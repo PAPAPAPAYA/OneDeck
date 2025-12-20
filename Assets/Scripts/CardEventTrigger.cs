@@ -7,6 +7,6 @@ public class CardEventTrigger : MonoBehaviour
         public UnityEvent CardActivateEvent;
         public void InvokeActivateEvent() // 发动
         {
-                CardActivateEvent.Invoke();
+                CardActivateEvent?.Invoke();
         }
 }

@@ -5,8 +5,10 @@
                 //// card structure
                         //// cost check
                         //// effect
+                        //// assign effect target ref
 // battle
         // text demo
-                // shuffle and mix decks
-                // reveal one by one and trigger events
+                //// shuffle and mix decks
+                //todo reveal one by one
+                // trigger events
 // shop
