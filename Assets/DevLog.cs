@@ -10,7 +10,7 @@
         // text demo
                 //// shuffle and mix decks
                 //// reveal one by one
-                // reshuffle
+                //// reshuffle
                 // trigger events
                 // end combat phase when one player's hp reached zero
                 // overtime
