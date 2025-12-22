@@ -33,11 +33,13 @@ public class CombatManager : MonoBehaviour
         
         [Header("ZONES")]
         public List<GameObject> combinedDeckZone;
+        public int deckSize;
         public GameObject revealZone;
         public List<GameObject> graveZone;
 
         [Header("FLOW")] 
         public bool awaitingRevealConfirm = true;
+        public int cardNum = 0;
         
         public static void EnterCombat()
         {
@@ -50,7 +52,7 @@ public class CombatManager : MonoBehaviour
                 switch (currentCombatState)
                 {
                         case EnumStorage.CombatState.GatherDeckLists:
-                                GatherDecksNShuffle();
+                                GatherDecks();
                                 break;
                         case EnumStorage.CombatState.ShuffleDeck:
                                 Shuffle();
@@ -60,7 +62,7 @@ public class CombatManager : MonoBehaviour
                                 break;
                 }
         }
-        private void GatherDecksNShuffle()
+        private void GatherDecks()
         {
                 foreach (var card in playerDeck.deck)
                 {
@@ -76,36 +78,54 @@ public class CombatManager : MonoBehaviour
                         cardInstance.GetComponent<CardScript>().theirStatusRef = ownerPlayerStatusRef;
                         combinedDeckZone.Add(cardInstance);
                 }
-                
-                currentCombatState = EnumStorage.CombatState.Reveal;
+                deckSize = combinedDeckZone.Count;
+                currentCombatState = EnumStorage.CombatState.ShuffleDeck;
         }
         private void Shuffle()
         {
+                if (graveZone.Count > 0) // not the first time shuffling deck
+                {
+                        UtilityFuncManagerScript.me.CopyGameObjectList(graveZone, combinedDeckZone);
+                        graveZone.Clear();
+                }
                 combinedDeckZone = UtilityFuncManagerScript.me.ShuffleList(combinedDeckZone);
+                cardNum = combinedDeckZone.Count - 1;
                 currentCombatState = EnumStorage.CombatState.Reveal;
         }
         private void RevealCards()
         {
                 if (awaitingRevealConfirm)
                 {
-                        print("press space to reveal");
-                        if (Input.GetKeyDown(KeyCode.Space))
+                        if (cardNum < 0)
                         {
-                                awaitingRevealConfirm = false;
+                                print("all cards revealed");
+                                currentCombatState = EnumStorage.CombatState.ShuffleDeck;
+                        }
+                        else
+                        {
+                                print("press space to reveal");
+                                if (Input.GetKeyDown(KeyCode.Space))
+                                {
+                                        awaitingRevealConfirm = false;
+                                }
                         }
                 }
                 else
                 {
-                        // todo: reveal next card
-                        var cardRevealed = combinedDeckZone[0].GetComponent<CardScript>();
+                        var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
+                        revealZone = combinedDeckZone[cardNum];
+                        combinedDeckZone.RemoveAt(cardNum);
                         if (cardRevealed.myStatusRef == ownerPlayerStatusRef) // if card revealed is session owner's
                         {
-                                print("your card: "+cardRevealed.cardName+": "+cardRevealed.cardDesc);
+                                print("#"+(deckSize -cardNum)+" your card: "+cardRevealed.cardName+": "+cardRevealed.cardDesc);
                         }
                         else
                         {
-                                print("their card: "+cardRevealed.cardName+": "+cardRevealed.cardDesc);
+                                print("#"+(deckSize -cardNum)+" their card: "+cardRevealed.cardName+": "+cardRevealed.cardDesc);
                         }
+                        cardNum--;
+                        graveZone.Add(revealZone);
+                        revealZone = null;
                         awaitingRevealConfirm = true;
                 }
         }

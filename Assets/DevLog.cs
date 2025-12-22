@@ -9,6 +9,9 @@
 // battle
         // text demo
                 //// shuffle and mix decks
-                //todo reveal one by one
+                //// reveal one by one
+                // reshuffle
                 // trigger events
+                // end combat phase when one player's hp reached zero
+                // overtime
 // shop
