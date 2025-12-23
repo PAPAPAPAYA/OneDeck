@@ -11,7 +11,12 @@
                 //// shuffle and mix decks
                 //// reveal one by one
                 //// reshuffle
+                // effects
+                        //// alter hp
+                        //// alter mp
                 // trigger events
-                // end combat phase when one player's hp reached zero
+                        //// activation
+                        // 
+                //// end combat phase when one player's hp reached zero
                 // overtime
 // shop

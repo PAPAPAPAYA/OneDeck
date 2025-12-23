@@ -14,6 +14,11 @@ namespace SOScripts
 
                 private void OnEnable()
                 {
+                        Reset();
+                }
+
+                public void Reset()
+                {
                         hp = hpOg;
                         mana = manaOg;
                 }

@@ -123,6 +123,7 @@ public class CombatManager : MonoBehaviour
                         {
                                 print("#"+(deckSize -cardNum)+" their card: "+cardRevealed.cardName+": "+cardRevealed.cardDesc);
                         }
+                        revealZone.GetComponent<CardEventTrigger>()?.InvokeActivateEvent();
                         cardNum--;
                         graveZone.Add(revealZone);
                         revealZone = null;

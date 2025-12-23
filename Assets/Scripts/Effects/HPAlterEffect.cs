@@ -15,6 +15,7 @@ public class HPAlterEffect : MonoBehaviour
         }
         public void AlterTheirHP(int HPAlterAmount)
         {
-                _myCardScript.theirStatusRef.mana +=  HPAlterAmount;
+                _myCardScript.theirStatusRef.hp +=  HPAlterAmount;
+                print("dmg dealt");
         }
 }
