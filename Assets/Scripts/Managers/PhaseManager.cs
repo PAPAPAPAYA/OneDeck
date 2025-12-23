@@ -1,9 +1,10 @@
 using System;
-using SOScripts;
 using UnityEngine;
 
+// control the overall flow of one session, currently dictating current phase is shop or combat
 public class PhaseManager : MonoBehaviour
 {
+        [Header("Flow Refs")]
         public GamePhaseSO currentGamePhaseRef;
         public IntSO roundCurrent;
         

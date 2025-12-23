@@ -20,3 +20,11 @@
                 //// end combat phase when one player's hp reached zero
                 // overtime
 // shop
+        //todo show player deck
+        //todo show shop items
+        // freeze
+        // buy
+        // reroll
+        // storage
+        // sell
+        // currency

@@ -1,17 +1,14 @@
 using System;
 using UnityEngine;
-
-namespace SOScripts
+// used to store an int
+[CreateAssetMenu]
+public class IntSO : ScriptableObject
 {
-        [CreateAssetMenu]
-        public class IntSO : ScriptableObject
+        public int value;
+        public int valueOg;
+        public bool resetOnStart;
+        private void OnEnable()
         {
-                public int value;
-                public int valueOg;
-                public bool resetOnStart;
-                private void OnEnable()
-                {
-                        if (resetOnStart) value = valueOg;
-                }
+                if (resetOnStart) value = valueOg;
         }
 }

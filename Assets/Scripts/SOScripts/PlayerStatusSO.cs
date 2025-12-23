@@ -1,26 +1,24 @@
 using System;
 using UnityEngine;
 
-namespace SOScripts
+// used to store player status
+[CreateAssetMenu]
+public class PlayerStatusSO : ScriptableObject
 {
-        [CreateAssetMenu]
-        public class PlayerStatusSO : ScriptableObject
+        public int hp;
+        public int mana;
+        [Header("DEFAULT VALUES")] 
+        public int hpOg;
+        public int manaOg;
+
+        private void OnEnable()
         {
-                public int hp;
-                public int mana;
-                [Header("DEFAULT VALUES")] 
-                public int hpOg;
-                public int manaOg;
+                Reset();
+        }
 
-                private void OnEnable()
-                {
-                        Reset();
-                }
-
-                public void Reset()
-                {
-                        hp = hpOg;
-                        mana = manaOg;
-                }
+        public void Reset()
+        {
+                hp = hpOg;
+                mana = manaOg;
         }
 }

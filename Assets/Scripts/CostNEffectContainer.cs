@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using SOScripts;
 using UnityEngine.Events;
 
 // this script is used to package, or in other words, to associate effects with their corresponding costs
@@ -16,11 +15,14 @@ public class CostNEffectContainer : MonoBehaviour
         }
         #endregion
         
+        [Header("Basic Info")]
         public string effectName;
-        public bool costCanBePayed = false;
         
+        [Header("Cost and Effect Events")]
         public UnityEvent checkCostEvent;
         public UnityEvent effectEvent;
+        
+        private bool costCanBePayed = false;
         public void InvokeEffectEvent()
         {
                 checkCostEvent?.Invoke();

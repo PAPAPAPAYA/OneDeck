@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// used to store a bunch of cards
 [CreateAssetMenu]
 public class DeckSO : ScriptableObject
 {

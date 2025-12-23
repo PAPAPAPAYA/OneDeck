@@ -1,19 +1,18 @@
 using System;
-using SOScripts;
 using TMPro;
 using UnityEngine;
 
 public class InfoDisplayManager : MonoBehaviour
 {
-        // tmp object
+        [Header("TMP Objects")]
         public GameObject playerInfoDisplay;
         public GameObject enemyInfoDisplay;
         
-        // status ref
+        [Header("Status Refs")]
         public PlayerStatusSO playerStatus;
         public PlayerStatusSO enemyStatus;
 
-        // flow ref
+        [Header("Flow Refs")]
         public GamePhaseSO gamePhase;
         private void Update()
         {

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using SOScripts;
 using UnityEngine;
 
 // this script functions as a variable storage in combat
@@ -21,9 +20,6 @@ public class CombatManager : MonoBehaviour
         [Header("PLAYER STATUS REFS")]
         public PlayerStatusSO ownerPlayerStatusRef;
         public PlayerStatusSO enemyPlayerStatusRef;
-        // public IntSO playerMana;
-        // public IntSO playerHP;
-        // public IntSO enemyHP;
         
         [Header("DECK REFS")]
         public DeckSO playerDeck;

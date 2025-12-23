@@ -10,13 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: CombinedDeckRef (not useable since SO can't get scene object)
+  m_Name: ShopPoolRef
   m_EditorClassIdentifier: 
-  deck:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  resetOnStart: 1
+  deck: []
+  resetOnStart: 0
