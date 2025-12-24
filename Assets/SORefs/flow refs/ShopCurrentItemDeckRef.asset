@@ -9,9 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3b874ada8e4469ea42cee10707255e4, type: 3}
-  m_Name: EnemyHPRef
+  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
+  m_Name: ShopCurrentItemDeckRef
   m_EditorClassIdentifier: 
-  value: 0
-  valueOg: 3
-  resetOnStart: 1
+  deck: []
+  resetOnStart: 0

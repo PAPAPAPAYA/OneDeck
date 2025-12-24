@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: PlayerStatusRef
   m_EditorClassIdentifier: 
   hp: 5
-  mana: 1
-  hpOg: 3
+  mana: 0
+  hpOg: 5
   manaOg: 0

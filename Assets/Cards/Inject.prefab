@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 1795577890928160246}
   - component: {fileID: 3451390522994276165}
   - component: {fileID: -1263184759504672610}
+  - component: {fileID: -269935061212022939}
   m_Layer: 0
-  m_Name: GainMana_1
+  m_Name: Inject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,8 +48,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Gain Mana
-  cardDesc: gain 1 mana
+  cardName: Inject
+  cardDesc: deal 1 dmg to self, gain 3 mana
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
 --- !u!114 &1795577890928160246
@@ -91,7 +92,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectName: 
-  costCanBePayed: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -110,6 +110,18 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: -269935061212022939}
+        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_MethodName: AlterMyHP
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: -1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: -1263184759504672610}
         m_TargetAssemblyTypeName: ManaAlterEffect, Assembly-CSharp
         m_MethodName: AlterMyMana
@@ -117,7 +129,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 3
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -132,5 +144,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf7d3c3d199e15b4f8b716a13478ec90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-269935061212022939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718476725744197808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

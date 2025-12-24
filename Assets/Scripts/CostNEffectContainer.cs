@@ -37,9 +37,9 @@ public class CostNEffectContainer : MonoBehaviour
         {
                 costCanBePayed = true;
         }
-        public void CheckCost_Mana1()
+        public void CheckCost_Mana(int mana)
         {
-                if (_myCardScript.myStatusRef.mana >= 1)
+                if (_myCardScript.myStatusRef.mana >= mana)
                 {
                         costCanBePayed = true;
                 }
