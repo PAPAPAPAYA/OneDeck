@@ -26,7 +26,9 @@
         // freeze
         // buy
         // space check
-        // reroll
+        //// reroll
         // sell
         // currency
         // storage
+// system
+        // record data and write to local txt

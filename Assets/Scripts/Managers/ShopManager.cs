@@ -21,9 +21,11 @@ public class ShopManager : MonoBehaviour
         [Header("shop")]
         public DeckSO shopPoolRef;
         public DeckSO currenShopItemDeckRef;
-        public int shopItemAmount;
+        // todo: find out how to customize inspector description
+        public int shopItemAmount; // max 5?
         [TextArea]
         public string phaseInfo;
+        public bool sellMode = false; // if it's not sell mode then its buy mode
         
         [Header("tmp objects")] 
         public TextMeshProUGUI phaseInfoDisplay;
@@ -40,6 +42,17 @@ public class ShopManager : MonoBehaviour
                 if (Input.GetKeyDown(KeyCode.R))
                 {
                         Reroll();
+                }
+                if (!sellMode) // buy mode
+                {
+                        if (Input.GetKeyDown(KeyCode.Alpha1))
+                        {
+                                
+                        }
+                }
+                else // sell mode
+                {
+                        
                 }
         }
 
@@ -87,6 +100,7 @@ public class ShopManager : MonoBehaviour
         private void Reroll()
         {
                 currenShopItemDeckRef.deck.Clear();
+                _shopInfoStr = "";
                 GenerateShopItems();
         }
 }
