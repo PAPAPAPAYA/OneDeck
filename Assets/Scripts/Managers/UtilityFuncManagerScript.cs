@@ -29,7 +29,7 @@ public class UtilityFuncManagerScript : MonoBehaviour
 		return shuffled;
 	}
 	// copy game object list
-	public void CopyGameObjectList(List<GameObject> from, List<GameObject> to)
+	public static void CopyGameObjectList(List<GameObject> from, List<GameObject> to)
 	{
 		to.Clear();
 		foreach (var gO in from)

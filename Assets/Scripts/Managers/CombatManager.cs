@@ -81,7 +81,7 @@ public class CombatManager : MonoBehaviour
         {
                 if (graveZone.Count > 0) // not the first time shuffling deck
                 {
-                        UtilityFuncManagerScript.me.CopyGameObjectList(graveZone, combinedDeckZone);
+                        UtilityFuncManagerScript.CopyGameObjectList(graveZone, combinedDeckZone);
                         graveZone.Clear();
                 }
                 combinedDeckZone = UtilityFuncManagerScript.me.ShuffleList(combinedDeckZone);

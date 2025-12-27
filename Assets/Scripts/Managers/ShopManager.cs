@@ -20,10 +20,12 @@ public class ShopManager : MonoBehaviour
         
         [Header("shop")]
         public DeckSO shopPoolRef;
-        public DeckSO currenShopItemDeckRef;
+        public DeckSO currentShopItemDeckRef;
         // todo: find out how to customize inspector description
+        [Range(1, 5)]
         public int shopItemAmount; // max 5?
         [TextArea]
+        [Tooltip("button prompts and other general info")]
         public string phaseInfo;
         public bool sellMode = false; // if it's not sell mode then its buy mode
         
@@ -47,6 +49,25 @@ public class ShopManager : MonoBehaviour
                 {
                         if (Input.GetKeyDown(KeyCode.Alpha1))
                         {
+                                if (!currentShopItemDeckRef.deck[0]) return;
+                                var cardToBuy = currentShopItemDeckRef.deck[0];
+                                playerDeckRef.deck.Add(cardToBuy);
+                                RefreshInfoDisplay();
+                        }
+                        else if (Input.GetKeyDown(KeyCode.Alpha2))
+                        {
+                                
+                        }
+                        else if (Input.GetKeyDown(KeyCode.Alpha3))
+                        {
+                                
+                        }
+                        else if (Input.GetKeyDown(KeyCode.Alpha4))
+                        {
+                                
+                        }
+                        else if (Input.GetKeyDown(KeyCode.Alpha5))
+                        {
                                 
                         }
                 }
@@ -59,11 +80,16 @@ public class ShopManager : MonoBehaviour
         public void EnterShop()
         {
                 print("entering shop");
+                RefreshInfoDisplay();
+        }
+        private void RefreshInfoDisplay()
+        {
                 GatherPlayerDeckInfo();
                 GenerateShopItems();
         }
         private void GatherPlayerDeckInfo()
         {
+                _deckInfoStr = "";
                 for (int i = 0; i < playerDeckRef.deck.Count; i++)
                 {
                         var card = playerDeckRef.deck[i];
@@ -75,10 +101,11 @@ public class ShopManager : MonoBehaviour
         }
         private void GenerateShopItems()
         {
+                _shopInfoStr = "";
                 for (int i = 0; i < shopItemAmount; i++)
                 {
                         var card = shopPoolRef.deck[Random.Range(0, shopPoolRef.deck.Count)];
-                        currenShopItemDeckRef.deck.Add(card);
+                        currentShopItemDeckRef.deck.Add(card);
                         _shopInfoStr +=
                                 "#" + (i + 1) + " " +
                                 card.GetComponent<CardScript>().cardName + 
@@ -99,7 +126,7 @@ public class ShopManager : MonoBehaviour
         }
         private void Reroll()
         {
-                currenShopItemDeckRef.deck.Clear();
+                currentShopItemDeckRef.deck.Clear();
                 _shopInfoStr = "";
                 GenerateShopItems();
         }

@@ -587,11 +587,12 @@ MonoBehaviour:
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   playerDeckRef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
-  currenShopItemDeckRef: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
+  currentShopItemDeckRef: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
   shopItemAmount: 3
   phaseInfo: 'Press R to REROLL
 
     Press key to BUY or SELL'
+  sellMode: 0
   phaseInfoDisplay: {fileID: 439035967}
   deckInfoDisplay: {fileID: 1348363272}
   shopInfoDisplay: {fileID: 2017417370}
