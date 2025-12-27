@@ -8,7 +8,7 @@
             //// assign effect target ref
 // battle
     // text demo
-        // text display in scene
+        //// text display in scene
         //// shuffle and mix decks
         //// reveal one by one
         //// reshuffle
@@ -38,5 +38,9 @@
         //// price
         //// purses
     // storage: not essential
-// system
+    //// clear info when exiting shop phase
+//// result
+    //// show result
+    //// show button prompt
+// debug
     // record data and write to local txt

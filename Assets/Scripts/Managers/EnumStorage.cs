@@ -5,15 +5,14 @@ public class EnumStorage : MonoBehaviour
         public enum GamePhase
         {
                 Combat,
-                Shop
+                Shop,
+                Result
         }
-
+        
         public enum CombatState
         {
                 GatherDeckLists,
                 ShuffleDeck,
-                Reveal,
-                Resolve,
-                End
+                Reveal
         }
 }

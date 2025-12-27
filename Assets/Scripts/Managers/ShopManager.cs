@@ -149,6 +149,13 @@ public class ShopManager : MonoBehaviour
         GatherPlayerDeckInfo();
     }
 
+    public void ExitShop()
+    {
+        deckInfoDisplay.text = "";
+        shopInfoDisplay.text = "";
+        phaseInfoDisplay.text = "";
+    }
+
     private void GatherPlayerDeckInfo()
     {
         _deckInfoStr = "";
@@ -167,6 +174,7 @@ public class ShopManager : MonoBehaviour
 
     private void GenerateShopItems()
     {
+        currentShopItemDeckRef.deck.Clear();
         for (var i = 0; i < shopItemAmount; i++)
         {
             var card = shopPoolRef.deck[Random.Range(0, shopPoolRef.deck.Count)];
@@ -209,8 +217,6 @@ public class ShopManager : MonoBehaviour
 
     private void Reroll()
     {
-        currentShopItemDeckRef.deck.Clear();
-        _shopInfoStr = "";
         GenerateShopItems();
         UpdateShopItemInfo();
     }

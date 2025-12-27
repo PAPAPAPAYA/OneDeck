@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 // this script functions as a variable storage in combat
@@ -36,9 +37,22 @@ public class CombatManager : MonoBehaviour
     public int cardNum;
     public int roundNum;
 
-    public static void EnterCombat()
+    [Header("TMP Objects")] public TextMeshProUGUI playerStatusDisplay;
+    public TextMeshProUGUI enemyStatusDisplay;
+    public TextMeshProUGUI combatInfoDisplay;
+    public TextMeshProUGUI combatTipsDisplay;
+
+    public void EnterCombat()
     {
         print("Entering combat");
+    }
+
+    public void ExitCombat()
+    {
+        playerStatusDisplay.text = "";
+        enemyStatusDisplay.text = "";
+        combatInfoDisplay.text = "";
+        combatTipsDisplay.text = "";
     }
 
     private void Update()
@@ -57,6 +71,8 @@ public class CombatManager : MonoBehaviour
                 RevealCards();
                 break;
         }
+
+        DisplayStatusInfo();
     }
 
     private void GatherDecks()
@@ -100,12 +116,12 @@ public class CombatManager : MonoBehaviour
         {
             if (cardNum < 0)
             {
-                print("all cards revealed");
+                combatTipsDisplay.text = "all cards revealed";
                 currentCombatState = EnumStorage.CombatState.ShuffleDeck;
             }
             else
             {
-                print("press space to reveal");
+                combatTipsDisplay.text = "press space to reveal";
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     awaitingRevealConfirm = false;
@@ -119,13 +135,15 @@ public class CombatManager : MonoBehaviour
             combinedDeckZone.RemoveAt(cardNum);
             if (cardRevealed.myStatusRef == ownerPlayerStatusRef) // if card revealed is session owner's
             {
-                print("#" + (deckSize - cardNum) + " your card: " + cardRevealed.cardName + ": " +
-                      cardRevealed.cardDesc);
+                combatInfoDisplay.text = "#" + (deckSize - cardNum) + 
+                                         " your card: " + cardRevealed.cardName + 
+                                         "\n" + cardRevealed.cardDesc;
             }
             else
             {
-                print("#" + (deckSize - cardNum) + " their card: " + cardRevealed.cardName + ": " +
-                      cardRevealed.cardDesc);
+                combatInfoDisplay.text = "#" + (deckSize - cardNum) + 
+                                         " their card: " + cardRevealed.cardName + 
+                                         "\n" + cardRevealed.cardDesc;
             }
 
             revealZone.GetComponent<CardEventTrigger>()?.InvokeActivateEvent(); //TIMEPOINT
@@ -134,5 +152,15 @@ public class CombatManager : MonoBehaviour
             revealZone = null;
             awaitingRevealConfirm = true;
         }
+    }
+
+    private void DisplayStatusInfo()
+    {
+        playerStatusDisplay.text = 
+            "Your HP: " + ownerPlayerStatusRef.hp + "\n" +
+            "Your Mana: " + ownerPlayerStatusRef.mana;
+        enemyStatusDisplay.text = 
+            "Their HP: " + enemyPlayerStatusRef.hp + "\n" +
+            "Their Mana: " + enemyPlayerStatusRef.mana;
     }
 }
