@@ -20,4 +20,6 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 9ffcac76c3d928f41962f81443a2f641, type: 3}
   - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
   - {fileID: 8718476725744197808, guid: 40e0deec71ff8fd4886778e9e7f0719a, type: 3}
+  - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
+  defaultDeck: {fileID: 0}
   resetOnStart: 0

@@ -3,20 +3,19 @@ using UnityEngine;
 
 public class CardScript : MonoBehaviour
 {
-        [Header("Basic Info")]
-        public string cardName;
-        [TextArea]
-        public string cardDesc;
-        [Header("Status Refs")]
-        public PlayerStatusSO myStatusRef;
-        public PlayerStatusSO theirStatusRef;
+    [Header("Basic Info")] public string cardName;
+    [TextArea] public string cardDesc;
+    public bool takeUpSpace = true; // whether this card takes up deck size
+    public int price;
+    [Header("Status Refs")] public PlayerStatusSO myStatusRef;
+    public PlayerStatusSO theirStatusRef;
 
-        // for testing
-        private void Update()
+    //todo for testing
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
         {
-                if (Input.GetKeyDown(KeyCode.T))
-                {
-                        GetComponent<CardEventTrigger>().CardActivateEvent?.Invoke();
-                }
+            GetComponent<CardEventTrigger>().cardActivateEvent?.Invoke();
         }
+    }
 }

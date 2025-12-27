@@ -11,13 +11,11 @@ public class DeckSO : ScriptableObject
         public bool resetOnStart;
         private void OnEnable()
         {
-                if (resetOnStart)
+                if (!resetOnStart) return;
+                deck.Clear();
+                if (defaultDeck)
                 {
-                        deck.Clear();
-                        if (defaultDeck)
-                        {
-                                UtilityFuncManagerScript.CopyGameObjectList(defaultDeck.deck, deck);
-                        }
+                        UtilityFuncManagerScript.CopyGameObjectList(defaultDeck.deck, deck);
                 }
         }
 }
