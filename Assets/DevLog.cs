@@ -24,7 +24,7 @@
         //// show shop items
         //// button prompt
         // freeze
-        // buy
+        //// buy
         // space check
         //// reroll
         // sell
