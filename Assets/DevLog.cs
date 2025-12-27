@@ -1,34 +1,41 @@
 // devlog
 
 // card
-        //// same structure from slash/ but expanded to support multiple costs and effects
-                //// card structure
-                        //// cost check
-                        //// effect
-                        //// assign effect target ref
+    //// same structure from slash/ but expanded to support multiple costs and effects
+        //// card structure
+            //// cost check
+            //// effect
+            //// assign effect target ref
 // battle
-        // text demo
-                //// shuffle and mix decks
-                //// reveal one by one
-                //// reshuffle
-                // effects
-                        //// alter hp
-                        //// alter mp
-                // trigger events
-                        //// activation
-                        // 
-                //// end combat phase when one player's hp reached zero
-                // overtime
+    // text demo
+        //// shuffle and mix decks
+        //// reveal one by one
+        //// reshuffle
+        // effects
+            //// alter hp
+            //// alter mp
+            // 
+        // trigger events
+            //// activation
+            // 
+        //// end combat phase when one player's hp reached zero
+        // overtime
 // shop
-        //// show player deck
-        //// show shop items
-        //// button prompt
-        // freeze
-        //// buy
-        // space check
-        //// reroll
-        // sell
-        // currency
-        // storage
+    //// show player deck
+    //// show shop items
+    //// button prompt
+    // freeze: not essential
+    //// buy
+        //// buy deck size
+        //// make item bought unbuyable
+    //// space check
+    //// show deck size
+    //// reroll
+    //// sell
+    //// currency
+        //// payday when entering shop
+        //// price
+        //// purses
+    // storage: not essential
 // system
-        // record data and write to local txt
+    // record data and write to local txt

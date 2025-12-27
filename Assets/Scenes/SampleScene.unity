@@ -153,7 +153,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 400, y: -200}
+  m_AnchoredPosition: {x: 320, y: -200}
   m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &13415598
@@ -494,21 +494,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 984a88de1c934a54b0184dfc5e84c682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CardActivateEvent:
+  cardActivateEvent:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 125518069}
-        m_TargetAssemblyTypeName: CostNEffectScript, Assembly-CSharp
-        m_MethodName: InvokeEffectEvent
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
+  cardBoughtEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &125518071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -523,6 +514,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: 
   cardDesc: 
+  takeUpSpace: 1
+  price: 0
   myStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
   theirStatusRef: {fileID: 11400000, guid: 3e07a686113188f42aa506f5d45e14ba, type: 2}
 --- !u!4 &125518072
@@ -586,12 +579,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   playerDeckRef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
+  deckSize: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
+  purse: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}
   shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
   currentShopItemDeckRef: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
   shopItemAmount: 3
+  payCheck: {fileID: 11400000, guid: fe5315966a51f1645bb27607137ec573, type: 2}
   phaseInfo: 'Press R to REROLL
 
-    Press key to BUY or SELL'
+    Press key to BUY/SELL
+
+    Press S to toggle
+    buying/selling'
   sellMode: 0
   phaseInfoDisplay: {fileID: 439035967}
   deckInfoDisplay: {fileID: 1348363272}
@@ -950,7 +949,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 300, y: 100}
+  m_AnchoredPosition: {x: 280, y: 100}
   m_SizeDelta: {x: 500, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &439035967
@@ -1000,8 +999,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1393,7 +1392,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -400, y: -200}
+  m_AnchoredPosition: {x: -320, y: -200}
   m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1174098154
@@ -1529,7 +1528,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -280, y: 0}
+  m_AnchoredPosition: {x: -220, y: 0}
   m_SizeDelta: {x: 500, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1348363272

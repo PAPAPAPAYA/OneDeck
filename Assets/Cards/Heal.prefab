@@ -49,6 +49,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: Heal
   cardDesc: 'cost 1 mana: heal 2 to self'
+  takeUpSpace: 1
+  price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
 --- !u!114 &1795577890928160246
@@ -63,21 +65,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 984a88de1c934a54b0184dfc5e84c682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CardActivateEvent:
+  cardActivateEvent:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3451390522994276165}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: InvokeEffectEvent
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
+  cardBoughtEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &3451390522994276165
 MonoBehaviour:
   m_ObjectHideFlags: 0
