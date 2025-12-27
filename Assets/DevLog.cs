@@ -8,6 +8,7 @@
             //// assign effect target ref
 // battle
     // text demo
+        // text display in scene
         //// shuffle and mix decks
         //// reveal one by one
         //// reshuffle

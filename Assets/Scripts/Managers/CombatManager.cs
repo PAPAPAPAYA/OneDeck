@@ -34,6 +34,7 @@ public class CombatManager : MonoBehaviour
 
     [Header("FLOW")] public bool awaitingRevealConfirm = true;
     public int cardNum;
+    public int roundNum;
 
     public static void EnterCombat()
     {
