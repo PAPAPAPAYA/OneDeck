@@ -3,11 +3,14 @@ using UnityEngine;
 
 public class CardScript : MonoBehaviour
 {
-    [Header("Basic Info")] public string cardName;
-    [TextArea] public string cardDesc;
+    [Header("Basic Info")]
+    public string cardName;
+    [TextArea]
+    public string cardDesc;
     public bool takeUpSpace = true; // whether this card takes up deck size
     public int price;
-    [Header("Status Refs")] public PlayerStatusSO myStatusRef;
+    [Header("Status Refs")]
+    public PlayerStatusSO myStatusRef;
     public PlayerStatusSO theirStatusRef;
 
     //todo for testing

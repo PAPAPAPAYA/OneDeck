@@ -947,9 +947,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: '#1 their card: card name
 
-    lorem ipsum lorem ipsum
-
-'
+    card description'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1293,7 +1291,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 508542130}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1621,11 +1619,15 @@ MonoBehaviour:
   graveZone: []
   awaitingRevealConfirm: 1
   cardNum: 0
-  roundNum: 0
   playerStatusDisplay: {fileID: 1174098154}
   enemyStatusDisplay: {fileID: 13415598}
   combatInfoDisplay: {fileID: 434224258}
   combatTipsDisplay: {fileID: 1501583256}
+  roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
+  overtimeRoundThreshold: 1
+  cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
+  fatigueAmount: 1
+  fatigueIncreaseAmount: 0
 --- !u!4 &1151980345
 Transform:
   m_ObjectHideFlags: 0
@@ -2500,7 +2502,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentGamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
-  roundCurrent: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
+  sessionNum: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
   wins: {fileID: 11400000, guid: 0c5b8ad6fd36260419f71a0b293f11ba, type: 2}
   winCon: {fileID: 11400000, guid: fd82b03b1d056a840874a52a528f9626, type: 2}
   hearts: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
@@ -2522,7 +2524,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  resultInfoDisplay: {fileID: 1115368634}
   onExitCombatPhase:
     m_PersistentCalls:
       m_Calls:
@@ -2574,6 +2575,7 @@ MonoBehaviour:
   onExitResultPhase:
     m_PersistentCalls:
       m_Calls: []
+  resultInfoDisplay: {fileID: 1115368634}
 --- !u!1001 &1604392758218879179
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2655,5 +2657,5 @@ SceneRoots:
   - {fileID: 301309640}
   - {fileID: 2012133714}
   - {fileID: 114813452}
-  - {fileID: 508542133}
   - {fileID: 1980727395}
+  - {fileID: 508542133}
