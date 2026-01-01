@@ -9,6 +9,7 @@ public class PhaseManager : MonoBehaviour
     [Header("Flow Refs")]
     public GamePhaseSO currentGamePhaseRef;
     public IntSO sessionNum;
+    public BoolSO combatFinished;
     public IntSO wins; // player needs a certain amount of wins to win the run
     public IntSO winCon;
     public IntSO hearts; // if player has no heart then the player loses the run
@@ -78,6 +79,7 @@ public class PhaseManager : MonoBehaviour
         }
         else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat)
         {
+            if (!combatFinished.value) return;
             if (playerStatusRef.hp <= 0)
             {
                 if (enemyStatusRef.hp <= 0)

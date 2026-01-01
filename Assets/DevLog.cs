@@ -19,7 +19,9 @@
     //// shuffle and mix decks
     //// reveal one by one
     //// reshuffle
-    // go to result screen after player pressed space
+    //// go to result screen after player pressed space
+    // migrate info display codes to a new script
+        // debug
     // effects
         //// alter hp
         //// alter mp

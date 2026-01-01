@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using TagSystem;
-using TMPro;
 using UnityEngine;
 
+[RequireComponent(typeof(CombatInfoDisplayer))]
 // this script functions as a variable storage in combat
 public class CombatManager : MonoBehaviour
 {
@@ -41,12 +41,10 @@ public class CombatManager : MonoBehaviour
     [Header("FLOW")]
     public bool awaitingRevealConfirm = true;
     public int cardNum;
+    public BoolSO combatFinished;
 
     [Header("TMP Objects")]
-    public TextMeshProUGUI playerStatusDisplay;
-    public TextMeshProUGUI enemyStatusDisplay;
-    public TextMeshProUGUI combatInfoDisplay;
-    public TextMeshProUGUI combatTipsDisplay;
+    public CombatInfoDisplayer _infoDisplayer;
 
     [Header("OVERTIME")]
     public IntSO roundNumRef;
@@ -64,10 +62,7 @@ public class CombatManager : MonoBehaviour
     public void ExitCombat()
     {
         // clean up ui
-        playerStatusDisplay.text = "";
-        enemyStatusDisplay.text = "";
-        combatInfoDisplay.text = "";
-        combatTipsDisplay.text = "";
+        _infoDisplayer.ClearInfo();
         // clean up combined deck
         foreach (var cardInstance in combinedDeckZone)
         {
@@ -103,8 +98,6 @@ public class CombatManager : MonoBehaviour
                 RevealCards();
                 break;
         }
-
-        DisplayStatusInfo();
     }
 
     private void GatherDecks()
@@ -178,15 +171,24 @@ public class CombatManager : MonoBehaviour
     {
         if (awaitingRevealConfirm)
         {
-            if (cardNum < 0)
+            if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
             {
-                combatTipsDisplay.text = "all cards revealed";
+                if (combatFinished.value) return;
+                _infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    combatFinished.value = true;
+                }
+            }
+            else if (cardNum < 0)
+            {
+                _infoDisplayer.combatTipsDisplay.text = "all cards revealed";
                 roundNumRef.value++;
                 currentCombatState = EnumStorage.CombatState.ShuffleDeck;
             }
             else
             {
-                combatTipsDisplay.text = "press space to reveal";
+                _infoDisplayer.combatTipsDisplay.text = "press space to reveal";
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     awaitingRevealConfirm = false;
@@ -200,21 +202,11 @@ public class CombatManager : MonoBehaviour
             combinedDeckZone.RemoveAt(cardNum);
             if (cardRevealed.myStatusRef == ownerPlayerStatusRef) // if card revealed is session owner's
             {
-                combatInfoDisplay.text = "#" + (deckSize - cardNum) + // card num
-                                         " your card: " + // card owner
-                                         ProcessTagInfo(cardRevealed) + // tags
-                                         cardRevealed.cardName + // card name
-                                         "\n" + cardRevealed.cardDesc; // card description
-                combatInfoDisplay.color = Color.blue;
+                _infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, true);
             }
             else
             {
-                combatInfoDisplay.text = "#" + (deckSize - cardNum) + // card num
-                                         " their card: " + // card owner
-                                         ProcessTagInfo(cardRevealed) + // tags
-                                         cardRevealed.cardName + // card name
-                                         "\n" + cardRevealed.cardDesc; // card description
-                combatInfoDisplay.color = Color.red;
+                _infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, false);
             }
 
             TagResolveManager.Me.ProcessTags(cardRevealed); //TIMEPOINT: tag resolve
@@ -226,24 +218,7 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    private string ProcessTagInfo(CardScript card)
-    {
-        var tagInfo = "";
-        if (card.myTags.Contains(EnumStorage.Tag.Infected))
-        {
-            tagInfo += "[Infected]";
-        }
+    
 
-        return tagInfo;
-    }
-
-    private void DisplayStatusInfo()
-    {
-        playerStatusDisplay.text =
-            "Your HP: " + ownerPlayerStatusRef.hp + "\n" +
-            "Your Mana: " + ownerPlayerStatusRef.mana;
-        enemyStatusDisplay.text =
-            "Their HP: " + enemyPlayerStatusRef.hp + "\n" +
-            "Their Mana: " + enemyPlayerStatusRef.mana;
-    }
+    
 }

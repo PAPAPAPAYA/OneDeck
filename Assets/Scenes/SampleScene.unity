@@ -983,7 +983,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -1381,12 +1381,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 621623533}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1910982409}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
 GameObject:
@@ -1645,6 +1645,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1151980345}
   - component: {fileID: 1151980344}
+  - component: {fileID: 1151980346}
   m_Layer: 0
   m_Name: CombatManager
   m_TagString: Untagged
@@ -1678,10 +1679,8 @@ MonoBehaviour:
   graveZone: []
   awaitingRevealConfirm: 1
   cardNum: 0
-  playerStatusDisplay: {fileID: 1174098154}
-  enemyStatusDisplay: {fileID: 13415598}
-  combatInfoDisplay: {fileID: 434224258}
-  combatTipsDisplay: {fileID: 1501583256}
+  combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
+  _infoDisplayer: {fileID: 1151980346}
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 1
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
@@ -1703,6 +1702,22 @@ Transform:
   - {fileID: 1887081634}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1151980346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151980343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a693cbb7bd86a442914db387e49a8bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerStatusDisplay: {fileID: 1174098154}
+  enemyStatusDisplay: {fileID: 13415598}
+  combatInfoDisplay: {fileID: 434224258}
+  combatTipsDisplay: {fileID: 1501583256}
 --- !u!1 &1174098152
 GameObject:
   m_ObjectHideFlags: 0
@@ -2233,7 +2248,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 621623536}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1910982410
@@ -2637,6 +2653,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentGamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   sessionNum: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
+  combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   wins: {fileID: 11400000, guid: 0c5b8ad6fd36260419f71a0b293f11ba, type: 2}
   winCon: {fileID: 11400000, guid: fd82b03b1d056a840874a52a528f9626, type: 2}
   hearts: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
@@ -2783,6 +2800,7 @@ SceneRoots:
   - {fileID: 2021275459}
   - {fileID: 152842585}
   - {fileID: 1151980345}
+  - {fileID: 1910982409}
   - {fileID: 64212448}
   - {fileID: 501287828}
   - {fileID: 1003829155}
@@ -2794,5 +2812,3 @@ SceneRoots:
   - {fileID: 1980727395}
   - {fileID: 508542133}
   - {fileID: 1229529461}
-  - {fileID: 1910982409}
-  - {fileID: 621623536}

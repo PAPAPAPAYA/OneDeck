@@ -1,12 +1,11 @@
 using System;
 using UnityEngine;
 
-// used to store an int
-[CreateAssetMenu(fileName = "IntSO", menuName = "SORefs/IntSO")]
-public class IntSO : ScriptableObject
+[CreateAssetMenu(fileName =  "BoolSO", menuName = "SORefs/BoolSO")]
+public class BoolSO : ScriptableObject
 {
-    public int value;
-    public int valueOg;
+    public bool value;
+    public bool valueOg;
     public bool resetOnStart;
     [TextArea]
     public string description;
