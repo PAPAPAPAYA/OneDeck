@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 // used to store player status
-[CreateAssetMenu]
+[CreateAssetMenu(fileName = "PlayerStatusSO", menuName = "SORefs/PlayerStatusSO")]
 public class PlayerStatusSO : ScriptableObject
 {
         public int hp;

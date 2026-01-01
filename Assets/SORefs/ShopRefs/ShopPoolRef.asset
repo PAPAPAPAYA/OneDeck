@@ -23,3 +23,4 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
+  description: shop pool

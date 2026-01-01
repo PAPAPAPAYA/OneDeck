@@ -15,3 +15,4 @@ MonoBehaviour:
   value: 0
   valueOg: 0
   resetOnStart: 1
+  description: player's money

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CardScript : MonoBehaviour
@@ -9,9 +10,12 @@ public class CardScript : MonoBehaviour
     public string cardDesc;
     public bool takeUpSpace = true; // whether this card takes up deck size
     public int price;
-    [Header("Status Refs")]
+    [HideInInspector]
     public PlayerStatusSO myStatusRef;
+    [HideInInspector]
     public PlayerStatusSO theirStatusRef;
+    [Header("Tags")]
+    public List<EnumStorage.Tag> myTags;
 
     //todo for testing
     private void Update()

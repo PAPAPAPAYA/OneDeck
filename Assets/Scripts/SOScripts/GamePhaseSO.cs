@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu]
+[CreateAssetMenu(fileName = "GamePhaseSO", menuName = "SORefs/GamePhaseSO")]
 public class GamePhaseSO : ScriptableObject
 {
         public EnumStorage.GamePhase currentGamePhase;

@@ -15,3 +15,4 @@ MonoBehaviour:
   value: 6
   valueOg: 6
   resetOnStart: 1
+  description: player deck size limit

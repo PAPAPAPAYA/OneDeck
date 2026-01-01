@@ -15,3 +15,5 @@ MonoBehaviour:
   value: 3
   valueOg: 3
   resetOnStart: 1
+  description: player's deck size, can be increased with buying IncreaseDeckSize
+    card in the shop

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 // used to store an int
-[CreateAssetMenu]
+[CreateAssetMenu(fileName = "IntSO", menuName = "SORefs/IntSO")]
 public class IntSO : ScriptableObject
 {
         public int value;

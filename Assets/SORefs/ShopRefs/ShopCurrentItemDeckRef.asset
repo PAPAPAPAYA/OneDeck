@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
   m_Name: ShopCurrentItemDeckRef
   m_EditorClassIdentifier: 
-  deck:
-  - {fileID: 8718476725744197808, guid: 9ddea3de077c20b458eb06727cb46828, type: 3}
-  - {fileID: 8718476725744197808, guid: 9ffcac76c3d928f41962f81443a2f641, type: 3}
+  deck: []
   defaultDeck: {fileID: 0}
   resetOnStart: 1
+  description: randomly selected cards from shop pool ref, the currently available
+    items in shop

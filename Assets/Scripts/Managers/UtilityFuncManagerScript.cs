@@ -22,16 +22,16 @@ public class UtilityFuncManagerScript : MonoBehaviour
 	}
 
 	// shuffle given GameObject list
-	public List<GameObject> ShuffleList(List<GameObject> list)
+	public static List<GameObject> ShuffleList(List<GameObject> list)
 	{
 		List<GameObject> shuffled = new();
 		shuffled = list.OrderBy(x => Random.value).ToList();
 		return shuffled;
 	}
 	// copy game object list
-	public static void CopyGameObjectList(List<GameObject> from, List<GameObject> to)
+	public static void CopyGameObjectList(List<GameObject> from, List<GameObject> to, bool clearTargetList)
 	{
-		to.Clear();
+        if (clearTargetList) to.Clear();
 		foreach (var gO in from)
 		{
 			to.Add(gO);

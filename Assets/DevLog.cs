@@ -1,5 +1,11 @@
 // devlog
-
+// design
+    // infection
+    // mana
+    // healing
+    // self-harm
+    // undertake
+    // heart change WIP
 // card
     //// same structure from slash/ but expanded to support multiple costs and effects
         //// card structure
@@ -13,10 +19,15 @@
     //// shuffle and mix decks
     //// reveal one by one
     //// reshuffle
+    // go to result screen after player pressed space
     // effects
         //// alter hp
         //// alter mp
-        // 
+        //// show tag effects
+        // resolve tags
+            //// infected
+                //// deal dmg
+                //// make sure this tag can only be given to cards without this tag
     // trigger events
         //// activation
         // 
@@ -48,6 +59,6 @@
 // debug
     // record data and write to local txt
 // housekeeping
-    // documentation
+    //// documentation
         //// document card system
         //// document overarching system

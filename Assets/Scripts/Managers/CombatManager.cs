@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TagSystem;
 using TMPro;
 using UnityEngine;
 
@@ -8,11 +9,11 @@ public class CombatManager : MonoBehaviour
 {
     #region SINGLETON
 
-    public static CombatManager instance;
+    public static CombatManager Me;
 
     private void Awake()
     {
-        instance = this;
+        Me = this;
     }
 
     #endregion
@@ -163,13 +164,13 @@ public class CombatManager : MonoBehaviour
     {
         if (graveZone.Count > 0) // not the first time shuffling deck
         {
-            UtilityFuncManagerScript.CopyGameObjectList(graveZone, combinedDeckZone);
+            UtilityFuncManagerScript.CopyGameObjectList(graveZone, combinedDeckZone, true);
             graveZone.Clear();
         }
 
         CheckFatigueNAddFatigue();
-        combinedDeckZone = UtilityFuncManagerScript.me.ShuffleList(combinedDeckZone);
-        cardNum = combinedDeckZone.Count - 1;
+        combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
+        cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
         currentCombatState = EnumStorage.CombatState.Reveal;
     }
 
@@ -199,23 +200,41 @@ public class CombatManager : MonoBehaviour
             combinedDeckZone.RemoveAt(cardNum);
             if (cardRevealed.myStatusRef == ownerPlayerStatusRef) // if card revealed is session owner's
             {
-                combatInfoDisplay.text = "#" + (deckSize - cardNum) +
-                                         " your card: " + cardRevealed.cardName +
-                                         "\n" + cardRevealed.cardDesc;
+                combatInfoDisplay.text = "#" + (deckSize - cardNum) + // card num
+                                         " your card: " + // card owner
+                                         ProcessTagInfo(cardRevealed) + // tags
+                                         cardRevealed.cardName + // card name
+                                         "\n" + cardRevealed.cardDesc; // card description
+                combatInfoDisplay.color = Color.blue;
             }
             else
             {
-                combatInfoDisplay.text = "#" + (deckSize - cardNum) +
-                                         " their card: " + cardRevealed.cardName +
-                                         "\n" + cardRevealed.cardDesc;
+                combatInfoDisplay.text = "#" + (deckSize - cardNum) + // card num
+                                         " their card: " + // card owner
+                                         ProcessTagInfo(cardRevealed) + // tags
+                                         cardRevealed.cardName + // card name
+                                         "\n" + cardRevealed.cardDesc; // card description
+                combatInfoDisplay.color = Color.red;
             }
 
+            TagResolveManager.Me.ProcessTags(cardRevealed); //TIMEPOINT: tag resolve
             revealZone.GetComponent<CardEventTrigger>()?.InvokeActivateEvent(); //TIMEPOINT
             cardNum--;
             graveZone.Add(revealZone);
             revealZone = null;
             awaitingRevealConfirm = true;
         }
+    }
+
+    private string ProcessTagInfo(CardScript card)
+    {
+        var tagInfo = "";
+        if (card.myTags.Contains(EnumStorage.Tag.Infected))
+        {
+            tagInfo += "[Infected]";
+        }
+
+        return tagInfo;
     }
 
     private void DisplayStatusInfo()
