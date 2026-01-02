@@ -441,6 +441,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  triggerLingerEffect: 0
 --- !u!114 &125518069
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -496,6 +497,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 984a88de1c934a54b0184dfc5e84c682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  afterShuffleEvent:
+    m_PersistentCalls:
+      m_Calls: []
   cardActivateEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -600,6 +604,52 @@ MonoBehaviour:
   phaseInfoDisplay: {fileID: 439035967}
   deckInfoDisplay: {fileID: 1348363272}
   shopInfoDisplay: {fileID: 2017417370}
+--- !u!1 &174779472
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 174779473}
+  - component: {fileID: 174779474}
+  m_Layer: 0
+  m_Name: LingeringEffectManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &174779473
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174779472}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &174779474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174779472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54b50cd9ad58c3443a57a7ac68b5fa48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sessionOwnerStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
+  onOwnerDealDmgToEnemy: {fileID: 11400000, guid: 6e69b63aa924cd342b78fd35ae337173, type: 2}
 --- !u!1 &301309639
 GameObject:
   m_ObjectHideFlags: 0
@@ -1360,6 +1410,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  triggerLingerEffect: 0
 --- !u!114 &621623535
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1680,7 +1731,7 @@ MonoBehaviour:
   awaitingRevealConfirm: 1
   cardNum: 0
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
-  _infoDisplayer: {fileID: 1151980346}
+  infoDisplayer: {fileID: 1151980346}
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 1
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
@@ -1714,6 +1765,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a693cbb7bd86a442914db387e49a8bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gamePhase: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   playerStatusDisplay: {fileID: 1174098154}
   enemyStatusDisplay: {fileID: 13415598}
   combatInfoDisplay: {fileID: 434224258}
@@ -2727,6 +2779,63 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   resultInfoDisplay: {fileID: 1115368634}
+--- !u!1001 &609837622552771877
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5657373600483367028, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_Name
+      value: LingerEffectResolver
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8543666084829609195, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 277ba5a58a512a34ca07e309e4cf2fba, type: 3}
 --- !u!1001 &1604392758218879179
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2812,3 +2921,5 @@ SceneRoots:
   - {fileID: 1980727395}
   - {fileID: 508542133}
   - {fileID: 1229529461}
+  - {fileID: 174779473}
+  - {fileID: 609837622552771877}

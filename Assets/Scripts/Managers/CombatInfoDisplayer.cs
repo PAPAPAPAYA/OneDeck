@@ -2,8 +2,10 @@ using System;
 using UnityEngine;
 using TMPro;
 
+// a required component of combat manager, responsible for temporarily show combat info
 public class CombatInfoDisplayer : MonoBehaviour
 {
+    public GamePhaseSO gamePhase;
     public TextMeshProUGUI playerStatusDisplay;
     public TextMeshProUGUI enemyStatusDisplay;
     public TextMeshProUGUI combatInfoDisplay;
@@ -11,10 +13,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 
     private void Update()
     {
+        if (gamePhase.Value() != EnumStorage.GamePhase.Combat) return;
         DisplayStatusInfo();
     }
 
-    //todo not clearing
     public void ClearInfo()
     {
         playerStatusDisplay.text = "";
@@ -26,12 +28,13 @@ public class CombatInfoDisplayer : MonoBehaviour
     public void ShowCardInfo(CardScript cardRevealed, int deckSize, int cardNum, bool ownersCard)
     {
         combatInfoDisplay.text = "#" + (deckSize - cardNum) + // card num
-                                 (ownersCard?" your card: \n\n":" their card: \n\n") + // card owner
+                                 (ownersCard ? " your card: \n\n" : " their card: \n\n") + // card owner
                                  ProcessTagInfo(cardRevealed) + // tags
                                  cardRevealed.cardName + // card name
                                  "\n" + cardRevealed.cardDesc; // card description
-        combatInfoDisplay.color = Color.blue;
+        combatInfoDisplay.color = ownersCard ? Color.blue : Color.red;
     }
+
     private string ProcessTagInfo(CardScript card)
     {
         var tagInfo = "";
@@ -42,6 +45,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 
         return tagInfo;
     }
+
     private void DisplayStatusInfo()
     {
         playerStatusDisplay.text =

@@ -54,6 +54,7 @@ MonoBehaviour:
   price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
+  myTags: 
 --- !u!114 &1795577890928160246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66,6 +67,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 984a88de1c934a54b0184dfc5e84c682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  afterShuffleEvent:
+    m_PersistentCalls:
+      m_Calls: []
   cardActivateEvent:
     m_PersistentCalls:
       m_Calls:
@@ -151,6 +155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  triggerLingerEffect: 1
 --- !u!114 &-818459441208190353
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 1795577890928160246}
   - component: {fileID: 3451390522994276165}
   - component: {fileID: 288352947704754826}
-  - component: {fileID: -818459441208190353}
+  - component: {fileID: -1674105073796601024}
   m_Layer: 0
-  m_Name: BigFireball
+  m_Name: StabSlowly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -48,8 +48,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Big Fireball
-  cardDesc: 'cost 2 mana: deal 3 dmg to enemy'
+  cardName: Stab Slowly
+  cardDesc: bury self; deal 1 dmg to enemy
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}
@@ -69,7 +69,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   afterShuffleEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: -1674105073796601024}
+        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
+        m_MethodName: BurySelf
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   cardActivateEvent:
     m_PersistentCalls:
       m_Calls:
@@ -106,12 +118,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3451390522994276165}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_Mana
-        m_Mode: 3
+        m_MethodName: CheckCost_noCost
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -119,18 +131,6 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: -818459441208190353}
-        m_TargetAssemblyTypeName: ManaAlterEffect, Assembly-CSharp
-        m_MethodName: AlterMyMana
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: -2
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 288352947704754826}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
         m_MethodName: AlterTheirHP
@@ -138,7 +138,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: -3
+          m_IntArgument: -1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   triggerLingerEffect: 1
---- !u!114 &-818459441208190353
+--- !u!114 &-1674105073796601024
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -165,6 +165,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8718476725744197808}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf7d3c3d199e15b4f8b716a13478ec90, type: 3}
+  m_Script: {fileID: 11500000, guid: eefb24a8c10cb53439f7e7db22e3daec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerDeck: {fileID: 0}

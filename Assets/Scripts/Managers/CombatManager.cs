@@ -43,8 +43,8 @@ public class CombatManager : MonoBehaviour
     public int cardNum;
     public BoolSO combatFinished;
 
-    [Header("TMP Objects")]
-    public CombatInfoDisplayer _infoDisplayer;
+    [Header("INFO DISPLAYER")]
+    public CombatInfoDisplayer infoDisplayer;
 
     [Header("OVERTIME")]
     public IntSO roundNumRef;
@@ -52,6 +52,8 @@ public class CombatManager : MonoBehaviour
     public GameObject cardToAddWhenOvertime;
     [Tooltip("add this amount of fatigue to both player")]
     public int fatigueAmount;
+
+    #region Enter and exit funcs
 
     public void EnterCombat()
     {
@@ -62,7 +64,7 @@ public class CombatManager : MonoBehaviour
     public void ExitCombat()
     {
         // clean up ui
-        _infoDisplayer.ClearInfo();
+        infoDisplayer.ClearInfo();
         // clean up combined deck
         foreach (var cardInstance in combinedDeckZone)
         {
@@ -82,6 +84,8 @@ public class CombatManager : MonoBehaviour
         cardNum = 0;
         deckSize = 0;
     }
+
+    #endregion
 
     private void Update()
     {
@@ -126,20 +130,18 @@ public class CombatManager : MonoBehaviour
 
     private void CheckFatigueNAddFatigue()
     {
-        if (roundNumRef.value > overtimeRoundThreshold)
+        if (roundNumRef.value <= overtimeRoundThreshold) return;
+        print("fatigue kicked in");
+        // add fatigue to owner side
+        for (var i = 0; i < fatigueAmount; i++)
         {
-            print("fatigue kicked in");
-            // add fatigue to owner side
-            for (var i = 0; i < fatigueAmount; i++)
-            {
-                AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, true);
-            }
+            AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, true);
+        }
 
-            // add fatigue to enemy side
-            for (var i = 0; i < fatigueAmount; i++)
-            {
-                AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, false);
-            }
+        // add fatigue to enemy side
+        for (var i = 0; i < fatigueAmount; i++)
+        {
+            AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, false);
         }
     }
 
@@ -163,6 +165,13 @@ public class CombatManager : MonoBehaviour
 
         CheckFatigueNAddFatigue();
         combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
+        //! since effects may change the combined deck zone list, copy it out and use the temp list to foreach
+        var tempList = new  List<GameObject>();
+        UtilityFuncManagerScript.CopyGameObjectList(combinedDeckZone, tempList, true);
+        foreach (var card in tempList)
+        {
+            card.GetComponent<CardEventTrigger>()?.InvokeAfterShuffleEvent(); // TIMEPOINT
+        }
         cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
         currentCombatState = EnumStorage.CombatState.Reveal;
     }
@@ -174,7 +183,7 @@ public class CombatManager : MonoBehaviour
             if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
             {
                 if (combatFinished.value) return;
-                _infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
+                infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     combatFinished.value = true;
@@ -182,13 +191,13 @@ public class CombatManager : MonoBehaviour
             }
             else if (cardNum < 0)
             {
-                _infoDisplayer.combatTipsDisplay.text = "all cards revealed";
+                infoDisplayer.combatTipsDisplay.text = "all cards revealed";
                 roundNumRef.value++;
                 currentCombatState = EnumStorage.CombatState.ShuffleDeck;
             }
             else
             {
-                _infoDisplayer.combatTipsDisplay.text = "press space to reveal";
+                infoDisplayer.combatTipsDisplay.text = "press space to reveal";
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     awaitingRevealConfirm = false;
@@ -202,11 +211,11 @@ public class CombatManager : MonoBehaviour
             combinedDeckZone.RemoveAt(cardNum);
             if (cardRevealed.myStatusRef == ownerPlayerStatusRef) // if card revealed is session owner's
             {
-                _infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, true);
+                infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, true);
             }
             else
             {
-                _infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, false);
+                infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, false);
             }
 
             TagResolveManager.Me.ProcessTags(cardRevealed); //TIMEPOINT: tag resolve
@@ -217,8 +226,4 @@ public class CombatManager : MonoBehaviour
             awaitingRevealConfirm = true;
         }
     }
-
-    
-
-    
 }
