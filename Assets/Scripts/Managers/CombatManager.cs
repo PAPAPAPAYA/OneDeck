@@ -104,15 +104,16 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    private void GatherDecks()
+    private void GatherDecks() // collect player and enemy decks and instantiate cards
     {
         combinedDeckZone.Clear();
         foreach (var card in playerDeck.deck)
         {
             var cardInstance = Instantiate(card, playerDeckParent.transform);
+            var cardInstanceScript = cardInstance.GetComponent<CardScript>();
             // assign cards' targets
-            cardInstance.GetComponent<CardScript>().myStatusRef = ownerPlayerStatusRef;
-            cardInstance.GetComponent<CardScript>().theirStatusRef = enemyPlayerStatusRef;
+            cardInstanceScript.myStatusRef = ownerPlayerStatusRef;
+            cardInstanceScript.theirStatusRef = enemyPlayerStatusRef;
             combinedDeckZone.Add(cardInstance);
         }
 
@@ -166,12 +167,14 @@ public class CombatManager : MonoBehaviour
         CheckFatigueNAddFatigue();
         combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
         //! since effects may change the combined deck zone list, copy it out and use the temp list to foreach
-        var tempList = new  List<GameObject>();
+        var tempList = new List<GameObject>();
         UtilityFuncManagerScript.CopyGameObjectList(combinedDeckZone, tempList, true);
+        UtilityFuncManagerScript.CopyGameObjectList(graveZone, tempList, false);
         foreach (var card in tempList)
         {
             card.GetComponent<CardEventTrigger>()?.InvokeAfterShuffleEvent(); // TIMEPOINT
         }
+
         cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
         currentCombatState = EnumStorage.CombatState.Reveal;
     }
@@ -209,14 +212,7 @@ public class CombatManager : MonoBehaviour
             var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
             revealZone = combinedDeckZone[cardNum];
             combinedDeckZone.RemoveAt(cardNum);
-            if (cardRevealed.myStatusRef == ownerPlayerStatusRef) // if card revealed is session owner's
-            {
-                infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, true);
-            }
-            else
-            {
-                infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, false);
-            }
+            infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, cardRevealed.myStatusRef == ownerPlayerStatusRef); // if card revealed is session owner's
 
             TagResolveManager.Me.ProcessTags(cardRevealed); //TIMEPOINT: tag resolve
             revealZone.GetComponent<CardEventTrigger>()?.InvokeActivateEvent(); //TIMEPOINT

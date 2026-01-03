@@ -12,9 +12,11 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: 1795577890928160246}
   - component: {fileID: 3451390522994276165}
-  - component: {fileID: -9038941153950301483}
+  - component: {fileID: 288352947704754826}
+  - component: {fileID: 7613628579646632186}
+  - component: {fileID: -1674105073796601024}
   m_Layer: 0
-  m_Name: DeathByAThousandCuts
+  m_Name: StabSlowly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,10 +49,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Death by a Thousand Cuts
-  cardDesc: 'linger: when dmg is dealt to the enemy, deal 1 dmg'
+  cardName: Stab Slowly
+  cardID: 0
+  cardDesc: bury self; deal 1 dmg to enemy
   takeUpSpace: 1
-  price: 0
+  price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myTags: 
@@ -66,9 +69,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 984a88de1c934a54b0184dfc5e84c682, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  afterShuffleEvent:
+  ownerDealtDmgToEnemyEvent:
     m_PersistentCalls:
       m_Calls: []
+  afterShuffleEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7613628579646632186}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: InvokeEffectEvent
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   cardActivateEvent:
     m_PersistentCalls:
       m_Calls:
@@ -99,7 +117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectName: 
+  effectName: deal 1 dmg
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -118,9 +136,50 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: -9038941153950301483}
-        m_TargetAssemblyTypeName: LingerEffectResolverMaker, Assembly-CSharp
-        m_MethodName: MakeLingerEffectResolver
+      - m_Target: {fileID: 288352947704754826}
+        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_MethodName: AlterTheirHP
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: -1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &288352947704754826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718476725744197808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  triggerLingerEffect: 1
+--- !u!114 &7613628579646632186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718476725744197808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectName: bury self
+  checkCostEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7613628579646632186}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: CheckCost_noCost
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -130,7 +189,22 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &-9038941153950301483
+  effectEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: -1674105073796601024}
+        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
+        m_MethodName: BurySelf
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &-1674105073796601024
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -139,7 +213,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8718476725744197808}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4a0ae1d5fec9734ca6f39154ef66588, type: 3}
+  m_Script: {fileID: 11500000, guid: eefb24a8c10cb53439f7e7db22e3daec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lingerEffectResolverToMake: {fileID: 5657373600483367028, guid: 6396b3cd733f7b34ebca7fb88bd21ec7, type: 3}
+  playerDeck: {fileID: 0}

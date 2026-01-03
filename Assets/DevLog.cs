@@ -32,16 +32,24 @@
             // 
         // stage
             //// stage self
-            // stage other
             //// bury self
+            //
     // trigger events
+        //todo use game event SO to avoid bloating card event trigger script
+        //// when player dealt dmg to enemy
         //// activation
         //// after shuffling
-    // lingering effects
-        // deal dmg when dmg is dealt
-            // avoid looping
-                // need to pass in source and check source
-            // test to see if checking and comparing player status can discern dmg dealer and dmg receiver
+        //
+    // lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
+        ////todo need test: linger effects straight on card
+        //todo show linger effects in combat info
+        ////todo avoid looping
+            // effect chain
+                // may need to check all situations
+                    //// effect activating itself
+                    // multiple cards loop, activating each other
+                    // same card, multiple same effects
+        //// test to see if checking and comparing player status can discern dmg dealer and dmg receiver
     //// end combat phase when one player's hp reached zero
     //// overtime
         //// implement func to add card in the middle of combat

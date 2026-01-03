@@ -7,46 +7,75 @@ using UnityEngine.Events;
 // this way, we can assign effects and their costs via UnityEvent, even as UnityEvents can't return values in a straight forward way
 public class CostNEffectContainer : MonoBehaviour
 {
-        #region GET MY CARD SCRIPT
-        private CardScript _myCardScript;
-        private void OnEnable()
+    #region GET MY CARD SCRIPT
+
+    private CardScript _myCardScript;
+
+    private void OnEnable()
+    {
+        _myCardScript = GetComponent<CardScript>();
+    }
+
+    #endregion
+
+    [Header("Basic Info")]
+    [Tooltip("don't assign identical effect name to effects in the same card")]
+    public string effectName;
+
+    [Header("Cost and Effect Events")]
+    public UnityEvent checkCostEvent;
+    public UnityEvent effectEvent;
+
+    private bool costCanBePayed = false;
+
+    public void InvokeEffectEvent()
+    {
+        // check if effect already in chain
+        if (EffectChainManager.Me.CheckEffectAndRecord(_myCardScript.cardID + effectName)) // concatenate card id and this effect's name
         {
-                _myCardScript = GetComponent<CardScript>();
+            checkCostEvent?.Invoke(); // check if cost is met or can be met
+            if (!costCanBePayed) return; // if cost can't be met, return
+            effectEvent?.Invoke(); // if cost can be met, invoke effect
+            print(GetComponent<CardScript>().cardName+" is triggered");
+            costCanBePayed = false; // reset flag
         }
-        #endregion
-        
-        [Header("Basic Info")]
-        public string effectName;
-        
-        [Header("Cost and Effect Events")]
-        public UnityEvent checkCostEvent;
-        public UnityEvent effectEvent;
-        
-        private bool costCanBePayed = false;
-        public void InvokeEffectEvent()
+        else
         {
-                checkCostEvent?.Invoke();
-                if (costCanBePayed)
-                {
-                        effectEvent?.Invoke();
-                        costCanBePayed = false;
-                }
+            print("effect already processed once, don't loop");
         }
-        #region check cost funcs
-        public void CheckCost_noCost()
+    }
+
+    #region check cost funcs
+
+    public void CheckCost_noCost()
+    {
+        costCanBePayed = true;
+    }
+
+    public void CheckCost_Mana(int mana)
+    {
+        if (_myCardScript.myStatusRef.mana >= mana)
         {
-                costCanBePayed = true;
+            costCanBePayed = true;
         }
-        public void CheckCost_Mana(int mana)
+        else
         {
-                if (_myCardScript.myStatusRef.mana >= mana)
-                {
-                        costCanBePayed = true;
-                }
-                else
-                {
-                        print("not enough mana");
-                }
+            print("not enough mana");
         }
-        #endregion
+    }
+
+    public void CheckCost_InGrave()
+    {
+        if (CombatManager.Me.graveZone.Contains(gameObject))
+        {
+            costCanBePayed = true;
+            print("card in grave");
+        }
+        else
+        {
+            print("not in grave");
+        }
+    }
+
+    #endregion
 }

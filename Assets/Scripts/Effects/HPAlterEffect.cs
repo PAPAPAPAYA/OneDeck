@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HPAlterEffect : MonoBehaviour
@@ -15,33 +16,37 @@ public class HPAlterEffect : MonoBehaviour
     }
 
     #endregion
-
-    public bool triggerLingerEffect = true; // decide whether the effect trigger lingering effects
-
+    
     public void AlterMyHP(int HPAlterAmount)
     {
         _myCardScript.myStatusRef.hp += HPAlterAmount;
-        if (!triggerLingerEffect) return;
         if (HPAlterAmount < 0)
         {
-            LingeringEffectManager.Me?.InvokeOnDmgDealtEvent(_myCardScript.myStatusRef, _myCardScript.myStatusRef); // TIMEPOINT
+            //LingeringEffectManager.Me?.InvokeOnDmgDealtEvent(_myCardScript.myStatusRef, _myCardScript.myStatusRef); // TIMEPOINT
         }
     }
 
     public void AlterTheirHP(int HPAlterAmount)
     {
         _myCardScript.theirStatusRef.hp += HPAlterAmount;
-        if (!triggerLingerEffect) return;
         if (HPAlterAmount < 0)
         {
-            LingeringEffectManager.Me?.InvokeOnDmgDealtEvent(_myCardScript.myStatusRef, _myCardScript.theirStatusRef); // TIMEPOINT
+            if (_myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef) // if card owner is player, then player is dealing dmg to enemy
+            {
+                var tempList = new  List<GameObject>();
+                UtilityFuncManagerScript.CopyGameObjectList(CombatManager.Me.combinedDeckZone, tempList, true);
+                UtilityFuncManagerScript.CopyGameObjectList(CombatManager.Me.graveZone, tempList, false);
+                foreach (var card in tempList)
+                {
+                    card.GetComponent<CardEventTrigger>()?.InvokeOwnerDealtDmgToEnemyEvent(); // TIMEPOINT
+                }
+            }
         }
     }
 
     public void AlterHP(int amount, PlayerStatusSO playerStatus)
     {
         playerStatus.hp += amount;
-        if (!triggerLingerEffect) return;
         if (amount < 0)
         {
             LingeringEffectManager.Me?.InvokeOnDmgDealtEvent(_myCardScript.myStatusRef, playerStatus); // TIMEPOINT

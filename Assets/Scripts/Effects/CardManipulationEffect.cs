@@ -23,10 +23,6 @@ public class CardManipulationEffect : MonoBehaviour
     public void StageSelf() // put self on top of the deck
     {
         if (!_cm.combinedDeckZone.Contains(gameObject))return;
-        // var tempList = _cm.combinedDeckZone;
-        // tempList.Remove(gameObject);
-        // tempList.Add(gameObject);
-        // _cm.combinedDeckZone = tempList;
         _cm.combinedDeckZone.Remove(gameObject);
         _cm.combinedDeckZone.Add(gameObject);
     }
