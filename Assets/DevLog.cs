@@ -29,7 +29,7 @@
             //// infected
                 //// deal dmg
                 //// make sure this tag can only be given to cards without this tag
-            // 
+            //todo refactor to use game event SOs
         // stage
             //// stage self
             //// bury self
