@@ -1,5 +1,93 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2891312017827280373
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 370407699155748086}
+  - component: {fileID: 3190445771714075860}
+  - component: {fileID: 8460720985390191826}
+  m_Layer: 0
+  m_Name: if card in grave, deal dmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &370407699155748086
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2891312017827280373}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3828591620990538636}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3190445771714075860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2891312017827280373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectName: deal 1 dmg if in grave
+  checkCostEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 3190445771714075860}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: CheckCost_InGrave
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  effectEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8460720985390191826}
+        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_MethodName: AlterTheirHP
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: -1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &8460720985390191826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2891312017827280373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -10,9 +98,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3828591620990538636}
   - component: {fileID: 7915703419504864441}
-  - component: {fileID: 1795577890928160246}
-  - component: {fileID: 3451390522994276165}
-  - component: {fileID: 814149559670989565}
+  - component: {fileID: 8021951882768828567}
   m_Layer: 0
   m_Name: DeathByAThousandCuts
   m_TagString: Untagged
@@ -32,7 +118,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 370407699155748086}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -49,13 +136,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: Death by a Thousand Cuts
   cardID: 0
-  cardDesc: 'linger: when dmg is dealt to the enemy, deal 1 dmg'
+  cardDesc: 'in grave: when player dealt dmg to enemy, deal 1 dmg'
   takeUpSpace: 1
-  price: 0
+  price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myTags: 
---- !u!114 &1795577890928160246
+--- !u!114 &8021951882768828567
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -64,13 +151,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8718476725744197808}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 984a88de1c934a54b0184dfc5e84c682, type: 3}
+  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ownerDealtDmgToEnemyEvent:
+  event: {fileID: 11400000, guid: 6e69b63aa924cd342b78fd35ae337173, type: 2}
+  response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3451390522994276165}
+      - m_Target: {fileID: 3190445771714075860}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent
         m_Mode: 1
@@ -82,68 +170,3 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  afterShuffleEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  cardActivateEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  cardBoughtEvent:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &3451390522994276165
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  effectName: when dmg is dealt to enemy, deal 1 dmg
-  checkCostEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3451390522994276165}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_InGrave
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: -1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  effectEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 814149559670989565}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: AlterTheirHP
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: -1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &814149559670989565
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  triggerLingerEffect: 1

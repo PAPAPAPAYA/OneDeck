@@ -1,5 +1,130 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6090982326920064139
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5464852428969389271}
+  - component: {fileID: 3929999910060317527}
+  - component: {fileID: 7957306034239753139}
+  - component: {fileID: 6474462606738216503}
+  m_Layer: 0
+  m_Name: cost mana and deal dmg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5464852428969389271
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6090982326920064139}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3828591620990538636}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3929999910060317527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6090982326920064139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectName: cost 1 mana to deal 2 dmg
+  checkCostEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 3929999910060317527}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: CheckCost_Mana
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 3929999910060317527}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: CheckCost_InReveal
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  effectEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7957306034239753139}
+        m_TargetAssemblyTypeName: ManaAlterEffect, Assembly-CSharp
+        m_MethodName: AlterMyMana
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: -1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 6474462606738216503}
+        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_MethodName: AlterTheirHP
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: -2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7957306034239753139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6090982326920064139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf7d3c3d199e15b4f8b716a13478ec90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6474462606738216503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6090982326920064139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -10,10 +135,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3828591620990538636}
   - component: {fileID: 7915703419504864441}
-  - component: {fileID: 1795577890928160246}
-  - component: {fileID: 3451390522994276165}
-  - component: {fileID: 288352947704754826}
-  - component: {fileID: -818459441208190353}
+  - component: {fileID: 7507784839872512994}
   m_Layer: 0
   m_Name: Fireball
   m_TagString: Untagged
@@ -33,7 +155,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5464852428969389271}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -49,13 +172,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardName: Fireball
+  cardID: 0
   cardDesc: 'cost 1 mana: deal 2 dmg to enemy'
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myTags: 
---- !u!114 &1795577890928160246
+--- !u!114 &7507784839872512994
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -64,16 +188,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8718476725744197808}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 984a88de1c934a54b0184dfc5e84c682, type: 3}
+  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  afterShuffleEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  cardActivateEvent:
+  event: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
+  response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3451390522994276165}
+      - m_Target: {fileID: 3929999910060317527}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent
         m_Mode: 1
@@ -85,86 +207,3 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  cardBoughtEvent:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &3451390522994276165
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  effectName: 
-  checkCostEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3451390522994276165}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_Mana
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  effectEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: -818459441208190353}
-        m_TargetAssemblyTypeName: ManaAlterEffect, Assembly-CSharp
-        m_MethodName: AlterMyMana
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: -1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 288352947704754826}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: AlterTheirHP
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: -2
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &288352947704754826
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  triggerLingerEffect: 1
---- !u!114 &-818459441208190353
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf7d3c3d199e15b4f8b716a13478ec90, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

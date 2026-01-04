@@ -5,54 +5,57 @@ using UnityEngine;
 
 public class EffectChainManager : MonoBehaviour
 {
-    #region SINGLETON
+	#region SINGLETON
+	public static EffectChainManager Me;
 
-    public static EffectChainManager Me;
+	private void Awake()
+	{
+		Me = this;
+	}
+	#endregion
 
-    private void Awake()
-    {
-        Me = this;
-    }
+	public GameObject effectChainPrefab;
+	public IntSO sessionNumberRef;
+	public int chainNumber;
+	public GameObject currentEffectChain;
 
-    #endregion
+	private void MakeANewEffectChain()
+	{
+		var effectChain = Instantiate(effectChainPrefab, transform);
+		effectChain.GetComponent<EffectChain>().sessionID = sessionNumberRef.value;
+		effectChain.GetComponent<EffectChain>().chainID = chainNumber;
+		currentEffectChain = effectChain;
+	}
 
-    public GameObject effectChainPrefab;
-    public int chainNumber;
-    public GameObject currentEffectChain;
+	public void CloseEffectChain()
+	{
+		if (currentEffectChain)
+		{
+			chainNumber++;
+		}
+		currentEffectChain = null;
+	}
 
-    private void MakeANewEffectChain()
-    {
-        var effectChain = Instantiate(effectChainPrefab, transform);
-        effectChain.GetComponent<EffectChain>().chainID = chainNumber;
-        currentEffectChain = effectChain;
-    }
+	public bool CheckEffectAndRecord(string effectID)
+	{
+		var effectCanBeProcessed = false;
+		if (!currentEffectChain)
+		{
+			MakeANewEffectChain();
+		}
 
-    private void CloseEffectChain()
-    {
-        currentEffectChain = null;
-        chainNumber++;
-    }
+		var currentEffectChainScript = currentEffectChain.GetComponent<EffectChain>();
+		if (currentEffectChainScript.processedEffectIDs.Contains(effectID))
+		{
+			CloseEffectChain();
+			effectCanBeProcessed = false;
+		}
+		else
+		{
+			currentEffectChainScript.processedEffectIDs.Add(effectID);
+			effectCanBeProcessed = true;
+		}
 
-    public bool CheckEffectAndRecord(string effectID)
-    {
-        var effectCanBeProcessed = false;
-        if (!currentEffectChain)
-        {
-            MakeANewEffectChain();
-        }
-
-        var currentEffectChainScript = currentEffectChain.GetComponent<EffectChain>();
-        if (currentEffectChainScript.processedEffectIDs.Contains(effectID))
-        {
-            CloseEffectChain();
-            effectCanBeProcessed = false;
-        }
-        else
-        {
-            currentEffectChainScript.processedEffectIDs.Add(effectID);
-            effectCanBeProcessed = true;
-        }
-
-        return effectCanBeProcessed;
-    }
+		return effectCanBeProcessed;
+	}
 }

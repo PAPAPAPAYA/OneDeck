@@ -6,162 +6,161 @@ using UnityEngine.Events;
 // control the overall flow of one session, currently dictating current phase is shop or combat
 public class PhaseManager : MonoBehaviour
 {
-    [Header("Flow Refs")]
-    public GamePhaseSO currentGamePhaseRef;
-    public IntSO sessionNum;
-    public BoolSO combatFinished;
-    public IntSO wins; // player needs a certain amount of wins to win the run
-    public IntSO winCon;
-    public IntSO hearts; // if player has no heart then the player loses the run
-    public IntSO heartMax;
+	[Header("Flow Refs")]
+	public GamePhaseSO currentGamePhaseRef;
+	public IntSO sessionNum;
+	public BoolSO combatFinished;
+	public IntSO wins; // player needs a certain amount of wins to win the run
+	public IntSO winCon;
+	public IntSO hearts; // if player has no heart then the player loses the run
+	public IntSO heartMax;
 
-    [Header("Status Refs")]
-    public PlayerStatusSO playerStatusRef;
-    public PlayerStatusSO enemyStatusRef;
+	[Header("Status Refs")]
+	public PlayerStatusSO playerStatusRef;
+	public PlayerStatusSO enemyStatusRef;
 
-    #region Enter/Exit Events
-    [Header("Phase Enter/Exit Events")]
-    public UnityEvent onEnterCombatPhase;
-    private void InvokeEnterCombatPhaseEvent()
-    {
-        onEnterCombatPhase?.Invoke();
-    }
+	#region Enter/Exit Events
+	[Header("Phase Enter/Exit Events")]
+	public UnityEvent onEnterCombatPhase;
+	private void InvokeEnterCombatPhaseEvent()
+	{
+		onEnterCombatPhase?.Invoke();
+	}
 
-    public UnityEvent onExitCombatPhase;
-    private void InvokeExitCombatPhaseEvent()
-    {
-        onExitCombatPhase?.Invoke();
-    }
+	public UnityEvent onExitCombatPhase;
+	private void InvokeExitCombatPhaseEvent()
+	{
+		onExitCombatPhase?.Invoke();
+	}
 
-    public UnityEvent onEnterShopPhase;
-    private void InvokeEnterShopPhaseEvent()
-    {
-        onEnterShopPhase?.Invoke();
-    }
-    
-    public UnityEvent onExitShopPhase;
-    private void InvokeExitShopPhaseEvent()
-    {
-        onExitShopPhase?.Invoke();
-    }
+	public UnityEvent onEnterShopPhase;
+	private void InvokeEnterShopPhaseEvent()
+	{
+		onEnterShopPhase?.Invoke();
+	}
 
-    public UnityEvent onEnterResultPhase;
-    private void InvokeEnterResultPhaseEvent()
-    {
-        onEnterResultPhase?.Invoke();
-    }
+	public UnityEvent onExitShopPhase;
+	private void InvokeExitShopPhaseEvent()
+	{
+		onExitShopPhase?.Invoke();
+	}
 
-    public UnityEvent onExitResultPhase;
-    private void InvokeExitResultPhaseEvent()
-    {
-        onExitResultPhase?.Invoke();
-    }
-    #endregion
-    
-    [Header("UI")]
-    public TextMeshProUGUI resultInfoDisplay;
-    private string _resultText;
+	public UnityEvent onEnterResultPhase;
+	private void InvokeEnterResultPhaseEvent()
+	{
+		onEnterResultPhase?.Invoke();
+	}
 
-    private void OnEnable()
-    {
-        ExitingCombatPhase();
-        ExitingResultPhase();
-        EnteringShopPhase();
-    }
+	public UnityEvent onExitResultPhase;
+	private void InvokeExitResultPhaseEvent()
+	{
+		onExitResultPhase?.Invoke();
+	}
+	#endregion
 
-    private void Update()
-    {
-        if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop)
-        {
-            if (!Input.GetKeyDown(KeyCode.Space)) return;
-            ExitingShopPhase();
-            EnteringCombatPhase();
-        }
-        else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat)
-        {
-            if (!combatFinished.value) return;
-            if (playerStatusRef.hp <= 0)
-            {
-                if (enemyStatusRef.hp <= 0)
-                {
-                    print("draw");
-                    _resultText = "DRAW";
-                }
-                else
-                {
-                    print("you lose");
-                    _resultText = "LOSE";
-                    hearts.value--;
-                }
-                ExitingCombatPhase();
-                EnteringResultPhase();
-            }
-            else if (enemyStatusRef.hp <= 0)
-            {
-                print("you win");
-                _resultText = "WIN";
-                wins.value++;
-                ExitingCombatPhase();
-                EnteringResultPhase();
-            }
-        }
-        else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Result)
-        {
-            ShowResult();
-            if (!Input.GetKeyDown(KeyCode.Space)) return;
-            print("entering shop");
-            ExitingResultPhase();
-            EnteringShopPhase();
-        }
-    }
+	[Header("UI")]
+	public TextMeshProUGUI resultInfoDisplay;
+	private string _resultText;
 
-    private void ShowResult()
-    {
-        resultInfoDisplay.text = _resultText +
-                                 "\nYour Wins: " + wins.value + "/" + winCon.value +
-                                 "\nYour Hearts: " + hearts.value + "/" + heartMax.value +
-                                 "\n\npress SPACE to continue";
-    }
+	private void OnEnable()
+	{
+		ExitingCombatPhase();
+		ExitingResultPhase();
+		EnteringShopPhase();
+	}
 
-    #region entering and exiting funcs
+	private void Update()
+	{
+		if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop)
+		{
+			if (!Input.GetKeyDown(KeyCode.Space)) return;
+			ExitingShopPhase();
+			EnteringCombatPhase();
+		}
+		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat)
+		{
+			if (!combatFinished.value) return;
+			if (playerStatusRef.hp <= 0)
+			{
+				if (enemyStatusRef.hp <= 0)
+				{
+					print("draw");
+					_resultText = "DRAW";
+				}
+				else
+				{
+					print("you lose");
+					_resultText = "LOSE";
+					hearts.value--;
+				}
+			}
+			else if (enemyStatusRef.hp <= 0)
+			{
+				print("you win");
+				_resultText = "WIN";
+				wins.value++;
+				// ExitingCombatPhase();
+				// EnteringResultPhase();
+			}
+			sessionNum.value++;
+			ExitingCombatPhase();
+			EnteringResultPhase();
+		}
+		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Result)
+		{
+			ShowResult();
+			if (!Input.GetKeyDown(KeyCode.Space)) return;
+			print("entering shop");
+			ExitingResultPhase();
+			EnteringShopPhase();
+		}
+	}
 
-    private void EnteringCombatPhase()
-    {
-        print("entering combat phase");
-        InvokeEnterCombatPhaseEvent();
-        currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;
-    }
+	private void ShowResult()
+	{
+		resultInfoDisplay.text = _resultText +
+		                         "\nYour Wins: " + wins.value + "/" + winCon.value +
+		                         "\nYour Hearts: " + hearts.value + "/" + heartMax.value +
+		                         "\n\npress SPACE to continue";
+	}
 
-    private void ExitingCombatPhase()
-    {
-        InvokeExitCombatPhaseEvent();
-    }
+	#region entering and exiting funcs
+	private void EnteringCombatPhase()
+	{
+		print("entering combat phase");
+		InvokeEnterCombatPhaseEvent();
+		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;
+	}
 
-    private void EnteringResultPhase()
-    {
-        InvokeEnterResultPhaseEvent();
-        currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Result;
-    }
+	private void ExitingCombatPhase()
+	{
+		InvokeExitCombatPhaseEvent();
+	}
 
-    private void ExitingResultPhase()
-    {
-        InvokeExitResultPhaseEvent();
-        resultInfoDisplay.text = "";
-    }
+	private void EnteringResultPhase()
+	{
+		InvokeEnterResultPhaseEvent();
+		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Result;
+	}
 
-    private void EnteringShopPhase()
-    {
-        playerStatusRef.Reset();
-        enemyStatusRef.Reset();
-        InvokeEnterShopPhaseEvent();
-        currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Shop;
-    }
+	private void ExitingResultPhase()
+	{
+		InvokeExitResultPhaseEvent();
+		resultInfoDisplay.text = "";
+	}
 
-    private void ExitingShopPhase()
-    {
-        print("exiting shop");
-        InvokeExitShopPhaseEvent();
-    }
+	private void EnteringShopPhase()
+	{
+		playerStatusRef.Reset();
+		enemyStatusRef.Reset();
+		InvokeEnterShopPhaseEvent();
+		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Shop;
+	}
 
-    #endregion
+	private void ExitingShopPhase()
+	{
+		print("exiting shop");
+		InvokeExitShopPhaseEvent();
+	}
+	#endregion
 }

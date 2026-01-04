@@ -7,219 +7,214 @@ using UnityEngine;
 // this script functions as a variable storage in combat
 public class CombatManager : MonoBehaviour
 {
-    #region SINGLETON
+	#region SINGLETON
+	public static CombatManager Me;
 
-    public static CombatManager Me;
+	private void Awake()
+	{
+		Me = this;
+	}
+	#endregion
 
-    private void Awake()
-    {
-        Me = this;
-    }
+	[Header("PHASE AND STATE REFS")]
+	public GamePhaseSO currentGamePhaseRef;
+	public EnumStorage.CombatState currentCombatState;
 
-    #endregion
+	[Header("PLAYER STATUS REFS")]
+	public PlayerStatusSO ownerPlayerStatusRef;
+	public PlayerStatusSO enemyPlayerStatusRef;
 
-    [Header("PHASE AND STATE REFS")]
-    public GamePhaseSO currentGamePhaseRef;
-    public EnumStorage.CombatState currentCombatState;
+	[Header("DECK REFS")]
+	public DeckSO playerDeck;
+	public DeckSO enemyDeck;
+	public GameObject playerDeckParent;
+	public GameObject enemyDeckParent;
 
-    [Header("PLAYER STATUS REFS")]
-    public PlayerStatusSO ownerPlayerStatusRef;
-    public PlayerStatusSO enemyPlayerStatusRef;
+	[Header("ZONES")]
+	public List<GameObject> combinedDeckZone;
+	public int deckSize;
+	public GameObject revealZone;
+	public List<GameObject> graveZone;
 
-    [Header("DECK REFS")]
-    public DeckSO playerDeck;
-    public DeckSO enemyDeck;
-    public GameObject playerDeckParent;
-    public GameObject enemyDeckParent;
+	[Header("FLOW")]
+	public bool awaitingRevealConfirm = true;
+	public int cardNum;
+	public BoolSO combatFinished; // identify if this session of combat is finished
 
-    [Header("ZONES")]
-    public List<GameObject> combinedDeckZone;
-    public int deckSize;
-    public GameObject revealZone;
-    public List<GameObject> graveZone;
+	[Header("INFO DISPLAYER")]
+	public CombatInfoDisplayer infoDisplayer;
 
-    [Header("FLOW")]
-    public bool awaitingRevealConfirm = true;
-    public int cardNum;
-    public BoolSO combatFinished;
+	[Header("OVERTIME")]
+	public IntSO roundNumRef;
+	public int overtimeRoundThreshold;
+	public GameObject cardToAddWhenOvertime;
+	[Tooltip("add this amount of fatigue to both player")]
+	public int fatigueAmount;
 
-    [Header("INFO DISPLAYER")]
-    public CombatInfoDisplayer infoDisplayer;
+	[Header("Game Events to raise")]
+	public GameEvent cardActivation;
 
-    [Header("OVERTIME")]
-    public IntSO roundNumRef;
-    public int overtimeRoundThreshold;
-    public GameObject cardToAddWhenOvertime;
-    [Tooltip("add this amount of fatigue to both player")]
-    public int fatigueAmount;
+	#region Enter and exit funcs
+	public void EnterCombat()
+	{
+		print("Entering combat");
+		currentCombatState = EnumStorage.CombatState.GatherDeckLists;
+		combatFinished.value = false;
+	}
 
-    #region Enter and exit funcs
+	public void ExitCombat()
+	{
+		// clean up ui
+		infoDisplayer.ClearInfo();
+		// clean up combined deck
+		foreach (var cardInstance in combinedDeckZone)
+		{
+			Destroy(cardInstance);
+		}
 
-    public void EnterCombat()
-    {
-        print("Entering combat");
-        currentCombatState = EnumStorage.CombatState.GatherDeckLists;
-    }
+		combinedDeckZone.Clear();
+		// clean up grave
+		foreach (var cardInstance in graveZone)
+		{
+			Destroy(cardInstance);
+		}
 
-    public void ExitCombat()
-    {
-        // clean up ui
-        infoDisplayer.ClearInfo();
-        // clean up combined deck
-        foreach (var cardInstance in combinedDeckZone)
-        {
-            Destroy(cardInstance);
-        }
+		graveZone.Clear();
+		// clean up tracking stats
+		roundNumRef.value = 0;
+		cardNum = 0;
+		deckSize = 0;
+		EffectChainManager.Me.CloseEffectChain();
+		EffectChainManager.Me.chainNumber = 0;
+	}
+	#endregion
 
-        combinedDeckZone.Clear();
-        // clean up grave
-        foreach (var cardInstance in graveZone)
-        {
-            Destroy(cardInstance);
-        }
+	private void Update()
+	{
+		if (currentGamePhaseRef.Value() != EnumStorage.GamePhase.Combat) return;
+		switch (currentCombatState)
+		{
+			case EnumStorage.CombatState.GatherDeckLists:
+				GatherDecks();
+				break;
+			case EnumStorage.CombatState.ShuffleDeck:
+				ResetGraveAndShuffle();
+				break;
+			case EnumStorage.CombatState.Reveal:
+				RevealCards();
+				break;
+		}
+	}
 
-        graveZone.Clear();
-        // clean up tracking stats
-        roundNumRef.value = 0;
-        cardNum = 0;
-        deckSize = 0;
-    }
+	private void GatherDecks() // collect player and enemy decks and instantiate cards
+	{
+		combinedDeckZone.Clear();
+		foreach (var card in playerDeck.deck)
+		{
+			var cardInstance = Instantiate(card, playerDeckParent.transform);
+			var cardInstanceScript = cardInstance.GetComponent<CardScript>();
+			// assign cards' targets
+			cardInstanceScript.myStatusRef = ownerPlayerStatusRef;
+			cardInstanceScript.theirStatusRef = enemyPlayerStatusRef;
+			combinedDeckZone.Add(cardInstance);
+		}
 
-    #endregion
+		foreach (var card in enemyDeck.deck)
+		{
+			var cardInstance = Instantiate(card, enemyDeckParent.transform);
+			cardInstance.GetComponent<CardScript>().myStatusRef = enemyPlayerStatusRef;
+			cardInstance.GetComponent<CardScript>().theirStatusRef = ownerPlayerStatusRef;
+			combinedDeckZone.Add(cardInstance);
+		}
 
-    private void Update()
-    {
-        if (currentGamePhaseRef.Value() != EnumStorage.GamePhase.Combat) return;
-        switch (currentCombatState)
-        {
-            case EnumStorage.CombatState.GatherDeckLists:
-                GatherDecks();
-                break;
-            case EnumStorage.CombatState.ShuffleDeck:
-                ResetGraveAndShuffle();
-                break;
-            case EnumStorage.CombatState.Reveal:
-                RevealCards();
-                break;
-        }
-    }
+		deckSize = combinedDeckZone.Count;
+		currentCombatState = EnumStorage.CombatState.ShuffleDeck;
+	}
 
-    private void GatherDecks() // collect player and enemy decks and instantiate cards
-    {
-        combinedDeckZone.Clear();
-        foreach (var card in playerDeck.deck)
-        {
-            var cardInstance = Instantiate(card, playerDeckParent.transform);
-            var cardInstanceScript = cardInstance.GetComponent<CardScript>();
-            // assign cards' targets
-            cardInstanceScript.myStatusRef = ownerPlayerStatusRef;
-            cardInstanceScript.theirStatusRef = enemyPlayerStatusRef;
-            combinedDeckZone.Add(cardInstance);
-        }
+	private void CheckFatigueNAddFatigue()
+	{
+		if (roundNumRef.value <= overtimeRoundThreshold) return; // check if overtime
+		print("fatigue kicked in");
+		// add fatigue to owner side
+		for (var i = 0; i < fatigueAmount; i++)
+		{
+			AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, true);
+		}
 
-        foreach (var card in enemyDeck.deck)
-        {
-            var cardInstance = Instantiate(card, enemyDeckParent.transform);
-            cardInstance.GetComponent<CardScript>().myStatusRef = enemyPlayerStatusRef;
-            cardInstance.GetComponent<CardScript>().theirStatusRef = ownerPlayerStatusRef;
-            combinedDeckZone.Add(cardInstance);
-        }
+		// add fatigue to enemy side
+		for (var i = 0; i < fatigueAmount; i++)
+		{
+			AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, false);
+		}
+	}
 
-        deckSize = combinedDeckZone.Count;
-        currentCombatState = EnumStorage.CombatState.ShuffleDeck;
-    }
+	private void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
+	{
+		var cardInstance = Instantiate(cardToAdd,
+			belongsToSessionOwner ? playerDeckParent.transform : enemyDeckParent.transform); // instantiate and assign corresponding parent
+		cardInstance.GetComponent<CardScript>().myStatusRef = belongsToSessionOwner ? ownerPlayerStatusRef : enemyPlayerStatusRef; // assign corresponding target
+		cardInstance.GetComponent<CardScript>().theirStatusRef = belongsToSessionOwner ? enemyPlayerStatusRef : ownerPlayerStatusRef; // assign corresponding target
+		combinedDeckZone.Add(cardInstance); // add the new card to combined deck
+		deckSize = combinedDeckZone.Count; // refresh deck size
+	}
 
-    private void CheckFatigueNAddFatigue()
-    {
-        if (roundNumRef.value <= overtimeRoundThreshold) return;
-        print("fatigue kicked in");
-        // add fatigue to owner side
-        for (var i = 0; i < fatigueAmount; i++)
-        {
-            AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, true);
-        }
+	private void ResetGraveAndShuffle()
+	{
+		if (graveZone.Count > 0) // if not the first time shuffling deck, if grave not empty
+		{
+			UtilityFuncManagerScript.CopyGameObjectList(graveZone, combinedDeckZone, true); // copy from grave to combined deck
+			graveZone.Clear(); // empty the grave
+		}
 
-        // add fatigue to enemy side
-        for (var i = 0; i < fatigueAmount; i++)
-        {
-            AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, false);
-        }
-    }
+		CheckFatigueNAddFatigue(); // process fatigue
+		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone); // shuffle deck
+		EffectChainManager.Me.CloseEffectChain(); // close current effect chain
+		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
+		cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
+		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
+	}
 
-    private void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
-    {
-        var cardInstance = Instantiate(cardToAdd,
-            belongsToSessionOwner ? playerDeckParent.transform : enemyDeckParent.transform);
-        cardInstance.GetComponent<CardScript>().myStatusRef = belongsToSessionOwner ? ownerPlayerStatusRef : enemyPlayerStatusRef;
-        cardInstance.GetComponent<CardScript>().theirStatusRef = belongsToSessionOwner ? enemyPlayerStatusRef : ownerPlayerStatusRef;
-        combinedDeckZone.Add(cardInstance);
-        deckSize = combinedDeckZone.Count;
-    }
-
-    private void ResetGraveAndShuffle()
-    {
-        if (graveZone.Count > 0) // not the first time shuffling deck
-        {
-            UtilityFuncManagerScript.CopyGameObjectList(graveZone, combinedDeckZone, true);
-            graveZone.Clear();
-        }
-
-        CheckFatigueNAddFatigue();
-        combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
-        //! since effects may change the combined deck zone list, copy it out and use the temp list to foreach
-        var tempList = new List<GameObject>();
-        UtilityFuncManagerScript.CopyGameObjectList(combinedDeckZone, tempList, true);
-        UtilityFuncManagerScript.CopyGameObjectList(graveZone, tempList, false);
-        foreach (var card in tempList)
-        {
-            card.GetComponent<CardEventTrigger>()?.InvokeAfterShuffleEvent(); // TIMEPOINT
-        }
-
-        cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
-        currentCombatState = EnumStorage.CombatState.Reveal;
-    }
-
-    private void RevealCards()
-    {
-        if (awaitingRevealConfirm)
-        {
-            if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
-            {
-                if (combatFinished.value) return;
-                infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    combatFinished.value = true;
-                }
-            }
-            else if (cardNum < 0)
-            {
-                infoDisplayer.combatTipsDisplay.text = "all cards revealed";
-                roundNumRef.value++;
-                currentCombatState = EnumStorage.CombatState.ShuffleDeck;
-            }
-            else
-            {
-                infoDisplayer.combatTipsDisplay.text = "press space to reveal";
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    awaitingRevealConfirm = false;
-                }
-            }
-        }
-        else
-        {
-            var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
-            revealZone = combinedDeckZone[cardNum];
-            combinedDeckZone.RemoveAt(cardNum);
-            infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, cardRevealed.myStatusRef == ownerPlayerStatusRef); // if card revealed is session owner's
-
-            TagResolveManager.Me.ProcessTags(cardRevealed); //TIMEPOINT: tag resolve
-            revealZone.GetComponent<CardEventTrigger>()?.InvokeActivateEvent(); //TIMEPOINT
-            cardNum--;
-            graveZone.Add(revealZone);
-            revealZone = null;
-            awaitingRevealConfirm = true;
-        }
-    }
+	private void RevealCards()
+	{
+		if (awaitingRevealConfirm)
+		{
+			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
+			{
+				if (combatFinished.value) return;
+				infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
+				if (Input.GetKeyDown(KeyCode.Space))
+				{
+					combatFinished.value = true;
+				}
+			}
+			else if (cardNum < 0)
+			{
+				infoDisplayer.combatTipsDisplay.text = "all cards revealed";
+				roundNumRef.value++;
+				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
+			}
+			else
+			{
+				infoDisplayer.combatTipsDisplay.text = "press space to reveal";
+				if (Input.GetKeyDown(KeyCode.Space))
+				{
+					awaitingRevealConfirm = false;
+				}
+			}
+		}
+		else
+		{
+			var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
+			revealZone = combinedDeckZone[cardNum];
+			combinedDeckZone.RemoveAt(cardNum);
+			infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, cardRevealed.myStatusRef == ownerPlayerStatusRef); // if card revealed is session owner's
+			// TagResolveManager.Me.ProcessTags(cardRevealed); //TIMEPOINT: tag resolve
+			//GameEventStorage.me.onCardActivation?.RaiseSpecific(revealZone); // TIMEPOINT: on card activation
+			GameEventStorage.me.onCardActivation?.Raise();
+			cardNum--;
+			graveZone.Add(revealZone);
+			revealZone = null;
+			awaitingRevealConfirm = true;
+		}
+	}
 }
