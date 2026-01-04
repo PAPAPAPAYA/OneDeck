@@ -5,11 +5,20 @@ using TMPro;
 // a required component of combat manager, responsible for temporarily show combat info
 public class CombatInfoDisplayer : MonoBehaviour
 {
+	#region Singleton
+	public static CombatInfoDisplayer me;
+	private void Awake()
+	{
+		me = this;
+	}
+	#endregion
+	
 	public GamePhaseSO gamePhase;
 	public TextMeshProUGUI playerStatusDisplay;
 	public TextMeshProUGUI enemyStatusDisplay;
-	public TextMeshProUGUI combatInfoDisplay;
+	public TextMeshProUGUI revealZoneDisplay;
 	public TextMeshProUGUI combatTipsDisplay;
+	public TextMeshProUGUI effectResultDisplay;
 
 	private void Update()
 	{
@@ -21,18 +30,19 @@ public class CombatInfoDisplayer : MonoBehaviour
 	{
 		playerStatusDisplay.text = "";
 		enemyStatusDisplay.text = "";
-		combatInfoDisplay.text = "";
+		revealZoneDisplay.text = "";
 		combatTipsDisplay.text = "";
+		effectResultDisplay.text = "";
 	}
 
 	public void ShowCardInfo(CardScript cardRevealed, int deckSize, int cardNum, bool ownersCard)
 	{
-		combatInfoDisplay.text = "#" + (deckSize - cardNum) + // card num
+		revealZoneDisplay.text = "#" + (deckSize - cardNum) + // card num
 		                         (ownersCard ? " your card: \n\n" : " their card: \n\n") + // card owner
 		                         ProcessTagInfo(cardRevealed) + // tags
 		                         cardRevealed.cardName + // card name
 		                         "\n" + cardRevealed.cardDesc; // card description
-		combatInfoDisplay.color = ownersCard ? Color.blue : Color.red;
+		revealZoneDisplay.color = ownersCard ? Color.blue : Color.red;
 	}
 
 	private string ProcessTagInfo(CardScript card)
@@ -54,5 +64,13 @@ public class CombatInfoDisplayer : MonoBehaviour
 		enemyStatusDisplay.text =
 			"Their HP: " + CombatManager.Me.enemyPlayerStatusRef.hp + "\n" +
 			"Their Mana: " + CombatManager.Me.enemyPlayerStatusRef.mana;
+	}
+
+	public void DisplayEffectResult(string cardName, string effectResult, string effectTarget)
+	{
+		effectResultDisplay.text =
+			"[" + cardName + "] " +
+			effectResult +
+			" [" + effectTarget + "]";
 	}
 }

@@ -21,6 +21,11 @@
 	//// reshuffle
 	//// go to result screen after player pressed space
 	//// migrate info display codes to a new script
+	//todo show effect result
+		// reveal zone effect succeeded
+		// reveal zone effect failed
+		// other effects state
+		// effect target
 	// effects
 	        //// alter hp
 	        //// alter mp
@@ -49,7 +54,6 @@
 		//
 	// lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
 		////todo need test: linger effects straight on card
-		//todo show linger effects in combat info
 		////todo avoid looping
 			// effect chain
 				////todo need to close chain when 1 round is finished

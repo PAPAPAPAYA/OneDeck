@@ -22,6 +22,9 @@ public class CostNEffectContainer: MonoBehaviour
 
         [Header("Basic Info")] [Tooltip("don't assign identical effect name to effects in the same card")]
         public string effectName;
+        [TextArea]
+        [Tooltip("this and card name will combine to show what happened")]
+        public string effectDescription;
 
         [Header("Cost and Effect Events")] public UnityEvent checkCostEvent;
         public UnityEvent effectEvent;
@@ -31,16 +34,26 @@ public class CostNEffectContainer: MonoBehaviour
         public void InvokeEffectEvent()
         {
                 checkCostEvent?.Invoke(); // check if cost is met or can be met
-                if (!costCanBePayed) return; // if cost can't be met, return
-                if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
+                if (costCanBePayed)
                 {
-	                effectEvent?.Invoke(); // if cost can be met, invoke effect
-	                print(GetComponentInParent<CardScript>().cardName + " is triggered");
-	                costCanBePayed = false; // reset flag
+	                if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
+	                {
+		                effectEvent?.Invoke(); // if cost can be met, invoke effect
+		                print(_myCardScript.cardName + " is triggered");
+		                CombatInfoDisplayer.me.effectResultDisplay.text = _myCardScript.cardName + " " + effectName;
+		                costCanBePayed = false; // reset flag
+	                }
+	                else
+	                {
+		                print("same effect triggered");
+	                }
                 }
                 else
                 {
-	                print("same effect triggered");
+	                if (CombatManager.Me.revealZone == transform.parent.gameObject)
+	                {
+		                CombatInfoDisplayer.me.effectResultDisplay.text = _myCardScript.cardName + " " + effectName + "'s cost can not be met";
+	                }
                 }
         }
 
