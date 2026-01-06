@@ -13,6 +13,8 @@
 			//// effect
 			//// assign effect target ref
 // battle: text demo
+	// check cost
+		// check multiple costs
 	//// draw situation
 		//// no win no heart loss
 	//// text display in scene
@@ -22,9 +24,14 @@
 	//// go to result screen after player pressed space
 	//// migrate info display codes to a new script
 	//todo show effect result
-		// reveal zone effect succeeded
-		// reveal zone effect failed
-		// other effects state
+		// need to figure out how to discern reveal zone effect and deck effect
+			// deck and grave effects don't show fail message, would be too much info? or too less surprises?
+		//todo reveal zone effect succeeded
+			// need to implement it in all effect script
+			// then see if it can be optimized and cleaned up more
+		//// reveal zone effect failed
+		// deck effect succeeded
+		// grave effect succeeded
 		// effect target
 	// effects
 	        //// alter hp

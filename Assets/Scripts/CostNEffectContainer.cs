@@ -29,49 +29,46 @@ public class CostNEffectContainer: MonoBehaviour
         [Header("Cost and Effect Events")] public UnityEvent checkCostEvent;
         public UnityEvent effectEvent;
 
-        private bool costCanBePayed = false;
+        //private bool _costCanBePayed = true;
+        private int _costNotMetFlag = 0;
         
         public void InvokeEffectEvent()
         {
-                checkCostEvent?.Invoke(); // check if cost is met or can be met
-                if (costCanBePayed)
+	        // check cost
+	        _costNotMetFlag = 0;
+                checkCostEvent?.Invoke();
+                
+                // invoke effect
+                if (_costNotMetFlag > 0) return; // if cost can not be met, return
+                if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
                 {
-	                if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
-	                {
-		                effectEvent?.Invoke(); // if cost can be met, invoke effect
-		                print(_myCardScript.cardName + " is triggered");
-		                CombatInfoDisplayer.me.effectResultDisplay.text = _myCardScript.cardName + " " + effectName;
-		                costCanBePayed = false; // reset flag
-	                }
-	                else
-	                {
-		                print("same effect triggered");
-	                }
+	                effectEvent?.Invoke(); // invoke effects
+	                print(_myCardScript.cardName + " is triggered");
+	                //_costCanBePayed = false; // reset flag
                 }
                 else
                 {
-	                if (CombatManager.Me.revealZone == transform.parent.gameObject)
-	                {
-		                CombatInfoDisplayer.me.effectResultDisplay.text = _myCardScript.cardName + " " + effectName + "'s cost can not be met";
-	                }
+	                print("same effect triggered");
                 }
         }
 
         #region check cost funcs
-        public void CheckCost_noCost()
+        public void CheckCost_noCost() // obsoleted since default value of _costCanBePayed is true
         {
-                costCanBePayed = true;
+                //_costCanBePayed = true;
         }
 
         public void CheckCost_Mana(int mana)
         {
                 if (_myCardScript.myStatusRef.mana >= mana)
                 {
-                        costCanBePayed = true;
+                        //_costCanBePayed = true;
                 }
                 else
                 {
-                        print("not enough mana");
+	                _costNotMetFlag++;
+	                if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+	                CombatInfoDisplayer.me.effectResultDisplay.text += "Not enough mana to activate [" + _myCardScript.cardName + "]";
                 }
         }
 
@@ -79,11 +76,11 @@ public class CostNEffectContainer: MonoBehaviour
         {
                 if (CombatManager.Me.graveZone.Contains(transform.parent.gameObject))
                 {
-                        costCanBePayed = true;
-                        print("card in grave");
+                        //_costCanBePayed = true;
                 }
                 else
                 {
+	                _costNotMetFlag++;
                         print("not in grave");
                 }
         }
@@ -91,7 +88,11 @@ public class CostNEffectContainer: MonoBehaviour
         {
 	        if (CombatManager.Me.revealZone == transform.parent.gameObject)
 	        {
-		        costCanBePayed = true;
+		        //_costCanBePayed = true;
+	        }
+	        else
+	        {
+		        _costNotMetFlag++;
 	        }
         }
         #endregion

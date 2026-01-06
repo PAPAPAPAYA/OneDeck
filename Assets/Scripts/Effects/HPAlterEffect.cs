@@ -20,34 +20,33 @@ public class HPAlterEffect : MonoBehaviour
 		_myCardScript.myStatusRef.hp += HPAlterAmount;
 		if (HPAlterAmount < 0)
 		{
-			//LingeringEffectManager.Me?.InvokeOnDmgDealtEvent(_myCardScript.myStatusRef, _myCardScript.myStatusRef); // TIMEPOINT
+			
 		}
 	}
 
 	public void AlterTheirHP(int HPAlterAmount)
 	{
 		_myCardScript.theirStatusRef.hp += HPAlterAmount;
-		if (HPAlterAmount >= 0) return;
-		if (_myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef) // if card owner is player, then player is dealing dmg to enemy
+		if (HPAlterAmount < 0) // dealing dmg
 		{
-			GameEventStorage.me.onPlayerDealtDmgToEnemy?.Raise(); // TIMEPOINT
-			// var tempList = new List<GameObject>();
-			// UtilityFuncManagerScript.CopyGameObjectList(CombatManager.Me.combinedDeckZone, tempList,
-			// 	true);
-			// UtilityFuncManagerScript.CopyGameObjectList(CombatManager.Me.graveZone, tempList,
-			// 	false);
-			// foreach (var card in tempList)
-			// {
-			// 	card.GetComponent<CardEventTrigger>()
-			// 		?.InvokeOwnerDealtDmgToEnemyEvent(); // TIMEPOINT
-			// }
+			if (_myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef) // if card owner is player, then player is dealing dmg to enemy
+			{
+				GameEventStorage.me.onPlayerDealtDmgToEnemy?.Raise(); // timepoint
+				// display info
+				CombatInfoDisplayer.me.effectResultDisplay.text += "["+_myCardScript.cardName + "] dealt [" + Mathf.Abs(HPAlterAmount) + "] damage to Enemy";
+			}
+			else // if card owner is enemy, then enemy is dealing dmg to player
+			{
+			
+			}
 		}
-		else // if card owner is enemy, then enemy is dealing dmg to player
+		else // healing
 		{
 			
 		}
 	}
 
+	// currently used by infected resolver since its effect isn't a card
 	public void AlterHP(int amount, PlayerStatusSO playerStatus)
 	{
 		playerStatus.hp += amount;

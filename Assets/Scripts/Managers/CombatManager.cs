@@ -199,6 +199,7 @@ public class CombatManager : MonoBehaviour
 				if (Input.GetKeyDown(KeyCode.Space))
 				{
 					awaitingRevealConfirm = false;
+					CombatInfoDisplayer.me.effectResultDisplay.text = "";
 				}
 			}
 		}
