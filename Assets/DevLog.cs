@@ -25,9 +25,13 @@
 	//// migrate info display codes to a new script
 	//todo show effect result
 		// need to figure out how to discern reveal zone effect and deck effect
-			// deck and grave effects don't show fail message, would be too much info? or too less surprises?
+			//! deck and grave effects don't show fail message, would be too much info? or too less surprises?
 		//todo reveal zone effect succeeded
 			// need to implement it in all effect script
+				// hp alter
+				// mana alter
+				// card manipulation
+				// infection
 			// then see if it can be optimized and cleaned up more
 		//// reveal zone effect failed
 		// deck effect succeeded
@@ -39,6 +43,8 @@
 	        //// show tag effects
 	        //todo change mana to tag
 		// resolve tags
+			// if tag is dealing damage, then what is the damage source?
+				// follows card
 			//// infected
 				//// deal dmg
 				//// make sure this tag can only be given to cards without this tag
@@ -49,6 +55,7 @@
 			//// bury self
 			// 
 	// trigger events
+		//! simplify hp event to [when session owner takes dmg] and [when enemy takes dmg]
 		////todo use game event SO to avoid bloating card event trigger script
 	                //// card activation
 	                //// after shuffling

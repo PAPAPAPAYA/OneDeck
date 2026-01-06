@@ -14,6 +14,7 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onCardActivation;
 	public GameEvent onCardBought;
 	[Header("Card Not Specific (Linger)")]
-	public GameEvent onPlayerDealtDmgToEnemy;
+	public GameEvent onEnemyTookDmg;
+	public GameEvent onPlayerTookDmg;
 	public GameEvent afterShuffle;
 }
