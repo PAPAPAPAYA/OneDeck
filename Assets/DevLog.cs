@@ -6,10 +6,10 @@
 	// self-harm
 	// undertake
 	// heart change WIP
-// refactoring
-	// effects can use a parent class to initialize some context
-	// button prompt before shuffling
-	// make text codes in effect scripts StringSO
+//todo refactoring
+	//todo effects can use a parent class to initialize some context
+	//todo button prompt before shuffling
+	////todo make text codes in effect scripts StringSO
 // card
 	//// same structure from slash/ but expanded to support multiple costs and effects
 		//// card structure
@@ -17,8 +17,8 @@
 			//// effect
 			//// assign effect target ref
 // battle: text demo
-	// check cost
-		// check multiple costs
+	//// check cost
+		//// check multiple costs
 	//// draw situation
 		//// no win no heart loss
 	//// text display in scene
@@ -30,8 +30,8 @@
 	// show effect result
 		// need to figure out how to discern reveal zone effect and deck effect
 			//! deck and grave effects don't show fail message, would be too much info? or too fewer surprises?
-		// reveal zone effect succeeded
-			// need to implement it in all effect script
+		//// reveal zone effect succeeded
+			//// need to implement it in all effect script
 				//// hp alter
 					////todo if invoked by tag, then it doesn't have a parent card script, need to think of a different way to do tag
 				//// mana alter
@@ -39,22 +39,23 @@
 				//// infection
 			// then see if it can be optimized and cleaned up more
 		//// reveal zone effect failed
-		// deck effect succeeded
-		// grave effect succeeded
-		// effect target
+		//// deck effect succeeded
+		//// grave effect succeeded
+		//// effect target
 	// effects
+		// 
 	        //// alter hp
 	        //// alter mp
 	        //// show tag effects
 	        //todo change mana to tag
-		// resolve tags
+		// tags
 			//! tag damage counts as tag owner card's damage
 			//// infected
 				//// deal dmg
 				//// make sure this tag can only be given to cards without this tag
 			//
 			////todo refactor to use game event SOs
-		// stage and bury
+		// card manipulation
 			//// stage self
 			//// bury self
 			// 
@@ -73,12 +74,12 @@
 	// lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
 		////todo need test: linger effects straight on card
 		////todo avoid looping
-			// effect chain
+			//? effect chain
 				////todo need to close chain when 1 round is finished
-				// may need to check all situations
+				//? may need to check all situations
 					//// effect activating itself
-					// multiple cards loop, activating each other
-					// same card, multiple same effects
+					//? multiple cards loop, activating each other
+					//? same card, multiple same effects
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver
 	//// end combat phase when one player's hp reached zero
 	//// overtime

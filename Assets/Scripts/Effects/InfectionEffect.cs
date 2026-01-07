@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DefaultNamespace.SOScripts;
 using UnityEngine;
 
 public class InfectionEffect : MonoBehaviour
@@ -15,6 +16,8 @@ public class InfectionEffect : MonoBehaviour
 		_myCardScript = _myCard.GetComponent<CardScript>();
 	}
 
+	public StringSO effectResultString;
+	
 	public void InfectRandom(int amount)
 	{
 		var cardsToInfect = new List<GameObject>();
@@ -35,7 +38,7 @@ public class InfectionEffect : MonoBehaviour
 			var targetCardScript = cardsToInfect[i].GetComponent<CardScript>();
 			targetCardScript.myTags.Add(EnumStorage.Tag.Infected);
 			var targetCardOwnerString = targetCardScript.myStatusRef == _cm.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
-			CombatInfoDisplayer.me.effectResultDisplay.text += "[" + _myCardScript.cardName + "] infected " + targetCardOwnerString + targetCardScript.cardName + "]\n";
+			effectResultString.value += "[" + _myCardScript.cardName + "] infected " + targetCardOwnerString + targetCardScript.cardName + "]\n";
 			Instantiate(infectedResolver, targetCardScript.transform);
 		}
 	}

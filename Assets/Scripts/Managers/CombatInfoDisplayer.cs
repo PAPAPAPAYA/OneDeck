@@ -1,4 +1,5 @@
 using System;
+using DefaultNamespace.SOScripts;
 using UnityEngine;
 using TMPro;
 
@@ -12,7 +13,8 @@ public class CombatInfoDisplayer : MonoBehaviour
 		me = this;
 	}
 	#endregion
-	
+
+	public StringSO effectResultString;
 	public GamePhaseSO gamePhase;
 	public TextMeshProUGUI playerStatusDisplay;
 	public TextMeshProUGUI enemyStatusDisplay;
@@ -24,6 +26,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 	{
 		if (gamePhase.Value() != EnumStorage.GamePhase.Combat) return;
 		DisplayStatusInfo();
+		effectResultDisplay.text = effectResultString.value;
 	}
 
 	public void ClearInfo()
@@ -32,7 +35,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 		enemyStatusDisplay.text = "";
 		revealZoneDisplay.text = "";
 		combatTipsDisplay.text = "";
-		effectResultDisplay.text = "";
+		effectResultString.value = "";
 	}
 
 	public void ShowCardInfo(CardScript cardRevealed, int deckSize, int cardNum, bool ownersCard)

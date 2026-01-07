@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectName: deal 1 dmg to enemy
+  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -88,6 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

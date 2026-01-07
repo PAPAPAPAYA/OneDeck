@@ -1501,6 +1501,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a693cbb7bd86a442914db387e49a8bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   gamePhase: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   playerStatusDisplay: {fileID: 1174098154}
   enemyStatusDisplay: {fileID: 13415598}

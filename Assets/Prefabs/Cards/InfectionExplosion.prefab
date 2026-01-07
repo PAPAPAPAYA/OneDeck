@@ -90,6 +90,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   infectedResolver: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
