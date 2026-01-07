@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc6c639cfe7644ff8b297631a1d5f491, type: 3}
   m_Name: PlayerStatusRef
   m_EditorClassIdentifier: 
-  hp: 5
+  hp: 0
+  hpMax: 0
   mana: 0
   hpOg: 5
+  hpMaxOg: 5
   manaOg: 0

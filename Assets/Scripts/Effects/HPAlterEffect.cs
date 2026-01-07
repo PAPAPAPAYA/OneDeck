@@ -37,10 +37,12 @@ public class HPAlterEffect : MonoBehaviour
 		{
 			if (_myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef) // if card owner is player, then player is healing
 			{
+				GameEventStorage.me.onPlayerHealed?.Raise();
 				CombatInfoDisplayer.me.effectResultDisplay.text += "["+_myCardScript.cardName + "] healed You for [" + HPAlterAmount + "]\n";
 			}
 			else // if card owner is enemy, then enemy is healing themselves
 			{
+				GameEventStorage.me.onEnemyHealed?.Raise();
 				CombatInfoDisplayer.me.effectResultDisplay.text += "["+_myCardScript.cardName + "] healed Enemy for [" + HPAlterAmount + "]\n";
 			}
 		}
@@ -50,23 +52,32 @@ public class HPAlterEffect : MonoBehaviour
 	{
 		_myCardScript.theirStatusRef.hp += HPAlterAmount;
 		_myCardScript.theirStatusRef.hp = Mathf.Clamp(_myCardScript.theirStatusRef.hp, 0, _myCardScript.theirStatusRef.hpMax);
+		
 		if (HPAlterAmount < 0) // dealing dmg
 		{
-			if (_myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef) // if card owner is player, then player is dealing dmg to enemy
-			{
-				GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
-				// display info
-				CombatInfoDisplayer.me.effectResultDisplay.text += "["+_myCardScript.cardName + "] dealt [" + Mathf.Abs(HPAlterAmount) + "] damage to Enemy\n";
-			}
-			else // if card owner is enemy, then enemy is dealing dmg to player
+			if (_myCardScript.theirStatusRef == CombatManager.Me.ownerPlayerStatusRef) // dmg dealt to player
 			{
 				GameEventStorage.me.onPlayerTookDmg?.Raise(); // timepoint
 				CombatInfoDisplayer.me.effectResultDisplay.text += "["+_myCardScript.cardName + "] dealt [" + Mathf.Abs(HPAlterAmount) + "] damage to You\n";
 			}
+			else // dmg dealt to enemy
+			{
+				GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
+				CombatInfoDisplayer.me.effectResultDisplay.text += "["+_myCardScript.cardName + "] dealt [" + Mathf.Abs(HPAlterAmount) + "] damage to Enemy\n";
+			}
 		}
-		else // healing the opponent
+		else // healing
 		{
-			throw new NotImplementedException();
+			if (_myCardScript.theirStatusRef == CombatManager.Me.ownerPlayerStatusRef) // healing dealt to player
+			{
+				GameEventStorage.me.onPlayerHealed?.Raise(); // timepoint
+				CombatInfoDisplayer.me.effectResultDisplay.text += "[" + _myCardScript.cardName + "] healed You for [" + HPAlterAmount + "]\n";
+			}
+			else // healing dealt to enemy
+			{
+				GameEventStorage.me.onEnemyHealed?.Raise(); // timepoint
+				CombatInfoDisplayer.me.effectResultDisplay.text += "[" + _myCardScript.cardName + "] healed Enemy for [" + HPAlterAmount + "]\n";
+			}
 		}
 	}
 
@@ -74,23 +85,32 @@ public class HPAlterEffect : MonoBehaviour
 	public void AlterHP(int amount, PlayerStatusSO targetPlayerStatus)
 	{
 		targetPlayerStatus.hp += amount;
+		targetPlayerStatus.hp = Mathf.Clamp(targetPlayerStatus.hp, 0, targetPlayerStatus.hpMax);
 		if (amount < 0) // dealing dmg
 		{
-			if (_myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef) // card belongs to player
+			if (targetPlayerStatus == CombatManager.Me.ownerPlayerStatusRef) // dmg dealt to player
 			{
-				if (targetPlayerStatus == CombatManager.Me.ownerPlayerStatusRef) // if card owner is player, then player is dealing dmg to enemy
-				{
-					//todo implement
-				}
+				GameEventStorage.me.onPlayerTookDmg?.Raise(); // timepoint
+				CombatInfoDisplayer.me.effectResultDisplay.text += "["+_myCardScript.cardName + "] dealt [" + Mathf.Abs(amount) + "] damage to You\n";
 			}
-			else // card belongs to enemy
+			else // dmg dealt to enemy
 			{
-				
+				GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
+				CombatInfoDisplayer.me.effectResultDisplay.text += "["+_myCardScript.cardName + "] dealt [" + Mathf.Abs(amount) + "] damage to Enemy\n";
 			}
 		}
 		else // healing
 		{
-			
+			if (targetPlayerStatus == CombatManager.Me.ownerPlayerStatusRef) // healing dealt to player
+			{
+				GameEventStorage.me.onPlayerHealed?.Raise();
+				CombatInfoDisplayer.me.effectResultDisplay.text += "[" + _myCardScript.cardName + "] healed You for [" + amount + "]\n";
+			}
+			else // healing dealt to enemy
+			{
+				GameEventStorage.me.onEnemyHealed?.Raise();
+				CombatInfoDisplayer.me.effectResultDisplay.text += "[" + _myCardScript.cardName + "] healed Enemy for [" + amount + "]\n";
+			}
 		}
 	}
 }

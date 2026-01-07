@@ -6,6 +6,9 @@
 	// self-harm
 	// undertake
 	// heart change WIP
+// refactoring
+	// effects can use a parent class to initialize some context
+	// button prompt before shuffling
 // card
 	//// same structure from slash/ but expanded to support multiple costs and effects
 		//// card structure
@@ -23,15 +26,16 @@
 	//// reshuffle
 	//// go to result screen after player pressed space
 	//// migrate info display codes to a new script
-	//todo show effect result
+	// show effect result
 		// need to figure out how to discern reveal zone effect and deck effect
 			//! deck and grave effects don't show fail message, would be too much info? or too less surprises?
-		//todo reveal zone effect succeeded
+		// reveal zone effect succeeded
 			// need to implement it in all effect script
-				// hp alter
-				// mana alter
-				// card manipulation
-				// infection
+				//// hp alter
+					//todo if invoked by tag, then it doesn't have a parent card script, need to think of a different way to do tag
+				//// mana alter
+				//// card manipulation
+				//// infection
 			// then see if it can be optimized and cleaned up more
 		//// reveal zone effect failed
 		// deck effect succeeded
@@ -43,8 +47,7 @@
 	        //// show tag effects
 	        //todo change mana to tag
 		// resolve tags
-			// if tag is dealing damage, then what is the damage source?
-				// follows card
+			//! tag damage counts as tag owner card's damage
 			//// infected
 				//// deal dmg
 				//// make sure this tag can only be given to cards without this tag
@@ -55,7 +58,7 @@
 			//// bury self
 			// 
 	// trigger events
-		//! simplify hp event to [when session owner takes dmg] and [when enemy takes dmg]
+		//! simplified hp event to [when session owner takes dmg] and [when enemy takes dmg]
 		////todo use game event SO to avoid bloating card event trigger script
 	                //// card activation
 	                //// after shuffling

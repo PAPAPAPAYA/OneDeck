@@ -4,10 +4,18 @@ using UnityEngine;
 public class InfectionEffect : MonoBehaviour
 {
 	private CombatManager _cm;
+	private GameObject _myCard;
+	private CardScript _myCardScript;
+	
+	private void OnEnable()
+	{
+		_cm = CombatManager.Me;
+		_myCard = transform.parent.gameObject;
+		_myCardScript = _myCard.GetComponent<CardScript>();
+	}
 
 	public void InfectRandom(int amount)
 	{
-		_cm = CombatManager.Me;
 		var cardsToInfect = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_cm.combinedDeckZone, cardsToInfect, true);
 		UtilityFuncManagerScript.CopyGameObjectList(_cm.graveZone, cardsToInfect, false);
@@ -23,7 +31,10 @@ public class InfectionEffect : MonoBehaviour
 		amount = Mathf.Clamp(amount, 0, cardsToInfect.Count);
 		for (var i = 0; i < amount; i++)
 		{
-			cardsToInfect[i].GetComponent<CardScript>().myTags.Add(EnumStorage.Tag.Infected);
+			var targetCardScript = cardsToInfect[i].GetComponent<CardScript>();
+			targetCardScript.myTags.Add(EnumStorage.Tag.Infected);
+			var targetCardOwnerString = targetCardScript.myStatusRef == _cm.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
+			CombatInfoDisplayer.me.effectResultDisplay.text += "[" + _myCardScript.cardName + "] infected " + targetCardOwnerString + targetCardScript.cardName + "]\n";
 		}
 	}
 }
