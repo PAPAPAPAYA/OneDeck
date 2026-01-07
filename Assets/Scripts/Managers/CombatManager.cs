@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using TagSystem;
 using UnityEngine;
 
 [RequireComponent(typeof(CombatInfoDisplayer))]
@@ -50,9 +48,6 @@ public class CombatManager : MonoBehaviour
 	public GameObject cardToAddWhenOvertime;
 	[Tooltip("add this amount of fatigue to both player")]
 	public int fatigueAmount;
-
-	[Header("Game Events to raise")]
-	public GameEvent cardActivation;
 
 	#region Enter and exit funcs
 	public void EnterCombat()
@@ -209,8 +204,6 @@ public class CombatManager : MonoBehaviour
 			revealZone = combinedDeckZone[cardNum];
 			combinedDeckZone.RemoveAt(cardNum);
 			infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, cardRevealed.myStatusRef == ownerPlayerStatusRef); // if card revealed is session owner's
-			// TagResolveManager.Me.ProcessTags(cardRevealed); //TIMEPOINT: tag resolve
-			//GameEventStorage.me.onCardActivation?.RaiseSpecific(revealZone); // TIMEPOINT: on card activation
 			GameEventStorage.me.onCardActivation?.Raise();
 			cardNum--;
 			graveZone.Add(revealZone);

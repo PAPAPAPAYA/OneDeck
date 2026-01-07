@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectName: infect 3 random cards
+  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -88,6 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ce983acabf3d13408e49fdb8b64b71a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  infectedResolver: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

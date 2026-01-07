@@ -2,25 +2,23 @@ using UnityEngine;
 
 namespace DefaultNamespace.Managers
 {
-    public class CardIDRetriever : MonoBehaviour
-    {
-        #region SINGLETON
+	public class CardIDRetriever : MonoBehaviour
+	{
+		#region SINGLETON
+		public static CardIDRetriever Me;
 
-        public static CardIDRetriever Me;
+		private void Awake()
+		{
+			Me = this;
+		}
+		#endregion
 
-        private void Awake()
-        {
-            Me = this;
-        }
+		public int cardIDTracker;
 
-        #endregion
-
-        public int cardIDTracker;
-
-        public int RetrieveCardID()
-        {
-            cardIDTracker++;
-            return cardIDTracker;
-        }
-    }
+		public int RetrieveCardID()
+		{
+			cardIDTracker++;
+			return cardIDTracker;
+		}
+	}
 }

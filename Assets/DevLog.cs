@@ -9,6 +9,7 @@
 // refactoring
 	// effects can use a parent class to initialize some context
 	// button prompt before shuffling
+	// make text codes in effect scripts StringSO
 // card
 	//// same structure from slash/ but expanded to support multiple costs and effects
 		//// card structure
@@ -28,11 +29,11 @@
 	//// migrate info display codes to a new script
 	// show effect result
 		// need to figure out how to discern reveal zone effect and deck effect
-			//! deck and grave effects don't show fail message, would be too much info? or too less surprises?
+			//! deck and grave effects don't show fail message, would be too much info? or too fewer surprises?
 		// reveal zone effect succeeded
 			// need to implement it in all effect script
 				//// hp alter
-					//todo if invoked by tag, then it doesn't have a parent card script, need to think of a different way to do tag
+					////todo if invoked by tag, then it doesn't have a parent card script, need to think of a different way to do tag
 				//// mana alter
 				//// card manipulation
 				//// infection
@@ -68,7 +69,7 @@
 		//// activation
 		//// after shuffling
 		////todo put cost n effect container and effect scripts to child objects to better organize a card
-		//
+		// 
 	// lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
 		////todo need test: linger effects straight on card
 		////todo avoid looping

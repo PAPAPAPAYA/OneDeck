@@ -6,6 +6,7 @@ public class InfectionEffect : MonoBehaviour
 	private CombatManager _cm;
 	private GameObject _myCard;
 	private CardScript _myCardScript;
+	public GameObject infectedResolver;
 	
 	private void OnEnable()
 	{
@@ -35,6 +36,7 @@ public class InfectionEffect : MonoBehaviour
 			targetCardScript.myTags.Add(EnumStorage.Tag.Infected);
 			var targetCardOwnerString = targetCardScript.myStatusRef == _cm.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
 			CombatInfoDisplayer.me.effectResultDisplay.text += "[" + _myCardScript.cardName + "] infected " + targetCardOwnerString + targetCardScript.cardName + "]\n";
+			Instantiate(infectedResolver, targetCardScript.transform);
 		}
 	}
 }

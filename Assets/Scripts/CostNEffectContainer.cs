@@ -6,6 +6,7 @@ using UnityEngine.Events;
 // this script is used to package, or in other words, to associate effects with their corresponding costs
 // all cost functions need to implement here as they all aim to change variable [costCanBePayed]
 // this way, we can assign effects and their costs via UnityEvent, even as UnityEvents can't return values in a straight forward way
+// so this script is responsible for checking effect cost
 public class CostNEffectContainer: MonoBehaviour
 {
         #region GET MY CARD SCRIPT
@@ -23,7 +24,6 @@ public class CostNEffectContainer: MonoBehaviour
         [Header("Basic Info")] [Tooltip("don't assign identical effect name to effects in the same card")]
         public string effectName;
         [TextArea]
-        [Tooltip("this and card name will combine to show what happened")]
         public string effectDescription;
 
         [Header("Cost and Effect Events")] public UnityEvent checkCostEvent;
@@ -43,12 +43,6 @@ public class CostNEffectContainer: MonoBehaviour
                 if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
                 {
 	                effectEvent?.Invoke(); // invoke effects
-	                print(_myCardScript.cardName + " is triggered");
-	                //_costCanBePayed = false; // reset flag
-                }
-                else
-                {
-	                print("same effect triggered");
                 }
         }
 
