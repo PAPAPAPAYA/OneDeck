@@ -6,14 +6,6 @@ using TMPro;
 // a required component of combat manager, responsible for temporarily show combat info
 public class CombatInfoDisplayer : MonoBehaviour
 {
-	#region Singleton
-	public static CombatInfoDisplayer me;
-	private void Awake()
-	{
-		me = this;
-	}
-	#endregion
-
 	public StringSO effectResultString;
 	public GamePhaseSO gamePhase;
 	public TextMeshProUGUI playerStatusDisplay;
@@ -67,13 +59,5 @@ public class CombatInfoDisplayer : MonoBehaviour
 		enemyStatusDisplay.text =
 			"Their HP: " + CombatManager.Me.enemyPlayerStatusRef.hp + "\n" +
 			"Their Mana: " + CombatManager.Me.enemyPlayerStatusRef.mana;
-	}
-
-	public void DisplayEffectResult(string cardName, string effectResult, string effectTarget)
-	{
-		effectResultDisplay.text =
-			"[" + cardName + "] " +
-			effectResult +
-			" [" + effectTarget + "]";
 	}
 }

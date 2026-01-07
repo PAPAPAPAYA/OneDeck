@@ -1,4 +1,5 @@
 using System;
+using DefaultNamespace.SOScripts;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -21,6 +22,7 @@ public class CostNEffectContainer: MonoBehaviour
         }
         #endregion
 
+        public StringSO effectResultString;
         [Header("Basic Info")] [Tooltip("don't assign identical effect name to effects in the same card")]
         public string effectName;
         [TextArea]
@@ -28,8 +30,7 @@ public class CostNEffectContainer: MonoBehaviour
 
         [Header("Cost and Effect Events")] public UnityEvent checkCostEvent;
         public UnityEvent effectEvent;
-
-        //private bool _costCanBePayed = true;
+        
         private int _costNotMetFlag = 0;
         
         public void InvokeEffectEvent()
@@ -62,7 +63,7 @@ public class CostNEffectContainer: MonoBehaviour
                 {
 	                _costNotMetFlag++;
 	                if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-	                CombatInfoDisplayer.me.effectResultDisplay.text += "Not enough mana to activate [" + _myCardScript.cardName + "]";
+	                effectResultString.value +=  "Not enough mana to activate [" + _myCardScript.cardName + "]";
                 }
         }
 
