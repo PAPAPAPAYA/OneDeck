@@ -68,7 +68,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7760446971144992626}
         m_TargetAssemblyTypeName: InfectionEffect, Assembly-CSharp
-        m_MethodName: InfectRandom
+        m_MethodName: GiveTagToRandom
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -90,8 +90,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ce983acabf3d13408e49fdb8b64b71a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  infectedResolver: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  myTagResolver: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
+  canTagBeStacked: 0
+  tagToGive: 1
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

@@ -28,6 +28,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 		revealZoneDisplay.text = "";
 		combatTipsDisplay.text = "";
 		effectResultString.value = "";
+		effectResultDisplay.text = "";
 	}
 
 	public void ShowCardInfo(CardScript cardRevealed, int deckSize, int cardNum, bool ownersCard)

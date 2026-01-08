@@ -177,25 +177,23 @@ public class CombatManager : MonoBehaviour
 			{
 				if (combatFinished.value) return;
 				infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
-				if (Input.GetKeyDown(KeyCode.Space))
-				{
-					combatFinished.value = true;
-				}
+				if (!Input.GetKeyDown(KeyCode.Space)) return;
+				combatFinished.value = true;
 			}
 			else if (cardNum < 0)
 			{
-				infoDisplayer.combatTipsDisplay.text = "all cards revealed";
+				infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\npress space to shuffle";
+				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				roundNumRef.value++;
+				infoDisplayer.ClearInfo();
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 			}
 			else
 			{
 				infoDisplayer.combatTipsDisplay.text = "press space to reveal";
-				if (Input.GetKeyDown(KeyCode.Space))
-				{
-					awaitingRevealConfirm = false;
-					infoDisplayer.effectResultString.value = "";
-				}
+				if (!Input.GetKeyDown(KeyCode.Space)) return;
+				awaitingRevealConfirm = false;
+				infoDisplayer.effectResultString.value = "";
 			}
 		}
 		else

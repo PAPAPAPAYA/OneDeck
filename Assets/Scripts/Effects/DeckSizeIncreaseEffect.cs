@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class DeckSizeIncreaseEffect : MonoBehaviour
+public class DeckSizeIncreaseEffect : EffectScript
 {
 	public IntSO myDeckSize;
 	public IntSO maxDeckSize;

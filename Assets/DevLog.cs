@@ -6,9 +6,10 @@
 	// self-harm
 	// undertake
 	// heart change WIP
-//todo refactoring
-	//todo effects can use a parent class to initialize some context
-	//todo button prompt before shuffling
+// refactoring
+	//// give tags to random cards and tag related refs are stuffed into the parent script ---- effect script
+	////todo effects can use a parent class to initialize some context
+	////todo button prompt before shuffling
 	////todo make text codes in effect scripts StringSO
 // card
 	//// same structure from slash/ but expanded to support multiple costs and effects
@@ -27,8 +28,8 @@
 	//// reshuffle
 	//// go to result screen after player pressed space
 	//// migrate info display codes to a new script
-	// show effect result
-		// need to figure out how to discern reveal zone effect and deck effect
+	//// show effect result
+		//// need to figure out how to discern reveal zone effect and deck effect
 			//! deck and grave effects don't show fail message, would be too much info? or too fewer surprises?
 		//// reveal zone effect succeeded
 			//// need to implement it in all effect script
@@ -37,7 +38,7 @@
 				//// mana alter
 				//// card manipulation
 				//// infection
-			// then see if it can be optimized and cleaned up more
+			//// then see if it can be optimized and cleaned up more
 		//// reveal zone effect failed
 		//// deck effect succeeded
 		//// grave effect succeeded
@@ -71,7 +72,7 @@
 		//// after shuffling
 		////todo put cost n effect container and effect scripts to child objects to better organize a card
 		// 
-	// lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
+	//// lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
 		////todo need test: linger effects straight on card
 		////todo avoid looping
 			//? effect chain
