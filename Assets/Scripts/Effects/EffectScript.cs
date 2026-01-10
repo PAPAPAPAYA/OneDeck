@@ -9,7 +9,7 @@ public class EffectScript : MonoBehaviour
 	protected CombatManager combatManager;
 	protected GameObject myCard;
 	protected CardScript myCardScript;
-	protected void OnEnable()
+	protected virtual void OnEnable()
 	{
 		combatManager = CombatManager.Me;
 		myCard = transform.parent.gameObject;

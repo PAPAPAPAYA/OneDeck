@@ -14,25 +14,25 @@ namespace DefaultNamespace.Effects
         public void GiveTagToRandom(int amount)
         {
             if (tagToGive == EnumStorage.Tag.None) return;
-            var cardsToInfect = new List<GameObject>();
-            UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, cardsToInfect, true);
-            UtilityFuncManagerScript.CopyGameObjectList(combatManager.graveZone, cardsToInfect, false);
-            cardsToInfect = UtilityFuncManagerScript.ShuffleList(cardsToInfect);
+            var cardsToGiveTag = new List<GameObject>();
+            UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, cardsToGiveTag, true);
+            UtilityFuncManagerScript.CopyGameObjectList(combatManager.graveZone, cardsToGiveTag, false);
+            cardsToGiveTag = UtilityFuncManagerScript.ShuffleList(cardsToGiveTag);
             if (!canTagBeStacked)
             {
-                for (var i = cardsToInfect.Count - 1; i >= 0; i--)
+                for (var i = cardsToGiveTag.Count - 1; i >= 0; i--)
                 {
-                    if (cardsToInfect[i].GetComponent<CardScript>().myTags.Contains(tagToGive))
+                    if (cardsToGiveTag[i].GetComponent<CardScript>().myTags.Contains(tagToGive))
                     {
-                        cardsToInfect.RemoveAt(i);
+                        cardsToGiveTag.RemoveAt(i);
                     }
                 }
             }
-            if (cardsToInfect.Count <= 0) return;
-            amount = Mathf.Clamp(amount, 0, cardsToInfect.Count);
+            if (cardsToGiveTag.Count <= 0) return;
+            amount = Mathf.Clamp(amount, 0, cardsToGiveTag.Count);
             for (var i = 0; i < amount; i++)
             {
-                var targetCardScript = cardsToInfect[i].GetComponent<CardScript>();
+                var targetCardScript = cardsToGiveTag[i].GetComponent<CardScript>();
                 targetCardScript.myTags.Add(tagToGive);
                 var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
                 effectResultString.value +=

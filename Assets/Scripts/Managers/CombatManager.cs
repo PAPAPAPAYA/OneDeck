@@ -1,18 +1,23 @@
+using System;
 using System.Collections.Generic;
 using DefaultNamespace;
+using DefaultNamespace.Managers;
 using UnityEngine;
 
 [RequireComponent(typeof(CombatInfoDisplayer))]
+[RequireComponent(typeof(CombatFuncs))]
 // this script functions as a variable storage in combat
 public class CombatManager : MonoBehaviour
 {
 	#region SINGLETON
+
 	public static CombatManager Me;
 
 	private void Awake()
 	{
 		Me = this;
 	}
+
 	#endregion
 
 	[Header("PHASE AND STATE REFS")]
@@ -40,8 +45,9 @@ public class CombatManager : MonoBehaviour
 	public int cardNum;
 	public BoolSO combatFinished; // identify if this session of combat is finished
 
-	[Header("INFO DISPLAYER")]
-	public CombatInfoDisplayer infoDisplayer;
+	[Header("SUPPLEMENT COMPONENTS")]
+	private CombatInfoDisplayer _infoDisplayer;
+	private CombatFuncs  _combatFuncs;
 
 	[Header("OVERTIME")]
 	public IntSO roundNumRef;
@@ -51,6 +57,7 @@ public class CombatManager : MonoBehaviour
 	public int fatigueAmount;
 
 	#region Enter and exit funcs
+
 	public void EnterCombat()
 	{
 		print("Entering combat");
@@ -61,7 +68,7 @@ public class CombatManager : MonoBehaviour
 	public void ExitCombat()
 	{
 		// clean up ui
-		infoDisplayer.ClearInfo();
+		_infoDisplayer.ClearInfo();
 		// clean up combined deck
 		foreach (var cardInstance in combinedDeckZone)
 		{
@@ -83,7 +90,14 @@ public class CombatManager : MonoBehaviour
 		EffectChainManager.Me.CloseEffectChain();
 		EffectChainManager.Me.chainNumber = 0;
 	}
+
 	#endregion
+
+	private void OnEnable()
+	{
+		_infoDisplayer = GetComponent<CombatInfoDisplayer>();
+		_combatFuncs =  GetComponent<CombatFuncs>();
+	}
 
 	private void Update()
 	{
@@ -120,6 +134,7 @@ public class CombatManager : MonoBehaviour
 		foreach (var card in enemyDeck.deck)
 		{
 			var cardInstance = Instantiate(card, enemyDeckParent.transform);
+			// assign cards' targets
 			cardInstance.GetComponent<CardScript>().myStatusRef = enemyPlayerStatusRef;
 			cardInstance.GetComponent<CardScript>().theirStatusRef = ownerPlayerStatusRef;
 			combinedDeckZone.Add(cardInstance);
@@ -136,24 +151,14 @@ public class CombatManager : MonoBehaviour
 		// add fatigue to owner side
 		for (var i = 0; i < fatigueAmount; i++)
 		{
-			AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, true);
+			_combatFuncs.AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, true);
 		}
 
 		// add fatigue to enemy side
 		for (var i = 0; i < fatigueAmount; i++)
 		{
-			AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, false);
+			_combatFuncs.AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, false);
 		}
-	}
-
-	public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
-	{
-		var cardInstance = Instantiate(cardToAdd,
-			belongsToSessionOwner ? playerDeckParent.transform : enemyDeckParent.transform); // instantiate and assign corresponding parent
-		cardInstance.GetComponent<CardScript>().myStatusRef = belongsToSessionOwner ? ownerPlayerStatusRef : enemyPlayerStatusRef; // assign corresponding target
-		cardInstance.GetComponent<CardScript>().theirStatusRef = belongsToSessionOwner ? enemyPlayerStatusRef : ownerPlayerStatusRef; // assign corresponding target
-		combinedDeckZone.Add(cardInstance); // add the new card to combined deck
-		deckSize = combinedDeckZone.Count; // refresh deck size
 	}
 
 	private void ResetGrave()
@@ -168,8 +173,15 @@ public class CombatManager : MonoBehaviour
 		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone); // shuffle deck
 		EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
-		cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
+		UpdateTrackingVariables();
+
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
+	}
+
+	public void UpdateTrackingVariables()
+	{
+		deckSize = combinedDeckZone.Count; // refresh deck size
+		cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
 	}
 
 	private void RevealCards()
@@ -179,24 +191,24 @@ public class CombatManager : MonoBehaviour
 			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
 				if (combatFinished.value) return;
-				infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
+				_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
 				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				combatFinished.value = true;
 			}
 			else if (cardNum < 0)
 			{
-				infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\npress space to shuffle";
+				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\npress space to shuffle";
 				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				roundNumRef.value++;
-				infoDisplayer.ClearInfo();
+				_infoDisplayer.ClearInfo();
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 			}
 			else
 			{
-				infoDisplayer.combatTipsDisplay.text = "press space to reveal";
+				_infoDisplayer.combatTipsDisplay.text = "press space to reveal";
 				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				awaitingRevealConfirm = false;
-				infoDisplayer.effectResultString.value = "";
+				_infoDisplayer.effectResultString.value = "";
 			}
 		}
 		else
@@ -204,17 +216,17 @@ public class CombatManager : MonoBehaviour
 			var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
 			revealZone = combinedDeckZone[cardNum];
 			combinedDeckZone.RemoveAt(cardNum);
-			infoDisplayer.ShowCardInfo(
-				cardRevealed, 
-				deckSize, 
-				graveZone.Count, 
+			_infoDisplayer.ShowCardInfo(
+				cardRevealed,
+				deckSize,
+				graveZone.Count,
 				cardRevealed.myStatusRef == ownerPlayerStatusRef);
 			cardNum--;
-			GameEventStorage.me.onAnyCardRevealed?.Raise();
-			GameEventStorage.me.onMeRevealed?.RaiseSpecific(cardRevealed.gameObject);
+			GameEventStorage.me.onAnyCardRevealed?.Raise(); // timepoint
+			GameEventStorage.me.onMeRevealed?.RaiseSpecific(cardRevealed.gameObject); // timepoint
 			graveZone.Add(revealZone);
-			GameEventStorage.me.onAnyCardSentToGrave?.Raise();
-			GameEventStorage.me.onMeSentToGrave?.RaiseSpecific(cardRevealed.gameObject);
+			GameEventStorage.me.onAnyCardSentToGrave?.Raise(); // timepoint
+			GameEventStorage.me.onMeSentToGrave?.RaiseSpecific(cardRevealed.gameObject); // timepoint
 			revealZone = null;
 			awaitingRevealConfirm = true;
 		}

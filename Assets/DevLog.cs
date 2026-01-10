@@ -16,7 +16,8 @@
 	// heart change
 
 // refactoring
-	// todo fucking hell you are stupid, refactor to call specific events and any events so that cost only check for cost, and invoke card effects through game event SO
+	//// encapsulate moving cards around and other supplement functions to another script and add it as a required component to combat manager
+	//// todo fucking hell you are stupid, refactor to call specific events and any events so that cost only check for cost, and invoke card effects through game event SO
 	//// give tags to random cards and tag related refs are stuffed into the parent script ---- effect script
 	//// effects can use a parent class to initialize some context
 	//// button prompt before shuffling
@@ -86,7 +87,7 @@
 	
 	// effects
 		//// generate: make temp cards that only last 1 combat phase
-		// undertake: send cards straight to grave
+		//// undertake: send cards straight to grave
 		// heart-change: change cards owner that only last 1 combat phase
 		// reborn: put cards in grave back to deck
 	        //// alter hp
@@ -113,25 +114,26 @@
 		// is infected
 
 	// trigger events
-		// death-rattle: if sent to grave
+		// specific event
+			//// death-rattle: if sent to grave
+			//// activation
 		//// use game event SO to avoid bloating card event trigger script
 	                //// card activation
 	                //// after shuffling
 	                //// when player dealt dmg to enemy
 			//// on card bought (kind of ugly, but works)
-		//// when player dealt dmg to enemy
-		//// activation
-		//// after shuffling
 		//// put cost n effect container and effect scripts to child objects to better organize a card
-	// lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
-		//// need test: linger effects straight on card
-		//// avoid looping
-			//? effect chain
-				//// need to close chain when 1 round is finished
-				//? may need to check all situations
-					//// effect activating itself
-					//? multiple cards loop, activating each other
-					//? same card, multiple same effects
+		// any event
+			//// when player dealt dmg to enemy
+			//// after shuffling
+			//// need test: linger effects straight on card
+			//// avoid looping
+				//? effect chain
+					//// need to close chain when 1 round is finished
+					//? may need to check all situations
+						//// effect activating itself
+						//? multiple cards loop, activating each other
+						//? same card, multiple same effects
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver
 	//// end combat phase when one player's hp reached zero
 	//// overtime
