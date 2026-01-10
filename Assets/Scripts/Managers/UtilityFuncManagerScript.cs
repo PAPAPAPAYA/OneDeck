@@ -9,11 +9,14 @@ using Random = UnityEngine.Random;
 public class UtilityFuncManagerScript : MonoBehaviour
 {
 	#region SINGLETON
+
 	public static UtilityFuncManagerScript me;
+
 	private void Awake()
 	{
 		me = this;
 	}
+
 	#endregion
 
 	public float ConvertV2ToAngle(Vector2 dir)
@@ -28,15 +31,17 @@ public class UtilityFuncManagerScript : MonoBehaviour
 		shuffled = list.OrderBy(x => Random.value).ToList();
 		return shuffled;
 	}
+
 	// copy game object list
 	public static void CopyGameObjectList(List<GameObject> from, List<GameObject> to, bool clearTargetList)
 	{
-        if (clearTargetList) to.Clear();
+		if (clearTargetList) to.Clear();
 		foreach (var gO in from)
 		{
 			to.Add(gO);
 		}
 	}
+
 	// get a random point on a circle
 	public Vector3 RandomPointOnUnitCircle(float radius)
 	{

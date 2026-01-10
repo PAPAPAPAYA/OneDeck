@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: PlayerDefaultDeckRef
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 73a49bcb816c7874ca32a82d9a030f96, type: 3}
-  - {fileID: 8718476725744197808, guid: e9b0f016821c08c43a08624ca19ff986, type: 3}
-  - {fileID: 8718476725744197808, guid: e22f9fcab0dbd6a44bdfb804693eb918, type: 3}
+  - {fileID: 8718476725744197808, guid: 4a86806e03a3601499ae80c0611f6b64, type: 3}
+  - {fileID: 8718476725744197808, guid: 4a86806e03a3601499ae80c0611f6b64, type: 3}
+  - {fileID: 8718476725744197808, guid: 4a86806e03a3601499ae80c0611f6b64, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: player default deck, will copy to player deck so at start of game

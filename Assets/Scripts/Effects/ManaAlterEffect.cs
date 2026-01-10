@@ -1,32 +1,19 @@
 using System;
+using DefaultNamespace.Effects;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
 
-public class ManaAlterEffect : EffectScript
+// mana: positive tag that can be stacked
+public class ManaAlterEffect : TagGiverEffect
 {
-	public void AlterMyMana(int manaAlterAmount)
+	public void ConsumeMana(int amount)
 	{
-		myCardScript.myStatusRef.mana += manaAlterAmount;
-		if (manaAlterAmount < 0) // consuming mana
+		if (!EnumStorage.DoesListContainAmountOfTag(myCardScript.myTags, amount, EnumStorage.Tag.Mana)) return;
+		for (var i = myCardScript.myTags.Count - 1; i >= 0; i--)
 		{
-			if (myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef) // player consuming
+			if (myCardScript.myTags[i] == EnumStorage.Tag.Mana)
 			{
-				effectResultString.value += "["+myCardScript.cardName + "] consumed [" + Mathf.Abs(manaAlterAmount) + "] mana from You\n";
-			}
-			else // enemy consuming
-			{
-				effectResultString.value += "["+myCardScript.cardName + "] consumed [" + Mathf.Abs(manaAlterAmount) + "] mana from Enemy\n";
-			}
-		}
-		else // gaining mana
-		{
-			if (myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef) // player gaining
-			{
-				effectResultString.value += "You gained [" + manaAlterAmount + "] mana from [" + myCardScript.cardName + "]\n";
-			}
-			else // enemy gaining
-			{
-				effectResultString.value += "Enemy gained [" + manaAlterAmount + "] mana from [" + myCardScript.cardName + "]\n";
+				myCardScript.myTags.RemoveAt(i);
 			}
 		}
 	}

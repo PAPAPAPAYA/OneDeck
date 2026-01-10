@@ -93,7 +93,9 @@ public class CombatManager : MonoBehaviour
 				GatherDecks();
 				break;
 			case EnumStorage.CombatState.ShuffleDeck:
-				ResetGraveAndShuffle();
+				ResetGrave();
+				CheckFatigueNAddFatigue(); // process fatigue
+				Shuffle();
 				break;
 			case EnumStorage.CombatState.Reveal:
 				RevealCards();
@@ -143,7 +145,7 @@ public class CombatManager : MonoBehaviour
 		}
 	}
 
-	private void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
+	public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
 	{
 		var cardInstance = Instantiate(cardToAdd,
 			belongsToSessionOwner ? playerDeckParent.transform : enemyDeckParent.transform); // instantiate and assign corresponding parent
@@ -153,15 +155,15 @@ public class CombatManager : MonoBehaviour
 		deckSize = combinedDeckZone.Count; // refresh deck size
 	}
 
-	private void ResetGraveAndShuffle()
+	private void ResetGrave()
 	{
-		if (graveZone.Count > 0) // if not the first time shuffling deck, if grave not empty
-		{
-			UtilityFuncManagerScript.CopyGameObjectList(graveZone, combinedDeckZone, true); // copy from grave to combined deck
-			graveZone.Clear(); // empty the grave
-		}
+		if (graveZone.Count <= 0) return; // if grave empty, return
+		UtilityFuncManagerScript.CopyGameObjectList(graveZone, combinedDeckZone, false); // copy from grave to combined deck
+		graveZone.Clear(); // empty the grave
+	}
 
-		CheckFatigueNAddFatigue(); // process fatigue
+	public void Shuffle()
+	{
 		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone); // shuffle deck
 		EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
@@ -201,9 +203,13 @@ public class CombatManager : MonoBehaviour
 			var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
 			revealZone = combinedDeckZone[cardNum];
 			combinedDeckZone.RemoveAt(cardNum);
-			infoDisplayer.ShowCardInfo(cardRevealed, deckSize, cardNum, cardRevealed.myStatusRef == ownerPlayerStatusRef); // if card revealed is session owner's
-			GameEventStorage.me.onCardActivation?.Raise();
+			infoDisplayer.ShowCardInfo(
+				cardRevealed, 
+				deckSize, 
+				graveZone.Count, 
+				cardRevealed.myStatusRef == ownerPlayerStatusRef);
 			cardNum--;
+			GameEventStorage.me.onCardActivation?.Raise();
 			graveZone.Add(revealZone);
 			revealZone = null;
 			awaitingRevealConfirm = true;

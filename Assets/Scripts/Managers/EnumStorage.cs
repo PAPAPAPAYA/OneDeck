@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnumStorage : MonoBehaviour
@@ -20,5 +21,19 @@ public class EnumStorage : MonoBehaviour
     {
         None,
         Infected,
+        Mana
+    }
+
+    public static bool DoesListContainAmountOfTag(List<Tag> listToCheck, int amount, Tag tagToCheck)
+    {
+	    var amountOfTag = 0;
+	    foreach (var listTag in listToCheck)
+	    {
+		    if (listTag == tagToCheck)
+		    {
+			    amountOfTag++;
+		    }
+	    }
+	    return amountOfTag >= amount;
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class CardScript : MonoBehaviour
 {
-    [Header("Basic Info")]
+    [Header("Card Info")]
     public string cardName;
     public int cardID;
     [TextArea]
@@ -22,14 +22,5 @@ public class CardScript : MonoBehaviour
     private void Start()
     {
         cardID = CardIDRetriever.Me.RetrieveCardID();
-    }
-
-    //todo for testing
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            GetComponent<CardEventTrigger>().cardActivateEvent?.Invoke();
-        }
     }
 }

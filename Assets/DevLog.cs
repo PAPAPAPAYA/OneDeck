@@ -1,68 +1,119 @@
 // devlog
+
+// quirks
+	// deck and grave effects don't show fail message, would be too much info? or too fewer surprises?
+	// tag damage counts as tag owner card's damage
+	// simplified hp event to [when session owner takes dmg] and [when enemy takes dmg]
+	// after changing the combined deck, shuffle
+
 // design
 	// infection
 	// mana
 	// healing
 	// self-harm
 	// undertake
-	// heart change WIP
+	// generate
+	// heart change
+
 // refactoring
 	//// give tags to random cards and tag related refs are stuffed into the parent script ---- effect script
-	////todo effects can use a parent class to initialize some context
-	////todo button prompt before shuffling
-	////todo make text codes in effect scripts StringSO
-// card
+	//// effects can use a parent class to initialize some context
+	//// button prompt before shuffling
+	//// make text codes in effect scripts StringSO
+	//// refactor tags to use game event SOs
+
+// card structure
 	//// same structure from slash/ but expanded to support multiple costs and effects
 		//// card structure
 			//// cost check
 			//// effect
 			//// assign effect target ref
+
+// cards
+	// stab
+		//// stab: deal 1 dmg
+		//// stab quickly: stage self; deal 1 dmg
+		//// stab slowly: bury self; deal 1 dmg
+		//// stab recklessly: deal 1 dmg to self; deal 1 dmg
+	// mana
+		//// meditate: mana to 3 cards
+		//// inject: deal 1 dmg to self; mana to 5 cards
+		//// fireball: cost 1 mana: deal 2 dmg
+		//// big fireball: cost 2 mana: deal 3 dmg
+	// infection
+		//// explosive infection: infect 3 cards
+	// shiv
+		//// add a shiv: add a shiv
+		//// shiv: deal 1 dmg
+	// in grave
+		//// death by a thousand cuts: when enemy received dmg, deal 1 dmg
+	// system
+		//// fatigue: deal 1 dmg to both players
+		//// deck expansion: increase deck size by 1
+	
+
 // battle: text demo
+	// enemy
+		// record decks to local
+		// read decks from local
+		// populate enemy decks
 	//// check cost
 		//// check multiple costs
 	//// draw situation
 		//// no win no heart loss
 	//// text display in scene
+		//// show tags on card
+	        //// show effect result
+			    //// need to figure out how to discern reveal zone effect and deck effect
+			    //// reveal zone effect succeeded
+				    //// need to implement it in all effect script
+					    //// hp alter
+						    //// if invoked by tag, then it doesn't have a parent card script, need to think of a different way to do tag
+					    //// mana alter
+					    //// card manipulation
+					    //// infection
+				    //// then see if it can be optimized and cleaned up more
+			    //// reveal zone effect failed
+			    //// deck effect succeeded
+			    //// grave effect succeeded
+			    //// effect target
 	//// shuffle and mix decks
 	//// reveal one by one
 	//// reshuffle
 	//// go to result screen after player pressed space
 	//// migrate info display codes to a new script
-	//// show effect result
-		//// need to figure out how to discern reveal zone effect and deck effect
-			//! deck and grave effects don't show fail message, would be too much info? or too fewer surprises?
-		//// reveal zone effect succeeded
-			//// need to implement it in all effect script
-				//// hp alter
-					////todo if invoked by tag, then it doesn't have a parent card script, need to think of a different way to do tag
-				//// mana alter
-				//// card manipulation
-				//// infection
-			//// then see if it can be optimized and cleaned up more
-		//// reveal zone effect failed
-		//// deck effect succeeded
-		//// grave effect succeeded
-		//// effect target
+	
 	// effects
-		// 
+		//// generate: make temp cards that only last 1 combat phase
+		// undertake: send cards straight to grave
+		// heart-change: change cards owner that only last 1 combat phase
+		// reborn: put cards in grave back to deck
 	        //// alter hp
 	        //// alter mp
 	        //// show tag effects
-	        //todo change mana to tag
 		// tags
-			//! tag damage counts as tag owner card's damage
+			// power: dmg increase
+			//// change mana to tag
+		                //// give mana tags
+		                //// check mana tags
+		                //// consume mana tags
 			//// infected
 				//// deal dmg
 				//// make sure this tag can only be given to cards without this tag
-			//
-			////todo refactor to use game event SOs
-		// card manipulation
+		//// card manipulation
 			//// stage self
 			//// bury self
-			// 
+
+	// cost
+		//// hp
+		//// mana
+		//// in reveal
+		//// in grave
+		// is infected
+
 	// trigger events
-		//! simplified hp event to [when session owner takes dmg] and [when enemy takes dmg]
-		////todo use game event SO to avoid bloating card event trigger script
+		// death-rattle: if sent to grave
+		//// use game event SO to avoid bloating card event trigger script
 	                //// card activation
 	                //// after shuffling
 	                //// when player dealt dmg to enemy
@@ -70,13 +121,12 @@
 		//// when player dealt dmg to enemy
 		//// activation
 		//// after shuffling
-		////todo put cost n effect container and effect scripts to child objects to better organize a card
-		// 
-	//// lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
-		////todo need test: linger effects straight on card
-		////todo avoid looping
+		//// put cost n effect container and effect scripts to child objects to better organize a card
+	// lingering effects (mechanically there's no special lingering effects, all effects goes through card event trigger)
+		//// need test: linger effects straight on card
+		//// avoid looping
 			//? effect chain
-				////todo need to close chain when 1 round is finished
+				//// need to close chain when 1 round is finished
 				//? may need to check all situations
 					//// effect activating itself
 					//? multiple cards loop, activating each other

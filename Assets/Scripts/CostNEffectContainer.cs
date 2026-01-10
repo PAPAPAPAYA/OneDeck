@@ -8,87 +8,82 @@ using UnityEngine.Events;
 // all cost functions need to implement here as they all aim to change variable [costCanBePayed]
 // this way, we can assign effects and their costs via UnityEvent, even as UnityEvents can't return values in a straight forward way
 // so this script is responsible for checking effect cost
-public class CostNEffectContainer: MonoBehaviour
+public class CostNEffectContainer : MonoBehaviour
 {
-        #region GET MY CARD SCRIPT
-        private CardScript _myCardScript;
+	#region GET MY CARD SCRIPT
 
-        private void OnEnable()
-        {
-                if (GetComponentInParent<CardScript>())
-                {
-                        _myCardScript = GetComponentInParent<CardScript>();
-                }
-        }
-        #endregion
+	private CardScript _myCardScript;
 
-        public StringSO effectResultString;
-        [Header("Basic Info")] [Tooltip("don't assign identical effect name to effects in the same card")]
-        public string effectName;
-        [TextArea]
-        public string effectDescription;
+	private void OnEnable()
+	{
+		if (GetComponentInParent<CardScript>())
+		{
+			_myCardScript = GetComponentInParent<CardScript>();
+		}
+	}
 
-        [Header("Cost and Effect Events")] public UnityEvent checkCostEvent;
-        public UnityEvent effectEvent;
-        
-        private int _costNotMetFlag = 0;
-        
-        public void InvokeEffectEvent()
-        {
-	        // check cost
-	        _costNotMetFlag = 0;
-                checkCostEvent?.Invoke();
-                
-                // invoke effect
-                if (_costNotMetFlag > 0) return; // if cost can not be met, return
-                if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
-                {
-	                effectEvent?.Invoke(); // invoke effects
-                }
-        }
+	#endregion
 
-        #region check cost funcs
-        public void CheckCost_noCost() // obsoleted since default value of _costCanBePayed is true
-        {
-                //_costCanBePayed = true;
-        }
+	public StringSO effectResultString;
+	[Header("Basic Info")]
+	[Tooltip("don't assign identical effect name to effects in the same card")]
+	public string effectName;
+	[TextArea]
+	public string effectDescription;
 
-        public void CheckCost_Mana(int mana)
-        {
-                if (_myCardScript.myStatusRef.mana >= mana)
-                {
-                        //_costCanBePayed = true;
-                }
-                else
-                {
-	                _costNotMetFlag++;
-	                if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-	                effectResultString.value +=  "Not enough mana to activate [" + _myCardScript.cardName + "]";
-                }
-        }
+	[Header("Cost and Effect Events")]
+	public UnityEvent checkCostEvent;
+	public UnityEvent effectEvent;
 
-        public void CheckCost_InGrave()
-        {
-                if (CombatManager.Me.graveZone.Contains(transform.parent.gameObject))
-                {
-                        //_costCanBePayed = true;
-                }
-                else
-                {
-	                _costNotMetFlag++;
-                        print("not in grave");
-                }
-        }
-        public void CheckCost_InReveal()
-        {
-	        if (CombatManager.Me.revealZone == transform.parent.gameObject)
-	        {
-		        //_costCanBePayed = true;
-	        }
-	        else
-	        {
-		        _costNotMetFlag++;
-	        }
-        }
-        #endregion
+	private int _costNotMetFlag = 0;
+
+	public void InvokeEffectEvent()
+	{
+		// check cost
+		_costNotMetFlag = 0;
+		checkCostEvent?.Invoke();
+
+		// invoke effect
+		if (_costNotMetFlag > 0) return; // if cost can not be met, return
+		if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
+		{
+			effectEvent?.Invoke(); // invoke effects
+		}
+	}
+
+	#region check cost funcs
+
+	public void CheckCost_Mana(int manaRequired)
+	{
+		if (EnumStorage.DoesListContainAmountOfTag(_myCardScript.myTags, manaRequired, EnumStorage.Tag.Mana)) return; // if check succeeded, do nothing
+		// if check failed, process
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
+		effectResultString.value += "Not enough mana to activate [" + _myCardScript.cardName + "]";
+	}
+
+	public void CheckCost_InGrave()
+	{
+		if (CombatManager.Me.graveZone.Contains(transform.parent.gameObject))
+		{
+		}
+		else
+		{
+			_costNotMetFlag++;
+			print("not in grave");
+		}
+	}
+
+	public void CheckCost_InReveal()
+	{
+		if (CombatManager.Me.revealZone == transform.parent.gameObject)
+		{
+		}
+		else
+		{
+			_costNotMetFlag++;
+		}
+	}
+
+	#endregion
 }
