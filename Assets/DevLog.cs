@@ -16,6 +16,7 @@
 	// heart change
 
 // refactoring
+	// todo fucking hell you are stupid, refactor to call specific events and any events so that cost only check for cost, and invoke card effects through game event SO
 	//// give tags to random cards and tag related refs are stuffed into the parent script ---- effect script
 	//// effects can use a parent class to initialize some context
 	//// button prompt before shuffling
@@ -45,8 +46,8 @@
 	// shiv
 		//// add a shiv: add a shiv
 		//// shiv: deal 1 dmg
-	// in grave
-		//// death by a thousand cuts: when enemy received dmg, deal 1 dmg
+	// grave
+		//// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
 	// system
 		//// fatigue: deal 1 dmg to both players
 		//// deck expansion: increase deck size by 1

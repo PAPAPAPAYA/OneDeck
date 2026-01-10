@@ -9,11 +9,15 @@ public class GameEventStorage : MonoBehaviour
 		me = this;
 	}
 	#endregion
-
-	[Header("Card Specific")]
-	public GameEvent onCardActivation;
-	public GameEvent onCardBought;
-	[Header("Card Not Specific (Linger)")]
+	// if you want to invoke a specific card's event use RaiseSpecific()
+	[Header("card specific")]
+	public GameEvent onMeRevealed;
+	public GameEvent onMeSentToGrave;
+	public GameEvent onMeBought;
+	// if you want ot invoke all cards with the same event, use Raise()
+	[Header("any card")]
+	public GameEvent onAnyCardRevealed;
+	public GameEvent onAnyCardSentToGrave;
 	public GameEvent onEnemyTookDmg;
 	public GameEvent onPlayerTookDmg;
 	public GameEvent onEnemyHealed;

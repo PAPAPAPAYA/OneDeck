@@ -74,16 +74,5 @@ public class CostNEffectContainer : MonoBehaviour
 		}
 	}
 
-	public void CheckCost_InReveal()
-	{
-		if (CombatManager.Me.revealZone == transform.parent.gameObject)
-		{
-		}
-		else
-		{
-			_costNotMetFlag++;
-		}
-	}
-
 	#endregion
 }

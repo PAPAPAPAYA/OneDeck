@@ -10,5 +10,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7461084ea7faf794c955f476c3c1c41e, type: 3}
-  m_Name: OnCardBought
+  m_Name: OnMeBought
   m_EditorClassIdentifier: 

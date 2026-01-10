@@ -50,19 +50,7 @@ MonoBehaviour:
   effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 5915337404688717014}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_InReveal
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -157,7 +145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  event: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
+  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:

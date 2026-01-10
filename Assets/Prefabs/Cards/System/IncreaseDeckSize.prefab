@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   effectName: Increase deck size by 1
   effectDescription: 
   checkCostEvent:
@@ -77,6 +78,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83350cd29f6e37648be41dfcb00a5759, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  effectResultString: {fileID: 0}
   myDeckSize: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
   maxDeckSize: {fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}
 --- !u!1 &8718476725744197808

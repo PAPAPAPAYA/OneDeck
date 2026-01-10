@@ -130,7 +130,7 @@ public class ShopManager : MonoBehaviour
 		currentShopItemDeckRef.deck.Remove(cardToBuy); // remove it from current shop item list
 		// buy timepoint: kind of ugly right now, instantiate so it register as a listener, and destroy it right after
 		var cardToBuyInst = Instantiate(cardToBuy, transform);
-		GameEventStorage.me.onCardBought.RaiseSpecific(cardToBuyInst);
+		GameEventStorage.me.onMeBought.RaiseSpecific(cardToBuyInst);
 		Destroy(cardToBuyInst);
 		GatherPlayerDeckInfo();
 		UpdateShopItemInfo();

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 
 [RequireComponent(typeof(CombatInfoDisplayer))]
@@ -209,8 +210,11 @@ public class CombatManager : MonoBehaviour
 				graveZone.Count, 
 				cardRevealed.myStatusRef == ownerPlayerStatusRef);
 			cardNum--;
-			GameEventStorage.me.onCardActivation?.Raise();
+			GameEventStorage.me.onAnyCardRevealed?.Raise();
+			GameEventStorage.me.onMeRevealed?.RaiseSpecific(cardRevealed.gameObject);
 			graveZone.Add(revealZone);
+			GameEventStorage.me.onAnyCardSentToGrave?.Raise();
+			GameEventStorage.me.onMeSentToGrave?.RaiseSpecific(cardRevealed.gameObject);
 			revealZone = null;
 			awaitingRevealConfirm = true;
 		}
