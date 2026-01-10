@@ -32,7 +32,7 @@
 			//// assign effect target ref
 
 // cards
-	// stab
+	// hp alter
 		//// stab: deal 1 dmg
 		//// stab quickly: stage self; deal 1 dmg
 		//// stab slowly: bury self; deal 1 dmg
@@ -49,6 +49,8 @@
 		//// shiv: deal 1 dmg
 	// grave
 		//// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
+		//// undertake: move 3 random cards straight to grave
+		//// stab from the grave: when sent to grave, deal 1 dmg
 	// system
 		//// fatigue: deal 1 dmg to both players
 		//// deck expansion: increase deck size by 1
