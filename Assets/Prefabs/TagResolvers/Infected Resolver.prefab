@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1999526145233014990}
   - component: {fileID: 3643492153036876302}
-  - component: {fileID: 4973421849516712604}
   - component: {fileID: 5979311566126577595}
   - component: {fileID: 6959311942194247450}
   - component: {fileID: 7431176955717029217}
+  - component: {fileID: 2615560197678872765}
   m_Layer: 0
   m_Name: Infected Resolver
   m_TagString: Untagged
@@ -48,26 +48,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1dc4100fa0eb46ac86580876f56a9ee8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &4973421849516712604
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6584689119450628697}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardName: ' ''s [INFECTED] tag'
-  cardID: 0
-  cardDesc: infected tag resolver
-  takeUpSpace: 0
-  price: 0
-  myStatusRef: {fileID: 0}
-  theirStatusRef: {fileID: 0}
-  myTags: 
 --- !u!114 &5979311566126577595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,7 +89,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: deal infected dmg
+  effectName: '[tag] deal infected dmg'
   effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
@@ -129,6 +109,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 2615560197678872765}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.RemoveTagEffect, Assembly-CSharp
+        m_MethodName: RemoveTag
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &7431176955717029217
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -144,3 +136,17 @@ MonoBehaviour:
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
+--- !u!114 &2615560197678872765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6584689119450628697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00228ec02dc74e6fa0d8f3cf40ed76ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  tagToRemove: 1

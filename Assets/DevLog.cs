@@ -16,7 +16,14 @@
 	// heart change
 
 // refactoring
-	// todo clean up effect script's variables?
+	//// clean up effect script's variables?
+		//// refactor how infection deal dmg
+			//// not removing infected tag after resolved
+				//// new effect: remove tag
+			//// get rid of the card script in tag resolver
+		//// test stab
+		//// test infection
+		//// test change of heart
 	//// yup we tripped ourselves by not discerning between dealing dmg and healing, separate these two
 	//// refactored game event so RaiseSpecific() also raise the game object's children's game event listeners
 	//// refactored tag resolver so it works with specific game event raise
