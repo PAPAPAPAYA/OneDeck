@@ -14,12 +14,17 @@ public class GameEvent : ScriptableObject
 			_listeners[i].OnEventRaised();
 		}
 	}
-
-	public void RaiseSpecific(GameObject target)
+	
+	public void RaiseSpecific(GameObject target) // will also raise target's children's events
 	{
-		var listener = target.GetComponent<GameEventListener>();
-		if (!_listeners.Contains(listener)) return;
-		listener?.OnEventRaised();
+		var listeners = target.GetComponentsInChildren<GameEventListener>();
+		foreach (var listenerFromParentOrChild in listeners)
+		{
+			if (_listeners.Contains(listenerFromParentOrChild))
+			{
+				listenerFromParentOrChild.OnEventRaised();
+			}
+		}
 	}
 
 	public void RegisterListener(GameEventListener listener)

@@ -72,7 +72,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 			var heartChangeAmount = 0;
 			foreach (var myTag in card.myTags)
 			{
-				if (myTag == EnumStorage.Tag.Mana)
+				if (myTag == EnumStorage.Tag.HeartChanged)
 				{
 					heartChangeAmount++;
 				}
@@ -80,8 +80,23 @@ public class CombatInfoDisplayer : MonoBehaviour
 
 			tagInfo += "[" + heartChangeAmount + " Heart-Changed]";
 		}
+		
+		// show power tag
+		if (card.myTags.Contains(EnumStorage.Tag.Power))
+		{
+			var powerAmount = 0;
+			foreach (var myTag in card.myTags)
+			{
+				if (myTag == EnumStorage.Tag.Power)
+				{
+					powerAmount++;
+				}
+			}
 
-		if (card.myTags.Count == 0)
+			tagInfo += "[" + powerAmount + " Power]";
+		}
+
+		if (card.myTags.Count > 0)
 		{
 			tagInfo += " ";
 		}

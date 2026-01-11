@@ -16,6 +16,9 @@
 	// heart change
 
 // refactoring
+	//// yup we tripped ourselves by not discerning between dealing dmg and healing, separate these two
+	//// refactored game event so RaiseSpecific() also raise the game object's children's game event listeners
+	//// refactored tag resolver so it works with specific game event raise
 	//// encapsulate moving cards around and other supplement functions to another script and add it as a required component to combat manager
 	//// todo fucking hell you are stupid, refactor to call specific events and any events so that cost only check for cost, and invoke card effects through game event SO
 	//// give tags to random cards and tag related refs are stuffed into the parent script ---- effect script
@@ -98,13 +101,14 @@
 	        //// alter mp
 	        //// show tag effects
 		// tags
-			// power: dmg increase
+			//todo power: dmg increase
 			//// heart-changed: so that it can be tracked
 			//// change mana to tag
 		                //// give mana tags
 		                //// check mana tags
 		                //// consume mana tags
 			//// infected
+				//? destroy tag resolver if tag is removed
 				//// deal dmg
 				//// make sure this tag can only be given to cards without this tag
 		//// card manipulation

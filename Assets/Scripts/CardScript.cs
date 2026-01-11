@@ -12,9 +12,9 @@ public class CardScript : MonoBehaviour
     public string cardDesc;
     public bool takeUpSpace = true; // whether this card takes up deck size
     public int price;
-    [HideInInspector]
+    //[HideInInspector]
     public PlayerStatusSO myStatusRef;
-    [HideInInspector]
+    //[HideInInspector]
     public PlayerStatusSO theirStatusRef;
     [Header("Tags")]
     public List<EnumStorage.Tag> myTags;

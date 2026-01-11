@@ -41,7 +41,8 @@ namespace DefaultNamespace.Effects
                     targetCardScript.cardName + "] " +
                     "1 [" + tagToGive + "]\n";
                 if (myTagResolver == null) continue;
-                Instantiate(myTagResolver, targetCardScript.transform);
+                var tagResolver = Instantiate(myTagResolver, targetCardScript.transform);
+                GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
             }
         }
     }

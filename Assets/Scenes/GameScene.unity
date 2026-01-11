@@ -1066,6 +1066,8 @@ MonoBehaviour:
   onMeRevealed: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
   onMeSentToGrave: {fileID: 11400000, guid: 5e8e5069704e41e4a80c2a0afa345e81, type: 2}
   onMeBought: {fileID: 11400000, guid: 525df2dc84c6aa640bedec4330fc7491, type: 2}
+  onThisTagResolverAttached: {fileID: 11400000, guid: 21baa6d6a7f3cc441b4afe20c83a5d8e, type: 2}
+  beforeIDealDmg: {fileID: 11400000, guid: 7d765be599f91ab45a8ea86a66b7b9d1, type: 2}
   onAnyCardRevealed: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
   onAnyCardSentToGrave: {fileID: 11400000, guid: 68a97b4a1968898459a97382e88f33a0, type: 2}
   onEnemyTookDmg: {fileID: 11400000, guid: 6e69b63aa924cd342b78fd35ae337173, type: 2}
@@ -1436,6 +1438,7 @@ GameObject:
   - component: {fileID: 1151980345}
   - component: {fileID: 1151980344}
   - component: {fileID: 1151980346}
+  - component: {fileID: 1151980347}
   m_Layer: 0
   m_Name: CombatManager
   m_TagString: Untagged
@@ -1470,7 +1473,6 @@ MonoBehaviour:
   awaitingRevealConfirm: 1
   cardNum: 0
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
-  infoDisplayer: {fileID: 1151980346}
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 1
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
@@ -1511,6 +1513,18 @@ MonoBehaviour:
   revealZoneDisplay: {fileID: 434224258}
   combatTipsDisplay: {fileID: 1501583256}
   effectResultDisplay: {fileID: 1860532761}
+--- !u!114 &1151980347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151980343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec2fe90f3b5846919602128666ca8bb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1174098152
 GameObject:
   m_ObjectHideFlags: 0
