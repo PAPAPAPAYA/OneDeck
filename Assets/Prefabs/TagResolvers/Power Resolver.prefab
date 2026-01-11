@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 4973421849516712604}
   - component: {fileID: 5979311566126577595}
   - component: {fileID: 6959311942194247450}
-  - component: {fileID: 3122638656770756891}
+  - component: {fileID: 8594121856820920651}
   m_Layer: 0
-  m_Name: HeartChange Resolver
+  m_Name: Power Resolver
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -60,9 +60,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: heart change resolver
+  cardName: 
   cardID: 0
-  cardDesc: heart change tag resolver
+  cardDesc: power tag resolver
   takeUpSpace: 0
   price: 0
   myStatusRef: {fileID: 0}
@@ -80,7 +80,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  event: {fileID: 11400000, guid: 21baa6d6a7f3cc441b4afe20c83a5d8e, type: 2}
+  event: {fileID: 11400000, guid: 7d765be599f91ab45a8ea86a66b7b9d1, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:
@@ -109,7 +109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: change card owner
+  effectName: resolve power tag
   effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
@@ -117,19 +117,20 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3122638656770756891}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ChangeCardTarget, Assembly-CSharp
-        m_MethodName: ChangeCardTargetPlayerStatus
-        m_Mode: 1
+      - m_Target: {fileID: 8594121856820920651}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ChangeHpAlterAmountEffect,
+          Assembly-CSharp
+        m_MethodName: ChangeHpAmountAlter
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: -1
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &3122638656770756891
+--- !u!114 &8594121856820920651
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -138,7 +139,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6584689119450628697}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ab493c48c6847f4918424924e2beb8d, type: 3}
+  m_Script: {fileID: 11500000, guid: 5fca16c9fbb8445796d6b3a58f8b6cf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}

@@ -24,6 +24,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 	#endregion
 
+	[Tooltip("the string SO that combat info displayer use to display effect result")]
 	public StringSO effectResultString;
 	[Header("Basic Info")]
 	[Tooltip("don't assign identical effect name to effects in the same card")]
@@ -33,6 +34,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 	[Header("Cost and Effect Events")]
 	public UnityEvent checkCostEvent;
+	[Tooltip("assign effect component's function")]
 	public UnityEvent effectEvent;
 
 	private int _costNotMetFlag = 0;

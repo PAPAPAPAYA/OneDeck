@@ -62,7 +62,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: ' ''s [INFECTED] tag'
   cardID: 0
-  cardDesc: 
+  cardDesc: infected tag resolver
   takeUpSpace: 0
   price: 0
   myStatusRef: {fileID: 0}
@@ -109,7 +109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: 
+  effectName: deal infected dmg
   effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
@@ -119,12 +119,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7431176955717029217}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: AlterMyHP
+        m_MethodName: DecreaseMyHp
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: -1
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -142,3 +142,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  dmgAmountAlter: 0
+  healAmountAlter: 0

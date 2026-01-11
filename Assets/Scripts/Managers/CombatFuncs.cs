@@ -48,5 +48,26 @@ namespace DefaultNamespace.Managers
 			_combatManager.combinedDeckZone.Add(cardInstance); // add the new card to combined deck
 			_combatManager.UpdateTrackingVariables();
 		}
+
+		public void AddCard_TargetSpecific(GameObject cardToAdd, PlayerStatusSO targetPlayerStatus)
+		{
+			if (targetPlayerStatus == _combatManager.ownerPlayerStatusRef) // card belongs to player
+			{
+				var cardInst = Instantiate(cardToAdd, _combatManager.playerDeckParent.transform);
+				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.ownerPlayerStatusRef;
+				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.enemyPlayerStatusRef;
+				_combatManager.combinedDeckZone.Add(cardInst); // add the new card to combined deck
+				_combatManager.UpdateTrackingVariables();
+			}
+			else // card belongs to enemy
+			{
+				var cardInst = Instantiate(cardToAdd, _combatManager.enemyDeckParent.transform);
+				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.enemyPlayerStatusRef;
+				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.ownerPlayerStatusRef;
+				_combatManager.combinedDeckZone.Add(cardInst); // add the new card to combined deck
+				_combatManager.UpdateTrackingVariables();
+			}
+			
+		}
 	}
 }

@@ -6,7 +6,9 @@ namespace DefaultNamespace
 {
 	public class GameEventListener : MonoBehaviour
 	{
+		[Tooltip("register to which game event SO?")]
 		public GameEvent @event;
+		[Tooltip("assign a child effect object")]
 		public UnityEvent response;
 
 		private void OnEnable()

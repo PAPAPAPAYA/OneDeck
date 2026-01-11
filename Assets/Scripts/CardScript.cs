@@ -7,6 +7,7 @@ public class CardScript : MonoBehaviour
 {
     [Header("Card Info")]
     public string cardName;
+    [HideInInspector]
     public int cardID;
     [TextArea]
     public string cardDesc;
@@ -19,7 +20,7 @@ public class CardScript : MonoBehaviour
     [Header("Tags")]
     public List<EnumStorage.Tag> myTags;
 
-    private void Start()
+    private void OnEnable()
     {
         cardID = CardIDRetriever.Me.RetrieveCardID();
     }
