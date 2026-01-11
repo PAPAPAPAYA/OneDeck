@@ -21,7 +21,8 @@ public class EnumStorage : MonoBehaviour
     {
         None,
         Infected,
-        Mana
+        Mana,
+        HeartChanged
     }
 
     public static bool DoesListContainAmountOfTag(List<Tag> listToCheck, int amount, Tag tagToCheck)

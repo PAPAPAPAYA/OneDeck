@@ -1,10 +1,10 @@
 // devlog
 
-// quirks
-	// deck and grave effects don't show fail message, would be too much info? or too fewer surprises?
-	// tag damage counts as tag owner card's damage
-	// simplified hp event to [when session owner takes dmg] and [when enemy takes dmg]
-	// after changing the combined deck, shuffle
+//! quirks
+	//! deck and grave effects don't show fail message, would be too much info? or too fewer surprises?
+	//! tag damage counts as tag owner card's damage
+	//! simplified hp event to [when session owner takes dmg] and [when enemy takes dmg]
+	//! after changing the combined deck, shuffle
 
 // design
 	// infection
@@ -90,13 +90,16 @@
 	// effects
 		//// generate: make temp cards that only last 1 combat phase
 		//// undertake: send cards straight to grave
-		// heart-change: change cards owner that only last 1 combat phase
-		// reborn: put cards in grave back to deck
+		//// heart-change: change cards owner that only last 1 combat phase
+			//// problem is, best strat is only having heart-change
+			//// need to give heart-change cost so that the player needs other cards for it to work
+		//// reborn: put cards in grave back to deck
 	        //// alter hp
 	        //// alter mp
 	        //// show tag effects
 		// tags
 			// power: dmg increase
+			//// heart-changed: so that it can be tracked
 			//// change mana to tag
 		                //// give mana tags
 		                //// check mana tags

@@ -11,7 +11,7 @@ namespace DefaultNamespace.Effects
         [Tooltip("if this is none, then won't run give tag")]
         public EnumStorage.Tag tagToGive;
         
-        public void GiveTagToRandom(int amount)
+        public virtual void GiveTagToRandom(int amount)
         {
             if (tagToGive == EnumStorage.Tag.None) return;
             var cardsToGiveTag = new List<GameObject>();

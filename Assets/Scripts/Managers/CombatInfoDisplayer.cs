@@ -44,11 +44,14 @@ public class CombatInfoDisplayer : MonoBehaviour
 	private string ProcessTagInfo(CardScript card)
 	{
 		var tagInfo = "";
+		
+		// show infected tag
 		if (card.myTags.Contains(EnumStorage.Tag.Infected))
 		{
 			tagInfo += "[Infected]";
 		}
 
+		// show mana tag
 		if (card.myTags.Contains(EnumStorage.Tag.Mana))
 		{
 			var manaAmount = 0;
@@ -61,6 +64,21 @@ public class CombatInfoDisplayer : MonoBehaviour
 			}
 
 			tagInfo += "[" + manaAmount + " Mana]";
+		}
+
+		// show heart changed tag
+		if (card.myTags.Contains(EnumStorage.Tag.HeartChanged))
+		{
+			var heartChangeAmount = 0;
+			foreach (var myTag in card.myTags)
+			{
+				if (myTag == EnumStorage.Tag.Mana)
+				{
+					heartChangeAmount++;
+				}
+			}
+
+			tagInfo += "[" + heartChangeAmount + " Heart-Changed]";
 		}
 
 		if (card.myTags.Count == 0)
