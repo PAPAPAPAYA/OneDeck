@@ -74,7 +74,7 @@
 
 // battle: text demo
 	// enemy
-		// record decks to local
+		//todo record decks to local
 		// read decks from local
 		// populate enemy decks
 	//// check cost
