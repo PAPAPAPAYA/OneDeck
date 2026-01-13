@@ -15,13 +15,13 @@ namespace TestWriteRead
 			_savePath =  Application.persistentDataPath + "/deckdata.json";
 		}
 
-		public void SaveDeck(DeckData data)
+		private void SaveDeck(DeckData data)
 		{
 			var json = JsonUtility.ToJson(data, true);
 			File.WriteAllText(_savePath, json);
 		}
 
-		public DeckData LoadDeck()
+		private DeckData LoadDeck()
 		{
 			if (File.Exists(_savePath))
 			{
@@ -31,7 +31,7 @@ namespace TestWriteRead
 			return null;
 		}
 
-		public DeckData MakeDeckData(DeckSO deckToSave)
+		private DeckData MakeDeckData(DeckSO deckToSave)
 		{
 			var deckDataToSave = new DeckData
 			{
@@ -50,7 +50,7 @@ namespace TestWriteRead
 
 			if (Input.GetKeyDown(KeyCode.L))
 			{
-				DeckData loadedDeck = LoadDeck();
+				var loadedDeck = LoadDeck();
 				if (loadedDeck != null)
 				{
 					foreach (var card in loadedDeck.deckSaved.deck)

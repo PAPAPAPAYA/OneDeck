@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TestWriteRead
@@ -6,5 +7,6 @@ namespace TestWriteRead
 	public class DeckData
 	{
 		public DeckSO deckSaved;
+		// 
 	}
 }

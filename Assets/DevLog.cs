@@ -74,7 +74,10 @@
 
 // battle: text demo
 	// enemy
-		//todo record decks to local
+		//todo deck saver
+			// save
+				// save multiple decks
+				// with according win/loss?
 		// read decks from local
 		// populate enemy decks
 	//// check cost
