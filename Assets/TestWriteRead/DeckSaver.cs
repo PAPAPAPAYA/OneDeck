@@ -1,13 +1,23 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using NUnit.Framework;
 using UnityEngine;
 
+// implement func to capture the current deck and win & heart amount, add it to the list
+// read json and add to list
+// so that the list contains all the decks saved before this game
+// save the list to json
 namespace TestWriteRead
 {
 	public class DeckSaver : MonoBehaviour
 	{
-		public DeckSO playerDeck;
+		[Header("deck info refs")]
+		public DeckSO playerDeck; // the deckSO to add to struct to save
+		public IntSO winAmount; // win amount to add to struct to save
+		public IntSO heartLeft; // heart left to add to struct to save
+		private List<DeckDataStruct> _deckToSave;
 		private string _savePath;
 
 		private void Awake()
@@ -21,6 +31,12 @@ namespace TestWriteRead
 			File.WriteAllText(_savePath, json);
 		}
 
+		// delete deck files
+		private void WipeDeckSaves()
+		{
+			File.Delete(_savePath);
+		}
+
 		private DeckData LoadDeck()
 		{
 			if (File.Exists(_savePath))
@@ -31,11 +47,11 @@ namespace TestWriteRead
 			return null;
 		}
 
-		private DeckData MakeDeckData(DeckSO deckToSave)
+		private DeckData MakeDeckData()
 		{
 			var deckDataToSave = new DeckData
 			{
-				deckSaved = deckToSave
+				savedDecks = _deckToSave
 			};
 			return deckDataToSave;
 		}
@@ -45,7 +61,7 @@ namespace TestWriteRead
 			// testing only
 			if (Input.GetKeyDown(KeyCode.S))
 			{
-				SaveDeck(MakeDeckData(playerDeck));
+				SaveDeck(MakeDeckData());
 			}
 
 			if (Input.GetKeyDown(KeyCode.L))
@@ -53,10 +69,10 @@ namespace TestWriteRead
 				var loadedDeck = LoadDeck();
 				if (loadedDeck != null)
 				{
-					foreach (var card in loadedDeck.deckSaved.deck)
-					{
-						print(card.name+"\n");
-					}
+					// foreach (var card in loadedDeck.deckSaved.deck)
+					// {
+					// 	print(card.name+"\n");
+					// }
 				}
 			}
 		}

@@ -6,7 +6,8 @@ namespace TestWriteRead
 	[System.Serializable]
 	public class DeckData
 	{
-		public DeckSO deckSaved;
-		// 
+		//public DeckSO deckSaved;
+		// deck data struct
+		public List<DeckDataStruct> savedDecks;
 	}
 }
