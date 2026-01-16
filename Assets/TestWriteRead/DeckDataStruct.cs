@@ -1,14 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TestWriteRead
 {
+	[System.Serializable]
 	public struct DeckDataStruct
 	{
-		public DeckSO theDeck;
+		public List<GameObject> theDeck;
 		public int winAmount;
 		public int heartLeft;
 
-		public DeckDataStruct(DeckSO theDeck, int winAmount, int heartLeft)
+		public DeckDataStruct(List<GameObject> theDeck, int winAmount, int heartLeft)
 		{
 			this.theDeck = theDeck;
 			this.winAmount = winAmount;

@@ -6,20 +6,20 @@ using System.Net.WebSockets;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class UtilityFuncManagerScript : MonoBehaviour
+public static class UtilityFuncManagerScript
 {
 	#region SINGLETON
 
-	public static UtilityFuncManagerScript me;
-
-	private void Awake()
-	{
-		me = this;
-	}
+	// public static UtilityFuncManagerScript me;
+	//
+	// private void Awake()
+	// {
+	// 	me = this;
+	// }
 
 	#endregion
 
-	public float ConvertV2ToAngle(Vector2 dir)
+	public static float ConvertV2ToAngle(Vector2 dir)
 	{
 		return Mathf.Atan2(dir.x, dir.y) * (180 / Mathf.PI);
 	}
@@ -42,8 +42,18 @@ public class UtilityFuncManagerScript : MonoBehaviour
 		}
 	}
 
+	// copy generic type list
+	public static void CopyList<T>(List<T> from, List<T> to, bool clearTargetList)
+	{
+		if (clearTargetList) to.Clear();
+		foreach (var gO in from)
+		{
+			to.Add(gO);
+		}
+	}
+
 	// get a random point on a circle
-	public Vector3 RandomPointOnUnitCircle(float radius)
+	public static Vector3 RandomPointOnUnitCircle(float radius)
 	{
 		float angle = Random.Range(0f, Mathf.PI * 2);
 		float x = Mathf.Sin(angle) * radius;
