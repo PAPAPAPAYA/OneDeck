@@ -5,6 +5,8 @@
 	//! tag damage counts as tag owner card's damage
 	//! simplified hp event to [when session owner takes dmg] and [when enemy takes dmg]
 	//! after changing the combined deck, shuffle
+	//! currently we only use round num to match decks
+	//! 43514 is [Meditate], might need to keep an eye if the instance id changes, if it changes, need to find a way so that we keep what we saved
 
 // design
 	// infection
@@ -73,14 +75,14 @@
 	
 
 // battle: text demo
-	// enemy
-		//todo deck saver
-			// save
-				// clean up
+	//// enemy
+		////deck saver
+			//// save
+				//// clean up
 				//// save multiple decks
 				//// with according win/loss?
-		// read decks from local
-		// populate enemy decks
+		//// read decks from local
+		//// populate enemy deck
 	//// check cost
 		//// check multiple costs
 	//// draw situation

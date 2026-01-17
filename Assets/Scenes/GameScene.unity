@@ -2063,6 +2063,8 @@ MonoBehaviour:
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   winAmount: {fileID: 11400000, guid: 0c5b8ad6fd36260419f71a0b293f11ba, type: 2}
   heartLeft: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
+  sessionNumber: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
+  enemyDeckToPopulate: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
 --- !u!4 &1855501822
 Transform:
   m_ObjectHideFlags: 0
@@ -2647,6 +2649,30 @@ MonoBehaviour:
       - m_Target: {fileID: 1151980344}
         m_TargetAssemblyTypeName: CombatManager, Assembly-CSharp
         m_MethodName: EnterCombat
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1855501821}
+        m_TargetAssemblyTypeName: TestWriteRead.DeckSaver, Assembly-CSharp
+        m_MethodName: LoadJsonToEnemyDeckSo
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1855501821}
+        m_TargetAssemblyTypeName: TestWriteRead.DeckSaver, Assembly-CSharp
+        m_MethodName: SavePlayerDeckToJson
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

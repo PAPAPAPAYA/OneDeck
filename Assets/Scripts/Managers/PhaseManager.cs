@@ -71,13 +71,13 @@ public class PhaseManager : MonoBehaviour
 
 	private void Update()
 	{
-		if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop)
+		if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop) // if in shop phase
 		{
 			if (!Input.GetKeyDown(KeyCode.Space)) return;
 			ExitingShopPhase();
 			EnteringCombatPhase();
 		}
-		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat)
+		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat) // if in combat phase
 		{
 			if (!combatFinished.value) return;
 			if (playerStatusRef.hp <= 0)
@@ -99,14 +99,12 @@ public class PhaseManager : MonoBehaviour
 				print("you win");
 				_resultText = "WIN";
 				wins.value++;
-				// ExitingCombatPhase();
-				// EnteringResultPhase();
 			}
 			sessionNum.value++;
 			ExitingCombatPhase();
 			EnteringResultPhase();
 		}
-		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Result)
+		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Result) // if in result phase
 		{
 			ShowResult();
 			if (!Input.GetKeyDown(KeyCode.Space)) return;
@@ -125,10 +123,12 @@ public class PhaseManager : MonoBehaviour
 	}
 
 	#region entering and exiting funcs
+	#region combat phase
 	private void EnteringCombatPhase()
 	{
 		print("entering combat phase");
 		InvokeEnterCombatPhaseEvent();
+		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;
 	}
 
@@ -136,10 +136,13 @@ public class PhaseManager : MonoBehaviour
 	{
 		InvokeExitCombatPhaseEvent();
 	}
-
+	#endregion
+	#region result phase
 	private void EnteringResultPhase()
 	{
 		InvokeEnterResultPhaseEvent();
+		
+		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Result;
 	}
 
@@ -148,12 +151,15 @@ public class PhaseManager : MonoBehaviour
 		InvokeExitResultPhaseEvent();
 		resultInfoDisplay.text = "";
 	}
-
+	#endregion
+	#region shop phase
 	private void EnteringShopPhase()
 	{
 		playerStatusRef.Reset();
 		enemyStatusRef.Reset();
 		InvokeEnterShopPhaseEvent();
+		
+		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Shop;
 	}
 
@@ -162,5 +168,6 @@ public class PhaseManager : MonoBehaviour
 		print("exiting shop");
 		InvokeExitShopPhaseEvent();
 	}
+	#endregion
 	#endregion
 }
