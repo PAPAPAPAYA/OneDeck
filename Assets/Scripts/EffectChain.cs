@@ -8,5 +8,9 @@ namespace DefaultNamespace
 		public int sessionID;
 		public int chainID;
 		public List<string> processedEffectIDs = new List<string>();
+		
+		// WIP
+		public GameObject cardObject;
+		public GameObject effectObject;
 	}
 }

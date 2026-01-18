@@ -46,8 +46,11 @@ public class CostNEffectContainer : MonoBehaviour
 		checkCostEvent?.Invoke();
 
 		// invoke effect
+		string effectString = "card " + _myCardScript.cardID + ": " + effectName;
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return
-		if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
+		//if (EffectChainManager.Me.CheckEffectAndRecord("card " + _myCardScript.cardID + ": " + effectName)) // check if effect already in chain
+		// todo: if you pass in card object and effect object everytime here, effect string will never match, thus stack overflow guaranteed
+		if (EffectChainManager.Me.CheckWipEffectAndRecord(effectString, _myCardScript.gameObject, gameObject))
 		{
 			effectEvent?.Invoke(); // invoke effects
 		}

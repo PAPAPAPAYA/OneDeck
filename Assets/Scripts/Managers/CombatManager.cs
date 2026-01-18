@@ -205,7 +205,7 @@ public class CombatManager : MonoBehaviour
 				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				roundNumRef.value++;
 				_infoDisplayer.ClearInfo();
-				EffectChainManager.Me.CloseEffectChain(); // close current effect chain
+				//EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 			}
 			else
@@ -213,6 +213,7 @@ public class CombatManager : MonoBehaviour
 				_infoDisplayer.combatTipsDisplay.text = "press space to reveal";
 				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				awaitingRevealConfirm = false;
+				EffectChainManager.Me.CloseWIPChain();
 				_infoDisplayer.effectResultString.value = "";
 			}
 		}
@@ -229,6 +230,7 @@ public class CombatManager : MonoBehaviour
 			cardNum--;
 			GameEventStorage.me.onAnyCardRevealed?.Raise(); // timepoint
 			GameEventStorage.me.onMeRevealed?.RaiseSpecific(cardRevealed.gameObject); // timepoint
+			
 			graveZone.Add(revealZone);
 			GameEventStorage.me.onAnyCardSentToGrave?.Raise(); // timepoint
 			GameEventStorage.me.onMeSentToGrave?.RaiseSpecific(cardRevealed.gameObject); // timepoint

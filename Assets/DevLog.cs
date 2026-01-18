@@ -164,6 +164,8 @@
 					//? may need to check all situations
 						//// effect activating itself
 						//todo same card, multiple loops
+							//// made two test cards to re-create bug
+							// 
 						//? multiple cards loop, activating each other
 						//? same card, multiple same effects
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver

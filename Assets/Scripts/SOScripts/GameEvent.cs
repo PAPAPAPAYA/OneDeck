@@ -36,4 +36,9 @@ public class GameEvent : ScriptableObject
 	{
 		_listeners.Remove(listener);
 	}
+	
+	public int ReturnAmountOfListeners()
+	{
+		return _listeners.Count;
+	}
 }
