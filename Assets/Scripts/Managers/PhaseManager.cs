@@ -1,4 +1,5 @@
 using System;
+using DefaultNamespace.Managers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -135,6 +136,7 @@ public class PhaseManager : MonoBehaviour
 	private void ExitingCombatPhase()
 	{
 		InvokeExitCombatPhaseEvent();
+		CardIDRetriever.Me.ResetCardID();
 	}
 	#endregion
 	#region result phase

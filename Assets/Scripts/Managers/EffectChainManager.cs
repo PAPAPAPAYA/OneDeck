@@ -47,6 +47,7 @@ public class EffectChainManager : MonoBehaviour
 		var currentEffectChainScript = currentEffectChain.GetComponent<EffectChain>();
 		if (currentEffectChainScript.processedEffectIDs.Contains(effectID))
 		{
+			print("check effect failed: clear effect chain");
 			CloseEffectChain();
 			effectCanBeProcessed = false;
 		}

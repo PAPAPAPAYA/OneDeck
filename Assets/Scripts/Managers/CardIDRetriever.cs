@@ -20,5 +20,10 @@ namespace DefaultNamespace.Managers
 			cardIDTracker++;
 			return cardIDTracker;
 		}
+
+		public void ResetCardID()
+		{
+			cardIDTracker = 0;
+		}
 	}
 }

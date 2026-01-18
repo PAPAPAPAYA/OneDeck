@@ -44,6 +44,7 @@ namespace DefaultNamespace.Effects
                 var tagResolver = Instantiate(myTagResolver, targetCardScript.transform);
                 GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
             }
+            CombatInfoDisplayer.me.RefreshDeckInfo();
         }
     }
 }

@@ -33,6 +33,8 @@ public class CombatManager : MonoBehaviour
 	public DeckSO enemyDeck;
 	public GameObject playerDeckParent;
 	public GameObject enemyDeckParent;
+	public List<GameObject> playerCardInstances = new List<GameObject>();
+	public List<GameObject> enemyCardInstances =  new List<GameObject>();
 
 	[Header("ZONES")]
 	public List<GameObject> combinedDeckZone;
@@ -87,6 +89,7 @@ public class CombatManager : MonoBehaviour
 		roundNumRef.value = 0;
 		cardNum = 0;
 		deckSize = 0;
+		print("exit combat: clear effect chain");
 		EffectChainManager.Me.CloseEffectChain();
 		EffectChainManager.Me.chainNumber = 0;
 	}
@@ -141,6 +144,7 @@ public class CombatManager : MonoBehaviour
 		}
 
 		deckSize = combinedDeckZone.Count;
+		_infoDisplayer.RefreshDeckInfo();
 		currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 	}
 
@@ -171,7 +175,7 @@ public class CombatManager : MonoBehaviour
 	public void Shuffle()
 	{
 		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone); // shuffle deck
-		EffectChainManager.Me.CloseEffectChain(); // close current effect chain
+		//EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
 		UpdateTrackingVariables();
 
@@ -201,6 +205,7 @@ public class CombatManager : MonoBehaviour
 				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				roundNumRef.value++;
 				_infoDisplayer.ClearInfo();
+				EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 			}
 			else
@@ -229,6 +234,7 @@ public class CombatManager : MonoBehaviour
 			GameEventStorage.me.onMeSentToGrave?.RaiseSpecific(cardRevealed.gameObject); // timepoint
 			revealZone = null;
 			awaitingRevealConfirm = true;
+			_infoDisplayer.RefreshDeckInfo();
 		}
 	}
 }

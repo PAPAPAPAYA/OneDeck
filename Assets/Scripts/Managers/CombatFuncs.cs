@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DefaultNamespace.Managers
@@ -68,6 +69,26 @@ namespace DefaultNamespace.Managers
 				_combatManager.UpdateTrackingVariables();
 			}
 			
+		}
+		
+		public List<CardScript> ReturnPlayerCardScripts()
+		{
+			var returnedCardInstances = new List<CardScript>();
+			foreach (var cardInst in _combatManager.playerDeckParent.GetComponentsInChildren<CardScript>())
+			{
+				returnedCardInstances.Add(cardInst);
+			}
+			return returnedCardInstances;
+		}
+
+		public List<CardScript> ReturnEnemyCardScripts()
+		{
+			var returnedCardInstances = new List<CardScript>();
+			foreach (var cardInst in _combatManager.enemyDeckParent.GetComponentsInChildren<CardScript>())
+			{
+				returnedCardInstances.Add(cardInst);
+			}
+			return returnedCardInstances;
 		}
 	}
 }

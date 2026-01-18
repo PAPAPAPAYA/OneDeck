@@ -1,4 +1,5 @@
 using System;
+using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
 using TMPro;
@@ -6,6 +7,15 @@ using TMPro;
 // a required component of combat manager, responsible for temporarily show combat info
 public class CombatInfoDisplayer : MonoBehaviour
 {
+	#region Singleton
+	public static CombatInfoDisplayer me;
+
+	private void Awake()
+	{
+		me = this;
+	}
+	#endregion
+	
 	public StringSO effectResultString;
 	public GamePhaseSO gamePhase;
 	public TextMeshProUGUI playerStatusDisplay;
@@ -32,6 +42,8 @@ public class CombatInfoDisplayer : MonoBehaviour
 		combatTipsDisplay.text = "";
 		effectResultString.value = "";
 		effectResultDisplay.text = "";
+		playerDeckDisplay.text = "";
+		enemyDeckDisplay.text = "";
 	}
 
 	public void ShowCardInfo(CardScript cardRevealed, int deckSize, int graveSize, bool ownersCard)
@@ -47,7 +59,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 	private string ProcessTagInfo(CardScript card)
 	{
 		var tagInfo = "";
-		
+
 		// show infected tag
 		if (card.myTags.Contains(EnumStorage.Tag.Infected))
 		{
@@ -83,7 +95,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 
 			tagInfo += "[" + heartChangeAmount + " Heart-Changed]";
 		}
-		
+
 		// show power tag
 		if (card.myTags.Contains(EnumStorage.Tag.Power))
 		{
@@ -103,6 +115,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 		{
 			tagInfo += " ";
 		}
+
 		return tagInfo;
 	}
 
@@ -112,5 +125,34 @@ public class CombatInfoDisplayer : MonoBehaviour
 			"Your HP: " + CombatManager.Me.ownerPlayerStatusRef.hp + "\n";
 		enemyStatusDisplay.text =
 			"Their HP: " + CombatManager.Me.enemyPlayerStatusRef.hp + "\n";
+	}
+
+	public void RefreshDeckInfo()
+	{
+		var playerDeckString = "";
+		foreach (var cardScript in CombatFuncs.me.ReturnPlayerCardScripts())
+		{
+			var playerCardString = ProcessTagInfo(cardScript) + cardScript.cardName + "\n";
+			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
+			{
+				playerCardString = "<color=grey>"+ProcessTagInfo(cardScript) + cardScript.cardName + "</color>\n";
+			}
+			playerDeckString += playerCardString;
+		}
+
+		playerDeckDisplay.text = playerDeckString;
+
+		var enemyDeckString = "";
+		foreach (var cardScript in CombatFuncs.me.ReturnEnemyCardScripts())
+		{
+			var enemyCardString = ProcessTagInfo(cardScript) + cardScript.cardName + "\n";
+			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
+			{
+				enemyCardString = "<color=grey>"+ProcessTagInfo(cardScript) + cardScript.cardName + "</color>\n";
+			}
+			enemyDeckString += enemyCardString;
+		}
+
+		enemyDeckDisplay.text = enemyDeckString;
 	}
 }

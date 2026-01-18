@@ -70,6 +70,7 @@
 		//// deck expansion: increase deck size by 1
 		//// increase max hp
 	// power
+		// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
 		//// power up: power to 3 cards
 	// curse
 		//// slippery floor: deal 1 dmg to self
@@ -162,6 +163,7 @@
 					//// need to close chain when 1 round is finished
 					//? may need to check all situations
 						//// effect activating itself
+						//todo same card, multiple loops
 						//? multiple cards loop, activating each other
 						//? same card, multiple same effects
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver
