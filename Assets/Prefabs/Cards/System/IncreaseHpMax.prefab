@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &7538812023556790325
+--- !u!1 &3931237291721422634
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,23 +8,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4188612179286784546}
-  - component: {fileID: 5915337404688717014}
-  - component: {fileID: 4706811165771425617}
+  - component: {fileID: 3112100143222158516}
+  - component: {fileID: 7068858253989052649}
+  - component: {fileID: 7009360386835812218}
   m_Layer: 0
-  m_Name: send cards to grave
+  m_Name: Increase 3 hp max
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4188612179286784546
+--- !u!4 &3112100143222158516
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
+  m_GameObject: {fileID: 3931237291721422634}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -33,20 +33,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3828591620990538636}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5915337404688717014
+--- !u!114 &7068858253989052649
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
+  m_GameObject: {fileID: 3931237291721422634}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: send 3 cards to grave
+  effectName: increase hp max 3
   effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
@@ -54,9 +54,9 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4706811165771425617}
-        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
-        m_MethodName: SendRandomCardsToGrave
+      - m_Target: {fileID: 7009360386835812218}
+        m_TargetAssemblyTypeName: HpMaxAlterEffect, Assembly-CSharp
+        m_MethodName: IncreaseMyHpMax
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -66,16 +66,16 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &4706811165771425617
+--- !u!114 &7009360386835812218
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
+  m_GameObject: {fileID: 3931237291721422634}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eefb24a8c10cb53439f7e7db22e3daec, type: 3}
+  m_Script: {fileID: 11500000, guid: 89e6220fd59c2ad448091db7d38db1da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
@@ -89,9 +89,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3828591620990538636}
   - component: {fileID: 7915703419504864441}
-  - component: {fileID: -4728943355192809547}
+  - component: {fileID: 7982320352536632933}
   m_Layer: 0
-  m_Name: Undertake 1
+  m_Name: IncreaseHpMax
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -110,7 +110,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4188612179286784546}
+  - {fileID: 3112100143222158516}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -125,15 +125,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Undertake
+  cardName: Increase Hp Max by 3
   cardID: 0
-  cardDesc: send 3 random cards to grave
-  takeUpSpace: 1
-  price: 4
+  cardDesc: 
+  takeUpSpace: 0
+  price: 6
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myTags: 
---- !u!114 &-4728943355192809547
+--- !u!114 &7982320352536632933
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -145,11 +145,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
+  event: {fileID: 11400000, guid: 525df2dc84c6aa640bedec4330fc7491, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5915337404688717014}
+      - m_Target: {fileID: 7068858253989052649}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent
         m_Mode: 1

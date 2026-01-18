@@ -14,6 +14,9 @@ public class CombatInfoDisplayer : MonoBehaviour
 	public TextMeshProUGUI combatTipsDisplay;
 	public TextMeshProUGUI effectResultDisplay;
 
+	public TextMeshProUGUI playerDeckDisplay;
+	public TextMeshProUGUI enemyDeckDisplay;
+
 	private void Update()
 	{
 		if (gamePhase.Value() != EnumStorage.GamePhase.Combat) return;

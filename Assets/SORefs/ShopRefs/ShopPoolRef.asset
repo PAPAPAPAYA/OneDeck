@@ -13,14 +13,7 @@ MonoBehaviour:
   m_Name: ShopPoolRef
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: fec9e975d6585e34d880af5eaea72faa, type: 3}
-  - {fileID: 8718476725744197808, guid: f4dc70d229703684da4571f876fb9230, type: 3}
-  - {fileID: 8718476725744197808, guid: 9ddea3de077c20b458eb06727cb46828, type: 3}
-  - {fileID: 8718476725744197808, guid: 0a6dc46228e026d419816e13b260f449, type: 3}
-  - {fileID: 8718476725744197808, guid: 9ffcac76c3d928f41962f81443a2f641, type: 3}
-  - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
-  - {fileID: 8718476725744197808, guid: 40e0deec71ff8fd4886778e9e7f0719a, type: 3}
-  - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
+  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: shop pool

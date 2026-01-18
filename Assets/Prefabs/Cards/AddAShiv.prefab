@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 2535055919507757290}
   m_Layer: 0
-  m_Name: Add a shiv
+  m_Name: Add 2 shiv
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 0}
-  effectName: add a shiv
+  effectName: add 2 shiv
   effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
@@ -54,6 +54,18 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 2535055919507757290}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
+        m_MethodName: AddCardToMe
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 4544861942980061181, guid: c8f8248c3f0c0a7498f127b644bbd791, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 2535055919507757290}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
         m_MethodName: AddCardToMe
@@ -125,9 +137,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Add Shiv
+  cardName: Add 2 Shiv
   cardID: 0
-  cardDesc: add a temporary [Shiv] to deck
+  cardDesc: add 2 temporary [Shiv] to deck
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}

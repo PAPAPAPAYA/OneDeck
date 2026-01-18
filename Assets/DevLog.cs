@@ -68,6 +68,7 @@
 	// system
 		//// fatigue: deal 1 dmg to both players
 		//// deck expansion: increase deck size by 1
+		//// increase max hp
 	// power
 		//// power up: power to 3 cards
 	// curse
