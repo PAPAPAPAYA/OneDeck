@@ -109,7 +109,6 @@ public class PhaseManager : MonoBehaviour
 		{
 			ShowResult();
 			if (!Input.GetKeyDown(KeyCode.Space)) return;
-			print("entering shop");
 			ExitingResultPhase();
 			EnteringShopPhase();
 		}
@@ -127,7 +126,6 @@ public class PhaseManager : MonoBehaviour
 	#region combat phase
 	private void EnteringCombatPhase()
 	{
-		print("entering combat phase");
 		InvokeEnterCombatPhaseEvent();
 		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;
@@ -167,7 +165,6 @@ public class PhaseManager : MonoBehaviour
 
 	private void ExitingShopPhase()
 	{
-		print("exiting shop");
 		InvokeExitShopPhaseEvent();
 	}
 	#endregion

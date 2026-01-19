@@ -7,6 +7,7 @@
 	//! after changing the combined deck, shuffle
 	//! currently we only use round num to match decks
 	//! 43514 is [Meditate], might need to keep an eye if the instance id changes, if it changes, need to find a way so that we keep what we saved
+	//! chains are closed when: [1] same card, different effect is trying to get invoked; [2] waiting input confirm; [3] same effect is trying to get invoked in the same chain
 
 // design
 	// infection
@@ -159,15 +160,19 @@
 			//// after shuffling
 			//// need test: linger effects straight on card
 			//// avoid looping
-				//? effect chain
+				// effect chain
 					//// need to close chain when 1 round is finished
-					//? may need to check all situations
+					//// same card, multiple loops
+						//// made two test cards to re-create bug
+						//// parent and sub chains
+						//// mark chains closed
+						//// check if chain closed
+						//// check if effect already recorded in chain
+						//// prevent effect from invoking self
+					//todo need to check all situations
 						//// effect activating itself
-						//todo same card, multiple loops
-							//// made two test cards to re-create bug
-							// 
-						//? multiple cards loop, activating each other
-						//? same card, multiple same effects
+						// multiple cards loop, activating each other
+						// same card, multiple same effects
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver
 	//// end combat phase when one player's hp reached zero
 	//// overtime

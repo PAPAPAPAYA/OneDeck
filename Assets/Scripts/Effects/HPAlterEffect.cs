@@ -48,13 +48,13 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy dealt dmg to player
 		{
-			GameEventStorage.me.onPlayerTookDmg?.Raise(); // timepoint
 			effectResultString.value += "// [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to You\n";
+			GameEventStorage.me.onPlayerTookDmg?.Raise(); // timepoint
 		}
 		else // player dealt dmg to enemy
 		{
-			GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
 			effectResultString.value += "// [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to Enemy\n";
+			GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
 		}
 	}
 
@@ -62,13 +62,13 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player dealt dmg to player
 		{
-			GameEventStorage.me.onPlayerTookDmg?.Raise(); // timepoint
 			effectResultString.value += "// [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to You\n";
+			GameEventStorage.me.onPlayerTookDmg?.Raise(); // timepoint
 		}
 		else // enemy dealt dmg to enemy
 		{
-			GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
 			effectResultString.value += "// [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to Enemy\n";
+			GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
 		}
 	}
 

@@ -12,5 +12,9 @@ namespace DefaultNamespace
 		// WIP
 		public GameObject cardObject;
 		public GameObject effectObject;
+		public List<GameObject> subChain;
+		public GameObject parentChain;
+		public string chainName;
+		public bool open = true;
 	}
 }

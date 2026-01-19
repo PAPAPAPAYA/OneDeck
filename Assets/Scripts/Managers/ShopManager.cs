@@ -148,7 +148,6 @@ public class ShopManager : MonoBehaviour
 
 	public void EnterShop()
 	{
-		print("entering shop");
 		// payday
 		purse.value += payCheck.value;
 		// process shop items and display

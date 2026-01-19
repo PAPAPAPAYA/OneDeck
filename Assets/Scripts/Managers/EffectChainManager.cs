@@ -18,47 +18,101 @@ public class EffectChainManager : MonoBehaviour
 	public IntSO sessionNumberRef;
 	public int chainNumber;
 	public GameObject currentEffectChain;
-	public GameObject wipChain;
+	public GameObject currentWipChain;
+	// tracks last effect inst
+	public GameObject lastEffectInst;
+	public List<GameObject> openedChains;
+	public List<GameObject> closedChains;
+	public int chainDepth = 0;
 
 	#region WIP
+	public void MakeANewWipChain(GameObject myCard, GameObject myEffectInst)
+	{
+		var newEffectChain = Instantiate(effectChainPrefab, transform);
+		var newChainScript = newEffectChain.GetComponent<EffectChain>();
+		newChainScript.sessionID = sessionNumberRef.value;
+		newChainScript.chainID = chainNumber;
+		newChainScript.cardObject = myCard;
+		newChainScript.effectObject = myEffectInst;
+		newChainScript.open = true;
+		if (currentWipChain != null) // there is already a chain before this one
+		{
+			if (IsSameChain(myCard, myEffectInst))
+			{
+				currentWipChain.GetComponent<EffectChain>().subChain.Add(newEffectChain);
+				newChainScript.parentChain = currentWipChain;
+				chainDepth++;
+				if (chainDepth > 99)
+				{
+					CloseChains();
+					Debug.LogError("ERROR: chain depth reached limit");
+				}
+			}
+			else
+			{
+				foreach (var chain in openedChains)
+				{
+					var openedChainScript = chain.GetComponent<EffectChain>();
+					if (newChainScript.cardObject.Equals(myCard) && !newChainScript.effectObject.Equals(myEffectInst)) // same card, different effect
+					{
+						openedChainScript.subChain.Add(newEffectChain);
+						newChainScript.parentChain = chain;
+					}
+				}
+				CloseChains();
+			}
+		}
+		currentWipChain = newEffectChain;
+		openedChains.Add(newEffectChain);
+	}
 
-	public void CloseWIPChain()
+	private bool IsSameChain(GameObject myCard, GameObject  myEffectInst)
 	{
-		wipChain = null;
-		chainNumber++;
+		var isSameChain = true;
+		foreach (var chain in openedChains)
+		{
+			var chainScript = chain.GetComponent<EffectChain>();
+			if (chainScript.cardObject.Equals(myCard) && !chainScript.effectObject.Equals(myEffectInst)) // same card, different effect
+			{
+				isSameChain = false;
+			}
+		}
+		return isSameChain;
 	}
 	
-	public void MakeANewWipChain(GameObject cardObj, GameObject effectObj)
+	public bool WipEffectCanBeInvoked(string effectID)
 	{
-		var effectChain = Instantiate(effectChainPrefab, transform);
-		var chainScript = effectChain.GetComponent<EffectChain>();
-		chainScript.sessionID = sessionNumberRef.value;
-		chainScript.chainID = chainNumber;
-		chainScript.cardObject = cardObj;
-		chainScript.effectObject = effectObj;
-		wipChain = effectChain;
+		// loop check (if same effect has already been invoked in the same chain)
+		var invokedTimes = 0;
+		foreach (var chain in openedChains)
+		{
+			var wipChainScript = chain.GetComponent<EffectChain>();
+			if (wipChainScript.processedEffectIDs.Contains(effectID))
+			{
+				invokedTimes++;
+			}
+		}
+		if (invokedTimes > 0) // same effect already invoked in opened chains
+		{
+			CloseChains();
+			return false;
+		}
+		currentWipChain.GetComponent<EffectChain>().processedEffectIDs.Add(effectID);
+		return true;
 	}
-	
-	public bool CheckWipEffectAndRecord(string effectID, GameObject cardObj, GameObject effectObj)
+
+	public void CloseChains()
 	{
-		if (!wipChain)
+		foreach (var chain in openedChains)
 		{
-			MakeANewWipChain(cardObj, effectObj);
+			chain.GetComponent<EffectChain>().open = false;
 		}
-		var effectCanBeProcessed = false;
-		var wipChainScript = wipChain.GetComponent<EffectChain>();
-		if (wipChainScript.processedEffectIDs.Contains(effectID) && wipChainScript.cardObject == cardObj && wipChainScript.effectObject == effectObj)
-		{
-			effectCanBeProcessed = false;
-		}
-		else
-		{
-			effectCanBeProcessed = true;
-			wipChainScript.processedEffectIDs.Add(effectID);
-		}
-		return effectCanBeProcessed;
+		UtilityFuncManagerScript.CopyList(openedChains, closedChains, false);
+		openedChains.Clear();
 	}
 	#endregion
+	
+	
 	private void MakeANewEffectChain()
 	{
 		var effectChain = Instantiate(effectChainPrefab, transform);
@@ -87,7 +141,6 @@ public class EffectChainManager : MonoBehaviour
 		var currentEffectChainScript = currentEffectChain.GetComponent<EffectChain>();
 		if (currentEffectChainScript.processedEffectIDs.Contains(effectID))
 		{
-			print("check effect failed: clear effect chain");
 			CloseEffectChain();
 			effectCanBeProcessed = false;
 		}

@@ -62,7 +62,6 @@ public class CombatManager : MonoBehaviour
 
 	public void EnterCombat()
 	{
-		print("Entering combat");
 		currentCombatState = EnumStorage.CombatState.GatherDeckLists;
 		combatFinished.value = false;
 	}
@@ -89,7 +88,6 @@ public class CombatManager : MonoBehaviour
 		roundNumRef.value = 0;
 		cardNum = 0;
 		deckSize = 0;
-		print("exit combat: clear effect chain");
 		EffectChainManager.Me.CloseEffectChain();
 		EffectChainManager.Me.chainNumber = 0;
 	}
@@ -192,6 +190,7 @@ public class CombatManager : MonoBehaviour
 	{
 		if (awaitingRevealConfirm)
 		{
+			// combat finished
 			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
 				if (combatFinished.value) return;
@@ -199,6 +198,7 @@ public class CombatManager : MonoBehaviour
 				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				combatFinished.value = true;
 			}
+			// round finished
 			else if (cardNum < 0)
 			{
 				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\npress space to shuffle";
@@ -208,14 +208,15 @@ public class CombatManager : MonoBehaviour
 				//EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 			}
+			// need to reveal next card
 			else
 			{
 				_infoDisplayer.combatTipsDisplay.text = "press space to reveal";
 				if (!Input.GetKeyDown(KeyCode.Space)) return;
 				awaitingRevealConfirm = false;
-				EffectChainManager.Me.CloseWIPChain();
 				_infoDisplayer.effectResultString.value = "";
 			}
+			EffectChainManager.Me.CloseChains();
 		}
 		else
 		{
