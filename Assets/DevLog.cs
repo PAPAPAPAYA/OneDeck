@@ -162,7 +162,8 @@
 			//// avoid looping
 				// effect chain
 					//// need to close chain when 1 round is finished
-					//// same card, multiple loops
+					// same card, multiple loops
+						//todo documentation
 						//// made two test cards to re-create bug
 						//// parent and sub chains
 						//// mark chains closed
