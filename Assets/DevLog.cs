@@ -71,7 +71,7 @@
 		//// deck expansion: increase deck size by 1
 		//// increase max hp
 	// power
-		// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
+		//todo effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
 		//// power up: power to 3 cards
 	// curse
 		//// slippery floor: deal 1 dmg to self

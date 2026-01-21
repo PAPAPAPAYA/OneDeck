@@ -1075,7 +1075,7 @@ MonoBehaviour:
   onEnemyTookDmg: {fileID: 11400000, guid: 6e69b63aa924cd342b78fd35ae337173, type: 2}
   onPlayerTookDmg: {fileID: 0}
   onEnemyHealed: {fileID: 0}
-  onPlayerHealed: {fileID: 0}
+  onPlayerHealed: {fileID: 11400000, guid: 5bb5dc0151c4c6f43bb90956484ef6b9, type: 2}
   afterShuffle: {fileID: 11400000, guid: fe87bc9a909276b4dabe1bf8aa01d8a4, type: 2}
 --- !u!1 &508542130
 GameObject:
@@ -2022,6 +2022,11 @@ MonoBehaviour:
   sessionNumberRef: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
   chainNumber: 0
   currentEffectChain: {fileID: 0}
+  currentWipChain: {fileID: 0}
+  lastEffectInst: {fileID: 0}
+  openedChains: []
+  closedChains: []
+  chainDepth: 0
 --- !u!4 &1792574036
 Transform:
   m_ObjectHideFlags: 0

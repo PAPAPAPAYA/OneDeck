@@ -66,6 +66,7 @@ public class EffectChainManager : MonoBehaviour
 		openedChains.Add(newEffectChain);
 	}
 
+	// todo: parent chain is wrongly assigned, not comprehensive enough
 	private bool IsSameChain(GameObject myCard, GameObject  myEffectInst)
 	{
 		var isSameChain = true;
@@ -92,9 +93,8 @@ public class EffectChainManager : MonoBehaviour
 				invokedTimes++;
 			}
 		}
-		if (invokedTimes > 0) // same effect already invoked in opened chains
+		if (invokedTimes > 0 || openedChains.Count == 0) // same effect already invoked in opened chains
 		{
-			CloseChains();
 			return false;
 		}
 		currentWipChain.GetComponent<EffectChain>().processedEffectIDs.Add(effectID);
