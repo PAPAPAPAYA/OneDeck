@@ -42,11 +42,6 @@ public class EffectChainManager : MonoBehaviour
 				currentWipChain.GetComponent<EffectChain>().subChain.Add(newEffectChain);
 				newChainScript.parentChain = currentWipChain;
 				chainDepth++;
-				if (chainDepth > 99)
-				{
-					CloseChains();
-					Debug.LogError("ERROR: chain depth reached limit");
-				}
 			}
 			else
 			{
@@ -95,6 +90,11 @@ public class EffectChainManager : MonoBehaviour
 		}
 		if (invokedTimes > 0 || openedChains.Count == 0) // same effect already invoked in opened chains
 		{
+			return false;
+		}
+		if (chainDepth > 99)
+		{
+			Debug.LogError("ERROR: chain depth reached limit");
 			return false;
 		}
 		currentWipChain.GetComponent<EffectChain>().processedEffectIDs.Add(effectID);

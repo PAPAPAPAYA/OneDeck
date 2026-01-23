@@ -7,7 +7,7 @@
 	//! after changing the combined deck, shuffle
 	//! currently we only use round num to match decks
 	//! 43514 is [Meditate], might need to keep an eye if the instance id changes, if it changes, need to find a way so that we keep what we saved
-	//! chains are closed when: [1] same card, different effect is trying to get invoked; [2] waiting input confirm; [3] same effect is trying to get invoked in the same chain
+	//! chains are closed when: [1] same card, different effect is trying to get invoked; [2] waiting input confirm;
 
 // design
 	// infection
@@ -164,6 +164,10 @@
 					//// need to close chain when 1 round is finished
 					// same card, multiple loops
 						//todo documentation
+						//todo simplify effect chains
+							// key is to only close chains when 1. reveal; 2. same card different effect
+							// these are the only two situations where we want to reset and effects can be invoked again
+							// we don't need parent and sub chains
 						//// made two test cards to re-create bug
 						//// parent and sub chains
 						//// mark chains closed
