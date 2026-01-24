@@ -165,7 +165,7 @@
 					// same card, multiple loops
 						//todo documentation
 						//todo simplify effect chains
-							// key is to only close chains when 1. reveal; 2. same card different effect
+							// key is to only close chains and open a new one when 1. reveal; 2. same card different effect
 							// these are the only two situations where we want to reset and effects can be invoked again
 							// we don't need parent and sub chains
 						//// made two test cards to re-create bug

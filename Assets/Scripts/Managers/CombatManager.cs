@@ -88,7 +88,7 @@ public class CombatManager : MonoBehaviour
 		roundNumRef.value = 0;
 		cardNum = 0;
 		deckSize = 0;
-		EffectChainManager.Me.CloseEffectChain();
+		EffectChainManager.Me.CloseOpenedChains();
 		EffectChainManager.Me.chainNumber = 0;
 	}
 
@@ -216,7 +216,7 @@ public class CombatManager : MonoBehaviour
 				awaitingRevealConfirm = false;
 				_infoDisplayer.effectResultString.value = "";
 			}
-			EffectChainManager.Me.CloseChains();
+			EffectChainManager.Me.CloseOpenedChains();
 		}
 		else
 		{

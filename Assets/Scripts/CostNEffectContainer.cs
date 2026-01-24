@@ -46,12 +46,15 @@ public class CostNEffectContainer : MonoBehaviour
 		checkCostEvent?.Invoke();
 
 		// invoke effect
-		string effectString = "card " + _myCardScript.cardID + ": " + effectName;
+		var effectString = "card " + _myCardScript.cardID + ": " + effectName;
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return
 		if (EffectChainManager.Me.lastEffectInst == gameObject) return; // prevent effect invoking self
-		EffectChainManager.Me.MakeANewWipChain(_myCardScript.gameObject, gameObject);
+		if (EffectChainManager.Me.ShouldMakeANewChain(_myCardScript.gameObject, gameObject))
+		{
+			EffectChainManager.Me.MakeANewChain(_myCardScript.gameObject, gameObject);
+		}
 		// todo currently will wrongly prevent effects from invoking
-		if (EffectChainManager.Me.WipEffectCanBeInvoked(effectString)) 
+		if (EffectChainManager.Me.EffectCanBeInvoked(effectString)) 
 		{
 			EffectChainManager.Me.lastEffectInst = gameObject;
 			effectEvent?.Invoke(); // invoke effects

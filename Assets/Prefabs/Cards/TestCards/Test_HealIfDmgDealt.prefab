@@ -129,7 +129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: vampirism
   cardID: 0
-  cardDesc: no matter where i am, when enemy took dmg, heal 1
+  cardDesc: 'no matter where: if enemy took dmg, heal 1'
   takeUpSpace: 1
   price: 0
   myStatusRef: {fileID: 0}
