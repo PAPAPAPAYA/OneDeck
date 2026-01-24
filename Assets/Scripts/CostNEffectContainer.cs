@@ -46,14 +46,12 @@ public class CostNEffectContainer : MonoBehaviour
 		checkCostEvent?.Invoke();
 
 		// invoke effect
-		var effectString = "card " + _myCardScript.cardID + ": " + effectName;
+		var effectString = "card " + _myCardScript.cardID + ": " + effectName; // this string will be used to record and compare to prevent looping
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return
 		if (EffectChainManager.Me.lastEffectInst == gameObject) return; // prevent effect invoking self
-		if (EffectChainManager.Me.ShouldMakeANewChain(_myCardScript.gameObject, gameObject))
-		{
-			EffectChainManager.Me.MakeANewChain(_myCardScript.gameObject, gameObject);
-		}
-		// todo currently will wrongly prevent effects from invoking
+		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared
+		EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
+		
 		if (EffectChainManager.Me.EffectCanBeInvoked(effectString)) 
 		{
 			EffectChainManager.Me.lastEffectInst = gameObject;

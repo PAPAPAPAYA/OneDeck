@@ -2018,14 +2018,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 297db033d688de744ac1f6d4afee9875, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectChainPrefab: {fileID: 2840731622393098116, guid: 017cda882040b6944ba1bd36281cf3b8, type: 3}
+  effectRecorderPrefab: {fileID: 2840731622393098116, guid: 017cda882040b6944ba1bd36281cf3b8, type: 3}
   sessionNumberRef: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
   chainNumber: 0
-  currentEffectChain: {fileID: 0}
-  currentWipChain: {fileID: 0}
+  currentEffectRecorder: {fileID: 0}
+  currentEffectRecorderParent: {fileID: 0}
   lastEffectInst: {fileID: 0}
-  openedChains: []
-  closedChains: []
+  openedEffectRecorders: []
+  closedEffectRecorders: []
   chainDepth: 0
 --- !u!4 &1792574036
 Transform:

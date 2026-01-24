@@ -8,6 +8,7 @@
 	//! currently we only use round num to match decks
 	//! 43514 is [Meditate], might need to keep an eye if the instance id changes, if it changes, need to find a way so that we keep what we saved
 	//! chains are closed when: [1] same card, different effect is trying to get invoked; [2] waiting input confirm;
+	//! chains are composed with a string of effect containers
 
 // design
 	// infection
@@ -71,7 +72,7 @@
 		//// deck expansion: increase deck size by 1
 		//// increase max hp
 	// power
-		//todo effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
+		//// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
 		//// power up: power to 3 cards
 	// curse
 		//// slippery floor: deal 1 dmg to self
@@ -160,24 +161,22 @@
 			//// after shuffling
 			//// need test: linger effects straight on card
 			//// avoid looping
-				// effect chain
+				//// effect chain
 					//// need to close chain when 1 round is finished
-					// same card, multiple loops
-						//todo documentation
-						//todo simplify effect chains
-							// key is to only close chains and open a new one when 1. reveal; 2. same card different effect
-							// these are the only two situations where we want to reset and effects can be invoked again
-							// we don't need parent and sub chains
+					//// same card, multiple loops
+						//// documentation
+						//// simplify effect chains
 						//// made two test cards to re-create bug
 						//// parent and sub chains
 						//// mark chains closed
 						//// check if chain closed
 						//// check if effect already recorded in chain
 						//// prevent effect from invoking self
-					//todo need to check all situations
+					//// need to check all situations
 						//// effect activating itself
-						// multiple cards loop, activating each other
-						// same card, multiple same effects
+						////x multiple cards loop, activating each other
+						//! same card, multiple loopable effects
+							// don't do this, will stack overflow
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver
 	//// end combat phase when one player's hp reached zero
 	//// overtime

@@ -3,18 +3,15 @@ using System.Collections.Generic;
 
 namespace DefaultNamespace
 {
-	public class EffectChain : MonoBehaviour
+	public class EffectRecorder : MonoBehaviour
 	{
 		public int sessionID;
 		public int chainID;
-		public List<string> processedEffectIDs = new List<string>();
+		public string processedEffectID;
 		
 		// WIP
 		public GameObject cardObject;
 		public GameObject effectObject;
-		public List<GameObject> subChain;
-		public GameObject parentChain;
-		public string chainName;
 		public bool open = true;
 	}
 }
