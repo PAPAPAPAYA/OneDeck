@@ -74,7 +74,7 @@ public class PhaseManager : MonoBehaviour
 	{
 		if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop) // if in shop phase
 		{
-			if (!Input.GetKeyDown(KeyCode.Space)) return;
+			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
 			ExitingShopPhase();
 			EnteringCombatPhase();
 		}
@@ -93,6 +93,8 @@ public class PhaseManager : MonoBehaviour
 					print("you lose");
 					_resultText = "LOSE";
 					hearts.value--;
+					DeckTester.me.deckBWins++;
+					DeckTester.me.currentSessionAmount++;
 				}
 			}
 			else if (enemyStatusRef.hp <= 0)
@@ -100,6 +102,8 @@ public class PhaseManager : MonoBehaviour
 				print("you win");
 				_resultText = "WIN";
 				wins.value++;
+				DeckTester.me.deckAWins++;
+				DeckTester.me.currentSessionAmount++;
 			}
 			sessionNum.value++;
 			ExitingCombatPhase();
@@ -108,7 +112,7 @@ public class PhaseManager : MonoBehaviour
 		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Result) // if in result phase
 		{
 			ShowResult();
-			if (!Input.GetKeyDown(KeyCode.Space)) return;
+			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
 			ExitingResultPhase();
 			EnteringShopPhase();
 		}

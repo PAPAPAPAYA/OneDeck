@@ -44,6 +44,11 @@
 	//// refactor tags to use game event SOs
 #endregion
 
+//// deck tester
+	//// record session amount
+	//// auto space until session amount reached
+	//// print win rate
+
 // card structure
 	//// same structure from slash/ but expanded to support multiple costs and effects
 		//// card structure
@@ -53,34 +58,38 @@
 
 // cards
 	// hp alter
-		// stab: deal 1 dmg
-		// stab quickly: stage self; deal 1 dmg
-		// stab slowly: bury self; deal 1 dmg
-		// stab recklessly: deal 1 dmg to self; deal 1 dmg
-		// cursed stab: deal 2 dmg; generate 1 curse
+		//// stab: deal 1 dmg
+		//// stab quickly: stage self; deal 1 dmg
+		//// stab slowly: bury self; deal 1 dmg
+		//// stab recklessly: deal 1 dmg to self; deal 1 dmg
+		//// cursed stab: deal 2 dmg; generate 1 curse
+		//// deal dmg = lost hp
+	// shield
+		//// each time lose hp, add shield
+		//// self harm, add shield
 	// mana
-		// meditate: mana to 3 cards
-		// inject: deal 1 dmg to self; mana to 5 cards
-		// fireball: cost 1 mana: deal 2 dmg
-		// big fireball: cost 2 mana: deal 3 dmg
+		//// meditate: mana to 3 cards
+		//// inject: deal 1 dmg to self; mana to 5 cards
+		//// fireball: cost 1 mana: deal 2 dmg
+		//// big fireball: cost 2 mana: deal 3 dmg
 	// infection
-		// explosive infection: infect 3 cards
+		//// explosive infection: infect 3 cards
 	// shiv
-		// add a shiv: add a shiv
-		// shiv: deal 1 dmg
+		//// add a shiv: add a shiv
+		//// shiv: deal 1 dmg
 	// grave
-		// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
-		// undertake: move 3 random cards straight to grave
-		// stab from the grave: when sent to grave, deal 1 dmg
+		//// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
+		//// undertake: move 3 random cards straight to grave
+		//// stab from the grave: when sent to grave, deal 1 dmg
 	// system
-		// fatigue: deal 1 dmg to both players
-		// deck expansion: increase deck size by 1
-		// increase max hp
+		//// fatigue: deal 1 dmg to both players
+		//// deck expansion: increase deck size by 1
+		//// increase max hp
 	// power
-		// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
-		// power up: power to 3 cards
+		//// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
+		//// power up: power to 3 cards
 	// curse
-		// slippery floor: deal 1 dmg to self
+		//// slippery floor: deal 1 dmg to self
 	
 
 // battle: text demo

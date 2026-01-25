@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: EnemyDefaultDeckRef
+  m_Name: shiv + death by a thousand cuts
   m_EditorClassIdentifier: 
   deck:
   - {fileID: 8718476725744197808, guid: 4a86806e03a3601499ae80c0611f6b64, type: 3}

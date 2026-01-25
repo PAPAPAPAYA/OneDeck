@@ -10,6 +10,7 @@ namespace DefaultNamespace.Effects
 		public void UpMyShield(int amount)
 		{
 			myCardScript.myStatusRef.shield += amount + shieldUpAmountAlter;
+			CheckShieldUpTarget_UppingSelfShield(amount);
 		}
 		private void CheckShieldUpTarget_UppingSelfShield(int shieldAmount)
 		{

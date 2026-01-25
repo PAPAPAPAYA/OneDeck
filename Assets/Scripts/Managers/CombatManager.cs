@@ -195,14 +195,14 @@ public class CombatManager : MonoBehaviour
 			{
 				if (combatFinished.value) return;
 				_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
-				if (!Input.GetKeyDown(KeyCode.Space)) return;
+				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
 				combatFinished.value = true;
 			}
 			// round finished
 			else if (cardNum < 0)
 			{
 				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\npress space to shuffle";
-				if (!Input.GetKeyDown(KeyCode.Space)) return;
+				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
 				roundNumRef.value++;
 				_infoDisplayer.ClearInfo();
 				//EffectChainManager.Me.CloseEffectChain(); // close current effect chain
@@ -212,7 +212,7 @@ public class CombatManager : MonoBehaviour
 			else
 			{
 				_infoDisplayer.combatTipsDisplay.text = "press space to reveal";
-				if (!Input.GetKeyDown(KeyCode.Space)) return;
+				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
 				awaitingRevealConfirm = false;
 				_infoDisplayer.effectResultString.value = "";
 			}
