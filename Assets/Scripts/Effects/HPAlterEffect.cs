@@ -10,6 +10,16 @@ public class HPAlterEffect : EffectScript
 	[HideInInspector]
 	public int healAmountAlter = 0;
 
+	private void ProcessShieldNHp(int dmgAmount, PlayerStatusSO status)
+	{
+		status.shield -= dmgAmount;
+		if (status.shield < 0)
+		{
+			status.hp -= 0 - status.shield;
+			status.shield = 0;
+		}
+	}
+
 	private void DmgCalculator()
 	{
 		var parentCardScript = GetComponentInParent<CardScript>();
@@ -21,12 +31,13 @@ public class HPAlterEffect : EffectScript
 			}
 		}
 	}
-	
+
 	public void DecreaseMyHp(int dmgAmount)
 	{
 		DmgCalculator();
 		//GameEventStorage.me.beforeIDealDmg?.RaiseSpecific(myCard); // timepoint
-		myCardScript.myStatusRef.hp -= dmgAmount + dmgAmountAlter;
+		//myCardScript.myStatusRef.hp -= dmgAmount + dmgAmountAlter;
+		ProcessShieldNHp(dmgAmount, myCardScript.myStatusRef);
 		myCardScript.myStatusRef.hp = Mathf.Clamp(myCardScript.myStatusRef.hp, 0, myCardScript.myStatusRef.hpMax);
 		CheckDmgTargets_DealingDmgToSelf(dmgAmount);
 		dmgAmountAlter = 0;
@@ -44,11 +55,13 @@ public class HPAlterEffect : EffectScript
 	{
 		DmgCalculator();
 		//GameEventStorage.me.beforeIDealDmg?.RaiseSpecific(myCard); // timepoint
-		myCardScript.theirStatusRef.hp -= dmgAmount + dmgAmountAlter;
+		//myCardScript.theirStatusRef.hp -= dmgAmount + dmgAmountAlter;
+		ProcessShieldNHp(dmgAmount, myCardScript.theirStatusRef);
 		myCardScript.theirStatusRef.hp = Mathf.Clamp(myCardScript.theirStatusRef.hp, 0, myCardScript.theirStatusRef.hpMax);
 		CheckDmgTargets_DealingDmgToOpponent(dmgAmount);
 		dmgAmountAlter = 0;
 	}
+
 	public void IncreaseTheirHp(int healAmount)
 	{
 		myCardScript.theirStatusRef.hp -= healAmount + healAmountAlter;
@@ -106,6 +119,7 @@ public class HPAlterEffect : EffectScript
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOwner(); // timepoint
 		}
 	}
+
 	private void CheckHealTargets_HealingOpponent(int healAmount)
 	{
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy healed player
