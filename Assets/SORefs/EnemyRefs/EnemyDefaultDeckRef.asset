@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
   m_Name: EnemyDefaultDeckRef
   m_EditorClassIdentifier: 
-  deck: []
+  deck:
+  - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
+  - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
+  - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: 

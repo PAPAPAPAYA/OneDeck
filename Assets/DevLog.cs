@@ -9,6 +9,8 @@
 	//! 43514 is [Meditate], might need to keep an eye if the instance id changes, if it changes, need to find a way so that we keep what we saved
 	//! chains are closed when: [1] same card, different effect is trying to get invoked; [2] waiting input confirm;
 	//! chains are composed with a string of effect containers
+	//! don't put multiple effect instances with loopable effect in one card, will stack overflow; put multiple loopable effects in same effect instance
+	//! no beforeIDealDmg timepoint and game event, would stack overflow; HPAlterEffect calculates dmg before dealing dmg
 
 // design
 	// infection
@@ -175,6 +177,9 @@
 					//// need to check all situations
 						//// effect activating itself
 						////x multiple cards loop, activating each other
+						//// beforeIDealDmg event and deal dmg if dmg dealt
+							//// this will bypass [effect can't invoke self] since last effect inst isn't self anymore
+							//// no more beforeIDealDmg timepoint and game event
 						//! same card, multiple loopable effects
 							// don't do this, will stack overflow
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver
@@ -183,6 +188,9 @@
 		//// implement func to add card in the middle of combat
 		//// add fatigue
 // shop
+	//? give tag
+		// stage self
+		// bury self
 	//// show player deck
 	//// show shop items
 	//// button prompt

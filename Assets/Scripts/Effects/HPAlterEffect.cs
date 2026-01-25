@@ -10,9 +10,22 @@ public class HPAlterEffect : EffectScript
 	[HideInInspector]
 	public int healAmountAlter = 0;
 
+	private void DmgCalculator()
+	{
+		var parentCardScript = GetComponentInParent<CardScript>();
+		foreach (var myTag in parentCardScript.myTags)
+		{
+			if (myTag == EnumStorage.Tag.Power)
+			{
+				dmgAmountAlter++;
+			}
+		}
+	}
+	
 	public void DecreaseMyHp(int dmgAmount)
 	{
-		GameEventStorage.me.beforeIDealDmg?.RaiseSpecific(myCard); // timepoint
+		DmgCalculator();
+		//GameEventStorage.me.beforeIDealDmg?.RaiseSpecific(myCard); // timepoint
 		myCardScript.myStatusRef.hp -= dmgAmount + dmgAmountAlter;
 		myCardScript.myStatusRef.hp = Mathf.Clamp(myCardScript.myStatusRef.hp, 0, myCardScript.myStatusRef.hpMax);
 		CheckDmgTargets_DealingDmgToSelf(dmgAmount);
@@ -29,7 +42,8 @@ public class HPAlterEffect : EffectScript
 
 	public void DecreaseTheirHp(int dmgAmount)
 	{
-		GameEventStorage.me.beforeIDealDmg?.RaiseSpecific(myCard); // timepoint
+		DmgCalculator();
+		//GameEventStorage.me.beforeIDealDmg?.RaiseSpecific(myCard); // timepoint
 		myCardScript.theirStatusRef.hp -= dmgAmount + dmgAmountAlter;
 		myCardScript.theirStatusRef.hp = Mathf.Clamp(myCardScript.theirStatusRef.hp, 0, myCardScript.theirStatusRef.hpMax);
 		CheckDmgTargets_DealingDmgToOpponent(dmgAmount);
