@@ -95,6 +95,9 @@ public class PhaseManager : MonoBehaviour
 					hearts.value--;
 					DeckTester.me.deckBWins++;
 					DeckTester.me.currentSessionAmount++;
+					DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
+					DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
+					DeckTester.me.CalculateSessionAveDmg();
 				}
 			}
 			else if (enemyStatusRef.hp <= 0)
@@ -104,6 +107,9 @@ public class PhaseManager : MonoBehaviour
 				wins.value++;
 				DeckTester.me.deckAWins++;
 				DeckTester.me.currentSessionAmount++;
+				DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
+				DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
+				DeckTester.me.CalculateSessionAveDmg();
 			}
 			sessionNum.value++;
 			ExitingCombatPhase();

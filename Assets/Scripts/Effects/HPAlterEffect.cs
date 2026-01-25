@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
 
@@ -85,12 +86,14 @@ public class HPAlterEffect : EffectScript
 			effectResultString.value += "// their [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to You\n";
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOpponent(); // timepoint
+			DeckTester.me.deckBDmgOutputs_ToOpp.Add(dmgAmount + dmgAmountAlter);
 		}
 		else // player dealt dmg to enemy
 		{
 			effectResultString.value += "// your [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to Enemy\n";
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOwner(); // timepoint
+			DeckTester.me.deckADmgOutputs_ToOpp.Add(dmgAmount + dmgAmountAlter);
 		}
 	}
 
@@ -101,12 +104,14 @@ public class HPAlterEffect : EffectScript
 			effectResultString.value += "// your [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to You\n";
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOpponent(); // timepoint
+			DeckTester.me.deckADmgOutputs_ToSelf.Add(dmgAmount + dmgAmountAlter);
 		}
 		else // enemy dealt dmg to enemy
 		{
 			effectResultString.value += "// their [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to Enemy\n";
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOwner(); // timepoint
+			DeckTester.me.deckBDmgOutputs_ToSelf.Add(dmgAmount + dmgAmountAlter);
 		}
 	}
 

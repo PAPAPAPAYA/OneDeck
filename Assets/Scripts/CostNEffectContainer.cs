@@ -61,6 +61,18 @@ public class CostNEffectContainer : MonoBehaviour
 
 	#region check cost funcs
 
+	public void CheckCost_Infected()
+	{
+		if (_myCardScript.myTags.Contains(EnumStorage.Tag.Infected))
+		{
+			
+		}
+		else
+		{
+			_costNotMetFlag++;
+		}
+	}
+	
 	public void CheckCost_Mana(int manaRequired)
 	{
 		if (EnumStorage.DoesListContainAmountOfTag(_myCardScript.myTags, manaRequired, EnumStorage.Tag.Mana)) return; // if check succeeded, do nothing

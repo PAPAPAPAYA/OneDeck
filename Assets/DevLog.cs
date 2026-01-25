@@ -48,6 +48,8 @@
 	//// record session amount
 	//// auto space until session amount reached
 	//// print win rate
+	//// average finish hp
+	// dmg stat?
 
 // card structure
 	//// same structure from slash/ but expanded to support multiple costs and effects
@@ -74,6 +76,7 @@
 		//// big fireball: cost 2 mana: deal 3 dmg
 	// infection
 		//// explosive infection: infect 3 cards
+		//// poisoned knife: deal 2 dmg; if infected: deal 2 dmg
 	// shiv
 		//// add a shiv: add a shiv
 		//// shiv: deal 1 dmg

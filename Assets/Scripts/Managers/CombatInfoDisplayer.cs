@@ -63,7 +63,16 @@ public class CombatInfoDisplayer : MonoBehaviour
 		// show infected tag
 		if (card.myTags.Contains(EnumStorage.Tag.Infected))
 		{
-			tagInfo += "[Infected]";
+			var infectedAmount = 0;
+			foreach (var myTag in card.myTags)
+			{
+				if (myTag == EnumStorage.Tag.Infected)
+				{
+					infectedAmount++;
+				}
+			}
+
+			tagInfo += "[" + infectedAmount + " Infected]";
 		}
 
 		// show mana tag

@@ -18,7 +18,7 @@ public static class UtilityFuncManagerScript
 	// }
 
 	#endregion
-
+	
 	public static float ConvertV2ToAngle(Vector2 dir)
 	{
 		return Mathf.Atan2(dir.x, dir.y) * (180 / Mathf.PI);
