@@ -1069,13 +1069,14 @@ MonoBehaviour:
   onMeSentToGrave: {fileID: 11400000, guid: 5e8e5069704e41e4a80c2a0afa345e81, type: 2}
   onMeBought: {fileID: 11400000, guid: 525df2dc84c6aa640bedec4330fc7491, type: 2}
   onThisTagResolverAttached: {fileID: 11400000, guid: 21baa6d6a7f3cc441b4afe20c83a5d8e, type: 2}
-  beforeIDealDmg: {fileID: 11400000, guid: 7d765be599f91ab45a8ea86a66b7b9d1, type: 2}
   onAnyCardRevealed: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
   onAnyCardSentToGrave: {fileID: 11400000, guid: 68a97b4a1968898459a97382e88f33a0, type: 2}
-  onEnemyTookDmg: {fileID: 11400000, guid: 6e69b63aa924cd342b78fd35ae337173, type: 2}
-  onPlayerTookDmg: {fileID: 0}
-  onEnemyHealed: {fileID: 0}
-  onPlayerHealed: {fileID: 11400000, guid: 5bb5dc0151c4c6f43bb90956484ef6b9, type: 2}
+  onTheirPlayerTookDmg: {fileID: 11400000, guid: 6e69b63aa924cd342b78fd35ae337173, type: 2}
+  onMyPlayerTookDmg: {fileID: 11400000, guid: 71bb06fd513c8fd4ba6910345f0913a5, type: 2}
+  onTheirPlayerHealed: {fileID: 11400000, guid: 9f601cec6d837ab4094b5788dac691c7, type: 2}
+  onMyPlayerHealed: {fileID: 11400000, guid: 5bb5dc0151c4c6f43bb90956484ef6b9, type: 2}
+  onMyPlayerShieldUpped: {fileID: 11400000, guid: 240a49713af66d84892b1942b1bd68d7, type: 2}
+  onTheirPlayerShieldUpped: {fileID: 11400000, guid: 808138fe6215952418c045862c9f80ad, type: 2}
   afterShuffle: {fileID: 11400000, guid: fe87bc9a909276b4dabe1bf8aa01d8a4, type: 2}
 --- !u!1 &508542130
 GameObject:

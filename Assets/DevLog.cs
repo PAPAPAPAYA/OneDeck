@@ -20,7 +20,9 @@
 	// undertake
 	// generate
 	// heart change
+	// shield
 
+#region Refactorings
 // refactoring
 	//// clean up effect script's variables?
 		//// refactor how infection deal dmg
@@ -40,6 +42,7 @@
 	//// button prompt before shuffling
 	//// make text codes in effect scripts StringSO
 	//// refactor tags to use game event SOs
+#endregion
 
 // card structure
 	//// same structure from slash/ but expanded to support multiple costs and effects
@@ -50,34 +53,34 @@
 
 // cards
 	// hp alter
-		//// stab: deal 1 dmg
-		//// stab quickly: stage self; deal 1 dmg
-		//// stab slowly: bury self; deal 1 dmg
-		//// stab recklessly: deal 1 dmg to self; deal 1 dmg
-		//// cursed stab: deal 2 dmg; generate 1 curse
+		// stab: deal 1 dmg
+		// stab quickly: stage self; deal 1 dmg
+		// stab slowly: bury self; deal 1 dmg
+		// stab recklessly: deal 1 dmg to self; deal 1 dmg
+		// cursed stab: deal 2 dmg; generate 1 curse
 	// mana
-		//// meditate: mana to 3 cards
-		//// inject: deal 1 dmg to self; mana to 5 cards
-		//// fireball: cost 1 mana: deal 2 dmg
-		//// big fireball: cost 2 mana: deal 3 dmg
+		// meditate: mana to 3 cards
+		// inject: deal 1 dmg to self; mana to 5 cards
+		// fireball: cost 1 mana: deal 2 dmg
+		// big fireball: cost 2 mana: deal 3 dmg
 	// infection
-		//// explosive infection: infect 3 cards
+		// explosive infection: infect 3 cards
 	// shiv
-		//// add a shiv: add a shiv
-		//// shiv: deal 1 dmg
+		// add a shiv: add a shiv
+		// shiv: deal 1 dmg
 	// grave
-		//// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
-		//// undertake: move 3 random cards straight to grave
-		//// stab from the grave: when sent to grave, deal 1 dmg
+		// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
+		// undertake: move 3 random cards straight to grave
+		// stab from the grave: when sent to grave, deal 1 dmg
 	// system
-		//// fatigue: deal 1 dmg to both players
-		//// deck expansion: increase deck size by 1
-		//// increase max hp
+		// fatigue: deal 1 dmg to both players
+		// deck expansion: increase deck size by 1
+		// increase max hp
 	// power
-		//// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
-		//// power up: power to 3 cards
+		// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
+		// power up: power to 3 cards
 	// curse
-		//// slippery floor: deal 1 dmg to self
+		// slippery floor: deal 1 dmg to self
 	
 
 // battle: text demo
@@ -116,6 +119,7 @@
 	//// migrate info display codes to a new script
 	
 	// effects
+		// give shield
 		//// generate: make temp cards that only last 1 combat phase
 		//// undertake: send cards straight to grave
 		//// heart-change: change cards owner that only last 1 combat phase
@@ -159,6 +163,8 @@
 			//// on card bought (kind of ugly, but works)
 		//// put cost n effect container and effect scripts to child objects to better organize a card
 		// any event
+			//// need to discern between invoking me event or invoking them event
+			//// document glossary
 			//// when player dealt dmg to enemy
 			//// after shuffling
 			//// need test: linger effects straight on card

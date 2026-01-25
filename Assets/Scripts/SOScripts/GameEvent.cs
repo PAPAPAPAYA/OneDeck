@@ -14,6 +14,28 @@ public class GameEvent : ScriptableObject
 			_listeners[i].OnEventRaised();
 		}
 	}
+
+	public void RaiseOwner()
+	{
+		for (var i = _listeners.Count - 1; i >= 0; i--)
+		{
+			if (_listeners[i].GetComponent<CardScript>().myStatusRef == CombatManager.Me.ownerPlayerStatusRef)
+			{
+				_listeners[i].OnEventRaised();
+			}
+		}
+	}
+
+	public void RaiseOpponent()
+	{
+		for (var i = _listeners.Count - 1; i >= 0; i--)
+		{
+			if (_listeners[i].GetComponent<CardScript>().myStatusRef == CombatManager.Me.enemyPlayerStatusRef)
+			{
+				_listeners[i].OnEventRaised();
+			}
+		}
+	}
 	
 	public void RaiseSpecific(GameObject target) // will also raise target's children's events
 	{

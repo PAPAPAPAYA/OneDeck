@@ -63,12 +63,14 @@ public class HPAlterEffect : EffectScript
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy dealt dmg to player
 		{
 			effectResultString.value += "// [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to You\n";
-			GameEventStorage.me.onPlayerTookDmg?.Raise(); // timepoint
+			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOwner(); // timepoint
+			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOpponent(); // timepoint
 		}
 		else // player dealt dmg to enemy
 		{
 			effectResultString.value += "// [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to Enemy\n";
-			GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
+			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOpponent(); // timepoint
+			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOwner(); // timepoint
 		}
 	}
 
@@ -77,12 +79,14 @@ public class HPAlterEffect : EffectScript
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player dealt dmg to player
 		{
 			effectResultString.value += "// [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to You\n";
-			GameEventStorage.me.onPlayerTookDmg?.Raise(); // timepoint
+			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOwner(); // timepoint
+			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOpponent(); // timepoint
 		}
 		else // enemy dealt dmg to enemy
 		{
 			effectResultString.value += "// [" + myCardScript.cardName + "] dealt [" + (dmgAmount + dmgAmountAlter) + "] damage to Enemy\n";
-			GameEventStorage.me.onEnemyTookDmg?.Raise(); // timepoint
+			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOpponent(); // timepoint
+			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOwner(); // timepoint
 		}
 	}
 
@@ -92,12 +96,14 @@ public class HPAlterEffect : EffectScript
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player healed player
 		{
 			effectResultString.value += "// [" + myCardScript.cardName + "] healed You for [" + (healAmount + healAmountAlter) + "]\n";
-			GameEventStorage.me.onPlayerHealed?.Raise(); // timepoint
+			GameEventStorage.me.onMyPlayerHealed?.RaiseOwner(); // timepoint
+			GameEventStorage.me.onTheirPlayerHealed?.RaiseOpponent(); // timepoint
 		}
 		else // enemy healed enemy
 		{
 			effectResultString.value += "// [" + myCardScript.cardName + "] healed Enemy for [" + (healAmount + healAmountAlter) + "]\n";
-			GameEventStorage.me.onEnemyHealed?.Raise(); // timepoint
+			GameEventStorage.me.onMyPlayerHealed?.RaiseOpponent(); // timepoint
+			GameEventStorage.me.onTheirPlayerHealed?.RaiseOwner(); // timepoint
 		}
 	}
 	private void CheckHealTargets_HealingOpponent(int healAmount)
@@ -105,12 +111,14 @@ public class HPAlterEffect : EffectScript
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy healed player
 		{
 			effectResultString.value += "// [" + myCardScript.cardName + "] healed You for [" + (healAmount + healAmountAlter) + "]\n";
-			GameEventStorage.me.onPlayerHealed?.Raise(); // timepoint
+			GameEventStorage.me.onMyPlayerHealed?.RaiseOwner(); // timepoint
+			GameEventStorage.me.onTheirPlayerHealed?.RaiseOpponent(); // timepoint
 		}
 		else // player healed enemy
 		{
 			effectResultString.value += "// [" + myCardScript.cardName + "] healed Enemy for [" + (healAmount + healAmountAlter) + "]\n";
-			GameEventStorage.me.onEnemyHealed?.Raise(); // timepoint
+			GameEventStorage.me.onMyPlayerHealed?.RaiseOpponent(); // timepoint
+			GameEventStorage.me.onTheirPlayerHealed?.RaiseOwner(); // timepoint
 		}
 	}
 }

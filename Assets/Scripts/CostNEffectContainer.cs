@@ -78,7 +78,6 @@ public class CostNEffectContainer : MonoBehaviour
 		else
 		{
 			_costNotMetFlag++;
-			print("not in grave");
 		}
 	}
 
