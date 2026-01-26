@@ -49,7 +49,9 @@
 	//// auto space until session amount reached
 	//// print win rate
 	//// average finish hp
-	// dmg stat?
+	// dmg stat
+		//// ave. dmg output per session
+		// ave. dmg output per session per card
 
 // card structure
 	//// same structure from slash/ but expanded to support multiple costs and effects
@@ -69,18 +71,22 @@
 	// shield
 		//// each time lose hp, add shield
 		//// self harm, add shield
-	// mana
-		//// meditate: mana to 3 cards
-		//// inject: deal 1 dmg to self; mana to 5 cards
-		//// fireball: cost 1 mana: deal 2 dmg
-		//// big fireball: cost 2 mana: deal 3 dmg
-	// infection
-		//// explosive infection: infect 3 cards
-		//// poisoned knife: deal 2 dmg; if infected: deal 2 dmg
+	// tags (status effect)
+		// mana
+			//// meditate: mana to 3 cards
+			//// inject: deal 1 dmg to self; mana to 5 cards
+			//// fireball: cost 1 mana: deal 2 dmg
+			//// big fireball: cost 2 mana: deal 3 dmg
+		// infection
+			//// explosive infection: infect 3 cards
+			//// poisoned knife: deal 2 dmg; if infected: deal 2 dmg
+		// power
+			//// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
+			//// power up: power to 3 cards
 	// shiv
 		//// add a shiv: add a shiv
 		//// shiv: deal 1 dmg
-	// grave
+	// grave (field)
 		//// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
 		//// undertake: move 3 random cards straight to grave
 		//// stab from the grave: when sent to grave, deal 1 dmg
@@ -88,14 +94,13 @@
 		//// fatigue: deal 1 dmg to both players
 		//// deck expansion: increase deck size by 1
 		//// increase max hp
-	// power
-		//// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
-		//// power up: power to 3 cards
 	// curse
 		//// slippery floor: deal 1 dmg to self
 	
 
 // battle: text demo
+	// linger
+		// continuous effect when in field
 	//// enemy
 		////deck saver
 			//// save
@@ -131,7 +136,7 @@
 	//// migrate info display codes to a new script
 	
 	// effects
-		// give shield
+		//// give shield
 		//// generate: make temp cards that only last 1 combat phase
 		//// undertake: send cards straight to grave
 		//// heart-change: change cards owner that only last 1 combat phase
@@ -141,7 +146,9 @@
 	        //// alter hp
 	        //// alter mp
 	        //// show tag effects
-		// tags
+		// tags (status effect)
+			//// directional status effect
+				//// clean up
 			//// power: dmg increase
 			//// heart-changed: so that it can be tracked
 				//// change card parent also
@@ -162,7 +169,8 @@
 		//// mana
 		//// in reveal
 		//// in grave
-		// is infected
+		//// is infected
+		// cool down
 
 	// trigger events
 		// specific event

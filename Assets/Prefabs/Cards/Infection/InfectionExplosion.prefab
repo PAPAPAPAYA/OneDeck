@@ -56,7 +56,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7760446971144992626}
         m_TargetAssemblyTypeName: InfectionEffect, Assembly-CSharp
-        m_MethodName: GiveTagToRandom
+        m_MethodName: GiveStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -82,6 +82,8 @@ MonoBehaviour:
   myTagResolver: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
   canTagBeStacked: 1
   tagToGive: 1
+  spreadEvenly: 0
+  target: 2
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

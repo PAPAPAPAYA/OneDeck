@@ -205,7 +205,6 @@ public class CombatManager : MonoBehaviour
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
 				roundNumRef.value++;
 				_infoDisplayer.ClearInfo();
-				//EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 			}
 			// need to reveal next card

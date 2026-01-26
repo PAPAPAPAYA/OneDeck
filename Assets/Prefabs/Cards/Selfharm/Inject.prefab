@@ -69,7 +69,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 8002208774031518423}
         m_TargetAssemblyTypeName: ManaAlterEffect, Assembly-CSharp
-        m_MethodName: GiveTagToRandom
+        m_MethodName: GiveStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -110,6 +110,8 @@ MonoBehaviour:
   myTagResolver: {fileID: 0}
   canTagBeStacked: 1
   tagToGive: 2
+  spreadEvenly: 0
+  target: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

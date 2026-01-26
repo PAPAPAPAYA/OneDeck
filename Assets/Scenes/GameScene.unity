@@ -1642,11 +1642,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deckARef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   deckBRef: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
-  autoSpace: 1
+  autoSpace: 0
   sessionAmountTarget: 100
   currentSessionAmount: 0
   deckAWins: 0
   deckBWins: 0
+  deckAHPs: 
+  deckBHPs: 
+  deckADmgOutputs_ToOpp: []
+  deckADmgOutputs_ToSelf: []
+  deckBDmgOutputs_ToOpp: []
+  deckBDmgOutputs_ToSelf: []
+  deckADmgOutputs_ToOpp_PerSession: []
+  deckADmgOutputs_ToSelf_PerSession: []
+  deckBDmgOutputs_ToOpp_PerSession: []
+  deckBDmgOutputs_ToSelf_PerSession: []
 --- !u!4 &1178790013
 Transform:
   m_ObjectHideFlags: 0

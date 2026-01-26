@@ -56,7 +56,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1314368674392260262}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.HeartChangeEffect, Assembly-CSharp
-        m_MethodName: GiveTagToRandom
+        m_MethodName: GiveStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -82,6 +82,8 @@ MonoBehaviour:
   myTagResolver: {fileID: 6584689119450628697, guid: 7455205bfe91f594a926ce2fe652cf1f, type: 3}
   canTagBeStacked: 1
   tagToGive: 3
+  spreadEvenly: 0
+  target: 2
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

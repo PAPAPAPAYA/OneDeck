@@ -16,6 +16,13 @@ public class EnumStorage : MonoBehaviour
         ShuffleDeck,
         Reveal
     }
+
+    public enum TargetType
+    {
+	    Me,
+	    Them,
+	    Random
+    }
     
     public enum Tag
     {

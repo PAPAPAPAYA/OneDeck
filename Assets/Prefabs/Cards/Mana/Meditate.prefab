@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: enchant 3 cards
+  effectName: enchant my 3 cards
   effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
@@ -56,7 +56,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3761391997474307764}
         m_TargetAssemblyTypeName: ManaAlterEffect, Assembly-CSharp
-        m_MethodName: GiveTagToRandom
+        m_MethodName: GiveStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -130,7 +130,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: Meditate
   cardID: 0
-  cardDesc: Enchant 3 random cards
+  cardDesc: Enchant my 3 cards
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}

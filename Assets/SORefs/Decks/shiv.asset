@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: self harm + infection
+  m_Name: shiv
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 9ddafeb70d716ff4a8d24ff4260aed9e, type: 3}
-  - {fileID: 8718476725744197808, guid: e22f9fcab0dbd6a44bdfb804693eb918, type: 3}
-  - {fileID: 4544861942980061181, guid: 6fd73b940b79b68479169a0d3aa7a6c8, type: 3}
+  - {fileID: 8718476725744197808, guid: 4a86806e03a3601499ae80c0611f6b64, type: 3}
+  - {fileID: 8718476725744197808, guid: 9a743abf0d946a84db0ba100c07d5114, type: 3}
+  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
-  description: player default deck, will copy to player deck SO at start of game
+  description: 
