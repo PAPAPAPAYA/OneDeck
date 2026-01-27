@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4821007963819311618}
   - component: {fileID: 8002208774031518423}
   m_Layer: 0
-  m_Name: self harm and gain mana
+  m_Name: lose 1 hp, enchant my 3 cards
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

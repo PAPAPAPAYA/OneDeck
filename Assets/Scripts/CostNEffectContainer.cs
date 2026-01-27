@@ -26,11 +26,6 @@ public class CostNEffectContainer : MonoBehaviour
 
 	[Tooltip("the string SO that combat info displayer use to display effect result")]
 	public StringSO effectResultString;
-	[Header("Basic Info")]
-	[Tooltip("don't assign identical effect name to effects in the same card")]
-	public string effectName;
-	[TextArea]
-	public string effectDescription;
 
 	[Header("Cost and Effect Events")]
 	public UnityEvent checkCostEvent;
@@ -46,7 +41,7 @@ public class CostNEffectContainer : MonoBehaviour
 		checkCostEvent?.Invoke();
 
 		// invoke effect
-		var effectString = "card " + _myCardScript.cardID + ": " + effectName; // this string will be used to record and compare to prevent looping
+		var effectString = "("+_myCardScript.cardID+") " +_myCardScript.cardName + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return
 		if (EffectChainManager.Me.lastEffectInst == gameObject) return; // prevent effect invoking self
 		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared

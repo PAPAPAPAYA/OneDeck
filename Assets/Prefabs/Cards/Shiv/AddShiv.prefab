@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 2535055919507757290}
   m_Layer: 0
-  m_Name: Add 3 shiv
+  m_Name: add 2 shiv
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

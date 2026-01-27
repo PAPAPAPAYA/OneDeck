@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 4527371410041028463}
   m_Layer: 0
-  m_Name: Give Power Tag
+  m_Name: give power tag
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

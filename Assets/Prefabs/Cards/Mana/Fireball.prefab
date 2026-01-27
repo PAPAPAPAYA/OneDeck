@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7957306034239753139}
   - component: {fileID: 6474462606738216503}
   m_Layer: 0
-  m_Name: cost mana and deal dmg
+  m_Name: cost 1 mana to deal 2 dmg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -107,6 +107,8 @@ MonoBehaviour:
   myTagResolver: {fileID: 0}
   canTagBeStacked: 0
   tagToGive: 0
+  spreadEvenly: 0
+  target: 0
 --- !u!114 &6474462606738216503
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,8 +122,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  dmgAlterAmount: 0
-  healAlterAmount: 0
+  dmgAmountAlter: 0
+  healAmountAlter: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

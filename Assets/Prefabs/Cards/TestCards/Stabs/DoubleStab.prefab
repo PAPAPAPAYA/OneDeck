@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4961857768364510674}
   - component: {fileID: 7564466459463941239}
   m_Layer: 0
-  m_Name: deal dmg (1)
+  m_Name: deal 1 dmg to enemy (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 1261998678939460703}
   - component: {fileID: 6404883462493187517}
   m_Layer: 0
-  m_Name: deal dmg
+  m_Name: deal 1 dmg to enemy (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

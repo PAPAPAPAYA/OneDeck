@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1261998678939460703}
   - component: {fileID: 6404883462493187517}
   m_Layer: 0
-  m_Name: deal dmg
+  m_Name: deal 1 dmg to enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 2644314653939913407}
   - component: {fileID: 4358267546251855236}
   m_Layer: 0
-  m_Name: generate curse
+  m_Name: add temp curse
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

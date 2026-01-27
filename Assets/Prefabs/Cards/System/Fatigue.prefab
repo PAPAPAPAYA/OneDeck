@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3026729637619739089}
   - component: {fileID: 9107223697356937696}
   m_Layer: 0
-  m_Name: Deal dmg to both player
+  m_Name: deal 1 dmg to both players
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -91,8 +91,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  dmgAlterAmount: 0
-  healAlterAmount: 0
+  dmgAmountAlter: 0
+  healAmountAlter: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

@@ -24,6 +24,7 @@
 
 #region Refactorings
 // refactoring
+	//// clean up effect name, effect description and use effect game object's name
 	//// clean up effect script's variables?
 		//// refactor how infection deal dmg
 			//// not removing infected tag after resolved

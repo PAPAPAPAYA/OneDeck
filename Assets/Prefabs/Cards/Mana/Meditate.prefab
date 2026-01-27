@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3799226224906106910}
   - component: {fileID: 3761391997474307764}
   m_Layer: 0
-  m_Name: gain mana
+  m_Name: enchant my 3 cards
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -82,6 +82,8 @@ MonoBehaviour:
   myTagResolver: {fileID: 0}
   canTagBeStacked: 1
   tagToGive: 2
+  spreadEvenly: 0
+  target: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

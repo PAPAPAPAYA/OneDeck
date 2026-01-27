@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 5770531881735627217}
   - component: {fileID: 4966915029437179759}
   m_Layer: 0
-  m_Name: self harm and deal dmg
+  m_Name: deal 1 dmg to self; deal 2 dmg to enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -173,5 +173,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  dmgAlterAmount: 0
-  healAlterAmount: 0
+  dmgAmountAlter: 0
+  healAmountAlter: 0

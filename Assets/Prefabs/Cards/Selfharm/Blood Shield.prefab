@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4821007963819311618}
   - component: {fileID: 1100967393347977857}
   m_Layer: 0
-  m_Name: self harm and gain shield
+  m_Name: lose 1 hp, gain 3 shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

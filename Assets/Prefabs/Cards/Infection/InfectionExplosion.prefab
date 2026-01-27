@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4920842779754924786}
   - component: {fileID: 7760446971144992626}
   m_Layer: 0
-  m_Name: infect random cards
+  m_Name: infect 3 random cards
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

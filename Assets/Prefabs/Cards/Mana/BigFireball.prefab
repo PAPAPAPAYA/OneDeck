@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8950732050201981053}
   - component: {fileID: 1574009377073963289}
   m_Layer: 0
-  m_Name: cost mana deal dmg
+  m_Name: cost 2 mana, deal 3 dmg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -107,6 +107,8 @@ MonoBehaviour:
   myTagResolver: {fileID: 0}
   canTagBeStacked: 0
   tagToGive: 0
+  spreadEvenly: 0
+  target: 0
 --- !u!114 &1574009377073963289
 MonoBehaviour:
   m_ObjectHideFlags: 0
