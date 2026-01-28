@@ -23,9 +23,9 @@ public class CardManipulationEffect : EffectScript
 			var targetCardScript = cardsToSend[i].GetComponent<CardScript>();
 			var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
 			effectResultString.value +=
-				"// [" + myCardScript.cardName + "] sent " +
+				"// [" + myCard.gameObject.name + "] sent " +
 				targetCardOwnerString +
-				targetCardScript.cardName + "] to grave\n";
+				targetCardScript.gameObject.name + "] to grave\n";
 			CombatFuncs.me.MoveCard_FromDeckToGrave(cardsToSend[i]);
 		}
 	}
@@ -42,9 +42,9 @@ public class CardManipulationEffect : EffectScript
 			var targetCardScript = cardsToPut[i].GetComponent<CardScript>();
 			var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
 			effectResultString.value +=
-				"// [" + myCardScript.cardName + "] put " +
+				"// [" + myCard.gameObject.name + "] put " +
 				targetCardOwnerString +
-				targetCardScript.cardName + "] back to deck\n";
+				targetCardScript.gameObject.name + "] back to deck\n";
 			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToPut[i]);
 		}
 	}
@@ -54,7 +54,7 @@ public class CardManipulationEffect : EffectScript
 		if (!_combinedDeck.Contains(myCard)) return;
 		_combinedDeck.Remove(myCard);
 		_combinedDeck.Add(myCard);
-		effectResultString.value += "// ["+myCardScript.cardName+"] is staged to the top of the deck\n";
+		effectResultString.value += "// ["+myCard.name+"] is staged to the top of the deck\n";
 	}
 
 	public void StageCardsWithStatusEffect(int amount, EnumStorage.StatusEffect statusEffectToCheck) //todo put random cards with statusEffectToCheck on top of the deck
@@ -66,6 +66,6 @@ public class CardManipulationEffect : EffectScript
 		if (!_combinedDeck.Contains(transform.parent.gameObject)) return;
 		_combinedDeck.Remove(transform.parent.gameObject);
 		_combinedDeck.Insert(0, transform.parent.gameObject);
-		effectResultString.value += "// ["+myCardScript.cardName+"] is buried to the bottom of the deck\n";
+		effectResultString.value += "// ["+myCard.name+"] is buried to the bottom of the deck\n";
 	}
 }

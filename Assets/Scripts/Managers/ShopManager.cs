@@ -175,7 +175,7 @@ public class ShopManager : MonoBehaviour
 			if (!cardScript.takeUpSpace) continue; // if card doesn't take up space, skip it
 			_deckInfoStr +=
 				"#" + (i + 1) + " " + // number
-				cardScript.cardName + // name
+				card.name + // name
 				": $" + cardScript.price / 2 + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
 		}
@@ -201,7 +201,7 @@ public class ShopManager : MonoBehaviour
 			var cardScript = card.GetComponent<CardScript>();
 			_shopInfoStr +=
 				"#" + (i + 1) + " " + // number
-				cardScript.cardName + // name
+				card.name + // name
 				": $" + cardScript.price + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
 		}

@@ -14,11 +14,12 @@ namespace DefaultNamespace.Effects
 			CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.myStatusRef);
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				effectResultString.value += "// [" + myCardScript.cardName + "] added 1 [" + cardToAdd.GetComponent<CardScript>().cardName + "] to You\n";
+				// todo implement a method to return "your" or "their"
+				effectResultString.value += "// [" + myCard.name + "] added 1 [" + cardToAdd.name + "] to You\n";
 			}
 			else // if this card belong to enemy
 			{
-				effectResultString.value += "// [" + myCardScript.cardName + "] added 1 [" + cardToAdd.GetComponent<CardScript>().cardName + "] to Enemy\n";
+				effectResultString.value += "// [" + myCard.name + "] added 1 [" + cardToAdd.name + "] to Enemy\n";
 			}
 			combatManager.Shuffle();
 		}
@@ -28,11 +29,11 @@ namespace DefaultNamespace.Effects
 			CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.theirStatusRef);
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				effectResultString.value += "// [" + myCardScript.cardName + "] added 1 [" + cardToAdd.GetComponent<CardScript>().cardName + "] to Enemy\n";
+				effectResultString.value += "// [" + myCard.name + "] added 1 [" + cardToAdd.name + "] to Enemy\n";
 			}
 			else // if this card belong to enemy
 			{
-				effectResultString.value += "// [" + myCardScript.cardName + "] added 1 [" + cardToAdd.GetComponent<CardScript>().cardName + "] to You\n";
+				effectResultString.value += "// [" + myCard.name + "] added 1 [" + cardToAdd.name + "] to You\n";
 			}
 			combatManager.Shuffle();
 		}

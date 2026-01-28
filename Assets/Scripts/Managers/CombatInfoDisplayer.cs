@@ -51,7 +51,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 		revealZoneDisplay.text = "#" + (graveSize + 1) + // card num
 		                         (ownersCard ? " your card: \n\n" : " their card: \n\n") + // card owner
 		                         ProcessTagInfo(cardRevealed) + // tags
-		                         cardRevealed.cardName + // card name
+		                         cardRevealed.gameObject.name + // card name
 		                         "\n" + cardRevealed.cardDesc; // card description
 		revealZoneDisplay.color = ownersCard ? Color.blue : Color.red;
 	}
@@ -143,10 +143,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var playerDeckString = "";
 		foreach (var cardScript in CombatFuncs.me.ReturnPlayerCardScripts())
 		{
-			var playerCardString = ProcessTagInfo(cardScript) + cardScript.cardName + "\n";
+			var playerCardString = ProcessTagInfo(cardScript) + cardScript.gameObject.name + "\n";
 			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
 			{
-				playerCardString = "<color=grey>"+ProcessTagInfo(cardScript) + cardScript.cardName + "</color>\n";
+				playerCardString = "<color=grey>"+ProcessTagInfo(cardScript) + cardScript.gameObject.name + "</color>\n";
 			}
 			playerDeckString += playerCardString;
 		}
@@ -156,10 +156,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var enemyDeckString = "";
 		foreach (var cardScript in CombatFuncs.me.ReturnEnemyCardScripts())
 		{
-			var enemyCardString = ProcessTagInfo(cardScript) + cardScript.cardName + "\n";
+			var enemyCardString = ProcessTagInfo(cardScript) + cardScript.gameObject.name + "\n";
 			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
 			{
-				enemyCardString = "<color=grey>"+ProcessTagInfo(cardScript) + cardScript.cardName + "</color>\n";
+				enemyCardString = "<color=grey>"+ProcessTagInfo(cardScript) + cardScript.gameObject.name + "</color>\n";
 			}
 			enemyDeckString += enemyCardString;
 		}

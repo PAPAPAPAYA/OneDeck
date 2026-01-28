@@ -68,7 +68,6 @@ namespace DefaultNamespace.Managers
 				_combatManager.combinedDeckZone.Add(cardInst); // add the new card to combined deck
 				_combatManager.UpdateTrackingVariables();
 			}
-			
 		}
 		
 		public List<CardScript> ReturnPlayerCardScripts()

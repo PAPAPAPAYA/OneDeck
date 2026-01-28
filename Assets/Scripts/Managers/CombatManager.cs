@@ -125,6 +125,7 @@ public class CombatManager : MonoBehaviour
 		foreach (var card in playerDeck.deck)
 		{
 			var cardInstance = Instantiate(card, playerDeckParent.transform);
+			cardInstance.name =  cardInstance.name.Replace("(Clone)", "");
 			var cardInstanceScript = cardInstance.GetComponent<CardScript>();
 			// assign cards' targets
 			cardInstanceScript.myStatusRef = ownerPlayerStatusRef;
@@ -135,9 +136,11 @@ public class CombatManager : MonoBehaviour
 		foreach (var card in enemyDeck.deck)
 		{
 			var cardInstance = Instantiate(card, enemyDeckParent.transform);
+			cardInstance.name =  cardInstance.name.Replace("(Clone)", "");
+			var cardInstanceScript = cardInstance.GetComponent<CardScript>();
 			// assign cards' targets
-			cardInstance.GetComponent<CardScript>().myStatusRef = enemyPlayerStatusRef;
-			cardInstance.GetComponent<CardScript>().theirStatusRef = ownerPlayerStatusRef;
+			cardInstanceScript.myStatusRef = enemyPlayerStatusRef;
+			cardInstanceScript.theirStatusRef = ownerPlayerStatusRef;
 			combinedDeckZone.Add(cardInstance);
 		}
 
@@ -173,9 +176,11 @@ public class CombatManager : MonoBehaviour
 	public void Shuffle()
 	{
 		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone); // shuffle deck
+		_infoDisplayer.RefreshDeckInfo();
 		//EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
 		UpdateTrackingVariables();
+		
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
 	}

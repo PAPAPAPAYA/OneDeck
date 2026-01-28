@@ -41,7 +41,7 @@ public class CostNEffectContainer : MonoBehaviour
 		checkCostEvent?.Invoke();
 
 		// invoke effect
-		var effectString = "("+_myCardScript.cardID+") " +_myCardScript.cardName + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
+		var effectString = "("+_myCardScript.cardID+") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return
 		if (EffectChainManager.Me.lastEffectInst == gameObject) return; // prevent effect invoking self
 		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared
@@ -74,7 +74,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// Not enough mana to activate [" + _myCardScript.cardName + "]\n";
+		effectResultString.value += "// Not enough mana to activate [" + _myCardScript.gameObject.name + "]\n";
 	}
 
 	public void CheckCost_InGrave()

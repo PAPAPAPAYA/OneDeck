@@ -452,7 +452,7 @@ Transform:
   m_GameObject: {fileID: 301309639}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.3776674, y: -3.4481156, z: -5.4651985}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -879,7 +879,7 @@ Transform:
   m_GameObject: {fileID: 439032068}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 187.5, y: 530.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1231,7 +1231,7 @@ Transform:
   m_GameObject: {fileID: 1005229399}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 187.5, y: 530.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1422,7 +1422,7 @@ MonoBehaviour:
   cardNum: 0
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
-  overtimeRoundThreshold: 1
+  overtimeRoundThreshold: 5
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
   fatigueAmount: 1
 --- !u!4 &1151980345
@@ -1642,7 +1642,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deckARef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   deckBRef: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
-  autoSpace: 1
+  autoSpace: 0
   sessionAmountTarget: 100
   currentSessionAmount: 0
   deckAWins: 0
@@ -3089,6 +3089,7 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 439032069}
+  - {fileID: 1178790013}
   - {fileID: 1855501822}
   - {fileID: 2021275459}
   - {fileID: 152842585}
@@ -3102,4 +3103,3 @@ SceneRoots:
   - {fileID: 1980727395}
   - {fileID: 508542133}
   - {fileID: 1229529461}
-  - {fileID: 1178790013}

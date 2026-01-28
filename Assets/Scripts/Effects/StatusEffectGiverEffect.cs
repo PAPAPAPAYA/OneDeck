@@ -63,9 +63,9 @@ namespace DefaultNamespace.Effects
 				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
 				effectResultString.value +=
 					"// " + thisCardOwnerString + // tag giver owner card
-					myCardScript.cardName + "] gave " + // tag giver card name 
+					myCard.name + "] gave " + // tag giver card name 
 					targetCardOwnerString + // status effect receiver card owner
-					targetCardScript.cardName + "] " + // status effect receiver card
+					targetCardScript.gameObject.name + "] " + // status effect receiver card
 					"1 [" + statusEffectToGive + "]\n"; // status effect
 				if (myStatusEffectResolverScript == null) continue;
 				var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);

@@ -16,13 +16,13 @@ namespace DefaultNamespace.Effects
 		{
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player gave shield to player
 			{
-				effectResultString.value += "// [" + myCardScript.cardName + "] gave [" + (shieldAmount + shieldUpAmountAlter) + "] shield to You\n";
+				effectResultString.value += "// [" + myCard.name + "] gave [" + (shieldAmount + shieldUpAmountAlter) + "] shield to You\n";
 				GameEventStorage.me.onMyPlayerShieldUpped?.RaiseOwner(); // timepoint
 				GameEventStorage.me.onTheirPlayerShieldUpped?.RaiseOpponent(); // timepoint
 			}
 			else // enemy gave shield to enemy
 			{
-				effectResultString.value += "// [" + myCardScript.cardName + "] gave [" + (shieldAmount + shieldUpAmountAlter) + "] shield to Enemy\n";
+				effectResultString.value += "// [" + myCard.name + "] gave [" + (shieldAmount + shieldUpAmountAlter) + "] shield to Enemy\n";
 				GameEventStorage.me.onTheirPlayerShieldUpped?.RaiseOwner(); // timepoint
 				GameEventStorage.me.onMyPlayerShieldUpped?.RaiseOpponent(); // timepoint
 			}

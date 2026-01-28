@@ -78,6 +78,8 @@
 
 #region Refactorings
 // refactoring
+	// use card's game object's name instead of cardscript's cardName
+		// take out "(Clone)"
 	//// change tag to status effect
 	//// clean up effect name, effect description and use effect game object's name
 	//// clean up effect script's variables?
@@ -109,7 +111,7 @@
 		//// ave. dmg output per session
 		// ave. dmg output per session per card
 
-// card maker
+//todo card maker
 	// make a new prefab
 	// add effect prefabs
 	// setup CostNEffectContainer events
@@ -163,6 +165,7 @@
 	
 
 // battle: text demo
+	//todo when a new round begins and the first card is enemy's, it will be sent to grave but its effect won't be invoked
 	//// enemy
 		////deck saver
 			//// save
@@ -264,12 +267,12 @@
 						//// prevent effect from invoking self
 					//// need to check all situations
 						//// effect activating itself
-						////x multiple cards loop, activating each other
+						//// multiple cards loop, activating each other
 						//// beforeIDealDmg event and deal dmg if dmg dealt
 							//// this will bypass [effect can't invoke self] since last effect inst isn't self anymore
 							//// no more beforeIDealDmg timepoint and game event
-						//! same card, multiple loopable effects
-							// don't do this, will stack overflow
+						//// same card, multiple loopable effects
+							//// don't do this, will stack overflow
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver
 	//// end combat phase when one player's hp reached zero
 	//// overtime

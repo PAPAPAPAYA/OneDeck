@@ -6,7 +6,6 @@ using UnityEngine;
 public class CardScript : MonoBehaviour
 {
     [Header("Card Info")]
-    public string cardName;
     [HideInInspector]
     public int cardID;
     [TextArea]
