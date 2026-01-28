@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: deal 2 dmg if infected
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -149,7 +147,7 @@ MonoBehaviour:
   price: 0
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
-  myTags: 
+  myStatusEffects: 
 --- !u!114 &5555516842082908882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,6 +165,18 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 9030499610454901085}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: InvokeEffectEvent
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 219992422929464858}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent
         m_Mode: 1
@@ -224,8 +234,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: deal 2 dmg
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []

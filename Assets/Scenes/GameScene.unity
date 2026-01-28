@@ -1642,7 +1642,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deckARef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   deckBRef: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
-  autoSpace: 0
+  autoSpace: 1
   sessionAmountTarget: 100
   currentSessionAmount: 0
   deckAWins: 0

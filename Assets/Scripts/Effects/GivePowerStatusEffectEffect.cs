@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DefaultNamespace.Effects
 {
-	public class GivePowerTagEffect : TagGiverEffect
+	public class GivePowerStatusEffectEffect : StatusEffectGiverEffect
 	{
 		
 	}

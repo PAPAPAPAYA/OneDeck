@@ -58,7 +58,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 	public void CheckCost_Infected()
 	{
-		if (_myCardScript.myTags.Contains(EnumStorage.Tag.Infected))
+		if (_myCardScript.myStatusEffects.Contains(EnumStorage.StatusEffect.Infected))
 		{
 			
 		}
@@ -70,11 +70,11 @@ public class CostNEffectContainer : MonoBehaviour
 	
 	public void CheckCost_Mana(int manaRequired)
 	{
-		if (EnumStorage.DoesListContainAmountOfTag(_myCardScript.myTags, manaRequired, EnumStorage.Tag.Mana)) return; // if check succeeded, do nothing
+		if (EnumStorage.DoesListContainAmountOfTag(_myCardScript.myStatusEffects, manaRequired, EnumStorage.StatusEffect.Mana)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "Not enough mana to activate [" + _myCardScript.cardName + "]";
+		effectResultString.value += "// Not enough mana to activate [" + _myCardScript.cardName + "]\n";
 	}
 
 	public void CheckCost_InGrave()

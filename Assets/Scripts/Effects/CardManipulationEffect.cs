@@ -57,7 +57,7 @@ public class CardManipulationEffect : EffectScript
 		effectResultString.value += "// ["+myCardScript.cardName+"] is staged to the top of the deck\n";
 	}
 
-	public void StageTag(int amount, EnumStorage.Tag tagToCheck) //todo put random cards with tagToCheck on top of the deck
+	public void StageCardsWithStatusEffect(int amount, EnumStorage.StatusEffect statusEffectToCheck) //todo put random cards with statusEffectToCheck on top of the deck
 	{
 	}
 

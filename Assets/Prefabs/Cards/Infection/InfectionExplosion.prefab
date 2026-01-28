@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: infect 3 random cards
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -79,9 +77,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  myTagResolver: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
-  canTagBeStacked: 1
-  tagToGive: 1
+  myStatusEffectResolverScript: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
+  canStatusEffectBeStacked: 1
+  statusEffectToGive: 1
   spreadEvenly: 0
   target: 2
 --- !u!1 &8718476725744197808
@@ -137,7 +135,7 @@ MonoBehaviour:
   price: 0
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
-  myTags: 
+  myStatusEffects: 
 --- !u!114 &1466604985783285254
 MonoBehaviour:
   m_ObjectHideFlags: 0

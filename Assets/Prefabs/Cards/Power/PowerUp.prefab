@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: give power tag
-  effectDescription: give power tag to 3 random cards
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -79,9 +77,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  myTagResolver: {fileID: 0}
-  canTagBeStacked: 1
-  tagToGive: 4
+  myStatusEffectResolverScript: {fileID: 0}
+  canStatusEffectBeStacked: 1
+  statusEffectToGive: 4
   spreadEvenly: 0
   target: 0
 --- !u!1 &8718476725744197808
@@ -137,7 +135,7 @@ MonoBehaviour:
   price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
-  myTags: 
+  myStatusEffects: 
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

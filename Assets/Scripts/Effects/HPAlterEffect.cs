@@ -25,9 +25,9 @@ public class HPAlterEffect : EffectScript
 	private void DmgCalculator()
 	{
 		var parentCardScript = GetComponentInParent<CardScript>();
-		foreach (var myTag in parentCardScript.myTags)
+		foreach (var myTag in parentCardScript.myStatusEffects)
 		{
-			if (myTag == EnumStorage.Tag.Power)
+			if (myTag == EnumStorage.StatusEffect.Power)
 			{
 				dmgAmountAlter++;
 			}

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DefaultNamespace.Effects
 {
-	public class HeartChangeEffect : TagGiverEffect
+	public class HeartChangeEffect : StatusEffectGiverEffect
 	{
 		
 	}

@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: deal 1 dmg to enemy
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -61,7 +59,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -127,8 +125,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: add temp curse
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -214,7 +210,7 @@ MonoBehaviour:
   price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
-  myTags: 
+  myStatusEffects: 
 --- !u!114 &1388698888961379426
 MonoBehaviour:
   m_ObjectHideFlags: 0

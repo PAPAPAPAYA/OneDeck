@@ -3,46 +3,46 @@ using UnityEngine;
 
 public class EnumStorage : MonoBehaviour
 {
-    public enum GamePhase
-    {
-        Combat,
-        Shop,
-        Result
-    }
+	public enum GamePhase
+	{
+		Combat,
+		Shop,
+		Result
+	}
 
-    public enum CombatState
-    {
-        GatherDeckLists,
-        ShuffleDeck,
-        Reveal
-    }
+	public enum CombatState
+	{
+		GatherDeckLists,
+		ShuffleDeck,
+		Reveal
+	}
 
-    public enum TargetType
-    {
-	    Me,
-	    Them,
-	    Random
-    }
-    
-    public enum Tag
-    {
-        None,
-        Infected,
-        Mana,
-        HeartChanged,
-        Power
-    }
+	public enum TargetType
+	{
+		Me,
+		Them,
+		Random
+	}
 
-    public static bool DoesListContainAmountOfTag(List<Tag> listToCheck, int amount, Tag tagToCheck)
-    {
-	    var amountOfTag = 0;
-	    foreach (var listTag in listToCheck)
-	    {
-		    if (listTag == tagToCheck)
-		    {
-			    amountOfTag++;
-		    }
-	    }
-	    return amountOfTag >= amount;
-    }
+	public enum StatusEffect
+	{
+		None,
+		Infected,
+		Mana,
+		HeartChanged,
+		Power
+	}
+
+	public static bool DoesListContainAmountOfTag(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)
+	{
+		var amountOfTag = 0;
+		foreach (var listStatusEffect in listToCheck)
+		{
+			if (listStatusEffect == statusEffectToCheck)
+			{
+				amountOfTag++;
+			}
+		}
+		return amountOfTag >= amount;
+	}
 }

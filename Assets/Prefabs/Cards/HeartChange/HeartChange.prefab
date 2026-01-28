@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: heart change 3 cards
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -79,9 +77,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  myTagResolver: {fileID: 6584689119450628697, guid: 7455205bfe91f594a926ce2fe652cf1f, type: 3}
-  canTagBeStacked: 1
-  tagToGive: 3
+  myStatusEffectResolverScript: {fileID: 6584689119450628697, guid: 7455205bfe91f594a926ce2fe652cf1f, type: 3}
+  canStatusEffectBeStacked: 1
+  statusEffectToGive: 3
   spreadEvenly: 0
   target: 2
 --- !u!1 &8718476725744197808
@@ -137,7 +135,7 @@ MonoBehaviour:
   price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
-  myTags: 
+  myStatusEffects: 
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

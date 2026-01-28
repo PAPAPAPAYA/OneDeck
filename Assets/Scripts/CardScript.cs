@@ -18,7 +18,7 @@ public class CardScript : MonoBehaviour
     //[HideInInspector]
     public PlayerStatusSO theirStatusRef;
     [Header("Tags")]
-    public List<EnumStorage.Tag> myTags;
+    public List<EnumStorage.StatusEffect> myStatusEffects;
 
     private void OnEnable()
     {

@@ -4,16 +4,16 @@ using DefaultNamespace.SOScripts;
 using UnityEngine;
 
 // mana: positive tag that can be stacked
-public class ManaAlterEffect : TagGiverEffect
+public class ManaAlterEffect : StatusEffectGiverEffect
 {
 	public void ConsumeMana(int amount)
 	{
-		if (!EnumStorage.DoesListContainAmountOfTag(myCardScript.myTags, amount, EnumStorage.Tag.Mana)) return;
-		for (var i = myCardScript.myTags.Count - 1; i >= 0; i--)
+		if (!EnumStorage.DoesListContainAmountOfTag(myCardScript.myStatusEffects, amount, EnumStorage.StatusEffect.Mana)) return;
+		for (var i = myCardScript.myStatusEffects.Count - 1; i >= 0; i--)
 		{
-			if (myCardScript.myTags[i] == EnumStorage.Tag.Mana)
+			if (myCardScript.myStatusEffects[i] == EnumStorage.StatusEffect.Mana)
 			{
-				myCardScript.myTags.RemoveAt(i);
+				myCardScript.myStatusEffects.RemoveAt(i);
 			}
 		}
 	}

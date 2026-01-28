@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5979311566126577595}
   - component: {fileID: 6959311942194247450}
   m_Layer: 0
-  m_Name: _tag resolver template
+  m_Name: _Status Effect resolver template
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

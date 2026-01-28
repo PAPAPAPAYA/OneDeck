@@ -61,12 +61,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var tagInfo = "";
 
 		// show infected tag
-		if (card.myTags.Contains(EnumStorage.Tag.Infected))
+		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Infected))
 		{
 			var infectedAmount = 0;
-			foreach (var myTag in card.myTags)
+			foreach (var myTag in card.myStatusEffects)
 			{
-				if (myTag == EnumStorage.Tag.Infected)
+				if (myTag == EnumStorage.StatusEffect.Infected)
 				{
 					infectedAmount++;
 				}
@@ -76,12 +76,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show mana tag
-		if (card.myTags.Contains(EnumStorage.Tag.Mana))
+		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Mana))
 		{
 			var manaAmount = 0;
-			foreach (var myTag in card.myTags)
+			foreach (var myTag in card.myStatusEffects)
 			{
-				if (myTag == EnumStorage.Tag.Mana)
+				if (myTag == EnumStorage.StatusEffect.Mana)
 				{
 					manaAmount++;
 				}
@@ -91,12 +91,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show heart changed tag
-		if (card.myTags.Contains(EnumStorage.Tag.HeartChanged))
+		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.HeartChanged))
 		{
 			var heartChangeAmount = 0;
-			foreach (var myTag in card.myTags)
+			foreach (var myTag in card.myStatusEffects)
 			{
-				if (myTag == EnumStorage.Tag.HeartChanged)
+				if (myTag == EnumStorage.StatusEffect.HeartChanged)
 				{
 					heartChangeAmount++;
 				}
@@ -106,12 +106,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show power tag
-		if (card.myTags.Contains(EnumStorage.Tag.Power))
+		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Power))
 		{
 			var powerAmount = 0;
-			foreach (var myTag in card.myTags)
+			foreach (var myTag in card.myStatusEffects)
 			{
-				if (myTag == EnumStorage.Tag.Power)
+				if (myTag == EnumStorage.StatusEffect.Power)
 				{
 					powerAmount++;
 				}
@@ -120,7 +120,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 			tagInfo += "[" + powerAmount + " Power]";
 		}
 
-		if (card.myTags.Count > 0)
+		if (card.myStatusEffects.Count > 0)
 		{
 			tagInfo += " ";
 		}
