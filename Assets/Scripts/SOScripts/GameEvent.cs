@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DefaultNamespace;
+using DefaultNamespace.Effects;
 using UnityEngine;
 
 [CreateAssetMenu]
@@ -47,6 +48,7 @@ public class GameEvent : ScriptableObject
 				listenerFromParentOrChild.OnEventRaised();
 			}
 		}
+		Debug.Log(name+": raised specific");
 	}
 
 	public void RegisterListener(GameEventListener listener)

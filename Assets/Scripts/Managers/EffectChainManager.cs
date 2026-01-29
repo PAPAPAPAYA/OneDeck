@@ -22,12 +22,12 @@ public class EffectChainManager : MonoBehaviour
 	public int chainNumber;
 	public GameObject currentEffectRecorder; // tracks current effect container being processed
 	public GameObject currentEffectRecorderParent; // tracks current chain parent
-	public GameObject lastEffectInst; // tracks last effect inst
+	public GameObject lastEffectObject; // tracks last effect inst
 	public List<GameObject> openedEffectRecorders; // tracks opened effect containers
 	public List<GameObject> closedEffectRecorders; // tracks closed effect containers
 	public int chainDepth; // chain depth to prevent stack overflow, currently when depth reached 99 effect will not be processed
 	
-	public void CheckShouldIStartANewChain(GameObject myCard, GameObject myEffectInst)
+	public void CheckShouldIStartANewChain(GameObject myCard, GameObject myEffectObj)
 	{
 		var shouldIMakeANewChain = false;
 		
@@ -37,7 +37,7 @@ public class EffectChainManager : MonoBehaviour
 		}
 		else
 		{
-			if (SameCardDifferentObject(myCard, myEffectInst))
+			if (SameCardDifferentObject(myCard, myEffectObj))
 			{
 				shouldIMakeANewChain = true;
 			}
@@ -125,5 +125,6 @@ public class EffectChainManager : MonoBehaviour
 
 		UtilityFuncManagerScript.CopyList(openedEffectRecorders, closedEffectRecorders, false);
 		openedEffectRecorders.Clear();
+		lastEffectObject = null; // also clear last effect object or else after shuffle if same card is revealed or after reveal if same card is legally revealed again, it won't go through
 	}
 }

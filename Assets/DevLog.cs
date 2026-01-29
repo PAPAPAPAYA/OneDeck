@@ -165,7 +165,7 @@
 	
 
 // battle: text demo
-	//todo when a new round begins and the first card is enemy's, it will be sent to grave but its effect won't be invoked
+	//// when a new round begins and the first card is enemy's, it will be sent to grave but its effect won't be invoked
 	//// enemy
 		////deck saver
 			//// save
