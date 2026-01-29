@@ -43,7 +43,6 @@ public class CostNEffectContainer : MonoBehaviour
 		// invoke effect
 		var effectString = "("+_myCardScript.cardID+") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return
-		print(effectString + "passed cost check");
 		if (EffectChainManager.Me.lastEffectObject == gameObject) return; // prevent effect invoking self
 		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared
 		EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
@@ -52,7 +51,6 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			EffectChainManager.Me.lastEffectObject = gameObject;
 			effectEvent?.Invoke(); // invoke effects
-			print(effectString + "passed chain check");
 		}
 	}
 

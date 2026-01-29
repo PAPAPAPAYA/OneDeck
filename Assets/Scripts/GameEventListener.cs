@@ -9,7 +9,7 @@ namespace DefaultNamespace
 		[Tooltip("register to which game event SO?")]
 		public GameEvent @event;
 		[Tooltip("assign child effect object(s)")]
-		public UnityEvent response;
+		public UnityEvent response = new UnityEvent();
 
 		private void OnEnable()
 		{

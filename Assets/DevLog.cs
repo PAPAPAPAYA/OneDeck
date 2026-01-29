@@ -112,12 +112,14 @@
 		// ave. dmg output per session per card
 
 //todo card maker
-	// make a new prefab
-	// add effect prefabs
+	//// make a new prefab
+		//// basic info
+	//// add effect prefabs to test hooking up unity event
+	// make effect object
 	// setup CostNEffectContainer events
 		// cost events
 		// effect events
-	// setup game event listener events
+	//// setup game event listener events
 
 // card structure
 	//// same structure from slash/ but expanded to support multiple costs and effects

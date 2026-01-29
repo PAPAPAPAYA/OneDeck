@@ -48,7 +48,6 @@ public class GameEvent : ScriptableObject
 				listenerFromParentOrChild.OnEventRaised();
 			}
 		}
-		Debug.Log(name+": raised specific");
 	}
 
 	public void RegisterListener(GameEventListener listener)
