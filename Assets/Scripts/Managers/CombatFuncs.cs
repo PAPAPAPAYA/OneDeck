@@ -46,6 +46,7 @@ namespace DefaultNamespace.Managers
 				belongsToSessionOwner ? _combatManager.ownerPlayerStatusRef : _combatManager.enemyPlayerStatusRef; // assign corresponding target
 			cardInstance.GetComponent<CardScript>().theirStatusRef = 
 				belongsToSessionOwner ? _combatManager.enemyPlayerStatusRef : _combatManager.ownerPlayerStatusRef; // assign corresponding target
+			cardInstance.name = cardToAdd.name.Replace("(Clone)", "");
 			_combatManager.combinedDeckZone.Add(cardInstance); // add the new card to combined deck
 			_combatManager.UpdateTrackingVariables();
 		}
@@ -57,17 +58,19 @@ namespace DefaultNamespace.Managers
 				var cardInst = Instantiate(cardToAdd, _combatManager.playerDeckParent.transform);
 				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.ownerPlayerStatusRef;
 				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.enemyPlayerStatusRef;
+				cardInst.name = cardInst.name.Replace("(Clone)", "");
 				_combatManager.combinedDeckZone.Add(cardInst); // add the new card to combined deck
-				_combatManager.UpdateTrackingVariables();
 			}
 			else // card belongs to enemy
 			{
 				var cardInst = Instantiate(cardToAdd, _combatManager.enemyDeckParent.transform);
 				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.enemyPlayerStatusRef;
 				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.ownerPlayerStatusRef;
+				cardInst.name = cardInst.name.Replace("(Clone)", "");
 				_combatManager.combinedDeckZone.Add(cardInst); // add the new card to combined deck
-				_combatManager.UpdateTrackingVariables();
 			}
+			
+			_combatManager.UpdateTrackingVariables();
 		}
 		
 		public List<CardScript> ReturnPlayerCardScripts()

@@ -10,7 +10,7 @@
 	//! chains are closed when: [1] same card, different effect is trying to get invoked; [2] waiting input confirm;
 	//! chains are composed with a string of effect containers
 	//! don't put multiple effect instances with loopable effect in one card, will stack overflow; put multiple loopable effects in same effect instance
-	//! no beforeIDealDmg timepoint and game event, would stack overflow; HPAlterEffect calculates dmg before dealing dmg
+	//! no beforeIDealDmg time point and game event, would stack overflow; HPAlterEffect calculates dmg before dealing dmg
 
 // design
 	// infection
@@ -76,10 +76,11 @@
 		// condition/cost
 			//? for each X not happened
 
-#region Refactorings
+
 // refactoring
-	// use card's game object's name instead of cardscript's cardName
-		// take out "(Clone)"
+#region Refactorings
+	//// use card's game object's name instead of cardscript's cardName
+		//// take out "(Clone)"
 	//// change tag to status effect
 	//// clean up effect name, effect description and use effect game object's name
 	//// clean up effect script's variables?
@@ -111,7 +112,9 @@
 		//// ave. dmg output per session
 		// ave. dmg output per session per card
 
-//todo card maker
+// abandoned: too much work, not economic
+#region abandoned
+// card maker
 	//// make a new prefab
 		//// basic info
 	//// add effect prefabs to test hooking up unity event
@@ -120,6 +123,7 @@
 		// cost events
 		// effect events
 	//// setup game event listener events
+#endregion
 
 // card structure
 	//// same structure from slash/ but expanded to support multiple costs and effects
@@ -205,6 +209,7 @@
 	// effects
 		//// give shield
 		//// generate: make temp cards that only last 1 combat phase
+			//// take out (Clone) from new card's name
 		//// undertake: send cards straight to grave
 		//// heart-change: change cards owner that only last 1 combat phase
 			//// problem is, best strat is only having heart-change
@@ -272,7 +277,7 @@
 						//// multiple cards loop, activating each other
 						//// beforeIDealDmg event and deal dmg if dmg dealt
 							//// this will bypass [effect can't invoke self] since last effect inst isn't self anymore
-							//// no more beforeIDealDmg timepoint and game event
+							//// no more beforeIDealDmg time point and game event
 						//// same card, multiple loopable effects
 							//// don't do this, will stack overflow
 		//// test to see if checking and comparing player status can discern dmg dealer and dmg receiver

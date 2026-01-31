@@ -5,9 +5,6 @@ namespace DefaultNamespace.Effects
 {
 	public class AddTempCard : EffectScript
 	{
-		//todo: bug: 
-		// 1. didn't implement to show text
-		// 2. if card's owner is changed, cards are not added to correct owner's deck
 		public void AddCardToMe(GameObject cardToAdd)
 		{
 			//CombatFuncs.me.AddCardInTheMiddleOfCombat(cardToAdd, true);
