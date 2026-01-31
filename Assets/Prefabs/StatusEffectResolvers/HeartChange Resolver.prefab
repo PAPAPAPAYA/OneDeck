@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1999526145233014990}
-  - component: {fileID: 3643492153036876302}
   - component: {fileID: 5979311566126577595}
   - component: {fileID: 6959311942194247450}
   - component: {fileID: 3122638656770756891}
@@ -35,18 +34,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3643492153036876302
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6584689119450628697}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1dc4100fa0eb46ac86580876f56a9ee8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &5979311566126577595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,8 +75,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: '[tag] change card owner'
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []

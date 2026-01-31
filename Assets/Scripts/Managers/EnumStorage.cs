@@ -19,8 +19,8 @@ public class EnumStorage : MonoBehaviour
 
 	public enum TargetType
 	{
-		Me,
-		Them,
+		Me, // card owner's deck
+		Them, // opponent's deck
 		Random
 	}
 
@@ -30,7 +30,8 @@ public class EnumStorage : MonoBehaviour
 		Infected,
 		Mana,
 		HeartChanged,
-		Power
+		Power,
+		Rest
 	}
 
 	public static bool DoesListContainAmountOfTag(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)

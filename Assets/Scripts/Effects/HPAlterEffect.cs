@@ -55,7 +55,7 @@ public class HPAlterEffect : EffectScript
 
 	public void DecreaseTheirHp_BasedOnLostHp(int baseDmgAmount)
 	{
-		var extraDmgAmount = myCardScript.myStatusRef.hpMax - myCardScript.myStatusRef.hp;
+		var extraDmgAmount = (myCardScript.myStatusRef.hpMax - myCardScript.myStatusRef.hp)/2;
 		DecreaseTheirHp(baseDmgAmount + extraDmgAmount);
 	}
 

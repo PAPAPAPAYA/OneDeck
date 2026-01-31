@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   deck:
   - {fileID: 8718476725744197808, guid: 3d6d4e56d1271ff4d8c21687f6a15c81, type: 3}
-  - {fileID: 8718476725744197808, guid: 9ddafeb70d716ff4a8d24ff4260aed9e, type: 3}
+  - {fileID: 8718476725744197808, guid: 40e0deec71ff8fd4886778e9e7f0719a, type: 3}
   - {fileID: 8718476725744197808, guid: 8cb13ce2b38712640afe61b09979a731, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0

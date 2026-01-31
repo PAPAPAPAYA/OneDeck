@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using DefaultNamespace.SOScripts;
-using TagSystem;
 using UnityEngine;
 
 public class EffectScript : MonoBehaviour

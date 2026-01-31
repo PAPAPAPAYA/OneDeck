@@ -152,12 +152,13 @@
 		// infection
 			//// explosive infection: infect 3 cards
 			//// poisoned knife: deal 2 dmg; if infected: deal 2 dmg
+			//// add poisoned shiv: deal 1 dmg; if infected: deal 1 dmg
 		// power
 			//// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
 			//// power up: power to 3 cards
 	// shiv
 		//// add a shiv: add a shiv
-		//// shiv: deal 1 dmg
+		//// shiv: deal 2 dmg
 	// grave (field)
 		//// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
 		//// undertake: move 3 random cards straight to grave
@@ -219,6 +220,7 @@
 	        //// alter mp
 	        //// show tag effects
 		// tags (status effect)
+			//// rested: add 1 if entered grave
 			//// directional status effect
 				//// clean up
 			//// power: dmg increase
@@ -242,7 +244,7 @@
 		//// in reveal
 		//// in grave
 		//// is infected
-		// cool down
+		// is rested: X number of [rested] is met
 
 	// trigger events
 		// specific event

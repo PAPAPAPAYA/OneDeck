@@ -98,8 +98,8 @@ namespace DefaultNamespace.Managers
 
 				print("win rates: " + deckAWinRate * 100 + "% vs " + deckBWinRate * 100 + "%");
 				print("HPs: " + deckAHPs.Average() + " vs " + deckBHPs.Average());
-				print("Ave Dmgs to enemy: " + deckAAveDmgToOppPerSession + " vs " + deckBAveDmgToOppPerSession);
-				print("Ave Dmgs to self: " + deckAAveDmgToSelfPerSession + " vs " + deckBAveDmgToSelfPerSession);
+				print("Ave Dmg to enemy/session: " + deckAAveDmgToOppPerSession + " vs " + deckBAveDmgToOppPerSession);
+				print("Ave Dmg to self/session: " + deckAAveDmgToSelfPerSession + " vs " + deckBAveDmgToSelfPerSession);
 				
 			}
 		}

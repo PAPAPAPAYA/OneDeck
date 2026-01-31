@@ -13,7 +13,16 @@ namespace DefaultNamespace.Effects
 		public bool spreadEvenly = false;
 		public EnumStorage.TargetType target; // whose cards the status effect will be given to
 
-		public virtual void GiveStatusEffect(int amount)
+		public virtual void GiveSelfStatusEffect(int amount) // give self status effect, default to stack
+		{
+			print("give self status effect");
+			for (int i = 0; i < amount; i++)
+			{
+				myCardScript.myStatusEffects.Add(statusEffectToGive);
+			}
+		}
+		
+		public virtual void GiveStatusEffect(int amount) // give card owner's or opponent's or full random cards status effect
 		{
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			var cardsToGiveTag = new List<GameObject>();

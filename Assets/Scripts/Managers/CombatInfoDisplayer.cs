@@ -59,8 +59,23 @@ public class CombatInfoDisplayer : MonoBehaviour
 	private string ProcessTagInfo(CardScript card)
 	{
 		var tagInfo = "";
+		
+		// show rest status effect
+		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Rest))
+		{
+			var amount = 0;
+			foreach (var myTag in card.myStatusEffects)
+			{
+				if (myTag == EnumStorage.StatusEffect.Rest)
+				{
+					amount++;
+				}
+			}
 
-		// show infected tag
+			tagInfo += "[" + amount + " Rested]";
+		}
+
+		// show infected status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Infected))
 		{
 			var infectedAmount = 0;
@@ -75,7 +90,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 			tagInfo += "[" + infectedAmount + " Infected]";
 		}
 
-		// show mana tag
+		// show mana status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Mana))
 		{
 			var manaAmount = 0;
@@ -90,7 +105,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 			tagInfo += "[" + manaAmount + " Mana]";
 		}
 
-		// show heart changed tag
+		// show heart changed status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.HeartChanged))
 		{
 			var heartChangeAmount = 0;
@@ -105,7 +120,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 			tagInfo += "[" + heartChangeAmount + " Heart-Changed]";
 		}
 
-		// show power tag
+		// show power status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Power))
 		{
 			var powerAmount = 0;

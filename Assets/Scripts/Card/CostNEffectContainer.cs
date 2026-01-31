@@ -56,6 +56,16 @@ public class CostNEffectContainer : MonoBehaviour
 
 	#region check cost funcs
 
+	public void CheckCost_Rested(int restRequired)
+	{
+		if (EnumStorage.DoesListContainAmountOfTag(_myCardScript.myStatusEffects, restRequired, EnumStorage.StatusEffect.Rest)) return; // if check succeeded, do nothing
+		// if check failed, process
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
+		// todo implement method to return "your" or "their" card
+		effectResultString.value += "// Not enough [Rest] to activate [" + _myCardScript.gameObject.name + "]\n";
+	}
+	
 	public void CheckCost_Infected()
 	{
 		if (_myCardScript.myStatusEffects.Contains(EnumStorage.StatusEffect.Infected))
@@ -74,7 +84,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// Not enough mana to activate [" + _myCardScript.gameObject.name + "]\n";
+		effectResultString.value += "// Not enough [Mana] to activate [" + _myCardScript.gameObject.name + "]\n";
 	}
 
 	public void CheckCost_InGrave()
