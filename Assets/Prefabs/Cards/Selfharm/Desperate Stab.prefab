@@ -250,7 +250,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardDesc: 'rest 1: deal dmg equals lost hp'
+  cardDesc: 'rest 1: deal dmg equals lost hp/2'
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}

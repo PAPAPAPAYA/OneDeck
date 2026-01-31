@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8950732050201981053}
   - component: {fileID: 1574009377073963289}
   m_Layer: 0
-  m_Name: cost 2 mana, deal 3 dmg
+  m_Name: cost 2 mana, deal 5 dmg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,8 +47,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: cost 2 mana, deal 3 dmg
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -104,9 +102,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  myTagResolver: {fileID: 0}
-  canTagBeStacked: 0
-  tagToGive: 0
+  myStatusEffectResolverScript: {fileID: 0}
+  canStatusEffectBeStacked: 0
+  statusEffectToGive: 0
   spreadEvenly: 0
   target: 0
 --- !u!114 &1574009377073963289
@@ -170,14 +168,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Big Fireball
   cardID: 0
   cardDesc: 'cost 2 mana: deal 5 dmg to enemy'
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
-  myTags: 
+  myStatusEffects: 
 --- !u!114 &6223351348450884220
 MonoBehaviour:
   m_ObjectHideFlags: 0

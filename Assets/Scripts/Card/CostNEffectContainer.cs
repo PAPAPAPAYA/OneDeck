@@ -41,13 +41,13 @@ public class CostNEffectContainer : MonoBehaviour
 		checkCostEvent?.Invoke();
 
 		// invoke effect
-		var effectString = "("+_myCardScript.cardID+") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
+		var effectString = "(" + _myCardScript.cardID + ") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return
 		if (EffectChainManager.Me.lastEffectObject == gameObject) return; // prevent effect invoking self
 		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared
 		EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
-		
-		if (EffectChainManager.Me.EffectCanBeInvoked(effectString)) 
+
+		if (EffectChainManager.Me.EffectCanBeInvoked(effectString))
 		{
 			EffectChainManager.Me.lastEffectObject = gameObject;
 			effectEvent?.Invoke(); // invoke effects
@@ -56,31 +56,46 @@ public class CostNEffectContainer : MonoBehaviour
 
 	#region check cost funcs
 
-	public void CheckCost_Rested(int restRequired)
+	public void CheckCost_Undead(int undeadRequired)
 	{
-		if (EnumStorage.DoesListContainAmountOfTag(_myCardScript.myStatusEffects, restRequired, EnumStorage.StatusEffect.Rest)) return; // if check succeeded, do nothing
+		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, undeadRequired, EnumStorage.StatusEffect.Undead)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		// todo implement method to return "your" or "their" card
-		effectResultString.value += "// Not enough [Rest] to activate [" + _myCardScript.gameObject.name + "]\n";
+		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
+		effectResultString.value +=
+			"// Not enough [Undead] to revive " +
+			cardOwnerInfo +
+			" [" + _myCardScript.gameObject.name + "]\n";
 	}
-	
+
+	public void CheckCost_Rested(int restRequired)
+	{
+		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, restRequired, EnumStorage.StatusEffect.Rest)) return; // if check succeeded, do nothing
+		// if check failed, process
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
+		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
+		effectResultString.value +=
+			"// Not enough [Rest] to activate " +
+			cardOwnerInfo +
+			" [" + _myCardScript.gameObject.name + "]\n";
+	}
+
 	public void CheckCost_Infected()
 	{
 		if (_myCardScript.myStatusEffects.Contains(EnumStorage.StatusEffect.Infected))
 		{
-			
 		}
 		else
 		{
 			_costNotMetFlag++;
 		}
 	}
-	
+
 	public void CheckCost_Mana(int manaRequired)
 	{
-		if (EnumStorage.DoesListContainAmountOfTag(_myCardScript.myStatusEffects, manaRequired, EnumStorage.StatusEffect.Mana)) return; // if check succeeded, do nothing
+		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, manaRequired, EnumStorage.StatusEffect.Mana)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone

@@ -31,10 +31,11 @@ public class EnumStorage : MonoBehaviour
 		Mana,
 		HeartChanged,
 		Power,
-		Rest
+		Rest,
+		Undead
 	}
 
-	public static bool DoesListContainAmountOfTag(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)
+	public static bool DoesListContainAmountOfStatusEffect(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)
 	{
 		var amountOfTag = 0;
 		foreach (var listStatusEffect in listToCheck)

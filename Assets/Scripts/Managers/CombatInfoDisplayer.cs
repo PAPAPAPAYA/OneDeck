@@ -46,6 +46,18 @@ public class CombatInfoDisplayer : MonoBehaviour
 		enemyDeckDisplay.text = "";
 	}
 
+	public string ReturnCardOwnerInfo(PlayerStatusSO statusRef)
+	{
+		if (statusRef == CombatManager.Me.ownerPlayerStatusRef)
+		{
+			return "Your";
+		}
+		else
+		{
+			return "Their";
+		}
+	}
+	
 	public void ShowCardInfo(CardScript cardRevealed, int deckSize, int graveSize, bool ownersCard)
 	{
 		revealZoneDisplay.text = "#" + (graveSize + 1) + // card num
@@ -59,6 +71,21 @@ public class CombatInfoDisplayer : MonoBehaviour
 	private string ProcessTagInfo(CardScript card)
 	{
 		var tagInfo = "";
+		
+		// show undead status effect
+		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Undead))
+		{
+			var amount = 0;
+			foreach (var myTag in card.myStatusEffects)
+			{
+				if (myTag == EnumStorage.StatusEffect.Undead)
+				{
+					amount++;
+				}
+			}
+
+			tagInfo += "[" + amount + " Undead]";
+		}
 		
 		// show rest status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Rest))

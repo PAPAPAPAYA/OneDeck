@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 1999526145233014990}
   - component: {fileID: 5979311566126577595}
   - component: {fileID: 6959311942194247450}
-  - component: {fileID: 7431176955717029217}
+  - component: {fileID: -1103770950550971098}
+  - component: {fileID: 8833320896859766530}
   m_Layer: 0
-  m_Name: Infected Resolver
+  m_Name: Undead Resolver
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
+  event: {fileID: 11400000, guid: 5e8e5069704e41e4a80c2a0afa345e81, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:
@@ -81,9 +82,21 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7431176955717029217}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseMyHp
+      - m_Target: {fileID: -1103770950550971098}
+        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
+        m_MethodName: ReviveSelf
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 8833320896859766530}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStausEffect, Assembly-CSharp
+        m_MethodName: ConsumeStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -93,7 +106,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &7431176955717029217
+--- !u!114 &-1103770950550971098
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -102,9 +115,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 6584689119450628697}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: eefb24a8c10cb53439f7e7db22e3daec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  dmgAmountAlter: 0
-  healAmountAlter: 0
+--- !u!114 &8833320896859766530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6584689119450628697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ac7fd908a064f019eae08d8e541f473, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  statusEffectToConsume: 6

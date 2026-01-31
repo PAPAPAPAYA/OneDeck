@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7957306034239753139}
   - component: {fileID: 6474462606738216503}
   m_Layer: 0
-  m_Name: cost 1 mana to deal 2 dmg
+  m_Name: cost 1 mana to deal 3 dmg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,8 +47,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: cost 1 mana to deal 2 dmg
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -86,7 +84,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 3
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -104,9 +102,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  myTagResolver: {fileID: 0}
-  canTagBeStacked: 0
-  tagToGive: 0
+  myStatusEffectResolverScript: {fileID: 0}
+  canStatusEffectBeStacked: 0
+  statusEffectToGive: 0
   spreadEvenly: 0
   target: 0
 --- !u!114 &6474462606738216503
@@ -170,14 +168,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Fireball
   cardID: 0
-  cardDesc: 'cost 1 mana: deal 2 dmg to enemy'
+  cardDesc: 'cost 1 mana: deal 3 dmg'
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
-  myTags: 
+  myStatusEffects: 
 --- !u!114 &7507784839872512994
 MonoBehaviour:
   m_ObjectHideFlags: 0

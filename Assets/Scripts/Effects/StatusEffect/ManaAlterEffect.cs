@@ -8,7 +8,7 @@ public class ManaAlterEffect : StatusEffectGiverEffect
 {
 	public void ConsumeMana(int amount)
 	{
-		if (!EnumStorage.DoesListContainAmountOfTag(myCardScript.myStatusEffects, amount, EnumStorage.StatusEffect.Mana)) return;
+		if (!EnumStorage.DoesListContainAmountOfStatusEffect(myCardScript.myStatusEffects, amount, EnumStorage.StatusEffect.Mana)) return;
 		for (var i = myCardScript.myStatusEffects.Count - 1; i >= 0; i--)
 		{
 			if (myCardScript.myStatusEffects[i] == EnumStorage.StatusEffect.Mana)

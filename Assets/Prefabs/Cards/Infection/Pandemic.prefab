@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: 1466604985783285254}
   m_Layer: 0
-  m_Name: InfectionExplosion
+  m_Name: Pandemic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

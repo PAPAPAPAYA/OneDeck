@@ -8,7 +8,7 @@ namespace DefaultNamespace.Effects
 		public void ConsumeStatusEffect(int amount)
 		{
 			// first check if amount is met
-			if (!EnumStorage.DoesListContainAmountOfTag(myCardScript.myStatusEffects, amount, statusEffectToConsume)) return;
+			if (!EnumStorage.DoesListContainAmountOfStatusEffect(myCardScript.myStatusEffects, amount, statusEffectToConsume)) return;
 			// then remove status effect
 			for (var i = myCardScript.myStatusEffects.Count - 1; i >= 0; i--)
 			{

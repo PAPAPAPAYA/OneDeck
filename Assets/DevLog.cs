@@ -172,6 +172,7 @@
 	
 
 // battle: text demo
+	//todo base dmg amount SO, so that i can balance it quicker
 	//// when a new round begins and the first card is enemy's, it will be sent to grave but its effect won't be invoked
 	//// enemy
 		////deck saver
@@ -185,7 +186,8 @@
 		//// check multiple costs
 	//// draw situation
 		//// no win no heart loss
-	//// text display in scene
+	// text display in scene
+		//? show cards' owner
 		//// show tags on card
 	        //// show effect result
 			    //// need to figure out how to discern reveal zone effect and deck effect
@@ -220,6 +222,7 @@
 	        //// alter mp
 	        //// show tag effects
 		// tags (status effect)
+			// undead: if sent to grave, put back to deck and consume status effect
 			//// rested: add 1 if entered grave
 			//// directional status effect
 				//// clean up
