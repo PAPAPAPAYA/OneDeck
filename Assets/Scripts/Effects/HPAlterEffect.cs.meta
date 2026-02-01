@@ -5,6 +5,7 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  - baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

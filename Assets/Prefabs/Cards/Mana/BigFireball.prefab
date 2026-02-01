@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4959209765031838332}
   - component: {fileID: 5154623417668548102}
-  - component: {fileID: 8950732050201981053}
   - component: {fileID: 1574009377073963289}
+  - component: {fileID: 3211876255216633365}
   m_Layer: 0
   m_Name: cost 2 mana, deal 5 dmg
   m_TagString: Untagged
@@ -65,9 +65,9 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8950732050201981053}
-        m_TargetAssemblyTypeName: ManaAlterEffect, Assembly-CSharp
-        m_MethodName: ConsumeMana
+      - m_Target: {fileID: 3211876255216633365}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStausEffect, Assembly-CSharp
+        m_MethodName: ConsumeStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -84,29 +84,11 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 5
+          m_IntArgument: 3
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &8950732050201981053
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1865972468532070846}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf7d3c3d199e15b4f8b716a13478ec90, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  myStatusEffectResolverScript: {fileID: 0}
-  canStatusEffectBeStacked: 0
-  statusEffectToGive: 0
-  spreadEvenly: 0
-  target: 0
 --- !u!114 &1574009377073963289
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,8 +102,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
+--- !u!114 &3211876255216633365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1865972468532070846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ac7fd908a064f019eae08d8e541f473, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  statusEffectToConsume: 2
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

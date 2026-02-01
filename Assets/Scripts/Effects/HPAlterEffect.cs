@@ -6,10 +6,28 @@ using UnityEngine;
 
 public class HPAlterEffect : EffectScript
 {
+	[Tooltip("base dmg that will be dealt")]
+	public IntSO baseDmg;
 	[HideInInspector]
 	public int dmgAmountAlter = 0;
 	[HideInInspector]
 	public int healAmountAlter = 0;
+	
+	private void DmgCalculator()
+	{
+		// calculate additional dmg due to [Power]
+		var parentCardScript = GetComponentInParent<CardScript>();
+		foreach (var myTag in parentCardScript.myStatusEffects)
+		{
+			if (myTag == EnumStorage.StatusEffect.Power)
+			{
+				dmgAmountAlter++;
+			}
+		}
+
+		// add base dmg
+		dmgAmountAlter += baseDmg.value;
+	}
 
 	private void ProcessShieldNHp(int dmgAmount, PlayerStatusSO status)
 	{
@@ -22,26 +40,12 @@ public class HPAlterEffect : EffectScript
 		}
 	}
 
-	private void DmgCalculator()
-	{
-		var parentCardScript = GetComponentInParent<CardScript>();
-		foreach (var myTag in parentCardScript.myStatusEffects)
-		{
-			if (myTag == EnumStorage.StatusEffect.Power)
-			{
-				dmgAmountAlter++;
-			}
-		}
-	}
-
-	public void DecreaseMyHp(int dmgAmount)
+	public void DecreaseMyHp(int extraDmg)
 	{
 		DmgCalculator();
-		//GameEventStorage.me.beforeIDealDmg?.RaiseSpecific(myCard); // timepoint
-		//myCardScript.myStatusRef.hp -= dmgAmount + dmgAmountAlter;
-		ProcessShieldNHp(dmgAmount + dmgAmountAlter, myCardScript.myStatusRef);
+		ProcessShieldNHp(extraDmg + dmgAmountAlter, myCardScript.myStatusRef);
 		myCardScript.myStatusRef.hp = Mathf.Clamp(myCardScript.myStatusRef.hp, 0, myCardScript.myStatusRef.hpMax);
-		CheckDmgTargets_DealingDmgToSelf(dmgAmount);
+		CheckDmgTargets_DealingDmgToSelf(extraDmg);
 		dmgAmountAlter = 0;
 	}
 
@@ -59,14 +63,12 @@ public class HPAlterEffect : EffectScript
 		DecreaseTheirHp(baseDmgAmount + extraDmgAmount);
 	}
 
-	public void DecreaseTheirHp(int dmgAmount)
+	public void DecreaseTheirHp(int extraDmg)
 	{
 		DmgCalculator();
-		//GameEventStorage.me.beforeIDealDmg?.RaiseSpecific(myCard); // timepoint
-		//myCardScript.theirStatusRef.hp -= dmgAmount + dmgAmountAlter;
-		ProcessShieldNHp(dmgAmount + dmgAmountAlter, myCardScript.theirStatusRef);
+		ProcessShieldNHp(extraDmg + dmgAmountAlter, myCardScript.theirStatusRef);
 		myCardScript.theirStatusRef.hp = Mathf.Clamp(myCardScript.theirStatusRef.hp, 0, myCardScript.theirStatusRef.hpMax);
-		CheckDmgTargets_DealingDmgToOpponent(dmgAmount);
+		CheckDmgTargets_DealingDmgToOpponent(extraDmg);
 		dmgAmountAlter = 0;
 	}
 

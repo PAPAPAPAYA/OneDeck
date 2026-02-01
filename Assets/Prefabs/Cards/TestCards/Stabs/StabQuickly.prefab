@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: deal 1 dmg
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -61,7 +59,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: -1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -79,6 +77,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
 --- !u!1 &6199982980403798588
@@ -127,8 +126,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: stage self
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -208,14 +205,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Stab Quickly
   cardID: 0
   cardDesc: stage self; deal 1 dmg to enemy
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
-  myTags: 
+  myStatusEffects: 
 --- !u!114 &4318095868380598169
 MonoBehaviour:
   m_ObjectHideFlags: 0

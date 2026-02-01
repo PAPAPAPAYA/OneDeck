@@ -64,18 +64,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 2535055919507757290}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
-        m_MethodName: AddCardToMe
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 4544861942980061181, guid: c8f8248c3f0c0a7498f127b644bbd791, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &2535055919507757290
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardDesc: add 2 temporary [Shiv] to deck
+  cardDesc: add 1 [Shiv] to deck
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 219992422929464858}
   - component: {fileID: 3119703532620799903}
   m_Layer: 0
-  m_Name: deal 2 dmg if infected
+  m_Name: deal 3 dmg if infected
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -71,7 +71,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -89,6 +89,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
 --- !u!1 &4544861942980061181
@@ -138,7 +139,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Poisoned Knife
   cardID: 0
   cardDesc: 'deal 2 damge to enemy;
 
@@ -200,7 +200,7 @@ GameObject:
   - component: {fileID: 9030499610454901085}
   - component: {fileID: 9157427750768029311}
   m_Layer: 0
-  m_Name: deal 2 dmg
+  m_Name: deal 1 dmg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -247,7 +247,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: -1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -265,5 +265,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0

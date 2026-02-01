@@ -14,5 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hp: 10
   hpMax: 10
-  hpOg: 10
-  hpMaxOg: 10
+  shield: 0
+  hpOg: 20
+  hpMaxOg: 20
+  shieldOg: 0

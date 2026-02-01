@@ -9,12 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc6c639cfe7644ff8b297631a1d5f491, type: 3}
-  m_Name: EnemyStatusRef
+  m_Script: {fileID: 11500000, guid: a3b874ada8e4469ea42cee10707255e4, type: 3}
+  m_Name: BaseDmgRef
   m_EditorClassIdentifier: 
-  hp: 10
-  hpMax: 10
-  shield: 0
-  hpOg: 20
-  hpMaxOg: 20
-  shieldOg: 0
+  value: 2
+  valueOg: 2
+  resetOnStart: 1
+  description: 
