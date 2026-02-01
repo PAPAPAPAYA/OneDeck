@@ -140,7 +140,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardDesc: 'deal 2 damge to enemy;
+  cardDesc: 'deal 1 damge to enemy;
 
     if infected, deal 2 more damage to enemy'
   takeUpSpace: 1
