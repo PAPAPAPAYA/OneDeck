@@ -77,8 +77,10 @@
 			//? for each X not happened
 
 
-// refactoring
+
 #region Refactorings
+// refactoring
+	//// base dmg amount SO, so that i can balance it quicker
 	//// use card's game object's name instead of cardscript's cardName
 		//// take out "(Clone)"
 	//// change tag to status effect
@@ -112,8 +114,8 @@
 		//// ave. dmg output per session
 		// ave. dmg output per session per card
 
-// abandoned: too much work, not economic
 #region abandoned
+// abandoned: too much work, not economic
 // card maker
 	//// make a new prefab
 		//// basic info
@@ -131,6 +133,7 @@
 			//// cost check
 			//// effect
 			//// assign effect target ref
+	
 
 // cards
 	// hp alter
@@ -152,14 +155,21 @@
 		// infection
 			//// explosive infection: infect 3 cards
 			//// poisoned knife: deal 2 dmg; if infected: deal 2 dmg
-			//// add poisoned shiv: deal 1 dmg; if infected: deal 1 dmg
 		// power
 			//// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
 			//// power up: power to 3 cards
 	// shiv
 		//// add a shiv: add a shiv
 		//// shiv: deal 2 dmg
-	// grave (field)
+		//// add poisoned shiv: deal 1 dmg; if infected: deal 1 dmg
+		//// add undead shiv: [revive] deal 1 dmg; if round start, grant self [revive]
+	// grave
+		//// lord of the underworld: if a card is revived, +1 power; deal 1 dmg
+		//// exile slash: undertake 1 of my cards, deal 4 dmg
+		//// zombify: give 1 of my cards [revive]
+		//// undead stab: [revive] deal base dmg
+			//// give self revive after shuffle
+			//// don't start with revive
 		//// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
 		//// undertake: move 3 random cards straight to grave
 		//// stab from the grave: when sent to grave, deal 1 dmg
@@ -169,10 +179,9 @@
 		//// increase max hp
 	// curse
 		//// slippery floor: deal 1 dmg to self
-	
+
 
 // battle: text demo
-	//todo base dmg amount SO, so that i can balance it quicker
 	//// when a new round begins and the first card is enemy's, it will be sent to grave but its effect won't be invoked
 	//// enemy
 		////deck saver
@@ -222,7 +231,9 @@
 	        //// alter mp
 	        //// show tag effects
 		// tags (status effect)
-			// undead: if sent to grave, put back to deck and consume status effect
+			//// remove status effect correctly
+			//// undead: if sent to grave, put back to deck and consume status effect
+				//// destroy status effect resolver 
 			//// rested: add 1 if entered grave
 			//// directional status effect
 				//// clean up
@@ -290,6 +301,8 @@
 	//// overtime
 		//// implement func to add card in the middle of combat
 		//// add fatigue
+
+
 // shop
 	//? give tag
 		// stage self
@@ -314,10 +327,12 @@
 	//// result
 	//// show result
 	//// show button prompt
+	
 
 // debug
 	//? record data and write to local txt
 
+	
 // housekeeping
 	//// documentation
 	//// document card system

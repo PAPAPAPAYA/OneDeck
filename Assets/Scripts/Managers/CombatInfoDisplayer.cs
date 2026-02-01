@@ -73,12 +73,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var tagInfo = "";
 		
 		// show undead status effect
-		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Undead))
+		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Revive))
 		{
 			var amount = 0;
 			foreach (var myTag in card.myStatusEffects)
 			{
-				if (myTag == EnumStorage.StatusEffect.Undead)
+				if (myTag == EnumStorage.StatusEffect.Revive)
 				{
 					amount++;
 				}

@@ -11,12 +11,33 @@ public class CardManipulationEffect : EffectScript
 	private List<GameObject> _graveDeck;
 
 	// choose cards logic in here, move cards logic in CombatFuncs
+	public void SendRandomMyCardsToGrave(int amount)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var cardsToSend = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
+		for (int i = cardsToSend.Count - 1; i >= 0; i--)
+		{
+			if (cardsToSend[i].GetComponent<CardScript>().myStatusRef != myCardScript.myStatusRef) // if card doesn't belong to this card's owner
+			{
+				cardsToSend.RemoveAt(i);
+			}
+		}
+		cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
+		SendChosenCardsToGrave(cardsToSend, amount);
+	}
 	public void SendRandomCardsToGrave(int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToSend = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
 		cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
+		SendChosenCardsToGrave(cardsToSend, amount);
+	}
+
+	private void SendChosenCardsToGrave(List<GameObject> cardsToSend, int amount)
+	{
+		if (amount == 0) return;
 		amount = Mathf.Clamp(amount, 0, _combinedDeck.Count);
 		for (var i = 0; i < amount; i++)
 		{

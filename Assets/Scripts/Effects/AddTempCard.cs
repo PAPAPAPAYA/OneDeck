@@ -18,7 +18,7 @@ namespace DefaultNamespace.Effects
 			{
 				effectResultString.value += "// [" + myCard.name + "] added 1 [" + cardToAdd.name + "] to Enemy\n";
 			}
-			combatManager.Shuffle();
+			//combatManager.Shuffle();
 		}
 		public void AddCardToThem(GameObject cardToAdd)
 		{
@@ -32,7 +32,7 @@ namespace DefaultNamespace.Effects
 			{
 				effectResultString.value += "// [" + myCard.name + "] added 1 [" + cardToAdd.name + "] to You\n";
 			}
-			combatManager.Shuffle();
+			//combatManager.Shuffle();
 		}
 	}
 }

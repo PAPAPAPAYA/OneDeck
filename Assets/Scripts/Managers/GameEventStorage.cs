@@ -27,4 +27,6 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onMyPlayerShieldUpped;
 	public GameEvent onTheirPlayerShieldUpped;
 	public GameEvent afterShuffle; // used for effects that put cards on top or bottom
+	public GameEvent beforeRoundStart; // used for effects that activate once in a round
+	public GameEvent onAnyCardRevived; // when any card is moved from grave to deck
 }

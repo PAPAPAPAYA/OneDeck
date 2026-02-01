@@ -11,10 +11,10 @@ public class CardScript : MonoBehaviour
     [TextArea]
     public string cardDesc;
     public bool takeUpSpace = true; // whether this card takes up deck size
-    public int price;
-    //[HideInInspector]
+    public int price = 4;
+    [HideInInspector]
     public PlayerStatusSO myStatusRef;
-    //[HideInInspector]
+    [HideInInspector]
     public PlayerStatusSO theirStatusRef;
     [Header("Tags")]
     public List<EnumStorage.StatusEffect> myStatusEffects;

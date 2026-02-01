@@ -146,6 +146,7 @@ public class CombatManager : MonoBehaviour
 
 		deckSize = combinedDeckZone.Count;
 		_infoDisplayer.RefreshDeckInfo();
+		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 		currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 	}
 
@@ -195,6 +196,7 @@ public class CombatManager : MonoBehaviour
 	{
 		if (awaitingRevealConfirm)
 		{
+			CombatInfoDisplayer.me.RefreshDeckInfo();
 			// combat finished
 			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
@@ -208,6 +210,7 @@ public class CombatManager : MonoBehaviour
 			{
 				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\npress space to shuffle";
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
+				GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 				roundNumRef.value++;
 				_infoDisplayer.ClearInfo();
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;

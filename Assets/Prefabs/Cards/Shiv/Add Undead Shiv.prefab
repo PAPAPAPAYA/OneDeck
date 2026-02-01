@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 2535055919507757290}
   m_Layer: 0
-  m_Name: add 1 undead shiv
+  m_Name: add 1 shiv
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57,7 +57,7 @@ MonoBehaviour:
         m_MethodName: AddCardToMe
         m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 4544861942980061181, guid: 96ed6d33e9035f64eab45578475cf688, type: 3}
+          m_ObjectArgument: {fileID: 8718476725744197808, guid: dd4016c2e6d53a54aa442c3a672f4405, type: 3}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
   m_Layer: 0
-  m_Name: Add Poisoned Shivs
+  m_Name: Add Undead Shiv
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -124,10 +124,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardDesc: 'add 1 temporary [Poisoned Shiv] to deck
+  cardDesc: 'add 1 [Undead Shiv] to deck
 
-    [Poisoned Shiv]: deal 1
-    dmg; deal 2 more if infected'
+    Undead Shiv: [undead] deal 1 dmg; grant
+    self [undead] each round'
   takeUpSpace: 1
   price: 4
   myStatusRef: {fileID: 0}

@@ -11,14 +11,26 @@ namespace DefaultNamespace.Effects
 		[Tooltip("if this is none, then won't run give status effect")]
 		public EnumStorage.StatusEffect statusEffectToGive;
 		public bool spreadEvenly = false;
+		[Tooltip("only applies to GiveStatusEffect(): whose cards the status effect will be given to")]
 		public EnumStorage.TargetType target; // whose cards the status effect will be given to
 
 		public virtual void GiveSelfStatusEffect(int amount) // give self status effect, default to stack
 		{
-			print("give self status effect");
 			for (int i = 0; i < amount; i++)
 			{
+				// give status effect
 				myCardScript.myStatusEffects.Add(statusEffectToGive);
+				// display effect info
+				var thisCardOwnerString = CombatInfoDisplayer.me.ReturnCardOwnerInfo(myCardScript.myStatusRef);
+				effectResultString.value +=
+					"// " + thisCardOwnerString + // tag giver owner card
+					" [" + myCard.name + "] gave" + // tag giver card name 
+					" it" + // status effect receiver card
+					" 1 [" + statusEffectToGive + "]\n"; // status effect
+				// make statue effect resolver
+				if (myStatusEffectResolverScript == null) continue;
+				var tagResolver = Instantiate(myStatusEffectResolverScript, myCard.transform);
+				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
 			}
 		}
 		

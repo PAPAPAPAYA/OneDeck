@@ -35,7 +35,8 @@ namespace DefaultNamespace.Managers
 		{
 			_combatManager.graveZone.Remove(targetCard);
 			_combatManager.combinedDeckZone.Add(targetCard);
-			_combatManager.Shuffle();
+			GameEventStorage.me.onAnyCardRevived.Raise();
+			//_combatManager.Shuffle();
 		}
 
 		public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)

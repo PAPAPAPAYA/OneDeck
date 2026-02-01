@@ -1078,6 +1078,8 @@ MonoBehaviour:
   onMyPlayerShieldUpped: {fileID: 11400000, guid: 240a49713af66d84892b1942b1bd68d7, type: 2}
   onTheirPlayerShieldUpped: {fileID: 11400000, guid: 808138fe6215952418c045862c9f80ad, type: 2}
   afterShuffle: {fileID: 11400000, guid: fe87bc9a909276b4dabe1bf8aa01d8a4, type: 2}
+  beforeRoundStart: {fileID: 11400000, guid: cde884b6e17c9e24b90d185b1c96604e, type: 2}
+  onAnyCardRevived: {fileID: 11400000, guid: 0d43dad2a4771174f9cb1704def50e8d, type: 2}
 --- !u!1 &508542130
 GameObject:
   m_ObjectHideFlags: 0

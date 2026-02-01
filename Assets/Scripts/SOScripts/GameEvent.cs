@@ -16,6 +16,7 @@ public class GameEvent : ScriptableObject
 		}
 	}
 
+	// used for events with specific player (owner) ex. OnMeTookDmg
 	public void RaiseOwner()
 	{
 		for (var i = _listeners.Count - 1; i >= 0; i--)
@@ -27,6 +28,7 @@ public class GameEvent : ScriptableObject
 		}
 	}
 
+	// used for events with specific player (opponent) ex. OnMeTookDmg
 	public void RaiseOpponent()
 	{
 		for (var i = _listeners.Count - 1; i >= 0; i--)

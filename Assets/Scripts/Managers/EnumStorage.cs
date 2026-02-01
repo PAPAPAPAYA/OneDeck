@@ -32,7 +32,7 @@ public class EnumStorage : MonoBehaviour
 		HeartChanged,
 		Power,
 		Rest,
-		Undead
+		Revive
 	}
 
 	public static bool DoesListContainAmountOfStatusEffect(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)

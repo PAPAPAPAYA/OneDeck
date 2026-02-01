@@ -56,9 +56,9 @@ public class CostNEffectContainer : MonoBehaviour
 
 	#region check cost funcs
 
-	public void CheckCost_Undead(int undeadRequired)
+	public void CheckCost_Revive(int undeadRequired)
 	{
-		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, undeadRequired, EnumStorage.StatusEffect.Undead)) return; // if check succeeded, do nothing
+		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, undeadRequired, EnumStorage.StatusEffect.Revive)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone

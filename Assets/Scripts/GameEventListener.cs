@@ -13,6 +13,10 @@ namespace DefaultNamespace
 
 		private void OnEnable()
 		{
+			if (@event == null)
+			{
+				Debug.LogError("Assign Game Event to GameEventListener");
+			}
 			@event.RegisterListener(this);
 		}
 

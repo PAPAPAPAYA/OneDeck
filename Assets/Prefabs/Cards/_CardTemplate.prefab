@@ -100,7 +100,7 @@ MonoBehaviour:
   cardID: 0
   cardDesc: 
   takeUpSpace: 1
-  price: 0
+  price: 4
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

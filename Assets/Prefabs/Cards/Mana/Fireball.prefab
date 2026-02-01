@@ -118,7 +118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  statusEffectToConsume: 0
+  statusEffectToConsume: 2
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
