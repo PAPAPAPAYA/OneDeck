@@ -11,7 +11,7 @@ public class CardScript : MonoBehaviour
     [TextArea]
     public string cardDesc;
     public bool takeUpSpace = true; // whether this card takes up deck size
-    public int price = 4;
+    public IntSO price;
     [HideInInspector]
     public PlayerStatusSO myStatusRef;
     [HideInInspector]

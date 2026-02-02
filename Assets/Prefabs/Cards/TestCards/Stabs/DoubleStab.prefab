@@ -210,7 +210,7 @@ MonoBehaviour:
   cardID: 0
   cardDesc: deal 1 dmg 2 times
   takeUpSpace: 1
-  price: 4
+  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

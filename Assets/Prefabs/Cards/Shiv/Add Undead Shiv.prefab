@@ -129,7 +129,7 @@ MonoBehaviour:
     Undead Shiv: [undead] deal 1 dmg; grant
     self [undead] each round'
   takeUpSpace: 1
-  price: 4
+  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

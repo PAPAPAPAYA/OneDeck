@@ -121,8 +121,8 @@ public class ShopManager : MonoBehaviour
 		{
 			if (playerDeckRef.deck.Count >= deckSize.value) return; // check if player deck not full
 		}
-		if (purse.value < cardToBuyScript.price) return; // check if affordable
-		purse.value -= cardToBuyScript.price; // pay the price
+		if (purse.value < cardToBuyScript.price.value) return; // check if affordable
+		purse.value -= cardToBuyScript.price.value; // pay the price
 		if (cardToBuyScript.takeUpSpace) // if card player tyring to buy takes up space in deck
 		{
 			playerDeckRef.deck.Add(cardToBuy); // add it to player deck
@@ -140,7 +140,7 @@ public class ShopManager : MonoBehaviour
 	{
 		if (playerDeckRef.deck.Count - 1 < cardIndex) return; // check if card index valid
 		var cardToSell = playerDeckRef.deck[cardIndex]; // store card player tyring to sell
-		purse.value += cardToSell.GetComponent<CardScript>().price / 2; // get the money
+		purse.value += cardToSell.GetComponent<CardScript>().price.value / 2; // get the money
 		playerDeckRef.deck.Remove(cardToSell); // remove it from player deck
 		GatherPlayerDeckInfo();
 		UpdateShopItemInfo();
@@ -176,7 +176,7 @@ public class ShopManager : MonoBehaviour
 			_deckInfoStr +=
 				"#" + (i + 1) + " " + // number
 				card.name + // name
-				": $" + cardScript.price / 2 + // price
+				": $" + cardScript.price.value / 2 + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
 		}
 	}
@@ -202,7 +202,7 @@ public class ShopManager : MonoBehaviour
 			_shopInfoStr +=
 				"#" + (i + 1) + " " + // number
 				card.name + // name
-				": $" + cardScript.price + // price
+				": $" + cardScript.price.value + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
 		}
 	}

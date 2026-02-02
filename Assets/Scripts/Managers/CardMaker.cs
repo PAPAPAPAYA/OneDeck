@@ -8,7 +8,7 @@ public class CardMaker : EditorWindow
 	private string _cardName = "NewCard";
 	private string _cardDescription = "Enter card description here";
 	private bool _takeUpSpaceInDeck = true;
-	private int _cardPrice = 2;
+	private IntSO _cardPrice;
 	private List<GameEvent> _gameEvents =  new List<GameEvent>();
 	private int _numberOfEventListeners = 0;
 	private List<GameObject> _effectObjects = new List<GameObject>();
@@ -27,7 +27,7 @@ public class CardMaker : EditorWindow
 		_cardName = EditorGUILayout.TextField("Card Name", _cardName);
 		_cardDescription = EditorGUILayout.TextArea(_cardDescription);
 		_takeUpSpaceInDeck = EditorGUILayout.Toggle("Take Up Space", _takeUpSpaceInDeck);
-		_cardPrice = EditorGUILayout.IntField("Card Price", _cardPrice);
+		_cardPrice = (IntSO)EditorGUILayout.ObjectField("Card Price", _cardPrice, typeof(IntSO), false);
 		for (int i = 0; i < _gameEvents.Count; i++)
 		{
 			_gameEvents[i] = (GameEvent)EditorGUILayout.ObjectField("Game Event", _gameEvents[i], typeof(GameEvent), false);

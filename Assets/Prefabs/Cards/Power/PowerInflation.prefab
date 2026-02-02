@@ -131,7 +131,7 @@ MonoBehaviour:
   cardID: 0
   cardDesc: Give [POWER] to 3 random cards
   takeUpSpace: 1
-  price: 4
+  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
