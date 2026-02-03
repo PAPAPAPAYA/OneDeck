@@ -69,17 +69,34 @@ public class CostNEffectContainer : MonoBehaviour
 			" [" + _myCardScript.gameObject.name + "]\n";
 	}
 
-	public void CheckCost_Rested(int restRequired)
+	// will check and consume rest
+	public void CheckCost_Rested()
 	{
-		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, restRequired, EnumStorage.StatusEffect.Rest)) return; // if check succeeded, do nothing
-		// if check failed, process
+		// 检查卡是否没有任何 rest status effect
+		if (!_myCardScript.myStatusEffects.Contains(EnumStorage.StatusEffect.Rest)) return; // 如果没有 rest，检查通过
+		
+		// 如果有 rest，移除一个 rest 并阻止效果发动
+		// 移除一个 Rest status effect
+		for (var i = _myCardScript.myStatusEffects.Count - 1; i >= 0; i--)
+		{
+			if (_myCardScript.myStatusEffects[i] == EnumStorage.StatusEffect.Rest)
+			{
+				_myCardScript.myStatusEffects.RemoveAt(i);
+				break; // 只移除一个
+			}
+		}
+		
+		// 刷新显示
+		CombatInfoDisplayer.me.RefreshDeckInfo();
+		
+		// 阻止效果发动
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
 		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
 		effectResultString.value +=
-			"// Not enough [Rest] to activate " +
+			"// [Rest] status consumed, " +
 			cardOwnerInfo +
-			" [" + _myCardScript.gameObject.name + "]\n";
+			" [" + _myCardScript.gameObject.name + "] skips this turn\n";
 	}
 
 	public void CheckCost_Infected()
@@ -111,6 +128,62 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			_costNotMetFlag++;
 		}
+	}
+
+	/// <summary>
+	/// Check if there are at least [enemyCardCount] cards in combined deck zone that do NOT belong to the session owner (this card's owner).
+	/// Cost is met if the combined deck contains at least the specified number of enemy cards.
+	/// </summary>
+	/// <param name="enemyCardCount">Required number of enemy cards in combined deck</param>
+	public void CheckCost_HasEnemyCardInCombinedDeck(int enemyCardCount)
+	{
+		int enemyCardFound = 0;
+		foreach (var card in CombatManager.Me.combinedDeckZone)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.myStatusRef != _myCardScript.myStatusRef)
+			{
+				enemyCardFound++;
+				if (enemyCardFound >= enemyCardCount) break;
+			}
+		}
+
+		if (enemyCardFound >= enemyCardCount) return; // cost met - enough enemy cards found
+		
+		// cost not met - not enough enemy cards in combined deck
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
+		effectResultString.value += "// Not enough enemy cards in deck to activate [" + _myCardScript.gameObject.name + "] (need " + enemyCardCount + ")\n";
+	}
+
+	/// <summary>
+	/// Check if there are at least [ownerCardCount] cards in graveyard that belong to the card owner.
+	/// Cost is met if the graveyard contains at least the specified number of cards owned by this card's owner.
+	/// </summary>
+	/// <param name="ownerCardCount">Required number of cards owned by this card's owner in graveyard</param>
+	public void CheckCost_HasOwnerCardInGrave(int ownerCardCount)
+	{
+		int ownerCardFound = 0;
+		foreach (var card in CombatManager.Me.graveZone)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.myStatusRef == _myCardScript.myStatusRef)
+			{
+				ownerCardFound++;
+				if (ownerCardFound >= ownerCardCount) break;
+			}
+		}
+
+		if (ownerCardFound >= ownerCardCount) return; // cost met - enough owner cards found
+
+		// cost not met - not enough cards owned by this card's owner in graveyard
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
+		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
+		effectResultString.value +=
+			"// Not enough [" + cardOwnerInfo + "] cards in graveyard to activate [" + _myCardScript.gameObject.name + "] (need " + ownerCardCount + ")\n";
 	}
 
 	#endregion

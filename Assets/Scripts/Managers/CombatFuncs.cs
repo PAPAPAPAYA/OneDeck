@@ -34,8 +34,9 @@ namespace DefaultNamespace.Managers
 		public void MoveCard_FromGraveToDeck(GameObject targetCard)
 		{
 			_combatManager.graveZone.Remove(targetCard);
-			_combatManager.combinedDeckZone.Add(targetCard);
+			_combatManager.combinedDeckZone.Insert(0, targetCard);
 			GameEventStorage.me.onAnyCardRevived.Raise();
+			_combatManager.UpdateTrackingVariables();
 			//_combatManager.Shuffle();
 		}
 
@@ -48,7 +49,7 @@ namespace DefaultNamespace.Managers
 			cardInstance.GetComponent<CardScript>().theirStatusRef = 
 				belongsToSessionOwner ? _combatManager.enemyPlayerStatusRef : _combatManager.ownerPlayerStatusRef; // assign corresponding target
 			cardInstance.name = cardToAdd.name.Replace("(Clone)", "");
-			_combatManager.combinedDeckZone.Add(cardInstance); // add the new card to combined deck
+			_combatManager.combinedDeckZone.Insert(0, cardInstance); // add the new card to combined deck (insert at first position)
 			_combatManager.UpdateTrackingVariables();
 		}
 
@@ -60,7 +61,7 @@ namespace DefaultNamespace.Managers
 				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.ownerPlayerStatusRef;
 				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.enemyPlayerStatusRef;
 				cardInst.name = cardInst.name.Replace("(Clone)", "");
-				_combatManager.combinedDeckZone.Add(cardInst); // add the new card to combined deck
+				_combatManager.combinedDeckZone.Insert(0, cardInst); // add the new card to combined deck (insert at first position)
 			}
 			else // card belongs to enemy
 			{
@@ -68,7 +69,7 @@ namespace DefaultNamespace.Managers
 				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.enemyPlayerStatusRef;
 				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.ownerPlayerStatusRef;
 				cardInst.name = cardInst.name.Replace("(Clone)", "");
-				_combatManager.combinedDeckZone.Add(cardInst); // add the new card to combined deck
+				_combatManager.combinedDeckZone.Insert(0, cardInst); // add the new card to combined deck (insert at first position)
 			}
 			
 			_combatManager.UpdateTrackingVariables();

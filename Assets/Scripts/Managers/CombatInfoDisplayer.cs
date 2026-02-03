@@ -99,7 +99,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			tagInfo += "[" + amount + " Rested]";
+			tagInfo += "[" + amount + " Rest Needed]";
 		}
 
 		// show infected status effect

@@ -74,7 +74,7 @@ public class HPAlterEffect : EffectScript
 
 	public void IncreaseTheirHp(int healAmount)
 	{
-		myCardScript.theirStatusRef.hp -= healAmount + healAmountAlter;
+		myCardScript.theirStatusRef.hp += healAmount + healAmountAlter;
 		myCardScript.theirStatusRef.hp = Mathf.Clamp(myCardScript.theirStatusRef.hp, 0, myCardScript.theirStatusRef.hpMax);
 		CheckHealTargets_HealingOpponent(healAmount);
 		healAmountAlter = 0;

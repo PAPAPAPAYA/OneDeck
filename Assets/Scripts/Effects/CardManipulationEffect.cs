@@ -18,6 +18,7 @@ public class CardManipulationEffect : EffectScript
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
 		for (int i = cardsToSend.Count - 1; i >= 0; i--)
 		{
+			// take out opponent's cards
 			if (cardsToSend[i].GetComponent<CardScript>().myStatusRef != myCardScript.myStatusRef) // if card doesn't belong to this card's owner
 			{
 				cardsToSend.RemoveAt(i);
@@ -35,10 +36,28 @@ public class CardManipulationEffect : EffectScript
 		SendChosenCardsToGrave(cardsToSend, amount);
 	}
 
+	public void SendRandomTheirCardsToGrave(int amount)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var cardsToSend = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
+		for (int i = cardsToSend.Count - 1; i >= 0; i--)
+		{
+			// take out card owner's cards
+			if (cardsToSend[i].GetComponent<CardScript>().myStatusRef == myCardScript.myStatusRef) // if card belongs to this card's owner
+			{
+				cardsToSend.RemoveAt(i);
+			}
+		}
+		cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
+		SendChosenCardsToGrave(cardsToSend, amount);
+	}
+
 	private void SendChosenCardsToGrave(List<GameObject> cardsToSend, int amount)
 	{
-		if (amount == 0) return;
 		amount = Mathf.Clamp(amount, 0, _combinedDeck.Count);
+		if (amount == 0) return;
+		if (cardsToSend.Count == 0) return;
 		for (var i = 0; i < amount; i++)
 		{
 			var targetCardScript = cardsToSend[i].GetComponent<CardScript>();
@@ -97,5 +116,31 @@ public class CardManipulationEffect : EffectScript
 		_combinedDeck.Remove(transform.parent.gameObject);
 		_combinedDeck.Insert(0, transform.parent.gameObject);
 		effectResultString.value += "// [" + myCard.name + "] is buried to the bottom of the deck\n";
+	}
+
+	public void ReviveRandomMyCardsFromGrave(int amount)
+	{
+		_graveDeck = combatManager.graveZone;
+		var cardsToRevive = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_graveDeck, cardsToRevive, true);
+		for (int i = cardsToRevive.Count - 1; i >= 0; i--)
+		{
+			// take out opponent's cards
+			if (cardsToRevive[i].GetComponent<CardScript>().myStatusRef != myCardScript.myStatusRef) // if card doesn't belong to this card's owner
+			{
+				cardsToRevive.RemoveAt(i);
+			}
+		}
+		cardsToRevive = UtilityFuncManagerScript.ShuffleList(cardsToRevive);
+		amount = Mathf.Clamp(amount, 0, cardsToRevive.Count);
+		if (amount == 0) return;
+		for (var i = 0; i < amount; i++)
+		{
+			var targetCardScript = cardsToRevive[i].GetComponent<CardScript>();
+			effectResultString.value +=
+				"// [" + myCard.gameObject.name + "] revived " +
+				"[" + targetCardScript.gameObject.name + "] from grave to deck\n";
+			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToRevive[i]);
+		}
 	}
 }

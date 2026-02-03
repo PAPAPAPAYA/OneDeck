@@ -133,52 +133,6 @@
 			//// cost check
 			//// effect
 			//// assign effect target ref
-	
-
-// cards
-	// hp alter
-		//// stab: deal 1 dmg
-		//// stab quickly: stage self; deal 1 dmg
-		//// stab slowly: bury self; deal 1 dmg
-		//// stab recklessly: deal 1 dmg to self; deal 1 dmg
-		//// cursed stab: deal 2 dmg; generate 1 curse
-		//// deal dmg = lost hp
-	// shield
-		//// each time lose hp, add shield
-		//// self harm, add shield
-	// tags (status effect)
-		// mana
-			//// meditate: mana to 3 cards
-			//// inject: deal 1 dmg to self; mana to 5 cards
-			//// fireball: cost 1 mana: deal 2 dmg
-			//// big fireball: cost 2 mana: deal 3 dmg
-		// infection
-			//// explosive infection: infect 3 cards
-			//// poisoned knife: deal 2 dmg; if infected: deal 2 dmg
-		// power
-			//// effect chain is blocking multiple power tag resolvers from increasing dmg multiple times
-			//// power up: power to 3 cards
-	// shiv
-		//// add a shiv: add a shiv
-		//// shiv: deal 2 dmg
-		//// add poisoned shiv: deal 1 dmg; if infected: deal 1 dmg
-		//// add undead shiv: [revive] deal 1 dmg; if round start, grant self [revive]
-	// grave
-		//// lord of the underworld: if a card is revived, +1 power; deal 1 dmg
-		//// exile slash: undertake 1 of my cards, deal 4 dmg
-		//// zombify: give 1 of my cards [revive]
-		//// undead stab: [revive] deal base dmg
-			//// give self revive after shuffle
-			//// don't start with revive
-		//// death by a thousand cuts: if in grave: when enemy received dmg: deal 1 dmg
-		//// undertake: move 3 random cards straight to grave
-		//// stab from the grave: when sent to grave, deal 1 dmg
-	// system
-		//// fatigue: deal 1 dmg to both players
-		//// deck expansion: increase deck size by 1
-		//// increase max hp
-	// curse
-		//// slippery floor: deal 1 dmg to self
 
 
 // battle: text demo
