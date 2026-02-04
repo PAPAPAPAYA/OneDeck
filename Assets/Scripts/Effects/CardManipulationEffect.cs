@@ -143,4 +143,30 @@ public class CardManipulationEffect : EffectScript
 			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToRevive[i]);
 		}
 	}
+
+	public void ReviveRandomTheirCardsFromGrave(int amount)
+	{
+		_graveDeck = combatManager.graveZone;
+		var cardsToRevive = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_graveDeck, cardsToRevive, true);
+		for (int i = cardsToRevive.Count - 1; i >= 0; i--)
+		{
+			// take out card owner's cards
+			if (cardsToRevive[i].GetComponent<CardScript>().myStatusRef == myCardScript.myStatusRef) // if card belongs to this card's owner
+			{
+				cardsToRevive.RemoveAt(i);
+			}
+		}
+		cardsToRevive = UtilityFuncManagerScript.ShuffleList(cardsToRevive);
+		amount = Mathf.Clamp(amount, 0, cardsToRevive.Count);
+		if (amount == 0) return;
+		for (var i = 0; i < amount; i++)
+		{
+			var targetCardScript = cardsToRevive[i].GetComponent<CardScript>();
+			effectResultString.value +=
+				"// [" + myCard.gameObject.name + "] revived " +
+				"[" + targetCardScript.gameObject.name + "] from grave to deck\n";
+			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToRevive[i]);
+		}
+	}
 }

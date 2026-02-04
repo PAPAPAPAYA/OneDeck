@@ -35,6 +35,11 @@ public class EnumStorage : MonoBehaviour
 		Revive
 	}
 
+	public enum Tag
+	{
+		
+	}
+
 	public static bool DoesListContainAmountOfStatusEffect(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)
 	{
 		var amountOfTag = 0;

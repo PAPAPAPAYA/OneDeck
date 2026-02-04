@@ -137,7 +137,8 @@
 
 // battle: text demo
 	//// when a new round begins and the first card is enemy's, it will be sent to grave but its effect won't be invoked
-	//// enemy
+	// enemy
+		//todo make enemy decks for when there's no player deck recorded
 		////deck saver
 			//// save
 				//// clean up
@@ -184,7 +185,10 @@
 	        //// alter hp
 	        //// alter mp
 	        //// show tag effects
-		// tags (status effect)
+	        //todo tag
+			// linger
+			// mana X
+		//status effect
 			//// remove status effect correctly
 			//// undead: if sent to grave, put back to deck and consume status effect
 				//// destroy status effect resolver 
@@ -199,7 +203,7 @@
 		                //// check mana tags
 		                //// consume mana tags
 			//// infected
-				//? destroy tag resolver if tag is removed
+				//// destroy tag resolver if tag is removed
 				//// deal dmg
 				//// make sure this tag can only be given to cards without this tag
 		//// card manipulation
@@ -212,7 +216,9 @@
 		//// in reveal
 		//// in grave
 		//// is infected
-		// is rested: X number of [rested] is met
+		//// is rested: no [rest]
+		//// enemy card in deck to prevent cards only pay cost but no effect
+		//// owner card in grave
 
 	// trigger events
 		// specific event
@@ -284,9 +290,13 @@
 	
 
 // debug
-	//? record data and write to local txt
+	//todo record data and write to local txt
+		// card showed time and bought time --> bought rate
+		// total combat amount and card appearance amount and win amount --> card win rate
+		// card number in deck --> amount rate
+	// left hp per session --> ave. hp after each combat
 
-	
+
 // housekeeping
 	//// documentation
 	//// document card system
