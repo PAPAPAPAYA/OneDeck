@@ -67,7 +67,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 4287150680130867788}
         m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
-        m_MethodName: SendRandomMyCardsToGrave
+        m_MethodName: ExileMyCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

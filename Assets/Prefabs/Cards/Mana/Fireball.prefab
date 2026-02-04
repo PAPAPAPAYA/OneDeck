@@ -172,6 +172,7 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  myTags: 02000000
 --- !u!114 &7507784839872512994
 MonoBehaviour:
   m_ObjectHideFlags: 0

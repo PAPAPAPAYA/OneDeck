@@ -10,12 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: DeckForTesting
+  m_Name: TestDeckAllMeditate
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 11b3757da78b5d2499871cd77fb025ee, type: 3}
-  - {fileID: 8718476725744197808, guid: e22f9fcab0dbd6a44bdfb804693eb918, type: 3}
-  - {fileID: 8718476725744197808, guid: 8cb13ce2b38712640afe61b09979a731, type: 3}
+  - {fileID: 8718476725744197808, guid: 9ffcac76c3d928f41962f81443a2f641, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: player default deck, will copy to player deck SO at start of game

@@ -37,7 +37,9 @@ public class EnumStorage : MonoBehaviour
 
 	public enum Tag
 	{
-		
+		None,
+		Linger,
+		ManaX
 	}
 
 	public static bool DoesListContainAmountOfStatusEffect(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)

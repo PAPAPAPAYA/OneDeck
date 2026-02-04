@@ -10,11 +10,17 @@ namespace DefaultNamespace.Effects
 		public bool canStatusEffectBeStacked = false;
 		[Tooltip("if this is none, then won't run give status effect")]
 		public EnumStorage.StatusEffect statusEffectToGive;
+		[Tooltip("this is used for GiveStatusEffectBasedOnStatusEffectCount()")]
+		public EnumStorage.StatusEffect statusEffectToCount;
 		public bool spreadEvenly = false;
 		[Tooltip("only applies to GiveStatusEffect(): whose cards the status effect will be given to")]
 		public EnumStorage.TargetType target; // whose cards the status effect will be given to
 
-		public virtual void GiveSelfStatusEffect(int amount) // give self status effect, default to stack
+		/// <summary>
+		/// 给自身卡片添加状态效果
+		/// </summary>
+		/// <param name="amount">添加的状态效果层数</param>
+		public virtual void GiveSelfStatusEffect(int amount)
 		{
 			for (int i = 0; i < amount; i++)
 			{
@@ -34,7 +40,12 @@ namespace DefaultNamespace.Effects
 			}
 		}
 		
-		public virtual void GiveStatusEffect(int amount) // give card owner's or opponent's or full random cards status effect
+		/// <summary>
+		/// 给目标卡片添加状态效果
+		/// 目标由target字段决定：Me(自己), Them(敌人), Random(随机)
+		/// </summary>
+		/// <param name="amount">添加的状态效果层数</param>
+		public virtual void GiveStatusEffect(int amount)
 		{
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			var cardsToGiveTag = new List<GameObject>();
@@ -93,6 +104,29 @@ namespace DefaultNamespace.Effects
 				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
 			}
 			CombatInfoDisplayer.me.RefreshDeckInfo();
+		}
+
+		/// <summary>
+		/// 根据卡上指定status effect的数量，给予statusEffectToGive指定的status effect
+		/// 目标由target字段决定：Me(自己), Them(敌人), Random(随机)
+		/// </summary>
+		public void GiveStatusEffectBasedOnStatusEffectCount()
+		{
+			// 统计卡上指定status effect的数量
+			int count = 0;
+			foreach (var effect in myCardScript.myStatusEffects)
+			{
+				if (effect == statusEffectToCount)
+				{
+					count++;
+				}
+			}
+			
+			// 如果数量小于等于0或要给予的status effect为None，则不执行
+			if (count <= 0 || statusEffectToGive == EnumStorage.StatusEffect.None) return;
+			
+			// 根据统计的数量给予status effect
+			GiveStatusEffect(count);
 		}
 	}
 }

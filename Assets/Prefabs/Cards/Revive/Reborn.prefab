@@ -56,7 +56,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2723856462613336745}
         m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
-        m_MethodName: PutCardsBackToDeck
+        m_MethodName: ReviveRandomCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
