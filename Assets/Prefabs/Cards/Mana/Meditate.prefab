@@ -80,6 +80,7 @@ MonoBehaviour:
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 2
+  statusEffectToCount: 0
   spreadEvenly: 0
   target: 0
 --- !u!1 &8718476725744197808
@@ -128,14 +129,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Meditate
   cardID: 0
-  cardDesc: Enchant my 3 cards
+  cardDesc: give 3 mana
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  myTags: 
 --- !u!114 &8804307646717441250
 MonoBehaviour:
   m_ObjectHideFlags: 0

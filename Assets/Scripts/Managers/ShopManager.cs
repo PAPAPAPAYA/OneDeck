@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace.Managers;
 using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -133,6 +134,11 @@ public class ShopManager : MonoBehaviour
 		cardToBuyInst.GetComponent<CardScript>().myStatusRef = CombatManager.Me.ownerPlayerStatusRef;
 		GameEventStorage.me.onMeBought.RaiseSpecific(cardToBuyInst);
 		Destroy(cardToBuyInst);
+		// record card bought
+		if (ShopStatsManager.me != null)
+		{
+			ShopStatsManager.me.RecordCardBought(cardToBuy.name);
+		}
 		GatherPlayerDeckInfo();
 		UpdateShopItemInfo();
 	}
@@ -155,6 +161,11 @@ public class ShopManager : MonoBehaviour
 		UpdateShopItemInfo();
 		// process player deck and display
 		GatherPlayerDeckInfo();
+		// record shop visit
+		if (ShopStatsManager.me != null)
+		{
+			ShopStatsManager.me.RecordShopVisit();
+		}
 	}
 
 	public void ExitShop()
@@ -189,6 +200,11 @@ public class ShopManager : MonoBehaviour
 		{
 			var card = shopPoolRef.deck[Random.Range(0, shopPoolRef.deck.Count)];
 			currentShopItemDeckRef.deck.Add(card);
+			// record card appeared
+			if (ShopStatsManager.me != null)
+			{
+				ShopStatsManager.me.RecordCardAppeared(card.name);
+			}
 		}
 	}
 
@@ -230,5 +246,10 @@ public class ShopManager : MonoBehaviour
 	{
 		GenerateShopItems();
 		UpdateShopItemInfo();
+		// record reroll
+		if (ShopStatsManager.me != null)
+		{
+			ShopStatsManager.me.RecordReroll();
+		}
 	}
 }

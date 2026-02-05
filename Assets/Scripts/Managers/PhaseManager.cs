@@ -57,6 +57,12 @@ public class PhaseManager : MonoBehaviour
 	{
 		onExitResultPhase?.Invoke();
 	}
+
+	public UnityEvent onGameStart;
+	private void InvokeOnGameStartEvent()
+	{
+		onGameStart?.Invoke();
+	}
 	#endregion
 
 	[Header("UI")]
@@ -65,6 +71,7 @@ public class PhaseManager : MonoBehaviour
 
 	private void OnEnable()
 	{
+		InvokeOnGameStartEvent();
 		ExitingCombatPhase();
 		ExitingResultPhase();
 		EnteringShopPhase();

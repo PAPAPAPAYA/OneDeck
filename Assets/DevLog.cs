@@ -185,9 +185,9 @@
 	        //// alter hp
 	        //// alter mp
 	        //// show tag effects
-	        //todo tag
-			// linger
-			// mana X
+	        // tag
+			//// linger
+			//// mana X
 		//status effect
 			//// remove status effect correctly
 			//// undead: if sent to grave, put back to deck and consume status effect
@@ -264,7 +264,7 @@
 
 
 // shop
-	//? give tag
+	//? give ability
 		// stage self
 		// bury self
 	//// show player deck
