@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: StartingDeckPoolRef
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 0}
+  - {fileID: 8718476725744197808, guid: 60bb6668ceae883428359bda35210657, type: 3}
+  - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
+  - {fileID: 8718476725744197808, guid: 49ae33a269162b448ae12f96757918cb, type: 3}
+  - {fileID: 8718476725744197808, guid: 18dfc4aeeb23a1346bb361c6ac2722de, type: 3}
+  - {fileID: 8718476725744197808, guid: 40e0deec71ff8fd4886778e9e7f0719a, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: shop pool

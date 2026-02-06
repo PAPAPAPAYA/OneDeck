@@ -137,6 +137,9 @@
 
 // battle: text demo
 	//// when a new round begins and the first card is enemy's, it will be sent to grave but its effect won't be invoked
+	//// starting hand
+		//// starting cards
+		//// give starting cards at the start of game
 	// enemy
 		//todo make enemy decks for when there's no player deck recorded
 		////deck saver

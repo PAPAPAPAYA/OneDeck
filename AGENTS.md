@@ -251,12 +251,21 @@ Located in `Assets/Scripts/Effects/`:
 |--------|-------------|
 | `HPAlterEffect` | Deal damage or heal HP. Supports Power buffs, shield processing |
 | `ShieldAlter` | Add/remove shield |
-| `CardManipulationEffect` | Move cards (stage, bury, grave, revive) |
+| `CardManipulationEffect` | Move cards (stage, bury, grave, revive, exile) |
 | `ChangeCardTarget` | Change card ownership (heart-change) |
 | `AddTempCard` | Generate temporary cards |
 | `ChangeHpAlterAmountEffect` | Modify damage/heal amounts dynamically |
 | `HpMaxAlterEffect` | Change max HP |
 | `PrintEffect` | Debug logging |
+
+#### Card Manipulation Operations
+
+| Operation | Description |
+|-----------|-------------|
+| `Stage` | Send card to top of deck |
+| `Bury` | Send card to bottom of deck |
+| `Exile` | Send card straight to graveyard (undertake) |
+| `Revive` | Put cards from graveyard back to deck |
 
 ### Status Effect Related (`Effects/StatusEffect/`)
 
@@ -277,11 +286,15 @@ Located in `Assets/Scripts/Effects/`:
 
 ### Cost Types (in `CostNEffectContainer.cs`)
 
-- `CheckCost_Infected()` - Requires Infected status
-- `CheckCost_Mana(int)` - Requires X mana stacks
-- `CheckCost_InGrave()` - Must be in graveyard
-- `CheckCost_Revive(int)` - Requires X Revive (Undead) stacks
-- `CheckCost_Rested(int)` - Requires X Rest stacks
+| Cost Function | Description |
+|---------------|-------------|
+| `CheckCost_Infected()` | Requires Infected status |
+| `CheckCost_Mana(int)` | Requires X mana stacks |
+| `CheckCost_InGrave()` | Must be in graveyard |
+| `CheckCost_Revive(int)` | Requires X Revive (Undead) stacks |
+| `CheckCost_Rested()` | Requires no Rest status (consumes one Rest if present) |
+| `CheckCost_HasEnemyCardInCombinedDeck(int)` | Requires X enemy cards in combined deck |
+| `CheckCost_HasOwnerCardInGrave(int)` | Requires X owner's cards in graveyard |
 
 ---
 
@@ -308,6 +321,7 @@ Metrics collected:
 - Average HP at end of combat
 - Average damage to opponent per session
 - Average damage to self per session
+- Average damage output per session per card (WIP)
 
 ---
 
@@ -350,18 +364,27 @@ Available create menu paths:
    - Same card, different effect tries to invoke
    - Player input is awaited
    - Chain depth exceeds 99
+   - Chains are composed of a string of effect containers tracked via `EffectRecorder` GameObjects
 
 2. **No `beforeIDealDmg` Event**: Removed to prevent stack overflow; HPAlterEffect calculates damage before dealing
 
 3. **Tag Damage Attribution**: Damage from status effects counts as the tag owner's card damage
 
-4. **Instance ID Warning**: Beware of changing prefab instance IDs (affects deck saving)
+4. **Instance ID Warning**: Beware of changing prefab instance IDs (affects deck saving). Card ID 43514 is `[Meditate]` - monitor if instance ID changes
 
 5. **Card ID System**: Cards get unique IDs via `CardIDRetriever` for tracking
 
 6. **Heart-Change Strategy**: Having only heart-change cards is overpowered; design costs accordingly
 
 7. **Overtime/Fatigue**: After `overtimeRoundThreshold` rounds, fatigue cards are added to both decks each shuffle
+
+8. **Loopable Effects Warning**: Don't put multiple effect instances with loopable effects in one card - this will cause stack overflow. Put multiple loopable effects in the same effect instance instead
+
+9. **Deck/Grave Effect Messages**: Deck and grave effects don't show fail messages (intentional design choice)
+
+10. **Shuffle After Deck Change**: After changing the combined deck, always shuffle
+
+11. **Deck Matching**: Currently only uses round number to match enemy decks
 
 ---
 
@@ -396,14 +419,18 @@ Core packages:
 ## DevLog Notes (Key Design Decisions)
 
 See `Assets/DevLog.cs` for detailed development notes including:
-- Card design patterns (Infection, Mana, Shield, Graveyard, etc.)
+- Card design patterns (Infection, Mana, Shield, Graveyard, Echo, Bury, Stage, etc.)
 - Refactoring history
 - Abandoned features
 - Implementation quirks and warnings
 
-Key quirks to remember:
-- Deck and grave effects don't show fail messages (intentional)
-- After changing the combined deck, shuffle
-- Currently only use round num to match decks
-- Don't put multiple effect instances with loopable effect in one card (will stack overflow)
-- Put multiple loopable effects in same effect instance instead
+### Abandoned Features
+
+- **Card Maker**: A visual card creation tool was abandoned due to being "too much work, not economic"
+
+### Planned Debug/Data Recording Features
+
+- Card show time and bought time → bought rate
+- Total combat amount and card appearance amount and win amount → card win rate
+- Card number in deck → amount rate
+- Left HP per session → average HP after each combat
