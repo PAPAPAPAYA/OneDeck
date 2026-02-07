@@ -294,7 +294,7 @@
 
 // debug
 	//todo record data and write to local txt
-		// card showed time and bought time --> bought rate
+		//// card showed time and bought time --> bought rate
 		// total combat amount and card appearance amount and win amount --> card win rate
 		// card number in deck --> amount rate
 	// left hp per session --> ave. hp after each combat

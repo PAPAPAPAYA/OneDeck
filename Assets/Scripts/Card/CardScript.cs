@@ -8,6 +8,8 @@ public class CardScript : MonoBehaviour
     [Header("Card Info")]
     [HideInInspector]
     public int cardID;
+    [Tooltip("唯一标识卡类型，用于胜率统计等（改名不影响）")]
+    public string cardTypeID;
     [TextArea]
     public string cardDesc;
     public bool takeUpSpace = true; // whether this card takes up deck size

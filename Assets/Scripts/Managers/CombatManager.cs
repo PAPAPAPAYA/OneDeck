@@ -147,6 +147,10 @@ public class CombatManager : MonoBehaviour
 		deckSize = combinedDeckZone.Count;
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
+		
+		// 记录玩家卡组快照（用于胜率统计）- 直接从playerDeck查询，无需等待实例化
+		TestWriteRead.CardWinRateTracker.Me?.RecordPlayerDeckSnapshot(playerDeck.deck);
+		
 		currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 	}
 

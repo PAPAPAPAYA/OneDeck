@@ -124,6 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
+  cardTypeID: SHIV_ADD_UNDEAD
   cardDesc: 'add 1 [Undead Shiv] to deck
 
     Undead Shiv: [undead] deal 1 dmg; grant

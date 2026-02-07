@@ -124,6 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
+  cardTypeID: SHIV_ADD_POISONED
   cardDesc: 'add 1 temporary [Poisoned Shiv] to deck
 
     [Poisoned Shiv]: deal 1

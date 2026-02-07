@@ -209,6 +209,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
+  cardTypeID: TEST_ADDITIONAL_DMG_COMBO
   cardDesc: 'no matter where: if enemy took dmg, deal 1 dmg;
 
     deal 1 dmg'

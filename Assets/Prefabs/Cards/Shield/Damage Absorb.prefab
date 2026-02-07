@@ -140,6 +140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: Damage Absorb
   cardID: 0
+  cardTypeID: SHIELD_DAMAGE_ABSORB
   cardDesc: 'in grave: when damage received, gain 1 shield'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
