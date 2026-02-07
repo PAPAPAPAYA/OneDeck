@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7068858253989052649}
   - component: {fileID: 6107012632210937845}
   m_Layer: 0
-  m_Name: Increase 1 deck size
+  m_Name: Increase 2 deck size
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -64,6 +64,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 6107012632210937845}
+        m_TargetAssemblyTypeName: DeckSizeIncreaseEffect, Assembly-CSharp
+        m_MethodName: IncreaseDeckSize
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6107012632210937845
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76,7 +88,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83350cd29f6e37648be41dfcb00a5759, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 0}
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   myDeckSize: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
   maxDeckSize: {fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}
 --- !u!1 &8718476725744197808
@@ -91,7 +103,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: 7982320352536632933}
   m_Layer: 0
-  m_Name: IncreaseDeckSize
+  m_Name: IncreaseDeckSizePro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -127,9 +139,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_DECK_SIZE
-  cardDesc: Increase deck size by <color=yellow>1</color>
+  cardDesc: Increase deck size by <color=yellow>2</color>
   takeUpSpace: 0
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
+  price: {fileID: 11400000, guid: e57676058a6a9344883c99c068362e4f, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
