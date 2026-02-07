@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  effectName: increase hp max 3
-  effectDescription: 
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -125,14 +123,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: Increase Hp Max by 3
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_HP_MAX
   cardDesc: 
   takeUpSpace: 0
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
+  price: {fileID: 11400000, guid: e57676058a6a9344883c99c068362e4f, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
+  myStatusEffects: 
   myTags: 
 --- !u!114 &7982320352536632933
 MonoBehaviour:

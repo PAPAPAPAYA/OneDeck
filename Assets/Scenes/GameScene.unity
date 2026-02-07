@@ -2187,6 +2187,17 @@ MonoBehaviour:
   heartLeft: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
   sessionNumber: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
   enemyDeckToPopulate: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
+  defaultEnemyDecks:
+  - {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
+  - {fileID: 11400000, guid: a9ee6f1e763a474c816e99c233349c16, type: 2}
+  - {fileID: 11400000, guid: 07ae052ea61f4279a1f4796afaa90271, type: 2}
+  - {fileID: 11400000, guid: 176a73177c5547c0a6146eafc999867d, type: 2}
+  - {fileID: 11400000, guid: c4e6de0a03734ef9a1e0c03d13759ff4, type: 2}
+  - {fileID: 11400000, guid: 2bd732143cca4b0a8502f6a0b463e821, type: 2}
+  - {fileID: 11400000, guid: 60f5781b899246bdb1355846edd715d9, type: 2}
+  - {fileID: 11400000, guid: 5e2b1a4a3d00449883338fad16951177, type: 2}
+  - {fileID: 11400000, guid: 80d03d9c92644d97ab5b6e11e3ab4908, type: 2}
+  - {fileID: 11400000, guid: 7833fb4bf72a428c8d84e6bf933b4853, type: 2}
 --- !u!4 &1855501822
 Transform:
   m_ObjectHideFlags: 0

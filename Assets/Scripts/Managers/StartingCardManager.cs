@@ -71,7 +71,7 @@ namespace DefaultNamespace.Managers
             playerDeck.deck.Add(selectedCard);
             _hasGivenStartingCardThisRun = true;
             
-            Debug.Log($"[StartingCardManager] 已添加起始卡牌: {selectedCard.name}");
+            //Debug.Log($"[StartingCardManager] 已添加起始卡牌: {selectedCard.name}");
         }
 
         /// <summary>
