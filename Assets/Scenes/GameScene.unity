@@ -2037,7 +2037,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   statsFileName: shop_stats.json
-  enableStats: 0
+  enableStats: 1
 --- !u!4 &1457153434
 Transform:
   m_ObjectHideFlags: 0
@@ -2819,8 +2819,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -265, y: -265}
-  m_SizeDelta: {x: 500, y: 300}
+  m_AnchoredPosition: {x: -275, y: -265}
+  m_SizeDelta: {x: 450, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1976907037
 MonoBehaviour:

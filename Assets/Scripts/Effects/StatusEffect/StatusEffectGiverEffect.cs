@@ -15,6 +15,8 @@ namespace DefaultNamespace.Effects
 		public bool spreadEvenly = false;
 		[Tooltip("only applies to GiveStatusEffect(): whose cards the status effect will be given to")]
 		public EnumStorage.TargetType target; // whose cards the status effect will be given to
+		[Tooltip("if true, will include the card itself in reveal zone when giving status effect")]
+		public bool includeSelf = false;
 
 		/// <summary>
 		/// 给自身卡片添加状态效果
@@ -28,7 +30,7 @@ namespace DefaultNamespace.Effects
 				myCardScript.myStatusEffects.Add(statusEffectToGive);
 				// display effect info
 				var thisCardOwnerString = CombatInfoDisplayer.me.ReturnCardOwnerInfo(myCardScript.myStatusRef);
-				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "blue" : "orange";
+				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 				effectResultString.value +=
 					"// " + thisCardOwnerString + // tag giver owner card
 					" [<color=" + thisCardColor + ">" + myCard.name + "</color>] gave" + // tag giver card name 
@@ -52,6 +54,10 @@ namespace DefaultNamespace.Effects
 			var cardsToGiveTag = new List<GameObject>();
 			UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, cardsToGiveTag, true);
 			UtilityFuncManagerScript.CopyGameObjectList(combatManager.graveZone, cardsToGiveTag, false);
+			if (includeSelf)
+			{
+				cardsToGiveTag.Add(myCard);
+			}
 			cardsToGiveTag = UtilityFuncManagerScript.ShuffleList(cardsToGiveTag);
 			for (var i = cardsToGiveTag.Count - 1; i >= 0; i--)
 			{
@@ -94,8 +100,8 @@ namespace DefaultNamespace.Effects
 				targetCardScript.myStatusEffects.Add(statusEffectToGive);
 				var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
 				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "blue" : "orange";
-				string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "blue" : "orange";
+				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+				string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 				effectResultString.value +=
 					"// " + thisCardOwnerString + // tag giver owner card
 					"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " + // tag giver card name 
