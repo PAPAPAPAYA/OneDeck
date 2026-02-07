@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class ShopManager : MonoBehaviour
@@ -34,10 +35,11 @@ public class ShopManager : MonoBehaviour
 	public string phaseInfo;
 	public bool sellMode = false; // if it's not sell mode then its buy mode
 
-	[Header("tmp objects")]
+	[Header("UI objects")]
 	public TextMeshProUGUI phaseInfoDisplay;
 	public TextMeshProUGUI deckInfoDisplay;
 	public TextMeshProUGUI shopInfoDisplay;
+	public GameObject rerollButton;
 	private string _deckInfoStr = "Your Deck: \n\n";
 	private string _shopInfoStr = "Shop: \n\n";
 
@@ -47,10 +49,7 @@ public class ShopManager : MonoBehaviour
 		ShowDeck();
 		ShowShopItems();
 		ShowShopTips();
-		if (Input.GetKeyDown(KeyCode.R))
-		{
-			Reroll();
-		}
+		ShowRerollButton();
 
 		if (Input.GetKeyDown(KeyCode.S))
 		{
@@ -173,6 +172,7 @@ public class ShopManager : MonoBehaviour
 		deckInfoDisplay.text = "";
 		shopInfoDisplay.text = "";
 		phaseInfoDisplay.text = "";
+		rerollButton.SetActive(false);
 	}
 
 	private void GatherPlayerDeckInfo()
@@ -241,8 +241,15 @@ public class ShopManager : MonoBehaviour
 		                        "\nHP Max: " + CombatManager.Me.ownerPlayerStatusRef.hpMax +
 		                        "\n$" + purse.value;
 	}
+	private void ShowRerollButton()
+	{
+		if (!rerollButton.activeSelf)
+		{
+			rerollButton.SetActive(true);
+		}
+	}
 
-	private void Reroll()
+	public void Reroll()
 	{
 		GenerateShopItems();
 		UpdateShopItemInfo();

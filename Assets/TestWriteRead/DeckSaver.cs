@@ -144,8 +144,8 @@ namespace TestWriteRead
 				return;
 			}
 			
-			// 根据session number选择卡组（session 1对应索引0）
-			int deckIndex = sessionNumber.value - 1;
+			// 直接使用session number作为deck index（session 0 -> #1Deck, session 1 -> #2Deck）
+			int deckIndex = sessionNumber.value;
 			// 如果超出范围，使用最后一项
 			if (deckIndex >= defaultEnemyDecks.Count)
 			{
