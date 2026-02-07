@@ -20,4 +20,4 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 40e0deec71ff8fd4886778e9e7f0719a, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
-  description: shop pool
+  description: player starting card pool

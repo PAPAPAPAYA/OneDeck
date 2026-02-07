@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3b874ada8e4469ea42cee10707255e4, type: 3}
   m_Name: MaxDeckSizeRef
   m_EditorClassIdentifier: 
-  value: 6
-  valueOg: 6
+  value: 12
+  valueOg: 12
   resetOnStart: 1
   description: player deck size limit

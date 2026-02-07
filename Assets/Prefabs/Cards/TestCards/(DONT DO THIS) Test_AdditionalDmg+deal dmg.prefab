@@ -210,7 +210,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: TEST_ADDITIONAL_DMG_COMBO
-  cardDesc: 'no matter where: if enemy took dmg, deal 1 dmg;
+  cardDesc: 'no matter where: if <color=orange>enemy</color> took dmg, deal <color=red>1</color> dmg;
 
     deal 1 dmg'
   takeUpSpace: 1

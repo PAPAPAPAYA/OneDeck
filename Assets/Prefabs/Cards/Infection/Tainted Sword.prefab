@@ -49,7 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: INFECT_TAINTED_SWORD
-  cardDesc: '[infected] deal 3 dmg to enemy'
+  cardDesc: '[infected] deal <color=red>3</color> dmg to <color=orange>enemy</color>'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

@@ -127,7 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_DECK_SIZE
-  cardDesc: 
+  cardDesc: Increase deck size by <color=yellow>1</color>
   takeUpSpace: 0
   price: {fileID: 11400000, guid: e57676058a6a9344883c99c068362e4f, type: 2}
   myStatusRef: {fileID: 0}

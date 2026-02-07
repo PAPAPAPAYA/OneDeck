@@ -131,7 +131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: REVIVE_ZOMBIFY
-  cardDesc: 'Give 1 of your cards [Revive]'
+  cardDesc: 'Give <color=yellow>1</color> of <color=#87CEEB>your</color> cards [Revive]'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

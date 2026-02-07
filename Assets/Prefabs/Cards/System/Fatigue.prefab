@@ -140,7 +140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_FATIGUE
-  cardDesc: Deal 1 dmg to both players
+  cardDesc: Deal <color=red>1</color> dmg to both players
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

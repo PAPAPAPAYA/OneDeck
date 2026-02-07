@@ -13,6 +13,23 @@ public class CardManipulationEffect : EffectScript
 	[Header("Tag Configuration")]
 	public EnumStorage.Tag tagToCheck;
 
+	/// <summary>
+	/// 获取卡牌所属者的颜色标签（玩家=#87CEEB，敌人=orange）
+	/// </summary>
+	private string GetCardColorTag(GameObject card)
+	{
+		var cardStatus = card.GetComponent<CardScript>().myStatusRef;
+		return cardStatus == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+	}
+
+	/// <summary>
+	/// 获取当前卡牌的颜色标签
+	/// </summary>
+	private string GetMyCardColorTag()
+	{
+		return myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+	}
+
 	// choose cards logic in here, move cards logic in CombatFuncs
 	public void ExileMyCards(int amount)
 	{
@@ -61,12 +78,14 @@ public class CardManipulationEffect : EffectScript
 		amount = Mathf.Clamp(amount, 0, _combinedDeck.Count);
 		if (amount == 0) return;
 		if (cardsToSend.Count == 0) return;
+		string myColor = GetMyCardColorTag();
 		for (var i = 0; i < amount; i++)
 		{
 			var targetCardScript = cardsToSend[i].GetComponent<CardScript>();
+			string targetColor = GetCardColorTag(cardsToSend[i]);
 			effectResultString.value +=
-				"// [" + myCard.gameObject.name + "] sent " +
-				targetCardScript.gameObject.name + "] to grave\n";
+				"// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] sent [<color=" + targetColor + ">" +
+				targetCardScript.gameObject.name + "</color>] to grave\n";
 			CombatFuncs.me.MoveCard_FromDeckToGrave(cardsToSend[i]);
 		}
 	}
@@ -78,17 +97,19 @@ public class CardManipulationEffect : EffectScript
 		UtilityFuncManagerScript.CopyGameObjectList(_graveDeck, cardsToPut, true);
 		cardsToPut = UtilityFuncManagerScript.ShuffleList(cardsToPut);
 		amount = Mathf.Clamp(amount, 0, _graveDeck.Count);
+		string myColor = GetMyCardColorTag();
 		for (var i = 0; i < amount; i++)
 		{
 			var targetCardScript = cardsToPut[i].GetComponent<CardScript>();
+			string targetColor = GetCardColorTag(cardsToPut[i]);
 			var targetCardOwnerString = CombatInfoDisplayer.me.ReturnCardOwnerInfo(targetCardScript.myStatusRef);
 			var thisCardOwnerString = CombatInfoDisplayer.me.ReturnCardOwnerInfo(myCardScript.myStatusRef);
 			effectResultString.value +=
 				"// "+
 				thisCardOwnerString +
-				" [" + myCard.gameObject.name + "] put " +
+				" [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] put " +
 				targetCardOwnerString +
-				" [" + targetCardScript.gameObject.name + "] back to deck\n";
+				" [<color=" + targetColor + ">" + targetCardScript.gameObject.name + "</color>] back to deck\n";
 			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToPut[i]);
 		}
 	}
@@ -98,7 +119,8 @@ public class CardManipulationEffect : EffectScript
 		if (!combatManager.graveZone.Contains(transform.parent.gameObject)) return;
 		CombatFuncs.me.MoveCard_FromGraveToDeck(myCard);
 		// show info
-		effectResultString.value += "// [" + myCard.name + "] is put back to deck\n";
+		string myColor = GetMyCardColorTag();
+		effectResultString.value += "// [<color=" + myColor + ">" + myCard.name + "</color>] is put back to deck\n";
 	}
 
 	public void StageSelf() // put self on top of the deck
@@ -106,7 +128,8 @@ public class CardManipulationEffect : EffectScript
 		if (!_combinedDeck.Contains(myCard)) return;
 		_combinedDeck.Remove(myCard);
 		_combinedDeck.Add(myCard);
-		effectResultString.value += "// [" + myCard.name + "] is staged to the top of the deck\n";
+		string myColor = GetMyCardColorTag();
+		effectResultString.value += "// [<color=" + myColor + ">" + myCard.name + "</color>] is staged to the top of the deck\n";
 	}
 
 	public void StageCardsWithTag(int amount)
@@ -184,8 +207,10 @@ public class CardManipulationEffect : EffectScript
 			{
 				_combinedDeck.Remove(targetCard);
 				_combinedDeck.Add(targetCard);
-				effectResultString.value += "// [" + myCard.gameObject.name + "] staged [" + 
-					targetCardScript.gameObject.name + "] to the top of the deck\n";
+				string myColor = GetMyCardColorTag();
+				string targetColor = GetCardColorTag(targetCard);
+				effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] staged [<color=" + targetColor + ">" + 
+					targetCardScript.gameObject.name + "</color>] to the top of the deck\n";
 			}
 		}
 	}
@@ -195,7 +220,8 @@ public class CardManipulationEffect : EffectScript
 		if (!_combinedDeck.Contains(transform.parent.gameObject)) return;
 		_combinedDeck.Remove(transform.parent.gameObject);
 		_combinedDeck.Insert(0, transform.parent.gameObject);
-		effectResultString.value += "// [" + myCard.name + "] is buried to the bottom of the deck\n";
+		string myColor = GetMyCardColorTag();
+		effectResultString.value += "// [<color=" + myColor + ">" + myCard.name + "</color>] is buried to the bottom of the deck\n";
 	}
 
 	public void BuryCardsWithTag(int amount)
@@ -273,8 +299,10 @@ public class CardManipulationEffect : EffectScript
 			{
 				_combinedDeck.Remove(targetCard);
 				_combinedDeck.Insert(0, targetCard);
-				effectResultString.value += "// [" + myCard.gameObject.name + "] buried [" + 
-					targetCardScript.gameObject.name + "] to the bottom of the deck\n";
+				string myColor = GetMyCardColorTag();
+				string targetColor = GetCardColorTag(targetCard);
+				effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] buried [<color=" + targetColor + ">" + 
+					targetCardScript.gameObject.name + "</color>] to the bottom of the deck\n";
 			}
 		}
 	}
@@ -295,12 +323,14 @@ public class CardManipulationEffect : EffectScript
 		cardsToRevive = UtilityFuncManagerScript.ShuffleList(cardsToRevive);
 		amount = Mathf.Clamp(amount, 0, cardsToRevive.Count);
 		if (amount == 0) return;
+		string myColor = GetMyCardColorTag();
 		for (var i = 0; i < amount; i++)
 		{
 			var targetCardScript = cardsToRevive[i].GetComponent<CardScript>();
+			string targetColor = GetCardColorTag(cardsToRevive[i]);
 			effectResultString.value +=
-				"// [" + myCard.gameObject.name + "] revived " +
-				"[" + targetCardScript.gameObject.name + "] from grave to deck\n";
+				"// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] revived " +
+				"[<color=" + targetColor + ">" + targetCardScript.gameObject.name + "</color>] from grave to deck\n";
 			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToRevive[i]);
 		}
 	}
@@ -321,12 +351,14 @@ public class CardManipulationEffect : EffectScript
 		cardsToRevive = UtilityFuncManagerScript.ShuffleList(cardsToRevive);
 		amount = Mathf.Clamp(amount, 0, cardsToRevive.Count);
 		if (amount == 0) return;
+		string myColor = GetMyCardColorTag();
 		for (var i = 0; i < amount; i++)
 		{
 			var targetCardScript = cardsToRevive[i].GetComponent<CardScript>();
+			string targetColor = GetCardColorTag(cardsToRevive[i]);
 			effectResultString.value +=
-				"// [" + myCard.gameObject.name + "] revived " +
-				"[" + targetCardScript.gameObject.name + "] from grave to deck\n";
+				"// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] revived " +
+				"[<color=" + targetColor + ">" + targetCardScript.gameObject.name + "</color>] from grave to deck\n";
 			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToRevive[i]);
 		}
 	}

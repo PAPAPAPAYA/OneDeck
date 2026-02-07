@@ -28,11 +28,12 @@ namespace DefaultNamespace.Effects
 				myCardScript.myStatusEffects.Add(statusEffectToGive);
 				// display effect info
 				var thisCardOwnerString = CombatInfoDisplayer.me.ReturnCardOwnerInfo(myCardScript.myStatusRef);
+				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "blue" : "orange";
 				effectResultString.value +=
 					"// " + thisCardOwnerString + // tag giver owner card
-					" [" + myCard.name + "] gave" + // tag giver card name 
+					" [<color=" + thisCardColor + ">" + myCard.name + "</color>] gave" + // tag giver card name 
 					" it" + // status effect receiver card
-					" 1 [" + statusEffectToGive + "]\n"; // status effect
+					" <color=yellow>1</color> [" + statusEffectToGive + "]\n"; // status effect
 				// make statue effect resolver
 				if (myStatusEffectResolverScript == null) continue;
 				var tagResolver = Instantiate(myStatusEffectResolverScript, myCard.transform);
@@ -91,14 +92,16 @@ namespace DefaultNamespace.Effects
 					targetCardScript = cardsToGiveTag[Random.Range(0, cardsToGiveTag.Count)].GetComponent<CardScript>();
 				}
 				targetCardScript.myStatusEffects.Add(statusEffectToGive);
-				var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
-				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "Your [" : "Enemy's [";
+				var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "blue" : "orange";
+				string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "blue" : "orange";
 				effectResultString.value +=
 					"// " + thisCardOwnerString + // tag giver owner card
-					myCard.name + "] gave " + // tag giver card name 
+					"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " + // tag giver card name 
 					targetCardOwnerString + // status effect receiver card owner
-					targetCardScript.gameObject.name + "] " + // status effect receiver card
-					"1 [" + statusEffectToGive + "]\n"; // status effect
+					"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " + // status effect receiver card
+					"<color=yellow>1</color> [" + statusEffectToGive + "]\n"; // status effect
 				if (myStatusEffectResolverScript == null) continue;
 				var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
 				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);

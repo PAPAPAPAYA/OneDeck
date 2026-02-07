@@ -239,6 +239,33 @@ List<StatusEffect> myStatusEffects; // Applied status effects
    - Effect implementations
 4. Wire up GameEventListeners to appropriate GameEvents
 
+#### Card Description Color Coding
+
+When writing `cardDesc` in CardScript, use the following color tags:
+
+**For Numbers:**
+
+| Color | Tag | Usage | Example |
+|-------|-----|-------|---------|
+| **Red** | `<color=red>` | **Damage values only** | `deal <color=red>3</color> dmg` |
+| **Light Green** | `<color=#90EE90>` | **Heal values** | `heal <color=#90EE90>3</color>` |
+| **Grey** | `<color=grey>` | **Shield values** | `gain <color=grey>2</color> shield` |
+| **Yellow** | `<color=yellow>` | **All other numbers** (costs, quantities, power, etc.) | `mana <color=yellow>2</color>`, `give <color=yellow>3</color> [power]` |
+
+**For Card Ownership:**
+
+| Color | Tag | Usage | Example |
+|-------|-----|-------|---------|
+| **Light Blue** | `<color=#87CEEB>` | **Player's cards/actions** | `<color=#87CEEB>Your</color> card`, `to <color=#87CEEB>self</color>` |
+| **Orange** | `<color=orange>` | **Enemy's cards/actions** | `<color=orange>Enemy</color> card`, `to <color=orange>enemy</color>` |
+
+**Examples:**
+- `mana <color=yellow>2</color>: deal <color=red>5</color> dmg` (BigFireball)
+- `exile <color=yellow>1</color>, heal <color=#90EE90>6</color>` (Queen's Gambit)
+- `deal <color=red>1</color> dmg to <color=#87CEEB>self</color>, gain <color=grey>3</color> shield` (Blood Shield)
+- `Give [POWER] to <color=yellow>3</color> random cards` (PowerInflation)
+- `deal <color=red>2</color> dmg to <color=orange>enemy</color>` (Stab)
+
 ---
 
 ## Effect Types

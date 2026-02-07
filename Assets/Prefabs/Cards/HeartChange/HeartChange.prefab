@@ -131,7 +131,7 @@ MonoBehaviour:
   cardName: HeartChange
   cardID: 0
   cardTypeID: HEART_CHANGE
-  cardDesc: 'Give 3 random cards [Heart Changed]'
+  cardDesc: 'Give <color=yellow>3</color> random cards [Heart Changed]'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

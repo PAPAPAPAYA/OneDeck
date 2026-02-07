@@ -213,7 +213,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: REVIVE_UNDEAD_STAB
-  cardDesc: deal 1 dmg to enemy; give self [Undead] after shuffle
+  cardDesc: deal <color=red>1</color> dmg to <color=orange>enemy</color>; give <color=#87CEEB>self</color> [Undead] after shuffle
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

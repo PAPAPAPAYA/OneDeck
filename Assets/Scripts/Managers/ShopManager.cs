@@ -185,9 +185,9 @@ public class ShopManager : MonoBehaviour
 			var cardScript = card.GetComponent<CardScript>();
 			if (!cardScript.takeUpSpace) continue; // if card doesn't take up space, skip it
 			_deckInfoStr +=
-				"#" + (i + 1) + " " + // number
+				"#" + (i + 1) + " <size=+2><b>" + // number
 				card.name + // name
-				": $" + cardScript.price.value / 2 + // price
+				"</b></size>: <color=yellow>$" + cardScript.price.value / 2 + "</color>" + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
 		}
 	}
@@ -216,9 +216,9 @@ public class ShopManager : MonoBehaviour
 			var card = currentShopItemDeckRef.deck[i];
 			var cardScript = card.GetComponent<CardScript>();
 			_shopInfoStr +=
-				"#" + (i + 1) + " " + // number
+				"#" + (i + 1) + " <size=+2><b>" + // number
 				card.name + // name
-				": $" + cardScript.price.value + // price
+				"</b></size>: <color=yellow>$" + cardScript.price.value + "</color>" + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
 		}
 	}
@@ -258,5 +258,6 @@ public class ShopManager : MonoBehaviour
 		{
 			ShopStatsManager.me.RecordReroll();
 		}
+		purse.value--;
 	}
 }

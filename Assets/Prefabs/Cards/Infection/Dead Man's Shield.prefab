@@ -205,7 +205,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: INFECT_DEAD_MAN_SHIELD
-  cardDesc: "add a Curse illness; \nto grave: gain 4 shield"
+  cardDesc: "add a Curse illness; \nto grave: gain <color=grey>4</color> shield"
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

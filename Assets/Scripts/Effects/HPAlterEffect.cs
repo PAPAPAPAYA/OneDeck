@@ -153,14 +153,14 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy dealt dmg to player
 		{
-			effectResultString.value += "// their [" + myCard.name + "] dealt [" + (dmgAmount) + "] damage to You\n";
+			effectResultString.value += "// <color=orange>their</color> [<color=orange>" + myCard.name + "</color>] dealt [<color=red>" + (dmgAmount) + "</color>] damage to <color=#87CEEB>You</color>\n";
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOpponent(); // timepoint
 			DeckTester.me.deckBDmgOutputs_ToOpp.Add(dmgAmount);
 		}
 		else // player dealt dmg to enemy
 		{
-			effectResultString.value += "// your [" + myCard.name + "] dealt [" + (dmgAmount) + "] damage to Enemy\n";
+			effectResultString.value += "// <color=#87CEEB>your</color> [<color=#87CEEB>" + myCard.name + "</color>] dealt [<color=red>" + (dmgAmount) + "</color>] damage to <color=orange>Enemy</color>\n";
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOwner(); // timepoint
 			DeckTester.me.deckADmgOutputs_ToOpp.Add(dmgAmount);
@@ -175,14 +175,14 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player dealt dmg to player
 		{
-			effectResultString.value += "// your [" + myCard.name + "] dealt [" + (dmgAmount) + "] damage to You\n";
+			effectResultString.value += "// <color=#87CEEB>your</color> [<color=#87CEEB>" + myCard.name + "</color>] dealt [<color=red>" + (dmgAmount) + "</color>] damage to <color=#87CEEB>You</color>\n";
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOpponent(); // timepoint
 			DeckTester.me.deckADmgOutputs_ToSelf.Add(dmgAmount);
 		}
 		else // enemy dealt dmg to enemy
 		{
-			effectResultString.value += "// their [" + myCard.name + "] dealt [" + (dmgAmount) + "] damage to Enemy\n";
+			effectResultString.value += "// <color=orange>their</color> [<color=orange>" + myCard.name + "</color>] dealt [<color=red>" + (dmgAmount) + "</color>] damage to <color=orange>Enemy</color>\n";
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOwner(); // timepoint
 			DeckTester.me.deckBDmgOutputs_ToSelf.Add(dmgAmount);
@@ -197,13 +197,13 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player healed player
 		{
-			effectResultString.value += "// your [" + myCard.name + "] healed You for [" + (healAmount + healAmountAlter) + "]\n";
+			effectResultString.value += "// <color=#87CEEB>your</color> [<color=#87CEEB>" + myCard.name + "</color>] healed <color=#87CEEB>You</color> for [<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]\n";
 			GameEventStorage.me.onMyPlayerHealed?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOpponent(); // timepoint
 		}
 		else // enemy healed enemy
 		{
-			effectResultString.value += "// their [" + myCard.name + "] healed Enemy for [" + (healAmount + healAmountAlter) + "]\n";
+			effectResultString.value += "// <color=orange>their</color> [<color=orange>" + myCard.name + "</color>] healed <color=orange>Enemy</color> for [<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]\n";
 			GameEventStorage.me.onMyPlayerHealed?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOwner(); // timepoint
 		}
@@ -217,13 +217,13 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy healed player
 		{
-			effectResultString.value += "// their [" + myCard.name + "] healed You for [" + (healAmount + healAmountAlter) + "]\n";
+			effectResultString.value += "// <color=orange>their</color> [<color=orange>" + myCard.name + "</color>] healed <color=#87CEEB>You</color> for [<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]\n";
 			GameEventStorage.me.onMyPlayerHealed?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOpponent(); // timepoint
 		}
 		else // player healed enemy
 		{
-			effectResultString.value += "// your [" + myCard.name + "] healed Enemy for [" + (healAmount + healAmountAlter) + "]\n";
+			effectResultString.value += "// <color=#87CEEB>your</color> [<color=#87CEEB>" + myCard.name + "</color>] healed <color=orange>Enemy</color> for [<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]\n";
 			GameEventStorage.me.onMyPlayerHealed?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOwner(); // timepoint
 		}

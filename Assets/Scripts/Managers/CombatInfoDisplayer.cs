@@ -60,12 +60,13 @@ public class CombatInfoDisplayer : MonoBehaviour
 	
 	public void ShowCardInfo(CardScript cardRevealed, int deckSize, int graveSize, bool ownersCard)
 	{
+		// Card name color: blue for player, orange for enemy
+		string cardNameColor = ownersCard ? "#87CEEB" : "orange";
 		revealZoneDisplay.text = "#" + (graveSize + 1) + // card num
-		                         (ownersCard ? " your card: \n\n" : " their card: \n\n") + // card owner
+		                         " <color=" + cardNameColor + ">" + (ownersCard ? "your card" : "their card") + "</color>: \n\n" + // card owner
 		                         ProcessTagInfo(cardRevealed) + // tags
-		                         cardRevealed.gameObject.name + // card name
+		                         "<color=" + cardNameColor + ">" + cardRevealed.gameObject.name + "</color>" + // card name with color
 		                         "\n" + cardRevealed.cardDesc; // card description
-		revealZoneDisplay.color = ownersCard ? Color.blue : Color.red;
 	}
 
 	private string ProcessTagInfo(CardScript card)
