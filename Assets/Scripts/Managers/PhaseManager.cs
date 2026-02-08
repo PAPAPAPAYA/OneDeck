@@ -79,6 +79,15 @@ public class PhaseManager : MonoBehaviour
 
 	private void Update()
 	{
+		// Press ESC to quit game
+		if (Input.GetKeyDown(KeyCode.Escape))
+		{
+			Application.Quit();
+#if UNITY_EDITOR
+			UnityEditor.EditorApplication.isPlaying = false;
+#endif
+		}
+
 		if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop) // if in shop phase
 		{
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
