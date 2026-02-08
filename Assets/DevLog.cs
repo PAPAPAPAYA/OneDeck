@@ -1,10 +1,10 @@
 // devlog
 
 //! quirks
-	//! deck and grave effects don't show fail message, would be too much info? or too fewer surprises?
-	//! tag damage counts as tag owner card's damage
+	//! deck and grave effects don't show fail message, would be too much info? or too few surprises?
+	//! status effect damage counts as status effect owner card's damage
 	//! simplified hp event to [when session owner takes dmg] and [when enemy takes dmg]
-	//! after changing the combined deck, shuffle
+	//! when adding card to / back to combined deck, add them to the end of deck; only shuffle when round finished
 	//! currently we only use round num to match decks
 	//! 43514 is [Meditate], might need to keep an eye if the instance id changes, if it changes, need to find a way so that we keep what we saved
 	//! chains are closed when: [1] same card, different effect is trying to get invoked; [2] waiting input confirm;
@@ -141,7 +141,8 @@
 		//// starting cards
 		//// give starting cards at the start of game
 	// enemy
-		//todo make enemy decks for when there's no player deck recorded
+		//todo also need to record enemy's health
+		//// make enemy decks for when there's no player deck recorded
 		////deck saver
 			//// save
 				//// clean up
@@ -295,7 +296,7 @@
 // debug
 	//todo record data and write to local txt
 		//// card showed time and bought time --> bought rate
-		// total combat amount and card appearance amount and win amount --> card win rate
+		//// total combat amount and card appearance amount and win amount --> card win rate
 		// card number in deck --> amount rate
 	// left hp per session --> ave. hp after each combat
 

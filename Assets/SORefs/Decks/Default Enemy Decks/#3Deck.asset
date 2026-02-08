@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: '#3Deck'
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
-  - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
-  - {fileID: 8718476725744197808, guid: 98fc7ac56f4e3ca4ca3ff97541139ba0, type: 3}
+  - {fileID: 8718476725744197808, guid: 18dfc4aeeb23a1346bb361c6ac2722de, type: 3}
+  - {fileID: 8718476725744197808, guid: 4a86806e03a3601499ae80c0611f6b64, type: 3}
+  - {fileID: 8718476725744197808, guid: bf696ddd8fce9f44c8f5f706a94b5345, type: 3}
+  - {fileID: 8718476725744197808, guid: 40e0deec71ff8fd4886778e9e7f0719a, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: 
