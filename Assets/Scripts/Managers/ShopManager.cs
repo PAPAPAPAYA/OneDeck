@@ -36,11 +36,14 @@ public class ShopManager : MonoBehaviour
 	public string phaseInfo;
 	public bool sellMode = false; // if it's not sell mode then its buy mode
 
+	[Tooltip("存储购买时实例化的卡牌，退出商店时统一销毁")]
+	private List<GameObject> _boughtCardInstances = new List<GameObject>();
+
 	[Header("UI objects")]
 	public TextMeshProUGUI phaseInfoDisplay;
 	public TextMeshProUGUI deckInfoDisplay;
 	public TextMeshProUGUI shopInfoDisplay;
-	public GameObject rerollButton;
+	public TextMeshProUGUI playerStatsDisplay;
 	private string _deckInfoStr = "Your Deck: \n\n";
 	private string _shopInfoStr = "Shop: \n\n";
 
@@ -50,12 +53,20 @@ public class ShopManager : MonoBehaviour
 		ShowDeck();
 		ShowShopItems();
 		ShowShopTips();
-		ShowRerollButton();
+		ShowPlayerStats();
 
+		// toggle sell/buy mode
 		if (Input.GetKeyDown(KeyCode.S))
 		{
 			sellMode = !sellMode;
 		}
+
+		// reroll
+		if (Input.GetKeyDown(KeyCode.R))
+		{
+			Reroll();
+		}
+
 
 		if (!sellMode) // buy mode TEMP
 		{
@@ -129,11 +140,10 @@ public class ShopManager : MonoBehaviour
 			playerDeckRef.deck.Add(cardToBuy); // add it to player deck
 		}
 		currentShopItemDeckRef.deck.Remove(cardToBuy); // remove it from current shop item list
-													   // buy timepoint: kind of ugly right now, instantiate so it register as a listener, and destroy it right after
 		var cardToBuyInst = Instantiate(cardToBuy, transform);
 		cardToBuyInst.GetComponent<CardScript>().myStatusRef = CombatManager.Me.ownerPlayerStatusRef;
-		GameEventStorage.me.onMeBought.RaiseSpecific(cardToBuyInst);
-		Destroy(cardToBuyInst);
+		GameEventStorage.me.onMeBought.RaiseSpecific(cardToBuyInst); // buy timepoint: instantiate so it register as a listener
+		_boughtCardInstances.Add(cardToBuyInst); // 添加到列表，退出商店时统一销毁
 		// record card bought
 		if (ShopStatsManager.Me != null)
 		{
@@ -158,6 +168,19 @@ public class ShopManager : MonoBehaviour
 
 	public void EnterShop()
 	{
+		// 清理可能残留的实例（保险起见）
+		if (_boughtCardInstances.Count > 0)
+		{
+			foreach (var cardInst in _boughtCardInstances)
+			{
+				if (cardInst != null)
+				{
+					Destroy(cardInst);
+				}
+			}
+			_boughtCardInstances.Clear();
+		}
+		
 		// payday
 		purse.value += payCheck.value;
 		// process shop items and display
@@ -181,10 +204,19 @@ public class ShopManager : MonoBehaviour
 			ShopStatsManager.Me.Flush();
 		}
 
+		// 统一销毁购买时实例化的卡牌
+		foreach (var cardInst in _boughtCardInstances)
+		{
+			if (cardInst != null)
+			{
+				Destroy(cardInst);
+			}
+		}
+		_boughtCardInstances.Clear();
+
 		deckInfoDisplay.text = "";
 		shopInfoDisplay.text = "";
 		phaseInfoDisplay.text = "";
-		rerollButton.SetActive(false);
 	}
 
 	private void GatherPlayerDeckInfo()
@@ -251,17 +283,14 @@ public class ShopManager : MonoBehaviour
 	private void ShowShopTips()
 	{
 		string currentMode = sellMode ? "<color=yellow>Selling</color>" : "<color=yellow>Buying</color>";
-		phaseInfoDisplay.text = phaseInfo + " Current: " + currentMode +
-								"\nDeck Size: <color=yellow>" + deckSize.value + "</color>" + " (current)/<color=yellow>" + maxDeckSize.value + "</color> (max)" +
+		phaseInfoDisplay.text = phaseInfo + " Current: " + currentMode;
+								
+	}
+	private void ShowPlayerStats()
+	{
+		playerStatsDisplay.text = "\nDeck Size: <color=yellow>" + deckSize.value + "</color>" + " (current) / <color=yellow>" + maxDeckSize.value + "</color> (max)" +
 								"\nHP Max: <color=#90EE90>" + CombatManager.Me.ownerPlayerStatusRef.hpMax + "</color>" +
 								"\n<color=yellow>$" + purse.value + "</color>";
-	}
-	private void ShowRerollButton()
-	{
-		if (!rerollButton.activeSelf)
-		{
-			rerollButton.SetActive(true);
-		}
 	}
 
 	public void Reroll()

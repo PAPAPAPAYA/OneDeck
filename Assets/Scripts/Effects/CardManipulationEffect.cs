@@ -125,6 +125,7 @@ public class CardManipulationEffect : EffectScript
 
 	public void StageSelf() // put self on top of the deck
 	{
+		_combinedDeck = combatManager.combinedDeckZone;
 		if (!_combinedDeck.Contains(myCard)) return;
 		_combinedDeck.Remove(myCard);
 		_combinedDeck.Add(myCard);
@@ -217,6 +218,7 @@ public class CardManipulationEffect : EffectScript
 
 	public void BurySelf() // put self at the bottom of the deck
 	{
+		_combinedDeck = combatManager.combinedDeckZone;
 		if (!_combinedDeck.Contains(transform.parent.gameObject)) return;
 		_combinedDeck.Remove(transform.parent.gameObject);
 		_combinedDeck.Insert(0, transform.parent.gameObject);

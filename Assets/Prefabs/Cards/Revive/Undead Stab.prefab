@@ -81,8 +81,10 @@ MonoBehaviour:
   myStatusEffectResolverScript: {fileID: 6584689119450628697, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 6
+  statusEffectToCount: 0
   spreadEvenly: 0
   target: 0
+  includeSelf: 0
 --- !u!1 &5686513399728282148
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,12 +215,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: REVIVE_UNDEAD_STAB
-  cardDesc: deal <color=red>1</color> dmg to <color=orange>enemy</color>; give <color=#87CEEB>self</color> [Undead] after shuffle
+  cardDesc: deal <color=red>1</color> dmg to <color=orange>enemy</color>; give <color=#87CEEB>self</color>
+    [Undead] each round
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  myTags: 
 --- !u!114 &1388698888961379426
 MonoBehaviour:
   m_ObjectHideFlags: 0

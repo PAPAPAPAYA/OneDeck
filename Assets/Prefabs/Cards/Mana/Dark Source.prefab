@@ -60,7 +60,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 4
+          m_IntArgument: 5
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -95,11 +95,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   myStatusEffectResolverScript: {fileID: 0}
-  canStatusEffectBeStacked: 0
-  statusEffectToGive: 0
+  canStatusEffectBeStacked: 1
+  statusEffectToGive: 2
   statusEffectToCount: 0
   spreadEvenly: 0
   target: 0
+  includeSelf: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: MANA_DARK_SOURCE
-  cardDesc: 'deal <color=red>1</color> dmg to <color=#87CEEB>self</color>, give <color=yellow>5</color> [MANA]'
+  cardDesc: '[infected] give <color=yellow>5</color> [MANA]'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
