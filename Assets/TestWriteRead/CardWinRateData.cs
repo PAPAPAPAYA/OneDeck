@@ -11,7 +11,6 @@ namespace TestWriteRead
     public class CardStats
     {
         public string cardTypeID;
-        public string cardName;
         public int totalCombats;
         public int wins;
         public int losses;
@@ -22,7 +21,7 @@ namespace TestWriteRead
         // 格式化输出
         public override string ToString()
         {
-            return $"[{cardTypeID}] {cardName}: 胜率 {WinRate:P1} ({wins}胜/{losses}负/{totalCombats}场)";
+            return $"[{cardTypeID}] : 胜率 {WinRate:P1} ({wins}胜/{losses}负/{totalCombats}场)";
         }
     }
 

@@ -461,3 +461,22 @@ See `Assets/DevLog.cs` for detailed development notes including:
 - Total combat amount and card appearance amount and win amount → card win rate
 - Card number in deck → amount rate
 - Left HP per session → average HP after each combat
+
+---
+
+## AI Agent Guidelines
+
+### Tool Usage Conventions
+
+**Glob Search Patterns:**
+- ❌ **Don't use `**` at the start** (e.g., `**/FileName.cs`) - This recursively searches all directories and may cause performance issues
+- ✅ **Use specific paths instead** (e.g., `Assets/**/FileName.cs`) - Narrow down the search to specific directories
+
+Example:
+```
+# Bad - searches entire project including large directories
+**/ShopStatsManager.cs
+
+# Good - searches only within Assets
+Assets/**/ShopStatsManager.cs
+```

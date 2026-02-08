@@ -4,7 +4,7 @@ using UnityEditor;
 namespace DefaultNamespace
 {
 	[CustomEditor(typeof(GameEvent))]
-	public class RaiseGameEventButton : Editor
+	public class RaiseGameEventButton : UnityEditor.Editor
 	{
 		public override void OnInspectorGUI()
 		{

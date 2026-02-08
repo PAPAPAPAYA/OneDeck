@@ -1,2 +1,14 @@
 fileFormatVersion: 2
 guid: 83350cd29f6e37648be41dfcb00a5759
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  - myDeckSize: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
+  - maxDeckSize: {fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

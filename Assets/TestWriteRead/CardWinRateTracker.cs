@@ -31,11 +31,17 @@ namespace TestWriteRead
             _jsonPath = Application.persistentDataPath + "/card_winrate.json";
             _csvPath = Application.persistentDataPath + "/card_winrate.csv";
             LoadData();
+            
+            if (resetOnStart)
+            {
+                ClearAllData();
+            }
         }
         #endregion
 
         [Header("System Switch")]
         public bool switchOnTracking = true;
+        public bool resetOnStart = false;
 
         [Header("Debug")]
         [SerializeField] private bool printOnSave = true;
@@ -102,7 +108,7 @@ namespace TestWriteRead
         /// <summary>
         /// 获取或创建卡的统计记录
         /// </summary>
-        private CardStats GetOrCreateStats(string cardTypeID, string cardName = "")
+        private CardStats GetOrCreateStats(string cardTypeID)
         {
             var existing = _data.allCardStats.Find(s => s.cardTypeID == cardTypeID);
             if (existing != null) return existing;
@@ -110,7 +116,6 @@ namespace TestWriteRead
             var newStats = new CardStats
             {
                 cardTypeID = cardTypeID,
-                cardName = cardName,
                 totalCombats = 0,
                 wins = 0,
                 losses = 0
@@ -192,6 +197,10 @@ namespace TestWriteRead
             {
                 var json = JsonUtility.ToJson(_data, true);
                 File.WriteAllText(_jsonPath, json);
+                if (printOnSave)
+                {
+                    Debug.Log($"[CardWinRateTracker] 统计已保存: {_jsonPath}");
+                }
             }
             catch (Exception e)
             {
@@ -227,7 +236,7 @@ namespace TestWriteRead
             
             foreach (var stat in sortedStats)
             {
-                sb.AppendLine($"{stat.cardTypeID},{stat.cardName},{stat.totalCombats},{stat.wins},{stat.losses},{stat.WinRate:F4},{_data.lastUpdated}");
+                sb.AppendLine($"{stat.cardTypeID},{stat.totalCombats},{stat.wins},{stat.losses},{stat.WinRate:F4},{_data.lastUpdated}");
             }
 
             try

@@ -22,6 +22,7 @@ public class ShopManager : MonoBehaviour
 	[Header("player ref")]
 	public DeckSO playerDeckRef;
 	public IntSO deckSize;
+	public IntSO maxDeckSize;
 	public IntSO purse;
 
 	[Header("shop")]
@@ -128,15 +129,19 @@ public class ShopManager : MonoBehaviour
 			playerDeckRef.deck.Add(cardToBuy); // add it to player deck
 		}
 		currentShopItemDeckRef.deck.Remove(cardToBuy); // remove it from current shop item list
-		// buy timepoint: kind of ugly right now, instantiate so it register as a listener, and destroy it right after
+													   // buy timepoint: kind of ugly right now, instantiate so it register as a listener, and destroy it right after
 		var cardToBuyInst = Instantiate(cardToBuy, transform);
 		cardToBuyInst.GetComponent<CardScript>().myStatusRef = CombatManager.Me.ownerPlayerStatusRef;
 		GameEventStorage.me.onMeBought.RaiseSpecific(cardToBuyInst);
 		Destroy(cardToBuyInst);
 		// record card bought
-		if (ShopStatsManager.me != null)
+		if (ShopStatsManager.Me != null)
 		{
-			ShopStatsManager.me.RecordCardBought(cardToBuy.name);
+			var cardTypeID = cardToBuy.GetComponent<CardScript>()?.cardTypeID;
+			if (!string.IsNullOrEmpty(cardTypeID))
+			{
+				ShopStatsManager.Me.RecordCardBought(cardTypeID, cardToBuy.name);
+			}
 		}
 		GatherPlayerDeckInfo();
 		UpdateShopItemInfo();
@@ -161,14 +166,21 @@ public class ShopManager : MonoBehaviour
 		// process player deck and display
 		GatherPlayerDeckInfo();
 		// record shop visit
-		if (ShopStatsManager.me != null)
+		if (ShopStatsManager.Me != null)
 		{
-			ShopStatsManager.me.RecordShopVisit();
+			ShopStatsManager.Me.RecordShopVisit();
 		}
+		// 注意：不需要在这里Flush，退出商店时Flush
 	}
 
 	public void ExitShop()
 	{
+		// 确保统计数据保存
+		if (ShopStatsManager.Me != null)
+		{
+			ShopStatsManager.Me.Flush();
+		}
+
 		deckInfoDisplay.text = "";
 		shopInfoDisplay.text = "";
 		phaseInfoDisplay.text = "";
@@ -195,15 +207,18 @@ public class ShopManager : MonoBehaviour
 	private void GenerateShopItems()
 	{
 		currentShopItemDeckRef.deck.Clear();
-		//shopInstList.Clear();
 		for (var i = 0; i < shopItemAmount; i++)
 		{
 			var card = shopPoolRef.deck[Random.Range(0, shopPoolRef.deck.Count)];
 			currentShopItemDeckRef.deck.Add(card);
 			// record card appeared
-			if (ShopStatsManager.me != null)
+			if (ShopStatsManager.Me != null)
 			{
-				ShopStatsManager.me.RecordCardAppeared(card.name);
+				var cardTypeID = card.GetComponent<CardScript>()?.cardTypeID;
+				if (!string.IsNullOrEmpty(cardTypeID))
+				{
+					ShopStatsManager.Me.RecordCardAppeared(cardTypeID, card.name);
+				}
 			}
 		}
 	}
@@ -235,11 +250,11 @@ public class ShopManager : MonoBehaviour
 
 	private void ShowShopTips()
 	{
-		string currentMode = sellMode ? "Selling" : "Buying";
+		string currentMode = sellMode ? "<color=yellow>Selling</color>" : "<color=yellow>Buying</color>";
 		phaseInfoDisplay.text = phaseInfo + " Current: " + currentMode +
-		                        "\nDeck Size: " + deckSize.value +
-		                        "\nHP Max: " + CombatManager.Me.ownerPlayerStatusRef.hpMax +
-		                        "\n$" + purse.value;
+								"\nDeck Size: <color=yellow>" + deckSize.value + "</color>" + " (current)/<color=yellow>" + maxDeckSize.value + "</color> (max)" +
+								"\nHP Max: <color=#90EE90>" + CombatManager.Me.ownerPlayerStatusRef.hpMax + "</color>" +
+								"\n<color=yellow>$" + purse.value + "</color>";
 	}
 	private void ShowRerollButton()
 	{
@@ -254,9 +269,9 @@ public class ShopManager : MonoBehaviour
 		GenerateShopItems();
 		UpdateShopItemInfo();
 		// record reroll
-		if (ShopStatsManager.me != null)
+		if (ShopStatsManager.Me != null)
 		{
-			ShopStatsManager.me.RecordReroll();
+			ShopStatsManager.Me.RecordReroll();
 		}
 		purse.value--;
 	}
