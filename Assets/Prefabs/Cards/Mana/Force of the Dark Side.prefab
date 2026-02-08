@@ -177,7 +177,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: MANA_DARK_SIDE_FORCE
-  cardDesc: 'mana <color=yellow>3</color>: exile <color=yellow>2</color> <color=orange>enemy</color> card'
+  cardDesc: 'MANA <color=yellow>3</color>: EXILE <color=yellow>2</color> <color=orange>enemy</color>
+    cards'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

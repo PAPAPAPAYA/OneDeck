@@ -207,7 +207,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: EXILE_DESPERATE_ATTEMPT
-  cardDesc: 'exile <color=yellow>2</color>: deal dmg equals lost hp/<color=yellow>2</color>'
+  cardDesc: 'EXILE <color=yellow>2</color>: deal dmg equals lost hp/<color=yellow>2</color>'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

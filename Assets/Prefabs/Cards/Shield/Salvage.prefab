@@ -153,7 +153,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SHIELD_SALVAGE
-  cardDesc: Revive <color=yellow>1</color> <color=orange>enemy</color>, gain <color=grey>4</color>
+  cardDesc: REVIVE <color=yellow>1</color> <color=orange>enemy</color>, gain <color=grey>4</color>
     shield
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}

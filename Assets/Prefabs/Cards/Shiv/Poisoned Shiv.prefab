@@ -49,12 +49,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SHIV_POISONED
-  cardDesc: deal <color=red>1</color> damge to <color=orange>enemy</color>; deal <color=red>2</color> dmg if infected
+  cardDesc: 'deal <color=red>1</color> damge to <color=orange>enemy</color>;
+
+    deal
+    <color=red>2</color> dmg if [INFECTED]'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  myTags: 
 --- !u!114 &5555516842082908882
 MonoBehaviour:
   m_ObjectHideFlags: 0

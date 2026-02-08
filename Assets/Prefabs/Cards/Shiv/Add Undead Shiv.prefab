@@ -128,7 +128,7 @@ MonoBehaviour:
   cardDesc: 'add <color=yellow>1</color> [Undead Shiv] to deck
 
     Undead Shiv:
-    [undead] deal <color=red>1</color> dmg; give self [undead] each round'
+    deal <color=red>1</color> dmg; give self [REVIVE] each round'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

@@ -128,7 +128,7 @@ MonoBehaviour:
   cardDesc: 'add <color=yellow>1</color> temporary [Poisoned Shiv] to deck
 
     [Poisoned
-    Shiv]: deal <color=red>1</color> dmg; deal <color=red>2</color> more if infected'
+    Shiv]: deal <color=red>1</color> dmg; deal <color=red>2</color> more if [INFECTED]'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

@@ -80,8 +80,10 @@ MonoBehaviour:
   myStatusEffectResolverScript: {fileID: 6584689119450628697, guid: 7455205bfe91f594a926ce2fe652cf1f, type: 3}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 3
+  statusEffectToCount: 0
   spreadEvenly: 0
   target: 2
+  includeSelf: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -128,15 +130,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardName: HeartChange
   cardID: 0
   cardTypeID: HEART_CHANGE
-  cardDesc: 'Give <color=yellow>3</color> random cards [Heart Changed]'
+  cardDesc: 'Give <color=yellow>3</color> random cards [HEART CHANGED]'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  myTags: 
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

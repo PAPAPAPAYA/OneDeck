@@ -83,6 +83,7 @@ MonoBehaviour:
   statusEffectToCount: 0
   spreadEvenly: 0
   target: 0
+  includeSelf: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,7 +132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: MANA_MEDITATE
-  cardDesc: give <color=yellow>3</color> mana
+  cardDesc: give <color=yellow>3</color> MANA among your cards
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

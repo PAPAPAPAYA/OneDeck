@@ -81,8 +81,10 @@ MonoBehaviour:
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 4
+  statusEffectToCount: 0
   spreadEvenly: 0
   target: 0
+  includeSelf: 0
 --- !u!1 &7538812023556790325
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,12 +215,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: POWER_LORD_OF_UNDERWORLD
-  cardDesc: if a card is revived, +<color=yellow>1</color> power; deal <color=red>1</color> dmg
+  cardDesc: 'if a card is REVIVED, +<color=yellow>1</color> POWER;
+
+    deal <color=red>1</color>
+    dmg'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  myTags: 
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

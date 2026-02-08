@@ -80,8 +80,10 @@ MonoBehaviour:
   myStatusEffectResolverScript: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 1
+  statusEffectToCount: 0
   spreadEvenly: 0
   target: 2
+  includeSelf: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -130,12 +132,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: INFECT_PANDEMIC
-  cardDesc: INFECT <color=yellow>5</color> cards randomly
+  cardDesc: 'give <color=yellow>5</color> cards [INFECTED]'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  myTags: 
 --- !u!114 &1466604985783285254
 MonoBehaviour:
   m_ObjectHideFlags: 0

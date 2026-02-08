@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: MANA_DARK_SOURCE
-  cardDesc: '[infected] give <color=yellow>5</color> [MANA]'
+  cardDesc: '[INFECTED] give <color=yellow>5</color> [MANA] among your cards'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}

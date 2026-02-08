@@ -143,12 +143,14 @@ MonoBehaviour:
   cardTypeID: INFECT_POISONED_KNIFE
   cardDesc: 'deal <color=red>1</color> damge to <color=orange>enemy</color>;
 
-    if infected, deal 2 more damage to enemy'
+    if
+    [INFECTED], deal 2 more damage to enemy'
   takeUpSpace: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  myTags: 
 --- !u!114 &5555516842082908882
 MonoBehaviour:
   m_ObjectHideFlags: 0
