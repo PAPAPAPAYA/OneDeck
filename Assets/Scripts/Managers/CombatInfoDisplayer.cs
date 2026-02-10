@@ -174,11 +174,11 @@ public class CombatInfoDisplayer : MonoBehaviour
 	private void DisplayStatusInfo()
 	{
 		playerStatusDisplay.text =
-			"Your HP: " + CombatManager.Me.ownerPlayerStatusRef.hp + "\n" +
-			"Your SHIELD: " + CombatManager.Me.ownerPlayerStatusRef.shield + "\n";
+			"Your HP: <color=#90EE90>" + CombatManager.Me.ownerPlayerStatusRef.hp + "</color>\n" +
+			"Your SHIELD: <color=grey>" + CombatManager.Me.ownerPlayerStatusRef.shield + "</color>\n";
 		enemyStatusDisplay.text =
-			"Their HP: " + CombatManager.Me.enemyPlayerStatusRef.hp + "\n" +
-			"Their SHIELD: " + CombatManager.Me.enemyPlayerStatusRef.shield + "\n";
+			"Their HP: <color=#90EE90>" + CombatManager.Me.enemyPlayerStatusRef.hp + "</color>\n" +
+			"Their SHIELD: <color=grey>" + CombatManager.Me.enemyPlayerStatusRef.shield + "</color>\n";
 	}
 
 	public void RefreshDeckInfo()

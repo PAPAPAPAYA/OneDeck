@@ -142,7 +142,7 @@ public class ShopManager : MonoBehaviour
 		currentShopItemDeckRef.deck.Remove(cardToBuy); // remove it from current shop item list
 		var cardToBuyInst = Instantiate(cardToBuy, transform);
 		cardToBuyInst.GetComponent<CardScript>().myStatusRef = CombatManager.Me.ownerPlayerStatusRef;
-		GameEventStorage.me.onMeBought.RaiseSpecific(cardToBuyInst); // buy timepoint: instantiate so it register as a listener
+		GameEventStorage.me?.onMeBought?.RaiseSpecific(cardToBuyInst); // buy timepoint: instantiate so it register as a listener
 		_boughtCardInstances.Add(cardToBuyInst); // 添加到列表，退出商店时统一销毁
 		// record card bought
 		if (ShopStatsManager.Me != null)
@@ -217,11 +217,12 @@ public class ShopManager : MonoBehaviour
 		deckInfoDisplay.text = "";
 		shopInfoDisplay.text = "";
 		phaseInfoDisplay.text = "";
+		playerStatsDisplay.text = "";
 	}
 
 	private void GatherPlayerDeckInfo()
 	{
-		_deckInfoStr = "";
+		_deckInfoStr = "Your Deck:\n\n";
 		//deckInstList.Clear();
 		for (var i = 0; i < playerDeckRef.deck.Count; i++)
 		{
@@ -257,7 +258,7 @@ public class ShopManager : MonoBehaviour
 
 	private void UpdateShopItemInfo()
 	{
-		_shopInfoStr = "";
+		_shopInfoStr = "Shop:\n\n";
 		for (var i = 0; i < currentShopItemDeckRef.deck.Count; i++)
 		{
 			var card = currentShopItemDeckRef.deck[i];

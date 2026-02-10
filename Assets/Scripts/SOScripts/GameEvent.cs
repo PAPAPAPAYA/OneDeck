@@ -6,7 +6,7 @@ using UnityEngine;
 [CreateAssetMenu]
 public class GameEvent : ScriptableObject
 {
-	private List<GameEventListener> _listeners;
+	private List<GameEventListener> _listeners = new List<GameEventListener>();
 
 	public void Raise()
 	{
@@ -42,6 +42,7 @@ public class GameEvent : ScriptableObject
 	
 	public void RaiseSpecific(GameObject target) // will also raise target's children's events
 	{
+		if (target == null) return;
 		var listeners = target.GetComponentsInChildren<GameEventListener>();
 		foreach (var listenerFromParentOrChild in listeners)
 		{
@@ -59,7 +60,10 @@ public class GameEvent : ScriptableObject
 
 	public void UnregisterListener(GameEventListener listener)
 	{
-		_listeners.Remove(listener);
+		if (_listeners != null)
+		{
+			_listeners.Remove(listener);
+		}
 	}
 	
 	public int ReturnAmountOfListeners()

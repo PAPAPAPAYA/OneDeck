@@ -15,7 +15,8 @@ namespace DefaultNamespace
 		{
 			if (@event == null)
 			{
-				Debug.LogError("Assign Game Event to GameEventListener");
+				Debug.LogError("Assign Game Event to GameEventListener", this);
+				return;
 			}
 			@event.RegisterListener(this);
 		}

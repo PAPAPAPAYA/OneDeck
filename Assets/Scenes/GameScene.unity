@@ -2263,11 +2263,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   switchOnSaveLoad: 1
+  resetOnStart: 0
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   winAmount: {fileID: 11400000, guid: 0c5b8ad6fd36260419f71a0b293f11ba, type: 2}
   heartLeft: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
   sessionNumber: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
   enemyDeckToPopulate: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
+  playerStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
+  enemyStatusRef: {fileID: 11400000, guid: 3e07a686113188f42aa506f5d45e14ba, type: 2}
+  shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
+  additionalCardPrefabs: []
   defaultEnemyDecks:
   - {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
   - {fileID: 11400000, guid: a9ee6f1e763a474c816e99c233349c16, type: 2}
@@ -2279,6 +2284,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5e2b1a4a3d00449883338fad16951177, type: 2}
   - {fileID: 11400000, guid: 80d03d9c92644d97ab5b6e11e3ab4908, type: 2}
   - {fileID: 11400000, guid: 7833fb4bf72a428c8d84e6bf933b4853, type: 2}
+  printOnSave: 1
 --- !u!4 &1855501822
 Transform:
   m_ObjectHideFlags: 0
