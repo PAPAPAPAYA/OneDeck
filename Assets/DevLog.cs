@@ -12,69 +12,11 @@
 	//! don't put multiple effect instances with loopable effect in one card, will stack overflow; put multiple loopable effects in same effect instance
 	//! no beforeIDealDmg time point and game event, would stack overflow; HPAlterEffect calculates dmg before dealing dmg
 
-// design
-	// infection
-		// effect
-			// give infection
-		// condition/cost
-			// if infected
-			//? for each infected
-	// mana
-		// effect
-			// give mana
-		// condition/cost
-			// if X mana
-	// healing
-		// effect
-			// heal
-		// condition/cost
-			// if healed
-	// self-harm
-		// effect
-			// deal dmg to self
-		// condition/cost
-			// if received dmg
-	// undertake
-		// effect
-			// send card straight to grave
-		// condition/cost
-			// if sent to grave
-	// reborn
-		// effect
-			// put cards from grave to deck
-		// condition/cost
-			//? each time sent to grave
-	// generate
-		// effect
-			// add temp cards to deck
-		// condition/cost
-			//? foreach card you/they own
-	// heart change
-		// effect
-			// give heart change
-		// condition/cost
-			//? if heart changed
-	// shield
-		// effect
-			// give shield
-		// condition/cost
-			//? if X shield
-			//? foreach shield
-	// echo (straight back to deck if cost met)
-		// effect
-			//? go to deck from reveal zone
-		// condition/cost
-			//? each time is played
-	// bury
-		// effect
-			// send card to bottom of deck
-		// condition/cost
-			//? for each X happened
-	// stage
-		// effect
-			// send card to top of deck
-		// condition/cost
-			//? for each X not happened
+// UX Prototype
+	// combat
+		//todo show deck
+	// shop
+	// result
 
 
 
