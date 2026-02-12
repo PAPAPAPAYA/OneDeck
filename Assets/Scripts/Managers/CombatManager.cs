@@ -119,7 +119,7 @@ public class CombatManager : MonoBehaviour
 		}
 	}
 
-	private void GatherDecks() // collect player and enemy decks and instantiate cards
+	public void GatherDecks() // collect player and enemy decks and instantiate cards
 	{
 		combinedDeckZone.Clear();
 		foreach (var card in playerDeck.deck)
@@ -224,6 +224,7 @@ public class CombatManager : MonoBehaviour
 			{
 				_infoDisplayer.combatTipsDisplay.text = "press space to reveal";
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
+				CombatUXManager.me.ProcessPhysicalCards();
 				awaitingRevealConfirm = false;
 				_infoDisplayer.effectResultString.value = "";
 			}

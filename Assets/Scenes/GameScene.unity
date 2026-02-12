@@ -257,93 +257,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 13415596}
   m_CullTransparentMesh: 1
---- !u!1 &24166981
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 24166982}
-  - component: {fileID: 24166983}
-  m_Layer: 0
-  m_Name: PhysicalCardEdge
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &24166982
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 24166981}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.01}
-  m_LocalScale: {x: 3.7, y: 5.1799994, z: 0.74}
-  m_ConstrainProportionsScale: 1
-  m_Children: []
-  m_Father: {fileID: 986266949}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &24166983
-SpriteRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 24166981}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.2509804, g: 0.7686275, b: 0.98823535, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
-  m_SpriteSortPoint: 0
 --- !u!1 &114813448
 GameObject:
   m_ObjectHideFlags: 0
@@ -1304,11 +1217,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &986266949 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5752269354517656790, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-  m_PrefabInstance: {fileID: 6188329026844508107}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1005229399
 GameObject:
   m_ObjectHideFlags: 0
@@ -2020,7 +1928,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   revealedPhysicalCard: {fileID: 0}
-  physicalCardPrefab: {fileID: 0}
+  physicalCardPrefab: {fileID: 99543954785682955, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+  startCardPrefab: {fileID: 0}
+  zOffset: 0.1
 --- !u!1 &1457153432
 GameObject:
   m_ObjectHideFlags: 0
@@ -2051,7 +1961,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableStats: 1
-  resetOnStart: 0
+  resetOnStart: 1
   printOnSave: 1
 --- !u!4 &1457153434
 Transform:
@@ -2401,7 +2311,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   switchOnSaveLoad: 1
-  resetOnStart: 0
+  resetOnStart: 1
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   winAmount: {fileID: 11400000, guid: 0c5b8ad6fd36260419f71a0b293f11ba, type: 2}
   heartLeft: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
@@ -2998,7 +2908,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2012133711
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3580,7 +3490,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   switchOnTracking: 1
-  resetOnStart: 0
+  resetOnStart: 1
   printOnSave: 1
 --- !u!4 &2103892657
 Transform:
@@ -3656,53 +3566,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: PhysicalCardParent
       objectReference: {fileID: 0}
-    - target: {fileID: 3672225787955730436, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_fontColor.b
-      value: 0.098039225
-      objectReference: {fileID: 0}
-    - target: {fileID: 3672225787955730436, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_fontColor.g
-      value: 0.054901965
-      objectReference: {fileID: 0}
-    - target: {fileID: 3672225787955730436, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_fontColor.r
-      value: 0.039215688
-      objectReference: {fileID: 0}
-    - target: {fileID: 3672225787955730436, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_fontColor32.rgba
-      value: 4279832074
-      objectReference: {fileID: 0}
-    - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_Color.b
-      value: 0.9725491
-      objectReference: {fileID: 0}
-    - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_Color.g
-      value: 0.3137255
-      objectReference: {fileID: 0}
-    - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_Color.r
-      value: 0.22352943
-      objectReference: {fileID: 0}
-    - target: {fileID: 4916689818573649989, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_Name
-      value: PhysicalCardFace
-      objectReference: {fileID: 0}
-    - target: {fileID: 5323925544510727272, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_fontColor.b
-      value: 0.09411766
-      objectReference: {fileID: 0}
-    - target: {fileID: 5323925544510727272, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_fontColor.g
-      value: 0.050980397
-      objectReference: {fileID: 0}
-    - target: {fileID: 5323925544510727272, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_fontColor.r
-      value: 0.039215688
-      objectReference: {fileID: 0}
-    - target: {fileID: 5323925544510727272, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_fontColor32.rgba
-      value: 4279766282
+    - target: {fileID: 99543954785682955, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5752269354517656790, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3746,10 +3612,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 5752269354517656790, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      insertIndex: 0
-      addedObject: {fileID: 24166982}
+    m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2342764060043469870, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       insertIndex: -1
