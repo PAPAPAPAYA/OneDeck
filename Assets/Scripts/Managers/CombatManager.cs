@@ -182,10 +182,11 @@ public class CombatManager : MonoBehaviour
 	{
 		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone); // shuffle deck
 		_infoDisplayer.RefreshDeckInfo();
-		//EffectChainManager.Me.CloseEffectChain(); // close current effect chain
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
 		UpdateTrackingVariables();
 		
+		CombatUXManager.me.CopyCombinedDeckOrder();
+		CombatUXManager.me.ResetPhysicalCardsPosAndSize();
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
 	}
@@ -205,26 +206,29 @@ public class CombatManager : MonoBehaviour
 			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
 				if (combatFinished.value) return;
-				_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\npress space to continue";
-				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
+				_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAB / SPACE to continue";
+				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 				combatFinished.value = true;
 			}
 			// round finished
 			else if (cardNum < 0)
 			{
-				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\npress space to shuffle";
-				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
+				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\nTAB / SPACE to shuffle";
+				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 				GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 				roundNumRef.value++;
 				_infoDisplayer.ClearInfo();
+				CombatUXManager.me.ReviveAllPhysicalCards();
+				//CombatUXManager.me.ResetPhysicalCardsPosAndSize();
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 			}
 			// need to reveal next card
 			else
 			{
-				_infoDisplayer.combatTipsDisplay.text = "press space to reveal";
-				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
-				CombatUXManager.me.ProcessPhysicalCards();
+				_infoDisplayer.combatTipsDisplay.text = "TAB / SPACE to reveal";
+				CombatUXManager.me.InstantiateAllPhysicalCards();
+				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+				CombatUXManager.me.RevealNextPhysicalCard();
 				awaitingRevealConfirm = false;
 				_infoDisplayer.effectResultString.value = "";
 			}
@@ -241,12 +245,12 @@ public class CombatManager : MonoBehaviour
 				graveZone.Count,
 				cardRevealed.myStatusRef == ownerPlayerStatusRef);
 			cardNum--;
-			GameEventStorage.me.onAnyCardRevealed?.Raise(); // timepoint
-			GameEventStorage.me.onMeRevealed?.RaiseSpecific(cardRevealed.gameObject); // timepoint
+            GameEventStorage.me.onAnyCardRevealed.Raise(); // timepoint
+            GameEventStorage.me.onMeRevealed.RaiseSpecific(cardRevealed.gameObject); // timepoint
 			
 			graveZone.Add(revealZone);
-			GameEventStorage.me.onAnyCardSentToGrave?.Raise(); // timepoint
-			GameEventStorage.me.onMeSentToGrave?.RaiseSpecific(cardRevealed.gameObject); // timepoint
+			GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
+			GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardRevealed.gameObject); // timepoint
 			revealZone = null;
 			awaitingRevealConfirm = true;
 			_infoDisplayer.RefreshDeckInfo();

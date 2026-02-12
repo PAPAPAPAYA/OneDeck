@@ -14,9 +14,18 @@
 
 // UX Prototype
 	// combat
-		//todo show deck
+		//// show deck
+		//// show grave
+		//// put grave card back to deck
+		//todo accounts for effects that change deck
+		//todo delete physical cards when exiting combat
 	// shop
+		//todo show deck
+		//todo show shop
+		//todo buy card
+		//todo sell card
 	// result
+		//todo tap to continue
 
 
 

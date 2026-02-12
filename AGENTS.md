@@ -451,10 +451,6 @@ See `Assets/DevLog.cs` for detailed development notes including:
 - Abandoned features
 - Implementation quirks and warnings
 
-### Abandoned Features
-
-- **Card Maker**: A visual card creation tool was abandoned due to being "too much work, not economic"
-
 ### Planned Debug/Data Recording Features
 
 - Card show time and bought time → bought rate
