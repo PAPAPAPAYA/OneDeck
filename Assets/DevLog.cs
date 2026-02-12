@@ -13,11 +13,17 @@
 	//! no beforeIDealDmg time point and game event, would stack overflow; HPAlterEffect calculates dmg before dealing dmg
 
 // UX Prototype
+	//todo learn DOTween for the real shit
 	// combat
 		//// show deck
 		//// show grave
 		//// put grave card back to deck
 		//todo accounts for effects that change deck
+			// grave to deck
+			// deck to grave
+			// stage
+			// bury
+			// may need to move logic of moving revealed card to grave later in the process, do it when next card is revealed
 		//todo delete physical cards when exiting combat
 	// shop
 		//todo show deck

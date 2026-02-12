@@ -73,7 +73,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 	{
 		var tagInfo = "";
 		
-		// show undead status effect
+		// show revive status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Revive))
 		{
 			var amount = 0;
@@ -85,7 +85,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			tagInfo += "[" + amount + " Undead]";
+			tagInfo += "[" + amount + " Revive]";
 		}
 		
 		// show rest status effect

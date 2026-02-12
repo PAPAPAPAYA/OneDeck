@@ -22,11 +22,11 @@ public class CombatUXManager : MonoBehaviour
 	public GameObject startCardPrefab;
 	public float zOffset;
 	public Transform physicalCardDeckPos;
-	public float physicalCardDeckSize;
+	public Vector3 physicalCardDeckSize;
 	public float lerpTimeMove;
 
 	[Header("GRAVE")]
-	public float physicalCardGraveSize;
+	public Vector3 physicalCardGraveSize;
 	public Transform physicalCardGravePos;
 	public float lerpTimeSize;
 	public List<GameObject> physicalCardsInGrave = new();
@@ -42,12 +42,12 @@ public class CombatUXManager : MonoBehaviour
 
 	public void RevealNextPhysicalCard()
 	{
-		float baseZ = physicalCardsInGrave.Count > 0? physicalCardsInGrave[0].transform.position.z:physicalCardsInDeck[^1].transform.position.z;
+		float baseZ = physicalCardsInGrave.Count > 0 ? physicalCardsInGrave[0].transform.position.z : physicalCardsInDeck[^1].transform.position.z;
 		physicalCardsInGrave.Add(physicalCardsInDeck[^1]);
 		physicalCardGravePos.position = new
 		(
-			physicalCardGravePos.position.x, 
-			physicalCardGravePos.position.y, 
+			physicalCardGravePos.position.x,
+			physicalCardGravePos.position.y,
 			baseZ - physicalCardsInGrave.Count * zOffset
 		);
 		physicalCardsInDeck[^1].transform.position = new
@@ -57,7 +57,7 @@ public class CombatUXManager : MonoBehaviour
 			physicalCardGravePos.position.z
 		);
 		StartCoroutine(LerpCardPos(physicalCardsInDeck[^1], physicalCardGravePos.position, lerpTimeMove));
-		StartCoroutine(LerpCardSize(physicalCardsInDeck[^1], new Vector3(physicalCardGraveSize, physicalCardGraveSize, physicalCardGraveSize), lerpTimeSize));
+		StartCoroutine(LerpCardSize(physicalCardsInDeck[^1], physicalCardGraveSize, lerpTimeSize));
 		physicalCardsInDeck.RemoveAt(physicalCardsInDeck.Count - 1);
 	}
 
@@ -129,7 +129,7 @@ public class CombatUXManager : MonoBehaviour
 		{
 			Vector3 targetPos = new(physicalCardDeckPos.position.x, physicalCardDeckPos.position.y, physicalCardDeckPos.position.z - zOffset * i);
 			StartCoroutine(LerpCardPos(physicalCardsInDeck[i], targetPos, lerpTimeMove));
-			StartCoroutine(LerpCardSize(physicalCardsInDeck[i], new(physicalCardDeckSize, physicalCardDeckSize, physicalCardDeckSize), lerpTimeSize));
+			StartCoroutine(LerpCardSize(physicalCardsInDeck[i], physicalCardDeckSize, lerpTimeSize));
 		}
 	}
 
@@ -146,7 +146,7 @@ public class CombatUXManager : MonoBehaviour
 			newPhysicalCardScript.cardImRepresenting = cardScript;
 			newPhysicalCardScript.cardNamePrint.text = card.name;
 			newPhysicalCardScript.cardDescPrint.text = cardScript.cardDesc;
-			newPhysicalCard.transform.localScale = new(physicalCardDeckSize, physicalCardDeckSize, physicalCardDeckSize);
+			newPhysicalCard.transform.localScale = physicalCardDeckSize;
 			physicalCardsInDeck.Add(newPhysicalCard);
 		}
 		// apply z offset
@@ -157,14 +157,26 @@ public class CombatUXManager : MonoBehaviour
 		MakeStartCard();
 	}
 
+	public void StartALerpCardPos(GameObject card, Vector3 end)
+	{
+		print("coroutine started");
+		StartCoroutine(LerpCardPos(card, end, lerpTimeMove));
+	}
+	
+	public void StartALerpCardSize(GameObject card, Vector3 targetSize)
+	{
+		StartCoroutine(LerpCardSize(card, targetSize, lerpTimeSize));
+	}
+
 	IEnumerator LerpCardPos(GameObject card, Vector3 end, float timeToMove)
 	{
+		print("lerp pos started");
 		float t = 0;
 		while (t < 1 && Vector3.Distance(card.transform.position, end) > 0.01f)
 		{
 			card.transform.position = Vector3.Lerp(card.transform.position, end, t);
 			t += Time.deltaTime / timeToMove;
-			print("pos t: " + t);
+			//print("pos t: " + t);
 			yield return null;
 		}
 		card.transform.position = end;
@@ -177,7 +189,6 @@ public class CombatUXManager : MonoBehaviour
 		{
 			card.transform.localScale = Vector3.Lerp(card.transform.localScale, targetSize, t);
 			t += Time.deltaTime / timeToShrink;
-			print("size t: " + t);
 			yield return null;
 		}
 		card.transform.localScale = targetSize;

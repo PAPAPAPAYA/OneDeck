@@ -2108,9 +2108,9 @@ MonoBehaviour:
   startCardPrefab: {fileID: 5433028961184208638, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
   zOffset: 0.1
   physicalCardDeckPos: {fileID: 17063023}
-  physicalCardDeckSize: 0.9
-  lerpTimeMove: 3
-  physicalCardGraveSize: 0.2
+  physicalCardDeckSize: {x: 0.9, y: 0.9, z: 0.9}
+  lerpTimeMove: 1
+  physicalCardGraveSize: {x: 0.2, y: 0.2, z: 0.2}
   physicalCardGravePos: {fileID: 490140365}
   lerpTimeSize: 5
   physicalCardsInGrave: []
@@ -3796,13 +3796,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2342764060043469870, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 5141949677929676963, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
 --- !u!1001 &7352471385566241194
 PrefabInstance:
@@ -3863,10 +3857,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8010385662152897714, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -29,6 +29,9 @@ namespace DefaultNamespace.Managers
 			GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
 			GameEventStorage.me.onMeSentToGrave.RaiseSpecific(targetCard); // timepoint
 			_combatManager.UpdateTrackingVariables();
+			// ux
+			CombatUXManager.me.StartALerpCardPos(targetCard, CombatUXManager.me.physicalCardGravePos.position);
+			CombatUXManager.me.StartALerpCardSize(targetCard, CombatUXManager.me.physicalCardGraveSize);
 		}
 
 		public void MoveCard_FromGraveToDeck(GameObject targetCard)
@@ -37,7 +40,9 @@ namespace DefaultNamespace.Managers
 			_combatManager.combinedDeckZone.Insert(0, targetCard);
 			GameEventStorage.me.onAnyCardRevived.Raise();
 			_combatManager.UpdateTrackingVariables();
-			//_combatManager.Shuffle();
+			// ux
+			CombatUXManager.me.StartALerpCardPos(targetCard, CombatUXManager.me.physicalCardDeckPos.position);
+			CombatUXManager.me.StartALerpCardSize(targetCard, CombatUXManager.me.physicalCardDeckSize);
 		}
 
 		public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
