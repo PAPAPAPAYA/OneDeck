@@ -199,20 +199,22 @@ public class CombatManager : MonoBehaviour
 
 	private void RevealCards()
 	{
-		// 统一处理：无论何种情况，先把上一张卡移入墓地
-		if (revealZone)
-		{
-			graveZone.Add(revealZone);
-			GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
-			GameEventStorage.me.onMeSentToGrave.RaiseSpecific(revealZone); // timepoint
-			revealZone = null;
-		}
-		
 		if (awaitingRevealConfirm)
 		{
 			CombatInfoDisplayer.me.RefreshDeckInfo();
+			// there's only one card in combined deck zone
+			if (revealZone && combinedDeckZone.Count == 0)
+			{
+				_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to send last card to grave";
+				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+				graveZone.Add(revealZone);
+				CombatUXManager.me.SendLastPhysicalCardToGrave();
+				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
+				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(revealZone); // timepoint
+				revealZone = null;
+			}	
 			// combat finished
-			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
+			else if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
 				if (combatFinished.value) return;
 				_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAP / SPACE to continue";
@@ -228,7 +230,6 @@ public class CombatManager : MonoBehaviour
 				roundNumRef.value++;
 				_infoDisplayer.ClearInfo();
 				CombatUXManager.me.ReviveAllPhysicalCards();
-				//CombatUXManager.me.ResetPhysicalCardsPosAndSize();
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
 			}
 			// need to reveal next card
@@ -237,7 +238,7 @@ public class CombatManager : MonoBehaviour
 				_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to reveal";
 				CombatUXManager.me.InstantiateAllPhysicalCards();
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
-				CombatUXManager.me.RevealNextPhysicalCard();
+				
 				awaitingRevealConfirm = false;
 				_infoDisplayer.effectResultString.value = "";
 			}
@@ -245,6 +246,14 @@ public class CombatManager : MonoBehaviour
 		}
 		else
 		{
+			CombatUXManager.me.SendLastPhysicalCardToGrave();
+			if (revealZone)
+			{
+				graveZone.Add(revealZone);
+				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
+				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(revealZone); // timepoint
+				revealZone = null;
+			}
 			// reveal next card
 			var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
 			revealZone = combinedDeckZone[cardNum];

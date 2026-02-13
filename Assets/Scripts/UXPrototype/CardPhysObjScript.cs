@@ -1,9 +1,15 @@
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class CardPhysObjScript : MonoBehaviour
 {
 	public CardScript cardImRepresenting;
+	private CombatUXManager _combatUXManager;
+	[Header("MOTION CONTROL")]
+	[SerializeField] private CoroutineSequencer sequencer;
+	[Header("LOOK")]
 	public SpriteRenderer cardFace;
 	public SpriteRenderer cardEdge;
 	public TextMeshPro cardNamePrint;
@@ -15,7 +21,12 @@ public class CardPhysObjScript : MonoBehaviour
 	public Color opponentCardColor;
 	public Color opponentCardEdgeColor;
 
-	void Update()
+    void OnEnable()
+    {
+        _combatUXManager = CombatUXManager.me;
+    }
+
+    void Update()
 	{
 		ApplyColor();
 	}

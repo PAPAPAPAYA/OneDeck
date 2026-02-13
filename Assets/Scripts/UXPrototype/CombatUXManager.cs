@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Principal;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CombatUXManager : MonoBehaviour
@@ -17,6 +15,9 @@ public class CombatUXManager : MonoBehaviour
 
 	public List<GameObject> physicalCardsInDeck = new();
 	public GameObject physicalCardPrefab;
+	
+	// Dictionary mapping CardScript to physical card (built from all physical cards in deck and grave)
+	private Dictionary<CardScript, GameObject> _cardScriptToPhysicalCache = new();
 
 	[Header("DECK")]
 	public GameObject startCardPrefab;
@@ -40,7 +41,7 @@ public class CombatUXManager : MonoBehaviour
 		_combatManger = CombatManager.Me;
 	}
 
-	public void RevealNextPhysicalCard()
+	public void SendLastPhysicalCardToGrave()
 	{
 		float baseZ = physicalCardsInGrave.Count > 0 ? physicalCardsInGrave[0].transform.position.z : physicalCardsInDeck[^1].transform.position.z;
 		physicalCardsInGrave.Add(physicalCardsInDeck[^1]);
@@ -56,8 +57,12 @@ public class CombatUXManager : MonoBehaviour
 			physicalCardsInDeck[^1].transform.position.y,
 			physicalCardGravePos.position.z
 		);
-		StartCoroutine(LerpCardPos(physicalCardsInDeck[^1], physicalCardGravePos.position, lerpTimeMove));
-		StartCoroutine(LerpCardSize(physicalCardsInDeck[^1], physicalCardGraveSize, lerpTimeSize));
+		MovePhysicalCard(physicalCardsInDeck[^1], physicalCardGravePos.position);
+		ScalePhysicalCard(physicalCardsInDeck[^1], physicalCardGraveSize);
+		//StartALerpCardPos(physicalCardsInDeck[^1], physicalCardGravePos.position);
+		//StartALerpCardSize(physicalCardsInDeck[^1], physicalCardGraveSize);
+		// StartCoroutine(LerpCardPos(physicalCardsInDeck[^1], physicalCardGravePos.position, lerpTimeMove));
+		// StartCoroutine(LerpCardSize(physicalCardsInDeck[^1], physicalCardGraveSize, lerpTimeSize));
 		physicalCardsInDeck.RemoveAt(physicalCardsInDeck.Count - 1);
 	}
 
@@ -67,6 +72,46 @@ public class CombatUXManager : MonoBehaviour
 		if (physicalCardsInGrave.Count <= 0) return; // no card to revive
 		UtilityFuncManagerScript.CopyList<GameObject>(physicalCardsInGrave, physicalCardsInDeck, false);
 		physicalCardsInGrave.Clear();
+	}
+
+	/// <summary>
+	/// Build dictionary mapping CardScript to physical card from all physical cards (deck + grave)
+	/// </summary>
+	public void BuildCardScriptToPhysicalDictionary()
+	{
+		_cardScriptToPhysicalCache.Clear();
+		
+		// Add physical cards from deck
+		foreach (var physicalCard in physicalCardsInDeck)
+		{
+			var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
+			if (physCardScript != null && physCardScript.cardImRepresenting != null)
+			{
+				_cardScriptToPhysicalCache[physCardScript.cardImRepresenting] = physicalCard;
+			}
+		}
+		
+		// Add physical cards from grave
+		foreach (var physicalCard in physicalCardsInGrave)
+		{
+			var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
+			if (physCardScript != null && physCardScript.cardImRepresenting != null)
+			{
+				_cardScriptToPhysicalCache[physCardScript.cardImRepresenting] = physicalCard;
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Get physical card from logical card (CardScript). Returns null if not found.
+	/// </summary>
+	public GameObject GetPhysicalCardFromLogicalCard(CardScript logicalCard)
+	{
+		if (_cardScriptToPhysicalCache.TryGetValue(logicalCard, out var physicalCard))
+		{
+			return physicalCard;
+		}
+		return null;
 	}
 
 	// copy combined deck's order
@@ -90,23 +135,15 @@ public class CombatUXManager : MonoBehaviour
 			}
 		}
 
-		// Build a dictionary mapping CardScript to physical card
-		Dictionary<CardScript, GameObject> cardScriptToPhysical = new Dictionary<CardScript, GameObject>();
-		foreach (var physicalCard in actualCards)
-		{
-			var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
-			if (physCardScript != null && physCardScript.cardImRepresenting != null)
-			{
-				cardScriptToPhysical[physCardScript.cardImRepresenting] = physicalCard;
-			}
-		}
+		// Build dictionary from current physical cards
+		BuildCardScriptToPhysicalDictionary();
 
 		// Reorder physicalCardsInDeck according to combinedDeckZone
 		physicalCardsInDeck.Clear();
 		foreach (var logicalCard in _combatManger.combinedDeckZone)
 		{
 			var cardScript = logicalCard.GetComponent<CardScript>();
-			if (cardScriptToPhysical.TryGetValue(cardScript, out var physicalCard))
+			if (_cardScriptToPhysicalCache.TryGetValue(cardScript, out var physicalCard))
 			{
 				physicalCardsInDeck.Add(physicalCard);
 			}
@@ -117,6 +154,7 @@ public class CombatUXManager : MonoBehaviour
 		{
 			physicalCardsInDeck.Add(startCard);
 		}
+		ResetPhysicalCardsPosAndSize();
 	}
 
 	// reset physical cards pos
@@ -128,8 +166,10 @@ public class CombatUXManager : MonoBehaviour
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
 			Vector3 targetPos = new(physicalCardDeckPos.position.x, physicalCardDeckPos.position.y, physicalCardDeckPos.position.z - zOffset * i);
-			StartCoroutine(LerpCardPos(physicalCardsInDeck[i], targetPos, lerpTimeMove));
-			StartCoroutine(LerpCardSize(physicalCardsInDeck[i], physicalCardDeckSize, lerpTimeSize));
+			MovePhysicalCard(physicalCardsInDeck[i], targetPos);
+			ScalePhysicalCard(physicalCardsInDeck[i],physicalCardDeckSize);
+			// StartCoroutine(LerpCardPos(physicalCardsInDeck[i], targetPos, lerpTimeMove));
+			// StartCoroutine(LerpCardSize(physicalCardsInDeck[i], physicalCardDeckSize, lerpTimeSize));
 		}
 	}
 
@@ -159,7 +199,6 @@ public class CombatUXManager : MonoBehaviour
 
 	public void StartALerpCardPos(GameObject card, Vector3 end)
 	{
-		print("coroutine started");
 		StartCoroutine(LerpCardPos(card, end, lerpTimeMove));
 	}
 	
@@ -168,9 +207,50 @@ public class CombatUXManager : MonoBehaviour
 		StartCoroutine(LerpCardSize(card, targetSize, lerpTimeSize));
 	}
 
+	// for now
+	public void MovePhysicalCard(GameObject card, Vector3 end)
+	{
+		card.transform.position = end;
+	}
+
+	public void ScalePhysicalCard(GameObject card, Vector3 targetSize)
+	{
+		card.transform.localScale = targetSize;
+	}
+
+	public void MovePhysicalCardFromGraveToDeck(GameObject card)
+	{
+		GameObject physicalCard;
+		
+		// Check if the input is already a physical card or a logical card
+		var cardScript = card.GetComponent<CardScript>();
+		if (cardScript == null)
+		{
+			// Input is already a physical card (no CardScript attached)
+			physicalCard = card;
+		}
+		else
+		{
+			// Input is a logical card with CardScript, need to find corresponding physical card
+			BuildCardScriptToPhysicalDictionary();
+			physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+			
+			if (physicalCard == null)
+			{
+				Debug.LogWarning($"MovePhysicalCardFromGraveToDeck: Could not find physical card for {card.name}");
+				return;
+			}
+		}
+		
+		MovePhysicalCard(physicalCard, physicalCardDeckPos.position);
+		ScalePhysicalCard(physicalCard, physicalCardDeckSize);
+		physicalCardsInDeck.Add(physicalCard);
+		physicalCardsInGrave.Remove(physicalCard);
+		CopyCombinedDeckOrder();
+	}
+
 	IEnumerator LerpCardPos(GameObject card, Vector3 end, float timeToMove)
 	{
-		print("lerp pos started");
 		float t = 0;
 		while (t < 1 && Vector3.Distance(card.transform.position, end) > 0.01f)
 		{

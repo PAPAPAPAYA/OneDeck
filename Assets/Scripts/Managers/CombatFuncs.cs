@@ -30,8 +30,10 @@ namespace DefaultNamespace.Managers
 			GameEventStorage.me.onMeSentToGrave.RaiseSpecific(targetCard); // timepoint
 			_combatManager.UpdateTrackingVariables();
 			// ux
-			CombatUXManager.me.StartALerpCardPos(targetCard, CombatUXManager.me.physicalCardGravePos.position);
-			CombatUXManager.me.StartALerpCardSize(targetCard, CombatUXManager.me.physicalCardGraveSize);
+			//CombatUXManager.me.StartALerpCardPos(targetCard, CombatUXManager.me.physicalCardGravePos.position);
+			//CombatUXManager.me.StartALerpCardSize(targetCard, CombatUXManager.me.physicalCardGraveSize);
+			CombatUXManager.me.MovePhysicalCard(targetCard, CombatUXManager.me.physicalCardGravePos.position);
+			CombatUXManager.me.ScalePhysicalCard(targetCard, CombatUXManager.me.physicalCardGraveSize);
 		}
 
 		public void MoveCard_FromGraveToDeck(GameObject targetCard)
@@ -41,8 +43,9 @@ namespace DefaultNamespace.Managers
 			GameEventStorage.me.onAnyCardRevived.Raise();
 			_combatManager.UpdateTrackingVariables();
 			// ux
-			CombatUXManager.me.StartALerpCardPos(targetCard, CombatUXManager.me.physicalCardDeckPos.position);
-			CombatUXManager.me.StartALerpCardSize(targetCard, CombatUXManager.me.physicalCardDeckSize);
+			//CombatUXManager.me.StartALerpCardPos(targetCard, CombatUXManager.me.physicalCardDeckPos.position);
+			//CombatUXManager.me.StartALerpCardSize(targetCard, CombatUXManager.me.physicalCardDeckSize);
+			CombatUXManager.me.MovePhysicalCardFromGraveToDeck(targetCard);
 		}
 
 		public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)

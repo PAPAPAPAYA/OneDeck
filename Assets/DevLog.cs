@@ -14,16 +14,20 @@
 
 // UX Prototype
 	//todo learn DOTween for the real shit
+	//todo or consider Unitask
 	// combat
 		//// show deck
 		//// show grave
 		//// put grave card back to deck
+		//todo motion queue for physical cards to process sequence of motion
 		//todo accounts for effects that change deck
-			// grave to deck
-			// deck to grave
-			// stage
-			// bury
+			//todo grave to deck
+			//// deck to grave
+			//todo stage
+			//todo bury
 			// may need to move logic of moving revealed card to grave later in the process, do it when next card is revealed
+				//todo need to fix revealed card info's #
+				//todo need to clean up revealed card info when need to put last card to grave
 		//todo delete physical cards when exiting combat
 	// shop
 		//todo show deck
