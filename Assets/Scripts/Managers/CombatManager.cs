@@ -46,6 +46,7 @@ public class CombatManager : MonoBehaviour
 	public bool awaitingRevealConfirm = true;
 	public int cardNum;
 	public BoolSO combatFinished; // identify if this session of combat is finished
+	public int cardsRevealedThisRound; // tracks how many cards have been revealed this round (for display numbering)
 
 	[Header("SUPPLEMENT COMPONENTS")]
 	private CombatInfoDisplayer _infoDisplayer;
@@ -88,6 +89,7 @@ public class CombatManager : MonoBehaviour
 		roundNumRef.value = 0;
 		cardNum = 0;
 		deckSize = 0;
+		cardsRevealedThisRound = 0;
 		EffectChainManager.Me.CloseOpenedChain();
 		EffectChainManager.Me.chainNumber = 0;
 	}
@@ -185,8 +187,8 @@ public class CombatManager : MonoBehaviour
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
 		UpdateTrackingVariables();
 
-		CombatUXManager.me.CopyCombinedDeckOrder();
-		CombatUXManager.me.ResetPhysicalCardsPosAndSize();
+		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+		CombatUXManager.me.UpdateAllPhysicalCardTargets();
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
 	}
@@ -195,6 +197,11 @@ public class CombatManager : MonoBehaviour
 	{
 		deckSize = combinedDeckZone.Count; // refresh deck size
 		cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
+	}
+
+	public void ResetCardsRevealedCount()
+	{
+		cardsRevealedThisRound = 0;
 	}
 
 	private void RevealCards()
@@ -225,9 +232,12 @@ public class CombatManager : MonoBehaviour
 			else if (cardNum < 0)
 			{
 				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\nTAP / SPACE to shuffle";
+				_infoDisplayer.revealZoneDisplay.text = "";
+				_infoDisplayer.effectResultString.value = "";
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 				GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 				roundNumRef.value++;
+				cardsRevealedThisRound = 0; // reset counter for new round
 				_infoDisplayer.ClearInfo();
 				CombatUXManager.me.ReviveAllPhysicalCards();
 				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
@@ -258,10 +268,10 @@ public class CombatManager : MonoBehaviour
 			var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
 			revealZone = combinedDeckZone[cardNum];
 			combinedDeckZone.RemoveAt(cardNum);
+			cardsRevealedThisRound++; // increment revealed count
 			_infoDisplayer.ShowCardInfo(
 				cardRevealed,
-				deckSize,
-				graveZone.Count,
+				cardsRevealedThisRound,
 				cardRevealed.myStatusRef == ownerPlayerStatusRef);
 			cardNum--;
 			GameEventStorage.me.onAnyCardRevealed.Raise(); // timepoint

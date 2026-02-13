@@ -27,6 +27,8 @@ public class CombatInfoDisplayer : MonoBehaviour
 	public TextMeshProUGUI playerDeckDisplay;
 	public TextMeshProUGUI enemyDeckDisplay;
 
+	public bool showRevealedCardName;
+
 	private void Update()
 	{
 		if (gamePhase.Value() != EnumStorage.GamePhase.Combat) return;
@@ -58,20 +60,20 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 	}
 	
-	public void ShowCardInfo(CardScript cardRevealed, int deckSize, int graveSize, bool ownersCard)
+	public void ShowCardInfo(CardScript cardRevealed, int cardNumber, bool ownersCard)
 	{
+		if (!showRevealedCardName) return;
 		// Card name color: blue for player, orange for enemy
 		string cardNameColor = ownersCard ? "#87CEEB" : "orange";
-		revealZoneDisplay.text = "#" + (graveSize + 1) + // card num
-		                         " <color=" + cardNameColor + ">" + (ownersCard ? "your card" : "their card") + "</color>: \n\n" + // card owner
-		                         ProcessTagInfo(cardRevealed) + // tags
-		                         "<color=" + cardNameColor + ">" + cardRevealed.gameObject.name + "</color>" + // card name with color
+		revealZoneDisplay.text = "#" + cardNumber + "\n" +// card num
+		                         ProcessStatusEffectInfo(cardRevealed) + // tags
+		                         "<color=" + cardNameColor + ">" + cardRevealed.gameObject.name + "</color>:" + // card name with color
 		                         "\n" + cardRevealed.cardDesc; // card description
 	}
 
-	private string ProcessTagInfo(CardScript card)
+	public string ProcessStatusEffectInfo(CardScript card)
 	{
-		var tagInfo = "";
+		var statusEffectInfo = "";
 		
 		// show revive status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Revive))
@@ -85,7 +87,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			tagInfo += "[" + amount + " Revive]";
+			statusEffectInfo += "[" + amount + " Revive]";
 		}
 		
 		// show rest status effect
@@ -100,7 +102,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			tagInfo += "[" + amount + " Rest Needed]";
+			statusEffectInfo += "[" + amount + " Rest Needed]";
 		}
 
 		// show infected status effect
@@ -115,7 +117,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			tagInfo += "[" + infectedAmount + " Infected]";
+			statusEffectInfo += "[" + infectedAmount + " Infected]";
 		}
 
 		// show mana status effect
@@ -130,7 +132,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			tagInfo += "[" + manaAmount + " Mana]";
+			statusEffectInfo += "[" + manaAmount + " Mana]";
 		}
 
 		// show heart changed status effect
@@ -145,7 +147,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			tagInfo += "[" + heartChangeAmount + " Heart-Changed]";
+			statusEffectInfo += "[" + heartChangeAmount + " Heart-Changed]";
 		}
 
 		// show power status effect
@@ -160,15 +162,15 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			tagInfo += "[" + powerAmount + " Power]";
+			statusEffectInfo += "[" + powerAmount + " Power]";
 		}
 
 		if (card.myStatusEffects.Count > 0)
 		{
-			tagInfo += " ";
+			statusEffectInfo += " ";
 		}
 
-		return tagInfo;
+		return statusEffectInfo;
 	}
 
 	private void DisplayStatusInfo()
@@ -186,10 +188,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var playerDeckString = "";
 		foreach (var cardScript in CombatFuncs.me.ReturnPlayerCardScripts())
 		{
-			var playerCardString = ProcessTagInfo(cardScript) + cardScript.gameObject.name + "\n";
+			var playerCardString = ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "\n";
 			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
 			{
-				playerCardString = "<color=grey>"+ProcessTagInfo(cardScript) + cardScript.gameObject.name + "</color>\n";
+				playerCardString = "<color=grey>"+ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "</color>\n";
 			}
 			playerDeckString += playerCardString;
 		}
@@ -199,10 +201,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var enemyDeckString = "";
 		foreach (var cardScript in CombatFuncs.me.ReturnEnemyCardScripts())
 		{
-			var enemyCardString = ProcessTagInfo(cardScript) + cardScript.gameObject.name + "\n";
+			var enemyCardString = ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "\n";
 			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
 			{
-				enemyCardString = "<color=grey>"+ProcessTagInfo(cardScript) + cardScript.gameObject.name + "</color>\n";
+				enemyCardString = "<color=grey>"+ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "</color>\n";
 			}
 			enemyDeckString += enemyCardString;
 		}

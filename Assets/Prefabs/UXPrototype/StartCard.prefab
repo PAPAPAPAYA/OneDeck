@@ -96,6 +96,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3036411943647600460}
+  - component: {fileID: 3155093648372201667}
   m_Layer: 0
   m_Name: StartCard
   m_TagString: Untagged
@@ -121,6 +122,29 @@ Transform:
   - {fileID: 4326167399064667662}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3155093648372201667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5433028961184208638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae01b7f8cc298dc4b8e2bad1431dacc8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cardImRepresenting: {fileID: 0}
+  sequencer: {fileID: 0}
+  cardFace: {fileID: 0}
+  cardEdge: {fileID: 0}
+  cardNamePrint: {fileID: 0}
+  cardDescPrint: {fileID: 0}
+  ownerCardColor: {r: 0, g: 0, b: 0, a: 0}
+  ownerCardEdgeColor: {r: 0, g: 0, b: 0, a: 0}
+  opponentCardColor: {r: 0, g: 0, b: 0, a: 0}
+  opponentCardEdgeColor: {r: 0, g: 0, b: 0, a: 0}
+  lerpSpeed: 10
 --- !u!1 &8010385662152897714
 GameObject:
   m_ObjectHideFlags: 0

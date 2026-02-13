@@ -1,283 +1,327 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CombatUXManager : MonoBehaviour
 {
-	#region SINGLETON
-	public static CombatUXManager me;
-	void Awake()
-	{
-		me = this;
-	}
+    #region SINGLETON
+    public static CombatUXManager me;
+    void Awake()
+    {
+        me = this;
+    }
+    #endregion
 
-	#endregion
+    [Header("REFERENCES")]
+    [SerializeField] private CombatManager combatManager;
+    
+    [Header("DECK")]
+    public GameObject startCardPrefab;
+    public GameObject physicalCardPrefab;
+    public Transform physicalCardDeckPos;
+    public Vector3 physicalCardDeckSize;
+    public float zOffset;
 
-	public List<GameObject> physicalCardsInDeck = new();
-	public GameObject physicalCardPrefab;
-	
-	// Dictionary mapping CardScript to physical card (built from all physical cards in deck and grave)
-	private Dictionary<CardScript, GameObject> _cardScriptToPhysicalCache = new();
+    [Header("GRAVE")]
+    public Transform physicalCardGravePos;
+    public Vector3 physicalCardGraveSize;
 
-	[Header("DECK")]
-	public GameObject startCardPrefab;
-	public float zOffset;
-	public Transform physicalCardDeckPos;
-	public Vector3 physicalCardDeckSize;
-	public float lerpTimeMove;
+    // 物理卡片列表（根据 combined deck zone 和 grave zone 更新）
+    public List<GameObject> physicalCardsInDeck = new();
+    public List<GameObject> physicalCardsInGrave = new();
+    
+    // CardScript 到 Physical Card 的字典（维护这个映射）
+    private Dictionary<CardScript, GameObject> _cardScriptToPhysicalCache = new();
 
-	[Header("GRAVE")]
-	public Vector3 physicalCardGraveSize;
-	public Transform physicalCardGravePos;
-	public float lerpTimeSize;
-	public List<GameObject> physicalCardsInGrave = new();
+    private void OnEnable()
+    {
+        if (combatManager == null)
+            combatManager = CombatManager.Me;
+    }
 
+    #region 职责1：根据逻辑区域更新物理卡片列表
+    
+    /// <summary>
+    /// 根据 combined deck zone 更新 physicalCardsInDeck 的顺序
+    /// </summary>
+    public void SyncPhysicalCardsWithCombinedDeck()
+    {
+        if (physicalCardsInDeck.Count == 0) return;
 
+        // 找到 StartCard（没有 CardPhysObjScript 或 cardImRepresenting 为 null）
+        GameObject startCard = null;
+        List<GameObject> actualCards = new();
+        foreach (var physicalCard in physicalCardsInDeck)
+        {
+            var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
+            if (physCardScript == null || physCardScript.cardImRepresenting == null)
+            {
+                startCard = physicalCard;
+            }
+            else
+            {
+                actualCards.Add(physicalCard);
+            }
+        }
 
-	private CombatManager _combatManger;
+        // 重建字典
+        BuildCardScriptToPhysicalDictionary();
 
-	private void OnEnable()
-	{
-		_combatManger = CombatManager.Me;
-	}
+        // 根据 combinedDeckZone 重新排序 physicalCardsInDeck
+        physicalCardsInDeck.Clear();
+        foreach (var logicalCard in combatManager.combinedDeckZone)
+        {
+            var cardScript = logicalCard.GetComponent<CardScript>();
+            if (_cardScriptToPhysicalCache.TryGetValue(cardScript, out var physicalCard))
+            {
+                physicalCardsInDeck.Add(physicalCard);
+            }
+        }
 
-	public void SendLastPhysicalCardToGrave()
-	{
-		float baseZ = physicalCardsInGrave.Count > 0 ? physicalCardsInGrave[0].transform.position.z : physicalCardsInDeck[^1].transform.position.z;
-		physicalCardsInGrave.Add(physicalCardsInDeck[^1]);
-		physicalCardGravePos.position = new
-		(
-			physicalCardGravePos.position.x,
-			physicalCardGravePos.position.y,
-			baseZ - physicalCardsInGrave.Count * zOffset
-		);
-		physicalCardsInDeck[^1].transform.position = new
-		(
-			physicalCardsInDeck[^1].transform.position.x,
-			physicalCardsInDeck[^1].transform.position.y,
-			physicalCardGravePos.position.z
-		);
-		MovePhysicalCard(physicalCardsInDeck[^1], physicalCardGravePos.position);
-		ScalePhysicalCard(physicalCardsInDeck[^1], physicalCardGraveSize);
-		//StartALerpCardPos(physicalCardsInDeck[^1], physicalCardGravePos.position);
-		//StartALerpCardSize(physicalCardsInDeck[^1], physicalCardGraveSize);
-		// StartCoroutine(LerpCardPos(physicalCardsInDeck[^1], physicalCardGravePos.position, lerpTimeMove));
-		// StartCoroutine(LerpCardSize(physicalCardsInDeck[^1], physicalCardGraveSize, lerpTimeSize));
-		physicalCardsInDeck.RemoveAt(physicalCardsInDeck.Count - 1);
-	}
+        // 如果有 StartCard，放到最后
+        if (startCard != null)
+        {
+            physicalCardsInDeck.Add(startCard);
+        }
+    }
+    
+    /// <summary>
+    /// 将卡片从墓地移回牌组
+    /// </summary>
+    public void MoveCardFromGraveToDeck(GameObject card)
+    {
+        GameObject physicalCard;
+        
+        // 判断输入是物理卡片还是逻辑卡片
+        var cardScript = card.GetComponent<CardScript>();
+        if (cardScript == null)
+        {
+            physicalCard = card;
+        }
+        else
+        {
+            BuildCardScriptToPhysicalDictionary();
+            physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+            if (physicalCard == null)
+            {
+                Debug.LogWarning($"MoveCardFromGraveToDeck: Could not find physical card for {card.name}");
+                return;
+            }
+        }
+        
+        physicalCardsInDeck.Add(physicalCard);
+        physicalCardsInGrave.Remove(physicalCard);
+        SyncPhysicalCardsWithCombinedDeck();
+    }
+    
+    /// <summary>
+    /// 将最后一张牌组中的卡片移到墓地
+    /// </summary>
+    public void SendLastPhysicalCardToGrave()
+    {
+        if (physicalCardsInDeck.Count == 0) return;
+        
+        var cardToMove = physicalCardsInDeck[^1];
+        physicalCardsInGrave.Add(cardToMove);
+        physicalCardsInDeck.RemoveAt(physicalCardsInDeck.Count - 1);
+        
+        // 墓地位置更新（只更新 z 轴）
+        float baseZ = physicalCardsInGrave.Count > 1 
+            ? physicalCardsInGrave[0].transform.position.z 
+            : cardToMove.transform.position.z;
+        physicalCardGravePos.position = new Vector3(
+            physicalCardGravePos.position.x,
+            physicalCardGravePos.position.y,
+            baseZ - physicalCardsInGrave.Count * zOffset
+        );
+        
+        // 更新所有卡片的目标位置
+        UpdateAllPhysicalCardTargets();
+    }
+    
+    /// <summary>
+    /// 将所有卡片从墓地移回牌组
+    /// </summary>
+    public void ReviveAllPhysicalCards()
+    {
+        if (physicalCardsInGrave.Count <= 0) return;
+        
+        physicalCardsInDeck.AddRange(physicalCardsInGrave);
+        physicalCardsInGrave.Clear();
+        
+        // 只更新目标位置，不排序（排序由 Shuffle 时的 SyncPhysicalCardsWithCombinedDeck 处理）
+        UpdateAllPhysicalCardTargets();
+    }
 
-	// put all physical cards from grave to deck
-	public void ReviveAllPhysicalCards()
-	{
-		if (physicalCardsInGrave.Count <= 0) return; // no card to revive
-		UtilityFuncManagerScript.CopyList<GameObject>(physicalCardsInGrave, physicalCardsInDeck, false);
-		physicalCardsInGrave.Clear();
-	}
+    #endregion
 
-	/// <summary>
-	/// Build dictionary mapping CardScript to physical card from all physical cards (deck + grave)
-	/// </summary>
-	public void BuildCardScriptToPhysicalDictionary()
-	{
-		_cardScriptToPhysicalCache.Clear();
-		
-		// Add physical cards from deck
-		foreach (var physicalCard in physicalCardsInDeck)
-		{
-			var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
-			if (physCardScript != null && physCardScript.cardImRepresenting != null)
-			{
-				_cardScriptToPhysicalCache[physCardScript.cardImRepresenting] = physicalCard;
-			}
-		}
-		
-		// Add physical cards from grave
-		foreach (var physicalCard in physicalCardsInGrave)
-		{
-			var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
-			if (physCardScript != null && physCardScript.cardImRepresenting != null)
-			{
-				_cardScriptToPhysicalCache[physCardScript.cardImRepresenting] = physicalCard;
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Get physical card from logical card (CardScript). Returns null if not found.
-	/// </summary>
-	public GameObject GetPhysicalCardFromLogicalCard(CardScript logicalCard)
-	{
-		if (_cardScriptToPhysicalCache.TryGetValue(logicalCard, out var physicalCard))
-		{
-			return physicalCard;
-		}
-		return null;
-	}
+    #region 职责2：维护 CardScript 到 Physical Card 的字典
+    
+    /// <summary>
+    /// 从牌组和墓地构建 CardScript -> Physical Card 映射
+    /// </summary>
+    public void BuildCardScriptToPhysicalDictionary()
+    {
+        _cardScriptToPhysicalCache.Clear();
+        
+        foreach (var physicalCard in physicalCardsInDeck)
+        {
+            var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
+            if (physCardScript?.cardImRepresenting != null)
+            {
+                _cardScriptToPhysicalCache[physCardScript.cardImRepresenting] = physicalCard;
+            }
+        }
+        
+        foreach (var physicalCard in physicalCardsInGrave)
+        {
+            var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
+            if (physCardScript?.cardImRepresenting != null)
+            {
+                _cardScriptToPhysicalCache[physCardScript.cardImRepresenting] = physicalCard;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 根据逻辑卡片获取物理卡片
+    /// </summary>
+    public GameObject GetPhysicalCardFromLogicalCard(CardScript logicalCard)
+    {
+        if (_cardScriptToPhysicalCache.TryGetValue(logicalCard, out var physicalCard))
+            return physicalCard;
+        return null;
+    }
 
-	// copy combined deck's order
-	public void CopyCombinedDeckOrder()
-	{
-		if (physicalCardsInDeck.Count == 0) return;
+    #endregion
 
-		// Find and remove StartCard (it has no CardPhysObjScript or cardImRepresenting is null)
-		GameObject startCard = null;
-		List<GameObject> actualCards = new();
-		foreach (var physicalCard in physicalCardsInDeck)
-		{
-			var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
-			if (physCardScript == null || physCardScript.cardImRepresenting == null)
-			{
-				startCard = physicalCard;
-			}
-			else
-			{
-				actualCards.Add(physicalCard);
-			}
-		}
+    #region 职责3：根据列表顺序告诉 Physical Card 目标位置
+    
+    /// <summary>
+    /// 根据 physicalCardsInDeck 和 physicalCardsInGrave 的顺序，更新所有卡片的目标位置
+    /// </summary>
+    public void UpdateAllPhysicalCardTargets()
+    {
+        // 更新牌组中的卡片位置
+        for (int i = 0; i < physicalCardsInDeck.Count; i++)
+        {
+            var card = physicalCardsInDeck[i];
+            var physScript = card.GetComponent<CardPhysObjScript>();
+            if (physScript == null) continue;
+            
+            // 计算目标位置
+            Vector3 targetPos = new(
+                physicalCardDeckPos.position.x, 
+                physicalCardDeckPos.position.y, 
+                physicalCardDeckPos.position.z - zOffset * i
+            );
+            
+            // 设置目标位置和缩放（卡片自己在 Update 中处理动画）
+            physScript.SetTargetPosition(targetPos);
+            physScript.SetTargetScale(physicalCardDeckSize);
+        }
+        
+        // 更新墓地中的卡片位置
+        for (int i = 0; i < physicalCardsInGrave.Count; i++)
+        {
+            var card = physicalCardsInGrave[i];
+            var physScript = card.GetComponent<CardPhysObjScript>();
+            if (physScript == null) continue;
+            
+            Vector3 targetPos = new(
+                physicalCardGravePos.position.x,
+                physicalCardGravePos.position.y,
+                physicalCardGravePos.position.z - zOffset * i
+            );
+            
+            physScript.SetTargetPosition(targetPos);
+            physScript.SetTargetScale(physicalCardGraveSize);
+        }
+    }
+    
+    /// <summary>
+    /// 立即重置所有卡片位置（无动画）
+    /// </summary>
+    public void ResetPhysicalCardsPositionImmediate()
+    {
+        for (int i = 0; i < physicalCardsInDeck.Count; i++)
+        {
+            var physScript = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
+            if (physScript == null) continue;
+            
+            Vector3 pos = new(
+                physicalCardDeckPos.position.x,
+                physicalCardDeckPos.position.y,
+                physicalCardDeckPos.position.z - zOffset * i
+            );
+            
+            physScript.SetPositionImmediate(pos);
+            physScript.SetScaleImmediate(physicalCardDeckSize);
+        }
+    }
 
-		// Build dictionary from current physical cards
-		BuildCardScriptToPhysicalDictionary();
+    #endregion
 
-		// Reorder physicalCardsInDeck according to combinedDeckZone
-		physicalCardsInDeck.Clear();
-		foreach (var logicalCard in _combatManger.combinedDeckZone)
-		{
-			var cardScript = logicalCard.GetComponent<CardScript>();
-			if (_cardScriptToPhysicalCache.TryGetValue(cardScript, out var physicalCard))
-			{
-				physicalCardsInDeck.Add(physicalCard);
-			}
-		}
+    #region 初始化
+    
+    /// <summary>
+    /// 实例化所有物理卡片
+    /// </summary>
+    public void InstantiateAllPhysicalCards()
+    {
+        if (physicalCardsInDeck.Count > 0) return;
+        
+        foreach (var card in combatManager.combinedDeckZone)
+        {
+            CardScript cardScript = card.GetComponent<CardScript>();
+            GameObject newPhysicalCard = Instantiate(physicalCardPrefab);
+            CardPhysObjScript physScript = newPhysicalCard.GetComponent<CardPhysObjScript>();
+            
+            physScript.cardImRepresenting = cardScript;
+            newPhysicalCard.name = card.name + "'s physical card";
+            physScript.cardNamePrint.text = card.name;
+            physScript.cardDescPrint.text = cardScript.cardDesc;
+            
+            // 立即设置初始位置和缩放
+            physScript.SetScaleImmediate(physicalCardDeckSize);
+            
+            physicalCardsInDeck.Add(newPhysicalCard);
+        }
+        
+        // 设置初始位置
+        for (int i = 0; i < physicalCardsInDeck.Count; i++)
+        {
+            var physScript = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
+            Vector3 pos = new(
+                physicalCardDeckPos.position.x,
+                physicalCardDeckPos.position.y,
+                physicalCardDeckPos.position.z - zOffset * i
+            );
+            physScript.SetPositionImmediate(pos);
+        }
+        
+        CreateStartCard();
+    }
+    
+    private void CreateStartCard()
+    {
+        var startCard = Instantiate(startCardPrefab);
+        var physScript = startCard.GetComponent<CardPhysObjScript>();
+        
+        // Start Card 没有对应的逻辑卡片
+        physScript.cardImRepresenting = null;
+        startCard.name = "Start Card";
+        
+        // 设置初始位置和缩放（通过 CardPhysObjScript 以支持动画）
+        Vector3 pos = new(
+            physicalCardDeckPos.position.x,
+            physicalCardDeckPos.position.y,
+            physicalCardDeckPos.position.z - zOffset * physicalCardsInDeck.Count
+        );
+        physScript.SetPositionImmediate(pos);
+        physScript.SetScaleImmediate(physicalCardDeckSize);
+        
+        physicalCardsInDeck.Add(startCard);
+    }
 
-		// Put StartCard at the end if it exists
-		if (startCard != null)
-		{
-			physicalCardsInDeck.Add(startCard);
-		}
-		ResetPhysicalCardsPosAndSize();
-	}
-
-	// reset physical cards pos
-	public void ResetPhysicalCardsPosAndSize()
-	{
-		if (physicalCardsInDeck.Count == 0) return;
-
-		// Move all cards back to deck position with z offset
-		for (int i = 0; i < physicalCardsInDeck.Count; i++)
-		{
-			Vector3 targetPos = new(physicalCardDeckPos.position.x, physicalCardDeckPos.position.y, physicalCardDeckPos.position.z - zOffset * i);
-			MovePhysicalCard(physicalCardsInDeck[i], targetPos);
-			ScalePhysicalCard(physicalCardsInDeck[i],physicalCardDeckSize);
-			// StartCoroutine(LerpCardPos(physicalCardsInDeck[i], targetPos, lerpTimeMove));
-			// StartCoroutine(LerpCardSize(physicalCardsInDeck[i], physicalCardDeckSize, lerpTimeSize));
-		}
-	}
-
-	public void InstantiateAllPhysicalCards()
-	{
-		// if physical deck is already made, return
-		if (physicalCardsInDeck.Count > 0) return;
-		// for each card in combined deck, instantiate a physical card
-		foreach (var card in _combatManger.combinedDeckZone)
-		{
-			CardScript cardScript = card.GetComponent<CardScript>();
-			GameObject newPhysicalCard = Instantiate(physicalCardPrefab);
-			CardPhysObjScript newPhysicalCardScript = newPhysicalCard.GetComponent<CardPhysObjScript>();
-			newPhysicalCardScript.cardImRepresenting = cardScript;
-			newPhysicalCardScript.cardNamePrint.text = card.name;
-			newPhysicalCardScript.cardDescPrint.text = cardScript.cardDesc;
-			newPhysicalCard.transform.localScale = physicalCardDeckSize;
-			physicalCardsInDeck.Add(newPhysicalCard);
-		}
-		// apply z offset
-		for (int i = 0; i < physicalCardsInDeck.Count; i++)
-		{
-			physicalCardsInDeck[i].transform.position = new Vector3(transform.position.x, transform.position.y, physicalCardDeckPos.position.z - zOffset * i);
-		}
-		MakeStartCard();
-	}
-
-	public void StartALerpCardPos(GameObject card, Vector3 end)
-	{
-		StartCoroutine(LerpCardPos(card, end, lerpTimeMove));
-	}
-	
-	public void StartALerpCardSize(GameObject card, Vector3 targetSize)
-	{
-		StartCoroutine(LerpCardSize(card, targetSize, lerpTimeSize));
-	}
-
-	// for now
-	public void MovePhysicalCard(GameObject card, Vector3 end)
-	{
-		card.transform.position = end;
-	}
-
-	public void ScalePhysicalCard(GameObject card, Vector3 targetSize)
-	{
-		card.transform.localScale = targetSize;
-	}
-
-	public void MovePhysicalCardFromGraveToDeck(GameObject card)
-	{
-		GameObject physicalCard;
-		
-		// Check if the input is already a physical card or a logical card
-		var cardScript = card.GetComponent<CardScript>();
-		if (cardScript == null)
-		{
-			// Input is already a physical card (no CardScript attached)
-			physicalCard = card;
-		}
-		else
-		{
-			// Input is a logical card with CardScript, need to find corresponding physical card
-			BuildCardScriptToPhysicalDictionary();
-			physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
-			
-			if (physicalCard == null)
-			{
-				Debug.LogWarning($"MovePhysicalCardFromGraveToDeck: Could not find physical card for {card.name}");
-				return;
-			}
-		}
-		
-		MovePhysicalCard(physicalCard, physicalCardDeckPos.position);
-		ScalePhysicalCard(physicalCard, physicalCardDeckSize);
-		physicalCardsInDeck.Add(physicalCard);
-		physicalCardsInGrave.Remove(physicalCard);
-		CopyCombinedDeckOrder();
-	}
-
-	IEnumerator LerpCardPos(GameObject card, Vector3 end, float timeToMove)
-	{
-		float t = 0;
-		while (t < 1 && Vector3.Distance(card.transform.position, end) > 0.01f)
-		{
-			card.transform.position = Vector3.Lerp(card.transform.position, end, t);
-			t += Time.deltaTime / timeToMove;
-			//print("pos t: " + t);
-			yield return null;
-		}
-		card.transform.position = end;
-	}
-
-	IEnumerator LerpCardSize(GameObject card, Vector3 targetSize, float timeToShrink)
-	{
-		float t = 0;
-		while (t < 1 && Vector3.Distance(card.transform.localScale, targetSize) > 0.01f)
-		{
-			card.transform.localScale = Vector3.Lerp(card.transform.localScale, targetSize, t);
-			t += Time.deltaTime / timeToShrink;
-			yield return null;
-		}
-		card.transform.localScale = targetSize;
-	}
-
-	private void MakeStartCard()
-	{
-		var newStartCard = Instantiate(startCardPrefab);
-		newStartCard.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - zOffset * physicalCardsInDeck.Count);
-		physicalCardsInDeck.Add(newStartCard);
-	}
+    #endregion
 }

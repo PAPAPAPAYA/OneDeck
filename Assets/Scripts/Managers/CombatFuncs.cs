@@ -29,11 +29,9 @@ namespace DefaultNamespace.Managers
 			GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
 			GameEventStorage.me.onMeSentToGrave.RaiseSpecific(targetCard); // timepoint
 			_combatManager.UpdateTrackingVariables();
-			// ux
-			//CombatUXManager.me.StartALerpCardPos(targetCard, CombatUXManager.me.physicalCardGravePos.position);
-			//CombatUXManager.me.StartALerpCardSize(targetCard, CombatUXManager.me.physicalCardGraveSize);
-			CombatUXManager.me.MovePhysicalCard(targetCard, CombatUXManager.me.physicalCardGravePos.position);
-			CombatUXManager.me.ScalePhysicalCard(targetCard, CombatUXManager.me.physicalCardGraveSize);
+			// ux: 将物理卡片从牌组移到墓地，并更新所有卡片目标位置
+			CombatUXManager.me.SendLastPhysicalCardToGrave();
+			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 
 		public void MoveCard_FromGraveToDeck(GameObject targetCard)
@@ -42,10 +40,9 @@ namespace DefaultNamespace.Managers
 			_combatManager.combinedDeckZone.Insert(0, targetCard);
 			GameEventStorage.me.onAnyCardRevived.Raise();
 			_combatManager.UpdateTrackingVariables();
-			// ux
-			//CombatUXManager.me.StartALerpCardPos(targetCard, CombatUXManager.me.physicalCardDeckPos.position);
-			//CombatUXManager.me.StartALerpCardSize(targetCard, CombatUXManager.me.physicalCardDeckSize);
-			CombatUXManager.me.MovePhysicalCardFromGraveToDeck(targetCard);
+			// ux: 将物理卡片从墓地移回牌组，并更新所有卡片目标位置
+			CombatUXManager.me.MoveCardFromGraveToDeck(targetCard);
+			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 
 		public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
