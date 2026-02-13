@@ -26,11 +26,12 @@ namespace DefaultNamespace.Managers
 		{
 			_combatManager.combinedDeckZone.Remove(targetCard);
 			_combatManager.graveZone.Add(targetCard);
+			// ux: 先移动物理卡片，确保事件触发时物理状态已更新
+			// 这样如果事件触发复活效果，MovePhysicalCardFromGraveToDeck 能正确找到卡片
+			CombatUXManager.me.MovePhysicalCardFromDeckToGrave(targetCard);
 			GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
 			GameEventStorage.me.onMeSentToGrave.RaiseSpecific(targetCard); // timepoint
 			_combatManager.UpdateTrackingVariables();
-			// ux: 将物理卡片从牌组移到墓地，并更新所有卡片目标位置
-			CombatUXManager.me.SendLastPhysicalCardToGrave();
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 
@@ -41,7 +42,7 @@ namespace DefaultNamespace.Managers
 			GameEventStorage.me.onAnyCardRevived.Raise();
 			_combatManager.UpdateTrackingVariables();
 			// ux: 将物理卡片从墓地移回牌组，并更新所有卡片目标位置
-			CombatUXManager.me.MoveCardFromGraveToDeck(targetCard);
+			CombatUXManager.me.MovePhysicalCardFromGraveToDeck(targetCard);
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 

@@ -214,11 +214,21 @@ public class CombatManager : MonoBehaviour
 			{
 				_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to send last card to grave";
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
-				graveZone.Add(revealZone);
-				CombatUXManager.me.SendLastPhysicalCardToGrave();
+				// FIX: 先保存卡片引用，清空revealZone，再把卡片加入墓地，最后触发事件
+				// 这样可以防止Undead等复活效果在事件触发时干扰当前状态
+				var cardToGrave = revealZone;
+				revealZone = null; // 先清空引用，确保复活效果执行时状态正确
+				graveZone.Add(cardToGrave);
+				CombatUXManager.me.MovePhysicalCardFromDeckToGrave(cardToGrave);
 				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
-				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(revealZone); // timepoint
-				revealZone = null;
+				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardToGrave); // timepoint
+				
+				// FIX: 处理复活效果可能导致的状态不一致
+				// 如果复活把卡片加回了combined deck，更新追踪变量以正确反映新状态
+				if (combinedDeckZone.Count > 0)
+				{
+					UpdateTrackingVariables();
+				}
 			}	
 			// combat finished
 			else if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
@@ -227,6 +237,7 @@ public class CombatManager : MonoBehaviour
 				_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAP / SPACE to continue";
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 				combatFinished.value = true;
+				CombatUXManager.me.ClearAllPhysicalCards();
 			}
 			// round finished
 			else if (cardNum < 0)
@@ -256,18 +267,24 @@ public class CombatManager : MonoBehaviour
 		}
 		else
 		{
-			CombatUXManager.me.SendLastPhysicalCardToGrave();
+			CombatUXManager.me.MovePhysicalCardFromDeckToGrave(CombatUXManager.me.physicalCardsInDeck[^1]);
 			if (revealZone)
 			{
-				graveZone.Add(revealZone);
+				// FIX: 同样先清空revealZone再触发事件，防止复活效果干扰状态
+				var cardToGrave = revealZone;
+				revealZone = null; // 先清空引用
+				graveZone.Add(cardToGrave);
 				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
-				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(revealZone); // timepoint
-				revealZone = null;
+				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardToGrave); // timepoint
+				
+				// FIX: 复活效果可能改变了combined deck，更新cardNum以反映正确状态
+				cardNum = combinedDeckZone.Count - 1;
 			}
 			// reveal next card
 			var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
 			revealZone = combinedDeckZone[cardNum];
 			combinedDeckZone.RemoveAt(cardNum);
+			deckSize = combinedDeckZone.Count; // refresh deck size after card removal
 			cardsRevealedThisRound++; // increment revealed count
 			_infoDisplayer.ShowCardInfo(
 				cardRevealed,

@@ -22,14 +22,17 @@
 		//// motion queue for physical cards to process sequence of motion
 		//// use lerp in update in card phys obj script instead of coroutine
 		//todo accounts for effects that change deck
-			//todo grave to deck
+			//todo need to fix [when undead stab is the last card]
+				//todo need testing
+			//todo add new card
+			//// grave to deck
 			//// deck to grave
-			//todo stage
-			//todo bury
+			//todo stage & bury
+				//todo test
 			//// may need to move logic of moving revealed card to grave later in the process, do it when next card is revealed
 				//// need to fix revealed card info's #
 				//// need to clean up revealed card info when need to put last card to grave
-		//todo delete physical cards when exiting combat
+		//// delete physical cards when exiting combat
 	// shop
 		//todo show deck
 		//todo show shop

@@ -45,7 +45,7 @@ public class CardManipulationEffect : EffectScript
 				cardsToSend.RemoveAt(i);
 			}
 		}
-		cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
+		//cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
 		ExileChosenCards(cardsToSend, amount);
 	}
 	public void ExileRandomCards(int amount)
@@ -53,7 +53,7 @@ public class CardManipulationEffect : EffectScript
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToSend = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
-		cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
+		//cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
 		ExileChosenCards(cardsToSend, amount);
 	}
 
@@ -70,7 +70,7 @@ public class CardManipulationEffect : EffectScript
 				cardsToSend.RemoveAt(i);
 			}
 		}
-		cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
+		//cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
 		ExileChosenCards(cardsToSend, amount);
 	}
 
@@ -186,11 +186,8 @@ public class CardManipulationEffect : EffectScript
 	public void StageSelf() // put self on top of the deck
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
-		if (!_combinedDeck.Contains(myCard)) return;
-		_combinedDeck.Remove(myCard);
-		_combinedDeck.Add(myCard);
-		string myColor = GetMyCardColorTag();
-		effectResultString.value += "// [<color=" + myColor + ">" + myCard.name + "</color>] is staged to the top of the deck\n";
+		var cardsToStage = new List<GameObject> { myCard };
+		StageChosenCards(cardsToStage, 1);
 	}
 
 	public void StageCardsWithTag(int amount)
@@ -274,6 +271,8 @@ public class CardManipulationEffect : EffectScript
 					targetCardScript.gameObject.name + "</color>] to the top of the deck\n";
 			}
 		}
+		// ux
+		CombatUXManager.me.UpdateAllPhysicalCardTargets();
 	}
 	#endregion
 	
@@ -281,11 +280,8 @@ public class CardManipulationEffect : EffectScript
 	public void BurySelf() // put self at the bottom of the deck
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
-		if (!_combinedDeck.Contains(transform.parent.gameObject)) return;
-		_combinedDeck.Remove(transform.parent.gameObject);
-		_combinedDeck.Insert(0, transform.parent.gameObject);
-		string myColor = GetMyCardColorTag();
-		effectResultString.value += "// [<color=" + myColor + ">" + myCard.name + "</color>] is buried to the bottom of the deck\n";
+		var cardsToBury = new List<GameObject> { transform.parent.gameObject };
+		BuryChosenCards(cardsToBury, 1);
 	}
 
 	public void BuryCardsWithTag(int amount)
@@ -369,6 +365,8 @@ public class CardManipulationEffect : EffectScript
 					targetCardScript.gameObject.name + "</color>] to the bottom of the deck\n";
 			}
 		}
+		// ux
+		CombatUXManager.me.UpdateAllPhysicalCardTargets();
 	}
 	#endregion
 }

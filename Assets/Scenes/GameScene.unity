@@ -1649,6 +1649,7 @@ MonoBehaviour:
   effectResultDisplay: {fileID: 1860532761}
   playerDeckDisplay: {fileID: 1863541339}
   enemyDeckDisplay: {fileID: 1976907037}
+  showRevealedCardName: 0
 --- !u!114 &1151980347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3719,7 +3720,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 513682b1941c45c8a53161c82e83f991, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingCardPool: {fileID: 11400000, guid: 2445f9b36147aac418a654622b5f8f4d, type: 2}
+  startingCardPool: {fileID: 11400000, guid: f7702da22dd6c59429313e8cf2f275b1, type: 2}
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   sessionNum: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
 --- !u!4 &2130605259

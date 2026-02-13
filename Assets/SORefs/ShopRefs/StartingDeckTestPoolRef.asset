@@ -10,10 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: ShopTestPoolRef
+  m_Name: StartingDeckTestPoolRef
   m_EditorClassIdentifier: 
-  deck:
-  - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
+  deck: []
   defaultDeck: {fileID: 0}
   resetOnStart: 0
-  description: shop pool
+  description: player starting card pool

@@ -8,7 +8,7 @@ namespace DefaultNamespace.Managers
     /// </summary>
     public class StartingCardManager : MonoBehaviour
     {
-        [Header("卡牌池配置")]
+        [Header("初始卡牌池配置")]
         [Tooltip("包含所有可能作为起始卡牌的DeckSO，从中随机选择一张")]
         public DeckSO startingCardPool;
         

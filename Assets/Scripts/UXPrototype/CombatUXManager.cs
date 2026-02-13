@@ -87,7 +87,7 @@ public class CombatUXManager : MonoBehaviour
     /// <summary>
     /// 将卡片从墓地移回牌组
     /// </summary>
-    public void MoveCardFromGraveToDeck(GameObject card)
+    public void MovePhysicalCardFromGraveToDeck(GameObject card)
     {
         GameObject physicalCard;
         
@@ -108,36 +108,53 @@ public class CombatUXManager : MonoBehaviour
             }
         }
         
-        physicalCardsInDeck.Add(physicalCard);
+        physicalCardsInDeck.Insert(0, physicalCard);
         physicalCardsInGrave.Remove(physicalCard);
-        SyncPhysicalCardsWithCombinedDeck();
+        UpdateAllPhysicalCardTargets();
     }
     
     /// <summary>
-    /// 将最后一张牌组中的卡片移到墓地
+    /// 将卡片从牌组移到墓地（用于 exile 效果）
     /// </summary>
-    public void SendLastPhysicalCardToGrave()
+    public void MovePhysicalCardFromDeckToGrave(GameObject card)
     {
-        if (physicalCardsInDeck.Count == 0) return;
+        GameObject physicalCard;
         
-        var cardToMove = physicalCardsInDeck[^1];
-        physicalCardsInGrave.Add(cardToMove);
-        physicalCardsInDeck.RemoveAt(physicalCardsInDeck.Count - 1);
+        // 判断输入是物理卡片还是逻辑卡片
+        var cardScript = card.GetComponent<CardScript>();
+        if (cardScript == null)
+        {
+            physicalCard = card;
+        }
+        else
+        {
+            BuildCardScriptToPhysicalDictionary();
+            physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+            if (physicalCard == null)
+            {
+                Debug.LogWarning($"MoveCardFromDeckToGrave: Could not find physical card for {card.name}");
+                return;
+            }
+        }
         
-        // 墓地位置更新（只更新 z 轴）
+        // 从牌组移除，添加到墓地
+        physicalCardsInDeck.Remove(physicalCard);
+        physicalCardsInGrave.Add(physicalCard);
+        
+        // 更新墓地位置基准（只更新 z 轴）
         float baseZ = physicalCardsInGrave.Count > 1 
             ? physicalCardsInGrave[0].transform.position.z 
-            : cardToMove.transform.position.z;
+            : physicalCard.transform.position.z;
         physicalCardGravePos.position = new Vector3(
             physicalCardGravePos.position.x,
             physicalCardGravePos.position.y,
             baseZ - physicalCardsInGrave.Count * zOffset
         );
         
-        // 更新所有卡片的目标位置
         UpdateAllPhysicalCardTargets();
     }
     
+
     /// <summary>
     /// 将所有卡片从墓地移回牌组
     /// </summary>
@@ -257,6 +274,39 @@ public class CombatUXManager : MonoBehaviour
             physScript.SetPositionImmediate(pos);
             physScript.SetScaleImmediate(physicalCardDeckSize);
         }
+    }
+
+    #endregion
+
+    #region 清理
+
+    /// <summary>
+    /// 销毁所有物理卡片并清空列表
+    /// </summary>
+    public void ClearAllPhysicalCards()
+    {
+        // 销毁牌组中的物理卡片
+        foreach (var physicalCard in physicalCardsInDeck)
+        {
+            if (physicalCard != null)
+            {
+                Destroy(physicalCard);
+            }
+        }
+        physicalCardsInDeck.Clear();
+
+        // 销毁墓地中的物理卡片
+        foreach (var physicalCard in physicalCardsInGrave)
+        {
+            if (physicalCard != null)
+            {
+                Destroy(physicalCard);
+            }
+        }
+        physicalCardsInGrave.Clear();
+
+        // 清空字典缓存
+        _cardScriptToPhysicalCache.Clear();
     }
 
     #endregion
