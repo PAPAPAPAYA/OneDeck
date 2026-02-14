@@ -476,3 +476,10 @@ Example:
 # Good - searches only within Assets
 Assets/**/ShopStatsManager.cs
 ```
+
+**PowerShell Shell Tool:**
+- 中文环境默认编码为 GB2312，需先设置 UTF-8：
+  ```powershell
+  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; $OutputEncoding = [System.Text.Encoding]::UTF8
+  ```
+- 避免使用 `findstr`（与 PowerShell 有兼容性问题），改用 `Select-String` 或 Grep 工具

@@ -38,13 +38,11 @@ public class CombatManager : MonoBehaviour
 
 	[Header("ZONES")]
 	public List<GameObject> combinedDeckZone;
-	public int deckSize;
 	public GameObject revealZone;
 	public List<GameObject> graveZone;
 
 	[Header("FLOW")]
 	public bool awaitingRevealConfirm = true;
-	public int cardNum;
 	public BoolSO combatFinished; // identify if this session of combat is finished
 	public int cardsRevealedThisRound; // tracks how many cards have been revealed this round (for display numbering)
 
@@ -87,8 +85,6 @@ public class CombatManager : MonoBehaviour
 		graveZone.Clear();
 		// clean up tracking stats
 		roundNumRef.value = 0;
-		cardNum = 0;
-		deckSize = 0;
 		cardsRevealedThisRound = 0;
 		EffectChainManager.Me.CloseOpenedChain();
 		EffectChainManager.Me.chainNumber = 0;
@@ -146,7 +142,6 @@ public class CombatManager : MonoBehaviour
 			combinedDeckZone.Add(cardInstance);
 		}
 
-		deckSize = combinedDeckZone.Count;
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 
@@ -185,7 +180,6 @@ public class CombatManager : MonoBehaviour
 		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone); // shuffle deck
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
-		UpdateTrackingVariables();
 
 		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
 		CombatUXManager.me.UpdateAllPhysicalCardTargets();
@@ -193,10 +187,9 @@ public class CombatManager : MonoBehaviour
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
 	}
 
-	public void UpdateTrackingVariables()
+	public int GetCurrentDeckSize()
 	{
-		deckSize = combinedDeckZone.Count; // refresh deck size
-		cardNum = combinedDeckZone.Count - 1; // reveal from last to first cause we remove the revealed card from list
+		return combinedDeckZone.Count;
 	}
 
 	public void ResetCardsRevealedCount()
@@ -209,27 +202,25 @@ public class CombatManager : MonoBehaviour
 		if (awaitingRevealConfirm)
 		{
 			CombatInfoDisplayer.me.RefreshDeckInfo();
+			// FIX: if last card is not in revealZone, put it there
+			if (combinedDeckZone.Count == 1 && revealZone == null)
+			{
+				revealZone = combinedDeckZone[0];
+				combinedDeckZone.RemoveAt(0);
+			}
 			// there's only one card in combined deck zone
 			if (revealZone && combinedDeckZone.Count == 0)
 			{
 				_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to send last card to grave";
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 				// FIX: 先保存卡片引用，清空revealZone，再把卡片加入墓地，最后触发事件
-				// 这样可以防止Undead等复活效果在事件触发时干扰当前状态
 				var cardToGrave = revealZone;
 				revealZone = null; // 先清空引用，确保复活效果执行时状态正确
 				graveZone.Add(cardToGrave);
 				CombatUXManager.me.MovePhysicalCardFromDeckToGrave(cardToGrave);
 				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
 				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardToGrave); // timepoint
-				
-				// FIX: 处理复活效果可能导致的状态不一致
-				// 如果复活把卡片加回了combined deck，更新追踪变量以正确反映新状态
-				if (combinedDeckZone.Count > 0)
-				{
-					UpdateTrackingVariables();
-				}
-			}	
+				}	
 			// combat finished
 			else if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
@@ -240,7 +231,7 @@ public class CombatManager : MonoBehaviour
 				CombatUXManager.me.ClearAllPhysicalCards();
 			}
 			// round finished
-			else if (cardNum < 0)
+			else if (revealZone == null && combinedDeckZone.Count == 0)
 			{
 				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\nTAP / SPACE to shuffle";
 				_infoDisplayer.revealZoneDisplay.text = "";
@@ -276,21 +267,16 @@ public class CombatManager : MonoBehaviour
 				graveZone.Add(cardToGrave);
 				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
 				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardToGrave); // timepoint
-				
-				// FIX: 复活效果可能改变了combined deck，更新cardNum以反映正确状态
-				cardNum = combinedDeckZone.Count - 1;
 			}
 			// reveal next card
-			var cardRevealed = combinedDeckZone[cardNum].GetComponent<CardScript>();
-			revealZone = combinedDeckZone[cardNum];
-			combinedDeckZone.RemoveAt(cardNum);
-			deckSize = combinedDeckZone.Count; // refresh deck size after card removal
+			var cardRevealed = combinedDeckZone[^1].GetComponent<CardScript>();
+			revealZone = combinedDeckZone[^1];
+			combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);
 			cardsRevealedThisRound++; // increment revealed count
 			_infoDisplayer.ShowCardInfo(
 				cardRevealed,
 				cardsRevealedThisRound,
 				cardRevealed.myStatusRef == ownerPlayerStatusRef);
-			cardNum--;
 			GameEventStorage.me.onAnyCardRevealed.Raise(); // timepoint
 			GameEventStorage.me.onMeRevealed.RaiseSpecific(cardRevealed.gameObject); // timepoint
 

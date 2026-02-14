@@ -31,7 +31,6 @@ namespace DefaultNamespace.Managers
 			CombatUXManager.me.MovePhysicalCardFromDeckToGrave(targetCard);
 			GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
 			GameEventStorage.me.onMeSentToGrave.RaiseSpecific(targetCard); // timepoint
-			_combatManager.UpdateTrackingVariables();
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 
@@ -40,7 +39,6 @@ namespace DefaultNamespace.Managers
 			_combatManager.graveZone.Remove(targetCard);
 			_combatManager.combinedDeckZone.Insert(0, targetCard);
 			GameEventStorage.me.onAnyCardRevived.Raise();
-			_combatManager.UpdateTrackingVariables();
 			// ux: 将物理卡片从墓地移回牌组，并更新所有卡片目标位置
 			CombatUXManager.me.MovePhysicalCardFromGraveToDeck(targetCard);
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
@@ -56,14 +54,17 @@ namespace DefaultNamespace.Managers
 				belongsToSessionOwner ? _combatManager.enemyPlayerStatusRef : _combatManager.ownerPlayerStatusRef; // assign corresponding target
 			cardInstance.name = cardToAdd.name.Replace("(Clone)", "");
 			_combatManager.combinedDeckZone.Insert(0, cardInstance); // add the new card to combined deck (insert at first position)
-			_combatManager.UpdateTrackingVariables();
+			
+			// 创建对应的物理卡片并插入到 deck 顶部
+			CombatUXManager.me.AddPhysicalCardToDeck(cardInstance);
 		}
 
 		public void AddCard_TargetSpecific(GameObject cardToAdd, PlayerStatusSO targetPlayerStatus)
 		{
+			GameObject cardInst;
 			if (targetPlayerStatus == _combatManager.ownerPlayerStatusRef) // card belongs to player
 			{
-				var cardInst = Instantiate(cardToAdd, _combatManager.playerDeckParent.transform);
+				cardInst = Instantiate(cardToAdd, _combatManager.playerDeckParent.transform);
 				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.ownerPlayerStatusRef;
 				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.enemyPlayerStatusRef;
 				cardInst.name = cardInst.name.Replace("(Clone)", "");
@@ -71,14 +72,15 @@ namespace DefaultNamespace.Managers
 			}
 			else // card belongs to enemy
 			{
-				var cardInst = Instantiate(cardToAdd, _combatManager.enemyDeckParent.transform);
+				cardInst = Instantiate(cardToAdd, _combatManager.enemyDeckParent.transform);
 				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.enemyPlayerStatusRef;
 				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.ownerPlayerStatusRef;
 				cardInst.name = cardInst.name.Replace("(Clone)", "");
 				_combatManager.combinedDeckZone.Insert(0, cardInst); // add the new card to combined deck (insert at first position)
 			}
 			
-			_combatManager.UpdateTrackingVariables();
+			// 创建对应的物理卡片并插入到 deck 顶部
+			CombatUXManager.me.AddPhysicalCardToDeck(cardInst);
 		}
 		
 		public List<CardScript> ReturnPlayerCardScripts()
