@@ -139,7 +139,7 @@ public class PhaseManager : MonoBehaviour
 		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Result) // if in result phase
 		{
 			ShowResult();
-			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
+			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 			ExitingResultPhase();
 			EnteringShopPhase();
 		}
@@ -150,12 +150,12 @@ public class PhaseManager : MonoBehaviour
 		resultInfoDisplay.text = _resultText +
 		                         "\nYour Wins: " + wins.value + "/" + winCon.value +
 		                         "\nYour Hearts: " + hearts.value + "/" + heartMax.value +
-		                         "\n\npress SPACE to continue";
+		                         "\n\nTAP / SPACE to continue";
 	}
 
 	#region entering and exiting funcs
 	#region combat phase
-	private void EnteringCombatPhase()
+	public void EnteringCombatPhase()
 	{
 		InvokeEnterCombatPhaseEvent();
 		// change phase
@@ -194,7 +194,7 @@ public class PhaseManager : MonoBehaviour
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Shop;
 	}
 
-	private void ExitingShopPhase()
+	public void ExitingShopPhase()
 	{
 		InvokeExitShopPhaseEvent();
 	}

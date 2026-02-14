@@ -44,30 +44,34 @@ public class ShopManager : MonoBehaviour
 	public TextMeshProUGUI deckInfoDisplay;
 	public TextMeshProUGUI shopInfoDisplay;
 	public TextMeshProUGUI playerStatsDisplay;
+	public GameObject rerollButton;
+	public GameObject rerollButtonBg;
+	public GameObject exitButton;
+	public GameObject sectionIdentifier;
 	private string _deckInfoStr = "Your Deck: \n\n";
 	private string _shopInfoStr = "Shop: \n\n";
 
 	private void Update()
 	{
 		if (gamePhaseRef.currentGamePhase != EnumStorage.GamePhase.Shop) return;
-		ShowDeck();
-		ShowShopItems();
-		ShowShopTips();
+		//ShowDeck();
+		//ShowShopItems();
+		//ShowShopTips();
 		ShowPlayerStats();
 
 		// toggle sell/buy mode
 		if (Input.GetKeyDown(KeyCode.S))
 		{
-			sellMode = !sellMode;
+			//sellMode = !sellMode;
 		}
 
 		// reroll
 		if (Input.GetKeyDown(KeyCode.R))
 		{
-			Reroll();
+			//Reroll();
 		}
 
-
+		/*
 		if (!sellMode) // buy mode TEMP
 		{
 			if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -121,10 +125,10 @@ public class ShopManager : MonoBehaviour
 			{
 				SellFunc(5);
 			}
-		}
+		}*/
 	}
 
-	private void BuyFunc(int itemIndex)
+	public void BuyFunc(int itemIndex)
 	{
 		if (currentShopItemDeckRef.deck.Count - 1 < itemIndex) return; // check if item index valid
 		var cardToBuy = currentShopItemDeckRef.deck[itemIndex]; // store card player tyring to buy
@@ -155,13 +159,23 @@ public class ShopManager : MonoBehaviour
 		}
 		GatherPlayerDeckInfo();
 		UpdateShopItemInfo();
+		
+		// 通知 ShopUXManager 处理购买后的视觉更新
+		ShopUXManager.Instance?.OnCardPurchased(itemIndex);
 	}
-	private void SellFunc(int cardIndex)
+	public void SellFunc(int cardIndex, GameObject physicalCardInstance = null)
 	{
 		if (playerDeckRef.deck.Count - 1 < cardIndex) return; // check if card index valid
 		var cardToSell = playerDeckRef.deck[cardIndex]; // store card player tyring to sell
 		purse.value += cardToSell.GetComponent<CardScript>().price.value / 2; // get the money
 		playerDeckRef.deck.Remove(cardToSell); // remove it from player deck
+		
+		// 通知 ShopUXManager 处理卖出动画
+		if (physicalCardInstance != null)
+		{
+			ShopUXManager.Instance?.OnCardSold(physicalCardInstance, cardIndex);
+		}
+		
 		GatherPlayerDeckInfo();
 		UpdateShopItemInfo();
 	}
@@ -188,6 +202,13 @@ public class ShopManager : MonoBehaviour
 		UpdateShopItemInfo();
 		// process player deck and display
 		GatherPlayerDeckInfo();
+		// show reroll button
+		rerollButton.SetActive(true);
+		rerollButtonBg.SetActive(true);
+		// show exit button
+		exitButton.SetActive(true);
+		// show section identifiers
+		sectionIdentifier.SetActive(true);
 		// record shop visit
 		if (ShopStatsManager.Me != null)
 		{
@@ -218,6 +239,10 @@ public class ShopManager : MonoBehaviour
 		shopInfoDisplay.text = "";
 		phaseInfoDisplay.text = "";
 		playerStatsDisplay.text = "";
+		rerollButton.SetActive(false);
+		rerollButtonBg.SetActive(false);
+		exitButton.SetActive(false);
+		sectionIdentifier.SetActive(false);
 	}
 
 	private void GatherPlayerDeckInfo()
@@ -289,13 +314,14 @@ public class ShopManager : MonoBehaviour
 	}
 	private void ShowPlayerStats()
 	{
-		playerStatsDisplay.text = "\nDeck Size: <color=yellow>" + deckSize.value + "</color>" + " (current) / <color=yellow>" + maxDeckSize.value + "</color> (max)" +
-								"\nHP Max: <color=#90EE90>" + CombatManager.Me.ownerPlayerStatusRef.hpMax + "</color>" +
-								"\n<color=yellow>$" + purse.value + "</color>";
+		playerStatsDisplay.text = 
+			"HP Max: <color=#90EE90>" + CombatManager.Me.ownerPlayerStatusRef.hpMax + "</color>" +
+			"\nYou have: <color=yellow>$" + purse.value + "</color> (+$12/combat)";
 	}
 
 	public void Reroll()
 	{
+		// 先生成新的商店物品数据
 		GenerateShopItems();
 		UpdateShopItemInfo();
 		// record reroll
@@ -304,5 +330,8 @@ public class ShopManager : MonoBehaviour
 			ShopStatsManager.Me.RecordReroll();
 		}
 		purse.value--;
+		
+		// 通知 ShopUXManager 处理 reroll 动画和重新生成物理卡片
+		ShopUXManager.Instance?.OnReroll();
 	}
 }

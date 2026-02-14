@@ -83,6 +83,8 @@ public class CombatManager : MonoBehaviour
 		}
 
 		graveZone.Clear();
+		Destroy(revealZone);
+		revealZone = null;
 		// clean up tracking stats
 		roundNumRef.value = 0;
 		cardsRevealedThisRound = 0;

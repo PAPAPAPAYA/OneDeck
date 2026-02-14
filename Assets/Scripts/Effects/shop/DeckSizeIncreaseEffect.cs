@@ -11,5 +11,8 @@ public class DeckSizeIncreaseEffect : EffectScript
 		myDeckSize.value += amount;
 		myDeckSize.value = Mathf.Clamp(myDeckSize.value, 1, maxDeckSize.value);
 		print($"deck size increased by {amount}");
+		
+		// 通知 ShopUXManager 生成新的占位卡片
+		ShopUXManager.Instance?.SpawnAdditionalEmptySpaces();
 	}
 }
