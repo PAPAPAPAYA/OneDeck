@@ -17,6 +17,12 @@ public class CardPhysObjScript : MonoBehaviour
     [Tooltip("长按购买所需时间（秒）")]
     public float holdTimeRequired = 0.5f;
     
+    [Header("Shake Settings")]
+    [Tooltip("子物体上的Shaker组件")]
+    [SerializeField] private Shaker cardShaker;
+    [Tooltip("震动预设")]
+    [SerializeField] private ShakePreset cardShakePreset;
+    
     [Header("LOOK")]
     public SpriteRenderer cardFace;
     public SpriteRenderer cardEdge;
@@ -39,6 +45,10 @@ public class CardPhysObjScript : MonoBehaviour
     // ========== 长按购买相关 ==========
     private bool _isHolding = false;
     private float _holdTimer = 0f;
+    
+    // ========== 震动相关 ==========
+    private ShakeInstance _currentShakeInstance;
+    private bool _isShaking = false;
     
     // ========== 卡片放大相关 ==========
     private Vector3 _originalPosition;
@@ -292,6 +302,9 @@ public class CardPhysObjScript : MonoBehaviour
             _isHolding = true;
             _holdTimer = 0f;
             _hasClickProcessed = false;
+            
+            // 开始震动
+            StartCardShake();
         }
     }
     
@@ -310,6 +323,9 @@ public class CardPhysObjScript : MonoBehaviour
         // 取消长按
         _isHolding = false;
         _holdTimer = 0f;
+        
+        // 停止震动
+        StopCardShake();
     }
     
     /// <summary>
@@ -369,5 +385,32 @@ public class CardPhysObjScript : MonoBehaviour
         // 鼠标移出，取消长按
         _isHolding = false;
         _holdTimer = 0f;
+        
+        // 停止震动
+        StopCardShake();
+    }
+    
+    /// <summary>
+    /// 开始卡片震动
+    /// </summary>
+    private void StartCardShake()
+    {
+        if (cardShaker == null || cardShakePreset == null || _isShaking) return;
+        
+        _currentShakeInstance = cardShaker.Shake(cardShakePreset);
+        _isShaking = true;
+    }
+    
+    /// <summary>
+    /// 停止卡片震动
+    /// </summary>
+    private void StopCardShake()
+    {
+        if (!_isShaking || _currentShakeInstance == null) return;
+        
+        // 停止震动，使用预设的fadeOut时间
+        _currentShakeInstance.Stop(cardShakePreset.FadeOut, true);
+        _isShaking = false;
+        _currentShakeInstance = null;
     }
 }

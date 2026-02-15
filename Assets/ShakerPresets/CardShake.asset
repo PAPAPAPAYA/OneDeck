@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: CardShake
   m_EditorClassIdentifier: 
   shakeType: 1
-  strength: 0.05
+  strength: 0.1
   roughness: 50
   fadeIn: 0
-  fadeOut: 0.5
+  fadeOut: 0.1
   positionInfluence: {x: 0, y: 0, z: 0}
-  rotationInfluence: {x: 10, y: 10, z: 10}
+  rotationInfluence: {x: 30, y: 30, z: 30}

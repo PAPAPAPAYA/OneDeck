@@ -226,6 +226,8 @@ MonoBehaviour:
   currentGamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   shopItemIndex: -1
   holdTimeRequired: 0.5
+  cardShaker: {fileID: 5987844285218546320}
+  cardShakePreset: {fileID: 11400000, guid: 4abb7b4c9373db54a8490c9fcd77cb9a, type: 2}
   cardFace: {fileID: 1570883360759536276}
   cardEdge: {fileID: 1619269684201985318}
   cardNamePrint: {fileID: 7428600347889550306}
