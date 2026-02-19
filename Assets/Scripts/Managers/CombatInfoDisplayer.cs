@@ -71,6 +71,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		                         "\n" + cardRevealed.cardDesc; // card description
 	}
 
+	public void ShowStartCardInfo(int cardNumber)
+	{
+		if (!showRevealedCardName) return;
+		revealZoneDisplay.text = "#" + cardNumber + "\n<color=grey>--- Start Card ---</color>";
+	}
+
 	public string ProcessStatusEffectInfo(CardScript card)
 	{
 		var statusEffectInfo = "";
@@ -188,6 +194,9 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var playerDeckString = "";
 		foreach (var cardScript in CombatFuncs.me.ReturnPlayerCardScripts())
 		{
+			// 跳过 Start Card
+			if (cardScript.isStartCard) continue;
+			
 			var playerCardString = ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "\n";
 			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
 			{
@@ -201,6 +210,9 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var enemyDeckString = "";
 		foreach (var cardScript in CombatFuncs.me.ReturnEnemyCardScripts())
 		{
+			// 跳过 Start Card
+			if (cardScript.isStartCard) continue;
+			
 			var enemyCardString = ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "\n";
 			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
 			{

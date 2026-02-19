@@ -36,6 +36,10 @@ public class CombatManager : MonoBehaviour
 	public List<GameObject> playerCardInstances = new List<GameObject>();
 	public List<GameObject> enemyCardInstances = new List<GameObject>();
 
+	[Header("START CARD")]
+	public GameObject startCardPrefab; // Start Card 预制体
+	private GameObject _startCardInstance; // Start Card 实例（在牌组底部）
+
 	[Header("ZONES")]
 	public List<GameObject> combinedDeckZone;
 	public GameObject revealZone;
@@ -45,6 +49,8 @@ public class CombatManager : MonoBehaviour
 	public bool awaitingRevealConfirm = true;
 	public BoolSO combatFinished; // identify if this session of combat is finished
 	public int cardsRevealedThisRound; // tracks how many cards have been revealed this round (for display numbering)
+	[Tooltip("播放Stage/Bury动画时屏蔽玩家输入")]
+	public bool blockPlayerInput = false;
 
 	[Header("SUPPLEMENT COMPONENTS")]
 	private CombatInfoDisplayer _infoDisplayer;
@@ -85,6 +91,14 @@ public class CombatManager : MonoBehaviour
 		graveZone.Clear();
 		Destroy(revealZone);
 		revealZone = null;
+		
+		// clean up start card
+		if (_startCardInstance != null)
+		{
+			Destroy(_startCardInstance);
+			_startCardInstance = null;
+		}
+		
 		// clean up tracking stats
 		roundNumRef.value = 0;
 		cardsRevealedThisRound = 0;
@@ -144,6 +158,16 @@ public class CombatManager : MonoBehaviour
 			combinedDeckZone.Add(cardInstance);
 		}
 
+		// 实例化 Start Card 并添加到牌组底部
+		_startCardInstance = Instantiate(startCardPrefab, playerDeckParent.transform);
+		_startCardInstance.name = "Start Card";
+		var startCardScript = _startCardInstance.GetComponent<CardScript>();
+		if (startCardScript != null)
+		{
+			startCardScript.isStartCard = true;
+		}
+		combinedDeckZone.Add(_startCardInstance);
+
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 
@@ -179,7 +203,14 @@ public class CombatManager : MonoBehaviour
 
 	public void Shuffle()
 	{
+		// 洗牌前移除 Start Card
+		combinedDeckZone.Remove(_startCardInstance);
+
 		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone); // shuffle deck
+
+		// 洗牌后将 Start Card 放回牌组底部
+		combinedDeckZone.Add(_startCardInstance);
+
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
 
@@ -201,100 +232,172 @@ public class CombatManager : MonoBehaviour
 
 	private void RevealCards()
 	{
-		if (awaitingRevealConfirm)
-		{
-			CombatInfoDisplayer.me.RefreshDeckInfo();
-			// FIX: if last card is not in revealZone, put it there
-			if (combinedDeckZone.Count == 1 && revealZone == null)
-			{
-				revealZone = combinedDeckZone[0];
-				combinedDeckZone.RemoveAt(0);
-				ProcessRevealedCard(revealZone.GetComponent<CardScript>());
-			}
-			// there's only one card in combined deck zone
-			if (revealZone && combinedDeckZone.Count == 0)
-			{
-				
-				_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to send last card to grave";
-				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
-				_infoDisplayer.effectResultString.value = "";
-				// FIX: 先保存卡片引用，清空revealZone，再把卡片加入墓地，最后触发事件
-				var cardToGrave = revealZone;
-				revealZone = null; // 先清空引用，确保复活效果执行时状态正确
-				graveZone.Add(cardToGrave);
-				CombatUXManager.me.MovePhysicalCardFromDeckToGrave(cardToGrave);
-				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
-				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardToGrave); // timepoint
-			}	
-			// combat finished
-			else if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
-			{
-				if (combatFinished.value) return;
-				_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAP / SPACE to continue";
-				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
-				combatFinished.value = true;
-				CombatUXManager.me.ClearAllPhysicalCards();
-			}
-			// round finished
-			else if (revealZone == null && combinedDeckZone.Count == 0)
-			{
-				_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\nTAP / SPACE to shuffle";
-				_infoDisplayer.revealZoneDisplay.text = "";
-				_infoDisplayer.effectResultString.value = "";
-				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
-				GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
-				roundNumRef.value++;
-				cardsRevealedThisRound = 0; // reset counter for new round
-				_infoDisplayer.ClearInfo();
-				CombatUXManager.me.ReviveAllPhysicalCards();
-				currentCombatState = EnumStorage.CombatState.ShuffleDeck;
-			}
-			// need to reveal next card
-			else
-			{
-				_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to reveal";
-				CombatUXManager.me.InstantiateAllPhysicalCards();
-				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
-				
-				awaitingRevealConfirm = false;
-				
-			}
-			EffectChainManager.Me.CloseOpenedChain();
-		}
-		else
-		{
-			CombatUXManager.me.MovePhysicalCardFromDeckToGrave(CombatUXManager.me.physicalCardsInDeck[^1]);
-			if (revealZone)
-			{
-				_infoDisplayer.effectResultString.value = "";
-				// FIX: 同样先清空revealZone再触发事件，防止复活效果干扰状态
-				var cardToGrave = revealZone;
-				revealZone = null; // 先清空引用
-				graveZone.Add(cardToGrave);
-				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
-				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardToGrave); // timepoint
-			}
-			// reveal next card
-			var cardRevealed = combinedDeckZone[^1].GetComponent<CardScript>();
-			revealZone = combinedDeckZone[^1];
-			combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);
-			ProcessRevealedCard(cardRevealed);
-		}
-	}
-	
-	private void ProcessRevealedCard(CardScript revealedCard)
-	{
-		
-		cardsRevealedThisRound++; // increment revealed count
-		_infoDisplayer.ShowCardInfo(
-			revealedCard,
-			cardsRevealedThisRound,
-			revealedCard.myStatusRef == ownerPlayerStatusRef);
-		GameEventStorage.me.onAnyCardRevealed.Raise(); // timepoint
-		GameEventStorage.me.onMeRevealed.RaiseSpecific(revealedCard.gameObject); // timepoint
+		if (blockPlayerInput) return;
 
 		_infoDisplayer.RefreshDeckInfo();
 
-		awaitingRevealConfirm = true;
+		// ========== 回合开始：自动揭晓 Start Card（玩家直接看到）==========
+		if (revealZone == null && cardsRevealedThisRound == 0)
+		{
+			CombatUXManager.me.InstantiateAllPhysicalCards();
+			
+			// 揭晓 Start Card（它在牌组底部）
+			if (combinedDeckZone.Count > 0)
+			{
+				RevealNextCard();
+				awaitingRevealConfirm = false; // 进入触发效果阶段（但 Start Card 会特殊处理）
+			}
+			return;
+		}
+
+		// ========== 阶段1: 等待送当前卡入墓地并揭晓下一张 ==========
+		if (awaitingRevealConfirm)
+		{
+			// 战斗结束检查
+			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
+			{
+				HandleCombatFinished();
+				return;
+			}
+
+			// 回合结束检查：revealZone 空 + 牌组空
+			if (revealZone == null && combinedDeckZone.Count == 0)
+			{
+				HandleRoundFinished();
+				return;
+			}
+
+			// 提示文本
+			_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to send card to grave";
+			
+			CombatUXManager.me.InstantiateAllPhysicalCards();
+			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+			_infoDisplayer.effectResultString.value = "";
+
+			// 1. 送当前卡入墓地
+			SendRevealedCardToGrave();
+
+			// 2. 揭晓下一张卡（如果有）
+			if (combinedDeckZone.Count > 0)
+			{
+				RevealNextCard();
+				awaitingRevealConfirm = false; // 进入触发效果阶段
+			}
+			// 3. 如果牌组空了，保持 awaitingRevealConfirm = true，下次循环进入回合结束
+			
+			EffectChainManager.Me.CloseOpenedChain();
+		}
+		// ========== 阶段2: 等待触发当前卡效果 ==========
+		else
+		{
+			// 检查当前卡是否有效
+			if (revealZone == null)
+			{
+				awaitingRevealConfirm = true;
+				return;
+			}
+
+			// Start Card 不需要触发效果，直接送回墓地阶段
+			if (IsRevealedCardStartCard())
+			{
+				awaitingRevealConfirm = true;
+				return;
+			}
+
+			_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to trigger effect";
+			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+
+			// 触发效果
+			TriggerRevealedCardEffect();
+			awaitingRevealConfirm = true;
+			EffectChainManager.Me.CloseOpenedChain();
+		}
 	}
+
+	// ========== 辅助方法 ==========
+
+	private void RevealNextCard()
+	{
+		var cardRevealed = combinedDeckZone[^1].GetComponent<CardScript>();
+		revealZone = combinedDeckZone[^1];
+		combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);
+
+		// 物理移动：从牌堆移到揭晓区域
+		var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(cardRevealed);
+		if (physicalCard != null)
+		{
+			CombatUXManager.me.MovePhysicalCardToRevealZone(physicalCard);
+		}
+
+		// 显示信息（不触发效果）
+		cardsRevealedThisRound++;
+		_infoDisplayer.ShowCardInfo(cardRevealed, cardsRevealedThisRound, cardRevealed.myStatusRef == ownerPlayerStatusRef);
+		_infoDisplayer.RefreshDeckInfo();
+	}
+
+	// [已移除] RevealStartCard 方法不再需要，Start Card 作为普通逻辑卡处理
+
+	private void TriggerRevealedCardEffect()
+	{
+		if (revealZone == null) return;
+		
+		var cardScript = revealZone.GetComponent<CardScript>();
+		if (cardScript == null) return; // Start Card 不触发效果
+
+		GameEventStorage.me.onAnyCardRevealed.Raise();
+		GameEventStorage.me.onMeRevealed.RaiseSpecific(revealZone);
+		_infoDisplayer.RefreshDeckInfo();
+	}
+
+	private void SendRevealedCardToGrave()
+	{
+		if (revealZone == null) return;
+
+		var cardToGrave = revealZone;
+		revealZone = null;
+
+		graveZone.Add(cardToGrave);
+		CombatUXManager.me.MoveRevealedCardToGrave(cardToGrave);
+		GameEventStorage.me.onAnyCardSentToGrave.Raise();
+		GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardToGrave);
+	}
+
+	// [已移除] SendStartCardToGrave 方法不再需要，Start Card 使用 SendRevealedCardToGrave
+
+	private void HandleCombatFinished()
+	{
+		if (combatFinished.value) return;
+
+		_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAP / SPACE to continue";
+		if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+
+		combatFinished.value = true;
+		CombatUXManager.me.ClearAllPhysicalCards();
+	}
+
+	private void HandleRoundFinished()
+	{
+		_infoDisplayer.combatTipsDisplay.text = "ROUND FINISHED\nTAP / SPACE to shuffle";
+		_infoDisplayer.revealZoneDisplay.text = "";
+		_infoDisplayer.effectResultString.value = "";
+		if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+
+		GameEventStorage.me.beforeRoundStart.Raise();
+		roundNumRef.value++;
+		cardsRevealedThisRound = 0;
+		_infoDisplayer.ClearInfo();
+		CombatUXManager.me.ReviveAllPhysicalCards();
+		currentCombatState = EnumStorage.CombatState.ShuffleDeck;
+	}
+
+	private bool IsRevealedCardStartCard()
+	{
+		if (revealZone == null) return false;
+		var cardScript = revealZone.GetComponent<CardScript>();
+		return cardScript != null && cardScript.isStartCard;
+	}
+
+	// [已移除] IsOnlyStartCardLeftInPhysicalDeck 方法不再需要，逻辑层已包含 Start Card
+
+	// [已移除] HasNextCardToReveal 方法不再需要，直接检查 combinedDeckZone.Count > 0 即可
 }

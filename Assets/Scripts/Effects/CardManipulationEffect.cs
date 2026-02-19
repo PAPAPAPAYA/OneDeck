@@ -255,7 +255,8 @@ public class CardManipulationEffect : EffectScript
 		amount = Mathf.Clamp(amount, 0, cardsToStage.Count);
 		if (amount == 0) return;
 
-		// Stage selected cards to the top of the deck (remove then add to end)
+		// 1. 先修改逻辑列表，并收集成功移动的卡片
+		var stagedCards = new List<GameObject>();
 		for (var i = 0; i < amount; i++)
 		{
 			var targetCard = cardsToStage[i];
@@ -264,16 +265,18 @@ public class CardManipulationEffect : EffectScript
 			if (_combinedDeck.Contains(targetCard))
 			{
 				_combinedDeck.Remove(targetCard);
-				_combinedDeck.Add(targetCard);
+				_combinedDeck.Add(targetCard);  // 添加到顶部
+				stagedCards.Add(targetCard);
+				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);
 				effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] staged [<color=" + targetColor + ">" +
 					targetCardScript.gameObject.name + "</color>] to the top of the deck\n";
 			}
 		}
-		// ux: 先同步物理卡片列表顺序，再更新目标位置
-		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-		CombatUXManager.me.UpdateAllPhysicalCardTargets();
+		
+		// 2. 播放特殊动画（替代原来的 Sync + Update）
+		CombatUXManager.me.PlayStageBuryAnimation(stagedCards, isStage: true);
 	}
 	#endregion
 	
@@ -350,7 +353,8 @@ public class CardManipulationEffect : EffectScript
 		amount = Mathf.Clamp(amount, 0, cardsToBury.Count);
 		if (amount == 0) return;
 
-		// Bury selected cards to the bottom of the deck (remove then insert at beginning)
+		// 1. 先修改逻辑列表，并收集成功移动的卡片
+		var buriedCards = new List<GameObject>();
 		for (var i = 0; i < amount; i++)
 		{
 			var targetCard = cardsToBury[i];
@@ -359,16 +363,18 @@ public class CardManipulationEffect : EffectScript
 			if (_combinedDeck.Contains(targetCard))
 			{
 				_combinedDeck.Remove(targetCard);
-				_combinedDeck.Insert(0, targetCard);
+				_combinedDeck.Insert(0, targetCard);  // 插入到底部
+				buriedCards.Add(targetCard);
+				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);
 				effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] buried [<color=" + targetColor + ">" +
 					targetCardScript.gameObject.name + "</color>] to the bottom of the deck\n";
 			}
 		}
-		// ux: 先同步物理卡片列表顺序，再更新目标位置
-		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-		CombatUXManager.me.UpdateAllPhysicalCardTargets();
+		
+		// 2. 播放特殊动画（替代原来的 Sync + Update）
+		CombatUXManager.me.PlayStageBuryAnimation(buriedCards, isStage: false);
 	}
 	#endregion
 }

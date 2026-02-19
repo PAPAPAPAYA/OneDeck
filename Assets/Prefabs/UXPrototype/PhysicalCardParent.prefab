@@ -57,6 +57,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -78,9 +80,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &2996388197093591622
 MonoBehaviour:
@@ -140,6 +144,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -238,6 +243,16 @@ MonoBehaviour:
   opponentCardColor: {r: 0.55, g: 0.25826088, b: 0.08130434, a: 1}
   opponentCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
   lerpSpeed: 10
+  isPlayingSpecialAnimation: 0
+  sideOffset: 0.8
+  sideMoveDuration: 0.5
+  insertDuration: 0.5
+  animationScaleMultiplier: 0.6
+  animationRotationAngle: 10
+  isMainAnimationCard: 0
+  deckShrinkMultiplier: 0.8
+  deckRightOffset: 1
+  deckAnimDuration: 1
 --- !u!61 &6834931916158603786
 BoxCollider2D:
   m_ObjectHideFlags: 0

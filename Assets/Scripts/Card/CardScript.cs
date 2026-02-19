@@ -13,6 +13,8 @@ public class CardScript : MonoBehaviour
     [TextArea]
     public string cardDesc;
     public bool takeUpSpace = true; // whether this card takes up deck size
+    [Tooltip("是否是回合开始标记卡（Start Card）")]
+    public bool isStartCard = false;
     public IntSO price;
     [HideInInspector]
     public PlayerStatusSO myStatusRef;

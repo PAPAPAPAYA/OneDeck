@@ -6,7 +6,6 @@
 	//! simplified hp event to [when session owner takes dmg] and [when enemy takes dmg]
 	//! when adding card to / back to combined deck, add them to the end of deck; only shuffle when round finished
 	//! currently we only use round num to match decks
-	//! 43514 is [Meditate], might need to keep an eye if the instance id changes, if it changes, need to find a way so that we keep what we saved
 	//! chains are closed when: [1] same card, different effect is trying to get invoked; [2] waiting input confirm;
 	//! chains are composed with a string of effect containers
 	//! don't put multiple effect instances with loopable effect in one card, will stack overflow; put multiple loopable effects in same effect instance
@@ -32,12 +31,12 @@
 				//// need to clean up revealed card info when need to put last card to grave
 		//// delete physical cards when exiting combat
 	// shop
-		//todo show deck
-		//todo show shop
-		//todo buy card
-		//todo sell card
+		//// show deck
+		//// show shop
+		//// buy card
+		//// sell card
 	// result
-		//todo tap to continue
+		//// tap to continue
 
 
 
