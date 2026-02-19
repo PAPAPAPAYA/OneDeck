@@ -209,12 +209,15 @@ public class CombatManager : MonoBehaviour
 			{
 				revealZone = combinedDeckZone[0];
 				combinedDeckZone.RemoveAt(0);
+				ProcessRevealedCard(revealZone.GetComponent<CardScript>());
 			}
 			// there's only one card in combined deck zone
 			if (revealZone && combinedDeckZone.Count == 0)
 			{
+				
 				_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to send last card to grave";
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+				_infoDisplayer.effectResultString.value = "";
 				// FIX: 先保存卡片引用，清空revealZone，再把卡片加入墓地，最后触发事件
 				var cardToGrave = revealZone;
 				revealZone = null; // 先清空引用，确保复活效果执行时状态正确
@@ -222,7 +225,7 @@ public class CombatManager : MonoBehaviour
 				CombatUXManager.me.MovePhysicalCardFromDeckToGrave(cardToGrave);
 				GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
 				GameEventStorage.me.onMeSentToGrave.RaiseSpecific(cardToGrave); // timepoint
-				}	
+			}	
 			// combat finished
 			else if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
@@ -254,7 +257,7 @@ public class CombatManager : MonoBehaviour
 				if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 				
 				awaitingRevealConfirm = false;
-				_infoDisplayer.effectResultString.value = "";
+				
 			}
 			EffectChainManager.Me.CloseOpenedChain();
 		}
@@ -263,6 +266,7 @@ public class CombatManager : MonoBehaviour
 			CombatUXManager.me.MovePhysicalCardFromDeckToGrave(CombatUXManager.me.physicalCardsInDeck[^1]);
 			if (revealZone)
 			{
+				_infoDisplayer.effectResultString.value = "";
 				// FIX: 同样先清空revealZone再触发事件，防止复活效果干扰状态
 				var cardToGrave = revealZone;
 				revealZone = null; // 先清空引用
@@ -274,17 +278,23 @@ public class CombatManager : MonoBehaviour
 			var cardRevealed = combinedDeckZone[^1].GetComponent<CardScript>();
 			revealZone = combinedDeckZone[^1];
 			combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);
-			cardsRevealedThisRound++; // increment revealed count
-			_infoDisplayer.ShowCardInfo(
-				cardRevealed,
-				cardsRevealedThisRound,
-				cardRevealed.myStatusRef == ownerPlayerStatusRef);
-			GameEventStorage.me.onAnyCardRevealed.Raise(); // timepoint
-			GameEventStorage.me.onMeRevealed.RaiseSpecific(cardRevealed.gameObject); // timepoint
-
-			_infoDisplayer.RefreshDeckInfo();
-			
-			awaitingRevealConfirm = true;
+			ProcessRevealedCard(cardRevealed);
 		}
+	}
+	
+	private void ProcessRevealedCard(CardScript revealedCard)
+	{
+		
+		cardsRevealedThisRound++; // increment revealed count
+		_infoDisplayer.ShowCardInfo(
+			revealedCard,
+			cardsRevealedThisRound,
+			revealedCard.myStatusRef == ownerPlayerStatusRef);
+		GameEventStorage.me.onAnyCardRevealed.Raise(); // timepoint
+		GameEventStorage.me.onMeRevealed.RaiseSpecific(revealedCard.gameObject); // timepoint
+
+		_infoDisplayer.RefreshDeckInfo();
+
+		awaitingRevealConfirm = true;
 	}
 }

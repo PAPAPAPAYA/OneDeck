@@ -271,7 +271,8 @@ public class CardManipulationEffect : EffectScript
 					targetCardScript.gameObject.name + "</color>] to the top of the deck\n";
 			}
 		}
-		// ux
+		// ux: 先同步物理卡片列表顺序，再更新目标位置
+		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
 		CombatUXManager.me.UpdateAllPhysicalCardTargets();
 	}
 	#endregion
@@ -365,7 +366,8 @@ public class CardManipulationEffect : EffectScript
 					targetCardScript.gameObject.name + "</color>] to the bottom of the deck\n";
 			}
 		}
-		// ux
+		// ux: 先同步物理卡片列表顺序，再更新目标位置
+		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
 		CombatUXManager.me.UpdateAllPhysicalCardTargets();
 	}
 	#endregion
