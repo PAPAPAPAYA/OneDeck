@@ -56,6 +56,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 9f2a8ccda771f2a44b1b657bf23ab44a, type: 3}
   - {fileID: 8718476725744197808, guid: a4769fcc3a0557a4491561d4d76171a1, type: 3}
   - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: shop pool
