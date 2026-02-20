@@ -98,7 +98,7 @@ public class ShopUXManager : MonoBehaviour
             // 计算位置（从 shopItemPos - xOffset 开始，使用 xOffset 水平排列）
             Vector3 spawnPosition = shopItemPos + new Vector3((i - 1) * xOffset, 0f, 0f);
             
-            // 实例化物理卡牌（初始位置在目标位置下方，让Lerp动画生效）
+            // 实例化物理卡牌（从起始位置开始，触发 DOTween 入场动画）
             Vector3 initialPosition = shopItemStartPos.position;
             GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
             
@@ -493,8 +493,17 @@ public class ShopUXManager : MonoBehaviour
     /// </summary>
     private System.Collections.IEnumerator DestroySoldCardAndSpawnEmpty(GameObject soldCard, Vector3 position, int insertIndex)
     {
-        // 等待动画完成（根据 lerpSpeed 和距离估算，大约 0.5 秒足够）
-        yield return new WaitForSeconds(0.5f);
+        // 等待动画完成（使用 CardPhysObjScript 的 moveDuration，默认 0.3 秒，加一点缓冲）
+        float waitTime = 0.35f;
+        if (soldCard != null)
+        {
+            var physObj = soldCard.GetComponent<CardPhysObjScript>();
+            if (physObj != null)
+            {
+                waitTime = physObj.moveDuration + 0.05f;
+            }
+        }
+        yield return new WaitForSeconds(waitTime);
         
         // 销毁卖出的卡片
         if (soldCard != null)
@@ -666,8 +675,17 @@ public class ShopUXManager : MonoBehaviour
     /// </summary>
     private System.Collections.IEnumerator SpawnNewShopCardsAfterDelay()
     {
-        // 等待动画完成（约 0.5 秒）
-        yield return new WaitForSeconds(0.5f);
+        // 等待动画完成（使用 CardPhysObjScript 的 moveDuration，默认 0.3 秒，加一点缓冲）
+        float waitTime = 0.35f;
+        if (_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null)
+        {
+            var physObj = _spawnedShopCards[0].GetComponent<CardPhysObjScript>();
+            if (physObj != null)
+            {
+                waitTime = physObj.moveDuration + 0.05f;
+            }
+        }
+        yield return new WaitForSeconds(waitTime);
         
         // 销毁旧的商店卡片
         foreach (var card in _spawnedShopCards)
@@ -724,7 +742,7 @@ public class ShopUXManager : MonoBehaviour
             // 计算位置
             Vector3 spawnPosition = shopItemPos + new Vector3((i - 1) * xOffset, 0f, 0f);
             
-            // 实例化物理卡牌（从商店起始位置开始，让Lerp动画生效）
+            // 实例化物理卡牌（从商店起始位置开始，触发 DOTween 入场动画）
             Vector3 initialPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;
             GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
             

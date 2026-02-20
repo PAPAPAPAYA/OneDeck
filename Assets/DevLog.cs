@@ -12,8 +12,8 @@
 	//! no beforeIDealDmg time point and game event, would stack overflow; HPAlterEffect calculates dmg before dealing dmg
 
 // UX Prototype
-	//todo learn DOTween for the real shit
-	//todo or consider Unitask
+	//// DOTween for the real shit
+	//// or consider Unitask
 	// combat
 		//// show deck
 		//// show grave

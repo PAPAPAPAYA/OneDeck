@@ -40,7 +40,6 @@ public class CardPhysObjScript : MonoBehaviour
 
 	// ========== 动画目标位置 ==========
 	[Header("ANIMATION")]
-	[SerializeField] private float lerpSpeed = 10f;
 	public Vector3 TargetPosition { get; private set; }
 	public Vector3 TargetScale { get; private set; }
 
@@ -94,6 +93,16 @@ public class CardPhysObjScript : MonoBehaviour
 	private Vector3 _deckAnimBasePosition;
 	private Vector3 _deckAnimBaseScale;
 	private bool _isInDeckGroupAnimation = false;
+
+	// ========== DOTween 动画 ==========
+	[Header("DOTween Animation")]
+	[Tooltip("移动到目标位置的动画持续时间")]
+	public float moveDuration = 0.3f;
+	[Tooltip("移动动画的缓动类型")]
+	public Ease moveEase = Ease.OutQuad;
+	
+	private Tweener _positionTween;
+	private Tweener _scaleTween;
 
 	void OnEnable()
 	{
@@ -260,19 +269,64 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 设置目标位置（由 CombatUXManager 调用）
+	/// 设置目标位置（由 CombatUXManager 调用），使用 DOTween 动画
 	/// </summary>
 	public void SetTargetPosition(Vector3 target)
 	{
 		TargetPosition = target;
+		
+		// 如果正在播放特殊动画或卡组整体动画，不启动 DOTween
+		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
+		
+		// 启动 DOTween 位置动画
+		StartPositionTween();
 	}
 
 	/// <summary>
-	/// 设置目标缩放（由 CombatUXManager 调用）
+	/// 设置目标缩放（由 CombatUXManager 调用），使用 DOTween 动画
 	/// </summary>
 	public void SetTargetScale(Vector3 target)
 	{
 		TargetScale = target;
+		
+		// 如果正在播放特殊动画或卡组整体动画，不启动 DOTween
+		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
+		
+		// 启动 DOTween 缩放动画
+		StartScaleTween();
+	}
+
+	/// <summary>
+	/// 启动位置 DOTween 动画
+	/// </summary>
+	private void StartPositionTween()
+	{
+		// 如果已经在动画中且目标相同，不重复启动
+		if (_positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
+		{
+			// 检查当前动画的目标是否已经是 TargetPosition
+			// DOTween 没有直接获取目标的方法，所以直接 Kill 并重新开始
+			_positionTween.Kill();
+		}
+		
+		_positionTween = transform.DOMove(TargetPosition, moveDuration)
+			.SetEase(moveEase)
+			.SetUpdate(UpdateType.Normal, true);
+	}
+
+	/// <summary>
+	/// 启动缩放 DOTween 动画
+	/// </summary>
+	private void StartScaleTween()
+	{
+		if (_scaleTween != null && _scaleTween.IsActive() && _scaleTween.IsPlaying())
+		{
+			_scaleTween.Kill();
+		}
+		
+		_scaleTween = transform.DOScale(TargetScale, moveDuration)
+			.SetEase(moveEase)
+			.SetUpdate(UpdateType.Normal, true);
 	}
 
 	/// <summary>
@@ -280,6 +334,13 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	public void SetPositionImmediate(Vector3 position)
 	{
+		// 停止正在进行的 DOTween 位置动画
+		if (_positionTween != null && _positionTween.IsActive())
+		{
+			_positionTween.Kill();
+			_positionTween = null;
+		}
+		
 		TargetPosition = position;
 		transform.position = position;
 	}
@@ -289,6 +350,13 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	public void SetScaleImmediate(Vector3 scale)
 	{
+		// 停止正在进行的 DOTween 缩放动画
+		if (_scaleTween != null && _scaleTween.IsActive())
+		{
+			_scaleTween.Kill();
+			_scaleTween = null;
+		}
+		
 		TargetScale = scale;
 		transform.localScale = scale;
 	}
@@ -376,7 +444,7 @@ public class CardPhysObjScript : MonoBehaviour
 		{
 			isPlayingSpecialAnimation = false;
 			isMainAnimationCard = false;
-			// 同步 TargetPosition，防止 Lerp 跳变
+			// 同步 TargetPosition，防止 DOTween 动画完成后跳变
 			TargetPosition = finalTarget;
 			// 确保最终状态正确
 			transform.eulerAngles = _specialAnimOriginalRotation;
@@ -527,16 +595,22 @@ public class CardPhysObjScript : MonoBehaviour
 	#endregion
 
 	/// <summary>
-	/// 在 Update 中平滑移动到目标位置
+	/// 在 Update 中处理动画相关逻辑
+	/// 注意：现在位置/缩放动画由 DOTween 处理，此方法只处理特殊逻辑
 	/// </summary>
 	private void UpdateMotion()
 	{
-		// 如果正在播放特殊动画或卡组整体动画，跳过 Lerp 更新
-		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
-
-		// 使用 Lerp 平滑移动
-		transform.position = Vector3.Lerp(transform.position, TargetPosition, Time.deltaTime * lerpSpeed);
-		transform.localScale = Vector3.Lerp(transform.localScale, TargetScale, Time.deltaTime * lerpSpeed);
+		// 如果正在播放特殊动画或卡组整体动画，停止常规 DOTween 动画
+		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation)
+		{
+			_positionTween?.Kill();
+			_scaleTween?.Kill();
+			_positionTween = null;
+			_scaleTween = null;
+			return;
+		}
+		
+		// DOTween 自动处理动画，这里不需要额外的 Lerp
 	}
 
 	private void ApplyColor()
