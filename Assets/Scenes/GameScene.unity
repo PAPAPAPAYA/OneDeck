@@ -3204,8 +3204,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dd6cf277ef043d7adc973cb91e8e02d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableStats: 0
-  resetOnStart: 1
+  enableStats: 1
+  resetOnStart: 0
   printOnSave: 0
 --- !u!4 &1457153434
 Transform:
@@ -3630,8 +3630,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c309896258a493caad265bdb907438f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  switchOnSaveLoad: 0
-  resetOnStart: 1
+  switchOnSaveLoad: 1
+  resetOnStart: 0
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   winAmount: {fileID: 11400000, guid: 0c5b8ad6fd36260419f71a0b293f11ba, type: 2}
   heartLeft: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
@@ -3702,8 +3702,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 250}
-  m_SizeDelta: {x: 1000, y: 200}
+  m_AnchoredPosition: {x: 0, y: 300}
+  m_SizeDelta: {x: 1000, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1860532761
 MonoBehaviour:
@@ -5310,8 +5310,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d687fc62e6070d4d84e72e916f682f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  switchOnTracking: 0
-  resetOnStart: 1
+  switchOnTracking: 1
+  resetOnStart: 0
   printOnSave: 0
 --- !u!4 &2103892657
 Transform:
@@ -5357,7 +5357,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 513682b1941c45c8a53161c82e83f991, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingCardPool: {fileID: 11400000, guid: f7702da22dd6c59429313e8cf2f275b1, type: 2}
+  startingCardPool: {fileID: 11400000, guid: 2445f9b36147aac418a654622b5f8f4d, type: 2}
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   sessionNum: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
 --- !u!4 &2130605259

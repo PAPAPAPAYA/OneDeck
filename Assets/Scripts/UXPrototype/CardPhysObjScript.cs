@@ -100,7 +100,7 @@ public class CardPhysObjScript : MonoBehaviour
 	public float moveDuration = 0.3f;
 	[Tooltip("移动动画的缓动类型")]
 	public Ease moveEase = Ease.OutQuad;
-	
+
 	private Tweener _positionTween;
 	private Tweener _scaleTween;
 
@@ -274,10 +274,10 @@ public class CardPhysObjScript : MonoBehaviour
 	public void SetTargetPosition(Vector3 target)
 	{
 		TargetPosition = target;
-		
+
 		// 如果正在播放特殊动画或卡组整体动画，不启动 DOTween
 		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
-		
+
 		// 启动 DOTween 位置动画
 		StartPositionTween();
 	}
@@ -288,10 +288,10 @@ public class CardPhysObjScript : MonoBehaviour
 	public void SetTargetScale(Vector3 target)
 	{
 		TargetScale = target;
-		
+
 		// 如果正在播放特殊动画或卡组整体动画，不启动 DOTween
 		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
-		
+
 		// 启动 DOTween 缩放动画
 		StartScaleTween();
 	}
@@ -308,7 +308,7 @@ public class CardPhysObjScript : MonoBehaviour
 			// DOTween 没有直接获取目标的方法，所以直接 Kill 并重新开始
 			_positionTween.Kill();
 		}
-		
+
 		_positionTween = transform.DOMove(TargetPosition, moveDuration)
 			.SetEase(moveEase)
 			.SetUpdate(UpdateType.Normal, true);
@@ -323,7 +323,7 @@ public class CardPhysObjScript : MonoBehaviour
 		{
 			_scaleTween.Kill();
 		}
-		
+
 		_scaleTween = transform.DOScale(TargetScale, moveDuration)
 			.SetEase(moveEase)
 			.SetUpdate(UpdateType.Normal, true);
@@ -340,7 +340,7 @@ public class CardPhysObjScript : MonoBehaviour
 			_positionTween.Kill();
 			_positionTween = null;
 		}
-		
+
 		TargetPosition = position;
 		transform.position = position;
 	}
@@ -356,7 +356,7 @@ public class CardPhysObjScript : MonoBehaviour
 			_scaleTween.Kill();
 			_scaleTween = null;
 		}
-		
+
 		TargetScale = scale;
 		transform.localScale = scale;
 	}
@@ -609,7 +609,7 @@ public class CardPhysObjScript : MonoBehaviour
 			_scaleTween = null;
 			return;
 		}
-		
+
 		// DOTween 自动处理动画，这里不需要额外的 Lerp
 	}
 

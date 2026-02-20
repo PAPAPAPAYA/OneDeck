@@ -12,27 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
   m_Name: PlayerDefaultDeckRef
   m_EditorClassIdentifier: 
-  deck:
-  - {fileID: 8718476725744197808, guid: 64b1e60ed1d67d646bc82e75fc50e9b9, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
-  - {fileID: 8718476725744197808, guid: 0cd7865969dc2a64faa9027b7b0adc52, type: 3}
+  deck: []
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: player default deck, will copy to player deck SO at start of game
