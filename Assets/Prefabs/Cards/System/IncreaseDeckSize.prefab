@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7068858253989052649}
   - component: {fileID: 6107012632210937845}
   m_Layer: 0
-  m_Name: Increase 1 deck size
+  m_Name: Increase 2 deck size
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -59,7 +59,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -127,8 +127,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_DECK_SIZE
-  cardDesc: Increase deck size by <color=yellow>1</color>
+  cardDesc: Increase deck size by <color=yellow>2</color>
   takeUpSpace: 0
+  isStartCard: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
