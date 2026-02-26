@@ -209,8 +209,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6999148230095115100}
   m_Father: {fileID: 0}
@@ -227,6 +227,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae01b7f8cc298dc4b8e2bad1431dacc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isPhysicalStartCard: 0
   cardImRepresenting: {fileID: 0}
   currentGamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   shopItemIndex: -1
@@ -240,9 +241,8 @@ MonoBehaviour:
   cardPricePrint: {fileID: 2996388197093591622}
   ownerCardColor: {r: 0.105882354, g: 0.22352941, b: 0.70980394, a: 1}
   ownerCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
-  opponentCardColor: {r: 0.55, g: 0.25826088, b: 0.08130434, a: 1}
+  opponentCardColor: {r: 0.708, g: 0.3278854, b: 0.10619999, a: 1}
   opponentCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
-  lerpSpeed: 10
   isPlayingSpecialAnimation: 0
   sideOffset: 0.8
   sideMoveDuration: 0.5
@@ -253,6 +253,8 @@ MonoBehaviour:
   deckShrinkMultiplier: 0.8
   deckRightOffset: 1
   deckAnimDuration: 1
+  moveDuration: 0.3
+  moveEase: 6
 --- !u!61 &6834931916158603786
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -323,9 +325,33 @@ PrefabInstance:
       propertyPath: cardPricePrint
       value: 
       objectReference: {fileID: 2996388197093591622}
+    - target: {fileID: 357299929515434855, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: opponentCardColor.b
+      value: 0.09019608
+      objectReference: {fileID: 0}
+    - target: {fileID: 357299929515434855, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: opponentCardColor.g
+      value: 0.3254902
+      objectReference: {fileID: 0}
+    - target: {fileID: 357299929515434855, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: opponentCardColor.r
+      value: 0.70980394
+      objectReference: {fileID: 0}
     - target: {fileID: 1237736304462037054, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_Color.b
+      value: 0.70980394
+      objectReference: {fileID: 0}
+    - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_Color.g
+      value: 0.22352941
+      objectReference: {fileID: 0}
+    - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_Color.r
+      value: 0.105882354
       objectReference: {fileID: 0}
     - target: {fileID: 5752269354517656790, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_LocalScale.x
