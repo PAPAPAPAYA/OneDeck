@@ -53,7 +53,7 @@ namespace DefaultNamespace.Effects
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			var cardsToGiveTag = new List<GameObject>();
 			UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, cardsToGiveTag, true);
-			UtilityFuncManagerScript.CopyGameObjectList(combatManager.graveZone, cardsToGiveTag, false);
+			// [已废弃] 墓地机制已移除 // UtilityFuncManagerScript.CopyGameObjectList(combatManager.graveZone, cardsToGiveTag, false);
 			if (includeSelf)
 			{
 				cardsToGiveTag.Add(myCard);

@@ -22,28 +22,6 @@ namespace DefaultNamespace.Managers
 			_combatManager = GetComponent<CombatManager>();
 		}
 
-		public void MoveCard_FromDeckToGrave(GameObject targetCard)
-		{
-			_combatManager.combinedDeckZone.Remove(targetCard);
-			_combatManager.graveZone.Add(targetCard);
-			// ux: 先移动物理卡片，确保事件触发时物理状态已更新
-			// 这样如果事件触发复活效果，MovePhysicalCardFromGraveToDeck 能正确找到卡片
-			CombatUXManager.me.MovePhysicalCardFromDeckToGrave(targetCard);
-			GameEventStorage.me.onAnyCardSentToGrave.Raise(); // timepoint
-			GameEventStorage.me.onMeSentToGrave.RaiseSpecific(targetCard); // timepoint
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
-		}
-
-		public void MoveCard_FromGraveToDeck(GameObject targetCard)
-		{
-			_combatManager.graveZone.Remove(targetCard);
-			_combatManager.combinedDeckZone.Insert(0, targetCard);
-			GameEventStorage.me.onAnyCardRevived.Raise();
-			// ux: 将物理卡片从墓地移回牌组，并更新所有卡片目标位置
-			CombatUXManager.me.MovePhysicalCardFromGraveToDeck(targetCard);
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
-		}
-
 		public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
 		{
 			var cardInstance = Instantiate(cardToAdd,

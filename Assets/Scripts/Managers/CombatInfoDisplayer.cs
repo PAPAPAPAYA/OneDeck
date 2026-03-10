@@ -198,10 +198,6 @@ public class CombatInfoDisplayer : MonoBehaviour
 			if (cardScript.isStartCard) continue;
 			
 			var playerCardString = ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "\n";
-			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
-			{
-				playerCardString = "<color=grey>"+ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "</color>\n";
-			}
 			playerDeckString += playerCardString;
 		}
 
@@ -214,10 +210,6 @@ public class CombatInfoDisplayer : MonoBehaviour
 			if (cardScript.isStartCard) continue;
 			
 			var enemyCardString = ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "\n";
-			if (CombatManager.Me.graveZone.Contains(cardScript.gameObject))
-			{
-				enemyCardString = "<color=grey>"+ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "</color>\n";
-			}
 			enemyDeckString += enemyCardString;
 		}
 

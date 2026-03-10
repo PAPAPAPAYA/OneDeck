@@ -89,17 +89,16 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 根据combinedDeckZone、revealZone和graveZone中拥有Infected状态效果且属于卡片所有者的卡的数量减少对方生命值
+	/// 根据combinedDeckZone和revealZone中拥有Infected状态效果且属于卡片所有者的卡的数量减少对方生命值
 	/// </summary>
 	/// <param name="baseDmgAmount">基础伤害数值</param>
 	public void DecreaseTheirHp_BasedOnInfectedCardsOwned(int baseDmgAmount)
 	{
 		var infectedCardCount = 0;
 		
-		// 合并三个区域到临时列表
+		// 合并两个区域到临时列表
 		List<GameObject> allCards = new();
 		UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, allCards, false);
-		UtilityFuncManagerScript.CopyGameObjectList(combatManager.graveZone, allCards, false);
 		if (combatManager.revealZone != null)
 		{
 			allCards.Add(combatManager.revealZone);

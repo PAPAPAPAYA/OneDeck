@@ -121,13 +121,8 @@ public class CostNEffectContainer : MonoBehaviour
 
 	public void CheckCost_InGrave()
 	{
-		if (CombatManager.Me.graveZone.Contains(transform.parent.gameObject))
-		{
-		}
-		else
-		{
-			_costNotMetFlag++;
-		}
+		// [已废弃] 墓地机制已移除，此方法始终返回成功
+		return;
 	}
 
 	/// <summary>
@@ -158,32 +153,12 @@ public class CostNEffectContainer : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Check if there are at least [ownerCardCount] cards in graveyard that belong to the card owner.
-	/// Cost is met if the graveyard contains at least the specified number of cards owned by this card's owner.
+	/// [已废弃] 墓地机制已移除
 	/// </summary>
-	/// <param name="ownerCardCount">Required number of cards owned by this card's owner in graveyard</param>
 	public void CheckCost_HasOwnerCardInGrave(int ownerCardCount)
 	{
-		int ownerCardFound = 0;
-		foreach (var card in CombatManager.Me.graveZone)
-		{
-			if (card == null) continue;
-			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript != null && cardScript.myStatusRef == _myCardScript.myStatusRef)
-			{
-				ownerCardFound++;
-				if (ownerCardFound >= ownerCardCount) break;
-			}
-		}
-
-		if (ownerCardFound >= ownerCardCount) return; // cost met - enough owner cards found
-
-		// cost not met - not enough cards owned by this card's owner in graveyard
-		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
-		effectResultString.value +=
-			"// Not enough [" + cardOwnerInfo + "] cards in graveyard to activate [" + _myCardScript.gameObject.name + "] (need " + ownerCardCount + ")\n";
+		// [已废弃] 墓地机制已移除，此方法始终返回成功
+		return;
 	}
 
 	#endregion

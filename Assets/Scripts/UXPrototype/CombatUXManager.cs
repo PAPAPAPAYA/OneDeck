@@ -16,6 +16,10 @@ public class CombatUXManager : MonoBehaviour
 	[Header("REFERENCES")]
 	[SerializeField] private CombatManager combatManager;
 	public float zOffset;
+	[Tooltip("Deck卡牌X轴偏移（每张卡牌向右偏移量）")]
+	public float xOffset;
+	[Tooltip("Deck卡牌Y轴偏移（每张卡牌向上偏移量）")]
+	public float yOffset;
 	[Header("NEW CARD")]
 	public Transform physicalCardNewTempCardPos;
 	public Vector3 physicalCardNewTempCardSize;
@@ -26,40 +30,29 @@ public class CombatUXManager : MonoBehaviour
 	public Transform physicalCardDeckPos;
 	public Vector3 physicalCardDeckSize;
 
-
-	[Header("GRAVE")]
-	public Transform physicalCardGravePos;
-	public Vector3 physicalCardGraveSize;
-	private Vector3 _physicalCardGravePosOriginal; // 保存 grave zone 的原始 x,y 位置
-
 	[Header("REVEAL")]
 	public Transform physicalCardRevealPos;
 	public Vector3 physicalCardRevealSize;
 
-	// 物理卡片列表（根据 combined deck zone 和 grave zone 更新）
+	// 物理卡片列表（根�?combined deck zone 更新�?
 	public List<GameObject> physicalCardsInDeck = new();
-	public List<GameObject> physicalCardsInGrave = new();
 	
-	// 揭晓区域的物理卡片（单独存储，防止与 deck/grave 混淆）
+	// 揭晓区域的物理卡片（单独存储，防止与 deck 混淆�?
 	public GameObject physicalCardInRevealZone;
 
-	// CardScript 到 Physical Card 的字典（维护这个映射）
+	// CardScript �?Physical Card 的字典（维护这个映射�?
 	private Dictionary<CardScript, GameObject> _cardScriptToPhysicalCache = new();
 
 	private void OnEnable()
 	{
 		if (combatManager == null)
 			combatManager = CombatManager.Me;
-		
-		// 保存 grave zone 的原始位置（只取 x, y）
-		if (physicalCardGravePos != null)
-			_physicalCardGravePosOriginal = physicalCardGravePos.position;
 	}
 
 	#region 职责1：根据逻辑区域更新物理卡片列表
 
 	/// <summary>
-	/// 根据 combined deck zone 更新 physicalCardsInDeck 的顺序
+	/// 根据 combined deck zone 更新 physicalCardsInDeck 的顺�?
 	/// </summary>
 	public void SyncPhysicalCardsWithCombinedDeck()
 	{
@@ -79,7 +72,7 @@ public class CombatUXManager : MonoBehaviour
 			}
 		}
 
-		// 如果有 revealZone 中的卡，放到最后
+		// 如果�?revealZone 中的卡，放到最�?
 		if (combatManager.revealZone != null)
 		{
 			var revealedCardScript = combatManager.revealZone.GetComponent<CardScript>();
@@ -92,43 +85,14 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 将卡片从墓地移回牌组
-	/// </summary>
-	public void MovePhysicalCardFromGraveToDeck(GameObject card)
-	{
-		GameObject physicalCard;
-
-		// 判断输入是物理卡片还是逻辑卡片
-		var cardScript = card.GetComponent<CardScript>();
-		if (cardScript == null)
-		{
-			physicalCard = card;
-		}
-		else
-		{
-			BuildCardScriptToPhysicalDictionary();
-			physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
-			if (physicalCard == null)
-			{
-				Debug.LogWarning($"MoveCardFromGraveToDeck: Could not find physical card for {card.name}");
-				return;
-			}
-		}
-
-		physicalCardsInDeck.Insert(0, physicalCard);
-		physicalCardsInGrave.Remove(physicalCard);
-		UpdateAllPhysicalCardTargets();
-	}
-
-	/// <summary>
 	/// 将卡片从牌组移到揭晓区域
 	/// </summary>
 	public void MovePhysicalCardToRevealZone(GameObject physicalCard)
 	{
-		// 从牌组移除
+		// 从牌组移�?
 		physicalCardsInDeck.Remove(physicalCard);
 
-		// 存储到揭晓区域
+		// 存储到揭晓区�?
 		physicalCardInRevealZone = physicalCard;
 
 		// 设置揭晓位置
@@ -141,9 +105,9 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 将揭晓区域的卡片移到墓地（支持逻辑卡或物理卡输入）
+	/// 将揭晓区域的卡片移回牌组底部
 	/// </summary>
-	public void MoveRevealedCardToGrave(GameObject card)
+	public void MoveRevealedCardToBottom(GameObject card)
 	{
 		GameObject physicalCard;
 
@@ -151,16 +115,16 @@ public class CombatUXManager : MonoBehaviour
 		var cardScript = card.GetComponent<CardScript>();
 		if (cardScript == null)
 		{
-			Debug.LogWarning($"MoveRevealedCardToGrave: Card {card.name} has no CardScript");
+			Debug.LogWarning($"MoveRevealedCardToBottom: Card {card.name} has no CardScript");
 			return;
 		}
 
-		// 通过逻辑卡找物理卡
+		// 通过逻辑卡找物理�?
 		BuildCardScriptToPhysicalDictionary();
 		physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
 		if (physicalCard == null)
 		{
-			Debug.LogWarning($"MoveRevealedCardToGrave: Could not find physical card for {card.name}");
+			Debug.LogWarning($"MoveRevealedCardToBottom: Could not find physical card for {card.name}");
 			return;
 		}
 
@@ -170,63 +134,15 @@ public class CombatUXManager : MonoBehaviour
 			physicalCardInRevealZone = null;
 		}
 
-		// 添加到墓地
-		physicalCardsInGrave.Add(physicalCard);
-
-		// 更新墓地位置基准（只更新 z 轴，x,y 保持原始配置）
-		float baseZ = _physicalCardGravePosOriginal.z;
-		physicalCardGravePos.position = new Vector3(
-			_physicalCardGravePosOriginal.x,
-			_physicalCardGravePosOriginal.y,
-			baseZ - (physicalCardsInGrave.Count - 1) * zOffset
-		);
+		// 添加到牌组底部（index 0�?
+		physicalCardsInDeck.Insert(0, physicalCard);
 
 		// 更新目标位置
 		UpdateAllPhysicalCardTargets();
 	}
 
 	/// <summary>
-	/// 将卡片从牌组移到墓地（用于 exile 效果）
-	/// </summary>
-	public void MovePhysicalCardFromDeckToGrave(GameObject card)
-	{
-		GameObject physicalCard;
-
-		// 判断输入是物理卡片还是逻辑卡片
-		var cardScript = card.GetComponent<CardScript>();
-		if (cardScript == null)
-		{
-			physicalCard = card;
-		}
-		else
-		{
-			BuildCardScriptToPhysicalDictionary();
-			physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
-			if (physicalCard == null)
-			{
-				Debug.LogWarning($"MoveCardFromDeckToGrave: Could not find physical card for {card.name}");
-				return;
-			}
-		}
-
-		// 从牌组移除，添加到墓地
-		physicalCardsInDeck.Remove(physicalCard);
-		physicalCardsInGrave.Add(physicalCard);
-
-		// 更新墓地位置基准（只更新 z 轴，x,y 保持原始配置）
-		float baseZ = _physicalCardGravePosOriginal.z;
-		physicalCardGravePos.position = new Vector3(
-		    _physicalCardGravePosOriginal.x,
-		    _physicalCardGravePosOriginal.y,
-		    baseZ - (physicalCardsInGrave.Count - 1) * zOffset
-		);
-
-		UpdateAllPhysicalCardTargets();
-	}
-
-
-	/// <summary>
-	/// 将所有卡片从墓地移回牌组
+	/// 将所有卡片复位（用于新回合开始）
 	/// </summary>
 	public void ReviveAllPhysicalCards()
 	{
@@ -237,36 +153,22 @@ public class CombatUXManager : MonoBehaviour
 			physicalCardInRevealZone = null;
 		}
 
-		if (physicalCardsInGrave.Count <= 0) return;
-
-		physicalCardsInDeck.AddRange(physicalCardsInGrave);
-		physicalCardsInGrave.Clear();
-
-		// 只更新目标位置，不排序（排序由 Shuffle 时的 SyncPhysicalCardsWithCombinedDeck 处理）
+		// 只更新目标位置，不排序（排序�?Shuffle 时的 SyncPhysicalCardsWithCombinedDeck 处理�?
 		UpdateAllPhysicalCardTargets();
 	}
 
 	#endregion
 
-	#region 职责2：维护 CardScript 到 Physical Card 的字典
+	#region 职责2：维�?CardScript �?Physical Card 的字�?
 
 	/// <summary>
-	/// 从牌组和墓地构建 CardScript -> Physical Card 映射
+	/// 从牌组构�?CardScript -> Physical Card 映射
 	/// </summary>
 	public void BuildCardScriptToPhysicalDictionary()
 	{
 		_cardScriptToPhysicalCache.Clear();
 
 		foreach (var physicalCard in physicalCardsInDeck)
-		{
-			var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
-			if (physCardScript?.cardImRepresenting != null)
-			{
-				_cardScriptToPhysicalCache[physCardScript.cardImRepresenting] = physicalCard;
-			}
-		}
-
-		foreach (var physicalCard in physicalCardsInGrave)
 		{
 			var physCardScript = physicalCard.GetComponent<CardPhysObjScript>();
 			if (physCardScript?.cardImRepresenting != null)
@@ -298,10 +200,10 @@ public class CombatUXManager : MonoBehaviour
 
 	#endregion
 
-	#region 职责3：根据列表顺序告诉 Physical Card 目标位置
+	#region 职责3：根据列表顺序告�?Physical Card 目标位置
 
 	/// <summary>
-	/// 根据 physicalCardsInDeck 和 physicalCardsInGrave 的顺序，更新所有卡片的目标位置
+	/// 根据 physicalCardsInDeck 的顺序，更新所有卡片的目标位置
 	/// </summary>
 	public void UpdateAllPhysicalCardTargets()
 	{
@@ -313,32 +215,17 @@ public class CombatUXManager : MonoBehaviour
 			if (physScript == null) continue;
 
 			// 计算目标位置
+			// i=0（顶部）偏移最大，i=count-1（底部）偏移最小
+			var count = physicalCardsInDeck.Count;
 			Vector3 targetPos = new(
-			    physicalCardDeckPos.position.x,
-			    physicalCardDeckPos.position.y,
+			    physicalCardDeckPos.position.x + xOffset * (count - 1 - i),
+			    physicalCardDeckPos.position.y + yOffset * (count - 1 - i),
 			    physicalCardDeckPos.position.z - zOffset * i
 			);
 
-			// 设置目标位置和缩放（卡片自己在 Update 中处理动画）
+			// 设置目标位置和缩放（卡片自己�?Update 中处理动画）
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
-		}
-
-		// 更新墓地中的卡片位置
-		for (int i = 0; i < physicalCardsInGrave.Count; i++)
-		{
-			var card = physicalCardsInGrave[i];
-			var physScript = card.GetComponent<CardPhysObjScript>();
-			if (physScript == null) continue;
-
-			Vector3 targetPos = new(
-			    physicalCardGravePos.position.x,
-			    physicalCardGravePos.position.y,
-			    physicalCardGravePos.position.z - zOffset * i
-			);
-
-			physScript.SetTargetPosition(targetPos);
-			physScript.SetTargetScale(physicalCardGraveSize);
 		}
 	}
 
@@ -353,8 +240,8 @@ public class CombatUXManager : MonoBehaviour
 			if (physScript == null) continue;
 
 			Vector3 pos = new(
-			    physicalCardDeckPos.position.x,
-			    physicalCardDeckPos.position.y,
+			    physicalCardDeckPos.position.x + xOffset * (i + 1),
+			    physicalCardDeckPos.position.y + yOffset * (i + 1),
 			    physicalCardDeckPos.position.z - zOffset * i
 			);
 
@@ -375,7 +262,7 @@ public class CombatUXManager : MonoBehaviour
 		// 停止所有可能正在播放的特殊动画
 		StopAllSpecialAnimations();
 		
-		// 销毁牌组中的物理卡片
+		// 销毁牌组中的物理卡�?
 		foreach (var physicalCard in physicalCardsInDeck)
 		{
 			if (physicalCard != null)
@@ -392,16 +279,6 @@ public class CombatUXManager : MonoBehaviour
 			physicalCardInRevealZone = null;
 		}
 
-		// 销毁墓地中的物理卡片
-		foreach (var physicalCard in physicalCardsInGrave)
-		{
-			if (physicalCard != null)
-			{
-				Destroy(physicalCard);
-			}
-		}
-		physicalCardsInGrave.Clear();
-
 		// 清空字典缓存
 		_cardScriptToPhysicalCache.Clear();
 	}
@@ -411,7 +288,7 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public void StopAllSpecialAnimations()
 	{
-		// 停止所有属于本对象的 DOTween 延迟调用
+		// 停止所有属于本对象�?DOTween 延迟调用
 		DOTween.Kill(this);
 		
 		// 恢复玩家输入
@@ -428,28 +305,19 @@ public class CombatUXManager : MonoBehaviour
 				physScript?.StopSpecialAnimation();
 			}
 		}
-		
-		foreach (var physicalCard in physicalCardsInGrave)
-		{
-			if (physicalCard != null)
-			{
-				var physScript = physicalCard.GetComponent<CardPhysObjScript>();
-				physScript?.StopSpecialAnimation();
-			}
-		}
 	}
 
 	#endregion
 	
-	#region Stage/Bury 特殊动画（协调主角卡片和卡组整体动画）
+	#region Stage/Bury 特殊动画（协调主角卡片和卡组整体动画�?
 	
 	/// <summary>
-	/// 为 Stage/Bury 操作播放特殊动画（包含卡组整体呼吸效果）
-	/// 动画流程：
-	/// 1. 卡组其他卡片：缩小 + 右移
-	/// 2. 主角卡片：左移 + 放大 + 旋转
+	/// �?Stage/Bury 操作播放特殊动画（包含卡组整体呼吸效果）
+	/// 动画流程�?
+	/// 1. 卡组其他卡片：缩�?+ 右移
+	/// 2. 主角卡片：左�?+ 放大 + 旋转
 	/// 3. 停顿
-	/// 4. 同时恢复：主角卡片插入到目标位置，卡组其他卡片恢复
+	/// 4. 同时恢复：主角卡片插入到目标位置，卡组其他卡片恢�?
 	/// </summary>
 	/// <param name="affectedCards">受影响的逻辑卡片列表（主角卡片）</param>
 	/// <param name="isStage">true=置顶, false=置底</param>
@@ -489,7 +357,7 @@ public class CombatUXManager : MonoBehaviour
 		
 		if (mainCardScripts.Count == 0) return;
 		
-		// 收集卡组中的其他卡片（非主角卡片）
+		// 收集卡组中的其他卡片（非主角卡片�?
 		List<CardPhysObjScript> otherCardScripts = new List<CardPhysObjScript>();
 		List<Vector3> otherCardBasePositions = new List<Vector3>();
 		
@@ -516,7 +384,7 @@ public class CombatUXManager : MonoBehaviour
 			otherCardBasePositions.Add(physScript.transform.position);
 		}
 		
-		// 包含 reveal zone 中的卡片（如果存在且不是主角卡片）
+		// 包含 reveal zone 中的卡片（如果存在且不是主角卡片�?
 		if (physicalCardInRevealZone != null)
 		{
 			var revealPhysScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
@@ -533,7 +401,7 @@ public class CombatUXManager : MonoBehaviour
 					}
 				}
 				
-				// 如果不是主角卡片，也添加到卡组动画列表
+				// 如果不是主角卡片，也添加到卡组动画列�?
 				if (!isMainCard)
 				{
 					otherCardScripts.Add(revealPhysScript);
@@ -542,9 +410,9 @@ public class CombatUXManager : MonoBehaviour
 			}
 		}
 		
-		// ========== 阶段 1：卡组缩小 + 主角卡片左移（同时进行）==========
+		// ========== 阶段 1：卡组缩�?+ 主角卡片左移（同时进行）==========
 		
-		// 卡组其他卡片：缩小 + 右移
+		// 卡组其他卡片：缩�?+ 右移
 		for (int i = 0; i < otherCardScripts.Count; i++)
 		{
 			otherCardScripts[i].PlayDeckGroupShrinkAnimation(otherCardBasePositions[i]);
@@ -556,7 +424,7 @@ public class CombatUXManager : MonoBehaviour
 		for (int i = 0; i < mainCardScripts.Count; i++)
 		{
 			int index = i; // 捕获索引
-				       // 从后往前计算延迟：最后一张0秒，倒数第二张0.1秒，以此类推
+				       // 从后往前计算延迟：最后一�?秒，倒数第二�?.1秒，以此类推
 			float delay = i * staggerDelay;
 			//float delay = (lastIndex - i) * staggerDelay;
 			DOVirtual.DelayedCall(delay, () => {
@@ -565,13 +433,13 @@ public class CombatUXManager : MonoBehaviour
 		}
 		
 		// 计算阶段1持续时间
-		// 卡组动画时间和主角卡片动画时间的最大值
+		// 卡组动画时间和主角卡片动画时间的最大�?
 		// 由于最后一张最先开始，最后一张的动画完成时间就是整体完成时间
 		float deckAnimDuration = otherCardScripts.Count > 0 ? otherCardScripts[0].deckAnimDuration : 0f;
-		float mainCardPhase1Duration = mainCardScripts[0].sideMoveDuration; // 最后一张0延迟开始
+		float mainCardPhase1Duration = mainCardScripts[0].sideMoveDuration; // 最后一�?延迟开�?
 		float phase1Duration = Mathf.Max(deckAnimDuration, mainCardPhase1Duration);
 		
-		// ========== 阶段 2：停顿 + 阶段3：同时恢复 ==========
+		// ========== 阶段 2：停�?+ 阶段3：同时恢�?==========
 		// 使用延迟调用在正确的时间触发恢复
 		float phase2Pause = 0.15f;
 		float restoreDelay = phase1Duration + phase2Pause;
@@ -584,7 +452,7 @@ public class CombatUXManager : MonoBehaviour
 				mainCardScripts[index].PlayMainCardPhase3(mainCardFinalTargets[index]);
 			}
 			
-			// 卡组其他卡片：恢复
+			// 卡组其他卡片：恢�?
 			foreach (var cardScript in otherCardScripts)
 			{
 				cardScript.PlayDeckGroupRestoreAnimation();
@@ -607,7 +475,7 @@ public class CombatUXManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// 为 Stage/Bury 操作播放特殊动画（兼容旧版调用）
+	/// �?Stage/Bury 操作播放特殊动画（兼容旧版调用）
 	/// </summary>
 	/// <param name="affectedCard">单张受影响的逻辑卡片</param>
 	/// <param name="isStage">true=置顶, false=置底</param>
@@ -618,11 +486,11 @@ public class CombatUXManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// 计算卡片在 Stage/Bury 后的目标位置
+	/// 计算卡片�?Stage/Bury 后的目标位置
 	/// </summary>
 	private Vector3 CalculateCardTargetPosition(GameObject logicalCard, bool isStage)
 	{
-		// 找到卡片在 combinedDeckZone 中的索引
+		// 找到卡片�?combinedDeckZone 中的索引
 		int targetIndex = combatManager.combinedDeckZone.IndexOf(logicalCard);
 		
 		// 如果找不到，根据 isStage 确定默认位置
@@ -630,27 +498,29 @@ public class CombatUXManager : MonoBehaviour
 		{
 			if (isStage)
 			{
-				// 置顶：放到 combinedDeckZone 的最后位置
+				// 置顶：放�?combinedDeckZone 的最后位�?
 				targetIndex = combatManager.combinedDeckZone.Count - 1;
 			}
 			else
 			{
-				// 置底：放到第 0 位
+				// 置底：放到第 0 �?
 				targetIndex = 0;
 			}
 		}
 		
-		return new Vector3(
-			physicalCardDeckPos.position.x,
-			physicalCardDeckPos.position.y,
-			physicalCardDeckPos.position.z - zOffset * targetIndex
-		);
+		// targetIndex=0（顶部）偏移最大，targetIndex=count-1（底部）偏移最小
+			var count = combatManager.combinedDeckZone.Count;
+			return new Vector3(
+				physicalCardDeckPos.position.x + xOffset * (count - 1 - targetIndex),
+				physicalCardDeckPos.position.y + yOffset * (count - 1 - targetIndex),
+				physicalCardDeckPos.position.z - zOffset * targetIndex
+			);
 	}
 	
 	#endregion
 
 	/// <summary>
-	/// 为逻辑卡片创建对应的物理卡片并插入到 deck 中
+	/// 为逻辑卡片创建对应的物理卡片并插入�?deck �?
 	/// </summary>
 	public void AddPhysicalCardToDeck(GameObject logicalCard)
 	{
@@ -668,7 +538,7 @@ public class CombatUXManager : MonoBehaviour
 		// 设置初始缩放
 		physScript.SetScaleImmediate(physicalCardDeckSize);
 
-		// 插入到物理卡片列表
+		// 插入到物理卡片列�?
 		physicalCardsInDeck.Insert(0, newPhysicalCard);
 
 		// 设置初始位置 (new card appears at physical card new temp card pos)
@@ -679,14 +549,14 @@ public class CombatUXManager : MonoBehaviour
 		physScript.SetScaleImmediate(startSize);
 
 
-		// 更新所有卡片目标位置（触发移动动画）
+		// 更新所有卡片目标位置（触发移动动画�?
 		UpdateAllPhysicalCardTargets();
 	}
 
-	#region 初始化
+	#region 初始�?
 
 	/// <summary>
-	/// 实例化所有物理卡片（包括 Start Card）
+	/// 实例化所有物理卡片（包括 Start Card�?
 	/// </summary>
 	public void InstantiateAllPhysicalCards()
 	{
@@ -714,7 +584,7 @@ public class CombatUXManager : MonoBehaviour
 				physScript.cardDescPrint.text = cardScript.cardDesc;
 			}
 
-			// 立即设置初始位置和缩放
+			// 立即设置初始位置和缩�?
 			physScript.SetScaleImmediate(physicalCardDeckSize);
 
 			physicalCardsInDeck.Add(newPhysicalCard);
@@ -724,9 +594,10 @@ public class CombatUXManager : MonoBehaviour
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
 			var physScript = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
+			var count = physicalCardsInDeck.Count;
 			Vector3 pos = new(
-			    physicalCardDeckPos.position.x,
-			    physicalCardDeckPos.position.y,
+			    physicalCardDeckPos.position.x + xOffset * (count - 1 - i),
+			    physicalCardDeckPos.position.y + yOffset * (count - 1 - i),
 			    physicalCardDeckPos.position.z - zOffset * i
 			);
 			physScript.SetPositionImmediate(pos);

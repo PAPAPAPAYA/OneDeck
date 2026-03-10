@@ -8,7 +8,6 @@ using UnityEngine;
 public class CardManipulationEffect : EffectScript
 {
 	private List<GameObject> _combinedDeck;
-	private List<GameObject> _graveDeck;
 
 	[Header("Tag Configuration")]
 	public EnumStorage.Tag tagToCheck;
@@ -85,9 +84,9 @@ public class CardManipulationEffect : EffectScript
 			var targetCardScript = cardsToSend[i].GetComponent<CardScript>();
 			string targetColor = GetCardColorTag(cardsToSend[i]);
 			effectResultString.value +=
-				"// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] sent [<color=" + targetColor + ">" +
-				targetCardScript.gameObject.name + "</color>] to grave\n";
-			CombatFuncs.me.MoveCard_FromDeckToGrave(cardsToSend[i]);
+				"// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] exiled [<color=" + targetColor + ">" +
+				targetCardScript.gameObject.name + "</color>]\n";
+			// [已废弃] 放逐效果暂不可用
 		}
 	}
 	#endregion
@@ -95,90 +94,25 @@ public class CardManipulationEffect : EffectScript
 	#region REVIVE
 	public void ReviveRandomMyCardsFromGrave(int amount)
 	{
-		_graveDeck = combatManager.graveZone;
-		var cardsToRevive = new List<GameObject>();
-		UtilityFuncManagerScript.CopyGameObjectList(_graveDeck, cardsToRevive, true);
-		for (int i = cardsToRevive.Count - 1; i >= 0; i--)
-		{
-			// take out opponent's cards
-			if (cardsToRevive[i].GetComponent<CardScript>().myStatusRef != myCardScript.myStatusRef) // if card doesn't belong to this card's owner
-			{
-				cardsToRevive.RemoveAt(i);
-			}
-		}
-		cardsToRevive = UtilityFuncManagerScript.ShuffleList(cardsToRevive);
-		amount = Mathf.Clamp(amount, 0, cardsToRevive.Count);
-		if (amount == 0) return;
-		string myColor = GetMyCardColorTag();
-		for (var i = 0; i < amount; i++)
-		{
-			var targetCardScript = cardsToRevive[i].GetComponent<CardScript>();
-			string targetColor = GetCardColorTag(cardsToRevive[i]);
-			effectResultString.value +=
-				"// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] revived " +
-				"[<color=" + targetColor + ">" + targetCardScript.gameObject.name + "</color>] from grave to deck\n";
-			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToRevive[i]);
-		}
+		// [已废弃] 墓地机制已移除
+		return;
 	}
 
 	public void ReviveRandomTheirCardsFromGrave(int amount)
 	{
-		_graveDeck = combatManager.graveZone;
-		var cardsToRevive = new List<GameObject>();
-		UtilityFuncManagerScript.CopyGameObjectList(_graveDeck, cardsToRevive, true);
-		for (int i = cardsToRevive.Count - 1; i >= 0; i--)
-		{
-			// take out card owner's cards
-			if (cardsToRevive[i].GetComponent<CardScript>().myStatusRef == myCardScript.myStatusRef) // if card belongs to this card's owner
-			{
-				cardsToRevive.RemoveAt(i);
-			}
-		}
-		cardsToRevive = UtilityFuncManagerScript.ShuffleList(cardsToRevive);
-		amount = Mathf.Clamp(amount, 0, cardsToRevive.Count);
-		if (amount == 0) return;
-		string myColor = GetMyCardColorTag();
-		for (var i = 0; i < amount; i++)
-		{
-			var targetCardScript = cardsToRevive[i].GetComponent<CardScript>();
-			string targetColor = GetCardColorTag(cardsToRevive[i]);
-			effectResultString.value +=
-				"// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] revived " +
-				"[<color=" + targetColor + ">" + targetCardScript.gameObject.name + "</color>] from grave to deck\n";
-			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToRevive[i]);
-		}
+		// [已废弃] 墓地机制已移除
+		return;
 	}
 	public void ReviveRandomCards(int amount)
 	{
-		_graveDeck = combatManager.graveZone;
-		var cardsToPut = new List<GameObject>();
-		UtilityFuncManagerScript.CopyGameObjectList(_graveDeck, cardsToPut, true);
-		cardsToPut = UtilityFuncManagerScript.ShuffleList(cardsToPut);
-		amount = Mathf.Clamp(amount, 0, _graveDeck.Count);
-		string myColor = GetMyCardColorTag();
-		for (var i = 0; i < amount; i++)
-		{
-			var targetCardScript = cardsToPut[i].GetComponent<CardScript>();
-			string targetColor = GetCardColorTag(cardsToPut[i]);
-			var targetCardOwnerString = CombatInfoDisplayer.me.ReturnCardOwnerInfo(targetCardScript.myStatusRef);
-			var thisCardOwnerString = CombatInfoDisplayer.me.ReturnCardOwnerInfo(myCardScript.myStatusRef);
-			effectResultString.value +=
-				"// " +
-				thisCardOwnerString +
-				" [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] put " +
-				targetCardOwnerString +
-				" [<color=" + targetColor + ">" + targetCardScript.gameObject.name + "</color>] back to deck\n";
-			CombatFuncs.me.MoveCard_FromGraveToDeck(cardsToPut[i]);
-		}
+		// [已废弃] 墓地机制已移除
+		return;
 	}
 
 	public void ReviveSelf() // put self back from grave to deck
 	{
-		if (!combatManager.graveZone.Contains(transform.parent.gameObject)) return;
-		CombatFuncs.me.MoveCard_FromGraveToDeck(myCard);
-		// show info
-		string myColor = GetMyCardColorTag();
-		effectResultString.value += "// [<color=" + myColor + ">" + myCard.name + "</color>] is put back to deck\n";
+		// [已废弃] 墓地机制已移除
+		return;
 	}
 	#endregion
 	

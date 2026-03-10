@@ -129,7 +129,8 @@ enum Tag { None, Linger, ManaX }
 
 ## 重要注意事项
 
-1. **HPAlterEffect 伤害**: 所有伤害方法自动加 `baseDmg.value`，传入具体值时请将 `baseDmg` 设 0
+1. **代码缩进**: 本项目使用 **Tab** 缩进（而非空格），修改代码时请注意保持缩进一致性
+2. **HPAlterEffect 伤害**: 所有伤害方法自动加 `baseDmg.value`，传入具体值时请将 `baseDmg` 设 0
 2. **cardTypeID**: 使用此字段而非实例 ID 进行存档/统计
 3. **可循环效果**: 同一卡牌不要放多个带循环效果的实例，会堆栈溢出
 4. **修改牌组后**: 必须重新洗牌才能生效

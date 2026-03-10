@@ -42,6 +42,10 @@
 
 #region Refactorings
 // refactoring
+	//// no grave
+	//// revealed card is put back to the bottom of deck
+	//// start card effect: shuffle deck (including start card)
+	//// start card marks the beginning of a new turn
 	//// base dmg amount SO, so that i can balance it quicker
 	//// use card's game object's name instead of cardscript's cardName
 		//// take out "(Clone)"
