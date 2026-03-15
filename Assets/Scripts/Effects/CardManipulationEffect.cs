@@ -144,6 +144,26 @@ public class CardManipulationEffect : EffectScript
 		StageChosenCards(cardsWithTag, amount);
 	}
 
+	public void StageMyCards(int amount)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var myCards = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myCards, true);
+
+		// Filter cards that belong to this card's owner
+		for (int i = myCards.Count - 1; i >= 0; i--)
+		{
+			var cardScript = myCards[i].GetComponent<CardScript>();
+			if (cardScript.myStatusRef != myCardScript.myStatusRef)
+			{
+				myCards.RemoveAt(i);
+			}
+		}
+
+		myCards = UtilityFuncManagerScript.ShuffleList(myCards);
+		StageChosenCards(myCards, amount);
+	}
+
 	public void StageMyCardsWithTag(int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
@@ -309,6 +329,69 @@ public class CardManipulationEffect : EffectScript
 		
 		// 2. 播放特殊动画（替代原来的 Sync + Update）
 		CombatUXManager.me.PlayStageBuryAnimation(buriedCards, isStage: false);
+	}
+	#endregion
+
+	#region DELAY
+	public void DelayMyCards(int amount)
+	{
+		var myCards = GetCardsByOwner(isMyCards: true);
+		ExecuteDelay(myCards, amount);
+	}
+
+	public void DelayTheirCards(int amount)
+	{
+		var theirCards = GetCardsByOwner(isMyCards: false);
+		ExecuteDelay(theirCards, amount);
+	}
+
+	private List<GameObject> GetCardsByOwner(bool isMyCards)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var result = new List<GameObject>();
+		foreach (var card in _combinedDeck)
+		{
+			var cardScript = card.GetComponent<CardScript>();
+			bool isOwner = cardScript.myStatusRef == myCardScript.myStatusRef;
+			if (isOwner == isMyCards)
+			{
+				result.Add(card);
+			}
+		}
+		return result;
+	}
+
+	private void ExecuteDelay(List<GameObject> candidates, int amount)
+	{
+		if (amount <= 0 || candidates.Count == 0) return;
+
+		candidates = UtilityFuncManagerScript.ShuffleList(candidates);
+		amount = Mathf.Min(amount, candidates.Count);
+
+		int movedCount = 0;
+		string myColor = GetMyCardColorTag();
+
+		for (int i = 0; i < amount; i++)
+		{
+			var card = candidates[i];
+			int index = _combinedDeck.IndexOf(card);
+
+			if (index <= 0) continue;
+
+			_combinedDeck.RemoveAt(index);
+			_combinedDeck.Insert(index - 1, card);
+			movedCount++;
+
+			var targetScript = card.GetComponent<CardScript>();
+			string targetColor = GetCardColorTag(card);
+			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] delayed [<color={targetColor}>{targetScript.name}</color>]\n";
+		}
+
+		if (movedCount > 0)
+		{
+			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+		}
 	}
 	#endregion
 }

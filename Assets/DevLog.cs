@@ -1,5 +1,34 @@
 // devlog
 
+
+// todo
+// game event:
+	// when a friendly token is added
+	// if next X cards contain friendly/hostile cards
+	// if card is moved (staged, buried, delayed, forwarded)
+	// X consecutive friendly/hostile
+	// is moved
+	// friendly token revealed
+// condition:
+	// if next X cards contain friendly/hostile cards
+// feature:
+	// shield change: decrease by 1 each reveal
+	// token / actual card
+// status effect:
+	// nutrious: when revealed, heal you for 1
+	// escape goat: bury target becomes this card
+// effect:
+	// delay
+	// forward
+	// add a copy
+	// deal dmg = next X cards friendly/hostile amount
+	// deal dmg = card amount in friendly deck
+	// new exile: destroy card
+	// exile friendly/hostile token
+	// skip
+	// heart change specific card
+	
+
 //! quirks
 	//! deck and grave effects don't show fail message, would be too much info? or too few surprises?
 	//! status effect damage counts as status effect owner card's damage

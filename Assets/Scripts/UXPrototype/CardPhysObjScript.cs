@@ -28,6 +28,7 @@ public class CardPhysObjScript : MonoBehaviour
 	[Header("LOOK")]
 	public SpriteRenderer cardFace;
 	public SpriteRenderer cardEdge;
+	public TextMeshPro cardCostPrint;
 	public TextMeshPro cardNamePrint;
 	public TextMeshPro cardDescPrint;
 	public TextMeshPro cardPricePrint;
@@ -115,6 +116,7 @@ public class CardPhysObjScript : MonoBehaviour
 		UpdateMotion(); // 在 Update 中处理动画
 		UpdateStatusEffectDisplay();
 		UpdatePriceDisplay();
+		UpdateCostDisplay();
 
 		// 长按检测
 		HandleHoldToBuy();
@@ -173,6 +175,26 @@ public class CardPhysObjScript : MonoBehaviour
 		// 商店卡片显示原价，玩家卡组中的卡片价格除以2
 		int displayPrice = shopItemIndex >= 0 ? cardImRepresenting.price.value : cardImRepresenting.price.value / 2;
 		cardPricePrint.text = $"<color=yellow>${displayPrice}</color>";
+	}
+
+	/// <summary>
+	/// 更新 Cost 显示
+	/// </summary>
+	private void UpdateCostDisplay()
+	{
+		// 如果没有 cost 文本组件，直接返回
+		if (cardCostPrint == null) return;
+
+		// 如果卡牌数据为空，隐藏 cost 显示
+		if (cardImRepresenting == null)
+		{
+			cardCostPrint.gameObject.SetActive(false);
+			return;
+		}
+
+		// 显示 cost
+		cardCostPrint.gameObject.SetActive(true);
+		cardCostPrint.text = $"{cardImRepresenting.delayCost}";
 	}
 
 	/// <summary>

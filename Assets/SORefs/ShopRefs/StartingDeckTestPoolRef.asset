@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StartingDeckTestPoolRef
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 6cdce296cfabf704aadbac217f3deeef, type: 3}
+  - {fileID: 8718476725744197808, guid: d6736656c4d283e4e936fa818be0b02d, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: player starting card pool
