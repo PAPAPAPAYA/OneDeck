@@ -2428,6 +2428,7 @@ MonoBehaviour:
   playerCardInstances: []
   enemyCardInstances: []
   startCardPrefab: {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
+  removeStartCardInsteadOfShuffle: 1
   combinedDeckZone: []
   revealZone: {fileID: 0}
   awaitingRevealConfirm: 1

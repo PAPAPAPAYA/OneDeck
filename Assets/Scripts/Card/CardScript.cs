@@ -25,6 +25,10 @@ public class CardScript : MonoBehaviour
     [Header("Tags")]
     public List<EnumStorage.Tag> myTags;
 
+    [Header("Delay Cost")]
+    [Tooltip("发动时，将N张己方卡往后推迟1位")]
+    public int delayCost;
+
     private void OnEnable()
     {
         cardID = CardIDRetriever.Me.RetrieveCardID();

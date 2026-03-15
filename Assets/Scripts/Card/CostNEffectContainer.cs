@@ -29,6 +29,8 @@ public class CostNEffectContainer : MonoBehaviour
 
 	[Header("Cost and Effect Events")]
 	public UnityEvent checkCostEvent;
+	[Tooltip("在检查cost之后、效果之前执行（如Delay Cost）")]
+	public UnityEvent preEffectEvent;
 	[Tooltip("assign effect component's function")]
 	public UnityEvent effectEvent;
 
@@ -39,6 +41,11 @@ public class CostNEffectContainer : MonoBehaviour
 		// check cost
 		_costNotMetFlag = 0;
 		checkCostEvent?.Invoke();
+
+		if (_costNotMetFlag > 0) return;
+
+		// execute pre-effect (e.g., Delay Cost)
+		preEffectEvent?.Invoke();
 
 		// invoke effect
 		var effectString = "(" + _myCardScript.cardID + ") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping

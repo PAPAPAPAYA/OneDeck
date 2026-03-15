@@ -39,6 +39,8 @@ public class CombatManager : MonoBehaviour
 	[Header("START CARD")]
 	public GameObject startCardPrefab; // Start Card 预制体
 	private GameObject _startCardInstance; // Start Card 实例（在牌组底部）
+	[Tooltip("如果为true，Start Card触发后直接移除，不洗入牌组")]
+	public bool removeStartCardInsteadOfShuffle = false;
 
 	[Header("ZONES")]
 	public List<GameObject> combinedDeckZone;
@@ -336,16 +338,47 @@ public class CombatManager : MonoBehaviour
 	{
 		if (revealZone == null) return;
 
-		// 1. 将 Start Card 放回牌组底部
 		var startCard = revealZone;
 		revealZone = null;
+
+		// 1. 将 Start Card 放回牌组底部
 		combinedDeckZone.Insert(0, startCard);
 		CombatUXManager.me.MoveRevealedCardToBottom(startCard);
 
 		// 2. 洗牌（包括 Start Card）
 		Shuffle();
 
-		// 3. 新回合开始
+		// 3. 如果功能生效，从牌组中移除 Start Card
+		if (removeStartCardInsteadOfShuffle)
+		{
+			// 先找到对应的物理卡牌，播放退场动画
+			var startCardScript = startCard.GetComponent<CardScript>();
+			if (startCardScript != null)
+			{
+				var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(startCardScript);
+				if (physicalCard != null)
+				{
+					// 播放退场动画：移动到 newCardPos 并缩小，动画完成后销毁
+					CombatUXManager.me.PlayStartCardExitAnimation(physicalCard, () =>
+					{
+						// 动画完成回调：从列表移除并销毁
+						CombatUXManager.me.DestroyPhysicalCard(physicalCard);
+					});
+				}
+			}
+			
+			// 从逻辑牌组中移除（物理卡牌等动画完成后再销毁）
+			combinedDeckZone.Remove(startCard);
+			Destroy(startCard);
+			_startCardInstance = null;
+			
+			// 刷新UI显示（不包括 Start Card）
+			_infoDisplayer.RefreshDeckInfo();
+			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+		}
+
+		// 4. 新回合开始
 		HandleNewRoundStart();
 	}
 

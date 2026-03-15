@@ -53,12 +53,13 @@ public class CombatUXManager : MonoBehaviour
 
 	/// <summary>
 	/// 根据 combined deck zone 更新 physicalCardsInDeck 的顺�?
+	/// 注意：revealZone 中的卡不加入此列表，它由 physicalCardInRevealZone 单独管理
 	/// </summary>
 	public void SyncPhysicalCardsWithCombinedDeck()
 	{
-		if (physicalCardsInDeck.Count == 0) return;
+		if (physicalCardsInDeck.Count == 0 && physicalCardInRevealZone == null) return;
 
-		// 重建字典
+		// 重建字典（包含 deck 和 reveal zone 的卡牌）
 		BuildCardScriptToPhysicalDictionary();
 
 		// 根据 combinedDeckZone 重新排序 physicalCardsInDeck
@@ -72,16 +73,8 @@ public class CombatUXManager : MonoBehaviour
 			}
 		}
 
-		// 如果�?revealZone 中的卡，放到最�?
-		if (combatManager.revealZone != null)
-		{
-			var revealedCardScript = combatManager.revealZone.GetComponent<CardScript>();
-			if (revealedCardScript != null && 
-			    _cardScriptToPhysicalCache.TryGetValue(revealedCardScript, out var revealedPhysicalCard))
-			{
-				physicalCardsInDeck.Add(revealedPhysicalCard);
-			}
-		}
+		// 注意：revealZone 中的卡不加入 physicalCardsInDeck
+		// 它由 physicalCardInRevealZone 单独管理，位置由单独的 reveal 逻辑控制
 	}
 
 	/// <summary>
@@ -102,6 +95,9 @@ public class CombatUXManager : MonoBehaviour
 			physScript.SetTargetPosition(physicalCardRevealPos.position);
 			physScript.SetTargetScale(physicalCardRevealSize);
 		}
+
+		// 更新牌组中剩余卡片的位置
+		UpdateAllPhysicalCardTargets();
 	}
 
 	/// <summary>
@@ -146,10 +142,10 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public void ReviveAllPhysicalCards()
 	{
-		// 如果有卡还在揭晓区域，先移回牌组
+		// 如果有卡还在揭晓区域，先移回牌组底部（index 0）
 		if (physicalCardInRevealZone != null)
 		{
-			physicalCardsInDeck.Add(physicalCardInRevealZone);
+			physicalCardsInDeck.Insert(0, physicalCardInRevealZone);
 			physicalCardInRevealZone = null;
 		}
 
@@ -218,8 +214,8 @@ public class CombatUXManager : MonoBehaviour
 			// i=0（顶部）偏移最大，i=count-1（底部）偏移最小
 			var count = physicalCardsInDeck.Count;
 			Vector3 targetPos = new(
-			    physicalCardDeckPos.position.x + xOffset * (count - 1 - i),
-			    physicalCardDeckPos.position.y + yOffset * (count - 1 - i),
+			    physicalCardDeckPos.position.x + xOffset * (count - i),
+			    physicalCardDeckPos.position.y + yOffset * (count - i),
 			    physicalCardDeckPos.position.z - zOffset * i
 			);
 
@@ -281,6 +277,74 @@ public class CombatUXManager : MonoBehaviour
 
 		// 清空字典缓存
 		_cardScriptToPhysicalCache.Clear();
+	}
+
+	/// <summary>
+	/// 销毁指定的物理卡牌（用于移除单张卡）
+	/// </summary>
+	public void DestroyPhysicalCard(GameObject physicalCard)
+	{
+		if (physicalCard == null) return;
+
+		// 从牌组列表中移除
+		physicalCardsInDeck.Remove(physicalCard);
+
+		// 从字典缓存中移除
+		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+		if (physScript?.cardImRepresenting != null)
+		{
+			_cardScriptToPhysicalCache.Remove(physScript.cardImRepresenting);
+		}
+
+		// 销毁 GameObject
+		Destroy(physicalCard);
+	}
+
+	/// <summary>
+	/// 播放 Start Card 退场动画：移动到 newCardPos 并缩小，完成后执行回调
+	/// </summary>
+	public void PlayStartCardExitAnimation(GameObject physicalCard, System.Action onComplete)
+	{
+		if (physicalCard == null)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+		if (physScript == null)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		// 从牌组列表中移除（不再参与位置同步）
+		physicalCardsInDeck.Remove(physicalCard);
+
+		// 停止该卡牌上可能正在进行的动画
+		physScript.SetPositionImmediate(physicalCard.transform.position);
+		physScript.SetScaleImmediate(physicalCard.transform.localScale);
+
+		// 创建退场动画序列
+		Sequence exitSequence = DOTween.Sequence();
+
+		// 移动到 newCardPos
+		exitSequence.Append(
+			physicalCard.transform.DOMove(physicalCardNewTempCardPos.position, 0.3f)
+				.SetEase(Ease.InOutQuad)
+		);
+
+		// 同步缩小
+		exitSequence.Join(
+			physicalCard.transform.DOScale(physicalCardNewTempCardSize, 0.3f)
+				.SetEase(Ease.InOutQuad)
+		);
+
+		// 动画完成后执行回调
+		exitSequence.OnComplete(() =>
+		{
+			onComplete?.Invoke();
+		});
 	}
 	
 	/// <summary>
@@ -511,8 +575,8 @@ public class CombatUXManager : MonoBehaviour
 		// targetIndex=0（顶部）偏移最大，targetIndex=count-1（底部）偏移最小
 			var count = combatManager.combinedDeckZone.Count;
 			return new Vector3(
-				physicalCardDeckPos.position.x + xOffset * (count - 1 - targetIndex),
-				physicalCardDeckPos.position.y + yOffset * (count - 1 - targetIndex),
+				physicalCardDeckPos.position.x + xOffset * (count - targetIndex),
+				physicalCardDeckPos.position.y + yOffset * (count - targetIndex),
 				physicalCardDeckPos.position.z - zOffset * targetIndex
 			);
 	}
