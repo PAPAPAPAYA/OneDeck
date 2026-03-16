@@ -63,6 +63,12 @@ public class CombatManager : MonoBehaviour
 	public GameObject cardToAddWhenOvertime;
 	[Tooltip("add this amount of fatigue to both player")]
 	public int fatigueAmount;
+	
+	[Header("FATIGUE BY REVEAL COUNT")]
+	[Tooltip("基于揭晓卡数的疲劳机制：当累计揭晓多少张卡后触发疲劳（0表示禁用）")]
+	public int fatigueRevealThreshold;
+	[Tooltip("已累计揭晓的卡数")]
+	public int totalCardsRevealed;
 
 	#region Enter and exit funcs
 
@@ -96,6 +102,7 @@ public class CombatManager : MonoBehaviour
 		// clean up tracking stats
 		roundNumRef.value = 0;
 		cardsRevealedThisRound = 0;
+		totalCardsRevealed = 0;
 		EffectChainManager.Me.CloseOpenedChain();
 		EffectChainManager.Me.chainNumber = 0;
 	}
@@ -117,7 +124,7 @@ public class CombatManager : MonoBehaviour
 				GatherDecks();
 				break;
 			case EnumStorage.CombatState.ShuffleDeck:
-				CheckFatigueNAddFatigue(); // process fatigue
+				CheckFatigueNAddFatigue(); // 基于回合数的疲劳检查
 				Shuffle();
 				break;
 			case EnumStorage.CombatState.Reveal:
@@ -172,8 +179,32 @@ public class CombatManager : MonoBehaviour
 
 	private void CheckFatigueNAddFatigue()
 	{
-		if (roundNumRef.value <= overtimeRoundThreshold) return; // check if overtime
-		print("fatigue kicked in");
+		// 基于回合数的疲劳检查（在ShuffleDeck阶段调用）
+		if (roundNumRef.value <= overtimeRoundThreshold) return;
+		
+		var msg = $"<color=red>FATIGUE!</color> Round {roundNumRef.value} > {overtimeRoundThreshold}";
+		print(msg);
+		_infoDisplayer.effectResultString.value += msg + "\n";
+		AddFatigueCards();
+	}
+	
+	private void CheckFatigueByRevealCount()
+	{
+		// 基于reveal卡数的疲劳检查（每次reveal时调用）
+		// threshold为0时禁用
+		if (fatigueRevealThreshold <= 0) return;
+		if (totalCardsRevealed < fatigueRevealThreshold) return;
+		// 只有当reveal卡数恰好等于阈值时才触发（避免重复触发）
+		if (totalCardsRevealed != fatigueRevealThreshold) return;
+		
+		var msg = $"<color=red>FATIGUE!</color> Revealed {totalCardsRevealed} cards";
+		print(msg);
+		_infoDisplayer.effectResultString.value += msg + "\n";
+		AddFatigueCards();
+	}
+	
+	private void AddFatigueCards()
+	{
 		// add fatigue to owner side
 		for (var i = 0; i < fatigueAmount; i++)
 		{
@@ -306,8 +337,12 @@ public class CombatManager : MonoBehaviour
 
 		// 显示信息（不触发效果）
 		cardsRevealedThisRound++;
+		totalCardsRevealed++;
 		_infoDisplayer.ShowCardInfo(cardRevealed, cardsRevealedThisRound, cardRevealed.myStatusRef == ownerPlayerStatusRef);
 		_infoDisplayer.RefreshDeckInfo();
+		
+		// 检查疲劳（基于reveal卡数）
+		CheckFatigueByRevealCount();
 	}
 
 	private void TriggerRevealedCardEffect()

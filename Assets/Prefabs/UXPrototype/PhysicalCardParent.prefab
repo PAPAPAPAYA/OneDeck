@@ -254,7 +254,7 @@ MonoBehaviour:
   deckShrinkMultiplier: 0.8
   deckRightOffset: 1
   deckAnimDuration: 1
-  moveDuration: 0.3
+  moveDuration: 0.4
   moveEase: 6
 --- !u!61 &6834931916158603786
 BoxCollider2D:

@@ -75,7 +75,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -157,7 +157,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: FLY
-  cardDesc: Deal 2 damage
+  cardDesc: Deal 3 damage
   takeUpSpace: 1
   isStartCard: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}

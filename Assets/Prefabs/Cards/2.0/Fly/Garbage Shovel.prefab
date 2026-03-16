@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 450466735166336877}
   - component: {fileID: 8335702443193652419}
   m_Layer: 0
-  m_Name: delay 1 hostile and add a fly
+  m_Name: bury 1 hostile and add a fly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -71,7 +71,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8335702443193652419}
         m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
-        m_MethodName: DelayTheirCards
+        m_MethodName: BuryTheirCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -181,9 +181,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GARBAGE_SHOVEL
-  cardDesc: 'Add 1 [Fly: deal 2 dmg];
+  cardDesc: 'Add 1 [Fly: deal 3 dmg];
 
-    Delay 1 hostile'
+    Bury 1 hostile'
   takeUpSpace: 1
   isStartCard: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}

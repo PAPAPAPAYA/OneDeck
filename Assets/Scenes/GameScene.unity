@@ -2439,6 +2439,8 @@ MonoBehaviour:
   overtimeRoundThreshold: 2
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
   fatigueAmount: 1
+  fatigueRevealThreshold: 20
+  totalCardsRevealed: 0
 --- !u!4 &1151980345
 Transform:
   m_ObjectHideFlags: 0
@@ -3163,7 +3165,7 @@ MonoBehaviour:
   xOffset: 0.2
   yOffset: 0.2
   physicalCardNewTempCardPos: {fileID: 2043192994}
-  physicalCardNewTempCardSize: {x: 0.2, y: 0.2, z: 0.2}
+  physicalCardNewTempCardSize: {x: 0.5, y: 0.5, z: 0.5}
   physicalCardPrefab: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
   startCardPhysicalPrefab: {fileID: 3539307345357344568, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
   physicalCardDeckPos: {fileID: 17063023}
@@ -5213,7 +5215,7 @@ Transform:
   m_GameObject: {fileID: 2043192993}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -3, z: 0}
+  m_LocalPosition: {x: 0, y: -6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5287,8 +5289,20 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.90000004
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.90000004
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.90000004
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.32568
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -5337,19 +5351,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 6139060933710598446, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 211618715913053591, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1 &2103892655
 GameObject:

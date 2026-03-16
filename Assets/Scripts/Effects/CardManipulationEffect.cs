@@ -29,6 +29,33 @@ public class CardManipulationEffect : EffectScript
 		return myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 	}
 
+	/// <summary>
+	/// 获取卡牌在 combinedDeck 中的索引
+	/// </summary>
+	private int GetCardIndexInCombinedDeck(GameObject card)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		return _combinedDeck.IndexOf(card);
+	}
+
+	/// <summary>
+	/// 检查卡牌是否在牌组顶部（index = count - 1）
+	/// </summary>
+	private bool IsCardAtTop(GameObject card)
+	{
+		int index = GetCardIndexInCombinedDeck(card);
+		return index >= 0 && index == _combinedDeck.Count - 1;
+	}
+
+	/// <summary>
+	/// 检查卡牌是否在牌组底部（index = 0）
+	/// </summary>
+	private bool IsCardAtBottom(GameObject card)
+	{
+		int index = GetCardIndexInCombinedDeck(card);
+		return index == 0;
+	}
+
 	#region EXILE
 	// choose cards logic in here, move cards logic in CombatFuncs
 	public void ExileMyCards(int amount)
@@ -120,6 +147,8 @@ public class CardManipulationEffect : EffectScript
 	public void StageSelf() // put self on top of the deck
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
+		// 如果已经在顶部，不需要 stage
+		if (IsCardAtTop(myCard)) return;
 		var cardsToStage = new List<GameObject> { myCard };
 		StageChosenCards(cardsToStage, 1);
 	}
@@ -130,11 +159,12 @@ public class CardManipulationEffect : EffectScript
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag
+		// Filter cards that have the specified tag and are not at the top
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
-			var cardScript = cardsWithTag[i].GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck))
+			var card = cardsWithTag[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -150,11 +180,12 @@ public class CardManipulationEffect : EffectScript
 		var myCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myCards, true);
 
-		// Filter cards that belong to this card's owner
+		// Filter cards that belong to this card's owner and are not at the top
 		for (int i = myCards.Count - 1; i >= 0; i--)
 		{
-			var cardScript = myCards[i].GetComponent<CardScript>();
-			if (cardScript.myStatusRef != myCardScript.myStatusRef)
+			var card = myCards[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -170,11 +201,12 @@ public class CardManipulationEffect : EffectScript
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag and belong to this card's owner
+		// Filter cards that have the specified tag, belong to this card's owner, and are not at the top
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
-			var cardScript = cardsWithTag[i].GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef != myCardScript.myStatusRef)
+			var card = cardsWithTag[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -190,11 +222,12 @@ public class CardManipulationEffect : EffectScript
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag and belong to the opponent
+		// Filter cards that have the specified tag, belong to the opponent, and are not at the top
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
-			var cardScript = cardsWithTag[i].GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef == myCardScript.myStatusRef)
+			var card = cardsWithTag[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtTop(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -238,7 +271,10 @@ public class CardManipulationEffect : EffectScript
 	public void BurySelf() // put self at the bottom of the deck
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
-		var cardsToBury = new List<GameObject> { transform.parent.gameObject };
+		var cardToBury = transform.parent.gameObject;
+		// 如果已经在底部，不需要 bury
+		if (IsCardAtBottom(cardToBury)) return;
+		var cardsToBury = new List<GameObject> { cardToBury };
 		BuryChosenCards(cardsToBury, 1);
 	}
 
@@ -248,11 +284,12 @@ public class CardManipulationEffect : EffectScript
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag
+		// Filter cards that have the specified tag and are not at the bottom
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
-			var cardScript = cardsWithTag[i].GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck))
+			var card = cardsWithTag[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtBottom(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -268,11 +305,12 @@ public class CardManipulationEffect : EffectScript
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag and belong to this card's owner
+		// Filter cards that have the specified tag, belong to this card's owner, and are not at the bottom
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
-			var cardScript = cardsWithTag[i].GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef != myCardScript.myStatusRef)
+			var card = cardsWithTag[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -288,11 +326,12 @@ public class CardManipulationEffect : EffectScript
 		var theirCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, theirCards, true);
 
-		// Filter cards that belong to the opponent
+		// Filter cards that belong to the opponent and are not at the bottom
 		for (int i = theirCards.Count - 1; i >= 0; i--)
 		{
-			var cardScript = theirCards[i].GetComponent<CardScript>();
-			if (cardScript.myStatusRef == myCardScript.myStatusRef)
+			var card = theirCards[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card))
 			{
 				theirCards.RemoveAt(i);
 			}
@@ -308,11 +347,12 @@ public class CardManipulationEffect : EffectScript
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag and belong to the opponent
+		// Filter cards that have the specified tag, belong to the opponent, and are not at the bottom
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
-			var cardScript = cardsWithTag[i].GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef == myCardScript.myStatusRef)
+			var card = cardsWithTag[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -369,11 +409,13 @@ public class CardManipulationEffect : EffectScript
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
 		var result = new List<GameObject>();
-		foreach (var card in _combinedDeck)
+		for (int i = 0; i < _combinedDeck.Count; i++)
 		{
+			var card = _combinedDeck[i];
 			var cardScript = card.GetComponent<CardScript>();
 			bool isOwner = cardScript.myStatusRef == myCardScript.myStatusRef;
-			if (isOwner == isMyCards)
+			// 只返回归属正确且在 index > 0 的卡（index 0 的卡无法 delay）
+			if (isOwner == isMyCards && i > 0)
 			{
 				result.Add(card);
 			}
@@ -396,6 +438,7 @@ public class CardManipulationEffect : EffectScript
 			var card = candidates[i];
 			int index = _combinedDeck.IndexOf(card);
 
+			// index 检查已在 GetCardsByOwner 中完成，这里做防御性检查
 			if (index <= 0) continue;
 
 			_combinedDeck.RemoveAt(index);
