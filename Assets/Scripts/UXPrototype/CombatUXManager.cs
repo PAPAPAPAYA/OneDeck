@@ -16,6 +16,10 @@ public class CombatUXManager : MonoBehaviour
 	[Header("REFERENCES")]
 	[SerializeField] private CombatManager combatManager;
 	public float zOffset;
+
+	[Header("ANIMATION SETTINGS")]
+	[Tooltip("是否启用 Stage/Bury 卡片动画")]
+	public bool enableStageBuryAnimation = true;
 	[Tooltip("Deck卡牌X轴偏移（每张卡牌向右偏移量）")]
 	public float xOffset;
 	[Tooltip("Deck卡牌Y轴偏移（每张卡牌向上偏移量）")]
@@ -388,6 +392,14 @@ public class CombatUXManager : MonoBehaviour
 	public void PlayStageBuryAnimation(List<GameObject> affectedCards, bool isStage)
 	{
 		if (affectedCards == null || affectedCards.Count == 0) return;
+
+		// 如果禁用了动画，直接同步位置
+		if (!enableStageBuryAnimation)
+		{
+			SyncPhysicalCardsWithCombinedDeck();
+			UpdateAllPhysicalCardTargets();
+			return;
+		}
 		
 		// 屏蔽玩家输入，防止动画期间揭晓下一张卡
 		if (combatManager != null)

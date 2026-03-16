@@ -10,10 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 4188612179286784546}
   - component: {fileID: 5915337404688717014}
-  - component: {fileID: 6250979960499082615}
-  - component: {fileID: 4014360001380625273}
+  - component: {fileID: 1625511825390951987}
+  - component: {fileID: 6713413052171917462}
+  - component: {fileID: 6907659391608360486}
   m_Layer: 0
-  m_Name: delay 2 hostile
+  m_Name: add curse and stage friendly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -53,7 +54,7 @@ MonoBehaviour:
   preEffectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6250979960499082615}
+      - m_Target: {fileID: 1625511825390951987}
         m_TargetAssemblyTypeName: DelayCostEffect, Assembly-CSharp
         m_MethodName: ExecuteDelayCost
         m_Mode: 1
@@ -68,19 +69,31 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4014360001380625273}
-        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
-        m_MethodName: DelayTheirCards
-        m_Mode: 3
+      - m_Target: {fileID: 6713413052171917462}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
+        m_MethodName: AddCardToMe
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_ObjectArgument: {fileID: 8718476725744197808, guid: 847c503644be7b1409038ad67b092cd5, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6250979960499082615
+      - m_Target: {fileID: 6907659391608360486}
+        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
+        m_MethodName: StageMyCards
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 3
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1625511825390951987
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -93,7 +106,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DelayCostEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
---- !u!114 &4014360001380625273
+--- !u!114 &6713413052171917462
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538812023556790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8da5b23dfa04f2bb3a8add21531e513, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AddTempCard
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+--- !u!114 &6907659391608360486
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -119,7 +145,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
   m_Layer: 0
-  m_Name: Bulldozer
+  m_Name: Forbidden Ritual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -154,8 +180,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: BULLDOZER
-  cardDesc: Delay 2 hostile
+  cardTypeID: FORBIDDEN_RITUAL
+  cardDesc: 'Add 1 [Curse: token; deal 1 dmg to self]
+
+    Stage 3 friendly'
   takeUpSpace: 1
   isStartCard: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
@@ -163,7 +191,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
-  delayCost: 1
+  delayCost: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4188612179286784546}
   - component: {fileID: 5915337404688717014}
-  - component: {fileID: 6250979960499082615}
-  - component: {fileID: 4014360001380625273}
+  - component: {fileID: 1804479272676240164}
+  - component: {fileID: 7408687852951384269}
   m_Layer: 0
-  m_Name: delay 2 hostile
+  m_Name: gain shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -53,7 +53,7 @@ MonoBehaviour:
   preEffectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6250979960499082615}
+      - m_Target: {fileID: 7408687852951384269}
         m_TargetAssemblyTypeName: DelayCostEffect, Assembly-CSharp
         m_MethodName: ExecuteDelayCost
         m_Mode: 1
@@ -68,9 +68,9 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4014360001380625273}
-        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
-        m_MethodName: DelayTheirCards
+      - m_Target: {fileID: 1804479272676240164}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ShieldAlter, Assembly-CSharp
+        m_MethodName: UpMyShield
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -80,7 +80,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6250979960499082615
+--- !u!114 &1804479272676240164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538812023556790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b816aa5788b645f08d0ca79d55f485be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.ShieldAlter
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  shieldUpAmountAlter: 0
+--- !u!114 &7408687852951384269
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -93,20 +107,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DelayCostEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
---- !u!114 &4014360001380625273
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eefb24a8c10cb53439f7e7db22e3daec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardManipulationEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -119,7 +119,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
   m_Layer: 0
-  m_Name: Bulldozer
+  m_Name: Spirit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -154,8 +154,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: BULLDOZER
-  cardDesc: Delay 2 hostile
+  cardTypeID: SPIRIT
+  cardDesc: Gain 2 shield
   takeUpSpace: 1
   isStartCard: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
@@ -163,7 +163,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
-  delayCost: 1
+  delayCost: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

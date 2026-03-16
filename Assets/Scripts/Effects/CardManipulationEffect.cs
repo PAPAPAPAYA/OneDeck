@@ -282,6 +282,26 @@ public class CardManipulationEffect : EffectScript
 		BuryChosenCards(cardsWithTag, amount);
 	}
 
+	public void BuryTheirCards(int amount)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var theirCards = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, theirCards, true);
+
+		// Filter cards that belong to the opponent
+		for (int i = theirCards.Count - 1; i >= 0; i--)
+		{
+			var cardScript = theirCards[i].GetComponent<CardScript>();
+			if (cardScript.myStatusRef == myCardScript.myStatusRef)
+			{
+				theirCards.RemoveAt(i);
+			}
+		}
+
+		theirCards = UtilityFuncManagerScript.ShuffleList(theirCards);
+		BuryChosenCards(theirCards, amount);
+	}
+
 	public void BuryTheirCardsWithTag(int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
