@@ -36,6 +36,16 @@ public class CostNEffectContainer : MonoBehaviour
 
 	private int _costNotMetFlag = 0;
 
+	/// <summary>
+	/// 用于外部（如 preEffectEvent 中的 TokenCostEffect）设置 cost 检查失败
+	/// </summary>
+	public void SetCostNotMet(string failMessage)
+	{
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+		effectResultString.value += failMessage;
+	}
+
 	public void InvokeEffectEvent()
 	{
 		// check cost

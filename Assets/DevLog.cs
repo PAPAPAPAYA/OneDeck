@@ -12,14 +12,13 @@
 // condition:
 	// if next X cards contain friendly/hostile cards
 // feature:
-	//? shield change: decrease by 1 each reveal
 	// token / actual card
 	// new way of adding fatigue
 // status effect:
 	// nutrious: when revealed, heal you for 1
 	// escape goat: bury target becomes this card
 // effect:
-	//todo delay bugged: try bury
+	//// delay bugged: try bury
 	// forward
 	// add a copy
 	// deal dmg = next X cards friendly/hostile amount

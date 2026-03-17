@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 6250979960499082615}
   - component: {fileID: 9220092470014319255}
+  - component: {fileID: 2564898624587267061}
   m_Layer: 0
   m_Name: deal dmg
   m_TagString: Untagged
@@ -109,6 +110,19 @@ MonoBehaviour:
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
+--- !u!114 &2564898624587267061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538812023556790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0567ac0cfac491449a3f470fd6cafdb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TokenCostEffect
+  effectResultString: {fileID: 0}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -160,12 +174,16 @@ MonoBehaviour:
   cardDesc: Deal 6 damage
   takeUpSpace: 1
   isStartCard: 0
+  isToken: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
-  delayCost: 1
+  delayCost: 0
+  tokenCostCount: 1
+  tokenCostCardTypeID: 
+  tokenCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

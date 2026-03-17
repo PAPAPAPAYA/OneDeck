@@ -71,6 +71,7 @@ Assets/
 | `CheckCost_Rested()` | 消耗 Rest 状态 |
 | `CheckCost_Revive(n)` | 需要 n 层复活 |
 | `CheckCost_HasEnemyCardInCombinedDeck(n)` | 需要 n 张敌方卡在牌组 |
+| `Token Cost` | 需要并从牌组中消耗 N 张指定类型的己方卡（见下文） |
 
 ## 状态效果
 
@@ -108,6 +109,23 @@ enum Tag { None, Linger, ManaX }
 | `CostNEffectContainer` | `Assets/Scripts/Card/CostNEffectContainer.cs` |
 | `EffectScript` | `Assets/Scripts/Effects/EffectScript.cs` |
 | `GameEvent` | `Assets/Scripts/SOScripts/GameEvent.cs` |
+
+## Token Cost 机制
+
+Token Cost 是一种特殊的预效果代价（pre-effect cost）：
+
+- **配置位置**: `CardScript` 的 Token Cost 相关字段
+  - `tokenCostCount`: 需要消耗的卡数量
+  - `tokenCostCardTypeID`: 消耗的卡牌类型ID（如"fly"），空字符串表示不限制类型
+  - `tokenCostOwner`: 消耗的卡牌所属（`Me`=己方, `Them`=敌方, `Random`=任意）
+- **执行组件**: `TokenCostEffect` 挂载到 `CostNEffectContainer.preEffectEvent`
+- **规则**:
+  - 发动时从 `combinedDeckZone` 中寻找符合条件的卡
+  - **必须满足**: `CardScript.isToken == true`（只有 token 卡能被消耗）
+  - 需同时满足所属和类型限制
+  - 符合条件的卡不足时，效果不发动
+  - 多张符合条件时随机选择
+- **消耗**: 符合条件的卡从牌组中移除并销毁
 
 ## 注意事项
 
