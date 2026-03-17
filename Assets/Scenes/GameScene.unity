@@ -2398,6 +2398,7 @@ GameObject:
   - component: {fileID: 1151980344}
   - component: {fileID: 1151980346}
   - component: {fileID: 1151980347}
+  - component: {fileID: 1151980348}
   m_Layer: 0
   m_Name: CombatManager
   m_TagString: Untagged
@@ -2425,8 +2426,6 @@ MonoBehaviour:
   enemyDeck: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
   playerDeckParent: {fileID: 1394699263}
   enemyDeckParent: {fileID: 1887081633}
-  playerCardInstances: []
-  enemyCardInstances: []
   startCardPrefab: {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
   removeStartCardInsteadOfShuffle: 1
   combinedDeckZone: []
@@ -2492,6 +2491,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec2fe90f3b5846919602128666ca8bb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1151980348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151980343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c69b9a5278f17f94fb46b9d3cd27cd70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.CombatStatsLogger
+  onAnyCardRevealed: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
+  combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
+  records: []
+  exportToCSV: 1
+  outputDirectory: CombatLogs
+  printToConsole: 0
 --- !u!1 &1174098152
 GameObject:
   m_ObjectHideFlags: 0
@@ -3169,9 +3186,9 @@ MonoBehaviour:
   physicalCardPrefab: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
   startCardPhysicalPrefab: {fileID: 3539307345357344568, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
   physicalCardDeckPos: {fileID: 17063023}
-  physicalCardDeckSize: {x: 0.9, y: 0.9, z: 0.9}
+  physicalCardDeckSize: {x: 0.8, y: 0.8, z: 0.8}
   physicalCardRevealPos: {fileID: 521203768}
-  physicalCardRevealSize: {x: 0.9, y: 0.9, z: 0.9}
+  physicalCardRevealSize: {x: 0.8, y: 0.8, z: 0.8}
   physicalCardsInDeck: []
   physicalCardInRevealZone: {fileID: 0}
 --- !u!1 &1457153432
@@ -5289,24 +5306,12 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.90000004
-      objectReference: {fileID: 0}
-    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.90000004
-      objectReference: {fileID: 0}
-    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.90000004
-      objectReference: {fileID: 0}
-    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5351,7 +5356,19 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 6139060933710598446, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 211618715913053591, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1 &2103892655
 GameObject:

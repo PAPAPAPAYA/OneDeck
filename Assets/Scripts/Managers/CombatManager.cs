@@ -33,8 +33,6 @@ public class CombatManager : MonoBehaviour
 	public DeckSO enemyDeck;
 	public GameObject playerDeckParent;
 	public GameObject enemyDeckParent;
-	public List<GameObject> playerCardInstances = new List<GameObject>();
-	public List<GameObject> enemyCardInstances = new List<GameObject>();
 
 	[Header("START CARD")]
 	public GameObject startCardPrefab; // Start Card 预制体
@@ -343,6 +341,9 @@ public class CombatManager : MonoBehaviour
 		
 		// 检查疲劳（基于reveal卡数）
 		CheckFatigueByRevealCount();
+
+		// 记录战斗统计
+		GetComponent<CombatStatsLogger>()?.OnCardRevealed(cardRevealed);
 	}
 
 	private void TriggerRevealedCardEffect()

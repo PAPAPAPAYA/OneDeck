@@ -121,7 +121,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
   m_Layer: 0
-  m_Name: Soldier
+  m_Name: Soldier 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: SOLDIER_1
+  cardTypeID: SOLDIER_5
   cardDesc: Deal 6 damage
   takeUpSpace: 1
   isStartCard: 0
