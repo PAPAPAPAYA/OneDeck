@@ -15,6 +15,17 @@ public class CardScript : MonoBehaviour
     public bool takeUpSpace = true; // whether this card takes up deck size
     [Tooltip("是否是回合开始标记卡（Start Card）")]
     public bool isStartCard = false;
+    
+    /// <summary>
+    /// 是否为中立卡（无归属，不参与效果计算）
+    /// </summary>
+    public bool IsNeutralCard => isStartCard;
+    
+    /// <summary>
+    /// 检查此卡是否能被效果影响（有归属且不是中立卡）
+    /// </summary>
+    public bool CanBeAffectedByEffects => !IsNeutralCard && myStatusRef != null;
+    
     public bool isToken = false;
     public IntSO price;
     [HideInInspector]

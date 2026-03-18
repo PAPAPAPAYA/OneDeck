@@ -235,6 +235,33 @@ public class CombatManager : MonoBehaviour
 		return combinedDeckZone.Count;
 	}
 
+	/// <summary>
+	/// 检查卡牌是否应该被效果跳过（Start Card 等中立卡）
+	/// 统一入口，方便后续扩展其他中立卡类型
+	/// </summary>
+	public static bool ShouldSkipEffectProcessing(CardScript card)
+	{
+		if (card == null) return true;
+		return card.IsNeutralCard;
+	}
+
+	/// <summary>
+	/// 获取牌组中实际参与效果计算的卡牌数量（排除 Start Card）
+	/// </summary>
+	public int GetEffectiveDeckSize()
+	{
+		int count = 0;
+		foreach (var card in combinedDeckZone)
+		{
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null && !cardScript.IsNeutralCard)
+			{
+				count++;
+			}
+		}
+		return count;
+	}
+
 	public void ResetCardsRevealedCount()
 	{
 		cardsRevealedThisRound = 0;

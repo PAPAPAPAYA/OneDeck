@@ -85,8 +85,8 @@ namespace DefaultNamespace.Managers
 				revealIndex = _revealIndex,
 				ownerHP = CombatManager.Me.ownerPlayerStatusRef?.hp ?? 0,
 				enemyHP = CombatManager.Me.enemyPlayerStatusRef?.hp ?? 0,
-				ownerDeckSize = CombatManager.Me.playerDeckParent?.transform.childCount ?? 0,
-				enemyDeckSize = CombatManager.Me.enemyDeckParent?.transform.childCount ?? 0,
+				ownerDeckSize = GetEffectiveDeckSize(true),
+				enemyDeckSize = GetEffectiveDeckSize(false),
 				roundNum = CombatManager.Me.roundNumRef?.value ?? 0
 			};
 
@@ -202,6 +202,30 @@ namespace DefaultNamespace.Managers
 			{
 				Debug.LogError($"[CombatStatsLogger] 导出 CSV 失败: {ex.Message}");
 			}
+		}
+
+		/// <summary>
+		/// 获取有效的卡组大小（排除 Start Card 等中立卡）
+		/// </summary>
+		private int GetEffectiveDeckSize(bool isOwner)
+		{
+			if (CombatManager.Me?.combinedDeckZone == null) return 0;
+			
+			var targetStatusRef = isOwner ? CombatManager.Me.ownerPlayerStatusRef : CombatManager.Me.enemyPlayerStatusRef;
+			int count = 0;
+			
+			foreach (var card in CombatManager.Me.combinedDeckZone)
+			{
+				if (card == null) continue;
+				var cardScript = card.GetComponent<CardScript>();
+				if (cardScript == null) continue;
+				// 跳过中立卡，只统计属于指定玩家的卡
+				if (!CombatManager.ShouldSkipEffectProcessing(cardScript) && cardScript.myStatusRef == targetStatusRef)
+				{
+					count++;
+				}
+			}
+			return count;
 		}
 
 		private int GetMaxRoundNum()

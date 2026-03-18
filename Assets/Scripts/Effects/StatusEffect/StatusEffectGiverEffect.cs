@@ -61,7 +61,14 @@ namespace DefaultNamespace.Effects
 			cardsToGiveTag = UtilityFuncManagerScript.ShuffleList(cardsToGiveTag);
 			for (var i = cardsToGiveTag.Count - 1; i >= 0; i--)
 			{
-				if (cardsToGiveTag[i].GetComponent<CardScript>().myStatusRef != myCardScript.myStatusRef)
+				var targetCardScript = cardsToGiveTag[i].GetComponent<CardScript>();
+				// 跳过中立卡和 Start Card
+				if (CombatManager.ShouldSkipEffectProcessing(targetCardScript))
+				{
+					cardsToGiveTag.RemoveAt(i);
+					continue;
+				}
+				if (targetCardScript.myStatusRef != myCardScript.myStatusRef)
 				{
 					if (target == EnumStorage.TargetType.Me) cardsToGiveTag.RemoveAt(i);
 				}

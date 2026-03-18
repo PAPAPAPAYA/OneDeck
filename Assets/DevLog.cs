@@ -2,6 +2,8 @@
 
 
 // todo
+// visual communication
+	// attack animation
 // game event:
 	// when a friendly token is added
 	// if next X cards contain friendly/hostile cards

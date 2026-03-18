@@ -109,7 +109,9 @@ public class HPAlterEffect : EffectScript
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript.myStatusRef == myCardScript.myStatusRef && 
+			// 跳过中立卡，只统计己方感染卡
+			if (!CombatManager.ShouldSkipEffectProcessing(cardScript) &&
+			    cardScript.myStatusRef == myCardScript.myStatusRef && 
 			    cardScript.myStatusEffects.Contains(EnumStorage.StatusEffect.Infected))
 			{
 				infectedCardCount++;

@@ -16,7 +16,8 @@ public class DelayCostEffect : EffectScript
 		for (int i = 0; i < combinedDeck.Count; i++)
 		{
 			var cardScript = combinedDeck[i].GetComponent<CardScript>();
-			if (cardScript.myStatusRef == myCardScript.myStatusRef)
+			// 跳过中立卡和 Start Card，只收集己方卡
+			if (!CombatManager.ShouldSkipEffectProcessing(cardScript) && cardScript.myStatusRef == myCardScript.myStatusRef)
 			{
 				myCards.Add(combinedDeck[i]);
 			}

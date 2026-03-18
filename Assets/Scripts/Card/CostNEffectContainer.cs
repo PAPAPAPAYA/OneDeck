@@ -154,7 +154,9 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript != null && cardScript.myStatusRef != _myCardScript.myStatusRef)
+			// 跳过中立卡和 Start Card
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+			if (cardScript.myStatusRef != _myCardScript.myStatusRef)
 			{
 				enemyCardFound++;
 				if (enemyCardFound >= enemyCardCount) break;

@@ -65,8 +65,9 @@ public class CardManipulationEffect : EffectScript
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
 		for (int i = cardsToSend.Count - 1; i >= 0; i--)
 		{
-			// take out opponent's cards
-			if (cardsToSend[i].GetComponent<CardScript>().myStatusRef != myCardScript.myStatusRef) // if card doesn't belong to this card's owner
+			// take out opponent's cards and neutral cards
+			var cardScript = cardsToSend[i].GetComponent<CardScript>();
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef)
 			{
 				cardsToSend.RemoveAt(i);
 			}
@@ -90,8 +91,9 @@ public class CardManipulationEffect : EffectScript
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
 		for (int i = cardsToSend.Count - 1; i >= 0; i--)
 		{
-			// take out card owner's cards
-			if (cardsToSend[i].GetComponent<CardScript>().myStatusRef == myCardScript.myStatusRef) // if card belongs to this card's owner
+			// take out card owner's cards and neutral cards
+			var cardScript = cardsToSend[i].GetComponent<CardScript>();
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef)
 			{
 				cardsToSend.RemoveAt(i);
 			}
@@ -164,7 +166,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card))
+			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card) || cardScript.isToken || CombatManager.ShouldSkipEffectProcessing(cardScript))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -185,7 +187,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isToken)
 			{
 				myCards.RemoveAt(i);
 			}
@@ -206,7 +208,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card))
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isToken)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -227,7 +229,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtTop(card))
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isToken)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -289,7 +291,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtBottom(card))
+			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtBottom(card) || cardScript.isToken || CombatManager.ShouldSkipEffectProcessing(cardScript))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -310,7 +312,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card))
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isToken)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -331,7 +333,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = theirCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isToken)
 			{
 				theirCards.RemoveAt(i);
 			}
@@ -352,7 +354,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card))
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isToken)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -413,6 +415,8 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = _combinedDeck[i];
 			var cardScript = card.GetComponent<CardScript>();
+			// 跳过中立卡和 Start Card
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			bool isOwner = cardScript.myStatusRef == myCardScript.myStatusRef;
 			// 只返回归属正确且在 index > 0 的卡（index 0 的卡无法 delay）
 			if (isOwner == isMyCards && i > 0)

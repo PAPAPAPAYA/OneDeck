@@ -23,6 +23,9 @@ public class TokenCostEffect : EffectScript
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 			
+			// 跳过中立卡和 Start Card
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+			
 			// 检查是否为 token 卡
 			if (!cardScript.isToken) continue;
 			
