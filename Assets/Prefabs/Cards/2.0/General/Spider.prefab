@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 6250979960499082615}
   - component: {fileID: 9220092470014319255}
   - component: {fileID: 5915105039437063472}
+  - component: {fileID: 6359990200739974032}
   m_Layer: 0
-  m_Name: deal dmg and delay
+  m_Name: deal dmg and bury
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -54,6 +55,18 @@ MonoBehaviour:
   preEffectEvent:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 6359990200739974032}
+        m_TargetAssemblyTypeName: TokenCostEffect, Assembly-CSharp
+        m_MethodName: ExecuteTokenCost
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 6250979960499082615}
         m_TargetAssemblyTypeName: DelayCostEffect, Assembly-CSharp
         m_MethodName: ExecuteDelayCost
@@ -83,7 +96,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 5915105039437063472}
         m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
-        m_MethodName: DelayTheirCards
+        m_MethodName: BuryTheirCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -93,6 +106,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &6359990200739974032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538812023556790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0567ac0cfac491449a3f470fd6cafdb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TokenCostEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+
 --- !u!114 &6250979960499082615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -184,17 +211,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SPIDER
-  cardDesc: 'Delay 1 hostile;
+  cardDesc: 'Bury 1 hostile;
 
     Deal 3 dmg '
   takeUpSpace: 1
   isStartCard: 0
+  isToken: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
   delayCost: 0
+  tokenCostCount: 1
+  tokenCostCardTypeID: 
+  tokenCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

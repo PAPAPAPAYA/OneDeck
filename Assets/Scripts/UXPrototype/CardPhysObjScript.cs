@@ -194,7 +194,7 @@ public class CardPhysObjScript : MonoBehaviour
 
 		// 显示 cost
 		cardCostPrint.gameObject.SetActive(true);
-		cardCostPrint.text = $"{cardImRepresenting.delayCost}";
+		cardCostPrint.text = $"{cardImRepresenting.tokenCostCount}";
 	}
 
 	/// <summary>

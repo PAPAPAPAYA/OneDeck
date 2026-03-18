@@ -37,6 +37,14 @@ public class CombatUXManager : MonoBehaviour
 	[Header("REVEAL")]
 	public Transform physicalCardRevealPos;
 	public Vector3 physicalCardRevealSize;
+	
+	[Header("DESTROY")]
+	[Tooltip("卡片销毁动画的目标位置（墓地位置）")]
+	public Transform gravePosition;
+	[Tooltip("卡片销毁动画持续时间")]
+	public float cardDestroyAnimDuration = 0.3f;
+	[Tooltip("卡片销毁时的目标大小")]
+	public Vector3 cardDestroyTargetSize = new Vector3(0.1f, 0.1f, 0.1f);
 
 	// 物理卡片列表（根�?combined deck zone 更新�?
 	public List<GameObject> physicalCardsInDeck = new();
@@ -284,7 +292,7 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 销毁指定的物理卡牌（用于移除单张卡）
+	/// 销毁指定的物理卡牌（立即销毁，无动画）
 	/// </summary>
 	public void DestroyPhysicalCard(GameObject physicalCard)
 	{
@@ -305,7 +313,79 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
+	/// 统一销毁卡片（带动画）：移动到 gravePosition 并缩小，然后销毁 physical 和 logical card
+	/// </summary>
+	/// <param name="logicalCard">逻辑卡牌 GameObject</param>
+	/// <param name="onComplete">动画完成回调</param>
+	public void DestroyCardWithAnimation(GameObject logicalCard, System.Action onComplete = null)
+	{
+		if (logicalCard == null)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		// 获取 CardScript
+		var cardScript = logicalCard.GetComponent<CardScript>();
+		if (cardScript == null)
+		{
+			// 没有 CardScript，直接销毁逻辑卡
+			Destroy(logicalCard);
+			onComplete?.Invoke();
+			return;
+		}
+
+		// 获取对应的 physical card
+		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+		
+		// 从 combined deck 中移除逻辑卡
+		if (combatManager != null && combatManager.combinedDeckZone.Contains(logicalCard))
+		{
+			combatManager.combinedDeckZone.Remove(logicalCard);
+		}
+
+		// 如果没有 physical card，直接销毁逻辑卡
+		if (physicalCard == null)
+		{
+			Destroy(logicalCard);
+			onComplete?.Invoke();
+			return;
+		}
+
+		// 从牌组列表和缓存中移除（防止动画期间被其他逻辑使用）
+		physicalCardsInDeck.Remove(physicalCard);
+		_cardScriptToPhysicalCache.Remove(cardScript);
+
+		// 创建退场动画
+		Sequence destroySequence = DOTween.Sequence();
+
+		// 移动到 grave position（如果设置了）
+		if (gravePosition != null)
+		{
+			destroySequence.Append(
+				physicalCard.transform.DOMove(gravePosition.position, cardDestroyAnimDuration)
+					.SetEase(Ease.InQuad)
+			);
+		}
+
+		// 缩小
+		destroySequence.Join(
+			physicalCard.transform.DOScale(cardDestroyTargetSize, cardDestroyAnimDuration)
+				.SetEase(Ease.InQuad)
+		);
+
+		// 动画完成后销毁
+		destroySequence.OnComplete(() =>
+		{
+			Destroy(physicalCard);
+			Destroy(logicalCard);
+			onComplete?.Invoke();
+		});
+	}
+
+	/// <summary>
 	/// 播放 Start Card 退场动画：移动到 newCardPos 并缩小，完成后执行回调
+	/// 注意：现在推荐使用 DestroyCardWithAnimation 作为统一的卡片销毁方法
 	/// </summary>
 	public void PlayStartCardExitAnimation(GameObject physicalCard, System.Action onComplete)
 	{

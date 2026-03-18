@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4188612179286784546}
   - component: {fileID: 5915337404688717014}
-  - component: {fileID: 6250979960499082615}
   - component: {fileID: 9220092470014319255}
+  - component: {fileID: 4566921597327136575}
   m_Layer: 0
   m_Name: deal dmg
   m_TagString: Untagged
@@ -53,9 +53,9 @@ MonoBehaviour:
   preEffectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6250979960499082615}
-        m_TargetAssemblyTypeName: DelayCostEffect, Assembly-CSharp
-        m_MethodName: ExecuteDelayCost
+      - m_Target: {fileID: 4566921597327136575}
+        m_TargetAssemblyTypeName: TokenCostEffect, Assembly-CSharp
+        m_MethodName: ExecuteTokenCost
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -80,19 +80,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6250979960499082615
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bbd5e06c579fc4145bdce72bf732b07a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DelayCostEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
 --- !u!114 &9220092470014319255
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,6 +96,19 @@ MonoBehaviour:
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
+--- !u!114 &4566921597327136575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538812023556790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0567ac0cfac491449a3f470fd6cafdb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TokenCostEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -156,16 +156,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: SOLDIER_1
+  cardTypeID: SOLDIER
   cardDesc: Deal 6 damage
   takeUpSpace: 1
   isStartCard: 0
+  isToken: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
-  delayCost: 1
+  delayCost: 0
+  tokenCostCount: 1
+  tokenCostCardTypeID: 
+  tokenCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

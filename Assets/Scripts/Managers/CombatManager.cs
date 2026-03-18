@@ -387,29 +387,15 @@ public class CombatManager : MonoBehaviour
 		// 3. 如果功能生效，从牌组中移除 Start Card
 		if (removeStartCardInsteadOfShuffle)
 		{
-			// 先找到对应的物理卡牌，播放退场动画
-			var startCardScript = startCard.GetComponent<CardScript>();
-			if (startCardScript != null)
+			// 使用统一销毁方法（带动画）
+			CombatUXManager.me.DestroyCardWithAnimation(startCard, onComplete: () =>
 			{
-				var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(startCardScript);
-				if (physicalCard != null)
-				{
-					// 播放退场动画：移动到 newCardPos 并缩小，动画完成后销毁
-					CombatUXManager.me.PlayStartCardExitAnimation(physicalCard, () =>
-					{
-						// 动画完成回调：从列表移除并销毁
-						CombatUXManager.me.DestroyPhysicalCard(physicalCard);
-					});
-				}
-			}
-			
-			// 从逻辑牌组中移除（物理卡牌等动画完成后再销毁）
-			combinedDeckZone.Remove(startCard);
-			Destroy(startCard);
+				// 刷新UI显示
+				_infoDisplayer.RefreshDeckInfo();
+			});
 			_startCardInstance = null;
 			
-			// 刷新UI显示（不包括 Start Card）
-			_infoDisplayer.RefreshDeckInfo();
+			// 同步剩余物理卡牌位置
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}

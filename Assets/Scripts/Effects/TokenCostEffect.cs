@@ -71,14 +71,17 @@ public class TokenCostEffect : EffectScript
 		eligibleCards = UtilityFuncManagerScript.ShuffleList(eligibleCards);
 		var cardsToConsume = eligibleCards.GetRange(0, costCount);
 
-		// 从卡组中移除这些卡（消耗）
+		// 从卡组中消耗这些卡（使用统一销毁方法，带动画）
+		int destroyedCount = 0;
 		foreach (var card in cardsToConsume)
 		{
-			combinedDeck.Remove(card);
-			Destroy(card);
+			CombatUXManager.me.DestroyCardWithAnimation(card, onComplete: () =>
+			{
+				destroyedCount++;
+			});
 		}
 
-		// 同步物理卡牌
+		// 同步剩余物理卡牌位置
 		if (cardsToConsume.Count > 0)
 		{
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
@@ -96,9 +99,9 @@ public class TokenCostEffect : EffectScript
 	{
 		return owner switch
 		{
-			EnumStorage.TargetType.Me => "ally",
-			EnumStorage.TargetType.Them => "enemy",
-			EnumStorage.TargetType.Random => "random",
+			EnumStorage.TargetType.Me => "ally token",
+			EnumStorage.TargetType.Them => "enemy token",
+			EnumStorage.TargetType.Random => "any token",
 			_ => ""
 		};
 	}

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 6250979960499082615}
   - component: {fileID: 7640080487421119321}
+  - component: {fileID: 2418524199761692650}
   m_Layer: 0
   m_Name: gain shield
   m_TagString: Untagged
@@ -53,6 +54,18 @@ MonoBehaviour:
   preEffectEvent:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 2418524199761692650}
+        m_TargetAssemblyTypeName: TokenCostEffect, Assembly-CSharp
+        m_MethodName: ExecuteTokenCost
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 6250979960499082615}
         m_TargetAssemblyTypeName: DelayCostEffect, Assembly-CSharp
         m_MethodName: ExecuteDelayCost
@@ -80,6 +93,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &2418524199761692650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538812023556790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0567ac0cfac491449a3f470fd6cafdb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TokenCostEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+
 --- !u!114 &6250979960499082615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,12 +185,16 @@ MonoBehaviour:
   cardDesc: Gain 5 shield
   takeUpSpace: 1
   isStartCard: 0
+  isToken: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
-  delayCost: 1
+  delayCost: 0
+  tokenCostCount: 1
+  tokenCostCardTypeID: 
+  tokenCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1590,7 +1590,7 @@ Transform:
   m_GameObject: {fileID: 490140364}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: -5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2427,7 +2427,7 @@ MonoBehaviour:
   playerDeckParent: {fileID: 1394699263}
   enemyDeckParent: {fileID: 1887081633}
   startCardPrefab: {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
-  removeStartCardInsteadOfShuffle: 1
+  removeStartCardInsteadOfShuffle: 0
   combinedDeckZone: []
   revealZone: {fileID: 0}
   awaitingRevealConfirm: 1
@@ -2438,7 +2438,7 @@ MonoBehaviour:
   overtimeRoundThreshold: 2
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
   fatigueAmount: 1
-  fatigueRevealThreshold: 20
+  fatigueRevealThreshold: 0
   totalCardsRevealed: 0
 --- !u!4 &1151980345
 Transform:
@@ -3189,6 +3189,9 @@ MonoBehaviour:
   physicalCardDeckSize: {x: 0.8, y: 0.8, z: 0.8}
   physicalCardRevealPos: {fileID: 521203768}
   physicalCardRevealSize: {x: 0.8, y: 0.8, z: 0.8}
+  gravePosition: {fileID: 490140365}
+  cardDestroyAnimDuration: 0.3
+  cardDestroyTargetSize: {x: 0.1, y: 0.1, z: 0.1}
   physicalCardsInDeck: []
   physicalCardInRevealZone: {fileID: 0}
 --- !u!1 &1457153432
@@ -5232,7 +5235,7 @@ Transform:
   m_GameObject: {fileID: 2043192993}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -6, z: 0}
+  m_LocalPosition: {x: 5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5356,19 +5359,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 6139060933710598446, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 211618715913053591, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1 &2103892655
 GameObject:
