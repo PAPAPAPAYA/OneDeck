@@ -22,6 +22,8 @@ Assets/
 │   │   ├── ShieldAlter.cs        # 护盾
 │   │   ├── CardManipulationEffect.cs # 放逐/置顶/置底
 │   │   ├── ChangeCardTarget.cs   # 换心
+│   │   ├── TokenCostEffect.cs    # Token Cost
+│   │   ├── BuryCostEffect.cs     # Bury Cost
 │   │   └── StatusEffect/         # 状态效果
 │   ├── Card/
 │   │   ├── CardScript.cs         # 卡牌数据
@@ -72,6 +74,7 @@ Assets/
 | `CheckCost_Revive(n)` | 需要 n 层复活 |
 | `CheckCost_HasEnemyCardInCombinedDeck(n)` | 需要 n 张敌方卡在牌组 |
 | `Token Cost` | 需要并从牌组中消耗 N 张指定类型的己方卡（见下文） |
+| `Bury Cost` | 发动时将 N 张己方卡置底（见下文） |
 
 ## 状态效果
 
@@ -108,6 +111,8 @@ enum Tag { None, Linger, ManaX }
 | `CardScript` | `Assets/Scripts/Card/CardScript.cs` |
 | `CostNEffectContainer` | `Assets/Scripts/Card/CostNEffectContainer.cs` |
 | `EffectScript` | `Assets/Scripts/Effects/EffectScript.cs` |
+| `TokenCostEffect` | `Assets/Scripts/Effects/TokenCostEffect.cs` |
+| `BuryCostEffect` | `Assets/Scripts/Effects/BuryCostEffect.cs` |
 | `GameEvent` | `Assets/Scripts/SOScripts/GameEvent.cs` |
 
 ## Token Cost 机制
@@ -126,6 +131,20 @@ Token Cost 是一种特殊的预效果代价（pre-effect cost）：
   - 符合条件的卡不足时，效果不发动
   - 多张符合条件时随机选择
 - **消耗**: 符合条件的卡从牌组中移除并销毁
+
+## Bury Cost 机制
+
+Bury Cost 是一种特殊的预效果代价（pre-effect cost）：
+
+- **配置位置**: `CardScript` 的 Bury Cost 相关字段
+  - `buryCost`: 需要置底的己方卡数量
+- **执行组件**: `BuryCostEffect` 挂载到 `CostNEffectContainer.preEffectEvent`
+- **规则**:
+  - 发动时从 `combinedDeckZone` 中寻找己方卡
+  - 排除当前正在发动的卡
+  - 己方卡不足时，效果不发动
+  - 多张符合条件时随机选择
+- **操作**: 符合条件的卡从牌组中移除并插入到底部（置底）
 
 ## 注意事项
 

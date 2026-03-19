@@ -41,6 +41,14 @@ public class CardScript : MonoBehaviour
     [Tooltip("发动时，将N张己方卡往后推迟1位")]
     public int delayCost;
 
+    [Header("Bury Cost")]
+    [Tooltip("发动时，将N张己方卡置底")]
+    public int buryCost;
+
+    [Header("Expose Cost")]
+    [Tooltip("发动时，将N张敌方卡置顶")]
+    public int exposeCost;
+
     [Header("Token Cost")]
     [Tooltip("发动时需要消耗的token卡数量")]
     public int tokenCostCount;

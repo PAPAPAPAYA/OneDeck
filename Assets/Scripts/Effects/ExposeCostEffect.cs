@@ -1,0 +1,63 @@
+using System.Collections.Generic;
+using DefaultNamespace.Managers;
+using UnityEngine;
+
+public class ExposeCostEffect : EffectScript
+{
+	public void ExecuteExposeCost()
+	{
+		int costCount = myCardScript.exposeCost;
+		if (costCount <= 0) return;
+
+		var combinedDeck = combatManager.combinedDeckZone;
+
+		// 收集敌方卡（排除中立卡）
+		var enemyCards = new List<GameObject>();
+		foreach (var card in combinedDeck)
+		{
+			if (card == null) continue;
+			
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+			
+			// 跳过中立卡（Start Card 等）
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+			
+			// 只收集敌方卡
+			if (cardScript.myStatusRef == myCardScript.myStatusRef) continue;
+			
+			enemyCards.Add(card);
+		}
+
+		// 软约束：能 expose 多少算多少
+		int actualCount = Mathf.Min(costCount, enemyCards.Count);
+		if (actualCount <= 0) return;
+
+		// 随机选择并置顶
+		enemyCards = UtilityFuncManagerScript.ShuffleList(enemyCards);
+		var cardsToExpose = enemyCards.GetRange(0, actualCount);
+		
+		var exposedCards = new List<GameObject>();
+		foreach (var card in cardsToExpose)
+		{
+			if (combinedDeck.Contains(card))
+			{
+				combinedDeck.Remove(card);
+				combinedDeck.Add(card);  // 添加到末尾 = 置顶
+				exposedCards.Add(card);
+				
+				var targetScript = card.GetComponent<CardScript>();
+				string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+				string targetColor = targetScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+				effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] expose cost: staged [<color={targetColor}>{targetScript.name}</color>] to top\n";
+			}
+		}
+
+		// 同步物理卡牌位置
+		if (exposedCards.Count > 0)
+		{
+			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+		}
+	}
+}
