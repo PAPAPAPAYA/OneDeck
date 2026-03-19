@@ -160,16 +160,16 @@ MonoBehaviour:
   cardDesc: Deal 2 dmg to self
   takeUpSpace: 1
   isStartCard: 0
-  isToken: 1
+  isMinion: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
   delayCost: 0
-  tokenCostCount: 0
-  tokenCostCardTypeID: 
-  tokenCostOwner: 0
+  minionCostCount: 0
+  minionCostCardTypeID: 
+  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

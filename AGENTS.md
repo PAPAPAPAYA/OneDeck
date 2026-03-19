@@ -22,7 +22,7 @@ Assets/
 │   │   ├── ShieldAlter.cs        # 护盾
 │   │   ├── CardManipulationEffect.cs # 放逐/置顶/置底
 │   │   ├── ChangeCardTarget.cs   # 换心
-│   │   ├── TokenCostEffect.cs    # Token Cost
+│   │   ├── MinionCostEffect.cs   # Minion Cost
 │   │   ├── BuryCostEffect.cs     # Bury Cost
 │   │   └── StatusEffect/         # 状态效果
 │   ├── Card/
@@ -111,22 +111,22 @@ enum Tag { None, Linger, ManaX }
 | `CardScript` | `Assets/Scripts/Card/CardScript.cs` |
 | `CostNEffectContainer` | `Assets/Scripts/Card/CostNEffectContainer.cs` |
 | `EffectScript` | `Assets/Scripts/Effects/EffectScript.cs` |
-| `TokenCostEffect` | `Assets/Scripts/Effects/TokenCostEffect.cs` |
+| `MinionCostEffect` | `Assets/Scripts/Effects/MinionCostEffect.cs` |
 | `BuryCostEffect` | `Assets/Scripts/Effects/BuryCostEffect.cs` |
 | `GameEvent` | `Assets/Scripts/SOScripts/GameEvent.cs` |
 
-## Token Cost 机制
+## Minion Cost 机制
 
-Token Cost 是一种特殊的预效果代价（pre-effect cost）：
+Minion Cost 是一种特殊的预效果代价（pre-effect cost）：
 
-- **配置位置**: `CardScript` 的 Token Cost 相关字段
-  - `tokenCostCount`: 需要消耗的卡数量
-  - `tokenCostCardTypeID`: 消耗的卡牌类型ID（如"fly"），空字符串表示不限制类型
-  - `tokenCostOwner`: 消耗的卡牌所属（`Me`=己方, `Them`=敌方, `Random`=任意）
-- **执行组件**: `TokenCostEffect` 挂载到 `CostNEffectContainer.preEffectEvent`
+- **配置位置**: `CardScript` 的 Minion Cost 相关字段
+  - `minionCostCount`: 需要消耗的卡数量
+  - `minionCostCardTypeID`: 消耗的卡牌类型ID（如"fly"），空字符串表示不限制类型
+  - `minionCostOwner`: 消耗的卡牌所属（`Me`=己方, `Them`=敌方, `Random`=任意）
+- **执行组件**: `MinionCostEffect` 挂载到 `CostNEffectContainer.preEffectEvent`
 - **规则**:
   - 发动时从 `combinedDeckZone` 中寻找符合条件的卡
-  - **必须满足**: `CardScript.isToken == true`（只有 token 卡能被消耗）
+  - **必须满足**: `CardScript.isMinion == true`（只有 minion 卡能被消耗）
   - 需同时满足所属和类型限制
   - 符合条件的卡不足时，效果不发动
   - 多张符合条件时随机选择

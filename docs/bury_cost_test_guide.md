@@ -190,7 +190,7 @@ CostNEffectContainer:
    - 测试法力不足时是否阻止发动
 
 2. **Bury Cost + Token Cost**
-   - 配置 `buryCost = 1` 和 `tokenCostCount = 1`
+   - 配置 `buryCost = 1` 和 `minionCostCount = 1`
    - 测试两种 cost 的执行顺序
 
 3. **Bury Cost + Delay Cost**

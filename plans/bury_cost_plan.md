@@ -13,7 +13,7 @@
 | Mana Cost | `checkCostEvent` | `CheckCost_Mana(n)` | 检查型：只检查条件 |
 | Revive Cost | `checkCostEvent` | `CheckCost_Revive(n)` | 检查型：只检查条件 |
 | Rest Cost | `checkCostEvent` | `CheckCost_Rested()` | 检查型：消耗状态 |
-| Token Cost | `preEffectEvent` | `TokenCostEffect` | 执行型：实际消耗卡牌 |
+| Minion Cost | `preEffectEvent` | `MinionCostEffect` | 执行型：实际消耗卡牌 |
 | **Bury Cost** | `preEffectEvent` | `BuryCostEffect` | 执行型：实际移动卡牌 |
 
 ### 为什么选择 preEffectEvent？
@@ -183,6 +183,6 @@ CostNEffectContainer:
 - `Assets/Scripts/Card/CardScript.cs` - 添加 buryCost 字段
 - `Assets/Scripts/Effects/BuryCostEffect.cs` - 新建文件
 - `Assets/Scripts/Card/CostNEffectContainer.cs` - 参考实现模式
-- `Assets/Scripts/Effects/TokenCostEffect.cs` - 参考实现模式
+- `Assets/Scripts/Effects/MinionCostEffect.cs` - 参考实现模式
 - `Assets/Scripts/Effects/CardManipulationEffect.cs` - 参考 bury 逻辑
 - `AGENTS.md` - 更新文档

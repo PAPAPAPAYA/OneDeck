@@ -160,7 +160,7 @@ MonoBehaviour:
   cardDesc: Deal 3 damage
   takeUpSpace: 1
   isStartCard: 0
-  isToken: 1
+  isMinion: 1
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}

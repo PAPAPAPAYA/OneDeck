@@ -26,7 +26,7 @@ public class CardScript : MonoBehaviour
     /// </summary>
     public bool CanBeAffectedByEffects => !IsNeutralCard && myStatusRef != null;
     
-    public bool isToken = false;
+    public bool isMinion = false;
     public IntSO price;
     [HideInInspector]
     public PlayerStatusSO myStatusRef;
@@ -49,13 +49,13 @@ public class CardScript : MonoBehaviour
     [Tooltip("发动时，将N张敌方卡置顶")]
     public int exposeCost;
 
-    [Header("Token Cost")]
-    [Tooltip("发动时需要消耗的token卡数量")]
-    public int tokenCostCount;
-    [Tooltip("消耗的token卡类型ID（如'fly'），空字符串表示不限制类型")]
-    public string tokenCostCardTypeID;
-    [Tooltip("消耗的token卡所属：Me=己方, Them=敌方, Random=随机")]
-    public EnumStorage.TargetType tokenCostOwner = EnumStorage.TargetType.Me;
+    [Header("Minion Cost")]
+    [Tooltip("发动时需要消耗的minion卡数量")]
+    public int minionCostCount;
+    [Tooltip("消耗的minion卡类型ID（如'fly'），空字符串表示不限制类型")]
+    public string minionCostCardTypeID;
+    [Tooltip("消耗的minion卡所属：Me=己方, Them=敌方, Random=随机")]
+    public EnumStorage.TargetType minionCostOwner = EnumStorage.TargetType.Me;
 
     private void OnEnable()
     {

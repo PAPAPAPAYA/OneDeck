@@ -55,8 +55,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2418524199761692650}
-        m_TargetAssemblyTypeName: TokenCostEffect, Assembly-CSharp
-        m_MethodName: ExecuteTokenCost
+        m_TargetAssemblyTypeName: MinionCostEffect, Assembly-CSharp
+        m_MethodName: ExecuteMinionCost
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -104,7 +104,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0567ac0cfac491449a3f470fd6cafdb6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TokenCostEffect
+  m_EditorClassIdentifier: Assembly-CSharp::MinionCostEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
 
 --- !u!114 &6250979960499082615
@@ -185,16 +185,16 @@ MonoBehaviour:
   cardDesc: Gain 5 shield
   takeUpSpace: 1
   isStartCard: 0
-  isToken: 0
+  isMinion: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
   delayCost: 0
-  tokenCostCount: 1
-  tokenCostCardTypeID: 
-  tokenCostOwner: 0
+  minionCostCount: 1
+  minionCostCardTypeID: 
+  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -160,7 +160,7 @@ MonoBehaviour:
   cardDesc: deal 6 dmg
   takeUpSpace: 1
   isStartCard: 0
-  isToken: 0
+  isMinion: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
@@ -169,9 +169,9 @@ MonoBehaviour:
   delayCost: 0
   buryCost: 0
   exposeCost: 1
-  tokenCostCount: 0
-  tokenCostCardTypeID: 
-  tokenCostOwner: 0
+  minionCostCount: 0
+  minionCostCardTypeID: 
+  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

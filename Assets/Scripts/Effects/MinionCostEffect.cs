@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using UnityEngine;
 
-public class TokenCostEffect : EffectScript
+public class MinionCostEffect : EffectScript
 {
-	public void ExecuteTokenCost()
+	public void ExecuteMinionCost()
 	{
-		int costCount = myCardScript.tokenCostCount;
-		string costCardTypeID = myCardScript.tokenCostCardTypeID;
-		var costOwner = myCardScript.tokenCostOwner;
+		int costCount = myCardScript.minionCostCount;
+		string costCardTypeID = myCardScript.minionCostCardTypeID;
+		var costOwner = myCardScript.minionCostOwner;
 
 		if (costCount <= 0) return;
 
@@ -26,8 +26,8 @@ public class TokenCostEffect : EffectScript
 			// 跳过中立卡和 Start Card
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
-			// 检查是否为 token 卡
-			if (!cardScript.isToken) continue;
+			// 检查是否为 minion 卡
+			if (!cardScript.isMinion) continue;
 			
 			// 检查所属玩家
 			bool isMyCard = cardScript.myStatusRef == myCardScript.myStatusRef;
@@ -95,16 +95,16 @@ public class TokenCostEffect : EffectScript
 		string ownerColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 		string cardTypeInfo = string.IsNullOrEmpty(costCardTypeID) ? "card(s)" : $"[{costCardTypeID}]";
 		string consumedOwnerInfo = GetOwnerDescription(costOwner);
-		effectResultString.value += $"// [<color={ownerColor}>{myCard.name}</color>] token cost: consumed <color=yellow>{cardsToConsume.Count}</color> {consumedOwnerInfo} {cardTypeInfo}\n";
+		effectResultString.value += $"// [<color={ownerColor}>{myCard.name}</color>] minion cost: consumed <color=yellow>{cardsToConsume.Count}</color> {consumedOwnerInfo} {cardTypeInfo}\n";
 	}
 
 	private string GetOwnerDescription(EnumStorage.TargetType owner)
 	{
 		return owner switch
 		{
-			EnumStorage.TargetType.Me => "ally token",
-			EnumStorage.TargetType.Them => "enemy token",
-			EnumStorage.TargetType.Random => "any token",
+			EnumStorage.TargetType.Me => "ally minion",
+			EnumStorage.TargetType.Them => "enemy minion",
+			EnumStorage.TargetType.Random => "any minion",
 			_ => ""
 		};
 	}

@@ -166,7 +166,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card) || cardScript.isToken || CombatManager.ShouldSkipEffectProcessing(cardScript))
+			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -187,7 +187,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isToken)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion)
 			{
 				myCards.RemoveAt(i);
 			}
@@ -208,7 +208,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isToken)
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -229,7 +229,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isToken)
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -291,7 +291,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtBottom(card) || cardScript.isToken || CombatManager.ShouldSkipEffectProcessing(cardScript))
+			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtBottom(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -312,7 +312,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isToken)
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -333,7 +333,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = theirCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isToken)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
 			{
 				theirCards.RemoveAt(i);
 			}
@@ -354,7 +354,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isToken)
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -462,73 +462,73 @@ public class CardManipulationEffect : EffectScript
 	}
 	#endregion
 	
-	#region DESTROY TOKEN
+	#region DESTROY MINION
 	/// <summary>
-	/// 销毁指定数量的己方 Token 卡
+	/// 销毁指定数量的己方 Minion 卡
 	/// </summary>
-	public void DestroyMyTokens(int amount)
+	public void DestroyMyMinions(int amount)
 	{
-		var tokens = GetTokensByOwner(isMyTokens: true);
-		ExecuteDestroyTokens(tokens, amount);
+		var minions = GetMinionsByOwner(isMyMinions: true);
+		ExecuteDestroyMinions(minions, amount);
 	}
 	
 	/// <summary>
-	/// 销毁指定数量的敌方 Token 卡
+	/// 销毁指定数量的敌方 Minion 卡
 	/// </summary>
-	public void DestroyTheirTokens(int amount)
+	public void DestroyTheirMinions(int amount)
 	{
-		var tokens = GetTokensByOwner(isMyTokens: false);
-		ExecuteDestroyTokens(tokens, amount);
+		var minions = GetMinionsByOwner(isMyMinions: false);
+		ExecuteDestroyMinions(minions, amount);
 	}
 	
 	/// <summary>
-	/// 销毁指定数量的任意 Token 卡（随机选择）
+	/// 销毁指定数量的任意 Minion 卡（随机选择）
 	/// </summary>
-	public void DestroyRandomTokens(int amount)
+	public void DestroyRandomMinions(int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
-		var tokens = new List<GameObject>();
+		var minions = new List<GameObject>();
 		
 		foreach (var card in _combinedDeck)
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript == null) continue;
-			if (cardScript.isToken)
+			if (cardScript.isMinion)
 			{
-				tokens.Add(card);
+				minions.Add(card);
 			}
 		}
 		
-		ExecuteDestroyTokens(tokens, amount);
+		ExecuteDestroyMinions(minions, amount);
 	}
 	
 	/// <summary>
-	/// 销毁指定数量的指定 Tag 的 Token 卡
+	/// 销毁指定数量的指定 Tag 的 Minion 卡
 	/// </summary>
-	public void DestroyTokensWithTag(int amount)
+	public void DestroyMinionsWithTag(int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
-		var tokensWithTag = new List<GameObject>();
+		var minionsWithTag = new List<GameObject>();
 		
 		foreach (var card in _combinedDeck)
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript == null) continue;
-			if (cardScript.isToken && cardScript.myTags.Contains(tagToCheck))
+			if (cardScript.isMinion && cardScript.myTags.Contains(tagToCheck))
 			{
-				tokensWithTag.Add(card);
+				minionsWithTag.Add(card);
 			}
 		}
 		
-		ExecuteDestroyTokens(tokensWithTag, amount);
+		ExecuteDestroyMinions(minionsWithTag, amount);
 	}
 	
 	/// <summary>
-	/// 获取指定归属的 Token 卡列表
+	/// 获取指定归属的 Minion 卡列表
 	/// </summary>
-	private List<GameObject> GetTokensByOwner(bool isMyTokens)
+	private List<GameObject> GetMinionsByOwner(bool isMyMinions)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
 		var result = new List<GameObject>();
@@ -538,10 +538,10 @@ public class CardManipulationEffect : EffectScript
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript == null) continue;
-			if (!cardScript.isToken) continue;
+			if (!cardScript.isMinion) continue;
 			
 			bool isOwner = cardScript.myStatusRef == myCardScript.myStatusRef;
-			if (isOwner == isMyTokens)
+			if (isOwner == isMyMinions)
 			{
 				result.Add(card);
 			}
@@ -551,27 +551,27 @@ public class CardManipulationEffect : EffectScript
 	}
 	
 	/// <summary>
-	/// 执行销毁 Token 卡（带动画）
+	/// 执行销毁 Minion 卡（带动画）
 	/// </summary>
-	private void ExecuteDestroyTokens(List<GameObject> tokens, int amount)
+	private void ExecuteDestroyMinions(List<GameObject> minions, int amount)
 	{
-		if (amount <= 0 || tokens.Count == 0) return;
+		if (amount <= 0 || minions.Count == 0) return;
 		
-		tokens = UtilityFuncManagerScript.ShuffleList(tokens);
-		amount = Mathf.Min(amount, tokens.Count);
+		minions = UtilityFuncManagerScript.ShuffleList(minions);
+		amount = Mathf.Min(amount, minions.Count);
 		
 		string myColor = GetMyCardColorTag();
 		
 		for (int i = 0; i < amount; i++)
 		{
-			var token = tokens[i];
-			var tokenScript = token.GetComponent<CardScript>();
-			string tokenColor = GetCardColorTag(token);
+			var minion = minions[i];
+			var minionScript = minion.GetComponent<CardScript>();
+			string minionColor = GetCardColorTag(minion);
 			
 			// 使用统一销毁方法（带动画）
-			CombatUXManager.me.DestroyCardWithAnimation(token);
+			CombatUXManager.me.DestroyCardWithAnimation(minion);
 			
-			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] destroyed token [<color={tokenColor}>{tokenScript.name}</color>]\n";
+			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] destroyed minion [<color={minionColor}>{minionScript.name}</color>]\n";
 		}
 		
 		// 同步剩余物理卡牌位置
