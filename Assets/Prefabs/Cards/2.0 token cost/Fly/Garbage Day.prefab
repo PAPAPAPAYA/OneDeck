@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 4188612179286784546}
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 6250979960499082615}
-  - component: {fileID: 9220092470014319255}
   - component: {fileID: 450466735166336877}
+  - component: {fileID: 8335702443193652419}
   m_Layer: 0
-  m_Name: deal dmg and add a fly
+  m_Name: stage 1 friendly and add a fly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69,14 +69,14 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 9220092470014319255}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
+      - m_Target: {fileID: 8335702443193652419}
+        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
+        m_MethodName: StageMyCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -106,22 +106,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DelayCostEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
---- !u!114 &9220092470014319255
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
-  dmgAmountAlter: 0
-  healAmountAlter: 0
 --- !u!114 &450466735166336877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,6 +119,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AddTempCard
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+--- !u!114 &8335702443193652419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538812023556790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefb24a8c10cb53439f7e7db22e3daec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardManipulationEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  tagToCheck: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -147,7 +145,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
   m_Layer: 0
-  m_Name: Garbage Punch
+  m_Name: Garbage Day
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -182,10 +180,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: GARBAGE_PUNCH
+  cardTypeID: GARBAGE_DAY
   cardDesc: 'Add 1 [Fly];
 
-    Deal 4 dmg'
+    Stage 1 friendly'
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

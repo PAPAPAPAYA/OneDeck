@@ -31,6 +31,7 @@ public class CombatUXManager : MonoBehaviour
 	[Header("DECK")]
 	public GameObject physicalCardPrefab;
 	public GameObject startCardPhysicalPrefab; // Start Card 的物理预制体（外观不同）
+	public GameObject minionPhysicalPrefab; // Minion 卡片的物理预制体（外观不同）
 	public Transform physicalCardDeckPos;
 	public Vector3 physicalCardDeckSize;
 
@@ -682,8 +683,16 @@ public class CombatUXManager : MonoBehaviour
 	{
 		CardScript cardScript = logicalCard.GetComponent<CardScript>();
 
+		// 根据卡片类型选择预制体
+		GameObject prefabToUse = physicalCardPrefab;
+		if (cardScript != null)
+		{
+			if (cardScript.isMinion)
+				prefabToUse = minionPhysicalPrefab;
+		}
+
 		// 创建物理卡片
-		GameObject newPhysicalCard = Instantiate(physicalCardPrefab);
+		GameObject newPhysicalCard = Instantiate(prefabToUse);
 		CardPhysObjScript physScript = newPhysicalCard.GetComponent<CardPhysObjScript>();
 
 		physScript.cardImRepresenting = cardScript;
@@ -722,10 +731,15 @@ public class CombatUXManager : MonoBehaviour
 		{
 			CardScript cardScript = card.GetComponent<CardScript>();
 			
-			// Start Card 使用专门的预制体
-			GameObject prefabToUse = (cardScript != null && cardScript.isStartCard) 
-				? startCardPhysicalPrefab 
-				: physicalCardPrefab;
+			// 根据卡片类型选择预制体
+			GameObject prefabToUse = physicalCardPrefab;
+			if (cardScript != null)
+			{
+				if (cardScript.isStartCard)
+					prefabToUse = startCardPhysicalPrefab;
+				else if (cardScript.isMinion)
+					prefabToUse = minionPhysicalPrefab;
+			}
 			
 			GameObject newPhysicalCard = Instantiate(prefabToUse);
 			CardPhysObjScript physScript = newPhysicalCard.GetComponent<CardPhysObjScript>();

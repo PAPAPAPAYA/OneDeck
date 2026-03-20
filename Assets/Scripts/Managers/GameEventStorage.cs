@@ -26,4 +26,7 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onTheirPlayerShieldUpped;
 	public GameEvent afterShuffle; // used for effects that put cards on top or bottom
 	public GameEvent beforeRoundStart; // used for effects that activate once in a round
+	
+	[Header("minion related")]
+	public GameEvent onFriendlyMinionAdded; // 当友方minion被添加到卡组中时触发
 }

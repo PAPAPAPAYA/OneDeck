@@ -122,6 +122,39 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
+	/// 根据combinedDeckZone和revealZone中友方指定cardTypeID的卡牌数量减少对方生命值
+	/// </summary>
+	/// <param name="cardTypeID">要统计的卡牌类型ID</param>
+	public void DecreaseTheirHp_BasedOnFriendlyCardTypeCount(string cardTypeID)
+	{
+		var cardCount = 0;
+		
+		// 合并两个区域到临时列表
+		List<GameObject> allCards = new();
+		UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, allCards, false);
+		if (combatManager.revealZone != null)
+		{
+			allCards.Add(combatManager.revealZone);
+		}
+		
+		// 遍历所有卡片统计指定类型的友方卡牌数量
+		foreach (var card in allCards)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			// 跳过中立卡，只统计己方指定类型的卡
+			if (!CombatManager.ShouldSkipEffectProcessing(cardScript) &&
+			    cardScript.myStatusRef == myCardScript.myStatusRef && 
+			    cardScript.cardTypeID == cardTypeID)
+			{
+				cardCount++;
+			}
+		}
+		
+		DecreaseTheirHp(cardCount);
+	}
+
+	/// <summary>
 	/// 减少对方生命值（考虑额外伤害）
 	/// </summary>
 	/// <param name="extraDmg">额外伤害数值</param>

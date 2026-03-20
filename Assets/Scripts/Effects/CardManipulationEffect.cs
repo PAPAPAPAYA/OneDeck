@@ -197,6 +197,27 @@ public class CardManipulationEffect : EffectScript
 		StageChosenCards(myCards, amount);
 	}
 
+	public void StageMyTokens(int amount)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var myTokens = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myTokens, true);
+
+		// Filter: 己方 Minion 卡，且不在顶部
+		for (int i = myTokens.Count - 1; i >= 0; i--)
+		{
+			var card = myTokens[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || !cardScript.isMinion)
+			{
+				myTokens.RemoveAt(i);
+			}
+		}
+
+		myTokens = UtilityFuncManagerScript.ShuffleList(myTokens);
+		StageChosenCards(myTokens, amount);
+	}
+
 	public void StageMyCardsWithTag(int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
@@ -237,6 +258,42 @@ public class CardManipulationEffect : EffectScript
 
 		cardsWithTag = UtilityFuncManagerScript.ShuffleList(cardsWithTag);
 		StageChosenCards(cardsWithTag, amount);
+	}
+
+	/// <summary>
+	/// Stage 所有符合条件的己方 Minion 卡
+	/// </summary>
+	/// <param name="targetCardTypeID">目标卡牌类型ID，为空字符串时匹配所有己方 Minion 卡</param>
+	public void StageAllFriendlyMinion(string targetCardTypeID)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var friendlyMinions = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, friendlyMinions, true);
+
+		// Filter: 己方 Minion 卡，且不在顶部
+		for (int i = friendlyMinions.Count - 1; i >= 0; i--)
+		{
+			var card = friendlyMinions[i];
+			var cardScript = card.GetComponent<CardScript>();
+			
+			// 排除非 Minion 卡、非己方卡、已在顶部的卡、以及需要跳过的卡
+			if (!cardScript.isMinion || 
+			    CombatManager.ShouldSkipEffectProcessing(cardScript) || 
+			    cardScript.myStatusRef != myCardScript.myStatusRef || 
+			    IsCardAtTop(card))
+			{
+				friendlyMinions.RemoveAt(i);
+				continue;
+			}
+			
+			// 如果指定了 card type id，则只匹配对应类型的卡
+			if (!string.IsNullOrEmpty(targetCardTypeID) && cardScript.cardTypeID != targetCardTypeID)
+			{
+				friendlyMinions.RemoveAt(i);
+			}
+		}
+
+		StageChosenCards(friendlyMinions, friendlyMinions.Count);
 	}
 
 	private void StageChosenCards(List<GameObject> cardsToStage, int amount)

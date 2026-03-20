@@ -181,7 +181,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GARBAGE_SHOVEL
-  cardDesc: 'Add 1 [Fly: deal 3 dmg];
+  cardDesc: 'Add 1 [Fly];
 
     Bury 1 hostile'
   takeUpSpace: 1
@@ -193,6 +193,8 @@ MonoBehaviour:
   myStatusEffects: 
   myTags: 
   delayCost: 0
+  buryCost: 0
+  exposeCost: 0
   minionCostCount: 0
   minionCostCardTypeID: 
   minionCostOwner: 0

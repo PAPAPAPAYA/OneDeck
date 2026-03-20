@@ -166,7 +166,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GARBAGE_PILE
-  cardDesc: 'Add 2 [Fly: Deal 3 dmg]'
+  cardDesc: 'Add 2 [Fly]'
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -176,6 +176,8 @@ MonoBehaviour:
   myStatusEffects: 
   myTags: 
   delayCost: 0
+  buryCost: 0
+  exposeCost: 0
   minionCostCount: 0
   minionCostCardTypeID: 
   minionCostOwner: 0

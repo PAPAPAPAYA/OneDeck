@@ -4,6 +4,9 @@
 // todo
 // visual communication
 	// attack animation
+	// status effect
+	// stage and bury
+	// minion
 // game event:
 	// when a friendly token is added
 	// if next X cards contain friendly/hostile cards

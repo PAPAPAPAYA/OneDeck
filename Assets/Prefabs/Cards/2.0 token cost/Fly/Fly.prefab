@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4188612179286784546}
   - component: {fileID: 5915337404688717014}
-  - component: {fileID: 6250979960499082615}
   - component: {fileID: 9220092470014319255}
+  - component: {fileID: 1640488054365647725}
   m_Layer: 0
   m_Name: deal dmg
   m_TagString: Untagged
@@ -52,19 +52,7 @@ MonoBehaviour:
       m_Calls: []
   preEffectEvent:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 6250979960499082615}
-        m_TargetAssemblyTypeName: DelayCostEffect, Assembly-CSharp
-        m_MethodName: ExecuteDelayCost
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -75,24 +63,24 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: -1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1640488054365647725}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.StatusEffectGiverEffect,
+          Assembly-CSharp
+        m_MethodName: GiveStatusEffect
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6250979960499082615
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bbd5e06c579fc4145bdce72bf732b07a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DelayCostEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
 --- !u!114 &9220092470014319255
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,6 +97,26 @@ MonoBehaviour:
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
+--- !u!114 &1640488054365647725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538812023556790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectGiverEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  myStatusEffectResolverScript: {fileID: 6584689119450628697, guid: ce66d12c9101d9c45b6890df62231e21, type: 3}
+  canStatusEffectBeStacked: 1
+  statusEffectToGive: 1
+  statusEffectToCount: 0
+  spreadEvenly: 0
+  target: 1
+  includeSelf: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -157,7 +165,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: FLY
-  cardDesc: Deal 3 damage
+  cardDesc: 'Apply 1 [infected];
+
+    Deal 1 dmg'
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 1
@@ -167,6 +177,11 @@ MonoBehaviour:
   myStatusEffects: 
   myTags: 
   delayCost: 0
+  buryCost: 0
+  exposeCost: 0
+  minionCostCount: 0
+  minionCostCardTypeID: 
+  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0
