@@ -29,4 +29,7 @@ public class GameEventStorage : MonoBehaviour
 	
 	[Header("minion related")]
 	public GameEvent onFriendlyMinionAdded; // 当友方minion被添加到卡组中时触发
+	
+	[Header("exile related")]
+	public GameEvent onFriendlyFlyExiled; // 当友方fly被放逐时触发（包括作为minion cost被消耗）
 }

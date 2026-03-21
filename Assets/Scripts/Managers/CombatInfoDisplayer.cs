@@ -171,6 +171,21 @@ public class CombatInfoDisplayer : MonoBehaviour
 			statusEffectInfo += "[" + powerAmount + " Power]";
 		}
 
+		// show counter status effect
+		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Counter))
+		{
+			var counterAmount = 0;
+			foreach (var myTag in card.myStatusEffects)
+			{
+				if (myTag == EnumStorage.StatusEffect.Counter)
+				{
+					counterAmount++;
+				}
+			}
+
+			statusEffectInfo += "[" + counterAmount + " Counter]";
+		}
+
 		if (card.myStatusEffects.Count > 0)
 		{
 			statusEffectInfo += " ";

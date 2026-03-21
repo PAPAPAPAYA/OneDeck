@@ -180,5 +180,19 @@ public class CostNEffectContainer : MonoBehaviour
 		return;
 	}
 
+	/// <summary>
+	/// Check if the card has at least [counterRequired] Counter status effects.
+	/// Used for effects that require a specific count to trigger.
+	/// </summary>
+	/// <param name="counterRequired">Required number of Counter status effects</param>
+	public void CheckCost_Counter(int counterRequired)
+	{
+		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, counterRequired, EnumStorage.StatusEffect.Counter)) return; // if check succeeded, do nothing
+		// if check failed, process
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
+		effectResultString.value += "// Not enough [Counter] to activate [" + _myCardScript.gameObject.name + "] (need " + counterRequired + ")\n";
+	}
+
 	#endregion
 }

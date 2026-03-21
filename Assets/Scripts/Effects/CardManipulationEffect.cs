@@ -7,6 +7,11 @@ using UnityEngine;
 
 public class CardManipulationEffect : EffectScript
 {
+	/// <summary>
+	/// 最后一次被放逐的卡的 cardTypeID（用于 EventCounter 过滤）
+	/// </summary>
+
+	
 	private List<GameObject> _combinedDeck;
 
 	[Header("Tag Configuration")]

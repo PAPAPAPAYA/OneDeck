@@ -32,7 +32,8 @@ public class EnumStorage : MonoBehaviour
 		HeartChanged,
 		Power,
 		Rest,
-		Revive
+		Revive,
+		Counter
 	}
 
 	public enum Tag

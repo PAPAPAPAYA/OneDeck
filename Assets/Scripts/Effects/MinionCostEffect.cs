@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using UnityEngine;
 
+// CardManipulationEffect 和 GameEventStorage 在全局命名空间
+
 public class MinionCostEffect : EffectScript
 {
 	public void ExecuteMinionCost()
@@ -78,6 +80,26 @@ public class MinionCostEffect : EffectScript
 		int destroyedCount = 0;
 		foreach (var card in cardsToConsume)
 		{
+			var cardScript = card.GetComponent<CardScript>();
+			bool isMyCard = cardScript.myStatusRef == myCardScript.myStatusRef;
+			
+			// 触发 OnFriendlyFlyExiled 事件（如果是友方fly卡）
+			// 根据被消耗fly的归属触发对应一方的事件：玩家方用RaiseOwner，敌方用RaiseOpponent
+			if (isMyCard && cardScript.cardTypeID == "FLY")
+			{
+				if (GameEventStorage.me.onFriendlyFlyExiled != null)
+				{
+					if (cardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+					{
+						GameEventStorage.me.onFriendlyFlyExiled.RaiseOwner();
+					}
+					else
+					{
+						GameEventStorage.me.onFriendlyFlyExiled.RaiseOpponent();
+					}
+				}
+			}
+			
 			CombatUXManager.me.DestroyCardWithAnimation(card, onComplete: () =>
 			{
 				destroyedCount++;

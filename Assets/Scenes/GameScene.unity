@@ -1474,6 +1474,7 @@ MonoBehaviour:
   afterShuffle: {fileID: 11400000, guid: fe87bc9a909276b4dabe1bf8aa01d8a4, type: 2}
   beforeRoundStart: {fileID: 11400000, guid: cde884b6e17c9e24b90d185b1c96604e, type: 2}
   onFriendlyMinionAdded: {fileID: 11400000, guid: 3d27fd3b0bb6feb4e85567151942425d, type: 2}
+  onFriendlyFlyExiled: {fileID: 11400000, guid: ee1cc5fc8ade8b44c9881c4183ed874f, type: 2}
 --- !u!1 &478120491
 GameObject:
   m_ObjectHideFlags: 0
@@ -5361,19 +5362,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 6139060933710598446, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 211618715913053591, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1 &2103892655
 GameObject:
@@ -5528,19 +5517,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 462548236884014055, guid: eeb3a0e8ad38bde4bbb3e38649ac4b2d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 7040174424018638698, guid: eeb3a0e8ad38bde4bbb3e38649ac4b2d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 4542468540519380595, guid: eeb3a0e8ad38bde4bbb3e38649ac4b2d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 8714104771823861607, guid: eeb3a0e8ad38bde4bbb3e38649ac4b2d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eeb3a0e8ad38bde4bbb3e38649ac4b2d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

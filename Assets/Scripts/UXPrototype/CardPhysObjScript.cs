@@ -783,4 +783,18 @@ public class CardPhysObjScript : MonoBehaviour
 		_isShaking = false;
 		_currentShakeInstance = null;
 	}
+
+	private void OnDestroy()
+	{
+		// 停止所有 DOTween 动画，防止对象销毁后动画仍尝试访问
+		_positionTween?.Kill();
+		_scaleTween?.Kill();
+		_currentSpecialTween?.Kill();
+		_currentDeckGroupTween?.Kill();
+
+		_positionTween = null;
+		_scaleTween = null;
+		_currentSpecialTween = null;
+		_currentDeckGroupTween = null;
+	}
 }
