@@ -78,6 +78,9 @@ public class CombatManager : MonoBehaviour
 
 	public void ExitCombat()
 	{
+		// 停止所有攻击动画
+		AttackAnimationManager.me?.StopAllAttackAnimations();
+		
 		// clean up ui
 		_infoDisplayer.ClearInfo();
 		// clean up combined deck
@@ -267,9 +270,27 @@ public class CombatManager : MonoBehaviour
 		cardsRevealedThisRound = 0;
 	}
 
+	/// <summary>
+	/// 等待攻击动画完成后再揭晓下一张
+	/// </summary>
+	private System.Collections.IEnumerator WaitForAttackAnimationsBeforeNextReveal()
+	{
+		// 如果有待播放的攻击动画，等待
+		while (AttackAnimationManager.me != null && AttackAnimationManager.me.HasPendingAnimations())
+		{
+			yield return null;
+		}
+	}
+
 	private void RevealCards()
 	{
 		if (blockPlayerInput) return;
+		
+		// 如果正在播放攻击动画，等待
+		if (AttackAnimationManager.me != null && AttackAnimationManager.me.isPlayingAttackAnimation)
+		{
+			return;
+		}
 
 		_infoDisplayer.RefreshDeckInfo();
 
@@ -342,6 +363,9 @@ public class CombatManager : MonoBehaviour
 			
 			awaitingRevealConfirm = true;
 			EffectChainManager.Me.CloseOpenedChain();
+			
+			// 等待所有攻击动画完成后再允许下一步操作
+			StartCoroutine(WaitForAttackAnimationsBeforeNextReveal());
 		}
 	}
 

@@ -146,6 +146,37 @@ Bury Cost 是一种特殊的预效果代价（pre-effect cost）：
   - 多张符合条件时随机选择
 - **操作**: 符合条件的卡从牌组中移除并插入到底部（置底）
 
+## 攻击动画系统
+
+### 组件
+| 组件 | 路径 | 说明 |
+|------|------|------|
+| `AttackAnimationManager` | `Assets/Scripts/Managers/AttackAnimationManager.cs` | 管理攻击动画队列 |
+
+### 动画流程
+1. **放大+旋转**: 卡片放大到 `attackScaleMultiplier` (默认1.4倍)，同时旋转使**顶部朝向目标**
+2. **冲撞+缩小**: 向目标位置冲撞，冲到 `overshoot` 位置（冲过目标），同时缩小到原始大小的85%
+3. **停顿**: 在 overshoot 位置停顿
+4. **回弹**: 从 overshoot **回弹到目标位置**（就是你配置的 EnemyTargetPos / PlayerTargetPos），同时恢复大小和旋转
+5. **伤害计算**: 执行伤害计算
+6. **去底部**: 卡片通过 `CombatUXManager.MoveRevealedCardToBottom()` 去底部
+
+### HPAlterEffect 动画触发
+- **普通伤害**: 触发攻击动画，动画完成后执行伤害
+- **Status Effect伤害**: 设置 `isStatusEffectDamage = true` 跳过动画
+- **攻击目标判断**: 根据 `theirStatusRef` 与 `ownerPlayerStatusRef` 对比判断攻击敌人还是自己
+
+### Unity Inspector 配置
+在场景中的某个 GameObject 上挂载 `AttackAnimationManager`，配置：
+- **Enemy Target Pos**: 敌人位置的 Transform
+- **Player Target Pos**: 玩家位置的 Transform
+- **Attack Scale Multiplier**: 1.3 (攻击前放大倍数)
+- **Scale Up Duration**: 0.15 (放大持续时间)
+- **Charge Duration**: 0.2 (冲撞持续时间)
+- **Overshoot Distance**: 0.5 (冲过目标的距离)
+- **Bounce Back Duration**: 0.1 (回弹持续时间)
+- **Pause After Attack**: 0.05 (攻击后停顿时间)
+
 ## 注意事项
 
 1. **缩进**: 使用 **Tab** 而非空格
@@ -153,6 +184,7 @@ Bury Cost 是一种特殊的预效果代价（pre-effect cost）：
 3. **cardTypeID**: 用于存档/统计（非实例 ID）
 4. **防循环**: 同卡不放多个循环效果实例
 5. **墓地机制**: 已移除（废弃）
+6. **攻击动画**: 通过 `AttackAnimationManager` 队列播放，每个伤害效果独立播放一次
 
 ## 颜色标签
 

@@ -9,10 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: '#1Deck'
+  m_Script: {fileID: 11500000, guid: 955f6c9be248dc249a31bad716cc6963, type: 3}
+  m_Name: OnHitShake
   m_EditorClassIdentifier: 
-  deck: []
-  defaultDeck: {fileID: 0}
-  resetOnStart: 0
-  description: 
+  shakeType: 0
+  strength: 0.1
+  roughness: 50
+  fadeIn: 0
+  fadeOut: 0.1
+  positionInfluence: {x: 0, y: 0, z: 0}
+  rotationInfluence: {x: 30, y: 30, z: 30}

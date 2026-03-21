@@ -18,6 +18,9 @@ public class HPAlterEffect : EffectScript
 	[HideInInspector]
 	public int healAmountAlter = 0;
 	
+	[Tooltip("标记是否是status effect造成的伤害（status effect伤害不触发攻击动画）")]
+	public bool isStatusEffectDamage = false;
+	
 	/// <summary>
 	/// 计算额外伤害（包括Power状态效果和基础伤害）
 	/// </summary>
@@ -52,6 +55,17 @@ public class HPAlterEffect : EffectScript
 			status.shield = 0;
 		}
 	}
+	
+	/// <summary>
+	/// 处理伤害（抽离公共逻辑，包括护盾和生命值处理）
+	/// </summary>
+	/// <param name="totalDmg">总伤害数值</param>
+	/// <param name="targetStatus">目标玩家状态</param>
+	private void ProcessDamage(int totalDmg, PlayerStatusSO targetStatus)
+	{
+		ProcessShieldNHp(totalDmg, targetStatus);
+		targetStatus.hp = Mathf.Clamp(targetStatus.hp, 0, targetStatus.hpMax);
+	}
 
 	/// <summary>
 	/// 减少自身生命值（考虑额外伤害）
@@ -60,9 +74,35 @@ public class HPAlterEffect : EffectScript
 	public void DecreaseMyHp(int extraDmg)
 	{
 		DmgCalculator();
-		ProcessShieldNHp(extraDmg + dmgAmountAlter, myCardScript.myStatusRef);
-		myCardScript.myStatusRef.hp = Mathf.Clamp(myCardScript.myStatusRef.hp, 0, myCardScript.myStatusRef.hpMax);
-		CheckDmgTargets_DealingDmgToSelf(extraDmg + dmgAmountAlter);
+		int totalDmg = extraDmg + dmgAmountAlter;
+		
+		// status effect伤害不触发攻击动画，直接执行
+		if (isStatusEffectDamage)
+		{
+			ProcessDamage(totalDmg, myCardScript.myStatusRef);
+			CheckDmgTargets_DealingDmgToSelf(totalDmg);
+			dmgAmountAlter = 0;
+			return;
+		}
+		
+		// 请求攻击动画（攻击自己）
+		if (AttackAnimationManager.me != null)
+		{
+			AttackAnimationManager.me.RequestAttackAnimation(myCard, false, 
+				onHit: () =>
+				{
+					ProcessDamage(totalDmg, myCardScript.myStatusRef);
+					CheckDmgTargets_DealingDmgToSelf(totalDmg);
+				},
+				onComplete: null);
+		}
+		else
+		{
+			// 如果没有动画管理器，直接执行
+			ProcessDamage(totalDmg, myCardScript.myStatusRef);
+			CheckDmgTargets_DealingDmgToSelf(totalDmg);
+		}
+		
 		dmgAmountAlter = 0;
 	}
 
@@ -161,9 +201,38 @@ public class HPAlterEffect : EffectScript
 	public void DecreaseTheirHp(int extraDmg)
 	{
 		DmgCalculator();
-		ProcessShieldNHp(extraDmg + dmgAmountAlter, myCardScript.theirStatusRef);
-		myCardScript.theirStatusRef.hp = Mathf.Clamp(myCardScript.theirStatusRef.hp, 0, myCardScript.theirStatusRef.hpMax);
-		CheckDmgTargets_DealingDmgToOpponent(extraDmg + dmgAmountAlter);
+		int totalDmg = extraDmg + dmgAmountAlter;
+		
+		// status effect伤害不触发攻击动画，直接执行
+		if (isStatusEffectDamage)
+		{
+			ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+			CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+			dmgAmountAlter = 0;
+			return;
+		}
+		
+		// 判断攻击目标（true=攻击敌人, false=攻击玩家自己）
+		bool isAttackingEnemy = myCardScript.theirStatusRef != combatManager.ownerPlayerStatusRef;
+		
+		// 请求攻击动画
+		if (AttackAnimationManager.me != null)
+		{
+			AttackAnimationManager.me.RequestAttackAnimation(myCard, isAttackingEnemy, 
+				onHit: () =>
+				{
+					ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+					CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+				},
+				onComplete: null);
+		}
+		else
+		{
+			// 如果没有动画管理器，直接执行
+			ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+			CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+		}
+		
 		dmgAmountAlter = 0;
 	}
 
