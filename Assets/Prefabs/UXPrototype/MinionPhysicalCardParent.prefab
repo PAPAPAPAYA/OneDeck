@@ -51,7 +51,7 @@ MonoBehaviour:
   currentGamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   shopItemIndex: -1
   holdTimeRequired: 0.5
-  cardShaker: {fileID: 5440100461649738001}
+  cardShaker: {fileID: 0}
   cardShakePreset: {fileID: 11400000, guid: 4abb7b4c9373db54a8490c9fcd77cb9a, type: 2}
   cardFace: {fileID: 2148588689219758807}
   cardEdge: {fileID: 2190289982241006949}
@@ -573,7 +573,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5752269354517656790, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.45
       objectReference: {fileID: 0}
     - target: {fileID: 5752269354517656790, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_LocalPosition.z
@@ -670,10 +670,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5752269354517656790, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2149436155725106274}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 99543954785682955, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5440100461649738001}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
 --- !u!114 &1449661338059296717 stripped
 MonoBehaviour:
@@ -696,24 +693,6 @@ SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 4074947915055329964, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
   m_PrefabInstance: {fileID: 2803603655641864137}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &2849019451302269378 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 99543954785682955, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-  m_PrefabInstance: {fileID: 2803603655641864137}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5440100461649738001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2849019451302269378}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1697a0132719bae458729c9e99c0c716, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  addToGlobalShakers: 0
 --- !u!4 &7583019624345035551 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5752269354517656790, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
