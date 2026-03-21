@@ -2,6 +2,18 @@
 
 Unity 肉鸽卡牌游戏。双方牌组混合、洗牌后逐张翻牌触发效果。
 
+## 开发注意事项
+
+### PowerShell 命令分隔符
+Windows PowerShell 不支持 `&&` 连接命令，应使用 `;` 分隔：
+```powershell
+# ❌ 错误
+command1 && command2
+
+# ✅ 正确
+command1 ; command2
+```
+
 ## 核心循环
 
 `Shop` → `Combat` → `Result` → `Shop`
@@ -176,6 +188,109 @@ Bury Cost 是一种特殊的预效果代价（pre-effect cost）：
 - **Overshoot Distance**: 0.5 (冲过目标的距离)
 - **Bounce Back Duration**: 0.1 (回弹持续时间)
 - **Pause After Attack**: 0.05 (攻击后停顿时间)
+
+## 卡片移动动画系统
+
+### 概述
+通用卡片移动动画系统，支持 Reveal、Stage、Bury、Delay、Start Card 等各种卡片操作的动画。
+
+### 核心组件
+| 组件 | 路径 | 说明 |
+|------|------|------|
+| `CombatUXManager` | `Assets/Scripts/UXPrototype/CombatUXManager.cs` | 管理所有卡片移动动画 |
+| `CardMoveConfig` | 同上 | 卡片移动配置类 |
+| `CardMoveType` | 同上 | 移动类型枚举 |
+
+### 移动类型
+| 类型 | 说明 |
+|------|------|
+| `ToTop` | 移动到牌组顶部（最后一张） |
+| `ToBottom` | 移动到牌组底部（第一张） |
+| `ToIndex` | 移动到指定索引位置 |
+| `ToPosition` | 移动到指定世界坐标 |
+| `ToGrave` | 移动到墓地（销毁位置） |
+
+### 使用方法
+
+#### 1. 通用移动方法
+```csharp
+// 使用配置对象
+var config = new CardMoveConfig {
+    moveType = CardMoveType.ToBottom,
+    useArc = true,
+    duration = 0.5f,
+    onComplete = () => { /* 动画完成后执行 */ }
+};
+CombatUXManager.me.MoveCardWithAnimation(logicalCard, config);
+
+// 使用便捷方法
+CombatUXManager.me.MoveCardToBottom(logicalCard, onComplete: callback);
+CombatUXManager.me.MoveCardToTop(logicalCard, onComplete: callback);
+CombatUXManager.me.MoveCardToIndex(logicalCard, index: 5, onComplete: callback);
+CombatUXManager.me.MoveCardToPosition(logicalCard, position, onComplete: callback);
+CombatUXManager.me.MoveCardToGrave(logicalCard, onComplete: callback);
+```
+
+#### 2. 批量移动
+```csharp
+CombatUXManager.me.MoveCardsWithAnimation(cardList, config, onAllComplete: callback);
+```
+
+#### 3. Start Card 特殊处理
+```csharp
+// 播放退场动画，动画完成后执行 Shuffle
+CombatUXManager.me.PlayStartCardExitAnimationWithCallback(startCard, () => {
+    Shuffle();
+    HandleNewRoundStart();
+});
+```
+
+### 动画流程
+1. **计算目标位置**: 根据 `CardMoveType` 计算最终位置
+2. **弧形轨迹** (可选): 经过 `showPos` 中间点
+3. **同步缩放**: 从当前大小缩放到目标大小
+4. **完成回调**: 动画完成后执行回调，同步 `TargetPosition`
+
+### 各操作使用方式
+
+| 操作 | 使用方法 | 弧形轨迹 |
+|------|---------|---------|
+| Reveal → Bottom | `MoveRevealedCardToBottom(card, onComplete)` | ✅ |
+| Start Card (销毁) | `PlayStartCardExitWithShuffleAnimation(card, others, callback)` | ❌ |
+| Start Card (保留) | `PlayStartCardShuffleAnimation(card, allCards, callback)` | ✅ |
+| Stage (置顶) | `MoveCardToTop(card, onComplete)` | ✅ |
+| Bury (置底) | `MoveCardToBottom(card, onComplete)` | ✅ |
+| Delay | `MoveCardToIndex(card, newIndex, useArc: false)` | ❌ |
+| Bury Cost | `MoveCardToBottom(card, onComplete)` | ✅ |
+
+### Start Card 与 Shuffle 并发动画
+
+**旧问题**: Start Card 先移动到底部，然后瞬间跳走到随机位置，动画很怪
+
+**新实现**: 
+- Start Card 的动画和 Shuffle 动画同时进行
+- 所有卡片（包括 Start Card）同时开始移动，同时到达新位置
+
+**两种模式:**
+
+1. **销毁模式** (`removeStartCardInsteadOfShuffle = true`):
+   ```csharp
+   // Start Card 退场去墓地，其他卡片 Shuffle
+   PlayStartCardExitWithShuffleAnimation(startCard, otherCards, onComplete);
+   ```
+
+2. **保留模式** (`removeStartCardInsteadOfShuffle = false`):
+   ```csharp
+   // Start Card 直接移动到 Shuffle 后的随机位置
+   PlayStartCardShuffleAnimation(startCard, allCards, onComplete);
+   ```
+
+**动画流程**:
+1. 计算每张卡片在 Shuffle 后的目标位置
+2. 所有卡片同时开始移动
+3. Start Card 从 Reveal Zone 直接移动到目标位置（不经过底部）
+4. 其他卡片从当前位置移动到 Shuffle 后的位置
+5. 使用弧形轨迹（经过 `showPos`）增加视觉效果
 
 ## 注意事项
 

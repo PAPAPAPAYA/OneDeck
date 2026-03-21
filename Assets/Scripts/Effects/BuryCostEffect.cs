@@ -69,10 +69,10 @@ public class BuryCostEffect : EffectScript
 			}
 		}
 
-		// 播放置底动画
-		if (buriedCards.Count > 0)
+		// 播放弧形轨迹动画（移动卡片到底部）
+		foreach (var card in buriedCards)
 		{
-			CombatUXManager.me.PlayStageBuryAnimation(buriedCards, isStage: false);
+			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true);
 		}
 	}
 }

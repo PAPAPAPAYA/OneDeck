@@ -326,8 +326,11 @@ public class CardManipulationEffect : EffectScript
 			}
 		}
 		
-		// 2. 播放特殊动画（替代原来的 Sync + Update）
-		CombatUXManager.me.PlayStageBuryAnimation(stagedCards, isStage: true);
+		// 2. 播放弧形轨迹动画（移动卡片到顶部）
+		foreach (var card in stagedCards)
+		{
+			CombatUXManager.me.MoveCardToTop(card, duration: 0.5f, useArc: true);
+		}
 	}
 	#endregion
 	
@@ -451,8 +454,11 @@ public class CardManipulationEffect : EffectScript
 			}
 		}
 		
-		// 2. 播放特殊动画（替代原来的 Sync + Update）
-		CombatUXManager.me.PlayStageBuryAnimation(buriedCards, isStage: false);
+		// 2. 播放弧形轨迹动画（移动卡片到底部）
+		foreach (var card in buriedCards)
+		{
+			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true);
+		}
 	}
 	#endregion
 
@@ -498,6 +504,7 @@ public class CardManipulationEffect : EffectScript
 
 		int movedCount = 0;
 		string myColor = GetMyCardColorTag();
+		var delayedCards = new List<(GameObject card, int newIndex)>();
 
 		for (int i = 0; i < amount; i++)
 		{
@@ -508,8 +515,10 @@ public class CardManipulationEffect : EffectScript
 			if (index <= 0) continue;
 
 			_combinedDeck.RemoveAt(index);
-			_combinedDeck.Insert(index - 1, card);
+			int newIndex = index - 1;
+			_combinedDeck.Insert(newIndex, card);
 			movedCount++;
+			delayedCards.Add((card, newIndex));
 
 			var targetScript = card.GetComponent<CardScript>();
 			string targetColor = GetCardColorTag(card);
@@ -518,7 +527,16 @@ public class CardManipulationEffect : EffectScript
 
 		if (movedCount > 0)
 		{
+			// 同步物理卡片列表
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+			
+			// 为每张移动的卡片播放动画
+			foreach (var (card, newIndex) in delayedCards)
+			{
+				CombatUXManager.me.MoveCardToIndex(card, newIndex, duration: 0.3f, useArc: false);
+			}
+			
+			// 更新其他卡片位置（确保所有卡片位置正确）
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 	}

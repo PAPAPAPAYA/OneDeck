@@ -428,31 +428,50 @@ public class CombatManager : MonoBehaviour
 		var startCard = revealZone;
 		revealZone = null;
 
-		// 1. 将 Start Card 放回牌组底部
-		combinedDeckZone.Insert(0, startCard);
-		CombatUXManager.me.MoveRevealedCardToBottom(startCard);
-
-		// 2. 洗牌（包括 Start Card）
-		Shuffle();
-
-		// 3. 如果功能生效，从牌组中移除 Start Card
+		// 根据配置决定动画和后续处理
 		if (removeStartCardInsteadOfShuffle)
 		{
-			// 使用统一销毁方法（带动画）
-			CombatUXManager.me.DestroyCardWithAnimation(startCard, onComplete: () =>
+			// 从牌组中移除 Start Card（它不会参与 Shuffle）
+			combinedDeckZone.Remove(startCard);
+			
+			// 同时播放：Start Card 退场动画 + 其他卡片 Shuffle 动画
+			CombatUXManager.me.PlayStartCardExitWithShuffleAnimation(startCard, combinedDeckZone, () =>
 			{
+				// 销毁逻辑卡片
+				Destroy(startCard);
+				_startCardInstance = null;
+				
+				// 逻辑上执行 Shuffle（Start Card 已经不在了）
+				combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
+				
 				// 刷新UI显示
 				_infoDisplayer.RefreshDeckInfo();
+				GameEventStorage.me.afterShuffle.Raise();
+				
+				// 新回合开始
+				HandleNewRoundStart();
 			});
-			_startCardInstance = null;
-			
-			// 同步剩余物理卡牌位置
-			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
-
-		// 4. 新回合开始
-		HandleNewRoundStart();
+		else
+		{
+			// Start Card 留在牌组中参与 Shuffle
+			// 先将 Start Card 添加回 combinedDeckZone（它之前被移到了 revealZone）
+			combinedDeckZone.Insert(0, startCard);
+			
+			// 同时播放：Start Card 移动到随机位置 + 其他卡片 Shuffle 动画
+			CombatUXManager.me.PlayStartCardShuffleAnimation(startCard, combinedDeckZone, () =>
+			{
+				// 逻辑上执行 Shuffle
+				combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
+				
+				// 刷新UI显示
+				_infoDisplayer.RefreshDeckInfo();
+				GameEventStorage.me.afterShuffle.Raise();
+				
+				// 新回合开始
+				HandleNewRoundStart();
+			});
+		}
 	}
 
 	private void HandleNewRoundStart()
