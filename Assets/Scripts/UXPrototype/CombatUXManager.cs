@@ -110,6 +110,10 @@ public class CombatUXManager : MonoBehaviour
 	[Header("ANIMATION SETTINGS")]
 	[Tooltip("是否启用 Stage/Bury 卡片动画")]
 	public bool enableStageBuryAnimation = true;
+	[Tooltip("洗牌动画是否使用随机先后顺序（staggered）")]
+	public bool useStaggeredShuffleAnimation = true;
+	[Tooltip("洗牌动画最大随机延迟时间（秒）")]
+	public float shuffleStaggerMaxDelay = 0.3f;
 	[Tooltip("Deck卡牌X轴偏移（每张卡牌向右偏移量）")]
 	public float xOffset;
 	[Tooltip("Deck卡牌Y轴偏移（每张卡牌向上偏移量）")]
@@ -686,12 +690,12 @@ public class CombatUXManager : MonoBehaviour
 
 	/// <summary>
 	/// 同时播放 Start Card 移动到随机位置和其他卡片的 Shuffle 动画
-	/// Start Card 留在牌组中，所有卡片一起 Shuffle
+	/// 【方案B】逻辑洗牌已完成，基于已知的洗牌结果播放动画
 	/// </summary>
 	/// <param name="startCard">Start Card 逻辑卡片</param>
-	/// <param name="allCards">所有卡片的逻辑列表（包含 Start Card，未 Shuffle）</param>
+	/// <param name="shuffledCards">已经洗好的牌组列表（包含 Start Card，顺序已确定）</param>
 	/// <param name="onComplete">所有动画完成后的回调</param>
-	public void PlayStartCardShuffleAnimation(GameObject startCard, List<GameObject> allCards, Action onComplete)
+	public void PlayStartCardShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
 	{
 		// 获取 Start Card 的物理卡片
 		BuildCardScriptToPhysicalDictionary();
@@ -703,21 +707,35 @@ public class CombatUXManager : MonoBehaviour
 			physicalCardInRevealZone = null;
 		}
 
-		// 1. 将 Start Card 加入物理列表（如果还没有）
-		if (startPhysicalCard != null && !physicalCardsInDeck.Contains(startPhysicalCard))
-		{
-			physicalCardsInDeck.Add(startPhysicalCard);
-		}
-
-		// 1.5 重新构建缓存（Start Card 刚加入物理列表）
-		BuildCardScriptToPhysicalDictionary();
-
-		// 2. 计算 Shuffle 后每张卡的位置（Start Card 也参与 Shuffle）
-		var shuffledCards = UtilityFuncManagerScript.ShuffleList(new List<GameObject>(allCards));
+		// 1. 计算每张卡的目标位置（基于已知的洗牌结果）
 		var shuffleTargets = CalculateShuffleTargets(shuffledCards);
 
-		// 3. 同时播放所有卡片的移动动画
-		PlayShuffleAnimationInternal(shuffleTargets, onComplete);
+		// 2. 同时播放所有卡片的移动动画
+		// Start Card 从 Reveal Zone 直接飞到新位置
+		// 其他卡片从当前位置飞到新位置
+		PlayShuffleAnimationInternal(shuffleTargets, () =>
+		{
+			// 3. 动画完成后，重建物理卡片列表以匹配逻辑顺序
+			RebuildPhysicalDeckFromShuffledList(shuffledCards);
+			onComplete?.Invoke();
+		});
+	}
+
+	/// <summary>
+	/// 根据洗牌后的逻辑列表重建物理卡片列表
+	/// </summary>
+	private void RebuildPhysicalDeckFromShuffledList(List<GameObject> shuffledCards)
+	{
+		physicalCardsInDeck.Clear();
+		
+		foreach (var logicalCard in shuffledCards)
+		{
+			var cardScript = logicalCard.GetComponent<CardScript>();
+			if (cardScript != null && _cardScriptToPhysicalCache.TryGetValue(cardScript, out var physicalCard))
+			{
+				physicalCardsInDeck.Add(physicalCard);
+			}
+		}
 	}
 
 	/// <summary>
@@ -786,10 +804,19 @@ public class CombatUXManager : MonoBehaviour
 		int totalCount = shuffleTargets.Count;
 		float shuffleDuration = 0.5f; // Shuffle 动画持续时间
 
+		// 为每张卡片生成随机延迟时间
+		var cardDelays = new Dictionary<GameObject, float>();
+		foreach (var kvp in shuffleTargets)
+		{
+			float delay = useStaggeredShuffleAnimation ? UnityEngine.Random.Range(0f, shuffleStaggerMaxDelay) : 0f;
+			cardDelays[kvp.Key] = delay;
+		}
+
 		foreach (var kvp in shuffleTargets)
 		{
 			var physicalCard = kvp.Key;
 			var targetPos = kvp.Value;
+			float delay = cardDelays[physicalCard];
 
 			if (physicalCard == null) 
 			{
@@ -807,6 +834,12 @@ public class CombatUXManager : MonoBehaviour
 
 			// 使用弧形轨迹或直接移动
 			Sequence moveSequence = DOTween.Sequence();
+
+			// 添加随机延迟（如果使用 staggered 动画）
+			if (delay > 0)
+			{
+				moveSequence.AppendInterval(delay);
+			}
 
 			if (showPos != null)
 			{

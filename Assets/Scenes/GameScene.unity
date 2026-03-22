@@ -3471,6 +3471,8 @@ MonoBehaviour:
   combatManager: {fileID: 0}
   zOffset: 0.5
   enableStageBuryAnimation: 0
+  useStaggeredShuffleAnimation: 1
+  shuffleStaggerMaxDelay: 0.5
   xOffset: 0.2
   yOffset: 0.2
   physicalCardNewTempCardPos: {fileID: 2043192994}

@@ -2,23 +2,26 @@
 
 
 // todo
+// bug
+	// start card movement
 // visual communication
-	// attack animation
+	//// attack animation
 	// status effect
 	// stage and bury
-	// minion
+	//// minion
 // game event:
-	// when a friendly token is added
+	//// when a friendly minion is added
 	// if next X cards contain friendly/hostile cards
 	// if card is moved (staged, buried, delayed, forwarded)
 	// X consecutive friendly/hostile
 	// is moved
-	// friendly token revealed
+	// friendly minion revealed
+	//// friendly fly exiled
 // condition:
 	// if next X cards contain friendly/hostile cards
 // feature:
-	// token / actual card
-	// new way of adding fatigue
+	//// minion / actual card
+	//// new way of adding fatigue
 // status effect:
 	// nutrious: when revealed, heal you for 1
 	// escape goat: bury target becomes this card
@@ -27,9 +30,9 @@
 	// forward
 	// add a copy
 	// deal dmg = next X cards friendly/hostile amount
-	// deal dmg = card amount in friendly deck
-	// new exile: destroy card
-	// exile friendly/hostile token
+	//// deal dmg = card amount in friendly deck
+	//// new exile: destroy card
+	//// exile friendly/hostile minion
 	// skip
 	// heart change specific card
 	

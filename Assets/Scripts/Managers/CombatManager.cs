@@ -454,17 +454,20 @@ public class CombatManager : MonoBehaviour
 		}
 		else
 		{
-			// Start Card 留在牌组中参与 Shuffle
-			// 先将 Start Card 添加回 combinedDeckZone（它之前被移到了 revealZone）
-			combinedDeckZone.Insert(0, startCard);
+			// ========== 方案 B：先执行逻辑洗牌，再播放动画 ==========
 			
-			// 同时播放：Start Card 移动到随机位置 + 其他卡片 Shuffle 动画
+			// 1. 先将 Start Card 加入牌组（准备参与洗牌）
+			// Start Card 当前不在 combinedDeckZone 中（它在 revealZone），需要加回去
+			combinedDeckZone.Add(startCard);
+			
+			// 2. 【关键】先执行逻辑洗牌，确定每张卡的位置
+			combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
+			
+			// 3. 根据已知的洗牌结果播放动画
+			// Start Card 从 Reveal Zone 直接飞到新位置，其他卡片从旧位置飞到新位置
 			CombatUXManager.me.PlayStartCardShuffleAnimation(startCard, combinedDeckZone, () =>
 			{
-				// 逻辑上执行 Shuffle
-				combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
-				
-				// 刷新UI显示
+				// 动画完成后，刷新UI并触发事件
 				_infoDisplayer.RefreshDeckInfo();
 				GameEventStorage.me.afterShuffle.Raise();
 				
