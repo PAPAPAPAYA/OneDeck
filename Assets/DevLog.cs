@@ -3,10 +3,14 @@
 
 // todo
 // bug
-	// start card movement
+	//// start card movement
+	// attack animation need to check effect, not card owner
 // visual communication
 	//// attack animation
 	// status effect
+		// infected WIP, need to change card material as well
+			// need to do the spit a poison thing to card thing
+		// power
 	// stage and bury
 	//// minion
 // game event:

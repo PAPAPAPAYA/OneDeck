@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9220092470014319255}
   - component: {fileID: 1640488054365647725}
   m_Layer: 0
-  m_Name: deal dmg
+  m_Name: deal dmg and apply infected
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -97,6 +97,7 @@ MonoBehaviour:
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
+  isStatusEffectDamage: 0
 --- !u!114 &1640488054365647725
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -117,6 +118,8 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 1
   includeSelf: 0
+  statusEffectParticlePrefab: {fileID: 117554476672918719, guid: 7746efe743cfad1418fb58dc33244f3d, type: 3}
+  particleYOffset: -2
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

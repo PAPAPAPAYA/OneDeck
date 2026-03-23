@@ -17,6 +17,12 @@ namespace DefaultNamespace.Effects
 		public EnumStorage.TargetType target; // whose cards the status effect will be given to
 		[Tooltip("if true, will include the card itself in reveal zone when giving status effect")]
 		public bool includeSelf = false;
+		
+		[Header("Particle System")]
+		[Tooltip("获得状态效果时播放的粒子系统预制体")]
+		public ParticleSystem statusEffectParticlePrefab;
+		[Tooltip("粒子系统的Y轴偏移量")]
+		public float particleYOffset = 0f;
 
 		/// <summary>
 		/// 给自身卡片添加状态效果
@@ -40,6 +46,8 @@ namespace DefaultNamespace.Effects
 				if (myStatusEffectResolverScript == null) continue;
 				var tagResolver = Instantiate(myStatusEffectResolverScript, myCard.transform);
 				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
+				// play particle effect at card position
+				PlayStatusEffectParticle(myCard.transform);
 			}
 		}
 		
@@ -118,10 +126,54 @@ namespace DefaultNamespace.Effects
 				if (myStatusEffectResolverScript == null) continue;
 				var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
 				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
+				// play particle effect at card position
+				PlayStatusEffectParticle(targetCardScript.transform);
 			}
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}
 
+		/// <summary>
+		/// 在指定位置播放状态效果粒子系统
+		/// 使用物理卡牌的实际世界位置，而非逻辑卡牌的位置
+		/// </summary>
+		/// <param name="cardTransform">逻辑卡牌Transform</param>
+		protected virtual void PlayStatusEffectParticle(Transform cardTransform)
+		{
+			if (statusEffectParticlePrefab == null) return;
+			
+			// 获取物理卡牌的实际位置
+			Vector3 spawnPosition = GetPhysicalCardWorldPosition(cardTransform) + Vector3.up * particleYOffset;
+			ParticleSystem particleInstance = Instantiate(statusEffectParticlePrefab, spawnPosition, Quaternion.identity, cardTransform);
+			particleInstance.Play();
+		}
+		
+		/// <summary>
+		/// 获取卡牌的世界位置
+		/// 优先使用物理卡牌的位置，如果找不到则使用逻辑卡牌位置
+		/// </summary>
+		/// <param name="cardTransform">逻辑卡牌Transform</param>
+		/// <returns>世界位置</returns>
+		protected virtual Vector3 GetPhysicalCardWorldPosition(Transform cardTransform)
+		{
+			// 尝试通过 CombatUXManager 获取物理卡牌
+			if (CombatUXManager.me != null)
+			{
+				var cardScript = cardTransform.GetComponent<CardScript>();
+				if (cardScript != null)
+				{
+					CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
+					var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(cardScript);
+					if (physicalCard != null)
+					{
+						return physicalCard.transform.position;
+					}
+				}
+			}
+			
+			// 回退：使用逻辑卡牌位置（可能不准确）
+			return cardTransform.position;
+		}
+		
 		/// <summary>
 		/// 根据卡上指定status effect的数量，给予statusEffectToGive指定的status effect
 		/// 目标由target字段决定：Me(自己), Them(敌人), Random(随机)
