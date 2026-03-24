@@ -78,12 +78,15 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
+  preEffectEvent:
+    m_PersistentCalls:
+      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 7431176955717029217}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseMyHp
+        m_MethodName: DecreaseMyHpFromStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -109,3 +112,4 @@ MonoBehaviour:
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
+  isStatusEffectDamage: 0

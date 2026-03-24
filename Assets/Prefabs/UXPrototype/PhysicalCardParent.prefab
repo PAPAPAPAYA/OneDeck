@@ -244,7 +244,12 @@ MonoBehaviour:
   ownerCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
   opponentCardColor: {r: 0.708, g: 0.3278854, b: 0.10619999, a: 1}
   opponentCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
-  minionCardEdgeColor: {r: 0.039215688, g: 0.054901965, b: 0.098039225, a: 1}
+  infectedTintColor: {r: 0.4, g: 0.8, b: 0.2, a: 1}
+  infectedTintIntensity: 0.5
+  powerTintColor: {r: 1, g: 0.6, b: 0.1, a: 1}
+  powerTintIntensity: 0.5
+  tintDuration: 1
+  tintTransitionSpeed: 5
   isPlayingSpecialAnimation: 0
   sideOffset: 0.8
   sideMoveDuration: 0.5

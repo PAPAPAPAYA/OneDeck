@@ -48,6 +48,8 @@ namespace DefaultNamespace.Effects
 				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
 				// play particle effect at card position
 				PlayStatusEffectParticle(myCard.transform);
+				// trigger tint effect
+				TriggerTintForStatusEffect(myCardScript, statusEffectToGive);
 			}
 		}
 		
@@ -128,6 +130,8 @@ namespace DefaultNamespace.Effects
 				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
 				// play particle effect at card position
 				PlayStatusEffectParticle(targetCardScript.transform);
+				// trigger tint effect
+				TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
 			}
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}
@@ -172,6 +176,29 @@ namespace DefaultNamespace.Effects
 			
 			// 回退：使用逻辑卡牌位置（可能不准确）
 			return cardTransform.position;
+		}
+
+		/// <summary>
+		/// 触发卡片的 tint 效果
+		/// </summary>
+		protected virtual void TriggerTintForStatusEffect(CardScript targetCard, EnumStorage.StatusEffect effect)
+		{
+			// 只处理 Infected 和 Power 两种 tint
+			if (effect != EnumStorage.StatusEffect.Infected && effect != EnumStorage.StatusEffect.Power)
+				return;
+
+			if (CombatUXManager.me == null) return;
+
+			CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
+			var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(targetCard);
+			if (physicalCard != null)
+			{
+				var cardPhysObj = physicalCard.GetComponent<CardPhysObjScript>();
+				if (cardPhysObj != null)
+				{
+					cardPhysObj.TriggerTintForStatusEffect(effect);
+				}
+			}
 		}
 		
 		/// <summary>

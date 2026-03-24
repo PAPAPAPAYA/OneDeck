@@ -39,6 +39,33 @@ public class CardPhysObjScript : MonoBehaviour
 	public Color opponentCardColor;
 	public Color opponentCardEdgeColor;
 
+	[Header("TINT - Infected")]
+	[Tooltip("Infected 状态的 Tint 颜色")]
+	public Color infectedTintColor = new Color(0.4f, 0.8f, 0.2f);
+	[Tooltip("Infected 状态的 Tint 强度")]
+	[Range(0f, 1f)]
+	public float infectedTintIntensity = 0.5f;
+
+	[Header("TINT - Power")]
+	[Tooltip("Power 状态的 Tint 颜色")]
+	public Color powerTintColor = new Color(1f, 0.6f, 0.1f);
+	[Tooltip("Power 状态的 Tint 强度")]
+	[Range(0f, 1f)]
+	public float powerTintIntensity = 0.5f;
+
+	[Header("TINT - Settings")]
+	[Tooltip("Tint 持续时间（秒）")]
+	public float tintDuration = 1.5f;
+	[Tooltip("Tint 颜色变化速度（越大越快）")]
+	public float tintTransitionSpeed = 5f;
+
+	// 运行时状态
+	private TintState _currentTintState = TintState.None;
+	private float _tintTimer = 0f;
+	private float _currentTintIntensity = 0f; // 当前实际显示的 tint 强度（用于平滑过渡）
+
+	public enum TintState { None, Infected, Power }
+
 	// ========== 动画目标位置 ==========
 	[Header("ANIMATION")]
 	public Vector3 TargetPosition { get; private set; }
@@ -117,6 +144,7 @@ public class CardPhysObjScript : MonoBehaviour
 		UpdateStatusEffectDisplay();
 		UpdatePriceDisplay();
 		UpdateCostDisplay();
+		UpdateTintTimer();
 
 		// 长按检测
 		HandleHoldToBuy();
@@ -289,6 +317,7 @@ public class CardPhysObjScript : MonoBehaviour
 			cardNamePrint.text = cardImRepresenting.gameObject.name;
 		}
 	}
+
 
 	/// <summary>
 	/// 设置目标位置（由 CombatUXManager 调用），使用 DOTween 动画
@@ -645,21 +674,114 @@ public class CardPhysObjScript : MonoBehaviour
 			return;
 		}
 
-		// myStatusRef 为空时，使用 ownerCardColor
+		// 确定基础颜色
+		Color baseFaceColor;
+		Color baseEdgeColor;
+
 		if (cardImRepresenting.myStatusRef == null)
 		{
-			cardEdge.color = ownerCardEdgeColor;
-			cardFace.color = ownerCardColor;
+			baseFaceColor = ownerCardColor;
+			baseEdgeColor = ownerCardEdgeColor;
 		}
 		else if (cardImRepresenting.myStatusRef != CombatManager.Me?.ownerPlayerStatusRef)
 		{
-			cardEdge.color = opponentCardEdgeColor;
-			cardFace.color = opponentCardColor;
+			baseFaceColor = opponentCardColor;
+			baseEdgeColor = opponentCardEdgeColor;
 		}
 		else
 		{
-			cardEdge.color = ownerCardEdgeColor;
-			cardFace.color = ownerCardColor;
+			baseFaceColor = ownerCardColor;
+			baseEdgeColor = ownerCardEdgeColor;
+		}
+
+		// 计算目标 tint 强度
+		float targetIntensity = (_currentTintState != TintState.None) ? 1f : 0f;
+
+		// 平滑过渡到目标强度
+		_currentTintIntensity = Mathf.Lerp(_currentTintIntensity, targetIntensity, Time.deltaTime * tintTransitionSpeed);
+
+		// 应用 Tint
+		Color finalFaceColor = baseFaceColor;
+		Color finalEdgeColor = baseEdgeColor;
+
+		if (_currentTintIntensity > 0.01f)
+		{
+			Color tintColor;
+			float intensity;
+
+			switch (_currentTintState)
+			{
+				case TintState.Infected:
+					tintColor = infectedTintColor;
+					intensity = infectedTintIntensity;
+					break;
+				case TintState.Power:
+					tintColor = powerTintColor;
+					intensity = powerTintIntensity;
+					break;
+				default:
+					tintColor = Color.white;
+					intensity = 0f;
+					break;
+			}
+
+			float appliedIntensity = intensity * _currentTintIntensity;
+			finalFaceColor = Color.Lerp(baseFaceColor, baseFaceColor * tintColor, appliedIntensity);
+			finalEdgeColor = Color.Lerp(baseEdgeColor, baseEdgeColor * tintColor, appliedIntensity);
+		}
+
+		cardFace.color = finalFaceColor;
+		cardEdge.color = finalEdgeColor;
+	}
+
+	/// <summary>
+	/// 触发 Tint 效果（当卡片获得 StatusEffect 时调用）
+	/// </summary>
+	public void TriggerTint(TintState state)
+	{
+		_currentTintState = state;
+		_tintTimer = tintDuration;
+		// 重置 tint 强度以便从 0 开始平滑淡入
+		_currentTintIntensity = 0f;
+	}
+
+	/// <summary>
+	/// 根据 StatusEffect 类型触发对应 Tint
+	/// </summary>
+	public void TriggerTintForStatusEffect(EnumStorage.StatusEffect effect)
+	{
+		switch (effect)
+		{
+			case EnumStorage.StatusEffect.Infected:
+				TriggerTint(TintState.Infected);
+				break;
+			case EnumStorage.StatusEffect.Power:
+				TriggerTint(TintState.Power);
+				break;
+		}
+	}
+
+	/// <summary>
+	/// 清除 Tint（恢复到 None 状态）
+	/// </summary>
+	public void ClearTint()
+	{
+		_currentTintState = TintState.None;
+		_tintTimer = 0f;
+	}
+
+	/// <summary>
+	/// 更新 Tint 计时器
+	/// </summary>
+	private void UpdateTintTimer()
+	{
+		if (_tintTimer > 0f)
+		{
+			_tintTimer -= Time.deltaTime;
+			if (_tintTimer <= 0f)
+			{
+				ClearTint();
+			}
 		}
 	}
 

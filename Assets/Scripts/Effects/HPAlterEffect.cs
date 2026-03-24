@@ -107,6 +107,17 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
+	/// 由状态效果造成的自身伤害（不触发攻击动画）
+	/// </summary>
+	/// <param name="dmgAmount">伤害数值</param>
+	public void DecreaseMyHpFromStatusEffect(int dmgAmount)
+	{
+		int totalDmg = dmgAmount + baseDmg.value;
+		ProcessDamage(totalDmg, myCardScript.myStatusRef);
+		CheckDmgTargets_DealingDmgToSelf(totalDmg);
+	}
+
+	/// <summary>
 	/// 增加自身生命值（考虑额外治疗量）
 	/// </summary>
 	/// <param name="healAmount">治疗数值</param>
@@ -234,6 +245,17 @@ public class HPAlterEffect : EffectScript
 		}
 		
 		dmgAmountAlter = 0;
+	}
+
+	/// <summary>
+	/// 由状态效果造成的对方伤害（不触发攻击动画）
+	/// </summary>
+	/// <param name="dmgAmount">伤害数值</param>
+	public void DecreaseTheirHpFromStatusEffect(int dmgAmount)
+	{
+		int totalDmg = dmgAmount + baseDmg.value;
+		ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+		CheckDmgTargets_DealingDmgToOpponent(totalDmg);
 	}
 
 	/// <summary>
