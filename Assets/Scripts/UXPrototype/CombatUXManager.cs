@@ -610,6 +610,10 @@ public class CombatUXManager : MonoBehaviour
 	/// <param name="onComplete">所有动画完成后的回调</param>
 	public void PlayStartCardExitWithShuffleAnimation(GameObject startCard, List<GameObject> otherCards, Action onComplete)
 	{
+		// 屏蔽玩家输入
+		if (combatManager != null)
+			combatManager.blockPlayerInput = true;
+			
 		if (startCard == null)
 		{
 			// 没有 Start Card，只执行普通 Shuffle 动画
@@ -652,6 +656,9 @@ public class CombatUXManager : MonoBehaviour
 			completedAnimations++;
 			if (completedAnimations >= totalAnimations)
 			{
+				// 恢复玩家输入
+				if (combatManager != null)
+					combatManager.blockPlayerInput = false;
 				onComplete?.Invoke();
 			}
 		};
@@ -697,6 +704,10 @@ public class CombatUXManager : MonoBehaviour
 	/// <param name="onComplete">所有动画完成后的回调</param>
 	public void PlayStartCardShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
 	{
+		// 屏蔽玩家输入
+		if (combatManager != null)
+			combatManager.blockPlayerInput = true;
+			
 		// 获取 Start Card 的物理卡片
 		BuildCardScriptToPhysicalDictionary();
 		var startPhysicalCard = GetPhysicalCardFromLogicalCard(startCard.GetComponent<CardScript>());
@@ -717,6 +728,9 @@ public class CombatUXManager : MonoBehaviour
 		{
 			// 3. 动画完成后，重建物理卡片列表以匹配逻辑顺序
 			RebuildPhysicalDeckFromShuffledList(shuffledCards);
+			// 恢复玩家输入
+			if (combatManager != null)
+				combatManager.blockPlayerInput = false;
 			onComplete?.Invoke();
 		});
 	}
@@ -745,6 +759,10 @@ public class CombatUXManager : MonoBehaviour
 	/// <param name="onComplete">动画完成后的回调</param>
 	public void PlayShuffleAnimation(List<GameObject> cards, Action onComplete)
 	{
+		// 屏蔽玩家输入
+		if (combatManager != null)
+			combatManager.blockPlayerInput = true;
+			
 		// 先同步物理列表
 		SyncPhysicalCardsWithCombinedDeck();
 
@@ -753,7 +771,13 @@ public class CombatUXManager : MonoBehaviour
 		var shuffleTargets = CalculateShuffleTargets(shuffledCards);
 
 		// 播放动画
-		PlayShuffleAnimationInternal(shuffleTargets, onComplete);
+		PlayShuffleAnimationInternal(shuffleTargets, () =>
+		{
+			// 恢复玩家输入
+			if (combatManager != null)
+				combatManager.blockPlayerInput = false;
+			onComplete?.Invoke();
+		});
 	}
 
 	/// <summary>
