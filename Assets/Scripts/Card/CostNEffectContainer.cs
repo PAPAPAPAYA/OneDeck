@@ -57,6 +57,11 @@ public class CostNEffectContainer : MonoBehaviour
 		// execute pre-effect (e.g., Delay Cost)
 		preEffectEvent?.Invoke();
 
+		if (_costNotMetFlag > 0) return; // if cost can not be met, return
+
+		// 在效果执行前刷新所有追踪数值
+		ValueTrackerManager.me?.UpdateAllTrackers();
+
 		// invoke effect
 		var effectString = "(" + _myCardScript.cardID + ") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return

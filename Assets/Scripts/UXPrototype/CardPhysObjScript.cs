@@ -210,19 +210,9 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	private void UpdateCostDisplay()
 	{
-		// 如果没有 cost 文本组件，直接返回
-		if (cardCostPrint == null) return;
-
-		// 如果卡牌数据为空，隐藏 cost 显示
-		if (cardImRepresenting == null)
-		{
+		// 隐藏 cost 显示
+		if (cardCostPrint != null)
 			cardCostPrint.gameObject.SetActive(false);
-			return;
-		}
-
-		// 显示 cost
-		cardCostPrint.gameObject.SetActive(true);
-		cardCostPrint.text = $"{cardImRepresenting.minionCostCount}";
 	}
 
 	/// <summary>

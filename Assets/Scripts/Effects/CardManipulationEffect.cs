@@ -366,6 +366,27 @@ public class CardManipulationEffect : EffectScript
 		BuryChosenCards(cardsWithTag, amount);
 	}
 
+	public void BuryMyCards(int amount)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var myCards = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myCards, true);
+
+		// Filter cards that belong to this card's owner and are not at the bottom
+		for (int i = myCards.Count - 1; i >= 0; i--)
+		{
+			var card = myCards[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			{
+				myCards.RemoveAt(i);
+			}
+		}
+
+		myCards = UtilityFuncManagerScript.ShuffleList(myCards);
+		BuryChosenCards(myCards, amount);
+	}
+
 	public void BuryMyCardsWithTag(int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
@@ -540,6 +561,40 @@ public class CardManipulationEffect : EffectScript
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 	}
+	#endregion
+
+	#region IntSO Based Effects
+
+	public void BuryTheirCards_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		BuryTheirCards(intSO.value);
+	}
+
+	public void BuryMyCards_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		BuryMyCards(intSO.value);
+	}
+
+	public void StageMyCards_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		StageMyCards(intSO.value);
+	}
+
+	public void DestroyTheirMinions_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		DestroyTheirMinions(intSO.value);
+	}
+
+	public void DestroyMyMinions_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		DestroyMyMinions(intSO.value);
+	}
+
 	#endregion
 	
 	#region DESTROY MINION

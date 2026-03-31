@@ -1,7 +1,8 @@
 // devlog
 
+//
 
-// todo
+//// oldtodo
 // bug
 	//// start card movement
 	//// attack animation need to check effect, not card owner

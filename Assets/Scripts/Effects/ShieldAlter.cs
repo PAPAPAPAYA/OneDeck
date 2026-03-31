@@ -12,6 +12,12 @@ namespace DefaultNamespace.Effects
 			myCardScript.myStatusRef.shield += amount + shieldUpAmountAlter;
 			CheckShieldUpTarget_UppingSelfShield(amount);
 		}
+
+		public void UpMyShield_BasedOnIntSO(IntSO intSO)
+		{
+			if (intSO == null) return;
+			UpMyShield(intSO.value);
+		}
 		private void CheckShieldUpTarget_UppingSelfShield(int shieldAmount)
 		{
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player gave shield to player

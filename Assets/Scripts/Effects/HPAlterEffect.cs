@@ -258,6 +258,34 @@ public class HPAlterEffect : EffectScript
 		CheckDmgTargets_DealingDmgToOpponent(totalDmg);
 	}
 
+	#region IntSO Based Effects
+
+	public void DecreaseTheirHp_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		DecreaseTheirHp(intSO.value);
+	}
+
+	public void DecreaseMyHp_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		DecreaseMyHp(intSO.value);
+	}
+
+	public void IncreaseTheirHp_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		IncreaseTheirHp(intSO.value);
+	}
+
+	public void IncreaseMyHp_BasedOnIntSO(IntSO intSO)
+	{
+		if (intSO == null) return;
+		IncreaseMyHp(intSO.value);
+	}
+
+	#endregion
+
 	/// <summary>
 	/// 增加对方生命值（考虑额外治疗量）
 	/// </summary>
