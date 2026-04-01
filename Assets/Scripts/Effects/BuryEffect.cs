@@ -206,6 +206,8 @@ public class BuryEffect : EffectScript
 		// 3. 触发卡被 bury 事件
 		foreach (var card in buriedCards)
 		{
+			// 触发自身被bury事件
+			GameEventStorage.me.onMeBuried.RaiseSpecific(card);
 			// 触发任意卡被bury事件
 			GameEventStorage.me.onAnyCardBuried.Raise();
 			// 触发友方卡被bury事件

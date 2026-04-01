@@ -33,5 +33,33 @@ namespace DefaultNamespace.Effects
 			}
 			//combatManager.Shuffle();
 		}
+
+		public void AddSelfToMe()
+		{
+			GameObject selfCopy = Instantiate(myCard);
+			CombatFuncs.me.AddCard_TargetSpecific(selfCopy, myCardScript.myStatusRef);
+			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
+			{
+				effectResultString.value += "// [<color=#87CEEB>" + myCard.name + "</color>] added <color=yellow>1</color> [<color=#87CEEB>" + myCard.name + "</color>] to <color=#87CEEB>You</color>\n";
+			}
+			else // if this card belong to enemy
+			{
+				effectResultString.value += "// [<color=orange>" + myCard.name + "</color>] added <color=yellow>1</color> [<color=orange>" + myCard.name + "</color>] to <color=orange>Enemy</color>\n";
+			}
+		}
+
+		public void AddSelfToThem()
+		{
+			GameObject selfCopy = Instantiate(myCard);
+			CombatFuncs.me.AddCard_TargetSpecific(selfCopy, myCardScript.theirStatusRef);
+			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
+			{
+				effectResultString.value += "// [<color=#87CEEB>" + myCard.name + "</color>] added <color=yellow>1</color> [<color=orange>" + myCard.name + "</color>] to <color=orange>Enemy</color>\n";
+			}
+			else // if this card belong to enemy
+			{
+				effectResultString.value += "// [<color=orange>" + myCard.name + "</color>] added <color=yellow>1</color> [<color=#87CEEB>" + myCard.name + "</color>] to <color=#87CEEB>You</color>\n";
+			}
+		}
 	}
 }

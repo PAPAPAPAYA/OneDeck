@@ -36,4 +36,5 @@ public class GameEventStorage : MonoBehaviour
 	[Header("bury related")]
 	public GameEvent onAnyCardBuried; // 当任意可被置底时触发
 	public GameEvent onFriendlyCardBuried; // 当友方卡被置底时触发
+	public GameEvent onMeBuried; //当自身被置底时触发
 }

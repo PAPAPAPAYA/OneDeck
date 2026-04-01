@@ -1617,6 +1617,7 @@ MonoBehaviour:
   onFriendlyFlyExiled: {fileID: 11400000, guid: ee1cc5fc8ade8b44c9881c4183ed874f, type: 2}
   onAnyCardBuried: {fileID: 11400000, guid: ed0ebe2b8f3453c4a8c72547faef3d47, type: 2}
   onFriendlyCardBuried: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
+  onMeBuried: {fileID: 11400000, guid: dbdfc6da826817e458050a266ddebda9, type: 2}
 --- !u!1 &478120491
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,7 +7,7 @@ namespace DefaultNamespace.Effects
 	{
 		[Header("Status Effect Related Refs")]
 		public GameObject myStatusEffectResolverScript;
-		public bool canStatusEffectBeStacked = false;
+		public bool canStatusEffectBeStacked = true;
 		[Tooltip("if this is none, then won't run give status effect")]
 		public EnumStorage.StatusEffect statusEffectToGive;
 		[Tooltip("this is used for GiveStatusEffectBasedOnStatusEffectCount()")]
@@ -230,6 +230,91 @@ namespace DefaultNamespace.Effects
 			GiveStatusEffect(count);
 		}
 		
+		/// <summary>
+		/// 给所有友方卡片添加指定数量的statusEffectToGive
+		/// 友方指与当前卡同属于一方的卡片（myStatusRef相同）
+		/// </summary>
+		/// <param name="amount">每个友方卡片获得的状态效果层数</param>
+		public virtual void GiveAllFriendlyStatusEffect(int amount)
+		{
+			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
+			if (amount <= 0) return;
+			
+			var cardsToGive = new List<GameObject>();
+			var combinedDeck = combatManager.combinedDeckZone;
+			
+			// 收集所有友方卡片（与当前卡同owner）
+			foreach (var card in combinedDeck)
+			{
+				var cardScript = card.GetComponent<CardScript>();
+				// 跳过中立卡和 Start Card
+				if (CombatManager.ShouldSkipEffectProcessing(cardScript))
+				{
+					continue;
+				}
+				// 只收集友方卡片
+				if (cardScript.myStatusRef == myCardScript.myStatusRef)
+				{
+					cardsToGive.Add(card);
+				}
+			}
+			
+			if (cardsToGive.Count <= 0) return;
+			
+			// 给每个友方卡片添加status effect
+			foreach (var targetCard in cardsToGive)
+			{
+				var targetCardScript = targetCard.GetComponent<CardScript>();
+				
+				// 检查是否已包含该状态效果（如果不能叠加）
+				if (!canStatusEffectBeStacked && targetCardScript.myStatusEffects.Contains(statusEffectToGive))
+				{
+					continue;
+				}
+				
+				// 给这张卡添加amount层状态效果
+				for (int i = 0; i < amount; i++)
+				{
+					targetCardScript.myStatusEffects.Add(statusEffectToGive);
+				}
+				
+				// 输出效果信息
+				var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+				string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+				
+				effectResultString.value +=
+					"// " + thisCardOwnerString +
+					"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
+					targetCardOwnerString +
+					"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
+					"<color=yellow>" + amount + "</color> [" + statusEffectToGive + "]\n";
+				
+				// 创建状态效果解析器
+				if (myStatusEffectResolverScript != null)
+				{
+					int resolverCount = canStatusEffectBeStacked ? amount : 1;
+					for (int i = 0; i < resolverCount; i++)
+					{
+						var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
+						GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
+					}
+				}
+				
+				// 播放粒子效果
+				for (int i = 0; i < amount; i++)
+				{
+					PlayStatusEffectParticle(targetCardScript.transform);
+				}
+				
+				// 触发tint效果
+				TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
+			}
+			
+			CombatInfoDisplayer.me.RefreshDeckInfo();
+		}
+
 		/// <summary>
 		/// 给当前卡后面的X张卡（索引递减方向）各添加Y层statusEffectToGive
 		/// 例如：当前卡索引为5，lastXCardsCount=3，则给索引4,3,2的卡各添加statusEffectLayerCount层状态效果
