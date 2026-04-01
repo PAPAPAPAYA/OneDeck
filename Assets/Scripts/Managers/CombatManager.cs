@@ -334,7 +334,7 @@ public class CombatManager : MonoBehaviour
 				RevealNextCard();
 				awaitingRevealConfirm = false; // 进入触发效果阶段
 			}
-			
+
 			EffectChainManager.Me.CloseOpenedChain();
 		}
 		// ========== 阶段2: 等待触发当前卡效果 ==========

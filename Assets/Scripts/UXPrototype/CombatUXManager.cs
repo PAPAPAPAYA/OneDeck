@@ -253,10 +253,32 @@ public class CombatUXManager : MonoBehaviour
 		// 添加到牌组底部（index 0）
 		physicalCardsInDeck.Insert(0, physicalCard);
 
-		// 如果有配置 showPos，使用弧形轨迹动画
+		// 如果有配置 showPos，使用通用动画系统
 		if (showPos != null)
 		{
-			PlayArcAnimationToDeckBottom(physicalCard, onComplete);
+			// 【关键修复】计算目标位置时，考虑到即将有一张卡会被 reveal
+			// 此时 physicalCardsInDeck 包含了即将被 reveal 的卡，但动画完成时它会被移除
+			// 所以需要使用 effectiveCount = physicalCardsInDeck.Count - 1 来计算正确位置
+			int effectiveCount = physicalCardsInDeck.Count - 1;
+			if (effectiveCount < 1) effectiveCount = 1; // 至少为1，避免计算错误
+			
+			Vector3 targetPos = new Vector3(
+				physicalCardDeckPos.position.x + xOffset * (effectiveCount - 1),
+				physicalCardDeckPos.position.y + yOffset * (effectiveCount - 1),
+				physicalCardDeckPos.position.z - zOffset * 0
+			);
+
+			var config = new CardMoveConfig
+			{
+				moveType = CardMoveType.ToPosition, // 使用 ToPosition 以使用修正后的位置
+				customTarget = targetPos,
+				duration = revealToDeckAnimDuration,
+				useArc = true,
+				arcMidpoint = showPos,
+				ease = revealToDeckEase,
+				onComplete = onComplete
+			};
+			MoveCardWithAnimation(card, config);
 		}
 		else
 		{
@@ -264,69 +286,6 @@ public class CombatUXManager : MonoBehaviour
 			UpdateAllPhysicalCardTargets();
 			onComplete?.Invoke();
 		}
-	}
-
-	/// <summary>
-	/// 播放弧形轨迹动画：从当前位置 -> showPos -> 牌组底部
-	/// </summary>
-	/// <param name="physicalCard">物理卡片 GameObject</param>
-	/// <param name="onComplete">动画完成回调（可选）</param>
-	private void PlayArcAnimationToDeckBottom(GameObject physicalCard, Action onComplete = null)
-	{
-		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
-		if (physScript == null) 
-		{
-			onComplete?.Invoke();
-			return;
-		}
-
-		// 计算牌组底部的最终位置
-		int deckIndex = 0; // 插入到底部，index 为 0
-		var count = physicalCardsInDeck.Count;
-		Vector3 finalTarget = new(
-			physicalCardDeckPos.position.x + xOffset * (count - 1 - deckIndex),
-			physicalCardDeckPos.position.y + yOffset * (count - 1 - deckIndex),
-			physicalCardDeckPos.position.z - zOffset * deckIndex
-		);
-
-		// 标记正在播放特殊动画，阻止常规 SetTargetPosition 动画
-		physScript.isPlayingSpecialAnimation = true;
-
-		// 创建弧形轨迹动画序列
-		Sequence arcSequence = DOTween.Sequence();
-
-		// 阶段1：从当前位置移动到 showPos
-		arcSequence.Append(
-			physicalCard.transform.DOMove(showPos.position, revealToDeckAnimDuration * 0.5f)
-				.SetEase(revealToDeckEase)
-		);
-
-		// 阶段2：从 showPos 移动到最终目标位置
-		arcSequence.Append(
-			physicalCard.transform.DOMove(finalTarget, revealToDeckAnimDuration * 0.5f)
-				.SetEase(revealToDeckEase)
-		);
-
-		// 同步缩放动画：从 reveal size 缩放到 deck size
-		arcSequence.Join(
-			physicalCard.transform.DOScale(physicalCardDeckSize, revealToDeckAnimDuration)
-				.SetEase(revealToDeckEase)
-		);
-
-		// 动画完成后恢复常规动画控制
-		arcSequence.OnComplete(() =>
-		{
-			physScript.isPlayingSpecialAnimation = false;
-			// 同步 TargetPosition 和 TargetScale，防止跳变
-			physScript.SetTargetPosition(finalTarget);
-			physScript.SetTargetScale(physicalCardDeckSize);
-			// 更新其他卡片的位置
-			UpdateAllPhysicalCardTargets();
-			// 调用完成回调
-			onComplete?.Invoke();
-		});
-
-		arcSequence.Play();
 	}
 
 	#endregion
@@ -362,6 +321,7 @@ public class CombatUXManager : MonoBehaviour
 				break;
 			case CardMoveType.ToBottom:
 				targetPosition = CalculatePositionAtIndex(0);
+				print("MoveCardWithAnimation() : " + physicalCardsInDeck.Count);
 				break;
 			case CardMoveType.ToIndex:
 				targetPosition = CalculatePositionAtIndex(config.targetIndex);
@@ -430,6 +390,7 @@ public class CombatUXManager : MonoBehaviour
 			}
 
 			config.onComplete?.Invoke();
+			UpdateAllPhysicalCardTargets();
 		});
 
 		moveSequence.Play();
@@ -525,8 +486,8 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	private Vector3 CalculatePositionAtIndex(int index)
 	{
-		var count = combatManager.combinedDeckZone.Count;
-		// index=0（底部）偏移最大，index=count-1（顶部）偏移最小
+		var count = physicalCardsInDeck.Count;
+		// index=0（物理卡组底部）偏移最大，index=count-1（顶部）偏移最小
 		return new Vector3(
 			physicalCardDeckPos.position.x + xOffset * (count - 1 - index),
 			physicalCardDeckPos.position.y + yOffset * (count - 1 - index),
@@ -798,12 +759,7 @@ public class CombatUXManager : MonoBehaviour
 			var physicalCard = GetPhysicalCardFromLogicalCard(logicalCard);
 			if (physicalCard == null) continue;
 
-			// i=0（底部）偏移最大，i=count-1（顶部）偏移最小
-			Vector3 targetPos = new(
-				physicalCardDeckPos.position.x + xOffset * (count - 1 - i),
-				physicalCardDeckPos.position.y + yOffset * (count - 1 - i),
-				physicalCardDeckPos.position.z - zOffset * i
-			);
+			Vector3 targetPos = CalculatePositionAtIndex(i);
 
 			targets[physicalCard] = targetPos;
 		}
@@ -969,7 +925,7 @@ public class CombatUXManager : MonoBehaviour
 
 	#endregion
 
-	#region 职责3：根据列表顺序告�?Physical Card 目标位置
+	#region 职责3：根据列表顺序告诉Physical Card 目标位置
 
 	/// <summary>
 	/// 根据 physicalCardsInDeck 的顺序，更新所有卡片的目标位置
@@ -984,15 +940,13 @@ public class CombatUXManager : MonoBehaviour
 			if (physScript == null) continue;
 
 			// 计算目标位置
-			// i=0（顶部）偏移最大，i=count-1（底部）偏移最小
-			var count = physicalCardsInDeck.Count;
-			Vector3 targetPos = new(
-			    physicalCardDeckPos.position.x + xOffset * (count - i),
-			    physicalCardDeckPos.position.y + yOffset * (count - i),
-			    physicalCardDeckPos.position.z - zOffset * i
-			);
-
-			// 设置目标位置和缩放（卡片自己�?Update 中处理动画）
+			Vector3 targetPos = CalculatePositionAtIndex(i);
+			if (i == 0)
+			{
+				print("updateAllPhysicalCardTargets(): " + physicalCardsInDeck.Count);
+			}
+			
+			// 设置目标位置和缩放（卡片自己在Update 中处理动画）
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
 		}
@@ -1218,42 +1172,6 @@ public class CombatUXManager : MonoBehaviour
 
 	#endregion
 	
-	#region Stage/Bury 动画（已改用通用弧形轨迹动画）
-	
-	/// <summary>
-	/// Stage/Bury 动画 - 已改用通用弧形轨迹动画
-	/// 请直接使用 MoveCardToTop / MoveCardToBottom 方法
-	/// </summary>
-	[Obsolete("请直接使用 MoveCardToTop 或 MoveCardToBottom 方法")]
-	public void PlayStageBuryAnimation(List<GameObject> affectedCards, bool isStage)
-	{
-		if (affectedCards == null || affectedCards.Count == 0) return;
-
-		// 直接调用通用弧形轨迹动画
-		foreach (var card in affectedCards)
-		{
-			if (isStage)
-				MoveCardToTop(card, duration: 0.5f, useArc: true);
-			else
-				MoveCardToBottom(card, duration: 0.5f, useArc: true);
-		}
-	}
-	
-	/// <summary>
-	/// Stage/Bury 动画 - 已改用通用弧形轨迹动画（兼容旧版调用）
-	/// </summary>
-	[Obsolete("请直接使用 MoveCardToTop 或 MoveCardToBottom 方法")]
-	public void PlayStageBuryAnimation(GameObject affectedCard, bool isStage)
-	{
-		if (affectedCard == null) return;
-		
-		if (isStage)
-			MoveCardToTop(affectedCard, duration: 0.5f, useArc: true);
-		else
-			MoveCardToBottom(affectedCard, duration: 0.5f, useArc: true);
-	}
-	
-	#endregion
 
 	/// <summary>
 	/// 为逻辑卡片创建对应的物理卡片并插入�?deck �?
@@ -1297,7 +1215,7 @@ public class CombatUXManager : MonoBehaviour
 		UpdateAllPhysicalCardTargets();
 	}
 
-	#region 初始�?
+	#region 初始化
 
 	/// <summary>
 	/// 实例化所有物理卡片（包括 Start Card�?

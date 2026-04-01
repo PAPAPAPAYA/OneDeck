@@ -21,6 +21,9 @@ public class HPAlterEffect : EffectScript
 	[Tooltip("标记是否是status effect造成的伤害（status effect伤害不触发攻击动画）")]
 	public bool isStatusEffectDamage = false;
 	
+	[Tooltip("额外伤害值 - 用于DecreaseMyHp和DecreaseTheirHp")]
+	public int extraDmg = 0;
+	
 	/// <summary>
 	/// 计算额外伤害（包括Power状态效果和基础伤害）
 	/// </summary>
@@ -69,9 +72,9 @@ public class HPAlterEffect : EffectScript
 
 	/// <summary>
 	/// 减少自身生命值（考虑额外伤害）
+	/// 使用 extraDmg 字段作为额外伤害值
 	/// </summary>
-	/// <param name="extraDmg">额外伤害数值</param>
-	public void DecreaseMyHp(int extraDmg)
+	public void DecreaseMyHp()
 	{
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
@@ -136,7 +139,9 @@ public class HPAlterEffect : EffectScript
 	public void DecreaseTheirHp_BasedOnLostHp(int baseDmgAmount)
 	{
 		var extraDmgAmount = (myCardScript.myStatusRef.hpMax - myCardScript.myStatusRef.hp)/2;
-		DecreaseTheirHp(baseDmgAmount + extraDmgAmount);
+		extraDmg = baseDmgAmount + extraDmgAmount;
+		DecreaseTheirHp();
+		extraDmg = 0;
 	}
 
 	/// <summary>
@@ -169,7 +174,9 @@ public class HPAlterEffect : EffectScript
 			}
 		}
 		
-		DecreaseTheirHp(baseDmgAmount + infectedCardCount);
+		extraDmg = baseDmgAmount + infectedCardCount;
+		DecreaseTheirHp();
+		extraDmg = 0;
 	}
 
 	/// <summary>
@@ -202,14 +209,16 @@ public class HPAlterEffect : EffectScript
 			}
 		}
 		
-		DecreaseTheirHp(cardCount);
+		extraDmg = cardCount;
+		DecreaseTheirHp();
+		extraDmg = 0;
 	}
 
 	/// <summary>
 	/// 减少对方生命值（考虑额外伤害）
+	/// 使用 extraDmg 字段作为额外伤害值
 	/// </summary>
-	/// <param name="extraDmg">额外伤害数值</param>
-	public void DecreaseTheirHp(int extraDmg)
+	public void DecreaseTheirHp()
 	{
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
@@ -263,13 +272,17 @@ public class HPAlterEffect : EffectScript
 	public void DecreaseTheirHp_BasedOnIntSO(IntSO intSO)
 	{
 		if (intSO == null) return;
-		DecreaseTheirHp(intSO.value);
+		extraDmg = intSO.value;
+		DecreaseTheirHp();
+		extraDmg = 0;
 	}
 
 	public void DecreaseMyHp_BasedOnIntSO(IntSO intSO)
 	{
 		if (intSO == null) return;
-		DecreaseMyHp(intSO.value);
+		extraDmg = intSO.value;
+		DecreaseMyHp();
+		extraDmg = 0;
 	}
 
 	public void IncreaseTheirHp_BasedOnIntSO(IntSO intSO)
@@ -282,6 +295,21 @@ public class HPAlterEffect : EffectScript
 	{
 		if (intSO == null) return;
 		IncreaseMyHp(intSO.value);
+	}
+
+	/// <summary>
+	/// 多次减少对方生命值，每次造成 baseDmg + extraDmg 伤害
+	/// </summary>
+	/// <param name="timesIntSO">伤害次数</param>
+	public void DecreaseTheirHpTimesIntSO(IntSO timesIntSO)
+	{
+		if (timesIntSO == null) return;
+		
+		int times = timesIntSO.value;
+		for (int i = 0; i < times; i++)
+		{
+			DecreaseTheirHp();
+		}
 	}
 
 	#endregion

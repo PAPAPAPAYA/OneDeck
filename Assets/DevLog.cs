@@ -1,12 +1,16 @@
 // devlog
 
-//
+// change
+	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
+// bug
+	//// bury animation bugged, suspect stage also has same problem
 
 //// oldtodo
 // bug
 	//// start card movement
 	//// attack animation need to check effect, not card owner
-	/// block input when shuffling
+	//// block input when shuffling
+	
 // visual communication
 	//// attack animation
 	// status effect
