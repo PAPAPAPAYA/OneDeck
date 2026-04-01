@@ -17,6 +17,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: c9f442f30e825cc4fb8a8277de5f2637, type: 3}
   - {fileID: 8718476725744197808, guid: c9f442f30e825cc4fb8a8277de5f2637, type: 3}
   - {fileID: 8718476725744197808, guid: c05a5ea8fe0eafd4c82cb5f5416938bb, type: 3}
+  - {fileID: 8718476725744197808, guid: 06861dbad3911804dbb077d430aebd73, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: player default deck, will copy to player deck SO at start of game

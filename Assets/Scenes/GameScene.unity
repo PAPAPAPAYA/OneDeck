@@ -1615,6 +1615,7 @@ MonoBehaviour:
   beforeRoundStart: {fileID: 11400000, guid: cde884b6e17c9e24b90d185b1c96604e, type: 2}
   onFriendlyMinionAdded: {fileID: 11400000, guid: 3d27fd3b0bb6feb4e85567151942425d, type: 2}
   onFriendlyFlyExiled: {fileID: 11400000, guid: ee1cc5fc8ade8b44c9881c4183ed874f, type: 2}
+  onAnyCardBuried: {fileID: 11400000, guid: ed0ebe2b8f3453c4a8c72547faef3d47, type: 2}
   onFriendlyCardBuried: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
 --- !u!1 &478120491
 GameObject:
