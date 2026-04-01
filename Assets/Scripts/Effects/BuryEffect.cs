@@ -203,7 +203,24 @@ public class BuryEffect : EffectScript
 			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true);
 		}
 		
-		// 3. 同步物理卡片列表并更新所有卡片位置
+		// 3. 触发友方卡被 bury 事件
+		foreach (var card in buriedCards)
+		{
+			var cardStatus = card.GetComponent<CardScript>()?.myStatusRef;
+			if (cardStatus != null && GameEventStorage.me.onFriendlyCardBuried != null)
+			{
+				if (cardStatus == combatManager.ownerPlayerStatusRef)
+				{
+					GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
+				}
+				else
+				{
+					GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+				}
+			}
+		}
+		
+		// 4. 同步物理卡片列表并更新所有卡片位置
 		if (buriedCards.Count > 0)
 		{
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();

@@ -321,7 +321,6 @@ public class CombatUXManager : MonoBehaviour
 				break;
 			case CardMoveType.ToBottom:
 				targetPosition = CalculatePositionAtIndex(0);
-				print("MoveCardWithAnimation() : " + physicalCardsInDeck.Count);
 				break;
 			case CardMoveType.ToIndex:
 				targetPosition = CalculatePositionAtIndex(config.targetIndex);
@@ -941,10 +940,6 @@ public class CombatUXManager : MonoBehaviour
 
 			// 计算目标位置
 			Vector3 targetPos = CalculatePositionAtIndex(i);
-			if (i == 0)
-			{
-				print("updateAllPhysicalCardTargets(): " + physicalCardsInDeck.Count);
-			}
 			
 			// 设置目标位置和缩放（卡片自己在Update 中处理动画）
 			physScript.SetTargetPosition(targetPos);

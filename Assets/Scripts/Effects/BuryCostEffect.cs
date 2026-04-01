@@ -74,5 +74,22 @@ public class BuryCostEffect : EffectScript
 		{
 			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true);
 		}
+		
+		// 触发友方卡被 bury 事件
+		foreach (var card in buriedCards)
+		{
+			var cardStatus = card.GetComponent<CardScript>()?.myStatusRef;
+			if (cardStatus != null && GameEventStorage.me.onFriendlyCardBuried != null)
+			{
+				if (cardStatus == combatManager.ownerPlayerStatusRef)
+				{
+					GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
+				}
+				else
+				{
+					GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+				}
+			}
+		}
 	}
 }

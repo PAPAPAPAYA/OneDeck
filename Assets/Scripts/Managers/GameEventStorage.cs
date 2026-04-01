@@ -32,4 +32,7 @@ public class GameEventStorage : MonoBehaviour
 	
 	[Header("exile related")]
 	public GameEvent onFriendlyFlyExiled; // 当友方fly被放逐时触发（包括作为minion cost被消耗）
+	
+	[Header("bury related")]
+	public GameEvent onFriendlyCardBuried; // 当友方卡被置底时触发
 }

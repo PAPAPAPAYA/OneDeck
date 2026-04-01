@@ -1,9 +1,15 @@
 // devlog
 
 // change
+	// should we change [bury 1 friendly] to [bury next 2]?
+		// it's more powerful, maybe should be benefit, not cost
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 // bug
 	//// bury animation bugged, suspect stage also has same problem
+
+
+
+
 
 //// oldtodo
 // bug

@@ -177,15 +177,6 @@ public class CostNEffectContainer : MonoBehaviour
 	}
 
 	/// <summary>
-	/// [已废弃] 墓地机制已移除
-	/// </summary>
-	public void CheckCost_HasOwnerCardInGrave(int ownerCardCount)
-	{
-		// [已废弃] 墓地机制已移除，此方法始终返回成功
-		return;
-	}
-
-	/// <summary>
 	/// Check if the card has at least [counterRequired] Counter status effects.
 	/// Used for effects that require a specific count to trigger.
 	/// </summary>
@@ -197,6 +188,54 @@ public class CostNEffectContainer : MonoBehaviour
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
 		effectResultString.value += "// Not enough [Counter] to activate [" + _myCardScript.gameObject.name + "] (need " + counterRequired + ")\n";
+	}
+
+	/// <summary>
+	/// Check if the card's index in combined deck is before (smaller than) the Start Card's index.
+	/// Cost is met if this card is positioned before Start Card in the deck.
+	/// </summary>
+	public void CheckCost_IndexBeforeStartCard()
+	{
+		var combinedDeck = CombatManager.Me.combinedDeckZone;
+		
+		// Find this card's index
+		int thisCardIndex = combinedDeck.IndexOf(_myCardScript.gameObject);
+		if (thisCardIndex == -1)
+		{
+			_costNotMetFlag++;
+			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+			effectResultString.value += "// [" + _myCardScript.gameObject.name + "] is not in deck\n";
+			return;
+		}
+		
+		// Find Start Card's index
+		int startCardIndex = -1;
+		for (int i = 0; i < combinedDeck.Count; i++)
+		{
+			var cardScript = combinedDeck[i].GetComponent<CardScript>();
+			if (cardScript != null && cardScript.isStartCard)
+			{
+				startCardIndex = i;
+				break;
+			}
+		}
+		
+		// If no Start Card found in deck, cost cannot be met
+		if (startCardIndex == -1)
+		{
+			_costNotMetFlag++;
+			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+			effectResultString.value += "// No Start Card in deck, [" + _myCardScript.gameObject.name + "] cannot activate\n";
+			return;
+		}
+		
+		// Cost is met if this card's index is smaller than Start Card's index (closer to bottom)
+		if (thisCardIndex < startCardIndex) return;
+		
+		// Cost not met
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+		effectResultString.value += "// [" + _myCardScript.gameObject.name + "] is not before Start Card in deck\n";
 	}
 
 	#endregion

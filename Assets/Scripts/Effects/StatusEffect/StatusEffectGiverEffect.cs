@@ -18,6 +18,12 @@ namespace DefaultNamespace.Effects
 		[Tooltip("if true, will include the card itself in reveal zone when giving status effect")]
 		public bool includeSelf = false;
 		
+		[Header("连续给予后X张卡")]
+		[Tooltip("给当前卡后面的X张卡添加状态效果（索引递减方向）")]
+		public int lastXCardsCount = 0;
+		[Tooltip("给每张卡添加的状态效果层数")]
+		public int statusEffectLayerCount = 1;
+		
 		[Header("Particle System")]
 		[Tooltip("获得状态效果时播放的粒子系统预制体")]
 		public ParticleSystem statusEffectParticlePrefab;
@@ -222,6 +228,111 @@ namespace DefaultNamespace.Effects
 			
 			// 根据统计的数量给予status effect
 			GiveStatusEffect(count);
+		}
+		
+		/// <summary>
+		/// 给当前卡后面的X张卡（索引递减方向）各添加Y层statusEffectToGive
+		/// 例如：当前卡索引为5，lastXCardsCount=3，则给索引4,3,2的卡各添加statusEffectLayerCount层状态效果
+		/// 如果当前卡在revealZone，则从combinedDeckZone的最后一个元素（Count-1）开始往后数X张卡
+		/// </summary>
+		public virtual void GiveStatusEffectToLastXCards()
+		{
+			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
+			if (lastXCardsCount <= 0 || statusEffectLayerCount <= 0) return;
+			
+			var combinedDeck = combatManager.combinedDeckZone;
+			int startIndex;
+			
+			// 判断当前卡是否在revealZone
+			if (combatManager.revealZone != null && combatManager.revealZone == myCard)
+			{
+				// 当前卡在revealZone，从combinedDeckZone的最后一个元素开始
+				startIndex = combinedDeck.Count - 1;
+			}
+			else
+			{
+				// 找到当前卡在combinedDeckZone中的索引
+				int currentIndex = -1;
+				for (int i = 0; i < combinedDeck.Count; i++)
+				{
+					if (combinedDeck[i] == myCard)
+					{
+						currentIndex = i;
+						break;
+					}
+				}
+				
+				// 如果找不到当前卡，则不执行
+				if (currentIndex < 0) return;
+				
+				startIndex = currentIndex - 1;
+			}
+			
+			// 给后面X张卡添加状态效果（索引递减方向）
+			int cardsGiven = 0;
+			for (int i = startIndex; i >= 0 && cardsGiven < lastXCardsCount; i--)
+			{
+				var targetCard = combinedDeck[i];
+				var targetCardScript = targetCard.GetComponent<CardScript>();
+				
+				// 跳过中立卡和 Start Card
+				if (CombatManager.ShouldSkipEffectProcessing(targetCardScript))
+				{
+					continue;
+				}
+				
+				// 检查是否已包含该状态效果（如果不能叠加）
+				if (!canStatusEffectBeStacked && targetCardScript.myStatusEffects.Contains(statusEffectToGive))
+				{
+					continue;
+				}
+				
+				// 给这张卡添加Y层状态效果
+				for (int j = 0; j < statusEffectLayerCount; j++)
+				{
+					targetCardScript.myStatusEffects.Add(statusEffectToGive);
+				}
+				
+				// 输出效果信息
+				var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+				string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+				
+				effectResultString.value +=
+					"// " + thisCardOwnerString +
+					"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
+					targetCardOwnerString +
+					"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
+					"<color=yellow>" + statusEffectLayerCount + "</color> [" + statusEffectToGive + "]\n";
+				
+				// 创建状态效果解析器（如果不能叠加则只创建1个，否则创建Y个）
+				if (myStatusEffectResolverScript != null)
+				{
+					int resolverCount = canStatusEffectBeStacked ? statusEffectLayerCount : 1;
+					for (int j = 0; j < resolverCount; j++)
+					{
+						var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
+						GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
+					}
+				}
+				
+				// 播放粒子效果
+				for (int j = 0; j < statusEffectLayerCount; j++)
+				{
+					PlayStatusEffectParticle(targetCardScript.transform);
+				}
+				
+				// 触发tint效果
+				TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
+				
+				cardsGiven++;
+			}
+			
+			if (cardsGiven > 0)
+			{
+				CombatInfoDisplayer.me.RefreshDeckInfo();
+			}
 		}
 	}
 }
