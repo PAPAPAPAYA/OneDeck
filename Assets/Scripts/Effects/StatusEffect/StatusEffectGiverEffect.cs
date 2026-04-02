@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 namespace DefaultNamespace.Effects
@@ -23,6 +25,12 @@ namespace DefaultNamespace.Effects
 		public int lastXCardsCount = 0;
 		[Tooltip("给每张卡添加的状态效果层数")]
 		public int statusEffectLayerCount = 1;
+		
+		[Header("给予X个友方卡片")]
+		[Tooltip("随机选择的友方卡片数量")]
+		public int xFriendlyCount = 0;
+		[Tooltip("给每个友方卡片添加的状态效果层数")]
+		public int yFriendlyLayerCount = 1;
 		
 		[Header("Particle System")]
 		[Tooltip("获得状态效果时播放的粒子系统预制体")]
@@ -109,6 +117,8 @@ namespace DefaultNamespace.Effects
 				amount = Mathf.Clamp(amount, 0, cardsToGiveTag.Count);
 			}
 
+			// 确定实际目标卡片
+			var targetCards = new List<CardScript>();
 			for (var i = 0; i < amount; i++)
 			{
 				CardScript targetCardScript;
@@ -120,24 +130,99 @@ namespace DefaultNamespace.Effects
 				{
 					targetCardScript = cardsToGiveTag[Random.Range(0, cardsToGiveTag.Count)].GetComponent<CardScript>();
 				}
-				targetCardScript.myStatusEffects.Add(statusEffectToGive);
-				var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				effectResultString.value +=
-					"// " + thisCardOwnerString + // tag giver owner card
-					"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " + // tag giver card name 
-					targetCardOwnerString + // status effect receiver card owner
-					"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " + // status effect receiver card
-					"<color=yellow>1</color> [" + statusEffectToGive + "]\n"; // status effect
-				if (myStatusEffectResolverScript == null) continue;
+				targetCards.Add(targetCardScript);
+			}
+			
+			// 播放特效并等待完成后执行效果
+			if (CombatUXManager.me != null && CombatUXManager.me.statusEffectProjectilePrefab != null)
+			{
+				StartCoroutine(GiveStatusEffectWithProjectile(targetCards));
+			}
+			else
+			{
+				// 无特效，直接执行
+				ApplyStatusEffectsToTargets(targetCards);
+			}
+		}
+
+		/// <summary>
+		/// 协程：播放飞行特效，完成后执行效果（并行播放）
+		/// </summary>
+		private IEnumerator GiveStatusEffectWithProjectile(List<CardScript> targetCards)
+		{
+			int completedCount = 0;
+			int totalCount = targetCards.Count;
+
+			for (int i = 0; i < targetCards.Count; i++)
+			{
+				var target = targetCards[i];
+				
+				// 错开播放时间（每个特效间隔0.05秒）
+				DOVirtual.DelayedCall(i * 0.05f, () =>
+				{
+					CombatUXManager.me.PlayStatusEffectProjectile(
+						myCard, 
+						target.gameObject, 
+						() => 
+						{
+							// 单个特效完成，执行该目标的效果
+							ApplyStatusEffectToSingleTarget(target);
+							
+							completedCount++;
+						}
+					);
+				});
+			}
+
+			// 等待所有特效完成
+			yield return new WaitUntil(() => completedCount >= totalCount);
+			
+			// 刷新UI
+			CombatInfoDisplayer.me.RefreshDeckInfo();
+		}
+
+		/// <summary>
+		/// 对单个目标应用状态效果
+		/// </summary>
+		private void ApplyStatusEffectToSingleTarget(CardScript targetCardScript)
+		{
+			targetCardScript.myStatusEffects.Add(statusEffectToGive);
+			
+			// 输出效果信息
+			var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+			string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+			
+			effectResultString.value +=
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
+				targetCardOwnerString +
+				"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
+				"<color=yellow>1</color> [" + statusEffectToGive + "]\n";
+			
+			// 创建状态效果解析器
+			if (myStatusEffectResolverScript != null)
+			{
 				var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
 				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
-				// play particle effect at card position
-				PlayStatusEffectParticle(targetCardScript.transform);
-				// trigger tint effect
-				TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
+			}
+			
+			// 播放粒子效果
+			PlayStatusEffectParticle(targetCardScript.transform);
+			
+			// 触发tint效果
+			TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
+		}
+
+		/// <summary>
+		/// 对多个目标直接应用状态效果（无特效时使用）
+		/// </summary>
+		private void ApplyStatusEffectsToTargets(List<CardScript> targetCards)
+		{
+			foreach (var targetCardScript in targetCards)
+			{
+				ApplyStatusEffectToSingleTarget(targetCardScript);
 			}
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}
@@ -261,7 +346,110 @@ namespace DefaultNamespace.Effects
 			
 			if (cardsToGive.Count <= 0) return;
 			
-			// 给每个友方卡片添加status effect
+			// 使用特效系统给予状态效果
+			if (CombatUXManager.me != null && CombatUXManager.me.statusEffectProjectilePrefab != null)
+			{
+				StartCoroutine(GiveAllFriendlyWithProjectile(cardsToGive, amount));
+			}
+			else
+			{
+				// 无特效，直接执行
+				ApplyStatusEffectsToFriendly(cardsToGive, amount);
+			}
+		}
+
+		/// <summary>
+		/// 协程：给所有友方卡片播放飞行特效后执行效果
+		/// </summary>
+		private IEnumerator GiveAllFriendlyWithProjectile(List<GameObject> cardsToGive, int amount)
+		{
+			int completedCount = 0;
+			int totalCount = cardsToGive.Count;
+
+			for (int i = 0; i < cardsToGive.Count; i++)
+			{
+				var targetCard = cardsToGive[i];
+				var targetCardScript = targetCard.GetComponent<CardScript>();
+				
+				// 检查是否已包含该状态效果（如果不能叠加）
+				if (!canStatusEffectBeStacked && targetCardScript.myStatusEffects.Contains(statusEffectToGive))
+				{
+					completedCount++; // 跳过也算完成
+					continue;
+				}
+				
+				// 错开播放时间
+				DOVirtual.DelayedCall(i * 0.05f, () =>
+				{
+					CombatUXManager.me.PlayStatusEffectProjectile(
+						myCard,
+						targetCard,
+						() =>
+						{
+							// 特效完成，执行效果
+							ApplyStatusEffectToFriendlySingle(targetCardScript, amount);
+							completedCount++;
+						}
+					);
+				});
+			}
+
+			// 等待所有特效完成
+			yield return new WaitUntil(() => completedCount >= totalCount);
+			
+			CombatInfoDisplayer.me.RefreshDeckInfo();
+		}
+
+		/// <summary>
+		/// 对单个友方目标应用状态效果（多层）
+		/// </summary>
+		private void ApplyStatusEffectToFriendlySingle(CardScript targetCardScript, int amount)
+		{
+			// 给这张卡添加amount层状态效果
+			for (int i = 0; i < amount; i++)
+			{
+				targetCardScript.myStatusEffects.Add(statusEffectToGive);
+			}
+			
+			// 输出效果信息
+			var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+			string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+			
+			effectResultString.value +=
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
+				targetCardOwnerString +
+				"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
+				"<color=yellow>" + amount + "</color> [" + statusEffectToGive + "]\n";
+			
+			// 创建状态效果解析器
+			if (myStatusEffectResolverScript != null)
+			{
+				int resolverCount = canStatusEffectBeStacked ? amount : 1;
+				for (int i = 0; i < resolverCount; i++)
+				{
+					var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
+					GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
+				}
+			}
+			
+			// 播放粒子效果
+			for (int i = 0; i < amount; i++)
+			{
+				PlayStatusEffectParticle(targetCardScript.transform);
+			}
+			
+			// 触发tint效果
+			TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
+		}
+
+		/// <summary>
+		/// 对多个友方目标直接应用状态效果（无特效时使用）
+		/// </summary>
+		private void ApplyStatusEffectsToFriendly(List<GameObject> cardsToGive, int amount)
+		{
 			foreach (var targetCard in cardsToGive)
 			{
 				var targetCardScript = targetCard.GetComponent<CardScript>();
@@ -272,44 +460,7 @@ namespace DefaultNamespace.Effects
 					continue;
 				}
 				
-				// 给这张卡添加amount层状态效果
-				for (int i = 0; i < amount; i++)
-				{
-					targetCardScript.myStatusEffects.Add(statusEffectToGive);
-				}
-				
-				// 输出效果信息
-				var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				
-				effectResultString.value +=
-					"// " + thisCardOwnerString +
-					"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
-					targetCardOwnerString +
-					"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
-					"<color=yellow>" + amount + "</color> [" + statusEffectToGive + "]\n";
-				
-				// 创建状态效果解析器
-				if (myStatusEffectResolverScript != null)
-				{
-					int resolverCount = canStatusEffectBeStacked ? amount : 1;
-					for (int i = 0; i < resolverCount; i++)
-					{
-						var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
-						GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
-					}
-				}
-				
-				// 播放粒子效果
-				for (int i = 0; i < amount; i++)
-				{
-					PlayStatusEffectParticle(targetCardScript.transform);
-				}
-				
-				// 触发tint效果
-				TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
+				ApplyStatusEffectToFriendlySingle(targetCardScript, amount);
 			}
 			
 			CombatInfoDisplayer.me.RefreshDeckInfo();
@@ -353,7 +504,8 @@ namespace DefaultNamespace.Effects
 				startIndex = currentIndex - 1;
 			}
 			
-			// 给后面X张卡添加状态效果（索引递减方向）
+			// 收集目标卡片
+			var targetCards = new List<CardScript>();
 			int cardsGiven = 0;
 			for (int i = startIndex; i >= 0 && cardsGiven < lastXCardsCount; i--)
 			{
@@ -372,52 +524,271 @@ namespace DefaultNamespace.Effects
 					continue;
 				}
 				
-				// 给这张卡添加Y层状态效果
-				for (int j = 0; j < statusEffectLayerCount; j++)
-				{
-					targetCardScript.myStatusEffects.Add(statusEffectToGive);
-				}
-				
-				// 输出效果信息
-				var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				
-				effectResultString.value +=
-					"// " + thisCardOwnerString +
-					"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
-					targetCardOwnerString +
-					"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
-					"<color=yellow>" + statusEffectLayerCount + "</color> [" + statusEffectToGive + "]\n";
-				
-				// 创建状态效果解析器（如果不能叠加则只创建1个，否则创建Y个）
-				if (myStatusEffectResolverScript != null)
-				{
-					int resolverCount = canStatusEffectBeStacked ? statusEffectLayerCount : 1;
-					for (int j = 0; j < resolverCount; j++)
-					{
-						var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
-						GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
-					}
-				}
-				
-				// 播放粒子效果
-				for (int j = 0; j < statusEffectLayerCount; j++)
-				{
-					PlayStatusEffectParticle(targetCardScript.transform);
-				}
-				
-				// 触发tint效果
-				TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
-				
+				targetCards.Add(targetCardScript);
 				cardsGiven++;
 			}
 			
-			if (cardsGiven > 0)
+			if (targetCards.Count <= 0) return;
+			
+			// 使用特效系统给予状态效果
+			if (CombatUXManager.me != null && CombatUXManager.me.statusEffectProjectilePrefab != null)
 			{
+				StartCoroutine(GiveToLastXCardsWithProjectile(targetCards));
+			}
+			else
+			{
+				// 无特效，直接执行
+				ApplyStatusEffectsToLastXCards(targetCards);
 				CombatInfoDisplayer.me.RefreshDeckInfo();
 			}
+		}
+
+		/// <summary>
+		/// 协程：给后X张卡播放飞行特效后执行效果
+		/// </summary>
+		private IEnumerator GiveToLastXCardsWithProjectile(List<CardScript> targetCards)
+		{
+			int completedCount = 0;
+			int totalCount = targetCards.Count;
+
+			for (int i = 0; i < targetCards.Count; i++)
+			{
+				var targetCardScript = targetCards[i];
+				
+				// 错开播放时间
+				DOVirtual.DelayedCall(i * 0.05f, () =>
+				{
+					CombatUXManager.me.PlayStatusEffectProjectile(
+						myCard,
+						targetCardScript.gameObject,
+						() =>
+						{
+							// 特效完成，执行效果
+							ApplyStatusEffectToLastXCardSingle(targetCardScript);
+							completedCount++;
+						}
+					);
+				});
+			}
+
+			// 等待所有特效完成
+			yield return new WaitUntil(() => completedCount >= totalCount);
+			
+			CombatInfoDisplayer.me.RefreshDeckInfo();
+		}
+
+		/// <summary>
+		/// 对单个后X卡片应用状态效果（多层）
+		/// </summary>
+		private void ApplyStatusEffectToLastXCardSingle(CardScript targetCardScript)
+		{
+			// 给这张卡添加Y层状态效果
+			for (int j = 0; j < statusEffectLayerCount; j++)
+			{
+				targetCardScript.myStatusEffects.Add(statusEffectToGive);
+			}
+			
+			// 输出效果信息
+			var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+			string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+			
+			effectResultString.value +=
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
+				targetCardOwnerString +
+				"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
+				"<color=yellow>" + statusEffectLayerCount + "</color> [" + statusEffectToGive + "]\n";
+			
+			// 创建状态效果解析器（如果不能叠加则只创建1个，否则创建Y个）
+			if (myStatusEffectResolverScript != null)
+			{
+				int resolverCount = canStatusEffectBeStacked ? statusEffectLayerCount : 1;
+				for (int j = 0; j < resolverCount; j++)
+				{
+					var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
+					GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
+				}
+			}
+			
+			// 播放粒子效果
+			for (int j = 0; j < statusEffectLayerCount; j++)
+			{
+				PlayStatusEffectParticle(targetCardScript.transform);
+			}
+			
+			// 触发tint效果
+			TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
+		}
+
+		/// <summary>
+		/// 对后X张卡片直接应用状态效果（无特效时使用）
+		/// </summary>
+		private void ApplyStatusEffectsToLastXCards(List<CardScript> targetCards)
+		{
+			foreach (var targetCardScript in targetCards)
+			{
+				ApplyStatusEffectToLastXCardSingle(targetCardScript);
+			}
+		}
+
+		/// <summary>
+		/// 给X个友方卡片（与当前卡同owner）各添加Y层statusEffectToGive
+		/// 如果友方卡片不足X个，则给所有友方卡片添加
+		/// X和Y由xFriendlyCount和yFriendlyLayerCount字段配置
+		/// </summary>
+		public virtual void GiveStatusEffectToXFriendly()
+		{
+			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
+			if (xFriendlyCount <= 0 || yFriendlyLayerCount <= 0) return;
+			
+			var combinedDeck = combatManager.combinedDeckZone;
+			
+			// 收集所有友方卡片（与当前卡同owner）
+			var friendlyCards = new List<CardScript>();
+			foreach (var card in combinedDeck)
+			{
+				var cardScript = card.GetComponent<CardScript>();
+				// 跳过中立卡和 Start Card
+				if (CombatManager.ShouldSkipEffectProcessing(cardScript))
+				{
+					continue;
+				}
+				// 只收集友方卡片
+				if (cardScript.myStatusRef == myCardScript.myStatusRef)
+				{
+					// 检查是否已包含该状态效果（如果不能叠加）
+					if (!canStatusEffectBeStacked && cardScript.myStatusEffects.Contains(statusEffectToGive))
+					{
+						continue;
+					}
+					friendlyCards.Add(cardScript);
+				}
+			}
+			
+			if (friendlyCards.Count <= 0) return;
+			
+			// 随机打乱后取前X个
+			friendlyCards = UtilityFuncManagerScript.ShuffleList(friendlyCards);
+			var targetCards = new List<CardScript>();
+			int actualCount = Mathf.Min(xFriendlyCount, friendlyCards.Count);
+			for (int i = 0; i < actualCount; i++)
+			{
+				targetCards.Add(friendlyCards[i]);
+			}
+			
+			if (targetCards.Count <= 0) return;
+			
+			// 使用特效系统给予状态效果
+			if (CombatUXManager.me != null && CombatUXManager.me.statusEffectProjectilePrefab != null)
+			{
+				StartCoroutine(GiveToXFriendlyWithProjectile(targetCards));
+			}
+			else
+			{
+				// 无特效，直接执行
+				ApplyStatusEffectsToXFriendly(targetCards);
+				CombatInfoDisplayer.me.RefreshDeckInfo();
+			}
+		}
+
+		/// <summary>
+		/// 协程：给X个友方卡片播放飞行特效后执行效果
+		/// </summary>
+		private IEnumerator GiveToXFriendlyWithProjectile(List<CardScript> targetCards)
+		{
+			int completedCount = 0;
+			int totalCount = targetCards.Count;
+
+			for (int i = 0; i < targetCards.Count; i++)
+			{
+				var targetCardScript = targetCards[i];
+				
+				// 错开播放时间
+				DOVirtual.DelayedCall(i * 0.05f, () =>
+				{
+					CombatUXManager.me.PlayStatusEffectProjectile(
+						myCard,
+						targetCardScript.gameObject,
+						() =>
+						{
+							// 特效完成，执行效果
+							ApplyStatusEffectToXFriendlySingle(targetCardScript);
+							completedCount++;
+						}
+					);
+				});
+			}
+
+			// 等待所有特效完成
+			yield return new WaitUntil(() => completedCount >= totalCount);
+			
+			CombatInfoDisplayer.me.RefreshDeckInfo();
+		}
+
+		/// <summary>
+		/// 对单个友方目标应用状态效果（多层）
+		/// </summary>
+		private void ApplyStatusEffectToXFriendlySingle(CardScript targetCardScript)
+		{
+			// 给这张卡添加Y层状态效果
+			for (int j = 0; j < yFriendlyLayerCount; j++)
+			{
+				targetCardScript.myStatusEffects.Add(statusEffectToGive);
+			}
+			
+			// 输出效果信息
+			var targetCardOwnerString = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+			string targetCardColor = targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+			
+			effectResultString.value +=
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
+				targetCardOwnerString +
+				"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
+				"<color=yellow>" + yFriendlyLayerCount + "</color> [" + statusEffectToGive + "]\n";
+			
+			// 创建状态效果解析器（如果不能叠加则只创建1个，否则创建Y个）
+			if (myStatusEffectResolverScript != null)
+			{
+				int resolverCount = canStatusEffectBeStacked ? yFriendlyLayerCount : 1;
+				for (int j = 0; j < resolverCount; j++)
+				{
+					var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
+					GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
+				}
+			}
+			
+			// 播放粒子效果
+			for (int j = 0; j < yFriendlyLayerCount; j++)
+			{
+				PlayStatusEffectParticle(targetCardScript.transform);
+			}
+			
+			// 触发tint效果
+			TriggerTintForStatusEffect(targetCardScript, statusEffectToGive);
+		}
+
+		/// <summary>
+		/// 对X个友方目标直接应用状态效果（无特效时使用）
+		/// </summary>
+		private void ApplyStatusEffectsToXFriendly(List<CardScript> targetCards)
+		{
+			foreach (var targetCardScript in targetCards)
+			{
+				ApplyStatusEffectToXFriendlySingle(targetCardScript);
+			}
+		}
+
+		/// <summary>
+		/// 组件禁用时停止所有协程，防止卡片销毁后回调执行异常
+		/// </summary>
+		private void OnDisable()
+		{
+			StopAllCoroutines();
 		}
 	}
 }

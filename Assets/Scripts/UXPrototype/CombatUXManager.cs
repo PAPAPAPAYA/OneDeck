@@ -1270,4 +1270,92 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	#endregion
+
+	#region Status Effect 飞行特效系统
+
+	[Header("STATUS EFFECT PROJECTILE")]
+	[Tooltip("状态效果飞行特效预制体（可以是Sprite、粒子系统或简单的GameObject）")]
+	public GameObject statusEffectProjectilePrefab;
+	[Tooltip("特效飞行持续时间")]
+	public float projectileDuration = 0.4f;
+	[Tooltip("抛物线高度")]
+	public float projectileArcHeight = 2f;
+	[Tooltip("特效起始位置偏移")]
+	public Vector3 projectileStartOffset = new Vector3(0, 0.5f, 0);
+	[Tooltip("特效目标位置偏移")]
+	public Vector3 projectileEndOffset = new Vector3(0, 0.5f, 0);
+
+	/// <summary>
+	/// 播放状态效果从给予者飞向被给予者的抛物线特效
+	/// 特效飞到目标后才执行 onComplete 回调
+	/// </summary>
+	/// <param name="giverCard">给予者逻辑卡片</param>
+	/// <param name="receiverCard">被给予者逻辑卡片</param>
+	/// <param name="onComplete">特效完成回调（特效到达目标后执行）</param>
+	public void PlayStatusEffectProjectile(GameObject giverCard, GameObject receiverCard, Action onComplete = null)
+	{
+		if (statusEffectProjectilePrefab == null || giverCard == null || receiverCard == null)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		// 获取物理卡片位置
+		BuildCardScriptToPhysicalDictionary();
+		
+		Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset;
+		Vector3 endPos = GetCardWorldPosition(receiverCard) + projectileEndOffset;
+
+		// 创建特效实例
+		GameObject projectile = Instantiate(statusEffectProjectilePrefab, startPos, Quaternion.identity);
+		
+		// 计算抛物线中间点
+		Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f) + Vector3.up * projectileArcHeight;
+
+		// 创建抛物线动画
+		Sequence projectileSequence = DOTween.Sequence();
+		
+		// 第一阶段：从起点到中间点（上升）
+		projectileSequence.Append(
+			projectile.transform.DOMove(midPoint, projectileDuration * 0.5f)
+				.SetEase(Ease.OutQuad)
+		);
+		
+		// 第二阶段：从中间点到终点（下降）
+		projectileSequence.Append(
+			projectile.transform.DOMove(endPos, projectileDuration * 0.5f)
+				.SetEase(Ease.InQuad)
+		);
+		
+		// 同步旋转：让特效始终朝向目标
+		projectile.transform.LookAt(endPos);
+
+		// 动画完成：销毁特效并执行回调
+		projectileSequence.OnComplete(() =>
+		{
+			Destroy(projectile);
+			onComplete?.Invoke();
+		});
+
+		projectileSequence.Play();
+	}
+
+	/// <summary>
+	/// 获取卡片的实际世界位置（优先使用物理卡片）
+	/// </summary>
+	private Vector3 GetCardWorldPosition(GameObject card)
+	{
+		var cardScript = card.GetComponent<CardScript>();
+		if (cardScript != null)
+		{
+			var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+			if (physicalCard != null)
+			{
+				return physicalCard.transform.position;
+			}
+		}
+		return card.transform.position;
+	}
+
+	#endregion
 }

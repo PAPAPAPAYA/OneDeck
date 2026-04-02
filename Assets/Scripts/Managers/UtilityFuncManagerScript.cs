@@ -24,12 +24,10 @@ public static class UtilityFuncManagerScript
 		return Mathf.Atan2(dir.x, dir.y) * (180 / Mathf.PI);
 	}
 
-	// shuffle given GameObject list
-	public static List<GameObject> ShuffleList(List<GameObject> list)
+	// shuffle given list
+	public static List<T> ShuffleList<T>(List<T> list)
 	{
-		List<GameObject> shuffled = new();
-		shuffled = list.OrderBy(x => Random.value).ToList();
-		return shuffled;
+		return list.OrderBy(x => Random.value).ToList();
 	}
 
 	// copy game object list
