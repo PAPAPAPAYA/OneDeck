@@ -220,12 +220,8 @@ public class HPAlterEffect : EffectScript
 	/// </summary>
 	public void DecreaseTheirHp()
 	{
-		print("deal dmg");
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
-		print("extra dmg: " + extraDmg);
-		print("dmg amount alter: " + dmgAmountAlter);
-		print("dmg amount: " + totalDmg);
 		
 		// status effect伤害不触发攻击动画，直接执行
 		if (isStatusEffectDamage)

@@ -7,11 +7,6 @@ using UnityEngine;
 
 public class CardManipulationEffect : EffectScript
 {
-	/// <summary>
-	/// 最后一次被放逐的卡的 cardTypeID（用于 EventCounter 过滤）
-	/// </summary>
-
-	
 	private List<GameObject> _combinedDeck;
 
 	[Header("Tag Configuration")]
@@ -34,70 +29,7 @@ public class CardManipulationEffect : EffectScript
 		return myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 	}
 
-	#region EXILE
-	// choose cards logic in here, move cards logic in CombatFuncs
-	public void ExileMyCards(int amount)
-	{
-		_combinedDeck = combatManager.combinedDeckZone;
-		var cardsToSend = new List<GameObject>();
-		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
-		for (int i = cardsToSend.Count - 1; i >= 0; i--)
-		{
-			// take out opponent's cards and neutral cards
-			var cardScript = cardsToSend[i].GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef)
-			{
-				cardsToSend.RemoveAt(i);
-			}
-		}
-		//cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
-		ExileChosenCards(cardsToSend, amount);
-	}
-	public void ExileRandomCards(int amount)
-	{
-		_combinedDeck = combatManager.combinedDeckZone;
-		var cardsToSend = new List<GameObject>();
-		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
-		//cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
-		ExileChosenCards(cardsToSend, amount);
-	}
 
-	public void ExileTheirCards(int amount)
-	{
-		_combinedDeck = combatManager.combinedDeckZone;
-		var cardsToSend = new List<GameObject>();
-		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToSend, true);
-		for (int i = cardsToSend.Count - 1; i >= 0; i--)
-		{
-			// take out card owner's cards and neutral cards
-			var cardScript = cardsToSend[i].GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef)
-			{
-				cardsToSend.RemoveAt(i);
-			}
-		}
-		//cardsToSend = UtilityFuncManagerScript.ShuffleList(cardsToSend);
-		ExileChosenCards(cardsToSend, amount);
-	}
-
-	private void ExileChosenCards(List<GameObject> cardsToSend, int amount)
-	{
-		amount = Mathf.Clamp(amount, 0, _combinedDeck.Count);
-		if (amount == 0) return;
-		if (cardsToSend.Count == 0) return;
-		string myColor = GetMyCardColorTag();
-		for (var i = 0; i < amount; i++)
-		{
-			var targetCardScript = cardsToSend[i].GetComponent<CardScript>();
-			string targetColor = GetCardColorTag(cardsToSend[i]);
-			effectResultString.value +=
-				"// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] exiled [<color=" + targetColor + ">" +
-				targetCardScript.gameObject.name + "</color>]\n";
-			// [已废弃] 放逐效果暂不可用
-		}
-	}
-	#endregion
-	
 	#region REVIVE
 	public void ReviveRandomMyCardsFromGrave(int amount)
 	{
