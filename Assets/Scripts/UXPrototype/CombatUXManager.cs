@@ -1305,6 +1305,7 @@ public class CombatUXManager : MonoBehaviour
 		
 		Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset;
 		Vector3 endPos = GetCardWorldPosition(receiverCard) + projectileEndOffset;
+		print("end pos: "+endPos);
 
 		// 创建特效实例
 		GameObject projectile = Instantiate(statusEffectProjectilePrefab, startPos, Quaternion.identity);
