@@ -243,6 +243,27 @@ public class ExileEffect : EffectScript
 			exiledCards.Add(targetCard);
 		}
 
+		// 触发 onFriendlyCardExiled 事件（检查是否有友方卡被放逐）
+		foreach (var card in exiledCards)
+		{
+			var cardScript = card.GetComponent<CardScript>();
+			bool isMyCard = cardScript.myStatusRef == myCardScript.myStatusRef;
+			if (isMyCard)
+			{
+				if (GameEventStorage.me.onFriendlyCardExiled != null)
+				{
+					if (cardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+					{
+						GameEventStorage.me.onFriendlyCardExiled.RaiseOwner();
+					}
+					else
+					{
+						GameEventStorage.me.onFriendlyCardExiled.RaiseOpponent();
+					}
+				}
+			}
+		}
+
 		// 同步剩余物理卡牌位置
 		if (exiledCards.Count > 0)
 		{

@@ -90,7 +90,9 @@ MonoBehaviour:
   includeSelf: 0
   lastXCardsCount: 0
   statusEffectLayerCount: 1
-  statusEffectParticlePrefab: {fileID: 0}
+  xFriendlyCount: 0
+  yFriendlyLayerCount: 1
+  statusEffectParticlePrefab: {fileID: 385316958995927269, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}
   particleYOffset: 0
 --- !u!1 &8718476725744197808
 GameObject:

@@ -1614,6 +1614,7 @@ MonoBehaviour:
   afterShuffle: {fileID: 11400000, guid: fe87bc9a909276b4dabe1bf8aa01d8a4, type: 2}
   beforeRoundStart: {fileID: 11400000, guid: cde884b6e17c9e24b90d185b1c96604e, type: 2}
   onFriendlyMinionAdded: {fileID: 11400000, guid: 3d27fd3b0bb6feb4e85567151942425d, type: 2}
+  onFriendlyCardExiled: {fileID: 11400000, guid: ed71b68fe01376e49ac1d493c529238f, type: 2}
   onFriendlyFlyExiled: {fileID: 11400000, guid: ee1cc5fc8ade8b44c9881c4183ed874f, type: 2}
   onAnyCardBuried: {fileID: 11400000, guid: ed0ebe2b8f3453c4a8c72547faef3d47, type: 2}
   onFriendlyCardBuried: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
@@ -1735,7 +1736,7 @@ Transform:
   m_GameObject: {fileID: 490140364}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2203,7 +2204,7 @@ Transform:
   m_GameObject: {fileID: 831239650}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 0, y: 3, z: -80}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3589,7 +3590,7 @@ MonoBehaviour:
   xOffset: 0.2
   yOffset: 0.2
   physicalCardNewTempCardPos: {fileID: 2043192994}
-  physicalCardNewTempCardSize: {x: 0.5, y: 0.5, z: 0.5}
+  physicalCardNewTempCardSize: {x: 0.8, y: 0.8, z: 0.8}
   physicalCardPrefab: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
   startCardPhysicalPrefab: {fileID: 3539307345357344568, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
   minionPhysicalPrefab: {fileID: 3344754133132326584, guid: eeb3a0e8ad38bde4bbb3e38649ac4b2d, type: 3}
@@ -3602,7 +3603,7 @@ MonoBehaviour:
   revealToDeckEase: 7
   gravePosition: {fileID: 490140365}
   cardDestroyAnimDuration: 0.3
-  cardDestroyTargetSize: {x: 0.1, y: 0.1, z: 0.1}
+  cardDestroyTargetSize: {x: 0.8, y: 0.8, z: 0.8}
   physicalCardsInDeck: []
   physicalCardInRevealZone: {fileID: 0}
   statusEffectProjectilePrefab: {fileID: 2816396703578066659, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}
@@ -5742,7 +5743,7 @@ Transform:
   m_GameObject: {fileID: 2043192993}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

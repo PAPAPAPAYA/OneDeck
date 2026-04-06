@@ -83,6 +83,23 @@ public class MinionCostEffect : EffectScript
 			var cardScript = card.GetComponent<CardScript>();
 			bool isMyCard = cardScript.myStatusRef == myCardScript.myStatusRef;
 			
+			// 触发 onFriendlyCardExiled 事件（如果是友方卡被消耗）
+			// 根据被消耗卡的归属触发对应一方的事件：玩家方用RaiseOwner，敌方用RaiseOpponent
+			if (isMyCard)
+			{
+				if (GameEventStorage.me.onFriendlyCardExiled != null)
+				{
+					if (cardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+					{
+						GameEventStorage.me.onFriendlyCardExiled.RaiseOwner();
+					}
+					else
+					{
+						GameEventStorage.me.onFriendlyCardExiled.RaiseOpponent();
+					}
+				}
+			}
+			
 			// 触发 OnFriendlyFlyExiled 事件（如果是友方fly卡）
 			// 根据被消耗fly的归属触发对应一方的事件：玩家方用RaiseOwner，敌方用RaiseOpponent
 			if (isMyCard && cardScript.cardTypeID == "FLY")
