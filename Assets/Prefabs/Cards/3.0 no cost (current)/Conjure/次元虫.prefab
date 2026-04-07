@@ -141,8 +141,8 @@ MonoBehaviour:
   delayCost: 0
   buryCost: 1
   exposeCost: 0
-  minionCostCount: 2
-  minionCostCardTypeID: RIFT
+  minionCostCount: 0
+  minionCostCardTypeID: 
   minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:

@@ -150,7 +150,7 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
-  myTags: 
+  myTags: 01000000
   delayCost: 0
   buryCost: 1
   exposeCost: 0

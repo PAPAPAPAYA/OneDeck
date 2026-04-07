@@ -178,7 +178,7 @@ MonoBehaviour:
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
   statusEffectParticlePrefab: {fileID: 385316958995927269, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}
-  particleYOffset: 0
+  particleYOffset: 5
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

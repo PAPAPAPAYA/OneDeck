@@ -11,6 +11,8 @@ using UnityEngine;
 /// </summary>
 public class HPAlterEffect : EffectScript
 {
+	#region Fields
+
 	[Tooltip("基础伤害值 - 所有伤害方法会自动加上这个值！要造成<基础伤害值的伤害时使用负数")]
 	public IntSO baseDmg;
 	[HideInInspector]
@@ -23,6 +25,14 @@ public class HPAlterEffect : EffectScript
 	
 	[Tooltip("额外伤害值 - 用于DecreaseMyHp和DecreaseTheirHp")]
 	public int extraDmg = 0;
+	
+	[Header("Status Effect Count Configuration")]
+	[Tooltip("要统计的状态效果类型")]
+	public EnumStorage.StatusEffect statusEffectToCheck;
+	
+	#endregion
+	
+	#region Private Helpers
 	
 	/// <summary>
 	/// 计算额外伤害（包括Power状态效果和基础伤害）
@@ -70,6 +80,10 @@ public class HPAlterEffect : EffectScript
 		targetStatus.hp = Mathf.Clamp(targetStatus.hp, 0, targetStatus.hpMax);
 	}
 
+	#endregion
+	
+	#region Damage Effects
+	
 	/// <summary>
 	/// 减少自身生命值（考虑额外伤害）
 	/// 使用 extraDmg 字段作为额外伤害值
@@ -120,6 +134,10 @@ public class HPAlterEffect : EffectScript
 		CheckDmgTargets_DealingDmgToSelf(totalDmg);
 	}
 
+	#endregion
+	
+	#region Heal Effects
+	
 	/// <summary>
 	/// 增加自身生命值（考虑额外治疗量）
 	/// </summary>
@@ -131,6 +149,10 @@ public class HPAlterEffect : EffectScript
 		CheckHealTargets_HealingSelf(healAmount + healAmountAlter);
 		healAmountAlter = 0;
 	}
+	
+	#endregion
+	
+	#region Damage Effects (Continued)
 
 	/// <summary>
 	/// 根据已损失生命值减少对方生命值 (/2)
@@ -211,6 +233,28 @@ public class HPAlterEffect : EffectScript
 		
 		extraDmg = cardCount;
 		DecreaseTheirHp();
+		extraDmg = 0;
+	}
+
+	/// <summary>
+	/// 根据自身身上的 statusEffectToCheck 状态效果数量减少自身生命值
+	/// 伤害值 = 状态效果数量
+	/// </summary>
+	public void DecreaseMyHp_BasedOnMyStatusEffectCount()
+	{
+		int statusEffectCount = 0;
+		
+		// 遍历自身卡片的状态效果列表，统计指定类型的数量
+		foreach (var myTag in myCardScript.myStatusEffects)
+		{
+			if (myTag == statusEffectToCheck)
+			{
+				statusEffectCount++;
+			}
+		}
+		
+		extraDmg = statusEffectCount;
+		DecreaseMyHp();
 		extraDmg = 0;
 	}
 
@@ -314,7 +358,13 @@ public class HPAlterEffect : EffectScript
 	}
 
 	#endregion
+	#endregion
 
+	
+
+
+	#region Heal Effects (Continued)
+	
 	/// <summary>
 	/// 增加对方生命值（考虑额外治疗量）
 	/// </summary>
@@ -326,7 +376,11 @@ public class HPAlterEffect : EffectScript
 		CheckHealTargets_HealingOpponent(healAmount + healAmountAlter);
 		healAmountAlter = 0;
 	}
-
+	
+	#endregion
+	
+	#region Result Logging
+	
 	/// <summary>
 	/// 检查伤害来源和目标，触发对应事件并显示文本信息（对对手造成伤害时）
 	/// </summary>
@@ -410,4 +464,6 @@ public class HPAlterEffect : EffectScript
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOwner(); // timepoint
 		}
 	}
+	
+	#endregion
 }

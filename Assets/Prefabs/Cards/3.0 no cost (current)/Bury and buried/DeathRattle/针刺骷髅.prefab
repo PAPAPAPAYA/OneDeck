@@ -85,7 +85,7 @@ MonoBehaviour:
   healAmountAlter: 0
   isStatusEffectDamage: 0
   extraDmg: 1
---- !u!1 &473914803469671618
+--- !u!1 &4991837413484954837
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -93,23 +93,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 574580945418538098}
-  - component: {fileID: 4724561406023219885}
-  - component: {fileID: 6832810485530567621}
+  - component: {fileID: 7414162886374073142}
+  - component: {fileID: 868085066501669820}
+  - component: {fileID: 155396253852350705}
   m_Layer: 0
-  m_Name: stage self
+  m_Name: deal dmg (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &574580945418538098
+--- !u!4 &7414162886374073142
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 473914803469671618}
+  m_GameObject: {fileID: 4991837413484954837}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -118,13 +118,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3828591620990538636}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4724561406023219885
+--- !u!114 &868085066501669820
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 473914803469671618}
+  m_GameObject: {fileID: 4991837413484954837}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
@@ -140,9 +140,9 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6832810485530567621}
-        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
-        m_MethodName: StageSelf
+      - m_Target: {fileID: 155396253852350705}
+        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_MethodName: DecreaseTheirHp
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -152,20 +152,24 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6832810485530567621
+--- !u!114 &155396253852350705
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 473914803469671618}
+  m_GameObject: {fileID: 4991837413484954837}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
+  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
+  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 0
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
+  dmgAmountAlter: 0
+  healAmountAlter: 0
+  isStatusEffectDamage: 0
+  extraDmg: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +183,7 @@ GameObject:
   - component: {fileID: -4728943355192809547}
   - component: {fileID: 6314270644752032363}
   m_Layer: 0
-  m_Name: "\u9AB7\u9AC5\u58EB\u5175"
+  m_Name: "\u9488\u523A\u9AB7\u9AC5"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -199,7 +203,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 834418638395040871}
-  - {fileID: 574580945418538098}
+  - {fileID: 7414162886374073142}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -216,8 +220,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: BODY_CANON
-  cardDesc: "\u88AB\u57CB\u846C\u65F6, \u7F6E\u9876\u81EA\u8EAB;\n\u9020\u6210 3
-    \u4F24\u5BB3"
+  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3;\n\u88AB\u57CB\u846C: \u9020\u6210 2 \u4F24\u5BB3
+    x 2"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -225,7 +229,7 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
-  myTags: 
+  myTags: 03000000
   delayCost: 0
   buryCost: 1
   exposeCost: 0
@@ -276,7 +280,19 @@ MonoBehaviour:
   response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4724561406023219885}
+      - m_Target: {fileID: 868085066501669820}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: InvokeEffectEvent
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 868085066501669820}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent
         m_Mode: 1

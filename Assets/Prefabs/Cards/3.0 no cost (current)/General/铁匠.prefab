@@ -227,8 +227,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: BODY_CANON
-  cardDesc: "\u9020\u6210 4 \u4F24\u5BB3;\n\u7ED9\u4E88\u4E00\u4E2A\u53CB\u65B9 2
+  cardTypeID: BLACKSMITH
+  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3;\n\u7ED9\u4E88\u4E00\u4E2A\u53CB\u65B9 1
     \u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
