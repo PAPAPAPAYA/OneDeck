@@ -2,6 +2,8 @@
 
 // feature
 	// queue animation?
+// asset
+	// power gain card particle
 // design change
 	// should we change [bury 1 friendly] to [bury next 2]?
 		// it's more powerful, maybe should be benefit, not cost

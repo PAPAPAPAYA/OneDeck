@@ -85,6 +85,7 @@ MonoBehaviour:
   healAmountAlter: 0
   isStatusEffectDamage: 0
   extraDmg: 1
+  statusEffectToCheck: 0
 --- !u!1 &473914803469671618
 GameObject:
   m_ObjectHideFlags: 0
@@ -176,7 +177,7 @@ MonoBehaviour:
   lastXCardsCount: 0
   statusEffectLayerCount: 0
   xFriendlyCount: 1
-  yFriendlyLayerCount: 2
+  yFriendlyLayerCount: 1
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
 --- !u!1 &8718476725744197808
@@ -262,7 +263,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3408854323514059765}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: 
+        m_MethodName: InvokeEffectEvent
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

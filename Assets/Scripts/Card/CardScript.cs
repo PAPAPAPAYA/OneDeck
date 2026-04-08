@@ -28,9 +28,9 @@ public class CardScript : MonoBehaviour
     
     public bool isMinion = false;
     public IntSO price;
-    [HideInInspector]
+    //[HideInInspector]
     public PlayerStatusSO myStatusRef;
-    [HideInInspector]
+    //[HideInInspector]
     public PlayerStatusSO theirStatusRef;
     [Header("Status Effects")]
     public List<EnumStorage.StatusEffect> myStatusEffects;

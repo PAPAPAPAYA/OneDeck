@@ -103,9 +103,12 @@ public class HPAlterEffect : EffectScript
 		}
 		
 		// 请求攻击动画（攻击自己）
+		// 判断攻击目标位置：玩家卡片自伤冲向玩家位置，敌人卡片自伤冲向敌人位置
+		bool isAttackingEnemy = myCardScript.myStatusRef != combatManager.ownerPlayerStatusRef;
+		
 		if (AttackAnimationManager.me != null)
 		{
-			AttackAnimationManager.me.RequestAttackAnimation(myCard, false, 
+			AttackAnimationManager.me.RequestAttackAnimation(myCard, isAttackingEnemy, 
 				onHit: () =>
 				{
 					ProcessDamage(totalDmg, myCardScript.myStatusRef);

@@ -1284,6 +1284,8 @@ public class CombatUXManager : MonoBehaviour
 	public Vector3 projectileStartOffset = new Vector3(0, 0.5f, 0);
 	[Tooltip("特效目标位置偏移")]
 	public Vector3 projectileEndOffset = new Vector3(0, 0.5f, 0);
+	[Tooltip("多个特效错开播放的间隔时间（秒）")]
+	public float projectileStaggerDelay = 0.05f;
 
 	/// <summary>
 	/// 播放状态效果从给予者飞向被给予者的抛物线特效
@@ -1339,6 +1341,69 @@ public class CombatUXManager : MonoBehaviour
 		});
 
 		projectileSequence.Play();
+	}
+
+	/// <summary>
+	/// 播放多个状态效果投射物动画，支持错开播放
+	/// 特效飞到每个目标后执行对应的回调，全部完成后执行最终回调
+	/// </summary>
+	/// <param name="giverCard">给予者逻辑卡片</param>
+	/// <param name="targetCards">目标卡片列表（CardScript）</param>
+	/// <param name="onEachComplete">每个特效完成时的回调（参数为目标CardScript）</param>
+	/// <param name="onAllComplete">所有特效完成后的回调</param>
+	/// <param name="customStaggerDelay">自定义错开时间（null则使用默认值）</param>
+	public void PlayMultiStatusEffectProjectile(
+		GameObject giverCard,
+		List<CardScript> targetCards,
+		System.Action<CardScript> onEachComplete,
+		System.Action onAllComplete = null,
+		float? customStaggerDelay = null)
+	{
+		if (targetCards == null || targetCards.Count == 0)
+		{
+			onAllComplete?.Invoke();
+			return;
+		}
+
+		// 如果没有配置预制体，直接执行效果（无动画）
+		if (statusEffectProjectilePrefab == null || giverCard == null)
+		{
+			foreach (var target in targetCards)
+			{
+				onEachComplete?.Invoke(target);
+			}
+			onAllComplete?.Invoke();
+			return;
+		}
+
+		float staggerDelay = customStaggerDelay ?? projectileStaggerDelay;
+		int completedCount = 0;
+		int totalCount = targetCards.Count;
+
+		for (int i = 0; i < targetCards.Count; i++)
+		{
+			var targetCardScript = targetCards[i];
+			
+			// 错开播放时间
+			DOVirtual.DelayedCall(i * staggerDelay, () =>
+			{
+				PlayStatusEffectProjectile(
+					giverCard, 
+					targetCardScript.gameObject, 
+					() =>
+					{
+						// 单个特效完成，执行该目标的效果
+						onEachComplete?.Invoke(targetCardScript);
+						
+						completedCount++;
+						if (completedCount >= totalCount)
+						{
+							onAllComplete?.Invoke();
+						}
+					}
+				);
+			});
+		}
 	}
 
 	/// <summary>

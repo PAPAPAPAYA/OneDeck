@@ -19,6 +19,9 @@ namespace DefaultNamespace.Effects
 		
 		[Tooltip("获得状态效果时播放的粒子系统（可选）")]
 		public ParticleSystem statusEffectParticlePrefab;
+		
+		[Tooltip("粒子系统的Y轴偏移量")]
+		public float particleYOffset = 0f;
 
 		/// <summary>
 		/// 增强诅咒：如果combinedDeckZone中没有敌人的指定cardTypeID的卡，
@@ -112,7 +115,7 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 给指定卡牌赋予power状态效果
+		/// 给指定卡牌赋予power状态效果（无动画，直接执行）
 		/// </summary>
 		private void ApplyPowerToCard(CardScript targetCard, int amount)
 		{
@@ -154,7 +157,78 @@ namespace DefaultNamespace.Effects
 			{
 				for (int i = 0; i < amount; i++)
 				{
-					Vector3 spawnPosition = GetPhysicalCardWorldPosition(targetCard.transform);
+					Vector3 spawnPosition = GetPhysicalCardWorldPosition(targetCard.transform) + Vector3.up * particleYOffset;
+					ParticleSystem particle = Instantiate(statusEffectParticlePrefab, spawnPosition, Quaternion.identity, targetCard.transform);
+					particle.Play();
+				}
+			}
+
+			// 触发tint效果
+			TriggerTintForPower(targetCard);
+		}
+
+		/// <summary>
+		/// 使用投射物动画给指定卡牌赋予power状态效果
+		/// 特效飞到目标后才执行实际效果
+		/// </summary>
+		public void ApplyPowerToCardWithProjectile(CardScript targetCard, int amount)
+		{
+			if (targetCard == null || amount <= 0) return;
+
+			var targetCards = new List<CardScript> { targetCard };
+			
+			CombatUXManager.me?.PlayMultiStatusEffectProjectile(
+				myCard,
+				targetCards,
+				(card) => ApplyPowerToCardInternal(card, amount),
+				null
+			);
+		}
+
+		/// <summary>
+		/// 内部方法：实际执行添加Power效果（用于投射物动画回调）
+		/// </summary>
+		private void ApplyPowerToCardInternal(CardScript targetCard, int amount)
+		{
+			// 添加power状态效果
+			for (int i = 0; i < amount; i++)
+			{
+				targetCard.myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+			}
+
+			// 输出效果信息
+			var targetCardOwnerString = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ? 
+				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
+				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
+				"#87CEEB" : "orange";
+			string targetCardColor = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ? 
+				"#87CEEB" : "orange";
+
+			effectResultString.value +=
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
+				targetCardOwnerString +
+				"<color=" + targetCardColor + ">" + targetCard.gameObject.name + "</color>] " +
+				"<color=yellow>" + amount + "</color> [Power]\n";
+
+			// 创建状态效果解析器
+			if (statusEffectResolverPrefab != null)
+			{
+				for (int i = 0; i < amount; i++)
+				{
+					var resolver = Instantiate(statusEffectResolverPrefab, targetCard.transform);
+					GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(resolver);
+				}
+			}
+
+			// 播放粒子效果
+			if (statusEffectParticlePrefab != null)
+			{
+				for (int i = 0; i < amount; i++)
+				{
+					Vector3 spawnPosition = GetPhysicalCardWorldPosition(targetCard.transform) + Vector3.up * particleYOffset;
 					ParticleSystem particle = Instantiate(statusEffectParticlePrefab, spawnPosition, Quaternion.identity, targetCard.transform);
 					particle.Play();
 				}
