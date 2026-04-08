@@ -58,7 +58,7 @@ namespace DefaultNamespace.Effects
 			// 给目标卡赋予power状态效果
 			if (targetCard != null)
 			{
-				ApplyPowerToCard(targetCard, powerAmount);
+				ApplyPowerToCardWithProjectile(targetCard, powerAmount);
 			}
 		}
 
@@ -112,59 +112,6 @@ namespace DefaultNamespace.Effects
 				return newCardScript;
 			}
 			return null;
-		}
-
-		/// <summary>
-		/// 给指定卡牌赋予power状态效果（无动画，直接执行）
-		/// </summary>
-		private void ApplyPowerToCard(CardScript targetCard, int amount)
-		{
-			// 添加power状态效果
-			for (int i = 0; i < amount; i++)
-			{
-				targetCard.myStatusEffects.Add(EnumStorage.StatusEffect.Power);
-			}
-
-			// 输出效果信息
-			var targetCardOwnerString = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"#87CEEB" : "orange";
-			string targetCardColor = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"#87CEEB" : "orange";
-
-			effectResultString.value +=
-				"// " + thisCardOwnerString +
-				"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
-				targetCardOwnerString +
-				"<color=" + targetCardColor + ">" + targetCard.gameObject.name + "</color>] " +
-				"<color=yellow>" + amount + "</color> [Power]\n";
-
-			// 创建状态效果解析器
-			if (statusEffectResolverPrefab != null)
-			{
-				for (int i = 0; i < amount; i++)
-				{
-					var resolver = Instantiate(statusEffectResolverPrefab, targetCard.transform);
-					GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(resolver);
-				}
-			}
-
-			// 播放粒子效果
-			if (statusEffectParticlePrefab != null)
-			{
-				for (int i = 0; i < amount; i++)
-				{
-					Vector3 spawnPosition = GetPhysicalCardWorldPosition(targetCard.transform) + Vector3.up * particleYOffset;
-					ParticleSystem particle = Instantiate(statusEffectParticlePrefab, spawnPosition, Quaternion.identity, targetCard.transform);
-					particle.Play();
-				}
-			}
-
-			// 触发tint效果
-			TriggerTintForPower(targetCard);
 		}
 
 		/// <summary>

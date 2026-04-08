@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerDefaultDeckRef
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 6333ce53aeedc944b82b0788c3921ccc, type: 3}
+  - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
   - {fileID: 8718476725744197808, guid: 6333ce53aeedc944b82b0788c3921ccc, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0

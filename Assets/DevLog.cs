@@ -9,6 +9,8 @@
 		// it's more powerful, maybe should be benefit, not cost
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 // bug
+	// curse effect
+		// when curse is added, power wisp target pos is weird cause curse is not yet in position
 	//// bury animation bugged, suspect stage also has same problem
 
 
