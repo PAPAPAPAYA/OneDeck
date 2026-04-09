@@ -56,4 +56,17 @@ public class EnumStorage : MonoBehaviour
 		}
 		return amountOfTag >= amount;
 	}
+
+	public static int GetStatusEffectCount(List<StatusEffect> listToCheck, StatusEffect statusEffectToCheck)
+	{
+		var amountOfTag = 0;
+		foreach (var listStatusEffect in listToCheck)
+		{
+			if (listStatusEffect == statusEffectToCheck)
+			{
+				amountOfTag++;
+			}
+		}
+		return amountOfTag;
+	}
 }

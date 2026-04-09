@@ -26,7 +26,7 @@ namespace DefaultNamespace.Managers
         public int cardsToGive = 1;
         
         [Header("触发设置")]
-        [Tooltip("仅第一次进入商店时触发")]
+        [Tooltip("仅第一次Enter shop时触发")]
         public bool onlyFirstTime = true;
         
         [Header("调试")]

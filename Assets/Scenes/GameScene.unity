@@ -1619,6 +1619,9 @@ MonoBehaviour:
   onAnyCardBuried: {fileID: 11400000, guid: ed0ebe2b8f3453c4a8c72547faef3d47, type: 2}
   onFriendlyCardBuried: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
   onMeBuried: {fileID: 11400000, guid: dbdfc6da826817e458050a266ddebda9, type: 2}
+  curseCardTypeID: JU_ON
+  onEnemyCurseCardRevealed: {fileID: 11400000, guid: 60c44989abfa91a41bcc3e450ac57bc7, type: 2}
+  onEnemyCurseCardGotPower: {fileID: 11400000, guid: 67fa492ab00f0c240b7a21e2e75b1d6a, type: 2}
 --- !u!1 &478120491
 GameObject:
   m_ObjectHideFlags: 0
@@ -2808,6 +2811,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ValueTrackerManager
   friendlyInGraveAmountRef: {fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}
+  hostileCursePowerCount: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
+  curseCardTypeId: JU_ON
 --- !u!4 &1162866022
 Transform:
   m_ObjectHideFlags: 0
@@ -3611,6 +3616,7 @@ MonoBehaviour:
   projectileArcHeight: 2
   projectileStartOffset: {x: 0, y: 2, z: 0}
   projectileEndOffset: {x: 0, y: 2, z: 0}
+  projectileStaggerDelay: 0.05
 --- !u!1 &1457153432
 GameObject:
   m_ObjectHideFlags: 0

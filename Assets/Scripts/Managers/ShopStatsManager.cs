@@ -46,10 +46,10 @@ namespace DefaultNamespace.Managers
     }
 
     /// <summary>
-    /// 商店统计管理器
+    /// Shop stats manager
     /// 功能：
     /// 1. 记录卡牌在商店中的出现次数、购买次数
-    /// 2. 记录商店访问次数和刷新次数
+    /// 2. Record shop visit次数和刷新次数
     /// 3. 保存到本地JSON
     /// 4. 导出CSV报告
     /// 
@@ -93,7 +93,7 @@ namespace DefaultNamespace.Managers
         private bool _pendingSave = false;
 
         /// <summary>
-        /// 记录卡牌出现在商店中
+        /// Record card appeared在商店中
         /// </summary>
         public void RecordCardAppeared(string cardTypeID, string cardName = "")
         {
@@ -118,7 +118,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// 记录商店访问次数
+        /// Record shop visit次数
         /// </summary>
         public void RecordShopVisit()
         {
@@ -129,7 +129,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// 记录刷新次数
+        /// Record reroll次数
         /// </summary>
         public void RecordReroll()
         {

@@ -13,7 +13,7 @@ public class CardManipulationEffect : EffectScript
 	public EnumStorage.Tag tagToCheck;
 
 	/// <summary>
-	/// 获取卡牌所属者的颜色标签（玩家=#87CEEB，敌人=orange）
+	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
 	private string GetCardColorTag(GameObject card)
 	{
@@ -22,7 +22,7 @@ public class CardManipulationEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 获取当前卡牌的颜色标签
+	/// Get current card's color tag
 	/// </summary>
 	private string GetMyCardColorTag()
 	{
@@ -33,24 +33,24 @@ public class CardManipulationEffect : EffectScript
 	#region REVIVE
 	public void ReviveRandomMyCardsFromGrave(int amount)
 	{
-		// [已废弃] 墓地机制已移除
+		// [Deprecated] Graveyard mechanic removed
 		return;
 	}
 
 	public void ReviveRandomTheirCardsFromGrave(int amount)
 	{
-		// [已废弃] 墓地机制已移除
+		// [Deprecated] Graveyard mechanic removed
 		return;
 	}
 	public void ReviveRandomCards(int amount)
 	{
-		// [已废弃] 墓地机制已移除
+		// [Deprecated] Graveyard mechanic removed
 		return;
 	}
 
 	public void ReviveSelf() // put self back from grave to deck
 	{
-		// [已废弃] 墓地机制已移除
+		// [Deprecated] Graveyard mechanic removed
 		return;
 	}
 	#endregion
@@ -79,7 +79,7 @@ public class CardManipulationEffect : EffectScript
 			// 跳过中立卡和 Start Card
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			bool isOwner = cardScript.myStatusRef == myCardScript.myStatusRef;
-			// 只返回归属正确且在 index > 0 的卡（index 0 的卡无法 delay）
+			// Only return cards with correct ownership and index > 0 (cards at index 0 cannot be delayed)
 			if (isOwner == isMyCards && i > 0)
 			{
 				result.Add(card);
@@ -104,7 +104,7 @@ public class CardManipulationEffect : EffectScript
 			var card = candidates[i];
 			int index = _combinedDeck.IndexOf(card);
 
-			// index 检查已在 GetCardsByOwner 中完成，这里做防御性检查
+			// Index check already done in GetCardsByOwner, this is a defensive check
 			if (index <= 0) continue;
 
 			_combinedDeck.RemoveAt(index);
@@ -123,13 +123,13 @@ public class CardManipulationEffect : EffectScript
 			// 同步物理卡片列表
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
 			
-			// 为每张移动的卡片播放动画
+			// Play animation for each moved card
 			foreach (var (card, newIndex) in delayedCards)
 			{
 				CombatUXManager.me.MoveCardToIndex(card, newIndex, duration: 0.3f, useArc: false);
 			}
 			
-			// 更新其他卡片位置（确保所有卡片位置正确）
+			// Update other card positions (ensure all card positions are correct)
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 	}
@@ -137,7 +137,7 @@ public class CardManipulationEffect : EffectScript
 
 	#region DESTROY MINION
 	/// <summary>
-	/// 销毁指定数量的己方 Minion 卡
+	/// Destroy specified number of own Minion cards
 	/// </summary>
 	public void DestroyMyMinions(int amount)
 	{
@@ -146,7 +146,7 @@ public class CardManipulationEffect : EffectScript
 	}
 	
 	/// <summary>
-	/// 销毁指定数量的敌方 Minion 卡
+	/// Destroy specified number of enemy Minion cards
 	/// </summary>
 	public void DestroyTheirMinions(int amount)
 	{
@@ -155,7 +155,7 @@ public class CardManipulationEffect : EffectScript
 	}
 	
 	/// <summary>
-	/// 销毁指定数量的任意 Minion 卡（随机选择）
+	/// Destroy specified number of any Minion cards (random selection)
 	/// </summary>
 	public void DestroyRandomMinions(int amount)
 	{
@@ -177,7 +177,7 @@ public class CardManipulationEffect : EffectScript
 	}
 	
 	/// <summary>
-	/// 销毁指定数量的指定 Tag 的 Minion 卡
+	/// Destroy specified number of Minion cards with specified Tag
 	/// </summary>
 	public void DestroyMinionsWithTag(int amount)
 	{
@@ -199,7 +199,7 @@ public class CardManipulationEffect : EffectScript
 	}
 	
 	/// <summary>
-	/// 获取指定归属的 Minion 卡列表
+	/// Get Minion card list with specified ownership
 	/// </summary>
 	private List<GameObject> GetMinionsByOwner(bool isMyMinions)
 	{
@@ -224,7 +224,7 @@ public class CardManipulationEffect : EffectScript
 	}
 	
 	/// <summary>
-	/// 执行销毁 Minion 卡（带动画）
+	/// Execute Minion card destruction (with animation)
 	/// </summary>
 	private void ExecuteDestroyMinions(List<GameObject> minions, int amount)
 	{
@@ -247,7 +247,7 @@ public class CardManipulationEffect : EffectScript
 			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] destroyed minion [<color={minionColor}>{minionScript.name}</color>]\n";
 		}
 		
-		// 同步剩余物理卡牌位置
+		// Sync remaining physical card positions
 		if (amount > 0)
 		{
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();

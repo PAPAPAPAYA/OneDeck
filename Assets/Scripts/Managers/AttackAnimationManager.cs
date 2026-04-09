@@ -27,9 +27,9 @@ public class AttackAnimationManager : MonoBehaviour
 	[Header("ANIMATION SETTINGS")]
 	[Tooltip("攻击前放大倍数")]
 	public float attackScaleMultiplier = 1.4f;
-	[Tooltip("放大动画持续时间")]
+	[Tooltip("放大Animation duration")]
 	public float scaleUpDuration = 0.2f;
-	[Tooltip("冲撞动画持续时间")]
+	[Tooltip("冲撞Animation duration")]
 	public float chargeDuration = 0.2f;
 	[Tooltip("冲撞时缩小系数（相对于原始大小的比例）")]
 	public float chargeScaleMultiplier = 0.85f;
@@ -41,16 +41,16 @@ public class AttackAnimationManager : MonoBehaviour
 	public ShakePreset hitShakePreset;
 	[Tooltip("Overshoot距离（冲过目标的距离）")]
 	public float overshootDistance = 2.0f;
-	[Tooltip("回弹动画持续时间")]
+	[Tooltip("回弹Animation duration")]
 	public float bounceBackDuration = 0.15f;
 
 	[Tooltip("后退距离（蓄力距离）")]
 	public float windUpDistance = 0.5f;
-	[Tooltip("后退动画持续时间")]
+	[Tooltip("后退Animation duration")]
 	public float windUpDuration = 0.1f;
 	[Tooltip("在target pos的停顿时间")]
 	public float pauseAtTarget = 0.05f;
-	[Tooltip("返回Reveal位置的动画持续时间")]
+	[Tooltip("返回Reveal位置的Animation duration")]
 	public float returnToRevealDuration = 0.2f;
 
 	[Header("STATE")]
@@ -127,7 +127,7 @@ public class AttackAnimationManager : MonoBehaviour
 	{
 		isPlayingAttackAnimation = true;
 		
-		// 屏蔽玩家输入
+		// Block player input
 		if (_combatManager != null)
 		{
 			_combatManager.blockPlayerInput = true;
@@ -179,7 +179,7 @@ public class AttackAnimationManager : MonoBehaviour
 			yield break;
 		}
 
-		// 确定目标位置
+		// Determine target position
 		Transform targetTransform = data.isAttackingEnemy ? enemyTargetPos : playerTargetPos;
 		if (targetTransform == null)
 		{
@@ -194,7 +194,7 @@ public class AttackAnimationManager : MonoBehaviour
 		Vector3 targetPos = targetTransform.position;
 		Vector3 originalScale = physicalCard.transform.localScale;
 
-		// 标记正在播放特殊动画，防止 CardPhysObjScript 覆盖 DOTween
+		// Mark that special animation is playing，防止 CardPhysObjScript 覆盖 DOTween
 		physScript.isPlayingSpecialAnimation = true;
 
 		try
@@ -203,7 +203,7 @@ public class AttackAnimationManager : MonoBehaviour
 			Vector3 windUpPos = CalculateWindUpPosition(startPos, targetPos);
 			yield return ScaleUpAndWindUpAnimation(physicalCard, originalScale, targetPos, windUpPos);
 
-			// ========== 阶段3: 冲撞至Target Pos（敌人/玩家位置）同时缩小 ==========
+			// ========== 阶段3: 冲撞至Target Pos（敌人/玩家位置）Scale down simultaneously ==========
 			yield return ChargeToTargetAnimation(physicalCard, targetPos, originalScale);
 
 			// ========== 阶段4: 在Target Pos停顿，触发伤害结算和屏幕震动 ==========
@@ -239,7 +239,7 @@ public class AttackAnimationManager : MonoBehaviour
 			physScript.SetTargetScale(revealSize);
 		}
 
-		// 标记动画完成
+		// 标记Animation complete
 		isPlayingAttackAnimation = false;
 		
 		// 恢复玩家输入
@@ -319,7 +319,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 冲撞至Target Pos，同时缩小
+	/// 冲撞至Target Pos，Scale down simultaneously
 	/// </summary>
 	private IEnumerator ChargeToTargetAnimation(GameObject physicalCard, Vector3 targetPos, Vector3 originalScale)
 	{
@@ -436,7 +436,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 停止所有攻击动画（用于战斗结束或阶段切换）
+	/// Stop all attack animations（用于战斗结束或阶段切换）
 	/// </summary>
 	public void StopAllAttackAnimations()
 	{
@@ -453,7 +453,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 检查是否有待播放的攻击动画
+	/// 检查Whether there are pending attack animations
 	/// </summary>
 	public bool HasPendingAnimations()
 	{

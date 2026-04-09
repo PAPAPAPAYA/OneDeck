@@ -4,11 +4,11 @@ namespace DefaultNamespace.Managers
 {
     /// <summary>
     /// 管理玩家每局游戏的起始卡牌
-    /// 在第一次进入商店时，从起始卡牌池中随机选择一张添加到玩家卡组
+    /// 在第一次Enter shop时，从起始卡牌池中随机选择一张添加到玩家卡组
     /// </summary>
     public class StartingCardManager : MonoBehaviour
     {
-        [Header("初始卡牌池配置")]
+        [Header("Initial cards池配置")]
         [Tooltip("包含所有可能作为起始卡牌的DeckSO，从中随机选择一张")]
         public DeckSO startingCardPool;
         
@@ -31,7 +31,7 @@ namespace DefaultNamespace.Managers
 
         /// <summary>
         /// 尝试给玩家发放起始卡牌
-        /// 仅在每局游戏第一次进入商店时执行
+        /// 仅在每局游戏第一次Enter shop时执行
         /// 通过PhaseManager的onEnterShopPhase事件调用
         /// </summary>
         public void TryGiveStartingCard()

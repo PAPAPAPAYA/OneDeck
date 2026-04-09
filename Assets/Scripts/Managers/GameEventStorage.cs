@@ -38,4 +38,9 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onAnyCardBuried; // 当任意可被置底时触发
 	public GameEvent onFriendlyCardBuried; // 当友方卡被置底时触发
 	public GameEvent onMeBuried; //当自身被置底时触发
+	
+	[Header("curse related")]
+	public StringSO curseCardTypeID;
+	public GameEvent onEnemyCurseCardRevealed; // 当敌方的诅咒卡被揭晓时触发
+	public GameEvent onEnemyCurseCardGotPower; // 当敌方的诅咒卡获得Power时触发
 }

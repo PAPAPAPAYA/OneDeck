@@ -221,7 +221,7 @@ namespace TestWriteRead
         }
 
         /// <summary>
-        /// 保存数据到JSON
+        /// Save data到JSON
         /// </summary>
         private void SaveData()
         {
@@ -241,7 +241,7 @@ namespace TestWriteRead
             }
             catch (Exception e)
             {
-                Debug.LogError($"[DeckSaver] 保存数据失败: {e.Message}");
+                Debug.LogError($"[DeckSaver] Save data失败: {e.Message}");
             }
         }
 

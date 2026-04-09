@@ -44,7 +44,7 @@ namespace DefaultNamespace.Managers
 			CombatUXManager.me.AddPhysicalCardToDeck(cardInstance);
 		}
 
-		public void AddCard_TargetSpecific(GameObject cardToAdd, PlayerStatusSO targetPlayerStatus)
+		public GameObject AddCard_TargetSpecific(GameObject cardToAdd, PlayerStatusSO targetPlayerStatus)
 		{
 			GameObject cardInst;
 			if (targetPlayerStatus == _combatManager.ownerPlayerStatusRef) // card belongs to player
@@ -74,6 +74,8 @@ namespace DefaultNamespace.Managers
 			
 			// 创建对应的物理卡片并插入到 deck 顶部
 			CombatUXManager.me.AddPhysicalCardToDeck(cardInst);
+			
+			return cardInst;
 		}
 		
 		public List<CardScript> ReturnPlayerCardScripts()

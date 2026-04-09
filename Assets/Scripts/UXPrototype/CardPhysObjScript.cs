@@ -14,7 +14,7 @@ public class CardPhysObjScript : MonoBehaviour
 	[SerializeField] private GamePhaseSO currentGamePhaseRef;
 
 	[Header("Shop Settings")]
-	[Tooltip("商店物品索引，-1表示不是商店物品")]
+	[Tooltip("Shop item index，-1表示不是商店物品")]
 	public int shopItemIndex = -1;
 	[Tooltip("长按购买所需时间（秒）")]
 	public float holdTimeRequired = 0.5f;
@@ -89,13 +89,13 @@ public class CardPhysObjScript : MonoBehaviour
 
 	// ========== Stage/Bury 特殊动画 ==========
 	[Header("Stage/Bury Animation")]
-	[Tooltip("是否正在播放特殊动画")]
+	[Tooltip("Is playing special animation")]
 	public bool isPlayingSpecialAnimation = false;
 	[Tooltip("左移距离")]
 	public float sideOffset = 2.5f;
-	[Tooltip("左移动画持续时间")]
+	[Tooltip("左移Animation duration")]
 	public float sideMoveDuration = 0.3f;
-	[Tooltip("插入动画持续时间")]
+	[Tooltip("插入Animation duration")]
 	public float insertDuration = 0.4f;
 	[Tooltip("动画期间的额外缩放倍数")]
 	public float animationScaleMultiplier = 1.3f;
@@ -114,7 +114,7 @@ public class CardPhysObjScript : MonoBehaviour
 	public float deckShrinkMultiplier = 0.85f;
 	[Tooltip("卡组右移距离")]
 	public float deckRightOffset = 1.5f;
-	[Tooltip("卡组动画持续时间")]
+	[Tooltip("卡组Animation duration")]
 	public float deckAnimDuration = 0.35f;
 
 	private Tween _currentDeckGroupTween;
@@ -124,9 +124,9 @@ public class CardPhysObjScript : MonoBehaviour
 
 	// ========== DOTween 动画 ==========
 	[Header("DOTween Animation")]
-	[Tooltip("移动到目标位置的动画持续时间")]
+	[Tooltip("移动到目标位置的Animation duration")]
 	public float moveDuration = 0.3f;
-	[Tooltip("移动动画的缓动类型")]
+	[Tooltip("移动动画的Ease type")]
 	public Ease moveEase = Ease.OutQuad;
 
 	private Tweener _positionTween;
@@ -310,7 +310,7 @@ public class CardPhysObjScript : MonoBehaviour
 
 
 	/// <summary>
-	/// 设置目标位置（由 CombatUXManager 调用），使用 DOTween 动画
+	/// Set target position（由 CombatUXManager 调用），使用 DOTween 动画
 	/// </summary>
 	public void SetTargetPosition(Vector3 target)
 	{
@@ -324,7 +324,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 设置目标缩放（由 CombatUXManager 调用），使用 DOTween 动画
+	/// Set target scale（由 CombatUXManager 调用），使用 DOTween 动画
 	/// </summary>
 	public void SetTargetScale(Vector3 target)
 	{
@@ -371,7 +371,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 立即设置位置（无动画）
+	/// Set position immediately（无动画）
 	/// </summary>
 	public void SetPositionImmediate(Vector3 position)
 	{
@@ -387,7 +387,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 立即设置缩放（无动画）
+	/// Set scale immediately（无动画）
 	/// </summary>
 	public void SetScaleImmediate(Vector3 scale)
 	{
@@ -408,7 +408,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// 播放主角卡片阶段1动画：左移 + 放大 + 旋转
 	/// 用于 Stage/Bury 操作的第一阶段
 	/// </summary>
-	/// <param name="onComplete">动画完成回调</param>
+	/// <param name="onComplete">Animation complete callback</param>
 	public void PlayMainCardPhase1(TweenCallback onComplete = null)
 	{
 		// 如果正在播放特殊动画，先停止
@@ -428,7 +428,7 @@ public class CardPhysObjScript : MonoBehaviour
 		    transform.position.z
 		);
 
-		// 创建动画序列
+		// Create animation sequence
 		Sequence sequence = DOTween.Sequence();
 
 		// 阶段一：左移 + 旋转 + 放大（并行执行）
@@ -445,7 +445,7 @@ public class CardPhysObjScript : MonoBehaviour
 			.SetEase(Ease.OutQuad)
 		);
 
-		// 动画完成回调
+		// Animation complete callback
 		sequence.OnComplete(() =>
 		{
 			onComplete?.Invoke();
@@ -460,7 +460,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// 用于 Stage/Bury 操作的第三阶段（与卡组恢复同时进行）
 	/// </summary>
 	/// <param name="finalTarget">最终目标位置</param>
-	/// <param name="onComplete">动画完成回调</param>
+	/// <param name="onComplete">Animation complete callback</param>
 	public void PlayMainCardPhase3(Vector3 finalTarget, TweenCallback onComplete = null)
 	{
 		// 创建插入动画
@@ -480,12 +480,12 @@ public class CardPhysObjScript : MonoBehaviour
 			.SetEase(Ease.InOutCubic)
 		);
 
-		// 动画完成回调
+		// Animation complete callback
 		sequence.OnComplete(() =>
 		{
 			isPlayingSpecialAnimation = false;
 			isMainAnimationCard = false;
-			// 同步 TargetPosition，防止 DOTween 动画完成后跳变
+			// 同步 TargetPosition，防止 DOTween Animation complete后跳变
 			TargetPosition = finalTarget;
 			// 确保最终状态正确
 			transform.eulerAngles = _specialAnimOriginalRotation;
@@ -548,7 +548,7 @@ public class CardPhysObjScript : MonoBehaviour
 		    basePosition.z
 		);
 
-		// 创建动画序列
+		// Create animation sequence
 		Sequence sequence = DOTween.Sequence();
 
 		// 1. 阶段一：右移 + 缩小
@@ -561,7 +561,7 @@ public class CardPhysObjScript : MonoBehaviour
 			.SetEase(Ease.OutQuad)
 		);
 
-		// 动画完成（此时保持缩小状态，等待恢复指令）
+		// Animation complete（此时保持缩小状态，等待恢复指令）
 		sequence.OnComplete(() =>
 		{
 			// 不标记动画结束，保持状态直到恢复
@@ -792,7 +792,7 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private void OnMouseUp()
 	{
-		// 如果正在长按且未达到购买时间，视为单击，触发放大
+		// 如果正在长按且未达到When bought间，视为单击，触发放大
 		if (_isHolding && _holdTimer < holdTimeRequired && !_hasClickProcessed)
 		{
 			//if (shopItemIndex >= 0)

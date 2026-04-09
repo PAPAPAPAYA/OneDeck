@@ -36,7 +36,7 @@ public class ShopManager : MonoBehaviour
 	public string phaseInfo;
 	public bool sellMode = false; // if it's not sell mode then its buy mode
 
-	[Tooltip("存储购买时实例化的卡牌，退出商店时统一销毁")]
+	[Tooltip("Store instantiated cards when purchased, destroy uniformly when exiting shop")]
 	private List<GameObject> _boughtCardInstances = new List<GameObject>();
 
 	[Header("UI objects")]
@@ -147,7 +147,7 @@ public class ShopManager : MonoBehaviour
 		var cardToBuyInst = Instantiate(cardToBuy, transform);
 		cardToBuyInst.GetComponent<CardScript>().myStatusRef = CombatManager.Me.ownerPlayerStatusRef;
 		GameEventStorage.me?.onMeBought?.RaiseSpecific(cardToBuyInst); // buy timepoint: instantiate so it register as a listener
-		_boughtCardInstances.Add(cardToBuyInst); // 添加到列表，退出商店时统一销毁
+		_boughtCardInstances.Add(cardToBuyInst); // 添加到列表，Exit shop时统一销毁
 		// record card bought
 		if (ShopStatsManager.Me != null)
 		{
@@ -160,7 +160,7 @@ public class ShopManager : MonoBehaviour
 		GatherPlayerDeckInfo();
 		UpdateShopItemInfo();
 		
-		// 通知 ShopUXManager 处理购买后的视觉更新
+		// Notify ShopUXManager to handle visual updates after purchase
 		ShopUXManager.Instance?.OnCardPurchased(itemIndex);
 	}
 	public void SellFunc(int cardIndex, GameObject physicalCardInstance = null)
@@ -170,7 +170,7 @@ public class ShopManager : MonoBehaviour
 		purse.value += cardToSell.GetComponent<CardScript>().price.value / 2; // get the money
 		playerDeckRef.deck.Remove(cardToSell); // remove it from player deck
 		
-		// 通知 ShopUXManager 处理卖出动画
+		// Notify ShopUXManager to handle sell animation
 		if (physicalCardInstance != null)
 		{
 			ShopUXManager.Instance?.OnCardSold(physicalCardInstance, cardIndex);
@@ -182,7 +182,7 @@ public class ShopManager : MonoBehaviour
 
 	public void EnterShop()
 	{
-		// 清理可能残留的实例（保险起见）
+		// Clean up possible residual instances (just in case)
 		if (_boughtCardInstances.Count > 0)
 		{
 			foreach (var cardInst in _boughtCardInstances)
@@ -214,18 +214,18 @@ public class ShopManager : MonoBehaviour
 		{
 			ShopStatsManager.Me.RecordShopVisit();
 		}
-		// 注意：不需要在这里Flush，退出商店时Flush
+		// Note: No need to Flush here, Flush when exiting shop
 	}
 
 	public void ExitShop()
 	{
-		// 确保统计数据保存
+		// Ensure statistics are saved
 		if (ShopStatsManager.Me != null)
 		{
 			ShopStatsManager.Me.Flush();
 		}
 
-		// 统一销毁购买时实例化的卡牌
+		// Destroy all cards instantiated during purchase
 		foreach (var cardInst in _boughtCardInstances)
 		{
 			if (cardInst != null)
@@ -321,7 +321,7 @@ public class ShopManager : MonoBehaviour
 
 	public void Reroll()
 	{
-		// 先生成新的商店物品数据
+		// First generate new shop item data
 		GenerateShopItems();
 		UpdateShopItemInfo();
 		// record reroll
@@ -331,7 +331,7 @@ public class ShopManager : MonoBehaviour
 		}
 		purse.value--;
 		
-		// 通知 ShopUXManager 处理 reroll 动画和重新生成物理卡片
+		// Notify ShopUXManager to handle reroll animation and regenerate physical cards
 		ShopUXManager.Instance?.OnReroll();
 	}
 }

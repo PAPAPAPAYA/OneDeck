@@ -5,29 +5,29 @@ using DefaultNamespace.SOScripts;
 using UnityEngine;
 
 /// <summary>
-/// 【重要警告】所有伤害方法（DecreaseTheirHp, DecreaseMyHp等）都会自动加上 baseDmg.value！
-/// 如果你通过参数传入具体伤害值，请将 baseDmg 设为0或在Inspector中留空，否则会造成双倍伤害。
-/// 例如：baseDmg.value=2 且调用 DecreaseTheirHp(2) 会造成 4 点伤害。
+/// [IMPORTANT WARNING] All damage methods (DecreaseTheirHp, DecreaseMyHp, etc.) automatically add baseDmg.value!
+/// If you pass specific damage values through parameters, set baseDmg to 0 or leave empty in Inspector, otherwise it will cause double damage.
+/// For example: baseDmg.value=2 and calling DecreaseTheirHp(2) will cause 4 damage.
 /// </summary>
 public class HPAlterEffect : EffectScript
 {
 	#region Fields
 
-	[Tooltip("基础伤害值 - 所有伤害方法会自动加上这个值！要造成<基础伤害值的伤害时使用负数")]
+	[Tooltip("Base damage value - All damage methods automatically add this! Use negative numbers for damage < base damage")]
 	public IntSO baseDmg;
 	[HideInInspector]
 	public int dmgAmountAlter = 0;
 	[HideInInspector]
 	public int healAmountAlter = 0;
 	
-	[Tooltip("标记是否是status effect造成的伤害（status effect伤害不触发攻击动画）")]
+	[Tooltip("Mark if damage is caused by status effect (status effect damage doesn't trigger attack animation)")]
 	public bool isStatusEffectDamage = false;
 	
-	[Tooltip("额外伤害值 - 用于DecreaseMyHp和DecreaseTheirHp")]
+	[Tooltip("Extra damage value - used for DecreaseMyHp and DecreaseTheirHp")]
 	public int extraDmg = 0;
 	
 	[Header("Status Effect Count Configuration")]
-	[Tooltip("要统计的状态效果类型")]
+	[Tooltip("Status effect type to count")]
 	public EnumStorage.StatusEffect statusEffectToCheck;
 	
 	#endregion
@@ -35,7 +35,7 @@ public class HPAlterEffect : EffectScript
 	#region Private Helpers
 	
 	/// <summary>
-	/// 计算额外伤害（包括Power状态效果和基础伤害）
+	/// Calculate extra damage (including Power status effect and base damage)
 	/// </summary>
 	private void DmgCalculator()
 	{
@@ -54,7 +54,7 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 处理护盾和生命值减少
+	/// Process shield and HP reduction
 	/// </summary>
 	/// <param name="dmgAmount">伤害数值</param>
 	/// <param name="status">目标玩家状态</param>
@@ -70,7 +70,7 @@ public class HPAlterEffect : EffectScript
 	}
 	
 	/// <summary>
-	/// 处理伤害（抽离公共逻辑，包括护盾和生命值处理）
+	/// Process damage (extract common logic, including shield and HP processing)
 	/// </summary>
 	/// <param name="totalDmg">总伤害数值</param>
 	/// <param name="targetStatus">目标玩家状态</param>
@@ -85,15 +85,15 @@ public class HPAlterEffect : EffectScript
 	#region Damage Effects
 	
 	/// <summary>
-	/// 减少自身生命值（考虑额外伤害）
-	/// 使用 extraDmg 字段作为额外伤害值
+	/// Decrease own HP (consider extra damage)
+	/// Use extraDmg field as extra damage value
 	/// </summary>
 	public void DecreaseMyHp()
 	{
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
 		
-		// status effect伤害不触发攻击动画，直接执行
+		// Status effect damage doesn't trigger attack animation, execute directly
 		if (isStatusEffectDamage)
 		{
 			ProcessDamage(totalDmg, myCardScript.myStatusRef);
@@ -102,8 +102,8 @@ public class HPAlterEffect : EffectScript
 			return;
 		}
 		
-		// 请求攻击动画（攻击自己）
-		// 判断攻击目标位置：玩家卡片自伤冲向玩家位置，敌人卡片自伤冲向敌人位置
+		// Request attack animation (attack self)
+		// Determine attack target position: player card self-damage rushes to player position, enemy card self-damage rushes to enemy position
 		bool isAttackingEnemy = myCardScript.myStatusRef != combatManager.ownerPlayerStatusRef;
 		
 		if (AttackAnimationManager.me != null)
@@ -118,7 +118,7 @@ public class HPAlterEffect : EffectScript
 		}
 		else
 		{
-			// 如果没有动画管理器，直接执行
+			// If no animation manager, execute directly
 			ProcessDamage(totalDmg, myCardScript.myStatusRef);
 			CheckDmgTargets_DealingDmgToSelf(totalDmg);
 		}
@@ -127,7 +127,7 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 由状态效果造成的自身伤害（不触发攻击动画）
+	/// Self-damage caused by status effect (doesn't trigger attack animation)
 	/// </summary>
 	/// <param name="dmgAmount">伤害数值</param>
 	public void DecreaseMyHpFromStatusEffect(int dmgAmount)
@@ -142,7 +142,7 @@ public class HPAlterEffect : EffectScript
 	#region Heal Effects
 	
 	/// <summary>
-	/// 增加自身生命值（考虑额外治疗量）
+	/// Increase own HP (consider extra heal amount)
 	/// </summary>
 	/// <param name="healAmount">治疗数值</param>
 	public void IncreaseMyHp(int healAmount)
@@ -158,7 +158,7 @@ public class HPAlterEffect : EffectScript
 	#region Damage Effects (Continued)
 
 	/// <summary>
-	/// 根据已损失生命值减少对方生命值 (/2)
+	/// Decrease opponent HP based on lost HP (/2)
 	/// </summary>
 	/// <param name="baseDmgAmount">基础伤害数值</param>
 	public void DecreaseTheirHp_BasedOnLostHp(int baseDmgAmount)
@@ -170,14 +170,14 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 根据combinedDeckZone和revealZone中拥有Infected状态效果且属于卡片所有者的卡的数量减少对方生命值
+	/// Decrease opponent HP based on count of cards with Infected status effect owned by card owner in combinedDeckZone and revealZone
 	/// </summary>
 	/// <param name="baseDmgAmount">基础伤害数值</param>
 	public void DecreaseTheirHp_BasedOnInfectedCardsOwned(int baseDmgAmount)
 	{
 		var infectedCardCount = 0;
 		
-		// 合并两个区域到临时列表
+		// Merge two zones to temporary list
 		List<GameObject> allCards = new();
 		UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, allCards, false);
 		if (combatManager.revealZone != null)
@@ -185,12 +185,12 @@ public class HPAlterEffect : EffectScript
 			allCards.Add(combatManager.revealZone);
 		}
 		
-		// 遍历所有卡片统计Infected数量
+		// Iterate all cards to count Infected
 		foreach (var card in allCards)
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
-			// 跳过中立卡，只统计己方感染卡
+			// Skip neutral cards, only count own infected cards
 			if (!CombatManager.ShouldSkipEffectProcessing(cardScript) &&
 			    cardScript.myStatusRef == myCardScript.myStatusRef && 
 			    cardScript.myStatusEffects.Contains(EnumStorage.StatusEffect.Infected))
@@ -205,14 +205,14 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 根据combinedDeckZone和revealZone中友方指定cardTypeID的卡牌数量减少对方生命值
+	/// Decrease opponent HP based on count of friendly cards with specified cardTypeID in combinedDeckZone and revealZone
 	/// </summary>
 	/// <param name="cardTypeID">要统计的卡牌类型ID</param>
 	public void DecreaseTheirHp_BasedOnFriendlyCardTypeCount(string cardTypeID)
 	{
 		var cardCount = 0;
 		
-		// 合并两个区域到临时列表
+		// Merge two zones to temporary list
 		List<GameObject> allCards = new();
 		UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, allCards, false);
 		if (combatManager.revealZone != null)
@@ -220,12 +220,12 @@ public class HPAlterEffect : EffectScript
 			allCards.Add(combatManager.revealZone);
 		}
 		
-		// 遍历所有卡片统计指定类型的友方卡牌数量
+		// Iterate all cards to count friendly cards of specified type
 		foreach (var card in allCards)
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
-			// 跳过中立卡，只统计己方指定类型的卡
+			// Skip neutral cards, only count own cards of specified type
 			if (!CombatManager.ShouldSkipEffectProcessing(cardScript) &&
 			    cardScript.myStatusRef == myCardScript.myStatusRef && 
 			    cardScript.cardTypeID == cardTypeID)
@@ -240,14 +240,14 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 根据自身身上的 statusEffectToCheck 状态效果数量减少自身生命值
-	/// 伤害值 = 状态效果数量
+	/// Decrease own HP based on count of statusEffectToCheck status effects on self
+	/// Damage value = status effect count
 	/// </summary>
 	public void DecreaseMyHp_BasedOnMyStatusEffectCount()
 	{
 		int statusEffectCount = 0;
 		
-		// 遍历自身卡片的状态效果列表，统计指定类型的数量
+		// Iterate self card's status effect list, count specified type
 		foreach (var myTag in myCardScript.myStatusEffects)
 		{
 			if (myTag == statusEffectToCheck)
@@ -262,15 +262,15 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 减少对方生命值（考虑额外伤害）
-	/// 使用 extraDmg 字段作为额外伤害值
+	/// Decrease opponent HP (consider extra damage)
+	/// Use extraDmg field as extra damage value
 	/// </summary>
 	public void DecreaseTheirHp()
 	{
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
 		
-		// status effect伤害不触发攻击动画，直接执行
+		// Status effect damage doesn't trigger attack animation, execute directly
 		if (isStatusEffectDamage)
 		{
 			ProcessDamage(totalDmg, myCardScript.theirStatusRef);
@@ -279,10 +279,10 @@ public class HPAlterEffect : EffectScript
 			return;
 		}
 		
-		// 判断攻击目标（true=攻击敌人, false=攻击玩家自己）
+		// Determine attack target (true=attack enemy, false=attack player self)
 		bool isAttackingEnemy = myCardScript.theirStatusRef != combatManager.ownerPlayerStatusRef;
 		
-		// 请求攻击动画
+		// Request attack animation
 		if (AttackAnimationManager.me != null)
 		{
 			AttackAnimationManager.me.RequestAttackAnimation(myCard, isAttackingEnemy, 
@@ -295,7 +295,7 @@ public class HPAlterEffect : EffectScript
 		}
 		else
 		{
-			// 如果没有动画管理器，直接执行
+			// If no animation manager, execute directly
 			ProcessDamage(totalDmg, myCardScript.theirStatusRef);
 			CheckDmgTargets_DealingDmgToOpponent(totalDmg);
 		}
@@ -304,7 +304,7 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 由状态效果造成的对方伤害（不触发攻击动画）
+	/// Opponent damage caused by status effect (doesn't trigger attack animation)
 	/// </summary>
 	/// <param name="dmgAmount">伤害数值</param>
 	public void DecreaseTheirHpFromStatusEffect(int dmgAmount)
@@ -345,7 +345,7 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 多次减少对方生命值，每次造成 baseDmg + extraDmg 伤害
+	/// Decrease opponent HP multiple times, each dealing baseDmg + extraDmg damage
 	/// </summary>
 	/// <param name="timesIntSO">伤害次数</param>
 	public void DecreaseTheirHpTimesIntSO(IntSO timesIntSO)
@@ -360,16 +360,26 @@ public class HPAlterEffect : EffectScript
 		}
 	}
 
+	/// <summary>
+	/// Decrease opponent HP multiple times, each dealing baseDmg + extraDmg damage
+	/// </summary>
+	/// <param name="times">伤害次数</param>
+	public void DecreaseTheirHpTimesX(int times)
+	{
+		for (int i = 0; i < times; i++)
+		{
+			print("call DecreaseTheirHp()");
+			DecreaseTheirHp();
+		}
+	}
+
 	#endregion
 	#endregion
-
-	
-
 
 	#region Heal Effects (Continued)
 	
 	/// <summary>
-	/// 增加对方生命值（考虑额外治疗量）
+	/// Increase opponent HP (consider extra heal amount)
 	/// </summary>
 	/// <param name="healAmount">治疗数值</param>
 	public void IncreaseTheirHp(int healAmount)
@@ -385,7 +395,7 @@ public class HPAlterEffect : EffectScript
 	#region Result Logging
 	
 	/// <summary>
-	/// 检查伤害来源和目标，触发对应事件并显示文本信息（对对手造成伤害时）
+	/// Check damage source and target, trigger corresponding events and display text (when dealing damage to opponent)
 	/// </summary>
 	/// <param name="dmgAmount">伤害数值</param>
 	private void CheckDmgTargets_DealingDmgToOpponent(int dmgAmount)
@@ -407,7 +417,7 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 检查伤害来源和目标，触发对应事件并显示文本信息（对自己造成伤害时）
+	/// Check damage source and target, trigger corresponding events and display text (when dealing damage to self)
 	/// </summary>
 	/// <param name="dmgAmount">伤害数值</param>
 	private void CheckDmgTargets_DealingDmgToSelf(int dmgAmount)
@@ -429,7 +439,7 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 检查治疗来源和目标，触发对应事件并显示文本信息（治疗自己时）
+	/// Check heal source and target, trigger corresponding events and display text (when healing self)
 	/// </summary>
 	/// <param name="healAmount">治疗数值</param>
 	private void CheckHealTargets_HealingSelf(int healAmount)
@@ -449,7 +459,7 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 检查治疗来源和目标，触发对应事件并显示文本信息（治疗对手时）
+	/// Check heal source and target, trigger corresponding events and display text (when healing opponent)
 	/// </summary>
 	/// <param name="healAmount">治疗数值</param>
 	private void CheckHealTargets_HealingOpponent(int healAmount)

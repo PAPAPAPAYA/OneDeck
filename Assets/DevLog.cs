@@ -1,5 +1,10 @@
 // devlog
 
+// refactor
+	// make all chinese into english to avoid encoding errors
+	// curse card type id: make it a stringSO
+// design decisions
+	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
 // feature
 	// fake shuffle
 	// motion design

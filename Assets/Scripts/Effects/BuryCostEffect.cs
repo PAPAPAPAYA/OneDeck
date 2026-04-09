@@ -12,7 +12,7 @@ public class BuryCostEffect : EffectScript
 
 		var combinedDeck = combatManager.combinedDeckZone;
 
-		// 收集己方卡（排除当前正在发动的卡）
+		// Collect own cards (exclude currently activating card)
 		var eligibleCards = new List<GameObject>();
 		foreach (var card in combinedDeck)
 		{
@@ -24,19 +24,19 @@ public class BuryCostEffect : EffectScript
 			// 跳过中立卡（Start Card 等）
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
-			// 排除当前正在发动的卡
+			// Exclude currently activating card
 			if (card == myCard) continue;
 			
-			// 只收集己方卡
+			// Only collect own cards
 			if (cardScript.myStatusRef != myCardScript.myStatusRef) continue;
 			
 			eligibleCards.Add(card);
 		}
 
-		// 检查是否有足够的己方卡
+		// Check if there are enough own cards
 		if (eligibleCards.Count < costCount)
 		{
-			// 显示失败信息并阻止效果发动
+			// Display failure message and prevent effect activation
 			string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 			string failMessage = $"// [<color={myColor}>{myCard.name}</color>] bury cost failed: need <color=yellow>{costCount}</color> ally card(s), found <color=yellow>{eligibleCards.Count}</color>\n";
 			
@@ -48,11 +48,11 @@ public class BuryCostEffect : EffectScript
 			return;
 		}
 
-		// 随机打乱并选择要置底的卡
+		// Randomly shuffle and select cards to bury
 		eligibleCards = UtilityFuncManagerScript.ShuffleList(eligibleCards);
 		var cardsToBury = eligibleCards.GetRange(0, costCount);
 
-		// 修改逻辑列表：将选中的卡移到底部
+		// Modify logical list: move selected cards to bottom
 		var buriedCards = new List<GameObject>();
 		foreach (var card in cardsToBury)
 		{
@@ -69,13 +69,13 @@ public class BuryCostEffect : EffectScript
 			}
 		}
 
-		// 播放弧形轨迹动画（移动卡片到底部）
+		// Play arc trajectory animation (move cards to bottom)
 		foreach (var card in buriedCards)
 		{
 			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true);
 		}
 		
-		// 触发友方卡被 bury 事件
+		// Trigger friendly card buried event
 		foreach (var card in buriedCards)
 		{
 			var cardStatus = card.GetComponent<CardScript>()?.myStatusRef;

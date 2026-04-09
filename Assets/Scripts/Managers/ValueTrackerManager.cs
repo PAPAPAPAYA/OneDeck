@@ -1,3 +1,4 @@
+using DefaultNamespace.SOScripts;
 using UnityEngine;
 
 public class ValueTrackerManager : MonoBehaviour
@@ -6,6 +7,11 @@ public class ValueTrackerManager : MonoBehaviour
 
 	[Header("Tracker Refs")]
 	public IntSO friendlyInGraveAmountRef;
+	public IntSO hostileCursePowerCount;
+
+	[Header("Curse Card Config")]
+	[Tooltip("Cursed card type ID，用于统计敌方对应卡的Power总数")]
+	public StringSO curseCardTypeId;
 
 	private void Awake()
 	{
@@ -18,6 +24,7 @@ public class ValueTrackerManager : MonoBehaviour
 	public void UpdateAllTrackers()
 	{
 		UpdateFriendlyInGraveAmount();
+		UpdateHostileCursePowerCount();
 	}
 
 	/// <summary>
@@ -62,5 +69,46 @@ public class ValueTrackerManager : MonoBehaviour
 		}
 
 		friendlyInGraveAmountRef.value = count;
+	}
+
+	/// <summary>
+	/// 更新 HostileCursePowerCount：统计敌方card type id为curseCardTypeId的卡拥有的Power status effect的总和
+	/// </summary>
+	private void UpdateHostileCursePowerCount()
+	{
+		if (hostileCursePowerCount == null || CombatManager.Me == null) return;
+
+		// 如果没有设置Cursed card type ID，计数为0
+		if (curseCardTypeId == null || string.IsNullOrEmpty(curseCardTypeId.value))
+		{
+			hostileCursePowerCount.value = 0;
+			return;
+		}
+
+		var deck = CombatManager.Me.combinedDeckZone;
+		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
+		int totalPower = 0;
+
+		foreach (var cardObj in deck)
+		{
+			var cardScript = cardObj.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+
+			// 检查是否为敌方卡且card type id匹配
+			bool isHostileCard = cardScript.myStatusRef != ownerStatus;
+			bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
+
+			if (isHostileCard && isMatchingType)
+			{
+				// 统计该卡上的Power status effect数量
+				int powerCount = EnumStorage.GetStatusEffectCount(
+					cardScript.myStatusEffects, 
+					EnumStorage.StatusEffect.Power
+				);
+				totalPower += powerCount;
+			}
+		}
+
+		hostileCursePowerCount.value = totalPower;
 	}
 }

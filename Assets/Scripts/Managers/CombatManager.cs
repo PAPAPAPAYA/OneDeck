@@ -35,9 +35,9 @@ public class CombatManager : MonoBehaviour
 	public GameObject enemyDeckParent;
 
 	[Header("START CARD")]
-	public GameObject startCardPrefab; // Start Card 预制体
-	private GameObject _startCardInstance; // Start Card 实例（在牌组底部）
-	[Tooltip("如果为true，Start Card触发后直接移除，不洗入牌组")]
+	public GameObject startCardPrefab; // Start Card prefab
+	private GameObject _startCardInstance; // Start Card instance (at the bottom of deck)
+	[Tooltip("If true, Start Card is removed directly after triggering, not shuffled into deck")]
 	public bool removeStartCardInsteadOfShuffle = false;
 
 	[Header("ZONES")]
@@ -48,7 +48,7 @@ public class CombatManager : MonoBehaviour
 	public bool awaitingRevealConfirm = true;
 	public BoolSO combatFinished; // identify if this session of combat is finished
 	public int cardsRevealedThisRound; // tracks how many cards have been revealed this round (for display numbering)
-	[Tooltip("播放Stage/Bury动画时屏蔽玩家输入")]
+	[Tooltip("Block player input when playing Stage/Bury animation")]
 	public bool blockPlayerInput = false;
 
 	[Header("SUPPLEMENT COMPONENTS")]
@@ -59,13 +59,13 @@ public class CombatManager : MonoBehaviour
 	public IntSO roundNumRef;
 	public int overtimeRoundThreshold;
 	public GameObject cardToAddWhenOvertime;
-	[Tooltip("add this amount of fatigue to both player")]
+	[Tooltip("Add this amount of fatigue to both players")]
 	public int fatigueAmount;
 	
 	[Header("FATIGUE BY REVEAL COUNT")]
-	[Tooltip("基于揭晓卡数的疲劳机制：当累计揭晓多少张卡后触发疲劳（0表示禁用）")]
+	[Tooltip("ڽƣͻƣۼƽſ󴥷ƣ(0ʾ)")]
 	public int fatigueRevealThreshold;
-	[Tooltip("已累计揭晓的卡数")]
+	[Tooltip("Total cards revealed count")]
 	public int totalCardsRevealed;
 
 	#region Enter and exit funcs
@@ -78,7 +78,7 @@ public class CombatManager : MonoBehaviour
 
 	public void ExitCombat()
 	{
-		// 停止所有攻击动画
+		// Stop all attack animations
 		AttackAnimationManager.me?.StopAllAttackAnimations();
 		
 		// clean up ui
@@ -125,7 +125,7 @@ public class CombatManager : MonoBehaviour
 				GatherDecks();
 				break;
 			case EnumStorage.CombatState.ShuffleDeck:
-				CheckFatigueNAddFatigue(); // 基于回合数的疲劳检查
+				CheckFatigueNAddFatigue(); // Fatigue check based on round number
 				Shuffle();
 				break;
 			case EnumStorage.CombatState.Reveal:
@@ -159,7 +159,7 @@ public class CombatManager : MonoBehaviour
 			combinedDeckZone.Add(cardInstance);
 		}
 
-		// 实例化 Start Card 并添加到牌组底部
+		// Instantiate Start Card and add to the bottom of deck
 		_startCardInstance = Instantiate(startCardPrefab, playerDeckParent.transform);
 		_startCardInstance.name = "Start Card";
 		var startCardScript = _startCardInstance.GetComponent<CardScript>();
@@ -172,7 +172,7 @@ public class CombatManager : MonoBehaviour
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 
-		// 记录玩家卡组快照（用于胜率统计）- 直接从playerDeck查询，无需等待实例化
+		// Record player deck snapshot (for win rate stats) - query directly from playerDeck, no need to wait for instantiation
 		TestWriteRead.CardWinRateTracker.Me?.RecordPlayerDeckSnapshot(playerDeck.deck);
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
@@ -180,7 +180,7 @@ public class CombatManager : MonoBehaviour
 
 	private void CheckFatigueNAddFatigue()
 	{
-		// 基于回合数的疲劳检查（在ShuffleDeck阶段调用）
+		// Fatigue check based on round number (called in ShuffleDeck phase)
 		if (roundNumRef.value <= overtimeRoundThreshold) return;
 		
 		var msg = $"<color=red>FATIGUE!</color> Round {roundNumRef.value} > {overtimeRoundThreshold}";
@@ -191,11 +191,11 @@ public class CombatManager : MonoBehaviour
 	
 	private void CheckFatigueByRevealCount()
 	{
-		// 基于reveal卡数的疲劳检查（每次reveal时调用）
-		// threshold为0时禁用
+		// Reveal count-based fatigue check (called each reveal)
+		// disabled when threshold
 		if (fatigueRevealThreshold <= 0) return;
 		if (totalCardsRevealed < fatigueRevealThreshold) return;
-		// 只有当reveal卡数恰好等于阈值时才触发（避免重复触发）
+		// Only trigger when revealed card count equals threshold exactly (to avoid duplicate triggers)
 		if (totalCardsRevealed != fatigueRevealThreshold) return;
 		
 		var msg = $"<color=red>FATIGUE!</color> Revealed {totalCardsRevealed} cards";
@@ -221,7 +221,7 @@ public class CombatManager : MonoBehaviour
 
 	public void Shuffle()
 	{
-		// 直接洗牌（Start Card 已在牌组中）
+		// Shuffle directly (Start Card is already in the deck)
 		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
 
 		_infoDisplayer.RefreshDeckInfo();
@@ -239,8 +239,8 @@ public class CombatManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 检查卡牌是否应该被效果跳过（Start Card 等中立卡）
-	/// 统一入口，方便后续扩展其他中立卡类型
+	/// Check if card should be skipped by effects (Start Card and other neutral cards)
+	/// Unified entry point for easy extension of other neutral card types
 	/// </summary>
 	public static bool ShouldSkipEffectProcessing(CardScript card)
 	{
@@ -249,7 +249,7 @@ public class CombatManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 获取牌组中实际参与效果计算的卡牌数量（排除 Start Card）
+	/// Get the count of cards that actually participate in effect calculation in the deck (excluding Start Card)
 	/// </summary>
 	public int GetEffectiveDeckSize()
 	{
@@ -271,11 +271,11 @@ public class CombatManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 等待攻击动画完成后再揭晓下一张
+	/// Wait for attack animation to complete before revealing next
 	/// </summary>
 	private System.Collections.IEnumerator WaitForAttackAnimationsBeforeNextReveal()
 	{
-		// 如果有待播放的攻击动画，等待
+		// If there are pending attack animations, wait
 		while (AttackAnimationManager.me != null && AttackAnimationManager.me.HasPendingAnimations())
 		{
 			yield return null;
@@ -286,7 +286,7 @@ public class CombatManager : MonoBehaviour
 	{
 		if (blockPlayerInput) return;
 		
-		// 如果正在播放攻击动画，等待
+		// If attack animation is playing, wait
 		if (AttackAnimationManager.me != null && AttackAnimationManager.me.isPlayingAttackAnimation)
 		{
 			return;
@@ -294,53 +294,53 @@ public class CombatManager : MonoBehaviour
 
 		_infoDisplayer.RefreshDeckInfo();
 
-		// ========== 回合开始：自动揭晓 Start Card（玩家直接看到）==========
+		// ========== Round start: automatically reveal Start Card (player sees it directly) ==========
 		if (revealZone == null && cardsRevealedThisRound == 0)
 		{
 			CombatUXManager.me.InstantiateAllPhysicalCards();
 			
-			// 揭晓 Start Card（它在牌组底部）
+			// Reveal Start Card (it's at the bottom of the deck)
 			if (combinedDeckZone.Count > 0)
 			{
 				RevealNextCard();
-				awaitingRevealConfirm = false; // 进入触发 Start Card 效果阶段
+				awaitingRevealConfirm = false; // Enter Start Card effect trigger phase
 			}
 			return;
 		}
 
-		// ========== 阶段1: 等待处理当前卡并揭晓下一张 ==========
+		// ========== Phase 1: Wait to process current card and reveal next ==========
 		if (awaitingRevealConfirm)
 		{
-			// 战斗结束检查
+			// Combat end check
 			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
 				HandleCombatFinished();
 				return;
 			}
 
-			// 提示文本
+			// Prompt text
 			_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to reveal next card";
 			
 			CombatUXManager.me.InstantiateAllPhysicalCards();
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 			_infoDisplayer.effectResultString.value = "";
 
-			// 1. 将当前卡放回牌组底部
+			// 1. Put current card back to bottom of deck
 			PutRevealedCardToBottom();
 
-			// 2. 揭晓下一张卡（如果有）
+			// 2. Reveal next card (if any)
 			if (combinedDeckZone.Count > 0)
 			{
 				RevealNextCard();
-				awaitingRevealConfirm = false; // 进入触发效果阶段
+				awaitingRevealConfirm = false; // Enter effect trigger phase
 			}
 
 			EffectChainManager.Me.CloseOpenedChain();
 		}
-		// ========== 阶段2: 等待触发当前卡效果 ==========
+		// ========== Phase 2: Wait to trigger current card effect ==========
 		else
 		{
-			// 检查当前卡是否有效
+			// Check if current card is valid
 			if (revealZone == null)
 			{
 				awaitingRevealConfirm = true;
@@ -350,26 +350,26 @@ public class CombatManager : MonoBehaviour
 			_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to trigger effect";
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 
-			// Start Card 特殊处理：触发效果 = 洗牌 + 新回合
+			// Start Card special handling: trigger effect = shuffle + new round
 			if (IsRevealedCardStartCard())
 			{
 				TriggerStartCardEffect();
 			}
 			else
 			{
-				// 普通卡触发效果
+				// Normal card triggers effect
 				TriggerRevealedCardEffect();
 			}
 			
 			awaitingRevealConfirm = true;
 			EffectChainManager.Me.CloseOpenedChain();
 			
-			// 等待所有攻击动画完成后再允许下一步操作
+			// Wait for all attack animations to complete before allowing next operation
 			StartCoroutine(WaitForAttackAnimationsBeforeNextReveal());
 		}
 	}
 
-	// ========== 辅助方法 ==========
+	// ========== Helper Methods ==========
 
 	private void RevealNextCard()
 	{
@@ -377,23 +377,23 @@ public class CombatManager : MonoBehaviour
 		revealZone = combinedDeckZone[^1];
 		combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);
 
-		// 物理移动：从牌堆移到揭晓区域
+		// Physical movement: from deck to reveal zone
 		var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(cardRevealed);
 		if (physicalCard != null)
 		{
 			CombatUXManager.me.MovePhysicalCardToRevealZone(physicalCard);
 		}
 
-		// 显示信息（不触发效果）
+		// Display info (don't trigger effect)
 		cardsRevealedThisRound++;
 		totalCardsRevealed++;
 		_infoDisplayer.ShowCardInfo(cardRevealed, cardsRevealedThisRound, cardRevealed.myStatusRef == ownerPlayerStatusRef);
 		_infoDisplayer.RefreshDeckInfo();
 		
-		// 检查疲劳（基于reveal卡数）
+		// Check fatigue (based on reveal card count)
 		CheckFatigueByRevealCount();
 
-		// 记录战斗统计
+		// Record combat stats
 		GetComponent<CombatStatsLogger>()?.OnCardRevealed(cardRevealed);
 	}
 
@@ -406,6 +406,16 @@ public class CombatManager : MonoBehaviour
 
 		GameEventStorage.me.onAnyCardRevealed.Raise();
 		GameEventStorage.me.onMeRevealed.RaiseSpecific(revealZone);
+		
+		// Check if it's an enemy curse card
+		if (cardScript.myStatusRef == enemyPlayerStatusRef && 
+		    GameEventStorage.me.curseCardTypeID != null &&
+			    !string.IsNullOrEmpty(GameEventStorage.me.curseCardTypeID.value) &&
+		    cardScript.cardTypeID == GameEventStorage.me.curseCardTypeID.value)
+		{
+			GameEventStorage.me.onEnemyCurseCardRevealed.Raise();
+		}
+		
 		_infoDisplayer.RefreshDeckInfo();
 	}
 
@@ -416,7 +426,7 @@ public class CombatManager : MonoBehaviour
 		var cardToBottom = revealZone;
 		revealZone = null;
 
-		// 放回牌组底部（index 0）
+		// Put back to bottom of deck (index 0)
 		combinedDeckZone.Insert(0, cardToBottom);
 		CombatUXManager.me.MoveRevealedCardToBottom(cardToBottom);
 	}
@@ -428,50 +438,50 @@ public class CombatManager : MonoBehaviour
 		var startCard = revealZone;
 		revealZone = null;
 
-		// 根据配置决定动画和后续处理
+		// Determine animation and subsequent handling based on config
 		if (removeStartCardInsteadOfShuffle)
 		{
-			// 从牌组中移除 Start Card（它不会参与 Shuffle）
+			// Remove Start Card from deck (it won't participate in Shuffle)
 			combinedDeckZone.Remove(startCard);
 			
-			// 同时播放：Start Card 退场动画 + 其他卡片 Shuffle 动画
+			// Play simultaneously: Start Card exit animation + other cards Shuffle animation
 			CombatUXManager.me.PlayStartCardExitWithShuffleAnimation(startCard, combinedDeckZone, () =>
 			{
-				// 销毁逻辑卡片
+				// Destroy logical card
 				Destroy(startCard);
 				_startCardInstance = null;
 				
-				// 逻辑上执行 Shuffle（Start Card 已经不在了）
+				// Logically execute Shuffle (Start Card is already gone)）
 				combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
 				
-				// 刷新UI显示
+				// Refresh UI display
 				_infoDisplayer.RefreshDeckInfo();
 				GameEventStorage.me.afterShuffle.Raise();
 				
-				// 新回合开始
+				// New round start
 				HandleNewRoundStart();
 			});
 		}
 		else
 		{
-			// ========== 方案 B：先执行逻辑洗牌，再播放动画 ==========
+			// ========== Plan B: Execute logical shuffle first, then play animation ==========
 			
-			// 1. 先将 Start Card 加入牌组（准备参与洗牌）
-			// Start Card 当前不在 combinedDeckZone 中（它在 revealZone），需要加回去
+			// 1. First add Start Card to deck (prepare to participate in shuffle)
+			// Start Card is currently not in combinedDeckZone (it's in revealZone), needs to be added back
 			combinedDeckZone.Add(startCard);
 			
-			// 2. 【关键】先执行逻辑洗牌，确定每张卡的位置
+			// 2. [Key] Execute logical shuffle first, determine each card's position
 			combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
 			
-			// 3. 根据已知的洗牌结果播放动画
-			// Start Card 从 Reveal Zone 直接飞到新位置，其他卡片从旧位置飞到新位置
+			// 3. Play animation based on known shuffle result
+			// Start Card flies directly from Reveal Zone to new position, other cards fly from old to new position
 			CombatUXManager.me.PlayStartCardShuffleAnimation(startCard, combinedDeckZone, () =>
 			{
-				// 动画完成后，刷新UI并触发事件
+				// After animation completes, refresh UI and trigger event
 				_infoDisplayer.RefreshDeckInfo();
 				GameEventStorage.me.afterShuffle.Raise();
 				
-				// 新回合开始
+				// New round start
 				HandleNewRoundStart();
 			});
 		}
@@ -479,15 +489,15 @@ public class CombatManager : MonoBehaviour
 
 	private void HandleNewRoundStart()
 	{
-		// 回合数增加
+		// Round number increment
 		roundNumRef.value++;
 		cardsRevealedThisRound = 0;
 		_infoDisplayer.ClearInfo();
 		
-		// 物理卡牌复位
+		// Physical card reset
 		CombatUXManager.me.ReviveAllPhysicalCards();
 		
-		// 回合开始事件
+		// Round start event
 		GameEventStorage.me.beforeRoundStart.Raise();
 	}
 

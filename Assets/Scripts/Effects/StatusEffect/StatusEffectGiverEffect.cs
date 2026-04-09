@@ -409,6 +409,22 @@ namespace DefaultNamespace.Effects
 				ApplyStatusEffectToXFriendlySingle(targetCardScript);
 			}
 		}
+
+		/// <summary>
+		/// 根据传入的 IntSO 值，给予相同数量的随机友方卡片 status effect，每个卡片获得1层
+		/// </summary>
+		/// <param name="intSO">包含友方卡片数量的 IntSO</param>
+		public virtual void GiveStatusEffectToXFriendly_BasedOnIntSO(IntSO intSO)
+		{
+			if (intSO == null) return;
+			int originalXFriendlyCount = xFriendlyCount;
+			int originalYFriendlyLayerCount = yFriendlyLayerCount;
+			xFriendlyCount = intSO.value;
+			yFriendlyLayerCount = 1;
+			GiveStatusEffectToXFriendly();
+			xFriendlyCount = originalXFriendlyCount;
+			yFriendlyLayerCount = originalYFriendlyLayerCount;
+		}
 		#endregion
 	}
 }

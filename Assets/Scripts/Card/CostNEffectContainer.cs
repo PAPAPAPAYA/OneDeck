@@ -28,12 +28,12 @@ public class CostNEffectContainer : MonoBehaviour
 	public StringSO effectResultString;
 
 	[Header("Cost Variables")]
-	[Tooltip("诅咒的 Card Type ID，用于特定成本检查")]
-	public string cursedCardTypeID;
+	[Tooltip("Cursed Card Type ID, used for specific cost checking")]
+	public StringSO cursedCardTypeID;
 
 	[Header("Cost and Effect Events")]
 	public UnityEvent checkCostEvent;
-	[Tooltip("在检查cost之后、效果之前执行（如Delay Cost）")]
+	[Tooltip("Execute after cost check but before effect (e.g., Delay Cost)")]
 	public UnityEvent preEffectEvent;
 	[Tooltip("assign effect component's function")]
 	public UnityEvent effectEvent;
@@ -41,7 +41,7 @@ public class CostNEffectContainer : MonoBehaviour
 	private int _costNotMetFlag = 0;
 
 	/// <summary>
-	/// 用于外部（如 preEffectEvent 中的 MinionCostEffect）设置 cost 检查失败
+	/// Used externally (e.g., MinionCostEffect in preEffectEvent) to set cost check failure
 	/// </summary>
 	public void SetCostNotMet(string failMessage)
 	{
@@ -63,7 +63,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 		if (_costNotMetFlag > 0) return; // if cost can not be met, return
 
-		// 在效果执行前刷新所有追踪数值
+		// Refresh all tracked values before effect execution
 		ValueTrackerManager.me?.UpdateAllTrackers();
 
 		// invoke effect
@@ -98,24 +98,24 @@ public class CostNEffectContainer : MonoBehaviour
 	// will check and consume rest
 	public void CheckCost_Rested()
 	{
-		// 检查卡是否没有任何 rest status effect
-		if (!_myCardScript.myStatusEffects.Contains(EnumStorage.StatusEffect.Rest)) return; // 如果没有 rest，检查通过
+		// Check if the card has no rest status effect
+		if (!_myCardScript.myStatusEffects.Contains(EnumStorage.StatusEffect.Rest)) return; // If no rest, check passed
 		
-		// 如果有 rest，移除一个 rest 并阻止效果发动
-		// 移除一个 Rest status effect
+		// If has rest, remove one rest and prevent effect activation
+		// Remove one Rest status effect
 		for (var i = _myCardScript.myStatusEffects.Count - 1; i >= 0; i--)
 		{
 			if (_myCardScript.myStatusEffects[i] == EnumStorage.StatusEffect.Rest)
 			{
 				_myCardScript.myStatusEffects.RemoveAt(i);
-				break; // 只移除一个
+				break; // Remove only one
 			}
 		}
 		
-		// 刷新显示
+		// Refresh display
 		CombatInfoDisplayer.me.RefreshDeckInfo();
 		
-		// 阻止效果发动
+		// Prevent effect activation
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
 		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
@@ -147,7 +147,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 	public void CheckCost_InGrave()
 	{
-		// [已废弃] 墓地机制已移除，此方法始终返回成功
+		// [Deprecated] Graveyard mechanic removed, this method always returns success
 		return;
 	}
 
@@ -243,18 +243,18 @@ public class CostNEffectContainer : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 检查卡组中是否存在符合诅咒 card type id 且属于敌方且 status effect 中有大于 X 个 power 的卡片。
+	/// Check if there is an enemy card matching the cursed card type id with more than X Power status effects in the deck.
 	/// Cost is met if there is at least one enemy card matching cursedCardTypeID with more than powerCount Power status effects.
 	/// </summary>
-	/// <param name="powerCount">需要的 Power status effect 数量阈值（需大于此值）</param>
+	/// <param name="powerCount">Required Power status effect threshold (must be greater than this value)</param>
 	public void CheckCost_EnemyCursedCardHasPower(int powerCount)
 	{
-		// 检查 cursedCardTypeID 是否已设置
-		if (string.IsNullOrEmpty(cursedCardTypeID))
+		// Check if cursedCardTypeID is set
+		if (cursedCardTypeID == null || string.IsNullOrEmpty(cursedCardTypeID.value))
 		{
 			_costNotMetFlag++;
 			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-			effectResultString.value += "// [" + _myCardScript.gameObject.name + "] cursedCardTypeID is not set\n";
+			effectResultString.value += "// [" + _myCardScript.gameObject.name + "] cursedCardTypeID is not set or null\n";
 			return;
 		}
 
@@ -267,13 +267,13 @@ public class CostNEffectContainer : MonoBehaviour
 			// 跳过中立卡和 Start Card
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
-			// 检查是否为敌方卡片
+			// Check if it's an enemy card
 			if (cardScript.myStatusRef == _myCardScript.myStatusRef) continue;
 			
-			// 检查 card type id 是否匹配诅咒的 card type id
-			if (cardScript.cardTypeID != cursedCardTypeID) continue;
+			// Check if card type id matches the cursed card type id
+			if (cardScript.cardTypeID != cursedCardTypeID?.value) continue;
 			
-			// 统计 Power status effect 的数量
+			// Count the number of Power status effects
 			int powerAmount = 0;
 			foreach (var effect in cardScript.myStatusEffects)
 			{
@@ -283,7 +283,7 @@ public class CostNEffectContainer : MonoBehaviour
 				}
 			}
 			
-			// 如果 Power 数量大于传入参数，cost 满足
+			// If Power count exceeds the parameter, cost is met
 			if (powerAmount > powerCount)
 			{
 				return; // cost met
@@ -293,7 +293,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// cost not met - no matching enemy card found with enough Power
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-		effectResultString.value += "// No enemy card [" + cursedCardTypeID + "] with >" + powerCount + " [Power] in deck\n";
+		effectResultString.value += "// No enemy card [" + cursedCardTypeID?.value + "] with >" + powerCount + " [Power] in deck\n";
 	}
 
 	#endregion

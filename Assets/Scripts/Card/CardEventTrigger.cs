@@ -13,7 +13,7 @@ public class CardEventTrigger : MonoBehaviour
     {
         ownerDealtDmgToEnemyEvent?.Invoke();
     }
-    public void InvokeAfterShuffleEvent() // 洗牌后（类似置顶自身的效果只在洗牌后发动）
+    public void InvokeAfterShuffleEvent() // After shuffle（类似置顶自身的效果只在After shuffle发动）
     {
         afterShuffleEvent?.Invoke();
     }

@@ -3,19 +3,19 @@ using UnityEngine;
 namespace DefaultNamespace.Effects
 {
     /// <summary>
-    /// 向 effectResultString 添加自定义文字的 Effect
+    /// Effect to add custom text to effectResultString
     /// </summary>
     public class AddTextEffect : EffectScript
     {
-        [Tooltip("要添加到 effectResultString 的文字内容")]
+        [Tooltip("Text content to add to effectResultString")]
         [TextArea(3, 10)]
         public string textToAdd = "";
         
-        [Tooltip("是否在文字末尾自动添加换行符")]
+        [Tooltip("Whether to automatically add newline at end of text")]
         public bool addNewLine = true;
 
         /// <summary>
-        /// 添加文字到 effectResultString
+        /// Add text to effectResultString
         /// </summary>
         public void AddText()
         {
@@ -26,7 +26,7 @@ namespace DefaultNamespace.Effects
         }
         
         /// <summary>
-        /// 添加带卡片名称前缀的文字（自动根据卡片归属着色）
+        /// Add text with card name prefix (automatically colored based on card ownership)
         /// </summary>
         public void AddTextWithCardPrefix()
         {
@@ -38,7 +38,7 @@ namespace DefaultNamespace.Effects
         }
         
         /// <summary>
-        /// 动态设置并添加文字
+        /// Dynamically set and add text
         /// </summary>
         public void AddTextDynamic(string dynamicText)
         {

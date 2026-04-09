@@ -11,7 +11,7 @@ public class StageEffect : EffectScript
 	public EnumStorage.Tag tagToCheck;
 
 	/// <summary>
-	/// 获取卡牌所属者的颜色标签（玩家=#87CEEB，敌人=orange）
+	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
 	private string GetCardColorTag(GameObject card)
 	{
@@ -20,7 +20,7 @@ public class StageEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 获取当前卡牌的颜色标签
+	/// Get current card's color tag
 	/// </summary>
 	private string GetMyCardColorTag()
 	{
@@ -28,7 +28,7 @@ public class StageEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 获取卡牌在 combinedDeck 中的索引
+	/// Get card's index in combinedDeck
 	/// </summary>
 	private int GetCardIndexInCombinedDeck(GameObject card)
 	{
@@ -37,7 +37,7 @@ public class StageEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 检查卡牌是否在牌组顶部（index = count - 1）
+	/// Check if card is at top of deck (index = count - 1)
 	/// </summary>
 	private bool IsCardAtTop(GameObject card)
 	{
@@ -48,7 +48,7 @@ public class StageEffect : EffectScript
 	public void StageSelf() // put self on top of the deck
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
-		// 如果已经在顶部，不需要 stage
+		// If already at top, no need to stage
 		if (IsCardAtTop(myCard)) return;
 		var cardsToStage = new List<GameObject> { myCard };
 		StageChosenCards(cardsToStage, 1);
@@ -102,7 +102,7 @@ public class StageEffect : EffectScript
 		var myTokens = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myTokens, true);
 
-		// Filter: 己方 Minion 卡，且不在顶部
+		// Filter: Own Minion cards，且不在顶部
 		for (int i = myTokens.Count - 1; i >= 0; i--)
 		{
 			var card = myTokens[i];
@@ -160,22 +160,22 @@ public class StageEffect : EffectScript
 	}
 
 	/// <summary>
-	/// Stage 所有符合条件的己方 Minion 卡
+	/// Stage all eligible friendly Minion cards
 	/// </summary>
-	/// <param name="targetCardTypeID">目标卡牌类型ID，为空字符串时匹配所有己方 Minion 卡</param>
+	/// <param name="targetCardTypeID">Target card type ID, empty string matches all friendly Minion cards</param>
 	public void StageAllFriendlyMinion(string targetCardTypeID)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
 		var friendlyMinions = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, friendlyMinions, true);
 
-		// Filter: 己方 Minion 卡，且不在顶部
+		// Filter: Own Minion cards，且不在顶部
 		for (int i = friendlyMinions.Count - 1; i >= 0; i--)
 		{
 			var card = friendlyMinions[i];
 			var cardScript = card.GetComponent<CardScript>();
 			
-			// 排除非 Minion 卡、非己方卡、已在顶部的卡、以及需要跳过的卡
+			// Exclude non-Minion cards, non-own cards, cards already at top, and cards to skip
 			if (!cardScript.isMinion || 
 			    CombatManager.ShouldSkipEffectProcessing(cardScript) || 
 			    cardScript.myStatusRef != myCardScript.myStatusRef || 
@@ -185,7 +185,7 @@ public class StageEffect : EffectScript
 				continue;
 			}
 			
-			// 如果指定了 card type id，则只匹配对应类型的卡
+			// If card type id is specified, only match cards of that type
 			if (!string.IsNullOrEmpty(targetCardTypeID) && cardScript.cardTypeID != targetCardTypeID)
 			{
 				friendlyMinions.RemoveAt(i);
@@ -202,7 +202,7 @@ public class StageEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 置顶敌方卡组中符合指定 Card Type ID 的随机一张卡
+	/// Stage a random card matching specified Card Type ID from enemy deck to top
 	/// </summary>
 	/// <param name="targetCardTypeID">目标卡牌类型ID</param>
 	public void StageTheirSpecificCard(string targetCardTypeID)
@@ -211,7 +211,7 @@ public class StageEffect : EffectScript
 		var matchingCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, matchingCards, true);
 
-		// 过滤：敌方卡、符合指定 cardTypeID、不在顶部、不是 Minion、不需要跳过效果处理
+		// Filter: Enemy cards, matching specified cardTypeID, not at top, not Minion, don't skip effect processing
 		for (int i = matchingCards.Count - 1; i >= 0; i--)
 		{
 			var card = matchingCards[i];
@@ -226,7 +226,7 @@ public class StageEffect : EffectScript
 			}
 		}
 
-		// 如果没有符合条件的卡，显示失败信息
+		// If no eligible cards, display failure message
 		if (matchingCards.Count == 0)
 		{
 			string myColor = GetMyCardColorTag();
@@ -234,7 +234,7 @@ public class StageEffect : EffectScript
 			return;
 		}
 
-		// 随机选择一张置顶
+		// Randomly select one to stage to top
 		matchingCards = UtilityFuncManagerScript.ShuffleList(matchingCards);
 		StageChosenCards(matchingCards, 1);
 	}
@@ -244,7 +244,7 @@ public class StageEffect : EffectScript
 		amount = Mathf.Clamp(amount, 0, cardsToStage.Count);
 		if (amount == 0) return;
 
-		// 1. 先修改逻辑列表，并收集成功移动的卡片
+		// 1. First modify logical list, and collect successfully moved cards
 		var stagedCards = new List<GameObject>();
 		for (var i = 0; i < amount; i++)
 		{
@@ -264,7 +264,7 @@ public class StageEffect : EffectScript
 			}
 		}
 		
-		// 2. 播放弧形轨迹动画（移动卡片到顶部）
+		// 2. Play arc trajectory animation (move cards to top)
 		foreach (var card in stagedCards)
 		{
 			CombatUXManager.me.MoveCardToTop(card, duration: 0.5f, useArc: true);

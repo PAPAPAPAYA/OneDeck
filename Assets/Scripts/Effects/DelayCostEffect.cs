@@ -11,12 +11,12 @@ public class DelayCostEffect : EffectScript
 
 		var combinedDeck = combatManager.combinedDeckZone;
 
-		// 收集己方卡（排除当前正在发动的卡，它已经在revealZone了）
+		// Collect own cards (exclude currently activating card, it's already in revealZone)
 		var myCards = new List<GameObject>();
 		for (int i = 0; i < combinedDeck.Count; i++)
 		{
 			var cardScript = combinedDeck[i].GetComponent<CardScript>();
-			// 跳过中立卡和 Start Card，只收集己方卡
+			// Skip neutral cards and Start Card, only collect own cards
 			if (!CombatManager.ShouldSkipEffectProcessing(cardScript) && cardScript.myStatusRef == myCardScript.myStatusRef)
 			{
 				myCards.Add(combinedDeck[i]);
@@ -25,29 +25,29 @@ public class DelayCostEffect : EffectScript
 
 		if (myCards.Count == 0) return;
 
-		// 随机打乱
+		// Randomly shuffle
 		myCards = UtilityFuncManagerScript.ShuffleList(myCards);
 
-		// 执行推迟
+		// Execute delay
 		int movedCount = 0;
 		for (int i = 0; i < myCards.Count && movedCount < cost; i++)
 		{
 			var card = myCards[i];
 
-			// 找到当前index（因为前面的移动可能改变了顺序）
+			// Find current index (because previous moves may have changed order)
 			int currentIndex = combinedDeck.IndexOf(card);
-			if (currentIndex < 0) continue; // 卡已不在牌组中（不应该发生）
+			if (currentIndex < 0) continue; // Card no longer in deck (shouldn't happen)
 
-			// 如果卡已经在最底部（index 0），无法继续推迟
+			// If card is already at bottom (index 0), cannot delay further
 			if (currentIndex <= 0) continue;
 
-			// 移动：remove后insert到index-1（往底部移，推迟揭晓）
+			// Move: remove then insert to index-1 (move toward bottom, delay reveal)
 			combinedDeck.RemoveAt(currentIndex);
 			combinedDeck.Insert(currentIndex - 1, card);
 			movedCount++;
 		}
 
-		// 同步物理卡牌位置
+		// Sync physical card positions
 		if (movedCount > 0)
 		{
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();

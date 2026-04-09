@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DefaultNamespace.Managers;
+using DefaultNamespace.SOScripts;
 using UnityEngine;
 
 namespace DefaultNamespace.Effects
@@ -8,7 +9,7 @@ namespace DefaultNamespace.Effects
 	{
 		[Header("Curse Config")]
 		[Tooltip("诅咒目标卡牌的类型ID")]
-		public string cardTypeID;
+		public StringSO cardTypeID;
 		
 		[Tooltip("需要生成的卡牌预制体（当牌组中没有目标卡时使用）")]
 		public GameObject cardPrefab;
@@ -30,7 +31,7 @@ namespace DefaultNamespace.Effects
 		/// <param name="powerAmount">赋予的power层数</param>
 		public void EnhanceCurse(int powerAmount)
 		{
-			if (string.IsNullOrEmpty(cardTypeID))
+			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
 			{
 				Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
 				return;
@@ -42,14 +43,14 @@ namespace DefaultNamespace.Effects
 			}
 
 			// 查找combinedDeckZone中敌人的指定cardTypeID的卡
-			CardScript targetCard = FindEnemyCardWithTypeID(cardTypeID);
+			CardScript targetCard = FindEnemyCardWithTypeID(cardTypeID.value);
 
 			// 如果没有找到，生成一张
 			if (targetCard == null)
 			{
 				if (cardPrefab == null)
 				{
-					Debug.LogWarning($"[CurseEffect] Card prefab is not set! Cannot create card with typeID: {cardTypeID}");
+					Debug.LogWarning($"[CurseEffect] Card prefab is not set! Cannot create card with typeID: {cardTypeID.value}");
 					return;
 				}
 				targetCard = CreateEnemyCard(cardPrefab);
@@ -60,6 +61,16 @@ namespace DefaultNamespace.Effects
 			{
 				ApplyPowerToCardWithProjectile(targetCard, powerAmount);
 			}
+		}
+
+		/// <summary>
+		/// 增强诅咒：根据IntSO值增强敌方诅咒
+		/// </summary>
+		/// <param name="powerAmountSO">存储power层数的IntSO</param>
+		public void EnhanceCurse(IntSO powerAmountSO)
+		{
+			if (powerAmountSO == null) return;
+			EnhanceCurse(powerAmountSO.value);
 		}
 
 		/// <summary>
@@ -183,6 +194,13 @@ namespace DefaultNamespace.Effects
 
 			// 触发tint效果
 			TriggerTintForPower(targetCard);
+			
+			// 检查是否是敌方诅咒卡获得Power，触发事件
+			if (targetCard.myStatusRef == myCardScript.theirStatusRef && 
+			    targetCard.cardTypeID == GameEventStorage.me?.curseCardTypeID?.value)
+			{
+				GameEventStorage.me?.onEnemyCurseCardGotPower?.Raise();
+			}
 		}
 
 		/// <summary>
@@ -223,6 +241,96 @@ namespace DefaultNamespace.Effects
 					cardPhysObj.TriggerTintForStatusEffect(EnumStorage.StatusEffect.Power);
 				}
 			}
+		}
+
+		/// <summary>
+		/// 消耗符合cardTypeID的敌方卡牌上的Power状态效果
+		/// </summary>
+		/// <param name="amount">要消耗的Power层数</param>
+		public void ConsumeHostileCursePower(int amount)
+		{
+			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
+			{
+				Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
+				return;
+			}
+
+			if (amount <= 0) return;
+
+			// 找到所有符合cardTypeID的敌方卡牌
+			var targetCards = FindAllEnemyCardsWithTypeID(cardTypeID.value);
+			if (targetCards.Count == 0) return;
+
+			// 计算这些卡牌上总共有多少层Power
+			int totalPower = 0;
+			foreach (var card in targetCards)
+			{
+				totalPower += EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
+			}
+
+			// 检查是否有足够的Power可以消耗
+			if (totalPower < amount) return;
+
+			// 消耗Power（从每张卡上逐层消耗）
+			int amountToRemove = amount;
+			foreach (var card in targetCards)
+			{
+				if (amountToRemove <= 0) break;
+
+				int cardPowerCount = EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
+				int removeFromThisCard = Mathf.Min(cardPowerCount, amountToRemove);
+
+				for (int i = card.myStatusEffects.Count - 1; i >= 0 && removeFromThisCard > 0; i--)
+				{
+					if (card.myStatusEffects[i] == EnumStorage.StatusEffect.Power)
+					{
+						card.myStatusEffects.RemoveAt(i);
+						removeFromThisCard--;
+						amountToRemove--;
+					}
+				}
+
+				// 刷新该卡牌的视觉显示
+				TriggerTintForPower(card);
+			}
+
+			// 输出效果信息
+			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
+				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
+				"#87CEEB" : "orange";
+
+			effectResultString.value +=
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>] consumed " +
+				"<color=yellow>" + amount + "</color> [Power] from cursed cards\n";
+
+			// 刷新信息显示
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+		}
+
+		/// <summary>
+		/// 查找所有符合cardTypeID的敌方卡牌
+		/// </summary>
+		private List<CardScript> FindAllEnemyCardsWithTypeID(string typeID)
+		{
+			var result = new List<CardScript>();
+			foreach (var card in combatManager.combinedDeckZone)
+			{
+				var cardScript = card.GetComponent<CardScript>();
+				if (cardScript == null) continue;
+				
+				// 跳过中立卡
+				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+				
+				// 检查是否是敌人的卡且cardTypeID匹配
+				if (cardScript.myStatusRef == myCardScript.theirStatusRef && 
+				    cardScript.cardTypeID == typeID)
+				{
+					result.Add(cardScript);
+				}
+			}
+			return result;
 		}
 	}
 }

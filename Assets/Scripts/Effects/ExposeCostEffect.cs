@@ -11,7 +11,7 @@ public class ExposeCostEffect : EffectScript
 
 		var combinedDeck = combatManager.combinedDeckZone;
 
-		// 收集敌方卡（排除中立卡）
+		// Collect enemy cards (exclude neutral cards)
 		var enemyCards = new List<GameObject>();
 		foreach (var card in combinedDeck)
 		{
@@ -23,17 +23,17 @@ public class ExposeCostEffect : EffectScript
 			// 跳过中立卡（Start Card 等）
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
-			// 只收集敌方卡
+			// Only collect enemy cards
 			if (cardScript.myStatusRef == myCardScript.myStatusRef) continue;
 			
 			enemyCards.Add(card);
 		}
 
-		// 软约束：能 expose 多少算多少
+		// Soft constraint: expose as many as possible
 		int actualCount = Mathf.Min(costCount, enemyCards.Count);
 		if (actualCount <= 0) return;
 
-		// 随机选择并置顶
+		// Randomly select and stage to top
 		enemyCards = UtilityFuncManagerScript.ShuffleList(enemyCards);
 		var cardsToExpose = enemyCards.GetRange(0, actualCount);
 		
@@ -53,7 +53,7 @@ public class ExposeCostEffect : EffectScript
 			}
 		}
 
-		// 同步物理卡牌位置
+		// Sync physical card positions
 		if (exposedCards.Count > 0)
 		{
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();

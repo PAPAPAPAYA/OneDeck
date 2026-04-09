@@ -16,7 +16,7 @@ public class MinionCostEffect : EffectScript
 
 		var combinedDeck = combatManager.combinedDeckZone;
 
-		// 收集符合条件的卡（指定所属，指定类型）
+		// Collect eligible cards (specified owner, specified type)
 		var eligibleCards = new List<GameObject>();
 		foreach (var card in combinedDeck)
 		{
@@ -28,10 +28,10 @@ public class MinionCostEffect : EffectScript
 			// 跳过中立卡和 Start Card
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
-			// 检查是否为 minion 卡
+			// Check if it's a minion card
 			if (!cardScript.isMinion) continue;
 			
-			// 检查所属玩家
+			// Check card owner
 			bool isMyCard = cardScript.myStatusRef == myCardScript.myStatusRef;
 			switch (costOwner)
 			{
@@ -42,11 +42,11 @@ public class MinionCostEffect : EffectScript
 					if (isMyCard) continue;
 					break;
 				case EnumStorage.TargetType.Random:
-					// 任意所属都符合条件
+					// Any owner is eligible
 					break;
 			}
 			
-			// 检查卡类型（如果指定了类型）
+			// Check card type (if type is specified)
 			if (!string.IsNullOrEmpty(costCardTypeID))
 			{
 				if (cardScript.cardTypeID != costCardTypeID) continue;
@@ -55,10 +55,10 @@ public class MinionCostEffect : EffectScript
 			eligibleCards.Add(card);
 		}
 
-		// 检查是否有足够符合条件的卡
+		// Check if there are enough eligible cards
 		if (eligibleCards.Count < costCount)
 		{
-			// 显示失败信息并阻止效果发动
+			// Display failure message and prevent effect activation
 			string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 			string typeInfo = string.IsNullOrEmpty(costCardTypeID) ? "card(s)" : $"[{costCardTypeID}]";
 			string ownerInfo = GetOwnerDescription(costOwner);
@@ -72,19 +72,19 @@ public class MinionCostEffect : EffectScript
 			return;
 		}
 
-		// 随机打乱并选择要消耗的卡
+		// Randomly shuffle and select cards to consume
 		eligibleCards = UtilityFuncManagerScript.ShuffleList(eligibleCards);
 		var cardsToConsume = eligibleCards.GetRange(0, costCount);
 
-		// 从卡组中消耗这些卡（使用统一销毁方法，带动画）
+		// Consume these cards from deck (using unified destroy method with animation)
 		int destroyedCount = 0;
 		foreach (var card in cardsToConsume)
 		{
 			var cardScript = card.GetComponent<CardScript>();
 			bool isMyCard = cardScript.myStatusRef == myCardScript.myStatusRef;
 			
-			// 触发 onFriendlyCardExiled 事件（如果是友方卡被消耗）
-			// 根据被消耗卡的归属触发对应一方的事件：玩家方用RaiseOwner，敌方用RaiseOpponent
+			// Trigger onFriendlyCardExiled event (if friendly card is consumed)
+			// Trigger corresponding side's event based on consumed card's ownership: RaiseOwner for player side, RaiseOpponent for enemy side
 			if (isMyCard)
 			{
 				if (GameEventStorage.me.onFriendlyCardExiled != null)
@@ -100,8 +100,8 @@ public class MinionCostEffect : EffectScript
 				}
 			}
 			
-			// 触发 OnFriendlyFlyExiled 事件（如果是友方fly卡）
-			// 根据被消耗fly的归属触发对应一方的事件：玩家方用RaiseOwner，敌方用RaiseOpponent
+			// Trigger OnFriendlyFlyExiled event (if friendly fly card)
+			// Trigger corresponding side's event based on consumed fly's ownership: RaiseOwner for player side, RaiseOpponent for enemy side
 			if (isMyCard && cardScript.cardTypeID == "FLY")
 			{
 				if (GameEventStorage.me.onFriendlyFlyExiled != null)
@@ -123,14 +123,14 @@ public class MinionCostEffect : EffectScript
 			});
 		}
 
-		// 同步剩余物理卡牌位置
+		// Sync remaining physical card positions
 		if (cardsToConsume.Count > 0)
 		{
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 
-		// 显示消耗信息
+		// Display consumption info
 		string ownerColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 		string cardTypeInfo = string.IsNullOrEmpty(costCardTypeID) ? "card(s)" : $"[{costCardTypeID}]";
 		string consumedOwnerInfo = GetOwnerDescription(costOwner);

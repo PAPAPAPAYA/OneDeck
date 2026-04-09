@@ -100,7 +100,7 @@ namespace TestWriteRead
             
             if (printOnSave)
             {
-                Debug.Log($"[CardWinRateTracker] 已记录战斗结果：{(playerWon ? "胜利" : "失败")}，" +
+                Debug.Log($"[CardWinRateTracker] 已Record combat result：{(playerWon ? "胜利" : "失败")}，" +
                           $"影响 {_currentCombatPlayerCardTypeIDs.Count} 张卡");
             }
         }
@@ -204,7 +204,7 @@ namespace TestWriteRead
             }
             catch (Exception e)
             {
-                Debug.LogError($"[CardWinRateTracker] 保存数据失败: {e.Message}");
+                Debug.LogError($"[CardWinRateTracker] Save data失败: {e.Message}");
             }
         }
 

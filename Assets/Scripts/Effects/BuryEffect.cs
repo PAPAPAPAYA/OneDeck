@@ -11,7 +11,7 @@ public class BuryEffect : EffectScript
 	public EnumStorage.Tag tagToCheck;
 
 	/// <summary>
-	/// 获取卡牌所属者的颜色标签（玩家=#87CEEB，敌人=orange）
+	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
 	private string GetCardColorTag(GameObject card)
 	{
@@ -20,7 +20,7 @@ public class BuryEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 获取当前卡牌的颜色标签
+	/// Get current card's color tag
 	/// </summary>
 	private string GetMyCardColorTag()
 	{
@@ -28,7 +28,7 @@ public class BuryEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 获取卡牌在 combinedDeck 中的索引
+	/// Get card's index in combinedDeck
 	/// </summary>
 	private int GetCardIndexInCombinedDeck(GameObject card)
 	{
@@ -37,7 +37,7 @@ public class BuryEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 检查卡牌是否在牌组底部（index = 0）
+	/// Check if card is at bottom of deck (index = 0)
 	/// </summary>
 	private bool IsCardAtBottom(GameObject card)
 	{
@@ -49,7 +49,7 @@ public class BuryEffect : EffectScript
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardToBury = transform.parent.gameObject;
-		// 如果已经在底部，不需要 bury
+		// If already at bottom, no need to bury
 		if (IsCardAtBottom(cardToBury)) return;
 		var cardsToBury = new List<GameObject> { cardToBury };
 		BuryChosenCards(cardsToBury, 1);
@@ -177,7 +177,7 @@ public class BuryEffect : EffectScript
 		amount = Mathf.Clamp(amount, 0, cardsToBury.Count);
 		if (amount == 0) return;
 
-		// 1. 先修改逻辑列表，并收集成功移动的卡片
+		// 1. First modify logical list, and collect successfully moved cards
 		var buriedCards = new List<GameObject>();
 		for (var i = 0; i < amount; i++)
 		{
@@ -197,20 +197,20 @@ public class BuryEffect : EffectScript
 			}
 		}
 		
-		// 2. 播放弧形轨迹动画（移动卡片到底部）
+		// 2. Play arc trajectory animation (move cards to bottom)
 		foreach (var card in buriedCards)
 		{
 			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true);
 		}
 		
-		// 3. 触发卡被 bury 事件
+		// 3. Trigger card buried event
 		foreach (var card in buriedCards)
 		{
-			// 触发自身被bury事件
+			// Trigger self buried event
 			GameEventStorage.me.onMeBuried.RaiseSpecific(card);
-			// 触发任意卡被bury事件
+			// Trigger any card buried event
 			GameEventStorage.me.onAnyCardBuried.Raise();
-			// 触发友方卡被bury事件
+			// Trigger friendly card buried event
 			var cardStatus = card.GetComponent<CardScript>()?.myStatusRef;
 			if (cardStatus != null && GameEventStorage.me.onFriendlyCardBuried != null)
 			{
@@ -225,7 +225,7 @@ public class BuryEffect : EffectScript
 			}
 		}
 		
-		// 4. 同步物理卡片列表并更新所有卡片位置
+		// 4. Sync physical card list and update all card positions
 		if (buriedCards.Count > 0)
 		{
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();

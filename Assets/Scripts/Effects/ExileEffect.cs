@@ -11,7 +11,7 @@ public class ExileEffect : EffectScript
 	public EnumStorage.Tag tagToCheck;
 
 	/// <summary>
-	/// 获取卡牌所属者的颜色标签（玩家=#87CEEB，敌人=orange）
+	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
 	private string GetCardColorTag(GameObject card)
 	{
@@ -20,7 +20,7 @@ public class ExileEffect : EffectScript
 	}
 
 	/// <summary>
-	/// 获取当前卡牌的颜色标签
+	/// Get current card's color tag
 	/// </summary>
 	private string GetMyCardColorTag()
 	{
@@ -40,7 +40,7 @@ public class ExileEffect : EffectScript
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
 
-		// Filter: 己方卡，排除需要跳过的卡
+		// Filter: Own cards, exclude cards to skip
 		for (int i = cardsToExile.Count - 1; i >= 0; i--)
 		{
 			var card = cardsToExile[i];
@@ -61,7 +61,7 @@ public class ExileEffect : EffectScript
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
 
-		// Filter: 敌方卡，排除需要跳过的卡
+		// Filter: Enemy cards, exclude cards to skip
 		for (int i = cardsToExile.Count - 1; i >= 0; i--)
 		{
 			var card = cardsToExile[i];
@@ -82,7 +82,7 @@ public class ExileEffect : EffectScript
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
 
-		// Filter: 排除需要跳过的卡
+		// Filter: Exclude cards to skip
 		for (int i = cardsToExile.Count - 1; i >= 0; i--)
 		{
 			var card = cardsToExile[i];
@@ -103,7 +103,7 @@ public class ExileEffect : EffectScript
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
 
-		// Filter: 己方卡且有指定tag，排除需要跳过的卡
+		// Filter: Own cards with specified tag, exclude cards to skip
 		for (int i = cardsToExile.Count - 1; i >= 0; i--)
 		{
 			var card = cardsToExile[i];
@@ -126,7 +126,7 @@ public class ExileEffect : EffectScript
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
 
-		// Filter: 敌方卡且有指定tag，排除需要跳过的卡
+		// Filter: Enemy cards with specified tag, exclude cards to skip
 		for (int i = cardsToExile.Count - 1; i >= 0; i--)
 		{
 			var card = cardsToExile[i];
@@ -149,7 +149,7 @@ public class ExileEffect : EffectScript
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
 
-		// Filter: 有指定tag，排除需要跳过的卡
+		// Filter: With specified tag, exclude cards to skip
 		for (int i = cardsToExile.Count - 1; i >= 0; i--)
 		{
 			var card = cardsToExile[i];
@@ -169,7 +169,7 @@ public class ExileEffect : EffectScript
 		_combinedDeck = combatManager.combinedDeckZone;
 		var minions = new List<GameObject>();
 
-		// Filter: 己方 Minion 卡
+		// Filter: Own Minion cards
 		foreach (var card in _combinedDeck)
 		{
 			if (card == null) continue;
@@ -191,7 +191,7 @@ public class ExileEffect : EffectScript
 		_combinedDeck = combatManager.combinedDeckZone;
 		var minions = new List<GameObject>();
 
-		// Filter: 敌方 Minion 卡
+		// Filter: Enemy Minion cards
 		foreach (var card in _combinedDeck)
 		{
 			if (card == null) continue;
@@ -234,7 +234,7 @@ public class ExileEffect : EffectScript
 			var targetCardScript = targetCard.GetComponent<CardScript>();
 			string targetColor = GetCardColorTag(targetCard);
 
-			// 使用统一销毁方法（带动画）- 放逐效果与销毁类似，都是将卡牌从游戏中移除
+			// Use unified destroy method (with animation) - Exile effect is similar to destroy, both remove card from game
 			CombatUXManager.me.DestroyCardWithAnimation(targetCard);
 
 			effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] exiled [<color=" + targetColor + ">" +
@@ -243,7 +243,7 @@ public class ExileEffect : EffectScript
 			exiledCards.Add(targetCard);
 		}
 
-		// 触发 onFriendlyCardExiled 事件（检查是否有友方卡被放逐）
+		// Trigger onFriendlyCardExiled event (check if friendly card was exiled)
 		foreach (var card in exiledCards)
 		{
 			var cardScript = card.GetComponent<CardScript>();
@@ -264,7 +264,7 @@ public class ExileEffect : EffectScript
 			}
 		}
 
-		// 同步剩余物理卡牌位置
+		// Sync remaining physical card positions
 		if (exiledCards.Count > 0)
 		{
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();

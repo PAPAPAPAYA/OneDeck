@@ -18,7 +18,7 @@ public class ShopUXManager : MonoBehaviour
     public float physCardEnlargeSize;
     
     [Header("Enlarge Settings")]
-    [Tooltip("放大后的目标位置")]
+    [Tooltip("Target position after enlargement")]
     public Vector3 enlargedPosition = Vector3.zero;
     
     [Header("Spawn Settings")]
@@ -38,16 +38,16 @@ public class ShopUXManager : MonoBehaviour
     public Transform playerDeckStartPos;
     
     [Header("Camera Scroll Settings")]
-    [Tooltip("是否启用鼠标滚轮控制相机上下移动")]
+    [Tooltip("Whether to enable mouse wheel to control camera up/down movement")]
     public bool enableCameraScroll = true;
-    [Tooltip("相机滚动速度")]
+    [Tooltip("Camera scroll speed")]
     public float cameraScrollSpeed = 5f;
-    [Tooltip("相机最低Y位置（向下滚动限制）")]
+    [Tooltip("Camera minimum Y position (downward scroll limit)")]
     public float cameraMinY = -5f;
-    [Tooltip("相机最高Y位置（向上滚动限制）")]
+    [Tooltip("Camera maximum Y position (upward scroll limit)")]
     public float cameraMaxY = 5f;
     
-    // 存储已实例化的物理卡牌，用于清理
+    // Store instantiated physical cards for cleanup
     private List<GameObject> _spawnedShopCards = new List<GameObject>();
     private List<GameObject> _spawnedPlayerCards = new List<GameObject>();
     
@@ -55,29 +55,29 @@ public class ShopUXManager : MonoBehaviour
     private float _cameraInitialY;
 
     /// <summary>
-    /// 当 PhaseManager 进入 Shop Phase 时调用此方法
-    /// 根据 shopItems DeckSO 实例化物理卡牌 prefab
+    /// Called when PhaseManager enters Shop Phase
+    /// Instantiate physical card prefab based on shopItems DeckSO
     /// </summary>
     public void InstantiateShopPhysCards()
     {
-        // 清理之前实例化的商店卡牌
+        // Clean up previously instantiated shop cards
         ClearSpawnedShopCards();
         
-        // 检查 shopItems 是否为空
+        // Check if shopItems is empty
         if (shopItems == null || shopItems.deck == null || shopItems.deck.Count == 0)
         {
             Debug.LogWarning("[ShopUXManager] shopItems is empty or null!");
             return;
         }
         
-        // 检查 physicalCardPrefab 是否设置
+        // Check if physicalCardPrefab is set
         if (physicalCardPrefab == null)
         {
             Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
             return;
         }
         
-        // 遍历 shopItems.deck 实例化物理卡牌
+        // Iterate through shopItems.deck to instantiate physical cards
         for (int i = 0; i < shopItems.deck.Count; i++)
         {
             GameObject cardPrefab = shopItems.deck[i];
@@ -87,7 +87,7 @@ public class ShopUXManager : MonoBehaviour
                 continue;
             }
             
-            // 获取 CardScript 组件
+            // Get CardScript component
             CardScript cardScript = cardPrefab.GetComponent<CardScript>();
             if (cardScript == null)
             {
@@ -95,25 +95,25 @@ public class ShopUXManager : MonoBehaviour
                 continue;
             }
             
-            // 计算位置（从 shopItemPos - xOffset 开始，使用 xOffset 水平排列）
+            // Calculate position (start from shopItemPos - xOffset, use xOffset for horizontal arrangement)
             Vector3 spawnPosition = shopItemPos + new Vector3((i - 1) * xOffset, 0f, 0f);
             
-            // 实例化物理卡牌（从起始位置开始，触发 DOTween 入场动画）
+            // Instantiate physical card (from start position, trigger DOTween entry animation)
             Vector3 initialPosition = shopItemStartPos.position;
             GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
             
-            // 获取 CardPhysObjScript 并设置 cardImRepresenting 和目标位置/缩放
+            // Get CardPhysObjScript and set cardImRepresenting and target position/scale
             CardPhysObjScript physObjScript = physicalCard.GetComponent<CardPhysObjScript>();
             if (physObjScript != null)
             {
                 physObjScript.cardImRepresenting = cardScript;
-                physObjScript.shopItemIndex = i; // 设置商店物品索引
+                physObjScript.shopItemIndex = i; // Set shop item index
                 physObjScript.SetPositionImmediate(initialPosition);
                 physObjScript.SetTargetPosition(spawnPosition);
                 physObjScript.SetScaleImmediate(Vector3.zero);
                 physObjScript.SetTargetScale(physCardSize);
                 
-                // 设置卡牌描述
+                // Set card description
                 if (physObjScript.cardDescPrint != null)
                 {
                     physObjScript.cardDescPrint.text = cardScript.cardDesc;
@@ -125,13 +125,13 @@ public class ShopUXManager : MonoBehaviour
                 physicalCard.transform.localScale = physCardSize;
             }
             
-            // 记录已实例化的卡牌
+            // Record instantiated card
             _spawnedShopCards.Add(physicalCard);
         }
     }
     
     /// <summary>
-    /// 清理所有已实例化的商店卡牌
+    /// Clean up all instantiated shop cards
     /// </summary>
     public void ClearSpawnedShopCards()
     {
@@ -146,7 +146,7 @@ public class ShopUXManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 清理所有已实例化的玩家牌组卡牌
+    /// Clean up all instantiated player deck cards
     /// </summary>
     public void ClearSpawnedPlayerCards()
     {
@@ -161,7 +161,7 @@ public class ShopUXManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 清理所有已实例化的物理卡牌（商店+玩家牌组）
+    /// Clean up all instantiated physical cards (shop + player deck)
     /// </summary>
     public void ClearSpawnedCards()
     {
@@ -170,29 +170,29 @@ public class ShopUXManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 实例化玩家牌组中的物理卡牌
-    /// 根据 objPerRow 自动换行，每行使用 yOffset 垂直偏移
+    /// Instantiate physical cards in player deck
+    /// Auto-wrap based on objPerRow, use yOffset for vertical offset per row
     /// </summary>
     public void InstantiatePlayerDeckPhysCards()
     {
-        // 清理之前实例化的玩家牌组卡牌
+        // Cleanup之前实例化的玩家牌组卡牌
         ClearSpawnedPlayerCards();
         
-        // 检查 playerDeck 是否为空
+        // Check if playerDeck is empty
         if (playerDeck == null || playerDeck.deck == null || playerDeck.deck.Count == 0)
         {
             Debug.LogWarning("[ShopUXManager] playerDeck is empty or null!");
             return;
         }
         
-        // 检查 physicalCardPrefab 是否设置
+        // Check if physicalCardPrefab is set
         if (physicalCardPrefab == null)
         {
             Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
             return;
         }
         
-        // 遍历 playerDeck.deck 实例化物理卡牌
+        // 遍历 playerDeck.deck Instantiate physical card
         int cardCount = 0;
         for (int i = 0; i < playerDeck.deck.Count; i++)
         {
@@ -203,7 +203,7 @@ public class ShopUXManager : MonoBehaviour
                 continue;
             }
             
-            // 获取 CardScript 组件
+            // Get CardScript component
             CardScript cardScript = cardPrefab.GetComponent<CardScript>();
             if (cardScript == null)
             {
@@ -211,14 +211,14 @@ public class ShopUXManager : MonoBehaviour
                 continue;
             }
             
-            // 计算行列位置
-            int row = cardCount / objPerRow;      // 当前行
-            int col = cardCount % objPerRow;      // 当前列
+            // Calculate row/column position
+            int row = cardCount / objPerRow;      // Current row
+            int col = cardCount % objPerRow;      // Current column
             
-            // 计算最终位置：从 playerDeckPos - xOffset 开始（与商店卡片一致），xOffset水平排列，yOffset垂直换行
+            // Calculate final position: start from playerDeckPos - xOffset (consistent with shop cards), xOffset horizontal, yOffset vertical wrap
             Vector3 spawnPosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
             
-            // 实例化物理卡牌
+            // Instantiate physical card
             Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
             GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
             
@@ -232,7 +232,7 @@ public class ShopUXManager : MonoBehaviour
                 physObjScript.SetScaleImmediate(Vector3.zero);
                 physObjScript.SetTargetScale(physCardSize);
                 
-                // 设置卡牌描述
+                // Set card description
                 if (physObjScript.cardDescPrint != null)
                 {
                     physObjScript.cardDescPrint.text = cardScript.cardDesc;
@@ -244,28 +244,28 @@ public class ShopUXManager : MonoBehaviour
                 physicalCard.transform.localScale = physCardSize;
             }
             
-            // 记录已实例化的卡牌
+            // Record instantiated card
             _spawnedPlayerCards.Add(physicalCard);
             cardCount++;
         }
         
-        // 根据 deckSize 和当前牌组数量，实例化空位占位符
+        // Instantiate empty slot placeholders based on deckSize and current deck count
         if (ShopManager.me != null && ShopManager.me.deckSize != null && emptyCardSpacePrefab != null)
         {
             int emptySlots = ShopManager.me.deckSize.value - cardCount;
             for (int i = 0; i < emptySlots; i++)
             {
-                // 计算行列位置（接续在卡牌后面）
+                // Calculate row/column position（接续在卡牌后面）
                 int row = cardCount / objPerRow;
                 int col = cardCount % objPerRow;
                 
                 Vector3 spawnPosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
                 
-                // 实例化空位占位符
+                // Instantiate empty slot占位符
                 Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
                 GameObject emptySpace = Instantiate(emptyCardSpacePrefab, initialPosition, Quaternion.identity, spawnParent);
                 
-                // 设置位置和缩放（与卡牌一致）
+                // Set position and scale（与卡牌一致）
                 CardPhysObjScript physObjScript = emptySpace.GetComponent<CardPhysObjScript>();
                 if (physObjScript != null)
                 {
@@ -301,7 +301,7 @@ public class ShopUXManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 处理鼠标滚轮控制相机上下移动
+    /// Handle mouse wheel control of camera up/down movement
     /// </summary>
     private void HandleCameraScroll()
     {
@@ -312,7 +312,7 @@ public class ShopUXManager : MonoBehaviour
         if (Mathf.Abs(scrollInput) < 0.001f)
             return;
         
-        // 计算新的Y位置
+        // Calculate new Y position
         Vector3 cameraPos = _mainCamera.transform.position;
         cameraPos.y -= scrollInput * cameraScrollSpeed;
         cameraPos.y = Mathf.Clamp(cameraPos.y, _cameraInitialY + cameraMinY, _cameraInitialY + cameraMaxY);
@@ -321,7 +321,7 @@ public class ShopUXManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 重置相机位置到初始Y
+    /// Reset camera position to initial Y
     /// </summary>
     public void ResetCameraPosition()
     {
@@ -333,15 +333,15 @@ public class ShopUXManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 玩家购买卡片后调用此方法
-    /// 1. 删除一个占位 emptyCardSpace
-    /// 2. 将被购买的卡片的目标位置设置为玩家卡组对应位置
-    /// 3. 更新 _spawnedShopCards 和 _spawnedPlayerCards
+    /// Call this method after player purchases a card
+    /// 1. Remove an emptyCardSpace placeholder
+    /// 2. Set purchased card's target position to corresponding player deck position
+    /// 3. Update _spawnedShopCards and _spawnedPlayerCards
     /// </summary>
-    /// <param name="purchasedCardIndex">被购买的商店卡片在 _spawnedShopCards 中的索引</param>
+    /// <param name="purchasedCardIndex">Index of purchased shop card in _spawnedShopCards</param>
     public void OnCardPurchased(int purchasedCardIndex)
     {
-        // 1. 获取被购买的卡片
+        // 1. Get purchased card
         if (purchasedCardIndex < 0 || purchasedCardIndex >= _spawnedShopCards.Count)
         {
             Debug.LogWarning($"[ShopUXManager] Invalid purchased card index: {purchasedCardIndex}");
@@ -352,13 +352,13 @@ public class ShopUXManager : MonoBehaviour
         CardPhysObjScript purchasedCardPhys = purchasedCard.GetComponent<CardPhysObjScript>();
         CardScript cardScript = purchasedCardPhys != null ? purchasedCardPhys.cardImRepresenting : null;
         
-        // 2. 检查卡片是否占用牌组空间
+        // 2. Check if card occupies deck space
         if (cardScript != null && !cardScript.takeUpSpace)
         {
-            // 如果不占用空间，直接从 _spawnedShopCards 中移除并销毁
+            // If doesn't occupy space, remove directly from _spawnedShopCards and destroy
             _spawnedShopCards.RemoveAt(purchasedCardIndex);
             
-            // 更新剩余商店卡片的 shopItemIndex
+            // Update shopItemIndex for remaining shop cards
             for (int i = 0; i < _spawnedShopCards.Count; i++)
             {
                 CardPhysObjScript physObj = _spawnedShopCards[i].GetComponent<CardPhysObjScript>();
@@ -373,12 +373,12 @@ public class ShopUXManager : MonoBehaviour
             return;
         }
         
-        // 3. 占用空间的卡片处理：找到并删除一个 emptyCardSpace
+        // 3. Cards occupying space: find and remove an emptyCardSpace
         GameObject emptySpaceToRemove = null;
         int emptySpaceIndex = -1;
         for (int i = 0; i < _spawnedPlayerCards.Count; i++)
         {
-            // 通过检查是否有 CardPhysObjScript 且 cardImRepresenting 为 null 来判断是 emptyCardSpace
+            // Determine emptyCardSpace by checking if has CardPhysObjScript and cardImRepresenting is null
             var physObj = _spawnedPlayerCards[i].GetComponent<CardPhysObjScript>();
             if (physObj != null && physObj.cardImRepresenting == null)
             {
@@ -388,17 +388,17 @@ public class ShopUXManager : MonoBehaviour
             }
         }
         
-        // 删除找到的 emptyCardSpace
+        // Remove found emptyCardSpace
         if (emptySpaceToRemove != null)
         {
             _spawnedPlayerCards.RemoveAt(emptySpaceIndex);
             Destroy(emptySpaceToRemove);
         }
         
-        // 4. 从 _spawnedShopCards 中移除
+        // 4. Remove from _spawnedShopCards
         _spawnedShopCards.RemoveAt(purchasedCardIndex);
         
-        // 更新剩余商店卡片的 shopItemIndex
+        // Update shopItemIndex for remaining shop cards
         for (int i = 0; i < _spawnedShopCards.Count; i++)
         {
             CardPhysObjScript physObj = _spawnedShopCards[i].GetComponent<CardPhysObjScript>();
@@ -408,29 +408,29 @@ public class ShopUXManager : MonoBehaviour
             }
         }
         
-        // 5. 插入到被删除的 emptyCardSpace 位置（如果找到了）
+        // 5. Insert at removed emptyCardSpace position (if found)
         if (emptySpaceIndex >= 0)
         {
             _spawnedPlayerCards.Insert(emptySpaceIndex, purchasedCard);
         }
         else
         {
-            // 如果没有找到 emptyCardSpace（牌组已满），添加到末尾
+            // If emptyCardSpace not found (deck full), add to end
             _spawnedPlayerCards.Add(purchasedCard);
             emptySpaceIndex = _spawnedPlayerCards.Count - 1;
         }
         
-        // 6. 计算玩家卡组中的新位置（填补空位的位置）
+        // 6. Calculate new position in player deck (fill empty slot position)
         int row = emptySpaceIndex / objPerRow;
         int col = emptySpaceIndex % objPerRow;
         
         Vector3 targetPosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
         
-        // 更新被购买卡片的目标位置
+        // Update purchased card's target position
         if (purchasedCardPhys != null)
         {
             purchasedCardPhys.SetTargetPosition(targetPosition);
-            // 清除 shopItemIndex，标记为不再是商店物品
+            // Clear shopItemIndex, mark as no longer a shop item
             purchasedCardPhys.shopItemIndex = -1;
         }
         
@@ -438,19 +438,19 @@ public class ShopUXManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 玩家卖出卡片后调用此方法
-    /// 1. 将被卖出的卡片移动到商店起始位置
-    /// 2. 在卡片到达目标位置后销毁
-    /// 3. 在被卖出的卡片位置插入 emptyCardSpace
+    /// Call this method after player sells a card
+    /// 1. Move sold card to shop start position
+    /// 2. Destroy after card reaches target position
+    /// 3. Insert emptyCardSpace at sold card's position
     /// 4. 更新 _spawnedPlayerCards
     /// </summary>
-    /// <param name="soldCardInstance">被卖出的物理卡片实例</param>
-    /// <param name="cardIndex">被卖出卡片在玩家卡组中的原始索引</param>
+    /// <param name="soldCardInstance">Sold physical card instance</param>
+    /// <param name="cardIndex">Original index of sold card in player deck</param>
     public void OnCardSold(GameObject soldCardInstance, int cardIndex)
     {
         if (soldCardInstance == null) return;
         
-        // 1. 找到被卖出卡片在 _spawnedPlayerCards 中的索引
+        // 1. Find index of sold card in _spawnedPlayerCards
         int spawnedIndex = _spawnedPlayerCards.IndexOf(soldCardInstance);
         if (spawnedIndex < 0)
         {
@@ -460,40 +460,40 @@ public class ShopUXManager : MonoBehaviour
             return;
         }
         
-        // 2. 从 _spawnedPlayerCards 中移除
+        // 2. Remove from _spawnedPlayerCards
         _spawnedPlayerCards.RemoveAt(spawnedIndex);
         
-        // 3. 计算空位位置
+        // 3. Calculate empty slot position
         int row = spawnedIndex / objPerRow;
         int col = spawnedIndex % objPerRow;
         Vector3 emptySpacePosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
         
-        // 4. 将被卖出的卡片设置目标位置为商店起始位置（播放卖出动画）
+        // 4. Set sold card's target position to shop start position (play sell animation)
         CardPhysObjScript soldCardPhys = soldCardInstance.GetComponent<CardPhysObjScript>();
         if (soldCardPhys != null)
         {
-            // 设置目标位置为商店起始位置
+            // Set target position为商店起始位置
             Vector3 shopStartPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;
             soldCardPhys.SetTargetPosition(shopStartPosition);
-            soldCardPhys.SetTargetScale(Vector3.zero); // 同时缩小
+            soldCardPhys.SetTargetScale(Vector3.zero); // Scale down simultaneously
             
-            // 启动协程，在动画结束后销毁卡片并生成空位
+            // Start coroutine to destroy card and spawn empty slot after animation
             StartCoroutine(DestroySoldCardAndSpawnEmpty(soldCardInstance, emptySpacePosition, spawnedIndex));
         }
         else
         {
-            // 如果没有 CardPhysObjScript，直接销毁并生成空位
+            // If no CardPhysObjScript, destroy directly and spawn empty slot
             Destroy(soldCardInstance);
             SpawnEmptySpaceAt(emptySpacePosition, spawnedIndex);
         }
     }
     
     /// <summary>
-    /// 协程：等待卖出动画完成后销毁卡片并生成空位
+    /// Coroutine: Wait for sell animation to complete, then destroy card and spawn empty slot
     /// </summary>
     private System.Collections.IEnumerator DestroySoldCardAndSpawnEmpty(GameObject soldCard, Vector3 position, int insertIndex)
     {
-        // 等待动画完成（使用 CardPhysObjScript 的 moveDuration，默认 0.3 秒，加一点缓冲）
+        // Wait for animation to complete (using CardPhysObjScript's moveDuration, default 0.3s, add a buffer)
         float waitTime = 0.35f;
         if (soldCard != null)
         {
@@ -505,28 +505,28 @@ public class ShopUXManager : MonoBehaviour
         }
         yield return new WaitForSeconds(waitTime);
         
-        // 销毁卖出的卡片
+        // Destroy sold card
         if (soldCard != null)
         {
             Destroy(soldCard);
         }
         
-        // 生成空位
+        // Spawn empty slot
         SpawnEmptySpaceAt(position, insertIndex);
     }
     
     /// <summary>
-    /// 在指定位置生成空位
+    /// Spawn empty slot at specified position
     /// </summary>
     private void SpawnEmptySpaceAt(Vector3 position, int insertIndex)
     {
         if (emptyCardSpacePrefab == null) return;
         
-        // 实例化空位
+        // Instantiate empty slot
         Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
         GameObject emptySpace = Instantiate(emptyCardSpacePrefab, initialPosition, Quaternion.identity, spawnParent);
         
-        // 设置位置和缩放
+        // Set position and scale
         CardPhysObjScript physObjScript = emptySpace.GetComponent<CardPhysObjScript>();
         if (physObjScript != null)
         {
@@ -540,7 +540,7 @@ public class ShopUXManager : MonoBehaviour
             emptySpace.transform.localScale = physCardSize;
         }
         
-        // 插入到指定位置
+        // Insert at specified position
         if (insertIndex >= 0 && insertIndex <= _spawnedPlayerCards.Count)
         {
             _spawnedPlayerCards.Insert(insertIndex, emptySpace);
@@ -554,15 +554,15 @@ public class ShopUXManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 根据新的 deckSize 生成额外的占位卡片
-    /// 当 deckSize 增加时调用此方法
+    /// Generate additional placeholder cards based on new deckSize
+    /// Call this method when deckSize increases
     /// </summary>
     public void SpawnAdditionalEmptySpaces()
     {
         if (emptyCardSpacePrefab == null || ShopManager.me == null || ShopManager.me.deckSize == null)
             return;
         
-        // 计算当前已有的卡牌数量（非空位）
+        // Calculate current card count (non-empty slots)
         int cardCount = 0;
         foreach (var card in _spawnedPlayerCards)
         {
@@ -576,10 +576,10 @@ public class ShopUXManager : MonoBehaviour
             }
         }
         
-        // 计算应该有多少个空位
+        // Calculate how many empty slots there should be
         int targetEmptySlots = ShopManager.me.deckSize.value - cardCount;
         
-        // 计算当前已有的空位数量
+        // Calculate current empty slot count
         int currentEmptySlots = 0;
         foreach (var card in _spawnedPlayerCards)
         {
@@ -593,24 +593,24 @@ public class ShopUXManager : MonoBehaviour
             }
         }
         
-        // 需要生成的新空位数量
+        // Number of new empty slots needed
         int newEmptySlots = targetEmptySlots - currentEmptySlots;
         
-        // 生成新的空位
+        // Generate new empty slots
         int currentTotalCount = _spawnedPlayerCards.Count;
         for (int i = 0; i < newEmptySlots; i++)
         {
-            // 计算行列位置
+            // Calculate row/column position
             int row = (currentTotalCount + i) / objPerRow;
             int col = (currentTotalCount + i) % objPerRow;
             
             Vector3 spawnPosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
             
-            // 实例化空位占位符
+            // Instantiate empty slot占位符
             Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
             GameObject emptySpace = Instantiate(emptyCardSpacePrefab, initialPosition, Quaternion.identity, spawnParent);
             
-            // 设置位置和缩放
+            // Set position and scale
             CardPhysObjScript physObjScript = emptySpace.GetComponent<CardPhysObjScript>();
             if (physObjScript != null)
             {
@@ -635,21 +635,21 @@ public class ShopUXManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 商店 reroll 时调用此方法
-    /// 1. 现有商店卡片飞向商店起始位置并缩小销毁
-    /// 2. 等待动画完成后生成新的物理卡片
+    /// Call this method when shop rerolls
+    /// 1. Existing shop cards fly to shop start position and shrink to destroy
+    /// 2. Generate new physical cards after animation completes
     /// </summary>
     public void OnReroll()
     {
-        // 1. 让现有商店卡片飞向商店起始位置并缩小
+        // 1. Make existing shop cards fly to shop start position and shrink
         AnimateShopCardsExit();
         
-        // 2. 启动协程，等待动画完成后生成新卡片
+        // 2. 启动协程，等待Animation complete后生成新卡片
         StartCoroutine(SpawnNewShopCardsAfterDelay());
     }
     
     /// <summary>
-    /// 让现有商店卡片飞向商店起始位置并缩小
+    /// Make existing shop cards fly to shop start position and shrink
     /// </summary>
     private void AnimateShopCardsExit()
     {
@@ -662,7 +662,7 @@ public class ShopUXManager : MonoBehaviour
                 CardPhysObjScript physObj = card.GetComponent<CardPhysObjScript>();
                 if (physObj != null)
                 {
-                    // 设置目标位置为商店起始位置，并缩小
+                    // Set target position为商店起始位置，并缩小
                     physObj.SetTargetPosition(exitPosition);
                     physObj.SetTargetScale(Vector3.zero);
                 }
@@ -671,11 +671,11 @@ public class ShopUXManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 协程：等待退出动画完成后销毁旧卡片并生成新卡片
+    /// Coroutine: Wait for exit animation to complete, destroy old cards and generate new ones
     /// </summary>
     private System.Collections.IEnumerator SpawnNewShopCardsAfterDelay()
     {
-        // 等待动画完成（使用 CardPhysObjScript 的 moveDuration，默认 0.3 秒，加一点缓冲）
+        // Wait for animation to complete (using CardPhysObjScript's moveDuration, default 0.3s, add a buffer)
         float waitTime = 0.35f;
         if (_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null)
         {
@@ -687,7 +687,7 @@ public class ShopUXManager : MonoBehaviour
         }
         yield return new WaitForSeconds(waitTime);
         
-        // 销毁旧的商店卡片
+        // Destroy old shop cards
         foreach (var card in _spawnedShopCards)
         {
             if (card != null)
@@ -697,31 +697,31 @@ public class ShopUXManager : MonoBehaviour
         }
         _spawnedShopCards.Clear();
         
-        // 生成新的商店物理卡片
+        // Generate new shop physical cards
         SpawnShopCardsInternal();
     }
     
     /// <summary>
-    /// 内部方法：根据当前的 shopItems 生成商店物理卡片
-    /// （不清理列表，因为已在调用前清理）
+    /// Internal method: Generate shop physical cards based on current shopItems
+    /// (Don't clean list because it was cleaned before calling)
     /// </summary>
     private void SpawnShopCardsInternal()
     {
-        // 检查 shopItems 是否为空
+        // Check if shopItems is empty
         if (shopItems == null || shopItems.deck == null || shopItems.deck.Count == 0)
         {
             Debug.LogWarning("[ShopUXManager] shopItems is empty or null, cannot spawn new cards!");
             return;
         }
         
-        // 检查 physicalCardPrefab 是否设置
+        // Check if physicalCardPrefab is set
         if (physicalCardPrefab == null)
         {
             Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
             return;
         }
         
-        // 遍历 shopItems.deck 实例化物理卡牌
+        // Iterate through shopItems.deck to instantiate physical cards
         for (int i = 0; i < shopItems.deck.Count; i++)
         {
             GameObject cardPrefab = shopItems.deck[i];
@@ -731,7 +731,7 @@ public class ShopUXManager : MonoBehaviour
                 continue;
             }
             
-            // 获取 CardScript 组件
+            // Get CardScript component
             CardScript cardScript = cardPrefab.GetComponent<CardScript>();
             if (cardScript == null)
             {
@@ -742,7 +742,7 @@ public class ShopUXManager : MonoBehaviour
             // 计算位置
             Vector3 spawnPosition = shopItemPos + new Vector3((i - 1) * xOffset, 0f, 0f);
             
-            // 实例化物理卡牌（从商店起始位置开始，触发 DOTween 入场动画）
+            // Instantiate physical card（从商店起始位置开始，触发 DOTween 入场动画）
             Vector3 initialPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;
             GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
             
@@ -757,7 +757,7 @@ public class ShopUXManager : MonoBehaviour
                 physObjScript.SetScaleImmediate(Vector3.zero);
                 physObjScript.SetTargetScale(physCardSize);
                 
-                // 设置卡牌描述
+                // Set card description
                 if (physObjScript.cardDescPrint != null)
                 {
                     physObjScript.cardDescPrint.text = cardScript.cardDesc;
@@ -769,7 +769,7 @@ public class ShopUXManager : MonoBehaviour
                 physicalCard.transform.localScale = physCardSize;
             }
             
-            // 记录已实例化的卡牌
+            // Record instantiated card
             _spawnedShopCards.Add(physicalCard);
         }
         
