@@ -201,6 +201,44 @@ public class StageEffect : EffectScript
 		StageMyCards(intSO.value);
 	}
 
+	/// <summary>
+	/// 置顶敌方卡组中符合指定 Card Type ID 的随机一张卡
+	/// </summary>
+	/// <param name="targetCardTypeID">目标卡牌类型ID</param>
+	public void StageTheirSpecificCard(string targetCardTypeID)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var matchingCards = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, matchingCards, true);
+
+		// 过滤：敌方卡、符合指定 cardTypeID、不在顶部、不是 Minion、不需要跳过效果处理
+		for (int i = matchingCards.Count - 1; i >= 0; i--)
+		{
+			var card = matchingCards[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || 
+			    cardScript.myStatusRef == myCardScript.myStatusRef || 
+			    IsCardAtTop(card) || 
+			    cardScript.isMinion ||
+			    cardScript.cardTypeID != targetCardTypeID)
+			{
+				matchingCards.RemoveAt(i);
+			}
+		}
+
+		// 如果没有符合条件的卡，显示失败信息
+		if (matchingCards.Count == 0)
+		{
+			string myColor = GetMyCardColorTag();
+			effectResultString.value += $"// [<color={myColor}>{myCard.gameObject.name}</color>] failed to stage enemy card (no matching card with ID '{targetCardTypeID}')\n";
+			return;
+		}
+
+		// 随机选择一张置顶
+		matchingCards = UtilityFuncManagerScript.ShuffleList(matchingCards);
+		StageChosenCards(matchingCards, 1);
+	}
+
 	private void StageChosenCards(List<GameObject> cardsToStage, int amount)
 	{
 		amount = Mathf.Clamp(amount, 0, cardsToStage.Count);

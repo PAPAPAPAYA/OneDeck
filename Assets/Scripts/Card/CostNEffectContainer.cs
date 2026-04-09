@@ -27,6 +27,10 @@ public class CostNEffectContainer : MonoBehaviour
 	[Tooltip("the string SO that combat info displayer use to display effect result")]
 	public StringSO effectResultString;
 
+	[Header("Cost Variables")]
+	[Tooltip("诅咒的 Card Type ID，用于特定成本检查")]
+	public string cursedCardTypeID;
+
 	[Header("Cost and Effect Events")]
 	public UnityEvent checkCostEvent;
 	[Tooltip("在检查cost之后、效果之前执行（如Delay Cost）")]
@@ -236,6 +240,60 @@ public class CostNEffectContainer : MonoBehaviour
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
 		effectResultString.value += "// [" + _myCardScript.gameObject.name + "] is not before Start Card in deck\n";
+	}
+
+	/// <summary>
+	/// 检查卡组中是否存在符合诅咒 card type id 且属于敌方且 status effect 中有大于 X 个 power 的卡片。
+	/// Cost is met if there is at least one enemy card matching cursedCardTypeID with more than powerCount Power status effects.
+	/// </summary>
+	/// <param name="powerCount">需要的 Power status effect 数量阈值（需大于此值）</param>
+	public void CheckCost_EnemyCursedCardHasPower(int powerCount)
+	{
+		// 检查 cursedCardTypeID 是否已设置
+		if (string.IsNullOrEmpty(cursedCardTypeID))
+		{
+			_costNotMetFlag++;
+			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+			effectResultString.value += "// [" + _myCardScript.gameObject.name + "] cursedCardTypeID is not set\n";
+			return;
+		}
+
+		foreach (var card in CombatManager.Me.combinedDeckZone)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+			
+			// 跳过中立卡和 Start Card
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+			
+			// 检查是否为敌方卡片
+			if (cardScript.myStatusRef == _myCardScript.myStatusRef) continue;
+			
+			// 检查 card type id 是否匹配诅咒的 card type id
+			if (cardScript.cardTypeID != cursedCardTypeID) continue;
+			
+			// 统计 Power status effect 的数量
+			int powerAmount = 0;
+			foreach (var effect in cardScript.myStatusEffects)
+			{
+				if (effect == EnumStorage.StatusEffect.Power)
+				{
+					powerAmount++;
+				}
+			}
+			
+			// 如果 Power 数量大于传入参数，cost 满足
+			if (powerAmount > powerCount)
+			{
+				return; // cost met
+			}
+		}
+		
+		// cost not met - no matching enemy card found with enough Power
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+		effectResultString.value += "// No enemy card [" + cursedCardTypeID + "] with >" + powerCount + " [Power] in deck\n";
 	}
 
 	#endregion

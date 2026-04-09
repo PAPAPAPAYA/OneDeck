@@ -1,6 +1,8 @@
 // devlog
 
 // feature
+	// fake shuffle
+	// motion design
 	// queue animation?
 // asset
 	// power gain card particle
