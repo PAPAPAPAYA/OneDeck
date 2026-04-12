@@ -1,5 +1,8 @@
 // devlog
 
+// low priority
+	// if we want to achieve synergy like "give power to next card" + "before power is given, stage self", we need to make the former a tag (like linger) to identify and react to
+	// same as "bury next 3 cards" + "before burying cards, stage self"
 // refactor
 	// power reaction effect & when gain power, gain triple amount effect
 		// new SO to store game object
