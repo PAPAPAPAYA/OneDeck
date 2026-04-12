@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DefaultNamespace.Managers;
+using DefaultNamespace.SOScripts;
 using UnityEngine;
 
 namespace DefaultNamespace.Effects

@@ -1,3 +1,4 @@
+using DefaultNamespace.SOScripts;
 using UnityEngine;
 
 public class GameEventStorage : MonoBehaviour

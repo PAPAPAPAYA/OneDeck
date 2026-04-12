@@ -5,6 +5,7 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  - cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   - cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
   - statusEffectResolverPrefab: {instanceID: 0}
   - statusEffectParticlePrefab: {instanceID: 0}

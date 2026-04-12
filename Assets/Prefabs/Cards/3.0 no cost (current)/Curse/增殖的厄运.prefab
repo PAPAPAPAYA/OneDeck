@@ -137,7 +137,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  cursedCardTypeID: 
+  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -173,4 +173,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AddTempCard
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cardCount: 1
-  curseCardTypeID: JU_ON
+  curseCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
