@@ -8,27 +8,31 @@ namespace DefaultNamespace.Effects
 	public class CurseEffect : EffectScript
 	{
 		[Header("Curse Config")]
-		[Tooltip("诅咒目标卡牌的类型ID")]
+		[Tooltip("Type ID of the curse target card")]
 		public StringSO cardTypeID;
 		
-		[Tooltip("需要生成的卡牌预制体（当牌组中没有目标卡时使用）")]
+		[Tooltip("Card prefab to spawn when no target card exists in deck")]
 		public GameObject cardPrefab;
 		
 		[Header("Status Effect Config")]
-		[Tooltip("状态效果解析器脚本（可选）")]
+		[Tooltip("Status effect resolver prefab (optional)")]
 		public GameObject statusEffectResolverPrefab;
 		
-		[Tooltip("获得状态效果时播放的粒子系统（可选）")]
+		[Tooltip("Particle system to play when applying status effect (optional)")]
 		public ParticleSystem statusEffectParticlePrefab;
 		
-		[Tooltip("粒子系统的Y轴偏移量")]
+		[Tooltip("Y-axis offset for the particle system")]
 		public float particleYOffset = 0f;
 
+		[Header("Coefficient Config")]
+		[Tooltip("Coefficient: for every this much IntSO value, enhance enemy curse by 1")]
+		public int powerCoefficient = 1;
+
 		/// <summary>
-		/// 增强诅咒：如果combinedDeckZone中没有敌人的指定cardTypeID的卡，
-		/// 则生成一张该类型的卡，然后给这张敌人的卡赋予power状态效果
+		/// Enhances curse: if no enemy card with the specified cardTypeID exists in combinedDeckZone,
+		/// spawns one of that type, then applies Power status effect to that enemy card.
 		/// </summary>
-		/// <param name="powerAmount">赋予的power层数</param>
+		/// <param name="powerAmount">Amount of Power stacks to apply.</param>
 		public void EnhanceCurse(int powerAmount)
 		{
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
@@ -42,10 +46,10 @@ namespace DefaultNamespace.Effects
 				return;
 			}
 
-			// 查找combinedDeckZone中敌人的指定cardTypeID的卡
+			// Find enemy card with specified cardTypeID in combinedDeckZone
 			CardScript targetCard = FindEnemyCardWithTypeID(cardTypeID.value);
 
-			// 如果没有找到，生成一张
+			// If not found, spawn one
 			if (targetCard == null)
 			{
 				if (cardPrefab == null)
@@ -56,7 +60,7 @@ namespace DefaultNamespace.Effects
 				targetCard = CreateEnemyCard(cardPrefab);
 			}
 
-			// 给目标卡赋予power状态效果
+			// Apply Power status effect to target card
 			if (targetCard != null)
 			{
 				ApplyPowerToCardWithProjectile(targetCard, powerAmount);
@@ -64,9 +68,9 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 增强诅咒：根据IntSO值增强敌方诅咒
+		/// Enhances curse: enhances enemy curse based on IntSO value.
 		/// </summary>
-		/// <param name="powerAmountSO">存储power层数的IntSO</param>
+		/// <param name="powerAmountSO">IntSO storing Power stack amount.</param>
 		public void EnhanceCurse(IntSO powerAmountSO)
 		{
 			if (powerAmountSO == null) return;
@@ -74,7 +78,25 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 在combinedDeckZone中查找敌人的指定cardTypeID的卡
+		/// Enhances curse (with coefficient): calculates enhancement stacks from IntSO value and coefficient,
+		/// enhancing curse by 1 for every powerCoefficient points.
+		/// </summary>
+		/// <param name="powerAmountSO">IntSO storing Power stack amount.</param>
+		public void EnhanceCurseWithCoefficient(IntSO powerAmountSO)
+		{
+			if (powerAmountSO == null) return;
+			if (powerCoefficient <= 0)
+			{
+				Debug.LogWarning("[CurseEffect] powerCoefficient must be greater than 0!");
+				return;
+			}
+
+			int calculatedPower = powerAmountSO.value / powerCoefficient;
+			EnhanceCurse(calculatedPower);
+		}
+
+		/// <summary>
+		/// Finds an enemy card with the specified cardTypeID in combinedDeckZone.
 		/// </summary>
 		private CardScript FindEnemyCardWithTypeID(string typeID)
 		{
@@ -83,10 +105,10 @@ namespace DefaultNamespace.Effects
 				var cardScript = card.GetComponent<CardScript>();
 				if (cardScript == null) continue;
 				
-				// 跳过中立卡
+				// Skip neutral cards
 				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 				
-				// 检查是否是敌人的卡且cardTypeID匹配
+				// Check if it is an enemy card and cardTypeID matches
 				if (cardScript.myStatusRef == myCardScript.theirStatusRef && 
 				    cardScript.cardTypeID == typeID)
 				{
@@ -97,19 +119,19 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 为敌人生成一张卡牌
+		/// Spawns a card for the enemy.
 		/// </summary>
 		private CardScript CreateEnemyCard(GameObject cardToCreate)
 		{
 			CombatFuncs.me.AddCard_TargetSpecific(cardToCreate, myCardScript.theirStatusRef);
 			
-			// 获取刚添加的卡（在combinedDeckZone的第一个位置）
+			// Get the newly added card (at the first position of combinedDeckZone)
 			if (combatManager.combinedDeckZone.Count > 0)
 			{
 				var newCard = combatManager.combinedDeckZone[0];
 				var newCardScript = newCard.GetComponent<CardScript>();
 				
-				// 输出效果信息
+				// Output effect info
 				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
 					"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
 				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
@@ -126,8 +148,8 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 使用投射物动画给指定卡牌赋予power状态效果
-		/// 特效飞到目标后才执行实际效果
+		/// Applies Power status effect to the specified card using a projectile animation.
+		/// The actual effect executes after the VFX reaches the target.
 		/// </summary>
 		public void ApplyPowerToCardWithProjectile(CardScript targetCard, int amount)
 		{
@@ -144,17 +166,31 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 内部方法：实际执行添加Power效果（用于投射物动画回调）
+		/// Internal method: actually applies the Power effect (used as projectile animation callback).
 		/// </summary>
 		private void ApplyPowerToCardInternal(CardScript targetCard, int amount)
 		{
-			// 添加power状态效果
+			// Add Power status effect
 			for (int i = 0; i < amount; i++)
 			{
 				targetCard.myStatusEffects.Add(EnumStorage.StatusEffect.Power);
 			}
 
-			// 输出效果信息
+			// Raise Power-related events
+			combatManager.lastCardGotPower = targetCard;
+			GameEventStorage.me?.onAnyCardGotPower?.Raise();
+			if (targetCard.myStatusRef == combatManager.ownerPlayerStatusRef)
+			{
+				GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOwner();
+				GameEventStorage.me?.onEnemyCardGotPower?.RaiseOpponent();
+			}
+			else
+			{
+				GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOpponent();
+				GameEventStorage.me?.onEnemyCardGotPower?.RaiseOwner();
+			}
+
+			// Output effect info
 			var targetCardOwnerString = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ? 
 				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
 			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
@@ -171,7 +207,7 @@ namespace DefaultNamespace.Effects
 				"<color=" + targetCardColor + ">" + targetCard.gameObject.name + "</color>] " +
 				"<color=yellow>" + amount + "</color> [Power]\n";
 
-			// 创建状态效果解析器
+			// Create status effect resolver
 			if (statusEffectResolverPrefab != null)
 			{
 				for (int i = 0; i < amount; i++)
@@ -181,7 +217,7 @@ namespace DefaultNamespace.Effects
 				}
 			}
 
-			// 播放粒子效果
+			// Play particle effect
 			if (statusEffectParticlePrefab != null)
 			{
 				for (int i = 0; i < amount; i++)
@@ -192,19 +228,26 @@ namespace DefaultNamespace.Effects
 				}
 			}
 
-			// 触发tint效果
+			// Trigger tint effect
 			TriggerTintForPower(targetCard);
 			
-			// 检查是否是敌方诅咒卡获得Power，触发事件
+			// Check if enemy curse card gained Power, trigger event
 			if (targetCard.myStatusRef == myCardScript.theirStatusRef && 
 			    targetCard.cardTypeID == GameEventStorage.me?.curseCardTypeID?.value)
 			{
-				GameEventStorage.me?.onEnemyCurseCardGotPower?.Raise();
+				if (targetCard.myStatusRef == combatManager.enemyPlayerStatusRef)
+				{
+					GameEventStorage.me?.onEnemyCurseCardGotPower?.RaiseOwner();
+				}
+				else
+				{
+					GameEventStorage.me?.onEnemyCurseCardGotPower?.RaiseOpponent();
+				}
 			}
 		}
 
 		/// <summary>
-		/// 获取卡牌的世界位置
+		/// Gets the world position of the card.
 		/// </summary>
 		private Vector3 GetPhysicalCardWorldPosition(Transform cardTransform)
 		{
@@ -225,7 +268,7 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 触发Power状态的tint效果
+		/// Triggers the tint effect for Power status.
 		/// </summary>
 		private void TriggerTintForPower(CardScript targetCard)
 		{
@@ -244,9 +287,9 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 消耗符合cardTypeID的敌方卡牌上的Power状态效果
+		/// Consumes Power status effect from enemy cards matching cardTypeID.
 		/// </summary>
-		/// <param name="amount">要消耗的Power层数</param>
+		/// <param name="amount">Amount of Power stacks to consume.</param>
 		public void ConsumeHostileCursePower(int amount)
 		{
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
@@ -257,21 +300,21 @@ namespace DefaultNamespace.Effects
 
 			if (amount <= 0) return;
 
-			// 找到所有符合cardTypeID的敌方卡牌
+			// Find all enemy cards matching cardTypeID
 			var targetCards = FindAllEnemyCardsWithTypeID(cardTypeID.value);
 			if (targetCards.Count == 0) return;
 
-			// 计算这些卡牌上总共有多少层Power
+			// Calculate total Power stacks on these cards
 			int totalPower = 0;
 			foreach (var card in targetCards)
 			{
 				totalPower += EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
 			}
 
-			// 检查是否有足够的Power可以消耗
+			// Check if there is enough Power to consume
 			if (totalPower < amount) return;
 
-			// 消耗Power（从每张卡上逐层消耗）
+			// Consume Power (remove layer by layer from each card)
 			int amountToRemove = amount;
 			foreach (var card in targetCards)
 			{
@@ -290,11 +333,11 @@ namespace DefaultNamespace.Effects
 					}
 				}
 
-				// 刷新该卡牌的视觉显示
+				// Refresh visual display for this card
 				TriggerTintForPower(card);
 			}
 
-			// 输出效果信息
+			// Output effect info
 			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
 				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
 			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
@@ -305,12 +348,12 @@ namespace DefaultNamespace.Effects
 				"<color=" + thisCardColor + ">" + myCard.name + "</color>] consumed " +
 				"<color=yellow>" + amount + "</color> [Power] from cursed cards\n";
 
-			// 刷新信息显示
+			// Refresh info display
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 		}
 
 		/// <summary>
-		/// 查找所有符合cardTypeID的敌方卡牌
+		/// Finds all enemy cards matching the specified cardTypeID.
 		/// </summary>
 		private List<CardScript> FindAllEnemyCardsWithTypeID(string typeID)
 		{
@@ -320,10 +363,10 @@ namespace DefaultNamespace.Effects
 				var cardScript = card.GetComponent<CardScript>();
 				if (cardScript == null) continue;
 				
-				// 跳过中立卡
+				// Skip neutral cards
 				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 				
-				// 检查是否是敌人的卡且cardTypeID匹配
+				// Check if it is an enemy card and cardTypeID matches
 				if (cardScript.myStatusRef == myCardScript.theirStatusRef && 
 				    cardScript.cardTypeID == typeID)
 				{

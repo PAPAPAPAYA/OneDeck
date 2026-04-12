@@ -63,10 +63,14 @@ public class CombatManager : MonoBehaviour
 	public int fatigueAmount;
 	
 	[Header("FATIGUE BY REVEAL COUNT")]
-	[Tooltip("ڽƣͻƣۼƽſ󴥷ƣ(0ʾ)")]
+	[Tooltip("Fatigue trigger threshold based on total cards revealed (0 means disabled)")]
 	public int fatigueRevealThreshold;
 	[Tooltip("Total cards revealed count")]
 	public int totalCardsRevealed;
+
+	[Header("POWER EVENT")]
+	[Tooltip("Tracks the last card that received Power status effect for reaction effects")]
+	public CardScript lastCardGotPower;
 
 	#region Enter and exit funcs
 
@@ -408,12 +412,28 @@ public class CombatManager : MonoBehaviour
 		GameEventStorage.me.onMeRevealed.RaiseSpecific(revealZone);
 		
 		// Check if it's an enemy curse card
-		if (cardScript.myStatusRef == enemyPlayerStatusRef && 
-		    GameEventStorage.me.curseCardTypeID != null &&
+		if (GameEventStorage.me.curseCardTypeID != null &&
 			    !string.IsNullOrEmpty(GameEventStorage.me.curseCardTypeID.value) &&
 		    cardScript.cardTypeID == GameEventStorage.me.curseCardTypeID.value)
 		{
-			GameEventStorage.me.onEnemyCurseCardRevealed.Raise();
+			if (cardScript.myStatusRef == enemyPlayerStatusRef)
+			{
+				GameEventStorage.me.onEnemyCurseCardRevealed.RaiseOwner();
+			}
+			else
+			{
+				GameEventStorage.me.onEnemyCurseCardRevealed.RaiseOpponent();
+			}
+		}
+
+		// Check if it's a hostile card
+		if (cardScript.myStatusRef == enemyPlayerStatusRef) // card belongs to enemy
+		{
+			GameEventStorage.me.onHostileCardRevealed.RaiseOwner();
+		}
+		else // card belongs to session owner (player)
+		{
+			GameEventStorage.me.onHostileCardRevealed.RaiseOpponent();
 		}
 		
 		_infoDisplayer.RefreshDeckInfo();

@@ -1604,7 +1604,9 @@ MonoBehaviour:
   onMeRevealed: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
   onMeBought: {fileID: 11400000, guid: 525df2dc84c6aa640bedec4330fc7491, type: 2}
   onThisTagResolverAttached: {fileID: 11400000, guid: 21baa6d6a7f3cc441b4afe20c83a5d8e, type: 2}
+  onMeStaged: {fileID: 11400000, guid: dccfed063d9c0e24f993e0d95aabb53d, type: 2}
   onAnyCardRevealed: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
+  onHostileCardRevealed: {fileID: 11400000, guid: 177251107327b8a439fefa95645e574a, type: 2}
   onTheirPlayerTookDmg: {fileID: 11400000, guid: 6e69b63aa924cd342b78fd35ae337173, type: 2}
   onMyPlayerTookDmg: {fileID: 11400000, guid: 71bb06fd513c8fd4ba6910345f0913a5, type: 2}
   onTheirPlayerHealed: {fileID: 11400000, guid: 9f601cec6d837ab4094b5788dac691c7, type: 2}
@@ -1622,6 +1624,10 @@ MonoBehaviour:
   curseCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   onEnemyCurseCardRevealed: {fileID: 11400000, guid: 60c44989abfa91a41bcc3e450ac57bc7, type: 2}
   onEnemyCurseCardGotPower: {fileID: 11400000, guid: 67fa492ab00f0c240b7a21e2e75b1d6a, type: 2}
+  onAnyCardGotPower: {fileID: 11400000, guid: 556ccffbf7822a946ba4884faaf5fd5d, type: 2}
+  onMeGotPower: {fileID: 11400000, guid: bf2ef786f27ff3042bc9b3eb02928202, type: 2}
+  onFriendlyCardGotPower: {fileID: 11400000, guid: f82fc4ec5b8a0c14eb626a5a0d4336ff, type: 2}
+  onEnemyCardGotPower: {fileID: 11400000, guid: 2cd4e276ef482774e9f947861a89e87a, type: 2}
 --- !u!1 &478120491
 GameObject:
   m_ObjectHideFlags: 0
@@ -2712,6 +2718,7 @@ MonoBehaviour:
   fatigueAmount: 1
   fatigueRevealThreshold: 0
   totalCardsRevealed: 0
+  lastCardGotPower: {fileID: 0}
 --- !u!4 &1151980345
 Transform:
   m_ObjectHideFlags: 0
@@ -2812,6 +2819,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ValueTrackerManager
   friendlyInGraveAmountRef: {fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}
   hostileCursePowerCount: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
+  totalPowerCountInDeckRef: {fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}
+  ownerCardCountInDeckRef: {fileID: 11400000, guid: 5a1ce2a824a63dc4bb3126221c6c5261, type: 2}
+  enemyCardCountInDeckRef: {fileID: 11400000, guid: d1c97eb8b8ba557428e546ccdc02e5da, type: 2}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
 --- !u!4 &1162866022
 Transform:

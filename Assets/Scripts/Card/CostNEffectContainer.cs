@@ -145,6 +145,15 @@ public class CostNEffectContainer : MonoBehaviour
 		effectResultString.value += "// Not enough [Mana] to activate [" + _myCardScript.gameObject.name + "]\n";
 	}
 
+	public void CheckCost_Power(int powerRequired)
+	{
+		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, powerRequired, EnumStorage.StatusEffect.Mana)) return; // if check succeeded, do nothing
+		// if check failed, process
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
+		effectResultString.value += "// Not enough [Power] to activate [" + _myCardScript.gameObject.name + "]\n";
+	}
+
 	public void CheckCost_InGrave()
 	{
 		// [Deprecated] Graveyard mechanic removed, this method always returns success

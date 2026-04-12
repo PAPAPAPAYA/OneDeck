@@ -1,6 +1,12 @@
 // devlog
 
 // refactor
+	// power reaction effect & when gain power, gain triple amount effect
+		// new SO to store game object
+		// track last power receiver in value tracker manager
+		// new method to give status effect to objSO
+		// new SO to store last applied power amount
+		// new method to gain double last applied power amount
 	// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
 // design decisions

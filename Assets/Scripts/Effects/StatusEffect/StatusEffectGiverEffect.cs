@@ -87,6 +87,25 @@ namespace DefaultNamespace.Effects
 		{
 			if (effect == EnumStorage.StatusEffect.None) return;
 			int actualLogAmount = logAmount ?? amount;
+
+			// Raise Power-related events when a card gains Power
+			if (effect == EnumStorage.StatusEffect.Power)
+			{
+				combatManager.lastCardGotPower = targetCardScript;
+				GameEventStorage.me?.onAnyCardGotPower?.Raise();
+				GameEventStorage.me?.onMeGotPower?.RaiseSpecific(targetCardScript.gameObject);
+				if (targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+				{
+					GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOwner();
+					GameEventStorage.me?.onEnemyCardGotPower?.RaiseOpponent();
+				}
+				else
+				{
+					GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOpponent();
+					GameEventStorage.me?.onEnemyCardGotPower?.RaiseOwner();
+				}
+			}
+
 			for (int i = 0; i < amount; i++)
 			{
 				targetCardScript.myStatusEffects.Add(effect);

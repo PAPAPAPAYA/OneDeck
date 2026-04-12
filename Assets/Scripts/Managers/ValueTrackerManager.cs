@@ -8,6 +8,9 @@ public class ValueTrackerManager : MonoBehaviour
 	[Header("Tracker Refs")]
 	public IntSO friendlyInGraveAmountRef;
 	public IntSO hostileCursePowerCount;
+	public IntSO totalPowerCountInDeckRef;
+	public IntSO ownerCardCountInDeckRef;
+	public IntSO enemyCardCountInDeckRef;
 
 	[Header("Curse Card Config")]
 	[Tooltip("Cursed card type ID，用于统计敌方对应卡的Power总数")]
@@ -25,6 +28,9 @@ public class ValueTrackerManager : MonoBehaviour
 	{
 		UpdateFriendlyInGraveAmount();
 		UpdateHostileCursePowerCount();
+		UpdateTotalPowerCountInDeck();
+		UpdateOwnerCardCountInDeck();
+		UpdateEnemyCardCountInDeck();
 	}
 
 	/// <summary>
@@ -110,5 +116,76 @@ public class ValueTrackerManager : MonoBehaviour
 		}
 
 		hostileCursePowerCount.value = totalPower;
+	}
+
+	/// <summary>
+	/// Updates TotalPowerCountInDeck: sums up all Power status effects on every card in combinedDeckZone.
+	/// </summary>
+	private void UpdateTotalPowerCountInDeck()
+	{
+		if (totalPowerCountInDeckRef == null || CombatManager.Me == null) return;
+
+		var deck = CombatManager.Me.combinedDeckZone;
+		int totalPower = 0;
+
+		foreach (var cardObj in deck)
+		{
+			var cardScript = cardObj.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+
+			int powerCount = EnumStorage.GetStatusEffectCount(
+				cardScript.myStatusEffects,
+				EnumStorage.StatusEffect.Power
+			);
+			totalPower += powerCount;
+		}
+
+		totalPowerCountInDeckRef.value = totalPower;
+	}
+
+	/// <summary>
+	/// Updates OwnerCardCountInDeck: counts all cards in combinedDeckZone that belong to the owner player.
+	/// </summary>
+	private void UpdateOwnerCardCountInDeck()
+	{
+		if (ownerCardCountInDeckRef == null || CombatManager.Me == null) return;
+
+		var deck = CombatManager.Me.combinedDeckZone;
+		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
+		int count = 0;
+
+		foreach (var cardObj in deck)
+		{
+			var cardScript = cardObj.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.myStatusRef == ownerStatus)
+			{
+				count++;
+			}
+		}
+
+		ownerCardCountInDeckRef.value = count;
+	}
+
+	/// <summary>
+	/// Updates EnemyCardCountInDeck: counts all cards in combinedDeckZone that belong to the enemy player.
+	/// </summary>
+	private void UpdateEnemyCardCountInDeck()
+	{
+		if (enemyCardCountInDeckRef == null || CombatManager.Me == null) return;
+
+		var deck = CombatManager.Me.combinedDeckZone;
+		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
+		int count = 0;
+
+		foreach (var cardObj in deck)
+		{
+			var cardScript = cardObj.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.myStatusRef != ownerStatus)
+			{
+				count++;
+			}
+		}
+
+		enemyCardCountInDeckRef.value = count;
 	}
 }

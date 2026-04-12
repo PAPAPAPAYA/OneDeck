@@ -144,7 +144,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7449076752151853866}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_InGrave
+        m_MethodName: CheckCost_IndexBeforeStartCard
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

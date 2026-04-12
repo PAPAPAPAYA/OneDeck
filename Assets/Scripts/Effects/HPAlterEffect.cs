@@ -240,6 +240,37 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
+	/// Decrease opponent HP based on count of friendly cards in combinedDeckZone
+	/// Uses ValueTrackerManager's OwnerCardCountInDeck and EnemyCardCountInDeck
+	/// </summary>
+	public void DecreaseTheirHp_BasedOnFriendlyCardCountInDeck()
+	{
+		int friendlyCount = 0;
+		
+		if (ValueTrackerManager.me != null)
+		{
+			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+			{
+				if (ValueTrackerManager.me.ownerCardCountInDeckRef != null)
+				{
+					friendlyCount = ValueTrackerManager.me.ownerCardCountInDeckRef.value;
+				}
+			}
+			else
+			{
+				if (ValueTrackerManager.me.enemyCardCountInDeckRef != null)
+				{
+					friendlyCount = ValueTrackerManager.me.enemyCardCountInDeckRef.value;
+				}
+			}
+		}
+		
+		extraDmg = friendlyCount;
+		DecreaseTheirHp();
+		extraDmg = 0;
+	}
+
+	/// <summary>
 	/// Decrease own HP based on count of statusEffectToCheck status effects on self
 	/// Damage value = status effect count
 	/// </summary>

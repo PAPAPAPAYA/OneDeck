@@ -10,6 +10,11 @@ public class StageEffect : EffectScript
 	[Header("Tag Configuration")]
 	public EnumStorage.Tag tagToCheck;
 
+	[Header("Status Effect Stage Configuration")]
+	[Tooltip("True = friendly cards, False = enemy cards")]
+	public bool targetFriendly;
+	public EnumStorage.StatusEffect statusEffectToCheck;
+
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
@@ -239,6 +244,61 @@ public class StageEffect : EffectScript
 		StageChosenCards(matchingCards, 1);
 	}
 
+	/// <summary>
+	/// Stage 1 card with the most target status effects. Randomly choose if multiple cards tie.
+	/// </summary>
+	public void StageCardWithMostStatusEffect()
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var eligibleCards = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, eligibleCards, true);
+
+		// Filter: matching owner, not at top, not Minion, don't skip effect processing
+		for (int i = eligibleCards.Count - 1; i >= 0; i--)
+		{
+			var card = eligibleCards[i];
+			var cardScript = card.GetComponent<CardScript>();
+			bool isFriendly = cardScript.myStatusRef == myCardScript.myStatusRef;
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    isFriendly != targetFriendly ||
+			    IsCardAtTop(card) ||
+			    cardScript.isMinion)
+			{
+				eligibleCards.RemoveAt(i);
+			}
+		}
+
+		if (eligibleCards.Count == 0) return;
+
+		// Find the maximum count of the target status effect
+		int maxCount = -1;
+		foreach (var card in eligibleCards)
+		{
+			var cardScript = card.GetComponent<CardScript>();
+			int count = EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, statusEffectToCheck);
+			if (count > maxCount)
+			{
+				maxCount = count;
+			}
+		}
+
+		// Collect all cards that have the max count
+		var topCards = new List<GameObject>();
+		foreach (var card in eligibleCards)
+		{
+			var cardScript = card.GetComponent<CardScript>();
+			int count = EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, statusEffectToCheck);
+			if (count == maxCount)
+			{
+				topCards.Add(card);
+			}
+		}
+
+		// Randomly select one and stage it
+		topCards = UtilityFuncManagerScript.ShuffleList(topCards);
+		StageChosenCards(topCards, 1);
+	}
+
 	private void StageChosenCards(List<GameObject> cardsToStage, int amount)
 	{
 		amount = Mathf.Clamp(amount, 0, cardsToStage.Count);
@@ -254,7 +314,7 @@ public class StageEffect : EffectScript
 			if (_combinedDeck.Contains(targetCard))
 			{
 				_combinedDeck.Remove(targetCard);
-				_combinedDeck.Add(targetCard);  // 添加到顶部
+				_combinedDeck.Add(targetCard);  // add to bottom of list, top of deck
 				stagedCards.Add(targetCard);
 				
 				string myColor = GetMyCardColorTag();
@@ -268,6 +328,13 @@ public class StageEffect : EffectScript
 		foreach (var card in stagedCards)
 		{
 			CombatUXManager.me.MoveCardToTop(card, duration: 0.5f, useArc: true);
+		}
+
+		// 3. Trigger card staged event
+		foreach (var card in stagedCards)
+		{
+			// Trigger specific card staged event
+			GameEventStorage.me.onMeStaged.RaiseSpecific(card);
 		}
 	}
 }

@@ -254,7 +254,7 @@ public class BuryEffect : EffectScript
 		// 3. Trigger card buried event
 		foreach (var card in buriedCards)
 		{
-			// Trigger self buried event
+			// Trigger specific card buried event
 			GameEventStorage.me.onMeBuried.RaiseSpecific(card);
 			// Trigger any card buried event
 			GameEventStorage.me.onAnyCardBuried.Raise();

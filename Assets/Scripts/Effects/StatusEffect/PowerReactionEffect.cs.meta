@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: bc6889e6c567d804ab804fe4840a1fb0
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  - myStatusEffectResolverScript: {instanceID: 0}
+  - statusEffectParticlePrefab: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -15,10 +15,12 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onMeRevealed;
 	public GameEvent onMeBought; // used for effects in shop
 	public GameEvent onThisTagResolverAttached; // used for effects that activate as soon as tag is given
-	
+	public GameEvent onMeStaged;
+
 	// if you want ot invoke all cards with the same event, use Raise()
 	[Header("any card")]
 	public GameEvent onAnyCardRevealed;
+	public GameEvent onHostileCardRevealed;
 	public GameEvent onTheirPlayerTookDmg;
 	public GameEvent onMyPlayerTookDmg;
 	public GameEvent onTheirPlayerHealed;
@@ -29,19 +31,25 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent beforeRoundStart; // used for effects that activate once in a round
 	
 	[Header("minion related")]
-	public GameEvent onFriendlyMinionAdded; // 当友方minion被添加到卡组中时触发
+	public GameEvent onFriendlyMinionAdded; // Triggered when a friendly minion is added to the deck
 	
 	[Header("exile related")]
-	public GameEvent onFriendlyCardExiled; // 当友方卡牌被放逐时触发
-	public GameEvent onFriendlyFlyExiled; // 当友方fly被放逐时触发（包括作为minion cost被消耗）
+	public GameEvent onFriendlyCardExiled; // Triggered when a friendly card is exiled
+	public GameEvent onFriendlyFlyExiled; // Triggered when a friendly fly is exiled (including being consumed as minion cost)
 	
 	[Header("bury related")]
-	public GameEvent onAnyCardBuried; // 当任意可被置底时触发
-	public GameEvent onFriendlyCardBuried; // 当友方卡被置底时触发
-	public GameEvent onMeBuried; //当自身被置底时触发
+	public GameEvent onAnyCardBuried; // Triggered when any card is buried
+	public GameEvent onFriendlyCardBuried; // Triggered when a friendly card is buried
+	public GameEvent onMeBuried; // Triggered when this card is buried
 	
 	[Header("curse related")]
 	public StringSO curseCardTypeID;
-	public GameEvent onEnemyCurseCardRevealed; // 当敌方的诅咒卡被揭晓时触发
-	public GameEvent onEnemyCurseCardGotPower; // 当敌方的诅咒卡获得Power时触发
+	public GameEvent onEnemyCurseCardRevealed; // Triggered when an enemy curse card is revealed
+	public GameEvent onEnemyCurseCardGotPower; // Triggered when an enemy curse card gains Power
+
+	[Header("power related")]
+	public GameEvent onAnyCardGotPower; // Triggered when any card gains Power
+	public GameEvent onMeGotPower; // Triggered when this card gains Power
+	public GameEvent onFriendlyCardGotPower; // Triggered when a friendly card gains Power
+	public GameEvent onEnemyCardGotPower; // Triggered when an enemy card gains Power
 }
