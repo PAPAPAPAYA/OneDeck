@@ -172,6 +172,54 @@ public class BuryEffect : EffectScript
 		BuryMyCards(intSO.value);
 	}
 
+	/// <summary>
+	/// Bury the last X cards in the combined deck (cards before this card in deck order).
+	/// Iterates backwards from the current card's position and buries each valid target.
+	/// Skips cards that should be ignored, are minions, or are already at the bottom.
+	/// If this card is in the reveal zone, starts from the bottom of the deck instead.
+	/// </summary>
+	/// <param name="amount">Number of cards to bury</param>
+	public void BuryLastXCards(int amount)
+	{
+		if (amount <= 0) return;
+		_combinedDeck = combatManager.combinedDeckZone;
+		int startIndex;
+		if (combatManager.revealZone != null && combatManager.revealZone == myCard)
+		{
+			startIndex = _combinedDeck.Count - 1;
+		}
+		else
+		{
+			int currentIndex = -1;
+			for (int i = 0; i < _combinedDeck.Count; i++)
+			{
+				if (_combinedDeck[i] == myCard)
+				{
+					currentIndex = i;
+					break;
+				}
+			}
+			if (currentIndex < 0) return;
+			startIndex = currentIndex - 1;
+		}
+		var cardsToBury = new List<GameObject>();
+		int cardsFound = 0;
+		for (int i = startIndex; i >= 0 && cardsFound < amount; i--)
+		{
+			var targetCard = _combinedDeck[i];
+			var targetCardScript = targetCard.GetComponent<CardScript>();
+			if (CombatManager.ShouldSkipEffectProcessing(targetCardScript)) continue;
+			if (targetCardScript.isMinion) continue;
+			if (IsCardAtBottom(targetCard)) continue;
+			cardsToBury.Add(targetCard);
+			cardsFound++;
+		}
+		if (cardsToBury.Count > 0)
+		{
+			BuryChosenCards(cardsToBury, cardsToBury.Count);
+		}
+	}
+
 	private void BuryChosenCards(List<GameObject> cardsToBury, int amount)
 	{
 		amount = Mathf.Clamp(amount, 0, cardsToBury.Count);

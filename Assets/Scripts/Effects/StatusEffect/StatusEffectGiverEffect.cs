@@ -18,22 +18,22 @@ namespace DefaultNamespace.Effects
 		[Tooltip("if true, will include the card itself in reveal zone when giving status effect")]
 		public bool includeSelf = false;
 
-		[Header("连续给予后X张卡")]
-		[Tooltip("给当前卡后面的X张卡添加状态效果（索引递减方向）")]
+		[Header("Apply to Last X Cards")]
+		[Tooltip("Apply status effects to the X cards after the current card (index decreasing direction)")]
 		public int lastXCardsCount = 0;
-		[Tooltip("给每张卡添加的状态效果层数")]
+		[Tooltip("Number of status effect layers to apply to each card")]
 		public int statusEffectLayerCount = 1;
 
-		[Header("给予X个友方卡片")]
-		[Tooltip("随机选择的友方卡片数量")]
+		[Header("Apply to X Friendly Cards")]
+		[Tooltip("Number of randomly selected friendly cards")]
 		public int xFriendlyCount = 0;
-		[Tooltip("给每个友方卡片添加的状态效果层数")]
+		[Tooltip("Number of status effect layers to apply to each friendly card")]
 		public int yFriendlyLayerCount = 1;
 
 		[Header("Particle System")]
-		[Tooltip("获得状态效果时播放的粒子系统预制体")]
+		[Tooltip("Particle system prefab to play when receiving status effect")]
 		public ParticleSystem statusEffectParticlePrefab;
-		[Tooltip("粒子系统的Y轴偏移量")]
+		[Tooltip("Y-axis offset for the particle system")]
 		public float particleYOffset = 0f;
 
 		#region Helper Methods - Card Ownership & Colors
@@ -310,6 +310,12 @@ namespace DefaultNamespace.Effects
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}
 
+		/// <summary>
+		/// Gives status effects to the last X cards in the combined deck (cards before this card in deck order).
+		/// Iterates backwards from the current card's position and applies statusEffectLayerCount layers of statusEffectToGive to each valid target.
+		/// Skips cards that should be ignored or cannot receive the status effect.
+		/// If this card is in the reveal zone, starts from the bottom of the deck instead.
+		/// </summary>
 		public virtual void GiveStatusEffectToLastXCards()
 		{
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
@@ -411,9 +417,9 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 根据传入的 IntSO 值，给予相同数量的随机友方卡片 status effect，每个卡片获得1层
+		/// Based on the passed IntSO value, apply status effects to the same number of random friendly cards, each card receives 1 layer
 		/// </summary>
-		/// <param name="intSO">包含友方卡片数量的 IntSO</param>
+		/// <param name="intSO">IntSO containing the number of friendly cards</param>
 		public virtual void GiveStatusEffectToXFriendly_BasedOnIntSO(IntSO intSO)
 		{
 			if (intSO == null) return;

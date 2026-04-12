@@ -2812,7 +2812,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ValueTrackerManager
   friendlyInGraveAmountRef: {fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}
   hostileCursePowerCount: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
-  curseCardTypeId: {fileID: 0}
+  curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
 --- !u!4 &1162866022
 Transform:
   m_ObjectHideFlags: 0
