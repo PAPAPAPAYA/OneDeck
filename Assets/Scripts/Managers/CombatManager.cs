@@ -68,6 +68,10 @@ public class CombatManager : MonoBehaviour
 	[Tooltip("Total cards revealed count")]
 	public int totalCardsRevealed;
 
+	[Header("STATUS EFFECT EVENT")]
+	[Tooltip("Tracks the last card that received any status effect for reaction effects")]
+	public CardScript lastCardGotStatusEffect;
+
 	[Header("POWER EVENT")]
 	[Tooltip("Tracks the last card that received Power status effect for reaction effects")]
 	public CardScript lastCardGotPower;

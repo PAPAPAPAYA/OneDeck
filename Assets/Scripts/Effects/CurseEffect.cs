@@ -176,6 +176,15 @@ namespace DefaultNamespace.Effects
 				targetCard.myStatusEffects.Add(EnumStorage.StatusEffect.Power);
 			}
 
+			// Update last applied status effect tracking
+			if (ValueTrackerManager.me != null)
+			{
+				if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
+					ValueTrackerManager.me.lastAppliedStatusEffectRef.value = EnumStorage.StatusEffect.Power;
+				if (ValueTrackerManager.me.lastAppliedStatusEffectAmountRef != null)
+					ValueTrackerManager.me.lastAppliedStatusEffectAmountRef.value = amount;
+			}
+
 			// Raise Power-related events
 			combatManager.lastCardGotPower = targetCard;
 			GameEventStorage.me?.onAnyCardGotPower?.Raise();

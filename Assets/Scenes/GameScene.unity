@@ -1624,6 +1624,7 @@ MonoBehaviour:
   curseCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   onEnemyCurseCardRevealed: {fileID: 11400000, guid: 60c44989abfa91a41bcc3e450ac57bc7, type: 2}
   onEnemyCurseCardGotPower: {fileID: 11400000, guid: 67fa492ab00f0c240b7a21e2e75b1d6a, type: 2}
+  onMeGotStatusEffect: {fileID: 11400000, guid: 1ad4399e33473264eada636d43124e08, type: 2}
   onAnyCardGotPower: {fileID: 11400000, guid: 556ccffbf7822a946ba4884faaf5fd5d, type: 2}
   onMeGotPower: {fileID: 11400000, guid: bf2ef786f27ff3042bc9b3eb02928202, type: 2}
   onFriendlyCardGotPower: {fileID: 11400000, guid: f82fc4ec5b8a0c14eb626a5a0d4336ff, type: 2}
@@ -2822,6 +2823,8 @@ MonoBehaviour:
   totalPowerCountInDeckRef: {fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}
   ownerCardCountInDeckRef: {fileID: 11400000, guid: 5a1ce2a824a63dc4bb3126221c6c5261, type: 2}
   enemyCardCountInDeckRef: {fileID: 11400000, guid: d1c97eb8b8ba557428e546ccdc02e5da, type: 2}
+  lastAppliedStatusEffectRef: {fileID: 0}
+  lastAppliedStatusEffectAmountRef: {fileID: 0}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
 --- !u!4 &1162866022
 Transform:

@@ -47,6 +47,9 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onEnemyCurseCardRevealed; // Triggered when an enemy curse card is revealed
 	public GameEvent onEnemyCurseCardGotPower; // Triggered when an enemy curse card gains Power
 
+	[Header("status effect related")]
+	public GameEvent onMeGotStatusEffect; // Triggered when this card gains any status effect
+
 	[Header("power related")]
 	public GameEvent onAnyCardGotPower; // Triggered when any card gains Power
 	public GameEvent onMeGotPower; // Triggered when this card gains Power

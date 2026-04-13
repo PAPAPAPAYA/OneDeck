@@ -12,6 +12,10 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO ownerCardCountInDeckRef;
 	public IntSO enemyCardCountInDeckRef;
 
+	[Header("Last Applied Status Effect")]
+	public StatusEffectSO lastAppliedStatusEffectRef;
+	public IntSO lastAppliedStatusEffectAmountRef;
+
 	[Header("Curse Card Config")]
 	[Tooltip("Cursed card type ID，用于统计敌方对应卡的Power总数")]
 	public StringSO curseCardTypeId;

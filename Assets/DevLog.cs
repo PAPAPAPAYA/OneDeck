@@ -4,12 +4,19 @@
 	// if we want to achieve synergy like "give power to next card" + "before power is given, stage self", we need to make the former a tag (like linger) to identify and react to
 	// same as "bury next 3 cards" + "before burying cards, stage self"
 // refactor
-	// power reaction effect & when gain power, gain triple amount effect
-		// new SO to store game object
-		// track last power receiver in value tracker manager
-		// new method to give status effect to objSO
-		// new SO to store last applied power amount
-		// new method to gain double last applied power amount
+	// ApplyStatusEffectCore()
+		// GiveSelfStatusEffect()
+		// ApplyPowerToCardInternal()
+		// TransferStatusEffects()
+		// these three didn't use ApplyStatusEffectCore(), might refactor later to clean up
+	//// power reaction effect & when gain power, gain triple amount effect
+		//// new SO to store game object
+			//// can't do, SO can't store instance
+			// well then store it in combat manager, might move it out to a component
+		//// track last power receiver in value tracker manager
+		//// new method to give status effect to objSO
+		//// new SO to store last applied power amount
+		//// new method to gain double last applied power amount
 	// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
 // design decisions

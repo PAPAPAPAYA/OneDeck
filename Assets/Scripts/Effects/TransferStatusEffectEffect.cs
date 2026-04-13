@@ -153,6 +153,15 @@ namespace DefaultNamespace.Effects
 				targetCard.myStatusEffects.Add(statusEffectToTransfer);
 			}
 
+			// Update last applied status effect tracking
+			if (ValueTrackerManager.me != null)
+			{
+				if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
+					ValueTrackerManager.me.lastAppliedStatusEffectRef.value = statusEffectToTransfer;
+				if (ValueTrackerManager.me.lastAppliedStatusEffectAmountRef != null)
+					ValueTrackerManager.me.lastAppliedStatusEffectAmountRef.value = totalCount;
+			}
+
 			// 创建状态效果解析器
 			if (statusEffectResolverPrefab != null)
 			{

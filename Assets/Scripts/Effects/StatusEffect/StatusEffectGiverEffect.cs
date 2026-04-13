@@ -88,6 +88,19 @@ namespace DefaultNamespace.Effects
 			if (effect == EnumStorage.StatusEffect.None) return;
 			int actualLogAmount = logAmount ?? amount;
 
+			// Update last applied status effect tracking
+			if (ValueTrackerManager.me != null)
+			{
+				if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
+					ValueTrackerManager.me.lastAppliedStatusEffectRef.value = effect;
+				if (ValueTrackerManager.me.lastAppliedStatusEffectAmountRef != null)
+					ValueTrackerManager.me.lastAppliedStatusEffectAmountRef.value = actualLogAmount;
+			}
+
+			// Raise status effect events
+			combatManager.lastCardGotStatusEffect = targetCardScript;
+			GameEventStorage.me?.onMeGotStatusEffect?.RaiseSpecific(targetCardScript.gameObject);
+
 			// Raise Power-related events when a card gains Power
 			if (effect == EnumStorage.StatusEffect.Power)
 			{
@@ -164,6 +177,15 @@ namespace DefaultNamespace.Effects
 		#region Public Effect Methods
 		public virtual void GiveSelfStatusEffect(int amount)
 		{
+			// Update last applied status effect tracking
+			if (ValueTrackerManager.me != null && statusEffectToGive != EnumStorage.StatusEffect.None)
+			{
+				if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
+					ValueTrackerManager.me.lastAppliedStatusEffectRef.value = statusEffectToGive;
+				if (ValueTrackerManager.me.lastAppliedStatusEffectAmountRef != null)
+					ValueTrackerManager.me.lastAppliedStatusEffectAmountRef.value = amount;
+			}
+
 			for (int i = 0; i < amount; i++)
 			{
 				myCardScript.myStatusEffects.Add(statusEffectToGive);
