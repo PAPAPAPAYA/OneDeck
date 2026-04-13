@@ -271,6 +271,73 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
+	/// Decrease opponent HP based on the opponent's buried card count.
+	/// If this card belongs to the owner, deals damage equal to enemyCardsBuriedCountRef.
+	/// If this card belongs to the enemy, deals damage equal to ownerCardsBuriedCountRef.
+	/// </summary>
+	public void DecreaseTheirHp_BasedOnOpponentBuriedCount()
+	{
+		int buriedCount = 0;
+
+		if (ValueTrackerManager.me != null)
+		{
+			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+			{
+				if (ValueTrackerManager.me.enemyCardsBuriedCountRef != null)
+				{
+					buriedCount = ValueTrackerManager.me.enemyCardsBuriedCountRef.value;
+				}
+			}
+			else
+			{
+				if (ValueTrackerManager.me.ownerCardsBuriedCountRef != null)
+				{
+					buriedCount = ValueTrackerManager.me.ownerCardsBuriedCountRef.value;
+				}
+			}
+		}
+
+		extraDmg = buriedCount;
+		DecreaseTheirHp();
+		extraDmg = 0;
+	}
+
+	/// <summary>
+	/// Decrease opponent HP multiple times based on the opponent's buried card count.
+	/// If this card belongs to the owner, deals damage enemyCardsBuriedCountRef times.
+	/// If this card belongs to the enemy, deals damage ownerCardsBuriedCountRef times.
+	/// Each hit deals baseDmg + extraDmg damage.
+	/// </summary>
+	public void DecreaseTheirHpTimes_BasedOnOpponentBuriedCount()
+	{
+		int times = 0;
+
+		if (ValueTrackerManager.me != null)
+		{
+			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+			{
+				if (ValueTrackerManager.me.enemyCardsBuriedCountRef != null)
+				{
+					times = ValueTrackerManager.me.enemyCardsBuriedCountRef.value;
+				}
+			}
+			else
+			{
+				if (ValueTrackerManager.me.ownerCardsBuriedCountRef != null)
+				{
+					times = ValueTrackerManager.me.ownerCardsBuriedCountRef.value;
+				}
+			}
+		}
+
+		for (int i = 0; i < times; i++)
+		{
+			print("call DecreaseTheirHp()");
+			DecreaseTheirHp();
+		}
+	}
+
+	/// <summary>
 	/// Decrease own HP based on count of statusEffectToCheck status effects on self
 	/// Damage value = status effect count
 	/// </summary>

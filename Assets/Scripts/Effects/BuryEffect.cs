@@ -238,6 +238,21 @@ public class BuryEffect : EffectScript
 				_combinedDeck.Insert(0, targetCard);  // 插入到底部
 				buriedCards.Add(targetCard);
 				
+				// Track buried counts
+				if (ValueTrackerManager.me != null)
+				{
+					if (targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+					{
+						if (ValueTrackerManager.me.ownerCardsBuriedCountRef != null)
+							ValueTrackerManager.me.ownerCardsBuriedCountRef.value++;
+					}
+					else
+					{
+						if (ValueTrackerManager.me.enemyCardsBuriedCountRef != null)
+							ValueTrackerManager.me.enemyCardsBuriedCountRef.value++;
+					}
+				}
+				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);
 				effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] buried [<color=" + targetColor + ">" +

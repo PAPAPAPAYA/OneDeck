@@ -234,11 +234,25 @@ public class CombatManager : MonoBehaviour
 
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
+		ResetShuffleTrackers();
 
 		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
 		CombatUXManager.me.UpdateAllPhysicalCardTargets();
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
+	}
+
+	private void ResetShuffleTrackers()
+	{
+		if (ValueTrackerManager.me == null) return;
+		if (ValueTrackerManager.me.ownerCardsBuriedCountRef != null)
+			ValueTrackerManager.me.ownerCardsBuriedCountRef.value = 0;
+		if (ValueTrackerManager.me.enemyCardsBuriedCountRef != null)
+			ValueTrackerManager.me.enemyCardsBuriedCountRef.value = 0;
+		if (ValueTrackerManager.me.stagedOwnerRef != null)
+			ValueTrackerManager.me.stagedOwnerRef.value = 0;
+		if (ValueTrackerManager.me.stagedEnemyRef != null)
+			ValueTrackerManager.me.stagedEnemyRef.value = 0;
 	}
 
 	public int GetCurrentDeckSize()
@@ -481,6 +495,7 @@ public class CombatManager : MonoBehaviour
 				// Refresh UI display
 				_infoDisplayer.RefreshDeckInfo();
 				GameEventStorage.me.afterShuffle.Raise();
+				ResetShuffleTrackers();
 				
 				// New round start
 				HandleNewRoundStart();
@@ -504,6 +519,7 @@ public class CombatManager : MonoBehaviour
 				// After animation completes, refresh UI and trigger event
 				_infoDisplayer.RefreshDeckInfo();
 				GameEventStorage.me.afterShuffle.Raise();
+				ResetShuffleTrackers();
 				
 				// New round start
 				HandleNewRoundStart();

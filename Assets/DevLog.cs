@@ -22,6 +22,7 @@
 // design decisions
 	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
 // feature
+	//todo tell kimi to make a configuration checker
 	// rarity
 		// rarity attibute in card script
 	// shop

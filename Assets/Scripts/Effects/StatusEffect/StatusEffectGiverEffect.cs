@@ -307,6 +307,17 @@ namespace DefaultNamespace.Effects
 			GiveStatusEffect(count);
 		}
 
+		public void GiveSelfStatusEffectBasedOnStatusEffectCount()
+		{
+			int count = 0;
+			foreach (var effect in myCardScript.myStatusEffects)
+			{
+				if (effect == statusEffectToCount) count++;
+			}
+			if (count <= 0 || statusEffectToGive == EnumStorage.StatusEffect.None) return;
+			GiveSelfStatusEffect(count);
+		}
+
 		public virtual void GiveAllFriendlyStatusEffect(int amount)
 		{
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
@@ -468,6 +479,41 @@ namespace DefaultNamespace.Effects
 			int originalYFriendlyLayerCount = yFriendlyLayerCount;
 			xFriendlyCount = intSO.value;
 			yFriendlyLayerCount = 1;
+			GiveStatusEffectToXFriendly();
+			xFriendlyCount = originalXFriendlyCount;
+			yFriendlyLayerCount = originalYFriendlyLayerCount;
+		}
+
+		/// <summary>
+		/// Gives status effects to X random friendly cards based on ValueTrackerManager staged values.
+		/// If this card belongs to the owner, X is stagedOwnerRef value; otherwise X is stagedEnemyRef value.
+		/// Each selected friendly card receives the specified number of layers.
+		/// </summary>
+		/// <param name="layerCount">Number of status effect layers to apply to each friendly card</param>
+		public virtual void GiveStatusEffectToXFriendly_BasedOnStaged(int layerCount)
+		{
+			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
+			if (layerCount <= 0) return;
+			if (ValueTrackerManager.me == null) return;
+
+			int xCount = 0;
+			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+			{
+				if (ValueTrackerManager.me.stagedOwnerRef != null)
+					xCount = ValueTrackerManager.me.stagedOwnerRef.value;
+			}
+			else
+			{
+				if (ValueTrackerManager.me.stagedEnemyRef != null)
+					xCount = ValueTrackerManager.me.stagedEnemyRef.value;
+			}
+
+			if (xCount <= 0) return;
+
+			int originalXFriendlyCount = xFriendlyCount;
+			int originalYFriendlyLayerCount = yFriendlyLayerCount;
+			xFriendlyCount = xCount;
+			yFriendlyLayerCount = layerCount;
 			GiveStatusEffectToXFriendly();
 			xFriendlyCount = originalXFriendlyCount;
 			yFriendlyLayerCount = originalYFriendlyLayerCount;

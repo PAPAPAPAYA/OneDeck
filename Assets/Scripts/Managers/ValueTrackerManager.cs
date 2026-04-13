@@ -11,6 +11,10 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO totalPowerCountInDeckRef;
 	public IntSO ownerCardCountInDeckRef;
 	public IntSO enemyCardCountInDeckRef;
+	public IntSO ownerCardsBuriedCountRef;
+	public IntSO enemyCardsBuriedCountRef;
+	public IntSO stagedOwnerRef;
+	public IntSO stagedEnemyRef;
 
 	[Header("Last Applied Status Effect")]
 	public StatusEffectSO lastAppliedStatusEffectRef;
