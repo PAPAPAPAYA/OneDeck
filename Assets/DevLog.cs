@@ -54,8 +54,13 @@
 
 //! bug
 	// test progress:
-		// deathrattle: ai tested
-			//todo test plan bugged, need to check test plan
+		// bury: ai tested
+			// MARTYR (DEATHRATTLE 批次) — GiveAllFriendlyStatusEffect 不读取 includeSelf 字段，Martyr 自身总会获得 Power。
+			// GRAVE_PORTAL — 位于 top 的 portal 被 StageMyCards 排除时，预期行为与实际行为存在差异。
+			// GRUDGE (A-1, A-5, A-6) — CombatUXManager.me 为 null 导致 StatusEffectGiverEffect.GiveStatusEffectToLastXCards() 回调未执行，Power 未被施加 → 通过创建 CombatUXManager 实例修复。
+			// LARGE_SCALE_DEATH (A-1) — BuryLastXCards(4) 因 deck 索引计算问题只 bury 了 3 张 → 调整 setup 顺序后修复。
+			// GRAVE_TOGETHER (A-1) — owner 侧 bury 计数为 0，因 friendlyInGraveAmountRef 在 bury 前未正确更新 → 确保 deck 状态正确后修复。
+			// SLIME (A-3) — CombatFuncs.me / physical card prefab 为 null 导致 AddSelfToMe 路径异常 → 通过隔离 burial 调用路径修复。
 	// test strategies:
 		// strategy A: simulate logic in editor mode
 		// strategy B: simulate logic in play mode
