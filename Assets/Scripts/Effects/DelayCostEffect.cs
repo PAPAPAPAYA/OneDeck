@@ -54,7 +54,7 @@ public class DelayCostEffect : EffectScript
 			CombatUXManager.me.UpdateAllPhysicalCardTargets();
 		}
 
-		// 显示信息
+		// Display info
 		if (movedCount > 0)
 		{
 			string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class HpMaxAlterEffect : EffectScript
+public class HPMaxAlterEffect : EffectScript
 {
 	public void IncreaseMyHpMax(int amount)
 	{

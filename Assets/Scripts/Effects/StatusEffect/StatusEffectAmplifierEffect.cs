@@ -26,7 +26,9 @@ namespace DefaultNamespace.Effects
 			int extraAmount = lastAmount.value * (statusEffectMultiplier - 1);
 			if (extraAmount > 0)
 			{
-				ApplyStatusEffectCore(myCardScript, statusEffectToGive, extraAmount);
+				ApplyStatusEffectCore(myCardScript, statusEffectToGive, extraAmount,
+					myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
+					canStatusEffectBeStacked ? extraAmount : 1);
 				CombatInfoDisplayer.me?.RefreshDeckInfo();
 			}
 		}

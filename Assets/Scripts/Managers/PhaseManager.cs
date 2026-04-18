@@ -103,7 +103,7 @@ public class PhaseManager : MonoBehaviour
 				{
 					print("draw");
 					_resultText = "DRAW";
-					// 平局不计入统计
+					// Draws are not counted in statistics
 				}
 				else
 				{
@@ -115,7 +115,7 @@ public class PhaseManager : MonoBehaviour
 					DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
 					DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
 					DeckTester.me.CalculateSessionAveDmg();
-					// 记录玩家卡失败
+					// Record player card loss
 					TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: false);
 				}
 			}
@@ -129,7 +129,7 @@ public class PhaseManager : MonoBehaviour
 				DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
 				DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
 				DeckTester.me.CalculateSessionAveDmg();
-				// 记录玩家卡胜利
+				// Record player card win
 				TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: true);
 			}
 			sessionNum.value++;

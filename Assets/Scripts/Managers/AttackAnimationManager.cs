@@ -6,7 +6,7 @@ using MilkShake;
 using UnityEngine;
 
 /// <summary>
-/// 攻击动画管理器 - 管理卡片攻击动画的队列播放
+/// Attack animation manager - manages queued playback of card attack animations
 /// </summary>
 public class AttackAnimationManager : MonoBehaviour
 {
@@ -19,45 +19,45 @@ public class AttackAnimationManager : MonoBehaviour
 	#endregion
 
 	[Header("ATTACK TARGET POSITIONS")]
-	[Tooltip("敌人位置（受到伤害的目标位置）")]
+	[Tooltip("Enemy position (target position when taking damage)")]
 	public Transform enemyTargetPos;
-	[Tooltip("玩家位置（受到伤害的目标位置）")]
+	[Tooltip("Player position (target position when taking damage)")]
 	public Transform playerTargetPos;
 
 	[Header("ANIMATION SETTINGS")]
-	[Tooltip("攻击前放大倍数")]
+	[Tooltip("Scale multiplier before attack")]
 	public float attackScaleMultiplier = 1.4f;
-	[Tooltip("放大Animation duration")]
+	[Tooltip("Scale-up animation duration")]
 	public float scaleUpDuration = 0.2f;
-	[Tooltip("冲撞Animation duration")]
+	[Tooltip("Charge animation duration")]
 	public float chargeDuration = 0.2f;
-	[Tooltip("冲撞时缩小系数（相对于原始大小的比例）")]
+	[Tooltip("Scale multiplier during charge (relative to original size)")]
 	public float chargeScaleMultiplier = 0.85f;
 
 	[Header("SCREEN SHAKE")]
-	[Tooltip("相机Shaker组件（用于屏幕震动）")]
+	[Tooltip("Camera shaker component (for screen shake)")]
 	public Shaker cameraShaker;
-	[Tooltip("伤害结算时的屏幕震动预设")]
+	[Tooltip("Screen shake preset on damage resolution")]
 	public ShakePreset hitShakePreset;
-	[Tooltip("Overshoot距离（冲过目标的距离）")]
+	[Tooltip("Overshoot distance (distance past the target)")]
 	public float overshootDistance = 2.0f;
-	[Tooltip("回弹Animation duration")]
+	[Tooltip("Bounce-back animation duration")]
 	public float bounceBackDuration = 0.15f;
 
-	[Tooltip("后退距离（蓄力距离）")]
+	[Tooltip("Wind-up distance (charge-up distance)")]
 	public float windUpDistance = 0.5f;
-	[Tooltip("后退Animation duration")]
+	[Tooltip("Wind-up animation duration")]
 	public float windUpDuration = 0.1f;
-	[Tooltip("在target pos的停顿时间")]
+	[Tooltip("Pause duration at target position")]
 	public float pauseAtTarget = 0.05f;
-	[Tooltip("返回Reveal位置的Animation duration")]
+	[Tooltip("Return-to-reveal animation duration")]
 	public float returnToRevealDuration = 0.2f;
 
 	[Header("STATE")]
-	[Tooltip("是否正在播放攻击动画")]
+	[Tooltip("Whether attack animation is currently playing")]
 	public bool isPlayingAttackAnimation = false;
 
-	// 动画队列
+	// Animation queue
 	private Queue<AttackAnimData> _attackQueue = new();
 	private bool _isProcessingQueue = false;
 
@@ -72,7 +72,7 @@ public class AttackAnimationManager : MonoBehaviour
 
 	void Start()
 	{
-		// 确保引用已初始化（应对 OnEnable 执行顺序问题）
+		// Ensure references are initialized (handle OnEnable execution order issues)
 		if (_combatManager == null)
 			_combatManager = CombatManager.Me;
 		if (_combatUXManager == null)
@@ -80,12 +80,12 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 请求播放攻击动画（加入队列）
+	/// Request attack animation playback (add to queue)
 	/// </summary>
-	/// <param name="attackerCard">攻击卡片（逻辑卡）</param>
-	/// <param name="isAttackingEnemy">true=攻击敌人, false=攻击自己</param>
-	/// <param name="onHit">在Target Pos停顿（阶段4）时触发，用于伤害结算</param>
-	/// <param name="onComplete">动画完全结束时触发</param>
+	/// <param name="attackerCard">Attacker card (logical card)</param>
+	/// <param name="isAttackingEnemy">true=attack enemy, false=attack self</param>
+	/// <param name="onHit">Triggered during pause at target position (phase 4), used for damage resolution</param>
+	/// <param name="onComplete">Triggered when animation fully ends</param>
 	public void RequestAttackAnimation(GameObject attackerCard, bool isAttackingEnemy, Action onHit = null, Action onComplete = null)
 	{
 		var data = new AttackAnimData
@@ -105,7 +105,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 处理动画队列
+	/// Process animation queue
 	/// </summary>
 	private IEnumerator ProcessQueue()
 	{
@@ -121,7 +121,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 播放单个攻击动画协程
+	/// Play single attack animation coroutine
 	/// </summary>
 	private IEnumerator PlayAttackAnimationCoroutine(AttackAnimData data)
 	{
@@ -133,7 +133,7 @@ public class AttackAnimationManager : MonoBehaviour
 			_combatManager.blockPlayerInput = true;
 		}
 
-		// 获取物理卡片
+		// Get physical card
 		CardScript cardScript = data.attackerLogicalCard.GetComponent<CardScript>();
 		if (cardScript == null)
 		{
@@ -144,7 +144,7 @@ public class AttackAnimationManager : MonoBehaviour
 			yield break;
 		}
 
-		// 确保 _combatUXManager 已初始化
+		// Ensure _combatUXManager is initialized
 		if (_combatUXManager == null)
 		{
 			_combatUXManager = CombatUXManager.me;
@@ -194,22 +194,22 @@ public class AttackAnimationManager : MonoBehaviour
 		Vector3 targetPos = targetTransform.position;
 		Vector3 originalScale = physicalCard.transform.localScale;
 
-		// Mark that special animation is playing，防止 CardPhysObjScript 覆盖 DOTween
+		// Mark that special animation is playing to prevent CardPhysObjScript from overriding DOTween
 		physScript.isPlayingSpecialAnimation = true;
 
 		try
 		{
-			// ========== 阶段1+2: 放大+旋转+后退蓄力（同时进行）==========
+			// ========== Phase 1+2: Scale up + Rotate + Wind up (simultaneous) ==========
 			Vector3 windUpPos = CalculateWindUpPosition(startPos, targetPos);
 			yield return ScaleUpAndWindUpAnimation(physicalCard, originalScale, targetPos, windUpPos);
 
-			// ========== 阶段3: 冲撞至Target Pos（敌人/玩家位置）Scale down simultaneously ==========
+			// ========== Phase 3: Charge to target pos (enemy/player position), scale down simultaneously ==========
 			yield return ChargeToTargetAnimation(physicalCard, targetPos, originalScale);
 
-			// ========== 阶段4: 在Target Pos停顿，触发伤害结算和屏幕震动 ==========
+			// ========== Phase 4: Pause at target pos, trigger damage resolution and screen shake ==========
 			data.onHit?.Invoke();
 			
-			// 触发屏幕震动（只震动相机）
+			// Trigger screen shake (camera only)
 			if (cameraShaker != null && hitShakePreset != null)
 			{
 				cameraShaker.Shake(hitShakePreset);
@@ -217,52 +217,52 @@ public class AttackAnimationManager : MonoBehaviour
 			
 			yield return new WaitForSeconds(pauseAtTarget);
 
-			// ========== 阶段5: 冲至Overshoot位置（冲过目标）==========
+			// ========== Phase 5: Charge to overshoot position (past target) ==========
 			Vector3 overshootPos = CalculateOvershootPosition(targetPos, startPos);
 			yield return OvershootAnimation(physicalCard, overshootPos);
 
-			// ========== 阶段6: 从Overshoot直接返回Reveal位置，同时恢复大小和旋转 ==========
+			// ========== Phase 6: Return directly from overshoot to reveal position, restore size and rotation ==========
 			Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
 			Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
 			yield return ReturnToRevealFromOvershootAnimation(physicalCard, revealPos, revealSize, originalScale);
 		}
 		finally
 		{
-			// 确保特殊动画标记总是被恢复
+			// Ensure special animation flag is always restored
 			physScript.isPlayingSpecialAnimation = false;
 			
-			// 更新 CardPhysObjScript 的目标位置，防止跳变
-			// 使用reveal位置作为目标
+			// Update CardPhysObjScript target position to prevent snapping
+			// Use reveal position as target
 			Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
 			Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
 			physScript.SetTargetPosition(revealPos);
 			physScript.SetTargetScale(revealSize);
 		}
 
-		// 标记Animation complete
+		// Mark animation complete
 		isPlayingAttackAnimation = false;
 		
-		// 恢复玩家输入
+		// Restore player input
 		ReleasePlayerInput();
 
-		// 触发回调（让卡片继续去到底部）
+		// Trigger callback (let card continue to bottom)
 		data.onComplete?.Invoke();
 	}
 
 	/// <summary>
-	/// 放大+旋转+后退蓄力动画（同时进行）
+	/// Scale up + rotate + wind up animation (simultaneous)
 	/// </summary>
 	private IEnumerator ScaleUpAndWindUpAnimation(GameObject physicalCard, Vector3 originalScale, Vector3 targetPos, Vector3 windUpPos)
 	{
 		bool completed = false;
 		
-		// 计算朝向目标的角度
+		// Calculate angle towards target
 		float targetAngle = CalculateRotationTowardsTarget(physicalCard.transform.position, targetPos);
 		
-		// 使用较长的持续时间确保旋转覆盖整个过程
+		// Use longer duration to ensure rotation covers the whole process
 		float rotationDuration = Mathf.Max(scaleUpDuration, windUpDuration);
 		
-		// 创建序列：放大 + 旋转 + 后退（同时进行）
+		// Create sequence: scale up + rotate + wind up (simultaneous)
 		Sequence sequence = DOTween.Sequence();
 		
 		sequence.Append(
@@ -286,22 +286,22 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// 计算卡片朝向目标的角度（顶部指向目标）
+	/// Calculate card rotation angle towards target (top points to target)
 	/// </summary>
 	private float CalculateRotationTowardsTarget(Vector3 cardPos, Vector3 targetPos)
 	{
-		// 计算从卡片指向目标的方向
+		// Calculate direction from card to target
 		Vector3 direction = targetPos - cardPos;
 		
-		// 使用 Atan2 计算角度（弧度转角度）
-		// +90 是因为卡片默认顶部朝上，需要调整
+		// Use Atan2 to calculate angle (radians to degrees)
+		// +90 because card default top faces up, needs adjustment
 		float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
 		
 		return angle;
 	}
 
 	/// <summary>
-	/// 计算后退蓄力位置
+	/// Calculate wind-up position
 	/// </summary>
 	private Vector3 CalculateWindUpPosition(Vector3 startPos, Vector3 targetPos)
 	{
@@ -310,7 +310,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 计算Overshoot位置（从target继续向前冲）
+	/// Calculate overshoot position (continue past target)
 	/// </summary>
 	private Vector3 CalculateOvershootPosition(Vector3 targetPos, Vector3 startPos)
 	{
@@ -319,16 +319,16 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 冲撞至Target Pos，Scale down simultaneously
+	/// Charge to target position, scale down simultaneously
 	/// </summary>
 	private IEnumerator ChargeToTargetAnimation(GameObject physicalCard, Vector3 targetPos, Vector3 originalScale)
 	{
 		bool completed = false;
 
-		// 计算冲撞时的缩小目标
+		// Calculate scale target during charge
 		Vector3 chargeTargetScale = originalScale * chargeScaleMultiplier;
 
-		// 创建序列：移动 + 缩小
+		// Create sequence: move + scale down
 		Sequence chargeSequence = DOTween.Sequence();
 		
 		chargeSequence.Append(
@@ -347,7 +347,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 从Target Pos冲至Overshoot位置
+	/// Charge from target position to overshoot position
 	/// </summary>
 	private IEnumerator OvershootAnimation(GameObject physicalCard, Vector3 overshootPos)
 	{
@@ -361,13 +361,13 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 回弹动画（从Overshoot往回走一部分），同时恢复大小
+	/// Bounce-back animation (move back partway from overshoot), restore size simultaneously
 	/// </summary>
 	private IEnumerator BounceBackAnimation(GameObject physicalCard, Vector3 bounceBackPos, Vector3 originalScale)
 	{
 		bool completed = false;
 		
-		// 创建序列：回弹位置 + 恢复缩放（旋转保持，到reveal时再旋转）
+		// Create sequence: bounce back position + restore scale (rotation kept, will rotate back at reveal)
 		Sequence bounceSequence = DOTween.Sequence();
 		
 		bounceSequence.Append(
@@ -386,13 +386,13 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 从Overshoot位置返回Reveal位置的动画，同时恢复大小和旋转归零
+	/// Return from overshoot position to reveal position animation, restore size and zero rotation simultaneously
 	/// </summary>
 	private IEnumerator ReturnToRevealFromOvershootAnimation(GameObject physicalCard, Vector3 revealPos, Vector3 revealSize, Vector3 originalScale)
 	{
 		bool completed = false;
 		
-		// 创建序列：移动到reveal位置 + 恢复reveal大小 + 旋转归零（与移动同步）
+		// Create sequence: move to reveal position + restore reveal size + zero rotation (sync with move)
 		Sequence returnSequence = DOTween.Sequence();
 		
 		returnSequence.Append(
@@ -405,7 +405,7 @@ public class AttackAnimationManager : MonoBehaviour
 				.SetEase(Ease.OutQuad)
 		);
 		
-		// 旋转归零，持续时间和移动一致，确保同步完成
+		// Zero rotation, duration matches movement to ensure synchronous completion
 		returnSequence.Join(
 			physicalCard.transform.DORotate(Vector3.zero, returnToRevealDuration)
 				.SetEase(Ease.OutQuad)
@@ -417,7 +417,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 释放玩家输入
+	/// Release player input
 	/// </summary>
 	private void ReleasePlayerInput()
 	{
@@ -428,7 +428,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 检查是否有任何动画正在播放
+	/// Check if any animation is currently playing
 	/// </summary>
 	private bool IsAnyAnimationPlaying()
 	{
@@ -436,7 +436,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Stop all attack animations（用于战斗结束或阶段切换）
+	/// Stop all attack animations (used for combat end or phase transition)
 	/// </summary>
 	public void StopAllAttackAnimations()
 	{
@@ -445,7 +445,7 @@ public class AttackAnimationManager : MonoBehaviour
 		_isProcessingQueue = false;
 		isPlayingAttackAnimation = false;
 		
-		// 恢复玩家输入
+		// Restore player input
 		if (_combatManager != null)
 		{
 			_combatManager.blockPlayerInput = false;
@@ -453,7 +453,7 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 检查Whether there are pending attack animations
+	/// Check whether there are pending attack animations
 	/// </summary>
 	public bool HasPendingAnimations()
 	{
@@ -462,12 +462,12 @@ public class AttackAnimationManager : MonoBehaviour
 }
 
 /// <summary>
-/// 攻击动画数据
+/// Attack animation data
 /// </summary>
 public struct AttackAnimData
 {
 	public GameObject attackerLogicalCard;
-	public bool isAttackingEnemy; // true=攻击敌人, false=攻击自己
-	public Action onHit; // 在Target Pos停顿（阶段4）时触发，用于伤害结算
-	public Action onComplete; // 动画完全结束时触发
+	public bool isAttackingEnemy; // true=attack enemy, false=attack self
+	public Action onHit; // Triggered during pause at target position (phase 4), used for damage resolution
+	public Action onComplete; // Triggered when animation fully ends
 }

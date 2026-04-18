@@ -33,14 +33,14 @@ namespace DefaultNamespace.Managers
 			cardInstance.name = cardToAdd.name.Replace("(Clone)", "");
 			_combatManager.combinedDeckZone.Insert(0, cardInstance); // add the new card to combined deck (insert at first position)
 			
-			// 触发友方minion添加事件（只有己方添加时才触发）
+			// Trigger friendly minion added event (only when added by self)
 			var cardScript = cardInstance.GetComponent<CardScript>();
 			if (belongsToSessionOwner && cardScript != null && cardScript.isMinion)
 			{
 				GameEventStorage.me.onFriendlyMinionAdded?.RaiseOwner();
 			}
 			
-			// 创建对应的物理卡片并插入到 deck 顶部
+			// Create corresponding physical card and insert at top of deck
 			CombatUXManager.me.AddPhysicalCardToDeck(cardInstance);
 		}
 
@@ -64,7 +64,7 @@ namespace DefaultNamespace.Managers
 				_combatManager.combinedDeckZone.Insert(0, cardInst); // add the new card to combined deck (insert at first position)
 			}
 			
-			// 触发友方minion添加事件（只有己方添加时才触发）
+			// Trigger friendly minion added event (only when added by self)
 			var addedCardScript = cardInst.GetComponent<CardScript>();
 			bool isFriendlyCard = targetPlayerStatus == _combatManager.ownerPlayerStatusRef;
 			if (isFriendlyCard && addedCardScript != null && addedCardScript.isMinion)
@@ -72,7 +72,7 @@ namespace DefaultNamespace.Managers
 				GameEventStorage.me.onFriendlyMinionAdded?.RaiseOwner();
 			}
 			
-			// 创建对应的物理卡片并插入到 deck 顶部
+			// Create corresponding physical card and insert at top of deck
 			CombatUXManager.me.AddPhysicalCardToDeck(cardInst);
 			
 			return cardInst;

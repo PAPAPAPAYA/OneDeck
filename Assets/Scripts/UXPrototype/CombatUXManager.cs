@@ -33,7 +33,7 @@ public class CardMoveConfig
 	public Action onComplete;                  // Animation complete callback
 	public Action onStart;                     // Animation start callback
 	
-	// 便捷构造方法
+	// Convenient constructors
 	public static CardMoveConfig ToTop(float duration = 0.5f, bool useArc = true, Action onComplete = null)
 	{
 		return new CardMoveConfig 
@@ -149,13 +149,13 @@ public class CombatUXManager : MonoBehaviour
 	[Tooltip("Target size when card is destroyed")]
 	public Vector3 cardDestroyTargetSize = new Vector3(0.1f, 0.1f, 0.1f);
 
-	// 物理卡片列表（根�?combined deck zone 更新�?
+	// Physical card list (synced with combined deck zone updates)
 	public List<GameObject> physicalCardsInDeck = new();
 	
-	// 揭晓区域的物理卡片（单独存储，防止与 deck 混淆�?
+	// Physical card in reveal zone (stored separately to avoid confusion with deck)
 	public GameObject physicalCardInRevealZone;
 
-	// CardScript �?Physical Card 的字典（维护这个映射�?
+	// Dictionary mapping CardScript to Physical Card (maintain this mapping)
 	private Dictionary<CardScript, GameObject> _cardScriptToPhysicalCache = new();
 
 	private void OnEnable()
@@ -167,17 +167,17 @@ public class CombatUXManager : MonoBehaviour
 	#region Responsibility 1: Update physical card list based on logical zone
 
 	/// <summary>
-	/// 根据 combined deck zone 更新 physicalCardsInDeck 的顺�?
+	/// Update physicalCardsInDeck order based on combined deck zone
 	/// Note: Cards in revealZone are not added to this list, managed separately by physicalCardInRevealZone
 	/// </summary>
 	public void SyncPhysicalCardsWithCombinedDeck()
 	{
 		if (physicalCardsInDeck.Count == 0 && physicalCardInRevealZone == null) return;
 
-		// 重建字典（包含 deck 和 reveal zone 的卡牌）
+		// Rebuild dictionary (includes cards from deck and reveal zone)
 		BuildCardScriptToPhysicalDictionary();
 
-		// 根据 combinedDeckZone 重新排序 physicalCardsInDeck
+		// Reorder physicalCardsInDeck based on combinedDeckZone
 		physicalCardsInDeck.Clear();
 		foreach (var logicalCard in combatManager.combinedDeckZone)
 		{
@@ -188,8 +188,8 @@ public class CombatUXManager : MonoBehaviour
 			}
 		}
 
-		// 注意：revealZone 中的卡不加入 physicalCardsInDeck
-		// 它由 physicalCardInRevealZone 单独管理，位置由单独的 reveal 逻辑控制
+		// Note: Cards in reveal zone are not added to physicalCardsInDeck
+		// It is managed separately by physicalCardInRevealZone, position controlled by separate reveal logic
 	}
 
 	/// <summary>
@@ -197,10 +197,10 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public void MovePhysicalCardToRevealZone(GameObject physicalCard)
 	{
-		// 从牌组移�?
+		// Remove from deck
 		physicalCardsInDeck.Remove(physicalCard);
 
-		// 存储到揭晓区�?
+		// Store to reveal zone
 		physicalCardInRevealZone = physicalCard;
 
 		// Set reveal position
@@ -219,8 +219,8 @@ public class CombatUXManager : MonoBehaviour
 	/// Move card from reveal zone back to bottom of deck
 	/// Use arc trajectory through showPos
 	/// </summary>
-	/// <param name="card">逻辑卡片 GameObject</param>
-	/// <param name="onComplete">Animation complete callback（可选）</param>
+	/// <param name="card">Logical card GameObject</param>
+	/// <param name="onComplete">Animation complete callback (optional)</param>
 	public void MoveRevealedCardToBottom(GameObject card, Action onComplete = null)
 	{
 		GameObject physicalCard;
@@ -234,7 +234,7 @@ public class CombatUXManager : MonoBehaviour
 			return;
 		}
 
-		// 通过逻辑卡找物理�?
+		// Find physical card from logical card
 		BuildCardScriptToPhysicalDictionary();
 		physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
 		if (physicalCard == null)
@@ -253,14 +253,14 @@ public class CombatUXManager : MonoBehaviour
 		// Add to bottom of deck (index 0)
 		physicalCardsInDeck.Insert(0, physicalCard);
 
-		// 如果有配置 showPos，使用通用动画系统
+		// If showPos is configured, use universal animation system
 		if (showPos != null)
 		{
 			// [Key Fix] When calculating target position, consider that one card will be revealed
 			// At this time physicalCardsInDeck contains the card about to be revealed, but it will be removed when animation completes
 			// So effectiveCount = physicalCardsInDeck.Count - 1 is needed to calculate correct position
 			int effectiveCount = physicalCardsInDeck.Count - 1;
-			if (effectiveCount < 1) effectiveCount = 1; // 至少为1，避免计算错误
+			if (effectiveCount < 1) effectiveCount = 1; // At least 1 to avoid calculation errors
 			
 			Vector3 targetPos = new Vector3(
 				physicalCardDeckPos.position.x + xOffset * (effectiveCount - 1),
@@ -270,7 +270,7 @@ public class CombatUXManager : MonoBehaviour
 
 			var config = new CardMoveConfig
 			{
-				moveType = CardMoveType.ToPosition, // 使用 ToPosition 以使用修正后的位置
+				moveType = CardMoveType.ToPosition, // Use ToPosition to apply the corrected position
 				customTarget = targetPos,
 				duration = revealToDeckAnimDuration,
 				useArc = true,
@@ -295,8 +295,8 @@ public class CombatUXManager : MonoBehaviour
 	/// <summary>
 	/// Universal card move method - move card based on configuration
 	/// </summary>
-	/// <param name="logicalCard">逻辑卡片 GameObject</param>
-	/// <param name="config">移动配置</param>
+	/// <param name="logicalCard">Logical card GameObject</param>
+	/// <param name="config">Move config</param>
 	public void MoveCardWithAnimation(GameObject logicalCard, CardMoveConfig config)
 	{
 		if (logicalCard == null || config == null) return;
@@ -304,7 +304,7 @@ public class CombatUXManager : MonoBehaviour
 		var cardScript = logicalCard.GetComponent<CardScript>();
 		if (cardScript == null) return;
 
-		// 获取物理卡片
+		// Get physical card
 		BuildCardScriptToPhysicalDictionary();
 		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
 		if (physicalCard == null) return;
@@ -398,9 +398,9 @@ public class CombatUXManager : MonoBehaviour
 	/// <summary>
 	/// Batch move multiple cards (for Stage/Bury operations)
 	/// </summary>
-	/// <param name="logicalCards">逻辑卡片列表</param>
-	/// <param name="config">移动配置</param>
-	/// <param name="onAllComplete">所有Animation complete后的回调</param>
+	/// <param name="logicalCards">Logical card list</param>
+	/// <param name="config">Move config</param>
+	/// <param name="onAllComplete">Callback after all animations complete</param>
 	public void MoveCardsWithAnimation(List<GameObject> logicalCards, CardMoveConfig config, Action onAllComplete = null)
 	{
 		if (logicalCards == null || logicalCards.Count == 0)
@@ -486,7 +486,7 @@ public class CombatUXManager : MonoBehaviour
 	private Vector3 CalculatePositionAtIndex(int index)
 	{
 		var count = physicalCardsInDeck.Count;
-		// index=0（物理卡组底部）偏移最大，index=count-1（顶部）偏移最小
+		// index=0 (bottom of physical deck) has largest offset, index=count-1 (top) has smallest offset
 		return new Vector3(
 			physicalCardDeckPos.position.x + xOffset * (count - 1 - index),
 			physicalCardDeckPos.position.y + yOffset * (count - 1 - index),
@@ -498,8 +498,8 @@ public class CombatUXManager : MonoBehaviour
 	/// Play Start Card exit animation and execute follow-up
 	/// Resolve conflict between Start Card animation and Shuffle
 	/// </summary>
-	/// <param name="logicalCard">Start Card 逻辑卡片</param>
-	/// <param name="onAnimationComplete">Animation complete后的回调（通常传入 Shuffle 逻辑）</param>
+	/// <param name="logicalCard">Start Card logical card</param>
+	/// <param name="onAnimationComplete">Callback after animation completes (usually pass shuffle logic)</param>
 	public void PlayStartCardExitAnimationWithCallback(GameObject logicalCard, Action onAnimationComplete)
 	{
 		if (logicalCard == null)
@@ -515,7 +515,7 @@ public class CombatUXManager : MonoBehaviour
 			return;
 		}
 
-		// 获取物理卡片
+		// Get physical card
 		BuildCardScriptToPhysicalDictionary();
 		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
 		if (physicalCard == null)
@@ -565,9 +565,9 @@ public class CombatUXManager : MonoBehaviour
 	/// Play Start Card exit animation and other cards' Shuffle animation simultaneously
 	/// Start Card goes directly to graveyard, other cards shuffle
 	/// </summary>
-	/// <param name="startCard">Start Card 逻辑卡片</param>
-	/// <param name="otherCards">其他卡片的逻辑列表（未 Shuffle）</param>
-	/// <param name="onComplete">所有Animation complete后的回调</param>
+	/// <param name="startCard">Start Card logical card</param>
+	/// <param name="otherCards">Logical list of other cards (not shuffled)</param>
+	/// <param name="onComplete">Callback after all animations complete</param>
 	public void PlayStartCardExitWithShuffleAnimation(GameObject startCard, List<GameObject> otherCards, Action onComplete)
 	{
 		// Block player input
@@ -576,16 +576,16 @@ public class CombatUXManager : MonoBehaviour
 			
 		if (startCard == null)
 		{
-			// 没有 Start Card，只执行普通 Shuffle 动画
+			// No Start Card, only play normal shuffle animation
 			PlayShuffleAnimation(otherCards, onComplete);
 			return;
 		}
 
-		// 获取 Start Card 的物理卡片
+		// Get Start Card physical card
 		BuildCardScriptToPhysicalDictionary();
 		var startPhysicalCard = GetPhysicalCardFromLogicalCard(startCard.GetComponent<CardScript>());
 		
-		// 从物理列表中移除 Start Card（它不参与 Shuffle）
+		// Remove Start Card from physical list (it does not participate in shuffle)
 		if (startPhysicalCard != null)
 		{
 			physicalCardsInDeck.Remove(startPhysicalCard);
@@ -616,7 +616,7 @@ public class CombatUXManager : MonoBehaviour
 			completedAnimations++;
 			if (completedAnimations >= totalAnimations)
 			{
-				// 恢复玩家输入
+				// Restore player input
 				if (combatManager != null)
 					combatManager.blockPlayerInput = false;
 				onComplete?.Invoke();
@@ -659,36 +659,36 @@ public class CombatUXManager : MonoBehaviour
 	/// Play Start Card move to random position and other cards' Shuffle animation simultaneously
 	/// [Plan B] Logical shuffle completed, play animation based on known shuffle result
 	/// </summary>
-	/// <param name="startCard">Start Card 逻辑卡片</param>
-	/// <param name="shuffledCards">已经洗好的牌组列表（包含 Start Card，顺序已确定）</param>
-	/// <param name="onComplete">所有Animation complete后的回调</param>
+	/// <param name="startCard">Start Card logical card</param>
+	/// <param name="shuffledCards">Already shuffled deck list (contains Start Card, order is determined)</param>
+	/// <param name="onComplete">Callback after all animations complete</param>
 	public void PlayStartCardShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
 	{
 		// Block player input
 		if (combatManager != null)
 			combatManager.blockPlayerInput = true;
 			
-		// 获取 Start Card 的物理卡片
+		// Get Start Card physical card
 		BuildCardScriptToPhysicalDictionary();
 		var startPhysicalCard = GetPhysicalCardFromLogicalCard(startCard.GetComponent<CardScript>());
 		
-		// 从 reveal zone 移除 Start Card
+		// Remove Start Card from reveal zone
 		if (physicalCardInRevealZone == startPhysicalCard)
 		{
 			physicalCardInRevealZone = null;
 		}
 
-		// 1. 计算每张卡的目标位置（基于已知的洗牌结果）
+		// 1. Calculate target position for each card (based on known shuffle result)
 		var shuffleTargets = CalculateShuffleTargets(shuffledCards);
 
-		// 2. 同时播放所有卡片的移动动画
-		// Start Card 从 Reveal Zone 直接飞到新位置
-		// 其他卡片从当前位置飞到新位置
+		// 2. Play move animations for all cards simultaneously
+		// Start Card flies from Reveal Zone directly to new position
+		// Other cards fly from current position to new position
 		PlayShuffleAnimationInternal(shuffleTargets, () =>
 		{
-			// 3. Animation complete后，重建物理卡片列表以匹配逻辑顺序
+			// 3. After animation completes, rebuild physical card list to match logical order
 			RebuildPhysicalDeckFromShuffledList(shuffledCards);
-			// 恢复玩家输入
+			// Restore player input
 			if (combatManager != null)
 				combatManager.blockPlayerInput = false;
 			onComplete?.Invoke();
@@ -715,8 +715,8 @@ public class CombatUXManager : MonoBehaviour
 	/// <summary>
 	/// Play normal Shuffle animation (without Start Card special handling)
 	/// </summary>
-	/// <param name="cards">卡片逻辑列表（未 Shuffle）</param>
-	/// <param name="onComplete">Animation complete后的回调</param>
+	/// <param name="cards">Logical card list (not shuffled)</param>
+	/// <param name="onComplete">Callback after animation completes</param>
 	public void PlayShuffleAnimation(List<GameObject> cards, Action onComplete)
 	{
 		// Block player input
@@ -733,7 +733,7 @@ public class CombatUXManager : MonoBehaviour
 		// Play animation
 		PlayShuffleAnimationInternal(shuffleTargets, () =>
 		{
-			// 恢复玩家输入
+			// Restore player input
 			if (combatManager != null)
 				combatManager.blockPlayerInput = false;
 			onComplete?.Invoke();
@@ -743,8 +743,8 @@ public class CombatUXManager : MonoBehaviour
 	/// <summary>
 	/// Calculate target position for each card after Shuffle
 	/// </summary>
-	/// <param name="shuffledCards">Shuffle 后的卡片顺序</param>
-	/// <returns>每张物理卡片对应的目标位置</returns>
+	/// <param name="shuffledCards">Card order after shuffle</param>
+	/// <returns>Target position for each physical card</returns>
 	private Dictionary<GameObject, Vector3> CalculateShuffleTargets(List<GameObject> shuffledCards)
 	{
 		var targets = new Dictionary<GameObject, Vector3>();
@@ -769,8 +769,8 @@ public class CombatUXManager : MonoBehaviour
 	/// <summary>
 	/// Internal method: Play Shuffle move animation
 	/// </summary>
-	/// <param name="shuffleTargets">每张物理卡片的目标位置</param>
-	/// <param name="onComplete">Animation complete后的回调</param>
+	/// <param name="shuffleTargets">Target position for each physical card</param>
+	/// <param name="onComplete">Callback after animation completes</param>
 	private void PlayShuffleAnimationInternal(Dictionary<GameObject, Vector3> shuffleTargets, Action onComplete)
 	{
 		if (shuffleTargets.Count == 0)
@@ -811,10 +811,10 @@ public class CombatUXManager : MonoBehaviour
 				physScript.isPlayingSpecialAnimation = true;
 			}
 
-			// 使用弧形轨迹或直接移动
+			// Use arc trajectory or direct move
 			Sequence moveSequence = DOTween.Sequence();
 
-			// 添加随机延迟（如果使用 staggered 动画）
+			// Add random delay (if using staggered animation)
 			if (delay > 0)
 			{
 				moveSequence.AppendInterval(delay);
@@ -832,13 +832,13 @@ public class CombatUXManager : MonoBehaviour
 			}
 			else
 			{
-				// 直接移动
+				// Direct move
 				moveSequence.Append(
 					physicalCard.transform.DOMove(targetPos, shuffleDuration).SetEase(Ease.InOutQuad)
 				);
 			}
 
-			// 同步缩放
+			// Sync scale
 			moveSequence.Join(
 				physicalCard.transform.DOScale(physicalCardDeckSize, shuffleDuration).SetEase(Ease.InOutQuad)
 			);
@@ -877,16 +877,16 @@ public class CombatUXManager : MonoBehaviour
 			physicalCardInRevealZone = null;
 		}
 
-		// 只更新目标位置，不排序（排序�?Shuffle 时的 SyncPhysicalCardsWithCombinedDeck 处理�?
+		// Only update target positions, do not sort (sorting is handled by SyncPhysicalCardsWithCombinedDeck during shuffle)
 		UpdateAllPhysicalCardTargets();
 	}
 
 	#endregion
 
-	#region 职责2：维�?CardScript �?Physical Card 的字�?
+	#region Responsibility 2: Maintain CardScript to Physical Card dictionary
 
 	/// <summary>
-	/// 从牌组构�?CardScript -> Physical Card 映射
+	/// Build CardScript -> Physical Card mapping from deck
 	/// </summary>
 	public void BuildCardScriptToPhysicalDictionary()
 	{
@@ -901,7 +901,7 @@ public class CombatUXManager : MonoBehaviour
 			}
 		}
 
-		// 包含 reveal zone 中的卡片
+		// Include card in reveal zone
 		if (physicalCardInRevealZone != null)
 		{
 			var physCardScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
@@ -931,7 +931,7 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public void UpdateAllPhysicalCardTargets()
 	{
-		// 更新牌组中的卡片位置
+		// Update card positions in deck
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
 			var card = physicalCardsInDeck[i];
@@ -941,7 +941,7 @@ public class CombatUXManager : MonoBehaviour
 			// Calculate target position
 			Vector3 targetPos = CalculatePositionAtIndex(i);
 			
-			// Set target position和缩放（卡片自己在Update 中处理动画）
+			// Set target position and scale (card handles animation in its own Update)
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
 		}
@@ -980,7 +980,7 @@ public class CombatUXManager : MonoBehaviour
 		// Stop all special animations that may be playing
 		StopAllSpecialAnimations();
 		
-		// 销毁牌组中的物理卡�?
+		// Destroy physical cards in deck
 		foreach (var physicalCard in physicalCardsInDeck)
 		{
 			if (physicalCard != null)
@@ -1002,30 +1002,30 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 销毁指定的物理卡牌（立即销毁，无动画）
+	/// Destroy specified physical card (immediate, no animation)
 	/// </summary>
 	public void DestroyPhysicalCard(GameObject physicalCard)
 	{
 		if (physicalCard == null) return;
 
-		// 从牌组列表中移除
+		// Remove from deck list
 		physicalCardsInDeck.Remove(physicalCard);
 
-		// 从字典缓存中移除
+		// Remove from dictionary cache
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript?.cardImRepresenting != null)
 		{
 			_cardScriptToPhysicalCache.Remove(physScript.cardImRepresenting);
 		}
 
-		// 销毁 GameObject
+		// Destroy GameObject
 		Destroy(physicalCard);
 	}
 
 	/// <summary>
-	/// 统一销毁卡片（带动画）：移动到 gravePosition 并缩小，然后销毁 physical 和 logical card
+	/// Uniformly destroy card (with animation): move to gravePosition and shrink, then destroy physical and logical card
 	/// </summary>
-	/// <param name="logicalCard">逻辑卡牌 GameObject</param>
+	/// <param name="logicalCard">Logical card GameObject</param>
 	/// <param name="onComplete">Animation complete callback</param>
 	public void DestroyCardWithAnimation(GameObject logicalCard, System.Action onComplete = null)
 	{
@@ -1035,26 +1035,26 @@ public class CombatUXManager : MonoBehaviour
 			return;
 		}
 
-		// 获取 CardScript
+		// Get CardScript
 		var cardScript = logicalCard.GetComponent<CardScript>();
 		if (cardScript == null)
 		{
-			// 没有 CardScript，直接销毁逻辑卡
+			// No CardScript, destroy logical card directly
 			Destroy(logicalCard);
 			onComplete?.Invoke();
 			return;
 		}
 
-		// 获取对应的 physical card
+		// Get corresponding physical card
 		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
 		
-		// 从 combined deck 中移除逻辑卡
+		// Remove logical card from combined deck
 		if (combatManager != null && combatManager.combinedDeckZone.Contains(logicalCard))
 		{
 			combatManager.combinedDeckZone.Remove(logicalCard);
 		}
 
-		// 如果没有 physical card，直接销毁逻辑卡
+		// If no physical card, destroy logical card directly
 		if (physicalCard == null)
 		{
 			Destroy(logicalCard);
@@ -1062,14 +1062,14 @@ public class CombatUXManager : MonoBehaviour
 			return;
 		}
 
-		// 从牌组列表和缓存中移除（防止动画期间被其他逻辑使用）
+		// Remove from deck list and cache (prevent use by other logic during animation)
 		physicalCardsInDeck.Remove(physicalCard);
 		_cardScriptToPhysicalCache.Remove(cardScript);
 
 		// Create exit animation
 		Sequence destroySequence = DOTween.Sequence();
 
-		// 移动到 grave position（如果设置了）
+		// Move to grave position (if set)
 		if (gravePosition != null)
 		{
 			destroySequence.Append(
@@ -1078,13 +1078,13 @@ public class CombatUXManager : MonoBehaviour
 			);
 		}
 
-		// 缩小
+		// Shrink
 		destroySequence.Join(
 			physicalCard.transform.DOScale(cardDestroyTargetSize, cardDestroyAnimDuration)
 				.SetEase(Ease.InQuad)
 		);
 
-		// Animation complete后销毁
+		// Destroy after animation completes
 		destroySequence.OnComplete(() =>
 		{
 			Destroy(physicalCard);
@@ -1094,8 +1094,8 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Play Start Card exit animation：移动到 newCardPos 并缩小，完成后执行回调
-	/// 注意：现在推荐使用 DestroyCardWithAnimation 作为统一的卡片销毁方法
+	/// Play Start Card exit animation: move to newCardPos and shrink, execute callback when complete
+	/// Note: Now recommended to use DestroyCardWithAnimation as the unified card destruction method
 	/// </summary>
 	public void PlayStartCardExitAnimation(GameObject physicalCard, System.Action onComplete)
 	{
@@ -1115,26 +1115,26 @@ public class CombatUXManager : MonoBehaviour
 		// Remove from deck list (no longer participate in position sync)
 		physicalCardsInDeck.Remove(physicalCard);
 
-		// 停止该卡牌上可能正在进行的动画
+		// Stop any ongoing animation on this card
 		physScript.SetPositionImmediate(physicalCard.transform.position);
 		physScript.SetScaleImmediate(physicalCard.transform.localScale);
 
-		// Create exit animation序列
+		// Create exit animation sequence
 		Sequence exitSequence = DOTween.Sequence();
 
-		// 移动到 newCardPos
+		// Move to newCardPos
 		exitSequence.Append(
 			physicalCard.transform.DOMove(physicalCardNewTempCardPos.position, 0.3f)
 				.SetEase(Ease.InOutQuad)
 		);
 
-		// 同步缩小
+		// Sync shrink
 		exitSequence.Join(
 			physicalCard.transform.DOScale(physicalCardNewTempCardSize, 0.3f)
 				.SetEase(Ease.InOutQuad)
 		);
 
-		// Animation complete后执行回调
+		// Execute callback after animation completes
 		exitSequence.OnComplete(() =>
 		{
 			onComplete?.Invoke();
@@ -1142,14 +1142,14 @@ public class CombatUXManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// 停止所有物理卡片的特殊动画
+	/// Stop all special animations on physical cards
 	/// </summary>
 	public void StopAllSpecialAnimations()
 	{
-		// 停止所有属于本对象�?DOTween 延迟调用
+		// Stop all DOTween delayed calls belonging to this object
 		DOTween.Kill(this);
 		
-		// 恢复玩家输入
+		// Restore player input
 		if (combatManager != null)
 		{
 			combatManager.blockPlayerInput = false;
@@ -1169,13 +1169,13 @@ public class CombatUXManager : MonoBehaviour
 	
 
 	/// <summary>
-	/// 为逻辑卡片创建对应的物理卡片并插入�?deck �?
+	/// Create corresponding physical card for logical card and insert into deck
 	/// </summary>
 	public void AddPhysicalCardToDeck(GameObject logicalCard)
 	{
 		CardScript cardScript = logicalCard.GetComponent<CardScript>();
 
-		// 根据卡片类型选择预制体
+		// Choose prefab based on card type
 		GameObject prefabToUse = physicalCardPrefab;
 		if (cardScript != null)
 		{
@@ -1183,22 +1183,22 @@ public class CombatUXManager : MonoBehaviour
 				prefabToUse = minionPhysicalPrefab;
 		}
 
-		// 创建物理卡片
+		// Create physical card
 		GameObject newPhysicalCard = Instantiate(prefabToUse);
 		CardPhysObjScript physScript = newPhysicalCard.GetComponent<CardPhysObjScript>();
 
 		physScript.cardImRepresenting = cardScript;
 		newPhysicalCard.name = logicalCard.name + "'s physical card";
-		physScript.cardNamePrint.text = logicalCard.name;
+		physScript.cardNamePrint.text = cardScript != null ? cardScript.GetDisplayName() : logicalCard.name;
 		physScript.cardDescPrint.text = cardScript.cardDesc;
 
-		// 设置初始缩放
+		// Set initial scale
 		physScript.SetScaleImmediate(physicalCardDeckSize);
 
-		// 插入到物理卡片列�?
+		// Insert into physical card list
 		physicalCardsInDeck.Insert(0, newPhysicalCard);
 
-		// 设置初始位置 (new card appears at physical card new temp card pos)
+		// Set initial position (new card appears at physical card new temp card pos)
 		Vector3 startPos = physicalCardNewTempCardPos.position;
 		physScript.SetPositionImmediate(startPos);
 		// set initial size
@@ -1206,14 +1206,14 @@ public class CombatUXManager : MonoBehaviour
 		physScript.SetScaleImmediate(startSize);
 
 
-		// 更新所有卡片目标位置（触发移动动画�?
+		// Update all card target positions (trigger move animation)
 		UpdateAllPhysicalCardTargets();
 	}
 
-	#region 初始化
+	#region Initialization
 
 	/// <summary>
-	/// 实例化所有物理卡片（包括 Start Card�?
+	/// Instantiate all physical cards (including Start Card)
 	/// </summary>
 	public void InstantiateAllPhysicalCards()
 	{
@@ -1223,7 +1223,7 @@ public class CombatUXManager : MonoBehaviour
 		{
 			CardScript cardScript = card.GetComponent<CardScript>();
 			
-			// 根据卡片类型选择预制体
+			// Choose prefab based on card type
 			GameObject prefabToUse = physicalCardPrefab;
 			if (cardScript != null)
 			{
@@ -1239,20 +1239,20 @@ public class CombatUXManager : MonoBehaviour
 			physScript.cardImRepresenting = cardScript;
 			newPhysicalCard.name = card.name + "'s physical card";
 			
-			// 普通卡片设置名称和描述
+			// Normal cards: set name and description
 			if (cardScript != null && !cardScript.isStartCard)
 			{
-				physScript.cardNamePrint.text = card.name;
+				physScript.cardNamePrint.text = cardScript != null ? cardScript.GetDisplayName() : card.name;
 				physScript.cardDescPrint.text = cardScript.cardDesc;
 			}
 
-			// 立即设置初始位置和缩�?
+			// Set initial position and scale immediately
 			physScript.SetScaleImmediate(physicalCardDeckSize);
 
 			physicalCardsInDeck.Add(newPhysicalCard);
 		}
 
-		// 设置初始位置
+		// Set initial position
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
 			var physScript = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
@@ -1265,35 +1265,35 @@ public class CombatUXManager : MonoBehaviour
 			physScript.SetPositionImmediate(pos);
 		}
 
-		// 重建字典映射
+		// Rebuild dictionary mapping
 		BuildCardScriptToPhysicalDictionary();
 	}
 
 	#endregion
 
-	#region Status Effect 飞行特效系统
+	#region Status Effect Projectile System
 
 	[Header("STATUS EFFECT PROJECTILE")]
-	[Tooltip("状态效果飞行特效预制体（可以是Sprite、粒子系统或简单的GameObject）")]
+	[Tooltip("Status effect projectile prefab (can be Sprite, particle system, or simple GameObject)")]
 	public GameObject statusEffectProjectilePrefab;
-	[Tooltip("特效飞行持续时间")]
+	[Tooltip("Projectile flight duration")]
 	public float projectileDuration = 0.4f;
-	[Tooltip("抛物线高度")]
+	[Tooltip("Arc height")]
 	public float projectileArcHeight = 2f;
-	[Tooltip("特效起始位置偏移")]
+	[Tooltip("Projectile start position offset")]
 	public Vector3 projectileStartOffset = new Vector3(0, 0.5f, 0);
-	[Tooltip("特效目标位置偏移")]
+	[Tooltip("Projectile end position offset")]
 	public Vector3 projectileEndOffset = new Vector3(0, 0.5f, 0);
-	[Tooltip("多个特效错开播放的间隔时间（秒）")]
+	[Tooltip("Stagger delay between multiple projectiles (seconds)")]
 	public float projectileStaggerDelay = 0.05f;
 
 	/// <summary>
-	/// 播放状态效果从给予者飞向被给予者的抛物线特效
-	/// 特效飞到目标后才执行 onComplete 回调
+	/// Play parabolic projectile effect of status effect flying from giver to receiver
+	/// onComplete callback is executed after the effect reaches the target
 	/// </summary>
-	/// <param name="giverCard">给予者逻辑卡片</param>
-	/// <param name="receiverCard">被给予者逻辑卡片</param>
-	/// <param name="onComplete">特效Complete callback（特效到达目标后执行）</param>
+	/// <param name="giverCard">Giver logical card</param>
+	/// <param name="receiverCard">Receiver logical card</param>
+	/// <param name="onComplete">Effect complete callback (executed after effect reaches target)</param>
 	public void PlayStatusEffectProjectile(GameObject giverCard, GameObject receiverCard, Action onComplete = null)
 	{
 		if (statusEffectProjectilePrefab == null || giverCard == null || receiverCard == null)
@@ -1302,38 +1302,38 @@ public class CombatUXManager : MonoBehaviour
 			return;
 		}
 
-		// 获取物理卡片位置
+		// Get physical card positions
 		BuildCardScriptToPhysicalDictionary();
 		
 		Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset;
 		Vector3 endPos = GetCardWorldPosition(receiverCard) + projectileEndOffset;
 		print("end pos: "+endPos);
 
-		// 创建特效实例
+		// Create effect instance
 		GameObject projectile = Instantiate(statusEffectProjectilePrefab, startPos, Quaternion.identity);
 		
-		// 计算抛物线中间点
+		// Calculate parabolic midpoint
 		Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f) + Vector3.up * projectileArcHeight;
 
-		// 创建抛物线动画
+		// Create parabolic animation
 		Sequence projectileSequence = DOTween.Sequence();
 		
-		// 第一阶段：从起点到中间点（上升）
+		// Phase 1: From start to midpoint (ascending)
 		projectileSequence.Append(
 			projectile.transform.DOMove(midPoint, projectileDuration * 0.5f)
 				.SetEase(Ease.OutQuad)
 		);
 		
-		// 第二阶段：从中间点到终点（下降）
+		// Phase 2: From midpoint to end (descending)
 		projectileSequence.Append(
 			projectile.transform.DOMove(endPos, projectileDuration * 0.5f)
 				.SetEase(Ease.InQuad)
 		);
 		
-		// 同步旋转：让特效始终朝向目标
+		// Sync rotation: keep effect facing target
 		projectile.transform.LookAt(endPos);
 
-		// Animation complete：销毁特效并执行回调
+		// Animation complete: destroy effect and execute callback
 		projectileSequence.OnComplete(() =>
 		{
 			Destroy(projectile);
@@ -1344,14 +1344,14 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 播放多个状态效果投射物动画，支持错开播放
-	/// 特效飞到每个目标后执行对应的回调，全部完成后执行最终回调
+	/// Play multiple status effect projectile animations, supports staggered playback
+	/// Execute corresponding callback after effect reaches each target, final callback after all complete
 	/// </summary>
-	/// <param name="giverCard">给予者逻辑卡片</param>
-	/// <param name="targetCards">目标卡片列表（CardScript）</param>
-	/// <param name="onEachComplete">每个特效完成时的回调（参数为目标CardScript）</param>
-	/// <param name="onAllComplete">所有特效完成后的回调</param>
-	/// <param name="customStaggerDelay">自定义错开时间（null则使用默认值）</param>
+	/// <param name="giverCard">Giver logical card</param>
+	/// <param name="targetCards">Target card list (CardScript)</param>
+	/// <param name="onEachComplete">Callback when each effect completes (parameter is target CardScript)</param>
+	/// <param name="onAllComplete">Callback after all effects complete</param>
+	/// <param name="customStaggerDelay">Custom stagger delay (null uses default value)</param>
 	public void PlayMultiStatusEffectProjectile(
 		GameObject giverCard,
 		List<CardScript> targetCards,
@@ -1365,7 +1365,7 @@ public class CombatUXManager : MonoBehaviour
 			return;
 		}
 
-		// 如果没有配置预制体，直接执行效果（无动画）
+		// If prefab is not configured, execute effect directly (no animation)
 		if (statusEffectProjectilePrefab == null || giverCard == null)
 		{
 			foreach (var target in targetCards)
@@ -1384,7 +1384,7 @@ public class CombatUXManager : MonoBehaviour
 		{
 			var targetCardScript = targetCards[i];
 			
-			// 错开播放时间
+			// Staggered playback time
 			DOVirtual.DelayedCall(i * staggerDelay, () =>
 			{
 				PlayStatusEffectProjectile(
@@ -1392,7 +1392,7 @@ public class CombatUXManager : MonoBehaviour
 					targetCardScript.gameObject, 
 					() =>
 					{
-						// 单个特效完成，执行该目标的效果
+						// Single effect complete, execute effect for this target
 						onEachComplete?.Invoke(targetCardScript);
 						
 						completedCount++;
@@ -1407,7 +1407,7 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 获取卡片的实际世界位置（优先使用物理卡片）
+	/// Get actual world position of card (prefer physical card)
 	/// </summary>
 	private Vector3 GetCardWorldPosition(GameObject card)
 	{

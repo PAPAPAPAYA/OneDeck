@@ -53,7 +53,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2479580585661553072}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ShieldAlter, Assembly-CSharp
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ShieldAlterEffect, Assembly-CSharp
         m_MethodName: UpMyShield
         m_Mode: 3
         m_Arguments:

@@ -3,40 +3,40 @@ using UnityEngine;
 namespace DefaultNamespace.Managers
 {
     /// <summary>
-    /// 管理玩家每局游戏的起始卡牌
-    /// 在第一次Enter shop时，从起始卡牌池中随机选择一张添加到玩家卡组
+    /// Manages starting cards for player each run.
+    /// On first shop enter, randomly selects one card from starting card pool and adds to player deck.
     /// </summary>
     public class StartingCardManager : MonoBehaviour
     {
-        [Header("Initial cards池配置")]
-        [Tooltip("包含所有可能作为起始卡牌的DeckSO，从中随机选择一张")]
+        [Header("Starting Card Pool Config")]
+        [Tooltip("DeckSO containing all possible starting cards, one is randomly selected")]
         public DeckSO startingCardPool;
         
-        [Header("玩家卡组")]
-        [Tooltip("玩家的DeckSO，起始卡牌将被添加到这里")]
+        [Header("Player Deck")]
+        [Tooltip("Player's DeckSO, starting cards will be added here")]
         public DeckSO playerDeck;
         
-        [Header("游戏状态")]
-        [Tooltip("当前游戏局数引用，用于判断是否是第一局")]
+        [Header("Game State")]
+        [Tooltip("Current session number reference, used to determine if it's the first session")]
         public IntSO sessionNum;
         
-        // 标记本局游戏是否已经发放过起始卡牌
+        // Flag whether starting card has been given this run
         private bool _hasGivenStartingCardThisRun;
 
         private void OnEnable()
         {
-            // 游戏开始时重置标记
+            // Reset flag when game starts
             _hasGivenStartingCardThisRun = false;
         }
 
         /// <summary>
-        /// 尝试给玩家发放起始卡牌
-        /// 仅在每局游戏第一次Enter shop时执行
-        /// 通过PhaseManager的onEnterShopPhase事件调用
+        /// Try to give player starting card.
+        /// Only executes on first shop enter each run.
+        /// Called via PhaseManager's onEnterShopPhase event.
         /// </summary>
         public void TryGiveStartingCard()
         {
-            // 只在本局游戏第一次且是第一局(sessionNum == 0)时执行
+            // Only execute on first time this run and only if it's the first session (sessionNum == 0)
             if (_hasGivenStartingCardThisRun)
             {
                 return;
@@ -49,33 +49,33 @@ namespace DefaultNamespace.Managers
 
             if (startingCardPool == null)
             {
-                Debug.LogWarning("[StartingCardManager] 起始卡牌池未配置！");
+                Debug.LogWarning("[StartingCardManager] Starting card pool is not configured!");
                 return;
             }
 
             if (playerDeck == null)
             {
-                Debug.LogWarning("[StartingCardManager] 玩家卡组未配置！");
+                Debug.LogWarning("[StartingCardManager] Player deck is not configured!");
                 return;
             }
 
-            // 从卡牌池中随机选择一张卡牌
+            // Randomly select one card from pool
             GameObject selectedCard = GetRandomCardFromPool();
             if (selectedCard == null)
             {
-                Debug.LogWarning("[StartingCardManager] 起始卡牌池为空！");
+                Debug.LogWarning("[StartingCardManager] Starting card pool is empty!");
                 return;
             }
 
-            // 添加到玩家卡组
+            // Add to player deck
             playerDeck.deck.Add(selectedCard);
             _hasGivenStartingCardThisRun = true;
             
-            //Debug.Log($"[StartingCardManager] 已添加起始卡牌: {selectedCard.name}");
+            //Debug.Log($"[StartingCardManager] Added starting card: {selectedCard.name}");
         }
 
         /// <summary>
-        /// 从起始卡牌池中随机选择一张卡牌
+        /// Randomly select one card from starting card pool
         /// </summary>
         private GameObject GetRandomCardFromPool()
         {
@@ -89,7 +89,7 @@ namespace DefaultNamespace.Managers
         }
         
         /// <summary>
-        /// 重置标记，用于新游戏
+        /// Reset flag for new game
         /// </summary>
         public void ResetForNewRun()
         {

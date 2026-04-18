@@ -56,8 +56,8 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Process shield and HP reduction
 	/// </summary>
-	/// <param name="dmgAmount">伤害数值</param>
-	/// <param name="status">目标玩家状态</param>
+	/// <param name="dmgAmount">Damage amount</param>
+	/// <param name="status">Target player status</param>
 	private void ProcessShieldNHp(int dmgAmount, PlayerStatusSO status)
 	{
 		status.shield -= dmgAmount;
@@ -72,8 +72,8 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Process damage (extract common logic, including shield and HP processing)
 	/// </summary>
-	/// <param name="totalDmg">总伤害数值</param>
-	/// <param name="targetStatus">目标玩家状态</param>
+	/// <param name="totalDmg">Total damage amount</param>
+	/// <param name="targetStatus">Target player status</param>
 	private void ProcessDamage(int totalDmg, PlayerStatusSO targetStatus)
 	{
 		ProcessShieldNHp(totalDmg, targetStatus);
@@ -129,7 +129,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Self-damage caused by status effect (doesn't trigger attack animation)
 	/// </summary>
-	/// <param name="dmgAmount">伤害数值</param>
+	/// <param name="dmgAmount">Damage amount</param>
 	public void DecreaseMyHpFromStatusEffect(int dmgAmount)
 	{
 		int totalDmg = dmgAmount + baseDmg.value;
@@ -144,7 +144,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Increase own HP (consider extra heal amount)
 	/// </summary>
-	/// <param name="healAmount">治疗数值</param>
+	/// <param name="healAmount">Heal amount</param>
 	public void IncreaseMyHp(int healAmount)
 	{
 		myCardScript.myStatusRef.hp += healAmount + healAmountAlter;
@@ -160,11 +160,11 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Decrease opponent HP based on lost HP (/2)
 	/// </summary>
-	/// <param name="baseDmgAmount">基础伤害数值</param>
+	/// <param name="baseDmgAmount">Base damage amount</param>
 	public void DecreaseTheirHp_BasedOnLostHp(int baseDmgAmount)
 	{
 		var extraDmgAmount = (myCardScript.myStatusRef.hpMax - myCardScript.myStatusRef.hp)/2;
-		extraDmg = baseDmgAmount + extraDmgAmount;
+		extraDmg += baseDmgAmount + extraDmgAmount;
 		DecreaseTheirHp();
 		extraDmg = 0;
 	}
@@ -172,7 +172,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Decrease opponent HP based on count of cards with Infected status effect owned by card owner in combinedDeckZone and revealZone
 	/// </summary>
-	/// <param name="baseDmgAmount">基础伤害数值</param>
+	/// <param name="baseDmgAmount">Base damage amount</param>
 	public void DecreaseTheirHp_BasedOnInfectedCardsOwned(int baseDmgAmount)
 	{
 		var infectedCardCount = 0;
@@ -199,7 +199,7 @@ public class HPAlterEffect : EffectScript
 			}
 		}
 		
-		extraDmg = baseDmgAmount + infectedCardCount;
+		extraDmg += baseDmgAmount + infectedCardCount;
 		DecreaseTheirHp();
 		extraDmg = 0;
 	}
@@ -207,7 +207,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Decrease opponent HP based on count of friendly cards with specified cardTypeID in combinedDeckZone and revealZone
 	/// </summary>
-	/// <param name="cardTypeID">要统计的卡牌类型ID</param>
+	/// <param name="cardTypeID">Card type ID to count</param>
 	public void DecreaseTheirHp_BasedOnFriendlyCardTypeCount(string cardTypeID)
 	{
 		var cardCount = 0;
@@ -234,7 +234,7 @@ public class HPAlterEffect : EffectScript
 			}
 		}
 		
-		extraDmg = cardCount;
+		extraDmg += cardCount;
 		DecreaseTheirHp();
 		extraDmg = 0;
 	}
@@ -265,7 +265,7 @@ public class HPAlterEffect : EffectScript
 			}
 		}
 		
-		extraDmg = friendlyCount;
+		extraDmg += friendlyCount;
 		DecreaseTheirHp();
 		extraDmg = 0;
 	}
@@ -297,7 +297,7 @@ public class HPAlterEffect : EffectScript
 			}
 		}
 
-		extraDmg = buriedCount;
+		extraDmg += buriedCount;
 		DecreaseTheirHp();
 		extraDmg = 0;
 	}
@@ -354,7 +354,7 @@ public class HPAlterEffect : EffectScript
 			}
 		}
 		
-		extraDmg = statusEffectCount;
+		extraDmg += statusEffectCount;
 		DecreaseMyHp();
 		extraDmg = 0;
 	}
@@ -404,7 +404,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Opponent damage caused by status effect (doesn't trigger attack animation)
 	/// </summary>
-	/// <param name="dmgAmount">伤害数值</param>
+	/// <param name="dmgAmount">Damage amount</param>
 	public void DecreaseTheirHpFromStatusEffect(int dmgAmount)
 	{
 		int totalDmg = dmgAmount + baseDmg.value;
@@ -417,7 +417,7 @@ public class HPAlterEffect : EffectScript
 	public void DecreaseTheirHp_BasedOnIntSO(IntSO intSO)
 	{
 		if (intSO == null) return;
-		extraDmg = intSO.value;
+		extraDmg += intSO.value;
 		DecreaseTheirHp();
 		extraDmg = 0;
 	}
@@ -425,7 +425,7 @@ public class HPAlterEffect : EffectScript
 	public void DecreaseMyHp_BasedOnIntSO(IntSO intSO)
 	{
 		if (intSO == null) return;
-		extraDmg = intSO.value;
+		extraDmg += intSO.value;
 		DecreaseMyHp();
 		extraDmg = 0;
 	}
@@ -445,7 +445,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Decrease opponent HP multiple times, each dealing baseDmg + extraDmg damage
 	/// </summary>
-	/// <param name="timesIntSO">伤害次数</param>
+	/// <param name="timesIntSO">Damage times</param>
 	public void DecreaseTheirHpTimesIntSO(IntSO timesIntSO)
 	{
 		if (timesIntSO == null) return;
@@ -461,7 +461,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Decrease opponent HP multiple times, each dealing baseDmg + extraDmg damage
 	/// </summary>
-	/// <param name="times">伤害次数</param>
+	/// <param name="times">Damage times</param>
 	public void DecreaseTheirHpTimesX(int times)
 	{
 		for (int i = 0; i < times; i++)
@@ -479,7 +479,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Increase opponent HP (consider extra heal amount)
 	/// </summary>
-	/// <param name="healAmount">治疗数值</param>
+	/// <param name="healAmount">Heal amount</param>
 	public void IncreaseTheirHp(int healAmount)
 	{
 		myCardScript.theirStatusRef.hp += healAmount + healAmountAlter;
@@ -495,7 +495,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Check damage source and target, trigger corresponding events and display text (when dealing damage to opponent)
 	/// </summary>
-	/// <param name="dmgAmount">伤害数值</param>
+	/// <param name="dmgAmount">Damage amount</param>
 	private void CheckDmgTargets_DealingDmgToOpponent(int dmgAmount)
 	{
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy dealt dmg to player
@@ -517,7 +517,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Check damage source and target, trigger corresponding events and display text (when dealing damage to self)
 	/// </summary>
-	/// <param name="dmgAmount">伤害数值</param>
+	/// <param name="dmgAmount">Damage amount</param>
 	private void CheckDmgTargets_DealingDmgToSelf(int dmgAmount)
 	{
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player dealt dmg to player
@@ -539,7 +539,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Check heal source and target, trigger corresponding events and display text (when healing self)
 	/// </summary>
-	/// <param name="healAmount">治疗数值</param>
+	/// <param name="healAmount">Heal amount</param>
 	private void CheckHealTargets_HealingSelf(int healAmount)
 	{
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player healed player
@@ -559,7 +559,7 @@ public class HPAlterEffect : EffectScript
 	/// <summary>
 	/// Check heal source and target, trigger corresponding events and display text (when healing opponent)
 	/// </summary>
-	/// <param name="healAmount">治疗数值</param>
+	/// <param name="healAmount">Heal amount</param>
 	private void CheckHealTargets_HealingOpponent(int healAmount)
 	{
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy healed player

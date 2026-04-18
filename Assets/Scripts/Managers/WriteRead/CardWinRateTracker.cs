@@ -9,16 +9,16 @@ using UnityEngine;
 namespace TestWriteRead
 {
     /// <summary>
-    /// 单卡胜率统计器
-    /// 功能：
-    /// 1. 记录每张玩家卡的战斗次数、胜利次数、失败次数
-    /// 2. 保存到本地JSON
-    /// 3. 导出CSV报告
+    /// Single card win rate tracker
+    /// Features:
+    /// 1. Record combat count, wins, and losses for each player card
+    /// 2. Save to local JSON
+    /// 3. Export CSV report
     /// 
-    /// 快捷键（Game视图中使用）：
-    /// - Ctrl+Shift+P: 打印胜率报告
-    /// - Ctrl+Shift+E: 导出CSV文件
-    /// - Ctrl+Shift+C: 清空统计数据
+    /// Hotkeys (use in Game view):
+    /// - Ctrl+Shift+P: Print win rate report
+    /// - Ctrl+Shift+E: Export CSV file
+    /// - Ctrl+Shift+C: Clear statistics data
     /// </summary>
     public class CardWinRateTracker : MonoBehaviour
     {
@@ -46,16 +46,16 @@ namespace TestWriteRead
         [Header("Debug")]
         [SerializeField] private bool printOnSave = true;
 
-        // 本地数据
+        // Local data
         private CardWinRateData _data;
         private string _jsonPath;
         private string _csvPath;
 
-        // 当前战斗中的卡组快照（在战斗开始时记录）
+        // Current combat deck snapshot (recorded at combat start)
         private List<string> _currentCombatPlayerCardTypeIDs = new();
 
         /// <summary>
-        /// 战斗开始时调用，记录当前玩家卡组中的卡（传入预制体列表）
+        /// Called at combat start, records cards in current player deck (pass prefab list)
         /// </summary>
         public void RecordPlayerDeckSnapshot(List<GameObject> playerCardPrefabs)
         {
@@ -70,7 +70,7 @@ namespace TestWriteRead
                 var cardScript = cardPrefab.GetComponent<CardScript>();
                 if (cardScript == null) continue;
                 
-                // 使用 cardTypeID 作为标识，如果没有则使用卡名并警告
+                // Use cardTypeID as identifier, if none then use card name and warn
                 string typeID = GetCardTypeID(cardScript);
                 if (!string.IsNullOrEmpty(typeID))
                 {
@@ -78,14 +78,14 @@ namespace TestWriteRead
                 }
             }
             
-            // 去重（同类型的卡可能有多个）
+            // Deduplicate (multiple cards of same type may exist)
             _currentCombatPlayerCardTypeIDs = _currentCombatPlayerCardTypeIDs.Distinct().ToList();
         }
 
         /// <summary>
-        /// 战斗结束时调用，更新所有参与卡的统计
+        /// Called at combat end, updates stats for all participating cards
         /// </summary>
-        /// <param name="playerWon">玩家是否获胜</param>
+        /// <param name="playerWon">Whether player won</param>
         public void RecordCombatResult(bool playerWon)
         {
             if (!switchOnTracking) return;
@@ -100,13 +100,13 @@ namespace TestWriteRead
             
             if (printOnSave)
             {
-                Debug.Log($"[CardWinRateTracker] 已Record combat result：{(playerWon ? "胜利" : "失败")}，" +
-                          $"影响 {_currentCombatPlayerCardTypeIDs.Count} 张卡");
+                Debug.Log($"[CardWinRateTracker] Recorded combat result: {(playerWon ? "Win" : "Loss")}, " +
+                          $"Affected {_currentCombatPlayerCardTypeIDs.Count} cards");
             }
         }
 
         /// <summary>
-        /// 获取或创建卡的统计记录
+        /// Get or create card statistics record
         /// </summary>
         private CardStats GetOrCreateStats(string cardTypeID)
         {
@@ -125,7 +125,7 @@ namespace TestWriteRead
         }
 
         /// <summary>
-        /// 更新单张卡的统计数据
+        /// Update single card statistics
         /// </summary>
         private void UpdateCardStats(string cardTypeID, bool won)
         {
@@ -139,22 +139,22 @@ namespace TestWriteRead
         }
 
         /// <summary>
-        /// 从 CardScript 获取稳定的卡类型ID
+        /// Get stable card type ID from CardScript
         /// </summary>
         private string GetCardTypeID(CardScript cardScript)
         {
-            // 优先使用配置的 cardTypeID
+            // Prefer configured cardTypeID
             if (!string.IsNullOrEmpty(cardScript.cardTypeID))
             {
                 return cardScript.cardTypeID;
             }
             
-            // 如果没有配置，使用卡名并警告
-            Debug.LogWarning($"[CardWinRateTracker] 卡 {cardScript.name} 没有配置 cardTypeID，使用卡名作为标识");
+            // If not configured, use card name and warn
+            Debug.LogWarning($"[CardWinRateTracker] Card {cardScript.name} has no cardTypeID configured, using card name as identifier");
             return cardScript.name;
         }
 
-        #region 数据持久化
+        #region Data Persistence
 
         private void LoadData()
         {
@@ -170,14 +170,14 @@ namespace TestWriteRead
                     }
                     else
                     {
-                        // 确保列表不为null
+                        // Ensure list is not null
                         if (_data.allCardStats == null)
                             _data.allCardStats = new List<CardStats>();
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[CardWinRateTracker] 读取数据失败: {e.Message}");
+                    Debug.LogError($"[CardWinRateTracker] Failed to read data: {e.Message}");
                     _data = new CardWinRateData();
                 }
             }
@@ -199,36 +199,36 @@ namespace TestWriteRead
                 File.WriteAllText(_jsonPath, json);
                 if (printOnSave)
                 {
-                    Debug.Log($"[CardWinRateTracker] 统计已保存: {_jsonPath}");
+                    Debug.Log($"[CardWinRateTracker] Statistics saved: {_jsonPath}");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[CardWinRateTracker] Save data失败: {e.Message}");
+                Debug.LogError($"[CardWinRateTracker] Save data failed: {e.Message}");
             }
         }
 
         #endregion
 
-        #region CSV导出
+        #region CSV Export
 
         /// <summary>
-        /// 导出胜率数据到CSV文件
+        /// Export win rate data to CSV file
         /// </summary>
         public void ExportToCSV()
         {
             if (_data.allCardStats.Count == 0)
             {
-                Debug.LogWarning("[CardWinRateTracker] 没有数据可以导出");
+                Debug.LogWarning("[CardWinRateTracker] No data to export");
                 return;
             }
 
             var sb = new StringBuilder();
             
-            // CSV头部
+            // CSV header
             sb.AppendLine("CardTypeID,CardName,TotalCombats,Wins,Losses,WinRate,LastUpdated");
             
-            // 按胜率排序
+            // Sort by win rate
             var sortedStats = _data.allCardStats
                 .OrderByDescending(s => s.WinRate)
                 .ThenByDescending(s => s.totalCombats)
@@ -242,20 +242,20 @@ namespace TestWriteRead
             try
             {
                 File.WriteAllText(_csvPath, sb.ToString(), Encoding.UTF8);
-                Debug.Log($"[CardWinRateTracker] CSV已导出到: {_csvPath}");
+                Debug.Log($"[CardWinRateTracker] CSV exported to: {_csvPath}");
             }
             catch (Exception e)
             {
-                Debug.LogError($"[CardWinRateTracker] CSV导出失败: {e.Message}");
+                Debug.LogError($"[CardWinRateTracker] CSV export failed: {e.Message}");
             }
         }
 
         #endregion
 
-        #region 查询接口
+        #region Query Interface
 
         /// <summary>
-        /// 获取单张卡的统计
+        /// Get single card statistics
         /// </summary>
         public CardStats GetCardStats(string cardTypeID)
         {
@@ -263,17 +263,17 @@ namespace TestWriteRead
         }
 
         /// <summary>
-        /// 打印所有卡的胜率报告到控制台
+        /// Print all cards' win rate report to console
         /// </summary>
         public void PrintReport()
         {
             if (_data.allCardStats.Count == 0)
             {
-                Debug.Log("[CardWinRateTracker] 暂无数据");
+                Debug.Log("[CardWinRateTracker] No data yet");
                 return;
             }
 
-            Debug.Log("========== 卡胜率统计报告 ==========");
+            Debug.Log("========== CARD WIN RATE REPORT ==========");
             
             var sortedStats = _data.allCardStats
                 .OrderByDescending(s => s.WinRate)
@@ -285,12 +285,12 @@ namespace TestWriteRead
                 Debug.Log(stat.ToString());
             }
             
-            Debug.Log($"总计 {_data.allCardStats.Count} 张卡，最后更新: {_data.lastUpdated}");
+            Debug.Log($"Total {_data.allCardStats.Count} cards, last updated: {_data.lastUpdated}");
             Debug.Log("====================================");
         }
 
         /// <summary>
-        /// 清空所有统计数据
+        /// Clear all statistics data
         /// </summary>
         public void ClearAllData()
         {
@@ -303,32 +303,32 @@ namespace TestWriteRead
             {
                 File.Delete(_csvPath);
             }
-            Debug.Log("[CardWinRateTracker] 已清空所有统计数据");
+            Debug.Log("[CardWinRateTracker] All statistics data cleared");
         }
 
         #endregion
 
-        #region Debug快捷键
-        // 快捷键说明（需在 Game 视图中激活）:
-        // Ctrl + Shift + P: 打印胜率报告到控制台
-        // Ctrl + Shift + E: 导出CSV文件到持久化路径
-        // Ctrl + Shift + C: 清空所有统计数据（谨慎使用）
+        #region Debug Hotkeys
+        // Hotkey instructions (must be active in Game view):
+        // Ctrl + Shift + P: Print win rate report to console
+        // Ctrl + Shift + E: Export CSV file to persistent path
+        // Ctrl + Shift + C: Clear all statistics data (use with caution)
 
         private void Update()
         {
-            // Ctrl + Shift + P: 打印报告
+            // Ctrl + Shift + P: Print report
             if (Input.GetKeyDown(KeyCode.P) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftControl))
             {
                 PrintReport();
             }
             
-            // Ctrl + Shift + E: 导出CSV
+            // Ctrl + Shift + E: Export CSV
             if (Input.GetKeyDown(KeyCode.E) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftControl))
             {
                 ExportToCSV();
             }
             
-            // Ctrl + Shift + C: 清空数据
+            // Ctrl + Shift + C: Clear data
             if (Input.GetKeyDown(KeyCode.C) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftControl))
             {
                 ClearAllData();

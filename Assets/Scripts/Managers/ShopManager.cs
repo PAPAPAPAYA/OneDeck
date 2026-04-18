@@ -147,7 +147,7 @@ public class ShopManager : MonoBehaviour
 		var cardToBuyInst = Instantiate(cardToBuy, transform);
 		cardToBuyInst.GetComponent<CardScript>().myStatusRef = CombatManager.Me.ownerPlayerStatusRef;
 		GameEventStorage.me?.onMeBought?.RaiseSpecific(cardToBuyInst); // buy timepoint: instantiate so it register as a listener
-		_boughtCardInstances.Add(cardToBuyInst); // 添加到列表，Exit shop时统一销毁
+		_boughtCardInstances.Add(cardToBuyInst); // Add to list, destroy uniformly when exiting shop
 		// record card bought
 		if (ShopStatsManager.Me != null)
 		{

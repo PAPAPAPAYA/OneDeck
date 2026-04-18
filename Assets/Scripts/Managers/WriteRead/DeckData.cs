@@ -5,28 +5,28 @@ using UnityEngine;
 namespace TestWriteRead
 {
     /// <summary>
-    /// 卡组保存条目 - 使用cardTypeID而非GameObject实例
-    /// 避免GameObject实例ID变化导致的问题
+    /// Deck save entry - uses cardTypeID instead of GameObject instances
+    /// Avoids issues caused by GameObject instance ID changes
     /// </summary>
     [System.Serializable]
     public class DeckSaveEntry
     {
-        /// <summary>卡组中所有卡牌的类型ID列表</summary>
+        /// <summary>List of all card type IDs in the deck</summary>
         public List<string> cardTypeIDs = new();
         
-        /// <summary>保存时的胜利数</summary>
+        /// <summary>Win count when saved</summary>
         public int winAmount;
         
-        /// <summary>保存时的生命值</summary>
+        /// <summary>Hearts when saved</summary>
         public int heartLeft;
         
-        /// <summary>保存时的session编号</summary>
+        /// <summary>Session number when saved</summary>
         public int sessionNum;
         
-        /// <summary>保存时的最大生命值</summary>
+        /// <summary>Max HP when saved</summary>
         public int hpMax;
         
-        /// <summary>保存时间戳</summary>
+        /// <summary>Save timestamp</summary>
         public string savedAt;
 
         public DeckSaveEntry()
@@ -36,18 +36,18 @@ namespace TestWriteRead
     }
 
     /// <summary>
-    /// 卡组数据容器（用于JSON序列化）
+    /// Deck data container (for JSON serialization)
     /// </summary>
     [System.Serializable]
     public class DeckData
     {
-        /// <summary>所有保存的卡组条目</summary>
+        /// <summary>All saved deck entries</summary>
         public List<DeckSaveEntry> savedDecks = new();
         
-        /// <summary>数据版本号，用于版本迁移</summary>
+        /// <summary>Data version number, for version migration</summary>
         public int version = 1;
         
-        /// <summary>最后更新时间</summary>
+        /// <summary>Last updated time</summary>
         public string lastUpdated;
 
         public DeckData()

@@ -76,7 +76,7 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = _combinedDeck[i];
 			var cardScript = card.GetComponent<CardScript>();
-			// 跳过中立卡和 Start Card
+			// Skip neutral cards and Start Card
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			bool isOwner = cardScript.myStatusRef == myCardScript.myStatusRef;
 			// Only return cards with correct ownership and index > 0 (cards at index 0 cannot be delayed)
@@ -120,7 +120,7 @@ public class CardManipulationEffect : EffectScript
 
 		if (movedCount > 0)
 		{
-			// 同步物理卡片列表
+			// Sync physical card list
 			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
 			
 			// Play animation for each moved card
@@ -241,7 +241,7 @@ public class CardManipulationEffect : EffectScript
 			var minionScript = minion.GetComponent<CardScript>();
 			string minionColor = GetCardColorTag(minion);
 			
-			// 使用统一销毁方法（带动画）
+			// Use unified destroy method (with animation)
 			CombatUXManager.me.DestroyCardWithAnimation(minion);
 			
 			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] destroyed minion [<color={minionColor}>{minionScript.name}</color>]\n";

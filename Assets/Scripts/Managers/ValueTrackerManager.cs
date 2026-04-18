@@ -21,7 +21,7 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO lastAppliedStatusEffectAmountRef;
 
 	[Header("Curse Card Config")]
-	[Tooltip("Cursed card type ID，用于统计敌方对应卡的Power总数")]
+	[Tooltip("Cursed card type ID, used to count total Power on corresponding enemy cards")]
 	public StringSO curseCardTypeId;
 
 	private void Awake()
@@ -30,7 +30,7 @@ public class ValueTrackerManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 在效果执行前统一刷新所有追踪数值
+	/// Refresh all tracked values before effect execution
 	/// </summary>
 	public void UpdateAllTrackers()
 	{
@@ -42,8 +42,8 @@ public class ValueTrackerManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 更新 FriendlyInGraveAmount：统计 combinedDeckZone 中位于 Start Card 下方（index 更小）的友方卡数量。
-	/// 这些卡将在 Start Card 之后被揭晓，视为处于"墓地"中。
+	/// Update FriendlyInGraveAmount: count friendly cards in combinedDeckZone below the Start Card (smaller index).
+	/// These cards will be revealed after the Start Card and are considered in the "graveyard".
 	/// </summary>
 	private void UpdateFriendlyInGraveAmount()
 	{
@@ -52,7 +52,7 @@ public class ValueTrackerManager : MonoBehaviour
 		var deck = CombatManager.Me.combinedDeckZone;
 		int startCardIndex = -1;
 
-		// 找到 Start Card 的 index
+		// Find the Start Card's index
 		for (int i = 0; i < deck.Count; i++)
 		{
 			var cardScript = deck[i].GetComponent<CardScript>();
@@ -63,14 +63,14 @@ public class ValueTrackerManager : MonoBehaviour
 			}
 		}
 
-		// 如果没有找到 Start Card，则计数为 0
+		// If Start Card is not found, count is 0
 		if (startCardIndex < 0)
 		{
 			friendlyInGraveAmountRef.value = 0;
 			return;
 		}
 
-		// 统计 index 比 Start Card 小的友方卡数量
+		// Count friendly cards with index smaller than Start Card
 		int count = 0;
 		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
 		for (int i = 0; i < startCardIndex; i++)
@@ -86,13 +86,13 @@ public class ValueTrackerManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 更新 HostileCursePowerCount：统计敌方card type id为curseCardTypeId的卡拥有的Power status effect的总和
+	/// Update HostileCursePowerCount: sum of Power status effects on enemy cards with card type id matching curseCardTypeId.
 	/// </summary>
 	private void UpdateHostileCursePowerCount()
 	{
 		if (hostileCursePowerCount == null || CombatManager.Me == null) return;
 
-		// 如果没有设置Cursed card type ID，计数为0
+		// If Cursed card type ID is not set, count is 0
 		if (curseCardTypeId == null || string.IsNullOrEmpty(curseCardTypeId.value))
 		{
 			hostileCursePowerCount.value = 0;
@@ -108,18 +108,39 @@ public class ValueTrackerManager : MonoBehaviour
 			var cardScript = cardObj.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 
-			// 检查是否为敌方卡且card type id匹配
+			// Check if it's a hostile card and card type id matches
 			bool isHostileCard = cardScript.myStatusRef != ownerStatus;
 			bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
 
 			if (isHostileCard && isMatchingType)
 			{
-				// 统计该卡上的Power status effect数量
+				// Count Power status effects on this card
 				int powerCount = EnumStorage.GetStatusEffectCount(
 					cardScript.myStatusEffects, 
 					EnumStorage.StatusEffect.Power
 				);
 				totalPower += powerCount;
+			}
+		}
+
+		// Include revealZone
+		var revealZone = CombatManager.Me.revealZone;
+		if (revealZone != null)
+		{
+			var cardScript = revealZone.GetComponent<CardScript>();
+			if (cardScript != null)
+			{
+				bool isHostileCard = cardScript.myStatusRef != ownerStatus;
+				bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
+
+				if (isHostileCard && isMatchingType)
+				{
+					int powerCount = EnumStorage.GetStatusEffectCount(
+						cardScript.myStatusEffects,
+						EnumStorage.StatusEffect.Power
+					);
+					totalPower += powerCount;
+				}
 			}
 		}
 
@@ -148,6 +169,21 @@ public class ValueTrackerManager : MonoBehaviour
 			totalPower += powerCount;
 		}
 
+		// Include revealZone
+		var revealZone = CombatManager.Me.revealZone;
+		if (revealZone != null)
+		{
+			var cardScript = revealZone.GetComponent<CardScript>();
+			if (cardScript != null)
+			{
+				int powerCount = EnumStorage.GetStatusEffectCount(
+					cardScript.myStatusEffects,
+					EnumStorage.StatusEffect.Power
+				);
+				totalPower += powerCount;
+			}
+		}
+
 		totalPowerCountInDeckRef.value = totalPower;
 	}
 
@@ -171,6 +207,17 @@ public class ValueTrackerManager : MonoBehaviour
 			}
 		}
 
+		// Include revealZone
+		var revealZone = CombatManager.Me.revealZone;
+		if (revealZone != null)
+		{
+			var cardScript = revealZone.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.myStatusRef == ownerStatus)
+			{
+				count++;
+			}
+		}
+
 		ownerCardCountInDeckRef.value = count;
 	}
 
@@ -188,6 +235,17 @@ public class ValueTrackerManager : MonoBehaviour
 		foreach (var cardObj in deck)
 		{
 			var cardScript = cardObj.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.myStatusRef != ownerStatus)
+			{
+				count++;
+			}
+		}
+
+		// Include revealZone
+		var revealZone = CombatManager.Me.revealZone;
+		if (revealZone != null)
+		{
+			var cardScript = revealZone.GetComponent<CardScript>();
 			if (cardScript != null && cardScript.myStatusRef != ownerStatus)
 			{
 				count++;

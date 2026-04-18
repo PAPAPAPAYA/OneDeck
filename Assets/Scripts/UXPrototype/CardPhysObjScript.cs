@@ -14,15 +14,15 @@ public class CardPhysObjScript : MonoBehaviour
 	[SerializeField] private GamePhaseSO currentGamePhaseRef;
 
 	[Header("Shop Settings")]
-	[Tooltip("Shop item index，-1表示不是商店物品")]
+	[Tooltip("Shop item index, -1 means not a shop item")]
 	public int shopItemIndex = -1;
-	[Tooltip("长按购买所需时间（秒）")]
+	[Tooltip("Long press duration required to purchase (seconds)")]
 	public float holdTimeRequired = 0.5f;
 
 	[Header("Shake Settings")]
-	[Tooltip("子物体上的Shaker组件")]
+	[Tooltip("Shaker component on child object")]
 	[SerializeField] private Shaker cardShaker;
-	[Tooltip("震动预设")]
+	[Tooltip("Shake preset")]
 	[SerializeField] private ShakePreset cardShakePreset;
 
 	[Header("LOOK")]
@@ -40,81 +40,81 @@ public class CardPhysObjScript : MonoBehaviour
 	public Color opponentCardEdgeColor;
 
 	[Header("TINT - Infected")]
-	[Tooltip("Infected 状态的 Tint 颜色")]
+	[Tooltip("Tint color for Infected state")]
 	public Color infectedTintColor = new Color(0.4f, 0.8f, 0.2f);
-	[Tooltip("Infected 状态的 Tint 强度")]
+	[Tooltip("Tint intensity for Infected state")]
 	[Range(0f, 1f)]
 	public float infectedTintIntensity = 0.5f;
 
 	[Header("TINT - Power")]
-	[Tooltip("Power 状态的 Tint 颜色")]
+	[Tooltip("Tint color for Power state")]
 	public Color powerTintColor = new Color(1f, 0.6f, 0.1f);
-	[Tooltip("Power 状态的 Tint 强度")]
+	[Tooltip("Tint intensity for Power state")]
 	[Range(0f, 1f)]
 	public float powerTintIntensity = 0.5f;
 
 	[Header("TINT - Settings")]
-	[Tooltip("Tint 持续时间（秒）")]
+	[Tooltip("Tint duration (seconds)")]
 	public float tintDuration = 1.5f;
-	[Tooltip("Tint 颜色变化速度（越大越快）")]
+	[Tooltip("Tint color transition speed (higher is faster)")]
 	public float tintTransitionSpeed = 5f;
 
-	// 运行时状态
+	// Runtime state
 	private TintState _currentTintState = TintState.None;
 	private float _tintTimer = 0f;
-	private float _currentTintIntensity = 0f; // 当前实际显示的 tint 强度（用于平滑过渡）
+	private float _currentTintIntensity = 0f; // Currently displayed tint intensity (used for smooth transition)
 
 	public enum TintState { None, Infected, Power }
 
-	// ========== 动画目标位置 ==========
+	// ========== Animation target position ==========
 	[Header("ANIMATION")]
 	public Vector3 TargetPosition { get; private set; }
 	public Vector3 TargetScale { get; private set; }
 
-	// ========== 长按购买相关 ==========
+	// ========== Long press purchase related ==========
 	private bool _isHolding = false;
 	private float _holdTimer = 0f;
 
-	// ========== 震动相关 ==========
+	// ========== Shake related ==========
 	private ShakeInstance _currentShakeInstance;
 	private bool _isShaking = false;
 
-	// ========== 卡片放大相关 ==========
+	// ========== Card enlarge related ==========
 	private Vector3 _originalPosition;
 	private Vector3 _originalScale;
 	private bool _isEnlarged = false;
-	private bool _hasClickProcessed = false; // 防止单击和长按冲突
-	private float _enlargeCooldown = 0f; // 放大冷却时间
-	private const float ENLARGE_COOLDOWN_TIME = 0.5f; // 冷却时间（秒）
+	private bool _hasClickProcessed = false; // Prevent click and long press conflict
+	private float _enlargeCooldown = 0f; // Enlarge cooldown time
+	private const float ENLARGE_COOLDOWN_TIME = 0.5f; // Cooldown time (seconds)
 
-	// ========== Stage/Bury 特殊动画 ==========
+	// ========== Stage/Bury special animation ==========
 	[Header("Stage/Bury Animation")]
 	[Tooltip("Is playing special animation")]
 	public bool isPlayingSpecialAnimation = false;
-	[Tooltip("左移距离")]
+	[Tooltip("Left move distance")]
 	public float sideOffset = 2.5f;
-	[Tooltip("左移Animation duration")]
+	[Tooltip("Left move animation duration")]
 	public float sideMoveDuration = 0.3f;
-	[Tooltip("插入Animation duration")]
+	[Tooltip("Insert animation duration")]
 	public float insertDuration = 0.4f;
-	[Tooltip("动画期间的额外缩放倍数")]
+	[Tooltip("Extra scale multiplier during animation")]
 	public float animationScaleMultiplier = 1.3f;
-	[Tooltip("动画期间的旋转角度")]
+	[Tooltip("Rotation angle during animation")]
 	public float animationRotationAngle = 20f;
 
 	private Tween _currentSpecialTween;
 	private Vector3 _specialAnimOriginalScale;
 	private Vector3 _specialAnimOriginalRotation;
 
-	// ========== 卡组整体动画（用于呼吸效果）==========
+	// ========== Deck group animation (used for breathing effect) ==========
 	[Header("Deck Group Animation")]
-	[Tooltip("是否是正在被移动的卡片（主角卡片）")]
+	[Tooltip("Whether this is the card being moved (main card)")]
 	public bool isMainAnimationCard = false;
-	[Tooltip("卡组缩小的倍数")]
+	[Tooltip("Deck shrink multiplier")]
 	public float deckShrinkMultiplier = 0.85f;
-	[Tooltip("卡组右移距离")]
+	[Tooltip("Deck right move distance")]
 	public float deckRightOffset = 1.5f;
-	[Tooltip("卡组Animation duration")]
+	[Tooltip("Deck animation duration")]
 	public float deckAnimDuration = 0.35f;
 
 	private Tween _currentDeckGroupTween;
@@ -122,11 +122,11 @@ public class CardPhysObjScript : MonoBehaviour
 	private Vector3 _deckAnimBaseScale;
 	private bool _isInDeckGroupAnimation = false;
 
-	// ========== DOTween 动画 ==========
+	// ========== DOTween animation ==========
 	[Header("DOTween Animation")]
-	[Tooltip("移动到目标位置的Animation duration")]
+	[Tooltip("Animation duration to move to target position")]
 	public float moveDuration = 0.3f;
-	[Tooltip("移动动画的Ease type")]
+	[Tooltip("Ease type for move animation")]
 	public Ease moveEase = Ease.OutQuad;
 
 	private Tweener _positionTween;
@@ -140,19 +140,19 @@ public class CardPhysObjScript : MonoBehaviour
 	void Update()
 	{
 		ApplyColor();
-		UpdateMotion(); // 在 Update 中处理动画
+		UpdateMotion(); // Handle animation in Update
 		UpdateStatusEffectDisplay();
 		UpdatePriceDisplay();
 		UpdateCostDisplay();
 		UpdateTintTimer();
 
-		// 长按检测
+		// Long press detection
 		HandleHoldToBuy();
 
-		// 检测再次点击恢复卡片
+		// Detect click again to restore card
 		HandleClickToRestore();
 
-		// 更新冷却时间
+		// Update cooldown time
 		if (_enlargeCooldown > 0)
 		{
 			_enlargeCooldown -= Time.deltaTime;
@@ -160,67 +160,67 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 检测再次点击恢复卡片
+	/// Detect click again to restore card
 	/// </summary>
 	private void HandleClickToRestore()
 	{
 		if (!_isEnlarged) return;
 
-		// 如果点击了鼠标左键，恢复卡片
+		// If left mouse button is clicked, restore card
 		if (Input.GetMouseButtonDown(0))
 		{
 			RestoreCard();
-			// 设置冷却时间，防止立即再次放大
+			// Set cooldown to prevent immediate re-enlarge
 			_enlargeCooldown = ENLARGE_COOLDOWN_TIME;
 		}
 	}
 
 	/// <summary>
-	/// 更新价格显示，仅在 Shop Phase 显示
+	/// Update price display, only shown in Shop Phase
 	/// </summary>
 	private void UpdatePriceDisplay()
 	{
-		// 如果没有价格文本组件，直接返回
+		// If no price text component, return directly
 		if (cardPricePrint == null) return;
 
-		// 如果不是 Shop Phase，隐藏价格显示
+		// If not Shop Phase, hide price display
 		if (currentGamePhaseRef == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Shop)
 		{
 			cardPricePrint.gameObject.SetActive(false);
 			return;
 		}
 
-		// 如果卡牌数据为空，隐藏价格显示
+		// If card data is null, hide price display
 		if (cardImRepresenting == null)
 		{
 			cardPricePrint.gameObject.SetActive(false);
 			return;
 		}
 
-		// 显示价格
+		// Show price
 		cardPricePrint.gameObject.SetActive(true);
 
-		// 商店卡片显示原价，玩家卡组中的卡片价格除以2
+		// Shop cards show original price, player deck cards show half price
 		int displayPrice = shopItemIndex >= 0 ? cardImRepresenting.price.value : cardImRepresenting.price.value / 2;
 		cardPricePrint.text = $"<color=yellow>${displayPrice}</color>";
 	}
 
 	/// <summary>
-	/// 更新 Cost 显示
+	/// Update Cost display
 	/// </summary>
 	private void UpdateCostDisplay()
 	{
-		// 隐藏 cost 显示
+		// Hide cost display
 		if (cardCostPrint != null)
 			cardCostPrint.gameObject.SetActive(false);
 	}
 
 	/// <summary>
-	/// 处理长按购买/卖出逻辑
+	/// Handle long press buy/sell logic
 	/// </summary>
 	private void HandleHoldToBuy()
 	{
-		// 只有在 Shop Phase 才检测
+		// Only detect in Shop Phase
 		if (currentGamePhaseRef == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Shop)
 			return;
 
@@ -228,17 +228,17 @@ public class CardPhysObjScript : MonoBehaviour
 		{
 			_holdTimer += Time.deltaTime;
 
-			// 达到长按时间，触发购买或卖出
+			// Long press time reached, trigger purchase or sell
 			if (_holdTimer >= holdTimeRequired)
 			{
 				if (shopItemIndex >= 0)
 				{
-					// 商店物品：购买
+					// Shop item: purchase
 					TryPurchase();
 				}
 				else if (shopItemIndex == -1)
 				{
-					// 玩家卡组中的卡片：卖出
+					// Player deck card: sell
 					TrySell();
 				}
 				_isHolding = false;
@@ -248,7 +248,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 尝试购买此卡片
+	/// Try to purchase this card
 	/// </summary>
 	private void TryPurchase()
 	{
@@ -259,13 +259,13 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 尝试卖出此卡片
+	/// Try to sell this card
 	/// </summary>
 	private void TrySell()
 	{
 		if (ShopManager.me == null || cardImRepresenting == null) return;
 
-		// 获取此卡片在玩家卡组中的索引
+		// Get the index of this card in player deck
 		int cardIndex = GetPlayerCardIndex();
 		if (cardIndex >= 0)
 		{
@@ -274,7 +274,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 获取此卡片在玩家卡组中的索引
+	/// Get the index of this card in player deck
 	/// </summary>
 	private int GetPlayerCardIndex()
 	{
@@ -300,53 +300,53 @@ public class CardPhysObjScript : MonoBehaviour
 		var statusEffectText = CombatInfoDisplayer.me?.ProcessStatusEffectInfo(cardImRepresenting);
 		if (!string.IsNullOrEmpty(statusEffectText))
 		{
-			cardNamePrint.text = $"<size=12>{statusEffectText}\n</size><b>{cardImRepresenting.gameObject.name}</b>";
+			cardNamePrint.text = $"<size=12>{statusEffectText}\n</size><b>{cardImRepresenting.GetDisplayName()}</b>";
 		}
 		else
 		{
-			cardNamePrint.text = cardImRepresenting.gameObject.name;
+			cardNamePrint.text = cardImRepresenting.GetDisplayName();
 		}
 	}
 
 
 	/// <summary>
-	/// Set target position（由 CombatUXManager 调用），使用 DOTween 动画
+	/// Set target position (called by CombatUXManager), uses DOTween animation
 	/// </summary>
 	public void SetTargetPosition(Vector3 target)
 	{
 		TargetPosition = target;
 
-		// 如果正在播放特殊动画或卡组整体动画，不启动 DOTween
+		// If special animation or deck group animation is playing, do not start DOTween
 		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
 
-		// 启动 DOTween 位置动画
+		// Start DOTween position animation
 		StartPositionTween();
 	}
 
 	/// <summary>
-	/// Set target scale（由 CombatUXManager 调用），使用 DOTween 动画
+	/// Set target scale (called by CombatUXManager), uses DOTween animation
 	/// </summary>
 	public void SetTargetScale(Vector3 target)
 	{
 		TargetScale = target;
 
-		// 如果正在播放特殊动画或卡组整体动画，不启动 DOTween
+		// If special animation or deck group animation is playing, do not start DOTween
 		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
 
-		// 启动 DOTween 缩放动画
+		// Start DOTween scale animation
 		StartScaleTween();
 	}
 
 	/// <summary>
-	/// 启动位置 DOTween 动画
+	/// Start position DOTween animation
 	/// </summary>
 	private void StartPositionTween()
 	{
-		// 如果已经在动画中且目标相同，不重复启动
+		// If already animating and target is the same, do not restart
 		if (_positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
 		{
-			// 检查当前动画的目标是否已经是 TargetPosition
-			// DOTween 没有直接获取目标的方法，所以直接 Kill 并重新开始
+			// Check if current animation target is already TargetPosition
+			// DOTween has no direct way to get target, so Kill and restart
 			_positionTween.Kill();
 		}
 
@@ -356,7 +356,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 启动缩放 DOTween 动画
+	/// Start scale DOTween animation
 	/// </summary>
 	private void StartScaleTween()
 	{
@@ -371,11 +371,11 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Set position immediately（无动画）
+	/// Set position immediately (no animation)
 	/// </summary>
 	public void SetPositionImmediate(Vector3 position)
 	{
-		// 停止正在进行的 DOTween 位置动画
+		// Stop ongoing DOTween position animation
 		if (_positionTween != null && _positionTween.IsActive())
 		{
 			_positionTween.Kill();
@@ -387,11 +387,11 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Set scale immediately（无动画）
+	/// Set scale immediately (no animation)
 	/// </summary>
 	public void SetScaleImmediate(Vector3 scale)
 	{
-		// 停止正在进行的 DOTween 缩放动画
+		// Stop ongoing DOTween scale animation
 		if (_scaleTween != null && _scaleTween.IsActive())
 		{
 			_scaleTween.Kill();
@@ -402,26 +402,26 @@ public class CardPhysObjScript : MonoBehaviour
 		transform.localScale = scale;
 	}
 
-	#region Stage/Bury 特殊动画（主角卡片动画）
+	#region Stage/Bury Special Animation (Main Card Animation)
 
 	/// <summary>
-	/// 播放主角卡片阶段1动画：左移 + 放大 + 旋转
-	/// 用于 Stage/Bury 操作的第一阶段
+	/// Play main card phase 1 animation: left move + enlarge + rotate
+	/// Used for the first phase of Stage/Bury operation
 	/// </summary>
 	/// <param name="onComplete">Animation complete callback</param>
 	public void PlayMainCardPhase1(TweenCallback onComplete = null)
 	{
-		// 如果正在播放特殊动画，先停止
+		// If special animation is playing, stop first
 		_currentSpecialTween?.Kill();
 
 		isPlayingSpecialAnimation = true;
 		isMainAnimationCard = true;
 
-		// 保存原始缩放和旋转
+		// Save original scale and rotation
 		_specialAnimOriginalScale = transform.localScale;
 		_specialAnimOriginalRotation = transform.eulerAngles;
 
-		// 计算左侧中间位置（卡组左边）
+		// Calculate left side middle position (left of deck)
 		Vector3 sidePosition = new Vector3(
 		    transform.position.x - sideOffset,
 		    transform.position.y,
@@ -431,7 +431,7 @@ public class CardPhysObjScript : MonoBehaviour
 		// Create animation sequence
 		Sequence sequence = DOTween.Sequence();
 
-		// 阶段一：左移 + 旋转 + 放大（并行执行）
+		// Phase 1: left move + rotate + enlarge (parallel)
 		sequence.Append(
 		    transform.DOMove(sidePosition, sideMoveDuration)
 			.SetEase(Ease.OutQuad)
@@ -456,17 +456,17 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 播放主角卡片阶段3动画：插入到目标位置 + 恢复
-	/// 用于 Stage/Bury 操作的第三阶段（与卡组恢复同时进行）
+	/// Play main card phase 3 animation: insert to target position + restore
+	/// Used for the third phase of Stage/Bury operation (simultaneous with deck restore)
 	/// </summary>
-	/// <param name="finalTarget">最终目标位置</param>
+	/// <param name="finalTarget">Final target position</param>
 	/// <param name="onComplete">Animation complete callback</param>
 	public void PlayMainCardPhase3(Vector3 finalTarget, TweenCallback onComplete = null)
 	{
-		// 创建插入动画
+		// Create insert animation
 		Sequence sequence = DOTween.Sequence();
 
-		// 插入到最终位置 + 恢复旋转 + 恢复缩放
+		// Insert to final position + restore rotation + restore scale
 		sequence.Append(
 		    transform.DOMove(finalTarget, insertDuration)
 			.SetEase(Ease.InOutCubic)
@@ -485,9 +485,9 @@ public class CardPhysObjScript : MonoBehaviour
 		{
 			isPlayingSpecialAnimation = false;
 			isMainAnimationCard = false;
-			// 同步 TargetPosition，防止 DOTween Animation complete后跳变
+			// Sync TargetPosition to prevent jump after DOTween animation completes
 			TargetPosition = finalTarget;
-			// 确保最终状态正确
+			// Ensure final state is correct
 			transform.eulerAngles = _specialAnimOriginalRotation;
 			onComplete?.Invoke();
 		});
@@ -497,13 +497,13 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 停止特殊动画（用于战斗阶段切换或洗牌时中断）
+	/// Stop special animation (used for combat phase switch or interrupt during shuffle)
 	/// </summary>
 	public void StopSpecialAnimation()
 	{
 		if (_currentSpecialTween != null && _currentSpecialTween.IsActive())
 		{
-			_currentSpecialTween.Kill(complete: false); // 不完成动画，直接停止
+			_currentSpecialTween.Kill(complete: false); // Do not complete animation, stop directly
 			_currentSpecialTween = null;
 		}
 
@@ -511,7 +511,7 @@ public class CardPhysObjScript : MonoBehaviour
 		{
 			isPlayingSpecialAnimation = false;
 			isMainAnimationCard = false;
-			// 恢复到原始状态
+			// Restore to original state
 			if (_specialAnimOriginalScale != Vector3.zero)
 			{
 				transform.localScale = _specialAnimOriginalScale;
@@ -519,29 +519,29 @@ public class CardPhysObjScript : MonoBehaviour
 			}
 		}
 
-		// 同时停止卡组整体动画
+		// Also stop deck group animation
 		StopDeckGroupAnimation();
 	}
 
 	#endregion
 
-	#region 卡组整体动画（呼吸效果）
+	#region Deck Group Animation (Breathing Effect)
 
 	/// <summary>
-	/// 播放卡组整体动画（缩小 + 右移）
-	/// 用于当其他卡片被 stage/bury 时，卡组给让出空间
+	/// Play deck group animation (shrink + right move)
+	/// Used when other cards are staged/buried, deck makes room
 	/// </summary>
-	/// <param name="basePosition">卡组基准位置（动画结束后要恢复的位置）</param>
+	/// <param name="basePosition">Deck base position (position to restore after animation)</param>
 	public void PlayDeckGroupShrinkAnimation(Vector3 basePosition)
 	{
-		// 停止之前的卡组动画
+		// Stop previous deck animation
 		_currentDeckGroupTween?.Kill();
 
 		_isInDeckGroupAnimation = true;
 		_deckAnimBasePosition = basePosition;
 		_deckAnimBaseScale = TargetScale;
 
-		// 计算右移后的位置
+		// Calculate position after right move
 		Vector3 rightPosition = new Vector3(
 		    basePosition.x + deckRightOffset,
 		    basePosition.y,
@@ -551,7 +551,7 @@ public class CardPhysObjScript : MonoBehaviour
 		// Create animation sequence
 		Sequence sequence = DOTween.Sequence();
 
-		// 1. 阶段一：右移 + 缩小
+		// 1. Phase 1: right move + shrink
 		sequence.Append(
 		    transform.DOMove(rightPosition, deckAnimDuration)
 			.SetEase(Ease.OutQuad)
@@ -561,10 +561,10 @@ public class CardPhysObjScript : MonoBehaviour
 			.SetEase(Ease.OutQuad)
 		);
 
-		// Animation complete（此时保持缩小状态，等待恢复指令）
+		// Animation complete (keep shrunk state at this time, waiting for restore command)
 		sequence.OnComplete(() =>
 		{
-			// 不标记动画结束，保持状态直到恢复
+			// Do not mark animation end, keep state until restore
 		});
 
 		_currentDeckGroupTween = sequence;
@@ -572,7 +572,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 恢复卡组整体动画（恢复到原始大小和位置）
+	/// Restore deck group animation (restore to original size and position)
 	/// </summary>
 	public void PlayDeckGroupRestoreAnimation()
 	{
@@ -580,7 +580,7 @@ public class CardPhysObjScript : MonoBehaviour
 
 		_currentDeckGroupTween?.Kill();
 
-		// 创建恢复动画
+		// Create restore animation
 		Sequence sequence = DOTween.Sequence();
 
 		sequence.Append(
@@ -595,7 +595,7 @@ public class CardPhysObjScript : MonoBehaviour
 		sequence.OnComplete(() =>
 		{
 			_isInDeckGroupAnimation = false;
-			// 同步 TargetPosition
+			// Sync TargetPosition
 			TargetPosition = _deckAnimBasePosition;
 		});
 
@@ -604,7 +604,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 停止卡组整体动画
+	/// Stop deck group animation
 	/// </summary>
 	public void StopDeckGroupAnimation()
 	{
@@ -617,7 +617,7 @@ public class CardPhysObjScript : MonoBehaviour
 		if (_isInDeckGroupAnimation)
 		{
 			_isInDeckGroupAnimation = false;
-			// 恢复状态
+			// Restore state
 			if (_deckAnimBaseScale != Vector3.zero)
 			{
 				transform.localScale = _deckAnimBaseScale;
@@ -626,7 +626,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 检查是否正在播放卡组整体动画
+	/// Check if deck group animation is playing
 	/// </summary>
 	public bool IsInDeckGroupAnimation()
 	{
@@ -636,12 +636,12 @@ public class CardPhysObjScript : MonoBehaviour
 	#endregion
 
 	/// <summary>
-	/// 在 Update 中处理动画相关逻辑
-	/// 注意：现在位置/缩放动画由 DOTween 处理，此方法只处理特殊逻辑
+	/// Handle animation-related logic in Update
+	/// Note: Position/scale animations are now handled by DOTween, this method only handles special logic
 	/// </summary>
 	private void UpdateMotion()
 	{
-		// 如果正在播放特殊动画或卡组整体动画，停止常规 DOTween 动画
+		// If special animation or deck group animation is playing, stop regular DOTween animations
 		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation)
 		{
 			_positionTween?.Kill();
@@ -651,20 +651,20 @@ public class CardPhysObjScript : MonoBehaviour
 			return;
 		}
 
-		// DOTween 自动处理动画，这里不需要额外的 Lerp
+		// DOTween handles animation automatically, no extra Lerp needed here
 	}
 
 	private void ApplyColor()
 	{
 		if (isPhysicalStartCard) return;
-		// Start Card 没有 cardImRepresenting，保持默认颜色或特殊处理
+		// Start Card has no cardImRepresenting, keep default color or special handling
 		if (cardImRepresenting == null)
 		{
-			// Start Card 可以设置一个特殊颜色，或者保持原样
+			// Start Card can set a special color, or keep as is
 			return;
 		}
 
-		// 确定基础颜色
+		// Determine base color
 		Color baseFaceColor;
 		Color baseEdgeColor;
 
@@ -684,13 +684,13 @@ public class CardPhysObjScript : MonoBehaviour
 			baseEdgeColor = ownerCardEdgeColor;
 		}
 
-		// 计算目标 tint 强度
+		// Calculate target tint intensity
 		float targetIntensity = (_currentTintState != TintState.None) ? 1f : 0f;
 
-		// 平滑过渡到目标强度
+		// Smoothly transition to target intensity
 		_currentTintIntensity = Mathf.Lerp(_currentTintIntensity, targetIntensity, Time.deltaTime * tintTransitionSpeed);
 
-		// 应用 Tint
+		// Apply Tint
 		Color finalFaceColor = baseFaceColor;
 		Color finalEdgeColor = baseEdgeColor;
 
@@ -725,18 +725,18 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 触发 Tint 效果（当卡片获得 StatusEffect 时调用）
+	/// Trigger Tint effect (called when card gains StatusEffect)
 	/// </summary>
 	public void TriggerTint(TintState state)
 	{
 		_currentTintState = state;
 		_tintTimer = tintDuration;
-		// 重置 tint 强度以便从 0 开始平滑淡入
+		// Reset tint intensity to fade in smoothly from 0
 		_currentTintIntensity = 0f;
 	}
 
 	/// <summary>
-	/// 根据 StatusEffect 类型触发对应 Tint
+	/// Trigger corresponding Tint based on StatusEffect type
 	/// </summary>
 	public void TriggerTintForStatusEffect(EnumStorage.StatusEffect effect)
 	{
@@ -752,7 +752,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 清除 Tint（恢复到 None 状态）
+	/// Clear Tint (restore to None state)
 	/// </summary>
 	public void ClearTint()
 	{
@@ -761,7 +761,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 更新 Tint 计时器
+	/// Update Tint timer
 	/// </summary>
 	private void UpdateTintTimer()
 	{
@@ -777,22 +777,22 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private void OnMouseDown()
 	{
-		// 检查是否在 Shop Phase
+		// Check if in Shop Phase
 		if (currentGamePhaseRef != null && currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop)
 		{
-			// 开始长按检测（商店物品和玩家卡组中的卡片都可以）
+			// Start long press detection (both shop items and player deck cards)
 			_isHolding = true;
 			_holdTimer = 0f;
 			_hasClickProcessed = false;
 
-			// 开始震动
+			// Start shake
 			StartCardShake();
 		}
 	}
 
 	private void OnMouseUp()
 	{
-		// 如果正在长按且未达到When bought间，视为单击，触发放大
+		// If holding and not reached purchase time, treat as click, trigger enlarge
 		if (_isHolding && _holdTimer < holdTimeRequired && !_hasClickProcessed)
 		{
 			//if (shopItemIndex >= 0)
@@ -802,27 +802,27 @@ public class CardPhysObjScript : MonoBehaviour
 			}
 		}
 
-		// 取消长按
+		// Cancel long press
 		_isHolding = false;
 		_holdTimer = 0f;
 
-		// 停止震动
+		// Stop shake
 		StopCardShake();
 	}
 
 	/// <summary>
-	/// 放大卡片
+	/// Enlarge card
 	/// </summary>
 	private void EnlargeCard()
 	{
-		// 检查冷却时间 - 防止 restore 后立即 enlarge
+		// Check cooldown - prevent enlarge immediately after restore
 		if (_enlargeCooldown > 0) return;
 
-		// 保存原始位置和缩放
+		// Save original position and scale
 		_originalPosition = TargetPosition;
 		_originalScale = TargetScale;
 
-		// 获取 ShopUXManager 中的放大设置
+		// Get enlarge settings from ShopUXManager
 		if (ShopUXManager.Instance != null)
 		{
 			float enlargeSize = ShopUXManager.Instance.physCardEnlargeSize;
@@ -831,8 +831,8 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 		else
 		{
-			SetTargetScale(new Vector3(2f, 2f, 2f)); // 默认放大倍数
-			SetTargetPosition(Vector3.zero); // 默认位置
+			SetTargetScale(new Vector3(2f, 2f, 2f)); // Default enlarge multiplier
+			SetTargetPosition(Vector3.zero); // Default position
 		}
 
 		_isEnlarged = true;
@@ -840,13 +840,13 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 恢复卡片到原始状态
+	/// Restore card to original state
 	/// </summary>
 	public void RestoreCard()
 	{
 		if (!_isEnlarged) return;
 
-		// 恢复到原始位置和缩放
+		// Restore to original position and scale
 		SetTargetPosition(_originalPosition);
 		SetTargetScale(_originalScale);
 
@@ -855,7 +855,7 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 获取卡片是否处于放大状态
+	/// Get whether card is enlarged
 	/// </summary>
 	public bool IsEnlarged()
 	{
@@ -864,16 +864,16 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private void OnMouseExit()
 	{
-		// 鼠标移出，取消长按
+		// Mouse exit, cancel long press
 		_isHolding = false;
 		_holdTimer = 0f;
 
-		// 停止震动
+		// Stop shake
 		StopCardShake();
 	}
 
 	/// <summary>
-	/// 开始卡片震动
+	/// Start card shake
 	/// </summary>
 	private void StartCardShake()
 	{
@@ -884,13 +884,13 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// 停止卡片震动
+	/// Stop card shake
 	/// </summary>
 	private void StopCardShake()
 	{
 		if (!_isShaking || _currentShakeInstance == null) return;
 
-		// 停止震动，使用预设的fadeOut时间
+		// Stop shake, use preset fadeOut time
 		_currentShakeInstance.Stop(cardShakePreset.FadeOut, true);
 		_isShaking = false;
 		_currentShakeInstance = null;
@@ -898,7 +898,7 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		// 停止所有 DOTween 动画，防止对象销毁后动画仍尝试访问
+		// Stop all DOTween animations to prevent access after object destruction
 		_positionTween?.Kill();
 		_scaleTween?.Kill();
 		_currentSpecialTween?.Kill();

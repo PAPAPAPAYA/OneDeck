@@ -67,7 +67,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 		string cardNameColor = ownersCard ? "#87CEEB" : "orange";
 		revealZoneDisplay.text = "#" + cardNumber + "\n" +// card num
 		                         ProcessStatusEffectInfo(cardRevealed) + // tags
-		                         "<color=" + cardNameColor + ">" + cardRevealed.gameObject.name + "</color>:" + // card name with color
+		                         "<color=" + cardNameColor + ">" + cardRevealed.GetDisplayName() + "</color>:" + // card name with color
 		                         "\n" + cardRevealed.cardDesc; // card description
 	}
 
@@ -209,10 +209,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var playerDeckString = "";
 		foreach (var cardScript in CombatFuncs.me.ReturnPlayerCardScripts())
 		{
-			// 跳过 Start Card
+			// Skip Start Card
 			if (cardScript.isStartCard) continue;
 			
-			var playerCardString = ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "\n";
+			var playerCardString = ProcessStatusEffectInfo(cardScript) + cardScript.GetDisplayName() + "\n";
 			playerDeckString += playerCardString;
 		}
 
@@ -221,10 +221,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 		var enemyDeckString = "";
 		foreach (var cardScript in CombatFuncs.me.ReturnEnemyCardScripts())
 		{
-			// 跳过 Start Card
+			// Skip Start Card
 			if (cardScript.isStartCard) continue;
 			
-			var enemyCardString = ProcessStatusEffectInfo(cardScript) + cardScript.gameObject.name + "\n";
+			var enemyCardString = ProcessStatusEffectInfo(cardScript) + cardScript.GetDisplayName() + "\n";
 			enemyDeckString += enemyCardString;
 		}
 

@@ -1,0 +1,35 @@
+{"duplicates":[
+  {"cardTypeID":"GRUDGE","count":2,"paths":[
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/史莱姆.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/怨恨.prefab"]}
+,
+  {"cardTypeID":"BODY_CANON","count":3,"paths":[
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/针刺骷髅.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/骷髅士兵.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/人间大炮.prefab"]}
+,
+  {"cardTypeID":"WISE_BURIAL","count":2,"paths":[
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/不愚蠢的埋葬.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/小范围死亡.prefab"]}
+,
+  {"cardTypeID":"RIFT_SUMMONER","count":2,"paths":[
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/次元棺材.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/裂缝召唤师.prefab"]}
+,
+  {"cardTypeID":"CURSE_SUMMONER","count":3,"paths":[
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/异次元的诅咒.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/被诅咒的骷髅.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/诅咒召唤师.prefab"]}
+,
+  {"cardTypeID":"MOTH_MAN","count":2,"paths":[
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/诅咒附魔.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/飞蛾人.prefab"]}
+,
+  {"cardTypeID":"ETERNAL_GHOST","count":2,"paths":[
+    "Assets/Prefabs/Cards/3.0 no cost (current)/General/不散的恶灵.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/General/武器精灵.prefab"]}
+,
+  {"cardTypeID":"BLACKSMITH","count":2,"paths":[
+    "Assets/Prefabs/Cards/3.0 no cost (current)/General/佩刀召唤师.prefab",
+    "Assets/Prefabs/Cards/3.0 no cost (current)/General/铁匠.prefab"]}
+],"totalCardsChecked":67}

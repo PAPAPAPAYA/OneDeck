@@ -119,8 +119,8 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 8833320896859766530}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStausEffect, Assembly-CSharp
-        m_MethodName: ConsumeStatusEffect
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+        m_MethodName: ConsumeOwnStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -131,7 +131,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 8833320896859766530}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStausEffect, Assembly-CSharp
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
         m_MethodName: DestroySelf
         m_Mode: 1
         m_Arguments:

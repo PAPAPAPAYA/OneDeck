@@ -33,15 +33,15 @@ namespace DefaultNamespace.Managers
 		[Header("Data")]
 		public List<CombatStatsRecord> records = new List<CombatStatsRecord>();
 		
-		// 卡牌 reveal 统计: cardTypeID -> list of reveal indices
+		// Card reveal stats: cardTypeID -> list of reveal indices
 		private Dictionary<string, List<int>> _cardRevealStats = new Dictionary<string, List<int>>();
 
 		[Header("Output Settings")]
-		[Tooltip("是否导出 CSV 文件")]
+		[Tooltip("Whether to export CSV file")]
 		public bool exportToCSV = true;
-		[Tooltip("导出文件目录（相对于项目根目录）")]
+		[Tooltip("Export file directory (relative to project root)")]
 		public string outputDirectory = "CombatLogs";
-		[Tooltip("是否同时输出到控制台")]
+		[Tooltip("Whether to also output to console")]
 		public bool printToConsole = true;
 
 		private int _revealIndex = 0;
@@ -73,7 +73,7 @@ namespace DefaultNamespace.Managers
 			}
 		}
 
-		// 在 CombatManager 的 RevealNextCard 之后调用此方法
+		// Call this method after CombatManager's RevealNextCard
 		public void OnCardRevealed(CardScript cardRevealed)
 		{
 			if (CombatManager.Me == null) return;
@@ -92,7 +92,7 @@ namespace DefaultNamespace.Managers
 
 			records.Add(record);
 			
-			// 记录卡牌 reveal 统计
+			// Record card reveal stats
 			if (cardRevealed != null && !string.IsNullOrEmpty(cardRevealed.cardTypeID))
 			{
 				string cardTypeID = cardRevealed.cardTypeID;
@@ -121,7 +121,7 @@ namespace DefaultNamespace.Managers
 			
 			Debug.Log("========== END OF COMBAT STATS ==========");
 			
-			// 打印卡牌 reveal 统计 (总reveal次数 / 该卡被reveal次数)
+			// Print card reveal stats (total reveals / card reveal count)
 			Debug.Log("========== CARD REVEAL STATS ==========");
 			int totalReveals = records.Count;
 			foreach (var kvp in _cardRevealStats)
@@ -145,44 +145,44 @@ namespace DefaultNamespace.Managers
 
 			try
 			{
-				// 构建导出路径
+				// Build export path
 				string projectRoot = Directory.GetParent(Application.dataPath).FullName;
 				string exportDir = Path.Combine(projectRoot, outputDirectory);
 				
-				// 确保目录存在
+				// Ensure directory exists
 				if (!Directory.Exists(exportDir))
 				{
 					Directory.CreateDirectory(exportDir);
 				}
 
-				// 生成文件名：CombatLog_20260101_143052.csv
+				// Generate file name: CombatLog_20260101_143052.csv
 				string fileName = $"CombatLog_{_currentSessionId}.csv";
 				string filePath = Path.Combine(exportDir, fileName);
 
-				// 构建 CSV 内容
+				// Build CSV content
 				StringBuilder csv = new StringBuilder();
 				
-				// 写入表头
-				csv.AppendLine("战斗日志导出");
-				csv.AppendLine($"导出时间,{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-				csv.AppendLine($"总翻牌次数,{records.Count}");
-				csv.AppendLine($"最终己方HP,{CombatManager.Me.ownerPlayerStatusRef?.hp ?? 0}");
-				csv.AppendLine($"最终敌方HP,{CombatManager.Me.enemyPlayerStatusRef?.hp ?? 0}");
-				csv.AppendLine($"总回合数,{GetMaxRoundNum()}");
+				// Write header
+				csv.AppendLine("Combat Log Export");
+				csv.AppendLine($"Export Time,{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+				csv.AppendLine($"Total Reveals,{records.Count}");
+				csv.AppendLine($"Final Owner HP,{CombatManager.Me.ownerPlayerStatusRef?.hp ?? 0}");
+				csv.AppendLine($"Final Enemy HP,{CombatManager.Me.enemyPlayerStatusRef?.hp ?? 0}");
+				csv.AppendLine($"Total Rounds,{GetMaxRoundNum()}");
 				csv.AppendLine();
 				
-				// 写入详细数据表头
-				csv.AppendLine("翻牌序号,回合数,己方HP,敌方HP,己方牌组数,敌方牌组数");
+				// Write detailed data header
+				csv.AppendLine("Reveal Index,Round,Owner HP,Enemy HP,Owner Deck,Enemy Deck");
 				
-				// 写入详细数据
+				// Write detailed data
 				foreach (var record in records)
 				{
 					csv.AppendLine($"{record.revealIndex},{record.roundNum},{record.ownerHP},{record.enemyHP},{record.ownerDeckSize},{record.enemyDeckSize}");
 				}
 				
-				// 写入卡牌 reveal 统计 (总reveal次数 / 该卡被reveal次数)
+				// Write card reveal stats (total reveals / card reveal count)
 				csv.AppendLine();
-				csv.AppendLine("卡牌类型,被Reveal次数,出现间隔(总次数/卡次数)");
+				csv.AppendLine("Card Type,Reveal Count,Interval(Total/Card)");
 				int totalRevealsForCSV = records.Count;
 				foreach (var kvp in _cardRevealStats)
 				{
@@ -193,19 +193,19 @@ namespace DefaultNamespace.Managers
 					csv.AppendLine($"{cardTypeID},{cardRevealCount},{interval:F2}");
 				}
 
-				// 写入文件
+				// Write to file
 				File.WriteAllText(filePath, csv.ToString(), Encoding.UTF8);
 
-				Debug.Log($"[CombatStatsLogger] 战斗日志已导出到: {filePath}");
+				Debug.Log($"[CombatStatsLogger] Combat log exported to: {filePath}");
 			}
 			catch (Exception ex)
 			{
-				Debug.LogError($"[CombatStatsLogger] 导出 CSV 失败: {ex.Message}");
+				Debug.LogError($"[CombatStatsLogger] CSV export failed: {ex.Message}");
 			}
 		}
 
 		/// <summary>
-		/// 获取有效的卡组大小（排除 Start Card 等中立卡）
+		/// Get effective deck size (excluding neutral cards like Start Card)
 		/// </summary>
 		private int GetEffectiveDeckSize(bool isOwner)
 		{
@@ -219,7 +219,7 @@ namespace DefaultNamespace.Managers
 				if (card == null) continue;
 				var cardScript = card.GetComponent<CardScript>();
 				if (cardScript == null) continue;
-				// 跳过中立卡，只统计属于指定玩家的卡
+				// Skip neutral cards, only count cards belonging to the specified player
 				if (!CombatManager.ShouldSkipEffectProcessing(cardScript) && cardScript.myStatusRef == targetStatusRef)
 				{
 					count++;

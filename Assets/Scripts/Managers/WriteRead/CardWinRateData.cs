@@ -5,7 +5,7 @@ using UnityEngine;
 namespace TestWriteRead
 {
     /// <summary>
-    /// 单张卡的统计数据
+    /// Single card statistics data
     /// </summary>
     [System.Serializable]
     public class CardStats
@@ -15,18 +15,18 @@ namespace TestWriteRead
         public int wins;
         public int losses;
         
-        // 计算胜率（0-1）
+        // Calculate win rate (0-1)
         public float WinRate => totalCombats > 0 ? (float)wins / totalCombats : 0f;
         
-        // 格式化输出
+        // Formatted output
         public override string ToString()
         {
-            return $"[{cardTypeID}] : 胜率 {WinRate:P1} ({wins}胜/{losses}负/{totalCombats}场)";
+            return $"[{cardTypeID}] : Win Rate {WinRate:P1} ({wins}W/{losses}L/{totalCombats}G)";
         }
     }
 
     /// <summary>
-    /// 卡胜率数据容器（用于JSON序列化）
+    /// Card win rate data container (for JSON serialization)
     /// </summary>
     [System.Serializable]
     public class CardWinRateData

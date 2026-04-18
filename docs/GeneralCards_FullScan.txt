@@ -1,0 +1,616 @@
+---
+CARD: ADVANCE_PORTAL
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/ADVANCE_PORTAL.prefab
+TYPE_ID: ADVANCE_PORTAL
+DESC: 置顶 2 友方
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on stage friendly] Event=null
+    effectEvent -> StageEffect, Assembly-CSharp.StageMyCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [stage friendly] StageEffect: tagToCheck=None, targetFriendly=False, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [ADVANCE_PORTAL] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: ALL_FOR_ONE
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/ALL_FOR_ONE.prefab
+TYPE_ID: ALL_FOR_ONE
+DESC: 造成所有卡的 力量 数量的伤害
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on deal dmg = total power count] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp_BasedOnIntSO
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg = total power count] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=-2, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [ALL_FOR_ONE] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: ALMIGHTY
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/ALMIGHTY.prefab
+TYPE_ID: ALMIGHTY
+DESC: 置顶 1 友方; 埋葬 1 敌方; 给予 1 友方 力量; 生成 1 [次元裂缝] 增强 1 敌方 [诅咒]
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on stage friendly; bury hostile; add 1 [rift]; enhance frienldy curse] Event=null
+    effectEvent -> StageEffect, Assembly-CSharp.StageMyCards
+    effectEvent -> BuryEffect, Assembly-CSharp.BuryTheirCards
+    effectEvent -> DefaultNamespace.Effects.AddTempCard, Assembly-CSharp.AddCardToMe
+    effectEvent -> DefaultNamespace.Effects.CurseEffect, Assembly-CSharp.EnhanceCurse
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [stage friendly; bury hostile; add 1 [rift]; enhance frienldy curse] StageEffect: tagToCheck=None, targetFriendly=False, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [stage friendly; bury hostile; add 1 [rift]; enhance frienldy curse] BuryEffect: tagToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [stage friendly; bury hostile; add 1 [rift]; enhance frienldy curse] AddTempCard: cardCount=1, curseCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO), effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [stage friendly; bury hostile; add 1 [rift]; enhance frienldy curse] CurseEffect: cardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO), cardPrefab=JU_ON (UnityEngine.GameObject), statusEffectResolverPrefab=null, statusEffectParticlePrefab=null, particleYOffset=0, powerCoefficient=1, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [ALMIGHTY] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: ANTI_CREATURE_WEAPON
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/ANTI_CREATURE_WEAPON.prefab
+TYPE_ID: ANTI_CREATURE_WEAPON
+DESC: 埋葬 2 敌方
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on bury hostile] Event=null
+    effectEvent -> BuryEffect, Assembly-CSharp.BuryTheirCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [bury hostile] BuryEffect: tagToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [ANTI_CREATURE_WEAPON] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: ARMED_SUMMONER
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/ARMED_SUMMONER.prefab
+TYPE_ID: ARMED_SUMMONER
+DESC: 造成 3 伤害; 置顶 1 友方
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on deal dmg and stage friendly] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp
+    effectEvent -> StageEffect, Assembly-CSharp.StageMyCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg and stage friendly] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=1, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [deal dmg and stage friendly] StageEffect: tagToCheck=None, targetFriendly=False, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [ARMED_SUMMONER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: BLACKSMITH
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/BLACKSMITH.prefab
+TYPE_ID: BLACKSMITH
+DESC: 造成 3 伤害; 给予一个友方 1 力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 2
+  [Container on deal dmg] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+  [Container on apply power to friendly] Event=null
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveStatusEffectToXFriendly
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=1, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [apply power to friendly] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=0, statusEffectLayerCount=0, xFriendlyCount=1, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [BLACKSMITH] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: BLIND_COMBAT_PRIEST
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/BLIND_COMBAT_PRIEST.prefab
+TYPE_ID: BLIND_COMBAT_PRIEST
+DESC: 给予下 1 卡 3 力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on apply power to next card] Event=null
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveStatusEffectToLastXCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [apply power to next card] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=None, statusEffectToCount=Power, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=1, statusEffectLayerCount=3, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [BLIND_COMBAT_PRIEST] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: BONE_COMBINATION
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/BONE_COMBINATION.prefab
+TYPE_ID: BONE_COMBINATION
+DESC: 造成 1 伤害 x 本回合埋葬敌方数量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on deal dmg x hostile buried amount] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHpTimes_BasedOnOpponentBuriedCount
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg x hostile buried amount] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=-1, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [BONE_COMBINATION] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: BOOSTER
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/BOOSTER.prefab
+TYPE_ID: BOOSTER
+DESC: 洗牌后, 置顶 2 友方; 埋葬 1 友方
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 2
+  [Container on bury friendly] Event=null
+    effectEvent -> BuryEffect, Assembly-CSharp.BuryMyCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+  [Container on stage friendly] Event=null
+    effectEvent -> StageEffect, Assembly-CSharp.StageMyCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [bury friendly] BuryEffect: tagToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [stage friendly] StageEffect: tagToCheck=None, targetFriendly=False, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 2
+  [BOOSTER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+  [BOOSTER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: COFFIN_MAKER
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/COFFIN_MAKER.prefab
+TYPE_ID: COFFIN_MAKER
+DESC: 造成 3 伤害; 埋葬 1 敌方
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on deal dmg and bury hostile] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp
+    effectEvent -> BuryEffect, Assembly-CSharp.BuryTheirCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg and bury hostile] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=1, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [deal dmg and bury hostile] BuryEffect: tagToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [COFFIN_MAKER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: DR_MANHATTON
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/DR_MANHATTON.prefab
+TYPE_ID: DR_MANHATTON
+DESC: 消耗 4 力量: 置顶 2 友方, 埋葬 2 敌方 
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on if 4 or more power, stage firneldy bury hostile] Event=null
+    checkCostEvent -> CostNEffectContainer, Assembly-CSharp.CheckCost_Power
+    effectEvent -> DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp.ConsumeOwnStatusEffect
+    effectEvent -> StageEffect, Assembly-CSharp.StageMyCards
+    effectEvent -> BuryEffect, Assembly-CSharp.BuryTheirCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [if 4 or more power, stage firneldy bury hostile] ConsumeStatusEffect: statusEffectToConsume=Power, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [if 4 or more power, stage firneldy bury hostile] StageEffect: tagToCheck=None, targetFriendly=False, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [if 4 or more power, stage firneldy bury hostile] BuryEffect: tagToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [DR_MANHATTON] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: ELDER_SOURCEROR
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/ELDER_SOURCEROR.prefab
+TYPE_ID: ELDER_SOURCEROR
+DESC: 本回合每置顶过 1 友方, 给予 1 友方 1 力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on give friendly power x staged friendly this round] Event=null
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveStatusEffectToXFriendly_BasedOnStaged
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [give friendly power x staged friendly this round] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 2
+  [ELDER_SOURCEROR] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+  [ELDER_SOURCEROR] Event=null -> CostNEffectContainer, Assembly-CSharp.
+
+---
+CARD: ETERNAL_GHOST
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/ETERNAL_GHOST.prefab
+TYPE_ID: ETERNAL_GHOST
+DESC: 萦绕; 敌人受到伤害时, 造成 1 伤害
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on if in grave, deal dmg] Event=null
+    checkCostEvent -> CostNEffectContainer, Assembly-CSharp.CheckCost_IndexBeforeStartCard
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [if in grave, deal dmg] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=-1, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [ETERNAL_GHOST] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: FLESH_COMBINATION
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/FLESH_COMBINATION.prefab
+TYPE_ID: FLESH_COMBINATION
+DESC: 造成友方数量的伤害
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on deal dmg  = friendly card count] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp_BasedOnFriendlyCardCountInDeck
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg  = friendly card count] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=-2, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [FLESH_COMBINATION] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: GOBLIN_ASSASIN_TEAM
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/GOBLIN_ASSASIN_TEAM.prefab
+TYPE_ID: GOBLIN_ASSASIN_TEAM
+DESC: 造成 4 伤害; 被置顶: 埋葬 1 敌方
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 2
+  [Container on deal dmg] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+  [Container on bury hostile] Event=null
+    effectEvent -> BuryEffect, Assembly-CSharp.BuryTheirCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=2, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [bury hostile] BuryEffect: tagToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 2
+  [GOBLIN_ASSASIN_TEAM] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+  [GOBLIN_ASSASIN_TEAM] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: MAD_SCIENTIST
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/MAD_SCIENTIST.prefab
+TYPE_ID: MAD_SCIENTIST
+DESC: 给予下 3 卡 2 力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on apply power to next cards] Event=null
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveStatusEffectToLastXCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [apply power to next cards] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=3, statusEffectLayerCount=2, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [MAD_SCIENTIST] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: OVERCHARGED_SUMMONER
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/OVERCHARGED_SUMMONER.prefab
+TYPE_ID: OVERCHARGED_SUMMONER
+DESC: 置顶 1 友方; 给予下 2 卡 1 力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on stage friendly and give next card power] Event=null
+    effectEvent -> StageEffect, Assembly-CSharp.StageMyCards
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveStatusEffectToLastXCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [stage friendly and give next card power] StageEffect: tagToCheck=None, targetFriendly=False, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [stage friendly and give next card power] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=2, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [OVERCHARGED_SUMMONER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: POWER_CRAVER
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/POWER_CRAVER.prefab
+TYPE_ID: POWER_CRAVER
+DESC: 造成 3 伤害; 获得 3 倍力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 2
+  [Container on deal dmg] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+  [Container on gain triple power] Event=null
+    effectEvent -> DefaultNamespace.Effects.StatusEffectAmplifierEffect, Assembly-CSharp.AmplifyStatusEffectGain
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=1, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [gain triple power] StatusEffectAmplifierEffect: statusEffectMultiplier=3, myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Power, statusEffectToCount=Power, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=null
+LISTENERS: 2
+  [POWER_CRAVER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+  [POWER_CRAVER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: POWER_SIPHONER
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/POWER_SIPHONER.prefab
+TYPE_ID: POWER_SIPHONER
+DESC: 转移所有友方的 力量 到自身; 造成 2 伤害 x 2
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on transfter friendly power to me] Event=null
+    effectEvent -> DefaultNamespace.Effects.TransferStatusEffectEffect, Assembly-CSharp.TransferAllStatusEffectToHostileCurse
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHpTimesX
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [transfter friendly power to me] TransferStatusEffectEffect: isFromFriendly=True, statusEffectToTransfer=Power, curseCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO), statusEffectResolverPrefab=null, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [transfter friendly power to me] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=0, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [POWER_SIPHONER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: POWER_TRANSFER
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/POWER_TRANSFER.prefab
+TYPE_ID: POWER_TRANSFER
+DESC: 去除 2 敌方 1 力量; 给予 2 友方 1 力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on consume hostile power; give friendly power] Event=null
+    effectEvent -> DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp.ConsumeRandomEnemyCardsStatusEffect
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveStatusEffect
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [consume hostile power; give friendly power] ConsumeStatusEffect: statusEffectToConsume=Power, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [consume hostile power; give friendly power] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 2
+  [POWER_TRANSFER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+  [POWER_TRANSFER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: QUICK_RESPONSE_PROTOCAL
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/QUICK_RESPONSE_PROTOCAL.prefab
+TYPE_ID: QUICK_RESPONSE_PROTOCAL
+DESC: 萦绕; 每 3 敌人被揭晓: 置顶 1 友方 
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: Linger
+CONTAINERS: 2
+  [Container on if in grave, add counter] Event=null
+    checkCostEvent -> CostNEffectContainer, Assembly-CSharp.CheckCost_IndexBeforeStartCard
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveSelfStatusEffect
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+  [Container on if counter requirement met, stage friendly] Event=null
+    checkCostEvent -> CostNEffectContainer, Assembly-CSharp.CheckCost_Counter
+    effectEvent -> StageEffect, Assembly-CSharp.StageMyCards
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [if in grave, add counter] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Counter, statusEffectToCount=None, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [if counter requirement met, stage friendly] StageEffect: tagToCheck=None, targetFriendly=False, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [QUICK_RESPONSE_PROTOCAL] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: TACTICAL_BREACHER
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/TACTICAL_BREACHER.prefab
+TYPE_ID: TACTICAL_BREACHER
+DESC: 造成 4 伤害; 被置顶: 获得 1 力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 2
+  [Container on deal dmg] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+  [Container on gain power] Event=null
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveSelfStatusEffect
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [deal dmg] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=2, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [gain power] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 2
+  [TACTICAL_BREACHER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+  [TACTICAL_BREACHER] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: THE_FOOL
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/THE_FOOL.prefab
+TYPE_ID: THE_FOOL
+DESC: 置顶 力量最多的 敌方; 造成 4 伤害
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 2
+  [Container on stage hostile with most power] Event=null
+    effectEvent -> StageEffect, Assembly-CSharp.StageCardWithMostStatusEffect
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+  [Container on deal dmg] Event=null
+    effectEvent -> HPAlterEffect, Assembly-CSharp.DecreaseTheirHp
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [stage hostile with most power] StageEffect: tagToCheck=None, targetFriendly=False, statusEffectToCheck=Power, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+  [deal dmg] HPAlterEffect: baseDmg=BaseDmgRef (IntSO), dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=False, extraDmg=2, statusEffectToCheck=None, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [THE_FOOL] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: UNFINISHED_ROBOT
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/UNFINISHED_ROBOT.prefab
+TYPE_ID: UNFINISHED_ROBOT
+DESC: 造成 0 伤害; 翻倍自身力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: Power,Power
+TAGS: 
+CONTAINERS: 1
+  [Container on double self power] Event=null
+    effectEvent -> DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp.GiveSelfStatusEffectBasedOnStatusEffectCount
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [double self power] StatusEffectGiverEffect: myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=Power, statusEffectToCount=Power, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [UNFINISHED_ROBOT] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+
+---
+CARD: WEAPON_SPIRIT
+PATH: Assets/Prefabs/Cards/3.0 no cost (current)/General/WEAPON_SPIRIT.prefab
+TYPE_ID: WEAPON_SPIRIT
+DESC: 萦绕; 当友方获得 力量 时, 给予该友方 1 力量
+IS_MINION: False
+BURY_COST: 0
+DELAY_COST: 0
+EXPOSE_COST: 0
+MINION_COST: 0 ()
+STATUS_EFFECTS: 
+TAGS: 
+CONTAINERS: 1
+  [Container on if in grave, apply power to last friendly power reciever] Event=null
+    checkCostEvent -> CostNEffectContainer, Assembly-CSharp.CheckCost_IndexBeforeStartCard
+    effectEvent -> DefaultNamespace.Effects.PowerReactionEffect, Assembly-CSharp.GivePowerToCardThatGotPower
+    effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+    cursedCardTypeID=CurseCardTypeID (DefaultNamespace.SOScripts.StringSO)
+EFFECT_COMPONENTS:
+  [if in grave, apply power to last friendly power reciever] PowerReactionEffect: powerAmount=1, excludeSelf=False, myStatusEffectResolverScript=null, canStatusEffectBeStacked=True, statusEffectToGive=None, statusEffectToCount=None, spreadEvenly=False, target=Me, includeSelf=False, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, statusEffectParticlePrefab=null, particleYOffset=0, effectResultString=EffectResultRef (DefaultNamespace.SOScripts.StringSO)
+LISTENERS: 1
+  [WEAPON_SPIRIT] Event=null -> CostNEffectContainer, Assembly-CSharp.InvokeEffectEvent
+

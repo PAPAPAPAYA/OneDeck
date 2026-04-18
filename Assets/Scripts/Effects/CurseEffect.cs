@@ -170,78 +170,12 @@ namespace DefaultNamespace.Effects
 		/// </summary>
 		private void ApplyPowerToCardInternal(CardScript targetCard, int amount)
 		{
-			// Add Power status effect
-			for (int i = 0; i < amount; i++)
-			{
-				targetCard.myStatusEffects.Add(EnumStorage.StatusEffect.Power);
-			}
+			ApplyStatusEffectCore(
+				targetCard, EnumStorage.StatusEffect.Power, amount,
+				statusEffectResolverPrefab, statusEffectParticlePrefab, particleYOffset, amount);
 
-			// Update last applied status effect tracking
-			if (ValueTrackerManager.me != null)
-			{
-				if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
-					ValueTrackerManager.me.lastAppliedStatusEffectRef.value = EnumStorage.StatusEffect.Power;
-				if (ValueTrackerManager.me.lastAppliedStatusEffectAmountRef != null)
-					ValueTrackerManager.me.lastAppliedStatusEffectAmountRef.value = amount;
-			}
-
-			// Raise Power-related events
-			combatManager.lastCardGotPower = targetCard;
-			GameEventStorage.me?.onAnyCardGotPower?.Raise();
-			if (targetCard.myStatusRef == combatManager.ownerPlayerStatusRef)
-			{
-				GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOwner();
-				GameEventStorage.me?.onEnemyCardGotPower?.RaiseOpponent();
-			}
-			else
-			{
-				GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOpponent();
-				GameEventStorage.me?.onEnemyCardGotPower?.RaiseOwner();
-			}
-
-			// Output effect info
-			var targetCardOwnerString = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"#87CEEB" : "orange";
-			string targetCardColor = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"#87CEEB" : "orange";
-
-			effectResultString.value +=
-				"// " + thisCardOwnerString +
-				"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
-				targetCardOwnerString +
-				"<color=" + targetCardColor + ">" + targetCard.gameObject.name + "</color>] " +
-				"<color=yellow>" + amount + "</color> [Power]\n";
-
-			// Create status effect resolver
-			if (statusEffectResolverPrefab != null)
-			{
-				for (int i = 0; i < amount; i++)
-				{
-					var resolver = Instantiate(statusEffectResolverPrefab, targetCard.transform);
-					GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(resolver);
-				}
-			}
-
-			// Play particle effect
-			if (statusEffectParticlePrefab != null)
-			{
-				for (int i = 0; i < amount; i++)
-				{
-					Vector3 spawnPosition = GetPhysicalCardWorldPosition(targetCard.transform) + Vector3.up * particleYOffset;
-					ParticleSystem particle = Instantiate(statusEffectParticlePrefab, spawnPosition, Quaternion.identity, targetCard.transform);
-					particle.Play();
-				}
-			}
-
-			// Trigger tint effect
-			TriggerTintForPower(targetCard);
-			
 			// Check if enemy curse card gained Power, trigger event
-			if (targetCard.myStatusRef == myCardScript.theirStatusRef && 
+			if (targetCard.myStatusRef == myCardScript.theirStatusRef &&
 			    targetCard.cardTypeID == GameEventStorage.me?.curseCardTypeID?.value)
 			{
 				if (targetCard.myStatusRef == combatManager.enemyPlayerStatusRef)
@@ -251,46 +185,6 @@ namespace DefaultNamespace.Effects
 				else
 				{
 					GameEventStorage.me?.onEnemyCurseCardGotPower?.RaiseOpponent();
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets the world position of the card.
-		/// </summary>
-		private Vector3 GetPhysicalCardWorldPosition(Transform cardTransform)
-		{
-			if (CombatUXManager.me != null)
-			{
-				var cardScript = cardTransform.GetComponent<CardScript>();
-				if (cardScript != null)
-				{
-					CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
-					var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(cardScript);
-					if (physicalCard != null)
-					{
-						return physicalCard.transform.position;
-					}
-				}
-			}
-			return cardTransform.position;
-		}
-
-		/// <summary>
-		/// Triggers the tint effect for Power status.
-		/// </summary>
-		private void TriggerTintForPower(CardScript targetCard)
-		{
-			if (CombatUXManager.me == null) return;
-
-			CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
-			var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(targetCard);
-			if (physicalCard != null)
-			{
-				var cardPhysObj = physicalCard.GetComponent<CardPhysObjScript>();
-				if (cardPhysObj != null)
-				{
-					cardPhysObj.TriggerTintForStatusEffect(EnumStorage.StatusEffect.Power);
 				}
 			}
 		}
@@ -343,7 +237,7 @@ namespace DefaultNamespace.Effects
 				}
 
 				// Refresh visual display for this card
-				TriggerTintForPower(card);
+				TriggerTintForStatusEffect(card, EnumStorage.StatusEffect.Power);
 			}
 
 			// Output effect info

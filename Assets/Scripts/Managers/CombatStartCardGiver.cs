@@ -4,101 +4,101 @@ using Random = UnityEngine.Random;
 namespace DefaultNamespace.Managers
 {
     /// <summary>
-    /// 战斗开始前从指定卡池随机赠卡给玩家
+    /// Randomly gives cards to player from specified pool before combat starts
     /// </summary>
     public class CombatStartCardGiver : MonoBehaviour
     {
-        [Header("卡池配置")]
-        [Tooltip("从中随机选卡的源卡池")]
+        [Header("Pool Config")]
+        [Tooltip("Source pool to randomly select cards from")]
         public DeckSO rewardPoolDeck;
         
-        [Tooltip("玩家卡组 (目标)")]
+        [Tooltip("Player deck (target)")]
         public DeckSO playerDeck;
         
-        [Header("可选限制")]
-        [Tooltip("是否检查卡组容量上限")]
+        [Header("Optional Limits")]
+        [Tooltip("Whether to check deck size limit")]
         public bool checkDeckSizeLimit = true;
         
-        [Tooltip("卡组容量上限引用 (如果 checkDeckSizeLimit 为 true)")]
+        [Tooltip("Deck size limit reference (if checkDeckSizeLimit is true)")]
         public IntSO deckSizeLimit;
         
-        [Tooltip("每次触发添加几张卡")]
+        [Tooltip("How many cards to add per trigger")]
         public int cardsToGive = 1;
         
-        [Header("触发设置")]
-        [Tooltip("仅第一次Enter shop时触发")]
+        [Header("Trigger Settings")]
+        [Tooltip("Only trigger on first shop enter")]
         public bool onlyFirstTime = true;
         
-        [Header("调试")]
+        [Header("Debug")]
         public bool logAddedCard = true;
 
-        // 内部状态：是否已经给过卡
+        // Internal state: whether cards have already been given
         private bool _hasGivenCard = false;
 
         private void OnEnable()
         {
-            // 重置状态，确保每次游戏运行时都能触发
+            // Reset state to ensure it can trigger every time the game runs
             _hasGivenCard = false;
         }
 
         /// <summary>
-        /// 从奖励卡池随机选卡添加到玩家卡组
-        /// 可绑定到 onEnterShopPhase 事件
+        /// Randomly select cards from reward pool and add to player deck.
+        /// Can be bound to onEnterShopPhase event.
         /// </summary>
         public void GiveRandomCardFromPool()
         {
-            // 检查是否仅限第一次
+            // Check if only first time
             if (onlyFirstTime && _hasGivenCard)
             {
                 return;
             }
             
-            // 验证源卡池
+            // Validate source pool
             if (rewardPoolDeck == null || rewardPoolDeck.deck.Count == 0)
             {
-                Debug.LogWarning("[CombatStartCardGiver] 奖励卡池为空或未配置");
+                Debug.LogWarning("[CombatStartCardGiver] Reward pool is empty or not configured");
                 return;
             }
             
-            // 验证目标卡组
+            // Validate target deck
             if (playerDeck == null)
             {
-                Debug.LogError("[CombatStartCardGiver] 玩家卡组未配置");
+                Debug.LogError("[CombatStartCardGiver] Player deck is not configured");
                 return;
             }
             
-            // 标记已触发
+            // Mark as triggered
             _hasGivenCard = true;
             
             for (int i = 0; i < cardsToGive; i++)
             {
-                // 检查容量限制
+                // Check capacity limit
                 if (checkDeckSizeLimit && deckSizeLimit != null)
                 {
                     int currentSize = GetActualDeckSize();
                     if (currentSize >= deckSizeLimit.value)
                     {
-                        Debug.Log("[CombatStartCardGiver] 卡组已满，停止添加");
+                        Debug.Log("[CombatStartCardGiver] Deck is full, stop adding");
                         return;
                     }
                 }
                 
-                // 随机选卡
+                // Randomly select card
                 int randomIndex = Random.Range(0, rewardPoolDeck.deck.Count);
                 GameObject cardToAdd = rewardPoolDeck.deck[randomIndex];
                 
-                // 添加到玩家卡组
+                // Add to player deck
                 playerDeck.deck.Add(cardToAdd);
                 
                 if (logAddedCard)
                 {
-                    Debug.Log($"[CombatStartCardGiver] 添加卡牌: {cardToAdd.name}");
+                    Debug.Log($"[CombatStartCardGiver] Added card: {cardToAdd.name}");
                 }
             }
         }
         
         /// <summary>
-        /// 计算实际占用卡位的卡牌数量
+        /// Calculate actual deck size counting only cards that take up space
         /// </summary>
         private int GetActualDeckSize()
         {
@@ -115,7 +115,7 @@ namespace DefaultNamespace.Managers
         }
         
         /// <summary>
-        /// 重置触发状态（用于测试或重新开始游戏）
+        /// Reset trigger state (for testing or restarting game)
         /// </summary>
         public void ResetTriggerState()
         {

@@ -20,7 +20,7 @@ public class ExposeCostEffect : EffectScript
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 			
-			// 跳过中立卡（Start Card 等）
+			// Skip neutral cards (Start Card, etc.)
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
 			// Only collect enemy cards
@@ -43,7 +43,7 @@ public class ExposeCostEffect : EffectScript
 			if (combinedDeck.Contains(card))
 			{
 				combinedDeck.Remove(card);
-				combinedDeck.Add(card);  // 添加到末尾 = 置顶
+				combinedDeck.Add(card);  // Add to end = stage to top
 				exposedCards.Add(card);
 				
 				var targetScript = card.GetComponent<CardScript>();

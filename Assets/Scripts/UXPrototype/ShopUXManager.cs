@@ -175,7 +175,7 @@ public class ShopUXManager : MonoBehaviour
     /// </summary>
     public void InstantiatePlayerDeckPhysCards()
     {
-        // Cleanup之前实例化的玩家牌组卡牌
+        // Cleanup previously instantiated player deck cards
         ClearSpawnedPlayerCards();
         
         // Check if playerDeck is empty
@@ -192,7 +192,7 @@ public class ShopUXManager : MonoBehaviour
             return;
         }
         
-        // 遍历 playerDeck.deck Instantiate physical card
+        // Iterate through playerDeck.deck to instantiate physical cards
         int cardCount = 0;
         for (int i = 0; i < playerDeck.deck.Count; i++)
         {
@@ -222,7 +222,7 @@ public class ShopUXManager : MonoBehaviour
             Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
             GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
             
-            // 获取 CardPhysObjScript 并设置
+            // Get CardPhysObjScript and setup
             CardPhysObjScript physObjScript = physicalCard.GetComponent<CardPhysObjScript>();
             if (physObjScript != null)
             {
@@ -255,17 +255,17 @@ public class ShopUXManager : MonoBehaviour
             int emptySlots = ShopManager.me.deckSize.value - cardCount;
             for (int i = 0; i < emptySlots; i++)
             {
-                // Calculate row/column position（接续在卡牌后面）
+                // Calculate row/column position (continue after cards)
                 int row = cardCount / objPerRow;
                 int col = cardCount % objPerRow;
                 
                 Vector3 spawnPosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
                 
-                // Instantiate empty slot占位符
+                // Instantiate empty slot placeholder
                 Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
                 GameObject emptySpace = Instantiate(emptyCardSpacePrefab, initialPosition, Quaternion.identity, spawnParent);
                 
-                // Set position and scale（与卡牌一致）
+                // Set position and scale (same as cards)
                 CardPhysObjScript physObjScript = emptySpace.GetComponent<CardPhysObjScript>();
                 if (physObjScript != null)
                 {
@@ -279,7 +279,7 @@ public class ShopUXManager : MonoBehaviour
                     emptySpace.transform.localScale = physCardSize;
                 }
                 
-                // 记录已实例化的空位
+                // Record instantiated empty space
                 _spawnedPlayerCards.Add(emptySpace);
                 cardCount++;
             }
@@ -442,7 +442,7 @@ public class ShopUXManager : MonoBehaviour
     /// 1. Move sold card to shop start position
     /// 2. Destroy after card reaches target position
     /// 3. Insert emptyCardSpace at sold card's position
-    /// 4. 更新 _spawnedPlayerCards
+    /// 4. Update _spawnedPlayerCards
     /// </summary>
     /// <param name="soldCardInstance">Sold physical card instance</param>
     /// <param name="cardIndex">Original index of sold card in player deck</param>
@@ -455,7 +455,7 @@ public class ShopUXManager : MonoBehaviour
         if (spawnedIndex < 0)
         {
             Debug.LogWarning($"[ShopUXManager] Sold card not found in _spawnedPlayerCards");
-            // 直接销毁
+            // Destroy directly
             Destroy(soldCardInstance);
             return;
         }
@@ -472,7 +472,7 @@ public class ShopUXManager : MonoBehaviour
         CardPhysObjScript soldCardPhys = soldCardInstance.GetComponent<CardPhysObjScript>();
         if (soldCardPhys != null)
         {
-            // Set target position为商店起始位置
+            // Set target position to shop start position
             Vector3 shopStartPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;
             soldCardPhys.SetTargetPosition(shopStartPosition);
             soldCardPhys.SetTargetScale(Vector3.zero); // Scale down simultaneously
@@ -606,7 +606,7 @@ public class ShopUXManager : MonoBehaviour
             
             Vector3 spawnPosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
             
-            // Instantiate empty slot占位符
+            // Instantiate empty slot placeholder
             Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
             GameObject emptySpace = Instantiate(emptyCardSpacePrefab, initialPosition, Quaternion.identity, spawnParent);
             
@@ -624,7 +624,7 @@ public class ShopUXManager : MonoBehaviour
                 emptySpace.transform.localScale = physCardSize;
             }
             
-            // 记录已实例化的空位
+            // Record instantiated empty space
             _spawnedPlayerCards.Add(emptySpace);
         }
         
@@ -644,7 +644,7 @@ public class ShopUXManager : MonoBehaviour
         // 1. Make existing shop cards fly to shop start position and shrink
         AnimateShopCardsExit();
         
-        // 2. 启动协程，等待Animation complete后生成新卡片
+        // 2. Start coroutine, wait for animation complete then spawn new cards
         StartCoroutine(SpawnNewShopCardsAfterDelay());
     }
     
@@ -662,7 +662,7 @@ public class ShopUXManager : MonoBehaviour
                 CardPhysObjScript physObj = card.GetComponent<CardPhysObjScript>();
                 if (physObj != null)
                 {
-                    // Set target position为商店起始位置，并缩小
+                    // Set target position to shop start position and shrink
                     physObj.SetTargetPosition(exitPosition);
                     physObj.SetTargetScale(Vector3.zero);
                 }
@@ -739,14 +739,14 @@ public class ShopUXManager : MonoBehaviour
                 continue;
             }
             
-            // 计算位置
+            // Calculate position
             Vector3 spawnPosition = shopItemPos + new Vector3((i - 1) * xOffset, 0f, 0f);
             
-            // Instantiate physical card（从商店起始位置开始，触发 DOTween 入场动画）
+            // Instantiate physical card (from shop start position, trigger DOTween entry animation)
             Vector3 initialPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;
             GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
             
-            // 获取 CardPhysObjScript 并设置
+            // Get CardPhysObjScript and setup
             CardPhysObjScript physObjScript = physicalCard.GetComponent<CardPhysObjScript>();
             if (physObjScript != null)
             {

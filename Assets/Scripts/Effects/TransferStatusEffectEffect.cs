@@ -7,27 +7,27 @@ namespace DefaultNamespace.Effects
 	public class TransferStatusEffectEffect : EffectScript
 	{
 		[Header("Transfer Config")]
-		[Tooltip("true = 从友方转移, false = 从敌方转移")]
+		[Tooltip("true = transfer from friendly, false = transfer from hostile")]
 		public bool isFromFriendly = true;
 
-		[Tooltip("要转移的状态效果类型")]
+		[Tooltip("Status effect type to transfer")]
 		public EnumStorage.StatusEffect statusEffectToTransfer;
 
-		[Tooltip("敌方诅咒卡的Card Type ID")]
+		[Tooltip("Hostile curse card's Card Type ID")]
 		public StringSO curseCardTypeID;
 
 		[Header("Status Effect Config")]
-		[Tooltip("状态效果解析器脚本（可选）")]
+		[Tooltip("Status effect resolver script (optional)")]
 		public GameObject statusEffectResolverPrefab;
 
-		[Tooltip("获得状态效果时播放的粒子系统（可选）")]
+		[Tooltip("Particle system played when gaining status effect (optional)")]
 		public ParticleSystem statusEffectParticlePrefab;
 
-		[Tooltip("粒子系统的Y轴偏移量")]
+		[Tooltip("Y-axis offset of the particle system")]
 		public float particleYOffset = 0f;
 
 		/// <summary>
-		/// 将所有指定的状态效果从友方/敌方转移到敌方的诅咒卡上
+		/// Transfer all specified status effects from friendly/hostile to the hostile curse card.
 		/// </summary>
 		public void TransferAllStatusEffectToHostileCurse()
 		{
@@ -43,7 +43,7 @@ namespace DefaultNamespace.Effects
 				return;
 			}
 
-			// 查找目标诅咒卡
+			// Find target curse card
 			CardScript targetCurseCard = FindHostileCurseCard();
 			if (targetCurseCard == null)
 			{
@@ -51,15 +51,15 @@ namespace DefaultNamespace.Effects
 				return;
 			}
 
-			// 收集源卡牌上的指定状态效果
+			// Collect specified status effects from source cards
 			List<CardScript> sourceCards = FindSourceCardsWithStatusEffect();
 			if (sourceCards.Count == 0)
 			{
-				// 没有找到带有指定状态效果的源卡牌，直接返回
+				// No source cards with the specified status effect found, return directly
 				return;
 			}
 
-			// 计算总共要转移的状态效果数量
+			// Calculate total number of status effects to transfer
 			int totalTransferCount = 0;
 			foreach (var card in sourceCards)
 			{
@@ -71,12 +71,12 @@ namespace DefaultNamespace.Effects
 				return;
 			}
 
-			// 执行转移
+			// Execute transfer
 			TransferStatusEffects(sourceCards, targetCurseCard, totalTransferCount);
 		}
 
 		/// <summary>
-		/// 查找敌方的诅咒卡
+		/// Find the hostile curse card.
 		/// </summary>
 		private CardScript FindHostileCurseCard()
 		{
@@ -85,10 +85,10 @@ namespace DefaultNamespace.Effects
 				var cardScript = card.GetComponent<CardScript>();
 				if (cardScript == null) continue;
 
-				// 跳过中立卡
+				// Skip neutral cards
 				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 
-				// 检查是否是敌人的卡且cardTypeID匹配
+				// Check if it's an enemy card and cardTypeID matches
 				if (cardScript.myStatusRef == myCardScript.theirStatusRef &&
 				    cardScript.cardTypeID == curseCardTypeID.value)
 				{
@@ -99,7 +99,7 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 查找带有指定状态效果的源卡牌（友方或敌方）
+		/// Find source cards with the specified status effect (friendly or hostile).
 		/// </summary>
 		private List<CardScript> FindSourceCardsWithStatusEffect()
 		{
@@ -111,13 +111,13 @@ namespace DefaultNamespace.Effects
 				var cardScript = card.GetComponent<CardScript>();
 				if (cardScript == null) continue;
 
-				// 跳过中立卡
+				// Skip neutral cards
 				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 
-				// 检查是否是目标方（友方或敌方）的卡
+				// Check if it's a target side (friendly or hostile) card
 				if (cardScript.myStatusRef != targetStatusRef) continue;
 
-				// 检查是否有指定的状态效果
+				// Check if it has the specified status effect
 				if (EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, statusEffectToTransfer) > 0)
 				{
 					result.Add(cardScript);
@@ -128,11 +128,11 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// 执行状态效果转移
+		/// Execute status effect transfer.
 		/// </summary>
 		private void TransferStatusEffects(List<CardScript> sourceCards, CardScript targetCard, int totalCount)
 		{
-			// 从源卡牌移除状态效果
+			// Remove status effects from source cards
 			foreach (var card in sourceCards)
 			{
 				for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
@@ -143,99 +143,25 @@ namespace DefaultNamespace.Effects
 					}
 				}
 
-				// 刷新视觉显示（如果是Power或Infected）
-				TriggerTintRefresh(card, statusEffectToTransfer);
+				// Refresh visual display (if Power or Infected)
+				TriggerTintForStatusEffect(card, statusEffectToTransfer);
 			}
 
-			// 添加到目标卡
-			for (int i = 0; i < totalCount; i++)
-			{
-				targetCard.myStatusEffects.Add(statusEffectToTransfer);
-			}
+			// Use core method to add status effects to target card (trigger events and visuals)
+			ApplyStatusEffectCore(
+				targetCard, statusEffectToTransfer, totalCount,
+				statusEffectResolverPrefab, statusEffectParticlePrefab, particleYOffset, totalCount,
+				suppressLog: true);
 
-			// Update last applied status effect tracking
-			if (ValueTrackerManager.me != null)
-			{
-				if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
-					ValueTrackerManager.me.lastAppliedStatusEffectRef.value = statusEffectToTransfer;
-				if (ValueTrackerManager.me.lastAppliedStatusEffectAmountRef != null)
-					ValueTrackerManager.me.lastAppliedStatusEffectAmountRef.value = totalCount;
-			}
-
-			// 创建状态效果解析器
-			if (statusEffectResolverPrefab != null)
-			{
-				for (int i = 0; i < totalCount; i++)
-				{
-					var resolver = Instantiate(statusEffectResolverPrefab, targetCard.transform);
-					GameEventStorage.me?.onThisTagResolverAttached.RaiseSpecific(resolver);
-				}
-			}
-
-			// 播放粒子效果
-			if (statusEffectParticlePrefab != null)
-			{
-				for (int i = 0; i < totalCount; i++)
-				{
-					Vector3 spawnPosition = GetPhysicalCardWorldPosition(targetCard.transform) + Vector3.up * particleYOffset;
-					ParticleSystem particle = Instantiate(statusEffectParticlePrefab, spawnPosition, Quaternion.identity, targetCard.transform);
-					particle.Play();
-				}
-			}
-
-			// 刷新目标卡的视觉显示
-			TriggerTintRefresh(targetCard, statusEffectToTransfer);
-
-			// 输出效果信息
+			// Output effect info
 			LogTransferEffect(sourceCards, targetCard, totalCount);
 
-			// 刷新信息显示
+			// Refresh info display
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 		}
 
 		/// <summary>
-		/// 刷新指定卡牌的Tint效果
-		/// </summary>
-		private void TriggerTintRefresh(CardScript card, EnumStorage.StatusEffect effect)
-		{
-			if (effect != EnumStorage.StatusEffect.Infected && effect != EnumStorage.StatusEffect.Power) return;
-			if (CombatUXManager.me == null) return;
-
-			CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
-			var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(card);
-			if (physicalCard != null)
-			{
-				var cardPhysObj = physicalCard.GetComponent<CardPhysObjScript>();
-				if (cardPhysObj != null)
-				{
-					cardPhysObj.TriggerTintForStatusEffect(effect);
-				}
-			}
-		}
-
-		/// <summary>
-		/// 获取卡牌的世界位置
-		/// </summary>
-		private Vector3 GetPhysicalCardWorldPosition(Transform cardTransform)
-		{
-			if (CombatUXManager.me != null)
-			{
-				var cardScript = cardTransform.GetComponent<CardScript>();
-				if (cardScript != null)
-				{
-					CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
-					var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(cardScript);
-					if (physicalCard != null)
-					{
-						return physicalCard.transform.position;
-					}
-				}
-			}
-			return cardTransform.position;
-		}
-
-		/// <summary>
-		/// 记录转移效果日志
+		/// Log transfer effect.
 		/// </summary>
 		private void LogTransferEffect(List<CardScript> sourceCards, CardScript targetCard, int totalCount)
 		{

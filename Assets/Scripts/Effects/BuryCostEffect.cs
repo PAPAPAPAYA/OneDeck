@@ -21,7 +21,7 @@ public class BuryCostEffect : EffectScript
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 			
-			// 跳过中立卡（Start Card 等）
+			// Skip neutral cards (Start Card, etc.)
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
 			// Exclude currently activating card
@@ -59,7 +59,7 @@ public class BuryCostEffect : EffectScript
 			if (combinedDeck.Contains(card))
 			{
 				combinedDeck.Remove(card);
-				combinedDeck.Insert(0, card);  // 插入到底部
+				combinedDeck.Insert(0, card);  // Insert at bottom
 				buriedCards.Add(card);
 				
 				var targetScript = card.GetComponent<CardScript>();

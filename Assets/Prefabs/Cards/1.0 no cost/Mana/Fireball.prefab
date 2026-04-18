@@ -66,8 +66,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8700848620480050298}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStausEffect, Assembly-CSharp
-        m_MethodName: ConsumeStatusEffect
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+        m_MethodName: ConsumeOwnStatusEffect
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

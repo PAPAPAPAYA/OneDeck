@@ -66,7 +66,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1100967393347977857}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ShieldAlter, Assembly-CSharp
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ShieldAlterEffect, Assembly-CSharp
         m_MethodName: UpMyShield
         m_Mode: 3
         m_Arguments:

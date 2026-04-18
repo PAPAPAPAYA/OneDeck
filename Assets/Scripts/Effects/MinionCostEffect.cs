@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using UnityEngine;
 
-// CardManipulationEffect 和 GameEventStorage 在全局命名空间
+// CardManipulationEffect and GameEventStorage are in the global namespace
 
 public class MinionCostEffect : EffectScript
 {
@@ -25,7 +25,7 @@ public class MinionCostEffect : EffectScript
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 			
-			// 跳过中立卡和 Start Card
+			// Skip neutral cards and Start Card
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
 			// Check if it's a minion card

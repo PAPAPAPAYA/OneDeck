@@ -9,21 +9,21 @@ public class CardEventTrigger : MonoBehaviour
     public UnityEvent cardActivateEvent;
     public UnityEvent cardBoughtEvent;
 
-    public void InvokeOwnerDealtDmgToEnemyEvent() // 当玩家对敌人造成伤害
+    public void InvokeOwnerDealtDmgToEnemyEvent() // When player deals damage to enemy
     {
         ownerDealtDmgToEnemyEvent?.Invoke();
     }
-    public void InvokeAfterShuffleEvent() // After shuffle（类似置顶自身的效果只在After shuffle发动）
+    public void InvokeAfterShuffleEvent() // After shuffle (effects like move self to top only activate after shuffle)
     {
         afterShuffleEvent?.Invoke();
     }
 
-    public void InvokeActivateEvent() // 发动
+    public void InvokeActivateEvent() // Activate
     {
         cardActivateEvent?.Invoke();
     }
 
-    public void InvokeCardBoughtEvent() // 购买
+    public void InvokeCardBoughtEvent() // Buy
     {
         cardBoughtEvent?.Invoke();
     }

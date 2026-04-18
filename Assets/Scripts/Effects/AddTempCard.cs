@@ -11,7 +11,7 @@ namespace DefaultNamespace.Effects
 		public int cardCount = 1;
 		
 		[Header("Curse Card Copy")]
-		[Tooltip("要复制的Cursed card type ID（空字符串表示不启用此功能）")]
+		[Tooltip("Cursed card type ID to copy (empty string means disabled)")]
 		public StringSO curseCardTypeID;
 
 		public void AddCardToMe(GameObject cardToAdd)
@@ -81,47 +81,47 @@ namespace DefaultNamespace.Effects
 		}
 		
 		/// <summary>
-		/// 复制一张敌方的符合 curseCardTypeID 的卡到己方
-		/// 如果敌方有多张符合条件的卡，随机选择一张
-		/// 复制时会保留原卡的所有 status effects
+		/// Copy an enemy card matching curseCardTypeID to self.
+		/// If multiple enemy cards match, randomly select one.
+		/// Copies will retain all original status effects.
 		/// </summary>
 		public void CopyEnemyCurseCardToMe()
 		{
-			// 如果 curseCardTypeID 为空，则不执行
+			// If curseCardTypeID is empty, do not execute
 			if (curseCardTypeID == null || string.IsNullOrEmpty(curseCardTypeID.value))
 			{
 				Debug.LogWarning($"[{myCard.name}] CopyEnemyCurseCardToMe: curseCardTypeID is empty or null");
 				return;
 			}
 			
-			// 获取敌方所有卡片
+			// Get all enemy cards
 			List<CardScript> enemyCards = CombatFuncs.me.ReturnEnemyCardScripts();
 			
-			// 筛选出符合 curseCardTypeID 的卡
+			// Filter cards matching curseCardTypeID
 			List<CardScript> matchingCards = enemyCards
 				.Where(card => card.cardTypeID == curseCardTypeID?.value)
 				.ToList();
 			
-			// 如果没有符合条件的卡，则不执行
+			// If no matching cards, do not execute
 			if (matchingCards.Count == 0)
 			{
 				Debug.Log($"[{myCard.name}] CopyEnemyCurseCardToMe: no enemy card with typeID '{curseCardTypeID?.value}' found");
 				return;
 			}
 			
-			// 随机选择一张符合条件的卡
+			// Randomly select one matching card
 			CardScript selectedCard = matchingCards[Random.Range(0, matchingCards.Count)];
 			GameObject cardPrefab = selectedCard.gameObject;
 			
-			// 保存原卡的 status effects
+			// Save original card's status effects
 			List<EnumStorage.StatusEffect> originalStatusEffects = selectedCard.myStatusEffects;
 			
-			// 复制选中的卡到己方，并复制 status effects
+			// Copy selected card to self and copy status effects
 			for (int i = 0; i < cardCount; i++)
 			{
 				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardPrefab, myCardScript.myStatusRef);
 				
-				// 复制 status effects 到新卡
+				// Copy status effects to new card
 				if (newCard != null)
 				{
 					CardScript newCardScript = newCard.GetComponent<CardScript>();
@@ -132,7 +132,7 @@ namespace DefaultNamespace.Effects
 				}
 			}
 			
-			// 记录日志
+			// Log result
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
 			{
 				effectResultString.value += $"// [<color=#87CEEB>{myCard.name}</color>] copied <color=yellow>{cardCount}</color> [<color=orange>{cardPrefab.name}</color>] from Enemy to <color=#87CEEB>You</color>\n";

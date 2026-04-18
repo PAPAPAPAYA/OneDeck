@@ -36,28 +36,6 @@ namespace DefaultNamespace.Effects
 		[Tooltip("Y-axis offset for the particle system")]
 		public float particleYOffset = 0f;
 
-		#region Helper Methods - Card Ownership & Colors
-		protected string GetCardOwnerPrefix(PlayerStatusSO statusRef)
-		{
-			return statusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-		}
-
-		protected string GetCardOwnerColor(PlayerStatusSO statusRef)
-		{
-			return statusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-		}
-
-		protected string GetMyCardOwnerPrefix()
-		{
-			return GetCardOwnerPrefix(myCardScript.myStatusRef);
-		}
-
-		protected string GetMyCardOwnerColor()
-		{
-			return GetCardOwnerColor(myCardScript.myStatusRef);
-		}
-		#endregion
-
 		#region Helper Methods - Card Filtering
 		protected bool ShouldSkipCard(CardScript cardScript)
 		{
@@ -82,120 +60,13 @@ namespace DefaultNamespace.Effects
 		}
 		#endregion
 
-		#region Helper Methods - Status Effect Application Core
-		protected void ApplyStatusEffectCore(CardScript targetCardScript, EnumStorage.StatusEffect effect, int amount, int? logAmount = null)
-		{
-			if (effect == EnumStorage.StatusEffect.None) return;
-			int actualLogAmount = logAmount ?? amount;
-
-			// Update last applied status effect tracking
-			if (ValueTrackerManager.me != null)
-			{
-				if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
-					ValueTrackerManager.me.lastAppliedStatusEffectRef.value = effect;
-				if (ValueTrackerManager.me.lastAppliedStatusEffectAmountRef != null)
-					ValueTrackerManager.me.lastAppliedStatusEffectAmountRef.value = actualLogAmount;
-			}
-
-			// Raise status effect events
-			combatManager.lastCardGotStatusEffect = targetCardScript;
-			GameEventStorage.me?.onMeGotStatusEffect?.RaiseSpecific(targetCardScript.gameObject);
-
-			// Raise Power-related events when a card gains Power
-			if (effect == EnumStorage.StatusEffect.Power)
-			{
-				combatManager.lastCardGotPower = targetCardScript;
-				GameEventStorage.me?.onAnyCardGotPower?.Raise();
-				GameEventStorage.me?.onMeGotPower?.RaiseSpecific(targetCardScript.gameObject);
-				if (targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
-				{
-					GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOwner();
-					GameEventStorage.me?.onEnemyCardGotPower?.RaiseOpponent();
-				}
-				else
-				{
-					GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOpponent();
-					GameEventStorage.me?.onEnemyCardGotPower?.RaiseOwner();
-				}
-			}
-
-			for (int i = 0; i < amount; i++)
-			{
-				targetCardScript.myStatusEffects.Add(effect);
-			}
-			CreateStatusEffectResolvers(targetCardScript, amount);
-			PlayStatusEffectParticles(targetCardScript.transform, amount);
-			TriggerTintForStatusEffect(targetCardScript, effect);
-			LogStatusEffectGiven(targetCardScript, effect, actualLogAmount);
-		}
-
-		protected void CreateStatusEffectResolvers(CardScript targetCardScript, int amount)
-		{
-			if (myStatusEffectResolverScript == null) return;
-			int resolverCount = canStatusEffectBeStacked ? amount : 1;
-			for (int i = 0; i < resolverCount; i++)
-			{
-				var tagResolver = Instantiate(myStatusEffectResolverScript, targetCardScript.transform);
-				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
-			}
-		}
-
-		protected void PlayStatusEffectParticles(Transform cardTransform, int count)
-		{
-			for (int i = 0; i < count; i++)
-			{
-				PlayStatusEffectParticle(cardTransform);
-			}
-		}
-
-		protected void LogStatusEffectGiven(CardScript targetCardScript, EnumStorage.StatusEffect effect, int amount)
-		{
-			string targetCardOwnerString = GetCardOwnerPrefix(targetCardScript.myStatusRef);
-			string targetCardColor = GetCardOwnerColor(targetCardScript.myStatusRef);
-			string thisCardOwnerString = GetMyCardOwnerPrefix();
-			string thisCardColor = GetMyCardOwnerColor();
-			effectResultString.value +=
-				"// " + thisCardOwnerString +
-				"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
-				targetCardOwnerString +
-				"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
-				"<color=yellow>" + amount + "</color> [" + effect + "]\n";
-		}
-
-		protected void LogSelfStatusEffect(EnumStorage.StatusEffect effect, int amount)
-		{
-			string thisCardOwnerString = CombatInfoDisplayer.me.ReturnCardOwnerInfo(myCardScript.myStatusRef);
-			string thisCardColor = GetMyCardOwnerColor();
-			effectResultString.value +=
-				"// " + thisCardOwnerString +
-				" [<color=" + thisCardColor + ">" + myCard.name + "</color>] gave" +
-				" it" +
-				" <color=yellow>" + amount + "</color> [" + effect + "]\n";
-		}
-		#endregion
-
 		#region Public Effect Methods
 		public virtual void GiveSelfStatusEffect(int amount)
 		{
-			// Update last applied status effect tracking
-			if (ValueTrackerManager.me != null && statusEffectToGive != EnumStorage.StatusEffect.None)
-			{
-				if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
-					ValueTrackerManager.me.lastAppliedStatusEffectRef.value = statusEffectToGive;
-				if (ValueTrackerManager.me.lastAppliedStatusEffectAmountRef != null)
-					ValueTrackerManager.me.lastAppliedStatusEffectAmountRef.value = amount;
-			}
-
-			for (int i = 0; i < amount; i++)
-			{
-				myCardScript.myStatusEffects.Add(statusEffectToGive);
-				LogSelfStatusEffect(statusEffectToGive, 1);
-				if (myStatusEffectResolverScript == null) continue;
-				var tagResolver = Instantiate(myStatusEffectResolverScript, myCard.transform);
-				GameEventStorage.me.onThisTagResolverAttached.RaiseSpecific(tagResolver);
-				PlayStatusEffectParticle(myCard.transform);
-				TriggerTintForStatusEffect(myCardScript, statusEffectToGive);
-			}
+			ApplyStatusEffectCore(
+				myCardScript, statusEffectToGive, amount,
+				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
+				canStatusEffectBeStacked ? amount : 1);
 		}
 
 		public virtual void GiveStatusEffect(int amount)
@@ -248,53 +119,21 @@ namespace DefaultNamespace.Effects
 
 		private void ApplyStatusEffectToSingleTarget(CardScript targetCardScript)
 		{
-			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, 1, 1);
+			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, 1,
+				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset, 1, 1);
 		}
 
 		private void ApplyStatusEffectsToTargets(List<CardScript> targetCards)
 		{
 			foreach (var targetCardScript in targetCards)
 			{
-				ApplyStatusEffectCore(targetCardScript, statusEffectToGive, 1, 1);
+				ApplyStatusEffectCore(targetCardScript, statusEffectToGive, 1,
+					myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset, 1, 1);
 			}
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}
 
-		protected virtual void PlayStatusEffectParticle(Transform cardTransform)
-		{
-			if (statusEffectParticlePrefab == null) return;
-			Vector3 spawnPosition = GetPhysicalCardWorldPosition(cardTransform) + Vector3.up * particleYOffset;
-			ParticleSystem particleInstance = Instantiate(statusEffectParticlePrefab, spawnPosition, Quaternion.identity, cardTransform);
-			particleInstance.Play();
-		}
 
-		protected virtual Vector3 GetPhysicalCardWorldPosition(Transform cardTransform)
-		{
-			if (CombatUXManager.me != null)
-			{
-				var cardScript = cardTransform.GetComponent<CardScript>();
-				if (cardScript != null)
-				{
-					CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
-					var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(cardScript);
-					if (physicalCard != null) return physicalCard.transform.position;
-				}
-			}
-			return cardTransform.position;
-		}
-
-		protected virtual void TriggerTintForStatusEffect(CardScript targetCard, EnumStorage.StatusEffect effect)
-		{
-			if (effect != EnumStorage.StatusEffect.Infected && effect != EnumStorage.StatusEffect.Power) return;
-			if (CombatUXManager.me == null) return;
-			CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
-			var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(targetCard);
-			if (physicalCard != null)
-			{
-				var cardPhysObj = physicalCard.GetComponent<CardPhysObjScript>();
-				if (cardPhysObj != null) cardPhysObj.TriggerTintForStatusEffect(effect);
-			}
-		}
 
 		public void GiveStatusEffectBasedOnStatusEffectCount()
 		{
@@ -348,7 +187,9 @@ namespace DefaultNamespace.Effects
 
 		private void ApplyStatusEffectToFriendlySingle(CardScript targetCardScript, int amount)
 		{
-			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, amount);
+			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, amount,
+				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
+				canStatusEffectBeStacked ? amount : 1);
 		}
 
 		private void ApplyStatusEffectsToFriendly(List<GameObject> cardsToGive, int amount)
@@ -414,7 +255,9 @@ namespace DefaultNamespace.Effects
 
 		private void ApplyStatusEffectToLastXCardSingle(CardScript targetCardScript)
 		{
-			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, statusEffectLayerCount);
+			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, statusEffectLayerCount,
+				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
+				canStatusEffectBeStacked ? statusEffectLayerCount : 1);
 		}
 
 		private void ApplyStatusEffectsToLastXCards(List<CardScript> targetCards)
@@ -457,7 +300,9 @@ namespace DefaultNamespace.Effects
 
 		private void ApplyStatusEffectToXFriendlySingle(CardScript targetCardScript)
 		{
-			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, yFriendlyLayerCount);
+			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, yFriendlyLayerCount,
+				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
+				canStatusEffectBeStacked ? yFriendlyLayerCount : 1);
 		}
 
 		private void ApplyStatusEffectsToXFriendly(List<CardScript> targetCards)

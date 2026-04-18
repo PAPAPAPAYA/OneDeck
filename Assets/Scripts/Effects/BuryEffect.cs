@@ -235,7 +235,7 @@ public class BuryEffect : EffectScript
 			if (_combinedDeck.Contains(targetCard))
 			{
 				_combinedDeck.Remove(targetCard);
-				_combinedDeck.Insert(0, targetCard);  // 插入到底部
+				_combinedDeck.Insert(0, targetCard);  // Insert at bottom
 				buriedCards.Add(targetCard);
 				
 				// Track buried counts

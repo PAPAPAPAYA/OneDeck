@@ -13,7 +13,7 @@ using UnityEngine;
 namespace TestWriteRead
 {
     /// <summary>
-    /// 卡组保存系统 - 使用cardTypeID而非GameObject实例来存储卡组，避免实例ID变化问题
+    /// Deck save system - uses cardTypeID instead of GameObject instances to store decks, avoiding instance ID change issues
     /// </summary>
     public class DeckSaver : MonoBehaviour
     {
@@ -32,35 +32,35 @@ namespace TestWriteRead
         public bool resetOnStart = false;
 
         [Header("Deck Info Refs")]
-        public DeckSO playerDeck; // 玩家卡组引用
-        public IntSO winAmount; // 当前胜利数
-        public IntSO heartLeft; // 当前生命值
-        public IntSO sessionNumber; // 当前session编号
-        public DeckSO enemyDeckToPopulate; // 敌人卡组引用（用于填充）
+        public DeckSO playerDeck; // Player deck reference
+        public IntSO winAmount; // Current win count
+        public IntSO heartLeft; // Current hearts
+        public IntSO sessionNumber; // Current session number
+        public DeckSO enemyDeckToPopulate; // Enemy deck reference (for population)
 
         [Header("Status Refs")]
-        public PlayerStatusSO playerStatusRef; // 玩家状态引用（获取hpMax）
-        public PlayerStatusSO enemyStatusRef; // 敌人状态引用（设置hpMax）
+        public PlayerStatusSO playerStatusRef; // Player status reference (for hpMax)
+        public PlayerStatusSO enemyStatusRef; // Enemy status reference (for setting hpMax)
 
         [Header("Card Database")]
-        [Tooltip("商店卡牌池，用于构建卡牌数据库（自动从中读取所有可用卡牌）")]
-        public DeckSO shopPoolRef; // 商店卡牌池引用
+        [Tooltip("Shop card pool, used to build card database (automatically reads all available cards from it)")]
+        public DeckSO shopPoolRef; // Shop card pool reference
 
-        [Tooltip("额外的卡牌预制体（可选，用于不在商店池中的卡牌）")]
-        public List<GameObject> additionalCardPrefabs; // 额外卡牌（可选）
+        [Tooltip("Additional card prefabs (optional, for cards not in shop pool)")]
+        public List<GameObject> additionalCardPrefabs; // Additional cards (optional)
 
         [Header("Default Enemy Decks")]
-        [Tooltip("当JSON中没有对应session的卡组时，从此列表中随机选择一个")]
-        public List<DeckSO> defaultEnemyDecks; // 默认敌人卡组配置列表
+        [Tooltip("When no deck for corresponding session exists in JSON, randomly select from this list")]
+        public List<DeckSO> defaultEnemyDecks; // Default enemy deck configuration list
 
         [Header("Debug")]
         [SerializeField] private bool printOnSave = true;
 
-        // 本地数据
+        // Local data
         private DeckData _currentData;
         private string _savePath;
 
-        // 卡牌类型ID到预制体的映射缓存
+        // Card type ID to prefab mapping cache
         private Dictionary<string, GameObject> _cardTypeToPrefabCache;
 
         private void Start()
@@ -77,13 +77,13 @@ namespace TestWriteRead
         }
 
         /// <summary>
-        /// 构建卡牌类型ID到预制体的映射缓存
+        /// Build card type ID to prefab mapping cache
         /// </summary>
         private void BuildCardDatabaseCache()
         {
             _cardTypeToPrefabCache = new Dictionary<string, GameObject>();
 
-            // 从商店池读取卡牌
+            // Read cards from shop pool
             if (shopPoolRef != null && shopPoolRef.deck != null)
             {
                 foreach (var cardPrefab in shopPoolRef.deck)
@@ -93,10 +93,10 @@ namespace TestWriteRead
             }
             else
             {
-                Debug.LogWarning("[DeckSaver] ShopPoolRef 未设置或为空，卡牌数据库将为空");
+                Debug.LogWarning("[DeckSaver] ShopPoolRef is not set or empty, card database will be empty");
             }
 
-            // 添加额外卡牌（如果有）
+            // Add additional cards (if any)
             if (additionalCardPrefabs != null)
             {
                 foreach (var cardPrefab in additionalCardPrefabs)
@@ -107,12 +107,12 @@ namespace TestWriteRead
 
             if (printOnSave)
             {
-                Debug.Log($"[DeckSaver] 卡牌数据库构建完成，共 {_cardTypeToPrefabCache.Count} 张卡牌");
+                Debug.Log($"[DeckSaver] Card database built, total {_cardTypeToPrefabCache.Count} cards");
             }
         }
 
         /// <summary>
-        /// 将卡牌添加到缓存字典
+        /// Add card to cache dictionary
         /// </summary>
         private void AddCardToCache(GameObject cardPrefab)
         {
@@ -126,30 +126,30 @@ namespace TestWriteRead
 
             if (_cardTypeToPrefabCache.ContainsKey(typeID))
             {
-                Debug.LogWarning($"[DeckSaver] 重复的cardTypeID: {typeID}，卡牌: {cardPrefab.name}");
+                Debug.LogWarning($"[DeckSaver] Duplicate cardTypeID: {typeID}, card: {cardPrefab.name}");
                 return;
             }
             _cardTypeToPrefabCache[typeID] = cardPrefab;
         }
 
         /// <summary>
-        /// 从CardScript获取稳定的卡类型ID
+        /// Get stable card type ID from CardScript
         /// </summary>
         private string GetCardTypeID(CardScript cardScript)
         {
-            // 优先使用配置的cardTypeID
+            // Prefer configured cardTypeID
             if (!string.IsNullOrEmpty(cardScript.cardTypeID))
             {
                 return cardScript.cardTypeID;
             }
 
-            // 如果没有配置，使用卡名并警告
-            Debug.LogWarning($"[DeckSaver] 卡 {cardScript.name} 没有配置cardTypeID，使用卡名作为标识");
+            // If not configured, use card name and warn
+            Debug.LogWarning($"[DeckSaver] Card {cardScript.name} has no cardTypeID configured, using card name as identifier");
             return cardScript.name;
         }
 
         /// <summary>
-        /// 根据cardTypeID查找卡牌预制体
+        /// Find card prefab by cardTypeID
         /// </summary>
         private GameObject FindCardPrefabByTypeID(string cardTypeID)
         {
@@ -163,14 +163,14 @@ namespace TestWriteRead
                 return prefab;
             }
 
-            Debug.LogError($"[DeckSaver] 找不到cardTypeID为 {cardTypeID} 的卡牌预制体");
+            Debug.LogError($"[DeckSaver] Cannot find card prefab with cardTypeID {cardTypeID}");
             return null;
         }
 
-        #region 数据持久化
+        #region Data Persistence
 
         /// <summary>
-        /// 加载已保存的数据
+        /// Load saved data
         /// </summary>
         private void LoadData()
         {
@@ -191,37 +191,37 @@ namespace TestWriteRead
                 }
                 else
                 {
-                    // 确保列表不为null
+                    // Ensure list is not null
                     if (_currentData.savedDecks == null)
                         _currentData.savedDecks = new List<DeckSaveEntry>();
 
-                    // 版本迁移：将旧格式的数据迁移到新格式
+                    // Version migration: migrate old format data to new format
                     MigrateOldData();
                 }
 
                 if (printOnSave)
                 {
-                    Debug.Log($"[DeckSaver] 已加载 {_currentData.savedDecks.Count} 个保存的卡组");
+                    Debug.Log($"[DeckSaver] Loaded {_currentData.savedDecks.Count} saved decks");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[DeckSaver] 读取数据失败: {e.Message}");
+                Debug.LogError($"[DeckSaver] Failed to read data: {e.Message}");
                 _currentData = new DeckData();
             }
         }
 
         /// <summary>
-        /// 将旧格式数据（使用GameObject列表）迁移到新格式（使用cardTypeID列表）
+        /// Migrate old format data (using GameObject lists) to new format (using cardTypeID lists)
         /// </summary>
         private void MigrateOldData()
         {
-            // 这里保留兼容性，如果有旧数据需要迁移可以在这里处理
-            // 目前新数据结构已经独立于GameObject
+            // Keep compatibility here, if old data needs migration it can be handled here
+            // Currently new data structure is independent from GameObject
         }
 
         /// <summary>
-        /// Save data到JSON
+        /// Save data to JSON
         /// </summary>
         private void SaveData()
         {
@@ -236,37 +236,37 @@ namespace TestWriteRead
 
                 if (printOnSave)
                 {
-                    Debug.Log($"[DeckSaver] 卡组已保存: {_savePath}");
+                    Debug.Log($"[DeckSaver] Deck saved: {_savePath}");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[DeckSaver] Save data失败: {e.Message}");
+                Debug.LogError($"[DeckSaver] Save data failed: {e.Message}");
             }
         }
 
         #endregion
 
-        #region 卡组操作
+        #region Deck Operations
 
         /// <summary>
-        /// 将当前玩家卡组保存到JSON
+        /// Save current player deck to JSON
         /// </summary>
         public void SavePlayerDeckToJson()
         {
             if (!switchOnSaveLoad) return;
 
-            // 创建卡组条目
+            // Create deck entry
             var deckEntry = CreateDeckSaveEntry();
             _currentData.savedDecks.Add(deckEntry);
 
             SaveData();
 
-            Debug.Log($"[DeckSaver] 已保存session {sessionNumber.value}的卡组，共 {deckEntry.cardTypeIDs.Count} 张卡");
+            Debug.Log($"[DeckSaver] Saved session {sessionNumber.value} deck, total {deckEntry.cardTypeIDs.Count} cards");
         }
 
         /// <summary>
-        /// 从当前玩家卡组创建保存条目
+        /// Create save entry from current player deck
         /// </summary>
         private DeckSaveEntry CreateDeckSaveEntry()
         {
@@ -297,40 +297,40 @@ namespace TestWriteRead
         }
 
         /// <summary>
-        /// 根据当前session number填充enemy deck
-        /// 优先从JSON加载已保存的卡组，如果没有则使用默认卡组列表
+        /// Populate enemy deck by current session number.
+        /// Prioritize loading saved deck from JSON, otherwise use default deck list.
         /// </summary>
         public void PopulateEnemyDeckBySessionNumber()
         {
-            // 先尝试从JSON加载
+            // Try loading from JSON first
             if (TryLoadFromJson())
             {
                 return;
             }
 
-            // JSON没有匹配时，从默认列表选择
+            // When no JSON match, select from default list
             PopulateFromDefaultDecks();
         }
 
         /// <summary>
-        /// 尝试从JSON文件加载匹配当前session number的卡组
+        /// Try to load deck matching current session number from JSON file
         /// </summary>
-        /// <returns>是否成功加载</returns>
+        /// <returns>Whether loading succeeded</returns>
         private bool TryLoadFromJson()
         {
             if (!switchOnSaveLoad) return false;
 
-            // 筛选匹配的卡组
+            // Filter matching decks
             var matchingDecks = _currentData.savedDecks
                 .Where(d => d.sessionNum == sessionNumber.value)
                 .ToList();
 
             if (matchingDecks.Count == 0) return false;
 
-            // 随机选择一个匹配卡组
+            // Randomly select a matching deck
             var randomDeck = matchingDecks[UnityEngine.Random.Range(0, matchingDecks.Count)];
 
-            // 将cardTypeID列表转换为GameObject列表
+            // Convert cardTypeID list to GameObject list
             var cardPrefabs = new List<GameObject>();
             foreach (var typeID in randomDeck.cardTypeIDs)
             {
@@ -341,52 +341,52 @@ namespace TestWriteRead
                 }
             }
 
-            // 填充到enemy deck
+            // Populate enemy deck
             enemyDeckToPopulate.deck.Clear();
             enemyDeckToPopulate.deck.AddRange(cardPrefabs);
 
-            // 应用保存的hpMax到敌人
+            // Apply saved hpMax to enemy
             if (enemyStatusRef != null)
             {
                 enemyStatusRef.hpMax = randomDeck.hpMax > 0 ? randomDeck.hpMax : 20;
-                Debug.Log($"[DeckSaver] 从JSON加载了session {sessionNumber.value}的敌人卡组，共 {cardPrefabs.Count} 张卡，敌人hpMax设置为 {enemyStatusRef.hpMax}");
+                Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards, enemy hpMax set to {enemyStatusRef.hpMax}");
             }
             else
             {
-                Debug.Log($"[DeckSaver] 从JSON加载了session {sessionNumber.value}的敌人卡组，共 {cardPrefabs.Count} 张卡（敌人StatusRef未设置，无法应用hpMax）");
+                Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards (enemy StatusRef not set, cannot apply hpMax)");
             }
             return true;
         }
 
         /// <summary>
-        /// 根据当前session number从默认敌人卡组列表中选择对应卡组填充
-        /// session 1 -> 列表第1个，session 2 -> 列表第2个，以此类推
-        /// 如果session number超出列表范围，则使用列表最后一项
+        /// Select corresponding deck from default enemy deck list by current session number to populate.
+        /// session 1 -> list item 1, session 2 -> list item 2, and so on.
+        /// If session number exceeds list range, use last item.
         /// </summary>
         private void PopulateFromDefaultDecks()
         {
             if (defaultEnemyDecks == null || defaultEnemyDecks.Count == 0)
             {
-                Debug.LogWarning($"[DeckSaver] Session {sessionNumber.value}: JSON无记录且默认卡组列表为空，无法填充enemy deck");
+                Debug.LogWarning($"[DeckSaver] Session {sessionNumber.value}: No JSON record and default deck list is empty, cannot populate enemy deck");
                 return;
             }
 
-            // 直接使用session number作为deck index（session 0 -> #1Deck, session 1 -> #2Deck）
+            // Use session number directly as deck index (session 0 -> #1Deck, session 1 -> #2Deck)
             int deckIndex = sessionNumber.value;
-            // 如果超出范围，使用最后一项
+            // If out of range, use last item
             if (deckIndex >= defaultEnemyDecks.Count)
             {
                 deckIndex = defaultEnemyDecks.Count - 1;
             }
             var selectedDeck = defaultEnemyDecks[deckIndex];
 
-            // 使用工具函数复制卡组
+            // Use utility function to copy deck
             UtilityFuncManagerScript.CopyGameObjectList(selectedDeck.deck, enemyDeckToPopulate.deck, true);
-            Debug.Log($"[DeckSaver] Session {sessionNumber.value}: 从默认列表加载了敌人卡组: {selectedDeck.name}");
+            Debug.Log($"[DeckSaver] Session {sessionNumber.value}: Loaded enemy deck from default list: {selectedDeck.name}");
         }
 
         /// <summary>
-        /// 删除所有保存的卡组数据
+        /// Delete all saved deck data
         /// </summary>
         public void WipeDeckSaves()
         {
@@ -397,31 +397,31 @@ namespace TestWriteRead
                 try
                 {
                     File.Delete(_savePath);
-                    Debug.Log($"[DeckSaver] 已删除保存文件: {_savePath}");
+                    Debug.Log($"[DeckSaver] Deleted save file: {_savePath}");
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[DeckSaver] 删除保存文件失败: {e.Message}");
+                    Debug.LogError($"[DeckSaver] Failed to delete save file: {e.Message}");
                 }
             }
         }
 
         #endregion
 
-        #region 查询接口
+        #region Query Interface
 
         /// <summary>
-        /// 获取所有保存的卡组统计信息
+        /// Get all saved deck statistics
         /// </summary>
         public void PrintSavedDecksInfo()
         {
             if (_currentData.savedDecks.Count == 0)
             {
-                Debug.Log("[DeckSaver] 没有保存的卡组");
+                Debug.Log("[DeckSaver] No saved decks");
                 return;
             }
 
-            Debug.Log("========== 已保存卡组统计 ==========");
+            Debug.Log("========== SAVED DECK STATISTICS ==========");
 
             var groupedBySession = _currentData.savedDecks
                 .GroupBy(d => d.sessionNum)
@@ -429,19 +429,19 @@ namespace TestWriteRead
 
             foreach (var group in groupedBySession)
             {
-                Debug.Log($"Session {group.Key}: {group.Count()} 个卡组");
+                Debug.Log($"Session {group.Key}: {group.Count()} decks");
             }
 
-            Debug.Log($"总计 {_currentData.savedDecks.Count} 个卡组，最后更新: {_currentData.lastUpdated}");
+            Debug.Log($"Total {_currentData.savedDecks.Count} decks, last updated: {_currentData.lastUpdated}");
             Debug.Log("====================================");
         }
 
         #endregion
 
-        #region 向后兼容
+        #region Backward Compatibility
 
-        // 旧方法保留，但调用新方法以保持向后兼容
-        [Obsolete("使用 PopulateEnemyDeckBySessionNumber 替代")]
+        // Keep old method but call new one for backward compatibility
+        [Obsolete("Use PopulateEnemyDeckBySessionNumber instead")]
         public void LoadJsonToEnemyDeckSo()
         {
             PopulateEnemyDeckBySessionNumber();
@@ -449,36 +449,36 @@ namespace TestWriteRead
 
         #endregion
 
-        #region Debug快捷键
-        // 快捷键说明（需在 Game 视图中激活）:
-        // Ctrl + S: 保存当前玩家卡组到JSON
-        // Ctrl + L: 加载卡组到敌人卡组
-        // Ctrl + W: 清空所有保存的卡组
-        // Ctrl + D: 打印已保存卡组统计信息
+        #region Debug Hotkeys
+        // Hotkey instructions (must be active in Game view):
+        // Ctrl + S: Save current player deck to JSON
+        // Ctrl + L: Load deck to enemy deck
+        // Ctrl + W: Clear all saved decks
+        // Ctrl + D: Print saved deck statistics
 
         private void Update()
         {
             if (!Input.GetKey(KeyCode.LeftControl)) return;
 
-            // Ctrl + S: 保存
+            // Ctrl + S: Save
             if (Input.GetKeyDown(KeyCode.S) && !Input.GetKey(KeyCode.LeftShift))
             {
                 SavePlayerDeckToJson();
             }
 
-            // Ctrl + L: 加载
+            // Ctrl + L: Load
             if (Input.GetKeyDown(KeyCode.L))
             {
                 PopulateEnemyDeckBySessionNumber();
             }
 
-            // Ctrl + W: 清空
+            // Ctrl + W: Clear
             if (Input.GetKeyDown(KeyCode.W))
             {
                 WipeDeckSaves();
             }
 
-            // Ctrl + D: 打印统计
+            // Ctrl + D: Print statistics
             if (Input.GetKeyDown(KeyCode.D))
             {
                 PrintSavedDecksInfo();

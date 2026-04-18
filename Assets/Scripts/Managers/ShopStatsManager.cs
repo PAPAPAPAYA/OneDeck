@@ -8,28 +8,28 @@ using UnityEngine;
 namespace DefaultNamespace.Managers
 {
     /// <summary>
-    /// 单张卡在商店中的统计数据
+    /// Stats for a single card in the shop
     /// </summary>
     [Serializable]
     public class CardShopStats
     {
-        public string cardTypeID;      // 唯一标识（优先使用）
-        public string cardName;        // 显示名称
-        public int appearCount;        // 出现次数
-        public int boughtCount;        // 购买次数
+        public string cardTypeID;      // Unique identifier (preferred)
+        public string cardName;        // Display name
+        public int appearCount;        // Appear count
+        public int boughtCount;        // Bought count
         
-        // 计算购买率（0-1）
+        // Calculate purchase rate (0-1)
         public float PurchaseRate => appearCount > 0 ? (float)boughtCount / appearCount : 0f;
         
-        // 格式化输出
+        // Formatted output
         public override string ToString()
         {
-            return $"[{cardTypeID}] {cardName}: 购买率 {PurchaseRate:P1} ({boughtCount}买/{appearCount}现)";
+            return $"[{cardTypeID}] {cardName}: Purchase Rate {PurchaseRate:P1} ({boughtCount} bought/{appearCount} appeared)";
         }
     }
 
     /// <summary>
-    /// 商店统计数据容器（用于JSON序列化）
+    /// Shop stats data container (for JSON serialization)
     /// </summary>
     [Serializable]
     public class ShopStatsData
@@ -47,16 +47,16 @@ namespace DefaultNamespace.Managers
 
     /// <summary>
     /// Shop stats manager
-    /// 功能：
-    /// 1. 记录卡牌在商店中的出现次数、购买次数
-    /// 2. Record shop visit次数和刷新次数
-    /// 3. 保存到本地JSON
-    /// 4. 导出CSV报告
+    /// Features:
+    /// 1. Record card appear count and bought count in shop
+    /// 2. Record shop visit count and reroll count
+    /// 3. Save to local JSON
+    /// 4. Export CSV report
     /// 
-    /// 快捷键（Game视图中使用）：
-    /// - Ctrl+Shift+P: 打印统计报告
-    /// - Ctrl+Shift+E: 导出CSV文件
-    /// - Ctrl+Shift+R: 重置统计数据
+    /// Shortcuts (used in Game view):
+    /// - Ctrl+Shift+P: Print stats report
+    /// - Ctrl+Shift+E: Export CSV file
+    /// - Ctrl+Shift+R: Reset stats
     /// </summary>
     public class ShopStatsManager : MonoBehaviour
     {
@@ -84,16 +84,16 @@ namespace DefaultNamespace.Managers
         [Header("Debug")]
         [SerializeField] private bool printOnSave = true;
 
-        // 本地数据
+        // Local data
         private ShopStatsData _statsData;
         private string _jsonPath;
         private string _csvPath;
 
-        // 延迟保存标记
+        // Pending save flag
         private bool _pendingSave = false;
 
         /// <summary>
-        /// Record card appeared在商店中
+        /// Record card appeared in shop
         /// </summary>
         public void RecordCardAppeared(string cardTypeID, string cardName = "")
         {
@@ -106,7 +106,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// 记录卡牌被购买
+        /// Record card bought
         /// </summary>
         public void RecordCardBought(string cardTypeID, string cardName = "")
         {
@@ -118,7 +118,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// Record shop visit次数
+        /// Record shop visit count
         /// </summary>
         public void RecordShopVisit()
         {
@@ -129,7 +129,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// Record reroll次数
+        /// Record reroll count
         /// </summary>
         public void RecordReroll()
         {
@@ -140,7 +140,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// 立即保存（在合适的时机调用，如离开商店时）
+        /// Save immediately (call at appropriate times, such as when leaving shop)
         /// </summary>
         public void Flush()
         {
@@ -152,7 +152,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// 获取或创建卡牌统计数据
+        /// Get or create card stats
         /// </summary>
         private CardShopStats GetOrCreateCardStat(string cardTypeID, string cardName = "")
         {
@@ -168,7 +168,7 @@ namespace DefaultNamespace.Managers
                 };
                 _statsData.cardStats.Add(stat);
             }
-            // 更新卡名（如果之前为空）
+            // Update card name (if previously empty)
             else if (string.IsNullOrEmpty(stat.cardName) && !string.IsNullOrEmpty(cardName))
             {
                 stat.cardName = cardName;
@@ -177,7 +177,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// 获取指定卡牌的统计数据
+        /// Get stats for specified card
         /// </summary>
         public CardShopStats GetCardStats(string cardTypeID)
         {
@@ -185,7 +185,7 @@ namespace DefaultNamespace.Managers
         }
 
         /// <summary>
-        /// 计算购买率
+        /// Calculate purchase rate
         /// </summary>
         public float GetPurchaseRate(string cardTypeID)
         {
@@ -194,10 +194,10 @@ namespace DefaultNamespace.Managers
             return stat.PurchaseRate;
         }
 
-        #region 数据持久化
+        #region Data Persistence
 
         /// <summary>
-        /// 保存统计数据到JSON
+        /// Save stats to JSON
         /// </summary>
         public void SaveStats()
         {
@@ -213,17 +213,17 @@ namespace DefaultNamespace.Managers
                 
                 if (printOnSave)
                 {
-                    Debug.Log($"[ShopStatsManager] 统计已保存: {_jsonPath}");
+                    Debug.Log($"[ShopStatsManager] Stats saved: {_jsonPath}");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[ShopStatsManager] 保存统计失败: {e.Message}");
+                Debug.LogError($"[ShopStatsManager] Failed to save stats: {e.Message}");
             }
         }
 
         /// <summary>
-        /// 从JSON加载统计数据
+        /// Load stats from JSON
         /// </summary>
         public void LoadStats()
         {
@@ -240,14 +240,14 @@ namespace DefaultNamespace.Managers
                     }
                     else
                     {
-                        // 确保列表不为null
+                        // Ensure list is not null
                         if (_statsData.cardStats == null)
                             _statsData.cardStats = new List<CardShopStats>();
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[ShopStatsManager] 加载统计失败: {e.Message}");
+                    Debug.LogError($"[ShopStatsManager] Failed to load stats: {e.Message}");
                     _statsData = new ShopStatsData();
                 }
             }
@@ -259,25 +259,25 @@ namespace DefaultNamespace.Managers
 
         #endregion
 
-        #region CSV导出
+        #region CSV Export
 
         /// <summary>
-        /// 导出统计数据到CSV文件
+        /// Export stats to CSV file
         /// </summary>
         public void ExportToCSV()
         {
             if (_statsData.cardStats.Count == 0)
             {
-                Debug.LogWarning("[ShopStatsManager] 没有数据可以导出");
+                Debug.LogWarning("[ShopStatsManager] No data to export");
                 return;
             }
 
             var sb = new StringBuilder();
             
-            // CSV头部
+            // CSV header
             sb.AppendLine("CardTypeID,CardName,AppearCount,BoughtCount,PurchaseRate,LastUpdated");
             
-            // 按购买率排序
+            // Sort by purchase rate
             var sortedStats = _statsData.cardStats
                 .OrderByDescending(s => s.PurchaseRate)
                 .ThenByDescending(s => s.appearCount)
@@ -291,33 +291,33 @@ namespace DefaultNamespace.Managers
             try
             {
                 File.WriteAllText(_csvPath, sb.ToString(), Encoding.UTF8);
-                Debug.Log($"[ShopStatsManager] CSV已导出: {_csvPath}");
+                Debug.Log($"[ShopStatsManager] CSV exported: {_csvPath}");
             }
             catch (Exception e)
             {
-                Debug.LogError($"[ShopStatsManager] CSV导出失败: {e.Message}");
+                Debug.LogError($"[ShopStatsManager] CSV export failed: {e.Message}");
             }
         }
 
         #endregion
 
-        #region 查询接口
+        #region Query Interface
 
         /// <summary>
-        /// 打印所有统计报告到控制台
+        /// Print all stats report to console
         /// </summary>
         public void PrintReport()
         {
             if (_statsData.cardStats.Count == 0)
             {
-                Debug.Log("[ShopStatsManager] 暂无数据");
+                Debug.Log("[ShopStatsManager] No data yet");
                 return;
             }
 
-            Debug.Log("========== 商店卡牌统计报告 ==========");
-            Debug.Log($"总商店访问次数: {_statsData.totalShopVisits}");
-            Debug.Log($"总刷新次数: {_statsData.totalRerolls}");
-            Debug.Log($"统计卡牌种类数: {_statsData.cardStats.Count}");
+            Debug.Log("========== Shop Card Statistics Report ==========");
+            Debug.Log($"Total shop visits: {_statsData.totalShopVisits}");
+            Debug.Log($"Total rerolls: {_statsData.totalRerolls}");
+            Debug.Log($"Card types tracked: {_statsData.cardStats.Count}");
             Debug.Log("");
             
             var sortedStats = _statsData.cardStats
@@ -330,12 +330,12 @@ namespace DefaultNamespace.Managers
                 Debug.Log(stat.ToString());
             }
             
-            Debug.Log($"最后更新: {_statsData.lastUpdated}");
+            Debug.Log($"Last updated: {_statsData.lastUpdated}");
             Debug.Log("======================================");
         }
 
         /// <summary>
-        /// 重置所有统计数据
+        /// Reset all stats
         /// </summary>
         public void ResetStats()
         {
@@ -351,28 +351,28 @@ namespace DefaultNamespace.Managers
                 File.Delete(_csvPath);
             }
             
-            Debug.Log("[ShopStatsManager] 统计数据已重置");
+            Debug.Log("[ShopStatsManager] Stats reset");
         }
 
         #endregion
 
-        #region 生命周期
+        #region Lifecycle
 
         private void Update()
         {
-            // Ctrl + Shift + P: 打印报告
+            // Ctrl + Shift + P: Print report
             if (Input.GetKeyDown(KeyCode.P) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftControl))
             {
                 PrintReport();
             }
             
-            // Ctrl + Shift + E: 导出CSV
+            // Ctrl + Shift + E: Export CSV
             if (Input.GetKeyDown(KeyCode.E) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftControl))
             {
                 ExportToCSV();
             }
             
-            // Ctrl + Shift + R: 重置数据
+            // Ctrl + Shift + R: Reset data
             if (Input.GetKeyDown(KeyCode.R) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.LeftControl))
             {
                 ResetStats();

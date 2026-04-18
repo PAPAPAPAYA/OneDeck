@@ -107,7 +107,7 @@ public class StageEffect : EffectScript
 		var myTokens = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myTokens, true);
 
-		// Filter: Own Minion cards，且不在顶部
+		// Filter: own Minion cards, not at the top
 		for (int i = myTokens.Count - 1; i >= 0; i--)
 		{
 			var card = myTokens[i];
@@ -174,7 +174,7 @@ public class StageEffect : EffectScript
 		var friendlyMinions = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, friendlyMinions, true);
 
-		// Filter: Own Minion cards，且不在顶部
+		// Filter: own Minion cards, not at the top
 		for (int i = friendlyMinions.Count - 1; i >= 0; i--)
 		{
 			var card = friendlyMinions[i];
@@ -209,7 +209,7 @@ public class StageEffect : EffectScript
 	/// <summary>
 	/// Stage a random card matching specified Card Type ID from enemy deck to top
 	/// </summary>
-	/// <param name="targetCardTypeID">目标卡牌类型ID</param>
+	/// <param name="targetCardTypeID">Target card type ID</param>
 	public void StageTheirSpecificCard(string targetCardTypeID)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;

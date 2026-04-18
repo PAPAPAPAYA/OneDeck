@@ -16,7 +16,9 @@ namespace DefaultNamespace.Effects
 			if (targetCard == null) return;
 			if (excludeSelf && targetCard == myCardScript) return;
 
-			ApplyStatusEffectCore(targetCard, EnumStorage.StatusEffect.Power, powerAmount);
+			ApplyStatusEffectCore(targetCard, EnumStorage.StatusEffect.Power, powerAmount,
+				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
+				canStatusEffectBeStacked ? powerAmount : 1);
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 		}
 	}

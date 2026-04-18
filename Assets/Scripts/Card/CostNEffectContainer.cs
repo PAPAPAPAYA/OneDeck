@@ -172,7 +172,7 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
-			// 跳过中立卡和 Start Card
+			// Skip neutral cards and Start Card
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			if (cardScript.myStatusRef != _myCardScript.myStatusRef)
 			{
@@ -273,7 +273,7 @@ public class CostNEffectContainer : MonoBehaviour
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 			
-			// 跳过中立卡和 Start Card
+			// Skip neutral cards and Start Card
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			
 			// Check if it's an enemy card

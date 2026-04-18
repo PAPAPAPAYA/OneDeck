@@ -1,14 +1,20 @@
 // devlog
 
-// low priority
+// small tweaks
+	//// change cardScript to use tab to indent
+
+//! low priority
 	// if we want to achieve synergy like "give power to next card" + "before power is given, stage self", we need to make the former a tag (like linger) to identify and react to
 	// same as "bury next 3 cards" + "before burying cards, stage self"
-// refactor
+
+//! refactor
+	// change all card prefab name to english
+		// new variable to store chinese name
 	// ApplyStatusEffectCore()
-		// GiveSelfStatusEffect()
-		// ApplyPowerToCardInternal()
-		// TransferStatusEffects()
-		// these three didn't use ApplyStatusEffectCore(), might refactor later to clean up
+		//// GiveSelfStatusEffect()
+		//// ApplyPowerToCardInternal()
+		//// TransferStatusEffects()
+		//// these three didn't use ApplyStatusEffectCore(), might refactor later to clean up
 	//// power reaction effect & when gain power, gain triple amount effect
 		//// new SO to store game object
 			//// can't do, SO can't store instance
@@ -17,26 +23,51 @@
 		//// new method to give status effect to objSO
 		//// new SO to store last applied power amount
 		//// new method to gain double last applied power amount
-	// make all chinese into english to avoid encoding errors
+	//// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
-// design decisions
+//! design decisions
 	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
-// feature
-	//todo tell kimi to make a configuration checker
+
+//! feature
+	// tool to validate no duplicate card type id
+	//// skills and SOPs to generate test plan and execute test plan to test card prefabs
+	//// script name check
+	//// tell kimi to make a configuration checker
 	// rarity
 		// rarity attibute in card script
 	// shop
 		// iterate on shop based on rarity
 	// fake shuffle
-	// motion design
-	// queue animation?
-// asset
+	
+//! viscom
+	// better power wisp
 	// power gain card particle
-// design change
+	// motion design
+		// show invoked cards not in reveal zone, compress rest of the deck
+	// queue animation?
+	
+
+//! design change
 	// should we change [bury 1 friendly] to [bury next 2]?
 		// it's more powerful, maybe should be benefit, not cost
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
-// bug
+
+//! bug
+	// test progress:
+		// deathrattle: ai tested
+			//todo test plan bugged, need to check test plan
+	// test strategies:
+		// strategy A: simulate logic in editor mode
+		// strategy B: simulate logic in play mode
+		// strategy C: regression batch test (different dimension, check if one type of configuration is correct)
+	//todo spike skeleton game event listener duplicates
+	//todo slime lacks consumming counter
+	// generate test plans
+		//// bury
+			//// deathrattle
+		//// general
+		//// conjure
+		//// curse
 	// curse effect
 		// when curse is added, power wisp target pos is weird cause curse is not yet in position
 	//// bury animation bugged, suspect stage also has same problem
