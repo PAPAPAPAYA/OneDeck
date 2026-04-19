@@ -81,16 +81,16 @@ namespace DefaultNamespace.Effects
 		}
 		
 		/// <summary>
-		/// Copy an enemy card matching curseCardTypeID to self.
+		/// Copy an enemy card matching curseCardTypeID to the effect triggerer's opponent.
 		/// If multiple enemy cards match, randomly select one.
 		/// Copies will retain all original status effects.
 		/// </summary>
-		public void CopyEnemyCurseCardToMe()
+		public void CopyEnemyCurseCardToThem()
 		{
 			// If curseCardTypeID is empty, do not execute
 			if (curseCardTypeID == null || string.IsNullOrEmpty(curseCardTypeID.value))
 			{
-				Debug.LogWarning($"[{myCard.name}] CopyEnemyCurseCardToMe: curseCardTypeID is empty or null");
+				Debug.LogWarning($"[{myCard.name}] CopyEnemyCurseCardToThem: curseCardTypeID is empty or null");
 				return;
 			}
 			
@@ -105,7 +105,7 @@ namespace DefaultNamespace.Effects
 			// If no matching cards, do not execute
 			if (matchingCards.Count == 0)
 			{
-				Debug.Log($"[{myCard.name}] CopyEnemyCurseCardToMe: no enemy card with typeID '{curseCardTypeID?.value}' found");
+				Debug.Log($"[{myCard.name}] CopyEnemyCurseCardToThem: no enemy card with typeID '{curseCardTypeID?.value}' found");
 				return;
 			}
 			
@@ -116,10 +116,10 @@ namespace DefaultNamespace.Effects
 			// Save original card's status effects
 			List<EnumStorage.StatusEffect> originalStatusEffects = selectedCard.myStatusEffects;
 			
-			// Copy selected card to self and copy status effects
+			// Copy selected card to the triggerer's opponent and copy status effects
 			for (int i = 0; i < cardCount; i++)
 			{
-				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardPrefab, myCardScript.myStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardPrefab, myCardScript.theirStatusRef);
 				
 				// Copy status effects to new card
 				if (newCard != null)
@@ -135,11 +135,11 @@ namespace DefaultNamespace.Effects
 			// Log result
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
 			{
-				effectResultString.value += $"// [<color=#87CEEB>{myCard.name}</color>] copied <color=yellow>{cardCount}</color> [<color=orange>{cardPrefab.name}</color>] from Enemy to <color=#87CEEB>You</color>\n";
+				effectResultString.value += $"// [<color=#87CEEB>{myCard.name}</color>] copied <color=yellow>{cardCount}</color> [<color=orange>{cardPrefab.name}</color>] from Enemy to <color=orange>Enemy</color>\n";
 			}
 			else
 			{
-				effectResultString.value += $"// [<color=orange>{myCard.name}</color>] copied <color=yellow>{cardCount}</color> [<color=#87CEEB>{cardPrefab.name}</color>] from You to <color=orange>Enemy</color>\n";
+				effectResultString.value += $"// [<color=orange>{myCard.name}</color>] copied <color=yellow>{cardCount}</color> [<color=#87CEEB>{cardPrefab.name}</color>] from You to <color=#87CEEB>You</color>\n";
 			}
 		}
 	}

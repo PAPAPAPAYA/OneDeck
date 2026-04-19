@@ -1,6 +1,7 @@
 // devlog
 
 //！ anything else
+	// check card desc and configuration inconsistentency
 	// check unstable_portal behaviour
 	//// change cardScript to use tab to indent
 
@@ -71,6 +72,7 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	//// fixed copycurse (to me --> to them)
 	// power wisp destroy timing
 	//// some effects don't include card in reveal zone
 	// test progress:

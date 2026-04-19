@@ -28,7 +28,7 @@ Assets/
 │   │   ├── CombatFuncs.cs            # Combat helper functions
 │   │   ├── CombatUXManager.cs        # Card movement & animation
 │   │   ├── AttackAnimationManager.cs # Attack animation queue
-│   │   ├── EffectChainManager.cs     # Effect chain (max depth 9)
+│   │   ├── EffectChainManager.cs     # Effect chain tracking & anti-loop (max depth 99)
 │   │   ├── EffectRecorder.cs         # Records effect history
 │   │   ├── GameEventStorage.cs       # Centralized GameEvent SO refs
 │   │   ├── ValueTrackerManager.cs    # Deck value trackers
@@ -80,7 +80,7 @@ Assets/
 
 ## Core Architecture
 
-- **Singleton**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`
+- **Singleton**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`
 - **Event-driven**: `GameEvent` SO + `GameEventListener`
 - **Component-based Cards**: `CardScript` + `EffectContainers` + `Effects`
 
@@ -103,6 +103,13 @@ Assets/
 
 ### Trigger Flow
 `CostNEffectContainer.InvokeEffectEvent()`: Check cost -> Check effect chain -> Execute effect.
+
+### Effect Chain Manager
+`EffectChainManager` prevents infinite loops and tracks nested effect invocations:
+- **Chain creation**: A new chain starts when no chains are open, or when the same card triggers a *different* effect object.
+- **Loop guard**: The same `effectID` cannot be invoked twice within an open chain.
+- **Depth limit**: When `chainDepth` exceeds **99**, further effects are blocked with an error log.
+- **Chain closing**: `CloseOpenedChain()` finalizes all open recorders and clears tracking state.
 
 ### Cost Types
 | Method | Description |
@@ -130,7 +137,8 @@ enum StatusEffect { None, Infected, Mana, HeartChanged, Power, Rest, Revive, Cou
 
 ### Tags
 ```csharp
-enum Tag { None, Linger, ManaX, DeathRattle }```
+enum Tag { None, Linger, ManaX, DeathRattle }
+```
 
 ## Events
 

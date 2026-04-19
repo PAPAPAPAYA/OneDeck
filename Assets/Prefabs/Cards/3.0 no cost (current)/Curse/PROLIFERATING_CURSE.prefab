@@ -150,7 +150,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 4826763367012806502}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
-        m_MethodName: CopyEnemyCurseCardToMe
+        m_MethodName: CopyEnemyCurseCardToThem
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
