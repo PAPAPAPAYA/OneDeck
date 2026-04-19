@@ -75,6 +75,13 @@ namespace DefaultNamespace.Effects
 			var cardsToGiveTag = new List<GameObject>();
 			UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, cardsToGiveTag, true);
 			if (includeSelf) cardsToGiveTag.Add(myCard);
+			if (combatManager.revealZone != null && !cardsToGiveTag.Contains(combatManager.revealZone))
+			{
+				if (combatManager.revealZone != myCard || includeSelf)
+				{
+					cardsToGiveTag.Add(combatManager.revealZone);
+				}
+			}
 			cardsToGiveTag = UtilityFuncManagerScript.ShuffleList(cardsToGiveTag);
 			for (var i = cardsToGiveTag.Count - 1; i >= 0; i--)
 			{
@@ -168,6 +175,14 @@ namespace DefaultNamespace.Effects
 				var cardScript = card.GetComponent<CardScript>();
 				if (ShouldSkipCard(cardScript)) continue;
 				if (cardScript.myStatusRef == myCardScript.myStatusRef) cardsToGive.Add(card);
+			}
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (!ShouldSkipCard(revealCardScript) && revealCardScript.myStatusRef == myCardScript.myStatusRef)
+				{
+					cardsToGive.Add(combatManager.revealZone);
+				}
 			}
 			if (cardsToGive.Count <= 0) return;
 			var targetCardScripts = new List<CardScript>();
@@ -282,6 +297,17 @@ namespace DefaultNamespace.Effects
 				{
 					if (!CanReceiveStatusEffect(cardScript, statusEffectToGive)) continue;
 					friendlyCards.Add(cardScript);
+				}
+			}
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (!ShouldSkipCard(revealCardScript) &&
+				    revealCardScript.myStatusRef == myCardScript.myStatusRef &&
+				    CanReceiveStatusEffect(revealCardScript, statusEffectToGive) &&
+				    !friendlyCards.Exists(c => c.gameObject == combatManager.revealZone))
+				{
+					friendlyCards.Add(revealCardScript);
 				}
 			}
 			if (friendlyCards.Count <= 0) return;

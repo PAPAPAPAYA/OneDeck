@@ -98,8 +98,9 @@ GameObject:
   - component: {fileID: 8827024223340827551}
   - component: {fileID: 711042354993321843}
   - component: {fileID: 1238789155915027209}
+  - component: {fileID: 4501051632094480253}
   m_Layer: 0
-  m_Name: add a copy of self
+  m_Name: add a copy of self, consume counter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -155,6 +156,18 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 4501051632094480253}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+        m_MethodName: ConsumeOwnStatusEffect
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1238789155915027209}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
         m_MethodName: AddSelfToMe
@@ -182,6 +195,20 @@ MonoBehaviour:
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cardCount: 1
   curseCardTypeID: {fileID: 0}
+--- !u!114 &4501051632094480253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6144443996281573302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ac7fd908a064f019eae08d8e541f473, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.ConsumeStatusEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  statusEffectToConsume: 7
 --- !u!1 &7538812023556790325
 GameObject:
   m_ObjectHideFlags: 0
@@ -328,7 +355,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SLIME
-  displayName: "史莱姆"
+  displayName: "\u53F2\u83B1\u59C6"
   cardDesc: "\u88AB\u57CB\u846C 2 \u6B21: \u6DFB\u52A0\u81EA\u8EAB\u5230\u5361\u7EC4\u4E2D;\n\u9020\u6210
     4 \u4F24\u5BB3"
   takeUpSpace: 1

@@ -2719,6 +2719,7 @@ MonoBehaviour:
   fatigueAmount: 1
   fatigueRevealThreshold: 0
   totalCardsRevealed: 0
+  lastCardGotStatusEffect: {fileID: 0}
   lastCardGotPower: {fileID: 0}
 --- !u!4 &1151980345
 Transform:
@@ -2823,6 +2824,10 @@ MonoBehaviour:
   totalPowerCountInDeckRef: {fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}
   ownerCardCountInDeckRef: {fileID: 11400000, guid: 5a1ce2a824a63dc4bb3126221c6c5261, type: 2}
   enemyCardCountInDeckRef: {fileID: 11400000, guid: d1c97eb8b8ba557428e546ccdc02e5da, type: 2}
+  ownerCardsBuriedCountRef: {fileID: 0}
+  enemyCardsBuriedCountRef: {fileID: 0}
+  stagedOwnerRef: {fileID: 0}
+  stagedEnemyRef: {fileID: 0}
   lastAppliedStatusEffectRef: {fileID: 0}
   lastAppliedStatusEffectAmountRef: {fileID: 0}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}

@@ -14,8 +14,10 @@ GameObject:
   - component: {fileID: 5876964604227770773}
   - component: {fileID: 3583010953411538909}
   - component: {fileID: 2228815078584909110}
+  - component: {fileID: 1980091464538312827}
   m_Layer: 0
-  m_Name: stage friendly; bury hostile; add 1 [rift]; enhance frienldy curse
+  m_Name: consume counter to stage friendly; bury hostile; add 1 [rift]; enhance
+    frienldy curse
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -52,13 +54,37 @@ MonoBehaviour:
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   checkCostEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 88236208953752898}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: CheckCost_Counter
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1980091464538312827}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+        m_MethodName: ConsumeOwnStatusEffect
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 3363569435199126571}
         m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
         m_MethodName: StageMyCards
@@ -171,6 +197,115 @@ MonoBehaviour:
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
   powerCoefficient: 1
+--- !u!114 &1980091464538312827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2635718925342889943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ac7fd908a064f019eae08d8e541f473, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.ConsumeStatusEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  statusEffectToConsume: 7
+--- !u!1 &5555191548067297752
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1147411240199483647}
+  - component: {fileID: 1945072824629670035}
+  - component: {fileID: 6535371549024205037}
+  m_Layer: 0
+  m_Name: gain counter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1147411240199483647
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5555191548067297752}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3828591620990538636}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1945072824629670035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5555191548067297752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  checkCostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  preEffectEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  effectEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6535371549024205037}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.StatusEffectGiverEffect,
+          Assembly-CSharp
+        m_MethodName: GiveSelfStatusEffect
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &6535371549024205037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5555191548067297752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectGiverEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  myStatusEffectResolverScript: {fileID: 0}
+  canStatusEffectBeStacked: 1
+  statusEffectToGive: 7
+  statusEffectToCount: 0
+  spreadEvenly: 0
+  target: 0
+  includeSelf: 0
+  lastXCardsCount: 0
+  statusEffectLayerCount: 1
+  xFriendlyCount: 0
+  yFriendlyLayerCount: 1
+  statusEffectParticlePrefab: {fileID: 0}
+  particleYOffset: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -203,6 +338,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4178670049436012962}
+  - {fileID: 1147411240199483647}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -219,10 +355,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: ALMIGHTY
-  displayName: "全能人"
-  cardDesc: "\u7F6E\u9876 1 \u53CB\u65B9;\n\u57CB\u846C 1 \u654C\u65B9;\n\u7ED9\u4E88
-    1 \u53CB\u65B9 \u529B\u91CF;\n\u751F\u6210 1 [\u6B21\u5143\u88C2\u7F1D]\n\u589E\u5F3A
-    1 \u654C\u65B9 [\u8BC5\u5492]"
+  displayName: "\u5168\u80FD\u4EBA"
+  cardDesc: "\u6BCF\u63ED\u6653 2 \u6B21:\n\u7F6E\u9876 1 \u53CB\u65B9;\n\u57CB\u846C
+    1 \u654C\u65B9;\n\u7ED9\u4E88 1 \u53CB\u65B9 \u529B\u91CF;\n\u751F\u6210 1 [\u6B21\u5143\u88C2\u7F1D];\n\u589E\u5F3A
+    1 \u654C\u65B9 [\u8BC5\u5492];"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -253,6 +389,18 @@ MonoBehaviour:
   response:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1945072824629670035}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: InvokeEffectEvent
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 88236208953752898}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent

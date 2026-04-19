@@ -48,8 +48,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: CURSE_SUMMONER
-  displayName: "诅咒召唤师"
-  cardDesc: "\u589E\u5F3A 1 \u654C\u65B9[\u8BC5\u5492],\n\u7F6E\u9876 1 \u53CB\u65B9"
+  displayName: "\u8BC5\u5492\u53EC\u5524\u5E08"
+  cardDesc: "\u6D88\u8017\u654C\u65B9[\u8BC5\u5492] 1 \u529B\u91CF:\n\u7F6E\u9876
+    1 \u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -102,10 +103,10 @@ GameObject:
   m_Component:
   - component: {fileID: 7347418108214000764}
   - component: {fileID: 7449076752151853866}
-  - component: {fileID: 8669991410060710143}
   - component: {fileID: 5804767994645335557}
+  - component: {fileID: 7717586853736928302}
   m_Layer: 0
-  m_Name: enhance hostile [ju-on], stage friendly
+  m_Name: consume hostile [ju-on] power, stage friendly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -142,16 +143,28 @@ MonoBehaviour:
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   checkCostEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 7449076752151853866}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: CheckCost_EnemyCursedCardHasPower
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8669991410060710143}
+      - m_Target: {fileID: 7717586853736928302}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.CurseEffect, Assembly-CSharp
-        m_MethodName: EnhanceCurse
+        m_MethodName: ConsumeHostileCursePower
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -173,7 +186,23 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &8669991410060710143
+--- !u!114 &5804767994645335557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6947502767563041322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  tagToCheck: 0
+  targetFriendly: 0
+  statusEffectToCheck: 0
+--- !u!114 &7717586853736928302
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -191,17 +220,4 @@ MonoBehaviour:
   statusEffectResolverPrefab: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
---- !u!114 &5804767994645335557
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6947502767563041322}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 0
+  powerCoefficient: 1

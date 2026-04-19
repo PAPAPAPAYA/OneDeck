@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1359544507321340075}
   - component: {fileID: 3396948184596767659}
   m_Layer: 0
-  m_Name: deal dmg and stage friendly
+  m_Name: deal dmg to self and stage friendly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -59,7 +59,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1359544507321340075}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
+        m_MethodName: DecreaseMyHp
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -98,7 +98,7 @@ MonoBehaviour:
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
-  extraDmg: 1
+  extraDmg: 0
   statusEffectToCheck: 0
 --- !u!114 &3396948184596767659
 MonoBehaviour:
@@ -128,7 +128,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
   m_Layer: 0
-  m_Name: ARMED_SUMMONER
+  m_Name: BLOOD_LETTING_SUMMONER
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -163,9 +163,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: ARMED_SUMMONER
-  displayName: "佩刀召唤师"
-  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3;\n\u7F6E\u9876 1 \u53CB\u65B9"
+  cardTypeID: BLOOD_LETTING_SUMMONER
+  displayName: "\u653E\u8840\u53EC\u5524\u5E08"
+  cardDesc: "\u5BF9\u81EA\u5DF1\u9020\u6210 3 \u4F24\u5BB3;\n\u7F6E\u9876 1 \u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

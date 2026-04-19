@@ -115,6 +115,20 @@ namespace DefaultNamespace.Effects
 					return cardScript;
 				}
 			}
+
+			// Check revealZone
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef == myCardScript.theirStatusRef &&
+				    revealCardScript.cardTypeID == typeID)
+				{
+					return revealCardScript;
+				}
+			}
+
 			return null;
 		}
 
@@ -276,6 +290,21 @@ namespace DefaultNamespace.Effects
 					result.Add(cardScript);
 				}
 			}
+
+			// Check revealZone
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef == myCardScript.theirStatusRef &&
+				    revealCardScript.cardTypeID == typeID &&
+				    !result.Exists(c => c.gameObject == combatManager.revealZone))
+				{
+					result.Add(revealCardScript);
+				}
+			}
+
 			return result;
 		}
 	}

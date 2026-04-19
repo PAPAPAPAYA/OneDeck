@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6146388706387094876}
   - component: {fileID: 5861440041844697119}
-  - component: {fileID: 1856333855234317735}
+  - component: {fileID: 877230821181285917}
   m_Layer: 0
-  m_Name: add counter
+  m_Name: stage friendly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -56,10 +56,9 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1856333855234317735}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.StatusEffectGiverEffect,
-          Assembly-CSharp
-        m_MethodName: GiveSelfStatusEffect
+      - m_Target: {fileID: 877230821181285917}
+        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
+        m_MethodName: StageMyCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -69,7 +68,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &1856333855234317735
+--- !u!114 &877230821181285917
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -78,23 +77,95 @@ MonoBehaviour:
   m_GameObject: {fileID: 2178906588464643643}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
+  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectGiverEffect
+  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  myStatusEffectResolverScript: {fileID: 0}
-  canStatusEffectBeStacked: 1
-  statusEffectToGive: 7
-  statusEffectToCount: 0
-  spreadEvenly: 0
-  target: 0
-  includeSelf: 0
-  lastXCardsCount: 0
-  statusEffectLayerCount: 1
-  xFriendlyCount: 0
-  yFriendlyLayerCount: 1
-  statusEffectParticlePrefab: {fileID: 0}
-  particleYOffset: 0
+  tagToCheck: 0
+  targetFriendly: 0
+  statusEffectToCheck: 0
+--- !u!1 &2364835784064896257
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 975125634785115984}
+  - component: {fileID: 2048990116620817710}
+  - component: {fileID: 4892750680444333227}
+  m_Layer: 0
+  m_Name: bury hostile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &975125634785115984
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2364835784064896257}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3828591620990538636}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2048990116620817710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2364835784064896257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  checkCostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  preEffectEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  effectEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4892750680444333227}
+        m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
+        m_MethodName: BuryTheirCards
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &4892750680444333227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2364835784064896257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb08dbd2c6066ac468526e104b9095a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  tagToCheck: 0
 --- !u!1 &2635718925342889943
 GameObject:
   m_ObjectHideFlags: 0
@@ -105,10 +176,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4178670049436012962}
   - component: {fileID: 88236208953752898}
-  - component: {fileID: 6382889524050659034}
-  - component: {fileID: 7956716747616918608}
+  - component: {fileID: 8380297118486034760}
   m_Layer: 0
-  m_Name: consume counter to stage friendly
+  m_Name: deal dmg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -145,29 +215,17 @@ MonoBehaviour:
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   checkCostEvent:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 88236208953752898}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_Counter
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7956716747616918608}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
-        m_MethodName: ConsumeOwnStatusEffect
-        m_Mode: 3
+      - m_Target: {fileID: 8380297118486034760}
+        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_MethodName: DecreaseTheirHp
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -176,19 +234,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 6382889524050659034}
-        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
-        m_MethodName: StageMyCards
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &6382889524050659034
+--- !u!114 &8380297118486034760
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -197,27 +243,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 2635718925342889943}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
+  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
+  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 0
-  targetFriendly: 0
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
+  dmgAmountAlter: 0
+  healAmountAlter: 0
+  isStatusEffectDamage: 0
+  extraDmg: 1
   statusEffectToCheck: 0
---- !u!114 &7956716747616918608
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2635718925342889943}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ac7fd908a064f019eae08d8e541f473, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.ConsumeStatusEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  statusEffectToConsume: 7
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -229,8 +264,10 @@ GameObject:
   - component: {fileID: 3828591620990538636}
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
+  - component: {fileID: 7736718513574106954}
+  - component: {fileID: 3778281451097414008}
   m_Layer: 0
-  m_Name: ADVANCE_PORTAL
+  m_Name: SNATCHER
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -251,6 +288,7 @@ Transform:
   m_Children:
   - {fileID: 4178670049436012962}
   - {fileID: 6146388706387094876}
+  - {fileID: 975125634785115984}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -266,9 +304,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: ADVANCE_PORTAL
-  displayName: "\u9AD8\u7B49\u4F20\u9001\u95E8"
-  cardDesc: "\u6BCF\u63ED\u6653 2 \u6B21: \n\u7F6E\u9876 2 \u53CB\u65B9"
+  cardTypeID: SNATCHER
+  displayName: "\u5C60\u592B"
+  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3\n\u88AB\u7F6E\u9876: \u7F6E\u9876 1 \u53CB\u65B9;\n\u88AB\u57CB\u846C:
+    \u57CB\u846C 1 \u654C\u65B9;"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -299,6 +338,34 @@ MonoBehaviour:
   response:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 88236208953752898}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: InvokeEffectEvent
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7736718513574106954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718476725744197808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
+  event: {fileID: 11400000, guid: dccfed063d9c0e24f993e0d95aabb53d, type: 2}
+  response:
+    m_PersistentCalls:
+      m_Calls:
       - m_Target: {fileID: 5861440041844697119}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent
@@ -311,7 +378,23 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 88236208953752898}
+--- !u!114 &3778281451097414008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718476725744197808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
+  event: {fileID: 11400000, guid: dbdfc6da826817e458050a266ddebda9, type: 2}
+  response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2048990116620817710}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent
         m_Mode: 1

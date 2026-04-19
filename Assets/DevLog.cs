@@ -1,6 +1,7 @@
 // devlog
 
-// small tweaks
+//！ anything else
+	// check unstable_portal behaviour
 	//// change cardScript to use tab to indent
 
 //! low priority
@@ -25,12 +26,29 @@
 		//// new method to gain double last applied power amount
 	//// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
-//! design decisions
+//! design
+	//// multiple [stage friendly] will result in easy infinite, need figure out how to limit stage ability
+		//// armed_summoner: stage 1 friendly; deal 3 dmg
+			//// blood-letting summoner: stage 1 friendly; deal 2 dmg to self
+		//// unstable_portal: stage 1 friendly; if buried, bury 2 hostile
+			//// stage 1 friendly; bury 1 friendly
+		//// overcharged_summoner: stage 1 friendly; enhance next 2
+			//// consume 1 power: stage 1 friendly; enhance next 2
+		//// curse_summoner: stage 1 friendly; enhance 1 hostile curse
+			//// consume 1 hostile curse power: stage 1 friendly
+		//// advance_portal: stage 2 friendly
+			//// stage 2 friendly; gain 1 rest
+		//// almighty: stage 1 friendly; bury 1 hostile; enhance 1 friendly; add 1 [rift]; enhance 1 hostile [curse]
+			//// gain 1 rest
+
+//! design choice
 	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
 
 //! feature
-	// tool to validate no duplicate card type id
+	//// skill to check infinite card combos
+	//// tool to validate no duplicate card type id
 	//// skills and SOPs to generate test plan and execute test plan to test card prefabs
+		// need to be more concise
 	//// script name check
 	//// tell kimi to make a configuration checker
 	// rarity
@@ -53,9 +71,11 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	// power wisp destroy timing
+	//// some effects don't include card in reveal zone
 	// test progress:
 		// bury: ai tested
-			// MARTYR (DEATHRATTLE 批次) — GiveAllFriendlyStatusEffect 不读取 includeSelf 字段，Martyr 自身总会获得 Power。
+			//// MARTYR (DEATHRATTLE 批次) — GiveAllFriendlyStatusEffect 不读取 includeSelf 字段，Martyr 自身总会获得 Power。
 			// GRAVE_PORTAL — 位于 top 的 portal 被 StageMyCards 排除时，预期行为与实际行为存在差异。
 			// GRUDGE (A-1, A-5, A-6) — CombatUXManager.me 为 null 导致 StatusEffectGiverEffect.GiveStatusEffectToLastXCards() 回调未执行，Power 未被施加 → 通过创建 CombatUXManager 实例修复。
 			// LARGE_SCALE_DEATH (A-1) — BuryLastXCards(4) 因 deck 索引计算问题只 bury 了 3 张 → 调整 setup 顺序后修复。
@@ -65,9 +85,9 @@
 		// strategy A: simulate logic in editor mode
 		// strategy B: simulate logic in play mode
 		// strategy C: regression batch test (different dimension, check if one type of configuration is correct)
-	//todo spike skeleton game event listener duplicates
-	//todo slime lacks consumming counter
-	// generate test plans
+	//// spike skeleton game event listener duplicates
+	//// slime lacks consumming counter
+	//// generate test plans
 		//// bury
 			//// deathrattle
 		//// general

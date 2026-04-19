@@ -95,6 +95,20 @@ namespace DefaultNamespace.Effects
 					return cardScript;
 				}
 			}
+
+			// Check revealZone
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef == myCardScript.theirStatusRef &&
+				    revealCardScript.cardTypeID == curseCardTypeID.value)
+				{
+					return revealCardScript;
+				}
+			}
+
 			return null;
 		}
 
@@ -121,6 +135,20 @@ namespace DefaultNamespace.Effects
 				if (EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, statusEffectToTransfer) > 0)
 				{
 					result.Add(cardScript);
+				}
+			}
+
+			// Check revealZone
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef == targetStatusRef &&
+				    EnumStorage.GetStatusEffectCount(revealCardScript.myStatusEffects, statusEffectToTransfer) > 0 &&
+				    !result.Exists(c => c.gameObject == combatManager.revealZone))
+				{
+					result.Add(revealCardScript);
 				}
 			}
 
