@@ -43,6 +43,19 @@ namespace DefaultNamespace.Effects
 				eligibleCards.Add(cardScript);
 			}
 
+			if (CombatManager.Me.revealZone != null)
+			{
+				var revealCardScript = CombatManager.Me.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef != myCardScript.myStatusRef &&
+				    revealCardScript.myStatusEffects.Contains(statusEffectToConsume) &&
+				    !eligibleCards.Exists(c => c.gameObject == CombatManager.Me.revealZone))
+				{
+					eligibleCards.Add(revealCardScript);
+				}
+			}
+
 			if (eligibleCards.Count == 0) return;
 
 			eligibleCards = UtilityFuncManagerScript.ShuffleList(eligibleCards);

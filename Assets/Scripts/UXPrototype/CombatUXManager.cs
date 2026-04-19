@@ -1336,7 +1336,9 @@ public class CombatUXManager : MonoBehaviour
 		// Animation complete: destroy effect and execute callback
 		projectileSequence.OnComplete(() =>
 		{
+			
 			Destroy(projectile);
+			print("projectile destroyed");
 			onComplete?.Invoke();
 		});
 

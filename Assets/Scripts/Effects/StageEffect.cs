@@ -324,6 +324,9 @@ public class StageEffect : EffectScript
 			}
 		}
 		
+		// Sync physical card list order with logical deck before animation
+		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+		
 		// 2. Play arc trajectory animation (move cards to top)
 		foreach (var card in stagedCards)
 		{

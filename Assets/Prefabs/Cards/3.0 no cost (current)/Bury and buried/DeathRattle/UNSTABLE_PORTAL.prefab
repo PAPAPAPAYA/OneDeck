@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1354317184328747679}
   - component: {fileID: 8876120594014979081}
   m_Layer: 0
-  m_Name: bury hostile
+  m_Name: bury friendly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -58,12 +58,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8876120594014979081}
         m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
-        m_MethodName: BuryTheirCards
+        m_MethodName: BuryMyCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -164,6 +164,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StageEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   tagToCheck: 0
+  targetFriendly: 0
+  statusEffectToCheck: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -214,8 +216,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: UNSTABLE_PORTAL
-  displayName: "不稳定传送门"
-  cardDesc: "\u7F6E\u9876 1 \u53CB\u65B9;\n\u88AB\u57CB\u846C: \u57CB\u846C 2 \u654C\u65B9"
+  displayName: "\u4E0D\u7A33\u5B9A\u4F20\u9001\u95E8"
+  cardDesc: "\u7F6E\u9876 1 \u53CB\u65B9;\n\u57CB\u846C 1 \u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -270,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
-  event: {fileID: 11400000, guid: dbdfc6da826817e458050a266ddebda9, type: 2}
+  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:

@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 574580945418538098}
   - component: {fileID: 4724561406023219885}
-  - component: {fileID: 6832810485530567621}
+  - component: {fileID: 7125105978710227966}
   m_Layer: 0
-  m_Name: stage friendly
+  m_Name: bury hostile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -56,9 +56,9 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6832810485530567621}
-        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
-        m_MethodName: StageMyCards
+      - m_Target: {fileID: 7125105978710227966}
+        m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
+        m_MethodName: BuryTheirCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -68,7 +68,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6832810485530567621
+--- !u!114 &7125105978710227966
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -77,13 +77,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 473914803469671618}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
+  m_Script: {fileID: 11500000, guid: bb08dbd2c6066ac468526e104b9095a5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
+  m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   tagToCheck: 0
-  targetFriendly: 0
-  statusEffectToCheck: 0
 --- !u!1 &2402662658808699592
 GameObject:
   m_ObjectHideFlags: 0
@@ -147,7 +145,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -218,8 +216,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_PORTAL
-  displayName: "冥界裂缝"
-  cardDesc: "\u7F6E\u9876 1 \u53CB\u65B9;\n\u88AB\u57CB\u846C: \u7F6E\u9876 2 \u53CB\u65B9"
+  displayName: "\u51A5\u754C\u88C2\u7F1D"
+  cardDesc: "\u57CB\u846C 1  \u654C\u65B9;\n\u88AB\u57CB\u846C: \u7F6E\u9876 1 \u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

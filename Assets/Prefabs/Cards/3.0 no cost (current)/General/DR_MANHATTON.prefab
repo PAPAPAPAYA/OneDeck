@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7907964307070441852}
   - component: {fileID: 2493173758063986808}
   m_Layer: 0
-  m_Name: if 4 or more power, stage firneldy bury hostile
+  m_Name: consume 4 power, stage firneldy bury hostile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -134,6 +134,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StageEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   tagToCheck: 0
+  targetFriendly: 0
+  statusEffectToCheck: 0
 --- !u!114 &2493173758063986808
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -196,7 +198,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: DR_MANHATTON
-  displayName: "曼哈顿博士"
+  displayName: "\u66FC\u54C8\u987F\u535A\u58EB"
   cardDesc: "\u6D88\u8017 4 \u529B\u91CF:\n\u7F6E\u9876 2 \u53CB\u65B9, \u57CB\u846C
     2 \u654C\u65B9 "
   takeUpSpace: 1
