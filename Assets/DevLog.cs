@@ -2,7 +2,8 @@
 
 //！ anything else
 	// check card desc and configuration inconsistentency
-	// check unstable_portal behaviour
+		// output ready, need to check actual prefab configuration, refer to History
+	//// check unstable_portal behaviour
 	//// change cardScript to use tab to indent
 
 //! low priority
