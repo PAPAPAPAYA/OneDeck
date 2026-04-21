@@ -98,7 +98,7 @@ MonoBehaviour:
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
-  extraDmg: 0
+  extraDmg: 1
   statusEffectToCheck: 0
 --- !u!114 &3396948184596767659
 MonoBehaviour:

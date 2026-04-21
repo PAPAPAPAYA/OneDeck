@@ -2,7 +2,8 @@
 
 //！ anything else
 	// check card desc and configuration inconsistentency
-		// output ready, need to check actual prefab configuration, refer to History
+		//todo output ready, need to check actual prefab configuration, refer to History
+	//todo chang blood-letting summoner to 有副作用的传送门, enhance friendly curse
 	//// check unstable_portal behaviour
 	//// change cardScript to use tab to indent
 
@@ -29,6 +30,10 @@
 	//// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
 //! design
+	//// POWER_SIPHONER will one card destroy curse
+		//// 1. copy half power from all friendly
+		//// 2. transfer half power from all friendly
+		//// 3. transfer 1 power from all friendly - go with this one
 	//// multiple [stage friendly] will result in easy infinite, need figure out how to limit stage ability
 		//// armed_summoner: stage 1 friendly; deal 3 dmg
 			//// blood-letting summoner: stage 1 friendly; deal 2 dmg to self

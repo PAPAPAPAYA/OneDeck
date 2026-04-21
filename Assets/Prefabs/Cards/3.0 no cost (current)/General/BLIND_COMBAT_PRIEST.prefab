@@ -84,15 +84,15 @@ MonoBehaviour:
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
-  statusEffectToGive: 0
-  statusEffectToCount: 4
+  statusEffectToGive: 4
+  statusEffectToCount: 0
   spreadEvenly: 0
   target: 0
   includeSelf: 0
   lastXCardsCount: 1
   statusEffectLayerCount: 3
   xFriendlyCount: 0
-  yFriendlyLayerCount: 1
+  yFriendlyLayerCount: 0
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
 --- !u!1 &8718476725744197808
@@ -143,7 +143,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: BLIND_COMBAT_PRIEST
-  displayName: "盲眼战斗牧师"
+  displayName: "\u76F2\u773C\u6218\u6597\u7267\u5E08"
   cardDesc: "\u7ED9\u4E88\u4E0B 1 \u5361 3 \u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0

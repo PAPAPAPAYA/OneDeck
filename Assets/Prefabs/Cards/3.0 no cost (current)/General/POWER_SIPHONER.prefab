@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6594858768936703534}
   - component: {fileID: 9184684227690541333}
   m_Layer: 0
-  m_Name: transfter friendly power to me
+  m_Name: transfter 1 friendly power to me
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -60,15 +60,15 @@ MonoBehaviour:
       - m_Target: {fileID: 6594858768936703534}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.TransferStatusEffectEffect,
           Assembly-CSharp
-        m_MethodName: TransferAllStatusEffectToHostileCurse
-        m_Mode: 1
+        m_MethodName: TransferOneStatusEffectToSelf
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
       - m_Target: {fileID: 9184684227690541333}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
@@ -168,7 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: POWER_SIPHONER
-  displayName: "力量虹吸人"
+  displayName: "\u529B\u91CF\u8679\u5438\u4EBA"
   cardDesc: "\u8F6C\u79FB\u6240\u6709\u53CB\u65B9\u7684 \u529B\u91CF \u5230\u81EA\u8EAB;\n\u9020\u6210
     2 \u4F24\u5BB3 x 2"
   takeUpSpace: 1

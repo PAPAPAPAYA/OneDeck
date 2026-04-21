@@ -76,6 +76,104 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
+		/// Transfer 1 layer of the specified status effect from each friendly/hostile card to self.
+		/// </summary>
+		/// <param name="fromFriendly">true = transfer from friendly cards, false = transfer from hostile cards</param>
+		public void TransferOneStatusEffectToSelf(bool fromFriendly)
+		{
+			if (statusEffectToTransfer == EnumStorage.StatusEffect.None)
+			{
+				Debug.LogWarning("[TransferStatusEffectEffect] statusEffectToTransfer is None!");
+				return;
+			}
+
+			PlayerStatusSO targetStatusRef = fromFriendly ? myCardScript.myStatusRef : myCardScript.theirStatusRef;
+
+			// Collect source cards with the specified status effect
+			List<CardScript> sourceCards = new List<CardScript>();
+
+			foreach (var card in combatManager.combinedDeckZone)
+			{
+				var cardScript = card.GetComponent<CardScript>();
+				if (cardScript == null) continue;
+				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+				if (cardScript.myStatusRef != targetStatusRef) continue;
+				if (cardScript == myCardScript) continue; // exclude self
+
+				int count = EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, statusEffectToTransfer);
+				if (count > 0)
+				{
+					sourceCards.Add(cardScript);
+				}
+			}
+
+			// Check revealZone
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef == targetStatusRef &&
+				    revealCardScript != myCardScript)
+				{
+					int count = EnumStorage.GetStatusEffectCount(revealCardScript.myStatusEffects, statusEffectToTransfer);
+					if (count > 0 && !sourceCards.Exists(c => c.gameObject == combatManager.revealZone))
+					{
+						sourceCards.Add(revealCardScript);
+					}
+				}
+			}
+
+			int totalTransferCount = sourceCards.Count;
+			if (totalTransferCount <= 0)
+			{
+				return;
+			}
+
+			// Remove 1 status effect layer from each source card
+			foreach (var card in sourceCards)
+			{
+				for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
+				{
+					if (card.myStatusEffects[i] == statusEffectToTransfer)
+					{
+						card.myStatusEffects.RemoveAt(i);
+						break; // remove only 1 layer
+					}
+				}
+				TriggerTintForStatusEffect(card, statusEffectToTransfer);
+			}
+
+			// Apply status effects to self (1 layer per source card)
+			ApplyStatusEffectCore(
+				myCardScript, statusEffectToTransfer, totalTransferCount,
+				statusEffectResolverPrefab, statusEffectParticlePrefab, particleYOffset, totalTransferCount,
+				suppressLog: true);
+
+			// Log effect
+			LogTransferToSelfEffect(sourceCards, totalTransferCount, fromFriendly);
+
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+		}
+
+		/// <summary>
+		/// Log transfer effect to self.
+		/// </summary>
+		private void LogTransferToSelfEffect(List<CardScript> sourceCards, int totalCount, bool fromFriendly)
+		{
+			string thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
+				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
+				"#87CEEB" : "orange";
+
+			effectResultString.value +=
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>] absorbed " +
+				"<color=yellow>" + totalCount + "</color> [" + statusEffectToTransfer + "] from " +
+				"<color=" + (fromFriendly ? "#87CEEB" : "orange") + ">" + (fromFriendly ? "friendly" : "hostile") + "</color> cards\n";
+		}
+
+		/// <summary>
 		/// Find the hostile curse card.
 		/// </summary>
 		private CardScript FindHostileCurseCard()
