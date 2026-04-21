@@ -99,7 +99,7 @@ GameObject:
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 6691177984462249146}
   m_Layer: 0
-  m_Name: bury 12 friendly cards
+  m_Name: bury all friendly cards
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -145,12 +145,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 6691177984462249146}
         m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
-        m_MethodName: BuryMyCards
-        m_Mode: 3
+        m_MethodName: BuryAllMyCards
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 12
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -218,7 +218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: BODY_CANON
-  displayName: "人间大炮"
+  displayName: "\u4EBA\u95F4\u5927\u70AE"
   cardDesc: "\u57CB\u846C\u6240\u6709\u53CB\u65B9;\n\u5893\u5730\u6BCF\u6709\u4E00\u4E2A\u53CB\u65B9,
     \u9020\u6210 3 \u4F24\u5BB3"
   takeUpSpace: 1

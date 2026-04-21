@@ -195,91 +195,101 @@
 		// Effect component fields on children
 		foreach (UnityEngine.Transform child in prefab.transform)
 		{
+			string safeName = safeName.Replace("[", "(").Replace("]", ")");
 			var hpAlter = child.GetComponent<HPAlterEffect>();
 			if (hpAlter != null)
 			{
-				output += "[HPALTER_" + child.name + " baseDmg=" + (hpAlter.baseDmg != null ? hpAlter.baseDmg.value.ToString() : "0") + " isStatusEffectDamage=" + hpAlter.isStatusEffectDamage + " extraDmg=" + hpAlter.extraDmg + " statusEffectToCheck=" + hpAlter.statusEffectToCheck + "]";
+				output += "[HPALTER_" + safeName + " baseDmg=" + (hpAlter.baseDmg != null ? hpAlter.baseDmg.value.ToString() : "0") + " isStatusEffectDamage=" + hpAlter.isStatusEffectDamage + " extraDmg=" + hpAlter.extraDmg + " statusEffectToCheck=" + hpAlter.statusEffectToCheck + "]";
 			}
 
 			var shieldAlter = child.GetComponent<DefaultNamespace.Effects.ShieldAlterEffect>();
 			if (shieldAlter != null)
 			{
-				output += "[SHIELD_" + child.name + "]";
+				output += "[SHIELD_" + safeName + "]";
 			}
 
 			var addTemp = child.GetComponent<DefaultNamespace.Effects.AddTempCard>();
 			if (addTemp != null)
 			{
-				output += "[ADDTEMP_" + child.name + " cardCount=" + addTemp.cardCount + " curseCardTypeID=" + (addTemp.curseCardTypeID != null ? addTemp.curseCardTypeID.value : "") + "]";
+				output += "[ADDTEMP_" + safeName + " cardCount=" + addTemp.cardCount + " curseCardTypeID=" + (addTemp.curseCardTypeID != null ? addTemp.curseCardTypeID.value : "") + "]";
 			}
 
 			var curse = child.GetComponent<DefaultNamespace.Effects.CurseEffect>();
 			if (curse != null)
 			{
-				output += "[CURSE_" + child.name + " cardTypeID=" + (curse.cardTypeID != null ? curse.cardTypeID.value : "") + " cardPrefab=" + (curse.cardPrefab != null ? curse.cardPrefab.name : "") + " powerCoefficient=" + curse.powerCoefficient + "]";
+				output += "[CURSE_" + safeName + " cardTypeID=" + (curse.cardTypeID != null ? curse.cardTypeID.value : "") + " cardPrefab=" + (curse.cardPrefab != null ? curse.cardPrefab.name : "") + " powerCoefficient=" + curse.powerCoefficient + "]";
 			}
 
 			var exile = child.GetComponent<ExileEffect>();
 			if (exile != null)
 			{
-				output += "[EXILE_" + child.name + " tagToCheck=" + exile.tagToCheck + "]";
+				output += "[EXILE_" + safeName + " tagToCheck=" + exile.tagToCheck + "]";
 			}
 
 			var bury = child.GetComponent<BuryEffect>();
 			if (bury != null)
 			{
-				output += "[BURY_" + child.name + " tagToCheck=" + bury.tagToCheck + "]";
+				output += "[BURY_" + safeName + " tagToCheck=" + bury.tagToCheck + "]";
 			}
 
 			var stage = child.GetComponent<StageEffect>();
 			if (stage != null)
 			{
-				output += "[STAGE_" + child.name + " tagToCheck=" + stage.tagToCheck + " targetFriendly=" + stage.targetFriendly + " statusEffectToCheck=" + stage.statusEffectToCheck + "]";
+				output += "[STAGE_" + safeName + " tagToCheck=" + stage.tagToCheck + " targetFriendly=" + stage.targetFriendly + " statusEffectToCheck=" + stage.statusEffectToCheck + "]";
 			}
 
 			var cardManip = child.GetComponent<CardManipulationEffect>();
 			if (cardManip != null)
 			{
-				output += "[MANIP_" + child.name + " tagToCheck=" + cardManip.tagToCheck + "]";
+				output += "[MANIP_" + safeName + " tagToCheck=" + cardManip.tagToCheck + "]";
 			}
 
 			var transfer = child.GetComponent<DefaultNamespace.Effects.TransferStatusEffectEffect>();
 			if (transfer != null)
 			{
-				output += "[TRANSFER_" + child.name + " isFromFriendly=" + transfer.isFromFriendly + " statusEffectToTransfer=" + transfer.statusEffectToTransfer + " curseCardTypeID=" + (transfer.curseCardTypeID != null ? transfer.curseCardTypeID.value : "") + "]";
+				output += "[TRANSFER_" + safeName + " isFromFriendly=" + transfer.isFromFriendly + " statusEffectToTransfer=" + transfer.statusEffectToTransfer + " curseCardTypeID=" + (transfer.curseCardTypeID != null ? transfer.curseCardTypeID.value : "") + "]";
 			}
 
 			var changeTarget = child.GetComponent<DefaultNamespace.Effects.ChangeCardTarget>();
 			if (changeTarget != null)
 			{
-				output += "[CHANGETARGET_" + child.name + "]";
+				output += "[CHANGETARGET_" + safeName + "]";
 			}
 
 			var changeHpAlter = child.GetComponent<DefaultNamespace.Effects.ChangeHpAlterAmountEffect>();
 			if (changeHpAlter != null)
 			{
-				output += "[CHANGEHPALTER_" + child.name + "]";
+				output += "[CHANGEHPALTER_" + safeName + "]";
 			}
 
 			var hpMaxAlter = child.GetComponent<HPMaxAlterEffect>();
 			if (hpMaxAlter != null)
 			{
-				output += "[HPMAXALTER_" + child.name + "]";
+				output += "[HPMAXALTER_" + safeName + "]";
 			}
 
 			// StatusEffectAmplifierEffect (must be checked before StatusEffectGiverEffect because it inherits from it)
 			var amplifier = child.GetComponent<DefaultNamespace.Effects.StatusEffectAmplifierEffect>();
 			if (amplifier != null)
 			{
-				output += "[AMPLIFIER_" + child.name + " statusEffectToGive=" + amplifier.statusEffectToGive + " statusEffectToCount=" + amplifier.statusEffectToCount + " statusEffectMultiplier=" + amplifier.statusEffectMultiplier + " target=" + amplifier.target + " includeSelf=" + amplifier.includeSelf + "]";
+				output += "[AMPLIFIER_" + safeName + " statusEffectToGive=" + amplifier.statusEffectToGive + " statusEffectToCount=" + amplifier.statusEffectToCount + " statusEffectMultiplier=" + amplifier.statusEffectMultiplier + " target=" + amplifier.target + " includeSelf=" + amplifier.includeSelf + " lastXCardsCount=" + amplifier.lastXCardsCount + " xFriendlyCount=" + amplifier.xFriendlyCount + " statusEffectLayerCount=" + amplifier.statusEffectLayerCount + " yFriendlyLayerCount=" + amplifier.yFriendlyLayerCount + "]";
 			}
 			else
 			{
-				// StatusEffectGiverEffect (only if not an amplifier)
-				var statusGiver = child.GetComponent<DefaultNamespace.Effects.StatusEffectGiverEffect>();
-				if (statusGiver != null)
+				// PowerReactionEffect (must be checked before StatusEffectGiverEffect because it inherits from it)
+				var powerReaction = child.GetComponent<DefaultNamespace.Effects.PowerReactionEffect>();
+				if (powerReaction != null)
 				{
-					output += "[GIVER_" + child.name + " statusEffectToGive=" + statusGiver.statusEffectToGive + " statusEffectToCount=" + statusGiver.statusEffectToCount + " target=" + statusGiver.target + " includeSelf=" + statusGiver.includeSelf + " lastXCardsCount=" + statusGiver.lastXCardsCount + " xFriendlyCount=" + statusGiver.xFriendlyCount + "]";
+					output += "[POWERREACTION_" + safeName + " powerAmount=" + powerReaction.powerAmount + " excludeSelf=" + powerReaction.excludeSelf + " statusEffectToGive=" + powerReaction.statusEffectToGive + " statusEffectToCount=" + powerReaction.statusEffectToCount + " target=" + powerReaction.target + " includeSelf=" + powerReaction.includeSelf + " lastXCardsCount=" + powerReaction.lastXCardsCount + " xFriendlyCount=" + powerReaction.xFriendlyCount + " statusEffectLayerCount=" + powerReaction.statusEffectLayerCount + " yFriendlyLayerCount=" + powerReaction.yFriendlyLayerCount + "]";
+				}
+				else
+				{
+					// StatusEffectGiverEffect (only if not an amplifier or power reaction)
+					var statusGiver = child.GetComponent<DefaultNamespace.Effects.StatusEffectGiverEffect>();
+					if (statusGiver != null)
+					{
+						output += "[GIVER_" + safeName + " statusEffectToGive=" + statusGiver.statusEffectToGive + " statusEffectToCount=" + statusGiver.statusEffectToCount + " target=" + statusGiver.target + " includeSelf=" + statusGiver.includeSelf + " lastXCardsCount=" + statusGiver.lastXCardsCount + " xFriendlyCount=" + statusGiver.xFriendlyCount + " statusEffectLayerCount=" + statusGiver.statusEffectLayerCount + " yFriendlyLayerCount=" + statusGiver.yFriendlyLayerCount + "]";
+					}
 				}
 			}
 
@@ -287,7 +297,7 @@
 			var consumer = child.GetComponent<DefaultNamespace.Effects.ConsumeStatusEffect>();
 			if (consumer != null)
 			{
-				output += "[CONSUMER_" + child.name + " statusEffectToConsume=" + consumer.statusEffectToConsume + "]";
+				output += "[CONSUMER_" + safeName + " statusEffectToConsume=" + consumer.statusEffectToConsume + "]";
 			}
 		}
 

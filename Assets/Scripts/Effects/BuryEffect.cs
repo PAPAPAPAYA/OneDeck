@@ -172,6 +172,26 @@ public class BuryEffect : EffectScript
 		BuryMyCards(intSO.value);
 	}
 
+	public void BuryAllMyCards()
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var myCards = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myCards, true);
+
+		// Filter cards that belong to this card's owner and are not at the bottom
+		for (int i = myCards.Count - 1; i >= 0; i--)
+		{
+			var card = myCards[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			{
+				myCards.RemoveAt(i);
+			}
+		}
+
+		BuryChosenCards(myCards, myCards.Count);
+	}
+
 	/// <summary>
 	/// Bury the last X cards in the combined deck (cards before this card in deck order).
 	/// Iterates backwards from the current card's position and buries each valid target.

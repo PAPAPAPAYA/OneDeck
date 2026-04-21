@@ -95,6 +95,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StageEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   tagToCheck: 0
+  targetFriendly: 0
+  statusEffectToCheck: 0
 --- !u!114 &5216541608761385445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,7 +122,6 @@ GameObject:
   - component: {fileID: 3828591620990538636}
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
-  - component: {fileID: 6314270644752032363}
   m_Layer: 0
   m_Name: RIFT
   m_TagString: Untagged
@@ -158,7 +159,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT
-  displayName: "次元裂缝"
+  displayName: "\u6B21\u5143\u88C2\u7F1D"
   cardDesc: "\u7F6E\u9876 1 \u53CB\u65B9;\n\u53BB\u9664\u81EA\u8EAB"
   takeUpSpace: 1
   isStartCard: 0
@@ -187,34 +188,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
-  response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 3408854323514059765}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: InvokeEffectEvent
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &6314270644752032363
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
-  event: {fileID: 11400000, guid: dbdfc6da826817e458050a266ddebda9, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:

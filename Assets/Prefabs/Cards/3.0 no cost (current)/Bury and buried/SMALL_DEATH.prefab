@@ -162,7 +162,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SMALL_DEATH
-  displayName: "小范围死亡"
+  displayName: "\u5C0F\u8303\u56F4\u6B7B\u4EA1"
   cardDesc: "\u57CB\u846C\u540E 2 \u5361;\n\u589E\u5F3A 1 \u654C\u65B9[\u8BC5\u5492]"
   takeUpSpace: 1
   isStartCard: 0
@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  event: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
+  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6594858768936703534}
   - component: {fileID: 9184684227690541333}
   m_Layer: 0
-  m_Name: transfter 1 friendly power to me
+  m_Name: transfer 1 friendly power to me
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -169,7 +169,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: POWER_SIPHONER
   displayName: "\u529B\u91CF\u8679\u5438\u4EBA"
-  cardDesc: "\u8F6C\u79FB\u6240\u6709\u53CB\u65B9\u7684 \u529B\u91CF \u5230\u81EA\u8EAB;\n\u9020\u6210
+  cardDesc: "\u8F6C\u79FB\u6240\u6709\u53CB\u65B9\u7684 1 \u529B\u91CF\u5230\u81EA\u8EAB;\n\u9020\u6210
     2 \u4F24\u5BB3 x 2"
   takeUpSpace: 1
   isStartCard: 0

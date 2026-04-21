@@ -93,10 +93,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  cardTypeID: JU_ON
+  cardTypeID: {fileID: 0}
   cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
   statusEffectResolverPrefab: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 385316958995927269, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}
+  particleYOffset: 0
+  powerCoefficient: 1
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -145,8 +147,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: DEATHBED_CURSE
-  displayName: "临终诅咒"
-  cardDesc: "\u8426\u7ED5: \u5F53\u53CB\u65B9\u88AB\u53BB\u9664, \u654C\u65B9[\u884C\u5C06\u5C31\u6728]\u83B7\u5F97
+  displayName: "\u4E34\u7EC8\u8BC5\u5492"
+  cardDesc: "\u8426\u7ED5: \u5F53\u53CB\u65B9\u88AB\u53BB\u9664, \u654C\u65B9[\u8BC5\u5492]\u83B7\u5F97
     1 \u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0

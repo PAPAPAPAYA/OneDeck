@@ -57,8 +57,9 @@ Use `execute_code` (with `compiler: "codedom"`) to load every prefab, read `Card
 | `ChangeCardTarget` | (presence only) |
 | `ChangeHpAlterAmountEffect` | (presence only) |
 | `HPMaxAlterEffect` | (presence only) |
-| `StatusEffectGiverEffect` | `statusEffectToGive`, `statusEffectToCount`, `target`, `includeSelf`, `lastXCardsCount`, `xFriendlyCount` |
+| `StatusEffectGiverEffect` | `statusEffectToGive`, `statusEffectToCount`, `target`, `includeSelf`, `lastXCardsCount`, `xFriendlyCount`, `statusEffectLayerCount`, `yFriendlyLayerCount` |
 | `StatusEffectAmplifierEffect` | 继承自上方，额外有 `statusEffectMultiplier` |
+| `PowerReactionEffect` | `powerAmount`, `excludeSelf` |
 | `ConsumeStatusEffect` | `statusEffectToConsume` |
 
 **Serialization access pattern:**

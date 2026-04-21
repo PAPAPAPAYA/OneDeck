@@ -1,9 +1,11 @@
 // devlog
 
 //！ anything else
-	// check card desc and configuration inconsistentency
-		//todo output ready, need to check actual prefab configuration, refer to History
-	//todo chang blood-letting summoner to 有副作用的传送门, enhance friendly curse
+	// check desc format
+		// result ready, need further operation
+	//// check card desc and configuration inconsistentency
+		//// output ready, need to check actual prefab configuration, refer to History
+	//// chang blood-letting summoner to 有副作用的传送门, enhance friendly curse
 	//// check unstable_portal behaviour
 	//// change cardScript to use tab to indent
 
@@ -53,9 +55,9 @@
 
 //! feature
 	//// skill to check infinite card combos
+		// GiveStatusEffectToXFriendly, GiveStatusEffectToLastXCards, GivePowerToCardThatGotPower
 	//// tool to validate no duplicate card type id
 	//// skills and SOPs to generate test plan and execute test plan to test card prefabs
-		// need to be more concise
 	//// script name check
 	//// tell kimi to make a configuration checker
 	// rarity

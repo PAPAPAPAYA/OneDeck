@@ -71,7 +71,7 @@ namespace DefaultNamespace.Effects
 		/// Enhances curse: enhances enemy curse based on IntSO value.
 		/// </summary>
 		/// <param name="powerAmountSO">IntSO storing Power stack amount.</param>
-		public void EnhanceCurse(IntSO powerAmountSO)
+		public void EnhanceCurseBasedOnIntSO(IntSO powerAmountSO)
 		{
 			if (powerAmountSO == null) return;
 			EnhanceCurse(powerAmountSO.value);
@@ -93,6 +93,82 @@ namespace DefaultNamespace.Effects
 
 			int calculatedPower = powerAmountSO.value / powerCoefficient;
 			EnhanceCurse(calculatedPower);
+		}
+
+		/// <summary>
+		/// Enhances friendly curse: if no friendly card with the specified cardTypeID exists in combinedDeckZone,
+		/// spawns one of that type, then applies Power status effect to that friendly card.
+		/// </summary>
+		/// <param name="powerAmount">Amount of Power stacks to apply.</param>
+		public void EnhanceFriendlyCurse(int powerAmount)
+		{
+			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
+			{
+				Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
+				return;
+			}
+
+			if (powerAmount <= 0)
+			{
+				return;
+			}
+
+			// Find friendly card with specified cardTypeID in combinedDeckZone
+			CardScript targetCard = FindFriendlyCardWithTypeID(cardTypeID.value);
+
+			// If not found, spawn one
+			if (targetCard == null)
+			{
+				if (cardPrefab == null)
+				{
+					Debug.LogWarning($"[CurseEffect] Card prefab is not set! Cannot create card with typeID: {cardTypeID.value}");
+					return;
+				}
+				targetCard = CreateFriendlyCard(cardPrefab);
+			}
+
+			// Apply Power status effect to target card
+			if (targetCard != null)
+			{
+				ApplyPowerToCardWithProjectile(targetCard, powerAmount);
+			}
+		}
+
+		/// <summary>
+		/// Finds a friendly card with the specified cardTypeID in combinedDeckZone.
+		/// </summary>
+		private CardScript FindFriendlyCardWithTypeID(string typeID)
+		{
+			foreach (var card in combatManager.combinedDeckZone)
+			{
+				var cardScript = card.GetComponent<CardScript>();
+				if (cardScript == null) continue;
+				
+				// Skip neutral cards
+				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+				
+				// Check if it is a friendly card and cardTypeID matches
+				if (cardScript.myStatusRef == myCardScript.myStatusRef && 
+				    cardScript.cardTypeID == typeID)
+				{
+					return cardScript;
+				}
+			}
+
+			// Check revealZone
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef == myCardScript.myStatusRef &&
+				    revealCardScript.cardTypeID == typeID)
+				{
+					return revealCardScript;
+				}
+			}
+
+			return null;
 		}
 
 		/// <summary>
@@ -129,6 +205,35 @@ namespace DefaultNamespace.Effects
 				}
 			}
 
+			return null;
+		}
+
+		/// <summary>
+		/// Spawns a card for the friendly side.
+		/// </summary>
+		private CardScript CreateFriendlyCard(GameObject cardToCreate)
+		{
+			CombatFuncs.me.AddCard_TargetSpecific(cardToCreate, myCardScript.myStatusRef);
+			
+			// Get the newly added card (at the first position of combinedDeckZone)
+			if (combatManager.combinedDeckZone.Count > 0)
+			{
+				var newCard = combatManager.combinedDeckZone[0];
+				var newCardScript = newCard.GetComponent<CardScript>();
+				
+				// Output effect info
+				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
+					"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
+					"#87CEEB" : "orange";
+				
+				effectResultString.value +=
+					"// " + thisCardOwnerString +
+					"<color=" + thisCardColor + ">" + myCard.name + "</color>] cursed and created " +
+					"<color=#87CEEB>Friendly</color> [<color=#87CEEB>" + newCard.name + "</color>]\n";
+				
+				return newCardScript;
+			}
 			return null;
 		}
 
@@ -188,9 +293,8 @@ namespace DefaultNamespace.Effects
 				targetCard, EnumStorage.StatusEffect.Power, amount,
 				statusEffectResolverPrefab, statusEffectParticlePrefab, particleYOffset, amount);
 
-			// Check if enemy curse card gained Power, trigger event
-			if (targetCard.myStatusRef == myCardScript.theirStatusRef &&
-			    targetCard.cardTypeID == GameEventStorage.me?.curseCardTypeID?.value)
+			// Check if curse card gained Power, trigger event
+			if (targetCard.cardTypeID == GameEventStorage.me?.curseCardTypeID?.value)
 			{
 				if (targetCard.myStatusRef == combatManager.enemyPlayerStatusRef)
 				{

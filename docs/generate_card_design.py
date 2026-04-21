@@ -1,313 +1,386 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Parse CardDesign_GenerationLog.txt and produce a structured Markdown document.
-"""
+"""Parse CardDesign_GenerationLog.txt and generate a Markdown card design document."""
 
 import re
 import os
 from datetime import datetime
 
 LOG_PATH = os.path.join(os.path.dirname(__file__), "CardDesign_GenerationLog.txt")
-OUT_PATH = os.path.join(os.path.dirname(__file__), "3.0_no_cost_CardDesign.md")
+OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "3.0_no_cost_CardDesign.md")
+
+
+def strip_assembly(name):
+	return name.replace(", Assembly-CSharp", "")
 
 
 def parse_log(path):
-    cards = []
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line.startswith("CARD|"):
-                continue
-            parts = line.split("|", 3)
-            if len(parts) < 4:
-                continue
-            prefab_name = parts[1]
-            asset_path = parts[2]
-            kv_part = parts[3]
+	cards = []
+	with open(path, "r", encoding="utf-8") as f:
+		for line in f:
+			line = line.strip()
+			if not line.startswith("CARD|"):
+				continue
+			# Split into exactly 4 parts: CARD, name, path, kv+containers
+			parts = line.split("|", 3)
+			if len(parts) < 4:
+				continue
+			prefab_name = parts[1]
+			asset_path = parts[2]
+			rest = parts[3]
 
-            # Preprocess: bracketed names like [ju-on], [curse], [rift] in child names
-            # break regexes because they contain ']' which is used as tag delimiter.
-            # Replace them with parentheses to avoid truncation.
-            kv_part = kv_part.replace("[ju-on]", "(ju-on)")
-            kv_part = kv_part.replace("[curse]", "(curse)")
-            kv_part = kv_part.replace("[rift]", "(rift)")
+			# Extract category from path
+			category = "Unknown"
+			m = re.search(r"3\.0 no cost \(current\)/([^/]+)/", asset_path)
+			if m:
+				category = m.group(1)
+			# Also check for subcategory like DeathRattle
+			sub_m = re.search(r"3\.0 no cost \(current\)/[^/]+/([^/]+)/[^/]+\.prefab", asset_path)
+			subcategory = sub_m.group(1) if sub_m else None
 
-            # Extract category from path
-            # e.g. Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/...
-            m = re.search(r"/3\.0 no cost \(current\)/([^/]+)/", asset_path)
-            category = m.group(1) if m else "Unknown"
-            subcategory = ""
-            # Check for subfolder like DeathRattle
-            m2 = re.search(r"/3\.0 no cost \(current\)/[^/]+/([^/]+)/[^/]+\.prefab", asset_path)
-            if m2:
-                subcategory = m2.group(1)
+			# Extract cardDesc using regex because it may contain semicolons
+			card_desc = ""
+			desc_m = re.search(r"cardDesc=(.*?);isMinion=", rest)
+			if desc_m:
+				card_desc = desc_m.group(1).replace("\\n", "\n")
 
-            # cardDesc extraction: it may contain semicolons
-            card_desc_match = re.search(r"cardDesc=(.*?);isMinion=", kv_part)
-            card_desc = card_desc_match.group(1) if card_desc_match else ""
-            card_desc = card_desc.replace("\\n", "\n")
+			# Parse key=value pairs before first bracket
+			kv_part = rest
+			first_bracket = rest.find("[")
+			if first_bracket != -1:
+				kv_part = rest[:first_bracket]
 
-            # Simple kv extraction for other fields
-            def get_field(key):
-                pat = re.escape(key) + r"=(.*?);"
-                m = re.search(pat, kv_part)
-                return m.group(1) if m else ""
+			fields = {}
+			for pair in kv_part.split(";"):
+				if "=" not in pair:
+					continue
+				k, v = pair.split("=", 1)
+				fields[k.strip()] = v.strip()
 
-            card = {
-                "prefab_name": prefab_name,
-                "asset_path": asset_path,
-                "category": category,
-                "subcategory": subcategory,
-                "cardTypeID": get_field("cardTypeID"),
-                "displayName": get_field("displayName"),
-                "cardDesc": card_desc,
-                "isMinion": get_field("isMinion"),
-                "buryCost": get_field("buryCost"),
-                "delayCost": get_field("delayCost"),
-                "exposeCost": get_field("exposeCost"),
-                "minionCostCount": get_field("minionCostCount"),
-                "minionCostCardTypeID": get_field("minionCostCardTypeID"),
-                "minionCostOwner": get_field("minionCostOwner"),
-                "statusEffects": get_field("statusEffects"),
-                "tags": get_field("tags"),
-                "containers": [],
-                "effects": [],
-            }
+			# Parse containers and effects from the rest
+			containers = []
+			effects = []
+			if first_bracket != -1:
+				bracket_part = rest[first_bracket:]
+				# Parse containers
+				container_pattern = r"\[CONTAINER_(\d+) name=(.+?)\](?=\[|$)"
+				for cm in re.finditer(container_pattern, bracket_part):
+					cidx = cm.group(1)
+					cname = cm.group(2)
+					# Find the segment for this container (from its start to next CONTAINER or end)
+					start_pos = cm.start()
+					next_container = re.search(r"\[CONTAINER_", bracket_part[start_pos + 1:])
+					if next_container:
+						seg_end = start_pos + 1 + next_container.start()
+					else:
+						seg_end = len(bracket_part)
+					segment = bracket_part[start_pos:seg_end]
 
-            # Extract containers and their triggers/calls
-            container_blocks = re.findall(
-                r"\[CONTAINER_(\d+) name=(.+?)\](?=\[|$)", kv_part
-            )
-            for idx, name in container_blocks:
-                # Find the slice of kv_part belonging to this container
-                # We locate the CONTAINER block and scan forward until next CONTAINER or effect blocks not associated
-                # Simpler: regex for trigger and calls immediately after the container tag
-                container_start = kv_part.find(f"[CONTAINER_{idx} name={name}]")
-                container_end = len(kv_part)
-                # Find next CONTAINER
-                next_cont = re.search(r"\[CONTAINER_\d+ name=", kv_part[container_start + 1:])
-                if next_cont:
-                    container_end = container_start + 1 + next_cont.start()
-                container_slice = kv_part[container_start:container_end]
+					trigger = ""
+					trigger_m = re.search(r"\[TRIGGER_(.+?)\]", segment)
+					if trigger_m:
+						trigger = trigger_m.group(1)
 
-                trigger_match = re.search(r"\[TRIGGER_(.+?)\]", container_slice)
-                trigger = trigger_match.group(1) if trigger_match else "NONE"
+					checks = []
+					for check_m in re.finditer(r"\[CHECK_(.+?)\]", segment):
+						checks.append(strip_assembly(check_m.group(1)))
 
-                checks = re.findall(r"\[CHECK_(.+?)\]", container_slice)
-                pres = re.findall(r"\[PRE_(.+?)\]", container_slice)
-                effects = re.findall(r"\[EFFECT_(.+?)\]", container_slice)
+					pres = []
+					for pre_m in re.finditer(r"\[PRE_(.+?)\]", segment):
+						pres.append(strip_assembly(pre_m.group(1)))
 
-                # Clean assembly names
-                def clean_call(s):
-                    return s.replace(", Assembly-CSharp", "")
+					effs = []
+					for eff_m in re.finditer(r"\[EFFECT_(.+?)\]", segment):
+						effs.append(strip_assembly(eff_m.group(1)))
 
-                checks = [clean_call(c) for c in checks]
-                pres = [clean_call(c) for c in pres]
-                effects = [clean_call(c) for c in effects]
+					containers.append({
+						"index": cidx,
+						"name": cname,
+						"trigger": trigger,
+						"checks": checks,
+						"pres": pres,
+						"effects": effs,
+					})
 
-                card["containers"].append({
-                    "name": name,
-                    "trigger": trigger,
-                    "checks": checks,
-                    "pres": pres,
-                    "effects": effects,
-                })
+				# Parse effect components (non-container brackets that have type prefixes)
+				# These are outside of container segments typically, or we can scan whole bracket_part
+				effect_types = [
+					("HPALTER", r"\[HPALTER_(.+?) baseDmg=(.+?) isStatusEffectDamage=(.+?) extraDmg=(.+?) statusEffectToCheck=(.+?)\]"),
+					("SHIELD", r"\[SHIELD_(.+?)\]"),
+					("ADDTEMP", r"\[ADDTEMP_(.+?) cardCount=(.+?) curseCardTypeID=(.*?)\]"),
+					("CURSE", r"\[CURSE_(.+?) cardTypeID=(.*?) cardPrefab=(.*?) powerCoefficient=(.+?)\]"),
+					("EXILE", r"\[EXILE_(.+?) tagToCheck=(.+?)\]"),
+					("BURY", r"\[BURY_(.+?) tagToCheck=(.+?)\]"),
+					("STAGE", r"\[STAGE_(.+?) tagToCheck=(.+?) targetFriendly=(.+?) statusEffectToCheck=(.+?)\]"),
+					("MANIP", r"\[MANIP_(.+?) tagToCheck=(.+?)\]"),
+					("TRANSFER", r"\[TRANSFER_(.+?) isFromFriendly=(.+?) statusEffectToTransfer=(.+?) curseCardTypeID=(.*?)\]"),
+					("CHANGETARGET", r"\[CHANGETARGET_(.+?)\]"),
+					("CHANGEHPALTER", r"\[CHANGEHPALTER_(.+?)\]"),
+					("HPMAXALTER", r"\[HPMAXALTER_(.+?)\]"),
+					("AMPLIFIER", r"\[AMPLIFIER_(.+?) statusEffectToGive=(.+?) statusEffectToCount=(.+?) statusEffectMultiplier=(.+?) target=(.+?) includeSelf=(.+?) lastXCardsCount=(.+?) xFriendlyCount=(.+?) statusEffectLayerCount=(.+?) yFriendlyLayerCount=(.+?)\]"),
+					("POWERREACTION", r"\[POWERREACTION_(.+?) powerAmount=(.+?) excludeSelf=(.+?) statusEffectToGive=(.+?) statusEffectToCount=(.+?) target=(.+?) includeSelf=(.+?) lastXCardsCount=(.+?) xFriendlyCount=(.+?) statusEffectLayerCount=(.+?) yFriendlyLayerCount=(.+?)\]"),
+					("GIVER", r"\[GIVER_(.+?) statusEffectToGive=(.+?) statusEffectToCount=(.+?) target=(.+?) includeSelf=(.+?) lastXCardsCount=(.+?) xFriendlyCount=(.+?) statusEffectLayerCount=(.+?) yFriendlyLayerCount=(.+?)\]"),
+					("CONSUMER", r"\[CONSUMER_(.+?) statusEffectToConsume=(.+?)\]"),
+				]
+				for eff_name, eff_pattern in effect_types:
+					for em in re.finditer(eff_pattern, bracket_part):
+						effects.append((eff_name, em.groups()))
 
-            # Extract standalone effect components (HPALTER, BURY, STAGE, etc.)
-            effect_patterns = [
-                (r"\[HPALTER_(.+?)\]", "HPAlter"),
-                (r"\[SHIELD_(.+?)\]", "ShieldAlter"),
-                (r"\[ADDTEMP_(.+?)\]", "AddTempCard"),
-                (r"\[CURSE_(.+?)\]", "Curse"),
-                (r"\[EXILE_(.+?)\]", "Exile"),
-                (r"\[BURY_(.+?)\]", "Bury"),
-                (r"\[STAGE_(.+?)\]", "Stage"),
-                (r"\[MANIP_(.+?)\]", "CardManip"),
-                (r"\[TRANSFER_(.+?)\]", "Transfer"),
-                (r"\[CHANGETARGET_(.+?)\]", "ChangeTarget"),
-                (r"\[CHANGEHPALTER_(.+?)\]", "ChangeHpAlter"),
-                (r"\[HPMAXALTER_(.+?)\]", "HPMaxAlter"),
-                (r"\[AMPLIFIER_(.+?)\]", "Amplifier"),
-                (r"\[GIVER_(.+?)\]", "StatusGiver"),
-                (r"\[CONSUMER_(.+?)\]", "Consume"),
-            ]
-            for pattern, eftype in effect_patterns:
-                for match in re.findall(pattern, kv_part):
-                    card["effects"].append({"type": eftype, "data": match})
-
-            cards.append(card)
-    return cards
+			cards.append({
+				"prefab_name": prefab_name,
+				"asset_path": asset_path,
+				"category": category,
+				"subcategory": subcategory,
+				"card_type_id": fields.get("cardTypeID", ""),
+				"display_name": fields.get("displayName", ""),
+				"card_desc": card_desc,
+				"is_minion": fields.get("isMinion", "False"),
+				"bury_cost": fields.get("buryCost", "0"),
+				"delay_cost": fields.get("delayCost", "0"),
+				"expose_cost": fields.get("exposeCost", "0"),
+				"minion_cost_count": fields.get("minionCostCount", "0"),
+				"minion_cost_card_type_id": fields.get("minionCostCardTypeID", ""),
+				"minion_cost_owner": fields.get("minionCostOwner", ""),
+				"status_effects": fields.get("statusEffects", ""),
+				"tags": fields.get("tags", ""),
+				"containers": containers,
+				"effects": effects,
+			})
+	return cards
 
 
-def build_markdown(cards):
-    # Group by category, then subcategory
-    groups = {}
-    for c in cards:
-        cat = c["category"]
-        sub = c["subcategory"]
-        if cat not in groups:
-            groups[cat] = {}
-        if sub not in groups[cat]:
-            groups[cat][sub] = []
-        groups[cat][sub].append(c)
+def generate_markdown(cards):
+	# Group by category, preserving order
+	from collections import OrderedDict
+	groups = OrderedDict()
+	for card in cards:
+		cat = card["category"]
+		if cat not in groups:
+			groups[cat] = []
+		groups[cat].append(card)
 
-    # Sort categories and cards
-    category_order = ["General", "Curse", "Conjure", "Bury and buried"]
-    sorted_cats = []
-    for cat in category_order:
-        if cat in groups:
-            sorted_cats.append(cat)
-    for cat in sorted(groups.keys()):
-        if cat not in sorted_cats:
-            sorted_cats.append(cat)
+	# Build category table
+	cat_table = ""
+	cat_toc = ""
+	total = 0
+	for cat, cat_cards in groups.items():
+		count = len(cat_cards)
+		total += count
+		cat_table += "| {0} | {1} |\n".format(cat, count)
+		anchor = cat.lower().replace(" ", "-").replace("&", "and")
+		cat_toc += "- [{0}](#{1})\n".format(cat, anchor)
 
-    total = len(cards)
-    cat_counts = {cat: sum(len(v) for v in groups[cat].values()) for cat in sorted_cats}
+	# Build category sections
+	sections = ""
+	for cat, cat_cards in groups.items():
+		anchor = cat.lower().replace(" ", "-").replace("&", "and")
+		sections += "## {0}\n\n".format(cat)
+		for card in cat_cards:
+			sections += render_card(card)
+			sections += "\n"
 
-    lines = []
-    lines.append("# OneDeck 3.0 No Cost Card Design Document")
-    lines.append("")
-    lines.append("> This document is auto-generated from prefab data under `Assets/Prefabs/Cards/3.0 no cost (current)`.")
-    lines.append(f"> Generation date: {datetime.now().strftime('%Y-%m-%d')}")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-    lines.append("## Table of Contents")
-    lines.append("")
-    lines.append("- [Overview](#overview)")
-    lines.append("- [Glossary](#glossary)")
-    for cat in sorted_cats:
-        anchor = cat.lower().replace(" ", "-")
-        lines.append(f"- [{cat}](#{anchor})")
-        for sub in sorted(groups[cat].keys()):
-            if sub:
-                sub_anchor = (cat + "-" + sub).lower().replace(" ", "-")
-                lines.append(f"  - [{sub}](#{sub_anchor})")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-    lines.append("## Overview")
-    lines.append("")
-    lines.append("| Category | Count |")
-    lines.append("|----------|-------|")
-    for cat in sorted_cats:
-        lines.append(f"| {cat} | {cat_counts[cat]} |")
-    lines.append(f"| **Total** | **{total}** |")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-    lines.append("## Glossary")
-    lines.append("")
-    lines.append("| Term | Description |")
-    lines.append("|------|-------------|")
-    lines.append("| Bury | Move card to the bottom of the deck |")
-    lines.append("| Stage | Move card to the top of the deck |")
-    lines.append("| Exile | Remove card from the game |")
-    lines.append("| Linger | Card can trigger effects while positioned before the Start Card in deck |")
-    lines.append("| DeathRattle | Effect triggers when the card is buried |")
-    lines.append("| Power | Status effect; each stack increases damage by 1 |")
-    lines.append("| Minion Cost | Consume N friendly Minion cards to activate the effect |")
-    lines.append("")
+	# Template
+	md = """# OneDeck 3.0 No Cost Card Design Document
 
-    for cat in sorted_cats:
-        anchor = cat.lower().replace(" ", "-")
-        lines.append(f"## {cat}")
-        lines.append("")
-        for sub in sorted(groups[cat].keys()):
-            if sub:
-                sub_anchor = (cat + "-" + sub).lower().replace(" ", "-")
-                lines.append(f"### {sub}")
-                lines.append("")
-            for card in groups[cat][sub]:
-                lines.append(f"#### {card['displayName']} (`{card['cardTypeID']}`)")
-                lines.append("")
-                lines.append("| Field | Value |")
-                lines.append("|-------|-------|")
-                flags = []
-                if card["isMinion"] == "True":
-                    flags.append("Minion")
-                if card["tags"]:
-                    flags.append(f"Tags={card['tags']}")
-                if card["statusEffects"]:
-                    flags.append(f"Status={card['statusEffects']}")
-                flags_str = ", ".join(flags) if flags else "None"
-                lines.append(f"| Flags | {flags_str} |")
+> This document is auto-generated from prefab data under `Assets/Prefabs/Cards/3.0 no cost (current)`.
+> Generation date: {date}
 
-                costs = []
-                if card["buryCost"] != "0":
-                    costs.append(f"Bury={card['buryCost']}")
-                if card["delayCost"] != "0":
-                    costs.append(f"Delay={card['delayCost']}")
-                if card["exposeCost"] != "0":
-                    costs.append(f"Expose={card['exposeCost']}")
-                if card["minionCostCount"] != "0":
-                    minion_info = card["minionCostCount"]
-                    if card["minionCostCardTypeID"]:
-                        minion_info += f"[{card['minionCostCardTypeID']}]"
-                    if card["minionCostOwner"]:
-                        minion_info += f"({card['minionCostOwner']})"
-                    costs.append(f"Minion={minion_info}")
-                costs_str = ", ".join(costs) if costs else "None"
-                lines.append(f"| Costs | {costs_str} |")
+---
 
-                desc = card["cardDesc"].replace("\n", "<br>")
-                lines.append(f"| Desc | {desc} |")
+## Table of Contents
 
-                if card["containers"]:
-                    for cont in card["containers"]:
-                        trigger = cont["trigger"]
-                        cont_str = f"**{cont['name']}** | Trigger: `{trigger}`"
-                        if cont["checks"]:
-                            cont_str += f"<br>Check: `{', '.join(cont['checks'])}`"
-                        if cont["pres"]:
-                            cont_str += f"<br>Pre: `{', '.join(cont['pres'])}`"
-                        if cont["effects"]:
-                            cont_str += f"<br>Effect: `{', '.join(cont['effects'])}`"
-                        lines.append(f"| Container | {cont_str} |")
+- [Overview](#overview)
+- [Glossary](#glossary)
+{toc}
 
-                # Key effect fields
-                key_fields = []
-                for eff in card["effects"]:
-                    if eff["type"] == "HPAlter":
-                        key_fields.append(f"HPAlter: {eff['data']}")
-                    elif eff["type"] == "Curse":
-                        key_fields.append(f"Curse: {eff['data']}")
-                    elif eff["type"] == "Amplifier":
-                        key_fields.append(f"Amplifier: {eff['data']}")
-                    elif eff["type"] == "StatusGiver":
-                        key_fields.append(f"StatusGiver: {eff['data']}")
-                    elif eff["type"] == "AddTempCard":
-                        key_fields.append(f"AddTempCard: {eff['data']}")
-                    elif eff["type"] == "Consume":
-                        key_fields.append(f"Consume: {eff['data']}")
-                    elif eff["type"] == "Transfer":
-                        key_fields.append(f"Transfer: {eff['data']}")
-                    elif eff["type"] == "Bury":
-                        key_fields.append(f"Bury: {eff['data']}")
-                    elif eff["type"] == "Stage":
-                        key_fields.append(f"Stage: {eff['data']}")
-                    elif eff["type"] == "Exile":
-                        key_fields.append(f"Exile: {eff['data']}")
+---
 
-                if key_fields:
-                    lines.append(f"| Key Fields | {'<br>'.join(key_fields)} |")
+## Overview
 
-                lines.append("")
-        lines.append("---")
-        lines.append("")
+| Category | Count |
+|----------|-------|
+{cat_table}| **Total** | **{total}** |
 
-    lines.append("> End of document")
-    return "\n".join(lines)
+---
+
+## Glossary
+
+| Term | Description |
+|------|-------------|
+| Bury | Move card to the bottom of the deck |
+| Stage | Move card to the top of the deck |
+| Exile | Remove card from the game |
+| Linger | Card can trigger effects while positioned before the Start Card in deck |
+| DeathRattle | Effect triggers when the card is buried |
+| Power | Status effect; each stack increases damage by 1 |
+| Minion Cost | Consume N friendly Minion cards to activate the effect |
+
+---
+
+{sections}
+
+---
+
+> End of document
+""".format(
+		date=datetime.now().strftime("%Y-%m-%d %H:%M"),
+		toc=cat_toc,
+		cat_table=cat_table,
+		total=total,
+		sections=sections,
+	)
+	return md
+
+
+def render_card(card):
+	lines = []
+	lines.append("### {0} (`{1}`)".format(card["display_name"], card["card_type_id"]))
+	lines.append("")
+
+	# Flags
+	flags = []
+	if card["is_minion"] == "True":
+		flags.append("Minion")
+	if card["tags"]:
+		flags.append("Tags=" + card["tags"])
+	if card["status_effects"]:
+		flags.append("Status=" + card["status_effects"])
+	flags_str = " / ".join(flags) if flags else "None"
+
+	# Costs
+	costs = []
+	if card["bury_cost"] != "0":
+		costs.append("Bury=" + card["bury_cost"])
+	if card["delay_cost"] != "0":
+		costs.append("Delay=" + card["delay_cost"])
+	if card["expose_cost"] != "0":
+		costs.append("Expose=" + card["expose_cost"])
+	if card["minion_cost_count"] != "0":
+		minion_cost = "Minion=" + card["minion_cost_count"]
+		if card["minion_cost_card_type_id"]:
+			minion_cost += "[" + card["minion_cost_card_type_id"] + "]"
+		if card["minion_cost_owner"]:
+			minion_cost += "(" + card["minion_cost_owner"] + ")"
+		costs.append(minion_cost)
+	costs_str = " / ".join(costs) if costs else "None"
+
+	lines.append("| Field | Value |")
+	lines.append("|-------|-------|")
+	lines.append("| Name | `{0}` (`{1}`) |".format(card["display_name"], card["card_type_id"]))
+	lines.append("| Flags | {0} |".format(flags_str))
+	lines.append("| Costs | {0} |".format(costs_str))
+	# Description with newlines converted to <br>
+	desc = card["card_desc"].replace("\n", "<br>")
+	lines.append("| Desc | {0} |".format(desc))
+
+	# Containers
+	if card["containers"]:
+		container_lines = []
+		for c in card["containers"]:
+			trigger = c["trigger"] if c["trigger"] else "NONE"
+			calls = []
+			if c["checks"]:
+				calls.append("Check: " + ", ".join(c["checks"]))
+			if c["pres"]:
+				calls.append("Pre: " + ", ".join(c["pres"]))
+			if c["effects"]:
+				calls.append("Effect: " + ", ".join(c["effects"]))
+			calls_str = "; ".join(calls) if calls else "None"
+			container_lines.append("- **{0}** | Trigger:`{1}` | {2}".format(c["name"], trigger, calls_str))
+		lines.append("| Containers | {0} |".format("<br>".join(container_lines)))
+
+	# Key effect fields
+	key_fields = []
+	for eff_name, eff_vals in card["effects"]:
+		if eff_name == "HPALTER":
+			# name, baseDmg, isStatusEffectDamage, extraDmg, statusEffectToCheck
+			base = eff_vals[1]
+			extra = eff_vals[3]
+			se = eff_vals[4]
+			key_fields.append("HPAlter: baseDmg={0} extraDmg={1} statusEffect={2}".format(base, extra, se))
+		elif eff_name == "CURSE":
+			# name, cardTypeID, cardPrefab, powerCoefficient
+			coef = eff_vals[3]
+			key_fields.append("Curse: powerCoefficient={0}".format(coef))
+		elif eff_name == "ADDTEMP":
+			# name, cardCount, curseCardTypeID
+			count = eff_vals[1]
+			key_fields.append("AddTemp: cardCount={0}".format(count))
+		elif eff_name == "AMPLIFIER":
+			# name, statusEffectToGive, statusEffectToCount, multiplier, target, includeSelf, ...
+			mult = eff_vals[3]
+			key_fields.append("Amplifier: multiplier={0}".format(mult))
+		elif eff_name == "POWERREACTION":
+			# name, powerAmount, excludeSelf, ...
+			pamt = eff_vals[1]
+			key_fields.append("PowerReaction: powerAmount={0}".format(pamt))
+		elif eff_name == "GIVER":
+			# name, statusEffectToGive, statusEffectToCount, target, includeSelf, lastXCardsCount, xFriendlyCount, statusEffectLayerCount, yFriendlyLayerCount
+			seg = eff_vals[0]
+			give = eff_vals[1]
+			count = eff_vals[2]
+			lastx = eff_vals[5]
+			xf = eff_vals[6]
+			slc = eff_vals[7]
+			yflc = eff_vals[8]
+			parts = []
+			if lastx != "0":
+				parts.append("lastXCards={0}".format(lastx))
+			if xf != "0":
+				parts.append("xFriendly={0}".format(xf))
+			if slc != "0":
+				parts.append("layerCount={0}".format(slc))
+			if yflc != "0":
+				parts.append("yLayerCount={0}".format(yflc))
+			key_fields.append("Giver: give={0} count={1} {2}".format(give, count, ", ".join(parts)))
+		elif eff_name == "CONSUMER":
+			# name, statusEffectToConsume
+			sec = eff_vals[1]
+			key_fields.append("Consumer: consume={0}".format(sec))
+		elif eff_name == "STAGE":
+			# name, tagToCheck, targetFriendly, statusEffectToCheck
+			tag = eff_vals[1]
+			tf = eff_vals[2]
+			sec = eff_vals[3]
+			parts = []
+			if tag != "None":
+				parts.append("tag={0}".format(tag))
+			if tf != "False":
+				parts.append("targetFriendly={0}".format(tf))
+			if sec != "None":
+				parts.append("statusEffect={0}".format(sec))
+			key_fields.append("Stage: {0}".format(", ".join(parts)) if parts else "Stage")
+		elif eff_name == "BURY":
+			tag = eff_vals[1]
+			if tag != "None":
+				key_fields.append("Bury: tag={0}".format(tag))
+			else:
+				key_fields.append("Bury")
+		elif eff_name == "EXILE":
+			tag = eff_vals[1]
+			if tag != "None":
+				key_fields.append("Exile: tag={0}".format(tag))
+			else:
+				key_fields.append("Exile")
+		elif eff_name == "TRANSFER":
+			# name, isFromFriendly, statusEffectToTransfer, curseCardTypeID
+			iff = eff_vals[1]
+			setr = eff_vals[2]
+			key_fields.append("Transfer: fromFriendly={0} effect={1}".format(iff, setr))
+
+	if key_fields:
+		lines.append("| Key Fields | {0} |".format("<br>".join(key_fields)))
+
+	return "\n".join(lines)
 
 
 def main():
-    cards = parse_log(LOG_PATH)
-    md = build_markdown(cards)
-    with open(OUT_PATH, "w", encoding="utf-8") as f:
-        f.write(md)
-    print(f"Generated: {OUT_PATH} ({len(cards)} cards)")
+	cards = parse_log(LOG_PATH)
+	md = generate_markdown(cards)
+	with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+		f.write(md)
+	print("Generated {0} with {1} cards.".format(OUTPUT_PATH, len(cards)))
 
 
 if __name__ == "__main__":
-    main()
+	main()

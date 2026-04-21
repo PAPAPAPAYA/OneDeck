@@ -99,7 +99,7 @@ GameObject:
   - component: {fileID: 868085066501669820}
   - component: {fileID: 155396253852350705}
   m_Layer: 0
-  m_Name: deal dmg (1)
+  m_Name: deal dmg multiple times
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -145,12 +145,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 155396253852350705}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
-        m_Mode: 1
+        m_MethodName: DecreaseTheirHpTimesX
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -224,7 +224,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SPIKE_SKELETON
-  displayName: "针刺骷髅"
+  displayName: "\u9488\u523A\u9AB7\u9AC5"
   cardDesc: "\u9020\u6210 3 \u4F24\u5BB3;\n\u88AB\u57CB\u846C: \u9020\u6210 2 \u4F24\u5BB3
     x 2"
   takeUpSpace: 1
@@ -285,18 +285,6 @@ MonoBehaviour:
   response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 868085066501669820}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: InvokeEffectEvent
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 868085066501669820}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEvent
