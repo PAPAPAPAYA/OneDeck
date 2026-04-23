@@ -356,8 +356,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SLIME
   displayName: "\u53F2\u83B1\u59C6"
-  cardDesc: "\u88AB\u57CB\u846C 2 \u6B21: \u6DFB\u52A0\u81EA\u8EAB\u5230\u5361\u7EC4\u4E2D;\n\u9020\u6210
-    4 \u4F24\u5BB3"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62104\u4F24\u5BB3;\u88AB\u57CB\u846C2\u6B21:\u6DFB\u52A0\u81EA\u8EAB\u5230\u5361\u7EC4\u4E2D"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

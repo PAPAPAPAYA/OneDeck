@@ -131,8 +131,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_INSECT
-  displayName: "次元虫"
-  cardDesc: "\u751F\u6210 1 [\u6B21\u5143\u88C2\u7F1D];"
+  displayName: "\u6B21\u5143\u866B"
+  cardDesc: "\u63ED\u6653\u65F6:\u751F\u62101[\u6B21\u5143\u88C2\u7F1D]"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

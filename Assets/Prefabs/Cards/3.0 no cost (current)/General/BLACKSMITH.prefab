@@ -231,9 +231,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: BLACKSMITH
-  displayName: "铁匠"
-  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3;\n\u7ED9\u4E88\u4E00\u4E2A\u53CB\u65B9 1
-    \u529B\u91CF"
+  displayName: "\u94C1\u5320"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62103\u4F24\u5BB3,\u7ED9\u4E88\u4E00\u4E2A\u53CB\u65B91\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

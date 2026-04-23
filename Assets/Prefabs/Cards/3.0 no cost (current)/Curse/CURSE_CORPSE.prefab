@@ -51,8 +51,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: CURSE_CORPSE
   displayName: "\u88AB\u8BC5\u5492\u7684\u5C38\u4F53"
-  cardDesc: "\u589E\u5F3A 1 \u654C\u65B9 [\u8BC5\u5492];\n\u88AB\u57CB\u846C: \u9020\u6210
-    1 x 3 \u4F24\u5BB3"
+  cardDesc: "\u63ED\u6653\u65F6:\u589E\u5F3A1\u654C\u65B9[\u8BC5\u5492];\u88AB\u57CB\u846C:\u9020\u62101x3\u4F24\u5BB3"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

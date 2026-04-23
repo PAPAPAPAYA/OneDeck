@@ -171,9 +171,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: POWER_TRANSFER
-  displayName: "力量转移"
-  cardDesc: "\u53BB\u9664 2 \u654C\u65B9 1 \u529B\u91CF;\n\u7ED9\u4E88 2 \u53CB\u65B9
-    1 \u529B\u91CF"
+  displayName: "\u529B\u91CF\u8F6C\u79FB"
+  cardDesc: "\u63ED\u6653\u65F6:\u53BB\u96642\u654C\u65B91\u529B\u91CF,\u7ED9\u4E882\u53CB\u65B91\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

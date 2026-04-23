@@ -142,8 +142,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_COFFIN
-  displayName: "次元棺材"
-  cardDesc: "\u8426\u7ED5: \u5F53\u53CB\u65B9\u88AB\u53BB\u9664, \u57CB\u846C 1 \u654C\u65B9"
+  displayName: "\u6B21\u5143\u68FA\u6750"
+  cardDesc: "\u8426\u7ED5;\u5F53\u53CB\u65B9\u88AB\u53BB\u9664\u65F6:\u57CB\u846C1\u654C\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

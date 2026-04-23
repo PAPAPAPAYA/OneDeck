@@ -132,8 +132,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: BOOSTER
-  displayName: "推进器"
-  cardDesc: "\u6D17\u724C\u540E, \u7F6E\u9876 2 \u53CB\u65B9;\n\u57CB\u846C 1 \u53CB\u65B9"
+  displayName: "\u63A8\u8FDB\u5668"
+  cardDesc: "\u6D17\u724C\u540E:\u7F6E\u98762\u53CB\u65B9,\u57CB\u846C1\u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

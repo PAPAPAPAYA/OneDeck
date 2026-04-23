@@ -135,8 +135,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: FLESH_COMBINATION
-  displayName: "血肉聚集体"
-  cardDesc: "\u9020\u6210\u53CB\u65B9\u6570\u91CF\u7684\u4F24\u5BB3"
+  displayName: "\u8840\u8089\u805A\u96C6\u4F53"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210\u53CB\u65B9\u6570\u91CF\u7684\u4F24\u5BB3"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

@@ -156,9 +156,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: WEAPON_SPIRIT
-  displayName: "武器精灵"
-  cardDesc: "\u8426\u7ED5;\n\u5F53\u53CB\u65B9\u83B7\u5F97 \u529B\u91CF \u65F6, \u7ED9\u4E88\u8BE5\u53CB\u65B9
-    1 \u529B\u91CF"
+  displayName: "\u6B66\u5668\u7CBE\u7075"
+  cardDesc: "\u8426\u7ED5;\u5F53\u53CB\u65B9\u83B7\u5F97\u529B\u91CF\u65F6:\u7ED9\u4E88\u8BE5\u53CB\u65B91\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

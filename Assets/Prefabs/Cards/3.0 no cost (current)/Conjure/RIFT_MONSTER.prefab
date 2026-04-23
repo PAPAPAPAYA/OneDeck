@@ -99,6 +99,7 @@ MonoBehaviour:
   healAmountAlter: 0
   isStatusEffectDamage: 0
   extraDmg: 2
+  statusEffectToCheck: 0
 --- !u!114 &8932655356446910850
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,8 +161,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_MONSTER
-  displayName: "次元兽"
-  cardDesc: "\u53BB\u9664 1 [\u6B21\u5143\u88C2\u7F1D]:\n\u9020\u6210 4 \u4F24\u5BB3"
+  displayName: "\u6B21\u5143\u517D"
+  cardDesc: "\u53BB\u96641[\u6B21\u5143\u88C2\u7F1D]:\u9020\u62104\u4F24\u5BB3"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

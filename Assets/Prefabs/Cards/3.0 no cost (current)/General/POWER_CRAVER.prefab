@@ -233,8 +233,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: POWER_CRAVER
-  displayName: "力量渴求者"
-  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3;\n\u83B7\u5F97 3 \u500D\u529B\u91CF"
+  displayName: "\u529B\u91CF\u6E34\u6C42\u8005"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62103\u4F24\u5BB3,\u83B7\u5F973\u500D\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

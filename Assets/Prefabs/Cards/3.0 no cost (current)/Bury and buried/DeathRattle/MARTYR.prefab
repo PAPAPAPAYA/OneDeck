@@ -143,8 +143,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: MARTYR
-  displayName: "殉道者"
-  cardDesc: "\u88AB\u57CB\u846C: \u6240\u6709\u53CB\u65B9\u83B7\u5F97 1 \u529B\u91CF"
+  displayName: "\u6B89\u9053\u8005"
+  cardDesc: "\u88AB\u57CB\u846C:\u6240\u6709\u53CB\u65B9\u83B7\u5F971\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

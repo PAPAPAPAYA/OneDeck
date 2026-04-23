@@ -268,7 +268,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: ADVANCE_PORTAL
   displayName: "\u9AD8\u7B49\u4F20\u9001\u95E8"
-  cardDesc: "\u6BCF\u63ED\u6653 2 \u6B21: \n\u7F6E\u9876 2 \u53CB\u65B9"
+  cardDesc: "\u6BCF\u63ED\u66532\u6B21:\u7F6E\u98762\u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

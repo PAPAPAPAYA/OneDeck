@@ -131,7 +131,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: WISE_BURIAL
   displayName: "\u4E0D\u611A\u8822\u7684\u57CB\u846C"
-  cardDesc: "\u88AB\u7F6E\u9876: \u57CB\u846C 1 \u53CB\u65B9[\u88AB\u57CB\u846C:]"
+  cardDesc: "\u88AB\u7F6E\u9876:\u57CB\u846C1\u53CB\u65B9[\u4EA1\u8BED]"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

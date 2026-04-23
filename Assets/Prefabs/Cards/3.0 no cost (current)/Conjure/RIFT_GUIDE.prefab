@@ -172,7 +172,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_GUIDE
   displayName: "\u6B21\u5143\u5F15\u5BFC\u8005"
-  cardDesc: "\u53BB\u9664 2 [\u6B21\u5143\u88C2\u7F1D]:\n\u57CB\u846C 2 \u654C\u65B9"
+  cardDesc: "\u53BB\u96642[\u6B21\u5143\u88C2\u7F1D]:\u57CB\u846C2\u654C\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

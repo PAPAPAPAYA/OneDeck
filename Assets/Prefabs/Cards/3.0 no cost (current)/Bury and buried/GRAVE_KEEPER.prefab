@@ -221,9 +221,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_KEEPER
-  displayName: "守墓人"
-  cardDesc: "\u5F53\u5361\u88AB\u57CB\u846C\u65F6, \u7F6E\u9876\u81EA\u8EAB;\n\u9020\u6210
-    6 \u4F24\u5BB3"
+  displayName: "\u5B88\u5893\u4EBA"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62106\u4F24\u5BB3;\u5F53\u5361\u88AB\u57CB\u846C\u65F6:\u7F6E\u9876\u81EA\u8EAB"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

@@ -220,7 +220,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: GOBLIN_ASSASIN_TEAM
   displayName: "\u54E5\u5E03\u6797\u6697\u6740\u90E8\u961F"
-  cardDesc: "\u9020\u6210 4 \u4F24\u5BB3;\n\u88AB\u7F6E\u9876: \u57CB\u846C 1 \u654C\u65B9"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62104\u4F24\u5BB3;\u88AB\u7F6E\u9876:\u57CB\u846C1\u654C\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

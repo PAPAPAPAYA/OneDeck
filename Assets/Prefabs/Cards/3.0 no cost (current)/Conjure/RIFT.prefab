@@ -160,7 +160,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT
   displayName: "\u6B21\u5143\u88C2\u7F1D"
-  cardDesc: "\u7F6E\u9876 1 \u53CB\u65B9;\n\u53BB\u9664\u81EA\u8EAB"
+  cardDesc: "\u63ED\u6653\u65F6:\u7F6E\u98761\u53CB\u65B9,\u53BB\u9664\u81EA\u8EAB"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 1

@@ -232,8 +232,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: TACTICAL_BREACHER
-  displayName: "战术爆破手"
-  cardDesc: "\u9020\u6210 4 \u4F24\u5BB3;\n\u88AB\u7F6E\u9876: \u83B7\u5F97 1 \u529B\u91CF"
+  displayName: "\u6218\u672F\u7206\u7834\u624B"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62104\u4F24\u5BB3;\u88AB\u7F6E\u9876:\u83B7\u5F971\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

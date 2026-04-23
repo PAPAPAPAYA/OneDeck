@@ -135,8 +135,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: ALL_FOR_ONE
-  displayName: "人人为我"
-  cardDesc: "\u9020\u6210\u6240\u6709\u5361\u7684 \u529B\u91CF \u6570\u91CF\u7684\u4F24\u5BB3"
+  displayName: "\u4EBA\u4EBA\u4E3A\u6211"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210\u6240\u6709\u5361\u7684\u529B\u91CF\u6570\u91CF\u7684\u4F24\u5BB3"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

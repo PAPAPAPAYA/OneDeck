@@ -225,8 +225,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SPIKE_SKELETON
   displayName: "\u9488\u523A\u9AB7\u9AC5"
-  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3;\n\u88AB\u57CB\u846C: \u9020\u6210 2 \u4F24\u5BB3
-    x 2"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62103\u4F24\u5BB3;\u88AB\u57CB\u846C:\u9020\u62102\u4F24\u5BB3x2"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

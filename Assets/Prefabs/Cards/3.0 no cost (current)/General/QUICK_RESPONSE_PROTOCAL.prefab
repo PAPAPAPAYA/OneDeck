@@ -253,8 +253,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: QUICK_RESPONSE_PROTOCAL
   displayName: "\u5FEB\u901F\u54CD\u5E94\u534F\u8BAE"
-  cardDesc: "\u8426\u7ED5;\n\u6BCF 3 \u654C\u4EBA\u88AB\u63ED\u6653: \u7F6E\u9876
-    1 \u53CB\u65B9 "
+  cardDesc: "\u8426\u7ED5;\u6BCF3\u654C\u4EBA\u88AB\u63ED\u6653:\u7F6E\u98761\u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

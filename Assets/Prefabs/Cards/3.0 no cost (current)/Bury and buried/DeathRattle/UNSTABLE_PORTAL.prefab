@@ -217,7 +217,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UNSTABLE_PORTAL
   displayName: "\u4E0D\u7A33\u5B9A\u4F20\u9001\u95E8"
-  cardDesc: "\u7F6E\u9876 1 \u53CB\u65B9;\n\u57CB\u846C 1 \u53CB\u65B9"
+  cardDesc: "\u63ED\u6653\u65F6:\u7F6E\u98761\u53CB\u65B9,\u57CB\u846C1\u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

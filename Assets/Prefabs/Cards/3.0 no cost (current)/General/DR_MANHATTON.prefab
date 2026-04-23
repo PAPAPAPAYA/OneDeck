@@ -199,8 +199,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: DR_MANHATTON
   displayName: "\u66FC\u54C8\u987F\u535A\u58EB"
-  cardDesc: "\u6D88\u8017 4 \u529B\u91CF:\n\u7F6E\u9876 2 \u53CB\u65B9, \u57CB\u846C
-    2 \u654C\u65B9 "
+  cardDesc: "\u6D88\u80174\u529B\u91CF:\u7F6E\u98762\u53CB\u65B9,\u57CB\u846C2\u654C\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

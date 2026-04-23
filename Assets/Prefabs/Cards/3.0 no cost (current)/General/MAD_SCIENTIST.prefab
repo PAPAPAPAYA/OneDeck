@@ -143,8 +143,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: MAD_SCIENTIST
-  displayName: "疯狂科学家"
-  cardDesc: "\u7ED9\u4E88\u4E0B 3 \u5361 2 \u529B\u91CF"
+  displayName: "\u75AF\u72C2\u79D1\u5B66\u5BB6"
+  cardDesc: "\u63ED\u6653\u65F6:\u7ED9\u4E88\u4E0B3\u53612\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

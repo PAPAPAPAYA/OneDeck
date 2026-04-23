@@ -159,7 +159,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_SUMMONER
   displayName: "\u88C2\u7F1D\u53EC\u5524\u5E08"
-  cardDesc: "\u53BB\u9664 1 [\u6B21\u5143\u88C2\u7F1D];\n\u7F6E\u9876 1 \u53CB\u65B9"
+  cardDesc: "\u63ED\u6653\u65F6:\u53BB\u96641[\u6B21\u5143\u88C2\u7F1D],\u7F6E\u98761\u53CB\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

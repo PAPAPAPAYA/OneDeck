@@ -157,7 +157,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: FALL_INTO_RIFT
   displayName: "\u5760\u5165\u88C2\u7F1D"
-  cardDesc: "\u53BB\u9664 1 [\u6B21\u5143\u88C2\u7F1D]:\n\u57CB\u846C 1 \u654C\u65B9"
+  cardDesc: "\u53BB\u96641[\u6B21\u5143\u88C2\u7F1D]:\u57CB\u846C1\u654C\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

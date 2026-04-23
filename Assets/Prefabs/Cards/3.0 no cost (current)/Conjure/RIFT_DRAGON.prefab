@@ -162,7 +162,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_DRAGON
   displayName: "\u6B21\u5143\u9F99"
-  cardDesc: "\u53BB\u9664 2 [\u6B21\u5143\u88C2\u7F1D]:\n\u9020\u6210 6 \u4F24\u5BB3"
+  cardDesc: "\u53BB\u96642[\u6B21\u5143\u88C2\u7F1D]:\u9020\u62106\u4F24\u5BB3"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

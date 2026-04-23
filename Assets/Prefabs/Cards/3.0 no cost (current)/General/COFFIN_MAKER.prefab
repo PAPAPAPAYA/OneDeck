@@ -162,8 +162,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: COFFIN_MAKER
-  displayName: "棺材制造者"
-  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3;\n\u57CB\u846C 1 \u654C\u65B9"
+  displayName: "\u68FA\u6750\u5236\u9020\u8005"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62103\u4F24\u5BB3,\u57CB\u846C1\u654C\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

@@ -155,9 +155,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRUDGE
-  displayName: "怨恨"
-  cardDesc: "\u8426\u7ED5:\n\u5F53\u53CB\u65B9\u88AB\u57CB\u846C, \u7ED9\u4E88\u4E0B
-    2 \u5F20\u5361 2 \u529B\u91CF"
+  displayName: "\u6028\u6068"
+  cardDesc: "\u8426\u7ED5;\u5F53\u53CB\u65B9\u88AB\u57CB\u846C\u65F6:\u7ED9\u4E88\u4E0B2\u5F20\u53612\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

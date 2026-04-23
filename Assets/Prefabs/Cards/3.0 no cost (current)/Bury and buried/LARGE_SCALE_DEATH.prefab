@@ -130,8 +130,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: LARGE_SCALE_DEATH
-  displayName: "大范围死亡"
-  cardDesc: "\u57CB\u846C\u540E 4 \u5361"
+  displayName: "\u5927\u8303\u56F4\u6B7B\u4EA1"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C\u540E4\u5361"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

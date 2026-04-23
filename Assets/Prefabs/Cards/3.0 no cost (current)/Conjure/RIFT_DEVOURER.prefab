@@ -86,6 +86,7 @@ MonoBehaviour:
   healAmountAlter: 0
   isStatusEffectDamage: 0
   extraDmg: 0
+  statusEffectToCheck: 0
 --- !u!1 &3639711154697097323
 GameObject:
   m_ObjectHideFlags: 0
@@ -231,9 +232,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_DEVOURER
-  displayName: "次元吞噬者"
-  cardDesc: "\u9020\u6210 2 \u4F24\u5BB3;\n\u5F53\u53CB\u65B9\u88AB\u53BB\u9664,
-    \u83B7\u5F97 1 \u529B\u91CF"
+  displayName: "\u6B21\u5143\u541E\u566C\u8005"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62102\u4F24\u5BB3;\u5F53\u53CB\u65B9\u88AB\u53BB\u9664\u65F6:\u83B7\u5F971\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

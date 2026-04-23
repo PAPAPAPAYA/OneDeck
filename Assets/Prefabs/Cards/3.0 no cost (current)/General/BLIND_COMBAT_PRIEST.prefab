@@ -144,7 +144,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BLIND_COMBAT_PRIEST
   displayName: "\u76F2\u773C\u6218\u6597\u7267\u5E08"
-  cardDesc: "\u7ED9\u4E88\u4E0B 1 \u5361 3 \u529B\u91CF"
+  cardDesc: "\u63ED\u6653\u65F6:\u7ED9\u4E88\u4E0B1\u53613\u529B\u91CF"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

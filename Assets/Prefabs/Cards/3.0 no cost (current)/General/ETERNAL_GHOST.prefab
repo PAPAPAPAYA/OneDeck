@@ -147,9 +147,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: ETERNAL_GHOST
-  displayName: "不散的恶灵"
-  cardDesc: "\u8426\u7ED5;\n\u654C\u4EBA\u53D7\u5230\u4F24\u5BB3\u65F6, \u9020\u6210
-    1 \u4F24\u5BB3"
+  displayName: "\u4E0D\u6563\u7684\u6076\u7075"
+  cardDesc: "\u8426\u7ED5;\u5F53\u654C\u4EBA\u53D7\u5230\u4F24\u5BB3\u65F6:\u9020\u62101\u4F24\u5BB3"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

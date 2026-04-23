@@ -213,8 +213,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_TOGETHER
-  displayName: "同路人"
-  cardDesc: "\u57CB\u846C 1 \u53CB\u65B9;\n\u57CB\u846C 2 \u654C\u65B9"
+  displayName: "\u540C\u8DEF\u4EBA"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C1\u53CB\u65B9,\u57CB\u846C2\u654C\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

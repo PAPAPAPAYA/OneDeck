@@ -306,8 +306,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SNATCHER
   displayName: "\u5C60\u592B"
-  cardDesc: "\u9020\u6210 3 \u4F24\u5BB3\n\u88AB\u7F6E\u9876: \u7F6E\u9876 1 \u53CB\u65B9;\n\u88AB\u57CB\u846C:
-    \u57CB\u846C 1 \u654C\u65B9;"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62103\u4F24\u5BB3;\u88AB\u7F6E\u9876:\u7F6E\u98761\u53CB\u65B9;\u88AB\u57CB\u846C:\u57CB\u846C1\u654C\u65B9"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

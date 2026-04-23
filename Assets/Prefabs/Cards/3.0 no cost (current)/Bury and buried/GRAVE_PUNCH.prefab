@@ -306,8 +306,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_PUNCH
-  displayName: "尸爆"
-  cardDesc: "\u57CB\u846C 1 \u53CB\u65B9;\n\u9020\u6210 3 \u4F24\u5BB3 x 2"
+  displayName: "\u5C38\u7206"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C1\u53CB\u65B9,\u9020\u62103\u4F24\u5BB3x2"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

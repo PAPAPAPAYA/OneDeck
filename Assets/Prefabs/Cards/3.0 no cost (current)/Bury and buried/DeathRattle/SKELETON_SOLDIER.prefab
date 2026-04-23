@@ -221,8 +221,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SKELETON_SOLDIER
-  displayName: "骷髅士兵"
-  cardDesc: "\u88AB\u57CB\u846C: \u7F6E\u9876\u81EA\u8EAB;\n\u9020\u6210 3 \u4F24\u5BB3"
+  displayName: "\u9AB7\u9AC5\u58EB\u5175"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u62103\u4F24\u5BB3;\u88AB\u57CB\u846C:\u7F6E\u9876\u81EA\u8EAB"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

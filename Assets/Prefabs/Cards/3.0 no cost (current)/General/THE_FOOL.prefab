@@ -220,9 +220,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: THE_FOOL
-  displayName: "愚者"
-  cardDesc: "\u7F6E\u9876 \u529B\u91CF\u6700\u591A\u7684 \u654C\u65B9;\n\u9020\u6210
-    4 \u4F24\u5BB3"
+  displayName: "\u611A\u8005"
+  cardDesc: "\u63ED\u6653\u65F6:\u7F6E\u9876\u529B\u91CF\u6700\u591A\u7684\u654C\u65B9,\u9020\u62104\u4F24\u5BB3"
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
