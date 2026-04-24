@@ -14,6 +14,7 @@ public class CardScript : MonoBehaviour
 	public string displayName;
 	[TextArea]
 	public string cardDesc;
+	public EnumStorage.Rarity rarity;
 
 	/// <summary>
 	/// Returns the display name for this card. Uses displayName if set, otherwise falls back to GameObject name.

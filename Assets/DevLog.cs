@@ -1,8 +1,7 @@
 // devlog
 
 //！ anything else
-	// check desc format
-		// result ready, need further operation
+	//// check desc format
 	//// check card desc and configuration inconsistentency
 		//// output ready, need to check actual prefab configuration, refer to History
 	//// chang blood-letting summoner to 有副作用的传送门, enhance friendly curse
@@ -14,8 +13,8 @@
 	// same as "bury next 3 cards" + "before burying cards, stage self"
 
 //! refactor
-	// change all card prefab name to english
-		// new variable to store chinese name
+	//// change all card prefab name to english
+		//// new variable to store chinese name
 	// ApplyStatusEffectCore()
 		//// GiveSelfStatusEffect()
 		//// ApplyPowerToCardInternal()
@@ -60,8 +59,8 @@
 	//// skills and SOPs to generate test plan and execute test plan to test card prefabs
 	//// script name check
 	//// tell kimi to make a configuration checker
-	// rarity
-		// rarity attibute in card script
+	//// rarity
+		//// rarity attibute in card script
 	// shop
 		// iterate on shop based on rarity
 	// fake shuffle

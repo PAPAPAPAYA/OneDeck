@@ -1,0 +1,68 @@
+BODY_CANON|揭晓时:埋葬所有友方,墓地每有一个友方:造成 <b>3</b> 伤害
+GRAVE_PORTAL|揭晓时:埋葬 <b>1</b> 敌方;被埋葬:置顶 <b>1</b> 友方
+MARTYR|被埋葬:所有友方获得 <b>1</b> 力量
+REVENGER|揭晓时:造成 <b>3</b> 伤害;被埋葬:获得 <b>2</b> 力量
+SKELETON_SOLDIER|揭晓时:造成 <b>3</b> 伤害;被埋葬:置顶自身
+SLIME|揭晓时:造成 <b>4</b> 伤害;被埋葬 <b>2</b> 次:添加自身到卡组中
+SPIKE_SKELETON|揭晓时:造成 <b>3</b> 伤害;被埋葬:造成 <b>2</b> 伤害 x <b>2</b>
+UNSTABLE_PORTAL|揭晓时:置顶 <b>1</b> 友方,埋葬 <b>1</b> 友方
+GRAVE_INVITATION|揭晓时:造成 <b>4</b> 伤害,墓地每有 <b>1</b> 友方:埋葬 <b>1</b> 敌方
+GRAVE_KEEPER|揭晓时:造成 <b>6</b> 伤害;当卡被埋葬时:置顶自身
+GRAVE_PUNCH|揭晓时:埋葬 <b>1</b> 友方,造成 <b>3</b> 伤害 x <b>2</b>
+GRAVE_TOGETHER|揭晓时:埋葬 <b>1</b> 友方,埋葬 <b>2</b> 敌方
+GRUDGE|萦绕;当友方被埋葬时:给予下 <b>2</b> 张卡 <b>2</b> 力量
+LARGE_SCALE_DEATH|揭晓时:埋葬后 <b>4</b> 卡
+SMALL_DEATH|揭晓时:埋葬后 <b>2</b> 卡,增强 <b>1</b> 敌方[诅咒]
+WISE_BURIAL|被置顶:埋葬 <b>1</b> 友方[亡语]
+DEATHBED_CURSE|萦绕;当友方被去除时:敌方[诅咒]获得 <b>1</b> 力量
+FALL_INTO_RIFT|揭晓时,去除 <b>1</b> [次元裂缝]:埋葬 <b>1</b> 敌方
+RIFT|揭晓时:置顶 <b>1</b> 友方,去除自身
+RIFT_COFFIN|萦绕;当友方被去除时:埋葬 <b>1</b> 敌方
+RIFT_DEVOURER|揭晓时:造成 <b>2</b> 伤害;当友方被去除时:获得 <b>1</b> 力量
+RIFT_DRAGON|揭晓时,去除 <b>2</b> [次元裂缝]:造成 <b>6</b> 伤害
+RIFT_GUIDE|揭晓时,去除 <b>2</b> [次元裂缝]:埋葬 <b>2</b> 敌方
+RIFT_INSECT|揭晓时:生成 <b>1</b> [次元裂缝]
+RIFT_MONSTER|揭晓时,去除 <b>1</b> [次元裂缝]:造成 <b>4</b> 伤害
+RIFT_SUMMONER|揭晓时,去除 <b>1</b> [次元裂缝]:置顶 <b>1</b> 友方
+SACRIFICE_RITUAL|揭晓时,埋葬 <b>2</b> 友方:生成 <b>2</b> [次元裂缝]
+CROW_CROWD|揭晓时:将所有友方的力量转移到敌方的[诅咒]
+CURSED_SEKELETON|揭晓时,墓地每有 <b>1</b> 友方:增强 <b>1</b> 敌方[诅咒]
+CURSE_CORPSE|揭晓时:增强 <b>1</b> 敌方[诅咒];被埋葬:造成 <b>1</b> x <b>3</b> 伤害
+CURSE_ENCHANTMENT|萦绕;当敌人受到伤害时:增强 <b>1</b> 敌方[诅咒]
+CURSE_SUMMONER|揭晓时,消耗敌方[诅咒] <b>1</b> 力量:置顶 <b>1</b> 友方
+CURSE_THIRST_BEAST|萦绕;当敌方[诅咒]揭晓时:置顶自身;揭晓时:造成 <b>4</b> 伤害
+CURSE_THIRST_SHARMAN|揭晓时,敌方[诅咒]每有 <b>1</b> 力量:给予 <b>1</b> 友方 <b>1</b> 力量
+DETERIORATION|揭晓时,敌方[诅咒]每有 <b>2</b> 力量:增强 <b>1</b> 敌方[诅咒]
+JU_ON|揭晓时:对自己造成[力量]层数的伤害
+MOTH_MAN|萦绕;当敌方[诅咒]获得力量时:置顶 <b>1</b> 友方
+POISNER|揭晓时:增强 <b>1</b> 敌方[诅咒],造成 <b>3</b> 伤害
+PREMATURE|揭晓时,敌方[诅咒]力量 - <b>1</b> :置顶敌方[诅咒]
+PROLIFERATING_CURSE|揭晓时:复制敌方 <b>1</b> [诅咒]
+RIFT_CURSE|揭晓时:增强 <b>1</b> 敌方[诅咒],生成 <b>1</b> [次元裂缝]
+SACRIFICIAL_SPIRIT|揭晓时:埋葬 <b>1</b> 友方,增强 <b>2</b> 敌方[诅咒]
+ADVANCE_PORTAL|每揭晓 <b>2</b> 次:置顶 <b>2</b> 友方
+ALL_FOR_ONE|揭晓时:造成所有卡的力量数量的伤害
+ALMIGHTY|每揭晓 <b>2</b> 次:造成 <b>1</b> 伤害,置顶 <b>1</b> 友方,埋葬 <b>1</b> 敌方,给予 <b>1</b> 友方力量,生成 <b>1</b> [次元裂缝],增强 <b>1</b> 敌方[诅咒]
+ANTI_CREATURE_WEAPON|揭晓时:埋葬 <b>2</b> 敌方
+BLACKSMITH|揭晓时:造成 <b>3</b> 伤害,给予一个友方 <b>1</b> 力量
+BLIND_COMBAT_PRIEST|揭晓时:给予下 <b>1</b> 卡 <b>3</b> 力量
+BONE_COMBINATION|揭晓时:造成 <b>1</b> 伤害 x 本回合埋葬敌方数量
+BOOSTER|洗牌后:置顶 <b>2</b> 友方,埋葬 <b>1</b> 友方
+COFFIN_MAKER|揭晓时:造成 <b>3</b> 伤害,埋葬 <b>1</b> 敌方
+DR_MANHATTON|揭晓时,消耗 <b>4</b> 力量:置顶 <b>2</b> 友方,埋葬 <b>2</b> 敌方
+ELDER_SOURCEROR|揭晓时,本回合每置顶过 <b>1</b> 友方:给予 <b>1</b> 友方 <b>1</b> 力量
+ETERNAL_GHOST|萦绕;当敌人受到伤害时:造成 <b>1</b> 伤害
+FLESH_COMBINATION|揭晓时:造成友方数量的伤害
+GOBLIN_ASSASSIN_TEAM|揭晓时:造成 <b>4</b> 伤害;被置顶:埋葬 <b>1</b> 敌方
+MAD_SCIENTIST|揭晓时:给予下 <b>3</b> 卡 <b>2</b> 力量
+OVERCHARGED_SUMMONER|揭晓时,消耗 <b>1</b> 力量:置顶 <b>1</b> 友方,给予下 <b>2</b> 卡 <b>1</b> 力量
+POWER_CRAVER|揭晓时:造成 <b>3</b> 伤害,获得 <b>3</b> 倍力量
+POWER_SIPHONER|揭晓时:转移所有友方的 <b>1</b> 力量到自身,造成 <b>2</b> 伤害 x <b>2</b>
+POWER_TRANSFER|揭晓时:去除 <b>2</b> 敌方 <b>1</b> 力量,给予 <b>2</b> 友方 <b>1</b> 力量
+QUICK_RESPONSE_PROTOCAL|萦绕;每 <b>3</b> 敌人被揭晓:置顶 <b>1</b> 友方
+SIDE_EFFECT_PORTAL|揭晓时:增强自身诅咒 <b>2</b> ,置顶 <b>1</b> 友方
+SNATCHER|揭晓时:造成 <b>3</b> 伤害;被置顶:置顶 <b>1</b> 友方;被埋葬:埋葬 <b>1</b> 敌方
+TACTICAL_BREACHER|揭晓时:造成 <b>4</b> 伤害;被置顶:获得 <b>1</b> 力量
+THE_FOOL|揭晓时:置顶力量最多的敌方,造成 <b>4</b> 伤害
+UNFINISHED_ROBOT|揭晓时:造成 <b>0</b> 伤害,翻倍自身力量
+WEAPON_SPIRIT|萦绕;当友方获得力量时:给予该友方 <b>1</b> 力量

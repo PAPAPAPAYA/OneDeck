@@ -44,6 +44,13 @@ public class EnumStorage : MonoBehaviour
 		DeathRattle
 	}
 
+	public enum Rarity
+	{
+		Common,
+		Uncommon,
+		Rare
+	}
+
 	public static bool DoesListContainAmountOfStatusEffect(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)
 	{
 		var amountOfTag = 0;
