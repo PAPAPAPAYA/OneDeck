@@ -1,6 +1,7 @@
 // devlog
 
 //！ anything else
+	// change rift to not be minion, need to have 1 rift to stage another rift
 	//// check desc format
 	//// check card desc and configuration inconsistentency
 		//// output ready, need to check actual prefab configuration, refer to History
@@ -31,6 +32,9 @@
 	//// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
 //! design
+	// decrease [deathrattle], [bury] should be more than [if buried]
+	// sort cards with "generating resources" and "consuming resources"
+	// update cards
 	//// POWER_SIPHONER will one card destroy curse
 		//// 1. copy half power from all friendly
 		//// 2. transfer half power from all friendly
