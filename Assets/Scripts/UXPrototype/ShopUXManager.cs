@@ -178,10 +178,10 @@ public class ShopUXManager : MonoBehaviour
         // Cleanup previously instantiated player deck cards
         ClearSpawnedPlayerCards();
         
-        // Check if playerDeck is empty
-        if (playerDeck == null || playerDeck.deck == null || playerDeck.deck.Count == 0)
+        // Check if playerDeck is null
+        if (playerDeck == null || playerDeck.deck == null)
         {
-            Debug.LogWarning("[ShopUXManager] playerDeck is empty or null!");
+            Debug.LogWarning("[ShopUXManager] playerDeck is null!");
             return;
         }
         

@@ -237,7 +237,7 @@ public class ExileEffect : EffectScript
 			// Use unified destroy method (with animation) - Exile effect is similar to destroy, both remove card from game
 			CombatUXManager.me.DestroyCardWithAnimation(targetCard);
 
-			effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] exiled [<color=" + targetColor + ">" +
+			effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>]放逐了[<color=" + targetColor + ">" +
 				targetCardScript.gameObject.name + "</color>]\n";
 
 			exiledCards.Add(targetCard);

@@ -49,7 +49,7 @@ public class ExposeCostEffect : EffectScript
 				var targetScript = card.GetComponent<CardScript>();
 				string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 				string targetColor = targetScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] expose cost: staged [<color={targetColor}>{targetScript.name}</color>] to top\n";
+				effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>]暴露消耗: 将[<color={targetColor}>{targetScript.name}</color>]置顶\n";
 			}
 		}
 

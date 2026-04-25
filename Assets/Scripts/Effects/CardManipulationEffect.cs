@@ -115,7 +115,7 @@ public class CardManipulationEffect : EffectScript
 
 			var targetScript = card.GetComponent<CardScript>();
 			string targetColor = GetCardColorTag(card);
-			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] delayed [<color={targetColor}>{targetScript.name}</color>]\n";
+			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>]延迟了[<color={targetColor}>{targetScript.name}</color>]\n";
 		}
 
 		if (movedCount > 0)
@@ -244,7 +244,7 @@ public class CardManipulationEffect : EffectScript
 			// Use unified destroy method (with animation)
 			CombatUXManager.me.DestroyCardWithAnimation(minion);
 			
-			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] destroyed minion [<color={minionColor}>{minionScript.name}</color>]\n";
+			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>]摧毁了随从[<color={minionColor}>{minionScript.name}</color>]\n";
 		}
 		
 		// Sync remaining physical card positions

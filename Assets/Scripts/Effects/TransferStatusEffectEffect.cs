@@ -159,18 +159,34 @@ namespace DefaultNamespace.Effects
 		/// <summary>
 		/// Log transfer effect to self.
 		/// </summary>
+		private string StatusEffectToCN(EnumStorage.StatusEffect effect)
+		{
+			return effect switch
+			{
+				EnumStorage.StatusEffect.Infected => "感染",
+				EnumStorage.StatusEffect.Mana => "法力",
+				EnumStorage.StatusEffect.HeartChanged => "心变",
+				EnumStorage.StatusEffect.Power => "力量",
+				EnumStorage.StatusEffect.Rest => "休息",
+				EnumStorage.StatusEffect.Revive => "复活",
+				EnumStorage.StatusEffect.Counter => "反击",
+				_ => effect.ToString()
+			};
+		}
+
 		private void LogTransferToSelfEffect(List<CardScript> sourceCards, int totalCount, bool fromFriendly)
 		{
 			string thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
-				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				"<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
 			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
 				"#87CEEB" : "orange";
+			string effectNameCN = StatusEffectToCN(statusEffectToTransfer);
 
 			effectResultString.value +=
 				"// " + thisCardOwnerString +
-				"<color=" + thisCardColor + ">" + myCard.name + "</color>] absorbed " +
-				"<color=yellow>" + totalCount + "</color> [" + statusEffectToTransfer + "] from " +
-				"<color=" + (fromFriendly ? "#87CEEB" : "orange") + ">" + (fromFriendly ? "friendly" : "hostile") + "</color> cards\n";
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>]从" +
+				"<color=" + (fromFriendly ? "#87CEEB" : "orange") + ">" + (fromFriendly ? "友方" : "敌方") + "</color>卡牌吸收了" +
+				"<color=yellow>" + totalCount + "</color>层[" + effectNameCN + "]\n";
 		}
 
 		/// <summary>
@@ -292,21 +308,22 @@ namespace DefaultNamespace.Effects
 		private void LogTransferEffect(List<CardScript> sourceCards, CardScript targetCard, int totalCount)
 		{
 			string sourceOwner = isFromFriendly ?
-				(myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "Your" : "Enemy's") :
-				(myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef ? "Your" : "Enemy's");
+				(myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "你的" : "敌方的") :
+				(myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef ? "你的" : "敌方的");
 
 			string thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
-				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+				"<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
 			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
 				"#87CEEB" : "orange";
 			string targetCardColor = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ?
 				"#87CEEB" : "orange";
 
+			string effectNameCN = StatusEffectToCN(statusEffectToTransfer);
 			effectResultString.value +=
 				"// " + thisCardOwnerString +
-				"<color=" + thisCardColor + ">" + myCard.name + "</color>] transferred " +
-				"<color=yellow>" + totalCount + "</color> [" + statusEffectToTransfer + "] from " +
-				"<color=" + (isFromFriendly ? "#87CEEB" : "orange") + ">" + (isFromFriendly ? "friendly" : "hostile") + "</color> cards to " +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>]将" +
+				"<color=yellow>" + totalCount + "</color>层[" + effectNameCN + "]从" +
+				"<color=" + (isFromFriendly ? "#87CEEB" : "orange") + ">" + (isFromFriendly ? "友方" : "敌方") + "</color>卡牌转移到了" +
 				"<color=" + targetCardColor + ">" + targetCard.name + "</color>]\n";
 		}
 	}

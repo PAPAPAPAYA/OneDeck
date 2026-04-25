@@ -191,7 +191,7 @@ public class CombatManager : MonoBehaviour
 		// Fatigue check based on round number (called in ShuffleDeck phase)
 		if (roundNumRef.value <= overtimeRoundThreshold) return;
 		
-		var msg = $"<color=red>FATIGUE!</color> Round {roundNumRef.value} > {overtimeRoundThreshold}";
+		var msg = $"<color=red>疲劳!</color> 回合{roundNumRef.value} > {overtimeRoundThreshold}";
 		print(msg);
 		_infoDisplayer.effectResultString.value += msg + "\n";
 		AddFatigueCards();
@@ -206,7 +206,7 @@ public class CombatManager : MonoBehaviour
 		// Only trigger when revealed card count equals threshold exactly (to avoid duplicate triggers)
 		if (totalCardsRevealed != fatigueRevealThreshold) return;
 		
-		var msg = $"<color=red>FATIGUE!</color> Revealed {totalCardsRevealed} cards";
+		var msg = $"<color=red>疲劳!</color> 已揭示{totalCardsRevealed}张卡牌";
 		print(msg);
 		_infoDisplayer.effectResultString.value += msg + "\n";
 		AddFatigueCards();

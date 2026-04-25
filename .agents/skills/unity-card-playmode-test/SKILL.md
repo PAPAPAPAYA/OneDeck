@@ -28,6 +28,12 @@ This skill provides a reusable workflow for running **Strategy B — Play Mode I
 | 6 | State pollution between tests | `myStatusEffects` list accumulates on reused instances | **Destroy and re-instantiate** the card-under-test for each test case |
 | 7 | `EffectChainManager` loop guard blocks effects | `lastEffectObject` check or chain depth limit | Call `EffectChainManager.Me.CloseOpenedChain()` before invoking effects |
 | 8 | `GamePhaseSO` has no `SetValue()` method | API mismatch | Directly assign `cm.currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;` |
+| 9 | **Multiple `CostNEffectContainer`s on one card** | Some cards (e.g. `CURSED_CORPSE`) have **multiple independent** `CostNEffectContainer`s all bound to `onMeRevealed`. `TriggerRevealedCardEffect` only invokes the first one. | Iterate **all** containers via `GetComponentsInChildren<CostNEffectContainer>()` and call `InvokeEffectEvent()` on each. |
+| 10 | **Linger cards listen to global events** | Linger cards (e.g. `CURSE_ENCHANTMENT`, `MOTH_MAN`) do **not** use `onMeRevealed`. They listen to `onTheirPlayerTookDmg`, `onEnemyCurseCardGotPower`, etc. | Do **not** use `TriggerRevealEffect`. Instead, directly `Raise()` the specific event from `GameEventStorage.me`. |
+| 11 | **Enemy cards need correct parent & status ref** | Curse tests often require an enemy `JU_ON` in the deck. Instantiating with `playerDeckParent` makes it a friendly card. | Create a separate `CreateEnemyCard` helper that uses `cm.enemyDeckParent` and sets `myStatusRef = cm.enemyPlayerStatusRef`. |
+| 12 | **Stage effect appears to do nothing** | `StageMyCards` / `StageSelf` excludes cards already at the top of `combinedDeckZone` (`IsCardAtTop` check). If the only eligible card is at index `Count-1`, the filtered list is empty. | Add an extra dummy card **after** the target card in `combinedDeckZone` so the target is **not** at the top. |
+| 13 | **Cost check `EnemyCursedCardHasPower` fails unexpectedly** | This cost requires the enemy curse card's Power to be **strictly greater** than the parameter (e.g. `> 1` for `intArg=1`). A JU_ON with exactly 1 Power will fail the check. | Pre-buff the enemy JU_ON with enough Power stacks before the trigger (e.g. 2+ Power for `intArg=1`). |
+| 14 | **Multi-Listener cards trigger wrong Container** | Some cards (e.g. `CURSE_THIRST_BEAST`) have **multiple GameEventListeners** on the root object, each bound to a **different CostNEffectContainer** via `InvokeEffectEvent`. `OnMeRevealed` may trigger the "deal dmg" Container while `OnHostileCurseRevealed` triggers the "stage self" Container. | Inspect the prefab's `GameEventListener` response targets (via `SerializedProperty`) to know which Listener maps to which Container. Do not assume all Containers share the same trigger event. |
 
 ## 3. Standard Play Mode Setup Template
 
@@ -140,6 +146,47 @@ System.Func<string, GameObject> CreateTestCard = (System.Func<string, GameObject
 });
 ```
 
+### Create Enemy Card (for curse / hostile targets)
+
+```csharp
+System.Func<string, GameObject> CreateEnemyCard = (System.Func<string, GameObject>)((prefabPath) =>
+{
+    GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+    if (prefab == null)
+    {
+        UnityEngine.Debug.Log("[TEST FAIL] Prefab not found: " + prefabPath);
+        return null;
+    }
+
+    GameObject card = UnityEngine.Object.Instantiate(prefab, cm.enemyDeckParent != null ? cm.enemyDeckParent.transform : null);
+    card.name = prefab.name;
+    CardScript cs = card.GetComponent<CardScript>();
+    cs.myStatusRef = cm.enemyPlayerStatusRef;
+    cs.theirStatusRef = cm.ownerPlayerStatusRef;
+    cs.myStatusEffects = new System.Collections.Generic.List<EnumStorage.StatusEffect>();
+    cs.myTags = new System.Collections.Generic.List<EnumStorage.Tag>();
+
+    EffectScript[] effects = card.GetComponentsInChildren<EffectScript>(true);
+    foreach (EffectScript effect in effects)
+    {
+        System.Reflection.FieldInfo myCardField = typeof(EffectScript).GetField("myCard", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        myCardField.SetValue(effect, card);
+        System.Reflection.FieldInfo myCardScriptField = typeof(EffectScript).GetField("myCardScript", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        myCardScriptField.SetValue(effect, cs);
+        System.Reflection.FieldInfo combatManagerField = typeof(EffectScript).GetField("combatManager", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        combatManagerField.SetValue(effect, cm);
+    }
+
+    HPAlterEffect[] hpaEffects = card.GetComponentsInChildren<HPAlterEffect>(true);
+    foreach (HPAlterEffect hae in hpaEffects)
+    {
+        hae.isStatusEffectDamage = true;
+    }
+
+    return card;
+});
+```
+
 ## 5. Effect Invocation Helper
 
 ```csharp
@@ -162,6 +209,14 @@ System.Action<GameObject> TriggerBuryEffect = (System.Action<GameObject>)((card)
     if (GameEventStorage.me != null && GameEventStorage.me.onMeBuried != null)
     {
         GameEventStorage.me.onMeBuried.RaiseSpecific(card);
+    }
+});
+
+System.Action TriggerFriendlyCardExiled = (System.Action)(() =>
+{
+    if (GameEventStorage.me != null && GameEventStorage.me.onFriendlyCardExiled != null)
+    {
+        GameEventStorage.me.onFriendlyCardExiled.RaiseOwner();
     }
 });
 ```
@@ -273,7 +328,10 @@ return 0;
 | **ShieldAlterEffect** | Check `shield` value on target `PlayerStatusSO` |
 | **BuryEffect / StageEffect** | Populate `cm.combinedDeckZone` with target cards before invoking; verify deck order after |
 | **StatusEffectGiverEffect** | Read `m_IntArgument` from `SerializedObject` to know the actual `amount` bound in the prefab |
-| **CurseEffect** | Ensure enemy deck contains a curse card; verify `myStatusEffects` on the curse target |
+| **CurseEffect** | Ensure enemy deck contains a curse card; verify `myStatusEffects` on the curse target. **Note**: `CurseEffect.EnhanceCurse` uses `PlayMultiStatusEffectProjectile` (async DOTween). Final Power state may not be observable in a single-frame test. Verify via reflection that `FindEnemyCardWithTypeID` succeeds and no exceptions are thrown. Also check `CurseEffect.cardTypeID` references a `StringSO` with `reset=false` (otherwise `value` becomes empty in Play Mode). **Use `CreateEnemyCard` for hostile JU_ON.** |
+| **CurseEffect.ConsumeHostileCursePower** | This method searches all enemy JU_ONs and consumes Power layer by layer. If total Power < amount, it returns silently. The UnityEvent caller (e.g. `CostNEffectContainer`) continues to the next bound method. |
+| **StageEffect** | Populate `cm.combinedDeckZone` with target cards before invoking; verify deck order after. **Critical**: `StageMyCards` / `StageSelf` excludes cards already at the top (index = Count-1). Add a dummy card above the target to prevent exclusion. |
+| **Multi-Listener Cards** | Cards like `CURSE_THIRST_BEAST` have multiple `GameEventListener`s each targeting a different `CostNEffectContainer`. Use `SerializedObject` on the listener's `response` property to inspect which Container each listener invokes. |
 | **MinionCostEffect** | Populate deck with matching `isMinion=true` cards before the reveal trigger |
 | **AddTempCard** | Check `cm.combinedDeckZone.Count` before and after |
 
@@ -287,6 +345,14 @@ return 0;
 | Power/status count wrong between tests | Same card instance reused | `DestroyImmediate` old card and `Instantiate` fresh one |
 | `GameEventListener` event is null | Wrong `SerializedProperty` name | Use `"event"`, not `"gameEvent"` |
 | Compilation error: "Unexpected symbol" | Used `$""`, `?.`, or file-level `using` | Switch to string concatenation and fully-qualified names |
+| `CurseEffect` / `StringSO` config null in Play Mode | `StringSO.reset=true` clears `value` on `OnEnable` | Set `reset=false` on persistent config SOs (e.g., `CurseCardTypeID.asset`) |
+| `onFriendlyCardExiled` has no listeners after creating card | `RaiseSpecific(card)` only triggers listeners on the target GameObject | Use `RaiseOwner()` for faction-scoped events like `onFriendlyCardExiled` |
+| Status effect (Power) not applied after `CurseEffect` triggers | `PlayMultiStatusEffectProjectile` is async; requires frame updates | In single-frame tests, verify effect chain starts without errors instead of final state |
+| **Damage missing on cards like `CURSED_CORPSE`** | Only the **first** `CostNEffectContainer` was triggered; the second (damage) container was skipped | Iterate **all** `CostNEffectContainer`s with `GetComponentsInChildren<CostNEffectContainer>()` and invoke each one |
+| **Linger card has no effect in test** | Using `TriggerRevealEffect` on a card that listens to `onTheirPlayerTookDmg` / `onEnemyCurseCardGotPower` | Raise the correct event directly from `GameEventStorage.me` instead of `TriggerRevealEffect` |
+| **Curse tests fail because enemy JU_ON is treated as friendly** | Used `CreateTestCard` which sets `myStatusRef = ownerPlayerStatusRef` | Use `CreateEnemyCard` helper which sets `myStatusRef = enemyPlayerStatusRef` and uses `enemyDeckParent` |
+| **Stage effect has no effect** | Target card is already at top of `combinedDeckZone` | Add a dummy card on top so the target is not at index `Count-1` |
+| **Cost `EnemyCursedCardHasPower` fails** | Enemy JU_ON Power is not strictly greater than the parameter | Give enemy JU-On enough Power stacks before triggering |
 
 ## 10. Checklist Before Running
 
@@ -298,4 +364,7 @@ return 0;
 - [ ] Card-under-test is **freshly instantiated** (not reused)
 - [ ] All `EffectScript` children are **reflection-wired**
 - [ ] `HPAlterEffect.isStatusEffectDamage = true` if testing damage synchronously
+- [ ] **Multi-container cards**: verify `GetComponentsInChildren<CostNEffectContainer>()` returns >1 and iterate all of them
+- [ ] **Linger cards**: verify the listened event (e.g. `onTheirPlayerTookDmg`) and raise the correct event in test
+- [ ] **Curse / enemy cards**: use `CreateEnemyCard` instead of `CreateTestCard` for hostile targets
 - [ ] Old test card is `DestroyImmediate`-ed at the end

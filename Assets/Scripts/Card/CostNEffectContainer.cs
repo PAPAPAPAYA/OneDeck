@@ -90,7 +90,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
 		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
 		effectResultString.value +=
-			"// Not enough [Revive] to revive " +
+			"// [复活]不足，无法复活 " +
 			cardOwnerInfo +
 			" [" + _myCardScript.gameObject.name + "]\n";
 	}
@@ -120,9 +120,9 @@ public class CostNEffectContainer : MonoBehaviour
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
 		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
 		effectResultString.value +=
-			"// [Rest] status consumed, " +
+			"// [休息]状态已消耗，" +
 			cardOwnerInfo +
-			" [" + _myCardScript.gameObject.name + "] skips this turn\n";
+			" [" + _myCardScript.gameObject.name + "]跳过本回合\n";
 	}
 
 	public void CheckCost_Infected()
@@ -142,7 +142,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// Not enough [Mana] to activate [" + _myCardScript.gameObject.name + "]\n";
+		effectResultString.value += "// [法力]不足，无法激活[" + _myCardScript.gameObject.name + "]\n";
 	}
 
 	public void CheckCost_Power(int powerRequired)
@@ -151,7 +151,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// Not enough [Power] to activate [" + _myCardScript.gameObject.name + "]\n";
+		effectResultString.value += "// [力量]不足，无法激活[" + _myCardScript.gameObject.name + "]\n";
 	}
 
 	public void CheckCost_InGrave()
@@ -186,7 +186,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// cost not met - not enough enemy cards in combined deck
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// Not enough enemy cards in deck to activate [" + _myCardScript.gameObject.name + "] (need " + enemyCardCount + ")\n";
+		effectResultString.value += "// 牌库中敌方卡牌不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + enemyCardCount + "张)\n";
 	}
 
 	/// <summary>
@@ -200,7 +200,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// if check failed, process
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// Not enough [Counter] to activate [" + _myCardScript.gameObject.name + "] (need " + counterRequired + ")\n";
+		effectResultString.value += "// [反击]不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + counterRequired + "层)\n";
 	}
 
 	/// <summary>
@@ -217,7 +217,7 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			_costNotMetFlag++;
 			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-			effectResultString.value += "// [" + _myCardScript.gameObject.name + "] is not in deck\n";
+			effectResultString.value += "// [" + _myCardScript.gameObject.name + "]不在牌库中\n";
 			return;
 		}
 		
@@ -238,7 +238,7 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			_costNotMetFlag++;
 			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-			effectResultString.value += "// No Start Card in deck, [" + _myCardScript.gameObject.name + "] cannot activate\n";
+			effectResultString.value += "// 牌库中没有起始牌，[" + _myCardScript.gameObject.name + "]无法激活\n";
 			return;
 		}
 		
@@ -248,7 +248,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// Cost not met
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-		effectResultString.value += "// [" + _myCardScript.gameObject.name + "] is not before Start Card in deck\n";
+		effectResultString.value += "// [" + _myCardScript.gameObject.name + "]不在起始牌之前\n";
 	}
 
 	/// <summary>
@@ -263,7 +263,7 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			_costNotMetFlag++;
 			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-			effectResultString.value += "// [" + _myCardScript.gameObject.name + "] cursedCardTypeID is not set or null\n";
+			effectResultString.value += "// [" + _myCardScript.gameObject.name + "]诅咒卡牌类型ID未设置或为空\n";
 			return;
 		}
 
@@ -302,7 +302,7 @@ public class CostNEffectContainer : MonoBehaviour
 		// cost not met - no matching enemy card found with enough Power
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-		effectResultString.value += "// No enemy card [" + cursedCardTypeID?.value + "] with >" + powerCount + " [Power] in deck\n";
+		effectResultString.value += "// 牌库中没有[" + cursedCardTypeID?.value + "]敌方卡牌拥有超过" + powerCount + "层[力量]\n";
 	}
 
 	#endregion

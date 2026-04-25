@@ -15,6 +15,8 @@ public class CardScript : MonoBehaviour
 	[TextArea]
 	public string cardDesc;
 	public EnumStorage.Rarity rarity;
+	[Tooltip("Shop roll weight multiplier for this specific card. Applied on top of rarity weight. 1 = default, 0 = never appears, 2 = twice as likely")]
+	public float shopRollWeightMultiplier = 1f;
 
 	/// <summary>
 	/// Returns the display name for this card. Uses displayName if set, otherwise falls back to GameObject name.

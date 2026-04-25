@@ -58,7 +58,7 @@ public class DelayCostEffect : EffectScript
 		if (movedCount > 0)
 		{
 			string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] delay cost: moved <color=yellow>{movedCount}</color> card(s) back\n";
+			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>]延迟消耗: 将<color=yellow>{movedCount}</color>张卡牌后置\n";
 		}
 	}
 }

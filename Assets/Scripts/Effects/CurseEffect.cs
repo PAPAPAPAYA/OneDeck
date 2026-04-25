@@ -223,14 +223,14 @@ namespace DefaultNamespace.Effects
 				
 				// Output effect info
 				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-					"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+					"<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
 				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
 					"#87CEEB" : "orange";
 				
 				effectResultString.value +=
 					"// " + thisCardOwnerString +
-					"<color=" + thisCardColor + ">" + myCard.name + "</color>] cursed and created " +
-					"<color=#87CEEB>Friendly</color> [<color=#87CEEB>" + newCard.name + "</color>]\n";
+					"<color=" + thisCardColor + ">" + myCard.name + "</color>]诅咒并创建了" +
+					"<color=#87CEEB>友方</color>[<color=#87CEEB>" + newCard.name + "</color>]\n";
 				
 				return newCardScript;
 			}
@@ -252,14 +252,14 @@ namespace DefaultNamespace.Effects
 				
 				// Output effect info
 				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-					"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+					"<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
 				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
 					"#87CEEB" : "orange";
 				
 				effectResultString.value +=
 					"// " + thisCardOwnerString +
-					"<color=" + thisCardColor + ">" + myCard.name + "</color>] cursed and created " +
-					"<color=orange>Enemy's</color> [<color=orange>" + newCard.name + "</color>]\n";
+					"<color=" + thisCardColor + ">" + myCard.name + "</color>]诅咒并创建了" +
+					"<color=orange>敌方</color>[<color=orange>" + newCard.name + "</color>]\n";
 				
 				return newCardScript;
 			}
@@ -366,8 +366,8 @@ namespace DefaultNamespace.Effects
 
 			effectResultString.value +=
 				"// " + thisCardOwnerString +
-				"<color=" + thisCardColor + ">" + myCard.name + "</color>] consumed " +
-				"<color=yellow>" + amount + "</color> [Power] from cursed cards\n";
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>]从被诅咒的卡牌中吸收了" +
+				"<color=yellow>" + amount + "</color>层[力量]\n";
 
 			// Refresh info display
 			CombatInfoDisplayer.me?.RefreshDeckInfo();

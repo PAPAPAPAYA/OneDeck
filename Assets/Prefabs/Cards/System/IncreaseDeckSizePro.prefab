@@ -46,7 +46,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  cursedCardTypeID: {fileID: 0}
   checkCostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -127,14 +131,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_DECK_SIZE_PRO
+  displayName: 
   cardDesc: Increase deck size by <color=yellow>3</color>
+  rarity: 2
+  shopRollWeightMultiplier: 1
   takeUpSpace: 0
   isStartCard: 0
+  isMinion: 0
   price: {fileID: 11400000, guid: e57676058a6a9344883c99c068362e4f, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
+  delayCost: 0
+  buryCost: 0
+  exposeCost: 0
+  minionCostCount: 0
+  minionCostCardTypeID: 
+  minionCostOwner: 0
 --- !u!114 &7982320352536632933
 MonoBehaviour:
   m_ObjectHideFlags: 0

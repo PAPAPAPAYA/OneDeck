@@ -132,18 +132,18 @@ public class MinionCostEffect : EffectScript
 
 		// Display consumption info
 		string ownerColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-		string cardTypeInfo = string.IsNullOrEmpty(costCardTypeID) ? "card(s)" : $"[{costCardTypeID}]";
+		string cardTypeInfo = string.IsNullOrEmpty(costCardTypeID) ? "卡牌" : $"[{costCardTypeID}]";
 		string consumedOwnerInfo = GetOwnerDescription(costOwner);
-		effectResultString.value += $"// [<color={ownerColor}>{myCard.name}</color>] minion cost: consumed <color=yellow>{cardsToConsume.Count}</color> {consumedOwnerInfo} {cardTypeInfo}\n";
+		effectResultString.value += $"// [<color={ownerColor}>{myCard.name}</color>]随从消耗: 消耗了<color=yellow>{cardsToConsume.Count}</color>张{consumedOwnerInfo}{cardTypeInfo}\n";
 	}
 
 	private string GetOwnerDescription(EnumStorage.TargetType owner)
 	{
 		return owner switch
 		{
-			EnumStorage.TargetType.Me => "ally minion",
-			EnumStorage.TargetType.Them => "enemy minion",
-			EnumStorage.TargetType.Random => "any minion",
+			EnumStorage.TargetType.Me => "友方随从",
+			EnumStorage.TargetType.Them => "敌方随从",
+			EnumStorage.TargetType.Random => "随机随从",
 			_ => ""
 		};
 	}

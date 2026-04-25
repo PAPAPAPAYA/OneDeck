@@ -275,8 +275,8 @@ public class BuryEffect : EffectScript
 				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);
-				effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>] buried [<color=" + targetColor + ">" +
-					targetCardScript.gameObject.name + "</color>] to the bottom of the deck\n";
+				effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>]将[<color=" + targetColor + ">" +
+					targetCardScript.gameObject.name + "</color>]埋入牌库底端\n";
 			}
 		}
 		

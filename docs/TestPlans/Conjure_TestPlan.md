@@ -57,6 +57,7 @@
 - Linger 卡片在墓地（Start Card 下方）才触发效果。
 - `CheckCost_IndexBeforeStartCard` 会跳过位于 Start Card 上方（存活区）的触发。
 - 创建诅咒卡片时，`CreateEnemyCard` 会将其添加到 combinedDeckZone[0]（底部）。
+- **`CurseEffect.cardTypeID` 配置**: 必须引用值为 `"JU_ON"` 的 `StringSO`。若引用的 `StringSO` 的 `reset=true`，Play Mode 下 `value` 会被重置为空字符串，导致 `EnhanceCurse` 直接返回。需确保 `CurseCardTypeID.asset` 的 `reset = false`。
 
 ### Test Cases
 
@@ -72,7 +73,9 @@
 #### Strategy B: Play Mode Integration Test
 
 - 将 DEATHBED_CURSE 置入墓地，观察友方卡片被放逐时是否正确触发。
+- **触发方式**: 使用 `GameEventStorage.me.onFriendlyCardExiled.RaiseOwner()`（不是 `RaiseSpecific`）。
 - 验证 `onEnemyCurseCardGotPower` 事件是否被正确 Raise。
+- **注意**: `CurseEffect.EnhanceCurse` 内部使用 `PlayMultiStatusEffectProjectile` 播放异步投射物动画，单帧测试中无法立即验证最终 Power 状态。可通过反射验证 `FindEnemyCardWithTypeID` 能找到 JU_ON 且无异常抛出，间接确认效果链启动。
 
 ---
 
@@ -254,14 +257,16 @@
 
 1. `GameEventListener` 监听 `onMeRevealed`。
 2. `preEffectEvent` -> `MinionCostEffect.ExecuteMinionCost`：消耗 2 友方 Minion。
-3. `effectEvent` -> `HPAlterEffect.DecreaseTheirHp`：`totalDmg = 2 + 2 + Power = 4 + Power`。
+3. `effectEvent` -> `HPAlterEffect.DecreaseTheirHp`：`totalDmg = 2 + 4 + Power = 6 + Power`。
 
 ### Effect Formula
 
 ```
 代价: 2 友方 Minion
-伤害: baseDmg(2) + extraDmg(2) + Power = 4 + Power
+伤害: baseDmg(2) + extraDmg(4) + Power = 6 + Power
 ```
+
+> 注: prefab 中 `deal dmg` 的 extraDmg = 4（测试计划原写为 2，以实际 prefab 为准）。
 
 ### Test Cases
 
@@ -269,9 +274,9 @@
 
 | ID | Scenario | Deck / State Setup | Expected Result | Validation Point |
 |----|----------|-------------------|-----------------|------------------|
-| A-1 | 代价充足 | 友方有 2+ Minion | 消耗 2 Minion，造成 4+Power 伤害 | MinionCost 成功 |
+| A-1 | 代价充足 | 友方有 2+ Minion | 消耗 2 Minion，造成 6+Power 伤害 | MinionCost 成功 |
 | A-2 | 代价不足 | 友方只有 1 Minion | 无效果，显示失败信息 | MinionCost 阻止 |
-| A-3 | 有 Power 加成 | RIFT_DRAGON 有 1 Power，代价充足 | 造成 5 伤害 | Power 正确叠加 |
+| A-3 | 有 Power 加成 | RIFT_DRAGON 有 1 Power，代价充足 | 造成 7 伤害 | Power 正确叠加 |
 
 ---
 
@@ -289,19 +294,18 @@
 ### Implementation Chain
 
 1. `GameEventListener` 监听 `onMeRevealed`。
-2. Container "exile rift and bury hostile" 包含 `ExileEffect` 和 `BuryEffect`。
-3. 日志显示 `effectEvent` -> `BuryEffect.BuryTheirCards`。
-4. `ExileEffect` 存在但未在日志中显示 event 绑定，需 Inspector 确认。
+2. Container "exile rift and bury hostile":
+   - `preEffectEvent` -> `MinionCostEffect.ExecuteMinionCost(0)`：不消耗 Minion（intArg=0）。
+   - `effectEvent` -> `BuryEffect.BuryTheirCards`：埋葬敌方卡片。
+3. `ExileEffect` 组件存在但未绑定到任何 event（无 GameEventListener 调用）。
 
 ### Effect Formula
 
 ```
-推测效果:
-- 放逐 RIFT 自身或敌方 RIFT（需确认 ExileEffect 绑定的方法）
-- 埋葬敌方卡片
+效果: 埋葬敌方卡片（随机，排除 Minion 和已在底部的卡片）
 ```
 
-> **注意:** prefab 序列化数据中 `ExileEffect` 的 event 绑定未在批量读取中完整捕获，建议单独 Inspector 确认其 `effectEvent` 绑定的方法名和参数。
+> **注意:** `ExileEffect` 未绑定任何 GameEvent，实际不触发。prefab 描述 "去除 2 [次元裂缝]" 与实际配置不符。
 
 ### Test Cases
 

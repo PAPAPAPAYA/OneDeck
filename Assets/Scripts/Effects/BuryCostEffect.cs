@@ -38,7 +38,7 @@ public class BuryCostEffect : EffectScript
 		{
 			// Display failure message and prevent effect activation
 			string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-			string failMessage = $"// [<color={myColor}>{myCard.name}</color>] bury cost failed: need <color=yellow>{costCount}</color> ally card(s), found <color=yellow>{eligibleCards.Count}</color>\n";
+			string failMessage = $"// [<color={myColor}>{myCard.name}</color>]埋葬消耗失败: 需要<color=yellow>{costCount}</color>张友方卡牌，找到<color=yellow>{eligibleCards.Count}</color>张\n";
 			
 			var container = GetComponent<CostNEffectContainer>();
 			if (container != null)
@@ -65,7 +65,7 @@ public class BuryCostEffect : EffectScript
 				var targetScript = card.GetComponent<CardScript>();
 				string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 				string targetColor = targetScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>] bury cost: buried [<color={targetColor}>{targetScript.name}</color>] to the bottom\n";
+				effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>]埋葬消耗: 将[<color={targetColor}>{targetScript.name}</color>]埋入牌库底端\n";
 			}
 		}
 

@@ -52,11 +52,11 @@ public class CombatInfoDisplayer : MonoBehaviour
 	{
 		if (statusRef == CombatManager.Me.ownerPlayerStatusRef)
 		{
-			return "Your";
+			return "你的";
 		}
 		else
 		{
-			return "Their";
+			return "敌方的";
 		}
 	}
 	

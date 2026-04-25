@@ -32,6 +32,7 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardNamePrint;
 	public TextMeshPro cardDescPrint;
 	public TextMeshPro cardPricePrint;
+	public TextMeshPro cardRarityPrint;
 
 	[Header("COLOR")]
 	public Color ownerCardColor;
@@ -144,6 +145,7 @@ public class CardPhysObjScript : MonoBehaviour
 		UpdateStatusEffectDisplay();
 		UpdatePriceDisplay();
 		UpdateCostDisplay();
+		UpdateRarityDisplay();
 		UpdateTintTimer();
 
 		// Long press detection
@@ -213,6 +215,33 @@ public class CardPhysObjScript : MonoBehaviour
 		// Hide cost display
 		if (cardCostPrint != null)
 			cardCostPrint.gameObject.SetActive(false);
+	}
+
+	/// <summary>
+	/// Update Rarity display using star count
+	/// </summary>
+	private void UpdateRarityDisplay()
+	{
+		if (cardRarityPrint == null || cardImRepresenting == null) return;
+
+		int starCount;
+		switch (cardImRepresenting.rarity)
+		{
+			case EnumStorage.Rarity.Common:
+				starCount = 1;
+				break;
+			case EnumStorage.Rarity.Uncommon:
+				starCount = 2;
+				break;
+			case EnumStorage.Rarity.Rare:
+				starCount = 3;
+				break;
+			default:
+				starCount = 1;
+				break;
+		}
+
+		cardRarityPrint.text = new string('*', starCount);
 	}
 
 	/// <summary>
@@ -666,22 +695,19 @@ public class CardPhysObjScript : MonoBehaviour
 
 		// Determine base color
 		Color baseFaceColor;
-		Color baseEdgeColor;
+		Color baseEdgeColor = ownerCardEdgeColor;
 
 		if (cardImRepresenting.myStatusRef == null)
 		{
 			baseFaceColor = ownerCardColor;
-			baseEdgeColor = ownerCardEdgeColor;
 		}
 		else if (cardImRepresenting.myStatusRef != CombatManager.Me?.ownerPlayerStatusRef)
 		{
 			baseFaceColor = opponentCardColor;
-			baseEdgeColor = opponentCardEdgeColor;
 		}
 		else
 		{
 			baseFaceColor = ownerCardColor;
-			baseEdgeColor = ownerCardEdgeColor;
 		}
 
 		// Calculate target tint intensity

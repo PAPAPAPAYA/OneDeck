@@ -7,10 +7,10 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 | Item | Requirement |
 |------|-------------|
 | **Line Endings** | `\r\n` (CRLF) |
-| **Indentation** | Tab (`\t`), spaces are strictly forbidden |
+| **Indentation** | Tab (`\t`), spaces forbidden |
 | **Command Separator** | PowerShell uses `;` instead of `&&` |
-| **Comments & Docs** | All comments and documentation must be written in English |
-| **Encoding** | Never use non-UTF-8 encoded characters under any circumstances |
+| **Comments & Docs** | English only |
+| **Encoding** | UTF-8 only |
 
 ## Core Loop
 
@@ -21,73 +21,25 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 ```
 Assets/
 ├── Scripts/
-│   ├── Managers/
-│   │   ├── CombatManager.cs          # Combat core
-│   │   ├── PhaseManager.cs           # Phase control
-│   │   ├── ShopManager.cs            # Shop system
-│   │   ├── CombatFuncs.cs            # Combat helper functions
-│   │   ├── CombatUXManager.cs        # Card movement & animation
-│   │   ├── AttackAnimationManager.cs # Attack animation queue
-│   │   ├── EffectChainManager.cs     # Effect chain tracking & anti-loop (max depth 99)
-│   │   ├── EffectRecorder.cs         # Records effect history
-│   │   ├── GameEventStorage.cs       # Centralized GameEvent SO refs
-│   │   ├── ValueTrackerManager.cs    # Deck value trackers
-│   │   ├── EnumStorage.cs            # Enums & static helpers
-│   │   └── WriteRead/                # Save/load data
-│   ├── Effects/
-│   │   ├── EffectScript.cs           # Effect base class
-│   │   ├── HPAlterEffect.cs          # Damage / Heal
-│   │   ├── HPMaxAlterEffect.cs       # Max HP change
-│   │   ├── ShieldAlterEffect.cs      # Shield
-│   │   ├── CardManipulationEffect.cs # Delay / Destroy Minion
-│   │   ├── StageEffect.cs            # Stage cards to top
-│   │   ├── BuryEffect.cs             # Bury cards to bottom
-│   │   ├── BuryCostEffect.cs         # Bury cost check & execute
-│   │   ├── DelayCostEffect.cs        # Delay cost check & execute
-│   │   ├── ExposeCostEffect.cs       # Expose cost check & execute
-│   │   ├── MinionCostEffect.cs       # Minion cost check & execute
-│   │   ├── AddTempCard.cs            # Add temporary cards
-│   │   ├── ExileEffect.cs            # Exile cards
-│   │   ├── CurseEffect.cs            # Curse mechanics
-│   │   ├── ChangeCardTarget.cs       # Change effect target
-│   │   ├── ChangeHpAlterAmountEffect.cs # Modify damage amount
-│   │   ├── StatusEffect/             # Status effect effects
-│   │   └── shop/                     # Shop-only effects
-│   ├── Card/
-│   │   ├── CardScript.cs             # Card data
-│   │   ├── CostNEffectContainer.cs   # Cost check & effect trigger
-│   │   └── CardEventTrigger.cs       # Card event hooks
-│   ├── SOScripts/
-│   │   ├── GameEvent.cs              # Event system
-│   │   ├── PlayerStatusSO.cs         # Player status
-│   │   ├── StatusEffectSO.cs         # Status effect data
-│   │   ├── DeckSO.cs                 # Deck data
-│   │   └── IntSO / BoolSO / StringSO / GamePhaseSO
-│   └── UXPrototype/
-│       ├── CombatUXManager.cs        # Combat UI/UX
-│       ├── ShopUXManager.cs          # Shop UI/UX
-│       └── CardPhysObjScript.cs      # Physical card object
-├── Prefabs/
-│   └── Cards/
-│       ├── 3.0 no cost (current)     # Currently in-use cards
-│       ├── System/                   # StartCard, Fatigue, etc.
-│       └── StatusEffectResolvers/    # Status effect resolver prefabs
+│   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, CombatUXManager, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage
+│   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, *CostEffect, StatusEffect/
+│   ├── Card/           # CardScript, CostNEffectContainer, CardEventTrigger
+│   ├── SOScripts/      # GameEvent, PlayerStatusSO, StatusEffectSO, DeckSO, *SO
+│   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript
+├── Prefabs/Cards/      # 3.0 no cost (current), System/, StatusEffectResolvers/
 └── docs/
-    ├── StatusEffectProjectileSystem.md
-    ├── bury_cost_test_guide.md
-    └── ChineseFontSetup.md
 ```
 
 ## Core Architecture
 
-- **Singleton**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`
+- **Singletons**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`
 - **Event-driven**: `GameEvent` SO + `GameEventListener`
 - **Component-based Cards**: `CardScript` + `EffectContainers` + `Effects`
 
 ## Combat System
 
 ### Flow
-1. **GatherDecks**: Merge both decks and add the Start Card to the bottom.
+1. **GatherDecks**: Merge both decks, add Start Card to bottom.
 2. **Reveal**: Reveal cards one by one.
 3. **Start Card**: When revealed, triggers shuffle + new round.
 
@@ -96,8 +48,8 @@ Assets/
 - `revealZone` - Currently revealed card
 
 ### Controls
-- First click: Reveal the next card.
-- Second click: Trigger the effect and place the card at the bottom of the deck.
+- First click: Reveal next card.
+- Second click: Trigger effect and place card at bottom.
 
 ## Effect System
 
@@ -105,35 +57,33 @@ Assets/
 `CostNEffectContainer.InvokeEffectEvent()`: Check cost -> Check effect chain -> Execute effect.
 
 ### Effect Chain Manager
-`EffectChainManager` prevents infinite loops and tracks nested effect invocations:
-- **Chain creation**: A new chain starts when no chains are open, or when the same card triggers a *different* effect object.
-- **Loop guard**: The same `effectID` cannot be invoked twice within an open chain.
-- **Depth limit**: When `chainDepth` exceeds **99**, further effects are blocked with an error log.
-- **Chain closing**: `CloseOpenedChain()` finalizes all open recorders and clears tracking state.
+- **Chain creation**: Starts when no chains open, or same card triggers a *different* effect object.
+- **Loop guard**: Same `effectID` cannot be invoked twice within an open chain.
+- **Depth limit**: `chainDepth` > **99** blocks further effects.
+- **Chain closing**: `CloseOpenedChain()` finalizes recorders and clears state.
 
 ### Cost Types
 | Method | Description |
 |--------|-------------|
-| `Mana(n)` | Requires n stacks of Mana |
+| `Mana(n)` | Requires n Mana stacks |
 | `Rested()` | Consumes Rest status |
-| `Revive(n)` | Requires n stacks of Revive |
-| `HasEnemyCard(n)` | Requires n enemy cards in the deck |
-| `Token Cost` | Consume N friendly Minions of a specified type |
-| `Bury Cost` | When activated, place N friendly cards at the bottom |
-| `Delay Cost` | When activated, delay N own cards by 1 position |
-| `Expose Cost` | When activated, expose N enemy cards to the top |
+| `Revive(n)` | Requires n Revive stacks |
+| `HasEnemyCard(n)` | Requires n enemy cards in deck |
+| `Token Cost` | Consume N friendly Minions of specified type |
+| `Bury Cost` | Place N friendly cards at bottom |
+| `Delay Cost` | Delay N own cards by 1 position |
+| `Expose Cost` | Expose N enemy cards to top |
 
 ### Status Effects
 ```csharp
 enum StatusEffect { None, Infected, Mana, HeartChanged, Power, Rest, Revive, Counter }
 ```
-
 | Effect | Description |
 |--------|-------------|
 | `Power` | Damage +1 |
 | `HeartChanged` | Ownership change |
 | `Rest` | Skip trigger |
-| `Counter` | Counter-attack / block mechanic |
+| `Counter` | Counter-attack / block |
 
 ### Tags
 ```csharp
@@ -143,39 +93,13 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 ## Events
 
 ### Card-Specific
-| Event | Timing |
-|-------|--------|
-| `onMeRevealed` | Card revealed |
-| `onMeBought` | Card bought in shop |
-| `onMeStaged` | Card staged to top |
-| `onMeBuried` | Card buried to bottom |
-| `onMeGotPower` | Card gains Power |
-| `onMeGotStatusEffect` | Card gains any status effect |
-| `onThisTagResolverAttached` | Tag resolver attached |
+`onMeRevealed`, `onMeBought`, `onMeStaged`, `onMeBuried`, `onMeGotPower`, `onMeGotStatusEffect`, `onThisTagResolverAttached`
 
-### Global / Faction-Specific
-| Event | Timing | Raise Method |
-|-------|--------|--------------|
-| `onAnyCardRevealed` | Any card revealed | `Raise()` |
-| `onHostileCardRevealed` | Hostile card revealed | `Raise()` |
-| `afterShuffle` | After shuffle | `Raise()` |
-| `beforeRoundStart` | Before round starts | `Raise()` |
-| `onTheirPlayerTookDmg` | Opponent took damage | `RaiseOwner()` / `RaiseOpponent()` |
-| `onMyPlayerTookDmg` | Self took damage | `RaiseOwner()` / `RaiseOpponent()` |
-| `onTheirPlayerHealed` | Opponent healed | `RaiseOwner()` / `RaiseOpponent()` |
-| `onMyPlayerHealed` | Self healed | `RaiseOwner()` / `RaiseOpponent()` |
-| `onMyPlayerShieldUpped` | Self gained shield | `RaiseOwner()` / `RaiseOpponent()` |
-| `onTheirPlayerShieldUpped` | Opponent gained shield | `RaiseOwner()` / `RaiseOpponent()` |
-| `onFriendlyMinionAdded` | Friendly minion added | `RaiseOwner()` |
-| `onFriendlyCardExiled` | Friendly card exiled | `RaiseOwner()` / `RaiseOpponent()` |
-| `onFriendlyFlyExiled` | Friendly fly exiled | `RaiseOwner()` / `RaiseOpponent()` |
-| `onAnyCardBuried` | Any card buried | `Raise()` |
-| `onFriendlyCardBuried` | Friendly card buried | `RaiseOwner()` / `RaiseOpponent()` |
-| `onEnemyCurseCardRevealed` | Enemy curse card revealed | `RaiseOwner()` / `RaiseOpponent()` |
-| `onEnemyCurseCardGotPower` | Enemy curse card got Power | `RaiseOwner()` / `RaiseOpponent()` |
-| `onAnyCardGotPower` | Any card got Power | `Raise()` |
-| `onFriendlyCardGotPower` | Friendly card got Power | `RaiseOwner()` / `RaiseOpponent()` |
-| `onEnemyCardGotPower` | Enemy card got Power | `RaiseOwner()` / `RaiseOpponent()` |
+### Global (use `Raise()`)
+`onAnyCardRevealed`, `onHostileCardRevealed`, `afterShuffle`, `beforeRoundStart`, `onAnyCardBuried`, `onAnyCardGotPower`
+
+### Faction-Specific (use `RaiseOwner()` / `RaiseOpponent()`)
+`onTheirPlayerTookDmg`, `onMyPlayerTookDmg`, `onTheirPlayerHealed`, `onMyPlayerHealed`, `onMyPlayerShieldUpped`, `onTheirPlayerShieldUpped`, `onFriendlyMinionAdded`, `onFriendlyCardExiled`, `onFriendlyFlyExiled`, `onFriendlyCardBuried`, `onEnemyCurseCardRevealed`, `onEnemyCurseCardGotPower`, `onFriendlyCardGotPower`, `onEnemyCardGotPower`
 
 ## Key Files
 
@@ -190,41 +114,38 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 | `GameEventStorage` | `Assets/Scripts/Managers/GameEventStorage.cs` |
 | `ValueTrackerManager` | `Assets/Scripts/Managers/ValueTrackerManager.cs` |
 | `EnumStorage` | `Assets/Scripts/Managers/EnumStorage.cs` |
+| `GameRules` | `docs/GameRules.md` |
 
 ## Minion Cost Mechanism
 
-When activated, consumes N eligible Minion cards (`isMinion == true`) from the `combinedDeckZone`. If the condition is not met, the effect does not activate.
-
-- `minionCostCount` - Number of minions required
+Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
+- `minionCostCount` - Number required
 - `minionCostCardTypeID` - Filter by card type ID (empty = no restriction)
 - `minionCostOwner` - `Me` / `Them` / `Random`
 
 ## Animation System
 
 ### Attack Animation
-`AttackAnimationManager` plays in queue. Flow: Scale & Rotate -> Dash -> Recoil -> Damage calculation.
-- Status Effect damage sets `isStatusEffectDamage = true` to skip the animation.
+`AttackAnimationManager` queue flow: Scale & Rotate -> Dash -> Recoil -> Damage calc.
+- Status Effect damage sets `isStatusEffectDamage = true` to skip animation.
 
-### Card Movement
-`CombatUXManager` provides the following methods:
-- `MoveCardToBottom(card, onComplete, duration, useArc)` - Move to bottom
-- `MoveCardToTop(card, onComplete, duration, useArc)` - Move to top
-- `MoveCardToIndex(card, index, duration, useArc)` - Move to specified index
-- `DestroyCardWithAnimation(card)` - Destroy a card with animation
-- `AddPhysicalCardToDeck(card)` - Add new physical card to deck
-- `SyncPhysicalCardsWithCombinedDeck()` - Sync visuals with logic
+### Card Movement (`CombatUXManager`)
+- `MoveCardToBottom(card, onComplete, duration, useArc)`
+- `MoveCardToTop(card, onComplete, duration, useArc)`
+- `MoveCardToIndex(card, index, duration, useArc)`
+- `DestroyCardWithAnimation(card)`
+- `AddPhysicalCardToDeck(card)`
+- `SyncPhysicalCardsWithCombinedDeck()`
+- `PlayStartCardExitWithShuffleAnimation()` - Start Card exit + shuffle
 
-### Start Card + Shuffle
-Use `PlayStartCardExitWithShuffleAnimation()` to make the Start Card exit and shuffle simultaneously.
+## Critical Rules
 
-## Notes
-
-1. **HPAlterEffect**: Automatically adds `baseDmg.value`. When passing a specific value, set `baseDmg` to 0.
-2. **cardTypeID**: Used for saving / statistics / Minion cost filtering (not instance ID).
-3. **Anti-loop**: Do not attach multiple looping effect instances to the same card.
-4. **GameEvent.Raise Usage Rules**: Use `Raise()` only when the event is **not faction-specific** (e.g., `afterShuffle`, `onAnyCardRevealed`). If the event carries owner/opponent semantics (e.g., `onEnemyCurseCardRevealed`, `onMyPlayerTookDmg`), you must use `RaiseOwner()` or `RaiseOpponent()` based on the actual faction of the trigger object. Directly calling `Raise()` is strictly prohibited.
-5. **Neutral Cards**: `isStartCard == true` cards are neutral and skipped by `CombatManager.ShouldSkipEffectProcessing()`.
-6. **CardScript Cost Fields**: `buryCost`, `delayCost`, `exposeCost`, `minionCostCount`, `minionCostCardTypeID`.
+- **HPAlterEffect**: Automatically adds `baseDmg.value`; set `baseDmg` to 0 when passing a specific value.
+- **cardTypeID**: Used for saving / statistics / Minion cost filtering (not instance ID).
+- **Anti-loop**: Do not attach multiple looping effect instances to the same card.
+- **GameEvent.Raise**: Use `Raise()` only for non-faction-specific events. For owner/opponent events, use `RaiseOwner()` / `RaiseOpponent()` based on the trigger object's faction. Direct `Raise()` on faction events is prohibited.
+- **Neutral Cards**: `isStartCard == true` cards are neutral and skipped by `ShouldSkipEffectProcessing()`.
+- **CardScript Cost Fields**: `buryCost`, `delayCost`, `exposeCost`, `minionCostCount`, `minionCostCardTypeID`.
 
 ## Color Tags
 
@@ -235,6 +156,22 @@ Use `PlayStartCardExitWithShuffleAnimation()` to make the Start Card exit and sh
 | Shield | `<color=grey>` |
 | Friendly | `<color=#87CEEB>` |
 | Enemy | `<color=orange>` |
+
+---
+
+## Unity MCP `execute_code` (CodeDom)
+
+Default compiler is `codedom` (C# 6). Constraints:
+
+| Forbidden | Alternative |
+|-----------|-------------|
+| `using` declarations | Fully-qualified names (`UnityEngine.Debug.Log`) |
+| `return;` (void) | `return <value>;` on **all** paths |
+| `$""` interpolation | `+` or `string.Format` |
+| `?.` null-conditional | Explicit `!= null` checks |
+| `yield return` | No coroutines |
+
+If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.GetType("GameEventListener, Assembly-CSharp")`.
 
 ---
 

@@ -28,6 +28,7 @@ public class ShopManager : MonoBehaviour
 	[Header("shop")]
 	public DeckSO shopPoolRef;
 	public DeckSO currentShopItemDeckRef;
+	public ShopRarityWeightSO rarityWeightRef;
 	[Range(1, 6)]
 	public int shopItemAmount;
 	public IntSO payCheck;
@@ -265,9 +266,30 @@ public class ShopManager : MonoBehaviour
 	private void GenerateShopItems()
 	{
 		currentShopItemDeckRef.deck.Clear();
+
+		// Build weighted pool from shopPoolRef
+		var weightedPool = new List<(GameObject card, float weight)>();
+		foreach (var cardPrefab in shopPoolRef.deck)
+		{
+			if (cardPrefab == null) continue;
+			var cardScript = cardPrefab.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+
+			float rarityWeight = rarityWeightRef != null ? rarityWeightRef.GetWeight(cardScript.rarity) : 1f;
+			float finalWeight = rarityWeight * cardScript.shopRollWeightMultiplier;
+
+			if (finalWeight <= 0f) continue;
+
+			weightedPool.Add((cardPrefab, finalWeight));
+		}
+
+		if (weightedPool.Count == 0) return;
+
 		for (var i = 0; i < shopItemAmount; i++)
 		{
-			var card = shopPoolRef.deck[Random.Range(0, shopPoolRef.deck.Count)];
+			var card = RollWeightedCard(weightedPool);
+			if (card == null) continue;
+
 			currentShopItemDeckRef.deck.Add(card);
 			// record card appeared
 			if (ShopStatsManager.Me != null)
@@ -279,6 +301,34 @@ public class ShopManager : MonoBehaviour
 				}
 			}
 		}
+	}
+
+	private GameObject RollWeightedCard(List<(GameObject card, float weight)> weightedPool)
+	{
+		if (weightedPool.Count == 0) return null;
+
+		float totalWeight = 0f;
+		foreach (var entry in weightedPool)
+		{
+			totalWeight += entry.weight;
+		}
+
+		if (totalWeight <= 0f) return null;
+
+		float roll = Random.Range(0f, totalWeight);
+		float cumulative = 0f;
+
+		foreach (var entry in weightedPool)
+		{
+			cumulative += entry.weight;
+			if (roll < cumulative)
+			{
+				return entry.card;
+			}
+		}
+
+		// Fallback to last entry due to floating point precision
+		return weightedPool[weightedPool.Count - 1].card;
 	}
 
 	private void UpdateShopItemInfo()

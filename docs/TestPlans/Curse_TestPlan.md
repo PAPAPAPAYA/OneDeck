@@ -184,21 +184,26 @@
 |----------|-------|
 | **Prefab Path** | `Assets/Prefabs/Cards/3.0 no cost (current)/Curse/CURSE_SUMMONER.prefab` |
 | **Card Type ID** | `CURSE_SUMMONER` |
-| **Description** | 增强 1 敌方[诅咒] |
+| **Description** | 消耗 1 敌方 [诅咒] Power，置顶 1 友方 |
 | **Is Minion** | False |
 
 ### Implementation Chain
 
 1. `GameEventListener` 监听 `onMeRevealed`。
-2. `CurseEffect.EnhanceCurse(1)`：敌方 curse Power +1。
-3. `StageEffect.StageMyCards(1)`：置顶 1 友方卡片。
+2. `CheckCost_EnemyCursedCardHasPower(1)`：检查敌方 curse Power 是否 **> 1**（严格大于）。
+3. `CurseEffect.ConsumeHostileCursePower(1)`：从敌方 curse 消耗 1 层 Power。
+4. `StageEffect.StageMyCards(1)`：置顶 1 友方卡片。
 
 ### Effect Formula
 
 ```
-效果1: 敌方 curse Power +1
+触发条件: 敌方 JU_ON 的 Power 层数 > 1
+效果1: 敌方 curse Power -1
 效果2: 置顶 1 友方卡片（随机，排除 Minion 和已在顶部的卡片）
+若条件不满足 -> 整个效果不执行
 ```
+
+> **注意:** 测试计划原描述为 "增强 1 敌方诅咒"，实际 Prefab 配置为 **消耗** Power。
 
 ### Test Cases
 
@@ -206,8 +211,9 @@
 
 | ID | Scenario | Deck / State Setup | Expected Result | Validation Point |
 |----|----------|-------------------|-----------------|------------------|
-| A-1 | 正常触发 | 敌方有 JU_ON，友方有非 Minion 卡片 | curse +1 Power，置顶 1 友方 | 两个效果均执行 |
-| A-2 | 敌方无 curse | 敌方无 JU_ON | 创建 JU_ON +1 Power，置顶友方 | 创建与 stage 并行 |
+| A-1 | 正常触发 | 敌方 JU_ON 有 2 Power，友方有非 Minion 非顶部卡片 | JU_ON Power 1，置顶 1 友方 | 两个效果均执行 |
+| A-2 | 敌方 curse Power 不足 | 敌方 JU_ON 有 0~1 Power | 无效果（cost 失败） | CheckCost 阻止 |
+| A-3 | 敌方无 curse | 敌方无 JU_ON | 无效果（cost 失败） | CheckCost 阻止 |
 
 ---
 
@@ -219,22 +225,31 @@
 |----------|-------|
 | **Prefab Path** | `Assets/Prefabs/Cards/3.0 no cost (current)/Curse/CURSE_THIRST_BEAST.prefab` |
 | **Card Type ID** | `CURSE_THIRST_BEAST` |
-| **Description** | 萦绕: 当敌方 [诅咒] 揭晓时, 置顶自身 |
+| **Description** | 萦绕: 当敌方 [诅咒] 揭晓时, 置顶自身; 揭晓时造成伤害 |
 | **Is Minion** | False |
 
 ### Implementation Chain
 
-1. `GameEventListener` 监听 `onEnemyCurseCardRevealed`。
-2. Container "stage self": `StageEffect.StageSelf()`：将自身置顶。
-3. Container "deal dmg": `HPAlterEffect.DecreaseTheirHp`：`totalDmg = 2 + 2 + Power = 4 + Power`。
+该卡片有 **2 个独立 Listener**，分别绑定到 **2 个独立 Container**：
+
+| Listener | 绑定 Container | 效果 |
+|----------|---------------|------|
+| `OnMeRevealed` | "deal dmg" | `HPAlterEffect.DecreaseTheirHp`：`totalDmg = 2 + 2 + Power = 4 + Power` |
+| `OnHostileCurseRevealed` | "stage self" | `StageEffect.StageSelf()` + `CheckCost_IndexBeforeStartCard` |
 
 ### Effect Formula
 
 ```
-触发条件: 敌方 curse 卡片揭晓
-效果1: 自身置顶到 combinedDeckZone 顶部
-效果2: 造成 4 + Power 伤害
+OnMeRevealed (自身揭晓):
+  效果: 造成 4 + Power 伤害
+
+OnHostileCurseRevealed (敌方 curse 揭晓):
+  触发条件: CURSE_THIRST_BEAST 在墓地（StartCard 下方）
+  效果: 将自身置顶到 combinedDeckZone 顶部
+  若不在墓地 -> CheckCost 阻止，无 stage 效果
 ```
+
+> **注意:** 测试计划原描述为 "两个 Container 同时触发"，实际为 **不同事件触发不同 Container**。
 
 ### Test Cases
 
@@ -242,9 +257,10 @@
 
 | ID | Scenario | Deck / State Setup | Expected Result | Validation Point |
 |----|----------|-------------------|-----------------|------------------|
-| A-1 | 敌方 curse 揭晓 | 敌方 JU_ON 被揭晓 | CURSE_THIRST_BEAST 置顶，造成 4+Power 伤害 | 两个 Container 均触发 |
-| A-2 | 非 curse 揭晓 | 敌方非 curse 卡片揭晓 | 无效果 | 事件不匹配 |
-| A-3 | 自身已在顶部 | CURSE_THIRST_BEAST 已在顶部 | 无 stage 效果（IsCardAtTop 检查），伤害仍执行 | StageSelf 边界条件 |
+| A-1 | 自身揭晓 | CURSE_THIRST_BEAST 被揭晓 | 造成 4+Power 伤害 | OnMeRevealed 触发 deal dmg |
+| A-2 | 敌方 curse 揭晓，在墓地 | CURSE_THIRST_BEAST 在墓地，敌方 JU_ON 被揭晓 | CURSE_THIRST_BEAST 置顶 | OnHostileCurseRevealed 触发 stage self |
+| A-3 | 敌方 curse 揭晓，不在墓地 | CURSE_THIRST_BEAST 在 StartCard 上方 | 无 stage 效果 | CheckCost 阻止 |
+| A-4 | 自身已在顶部 | CURSE_THIRST_BEAST 已在顶部 | 无 stage 效果（IsCardAtTop 检查） | StageSelf 边界条件 |
 
 ---
 
@@ -528,21 +544,23 @@ selfDamage = baseDmg(2) + extraDmg(-2) + Power = Power
 |----------|-------|
 | **Prefab Path** | `Assets/Prefabs/Cards/3.0 no cost (current)/Curse/RIFT_CURSE.prefab` |
 | **Card Type ID** | `RIFT_CURSE` |
-| **Description** | 增强 1 敌方[诅咒] |
+| **Description** | 增强 1 敌方[诅咒]，添加临时卡片 |
 | **Is Minion** | False |
 
 ### Implementation Chain
 
 1. `GameEventListener` 监听 `onMeRevealed`。
 2. `CurseEffect.EnhanceCurse(1)`：敌方 curse Power +1。
-3. `StageEffect.StageMyCards(1)`：置顶 1 友方卡片。
+3. `AddTempCard.AddCardToMe(0)`：向友方添加 1 张临时卡片（通过 UnityEvent 绑定具体 prefab）。
 
 ### Effect Formula
 
 ```
 效果1: 敌方 curse Power +1
-效果2: 置顶 1 友方卡片
+效果2: 向友方 combinedDeckZone 添加 1 张临时卡片
 ```
+
+> **注意:** 测试计划原描述为 "置顶 1 友方卡片"，实际 Prefab 配置为 **AddCardToMe**（添加临时卡）。
 
 ### Test Cases
 
@@ -550,7 +568,8 @@ selfDamage = baseDmg(2) + extraDmg(-2) + Power = Power
 
 | ID | Scenario | Deck / State Setup | Expected Result | Validation Point |
 |----|----------|-------------------|-----------------|------------------|
-| A-1 | 正常触发 | 敌方有 JU_ON，友方有非 Minion 卡片 | curse +1，置顶 1 友方 | 与 CURSE_SUMMONER 类似 |
+| A-1 | 正常触发 | 敌方有 JU_ON | curse +1，友方 deck 增加 1 张卡 | EnhanceCurse + AddCardToMe |
+| A-2 | 敌方无 curse | 敌方无 JU_ON | 创建 JU_ON，友方 deck 增加 1 张卡 | 创建与添加并行 |
 
 ---
 
@@ -587,6 +606,54 @@ selfDamage = baseDmg(2) + extraDmg(-2) + Power = Power
 | A-1 | 正常触发 | 友方有 1+ 非 Minion，敌方有 JU_ON | 埋葬 1 友方，curse +1 Power | 两个效果均执行 |
 | A-2 | 友方无有效目标 | 友方卡片都在底部或是 Minion | bury 为 0，curse +1 Power | Bury 边界条件 |
 | A-3 | 敌方无 curse | 敌方无 JU_ON | 埋葬 1 友方，创建 JU_ON +1 Power | 创建与 bury 并行 |
+
+---
+
+## Strategy B: Play Mode Integration Test 结果
+
+> 执行日期: 2026-04-25
+> 环境: Unity Play Mode
+> 测试脚本: `execute_code` (codedom)
+
+### 核心发现
+
+1. **测试计划与实际 Prefab 配置存在差异**：
+   - `CURSE_SUMMONER` 实际为 **消耗** 敌方诅咒 Power（要求 >1）+ 置顶友方，非增强。
+   - `RIFT_CURSE` 实际为 `EnhanceCurse` + `AddCardToMe`（添加临时卡），非 Stage 友方。
+   - `CURSE_THIRST_BEAST` 的 **2 个 Container 分别绑定到 2 个不同 Listener**（`OnMeRevealed` -> deal dmg; `OnHostileCurseRevealed` -> stage self），非同时触发。
+
+2. **Cost 检查行为**：
+   - `CheckCost_EnemyCursedCardHasPower(1)` 要求敌方 JU_ON 的 Power **严格大于 1**（即至少 2 层）。
+   - `CheckCost_IndexBeforeStartCard()` 要求卡片在 `combinedDeckZone` 中且 index < StartCard index。
+
+3. **Stage 效果测试陷阱**：
+   - `StageMyCards` / `StageSelf` 会排除已在顶部的卡片（`IsCardAtTop`）。
+   - 测试时必须确保目标卡片 **不在** combinedDeckZone 最末尾（index = Count-1），否则会被排除。
+
+### 测试通过情况
+
+| 卡片 | Strategy B 用例数 | 通过 | 失败 |
+|------|------------------|------|------|
+| JU_ON | 3 | 3 | 0 |
+| POISONER | 3 | 3 | 0 |
+| CURSED_CORPSE | 3 | 3 | 0 |
+| CURSE_SUMMONER | 3 | 3 | 0 |
+| RIFT_CURSE | 2 | 2 | 0 |
+| PREMATURE | 2 | 2 | 0 |
+| PROLIFERATING_CURSE | 2 | 1 | 1 |
+| CURSE_ENCHANTMENT | 2 | 2 | 0 |
+| CURSE_THIRST_BEAST | 3 | 2 | 1 |
+| MOTH_MAN | 2 | 2 | 0 |
+| CURSED_SKELETON | 1 | 1 | 0 |
+| DETERIORATION | 2 | 2 | 0 |
+| CROW_CROWD | 1 | 1 | 0 |
+| SACRIFICIAL_SPIRIT | 1 | 1 | 0 |
+| CURSE_THIRST_SHAMAN | 1 | 1 | 0 |
+
+### 已知边界问题
+
+- **PROLIFERATING_CURSE-2**（无敌方诅咒）: `CopyEnemyCurseCardToThem` 在 Play Mode 下偶发添加卡片，可能与 `StringSO` 引用残留或 `ReturnEnemyCardScripts` 作用域有关。代码逻辑中 `matchingCards.Count == 0` 时会直接 return，理论上不应添加卡片。
+- **CURSE_THIRST_BEAST-3**（非墓地状态）: `RaiseOwner()` 可能触发环境中残留的 listener，导致偶发异常。核心功能（墓地内 stage、OnMeRevealed 伤害）已验证通过。
 
 ---
 

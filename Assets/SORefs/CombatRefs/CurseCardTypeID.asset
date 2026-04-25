@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: CurseCardTypeID
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.SOScripts.StringSO
   value: JU_ON
-  reset: 1
+  reset: 0

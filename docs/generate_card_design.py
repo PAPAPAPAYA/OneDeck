@@ -211,7 +211,7 @@ def generate_markdown(cards):
 | Stage | Move card to the top of the deck |
 | Exile | Remove card from the game |
 | Linger | Card can trigger effects while positioned before the Start Card in deck |
-| DeathRattle | Effect triggers when the card is buried |
+| DeathRattle | Effect triggers **only** when the card is buried (OnMeBuried). Exile, Stage, or other zone changes do **not** trigger DeathRattle. |
 | Power | Status effect; each stack increases damage by 1 |
 | Minion Cost | Consume N friendly Minion cards to activate the effect |
 

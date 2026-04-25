@@ -19,7 +19,7 @@ public class EffectScript : MonoBehaviour
 	#region Helper Methods - Card Ownership & Colors
 	protected string GetCardOwnerPrefix(PlayerStatusSO statusRef)
 	{
-		return statusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
+		return statusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
 	}
 
 	protected string GetCardOwnerColor(PlayerStatusSO statusRef)
@@ -124,12 +124,23 @@ public class EffectScript : MonoBehaviour
 		string targetCardColor = GetCardOwnerColor(targetCardScript.myStatusRef);
 		string thisCardOwnerString = GetMyCardOwnerPrefix();
 		string thisCardColor = GetMyCardOwnerColor();
+		string effectNameCN = effect switch
+		{
+			EnumStorage.StatusEffect.Infected => "感染",
+			EnumStorage.StatusEffect.Mana => "法力",
+			EnumStorage.StatusEffect.HeartChanged => "心变",
+			EnumStorage.StatusEffect.Power => "力量",
+			EnumStorage.StatusEffect.Rest => "休息",
+			EnumStorage.StatusEffect.Revive => "复活",
+			EnumStorage.StatusEffect.Counter => "反击",
+			_ => effect.ToString()
+		};
 		effectResultString.value +=
 			"// " + thisCardOwnerString +
-			"<color=" + thisCardColor + ">" + myCard.name + "</color>] gave " +
+			"<color=" + thisCardColor + ">" + myCard.name + "</color>]给予" +
 			targetCardOwnerString +
-			"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>] " +
-			"<color=yellow>" + amount + "</color> [" + effect + "]\n";
+			"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>]" +
+			"<color=yellow>" + amount + "</color>层[" + effectNameCN + "]\n";
 	}
 	#endregion
 

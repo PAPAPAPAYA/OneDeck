@@ -268,7 +268,11 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: OVERCHARGED_SUMMONER
   displayName: "\u80FD\u91CF\u6EA2\u51FA\u7684\u53EC\u5524\u5E08"
-  cardDesc: "\u63ed\u6653\u65f6,\u6d88\u8017 <b>1</b> \u529b\u91cf:\u7f6e\u9876 <b>1</b> \u53cb\u65b9,\u7ed9\u4e88\u4e0b <b>2</b> \u5361 <b>1</b> \u529b\u91cf"
+  cardDesc: "\u63ED\u6653\u65F6,\u6D88\u8017 <b>1</b> \u529B\u91CF:\u7F6E\u9876 <b>1</b>
+    \u53CB\u65B9;\n\u63ED\u6653\u65F6:\u7ED9\u4E88\u4E0B <b>2</b> \u5361 <b>1</b>
+    \u529B\u91CF"
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

@@ -543,6 +543,7 @@ MonoBehaviour:
   purse: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}
   shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
   currentShopItemDeckRef: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
+  rarityWeightRef: {fileID: 11400000, guid: a443338ae5fa3a844ae1dcfec0166515, type: 2}
   shopItemAmount: 3
   payCheck: {fileID: 11400000, guid: fe5315966a51f1645bb27607137ec573, type: 2}
   phaseInfo: 'Press <b>[SPACE]</b> to EXIT SHOP
@@ -1145,7 +1146,7 @@ Transform:
   m_GameObject: {fileID: 410087039}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: 0.09, y: 5.43, z: -6.61}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6186,6 +6187,79 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+--- !u!1001 &6436140358085499884
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.33373
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -6.60368
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_Name
+      value: PhysicalCardParent (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 970215225319227402, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 1590914822883340471, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+  m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -6203,3 +6277,4 @@ SceneRoots:
   - {fileID: 1162866022}
   - {fileID: 3557901334636591101}
   - {fileID: 5679438409225558469}
+  - {fileID: 6436140358085499884}
