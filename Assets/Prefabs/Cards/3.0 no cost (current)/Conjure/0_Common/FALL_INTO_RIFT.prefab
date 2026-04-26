@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 834418638395040871}
   - component: {fileID: 3408854323514059765}
   - component: {fileID: 2776964620073058258}
-  - component: {fileID: 283381709536155472}
+  - component: {fileID: 7386279966630511073}
   m_Layer: 0
-  m_Name: bury hostile
+  m_Name: add [rift] and bury hostile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -53,22 +53,22 @@ MonoBehaviour:
       m_Calls: []
   preEffectEvent:
     m_PersistentCalls:
+      m_Calls: []
+  effectEvent:
+    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 283381709536155472}
-        m_TargetAssemblyTypeName: MinionCostEffect, Assembly-CSharp
-        m_MethodName: ExecuteMinionCost
-        m_Mode: 1
+      - m_Target: {fileID: 7386279966630511073}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
+        m_MethodName: AddCardToMe
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  effectEvent:
-    m_PersistentCalls:
-      m_Calls:
       - m_Target: {fileID: 2776964620073058258}
         m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
         m_MethodName: BuryTheirCards
@@ -94,8 +94,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 0
---- !u!114 &283381709536155472
+  tagsToCheck: 00000000
+--- !u!114 &7386279966630511073
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -104,10 +104,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 270621688628183383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f2ba1f09f81a75408a543fff3cbff4b, type: 3}
+  m_Script: {fileID: 11500000, guid: e8da5b23dfa04f2bb3a8add21531e513, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MinionCostEffect
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AddTempCard
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  cardCount: 1
+  curseCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -157,7 +159,10 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: FALL_INTO_RIFT
   displayName: "\u5760\u5165\u88C2\u7F1D"
-  cardDesc: "\u63ed\u6653\u65f6,\u53bb\u9664 <b>1</b> [\u6b21\u5143\u88c2\u7f1d]:\u57cb\u846c <b>1</b> \u654c\u65b9"
+  cardDesc: "\u63ED\u6653\u65F6:\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D],\u57CB\u846C
+    <b>1</b> \u654C\u65B9"
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -169,8 +174,8 @@ MonoBehaviour:
   delayCost: 0
   buryCost: 0
   exposeCost: 0
-  minionCostCount: 1
-  minionCostCardTypeID: RIFT
+  minionCostCount: 0
+  minionCostCardTypeID: 
   minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:

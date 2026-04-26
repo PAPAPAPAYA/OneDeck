@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5915337404688717014}
   - component: {fileID: 8423640758078931932}
   m_Layer: 0
-  m_Name: 'bury 1 friendly [if buried]'
+  m_Name: 'bury 1 friendly [Deathrattle]/[Linger]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -81,7 +81,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 3
+  tagsToCheck: 0300000001000000
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,8 +131,9 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: WISE_BURIAL
   displayName: "\u4E0D\u611A\u8822\u7684\u57CB\u846C"
-  cardDesc: "\u88AB\u7F6E\u9876:\u57CB\u846C <b>1</b> \u53CB\u65B9[\u4EA1\u8BED]"
+  cardDesc: "\u88AB\u7F6E\u9876:\u57CB\u846C <b>1</b> \u53CB\u65B9[\u4EA1\u8BED]/[\u8426\u7ED5]"
   rarity: 2
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

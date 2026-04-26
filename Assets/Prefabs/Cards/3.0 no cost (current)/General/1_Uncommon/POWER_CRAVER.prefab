@@ -182,7 +182,7 @@ MonoBehaviour:
   yFriendlyLayerCount: 1
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
-  statusEffectMultiplier: 3
+  statusEffectMultiplier: 2
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -235,8 +235,9 @@ MonoBehaviour:
   cardTypeID: POWER_CRAVER
   displayName: "\u529B\u91CF\u6E34\u6C42\u8005"
   cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b>3</b> \u4F24\u5BB3;\u83B7\u5F97\u529B\u91CF\u65F6:\u83B7\u5F97
-    <b>3</b> \u500D\u529B\u91CF"
+    <b>2</b> \u500D\u529B\u91CF"
   rarity: 1
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

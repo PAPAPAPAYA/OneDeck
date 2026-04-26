@@ -174,7 +174,8 @@ MonoBehaviour:
   displayName: "\u529B\u91CF\u8F6C\u79FB"
   cardDesc: "\u63ED\u6653\u65F6:\u53BB\u9664 <b>2</b> \u654C\u65B9 <b>1</b> \u529B\u91CF,\u7ED9\u4E88
     <b>2</b> \u53CB\u65B9 <b>1</b> \u529B\u91CF"
-  rarity: 2
+  rarity: 1
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

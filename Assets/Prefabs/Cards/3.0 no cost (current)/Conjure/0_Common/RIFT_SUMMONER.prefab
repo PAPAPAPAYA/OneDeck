@@ -159,7 +159,10 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_SUMMONER
   displayName: "\u88C2\u7F1D\u53EC\u5524\u5E08"
-  cardDesc: "\u63ed\u6653\u65f6,\u53bb\u9664 <b>1</b> [\u6b21\u5143\u88c2\u7f1d]:\u7f6e\u9876 <b>1</b> \u53cb\u65b9"
+  cardDesc: "\u63ED\u6653\u65F6,\u53BB\u9664 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]:\u7F6E\u9876
+    <b>1</b> \u53CB\u65B9"
+  rarity: 1
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

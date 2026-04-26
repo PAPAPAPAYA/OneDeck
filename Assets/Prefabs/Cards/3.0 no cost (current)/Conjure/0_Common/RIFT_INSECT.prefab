@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 834418638395040871}
   - component: {fileID: 3408854323514059765}
   - component: {fileID: 1849899937797477789}
+  - component: {fileID: 1970246900769268874}
   m_Layer: 0
-  m_Name: 'add 1 [rift]'
+  m_Name: 'deal dmg and add 1 [rift]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -56,6 +57,18 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1970246900769268874}
+        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_MethodName: DecreaseTheirHp
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1849899937797477789}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
         m_MethodName: AddCardToMe
@@ -83,6 +96,25 @@ MonoBehaviour:
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cardCount: 1
   curseCardTypeID: {fileID: 0}
+--- !u!114 &1970246900769268874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270621688628183383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
+  dmgAmountAlter: 0
+  healAmountAlter: 0
+  isStatusEffectDamage: 0
+  extraDmg: 0
+  statusEffectToCheck: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -132,7 +164,10 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_INSECT
   displayName: "\u6B21\u5143\u866B"
-  cardDesc: "\u63ed\u6653\u65f6:\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d]"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b>2</b> \u4F24\u5BB3;\u751F\u6210 <b>1</b>
+    [\u6B21\u5143\u88C2\u7F1D]"
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0

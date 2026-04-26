@@ -8,7 +8,7 @@ public class BuryEffect : EffectScript
 	private List<GameObject> _combinedDeck;
 
 	[Header("Tag Configuration")]
-	public EnumStorage.Tag tagToCheck;
+	public List<EnumStorage.Tag> tagsToCheck;
 
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
@@ -55,18 +55,31 @@ public class BuryEffect : EffectScript
 		BuryChosenCards(cardsToBury, 1);
 	}
 
+	/// <summary>
+	/// Check if card's tags intersect with tagsToCheck list
+	/// </summary>
+	private bool CardHasAnyMatchingTag(CardScript cardScript)
+	{
+		if (tagsToCheck == null || tagsToCheck.Count == 0) return false;
+		foreach (var tag in tagsToCheck)
+		{
+			if (cardScript.myTags.Contains(tag)) return true;
+		}
+		return false;
+	}
+
 	public void BuryCardsWithTag(int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag and are not at the bottom
+		// Filter cards that have any of the specified tags and are not at the bottom
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtBottom(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript))
+			if (!CardHasAnyMatchingTag(cardScript) || IsCardAtBottom(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -103,12 +116,12 @@ public class BuryEffect : EffectScript
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag, belong to this card's owner, and are not at the bottom
+		// Filter cards that have any of the specified tags, belong to this card's owner, and are not at the bottom
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			if (!CardHasAnyMatchingTag(cardScript) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -145,12 +158,12 @@ public class BuryEffect : EffectScript
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
 
-		// Filter cards that have the specified tag, belong to the opponent, and are not at the bottom
+		// Filter cards that have any of the specified tags, belong to the opponent, and are not at the bottom
 		for (int i = cardsWithTag.Count - 1; i >= 0; i--)
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			if (!CardHasAnyMatchingTag(cardScript) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
 			{
 				cardsWithTag.RemoveAt(i);
 			}

@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 8667056708927067259}
   - component: {fileID: 7288527331841238507}
   m_Layer: 0
-  m_Name: enhance next cards
+  m_Name: enhance next card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -212,8 +212,8 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
-  lastXCardsCount: 2
-  statusEffectLayerCount: 1
+  lastXCardsCount: 1
+  statusEffectLayerCount: 2
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
   statusEffectParticlePrefab: {fileID: 0}
@@ -269,9 +269,9 @@ MonoBehaviour:
   cardTypeID: OVERCHARGED_SUMMONER
   displayName: "\u80FD\u91CF\u6EA2\u51FA\u7684\u53EC\u5524\u5E08"
   cardDesc: "\u63ED\u6653\u65F6,\u6D88\u8017 <b>1</b> \u529B\u91CF:\u7F6E\u9876 <b>1</b>
-    \u53CB\u65B9;\n\u63ED\u6653\u65F6:\u7ED9\u4E88\u4E0B <b>2</b> \u5361 <b>1</b>
+    \u53CB\u65B9;\n\u63ED\u6653\u65F6:\u7ED9\u4E88\u4E0B <b>1</b> \u5361 <b>2</b>
     \u529B\u91CF"
-  rarity: 0
+  rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0

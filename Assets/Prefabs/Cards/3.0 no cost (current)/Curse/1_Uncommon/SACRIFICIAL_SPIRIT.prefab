@@ -51,7 +51,8 @@ MonoBehaviour:
   displayName: "\u732E\u796D\u7CBE\u7075"
   cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9,\u589E\u5F3A <b>2</b>
     \u654C\u65B9[\u8BC5\u5492]"
-  rarity: 1
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -207,4 +208,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 0
+  tagsToCheck: 00000000

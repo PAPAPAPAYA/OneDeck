@@ -1,6 +1,9 @@
 // devlog
 
 //！ anything else
+	// add space after annotations
+	//// show card tag ---- deathrattle, linger
+	//// cards tweaks
 	// change rift to not be minion, need to have 1 rift to stage another rift
 	//// check desc format
 	//// check card desc and configuration inconsistentency

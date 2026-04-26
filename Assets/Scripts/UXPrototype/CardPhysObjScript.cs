@@ -33,6 +33,7 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardDescPrint;
 	public TextMeshPro cardPricePrint;
 	public TextMeshPro cardRarityPrint;
+	public TextMeshPro cardTagPrint;
 
 	[Header("COLOR")]
 	public Color ownerCardColor;
@@ -146,6 +147,7 @@ public class CardPhysObjScript : MonoBehaviour
 		UpdatePriceDisplay();
 		UpdateCostDisplay();
 		UpdateRarityDisplay();
+		UpdateTagDisplay();
 		UpdateTintTimer();
 
 		// Long press detection
@@ -215,6 +217,46 @@ public class CardPhysObjScript : MonoBehaviour
 		// Hide cost display
 		if (cardCostPrint != null)
 			cardCostPrint.gameObject.SetActive(false);
+	}
+
+	/// <summary>
+	/// Update Tag display, tags wrapped in brackets separated by spaces
+	/// </summary>
+	private void UpdateTagDisplay()
+	{
+		if (cardTagPrint == null || cardImRepresenting == null) return;
+
+		if (cardImRepresenting.myTags == null || cardImRepresenting.myTags.Count == 0)
+		{
+			cardTagPrint.gameObject.SetActive(false);
+			return;
+		}
+
+		System.Text.StringBuilder sb = new System.Text.StringBuilder();
+		bool hasVisibleTag = false;
+		for (int i = 0; i < cardImRepresenting.myTags.Count; i++)
+		{
+			EnumStorage.Tag tag = cardImRepresenting.myTags[i];
+			if (tag == EnumStorage.Tag.None) continue;
+			if (hasVisibleTag)
+			{
+				sb.Append(" ");
+			}
+			sb.Append("[");
+			sb.Append(tag.ToString());
+			sb.Append("]");
+			hasVisibleTag = true;
+		}
+
+		if (hasVisibleTag)
+		{
+			cardTagPrint.gameObject.SetActive(true);
+			cardTagPrint.text = sb.ToString();
+		}
+		else
+		{
+			cardTagPrint.gameObject.SetActive(false);
+		}
 	}
 
 	/// <summary>

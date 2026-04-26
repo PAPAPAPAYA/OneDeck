@@ -189,7 +189,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 0
+  tagsToCheck:
+  - 0
 --- !u!114 &3583010953411538909
 MonoBehaviour:
   m_ObjectHideFlags: 0
