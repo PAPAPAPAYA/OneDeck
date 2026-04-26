@@ -30,6 +30,8 @@ public class CostNEffectContainer : MonoBehaviour
 	[Header("Cost Variables")]
 	[Tooltip("Cursed Card Type ID, used for specific cost checking")]
 	public StringSO cursedCardTypeID;
+	[Tooltip("Target Card Type ID for cost checking (e.g., 'fly')")]
+	public StringSO targetCardTypeID;
 
 	[Header("Cost and Effect Events")]
 	public UnityEvent checkCostEvent;
@@ -303,6 +305,46 @@ public class CostNEffectContainer : MonoBehaviour
 		_costNotMetFlag++;
 		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
 		effectResultString.value += "// 牌库中没有[" + cursedCardTypeID?.value + "]敌方卡牌拥有超过" + powerCount + "层[力量]\n";
+	}
+
+	/// <summary>
+	/// Check if there are at least [requiredCount] friendly cards in combined deck zone matching targetCardTypeID.
+	/// Cost is met if the combined deck contains at least the specified number of own cards with matching cardTypeID.
+	/// </summary>
+	/// <param name="requiredCount">Required number of matching friendly cards in combined deck</param>
+	public void CheckCost_HasOwnCardOfType(int requiredCount)
+	{
+		// Check if targetCardTypeID is set
+		if (targetCardTypeID == null || string.IsNullOrEmpty(targetCardTypeID.value))
+		{
+			_costNotMetFlag++;
+			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+			effectResultString.value += "// [" + _myCardScript.gameObject.name + "]目标卡牌类型ID未设置或为空\n";
+			return;
+		}
+
+		int matchingCardFound = 0;
+		foreach (var card in CombatManager.Me.combinedDeckZone)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			// Skip neutral cards and Start Card
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+			// Must belong to self (same owner)
+			if (cardScript.myStatusRef != _myCardScript.myStatusRef) continue;
+			// Must match target card type ID
+			if (cardScript.cardTypeID != targetCardTypeID.value) continue;
+
+			matchingCardFound++;
+			if (matchingCardFound >= requiredCount) break;
+		}
+
+		if (matchingCardFound >= requiredCount) return; // cost met
+
+		// cost not met
+		_costNotMetFlag++;
+		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
+		effectResultString.value += "// 牌库中[" + targetCardTypeID.value + "]友方卡牌不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + requiredCount + "张)\n";
 	}
 
 	#endregion

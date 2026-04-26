@@ -39,11 +39,12 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	public bool CanBeAffectedByEffects => !IsNeutralCard && myStatusRef != null;
 	
+	[HideInInspector]
 	public bool isMinion = false;
 	public IntSO price;
-	//[HideInInspector]
+	[HideInInspector]
 	public PlayerStatusSO myStatusRef;
-	//[HideInInspector]
+	[HideInInspector]
 	public PlayerStatusSO theirStatusRef;
 	[Header("Status Effects")]
 	public List<EnumStorage.StatusEffect> myStatusEffects;
@@ -52,22 +53,28 @@ public class CardScript : MonoBehaviour
 
 	[Header("Delay Cost")]
 	[Tooltip("When activated, delay N own cards by 1 position")]
+	[HideInInspector]
 	public int delayCost;
 
 	[Header("Bury Cost")]
 	[Tooltip("When activated, bury N own cards to the bottom")]
+	[HideInInspector]
 	public int buryCost;
 
 	[Header("Expose Cost")]
 	[Tooltip("When activated, expose N enemy cards to the top")]
+	[HideInInspector]
 	public int exposeCost;
 
 	[Header("Minion Cost")]
 	[Tooltip("Number of minion cards required to activate")]
+	[HideInInspector]
 	public int minionCostCount;
 	[Tooltip("Minion card type ID to consume (e.g., 'fly'), empty string means no type restriction")]
+	[HideInInspector]
 	public string minionCostCardTypeID;
 	[Tooltip("Owner of consumed minion cards: Me=ally, Them=enemy, Random=random")]
+	[HideInInspector]
 	public EnumStorage.TargetType minionCostOwner = EnumStorage.TargetType.Me;
 
 	private void OnEnable()

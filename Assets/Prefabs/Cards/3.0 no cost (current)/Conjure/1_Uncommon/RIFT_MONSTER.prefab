@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7514892832312545785}
   - component: {fileID: 8932655356446910850}
   m_Layer: 0
-  m_Name: deal dmg
+  m_Name: exile rift and deal dmg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -48,27 +48,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
   checkCostEvent:
     m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8932655356446910850}
-        m_TargetAssemblyTypeName: MinionCostEffect, Assembly-CSharp
-        m_MethodName: ExecuteMinionCost
-        m_Mode: 1
+      - m_Target: {fileID: 3408854323514059765}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: CheckCost_HasOwnCardOfType
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  preEffectEvent:
+    m_PersistentCalls:
+      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 8932655356446910850}
+        m_TargetAssemblyTypeName: ExileEffect, Assembly-CSharp
+        m_MethodName: ExileMyCardsWithTypeID
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 7514892832312545785}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
         m_MethodName: DecreaseTheirHp
@@ -109,10 +122,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 270621688628183383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f2ba1f09f81a75408a543fff3cbff4b, type: 3}
+  m_Script: {fileID: 11500000, guid: 48fd28867eaa8fc44bcf68c773e7d076, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MinionCostEffect
+  m_EditorClassIdentifier: Assembly-CSharp::ExileEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  tagToCheck: 0
+  cardTypeIDSO: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -165,6 +180,7 @@ MonoBehaviour:
   cardDesc: "\u63ED\u6653\u65F6,\u53BB\u9664 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]:\u9020\u6210
     <b>4</b> \u4F24\u5BB3"
   rarity: 1
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -176,8 +192,8 @@ MonoBehaviour:
   delayCost: 0
   buryCost: 0
   exposeCost: 0
-  minionCostCount: 1
-  minionCostCardTypeID: RIFT
+  minionCostCount: 0
+  minionCostCardTypeID: 
   minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:

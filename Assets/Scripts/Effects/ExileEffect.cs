@@ -10,6 +10,10 @@ public class ExileEffect : EffectScript
 	[Header("Tag Configuration")]
 	public EnumStorage.Tag tagToCheck;
 
+	[Header("Card Type ID Configuration")]
+	[Tooltip("Target card type ID for exile filtering (e.g., 'fly')")]
+	public StringSO cardTypeIDSO;
+
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
@@ -206,6 +210,34 @@ public class ExileEffect : EffectScript
 
 		minions = UtilityFuncManagerScript.ShuffleList(minions);
 		ExileChosenCards(minions, amount);
+	}
+
+	/// <summary>
+	/// Exile friendly cards matching the specified cardTypeID from cardTypeIDSO field.
+	/// </summary>
+	/// <param name="amount">Number of cards to exile</param>
+	public void ExileMyCardsWithTypeID(int amount)
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var cardsToExile = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
+
+		// Filter: Own cards with matching cardTypeID, exclude cards to skip
+		for (int i = cardsToExile.Count - 1; i >= 0; i--)
+		{
+			var card = cardsToExile[i];
+			var cardScript = card.GetComponent<CardScript>();
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    cardScript.myStatusRef != myCardScript.myStatusRef ||
+			    cardTypeIDSO == null ||
+			    cardScript.cardTypeID != cardTypeIDSO.value)
+			{
+				cardsToExile.RemoveAt(i);
+			}
+		}
+
+		cardsToExile = UtilityFuncManagerScript.ShuffleList(cardsToExile);
+		ExileChosenCards(cardsToExile, amount);
 	}
 
 	public void ExileMyCards_BasedOnIntSO(IntSO intSO)

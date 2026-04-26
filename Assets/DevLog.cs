@@ -4,7 +4,7 @@
 	// add space after annotations
 	//// show card tag ---- deathrattle, linger
 	//// cards tweaks
-	// change rift to not be minion, need to have 1 rift to stage another rift
+	//// change rift to not be minion, need to have 1 rift to stage another rift
 	//// check desc format
 	//// check card desc and configuration inconsistentency
 		//// output ready, need to check actual prefab configuration, refer to History
@@ -19,7 +19,7 @@
 //! refactor
 	//// change all card prefab name to english
 		//// new variable to store chinese name
-	// ApplyStatusEffectCore()
+	//// ApplyStatusEffectCore()
 		//// GiveSelfStatusEffect()
 		//// ApplyPowerToCardInternal()
 		//// TransferStatusEffects()
@@ -35,9 +35,9 @@
 	//// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
 //! design
-	// decrease [deathrattle], [bury] should be more than [if buried]
-	// sort cards with "generating resources" and "consuming resources"
-	// update cards
+	//// decrease [deathrattle], [bury] should be more than [if buried]
+	//// sort cards with "generating resources" and "consuming resources"
+	//// update cards
 	//// POWER_SIPHONER will one card destroy curse
 		//// 1. copy half power from all friendly
 		//// 2. transfer half power from all friendly
@@ -61,7 +61,7 @@
 
 //! feature
 	//// skill to check infinite card combos
-		// GiveStatusEffectToXFriendly, GiveStatusEffectToLastXCards, GivePowerToCardThatGotPower
+		//// GiveStatusEffectToXFriendly, GiveStatusEffectToLastXCards, GivePowerToCardThatGotPower
 	//// tool to validate no duplicate card type id
 	//// skills and SOPs to generate test plan and execute test plan to test card prefabs
 	//// script name check
@@ -69,34 +69,30 @@
 	//// rarity
 		//// rarity attibute in card script
 	// shop
-		// iterate on shop based on rarity
+		//// iterate on shop based on rarity
 	// fake shuffle
 	
 //! viscom
 	// better power wisp
 	// power gain card particle
 	// motion design
-		// show invoked cards not in reveal zone, compress rest of the deck
-	// queue animation?
+		//todo cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
+	//todo queue animation
 	
 
 //! design change
-	// should we change [bury 1 friendly] to [bury next 2]?
-		// it's more powerful, maybe should be benefit, not cost
+	//// should we change [bury 1 friendly] to [bury next 2]?
+		//// it's more powerful, maybe should be benefit, not cost
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	//// test SPIKE_SKELETON
 	//// fixed copycurse (to me --> to them)
 	// power wisp destroy timing
 	//// some effects don't include card in reveal zone
-	// test progress:
-		// bury: ai tested
+	//// test progress:
+		//// bury: ai tested
 			//// MARTYR (DEATHRATTLE 批次) — GiveAllFriendlyStatusEffect 不读取 includeSelf 字段，Martyr 自身总会获得 Power。
-			// GRAVE_PORTAL — 位于 top 的 portal 被 StageMyCards 排除时，预期行为与实际行为存在差异。
-			// GRUDGE (A-1, A-5, A-6) — CombatUXManager.me 为 null 导致 StatusEffectGiverEffect.GiveStatusEffectToLastXCards() 回调未执行，Power 未被施加 → 通过创建 CombatUXManager 实例修复。
-			// LARGE_SCALE_DEATH (A-1) — BuryLastXCards(4) 因 deck 索引计算问题只 bury 了 3 张 → 调整 setup 顺序后修复。
-			// GRAVE_TOGETHER (A-1) — owner 侧 bury 计数为 0，因 friendlyInGraveAmountRef 在 bury 前未正确更新 → 确保 deck 状态正确后修复。
-			// SLIME (A-3) — CombatFuncs.me / physical card prefab 为 null 导致 AddSelfToMe 路径异常 → 通过隔离 burial 调用路径修复。
 	// test strategies:
 		// strategy A: simulate logic in editor mode
 		// strategy B: simulate logic in play mode
