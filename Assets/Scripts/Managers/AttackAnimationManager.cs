@@ -118,6 +118,12 @@ public class AttackAnimationManager : MonoBehaviour
 		}
 
 		_isProcessingQueue = false;
+
+		// All attack animations done: restore deck focus
+		if (_combatUXManager != null && _combatUXManager.IsDeckFocused)
+		{
+			yield return StartCoroutine(_combatUXManager.RestoreDeckFocusCoroutine());
+		}
 	}
 
 	/// <summary>
@@ -190,6 +196,15 @@ public class AttackAnimationManager : MonoBehaviour
 			yield break;
 		}
 
+		// Determine if attacker is in reveal zone
+		bool isInRevealZone = _combatManager != null && _combatManager.revealZone == data.attackerLogicalCard;
+
+		// If NOT in reveal zone, focus deck on this card first
+		if (!isInRevealZone)
+		{
+			yield return StartCoroutine(_combatUXManager.FocusOnCardCoroutine(cardScript));
+		}
+
 		Vector3 startPos = physicalCard.transform.position;
 		Vector3 targetPos = targetTransform.position;
 		Vector3 originalScale = physicalCard.transform.localScale;
@@ -221,10 +236,23 @@ public class AttackAnimationManager : MonoBehaviour
 			Vector3 overshootPos = CalculateOvershootPosition(targetPos, startPos);
 			yield return OvershootAnimation(physicalCard, overshootPos);
 
-			// ========== Phase 6: Return directly from overshoot to reveal position, restore size and rotation ==========
-			Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
-			Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
-			yield return ReturnToRevealFromOvershootAnimation(physicalCard, revealPos, revealSize, originalScale);
+			// ========== Phase 6: Return to appropriate position ==========
+			if (isInRevealZone)
+			{
+				// Return to reveal position
+				Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
+				Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
+				yield return ReturnToRevealFromOvershootAnimation(physicalCard, revealPos, revealSize, originalScale);
+			}
+			else
+			{
+				// Return to deck position (respects focus offset)
+				int deckIndex = _combatUXManager.GetPhysicalCardDeckIndex(physicalCard);
+				Vector3 deckPos = deckIndex >= 0
+					? _combatUXManager.CalculatePositionAtIndex(deckIndex)
+					: startPos;
+				yield return ReturnToDeckFromOvershootAnimation(physicalCard, deckPos, originalScale);
+			}
 		}
 		finally
 		{
@@ -232,11 +260,23 @@ public class AttackAnimationManager : MonoBehaviour
 			physScript.isPlayingSpecialAnimation = false;
 			
 			// Update CardPhysObjScript target position to prevent snapping
-			// Use reveal position as target
-			Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
-			Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
-			physScript.SetTargetPosition(revealPos);
-			physScript.SetTargetScale(revealSize);
+			if (isInRevealZone)
+			{
+				Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
+				Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
+				physScript.SetTargetPosition(revealPos);
+				physScript.SetTargetScale(revealSize);
+			}
+			else
+			{
+				int deckIndex = _combatUXManager.GetPhysicalCardDeckIndex(physicalCard);
+				if (deckIndex >= 0)
+				{
+					Vector3 deckPos = _combatUXManager.CalculatePositionAtIndex(deckIndex);
+					physScript.SetTargetPosition(deckPos);
+					physScript.SetTargetScale(_combatUXManager.physicalCardDeckSize);
+				}
+			}
 		}
 
 		// Mark animation complete
@@ -417,6 +457,35 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Return from overshoot position to deck position animation, restore original scale and zero rotation
+	/// </summary>
+	private IEnumerator ReturnToDeckFromOvershootAnimation(GameObject physicalCard, Vector3 deckPos, Vector3 originalScale)
+	{
+		bool completed = false;
+		
+		Sequence returnSequence = DOTween.Sequence();
+		
+		returnSequence.Append(
+			physicalCard.transform.DOMove(deckPos, returnToRevealDuration)
+				.SetEase(Ease.OutQuad)
+		);
+		
+		returnSequence.Join(
+			physicalCard.transform.DOScale(originalScale, returnToRevealDuration)
+				.SetEase(Ease.OutQuad)
+		);
+		
+		returnSequence.Join(
+			physicalCard.transform.DORotate(Vector3.zero, returnToRevealDuration)
+				.SetEase(Ease.OutQuad)
+		);
+		
+		returnSequence.OnComplete(() => completed = true);
+
+		yield return new WaitUntil(() => completed);
+	}
+
+	/// <summary>
 	/// Release player input
 	/// </summary>
 	private void ReleasePlayerInput()
@@ -444,6 +513,12 @@ public class AttackAnimationManager : MonoBehaviour
 		_attackQueue.Clear();
 		_isProcessingQueue = false;
 		isPlayingAttackAnimation = false;
+		
+		// Restore deck focus if active
+		if (_combatUXManager != null && _combatUXManager.IsDeckFocused)
+		{
+			StartCoroutine(_combatUXManager.RestoreDeckFocusCoroutine());
+		}
 		
 		// Restore player input
 		if (_combatManager != null)

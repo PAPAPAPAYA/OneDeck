@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -149,6 +150,15 @@ public class CombatUXManager : MonoBehaviour
 	[Tooltip("Target size when card is destroyed")]
 	public Vector3 cardDestroyTargetSize = new Vector3(0.1f, 0.1f, 0.1f);
 
+	[Header("DECK FOCUS / PEEL")]
+	public Transform deckFocusTargetPos;
+	public float peelSlideDistance = 4f;
+	public float deckShiftDuration = 0.3f;
+	public float peelCardDuration = 0.18f;
+	public float peelStaggerDelay = 0.04f;
+	public float secondaryLiftHeight = 0.4f;
+	public float secondaryLiftDuration = 0.25f;
+
 	// Physical card list (synced with combined deck zone updates)
 	public List<GameObject> physicalCardsInDeck = new();
 	
@@ -157,6 +167,14 @@ public class CombatUXManager : MonoBehaviour
 
 	// Dictionary mapping CardScript to Physical Card (maintain this mapping)
 	private Dictionary<CardScript, GameObject> _cardScriptToPhysicalCache = new();
+
+	// Deck focus runtime state
+	private bool _isDeckFocused = false;
+	private CardScript _currentFocusCard = null;
+	private Vector3 _deckFocusOffset = Vector3.zero;
+	private List<GameObject> _peeledCards = new List<GameObject>();
+	private Dictionary<GameObject, Vector3> _peeledCardOriginalPositions = new Dictionary<GameObject, Vector3>();
+	public bool IsDeckFocused => _isDeckFocused;
 
 	private void OnEnable()
 	{
@@ -483,14 +501,15 @@ public class CombatUXManager : MonoBehaviour
 	/// <summary>
 	/// Calculate position coordinates at specified index
 	/// </summary>
-	private Vector3 CalculatePositionAtIndex(int index)
+	public Vector3 CalculatePositionAtIndex(int index)
 	{
 		var count = physicalCardsInDeck.Count;
+		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		// index=0 (bottom of physical deck) has largest offset, index=count-1 (top) has smallest offset
 		return new Vector3(
-			physicalCardDeckPos.position.x + xOffset * (count - 1 - index),
-			physicalCardDeckPos.position.y + yOffset * (count - 1 - index),
-			physicalCardDeckPos.position.z - zOffset * index
+			basePos.x + xOffset * (count - 1 - index),
+			basePos.y + yOffset * (count - 1 - index),
+			basePos.z - zOffset * index
 		);
 	}
 
@@ -931,6 +950,10 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public void UpdateAllPhysicalCardTargets()
 	{
+		// Guard: skip update when deck is focused to prevent interference
+		if (_isDeckFocused)
+			return;
+
 		// Update card positions in deck
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
@@ -966,6 +989,324 @@ public class CombatUXManager : MonoBehaviour
 			physScript.SetPositionImmediate(pos);
 			physScript.SetScaleImmediate(physicalCardDeckSize);
 		}
+	}
+
+	#endregion
+
+	#region Deck Focus / Peel System
+
+	/// <summary>
+	/// Focus on a card in the deck by peeling cards in front of it
+	/// </summary>
+	public IEnumerator FocusOnCardCoroutine(CardScript targetCard)
+	{
+		if (targetCard == null)
+			yield break;
+
+		// Get physical card
+		BuildCardScriptToPhysicalDictionary();
+		GameObject physicalCard = GetPhysicalCardFromLogicalCard(targetCard);
+		if (physicalCard == null)
+		{
+			Debug.LogWarning("[CombatUXManager] FocusOnCardCoroutine: No physical card found for " + targetCard.name);
+			yield break;
+		}
+
+		int targetIndex = GetPhysicalCardDeckIndex(physicalCard);
+		if (targetIndex < 0)
+		{
+			Debug.LogWarning("[CombatUXManager] FocusOnCardCoroutine: Card not found in physical deck");
+			yield break;
+		}
+
+		// Already focused on this card
+		if (_isDeckFocused && _currentFocusCard == targetCard)
+			yield break;
+
+		if (!_isDeckFocused)
+		{
+			// Start new peel
+			yield return StartCoroutine(StartPeelCoroutine(targetIndex));
+		}
+		else
+		{
+			// Transition focus to different card
+			GameObject currentPhysical = GetPhysicalCardFromLogicalCard(_currentFocusCard);
+			int currentIndex = currentPhysical != null ? GetPhysicalCardDeckIndex(currentPhysical) : -1;
+			if (currentIndex < 0)
+			{
+				// Current focus card no longer in deck, start fresh
+				yield return StartCoroutine(StartPeelCoroutine(targetIndex));
+			}
+			else
+			{
+				yield return StartCoroutine(TransitionFocusCoroutine(targetIndex, currentIndex));
+			}
+		}
+
+		_currentFocusCard = targetCard;
+		_isDeckFocused = true;
+	}
+
+	/// <summary>
+	/// Start peeling deck to expose target card at specified index
+	/// </summary>
+	private IEnumerator StartPeelCoroutine(int targetIndex)
+	{
+		var count = physicalCardsInDeck.Count;
+		if (count == 0 || targetIndex < 0 || targetIndex >= count)
+			yield break;
+
+		// Compute deck focus offset: shift deck so target card X aligns with deckFocusTargetPos
+		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
+		float noOffsetX = physicalCardDeckPos.position.x + xOffset * (count - 1 - targetIndex);
+		float noOffsetY = physicalCardDeckPos.position.y + yOffset * (count - 1 - targetIndex);
+		float offsetX = desiredX - noOffsetX;
+		float offsetY = physicalCardDeckPos.position.y - noOffsetY;
+		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
+
+		// Animate all deck cards to new offset positions
+		float halfDuration = deckShiftDuration * 0.5f;
+		Sequence shiftSequence = DOTween.Sequence();
+		for (int i = 0; i < count; i++)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+			var physScript = card.GetComponent<CardPhysObjScript>();
+			if (physScript == null) continue;
+
+			Vector3 newPos = CalculatePositionAtIndex(i);
+			shiftSequence.Join(
+				card.transform.DOMove(newPos, deckShiftDuration).SetEase(Ease.OutQuad)
+			);
+			physScript.SetTargetPosition(newPos);
+		}
+		
+		bool shiftCompleted = false;
+		shiftSequence.OnComplete(() => shiftCompleted = true);
+		shiftSequence.Play();
+		yield return new WaitUntil(() => shiftCompleted);
+
+		// Peel cards in front of target (index > targetIndex)
+		_peeledCards.Clear();
+		_peeledCardOriginalPositions.Clear();
+		for (int i = count - 1; i > targetIndex; i--)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+
+			_peeledCardOriginalPositions[card] = card.transform.position;
+			_peeledCards.Add(card);
+
+			Vector3 peelDirection = new Vector3(-1f, -1f, 0f).normalized;
+			Vector3 peelPos = card.transform.position + peelDirection * peelSlideDistance;
+
+			bool peelCompleted = false;
+			card.transform.DOMove(peelPos, peelCardDuration)
+				.SetEase(Ease.InOutQuad)
+				.SetDelay((count - 1 - i) * peelStaggerDelay)
+				.OnComplete(() => peelCompleted = true);
+
+			yield return new WaitUntil(() => peelCompleted);
+		}
+	}
+
+	/// <summary>
+	/// Transition focus from one card to another
+	/// </summary>
+	private IEnumerator TransitionFocusCoroutine(int newTargetIndex, int currentTargetIndex)
+	{
+		var count = physicalCardsInDeck.Count;
+		if (count == 0 || newTargetIndex < 0 || newTargetIndex >= count)
+			yield break;
+
+		// Recompute deck focus offset for new target
+		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
+		float noOffsetX = physicalCardDeckPos.position.x + xOffset * (count - 1 - newTargetIndex);
+		float noOffsetY = physicalCardDeckPos.position.y + yOffset * (count - 1 - newTargetIndex);
+		float offsetX = desiredX - noOffsetX;
+		float offsetY = physicalCardDeckPos.position.y - noOffsetY;
+		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
+
+		// Animate deck to new offset
+		float duration = deckShiftDuration;
+		Sequence shiftSequence = DOTween.Sequence();
+		for (int i = 0; i < count; i++)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+			var physScript = card.GetComponent<CardPhysObjScript>();
+			if (physScript == null) continue;
+
+			Vector3 newPos = CalculatePositionAtIndex(i);
+			shiftSequence.Join(
+				card.transform.DOMove(newPos, duration).SetEase(Ease.OutQuad)
+			);
+			physScript.SetTargetPosition(newPos);
+		}
+
+		bool shiftCompleted = false;
+		shiftSequence.OnComplete(() => shiftCompleted = true);
+		shiftSequence.Play();
+		yield return new WaitUntil(() => shiftCompleted);
+
+		// Determine which cards need to be peeled or restored
+		var shouldBePeeled = new HashSet<GameObject>();
+		for (int i = newTargetIndex + 1; i < count; i++)
+		{
+			if (physicalCardsInDeck[i] != null)
+				shouldBePeeled.Add(physicalCardsInDeck[i]);
+		}
+
+		// Restore cards that should no longer be peeled
+		for (int i = _peeledCards.Count - 1; i >= 0; i--)
+		{
+			var card = _peeledCards[i];
+			if (card == null)
+			{
+				_peeledCards.RemoveAt(i);
+				continue;
+			}
+			if (!shouldBePeeled.Contains(card))
+			{
+				int cardIndex = physicalCardsInDeck.IndexOf(card);
+				Vector3 restorePos = cardIndex >= 0 ? CalculatePositionAtIndex(cardIndex) : card.transform.position;
+
+				bool restoreCompleted = false;
+				card.transform.DOMove(restorePos, peelCardDuration)
+					.SetEase(Ease.InOutQuad)
+					.OnComplete(() => restoreCompleted = true);
+
+				_peeledCards.RemoveAt(i);
+				_peeledCardOriginalPositions.Remove(card);
+
+				yield return new WaitUntil(() => restoreCompleted);
+			}
+		}
+
+		// Peel cards that should now be peeled
+		for (int i = count - 1; i > newTargetIndex; i--)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+			if (_peeledCards.Contains(card)) continue;
+
+			_peeledCardOriginalPositions[card] = card.transform.position;
+			_peeledCards.Add(card);
+
+			Vector3 peelDirection = new Vector3(-1f, -1f, 0f).normalized;
+			Vector3 peelPos = card.transform.position + peelDirection * peelSlideDistance;
+
+			bool peelCompleted = false;
+			card.transform.DOMove(peelPos, peelCardDuration)
+				.SetEase(Ease.InOutQuad)
+				.SetDelay((count - 1 - i) * peelStaggerDelay)
+				.OnComplete(() => peelCompleted = true);
+
+			yield return new WaitUntil(() => peelCompleted);
+		}
+	}
+
+	/// <summary>
+	/// Restore deck focus: return all peeled cards and reset offset
+	/// </summary>
+	public IEnumerator RestoreDeckFocusCoroutine()
+	{
+		if (!_isDeckFocused)
+			yield break;
+
+		// Restore peeled cards in reverse order (closest to target first)
+		for (int i = _peeledCards.Count - 1; i >= 0; i--)
+		{
+			var card = _peeledCards[i];
+			if (card == null) continue;
+
+			Vector3 originalPos = _peeledCardOriginalPositions.ContainsKey(card)
+				? _peeledCardOriginalPositions[card]
+				: Vector3.zero;
+
+			bool restoreCompleted = false;
+			card.transform.DOMove(originalPos, peelCardDuration)
+				.SetEase(Ease.InOutQuad)
+				.OnComplete(() => restoreCompleted = true);
+
+			yield return new WaitUntil(() => restoreCompleted);
+		}
+
+		// Animate deck base back to zero offset
+		_deckFocusOffset = Vector3.zero;
+		float duration = deckShiftDuration;
+		Sequence restoreSequence = DOTween.Sequence();
+		for (int i = 0; i < physicalCardsInDeck.Count; i++)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+			var physScript = card.GetComponent<CardPhysObjScript>();
+			if (physScript == null) continue;
+
+			Vector3 newPos = CalculatePositionAtIndex(i);
+			restoreSequence.Join(
+				card.transform.DOMove(newPos, duration).SetEase(Ease.OutQuad)
+			);
+			physScript.SetTargetPosition(newPos);
+		}
+
+		bool restoreCompletedAll = false;
+		restoreSequence.OnComplete(() => restoreCompletedAll = true);
+		restoreSequence.Play();
+		yield return new WaitUntil(() => restoreCompletedAll);
+
+		// Clear focus state
+		_isDeckFocused = false;
+		_currentFocusCard = null;
+		_peeledCards.Clear();
+		_peeledCardOriginalPositions.Clear();
+
+		// Update all physical card targets to ensure they are in sync
+		UpdateAllPhysicalCardTargets();
+	}
+
+	/// <summary>
+	/// Lift a card in the deck slightly for secondary animation (receiver)
+	/// Does NOT interfere with PeelDeck focus state
+	/// </summary>
+	public IEnumerator LiftCardInDeckCoroutine(CardScript targetCard)
+	{
+		if (targetCard == null)
+			yield break;
+
+		BuildCardScriptToPhysicalDictionary();
+		GameObject physicalCard = GetPhysicalCardFromLogicalCard(targetCard);
+		if (physicalCard == null)
+			yield break;
+
+		Vector3 originalPos = physicalCard.transform.position;
+		Vector3 liftPos = originalPos + Vector3.up * secondaryLiftHeight;
+
+		bool liftCompleted = false;
+		physicalCard.transform.DOMove(liftPos, secondaryLiftDuration)
+			.SetEase(Ease.OutQuad)
+			.OnComplete(() => liftCompleted = true);
+		yield return new WaitUntil(() => liftCompleted);
+
+		// Hold briefly then return
+		yield return new WaitForSeconds(0.1f);
+
+		bool lowerCompleted = false;
+		physicalCard.transform.DOMove(originalPos, secondaryLiftDuration)
+			.SetEase(Ease.InOutQuad)
+			.OnComplete(() => lowerCompleted = true);
+		yield return new WaitUntil(() => lowerCompleted);
+	}
+
+	/// <summary>
+	/// Get index of physical card in physicalCardsInDeck, or -1
+	/// </summary>
+	public int GetPhysicalCardDeckIndex(GameObject physicalCard)
+	{
+		if (physicalCard == null)
+			return -1;
+		return physicalCardsInDeck.IndexOf(physicalCard);
 	}
 
 	#endregion
