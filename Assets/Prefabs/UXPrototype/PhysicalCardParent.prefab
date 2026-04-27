@@ -519,6 +519,8 @@ MonoBehaviour:
   ownerCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
   opponentCardColor: {r: 0.70980394, g: 0.10588236, b: 0.15686275, a: 1}
   opponentCardEdgeColor: {r: 0.70980394, g: 0.105882354, b: 0.15686275, a: 1}
+  ownerTextColor: {r: 0.039215688, g: 0.05490196, b: 0.09803922, a: 1}
+  opponentTextColor: {r: 1, g: 0.9686275, b: 0.9215687, a: 1}
   infectedTintColor: {r: 0.4, g: 0.8, b: 0.2, a: 1}
   infectedTintIntensity: 0.5
   powerTintColor: {r: 1, g: 0.6, b: 0.1, a: 1}

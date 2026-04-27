@@ -5828,6 +5828,38 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7023318022294586710, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: ownerTextColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7023318022294586710, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: ownerTextColor.b
+      value: 0.09803922
+      objectReference: {fileID: 0}
+    - target: {fileID: 7023318022294586710, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: ownerTextColor.g
+      value: 0.05490196
+      objectReference: {fileID: 0}
+    - target: {fileID: 7023318022294586710, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: ownerTextColor.r
+      value: 0.039215688
+      objectReference: {fileID: 0}
+    - target: {fileID: 7023318022294586710, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: opponentTextColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7023318022294586710, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: opponentTextColor.b
+      value: 0.9215687
+      objectReference: {fileID: 0}
+    - target: {fileID: 7023318022294586710, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: opponentTextColor.g
+      value: 0.9686275
+      objectReference: {fileID: 0}
+    - target: {fileID: 7023318022294586710, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: opponentTextColor.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
