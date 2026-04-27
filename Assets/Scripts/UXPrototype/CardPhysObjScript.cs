@@ -40,6 +40,8 @@ public class CardPhysObjScript : MonoBehaviour
 	public Color ownerCardEdgeColor;
 	public Color opponentCardColor;
 	public Color opponentCardEdgeColor;
+	public Color ownerTextColor;
+	public Color opponentTextColor;
 
 	[Header("TINT - Infected")]
 	[Tooltip("Tint color for Infected state")]
@@ -790,6 +792,14 @@ public class CardPhysObjScript : MonoBehaviour
 
 		cardFace.color = finalFaceColor;
 		cardEdge.color = finalEdgeColor;
+
+		// Apply text color based on ownership
+		Color textColor = baseFaceColor == ownerCardColor ? ownerTextColor : opponentTextColor;
+		if (cardNamePrint != null) cardNamePrint.color = textColor;
+		if (cardDescPrint != null) cardDescPrint.color = textColor;
+		if (cardCostPrint != null) cardCostPrint.color = textColor;
+		if (cardTagPrint != null) cardTagPrint.color = textColor;
+		if (cardRarityPrint != null) cardRarityPrint.color = textColor;
 	}
 
 	/// <summary>
