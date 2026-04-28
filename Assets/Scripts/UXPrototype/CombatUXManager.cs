@@ -158,6 +158,10 @@ public class CombatUXManager : MonoBehaviour
 	public float peelStaggerDelay = 0.04f;
 	public float secondaryLiftHeight = 0.4f;
 	public float secondaryLiftDuration = 0.25f;
+	[Tooltip("Enable LiftCardInDeck secondary animation")]
+	public bool enableLiftCardInDeck = false;
+	[Tooltip("Enable PeelDeck focus animation during attack")]
+	public bool enablePeelDeck = true;
 
 	// Physical card list (synced with combined deck zone updates)
 	public List<GameObject> physicalCardsInDeck = new();
@@ -1000,6 +1004,8 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public IEnumerator FocusOnCardCoroutine(CardScript targetCard)
 	{
+		if (!enablePeelDeck)
+			yield break;
 		if (targetCard == null)
 			yield break;
 
@@ -1083,8 +1089,14 @@ public class CombatUXManager : MonoBehaviour
 		}
 		
 		bool shiftCompleted = false;
-		shiftSequence.OnComplete(() => shiftCompleted = true);
+		shiftSequence.OnComplete(() => 
+		{
+			shiftCompleted = true;
+			UnityEngine.Debug.Log("[PEEL] Shift sequence completed");
+		});
+		shiftSequence.OnKill(() => UnityEngine.Debug.Log("[PEEL] Shift sequence killed"));
 		shiftSequence.Play();
+		UnityEngine.Debug.Log("[PEEL] Shift sequence started, duration=" + shiftSequence.Duration());
 		yield return new WaitUntil(() => shiftCompleted);
 
 		// Peel cards in front of target (index > targetIndex)
@@ -1212,6 +1224,8 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public IEnumerator RestoreDeckFocusCoroutine()
 	{
+		if (!enablePeelDeck)
+			yield break;
 		if (!_isDeckFocused)
 			yield break;
 
@@ -1272,6 +1286,8 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public IEnumerator LiftCardInDeckCoroutine(CardScript targetCard)
 	{
+		if (!enableLiftCardInDeck)
+			yield break;
 		if (targetCard == null)
 			yield break;
 

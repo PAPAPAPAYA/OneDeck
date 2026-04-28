@@ -783,7 +783,7 @@ MonoBehaviour:
   hitShakePreset: {fileID: 11400000, guid: a8ff2a1b41435cf48a9c8b2cb7d1545e, type: 2}
   overshootDistance: 10
   bounceBackDuration: 0.1
-  windUpDistance: 2
+  windUpDistance: 15
   windUpDuration: 0.25
   pauseAtTarget: 0.2
   returnToRevealDuration: 0.2
@@ -1358,6 +1358,7 @@ Transform:
   - {fileID: 1796125023}
   - {fileID: 1757099129}
   - {fileID: 2016868083}
+  - {fileID: 1162866022}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &439035965
@@ -2870,12 +2871,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1162866020}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 439032069}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1174098152
 GameObject:
@@ -6224,6 +6225,5 @@ SceneRoots:
   - {fileID: 1229529461}
   - {fileID: 2064474147}
   - {fileID: 15491487674759769}
-  - {fileID: 1162866022}
   - {fileID: 3557901334636591101}
   - {fileID: 3767364583604549246}

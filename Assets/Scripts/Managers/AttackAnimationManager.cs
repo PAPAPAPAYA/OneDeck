@@ -341,21 +341,29 @@ public class AttackAnimationManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Calculate wind-up position
+	/// Calculate wind-up position (ignores z-axis, works in xy-plane only)
 	/// </summary>
 	private Vector3 CalculateWindUpPosition(Vector3 startPos, Vector3 targetPos)
 	{
-		Vector3 direction = (targetPos - startPos).normalized;
-		return startPos - direction * windUpDistance;
+		Vector2 direction2D = (new Vector2(targetPos.x, targetPos.y) - new Vector2(startPos.x, startPos.y)).normalized;
+		return new Vector3(
+			startPos.x - direction2D.x * windUpDistance,
+			startPos.y - direction2D.y * windUpDistance,
+			startPos.z
+		);
 	}
 
 	/// <summary>
-	/// Calculate overshoot position (continue past target)
+	/// Calculate overshoot position (continue past target, ignores z-axis)
 	/// </summary>
 	private Vector3 CalculateOvershootPosition(Vector3 targetPos, Vector3 startPos)
 	{
-		Vector3 direction = (targetPos - startPos).normalized;
-		return targetPos + direction * overshootDistance;
+		Vector2 direction2D = (new Vector2(targetPos.x, targetPos.y) - new Vector2(startPos.x, startPos.y)).normalized;
+		return new Vector3(
+			targetPos.x + direction2D.x * overshootDistance,
+			targetPos.y + direction2D.y * overshootDistance,
+			targetPos.z
+		);
 	}
 
 	/// <summary>

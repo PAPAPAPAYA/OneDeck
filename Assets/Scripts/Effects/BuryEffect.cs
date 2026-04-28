@@ -293,39 +293,38 @@ public class BuryEffect : EffectScript
 			}
 		}
 		
-		// 2. Play arc trajectory animation (move cards to bottom)
+		// 2. Play arc trajectory animation, trigger events after each animation completes
+		int completedCount = 0;
+		int totalCount = buriedCards.Count;
+
 		foreach (var card in buriedCards)
 		{
-			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true);
-		}
-		
-		// 3. Trigger card buried event
-		foreach (var card in buriedCards)
-		{
-			// Trigger specific card buried event
-			GameEventStorage.me.onMeBuried.RaiseSpecific(card);
-			// Trigger any card buried event
-			GameEventStorage.me.onAnyCardBuried.Raise();
-			// Trigger friendly card buried event
-			var cardStatus = card.GetComponent<CardScript>()?.myStatusRef;
-			if (cardStatus != null && GameEventStorage.me.onFriendlyCardBuried != null)
+			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: () =>
 			{
-				if (cardStatus == combatManager.ownerPlayerStatusRef)
+				// 3. Trigger card buried event after THIS card's animation completes
+				GameEventStorage.me.onMeBuried.RaiseSpecific(card);
+				GameEventStorage.me.onAnyCardBuried.Raise();
+				var cardStatus = card.GetComponent<CardScript>()?.myStatusRef;
+				if (cardStatus != null && GameEventStorage.me.onFriendlyCardBuried != null)
 				{
-					GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
+					if (cardStatus == combatManager.ownerPlayerStatusRef)
+					{
+						GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
+					}
+					else
+					{
+						GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+					}
 				}
-				else
+
+				completedCount++;
+				if (completedCount >= totalCount)
 				{
-					GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+					// 4. All bury animations complete: sync physical cards
+					CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+					CombatUXManager.me.UpdateAllPhysicalCardTargets();
 				}
-			}
-		}
-		
-		// 4. Sync physical card list and update all card positions
-		if (buriedCards.Count > 0)
-		{
-			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+			});
 		}
 	}
 }
