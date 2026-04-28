@@ -389,6 +389,17 @@ public class CardPhysObjScript : MonoBehaviour
 	{
 		TargetPosition = target;
 
+		// Log when target is near reveal position to help debug reveal card snapping back
+		var combatUX = CombatUXManager.me;
+		if (combatUX != null && combatUX.physicalCardRevealPos != null)
+		{
+			Vector3 revealPos = combatUX.physicalCardRevealPos.position;
+			if (UnityEngine.Vector3.Distance(target, revealPos) < 0.5f)
+			{
+				UnityEngine.Debug.Log("[PEEL_REVEAL] SetTargetPosition called with revealPos=" + target + " on " + this.name + " isPlayingSpecialAnimation=" + isPlayingSpecialAnimation + " _isInDeckGroupAnimation=" + _isInDeckGroupAnimation + "\n" + UnityEngine.StackTraceUtility.ExtractStackTrace());
+			}
+		}
+
 		// If special animation or deck group animation is playing, do not start DOTween
 		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
 

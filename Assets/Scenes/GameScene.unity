@@ -3667,7 +3667,7 @@ MonoBehaviour:
   secondaryLiftHeight: 0.4
   secondaryLiftDuration: 0.25
   enableLiftCardInDeck: 0
-  enablePeelDeck: 0
+  enablePeelDeck: 1
   physicalCardsInDeck: []
   physicalCardInRevealZone: {fileID: 0}
   statusEffectProjectilePrefab: {fileID: 2816396703578066659, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}

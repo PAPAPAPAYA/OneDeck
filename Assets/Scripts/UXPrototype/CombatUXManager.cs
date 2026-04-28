@@ -156,6 +156,10 @@ public class CombatUXManager : MonoBehaviour
 	public float deckShiftDuration = 0.3f;
 	public float peelCardDuration = 0.18f;
 	public float peelStaggerDelay = 0.04f;
+	[Tooltip("Distance to move reveal zone card downward out of screen when peeling starts")]
+	public float revealCardExitDistance = 6f;
+	[Tooltip("Duration for reveal zone card to exit/enter screen")]
+	public float revealCardExitDuration = 0.2f;
 	public float secondaryLiftHeight = 0.4f;
 	public float secondaryLiftDuration = 0.25f;
 	[Tooltip("Enable LiftCardInDeck secondary animation")]
@@ -219,6 +223,7 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public void MovePhysicalCardToRevealZone(GameObject physicalCard)
 	{
+		UnityEngine.Debug.Log("[PEEL_REVEAL] MovePhysicalCardToRevealZone called for " + physicalCard.name);
 		// Remove from deck
 		physicalCardsInDeck.Remove(physicalCard);
 
@@ -1063,6 +1068,25 @@ public class CombatUXManager : MonoBehaviour
 		if (count == 0 || targetIndex < 0 || targetIndex >= count)
 			yield break;
 
+		// Move reveal zone card out of screen downward first
+		if (physicalCardInRevealZone != null)
+		{
+			UnityEngine.Debug.Log("[PEEL_REVEAL] StartPeelCoroutine: Moving reveal zone card out. Current pos=" + physicalCardInRevealZone.transform.position);
+			var revealPhysScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+			if (revealPhysScript != null)
+			{
+				revealPhysScript.isPlayingSpecialAnimation = true;
+			}
+
+			Vector3 exitPos = physicalCardInRevealZone.transform.position + Vector3.down * revealCardExitDistance;
+			bool exitCompleted = false;
+			physicalCardInRevealZone.transform.DOMove(exitPos, revealCardExitDuration)
+				.SetEase(Ease.InOutQuad)
+				.OnComplete(() => exitCompleted = true);
+			yield return new WaitUntil(() => exitCompleted);
+			UnityEngine.Debug.Log("[PEEL_REVEAL] StartPeelCoroutine: Reveal zone card moved out. New pos=" + physicalCardInRevealZone.transform.position);
+		}
+
 		// Compute deck focus offset: shift deck so target card X aligns with deckFocusTargetPos
 		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
 		float noOffsetX = physicalCardDeckPos.position.x + xOffset * (count - 1 - targetIndex);
@@ -1269,6 +1293,27 @@ public class CombatUXManager : MonoBehaviour
 		restoreSequence.OnComplete(() => restoreCompletedAll = true);
 		restoreSequence.Play();
 		yield return new WaitUntil(() => restoreCompletedAll);
+
+		// Restore reveal zone card back to reveal position
+		if (physicalCardInRevealZone != null)
+		{
+			UnityEngine.Debug.Log("[PEEL_REVEAL] RestoreDeckFocusCoroutine: Restoring reveal zone card. Current pos=" + physicalCardInRevealZone.transform.position);
+			Vector3 revealPos = physicalCardRevealPos.position;
+			bool revealRestoreCompleted = false;
+			physicalCardInRevealZone.transform.DOMove(revealPos, revealCardExitDuration)
+				.SetEase(Ease.InOutQuad)
+				.OnComplete(() => revealRestoreCompleted = true);
+			yield return new WaitUntil(() => revealRestoreCompleted);
+			UnityEngine.Debug.Log("[PEEL_REVEAL] RestoreDeckFocusCoroutine: Reveal zone card restored. New pos=" + physicalCardInRevealZone.transform.position);
+
+			var physScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+			if (physScript != null)
+			{
+				physScript.SetTargetPosition(revealPos);
+				physScript.SetTargetScale(physicalCardRevealSize);
+				physScript.isPlayingSpecialAnimation = false;
+			}
+		}
 
 		// Clear focus state
 		_isDeckFocused = false;
