@@ -1068,7 +1068,19 @@ public class CombatUXManager : MonoBehaviour
 		if (count == 0 || targetIndex < 0 || targetIndex >= count)
 			yield break;
 
-		// Move reveal zone card out of screen downward first
+		// Compute deck focus offset first so reveal zone can follow the same offset
+		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
+		float noOffsetX = physicalCardDeckPos.position.x + xOffset * (count - 1 - targetIndex);
+		float noOffsetY = physicalCardDeckPos.position.y + yOffset * (count - 1 - targetIndex);
+		float offsetX = desiredX - noOffsetX;
+		float offsetY = physicalCardDeckPos.position.y - noOffsetY;
+		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
+
+		// Animate all cards to their final positions (parallel) including reveal zone exit
+		int animCompletedCount = 0;
+		int animTotalCount = 0;
+
+		// Move reveal zone card out of screen downward (respecting deck offset to keep relative XY unchanged)
 		if (physicalCardInRevealZone != null)
 		{
 			UnityEngine.Debug.Log("[PEEL_REVEAL] StartPeelCoroutine: Moving reveal zone card out. Current pos=" + physicalCardInRevealZone.transform.position);
@@ -1078,26 +1090,22 @@ public class CombatUXManager : MonoBehaviour
 				revealPhysScript.isPlayingSpecialAnimation = true;
 			}
 
-			Vector3 exitPos = physicalCardInRevealZone.transform.position + Vector3.down * revealCardExitDistance;
-			bool exitCompleted = false;
-			physicalCardInRevealZone.transform.DOMove(exitPos, revealCardExitDuration)
+			Vector3 offsetRevealPos = physicalCardRevealPos.position + _deckFocusOffset;
+			Vector3 exitPos = offsetRevealPos + Vector3.down * revealCardExitDistance;
+			animTotalCount++;
+			physicalCardInRevealZone.transform.DOMove(exitPos, peelCardDuration)
 				.SetEase(Ease.InOutQuad)
-				.OnComplete(() => exitCompleted = true);
-			yield return new WaitUntil(() => exitCompleted);
-			UnityEngine.Debug.Log("[PEEL_REVEAL] StartPeelCoroutine: Reveal zone card moved out. New pos=" + physicalCardInRevealZone.transform.position);
+				.SetDelay(peelStaggerDelay)
+				.OnComplete(() =>
+				{
+					animCompletedCount++;
+					UnityEngine.Debug.Log("[PEEL_REVEAL] StartPeelCoroutine: Reveal zone card moved out. New pos=" + physicalCardInRevealZone.transform.position);
+				});
 		}
 
-		// Compute deck focus offset: shift deck so target card X aligns with deckFocusTargetPos
-		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
-		float noOffsetX = physicalCardDeckPos.position.x + xOffset * (count - 1 - targetIndex);
-		float noOffsetY = physicalCardDeckPos.position.y + yOffset * (count - 1 - targetIndex);
-		float offsetX = desiredX - noOffsetX;
-		float offsetY = physicalCardDeckPos.position.y - noOffsetY;
-		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
+		_peeledCards.Clear();
+		_peeledCardOriginalPositions.Clear();
 
-		// Animate all deck cards to new offset positions
-		float halfDuration = deckShiftDuration * 0.5f;
-		Sequence shiftSequence = DOTween.Sequence();
 		for (int i = 0; i < count; i++)
 		{
 			var card = physicalCardsInDeck[i];
@@ -1105,46 +1113,35 @@ public class CombatUXManager : MonoBehaviour
 			var physScript = card.GetComponent<CardPhysObjScript>();
 			if (physScript == null) continue;
 
-			Vector3 newPos = CalculatePositionAtIndex(i);
-			shiftSequence.Join(
-				card.transform.DOMove(newPos, deckShiftDuration).SetEase(Ease.OutQuad)
-			);
-			physScript.SetTargetPosition(newPos);
+			Vector3 basePos = CalculatePositionAtIndex(i);
+
+			if (i > targetIndex)
+			{
+				// Peel this card
+				_peeledCardOriginalPositions[card] = basePos;
+				_peeledCards.Add(card);
+
+				Vector3 peelDirection = new Vector3(0f, -1f, 0f).normalized;
+				Vector3 peelPos = basePos + peelDirection * peelSlideDistance;
+
+				animTotalCount++;
+				card.transform.DOMove(peelPos, peelCardDuration)
+					.SetEase(Ease.InOutQuad)
+					.SetDelay((count - 1 - i) * peelStaggerDelay)
+					.OnComplete(() => animCompletedCount++);
+			}
+			else
+			{
+				// Shift this card to deck position
+				animTotalCount++;
+				card.transform.DOMove(basePos, deckShiftDuration)
+					.SetEase(Ease.OutQuad)
+					.OnComplete(() => animCompletedCount++);
+				physScript.SetTargetPosition(basePos);
+			}
 		}
-		
-		bool shiftCompleted = false;
-		shiftSequence.OnComplete(() => 
-		{
-			shiftCompleted = true;
-			UnityEngine.Debug.Log("[PEEL] Shift sequence completed");
-		});
-		shiftSequence.OnKill(() => UnityEngine.Debug.Log("[PEEL] Shift sequence killed"));
-		shiftSequence.Play();
-		UnityEngine.Debug.Log("[PEEL] Shift sequence started, duration=" + shiftSequence.Duration());
-		yield return new WaitUntil(() => shiftCompleted);
 
-		// Peel cards in front of target (index > targetIndex)
-		_peeledCards.Clear();
-		_peeledCardOriginalPositions.Clear();
-		for (int i = count - 1; i > targetIndex; i--)
-		{
-			var card = physicalCardsInDeck[i];
-			if (card == null) continue;
-
-			_peeledCardOriginalPositions[card] = card.transform.position;
-			_peeledCards.Add(card);
-
-			Vector3 peelDirection = new Vector3(-1f, -1f, 0f).normalized;
-			Vector3 peelPos = card.transform.position + peelDirection * peelSlideDistance;
-
-			bool peelCompleted = false;
-			card.transform.DOMove(peelPos, peelCardDuration)
-				.SetEase(Ease.InOutQuad)
-				.SetDelay((count - 1 - i) * peelStaggerDelay)
-				.OnComplete(() => peelCompleted = true);
-
-			yield return new WaitUntil(() => peelCompleted);
-		}
+		yield return new WaitUntil(() => animCompletedCount >= animTotalCount);
 	}
 
 	/// <summary>
@@ -1164,29 +1161,7 @@ public class CombatUXManager : MonoBehaviour
 		float offsetY = physicalCardDeckPos.position.y - noOffsetY;
 		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
 
-		// Animate deck to new offset
-		float duration = deckShiftDuration;
-		Sequence shiftSequence = DOTween.Sequence();
-		for (int i = 0; i < count; i++)
-		{
-			var card = physicalCardsInDeck[i];
-			if (card == null) continue;
-			var physScript = card.GetComponent<CardPhysObjScript>();
-			if (physScript == null) continue;
-
-			Vector3 newPos = CalculatePositionAtIndex(i);
-			shiftSequence.Join(
-				card.transform.DOMove(newPos, duration).SetEase(Ease.OutQuad)
-			);
-			physScript.SetTargetPosition(newPos);
-		}
-
-		bool shiftCompleted = false;
-		shiftSequence.OnComplete(() => shiftCompleted = true);
-		shiftSequence.Play();
-		yield return new WaitUntil(() => shiftCompleted);
-
-		// Determine which cards need to be peeled or restored
+		// Determine which cards should be peeled at the end
 		var shouldBePeeled = new HashSet<GameObject>();
 		for (int i = newTargetIndex + 1; i < count; i++)
 		{
@@ -1194,53 +1169,53 @@ public class CombatUXManager : MonoBehaviour
 				shouldBePeeled.Add(physicalCardsInDeck[i]);
 		}
 
-		// Restore cards that should no longer be peeled
-		for (int i = _peeledCards.Count - 1; i >= 0; i--)
-		{
-			var card = _peeledCards[i];
-			if (card == null)
-			{
-				_peeledCards.RemoveAt(i);
-				continue;
-			}
-			if (!shouldBePeeled.Contains(card))
-			{
-				int cardIndex = physicalCardsInDeck.IndexOf(card);
-				Vector3 restorePos = cardIndex >= 0 ? CalculatePositionAtIndex(cardIndex) : card.transform.position;
+		// Animate all cards to their final positions (parallel)
+		int animCompletedCount = 0;
+		int animTotalCount = 0;
 
-				bool restoreCompleted = false;
-				card.transform.DOMove(restorePos, peelCardDuration)
-					.SetEase(Ease.InOutQuad)
-					.OnComplete(() => restoreCompleted = true);
+		var newPeeledCards = new List<GameObject>();
+		var newPeeledOriginalPositions = new Dictionary<GameObject, Vector3>();
 
-				_peeledCards.RemoveAt(i);
-				_peeledCardOriginalPositions.Remove(card);
-
-				yield return new WaitUntil(() => restoreCompleted);
-			}
-		}
-
-		// Peel cards that should now be peeled
-		for (int i = count - 1; i > newTargetIndex; i--)
+		for (int i = 0; i < count; i++)
 		{
 			var card = physicalCardsInDeck[i];
 			if (card == null) continue;
-			if (_peeledCards.Contains(card)) continue;
+			var physScript = card.GetComponent<CardPhysObjScript>();
+			if (physScript == null) continue;
 
-			_peeledCardOriginalPositions[card] = card.transform.position;
-			_peeledCards.Add(card);
+			Vector3 basePos = CalculatePositionAtIndex(i);
+			physScript.SetTargetPosition(basePos);
 
-			Vector3 peelDirection = new Vector3(-1f, -1f, 0f).normalized;
-			Vector3 peelPos = card.transform.position + peelDirection * peelSlideDistance;
+			if (shouldBePeeled.Contains(card))
+			{
+				// This card should be peeled
+				Vector3 peelDirection = new Vector3(0f, -1f, 0f).normalized;
+				Vector3 peelPos = basePos + peelDirection * peelSlideDistance;
 
-			bool peelCompleted = false;
-			card.transform.DOMove(peelPos, peelCardDuration)
-				.SetEase(Ease.InOutQuad)
-				.SetDelay((count - 1 - i) * peelStaggerDelay)
-				.OnComplete(() => peelCompleted = true);
+				newPeeledCards.Add(card);
+				newPeeledOriginalPositions[card] = basePos;
 
-			yield return new WaitUntil(() => peelCompleted);
+				animTotalCount++;
+				card.transform.DOMove(peelPos, peelCardDuration)
+					.SetEase(Ease.InOutQuad)
+					.SetDelay((count - 1 - i) * peelStaggerDelay)
+					.OnComplete(() => animCompletedCount++);
+			}
+			else
+			{
+				// This card stays in deck
+				animTotalCount++;
+				card.transform.DOMove(basePos, deckShiftDuration)
+					.SetEase(Ease.OutQuad)
+					.OnComplete(() => animCompletedCount++);
+			}
 		}
+
+		yield return new WaitUntil(() => animCompletedCount >= animTotalCount);
+
+		// Update peeled state
+		_peeledCards = newPeeledCards;
+		_peeledCardOriginalPositions = newPeeledOriginalPositions;
 	}
 
 	/// <summary>
@@ -1253,67 +1228,54 @@ public class CombatUXManager : MonoBehaviour
 		if (!_isDeckFocused)
 			yield break;
 
-		// Restore peeled cards in reverse order (closest to target first)
-		for (int i = _peeledCards.Count - 1; i >= 0; i--)
-		{
-			var card = _peeledCards[i];
-			if (card == null) continue;
-
-			Vector3 originalPos = _peeledCardOriginalPositions.ContainsKey(card)
-				? _peeledCardOriginalPositions[card]
-				: Vector3.zero;
-
-			bool restoreCompleted = false;
-			card.transform.DOMove(originalPos, peelCardDuration)
-				.SetEase(Ease.InOutQuad)
-				.OnComplete(() => restoreCompleted = true);
-
-			yield return new WaitUntil(() => restoreCompleted);
-		}
-
-		// Animate deck base back to zero offset
+		// Reset offset early so CalculatePositionAtIndex returns zero-offset positions
 		_deckFocusOffset = Vector3.zero;
-		float duration = deckShiftDuration;
-		Sequence restoreSequence = DOTween.Sequence();
-		for (int i = 0; i < physicalCardsInDeck.Count; i++)
+
+		// Animate all cards to their final zero-offset positions (parallel)
+		int animCompletedCount = 0;
+		int animTotalCount = 0;
+
+		int cardCount = physicalCardsInDeck.Count;
+		for (int i = 0; i < cardCount; i++)
 		{
 			var card = physicalCardsInDeck[i];
 			if (card == null) continue;
 			var physScript = card.GetComponent<CardPhysObjScript>();
 			if (physScript == null) continue;
 
-			Vector3 newPos = CalculatePositionAtIndex(i);
-			restoreSequence.Join(
-				card.transform.DOMove(newPos, duration).SetEase(Ease.OutQuad)
-			);
-			physScript.SetTargetPosition(newPos);
+			Vector3 finalPos = CalculatePositionAtIndex(i);
+			physScript.SetTargetPosition(finalPos);
+
+			animTotalCount++;
+			card.transform.DOMove(finalPos, deckShiftDuration)
+				.SetEase(Ease.OutQuad)
+				.SetDelay((cardCount - 1 - i) * peelStaggerDelay)
+				.OnComplete(() => animCompletedCount++);
 		}
 
-		bool restoreCompletedAll = false;
-		restoreSequence.OnComplete(() => restoreCompletedAll = true);
-		restoreSequence.Play();
-		yield return new WaitUntil(() => restoreCompletedAll);
-
-		// Restore reveal zone card back to reveal position
+		// Restore reveal zone card back to reveal position (parallel)
 		if (physicalCardInRevealZone != null)
 		{
-			UnityEngine.Debug.Log("[PEEL_REVEAL] RestoreDeckFocusCoroutine: Restoring reveal zone card. Current pos=" + physicalCardInRevealZone.transform.position);
 			Vector3 revealPos = physicalCardRevealPos.position;
-			bool revealRestoreCompleted = false;
-			physicalCardInRevealZone.transform.DOMove(revealPos, revealCardExitDuration)
-				.SetEase(Ease.InOutQuad)
-				.OnComplete(() => revealRestoreCompleted = true);
-			yield return new WaitUntil(() => revealRestoreCompleted);
-			UnityEngine.Debug.Log("[PEEL_REVEAL] RestoreDeckFocusCoroutine: Reveal zone card restored. New pos=" + physicalCardInRevealZone.transform.position);
+			var revealPhysScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
 
-			var physScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
-			if (physScript != null)
-			{
-				physScript.SetTargetPosition(revealPos);
-				physScript.SetTargetScale(physicalCardRevealSize);
-				physScript.isPlayingSpecialAnimation = false;
-			}
+			animTotalCount++;
+			physicalCardInRevealZone.transform.DOMove(revealPos, peelCardDuration)
+				.SetEase(Ease.InOutQuad)
+				.SetDelay(peelStaggerDelay)
+				.OnComplete(() =>
+				{
+					animCompletedCount++;
+					if (revealPhysScript != null)
+					{
+						revealPhysScript.SetTargetPosition(revealPos);
+						revealPhysScript.SetTargetScale(physicalCardRevealSize);
+						revealPhysScript.isPlayingSpecialAnimation = false;
+					}
+				});
 		}
+
+		yield return new WaitUntil(() => animCompletedCount >= animTotalCount);
 
 		// Clear focus state
 		_isDeckFocused = false;

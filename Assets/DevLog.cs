@@ -93,6 +93,7 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	// stage bugged
 	//// test SPIKE_SKELETON
 	//// fixed copycurse (to me --> to them)
 	// power wisp destroy timing
