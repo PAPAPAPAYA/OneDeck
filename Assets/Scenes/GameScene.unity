@@ -3665,7 +3665,6 @@ MonoBehaviour:
   peelCardDuration: 0.18
   peelStaggerDelay: 0.04
   revealCardExitDistance: 8
-  revealCardExitDuration: 0.2
   secondaryLiftHeight: 0.4
   secondaryLiftDuration: 0.25
   enableLiftCardInDeck: 0
