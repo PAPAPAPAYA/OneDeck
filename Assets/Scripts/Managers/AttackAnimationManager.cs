@@ -264,7 +264,7 @@ public class AttackAnimationManager : MonoBehaviour
 			{
 				Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
 				Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
-				UnityEngine.Debug.Log("[PEEL_REVEAL] AttackAnim finally: isInRevealZone=true, setting TargetPosition to revealPos=" + revealPos + " for " + physicalCard.name + " current pos=" + physicalCard.transform.position);
+
 				physScript.SetTargetPosition(revealPos);
 				physScript.SetTargetScale(revealSize);
 			}
