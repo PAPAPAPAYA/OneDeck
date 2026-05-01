@@ -11,7 +11,7 @@ public class CardPhysObjScript : MonoBehaviour
 	private CombatUXManager _combatUXManager;
 
 	[Header("Phase Ref")]
-	[SerializeField] private GamePhaseSO currentGamePhaseRef;
+	[SerializeField] public GamePhaseSO currentGamePhaseRef;
 
 	[Header("Shop Settings")]
 	[Tooltip("Shop item index, -1 means not a shop item")]
@@ -75,56 +75,21 @@ public class CardPhysObjScript : MonoBehaviour
 	public Vector3 TargetPosition { get; private set; }
 	public Vector3 TargetScale { get; private set; }
 
-	// ========== Long press purchase related ==========
-	private bool _isHolding = false;
-	private float _holdTimer = 0f;
-
 	// ========== Shake related ==========
 	private ShakeInstance _currentShakeInstance;
 	private bool _isShaking = false;
 
-	// ========== Card enlarge related ==========
-	private Vector3 _originalPosition;
-	private Vector3 _originalScale;
-	private bool _isEnlarged = false;
-	private bool _hasClickProcessed = false; // Prevent click and long press conflict
-	private float _enlargeCooldown = 0f; // Enlarge cooldown time
-	private const float ENLARGE_COOLDOWN_TIME = 0.5f; // Cooldown time (seconds)
-
-	// ========== Stage/Bury special animation ==========
-	[Header("Stage/Bury Animation")]
+	[Header("Special Animation")]
 	[Tooltip("Is playing special animation")]
 	public bool isPlayingSpecialAnimation = false;
-	[Tooltip("Left move distance")]
-	public float sideOffset = 2.5f;
-	[Tooltip("Left move animation duration")]
-	public float sideMoveDuration = 0.3f;
 	[Tooltip("Insert animation duration")]
 	public float insertDuration = 0.4f;
-	[Tooltip("Extra scale multiplier during animation")]
-	public float animationScaleMultiplier = 1.3f;
-	[Tooltip("Rotation angle during animation")]
-	public float animationRotationAngle = 20f;
 
-	private Tween _currentSpecialTween;
-	private Vector3 _specialAnimOriginalScale;
-	private Vector3 _specialAnimOriginalRotation;
-
-	// ========== Deck group animation (used for breathing effect) ==========
-	[Header("Deck Group Animation")]
-	[Tooltip("Whether this is the card being moved (main card)")]
-	public bool isMainAnimationCard = false;
-	[Tooltip("Deck shrink multiplier")]
-	public float deckShrinkMultiplier = 0.85f;
-	[Tooltip("Deck right move distance")]
-	public float deckRightOffset = 1.5f;
-	[Tooltip("Deck animation duration")]
-	public float deckAnimDuration = 0.35f;
-
-	private Tween _currentDeckGroupTween;
-	private Vector3 _deckAnimBasePosition;
-	private Vector3 _deckAnimBaseScale;
-	private bool _isInDeckGroupAnimation = false;
+	[Header("Reveal Zone Pending")]
+	[Tooltip("When special animation finishes, move to reveal zone instead of default target")]
+	public bool pendingRevealZoneMove = false;
+	public Vector3 pendingRevealPosition;
+	public Vector3 pendingRevealScale;
 
 	// ========== DOTween animation ==========
 	[Header("DOTween Animation")]
@@ -144,71 +109,11 @@ public class CardPhysObjScript : MonoBehaviour
 	void Update()
 	{
 		ApplyColor();
-		UpdateMotion(); // Handle animation in Update
 		UpdateStatusEffectDisplay();
-		UpdatePriceDisplay();
 		UpdateCostDisplay();
 		UpdateRarityDisplay();
 		UpdateTagDisplay();
 		UpdateTintTimer();
-
-		// Long press detection
-		HandleHoldToBuy();
-
-		// Detect click again to restore card
-		HandleClickToRestore();
-
-		// Update cooldown time
-		if (_enlargeCooldown > 0)
-		{
-			_enlargeCooldown -= Time.deltaTime;
-		}
-	}
-
-	/// <summary>
-	/// Detect click again to restore card
-	/// </summary>
-	private void HandleClickToRestore()
-	{
-		if (!_isEnlarged) return;
-
-		// If left mouse button is clicked, restore card
-		if (Input.GetMouseButtonDown(0))
-		{
-			RestoreCard();
-			// Set cooldown to prevent immediate re-enlarge
-			_enlargeCooldown = ENLARGE_COOLDOWN_TIME;
-		}
-	}
-
-	/// <summary>
-	/// Update price display, only shown in Shop Phase
-	/// </summary>
-	private void UpdatePriceDisplay()
-	{
-		// If no price text component, return directly
-		if (cardPricePrint == null) return;
-
-		// If not Shop Phase, hide price display
-		if (currentGamePhaseRef == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Shop)
-		{
-			cardPricePrint.gameObject.SetActive(false);
-			return;
-		}
-
-		// If card data is null, hide price display
-		if (cardImRepresenting == null)
-		{
-			cardPricePrint.gameObject.SetActive(false);
-			return;
-		}
-
-		// Show price
-		cardPricePrint.gameObject.SetActive(true);
-
-		// Shop cards show original price, player deck cards show half price
-		int displayPrice = shopItemIndex >= 0 ? cardImRepresenting.price.value : cardImRepresenting.price.value / 2;
-		cardPricePrint.text = $"<color=yellow>${displayPrice}</color>";
 	}
 
 	/// <summary>
@@ -288,84 +193,6 @@ public class CardPhysObjScript : MonoBehaviour
 		cardRarityPrint.text = new string('*', starCount);
 	}
 
-	/// <summary>
-	/// Handle long press buy/sell logic
-	/// </summary>
-	private void HandleHoldToBuy()
-	{
-		// Only detect in Shop Phase
-		if (currentGamePhaseRef == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Shop)
-			return;
-
-		if (_isHolding)
-		{
-			_holdTimer += Time.deltaTime;
-
-			// Long press time reached, trigger purchase or sell
-			if (_holdTimer >= holdTimeRequired)
-			{
-				if (shopItemIndex >= 0)
-				{
-					// Shop item: purchase
-					TryPurchase();
-				}
-				else if (shopItemIndex == -1)
-				{
-					// Player deck card: sell
-					TrySell();
-				}
-				_isHolding = false;
-				_holdTimer = 0f;
-			}
-		}
-	}
-
-	/// <summary>
-	/// Try to purchase this card
-	/// </summary>
-	private void TryPurchase()
-	{
-		if (ShopManager.me != null)
-		{
-			ShopManager.me.BuyFunc(shopItemIndex);
-		}
-	}
-
-	/// <summary>
-	/// Try to sell this card
-	/// </summary>
-	private void TrySell()
-	{
-		if (ShopManager.me == null || cardImRepresenting == null) return;
-
-		// Get the index of this card in player deck
-		int cardIndex = GetPlayerCardIndex();
-		if (cardIndex >= 0)
-		{
-			ShopManager.me.SellFunc(cardIndex, this.gameObject);
-		}
-	}
-
-	/// <summary>
-	/// Get the index of this card in player deck
-	/// </summary>
-	private int GetPlayerCardIndex()
-	{
-		if (ShopManager.me == null || cardImRepresenting == null) return -1;
-
-		var playerDeck = ShopManager.me.playerDeckRef;
-		if (playerDeck == null || playerDeck.deck == null) return -1;
-
-		for (int i = 0; i < playerDeck.deck.Count; i++)
-		{
-			if (playerDeck.deck[i] == cardImRepresenting.gameObject)
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	private void UpdateStatusEffectDisplay()
 	{
 		if (cardImRepresenting == null || cardNamePrint == null) return;
@@ -373,14 +200,13 @@ public class CardPhysObjScript : MonoBehaviour
 		var statusEffectText = CombatInfoDisplayer.me?.ProcessStatusEffectInfo(cardImRepresenting);
 		if (!string.IsNullOrEmpty(statusEffectText))
 		{
-			cardNamePrint.text = $"<size=12>{statusEffectText}\n</size><b>{cardImRepresenting.GetDisplayName()}</b>";
+			cardNamePrint.text = "<size=12>" + statusEffectText + "\n</size><b>" + cardImRepresenting.GetDisplayName() + "</b>";
 		}
 		else
 		{
 			cardNamePrint.text = cardImRepresenting.GetDisplayName();
 		}
 	}
-
 
 	/// <summary>
 	/// Set target position (called by CombatUXManager), uses DOTween animation
@@ -389,19 +215,8 @@ public class CardPhysObjScript : MonoBehaviour
 	{
 		TargetPosition = target;
 
-		// Log when target is near reveal position to help debug reveal card snapping back
-		var combatUX = CombatUXManager.me;
-		if (combatUX != null && combatUX.physicalCardRevealPos != null)
-		{
-			Vector3 revealPos = combatUX.physicalCardRevealPos.position;
-			if (UnityEngine.Vector3.Distance(target, revealPos) < 0.5f)
-			{
-
-			}
-		}
-
-		// If special animation or deck group animation is playing, do not start DOTween
-		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
+		// If special animation is playing, do not start DOTween
+		if (isPlayingSpecialAnimation) return;
 
 		// Start DOTween position animation
 		StartPositionTween();
@@ -414,8 +229,8 @@ public class CardPhysObjScript : MonoBehaviour
 	{
 		TargetScale = target;
 
-		// If special animation or deck group animation is playing, do not start DOTween
-		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation) return;
+		// If special animation is playing, do not start DOTween
+		if (isPlayingSpecialAnimation) return;
 
 		// Start DOTween scale animation
 		StartScaleTween();
@@ -429,8 +244,6 @@ public class CardPhysObjScript : MonoBehaviour
 		// If already animating and target is the same, do not restart
 		if (_positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
 		{
-			// Check if current animation target is already TargetPosition
-			// DOTween has no direct way to get target, so Kill and restart
 			_positionTween.Kill();
 		}
 
@@ -486,256 +299,31 @@ public class CardPhysObjScript : MonoBehaviour
 		transform.localScale = scale;
 	}
 
-	#region Stage/Bury Special Animation (Main Card Animation)
-
-	/// <summary>
-	/// Play main card phase 1 animation: left move + enlarge + rotate
-	/// Used for the first phase of Stage/Bury operation
-	/// </summary>
-	/// <param name="onComplete">Animation complete callback</param>
-	public void PlayMainCardPhase1(TweenCallback onComplete = null)
-	{
-		// If special animation is playing, stop first
-		_currentSpecialTween?.Kill();
-
-		isPlayingSpecialAnimation = true;
-		isMainAnimationCard = true;
-
-		// Save original scale and rotation
-		_specialAnimOriginalScale = transform.localScale;
-		_specialAnimOriginalRotation = transform.eulerAngles;
-
-		// Calculate left side middle position (left of deck)
-		Vector3 sidePosition = new Vector3(
-		    transform.position.x - sideOffset,
-		    transform.position.y,
-		    transform.position.z
-		);
-
-		// Create animation sequence
-		Sequence sequence = DOTween.Sequence();
-
-		// Phase 1: left move + rotate + enlarge (parallel)
-		sequence.Append(
-		    transform.DOMove(sidePosition, sideMoveDuration)
-			.SetEase(Ease.OutQuad)
-		);
-		sequence.Join(
-		    transform.DORotate(new Vector3(0, 0, animationRotationAngle), sideMoveDuration)
-			.SetEase(Ease.OutQuad)
-		);
-		sequence.Join(
-		    transform.DOScale(_specialAnimOriginalScale * animationScaleMultiplier, sideMoveDuration)
-			.SetEase(Ease.OutQuad)
-		);
-
-		// Animation complete callback
-		sequence.OnComplete(() =>
-		{
-			onComplete?.Invoke();
-		});
-
-		_currentSpecialTween = sequence;
-		sequence.Play();
-	}
-
-	/// <summary>
-	/// Play main card phase 3 animation: insert to target position + restore
-	/// Used for the third phase of Stage/Bury operation (simultaneous with deck restore)
-	/// </summary>
-	/// <param name="finalTarget">Final target position</param>
-	/// <param name="onComplete">Animation complete callback</param>
-	public void PlayMainCardPhase3(Vector3 finalTarget, TweenCallback onComplete = null)
-	{
-		// Create insert animation
-		Sequence sequence = DOTween.Sequence();
-
-		// Insert to final position + restore rotation + restore scale
-		sequence.Append(
-		    transform.DOMove(finalTarget, insertDuration)
-			.SetEase(Ease.InOutCubic)
-		);
-		sequence.Join(
-		    transform.DORotate(_specialAnimOriginalRotation, insertDuration)
-			.SetEase(Ease.InOutCubic)
-		);
-		sequence.Join(
-		    transform.DOScale(TargetScale, insertDuration)
-			.SetEase(Ease.InOutCubic)
-		);
-
-		// Animation complete callback
-		sequence.OnComplete(() =>
-		{
-			isPlayingSpecialAnimation = false;
-			isMainAnimationCard = false;
-			// Sync TargetPosition to prevent jump after DOTween animation completes
-			TargetPosition = finalTarget;
-			// Ensure final state is correct
-			transform.eulerAngles = _specialAnimOriginalRotation;
-			onComplete?.Invoke();
-		});
-
-		_currentSpecialTween = sequence;
-		sequence.Play();
-	}
+	#region Special Animation
 
 	/// <summary>
 	/// Stop special animation (used for combat phase switch or interrupt during shuffle)
 	/// </summary>
 	public void StopSpecialAnimation()
 	{
-		if (_currentSpecialTween != null && _currentSpecialTween.IsActive())
-		{
-			_currentSpecialTween.Kill(complete: false); // Do not complete animation, stop directly
-			_currentSpecialTween = null;
-		}
-
 		if (isPlayingSpecialAnimation)
 		{
 			isPlayingSpecialAnimation = false;
-			isMainAnimationCard = false;
-			// Restore to original state
-			if (_specialAnimOriginalScale != Vector3.zero)
-			{
-				transform.localScale = _specialAnimOriginalScale;
-				transform.eulerAngles = _specialAnimOriginalRotation;
-			}
 		}
-
-		// Also stop deck group animation
-		StopDeckGroupAnimation();
-	}
-
-	#endregion
-
-	#region Deck Group Animation (Breathing Effect)
-
-	/// <summary>
-	/// Play deck group animation (shrink + right move)
-	/// Used when other cards are staged/buried, deck makes room
-	/// </summary>
-	/// <param name="basePosition">Deck base position (position to restore after animation)</param>
-	public void PlayDeckGroupShrinkAnimation(Vector3 basePosition)
-	{
-		// Stop previous deck animation
-		_currentDeckGroupTween?.Kill();
-
-		_isInDeckGroupAnimation = true;
-		_deckAnimBasePosition = basePosition;
-		_deckAnimBaseScale = TargetScale;
-
-		// Calculate position after right move
-		Vector3 rightPosition = new Vector3(
-		    basePosition.x + deckRightOffset,
-		    basePosition.y,
-		    basePosition.z
-		);
-
-		// Create animation sequence
-		Sequence sequence = DOTween.Sequence();
-
-		// 1. Phase 1: right move + shrink
-		sequence.Append(
-		    transform.DOMove(rightPosition, deckAnimDuration)
-			.SetEase(Ease.OutQuad)
-		);
-		sequence.Join(
-		    transform.DOScale(TargetScale * deckShrinkMultiplier, deckAnimDuration)
-			.SetEase(Ease.OutQuad)
-		);
-
-		// Animation complete (keep shrunk state at this time, waiting for restore command)
-		sequence.OnComplete(() =>
-		{
-			// Do not mark animation end, keep state until restore
-		});
-
-		_currentDeckGroupTween = sequence;
-		sequence.Play();
-	}
-
-	/// <summary>
-	/// Restore deck group animation (restore to original size and position)
-	/// </summary>
-	public void PlayDeckGroupRestoreAnimation()
-	{
-		if (!_isInDeckGroupAnimation) return;
-
-		_currentDeckGroupTween?.Kill();
-
-		// Create restore animation
-		Sequence sequence = DOTween.Sequence();
-
-		sequence.Append(
-		    transform.DOMove(_deckAnimBasePosition, insertDuration)
-			.SetEase(Ease.InOutCubic)
-		);
-		sequence.Join(
-		    transform.DOScale(_deckAnimBaseScale, insertDuration)
-			.SetEase(Ease.InOutCubic)
-		);
-
-		sequence.OnComplete(() =>
-		{
-			_isInDeckGroupAnimation = false;
-			// Sync TargetPosition
-			TargetPosition = _deckAnimBasePosition;
-		});
-
-		_currentDeckGroupTween = sequence;
-		sequence.Play();
-	}
-
-	/// <summary>
-	/// Stop deck group animation
-	/// </summary>
-	public void StopDeckGroupAnimation()
-	{
-		if (_currentDeckGroupTween != null && _currentDeckGroupTween.IsActive())
-		{
-			_currentDeckGroupTween.Kill(complete: false);
-			_currentDeckGroupTween = null;
-		}
-
-		if (_isInDeckGroupAnimation)
-		{
-			_isInDeckGroupAnimation = false;
-			// Restore state
-			if (_deckAnimBaseScale != Vector3.zero)
-			{
-				transform.localScale = _deckAnimBaseScale;
-			}
-		}
-	}
-
-	/// <summary>
-	/// Check if deck group animation is playing
-	/// </summary>
-	public bool IsInDeckGroupAnimation()
-	{
-		return _isInDeckGroupAnimation;
 	}
 
 	#endregion
 
 	/// <summary>
-	/// Handle animation-related logic in Update
-	/// Note: Position/scale animations are now handled by DOTween, this method only handles special logic
+	/// Kill active DOTween tweens for position and scale.
+	/// Called by CombatCardView when special animation is playing.
 	/// </summary>
-	private void UpdateMotion()
+	public void KillTweens()
 	{
-		// If special animation or deck group animation is playing, stop regular DOTween animations
-		if (isPlayingSpecialAnimation || _isInDeckGroupAnimation)
-		{
-			_positionTween?.Kill();
-			_scaleTween?.Kill();
-			_positionTween = null;
-			_scaleTween = null;
-			return;
-		}
-
-		// DOTween handles animation automatically, no extra Lerp needed here
+		_positionTween?.Kill();
+		_scaleTween?.Kill();
+		_positionTween = null;
+		_scaleTween = null;
 	}
 
 	private void ApplyColor()
@@ -864,107 +452,10 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 	}
 
-	private void OnMouseDown()
-	{
-		// Check if in Shop Phase
-		if (currentGamePhaseRef != null && currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop)
-		{
-			// Start long press detection (both shop items and player deck cards)
-			_isHolding = true;
-			_holdTimer = 0f;
-			_hasClickProcessed = false;
-
-			// Start shake
-			StartCardShake();
-		}
-	}
-
-	private void OnMouseUp()
-	{
-		// If holding and not reached purchase time, treat as click, trigger enlarge
-		if (_isHolding && _holdTimer < holdTimeRequired && !_hasClickProcessed)
-		{
-			//if (shopItemIndex >= 0)
-			{
-				EnlargeCard();
-				_hasClickProcessed = true;
-			}
-		}
-
-		// Cancel long press
-		_isHolding = false;
-		_holdTimer = 0f;
-
-		// Stop shake
-		StopCardShake();
-	}
-
-	/// <summary>
-	/// Enlarge card
-	/// </summary>
-	private void EnlargeCard()
-	{
-		// Check cooldown - prevent enlarge immediately after restore
-		if (_enlargeCooldown > 0) return;
-
-		// Save original position and scale
-		_originalPosition = TargetPosition;
-		_originalScale = TargetScale;
-
-		// Get enlarge settings from ShopUXManager
-		if (ShopUXManager.Instance != null)
-		{
-			float enlargeSize = ShopUXManager.Instance.physCardEnlargeSize;
-			SetTargetScale(new Vector3(enlargeSize, enlargeSize, enlargeSize));
-			SetTargetPosition(ShopUXManager.Instance.enlargedPosition);
-		}
-		else
-		{
-			SetTargetScale(new Vector3(2f, 2f, 2f)); // Default enlarge multiplier
-			SetTargetPosition(Vector3.zero); // Default position
-		}
-
-		_isEnlarged = true;
-		Debug.Log($"[CardPhysObjScript] Card enlarged: {cardImRepresenting?.gameObject.name}");
-	}
-
-	/// <summary>
-	/// Restore card to original state
-	/// </summary>
-	public void RestoreCard()
-	{
-		if (!_isEnlarged) return;
-
-		// Restore to original position and scale
-		SetTargetPosition(_originalPosition);
-		SetTargetScale(_originalScale);
-
-		_isEnlarged = false;
-		Debug.Log($"[CardPhysObjScript] Card restored: {cardImRepresenting?.gameObject.name}");
-	}
-
-	/// <summary>
-	/// Get whether card is enlarged
-	/// </summary>
-	public bool IsEnlarged()
-	{
-		return _isEnlarged;
-	}
-
-	private void OnMouseExit()
-	{
-		// Mouse exit, cancel long press
-		_isHolding = false;
-		_holdTimer = 0f;
-
-		// Stop shake
-		StopCardShake();
-	}
-
 	/// <summary>
 	/// Start card shake
 	/// </summary>
-	private void StartCardShake()
+	public void StartCardShake()
 	{
 		if (cardShaker == null || cardShakePreset == null || _isShaking) return;
 
@@ -975,7 +466,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// <summary>
 	/// Stop card shake
 	/// </summary>
-	private void StopCardShake()
+	public void StopCardShake()
 	{
 		if (!_isShaking || _currentShakeInstance == null) return;
 
@@ -990,12 +481,8 @@ public class CardPhysObjScript : MonoBehaviour
 		// Stop all DOTween animations to prevent access after object destruction
 		_positionTween?.Kill();
 		_scaleTween?.Kill();
-		_currentSpecialTween?.Kill();
-		_currentDeckGroupTween?.Kill();
 
 		_positionTween = null;
 		_scaleTween = null;
-		_currentSpecialTween = null;
-		_currentDeckGroupTween = null;
 	}
 }

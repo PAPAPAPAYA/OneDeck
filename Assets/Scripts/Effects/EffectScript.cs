@@ -147,15 +147,11 @@ public class EffectScript : MonoBehaviour
 	#region Helper Methods - Visuals
 	protected Vector3 GetPhysicalCardWorldPosition(Transform cardTransform)
 	{
-		if (CombatUXManager.me != null)
+		var visuals = CombatManager.Me?.visuals;
+		if (visuals != null)
 		{
-			var cardScript = cardTransform.GetComponent<CardScript>();
-			if (cardScript != null)
-			{
-				CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
-				var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(cardScript);
-				if (physicalCard != null) return physicalCard.transform.position;
-			}
+			var physicalCard = visuals.GetPhysicalCard(cardTransform.gameObject);
+			if (physicalCard != null) return physicalCard.transform.position;
 		}
 		return cardTransform.position;
 	}
@@ -163,14 +159,7 @@ public class EffectScript : MonoBehaviour
 	protected void TriggerTintForStatusEffect(CardScript targetCard, EnumStorage.StatusEffect effect)
 	{
 		if (effect != EnumStorage.StatusEffect.Infected && effect != EnumStorage.StatusEffect.Power) return;
-		if (CombatUXManager.me == null) return;
-		CombatUXManager.me.BuildCardScriptToPhysicalDictionary();
-		var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(targetCard);
-		if (physicalCard != null)
-		{
-			var cardPhysObj = physicalCard.GetComponent<CardPhysObjScript>();
-			if (cardPhysObj != null) cardPhysObj.TriggerTintForStatusEffect(effect);
-		}
+		CombatManager.Me?.visuals?.ApplyStatusTint(targetCard, effect);
 	}
 	#endregion
 }

@@ -24,58 +24,28 @@ namespace DefaultNamespace.Managers
 
 		public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
 		{
-			var cardInstance = Instantiate(cardToAdd,
-				belongsToSessionOwner ? _combatManager.playerDeckParent.transform : _combatManager.enemyDeckParent.transform); // instantiate and assign corresponding parent
-			cardInstance.GetComponent<CardScript>().myStatusRef = 
-				belongsToSessionOwner ? _combatManager.ownerPlayerStatusRef : _combatManager.enemyPlayerStatusRef; // assign corresponding target
-			cardInstance.GetComponent<CardScript>().theirStatusRef = 
-				belongsToSessionOwner ? _combatManager.enemyPlayerStatusRef : _combatManager.ownerPlayerStatusRef; // assign corresponding target
-			cardInstance.name = cardToAdd.name.Replace("(Clone)", "");
-			_combatManager.combinedDeckZone.Insert(0, cardInstance); // add the new card to combined deck (insert at first position)
-			
-			// Trigger friendly minion added event (only when added by self)
-			var cardScript = cardInstance.GetComponent<CardScript>();
-			if (belongsToSessionOwner && cardScript != null && cardScript.isMinion)
+			var factory = CardFactory.me;
+			if (factory == null)
 			{
-				GameEventStorage.me.onFriendlyMinionAdded?.RaiseOwner();
+				Debug.LogError("[CombatFuncs] CardFactory is not available!");
+				return;
 			}
-			
-			// Create corresponding physical card and insert at top of deck
-			CombatUXManager.me.AddPhysicalCardToDeck(cardInstance);
+
+			var targetStatus = belongsToSessionOwner ? _combatManager.ownerPlayerStatusRef : _combatManager.enemyPlayerStatusRef;
+			factory.SpawnCardForPlayer(cardToAdd, targetStatus, deckIndex: 0, triggerMinionEvent: belongsToSessionOwner);
 		}
 
 		public GameObject AddCard_TargetSpecific(GameObject cardToAdd, PlayerStatusSO targetPlayerStatus)
 		{
-			GameObject cardInst;
-			if (targetPlayerStatus == _combatManager.ownerPlayerStatusRef) // card belongs to player
+			var factory = CardFactory.me;
+			if (factory == null)
 			{
-				cardInst = Instantiate(cardToAdd, _combatManager.playerDeckParent.transform);
-				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.ownerPlayerStatusRef;
-				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.enemyPlayerStatusRef;
-				cardInst.name = cardInst.name.Replace("(Clone)", "");
-				_combatManager.combinedDeckZone.Insert(0, cardInst); // add the new card to combined deck (insert at first position)
+				Debug.LogError("[CombatFuncs] CardFactory is not available!");
+				return null;
 			}
-			else // card belongs to enemy
-			{
-				cardInst = Instantiate(cardToAdd, _combatManager.enemyDeckParent.transform);
-				cardInst.GetComponent<CardScript>().myStatusRef = _combatManager.enemyPlayerStatusRef;
-				cardInst.GetComponent<CardScript>().theirStatusRef = _combatManager.ownerPlayerStatusRef;
-				cardInst.name = cardInst.name.Replace("(Clone)", "");
-				_combatManager.combinedDeckZone.Insert(0, cardInst); // add the new card to combined deck (insert at first position)
-			}
-			
-			// Trigger friendly minion added event (only when added by self)
-			var addedCardScript = cardInst.GetComponent<CardScript>();
+
 			bool isFriendlyCard = targetPlayerStatus == _combatManager.ownerPlayerStatusRef;
-			if (isFriendlyCard && addedCardScript != null && addedCardScript.isMinion)
-			{
-				GameEventStorage.me.onFriendlyMinionAdded?.RaiseOwner();
-			}
-			
-			// Create corresponding physical card and insert at top of deck
-			CombatUXManager.me.AddPhysicalCardToDeck(cardInst);
-			
-			return cardInst;
+			return factory.SpawnCardForPlayer(cardToAdd, targetPlayerStatus, deckIndex: 0, triggerMinionEvent: isFriendlyCard);
 		}
 		
 		public List<CardScript> ReturnPlayerCardScripts()

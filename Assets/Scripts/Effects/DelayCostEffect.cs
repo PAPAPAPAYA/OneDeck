@@ -50,8 +50,8 @@ public class DelayCostEffect : EffectScript
 		// Sync physical card positions
 		if (movedCount > 0)
 		{
-			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 
 		// Display info

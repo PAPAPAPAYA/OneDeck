@@ -61,23 +61,8 @@ public class AttackAnimationManager : MonoBehaviour
 	private Queue<AttackAnimData> _attackQueue = new();
 	private bool _isProcessingQueue = false;
 
-	private CombatManager _combatManager;
-	private CombatUXManager _combatUXManager;
-
-	void OnEnable()
-	{
-		_combatManager = CombatManager.Me;
-		_combatUXManager = CombatUXManager.me;
-	}
-
-	void Start()
-	{
-		// Ensure references are initialized (handle OnEnable execution order issues)
-		if (_combatManager == null)
-			_combatManager = CombatManager.Me;
-		if (_combatUXManager == null)
-			_combatUXManager = CombatUXManager.me;
-	}
+	private CombatManager _combatManager => CombatManager.Me;
+	private CombatUXManager _combatUXManager => CombatUXManager.me;
 
 	/// <summary>
 	/// Request attack animation playback (add to queue)
@@ -148,12 +133,6 @@ public class AttackAnimationManager : MonoBehaviour
 			isPlayingAttackAnimation = false;
 			ReleasePlayerInput();
 			yield break;
-		}
-
-		// Ensure _combatUXManager is initialized
-		if (_combatUXManager == null)
-		{
-			_combatUXManager = CombatUXManager.me;
 		}
 
 		if (_combatUXManager == null)

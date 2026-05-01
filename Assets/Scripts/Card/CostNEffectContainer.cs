@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DefaultNamespace.SOScripts;
 using UnityEditor;
 using UnityEngine;
@@ -41,6 +42,7 @@ public class CostNEffectContainer : MonoBehaviour
 	public UnityEvent effectEvent;
 
 	private int _costNotMetFlag = 0;
+	private readonly List<string> _costFailMessages = new();
 
 	/// <summary>
 	/// Used externally (e.g., MinionCostEffect in preEffectEvent) to set cost check failure
@@ -48,22 +50,42 @@ public class CostNEffectContainer : MonoBehaviour
 	public void SetCostNotMet(string failMessage)
 	{
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-		effectResultString.value += failMessage;
+		_costFailMessages.Add(failMessage);
 	}
 
 	public void InvokeEffectEvent()
 	{
 		// check cost
 		_costNotMetFlag = 0;
+		_costFailMessages.Clear();
 		checkCostEvent?.Invoke();
 
-		if (_costNotMetFlag > 0) return;
+		if (_costNotMetFlag > 0)
+		{
+			// Only display fail messages if card is in reveal zone — centralized UI decision
+			if (CombatManager.Me.revealZone == transform.parent.gameObject)
+			{
+				foreach (var msg in _costFailMessages)
+					effectResultString.value += msg;
+			}
+			_costFailMessages.Clear();
+			return;
+		}
 
 		// execute pre-effect (e.g., Delay Cost)
 		preEffectEvent?.Invoke();
 
-		if (_costNotMetFlag > 0) return; // if cost can not be met, return
+		if (_costNotMetFlag > 0)
+		{
+			// Centralized UI decision for pre-effect cost failures too
+			if (CombatManager.Me.revealZone == transform.parent.gameObject)
+			{
+				foreach (var msg in _costFailMessages)
+					effectResultString.value += msg;
+			}
+			_costFailMessages.Clear();
+			return;
+		}
 
 		// Refresh all tracked values before effect execution
 		ValueTrackerManager.me?.UpdateAllTrackers();
@@ -89,12 +111,11 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, reviveRequired, EnumStorage.StatusEffect.Revive)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
 		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
-		effectResultString.value +=
+		_costFailMessages.Add(
 			"// [复活]不足，无法复活 " +
 			cardOwnerInfo +
-			" [" + _myCardScript.gameObject.name + "]\n";
+			" [" + _myCardScript.gameObject.name + "]\n");
 	}
 
 	// will check and consume rest
@@ -119,12 +140,11 @@ public class CostNEffectContainer : MonoBehaviour
 		
 		// Prevent effect activation
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
 		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
-		effectResultString.value +=
+		_costFailMessages.Add(
 			"// [休息]状态已消耗，" +
 			cardOwnerInfo +
-			" [" + _myCardScript.gameObject.name + "]跳过本回合\n";
+			" [" + _myCardScript.gameObject.name + "]跳过本回合\n");
 	}
 
 	public void CheckCost_Infected()
@@ -143,8 +163,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, manaRequired, EnumStorage.StatusEffect.Mana)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// [法力]不足，无法激活[" + _myCardScript.gameObject.name + "]\n";
+		_costFailMessages.Add("// [法力]不足，无法激活[" + _myCardScript.gameObject.name + "]\n");
 	}
 
 	public void CheckCost_Power(int powerRequired)
@@ -152,8 +171,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, powerRequired, EnumStorage.StatusEffect.Mana)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// [力量]不足，无法激活[" + _myCardScript.gameObject.name + "]\n";
+		_costFailMessages.Add("// [力量]不足，无法激活[" + _myCardScript.gameObject.name + "]\n");
 	}
 
 	public void CheckCost_InGrave()
@@ -187,8 +205,7 @@ public class CostNEffectContainer : MonoBehaviour
 		
 		// cost not met - not enough enemy cards in combined deck
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// 牌库中敌方卡牌不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + enemyCardCount + "张)\n";
+		_costFailMessages.Add("// 牌库中敌方卡牌不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + enemyCardCount + "张)\n");
 	}
 
 	/// <summary>
@@ -201,8 +218,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, counterRequired, EnumStorage.StatusEffect.Counter)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return; // only show fail message if card is in reveal zone
-		effectResultString.value += "// [反击]不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + counterRequired + "层)\n";
+		_costFailMessages.Add("// [反击]不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + counterRequired + "层)\n");
 	}
 
 	/// <summary>
@@ -218,8 +234,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (thisCardIndex == -1)
 		{
 			_costNotMetFlag++;
-			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-			effectResultString.value += "// [" + _myCardScript.gameObject.name + "]不在牌库中\n";
+			_costFailMessages.Add("// [" + _myCardScript.gameObject.name + "]不在牌库中\n");
 			return;
 		}
 		
@@ -239,8 +254,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (startCardIndex == -1)
 		{
 			_costNotMetFlag++;
-			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-			effectResultString.value += "// 牌库中没有起始牌，[" + _myCardScript.gameObject.name + "]无法激活\n";
+			_costFailMessages.Add("// 牌库中没有起始牌，[" + _myCardScript.gameObject.name + "]无法激活\n");
 			return;
 		}
 		
@@ -249,8 +263,7 @@ public class CostNEffectContainer : MonoBehaviour
 		
 		// Cost not met
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-		effectResultString.value += "// [" + _myCardScript.gameObject.name + "]不在起始牌之前\n";
+		_costFailMessages.Add("// [" + _myCardScript.gameObject.name + "]不在起始牌之前\n");
 	}
 
 	/// <summary>
@@ -264,8 +277,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (cursedCardTypeID == null || string.IsNullOrEmpty(cursedCardTypeID.value))
 		{
 			_costNotMetFlag++;
-			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-			effectResultString.value += "// [" + _myCardScript.gameObject.name + "]诅咒卡牌类型ID未设置或为空\n";
+			_costFailMessages.Add("// [" + _myCardScript.gameObject.name + "]诅咒卡牌类型ID未设置或为空\n");
 			return;
 		}
 
@@ -303,8 +315,7 @@ public class CostNEffectContainer : MonoBehaviour
 		
 		// cost not met - no matching enemy card found with enough Power
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-		effectResultString.value += "// 牌库中没有[" + cursedCardTypeID?.value + "]敌方卡牌拥有超过" + powerCount + "层[力量]\n";
+		_costFailMessages.Add("// 牌库中没有[" + cursedCardTypeID?.value + "]敌方卡牌拥有超过" + powerCount + "层[力量]\n");
 	}
 
 	/// <summary>
@@ -318,8 +329,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (targetCardTypeID == null || string.IsNullOrEmpty(targetCardTypeID.value))
 		{
 			_costNotMetFlag++;
-			if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-			effectResultString.value += "// [" + _myCardScript.gameObject.name + "]目标卡牌类型ID未设置或为空\n";
+			_costFailMessages.Add("// [" + _myCardScript.gameObject.name + "]目标卡牌类型ID未设置或为空\n");
 			return;
 		}
 
@@ -343,8 +353,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 		// cost not met
 		_costNotMetFlag++;
-		if (CombatManager.Me.revealZone != transform.parent.gameObject) return;
-		effectResultString.value += "// 牌库中[" + targetCardTypeID.value + "]友方卡牌不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + requiredCount + "张)\n";
+		_costFailMessages.Add("// 牌库中[" + targetCardTypeID.value + "]友方卡牌不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + requiredCount + "张)\n");
 	}
 
 	#endregion

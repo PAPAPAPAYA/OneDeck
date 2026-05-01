@@ -117,7 +117,7 @@ public class MinionCostEffect : EffectScript
 				}
 			}
 			
-			CombatUXManager.me.DestroyCardWithAnimation(card, onComplete: () =>
+			combatManager.visuals.DestroyCardWithAnimation(card, onComplete: () =>
 			{
 				destroyedCount++;
 			});
@@ -126,8 +126,8 @@ public class MinionCostEffect : EffectScript
 		// Sync remaining physical card positions
 		if (cardsToConsume.Count > 0)
 		{
-			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 
 		// Display consumption info

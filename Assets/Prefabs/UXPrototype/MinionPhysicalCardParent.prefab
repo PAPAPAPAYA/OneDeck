@@ -64,15 +64,7 @@ MonoBehaviour:
   opponentCardColor: {r: 0.708, g: 0.3278854, b: 0.10619999, a: 1}
   opponentCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
   isPlayingSpecialAnimation: 0
-  sideOffset: 0.8
-  sideMoveDuration: 0.5
   insertDuration: 0.5
-  animationScaleMultiplier: 0.6
-  animationRotationAngle: 10
-  isMainAnimationCard: 0
-  deckShrinkMultiplier: 0.8
-  deckRightOffset: 1
-  deckAnimDuration: 1
   moveDuration: 0.4
   moveEase: 6
 --- !u!61 &6315436473226214833

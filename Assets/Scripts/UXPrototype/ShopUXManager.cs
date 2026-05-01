@@ -104,6 +104,7 @@ public class ShopUXManager : MonoBehaviour
             
             // Get CardPhysObjScript and set cardImRepresenting and target position/scale
             CardPhysObjScript physObjScript = physicalCard.GetComponent<CardPhysObjScript>();
+            physicalCard.AddComponent<ShopCardView>();
             if (physObjScript != null)
             {
                 physObjScript.cardImRepresenting = cardScript;
@@ -224,6 +225,7 @@ public class ShopUXManager : MonoBehaviour
             
             // Get CardPhysObjScript and setup
             CardPhysObjScript physObjScript = physicalCard.GetComponent<CardPhysObjScript>();
+            physicalCard.AddComponent<ShopCardView>();
             if (physObjScript != null)
             {
                 physObjScript.cardImRepresenting = cardScript;
@@ -748,6 +750,7 @@ public class ShopUXManager : MonoBehaviour
             
             // Get CardPhysObjScript and setup
             CardPhysObjScript physObjScript = physicalCard.GetComponent<CardPhysObjScript>();
+            physicalCard.AddComponent<ShopCardView>();
             if (physObjScript != null)
             {
                 physObjScript.cardImRepresenting = cardScript;

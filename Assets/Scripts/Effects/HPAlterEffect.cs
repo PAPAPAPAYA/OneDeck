@@ -106,22 +106,13 @@ public class HPAlterEffect : EffectScript
 		// Determine attack target position: player card self-damage rushes to player position, enemy card self-damage rushes to enemy position
 		bool isAttackingEnemy = myCardScript.myStatusRef != combatManager.ownerPlayerStatusRef;
 		
-		if (AttackAnimationManager.me != null)
-		{
-			AttackAnimationManager.me.RequestAttackAnimation(myCard, isAttackingEnemy, 
-				onHit: () =>
-				{
-					ProcessDamage(totalDmg, myCardScript.myStatusRef);
-					CheckDmgTargets_DealingDmgToSelf(totalDmg);
-				},
-				onComplete: null);
-		}
-		else
-		{
-			// If no animation manager, execute directly
-			ProcessDamage(totalDmg, myCardScript.myStatusRef);
-			CheckDmgTargets_DealingDmgToSelf(totalDmg);
-		}
+		combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy,
+			onHit: () =>
+			{
+				ProcessDamage(totalDmg, myCardScript.myStatusRef);
+				CheckDmgTargets_DealingDmgToSelf(totalDmg);
+			},
+			onComplete: null);
 		
 		dmgAmountAlter = 0;
 	}
@@ -380,23 +371,14 @@ public class HPAlterEffect : EffectScript
 		// Determine attack target (true=attack enemy, false=attack player self)
 		bool isAttackingEnemy = myCardScript.theirStatusRef != combatManager.ownerPlayerStatusRef;
 		
-		// Request attack animation
-		if (AttackAnimationManager.me != null)
-		{
-			AttackAnimationManager.me.RequestAttackAnimation(myCard, isAttackingEnemy, 
-				onHit: () =>
-				{
-					ProcessDamage(totalDmg, myCardScript.theirStatusRef);
-					CheckDmgTargets_DealingDmgToOpponent(totalDmg);
-				},
-				onComplete: null);
-		}
-		else
-		{
-			// If no animation manager, execute directly
-			ProcessDamage(totalDmg, myCardScript.theirStatusRef);
-			CheckDmgTargets_DealingDmgToOpponent(totalDmg);
-		}
+		// Request attack animation via event
+		combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy,
+			onHit: () =>
+			{
+				ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+				CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+			},
+			onComplete: null);
 		
 		dmgAmountAlter = 0;
 	}

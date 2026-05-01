@@ -75,7 +75,7 @@ public class BuryCostEffect : EffectScript
 
 		foreach (var card in buriedCards)
 		{
-			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: () =>
+			combatManager.visuals.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: () =>
 			{
 				// Trigger friendly card buried event after THIS card's animation completes
 				var cardStatus = card.GetComponent<CardScript>()?.myStatusRef;
@@ -95,8 +95,8 @@ public class BuryCostEffect : EffectScript
 				if (completedCount >= totalCount)
 				{
 					// All bury animations complete: sync physical cards
-					CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-					CombatUXManager.me.UpdateAllPhysicalCardTargets();
+					combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+					combatManager.visuals.UpdateAllPhysicalCardTargets();
 				}
 			});
 		}

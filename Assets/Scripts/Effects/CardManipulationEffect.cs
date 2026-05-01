@@ -121,16 +121,16 @@ public class CardManipulationEffect : EffectScript
 		if (movedCount > 0)
 		{
 			// Sync physical card list
-			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 			
 			// Play animation for each moved card
 			foreach (var (card, newIndex) in delayedCards)
 			{
-				CombatUXManager.me.MoveCardToIndex(card, newIndex, duration: 0.3f, useArc: false);
+				combatManager.visuals.MoveCardToIndex(card, newIndex, duration: 0.3f, useArc: false);
 			}
 			
 			// Update other card positions (ensure all card positions are correct)
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 	#endregion
@@ -242,7 +242,7 @@ public class CardManipulationEffect : EffectScript
 			string minionColor = GetCardColorTag(minion);
 			
 			// Use unified destroy method (with animation)
-			CombatUXManager.me.DestroyCardWithAnimation(minion);
+			combatManager.visuals.DestroyCardWithAnimation(minion);
 			
 			effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>]摧毁了随从[<color={minionColor}>{minionScript.name}</color>]\n";
 		}
@@ -250,8 +250,8 @@ public class CardManipulationEffect : EffectScript
 		// Sync remaining physical card positions
 		if (amount > 0)
 		{
-			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 	#endregion

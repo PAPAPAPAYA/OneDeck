@@ -162,15 +162,7 @@ MonoBehaviour:
   tintDuration: 1.5
   tintTransitionSpeed: 5
   isPlayingSpecialAnimation: 0
-  sideOffset: 2.5
-  sideMoveDuration: 0.3
   insertDuration: 0.4
-  animationScaleMultiplier: 1.3
-  animationRotationAngle: 20
-  isMainAnimationCard: 0
-  deckShrinkMultiplier: 0.85
-  deckRightOffset: 1.5
-  deckAnimDuration: 0.35
   moveDuration: 0.3
   moveEase: 6
 --- !u!1 &4718722550107642493

@@ -48,6 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -57,18 +58,6 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 588846069068210853}
-        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
-        m_MethodName: StageMyCards
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 5216541608761385445}
         m_TargetAssemblyTypeName: ExileEffect, Assembly-CSharp
         m_MethodName: ExileSelf
@@ -77,6 +66,18 @@ MonoBehaviour:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 588846069068210853}
+        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
+        m_MethodName: StageMyCards
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -111,6 +112,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ExileEffect
   effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   tagToCheck: 0
+  cardTypeIDSO: {fileID: 0}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -160,10 +162,12 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT
   displayName: "\u6B21\u5143\u88C2\u7F1D"
-  cardDesc: "\u63ed\u6653\u65f6:\u7f6e\u9876 <b>1</b> \u53cb\u65b9,\u53bb\u9664\u81ea\u8eab"
+  cardDesc: "\u63ED\u6653\u65F6:\u7F6E\u9876 <b>1</b> \u53CB\u65B9,\u53BB\u9664\u81EA\u8EAB"
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
-  isMinion: 1
+  isMinion: 0
   price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}

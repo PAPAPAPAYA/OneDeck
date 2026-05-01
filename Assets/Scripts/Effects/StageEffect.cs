@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 
 public class StageEffect : EffectScript
 {
@@ -325,13 +326,16 @@ public class StageEffect : EffectScript
 		}
 		
 		// Sync physical card list order with logical deck before animation
-		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
+		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 		
 		// 2. Play arc trajectory animation (move cards to top)
 		foreach (var card in stagedCards)
 		{
-			CombatUXManager.me.MoveCardToTop(card, duration: 0.5f, useArc: true);
+			combatManager.visuals.MoveCardToTop(card, duration: 0.5f, useArc: true);
 		}
+
+		// Update positions of other cards immediately so they move in parallel with staged cards
+		combatManager.visuals.UpdateAllPhysicalCardTargets();
 
 		// 3. Trigger card staged event
 		foreach (var card in stagedCards)

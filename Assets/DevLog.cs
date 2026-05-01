@@ -1,6 +1,7 @@
-// devlog
+ // devlog
 
-//！ anything else
+//! anything else
+	// remember to check combat stats logger CSVs
 	// add space after annotations
 	//// show card tag ---- deathrattle, linger
 	//// cards tweaks
@@ -12,11 +13,12 @@
 	//// check unstable_portal behaviour
 	//// change cardScript to use tab to indent
 
-//! low priority
-	// if we want to achieve synergy like "give power to next card" + "before power is given, stage self", we need to make the former a tag (like linger) to identify and react to
-	// same as "bury next 3 cards" + "before burying cards, stage self"
-
 //! refactor
+	//// more animation need to be cleaned up (ex. deck group animation)
+	//todo clean up and organize logic and visual, messy right now
+		//todo side-effect portal curse effect bugged
+	//// dead state - can't enter shuffle state; TriggerStartCardEffect() doesn't call shuffle
+	//// plan a and plan b
 	//// change all card prefab name to english
 		//// new variable to store chinese name
 	//// ApplyStatusEffectCore()
@@ -35,6 +37,8 @@
 	//// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
 //! design
+	// if we want to achieve synergy like "give power to next card" + "before power is given, stage self", we need to make the former a tag (like linger) to identify and react to
+	// same as "bury next 3 cards" + "before burying cards, stage self"
 	//// decrease [deathrattle], [bury] should be more than [if buried]
 	//// sort cards with "generating resources" and "consuming resources"
 	//// update cards
@@ -73,6 +77,8 @@
 	// fake shuffle
 	
 //! viscom
+	//// stage/bury and deck shift should happen at the same time
+		//// rift -> stage another card, staged card should go straight to reveal zone
 	// better power wisp
 	// power gain card particle
 	// motion design
@@ -93,7 +99,8 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
-	// stage bugged
+	//// stage bugged
+	//// auto reveal in phase 1 if reveal zone is null
 	//// test SPIKE_SKELETON
 	//// fixed copycurse (to me --> to them)
 	// power wisp destroy timing

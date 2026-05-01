@@ -116,7 +116,7 @@ namespace DefaultNamespace.Effects
 				else targetCardScript = cardsToGiveTag[Random.Range(0, cardsToGiveTag.Count)].GetComponent<CardScript>();
 				targetCards.Add(targetCardScript);
 			}
-			CombatUXManager.me?.PlayMultiStatusEffectProjectile(
+			combatManager.visuals?.PlayMultiStatusEffectProjectile(
 				myCard,
 				targetCards,
 				ApplyStatusEffectToSingleTarget,
@@ -192,7 +192,7 @@ namespace DefaultNamespace.Effects
 				if (!CanReceiveStatusEffect(cardScript, statusEffectToGive)) continue;
 				targetCardScripts.Add(cardScript);
 			}
-			CombatUXManager.me?.PlayMultiStatusEffectProjectile(
+			combatManager.visuals?.PlayMultiStatusEffectProjectile(
 				myCard,
 				targetCardScripts,
 				(target) => ApplyStatusEffectToFriendlySingle(target, amount),
@@ -260,7 +260,7 @@ namespace DefaultNamespace.Effects
 				cardsGiven++;
 			}
 			if (targetCards.Count <= 0) return;
-			CombatUXManager.me?.PlayMultiStatusEffectProjectile(
+			combatManager.visuals?.PlayMultiStatusEffectProjectile(
 				myCard,
 				targetCards,
 				ApplyStatusEffectToLastXCardSingle,
@@ -316,7 +316,7 @@ namespace DefaultNamespace.Effects
 			int actualCount = Mathf.Min(xFriendlyCount, friendlyCards.Count);
 			for (int i = 0; i < actualCount; i++) targetCards.Add(friendlyCards[i]);
 			if (targetCards.Count <= 0) return;
-			CombatUXManager.me?.PlayMultiStatusEffectProjectile(
+			combatManager.visuals?.PlayMultiStatusEffectProjectile(
 				myCard,
 				targetCards,
 				ApplyStatusEffectToXFriendlySingle,

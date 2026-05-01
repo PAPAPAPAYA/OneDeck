@@ -293,13 +293,13 @@ public class BuryEffect : EffectScript
 			}
 		}
 		
-		// 2. Play arc trajectory animation, trigger events after each animation completes
-		int completedCount = 0;
-		int totalCount = buriedCards.Count;
+		// Sync physical card list order with logical deck before animation
+		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 
+		// 2. Play arc trajectory animation, trigger events after each animation completes
 		foreach (var card in buriedCards)
 		{
-			CombatUXManager.me.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: () =>
+			combatManager.visuals.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: () =>
 			{
 				// 3. Trigger card buried event after THIS card's animation completes
 				GameEventStorage.me.onMeBuried.RaiseSpecific(card);
@@ -316,15 +316,10 @@ public class BuryEffect : EffectScript
 						GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
 					}
 				}
-
-				completedCount++;
-				if (completedCount >= totalCount)
-				{
-					// 4. All bury animations complete: sync physical cards
-					CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-					CombatUXManager.me.UpdateAllPhysicalCardTargets();
-				}
 			});
 		}
+		
+		// Update positions of other cards immediately so they move in parallel with buried cards
+		combatManager.visuals.UpdateAllPhysicalCardTargets();
 	}
 }

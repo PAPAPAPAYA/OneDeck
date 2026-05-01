@@ -6,6 +6,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(CombatInfoDisplayer))]
 [RequireComponent(typeof(CombatFuncs))]
+[RequireComponent(typeof(CardFactory))]
 // this script functions as a variable storage in combat
 public class CombatManager : MonoBehaviour
 {
@@ -13,9 +14,38 @@ public class CombatManager : MonoBehaviour
 
 	public static CombatManager Me;
 
+	/// <summary>
+	/// Visual system interface. Logic layer should use this instead of CombatUXManager directly.
+	/// Lazily initialized to avoid dependency on Awake execution order.
+	/// </summary>
+	public ICombatVisuals visuals
+	{
+		get
+		{
+			if (_visuals == null)
+				_visuals = CombatUXManager.visuals;
+			return _visuals;
+		}
+	}
+	private ICombatVisuals _visuals;
+
 	private void Awake()
 	{
 		Me = this;
+	}
+
+	/// <summary>
+	/// Event raised when damage is dealt and attack animation should play.
+	/// Parameters: attackerCard, isAttackingEnemy, onHit, onComplete
+	/// </summary>
+	public event Action<GameObject, bool, Action, Action> onDamageDealt;
+
+	/// <summary>
+	/// Raise onDamageDealt event. Called by HPAlterEffect to request attack animation.
+	/// </summary>
+	public void RaiseDamageDealtEvent(GameObject attackerCard, bool isAttackingEnemy, Action onHit, Action onComplete)
+	{
+		onDamageDealt?.Invoke(attackerCard, isAttackingEnemy, onHit, onComplete);
 	}
 
 	#endregion
@@ -37,8 +67,6 @@ public class CombatManager : MonoBehaviour
 	[Header("START CARD")]
 	public GameObject startCardPrefab; // Start Card prefab
 	private GameObject _startCardInstance; // Start Card instance (at the bottom of deck)
-	[Tooltip("If true, Start Card is removed directly after triggering, not shuffled into deck")]
-	public bool removeStartCardInsteadOfShuffle = false;
 
 	[Header("ZONES")]
 	public List<GameObject> combinedDeckZone;
@@ -76,6 +104,10 @@ public class CombatManager : MonoBehaviour
 	[Tooltip("Tracks the last card that received Power status effect for reaction effects")]
 	public CardScript lastCardGotPower;
 
+	[Header("SHUFFLE EVENT TIMING")]
+	[Tooltip("Delay afterShuffle event until the first card is revealed after shuffle")]
+	private bool _raiseAfterShuffleOnNextReveal;
+
 	#region Enter and exit funcs
 
 	public void EnterCombat()
@@ -87,7 +119,7 @@ public class CombatManager : MonoBehaviour
 	public void ExitCombat()
 	{
 		// Stop all attack animations
-		AttackAnimationManager.me?.StopAllAttackAnimations();
+		visuals?.StopAllAnimations();
 		
 		// clean up ui
 		_infoDisplayer.ClearInfo();
@@ -132,10 +164,6 @@ public class CombatManager : MonoBehaviour
 			case EnumStorage.CombatState.GatherDeckLists:
 				GatherDecks();
 				break;
-			case EnumStorage.CombatState.ShuffleDeck:
-				CheckFatigueNAddFatigue(); // Fatigue check based on round number
-				Shuffle();
-				break;
 			case EnumStorage.CombatState.Reveal:
 				RevealCards();
 				break;
@@ -145,37 +173,33 @@ public class CombatManager : MonoBehaviour
 	public void GatherDecks() // collect player and enemy decks and instantiate cards
 	{
 		combinedDeckZone.Clear();
+
+		// Use CardFactory for consistent logical card creation
+		var factory = CardFactory.me;
+		if (factory == null)
+		{
+			Debug.LogError("[CombatManager] CardFactory is not available!");
+			return;
+		}
+
 		foreach (var card in playerDeck.deck)
 		{
-			var cardInstance = Instantiate(card, playerDeckParent.transform);
-			cardInstance.name = cardInstance.name.Replace("(Clone)", "");
-			var cardInstanceScript = cardInstance.GetComponent<CardScript>();
-			// assign cards' targets
-			cardInstanceScript.myStatusRef = ownerPlayerStatusRef;
-			cardInstanceScript.theirStatusRef = enemyPlayerStatusRef;
-			combinedDeckZone.Add(cardInstance);
+			var cardInstance = factory.CreateLogicalCard(card, ownerPlayerStatusRef, enemyPlayerStatusRef, playerDeckParent.transform);
+			if (cardInstance != null)
+				combinedDeckZone.Add(cardInstance);
 		}
 
 		foreach (var card in enemyDeck.deck)
 		{
-			var cardInstance = Instantiate(card, enemyDeckParent.transform);
-			cardInstance.name = cardInstance.name.Replace("(Clone)", "");
-			var cardInstanceScript = cardInstance.GetComponent<CardScript>();
-			// assign cards' targets
-			cardInstanceScript.myStatusRef = enemyPlayerStatusRef;
-			cardInstanceScript.theirStatusRef = ownerPlayerStatusRef;
-			combinedDeckZone.Add(cardInstance);
+			var cardInstance = factory.CreateLogicalCard(card, enemyPlayerStatusRef, ownerPlayerStatusRef, enemyDeckParent.transform);
+			if (cardInstance != null)
+				combinedDeckZone.Add(cardInstance);
 		}
 
 		// Instantiate Start Card and add to the bottom of deck
-		_startCardInstance = Instantiate(startCardPrefab, playerDeckParent.transform);
-		_startCardInstance.name = "Start Card";
-		var startCardScript = _startCardInstance.GetComponent<CardScript>();
-		if (startCardScript != null)
-		{
-			startCardScript.isStartCard = true;
-		}
-		combinedDeckZone.Add(_startCardInstance);
+		_startCardInstance = factory.CreateStartCard(startCardPrefab, playerDeckParent.transform);
+		if (_startCardInstance != null)
+			combinedDeckZone.Add(_startCardInstance);
 
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
@@ -188,7 +212,7 @@ public class CombatManager : MonoBehaviour
 
 	private void CheckFatigueNAddFatigue()
 	{
-		// Fatigue check based on round number (called in ShuffleDeck phase)
+		// Fatigue check based on round number (called before Start Card shuffle)
 		if (roundNumRef.value <= overtimeRoundThreshold) return;
 		
 		var msg = $"<color=red>疲劳!</color> 回合{roundNumRef.value} > {overtimeRoundThreshold}";
@@ -227,20 +251,6 @@ public class CombatManager : MonoBehaviour
 		}
 	}
 
-	public void Shuffle()
-	{
-		// Shuffle directly (Start Card is already in the deck)
-		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
-
-		_infoDisplayer.RefreshDeckInfo();
-		GameEventStorage.me.afterShuffle.Raise(); // TIMEPOINT: after shuffle
-		ResetShuffleTrackers();
-
-		CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-		CombatUXManager.me.UpdateAllPhysicalCardTargets();
-
-		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
-	}
 
 	private void ResetShuffleTrackers()
 	{
@@ -298,7 +308,7 @@ public class CombatManager : MonoBehaviour
 	private System.Collections.IEnumerator WaitForAttackAnimationsBeforeNextReveal()
 	{
 		// If there are pending attack animations, wait
-		while (AttackAnimationManager.me != null && AttackAnimationManager.me.HasPendingAnimations())
+		while (visuals != null && visuals.HasPendingAnimations())
 		{
 			yield return null;
 		}
@@ -309,7 +319,7 @@ public class CombatManager : MonoBehaviour
 		if (blockPlayerInput) return;
 		
 		// If attack animation is playing, wait
-		if (AttackAnimationManager.me != null && AttackAnimationManager.me.isPlayingAttackAnimation)
+		if (visuals != null && visuals.IsPlayingAttackAnimation())
 		{
 			return;
 		}
@@ -319,9 +329,9 @@ public class CombatManager : MonoBehaviour
 		// ========== Round start: automatically reveal Start Card (player sees it directly) ==========
 		if (revealZone == null && cardsRevealedThisRound == 0)
 		{
-			CombatUXManager.me.InstantiateAllPhysicalCards();
+			visuals.InstantiateAllPhysicalCards();
 			
-			// Reveal Start Card (it's at the bottom of the deck)
+			// Reveal Start Card (it's at the bottom of the list but top of the actual deck)
 			if (combinedDeckZone.Count > 0)
 			{
 				RevealNextCard();
@@ -333,6 +343,15 @@ public class CombatManager : MonoBehaviour
 		// ========== Phase 1: Wait to process current card and reveal next ==========
 		if (awaitingRevealConfirm)
 		{
+			// Auto-reveal next card if current revealed card was removed from game (exiled/destroyed)
+			if (revealZone == null && combinedDeckZone.Count > 0)
+			{
+				RevealNextCard();
+				awaitingRevealConfirm = false;
+				EffectChainManager.Me.CloseOpenedChain();
+				return;
+			}
+
 			// Combat end check
 			if (ownerPlayerStatusRef.hp <= 0 || enemyPlayerStatusRef.hp <= 0)
 			{
@@ -343,7 +362,7 @@ public class CombatManager : MonoBehaviour
 			// Prompt text
 			_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to reveal next card";
 			
-			CombatUXManager.me.InstantiateAllPhysicalCards();
+			visuals.InstantiateAllPhysicalCards();
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 			_infoDisplayer.effectResultString.value = "";
 
@@ -400,11 +419,7 @@ public class CombatManager : MonoBehaviour
 		combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);
 
 		// Physical movement: from deck to reveal zone
-		var physicalCard = CombatUXManager.me.GetPhysicalCardFromLogicalCard(cardRevealed);
-		if (physicalCard != null)
-		{
-			CombatUXManager.me.MovePhysicalCardToRevealZone(physicalCard);
-		}
+		visuals.MoveCardToRevealZone(cardRevealed.gameObject);
 
 		// Display info (don't trigger effect)
 		cardsRevealedThisRound++;
@@ -417,6 +432,13 @@ public class CombatManager : MonoBehaviour
 
 		// Record combat stats
 		GetComponent<CombatStatsLogger>()?.OnCardRevealed(cardRevealed);
+
+		// Trigger delayed afterShuffle event if pending
+		if (_raiseAfterShuffleOnNextReveal)
+		{
+			_raiseAfterShuffleOnNextReveal = false;
+			GameEventStorage.me.afterShuffle.Raise();
+		}
 	}
 
 	private void TriggerRevealedCardEffect()
@@ -466,7 +488,7 @@ public class CombatManager : MonoBehaviour
 
 		// Put back to bottom of deck (index 0)
 		combinedDeckZone.Insert(0, cardToBottom);
-		CombatUXManager.me.MoveRevealedCardToBottom(cardToBottom);
+		visuals.MoveRevealedCardToBottom(cardToBottom);
 	}
 
 	private void TriggerStartCardEffect()
@@ -476,55 +498,24 @@ public class CombatManager : MonoBehaviour
 		var startCard = revealZone;
 		revealZone = null;
 
-		// Determine animation and subsequent handling based on config
-		if (removeStartCardInsteadOfShuffle)
+		// Add Start Card back to deck (it is currently in revealZone, not in combinedDeckZone)
+		combinedDeckZone.Add(startCard);
+
+		// Execute logical shuffle first, determine each card's position
+		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
+
+		// Play animation based on known shuffle result
+		// Start Card flies directly from Reveal Zone to new position, other cards fly from old to new position
+		visuals.PlayShuffleAnimation(startCard, combinedDeckZone, () =>
 		{
-			// Remove Start Card from deck (it won't participate in Shuffle)
-			combinedDeckZone.Remove(startCard);
-			
-			// Play simultaneously: Start Card exit animation + other cards Shuffle animation
-			CombatUXManager.me.PlayStartCardExitWithShuffleAnimation(startCard, combinedDeckZone, () =>
-			{
-				// Destroy logical card
-				Destroy(startCard);
-				_startCardInstance = null;
-				
-				// Logically execute Shuffle (Start Card is already gone)）
-				combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
-				
-				// Refresh UI display
-				_infoDisplayer.RefreshDeckInfo();
-				GameEventStorage.me.afterShuffle.Raise();
-				ResetShuffleTrackers();
-				
-				// New round start
-				HandleNewRoundStart();
-			});
-		}
-		else
-		{
-			// ========== Plan B: Execute logical shuffle first, then play animation ==========
-			
-			// 1. First add Start Card to deck (prepare to participate in shuffle)
-			// Start Card is currently not in combinedDeckZone (it's in revealZone), needs to be added back
-			combinedDeckZone.Add(startCard);
-			
-			// 2. [Key] Execute logical shuffle first, determine each card's position
-			combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
-			
-			// 3. Play animation based on known shuffle result
-			// Start Card flies directly from Reveal Zone to new position, other cards fly from old to new position
-			CombatUXManager.me.PlayStartCardShuffleAnimation(startCard, combinedDeckZone, () =>
-			{
-				// After animation completes, refresh UI and trigger event
-				_infoDisplayer.RefreshDeckInfo();
-				GameEventStorage.me.afterShuffle.Raise();
-				ResetShuffleTrackers();
-				
-				// New round start
-				HandleNewRoundStart();
-			});
-		}
+			// After animation completes, refresh UI and prepare delayed afterShuffle
+			_infoDisplayer.RefreshDeckInfo();
+			_raiseAfterShuffleOnNextReveal = true; // Delay afterShuffle until first card reveal
+			ResetShuffleTrackers();
+
+			// New round start
+			HandleNewRoundStart();
+		});
 	}
 
 	private void HandleNewRoundStart()
@@ -535,7 +526,7 @@ public class CombatManager : MonoBehaviour
 		_infoDisplayer.ClearInfo();
 		
 		// Physical card reset
-		CombatUXManager.me.ReviveAllPhysicalCards();
+		visuals.ReviveAllPhysicalCards();
 		
 		// Round start event
 		GameEventStorage.me.beforeRoundStart.Raise();
@@ -549,7 +540,7 @@ public class CombatManager : MonoBehaviour
 		if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 
 		combatFinished.value = true;
-		CombatUXManager.me.ClearAllPhysicalCards();
+		visuals.ClearAllPhysicalCards();
 	}
 
 	private bool IsRevealedCardStartCard()

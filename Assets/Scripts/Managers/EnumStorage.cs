@@ -13,7 +13,6 @@ public class EnumStorage : MonoBehaviour
 	public enum CombatState
 	{
 		GatherDeckLists,
-		ShuffleDeck,
 		Reveal
 	}
 

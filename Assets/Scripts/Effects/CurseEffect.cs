@@ -276,7 +276,7 @@ namespace DefaultNamespace.Effects
 
 			var targetCards = new List<CardScript> { targetCard };
 			
-			CombatUXManager.me?.PlayMultiStatusEffectProjectile(
+			combatManager.visuals?.PlayMultiStatusEffectProjectile(
 				myCard,
 				targetCards,
 				(card) => ApplyPowerToCardInternal(card, amount),

@@ -56,8 +56,8 @@ public class ExposeCostEffect : EffectScript
 		// Sync physical card positions
 		if (exposedCards.Count > 0)
 		{
-			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 }

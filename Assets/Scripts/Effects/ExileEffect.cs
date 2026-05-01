@@ -263,11 +263,22 @@ public class ExileEffect : EffectScript
 		for (var i = 0; i < amount; i++)
 		{
 			var targetCard = cardsToExile[i];
+			if (targetCard == null) continue;
+
 			var targetCardScript = targetCard.GetComponent<CardScript>();
+			if (targetCardScript == null) continue;
+
 			string targetColor = GetCardColorTag(targetCard);
 
+			// Clear reveal zone references if exiling the currently revealed card
+			// (prevents the card from being put back into the deck on next click)
+			if (combatManager.revealZone == targetCard)
+			{
+				combatManager.revealZone = null;
+			}
+
 			// Use unified destroy method (with animation) - Exile effect is similar to destroy, both remove card from game
-			CombatUXManager.me.DestroyCardWithAnimation(targetCard);
+			combatManager.visuals.DestroyCardWithAnimation(targetCard);
 
 			effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>]放逐了[<color=" + targetColor + ">" +
 				targetCardScript.gameObject.name + "</color>]\n";
@@ -299,8 +310,8 @@ public class ExileEffect : EffectScript
 		// Sync remaining physical card positions
 		if (exiledCards.Count > 0)
 		{
-			CombatUXManager.me.SyncPhysicalCardsWithCombinedDeck();
-			CombatUXManager.me.UpdateAllPhysicalCardTargets();
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 }

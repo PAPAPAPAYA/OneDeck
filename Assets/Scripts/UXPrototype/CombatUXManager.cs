@@ -94,13 +94,19 @@ public class CardMoveConfig
 	}
 }
 
-public class CombatUXManager : MonoBehaviour
+public class CombatUXManager : MonoBehaviour, ICombatVisuals
 {
 	#region SINGLETON
 	public static CombatUXManager me;
+	/// <summary>
+	/// Interface reference for decoupled access from logic layer.
+	/// Logic scripts should use this instead of 'me'.
+	/// </summary>
+	public static ICombatVisuals visuals;
 	void Awake()
 	{
 		me = this;
+		visuals = this;
 	}
 	#endregion
 
@@ -185,6 +191,27 @@ public class CombatUXManager : MonoBehaviour
 	{
 		if (combatManager == null)
 			combatManager = CombatManager.Me;
+		
+		if (combatManager != null)
+		{
+			combatManager.onDamageDealt += HandleDamageDealt;
+		}
+	}
+	
+	private void OnDisable()
+	{
+		if (combatManager != null)
+		{
+			combatManager.onDamageDealt -= HandleDamageDealt;
+		}
+	}
+	
+	/// <summary>
+	/// Handle onDamageDealt event from CombatManager.
+	/// </summary>
+	private void HandleDamageDealt(GameObject attackerCard, bool isAttackingEnemy, Action onHit, Action onComplete)
+	{
+		PlayAttackAnimation(attackerCard, isAttackingEnemy, onHit, onComplete);
 	}
 
 	#region Responsibility 1: Update physical card list based on logical zone
@@ -213,6 +240,18 @@ public class CombatUXManager : MonoBehaviour
 
 		// Note: Cards in reveal zone are not added to physicalCardsInDeck
 		// It is managed separately by physicalCardInRevealZone, position controlled by separate reveal logic
+
+		// FIX: If a card is in logical revealZone but not in physical reveal zone, sync it
+		// (e.g. StageEffect sets revealZone directly without notifying UXManager)
+		if (combatManager.revealZone != null)
+		{
+			var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+			if (revealCardScript != null && _cardScriptToPhysicalCache.TryGetValue(revealCardScript, out var revealPhysicalCard))
+			{
+				physicalCardsInDeck.Remove(revealPhysicalCard);
+				physicalCardInRevealZone = revealPhysicalCard;
+			}
+		}
 	}
 
 	/// <summary>
@@ -220,7 +259,7 @@ public class CombatUXManager : MonoBehaviour
 	/// </summary>
 	public void MovePhysicalCardToRevealZone(GameObject physicalCard)
 	{
-
+		
 		// Remove from deck
 		physicalCardsInDeck.Remove(physicalCard);
 
@@ -231,12 +270,38 @@ public class CombatUXManager : MonoBehaviour
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript != null)
 		{
-			physScript.SetTargetPosition(physicalCardRevealPos.position);
-			physScript.SetTargetScale(physicalCardRevealSize);
+			// If card is playing special animation, set pending reveal zone move
+			// so that when special animation finishes, it goes directly to reveal zone
+			if (physScript.isPlayingSpecialAnimation)
+			{
+				physScript.pendingRevealZoneMove = true;
+				physScript.pendingRevealPosition = physicalCardRevealPos.position;
+				physScript.pendingRevealScale = physicalCardRevealSize;
+			}
+			else
+			{
+				physScript.SetTargetPosition(physicalCardRevealPos.position);
+				physScript.SetTargetScale(physicalCardRevealSize);
+			}
 		}
-
 		// Update positions of remaining cards in deck
 		UpdateAllPhysicalCardTargets();
+	}
+
+	/// <summary>
+	/// Wait for special animation to finish, then move card to reveal zone
+	/// </summary>
+	private System.Collections.IEnumerator MoveToRevealZoneWhenReady(CardPhysObjScript physScript)
+	{
+		float timeout = 2f;
+		float timer = 0f;
+		while (physScript.isPlayingSpecialAnimation && timer < timeout)
+		{
+			yield return null;
+			timer += Time.deltaTime;
+		}
+		physScript.SetTargetPosition(physicalCardRevealPos.position);
+		physScript.SetTargetScale(physicalCardRevealSize);
 	}
 
 	/// <summary>
@@ -341,7 +406,15 @@ public class CombatUXManager : MonoBehaviour
 		switch (config.moveType)
 		{
 			case CardMoveType.ToTop:
-				targetPosition = CalculatePositionAtIndex(combatManager.combinedDeckZone.Count - 1);
+				// if reveal zone is me, move to reveal zone instead of deck top
+				if (combatManager.revealZone == physScript.cardImRepresenting.gameObject)
+				{
+					targetPosition = physicalCardRevealPos.position;
+				}
+				else
+				{
+					targetPosition = CalculatePositionAtIndex(combatManager.combinedDeckZone.Count - 1);
+				}
 				break;
 			case CardMoveType.ToBottom:
 				targetPosition = CalculatePositionAtIndex(0);
@@ -404,8 +477,19 @@ public class CombatUXManager : MonoBehaviour
 		moveSequence.OnComplete(() =>
 		{
 			physScript.isPlayingSpecialAnimation = false;
-			physScript.SetTargetPosition(targetPosition);
-			physScript.SetTargetScale(targetScale);
+
+			// If pending reveal zone move, go directly to reveal zone instead of default target
+			if (physScript.pendingRevealZoneMove)
+			{
+				physScript.SetTargetPosition(physScript.pendingRevealPosition);
+				physScript.SetTargetScale(physScript.pendingRevealScale);
+				physScript.pendingRevealZoneMove = false;
+			}
+			else
+			{
+				physScript.SetTargetPosition(targetPosition);
+				physScript.SetTargetScale(targetScale);
+			}
 
 			if (config.destroyAfterMove)
 			{
@@ -417,51 +501,6 @@ public class CombatUXManager : MonoBehaviour
 		});
 
 		moveSequence.Play();
-	}
-
-	/// <summary>
-	/// Batch move multiple cards (for Stage/Bury operations)
-	/// </summary>
-	/// <param name="logicalCards">Logical card list</param>
-	/// <param name="config">Move config</param>
-	/// <param name="onAllComplete">Callback after all animations complete</param>
-	public void MoveCardsWithAnimation(List<GameObject> logicalCards, CardMoveConfig config, Action onAllComplete = null)
-	{
-		if (logicalCards == null || logicalCards.Count == 0)
-		{
-			onAllComplete?.Invoke();
-			return;
-		}
-
-		int completedCount = 0;
-		int totalCount = logicalCards.Count;
-
-		Action onSingleComplete = () =>
-		{
-			completedCount++;
-			if (completedCount >= totalCount)
-			{
-				onAllComplete?.Invoke();
-			}
-		};
-
-		// Create config copy for each card (because callbacks differ)
-		foreach (var card in logicalCards)
-		{
-			var cardConfig = new CardMoveConfig
-			{
-				moveType = config.moveType,
-				targetIndex = config.targetIndex,
-				customTarget = config.customTarget,
-				useArc = config.useArc,
-				arcMidpoint = config.arcMidpoint,
-				duration = config.duration,
-				ease = config.ease,
-				destroyAfterMove = config.destroyAfterMove,
-				onComplete = onSingleComplete
-			};
-			MoveCardWithAnimation(card, cardConfig);
-		}
 	}
 
 	/// <summary>
@@ -489,22 +528,6 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Move card to specified world position
-	/// </summary>
-	public void MoveCardToPosition(GameObject logicalCard, Vector3 position, float duration = 0.5f, bool useArc = true, Action onComplete = null)
-	{
-		MoveCardWithAnimation(logicalCard, CardMoveConfig.ToPosition(position, duration, useArc, onComplete));
-	}
-
-	/// <summary>
-	/// Move card to graveyard (destroy position)
-	/// </summary>
-	public void MoveCardToGrave(GameObject logicalCard, float duration = 0.3f, Action onComplete = null)
-	{
-		MoveCardWithAnimation(logicalCard, CardMoveConfig.ToGrave(duration, onComplete));
-	}
-
-	/// <summary>
 	/// Calculate position coordinates at specified index
 	/// </summary>
 	public Vector3 CalculatePositionAtIndex(int index)
@@ -519,174 +542,6 @@ public class CombatUXManager : MonoBehaviour
 		);
 	}
 
-	/// <summary>
-	/// Play Start Card exit animation and execute follow-up
-	/// Resolve conflict between Start Card animation and Shuffle
-	/// </summary>
-	/// <param name="logicalCard">Start Card logical card</param>
-	/// <param name="onAnimationComplete">Callback after animation completes (usually pass shuffle logic)</param>
-	public void PlayStartCardExitAnimationWithCallback(GameObject logicalCard, Action onAnimationComplete)
-	{
-		if (logicalCard == null)
-		{
-			onAnimationComplete?.Invoke();
-			return;
-		}
-
-		var cardScript = logicalCard.GetComponent<CardScript>();
-		if (cardScript == null || !cardScript.isStartCard)
-		{
-			onAnimationComplete?.Invoke();
-			return;
-		}
-
-		// Get physical card
-		BuildCardScriptToPhysicalDictionary();
-		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
-		if (physicalCard == null)
-		{
-			onAnimationComplete?.Invoke();
-			return;
-		}
-
-		// Remove from deck list (no longer participate in position sync)
-		physicalCardsInDeck.Remove(physicalCard);
-		if (physicalCardInRevealZone == physicalCard)
-		{
-			physicalCardInRevealZone = null;
-		}
-
-		// Determine target position
-		Vector3 targetPos = gravePosition != null 
-			? gravePosition.position 
-			: physicalCardNewTempCardPos.position;
-		Vector3 targetSize = cardDestroyTargetSize;
-
-		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
-		if (physScript != null)
-		{
-			physScript.isPlayingSpecialAnimation = true;
-		}
-
-		// Create exit animation
-		Sequence exitSequence = DOTween.Sequence();
-		exitSequence.Append(
-			physicalCard.transform.DOMove(targetPos, cardDestroyAnimDuration).SetEase(Ease.InQuad)
-		);
-		exitSequence.Join(
-			physicalCard.transform.DOScale(targetSize, cardDestroyAnimDuration).SetEase(Ease.InQuad)
-		);
-
-		exitSequence.OnComplete(() =>
-		{
-			Destroy(physicalCard);
-			onAnimationComplete?.Invoke();
-		});
-
-		exitSequence.Play();
-	}
-
-	/// <summary>
-	/// Play Start Card exit animation and other cards' Shuffle animation simultaneously
-	/// Start Card goes directly to graveyard, other cards shuffle
-	/// </summary>
-	/// <param name="startCard">Start Card logical card</param>
-	/// <param name="otherCards">Logical list of other cards (not shuffled)</param>
-	/// <param name="onComplete">Callback after all animations complete</param>
-	public void PlayStartCardExitWithShuffleAnimation(GameObject startCard, List<GameObject> otherCards, Action onComplete)
-	{
-		// Block player input
-		if (combatManager != null)
-			combatManager.blockPlayerInput = true;
-			
-		if (startCard == null)
-		{
-			// No Start Card, only play normal shuffle animation
-			PlayShuffleAnimation(otherCards, onComplete);
-			return;
-		}
-
-		// Get Start Card physical card
-		BuildCardScriptToPhysicalDictionary();
-		var startPhysicalCard = GetPhysicalCardFromLogicalCard(startCard.GetComponent<CardScript>());
-		
-		// Remove Start Card from physical list (it does not participate in shuffle)
-		if (startPhysicalCard != null)
-		{
-			physicalCardsInDeck.Remove(startPhysicalCard);
-			if (physicalCardInRevealZone == startPhysicalCard)
-			{
-				physicalCardInRevealZone = null;
-			}
-		}
-
-		// 1. First sync other cards' physical list (after removing Start Card)
-		SyncPhysicalCardsWithCombinedDeck();
-
-		// 2. Calculate other cards' positions after Shuffle
-		var shuffledCards = UtilityFuncManagerScript.ShuffleList(new List<GameObject>(otherCards));
-		var shuffleTargets = CalculateShuffleTargets(shuffledCards);
-
-		// 3. Calculate Start Card's target position (graveyard)
-		Vector3 startCardTarget = gravePosition != null 
-			? gravePosition.position 
-			: physicalCardNewTempCardPos.position;
-
-		// 4. Play both animations simultaneously
-		int completedAnimations = 0;
-		int totalAnimations = 1 + (startPhysicalCard != null ? 1 : 0); // Shuffle + Start Card
-
-		Action onOneComplete = () =>
-		{
-			completedAnimations++;
-			if (completedAnimations >= totalAnimations)
-			{
-				// Restore player input
-				if (combatManager != null)
-					combatManager.blockPlayerInput = false;
-				onComplete?.Invoke();
-			}
-		};
-
-		// Play other cards' Shuffle animation
-		PlayShuffleAnimationInternal(shuffleTargets, onOneComplete);
-
-		// Play Start Card exit animation
-		if (startPhysicalCard != null)
-		{
-			var physScript = startPhysicalCard.GetComponent<CardPhysObjScript>();
-			if (physScript != null)
-			{
-				physScript.isPlayingSpecialAnimation = true;
-			}
-
-			Sequence exitSequence = DOTween.Sequence();
-			exitSequence.Append(
-				startPhysicalCard.transform.DOMove(startCardTarget, cardDestroyAnimDuration).SetEase(Ease.InQuad)
-			);
-			exitSequence.Join(
-				startPhysicalCard.transform.DOScale(cardDestroyTargetSize, cardDestroyAnimDuration).SetEase(Ease.InQuad)
-			);
-			exitSequence.OnComplete(() =>
-			{
-				Destroy(startPhysicalCard);
-				onOneComplete?.Invoke();
-			});
-			exitSequence.Play();
-		}
-		else
-		{
-			onOneComplete?.Invoke();
-		}
-	}
-
-	/// <summary>
-	/// Play Start Card move to random position and other cards' Shuffle animation simultaneously
-	/// [Plan B] Logical shuffle completed, play animation based on known shuffle result
-	/// </summary>
-	/// <param name="startCard">Start Card logical card</param>
-	/// <param name="shuffledCards">Already shuffled deck list (contains Start Card, order is determined)</param>
-	/// <param name="onComplete">Callback after all animations complete</param>
 	public void PlayStartCardShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
 	{
 		// Block player input
@@ -735,34 +590,6 @@ public class CombatUXManager : MonoBehaviour
 				physicalCardsInDeck.Add(physicalCard);
 			}
 		}
-	}
-
-	/// <summary>
-	/// Play normal Shuffle animation (without Start Card special handling)
-	/// </summary>
-	/// <param name="cards">Logical card list (not shuffled)</param>
-	/// <param name="onComplete">Callback after animation completes</param>
-	public void PlayShuffleAnimation(List<GameObject> cards, Action onComplete)
-	{
-		// Block player input
-		if (combatManager != null)
-			combatManager.blockPlayerInput = true;
-			
-		// First sync physical list
-		SyncPhysicalCardsWithCombinedDeck();
-
-		// Calculate positions after Shuffle
-		var shuffledCards = UtilityFuncManagerScript.ShuffleList(new List<GameObject>(cards));
-		var shuffleTargets = CalculateShuffleTargets(shuffledCards);
-
-		// Play animation
-		PlayShuffleAnimationInternal(shuffleTargets, () =>
-		{
-			// Restore player input
-			if (combatManager != null)
-				combatManager.blockPlayerInput = false;
-			onComplete?.Invoke();
-		});
 	}
 
 	/// <summary>
@@ -958,8 +785,9 @@ public class CombatUXManager : MonoBehaviour
 	{
 		// Guard: skip update when deck is focused to prevent interference
 		if (_isDeckFocused)
+		{
 			return;
-
+		}
 		// Update card positions in deck
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
@@ -973,27 +801,6 @@ public class CombatUXManager : MonoBehaviour
 			// Set target position and scale (card handles animation in its own Update)
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
-		}
-	}
-
-	/// <summary>
-	/// Reset all card positions immediately (no animation)
-	/// </summary>
-	public void ResetPhysicalCardsPositionImmediate()
-	{
-		for (int i = 0; i < physicalCardsInDeck.Count; i++)
-		{
-			var physScript = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
-			if (physScript == null) continue;
-
-			Vector3 pos = new(
-			    physicalCardDeckPos.position.x + xOffset * (i + 1),
-			    physicalCardDeckPos.position.y + yOffset * (i + 1),
-			    physicalCardDeckPos.position.z - zOffset * i
-			);
-
-			physScript.SetPositionImmediate(pos);
-			physScript.SetScaleImmediate(physicalCardDeckSize);
 		}
 	}
 
@@ -1345,41 +1152,6 @@ public class CombatUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Lift a card in the deck slightly for secondary animation (receiver)
-	/// Does NOT interfere with PeelDeck focus state
-	/// </summary>
-	public IEnumerator LiftCardInDeckCoroutine(CardScript targetCard)
-	{
-		if (!enableLiftCardInDeck)
-			yield break;
-		if (targetCard == null)
-			yield break;
-
-		BuildCardScriptToPhysicalDictionary();
-		GameObject physicalCard = GetPhysicalCardFromLogicalCard(targetCard);
-		if (physicalCard == null)
-			yield break;
-
-		Vector3 originalPos = physicalCard.transform.position;
-		Vector3 liftPos = originalPos + Vector3.up * secondaryLiftHeight;
-
-		bool liftCompleted = false;
-		physicalCard.transform.DOMove(liftPos, secondaryLiftDuration)
-			.SetEase(Ease.OutQuad)
-			.OnComplete(() => liftCompleted = true);
-		yield return new WaitUntil(() => liftCompleted);
-
-		// Hold briefly then return
-		yield return new WaitForSeconds(0.1f);
-
-		bool lowerCompleted = false;
-		physicalCard.transform.DOMove(originalPos, secondaryLiftDuration)
-			.SetEase(Ease.InOutQuad)
-			.OnComplete(() => lowerCompleted = true);
-		yield return new WaitUntil(() => lowerCompleted);
-	}
-
-	/// <summary>
 	/// Get index of physical card in physicalCardsInDeck, or -1
 	/// </summary>
 	public int GetPhysicalCardDeckIndex(GameObject physicalCard)
@@ -1420,27 +1192,6 @@ public class CombatUXManager : MonoBehaviour
 
 		// Clear dictionary cache
 		_cardScriptToPhysicalCache.Clear();
-	}
-
-	/// <summary>
-	/// Destroy specified physical card (immediate, no animation)
-	/// </summary>
-	public void DestroyPhysicalCard(GameObject physicalCard)
-	{
-		if (physicalCard == null) return;
-
-		// Remove from deck list
-		physicalCardsInDeck.Remove(physicalCard);
-
-		// Remove from dictionary cache
-		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
-		if (physScript?.cardImRepresenting != null)
-		{
-			_cardScriptToPhysicalCache.Remove(physScript.cardImRepresenting);
-		}
-
-		// Destroy GameObject
-		Destroy(physicalCard);
 	}
 
 	/// <summary>
@@ -1487,6 +1238,12 @@ public class CombatUXManager : MonoBehaviour
 		physicalCardsInDeck.Remove(physicalCard);
 		_cardScriptToPhysicalCache.Remove(cardScript);
 
+		// Clear reveal zone reference if this card is currently revealed
+		if (physicalCardInRevealZone == physicalCard)
+		{
+			physicalCardInRevealZone = null;
+		}
+
 		// Create exit animation
 		Sequence destroySequence = DOTween.Sequence();
 
@@ -1514,54 +1271,6 @@ public class CombatUXManager : MonoBehaviour
 		});
 	}
 
-	/// <summary>
-	/// Play Start Card exit animation: move to newCardPos and shrink, execute callback when complete
-	/// Note: Now recommended to use DestroyCardWithAnimation as the unified card destruction method
-	/// </summary>
-	public void PlayStartCardExitAnimation(GameObject physicalCard, System.Action onComplete)
-	{
-		if (physicalCard == null)
-		{
-			onComplete?.Invoke();
-			return;
-		}
-
-		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
-		if (physScript == null)
-		{
-			onComplete?.Invoke();
-			return;
-		}
-
-		// Remove from deck list (no longer participate in position sync)
-		physicalCardsInDeck.Remove(physicalCard);
-
-		// Stop any ongoing animation on this card
-		physScript.SetPositionImmediate(physicalCard.transform.position);
-		physScript.SetScaleImmediate(physicalCard.transform.localScale);
-
-		// Create exit animation sequence
-		Sequence exitSequence = DOTween.Sequence();
-
-		// Move to newCardPos
-		exitSequence.Append(
-			physicalCard.transform.DOMove(physicalCardNewTempCardPos.position, 0.3f)
-				.SetEase(Ease.InOutQuad)
-		);
-
-		// Sync shrink
-		exitSequence.Join(
-			physicalCard.transform.DOScale(physicalCardNewTempCardSize, 0.3f)
-				.SetEase(Ease.InOutQuad)
-		);
-
-		// Execute callback after animation completes
-		exitSequence.OnComplete(() =>
-		{
-			onComplete?.Invoke();
-		});
-	}
-	
 	/// <summary>
 	/// Stop all special animations on physical cards
 	/// </summary>
@@ -1607,6 +1316,7 @@ public class CombatUXManager : MonoBehaviour
 		// Create physical card
 		GameObject newPhysicalCard = Instantiate(prefabToUse);
 		CardPhysObjScript physScript = newPhysicalCard.GetComponent<CardPhysObjScript>();
+		newPhysicalCard.AddComponent<CombatCardView>();
 
 		physScript.cardImRepresenting = cardScript;
 		newPhysicalCard.name = logicalCard.name + "'s physical card";
@@ -1656,6 +1366,7 @@ public class CombatUXManager : MonoBehaviour
 			
 			GameObject newPhysicalCard = Instantiate(prefabToUse);
 			CardPhysObjScript physScript = newPhysicalCard.GetComponent<CardPhysObjScript>();
+			newPhysicalCard.AddComponent<CombatCardView>();
 
 			physScript.cardImRepresenting = cardScript;
 			newPhysicalCard.name = card.name + "'s physical card";
@@ -1728,7 +1439,6 @@ public class CombatUXManager : MonoBehaviour
 		
 		Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset;
 		Vector3 endPos = GetCardWorldPosition(receiverCard) + projectileEndOffset;
-		print("end pos: "+endPos);
 
 		// Create effect instance
 		GameObject projectile = Instantiate(statusEffectProjectilePrefab, startPos, Quaternion.identity);
@@ -1759,7 +1469,6 @@ public class CombatUXManager : MonoBehaviour
 		{
 			
 			Destroy(projectile);
-			print("projectile destroyed");
 			onComplete?.Invoke();
 		});
 
@@ -1844,6 +1553,110 @@ public class CombatUXManager : MonoBehaviour
 			}
 		}
 		return card.transform.position;
+	}
+
+	#endregion
+
+	#region ICombatVisuals Implementation
+
+	/// <summary>
+	/// ICombatVisuals: Get physical card from logical card GameObject.
+	/// </summary>
+	public GameObject GetPhysicalCard(GameObject logicalCard)
+	{
+		if (logicalCard == null) return null;
+		var cardScript = logicalCard.GetComponent<CardScript>();
+		if (cardScript == null) return null;
+		BuildCardScriptToPhysicalDictionary();
+		return GetPhysicalCardFromLogicalCard(cardScript);
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Move logical card to reveal zone.
+	/// </summary>
+	public void MoveCardToRevealZone(GameObject logicalCard)
+	{
+		if (logicalCard == null) return;
+		var cardScript = logicalCard.GetComponent<CardScript>();
+		if (cardScript == null) return;
+		BuildCardScriptToPhysicalDictionary();
+		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+		if (physicalCard != null)
+		{
+			MovePhysicalCardToRevealZone(physicalCard);
+		}
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Request attack animation (delegates to AttackAnimationManager).
+	/// </summary>
+	public void PlayAttackAnimation(GameObject attackerCard, bool isAttackingEnemy, Action onHit = null, Action onComplete = null)
+	{
+		if (AttackAnimationManager.me != null)
+		{
+			AttackAnimationManager.me.RequestAttackAnimation(attackerCard, isAttackingEnemy, onHit, onComplete);
+		}
+		else
+		{
+			// No animation manager available, execute callbacks immediately
+			onHit?.Invoke();
+			onComplete?.Invoke();
+		}
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Stop all playing and pending animations immediately.
+	/// </summary>
+	public void StopAllAnimations()
+	{
+		AttackAnimationManager.me?.StopAllAttackAnimations();
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Check if an attack animation is currently playing.
+	/// </summary>
+	public bool IsPlayingAttackAnimation()
+	{
+		return AttackAnimationManager.me != null && AttackAnimationManager.me.isPlayingAttackAnimation;
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Check if there are pending animations in the queue.
+	/// </summary>
+	public bool HasPendingAnimations()
+	{
+		return AttackAnimationManager.me != null && AttackAnimationManager.me.HasPendingAnimations();
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Apply status effect tint to the target card.
+	/// </summary>
+	public void ApplyStatusTint(CardScript targetCard, EnumStorage.StatusEffect effect)
+	{
+		if (effect != EnumStorage.StatusEffect.Infected && effect != EnumStorage.StatusEffect.Power) return;
+		BuildCardScriptToPhysicalDictionary();
+		var physicalCard = GetPhysicalCardFromLogicalCard(targetCard);
+		if (physicalCard != null)
+		{
+			var cardPhysObj = physicalCard.GetComponent<CardPhysObjScript>();
+			if (cardPhysObj != null) cardPhysObj.TriggerTintForStatusEffect(effect);
+		}
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Add physical card for a logical card inserted mid-combat.
+	/// </summary>
+	public void AddCardToDeckVisual(GameObject logicalCard)
+	{
+		AddPhysicalCardToDeck(logicalCard);
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Play Start Card shuffle animation.
+	/// </summary>
+	public void PlayShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
+	{
+		PlayStartCardShuffleAnimation(startCard, shuffledCards, onComplete);
 	}
 
 	#endregion
