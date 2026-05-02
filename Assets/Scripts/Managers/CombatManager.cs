@@ -78,7 +78,36 @@ public class CombatManager : MonoBehaviour
 	public BoolSO combatFinished; // identify if this session of combat is finished
 	public int cardsRevealedThisRound; // tracks how many cards have been revealed this round (for display numbering)
 	[Tooltip("Block player input when playing Stage/Bury animation")]
-	public bool blockPlayerInput = false;
+	public bool IsInputBlocked { get; private set; }
+	private int _inputBlockCount = 0;
+
+	/// <summary>
+	/// Request to block player input. Uses reference counting to handle concurrent animations.
+	/// </summary>
+	public void BlockInput(object requester)
+	{
+		_inputBlockCount++;
+		IsInputBlocked = true;
+	}
+
+	/// <summary>
+	/// Request to unblock player input. Reference count must reach zero before input is restored.
+	/// </summary>
+	public void UnblockInput(object requester)
+	{
+		_inputBlockCount = Mathf.Max(0, _inputBlockCount - 1);
+		if (_inputBlockCount <= 0)
+			IsInputBlocked = false;
+	}
+
+	/// <summary>
+	/// Force reset input block state. Called on combat enter/exit.
+	/// </summary>
+	public void ResetInputBlock()
+	{
+		_inputBlockCount = 0;
+		IsInputBlocked = false;
+	}
 
 	[Header("SUPPLEMENT COMPONENTS")]
 	private CombatInfoDisplayer _infoDisplayer;
@@ -115,10 +144,13 @@ public class CombatManager : MonoBehaviour
 	{
 		currentCombatState = EnumStorage.CombatState.GatherDeckLists;
 		combatFinished.value = false;
+		ResetInputBlock();
 	}
 
 	public void ExitCombat()
 	{
+		ResetInputBlock();
+		
 		// Stop all attack animations
 		visuals?.StopAllAnimations();
 		
@@ -317,7 +349,7 @@ public class CombatManager : MonoBehaviour
 
 	private void RevealCards()
 	{
-		if (blockPlayerInput) return;
+		if (IsInputBlocked) return;
 		
 		// If attack animation is playing, wait
 		if (visuals != null && visuals.IsPlayingAttackAnimation())

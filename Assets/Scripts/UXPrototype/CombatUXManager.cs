@@ -545,8 +545,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public void PlayStartCardShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
 	{
 		// Block player input
-		if (combatManager != null)
-			combatManager.blockPlayerInput = true;
+		BlockInput(this);
 			
 		// Get Start Card physical card
 		BuildCardScriptToPhysicalDictionary();
@@ -569,8 +568,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// 3. After animation completes, rebuild physical card list to match logical order
 			RebuildPhysicalDeckFromShuffledList(shuffledCards);
 			// Restore player input
-			if (combatManager != null)
-				combatManager.blockPlayerInput = false;
+			UnblockInput(this);
 			onComplete?.Invoke();
 		});
 	}
@@ -1280,10 +1278,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		DOTween.Kill(this);
 		
 		// Restore player input
-		if (combatManager != null)
-		{
-			combatManager.blockPlayerInput = false;
-		}
+		UnblockInput(this);
 		
 		foreach (var physicalCard in physicalCardsInDeck)
 		{
@@ -1657,6 +1652,22 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public void PlayShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
 	{
 		PlayStartCardShuffleAnimation(startCard, shuffledCards, onComplete);
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Request to block player input.
+	/// </summary>
+	public void BlockInput(object requester)
+	{
+		combatManager?.BlockInput(requester);
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Request to unblock player input.
+	/// </summary>
+	public void UnblockInput(object requester)
+	{
+		combatManager?.UnblockInput(requester);
 	}
 
 	#endregion

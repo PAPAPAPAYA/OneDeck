@@ -145,4 +145,14 @@ public class NullCombatVisuals : ICombatVisuals
 		callLog.Add("HasPendingAnimations");
 		return false;
 	}
+
+	public void BlockInput(object requester)
+	{
+		callLog.Add("BlockInput: " + (requester?.GetType().Name ?? "null"));
+	}
+
+	public void UnblockInput(object requester)
+	{
+		callLog.Add("UnblockInput: " + (requester?.GetType().Name ?? "null"));
+	}
 }

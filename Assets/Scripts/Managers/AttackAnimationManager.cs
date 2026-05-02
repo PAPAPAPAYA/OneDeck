@@ -121,7 +121,7 @@ public class AttackAnimationManager : MonoBehaviour
 		// Block player input
 		if (_combatManager != null)
 		{
-			_combatManager.blockPlayerInput = true;
+			_combatManager.visuals.BlockInput(this);
 		}
 
 		// Get physical card
@@ -480,7 +480,7 @@ public class AttackAnimationManager : MonoBehaviour
 	{
 		if (_combatManager != null && !IsAnyAnimationPlaying())
 		{
-			_combatManager.blockPlayerInput = false;
+			_combatManager.visuals.UnblockInput(this);
 		}
 	}
 
@@ -511,7 +511,7 @@ public class AttackAnimationManager : MonoBehaviour
 		// Restore player input
 		if (_combatManager != null)
 		{
-			_combatManager.blockPlayerInput = false;
+			_combatManager.visuals.UnblockInput(this);
 		}
 	}
 

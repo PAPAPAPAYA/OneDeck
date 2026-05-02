@@ -1,6 +1,7 @@
 # 卡片逻辑层与表现层架构整理
 
 > 整理日期: 2026-05-01  
+> 更新日期: 2026-05-02  
 > 范围: `Assets/Scripts/Card/`, `Assets/Scripts/Effects/`, `Assets/Scripts/Managers/`, `Assets/Scripts/UXPrototype/`
 
 ---
@@ -177,15 +178,19 @@ if (CombatManager.Me.revealZone != transform.parent.gameObject)
 
 ### 2.6 表现层反向控制逻辑层状态
 
-| 调用方 | 被控制的状态 | 说明 |
-|--------|-------------|------|
-| `CombatUXManager` | `CombatManager.blockPlayerInput` | 动画播放期间锁输入 |
-| `AttackAnimationManager` | `CombatManager.blockPlayerInput` | 攻击动画期间锁输入 |
-| `CardPhysObjScript` | `ShopManager.BuyFunc/SellFunc` | 视觉输入直接触发商店交易 |
+| 调用方 | 被控制的状态 | 说明 | 状态 |
+|--------|-------------|------|------|
+| `CombatUXManager` | `CombatManager.blockPlayerInput` | 动画播放期间锁输入 | ✅ 已修复 |
+| `AttackAnimationManager` | `CombatManager.blockPlayerInput` | 攻击动画期间锁输入 | ✅ 已修复 |
+| `CardPhysObjScript` | `ShopManager.BuyFunc/SellFunc` | 视觉输入直接触发商店交易 | — |
+
+**已修复**：`blockPlayerInput` 已改为私有 `IsInputBlocked`，表现层通过 `ICombatVisuals.BlockInput/UnblockInput` 请求锁，由 `CombatManager` 用引用计数统一管理。
+
+**未修复**：`CardPhysObjScript` 仍直接触发商店交易（不在本次重构范围内）。
 
 **影响**：
-- 表现层可以直接冻结/释放玩家输入，逻辑层失去了对输入控制的权威。
-- 视觉组件 (`CardPhysObjScript`) 变成了输入控制器。
+- ~~表现层可以直接冻结/释放玩家输入，逻辑层失去了对输入控制的权威。~~（已修复）
+- 视觉组件 (`CardPhysObjScript`) 变成了输入控制器。（商店阶段仍保留）
 
 ---
 
@@ -357,6 +362,7 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 - [x] 新增/删除卡片时，只需调用一个工厂方法，无需分别创建逻辑卡和物理卡。
 - [x] 费用检查返回纯数据结构，不直接写 UI 文本。
 - [x] 表现层可以在不修改逻辑层的情况下替换动画系统（通过 `ICombatVisuals` 注入）。
+- [x] 输入锁由 CombatManager 统一管理，表现层通过 `ICombatVisuals.BlockInput/UnblockInput` 请求，禁止直接赋值。
 - [ ] 可以运行一个不实例化物理卡的"无头"战斗测试（`NullCombatVisuals` 已实现 + 3 组单元测试）。
 
 ---
@@ -374,14 +380,14 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 | P2 | `CombatManager` 不再直接调 `CombatUXManager`，改为走接口 | ✅ 完成 | `CombatManager.cs` (visuals 属性) |
 | P3 | `CardPhysObjScript` 拆分为 `CombatCardView` + `ShopCardView` | ✅ 基本完成 | `CombatCardView.cs`, `ShopCardView.cs` |
 | P4 | 统一 `CardFactory` 负责逻辑卡+物理卡成对创建 | ✅ 完成 | `CardFactory.cs`, `CombatFuncs.cs` |
+| P5 | `CostNEffectContainer` 返回 `CostResult` 结构体，UI 文字由 Presenter 写入 | ✅ 完成 | `CostNEffectContainer.cs`, `CombatLog.cs`, `CombatInfoDisplayer.cs` |
+| — | 效果结果日志与 UI 解耦 | ✅ 完成 | 所有 Effect 子类 |
+| — | 输入锁控制权责分离 | ✅ 完成 | `CombatManager.cs`, `ICombatVisuals.cs`, `CombatUXManager.cs`, `AttackAnimationManager.cs` |
 
 ### 未完成的重构
 
 | 优先级 | 重构项 | 状态 | 问题位置 | 说明 |
 |--------|--------|------|----------|------|
-| P5 | `CostNEffectContainer` 返回 `CostResult` 结构体，UI 文字由 Presenter 写入 | ✅ 完成 | `CostNEffectContainer.cs`, `CombatLog.cs`, `CombatInfoDisplayer.cs` | 费用检查失败时推入 `CombatLog`，由 `CombatInfoDisplayer` 渲染 |
-| — | 效果结果日志与 UI 解耦 | ✅ 完成 | 所有 Effect 子类 | 所有效果日志统一通过 `EffectScript.AppendLog()` 推入 `CombatLog`，`CombatInfoDisplayer` 负责渲染到 UI |
-| — | 输入锁控制权责分离 | ❌ 未解决 | `CombatUXManager.cs` 第 549、573、1285 行；`AttackAnimationManager.cs` 第 124、483、514 行 | 表现层仍直接设置 `combatManager.blockPlayerInput = true/false` |
 | — | 无头单元测试 | ❌ 未实现 | — | `NullCombatVisuals` 已实现，但项目中无实际调用它的单元测试代码；`DeckTester.cs` 是对战统计器而非单元测试 |
 
 ### 遗留细节

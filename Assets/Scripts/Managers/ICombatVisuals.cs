@@ -160,4 +160,18 @@ public interface ICombatVisuals
 	void AddCardToDeckVisual(GameObject logicalCard);
 
 	#endregion
+
+	#region Input Block
+
+	/// <summary>
+	/// Request to block player input. Reference counted; multiple concurrent animations are safe.
+	/// </summary>
+	void BlockInput(object requester);
+
+	/// <summary>
+	/// Request to unblock player input. Must match a previous BlockInput call from the same requester.
+	/// </summary>
+	void UnblockInput(object requester);
+
+	#endregion
 }
