@@ -103,12 +103,7 @@ public class EffectScript : MonoBehaviour
 		// Play particle effects
 		if (particlePrefab != null)
 		{
-			for (int i = 0; i < amount; i++)
-			{
-				Vector3 spawnPosition = GetPhysicalCardWorldPosition(targetCardScript.transform) + Vector3.up * particleYOffset;
-				ParticleSystem particleInstance = Instantiate(particlePrefab, spawnPosition, Quaternion.identity, targetCardScript.transform);
-				particleInstance.Play();
-			}
+			CombatManager.Me?.visuals?.PlayStatusEffectParticle(targetCardScript, particlePrefab, particleYOffset, amount);
 		}
 
 		TriggerTintForStatusEffect(targetCardScript, effect);
@@ -162,17 +157,6 @@ public class EffectScript : MonoBehaviour
 	#endregion
 
 	#region Helper Methods - Visuals
-	protected Vector3 GetPhysicalCardWorldPosition(Transform cardTransform)
-	{
-		var visuals = CombatManager.Me?.visuals;
-		if (visuals != null)
-		{
-			var physicalCard = visuals.GetPhysicalCard(cardTransform.gameObject);
-			if (physicalCard != null) return physicalCard.transform.position;
-		}
-		return cardTransform.position;
-	}
-
 	protected void TriggerTintForStatusEffect(CardScript targetCard, EnumStorage.StatusEffect effect)
 	{
 		if (effect != EnumStorage.StatusEffect.Infected && effect != EnumStorage.StatusEffect.Power) return;

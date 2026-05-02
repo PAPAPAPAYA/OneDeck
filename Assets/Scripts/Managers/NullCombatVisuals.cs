@@ -73,6 +73,11 @@ public class NullCombatVisuals : ICombatVisuals
 		callLog.Add("ApplyStatusTint: " + (targetCard?.name ?? "null") + " -> " + effect);
 	}
 
+	public void PlayStatusEffectParticle(CardScript targetCard, ParticleSystem particlePrefab, float particleYOffset, int amount)
+	{
+		callLog.Add("PlayStatusEffectParticle: " + (targetCard?.name ?? "null") + " x" + amount);
+	}
+
 	public void SyncPhysicalCardsWithCombinedDeck()
 	{
 		syncDeckCalls++;

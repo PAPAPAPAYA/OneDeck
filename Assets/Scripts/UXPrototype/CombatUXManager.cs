@@ -1639,6 +1639,23 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// ICombatVisuals: Play particle effect for a status effect applied to a card.
+	/// </summary>
+	public void PlayStatusEffectParticle(CardScript targetCard, ParticleSystem particlePrefab, float particleYOffset, int amount)
+	{
+		if (particlePrefab == null || targetCard == null) return;
+		BuildCardScriptToPhysicalDictionary();
+		var physicalCard = GetPhysicalCardFromLogicalCard(targetCard);
+		Vector3 basePosition = physicalCard != null ? physicalCard.transform.position : targetCard.transform.position;
+		for (int i = 0; i < amount; i++)
+		{
+			Vector3 spawnPosition = basePosition + Vector3.up * particleYOffset;
+			ParticleSystem particleInstance = Instantiate(particlePrefab, spawnPosition, Quaternion.identity, targetCard.transform);
+			particleInstance.Play();
+		}
+	}
+
+	/// <summary>
 	/// ICombatVisuals: Add physical card for a logical card inserted mid-combat.
 	/// </summary>
 	public void AddCardToDeckVisual(GameObject logicalCard)

@@ -393,5 +393,36 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 ### 遗留细节
 
 1. **`CardPhysObjScript` 数据残留**：仍保留 `shopItemIndex`、`holdTimeRequired`、`cardPricePrint` 等商店专属字段（虽然业务逻辑已拆分到 `ShopCardView`）。
-2. **`EffectScript.GetPhysicalCardWorldPosition()`**：逻辑层仍依赖物理卡位置来生成粒子特效，虽然走了 `ICombatVisuals` 接口，但本质仍是逻辑层关心视觉坐标。
-3. **`CombatManager.visuals` 懒加载**：仍通过 `CombatUXManager.visuals` 单例获取实现，未改为 Inspector 注入或工厂创建。
+2. **`EffectScript.GetPhysicalCardWorldPosition()`**：~~逻辑层仍依赖物理卡位置来生成粒子特效，虽然走了 `ICombatVisuals` 接口，但本质仍是逻辑层关心视觉坐标。~~ ✅ **已修复**（见下方实现说明）
+3. **`CombatManager.visuals` 懒加载**：~~仍通过 `CombatUXManager.visuals` 单例获取实现，未改为 Inspector 注入或工厂创建。~~ ✅ **已修复**（见下方实现说明）
+
+#### 遗留细节 2 实现说明
+
+**改动文件**：
+- `Assets/Scripts/Managers/ICombatVisuals.cs`
+- `Assets/Scripts/UXPrototype/CombatUXManager.cs`
+- `Assets/Scripts/Managers/NullCombatVisuals.cs`
+- `Assets/Scripts/Managers/NullCombatVisualsBehaviour.cs`
+- `Assets/Scripts/Effects/EffectScript.cs`
+
+**实现方式**：
+- `ICombatVisuals` 新增 `PlayStatusEffectParticle(CardScript, ParticleSystem, float, int)` 接口方法。
+- `CombatUXManager` 实现该方法：负责查询物理卡世界坐标、`Instantiate` 粒子系统并播放。逻辑层不再直接 `Instantiate`。
+- `NullCombatVisuals` / `NullCombatVisualsBehaviour` 实现空方法并记录调用日志，便于无头测试断言。
+- `EffectScript` 中 `ApplyStatusEffectCore()` 的粒子生成逻辑改为调用 `CombatManager.Me?.visuals?.PlayStatusEffectParticle(...)`。
+- `EffectScript.GetPhysicalCardWorldPosition()` 方法已删除，逻辑层不再关心物理坐标。
+
+#### 遗留细节 3 实现说明
+
+**改动文件**：
+- `Assets/Scripts/Managers/CombatManager.cs`
+- `Assets/Scripts/Managers/NullCombatVisualsBehaviour.cs`（新增）
+
+**实现方式**：
+- `CombatManager` 新增 `[SerializeField] MonoBehaviour visualsOverride` 字段，支持在 Inspector 中拖拽任意实现了 `ICombatVisuals` 的 `MonoBehaviour`。
+- `visuals` getter 优先检查 `visualsOverride`：若不为 null 且实现了 `ICombatVisuals`，则使用 override；否则 fallback 到原有的 `CombatUXManager.visuals`。
+- 新增 `NullCombatVisualsBehaviour`（`MonoBehaviour` 包装器），内部持有 `NullCombatVisuals` 实例并委托所有接口调用。无头测试场景只需创建一个空 GameObject 挂上该脚本，然后拖入 `CombatManager` 的 `visualsOverride` 槽位即可。
+
+**使用方式**：
+1. 正常战斗场景：`visualsOverride` 留空，`CombatManager` 自动使用 `CombatUXManager`（行为与之前完全一致）。
+2. 无头测试场景：创建一个 GameObject 并添加 `NullCombatVisualsBehaviour` 组件，将其拖拽到 `CombatManager` 的 `Visuals Override` 字段中。

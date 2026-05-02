@@ -84,6 +84,12 @@ public interface ICombatVisuals
 	/// </summary>
 	void ApplyStatusTint(CardScript targetCard, EnumStorage.StatusEffect effect);
 
+	/// <summary>
+	/// Play particle effect for a status effect applied to a card.
+	/// Logic layer should call this instead of instantiating particles directly.
+	/// </summary>
+	void PlayStatusEffectParticle(CardScript targetCard, ParticleSystem particlePrefab, float particleYOffset, int amount);
+
 	#endregion
 
 	#region Deck Synchronization

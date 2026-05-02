@@ -15,16 +15,25 @@ public class CombatManager : MonoBehaviour
 
 	public static CombatManager Me;
 
+	[Header("VISUALS")]
+	[Tooltip("Optional override for ICombatVisuals. Drag a MonoBehaviour implementing ICombatVisuals here to inject a custom visual provider (e.g. NullCombatVisualsBehaviour for headless testing). If null, falls back to CombatUXManager.visuals.")]
+	[SerializeField] private MonoBehaviour visualsOverride;
+
 	/// <summary>
 	/// Visual system interface. Logic layer should use this instead of CombatUXManager directly.
-	/// Lazily initialized to avoid dependency on Awake execution order.
+	/// Supports Inspector injection via visualsOverride; falls back to CombatUXManager.visuals if no override is set.
 	/// </summary>
 	public ICombatVisuals visuals
 	{
 		get
 		{
 			if (_visuals == null)
-				_visuals = CombatUXManager.visuals;
+			{
+				if (visualsOverride != null && visualsOverride is ICombatVisuals overrideVisuals)
+					_visuals = overrideVisuals;
+				else
+					_visuals = CombatUXManager.visuals;
+			}
 			return _visuals;
 		}
 	}
