@@ -66,7 +66,7 @@ public class CostNEffectContainer : MonoBehaviour
 			if (CombatManager.Me.revealZone == transform.parent.gameObject)
 			{
 				foreach (var msg in _costFailMessages)
-					effectResultString.value += msg;
+					CombatLog.me?.Append(msg);
 			}
 			_costFailMessages.Clear();
 			return;
@@ -81,7 +81,7 @@ public class CostNEffectContainer : MonoBehaviour
 			if (CombatManager.Me.revealZone == transform.parent.gameObject)
 			{
 				foreach (var msg in _costFailMessages)
-					effectResultString.value += msg;
+					CombatLog.me?.Append(msg);
 			}
 			_costFailMessages.Clear();
 			return;

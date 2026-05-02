@@ -22,7 +22,7 @@ namespace DefaultNamespace.Effects
             if (string.IsNullOrEmpty(textToAdd))
                 return;
                 
-            effectResultString.value += textToAdd + (addNewLine ? "\n" : "");
+            AppendLog(textToAdd);
         }
         
         /// <summary>
@@ -34,7 +34,7 @@ namespace DefaultNamespace.Effects
                 return;
 
             string myColor = myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-            effectResultString.value += $"// [<color={myColor}>" + myCard.name + $"</color>] {textToAdd}" + (addNewLine ? "\n" : "");
+            AppendLog($"// [<color={myColor}>" + myCard.name + $"</color>] {textToAdd}");
         }
         
         /// <summary>
@@ -45,7 +45,7 @@ namespace DefaultNamespace.Effects
             if (string.IsNullOrEmpty(dynamicText))
                 return;
                 
-            effectResultString.value += dynamicText + (addNewLine ? "\n" : "");
+            AppendLog(dynamicText);
         }
     }
 }

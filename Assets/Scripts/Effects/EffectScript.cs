@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EffectScript : MonoBehaviour
 {
+	[Tooltip("Deprecated: use AppendLog() instead. Kept for backward compatibility with existing prefabs.")]
 	public StringSO effectResultString;
 	
 	protected CombatManager combatManager;
@@ -118,6 +119,22 @@ public class EffectScript : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Append a line to the combat log. Logic layer should use this instead of writing to effectResultString directly.
+	/// </summary>
+	protected void AppendLog(string text)
+	{
+		if (CombatLog.me != null)
+		{
+			CombatLog.me.Append(text);
+		}
+		else if (effectResultString != null)
+		{
+			// Fallback for backward compatibility if CombatLog is not available
+			effectResultString.value += text;
+		}
+	}
+
 	protected void LogStatusEffectGiven(CardScript targetCardScript, EnumStorage.StatusEffect effect, int amount)
 	{
 		string targetCardOwnerString = GetCardOwnerPrefix(targetCardScript.myStatusRef);
@@ -135,12 +152,12 @@ public class EffectScript : MonoBehaviour
 			EnumStorage.StatusEffect.Counter => "反击",
 			_ => effect.ToString()
 		};
-		effectResultString.value +=
+		AppendLog(
 			"// " + thisCardOwnerString +
 			"<color=" + thisCardColor + ">" + myCard.name + "</color>]给予" +
 			targetCardOwnerString +
 			"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>]" +
-			"<color=yellow>" + amount + "</color>层[" + effectNameCN + "]\n";
+			"<color=yellow>" + amount + "</color>层[" + effectNameCN + "]");
 	}
 	#endregion
 

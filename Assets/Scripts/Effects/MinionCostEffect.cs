@@ -134,7 +134,7 @@ public class MinionCostEffect : EffectScript
 		string ownerColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 		string cardTypeInfo = string.IsNullOrEmpty(costCardTypeID) ? "卡牌" : $"[{costCardTypeID}]";
 		string consumedOwnerInfo = GetOwnerDescription(costOwner);
-		effectResultString.value += $"// [<color={ownerColor}>{myCard.name}</color>]随从消耗: 消耗了<color=yellow>{cardsToConsume.Count}</color>张{consumedOwnerInfo}{cardTypeInfo}\n";
+		AppendLog($"// [<color={ownerColor}>{myCard.name}</color>]随从消耗: 消耗了<color=yellow>{cardsToConsume.Count}</color>张{consumedOwnerInfo}{cardTypeInfo}");
 	}
 
 	private string GetOwnerDescription(EnumStorage.TargetType owner)

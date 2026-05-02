@@ -357,4 +357,35 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 - [x] 新增/删除卡片时，只需调用一个工厂方法，无需分别创建逻辑卡和物理卡。
 - [x] 费用检查返回纯数据结构，不直接写 UI 文本。
 - [x] 表现层可以在不修改逻辑层的情况下替换动画系统（通过 `ICombatVisuals` 注入）。
-- [x] 可以运行一个不实例化物理卡的"无头"战斗测试（`NullCombatVisuals` 已实现 + 3 组单元测试）。
+- [ ] 可以运行一个不实例化物理卡的"无头"战斗测试（`NullCombatVisuals` 已实现 + 3 组单元测试）。
+
+---
+
+## 七、实现状态检查
+
+> 检查日期: 2026-05-02
+
+### 已完成的重构
+
+| 优先级 | 重构项 | 状态 | 关键文件 |
+|--------|--------|------|----------|
+| P0 | 提取 `ICombatVisuals` 接口，Effect 不再直接调 `CombatUXManager` | ✅ 完成 | `ICombatVisuals.cs`, `NullCombatVisuals.cs`, `CombatUXManager.cs` |
+| P1 | 用事件替代 `HPAlterEffect → AttackAnimationManager` 直接调用 | ✅ 完成 | `HPAlterEffect.cs`, `CombatManager.cs` (onDamageDealt 事件) |
+| P2 | `CombatManager` 不再直接调 `CombatUXManager`，改为走接口 | ✅ 完成 | `CombatManager.cs` (visuals 属性) |
+| P3 | `CardPhysObjScript` 拆分为 `CombatCardView` + `ShopCardView` | ✅ 基本完成 | `CombatCardView.cs`, `ShopCardView.cs` |
+| P4 | 统一 `CardFactory` 负责逻辑卡+物理卡成对创建 | ✅ 完成 | `CardFactory.cs`, `CombatFuncs.cs` |
+
+### 未完成的重构
+
+| 优先级 | 重构项 | 状态 | 问题位置 | 说明 |
+|--------|--------|------|----------|------|
+| P5 | `CostNEffectContainer` 返回 `CostResult` 结构体，UI 文字由 Presenter 写入 | ✅ 完成 | `CostNEffectContainer.cs`, `CombatLog.cs`, `CombatInfoDisplayer.cs` | 费用检查失败时推入 `CombatLog`，由 `CombatInfoDisplayer` 渲染 |
+| — | 效果结果日志与 UI 解耦 | ✅ 完成 | 所有 Effect 子类 | 所有效果日志统一通过 `EffectScript.AppendLog()` 推入 `CombatLog`，`CombatInfoDisplayer` 负责渲染到 UI |
+| — | 输入锁控制权责分离 | ❌ 未解决 | `CombatUXManager.cs` 第 549、573、1285 行；`AttackAnimationManager.cs` 第 124、483、514 行 | 表现层仍直接设置 `combatManager.blockPlayerInput = true/false` |
+| — | 无头单元测试 | ❌ 未实现 | — | `NullCombatVisuals` 已实现，但项目中无实际调用它的单元测试代码；`DeckTester.cs` 是对战统计器而非单元测试 |
+
+### 遗留细节
+
+1. **`CardPhysObjScript` 数据残留**：仍保留 `shopItemIndex`、`holdTimeRequired`、`cardPricePrint` 等商店专属字段（虽然业务逻辑已拆分到 `ShopCardView`）。
+2. **`EffectScript.GetPhysicalCardWorldPosition()`**：逻辑层仍依赖物理卡位置来生成粒子特效，虽然走了 `ICombatVisuals` 接口，但本质仍是逻辑层关心视觉坐标。
+3. **`CombatManager.visuals` 懒加载**：仍通过 `CombatUXManager.visuals` 单例获取实现，未改为 Inspector 注入或工厂创建。

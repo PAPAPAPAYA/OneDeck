@@ -227,10 +227,10 @@ namespace DefaultNamespace.Effects
 				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
 					"#87CEEB" : "orange";
 				
-				effectResultString.value +=
+				AppendLog(
 					"// " + thisCardOwnerString +
 					"<color=" + thisCardColor + ">" + myCard.name + "</color>]诅咒并创建了" +
-					"<color=#87CEEB>友方</color>[<color=#87CEEB>" + newCard.name + "</color>]\n";
+					"<color=#87CEEB>友方</color>[<color=#87CEEB>" + newCard.name + "</color>]");
 				
 				return newCardScript;
 			}
@@ -256,10 +256,10 @@ namespace DefaultNamespace.Effects
 				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
 					"#87CEEB" : "orange";
 				
-				effectResultString.value +=
+				AppendLog(
 					"// " + thisCardOwnerString +
 					"<color=" + thisCardColor + ">" + myCard.name + "</color>]诅咒并创建了" +
-					"<color=orange>敌方</color>[<color=orange>" + newCard.name + "</color>]\n";
+					"<color=orange>敌方</color>[<color=orange>" + newCard.name + "</color>]");
 				
 				return newCardScript;
 			}
@@ -364,10 +364,10 @@ namespace DefaultNamespace.Effects
 			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
 				"#87CEEB" : "orange";
 
-			effectResultString.value +=
+			AppendLog(
 				"// " + thisCardOwnerString +
 				"<color=" + thisCardColor + ">" + myCard.name + "</color>]从被诅咒的卡牌中吸收了" +
-				"<color=yellow>" + amount + "</color>层[力量]\n";
+				"<color=yellow>" + amount + "</color>层[力量]");
 
 			// Refresh info display
 			CombatInfoDisplayer.me?.RefreshDeckInfo();

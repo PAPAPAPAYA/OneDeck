@@ -236,7 +236,7 @@ public class StageEffect : EffectScript
 		if (matchingCards.Count == 0)
 		{
 			string myColor = GetMyCardColorTag();
-			effectResultString.value += $"// [<color={myColor}>{myCard.gameObject.name}</color>]置顶敌方卡牌失败(没有找到ID为'{targetCardTypeID}'的卡牌)\n";
+			AppendLog($"// [<color={myColor}>{myCard.gameObject.name}</color>]置顶敌方卡牌失败(没有找到ID为'{targetCardTypeID}'的卡牌)");
 			return;
 		}
 
@@ -320,8 +320,8 @@ public class StageEffect : EffectScript
 				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);
-				effectResultString.value += "// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>]将[<color=" + targetColor + ">" +
-					targetCardScript.gameObject.name + "</color>]置顶\n";
+				AppendLog("// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>]将[<color=" + targetColor + ">" +
+					targetCardScript.gameObject.name + "</color>]置顶");
 			}
 		}
 		

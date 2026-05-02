@@ -65,7 +65,7 @@ public class BuryCostEffect : EffectScript
 				var targetScript = card.GetComponent<CardScript>();
 				string myColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
 				string targetColor = targetScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
-				effectResultString.value += $"// [<color={myColor}>{myCard.name}</color>]埋葬消耗: 将[<color={targetColor}>{targetScript.name}</color>]埋入牌库底端\n";
+				AppendLog($"// [<color={myColor}>{myCard.name}</color>]埋葬消耗: 将[<color={targetColor}>{targetScript.name}</color>]埋入牌库底端");
 			}
 		}
 

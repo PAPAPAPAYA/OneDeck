@@ -22,11 +22,11 @@ namespace DefaultNamespace.Effects
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				effectResultString.value += "// [<color=#87CEEB>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + cardToAdd.name + "</color>]\n";
+				AppendLog("// [<color=#87CEEB>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + cardToAdd.name + "</color>]");
 			}
 			else // if this card belong to enemy
 			{
-				effectResultString.value += "// [<color=orange>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + cardToAdd.name + "</color>]\n";
+				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + cardToAdd.name + "</color>]");
 			}
 		}
 
@@ -38,11 +38,11 @@ namespace DefaultNamespace.Effects
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				effectResultString.value += "// [<color=#87CEEB>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + cardToAdd.name + "</color>]\n";
+				AppendLog("// [<color=#87CEEB>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + cardToAdd.name + "</color>]");
 			}
 			else // if this card belong to enemy
 			{
-				effectResultString.value += "// [<color=orange>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + cardToAdd.name + "</color>]\n";
+				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + cardToAdd.name + "</color>]");
 			}
 		}
 
@@ -55,11 +55,11 @@ namespace DefaultNamespace.Effects
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				effectResultString.value += "// [<color=#87CEEB>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + myCard.name + "</color>]\n";
+				AppendLog("// [<color=#87CEEB>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + myCard.name + "</color>]");
 			}
 			else // if this card belong to enemy
 			{
-				effectResultString.value += "// [<color=orange>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + myCard.name + "</color>]\n";
+				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + myCard.name + "</color>]");
 			}
 		}
 
@@ -72,11 +72,11 @@ namespace DefaultNamespace.Effects
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				effectResultString.value += "// [<color=#87CEEB>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + myCard.name + "</color>]\n";
+				AppendLog("// [<color=#87CEEB>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + myCard.name + "</color>]");
 			}
 			else // if this card belong to enemy
 			{
-				effectResultString.value += "// [<color=orange>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + myCard.name + "</color>]\n";
+				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + myCard.name + "</color>]");
 			}
 		}
 		
@@ -135,11 +135,11 @@ namespace DefaultNamespace.Effects
 			// Log result
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
 			{
-				effectResultString.value += $"// [<color=#87CEEB>{myCard.name}</color>]从敌方复制了<color=yellow>{cardCount}</color>张[<color=orange>{cardPrefab.name}</color>]给<color=orange>敌人</color>\n";
+				AppendLog($"// [<color=#87CEEB>{myCard.name}</color>]从敌方复制了<color=yellow>{cardCount}</color>张[<color=orange>{cardPrefab.name}</color>]给<color=orange>敌人</color>");
 			}
 			else
 			{
-				effectResultString.value += $"// [<color=orange>{myCard.name}</color>]从你方复制了<color=yellow>{cardCount}</color>张[<color=#87CEEB>{cardPrefab.name}</color>]给<color=#87CEEB>你</color>\n";
+				AppendLog($"// [<color=orange>{myCard.name}</color>]从你方复制了<color=yellow>{cardCount}</color>张[<color=#87CEEB>{cardPrefab.name}</color>]给<color=#87CEEB>你</color>");
 			}
 		}
 	}

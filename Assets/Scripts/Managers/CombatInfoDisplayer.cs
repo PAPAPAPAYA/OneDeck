@@ -33,7 +33,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 	{
 		if (gamePhase.Value() != EnumStorage.GamePhase.Combat) return;
 		DisplayStatusInfo();
-		effectResultDisplay.text = effectResultString.value;
+		effectResultDisplay.text = CombatLog.me != null ? CombatLog.me.GetRenderedText() : effectResultString.value;
 	}
 
 	public void ClearInfo()
@@ -42,6 +42,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 		enemyStatusDisplay.text = "";
 		revealZoneDisplay.text = "";
 		combatTipsDisplay.text = "";
+		CombatLog.me?.Clear();
 		effectResultString.value = "";
 		effectResultDisplay.text = "";
 		playerDeckDisplay.text = "";

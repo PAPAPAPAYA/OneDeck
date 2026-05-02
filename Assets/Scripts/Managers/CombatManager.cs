@@ -7,6 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(CombatInfoDisplayer))]
 [RequireComponent(typeof(CombatFuncs))]
 [RequireComponent(typeof(CardFactory))]
+[RequireComponent(typeof(CombatLog))]
 // this script functions as a variable storage in combat
 public class CombatManager : MonoBehaviour
 {
@@ -217,7 +218,7 @@ public class CombatManager : MonoBehaviour
 		
 		var msg = $"<color=red>疲劳!</color> 回合{roundNumRef.value} > {overtimeRoundThreshold}";
 		print(msg);
-		_infoDisplayer.effectResultString.value += msg + "\n";
+		CombatLog.me?.Append(msg);
 		AddFatigueCards();
 	}
 	
@@ -232,7 +233,7 @@ public class CombatManager : MonoBehaviour
 		
 		var msg = $"<color=red>疲劳!</color> 已揭示{totalCardsRevealed}张卡牌";
 		print(msg);
-		_infoDisplayer.effectResultString.value += msg + "\n";
+		CombatLog.me?.Append(msg);
 		AddFatigueCards();
 	}
 	
@@ -364,7 +365,7 @@ public class CombatManager : MonoBehaviour
 			
 			visuals.InstantiateAllPhysicalCards();
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
-			_infoDisplayer.effectResultString.value = "";
+			CombatLog.me?.Clear();
 
 			// 1. Put current card back to bottom of deck
 			PutRevealedCardToBottom();

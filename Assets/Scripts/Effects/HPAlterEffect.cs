@@ -482,14 +482,14 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy dealt dmg to player
 		{
-			effectResultString.value += "// <color=orange>敌方</color>[<color=orange>" + myCard.name + "</color>]对<color=#87CEEB>你</color>造成了[<color=red>" + (dmgAmount) + "</color>]点伤害\n";
+			AppendLog("// <color=orange>敌方</color>[<color=orange>" + myCard.name + "</color>]对<color=#87CEEB>你</color>造成了[<color=red>" + (dmgAmount) + "</color>]点伤害");
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOpponent(); // timepoint
 			DeckTester.me.deckBDmgOutputs_ToOpp.Add(dmgAmount);
 		}
 		else // player dealt dmg to enemy
 		{
-			effectResultString.value += "// <color=#87CEEB>你的</color>[<color=#87CEEB>" + myCard.name + "</color>]对<color=orange>敌人</color>造成了[<color=red>" + (dmgAmount) + "</color>]点伤害\n";
+			AppendLog("// <color=#87CEEB>你的</color>[<color=#87CEEB>" + myCard.name + "</color>]对<color=orange>敌人</color>造成了[<color=red>" + (dmgAmount) + "</color>]点伤害");
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOwner(); // timepoint
 			DeckTester.me.deckADmgOutputs_ToOpp.Add(dmgAmount);
@@ -504,14 +504,14 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player dealt dmg to player
 		{
-			effectResultString.value += "// <color=#87CEEB>你的</color>[<color=#87CEEB>" + myCard.name + "</color>]对<color=#87CEEB>你</color>造成了[<color=red>" + (dmgAmount) + "</color>]点伤害\n";
+			AppendLog("// <color=#87CEEB>你的</color>[<color=#87CEEB>" + myCard.name + "</color>]对<color=#87CEEB>你</color>造成了[<color=red>" + (dmgAmount) + "</color>]点伤害");
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOpponent(); // timepoint
 			DeckTester.me.deckADmgOutputs_ToSelf.Add(dmgAmount);
 		}
 		else // enemy dealt dmg to enemy
 		{
-			effectResultString.value += "// <color=orange>敌方</color>[<color=orange>" + myCard.name + "</color>]对<color=orange>敌人</color>造成了[<color=red>" + (dmgAmount) + "</color>]点伤害\n";
+			AppendLog("// <color=orange>敌方</color>[<color=orange>" + myCard.name + "</color>]对<color=orange>敌人</color>造成了[<color=red>" + (dmgAmount) + "</color>]点伤害");
 			GameEventStorage.me.onMyPlayerTookDmg?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerTookDmg?.RaiseOwner(); // timepoint
 			DeckTester.me.deckBDmgOutputs_ToSelf.Add(dmgAmount);
@@ -526,13 +526,13 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player healed player
 		{
-			effectResultString.value += "// <color=#87CEEB>你的</color>[<color=#87CEEB>" + myCard.name + "</color>]为<color=#87CEEB>你</color>恢复了[<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]点生命\n";
+			AppendLog("// <color=#87CEEB>你的</color>[<color=#87CEEB>" + myCard.name + "</color>]为<color=#87CEEB>你</color>恢复了[<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]点生命");
 			GameEventStorage.me.onMyPlayerHealed?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOpponent(); // timepoint
 		}
 		else // enemy healed enemy
 		{
-			effectResultString.value += "// <color=orange>敌方</color>[<color=orange>" + myCard.name + "</color>]为<color=orange>敌人</color>恢复了[<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]点生命\n";
+			AppendLog("// <color=orange>敌方</color>[<color=orange>" + myCard.name + "</color>]为<color=orange>敌人</color>恢复了[<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]点生命");
 			GameEventStorage.me.onMyPlayerHealed?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOwner(); // timepoint
 		}
@@ -546,13 +546,13 @@ public class HPAlterEffect : EffectScript
 	{
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy healed player
 		{
-			effectResultString.value += "// <color=orange>敌方</color>[<color=orange>" + myCard.name + "</color>]为<color=#87CEEB>你</color>恢复了[<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]点生命\n";
+			AppendLog("// <color=orange>敌方</color>[<color=orange>" + myCard.name + "</color>]为<color=#87CEEB>你</color>恢复了[<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]点生命");
 			GameEventStorage.me.onMyPlayerHealed?.RaiseOwner(); // timepoint
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOpponent(); // timepoint
 		}
 		else // player healed enemy
 		{
-			effectResultString.value += "// <color=#87CEEB>你的</color>[<color=#87CEEB>" + myCard.name + "</color>]为<color=orange>敌人</color>恢复了[<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]点生命\n";
+			AppendLog("// <color=#87CEEB>你的</color>[<color=#87CEEB>" + myCard.name + "</color>]为<color=orange>敌人</color>恢复了[<color=#90EE90>" + (healAmount + healAmountAlter) + "</color>]点生命");
 			GameEventStorage.me.onMyPlayerHealed?.RaiseOpponent(); // timepoint
 			GameEventStorage.me.onTheirPlayerHealed?.RaiseOwner(); // timepoint
 		}

@@ -182,11 +182,11 @@ namespace DefaultNamespace.Effects
 				"#87CEEB" : "orange";
 			string effectNameCN = StatusEffectToCN(statusEffectToTransfer);
 
-			effectResultString.value +=
+			AppendLog(
 				"// " + thisCardOwnerString +
 				"<color=" + thisCardColor + ">" + myCard.name + "</color>]从" +
 				"<color=" + (fromFriendly ? "#87CEEB" : "orange") + ">" + (fromFriendly ? "友方" : "敌方") + "</color>卡牌吸收了" +
-				"<color=yellow>" + totalCount + "</color>层[" + effectNameCN + "]\n";
+				"<color=yellow>" + totalCount + "</color>层[" + effectNameCN + "]");
 		}
 
 		/// <summary>
@@ -319,12 +319,12 @@ namespace DefaultNamespace.Effects
 				"#87CEEB" : "orange";
 
 			string effectNameCN = StatusEffectToCN(statusEffectToTransfer);
-			effectResultString.value +=
+			AppendLog(
 				"// " + thisCardOwnerString +
 				"<color=" + thisCardColor + ">" + myCard.name + "</color>]将" +
 				"<color=yellow>" + totalCount + "</color>层[" + effectNameCN + "]从" +
 				"<color=" + (isFromFriendly ? "#87CEEB" : "orange") + ">" + (isFromFriendly ? "友方" : "敌方") + "</color>卡牌转移到了" +
-				"<color=" + targetCardColor + ">" + targetCard.name + "</color>]\n";
+				"<color=" + targetCardColor + ">" + targetCard.name + "</color>]");
 		}
 	}
 }
