@@ -478,7 +478,7 @@ public class AttackAnimationManager : MonoBehaviour
 	/// </summary>
 	private void ReleasePlayerInput()
 	{
-		if (_combatManager != null && !IsAnyAnimationPlaying())
+		if (_combatManager != null)
 		{
 			_combatManager.visuals.UnblockInput(this);
 		}

@@ -443,6 +443,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Mark that special animation is playing
 		physScript.isPlayingSpecialAnimation = true;
 
+		// Block input during effect animation
+		BlockInput(this);
+
 		// Create animation sequence
 		Sequence moveSequence = DOTween.Sequence();
 
@@ -476,6 +479,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Animation complete callback
 		moveSequence.OnComplete(() =>
 		{
+			UnblockInput(this);
+
 			physScript.isPlayingSpecialAnimation = false;
 
 			// If pending reveal zone move, go directly to reveal zone instead of default target
@@ -1278,7 +1283,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		DOTween.Kill(this);
 		
 		// Restore player input
-		UnblockInput(this);
+		combatManager?.ResetInputBlock();
 		
 		foreach (var physicalCard in physicalCardsInDeck)
 		{
@@ -1503,6 +1508,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			return;
 		}
 
+		BlockInput(this);
+
 		float staggerDelay = customStaggerDelay ?? projectileStaggerDelay;
 		int completedCount = 0;
 		int totalCount = targetCards.Count;
@@ -1525,6 +1532,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						completedCount++;
 						if (completedCount >= totalCount)
 						{
+							UnblockInput(this);
 							onAllComplete?.Invoke();
 						}
 					}

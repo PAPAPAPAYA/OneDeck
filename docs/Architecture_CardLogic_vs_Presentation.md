@@ -1,7 +1,7 @@
 # 卡片逻辑层与表现层架构整理
 
 > 整理日期: 2026-05-01  
-> 更新日期: 2026-05-02  
+> 更新日期: 2026-05-05  
 > 范围: `Assets/Scripts/Card/`, `Assets/Scripts/Effects/`, `Assets/Scripts/Managers/`, `Assets/Scripts/UXPrototype/`
 
 ---
@@ -332,7 +332,7 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 | **P2** | `CombatManager` 不再直接调 `CombatUXManager`，改为走接口/事件 | 状态机和视觉节奏分离 | 中，需梳理所有调用点 | 2 天 |
 | **P3** | 把 `CardPhysObjScript` 拆成 `CombatCardView` + `ShopCardView` | 单职责 | 中，商店和战斗都要测 | 2-3 天 |
 | **P4** | 统一 `CardFactory` 负责逻辑卡+物理卡成对创建 | 消灭同步遗漏 bug | 低，集中化 | 1 天 |
-| **P5** | `CostNEffectContainer` 返回 `CostResult` 结构体，UI 文字由 Presenter 写入 | 费用逻辑和显示解耦 | 低 | 0.5 天 |
+| **P5** | `CostNEffectContainer` 返回 `CostResult` 结构体，UI 文字由 `CostResultPresenter` 写入 | 费用逻辑和显示解耦 | 低 | 0.5 天 |
 
 ---
 
@@ -360,10 +360,10 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 - [x] 任何 `Assets/Scripts/Effects/` 下的脚本不再引用 `CombatUXManager`。
 - [x] `CombatManager` 中不再出现 `CombatUXManager.me.xxx()` 的直接调用。
 - [x] 新增/删除卡片时，只需调用一个工厂方法，无需分别创建逻辑卡和物理卡。
-- [x] 费用检查返回纯数据结构，不直接写 UI 文本。
+- [x] 费用检查返回纯数据结构，不直接写 UI 文本。（`CostNEffectContainer.InvokeEffectEvent()` 返回 `CostCheckResult`，失败显示由 `CostResultPresenter` 处理。）
 - [x] 表现层可以在不修改逻辑层的情况下替换动画系统（通过 `ICombatVisuals` 注入）。
 - [x] 输入锁由 CombatManager 统一管理，表现层通过 `ICombatVisuals.BlockInput/UnblockInput` 请求，禁止直接赋值。
-- [ ] 可以运行一个不实例化物理卡的"无头"战斗测试（`NullCombatVisuals` 已实现 + 3 组单元测试）。
+- [ ] 可以运行一个不实例化物理卡的"无头"战斗测试（`NullCombatVisuals` + `NullCombatVisualsBehaviour` 已实现，但项目中尚无实际调用它们的单元测试代码）。
 
 ---
 
@@ -378,11 +378,13 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 | P0 | 提取 `ICombatVisuals` 接口，Effect 不再直接调 `CombatUXManager` | ✅ 完成 | `ICombatVisuals.cs`, `NullCombatVisuals.cs`, `CombatUXManager.cs` |
 | P1 | 用事件替代 `HPAlterEffect → AttackAnimationManager` 直接调用 | ✅ 完成 | `HPAlterEffect.cs`, `CombatManager.cs` (onDamageDealt 事件) |
 | P2 | `CombatManager` 不再直接调 `CombatUXManager`，改为走接口 | ✅ 完成 | `CombatManager.cs` (visuals 属性) |
-| P3 | `CardPhysObjScript` 拆分为 `CombatCardView` + `ShopCardView` | ✅ 基本完成 | `CombatCardView.cs`, `ShopCardView.cs` |
+| P3 | `CardPhysObjScript` 拆分为 `CombatCardView` + `ShopCardView` | ⚠️ 基本完成（`CombatCardView` 过薄） | `CombatCardView.cs`, `ShopCardView.cs` |
 | P4 | 统一 `CardFactory` 负责逻辑卡+物理卡成对创建 | ✅ 完成 | `CardFactory.cs`, `CombatFuncs.cs` |
-| P5 | `CostNEffectContainer` 返回 `CostResult` 结构体，UI 文字由 Presenter 写入 | ✅ 完成 | `CostNEffectContainer.cs`, `CombatLog.cs`, `CombatInfoDisplayer.cs` |
+| P5 | `CostNEffectContainer` 返回 `CostResult` 结构体，UI 文字由 `CostResultPresenter` 写入 | ✅ 完成 | `CostNEffectContainer.cs`, `CostResultPresenter.cs`, `CombatLog.cs`, `CombatInfoDisplayer.cs` |
 | — | 效果结果日志与 UI 解耦 | ✅ 完成 | 所有 Effect 子类 |
 | — | 输入锁控制权责分离 | ✅ 完成 | `CombatManager.cs`, `ICombatVisuals.cs`, `CombatUXManager.cs`, `AttackAnimationManager.cs` |
+
+**P5 补充说明**：`CostCheckResult` 结构体已创建并实际投入使用。`CostNEffectContainer.InvokeEffectEvent()` 返回类型已改为 `CostCheckResult`，费用失败信息通过 `CostResultPresenter.me.PresentCostFailure()` 统一处理（包含 revealZone 判断和 `CombatLog` 写入），`CostNEffectContainer` 不再直接操作 UI。
 
 ### 未完成的重构
 
@@ -395,6 +397,7 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 1. **`CardPhysObjScript` 数据残留**：仍保留 `shopItemIndex`、`holdTimeRequired`、`cardPricePrint` 等商店专属字段（虽然业务逻辑已拆分到 `ShopCardView`）。
 2. **`EffectScript.GetPhysicalCardWorldPosition()`**：~~逻辑层仍依赖物理卡位置来生成粒子特效，虽然走了 `ICombatVisuals` 接口，但本质仍是逻辑层关心视觉坐标。~~ ✅ **已修复**（见下方实现说明）
 3. **`CombatManager.visuals` 懒加载**：~~仍通过 `CombatUXManager.visuals` 单例获取实现，未改为 Inspector 注入或工厂创建。~~ ✅ **已修复**（见下方实现说明）
+4. **`AttackAnimationManager` 仍直接引用 `CombatUXManager.me`**：虽然逻辑层（`HPAlterEffect`）已通过 `onDamageDealt` 事件解耦，但 `AttackAnimationManager` 内部仍直接访问 `CombatUXManager.me` 的具体方法（如 `FocusOnCardCoroutine`、`GetPhysicalCardFromLogicalCard` 等），表现层内部尚未完全通过 `ICombatVisuals` 交互。
 
 #### 遗留细节 2 实现说明
 
@@ -426,3 +429,19 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 **使用方式**：
 1. 正常战斗场景：`visualsOverride` 留空，`CombatManager` 自动使用 `CombatUXManager`（行为与之前完全一致）。
 2. 无头测试场景：创建一个 GameObject 并添加 `NullCombatVisualsBehaviour` 组件，将其拖拽到 `CombatManager` 的 `Visuals Override` 字段中。
+
+#### 遗留细节 4 说明
+
+**问题位置**：`Assets/Scripts/Managers/AttackAnimationManager.cs`
+
+**现状**：
+- `AttackAnimationManager` 第 65 行仍持有 `private CombatUXManager _combatUXManager => CombatUXManager.me;` 的硬引用。
+- 动画流程中直接调用 `_combatUXManager.GetPhysicalCardFromLogicalCard()`、`_combatUXManager.FocusOnCardCoroutine()`、`_combatUXManager.physicalCardRevealPos` 等具体实现成员。
+
+**影响**：
+- 表现层内部（`AttackAnimationManager` ↔ `CombatUXManager`）仍是具体类之间的硬依赖。
+- 若未来需要替换 `CombatUXManager` 的实现（如使用新的渲染管线或 3D 卡组表现），必须同步修改 `AttackAnimationManager`。
+
+**建议修复方向**：
+- 将 `AttackAnimationManager` 所需的物理卡查询、Deck Focus、Reveal Zone 位置获取等能力，收敛到 `ICombatVisuals` 接口中。
+- `AttackAnimationManager` 改为通过 `CombatManager.Me.visuals` 调用接口方法，或接收注入的 `ICombatVisuals` 引用。

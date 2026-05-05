@@ -111,6 +111,7 @@ public class CardPhysObjScript : MonoBehaviour
 		ApplyColor();
 		UpdateStatusEffectDisplay();
 		UpdateCostDisplay();
+		UpdatePriceDisplay();
 		UpdateRarityDisplay();
 		UpdateTagDisplay();
 		UpdateTintTimer();
@@ -124,6 +125,18 @@ public class CardPhysObjScript : MonoBehaviour
 		// Hide cost display
 		if (cardCostPrint != null)
 			cardCostPrint.gameObject.SetActive(false);
+	}
+	/// <summary>
+	/// Update Price display, only shown in Shop Phase.
+	/// </summary>
+	private void UpdatePriceDisplay()
+	{
+		if (cardPricePrint == null) return;
+
+		if (currentGamePhaseRef == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Shop)
+		{
+			cardPricePrint.gameObject.SetActive(false);
+		}
 	}
 
 	/// <summary>

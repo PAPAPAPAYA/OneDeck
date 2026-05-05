@@ -92,7 +92,7 @@ public class CardMaker : EditorWindow
 		{
 			newCardListeners[i].@event =  _gameEvents[i];
 			//UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(newCardListeners[i].response, _effectObjects[i].GetComponent<CostNEffectContainer>().InvokeEffectEvent);
-			UnityEditor.Events.UnityEventTools.AddPersistentListener(newCardListeners[i].response, _effectObjects[i].GetComponent<CostNEffectContainer>().InvokeEffectEvent);
+			UnityEditor.Events.UnityEventTools.AddPersistentListener(newCardListeners[i].response, _effectObjects[i].GetComponent<CostNEffectContainer>().InvokeEffectEventVoid);
 		}
 		
 		SaveCardPrefab(newCard);

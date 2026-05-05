@@ -260,7 +260,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3408854323514059765}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: InvokeEffectEvent
+        m_MethodName: InvokeEffectEventVoid
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -288,7 +288,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 868085066501669820}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: InvokeEffectEvent
+        m_MethodName: InvokeEffectEventVoid
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

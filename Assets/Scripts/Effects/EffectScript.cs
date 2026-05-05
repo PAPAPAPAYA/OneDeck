@@ -4,9 +4,7 @@ using UnityEngine;
 
 public class EffectScript : MonoBehaviour
 {
-	[Tooltip("Deprecated: use AppendLog() instead. Kept for backward compatibility with existing prefabs.")]
-	public StringSO effectResultString;
-	
+
 	protected CombatManager combatManager;
 	protected GameObject myCard;
 	protected CardScript myCardScript;
@@ -119,15 +117,7 @@ public class EffectScript : MonoBehaviour
 	/// </summary>
 	protected void AppendLog(string text)
 	{
-		if (CombatLog.me != null)
-		{
-			CombatLog.me.Append(text);
-		}
-		else if (effectResultString != null)
-		{
-			// Fallback for backward compatibility if CombatLog is not available
-			effectResultString.value += text;
-		}
+		CombatLog.me?.Append(text);
 	}
 
 	protected void LogStatusEffectGiven(CardScript targetCardScript, EnumStorage.StatusEffect effect, int amount)

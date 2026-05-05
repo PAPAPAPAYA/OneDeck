@@ -448,7 +448,6 @@ public class HPAlterEffect : EffectScript
 	{
 		for (int i = 0; i < times; i++)
 		{
-			print("call DecreaseTheirHp()");
 			DecreaseTheirHp();
 		}
 	}

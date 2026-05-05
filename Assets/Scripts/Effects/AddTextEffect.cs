@@ -3,11 +3,11 @@ using UnityEngine;
 namespace DefaultNamespace.Effects
 {
     /// <summary>
-    /// Effect to add custom text to effectResultString
+    /// Effect to add custom text to the combat log.
     /// </summary>
     public class AddTextEffect : EffectScript
     {
-        [Tooltip("Text content to add to effectResultString")]
+        [Tooltip("Text content to add to the combat log")]
         [TextArea(3, 10)]
         public string textToAdd = "";
         
@@ -15,7 +15,7 @@ namespace DefaultNamespace.Effects
         public bool addNewLine = true;
 
         /// <summary>
-        /// Add text to effectResultString
+        /// Add text to the combat log
         /// </summary>
         public void AddText()
         {

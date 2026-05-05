@@ -7,7 +7,7 @@ using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
 
-public static class B1
+public static class CardEffectUnitTests
 {
 	public static void Run()
 	{
@@ -105,7 +105,7 @@ public static class B1
 		ecm.effectRecorderPrefab = recPrefab;
 		ecm.sessionNumberRef = (IntSO)ScriptableObject.CreateInstance(typeof(IntSO));
 
-		StringSO effectResultStr = (StringSO)ScriptableObject.CreateInstance(typeof(StringSO));
+		
 
 		Func<bool, GameObject> MC = (isOwner) =>
 		{
@@ -159,8 +159,7 @@ public static class B1
 			GameObject co = new GameObject("CNT");
 			co.transform.SetParent(parent.transform);
 			CostNEffectContainer cnt = co.AddComponent<CostNEffectContainer>();
-			cnt.effectResultString = effectResultStr;
-			FieldInfo mcs = typeof(CostNEffectContainer).GetField("_myCardScript", BindingFlags.NonPublic | BindingFlags.Instance);
+						FieldInfo mcs = typeof(CostNEffectContainer).GetField("_myCardScript", BindingFlags.NonPublic | BindingFlags.Instance);
 			mcs.SetValue(cnt, parent.GetComponent<CardScript>());
 			FieldInfo cff = typeof(CostNEffectContainer).GetField("_costNotMetFlag", BindingFlags.NonPublic | BindingFlags.Instance);
 			cff.SetValue(cnt, 0);
@@ -177,8 +176,7 @@ public static class B1
 			hae.baseDmg = bd;
 			hae.extraDmg = 0;
 			hae.isStatusEffectDamage = true;
-			hae.effectResultString = effectResultStr;
-			return hae;
+						return hae;
 		};
 
 		Debug.Log("===== Conjure Strategy A - Batch 1 =====");
@@ -206,7 +204,7 @@ public static class B1
 			CurseEffect ce = ceObj.AddComponent<CurseEffect>();
 			W(db, ce);
 			StringSO jtid = (StringSO)ScriptableObject.CreateInstance(typeof(StringSO)); jtid.value = "JU_ON";
-			ce.cardTypeID = jtid; ce.effectResultString = effectResultStr;
+			ce.cardTypeID = jtid;
 			int pb = 0; foreach (var se in juoncs.myStatusEffects) if (se == EnumStorage.StatusEffect.Power) pb++;
 			ce.EnhanceCurse(1);
 			int pa = 0; foreach (var se in juoncs.myStatusEffects) if (se == EnumStorage.StatusEffect.Power) pa++;
@@ -239,7 +237,7 @@ public static class B1
 			CurseEffect ce = ceObj.AddComponent<CurseEffect>();
 			W(db, ce);
 			StringSO jtid = (StringSO)ScriptableObject.CreateInstance(typeof(StringSO)); jtid.value = "JU_ON";
-			ce.cardTypeID = jtid; ce.effectResultString = effectResultStr;
+			ce.cardTypeID = jtid;
 			GameObject juonPrefab = MC(false); juonPrefab.name = "JU_ON";
 			juonPrefab.GetComponent<CardScript>().cardTypeID = "JU_ON";
 			ce.cardPrefab = juonPrefab;
@@ -271,7 +269,7 @@ public static class B1
 			CurseEffect ce = ceObj.AddComponent<CurseEffect>();
 			W(db, ce);
 			StringSO jtid = (StringSO)ScriptableObject.CreateInstance(typeof(StringSO)); jtid.value = "JU_ON";
-			ce.cardTypeID = jtid; ce.effectResultString = effectResultStr;
+			ce.cardTypeID = jtid;
 			int pb = 0; foreach (var se in juoncs.myStatusEffects) if (se == EnumStorage.StatusEffect.Power) pb++;
 			ce.EnhanceCurse(1);
 			int pa = 0; foreach (var se in juoncs.myStatusEffects) if (se == EnumStorage.StatusEffect.Power) pa++;
@@ -290,13 +288,13 @@ public static class B1
 			GameObject enemy = MC(false); cm.combinedDeckZone.Add(enemy);
 			GameObject meObj = new GameObject("MCE"); meObj.transform.SetParent(fitr.transform);
 			MinionCostEffect mce = meObj.AddComponent<MinionCostEffect>();
-			W(fitr, mce); mce.effectResultString = effectResultStr;
+			W(fitr, mce);
 			mce.ExecuteMinionCost();
 			bool mgone = true;
 			foreach (GameObject c in cm.combinedDeckZone) if (c == minion) mgone = false;
 			GameObject beObj = new GameObject("BE"); beObj.transform.SetParent(fitr.transform);
 			BuryEffect be = beObj.AddComponent<BuryEffect>();
-			W(fitr, be); be.effectResultString = effectResultStr;
+			W(fitr, be);
 			int dbf = cm.combinedDeckZone.Count;
 			be.BuryTheirCards(1);
 			A("FALL_INTO_RIFT A-1", mgone && cm.combinedDeckZone.Count == dbf);
@@ -312,7 +310,7 @@ public static class B1
 			GameObject enemy = MC(false); cm.combinedDeckZone.Add(enemy);
 			GameObject meObj = new GameObject("MCE"); meObj.transform.SetParent(fitr.transform);
 			MinionCostEffect mce = meObj.AddComponent<MinionCostEffect>();
-			W(fitr, mce); mce.effectResultString = effectResultStr;
+			W(fitr, mce);
 			mce.ExecuteMinionCost();
 			A("FALL_INTO_RIFT A-2", cm.combinedDeckZone.Count == 1);
 			C(); UnityEngine.Object.DestroyImmediate(fitr); UnityEngine.Object.DestroyImmediate(meObj);
@@ -327,13 +325,13 @@ public static class B1
 			GameObject enemy = MC(false); cm.combinedDeckZone.Insert(0, enemy);
 			GameObject meObj = new GameObject("MCE"); meObj.transform.SetParent(fitr.transform);
 			MinionCostEffect mce = meObj.AddComponent<MinionCostEffect>();
-			W(fitr, mce); mce.effectResultString = effectResultStr;
+			W(fitr, mce);
 			mce.ExecuteMinionCost();
 			bool mgone = true;
 			foreach (GameObject c in cm.combinedDeckZone) if (c == minion) mgone = false;
 			GameObject beObj = new GameObject("BE"); beObj.transform.SetParent(fitr.transform);
 			BuryEffect be = beObj.AddComponent<BuryEffect>();
-			W(fitr, be); be.effectResultString = effectResultStr;
+			W(fitr, be);
 			int dbf = cm.combinedDeckZone.Count;
 			be.BuryTheirCards(1);
 			A("FALL_INTO_RIFT A-3", mgone && cm.combinedDeckZone.Count == dbf);
@@ -348,10 +346,10 @@ public static class B1
 			GameObject friendly = MC(true); cm.combinedDeckZone.Add(friendly);
 			GameObject seObj = new GameObject("SE"); seObj.transform.SetParent(rift.transform);
 			StageEffect se = seObj.AddComponent<StageEffect>();
-			W(rift, se); se.effectResultString = effectResultStr;
+			W(rift, se);
 			GameObject eeObj = new GameObject("EE"); eeObj.transform.SetParent(rift.transform);
 			ExileEffect ee = eeObj.AddComponent<ExileEffect>();
-			W(rift, ee); ee.effectResultString = effectResultStr;
+			W(rift, ee);
 			cm.revealZone = rift;
 			se.StageMyCards(1);
 			bool staged = (cm.combinedDeckZone.IndexOf(friendly) == cm.combinedDeckZone.Count - 1);
@@ -369,10 +367,10 @@ public static class B1
 			GameObject friendly = MC(true); cm.combinedDeckZone.Add(friendly);
 			GameObject seObj = new GameObject("SE"); seObj.transform.SetParent(rift.transform);
 			StageEffect se = seObj.AddComponent<StageEffect>();
-			W(rift, se); se.effectResultString = effectResultStr;
+			W(rift, se);
 			GameObject eeObj = new GameObject("EE"); eeObj.transform.SetParent(rift.transform);
 			ExileEffect ee = eeObj.AddComponent<ExileEffect>();
-			W(rift, ee); ee.effectResultString = effectResultStr;
+			W(rift, ee);
 			int dbf = cm.combinedDeckZone.Count;
 			se.StageMyCards(1);
 			cm.combinedDeckZone.Add(rift);
@@ -388,7 +386,7 @@ public static class B1
 			cm.revealZone = rift;
 			GameObject eeObj = new GameObject("EE"); eeObj.transform.SetParent(rift.transform);
 			ExileEffect ee = eeObj.AddComponent<ExileEffect>();
-			W(rift, ee); ee.effectResultString = effectResultStr;
+			W(rift, ee);
 			ee.ExileSelf();
 			bool notInDeck = !cm.combinedDeckZone.Contains(rift);
 			A("RIFT A-3", notInDeck && cm.revealZone == null);

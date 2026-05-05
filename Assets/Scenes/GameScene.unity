@@ -2709,6 +2709,8 @@ GameObject:
   - component: {fileID: 1151980346}
   - component: {fileID: 1151980347}
   - component: {fileID: 1151980348}
+  - component: {fileID: 1151980350}
+  - component: {fileID: 1151980349}
   m_Layer: 0
   m_Name: CombatManager
   m_TagString: Untagged
@@ -2728,6 +2730,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc2eed2554d14a71adb7e2b85eb4fb7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  visualsOverride: {fileID: 0}
   currentGamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   currentCombatState: 0
   ownerPlayerStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
@@ -2742,7 +2745,6 @@ MonoBehaviour:
   awaitingRevealConfirm: 1
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   cardsRevealedThisRound: 0
-  blockPlayerInput: 0
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 3
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
@@ -2780,7 +2782,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a693cbb7bd86a442914db387e49a8bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   gamePhase: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   playerStatusDisplay: {fileID: 1174098154}
   enemyStatusDisplay: {fileID: 13415598}
@@ -2820,6 +2821,31 @@ MonoBehaviour:
   exportToCSV: 0
   outputDirectory: CombatLogs
   printToConsole: 0
+--- !u!114 &1151980349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151980343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bc54782439e60e47bdd15bc22c439d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatLog
+--- !u!114 &1151980350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151980343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a7f84f396066614cbd252b97e3bd4d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardFactory
+  combatManager: {fileID: 1151980344}
 --- !u!1 &1162866020
 GameObject:
   m_ObjectHideFlags: 0

@@ -25,8 +25,6 @@ public class CostNEffectContainer : MonoBehaviour
 
 	#endregion
 
-	[Tooltip("the string SO that combat info displayer use to display effect result")]
-	public StringSO effectResultString;
 
 	[Header("Cost Variables")]
 	[Tooltip("Cursed Card Type ID, used for specific cost checking")]
@@ -53,7 +51,16 @@ public class CostNEffectContainer : MonoBehaviour
 		_costFailMessages.Add(failMessage);
 	}
 
-	public void InvokeEffectEvent()
+	/// <summary>
+	/// Void wrapper for UnityEvent binding compatibility.
+	/// Use this when assigning via Inspector or UnityEventTools.
+	/// </summary>
+	public void InvokeEffectEventVoid()
+	{
+		InvokeEffectEvent();
+	}
+
+	public CostCheckResult InvokeEffectEvent()
 	{
 		// check cost
 		_costNotMetFlag = 0;
@@ -62,14 +69,10 @@ public class CostNEffectContainer : MonoBehaviour
 
 		if (_costNotMetFlag > 0)
 		{
-			// Only display fail messages if card is in reveal zone — centralized UI decision
-			if (CombatManager.Me.revealZone == transform.parent.gameObject)
-			{
-				foreach (var msg in _costFailMessages)
-					CombatLog.me?.Append(msg);
-			}
+			var result = new CostCheckResult(false, new List<string>(_costFailMessages));
+			CostResultPresenter.me?.PresentCostFailure(result, _myCardScript, this);
 			_costFailMessages.Clear();
-			return;
+			return result;
 		}
 
 		// execute pre-effect (e.g., Delay Cost)
@@ -77,14 +80,10 @@ public class CostNEffectContainer : MonoBehaviour
 
 		if (_costNotMetFlag > 0)
 		{
-			// Centralized UI decision for pre-effect cost failures too
-			if (CombatManager.Me.revealZone == transform.parent.gameObject)
-			{
-				foreach (var msg in _costFailMessages)
-					CombatLog.me?.Append(msg);
-			}
+			var result = new CostCheckResult(false, new List<string>(_costFailMessages));
+			CostResultPresenter.me?.PresentCostFailure(result, _myCardScript, this);
 			_costFailMessages.Clear();
-			return;
+			return result;
 		}
 
 		// Refresh all tracked values before effect execution
@@ -92,8 +91,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 		// invoke effect
 		var effectString = "(" + _myCardScript.cardID + ") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
-		if (_costNotMetFlag > 0) return; // if cost can not be met, return
-		if (EffectChainManager.Me.lastEffectObject == gameObject) return; // prevent effect invoking self
+		if (EffectChainManager.Me.lastEffectObject == gameObject) return CostCheckResult.Success(); // prevent effect invoking self
 		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared
 		EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
 
@@ -102,6 +100,8 @@ public class CostNEffectContainer : MonoBehaviour
 			EffectChainManager.Me.lastEffectObject = gameObject;
 			effectEvent?.Invoke(); // invoke effects
 		}
+
+		return CostCheckResult.Success();
 	}
 
 	#region check cost funcs
