@@ -1,7 +1,7 @@
 # 卡片逻辑层与表现层架构整理
 
 > 整理日期: 2026-05-01  
-> 更新日期: 2026-05-05  
+> 更新日期: 2026-05-05（无头单元测试已落地）  
 > 范围: `Assets/Scripts/Card/`, `Assets/Scripts/Effects/`, `Assets/Scripts/Managers/`, `Assets/Scripts/UXPrototype/`
 
 ---
@@ -98,7 +98,7 @@ CardDesignPrefab (GameObject + CardScript)
 | `CombatFuncs` | `CombatUXManager` | `AddPhysicalCardToDeck()` — 加卡逻辑必须同时 spawn 视觉对象 | `Assets/Scripts/Managers/CombatFuncs.cs` |
 
 **影响**：
-- 无法做无头逻辑测试（headless combat simulation）。
+- ~~无法做无头逻辑测试（headless combat simulation）。~~ ✅ **已解决** — `NullCombatVisuals` + `HeadlessCombatTestFixture` 已实现 28 个 EditMode 测试。
 - 替换动画系统需要改动所有效果脚本。
 - 逻辑层的单元测试必须 mock 整个 `CombatUXManager`。
 
@@ -352,6 +352,11 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 | 单卡视觉 | `Assets/Scripts/UXPrototype/CardPhysObjScript.cs` |
 | 商店视觉 | `Assets/Scripts/UXPrototype/ShopUXManager.cs` |
 | 战斗信息UI | `Assets/Scripts/Managers/CombatInfoDisplayer.cs` |
+| 无头测试基类 | `Assets/Scripts/Editor/Tests/HeadlessCombatTestFixture.cs` |
+| 战斗流程测试 | `Assets/Scripts/Editor/Tests/CombatFlowTests.cs` |
+| 费用检查测试 | `Assets/Scripts/Editor/Tests/CostCheckTests.cs` |
+| 效果链测试 | `Assets/Scripts/Editor/Tests/EffectChainTests.cs` |
+| Visuals 调用记录测试 | `Assets/Scripts/Editor/Tests/VisualsCallTests.cs` |
 
 ---
 
@@ -363,13 +368,13 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 - [x] 费用检查返回纯数据结构，不直接写 UI 文本。（`CostNEffectContainer.InvokeEffectEvent()` 返回 `CostCheckResult`，失败显示由 `CostResultPresenter` 处理。）
 - [x] 表现层可以在不修改逻辑层的情况下替换动画系统（通过 `ICombatVisuals` 注入）。
 - [x] 输入锁由 CombatManager 统一管理，表现层通过 `ICombatVisuals.BlockInput/UnblockInput` 请求，禁止直接赋值。
-- [ ] 可以运行一个不实例化物理卡的"无头"战斗测试（`NullCombatVisuals` + `NullCombatVisualsBehaviour` 已实现，但项目中尚无实际调用它们的单元测试代码）。
+- [x] 可以运行一个不实例化物理卡的"无头"战斗测试（`NullCombatVisuals` + `HeadlessCombatTestFixture` EditMode 测试，28 个用例全部通过）。
 
 ---
 
 ## 七、实现状态检查
 
-> 检查日期: 2026-05-02
+> 检查日期: 2026-05-05
 
 ### 已完成的重构
 
@@ -383,14 +388,13 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 | P5 | `CostNEffectContainer` 返回 `CostResult` 结构体，UI 文字由 `CostResultPresenter` 写入 | ✅ 完成 | `CostNEffectContainer.cs`, `CostResultPresenter.cs`, `CombatLog.cs`, `CombatInfoDisplayer.cs` |
 | — | 效果结果日志与 UI 解耦 | ✅ 完成 | 所有 Effect 子类 |
 | — | 输入锁控制权责分离 | ✅ 完成 | `CombatManager.cs`, `ICombatVisuals.cs`, `CombatUXManager.cs`, `AttackAnimationManager.cs` |
+| — | 无头单元测试基础设施 | ✅ 完成 | `HeadlessCombatTestFixture.cs`, `NullCombatVisuals.cs`, `CombatManager.cs` (`SetVisualsOverride`)
 
 **P5 补充说明**：`CostCheckResult` 结构体已创建并实际投入使用。`CostNEffectContainer.InvokeEffectEvent()` 返回类型已改为 `CostCheckResult`，费用失败信息通过 `CostResultPresenter.me.PresentCostFailure()` 统一处理（包含 revealZone 判断和 `CombatLog` 写入），`CostNEffectContainer` 不再直接操作 UI。
 
 ### 未完成的重构
 
-| 优先级 | 重构项 | 状态 | 问题位置 | 说明 |
-|--------|--------|------|----------|------|
-| — | 无头单元测试 | ❌ 未实现 | — | `NullCombatVisuals` 已实现，但项目中无实际调用它的单元测试代码；`DeckTester.cs` 是对战统计器而非单元测试 |
+无 — 所有计划内重构项均已完成。
 
 ### 遗留细节
 
@@ -425,10 +429,12 @@ Model (纯数据)              Presenter (逻辑)            View (表现)
 - `CombatManager` 新增 `[SerializeField] MonoBehaviour visualsOverride` 字段，支持在 Inspector 中拖拽任意实现了 `ICombatVisuals` 的 `MonoBehaviour`。
 - `visuals` getter 优先检查 `visualsOverride`：若不为 null 且实现了 `ICombatVisuals`，则使用 override；否则 fallback 到原有的 `CombatUXManager.visuals`。
 - 新增 `NullCombatVisualsBehaviour`（`MonoBehaviour` 包装器），内部持有 `NullCombatVisuals` 实例并委托所有接口调用。无头测试场景只需创建一个空 GameObject 挂上该脚本，然后拖入 `CombatManager` 的 `visualsOverride` 槽位即可。
+- 新增 `public void SetVisualsOverride(ICombatVisuals visuals)` 方法（测试专用），允许代码直接注入 `NullCombatVisuals`，无需反射 hack。
 
 **使用方式**：
 1. 正常战斗场景：`visualsOverride` 留空，`CombatManager` 自动使用 `CombatUXManager`（行为与之前完全一致）。
-2. 无头测试场景：创建一个 GameObject 并添加 `NullCombatVisualsBehaviour` 组件，将其拖拽到 `CombatManager` 的 `Visuals Override` 字段中。
+2. 无头测试场景（Inspector）：创建一个 GameObject 并添加 `NullCombatVisualsBehaviour` 组件，将其拖拽到 `CombatManager` 的 `Visuals Override` 字段中。
+3. 无头测试场景（代码）：调用 `CombatManager.SetVisualsOverride(new NullCombatVisuals())` 直接注入。
 
 #### 遗留细节 4 说明
 

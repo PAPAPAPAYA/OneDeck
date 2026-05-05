@@ -39,6 +39,15 @@ public class CombatManager : MonoBehaviour
 	}
 	private ICombatVisuals _visuals;
 
+	/// <summary>
+	/// Test-only helper to inject a custom ICombatVisuals implementation.
+	/// Clears the cached visuals reference so the new one takes effect immediately.
+	/// </summary>
+	public void SetVisualsOverride(ICombatVisuals visuals)
+	{
+		_visuals = visuals;
+	}
+
 	private void Awake()
 	{
 		Me = this;

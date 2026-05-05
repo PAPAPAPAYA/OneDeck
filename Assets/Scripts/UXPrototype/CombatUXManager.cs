@@ -983,6 +983,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private IEnumerator TransitionFocusCoroutine(int newTargetIndex, int currentTargetIndex)
 	{
+		Debug.Log($"[Peel] TransitionFocusCoroutine called. newTargetIndex={newTargetIndex}, currentTargetIndex={currentTargetIndex}, deck count={physicalCardsInDeck.Count}");
 		var count = physicalCardsInDeck.Count;
 		if (count == 0 || newTargetIndex < 0 || newTargetIndex >= count)
 			yield break;
