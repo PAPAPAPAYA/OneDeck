@@ -15,8 +15,8 @@
 
 //! refactor
 	//// more animation need to be cleaned up (ex. deck group animation)
-	//todo clean up and organize logic and visual, messy right now
-		//todo side-effect portal curse effect bugged
+	////  clean up and organize logic and visual, messy right now
+		//// side-effect portal curse effect bugged
 	//// dead state - can't enter shuffle state; TriggerStartCardEffect() doesn't call shuffle
 	//// plan a and plan b
 	//// change all card prefab name to english
@@ -64,6 +64,7 @@
 	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
 
 //! feature
+	// effect chain manager issue
 	//// skill to check infinite card combos
 		//// GiveStatusEffectToXFriendly, GiveStatusEffectToLastXCards, GivePowerToCardThatGotPower
 	//// tool to validate no duplicate card type id
@@ -79,6 +80,8 @@
 //! viscom
 	//// stage/bury and deck shift should happen at the same time
 		//// rift -> stage another card, staged card should go straight to reveal zone
+	// better card move animatin
+		// change z dynamically
 	// better power wisp
 	// power gain card particle
 	// motion design
@@ -90,7 +93,9 @@
 			// 4. **Chained focus switch**: Card A triggers attack (peels to A). Before A's attack ends, Card B (deeper in deck) triggers. System continues peeling to expose B. After all attacks, restores.
 			// 5. **Chained focus switch reverse**: Card A triggers (peels to A). Card C (shallower than A) triggers. System restores some peeled cards until C reaches center.
 			// 6. **Reveal zone card**: Normal reveal → attack. No peel occurs. Card returns to reveal zone as before.
-	//todo queue animation
+	//// queue animation
+		//// D:\Unity Projects\OneDeck\plans\card-animation-serialization-plan.md
+	// AnimationStateTracker checker
 	
 
 //! design change

@@ -446,6 +446,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Block input during effect animation
 		BlockInput(this);
 
+		AnimationStateTracker.me?.RegisterAnimation();
+
 		// Create animation sequence
 		Sequence moveSequence = DOTween.Sequence();
 
@@ -479,6 +481,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Animation complete callback
 		moveSequence.OnComplete(() =>
 		{
+			AnimationStateTracker.me?.CompleteAnimation();
 			UnblockInput(this);
 
 			physScript.isPlayingSpecialAnimation = false;
@@ -634,6 +637,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			return;
 		}
 
+		AnimationStateTracker.me?.RegisterAnimation();
+
 		int completedCount = 0;
 		int totalCount = shuffleTargets.Count;
 		float shuffleDuration = 0.5f; // Shuffle Animation duration
@@ -709,7 +714,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 				completedCount++;
 				if (completedCount >= totalCount)
+				{
+					AnimationStateTracker.me?.CompleteAnimation();
 					onComplete?.Invoke();
+				}
 			});
 
 			moveSequence.Play();
@@ -871,9 +879,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private IEnumerator StartPeelCoroutine(int targetIndex)
 	{
+		Debug.Log($"[Peel] Starting peel. Target index={targetIndex}, deck count={physicalCardsInDeck.Count}");
+		
 		var count = physicalCardsInDeck.Count;
 		if (count == 0 || targetIndex < 0 || targetIndex >= count)
 			yield break;
+
+		// Mark deck as focused early to prevent UpdateAllPhysicalCardTargets from interfering during peel
+		_isDeckFocused = true;
+
+		AnimationStateTracker.me?.RegisterAnimation();
 
 		// Compute deck focus offset first so reveal zone can follow the same offset
 		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
@@ -918,8 +933,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (physScript == null) continue;
 
 			Vector3 basePos = CalculatePositionAtIndex(i);
+			bool willPeel = i > targetIndex;
 
-			if (i > targetIndex)
+			if (willPeel)
 			{
 				// Peel this card
 				_peeledCards.Add(card);
@@ -936,6 +952,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					.OnComplete(() =>
 					{
 						animCompletedCount++;
+						// Ensure TargetPosition is synced to peelPos before releasing special animation flag
+						physScript.SetTargetPosition(peelPos);
 						physScript.isPlayingSpecialAnimation = false;
 					});
 			}
@@ -956,6 +974,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 
 		yield return new WaitUntil(() => animCompletedCount >= animTotalCount);
+
+		AnimationStateTracker.me?.CompleteAnimation();
 	}
 
 	/// <summary>
@@ -966,6 +986,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var count = physicalCardsInDeck.Count;
 		if (count == 0 || newTargetIndex < 0 || newTargetIndex >= count)
 			yield break;
+
+		AnimationStateTracker.me?.RegisterAnimation();
 
 		// Recompute deck focus offset for new target
 		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
@@ -1016,6 +1038,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					.OnComplete(() =>
 					{
 						animCompletedCount++;
+						// Ensure TargetPosition is synced to peelPos before releasing special animation flag
+						physScript.SetTargetPosition(peelPos);
 						physScript.isPlayingSpecialAnimation = false;
 					});
 			}
@@ -1037,6 +1061,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		yield return new WaitUntil(() => animCompletedCount >= animTotalCount);
 
+		AnimationStateTracker.me?.CompleteAnimation();
+
 		// Update peeled state
 		_peeledCards = newPeeledCards;
 	}
@@ -1050,6 +1076,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			yield break;
 		if (!_isDeckFocused)
 			yield break;
+
+		AnimationStateTracker.me?.RegisterAnimation();
 
 		// Clear offset so all cards calculate their final normal positions
 		_deckFocusOffset = Vector3.zero;
@@ -1144,6 +1172,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			yield return new WaitUntil(() => completedCount >= totalCount);
 		}
+
+		AnimationStateTracker.me?.CompleteAnimation();
 
 		// Clear focus state
 		_isDeckFocused = false;
@@ -1247,6 +1277,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physicalCardInRevealZone = null;
 		}
 
+		AnimationStateTracker.me?.RegisterAnimation();
+
 		// Create exit animation
 		Sequence destroySequence = DOTween.Sequence();
 
@@ -1268,6 +1300,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Destroy after animation completes
 		destroySequence.OnComplete(() =>
 		{
+			AnimationStateTracker.me?.CompleteAnimation();
 			Destroy(physicalCard);
 			Destroy(logicalCard);
 			onComplete?.Invoke();
@@ -1446,6 +1479,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Calculate parabolic midpoint
 		Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f) + Vector3.up * projectileArcHeight;
 
+		AnimationStateTracker.me?.RegisterAnimation();
+
 		// Create parabolic animation
 		Sequence projectileSequence = DOTween.Sequence();
 		
@@ -1467,7 +1502,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Animation complete: destroy effect and execute callback
 		projectileSequence.OnComplete(() =>
 		{
-			
+			AnimationStateTracker.me?.CompleteAnimation();
 			Destroy(projectile);
 			onComplete?.Invoke();
 		});
@@ -1509,6 +1544,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 
 		BlockInput(this);
+		AnimationStateTracker.me?.RegisterAnimation();
 
 		float staggerDelay = customStaggerDelay ?? projectileStaggerDelay;
 		int completedCount = 0;
@@ -1533,6 +1569,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						if (completedCount >= totalCount)
 						{
 							UnblockInput(this);
+							AnimationStateTracker.me?.CompleteAnimation();
 							onAllComplete?.Invoke();
 						}
 					}

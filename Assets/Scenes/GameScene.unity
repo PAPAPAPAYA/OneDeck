@@ -2711,6 +2711,7 @@ GameObject:
   - component: {fileID: 1151980348}
   - component: {fileID: 1151980350}
   - component: {fileID: 1151980349}
+  - component: {fileID: 1151980351}
   m_Layer: 0
   m_Name: CombatManager
   m_TagString: Untagged
@@ -2846,6 +2847,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardFactory
   combatManager: {fileID: 1151980344}
+--- !u!114 &1151980351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151980343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab513846530a6b6408400c0a72cdf72e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationStateTracker
+  timeoutSeconds: 5
 --- !u!1 &1162866020
 GameObject:
   m_ObjectHideFlags: 0

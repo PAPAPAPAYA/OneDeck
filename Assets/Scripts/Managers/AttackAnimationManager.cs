@@ -95,6 +95,7 @@ public class AttackAnimationManager : MonoBehaviour
 	private IEnumerator ProcessQueue()
 	{
 		_isProcessingQueue = true;
+		AnimationStateTracker.me?.RegisterAnimation();
 
 		while (_attackQueue.Count > 0)
 		{
@@ -109,6 +110,8 @@ public class AttackAnimationManager : MonoBehaviour
 		{
 			yield return StartCoroutine(_combatUXManager.RestoreDeckFocusCoroutine());
 		}
+
+		AnimationStateTracker.me?.CompleteAnimation();
 	}
 
 	/// <summary>

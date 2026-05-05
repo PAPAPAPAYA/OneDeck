@@ -10,14 +10,62 @@ public class GameEvent : ScriptableObject
 
 	public void Raise()
 	{
+		var tracker = AnimationStateTracker.me;
+		if (tracker != null)
+		{
+			tracker.TryExecute(() => ExecuteRaise());
+			return;
+		}
+		ExecuteRaise();
+	}
+
+	// used for events with specific player (owner) ex. OnMeTookDmg
+	public void RaiseOwner()
+	{
+		var tracker = AnimationStateTracker.me;
+		if (tracker != null)
+		{
+			tracker.TryExecute(() => ExecuteRaiseOwner());
+			return;
+		}
+		ExecuteRaiseOwner();
+	}
+
+	// used for events with specific player (opponent) ex. OnMeTookDmg
+	public void RaiseOpponent()
+	{
+		var tracker = AnimationStateTracker.me;
+		if (tracker != null)
+		{
+			tracker.TryExecute(() => ExecuteRaiseOpponent());
+			return;
+		}
+		ExecuteRaiseOpponent();
+	}
+
+	public void RaiseSpecific(GameObject target) // will also raise target's children's events
+	{
+		if (target == null) return;
+		var tracker = AnimationStateTracker.me;
+		if (tracker != null)
+		{
+			tracker.TryExecute(() => ExecuteRaiseSpecific(target));
+			return;
+		}
+		ExecuteRaiseSpecific(target);
+	}
+
+	// --- Internal execution methods ---
+
+	private void ExecuteRaise()
+	{
 		for (var i = _listeners.Count - 1; i >= 0; i--)
 		{
 			_listeners[i].OnEventRaised();
 		}
 	}
 
-	// used for events with specific player (owner) ex. OnMeTookDmg
-	public void RaiseOwner()
+	private void ExecuteRaiseOwner()
 	{
 		for (var i = _listeners.Count - 1; i >= 0; i--)
 		{
@@ -28,8 +76,7 @@ public class GameEvent : ScriptableObject
 		}
 	}
 
-	// used for events with specific player (opponent) ex. OnMeTookDmg
-	public void RaiseOpponent()
+	private void ExecuteRaiseOpponent()
 	{
 		for (var i = _listeners.Count - 1; i >= 0; i--)
 		{
@@ -39,10 +86,9 @@ public class GameEvent : ScriptableObject
 			}
 		}
 	}
-	
-	public void RaiseSpecific(GameObject target) // will also raise target's children's events
+
+	private void ExecuteRaiseSpecific(GameObject target)
 	{
-		if (target == null) return;
 		var listeners = target.GetComponentsInChildren<GameEventListener>();
 		foreach (var listenerFromParentOrChild in listeners)
 		{
@@ -65,7 +111,7 @@ public class GameEvent : ScriptableObject
 			_listeners.Remove(listener);
 		}
 	}
-	
+
 	public int ReturnAmountOfListeners()
 	{
 		return _listeners.Count;
