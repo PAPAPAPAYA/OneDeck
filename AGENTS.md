@@ -21,20 +21,21 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 ```
 Assets/
 ├── Scripts/
-│   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, CombatUXManager, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage
-│   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, *CostEffect, StatusEffect/
+│   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, AttackAnimationManager, CardFactory, CardIDRetriever, CombatInfoDisplayer, CombatLog, CombatStartCardGiver, CombatStatsLogger, CostResultPresenter, DeckTester, EffectRecorder, GameEventListener, ICombatVisuals + Null*, ShopStatsManager, StartingCardManager, UtilityFuncManagerScript, WriteRead/
+│   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, AddTextEffect, CardManipulationEffect, ChangeCardTarget, ChangeHpAlterAmountEffect, HPMaxAlterEffect, PrintEffect, TransferStatusEffectEffect, BuryCostEffect, DelayCostEffect, ExposeCostEffect, MinionCostEffect, shop/DeckSizeIncreaseEffect, StatusEffect/
 │   ├── Card/           # CardScript, CostNEffectContainer, CardEventTrigger
-│   ├── SOScripts/      # GameEvent, PlayerStatusSO, StatusEffectSO, DeckSO, *SO
-│   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript
+│   ├── SOScripts/      # GameEvent, PlayerStatusSO, StatusEffectSO, DeckSO, BoolSO, CostCheckResult, GamePhaseSO, IntSO, ShopRarityWeightSO, StringSO
+│   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript, CombatCardView, ShopCardView
 ├── Prefabs/Cards/      # 3.0 no cost (current), System/, StatusEffectResolvers/
 └── docs/
 ```
 
 ## Core Architecture
 
-- **Singletons**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`
+- **Singletons**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`, `CombatFuncs.me`, `CardFactory.me`, `CardIDRetriever.Me`, `AnimationStateTracker.me`, `CombatInfoDisplayer.me`, `CombatLog.me`, `CostResultPresenter.me`
 - **Event-driven**: `GameEvent` SO + `GameEventListener`
 - **Component-based Cards**: `CardScript` + `EffectContainers` + `Effects`
+- **Visual Abstraction**: `ICombatVisuals` interface. `CombatManager.visuals` falls back to `CombatUXManager.visuals`, or inject via `visualsOverride` (e.g. `NullCombatVisualsBehaviour` for headless tests).
 
 ## Combat System
 
@@ -51,10 +52,18 @@ Assets/
 - First click: Reveal next card.
 - Second click: Trigger effect and place card at bottom.
 
+### Input Blocking
+`CombatManager.IsInputBlocked` uses reference counting via `BlockInput(requester)` / `UnblockInput(requester)`.
+
+### Fatigue / Overtime
+- `fatigueRevealThreshold` + `totalCardsRevealed` - Fatigue after N reveals.
+- `overtimeRoundThreshold` + `fatigueAmount` - Fatigue after N rounds.
+
 ## Effect System
 
 ### Trigger Flow
-`CostNEffectContainer.InvokeEffectEvent()`: Check cost -> Check effect chain -> Execute effect.
+`CostNEffectContainer.InvokeEffectEvent()` returns `CostCheckResult`.
+Flow: Check cost -> `preEffectEvent` -> Check effect chain -> Execute effect.
 
 ### Effect Chain Manager
 - **Chain creation**: Starts when no chains open, or same card triggers a *different* effect object.
@@ -101,6 +110,9 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 ### Faction-Specific (use `RaiseOwner()` / `RaiseOpponent()`)
 `onTheirPlayerTookDmg`, `onMyPlayerTookDmg`, `onTheirPlayerHealed`, `onMyPlayerHealed`, `onMyPlayerShieldUpped`, `onTheirPlayerShieldUpped`, `onFriendlyMinionAdded`, `onFriendlyCardExiled`, `onFriendlyFlyExiled`, `onFriendlyCardBuried`, `onEnemyCurseCardRevealed`, `onEnemyCurseCardGotPower`, `onFriendlyCardGotPower`, `onEnemyCardGotPower`
 
+### Target-Specific (use `RaiseSpecific()`)
+`RaiseSpecific(GameObject target)` raises event only on target and its children listeners.
+
 ## Key Files
 
 | Name | Path |
@@ -114,6 +126,10 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 | `GameEventStorage` | `Assets/Scripts/Managers/GameEventStorage.cs` |
 | `ValueTrackerManager` | `Assets/Scripts/Managers/ValueTrackerManager.cs` |
 | `EnumStorage` | `Assets/Scripts/Managers/EnumStorage.cs` |
+| `AnimationStateTracker` | `Assets/Scripts/Managers/AnimationStateTracker.cs` |
+| `CardFactory` | `Assets/Scripts/Managers/CardFactory.cs` |
+| `ICombatVisuals` | `Assets/Scripts/Managers/ICombatVisuals.cs` |
+| `CombatLog` | `Assets/Scripts/Managers/CombatLog.cs` |
 | `GameRules` | `docs/GameRules.md` |
 
 ## Minion Cost Mechanism
@@ -125,18 +141,22 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 
 ## Animation System
 
+### Animation State Tracker
+`AnimationStateTracker.me` coordinates global animation state. While animations are playing, all `GameEvent.Raise*` calls are queued and delayed until the current animation batch completes.
+
 ### Attack Animation
 `AttackAnimationManager` queue flow: Scale & Rotate -> Dash -> Recoil -> Damage calc.
+- `CombatManager.onDamageDealt` event is raised by `HPAlterEffect` to request animation.
 - Status Effect damage sets `isStatusEffectDamage = true` to skip animation.
 
-### Card Movement (`CombatUXManager`)
-- `MoveCardToBottom(card, onComplete, duration, useArc)`
-- `MoveCardToTop(card, onComplete, duration, useArc)`
-- `MoveCardToIndex(card, index, duration, useArc)`
-- `DestroyCardWithAnimation(card)`
-- `AddPhysicalCardToDeck(card)`
+### Card Movement (`ICombatVisuals` / `CombatUXManager`)
+- `MoveCardToBottom(card, duration, useArc, onComplete)`
+- `MoveCardToTop(card, duration, useArc, onComplete)`
+- `MoveCardToIndex(card, index, duration, useArc, onComplete)`
+- `DestroyCardWithAnimation(card, onComplete)`
+- `AddCardToDeckVisual(card)`
 - `SyncPhysicalCardsWithCombinedDeck()`
-- `PlayStartCardExitWithShuffleAnimation()` - Start Card exit + shuffle
+- `PlayShuffleAnimation(startCard, shuffledCards, onComplete)`
 
 ## Critical Rules
 
@@ -145,7 +165,10 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 - **Anti-loop**: Do not attach multiple looping effect instances to the same card.
 - **GameEvent.Raise**: Use `Raise()` only for non-faction-specific events. For owner/opponent events, use `RaiseOwner()` / `RaiseOpponent()` based on the trigger object's faction. Direct `Raise()` on faction events is prohibited.
 - **Neutral Cards**: `isStartCard == true` cards are neutral and skipped by `ShouldSkipEffectProcessing()`.
-- **CardScript Cost Fields**: `buryCost`, `delayCost`, `exposeCost`, `minionCostCount`, `minionCostCardTypeID`.
+- **CardScript Cost Fields**: `buryCost`, `delayCost`, `exposeCost`, `minionCostCount`, `minionCostCardTypeID`, `minionCostOwner`.
+- **CardScript Properties**: `displayName` (falls back to GameObject name via `GetDisplayName()`), `shopRollWeightMultiplier`, `IsNeutralCard`, `CanBeAffectedByEffects`, `takeUpSpace`.
+- **Graveyard Removed**: Graveyard mechanic is deprecated. `CardManipulationEffect.Revive*` methods are no-ops.
+- **Input Block Reference Counting**: `BlockInput`/`UnblockInput` use reference counting; always pair them.
 
 ## Color Tags
 

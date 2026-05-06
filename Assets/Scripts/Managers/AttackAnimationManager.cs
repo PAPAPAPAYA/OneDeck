@@ -85,6 +85,7 @@ public class AttackAnimationManager : MonoBehaviour
 		
 		if (!_isProcessingQueue)
 		{
+			_isProcessingQueue = true; // Set immediately to prevent duplicate queue starts in the same frame
 			StartCoroutine(ProcessQueue());
 		}
 	}

@@ -296,24 +296,34 @@ public class BuryEffect : EffectScript
 		// Sync physical card list order with logical deck before animation
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 
-		// 2. Play arc trajectory animation, trigger events after each animation completes
+		// 2. Play arc trajectory animation, trigger events after ALL animations complete
+		int completedCount = 0;
+		int totalCount = buriedCards.Count;
+
 		foreach (var card in buriedCards)
 		{
 			combatManager.visuals.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: () =>
 			{
-				// 3. Trigger card buried event after THIS card's animation completes
-				GameEventStorage.me.onMeBuried.RaiseSpecific(card);
-				GameEventStorage.me.onAnyCardBuried.Raise();
-				var cardStatus = card.GetComponent<CardScript>()?.myStatusRef;
-				if (cardStatus != null && GameEventStorage.me.onFriendlyCardBuried != null)
+				completedCount++;
+				// Only raise events when ALL bury animations are done
+				if (completedCount >= totalCount)
 				{
-					if (cardStatus == combatManager.ownerPlayerStatusRef)
+					foreach (var buriedCard in buriedCards)
 					{
-						GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
-					}
-					else
-					{
-						GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+						GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
+						GameEventStorage.me.onAnyCardBuried.Raise();
+						var cardStatus = buriedCard.GetComponent<CardScript>()?.myStatusRef;
+						if (cardStatus != null && GameEventStorage.me.onFriendlyCardBuried != null)
+						{
+							if (cardStatus == combatManager.ownerPlayerStatusRef)
+							{
+								GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
+							}
+							else
+							{
+								GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+							}
+						}
 					}
 				}
 			});

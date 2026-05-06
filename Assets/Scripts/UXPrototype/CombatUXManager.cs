@@ -211,6 +211,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private void HandleDamageDealt(GameObject attackerCard, bool isAttackingEnemy, Action onHit, Action onComplete)
 	{
+		print("play attack animation: "+attackerCard.name);
 		PlayAttackAnimation(attackerCard, isAttackingEnemy, onHit, onComplete);
 	}
 
@@ -1078,6 +1079,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (!_isDeckFocused)
 			yield break;
 
+		print("restore");
+		
 		AnimationStateTracker.me?.RegisterAnimation();
 
 		// Clear offset so all cards calculate their final normal positions
