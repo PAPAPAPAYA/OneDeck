@@ -37,6 +37,7 @@ public class AnimationStateTracker : MonoBehaviour
 			_hasActiveBatch = true;
 		}
 		_pendingAnimations++;
+		Debug.Log("[AnimationStateTracker] RegisterAnimation: pending=" + _pendingAnimations + " | frame=" + Time.frameCount);
 	}
 
 	/// <summary>
@@ -45,6 +46,7 @@ public class AnimationStateTracker : MonoBehaviour
 	public void CompleteAnimation()
 	{
 		_pendingAnimations--;
+		Debug.Log("[AnimationStateTracker] CompleteAnimation: pending=" + _pendingAnimations + " | delayedEvents=" + _delayedEvents.Count + " | frame=" + Time.frameCount);
 		if (_pendingAnimations <= 0)
 		{
 			_pendingAnimations = 0;
@@ -66,26 +68,34 @@ public class AnimationStateTracker : MonoBehaviour
 		if (_pendingAnimations > 0)
 		{
 			_delayedEvents.Enqueue(action);
+			Debug.Log("[AnimationStateTracker] TryExecute: ENQUEUED (pending=" + _pendingAnimations + ", queue=" + _delayedEvents.Count + ")");
 			return;
 		}
+		Debug.Log("[AnimationStateTracker] TryExecute: EXECUTE IMMEDIATELY (pending=" + _pendingAnimations + ")");
 		action();
 	}
 
 	private void FlushDelayedEvents()
 	{
 		_isFlushing = true;
+		int processed = 0;
+		int initialCount = _delayedEvents.Count;
+		Debug.Log("[AnimationStateTracker] FlushDelayedEvents START: queue=" + initialCount + " | frame=" + Time.frameCount);
 		while (_delayedEvents.Count > 0)
 		{
 			var evt = _delayedEvents.Dequeue();
 			evt();
+			processed++;
 
 			// If the executed event started new animations, stop flushing.
 			// Those animations will trigger another flush when they complete.
 			if (_pendingAnimations > 0)
 			{
+				Debug.Log("[AnimationStateTracker] FlushDelayedEvents BREAK after " + processed + "/" + initialCount + " events (pending=" + _pendingAnimations + ")");
 				break;
 			}
 		}
+		Debug.Log("[AnimationStateTracker] FlushDelayedEvents END: processed=" + processed + "/" + initialCount + ", remaining=" + _delayedEvents.Count + ", pending=" + _pendingAnimations);
 		_isFlushing = false;
 	}
 

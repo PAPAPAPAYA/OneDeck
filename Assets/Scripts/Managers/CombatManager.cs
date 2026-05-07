@@ -454,6 +454,7 @@ public class CombatManager : MonoBehaviour
 			}
 			
 			awaitingRevealConfirm = true;
+				Debug.Log("[CombatManager] RevealCards Phase2: about to CloseOpenedChain after TriggerRevealedCardEffect for " + revealZone != null ? revealZone.name : "null");
 			EffectChainManager.Me.CloseOpenedChain();
 			
 			// Wait for all attack animations to complete before allowing next operation
@@ -553,7 +554,17 @@ public class CombatManager : MonoBehaviour
 		combinedDeckZone.Add(startCard);
 
 		// Execute logical shuffle first, determine each card's position
-		combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
+		var shuffleOverride = GetComponent<ShuffleOrderOverride>();
+		if (shuffleOverride != null && shuffleOverride.useCustomOrder
+		    && shuffleOverride.customOrderPrefabs != null
+		    && shuffleOverride.customOrderPrefabs.Count > 0)
+		{
+			combinedDeckZone = ApplyCustomShuffleOrder(combinedDeckZone, shuffleOverride.customOrderPrefabs);
+		}
+		else
+		{
+			combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
+		}
 
 		// Play animation based on known shuffle result
 		// Start Card flies directly from Reveal Zone to new position, other cards fly from old to new position
@@ -600,4 +611,86 @@ public class CombatManager : MonoBehaviour
 		var cardScript = revealZone.GetComponent<CardScript>();
 		return cardScript != null && cardScript.isStartCard;
 	}
+
+	#region Custom Shuffle Order (Test Only)
+
+	/// <summary>
+	/// Apply custom deck order after shuffle for testing purposes.
+	/// prefabOrder defines reveal order from top (first revealed) to bottom (last revealed).
+	/// Cards not in the list stay at the bottom preserving original relative order.
+	/// Start Card can be included in the list.
+	/// </summary>
+	private List<GameObject> ApplyCustomShuffleOrder(List<GameObject> currentDeck, List<GameObject> prefabOrder)
+	{
+		var matchedInRevealOrder = new List<GameObject>();
+		var usedInstances = new HashSet<GameObject>();
+
+		foreach (var prefab in prefabOrder)
+		{
+			if (prefab == null) continue;
+			var prefabCs = prefab.GetComponent<CardScript>();
+			if (prefabCs == null) continue;
+
+			GameObject matchedInstance = null;
+			foreach (var instance in currentDeck)
+			{
+				if (usedInstances.Contains(instance)) continue;
+				var instanceCs = instance.GetComponent<CardScript>();
+				if (instanceCs == null) continue;
+
+				if (CardMatchesPrefab(prefabCs, instanceCs, prefab, instance))
+				{
+					matchedInstance = instance;
+					break;
+				}
+			}
+
+			if (matchedInstance != null)
+			{
+				matchedInRevealOrder.Add(matchedInstance);
+				usedInstances.Add(matchedInstance);
+			}
+		}
+
+		// Collect unmatched cards preserving original relative order
+		var unmatched = new List<GameObject>();
+		foreach (var card in currentDeck)
+		{
+			if (!usedInstances.Contains(card))
+				unmatched.Add(card);
+		}
+
+		// Reverse matched list: reveal order [first->last] -> deck order [bottom->top]
+		// combinedDeckZone: index 0 = bottom (last revealed), [^1] = top (first revealed)
+		var matchedInDeckOrder = new List<GameObject>(matchedInRevealOrder);
+		matchedInDeckOrder.Reverse();
+
+		var result = new List<GameObject>();
+		result.AddRange(unmatched);
+		result.AddRange(matchedInDeckOrder);
+
+		return result;
+	}
+
+	/// <summary>
+	/// Check if an instantiated card matches a prefab for shuffle override purposes.
+	/// </summary>
+	private bool CardMatchesPrefab(CardScript prefabCs, CardScript instanceCs, GameObject prefab, GameObject instance)
+	{
+		// Start Card matching
+		if (prefabCs.isStartCard && instanceCs.isStartCard)
+			return true;
+
+		// cardTypeID matching (primary)
+		if (!string.IsNullOrEmpty(prefabCs.cardTypeID) && !string.IsNullOrEmpty(instanceCs.cardTypeID))
+			return prefabCs.cardTypeID == instanceCs.cardTypeID;
+
+		// Fallback: displayName or GameObject name
+		string prefabName = !string.IsNullOrEmpty(prefabCs.displayName) ? prefabCs.displayName : prefab.name;
+		string instanceName = !string.IsNullOrEmpty(instanceCs.displayName) ? instanceCs.displayName : instance.name;
+
+		return prefabName == instanceName || instanceName.StartsWith(prefabName + " (");
+	}
+
+	#endregion
 }

@@ -104,7 +104,8 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
-	//todo feature to customize deck after shuffle for testing
+	//todo GRAVE_Punch + SPIKE_SKELETON + ETERNAL_GHOST
+	//// feature to customize deck after shuffle for testing
 	//// transition focus coroutine bug: test case 4
 	//// stage bugged
 	//// auto reveal in phase 1 if reveal zone is null

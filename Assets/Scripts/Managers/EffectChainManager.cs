@@ -42,6 +42,7 @@ public class EffectChainManager : MonoBehaviour
 				shouldIMakeANewChain = true;
 			}
 		}
+		Debug.Log("[EffectChainManager] CheckShouldIStartANewChain for " + myCard.name + "/" + myEffectObj.name + ": opened=" + openedEffectRecorders.Count + ", shouldNew=" + shouldIMakeANewChain);
 		if (shouldIMakeANewChain)
 		{
 			CloseOpenedChain();
@@ -77,7 +78,8 @@ public class EffectChainManager : MonoBehaviour
 		currentEffectRecorder = newEffectChain;
 		openedEffectRecorders.Add(newEffectChain);
 		
-		if (currentEffectRecorderParent == null)
+		bool isRoot = currentEffectRecorderParent == null;
+		if (isRoot)
 		{
 			currentEffectRecorderParent = newEffectChain;
 		}
@@ -85,6 +87,7 @@ public class EffectChainManager : MonoBehaviour
 		{
 			newEffectChain.transform.SetParent(currentEffectRecorderParent.transform);
 		}
+		Debug.Log("[EffectChainManager] MakeANewEffectRecorder: chain#" + chainNumber + " for " + myCard.name + "/" + myEffectInst.name + " | isRoot=" + isRoot + " | parent=" + (currentEffectRecorderParent != null ? currentEffectRecorderParent.name : "null"));
 	}
 
 	public bool EffectCanBeInvoked(string effectID)
@@ -99,6 +102,9 @@ public class EffectChainManager : MonoBehaviour
 				invokedTimes++;
 			}
 		}
+
+		bool canInvoke = !(invokedTimes > 0 || openedEffectRecorders.Count == 0) && chainDepth <= 99;
+		Debug.Log("[EffectChainManager] EffectCanBeInvoked: effectID=" + effectID + ", invokedTimes=" + invokedTimes + ", openedCount=" + openedEffectRecorders.Count + ", chainDepth=" + chainDepth + " => " + canInvoke);
 
 		if (invokedTimes > 0 || openedEffectRecorders.Count == 0) // same effect already invoked in opened chains
 		{
@@ -118,6 +124,7 @@ public class EffectChainManager : MonoBehaviour
 
 	public void CloseOpenedChain()
 	{
+		int count = openedEffectRecorders.Count;
 		foreach (var recorder in openedEffectRecorders)
 		{
 			recorder.GetComponent<EffectRecorder>().open = false;
@@ -126,5 +133,6 @@ public class EffectChainManager : MonoBehaviour
 		UtilityFuncManagerScript.CopyList(openedEffectRecorders, closedEffectRecorders, false);
 		openedEffectRecorders.Clear();
 		lastEffectObject = null; // also clear last effect object or else after shuffle if same card is revealed or after reveal if same card is legally revealed again, it won't go through
+		Debug.Log("[EffectChainManager] CloseOpenedChain: closed " + count + " recorders, lastEffectObject cleared. current parent=" + (currentEffectRecorderParent != null ? currentEffectRecorderParent.name : "null"));
 	}
 }

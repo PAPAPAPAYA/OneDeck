@@ -91,14 +91,24 @@ public class CostNEffectContainer : MonoBehaviour
 
 		// invoke effect
 		var effectString = "(" + _myCardScript.cardID + ") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
-		if (EffectChainManager.Me.lastEffectObject == gameObject) return CostCheckResult.Success(); // prevent effect invoking self
+		Debug.Log("[CostNEffectContainer] InvokeEffectEvent: " + effectString + " | lastEffectObject=" + (EffectChainManager.Me.lastEffectObject != null ? EffectChainManager.Me.lastEffectObject.name : "null") + ", me=" + gameObject.name);
+		if (EffectChainManager.Me.lastEffectObject == gameObject)
+		{
+			Debug.Log("[CostNEffectContainer] BLOCKED by lastEffectObject: " + effectString);
+			return CostCheckResult.Success(); // prevent effect invoking self
+		}
 		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared
 		EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
 
 		if (EffectChainManager.Me.EffectCanBeInvoked(effectString))
 		{
 			EffectChainManager.Me.lastEffectObject = gameObject;
+			Debug.Log("[CostNEffectContainer] INVOKING effectEvent: " + effectString);
 			effectEvent?.Invoke(); // invoke effects
+		}
+		else
+		{
+			Debug.Log("[CostNEffectContainer] EffectCanBeInvoked returned FALSE: " + effectString);
 		}
 
 		return CostCheckResult.Success();

@@ -10,6 +10,7 @@ public class GameEvent : ScriptableObject
 
 	public void Raise()
 	{
+		Debug.Log("[GameEvent] Raise: " + name);
 		var tracker = AnimationStateTracker.me;
 		if (tracker != null)
 		{
@@ -22,6 +23,7 @@ public class GameEvent : ScriptableObject
 	// used for events with specific player (owner) ex. OnMeTookDmg
 	public void RaiseOwner()
 	{
+		Debug.Log("[GameEvent] RaiseOwner: " + name);
 		var tracker = AnimationStateTracker.me;
 		if (tracker != null)
 		{
@@ -34,6 +36,7 @@ public class GameEvent : ScriptableObject
 	// used for events with specific player (opponent) ex. OnMeTookDmg
 	public void RaiseOpponent()
 	{
+		Debug.Log("[GameEvent] RaiseOpponent: " + name);
 		var tracker = AnimationStateTracker.me;
 		if (tracker != null)
 		{
@@ -46,6 +49,7 @@ public class GameEvent : ScriptableObject
 	public void RaiseSpecific(GameObject target) // will also raise target's children's events
 	{
 		if (target == null) return;
+		Debug.Log("[GameEvent] RaiseSpecific: " + name + " on " + target.name);
 		var tracker = AnimationStateTracker.me;
 		if (tracker != null)
 		{
