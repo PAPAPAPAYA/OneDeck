@@ -308,8 +308,10 @@ public class BuryEffect : EffectScript
 				// Only raise events when ALL bury animations are done
 				if (completedCount >= totalCount)
 				{
+					// All bury animations done, raise events for all buried cards
 					foreach (var buriedCard in buriedCards)
 					{
+
 						GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
 						GameEventStorage.me.onAnyCardBuried.Raise();
 						var cardStatus = buriedCard.GetComponent<CardScript>()?.myStatusRef;
@@ -325,6 +327,7 @@ public class BuryEffect : EffectScript
 							}
 						}
 					}
+					// All onMeBuried events raised
 				}
 			});
 		}

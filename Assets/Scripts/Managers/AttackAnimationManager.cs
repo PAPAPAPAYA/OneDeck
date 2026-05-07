@@ -60,6 +60,7 @@ public class AttackAnimationManager : MonoBehaviour
 	// Animation queue
 	private Queue<AttackAnimData> _attackQueue = new();
 	private bool _isProcessingQueue = false;
+	private bool _queueStartPending = false;
 
 	private CombatManager _combatManager => CombatManager.Me;
 	private CombatUXManager _combatUXManager => CombatUXManager.me;
@@ -83,9 +84,24 @@ public class AttackAnimationManager : MonoBehaviour
 		
 		_attackQueue.Enqueue(data);
 		
-		if (!_isProcessingQueue)
+		if (!_isProcessingQueue && !_queueStartPending)
 		{
-			_isProcessingQueue = true; // Set immediately to prevent duplicate queue starts in the same frame
+			_queueStartPending = true;
+			StartCoroutine(DelayedStartQueue());
+		}
+	}
+
+	/// <summary>
+	/// Delay ProcessQueue start to next frame so all synchronous RequestAttackAnimation calls in current frame can enqueue first.
+	/// This prevents AnimationStateTracker from delaying subsequent onMeBuried events before they get a chance to enqueue.
+	/// </summary>
+	private IEnumerator DelayedStartQueue()
+	{
+		yield return null; // Wait until next frame
+		_queueStartPending = false;
+		if (!_isProcessingQueue && _attackQueue.Count > 0)
+		{
+			_isProcessingQueue = true;
 			StartCoroutine(ProcessQueue());
 		}
 	}
@@ -101,6 +117,7 @@ public class AttackAnimationManager : MonoBehaviour
 		while (_attackQueue.Count > 0)
 		{
 			var data = _attackQueue.Dequeue();
+
 			yield return StartCoroutine(PlayAttackAnimationCoroutine(data));
 		}
 
