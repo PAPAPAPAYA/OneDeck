@@ -30,6 +30,7 @@ public class EffectChainManager : MonoBehaviour
 	public void CheckShouldIStartANewChain(GameObject myCard, GameObject myEffectObj)
 	{
 		var shouldIMakeANewChain = false;
+		bool sameCardDiffObj = false;
 		
 		if (openedEffectRecorders.Count == 0) // if no opened chains
 		{
@@ -37,12 +38,13 @@ public class EffectChainManager : MonoBehaviour
 		}
 		else
 		{
-			if (SameCardDifferentObject(myCard, myEffectObj))
+			sameCardDiffObj = SameCardDifferentObject(myCard, myEffectObj);
+			if (sameCardDiffObj)
 			{
 				shouldIMakeANewChain = true;
 			}
 		}
-		Debug.Log("[EffectChainManager] CheckShouldIStartANewChain for " + myCard.name + "/" + myEffectObj.name + ": opened=" + openedEffectRecorders.Count + ", shouldNew=" + shouldIMakeANewChain);
+		Debug.Log("[CHAIN] CheckShouldIStartANewChain | card=" + myCard.name + " | effect=" + myEffectObj.name + " | opened=" + openedEffectRecorders.Count + " | sameCardDiffObj=" + sameCardDiffObj + " | decision=" + (shouldIMakeANewChain ? "NEW_CHAIN" : "CONTINUE") + " | parent=" + (currentEffectRecorderParent != null ? currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString() : "null") + " | frame=" + Time.frameCount);
 		if (shouldIMakeANewChain)
 		{
 			CloseOpenedChain();
@@ -56,7 +58,10 @@ public class EffectChainManager : MonoBehaviour
 		foreach (var chain in openedEffectRecorders)
 		{
 			var openedChainScript = chain.GetComponent<EffectRecorder>();
-			if (openedChainScript.cardObject.Equals(myCard) && !openedChainScript.effectObject.Equals(myEffectInst)) // same card, different effect
+			bool sameCard = openedChainScript.cardObject.Equals(myCard);
+			bool sameEffect = openedChainScript.effectObject.Equals(myEffectInst);
+			Debug.Log("[CHAIN] SameCardDiffObjCheck | chain#" + openedChainScript.chainID + " | chainCard=" + openedChainScript.cardObject.name + " | chainEffect=" + openedChainScript.effectObject.name + " | vsCard=" + myCard.name + " | vsEffect=" + myEffectInst.name + " | sameCard=" + sameCard + " | sameEffect=" + sameEffect + " | match=" + (sameCard && !sameEffect) + " | frame=" + Time.frameCount);
+			if (sameCard && !sameEffect) // same card, different effect
 			{
 				return true;
 			}
@@ -87,26 +92,35 @@ public class EffectChainManager : MonoBehaviour
 		{
 			newEffectChain.transform.SetParent(currentEffectRecorderParent.transform);
 		}
-		Debug.Log("[EffectChainManager] MakeANewEffectRecorder: chain#" + chainNumber + " for " + myCard.name + "/" + myEffectInst.name + " | isRoot=" + isRoot + " | parent=" + (currentEffectRecorderParent != null ? currentEffectRecorderParent.name : "null"));
+		Debug.Log("[CHAIN] NewRecorder | chain#" + chainNumber + " | card=" + myCard.name + " | effect=" + myEffectInst.name + " | isRoot=" + isRoot + " | parent=" + (currentEffectRecorderParent != null ? currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString() : "null") + " | openedAfterAdd=" + openedEffectRecorders.Count + " | frame=" + Time.frameCount);
 	}
 
 	public bool EffectCanBeInvoked(string effectID)
 	{
-		// loop check (if same effect has already been invoked in the same chain)
+		// loop check: same CARD INSTANCE + same EFFECT OBJECT already processed in opened chains
+		var currentRec = currentEffectRecorder.GetComponent<EffectRecorder>();
+		var myCard = currentRec.cardObject;
+		var myEffect = currentRec.effectObject;
+
 		var invokedTimes = 0;
+		string matchedChains = "";
 		foreach (var chain in openedEffectRecorders)
 		{
 			var wipChainScript = chain.GetComponent<EffectRecorder>();
-			if (wipChainScript.processedEffectID == effectID)
+			// Match by GameObject reference (instance), not by effectID string
+			if (wipChainScript.cardObject == myCard &&
+			    wipChainScript.effectObject == myEffect &&
+			    !string.IsNullOrEmpty(wipChainScript.processedEffectID))
 			{
 				invokedTimes++;
+				matchedChains += "chain#" + wipChainScript.chainID + "[" + wipChainScript.effectObject.name + "];";
 			}
 		}
 
 		bool canInvoke = !(invokedTimes > 0 || openedEffectRecorders.Count == 0) && chainDepth <= 99;
-		Debug.Log("[EffectChainManager] EffectCanBeInvoked: effectID=" + effectID + ", invokedTimes=" + invokedTimes + ", openedCount=" + openedEffectRecorders.Count + ", chainDepth=" + chainDepth + " => " + canInvoke);
+		Debug.Log("[CHAIN] CanInvoke | effectID=" + effectID + " | opened=" + openedEffectRecorders.Count + " | depth=" + chainDepth + " | invokedTimes=" + invokedTimes + " | matched=" + matchedChains + " | result=" + canInvoke + " | frame=" + Time.frameCount);
 
-		if (invokedTimes > 0 || openedEffectRecorders.Count == 0) // same effect already invoked in opened chains
+		if (invokedTimes > 0 || openedEffectRecorders.Count == 0) // same card instance + effect already invoked in opened chains
 		{
 			return false;
 		}
@@ -117,7 +131,7 @@ public class EffectChainManager : MonoBehaviour
 			return false;
 		}
 
-		currentEffectRecorder.GetComponent<EffectRecorder>().processedEffectID = effectID;
+		currentRec.processedEffectID = effectID;
 		chainDepth++;
 		return true;
 	}
@@ -125,14 +139,18 @@ public class EffectChainManager : MonoBehaviour
 	public void CloseOpenedChain()
 	{
 		int count = openedEffectRecorders.Count;
+		string closedChainInfo = "";
 		foreach (var recorder in openedEffectRecorders)
 		{
-			recorder.GetComponent<EffectRecorder>().open = false;
+			var rec = recorder.GetComponent<EffectRecorder>();
+			rec.open = false;
+			closedChainInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "/processed=" + rec.processedEffectID + "];";
 		}
 
 		UtilityFuncManagerScript.CopyList(openedEffectRecorders, closedEffectRecorders, false);
 		openedEffectRecorders.Clear();
 		lastEffectObject = null; // also clear last effect object or else after shuffle if same card is revealed or after reveal if same card is legally revealed again, it won't go through
-		Debug.Log("[EffectChainManager] CloseOpenedChain: closed " + count + " recorders, lastEffectObject cleared. current parent=" + (currentEffectRecorderParent != null ? currentEffectRecorderParent.name : "null"));
+		chainDepth = 0;
+		Debug.Log("[CHAIN] CloseOpened | closed=" + count + " | detail=" + closedChainInfo + " | depth=" + chainDepth + " | frame=" + Time.frameCount);
 	}
 }

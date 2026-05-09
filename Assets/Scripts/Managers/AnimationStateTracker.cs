@@ -37,7 +37,7 @@ public class AnimationStateTracker : MonoBehaviour
 			_hasActiveBatch = true;
 		}
 		_pendingAnimations++;
-		Debug.Log("[AnimationStateTracker] RegisterAnimation: pending=" + _pendingAnimations + " | frame=" + Time.frameCount);
+		// Animation registered
 	}
 
 	/// <summary>
@@ -46,7 +46,7 @@ public class AnimationStateTracker : MonoBehaviour
 	public void CompleteAnimation()
 	{
 		_pendingAnimations--;
-		Debug.Log("[AnimationStateTracker] CompleteAnimation: pending=" + _pendingAnimations + " | delayedEvents=" + _delayedEvents.Count + " | frame=" + Time.frameCount);
+		// Animation completed
 		if (_pendingAnimations <= 0)
 		{
 			_pendingAnimations = 0;
@@ -68,10 +68,10 @@ public class AnimationStateTracker : MonoBehaviour
 		if (_pendingAnimations > 0)
 		{
 			_delayedEvents.Enqueue(action);
-			Debug.Log("[AnimationStateTracker] TryExecute: ENQUEUED (pending=" + _pendingAnimations + ", queue=" + _delayedEvents.Count + ")");
+			Debug.Log("[FLUSH] Enqueued | pending=" + _pendingAnimations + " | queue=" + _delayedEvents.Count + " | frame=" + Time.frameCount);
 			return;
 		}
-		Debug.Log("[AnimationStateTracker] TryExecute: EXECUTE IMMEDIATELY (pending=" + _pendingAnimations + ")");
+		// Executing immediately
 		action();
 	}
 
@@ -80,10 +80,26 @@ public class AnimationStateTracker : MonoBehaviour
 		_isFlushing = true;
 		int processed = 0;
 		int initialCount = _delayedEvents.Count;
-		Debug.Log("[AnimationStateTracker] FlushDelayedEvents START: queue=" + initialCount + " | frame=" + Time.frameCount);
+		int openedChains = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.openedEffectRecorders.Count : -1;
+		int chainDepth = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.chainDepth : -1;
+		string parentChain = global::EffectChainManager.Me != null && global::EffectChainManager.Me.currentEffectRecorderParent != null ? global::EffectChainManager.Me.currentEffectRecorderParent.GetComponent<global::DefaultNamespace.EffectRecorder>().chainID.ToString() : "null";
+		Debug.Log("[FLUSH] START | queue=" + initialCount + " | frame=" + Time.frameCount + " | openedChains=" + openedChains + " | depth=" + chainDepth + " | parent=" + parentChain);
 		while (_delayedEvents.Count > 0)
 		{
 			var evt = _delayedEvents.Dequeue();
+			openedChains = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.openedEffectRecorders.Count : -1;
+			chainDepth = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.chainDepth : -1;
+			parentChain = global::EffectChainManager.Me != null && global::EffectChainManager.Me.currentEffectRecorderParent != null ? global::EffectChainManager.Me.currentEffectRecorderParent.GetComponent<global::DefaultNamespace.EffectRecorder>().chainID.ToString() : "null";
+			string openedDetail = "";
+			if (global::EffectChainManager.Me != null)
+			{
+				foreach (var rec in global::EffectChainManager.Me.openedEffectRecorders)
+				{
+					var r = rec.GetComponent<global::DefaultNamespace.EffectRecorder>();
+					openedDetail += "chain#" + r.chainID + "[" + r.cardObject.name + "/" + r.effectObject.name + "/proc=" + (r.processedEffectID ?? "null") + "];";
+				}
+			}
+			Debug.Log("[FLUSH] Executing | remaining=" + _delayedEvents.Count + " | frame=" + Time.frameCount + " | openedChains=" + openedChains + " | depth=" + chainDepth + " | parent=" + parentChain + " | openedDetail=" + openedDetail);
 			evt();
 			processed++;
 
@@ -91,11 +107,14 @@ public class AnimationStateTracker : MonoBehaviour
 			// Those animations will trigger another flush when they complete.
 			if (_pendingAnimations > 0)
 			{
-				Debug.Log("[AnimationStateTracker] FlushDelayedEvents BREAK after " + processed + "/" + initialCount + " events (pending=" + _pendingAnimations + ")");
+				Debug.Log("[FLUSH] BREAK after " + processed + "/" + initialCount + " | pending=" + _pendingAnimations + " | frame=" + Time.frameCount);
 				break;
 			}
 		}
-		Debug.Log("[AnimationStateTracker] FlushDelayedEvents END: processed=" + processed + "/" + initialCount + ", remaining=" + _delayedEvents.Count + ", pending=" + _pendingAnimations);
+		openedChains = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.openedEffectRecorders.Count : -1;
+		chainDepth = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.chainDepth : -1;
+		parentChain = global::EffectChainManager.Me != null && global::EffectChainManager.Me.currentEffectRecorderParent != null ? global::EffectChainManager.Me.currentEffectRecorderParent.GetComponent<global::DefaultNamespace.EffectRecorder>().chainID.ToString() : "null";
+		Debug.Log("[FLUSH] END | processed=" + processed + "/" + initialCount + " | remaining=" + _delayedEvents.Count + " | pending=" + _pendingAnimations + " | frame=" + Time.frameCount + " | openedChains=" + openedChains + " | depth=" + chainDepth + " | parent=" + parentChain);
 		_isFlushing = false;
 	}
 
@@ -105,8 +124,8 @@ public class AnimationStateTracker : MonoBehaviour
 		if (_hasActiveBatch && Time.time - _batchStartTime > timeoutSeconds)
 		{
 			Debug.LogWarning(
-				"[AnimationStateTracker] Animation batch timed out after " + timeoutSeconds +
-				"s. Pending=" + _pendingAnimations + ". Forcing release.");
+				"[FLUSH] TIMEOUT after " + timeoutSeconds +
+				"s | pending=" + _pendingAnimations + " | frame=" + Time.frameCount);
 			_pendingAnimations = 0;
 			_hasActiveBatch = false;
 			FlushDelayedEvents();

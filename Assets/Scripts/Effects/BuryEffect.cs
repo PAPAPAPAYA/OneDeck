@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
@@ -296,43 +297,45 @@ public class BuryEffect : EffectScript
 		// Sync physical card list order with logical deck before animation
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 
-		// 2. Play arc trajectory animation, trigger events after ALL animations complete
-		int completedCount = 0;
-		int totalCount = buriedCards.Count;
-
-		foreach (var card in buriedCards)
+		// 2. Raise events in logic phase
+		foreach (var buriedCard in buriedCards)
 		{
-			combatManager.visuals.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: () =>
+			GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
+			GameEventStorage.me.onAnyCardBuried.Raise();
+			var buriedCardScript = buriedCard.GetComponent<CardScript>();
+			if (buriedCardScript != null && GameEventStorage.me.onFriendlyCardBuried != null)
 			{
-				completedCount++;
-				// Only raise events when ALL bury animations are done
-				if (completedCount >= totalCount)
+				if (buriedCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
 				{
-					// All bury animations done, raise events for all buried cards
-					foreach (var buriedCard in buriedCards)
-					{
-
-						GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
-						GameEventStorage.me.onAnyCardBuried.Raise();
-						var cardStatus = buriedCard.GetComponent<CardScript>()?.myStatusRef;
-						if (cardStatus != null && GameEventStorage.me.onFriendlyCardBuried != null)
-						{
-							if (cardStatus == combatManager.ownerPlayerStatusRef)
-							{
-								GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
-							}
-							else
-							{
-								GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
-							}
-						}
-					}
-					// All onMeBuried events raised
+					GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
 				}
+				else
+				{
+					GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+				}
+			}
+		}
+
+		// 3. Capture animation request
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null)
+		{
+			recorder.animationRequests.Add(new AnimationRequest {
+				type = AnimationRequestType.MoveToBottomBatch,
+				targetCards = buriedCards,
+				duration = 0.5f,
+				useArc = true
 			});
 		}
-		
-		// Update positions of other cards immediately so they move in parallel with buried cards
-		combatManager.visuals.UpdateAllPhysicalCardTargets();
+		else
+		{
+			// Fallback: old immediate visual path
+			foreach (var card in buriedCards)
+			{
+				combatManager.visuals.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: null);
+			}
+			combatManager.visuals.UpdateAllPhysicalCardTargets();
+		}
 	}
 }

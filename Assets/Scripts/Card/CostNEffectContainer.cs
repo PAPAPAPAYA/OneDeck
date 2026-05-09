@@ -91,10 +91,13 @@ public class CostNEffectContainer : MonoBehaviour
 
 		// invoke effect
 		var effectString = "(" + _myCardScript.cardID + ") " + _myCardScript.gameObject.name + ": " + gameObject.name; // this string will be used to record and compare to prevent looping
-		Debug.Log("[CostNEffectContainer] InvokeEffectEvent: " + effectString + " | lastEffectObject=" + (EffectChainManager.Me.lastEffectObject != null ? EffectChainManager.Me.lastEffectObject.name : "null") + ", me=" + gameObject.name);
+		int openedChains = EffectChainManager.Me != null ? EffectChainManager.Me.openedEffectRecorders.Count : -1;
+		int chainDepth = EffectChainManager.Me != null ? EffectChainManager.Me.chainDepth : -1;
+		string parentChainID = EffectChainManager.Me != null && EffectChainManager.Me.currentEffectRecorderParent != null ? EffectChainManager.Me.currentEffectRecorderParent.GetComponent<DefaultNamespace.EffectRecorder>().chainID.ToString() : "null";
+		Debug.Log("[INVOKE] Enter | effect=" + effectString + " | lastEffect=" + (EffectChainManager.Me.lastEffectObject != null ? EffectChainManager.Me.lastEffectObject.name : "null") + " | opened=" + openedChains + " | depth=" + chainDepth + " | parentChain=" + parentChainID + " | frame=" + Time.frameCount);
 		if (EffectChainManager.Me.lastEffectObject == gameObject)
 		{
-			Debug.Log("[CostNEffectContainer] BLOCKED by lastEffectObject: " + effectString);
+			Debug.Log("[INVOKE] BLOCKED by lastEffectObject | effect=" + effectString + " | frame=" + Time.frameCount);
 			return CostCheckResult.Success(); // prevent effect invoking self
 		}
 		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared
@@ -103,12 +106,12 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EffectChainManager.Me.EffectCanBeInvoked(effectString))
 		{
 			EffectChainManager.Me.lastEffectObject = gameObject;
-			Debug.Log("[CostNEffectContainer] INVOKING effectEvent: " + effectString);
+			Debug.Log("[INVOKE] EXECUTING | effect=" + effectString + " | frame=" + Time.frameCount);
 			effectEvent?.Invoke(); // invoke effects
 		}
 		else
 		{
-			Debug.Log("[CostNEffectContainer] EffectCanBeInvoked returned FALSE: " + effectString);
+			Debug.Log("[INVOKE] BLOCKED by chain guard | effect=" + effectString + " | frame=" + Time.frameCount);
 		}
 
 		return CostCheckResult.Success();

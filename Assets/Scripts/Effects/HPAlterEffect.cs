@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
@@ -102,17 +103,34 @@ public class HPAlterEffect : EffectScript
 			return;
 		}
 		
-		// Request attack animation (attack self)
 		// Determine attack target position: player card self-damage rushes to player position, enemy card self-damage rushes to enemy position
 		bool isAttackingEnemy = myCardScript.myStatusRef != combatManager.ownerPlayerStatusRef;
 		
-		combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy,
-			onHit: () =>
-			{
-				ProcessDamage(totalDmg, myCardScript.myStatusRef);
-				CheckDmgTargets_DealingDmgToSelf(totalDmg);
-			},
-			onComplete: null);
+		// Move damage resolution and event raising to logic phase
+		ProcessDamage(totalDmg, myCardScript.myStatusRef);
+		CheckDmgTargets_DealingDmgToSelf(totalDmg);
+		
+		// Capture animation request
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null)
+		{
+			recorder.animationRequests.Add(new AnimationRequest {
+				type = AnimationRequestType.Attack,
+				attackerCard = myCard,
+				isAttackingEnemy = isAttackingEnemy,
+				onHit = null, // damage already resolved
+				onComplete = null
+			});
+		}
+		else
+		{
+			// Fallback: old immediate visual path
+			// Damage already resolved in logic phase above, so onHit is null
+			combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy,
+				onHit: null,
+				onComplete: null);
+		}
 		
 		dmgAmountAlter = 0;
 	}
@@ -371,14 +389,31 @@ public class HPAlterEffect : EffectScript
 		// Determine attack target (true=attack enemy, false=attack player self)
 		bool isAttackingEnemy = myCardScript.theirStatusRef != combatManager.ownerPlayerStatusRef;
 		
-		// Request attack animation via event
-		combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy,
-			onHit: () =>
-			{
-				ProcessDamage(totalDmg, myCardScript.theirStatusRef);
-				CheckDmgTargets_DealingDmgToOpponent(totalDmg);
-			},
-			onComplete: null);
+		// Move damage resolution and event raising to logic phase
+		ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+		CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+		
+		// Capture animation request
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null)
+		{
+			recorder.animationRequests.Add(new AnimationRequest {
+				type = AnimationRequestType.Attack,
+				attackerCard = myCard,
+				isAttackingEnemy = isAttackingEnemy,
+				onHit = null, // damage already resolved
+				onComplete = null
+			});
+		}
+		else
+		{
+			// Fallback: old immediate visual path
+			// Damage already resolved in logic phase above, so onHit is null
+			combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy,
+				onHit: null,
+				onComplete: null);
+		}
 		
 		dmgAmountAlter = 0;
 	}

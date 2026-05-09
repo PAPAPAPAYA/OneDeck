@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
@@ -327,21 +328,34 @@ public class StageEffect : EffectScript
 		
 		// Sync physical card list order with logical deck before animation
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
-		
-		// 2. Play arc trajectory animation (move cards to top)
-		foreach (var card in stagedCards)
-		{
-			combatManager.visuals.MoveCardToTop(card, duration: 0.5f, useArc: true);
-		}
 
-		// Update positions of other cards immediately so they move in parallel with staged cards
-		combatManager.visuals.UpdateAllPhysicalCardTargets();
-
-		// 3. Trigger card staged event
+		// 2. Trigger card staged event (already in logic phase)
 		foreach (var card in stagedCards)
 		{
 			// Trigger specific card staged event
 			GameEventStorage.me.onMeStaged.RaiseSpecific(card);
+		}
+
+		// 3. Capture animation request
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null)
+		{
+			recorder.animationRequests.Add(new AnimationRequest {
+				type = AnimationRequestType.MoveToTopBatch,
+				targetCards = stagedCards,
+				duration = 0.5f,
+				useArc = true
+			});
+		}
+		else
+		{
+			// Fallback: old immediate visual path
+			foreach (var card in stagedCards)
+			{
+				combatManager.visuals.MoveCardToTop(card, duration: 0.5f, useArc: true);
+			}
+			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 }

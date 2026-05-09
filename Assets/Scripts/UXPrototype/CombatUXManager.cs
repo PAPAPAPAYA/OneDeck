@@ -1079,8 +1079,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (!_isDeckFocused)
 			yield break;
 
-		print("restore");
-		
 		AnimationStateTracker.me?.RegisterAnimation();
 
 		// Clear offset so all cards calculate their final normal positions

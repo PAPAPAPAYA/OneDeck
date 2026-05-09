@@ -197,6 +197,20 @@ public class CombatManager : MonoBehaviour
 		totalCardsRevealed = 0;
 		EffectChainManager.Me.CloseOpenedChain();
 		EffectChainManager.Me.chainNumber = 0;
+		
+		// clean up effect recorders
+		if (EffectChainManager.Me != null)
+		{
+			for (int i = EffectChainManager.Me.transform.childCount - 1; i >= 0; i--)
+			{
+				var child = EffectChainManager.Me.transform.GetChild(i).gameObject;
+				if (child.GetComponent<EffectRecorder>() != null)
+				{
+					Destroy(child);
+				}
+			}
+			EffectChainManager.Me.closedEffectRecorders.Clear();
+		}
 	}
 
 	#endregion
@@ -365,6 +379,66 @@ public class CombatManager : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Wait for legacy animations to idle, close the effect chain, then play captured recorder animations.
+	/// </summary>
+	private System.Collections.IEnumerator PlayRecorderAnimationsAndWait()
+	{
+		// 1. Safety wait for legacy animations
+		while (AnimationStateTracker.me != null && AnimationStateTracker.me.HasActiveBatch)
+		{
+			yield return null;
+		}
+
+		// 2. Close the chain
+		EffectChainManager.Me.CloseOpenedChain();
+
+		try
+		{
+			// 3. Collect root recorders and play animations
+			if (RecorderAnimationPlayer.me != null)
+			{
+				var roots = new List<GameObject>();
+				if (EffectChainManager.Me != null && EffectChainManager.Me.closedEffectRecorders != null)
+				{
+					foreach (var rec in EffectChainManager.Me.closedEffectRecorders)
+					{
+						if (rec == null) continue;
+						var recorder = rec.GetComponent<EffectRecorder>();
+						if (recorder != null && !recorder.animationPlayed && rec.transform.parent == EffectChainManager.Me.transform)
+						{
+							roots.Add(rec);
+						}
+					}
+				}
+
+				if (roots.Count > 0)
+				{
+					yield return StartCoroutine(RecorderAnimationPlayer.me.PlayRecordersCoroutine(roots));
+				}
+			}
+		}
+		finally
+		{
+			// Mark all recorders in closedEffectRecorders as played to prevent replay on exception
+			if (EffectChainManager.Me != null && EffectChainManager.Me.closedEffectRecorders != null)
+			{
+				foreach (var recObj in EffectChainManager.Me.closedEffectRecorders)
+				{
+					if (recObj == null) continue;
+					var recorder = recObj.GetComponent<EffectRecorder>();
+					if (recorder != null) recorder.animationPlayed = true;
+				}
+			}
+
+			// Ensure input blocking is released
+			ResetInputBlock();
+		}
+
+		// Safety net for stray legacy animations
+		yield return StartCoroutine(WaitForAttackAnimationsBeforeNextReveal());
+	}
+
 	private void RevealCards()
 	{
 		if (IsInputBlocked) return;
@@ -454,11 +528,10 @@ public class CombatManager : MonoBehaviour
 			}
 			
 			awaitingRevealConfirm = true;
-				Debug.Log("[CombatManager] RevealCards Phase2: about to CloseOpenedChain after TriggerRevealedCardEffect for " + revealZone != null ? revealZone.name : "null");
-			EffectChainManager.Me.CloseOpenedChain();
+			Debug.Log("[COMBAT] Phase2 PlayRecorderAnimationsAndWait | frame=" + Time.frameCount + " | pendingAnims=" + (AnimationStateTracker.me != null ? AnimationStateTracker.me.PendingAnimations : -1));
 			
 			// Wait for all attack animations to complete before allowing next operation
-			StartCoroutine(WaitForAttackAnimationsBeforeNextReveal());
+			StartCoroutine(PlayRecorderAnimationsAndWait());
 		}
 	}
 
