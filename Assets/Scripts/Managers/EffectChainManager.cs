@@ -20,12 +20,20 @@ public class EffectChainManager : MonoBehaviour
 	public IntSO sessionNumberRef;
 	[Header("VIEW ONLY")]
 	public int chainNumber;
-	public GameObject currentEffectRecorder; // tracks current effect container being processed
+	public GameObject currentEffectRecorder
+	{
+		get { return recorderStack.Count > 0 ? recorderStack[recorderStack.Count - 1] : null; }
+	}
 	public GameObject currentEffectRecorderParent; // tracks current chain parent
 	public GameObject lastEffectObject; // tracks last effect inst
 	public List<GameObject> openedEffectRecorders; // tracks opened effect containers
 	public List<GameObject> closedEffectRecorders; // tracks closed effect containers
 	public int chainDepth; // chain depth to prevent stack overflow, currently when depth reached 99 effect will not be processed
+	
+	// Stack to track nested recorder creation. Each InvokeEffectEvent pushes its recorder,
+	// then pops it after effect execution. This prevents currentEffectRecorder from being
+	// overwritten by synchronous reactive effects triggered during execution.
+	private List<GameObject> recorderStack = new List<GameObject>();
 	
 	public void CheckShouldIStartANewChain(GameObject myCard, GameObject myEffectObj)
 	{
@@ -80,7 +88,12 @@ public class EffectChainManager : MonoBehaviour
 		newChainScript.cardObject = myCard;
 		newChainScript.effectObject = myEffectInst;
 		newChainScript.open = true;
-		currentEffectRecorder = newEffectChain;
+		
+		// Remember the recorder that was active before creating this one.
+		// This ensures reactive effects are parented to the recorder that triggered them.
+		var previousRecorder = currentEffectRecorder;
+		
+		recorderStack.Add(newEffectChain);
 		openedEffectRecorders.Add(newEffectChain);
 		
 		bool isRoot = currentEffectRecorderParent == null;
@@ -90,9 +103,14 @@ public class EffectChainManager : MonoBehaviour
 		}
 		else
 		{
-			newEffectChain.transform.SetParent(currentEffectRecorderParent.transform);
+			// Attach reactive effects as children of the recorder that triggered them,
+			// instead of flattening everything under the chain root.
+			var parentTransform = previousRecorder != null
+				? previousRecorder.transform
+				: currentEffectRecorderParent.transform;
+			newEffectChain.transform.SetParent(parentTransform);
 		}
-		Debug.Log("[CHAIN] NewRecorder | chain#" + chainNumber + " | card=" + myCard.name + " | effect=" + myEffectInst.name + " | isRoot=" + isRoot + " | parent=" + (currentEffectRecorderParent != null ? currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString() : "null") + " | openedAfterAdd=" + openedEffectRecorders.Count + " | frame=" + Time.frameCount);
+		Debug.Log("[CHAIN] NewRecorder | chain#" + chainNumber + " | card=" + myCard.name + " | effect=" + myEffectInst.name + " | isRoot=" + isRoot + " | parent=" + (previousRecorder != null ? previousRecorder.GetComponent<EffectRecorder>().chainID.ToString() : (currentEffectRecorderParent != null ? currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString() : "null")) + " | openedAfterAdd=" + openedEffectRecorders.Count + " | frame=" + Time.frameCount);
 	}
 
 	public bool EffectCanBeInvoked(string effectID)
@@ -136,6 +154,14 @@ public class EffectChainManager : MonoBehaviour
 		return true;
 	}
 
+	public void PopCurrentRecorder()
+	{
+		if (recorderStack.Count > 0)
+		{
+			recorderStack.RemoveAt(recorderStack.Count - 1);
+		}
+	}
+
 	public void CloseOpenedChain()
 	{
 		int count = openedEffectRecorders.Count;
@@ -151,6 +177,8 @@ public class EffectChainManager : MonoBehaviour
 		openedEffectRecorders.Clear();
 		lastEffectObject = null; // also clear last effect object or else after shuffle if same card is revealed or after reveal if same card is legally revealed again, it won't go through
 		chainDepth = 0;
+		recorderStack.Clear();
+		currentEffectRecorderParent = null;
 		Debug.Log("[CHAIN] CloseOpened | closed=" + count + " | detail=" + closedChainInfo + " | depth=" + chainDepth + " | frame=" + Time.frameCount);
 	}
 }

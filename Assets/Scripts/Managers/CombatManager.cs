@@ -51,6 +51,13 @@ public class CombatManager : MonoBehaviour
 	private void Awake()
 	{
 		Me = this;
+		
+		// Ensure RecorderAnimationPlayer singleton exists for effect-recorder-driven animation
+		if (RecorderAnimationPlayer.me == null)
+		{
+			var go = new GameObject("RecorderAnimationPlayer");
+			go.AddComponent<RecorderAnimationPlayer>();
+		}
 	}
 
 	/// <summary>

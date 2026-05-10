@@ -99,7 +99,7 @@ public class AnimationStateTracker : MonoBehaviour
 					openedDetail += "chain#" + r.chainID + "[" + r.cardObject.name + "/" + r.effectObject.name + "/proc=" + (r.processedEffectID ?? "null") + "];";
 				}
 			}
-			Debug.Log("[FLUSH] Executing | remaining=" + _delayedEvents.Count + " | frame=" + Time.frameCount + " | openedChains=" + openedChains + " | depth=" + chainDepth + " | parent=" + parentChain + " | openedDetail=" + openedDetail);
+			// Debug.Log("[FLUSH] Executing | remaining=" + _delayedEvents.Count + " | frame=" + Time.frameCount + " | openedChains=" + openedChains + " | depth=" + chainDepth + " | parent=" + parentChain + " | openedDetail=" + openedDetail);
 			evt();
 			processed++;
 

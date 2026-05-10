@@ -108,6 +108,15 @@ public class CardPhysObjScript : MonoBehaviour
 
 	void Update()
 	{
+		// Handle pending reveal zone move when special animation ends
+		if (!isPlayingSpecialAnimation && pendingRevealZoneMove)
+		{
+			Debug.Log("[PEEL] CardPhysObjScript.Update pendingRevealZoneMove EXECUTE | card=" + this.name + " | pos=" + pendingRevealPosition + " | frame=" + Time.frameCount);
+			SetTargetPosition(pendingRevealPosition);
+			SetTargetScale(pendingRevealScale);
+			pendingRevealZoneMove = false;
+		}
+
 		ApplyColor();
 		UpdateStatusEffectDisplay();
 		UpdateCostDisplay();

@@ -94,7 +94,7 @@ public class CostNEffectContainer : MonoBehaviour
 		int openedChains = EffectChainManager.Me != null ? EffectChainManager.Me.openedEffectRecorders.Count : -1;
 		int chainDepth = EffectChainManager.Me != null ? EffectChainManager.Me.chainDepth : -1;
 		string parentChainID = EffectChainManager.Me != null && EffectChainManager.Me.currentEffectRecorderParent != null ? EffectChainManager.Me.currentEffectRecorderParent.GetComponent<DefaultNamespace.EffectRecorder>().chainID.ToString() : "null";
-		Debug.Log("[INVOKE] Enter | effect=" + effectString + " | lastEffect=" + (EffectChainManager.Me.lastEffectObject != null ? EffectChainManager.Me.lastEffectObject.name : "null") + " | opened=" + openedChains + " | depth=" + chainDepth + " | parentChain=" + parentChainID + " | frame=" + Time.frameCount);
+		// Debug.Log("[INVOKE] Enter | effect=" + effectString + " | lastEffect=" + (EffectChainManager.Me.lastEffectObject != null ? EffectChainManager.Me.lastEffectObject.name : "null") + " | opened=" + openedChains + " | depth=" + chainDepth + " | parentChain=" + parentChainID + " | frame=" + Time.frameCount);
 		if (EffectChainManager.Me.lastEffectObject == gameObject)
 		{
 			Debug.Log("[INVOKE] BLOCKED by lastEffectObject | effect=" + effectString + " | frame=" + Time.frameCount);
@@ -113,6 +113,9 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			Debug.Log("[INVOKE] BLOCKED by chain guard | effect=" + effectString + " | frame=" + Time.frameCount);
 		}
+
+		// Pop recorder from stack so outer effects see their own recorder again
+		EffectChainManager.Me?.PopCurrentRecorder();
 
 		return CostCheckResult.Success();
 	}

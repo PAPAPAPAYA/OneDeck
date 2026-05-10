@@ -15,46 +15,74 @@ public class RecorderAnimationPlayer : MonoBehaviour
 
 	public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 	{
-		foreach (var rootRecorder in rootRecorders)
+		string rootInfo = "";
+		foreach (var r in rootRecorders)
 		{
-			if (rootRecorder == null) continue;
-			var recorder = rootRecorder.GetComponent<EffectRecorder>();
-			if (recorder == null || recorder.animationPlayed) continue;
-			yield return StartCoroutine(PlayRecorderCoroutine(recorder));
+			if (r == null) continue;
+			var rec = r.GetComponent<EffectRecorder>();
+			if (rec != null) rootInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "];";
 		}
+		Debug.Log("[ANIM] PlayRecorders START | roots=" + rootRecorders.Count + " | detail=" + rootInfo + " | frame=" + Time.frameCount);
+
+		AttackAnimationManager.me?.HoldDeckFocus();
+		try
+		{
+			foreach (var rootRecorder in rootRecorders)
+			{
+				if (rootRecorder == null) continue;
+				var recorder = rootRecorder.GetComponent<EffectRecorder>();
+				if (recorder == null || recorder.animationPlayed) continue;
+				yield return StartCoroutine(PlayRecorderCoroutine(recorder));
+			}
+		}
+		finally
+		{
+			AttackAnimationManager.me?.ReleaseDeckFocus();
+		}
+
+		Debug.Log("[ANIM] PlayRecorders END | frame=" + Time.frameCount);
 	}
 
 	public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 	{
 		if (recorder == null || recorder.animationPlayed) yield break;
 		recorder.animationPlayed = true;
-
-		foreach (var request in recorder.animationRequests)
+		
+		string reqSummary = "";
+		foreach (var r in recorder.animationRequests)
 		{
-			yield return StartCoroutine(PlayRequestCoroutine(request));
+			if (r != null) reqSummary += r.type.ToString() + ";";
+		}
+		Debug.Log("[ANIM] PlayRecorder START | chain#" + recorder.chainID + "[" + recorder.cardObject.name + "/" + recorder.effectObject.name + "] | requests=" + recorder.animationRequests.Count + "[" + reqSummary + "] | children=" + recorder.transform.childCount + " | frame=" + Time.frameCount);
 
-			// Interleaved playback: recurse into unplayed direct children
-			for (int i = 0; i < recorder.transform.childCount; i++)
-			{
-				var child = recorder.transform.GetChild(i);
-				var childRecorder = child.GetComponent<EffectRecorder>();
-				if (childRecorder != null && !childRecorder.animationPlayed)
-				{
-					yield return StartCoroutine(PlayRecorderCoroutine(childRecorder));
-				}
-			}
+		// Play all requests of this effect instance sequentially without interleaving children
+		for (int reqIndex = 0; reqIndex < recorder.animationRequests.Count; reqIndex++)
+		{
+			var request = recorder.animationRequests[reqIndex];
+			if (request != null)
+				Debug.Log("[ANIM] PlayRecorder chain#" + recorder.chainID + " -> request[" + reqIndex + "]=" + request.type + " | frame=" + Time.frameCount);
+			
+			yield return StartCoroutine(PlayRequestCoroutine(request));
 		}
 
-		// After processing all requests, still recurse into any remaining unplayed children
+		// After all requests of this effect instance are done, recurse into children (effect-instance-boundary interleave)
+		if (recorder.transform.childCount > 0)
+		{
+			Debug.Log("[ANIM] PlayRecorder chain#" + recorder.chainID + " all requests done, now processing " + recorder.transform.childCount + " children | frame=" + Time.frameCount);
+		}
+		
 		for (int i = 0; i < recorder.transform.childCount; i++)
 		{
 			var child = recorder.transform.GetChild(i);
 			var childRecorder = child.GetComponent<EffectRecorder>();
 			if (childRecorder != null && !childRecorder.animationPlayed)
 			{
+				Debug.Log("[ANIM] PlayRecorder chain#" + recorder.chainID + " -> child chain#" + childRecorder.chainID + "[" + childRecorder.cardObject.name + "] at siblingIndex=" + i + " | frame=" + Time.frameCount);
 				yield return StartCoroutine(PlayRecorderCoroutine(childRecorder));
 			}
 		}
+		
+		Debug.Log("[ANIM] PlayRecorder END | chain#" + recorder.chainID + "[" + recorder.cardObject.name + "/" + recorder.effectObject.name + "] | frame=" + Time.frameCount);
 	}
 
 	public IEnumerator PlayRequestCoroutine(AnimationRequest request)
@@ -63,6 +91,10 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		if (CombatManager.Me == null) yield break;
 		var visuals = CombatManager.Me.visuals;
 		if (visuals == null) yield break;
+		
+		string attackerName = request.attackerCard != null ? request.attackerCard.name : "null";
+		string targetName = request.targetCard != null ? request.targetCard.name : (request.targetCards != null ? "count=" + request.targetCards.Count : "null");
+		Debug.Log("[ANIM] PlayRequest START | type=" + request.type + " | attacker=" + attackerName + " | target=" + targetName + " | frame=" + Time.frameCount);
 
 		switch (request.type)
 		{
@@ -132,5 +164,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				break;
 			}
 		}
+		
+		Debug.Log("[ANIM] PlayRequest END | type=" + request.type + " | attacker=" + attackerName + " | target=" + targetName + " | frame=" + Time.frameCount);
 	}
 }
