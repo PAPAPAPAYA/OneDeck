@@ -78,6 +78,7 @@
 	// fake shuffle
 	
 //! viscom
+	// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 	//// stage/bury and deck shift should happen at the same time
 		//// rift -> stage another card, staged card should go straight to reveal zone
 	// better card move animatin
@@ -86,14 +87,14 @@
 	// power gain card particle
 	// motion design
 		//todo enlarge card when event triggered
-		//todo cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
-			// 1. **SPIKE_SKELETON**: Buried → triggers `OnMeBuried` → `DecreaseTheirHpTimesX(2)`. Deck peels once, 2 attack animations play from focused position, deck restores.
-			// 2. **GOBLIN_CHARGE_TEAM**: Staged → triggers `OnMeStaged` → single `DecreaseTheirHp`. Deck peels, attack plays, deck restores.
-			// 3. **ETERNAL_GHOST**: In deck, listens to `OnTheirPlayerTookDmg`. When enemy takes damage from another source, ETERNAL_GHOST's effect triggers. Deck peels to focus ETERNAL_GHOST, attack plays, restores.
-			// 4. **Chained focus switch**: Card A triggers attack (peels to A). Before A's attack ends, Card B (deeper in deck) triggers. System continues peeling to expose B. After all attacks, restores.
-			// 5. **Chained focus switch reverse**: Card A triggers (peels to A). Card C (shallower than A) triggers. System restores some peeled cards until C reaches center.
-			// 6. **Reveal zone card**: Normal reveal → attack. No peel occurs. Card returns to reveal zone as before.
-	//// queue animation
+		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
+	// queue animation
+		// effect recorder based animation system
+			//// prototype
+			///todo total implementation
+				// ## 7. Success Criteria
+				// headless unit test update
+				// ### Phase 5: Testing & Edge Cases
 		//// D:\Unity Projects\OneDeck\plans\card-animation-serialization-plan.md
 	// AnimationStateTracker checker
 	
@@ -104,7 +105,7 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
-	//todo GRAVE_Punch + SPIKE_SKELETON + ETERNAL_GHOST
+	//// GRAVE_Punch + SPIKE_SKELETON + ETERNAL_GHOST
 	//// feature to customize deck after shuffle for testing
 	//// transition focus coroutine bug: test case 4
 	//// stage bugged

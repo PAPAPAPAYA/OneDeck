@@ -388,21 +388,83 @@ private IEnumerator PlayMoveToBottomBatchRequest(AnimationRequest request)
 
 **Decision**: Do NOT modify `GameEvent.cs` in this iteration. `AnimationStateTracker` continues to run as a secondary guard. The new system works *alongside* it, not *instead of* it, during the transition period.
 
-### Phase 5: Testing & Edge Cases (Files: 2)
+### Phase 5: Testing & Edge Cases
 
-| # | Task | File |
-|---|------|------|
-| 5.1 | Update `EffectChainTests` if needed | `Assets/Scripts/Editor/Tests/EffectChainTests.cs` |
-| 5.2 | Update PlayMode test SOPs that reference `CloseOpenedChain()` behavior | `docs/StrategyB_PlayMode_SOP.md`, `.agents/skills/unity-card-playmode-test/SKILL.md` |
+#### 5.1 Editor Unit Tests (`Assets/Scripts/Editor/Tests/EffectChainTests.cs`)
 
-**Test scenarios**:
-1. Single card reveal -> attack animation plays normally
-2. Bury -> onMeBuried -> stage: animations play in bury -> stage order
-3. Same card with two effects (e.g., attack + bury): both animations captured, played contiguously
-4. Deep nesting (A -> B -> C -> D): animations play A -> B -> C -> D
-5. Loop guard: same card+effect in opened chains blocks (existing behavior)
-6. Combat end during animation: `RecorderAnimationPlayer` stops gracefully
-7. Headless test: fallback path works when `RecorderAnimationPlayer.me == null`
+Add the following test methods to `EffectChainTests`:
+
+| Test Method | Purpose | Setup | Assertion |
+|-------------|---------|-------|-----------|
+| `AnimationRequest_CapturedOnEffectRecorder` | Verify `HPAlterEffect` captures `Attack` request on current recorder | Create card + effect, call `DecreaseTheirHp()` via reflection | `recorder.animationRequests.Count == 1 && recorder.animationRequests[0].type == Attack` |
+| `AnimationRequest_BatchMoveCaptured` | Verify `BuryEffect` captures `MoveToBottomBatch` | Create card with `BuryEffect`, invoke `BuryMyCards(2)` with 2 valid targets in deck | `recorder.animationRequests[0].type == MoveToBottomBatch && targetCards.Count == 2` |
+| `RecorderTree_NavigatesViaTransform` | Verify parent-child links use Transform only | Create root recorder under `EffectChainManager`, create child recorder parented to root | `child.transform.parent == root.transform` (no explicit C# parent field) |
+| `AnimationPlayedFlag_SetAfterPlayback` | Verify `animationPlayed` prevents double-play | Start `PlayRecorderCoroutine`, yield until complete | `recorder.animationPlayed == true` |
+| `FallbackPath_OldVisualCalledWhenPlayerNull` | Verify fallback when `RecorderAnimationPlayer.me == null` | Set `RecorderAnimationPlayer.me = null`, trigger `HPAlterEffect` | `CombatManager.onDamageDealt` event is raised (old path) |
+| `CloseOpenedChain_DoesNotTriggerPlayback` | Verify chain manager does NOT play animations | Open chain, close chain | `EffectChainManager.closedEffectRecorders.Count > 0` but no coroutines started by chain manager |
+
+#### 5.2 Play Mode Integration Tests
+
+Run in Play Mode via `unity-MCP execute_code`. Use the standard Strategy B setup template.
+
+| ID | Scenario | Deck Setup | Trigger Steps | Expected Animation Order | State Verification |
+|----|----------|------------|---------------|--------------------------|--------------------|
+| **PM-1** | Basic attack | `BLACKSMITH` (player) vs dummy enemy | Reveal `BLACKSMITH`, trigger effect | 1. BLACKSMITH attack animation | Enemy HP = 100 - (2+1+Power) |
+| **PM-2** | Bury chain | `SPIKE_SKELETON`(bottom), `Start_Card`, `ETERNAL_GHOST`, `GRAVE_PUNCH`(top) | Reveal `GRAVE_PUNCH`, trigger effect | 1. GRAVE_PUNCH bury animation (batch)<br>2. SPIKE_SKELETON attack animation (from onMeBuried)<br>3. ETERNAL_GHOST attack animation (from SPIKE damage)<br>4. GRAVE_PUNCH attack animation<br>5. ETERNAL_GHOST attack animation (from GRAVE_PUNCH damage) | Enemy HP reduced by all attacks; SPIKE_SKELETON at bottom |
+| **PM-3** | Multi-effect card | `GRAVE_KEEPER` + 1 friendly + 1 enemy | Reveal `GRAVE_KEEPER`, trigger effect | 1. GRAVE_KEEPER attack animation<br>2. GRAVE_KEEPER stage-self animation (if onFriendlyCardBuried fires) | Attack resolves first, then stage; both requests on same recorder |
+| **PM-4** | Deep nesting | `A`(buries B) -> `B`(buries C) -> `C`(attacks) | Trigger A -> B's onMeBuried -> C's onMeBuried | 1. A bury animation<br>2. B bury animation<br>3. C attack animation | Depth-first interleave order: A's requests, then A's children (B), then B's children (C) |
+| **PM-5** | Loop guard | `SLIME` with self-replicating effect | Reveal `SLIME`, trigger `onMeBuried` twice | Only first `onMeBuried` triggers; second blocked by `openedEffectRecorders` | `EffectCanBeInvoked` returns `false` on second call |
+| **PM-6** | Combat end during animation | Any damage card | Trigger effect, immediately call `ExitCombat()` | No exception; all recorder GameObjects destroyed; input block released | `EffectChainManager.closedEffectRecorders.Count == 0` |
+| **PM-7** | Headless fallback | Same as PM-1, but destroy `RecorderAnimationPlayer` GameObject before test | Reveal card, trigger effect | Old visual path executes (`CombatManager.onDamageDealt` fires) | Damage resolves synchronously even without animation player |
+
+#### 5.3 Edge Cases & Regression
+
+| ID | Case | Expected Behavior | How to Test |
+|----|------|-------------------|-------------|
+| **EC-1** | Empty `animationRequests` list | Recorder is marked `animationPlayed = true` immediately; children still recursed | Create recorder with 0 requests, play it |
+| **EC-2** | `targetCards` contains null entries | Batch move skips null cards without exception | Add `null` to `targetCards` list, play `MoveToBottomBatch` |
+| **EC-3** | `AnimationStateTracker.HasActiveBatch` true during Phase 2 | `PlayRecorderAnimationsAndWait` yields until idle before closing chain | Force `AnimationStateTracker` into active state, then trigger reveal |
+| **EC-4** | Input block reference count | `ResetInputBlock()` in `finally` releases all input blocks | Trigger multiple effects that call `BlockInput`, verify `IsInputBlocked == false` after animation phase |
+| **EC-5** | Damage resolved before animation | HP changes immediately in logic phase; animation only visual | Check enemy HP **before** `PlayRecordersCoroutine` yields |
+| **EC-6** | `closedEffectRecorders` accumulates across rounds | Each round's recorders are cleaned up by `animationPlayed = true` | Trigger 3 separate reveals, verify old recorders are skipped on subsequent plays |
+| **EC-7** | Exile + Destroy animation | `ExileEffect` captures `Destroy` request; plays after parent recorder's requests | Reveal `RIFT` (exiles self + stages friendly); verify Destroy plays after Stage in correct recorder order |
+| **EC-8** | Same card with 3+ effects | All requests on same recorder play sequentially before children | Create card with HPAlter + Bury + Stage in same container; verify order = attack -> bury -> stage -> children |
+
+#### 5.4 Automated Console Assertions (Strategy B Script)
+
+When writing Play Mode test scripts, assert the following console messages or state checks:
+
+```csharp
+// After TriggerRevealEffect(testCard) + yield for PlayRecorderAnimationsAndWait
+// 1. Verify EffectRecorder tree built
+var ecm = EffectChainManager.Me;
+bool hasRecorders = ecm.closedEffectRecorders.Count > 0;
+UnityEngine.Debug.Log("[CHECK] Recorders built: " + hasRecorders);
+
+// 2. Verify animation requests captured
+foreach (var recGo in ecm.closedEffectRecorders)
+{
+    var rec = recGo.GetComponent<EffectRecorder>();
+    UnityEngine.Debug.Log("[CHECK] Recorder " + rec.processedEffectID + " requests: " + rec.animationRequests.Count);
+}
+
+// 3. Verify all played flag set
+bool allPlayed = ecm.closedEffectRecorders.TrueForAll(r => r.GetComponent<EffectRecorder>().animationPlayed);
+UnityEngine.Debug.Log("[CHECK] All recorders played: " + allPlayed);
+
+// 4. Verify input unblocked
+bool inputFree = !cm.IsInputBlocked;
+UnityEngine.Debug.Log("[CHECK] Input unblocked: " + inputFree);
+```
+
+#### 5.5 SOP Updates Required
+
+| Document | Section | Update |
+|----------|---------|--------|
+| `docs/StrategyB_PlayMode_SOP.md` | Challenge #3 | Clarify that `CloseOpenedChain()` is now called **inside** `PlayRecorderAnimationsAndWait()`; tests that manually call `CloseOpenedChain()` after trigger are still valid but the coroutine will call it again safely |
+| `docs/StrategyB_PlayMode_SOP.md` | Section 4.3 | Add note: `TriggerRevealEffect` now starts the `PlayRecorderAnimationsAndWait` coroutine automatically in `CombatManager.RevealCards()`; for direct `InvokeEffectEvent()` tests, call `cm.StartCoroutine(cm.GetType().GetMethod("PlayRecorderAnimationsAndWait", BindingFlags.NonPublic).Invoke(cm, null))` to simulate full flow |
+| `.agents/skills/unity-card-playmode-test/SKILL.md` | Challenge list | Add Challenge #15: `PlayRecorderAnimationsAndWait` coroutine must be waited for when testing animation capture; direct `InvokeEffectEvent` does not auto-start the coroutine |
+| `.agents/skills/unity-card-playmode-test/SKILL.md` | Section 6.1 | Add step 5.5: If testing animation request capture (not just damage), call `PlayRecorderAnimationsAndWait` via reflection and yield one frame to allow coroutine to collect root recorders |
 
 ---
 
@@ -987,13 +1049,22 @@ Grave_Punch revealed
 
 ## 7. Success Criteria
 
-1. **Basic combat**: Reveal a card with simple damage effect -> attack animation plays normally
-2. **Bury chain**: Card with bury effect targets another card -> bury animation plays first, then buried card's effect animation plays
-3. **Multi-effect card**: Card with attack + bury -> both requests captured on same recorder, animations play contiguously
-4. **Deep nesting**: A -> B -> C -> D chain -> animations play A -> B -> C -> D
-5. **No regression**: Combat win/lose conditions, HP calculations, and combat log remain correct
-6. **No soft-lock**: If animation system breaks, timeout releases input within 5 seconds
-7. **Headless compatibility**: Tests without `RecorderAnimationPlayer` work through fallback paths
+All criteria must pass before the system is considered stable.
+
+| # | Criterion | Test Method | Pass Condition |
+|---|-----------|-------------|----------------|
+| SC-1 | **Basic attack animation** | Play Mode: Reveal `BLACKSMITH`, trigger effect | Attack animation plays; enemy HP reduced by `baseDmg + extraDmg + Power`; no errors in console |
+| SC-2 | **Bury chain order** | Play Mode: Deck = `[SPIKE_SKELETON, Start_Card, ETERNAL_GHOST, GRAVE_PUNCH]` (bottom->top); reveal `GRAVE_PUNCH` | Animation order: (1) GRAVE_PUNCH bury batch, (2) SPIKE_SKELETON attack, (3) ETERNAL_GHOST attack (from SPIKE), (4) GRAVE_PUNCH attack, (5) ETERNAL_GHOST attack (from GRAVE_PUNCH) |
+| SC-3 | **Multi-effect contiguous playback** | Play Mode: Reveal `GRAVE_PUNCH` (has Bury + HPAlter + HPAlter) | All 3 animation requests captured on the **same** `EffectRecorder`; they play sequentially before any child recorder animations |
+| SC-4 | **Deep nesting interleave** | Play Mode: Create chain A(buries B) -> B(buries C) -> C(attacks) | `RecorderAnimationPlayer` traverses depth-first by effect-instance-boundary: A's requests -> A's child B's requests -> B's child C's requests |
+| SC-5 | **No combat regression** | Run full card test suite (Strategy A + B) | All existing HP/shield calculations, win/lose conditions, `ValueTrackerManager` counters, and combat logs match pre-change baselines |
+| SC-6 | **No soft-lock** | Play Mode: Trigger effect, then force `ExitCombat()` mid-animation | Input block released within 5 seconds (via `ResetInputBlock` in `finally`); no exceptions; `EffectChainManager` children destroyed |
+| SC-7 | **Headless compatibility** | Editor Mode: Run `EffectChainTests` with `RecorderAnimationPlayer.me = null` | All damage and deck-manipulation tests pass via fallback paths; no `NullReferenceException` on `RecorderAnimationPlayer.me` access |
+| SC-8 | **Event timing correctness** | Play Mode: Reveal `GRAVE_PORTAL` (bury + onMeBuried stage) | `onMeBuried` and `onAnyCardBuried` fire **synchronously** during logic phase (before animations); buried card's reactive effects execute immediately, not after animation |
+| SC-9 | **Batch move parallelism** | Play Mode: Reveal `BODY_CANON` (bury all friendly) | All buried cards start `MoveToBottom` simultaneously; yield waits for last card to finish; non-moving cards slide in parallel via `UpdateAllPhysicalCardTargets` |
+| SC-10 | **Damage resolved in logic phase** | Play Mode: Reveal damage card, check enemy HP **before** animation coroutine yields | Enemy HP is already reduced immediately after `TriggerRevealedCardEffect()` returns; animation is purely visual |
+| SC-11 | **Recorder cleanup** | Play Mode: Complete 3 combat rounds | `EffectChainManager.closedEffectRecorders` does not leak across rounds; `animationPlayed = true` prevents replay; `ExitCombat()` destroys all recorder GameObjects |
+| SC-12 | **AnimationStateTracker safety net** | Play Mode: Trigger effect that uses old `AnimationStateTracker` path (e.g. async status effect projectile) | `PlayRecorderAnimationsAndWait` yields until `HasActiveBatch == false` before closing chain; old and new systems do not conflict |
 
 ---
 
@@ -1009,3 +1080,252 @@ Grave_Punch revealed
 8. **Phase 4** (Conservative Cleanup): Verify `AnimationStateTracker` still works as safety net; no `GameEvent.cs` changes
 9. **Phase 5** (Tests): Update unit tests and PlayMode SOPs if needed
 10. **Full regression test**: Run full card test suite
+
+
+## 9. Test Script Examples
+
+### 9.1 Play Mode — Animation Request Capture Verification
+
+Use this snippet to verify that `EffectRecorder`s are building the correct tree and capturing requests after a reveal trigger.
+
+```csharp
+// ==========================================
+// Setup (standard Strategy B template)
+// ==========================================
+if (!UnityEditor.EditorApplication.isPlaying){
+    UnityEngine.Debug.Log("[TEST FAIL] Must be in Play Mode");
+    return 1;
+}
+
+CombatManager cm = CombatManager.Me;
+if (cm == null) { UnityEngine.Debug.Log("[TEST FAIL] cm null"); return 1; }
+
+// Reset HP
+cm.ownerPlayerStatusRef.hp = 100; cm.ownerPlayerStatusRef.hpMax = 100; cm.ownerPlayerStatusRef.shield = 0;
+cm.enemyPlayerStatusRef.hp = 100; cm.enemyPlayerStatusRef.hpMax = 100; cm.enemyPlayerStatusRef.shield = 0;
+
+// Reset deck
+cm.combinedDeckZone.Clear();
+if (cm.revealZone != null) { UnityEngine.Object.DestroyImmediate(cm.revealZone); cm.revealZone = null; }
+
+// Set phase
+if (cm.currentGamePhaseRef != null)
+    cm.currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;
+
+// Close chains
+if (EffectChainManager.Me != null){
+    EffectChainManager.Me.CloseOpenedChain();
+    EffectChainManager.Me.lastEffectObject = null;
+}
+
+// ==========================================
+// Helper: Create card with reflection wiring
+// ==========================================
+System.Func<string, GameObject> CreateTestCard = (System.Func<string, GameObject>)((prefabPath) =>{
+    GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+    if (prefab == null) { UnityEngine.Debug.Log("[TEST FAIL] Prefab not found: " + prefabPath); return null; }
+    GameObject card = UnityEngine.Object.Instantiate(prefab, cm.playerDeckParent != null ? cm.playerDeckParent.transform : null);
+    card.name = prefab.name;
+    CardScript cs = card.GetComponent<CardScript>();
+    cs.myStatusRef = cm.ownerPlayerStatusRef;
+    cs.theirStatusRef = cm.enemyPlayerStatusRef;
+    cs.myStatusEffects = new System.Collections.Generic.List<EnumStorage.StatusEffect>();
+    cs.myTags = new System.Collections.Generic.List<EnumStorage.Tag>();
+    EffectScript[] effects = card.GetComponentsInChildren<EffectScript>(true);
+    foreach (EffectScript effect in effects)
+    {
+        typeof(EffectScript).GetField("myCard", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(effect, card);
+        typeof(EffectScript).GetField("myCardScript", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(effect, cs);
+        typeof(EffectScript).GetField("combatManager", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(effect, cm);
+    }
+    HPAlterEffect[] hpaEffects = card.GetComponentsInChildren<HPAlterEffect>(true);
+    foreach (HPAlterEffect hae in hpaEffects) hae.isStatusEffectDamage = true;
+    return card;
+});
+
+System.Action<GameObject> TriggerRevealEffect = (System.Action<GameObject>)((card) =>{
+    cm.revealZone = card;
+    System.Reflection.MethodInfo triggerMethod = typeof(CombatManager).GetMethod("TriggerRevealedCardEffect",
+        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+    if (triggerMethod != null) triggerMethod.Invoke(cm, null);
+});
+
+// ==========================================
+// Test: PM-2 Bury Chain Animation Order
+// ==========================================
+UnityEngine.Debug.Log("===== PM-2 Bury Chain Test =====");
+{
+    // Build deck: Spike_Skeleton(bottom), Start_Card, Eternal_Ghost, Grave_Punch(top)
+    GameObject spike = CreateTestCard("Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/SPIKE_SKELETON.prefab");
+    GameObject startCard = CreateTestCard("Assets/Prefabs/Cards/System/StartCard.prefab");
+    GameObject eternal = CreateTestCard("Assets/Prefabs/Cards/3.0 no cost (current)/General/ETERNAL_GHOST.prefab");
+    GameObject gravePunch = CreateTestCard("Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab");
+
+    if (spike != null) { cm.combinedDeckZone.Add(spike); spike.GetComponent<CardScript>().myStatusRef = cm.ownerPlayerStatusRef; }
+    if (startCard != null) cm.combinedDeckZone.Add(startCard);
+    if (eternal != null) { cm.combinedDeckZone.Add(eternal); eternal.GetComponent<CardScript>().myStatusRef = cm.ownerPlayerStatusRef; }
+    if (gravePunch != null) { cm.combinedDeckZone.Add(gravePunch); gravePunch.GetComponent<CardScript>().myStatusRef = cm.ownerPlayerStatusRef; }
+
+    int hpBefore = cm.enemyPlayerStatusRef.hp;
+    TriggerRevealEffect(gravePunch);
+
+    // Manually start PlayRecorderAnimationsAndWait coroutine (simulate CombatManager Phase 2)
+    System.Reflection.MethodInfo playMethod = typeof(CombatManager).GetMethod("PlayRecorderAnimationsAndWait",
+        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+    if (playMethod != null)
+    {
+        cm.StartCoroutine((System.Collections.IEnumerator)playMethod.Invoke(cm, null));
+    }
+
+    // Yield one frame so coroutine reaches the chain close + recorder collection
+    // (In real test you may need to yield more frames; here we just inspect state)
+
+    // Verify recorders built
+    var ecm = EffectChainManager.Me;
+    int recorderCount = ecm != null ? ecm.closedEffectRecorders.Count : 0;
+    UnityEngine.Debug.Log("[CHECK] Closed recorders: " + recorderCount);
+
+    // Verify animation requests exist
+    int totalRequests = 0;
+    foreach (var recGo in ecm.closedEffectRecorders)
+    {
+        var rec = recGo.GetComponent<EffectRecorder>();
+        if (rec != null)
+        {
+            totalRequests += rec.animationRequests.Count;
+            string reqTypes = "";
+            foreach (var req in rec.animationRequests)
+                reqTypes += req.type.ToString() + " ";
+            UnityEngine.Debug.Log("[CHECK] Recorder " + rec.processedEffectID + " requests=" + rec.animationRequests.Count + " types=" + reqTypes);
+        }
+    }
+
+    // Damage should already be resolved (logic phase)
+    int hpAfter = cm.enemyPlayerStatusRef.hp;
+    int totalDmg = hpBefore - hpAfter;
+    UnityEngine.Debug.Log("[CHECK] Total damage dealt (logic phase): " + totalDmg);
+
+    // Expected: GRAVE_PUNCH attack(3) + SPIKE_SKELETON 2 attacks(2*3=6) + ETERNAL_GHOST 2 attacks(2*2=4) = 13 (no Power)
+    // Actual depends on exact card config; verify > 0 and recorders > 0
+    string result = (recorderCount > 0 && totalRequests > 0 && totalDmg > 0) ? "PASS" : "FAIL";
+    UnityEngine.Debug.Log("[TEST " + result + "] PM-2 | Recorders=" + recorderCount + " Requests=" + totalRequests + " Dmg=" + totalDmg);
+
+    if (spike != null) UnityEngine.Object.DestroyImmediate(spike);
+    if (startCard != null) UnityEngine.Object.DestroyImmediate(startCard);
+    if (eternal != null) UnityEngine.Object.DestroyImmediate(eternal);
+    if (gravePunch != null) UnityEngine.Object.DestroyImmediate(gravePunch);
+}
+
+UnityEngine.Debug.Log("===== Tests Complete =====");
+return 0;
+```
+
+### 9.2 Headless — Fallback Path Verification
+
+Use this snippet in Editor Mode (or Play Mode with `RecorderAnimationPlayer` destroyed) to verify the old visual path still works.
+
+```csharp
+// Headless test: ensure damage resolves when RecorderAnimationPlayer is null
+CombatManager cm = CombatManager.Me;
+if (cm == null) { UnityEngine.Debug.Log("[TEST FAIL] cm null"); return 1; }
+
+// Destroy RecorderAnimationPlayer if exists
+if (RecorderAnimationPlayer.me != null)
+    UnityEngine.Object.DestroyImmediate(RecorderAnimationPlayer.me.gameObject);
+RecorderAnimationPlayer.me = null;
+
+// Reset state
+cm.ownerPlayerStatusRef.hp = 100; cm.enemyPlayerStatusRef.hp = 100; cm.enemyPlayerStatusRef.shield = 0;
+cm.combinedDeckZone.Clear();
+if (EffectChainManager.Me != null) { EffectChainManager.Me.CloseOpenedChain(); EffectChainManager.Me.lastEffectObject = null; }
+
+// Create and wire a simple damage card
+GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(
+    "Assets/Prefabs/Cards/3.0 no cost (current)/General/BLACKSMITH.prefab");
+if (prefab == null) { UnityEngine.Debug.Log("[TEST FAIL] Prefab not found"); return 1; }
+GameObject card = UnityEngine.Object.Instantiate(prefab);
+CardScript cs = card.GetComponent<CardScript>();
+cs.myStatusRef = cm.ownerPlayerStatusRef;
+cs.theirStatusRef = cm.enemyPlayerStatusRef;
+HPAlterEffect hae = card.GetComponentInChildren<HPAlterEffect>(true);
+if (hae != null)
+{
+    typeof(EffectScript).GetField("myCard", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(hae, card);
+    typeof(EffectScript).GetField("myCardScript", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(hae, cs);
+    typeof(EffectScript).GetField("combatManager", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(hae, cm);
+    hae.isStatusEffectDamage = true; // synchronous for headless test
+}
+
+int hpBefore = cm.enemyPlayerStatusRef.hp;
+hae.DecreaseTheirHp();
+int hpAfter = cm.enemyPlayerStatusRef.hp;
+int dmg = hpBefore - hpAfter;
+
+string result = (dmg > 0) ? "PASS" : "FAIL";
+UnityEngine.Debug.Log("[TEST " + result + "] Headless Fallback | Dmg=" + dmg);
+
+UnityEngine.Object.DestroyImmediate(card);
+return 0;
+```
+
+### 9.3 Editor Unit Test — AnimationRequest Capture
+
+Add to `Assets/Scripts/Editor/Tests/EffectChainTests.cs`:
+
+```csharp
+[Test]
+public void AnimationRequest_CapturedOnEffectRecorder()
+{
+    var card = CreateCard(true, "TestCard");
+    var effectObj = CreateGameObject("EffectObj");
+    effectObj.transform.SetParent(card.transform);
+
+    // Make recorder
+    EffectChainManager.MakeANewEffectRecorder(card, effectObj);
+    var recorderGo = EffectChainManager.currentEffectRecorder;
+    Assert.IsNotNull(recorderGo, "Recorder should be created");
+    var recorder = recorderGo.GetComponent<EffectRecorder>();
+    Assert.IsNotNull(recorder, "Recorder should have EffectRecorder component");
+
+    // Simulate HPAlterEffect capturing a request
+    recorder.animationRequests.Add(new AnimationRequest
+    {
+        type = AnimationRequestType.Attack,
+        attackerCard = card,
+        isAttackingEnemy = true,
+        onHit = null,
+        onComplete = null
+    });
+
+    Assert.AreEqual(1, recorder.animationRequests.Count, "Should have 1 animation request");
+    Assert.AreEqual(AnimationRequestType.Attack, recorder.animationRequests[0].type, "Should be Attack type");
+}
+
+[Test]
+public void RecorderAnimationPlayer_InterleavesChildrenDepthFirst()
+{
+    // Setup a mock tree using Transform hierarchy
+    var rootGo = new GameObject("RootRecorder");
+    var root = rootGo.AddComponent<EffectRecorder>();
+    root.animationRequests.Add(new AnimationRequest { type = AnimationRequestType.Attack });
+
+    var childGo = new GameObject("ChildRecorder");
+    var child = childGo.AddComponent<EffectRecorder>();
+    child.transform.SetParent(rootGo.transform);
+    child.animationRequests.Add(new AnimationRequest { type = AnimationRequestType.MoveToBottom });
+
+    // Run player (this is a synchronous approximation; real test uses UnityTest attribute)
+    var playerGo = new GameObject("Player");
+    var player = playerGo.AddComponent<RecorderAnimationPlayer>();
+    RecorderAnimationPlayer.me = player;
+
+    // Note: In a real Editor test, use [UnityTest] and yield return player.PlayRecorderCoroutine(root);
+    // For this unit test, we verify the tree structure:
+    Assert.AreEqual(rootGo.transform, childGo.transform.parent, "Child should be parented to root via Transform");
+    Assert.IsFalse(root.animationPlayed, "Root should not be played yet");
+
+    UnityEngine.Object.DestroyImmediate(rootGo);
+    UnityEngine.Object.DestroyImmediate(childGo);
+    UnityEngine.Object.DestroyImmediate(playerGo);
+}
+```

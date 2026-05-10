@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using Unity.VisualScripting;
@@ -123,14 +124,32 @@ public class CardManipulationEffect : EffectScript
 			// Sync physical card list
 			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 			
-			// Play animation for each moved card
-			foreach (var (card, newIndex) in delayedCards)
+			// Capture animation requests
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null && RecorderAnimationPlayer.me != null)
 			{
-				combatManager.visuals.MoveCardToIndex(card, newIndex, duration: 0.3f, useArc: false);
+				foreach (var (card, newIndex) in delayedCards)
+				{
+					recorder.animationRequests.Add(new AnimationRequest
+					{
+						type = AnimationRequestType.MoveToIndex,
+						targetCard = card,
+						targetIndex = newIndex,
+						duration = 0.3f,
+						useArc = false
+					});
+				}
 			}
-			
-			// Update other card positions (ensure all card positions are correct)
-			combatManager.visuals.UpdateAllPhysicalCardTargets();
+			else
+			{
+				// Fallback: old immediate visual path
+				foreach (var (card, newIndex) in delayedCards)
+				{
+					combatManager.visuals.MoveCardToIndex(card, newIndex, duration: 0.3f, useArc: false);
+				}
+				combatManager.visuals.UpdateAllPhysicalCardTargets();
+			}
 		}
 	}
 	#endregion
@@ -235,22 +254,54 @@ public class CardManipulationEffect : EffectScript
 		
 		string myColor = GetMyCardColorTag();
 		
+		// Remove from combined deck in logic phase so SyncPhysicalCards sees correct state
 		for (int i = 0; i < amount; i++)
 		{
 			var minion = minions[i];
-			var minionScript = minion.GetComponent<CardScript>();
-			string minionColor = GetCardColorTag(minion);
-			
-			// Use unified destroy method (with animation)
-			combatManager.visuals.DestroyCardWithAnimation(minion);
-			
-			AppendLog($"// [<color={myColor}>{myCard.name}</color>]摧毁了随从[<color={minionColor}>{minionScript.name}</color>]");
+			if (combatManager.combinedDeckZone.Contains(minion))
+			{
+				combatManager.combinedDeckZone.Remove(minion);
+			}
 		}
 		
-		// Sync remaining physical card positions
-		if (amount > 0)
+		// Sync physical card list order with logical deck
+		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+		
+		// Capture animation requests
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null)
 		{
-			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+			for (int i = 0; i < amount; i++)
+			{
+				var minion = minions[i];
+				var minionScript = minion.GetComponent<CardScript>();
+				string minionColor = GetCardColorTag(minion);
+				
+				bool isLast = (i == amount - 1);
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.Destroy,
+					targetCard = minion,
+					onComplete = isLast ? (Action)(() => combatManager.visuals.UpdateAllPhysicalCardTargets()) : null
+				});
+				
+				AppendLog($"// [<color={myColor}>{myCard.name}</color>]摧毁了随从[<color={minionColor}>{minionScript.name}</color>]");
+			}
+		}
+		else
+		{
+			// Fallback: old immediate visual path
+			for (int i = 0; i < amount; i++)
+			{
+				var minion = minions[i];
+				var minionScript = minion.GetComponent<CardScript>();
+				string minionColor = GetCardColorTag(minion);
+				
+				combatManager.visuals.DestroyCardWithAnimation(minion);
+				
+				AppendLog($"// [<color={myColor}>{myCard.name}</color>]摧毁了随从[<color={minionColor}>{minionScript.name}</color>]");
+			}
 			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}

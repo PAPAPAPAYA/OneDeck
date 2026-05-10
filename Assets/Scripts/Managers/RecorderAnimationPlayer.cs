@@ -15,15 +15,6 @@ public class RecorderAnimationPlayer : MonoBehaviour
 
 	public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 	{
-		string rootInfo = "";
-		foreach (var r in rootRecorders)
-		{
-			if (r == null) continue;
-			var rec = r.GetComponent<EffectRecorder>();
-			if (rec != null) rootInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "];";
-		}
-
-
 		AttackAnimationManager.me?.HoldDeckFocus();
 		try
 		{
@@ -39,50 +30,32 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		{
 			AttackAnimationManager.me?.ReleaseDeckFocus();
 		}
-
-
 	}
 
 	public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 	{
 		if (recorder == null || recorder.animationPlayed) yield break;
 		recorder.animationPlayed = true;
-		
-		string reqSummary = "";
-		foreach (var r in recorder.animationRequests)
-		{
-			if (r != null) reqSummary += r.type.ToString() + ";";
-		}
 
-
-		// Play all requests of this effect instance sequentially without interleaving children
-		for (int reqIndex = 0; reqIndex < recorder.animationRequests.Count; reqIndex++)
+		// Play all requests of this effect instance sequentially
+		foreach (var request in recorder.animationRequests)
 		{
-			var request = recorder.animationRequests[reqIndex];
 			if (request != null)
-
-			
-			yield return StartCoroutine(PlayRequestCoroutine(request));
+			{
+				yield return StartCoroutine(PlayRequestCoroutine(request));
+			}
 		}
 
 		// After all requests of this effect instance are done, recurse into children (effect-instance-boundary interleave)
-		if (recorder.transform.childCount > 0)
-		{
-
-		}
-		
 		for (int i = 0; i < recorder.transform.childCount; i++)
 		{
 			var child = recorder.transform.GetChild(i);
 			var childRecorder = child.GetComponent<EffectRecorder>();
 			if (childRecorder != null && !childRecorder.animationPlayed)
 			{
-	
 				yield return StartCoroutine(PlayRecorderCoroutine(childRecorder));
 			}
 		}
-		
-
 	}
 
 	public IEnumerator PlayRequestCoroutine(AnimationRequest request)
@@ -91,10 +64,6 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		if (CombatManager.Me == null) yield break;
 		var visuals = CombatManager.Me.visuals;
 		if (visuals == null) yield break;
-		
-		string attackerName = request.attackerCard != null ? request.attackerCard.name : "null";
-		string targetName = request.targetCard != null ? request.targetCard.name : (request.targetCards != null ? "count=" + request.targetCards.Count : "null");
-
 
 		switch (request.type)
 		{
@@ -102,7 +71,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			{
 				bool done = false;
 				visuals.PlayAttackAnimation(request.attackerCard, request.isAttackingEnemy, request.onHit, () => { done = true; if (request.onComplete != null) request.onComplete(); });
-				while (!done) yield return null;
+				yield return new WaitUntil(() => done);
 				break;
 			}
 			case AnimationRequestType.MoveToBottom:
@@ -110,7 +79,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
 				visuals.MoveCardToBottom(request.targetCard, request.duration, request.useArc, () => { done = true; if (request.onComplete != null) request.onComplete(); });
-				while (!done) yield return null;
+				yield return new WaitUntil(() => done);
 				break;
 			}
 			case AnimationRequestType.MoveToBottomBatch:
@@ -127,7 +96,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
 					});
 				}
-				while (completedCount < totalCount) yield return null;
+				yield return new WaitUntil(() => completedCount >= totalCount);
 				break;
 			}
 			case AnimationRequestType.MoveToTop:
@@ -135,7 +104,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
 				visuals.MoveCardToTop(request.targetCard, request.duration, request.useArc, () => { done = true; if (request.onComplete != null) request.onComplete(); });
-				while (!done) yield return null;
+				yield return new WaitUntil(() => done);
 				break;
 			}
 			case AnimationRequestType.MoveToTopBatch:
@@ -152,7 +121,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
 					});
 				}
-				while (completedCount < totalCount) yield return null;
+				yield return new WaitUntil(() => completedCount >= totalCount);
 				break;
 			}
 			case AnimationRequestType.MoveToIndex:
@@ -160,11 +129,16 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
 				visuals.MoveCardToIndex(request.targetCard, request.targetIndex, request.duration, request.useArc, () => { done = true; if (request.onComplete != null) request.onComplete(); });
-				while (!done) yield return null;
+				yield return new WaitUntil(() => done);
+				break;
+			}
+			case AnimationRequestType.Destroy:
+			{
+				bool done = false;
+				visuals.DestroyCardWithAnimation(request.targetCard, () => { done = true; if (request.onComplete != null) request.onComplete(); });
+				yield return new WaitUntil(() => done);
 				break;
 			}
 		}
-		
-
 	}
 }

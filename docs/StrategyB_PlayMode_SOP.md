@@ -27,6 +27,8 @@ Unlike Strategy A (Editor Mode / isolated environment), Strategy B runs inside a
 | 12 | **Stage effect appears to do nothing** | `StageMyCards` / `StageSelf` excludes cards already at the top of `combinedDeckZone` (`IsCardAtTop` check). If the only eligible card is at index `Count-1`, the filtered list is empty. | Add an extra dummy card **after** the target card in `combinedDeckZone` so the target is **not** at the top. |
 | 13 | **Cost check `EnemyCursedCardHasPower` fails unexpectedly** | This cost requires the enemy curse card's Power to be **strictly greater** than the parameter (e.g. `> 1` for `intArg=1`). A JU_ON with exactly 1 Power will fail the check. | Pre-buff the enemy JU_ON with enough Power stacks before the trigger (e.g. 2+ Power for `intArg=1`). |
 | 14 | **Multi-Listener cards trigger wrong Container** | Some cards (e.g. `CURSE_THIRST_BEAST`) have **multiple GameEventListeners** on the root object, each bound to a **different CostNEffectContainer** via `InvokeEffectEvent`. `OnMeRevealed` may trigger the "deal dmg" Container while `OnHostileCurseRevealed` triggers the "stage self" Container. | Inspect the prefab's `GameEventListener` response targets (via `SerializedProperty`) to know which Listener maps to which Container. Do not assume all Containers share the same trigger event. |
+| 15 | **`PlayRecorderAnimationsAndWait` not started in direct tests** | `CombatManager.RevealCards()` starts the coroutine automatically, but direct `InvokeEffectEvent()` or `TriggerRevealEffect` bypasses it | To test the full animation flow, manually start the coroutine via reflection after your effect trigger; or use `TriggerRevealEffect` inside a real reveal cycle by setting `cm.awaitingRevealConfirm = false` first |
+| 16 | **Animation request capture not visible in single-frame tests** | `HPAlterEffect` now captures `AnimationRequest` on the recorder instead of immediately raising `onDamageDealt` | Damage is still resolved synchronously (good for tests), but the `AnimationRequest` is only visible on `EffectRecorder.animationRequests`; inspect `EffectChainManager.Me.closedEffectRecorders` after calling `CloseChain()` |
 
 ---
 
@@ -188,6 +190,8 @@ System.Func<string, GameObject> CreateTestCard = (System.Func<string, GameObject
 
 ### 4.3 Trigger Reveal Effect
 
+> **Note (RecorderAnimationPlayer system):** `CombatManager.RevealCards()` automatically starts `PlayRecorderAnimationsAndWait()` after `TriggerRevealedCardEffect()`. When calling `TriggerRevealedCardEffect` directly in tests, the animation phase coroutine is **not** started automatically. If you need to verify animation request capture or playback, call the helper below after your trigger.
+
 ```csharp
 System.Action<GameObject> TriggerRevealEffect = (System.Action<GameObject>)((card) =>
 {
@@ -202,6 +206,25 @@ System.Action<GameObject> TriggerRevealEffect = (System.Action<GameObject>)((car
     else
     {
         UnityEngine.Debug.Log("[TEST WARN] TriggerRevealedCardEffect not found");
+    }
+});
+```
+
+### 4.3a Start Animation Phase (for direct trigger tests)
+
+```csharp
+System.Action StartAnimationPhase = (System.Action)(() =>
+{
+    System.Reflection.MethodInfo playMethod =
+        typeof(CombatManager).GetMethod("PlayRecorderAnimationsAndWait",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+    if (playMethod != null)
+    {
+        cm.StartCoroutine((System.Collections.IEnumerator)playMethod.Invoke(cm, null));
+    }
+    else
+    {
+        UnityEngine.Debug.Log("[TEST WARN] PlayRecorderAnimationsAndWait not found");
     }
 });
 ```
@@ -309,10 +332,11 @@ System.Action CloseChain = (System.Action)(() =>
    - For **multi-container** cards: iterate all `CostNEffectContainer`s and call `InvokeEffectEvent()` on each.
    - For **Linger** cards: directly raise the event (e.g. `GameEventStorage.me.onTheirPlayerTookDmg.RaiseOwner()`).
 6. **Immediately call `CloseChain()`**
-7. Record post-state and compute delta
-8. For async status-effect projectiles, additionally call the private `ApplyXxxSingle` method via reflection
-9. `Debug.Log` with `[TEST PASS/FAIL]` prefix
-10. `DestroyImmediate` the test card
+7. *(Optional)* If testing the **animation request capture** path, call `StartAnimationPhase()` to run `PlayRecorderAnimationsAndWait`, then inspect `EffectChainManager.Me.closedEffectRecorders` for `AnimationRequest` counts.
+8. Record post-state and compute delta
+9. For async status-effect projectiles, additionally call the private `ApplyXxxSingle` method via reflection
+10. `Debug.Log` with `[TEST PASS/FAIL]` prefix
+11. `DestroyImmediate` the test card
 
 ### 5.2 Assertion Convention
 
@@ -469,6 +493,8 @@ return 0;
 | **Stage effect has no effect** | Target card is already at top of `combinedDeckZone` | Add a dummy card on top so the target is not at index `Count-1` |
 | **Cost `EnemyCursedCardHasPower` fails** | Enemy JU_ON Power is not strictly greater than the parameter | Give enemy JU_ON enough Power stacks before triggering |
 | Compilation error: "Unexpected symbol" | Used `$""`, `?.`, or file-level `using` | Switch to string concatenation (`+`) and fully-qualified names |
+| **`onDamageDealt` event not raised after damage effect** | `RecorderAnimationPlayer` is active and `HPAlterEffect` captured an `AnimationRequest` instead | This is expected in the new system. Damage is resolved synchronously; the event is deferred to animation phase. For tests, check `EffectRecorder.animationRequests` on `EffectChainManager.Me.closedEffectRecorders` |
+| **`PlayRecorderAnimationsAndWait` coroutine never completes** | `AnimationStateTracker.HasActiveBatch` is stuck true, or `ICombatVisuals` callback was never invoked | Check that `CombatUXManager` is not null and that `MoveCardToBottom` / `PlayAttackAnimation` callbacks fire. In headless tests, the coroutine may hang if visuals are missing; use fallback path or mock visuals |
 
 ---
 

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
@@ -277,8 +279,11 @@ public class ExileEffect : EffectScript
 				combatManager.revealZone = null;
 			}
 
-			// Use unified destroy method (with animation) - Exile effect is similar to destroy, both remove card from game
-			combatManager.visuals.DestroyCardWithAnimation(targetCard);
+			// Remove from combined deck in logic phase so SyncPhysicalCards sees correct state
+			if (combatManager.combinedDeckZone.Contains(targetCard))
+			{
+				combatManager.combinedDeckZone.Remove(targetCard);
+			}
 
 			AppendLog("// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>]放逐了[<color=" + targetColor + ">" +
 				targetCardScript.gameObject.name + "</color>]");
@@ -307,10 +312,32 @@ public class ExileEffect : EffectScript
 			}
 		}
 
-		// Sync remaining physical card positions
-		if (exiledCards.Count > 0)
+		// Sync physical card list order with logical deck
+		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+
+		// Capture animation requests
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null && exiledCards.Count > 0)
 		{
-			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+			for (int i = 0; i < exiledCards.Count; i++)
+			{
+				bool isLast = (i == exiledCards.Count - 1);
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.Destroy,
+					targetCard = exiledCards[i],
+					onComplete = isLast ? (Action)(() => combatManager.visuals.UpdateAllPhysicalCardTargets()) : null
+				});
+			}
+		}
+		else
+		{
+			// Fallback: old immediate visual path
+			foreach (var card in exiledCards)
+			{
+				combatManager.visuals.DestroyCardWithAnimation(card);
+			}
 			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}

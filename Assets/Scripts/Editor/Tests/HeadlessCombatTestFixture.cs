@@ -198,6 +198,12 @@ public abstract class HeadlessCombatTestFixture
 			CombatManager.Me = null;
 			if (cm != null) UnityEngine.Object.DestroyImmediate(cm.gameObject);
 		}
+		if (RecorderAnimationPlayer.me != null)
+		{
+			var rap = RecorderAnimationPlayer.me;
+			RecorderAnimationPlayer.me = null;
+			if (rap != null && rap.gameObject != null) UnityEngine.Object.DestroyImmediate(rap.gameObject);
+		}
 		if (global::ValueTrackerManager.me != null)
 		{
 			var vtm = global::ValueTrackerManager.me;

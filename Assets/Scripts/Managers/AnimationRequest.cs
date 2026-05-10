@@ -11,7 +11,8 @@ namespace DefaultNamespace
 		MoveToBottomBatch,
 		MoveToTop,
 		MoveToTopBatch,
-		MoveToIndex
+		MoveToIndex,
+		Destroy
 	}
 
 	public class AnimationRequest

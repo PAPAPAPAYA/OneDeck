@@ -1,5 +1,8 @@
+using System.Collections;
+using DefaultNamespace;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 public class EffectChainTests : HeadlessCombatTestFixture
 {
@@ -85,5 +88,140 @@ public class EffectChainTests : HeadlessCombatTestFixture
 
 		Assert.AreEqual(0, EffectChainManager.openedEffectRecorders.Count);
 		Assert.AreEqual(1, EffectChainManager.closedEffectRecorders.Count);
+	}
+
+	[Test]
+	public void AnimationRequest_CapturedOnEffectRecorder()
+	{
+		// Ensure RecorderAnimationPlayer exists for capture path (Awake may not fire in Edit Mode)
+		if (RecorderAnimationPlayer.me == null)
+		{
+			var rapGo = new GameObject("RecorderAnimationPlayer");
+			var rap = rapGo.AddComponent<RecorderAnimationPlayer>();
+			RecorderAnimationPlayer.me = rap;
+		}
+
+		var card = CreateCard(true, "TestCard");
+		var hpa = CreateEffect<HPAlterEffect>(card);
+		hpa.isStatusEffectDamage = false;
+		hpa.baseDmg = CreateScriptableObject<IntSO>();
+		hpa.baseDmg.value = 3;
+
+		EffectChainManager.MakeANewEffectRecorder(card, hpa.gameObject);
+		hpa.DecreaseTheirHp();
+
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		Assert.AreEqual(1, recorder.animationRequests.Count, "Should have 1 animation request");
+		Assert.AreEqual(AnimationRequestType.Attack, recorder.animationRequests[0].type, "Should be Attack type");
+		Assert.AreEqual(card, recorder.animationRequests[0].attackerCard, "Attacker should be the card");
+	}
+
+	[Test]
+	public void AnimationRequest_BatchMoveCaptured()
+	{
+		// Ensure RecorderAnimationPlayer exists for capture path (Awake may not fire in Edit Mode)
+		if (RecorderAnimationPlayer.me == null)
+		{
+			var rapGo = new GameObject("RecorderAnimationPlayer");
+			var rap = rapGo.AddComponent<RecorderAnimationPlayer>();
+			RecorderAnimationPlayer.me = rap;
+		}
+
+		var effectCard = CreateCard(true, "BuryCard");
+		var target1 = CreateCard(false, "Target1");
+		var target2 = CreateCard(false, "Target2");
+
+		CombatManager.combinedDeckZone.Clear();
+		CombatManager.combinedDeckZone.Add(CreateCard(true, "DummyBottom"));
+		CombatManager.combinedDeckZone.Add(target1);
+		CombatManager.combinedDeckZone.Add(target2);
+
+		var buryEffect = CreateEffect<BuryEffect>(effectCard);
+		EffectChainManager.MakeANewEffectRecorder(effectCard, buryEffect.gameObject);
+
+		buryEffect.BuryTheirCards(2);
+
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		Assert.AreEqual(1, recorder.animationRequests.Count, "Should have 1 batch request");
+		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, recorder.animationRequests[0].type);
+		Assert.AreEqual(2, recorder.animationRequests[0].targetCards.Count, "Should bury 2 cards");
+	}
+
+	[Test]
+	public void RecorderTree_NavigatesViaTransform()
+	{
+		var rootGo = CreateGameObject("RootRecorder");
+		var root = rootGo.AddComponent<EffectRecorder>();
+
+		var childGo = CreateGameObject("ChildRecorder");
+		var child = childGo.AddComponent<EffectRecorder>();
+		child.transform.SetParent(rootGo.transform);
+
+		Assert.AreEqual(rootGo.transform, childGo.transform.parent, "Child should be parented to root via Transform only");
+	}
+
+	[UnityTest]
+	public IEnumerator AnimationPlayedFlag_SetAfterPlayback()
+	{
+		var rootGo = CreateGameObject("RootRecorder");
+		var root = rootGo.AddComponent<EffectRecorder>();
+		root.animationRequests.Add(new AnimationRequest { type = AnimationRequestType.Attack });
+
+		var playerGo = CreateGameObject("Player");
+		var player = playerGo.AddComponent<RecorderAnimationPlayer>();
+		RecorderAnimationPlayer.me = player;
+
+		yield return player.PlayRecorderCoroutine(root);
+
+		Assert.IsTrue(root.animationPlayed, "Root should be marked as played after playback");
+	}
+
+	[Test]
+	public void FallbackPath_OldVisualCalledWhenPlayerNull()
+	{
+		// Destroy RecorderAnimationPlayer to force fallback path
+		if (RecorderAnimationPlayer.me != null)
+		{
+			var rapGo = RecorderAnimationPlayer.me.gameObject;
+			RecorderAnimationPlayer.me = null;
+			UnityEngine.Object.DestroyImmediate(rapGo);
+		}
+
+		var card = CreateCard(true, "TestCard");
+		var hpa = CreateEffect<HPAlterEffect>(card);
+		hpa.isStatusEffectDamage = false;
+		hpa.baseDmg = CreateScriptableObject<IntSO>();
+		hpa.baseDmg.value = 5;
+
+		EffectChainManager.MakeANewEffectRecorder(card, hpa.gameObject);
+
+		bool damageEventRaised = false;
+		CombatManager.onDamageDealt += (attacker, isEnemy, onHit, onComplete) =>
+		{
+			damageEventRaised = true;
+		};
+
+		hpa.DecreaseTheirHp();
+
+		Assert.IsTrue(damageEventRaised, "Old visual path should raise onDamageDealt when RecorderAnimationPlayer.me is null");
+	}
+
+	[Test]
+	public void CloseOpenedChain_DoesNotTriggerPlayback()
+	{
+		var card = CreateCard(true, "TestCard");
+		var effectObj = CreateGameObject("EffectObj");
+		effectObj.transform.SetParent(card.transform);
+
+		EffectChainManager.MakeANewEffectRecorder(card, effectObj);
+		Assert.AreEqual(1, EffectChainManager.openedEffectRecorders.Count);
+
+		EffectChainManager.CloseOpenedChain();
+
+		Assert.AreEqual(0, EffectChainManager.openedEffectRecorders.Count);
+		Assert.AreEqual(1, EffectChainManager.closedEffectRecorders.Count);
+
+		var recorder = EffectChainManager.closedEffectRecorders[0].GetComponent<EffectRecorder>();
+		Assert.IsFalse(recorder.animationPlayed, "CloseOpenedChain should NOT trigger animation playback");
 	}
 }

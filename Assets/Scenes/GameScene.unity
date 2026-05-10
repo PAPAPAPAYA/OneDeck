@@ -2873,7 +2873,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbc126ac2175bbf439e7642b6f5fb18d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
-  useCustomOrder: 1
+  useCustomOrder: 0
   customOrderPrefabs:
   - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 8507f0b52a8cc2e41a12752f65e6d063, type: 3}
@@ -4197,7 +4197,6 @@ MonoBehaviour:
   effectRecorderPrefab: {fileID: 2840731622393098116, guid: 017cda882040b6944ba1bd36281cf3b8, type: 3}
   sessionNumberRef: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
   chainNumber: 0
-  currentEffectRecorder: {fileID: 0}
   currentEffectRecorderParent: {fileID: 0}
   lastEffectObject: {fileID: 0}
   openedEffectRecorders: []
