@@ -21,7 +21,7 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 ```
 Assets/
 ├── Scripts/
-│   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, AttackAnimationManager, CardFactory, CardIDRetriever, CombatInfoDisplayer, CombatLog, CombatStartCardGiver, CombatStatsLogger, CostResultPresenter, DeckTester, EffectRecorder, GameEventListener, ICombatVisuals + Null*, ShopStatsManager, StartingCardManager, UtilityFuncManagerScript, WriteRead/
+│   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, AttackAnimationManager, CardFactory, CardIDRetriever, CombatInfoDisplayer, CombatLog, CombatStartCardGiver, CombatStatsLogger, CostResultPresenter, DeckTester, EffectRecorder, RecorderAnimationPlayer, GameEventListener, ICombatVisuals + Null*, ShopStatsManager, StartingCardManager, UtilityFuncManagerScript, WriteRead/
 │   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, AddTextEffect, CardManipulationEffect, ChangeCardTarget, ChangeHpAlterAmountEffect, HPMaxAlterEffect, PrintEffect, TransferStatusEffectEffect, BuryCostEffect, DelayCostEffect, ExposeCostEffect, MinionCostEffect, shop/DeckSizeIncreaseEffect, StatusEffect/
 │   ├── Card/           # CardScript, CostNEffectContainer, CardEventTrigger
 │   ├── SOScripts/      # GameEvent, PlayerStatusSO, StatusEffectSO, DeckSO, BoolSO, CostCheckResult, GamePhaseSO, IntSO, ShopRarityWeightSO, StringSO
@@ -32,7 +32,7 @@ Assets/
 
 ## Core Architecture
 
-- **Singletons**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`, `CombatFuncs.me`, `CardFactory.me`, `CardIDRetriever.Me`, `AnimationStateTracker.me`, `CombatInfoDisplayer.me`, `CombatLog.me`, `CostResultPresenter.me`
+- **Singletons**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`, `CombatFuncs.me`, `CardFactory.me`, `CardIDRetriever.Me`, `AnimationStateTracker.me`, `CombatInfoDisplayer.me`, `CombatLog.me`, `CostResultPresenter.me`, `RecorderAnimationPlayer.me`
 - **Event-driven**: `GameEvent` SO + `GameEventListener`
 - **Component-based Cards**: `CardScript` + `EffectContainers` + `Effects`
 - **Visual Abstraction**: `ICombatVisuals` interface. `CombatManager.visuals` falls back to `CombatUXManager.visuals`, or inject via `visualsOverride` (e.g. `NullCombatVisualsBehaviour` for headless tests).
@@ -127,6 +127,7 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 | `ValueTrackerManager` | `Assets/Scripts/Managers/ValueTrackerManager.cs` |
 | `EnumStorage` | `Assets/Scripts/Managers/EnumStorage.cs` |
 | `AnimationStateTracker` | `Assets/Scripts/Managers/AnimationStateTracker.cs` |
+| `RecorderAnimationPlayer` | `Assets/Scripts/Managers/RecorderAnimationPlayer.cs` |
 | `CardFactory` | `Assets/Scripts/Managers/CardFactory.cs` |
 | `ICombatVisuals` | `Assets/Scripts/Managers/ICombatVisuals.cs` |
 | `CombatLog` | `Assets/Scripts/Managers/CombatLog.cs` |
@@ -141,13 +142,33 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 
 ## Animation System
 
-### Animation State Tracker
-`AnimationStateTracker.me` coordinates global animation state. While animations are playing, all `GameEvent.Raise*` calls are queued and delayed until the current animation batch completes.
+### Two-Phase Execution Model
+1. **Logic Phase** — All effect logic executes synchronously. Effects capture `AnimationRequest`s into the current `EffectRecorder` instead of playing visuals immediately. Deck state, HP, and shields resolve immediately.
+2. **Animation Phase** — After the chain closes, `CombatManager.PlayRecorderAnimationsAndWait()` collects root recorders and yields to `RecorderAnimationPlayer.PlayRecordersCoroutine()` for sequential playback.
 
-### Attack Animation
-`AttackAnimationManager` queue flow: Scale & Rotate -> Dash -> Recoil -> Damage calc.
-- `CombatManager.onDamageDealt` event is raised by `HPAlterEffect` to request animation.
-- Status Effect damage sets `isStatusEffectDamage = true` to skip animation.
+### EffectRecorder Tree
+- `EffectRecorder` MonoBehaviour carries `animationRequests` (captured intents) and `animationPlayed` flag.
+- Tree navigation uses existing Transform parent-child hierarchy under `EffectChainManager`.
+- Traversal order is **effect-instance-boundary interleave**: play all requests in current recorder, then recurse into unplayed direct children by sibling order.
+
+### AnimationRequest Types
+```csharp
+enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy }
+```
+- `HPAlterEffect` captures `Attack` requests (damage already resolved in logic phase; `onHit` is null).
+- `BuryEffect` captures `MoveToBottomBatch`.
+- `StageEffect` captures `MoveToTopBatch`.
+- `ExileEffect` captures `Destroy`.
+- Batch types run all card movements in parallel and yield until the last completes.
+
+### RecorderAnimationPlayer
+- Singleton. Owns the animation-phase coroutine.
+- Wraps playback in `AttackAnimationManager.HoldDeckFocus()` / `ReleaseDeckFocus()`.
+- Calls `UpdateAllPhysicalCardTargets()` before each move request.
+- Falls back to old visual path when `RecorderAnimationPlayer.me == null`.
+
+### AnimationStateTracker (Legacy Safety Net)
+Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until `HasActiveBatch == false` before closing the chain, ensuring any legacy-queued events flush naturally.
 
 ### Card Movement (`ICombatVisuals` / `CombatUXManager`)
 - `MoveCardToBottom(card, duration, useArc, onComplete)`

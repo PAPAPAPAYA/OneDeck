@@ -88,13 +88,13 @@
 	// motion design
 		//todo enlarge card when event triggered
 		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
-	// queue animation
-		// effect recorder based animation system
+	//// queue animation
+		//// effect recorder based animation system
 			//// prototype
-			///todo total implementation
-				// ## 7. Success Criteria
-				// headless unit test update
-				// ### Phase 5: Testing & Edge Cases
+			//// total implementation
+				//// ## 7. Success Criteria
+				//// headless unit test update
+				//// ### Phase 5: Testing & Edge Cases
 		//// D:\Unity Projects\OneDeck\plans\card-animation-serialization-plan.md
 	// AnimationStateTracker checker
 	

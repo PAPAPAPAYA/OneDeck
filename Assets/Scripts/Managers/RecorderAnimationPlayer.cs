@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DefaultNamespace;
+using DG.Tweening;
 using UnityEngine;
 
 public class RecorderAnimationPlayer : MonoBehaviour
@@ -37,6 +38,12 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		if (recorder == null || recorder.animationPlayed) yield break;
 		recorder.animationPlayed = true;
 
+		// Emphasize the source card before playing its effect animations
+		if (recorder.animationRequests.Count > 0 && recorder.cardObject != null)
+		{
+			yield return StartCoroutine(PlayEmphasizeAnimation(recorder.cardObject));
+		}
+
 		// Play all requests of this effect instance sequentially
 		foreach (var request in recorder.animationRequests)
 		{
@@ -56,6 +63,43 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				yield return StartCoroutine(PlayRecorderCoroutine(childRecorder));
 			}
 		}
+	}
+
+	/// <summary>
+	/// Play emphasize animation (scale up then back to original) on the card that triggered the effect.
+	/// </summary>
+	private IEnumerator PlayEmphasizeAnimation(GameObject logicalCard)
+	{
+		if (logicalCard == null) yield break;
+		if (CombatManager.Me == null) yield break;
+		var visuals = CombatManager.Me.visuals;
+		if (visuals == null) yield break;
+
+		GameObject physicalCard = visuals.GetPhysicalCard(logicalCard);
+		if (physicalCard == null) yield break;
+
+		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+		if (physScript == null) yield break;
+
+		AnimationStateTracker.me?.RegisterAnimation();
+		physScript.isPlayingSpecialAnimation = true;
+
+		bool done = false;
+		Vector3 originalScale = physicalCard.transform.localScale;
+		Vector3 targetScale = originalScale * 1.2f;
+		float halfDuration = 0.25f;
+
+		Sequence seq = DOTween.Sequence();
+		seq.Append(physicalCard.transform.DOScale(targetScale, halfDuration).SetEase(Ease.OutQuad));
+		seq.Append(physicalCard.transform.DOScale(originalScale, halfDuration).SetEase(Ease.OutQuad));
+		seq.OnComplete(() =>
+		{
+			physScript.isPlayingSpecialAnimation = false;
+			AnimationStateTracker.me?.CompleteAnimation();
+			done = true;
+		});
+
+		yield return new WaitUntil(() => done);
 	}
 
 	public IEnumerator PlayRequestCoroutine(AnimationRequest request)
