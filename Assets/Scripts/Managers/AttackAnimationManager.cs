@@ -75,7 +75,7 @@ public class AttackAnimationManager : MonoBehaviour
 public void HoldDeckFocus()
 	{
 		_deckFocusHoldCount++;
-		Debug.Log("[ATTACK] HoldDeckFocus | count=" + _deckFocusHoldCount + " | frame=" + Time.frameCount);
+
 	}
 
 	/// <summary>
@@ -84,18 +84,18 @@ public void HoldDeckFocus()
 public void ReleaseDeckFocus()
 	{
 		_deckFocusHoldCount--;
-		Debug.Log("[ATTACK] ReleaseDeckFocus | count=" + _deckFocusHoldCount + " | frame=" + Time.frameCount);
+
 		if (_deckFocusHoldCount <= 0)
 		{
 			_deckFocusHoldCount = 0;
 			if (_combatUXManager != null && _combatUXManager.IsDeckFocused)
 			{
-				Debug.Log("[ATTACK] ReleaseDeckFocus -> RestoreDeckFocusCoroutine");
+	
 				StartCoroutine(_combatUXManager.RestoreDeckFocusCoroutine());
 			}
 			else
 			{
-				Debug.Log("[ATTACK] ReleaseDeckFocus SKIP restore");
+	
 			}
 		}
 	}
@@ -159,15 +159,15 @@ public void ReleaseDeckFocus()
 		_isProcessingQueue = false;
 
 		// All attack animations done: restore deck focus (unless held by RecorderAnimationPlayer batch)
-		Debug.Log("[ATTACK] ProcessQueue loop ended | _attackQueue.Count=" + _attackQueue.Count + " | _deckFocusHoldCount=" + _deckFocusHoldCount + " | IsDeckFocused=" + (_combatUXManager != null ? _combatUXManager.IsDeckFocused.ToString() : "null") + " | frame=" + Time.frameCount);
+
 		if (_deckFocusHoldCount <= 0 && _combatUXManager != null && _combatUXManager.IsDeckFocused)
 		{
-			Debug.Log("[ATTACK] ProcessQueue -> RestoreDeckFocusCoroutine");
+
 			yield return StartCoroutine(_combatUXManager.RestoreDeckFocusCoroutine());
 		}
 		else
 		{
-			Debug.Log("[ATTACK] ProcessQueue SKIP restore | reason=" + (_deckFocusHoldCount > 0 ? "holdCount=" + _deckFocusHoldCount : "notFocused") + " | frame=" + Time.frameCount);
+
 		}
 
 		AnimationStateTracker.me?.CompleteAnimation();
@@ -190,7 +190,7 @@ public void ReleaseDeckFocus()
 		CardScript cardScript = data.attackerLogicalCard.GetComponent<CardScript>();
 		if (cardScript == null)
 		{
-			Debug.LogWarning("[AttackAnimationManager] Card has no CardScript");
+
 			data.onComplete?.Invoke();
 			isPlayingAttackAnimation = false;
 			ReleasePlayerInput();
@@ -199,7 +199,7 @@ public void ReleaseDeckFocus()
 
 		if (_combatUXManager == null)
 		{
-			Debug.LogWarning("[AttackAnimationManager] CombatUXManager is not available");
+
 			data.onComplete?.Invoke();
 			isPlayingAttackAnimation = false;
 			ReleasePlayerInput();
@@ -209,7 +209,7 @@ public void ReleaseDeckFocus()
 		GameObject physicalCard = _combatUXManager.GetPhysicalCardFromLogicalCard(cardScript);
 		if (physicalCard == null)
 		{
-			Debug.LogWarning($"[AttackAnimationManager] No physical card found for {data.attackerLogicalCard.name}");
+
 			data.onComplete?.Invoke();
 			isPlayingAttackAnimation = false;
 			ReleasePlayerInput();
@@ -219,7 +219,7 @@ public void ReleaseDeckFocus()
 		CardPhysObjScript physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null)
 		{
-			Debug.LogWarning("[AttackAnimationManager] Physical card has no CardPhysObjScript");
+
 			data.onComplete?.Invoke();
 			isPlayingAttackAnimation = false;
 			ReleasePlayerInput();
@@ -230,7 +230,7 @@ public void ReleaseDeckFocus()
 		Transform targetTransform = data.isAttackingEnemy ? enemyTargetPos : playerTargetPos;
 		if (targetTransform == null)
 		{
-			Debug.LogWarning("[AttackAnimationManager] Target position not set");
+
 			data.onComplete?.Invoke();
 			isPlayingAttackAnimation = false;
 			ReleasePlayerInput();
@@ -239,24 +239,24 @@ public void ReleaseDeckFocus()
 
 		// Determine if attacker is in reveal zone
 		bool isInRevealZone = _combatManager != null && _combatManager.revealZone == data.attackerLogicalCard;
-		Debug.Log("[ATTACK] PlayAttackAnimationCoroutine | attacker=" + data.attackerLogicalCard.name + " | isInRevealZone=" + isInRevealZone + " | revealZone=" + (_combatManager != null && _combatManager.revealZone != null ? _combatManager.revealZone.name : "null") + " | frame=" + Time.frameCount);
+
 
 		// If NOT in reveal zone, focus deck on this card first
 		if (!isInRevealZone)
 		{
-			Debug.Log("[ATTACK] PlayAttackAnimationCoroutine -> FocusOnCardCoroutine for " + cardScript.name);
+
 			yield return StartCoroutine(_combatUXManager.FocusOnCardCoroutine(cardScript));
-			Debug.Log("[ATTACK] PlayAttackAnimationCoroutine <- FocusOnCardCoroutine done for " + cardScript.name);
+
 		}
 		else
 		{
-			Debug.Log("[ATTACK] PlayAttackAnimationCoroutine SKIP FocusOnCardCoroutine (in reveal zone)");
+
 			// Reveal zone card should be the visual focus: restore deck focus so reveal zone card returns to center
 			if (_combatUXManager != null && _combatUXManager.IsDeckFocused)
 			{
-				Debug.Log("[ATTACK] PlayAttackAnimationCoroutine -> RestoreDeckFocusCoroutine (attacker in reveal zone)");
+	
 				yield return StartCoroutine(_combatUXManager.RestoreDeckFocusCoroutine());
-				Debug.Log("[ATTACK] PlayAttackAnimationCoroutine <- RestoreDeckFocusCoroutine done (attacker in reveal zone)");
+	
 			}
 		}
 

@@ -535,7 +535,7 @@ public class CombatManager : MonoBehaviour
 			}
 			
 			awaitingRevealConfirm = true;
-			Debug.Log("[COMBAT] Phase2 PlayRecorderAnimationsAndWait | frame=" + Time.frameCount + " | pendingAnims=" + (AnimationStateTracker.me != null ? AnimationStateTracker.me.PendingAnimations : -1));
+
 			
 			// Wait for all attack animations to complete before allowing next operation
 			StartCoroutine(PlayRecorderAnimationsAndWait());

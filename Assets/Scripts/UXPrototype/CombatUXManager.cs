@@ -211,7 +211,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private void HandleDamageDealt(GameObject attackerCard, bool isAttackingEnemy, Action onHit, Action onComplete)
 	{
-		print("play attack animation: "+attackerCard.name);
+
 		PlayAttackAnimation(attackerCard, isAttackingEnemy, onHit, onComplete);
 	}
 
@@ -261,7 +261,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public void MovePhysicalCardToRevealZone(GameObject physicalCard)
 	{
 		var physScript = physicalCard != null ? physicalCard.GetComponent<CardPhysObjScript>() : null;
-		Debug.Log("[PEEL] MovePhysicalCardToRevealZone | card=" + (physicalCard != null ? physicalCard.name : "null") + " | isPlayingSpecialAnimation=" + (physScript != null ? physScript.isPlayingSpecialAnimation.ToString() : "null") + " | _isDeckFocused=" + _isDeckFocused + " | frame=" + Time.frameCount);
+
 		
 		// Remove from deck
 		physicalCardsInDeck.Remove(physicalCard);
@@ -279,13 +279,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physScript.pendingRevealZoneMove = true;
 				physScript.pendingRevealPosition = physicalCardRevealPos.position;
 				physScript.pendingRevealScale = physicalCardRevealSize;
-				Debug.Log("[PEEL] MovePhysicalCardToRevealZone SET pendingRevealZoneMove=true for " + physicalCard.name);
+	
 			}
 			else
 			{
 				physScript.SetTargetPosition(physicalCardRevealPos.position);
 				physScript.SetTargetScale(physicalCardRevealSize);
-				Debug.Log("[PEEL] MovePhysicalCardToRevealZone immediate SetTargetPosition to revealPos for " + physicalCard.name);
+	
 			}
 		}
 		// Update positions of remaining cards in deck
@@ -828,15 +828,15 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	public IEnumerator FocusOnCardCoroutine(CardScript targetCard)
 	{
-		Debug.Log("[PEEL] FocusOnCardCoroutine ENTER | target=" + (targetCard != null ? targetCard.name : "null") + " | _isDeckFocused=" + _isDeckFocused + " | _currentFocusCard=" + (_currentFocusCard != null ? _currentFocusCard.name : "null") + " | frame=" + Time.frameCount);
+
 		if (!enablePeelDeck)
 		{
-			Debug.Log("[PEEL] FocusOnCardCoroutine EARLY EXIT: enablePeelDeck=false");
+
 			yield break;
 		}
 		if (targetCard == null)
 		{
-			Debug.Log("[PEEL] FocusOnCardCoroutine EARLY EXIT: targetCard=null");
+
 			yield break;
 		}
 
@@ -852,20 +852,20 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		int targetIndex = GetPhysicalCardDeckIndex(physicalCard);
 		if (targetIndex < 0)
 		{
-			Debug.LogWarning("[PEEL] FocusOnCardCoroutine EARLY EXIT: targetIndex < 0 for " + targetCard.name + " | physicalCardsInDeck.Count=" + physicalCardsInDeck.Count);
+
 			yield break;
 		}
 
 		// Already focused on this card
 		if (_isDeckFocused && _currentFocusCard == targetCard)
 		{
-			Debug.Log("[PEEL] FocusOnCardCoroutine EARLY EXIT: already focused on " + targetCard.name);
+
 			yield break;
 		}
 
 		if (!_isDeckFocused)
 		{
-			Debug.Log("[PEEL] FocusOnCardCoroutine -> StartPeelCoroutine | targetIndex=" + targetIndex);
+
 			// Start new peel
 			yield return StartCoroutine(StartPeelCoroutine(targetIndex));
 		}
@@ -874,23 +874,23 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// Transition focus to different card
 			GameObject currentPhysical = GetPhysicalCardFromLogicalCard(_currentFocusCard);
 			int currentIndex = currentPhysical != null ? GetPhysicalCardDeckIndex(currentPhysical) : -1;
-			Debug.Log("[PEEL] FocusOnCardCoroutine -> currentFocusCard=" + (_currentFocusCard != null ? _currentFocusCard.name : "null") + " currentIndex=" + currentIndex + " targetIndex=" + targetIndex);
+
 			if (currentIndex < 0)
 			{
 				// Current focus card no longer in deck, start fresh
-				Debug.Log("[PEEL] FocusOnCardCoroutine -> StartPeelCoroutine (currentIndex < 0)");
+
 				yield return StartCoroutine(StartPeelCoroutine(targetIndex));
 			}
 			else
 			{
-				Debug.Log("[PEEL] FocusOnCardCoroutine -> TransitionFocusCoroutine | new=" + targetIndex + " current=" + currentIndex);
+
 				yield return StartCoroutine(TransitionFocusCoroutine(targetIndex, currentIndex));
 			}
 		}
 
 		_currentFocusCard = targetCard;
 		_isDeckFocused = true;
-		Debug.Log("[PEEL] FocusOnCardCoroutine DONE | _currentFocusCard=" + targetCard.name + " | frame=" + Time.frameCount);
+
 	}
 
 	/// <summary>
@@ -898,7 +898,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private IEnumerator StartPeelCoroutine(int targetIndex)
 	{
-		Debug.Log($"[Peel] Starting peel. Target index={targetIndex}, deck count={physicalCardsInDeck.Count}");
+
 		
 		var count = physicalCardsInDeck.Count;
 		if (count == 0 || targetIndex < 0 || targetIndex >= count)
@@ -1002,7 +1002,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private IEnumerator TransitionFocusCoroutine(int newTargetIndex, int currentTargetIndex)
 	{
-		Debug.Log($"[Peel] TransitionFocusCoroutine called. newTargetIndex={newTargetIndex}, currentTargetIndex={currentTargetIndex}, deck count={physicalCardsInDeck.Count}");
+
 		var count = physicalCardsInDeck.Count;
 		if (count == 0 || newTargetIndex < 0 || newTargetIndex >= count)
 			yield break;

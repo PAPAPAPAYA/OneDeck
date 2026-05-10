@@ -5,14 +5,14 @@
 ### 1.1 Goal
 Replace the current **animation-reference-counter-driven event delay** (`AnimationStateTracker`) with an **EffectRecorder-tree-driven sequential animation playback** system.
 
-All effect logic executes synchronously during a **Logic Phase**, building a complete `EffectRecorder` tree with captured animation intents. After the tree is fully constructed, an **Animation Phase** traverses the tree depth-first and plays animations in strict order.
+All effect logic executes synchronously during a **Logic Phase**, building a complete `EffectRecorder` tree with captured animation requests. After the tree is fully constructed, an **Animation Phase** traverses the tree in effect-instance-boundary interleaved order and plays animations sequentially.
 
 ### 1.2 Concrete Result
 Using the user's example:
 - Deck: `Spike_Skeleton` (bottom), `Start_Card`, `Eternal_Ghost`, `Grave_Punch` (top)
 - `Grave_Punch` revealed, triggers `BuryEffect` + `HPAlterEffect`
 - Animation sequence:
-  1. Spike_Skeleton bury animation
+  1. Spike_Skeleton bury animation (parallel if multiple cards)
   2. Spike_Skeleton attack animation (triggered by `onMeBuried`)
   3. Eternal_Ghost attack animation (triggered by Spike_Skeleton)
   4. Grave_Punch attack animation
@@ -27,20 +27,20 @@ Player Click -> TriggerRevealedCardEffect()
 [LOGIC PHASE] — synchronous, no animations
     |
     ├── Event listeners fire synchronously
-    ├── Effects create EffectRecorders + capture AnimationIntent
+    ├── Effects create EffectRecorders + capture AnimationRequest(s)
     ├── Deck state changes immediately
-    ├── HP/shield changes captured in callbacks (deferred to animation hit-point)
+    ├── HP/shield changes immediately (damage resolved in logic phase)
     └── Tree fully built
     |
     v
-CloseOpenedChain() hands tree to EffectAnimationPlayer
+CombatManager waits for AnimationStateTracker idle, then CloseOpenedChain()
     |
     v
 [ANIMATION PHASE] — sequential, blocks input
     |
-    ├── Depth-first traversal of EffectRecorder tree
-    ├── Each recorder's AnimationIntent played to completion
-    ├── HP callbacks execute at animation hit-points
+    ├── Effect-instance-boundary interleaved traversal of EffectRecorder tree
+    ├── Each recorder's AnimationRequests played to completion
+    ├── Batch movements start in parallel
     └── Input restored when all animations complete
 ```
 
@@ -52,90 +52,109 @@ CloseOpenedChain() hands tree to EffectAnimationPlayer
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     EffectAnimationPlayer (NEW)                      │
+│                     RecorderAnimationPlayer (NEW)                    │
 │  Singleton. Owns animation phase.                                    │
 │                                                                      │
-│  PlayRecorderTree(EffectRecorder root)                               │
-│  └── coroutine: depth-first traversal, yield per animation           │
+│  PlayRecordersCoroutine(List<GameObject> rootRecorders)              │
+│  └── iterates roots in closedEffectRecorders order                   │
+│      └── PlayRecorderCoroutine(EffectRecorder)                       │
+│          └── effect-instance-boundary interleave:                    │
+│              plays all AnimationRequests in current recorder,        │
+│              then recurses into unplayed direct children             │
+│              (by Transform sibling order)                            │
+│                                                                      │
+│  PlayRequestCoroutine(AnimationRequest)                              │
+│  └── dispatches to ICombatVisuals                                    │
+│      └── batch types start all movements in parallel                 │
+│      └── calls UpdateAllPhysicalCardTargets() before batch moves     │
 └─────────────────────────────────────────────────────────────────────┘
                               ▲
                               │ called by
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     EffectChainManager (MODIFIED)                    │
+│                     CombatManager (MODIFIED)                         │
 │                                                                      │
-│  - Remove SameCardDifferentObject chain closing                      │
-│  - Loop guard: ancestor-only (not all open recorders)                │
-│  - Add proper parent/child tree links                                │
-│  - On CloseOpenedChain(): hand tree root to EffectAnimationPlayer    │
+│  RevealCards() Phase 2:                                              │
+│  └── StartCoroutine(PlayRecorderAnimationsAndWait())                 │
+│      ├── Wait for AnimationStateTracker idle                         │
+│      ├── CloseOpenedChain()                                          │
+│      ├── Collect root recorders from closedEffectRecorders           │
+│      ├── Yield PlayRecordersCoroutine(roots)                         │
+│      └── Mark all recorders as animationPlayed=true                  │
 └─────────────────────────────────────────────────────────────────────┘
                               │
                               │ creates/updates
+┌─────────────────────────────────────────────────────────────────────┐
+│                     EffectChainManager (PRESERVED)                   │
+│                                                                      │
+│  - Keep SameCardDifferentObject chain closing                        │
+│  - Keep chainDepth field (flat chain logic)                          │
+│  - Keep openedEffectRecorders loop guard                             │
+│  - Tree links via Transform parent-child (existing behavior)         │
+│  - recorderStack push/pop (existing behavior)                        │
+│  - On CloseOpenedChain(): close only, do NOT trigger playback        │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              │ creates
 ┌─────────────────────────────────────────────────────────────────────┐
 │                     EffectRecorder (MODIFIED)                        │
 │  MonoBehaviour on recorder prefab                                    │
 │                                                                      │
 │  Existing: sessionID, chainID, processedEffectID, cardObject,        │
 │            effectObject, open                                        │
-│  New:      parentRecorder, childRecorders, siblingIndex,             │
-│            hasAnimation, animationIntent, animationPlayed            │
+│  New:      List<AnimationRequest> animationRequests                  │
+│            bool animationPlayed                                      │
+│                                                                      │
+│  Tree navigation: via Transform hierarchy (transform.parent /        │
+│  transform.GetChild) — no explicit C# parent/child fields            │
 └─────────────────────────────────────────────────────────────────────┘
                               ▲
                               │ captures into
 ┌─────────────────────────────────────────────────────────────────────┐
 │  HPAlterEffect, BuryEffect, StageEffect, etc. (MODIFIED)             │
-│  Capture AnimationIntent instead of calling visuals directly         │
+│  Capture AnimationRequest(s) instead of calling visuals directly     │
+│  Damage resolved immediately in logic phase (onHit = null)           │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2 AnimationIntent Data Model
+### 2.2 AnimationRequest Data Model
 
 ```csharp
-public enum AnimationType
+public enum AnimationRequestType
 {
-    None,
-    Attack,           // HPAlterEffect damage/heal
-    MoveToBottom,     // BuryEffect
-    MoveToTop,        // StageEffect
-    MoveToIndex,      // Generic index move
-    Destroy,          // Exile / destroy
-    StatusProjectile, // Multi/single projectile
-    Shuffle,          // Start card shuffle
+    Attack,
+    MoveToBottom,
+    MoveToBottomBatch,
+    MoveToTop,
+    MoveToTopBatch,
+    MoveToIndex
 }
 
-[System.Serializable]
-public class AnimationIntent
+public class AnimationRequest
 {
-    public AnimationType type = AnimationType.None;
+    public AnimationRequestType type;
 
     // ── Attack ──
     public GameObject attackerCard;
     public bool isAttackingEnemy;
-    public Action onHit;          // damage resolution callback
+    public Action onHit;          // null — damage already resolved in logic phase
     public Action onComplete;
 
-    // ── Move ──
+    // ── Single Move ──
     public GameObject targetCard;
-    public int targetIndex;       // for MoveToIndex
     public float duration = 0.5f;
     public bool useArc = true;
 
-    // ── Destroy ──
-    public Action onDestroyComplete;
+    // ── Batch Move ──
+    public List<GameObject> targetCards; // for MoveToBottomBatch / MoveToTopBatch
 
-    // ── Status Projectile ──
-    public GameObject giverCard;
-    public List<CardScript> receiverCards;
-    public Action<CardScript> onEachComplete;
-    public Action onAllComplete;
-
-    // ── Shuffle ──
-    public GameObject startCard;
-    public List<GameObject> shuffledCards;
-    public Action onShuffleComplete;
+    // ── MoveToIndex ──
+    public int targetIndex;
 }
 ```
 
-### 2.3 EffectRecorder Tree Structure
+**Design rationale for batch types**: `MoveToBottomBatch` and `MoveToTopBatch` carry a `List<GameObject> targetCards` so that `RecorderAnimationPlayer` can start all card movements simultaneously and yield until the last one completes. This preserves the visual feel of the old system where multiple bury/stage animations ran in parallel.
+
+### 2.3 EffectRecorder Structure
 
 ```csharp
 public class EffectRecorder : MonoBehaviour
@@ -148,20 +167,24 @@ public class EffectRecorder : MonoBehaviour
     public GameObject effectObject;
     public bool open = true;
 
-    // ── NEW: Tree Navigation ──
-    public EffectRecorder parentRecorder;
-    public List<EffectRecorder> childRecorders = new List<EffectRecorder>();
-    public int siblingIndex;
-
     // ── NEW: Animation Capture ──
-    public bool hasAnimation;
-    public AnimationIntent animationIntent;
+    public List<AnimationRequest> animationRequests = new List<AnimationRequest>();
 
     // ── NEW: Playback State ──
-    public bool animationPlayed;
-    public bool isPlayingAnimation;
+    public bool animationPlayed = false;
 }
 ```
+
+**Tree navigation**: The recorder tree uses the existing Transform parent-child hierarchy already created by `EffectChainManager.MakeANewEffectRecorder`. Root nodes are identified by `transform.parent == EffectChainManager.Me.transform`. No explicit `parentRecorder` / `childRecorders` C# fields are added.
+
+### 2.4 Tree Traversal Order
+
+`RecorderAnimationPlayer` uses **effect-instance-boundary interleave**:
+
+1. Play **all** `AnimationRequest`s in the current recorder sequentially.
+2. Then recurse into any **unplayed** direct children (by Transform sibling order).
+
+This ensures all animations produced by the same effect instance are played contiguously, while reactive effects triggered by that instance are animated afterward.
 
 ---
 
@@ -169,176 +192,217 @@ public class EffectRecorder : MonoBehaviour
 
 ### Phase 1: Core Infrastructure (Files: 4)
 
-**Goal**: Build the foundation. EffectRecorders can form a tree, and the animation player can traverse it.
+**Goal**: Build the foundation. EffectRecorders can capture animation requests, and the animation player can traverse the existing Transform tree.
 
 | # | Task | File |
 |---|------|------|
-| 1.1 | Add `AnimationIntent` enum and class | `Assets/Scripts/Managers/AnimationIntent.cs` (new) |
-| 1.2 | Add tree fields (`parentRecorder`, `childRecorders`, `hasAnimation`, `animationIntent`, etc.) to `EffectRecorder` | `Assets/Scripts/Managers/EffectRecorder.cs` |
-| 1.3 | Create `EffectAnimationPlayer` singleton with `PlayRecorderTree` coroutine that does depth-first traversal and invokes `AnimationIntent` callbacks | `Assets/Scripts/Managers/EffectAnimationPlayer.cs` (new) |
-| 1.4 | Modify `EffectChainManager` | `Assets/Scripts/Managers/EffectChainManager.cs` |
+| 1.1 | Add `AnimationRequestType` enum and `AnimationRequest` class | `Assets/Scripts/Managers/AnimationRequest.cs` (new) |
+| 1.2 | Add `animationRequests` and `animationPlayed` fields to `EffectRecorder` | `Assets/Scripts/Managers/EffectRecorder.cs` |
+| 1.3 | Create `RecorderAnimationPlayer` singleton with interleaved traversal | `Assets/Scripts/Managers/RecorderAnimationPlayer.cs` (new) |
+| 1.4 | Ensure `RecorderAnimationPlayer` singleton exists at runtime | `Assets/Scripts/Managers/CombatManager.cs` |
 
-**EffectChainManager changes (1.4)**:
-- Remove `SameCardDifferentObject` chain closing in `CheckShouldIStartANewChain`
-- In `MakeANewEffectRecorder`: set `parentRecorder` to the **previous** `currentEffectRecorder` (not `currentEffectRecorderParent`)
-- Add child to parent's `childRecorders` list
-- Update `currentEffectRecorder` before `effectEvent.Invoke()` and restore it after
-- Change `EffectCanBeInvoked` loop guard to check **ancestor chain only** instead of all `openedEffectRecorders`
-- In `CloseOpenedChain()`: find the tree root(s) and hand to `EffectAnimationPlayer.PlayRecorderTree()`
+**RecorderAnimationPlayer responsibilities (1.3)**:
+- `Awake()` sets up singleton `me`.
+- `PlayRecordersCoroutine(List<GameObject> rootRecorders)` — iterates roots in `closedEffectRecorders` order, wrapping playback in `AttackAnimationManager.HoldDeckFocus()` / `ReleaseDeckFocus()`.
+- `PlayRecorderCoroutine(EffectRecorder)` — effect-instance-boundary interleave: plays all `AnimationRequest`s in the current recorder sequentially, then recurses into unplayed direct children by Transform sibling order.
+- `PlayRequestCoroutine(AnimationRequest)` — dispatches to `ICombatVisuals`. For batch types, starts all movements in parallel and yields until the last completes. For all Move types, calls `UpdateAllPhysicalCardTargets()` **before** starting the movement.
 
-**Code sketch for tree building**:
-```csharp
-public void MakeANewEffectRecorder(GameObject myCard, GameObject myEffectInst)
-{
-    chainDepth = 0; // reset per recorder? No — this needs rethinking.
-    // Actually chainDepth should increment per nested invocation.
-    // Currently it's reset in MakeANewEffectRecorder which is wrong for tree building.
-    // FIX: only reset chainDepth when creating a NEW tree root.
-}
-```
+**CombatManager changes (1.4)**:
+- In `Awake()`: dynamically create a GameObject with `RecorderAnimationPlayer` component if `me == null`.
+- In `RevealCards()`, Phase 2: replace `StartCoroutine(WaitForAttackAnimationsBeforeNextReveal())` with `StartCoroutine(PlayRecorderAnimationsAndWait())`.
+- New coroutine `PlayRecorderAnimationsAndWait()`:
+  1. Safety wait: `while (AnimationStateTracker.me != null && AnimationStateTracker.me.HasActiveBatch) yield return null;`
+  2. Close the chain: `EffectChainManager.Me.CloseOpenedChain();`
+  3. Collect root recorders from `closedEffectRecorders` (Transform.parent == EffectChainManager, `animationPlayed == false`).
+  4. If `RecorderAnimationPlayer.me` exists and roots > 0: yield `PlayRecordersCoroutine(roots)`.
+  5. In `try-finally`: mark all recorders in `closedEffectRecorders` as `animationPlayed = true` and call `ResetInputBlock()`.
+  6. Afterward, yield `WaitForAttackAnimationsBeforeNextReveal()` as safety net.
 
-> **Important**: `chainDepth` currently resets to 0 in `MakeANewEffectRecorder` and increments in `EffectCanBeInvoked`. This was designed for flat chains. For trees, `chainDepth` should equal the depth from root. We can compute it from `parentRecorder` chain length instead of tracking it separately.
+### Phase 2: Effect Intent Capture (Files: 3)
 
-**Restore `currentEffectRecorder` around effect invocation**:
-```csharp
-// In CostNEffectContainer.InvokeEffectEvent()
-EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
-
-if (EffectChainManager.Me.EffectCanBeInvoked(effectString))
-{
-    EffectChainManager.Me.lastEffectObject = gameObject;
-    
-    // NEW: push/pop current recorder for proper tree parenting
-    var previousRecorder = EffectChainManager.Me.currentEffectRecorder;
-    EffectChainManager.Me.currentEffectRecorder = EffectChainManager.Me.openedEffectRecorders[EffectChainManager.Me.openedEffectRecorders.Count - 1];
-    
-    effectEvent?.Invoke();
-    
-    EffectChainManager.Me.currentEffectRecorder = previousRecorder;
-}
-```
-
-### Phase 2: Effect Intent Capture (Files: 5)
-
-**Goal**: Convert key effects from "play animation immediately" to "capture AnimationIntent."
-
-Priority order (most impactful first):
+**Goal**: Convert key effects from "play animation immediately" to "capture AnimationRequest(s)."
 
 | # | Task | File | What changes |
 |---|------|------|-------------|
-| 2.1 | `HPAlterEffect` capture attack intent | `Assets/Scripts/Effects/HPAlterEffect.cs` | `DecreaseTheirHp()`, `DecreaseMyHp()`, and all variants capture `AnimationIntent` with `onHit` callback containing `ProcessDamage()` + `CheckDmgTargets_*()` |
-| 2.2 | `BuryEffect` capture move intent + immediate event raise | `Assets/Scripts/Effects/BuryEffect.cs` | `BuryChosenCards()` raises `onMeBuried` events **immediately** (logic phase); captures `MoveToBottom` intents for animation phase |
-| 2.3 | `StageEffect` capture move intent + immediate event raise | `Assets/Scripts/Effects/StageEffect.cs` | Same pattern as BuryEffect |
-| 2.4 | `ExileEffect` / `CardManipulationEffect` capture destroy/move intent | `Assets/Scripts/Effects/ExileEffect.cs`, `CardManipulationEffect.cs` | Capture destroy or move intents |
-| 2.5 | Status effect application — decide on particle/tint timing | `Assets/Scripts/Effects/EffectScript.cs` | `ApplyStatusEffectCore()` may need to split logic (immediate) from visuals (deferred to intent) |
+| 2.1 | `HPAlterEffect` capture attack intent | `Assets/Scripts/Effects/HPAlterEffect.cs` | `DecreaseTheirHp()`, `DecreaseMyHp()`: move `ProcessDamage()` + `CheckDmgTargets_*()` to **logic phase** (before capture); capture `AnimationRequest` with `onHit = null` |
+| 2.2 | `BuryEffect` capture batch move intent + immediate event raise | `Assets/Scripts/Effects/BuryEffect.cs` | `BuryChosenCards()`: raise events immediately; capture single `MoveToBottomBatch` request; remove `UpdateAllPhysicalCardTargets()` from logic phase |
+| 2.3 | `StageEffect` capture batch move intent + immediate event raise | `Assets/Scripts/Effects/StageEffect.cs` | Same pattern as BuryEffect: capture `MoveToTopBatch` |
 
-**Key pattern for all effects**:
+**HPAlterEffect pattern (2.1)**:
 ```csharp
-// OLD (immediate animation):
-combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy, onHit, onComplete);
-
-// NEW (capture intent):
-var recorder = EffectChainManager.Me.currentEffectRecorder?.GetComponent<EffectRecorder>();
-if (recorder != null)
+public void DecreaseTheirHp()
 {
-    recorder.hasAnimation = true;
-    recorder.animationIntent = new AnimationIntent
+    DmgCalculator();
+    int totalDmg = extraDmg + dmgAmountAlter;
+
+    if (isStatusEffectDamage)
     {
-        type = AnimationType.Attack,
-        attackerCard = myCard,
-        isAttackingEnemy = isAttackingEnemy,
-        onHit = () => { ProcessDamage(totalDmg, targetStatus); CheckDmgTargets(...); },
-        onComplete = null
-    };
+        ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+        CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+        dmgAmountAlter = 0;
+        return;
+    }
+
+    bool isAttackingEnemy = myCardScript.theirStatusRef != combatManager.ownerPlayerStatusRef;
+
+    // 1. Resolve damage IMMEDIATELY in logic phase
+    ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+    CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+
+    // 2. Capture animation request
+    var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+    var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+    if (recorder != null && RecorderAnimationPlayer.me != null)
+    {
+        recorder.animationRequests.Add(new AnimationRequest {
+            type = AnimationRequestType.Attack,
+            attackerCard = myCard,
+            isAttackingEnemy = isAttackingEnemy,
+            onHit = null, // damage already resolved
+            onComplete = null
+        });
+    }
+    else
+    {
+        // Fallback: old immediate visual path
+        combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy, onHit: null, onComplete: null);
+    }
+
+    dmgAmountAlter = 0;
 }
 ```
 
-**BuryEffect event timing change**:
+**BuryEffect pattern (2.2)**:
 ```csharp
-// OLD: events raised in animation onComplete callback
-combatManager.visuals.MoveCardToBottom(card, ..., onComplete: () => {
-    GameEventStorage.me.onMeBuried.RaiseSpecific(card);
-});
-
-// NEW: logical changes + events happen immediately; animation deferred
-// 1. Modify deck
-// 2. Raise events immediately (triggers listeners synchronously, builds tree deeper)
-foreach (var buriedCard in buriedCards)
+private void BuryChosenCards(List<GameObject> cardsToBury, int amount)
 {
-    GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
-    GameEventStorage.me.onAnyCardBuried.Raise();
-    // ... faction events ...
+    // ... existing deck modification logic ...
+
+    // Sync physical cards immediately
+    combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+
+    // DO NOT call UpdateAllPhysicalCardTargets() here — deferred to RecorderAnimationPlayer
+
+    // Raise events IMMEDIATELY (logic phase)
+    foreach (var buriedCard in buriedCards)
+    {
+        GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
+        GameEventStorage.me.onAnyCardBuried.Raise();
+        // ... faction events ...
+    }
+
+    // Capture a single batch animation request
+    var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+    var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+    if (recorder != null && RecorderAnimationPlayer.me != null)
+    {
+        recorder.animationRequests.Add(new AnimationRequest {
+            type = AnimationRequestType.MoveToBottomBatch,
+            targetCards = buriedCards,
+            duration = 0.5f,
+            useArc = true
+        });
+    }
+    else
+    {
+        // Fallback: old immediate visual calls
+    }
 }
-// 3. Capture animation intents
-// 4. Update physical card targets immediately so cards snap to logical positions
 ```
 
 ### Phase 3: Animation Playback Integration (Files: 3)
 
-**Goal**: `EffectAnimationPlayer` can actually execute the captured intents using existing visual infrastructure.
+**Goal**: `RecorderAnimationPlayer` can actually execute the captured requests using existing visual infrastructure.
 
 | # | Task | File |
 |---|------|------|
-| 3.1 | Implement `PlayAnimationIntent` switch that delegates to existing visual methods | `Assets/Scripts/Managers/EffectAnimationPlayer.cs` |
-| 3.2 | Add coroutine-based attack animation API to `AttackAnimationManager` (or reuse existing queue) | `Assets/Scripts/Managers/AttackAnimationManager.cs` |
-| 3.3 | Ensure `CombatUXManager` move/destroy methods can be called with yield-able coroutines | `Assets/Scripts/UXPrototype/CombatUXManager.cs` |
+| 3.1 | Implement `PlayRequestCoroutine` switch that delegates to existing visual methods | `Assets/Scripts/Managers/RecorderAnimationPlayer.cs` |
+| 3.2 | Ensure `AttackAnimationManager` queue works with recorder-driven playback | `Assets/Scripts/Managers/AttackAnimationManager.cs` |
+| 3.3 | Ensure `CombatUXManager` move methods work with deferred target updates | `Assets/Scripts/UXPrototype/CombatUXManager.cs` |
 
-**AnimationIntent execution sketch**:
+**AnimationRequest execution sketch**:
 ```csharp
-private IEnumerator PlayAnimationIntent(AnimationIntent intent)
+private IEnumerator PlayRequestCoroutine(AnimationRequest request)
 {
-    switch (intent.type)
+    switch (request.type)
     {
-        case AnimationType.Attack:
-            yield return PlayAttackIntent(intent);
+        case AnimationRequestType.Attack:
+            yield return PlayAttackRequest(request);
             break;
-        case AnimationType.MoveToBottom:
-            yield return PlayMoveIntent(intent);
+        case AnimationRequestType.MoveToBottom:
+            yield return PlayMoveToBottomRequest(request);
             break;
-        // ... etc
+        case AnimationRequestType.MoveToBottomBatch:
+            yield return PlayMoveToBottomBatchRequest(request);
+            break;
+        case AnimationRequestType.MoveToTop:
+            yield return PlayMoveToTopRequest(request);
+            break;
+        case AnimationRequestType.MoveToTopBatch:
+            yield return PlayMoveToTopBatchRequest(request);
+            break;
+        case AnimationRequestType.MoveToIndex:
+            yield return PlayMoveToIndexRequest(request);
+            break;
     }
 }
 
-private IEnumerator PlayAttackIntent(AnimationIntent intent)
+private IEnumerator PlayAttackRequest(AnimationRequest request)
 {
-    bool complete = false;
+    bool done = false;
     CombatManager.Me.visuals.PlayAttackAnimation(
-        intent.attackerCard,
-        intent.isAttackingEnemy,
-        onHit: () => { intent.onHit?.Invoke(); },
-        onComplete: () => { complete = true; }
+        request.attackerCard,
+        request.isAttackingEnemy,
+        onHit: () => { request.onHit?.Invoke(); },
+        onComplete: () => { request.onComplete?.Invoke(); done = true; }
     );
-    yield return new WaitUntil(() => complete);
+    yield return new WaitUntil(() => done);
+}
+
+private IEnumerator PlayMoveToBottomBatchRequest(AnimationRequest request)
+{
+    // Update targets before moving so non-moving cards slide in parallel
+    CombatManager.Me.visuals.UpdateAllPhysicalCardTargets();
+
+    var coroutines = new List<Coroutine>();
+    var completions = new List<bool>();
+    for (int i = 0; i < request.targetCards.Count; i++)
+    {
+        completions.Add(false);
+        int index = i;
+        coroutines.Add(StartCoroutine(MoveSingleCard(request.targetCards[index], request.duration, request.useArc, () => completions[index] = true)));
+    }
+    yield return new WaitUntil(() => completions.TrueForAll(b => b));
 }
 ```
 
-**Input blocking**: `EffectAnimationPlayer` should call `CombatManager.Me.visuals.BlockInput(this)` when starting a tree and `UnblockInput(this)` when done.
+**Input blocking**: Individual `ICombatVisuals` methods (`PlayAttackAnimation`, `MoveCardToBottom`, etc.) still manage their own `BlockInput`/`UnblockInput` calls, so player input remains blocked during the entire recorder playback sequence.
 
-### Phase 4: Event System Cleanup (Files: 2)
+### Phase 4: Event System Cleanup (Files: 1)
 
-**Goal**: Remove `AnimationStateTracker` event delay since events now fire synchronously during logic phase.
+**Goal**: Keep `AnimationStateTracker` as a safety net during transition.
 
 | # | Task | File | Rationale |
 |---|------|------|-----------|
-| 4.1 | Remove `AnimationStateTracker.TryExecute` wrapping from all `Raise*` methods | `Assets/Scripts/SOScripts/GameEvent.cs` | Events must fire synchronously to build the complete tree |
-| 4.2 | Remove `AnimationStateTracker` usage from all animation methods (or keep for safety timeout only) | `Assets/Scripts/Managers/AnimationStateTracker.cs`, `CombatUXManager.cs`, `AttackAnimationManager.cs` | If `EffectAnimationPlayer` blocks input and runs animations sequentially, the global pending counter is no longer needed for coordination |
+| 4.1 | Keep `AnimationStateTracker` in scene, do NOT remove `TryExecute` wrapping | `Assets/Scripts/SOScripts/GameEvent.cs`, `AnimationStateTracker.cs` | The new coroutine explicitly waits for `HasActiveBatch == false` before closing the chain, ensuring delayed events flush naturally. Full removal can be a future Phase 5 after stability is proven. |
 
-**Decision on AnimationStateTracker**: Keep the component in scene but disable its event-delay functionality. It can still serve as a safety timeout during transition. Or fully remove it once Phase 5 tests pass.
+**Decision**: Do NOT modify `GameEvent.cs` in this iteration. `AnimationStateTracker` continues to run as a secondary guard. The new system works *alongside* it, not *instead of* it, during the transition period.
 
 ### Phase 5: Testing & Edge Cases (Files: 2)
 
 | # | Task | File |
 |---|------|------|
-| 5.1 | Update `EffectChainTests` to test tree structure instead of flat chain | `Assets/Scripts/Editor/Tests/EffectChainTests.cs` |
+| 5.1 | Update `EffectChainTests` if needed | `Assets/Scripts/Editor/Tests/EffectChainTests.cs` |
 | 5.2 | Update PlayMode test SOPs that reference `CloseOpenedChain()` behavior | `docs/StrategyB_PlayMode_SOP.md`, `.agents/skills/unity-card-playmode-test/SKILL.md` |
 
 **Test scenarios**:
 1. Single card reveal -> attack animation plays normally
 2. Bury -> onMeBuried -> stage: animations play in bury -> stage order
-3. Same card with two effects (e.g., attack + bury): both animations capture, tree has two sibling children
+3. Same card with two effects (e.g., attack + bury): both animations captured, played contiguously
 4. Deep nesting (A -> B -> C -> D): animations play A -> B -> C -> D
-5. Loop guard: same card+effect in ancestor chain blocks; same card+effect in sibling branch allows
-6. Combat end during animation: `EffectAnimationPlayer` stops gracefully, `StopAllAnimations()` called
+5. Loop guard: same card+effect in opened chains blocks (existing behavior)
+6. Combat end during animation: `RecorderAnimationPlayer` stops gracefully
+7. Headless test: fallback path works when `RecorderAnimationPlayer.me == null`
 
 ---
 
@@ -346,29 +410,25 @@ private IEnumerator PlayAttackIntent(AnimationIntent intent)
 
 ### 4.1 New Files
 
-**`Assets/Scripts/Managers/AnimationIntent.cs`**
+**`Assets/Scripts/Managers/AnimationRequest.cs`**
 ```csharp
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum AnimationType
+public enum AnimationRequestType
 {
-    None,
     Attack,
     MoveToBottom,
+    MoveToBottomBatch,
     MoveToTop,
-    MoveToIndex,
-    Destroy,
-    StatusProjectileSingle,
-    StatusProjectileMulti,
-    Shuffle
+    MoveToTopBatch,
+    MoveToIndex
 }
 
-[Serializable]
-public class AnimationIntent
+public class AnimationRequest
 {
-    public AnimationType type = AnimationType.None;
+    public AnimationRequestType type;
 
     // Attack
     public GameObject attackerCard;
@@ -376,205 +436,202 @@ public class AnimationIntent
     public Action onHit;
     public Action onComplete;
 
-    // Move
+    // Single Move
     public GameObject targetCard;
-    public int targetIndex = -1;
     public float duration = 0.5f;
     public bool useArc = true;
 
-    // Destroy
-    public Action onDestroyComplete;
+    // Batch Move
+    public List<GameObject> targetCards;
 
-    // Status Projectile
-    public GameObject giverCard;
-    public CardScript singleReceiver;
-    public List<CardScript> multiReceivers;
-    public Action<CardScript> onEachProjectileComplete;
-    public Action onAllProjectilesComplete;
-
-    // Shuffle
-    public GameObject shuffleStartCard;
-    public List<GameObject> shuffleResultCards;
-    public Action onShuffleComplete;
+    // MoveToIndex
+    public int targetIndex;
 }
 ```
 
-**`Assets/Scripts/Managers/EffectAnimationPlayer.cs`**
+**`Assets/Scripts/Managers/RecorderAnimationPlayer.cs`**
 ```csharp
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EffectAnimationPlayer : MonoBehaviour
+public class RecorderAnimationPlayer : MonoBehaviour
 {
-    public static EffectAnimationPlayer me;
+    public static RecorderAnimationPlayer me;
     void Awake() { me = this; }
 
-    private bool _isPlaying;
-    public bool IsPlaying => _isPlaying;
-
-    public void PlayRecorderTree(EffectRecorder root)
+    public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
     {
-        if (root == null) return;
-        if (_isPlaying)
+        AttackAnimationManager.me?.HoldDeckFocus();
+        try
         {
-            Debug.LogWarning("[EffectAnimationPlayer] Tree playback requested while already playing. Queueing not yet implemented.");
-            return;
+            foreach (var rootGo in rootRecorders)
+            {
+                var recorder = rootGo.GetComponent<EffectRecorder>();
+                if (recorder != null && !recorder.animationPlayed)
+                {
+                    yield return PlayRecorderCoroutine(recorder);
+                }
+            }
         }
-        StartCoroutine(PlayTreeCoroutine(root));
-    }
-
-    private IEnumerator PlayTreeCoroutine(EffectRecorder root)
-    {
-        _isPlaying = true;
-        CombatManager.Me?.visuals?.BlockInput(this);
-
-        yield return PlayRecorderRecursive(root);
-
-        CombatManager.Me?.visuals?.UnblockInput(this);
-        _isPlaying = false;
-    }
-
-    private IEnumerator PlayRecorderRecursive(EffectRecorder recorder)
-    {
-        if (recorder == null) yield break;
-
-        if (recorder.hasAnimation && recorder.animationIntent != null)
+        finally
         {
-            yield return ExecuteIntent(recorder.animationIntent);
-            recorder.animationPlayed = true;
-        }
-
-        for (int i = 0; i < recorder.childRecorders.Count; i++)
-        {
-            yield return PlayRecorderRecursive(recorder.childRecorders[i]);
+            AttackAnimationManager.me?.ReleaseDeckFocus();
         }
     }
 
-    private IEnumerator ExecuteIntent(AnimationIntent intent)
+    private IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
     {
-        switch (intent.type)
+        if (recorder == null || recorder.animationPlayed) yield break;
+
+        // Play all requests in this recorder sequentially
+        foreach (var request in recorder.animationRequests)
         {
-            case AnimationType.Attack:
-                yield return ExecuteAttack(intent);
+            yield return PlayRequestCoroutine(request);
+        }
+
+        recorder.animationPlayed = true;
+
+        // Recurse into unplayed direct children by Transform sibling order
+        int childCount = recorder.transform.childCount;
+        for (int i = 0; i < childCount; i++)
+        {
+            var childRecorder = recorder.transform.GetChild(i).GetComponent<EffectRecorder>();
+            if (childRecorder != null && !childRecorder.animationPlayed)
+            {
+                yield return PlayRecorderCoroutine(childRecorder);
+            }
+        }
+    }
+
+    private IEnumerator PlayRequestCoroutine(AnimationRequest request)
+    {
+        switch (request.type)
+        {
+            case AnimationRequestType.Attack:
+                yield return PlayAttackRequest(request);
                 break;
-            case AnimationType.MoveToBottom:
-                yield return ExecuteMoveToBottom(intent);
+            case AnimationRequestType.MoveToBottom:
+                yield return PlayMoveToBottomRequest(request);
                 break;
-            case AnimationType.MoveToTop:
-                yield return ExecuteMoveToTop(intent);
+            case AnimationRequestType.MoveToBottomBatch:
+                yield return PlayMoveToBottomBatchRequest(request);
                 break;
-            case AnimationType.MoveToIndex:
-                yield return ExecuteMoveToIndex(intent);
+            case AnimationRequestType.MoveToTop:
+                yield return PlayMoveToTopRequest(request);
                 break;
-            case AnimationType.Destroy:
-                yield return ExecuteDestroy(intent);
+            case AnimationRequestType.MoveToTopBatch:
+                yield return PlayMoveToTopBatchRequest(request);
                 break;
-            case AnimationType.StatusProjectileSingle:
-                yield return ExecuteSingleProjectile(intent);
-                break;
-            case AnimationType.StatusProjectileMulti:
-                yield return ExecuteMultiProjectile(intent);
-                break;
-            case AnimationType.Shuffle:
-                yield return ExecuteShuffle(intent);
-                break;
-            default:
-                intent.onComplete?.Invoke();
+            case AnimationRequestType.MoveToIndex:
+                yield return PlayMoveToIndexRequest(request);
                 break;
         }
     }
 
-    private IEnumerator ExecuteAttack(AnimationIntent intent)
+    private IEnumerator PlayAttackRequest(AnimationRequest request)
     {
         bool done = false;
         CombatManager.Me.visuals.PlayAttackAnimation(
-            intent.attackerCard,
-            intent.isAttackingEnemy,
-            onHit: () => { intent.onHit?.Invoke(); },
-            onComplete: () => { intent.onComplete?.Invoke(); done = true; }
+            request.attackerCard,
+            request.isAttackingEnemy,
+            onHit: () => { request.onHit?.Invoke(); },
+            onComplete: () => { request.onComplete?.Invoke(); done = true; }
         );
         yield return new WaitUntil(() => done);
     }
 
-    private IEnumerator ExecuteMoveToBottom(AnimationIntent intent)
+    private IEnumerator PlayMoveToBottomRequest(AnimationRequest request)
     {
         bool done = false;
+        CombatManager.Me.visuals.UpdateAllPhysicalCardTargets();
         CombatManager.Me.visuals.MoveCardToBottom(
-            intent.targetCard,
-            intent.duration,
-            intent.useArc,
-            onComplete: () => { intent.onComplete?.Invoke(); done = true; }
+            request.targetCard,
+            request.duration,
+            request.useArc,
+            onComplete: () => { done = true; }
         );
         yield return new WaitUntil(() => done);
     }
 
-    private IEnumerator ExecuteMoveToTop(AnimationIntent intent)
+    private IEnumerator PlayMoveToBottomBatchRequest(AnimationRequest request)
+    {
+        CombatManager.Me.visuals.UpdateAllPhysicalCardTargets();
+
+        var completions = new List<bool>();
+        for (int i = 0; i < request.targetCards.Count; i++)
+        {
+            completions.Add(false);
+        }
+
+        for (int i = 0; i < request.targetCards.Count; i++)
+        {
+            int index = i;
+            CombatManager.Me.visuals.MoveCardToBottom(
+                request.targetCards[index],
+                request.duration,
+                request.useArc,
+                onComplete: () => { completions[index] = true; }
+            );
+        }
+
+        yield return new WaitUntil(() => {
+            foreach (var c in completions) if (!c) return false;
+            return true;
+        });
+    }
+
+    private IEnumerator PlayMoveToTopRequest(AnimationRequest request)
     {
         bool done = false;
+        CombatManager.Me.visuals.UpdateAllPhysicalCardTargets();
         CombatManager.Me.visuals.MoveCardToTop(
-            intent.targetCard,
-            intent.duration,
-            intent.useArc,
-            onComplete: () => { intent.onComplete?.Invoke(); done = true; }
+            request.targetCard,
+            request.duration,
+            request.useArc,
+            onComplete: () => { done = true; }
         );
         yield return new WaitUntil(() => done);
     }
 
-    private IEnumerator ExecuteMoveToIndex(AnimationIntent intent)
+    private IEnumerator PlayMoveToTopBatchRequest(AnimationRequest request)
+    {
+        CombatManager.Me.visuals.UpdateAllPhysicalCardTargets();
+
+        var completions = new List<bool>();
+        for (int i = 0; i < request.targetCards.Count; i++)
+        {
+            completions.Add(false);
+        }
+
+        for (int i = 0; i < request.targetCards.Count; i++)
+        {
+            int index = i;
+            CombatManager.Me.visuals.MoveCardToTop(
+                request.targetCards[index],
+                request.duration,
+                request.useArc,
+                onComplete: () => { completions[index] = true; }
+            );
+        }
+
+        yield return new WaitUntil(() => {
+            foreach (var c in completions) if (!c) return false;
+            return true;
+        });
+    }
+
+    private IEnumerator PlayMoveToIndexRequest(AnimationRequest request)
     {
         bool done = false;
+        CombatManager.Me.visuals.UpdateAllPhysicalCardTargets();
         CombatManager.Me.visuals.MoveCardToIndex(
-            intent.targetCard,
-            intent.targetIndex,
-            intent.duration,
-            intent.useArc,
-            onComplete: () => { intent.onComplete?.Invoke(); done = true; }
-        );
-        yield return new WaitUntil(() => done);
-    }
-
-    private IEnumerator ExecuteDestroy(AnimationIntent intent)
-    {
-        bool done = false;
-        CombatManager.Me.visuals.DestroyCardWithAnimation(
-            intent.targetCard,
-            onComplete: () => { intent.onDestroyComplete?.Invoke(); done = true; }
-        );
-        yield return new WaitUntil(() => done);
-    }
-
-    private IEnumerator ExecuteSingleProjectile(AnimationIntent intent)
-    {
-        bool done = false;
-        CombatManager.Me.visuals.PlayStatusEffectProjectile(
-            intent.giverCard,
-            intent.singleReceiver.gameObject,
-            onComplete: () => { intent.onComplete?.Invoke(); done = true; }
-        );
-        yield return new WaitUntil(() => done);
-    }
-
-    private IEnumerator ExecuteMultiProjectile(AnimationIntent intent)
-    {
-        bool done = false;
-        CombatManager.Me.visuals.PlayMultiStatusEffectProjectile(
-            intent.giverCard,
-            intent.multiReceivers,
-            onEachComplete: intent.onEachProjectileComplete,
-            onAllComplete: () => { intent.onAllProjectilesComplete?.Invoke(); done = true; }
-        );
-        yield return new WaitUntil(() => done);
-    }
-
-    private IEnumerator ExecuteShuffle(AnimationIntent intent)
-    {
-        bool done = false;
-        CombatManager.Me.visuals.PlayShuffleAnimation(
-            intent.shuffleStartCard,
-            intent.shuffleResultCards,
-            onComplete: () => { intent.onShuffleComplete?.Invoke(); done = true; }
+            request.targetCard,
+            request.targetIndex,
+            request.duration,
+            request.useArc,
+            onComplete: () => { done = true; }
         );
         yield return new WaitUntil(() => done);
     }
@@ -587,94 +644,23 @@ public class EffectAnimationPlayer : MonoBehaviour
 - Add `using System.Collections.Generic;`
 - Add fields:
   ```csharp
-  public EffectRecorder parentRecorder;
-  public List<EffectRecorder> childRecorders = new List<EffectRecorder>();
-  public int siblingIndex;
-  public bool hasAnimation;
-  public AnimationIntent animationIntent;
-  public bool animationPlayed;
-  public bool isPlayingAnimation;
+  public List<AnimationRequest> animationRequests = new List<AnimationRequest>();
+  public bool animationPlayed = false;
   ```
 
 **`Assets/Scripts/Managers/EffectChainManager.cs`**
 
-Changes:
-1. Remove `chainDepth` field (compute from ancestor chain instead)
-2. In `CheckShouldIStartANewChain`: remove `SameCardDifferentObject` logic. Only start a new chain when `openedEffectRecorders.Count == 0`.
-3. In `MakeANewEffectRecorder`:
-   - Remove `chainDepth = 0;`
-   - Set up tree links:
-     ```csharp
-     var newChainScript = newEffectChain.GetComponent<EffectRecorder>();
-     // ... existing fields ...
-     
-     var parent = currentEffectRecorder != null
-         ? currentEffectRecorder.GetComponent<EffectRecorder>()
-         : null;
-     newChainScript.parentRecorder = parent;
-     newChainScript.siblingIndex = parent != null ? parent.childRecorders.Count : 0;
-     if (parent != null)
-         parent.childRecorders.Add(newChainScript);
-     ```
-   - Keep `currentEffectRecorder = newEffectChain;` but also track it properly
-4. In `EffectCanBeInvoked`:
-   - Replace flat `openedEffectRecorders` loop with ancestor chain walk:
-     ```csharp
-     var ancestor = currentRec.parentRecorder;
-     while (ancestor != null)
-     {
-         if (ancestor.cardObject == myCard &&
-             ancestor.effectObject == myEffect &&
-             !string.IsNullOrEmpty(ancestor.processedEffectID))
-         {
-             return false;
-         }
-         ancestor = ancestor.parentRecorder;
-     }
-     ```
-   - Compute depth from ancestor chain:
-     ```csharp
-     int depth = 0;
-     var d = currentRec.parentRecorder;
-     while (d != null) { depth++; d = d.parentRecorder; }
-     if (depth > 99) { Debug.LogError("ERROR: chain depth reached limit"); return false; }
-     ```
-5. In `CloseOpenedChain`:
-   - After closing recorders, find tree root(s) and trigger animation playback
-   - Root = any recorder with `parentRecorder == null`
-   - For now, expect exactly one root per close call:
-     ```csharp
-     EffectRecorder root = null;
-     foreach (var rec in closedEffectRecorders)
-     {
-         var r = rec.GetComponent<EffectRecorder>();
-         if (r.parentRecorder == null) { root = r; break; }
-     }
-     if (root != null)
-         EffectAnimationPlayer.me?.PlayRecorderTree(root);
-     ```
+**No changes required** for core chain logic. Keep:
+- `SameCardDifferentObject` chain closing in `CheckShouldIStartANewChain`
+- `chainDepth` field and its usage in `EffectCanBeInvoked`
+- Flat `openedEffectRecorders` loop guard
+- `recorderStack` push/pop
+- Transform-based parenting in `MakeANewEffectRecorder`
+- `CloseOpenedChain()` closes only, does not trigger playback
 
 **`Assets/Scripts/Card/CostNEffectContainer.cs`**
 
-In `InvokeEffectEvent()`, after `MakeANewEffectRecorder`, add push/pop of `currentEffectRecorder`:
-
-```csharp
-EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
-
-if (EffectChainManager.Me.EffectCanBeInvoked(effectString))
-{
-    EffectChainManager.Me.lastEffectObject = gameObject;
-    
-    // Push current recorder for tree nesting
-    var previousRecorder = EffectChainManager.Me.currentEffectRecorder;
-    EffectChainManager.Me.currentEffectRecorder = EffectChainManager.Me.openedEffectRecorders[EffectChainManager.Me.openedEffectRecorders.Count - 1];
-    
-    effectEvent?.Invoke();
-    
-    // Pop back
-    EffectChainManager.Me.currentEffectRecorder = previousRecorder;
-}
-```
+**No changes required**. The existing `recorderStack` push/pop in `EffectChainManager` already handles nested recorder creation correctly.
 
 **`Assets/Scripts/Effects/HPAlterEffect.cs`**
 
@@ -685,7 +671,7 @@ public void DecreaseTheirHp()
 {
     DmgCalculator();
     int totalDmg = extraDmg + dmgAmountAlter;
-    
+
     if (isStatusEffectDamage)
     {
         ProcessDamage(totalDmg, myCardScript.theirStatusRef);
@@ -693,33 +679,32 @@ public void DecreaseTheirHp()
         dmgAmountAlter = 0;
         return;
     }
-    
+
     bool isAttackingEnemy = myCardScript.theirStatusRef != combatManager.ownerPlayerStatusRef;
-    
-    var recorder = EffectChainManager.Me.currentEffectRecorder?.GetComponent<EffectRecorder>();
-    if (recorder != null)
+
+    // Resolve damage immediately in logic phase
+    ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+    CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+
+    // Capture animation request
+    var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+    var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+    if (recorder != null && RecorderAnimationPlayer.me != null)
     {
-        recorder.hasAnimation = true;
-        recorder.animationIntent = new AnimationIntent
-        {
-            type = AnimationType.Attack,
+        recorder.animationRequests.Add(new AnimationRequest {
+            type = AnimationRequestType.Attack,
             attackerCard = myCard,
             isAttackingEnemy = isAttackingEnemy,
-            onHit = () =>
-            {
-                ProcessDamage(totalDmg, myCardScript.theirStatusRef);
-                CheckDmgTargets_DealingDmgToOpponent(totalDmg);
-            },
+            onHit = null, // damage already resolved
             onComplete = null
-        };
+        });
     }
     else
     {
-        // Fallback if no recorder (should not happen in normal combat)
-        ProcessDamage(totalDmg, myCardScript.theirStatusRef);
-        CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+        // Fallback: old immediate visual path
+        combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy, onHit: null, onComplete: null);
     }
-    
+
     dmgAmountAlter = 0;
 }
 ```
@@ -749,7 +734,7 @@ private void BuryChosenCards(List<GameObject> cardsToBury, int amount)
             _combinedDeck.Remove(targetCard);
             _combinedDeck.Insert(0, targetCard);
             buriedCards.Add(targetCard);
-            
+
             // Track buried counts (existing logic)
             if (ValueTrackerManager.me != null)
             {
@@ -764,7 +749,7 @@ private void BuryChosenCards(List<GameObject> cardsToBury, int amount)
                         ValueTrackerManager.me.enemyCardsBuriedCountRef.value++;
                 }
             }
-            
+
             // Log (existing logic)
             string myColor = GetMyCardColorTag();
             string targetColor = GetCardColorTag(targetCard);
@@ -772,27 +757,35 @@ private void BuryChosenCards(List<GameObject> cardsToBury, int amount)
                 targetCardScript.gameObject.name + "</color>]埋入牌库底端");
         }
     }
-    
+
     // Sync physical cards to match logical deck immediately
     combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
-    
-    // NEW: Capture animation intents for all buried cards
-    var currentRecorder = EffectChainManager.Me.currentEffectRecorder?.GetComponent<EffectRecorder>();
-    foreach (var card in buriedCards)
+
+    // DO NOT call UpdateAllPhysicalCardTargets() here
+
+    // Capture animation intent
+    var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+    var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+    if (recorder != null && RecorderAnimationPlayer.me != null && buriedCards.Count > 0)
     {
-        if (currentRecorder != null)
-        {
-            // Create child recorder for each bury animation
-            // Alternatively: store multiple intents in a list on the parent recorder
-            // For simplicity, create child recorders
-            // But we need to make sure these are in the tree...
-        }
+        recorder.animationRequests.Add(new AnimationRequest {
+            type = AnimationRequestType.MoveToBottomBatch,
+            targetCards = buriedCards,
+            duration = 0.5f,
+            useArc = true
+        });
     }
-    
-    // Update other cards' positions immediately
-    combatManager.visuals.UpdateAllPhysicalCardTargets();
-    
-    // NEW: Raise events IMMEDIATELY (logic phase)
+    else
+    {
+        // Fallback: old immediate visual calls for each card
+        foreach (var card in buriedCards)
+        {
+            combatManager.visuals.MoveCardToBottom(card, 0.5f, true, null);
+        }
+        combatManager.visuals.UpdateAllPhysicalCardTargets();
+    }
+
+    // Raise events IMMEDIATELY (logic phase)
     foreach (var buriedCard in buriedCards)
     {
         GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
@@ -809,53 +802,96 @@ private void BuryChosenCards(List<GameObject> cardsToBury, int amount)
 }
 ```
 
-> **Design note for BuryEffect**: Each buried card could have its own child recorder, OR the bury animation intents could be stored in a list. The simplest approach for Phase 2 is: the parent effect recorder captures ONE intent that represents the entire bury operation. Since multiple cards being buried is part of the same effect invocation, they can share one recorder. `AnimationIntent` could be extended to support a list of target cards for batch move. For MVP, just capture the first card or add a `List<GameObject> batchMoveTargets` to `AnimationIntent`.
-
 **`Assets/Scripts/Effects/StageEffect.cs`**
-Same pattern as BuryEffect: immediate logical deck change, immediate event raise, capture move intent.
+Same pattern as BuryEffect: immediate logical deck change, immediate event raise, capture `MoveToTopBatch` intent. Keep `SyncPhysicalCardsWithCombinedDeck()` in logic phase; remove `UpdateAllPhysicalCardTargets()` from logic phase.
 
 **`Assets/Scripts/SOScripts/GameEvent.cs`**
-Remove `AnimationStateTracker.TryExecute` wrapping. All `Raise*` methods call `ExecuteRaise*` directly.
-
-```csharp
-public void Raise()
-{
-    ExecuteRaise();
-}
-
-public void RaiseOwner()
-{
-    ExecuteRaiseOwner();
-}
-
-public void RaiseOpponent()
-{
-    ExecuteRaiseOpponent();
-}
-
-public void RaiseSpecific(GameObject target)
-{
-    if (target == null) return;
-    ExecuteRaiseSpecific(target);
-}
-```
+**No changes**. Keep `AnimationStateTracker.TryExecute` wrapping intact.
 
 **`Assets/Scripts/Managers/AnimationStateTracker.cs`**
-Keep file in project but disable event-delay functionality. Comment out `TryExecute` body and make it execute immediately. Or remove entirely after Phase 5 confirms stability.
+**No changes**. Keep running as a safety net. The new `PlayRecorderAnimationsAndWait` coroutine explicitly waits for `HasActiveBatch == false` before closing the chain.
 
 **`Assets/Scripts/Managers/CombatManager.cs`**
-Remove `WaitForAttackAnimationsBeforeNextReveal()` coroutine or simplify it to check `EffectAnimationPlayer.me?.IsPlaying` instead of `visuals.HasPendingAnimations()`.
 
-In `RevealCards()`:
+In `Awake()`:
 ```csharp
-// OLD
-if (visuals != null && visuals.IsPlayingAttackAnimation()) return;
-
-// NEW
-if (EffectAnimationPlayer.me != null && EffectAnimationPlayer.me.IsPlaying) return;
+// Ensure RecorderAnimationPlayer singleton exists
+if (RecorderAnimationPlayer.me == null)
+{
+    var go = new GameObject("RecorderAnimationPlayer");
+    go.AddComponent<RecorderAnimationPlayer>();
+}
 ```
 
-Also update `IsInputBlocked` check or ensure `EffectAnimationPlayer` properly blocks/unblocks input.
+In `RevealCards()`, Phase 2 (after `TriggerRevealedCardEffect()`):
+- Remove the direct call to `EffectChainManager.Me.CloseOpenedChain()`.
+- Replace `StartCoroutine(WaitForAttackAnimationsBeforeNextReveal())` with `StartCoroutine(PlayRecorderAnimationsAndWait())`.
+
+New private coroutine `PlayRecorderAnimationsAndWait()`:
+```csharp
+private IEnumerator PlayRecorderAnimationsAndWait()
+{
+    // 1. Safety wait for legacy animations
+    while (AnimationStateTracker.me != null && AnimationStateTracker.me.HasActiveBatch)
+        yield return null;
+
+    // 2. Close the chain
+    EffectChainManager.Me.CloseOpenedChain();
+
+    // 3. Collect root recorders
+    var roots = new List<GameObject>();
+    foreach (var rec in EffectChainManager.Me.closedEffectRecorders)
+    {
+        if (rec.transform.parent == EffectChainManager.Me.transform)
+        {
+            var recorder = rec.GetComponent<EffectRecorder>();
+            if (recorder != null && !recorder.animationPlayed)
+                roots.Add(rec);
+        }
+    }
+
+    // 4. Play recorder animations
+    if (RecorderAnimationPlayer.me != null && roots.Count > 0)
+    {
+        yield return RecorderAnimationPlayer.me.PlayRecordersCoroutine(roots);
+    }
+
+    // 5. Cleanup in try-finally
+    try { }
+    finally
+    {
+        foreach (var rec in EffectChainManager.Me.closedEffectRecorders)
+        {
+            var recorder = rec.GetComponent<EffectRecorder>();
+            if (recorder != null)
+                recorder.animationPlayed = true;
+        }
+        ResetInputBlock();
+    }
+
+    // 6. Safety net for stray legacy animations
+    yield return StartCoroutine(WaitForAttackAnimationsBeforeNextReveal());
+}
+```
+
+Also update `ExitCombat()`:
+```csharp
+// Clear and destroy all recorder GameObjects under EffectChainManager
+if (EffectChainManager.Me != null)
+{
+    foreach (var rec in EffectChainManager.Me.closedEffectRecorders)
+    {
+        if (rec != null) Destroy(rec);
+    }
+    EffectChainManager.Me.closedEffectRecorders.Clear();
+
+    // Also destroy any children under EffectChainManager transform
+    for (int i = EffectChainManager.Me.transform.childCount - 1; i >= 0; i--)
+    {
+        Destroy(EffectChainManager.Me.transform.GetChild(i).gameObject);
+    }
+}
+```
 
 ---
 
@@ -888,7 +924,7 @@ Grave_Punch revealed
 
 **Result**: Animation order depends on DOTween timing, event flush cycles, and attack queue processing. Order is emergent.
 
-### After (Proposed System)
+### After (Prototype-Aligned System)
 ```
 Grave_Punch revealed
   -> onMeRevealed raised (synchronous)
@@ -896,28 +932,39 @@ Grave_Punch revealed
         -> Logical deck modified
         -> onMeBuried raised (synchronous)
            -> Spike_Skeleton effect executes
-              -> Capture attack intent (Recorder #3)
+              -> ProcessDamage() + CheckDmgTargets() (immediate)
+              -> Capture attack request (Recorder #3)
               -> onTheirPlayerTookDmg raised (synchronous)
                  -> Eternal_Ghost effect executes
-                    -> Capture attack intent (Recorder #4)
-        -> Capture bury intent (Recorder #1)
+                    -> ProcessDamage() + CheckDmgTargets() (immediate)
+                    -> Capture attack request (Recorder #4)
+        -> Capture bury batch request (Recorder #1)
      -> HPAlterEffect executes
-        -> Capture attack intent (Recorder #2)
+        -> ProcessDamage() + CheckDmgTargets() (immediate)
+        -> Capture attack request (Recorder #2)
         -> onTheirPlayerTookDmg raised (synchronous)
            -> Eternal_Ghost effect executes
-              -> Capture attack intent (Recorder #5)
-     -> CloseOpenedChain()
-        -> EffectAnimationPlayer.PlayRecorderTree(Recorder #1 root)
+              -> ProcessDamage() + CheckDmgTargets() (immediate)
+              -> Capture attack request (Recorder #5)
+     -> CombatManager.PlayRecorderAnimationsAndWait()
+        -> Wait for AnimationStateTracker idle
+        -> CloseOpenedChain()
+        -> EffectChainManager.Me.closedEffectRecorders = [Recorder #1, #2, #3, #4, #5]
+        -> Collect roots: Recorder #1
+        -> RecorderAnimationPlayer.PlayRecordersCoroutine([#1])
 
 [Animation Phase]
-  1. Recorder #1: Bury animation
+  1. Recorder #1: Bury animation (batch, parallel)
+     └── Recorder #1 children: #3 (Spike attack), #4 (Eternal from Spike)
   2. Recorder #3: Spike_Skeleton attack
   3. Recorder #4: Eternal_Ghost attack (from Spike)
-  4. Recorder #2: Grave_Punch attack
-  5. Recorder #5: Eternal_Ghost attack (from Grave_Punch)
+  4. Return to Recorder #1's siblings
+  5. Recorder #2: Grave_Punch attack
+     └── Recorder #2 children: #5 (Eternal from Grave)
+  6. Recorder #5: Eternal_Ghost attack (from Grave_Punch)
 ```
 
-**Result**: Deterministic depth-first order. No race conditions.
+**Result**: Deterministic effect-instance-boundary interleaved order. No race conditions. Damage resolved immediately in logic phase.
 
 ---
 
@@ -925,36 +972,40 @@ Grave_Punch revealed
 
 | # | Risk | Severity | Mitigation |
 |---|------|----------|------------|
-| 1 | Extensive file changes (10+ files) break existing combat flow | High | Implement in phases; test after each phase; keep `AnimationStateTracker` as fallback during transition |
-| 2 | BuryEffect/StageEffect event timing change breaks card interactions | High | Move events to synchronous immediately; if cards depend on animation-complete timing, adjust those cards individually |
-| 3 | AttackAnimationManager queue + EffectAnimationPlayer double-queue | Medium | `EffectAnimationPlayer` should call `PlayAttackAnimation` which enqueues; but then attack queue processes internally. This is fine — `EffectAnimationPlayer` waits for `onComplete` which fires after the attack queue finishes that specific attack. |
-| 4 | Same-card parallel animations lost (attack + bury no longer simultaneous) | Medium | If UX feels too slow, implement hybrid mode where same-card sibling recorders play in parallel |
-| 5 | Loop guard with ancestor-only check allows new loop patterns | Medium | Test extensively with known loop-prone cards; the ancestor check is actually stricter in some ways (allows siblings) and looser in others (allows different branches) |
-| 6 | `CombatUXManager.MoveCardWithAnimation` relies on `AnimationStateTracker` | Low | `MoveCardWithAnimation` uses `RegisterAnimation/CompleteAnimation` for counting. `EffectAnimationPlayer` uses `onComplete` callbacks, so it doesn't need the global counter. Remove or keep as no-op. |
-| 7 | Input blocking gaps between animations allow player to click | Low | `EffectAnimationPlayer` holds input block for the ENTIRE tree playback, not per-animation |
+| 1 | Extensive file changes break existing combat flow | High | Implement in phases; test after each phase; keep `AnimationStateTracker` as fallback during transition |
+| 2 | BuryEffect/StageEffect event timing change breaks card interactions | High | Move events to synchronous immediately; fallback paths preserve old behavior if recorder is missing |
+| 3 | AttackAnimationManager queue + RecorderAnimationPlayer double-queue | Medium | `RecorderAnimationPlayer` calls `PlayAttackAnimation` which enqueues; attack queue processes internally. `RecorderAnimationPlayer` waits for `onComplete` which fires after the attack queue finishes. |
+| 4 | Same-card parallel animations lost (attack + bury no longer simultaneous) | Medium | Same effect instance's requests play contiguously (attack then bury). If UX feels too slow, consider parallel sibling playback in future iteration. |
+| 5 | Loop guard behavior unchanged | Low | Flat `openedEffectRecorders` check is preserved exactly as-is; no new loop patterns introduced |
+| 6 | `CombatUXManager.MoveCardWithAnimation` relies on `AnimationStateTracker` | Low | `AnimationStateTracker` is kept running as safety net. `RecorderAnimationPlayer` uses `onComplete` callbacks for its own sequencing. |
+| 7 | Input blocking gaps between animations allow player to click | Low | Individual `ICombatVisuals` methods manage Block/Unblock. `AttackAnimationManager.HoldDeckFocus` prevents focus drift during batch playback. |
+| 8 | Combat end delayed because damage resolved in logic phase but checked too early | Low | Damage is resolved in Phase 2 (effect execution), combat end is checked in Phase 1 (next reveal). This is the existing flow and works correctly. |
+| 9 | `closedEffectRecorders` accumulates objects across combat sessions | Medium | `CombatManager.ExitCombat()` destroys all recorder GameObjects and clears the list. |
+| 10 | Headless tests break without RecorderAnimationPlayer | Low | Fallback condition `RecorderAnimationPlayer.me != null` ensures headless tests continue through old paths. |
 
 ---
 
 ## 7. Success Criteria
 
-1. **Basic combat**: Reveal a card with simple damage effect → attack animation plays normally
-2. **Bury chain**: Card with bury effect targets another card → bury animation plays first, then buried card's effect animation plays
-3. **Multi-effect card**: Card with attack + bury → both intents captured, tree has two children, animations play sequentially
-4. **Deep nesting**: A -> B -> C -> D chain → animations play in A-B-C-D order
+1. **Basic combat**: Reveal a card with simple damage effect -> attack animation plays normally
+2. **Bury chain**: Card with bury effect targets another card -> bury animation plays first, then buried card's effect animation plays
+3. **Multi-effect card**: Card with attack + bury -> both requests captured on same recorder, animations play contiguously
+4. **Deep nesting**: A -> B -> C -> D chain -> animations play A -> B -> C -> D
 5. **No regression**: Combat win/lose conditions, HP calculations, and combat log remain correct
 6. **No soft-lock**: If animation system breaks, timeout releases input within 5 seconds
+7. **Headless compatibility**: Tests without `RecorderAnimationPlayer` work through fallback paths
 
 ---
 
 ## 8. Recommended Execution Order
 
 1. **Create branch** (if using version control)
-2. **Phase 1** (Core Infrastructure): Create `AnimationIntent.cs`, `EffectAnimationPlayer.cs`, modify `EffectRecorder.cs`, `EffectChainManager.cs`, `CostNEffectContainer.cs`
-3. **Test Phase 1**: Use existing PlayMode tests or manual play to verify tree builds correctly
+2. **Phase 1** (Core Infrastructure): Create `AnimationRequest.cs`, `RecorderAnimationPlayer.cs`, modify `EffectRecorder.cs`, `CombatManager.cs`
+3. **Test Phase 1**: Verify tree builds correctly, `PlayRecorderAnimationsAndWait` coroutine runs without error
 4. **Phase 2** (Effect Capture): Modify `HPAlterEffect.cs`, `BuryEffect.cs`, `StageEffect.cs`
-5. **Test Phase 2**: Verify combat log shows correct order, animations captured but not played yet
-6. **Phase 3** (Animation Playback): Wire up `EffectAnimationPlayer` intent execution
-7. **Test Phase 3**: Full combat flow — animations should play in tree order
-8. **Phase 4** (Cleanup): Remove `AnimationStateTracker` event delay, update `GameEvent.cs`
-9. **Phase 5** (Tests): Update unit tests and PlayMode SOPs
+5. **Test Phase 2**: Verify combat log shows correct order, animations captured but not yet played via new system
+6. **Phase 3** (Animation Playback): Ensure `RecorderAnimationPlayer` dispatches correctly to `ICombatVisuals`
+7. **Test Phase 3**: Full combat flow — animations should play in effect-instance-boundary interleaved order
+8. **Phase 4** (Conservative Cleanup): Verify `AnimationStateTracker` still works as safety net; no `GameEvent.cs` changes
+9. **Phase 5** (Tests): Update unit tests and PlayMode SOPs if needed
 10. **Full regression test**: Run full card test suite

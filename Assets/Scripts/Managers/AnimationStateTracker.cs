@@ -68,7 +68,7 @@ public class AnimationStateTracker : MonoBehaviour
 		if (_pendingAnimations > 0)
 		{
 			_delayedEvents.Enqueue(action);
-			Debug.Log("[FLUSH] Enqueued | pending=" + _pendingAnimations + " | queue=" + _delayedEvents.Count + " | frame=" + Time.frameCount);
+
 			return;
 		}
 		// Executing immediately
@@ -83,7 +83,7 @@ public class AnimationStateTracker : MonoBehaviour
 		int openedChains = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.openedEffectRecorders.Count : -1;
 		int chainDepth = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.chainDepth : -1;
 		string parentChain = global::EffectChainManager.Me != null && global::EffectChainManager.Me.currentEffectRecorderParent != null ? global::EffectChainManager.Me.currentEffectRecorderParent.GetComponent<global::DefaultNamespace.EffectRecorder>().chainID.ToString() : "null";
-		Debug.Log("[FLUSH] START | queue=" + initialCount + " | frame=" + Time.frameCount + " | openedChains=" + openedChains + " | depth=" + chainDepth + " | parent=" + parentChain);
+
 		while (_delayedEvents.Count > 0)
 		{
 			var evt = _delayedEvents.Dequeue();
@@ -107,14 +107,14 @@ public class AnimationStateTracker : MonoBehaviour
 			// Those animations will trigger another flush when they complete.
 			if (_pendingAnimations > 0)
 			{
-				Debug.Log("[FLUSH] BREAK after " + processed + "/" + initialCount + " | pending=" + _pendingAnimations + " | frame=" + Time.frameCount);
+	
 				break;
 			}
 		}
 		openedChains = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.openedEffectRecorders.Count : -1;
 		chainDepth = global::EffectChainManager.Me != null ? global::EffectChainManager.Me.chainDepth : -1;
 		parentChain = global::EffectChainManager.Me != null && global::EffectChainManager.Me.currentEffectRecorderParent != null ? global::EffectChainManager.Me.currentEffectRecorderParent.GetComponent<global::DefaultNamespace.EffectRecorder>().chainID.ToString() : "null";
-		Debug.Log("[FLUSH] END | processed=" + processed + "/" + initialCount + " | remaining=" + _delayedEvents.Count + " | pending=" + _pendingAnimations + " | frame=" + Time.frameCount + " | openedChains=" + openedChains + " | depth=" + chainDepth + " | parent=" + parentChain);
+
 		_isFlushing = false;
 	}
 

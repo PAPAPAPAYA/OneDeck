@@ -52,7 +52,7 @@ public class EffectChainManager : MonoBehaviour
 				shouldIMakeANewChain = true;
 			}
 		}
-		Debug.Log("[CHAIN] CheckShouldIStartANewChain | card=" + myCard.name + " | effect=" + myEffectObj.name + " | opened=" + openedEffectRecorders.Count + " | sameCardDiffObj=" + sameCardDiffObj + " | decision=" + (shouldIMakeANewChain ? "NEW_CHAIN" : "CONTINUE") + " | parent=" + (currentEffectRecorderParent != null ? currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString() : "null") + " | frame=" + Time.frameCount);
+
 		if (shouldIMakeANewChain)
 		{
 			CloseOpenedChain();
@@ -68,7 +68,7 @@ public class EffectChainManager : MonoBehaviour
 			var openedChainScript = chain.GetComponent<EffectRecorder>();
 			bool sameCard = openedChainScript.cardObject.Equals(myCard);
 			bool sameEffect = openedChainScript.effectObject.Equals(myEffectInst);
-			Debug.Log("[CHAIN] SameCardDiffObjCheck | chain#" + openedChainScript.chainID + " | chainCard=" + openedChainScript.cardObject.name + " | chainEffect=" + openedChainScript.effectObject.name + " | vsCard=" + myCard.name + " | vsEffect=" + myEffectInst.name + " | sameCard=" + sameCard + " | sameEffect=" + sameEffect + " | match=" + (sameCard && !sameEffect) + " | frame=" + Time.frameCount);
+
 			if (sameCard && !sameEffect) // same card, different effect
 			{
 				return true;
@@ -110,7 +110,7 @@ public class EffectChainManager : MonoBehaviour
 				: currentEffectRecorderParent.transform;
 			newEffectChain.transform.SetParent(parentTransform);
 		}
-		Debug.Log("[CHAIN] NewRecorder | chain#" + chainNumber + " | card=" + myCard.name + " | effect=" + myEffectInst.name + " | isRoot=" + isRoot + " | parent=" + (previousRecorder != null ? previousRecorder.GetComponent<EffectRecorder>().chainID.ToString() : (currentEffectRecorderParent != null ? currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString() : "null")) + " | openedAfterAdd=" + openedEffectRecorders.Count + " | frame=" + Time.frameCount);
+
 	}
 
 	public bool EffectCanBeInvoked(string effectID)
@@ -136,7 +136,7 @@ public class EffectChainManager : MonoBehaviour
 		}
 
 		bool canInvoke = !(invokedTimes > 0 || openedEffectRecorders.Count == 0) && chainDepth <= 99;
-		Debug.Log("[CHAIN] CanInvoke | effectID=" + effectID + " | opened=" + openedEffectRecorders.Count + " | depth=" + chainDepth + " | invokedTimes=" + invokedTimes + " | matched=" + matchedChains + " | result=" + canInvoke + " | frame=" + Time.frameCount);
+
 
 		if (invokedTimes > 0 || openedEffectRecorders.Count == 0) // same card instance + effect already invoked in opened chains
 		{
@@ -179,6 +179,6 @@ public class EffectChainManager : MonoBehaviour
 		chainDepth = 0;
 		recorderStack.Clear();
 		currentEffectRecorderParent = null;
-		Debug.Log("[CHAIN] CloseOpened | closed=" + count + " | detail=" + closedChainInfo + " | depth=" + chainDepth + " | frame=" + Time.frameCount);
+
 	}
 }

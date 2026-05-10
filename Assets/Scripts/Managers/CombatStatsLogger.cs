@@ -103,7 +103,10 @@ namespace DefaultNamespace.Managers
 				_cardRevealStats[cardTypeID].Add(_revealIndex);
 			}
 			
-			Debug.Log($"[CombatStatsLogger] {record}");
+			if (printToConsole)
+			{
+				Debug.Log($"[CombatStatsLogger] {record}");
+			}
 		}
 
 		private void PrintCombatResults()

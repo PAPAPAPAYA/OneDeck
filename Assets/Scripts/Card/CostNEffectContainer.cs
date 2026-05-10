@@ -94,10 +94,10 @@ public class CostNEffectContainer : MonoBehaviour
 		int openedChains = EffectChainManager.Me != null ? EffectChainManager.Me.openedEffectRecorders.Count : -1;
 		int chainDepth = EffectChainManager.Me != null ? EffectChainManager.Me.chainDepth : -1;
 		string parentChainID = EffectChainManager.Me != null && EffectChainManager.Me.currentEffectRecorderParent != null ? EffectChainManager.Me.currentEffectRecorderParent.GetComponent<DefaultNamespace.EffectRecorder>().chainID.ToString() : "null";
-		// Debug.Log("[INVOKE] Enter | effect=" + effectString + " | lastEffect=" + (EffectChainManager.Me.lastEffectObject != null ? EffectChainManager.Me.lastEffectObject.name : "null") + " | opened=" + openedChains + " | depth=" + chainDepth + " | parentChain=" + parentChainID + " | frame=" + Time.frameCount);
+
 		if (EffectChainManager.Me.lastEffectObject == gameObject)
 		{
-			Debug.Log("[INVOKE] BLOCKED by lastEffectObject | effect=" + effectString + " | frame=" + Time.frameCount);
+
 			return CostCheckResult.Success(); // prevent effect invoking self
 		}
 		EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject); // check to see if a new chain is warranted, if yes, current container parent will be cleared
@@ -106,12 +106,12 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EffectChainManager.Me.EffectCanBeInvoked(effectString))
 		{
 			EffectChainManager.Me.lastEffectObject = gameObject;
-			Debug.Log("[INVOKE] EXECUTING | effect=" + effectString + " | frame=" + Time.frameCount);
+
 			effectEvent?.Invoke(); // invoke effects
 		}
 		else
 		{
-			Debug.Log("[INVOKE] BLOCKED by chain guard | effect=" + effectString + " | frame=" + Time.frameCount);
+
 		}
 
 		// Pop recorder from stack so outer effects see their own recorder again
