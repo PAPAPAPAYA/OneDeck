@@ -12,7 +12,8 @@ namespace DefaultNamespace
 		MoveToTop,
 		MoveToTopBatch,
 		MoveToIndex,
-		Destroy
+		Destroy,
+		StatusEffectChange
 	}
 
 	public class AnimationRequest
@@ -27,5 +28,11 @@ namespace DefaultNamespace
 		public float duration = 0.5f;
 		public bool useArc = true;
 		public int targetIndex;
+
+		// StatusEffectChange specific fields
+		public EnumStorage.StatusEffect statusEffect;
+		public int statusEffectAmount;
+		public ParticleSystem statusEffectParticlePrefab;
+		public float statusEffectParticleYOffset;
 	}
 }

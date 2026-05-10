@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DefaultNamespace;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
 
@@ -98,13 +99,30 @@ public class EffectScript : MonoBehaviour
 			}
 		}
 
-		// Play particle effects
-		if (particlePrefab != null)
+		// Capture status effect change into AnimationRequest when recorder system is available
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null)
 		{
-			CombatManager.Me?.visuals?.PlayStatusEffectParticle(targetCardScript, particlePrefab, particleYOffset, amount);
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.StatusEffectChange,
+				targetCard = targetCardScript.gameObject,
+				statusEffect = effect,
+				statusEffectAmount = amount,
+				statusEffectParticlePrefab = particlePrefab,
+				statusEffectParticleYOffset = particleYOffset
+			});
 		}
-
-		TriggerTintForStatusEffect(targetCardScript, effect);
+		else
+		{
+			// Fallback: old immediate visual path
+			if (particlePrefab != null)
+			{
+				CombatManager.Me?.visuals?.PlayStatusEffectParticle(targetCardScript, particlePrefab, particleYOffset, amount);
+			}
+			TriggerTintForStatusEffect(targetCardScript, effect);
+		}
 
 		if (!suppressLog)
 		{
@@ -151,6 +169,34 @@ public class EffectScript : MonoBehaviour
 	{
 		if (effect != EnumStorage.StatusEffect.Infected && effect != EnumStorage.StatusEffect.Power) return;
 		CombatManager.Me?.visuals?.ApplyStatusTint(targetCard, effect);
+	}
+
+	/// <summary>
+	/// Capture a status effect change (give or consume) into the current EffectRecorder as an AnimationRequest.
+	/// Falls back to immediate tint refresh if the recorder system is unavailable.
+	/// </summary>
+	protected void CaptureStatusEffectChangeAnimationRequest(GameObject targetCard, EnumStorage.StatusEffect effect, int amount)
+	{
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null)
+		{
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.StatusEffectChange,
+				targetCard = targetCard,
+				statusEffect = effect,
+				statusEffectAmount = amount
+			});
+		}
+		else
+		{
+			var targetCardScript = targetCard.GetComponent<CardScript>();
+			if (targetCardScript != null)
+			{
+				TriggerTintForStatusEffect(targetCardScript, effect);
+			}
+		}
 	}
 	#endregion
 }

@@ -141,7 +141,7 @@ namespace DefaultNamespace.Effects
 						break; // remove only 1 layer
 					}
 				}
-				TriggerTintForStatusEffect(card, statusEffectToTransfer);
+				CaptureStatusEffectChangeAnimationRequest(card.gameObject, statusEffectToTransfer, -1);
 			}
 
 			// Apply status effects to self (1 layer per source card)
@@ -277,16 +277,17 @@ namespace DefaultNamespace.Effects
 			// Remove status effects from source cards
 			foreach (var card in sourceCards)
 			{
+				int removedCount = 0;
 				for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
 				{
 					if (card.myStatusEffects[i] == statusEffectToTransfer)
 					{
 						card.myStatusEffects.RemoveAt(i);
+						removedCount++;
 					}
 				}
 
-				// Refresh visual display (if Power or Infected)
-				TriggerTintForStatusEffect(card, statusEffectToTransfer);
+				CaptureStatusEffectChangeAnimationRequest(card.gameObject, statusEffectToTransfer, -removedCount);
 			}
 
 			// Use core method to add status effects to target card (trigger events and visuals)

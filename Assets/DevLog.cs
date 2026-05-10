@@ -87,6 +87,7 @@
 	// power gain card particle
 	// motion design
 		//todo enlarge card when event triggered
+			// make status effect related effects to go through animation request system, so that they have emphasize animation
 		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
 	//// queue animation
 		//// effect recorder based animation system
@@ -105,6 +106,7 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	//// test if dmg is correct
 	//// GRAVE_Punch + SPIKE_SKELETON + ETERNAL_GHOST
 	//// feature to customize deck after shuffle for testing
 	//// transition focus coroutine bug: test case 4

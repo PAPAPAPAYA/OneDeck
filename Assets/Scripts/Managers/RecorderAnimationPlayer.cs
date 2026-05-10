@@ -183,6 +183,30 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				yield return new WaitUntil(() => done);
 				break;
 			}
+			case AnimationRequestType.StatusEffectChange:
+			{
+				if (request.targetCard == null) break;
+				var targetCardScript = request.targetCard.GetComponent<CardScript>();
+				if (targetCardScript == null) break;
+
+				if (request.statusEffectParticlePrefab != null)
+				{
+					visuals.PlayStatusEffectParticle(
+						targetCardScript,
+						request.statusEffectParticlePrefab,
+						request.statusEffectParticleYOffset,
+						Mathf.Abs(request.statusEffectAmount));
+				}
+
+				if (request.statusEffect == EnumStorage.StatusEffect.Infected ||
+				    request.statusEffect == EnumStorage.StatusEffect.Power)
+				{
+					visuals.ApplyStatusTint(targetCardScript, request.statusEffect);
+				}
+
+				request.onComplete?.Invoke();
+				break;
+			}
 		}
 	}
 }

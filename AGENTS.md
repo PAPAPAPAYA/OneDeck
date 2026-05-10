@@ -153,12 +153,13 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 
 ### AnimationRequest Types
 ```csharp
-enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy }
+enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange }
 ```
 - `HPAlterEffect` captures `Attack` requests (damage already resolved in logic phase; `onHit` is null).
 - `BuryEffect` captures `MoveToBottomBatch`.
 - `StageEffect` captures `MoveToTopBatch`.
 - `ExileEffect` captures `Destroy`.
+- `ApplyStatusEffectCore`, `ConsumeStatusEffect`, `ManaAlterEffect`, and `TransferStatusEffectEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
 - Batch types run all card movements in parallel and yield until the last completes.
 
 ### RecorderAnimationPlayer
