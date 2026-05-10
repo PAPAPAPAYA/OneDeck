@@ -46,8 +46,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -93,7 +93,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb08dbd2c6066ac468526e104b9095a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   tagsToCheck: 00000000
 --- !u!114 &1849899937797477789
 MonoBehaviour:
@@ -107,7 +106,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8da5b23dfa04f2bb3a8add21531e513, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AddTempCard
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cardCount: 2
   curseCardTypeID: {fileID: 0}
 --- !u!1 &8718476725744197808
@@ -161,7 +159,7 @@ MonoBehaviour:
   displayName: "\u732E\u796D\u4EEA\u5F0F"
   cardDesc: "\u63ED\u6653\u65F6,\u57CB\u846C <b>1</b> \u53CB\u65B9:\u751F\u6210 <b>2</b>
     [\u6B21\u5143\u88C2\u7F1D]"
-  rarity: 1
+  rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
