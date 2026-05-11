@@ -419,6 +419,7 @@ public class CombatManager : MonoBehaviour
 					}
 				}
 
+				Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait collected " + roots.Count + " root recorders");
 				if (roots.Count > 0)
 				{
 					yield return StartCoroutine(RecorderAnimationPlayer.me.PlayRecordersCoroutine(roots));

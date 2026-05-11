@@ -102,6 +102,7 @@ public class EffectScript : MonoBehaviour
 		// Capture status effect change into AnimationRequest when recorder system is available
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		bool captured = false;
 		if (recorder != null && RecorderAnimationPlayer.me != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest
@@ -113,8 +114,10 @@ public class EffectScript : MonoBehaviour
 				statusEffectParticlePrefab = particlePrefab,
 				statusEffectParticleYOffset = particleYOffset
 			});
+			captured = true;
 		}
-		else
+		Debug.Log("[EffectScript] ApplyStatusEffectCore target=" + targetCardScript.name + " effect=" + effect + " amount=" + amount + " recorder=" + (recorderGo != null ? recorderGo.name : "null") + " captured=" + captured);
+		if (!captured)
 		{
 			// Fallback: old immediate visual path
 			if (particlePrefab != null)

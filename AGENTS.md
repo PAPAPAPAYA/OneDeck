@@ -168,6 +168,9 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 - Calls `UpdateAllPhysicalCardTargets()` before each move request.
 - Falls back to old visual path when `RecorderAnimationPlayer.me == null`.
 
+### Emphasize Animation
+Before playing an effect recorder's requests, the source card (`recorder.cardObject`) plays a brief scale pulse (1.2x over 0.25s, then back) to visually signal which card triggered the effect. Skipped if the recorder has no requests or no card object.
+
 ### AnimationStateTracker (Legacy Safety Net)
 Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until `HasActiveBatch == false` before closing the chain, ensuring any legacy-queued events flush naturally.
 

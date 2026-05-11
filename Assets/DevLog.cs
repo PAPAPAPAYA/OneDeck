@@ -1,7 +1,7 @@
  // devlog
 
 //! anything else
-	// remember to check combat stats logger CSVs
+	//// remember to check combat stats logger CSVs
 	// add space after annotations
 	//// show card tag ---- deathrattle, linger
 	//// cards tweaks
@@ -64,7 +64,7 @@
 	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
 
 //! feature
-	// effect chain manager issue
+	//// effect chain manager issue
 	//// skill to check infinite card combos
 		//// GiveStatusEffectToXFriendly, GiveStatusEffectToLastXCards, GivePowerToCardThatGotPower
 	//// tool to validate no duplicate card type id
@@ -78,16 +78,25 @@
 	// fake shuffle
 	
 //! viscom
+	// status effect
+		// better power wisp
+		// power gain card particle
+		// consume effect
 	// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
+		//// curse
+			//// add
+			//// give status effect
+				//// animation entity is effect projectile, not give status effect itself
+			//// effect projectile
+		//// add rift
 	//// stage/bury and deck shift should happen at the same time
 		//// rift -> stage another card, staged card should go straight to reveal zone
 	// better card move animatin
 		// change z dynamically
-	// better power wisp
-	// power gain card particle
 	// motion design
-		//todo enlarge card when event triggered
-			// make status effect related effects to go through animation request system, so that they have emphasize animation
+		// shake revealed card if cost not met / can't activate
+		//// enlarge card when event triggered
+			//// make status effect related effects to go through animation request system, so that they have emphasize animation
 		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
 	//// queue animation
 		//// effect recorder based animation system
@@ -106,6 +115,9 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	// stage
+		//todo fixing
+	// exile
 	//// test if dmg is correct
 	//// GRAVE_Punch + SPIKE_SKELETON + ETERNAL_GHOST
 	//// feature to customize deck after shuffle for testing

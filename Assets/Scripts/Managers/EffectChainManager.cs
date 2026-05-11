@@ -170,8 +170,14 @@ public class EffectChainManager : MonoBehaviour
 		{
 			var rec = recorder.GetComponent<EffectRecorder>();
 			rec.open = false;
-			closedChainInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "/processed=" + rec.processedEffectID + "];";
+			string reqSummary = "reqs=" + rec.animationRequests.Count;
+			for (int i = 0; i < rec.animationRequests.Count; i++)
+			{
+				reqSummary += "[" + i + "]" + rec.animationRequests[i].type;
+			}
+			closedChainInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "/processed=" + rec.processedEffectID + "/" + reqSummary + "];";
 		}
+		Debug.Log("[EffectChainManager] CloseOpenedChain closing " + count + " recorders: " + closedChainInfo);
 
 		UtilityFuncManagerScript.CopyList(openedEffectRecorders, closedEffectRecorders, false);
 		openedEffectRecorders.Clear();

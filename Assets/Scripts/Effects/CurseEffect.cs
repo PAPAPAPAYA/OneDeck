@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
@@ -35,6 +36,7 @@ namespace DefaultNamespace.Effects
 		/// <param name="powerAmount">Amount of Power stacks to apply.</param>
 		public void EnhanceCurse(int powerAmount)
 		{
+			Debug.Log("[CurseEffect] EnhanceCurse START powerAmount=" + powerAmount + " myCard=" + (myCard != null ? myCard.name : "null"));
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
 			{
 				Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
@@ -65,6 +67,7 @@ namespace DefaultNamespace.Effects
 			{
 				ApplyPowerToCardWithProjectile(targetCard, powerAmount);
 			}
+			Debug.Log("[CurseEffect] EnhanceCurse END myCard=" + (myCard != null ? myCard.name : "null"));
 		}
 
 		/// <summary>
@@ -274,14 +277,32 @@ namespace DefaultNamespace.Effects
 		{
 			if (targetCard == null || amount <= 0) return;
 
-			var targetCards = new List<CardScript> { targetCard };
-			
-			combatManager.visuals?.PlayMultiStatusEffectProjectile(
-				myCard,
-				targetCards,
-				(card) => ApplyPowerToCardInternal(card, amount),
-				null
-			);
+			// Execute logic immediately so AnimationRequest is captured in the current recorder
+			ApplyPowerToCardInternal(targetCard, amount);
+
+			// Capture projectile animation into AnimationRequest
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null && RecorderAnimationPlayer.me != null)
+			{
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.StatusEffectProjectile,
+					attackerCard = myCard,
+					targetCard = targetCard.gameObject
+				});
+			}
+			else
+			{
+				// Fallback: old immediate visual path
+				var targetCards = new List<CardScript> { targetCard };
+				combatManager.visuals?.PlayMultiStatusEffectProjectile(
+					myCard,
+					targetCards,
+					onEachComplete: null,
+					onAllComplete: null
+				);
+			}
 		}
 
 		/// <summary>
@@ -289,6 +310,7 @@ namespace DefaultNamespace.Effects
 		/// </summary>
 		private void ApplyPowerToCardInternal(CardScript targetCard, int amount)
 		{
+			Debug.Log("[CurseEffect] ApplyPowerToCardInternal target=" + (targetCard != null ? targetCard.name : "null") + " amount=" + amount + " myCard=" + (myCard != null ? myCard.name : "null"));
 			ApplyStatusEffectCore(
 				targetCard, EnumStorage.StatusEffect.Power, amount,
 				statusEffectResolverPrefab, statusEffectParticlePrefab, particleYOffset, amount);
@@ -343,6 +365,7 @@ namespace DefaultNamespace.Effects
 
 				int cardPowerCount = EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
 				int removeFromThisCard = Mathf.Min(cardPowerCount, amountToRemove);
+				int removedFromThisCard = 0;
 
 				for (int i = card.myStatusEffects.Count - 1; i >= 0 && removeFromThisCard > 0; i--)
 				{
@@ -351,11 +374,11 @@ namespace DefaultNamespace.Effects
 						card.myStatusEffects.RemoveAt(i);
 						removeFromThisCard--;
 						amountToRemove--;
+						removedFromThisCard++;
 					}
 				}
 
-				// Refresh visual display for this card
-				TriggerTintForStatusEffect(card, EnumStorage.StatusEffect.Power);
+				CaptureStatusEffectChangeAnimationRequest(card.gameObject, EnumStorage.StatusEffect.Power, -removedFromThisCard);
 			}
 
 			// Output effect info

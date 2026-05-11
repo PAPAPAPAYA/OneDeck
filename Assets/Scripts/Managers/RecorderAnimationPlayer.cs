@@ -38,10 +38,19 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		if (recorder == null || recorder.animationPlayed) yield break;
 		recorder.animationPlayed = true;
 
+		string cardName = recorder.cardObject != null ? recorder.cardObject.name : "null";
+		Debug.Log("[RecorderAnimationPlayer] PlayRecorderCoroutine chainID=" + recorder.chainID + " card=" + cardName + " requests=" + recorder.animationRequests.Count);
+
 		// Emphasize the source card before playing its effect animations
 		if (recorder.animationRequests.Count > 0 && recorder.cardObject != null)
 		{
+			Debug.Log("[RecorderAnimationPlayer] Starting emphasize for " + cardName);
 			yield return StartCoroutine(PlayEmphasizeAnimation(recorder.cardObject));
+			Debug.Log("[RecorderAnimationPlayer] Emphasize done for " + cardName);
+		}
+		else
+		{
+			Debug.Log("[RecorderAnimationPlayer] Skipping emphasize: requests=" + recorder.animationRequests.Count + " card=" + cardName);
 		}
 
 		// Play all requests of this effect instance sequentially
@@ -70,6 +79,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 	/// </summary>
 	private IEnumerator PlayEmphasizeAnimation(GameObject logicalCard)
 	{
+		Debug.Log("[RecorderAnimationPlayer] PlayEmphasizeAnimation logicalCard=" + (logicalCard != null ? logicalCard.name : "null"));
 		if (logicalCard == null) yield break;
 		if (CombatManager.Me == null) yield break;
 		var visuals = CombatManager.Me.visuals;
@@ -205,6 +215,22 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				}
 
 				request.onComplete?.Invoke();
+				break;
+			}
+			case AnimationRequestType.StatusEffectProjectile:
+			{
+				if (request.attackerCard == null || request.targetCard == null) break;
+				var targetCardScript = request.targetCard.GetComponent<CardScript>();
+				if (targetCardScript == null) break;
+
+				bool done = false;
+				visuals.PlayMultiStatusEffectProjectile(
+					request.attackerCard,
+					new List<CardScript> { targetCardScript },
+					onEachComplete: null, // logic already resolved in logic phase
+					onAllComplete: () => { done = true; }
+				);
+				yield return new WaitUntil(() => done);
 				break;
 			}
 		}

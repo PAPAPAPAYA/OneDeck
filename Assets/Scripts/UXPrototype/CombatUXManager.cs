@@ -405,6 +405,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) return;
 
+		// Kill existing tweens from UpdateAllPhysicalCardTargets to prevent conflict with special animation
+		physScript.KillTweens();
+
 		// Calculate target position
 		Vector3 targetPosition;
 		switch (config.moveType)

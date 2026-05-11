@@ -13,7 +13,8 @@ namespace DefaultNamespace
 		MoveToTopBatch,
 		MoveToIndex,
 		Destroy,
-		StatusEffectChange
+		StatusEffectChange,
+		StatusEffectProjectile
 	}
 
 	public class AnimationRequest
