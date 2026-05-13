@@ -331,6 +331,7 @@ public class BuryEffect : EffectScript
 		else
 		{
 			// Fallback: old immediate visual path
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 			foreach (var card in buriedCards)
 			{
 				combatManager.visuals.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: null);

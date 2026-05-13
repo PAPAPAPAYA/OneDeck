@@ -50,8 +50,7 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				GameObject selfCopy = Instantiate(myCard);
-				CombatFuncs.me.AddCard_TargetSpecific(selfCopy, myCardScript.myStatusRef);
+				CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.myStatusRef);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
@@ -67,8 +66,7 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				GameObject selfCopy = Instantiate(myCard);
-				CombatFuncs.me.AddCard_TargetSpecific(selfCopy, myCardScript.theirStatusRef);
+				CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.theirStatusRef);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{

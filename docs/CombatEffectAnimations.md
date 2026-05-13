@@ -62,7 +62,7 @@
 | **力量反应** | `PowerReactionEffect.GivePowerToCardThatGotPower` | 武器精灵 | 调用 `ApplyStatusEffectCore`（有粒子和染色），但**无投射物飞行动画** |
 | **力量放大** | `StatusEffectAmplifierEffect.AmplifyStatusEffectGain` | 力量渴求者 | 调用 `ApplyStatusEffectCore`（有粒子和染色），但**无"放大"特殊视觉**（如闪光、脉冲） |
 | **护盾格挡** | `HPAlterEffect.ProcessShieldNHp` | 所有带 Shield 的战斗 | shield 抵消伤害时**纯数值计算**，无盾牌破碎/格挡视觉 |
-| **Counter 反击** | Counter 状态机制 | 带 Counter 的卡 | Counter 触发时**无专门视觉反馈** |
+| **Counter 计数** | Counter 状态机制 | 带 Counter 的卡 | Counter 触发时**无专门视觉反馈** |
 
 ---
 

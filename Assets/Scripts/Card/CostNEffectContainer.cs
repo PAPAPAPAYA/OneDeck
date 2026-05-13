@@ -234,7 +234,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, counterRequired, EnumStorage.StatusEffect.Counter)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
-		_costFailMessages.Add("// [反击]不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + counterRequired + "层)\n");
+		_costFailMessages.Add("// [计数]不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + counterRequired + "层)\n");
 	}
 
 	/// <summary>
@@ -323,7 +323,7 @@ public class CostNEffectContainer : MonoBehaviour
 			}
 			
 			// If Power count exceeds the parameter, cost is met
-			if (powerAmount > powerCount)
+			if (powerAmount >= powerCount)
 			{
 				return; // cost met
 			}

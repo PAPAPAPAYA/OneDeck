@@ -115,8 +115,16 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	// check 
+		//// 1. cost on card script + multiple effect instance and one of them has pre effect event one of them doesn't
+		// 2. cost on cost n effect container, ex. RIFT_DRAGON, check animation bug
+			// todo exile bug
+	//// counter's translation incorrect
+	//// slime
 	// 1 effect recorder 1 effect (1 game event listener 1 effect)
-		//todo list ready, manual check if type A would be a problem
+		//// list ready, manual check if type A would be a problem
+		//todo check all type b
+	//// need to check cards that has 1 effect with cost and 1 effect without cost
 	//// stage
 		//// fixing
 	//// exile

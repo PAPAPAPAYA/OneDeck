@@ -287,13 +287,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physScript.pendingRevealZoneMove = true;
 				physScript.pendingRevealPosition = physicalCardRevealPos.position;
 				physScript.pendingRevealScale = physicalCardRevealSize;
-	
 			}
 			else
 			{
 				physScript.SetTargetPosition(physicalCardRevealPos.position);
 				physScript.SetTargetScale(physicalCardRevealSize);
-	
 			}
 		}
 		// Update positions of remaining cards in deck
@@ -413,8 +411,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) return;
 
-		Debug.Log("[CombatUXManager] MoveCardWithAnimation logical=" + logicalCard.name + " moveType=" + config.moveType + " special=" + physScript.isPlayingSpecialAnimation);
-
 		// Kill existing tweens from UpdateAllPhysicalCardTargets to prevent conflict with special animation
 		physScript.KillTweens();
 
@@ -430,12 +426,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				}
 				else
 				{
-					targetPosition = CalculatePositionAtIndex(combatManager.combinedDeckZone.Count - 1);
+					int topActualIndex = GetPhysicalCardDeckIndex(physicalCard);
+					if (topActualIndex < 0) topActualIndex = physicalCardsInDeck.Count - 1;
+					targetPosition = CalculatePositionAtIndex(topActualIndex);
 				}
 				break;
 			case CardMoveType.ToBottom:
-				targetPosition = CalculatePositionAtIndex(0);
+			{
+				int bottomActualIndex = GetPhysicalCardDeckIndex(physicalCard);
+				if (bottomActualIndex < 0) bottomActualIndex = 0;
+				targetPosition = CalculatePositionAtIndex(bottomActualIndex);
 				break;
+			}
 			case CardMoveType.ToIndex:
 				targetPosition = CalculatePositionAtIndex(config.targetIndex);
 				break;

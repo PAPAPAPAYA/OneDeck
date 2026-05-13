@@ -69,6 +69,9 @@ public class BuryCostEffect : EffectScript
 			}
 		}
 
+		// Sync physical cards before animation so MoveCardToBottom uses correct indices
+		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+
 		// Play arc trajectory animation, trigger events after each animation completes
 		int completedCount = 0;
 		int totalCount = buriedCards.Count;

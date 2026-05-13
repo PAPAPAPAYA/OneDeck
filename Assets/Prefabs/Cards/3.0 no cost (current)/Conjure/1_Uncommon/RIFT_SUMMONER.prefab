@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 834418638395040871}
   - component: {fileID: 3408854323514059765}
   - component: {fileID: 277766295408443174}
-  - component: {fileID: 6315565223957223948}
+  - component: {fileID: 6200149520148952952}
   m_Layer: 0
-  m_Name: exile rift and stage friendly
+  m_Name: stage friendly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46,42 +46,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
   checkCostEvent:
     m_PersistentCalls:
+      m_Calls: []
+  preEffectEvent:
+    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3408854323514059765}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_HasOwnCardOfType
-        m_Mode: 3
+      - m_Target: {fileID: 6200149520148952952}
+        m_TargetAssemblyTypeName: ExileCostEffect, Assembly-CSharp
+        m_MethodName: ExecuteExileCost
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6315565223957223948}
-        m_TargetAssemblyTypeName: ExileEffect, Assembly-CSharp
-        m_MethodName: ExileMyCardsWithTypeID
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 277766295408443174}
         m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
         m_MethodName: StageMyCards
@@ -106,11 +93,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StageEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   tagToCheck: 0
   targetFriendly: 0
   statusEffectToCheck: 0
---- !u!114 &6315565223957223948
+--- !u!114 &6200149520148952952
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -119,12 +105,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 270621688628183383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48fd28867eaa8fc44bcf68c773e7d076, type: 3}
+  m_Script: {fileID: 11500000, guid: 290072fa332eaa14084b1a8dc471d809, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExileEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
-  tagToCheck: 0
-  cardTypeIDSO: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::ExileCostEffect
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,7 +158,7 @@ MonoBehaviour:
   cardTypeID: RIFT_SUMMONER
   displayName: "\u88C2\u7F1D\u53EC\u5524\u5E08"
   cardDesc: "\u63ED\u6653\u65F6,\u53BB\u9664 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]:\u7F6E\u9876
-    <b>1</b> \u53CB\u65B9"
+    <b>2</b> \u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -192,6 +175,9 @@ MonoBehaviour:
   minionCostCount: 0
   minionCostCardTypeID: 
   minionCostOwner: 0
+  exileCostCount: 1
+  exileCostCardTypeID: RIFT
+  exileCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

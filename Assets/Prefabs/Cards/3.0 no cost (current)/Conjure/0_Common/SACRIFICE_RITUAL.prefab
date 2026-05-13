@@ -11,9 +11,8 @@ GameObject:
   - component: {fileID: 834418638395040871}
   - component: {fileID: 3408854323514059765}
   - component: {fileID: 1750634523173734784}
-  - component: {fileID: 1849899937797477789}
   m_Layer: 0
-  m_Name: 'bury friendly and add [rift]'
+  m_Name: bury friendly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69,18 +68,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1849899937797477789}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
-        m_MethodName: AddCardToMe
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &1750634523173734784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,13 +81,81 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   tagsToCheck: 00000000
---- !u!114 &1849899937797477789
+--- !u!1 &4094267181467235326
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5025949909811271839}
+  - component: {fileID: 5746714398542143305}
+  - component: {fileID: 7527285285389357061}
+  m_Layer: 0
+  m_Name: 'add [rift]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5025949909811271839
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4094267181467235326}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3828591620990538636}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5746714398542143305
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 270621688628183383}
+  m_GameObject: {fileID: 4094267181467235326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
+  checkCostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  preEffectEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  effectEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7527285285389357061}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
+        m_MethodName: AddCardToMe
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7527285285389357061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4094267181467235326}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8da5b23dfa04f2bb3a8add21531e513, type: 3}
@@ -140,6 +195,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 834418638395040871}
+  - {fileID: 5025949909811271839}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -157,7 +213,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SACRIFICE_RITUAL
   displayName: "\u732E\u796D\u4EEA\u5F0F"
-  cardDesc: "\u63ED\u6653\u65F6,\u57CB\u846C <b>1</b> \u53CB\u65B9:\u751F\u6210 <b>2</b>
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9,\u751F\u6210 <b>2</b>
     [\u6B21\u5143\u88C2\u7F1D]"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -175,6 +231,9 @@ MonoBehaviour:
   minionCostCount: 0
   minionCostCardTypeID: 
   minionCostOwner: 0
+  exileCostCount: 0
+  exileCostCardTypeID: 
+  exileCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,6 +251,18 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 3408854323514059765}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: InvokeEffectEventVoid
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 5746714398542143305}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid
         m_Mode: 1

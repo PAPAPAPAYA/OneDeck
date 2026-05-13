@@ -155,7 +155,7 @@ public class EffectScript : MonoBehaviour
 			EnumStorage.StatusEffect.Power => "力量",
 			EnumStorage.StatusEffect.Rest => "休息",
 			EnumStorage.StatusEffect.Revive => "复活",
-			EnumStorage.StatusEffect.Counter => "反击",
+			EnumStorage.StatusEffect.Counter => "计数",
 			_ => effect.ToString()
 		};
 		AppendLog(

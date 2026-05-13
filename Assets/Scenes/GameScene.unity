@@ -2747,6 +2747,7 @@ MonoBehaviour:
   awaitingRevealConfirm: 1
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   cardsRevealedThisRound: 0
+  isPlayingEffectAnimations: 0
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 3
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
@@ -2875,9 +2876,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
   useCustomOrder: 1
   customOrderPrefabs:
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
+  - {fileID: 8718476725744197808, guid: 8a9871274e7b5ed4ea2b5977f2d53aeb, type: 3}
   - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
-  - {fileID: 8718476725744197808, guid: c9f442f30e825cc4fb8a8277de5f2637, type: 3}
+  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
+  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
 --- !u!1 &1162866020
 GameObject:
   m_ObjectHideFlags: 0
