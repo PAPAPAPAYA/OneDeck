@@ -115,9 +115,11 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
-	// stage
-		//todo fixing
-	// exile
+	// 1 effect recorder 1 effect (1 game event listener 1 effect)
+		//todo list ready, manual check if type A would be a problem
+	//// stage
+		//// fixing
+	//// exile
 	//// test if dmg is correct
 	//// GRAVE_Punch + SPIKE_SKELETON + ETERNAL_GHOST
 	//// feature to customize deck after shuffle for testing

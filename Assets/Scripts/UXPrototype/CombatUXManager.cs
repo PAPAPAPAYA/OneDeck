@@ -253,6 +253,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physicalCardInRevealZone = revealPhysicalCard;
 			}
 		}
+
+		string deckList = "";
+		for (int i = 0; i < physicalCardsInDeck.Count; i++)
+		{
+			deckList += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
+		}
+		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck done. deckCount=" + physicalCardsInDeck.Count + " revealZone=" + (physicalCardInRevealZone != null ? physicalCardInRevealZone.name : "null") + " deck=" + deckList);
 	}
 
 	/// <summary>
@@ -262,6 +269,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		var physScript = physicalCard != null ? physicalCard.GetComponent<CardPhysObjScript>() : null;
 
+		Debug.Log("[CombatUXManager] MovePhysicalCardToRevealZone physical=" + (physicalCard != null ? physicalCard.name : "null") + " deckCountBefore=" + physicalCardsInDeck.Count);
 		
 		// Remove from deck
 		physicalCardsInDeck.Remove(physicalCard);
@@ -405,6 +413,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) return;
 
+		Debug.Log("[CombatUXManager] MoveCardWithAnimation logical=" + logicalCard.name + " moveType=" + config.moveType + " special=" + physScript.isPlayingSpecialAnimation);
+
 		// Kill existing tweens from UpdateAllPhysicalCardTargets to prevent conflict with special animation
 		physScript.KillTweens();
 
@@ -488,6 +498,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Animation complete callback
 		moveSequence.OnComplete(() =>
 		{
+			Debug.Log("[CombatUXManager] MoveCardWithAnimation COMPLETE logical=" + logicalCard.name);
 			AnimationStateTracker.me?.CompleteAnimation();
 			UnblockInput(this);
 
@@ -806,6 +817,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			return;
 		}
+		string caller = "unknown";
+		try
+		{
+			var stack = new System.Diagnostics.StackTrace(2, false);
+			if (stack.FrameCount > 0)
+			{
+				var method = stack.GetFrame(0).GetMethod();
+				caller = method.DeclaringType.Name + "." + method.Name;
+			}
+		}
+		catch { }
+		Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets called by " + caller + ". deckCount=" + physicalCardsInDeck.Count);
 		// Update card positions in deck
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
@@ -1274,7 +1297,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 
 		// Get corresponding physical card
+		BuildCardScriptToPhysicalDictionary();
 		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+		Debug.Log("[CombatUXManager] DestroyCardWithAnimation logical=" + logicalCard.name + " physicalFound=" + (physicalCard != null ? physicalCard.name : "NULL") + " inDeck=" + physicalCardsInDeck.Contains(physicalCard) + " inReveal=" + (physicalCardInRevealZone == physicalCard));
 		
 		// Remove logical card from combined deck
 		if (combatManager != null && combatManager.combinedDeckZone.Contains(logicalCard))
@@ -1285,6 +1310,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// If no physical card, destroy logical card directly
 		if (physicalCard == null)
 		{
+			Debug.LogWarning("[CombatUXManager] DestroyCardWithAnimation: no physical card found for " + logicalCard.name + ", destroying immediately");
 			Destroy(logicalCard);
 			onComplete?.Invoke();
 			return;

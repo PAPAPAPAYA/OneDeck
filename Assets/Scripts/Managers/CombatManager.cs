@@ -106,6 +106,10 @@ public class CombatManager : MonoBehaviour
 	public bool IsInputBlocked { get; private set; }
 	private int _inputBlockCount = 0;
 
+	[Header("ANIMATION LOCK")]
+	[Tooltip("True while effect recorder animations are playing. Prevents RevealCards from auto-revealing next card too early.")]
+	public bool isPlayingEffectAnimations;
+
 	/// <summary>
 	/// Request to block player input. Uses reference counting to handle concurrent animations.
 	/// </summary>
@@ -391,14 +395,18 @@ public class CombatManager : MonoBehaviour
 	/// </summary>
 	private System.Collections.IEnumerator PlayRecorderAnimationsAndWait()
 	{
+		isPlayingEffectAnimations = true;
+		Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait START");
 		// 1. Safety wait for legacy animations
 		while (AnimationStateTracker.me != null && AnimationStateTracker.me.HasActiveBatch)
 		{
 			yield return null;
 		}
+		Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait legacy animations done");
 
 		// 2. Close the chain
 		EffectChainManager.Me.CloseOpenedChain();
+		Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait chain closed");
 
 		try
 		{
@@ -441,6 +449,8 @@ public class CombatManager : MonoBehaviour
 
 			// Ensure input blocking is released
 			ResetInputBlock();
+			isPlayingEffectAnimations = false;
+			Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait animation lock released");
 		}
 
 		// Safety net for stray legacy animations
@@ -476,9 +486,17 @@ public class CombatManager : MonoBehaviour
 		// ========== Phase 1: Wait to process current card and reveal next ==========
 		if (awaitingRevealConfirm)
 		{
+			// Guard: don't advance state while effect recorder animations are playing
+			if (isPlayingEffectAnimations)
+			{
+				Debug.Log("[CombatManager] RevealCards Phase1 BLOCKED because isPlayingEffectAnimations=true");
+				return;
+			}
+
 			// Auto-reveal next card if current revealed card was removed from game (exiled/destroyed)
 			if (revealZone == null && combinedDeckZone.Count > 0)
 			{
+				Debug.Log("[CombatManager] RevealCards Phase1 AUTO-REVEAL because revealZone is null. Next card=" + combinedDeckZone[combinedDeckZone.Count - 1].name);
 				RevealNextCard();
 				awaitingRevealConfirm = false;
 				EffectChainManager.Me.CloseOpenedChain();
@@ -532,6 +550,7 @@ public class CombatManager : MonoBehaviour
 			else
 			{
 				// Normal card triggers effect
+				Debug.Log("[CombatManager] RevealCards Phase2 TRIGGER effect on " + revealZone.name);
 				TriggerRevealedCardEffect();
 			}
 			

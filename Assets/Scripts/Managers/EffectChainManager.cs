@@ -175,9 +175,10 @@ public class EffectChainManager : MonoBehaviour
 			{
 				reqSummary += "[" + i + "]" + rec.animationRequests[i].type;
 			}
-			closedChainInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "/processed=" + rec.processedEffectID + "/" + reqSummary + "];";
+			closedChainInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "/" + reqSummary + "];";
 		}
-		Debug.Log("[EffectChainManager] CloseOpenedChain closing " + count + " recorders: " + closedChainInfo);
+		if (count > 0)
+			Debug.Log("[EffectChainManager] CloseOpenedChain closing " + count + " recorders: " + closedChainInfo);
 
 		UtilityFuncManagerScript.CopyList(openedEffectRecorders, closedEffectRecorders, false);
 		openedEffectRecorders.Clear();

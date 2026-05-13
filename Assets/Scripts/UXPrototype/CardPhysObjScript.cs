@@ -238,8 +238,13 @@ public class CardPhysObjScript : MonoBehaviour
 		TargetPosition = target;
 
 		// If special animation is playing, do not start DOTween
-		if (isPlayingSpecialAnimation) return;
+		if (isPlayingSpecialAnimation)
+		{
+			Debug.Log("[CardPhysObjScript] SetTargetPosition SKIPPED (special animation) card=" + gameObject.name + " target=" + target);
+			return;
+		}
 
+		Debug.Log("[CardPhysObjScript] SetTargetPosition MOVING card=" + gameObject.name + " from=" + transform.position + " to=" + target + " isPlayingSpecialAnimation=" + isPlayingSpecialAnimation);
 		// Start DOTween position animation
 		StartPositionTween();
 	}

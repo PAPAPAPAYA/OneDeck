@@ -1,0 +1,56 @@
+--- CHECK RESULTS --- Total checked cards: 71, Cards with issues: 27
+
+=== GRAVE_PUNCH (Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab) ===
+  LISTENER 'GRAVE_PUNCH': response has 2 calls (expected 1)
+=== GRAVE_TOGETHER (Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/0_Common/GRAVE_TOGETHER.prefab) ===
+  LISTENER 'GRAVE_TOGETHER': response has 2 calls (expected 1)
+=== GRAVE_INVITATION (Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/1_Uncommon/GRAVE_INVITATION.prefab) ===
+  LISTENER 'GRAVE_INVITATION' -> CONTAINER 'deal dmg and bury hostile based on friendly in grave': effectEvent has 2 calls (expected 1) | [0]DecreaseTheirHp(deal dmg and bury hostile based on friendly in grave) | [1]BuryTheirCards_BasedOnIntSO(deal dmg and bury hostile based on friendly in grave)
+=== BODY_CANON (Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/2_Rare/BODY_CANON.prefab) ===
+  LISTENER 'BODY_CANON': response has 2 calls (expected 1)
+=== SLIME (Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/2_Rare/SLIME.prefab) ===
+  LISTENER 'SLIME': response has 2 calls (expected 1)
+=== FALL_INTO_RIFT (Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/0_Common/FALL_INTO_RIFT.prefab) ===
+  LISTENER 'FALL_INTO_RIFT' -> CONTAINER 'add [rift] and bury hostile': effectEvent has 2 calls (expected 1) | [0]AddCardToMe(add [rift] and bury hostile) | [1]BuryTheirCards(add [rift] and bury hostile)
+=== SACRIFICE_RITUAL (Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/0_Common/SACRIFICE_RITUAL.prefab) ===
+  LISTENER 'SACRIFICE_RITUAL' -> CONTAINER 'bury friendly and add [rift]': effectEvent has 2 calls (expected 1) | [0]BuryMyCards(bury friendly and add [rift]) | [1]AddCardToMe(bury friendly and add [rift])
+=== RIFT_DRAGON (Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_DRAGON.prefab) ===
+  LISTENER 'RIFT_DRAGON' -> CONTAINER 'check and exile rift, deal dmg': effectEvent has 2 calls (expected 1) | [0]ExileMyCardsWithTypeID(check and exile rift, deal dmg) | [1]DecreaseTheirHp(check and exile rift, deal dmg)
+=== RIFT_GUIDE (Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_GUIDE.prefab) ===
+  LISTENER 'RIFT_GUIDE' -> CONTAINER 'exile rift and bury hostile': effectEvent has 2 calls (expected 1) | [0]ExileMyCardsWithTypeID(exile rift and bury hostile) | [1]BuryTheirCards(exile rift and bury hostile)
+=== RIFT_MONSTER (Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_MONSTER.prefab) ===
+  LISTENER 'RIFT_MONSTER' -> CONTAINER 'exile rift and deal dmg': effectEvent has 2 calls (expected 1) | [0]ExileMyCardsWithTypeID(exile rift and deal dmg) | [1]DecreaseTheirHp(exile rift and deal dmg)
+=== RIFT_SUMMONER (Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_SUMMONER.prefab) ===
+  LISTENER 'RIFT_SUMMONER' -> CONTAINER 'exile rift and stage friendly': effectEvent has 2 calls (expected 1) | [0]ExileMyCardsWithTypeID(exile rift and stage friendly) | [1]StageMyCards(exile rift and stage friendly)
+=== CURSE_SUMMONER (Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/CURSE_SUMMONER.prefab) ===
+  LISTENER 'CURSE_SUMMONER' -> CONTAINER 'consume hostile [ju-on] power, stage friendly': effectEvent has 2 calls (expected 1) | [0]ConsumeHostileCursePower(consume hostile [ju-on] power, stage friendly) | [1]StageMyCards(consume hostile [ju-on] power, stage friendly)
+=== POISONER (Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/POISONER.prefab) ===
+  LISTENER 'POISONER' -> CONTAINER 'enhence hostile [ju-on], deal dmg': effectEvent has 2 calls (expected 1) | [0]EnhanceCurse(enhence hostile [ju-on], deal dmg) | [1]DecreaseTheirHp(enhence hostile [ju-on], deal dmg)
+=== RIFT_CURSE (Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/RIFT_CURSE.prefab) ===
+  LISTENER 'RIFT_CURSE' -> CONTAINER 'enhance hostile [ju-on], add [rift]': effectEvent has 2 calls (expected 1) | [0]EnhanceCurse(enhance hostile [ju-on], add [rift]) | [1]AddCardToMe(enhance hostile [ju-on], add [rift])
+=== PREMATURE (Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/PREMATURE.prefab) ===
+  LISTENER 'PREMATURE' -> CONTAINER 'consume 1 hostile [ju-on] power, , stage it': effectEvent has 2 calls (expected 1) | [0]ConsumeHostileCursePower(consume 1 hostile [ju-on] power, , stage it) | [1]StageTheirSpecificCard(consume 1 hostile [ju-on] power, , stage it)
+=== SACRIFICIAL_SPIRIT (Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/SACRIFICIAL_SPIRIT.prefab) ===
+  LISTENER 'SACRIFICIAL_SPIRIT' -> CONTAINER 'bury friendly; enhance hostile curse': effectEvent has 2 calls (expected 1) | [0]BuryMyCards(bury friendly; enhance hostile curse) | [1]EnhanceCurse(bury friendly; enhance hostile curse)
+=== SMALL_SCALE_DEATH (Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/SMALL_SCALE_DEATH.prefab) ===
+  LISTENER 'SMALL_SCALE_DEATH' -> CONTAINER 'bury next 2; enhance hostile curse': effectEvent has 2 calls (expected 1) | [0]BuryLastXCards(bury next 2; enhance hostile curse) | [1]EnhanceCurse(bury next 2; enhance hostile curse)
+=== BLACKSMITH (Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/BLACKSMITH.prefab) ===
+  LISTENER 'BLACKSMITH': response has 2 calls (expected 1)
+=== COFFIN_MAKER (Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/COFFIN_MAKER.prefab) ===
+  LISTENER 'COFFIN_MAKER': response has 2 calls (expected 1)
+=== OVERCHARGED_SUMMONER (Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/OVERCHARGED_SUMMONER.prefab) ===
+  LISTENER 'OVERCHARGED_SUMMONER': response has 2 calls (expected 1)
+=== THE_FOOL (Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/THE_FOOL.prefab) ===
+  LISTENER 'THE_FOOL': response has 2 calls (expected 1)
+=== ADVANCE_PORTAL (Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/ADVANCE_PORTAL.prefab) ===
+  LISTENER 'ADVANCE_PORTAL': response has 2 calls (expected 1)
+=== DR_MANHATTAN (Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/DR_MANHATTAN.prefab) ===
+  LISTENER 'DR_MANHATTAN' -> CONTAINER 'consume 4 power, stage firneldy bury hostile': effectEvent has 3 calls (expected 1) | [0]ConsumeOwnStatusEffect(consume 4 power, stage firneldy bury hostile) | [1]StageMyCards(consume 4 power, stage firneldy bury hostile) | [2]BuryTheirCards(consume 4 power, stage firneldy bury hostile)
+=== QUICK_RESPONSE_PROTOCOL (Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/QUICK_RESPONSE_PROTOCOL.prefab) ===
+  LISTENER 'QUICK_RESPONSE_PROTOCOL': response has 2 calls (expected 1)
+=== ALMIGHTY (Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ALMIGHTY.prefab) ===
+  LISTENER 'ALMIGHTY': response has 2 calls (expected 1)
+=== POWER_SIPHONER (Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/POWER_SIPHONER.prefab) ===
+  LISTENER 'POWER_SIPHONER' -> CONTAINER 'transfer 1 friendly power to me': effectEvent has 2 calls (expected 1) | [0]TransferOneStatusEffectToSelf(transfer 1 friendly power to me) | [1]DecreaseTheirHpTimesX(transfer 1 friendly power to me)
+=== POWER_TRANSFER (Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/POWER_TRANSFER.prefab) ===
+  LISTENER 'POWER_TRANSFER' -> CONTAINER 'consume hostile power; give friendly power': effectEvent has 2 calls (expected 1) | [0]ConsumeRandomEnemyCardsStatusEffect(consume hostile power; give friendly power) | [1]GiveStatusEffect(consume hostile power; give friendly power)

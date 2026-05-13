@@ -10,10 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 834418638395040871}
   - component: {fileID: 3408854323514059765}
-  - component: {fileID: 588846069068210853}
   - component: {fileID: 5216541608761385445}
   m_Layer: 0
-  m_Name: stage friendly & exile self
+  m_Name: exile self
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69,33 +68,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 588846069068210853}
-        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
-        m_MethodName: StageMyCards
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &588846069068210853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 270621688628183383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
-  tagToCheck: 0
-  targetFriendly: 0
-  statusEffectToCheck: 0
 --- !u!114 &5216541608761385445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,6 +82,89 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ExileEffect
   tagToCheck: 0
   cardTypeIDSO: {fileID: 0}
+--- !u!1 &3082838112725377213
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6127645972332754950}
+  - component: {fileID: 4258555524989370297}
+  - component: {fileID: 8104819925093118918}
+  m_Layer: 0
+  m_Name: stage friendly
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6127645972332754950
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3082838112725377213}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3828591620990538636}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4258555524989370297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3082838112725377213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
+  checkCostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  preEffectEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  effectEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8104819925093118918}
+        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
+        m_MethodName: StageMyCards
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &8104819925093118918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3082838112725377213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
+  tagToCheck: 0
+  targetFriendly: 0
+  statusEffectToCheck: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -120,6 +175,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3828591620990538636}
   - component: {fileID: 7915703419504864441}
+  - component: {fileID: 6790492850431796707}
   - component: {fileID: -4728943355192809547}
   m_Layer: 0
   m_Name: RIFT
@@ -142,6 +198,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 834418638395040871}
+  - {fileID: 6127645972332754950}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -176,6 +233,34 @@ MonoBehaviour:
   minionCostCount: 0
   minionCostCardTypeID: 
   minionCostOwner: 0
+--- !u!114 &6790492850431796707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718476725744197808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
+  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
+  response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4258555524989370297}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: InvokeEffectEventVoid
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

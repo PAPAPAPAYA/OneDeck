@@ -16,6 +16,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 
 	public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 	{
+		Debug.Log("[RecorderAnimationPlayer] PlayRecordersCoroutine START rootCount=" + rootRecorders.Count);
 		AttackAnimationManager.me?.HoldDeckFocus();
 		try
 		{
@@ -39,14 +40,12 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		recorder.animationPlayed = true;
 
 		string cardName = recorder.cardObject != null ? recorder.cardObject.name : "null";
-		Debug.Log("[RecorderAnimationPlayer] PlayRecorderCoroutine chainID=" + recorder.chainID + " card=" + cardName + " requests=" + recorder.animationRequests.Count);
+		Debug.Log("[RecorderAnimationPlayer] === Playing recorder chainID=" + recorder.chainID + " card=" + cardName + " requests=" + recorder.animationRequests.Count + " childCount=" + recorder.transform.childCount);
 
 		// Emphasize the source card before playing its effect animations
 		if (recorder.animationRequests.Count > 0 && recorder.cardObject != null)
 		{
-			Debug.Log("[RecorderAnimationPlayer] Starting emphasize for " + cardName);
 			yield return StartCoroutine(PlayEmphasizeAnimation(recorder.cardObject));
-			Debug.Log("[RecorderAnimationPlayer] Emphasize done for " + cardName);
 		}
 		else
 		{
@@ -79,7 +78,6 @@ public class RecorderAnimationPlayer : MonoBehaviour
 	/// </summary>
 	private IEnumerator PlayEmphasizeAnimation(GameObject logicalCard)
 	{
-		Debug.Log("[RecorderAnimationPlayer] PlayEmphasizeAnimation logicalCard=" + (logicalCard != null ? logicalCard.name : "null"));
 		if (logicalCard == null) yield break;
 		if (CombatManager.Me == null) yield break;
 		var visuals = CombatManager.Me.visuals;
@@ -119,6 +117,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		var visuals = CombatManager.Me.visuals;
 		if (visuals == null) yield break;
 
+		Debug.Log("[RecorderAnimationPlayer] PlayRequest type=" + request.type + " target=" + (request.targetCard != null ? request.targetCard.name : (request.attackerCard != null ? request.attackerCard.name : "null")));
 		switch (request.type)
 		{
 			case AnimationRequestType.Attack:
@@ -164,11 +163,13 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			case AnimationRequestType.MoveToTopBatch:
 			{
 				visuals.UpdateAllPhysicalCardTargets();
+				Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch START targetCards=" + (request.targetCards != null ? request.targetCards.Count : 0));
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
 				foreach (var card in request.targetCards)
 				{
+					Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToTop for " + card.name + " revealZone=" + (CombatManager.Me != null && CombatManager.Me.revealZone != null ? CombatManager.Me.revealZone.name : "null"));
 					visuals.MoveCardToTop(card, request.duration, request.useArc, () =>
 					{
 						completedCount++;
@@ -176,6 +177,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					});
 				}
 				yield return new WaitUntil(() => completedCount >= totalCount);
+				Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch DONE");
 				break;
 			}
 			case AnimationRequestType.MoveToIndex:

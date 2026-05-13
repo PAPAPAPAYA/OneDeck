@@ -326,7 +326,15 @@ public class StageEffect : EffectScript
 		}
 		
 		// Sync physical card list order with logical deck before animation
+		string deckBefore = "";
+		for (int i = 0; i < _combinedDeck.Count; i++)
+		{
+			var cs = _combinedDeck[i].GetComponent<CardScript>();
+			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
+		}
+		Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
 
 		// 2. Trigger card staged event (already in logic phase)
 		foreach (var card in stagedCards)
