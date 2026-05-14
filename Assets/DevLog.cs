@@ -117,8 +117,9 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	//todo skeleton soldier will be staged even if already at second place
 	//todo pre effect event cost won't make effect recorder, need to abandon cost on card script, use old check cost event to check + normal effect event to execute cost
-	// check 
+	// check
 		//// 1. cost on card script + multiple effect instance and one of them has pre effect event one of them doesn't
 		//// 2. cost on cost n effect container, ex. RIFT_DRAGON, check animation bug
 			//// exile bug
