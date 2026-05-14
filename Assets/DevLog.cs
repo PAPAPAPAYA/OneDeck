@@ -60,7 +60,9 @@
 		//// almighty: stage 1 friendly; bury 1 hostile; enhance 1 friendly; add 1 [rift]; enhance 1 hostile [curse]
 			//// gain 1 rest
 
-//! design choice
+//! need to know
+	// if an effect instance contains more than 1 effect, animations of those effects will be played, THEN other invoked effects' animations will be played;
+		// vs. if an effect instance contains only 1 effect, but the card has multiple effect instances, other invoked effefcts' animations will be played after each invoker effect's animation	
 	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
 
 //! feature
@@ -115,10 +117,11 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	//todo pre effect event cost won't make effect recorder, need to abandon cost on card script, use old check cost event to check + normal effect event to execute cost
 	// check 
 		//// 1. cost on card script + multiple effect instance and one of them has pre effect event one of them doesn't
-		// 2. cost on cost n effect container, ex. RIFT_DRAGON, check animation bug
-			// todo exile bug
+		//// 2. cost on cost n effect container, ex. RIFT_DRAGON, check animation bug
+			//// exile bug
 	//// counter's translation incorrect
 	//// slime
 	// 1 effect recorder 1 effect (1 game event listener 1 effect)

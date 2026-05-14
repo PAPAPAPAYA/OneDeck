@@ -1301,6 +1301,21 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Get corresponding physical card
 		BuildCardScriptToPhysicalDictionary();
 		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+
+		// Fallback: card may have been removed from deck by SyncPhysicalCardsWithCombinedDeck before animation phase
+		if (physicalCard == null)
+		{
+			var allPhysScripts = GameObject.FindObjectsOfType<CardPhysObjScript>();
+			foreach (var physScript in allPhysScripts)
+			{
+				if (physScript.cardImRepresenting == cardScript)
+				{
+					physicalCard = physScript.gameObject;
+					break;
+				}
+			}
+		}
+
 		Debug.Log("[CombatUXManager] DestroyCardWithAnimation logical=" + logicalCard.name + " physicalFound=" + (physicalCard != null ? physicalCard.name : "NULL") + " inDeck=" + physicalCardsInDeck.Contains(physicalCard) + " inReveal=" + (physicalCardInRevealZone == physicalCard));
 		
 		// Remove logical card from combined deck
