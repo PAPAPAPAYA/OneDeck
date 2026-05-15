@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 
 /// <summary>
@@ -89,4 +90,7 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 
 	public void UnblockInput(object requester)
 		=> _nullVisuals.UnblockInput(requester);
+
+	public void ApplyAnimationResult(AnimationRequest request)
+		=> _nullVisuals.ApplyAnimationResult(request);
 }

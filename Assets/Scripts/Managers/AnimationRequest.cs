@@ -29,6 +29,7 @@ namespace DefaultNamespace
 		public float duration = 0.5f;
 		public bool useArc = true;
 		public int targetIndex;
+		public List<int> targetIndices;
 
 		// StatusEffectChange specific fields
 		public EnumStorage.StatusEffect statusEffect;

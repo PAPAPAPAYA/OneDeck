@@ -336,6 +336,14 @@ public class StageEffect : EffectScript
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
 
+		// Snapshot target indices BEFORE raising events, because reactive effects may modify deck order
+		var stagedTargetIndices = new List<int>();
+		foreach (var card in stagedCards)
+		{
+			int idx = _combinedDeck.IndexOf(card);
+			stagedTargetIndices.Add(idx >= 0 ? idx : _combinedDeck.Count - 1);
+		}
+
 		// 2. Trigger card staged event (already in logic phase)
 		foreach (var card in stagedCards)
 		{
@@ -351,6 +359,7 @@ public class StageEffect : EffectScript
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.MoveToTopBatch,
 				targetCards = stagedCards,
+				targetIndices = stagedTargetIndices,
 				duration = 0.5f,
 				useArc = true
 			});

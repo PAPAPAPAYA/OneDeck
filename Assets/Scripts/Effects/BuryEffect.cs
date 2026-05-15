@@ -297,6 +297,15 @@ public class BuryEffect : EffectScript
 		// Sync physical card list order with logical deck before animation
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 
+		// Snapshot target indices BEFORE raising events, because reactive effects (e.g. onMeBuried -> StageSelf)
+		// may modify the deck order, and we need to capture the post-bury indices for the bury animation.
+		var buriedTargetIndices = new List<int>();
+		foreach (var card in buriedCards)
+		{
+			int idx = _combinedDeck.IndexOf(card);
+			buriedTargetIndices.Add(idx >= 0 ? idx : 0);
+		}
+
 		// 2. Raise events in logic phase
 		foreach (var buriedCard in buriedCards)
 		{
@@ -324,6 +333,7 @@ public class BuryEffect : EffectScript
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.MoveToBottomBatch,
 				targetCards = buriedCards,
+				targetIndices = buriedTargetIndices,
 				duration = 0.5f,
 				useArc = true
 			});

@@ -141,13 +141,26 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
-				foreach (var card in request.targetCards)
+				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
+				for (int i = 0; i < totalCount; i++)
 				{
-					visuals.MoveCardToBottom(card, request.duration, request.useArc, () =>
+					var card = request.targetCards[i];
+					if (hasSnapshot)
 					{
-						completedCount++;
-						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
-					});
+						visuals.MoveCardToIndex(card, request.targetIndices[i], request.duration, request.useArc, () =>
+						{
+							completedCount++;
+							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
+						});
+					}
+					else
+					{
+						visuals.MoveCardToBottom(card, request.duration, request.useArc, () =>
+						{
+							completedCount++;
+							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
+						});
+					}
 				}
 				yield return new WaitUntil(() => completedCount >= totalCount);
 				break;
@@ -167,14 +180,28 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
-				foreach (var card in request.targetCards)
+				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
+				for (int i = 0; i < totalCount; i++)
 				{
-					Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToTop for " + card.name + " revealZone=" + (CombatManager.Me != null && CombatManager.Me.revealZone != null ? CombatManager.Me.revealZone.name : "null"));
-					visuals.MoveCardToTop(card, request.duration, request.useArc, () =>
+					var card = request.targetCards[i];
+					if (hasSnapshot)
 					{
-						completedCount++;
-						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
-					});
+						Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex for " + card.name + " index=" + request.targetIndices[i]);
+						visuals.MoveCardToIndex(card, request.targetIndices[i], request.duration, request.useArc, () =>
+						{
+							completedCount++;
+							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
+						});
+					}
+					else
+					{
+						Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToTop for " + card.name + " revealZone=" + (CombatManager.Me != null && CombatManager.Me.revealZone != null ? CombatManager.Me.revealZone.name : "null"));
+						visuals.MoveCardToTop(card, request.duration, request.useArc, () =>
+						{
+							completedCount++;
+							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
+						});
+					}
 				}
 				yield return new WaitUntil(() => completedCount >= totalCount);
 				Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch DONE");
@@ -236,5 +263,9 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				break;
 			}
 		}
+
+		// Apply animation result to physical deck so subsequent animations see correct intermediate state
+		visuals.ApplyAnimationResult(request);
+		visuals.UpdateAllPhysicalCardTargets();
 	}
 }

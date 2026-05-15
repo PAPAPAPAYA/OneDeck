@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DefaultNamespace;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Video;
@@ -426,16 +427,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				}
 				else
 				{
-					int topActualIndex = GetPhysicalCardDeckIndex(physicalCard);
-					if (topActualIndex < 0) topActualIndex = physicalCardsInDeck.Count - 1;
-					targetPosition = CalculatePositionAtIndex(topActualIndex);
+					targetPosition = CalculatePositionAtIndex(physicalCardsInDeck.Count - 1);
 				}
 				break;
 			case CardMoveType.ToBottom:
 			{
-				int bottomActualIndex = GetPhysicalCardDeckIndex(physicalCard);
-				if (bottomActualIndex < 0) bottomActualIndex = 0;
-				targetPosition = CalculatePositionAtIndex(bottomActualIndex);
+				targetPosition = CalculatePositionAtIndex(0);
 				break;
 			}
 			case CardMoveType.ToIndex:
@@ -525,7 +522,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 
 			config.onComplete?.Invoke();
-			UpdateAllPhysicalCardTargets();
+			// In recorder mode, RecorderAnimationPlayer handles deck sync after each request
+			// to preserve intermediate animation states. Only auto-sync in old immediate path.
+			if (RecorderAnimationPlayer.me == null)
+			{
+				UpdateAllPhysicalCardTargets();
+			}
 		});
 
 		moveSequence.Play();
@@ -844,6 +846,87 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// Set target position and scale (card handles animation in its own Update)
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
+		}
+	}
+
+	/// <summary>
+	/// Apply animation result to physical deck ordering so subsequent animations
+	/// see the correct intermediate state.
+	/// </summary>
+	public void ApplyAnimationResult(AnimationRequest request)
+	{
+		if (request == null) return;
+
+		switch (request.type)
+		{
+			case AnimationRequestType.MoveToBottomBatch:
+				if (request.targetCards == null) break;
+				foreach (var card in request.targetCards)
+				{
+					var phys = GetPhysicalCard(card);
+					if (phys != null)
+					{
+						physicalCardsInDeck.Remove(phys);
+						physicalCardsInDeck.Insert(0, phys);
+					}
+				}
+				break;
+			case AnimationRequestType.MoveToTopBatch:
+				if (request.targetCards == null) break;
+				foreach (var card in request.targetCards)
+				{
+					var phys = GetPhysicalCard(card);
+					if (phys != null)
+					{
+						physicalCardsInDeck.Remove(phys);
+						physicalCardsInDeck.Add(phys);
+					}
+				}
+				break;
+			case AnimationRequestType.MoveToBottom:
+				if (request.targetCard != null)
+				{
+					var phys = GetPhysicalCard(request.targetCard);
+					if (phys != null)
+					{
+						physicalCardsInDeck.Remove(phys);
+						physicalCardsInDeck.Insert(0, phys);
+					}
+				}
+				break;
+			case AnimationRequestType.MoveToTop:
+				if (request.targetCard != null)
+				{
+					var phys = GetPhysicalCard(request.targetCard);
+					if (phys != null)
+					{
+						physicalCardsInDeck.Remove(phys);
+						physicalCardsInDeck.Add(phys);
+					}
+				}
+				break;
+			case AnimationRequestType.MoveToIndex:
+				if (request.targetCard != null)
+				{
+					var phys = GetPhysicalCard(request.targetCard);
+					if (phys != null)
+					{
+						physicalCardsInDeck.Remove(phys);
+						int idx = Mathf.Clamp(request.targetIndex, 0, physicalCardsInDeck.Count);
+						physicalCardsInDeck.Insert(idx, phys);
+					}
+				}
+				break;
+			case AnimationRequestType.Destroy:
+				if (request.targetCard != null)
+				{
+					var phys = GetPhysicalCard(request.targetCard);
+					if (phys != null)
+					{
+						physicalCardsInDeck.Remove(phys);
+					}
+				}
+				break;
 		}
 	}
 

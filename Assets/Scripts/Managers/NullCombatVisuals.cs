@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 
 /// <summary>
@@ -88,6 +89,11 @@ public class NullCombatVisuals : ICombatVisuals
 	{
 		updateTargetCalls++;
 		callLog.Add("UpdateAllPhysicalCardTargets");
+	}
+
+	public void ApplyAnimationResult(AnimationRequest request)
+	{
+		callLog.Add("ApplyAnimationResult: " + request.type);
 	}
 
 	public GameObject GetPhysicalCard(GameObject logicalCard)

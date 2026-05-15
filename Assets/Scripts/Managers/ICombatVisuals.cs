@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace;
 using UnityEngine;
 
 /// <summary>
@@ -103,6 +104,13 @@ public interface ICombatVisuals
 	/// Update all physical cards' target positions based on current list order.
 	/// </summary>
 	void UpdateAllPhysicalCardTargets();
+
+	/// <summary>
+	/// Apply the result of a played animation request to the physical deck ordering.
+	/// Called by RecorderAnimationPlayer after each request completes so that
+	/// subsequent animations see the correct deck state.
+	/// </summary>
+	void ApplyAnimationResult(AnimationRequest request);
 
 	#endregion
 
