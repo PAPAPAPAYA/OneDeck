@@ -184,7 +184,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 	public void CheckCost_Power(int powerRequired)
 	{
-		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, powerRequired, EnumStorage.StatusEffect.Mana)) return; // if check succeeded, do nothing
+		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, powerRequired, EnumStorage.StatusEffect.Power)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
 		_costFailMessages.Add("// [力量]不足，无法激活[" + _myCardScript.gameObject.name + "]\n");

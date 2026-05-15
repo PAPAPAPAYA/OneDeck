@@ -79,10 +79,13 @@ public class CardScript : MonoBehaviour
 
 	[Header("Exile Cost")]
 	[Tooltip("Number of cards required to exile as cost")]
+	[HideInInspector]
 	public int exileCostCount;
 	[Tooltip("Card type ID to exile as cost (e.g., 'fly'), empty string means no type restriction")]
+	[HideInInspector]
 	public string exileCostCardTypeID;
 	[Tooltip("Owner of exiled cards: Me=ally, Them=enemy, Random=random")]
+	[HideInInspector]
 	public EnumStorage.TargetType exileCostOwner = EnumStorage.TargetType.Me;
 
 	private void OnEnable()
