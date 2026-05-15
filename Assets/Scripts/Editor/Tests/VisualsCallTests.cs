@@ -115,7 +115,7 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 		var buryEffect = CreateEffect<BuryEffect>(card);
 		buryEffect.BuryTheirCards(1);
 
-		Assert.AreEqual(1, NullVisuals.syncDeckCalls, "BuryEffect should call SyncPhysicalCardsWithCombinedDeck");
+		Assert.AreEqual(2, NullVisuals.syncDeckCalls, "BuryEffect should call SyncPhysicalCardsWithCombinedDeck (pre-event + post-event in fallback path)");
 		Assert.AreEqual(1, NullVisuals.updateTargetCalls, "BuryEffect should call UpdateAllPhysicalCardTargets");
 	}
 

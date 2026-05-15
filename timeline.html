@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发时间线</title>
+	<style>
+		:root {
+			--bg: #0d1117;
+			--surface: #161b22;
+			--border: #30363d;
+			--text: #c9d1d9;
+			--text-secondary: #8b949e;
+			--accent: #58a6ff;
+			--accent-glow: rgba(88, 166, 255, 0.3);
+			--milestone: #f0883e;
+			--feature: #3fb950;
+			--refactor: #a371f7;
+			--bugfix: #f85149;
+			--card: #21262d;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+			background: var(--bg);
+			color: var(--text);
+			line-height: 1.6;
+			padding: 40px 20px;
+		}
+
+		.container {
+			max-width: 900px;
+			margin: 0 auto;
+		}
+
+		header {
+			text-align: center;
+			margin-bottom: 60px;
+		}
+
+		header h1 {
+			font-size: 2.5rem;
+			font-weight: 700;
+			margin-bottom: 8px;
+			background: linear-gradient(90deg, var(--accent), var(--feature));
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+
+		header p {
+			color: var(--text-secondary);
+			font-size: 1rem;
+		}
+
+		.timeline {
+			position: relative;
+			padding-left: 32px;
+		}
+
+		.timeline::before {
+			content: "";
+			position: absolute;
+			left: 8px;
+			top: 0;
+			bottom: 0;
+			width: 2px;
+			background: linear-gradient(180deg, var(--accent), var(--feature), var(--milestone));
+			border-radius: 2px;
+		}
+
+		.month-group {
+			position: relative;
+			margin-bottom: 48px;
+		}
+
+		.month-label {
+			position: sticky;
+			top: 20px;
+			z-index: 10;
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			padding: 8px 16px;
+			border-radius: 20px;
+			font-size: 0.85rem;
+			font-weight: 600;
+			color: var(--accent);
+			margin-bottom: 24px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+		}
+
+		.month-label::before {
+			content: "";
+			width: 8px;
+			height: 8px;
+			background: var(--accent);
+			border-radius: 50%;
+			box-shadow: 0 0 8px var(--accent-glow);
+		}
+
+		.entry {
+			position: relative;
+			margin-bottom: 16px;
+			padding-left: 24px;
+		}
+
+		.entry::before {
+			content: "";
+			position: absolute;
+			left: -28px;
+			top: 6px;
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background: var(--border);
+			border: 2px solid var(--bg);
+			transition: all 0.2s ease;
+		}
+
+		.entry:hover::before {
+			background: var(--accent);
+			box-shadow: 0 0 10px var(--accent-glow);
+			transform: scale(1.3);
+		}
+
+		.entry-card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			padding: 16px 20px;
+			transition: all 0.2s ease;
+		}
+
+		.entry-card:hover {
+			border-color: var(--accent);
+			transform: translateX(4px);
+			box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+		}
+
+		.entry-header {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 8px;
+			flex-wrap: wrap;
+		}
+
+		.entry-date {
+			font-size: 0.75rem;
+			font-weight: 600;
+			color: var(--text-secondary);
+			background: var(--surface);
+			padding: 2px 10px;
+			border-radius: 12px;
+			white-space: nowrap;
+		}
+
+		.entry-tag {
+			font-size: 0.7rem;
+			font-weight: 600;
+			padding: 2px 10px;
+			border-radius: 12px;
+			white-space: nowrap;
+		}
+
+		.tag-milestone { background: rgba(240, 136, 62, 0.15); color: var(--milestone); }
+		.tag-feature { background: rgba(63, 185, 80, 0.15); color: var(--feature); }
+		.tag-refactor { background: rgba(163, 113, 247, 0.15); color: var(--refactor); }
+		.tag-bugfix { background: rgba(248, 81, 73, 0.15); color: var(--bugfix); }
+		.tag-content { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+		.tag-polish { background: rgba(139, 148, 158, 0.15); color: var(--text-secondary); }
+
+		.entry-title {
+			font-size: 1rem;
+			font-weight: 600;
+			margin-bottom: 6px;
+		}
+
+		.entry-desc {
+			font-size: 0.9rem;
+			color: var(--text-secondary);
+			line-height: 1.5;
+		}
+
+		.entry-desc ul {
+			list-style: none;
+			padding-left: 0;
+		}
+
+		.entry-desc li {
+			position: relative;
+			padding-left: 16px;
+			margin-bottom: 3px;
+		}
+
+		.entry-desc li::before {
+			content: "›";
+			position: absolute;
+			left: 0;
+			color: var(--accent);
+			font-weight: bold;
+		}
+
+		.stats {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+			gap: 16px;
+			margin-bottom: 48px;
+		}
+
+		.stat-card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			padding: 20px;
+			text-align: center;
+			transition: transform 0.2s ease;
+		}
+
+		.stat-card:hover {
+			transform: translateY(-4px);
+			border-color: var(--accent);
+		}
+
+		.stat-value {
+			font-size: 2rem;
+			font-weight: 700;
+			color: var(--accent);
+			margin-bottom: 4px;
+		}
+
+		.stat-label {
+			font-size: 0.85rem;
+			color: var(--text-secondary);
+		}
+
+		footer {
+			text-align: center;
+			margin-top: 60px;
+			padding-top: 20px;
+			border-top: 1px solid var(--border);
+			color: var(--text-secondary);
+			font-size: 0.85rem;
+		}
+
+		@media (max-width: 600px) {
+			header h1 { font-size: 1.8rem; }
+			.timeline { padding-left: 24px; }
+			.entry { padding-left: 16px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<h1>OneDeck 开发时间线</h1>
+			<p>2025年12月19日 — 2026年5月15日</p>
+		</header>
+
+		<div class="stats">
+			<div class="stat-card">
+				<div class="stat-value">148</div>
+				<div class="stat-label">提交次数</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value">5</div>
+				<div class="stat-label">个月</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value">12+</div>
+				<div class="stat-label">核心系统</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-value">60+</div>
+				<div class="stat-label">卡牌设计</div>
+			</div>
+		</div>
+
+		<div class="timeline">
+
+			<!-- 2025年12月 -->
+			<div class="month-group">
+				<div class="month-label">2025年12月 — 项目启动与核心框架</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">12月19日</span>
+							<span class="entry-tag tag-feature">核心系统</span>
+						</div>
+						<div class="entry-title">Combat Manager 战斗管理器</div>
+						<div class="entry-desc">搭建战斗管理核心框架，奠定整个游戏的战斗循环基础。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">12月20日</span>
+							<span class="entry-tag tag-feature">机制</span>
+						</div>
+						<div class="entry-title">卡牌目标分配与揭示机制</div>
+						<div class="entry-desc">实现卡牌目标指向（自身/敌方），开发卡牌揭示（Reveal）系统。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">12月22日</span>
+							<span class="entry-tag tag-feature">机制</span>
+						</div>
+						<div class="entry-title">揭示与重洗完成</div>
+						<div class="entry-desc">卡牌揭示和牌库重洗（Reshuffle）功能开发完成，开始接入事件触发系统。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">12月23日</span>
+							<span class="entry-tag tag-milestone">里程碑</span>
+						</div>
+						<div class="entry-title">战斗循环完成 + 商店系统启动</div>
+						<div class="entry-desc">核心战斗循环（Combat Loop）开发完成；效果激活（Effect Activation）启动开发；商店系统（Shop）开始搭建。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">12月24日</span>
+							<span class="entry-tag tag-content">内容</span>
+						</div>
+						<div class="entry-title">卡牌与商店内容</div>
+						<div class="entry-desc">填充卡牌数据与商店基础内容。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">12月26-27日</span>
+							<span class="entry-tag tag-milestone">里程碑</span>
+						</div>
+						<div class="entry-title">商店系统基础完成 + 战斗信息显示</div>
+						<div class="entry-desc">实现重掷（Reroll）、购买（Buy）功能；玩家牌组初始化；战斗信息展示与结果界面开发完成。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">12月28日</span>
+							<span class="entry-tag tag-polish">设计</span>
+						</div>
+						<div class="entry-title">代码清理与卡牌设计</div>
+						<div class="entry-desc">项目代码整理优化，开始进行卡牌机制设计。</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 2026年1月 -->
+			<div class="month-group">
+				<div class="month-label">2026年1月 — 效果系统与状态机制</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">1月1-3日</span>
+							<span class="entry-tag tag-feature">核心系统</span>
+						</div>
+						<div class="entry-title">标签系统、Linger效果与效果链</div>
+						<div class="entry-desc">实现标签（Tag）系统；开发 Linger 持续效果；完成效果链（Effect Chain）机制，防止同效果无限循环。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">1月4-8日</span>
+							<span class="entry-tag tag-refactor">重构</span>
+						</div>
+						<div class="entry-title">事件系统重构与战斗信息流</div>
+						<div class="entry-desc">标签和卡牌事件触发器统一使用 GameEvent ScriptableObject；开发战斗信息流（Combat Info Stream），实现伤害、标签效果等信息的实时展示。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">1月10-11日</span>
+							<span class="entry-tag tag-feature">机制</span>
+						</div>
+						<div class="entry-title">法力系统、临时卡牌、心变与诅咒</div>
+						<div class="entry-desc">
+							<ul>
+								<li>法力（Mana）系统调整与临时卡牌效果</li>
+								<li>心变（Heart-Change）效果：改变卡牌阵营归属</li>
+								<li>诅咒（Curse）与力量（Power）状态效果</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">1月13-17日</span>
+							<span class="entry-tag tag-feature">系统</span>
+						</div>
+						<div class="entry-title">牌组存档系统完成</div>
+						<div class="entry-desc">开发并完善 Deck Saver 牌组存档/读取系统，支持玩家牌组的持久化存储。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">1月18日</span>
+							<span class="entry-tag tag-feature">机制</span>
+						</div>
+						<div class="entry-title">最大HP增加与效果循环问题</div>
+						<div class="entry-desc">新增增加玩家最大生命值的效果；识别并开始解决效果循环问题。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">1月19-25日</span>
+							<span class="entry-tag tag-milestone">里程碑</span>
+						</div>
+						<div class="entry-title">新效果链系统完成 + 护盾与牌组测试器</div>
+						<div class="entry-desc">
+							<ul>
+								<li>重写效果链（Effect Chain）系统，解决循环与层级问题</li>
+								<li>新增护盾（Shield）机制</li>
+								<li>开发牌组测试器（Deck Tester），支持快速验证卡牌组合</li>
+								<li>新增多张卡牌（如毒刃 Poisoned Knife）</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">1月26-31日</span>
+							<span class="entry-tag tag-refactor">重构</span>
+						</div>
+						<div class="entry-title">标签改为状态效果 + 卡牌制作器</div>
+						<div class="entry-desc">
+							<ul>
+								<li>将 Tag 全面重构为 Status Effect（状态效果）</li>
+								<li>开发 Card Maker 卡牌制作工具</li>
+								<li>新增亡灵（Undead）状态效果与自我复活（Revive Self）</li>
+								<li>新增毒 Shiv（Poisoned Shiv）</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 2026年2月 -->
+			<div class="month-group">
+				<div class="month-label">2026年2月 — 内容扩展与UX原型</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">2月1-5日</span>
+							<span class="entry-tag tag-content">内容</span>
+						</div>
+						<div class="entry-title">墓地机制、新卡牌与商店统计</div>
+						<div class="entry-desc">
+							<ul>
+								<li>实现基础伤害 ScriptableObject</li>
+								<li>新增墓地相关卡牌</li>
+								<li>新增 analyze_mechanics.py 机制分析脚本</li>
+								<li>商店价格改用 SO，新增商店统计记录器</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">2月6-8日</span>
+							<span class="entry-tag tag-milestone">里程碑</span>
+						</div>
+						<div class="entry-title">起始卡牌 + v0.2 版本</div>
+						<div class="entry-desc">
+							<ul>
+								<li>实现起始卡牌（Starting Card）机制</li>
+								<li>开发卡牌胜率统计系统</li>
+								<li>起始卡牌管理器 + 默认敌人牌组</li>
+								<li>填充商店卡池，新增重掷按钮</li>
+								<li>根据 1080p 调整 UI，更新所有卡牌描述</li>
+								<li>发布 v0.2 版本</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">2月10-14日</span>
+							<span class="entry-tag tag-feature">UX</span>
+						</div>
+						<div class="entry-title">UX 原型开发完成</div>
+						<div class="entry-desc">
+							<ul>
+								<li>启动 UX 原型开发</li>
+								<li>战斗阶段牌组与墓地可视化</li>
+								<li>开发 Combat UX Manager，管理战斗中卡牌物理对象的显示</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">2月15-20日</span>
+							<span class="entry-tag tag-milestone">里程碑</span>
+						</div>
+						<div class="entry-title">Android Alpha + v0.1.2</div>
+						<div class="entry-desc">
+							<ul>
+								<li>发布 OneDeck Android Alpha 版本</li>
+								<li>升级 Unity 版本，修复多项 Bug</li>
+								<li>修复 Well Rested、最大HP重置等问题</li>
+								<li>动画系统全面改用 DOTween，替换 Lerp</li>
+								<li>修复大卡组时墓地遮挡摄像机的问题</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">2月21-26日</span>
+							<span class="entry-tag tag-polish">调优</span>
+						</div>
+						<div class="entry-title">卡组容量与卡牌尺寸调优</div>
+						<div class="entry-desc">增加牌组容量提升幅度；调整卡牌显示尺寸。</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 2026年3月 -->
+			<div class="month-group">
+				<div class="month-label">2026年3月 — 系统2.0与动画系统</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">3月10-13日</span>
+							<span class="entry-tag tag-milestone">里程碑</span>
+						</div>
+						<div class="entry-title">System Update 2.0 + AI 卡牌设计</div>
+						<div class="entry-desc">发布系统2.0更新；开始使用 AI 辅助生成卡牌设计方案。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">3月15-16日</span>
+							<span class="entry-tag tag-feature">机制</span>
+						</div>
+						<div class="entry-title">延迟费用、放逐与新卡牌</div>
+						<div class="entry-desc">新增延迟友方（Delay Friendly）费用；支持放逐起始卡牌；新增多张卡牌和新方法；调试 Bury 和 Stage 机制。</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">3月17-20日</span>
+							<span class="entry-tag tag-refactor">重构</span>
+						</div>
+						<div class="entry-title">Token → Minion 重构与卡组测试</div>
+						<div class="entry-desc">
+							<ul>
+								<li>开发卡组测试功能</li>
+								<li>将 Token 费用系统全面改为 Minion（随从）机制</li>
+								<li>排除起始卡牌参与某些效果判定</li>
+								<li>修改 Stage 和 Bury 的检查逻辑</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">3月21-24日</span>
+							<span class="entry-tag tag-feature">动画</span>
+						</div>
+						<div class="entry-title">Counter效果、击中反馈与感染特效</div>
+						<div class="entry-desc">
+							<ul>
+								<li>新增 Counter（反击）状态效果</li>
+								<li>新增击中视觉反馈（Hit Feedback）</li>
+								<li>随从卡牌显示优化（底部对齐、缩短）</li>
+								<li>卡牌移动动画系统开发</li>
+								<li>更好的洗牌动画节奏</li>
+								<li>Infected（感染）视觉特效完成，包含着色效果</li>
+								<li>洗牌时锁定玩家输入</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">3月31日</span>
+							<span class="entry-tag tag-polish">本地化</span>
+						</div>
+						<div class="entry-title">中文字体与 ValueUpdateManager</div>
+						<div class="entry-desc">新增中文字体支持；开发 ValueUpdateManager 数值更新管理器。</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 2026年4月 -->
+			<div class="month-group">
+				<div class="month-label">2026年4月 — 内容爆发与视觉打磨</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">4月1-3日</span>
+							<span class="entry-tag tag-content">内容</span>
+						</div>
+						<div class="entry-title">卡牌动画整理、Grave Keeper与状态精灵</div>
+						<div class="entry-desc">
+							<ul>
+								<li>重新整理卡牌动画，减少冗余和错误</li>
+								<li>新增 Grave Keeper（守墓人）等卡牌</li>
+								<li>新增给予友方状态效果的能力</li>
+								<li>状态效果精灵（Wisp）特效：调整位置、Power Wisp</li>
+								<li>Conjure（召唤）更名为 Rift（裂隙）</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">4月6-9日</span>
+							<span class="entry-tag tag-content">内容</span>
+						</div>
+						<div class="entry-title">Rift系列完成与诅咒系统</div>
+						<div class="entry-desc">
+							<ul>
+								<li>新增友方卡牌被放逐时触发的事件</li>
+								<li>完成最后一张 Rift 卡牌，关联诅咒机制</li>
+								<li>重构 StatusGiverEffect</li>
+								<li>拔苗助长（Forced Growth）卡牌开发</li>
+								<li>新卡牌设计，进行中英文翻译</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">4月12-13日</span>
+							<span class="entry-tag tag-feature">系统</span>
+						</div>
+						<div class="entry-title">诅咒卡牌配置与三倍力量</div>
+						<div class="entry-desc">
+							<ul>
+								<li>所有诅咒卡牌的类型ID改用 StringSO</li>
+								<li>新增三倍力量（Gain Triple Power）效果</li>
+								<li>所有卡牌配置完成</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">4月18-21日</span>
+							<span class="entry-tag tag-polish">测试</span>
+						</div>
+						<div class="entry-title">测试计划与卡牌调优</div>
+						<div class="entry-desc">
+							<ul>
+								<li>编写测试计划文档</li>
+								<li>测试 Bury、DeathRattle 等机制</li>
+								<li>检查预制体配置一致性</li>
+								<li>卡牌数值调优与配置调试</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">4月23-27日</span>
+							<span class="entry-tag tag-polish">美术</span>
+						</div>
+						<div class="entry-title">商店本地化、卡牌美术与动效设计</div>
+						<div class="entry-desc">
+							<ul>
+								<li>商店更新与本地化</li>
+								<li>卡牌描述规范化</li>
+								<li>卡牌美术设计启动</li>
+								<li>不同阵营卡牌显示不同文字颜色</li>
+								<li>卡牌动效设计（Motion Design）</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">4月28-30日</span>
+							<span class="entry-tag tag-feature">动画</span>
+						</div>
+						<div class="entry-title">攻击动画修复与 PeelDeck 系统</div>
+						<div class="entry-desc">
+							<ul>
+								<li>修复攻击动画 Bug</li>
+								<li>修复 PeelDeck 动画中揭示区卡牌重置问题</li>
+								<li>开发 PeelDeck 系统，用于攻击动画中的牌组剥离效果</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 2026年5月 -->
+			<div class="month-group">
+				<div class="month-label">2026年5月 — 架构重构与动画系统革新</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">5月2日</span>
+							<span class="entry-tag tag-refactor">重构</span>
+						</div>
+						<div class="entry-title">逻辑与视觉分离重构</div>
+						<div class="entry-desc">
+							<ul>
+								<li>将游戏逻辑与视觉表现彻底分离</li>
+								<li>输入锁权责分离，避免死锁</li>
+								<li>为 Headless 单元测试奠定基础</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">5月5-7日</span>
+							<span class="entry-tag tag-feature">测试</span>
+						</div>
+						<div class="entry-title">逻辑视觉分离完成 + Headless测试</div>
+						<div class="entry-desc">
+							<ul>
+								<li>逻辑视觉分离重构完成</li>
+								<li>PeelDeck Bug 修复</li>
+								<li>开发 Headless 单元测试系统</li>
+								<li>修复过渡焦点协程 Bug</li>
+								<li>测试用例 4 修复并通过</li>
+								<li>效果链修复</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">5月10-11日</span>
+							<span class="entry-tag tag-milestone">里程碑</span>
+						</div>
+						<div class="entry-title">Effect Recorder 动画系统完成</div>
+						<div class="entry-desc">
+							<ul>
+								<li>开发基于 Effect Recorder 的动画系统</li>
+								<li>逻辑阶段同步执行，动画阶段异步播放</li>
+								<li>状态效果变更纳入动画请求系统</li>
+								<li>修复 Stage 动画问题</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="entry">
+					<div class="entry-card">
+						<div class="entry-header">
+							<span class="entry-date">5月13-15日</span>
+							<span class="entry-tag tag-bugfix">修复</span>
+						</div>
+						<div class="entry-title">Rift修复、卡牌配置检查与多效果记录器</div>
+						<div class="entry-desc">
+							<ul>
+								<li>修复 Rift 和副作用传送门（Side Effect Portal）</li>
+								<li>检查 Type B 卡牌（非1效果1记录器模式）</li>
+								<li>将所有卡牌的 Pre-Effect 费用迁移至 Check Cost + Effect 模式</li>
+								<li>支持单记录器多效果检查</li>
+								<li>修复卡牌位置被多次改变时的视觉 Bug</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<footer>
+			<p>OneDeck 开发时间线 · 基于 Git 提交记录生成</p>
+			<p>2025.12.19 — 2026.05.15</p>
+		</footer>
+	</div>
+</body>
+</html>

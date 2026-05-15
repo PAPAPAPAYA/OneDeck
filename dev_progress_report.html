@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发进度评估报告</title>
+	<style>
+		:root {
+			--bg: #0d1117;
+			--surface: #161b22;
+			--card: #21262d;
+			--border: #30363d;
+			--text: #c9d1d9;
+			--text-secondary: #8b949e;
+			--accent: #58a6ff;
+			--success: #3fb950;
+			--warning: #f0883e;
+			--danger: #f85149;
+			--purple: #a371f7;
+		}
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+			background: var(--bg);
+			color: var(--text);
+			line-height: 1.7;
+			padding: 40px 20px;
+		}
+		.container { max-width: 960px; margin: 0 auto; }
+		header {
+			text-align: center;
+			margin-bottom: 50px;
+			padding-bottom: 30px;
+			border-bottom: 1px solid var(--border);
+		}
+		header h1 {
+			font-size: 2.2rem;
+			font-weight: 700;
+			margin-bottom: 10px;
+			background: linear-gradient(90deg, var(--accent), var(--purple));
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+		header p { color: var(--text-secondary); font-size: 1rem; }
+		.section {
+			margin-bottom: 48px;
+		}
+		.section-title {
+			font-size: 1.4rem;
+			font-weight: 700;
+			margin-bottom: 20px;
+			padding-left: 16px;
+			border-left: 4px solid var(--accent);
+		}
+		.grid-2 {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 20px;
+		}
+		.grid-3 {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 16px;
+		}
+		.card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 14px;
+			padding: 24px;
+			transition: transform 0.2s, border-color 0.2s;
+		}
+		.card:hover {
+			transform: translateY(-3px);
+			border-color: var(--accent);
+		}
+		.metric-value {
+			font-size: 2.4rem;
+			font-weight: 800;
+			margin-bottom: 4px;
+		}
+		.metric-label {
+			font-size: 0.9rem;
+			color: var(--text-secondary);
+		}
+		.metric-note {
+			font-size: 0.8rem;
+			color: var(--text-secondary);
+			margin-top: 8px;
+			padding-top: 8px;
+			border-top: 1px solid var(--border);
+		}
+		.accent { color: var(--accent); }
+		.success { color: var(--success); }
+		.warning { color: var(--warning); }
+		.danger { color: var(--danger); }
+		.purple { color: var(--purple); }
+		.bar-chart {
+			display: flex;
+			align-items: flex-end;
+			gap: 8px;
+			height: 160px;
+			padding: 20px 0;
+		}
+		.bar-item {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 8px;
+		}
+		.bar {
+			width: 100%;
+			border-radius: 6px 6px 0 0;
+			min-height: 4px;
+			transition: all 0.3s;
+			position: relative;
+		}
+		.bar:hover {
+			opacity: 0.85;
+		}
+		.bar-label {
+			font-size: 0.75rem;
+			color: var(--text-secondary);
+			font-weight: 600;
+		}
+		.bar-value {
+			font-size: 0.7rem;
+			color: var(--text);
+			font-weight: 700;
+		}
+		.heatmap {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			gap: 4px;
+			margin-top: 16px;
+		}
+		.heatmap-label {
+			font-size: 0.7rem;
+			color: var(--text-secondary);
+			text-align: center;
+			margin-bottom: 4px;
+		}
+		.heat-cell {
+			aspect-ratio: 1;
+			border-radius: 4px;
+			transition: transform 0.2s;
+		}
+		.heat-cell:hover { transform: scale(1.2); }
+		.rating {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			margin-bottom: 16px;
+		}
+		.rating-stars {
+			font-size: 1.3rem;
+			letter-spacing: 2px;
+		}
+		.rating-label {
+			font-weight: 600;
+			font-size: 0.95rem;
+		}
+		.rating-desc {
+			font-size: 0.85rem;
+			color: var(--text-secondary);
+			margin-left: auto;
+		}
+		insight-box {
+			display: block;
+			background: rgba(88, 166, 255, 0.08);
+			border: 1px solid rgba(88, 166, 255, 0.25);
+			border-radius: 12px;
+			padding: 20px 24px;
+			margin-bottom: 16px;
+		}
+		insight-box.warning-box {
+			background: rgba(240, 136, 62, 0.08);
+			border-color: rgba(240, 136, 62, 0.25);
+		}
+		insight-box.danger-box {
+			background: rgba(248, 81, 73, 0.08);
+			border-color: rgba(248, 81, 73, 0.25);
+		}
+		insight-box.success-box {
+			background: rgba(63, 185, 80, 0.08);
+			border-color: rgba(63, 185, 80, 0.25);
+		}
+		insight-box h4 {
+			font-size: 1rem;
+			margin-bottom: 10px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		insight-box ul {
+			padding-left: 20px;
+			font-size: 0.9rem;
+			color: var(--text-secondary);
+		}
+		insight-box li { margin-bottom: 6px; }
+		.phase-list {
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+		}
+		.phase-item {
+			display: flex;
+			gap: 20px;
+			align-items: flex-start;
+		}
+		.phase-marker {
+			width: 36px;
+			height: 36px;
+			border-radius: 50%;
+			background: var(--surface);
+			border: 2px solid var(--border);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 0.85rem;
+			font-weight: 700;
+			flex-shrink: 0;
+			margin-top: 2px;
+		}
+		.phase-marker.done { border-color: var(--success); color: var(--success); }
+		.phase-marker.active { border-color: var(--accent); color: var(--accent); }
+		.phase-marker.pending { border-color: var(--text-secondary); color: var(--text-secondary); }
+		.phase-content h4 { font-size: 1rem; margin-bottom: 4px; }
+		.phase-content p { font-size: 0.9rem; color: var(--text-secondary); }
+		.phase-meta {
+			font-size: 0.8rem;
+			color: var(--text-secondary);
+			margin-top: 4px;
+		}
+		.recommendation {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			padding: 20px 24px;
+			margin-bottom: 14px;
+		}
+		.recommendation h4 {
+			font-size: 1rem;
+			margin-bottom: 12px;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.recommendation .prio {
+			display: inline-block;
+			padding: 2px 10px;
+			border-radius: 12px;
+			font-size: 0.75rem;
+			font-weight: 700;
+			margin-right: 8px;
+		}
+		.prio-p0 { background: rgba(248,81,73,0.15); color: var(--danger); }
+		.prio-p1 { background: rgba(240,136,62,0.15); color: var(--warning); }
+		.prio-p2 { background: rgba(88,166,255,0.15); color: var(--accent); }
+		.prio-p3 { background: rgba(139,148,158,0.15); color: var(--text-secondary); }
+		.tag-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 4px 12px;
+			border-radius: 20px;
+			font-size: 0.8rem;
+			font-weight: 600;
+			margin-right: 6px;
+			margin-bottom: 6px;
+		}
+		.tag-pill span { opacity: 0.7; }
+		footer {
+			text-align: center;
+			margin-top: 60px;
+			padding-top: 30px;
+			border-top: 1px solid var(--border);
+			color: var(--text-secondary);
+			font-size: 0.85rem;
+		}
+		@media (max-width: 600px) {
+			header h1 { font-size: 1.6rem; }
+			.bar-chart { height: 120px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<h1>OneDeck 开发进度评估报告</h1>
+			<p>评估周期：2025年12月19日 — 2026年5月15日（148天）</p>
+			<p style="margin-top:6px;font-size:0.85rem;">基于 207 次 Git 提交、3 位贡献者、26 个活跃开发日的数据分析</p>
+		</header>
+
+		<!-- 执行摘要 -->
+		<div class="section">
+			<div class="section-title">执行摘要</div>
+			<insight-box>
+				<h4><span class="accent">📊</span> 总体评价</h4>
+				<p style="font-size:0.95rem;color:var(--text);margin-bottom:12px;">
+					5个月开发取得了显著进展：核心战斗循环、商店系统、60+张卡牌、UX原型、Android Alpha均已落地。但开发节奏极不均匀，<strong>核心系统经历了多次推倒重来</strong>（效果链3次、动画系统3次），反映出前期架构设计不足。5月的逻辑-视觉分离与EffectRecorder动画系统是<strong>最关键的架构升级</strong>，应作为后续开发的基石。
+				</p>
+				<div style="display:flex;gap:12px;flex-wrap:wrap;">
+					<span class="tag-pill" style="background:rgba(63,185,80,0.12);color:var(--success);"><span>✓</span> 核心玩法闭环</span>
+					<span class="tag-pill" style="background:rgba(63,185,80,0.12);color:var(--success);"><span>✓</span> Android Alpha</span>
+					<span class="tag-pill" style="background:rgba(240,136,62,0.12);color:var(--warning);"><span>!</span> 节奏不健康</span>
+					<span class="tag-pill" style="background:rgba(248,81,73,0.12);color:var(--danger);"><span>✗</span> 系统反复重构</span>
+					<span class="tag-pill" style="background:rgba(163,113,247,0.12);color:var(--purple);"><span>★</span> 5月架构突破</span>
+				</div>
+			</insight-box>
+		</div>
+
+		<!-- 核心数据 -->
+		<div class="section">
+			<div class="section-title">核心数据仪表盘</div>
+			<div class="grid-3">
+				<div class="card">
+					<div class="metric-value accent">207</div>
+					<div class="metric-label">总提交数</div>
+					<div class="metric-note">PAPAYA(130) · PAPAPAPAYA(59) · PAPAYAlite(18)</div>
+				</div>
+				<div class="card">
+					<div class="metric-value warning">42.5%</div>
+					<div class="metric-label">周末提交占比</div>
+					<div class="metric-note">工作日119次 · 周末88次<br/>工作强度显著偏高</div>
+				</div>
+				<div class="card">
+					<div class="metric-value danger">23:00</div>
+					<div class="metric-label">最活跃提交时间</div>
+					<div class="metric-note">深夜提交39次，18-23点占53%<br/>作息存在健康风险</div>
+				</div>
+				<div class="card">
+					<div class="metric-value accent">10</div>
+					<div class="metric-label">最长连续开发天数</div>
+					<div class="metric-note">共6次超过3天的空白期<br/>最长空白12天（2月底→3月中）</div>
+				</div>
+				<div class="card">
+					<div class="metric-value purple">26%</div>
+					<div class="metric-label">新卡牌相关提交</div>
+					<div class="metric-note">内容生产是最大单一投入<br/>但配置反复调整占相当比例</div>
+				</div>
+				<div class="card">
+					<div class="metric-value warning">14%</div>
+					<div class="metric-label">WIP（进行中）提交</div>
+					<div class="metric-note">29次WIP提交，说明任务拆分粗<br/>或缺乏"完成定义"标准</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 月度节奏分析 -->
+		<div class="section">
+			<div class="section-title">月度开发节奏分析</div>
+			<div class="card" style="margin-bottom:20px;">
+				<div class="bar-chart">
+					<div class="bar-item">
+						<div class="bar-value">17</div>
+						<div class="bar" style="height:20%;background:var(--accent);"></div>
+						<div class="bar-label">12月</div>
+					</div>
+					<div class="bar-item">
+						<div class="bar-value">51</div>
+						<div class="bar" style="height:60%;background:var(--success);"></div>
+						<div class="bar-label">1月</div>
+					</div>
+					<div class="bar-item">
+						<div class="bar-value">43</div>
+						<div class="bar" style="height:50%;background:var(--success);"></div>
+						<div class="bar-label">2月</div>
+					</div>
+					<div class="bar-item">
+						<div class="bar-value">24</div>
+						<div class="bar" style="height:28%;background:var(--warning);"></div>
+						<div class="bar-label">3月</div>
+					</div>
+					<div class="bar-item">
+						<div class="bar-value">46</div>
+						<div class="bar" style="height:54%;background:var(--success);"></div>
+						<div class="bar-label">4月</div>
+					</div>
+					<div class="bar-item">
+						<div class="bar-value" style="color:var(--text-secondary)">26</div>
+						<div class="bar" style="height:30%;background:var(--text-secondary);"></div>
+						<div class="bar-label">5月(半)</div>
+					</div>
+				</div>
+				<p style="font-size:0.85rem;color:var(--text-secondary);text-align:center;margin-top:8px;">
+					1月为爆发期（51次），3月骤降至24次（春节/休整），4月反弹至46次，5月按当前节奏推算全月约45次
+				</p>
+			</div>
+
+			<div class="grid-2">
+				<insight-box class="success-box">
+					<h4 style="color:var(--success)"><span>▲</span> 1月：系统建设高峰</h4>
+					<ul>
+						<li>效果链、状态效果、护盾、存档等核心系统密集落地</li>
+						<li>高强度但产出清晰，是效率最高的月份</li>
+						<li>风险：连续高压开发，为后续疲劳埋下隐患</li>
+					</ul>
+				</insight-box>
+				<insight-box class="warning-box">
+					<h4 style="color:var(--warning)"><span>▼</span> 3月：低谷与还债</h4>
+					<ul>
+						<li>提交量腰斩，但完成了 Token→Minion 重构和 VFX 系统</li>
+						<li>12天空白期（2/20→3/10）可能是春节休假</li>
+						<li>本质是"技术债偿还月"，非消极信号</li>
+					</ul>
+				</insight-box>
+			</div>
+		</div>
+
+		<!-- 提交内容分析 -->
+		<div class="section">
+			<div class="section-title">提交内容构成分析</div>
+			<div class="card" style="margin-bottom:20px;">
+				<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+					<div style="flex:1;min-width:200px;">
+						<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+							<div style="width:12px;height:12px;border-radius:3px;background:var(--success);"></div>
+							<span style="font-size:0.9rem;">新卡牌/内容 <strong>26%</strong></span>
+						</div>
+						<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;">
+							<div style="width:26%;height:100%;background:var(--success);border-radius:4px;"></div>
+						</div>
+					</div>
+					<div style="flex:1;min-width:200px;">
+						<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+							<div style="width:12px;height:12px;border-radius:3px;background:var(--accent);"></div>
+							<span style="font-size:0.9rem;">功能完成/Done <strong>21%</strong></span>
+						</div>
+						<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;">
+							<div style="width:21%;height:100%;background:var(--accent);border-radius:4px;"></div>
+						</div>
+					</div>
+				</div>
+				<div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+					<div style="flex:1;min-width:200px;">
+						<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+							<div style="width:12px;height:12px;border-radius:3px;background:var(--danger);"></div>
+							<span style="font-size:0.9rem;">Bug修复 <strong>14%</strong></span>
+						</div>
+						<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;">
+							<div style="width:14%;height:100%;background:var(--danger);border-radius:4px;"></div>
+						</div>
+					</div>
+					<div style="flex:1;min-width:200px;">
+						<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+							<div style="width:12px;height:12px;border-radius:3px;background:var(--warning);"></div>
+							<span style="font-size:0.9rem;">WIP进行中 <strong>14%</strong></span>
+						</div>
+						<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;">
+							<div style="width:14%;height:100%;background:var(--warning);border-radius:4px;"></div>
+						</div>
+					</div>
+				</div>
+				<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+					<div style="flex:1;min-width:200px;">
+						<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+							<div style="width:12px;height:12px;border-radius:3px;background:var(--purple);"></div>
+							<span style="font-size:0.9rem;">重构 <strong>5%</strong></span>
+						</div>
+						<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;">
+							<div style="width:5%;height:100%;background:var(--purple);border-radius:4px;"></div>
+						</div>
+					</div>
+					<div style="flex:1;min-width:200px;">
+						<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+							<div style="width:12px;height:12px;border-radius:3px;background:#d2a8ff;"></div>
+							<span style="font-size:0.9rem;">动画 <strong>7%</strong></span>
+						</div>
+						<div style="height:8px;background:var(--surface);border-radius:4px;overflow:hidden;">
+							<div style="width:7%;height:100%;background:#d2a8ff;border-radius:4px;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<insight-box class="danger-box">
+				<h4 style="color:var(--danger)"><span>⚠</span> 关键发现：系统反复重构的技术债信号</h4>
+				<ul>
+					<li><strong>效果链系统</strong>：1月重写 → 4月简化 → 5月修复，核心逻辑被修改至少<strong>5次</strong></li>
+					<li><strong>动画系统</strong>：Lerp → DOTween → PeelDeck → EffectRecorder，经历<strong>4代</strong>迭代</li>
+					<li><strong>CombatManager.cs</strong>：被修改67次，是项目中最不稳定的文件</li>
+					<li><strong>CardManipulationEffect</strong>：被修改42次，卡牌操控逻辑持续动荡</li>
+					<li><strong>PlayerDefaultDeckRef.asset</strong>：被修改78次，牌组配置在代码外反复调整</li>
+				</ul>
+			</insight-box>
+		</div>
+
+		<!-- 多维度评分 -->
+		<div class="section">
+			<div class="section-title">多维度健康度评分</div>
+			<div class="card">
+				<div class="rating">
+					<div class="rating-stars success">★★★★☆</div>
+					<div class="rating-label">功能完成度</div>
+					<div class="rating-desc">核心闭环已跑通</div>
+				</div>
+				<div class="rating">
+					<div class="rating-stars warning">★★☆☆☆</div>
+					<div class="rating-label">架构稳定性</div>
+					<div class="rating-desc">核心系统多次重写</div>
+				</div>
+				<div class="rating">
+					<div class="rating-stars warning">★★★☆☆</div>
+					<div class="rating-label">测试覆盖度</div>
+					<div class="rating-desc">4月才开始系统测试，Headless刚起步</div>
+				</div>
+				<div class="rating">
+					<div class="rating-stars danger">★★☆☆☆</div>
+					<div class="rating-label">开发节奏可持续性</div>
+					<div class="rating-desc">周末+深夜占比过高</div>
+				</div>
+				<div class="rating">
+					<div class="rating-stars success">★★★★☆</div>
+					<div class="rating-label">内容生产效率</div>
+					<div class="rating-desc">60+卡牌，迭代速度快</div>
+				</div>
+				<div class="rating">
+					<div class="rating-stars warning">★★★☆☆</div>
+					<div class="rating-label">代码可维护性</div>
+					<div class="rating-desc">5月重构后显著改善</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 已完成里程碑 -->
+		<div class="section">
+			<div class="section-title">已完成的开发阶段</div>
+			<div class="phase-list">
+				<div class="phase-item">
+					<div class="phase-marker done">✓</div>
+					<div class="phase-content">
+						<h4>Phase 1 — 核心原型验证 <span style="color:var(--success);font-size:0.8rem;font-weight:500;">已完成</span></h4>
+						<p>Combat Manager、卡牌揭示/重洗、效果触发、基础战斗循环</p>
+						<div class="phase-meta">2025.12 — 2026.01 · 约68次提交</div>
+					</div>
+				</div>
+				<div class="phase-item">
+					<div class="phase-marker done">✓</div>
+					<div class="phase-content">
+						<h4>Phase 2 — 系统扩展与内容填充 <span style="color:var(--success);font-size:0.8rem;font-weight:500;">已完成</span></h4>
+						<p>商店系统、状态效果、护盾、存档、牌组测试器、卡牌制作器、60+卡牌</p>
+						<div class="phase-meta">2026.01 — 2026.02 · 约94次提交</div>
+					</div>
+				</div>
+				<div class="phase-item">
+					<div class="phase-marker done">✓</div>
+					<div class="phase-content">
+						<h4>Phase 3 — UX原型与移动端验证 <span style="color:var(--success);font-size:0.8rem;font-weight:500;">已完成</span></h4>
+						<p>Combat UX Manager、卡牌物理对象、墓地可视化、DOTween动画、Android Alpha</p>
+						<div class="phase-meta">2026.02 — 2026.03 · 约67次提交</div>
+					</div>
+				</div>
+				<div class="phase-item">
+					<div class="phase-marker active">●</div>
+					<div class="phase-content">
+						<h4>Phase 4 — 架构升级与质量筑基 <span style="color:var(--accent);font-size:0.8rem;font-weight:500;">进行中</span></h4>
+						<p>逻辑-视觉分离、EffectRecorder动画系统、Headless单元测试、卡牌配置规范化</p>
+						<div class="phase-meta">2026.04 — 至今 · 约72次提交</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 问题诊断 -->
+		<div class="section">
+			<div class="section-title">问题诊断与根因分析</div>
+			<div class="grid-2">
+				<insight-box class="danger-box">
+					<h4 style="color:var(--danger)"><span>1</span> 架构设计先行不足</h4>
+					<ul>
+						<li>效果链和动画系统都是"用到哪写到哪"，后期发现边界情况再推倒重来</li>
+						<li>CombatManager 承担过多职责（67次修改），违反单一职责原则</li>
+						<li>建议：新机制开发前强制写一份简短的技术方案（≤1页）</li>
+					</ul>
+				</insight-box>
+				<insight-box class="danger-box">
+					<h4 style="color:var(--danger)"><span>2</span> 测试严重滞后</h4>
+					<ul>
+						<li>4月中旬才开始系统测试，此时核心系统已成型，Bug修复成本高</li>
+						<li>Headless测试5月才启动，错过了最佳建设窗口</li>
+						<li>54%的新卡牌提交没有任何配套测试提交</li>
+					</ul>
+				</insight-box>
+				<insight-box class="warning-box">
+					<h4 style="color:var(--warning)"><span>3</span> 工作节奏不可持续</h4>
+					<ul>
+						<li>42.5%提交在周末，深夜23点是最活跃时段</li>
+						<li>10天连续开发 streak 表明缺乏休息</li>
+						<li>3月的12天空白可能是 burnout 后的强制恢复</li>
+					</ul>
+				</insight-box>
+				<insight-box class="warning-box">
+					<h4 style="color:var(--warning)"><span>4</span> 配置驱动不足</h4>
+					<ul>
+						<li>PlayerDefaultDeckRef 被改78次，说明牌组平衡纯靠手动调</li>
+						<li>场景文件(unity)被改114次，很多是视觉微调入版本控制</li>
+						<li>建议：牌组平衡数据外置CSV/JSON，场景修改单独管理</li>
+					</ul>
+				</insight-box>
+			</div>
+		</div>
+
+		<!-- 后续开发建议 -->
+		<div class="section">
+			<div class="section-title">后续开发计划与节奏调整建议</div>
+
+			<div class="recommendation">
+				<h4><span class="prio prio-p0">P0</span>巩固5月架构成果（未来2-3周）</h4>
+				<p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:12px;">这是目前最高优先级。5月的逻辑-视觉分离和EffectRecorder是项目能否进入Beta的关键。</p>
+				<div style="display:flex;gap:8px;flex-wrap:wrap;">
+					<span class="tag-pill" style="background:var(--surface);">补全所有卡牌动画走EffectRecorder</span>
+					<span class="tag-pill" style="background:var(--surface);">消除旧动画代码路径</span>
+					<span class="tag-pill" style="background:var(--surface);">Headless测试覆盖核心效果链</span>
+				</div>
+			</div>
+
+			<div class="recommendation">
+				<h4><span class="prio prio-p1">P1</span>建立测试先行流程（同步进行）</h4>
+				<p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:12px;">改变"先做功能后补测试"的模式。新卡牌必须带Headless测试才能合并。</p>
+				<div style="display:flex;gap:8px;flex-wrap:wrap;">
+					<span class="tag-pill" style="background:var(--surface);">每张新卡牌配套1个自动化测试</span>
+					<span class="tag-pill" style="background:var(--surface);">核心效果链回归测试套件</span>
+					<span class="tag-pill" style="background:var(--surface);">CI运行所有Headless测试</span>
+				</div>
+			</div>
+
+			<div class="recommendation">
+				<h4><span class="prio prio-p1">P1</span>引入结构化迭代周期</h4>
+				<p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:12px;">当前开发是"持续流"模式，缺乏节奏感。建议改为2周Sprint制。</p>
+				<div style="display:flex;gap:8px;flex-wrap:wrap;">
+					<span class="tag-pill" style="background:var(--surface);">2周一个Sprint，周五发版不提交</span>
+					<span class="tag-pill" style="background:var(--surface);">周末强制休息，降低 burnout 风险</span>
+					<span class="tag-pill" style="background:var(--surface);">Sprint计划会强制写技术方案</span>
+				</div>
+			</div>
+
+			<div class="recommendation">
+				<h4><span class="prio prio-p2">P2</span>内容生产流程优化</h4>
+				<p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:12px;">卡牌占26%提交但大量是配置反复调整，需要更高效的管线。</p>
+				<div style="display:flex;gap:8px;flex-wrap:wrap;">
+					<span class="tag-pill" style="background:var(--surface);">卡牌数据CSV/JSON外置</span>
+					<span class="tag-pill" style="background:var(--surface);">自动化卡牌配置验证脚本</span>
+					<span class="tag-pill" style="background:var(--surface);">减少Prefab直接修改频率</span>
+				</div>
+			</div>
+
+			<div class="recommendation">
+				<h4><span class="prio prio-p2">P2</span>技术债清理清单</h4>
+				<p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:12px;">在不影响功能开发的前提下，逐步偿还。</p>
+				<div style="display:flex;gap:8px;flex-wrap:wrap;">
+					<span class="tag-pill" style="background:var(--surface);">CombatManager职责拆分</span>
+					<span class="tag-pill" style="background:var(--surface);">CardManipulationEffect接口稳定化</span>
+					<span class="tag-pill" style="background:var(--surface);">场景文件修改规范</span>
+				</div>
+			</div>
+
+			<div class="recommendation">
+				<h4><span class="prio prio-p3">P3</span>里程碑规划建议</h4>
+				<div class="phase-list" style="margin-top:12px;">
+					<div class="phase-item">
+						<div class="phase-marker pending" style="font-size:0.7rem;">M4</div>
+						<div class="phase-content">
+							<h4>Closed Beta <span style="color:var(--text-secondary);font-size:0.8rem;">目标：2026年6月底</span></h4>
+							<p style="font-size:0.85rem;">EffectRecorder全面落地、Headless核心覆盖、卡牌数量稳定至80张、无阻塞Bug</p>
+						</div>
+					</div>
+					<div class="phase-item">
+						<div class="phase-marker pending" style="font-size:0.7rem;">M5</div>
+						<div class="phase-content">
+							<h4>Open Beta <span style="color:var(--text-secondary);font-size:0.8rem;">目标：2026年8月</span></h4>
+							<p style="font-size:0.85rem;">完整新手引导、排行榜、云存档、100张卡牌、平衡性经过数据验证</p>
+						</div>
+					</div>
+					<div class="phase-item">
+						<div class="phase-marker pending" style="font-size:0.7rem;">M6</div>
+						<div class="phase-content">
+							<h4>正式版 v1.0 <span style="color:var(--text-secondary);font-size:0.8rem;">目标：2026年Q4</span></h4>
+							<p style="font-size:0.85rem;">完整卡牌美术、音效、多语言、赛季系统、社区功能</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- 节奏调整具体建议 -->
+		<div class="section">
+			<div class="section-title">具体节奏调整建议</div>
+			<div class="grid-2">
+				<div class="card">
+					<h4 style="margin-bottom:12px;color:var(--success);">✓ 应该做的</h4>
+					<ul style="font-size:0.9rem;color:var(--text-secondary);padding-left:18px;">
+						<li>工作日集中开发，周末彻底休息</li>
+						<li>每晚22:00前结束编码，留时间复盘</li>
+						<li>每2周一个Sprint，明确Sprint目标</li>
+						<li>新功能开发前先写1页技术方案</li>
+						<li>每次提交都配一句清晰的完成描述</li>
+						<li>3个月以上假期前做技术方案存档</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h4 style="margin-bottom:12px;color:var(--danger);">✗ 应该停止的</h4>
+					<ul style="font-size:0.9rem;color:var(--text-secondary);padding-left:18px;">
+						<li>深夜23点后的密集提交</li>
+						<li>连续7天以上不休息的开发 streak</li>
+						<li>大量"WIP"提交后第二天再修</li>
+						<li>直接在CombatManager里堆新逻辑</li>
+						<li>不做测试就新增卡牌效果</li>
+						<li>场景视觉微调与代码混在一个提交</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<!-- 总结 -->
+		<div class="section">
+			<div class="section-title">总结</div>
+			<insight-box class="success-box">
+				<h4 style="color:var(--success)"><span>🎯</span> 核心结论</h4>
+				<p style="font-size:0.95rem;color:var(--text);margin-bottom:12px;">
+					OneDeck 在5个月内从零走到了 Android Alpha，这是一个<strong>极快的迭代速度</strong>。但代价是架构上欠了技术债、个人承担了过高的工作强度、测试体系严重滞后。
+				</p>
+				<p style="font-size:0.95rem;color:var(--text);margin-bottom:12px;">
+					<strong>5月的逻辑-视觉分离和EffectRecorder是最关键的转折点</strong>——它让项目第一次有了可持续扩展的骨架。接下来的2-3周，应该全力巩固这个骨架，而不是急于加新功能。
+				</p>
+				<p style="font-size:0.95rem;color:var(--text);">
+					如果能建立"2周Sprint + 测试先行 + 周末休息"的节奏，项目有望在6月底进入 Closed Beta，8月进入 Open Beta。否则，持续的高强度开发会在某个节点迎来又一次长周期停摆。
+				</p>
+			</insight-box>
+		</div>
+
+		<footer>
+			<p>OneDeck 开发进度评估报告 · 基于 Git 数据分析生成</p>
+			<p>评估日期：2026年5月15日</p>
+		</footer>
+	</div>
+</body>
+</html>

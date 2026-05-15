@@ -118,6 +118,7 @@
 
 //! bug
 	//todo soldier_skeleton will go to staged position before staged
+		//todo soldier_skeleton won't move if a new card is added to the deck while staging self
 	//// pre effect event cost won't make effect recorder, need to abandon cost on card script, use old check cost event to check + normal effect event to execute cost
 	// check
 		//// 1. cost on card script + multiple effect instance and one of them has pre effect event one of them doesn't
