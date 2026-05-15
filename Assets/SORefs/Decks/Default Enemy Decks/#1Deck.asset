@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
   m_Name: '#1Deck'
   m_EditorClassIdentifier: 
-  deck:
-  - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
+  deck: []
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: 

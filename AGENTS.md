@@ -153,7 +153,7 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 
 ### AnimationRequest Types
 ```csharp
-enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange }
+enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange, StatusEffectProjectile }
 ```
 - `HPAlterEffect` captures `Attack` requests (damage already resolved in logic phase; `onHit` is null).
 - `BuryEffect` captures `MoveToBottomBatch`.
@@ -162,10 +162,32 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 - `ApplyStatusEffectCore`, `ConsumeStatusEffect`, `ManaAlterEffect`, and `TransferStatusEffectEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
 - Batch types run all card movements in parallel and yield until the last completes.
 
+### Snapshot Target Indices
+`AnimationRequest` carries an optional `List<int> targetIndices` (parallel to `targetCards`). Effects that move cards within the deck must **snapshot** each target card's logical index at capture time **before** raising reactive events (e.g. `onMeBuried` → `StageSelf`), because reactive effects may modify deck order and pollute the index.
+
+Example (BuryEffect):
+```csharp
+// Snapshot AFTER SyncPhysicalCardsWithCombinedDeck but BEFORE RaiseSpecific
+var targetIndices = new List<int>();
+foreach (var card in buriedCards) { targetIndices.Add(_combinedDeck.IndexOf(card)); }
+recorder.animationRequests.Add(new AnimationRequest {
+    type = AnimationRequestType.MoveToBottomBatch,
+    targetCards = buriedCards,
+    targetIndices = targetIndices,  // snapshot
+    ...
+});
+```
+
+### ApplyAnimationResult
+`ICombatVisuals` exposes `ApplyAnimationResult(AnimationRequest request)`. `RecorderAnimationPlayer` calls it **before** each deck-move request (alongside `UpdateAllPhysicalCardTargets`) so that:
+1. `physicalCardsInDeck` order is advanced to the post-animation state **before** the tween starts.
+2. All cards tween to their new positions in parallel (the moved card plays its arc/special animation while other cards slide smoothly).
+3. Reactive chains (e.g. bury → stage) display correctly: the first animation's result is preserved instead of being overwritten by the final deck state.
+
 ### RecorderAnimationPlayer
 - Singleton. Owns the animation-phase coroutine.
 - Wraps playback in `AttackAnimationManager.HoldDeckFocus()` / `ReleaseDeckFocus()`.
-- Calls `UpdateAllPhysicalCardTargets()` before each move request.
+- For deck-move requests, calls `ApplyAnimationResult(request)` **before** `UpdateAllPhysicalCardTargets()` so the physical deck order matches the animation intent and all cards tween in parallel.
 - Falls back to old visual path when `RecorderAnimationPlayer.me == null`.
 
 ### Emphasize Animation
@@ -181,7 +203,10 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 - `DestroyCardWithAnimation(card, onComplete)`
 - `AddCardToDeckVisual(card)`
 - `SyncPhysicalCardsWithCombinedDeck()`
+- `ApplyAnimationResult(request)` — Updates `physicalCardsInDeck` order to reflect a completed animation request (e.g. inserting moved cards at bottom/top/index, removing destroyed cards).
 - `PlayShuffleAnimation(startCard, shuffledCards, onComplete)`
+
+**Note:** `MoveCardWithAnimation` skips `UpdateAllPhysicalCardTargets()` in its `OnComplete` when `RecorderAnimationPlayer.me != null`, because `RecorderAnimationPlayer` handles deck sync per-request via `ApplyAnimationResult`.
 
 ## Critical Rules
 

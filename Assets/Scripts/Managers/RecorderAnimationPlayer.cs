@@ -129,6 +129,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToBottom:
 			{
+				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
 				visuals.MoveCardToBottom(request.targetCard, request.duration, request.useArc, () => { done = true; if (request.onComplete != null) request.onComplete(); });
@@ -137,6 +138,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToBottomBatch:
 			{
+				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
@@ -167,6 +169,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToTop:
 			{
+				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
 				visuals.MoveCardToTop(request.targetCard, request.duration, request.useArc, () => { done = true; if (request.onComplete != null) request.onComplete(); });
@@ -175,6 +178,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToTopBatch:
 			{
+				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch START targetCards=" + (request.targetCards != null ? request.targetCards.Count : 0));
 				int completedCount = 0;
@@ -209,6 +213,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToIndex:
 			{
+				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
 				visuals.MoveCardToIndex(request.targetCard, request.targetIndex, request.duration, request.useArc, () => { done = true; if (request.onComplete != null) request.onComplete(); });
@@ -217,6 +222,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.Destroy:
 			{
+				visuals.ApplyAnimationResult(request);
 				bool done = false;
 				visuals.DestroyCardWithAnimation(request.targetCard, () => { done = true; if (request.onComplete != null) request.onComplete(); });
 				yield return new WaitUntil(() => done);
@@ -263,9 +269,5 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				break;
 			}
 		}
-
-		// Apply animation result to physical deck so subsequent animations see correct intermediate state
-		visuals.ApplyAnimationResult(request);
-		visuals.UpdateAllPhysicalCardTargets();
 	}
 }
