@@ -40,7 +40,13 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		recorder.animationPlayed = true;
 
 		string cardName = recorder.cardObject != null ? recorder.cardObject.name : "null";
-		Debug.Log("[RecorderAnimationPlayer] === Playing recorder chainID=" + recorder.chainID + " card=" + cardName + " requests=" + recorder.animationRequests.Count + " childCount=" + recorder.transform.childCount);
+		string reqSummary = "";
+		for (int i = 0; i < recorder.animationRequests.Count; i++)
+		{
+			var r = recorder.animationRequests[i];
+			reqSummary += "[" + i + "]" + (r != null ? r.type.ToString() : "null") + " ";
+		}
+		Debug.Log("[RecorderAnimationPlayer] === Playing recorder chainID=" + recorder.chainID + " card=" + cardName + " requests=" + recorder.animationRequests.Count + " childCount=" + recorder.transform.childCount + " reqs=" + reqSummary);
 
 		// Emphasize the source card before playing its effect animations
 		if (recorder.animationRequests.Count > 0 && recorder.cardObject != null)
@@ -138,18 +144,28 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToBottomBatch:
 			{
+				Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch START targetCards=" + (request.targetCards != null ? request.targetCards.Count : 0) + " snapshot=" + (request.targetIndices != null ? string.Join(",", request.targetIndices) : "null") + " snapshotDeckSize=" + request.snapshotDeckSize);
 				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
 				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
+				int currentCount = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.Count : 0;
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
 					if (hasSnapshot)
 					{
-						visuals.MoveCardToIndex(card, request.targetIndices[i], request.duration, request.useArc, () =>
+						// Bury (MoveToBottomBatch) sends cards to the absolute bottom of the physical deck.
+						// ApplyAnimationResult inserts them at index 0 in forward order,
+						// so targetCards[i] ends up at (totalCount - 1 - i).
+						// We intentionally do NOT use snapshotDeckSize offset here,
+						// because Bury/Stage are absolute-position operations, not relative shifts.
+						int correctedIndex = totalCount - 1 - i;
+						correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
+						Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex for " + card.name + " snapshotIndex=" + request.targetIndices[i] + " snapshotDeckSize=" + request.snapshotDeckSize + " currentCount=" + currentCount + " correctedIndex=" + correctedIndex);
+						visuals.MoveCardToIndex(card, correctedIndex, request.duration, request.useArc, () =>
 						{
 							completedCount++;
 							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
@@ -165,6 +181,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					}
 				}
 				yield return new WaitUntil(() => completedCount >= totalCount);
+				Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch DONE");
 				break;
 			}
 			case AnimationRequestType.MoveToTop:
@@ -180,18 +197,26 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			{
 				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
-				Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch START targetCards=" + (request.targetCards != null ? request.targetCards.Count : 0));
+				Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch START targetCards=" + (request.targetCards != null ? request.targetCards.Count : 0) + " snapshotDeckSize=" + request.snapshotDeckSize);
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
 				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
+				int currentCount = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.Count : 0;
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
 					if (hasSnapshot)
 					{
-						Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex for " + card.name + " index=" + request.targetIndices[i]);
-						visuals.MoveCardToIndex(card, request.targetIndices[i], request.duration, request.useArc, () =>
+						// Stage (MoveToTopBatch) sends cards to the absolute top of the physical deck.
+						// ApplyAnimationResult appends them in forward order,
+						// so targetCards[i] ends up at (currentCount - totalCount + i).
+						// We intentionally do NOT use snapshotDeckSize offset here,
+						// because Bury/Stage are absolute-position operations, not relative shifts.
+						int correctedIndex = currentCount - totalCount + i;
+						correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
+						Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex for " + card.name + " snapshotIndex=" + request.targetIndices[i] + " snapshotDeckSize=" + request.snapshotDeckSize + " currentCount=" + currentCount + " correctedIndex=" + correctedIndex);
+						visuals.MoveCardToIndex(card, correctedIndex, request.duration, request.useArc, () =>
 						{
 							completedCount++;
 							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();

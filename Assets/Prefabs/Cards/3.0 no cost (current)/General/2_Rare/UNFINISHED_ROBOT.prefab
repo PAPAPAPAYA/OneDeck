@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -81,7 +81,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectGiverEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 4
@@ -140,8 +139,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -175,7 +174,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
@@ -234,6 +232,7 @@ MonoBehaviour:
   displayName: "\u672A\u5B8C\u6210\u7684\u673A\u5668\u4EBA"
   cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b>0</b> \u4F24\u5BB3,\u7FFB\u500D\u81EA\u8EAB\u529B\u91CF"
   rarity: 2
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -248,6 +247,9 @@ MonoBehaviour:
   minionCostCount: 0
   minionCostCardTypeID: 
   minionCostOwner: 0
+  exileCostCount: 0
+  exileCostCardTypeID: 
+  exileCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -264,6 +266,18 @@ MonoBehaviour:
   response:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 2975535557018067864}
+        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
+        m_MethodName: InvokeEffectEventVoid
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 88236208953752898}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid

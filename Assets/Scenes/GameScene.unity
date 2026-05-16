@@ -2876,9 +2876,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
   useCustomOrder: 1
   customOrderPrefabs:
-  - {fileID: 1808145013887896563, guid: 8b120695cc416044087f9a46fbe99d5f, type: 3}
-  - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
-  - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
+  - {fileID: 8718476725744197808, guid: 437c02dc3a189364787d86a0cbfb3583, type: 3}
 --- !u!1 &1162866020
 GameObject:
   m_ObjectHideFlags: 0
@@ -5866,7 +5864,7 @@ Transform:
   m_GameObject: {fileID: 2043192993}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -5, z: 0}
+  m_LocalPosition: {x: 0, y: -8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5880,7 +5878,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2043192993}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1

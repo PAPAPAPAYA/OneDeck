@@ -111,6 +111,8 @@ public class EffectChainManager : MonoBehaviour
 			newEffectChain.transform.SetParent(parentTransform);
 		}
 
+		string parentName = isRoot ? "ROOT" : (previousRecorder != null ? previousRecorder.GetComponent<EffectRecorder>().chainID.ToString() : currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString());
+		Debug.Log("[EffectChainManager] MakeANewEffectRecorder chain#" + chainNumber + " card=" + myCard.name + " effect=" + myEffectInst.name + " isRoot=" + isRoot + " parent=" + parentName + " stackSize=" + recorderStack.Count);
 	}
 
 	public bool EffectCanBeInvoked(string effectID)
@@ -158,7 +160,13 @@ public class EffectChainManager : MonoBehaviour
 	{
 		if (recorderStack.Count > 0)
 		{
+			var popped = recorderStack[recorderStack.Count - 1];
+			var poppedRec = popped != null ? popped.GetComponent<EffectRecorder>() : null;
+			string poppedName = poppedRec != null ? "chain#" + poppedRec.chainID + "[" + poppedRec.cardObject.name + "]" : "null";
 			recorderStack.RemoveAt(recorderStack.Count - 1);
+			var newCurrent = currentEffectRecorder;
+			string newCurrentName = newCurrent != null ? "chain#" + newCurrent.GetComponent<EffectRecorder>().chainID + "[" + newCurrent.GetComponent<EffectRecorder>().cardObject.name + "]" : "null";
+			Debug.Log("[EffectChainManager] PopCurrentRecorder popped=" + poppedName + " newCurrent=" + newCurrentName + " stackSize=" + recorderStack.Count);
 		}
 	}
 

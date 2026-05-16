@@ -30,6 +30,7 @@ namespace DefaultNamespace
 		public bool useArc = true;
 		public int targetIndex;
 		public List<int> targetIndices;
+		public int snapshotDeckSize; // Deck size at the time of snapshot, used to correct index when deck size changes before animation playback
 
 		// StatusEffectChange specific fields
 		public EnumStorage.StatusEffect statusEffect;

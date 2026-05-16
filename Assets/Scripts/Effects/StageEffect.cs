@@ -354,12 +354,16 @@ public class StageEffect : EffectScript
 		// 3. Capture animation request
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
+		string reqInfo = "StageBatch cards=" + stagedCards.Count + " indices=" + string.Join(",", stagedTargetIndices) + " deckSize=" + _combinedDeck.Count;
+		Debug.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null && RecorderAnimationPlayer.me != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.MoveToTopBatch,
 				targetCards = stagedCards,
 				targetIndices = stagedTargetIndices,
+				snapshotDeckSize = _combinedDeck.Count,
 				duration = 0.5f,
 				useArc = true
 			});

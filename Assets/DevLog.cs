@@ -66,6 +66,9 @@
 	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
 
 //! feature
+	// a more comprehensive test kit
+		// logic
+		// visual
 	//// effect chain manager issue
 	//// skill to check infinite card combos
 		//// GiveStatusEffectToXFriendly, GiveStatusEffectToLastXCards, GivePowerToCardThatGotPower
@@ -80,11 +83,12 @@
 	// fake shuffle
 	
 //! viscom
+	// need to show what's added
 	// status effect
 		// better power wisp
 		// power gain card particle
 		// consume effect
-	// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
+	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add
 			//// give status effect
@@ -117,8 +121,15 @@
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 
 //! bug
+	//todo almighty test failed
+	//todo use ALMIGHTY + reactive cards to test
 	//todo soldier_skeleton will go to staged position before staged
 		//todo soldier_skeleton won't move if a new card is added to the deck while staging self
+		// SACRIFICIAL_SPIRIT + soldier_skeleton
+			// sacrificial_spirit + dummy
+		// RIFT + dummy
+		// RIFT_DRAGON + RIFT x 2
+		// RIFT_SUMMONER + RIFT + DUMMY
 	//// pre effect event cost won't make effect recorder, need to abandon cost on card script, use old check cost event to check + normal effect event to execute cost
 	// check
 		//// 1. cost on card script + multiple effect instance and one of them has pre effect event one of them doesn't

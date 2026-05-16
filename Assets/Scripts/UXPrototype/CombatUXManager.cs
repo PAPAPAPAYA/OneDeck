@@ -407,7 +407,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Get physical card
 		BuildCardScriptToPhysicalDictionary();
 		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
-		if (physicalCard == null) return;
+		if (physicalCard == null)
+		{
+			Debug.LogWarning("[CombatUXManager] MoveCardWithAnimation physicalCard NOT FOUND for " + logicalCard.name);
+			return;
+		}
 
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) return;
@@ -464,6 +468,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		AnimationStateTracker.me?.RegisterAnimation();
 
+		Debug.Log("[CombatUXManager] MoveCardWithAnimation START logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " targetPos=" + targetPosition + " physical=" + physicalCard.name + " physCurrentPos=" + physicalCard.transform.position);
+
 		// Create animation sequence
 		Sequence moveSequence = DOTween.Sequence();
 
@@ -497,7 +503,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Animation complete callback
 		moveSequence.OnComplete(() =>
 		{
-			Debug.Log("[CombatUXManager] MoveCardWithAnimation COMPLETE logical=" + logicalCard.name);
+			Debug.Log("[CombatUXManager] MoveCardWithAnimation COMPLETE logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " finalPos=" + physicalCard.transform.position);
 			AnimationStateTracker.me?.CompleteAnimation();
 			UnblockInput(this);
 
@@ -565,11 +571,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var count = physicalCardsInDeck.Count;
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		// index=0 (bottom of physical deck) has largest offset, index=count-1 (top) has smallest offset
-		return new Vector3(
+		Vector3 result = new Vector3(
 			basePos.x + xOffset * (count - 1 - index),
 			basePos.y + yOffset * (count - 1 - index),
 			basePos.z - zOffset * index
 		);
+		Debug.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result + " basePos=" + basePos);
+		return result;
 	}
 
 	public void PlayStartCardShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
@@ -857,6 +865,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		if (request == null) return;
 
+		string deckBefore = "";
+		for (int i = 0; i < physicalCardsInDeck.Count; i++)
+		{
+			deckBefore += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
+		}
+		Debug.Log("[CombatUXManager] ApplyAnimationResult START type=" + request.type + " deckBefore=" + deckBefore);
+
 		switch (request.type)
 		{
 			case AnimationRequestType.MoveToBottomBatch:
@@ -868,6 +883,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					{
 						physicalCardsInDeck.Remove(phys);
 						physicalCardsInDeck.Insert(0, phys);
+						Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottomBatch inserted " + phys.name + " at index 0");
+					}
+					else
+					{
+						Debug.LogWarning("[CombatUXManager] ApplyAnimationResult MoveToBottomBatch physical not found for " + card.name);
 					}
 				}
 				break;
@@ -880,6 +900,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					{
 						physicalCardsInDeck.Remove(phys);
 						physicalCardsInDeck.Add(phys);
+						Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTopBatch appended " + phys.name + " at end");
+					}
+					else
+					{
+						Debug.LogWarning("[CombatUXManager] ApplyAnimationResult MoveToTopBatch physical not found for " + card.name);
 					}
 				}
 				break;
@@ -1388,7 +1413,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Fallback: card may have been removed from deck by SyncPhysicalCardsWithCombinedDeck before animation phase
 		if (physicalCard == null)
 		{
-			var allPhysScripts = GameObject.FindObjectsOfType<CardPhysObjScript>();
+			var allPhysScripts = UnityEngine.Object.FindObjectsByType<CardPhysObjScript>(FindObjectsSortMode.None);
 			foreach (var physScript in allPhysScripts)
 			{
 				if (physScript.cardImRepresenting == cardScript)
@@ -1519,8 +1544,15 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		physScript.SetScaleImmediate(startSize);
 
 
-		// Update all card target positions (trigger move animation)
-		UpdateAllPhysicalCardTargets();
+		// When RecorderAnimationPlayer is active, do NOT trigger a full deck reposition here.
+		// The new card gets an immediate spawn position above; its final deck position
+		// will be handled during the animation phase by ApplyAnimationResult + UpdateAllPhysicalCardTargets.
+		// Calling UpdateAllPhysicalCardTargets in the logic phase would pre-move all existing cards,
+		// causing subsequent bury/stage animations to tween from the already-moved state (distance zero).
+		if (RecorderAnimationPlayer.me == null)
+		{
+			UpdateAllPhysicalCardTargets();
+		}
 	}
 
 	#region Initialization
@@ -1648,6 +1680,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Sync rotation: keep effect facing target
 		projectile.transform.LookAt(endPos);
 
+		// Safety kill: if the projectile GameObject is destroyed externally before the tween finishes,
+		// DOTween would throw a missing-Transform warning. Kill the sequence gracefully instead.
+		projectileSequence.OnUpdate(() =>
+		{
+			if (projectile == null)
+			{
+				projectileSequence.Kill(true);
+			}
+		});
+
 		// Animation complete: destroy effect and execute callback
 		projectileSequence.OnComplete(() =>
 		{
@@ -1704,16 +1746,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var targetCardScript = targetCards[i];
 			
 			// Staggered playback time
-			DOVirtual.DelayedCall(i * staggerDelay, () =>
-			{
-				PlayStatusEffectProjectile(
-					giverCard, 
-					targetCardScript.gameObject, 
-					() =>
+				DOVirtual.DelayedCall(i * staggerDelay, () =>
+				{
+					// Defensive: giver or target may have been destroyed (e.g. exiled) during the delay.
+					if (giverCard == null || targetCardScript == null || targetCardScript.gameObject == null)
 					{
-						// Single effect complete, execute effect for this target
-						onEachComplete?.Invoke(targetCardScript);
-						
 						completedCount++;
 						if (completedCount >= totalCount)
 						{
@@ -1721,9 +1758,27 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 							AnimationStateTracker.me?.CompleteAnimation();
 							onAllComplete?.Invoke();
 						}
+						return;
 					}
-				);
-			});
+
+					PlayStatusEffectProjectile(
+						giverCard, 
+						targetCardScript.gameObject, 
+						() =>
+						{
+							// Single effect complete, execute effect for this target
+							onEachComplete?.Invoke(targetCardScript);
+							
+							completedCount++;
+							if (completedCount >= totalCount)
+							{
+								UnblockInput(this);
+								AnimationStateTracker.me?.CompleteAnimation();
+								onAllComplete?.Invoke();
+							}
+						}
+					);
+				});
 		}
 	}
 
