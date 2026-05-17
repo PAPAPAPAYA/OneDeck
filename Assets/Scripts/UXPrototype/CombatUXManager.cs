@@ -1508,15 +1508,22 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Set initial position (new card appears at physical card new temp card pos)
 		Vector3 startPos = physicalCardNewTempCardPos.position;
 
-		// Bump the new card's spawn Z so it flies in from *behind* the entire deck,
-		// preventing it from overlapping the existing bottom card during the tween.
-		int countAfterInsert = physicalCardsInDeck.Count;
-		float frontMostZ = physicalCardDeckPos.position.z - zOffset * (countAfterInsert - 1);
+		// z is smaller towards the camera (front), larger away from camera (back).
+		// New cards must spawn BEHIND all existing cards, so we find the largest Z
+		// (furthest from camera) among existing cards and place the new card even further back.
+		float backMostZ = float.MinValue;
+		foreach (var card in physicalCardsInDeck)
+		{
+			if (card == newPhysicalCard) continue;
+			var phys = card.GetComponent<CardPhysObjScript>();
+			if (phys != null)
+				backMostZ = Mathf.Max(backMostZ, phys.TargetPosition.z);
+		}
+		if (backMostZ == float.MinValue)
+			backMostZ = physicalCardDeckPos.position.z;
+
 		float zBump = Mathf.Abs(zOffset) > 0.001f ? Mathf.Abs(zOffset) : 0.5f;
-		if (zOffset >= 0)
-			startPos.z = frontMostZ + zBump;
-		else
-			startPos.z = frontMostZ - zBump;
+		startPos.z = backMostZ + zBump * 2f;
 
 		physScript.SetPositionImmediate(startPos);
 		// set initial size
@@ -1539,12 +1546,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			UpdateAllPhysicalCardTargets();
 
-			// Apply zBump to the new card's final target so the whole tween stays behind the deck.
+			// Place the new card behind all existing cards during its flight.
 			Vector3 newCardTarget = CalculatePositionAtIndex(0);
-			if (zOffset >= 0)
-				newCardTarget.z += zBump;
-			else
-				newCardTarget.z -= zBump;
+			newCardTarget.z = backMostZ + zBump;
 			physScript.SetTargetPosition(newCardTarget);
 		}
 		else
@@ -1567,11 +1571,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				if (cardAtIndex == newPhysicalCard)
 				{
 					// New card: start tween immediately so it enters the deck visually.
-					// Apply same zBump as spawn so the card stays behind the deck for the entire flight.
-					if (zOffset >= 0)
-						targetPos.z += zBump;
-					else
-						targetPos.z -= zBump;
+					// Place it behind all existing cards so later spawns never overlap earlier ones.
+					targetPos.z = backMostZ + zBump;
 					cardPhys.SetTargetPosition(targetPos);
 					cardPhys.SetTargetScale(physicalCardDeckSize);
 					Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);

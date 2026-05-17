@@ -257,6 +257,15 @@ public class CardPhysObjScript : MonoBehaviour
 	{
 		Debug.Log("[CardPhysObjScript] UpdateTargetPositionOnly card=" + name + " currentPos=" + transform.position + " newTarget=" + target);
 		TargetPosition = target;
+
+		// Only restart tween for cards that are still off-screen (incoming flight).
+		// Cards already in the deck must NOT be pre-moved here; their movement
+		// is handled by UpdateAllPhysicalCardTargets during the animation phase.
+		bool isIncomingFlight = transform.position.y < -2f;
+		if (isIncomingFlight && _positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
+		{
+			StartPositionTween();
+		}
 	}
 
 	/// <summary>
