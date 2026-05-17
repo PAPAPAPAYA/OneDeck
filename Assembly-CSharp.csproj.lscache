@@ -159,9 +159,11 @@ Assets/
   StatusEffectSO.cs
   StringSO.cs
  Scripts/UXPrototype/
+  CardMoveConfig.cs
   CardPhysObjScript.cs
   CombatCardView.cs
   CombatUXManager.cs
+  DeckPositionCalculator.cs
   ShopCardView.cs
   ShopUXManager.cs
  TutorialInfo/Scripts/Readme.cs

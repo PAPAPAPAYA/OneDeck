@@ -1,5 +1,8 @@
  // devlog
 
+//! tools
+	////   skill to generate commit messages
+
 //! anything else
 	//// remember to check combat stats logger CSVs
 	// add space after annotations
@@ -14,6 +17,8 @@
 	//// change cardScript to use tab to indent
 
 //! refactor
+	//// simplify and split up CombatUXManager
+		//// simiplified a little bit
 	//// more animation need to be cleaned up (ex. deck group animation)
 	////  clean up and organize logic and visual, messy right now
 		//// side-effect portal curse effect bugged
@@ -59,12 +64,10 @@
 			//// stage 2 friendly; gain 1 rest
 		//// almighty: stage 1 friendly; bury 1 hostile; enhance 1 friendly; add 1 [rift]; enhance 1 hostile [curse]
 			//// gain 1 rest
-
 //! need to know
 	// if an effect instance contains more than 1 effect, animations of those effects will be played, THEN other invoked effects' animations will be played;
 		// vs. if an effect instance contains only 1 effect, but the card has multiple effect instances, other invoked effefcts' animations will be played after each invoker effect's animation	
 	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
-
 //! feature
 	// a more comprehensive test kit
 		// logic
@@ -81,7 +84,6 @@
 	// shop
 		//// iterate on shop based on rarity
 	// fake shuffle
-	
 //! viscom
 	// need to show what's added
 	// status effect
@@ -113,18 +115,16 @@
 				//// ### Phase 5: Testing & Edge Cases
 		//// D:\Unity Projects\OneDeck\plans\card-animation-serialization-plan.md
 	// AnimationStateTracker checker
-	
-
 //! design change
 	//// should we change [bury 1 friendly] to [bury next 2]?
 		//// it's more powerful, maybe should be benefit, not cost
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
-
 //! bug
 	//todo almighty test failed
-	//todo use ALMIGHTY + reactive cards to test
-	//todo soldier_skeleton will go to staged position before staged
-		//todo soldier_skeleton won't move if a new card is added to the deck while staging self
+		//todo newly added cards will move to deck position, but z position still wrong
+	//todo make ALMIGHTY + reactive cards test
+	//// soldier_skeleton will go to staged position before staged
+		// soldier_skeleton won't move if a new card is added to the deck while staging self
 		// SACRIFICIAL_SPIRIT + soldier_skeleton
 			// sacrificial_spirit + dummy
 		// RIFT + dummy

@@ -2876,7 +2876,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
   useCustomOrder: 1
   customOrderPrefabs:
-  - {fileID: 8718476725744197808, guid: 32c7492795cdf5d418e164a404fab845, type: 3}
+  - {fileID: 1808145013887896563, guid: 3285b0b41237f6d4c976640e83879acf, type: 3}
 --- !u!1 &1162866020
 GameObject:
   m_ObjectHideFlags: 0

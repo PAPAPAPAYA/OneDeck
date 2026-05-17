@@ -4,96 +4,6 @@ using System.Collections.Generic;
 using DefaultNamespace;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.Video;
-
-/// <summary>
-/// Card Move Type
-/// </summary>
-public enum CardMoveType
-{
-	ToTop,          // Move to top of deck (last card)
-	ToBottom,       // Move to bottom of deck (first card)
-	ToIndex,        // Move to specified index
-	ToPosition,     // Move to specified world position
-	ToGrave,        // Move to graveyard (destroy position)
-}
-
-/// <summary>
-/// Card Move Config
-/// </summary>
-[Serializable]
-public class CardMoveConfig
-{
-	public CardMoveType moveType = CardMoveType.ToBottom;
-	public int targetIndex;                    // Used when ToIndex
-	public Vector3? customTarget;              // Used when ToPosition
-	public bool useArc = true;                 // Whether to use arc trajectory
-	public Transform arcMidpoint;              // Arc midpoint (use showPos if null)
-	public float duration = 0.5f;              // Animation duration
-	public Ease ease = Ease.InOutQuad;         // Ease type
-	public bool destroyAfterMove = false;      // Whether to destroy after move
-	public Action onComplete;                  // Animation complete callback
-	public Action onStart;                     // Animation start callback
-	
-	// Convenient constructors
-	public static CardMoveConfig ToTop(float duration = 0.5f, bool useArc = true, Action onComplete = null)
-	{
-		return new CardMoveConfig 
-		{ 
-			moveType = CardMoveType.ToTop, 
-			duration = duration, 
-			useArc = useArc,
-			onComplete = onComplete 
-		};
-	}
-	
-	public static CardMoveConfig ToBottom(float duration = 0.5f, bool useArc = true, Action onComplete = null)
-	{
-		return new CardMoveConfig 
-		{ 
-			moveType = CardMoveType.ToBottom, 
-			duration = duration, 
-			useArc = useArc,
-			onComplete = onComplete 
-		};
-	}
-	
-	public static CardMoveConfig ToIndex(int index, float duration = 0.5f, bool useArc = true, Action onComplete = null)
-	{
-		return new CardMoveConfig 
-		{ 
-			moveType = CardMoveType.ToIndex, 
-			targetIndex = index,
-			duration = duration, 
-			useArc = useArc,
-			onComplete = onComplete 
-		};
-	}
-	
-	public static CardMoveConfig ToPosition(Vector3 position, float duration = 0.5f, bool useArc = true, Action onComplete = null)
-	{
-		return new CardMoveConfig 
-		{ 
-			moveType = CardMoveType.ToPosition, 
-			customTarget = position,
-			duration = duration, 
-			useArc = useArc,
-			onComplete = onComplete 
-		};
-	}
-	
-	public static CardMoveConfig ToGrave(float duration = 0.3f, Action onComplete = null)
-	{
-		return new CardMoveConfig 
-		{ 
-			moveType = CardMoveType.ToGrave, 
-			duration = duration, 
-			useArc = false,
-			destroyAfterMove = true,
-			onComplete = onComplete 
-		};
-	}
-}
 
 public class CombatUXManager : MonoBehaviour, ICombatVisuals
 {
@@ -180,6 +90,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	// Dictionary mapping CardScript to Physical Card (maintain this mapping)
 	private Dictionary<CardScript, GameObject> _cardScriptToPhysicalCache = new();
+	private bool _cardScriptCacheDirty = true;
 
 	// Deck focus runtime state
 	private bool _isDeckFocused = false;
@@ -297,6 +208,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		
 		// Remove from deck
 		physicalCardsInDeck.Remove(physicalCard);
+		InvalidateCardScriptCache();
 
 		// Store to reveal zone
 		physicalCardInRevealZone = physicalCard;
@@ -375,6 +287,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Add to bottom of deck (index 0)
 		physicalCardsInDeck.Insert(0, physicalCard);
+		InvalidateCardScriptCache();
 		Debug.Log("[CombatUXManager] MoveRevealedCardToBottom inserted " + physicalCard.name + " at index 0 deckCount=" + physicalCardsInDeck.Count);
 
 		// If showPos is configured, use universal animation system
@@ -596,12 +509,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		var count = physicalCardsInDeck.Count;
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
-		// index=0 (bottom of physical deck) has largest offset, index=count-1 (top) has smallest offset
-		Vector3 result = new Vector3(
-			basePos.x + xOffset * (count - 1 - index),
-			basePos.y + yOffset * (count - 1 - index),
-			basePos.z - zOffset * index
-		);
+		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
+			index, count, basePos, xOffset, yOffset, zOffset);
 		Debug.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result + " basePos=" + basePos);
 		return result;
 	}
@@ -652,6 +561,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physicalCardsInDeck.Add(physicalCard);
 			}
 		}
+		InvalidateCardScriptCache();
 	}
 
 	/// <summary>
@@ -794,6 +704,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			physicalCardsInDeck.Insert(0, physicalCardInRevealZone);
 			physicalCardInRevealZone = null;
+			InvalidateCardScriptCache();
 		}
 
 		// Only update target positions, do not sort (sorting is handled by SyncPhysicalCardsWithCombinedDeck during shuffle)
@@ -805,10 +716,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	#region Responsibility 2: Maintain CardScript to Physical Card dictionary
 
 	/// <summary>
-	/// Build CardScript -> Physical Card mapping from deck
+	/// Build CardScript -> Physical Card mapping from deck.
+	/// Skips rebuild if cache is still valid.
 	/// </summary>
 	public void BuildCardScriptToPhysicalDictionary()
 	{
+		if (!_cardScriptCacheDirty) return;
+		_cardScriptCacheDirty = false;
 		_cardScriptToPhysicalCache.Clear();
 
 		foreach (var physicalCard in physicalCardsInDeck)
@@ -832,10 +746,23 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
-	/// Get physical card from logical card
+	/// Mark the CardScript -> Physical Card cache as needing a rebuild.
+	/// Call this after any modification to physicalCardsInDeck or physicalCardInRevealZone.
+	/// </summary>
+	private void InvalidateCardScriptCache()
+	{
+		_cardScriptCacheDirty = true;
+	}
+
+	/// <summary>
+	/// Get physical card from logical card.
+	/// Automatically rebuilds cache if it is dirty.
 	/// </summary>
 	public GameObject GetPhysicalCardFromLogicalCard(CardScript logicalCard)
 	{
+		if (_cardScriptCacheDirty)
+			BuildCardScriptToPhysicalDictionary();
+		
 		if (_cardScriptToPhysicalCache.TryGetValue(logicalCard, out var physicalCard))
 			return physicalCard;
 		return null;
@@ -985,6 +912,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				}
 				break;
 		}
+
+		InvalidateCardScriptCache();
 
 		string deckAfter = "";
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
@@ -1574,11 +1503,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Insert into physical card list
 		physicalCardsInDeck.Insert(0, newPhysicalCard);
+		InvalidateCardScriptCache();
 
 		// Set initial position (new card appears at physical card new temp card pos)
 		Vector3 startPos = physicalCardNewTempCardPos.position;
 
-		// Bump the new card's spawn Z so it flies in from *in front of* the entire deck,
+		// Bump the new card's spawn Z so it flies in from *behind* the entire deck,
 		// preventing it from overlapping the existing bottom card during the tween.
 		int countAfterInsert = physicalCardsInDeck.Count;
 		float frontMostZ = physicalCardDeckPos.position.z - zOffset * (countAfterInsert - 1);
@@ -1609,7 +1539,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			UpdateAllPhysicalCardTargets();
 
-			// Apply zBump to the new card's final target so the whole tween stays in front.
+			// Apply zBump to the new card's final target so the whole tween stays behind the deck.
 			Vector3 newCardTarget = CalculatePositionAtIndex(0);
 			if (zOffset >= 0)
 				newCardTarget.z += zBump;
@@ -1637,7 +1567,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				if (cardAtIndex == newPhysicalCard)
 				{
 					// New card: start tween immediately so it enters the deck visually.
-					// Apply same zBump as spawn so the card stays in front of the deck for the entire flight.
+					// Apply same zBump as spawn so the card stays behind the deck for the entire flight.
 					if (zOffset >= 0)
 						targetPos.z += zBump;
 					else
@@ -1697,17 +1627,15 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 			physicalCardsInDeck.Add(newPhysicalCard);
 		}
+		InvalidateCardScriptCache();
 
 		// Set initial position
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
 			var physScript = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
 			var count = physicalCardsInDeck.Count;
-			Vector3 pos = new(
-			    physicalCardDeckPos.position.x + xOffset * (count - 1 - i),
-			    physicalCardDeckPos.position.y + yOffset * (count - 1 - i),
-			    physicalCardDeckPos.position.z - zOffset * i
-			);
+			Vector3 pos = DeckPositionCalculator.CalculatePositionAtIndex(
+				i, count, physicalCardDeckPos.position, xOffset, yOffset, zOffset);
 			physScript.SetPositionImmediate(pos);
 		}
 
