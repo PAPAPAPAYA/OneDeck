@@ -152,6 +152,9 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				if (totalCount == 0) break;
 				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
 				int currentCount = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.Count : 0;
+				var combatUX = visuals as CombatUXManager;
+				int physCount = combatUX != null ? combatUX.physicalCardsInDeck.Count : 0;
+				Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch deckCounts combined=" + currentCount + " physical=" + physCount);
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
@@ -203,6 +206,9 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				if (totalCount == 0) break;
 				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
 				int currentCount = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.Count : 0;
+				var combatUX = visuals as CombatUXManager;
+				int physCount = combatUX != null ? combatUX.physicalCardsInDeck.Count : 0;
+				Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch deckCounts combined=" + currentCount + " physical=" + physCount);
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];

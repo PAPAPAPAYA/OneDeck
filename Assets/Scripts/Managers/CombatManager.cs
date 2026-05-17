@@ -450,6 +450,30 @@ public class CombatManager : MonoBehaviour
 
 		// Safety net for stray legacy animations
 		yield return StartCoroutine(WaitForAttackAnimationsBeforeNextReveal());
+
+		// Safety net: cards added during the logic phase may have had their TargetPosition
+		// updated via UpdateTargetPositionOnly (to avoid pre-moving before bury/stage).
+		// Start any pending tweens now that all recorder animations are done.
+		if (visuals != null)
+		{
+			visuals.UpdateAllPhysicalCardTargets();
+		}
+
+		Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait COMPLETE");
+		if (visuals != null)
+		{
+			string deckList = "";
+			var ux = visuals as CombatUXManager;
+			if (ux != null)
+			{
+				for (int i = 0; i < ux.physicalCardsInDeck.Count; i++)
+				{
+					var card = ux.physicalCardsInDeck[i];
+					deckList += "[" + i + "]" + card.name + " pos=" + card.transform.position + " ";
+				}
+			}
+			Debug.Log("[CombatManager] Final deck state: " + deckList);
+		}
 	}
 
 	private void RevealCards()
