@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: almighty test
+  m_Name: stage goblin_charge_team + bury soldier_skeleton test
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 437c02dc3a189364787d86a0cbfb3583, type: 3}
+  - {fileID: 1808145013887896563, guid: 68f345630a927cb49b8bed9e636ce06c, type: 3}
   - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0

@@ -1574,13 +1574,15 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					// Place it behind all existing cards so later spawns never overlap earlier ones.
 					targetPos.z = backMostZ + zBump;
 					cardPhys.SetTargetPosition(targetPos);
+					print("manual debug new card: card="+cardPhys.cardImRepresenting.name+"; targetPos="+targetPos);
 					cardPhys.SetTargetScale(physicalCardDeckSize);
 					Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
 				}
 				else
 				{
 					// Existing card: update target only, tween will be started later
-					cardPhys.UpdateTargetPositionOnly(targetPos);
+					//cardPhys.UpdateTargetPositionOnly(targetPos);
+					print("manual debug existing card: card="+cardPhys.cardImRepresenting.name+"; targetPos="+targetPos);
 				}
 			}
 		}

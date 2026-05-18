@@ -4,6 +4,7 @@
 	////   skill to generate commit messages
 
 //! anything else
+	// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
 	// add space after annotations
 	//// show card tag ---- deathrattle, linger
@@ -120,9 +121,11 @@
 		//// it's more powerful, maybe should be benefit, not cost
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 //! bug
-	//todo almighty test failed
-		//todo newly added cards will move to deck position, but z position still wrong
-	//todo make ALMIGHTY + reactive cards test
+	//todo almighty test
+		//// newly added cards will move to deck position, but z position still wrong
+	//todo swtich + goblin charge team + hostile soldier skeleton
+		// after goblin charge team animation, should restore peel deck, then show soldier skeleton being buried and staged
+	//// make ALMIGHTY + reactive cards test
 	//// soldier_skeleton will go to staged position before staged
 		// soldier_skeleton won't move if a new card is added to the deck while staging self
 		// SACRIFICIAL_SPIRIT + soldier_skeleton
