@@ -333,7 +333,11 @@ public class StageEffect : EffectScript
 			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
 		}
 		Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
-		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+		// In recorder-driven mode, skip sync here; ApplyAnimationResult handles it during playback.
+		if (RecorderAnimationPlayer.me == null)
+		{
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+		}
 		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
 
 		// Snapshot target indices BEFORE raising events, because reactive effects may modify deck order

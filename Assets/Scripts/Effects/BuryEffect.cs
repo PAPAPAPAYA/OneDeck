@@ -295,7 +295,11 @@ public class BuryEffect : EffectScript
 		}
 		
 		// Sync physical card list order with logical deck before animation
-		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+		// In recorder-driven mode, skip sync here; ApplyAnimationResult handles it during playback.
+		if (RecorderAnimationPlayer.me == null)
+		{
+			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+		}
 
 		// Snapshot target indices BEFORE raising events, because reactive effects (e.g. onMeBuried -> StageSelf)
 		// may modify the deck order, and we need to capture the post-bury indices for the bury animation.
