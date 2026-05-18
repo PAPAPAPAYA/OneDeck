@@ -295,19 +295,9 @@ public class BuryEffect : EffectScript
 		}
 		
 		// Sync physical card list order with logical deck before animation
-		// ------------------------------------------------------------------
-		// CRITICAL: Do NOT remove this guard. In recorder-driven mode
-		// (RecorderAnimationPlayer != null) we must skip Sync here.
-		// Otherwise later chains update physicalCardsInDeck to their final
-		// state BEFORE earlier chain animations play, causing cards to
-		// tween to their final positions prematurely and making subsequent
-		// animations play in-place (e.g. bury appears to animate at bottom).
-		// ApplyAnimationResult handles deck ordering during playback.
-		// ------------------------------------------------------------------
-		if (RecorderAnimationPlayer.me == null)
-		{
-			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
-		}
+		// In recorder-driven mode we skip Sync here. ApplyAnimationResult handles
+		// deck ordering during playback to preserve intermediate animation states.
+		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 
 		// Snapshot target indices BEFORE raising events, because reactive effects (e.g. onMeBuried -> StageSelf)
 		// may modify the deck order, and we need to capture the post-bury indices for the bury animation.
@@ -343,7 +333,7 @@ public class BuryEffect : EffectScript
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
 		string reqInfo = "BuryBatch cards=" + buriedCards.Count + " indices=" + string.Join(",", buriedTargetIndices) + " deckSize=" + _combinedDeck.Count;
 		Debug.Log("[BuryEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
-		if (recorder != null && RecorderAnimationPlayer.me != null)
+		if (recorder != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.MoveToBottomBatch,
@@ -353,16 +343,6 @@ public class BuryEffect : EffectScript
 				duration = 0.5f,
 				useArc = true
 			});
-		}
-		else
-		{
-			// Fallback: old immediate visual path
-			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
-			foreach (var card in buriedCards)
-			{
-				combatManager.visuals.MoveCardToBottom(card, duration: 0.5f, useArc: true, onComplete: null);
-			}
-			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 }

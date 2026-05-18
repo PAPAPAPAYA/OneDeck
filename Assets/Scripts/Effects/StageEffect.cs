@@ -333,19 +333,9 @@ public class StageEffect : EffectScript
 			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
 		}
 		Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
-		// ------------------------------------------------------------------
-		// CRITICAL: Do NOT remove this guard. In recorder-driven mode
-		// (RecorderAnimationPlayer != null) we must skip Sync here.
-		// Otherwise later chains update physicalCardsInDeck to their final
-		// state BEFORE earlier chain animations play, causing cards to
-		// tween to their final positions prematurely and making subsequent
-		// animations play in-place (e.g. bury appears to animate at bottom).
-		// ApplyAnimationResult handles deck ordering during playback.
-		// ------------------------------------------------------------------
-		if (RecorderAnimationPlayer.me == null)
-		{
-			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
-		}
+		// In recorder-driven mode we skip Sync here. ApplyAnimationResult handles
+		// deck ordering during playback to preserve intermediate animation states.
+		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
 
 		// Snapshot target indices BEFORE raising events, because reactive effects may modify deck order
@@ -369,7 +359,7 @@ public class StageEffect : EffectScript
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
 		string reqInfo = "StageBatch cards=" + stagedCards.Count + " indices=" + string.Join(",", stagedTargetIndices) + " deckSize=" + _combinedDeck.Count;
 		Debug.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
-		if (recorder != null && RecorderAnimationPlayer.me != null)
+		if (recorder != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.MoveToTopBatch,
@@ -379,15 +369,6 @@ public class StageEffect : EffectScript
 				duration = 0.5f,
 				useArc = true
 			});
-		}
-		else
-		{
-			// Fallback: old immediate visual path
-			foreach (var card in stagedCards)
-			{
-				combatManager.visuals.MoveCardToTop(card, duration: 0.5f, useArc: true);
-			}
-			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 }

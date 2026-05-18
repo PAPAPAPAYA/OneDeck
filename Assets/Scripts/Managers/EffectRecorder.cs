@@ -9,7 +9,6 @@ namespace DefaultNamespace
 		public int chainID;
 		public string processedEffectID;
 		
-		// WIP
 		public GameObject cardObject;
 		public GameObject effectObject;
 		public bool open = true;

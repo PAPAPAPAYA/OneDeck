@@ -31,30 +31,6 @@ public class CardManipulationEffect : EffectScript
 	}
 
 
-	#region REVIVE
-	public void ReviveRandomMyCardsFromGrave(int amount)
-	{
-		// [Deprecated] Graveyard mechanic removed
-		return;
-	}
-
-	public void ReviveRandomTheirCardsFromGrave(int amount)
-	{
-		// [Deprecated] Graveyard mechanic removed
-		return;
-	}
-	public void ReviveRandomCards(int amount)
-	{
-		// [Deprecated] Graveyard mechanic removed
-		return;
-	}
-
-	public void ReviveSelf() // put self back from grave to deck
-	{
-		// [Deprecated] Graveyard mechanic removed
-		return;
-	}
-	#endregion
 	
 	#region DELAY
 	public void DelayMyCards(int amount)
@@ -127,7 +103,7 @@ public class CardManipulationEffect : EffectScript
 			// Capture animation requests
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-			if (recorder != null && RecorderAnimationPlayer.me != null)
+			if (recorder != null)
 			{
 				foreach (var (card, newIndex) in delayedCards)
 				{
@@ -140,15 +116,6 @@ public class CardManipulationEffect : EffectScript
 						useArc = false
 					});
 				}
-			}
-			else
-			{
-				// Fallback: old immediate visual path
-				foreach (var (card, newIndex) in delayedCards)
-				{
-					combatManager.visuals.MoveCardToIndex(card, newIndex, duration: 0.3f, useArc: false);
-				}
-				combatManager.visuals.UpdateAllPhysicalCardTargets();
 			}
 		}
 	}
@@ -270,7 +237,7 @@ public class CardManipulationEffect : EffectScript
 		// Capture animation requests
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-		if (recorder != null && RecorderAnimationPlayer.me != null)
+		if (recorder != null)
 		{
 			for (int i = 0; i < amount; i++)
 			{
@@ -288,21 +255,6 @@ public class CardManipulationEffect : EffectScript
 				
 				AppendLog($"// [<color={myColor}>{myCard.name}</color>]摧毁了随从[<color={minionColor}>{minionScript.name}</color>]");
 			}
-		}
-		else
-		{
-			// Fallback: old immediate visual path
-			for (int i = 0; i < amount; i++)
-			{
-				var minion = minions[i];
-				var minionScript = minion.GetComponent<CardScript>();
-				string minionColor = GetCardColorTag(minion);
-				
-				combatManager.visuals.DestroyCardWithAnimation(minion);
-				
-				AppendLog($"// [<color={myColor}>{myCard.name}</color>]摧毁了随从[<color={minionColor}>{minionScript.name}</color>]");
-			}
-			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 	#endregion

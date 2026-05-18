@@ -320,7 +320,7 @@ public class ExileEffect : EffectScript
 		// Capture animation requests
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-		if (recorder != null && RecorderAnimationPlayer.me != null && exiledCards.Count > 0)
+		if (recorder != null && exiledCards.Count > 0)
 		{
 			for (int i = 0; i < exiledCards.Count; i++)
 			{
@@ -332,15 +332,6 @@ public class ExileEffect : EffectScript
 					onComplete = isLast ? (Action)(() => combatManager.visuals.UpdateAllPhysicalCardTargets()) : null
 				});
 			}
-		}
-		else
-		{
-			// Fallback: old immediate visual path
-			foreach (var card in exiledCards)
-			{
-				combatManager.visuals.DestroyCardWithAnimation(card);
-			}
-			combatManager.visuals.UpdateAllPhysicalCardTargets();
 		}
 	}
 }

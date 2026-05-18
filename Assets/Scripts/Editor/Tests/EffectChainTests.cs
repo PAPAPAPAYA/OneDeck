@@ -177,36 +177,6 @@ public class EffectChainTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void FallbackPath_OldVisualCalledWhenPlayerNull()
-	{
-		// Destroy RecorderAnimationPlayer to force fallback path
-		if (RecorderAnimationPlayer.me != null)
-		{
-			var rapGo = RecorderAnimationPlayer.me.gameObject;
-			RecorderAnimationPlayer.me = null;
-			UnityEngine.Object.DestroyImmediate(rapGo);
-		}
-
-		var card = CreateCard(true, "TestCard");
-		var hpa = CreateEffect<HPAlterEffect>(card);
-		hpa.isStatusEffectDamage = false;
-		hpa.baseDmg = CreateScriptableObject<IntSO>();
-		hpa.baseDmg.value = 5;
-
-		EffectChainManager.MakeANewEffectRecorder(card, hpa.gameObject);
-
-		bool damageEventRaised = false;
-		CombatManager.onDamageDealt += (attacker, isEnemy, onHit, onComplete) =>
-		{
-			damageEventRaised = true;
-		};
-
-		hpa.DecreaseTheirHp();
-
-		Assert.IsTrue(damageEventRaised, "Old visual path should raise onDamageDealt when RecorderAnimationPlayer.me is null");
-	}
-
-	[Test]
 	public void CloseOpenedChain_DoesNotTriggerPlayback()
 	{
 		var card = CreateCard(true, "TestCard");

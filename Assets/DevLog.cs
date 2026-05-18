@@ -2,9 +2,10 @@
 
 //! tools
 	////   skill to generate commit messages
+	//  AnimationStateTracker checker  (low priority)
 
 //! anything else
-	// add to agents.md a reminder of smaller index = further away from camera = smaller z position
+	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
 	// add space after annotations
 	//// show card tag ---- deathrattle, linger
@@ -106,7 +107,7 @@
 	// better card move animatin
 		// change z dynamically
 	// motion design
-		// shake revealed card if cost not met / can't activate
+		//todo shake revealed card if cost not met / can't activate
 		//// enlarge card when event triggered
 			//// make status effect related effects to go through animation request system, so that they have emphasize animation
 		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
@@ -118,7 +119,6 @@
 				//// headless unit test update
 				//// ### Phase 5: Testing & Edge Cases
 		//// D:\Unity Projects\OneDeck\plans\card-animation-serialization-plan.md
-	// AnimationStateTracker checker  (low priority)
 //! design change
 	//// should we change [bury 1 friendly] to [bury next 2]?
 		//// it's more powerful, maybe should be benefit, not cost
@@ -144,9 +144,10 @@
 			//// exile bug
 	//// counter's translation incorrect
 	//// slime
-	// 1 effect recorder 1 effect (1 game event listener 1 effect)
+	//// 1 effect recorder 1 effect (1 game event listener 1 effect)
+		//// can't do, cause effects with cost need to have cost effects
 		//// list ready, manual check if type A would be a problem
-		//todo check all type b
+		//// check all type b
 	//// need to check cards that has 1 effect with cost and 1 effect without cost
 	//// stage
 		//// fixing

@@ -26,8 +26,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float zOffset;
 
 	[Header("ANIMATION SETTINGS")]
-	[Tooltip("Whether to enable Stage/Bury card animation")]
-	public bool enableStageBuryAnimation = true;
 	[Tooltip("Whether shuffle animation uses random staggered timing")]
 	public bool useStaggeredShuffleAnimation = true;
 	[Tooltip("Maximum random delay for shuffle animation (seconds)")]
@@ -77,8 +75,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float revealCardExitDistance = 6f;
 	public float secondaryLiftHeight = 0.4f;
 	public float secondaryLiftDuration = 0.25f;
-	[Tooltip("Enable LiftCardInDeck secondary animation")]
-	public bool enableLiftCardInDeck = false;
 	[Tooltip("Enable PeelDeck focus animation during attack")]
 	public bool enablePeelDeck = true;
 
@@ -104,27 +100,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (combatManager == null)
 			combatManager = CombatManager.Me;
 		
-		if (combatManager != null)
-		{
-			combatManager.onDamageDealt += HandleDamageDealt;
-		}
-	}
-	
-	private void OnDisable()
-	{
-		if (combatManager != null)
-		{
-			combatManager.onDamageDealt -= HandleDamageDealt;
-		}
-	}
-	
-	/// <summary>
-	/// Handle onDamageDealt event from CombatManager.
-	/// </summary>
-	private void HandleDamageDealt(GameObject attackerCard, bool isAttackingEnemy, Action onHit, Action onComplete)
-	{
-
-		PlayAttackAnimation(attackerCard, isAttackingEnemy, onHit, onComplete);
 	}
 
 	#region Responsibility 1: Update physical card list based on logical zone
@@ -135,21 +110,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	public void SyncPhysicalCardsWithCombinedDeck()
 	{
-		string caller = "unknown";
-		try
-		{
-			var stack = new System.Diagnostics.StackTrace(2, false);
-			if (stack.FrameCount > 0)
-			{
-				var method = stack.GetFrame(0).GetMethod();
-				caller = method.DeclaringType.Name + "." + method.Name;
-			}
-		}
-		catch { }
-
 		if (physicalCardsInDeck.Count == 0 && physicalCardInRevealZone == null)
 		{
-			Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck SKIPPED (empty) caller=" + caller);
+			Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck SKIPPED (empty)");
 			return;
 		}
 
@@ -158,7 +121,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckBefore += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck START caller=" + caller + " deckBefore=" + deckBefore);
+		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck START deckBefore=" + deckBefore);
 
 		// Rebuild dictionary (includes cards from deck and reveal zone)
 		BuildCardScriptToPhysicalDictionary();
@@ -466,12 +429,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 
 			config.onComplete?.Invoke();
-			// In recorder mode, RecorderAnimationPlayer handles deck sync after each request
-			// to preserve intermediate animation states. Only auto-sync in old immediate path.
-			if (RecorderAnimationPlayer.me == null)
-			{
-				UpdateAllPhysicalCardTargets();
-			}
 		});
 
 		moveSequence.Play();
@@ -782,18 +739,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			return;
 		}
-		string caller = "unknown";
-		try
-		{
-			var stack = new System.Diagnostics.StackTrace(2, false);
-			if (stack.FrameCount > 0)
-			{
-				var method = stack.GetFrame(0).GetMethod();
-				caller = method.DeclaringType.Name + "." + method.Name;
-			}
-		}
-		catch { }
-		Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets called by " + caller + ". deckCount=" + physicalCardsInDeck.Count);
+		Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets deckCount=" + physicalCardsInDeck.Count);
 		// Update card positions in deck
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
@@ -1537,53 +1483,25 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 		Debug.Log("[CombatUXManager] AddPhysicalCardToDeck logical=" + logicalCard.name + " deckCountAfterInsert=" + physicalCardsInDeck.Count + " insertedAtIndex=0 deck=" + deckAfterInsert);
 
-		// When RecorderAnimationPlayer is active, do NOT trigger a full deck reposition here.
+		// Do NOT call UpdateAllPhysicalCardTargets here to avoid pre-moving
+		// existing cards before bury/stage animations (distance-zero bug).
 		// The new card gets an immediate spawn position above; its final deck position
 		// will be handled during the animation phase by ApplyAnimationResult + UpdateAllPhysicalCardTargets.
-		// Calling UpdateAllPhysicalCardTargets in the logic phase would pre-move all existing cards,
-		// causing subsequent bury/stage animations to tween from the already-moved state (distance zero).
-		if (RecorderAnimationPlayer.me == null)
+		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
-			UpdateAllPhysicalCardTargets();
+			var cardAtIndex = physicalCardsInDeck[i];
+			var cardPhys = cardAtIndex.GetComponent<CardPhysObjScript>();
+			if (cardPhys == null) continue;
 
-			// Place the new card behind all existing cards during its flight.
-			Vector3 newCardTarget = CalculatePositionAtIndex(0);
-			newCardTarget.z = backMostZ + zBump;
-			physScript.SetTargetPosition(newCardTarget);
-		}
-		else
-		{
-			// Recorder mode: do NOT call UpdateAllPhysicalCardTargets here to avoid pre-moving
-			// existing cards before bury/stage animations (distance-zero bug).
-			// Instead:
-			// 1. New card starts tween from spawn pos to its deck position.
-			// 2. Existing cards only get their TargetPosition updated (no tween started),
-			//    so their z-offset stays correct when deck count changes.
-			// 3. After all recorders finish, PlayRecorderAnimationsAndWait calls
-			//    UpdateAllPhysicalCardTargets as a safety net to start any pending tweens.
-			for (int i = 0; i < physicalCardsInDeck.Count; i++)
+			Vector3 targetPos = CalculatePositionAtIndex(i);
+			if (cardAtIndex == newPhysicalCard)
 			{
-				var cardAtIndex = physicalCardsInDeck[i];
-				var cardPhys = cardAtIndex.GetComponent<CardPhysObjScript>();
-				if (cardPhys == null) continue;
-
-				Vector3 targetPos = CalculatePositionAtIndex(i);
-				if (cardAtIndex == newPhysicalCard)
-				{
-					// New card: start tween immediately so it enters the deck visually.
-					// Place it behind all existing cards so later spawns never overlap earlier ones.
-					targetPos.z = backMostZ + zBump;
-					cardPhys.SetTargetPosition(targetPos);
-					print("manual debug new card: card="+cardPhys.cardImRepresenting.name+"; targetPos="+targetPos);
-					cardPhys.SetTargetScale(physicalCardDeckSize);
-					Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
-				}
-				else
-				{
-					// Existing card: update target only, tween will be started later
-					//cardPhys.UpdateTargetPositionOnly(targetPos);
-					print("manual debug existing card: card="+cardPhys.cardImRepresenting.name+"; targetPos="+targetPos);
-				}
+				// New card: start tween immediately so it enters the deck visually.
+				// Place it behind all existing cards so later spawns never overlap earlier ones.
+				targetPos.z = backMostZ + zBump;
+				cardPhys.SetTargetPosition(targetPos);
+				cardPhys.SetTargetScale(physicalCardDeckSize);
+				Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
 			}
 		}
 	}

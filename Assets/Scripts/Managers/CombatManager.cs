@@ -60,20 +60,6 @@ public class CombatManager : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Event raised when damage is dealt and attack animation should play.
-	/// Parameters: attackerCard, isAttackingEnemy, onHit, onComplete
-	/// </summary>
-	public event Action<GameObject, bool, Action, Action> onDamageDealt;
-
-	/// <summary>
-	/// Raise onDamageDealt event. Called by HPAlterEffect to request attack animation.
-	/// </summary>
-	public void RaiseDamageDealtEvent(GameObject attackerCard, bool isAttackingEnemy, Action onHit, Action onComplete)
-	{
-		onDamageDealt?.Invoke(attackerCard, isAttackingEnemy, onHit, onComplete);
-	}
-
 	#endregion
 
 	[Header("PHASE AND STATE REFS")]
@@ -391,12 +377,12 @@ public class CombatManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Wait for legacy animations to idle, close the effect chain, then play captured recorder animations.
+	/// Wait for active animation batches to idle, close the effect chain, then play captured recorder animations.
 	/// </summary>
 	private System.Collections.IEnumerator PlayRecorderAnimationsAndWait()
 	{
 		isPlayingEffectAnimations = true;
-		// 1. Safety wait for legacy animations
+		// 1. Safety wait for active animation batches
 		while (AnimationStateTracker.me != null && AnimationStateTracker.me.HasActiveBatch)
 		{
 			yield return null;
@@ -448,12 +434,10 @@ public class CombatManager : MonoBehaviour
 			isPlayingEffectAnimations = false;
 		}
 
-		// Safety net for stray legacy animations
+		// Wait for attack animations to finish before next reveal
 		yield return StartCoroutine(WaitForAttackAnimationsBeforeNextReveal());
 
-		// Safety net: cards added during the logic phase may have had their TargetPosition
-		// updated via UpdateTargetPositionOnly (to avoid pre-moving before bury/stage).
-		// Start any pending tweens now that all recorder animations are done.
+		// Ensure all physical cards tween to their final positions after recorder animations complete.
 		if (visuals != null)
 		{
 			visuals.UpdateAllPhysicalCardTargets();

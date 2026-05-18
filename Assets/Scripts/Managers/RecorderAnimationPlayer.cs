@@ -182,30 +182,19 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
-					if (hasSnapshot)
+					// Bury (MoveToBottomBatch) sends cards to the absolute bottom of the physical deck.
+					// ApplyAnimationResult inserts them at index 0 in forward order,
+					// so targetCards[i] ends up at (totalCount - 1 - i).
+					// We intentionally do NOT use snapshotDeckSize offset here,
+					// because Bury/Stage are absolute-position operations, not relative shifts.
+					int correctedIndex = totalCount - 1 - i;
+					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
+					Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex for " + card.name + " snapshotIndex=" + request.targetIndices[i] + " snapshotDeckSize=" + request.snapshotDeckSize + " currentCount=" + currentCount + " correctedIndex=" + correctedIndex);
+					visuals.MoveCardToIndex(card, correctedIndex, request.duration, request.useArc, () =>
 					{
-						// Bury (MoveToBottomBatch) sends cards to the absolute bottom of the physical deck.
-						// ApplyAnimationResult inserts them at index 0 in forward order,
-						// so targetCards[i] ends up at (totalCount - 1 - i).
-						// We intentionally do NOT use snapshotDeckSize offset here,
-						// because Bury/Stage are absolute-position operations, not relative shifts.
-						int correctedIndex = totalCount - 1 - i;
-						correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
-						Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex for " + card.name + " snapshotIndex=" + request.targetIndices[i] + " snapshotDeckSize=" + request.snapshotDeckSize + " currentCount=" + currentCount + " correctedIndex=" + correctedIndex);
-						visuals.MoveCardToIndex(card, correctedIndex, request.duration, request.useArc, () =>
-						{
-							completedCount++;
-							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
-						});
-					}
-					else
-					{
-						visuals.MoveCardToBottom(card, request.duration, request.useArc, () =>
-						{
-							completedCount++;
-							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
-						});
-					}
+						completedCount++;
+						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
+					});
 				}
 				yield return new WaitUntil(() => completedCount >= totalCount);
 				Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch DONE");
@@ -236,31 +225,19 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
-					if (hasSnapshot)
+					// Stage (MoveToTopBatch) sends cards to the absolute top of the physical deck.
+					// ApplyAnimationResult appends them in forward order,
+					// so targetCards[i] ends up at (currentCount - totalCount + i).
+					// We intentionally do NOT use snapshotDeckSize offset here,
+					// because Bury/Stage are absolute-position operations, not relative shifts.
+					int correctedIndex = currentCount - totalCount + i;
+					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
+					Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex for " + card.name + " snapshotIndex=" + request.targetIndices[i] + " snapshotDeckSize=" + request.snapshotDeckSize + " currentCount=" + currentCount + " correctedIndex=" + correctedIndex);
+					visuals.MoveCardToIndex(card, correctedIndex, request.duration, request.useArc, () =>
 					{
-						// Stage (MoveToTopBatch) sends cards to the absolute top of the physical deck.
-						// ApplyAnimationResult appends them in forward order,
-						// so targetCards[i] ends up at (currentCount - totalCount + i).
-						// We intentionally do NOT use snapshotDeckSize offset here,
-						// because Bury/Stage are absolute-position operations, not relative shifts.
-						int correctedIndex = currentCount - totalCount + i;
-						correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
-						Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex for " + card.name + " snapshotIndex=" + request.targetIndices[i] + " snapshotDeckSize=" + request.snapshotDeckSize + " currentCount=" + currentCount + " correctedIndex=" + correctedIndex);
-						visuals.MoveCardToIndex(card, correctedIndex, request.duration, request.useArc, () =>
-						{
-							completedCount++;
-							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
-						});
-					}
-					else
-					{
-						Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToTop for " + card.name + " revealZone=" + (CombatManager.Me != null && CombatManager.Me.revealZone != null ? CombatManager.Me.revealZone.name : "null"));
-						visuals.MoveCardToTop(card, request.duration, request.useArc, () =>
-						{
-							completedCount++;
-							if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
-						});
-					}
+						completedCount++;
+						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
+					});
 				}
 				yield return new WaitUntil(() => completedCount >= totalCount);
 				Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch DONE");

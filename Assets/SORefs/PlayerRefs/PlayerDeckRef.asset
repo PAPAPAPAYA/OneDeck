@@ -16,6 +16,6 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 6df20aaf8a054834fbe68a5dd7e5af4d, type: 3}
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
-  defaultDeck: {fileID: 11400000, guid: f65d5b113dedc9b4ba1183581ebc7da4, type: 2}
+  defaultDeck: {fileID: 11400000, guid: 2eb652103d4da664eb50dfd26bec713b, type: 2}
   resetOnStart: 1
   description: player's deck, data only no instances

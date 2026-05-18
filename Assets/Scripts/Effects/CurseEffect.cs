@@ -283,7 +283,7 @@ namespace DefaultNamespace.Effects
 			// Capture projectile animation into AnimationRequest
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-			if (recorder != null && RecorderAnimationPlayer.me != null)
+			if (recorder != null)
 			{
 				recorder.animationRequests.Add(new AnimationRequest
 				{
@@ -291,17 +291,6 @@ namespace DefaultNamespace.Effects
 					attackerCard = myCard,
 					targetCard = targetCard.gameObject
 				});
-			}
-			else
-			{
-				// Fallback: old immediate visual path
-				var targetCards = new List<CardScript> { targetCard };
-				combatManager.visuals?.PlayMultiStatusEffectProjectile(
-					myCard,
-					targetCards,
-					onEachComplete: null,
-					onAllComplete: null
-				);
 			}
 		}
 

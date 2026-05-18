@@ -465,31 +465,6 @@ public void ReleaseDeckFocus()
 	}
 
 	/// <summary>
-	/// Bounce-back animation (move back partway from overshoot), restore size simultaneously
-	/// </summary>
-	private IEnumerator BounceBackAnimation(GameObject physicalCard, Vector3 bounceBackPos, Vector3 originalScale)
-	{
-		bool completed = false;
-		
-		// Create sequence: bounce back position + restore scale (rotation kept, will rotate back at reveal)
-		Sequence bounceSequence = DOTween.Sequence();
-		
-		bounceSequence.Append(
-			physicalCard.transform.DOMove(bounceBackPos, bounceBackDuration)
-				.SetEase(Ease.OutQuad)
-		);
-		
-		bounceSequence.Join(
-			physicalCard.transform.DOScale(originalScale, bounceBackDuration)
-				.SetEase(Ease.OutQuad)
-		);
-		
-		bounceSequence.OnComplete(() => completed = true);
-
-		yield return new WaitUntil(() => completed);
-	}
-
-	/// <summary>
 	/// Return from overshoot position to reveal position animation, restore size and zero rotation simultaneously
 	/// </summary>
 	private IEnumerator ReturnToRevealFromOvershootAnimation(GameObject physicalCard, Vector3 revealPos, Vector3 revealSize, Vector3 originalScale)
@@ -558,14 +533,6 @@ public void ReleaseDeckFocus()
 		{
 			_combatManager.visuals.UnblockInput(this);
 		}
-	}
-
-	/// <summary>
-	/// Check if any animation is currently playing
-	/// </summary>
-	private bool IsAnyAnimationPlaying()
-	{
-		return isPlayingAttackAnimation || _attackQueue.Count > 0;
 	}
 
 	/// <summary>

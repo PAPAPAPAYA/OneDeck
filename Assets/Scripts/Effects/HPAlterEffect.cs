@@ -113,7 +113,7 @@ public class HPAlterEffect : EffectScript
 		// Capture animation request
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-		if (recorder != null && RecorderAnimationPlayer.me != null)
+		if (recorder != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.Attack,
@@ -122,14 +122,6 @@ public class HPAlterEffect : EffectScript
 				onHit = null, // damage already resolved
 				onComplete = null
 			});
-		}
-		else
-		{
-			// Fallback: old immediate visual path
-			// Damage already resolved in logic phase above, so onHit is null
-			combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy,
-				onHit: null,
-				onComplete: null);
 		}
 		
 		dmgAmountAlter = 0;
@@ -396,7 +388,7 @@ public class HPAlterEffect : EffectScript
 		// Capture animation request
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-		if (recorder != null && RecorderAnimationPlayer.me != null)
+		if (recorder != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.Attack,
@@ -405,14 +397,6 @@ public class HPAlterEffect : EffectScript
 				onHit = null, // damage already resolved
 				onComplete = null
 			});
-		}
-		else
-		{
-			// Fallback: old immediate visual path
-			// Damage already resolved in logic phase above, so onHit is null
-			combatManager.RaiseDamageDealtEvent(myCard, isAttackingEnemy,
-				onHit: null,
-				onComplete: null);
 		}
 		
 		dmgAmountAlter = 0;

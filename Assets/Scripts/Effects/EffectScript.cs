@@ -102,8 +102,7 @@ public class EffectScript : MonoBehaviour
 		// Capture status effect change into AnimationRequest when recorder system is available
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-		bool captured = false;
-		if (recorder != null && RecorderAnimationPlayer.me != null)
+		if (recorder != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest
 			{
@@ -114,18 +113,8 @@ public class EffectScript : MonoBehaviour
 				statusEffectParticlePrefab = particlePrefab,
 				statusEffectParticleYOffset = particleYOffset
 			});
-			captured = true;
 		}
-		Debug.Log("[EffectScript] ApplyStatusEffectCore target=" + targetCardScript.name + " effect=" + effect + " amount=" + amount + " recorder=" + (recorderGo != null ? recorderGo.name : "null") + " captured=" + captured);
-		if (!captured)
-		{
-			// Fallback: old immediate visual path
-			if (particlePrefab != null)
-			{
-				CombatManager.Me?.visuals?.PlayStatusEffectParticle(targetCardScript, particlePrefab, particleYOffset, amount);
-			}
-			TriggerTintForStatusEffect(targetCardScript, effect);
-		}
+		Debug.Log("[EffectScript] ApplyStatusEffectCore target=" + targetCardScript.name + " effect=" + effect + " amount=" + amount + " recorder=" + (recorderGo != null ? recorderGo.name : "null"));
 
 		if (!suppressLog)
 		{
@@ -176,7 +165,6 @@ public class EffectScript : MonoBehaviour
 
 	/// <summary>
 	/// Capture a status effect change (give or consume) into the current EffectRecorder as an AnimationRequest.
-	/// Falls back to immediate tint refresh if the recorder system is unavailable.
 	/// </summary>
 	protected void CaptureStatusEffectChangeAnimationRequest(GameObject targetCard, EnumStorage.StatusEffect effect, int amount)
 	{
