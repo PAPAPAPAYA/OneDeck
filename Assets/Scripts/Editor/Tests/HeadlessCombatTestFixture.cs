@@ -376,7 +376,6 @@ public abstract class HeadlessCombatTestFixture
 
 		// Initialize UnityEvents (normally populated via Inspector)
 		cnt.checkCostEvent = new UnityEngine.Events.UnityEvent();
-		cnt.preEffectEvent = new UnityEngine.Events.UnityEvent();
 		cnt.effectEvent = new UnityEngine.Events.UnityEvent();
 
 		containerObj.SetActive(true);

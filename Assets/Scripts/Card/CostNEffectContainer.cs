@@ -34,8 +34,6 @@ public class CostNEffectContainer : MonoBehaviour
 
 	[Header("Cost and Effect Events")]
 	public UnityEvent checkCostEvent;
-	[Tooltip("Execute after cost check but before effect (e.g., Delay Cost)")]
-	public UnityEvent preEffectEvent;
 	[Tooltip("assign effect component's function")]
 	public UnityEvent effectEvent;
 
@@ -43,7 +41,7 @@ public class CostNEffectContainer : MonoBehaviour
 	private readonly List<string> _costFailMessages = new();
 
 	/// <summary>
-	/// Used externally (e.g., MinionCostEffect in preEffectEvent) to set cost check failure
+	/// Used externally to set cost check failure
 	/// </summary>
 	public void SetCostNotMet(string failMessage)
 	{
@@ -66,17 +64,6 @@ public class CostNEffectContainer : MonoBehaviour
 		_costNotMetFlag = 0;
 		_costFailMessages.Clear();
 		checkCostEvent?.Invoke();
-
-		if (_costNotMetFlag > 0)
-		{
-			var result = new CostCheckResult(false, new List<string>(_costFailMessages));
-			CostResultPresenter.me?.PresentCostFailure(result, _myCardScript, this);
-			_costFailMessages.Clear();
-			return result;
-		}
-
-		// execute pre-effect (e.g., Delay Cost)
-		preEffectEvent?.Invoke();
 
 		if (_costNotMetFlag > 0)
 		{

@@ -19,7 +19,7 @@
 	//// change cardScript to use tab to indent
 
 //! refactor
-	//todo clean up, since new animation system is complete
+	//// clean up, since new animation system is complete
 	//todo clean up pre effect event
 	//todo clean up or rather add a switch to toggle debug messages
 	//// simplify and split up CombatUXManager

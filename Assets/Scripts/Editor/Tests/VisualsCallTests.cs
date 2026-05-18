@@ -49,61 +49,6 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void MinionCostEffect_CallsDestroyCardAndSyncDeck()
-	{
-		var card = CreateCard(true, "CostCard");
-		card.GetComponent<CardScript>().minionCostCount = 1;
-		card.GetComponent<CardScript>().minionCostOwner = EnumStorage.TargetType.Me;
-
-		var minion = CreateMinion(true, "Minion");
-		CombatManager.combinedDeckZone.Add(minion);
-
-		var costEffect = CreateEffect<MinionCostEffect>(card);
-		costEffect.ExecuteMinionCost();
-
-		Assert.AreEqual(1, NullVisuals.destroyCardCalls, "MinionCostEffect should call DestroyCardWithAnimation");
-		Assert.AreEqual(1, NullVisuals.syncDeckCalls, "MinionCostEffect should call SyncPhysicalCardsWithCombinedDeck");
-		Assert.AreEqual(1, NullVisuals.updateTargetCalls, "MinionCostEffect should call UpdateAllPhysicalCardTargets");
-	}
-
-	[Test]
-	public void ExileCostEffect_CallsDestroyCardAndSyncDeck()
-	{
-		var card = CreateCard(true, "CostCard");
-		card.GetComponent<CardScript>().exileCostCount = 1;
-		card.GetComponent<CardScript>().exileCostOwner = EnumStorage.TargetType.Me;
-
-		var target = CreateCard(true, "TargetCard");
-		CombatManager.combinedDeckZone.Add(target);
-
-		var costEffect = CreateEffect<ExileCostEffect>(card);
-		costEffect.ExecuteExileCost();
-
-		Assert.AreEqual(1, NullVisuals.destroyCardCalls, "ExileCostEffect should call DestroyCardWithAnimation");
-		Assert.AreEqual(1, NullVisuals.syncDeckCalls, "ExileCostEffect should call SyncPhysicalCardsWithCombinedDeck");
-		Assert.AreEqual(1, NullVisuals.updateTargetCalls, "ExileCostEffect should call UpdateAllPhysicalCardTargets");
-	}
-
-	[Test]
-	public void ExileCostEffect_WithTypeID_FilterWorks()
-	{
-		var card = CreateCard(true, "CostCard");
-		card.GetComponent<CardScript>().exileCostCount = 1;
-		card.GetComponent<CardScript>().exileCostOwner = EnumStorage.TargetType.Me;
-		card.GetComponent<CardScript>().exileCostCardTypeID = "FLY";
-
-		var fly = CreateCard(true, "FlyCard", "FLY");
-		var other = CreateCard(true, "OtherCard", "OTHER");
-		CombatManager.combinedDeckZone.Add(fly);
-		CombatManager.combinedDeckZone.Add(other);
-
-		var costEffect = CreateEffect<ExileCostEffect>(card);
-		costEffect.ExecuteExileCost();
-
-		Assert.AreEqual(1, NullVisuals.destroyCardCalls, "ExileCostEffect should exile exactly 1 matching card");
-	}
-
-	[Test]
 	public void BuryEffect_CallsSyncDeckAndUpdateTargets()
 	{
 		var card = CreateCard(true, "BuryCard");

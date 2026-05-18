@@ -51,42 +51,7 @@ public class CardScript : MonoBehaviour
 	[Header("Tags")]
 	public List<EnumStorage.Tag> myTags;
 
-	[Header("Delay Cost")]
-	[Tooltip("When activated, delay N own cards by 1 position")]
-	[HideInInspector]
-	public int delayCost;
 
-	[Header("Bury Cost")]
-	[Tooltip("When activated, bury N own cards to the bottom")]
-	[HideInInspector]
-	public int buryCost;
-
-	[Header("Expose Cost")]
-	[Tooltip("When activated, expose N enemy cards to the top")]
-	[HideInInspector]
-	public int exposeCost;
-
-	[Header("Minion Cost")]
-	[Tooltip("Number of minion cards required to activate")]
-	[HideInInspector]
-	public int minionCostCount;
-	[Tooltip("Minion card type ID to consume (e.g., 'fly'), empty string means no type restriction")]
-	[HideInInspector]
-	public string minionCostCardTypeID;
-	[Tooltip("Owner of consumed minion cards: Me=ally, Them=enemy, Random=random")]
-	[HideInInspector]
-	public EnumStorage.TargetType minionCostOwner = EnumStorage.TargetType.Me;
-
-	[Header("Exile Cost")]
-	[Tooltip("Number of cards required to exile as cost")]
-	[HideInInspector]
-	public int exileCostCount;
-	[Tooltip("Card type ID to exile as cost (e.g., 'fly'), empty string means no type restriction")]
-	[HideInInspector]
-	public string exileCostCardTypeID;
-	[Tooltip("Owner of exiled cards: Me=ally, Them=enemy, Random=random")]
-	[HideInInspector]
-	public EnumStorage.TargetType exileCostOwner = EnumStorage.TargetType.Me;
 
 	private void OnEnable()
 	{
