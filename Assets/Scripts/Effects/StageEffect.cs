@@ -333,7 +333,15 @@ public class StageEffect : EffectScript
 			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
 		}
 		Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
-		// In recorder-driven mode, skip sync here; ApplyAnimationResult handles it during playback.
+		// ------------------------------------------------------------------
+		// CRITICAL: Do NOT remove this guard. In recorder-driven mode
+		// (RecorderAnimationPlayer != null) we must skip Sync here.
+		// Otherwise later chains update physicalCardsInDeck to their final
+		// state BEFORE earlier chain animations play, causing cards to
+		// tween to their final positions prematurely and making subsequent
+		// animations play in-place (e.g. bury appears to animate at bottom).
+		// ApplyAnimationResult handles deck ordering during playback.
+		// ------------------------------------------------------------------
 		if (RecorderAnimationPlayer.me == null)
 		{
 			combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
