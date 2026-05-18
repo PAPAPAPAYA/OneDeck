@@ -161,7 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8da5b23dfa04f2bb3a8add21531e513, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AddTempCard
-  cardCount: 4
+  cardCount: 2
   curseCardTypeID: {fileID: 0}
 --- !u!1 &8718476725744197808
 GameObject:
