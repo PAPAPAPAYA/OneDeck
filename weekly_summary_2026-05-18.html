@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 工作周报 - 2026.05.13 ~ 05.18</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+			background: #0d1117;
+			color: #c9d1d9;
+			line-height: 1.6;
+			padding: 2rem;
+		}
+		.container {
+			max-width: 1100px;
+			margin: 0 auto;
+		}
+		header {
+			text-align: center;
+			margin-bottom: 2.5rem;
+			padding-bottom: 1.5rem;
+			border-bottom: 1px solid #30363d;
+		}
+		header h1 {
+			font-size: 2rem;
+			color: #58a6ff;
+			margin-bottom: 0.5rem;
+		}
+		header .subtitle {
+			color: #8b949e;
+			font-size: 0.95rem;
+		}
+		.stats-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+			gap: 1rem;
+			margin-bottom: 2rem;
+		}
+		.stat-card {
+			background: #161b22;
+			border: 1px solid #30363d;
+			border-radius: 12px;
+			padding: 1.25rem;
+			text-align: center;
+			transition: transform 0.2s;
+		}
+		.stat-card:hover {
+			transform: translateY(-3px);
+			border-color: #58a6ff;
+		}
+		.stat-card .number {
+			font-size: 2rem;
+			font-weight: bold;
+			color: #58a6ff;
+		}
+		.stat-card .label {
+			font-size: 0.85rem;
+			color: #8b949e;
+			margin-top: 0.25rem;
+		}
+		.section {
+			background: #161b22;
+			border: 1px solid #30363d;
+			border-radius: 12px;
+			padding: 1.5rem;
+			margin-bottom: 1.5rem;
+		}
+		.section h2 {
+			font-size: 1.2rem;
+			color: #f0f6fc;
+			margin-bottom: 1rem;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.section h2 .icon {
+			font-size: 1.1rem;
+		}
+		.timeline {
+			position: relative;
+			padding-left: 1.5rem;
+		}
+		.timeline::before {
+			content: '';
+			position: absolute;
+			left: 6px;
+			top: 0;
+			bottom: 0;
+			width: 2px;
+			background: #30363d;
+		}
+		.timeline-item {
+			position: relative;
+			margin-bottom: 1.5rem;
+			padding-left: 1rem;
+		}
+		.timeline-item::before {
+			content: '';
+			position: absolute;
+			left: -1.25rem;
+			top: 0.5rem;
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background: #238636;
+			border: 2px solid #0d1117;
+		}
+		.timeline-item.today::before {
+			background: #58a6ff;
+			box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.2);
+		}
+		.timeline-item .date {
+			font-size: 0.8rem;
+			color: #8b949e;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			margin-bottom: 0.25rem;
+		}
+		.timeline-item .commits {
+			list-style: none;
+		}
+		.timeline-item .commits li {
+			font-size: 0.9rem;
+			padding: 0.3rem 0;
+			color: #c9d1d9;
+		}
+		.timeline-item .commits li::before {
+			content: '• ';
+			color: #58a6ff;
+		}
+		.tag {
+			display: inline-block;
+			padding: 0.15rem 0.5rem;
+			border-radius: 20px;
+			font-size: 0.75rem;
+			font-weight: 600;
+			margin-right: 0.3rem;
+		}
+		.tag-fix {
+			background: #da3633;
+			color: #fff;
+		}
+		.tag-feature {
+			background: #238636;
+			color: #fff;
+		}
+		.tag-refactor {
+			background: #8957e5;
+			color: #fff;
+		}
+		.tag-wip {
+			background: #d29922;
+			color: #fff;
+		}
+		.file-list {
+			columns: 2;
+			column-gap: 1.5rem;
+		}
+		.file-list li {
+			font-size: 0.85rem;
+			color: #8b949e;
+			padding: 0.15rem 0;
+			break-inside: avoid;
+		}
+		.file-list li .dir {
+			color: #58a6ff;
+		}
+		.file-list li .file {
+			color: #c9d1d9;
+		}
+		.highlight-box {
+			background: rgba(88, 166, 255, 0.1);
+			border-left: 4px solid #58a6ff;
+			padding: 1rem 1.25rem;
+			border-radius: 0 8px 8px 0;
+			margin-bottom: 1rem;
+		}
+		.highlight-box h3 {
+			color: #58a6ff;
+			font-size: 1rem;
+			margin-bottom: 0.5rem;
+		}
+		.highlight-box p {
+			font-size: 0.9rem;
+			color: #c9d1d9;
+		}
+		footer {
+			text-align: center;
+			margin-top: 2rem;
+			padding-top: 1.5rem;
+			border-top: 1px solid #30363d;
+			color: #6e7681;
+			font-size: 0.85rem;
+		}
+		@media (max-width: 600px) {
+			body {
+				padding: 1rem;
+			}
+			.file-list {
+				columns: 1;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<h1>OneDeck 工作周报</h1>
+			<div class="subtitle">2026.05.13（周二） ~ 2026.05.18（周一） · main 分支</div>
+		</header>
+
+		<div class="stats-grid">
+			<div class="stat-card">
+				<div class="number">15</div>
+				<div class="label">Git 提交</div>
+			</div>
+			<div class="stat-card">
+				<div class="number">164</div>
+				<div class="label">文件变更</div>
+			</div>
+			<div class="stat-card">
+				<div class="number">7,318</div>
+				<div class="label">代码新增行</div>
+			</div>
+			<div class="stat-card">
+				<div class="number">848</div>
+				<div class="label">代码删除行</div>
+			</div>
+			<div class="stat-card">
+				<div class="number">19</div>
+				<div class="label">新增文件</div>
+			</div>
+		</div>
+
+		<div class="highlight-box">
+			<h3>本周核心成果</h3>
+			<p><strong>新动画系统（EffectRecorder-Driven Animation）全面完成</strong>：所有现有测试通过，实现了逻辑阶段与动画阶段的完全分离。效果在逻辑阶段同步执行并捕获 AnimationRequest，动画阶段由 RecorderAnimationPlayer 按顺序播放，支持批次并行移动、deck focus 保持、Z-fighting 修复以及多效果组合的视觉效果正确性。</p>
+		</div>
+
+		<div class="section">
+			<h2><span class="icon">📅</span> 每日工作详情</h2>
+			<div class="timeline">
+				<div class="timeline-item today">
+					<div class="date">05.18 周一（今天）</div>
+					<ul class="commits">
+						<li><span class="tag tag-fix">Fix</span> 修复 deck-move 动画前 deck focus 丢失问题</li>
+						<li><span class="tag tag-fix">Fix</span> 修复 Bury/Stage 在 recorder 播放期间的 premature deck sync</li>
+						<li><span class="tag tag-feature">Done</span> <strong>所有当前测试通过，新动画系统完成</strong></li>
+					</ul>
+				</div>
+				<div class="timeline-item">
+					<div class="date">05.17 周日</div>
+					<ul class="commits">
+						<li><span class="tag tag-fix">Fix</span> 修复 AddPhysicalCardToDeck 的 Z-fighting 与 distance0 bug</li>
+						<li><span class="tag tag-refactor">Refactor</span> 提取 CardMoveConfig 与 DeckPositionCalculator</li>
+						<li><span class="tag tag-wip">WIP</span> Z-bump 深度层级调整</li>
+					</ul>
+				</div>
+				<div class="timeline-item">
+					<div class="date">05.16 周六</div>
+					<ul class="commits">
+						<li><span class="tag tag-fix">Fix</span> 修复 Add Temp Card + Bury 组合效果异常</li>
+					</ul>
+				</div>
+				<div class="timeline-item">
+					<div class="date">05.15 周五</div>
+					<ul class="commits">
+						<li><span class="tag tag-fix">Fix</span> 修复同一卡牌被多个事件改变位置时的视觉 bug</li>
+						<li><span class="tag tag-wip">WIP</span> 1 recorder 多效果检查</li>
+						<li><span class="tag tag-feature">Test</span> 更新 Headless 测试单元</li>
+					</ul>
+				</div>
+				<div class="timeline-item">
+					<div class="date">05.14 周四</div>
+					<ul class="commits">
+						<li><span class="tag tag-refactor">Refactor</span> 将所有卡牌配置从 pre effect event 迁移至 check cost + effect</li>
+					</ul>
+				</div>
+				<div class="timeline-item">
+					<div class="date">05.13 周三</div>
+					<ul class="commits">
+						<li><span class="tag tag-fix">Fix</span> 修复 Rift & Side Effect Portal 卡牌效果</li>
+						<li><span class="tag tag-wip">WIP</span> 检查 Type B 卡牌（非 1 effect 1 recorder 模式）</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="section">
+			<h2><span class="icon">🎯</span> 本周重点工作领域</h2>
+			<ul class="commits" style="list-style: none;">
+				<li><span style="color: #58a6ff;">▸</span> <strong>动画系统重构</strong>：完成 EffectRecorder 驱动的两阶段动画执行模型（逻辑→动画），支持 Attack、MoveToBottom/Top、Destroy、StatusEffectChange 等多种 AnimationRequest 类型</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>视觉修复</strong>：解决卡牌多重移动、Z-fighting、deck focus、 premature sync 等多个渲染与动画时序问题</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>卡牌配置标准化</strong>：统一所有卡牌使用 check cost + effect 模式，废弃 pre effect event 触发成本检查的旧方式</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>测试基础设施</strong>：新增 6 个测试牌组，5 张测试卡牌，完善 Headless 单元测试</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>代码重构</strong>：提取 CombatUXManager 中的移动配置与位置计算逻辑为独立类（CardMoveConfig / DeckPositionCalculator）</li>
+			</ul>
+		</div>
+
+		<div class="section">
+			<h2><span class="icon">📝</span> 新增文件清单</h2>
+			<ul class="file-list">
+				<li><span class="dir">Scripts/UXPrototype/</span><span class="file">CardMoveConfig.cs</span></li>
+				<li><span class="dir">Scripts/UXPrototype/</span><span class="file">DeckPositionCalculator.cs</span></li>
+				<li><span class="dir">Scripts/Effects/</span><span class="file">ExileCostEffect.cs</span></li>
+				<li><span class="dir">Prefabs/Cards/_Test Cards/</span><span class="file">ADD_RIFT_AND_CURSE.prefab</span></li>
+				<li><span class="dir">Prefabs/Cards/_Test Cards/</span><span class="file">CURSED_UNDERTAKER.prefab</span></li>
+				<li><span class="dir">Prefabs/Cards/_Test Cards/</span><span class="file">DUMMY.prefab</span></li>
+				<li><span class="dir">Prefabs/Cards/_Test Cards/</span><span class="file">ONE_TIME_EXILE.prefab</span></li>
+				<li><span class="dir">Prefabs/Cards/_Test Cards/</span><span class="file">SWITCH.prefab</span></li>
+				<li><span class="dir">SORefs/test decks/</span><span class="file">add + bury + stage test.asset</span></li>
+				<li><span class="dir">SORefs/test decks/</span><span class="file">add rift and curse test.asset</span></li>
+				<li><span class="dir">SORefs/test decks/</span><span class="file">add test.asset</span></li>
+				<li><span class="dir">SORefs/test decks/</span><span class="file">add two test.asset</span></li>
+				<li><span class="dir">SORefs/test decks/</span><span class="file">almighty test.asset</span></li>
+				<li><span class="dir">SORefs/test decks/</span><span class="file">bury test.asset</span></li>
+				<li><span class="dir">SORefs/test decks/</span><span class="file">stage goblin + bury soldier test.asset</span></li>
+			</ul>
+		</div>
+
+		<div class="section">
+			<h2><span class="icon">🔧</span> 高频修改文件</h2>
+			<ul class="commits" style="list-style: none;">
+				<li><span style="color: #58a6ff;">▸</span> <strong>CombatUXManager.cs</strong>（9 次）— 动画播放、卡牌移动、deck sync 核心逻辑</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>RecorderAnimationPlayer.cs</strong>（6 次）— recorder 动画播放协调器</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>StageEffect.cs / BuryEffect.cs</strong>（5 次 each）— 核心卡牌效果动画适配</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>CardPhysObjScript.cs</strong>（4 次）— 卡牌物理对象控制</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>CombatManager.cs / EffectChainManager.cs</strong> — 战斗主循环与效果链管理</li>
+				<li><span style="color: #58a6ff;">▸</span> <strong>20+ 张卡牌 Prefab</strong> — 成本触发器配置迁移</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box" style="border-left-color: #238636; background: rgba(35, 134, 54, 0.1);">
+			<h3 style="color: #3fb950;">下周建议方向</h3>
+			<p>1. 验证新动画系统在更多复杂卡牌组合下的稳定性；2. 清理废弃的 pre effect event 相关代码；3. 继续完善 Headless 自动化测试覆盖；4. 评估并修复剩余的 Type B 卡牌（多 effect 共享 recorder） edge cases。</p>
+		</div>
+
+		<footer>
+			<p>Generated on 2026-05-18 · OneDeck Unity Roguelike Card Game · main 分支</p>
+		</footer>
+	</div>
+</body>
+</html>

@@ -144,7 +144,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1924760719970565178}
         m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
-        m_MethodName: BuryLastXCards
+        m_MethodName: BuryNextXCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -18,6 +18,9 @@
 	//// change cardScript to use tab to indent
 
 //! refactor
+	//todo clean up, since new animation system is complete
+	//todo clean up pre effect event
+	//todo clean up or rather add a switch to toggle debug messages
 	//// simplify and split up CombatUXManager
 		//// simiplified a little bit
 	//// more animation need to be cleaned up (ex. deck group animation)
@@ -115,16 +118,17 @@
 				//// headless unit test update
 				//// ### Phase 5: Testing & Edge Cases
 		//// D:\Unity Projects\OneDeck\plans\card-animation-serialization-plan.md
-	// AnimationStateTracker checker
+	// AnimationStateTracker checker  (low priority)
 //! design change
 	//// should we change [bury 1 friendly] to [bury next 2]?
 		//// it's more powerful, maybe should be benefit, not cost
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 //! bug
-	//todo almighty test
+	//todo more headless tests
+	//// almighty test
 		//// newly added cards will move to deck position, but z position still wrong
-	//todo swtich + goblin charge team + hostile soldier skeleton
-		// after goblin charge team animation, should restore peel deck, then show soldier skeleton being buried and staged
+	//// swtich + goblin charge team + hostile soldier skeleton
+		//// after goblin charge team animation, should restore peel deck, then show soldier skeleton being buried and staged
 	//// make ALMIGHTY + reactive cards test
 	//// soldier_skeleton will go to staged position before staged
 		// soldier_skeleton won't move if a new card is added to the deck while staging self

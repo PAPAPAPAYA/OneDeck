@@ -48,6 +48,16 @@ Assets/
 - `combinedDeckZone` - Merged deck (index 0 = bottom, index Count-1 = top)
 - `revealZone` - Currently revealed card
 
+### Deck Index & Direction
+- `index 0` = bottom = **last revealed** = furthest back in visual stack.
+- `index Count-1` = top = **first revealed** = frontmost in visual stack.
+- Reveal flow always pops `combinedDeckZone[^1]` (the top card).
+- **"Next" in deck order** means cards at lower indices (closer to bottom, revealed later). This is the direction `BuryNextXCards` travels.
+- **"Before this card in deck order"** also means lower indices — do not confuse with "before" in time/reveal order, which would mean higher indices.
+- **Bury** sends cards to `index 0` (bottom, last revealed).
+- **Stage** sends cards to `index Count-1` (top, first revealed).
+- **Delay** moves a card toward `index 0` by 1 slot (later reveal).
+
 ### Controls
 - First click: Reveal next card.
 - Second click: Trigger effect and place card at bottom.

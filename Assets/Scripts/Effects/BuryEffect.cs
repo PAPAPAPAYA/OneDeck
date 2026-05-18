@@ -207,13 +207,13 @@ public class BuryEffect : EffectScript
 	}
 
 	/// <summary>
-	/// Bury the last X cards in the combined deck (cards before this card in deck order).
+	/// Bury the next X cards in deck order (cards before this card in combined deck, i.e. closer to bottom).
 	/// Iterates backwards from the current card's position and buries each valid target.
 	/// Skips cards that should be ignored, are minions, or are already at the bottom.
 	/// If this card is in the reveal zone, starts from the bottom of the deck instead.
 	/// </summary>
 	/// <param name="amount">Number of cards to bury</param>
-	public void BuryLastXCards(int amount)
+	public void BuryNextXCards(int amount)
 	{
 		if (amount <= 0) return;
 		_combinedDeck = combatManager.combinedDeckZone;

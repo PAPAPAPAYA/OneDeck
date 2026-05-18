@@ -1,0 +1,179 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - heading "OneDeck 工作周报" [level=1] [ref=e4]
+    - generic [ref=e5]: 2026.05.13（周二） ~ 2026.05.18（周一） · main 分支
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]: "15"
+      - generic [ref=e9]: Git 提交
+    - generic [ref=e10]:
+      - generic [ref=e11]: "164"
+      - generic [ref=e12]: 文件变更
+    - generic [ref=e13]:
+      - generic [ref=e14]: 7,318
+      - generic [ref=e15]: 代码新增行
+    - generic [ref=e16]:
+      - generic [ref=e17]: "848"
+      - generic [ref=e18]: 代码删除行
+    - generic [ref=e19]:
+      - generic [ref=e20]: "19"
+      - generic [ref=e21]: 新增文件
+  - generic [ref=e22]:
+    - heading "本周核心成果" [level=3] [ref=e23]
+    - paragraph [ref=e24]:
+      - strong [ref=e25]: 新动画系统（EffectRecorder-Driven Animation）全面完成
+      - text: ：所有现有测试通过，实现了逻辑阶段与动画阶段的完全分离。效果在逻辑阶段同步执行并捕获 AnimationRequest，动画阶段由 RecorderAnimationPlayer 按顺序播放，支持批次并行移动、deck focus 保持、Z-fighting 修复以及多效果组合的视觉效果正确性。
+  - generic [ref=e26]:
+    - heading "📅 每日工作详情" [level=2] [ref=e27]:
+      - generic [ref=e28]: 📅
+      - text: 每日工作详情
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: 05.18 周一（今天）
+        - list [ref=e32]:
+          - listitem [ref=e33]:
+            - text: •
+            - generic [ref=e34]: Fix
+            - text: 修复 deck-move 动画前 deck focus 丢失问题
+          - listitem [ref=e35]:
+            - text: •
+            - generic [ref=e36]: Fix
+            - text: 修复 Bury/Stage 在 recorder 播放期间的 premature deck sync
+          - listitem [ref=e37]:
+            - text: •
+            - generic [ref=e38]: Done
+            - strong [ref=e39]: 所有当前测试通过，新动画系统完成
+      - generic [ref=e40]:
+        - generic [ref=e41]: 05.17 周日
+        - list [ref=e42]:
+          - listitem [ref=e43]:
+            - text: •
+            - generic [ref=e44]: Fix
+            - text: 修复 AddPhysicalCardToDeck 的 Z-fighting 与 distance0 bug
+          - listitem [ref=e45]:
+            - text: •
+            - generic [ref=e46]: Refactor
+            - text: 提取 CardMoveConfig 与 DeckPositionCalculator
+          - listitem [ref=e47]:
+            - text: •
+            - generic [ref=e48]: WIP
+            - text: Z-bump 深度层级调整
+      - generic [ref=e49]:
+        - generic [ref=e50]: 05.16 周六
+        - list [ref=e51]:
+          - listitem [ref=e52]:
+            - text: •
+            - generic [ref=e53]: Fix
+            - text: 修复 Add Temp Card + Bury 组合效果异常
+      - generic [ref=e54]:
+        - generic [ref=e55]: 05.15 周五
+        - list [ref=e56]:
+          - listitem [ref=e57]:
+            - text: •
+            - generic [ref=e58]: Fix
+            - text: 修复同一卡牌被多个事件改变位置时的视觉 bug
+          - listitem [ref=e59]:
+            - text: •
+            - generic [ref=e60]: WIP
+            - text: 1 recorder 多效果检查
+          - listitem [ref=e61]:
+            - text: •
+            - generic [ref=e62]: Test
+            - text: 更新 Headless 测试单元
+      - generic [ref=e63]:
+        - generic [ref=e64]: 05.14 周四
+        - list [ref=e65]:
+          - listitem [ref=e66]:
+            - text: •
+            - generic [ref=e67]: Refactor
+            - text: 将所有卡牌配置从 pre effect event 迁移至 check cost + effect
+      - generic [ref=e68]:
+        - generic [ref=e69]: 05.13 周三
+        - list [ref=e70]:
+          - listitem [ref=e71]:
+            - text: •
+            - generic [ref=e72]: Fix
+            - text: 修复 Rift & Side Effect Portal 卡牌效果
+          - listitem [ref=e73]:
+            - text: •
+            - generic [ref=e74]: WIP
+            - text: 检查 Type B 卡牌（非 1 effect 1 recorder 模式）
+  - generic [ref=e75]:
+    - heading "🎯 本周重点工作领域" [level=2] [ref=e76]:
+      - generic [ref=e77]: 🎯
+      - text: 本周重点工作领域
+    - list [ref=e78]:
+      - listitem [ref=e79]:
+        - text: ▸
+        - strong [ref=e80]: 动画系统重构
+        - text: ：完成 EffectRecorder 驱动的两阶段动画执行模型（逻辑→动画），支持 Attack、MoveToBottom/Top、Destroy、StatusEffectChange 等多种 AnimationRequest 类型
+      - listitem [ref=e81]:
+        - text: ▸
+        - strong [ref=e82]: 视觉修复
+        - text: ：解决卡牌多重移动、Z-fighting、deck focus、 premature sync 等多个渲染与动画时序问题
+      - listitem [ref=e83]:
+        - text: ▸
+        - strong [ref=e84]: 卡牌配置标准化
+        - text: ：统一所有卡牌使用 check cost + effect 模式，废弃 pre effect event 触发成本检查的旧方式
+      - listitem [ref=e85]:
+        - text: ▸
+        - strong [ref=e86]: 测试基础设施
+        - text: ：新增 6 个测试牌组，5 张测试卡牌，完善 Headless 单元测试
+      - listitem [ref=e87]:
+        - text: ▸
+        - strong [ref=e88]: 代码重构
+        - text: ：提取 CombatUXManager 中的移动配置与位置计算逻辑为独立类（CardMoveConfig / DeckPositionCalculator）
+  - generic [ref=e89]:
+    - heading "📝 新增文件清单" [level=2] [ref=e90]:
+      - generic [ref=e91]: 📝
+      - text: 新增文件清单
+    - list [ref=e92]:
+      - listitem [ref=e93]: Scripts/UXPrototype/CardMoveConfig.cs
+      - listitem [ref=e94]: Scripts/UXPrototype/DeckPositionCalculator.cs
+      - listitem [ref=e95]: Scripts/Effects/ExileCostEffect.cs
+      - listitem [ref=e96]: Prefabs/Cards/_Test Cards/ADD_RIFT_AND_CURSE.prefab
+      - listitem [ref=e97]: Prefabs/Cards/_Test Cards/CURSED_UNDERTAKER.prefab
+      - listitem [ref=e98]: Prefabs/Cards/_Test Cards/DUMMY.prefab
+      - listitem [ref=e99]: Prefabs/Cards/_Test Cards/ONE_TIME_EXILE.prefab
+      - listitem [ref=e100]: Prefabs/Cards/_Test Cards/SWITCH.prefab
+      - listitem [ref=e101]: SORefs/test decks/add + bury + stage test.asset
+      - listitem [ref=e102]: SORefs/test decks/add rift and curse test.asset
+      - listitem [ref=e103]: SORefs/test decks/add test.asset
+      - listitem [ref=e104]: SORefs/test decks/add two test.asset
+      - listitem [ref=e105]: SORefs/test decks/almighty test.asset
+      - listitem [ref=e106]: SORefs/test decks/bury test.asset
+      - listitem [ref=e107]: SORefs/test decks/stage goblin + bury soldier test.asset
+  - generic [ref=e108]:
+    - heading "🔧 高频修改文件" [level=2] [ref=e109]:
+      - generic [ref=e110]: 🔧
+      - text: 高频修改文件
+    - list [ref=e111]:
+      - listitem [ref=e112]:
+        - text: ▸
+        - strong [ref=e113]: CombatUXManager.cs
+        - text: （9 次）— 动画播放、卡牌移动、deck sync 核心逻辑
+      - listitem [ref=e114]:
+        - text: ▸
+        - strong [ref=e115]: RecorderAnimationPlayer.cs
+        - text: （6 次）— recorder 动画播放协调器
+      - listitem [ref=e116]:
+        - text: ▸
+        - strong [ref=e117]: StageEffect.cs / BuryEffect.cs
+        - text: （5 次 each）— 核心卡牌效果动画适配
+      - listitem [ref=e118]:
+        - text: ▸
+        - strong [ref=e119]: CardPhysObjScript.cs
+        - text: （4 次）— 卡牌物理对象控制
+      - listitem [ref=e120]:
+        - text: ▸
+        - strong [ref=e121]: CombatManager.cs / EffectChainManager.cs
+        - text: — 战斗主循环与效果链管理
+      - listitem [ref=e122]:
+        - text: ▸
+        - strong [ref=e123]: 20+ 张卡牌 Prefab
+        - text: — 成本触发器配置迁移
+  - generic [ref=e124]:
+    - heading "下周建议方向" [level=3] [ref=e125]
+    - paragraph [ref=e126]: 1. 验证新动画系统在更多复杂卡牌组合下的稳定性；2. 清理废弃的 pre effect event 相关代码；3. 继续完善 Headless 自动化测试覆盖；4. 评估并修复剩余的 Type B 卡牌（多 effect 共享 recorder） edge cases。
+  - contentinfo [ref=e127]:
+    - paragraph [ref=e128]: Generated on 2026-05-18 · OneDeck Unity Roguelike Card Game · main 分支
