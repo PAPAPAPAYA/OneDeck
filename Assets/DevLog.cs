@@ -20,8 +20,8 @@
 
 //! refactor
 	//// clean up, since new animation system is complete
-	//todo clean up pre effect event
-	//todo clean up or rather add a switch to toggle debug messages
+	//// clean up pre effect event
+	// clean up or rather add a switch to toggle debug messages
 	//// simplify and split up CombatUXManager
 		//// simiplified a little bit
 	//// more animation need to be cleaned up (ex. deck group animation)
@@ -124,7 +124,7 @@
 		//// it's more powerful, maybe should be benefit, not cost
 	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 //! bug
-	//todo more headless tests
+	//// more headless tests
 	//// almighty test
 		//// newly added cards will move to deck position, but z position still wrong
 	//// swtich + goblin charge team + hostile soldier skeleton

@@ -77,7 +77,7 @@ Flow: Check cost -> `preEffectEvent` -> Check effect chain -> Execute effect.
 
 ### Effect Chain Manager
 - **Chain creation**: Starts when no chains open, or same card triggers a *different* effect object.
-- **Loop guard**: Same `effectID` cannot be invoked twice within an open chain.
+- **Loop guard**: Same card instance + same effect component instance cannot be invoked twice within an open chain (checked by GameObject reference, not effectID string).
 - **Depth limit**: `chainDepth` > **99** blocks further effects.
 - **Chain closing**: `CloseOpenedChain()` finalizes recorders and clears state.
 
@@ -205,6 +205,19 @@ Before playing an effect recorder's requests, the source card (`recorder.cardObj
 
 ### AnimationStateTracker (Legacy Safety Net)
 Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until `HasActiveBatch == false` before closing the chain, ensuring any legacy-queued events flush naturally.
+
+### Important Animation Implementation Details
+- `EffectRecorder` fields: `sessionID`, `chainID`, `processedEffectID`, `cardObject`, `effectObject`, `open`, `animationRequests`, `animationPlayed`.
+- `EffectChainManager.recorderStack` tracks nested recorder creation; reactive effects attach as children of the **recorder that triggered them**.
+- `CurseEffect.ApplyPowerToCardWithProjectile()` captures `StatusEffectProjectile`.
+- `CombatManager.isPlayingEffectAnimations` blocks auto-reveal during playback.
+- `PlayRecorderAnimationsAndWait`: wait `HasActiveBatch` -> `CloseOpenedChain()` -> play roots -> `finally` marks all recorders played + `ResetInputBlock()` + `isPlayingEffectAnimations = false`.
+- **Deck Focus Restoration**: `RecorderAnimationPlayer` restores normal deck layout before any deck-move request if `CombatUXManager.IsDeckFocused` is true.
+- Batch moves (`MoveToBottomBatch`/`MoveToTopBatch`) use `correctedIndex` absolute positions, ignoring `snapshotDeckSize` offsets.
+- `HPAlterEffect.isStatusEffectDamage = true` skips `Attack` animation capture.
+- **Fallback**: If `RecorderAnimationPlayer.me == null`, status effect changes trigger tint directly; `BuryEffect`/`StageEffect` still call `SyncPhysicalCardsWithCombinedDeck`.
+- `ExileEffect` sets `revealZone = null` when exiling the revealed card, and chains `Destroy` requests with `onComplete` on the last card.
+- `CombatManager.Awake()` auto-creates `RecorderAnimationPlayer` if missing.
 
 ### Card Movement (`ICombatVisuals` / `CombatUXManager`)
 - `MoveCardToBottom(card, duration, useArc, onComplete)`

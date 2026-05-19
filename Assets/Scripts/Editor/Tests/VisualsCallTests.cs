@@ -1,3 +1,4 @@
+using DefaultNamespace;
 using DefaultNamespace.Effects;
 using NUnit.Framework;
 using UnityEngine;
@@ -5,7 +6,7 @@ using UnityEngine;
 public class VisualsCallTests : HeadlessCombatTestFixture
 {
 	[Test]
-	public void StageEffect_CallsMoveCardToTop()
+	public void StageEffect_CapturesMoveToTopBatchRequest()
 	{
 		var card = CreateCard(true, "StageCard");
 		var other = CreateCard(true, "OtherCard");
@@ -15,13 +16,19 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 		CombatManager.combinedDeckZone.Add(target);
 
 		var stageEffect = CreateEffect<StageEffect>(card);
+		EffectChainManager.MakeANewEffectRecorder(card, stageEffect.gameObject);
 		stageEffect.StageMyCards(1);
 
-		Assert.AreEqual(1, NullVisuals.moveCardToTopCalls, "StageEffect should call MoveCardToTop");
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		Assert.AreEqual(1, recorder.animationRequests.Count, "StageEffect should capture 1 animation request");
+		Assert.AreEqual(AnimationRequestType.MoveToTopBatch, recorder.animationRequests[0].type, "Should be MoveToTopBatch");
+		Assert.AreEqual(1, recorder.animationRequests[0].targetCards.Count, "Should stage 1 card");
+
+		EffectChainManager.Me.CloseOpenedChain();
 	}
 
 	[Test]
-	public void BuryEffect_CallsMoveCardToBottom()
+	public void BuryEffect_CapturesMoveToBottomBatchRequest()
 	{
 		var card = CreateCard(true, "BuryCard");
 		var other = CreateCard(false, "OtherCard");
@@ -31,25 +38,36 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 		CombatManager.combinedDeckZone.Add(other);
 
 		var buryEffect = CreateEffect<BuryEffect>(card);
+		EffectChainManager.MakeANewEffectRecorder(card, buryEffect.gameObject);
 		buryEffect.BuryTheirCards(1);
 
-		Assert.AreEqual(1, NullVisuals.moveCardToBottomCalls, "BuryEffect should call MoveCardToBottom");
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		Assert.AreEqual(1, recorder.animationRequests.Count, "BuryEffect should capture 1 animation request");
+		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, recorder.animationRequests[0].type, "Should be MoveToBottomBatch");
+		Assert.AreEqual(1, recorder.animationRequests[0].targetCards.Count, "Should bury 1 card");
+
+		EffectChainManager.Me.CloseOpenedChain();
 	}
 
 	[Test]
-	public void ExileEffect_CallsDestroyCard()
+	public void ExileEffect_CapturesDestroyRequest()
 	{
 		var card = CreateCard(true, "ExileCard");
 		CombatManager.combinedDeckZone.Add(card);
 
 		var exileEffect = CreateEffect<ExileEffect>(card);
+		EffectChainManager.MakeANewEffectRecorder(card, exileEffect.gameObject);
 		exileEffect.ExileSelf();
 
-		Assert.AreEqual(1, NullVisuals.destroyCardCalls, "ExileEffect should call DestroyCardWithAnimation");
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		Assert.AreEqual(1, recorder.animationRequests.Count, "ExileEffect should capture 1 destroy request");
+		Assert.AreEqual(AnimationRequestType.Destroy, recorder.animationRequests[0].type, "Should be Destroy type");
+
+		EffectChainManager.Me.CloseOpenedChain();
 	}
 
 	[Test]
-	public void BuryEffect_CallsSyncDeckAndUpdateTargets()
+	public void BuryEffect_CallsSyncDeckOnce()
 	{
 		var card = CreateCard(true, "BuryCard");
 		var other = CreateCard(false, "OtherCard");
@@ -58,10 +76,15 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 		CombatManager.combinedDeckZone.Add(other);
 
 		var buryEffect = CreateEffect<BuryEffect>(card);
-		buryEffect.BuryTheirCards(1);
+		EffectChainManager.MakeANewEffectRecorder(card, buryEffect.gameObject);
 
-		Assert.AreEqual(2, NullVisuals.syncDeckCalls, "BuryEffect should call SyncPhysicalCardsWithCombinedDeck (pre-event + post-event in fallback path)");
-		Assert.AreEqual(1, NullVisuals.updateTargetCalls, "BuryEffect should call UpdateAllPhysicalCardTargets");
+		int syncCallsBefore = NullVisuals.syncDeckCalls;
+		buryEffect.BuryTheirCards(1);
+		int syncCallsAfter = NullVisuals.syncDeckCalls;
+
+		Assert.AreEqual(1, syncCallsAfter - syncCallsBefore, "BuryEffect should call SyncPhysicalCardsWithCombinedDeck once");
+
+		EffectChainManager.Me.CloseOpenedChain();
 	}
 
 	[Test]
