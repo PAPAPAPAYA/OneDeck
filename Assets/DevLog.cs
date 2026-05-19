@@ -1,9 +1,11 @@
  // devlog
 
+#region tools
 //! tools
 	////   skill to generate commit messages
 	//  AnimationStateTracker checker  (low priority)
-
+#endregion
+#region anything else
 //! anything else
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
@@ -17,7 +19,8 @@
 	//// chang blood-letting summoner to 有副作用的传送门, enhance friendly curse
 	//// check unstable_portal behaviour
 	//// change cardScript to use tab to indent
-
+#endregion
+#region refactor
 //! refactor
 	//// clean up, since new animation system is complete
 	//// clean up pre effect event
@@ -46,7 +49,15 @@
 		//// new method to gain double last applied power amount
 	//// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
+#endregion
+#region design
 //! design
+	// if an effect instance contains more than 1 effect, animations of those effects will be played, THEN other invoked effects' animations will be played;
+		// vs. if an effect instance contains only 1 effect, but the card has multiple effect instances, other invoked effefcts' animations will be played after each invoker effect's animation	
+	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
+	//// should we change [bury 1 friendly] to [bury next 2]?
+		//// it's more powerful, maybe should be benefit, not cost
+	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
 	// if we want to achieve synergy like "give power to next card" + "before power is given, stage self", we need to make the former a tag (like linger) to identify and react to
 	// same as "bury next 3 cards" + "before burying cards, stage self"
 	//// decrease [deathrattle], [bury] should be more than [if buried]
@@ -69,10 +80,8 @@
 			//// stage 2 friendly; gain 1 rest
 		//// almighty: stage 1 friendly; bury 1 hostile; enhance 1 friendly; add 1 [rift]; enhance 1 hostile [curse]
 			//// gain 1 rest
-//! need to know
-	// if an effect instance contains more than 1 effect, animations of those effects will be played, THEN other invoked effects' animations will be played;
-		// vs. if an effect instance contains only 1 effect, but the card has multiple effect instances, other invoked effefcts' animations will be played after each invoker effect's animation	
-	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
+#endregion
+#region feature
 //! feature
 	// a more comprehensive test kit
 		// logic
@@ -89,9 +98,11 @@
 	// shop
 		//// iterate on shop based on rarity
 	// fake shuffle
+#endregion
+#region viscom
 //! viscom
-	// need to show what's added
-	// status effect
+	//todo need to show what's added
+	//todo status effect
 		// better power wisp
 		// power gain card particle
 		// consume effect
@@ -119,10 +130,8 @@
 				//// headless unit test update
 				//// ### Phase 5: Testing & Edge Cases
 		//// D:\Unity Projects\OneDeck\plans\card-animation-serialization-plan.md
-//! design change
-	//// should we change [bury 1 friendly] to [bury next 2]?
-		//// it's more powerful, maybe should be benefit, not cost
-	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
+#endregion
+#region bugs
 //! bug
 	//// more headless tests
 	//// almighty test
@@ -180,7 +189,7 @@
 	// curse effect
 		// when curse is added, power wisp target pos is weird cause curse is not yet in position
 	//// bury animation bugged, suspect stage also has same problem
-
+#endregion
 
 
 
@@ -267,7 +276,6 @@
 
 
 
-#region Refactorings
 // refactoring
 	//// no grave
 	//// revealed card is put back to the bottom of deck
@@ -296,7 +304,6 @@
 	//// button prompt before shuffling
 	//// make text codes in effect scripts StringSO
 	//// refactor tags to use game event SOs
-#endregion
 
 //// deck tester
 	//// record session amount
@@ -307,7 +314,6 @@
 		//// ave. dmg output per session
 		// ave. dmg output per session per card
 
-#region abandoned
 // abandoned: too much work, not economic
 // card maker
 	//// make a new prefab
@@ -318,7 +324,6 @@
 		// cost events
 		// effect events
 	//// setup game event listener events
-#endregion
 
 // card structure
 	//// same structure from slash/ but expanded to support multiple costs and effects

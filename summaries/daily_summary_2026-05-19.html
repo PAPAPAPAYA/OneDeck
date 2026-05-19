@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发日报 - 2026-05-19</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		body {
+			font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+			background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+			min-height: 100vh;
+			color: #e0e0e0;
+			padding: 40px 20px;
+		}
+		.container {
+			max-width: 900px;
+			margin: 0 auto;
+		}
+		.header {
+			text-align: center;
+			margin-bottom: 40px;
+			padding: 30px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 20px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+		}
+		.header h1 {
+			font-size: 2.5em;
+			margin-bottom: 10px;
+			background: linear-gradient(90deg, #e94560, #ff6b6b);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+		.header .subtitle {
+			color: #888;
+			font-size: 1.1em;
+		}
+		.header .stats {
+			display: flex;
+			justify-content: center;
+			gap: 40px;
+			margin-top: 25px;
+		}
+		.stat-box {
+			text-align: center;
+		}
+		.stat-box .number {
+			font-size: 2em;
+			font-weight: bold;
+			color: #e94560;
+		}
+		.stat-box .label {
+			font-size: 0.9em;
+			color: #aaa;
+			margin-top: 5px;
+		}
+		.timeline {
+			position: relative;
+			padding-left: 30px;
+		}
+		.timeline::before {
+			content: '';
+			position: absolute;
+			left: 10px;
+			top: 0;
+			bottom: 0;
+			width: 3px;
+			background: linear-gradient(to bottom, #e94560, #533483);
+			border-radius: 3px;
+		}
+		.commit-card {
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 16px;
+			padding: 25px;
+			margin-bottom: 25px;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			backdrop-filter: blur(10px);
+			position: relative;
+			transition: transform 0.3s, box-shadow 0.3s;
+		}
+		.commit-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 10px 30px rgba(233, 69, 96, 0.15);
+		}
+		.commit-card::before {
+			content: '';
+			position: absolute;
+			left: -24px;
+			top: 30px;
+			width: 14px;
+			height: 14px;
+			background: #e94560;
+			border-radius: 50%;
+			border: 3px solid #1a1a2e;
+		}
+		.commit-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		.commit-title {
+			font-size: 1.3em;
+			font-weight: 600;
+			color: #fff;
+		}
+		.commit-time {
+			background: rgba(233, 69, 96, 0.15);
+			color: #e94560;
+			padding: 5px 15px;
+			border-radius: 20px;
+			font-size: 0.85em;
+			font-weight: 500;
+		}
+		.commit-desc {
+			color: #ccc;
+			line-height: 1.7;
+			margin-bottom: 15px;
+		}
+		.file-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin-top: 15px;
+		}
+		.file-tag {
+			background: rgba(83, 52, 131, 0.3);
+			color: #b8a9d9;
+			padding: 4px 12px;
+			border-radius: 8px;
+			font-size: 0.8em;
+			font-family: 'Consolas', monospace;
+		}
+		.file-tag.added {
+			background: rgba(46, 204, 113, 0.15);
+			color: #2ecc71;
+		}
+		.file-tag.modified {
+			background: rgba(241, 196, 15, 0.15);
+			color: #f1c40f;
+		}
+		.diff-stats {
+			display: flex;
+			gap: 20px;
+			margin-top: 15px;
+			font-size: 0.9em;
+		}
+		.diff-stat {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+		.diff-stat .plus {
+			color: #2ecc71;
+			font-weight: bold;
+		}
+		.diff-stat .minus {
+			color: #e74c3c;
+			font-weight: bold;
+		}
+		.section-title {
+			font-size: 1.5em;
+			margin: 40px 0 20px 0;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.section-title::before {
+			content: '';
+			width: 5px;
+			height: 25px;
+			background: #e94560;
+			border-radius: 3px;
+		}
+		.highlight-box {
+			background: linear-gradient(135deg, rgba(233, 69, 96, 0.1), rgba(83, 52, 131, 0.1));
+			border: 1px solid rgba(233, 69, 96, 0.3);
+			border-radius: 16px;
+			padding: 25px;
+			margin-top: 30px;
+		}
+		.highlight-box h3 {
+			color: #e94560;
+			margin-bottom: 15px;
+			font-size: 1.2em;
+		}
+		.highlight-box ul {
+			list-style: none;
+			padding: 0;
+		}
+		.highlight-box li {
+			padding: 8px 0;
+			padding-left: 25px;
+			position: relative;
+			color: #ddd;
+			line-height: 1.6;
+		}
+		.highlight-box li::before {
+			content: '▸';
+			position: absolute;
+			left: 0;
+			color: #e94560;
+		}
+		.tag {
+			display: inline-block;
+			padding: 2px 10px;
+			border-radius: 6px;
+			font-size: 0.75em;
+			font-weight: 600;
+			margin-left: 10px;
+		}
+		.tag.bugfix {
+			background: rgba(231, 76, 60, 0.2);
+			color: #e74c3c;
+		}
+		.tag.feature {
+			background: rgba(46, 204, 113, 0.2);
+			color: #2ecc71;
+		}
+		.tag.test {
+			background: rgba(52, 152, 219, 0.2);
+			color: #3498db;
+		}
+		.tag.docs {
+			background: rgba(155, 89, 182, 0.2);
+			color: #9b59b6;
+		}
+		.footer {
+			text-align: center;
+			margin-top: 50px;
+			padding: 20px;
+			color: #666;
+			font-size: 0.9em;
+		}
+		.test-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: 12px;
+			margin-top: 15px;
+		}
+		.test-card {
+			background: rgba(255, 255, 255, 0.03);
+			border: 1px solid rgba(255, 255, 255, 0.06);
+			border-radius: 10px;
+			padding: 14px 16px;
+		}
+		.test-card .test-name {
+			font-weight: 600;
+			color: #fff;
+			font-size: 0.95em;
+			margin-bottom: 4px;
+		}
+		.test-card .test-count {
+			color: #888;
+			font-size: 0.85em;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>OneDeck 开发日报</h1>
+			<div class="subtitle">2026年5月19日（周二）| Headless 测试体系全面建设与文档补全</div>
+			<div class="stats">
+				<div class="stat-box">
+					<div class="number">11</div>
+					<div class="label">新增测试文件</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">~79</div>
+					<div class="label">测试用例总数</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">~2,200</div>
+					<div class="label">新增代码行</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">3</div>
+					<div class="label">文档/配置更新</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-title">工作内容时间线</div>
+		<div class="timeline">
+			<!-- Task 1 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						AGENTS.md 动画系统文档补全
+						<span class="tag docs">文档</span>
+					</div>
+					<div class="commit-time">5月19日</div>
+				</div>
+				<div class="commit-desc">
+					在 AGENTS.md 新增 <strong>"Important Animation Implementation Details"</strong> 章节，系统整理了 EffectRecorder 动画系统的关键实现细节，包括：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li>EffectRecorder 核心字段说明（sessionID、chainID、animationRequests 等）</li>
+						<li>EffectChainManager.recorderStack 嵌套 recorder 创建机制</li>
+						<li>CurseEffect.StatusEffectProjectile 捕获逻辑</li>
+						<li>CombatManager.isPlayingEffectAnimations 阻断机制</li>
+						<li>Deck Focus Restoration 在 deck-move 前的恢复逻辑</li>
+						<li>Batch moves 的 correctedIndex 绝对位置计算</li>
+						<li>HPAlterEffect.isStatusEffectDamage 跳过 Attack 动画的规则</li>
+						<li>ExileEffect 的 revealZone 清空与 Destroy 请求链式触发</li>
+					</ul>
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+13</span> 行</div>
+					<div class="diff-stat"><span class="minus">-2</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">AGENTS.md</span>
+				</div>
+			</div>
+
+			<!-- Task 2 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						VisualsCallTests 适配新动画系统
+						<span class="tag test">测试</span>
+					</div>
+					<div class="commit-time">5月19日</div>
+				</div>
+				<div class="commit-desc">
+					将原有的直接视觉调用断言（检查 NullVisuals 的 call 计数）迁移为对 <code>EffectRecorder.animationRequests</code> 的断言，<br>
+					适配 EffectRecorder-Driven Animation 新架构：
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li>StageEffect → 断言 MoveToTopBatch 请求捕获</li>
+						<li>BuryEffect → 断言 MoveToBottomBatch 请求捕获</li>
+						<li>ExileEffect → 断言 Destroy 请求捕获</li>
+						<li>BuryEffect SyncDeck → 精确断言单次 SyncPhysicalCardsWithCombinedDeck 调用</li>
+					</ul>
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+28</span> 行</div>
+					<div class="diff-stat"><span class="minus">-11</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">VisualsCallTests.cs</span>
+				</div>
+			</div>
+
+			<!-- Task 3 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Headless 单元测试体系大规模扩建
+						<span class="tag test">测试</span>
+					</div>
+					<div class="commit-time">5月19日</div>
+				</div>
+				<div class="commit-desc">
+					基于现有的 <code>HeadlessCombatTestFixture</code> 基类，新建 <strong>11 个测试类</strong>，覆盖战斗逻辑的核心模块。<br>
+					所有测试均在 Editor Mode 下运行，使用 NullCombatVisuals 屏蔽视觉层，专注于逻辑正确性验证。
+				</div>
+				<div class="test-grid">
+					<div class="test-card">
+						<div class="test-name">HPAlterEffectTests</div>
+						<div class="test-count">13 个测试 — 伤害/治疗逻辑、动画请求捕获、StatusEffectDamage 跳过规则</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">CardManipulationTests</div>
+						<div class="test-count">7 个测试 — Delay、Bury、Stage 的索引移动与动画请求</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">CostCheckTests</div>
+						<div class="test-count">9 个测试 — Mana、Rested、IndexBeforeStartCard 等成本判定</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">EffectChainTests</div>
+						<div class="test-count">9 个测试 — 防循环、链深度限制、同卡不同 effect 的链切换</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">ExileEffectTests</div>
+						<div class="test-count">7 个测试 — 放逐自身/敌方、revealZone 清空、Destroy 请求</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">CombatIntegrationTests</div>
+						<div class="test-count">6 个测试 — 完整回合流程、StartCard 触发洗牌与新回合</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">ReactiveChainTests</div>
+						<div class="test-count">6 个测试 — Bury→Stage 反应链、三层嵌套 recorder 树</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">CombatFlowTests</div>
+						<div class="test-count">6 个测试 — GatherDecks、Reveal、PutToBottom 基础流程</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">StatusEffectTests</div>
+						<div class="test-count">6 个测试 — Curse 增强、Power 应用、StatusEffectChange 请求</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">RecorderAnimationPlayerTests</div>
+						<div class="test-count">~5 个测试 — Attack/Destroy 动画播放、animationPlayed 标记</div>
+					</div>
+					<div class="test-card">
+						<div class="test-name">ShieldAlterTests</div>
+						<div class="test-count">3 个测试 — 护盾增减、事件触发、敌方护盾事件路由</div>
+					</div>
+				</div>
+				<div class="diff-stats" style="margin-top: 20px;">
+					<div class="diff-stat"><span class="plus">+~2,200</span> 行</div>
+					<div class="diff-stat">11 个新文件</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag added">HPAlterEffectTests.cs</span>
+					<span class="file-tag added">CardManipulationTests.cs</span>
+					<span class="file-tag added">CostCheckTests.cs</span>
+					<span class="file-tag added">EffectChainTests.cs</span>
+					<span class="file-tag added">ExileEffectTests.cs</span>
+					<span class="file-tag added">CombatIntegrationTests.cs</span>
+					<span class="file-tag added">ReactiveChainTests.cs</span>
+					<span class="file-tag added">CombatFlowTests.cs</span>
+					<span class="file-tag added">StatusEffectTests.cs</span>
+					<span class="file-tag added">RecorderAnimationPlayerTests.cs</span>
+					<span class="file-tag added">ShieldAlterTests.cs</span>
+				</div>
+			</div>
+
+			<!-- Task 4 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						DevLog 任务状态更新
+						<span class="tag docs">文档</span>
+					</div>
+					<div class="commit-time">5月19日</div>
+				</div>
+				<div class="commit-desc">
+					标记两项长期任务为已完成：
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>clean up pre effect event</code> — 废弃的 pre effect event 相关代码清理完成</li>
+						<li><code>more headless tests</code> — Headless 单元测试大规模扩建完成</li>
+					</ul>
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+3</span> 行</div>
+					<div class="diff-stat"><span class="minus">-3</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">DevLog.cs</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="highlight-box">
+			<h3>今日重点工作总结</h3>
+			<ul>
+				<li><strong>测试体系全面成型</strong> — 从仅有 VisualsCallTests 的单一文件扩展为 12 个测试类、约 79 个测试用例，覆盖 HP 改动、护盾、放逐、状态效果、卡牌操控、成本检查、效果链、反应链、战斗流程、集成场景、动画播放器全模块</li>
+				<li><strong>Headless 测试基类复用</strong> — 所有新测试继承自 <code>HeadlessCombatTestFixture</code>，统一的生命周期管理（SetUp/TearDown）和辅助方法（CreateCard、CreateEffect、CreateDeckSO、RevealTopCard 等）</li>
+				<li><strong>动画请求断言模式确立</strong> — 新测试统一通过 <code>EffectRecorder.animationRequests</code> 验证动画意图捕获，而非检查视觉层调用，确保测试聚焦于逻辑层</li>
+				<li><strong>反应链测试覆盖</strong> — ReactiveChainTests 验证了 Bury→Stage 反应效果和三层嵌套 recorder 树的结构正确性</li>
+				<li><strong>文档同步</strong> — AGENTS.md 补充动画实现细节，DevLog 更新任务完成状态</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box">
+			<h3>待办事项</h3>
+			<ul>
+				<li>运行全部 Edit Mode 测试，确认 ~79 个用例全部通过</li>
+				<li>补充 Play Mode 集成测试（Strategy B）覆盖复杂卡牌组合场景</li>
+				<li>评估并清理剩余的废弃 pre effect event 代码引用</li>
+				<li>考虑为 CostNEffectContainer 的多效果实例配置添加自动化验证测试</li>
+				<li>继续推进商店系统（Shop）和疲劳机制（Fatigue）相关功能</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box" style="border-color: rgba(46, 204, 113, 0.4); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(52, 152, 219, 0.08));">
+			<h3 style="color: #2ecc71;">后续工作建议</h3>
+			<p style="color: #bbb; margin-bottom: 15px; font-size: 0.9em;">基于 5.13 ~ 5.19 三周的工作积累（动画系统重构完成、Headless 测试体系成型），建议下一阶段按以下优先级推进：</p>
+			<ul>
+				<li><strong style="color: #2ecc71;">测试质量提升（高优先级）</strong><br>
+				将今日新建的 ~79 个 Headless 测试接入 CI/CD 流程或每日自动化运行，建立测试失败即阻断提交的规则；同时补齐 Play Mode 集成测试（Strategy B），覆盖 SACRIFICIAL_SPIRIT + DUMMY、RIFT_DRAGON + RIFT 等已知复杂组合</li>
+				<li><strong style="color: #2ecc71;">动画系统收尾（中优先级）</strong><br>
+				修复 Almighty 测试中新添加物理卡牌停留在生成位置不进入牌组的问题；验证 Stage/Bury 与新增卡牌的 Z-fighting 场景；清理 AnimationStateTracker 等废弃的 legacy 动画代码</li>
+				<li><strong style="color: #2ecc71;">Gameplay 功能回归（高优先级）</strong><br>
+				动画系统和测试基座已稳固，建议将开发重心从底层基础设施转回 gameplay：推进商店迭代（基于卡牌稀有度的 roll 权重）、实现疲劳/ overtime 机制、完成感染（Infected）状态的视觉反馈</li>
+				<li><strong style="color: #2ecc71;">卡牌配置自动化验证（中优先级）</strong><br>
+				利用已有的 <code>CardIDRetriever</code> 和测试基础设施，构建配置检查工具：自动验证 cardTypeID 唯一性、检测多效果实例的循环风险、比对卡牌描述与 prefab 配置的一致性</li>
+				<li><strong style="color: #2ecc71;">技术债务清理（低优先级，可持续进行）</strong><br>
+				彻底移除 pre effect event 相关废弃代码；为 CombatUXManager 添加 debug 日志开关；将剩余中文硬编码迁移为 StringSO；统一 CardScript 的 tab 缩进规范</li>
+			</ul>
+		</div>
+
+		<div class="footer">
+			OneDeck Unity Roguelike Card Game | 开发者: PAPAYA<br>
+			生成时间: 2026-05-19 23:16
+		</div>
+	</div>
+</body>
+</html>
