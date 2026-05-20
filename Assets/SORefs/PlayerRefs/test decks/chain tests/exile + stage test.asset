@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: PlayerDeckRef
+  m_Name: exile + stage test
   m_EditorClassIdentifier: 
   deck:
+  - {fileID: 8718476725744197808, guid: 75c115a5d087ea94db41f1a65072eb8f, type: 3}
+  - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
   - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-  - {fileID: 8718476725744197808, guid: 8a9871274e7b5ed4ea2b5977f2d53aeb, type: 3}
-  defaultDeck: {fileID: 11400000, guid: d8516d86e2777c84a87f8acfa48d476e, type: 2}
-  resetOnStart: 1
-  description: player's deck, data only no instances
+  - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: bury friendly + add curse

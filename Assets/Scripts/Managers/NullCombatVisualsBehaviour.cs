@@ -21,6 +21,7 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 	public int SyncDeckCalls => _nullVisuals.syncDeckCalls;
 	public int UpdateTargetCalls => _nullVisuals.updateTargetCalls;
 	public int AddCardCalls => _nullVisuals.addCardCalls;
+	public int MoveCardToPopUpPositionCalls => _nullVisuals.moveCardToPopUpPositionCalls;
 
 	public void MoveCardToTop(GameObject logicalCard, float duration = 0.5f, bool useArc = true, Action onComplete = null)
 		=> _nullVisuals.MoveCardToTop(logicalCard, duration, useArc, onComplete);
@@ -75,6 +76,15 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 
 	public void AddCardToDeckVisual(GameObject logicalCard)
 		=> _nullVisuals.AddCardToDeckVisual(logicalCard);
+
+	public void PopUpCard(GameObject logicalCard, Action onComplete = null)
+		=> _nullVisuals.PopUpCard(logicalCard, onComplete);
+
+	public void SlotInCard(GameObject logicalCard, Action onComplete = null)
+		=> _nullVisuals.SlotInCard(logicalCard, onComplete);
+
+	public void MoveCardToPopUpPosition(GameObject logicalCard, int deckIndex, Action onComplete = null)
+		=> _nullVisuals.MoveCardToPopUpPosition(logicalCard, deckIndex, onComplete);
 
 	public void StopAllAnimations()
 		=> _nullVisuals.StopAllAnimations();

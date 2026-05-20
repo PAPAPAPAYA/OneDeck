@@ -135,7 +135,10 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		    request.type == AnimationRequestType.MoveToTopBatch ||
 		    request.type == AnimationRequestType.MoveToBottom ||
 		    request.type == AnimationRequestType.MoveToTop ||
-		    request.type == AnimationRequestType.MoveToIndex)
+		    request.type == AnimationRequestType.MoveToIndex ||
+		    request.type == AnimationRequestType.PopUp ||
+		    request.type == AnimationRequestType.SlotIn ||
+		    request.type == AnimationRequestType.MoveToPopUpPosition)
 		{
 			var combatUX = visuals as CombatUXManager;
 			if (combatUX != null && combatUX.IsDeckFocused)
@@ -297,6 +300,28 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					onEachComplete: null, // logic already resolved in logic phase
 					onAllComplete: () => { done = true; }
 				);
+				yield return new WaitUntil(() => done);
+				break;
+			}
+			case AnimationRequestType.PopUp:
+			{
+				bool done = false;
+				visuals.PopUpCard(request.targetCard, () => { done = true; if (request.onComplete != null) request.onComplete(); });
+				yield return new WaitUntil(() => done);
+				break;
+			}
+			case AnimationRequestType.MoveToPopUpPosition:
+			{
+				visuals.UpdateAllPhysicalCardTargets();
+				bool done = false;
+				visuals.MoveCardToPopUpPosition(request.targetCard, request.targetIndex, () => { done = true; if (request.onComplete != null) request.onComplete(); });
+				yield return new WaitUntil(() => done);
+				break;
+			}
+			case AnimationRequestType.SlotIn:
+			{
+				bool done = false;
+				visuals.SlotInCard(request.targetCard, () => { done = true; if (request.onComplete != null) request.onComplete(); });
 				yield return new WaitUntil(() => done);
 				break;
 			}

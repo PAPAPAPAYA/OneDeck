@@ -47,6 +47,25 @@ public interface ICombatVisuals
 	/// </summary>
 	void PlayAttackAnimation(GameObject attackerCard, bool isAttackingEnemy, Action onHit = null, Action onComplete = null);
 
+	/// <summary>
+	/// Pop Up a card from its current position so the player can see it clearly.
+	/// Sets isPlayingSpecialAnimation=true. Card remains at peak until SlotIn is called.
+	/// </summary>
+	void PopUpCard(GameObject logicalCard, Action onComplete = null);
+
+	/// <summary>
+	/// Slot In a card from its pop-up position back to its correct deck position.
+	/// Clears isPlayingSpecialAnimation and syncs target position/scale.
+	/// </summary>
+	void SlotInCard(GameObject logicalCard, Action onComplete = null);
+
+	/// <summary>
+	/// Move card from its current spawn position to the pop-up peak position
+	/// calculated from the specified deck index. Used for new cards entering
+	/// the deck so they fly in and arrive at the pop-up peak, ready for SlotIn.
+	/// </summary>
+	void MoveCardToPopUpPosition(GameObject logicalCard, int deckIndex, Action onComplete = null);
+
 	#endregion
 
 	#region Animation Control

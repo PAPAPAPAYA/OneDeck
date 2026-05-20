@@ -189,5 +189,39 @@ public class EffectScript : MonoBehaviour
 			}
 		}
 	}
+
+	/// <summary>
+	/// Capture PopUp -> StatusEffectChange -> SlotIn sequence for status effect consumption.
+	/// Used when the target card is in the deck and should visibly pop up during the effect.
+	/// </summary>
+	protected void CapturePopUpStatusEffectChangeSlotIn(GameObject targetCard, EnumStorage.StatusEffect effect, int amount)
+	{
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder == null) return;
+
+		// 1. Pop Up
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.PopUp,
+			targetCard = targetCard
+		});
+
+		// 2. Status Effect Change (tint + particles)
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.StatusEffectChange,
+			targetCard = targetCard,
+			statusEffect = effect,
+			statusEffectAmount = amount
+		});
+
+		// 3. Slot In
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.SlotIn,
+			targetCard = targetCard
+		});
+	}
 	#endregion
 }

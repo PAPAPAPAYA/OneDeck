@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: side effect portal test
+  m_Name: stage goblin_charge_team + bury soldier_skeleton test
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: b7b1eef725b29f64cbd79365a9920d2b, type: 3}
-  - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
+  - {fileID: 1808145013887896563, guid: 68f345630a927cb49b8bed9e636ce06c, type: 3}
+  - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
-  description: player default deck, will copy to player deck SO at start of game
+  description: stage friendly + bury hostile

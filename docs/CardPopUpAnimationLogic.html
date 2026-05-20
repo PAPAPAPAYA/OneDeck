@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<title>OneDeck - 生成卡片 Pop Up 动画逻辑</title>
+	<style>
+		:root { --bg:#0d1117; --fg:#c9d1d9; --accent:#58a6ff; --accent2:#7ee787; --code:#161b22; --border:#30363d; }
+		body { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; background:var(--bg); color:var(--fg); line-height:1.6; max-width:960px; margin:0 auto; padding:24px; }
+		h1 { color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:12px; }
+		h2 { color:var(--accent2); margin-top:32px; font-size:1.2em; }
+		h3 { color:#d2a8ff; font-size:1.05em; margin-top:24px; }
+		code, pre { font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace; font-size:0.9em; }
+		code { background:var(--code); padding:2px 6px; border-radius:4px; border:1px solid var(--border); }
+		pre { background:var(--code); padding:14px; border-radius:8px; border:1px solid var(--border); overflow-x:auto; }
+		pre code { background:none; padding:0; border:none; }
+		ul { padding-left:20px; }
+		li { margin:6px 0; }
+		.tag { display:inline-block; background:#238636; color:#fff; padding:2px 8px; border-radius:12px; font-size:0.8em; margin-right:6px; }
+		.path { color:#8b949e; font-size:0.85em; }
+		table { width:100%; border-collapse:collapse; margin:12px 0; }
+		th, td { border:1px solid var(--border); padding:8px 12px; text-align:left; }
+		th { background:#161b22; color:var(--accent); }
+		.highlight { color:var(--accent2); }
+		.note { border-left:4px solid var(--accent); padding-left:12px; margin:12px 0; color:#8b949e; }
+	</style>
+</head>
+<body>
+
+<h1>OneDeck - 生成卡片 Pop Up 动画逻辑整理</h1>
+<p class="path">整理范围：逻辑层捕获 → 动画数据结构 → 播放器调度 → 视觉层实现</p>
+
+<h2>1. 核心设计思想</h2>
+<p>生成（或需要引起注意的）卡片不会立即静默进入牌堆，而是执行一段 <strong>Pop Up → (中间效果) → Slot In</strong> 的三段式动画，让玩家清晰感知到新卡片的加入。</p>
+<ul>
+	<li><strong>Pop Up</strong>：卡片从当前位置向上浮起、放大、前移，进入玩家视野。</li>
+	<li><strong>中间效果</strong>（可选）：投射物飞行、状态效果变更、放逐销毁等。</li>
+	<li><strong>Slot In</strong>：卡片从浮起位置平滑落回牌堆的正确索引位置。</li>
+</ul>
+
+<h2>2. 物理对象的初始创建</h2>
+<p class="path">文件：<code>Assets/Scripts/UXPrototype/CombatUXManager.cs</code> — <code>AddPhysicalCardToDeck()</code></p>
+<pre><code>// 1. 在 physicalCardNewTempCardPos 处实例化物理卡片
+Vector3 startPos = physicalCardNewTempCardPos.position;
+// 2. 将新卡插入 physicalCardsInDeck[0]
+physicalCardsInDeck.Insert(0, newPhysicalCard);
+// 3. 如果在效果链内，跳过自动补间，等待 PopUp + SlotIn 请求
+bool insideEffectChain = EffectChainManager.Me != null 
+                      && EffectChainManager.Me.currentEffectRecorder != null;
+if (!insideEffectChain) {
+    // 非效果链内：直接开始补间进入牌堆
+    cardPhys.SetTargetPosition(targetPos);
+    cardPhys.SetTargetScale(physicalCardDeckSize);
+} else {
+    // 效果链内：不自动补间，由 RecorderAnimationPlayer 控制
+}</code></pre>
+<div class="note">关键点：处于效果链中时，新卡的初始位置在 <code>physicalCardNewTempCardPos</code>（牌堆后上方），逻辑层会额外捕获 <code>PopUp</code> 与 <code>SlotIn</code> 的 <code>AnimationRequest</code>。</div>
+
+<h2>3. 逻辑层捕获 AnimationRequest</h2>
+
+<h3>3.1 新增临时卡片 — AddTempCard</h3>
+<p class="path">文件：<code>Assets/Scripts/Effects/AddTempCard.cs</code></p>
+<pre><code>private void CapturePopUpSlotInForNewCard(GameObject newCard)
+{
+    var recorder = EffectChainManager.Me?.currentEffectRecorder?.GetComponent&lt;EffectRecorder&gt;();
+    if (recorder != null)
+    {
+        recorder.animationRequests.Add(new AnimationRequest
+        {
+            type = AnimationRequestType.PopUp,
+            targetCard = newCard
+        });
+        recorder.animationRequests.Add(new AnimationRequest
+        {
+            type = AnimationRequestType.SlotIn,
+            targetCard = newCard
+        });
+    }
+}</code></pre>
+<p>调用路径：<code>AddCardToMe / AddCardToThem / AddSelfToMe / AddSelfToThem</code> → 每张新卡都触发 <code>CapturePopUpSlotInForNewCard</code>。</p>
+
+<h3>3.2 诅咒增强 — CurseEffect</h3>
+<p class="path">文件：<code>Assets/Scripts/Effects/CurseEffect.cs</code></p>
+<pre><code>public void ApplyPowerToCardWithProjectile(CardScript targetCard, int amount)
+{
+    ApplyPowerToCardInternal(targetCard, amount); // 逻辑立即执行
+
+    var recorder = EffectChainManager.Me?.currentEffectRecorder?.GetComponent&lt;EffectRecorder&gt;();
+    if (recorder != null)
+    {
+        // 1. Pop Up 目标卡
+        recorder.animationRequests.Add(new AnimationRequest
+        {
+            type = AnimationRequestType.PopUp,
+            targetCard = targetCard.gameObject
+        });
+        // 2. 投射物飞行（从来源卡到目标卡）
+        recorder.animationRequests.Add(new AnimationRequest
+        {
+            type = AnimationRequestType.StatusEffectProjectile,
+            attackerCard = myCard,
+            targetCard = targetCard.gameObject
+        });
+        // 3. Slot In 落回牌堆
+        recorder.animationRequests.Add(new AnimationRequest
+        {
+            type = AnimationRequestType.SlotIn,
+            targetCard = targetCard.gameObject
+        });
+    }
+}</code></pre>
+
+<h3>3.3 消耗状态效果 — ConsumeStatusEffect</h3>
+<p class="path">文件：<code>Assets/Scripts/Effects/EffectScript.cs</code> — 基类提供的通用方法</p>
+<pre><code>protected void CapturePopUpStatusEffectChangeSlotIn(
+    GameObject targetCard, EnumStorage.StatusEffect effect, int amount)
+{
+    var recorder = EffectChainManager.Me?.currentEffectRecorder?.GetComponent&lt;EffectRecorder&gt;();
+    if (recorder == null) return;
+
+    // 1. Pop Up
+    recorder.animationRequests.Add(new AnimationRequest
+    {
+        type = AnimationRequestType.PopUp, targetCard = targetCard
+    });
+    // 2. 状态效果变更（染色 + 粒子）
+    recorder.animationRequests.Add(new AnimationRequest
+    {
+        type = AnimationRequestType.StatusEffectChange,
+        targetCard = targetCard,
+        statusEffect = effect,
+        statusEffectAmount = amount
+    });
+    // 3. Slot In
+    recorder.animationRequests.Add(new AnimationRequest
+    {
+        type = AnimationRequestType.SlotIn, targetCard = targetCard
+    });
+}</code></pre>
+<p>被 <code>ConsumeStatusEffect.ConsumeOwnStatusEffect()</code> 与 <code>ConsumeRandomEnemyCardsStatusEffect()</code> 调用。</p>
+
+<h3>3.4 放逐 — ExileEffect</h3>
+<p class="path">文件：<code>Assets/Scripts/Effects/ExileEffect.cs</code></p>
+<pre><code>// 1. Pop Up 让玩家看到被放逐的卡
+recorder.animationRequests.Add(new AnimationRequest
+{
+    type = AnimationRequestType.PopUp,
+    targetCard = exiledCards[i]
+});
+// 2. Destroy 从浮起位置销毁
+recorder.animationRequests.Add(new AnimationRequest
+{
+    type = AnimationRequestType.Destroy,
+    targetCard = exiledCards[i],
+    onComplete = isLast ? (Action)(() => combatManager.visuals.UpdateAllPhysicalCardTargets()) : null
+});</code></pre>
+
+<h2>4. 动画数据结构</h2>
+<p class="path">文件：<code>Assets/Scripts/Managers/AnimationRequest.cs</code></p>
+<table>
+<tr><th>字段</th><th>说明</th></tr>
+<tr><td><code>AnimationRequestType type</code></td><td>请求类型（PopUp / SlotIn / StatusEffectProjectile / Destroy 等）</td></tr>
+<tr><td><code>GameObject targetCard</code></td><td>目标逻辑卡片</td></tr>
+<tr><td><code>GameObject attackerCard</code></td><td>来源逻辑卡片（投射物用）</td></tr>
+<tr><td><code>Action onComplete</code></td><td>动画完成回调</td></tr>
+<tr><td><code>float duration</code></td><td>持续时间（默认 0.5s）</td></tr>
+</table>
+
+<h2>5. 动画播放器调度</h2>
+<p class="path">文件：<code>Assets/Scripts/Managers/RecorderAnimationPlayer.cs</code></p>
+
+<h3>5.1 播放前恢复 Deck Focus</h3>
+<p>如果牌堆当前处于 Peel/Focus 状态，PopUp、SlotIn 等位置相关动画会先强制恢复普通牌堆布局：</p>
+<pre><code>if (request.type == AnimationRequestType.MoveToBottomBatch ||
+    request.type == AnimationRequestType.MoveToTopBatch ||
+    request.type == AnimationRequestType.PopUp ||
+    request.type == AnimationRequestType.SlotIn)
+{
+    var combatUX = visuals as CombatUXManager;
+    if (combatUX != null && combatUX.IsDeckFocused)
+    {
+        yield return combatUX.StartCoroutine(combatUX.RestoreDeckFocusCoroutine());
+    }
+}</code></pre>
+
+<h3>5.2 请求分发</h3>
+<pre><code>case AnimationRequestType.PopUp:
+{
+    bool done = false;
+    visuals.PopUpCard(request.targetCard, () => { done = true; });
+    yield return new WaitUntil(() => done);
+    break;
+}
+case AnimationRequestType.SlotIn:
+{
+    bool done = false;
+    visuals.SlotInCard(request.targetCard, () => { done = true; });
+    yield return new WaitUntil(() => done);
+    break;
+}</code></pre>
+
+<h2>6. 视觉层实现（CombatUXManager）</h2>
+<p class="path">文件：<code>Assets/Scripts/UXPrototype/CombatUXManager.cs</code></p>
+
+<h3>6.1 可调参数（Inspector）</h3>
+<table>
+<tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+<tr><td><code>popUpYOffset</code></td><td>1.5</td><td>垂直浮起距离（世界单位）</td></tr>
+<tr><td><code>popUpZBoost</code></td><td>-1.0</td><td>Z轴前移（负值 = 靠近镜头/最前）</td></tr>
+<tr><td><code>popUpScaleMultiplier</code></td><td>1.15</td><td>浮起时缩放倍率</td></tr>
+<tr><td><code>popUpDuration</code></td><td>0.25s</td><td>浮起耗时</td></tr>
+<tr><td><code>popUpEase</code></td><td>Ease.OutQuad</td><td>浮起缓动曲线</td></tr>
+<tr><td><code>slotInDuration</code></td><td>0.35s</td><td>落回耗时</td></tr>
+<tr><td><code>slotInEase</code></td><td>Ease.InOutQuad</td><td>落回缓动曲线</td></tr>
+</table>
+
+<h3>6.2 PopUpCard</h3>
+<pre><code>public void PopUpCard(GameObject logicalCard, Action onComplete = null)
+{
+    // 1. 查找物理卡片
+    var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+    var physScript = physicalCard.GetComponent&lt;CardPhysObjScript&gt;();
+
+    // 2. 清除现有补间，防止冲突
+    physScript.KillTweens();
+
+    // 3. 计算峰值位置：当前位置 + 上移 + Z前移
+    Vector3 currentPos = physicalCard.transform.position;
+    Vector3 peakPos = currentPos + Vector3.up * popUpYOffset;
+    peakPos.z += popUpZBoost;
+    Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
+
+    // 4. 标记特殊动画中，阻断输入
+    physScript.isPlayingSpecialAnimation = true;
+    BlockInput(this);
+
+    // 5. DOTween 同时执行位移与缩放
+    Sequence seq = DOTween.Sequence();
+    seq.Append(physicalCard.transform.DOMove(peakPos, popUpDuration).SetEase(popUpEase));
+    seq.Join(physicalCard.transform.DOScale(peakScale, popUpDuration).SetEase(popUpEase));
+    seq.OnComplete(() =>
+    {
+        UnblockInput(this);
+        onComplete?.Invoke();
+    });
+    seq.Play();
+}</code></pre>
+<div class="note">卡片在 PopUp 完成后会停留在 <code>peakPos</code>，直到 SlotIn 被调用。期间 <code>isPlayingSpecialAnimation = true</code> 会阻止常规牌堆位置更新将其拉回。</div>
+
+<h3>6.3 SlotInCard</h3>
+<pre><code>public void SlotInCard(GameObject logicalCard, Action onComplete = null)
+{
+    // 1. 查找物理卡片
+    var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+    var physScript = physicalCard.GetComponent&lt;CardPhysObjScript&gt;();
+
+    // 2. 获取当前在 physicalCardsInDeck 中的索引
+    int deckIndex = physicalCardsInDeck.IndexOf(physicalCard);
+    if (deckIndex &lt; 0)
+    {
+        // 不在牌堆中（如 revealZone），直接释放标记
+        physScript.isPlayingSpecialAnimation = false;
+        onComplete?.Invoke();
+        return;
+    }
+
+    // 3. 计算该索引对应的牌堆目标位置
+    Vector3 targetPos = CalculatePositionAtIndex(deckIndex);
+
+    // 4. DOTween 落回 + 恢复缩放
+    Sequence seq = DOTween.Sequence();
+    seq.Append(physicalCard.transform.DOMove(targetPos, slotInDuration).SetEase(slotInEase));
+    seq.Join(physicalCard.transform.DOScale(physicalCardDeckSize, slotInDuration).SetEase(slotInEase));
+    seq.OnComplete(() =>
+    {
+        physScript.isPlayingSpecialAnimation = false;
+        physScript.SetTargetPosition(targetPos);
+        physScript.SetTargetScale(physicalCardDeckSize);
+        UnblockInput(this);
+        onComplete?.Invoke();
+    });
+    seq.Play();
+}</code></pre>
+
+<h2>7. 完整流程时序图（以 AddTempCard 为例）</h2>
+<pre><code>逻辑层 (AddTempCard)          EffectRecorder            RecorderAnimationPlayer              CombatUXManager
+        |                           |                              |                                    |
+        |-- CombatFuncs.me.AddCard --&gt;|                              |                                    |
+        |   (新卡入 combinedDeckZone) |                              |                                    |
+        |                           |                              |                                    |
+        |-- CapturePopUpSlotIn ------&gt;|                              |                                    |
+        |   type=PopUp                |                              |                                    |
+        |   type=SlotIn               |                              |                                    |
+        |                           |&lt;-- 逻辑阶段结束，关闭 Chain ---|                                    |
+        |                           |                              |                                    |
+        |                           |-------------------- PlayRecordersCoroutine() ---------------------&gt;|
+        |                           |                              |                                    |
+        |                           |                              |-- PlayRecorderCoroutine(recorder) --&gt;|
+        |                           |                              |                                    |
+        |                           |                              |-- PlayRequest(PopUp) --------------&gt;|
+        |                           |                              |                                    |-- PopUpCard()
+        |                           |                              |                                    |   (上移+放大+前移)
+        |                           |                              |&lt;-- WaitUntil(done) -----------------|
+        |                           |                              |                                    |
+        |                           |                              |-- PlayRequest(SlotIn) -------------&gt;|
+        |                           |                              |                                    |-- SlotInCard()
+        |                           |                              |                                    |   (落回正确索引位置)
+        |                           |                              |&lt;-- WaitUntil(done) -----------------|
+        |                           |                              |                                    |
+</code></pre>
+
+<h2>8. 使用 PopUp / SlotIn 的效果汇总</h2>
+<table>
+<tr><th>效果类</th><th>方法</th><th>捕获的请求序列</th><th>用途</th></tr>
+<tr><td><code>AddTempCard</code></td><td><code>AddCardToMe / AddCardToThem / AddSelfToMe / AddSelfToThem</code></td><td>PopUp → SlotIn</td><td>新卡进入牌堆</td></tr>
+<tr><td><code>CurseEffect</code></td><td><code>ApplyPowerToCardWithProjectile</code></td><td>PopUp → StatusEffectProjectile → SlotIn</td><td>诅咒增强，带投射物</td></tr>
+<tr><td><code>ConsumeStatusEffect</code></td><td><code>ConsumeOwnStatusEffect / ConsumeRandomEnemyCardsStatusEffect</code></td><td>PopUp → StatusEffectChange → SlotIn</td><td>消耗状态效果</td></tr>
+<tr><td><code>ExileEffect</code></td><td><code>ExileChosenCards</code></td><td>PopUp → Destroy</td><td>放逐前让玩家看到目标卡</td></tr>
+</table>
+
+<h2>9. 关键注意事项</h2>
+<ul>
+	<li><strong>isPlayingSpecialAnimation</strong>：PopUp 期间设为 <code>true</code>，阻止 <code>UpdateAllPhysicalCardTargets()</code> 把卡片拉回旧位置。</li>
+	<li><strong>Deck Focus 恢复</strong>：若牌堆处于 Peel 聚焦状态，PopUp / SlotIn 播放前会自动调用 <code>RestoreDeckFocusCoroutine()</code>，确保动画在正确布局下执行。</li>
+	<li><strong>输入阻断</strong>：PopUp 与 SlotIn 各自通过 <code>BlockInput/UnblockInput</code> 引用计数阻断玩家点击，防止动画中途被打断。</li>
+	<li><strong>不在牌堆中</strong>：SlotIn 时若 <code>physicalCardsInDeck.IndexOf(physicalCard) &lt; 0</code>（如 revealZone），直接释放 <code>isPlayingSpecialAnimation</code>，不做位移动画。</li>
+	<li><strong>效果链内跳过自动补间</strong>：<code>AddPhysicalCardToDeck</code> 检测到 <code>EffectChainManager.Me.currentEffectRecorder != null</code> 时，不会给新卡设置目标位置，完全交由 Recorder 控制。</li>
+</ul>
+
+</body>
+</html>

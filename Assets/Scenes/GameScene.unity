@@ -2876,9 +2876,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
   useCustomOrder: 1
   customOrderPrefabs:
-  - {fileID: 8718476725744197808, guid: 437c02dc3a189364787d86a0cbfb3583, type: 3}
-  - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
+  - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
+  - {fileID: 8718476725744197808, guid: 32c7492795cdf5d418e164a404fab845, type: 3}
   - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
+  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
   - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
 --- !u!1 &1162866020
 GameObject:
@@ -3704,6 +3705,7 @@ MonoBehaviour:
   yOffset: 0.2
   physicalCardNewTempCardPos: {fileID: 2043192994}
   physicalCardNewTempCardSize: {x: 0.8, y: 0.8, z: 0.8}
+  newCardFlyInDuration: 0.25
   physicalCardPrefab: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
   startCardPhysicalPrefab: {fileID: 3539307345357344568, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
   minionPhysicalPrefab: {fileID: 3344754133132326584, guid: eeb3a0e8ad38bde4bbb3e38649ac4b2d, type: 3}
@@ -3717,6 +3719,13 @@ MonoBehaviour:
   gravePosition: {fileID: 490140365}
   cardDestroyAnimDuration: 0.3
   cardDestroyTargetSize: {x: 0.8, y: 0.8, z: 0.8}
+  popUpYOffset: 1.5
+  popUpZBoost: 0
+  popUpScaleMultiplier: 1
+  popUpDuration: 0.5
+  popUpEase: 27
+  slotInDuration: 0.35
+  slotInEase: 17
   deckFocusTargetPos: {fileID: 714939180}
   peelSlideDistance: 8
   deckShiftDuration: 0.3
@@ -5865,7 +5874,7 @@ Transform:
   m_GameObject: {fileID: 2043192993}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -8, z: 0}
+  m_LocalPosition: {x: 0, y: 8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -7,6 +7,10 @@
 #endregion
 #region anything else
 //! anything else
+	// test strategies:
+		// strategy A: simulate logic in editor mode
+		// strategy B: simulate logic in play mode
+		// strategy C: regression batch test (different dimension, check if one type of configuration is correct)
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
 	// add space after annotations
@@ -22,6 +26,7 @@
 #endregion
 #region refactor
 //! refactor
+	// localization stringSO to store chinese translation
 	//// clean up, since new animation system is complete
 	//// clean up pre effect event
 	// clean up or rather add a switch to toggle debug messages
@@ -42,7 +47,7 @@
 	//// power reaction effect & when gain power, gain triple amount effect
 		//// new SO to store game object
 			//// can't do, SO can't store instance
-			// well then store it in combat manager, might move it out to a component
+			// store it in combat manager, might move it out to a component
 		//// track last power receiver in value tracker manager
 		//// new method to give status effect to objSO
 		//// new SO to store last applied power amount
@@ -101,7 +106,8 @@
 #endregion
 #region viscom
 //! viscom
-	//todo need to show what's added
+	//todo need to show what's added / exiled / given status effect / consumed status effect
+		// pop up + slot in animation
 	//todo status effect
 		// better power wisp
 		// power gain card particle
@@ -133,6 +139,11 @@
 #endregion
 #region bugs
 //! bug
+	// test on power gained: POWER_CRAVER
+	// after shuffle: BOOSTER
+	// elder sorcerer
+	// snatcher
+	// BONE_COMBINATION
 	//// more headless tests
 	//// almighty test
 		//// newly added cards will move to deck position, but z position still wrong
@@ -140,14 +151,14 @@
 		//// after goblin charge team animation, should restore peel deck, then show soldier skeleton being buried and staged
 	//// make ALMIGHTY + reactive cards test
 	//// soldier_skeleton will go to staged position before staged
-		// soldier_skeleton won't move if a new card is added to the deck while staging self
-		// SACRIFICIAL_SPIRIT + soldier_skeleton
-			// sacrificial_spirit + dummy
-		// RIFT + dummy
-		// RIFT_DRAGON + RIFT x 2
-		// RIFT_SUMMONER + RIFT + DUMMY
+		//// soldier_skeleton won't move if a new card is added to the deck while staging self
+		//// SACRIFICIAL_SPIRIT + soldier_skeleton
+			//// sacrificial_spirit + dummy
+		//// RIFT + dummy
+		//// RIFT_DRAGON + RIFT x 2
+		//// RIFT_SUMMONER + RIFT + DUMMY
 	//// pre effect event cost won't make effect recorder, need to abandon cost on card script, use old check cost event to check + normal effect event to execute cost
-	// check
+	//// check
 		//// 1. cost on card script + multiple effect instance and one of them has pre effect event one of them doesn't
 		//// 2. cost on cost n effect container, ex. RIFT_DRAGON, check animation bug
 			//// exile bug
@@ -169,15 +180,11 @@
 	//// auto reveal in phase 1 if reveal zone is null
 	//// test SPIKE_SKELETON
 	//// fixed copycurse (to me --> to them)
-	// power wisp destroy timing
+	//// power wisp destroy timing
 	//// some effects don't include card in reveal zone
 	//// test progress:
 		//// bury: ai tested
 			//// MARTYR (DEATHRATTLE 批次) — GiveAllFriendlyStatusEffect 不读取 includeSelf 字段，Martyr 自身总会获得 Power。
-	// test strategies:
-		// strategy A: simulate logic in editor mode
-		// strategy B: simulate logic in play mode
-		// strategy C: regression batch test (different dimension, check if one type of configuration is correct)
 	//// spike skeleton game event listener duplicates
 	//// slime lacks consumming counter
 	//// generate test plans
@@ -187,7 +194,7 @@
 		//// conjure
 		//// curse
 	// curse effect
-		// when curse is added, power wisp target pos is weird cause curse is not yet in position
+		//// when curse is added, power wisp target pos is weird cause curse is not yet in position
 	//// bury animation bugged, suspect stage also has same problem
 #endregion
 

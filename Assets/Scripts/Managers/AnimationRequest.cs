@@ -14,7 +14,10 @@ namespace DefaultNamespace
 		MoveToIndex,
 		Destroy,
 		StatusEffectChange,
-		StatusEffectProjectile
+		StatusEffectProjectile,
+		PopUp,
+		SlotIn,
+		MoveToPopUpPosition
 	}
 
 	public class AnimationRequest

@@ -18,6 +18,9 @@ public class NullCombatVisuals : ICombatVisuals
 	public int syncDeckCalls = 0;
 	public int updateTargetCalls = 0;
 	public int addCardCalls = 0;
+	public int popUpCardCalls = 0;
+	public int slotInCardCalls = 0;
+	public int moveCardToPopUpPositionCalls = 0;
 
 	public void MoveCardToTop(GameObject logicalCard, float duration = 0.5f, bool useArc = true, Action onComplete = null)
 	{
@@ -138,6 +141,27 @@ public class NullCombatVisuals : ICombatVisuals
 	{
 		addCardCalls++;
 		callLog.Add("AddCardToDeckVisual: " + (logicalCard?.name ?? "null"));
+	}
+
+	public void PopUpCard(GameObject logicalCard, Action onComplete = null)
+	{
+		popUpCardCalls++;
+		callLog.Add("PopUpCard: " + (logicalCard?.name ?? "null"));
+		onComplete?.Invoke();
+	}
+
+	public void SlotInCard(GameObject logicalCard, Action onComplete = null)
+	{
+		slotInCardCalls++;
+		callLog.Add("SlotInCard: " + (logicalCard?.name ?? "null"));
+		onComplete?.Invoke();
+	}
+
+	public void MoveCardToPopUpPosition(GameObject logicalCard, int deckIndex, Action onComplete = null)
+	{
+		moveCardToPopUpPositionCalls++;
+		callLog.Add("MoveCardToPopUpPosition: " + (logicalCard?.name ?? "null") + " -> " + deckIndex);
+		onComplete?.Invoke();
 	}
 
 	public void StopAllAnimations()

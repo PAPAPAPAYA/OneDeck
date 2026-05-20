@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop Up + Slot In 动画设计文档</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --bg-card: #181b24;
+            --bg-elevated: #1e2230;
+            --border: #2a2f3f;
+            --text: #e2e4ea;
+            --text-muted: #8b92a8;
+            --accent: #5c8aff;
+            --accent-soft: #3d5a99;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --pop-up-color: #60a5fa;
+            --slot-in-color: #a78bfa;
+            --card-friendly: #87CEEB;
+            --card-enemy: #fb923c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin: 0 0 12px;
+            background: linear-gradient(90deg, var(--pop-up-color), var(--slot-in-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 48px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 .icon {
+            font-size: 1.3rem;
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            color: var(--accent);
+            margin: 28px 0 12px;
+        }
+
+        .lead {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        /* Concept Demo */
+        .concept-stage {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deck-area {
+            position: relative;
+            height: 220px;
+            margin: 20px 0;
+            perspective: 800px;
+        }
+
+        .deck-label {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: var(--bg-elevated);
+            padding: 4px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .card-stack {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 140px;
+        }
+
+        .dcard {
+            position: absolute;
+            width: 80px;
+            height: 110px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2a3045, #1a1f2e);
+            border: 1px solid #3a4055;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .dcard .cname {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+        .dcard:nth-child(1) { left: 0px; top: 30px; z-index: 3; }
+        .dcard:nth-child(2) { left: 8px; top: 24px; z-index: 4; }
+        .dcard:nth-child(3) { left: 16px; top: 18px; z-index: 5; }
+        .dcard:nth-child(4) { left: 24px; top: 12px; z-index: 6; }
+        .dcard:nth-child(5) { left: 32px; top: 6px; z-index: 7; }
+
+        .dcard.target {
+            background: linear-gradient(135deg, #1e3a5f, #152540);
+            border-color: var(--accent-soft);
+        }
+
+        .dcard.target.pop-up {
+            transform: translateY(-55px) translateZ(60px) scale(1.15);
+            border-color: var(--pop-up-color);
+            box-shadow: 0 12px 32px rgba(92, 138, 255, 0.35);
+            z-index: 100;
+        }
+
+        .dcard.target.slot-in {
+            transform: translateY(0) translateZ(0) scale(1);
+            border-color: var(--slot-in-color);
+            z-index: 10;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+        }
+
+        .btn.primary {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+        }
+
+        .btn.primary:hover {
+            background: var(--accent);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Scenario cards */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+
+        .scenario-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .scenario-card .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .badge-add { background: rgba(74, 222, 128, 0.15); color: var(--success); border: 1px solid rgba(74, 222, 128, 0.3); }
+        .badge-exile { background: rgba(248, 113, 113, 0.15); color: var(--danger); border: 1px solid rgba(248, 113, 113, 0.3); }
+        .badge-buff { background: rgba(92, 138, 255, 0.15); color: var(--accent); border: 1px solid rgba(92, 138, 255, 0.3); }
+        .badge-consume { background: rgba(251, 191, 36, 0.15); color: var(--warning); border: 1px solid rgba(251, 191, 36, 0.3); }
+
+        .scenario-card h4 {
+            margin: 0 0 10px;
+            font-size: 1.1rem;
+        }
+
+        .scenario-card p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            margin: 0 0 14px;
+        }
+
+        .sequence-flow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+
+        .seq-box {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .seq-arrow {
+            color: var(--text-muted);
+        }
+
+        .seq-box.highlight {
+            border-color: var(--pop-up-color);
+            color: var(--pop-up-color);
+        }
+
+        .seq-box.highlight-out {
+            border-color: var(--slot-in-color);
+            color: var(--slot-in-color);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.92rem;
+        }
+
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg-elevated);
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        td code {
+            background: var(--bg-elevated);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "Consolas", "SF Mono", monospace;
+            font-size: 0.85em;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0;
+        }
+
+        .checklist li {
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+        }
+
+        .checklist li::before {
+            content: "";
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .checklist li.done::before {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+            background-size: 14px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .phase-label {
+            display: inline-block;
+            background: var(--bg-elevated);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* Risk matrix */
+        .risk-grid {
+            display: grid;
+            grid-template-columns: 1fr 80px 80px;
+            gap: 1px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .risk-grid > div {
+            background: var(--bg-card);
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+
+        .risk-grid .risk-header {
+            background: var(--bg-elevated);
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .risk-high { color: var(--danger); font-weight: 700; }
+        .risk-med { color: var(--warning); font-weight: 700; }
+        .risk-low { color: var(--success); font-weight: 700; }
+
+        /* Footer */
+        footer {
+            margin-top: 60px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .scenario-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.6rem; }
+            .concept-stage { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pop Up + Slot In 动画设计</h1>
+            <p>让卡组中的每一张关键卡片都能被玩家清晰看见</p>
+        </header>
+
+        <h2><span class="icon">🎯</span>设计目标</h2>
+        <p class="lead">
+            当前战斗中，卡片层层堆叠，当卡片被添加、放逐、获得或失去状态效果时，玩家往往无法一眼看出"到底是哪张卡"受到了影响。
+            本方案引入 <strong style="color:var(--pop-up-color)">Pop Up（弹起）</strong> + <strong style="color:var(--slot-in-color)">Slot In（插回）</strong> 动画组合，
+            让关键卡片在受影响的瞬间主动"跳"到视觉 foreground，展示完毕后再优雅地回到卡组原位。
+        </p>
+
+        <div class="concept-stage">
+            <h3 style="margin-top:0">概念演示</h3>
+            <p style="color:var(--text-muted);font-size:0.9rem">点击下方按钮模拟动画效果（CSS 示意）</p>
+            <div class="deck-area" id="demoArea">
+                <div class="card-stack">
+                    <div class="dcard"><span class="cname">骷髅</span></div>
+                    <div class="dcard"><span class="cname">幽灵</span></div>
+                    <div class="dcard"><span class="cname">守卫</span></div>
+                    <div class="dcard"><span class="cname">拳手</span></div>
+                    <div class="dcard target" id="targetCard"><span class="cname" style="color:var(--accent)">目标卡</span></div>
+                </div>
+                <div class="deck-label">卡组堆叠区域</div>
+            </div>
+            <div class="demo-controls">
+                <button class="btn primary" id="btnPopUp" onclick="playPopUp()">Pop Up 弹起</button>
+                <button class="btn" id="btnSlotIn" onclick="playSlotIn()" disabled>Slot In 插回</button>
+                <button class="btn" onclick="resetDemo()">重置</button>
+            </div>
+        </div>
+
+        <h2><span class="icon">🎬</span>四个使用场景</h2>
+        <div class="scenario-grid">
+            <div class="scenario-card">
+                <span class="badge badge-add">场景 A</span>
+                <h4>卡片被添加到卡组</h4>
+                <p>当效果向卡组中添加临时卡片时，新卡先 pop up 展示自己，让玩家知道"来了什么卡"，然后再 slot in 进入堆叠。</p>
+                <div class="sequence-flow">
+                    <span class="seq-box highlight">Pop Up</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box">展示 0.2s</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box highlight-out">Slot In</span>
+                </div>
+            </div>
+
+            <div class="scenario-card">
+                <span class="badge badge-exile">场景 B</span>
+                <h4>卡片被放逐</h4>
+                <p>放逐发生时，目标卡先 pop up 让玩家看清"什么卡没了"，然后再执行退场销毁动画。</p>
+                <div class="sequence-flow">
+                    <span class="seq-box highlight">Pop Up</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box">展示 0.1s</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box" style="border-color:var(--danger);color:var(--danger)">Destroy 退场</span>
+                </div>
+            </div>
+
+            <div class="scenario-card">
+                <span class="badge badge-buff">场景 C</span>
+                <h4>状态效果投射物</h4>
+                <p>当诅咒/力量等投射物飞向目标卡时，目标卡 pop up，在高位接收投射物，投射物结束后 slot in 回到卡组。</p>
+                <div class="sequence-flow">
+                    <span class="seq-box highlight">Pop Up</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box">Projectile 飞行</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box">Tint 变色</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box highlight-out">Slot In</span>
+                </div>
+            </div>
+
+            <div class="scenario-card">
+                <span class="badge badge-consume">场景 D</span>
+                <h4>状态效果被消耗</h4>
+                <p>当卡片上的状态效果（如 Mana、Power）被消耗时，该卡 pop up 让玩家看清"哪张卡的什么效果被消耗了"，然后 slot in。</p>
+                <div class="sequence-flow">
+                    <span class="seq-box highlight">Pop Up</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box">Tint 消退</span>
+                    <span class="seq-arrow">→</span>
+                    <span class="seq-box highlight-out">Slot In</span>
+                </div>
+            </div>
+        </div>
+
+        <h2><span class="icon">⚙️</span>动画参数配置</h2>
+        <p class="lead">以下参数可在 Unity Inspector 中实时调整，位于 <code>CombatUXManager</code> 组件。</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>参数名</th>
+                    <th>类型</th>
+                    <th>默认值</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>popUpYOffset</code></td>
+                    <td>float</td>
+                    <td>1.5</td>
+                    <td>垂直弹起高度（世界单位）</td>
+                </tr>
+                <tr>
+                    <td><code>popUpZBoost</code></td>
+                    <td>float</td>
+                    <td>-1.0</td>
+                    <td>向镜头方向偏移（负值 = 更靠前/更可见）</td>
+                </tr>
+                <tr>
+                    <td><code>popUpScaleMultiplier</code></td>
+                    <td>float</td>
+                    <td>1.15</td>
+                    <td>弹起时的缩放倍率（1.15 = 放大 15%）</td>
+                </tr>
+                <tr>
+                    <td><code>popUpDuration</code></td>
+                    <td>float</td>
+                    <td>0.25s</td>
+                    <td>弹起动画时长</td>
+                </tr>
+                <tr>
+                    <td><code>popUpEase</code></td>
+                    <td>Ease</td>
+                    <td>OutQuad</td>
+                    <td>弹起缓动曲线（快起慢停）</td>
+                </tr>
+                <tr>
+                    <td><code>slotInDuration</code></td>
+                    <td>float</td>
+                    <td>0.35s</td>
+                    <td>插回动画时长</td>
+                </tr>
+                <tr>
+                    <td><code>slotInEase</code></td>
+                    <td>Ease</td>
+                    <td>InOutQuad</td>
+                    <td>插回缓动曲线（平滑起降）</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><span class="icon">🔧</span>实施检查清单</h2>
+        <ul class="checklist">
+            <li><span>在 <code>AnimationRequestType</code> 枚举中新增 <code>PopUp</code> 和 <code>SlotIn</code></span><span class="phase-label">Phase 1</span></li>
+            <li><span>扩展 <code>ICombatVisuals</code> 接口：新增 <code>PopUpCard()</code> 和 <code>SlotInCard()</code></span><span class="phase-label">Phase 1</span></li>
+            <li><span>在 <code>CombatUXManager</code> 中实现 PopUp / SlotIn 动画逻辑 + Inspector 配置字段</span><span class="phase-label">Phase 1</span></li>
+            <li><span>在 <code>RecorderAnimationPlayer</code> 中处理新的 RequestType 分支</span><span class="phase-label">Phase 1</span></li>
+            <li><span>修改 <code>AddPhysicalCardToDeck</code>：在效果链中时抑制自动 tween</span><span class="phase-label">Phase 2</span></li>
+            <li><span><code>AddTempCard</code> 添加卡片后捕获 PopUp + SlotIn 动画请求</span><span class="phase-label">Phase 2</span></li>
+            <li><span><code>ExileEffect</code> 在 Destroy 请求前插入 PopUp 请求</span><span class="phase-label">Phase 2</span></li>
+            <li><span><code>CurseEffect.ApplyPowerToCardWithProjectile</code> 改为 PopUp → Projectile → SlotIn</span><span class="phase-label">Phase 2</span></li>
+            <li><span><code>ConsumeStatusEffect</code> 使用新的 PopUp + Change + SlotIn 捕获方式</span><span class="phase-label">Phase 2</span></li>
+            <li><span>Play Mode 测试：Add Card 场景验证 PopUp + SlotIn</span><span class="phase-label">Phase 3</span></li>
+            <li><span>Play Mode 测试：Exile 场景验证 PopUp + Destroy</span><span class="phase-label">Phase 3</span></li>
+            <li><span>Play Mode 测试：Projectile 场景验证三段式动画</span><span class="phase-label">Phase 3</span></li>
+            <li><span>Play Mode 测试：Consume 场景验证 PopUp + Tint + SlotIn</span><span class="phase-label">Phase 3</span></li>
+            <li><span>Headless 回退测试（NullCombatVisuals）确保无异常</span><span class="phase-label">Phase 3</span></li>
+        </ul>
+
+        <h2><span class="icon">⚠️</span>风险评估</h2>
+        <div class="risk-grid">
+            <div class="risk-header">风险点</div>
+            <div class="risk-header">可能性</div>
+            <div class="risk-header">影响</div>
+
+            <div>PopUp 与 AddPhysicalCardToDeck 的自动 tween 冲突</div>
+            <div class="risk-med">中</div>
+            <div class="risk-high">高</div>
+
+            <div>isPlayingSpecialAnimation 未被正确释放导致卡片卡死</div>
+            <div class="risk-low">低</div>
+            <div class="risk-med">中</div>
+
+            <div>Z-order 设置不当，弹起后仍被其他卡片遮挡</div>
+            <div class="risk-low">低</div>
+            <div class="risk-high">高</div>
+
+            <div>额外动画请求延长动画总时长，拖慢战斗节奏</div>
+            <div class="risk-low">低</div>
+            <div class="risk-low">低</div>
+
+            <div>误改现有 <code>CaptureStatusEffectChangeAnimationRequest</code> 导致副作用</div>
+            <div class="risk-med">中</div>
+            <div class="risk-high">高</div>
+        </div>
+
+        <h2><span class="icon">📋</span>关键设计决策</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:30%">问题</th>
+                    <th>决策</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>所有加卡都用 PopUp+SlotIn 吗？</td>
+                    <td>只有<strong>战斗中临时添加</strong>（AddTempCard）使用。战斗初始化（InstantiateAllPhysicalCards）保持 instant，避免开局过慢。</td>
+                </tr>
+                <tr>
+                    <td>Reveal Zone 的卡片需要 PopUp 吗？</td>
+                    <td><strong>不需要</strong>。揭示区卡片本身已在前景，无需额外弹起。</td>
+                </tr>
+                <tr>
+                    <td>PopUp 期间卡组 Peel/Focus 怎么办？</td>
+                    <td>RecorderAnimationPlayer 在播放 PopUp/SlotIn 前，若检测到 Deck Focus 状态，先执行 <code>RestoreDeckFocusCoroutine</code>。</td>
+                </tr>
+                <tr>
+                    <td>Headless 测试环境怎么办？</td>
+                    <td>NullCombatVisuals 中 PopUp/SlotIn 为空实现（no-op），逻辑层不受影响。</td>
+                </tr>
+                <tr>
+                    <td>需要加音效吗？</td>
+                    <td>本期 PRD <strong>不包含音效</strong>。如需可在 CombatUXManager.PopUpCard 中后续扩展。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><span class="icon">📎</span>相关文件</h2>
+        <p class="lead">完整技术实现细节（给 AI 看的 PRD）：</p>
+        <p><code>plans/pop-up-slot-in-animation-prd.md</code></p>
+
+        <footer>
+            Pop Up + Slot In Animation Design &middot; OneDeck &middot; Generated for review
+        </footer>
+    </div>
+
+    <script>
+        const card = document.getElementById('targetCard');
+        const btnPop = document.getElementById('btnPopUp');
+        const btnSlot = document.getElementById('btnSlotIn');
+
+        function playPopUp() {
+            card.classList.remove('slot-in');
+            card.classList.add('pop-up');
+            btnPop.disabled = true;
+            btnSlot.disabled = false;
+        }
+
+        function playSlotIn() {
+            card.classList.remove('pop-up');
+            card.classList.add('slot-in');
+            btnSlot.disabled = true;
+            setTimeout(() => {
+                btnPop.disabled = false;
+                card.classList.remove('slot-in');
+            }, 500);
+        }
+
+        function resetDemo() {
+            card.classList.remove('pop-up', 'slot-in');
+            btnPop.disabled = false;
+            btnSlot.disabled = true;
+        }
+    </script>
+</body>
+</html>

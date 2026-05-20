@@ -163,13 +163,16 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 
 ### AnimationRequest Types
 ```csharp
-enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange, StatusEffectProjectile }
+enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange, StatusEffectProjectile, PopUp, SlotIn }
 ```
 - `HPAlterEffect` captures `Attack` requests (damage already resolved in logic phase; `onHit` is null).
 - `BuryEffect` captures `MoveToBottomBatch`.
 - `StageEffect` captures `MoveToTopBatch`.
-- `ExileEffect` captures `Destroy`.
+- `ExileEffect` captures `Destroy` (preceded by `PopUp` so the player sees the card being exiled).
 - `ApplyStatusEffectCore`, `ConsumeStatusEffect`, `ManaAlterEffect`, and `TransferStatusEffectEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
+- `AddTempCard` captures `PopUp` + `SlotIn` for each newly created card so it visibly enters the deck.
+- `CurseEffect` captures `PopUp` + `StatusEffectProjectile` + `SlotIn` so the target card lifts during the projectile flight.
+- `ConsumeStatusEffect` uses `CapturePopUpStatusEffectChangeSlotIn` to play `PopUp` + `StatusEffectChange` + `SlotIn` for consumption on deck cards.
 - Batch types run all card movements in parallel and yield until the last completes.
 
 ### Snapshot Target Indices

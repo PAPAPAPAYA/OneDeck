@@ -325,6 +325,15 @@ public class ExileEffect : EffectScript
 			for (int i = 0; i < exiledCards.Count; i++)
 			{
 				bool isLast = (i == exiledCards.Count - 1);
+
+				// 1. Pop Up so player sees the card
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.PopUp,
+					targetCard = exiledCards[i]
+				});
+
+				// 2. Destroy from the elevated position
 				recorder.animationRequests.Add(new AnimationRequest
 				{
 					type = AnimationRequestType.Destroy,

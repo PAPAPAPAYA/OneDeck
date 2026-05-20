@@ -285,10 +285,25 @@ namespace DefaultNamespace.Effects
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 			if (recorder != null)
 			{
+				// 1. Pop Up target card
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.PopUp,
+					targetCard = targetCard.gameObject
+				});
+
+				// 2. Play projectile while card is elevated
 				recorder.animationRequests.Add(new AnimationRequest
 				{
 					type = AnimationRequestType.StatusEffectProjectile,
 					attackerCard = myCard,
+					targetCard = targetCard.gameObject
+				});
+
+				// 3. Slot In after projectile completes
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.SlotIn,
 					targetCard = targetCard.gameObject
 				});
 			}

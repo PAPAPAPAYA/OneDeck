@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
@@ -18,7 +19,8 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.myStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.myStatusRef);
+				CapturePopUpSlotInForNewCard(newCard);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
@@ -34,7 +36,8 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.theirStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.theirStatusRef);
+				CapturePopUpSlotInForNewCard(newCard);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
@@ -50,7 +53,8 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.myStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.myStatusRef);
+				CapturePopUpSlotInForNewCard(newCard);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
@@ -66,7 +70,8 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.theirStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.theirStatusRef);
+				CapturePopUpSlotInForNewCard(newCard);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
@@ -76,6 +81,32 @@ namespace DefaultNamespace.Effects
 			{
 				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + myCard.name + "</color>]");
 			}
+		}
+
+		/// <summary>
+		/// Capture PopUp + SlotIn animation requests for a newly added card.
+		/// </summary>
+		private void CapturePopUpSlotInForNewCard(GameObject newCard)
+		{
+			if (newCard == null) return;
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder == null) return;
+
+			int deckIndex = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.IndexOf(newCard) : -1;
+			if (deckIndex < 0) deckIndex = 0;
+
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.MoveToPopUpPosition,
+				targetCard = newCard,
+				targetIndex = deckIndex
+			});
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.SlotIn,
+				targetCard = newCard
+			});
 		}
 		
 		/// <summary>

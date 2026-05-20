@@ -37,6 +37,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	[Header("NEW CARD")]
 	public Transform physicalCardNewTempCardPos;
 	public Vector3 physicalCardNewTempCardSize;
+	[Tooltip("Duration for new card to fly in from temp pos to peak position")]
+	public float newCardFlyInDuration = 0.25f;
 
 	[Header("DECK")]
 	public GameObject physicalCardPrefab;
@@ -64,6 +66,22 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float cardDestroyAnimDuration = 0.3f;
 	[Tooltip("Target size when card is destroyed")]
 	public Vector3 cardDestroyTargetSize = new Vector3(0.1f, 0.1f, 0.1f);
+
+	[Header("POP UP / SLOT IN")]
+	[Tooltip("Vertical lift distance for Pop Up animation (world units)")]
+	public float popUpYOffset = 1.5f;
+	[Tooltip("Z offset toward camera for Pop Up (negative = closer/frontmost)")]
+	public float popUpZBoost = -1.0f;
+	[Tooltip("Scale multiplier at Pop Up peak")]
+	public float popUpScaleMultiplier = 1.15f;
+	[Tooltip("Time to reach Pop Up peak position")]
+	public float popUpDuration = 0.25f;
+	[Tooltip("Easing for Pop Up movement")]
+	public Ease popUpEase = Ease.OutQuad;
+	[Tooltip("Time to return to deck position in Slot In")]
+	public float slotInDuration = 0.35f;
+	[Tooltip("Easing for Slot In movement")]
+	public Ease slotInEase = Ease.InOutQuad;
 
 	[Header("DECK FOCUS / PEEL")]
 	public Transform deckFocusTargetPos;
@@ -1496,12 +1514,22 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			Vector3 targetPos = CalculatePositionAtIndex(i);
 			if (cardAtIndex == newPhysicalCard)
 			{
-				// New card: start tween immediately so it enters the deck visually.
-				// Place it behind all existing cards so later spawns never overlap earlier ones.
-				targetPos.z = backMostZ + zBump;
-				cardPhys.SetTargetPosition(targetPos);
-				cardPhys.SetTargetScale(physicalCardDeckSize);
-				Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
+				// If inside an active effect chain, do NOT auto-tween the new card.
+				// The effect will capture PopUp + SlotIn AnimationRequests instead.
+				bool insideEffectChain = EffectChainManager.Me != null && EffectChainManager.Me.currentEffectRecorder != null;
+				if (!insideEffectChain)
+				{
+					// New card: start tween immediately so it enters the deck visually.
+					// Place it behind all existing cards so later spawns never overlap earlier ones.
+					targetPos.z = backMostZ + zBump;
+					cardPhys.SetTargetPosition(targetPos);
+					cardPhys.SetTargetScale(physicalCardDeckSize);
+					Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
+				}
+				else
+				{
+					Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card inside effect chain, skipping auto-tween card=" + cardAtIndex.name);
+				}
 			}
 		}
 	}
@@ -1867,6 +1895,143 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public void PlayShuffleAnimation(GameObject startCard, List<GameObject> shuffledCards, Action onComplete)
 	{
 		PlayStartCardShuffleAnimation(startCard, shuffledCards, onComplete);
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Pop Up a card from its current position so the player can see it clearly.
+	/// Sets isPlayingSpecialAnimation=true. Card remains at peak until SlotIn is called.
+	/// </summary>
+	public void PopUpCard(GameObject logicalCard, Action onComplete = null)
+	{
+		if (logicalCard == null) { onComplete?.Invoke(); return; }
+
+		var cardScript = logicalCard.GetComponent<CardScript>();
+		if (cardScript == null) { onComplete?.Invoke(); return; }
+
+		BuildCardScriptToPhysicalDictionary();
+		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+		if (physicalCard == null) { onComplete?.Invoke(); return; }
+
+		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+		if (physScript == null) { onComplete?.Invoke(); return; }
+
+		// Kill existing tweens to prevent conflicts
+		physScript.KillTweens();
+
+		// Compute peak position from CURRENT world position
+		Vector3 currentPos = physicalCard.transform.position;
+		Vector3 peakPos = currentPos + Vector3.up * popUpYOffset;
+		peakPos.z += popUpZBoost;
+
+		Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
+
+		physScript.isPlayingSpecialAnimation = true;
+		AnimationStateTracker.me?.RegisterAnimation();
+		BlockInput(this);
+
+		Sequence seq = DOTween.Sequence();
+		seq.Append(physicalCard.transform.DOMove(peakPos, popUpDuration).SetEase(popUpEase));
+		seq.Join(physicalCard.transform.DOScale(peakScale, popUpDuration).SetEase(popUpEase));
+		seq.OnComplete(() =>
+		{
+			AnimationStateTracker.me?.CompleteAnimation();
+			UnblockInput(this);
+			onComplete?.Invoke();
+		});
+		seq.Play();
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Slot In a card from its pop-up position back to its correct deck position.
+	/// Clears isPlayingSpecialAnimation and syncs target position/scale.
+	/// </summary>
+	public void SlotInCard(GameObject logicalCard, Action onComplete = null)
+	{
+		if (logicalCard == null) { onComplete?.Invoke(); return; }
+
+		var cardScript = logicalCard.GetComponent<CardScript>();
+		if (cardScript == null) { onComplete?.Invoke(); return; }
+
+		BuildCardScriptToPhysicalDictionary();
+		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+		if (physicalCard == null) { onComplete?.Invoke(); return; }
+
+		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+		if (physScript == null) { onComplete?.Invoke(); return; }
+
+		// Find current deck index
+		int deckIndex = physicalCardsInDeck.IndexOf(physicalCard);
+		if (deckIndex < 0)
+		{
+			// Card not in deck (e.g. reveal zone) — skip slot-in movement, just release flag
+			physScript.isPlayingSpecialAnimation = false;
+			onComplete?.Invoke();
+			return;
+		}
+
+		Vector3 targetPos = CalculatePositionAtIndex(deckIndex);
+
+		AnimationStateTracker.me?.RegisterAnimation();
+		BlockInput(this);
+
+		Sequence seq = DOTween.Sequence();
+		seq.Append(physicalCard.transform.DOMove(targetPos, slotInDuration).SetEase(slotInEase));
+		seq.Join(physicalCard.transform.DOScale(physicalCardDeckSize, slotInDuration).SetEase(slotInEase));
+		seq.OnComplete(() =>
+		{
+			physScript.isPlayingSpecialAnimation = false;
+			physScript.SetTargetPosition(targetPos);
+			physScript.SetTargetScale(physicalCardDeckSize);
+			AnimationStateTracker.me?.CompleteAnimation();
+			UnblockInput(this);
+			onComplete?.Invoke();
+		});
+		seq.Play();
+	}
+
+	/// <summary>
+	/// ICombatVisuals: Move card from its current spawn position to the pop-up peak position
+	/// calculated from the specified deck index. Used for new cards entering the deck.
+	/// </summary>
+	public void MoveCardToPopUpPosition(GameObject logicalCard, int deckIndex, Action onComplete = null)
+	{
+		if (logicalCard == null) { onComplete?.Invoke(); return; }
+
+		var cardScript = logicalCard.GetComponent<CardScript>();
+		if (cardScript == null) { onComplete?.Invoke(); return; }
+
+		BuildCardScriptToPhysicalDictionary();
+		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+		if (physicalCard == null) { onComplete?.Invoke(); return; }
+
+		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+		if (physScript == null) { onComplete?.Invoke(); return; }
+
+		physScript.KillTweens();
+
+		// Calculate peak position based on deck index (same formula as PopUpCard)
+		Vector3 deckPos = CalculatePositionAtIndex(deckIndex);
+		Vector3 peakPos = deckPos + Vector3.up * popUpYOffset;
+		peakPos.z += popUpZBoost;
+		Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
+
+		physScript.isPlayingSpecialAnimation = true;
+		AnimationStateTracker.me?.RegisterAnimation();
+		BlockInput(this);
+
+		// Straight line move to peak position, scaling to peak scale
+		Sequence seq = DOTween.Sequence();
+		seq.Append(physicalCard.transform.DOMove(peakPos, newCardFlyInDuration).SetEase(popUpEase));
+		seq.Join(physicalCard.transform.DOScale(peakScale, newCardFlyInDuration).SetEase(popUpEase));
+		seq.AppendInterval(popUpDuration);
+		seq.OnComplete(() =>
+		{
+			physScript.isPlayingSpecialAnimation = false;
+			AnimationStateTracker.me?.CompleteAnimation();
+			UnblockInput(this);
+			onComplete?.Invoke();
+		});
+		seq.Play();
 	}
 
 	/// <summary>

@@ -22,7 +22,7 @@ namespace DefaultNamespace.Effects
 				}
 			}
 			// capture animation request for status effect consumption
-			CaptureStatusEffectChangeAnimationRequest(myCardScript.gameObject, statusEffectToConsume, -amountRemoved);
+			CapturePopUpStatusEffectChangeSlotIn(myCardScript.gameObject, statusEffectToConsume, -amountRemoved);
 			// lastly, refresh info display
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}
@@ -66,7 +66,7 @@ namespace DefaultNamespace.Effects
 			{
 				var targetCard = eligibleCards[i];
 				targetCard.myStatusEffects.Remove(statusEffectToConsume);
-				CaptureStatusEffectChangeAnimationRequest(targetCard.gameObject, statusEffectToConsume, -1);
+				CapturePopUpStatusEffectChangeSlotIn(targetCard.gameObject, statusEffectToConsume, -1);
 			}
 
 			CombatInfoDisplayer.me.RefreshDeckInfo();
