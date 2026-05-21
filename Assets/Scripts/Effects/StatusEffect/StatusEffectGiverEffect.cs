@@ -72,73 +72,88 @@ namespace DefaultNamespace.Effects
 		public virtual void GiveStatusEffect(int amount)
 		{
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
+
+			// --- 1. Target selection (unchanged) ---
 			var cardsToGiveTag = new List<GameObject>();
 			UtilityFuncManagerScript.CopyGameObjectList(combatManager.combinedDeckZone, cardsToGiveTag, true);
 			if (includeSelf) cardsToGiveTag.Add(myCard);
 			if (combatManager.revealZone != null && !cardsToGiveTag.Contains(combatManager.revealZone))
 			{
 				if (combatManager.revealZone != myCard || includeSelf)
-				{
 					cardsToGiveTag.Add(combatManager.revealZone);
-				}
 			}
 			cardsToGiveTag = UtilityFuncManagerScript.ShuffleList(cardsToGiveTag);
 			for (var i = cardsToGiveTag.Count - 1; i >= 0; i--)
 			{
 				var targetCardScript = cardsToGiveTag[i].GetComponent<CardScript>();
-				if (ShouldSkipCard(targetCardScript))
-				{
+				if (ShouldSkipCard(targetCardScript) || !MatchesTargetFilter(targetCardScript, target))
 					cardsToGiveTag.RemoveAt(i);
-					continue;
-				}
-				if (!MatchesTargetFilter(targetCardScript, target))
-				{
-					cardsToGiveTag.RemoveAt(i);
-				}
 			}
 			if (!canStatusEffectBeStacked)
 			{
 				for (var i = cardsToGiveTag.Count - 1; i >= 0; i--)
 				{
 					if (cardsToGiveTag[i].GetComponent<CardScript>().myStatusEffects.Contains(statusEffectToGive))
-					{
 						cardsToGiveTag.RemoveAt(i);
-					}
 				}
 			}
 			if (cardsToGiveTag.Count <= 0) return;
 			if (spreadEvenly) amount = Mathf.Clamp(amount, 0, cardsToGiveTag.Count);
+
+			// --- 2. Synchronous logic execution ---
 			var targetCards = new List<CardScript>();
 			for (var i = 0; i < amount; i++)
 			{
-				CardScript targetCardScript;
-				if (spreadEvenly) targetCardScript = cardsToGiveTag[i].GetComponent<CardScript>();
-				else targetCardScript = cardsToGiveTag[Random.Range(0, cardsToGiveTag.Count)].GetComponent<CardScript>();
+				CardScript targetCardScript = spreadEvenly
+					? cardsToGiveTag[i].GetComponent<CardScript>()
+					: cardsToGiveTag[Random.Range(0, cardsToGiveTag.Count)].GetComponent<CardScript>();
 				targetCards.Add(targetCardScript);
 			}
-			combatManager.visuals?.PlayMultiStatusEffectProjectile(
-				myCard,
-				targetCards,
-				ApplyStatusEffectToSingleTarget,
-				() => CombatInfoDisplayer.me?.RefreshDeckInfo()
-			);
-		}
 
-		private void ApplyStatusEffectToSingleTarget(CardScript targetCardScript)
-		{
-			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, 1,
-				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset, 1, 1);
-		}
-
-		private void ApplyStatusEffectsToTargets(List<CardScript> targetCards)
-		{
-			foreach (var targetCardScript in targetCards)
+			foreach (var t in targetCards)
 			{
-				ApplyStatusEffectCore(targetCardScript, statusEffectToGive, 1,
+				ApplyStatusEffectCore(t, statusEffectToGive, 1,
 					myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset, 1, 1);
 			}
-			CombatInfoDisplayer.me.RefreshDeckInfo();
+
+			// --- 3. Refresh display (synchronous) ---
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+
+			// --- 4. Capture batch projectile animation ---
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null && targetCards.Count > 0)
+			{
+				var targetGameObjects = new List<GameObject>();
+				foreach (var t in targetCards)
+				{
+					if (t != null) targetGameObjects.Add(t.gameObject);
+				}
+
+				// 1. Parallel Pop Up all targets
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.PopUpBatch,
+					targetCards = targetGameObjects
+				});
+
+				// 2. Batch projectile while cards are elevated
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.StatusEffectProjectile,
+					attackerCard = myCard,
+					targetCards = targetGameObjects
+				});
+
+				// 3. Parallel Slot In all targets
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.SlotInBatch,
+					targetCards = targetGameObjects
+				});
+			}
 		}
+
 
 
 
@@ -190,14 +205,43 @@ namespace DefaultNamespace.Effects
 			{
 				var cardScript = card.GetComponent<CardScript>();
 				if (!CanReceiveStatusEffect(cardScript, statusEffectToGive)) continue;
+				ApplyStatusEffectToFriendlySingle(cardScript, amount);
 				targetCardScripts.Add(cardScript);
 			}
-			combatManager.visuals?.PlayMultiStatusEffectProjectile(
-				myCard,
-				targetCardScripts,
-				(target) => ApplyStatusEffectToFriendlySingle(target, amount),
-				() => CombatInfoDisplayer.me?.RefreshDeckInfo()
-			);
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null && targetCardScripts.Count > 0)
+			{
+				var targetGameObjects = new List<GameObject>();
+				foreach (var t in targetCardScripts)
+				{
+					if (t != null) targetGameObjects.Add(t.gameObject);
+				}
+
+				// 1. Parallel Pop Up all targets
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.PopUpBatch,
+					targetCards = targetGameObjects
+				});
+
+				// 2. Batch projectile while cards are elevated
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.StatusEffectProjectile,
+					attackerCard = myCard,
+					targetCards = targetGameObjects
+				});
+
+				// 3. Parallel Slot In all targets
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.SlotInBatch,
+					targetCards = targetGameObjects
+				});
+			}
 		}
 
 		private void ApplyStatusEffectToFriendlySingle(CardScript targetCardScript, int amount)
@@ -207,16 +251,6 @@ namespace DefaultNamespace.Effects
 				canStatusEffectBeStacked ? amount : 1);
 		}
 
-		private void ApplyStatusEffectsToFriendly(List<GameObject> cardsToGive, int amount)
-		{
-			foreach (var targetCard in cardsToGive)
-			{
-				var targetCardScript = targetCard.GetComponent<CardScript>();
-				if (!CanReceiveStatusEffect(targetCardScript, statusEffectToGive)) continue;
-				ApplyStatusEffectToFriendlySingle(targetCardScript, amount);
-			}
-			CombatInfoDisplayer.me.RefreshDeckInfo();
-		}
 
 		/// <summary>
 		/// Gives status effects to the last X cards in the combined deck (cards before this card in deck order).
@@ -260,12 +294,46 @@ namespace DefaultNamespace.Effects
 				cardsGiven++;
 			}
 			if (targetCards.Count <= 0) return;
-			combatManager.visuals?.PlayMultiStatusEffectProjectile(
-				myCard,
-				targetCards,
-				ApplyStatusEffectToLastXCardSingle,
-				() => CombatInfoDisplayer.me?.RefreshDeckInfo()
-			);
+
+			foreach (var t in targetCards)
+			{
+				ApplyStatusEffectToLastXCardSingle(t);
+			}
+
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null)
+			{
+				var targetGameObjects = new List<GameObject>();
+				foreach (var t in targetCards)
+				{
+					if (t != null) targetGameObjects.Add(t.gameObject);
+				}
+
+				// 1. Parallel Pop Up all targets
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.PopUpBatch,
+					targetCards = targetGameObjects
+				});
+
+				// 2. Batch projectile while cards are elevated
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.StatusEffectProjectile,
+					attackerCard = myCard,
+					targetCards = targetGameObjects
+				});
+
+				// 3. Parallel Slot In all targets
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.SlotInBatch,
+					targetCards = targetGameObjects
+				});
+			}
 		}
 
 		private void ApplyStatusEffectToLastXCardSingle(CardScript targetCardScript)
@@ -275,13 +343,6 @@ namespace DefaultNamespace.Effects
 				canStatusEffectBeStacked ? statusEffectLayerCount : 1);
 		}
 
-		private void ApplyStatusEffectsToLastXCards(List<CardScript> targetCards)
-		{
-			foreach (var targetCardScript in targetCards)
-			{
-				ApplyStatusEffectToLastXCardSingle(targetCardScript);
-			}
-		}
 
 		public virtual void GiveStatusEffectToXFriendly()
 		{
@@ -316,12 +377,46 @@ namespace DefaultNamespace.Effects
 			int actualCount = Mathf.Min(xFriendlyCount, friendlyCards.Count);
 			for (int i = 0; i < actualCount; i++) targetCards.Add(friendlyCards[i]);
 			if (targetCards.Count <= 0) return;
-			combatManager.visuals?.PlayMultiStatusEffectProjectile(
-				myCard,
-				targetCards,
-				ApplyStatusEffectToXFriendlySingle,
-				() => CombatInfoDisplayer.me?.RefreshDeckInfo()
-			);
+
+			foreach (var t in targetCards)
+			{
+				ApplyStatusEffectToXFriendlySingle(t);
+			}
+
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null)
+			{
+				var targetGameObjects = new List<GameObject>();
+				foreach (var t in targetCards)
+				{
+					if (t != null) targetGameObjects.Add(t.gameObject);
+				}
+
+				// 1. Parallel Pop Up all targets
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.PopUpBatch,
+					targetCards = targetGameObjects
+				});
+
+				// 2. Batch projectile while cards are elevated
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.StatusEffectProjectile,
+					attackerCard = myCard,
+					targetCards = targetGameObjects
+				});
+
+				// 3. Parallel Slot In all targets
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.SlotInBatch,
+					targetCards = targetGameObjects
+				});
+			}
 		}
 
 		private void ApplyStatusEffectToXFriendlySingle(CardScript targetCardScript)
@@ -331,13 +426,6 @@ namespace DefaultNamespace.Effects
 				canStatusEffectBeStacked ? yFriendlyLayerCount : 1);
 		}
 
-		private void ApplyStatusEffectsToXFriendly(List<CardScript> targetCards)
-		{
-			foreach (var targetCardScript in targetCards)
-			{
-				ApplyStatusEffectToXFriendlySingle(targetCardScript);
-			}
-		}
 
 		/// <summary>
 		/// Based on the passed IntSO value, apply status effects to the same number of random friendly cards, each card receives 1 layer

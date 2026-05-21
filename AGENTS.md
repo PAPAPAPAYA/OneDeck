@@ -170,10 +170,16 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 - `StageEffect` captures `MoveToTopBatch`.
 - `ExileEffect` captures `Destroy` (preceded by `PopUp` so the player sees the card being exiled).
 - `ApplyStatusEffectCore`, `ConsumeStatusEffect`, `ManaAlterEffect`, and `TransferStatusEffectEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
+- `StatusEffectGiverEffect` executes `ApplyStatusEffectCore` synchronously in the logic phase (auto-capturing `StatusEffectChange`), then optionally captures a single `StatusEffectProjectile` request carrying all targets for batched animation playback.
 - `AddTempCard` captures `PopUp` + `SlotIn` for each newly created card so it visibly enters the deck.
 - `CurseEffect` captures `PopUp` + `StatusEffectProjectile` + `SlotIn` so the target card lifts during the projectile flight.
 - `ConsumeStatusEffect` uses `CapturePopUpStatusEffectChangeSlotIn` to play `PopUp` + `StatusEffectChange` + `SlotIn` for consumption on deck cards.
 - Batch types run all card movements in parallel and yield until the last completes.
+
+**`StatusEffectProjectile` semantics:**
+- `targetCard` populated, `targetCards` null/empty → single-target projectile (back-compat).
+- `targetCard` null, `targetCards` populated → multi-target projectile; all targets fly in parallel with stagger.
+- Do not populate both simultaneously.
 
 ### Snapshot Target Indices
 `AnimationRequest` carries an optional `List<int> targetIndices` (parallel to `targetCards`). Effects that move cards within the deck must **snapshot** each target card's logical index at capture time **before** raising reactive events (e.g. `onMeBuried` → `StageSelf`), because reactive effects may modify deck order and pollute the index.

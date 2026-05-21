@@ -105,27 +105,27 @@ namespace DefaultNamespace.Managers
 			
 			if (printToConsole)
 			{
-				Debug.Log($"[CombatStatsLogger] {record}");
+				// Debug.Log($"[CombatStatsLogger] {record}");
 			}
 		}
 
 		private void PrintCombatResults()
 		{
-			Debug.Log("========== COMBAT STATS REPORT ==========");
-			Debug.Log($"Total reveals: {records.Count}");
-			Debug.Log($"Final Owner HP: {CombatManager.Me.ownerPlayerStatusRef?.hp ?? 0}");
-			Debug.Log($"Final Enemy HP: {CombatManager.Me.enemyPlayerStatusRef?.hp ?? 0}");
-			Debug.Log("------------------------------------------");
+			// Debug.Log("========== COMBAT STATS REPORT ==========");
+			// Debug.Log($"Total reveals: {records.Count}");
+			// Debug.Log($"Final Owner HP: {CombatManager.Me.ownerPlayerStatusRef?.hp ?? 0}");
+			// Debug.Log($"Final Enemy HP: {CombatManager.Me.enemyPlayerStatusRef?.hp ?? 0}");
+			// Debug.Log("------------------------------------------");
 			
 			foreach (var record in records)
 			{
-				Debug.Log(record.ToString());
+				// Debug.Log(record.ToString());
 			}
 			
-			Debug.Log("========== END OF COMBAT STATS ==========");
+			// Debug.Log("========== END OF COMBAT STATS ==========");
 			
 			// Print card reveal stats (total reveals / card reveal count)
-			Debug.Log("========== CARD REVEAL STATS ==========");
+			// Debug.Log("========== CARD REVEAL STATS ==========");
 			int totalReveals = records.Count;
 			foreach (var kvp in _cardRevealStats)
 			{
@@ -133,16 +133,16 @@ namespace DefaultNamespace.Managers
 				List<int> revealIndices = kvp.Value;
 				int cardRevealCount = revealIndices.Count;
 				float interval = totalReveals / (float)cardRevealCount;
-				Debug.Log($"Card {cardTypeID}: revealed {cardRevealCount} times, interval (total/card): {interval:F2}");
+				// Debug.Log($"Card {cardTypeID}: revealed {cardRevealCount} times, interval (total/card): {interval:F2}");
 			}
-			Debug.Log("========== END OF CARD REVEAL STATS ==========");
+			// Debug.Log("========== END OF CARD REVEAL STATS ==========");
 		}
 
 		private void ExportToCSV()
 		{
 			if (records.Count == 0)
 			{
-				Debug.LogWarning("[CombatStatsLogger] No records to export.");
+				// Debug.LogWarning("[CombatStatsLogger] No records to export.");
 				return;
 			}
 
@@ -199,11 +199,11 @@ namespace DefaultNamespace.Managers
 				// Write to file
 				File.WriteAllText(filePath, csv.ToString(), Encoding.UTF8);
 
-				Debug.Log($"[CombatStatsLogger] Combat log exported to: {filePath}");
+				// Debug.Log($"[CombatStatsLogger] Combat log exported to: {filePath}");
 			}
 			catch (Exception ex)
 			{
-				Debug.LogError($"[CombatStatsLogger] CSV export failed: {ex.Message}");
+				// Debug.LogError($"[CombatStatsLogger] CSV export failed: {ex.Message}");
 			}
 		}
 

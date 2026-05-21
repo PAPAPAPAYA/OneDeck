@@ -76,6 +76,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float popUpScaleMultiplier = 1.15f;
 	[Tooltip("Time to reach Pop Up peak position")]
 	public float popUpDuration = 0.25f;
+	[Tooltip("Time to hold at Pop Up peak position before onComplete fires")]
+	public float popUpHoldDuration = 0.25f;
 	[Tooltip("Easing for Pop Up movement")]
 	public Ease popUpEase = Ease.OutQuad;
 	[Tooltip("Time to return to deck position in Slot In")]
@@ -130,7 +132,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		if (physicalCardsInDeck.Count == 0 && physicalCardInRevealZone == null)
 		{
-			Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck SKIPPED (empty)");
+			// Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck SKIPPED (empty)");
 			return;
 		}
 
@@ -139,7 +141,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckBefore += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck START deckBefore=" + deckBefore);
+		// Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck START deckBefore=" + deckBefore);
 
 		// Rebuild dictionary (includes cards from deck and reveal zone)
 		BuildCardScriptToPhysicalDictionary();
@@ -175,7 +177,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckList += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck done. deckCount=" + physicalCardsInDeck.Count + " revealZone=" + (physicalCardInRevealZone != null ? physicalCardInRevealZone.name : "null") + " deck=" + deckList);
+		// Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck done. deckCount=" + physicalCardsInDeck.Count + " revealZone=" + (physicalCardInRevealZone != null ? physicalCardInRevealZone.name : "null") + " deck=" + deckList);
 	}
 
 	/// <summary>
@@ -185,7 +187,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		var physScript = physicalCard != null ? physicalCard.GetComponent<CardPhysObjScript>() : null;
 
-		Debug.Log("[CombatUXManager] MovePhysicalCardToRevealZone physical=" + (physicalCard != null ? physicalCard.name : "null") + " deckCountBefore=" + physicalCardsInDeck.Count);
+		// Debug.Log("[CombatUXManager] MovePhysicalCardToRevealZone physical=" + (physicalCard != null ? physicalCard.name : "null") + " deckCountBefore=" + physicalCardsInDeck.Count);
 		
 		// Remove from deck
 		physicalCardsInDeck.Remove(physicalCard);
@@ -245,7 +247,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var cardScript = card.GetComponent<CardScript>();
 		if (cardScript == null)
 		{
-			Debug.LogWarning($"MoveRevealedCardToBottom: Card {card.name} has no CardScript");
+			// Debug.LogWarning($"MoveRevealedCardToBottom: Card {card.name} has no CardScript");
 			onComplete?.Invoke();
 			return;
 		}
@@ -255,7 +257,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
 		if (physicalCard == null)
 		{
-			Debug.LogWarning($"MoveRevealedCardToBottom: Could not find physical card for {card.name}");
+			// Debug.LogWarning($"MoveRevealedCardToBottom: Could not find physical card for {card.name}");
 			onComplete?.Invoke();
 			return;
 		}
@@ -269,7 +271,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Add to bottom of deck (index 0)
 		physicalCardsInDeck.Insert(0, physicalCard);
 		InvalidateCardScriptCache();
-		Debug.Log("[CombatUXManager] MoveRevealedCardToBottom inserted " + physicalCard.name + " at index 0 deckCount=" + physicalCardsInDeck.Count);
+		// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom inserted " + physicalCard.name + " at index 0 deckCount=" + physicalCardsInDeck.Count);
 
 		// If showPos is configured, use universal animation system
 		if (showPos != null)
@@ -285,7 +287,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physicalCardDeckPos.position.y + yOffset * (effectiveCount - 1),
 				physicalCardDeckPos.position.z - zOffset * 0
 			);
-			Debug.Log("[CombatUXManager] MoveRevealedCardToBottom targetPos=" + targetPos + " effectiveCount=" + effectiveCount);
+			// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom targetPos=" + targetPos + " effectiveCount=" + effectiveCount);
 
 			var config = new CardMoveConfig
 			{
@@ -328,7 +330,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
 		if (physicalCard == null)
 		{
-			Debug.LogWarning("[CombatUXManager] MoveCardWithAnimation physicalCard NOT FOUND for " + logicalCard.name);
+			// Debug.LogWarning("[CombatUXManager] MoveCardWithAnimation physicalCard NOT FOUND for " + logicalCard.name);
 			return;
 		}
 
@@ -387,7 +389,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		AnimationStateTracker.me?.RegisterAnimation();
 
-		Debug.Log("[CombatUXManager] MoveCardWithAnimation START logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " targetPos=" + targetPosition + " physical=" + physicalCard.name + " physCurrentPos=" + physicalCard.transform.position);
+		// Debug.Log("[CombatUXManager] MoveCardWithAnimation START logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " targetPos=" + targetPosition + " physical=" + physicalCard.name + " physCurrentPos=" + physicalCard.transform.position);
 
 		// Create animation sequence
 		Sequence moveSequence = DOTween.Sequence();
@@ -422,7 +424,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Animation complete callback
 		moveSequence.OnComplete(() =>
 		{
-			Debug.Log("[CombatUXManager] MoveCardWithAnimation COMPLETE logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " finalPos=" + physicalCard.transform.position + " finalTargetPos=" + targetPosition);
+			// Debug.Log("[CombatUXManager] MoveCardWithAnimation COMPLETE logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " finalPos=" + physicalCard.transform.position + " finalTargetPos=" + targetPosition);
 			AnimationStateTracker.me?.CompleteAnimation();
 			UnblockInput(this);
 
@@ -473,7 +475,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	public void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null)
 	{
-		Debug.Log("[CombatUXManager] MoveCardToIndex called logical=" + (logicalCard != null ? logicalCard.name : "null") + " requestedIndex=" + index + " deckCount=" + physicalCardsInDeck.Count);
+		// Debug.Log("[CombatUXManager] MoveCardToIndex called logical=" + (logicalCard != null ? logicalCard.name : "null") + " requestedIndex=" + index + " deckCount=" + physicalCardsInDeck.Count);
 		MoveCardWithAnimation(logicalCard, CardMoveConfig.ToIndex(index, duration, useArc, onComplete));
 	}
 
@@ -486,7 +488,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, count, basePos, xOffset, yOffset, zOffset);
-		Debug.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result + " basePos=" + basePos);
+		// Debug.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result + " basePos=" + basePos);
 		return result;
 	}
 
@@ -757,7 +759,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			return;
 		}
-		Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets deckCount=" + physicalCardsInDeck.Count);
+		// Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets deckCount=" + physicalCardsInDeck.Count);
 		// Update card positions in deck
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
@@ -768,7 +770,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// Calculate target position
 			Vector3 targetPos = CalculatePositionAtIndex(i);
 			
-			Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets card=" + card.name + " index=" + i + " currentPos=" + card.transform.position + " targetPos=" + targetPos);
+			// Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets card=" + card.name + " index=" + i + " currentPos=" + card.transform.position + " targetPos=" + targetPos);
 			
 			// Set target position and scale (card handles animation in its own Update)
 			physScript.SetTargetPosition(targetPos);
@@ -789,7 +791,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckBefore += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		Debug.Log("[CombatUXManager] ApplyAnimationResult START type=" + request.type + " deckBefore=" + deckBefore);
+		// Debug.Log("[CombatUXManager] ApplyAnimationResult START type=" + request.type + " deckBefore=" + deckBefore);
 
 		switch (request.type)
 		{
@@ -802,11 +804,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					{
 						physicalCardsInDeck.Remove(phys);
 						physicalCardsInDeck.Insert(0, phys);
-						Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottomBatch inserted " + phys.name + " at index 0");
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottomBatch inserted " + phys.name + " at index 0");
 					}
 					else
 					{
-						Debug.LogWarning("[CombatUXManager] ApplyAnimationResult MoveToBottomBatch physical not found for " + card.name);
+						// Debug.LogWarning("[CombatUXManager] ApplyAnimationResult MoveToBottomBatch physical not found for " + card.name);
 					}
 				}
 				break;
@@ -819,11 +821,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					{
 						physicalCardsInDeck.Remove(phys);
 						physicalCardsInDeck.Add(phys);
-						Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTopBatch appended " + phys.name + " at end");
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTopBatch appended " + phys.name + " at end");
 					}
 					else
 					{
-						Debug.LogWarning("[CombatUXManager] ApplyAnimationResult MoveToTopBatch physical not found for " + card.name);
+						// Debug.LogWarning("[CombatUXManager] ApplyAnimationResult MoveToTopBatch physical not found for " + card.name);
 					}
 				}
 				break;
@@ -835,7 +837,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					{
 						physicalCardsInDeck.Remove(phys);
 						physicalCardsInDeck.Insert(0, phys);
-						Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottom inserted " + phys.name + " at index 0");
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottom inserted " + phys.name + " at index 0");
 					}
 				}
 				break;
@@ -847,7 +849,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					{
 						physicalCardsInDeck.Remove(phys);
 						physicalCardsInDeck.Add(phys);
-						Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTop appended " + phys.name + " at end");
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTop appended " + phys.name + " at end");
 					}
 				}
 				break;
@@ -860,7 +862,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						physicalCardsInDeck.Remove(phys);
 						int idx = Mathf.Clamp(request.targetIndex, 0, physicalCardsInDeck.Count);
 						physicalCardsInDeck.Insert(idx, phys);
-						Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToIndex inserted " + phys.name + " at index=" + idx + " requested=" + request.targetIndex);
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToIndex inserted " + phys.name + " at index=" + idx + " requested=" + request.targetIndex);
 					}
 				}
 				break;
@@ -871,7 +873,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					if (phys != null)
 					{
 						physicalCardsInDeck.Remove(phys);
-						Debug.Log("[CombatUXManager] ApplyAnimationResult Destroy removed " + phys.name);
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult Destroy removed " + phys.name);
 					}
 				}
 				break;
@@ -884,7 +886,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckAfter += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		Debug.Log("[CombatUXManager] ApplyAnimationResult END deckCount=" + physicalCardsInDeck.Count + " deckAfter=" + deckAfter);
+		// Debug.Log("[CombatUXManager] ApplyAnimationResult END deckCount=" + physicalCardsInDeck.Count + " deckAfter=" + deckAfter);
 	}
 
 	#endregion
@@ -913,7 +915,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		GameObject physicalCard = GetPhysicalCardFromLogicalCard(targetCard);
 		if (physicalCard == null)
 		{
-			Debug.LogWarning("[CombatUXManager] FocusOnCardCoroutine: No physical card found for " + targetCard.name);
+			// Debug.LogWarning("[CombatUXManager] FocusOnCardCoroutine: No physical card found for " + targetCard.name);
 			yield break;
 		}
 
@@ -1356,7 +1358,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 		}
 
-		Debug.Log("[CombatUXManager] DestroyCardWithAnimation logical=" + logicalCard.name + " physicalFound=" + (physicalCard != null ? physicalCard.name : "NULL") + " inDeck=" + physicalCardsInDeck.Contains(physicalCard) + " inReveal=" + (physicalCardInRevealZone == physicalCard));
+		// Debug.Log("[CombatUXManager] DestroyCardWithAnimation logical=" + logicalCard.name + " physicalFound=" + (physicalCard != null ? physicalCard.name : "NULL") + " inDeck=" + physicalCardsInDeck.Contains(physicalCard) + " inReveal=" + (physicalCardInRevealZone == physicalCard));
 		
 		// Remove logical card from combined deck
 		if (combatManager != null && combatManager.combinedDeckZone.Contains(logicalCard))
@@ -1367,7 +1369,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// If no physical card, destroy logical card directly
 		if (physicalCard == null)
 		{
-			Debug.LogWarning("[CombatUXManager] DestroyCardWithAnimation: no physical card found for " + logicalCard.name + ", destroying immediately");
+			// Debug.LogWarning("[CombatUXManager] DestroyCardWithAnimation: no physical card found for " + logicalCard.name + ", destroying immediately");
 			Destroy(logicalCard);
 			onComplete?.Invoke();
 			return;
@@ -1499,7 +1501,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckAfterInsert += "[" + i + "]" + physicalCardsInDeck[i].name + " pos=" + physicalCardsInDeck[i].transform.position + " ";
 		}
-		Debug.Log("[CombatUXManager] AddPhysicalCardToDeck logical=" + logicalCard.name + " deckCountAfterInsert=" + physicalCardsInDeck.Count + " insertedAtIndex=0 deck=" + deckAfterInsert);
+		// Debug.Log("[CombatUXManager] AddPhysicalCardToDeck logical=" + logicalCard.name + " deckCountAfterInsert=" + physicalCardsInDeck.Count + " insertedAtIndex=0 deck=" + deckAfterInsert);
 
 		// Do NOT call UpdateAllPhysicalCardTargets here to avoid pre-moving
 		// existing cards before bury/stage animations (distance-zero bug).
@@ -1524,11 +1526,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					targetPos.z = backMostZ + zBump;
 					cardPhys.SetTargetPosition(targetPos);
 					cardPhys.SetTargetScale(physicalCardDeckSize);
-					Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
+					// Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
 				}
 				else
 				{
-					Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card inside effect chain, skipping auto-tween card=" + cardAtIndex.name);
+					// Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card inside effect chain, skipping auto-tween card=" + cardAtIndex.name);
 				}
 			}
 		}
@@ -1619,6 +1621,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// <param name="onComplete">Effect complete callback (executed after effect reaches target)</param>
 	public void PlayStatusEffectProjectile(GameObject giverCard, GameObject receiverCard, Action onComplete = null)
 	{
+		UnityEngine.Debug.Log("[CombatUXManager] PlayStatusEffectProjectile for receiver=" + (receiverCard?.name ?? "null") + " — NO PopUp here, only parabolic projectile.");
 		if (statusEffectProjectilePrefab == null || giverCard == null || receiverCard == null)
 		{
 			onComplete?.Invoke();
@@ -1694,6 +1697,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		System.Action onAllComplete = null,
 		float? customStaggerDelay = null)
 	{
+		UnityEngine.Debug.Log("[CombatUXManager] PlayMultiStatusEffectProjectile START — REAL-TIME path, " + (targetCards?.Count ?? 0) + " targets. NO PopUp/SlotIn here!");
 		if (targetCards == null || targetCards.Count == 0)
 		{
 			onAllComplete?.Invoke();
@@ -1932,6 +1936,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Sequence seq = DOTween.Sequence();
 		seq.Append(physicalCard.transform.DOMove(peakPos, popUpDuration).SetEase(popUpEase));
 		seq.Join(physicalCard.transform.DOScale(peakScale, popUpDuration).SetEase(popUpEase));
+		seq.AppendInterval(popUpHoldDuration);
 		seq.OnComplete(() =>
 		{
 			AnimationStateTracker.me?.CompleteAnimation();
@@ -2023,7 +2028,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Sequence seq = DOTween.Sequence();
 		seq.Append(physicalCard.transform.DOMove(peakPos, newCardFlyInDuration).SetEase(popUpEase));
 		seq.Join(physicalCard.transform.DOScale(peakScale, newCardFlyInDuration).SetEase(popUpEase));
-		seq.AppendInterval(popUpDuration);
+		seq.AppendInterval(popUpHoldDuration);
 		seq.OnComplete(() =>
 		{
 			physScript.isPlayingSpecialAnimation = false;

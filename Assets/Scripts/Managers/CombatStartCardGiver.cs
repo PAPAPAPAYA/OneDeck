@@ -56,14 +56,14 @@ namespace DefaultNamespace.Managers
             // Validate source pool
             if (rewardPoolDeck == null || rewardPoolDeck.deck.Count == 0)
             {
-                Debug.LogWarning("[CombatStartCardGiver] Reward pool is empty or not configured");
+                // Debug.LogWarning("[CombatStartCardGiver] Reward pool is empty or not configured");
                 return;
             }
             
             // Validate target deck
             if (playerDeck == null)
             {
-                Debug.LogError("[CombatStartCardGiver] Player deck is not configured");
+                // Debug.LogError("[CombatStartCardGiver] Player deck is not configured");
                 return;
             }
             
@@ -78,7 +78,7 @@ namespace DefaultNamespace.Managers
                     int currentSize = GetActualDeckSize();
                     if (currentSize >= deckSizeLimit.value)
                     {
-                        Debug.Log("[CombatStartCardGiver] Deck is full, stop adding");
+                        // Debug.Log("[CombatStartCardGiver] Deck is full, stop adding");
                         return;
                     }
                 }
@@ -92,7 +92,7 @@ namespace DefaultNamespace.Managers
                 
                 if (logAddedCard)
                 {
-                    Debug.Log($"[CombatStartCardGiver] Added card: {cardToAdd.name}");
+                    // Debug.Log($"[CombatStartCardGiver] Added card: {cardToAdd.name}");
                 }
             }
         }

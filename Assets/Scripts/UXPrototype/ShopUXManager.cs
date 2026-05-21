@@ -66,14 +66,14 @@ public class ShopUXManager : MonoBehaviour
         // Check if shopItems is empty
         if (shopItems == null || shopItems.deck == null || shopItems.deck.Count == 0)
         {
-            Debug.LogWarning("[ShopUXManager] shopItems is empty or null!");
+            // Debug.LogWarning("[ShopUXManager] shopItems is empty or null!");
             return;
         }
         
         // Check if physicalCardPrefab is set
         if (physicalCardPrefab == null)
         {
-            Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
+            // Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
             return;
         }
         
@@ -83,7 +83,7 @@ public class ShopUXManager : MonoBehaviour
             GameObject cardPrefab = shopItems.deck[i];
             if (cardPrefab == null)
             {
-                Debug.LogWarning($"[ShopUXManager] Shop item at index {i} is null, skipping.");
+                // Debug.LogWarning($"[ShopUXManager] Shop item at index {i} is null, skipping.");
                 continue;
             }
             
@@ -91,7 +91,7 @@ public class ShopUXManager : MonoBehaviour
             CardScript cardScript = cardPrefab.GetComponent<CardScript>();
             if (cardScript == null)
             {
-                Debug.LogWarning($"[ShopUXManager] Card prefab at index {i} does not have CardScript component!");
+                // Debug.LogWarning($"[ShopUXManager] Card prefab at index {i} does not have CardScript component!");
                 continue;
             }
             
@@ -122,7 +122,7 @@ public class ShopUXManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[ShopUXManager] Physical card prefab does not have CardPhysObjScript component!");
+                // Debug.LogWarning($"[ShopUXManager] Physical card prefab does not have CardPhysObjScript component!");
                 physicalCard.transform.localScale = physCardSize;
             }
             
@@ -182,14 +182,14 @@ public class ShopUXManager : MonoBehaviour
         // Check if playerDeck is null
         if (playerDeck == null || playerDeck.deck == null)
         {
-            Debug.LogWarning("[ShopUXManager] playerDeck is null!");
+            // Debug.LogWarning("[ShopUXManager] playerDeck is null!");
             return;
         }
         
         // Check if physicalCardPrefab is set
         if (physicalCardPrefab == null)
         {
-            Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
+            // Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
             return;
         }
         
@@ -200,7 +200,7 @@ public class ShopUXManager : MonoBehaviour
             GameObject cardPrefab = playerDeck.deck[i];
             if (cardPrefab == null)
             {
-                Debug.LogWarning($"[ShopUXManager] Player deck card at index {i} is null, skipping.");
+                // Debug.LogWarning($"[ShopUXManager] Player deck card at index {i} is null, skipping.");
                 continue;
             }
             
@@ -208,7 +208,7 @@ public class ShopUXManager : MonoBehaviour
             CardScript cardScript = cardPrefab.GetComponent<CardScript>();
             if (cardScript == null)
             {
-                Debug.LogWarning($"[ShopUXManager] Card prefab at index {i} does not have CardScript component!");
+                // Debug.LogWarning($"[ShopUXManager] Card prefab at index {i} does not have CardScript component!");
                 continue;
             }
             
@@ -242,7 +242,7 @@ public class ShopUXManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[ShopUXManager] Physical card prefab does not have CardPhysObjScript component!");
+                // Debug.LogWarning($"[ShopUXManager] Physical card prefab does not have CardPhysObjScript component!");
                 physicalCard.transform.localScale = physCardSize;
             }
             
@@ -346,7 +346,7 @@ public class ShopUXManager : MonoBehaviour
         // 1. Get purchased card
         if (purchasedCardIndex < 0 || purchasedCardIndex >= _spawnedShopCards.Count)
         {
-            Debug.LogWarning($"[ShopUXManager] Invalid purchased card index: {purchasedCardIndex}");
+            // Debug.LogWarning($"[ShopUXManager] Invalid purchased card index: {purchasedCardIndex}");
             return;
         }
         
@@ -371,7 +371,7 @@ public class ShopUXManager : MonoBehaviour
             }
             
             Destroy(purchasedCard);
-            Debug.Log($"[ShopUXManager] Card purchased (no space), destroyed immediately");
+            // Debug.Log($"[ShopUXManager] Card purchased (no space), destroyed immediately");
             return;
         }
         
@@ -436,7 +436,7 @@ public class ShopUXManager : MonoBehaviour
             purchasedCardPhys.shopItemIndex = -1;
         }
         
-        Debug.Log($"[ShopUXManager] Card purchased, moved to player deck position ({row}, {col})");
+        // Debug.Log($"[ShopUXManager] Card purchased, moved to player deck position ({row}, {col})");
     }
     
     /// <summary>
@@ -456,7 +456,7 @@ public class ShopUXManager : MonoBehaviour
         int spawnedIndex = _spawnedPlayerCards.IndexOf(soldCardInstance);
         if (spawnedIndex < 0)
         {
-            Debug.LogWarning($"[ShopUXManager] Sold card not found in _spawnedPlayerCards");
+            // Debug.LogWarning($"[ShopUXManager] Sold card not found in _spawnedPlayerCards");
             // Destroy directly
             Destroy(soldCardInstance);
             return;
@@ -552,7 +552,7 @@ public class ShopUXManager : MonoBehaviour
             _spawnedPlayerCards.Add(emptySpace);
         }
         
-        Debug.Log($"[ShopUXManager] Card sold, spawned empty space at index {insertIndex}");
+        // Debug.Log($"[ShopUXManager] Card sold, spawned empty space at index {insertIndex}");
     }
 
     /// <summary>
@@ -632,7 +632,7 @@ public class ShopUXManager : MonoBehaviour
         
         if (newEmptySlots > 0)
         {
-            Debug.Log($"[ShopUXManager] Spawned {newEmptySlots} additional empty spaces. Total player cards: {_spawnedPlayerCards.Count}");
+            // Debug.Log($"[ShopUXManager] Spawned {newEmptySlots} additional empty spaces. Total player cards: {_spawnedPlayerCards.Count}");
         }
     }
 
@@ -712,14 +712,14 @@ public class ShopUXManager : MonoBehaviour
         // Check if shopItems is empty
         if (shopItems == null || shopItems.deck == null || shopItems.deck.Count == 0)
         {
-            Debug.LogWarning("[ShopUXManager] shopItems is empty or null, cannot spawn new cards!");
+            // Debug.LogWarning("[ShopUXManager] shopItems is empty or null, cannot spawn new cards!");
             return;
         }
         
         // Check if physicalCardPrefab is set
         if (physicalCardPrefab == null)
         {
-            Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
+            // Debug.LogError("[ShopUXManager] physicalCardPrefab is not assigned!");
             return;
         }
         
@@ -729,7 +729,7 @@ public class ShopUXManager : MonoBehaviour
             GameObject cardPrefab = shopItems.deck[i];
             if (cardPrefab == null)
             {
-                Debug.LogWarning($"[ShopUXManager] Shop item at index {i} is null, skipping.");
+                // Debug.LogWarning($"[ShopUXManager] Shop item at index {i} is null, skipping.");
                 continue;
             }
             
@@ -737,7 +737,7 @@ public class ShopUXManager : MonoBehaviour
             CardScript cardScript = cardPrefab.GetComponent<CardScript>();
             if (cardScript == null)
             {
-                Debug.LogWarning($"[ShopUXManager] Card prefab at index {i} does not have CardScript component!");
+                // Debug.LogWarning($"[ShopUXManager] Card prefab at index {i} does not have CardScript component!");
                 continue;
             }
             
@@ -768,7 +768,7 @@ public class ShopUXManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[ShopUXManager] Physical card prefab does not have CardPhysObjScript component!");
+                // Debug.LogWarning($"[ShopUXManager] Physical card prefab does not have CardPhysObjScript component!");
                 physicalCard.transform.localScale = physCardSize;
             }
             
@@ -776,6 +776,6 @@ public class ShopUXManager : MonoBehaviour
             _spawnedShopCards.Add(physicalCard);
         }
         
-        Debug.Log($"[ShopUXManager] Reroll complete, spawned {_spawnedShopCards.Count} new shop cards.");
+        // Debug.Log($"[ShopUXManager] Reroll complete, spawned {_spawnedShopCards.Count} new shop cards.");
     }
 }

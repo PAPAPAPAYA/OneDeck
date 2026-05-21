@@ -96,10 +96,10 @@ namespace DefaultNamespace.Managers
 				float deckAAveDmgToSelfPerSession = deckADmgOutputs_ToSelf_PerSession.Average();
 				float deckBAveDmgToSelfPerSession = deckBDmgOutputs_ToSelf_PerSession.Average();
 
-				print("win rates: " + deckAWinRate * 100 + "% vs " + deckBWinRate * 100 + "%");
-				print("HPs: " + deckAHPs.Average() + " vs " + deckBHPs.Average());
-				print("Ave Dmg to enemy/session: " + deckAAveDmgToOppPerSession + " vs " + deckBAveDmgToOppPerSession);
-				print("Ave Dmg to self/session: " + deckAAveDmgToSelfPerSession + " vs " + deckBAveDmgToSelfPerSession);
+				// print("win rates: " + deckAWinRate * 100 + "% vs " + deckBWinRate * 100 + "%");
+				// print("HPs: " + deckAHPs.Average() + " vs " + deckBHPs.Average());
+				// print("Ave Dmg to enemy/session: " + deckAAveDmgToOppPerSession + " vs " + deckBAveDmgToOppPerSession);
+				// print("Ave Dmg to self/session: " + deckAAveDmgToSelfPerSession + " vs " + deckBAveDmgToSelfPerSession);
 				
 			}
 		}

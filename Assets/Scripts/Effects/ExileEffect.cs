@@ -261,7 +261,7 @@ public class ExileEffect : EffectScript
 
 		string myColor = GetMyCardColorTag();
 		var exiledCards = new List<GameObject>();
-		Debug.Log("[ExileEffect] ExileChosenCards START. revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null") + " combinedDeckCount=" + combatManager.combinedDeckZone.Count);
+		// Debug.Log("[ExileEffect] ExileChosenCards START. revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null") + " combinedDeckCount=" + combatManager.combinedDeckZone.Count);
 
 		for (var i = 0; i < amount; i++)
 		{
@@ -277,7 +277,7 @@ public class ExileEffect : EffectScript
 			// (prevents the card from being put back into the deck on next click)
 			if (combatManager.revealZone == targetCard)
 			{
-				Debug.Log("[ExileEffect] Setting revealZone to NULL because exiling revealed card " + targetCard.name);
+				// Debug.Log("[ExileEffect] Setting revealZone to NULL because exiling revealed card " + targetCard.name);
 				combatManager.revealZone = null;
 			}
 

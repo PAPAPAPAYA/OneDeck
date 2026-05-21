@@ -102,7 +102,7 @@ namespace DefaultNamespace.Managers
             var stat = GetOrCreateCardStat(cardTypeID, cardName);
             stat.appearCount++;
             _pendingSave = true;
-            print("recorded card appeared");
+            // print("recorded card appeared");
         }
 
         /// <summary>
@@ -213,12 +213,12 @@ namespace DefaultNamespace.Managers
                 
                 if (printOnSave)
                 {
-                    Debug.Log($"[ShopStatsManager] Stats saved: {_jsonPath}");
+                    // Debug.Log($"[ShopStatsManager] Stats saved: {_jsonPath}");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[ShopStatsManager] Failed to save stats: {e.Message}");
+                // Debug.LogError($"[ShopStatsManager] Failed to save stats: {e.Message}");
             }
         }
 
@@ -247,7 +247,7 @@ namespace DefaultNamespace.Managers
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[ShopStatsManager] Failed to load stats: {e.Message}");
+                    // Debug.LogError($"[ShopStatsManager] Failed to load stats: {e.Message}");
                     _statsData = new ShopStatsData();
                 }
             }
@@ -268,7 +268,7 @@ namespace DefaultNamespace.Managers
         {
             if (_statsData.cardStats.Count == 0)
             {
-                Debug.LogWarning("[ShopStatsManager] No data to export");
+                // Debug.LogWarning("[ShopStatsManager] No data to export");
                 return;
             }
 
@@ -291,11 +291,11 @@ namespace DefaultNamespace.Managers
             try
             {
                 File.WriteAllText(_csvPath, sb.ToString(), Encoding.UTF8);
-                Debug.Log($"[ShopStatsManager] CSV exported: {_csvPath}");
+                // Debug.Log($"[ShopStatsManager] CSV exported: {_csvPath}");
             }
             catch (Exception e)
             {
-                Debug.LogError($"[ShopStatsManager] CSV export failed: {e.Message}");
+                // Debug.LogError($"[ShopStatsManager] CSV export failed: {e.Message}");
             }
         }
 
@@ -310,15 +310,15 @@ namespace DefaultNamespace.Managers
         {
             if (_statsData.cardStats.Count == 0)
             {
-                Debug.Log("[ShopStatsManager] No data yet");
+                // Debug.Log("[ShopStatsManager] No data yet");
                 return;
             }
 
-            Debug.Log("========== Shop Card Statistics Report ==========");
-            Debug.Log($"Total shop visits: {_statsData.totalShopVisits}");
-            Debug.Log($"Total rerolls: {_statsData.totalRerolls}");
-            Debug.Log($"Card types tracked: {_statsData.cardStats.Count}");
-            Debug.Log("");
+            // Debug.Log("========== Shop Card Statistics Report ==========");
+            // Debug.Log($"Total shop visits: {_statsData.totalShopVisits}");
+            // Debug.Log($"Total rerolls: {_statsData.totalRerolls}");
+            // Debug.Log($"Card types tracked: {_statsData.cardStats.Count}");
+            // Debug.Log("");
             
             var sortedStats = _statsData.cardStats
                 .OrderByDescending(s => s.PurchaseRate)
@@ -327,11 +327,11 @@ namespace DefaultNamespace.Managers
 
             foreach (var stat in sortedStats)
             {
-                Debug.Log(stat.ToString());
+                // Debug.Log(stat.ToString());
             }
             
-            Debug.Log($"Last updated: {_statsData.lastUpdated}");
-            Debug.Log("======================================");
+            // Debug.Log($"Last updated: {_statsData.lastUpdated}");
+            // Debug.Log("======================================");
         }
 
         /// <summary>
@@ -351,7 +351,7 @@ namespace DefaultNamespace.Managers
                 File.Delete(_csvPath);
             }
             
-            Debug.Log("[ShopStatsManager] Stats reset");
+            // Debug.Log("[ShopStatsManager] Stats reset");
         }
 
         #endregion

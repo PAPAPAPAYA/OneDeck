@@ -45,12 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -80,7 +77,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
@@ -132,12 +128,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -168,7 +161,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectGiverEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 4
@@ -178,7 +170,7 @@ MonoBehaviour:
   includeSelf: 0
   lastXCardsCount: 0
   statusEffectLayerCount: 0
-  xFriendlyCount: 1
+  xFriendlyCount: 2
   yFriendlyLayerCount: 1
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
@@ -232,7 +224,10 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BLACKSMITH
   displayName: "\u94C1\u5320"
-  cardDesc: "\u63ed\u6653\u65f6:\u9020\u6210 <b>3</b> \u4f24\u5bb3,\u7ed9\u4e88\u4e00\u4e2a\u53cb\u65b9 <b>1</b> \u529b\u91cf"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b>3</b> \u4F24\u5BB3,\u7ED9\u4E88\u4E00\u4E2A\u53CB\u65B9
+    <b>1</b> \u529B\u91CF"
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -241,12 +236,6 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

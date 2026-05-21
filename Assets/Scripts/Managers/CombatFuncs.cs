@@ -27,7 +27,7 @@ namespace DefaultNamespace.Managers
 			var factory = CardFactory.me;
 			if (factory == null)
 			{
-				Debug.LogError("[CombatFuncs] CardFactory is not available!");
+				// Debug.LogError("[CombatFuncs] CardFactory is not available!");
 				return;
 			}
 
@@ -40,7 +40,7 @@ namespace DefaultNamespace.Managers
 			var factory = CardFactory.me;
 			if (factory == null)
 			{
-				Debug.LogError("[CombatFuncs] CardFactory is not available!");
+				// Debug.LogError("[CombatFuncs] CardFactory is not available!");
 				return null;
 			}
 

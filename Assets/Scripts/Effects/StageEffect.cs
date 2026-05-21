@@ -332,11 +332,11 @@ public class StageEffect : EffectScript
 			var cs = _combinedDeck[i].GetComponent<CardScript>();
 			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
 		}
-		Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
+		// Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
 		// In recorder-driven mode we skip Sync here. ApplyAnimationResult handles
 		// deck ordering during playback to preserve intermediate animation states.
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
-		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
+		// Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
 
 		// Snapshot target indices BEFORE raising events, because reactive effects may modify deck order
 		var stagedTargetIndices = new List<int>();
@@ -358,7 +358,7 @@ public class StageEffect : EffectScript
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
 		string reqInfo = "StageBatch cards=" + stagedCards.Count + " indices=" + string.Join(",", stagedTargetIndices) + " deckSize=" + _combinedDeck.Count;
-		Debug.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
+		// Debug.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest {

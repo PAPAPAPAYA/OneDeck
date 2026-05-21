@@ -332,7 +332,7 @@ public class BuryEffect : EffectScript
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
 		string reqInfo = "BuryBatch cards=" + buriedCards.Count + " indices=" + string.Join(",", buriedTargetIndices) + " deckSize=" + _combinedDeck.Count;
-		Debug.Log("[BuryEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
+		// Debug.Log("[BuryEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null)
 		{
 			recorder.animationRequests.Add(new AnimationRequest {

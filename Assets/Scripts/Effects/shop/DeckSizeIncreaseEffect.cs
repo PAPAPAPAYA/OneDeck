@@ -10,7 +10,7 @@ public class DeckSizeIncreaseEffect : EffectScript
 	{
 		myDeckSize.value += amount;
 		myDeckSize.value = Mathf.Clamp(myDeckSize.value, 1, maxDeckSize.value);
-		print($"deck size increased by {amount}");
+		// print($"deck size increased by {amount}");
 		
 		// Notify ShopUXManager to spawn new placeholder cards
 		ShopUXManager.Instance?.SpawnAdditionalEmptySpaces();

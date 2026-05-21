@@ -33,13 +33,13 @@ namespace DefaultNamespace.Effects
 		{
 			if (statusEffectToTransfer == EnumStorage.StatusEffect.None)
 			{
-				Debug.LogWarning("[TransferStatusEffectEffect] statusEffectToTransfer is None!");
+				// Debug.LogWarning("[TransferStatusEffectEffect] statusEffectToTransfer is None!");
 				return;
 			}
 
 			if (curseCardTypeID == null || string.IsNullOrEmpty(curseCardTypeID.value))
 			{
-				Debug.LogWarning("[TransferStatusEffectEffect] curseCardTypeID is not set!");
+				// Debug.LogWarning("[TransferStatusEffectEffect] curseCardTypeID is not set!");
 				return;
 			}
 
@@ -47,7 +47,7 @@ namespace DefaultNamespace.Effects
 			CardScript targetCurseCard = FindHostileCurseCard();
 			if (targetCurseCard == null)
 			{
-				Debug.LogWarning($"[TransferStatusEffectEffect] Cannot find hostile curse card with typeID: {curseCardTypeID.value}");
+				// Debug.LogWarning($"[TransferStatusEffectEffect] Cannot find hostile curse card with typeID: {curseCardTypeID.value}");
 				return;
 			}
 
@@ -83,7 +83,7 @@ namespace DefaultNamespace.Effects
 		{
 			if (statusEffectToTransfer == EnumStorage.StatusEffect.None)
 			{
-				Debug.LogWarning("[TransferStatusEffectEffect] statusEffectToTransfer is None!");
+				// Debug.LogWarning("[TransferStatusEffectEffect] statusEffectToTransfer is None!");
 				return;
 			}
 

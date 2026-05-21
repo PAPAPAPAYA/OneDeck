@@ -215,7 +215,7 @@ public class ShopCardView : MonoBehaviour
 		}
 
 		_isEnlarged = true;
-		Debug.Log("[ShopCardView] Card enlarged: " + (_cardPhysObj.cardImRepresenting != null ? _cardPhysObj.cardImRepresenting.gameObject.name : "null"));
+		// Debug.Log("[ShopCardView] Card enlarged: " + (_cardPhysObj.cardImRepresenting != null ? _cardPhysObj.cardImRepresenting.gameObject.name : "null"));
 	}
 
 	/// <summary>
@@ -229,7 +229,7 @@ public class ShopCardView : MonoBehaviour
 		_cardPhysObj.SetTargetScale(_originalScale);
 
 		_isEnlarged = false;
-		Debug.Log("[ShopCardView] Card restored: " + (_cardPhysObj.cardImRepresenting != null ? _cardPhysObj.cardImRepresenting.gameObject.name : "null"));
+		// Debug.Log("[ShopCardView] Card restored: " + (_cardPhysObj.cardImRepresenting != null ? _cardPhysObj.cardImRepresenting.gameObject.name : "null"));
 	}
 
 	#endregion

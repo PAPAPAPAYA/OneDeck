@@ -235,7 +235,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	public void SetTargetPosition(Vector3 target)
 	{
-		Debug.Log("[CardPhysObjScript] SetTargetPosition card=" + name + " currentPos=" + transform.position + " newTarget=" + target + " isPlayingSpecial=" + isPlayingSpecialAnimation);
+		// Debug.Log("[CardPhysObjScript] SetTargetPosition card=" + name + " currentPos=" + transform.position + " newTarget=" + target + " isPlayingSpecial=" + isPlayingSpecialAnimation);
 		TargetPosition = target;
 
 		// If special animation is playing, do not start DOTween
@@ -255,7 +255,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	public void UpdateTargetPositionOnly(Vector3 target)
 	{
-		Debug.Log("[CardPhysObjScript] UpdateTargetPositionOnly card=" + name + " currentPos=" + transform.position + " newTarget=" + target);
+		// Debug.Log("[CardPhysObjScript] UpdateTargetPositionOnly card=" + name + " currentPos=" + transform.position + " newTarget=" + target);
 		TargetPosition = target;
 
 		// Only restart tween for cards that are still off-screen (incoming flight).
@@ -290,11 +290,11 @@ public class CardPhysObjScript : MonoBehaviour
 		// If already animating and target is the same, do not restart
 		if (_positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
 		{
-			Debug.Log("[CardPhysObjScript] StartPositionTween KILLING existing tween card=" + name);
+			// Debug.Log("[CardPhysObjScript] StartPositionTween KILLING existing tween card=" + name);
 			_positionTween.Kill();
 		}
 
-		Debug.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + moveDuration);
+		// Debug.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + moveDuration);
 		_positionTween = transform.DOMove(TargetPosition, moveDuration)
 			.SetEase(moveEase)
 			.SetUpdate(UpdateType.Normal, true);
@@ -320,7 +320,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	public void SetPositionImmediate(Vector3 position)
 	{
-		Debug.Log("[CardPhysObjScript] SetPositionImmediate card=" + name + " pos=" + position);
+		// Debug.Log("[CardPhysObjScript] SetPositionImmediate card=" + name + " pos=" + position);
 		// Stop ongoing DOTween position animation
 		if (_positionTween != null && _positionTween.IsActive())
 		{

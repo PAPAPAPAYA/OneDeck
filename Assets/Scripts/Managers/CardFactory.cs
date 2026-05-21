@@ -48,7 +48,7 @@ public class CardFactory : MonoBehaviour
 	{
 		if (prefab == null)
 		{
-			Debug.LogError("[CardFactory] prefab is null!");
+			// Debug.LogError("[CardFactory] prefab is null!");
 			return null;
 		}
 
@@ -63,7 +63,7 @@ public class CardFactory : MonoBehaviour
 		}
 		else
 		{
-			Debug.LogWarning("[CardFactory] Instantiated card has no CardScript component: " + prefab.name);
+			// Debug.LogWarning("[CardFactory] Instantiated card has no CardScript component: " + prefab.name);
 		}
 
 		return instance;
@@ -116,7 +116,7 @@ public class CardFactory : MonoBehaviour
 		}
 		else
 		{
-			Debug.LogError("[CardFactory] combatManager is null — cannot add card to deck!");
+			// Debug.LogError("[CardFactory] combatManager is null — cannot add card to deck!");
 			return cardInstance;
 		}
 
@@ -127,7 +127,7 @@ public class CardFactory : MonoBehaviour
 		}
 		else
 		{
-			Debug.LogWarning("[CardFactory] visuals is null — physical card was not created for " + cardInstance.name);
+			// Debug.LogWarning("[CardFactory] visuals is null — physical card was not created for " + cardInstance.name);
 		}
 
 		// 4. Trigger minion event
@@ -157,7 +157,7 @@ public class CardFactory : MonoBehaviour
 	{
 		if (combatManager == null)
 		{
-			Debug.LogError("[CardFactory] combatManager is null!");
+			// Debug.LogError("[CardFactory] combatManager is null!");
 			return null;
 		}
 

@@ -119,7 +119,7 @@ namespace DefaultNamespace.Effects
 			// If curseCardTypeID is empty, do not execute
 			if (curseCardTypeID == null || string.IsNullOrEmpty(curseCardTypeID.value))
 			{
-				Debug.LogWarning($"[{myCard.name}] CopyEnemyCurseCardToThem: curseCardTypeID is empty or null");
+				// Debug.LogWarning($"[{myCard.name}] CopyEnemyCurseCardToThem: curseCardTypeID is empty or null");
 				return;
 			}
 			
@@ -134,7 +134,7 @@ namespace DefaultNamespace.Effects
 			// If no matching cards, do not execute
 			if (matchingCards.Count == 0)
 			{
-				Debug.Log($"[{myCard.name}] CopyEnemyCurseCardToThem: no enemy card with typeID '{curseCardTypeID?.value}' found");
+				// Debug.Log($"[{myCard.name}] CopyEnemyCurseCardToThem: no enemy card with typeID '{curseCardTypeID?.value}' found");
 				return;
 			}
 			

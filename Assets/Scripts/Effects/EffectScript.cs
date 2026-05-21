@@ -104,6 +104,7 @@ public class EffectScript : MonoBehaviour
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		if (recorder != null)
 		{
+			UnityEngine.Debug.Log("[ApplyStatusEffectCore] Capturing StatusEffectChange for " + targetCardScript?.name + ". Recorder has " + recorder.animationRequests.Count + " requests before add.");
 			recorder.animationRequests.Add(new AnimationRequest
 			{
 				type = AnimationRequestType.StatusEffectChange,
@@ -114,7 +115,6 @@ public class EffectScript : MonoBehaviour
 				statusEffectParticleYOffset = particleYOffset
 			});
 		}
-		Debug.Log("[EffectScript] ApplyStatusEffectCore target=" + targetCardScript.name + " effect=" + effect + " amount=" + amount + " recorder=" + (recorderGo != null ? recorderGo.name : "null"));
 
 		if (!suppressLog)
 		{

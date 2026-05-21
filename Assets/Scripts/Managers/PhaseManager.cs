@@ -101,13 +101,13 @@ public class PhaseManager : MonoBehaviour
 			{
 				if (enemyStatusRef.hp <= 0)
 				{
-					print("draw");
+					// print("draw");
 					_resultText = "DRAW";
 					// Draws are not counted in statistics
 				}
 				else
 				{
-					print("you lose");
+					// print("you lose");
 					_resultText = "LOSE";
 					hearts.value--;
 					DeckTester.me.deckBWins++;
@@ -121,7 +121,7 @@ public class PhaseManager : MonoBehaviour
 			}
 			else if (enemyStatusRef.hp <= 0)
 			{
-				print("you win");
+				// print("you win");
 				_resultText = "WIN";
 				wins.value++;
 				DeckTester.me.deckAWins++;

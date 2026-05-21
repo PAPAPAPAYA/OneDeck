@@ -100,8 +100,8 @@ namespace TestWriteRead
             
             if (printOnSave)
             {
-                Debug.Log($"[CardWinRateTracker] Recorded combat result: {(playerWon ? "Win" : "Loss")}, " +
-                          $"Affected {_currentCombatPlayerCardTypeIDs.Count} cards");
+                /* Debug.Log($"[CardWinRateTracker] Recorded combat result: {(playerWon ? "Win" : "Loss")}, " +
+                          $"Affected {_currentCombatPlayerCardTypeIDs.Count} cards"); */
             }
         }
 
@@ -150,7 +150,7 @@ namespace TestWriteRead
             }
             
             // If not configured, use card name and warn
-            Debug.LogWarning($"[CardWinRateTracker] Card {cardScript.name} has no cardTypeID configured, using card name as identifier");
+            // Debug.LogWarning($"[CardWinRateTracker] Card {cardScript.name} has no cardTypeID configured, using card name as identifier");
             return cardScript.name;
         }
 
@@ -177,7 +177,7 @@ namespace TestWriteRead
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[CardWinRateTracker] Failed to read data: {e.Message}");
+                    // Debug.LogError($"[CardWinRateTracker] Failed to read data: {e.Message}");
                     _data = new CardWinRateData();
                 }
             }
@@ -199,12 +199,12 @@ namespace TestWriteRead
                 File.WriteAllText(_jsonPath, json);
                 if (printOnSave)
                 {
-                    Debug.Log($"[CardWinRateTracker] Statistics saved: {_jsonPath}");
+                    // Debug.Log($"[CardWinRateTracker] Statistics saved: {_jsonPath}");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[CardWinRateTracker] Save data failed: {e.Message}");
+                // Debug.LogError($"[CardWinRateTracker] Save data failed: {e.Message}");
             }
         }
 
@@ -219,7 +219,7 @@ namespace TestWriteRead
         {
             if (_data.allCardStats.Count == 0)
             {
-                Debug.LogWarning("[CardWinRateTracker] No data to export");
+                // Debug.LogWarning("[CardWinRateTracker] No data to export");
                 return;
             }
 
@@ -242,11 +242,11 @@ namespace TestWriteRead
             try
             {
                 File.WriteAllText(_csvPath, sb.ToString(), Encoding.UTF8);
-                Debug.Log($"[CardWinRateTracker] CSV exported to: {_csvPath}");
+                // Debug.Log($"[CardWinRateTracker] CSV exported to: {_csvPath}");
             }
             catch (Exception e)
             {
-                Debug.LogError($"[CardWinRateTracker] CSV export failed: {e.Message}");
+                // Debug.LogError($"[CardWinRateTracker] CSV export failed: {e.Message}");
             }
         }
 
@@ -269,11 +269,11 @@ namespace TestWriteRead
         {
             if (_data.allCardStats.Count == 0)
             {
-                Debug.Log("[CardWinRateTracker] No data yet");
+                // Debug.Log("[CardWinRateTracker] No data yet");
                 return;
             }
 
-            Debug.Log("========== CARD WIN RATE REPORT ==========");
+            // Debug.Log("========== CARD WIN RATE REPORT ==========");
             
             var sortedStats = _data.allCardStats
                 .OrderByDescending(s => s.WinRate)
@@ -282,11 +282,11 @@ namespace TestWriteRead
 
             foreach (var stat in sortedStats)
             {
-                Debug.Log(stat.ToString());
+                // Debug.Log(stat.ToString());
             }
             
-            Debug.Log($"Total {_data.allCardStats.Count} cards, last updated: {_data.lastUpdated}");
-            Debug.Log("====================================");
+            // Debug.Log($"Total {_data.allCardStats.Count} cards, last updated: {_data.lastUpdated}");
+            // Debug.Log("====================================");
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace TestWriteRead
             {
                 File.Delete(_csvPath);
             }
-            Debug.Log("[CardWinRateTracker] All statistics data cleared");
+            // Debug.Log("[CardWinRateTracker] All statistics data cleared");
         }
 
         #endregion

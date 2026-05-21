@@ -10,9 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: '#1Deck'
+  m_Name: add then exile test
   m_EditorClassIdentifier: 
-  deck: []
+  deck:
+  - {fileID: 8718476725744197808, guid: 32c7492795cdf5d418e164a404fab845, type: 3}
+  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
+  - {fileID: 8718476725744197808, guid: 8a9871274e7b5ed4ea2b5977f2d53aeb, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
-  description: 
+  description: player default deck, will copy to player deck SO at start of game

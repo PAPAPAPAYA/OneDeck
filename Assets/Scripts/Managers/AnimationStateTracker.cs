@@ -123,9 +123,9 @@ public class AnimationStateTracker : MonoBehaviour
 		// Safety: force release if batch exceeds timeout
 		if (_hasActiveBatch && Time.time - _batchStartTime > timeoutSeconds)
 		{
-			Debug.LogWarning(
+			/* Debug.LogWarning(
 				"[FLUSH] TIMEOUT after " + timeoutSeconds +
-				"s | pending=" + _pendingAnimations + " | frame=" + Time.frameCount);
+				"s | pending=" + _pendingAnimations + " | frame=" + Time.frameCount); */
 			_pendingAnimations = 0;
 			_hasActiveBatch = false;
 			FlushDelayedEvents();

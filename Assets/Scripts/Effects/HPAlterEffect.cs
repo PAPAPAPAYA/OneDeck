@@ -333,7 +333,7 @@ public class HPAlterEffect : EffectScript
 
 		for (int i = 0; i < times; i++)
 		{
-			print("call DecreaseTheirHp()");
+			// print("call DecreaseTheirHp()");
 			DecreaseTheirHp();
 		}
 	}
@@ -454,7 +454,7 @@ public class HPAlterEffect : EffectScript
 		int times = timesIntSO.value;
 		for (int i = 0; i < times; i++)
 		{
-			print("call DecreaseTheirHp()");
+			// print("call DecreaseTheirHp()");
 			DecreaseTheirHp();
 		}
 	}

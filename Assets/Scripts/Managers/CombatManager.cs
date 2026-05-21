@@ -240,7 +240,7 @@ public class CombatManager : MonoBehaviour
 		var factory = CardFactory.me;
 		if (factory == null)
 		{
-			Debug.LogError("[CombatManager] CardFactory is not available!");
+			// Debug.LogError("[CombatManager] CardFactory is not available!");
 			return;
 		}
 
@@ -278,7 +278,7 @@ public class CombatManager : MonoBehaviour
 		if (roundNumRef.value <= overtimeRoundThreshold) return;
 		
 		var msg = $"<color=red>疲劳!</color> 回合{roundNumRef.value} > {overtimeRoundThreshold}";
-		print(msg);
+		// print(msg);
 		CombatLog.me?.Append(msg);
 		AddFatigueCards();
 	}
@@ -293,7 +293,7 @@ public class CombatManager : MonoBehaviour
 		if (totalCardsRevealed != fatigueRevealThreshold) return;
 		
 		var msg = $"<color=red>疲劳!</color> 已揭示{totalCardsRevealed}张卡牌";
-		print(msg);
+		// print(msg);
 		CombatLog.me?.Append(msg);
 		AddFatigueCards();
 	}
@@ -443,7 +443,7 @@ public class CombatManager : MonoBehaviour
 			visuals.UpdateAllPhysicalCardTargets();
 		}
 
-		Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait COMPLETE");
+		// Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait COMPLETE");
 		if (visuals != null)
 		{
 			string deckList = "";
@@ -456,7 +456,7 @@ public class CombatManager : MonoBehaviour
 					deckList += "[" + i + "]" + card.name + " pos=" + card.transform.position + " ";
 				}
 			}
-			Debug.Log("[CombatManager] Final deck state: " + deckList);
+			// Debug.Log("[CombatManager] Final deck state: " + deckList);
 		}
 	}
 

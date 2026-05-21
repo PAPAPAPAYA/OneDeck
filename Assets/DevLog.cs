@@ -107,7 +107,15 @@
 #region viscom
 //! viscom
 	//todo need to show what's added / exiled / given status effect / consumed status effect
-		// pop up + slot in animation
+		//// pop up + slot in animation
+		//// added
+		//// exiled
+		// given status effect
+			// not working
+		// consumed status effect
+		// transfered status effect
+		// buried
+		// staged
 	//todo status effect
 		// better power wisp
 		// power gain card particle
@@ -139,6 +147,7 @@
 #endregion
 #region bugs
 //! bug
+	//// give power gives 2 times the power
 	// test on power gained: POWER_CRAVER
 	// after shuffle: BOOSTER
 	// elder sorcerer

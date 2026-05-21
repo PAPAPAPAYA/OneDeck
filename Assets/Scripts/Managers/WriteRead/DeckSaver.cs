@@ -93,7 +93,7 @@ namespace TestWriteRead
             }
             else
             {
-                Debug.LogWarning("[DeckSaver] ShopPoolRef is not set or empty, card database will be empty");
+                // Debug.LogWarning("[DeckSaver] ShopPoolRef is not set or empty, card database will be empty");
             }
 
             // Add additional cards (if any)
@@ -107,7 +107,7 @@ namespace TestWriteRead
 
             if (printOnSave)
             {
-                Debug.Log($"[DeckSaver] Card database built, total {_cardTypeToPrefabCache.Count} cards");
+                // Debug.Log($"[DeckSaver] Card database built, total {_cardTypeToPrefabCache.Count} cards");
             }
         }
 
@@ -126,7 +126,7 @@ namespace TestWriteRead
 
             if (_cardTypeToPrefabCache.ContainsKey(typeID))
             {
-                Debug.LogWarning($"[DeckSaver] Duplicate cardTypeID: {typeID}, card: {cardPrefab.name}");
+                // Debug.LogWarning($"[DeckSaver] Duplicate cardTypeID: {typeID}, card: {cardPrefab.name}");
                 return;
             }
             _cardTypeToPrefabCache[typeID] = cardPrefab;
@@ -144,7 +144,7 @@ namespace TestWriteRead
             }
 
             // If not configured, use card name and warn
-            Debug.LogWarning($"[DeckSaver] Card {cardScript.name} has no cardTypeID configured, using card name as identifier");
+            // Debug.LogWarning($"[DeckSaver] Card {cardScript.name} has no cardTypeID configured, using card name as identifier");
             return cardScript.name;
         }
 
@@ -163,7 +163,7 @@ namespace TestWriteRead
                 return prefab;
             }
 
-            Debug.LogError($"[DeckSaver] Cannot find card prefab with cardTypeID {cardTypeID}");
+            // Debug.LogError($"[DeckSaver] Cannot find card prefab with cardTypeID {cardTypeID}");
             return null;
         }
 
@@ -201,12 +201,12 @@ namespace TestWriteRead
 
                 if (printOnSave)
                 {
-                    Debug.Log($"[DeckSaver] Loaded {_currentData.savedDecks.Count} saved decks");
+                    // Debug.Log($"[DeckSaver] Loaded {_currentData.savedDecks.Count} saved decks");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[DeckSaver] Failed to read data: {e.Message}");
+                // Debug.LogError($"[DeckSaver] Failed to read data: {e.Message}");
                 _currentData = new DeckData();
             }
         }
@@ -236,12 +236,12 @@ namespace TestWriteRead
 
                 if (printOnSave)
                 {
-                    Debug.Log($"[DeckSaver] Deck saved: {_savePath}");
+                    // Debug.Log($"[DeckSaver] Deck saved: {_savePath}");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[DeckSaver] Save data failed: {e.Message}");
+                // Debug.LogError($"[DeckSaver] Save data failed: {e.Message}");
             }
         }
 
@@ -262,7 +262,7 @@ namespace TestWriteRead
 
             SaveData();
 
-            Debug.Log($"[DeckSaver] Saved session {sessionNumber.value} deck, total {deckEntry.cardTypeIDs.Count} cards");
+            // Debug.Log($"[DeckSaver] Saved session {sessionNumber.value} deck, total {deckEntry.cardTypeIDs.Count} cards");
         }
 
         /// <summary>
@@ -349,11 +349,11 @@ namespace TestWriteRead
             if (enemyStatusRef != null)
             {
                 enemyStatusRef.hpMax = randomDeck.hpMax > 0 ? randomDeck.hpMax : 20;
-                Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards, enemy hpMax set to {enemyStatusRef.hpMax}");
+                // Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards, enemy hpMax set to {enemyStatusRef.hpMax}");
             }
             else
             {
-                Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards (enemy StatusRef not set, cannot apply hpMax)");
+                // Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards (enemy StatusRef not set, cannot apply hpMax)");
             }
             return true;
         }
@@ -367,7 +367,7 @@ namespace TestWriteRead
         {
             if (defaultEnemyDecks == null || defaultEnemyDecks.Count == 0)
             {
-                Debug.LogWarning($"[DeckSaver] Session {sessionNumber.value}: No JSON record and default deck list is empty, cannot populate enemy deck");
+                // Debug.LogWarning($"[DeckSaver] Session {sessionNumber.value}: No JSON record and default deck list is empty, cannot populate enemy deck");
                 return;
             }
 
@@ -382,7 +382,7 @@ namespace TestWriteRead
 
             // Use utility function to copy deck
             UtilityFuncManagerScript.CopyGameObjectList(selectedDeck.deck, enemyDeckToPopulate.deck, true);
-            Debug.Log($"[DeckSaver] Session {sessionNumber.value}: Loaded enemy deck from default list: {selectedDeck.name}");
+            // Debug.Log($"[DeckSaver] Session {sessionNumber.value}: Loaded enemy deck from default list: {selectedDeck.name}");
         }
 
         /// <summary>
@@ -397,11 +397,11 @@ namespace TestWriteRead
                 try
                 {
                     File.Delete(_savePath);
-                    Debug.Log($"[DeckSaver] Deleted save file: {_savePath}");
+                    // Debug.Log($"[DeckSaver] Deleted save file: {_savePath}");
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[DeckSaver] Failed to delete save file: {e.Message}");
+                    // Debug.LogError($"[DeckSaver] Failed to delete save file: {e.Message}");
                 }
             }
         }
@@ -417,11 +417,11 @@ namespace TestWriteRead
         {
             if (_currentData.savedDecks.Count == 0)
             {
-                Debug.Log("[DeckSaver] No saved decks");
+                // Debug.Log("[DeckSaver] No saved decks");
                 return;
             }
 
-            Debug.Log("========== SAVED DECK STATISTICS ==========");
+            // Debug.Log("========== SAVED DECK STATISTICS ==========");
 
             var groupedBySession = _currentData.savedDecks
                 .GroupBy(d => d.sessionNum)
@@ -429,11 +429,11 @@ namespace TestWriteRead
 
             foreach (var group in groupedBySession)
             {
-                Debug.Log($"Session {group.Key}: {group.Count()} decks");
+                // Debug.Log($"Session {group.Key}: {group.Count()} decks");
             }
 
-            Debug.Log($"Total {_currentData.savedDecks.Count} decks, last updated: {_currentData.lastUpdated}");
-            Debug.Log("====================================");
+            // Debug.Log($"Total {_currentData.savedDecks.Count} decks, last updated: {_currentData.lastUpdated}");
+            // Debug.Log("====================================");
         }
 
         #endregion

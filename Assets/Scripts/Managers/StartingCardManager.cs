@@ -49,13 +49,13 @@ namespace DefaultNamespace.Managers
 
             if (startingCardPool == null)
             {
-                Debug.LogWarning("[StartingCardManager] Starting card pool is not configured!");
+                // Debug.LogWarning("[StartingCardManager] Starting card pool is not configured!");
                 return;
             }
 
             if (playerDeck == null)
             {
-                Debug.LogWarning("[StartingCardManager] Player deck is not configured!");
+                // Debug.LogWarning("[StartingCardManager] Player deck is not configured!");
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace DefaultNamespace.Managers
             GameObject selectedCard = GetRandomCardFromPool();
             if (selectedCard == null)
             {
-                Debug.LogWarning("[StartingCardManager] Starting card pool is empty!");
+                // Debug.LogWarning("[StartingCardManager] Starting card pool is empty!");
                 return;
             }
 

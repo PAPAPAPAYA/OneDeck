@@ -36,10 +36,10 @@ namespace DefaultNamespace.Effects
 		/// <param name="powerAmount">Amount of Power stacks to apply.</param>
 		public void EnhanceCurse(int powerAmount)
 		{
-			Debug.Log("[CurseEffect] EnhanceCurse START powerAmount=" + powerAmount + " myCard=" + (myCard != null ? myCard.name : "null"));
+			// Debug.Log("[CurseEffect] EnhanceCurse START powerAmount=" + powerAmount + " myCard=" + (myCard != null ? myCard.name : "null"));
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
 			{
-				Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
+				// Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
 				return;
 			}
 
@@ -56,7 +56,7 @@ namespace DefaultNamespace.Effects
 			{
 				if (cardPrefab == null)
 				{
-					Debug.LogWarning($"[CurseEffect] Card prefab is not set! Cannot create card with typeID: {cardTypeID.value}");
+					// Debug.LogWarning($"[CurseEffect] Card prefab is not set! Cannot create card with typeID: {cardTypeID.value}");
 					return;
 				}
 				targetCard = CreateEnemyCard(cardPrefab);
@@ -67,7 +67,7 @@ namespace DefaultNamespace.Effects
 			{
 				ApplyPowerToCardWithProjectile(targetCard, powerAmount);
 			}
-			Debug.Log("[CurseEffect] EnhanceCurse END myCard=" + (myCard != null ? myCard.name : "null"));
+			// Debug.Log("[CurseEffect] EnhanceCurse END myCard=" + (myCard != null ? myCard.name : "null"));
 		}
 
 		/// <summary>
@@ -90,7 +90,7 @@ namespace DefaultNamespace.Effects
 			if (powerAmountSO == null) return;
 			if (powerCoefficient <= 0)
 			{
-				Debug.LogWarning("[CurseEffect] powerCoefficient must be greater than 0!");
+				// Debug.LogWarning("[CurseEffect] powerCoefficient must be greater than 0!");
 				return;
 			}
 
@@ -107,7 +107,7 @@ namespace DefaultNamespace.Effects
 		{
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
 			{
-				Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
+				// Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
 				return;
 			}
 
@@ -124,7 +124,7 @@ namespace DefaultNamespace.Effects
 			{
 				if (cardPrefab == null)
 				{
-					Debug.LogWarning($"[CurseEffect] Card prefab is not set! Cannot create card with typeID: {cardTypeID.value}");
+					// Debug.LogWarning($"[CurseEffect] Card prefab is not set! Cannot create card with typeID: {cardTypeID.value}");
 					return;
 				}
 				targetCard = CreateFriendlyCard(cardPrefab);
@@ -314,7 +314,7 @@ namespace DefaultNamespace.Effects
 		/// </summary>
 		private void ApplyPowerToCardInternal(CardScript targetCard, int amount)
 		{
-			Debug.Log("[CurseEffect] ApplyPowerToCardInternal target=" + (targetCard != null ? targetCard.name : "null") + " amount=" + amount + " myCard=" + (myCard != null ? myCard.name : "null"));
+			// Debug.Log("[CurseEffect] ApplyPowerToCardInternal target=" + (targetCard != null ? targetCard.name : "null") + " amount=" + amount + " myCard=" + (myCard != null ? myCard.name : "null"));
 			ApplyStatusEffectCore(
 				targetCard, EnumStorage.StatusEffect.Power, amount,
 				statusEffectResolverPrefab, statusEffectParticlePrefab, particleYOffset, amount);
@@ -341,7 +341,7 @@ namespace DefaultNamespace.Effects
 		{
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
 			{
-				Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
+				// Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
 				return;
 			}
 

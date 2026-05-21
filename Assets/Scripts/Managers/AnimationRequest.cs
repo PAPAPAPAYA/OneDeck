@@ -17,7 +17,9 @@ namespace DefaultNamespace
 		StatusEffectProjectile,
 		PopUp,
 		SlotIn,
-		MoveToPopUpPosition
+		MoveToPopUpPosition,
+		PopUpBatch,
+		SlotInBatch
 	}
 
 	public class AnimationRequest

@@ -6,7 +6,7 @@ namespace DefaultNamespace.Effects
 	{
 		public void TestPrint()
 		{
-			print("effect activated");
+			// print("effect activated");
 		}
 	}
 }
