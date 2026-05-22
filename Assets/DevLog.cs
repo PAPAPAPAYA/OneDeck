@@ -110,8 +110,7 @@
 		//// pop up + slot in animation
 		//// added
 		//// exiled
-		// given status effect
-			// not working
+		//// given status effect
 		// consumed status effect
 		// transfered status effect
 		// buried

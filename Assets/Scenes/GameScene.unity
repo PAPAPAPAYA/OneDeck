@@ -3729,7 +3729,49 @@ MonoBehaviour:
   popUpHoldDuration: 0.32
   popUpEase: 27
   slotInDuration: 0.35
-  slotInEase: 17
+  slotInEase: 29
+  slotInCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.60737216
+      value: 0.023421263
+      inSlope: 0.043939114
+      outSlope: 0.043939114
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.16656938
+    - serializedVersion: 3
+      time: 0.98471355
+      value: 0.80208814
+      inSlope: 5.765542
+      outSlope: 5.765542
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 1
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   deckFocusTargetPos: {fileID: 714939180}
   peelSlideDistance: 8
   deckShiftDuration: 0.3

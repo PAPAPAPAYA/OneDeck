@@ -84,6 +84,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float slotInDuration = 0.35f;
 	[Tooltip("Easing for Slot In movement")]
 	public Ease slotInEase = Ease.InOutQuad;
+	[Tooltip("Optional custom curve for Slot In. If assigned, overrides slotInEase.")]
+	public AnimationCurve slotInCurve;
 
 	[Header("DECK FOCUS / PEEL")]
 	public Transform deckFocusTargetPos;
@@ -1922,6 +1924,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Kill existing tweens to prevent conflicts
 		physScript.KillTweens();
 
+		// Save original transform so SlotIn can restore it for reveal-zone cards
+		physScript.popUpOriginalPosition = physicalCard.transform.position;
+		physScript.popUpOriginalScale = physicalCard.transform.localScale;
+
 		// Compute peak position from CURRENT world position
 		Vector3 currentPos = physicalCard.transform.position;
 		Vector3 peakPos = currentPos + Vector3.up * popUpYOffset;
@@ -1968,9 +1974,34 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		int deckIndex = physicalCardsInDeck.IndexOf(physicalCard);
 		if (deckIndex < 0)
 		{
-			// Card not in deck (e.g. reveal zone) — skip slot-in movement, just release flag
-			physScript.isPlayingSpecialAnimation = false;
-			onComplete?.Invoke();
+			// Card not in deck (e.g. reveal zone) — tween back to pop-up original position
+			Vector3 originalPos = physScript.popUpOriginalPosition;
+			Vector3 originalScale = physScript.popUpOriginalScale;
+
+			// Fallback: if never saved (legacy path), just release flag
+			if (originalPos == Vector3.zero && originalScale == Vector3.zero)
+			{
+				physScript.isPlayingSpecialAnimation = false;
+				onComplete?.Invoke();
+				return;
+			}
+
+			AnimationStateTracker.me?.RegisterAnimation();
+			BlockInput(this);
+
+			Sequence fallbackSeq = DOTween.Sequence();
+			fallbackSeq.Append(ApplySlotInEase(physicalCard.transform.DOMove(originalPos, slotInDuration)));
+			fallbackSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(originalScale, slotInDuration)));
+			fallbackSeq.OnComplete(() =>
+			{
+				physScript.isPlayingSpecialAnimation = false;
+				physScript.SetTargetPosition(originalPos);
+				physScript.SetTargetScale(originalScale);
+				AnimationStateTracker.me?.CompleteAnimation();
+				UnblockInput(this);
+				onComplete?.Invoke();
+			});
+			fallbackSeq.Play();
 			return;
 		}
 
@@ -1980,8 +2011,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		BlockInput(this);
 
 		Sequence seq = DOTween.Sequence();
-		seq.Append(physicalCard.transform.DOMove(targetPos, slotInDuration).SetEase(slotInEase));
-		seq.Join(physicalCard.transform.DOScale(physicalCardDeckSize, slotInDuration).SetEase(slotInEase));
+		seq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, slotInDuration)));
+		seq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, slotInDuration)));
 		seq.OnComplete(() =>
 		{
 			physScript.isPlayingSpecialAnimation = false;
@@ -1992,6 +2023,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			onComplete?.Invoke();
 		});
 		seq.Play();
+	}
+
+	/// <summary>
+	/// Applies either the custom AnimationCurve (if assigned) or the configured Ease to a tween.
+	/// </summary>
+	private Tween ApplySlotInEase(Tween tween)
+	{
+		if (slotInCurve != null && slotInCurve.length > 0)
+		{
+			return tween.SetEase(slotInCurve);
+		}
+		return tween.SetEase(slotInEase);
 	}
 
 	/// <summary>

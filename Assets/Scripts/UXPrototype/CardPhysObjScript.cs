@@ -85,6 +85,11 @@ public class CardPhysObjScript : MonoBehaviour
 	[Tooltip("Insert animation duration")]
 	public float insertDuration = 0.4f;
 
+	[HideInInspector]
+	public Vector3 popUpOriginalPosition;
+	[HideInInspector]
+	public Vector3 popUpOriginalScale;
+
 	[Header("Reveal Zone Pending")]
 	[Tooltip("When special animation finishes, move to reveal zone instead of default target")]
 	public bool pendingRevealZoneMove = false;
