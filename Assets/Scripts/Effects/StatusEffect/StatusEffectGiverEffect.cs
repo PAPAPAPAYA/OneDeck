@@ -60,13 +60,80 @@ namespace DefaultNamespace.Effects
 		}
 		#endregion
 
+		#region Helper Methods - Common Operations
+		protected void ApplyStatusEffectToCard(CardScript targetCardScript, int amount)
+		{
+			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, amount,
+				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
+				canStatusEffectBeStacked ? amount : 1);
+		}
+
+		protected List<CardScript> CollectFriendlyCards(bool filterCanReceive = false)
+		{
+			var result = new List<CardScript>();
+			var combinedDeck = combatManager.combinedDeckZone;
+			foreach (var card in combinedDeck)
+			{
+				var cardScript = card.GetComponent<CardScript>();
+				if (ShouldSkipCard(cardScript)) continue;
+				if (cardScript.myStatusRef != myCardScript.myStatusRef) continue;
+				if (filterCanReceive && !CanReceiveStatusEffect(cardScript, statusEffectToGive)) continue;
+				result.Add(cardScript);
+			}
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (!ShouldSkipCard(revealCardScript) &&
+				    revealCardScript.myStatusRef == myCardScript.myStatusRef)
+				{
+					if (!filterCanReceive || CanReceiveStatusEffect(revealCardScript, statusEffectToGive))
+					{
+						bool alreadyExists = result.Exists(c => c.gameObject == combatManager.revealZone);
+						if (!alreadyExists)
+							result.Add(revealCardScript);
+					}
+				}
+			}
+			return result;
+		}
+
+		protected void CaptureBatchStatusEffectAnimation(List<CardScript> targetCards)
+		{
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder == null || targetCards.Count <= 0) return;
+
+			var targetGameObjects = new List<GameObject>();
+			foreach (var t in targetCards)
+			{
+				if (t != null) targetGameObjects.Add(t.gameObject);
+			}
+
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.PopUpBatch,
+				targetCards = targetGameObjects
+			});
+
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.StatusEffectProjectile,
+				attackerCard = myCard,
+				targetCards = targetGameObjects
+			});
+
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.SlotInBatch,
+				targetCards = targetGameObjects
+			});
+		}
+		#endregion
+
 		#region Public Effect Methods
 		public virtual void GiveSelfStatusEffect(int amount)
 		{
-			ApplyStatusEffectCore(
-				myCardScript, statusEffectToGive, amount,
-				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
-				canStatusEffectBeStacked ? amount : 1);
+			ApplyStatusEffectToCard(myCardScript, amount);
 		}
 
 		public virtual void GiveStatusEffect(int amount)
@@ -120,42 +187,8 @@ namespace DefaultNamespace.Effects
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 
 			// --- 4. Capture batch projectile animation ---
-			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
-			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-			if (recorder != null && targetCards.Count > 0)
-			{
-				var targetGameObjects = new List<GameObject>();
-				foreach (var t in targetCards)
-				{
-					if (t != null) targetGameObjects.Add(t.gameObject);
-				}
-
-				// 1. Parallel Pop Up all targets
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.PopUpBatch,
-					targetCards = targetGameObjects
-				});
-
-				// 2. Batch projectile while cards are elevated
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.StatusEffectProjectile,
-					attackerCard = myCard,
-					targetCards = targetGameObjects
-				});
-
-				// 3. Parallel Slot In all targets
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.SlotInBatch,
-					targetCards = targetGameObjects
-				});
-			}
+			CaptureBatchStatusEffectAnimation(targetCards);
 		}
-
-
-
 
 		public void GiveStatusEffectBasedOnStatusEffectCount()
 		{
@@ -183,74 +216,18 @@ namespace DefaultNamespace.Effects
 		{
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			if (amount <= 0) return;
-			var cardsToGive = new List<GameObject>();
-			var combinedDeck = combatManager.combinedDeckZone;
-			foreach (var card in combinedDeck)
+
+			var targetCards = CollectFriendlyCards(filterCanReceive: true);
+			if (targetCards.Count <= 0) return;
+
+			foreach (var card in targetCards)
 			{
-				var cardScript = card.GetComponent<CardScript>();
-				if (ShouldSkipCard(cardScript)) continue;
-				if (cardScript.myStatusRef == myCardScript.myStatusRef) cardsToGive.Add(card);
+				ApplyStatusEffectToCard(card, amount);
 			}
-			if (combatManager.revealZone != null)
-			{
-				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
-				if (!ShouldSkipCard(revealCardScript) && revealCardScript.myStatusRef == myCardScript.myStatusRef)
-				{
-					cardsToGive.Add(combatManager.revealZone);
-				}
-			}
-			if (cardsToGive.Count <= 0) return;
-			var targetCardScripts = new List<CardScript>();
-			foreach (var card in cardsToGive)
-			{
-				var cardScript = card.GetComponent<CardScript>();
-				if (!CanReceiveStatusEffect(cardScript, statusEffectToGive)) continue;
-				ApplyStatusEffectToFriendlySingle(cardScript, amount);
-				targetCardScripts.Add(cardScript);
-			}
+
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
-
-			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
-			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-			if (recorder != null && targetCardScripts.Count > 0)
-			{
-				var targetGameObjects = new List<GameObject>();
-				foreach (var t in targetCardScripts)
-				{
-					if (t != null) targetGameObjects.Add(t.gameObject);
-				}
-
-				// 1. Parallel Pop Up all targets
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.PopUpBatch,
-					targetCards = targetGameObjects
-				});
-
-				// 2. Batch projectile while cards are elevated
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.StatusEffectProjectile,
-					attackerCard = myCard,
-					targetCards = targetGameObjects
-				});
-
-				// 3. Parallel Slot In all targets
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.SlotInBatch,
-					targetCards = targetGameObjects
-				});
-			}
+			CaptureBatchStatusEffectAnimation(targetCards);
 		}
-
-		private void ApplyStatusEffectToFriendlySingle(CardScript targetCardScript, int amount)
-		{
-			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, amount,
-				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
-				canStatusEffectBeStacked ? amount : 1);
-		}
-
 
 		/// <summary>
 		/// Gives status effects to the last X cards in the combined deck (cards before this card in deck order).
@@ -297,81 +274,21 @@ namespace DefaultNamespace.Effects
 
 			foreach (var t in targetCards)
 			{
-				ApplyStatusEffectToLastXCardSingle(t);
+				ApplyStatusEffectToCard(t, statusEffectLayerCount);
 			}
 
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
-
-			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
-			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-			if (recorder != null)
-			{
-				var targetGameObjects = new List<GameObject>();
-				foreach (var t in targetCards)
-				{
-					if (t != null) targetGameObjects.Add(t.gameObject);
-				}
-
-				// 1. Parallel Pop Up all targets
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.PopUpBatch,
-					targetCards = targetGameObjects
-				});
-
-				// 2. Batch projectile while cards are elevated
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.StatusEffectProjectile,
-					attackerCard = myCard,
-					targetCards = targetGameObjects
-				});
-
-				// 3. Parallel Slot In all targets
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.SlotInBatch,
-					targetCards = targetGameObjects
-				});
-			}
+			CaptureBatchStatusEffectAnimation(targetCards);
 		}
-
-		private void ApplyStatusEffectToLastXCardSingle(CardScript targetCardScript)
-		{
-			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, statusEffectLayerCount,
-				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
-				canStatusEffectBeStacked ? statusEffectLayerCount : 1);
-		}
-
 
 		public virtual void GiveStatusEffectToXFriendly()
 		{
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			if (xFriendlyCount <= 0 || yFriendlyLayerCount <= 0) return;
-			var combinedDeck = combatManager.combinedDeckZone;
-			var friendlyCards = new List<CardScript>();
-			foreach (var card in combinedDeck)
-			{
-				var cardScript = card.GetComponent<CardScript>();
-				if (ShouldSkipCard(cardScript)) continue;
-				if (cardScript.myStatusRef == myCardScript.myStatusRef)
-				{
-					if (!CanReceiveStatusEffect(cardScript, statusEffectToGive)) continue;
-					friendlyCards.Add(cardScript);
-				}
-			}
-			if (combatManager.revealZone != null)
-			{
-				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
-				if (!ShouldSkipCard(revealCardScript) &&
-				    revealCardScript.myStatusRef == myCardScript.myStatusRef &&
-				    CanReceiveStatusEffect(revealCardScript, statusEffectToGive) &&
-				    !friendlyCards.Exists(c => c.gameObject == combatManager.revealZone))
-				{
-					friendlyCards.Add(revealCardScript);
-				}
-			}
+
+			var friendlyCards = CollectFriendlyCards(filterCanReceive: true);
 			if (friendlyCards.Count <= 0) return;
+
 			friendlyCards = UtilityFuncManagerScript.ShuffleList(friendlyCards);
 			var targetCards = new List<CardScript>();
 			int actualCount = Mathf.Min(xFriendlyCount, friendlyCards.Count);
@@ -380,52 +297,12 @@ namespace DefaultNamespace.Effects
 
 			foreach (var t in targetCards)
 			{
-				ApplyStatusEffectToXFriendlySingle(t);
+				ApplyStatusEffectToCard(t, yFriendlyLayerCount);
 			}
 
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
-
-			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
-			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-			if (recorder != null)
-			{
-				var targetGameObjects = new List<GameObject>();
-				foreach (var t in targetCards)
-				{
-					if (t != null) targetGameObjects.Add(t.gameObject);
-				}
-
-				// 1. Parallel Pop Up all targets
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.PopUpBatch,
-					targetCards = targetGameObjects
-				});
-
-				// 2. Batch projectile while cards are elevated
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.StatusEffectProjectile,
-					attackerCard = myCard,
-					targetCards = targetGameObjects
-				});
-
-				// 3. Parallel Slot In all targets
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.SlotInBatch,
-					targetCards = targetGameObjects
-				});
-			}
+			CaptureBatchStatusEffectAnimation(targetCards);
 		}
-
-		private void ApplyStatusEffectToXFriendlySingle(CardScript targetCardScript)
-		{
-			ApplyStatusEffectCore(targetCardScript, statusEffectToGive, yFriendlyLayerCount,
-				myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
-				canStatusEffectBeStacked ? yFriendlyLayerCount : 1);
-		}
-
 
 		/// <summary>
 		/// Based on the passed IntSO value, apply status effects to the same number of random friendly cards, each card receives 1 layer

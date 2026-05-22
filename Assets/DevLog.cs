@@ -113,7 +113,7 @@
 		//// given status effect
 		// consumed status effect
 		// transfered status effect
-		// buried
+		////buried
 		// staged
 	//todo status effect
 		// better power wisp

@@ -327,7 +327,7 @@ public class BuryEffect : EffectScript
 			}
 		}
 
-		// 3. Capture animation request
+		// 3. Capture animation requests
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
@@ -335,6 +335,12 @@ public class BuryEffect : EffectScript
 		// Debug.Log("[BuryEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null)
 		{
+			// PopUp so player can see which cards are being buried
+			recorder.animationRequests.Add(new AnimationRequest {
+				type = AnimationRequestType.PopUpBatch,
+				targetCards = buriedCards
+			});
+
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.MoveToBottomBatch,
 				targetCards = buriedCards,

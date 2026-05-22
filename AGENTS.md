@@ -141,6 +141,7 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 | `CardFactory` | `Assets/Scripts/Managers/CardFactory.cs` |
 | `ICombatVisuals` | `Assets/Scripts/Managers/ICombatVisuals.cs` |
 | `CombatLog` | `Assets/Scripts/Managers/CombatLog.cs` |
+| `StatusEffectGiverEffect` | `Assets/Scripts/Effects/StatusEffect/StatusEffectGiverEffect.cs` |
 | `GameRules` | `docs/GameRules.md` |
 
 ## Minion Cost Mechanism
@@ -163,16 +164,16 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 
 ### AnimationRequest Types
 ```csharp
-enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange, StatusEffectProjectile, PopUp, SlotIn }
+enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange, StatusEffectProjectile, PopUp, SlotIn, MoveToPopUpPosition, PopUpBatch, SlotInBatch }
 ```
 - `HPAlterEffect` captures `Attack` requests (damage already resolved in logic phase; `onHit` is null).
-- `BuryEffect` captures `MoveToBottomBatch`.
+- `BuryEffect` captures `PopUpBatch` then `MoveToBottomBatch`.
 - `StageEffect` captures `MoveToTopBatch`.
 - `ExileEffect` captures `Destroy` (preceded by `PopUp` so the player sees the card being exiled).
 - `ApplyStatusEffectCore`, `ConsumeStatusEffect`, `ManaAlterEffect`, and `TransferStatusEffectEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
-- `StatusEffectGiverEffect` executes `ApplyStatusEffectCore` synchronously in the logic phase (auto-capturing `StatusEffectChange`), then optionally captures a single `StatusEffectProjectile` request carrying all targets for batched animation playback.
-- `AddTempCard` captures `PopUp` + `SlotIn` for each newly created card so it visibly enters the deck.
-- `CurseEffect` captures `PopUp` + `StatusEffectProjectile` + `SlotIn` so the target card lifts during the projectile flight.
+- `StatusEffectGiverEffect` — `GiveSelfStatusEffect` runs `ApplyStatusEffectCore` (auto-captures `StatusEffectChange` only). `GiveStatusEffect`, `GiveAllFriendlyStatusEffect`, `GiveStatusEffectToLastXCards`, and `GiveStatusEffectToXFriendly` run `ApplyStatusEffectCore` synchronously then capture `PopUpBatch` + `StatusEffectProjectile` + `SlotInBatch` via `CaptureBatchStatusEffectAnimation`.
+- `AddTempCard` captures `MoveToPopUpPosition` + `SlotIn` for each newly created card so it visibly enters the deck.
+- `CurseEffect` captures `PopUp` + `StatusEffectProjectile` + `SlotIn` (single-target).
 - `ConsumeStatusEffect` uses `CapturePopUpStatusEffectChangeSlotIn` to play `PopUp` + `StatusEffectChange` + `SlotIn` for consumption on deck cards.
 - Batch types run all card movements in parallel and yield until the last completes.
 
