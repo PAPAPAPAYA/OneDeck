@@ -201,8 +201,7 @@
 		//// general
 		//// conjure
 		//// curse
-	// curse effect
-		//// when curse is added, power wisp target pos is weird cause curse is not yet in position
+	//// when curse is added, power wisp target pos is weird cause curse is not yet in position
 	//// bury animation bugged, suspect stage also has same problem
 #endregion
 
