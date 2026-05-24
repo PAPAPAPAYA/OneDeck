@@ -21,7 +21,7 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
 		Assert.AreEqual(1, recorder.animationRequests.Count, "StageEffect should capture 1 animation request");
-		Assert.AreEqual(AnimationRequestType.MoveToTopBatch, recorder.animationRequests[0].type, "Should be MoveToTopBatch");
+		Assert.AreEqual(AnimationRequestType.MoveToTopPopUpBatch, recorder.animationRequests[0].type, "Should be MoveToTopPopUpBatch");
 		Assert.AreEqual(1, recorder.animationRequests[0].targetCards.Count, "Should stage 1 card");
 
 		EffectChainManager.Me.CloseOpenedChain();
@@ -42,9 +42,10 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 		buryEffect.BuryTheirCards(1);
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
-		Assert.AreEqual(1, recorder.animationRequests.Count, "BuryEffect should capture 1 animation request");
-		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, recorder.animationRequests[0].type, "Should be MoveToBottomBatch");
-		Assert.AreEqual(1, recorder.animationRequests[0].targetCards.Count, "Should bury 1 card");
+		Assert.AreEqual(2, recorder.animationRequests.Count, "BuryEffect should capture 2 animation requests (PopUpBatch + MoveToBottomBatch)");
+		Assert.AreEqual(AnimationRequestType.PopUpBatch, recorder.animationRequests[0].type, "First should be PopUpBatch");
+		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, recorder.animationRequests[1].type, "Second should be MoveToBottomBatch");
+		Assert.AreEqual(1, recorder.animationRequests[1].targetCards.Count, "Should bury 1 card");
 
 		EffectChainManager.Me.CloseOpenedChain();
 	}
@@ -60,8 +61,9 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 		exileEffect.ExileSelf();
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
-		Assert.AreEqual(1, recorder.animationRequests.Count, "ExileEffect should capture 1 destroy request");
-		Assert.AreEqual(AnimationRequestType.Destroy, recorder.animationRequests[0].type, "Should be Destroy type");
+		Assert.AreEqual(2, recorder.animationRequests.Count, "ExileEffect should capture 2 requests (PopUp + Destroy)");
+		Assert.AreEqual(AnimationRequestType.PopUp, recorder.animationRequests[0].type, "First should be PopUp");
+		Assert.AreEqual(AnimationRequestType.Destroy, recorder.animationRequests[1].type, "Second should be Destroy type");
 
 		EffectChainManager.Me.CloseOpenedChain();
 	}

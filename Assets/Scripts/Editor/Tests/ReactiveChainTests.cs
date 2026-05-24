@@ -46,8 +46,9 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 
 		var root = rootGo.GetComponent<EffectRecorder>();
 		var child = rootGo.transform.GetChild(0).GetComponent<EffectRecorder>();
-		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, root.animationRequests[0].type, "Root should have bury request");
-		Assert.AreEqual(AnimationRequestType.MoveToTopBatch, child.animationRequests[0].type, "Child should have stage request");
+		Assert.AreEqual(AnimationRequestType.PopUpBatch, root.animationRequests[0].type, "Root should have PopUpBatch request");
+		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, root.animationRequests[1].type, "Root should have MoveToBottomBatch request");
+		Assert.AreEqual(AnimationRequestType.MoveToTopPopUpBatch, child.animationRequests[0].type, "Child should have MoveToTopPopUpBatch request");
 
 		// Verify final deck: target was buried then staged back to top
 		Assert.AreEqual(target, CombatManager.combinedDeckZone[CombatManager.combinedDeckZone.Count - 1], "Target should end up at top after reactive stage");

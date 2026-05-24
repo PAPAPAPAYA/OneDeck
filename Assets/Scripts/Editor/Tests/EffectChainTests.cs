@@ -142,9 +142,10 @@ public class EffectChainTests : HeadlessCombatTestFixture
 		buryEffect.BuryTheirCards(2);
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
-		Assert.AreEqual(1, recorder.animationRequests.Count, "Should have 1 batch request");
-		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, recorder.animationRequests[0].type);
-		Assert.AreEqual(2, recorder.animationRequests[0].targetCards.Count, "Should bury 2 cards");
+		Assert.AreEqual(2, recorder.animationRequests.Count, "Should have 2 requests (PopUpBatch + MoveToBottomBatch)");
+		Assert.AreEqual(AnimationRequestType.PopUpBatch, recorder.animationRequests[0].type, "First should be PopUpBatch");
+		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, recorder.animationRequests[1].type, "Second should be MoveToBottomBatch");
+		Assert.AreEqual(2, recorder.animationRequests[1].targetCards.Count, "Should bury 2 cards");
 	}
 
 	[Test]

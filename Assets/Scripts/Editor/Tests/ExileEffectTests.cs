@@ -31,9 +31,11 @@ public class ExileEffectTests : HeadlessCombatTestFixture
 		exile.ExileSelf();
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
-		Assert.AreEqual(1, recorder.animationRequests.Count, "Should capture 1 destroy request");
-		Assert.AreEqual(AnimationRequestType.Destroy, recorder.animationRequests[0].type, "Should be Destroy type");
-		Assert.AreEqual(card, recorder.animationRequests[0].targetCard, "Target should be the exiled card");
+		Assert.AreEqual(2, recorder.animationRequests.Count, "Should capture 2 requests (PopUp + Destroy)");
+		Assert.AreEqual(AnimationRequestType.PopUp, recorder.animationRequests[0].type, "First should be PopUp");
+		Assert.AreEqual(card, recorder.animationRequests[0].targetCard, "PopUp target should be the exiled card");
+		Assert.AreEqual(AnimationRequestType.Destroy, recorder.animationRequests[1].type, "Second should be Destroy type");
+		Assert.AreEqual(card, recorder.animationRequests[1].targetCard, "Destroy target should be the exiled card");
 
 		EffectChainManager.Me.CloseOpenedChain();
 	}
@@ -89,9 +91,11 @@ public class ExileEffectTests : HeadlessCombatTestFixture
 		exile.ExileTheirCards(2);
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
-		Assert.AreEqual(2, recorder.animationRequests.Count, "Should capture 2 destroy requests");
-		Assert.AreEqual(AnimationRequestType.Destroy, recorder.animationRequests[0].type);
+		Assert.AreEqual(4, recorder.animationRequests.Count, "Should capture 4 requests (PopUp+Destroy for each of 2 cards)");
+		Assert.AreEqual(AnimationRequestType.PopUp, recorder.animationRequests[0].type);
 		Assert.AreEqual(AnimationRequestType.Destroy, recorder.animationRequests[1].type);
+		Assert.AreEqual(AnimationRequestType.PopUp, recorder.animationRequests[2].type);
+		Assert.AreEqual(AnimationRequestType.Destroy, recorder.animationRequests[3].type);
 
 		EffectChainManager.Me.CloseOpenedChain();
 	}

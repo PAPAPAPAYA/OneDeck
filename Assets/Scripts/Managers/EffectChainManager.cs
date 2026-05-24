@@ -147,7 +147,7 @@ public class EffectChainManager : MonoBehaviour
 
 		if (chainDepth > 99)
 		{
-			// Debug.LogError("ERROR: chain depth reached limit");
+			Debug.LogError("ERROR: chain depth reached limit");
 			return false;
 		}
 
