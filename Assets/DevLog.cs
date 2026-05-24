@@ -2,6 +2,7 @@
 
 #region tools
 //! tools
+	//todo bug Recorder to prevent later fixes undermine former fixes
 	////   skill to generate commit messages
 	//  AnimationStateTracker checker  (low priority)
 #endregion
@@ -114,6 +115,8 @@
 		// consumed status effect
 		// transfered status effect
 		////buried
+		//// add
+			//// bury and add (sacrifice_ritual)
 		// staged
 	//todo status effect
 		// better power wisp

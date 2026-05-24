@@ -528,6 +528,7 @@ MonoBehaviour:
   tintDuration: 1
   tintTransitionSpeed: 5
   isPlayingSpecialAnimation: 0
+  isPendingSlotIn: 0
   insertDuration: 0.5
   moveDuration: 0.4
   moveEase: 6

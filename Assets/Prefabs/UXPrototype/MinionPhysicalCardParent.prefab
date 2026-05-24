@@ -64,6 +64,7 @@ MonoBehaviour:
   opponentCardColor: {r: 0.708, g: 0.3278854, b: 0.10619999, a: 1}
   opponentCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
   isPlayingSpecialAnimation: 0
+  isPendingSlotIn: 0
   insertDuration: 0.5
   moveDuration: 0.4
   moveEase: 6

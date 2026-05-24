@@ -153,7 +153,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		// END BUG FIX (E)
 		// ------------------------------------------------------------------
 
-		// Debug.Log("[RecorderAnimationPlayer] PlayRequest type=" + request.type + " target=" + (request.targetCard != null ? request.targetCard.name : (request.attackerCard != null ? request.attackerCard.name : "null")));
+		Debug.Log("[RecorderAnimationPlayer] PlayRequest type=" + request.type + " target=" + (request.targetCard != null ? request.targetCard.name : (request.attackerCard != null ? request.attackerCard.name : "null")));
 		switch (request.type)
 		{
 			case AnimationRequestType.Attack:
