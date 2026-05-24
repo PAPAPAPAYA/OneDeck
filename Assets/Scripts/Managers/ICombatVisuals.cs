@@ -71,6 +71,11 @@ public interface ICombatVisuals
 	/// Phase 1: all cards arc in parallel to their pop-up peaks.
 	/// Phase 2: all cards slot in in parallel to their final deck top positions.
 	/// </summary>
+	/// <remarks>
+	/// targetIndices here are the FINAL deck indices (computed by RecorderAnimationPlayer
+	/// after ApplyAnimationResult). The implementation cannot resolve indices itself because
+	/// Phase 1 needs every card's final position up-front to calculate pop-up peaks.
+	/// </remarks>
 	void MoveCardToTopPopUpBatch(List<GameObject> logicalCards, List<int> targetIndices,
 	    float duration, Action onComplete = null);
 

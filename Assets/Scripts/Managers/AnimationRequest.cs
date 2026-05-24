@@ -35,8 +35,12 @@ namespace DefaultNamespace
 		public float duration = 0.5f;
 		public bool useArc = true;
 		public int targetIndex;
+		// Semi-deprecated for batch moves: MoveToBottomBatch and MoveToTopBatch no longer use
+		// this for index calculation (they read actualPhysIndex from physicalCardsInDeck after
+		// ApplyAnimationResult). targetIndices is kept because MoveToTopPopUpBatch still needs
+		// pre-computed final deck positions up-front to calculate pop-up peaks in Phase 1.
 		public List<int> targetIndices;
-		public int snapshotDeckSize; // Deck size at the time of snapshot, used to correct index when deck size changes before animation playback
+		public int snapshotDeckSize; // Historical deck size at time of effect capture, for debug logging only. No longer used for index calculation.
 
 		// StatusEffectChange specific fields
 		public EnumStorage.StatusEffect statusEffect;

@@ -183,14 +183,22 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				{
 					var card = request.targetCards[i];
 					// Bury (MoveToBottomBatch) sends cards to the absolute bottom of the physical deck.
-					// ApplyAnimationResult inserts them at index 0 in forward order,
-					// so targetCards[i] ends up at (totalCount - 1 - i).
-					// We intentionally do NOT use snapshotDeckSize offset here,
-					// because Bury/Stage are absolute-position operations, not relative shifts.
+					// We read actualPhysIndex from physicalCardsInDeck after ApplyAnimationResult,
+					// because reactive effects (e.g. StageSelf) or pending slot-in cards may have altered deck order.
+					// correctedIndex (totalCount - 1 - i) is kept as fallback only when physical card cannot be resolved.
 					int correctedIndex = totalCount - 1 - i;
 					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
-					// Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex for " + card.name + " snapshotIndex=" + request.targetIndices[i] + " snapshotDeckSize=" + request.snapshotDeckSize + " currentCount=" + currentCount + " correctedIndex=" + correctedIndex);
-					visuals.MoveCardToIndex(card, correctedIndex, request.duration, request.useArc, () =>
+					int actualPhysIndex = -1;
+					var combatUX2 = visuals as CombatUXManager;
+					if (combatUX2 != null)
+					{
+						var phys = combatUX2.GetPhysicalCard(card);
+						if (phys != null) actualPhysIndex = combatUX2.GetPhysicalCardDeckIndex(phys);
+					}
+					int targetIndex = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
+					string snapshotIdxStr = (hasSnapshot && request.targetIndices != null && i < request.targetIndices.Count) ? request.targetIndices[i].ToString() : "null";
+					Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount);
+					visuals.MoveCardToIndex(card, targetIndex, request.duration, request.useArc, () =>
 					{
 						completedCount++;
 						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
@@ -226,14 +234,22 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				{
 					var card = request.targetCards[i];
 					// Stage (MoveToTopBatch) sends cards to the absolute top of the physical deck.
-					// ApplyAnimationResult appends them in forward order,
-					// so targetCards[i] ends up at (currentCount - totalCount + i).
-					// We intentionally do NOT use snapshotDeckSize offset here,
-					// because Bury/Stage are absolute-position operations, not relative shifts.
+					// We read actualPhysIndex from physicalCardsInDeck after ApplyAnimationResult,
+					// because reactive effects or pending slot-in cards may have altered deck order.
+					// correctedIndex (currentCount - totalCount + i) is kept as fallback only when physical card cannot be resolved.
 					int correctedIndex = currentCount - totalCount + i;
 					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
-					// Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex for " + card.name + " snapshotIndex=" + request.targetIndices[i] + " snapshotDeckSize=" + request.snapshotDeckSize + " currentCount=" + currentCount + " correctedIndex=" + correctedIndex);
-					visuals.MoveCardToIndex(card, correctedIndex, request.duration, request.useArc, () =>
+					int actualPhysIndex = -1;
+					var combatUX2 = visuals as CombatUXManager;
+					if (combatUX2 != null)
+					{
+						var phys = combatUX2.GetPhysicalCard(card);
+						if (phys != null) actualPhysIndex = combatUX2.GetPhysicalCardDeckIndex(phys);
+					}
+					int targetIndex = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
+					string snapshotIdxStr = (hasSnapshot && request.targetIndices != null && i < request.targetIndices.Count) ? request.targetIndices[i].ToString() : "null";
+					Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount);
+					visuals.MoveCardToIndex(card, targetIndex, request.duration, request.useArc, () =>
 					{
 						completedCount++;
 						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
@@ -261,13 +277,29 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
 				int currentCount = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.Count : 0;
 
-				// Build final indices (same correction logic as MoveToTopBatch)
+				// Build final indices by reading actualPhysIndex from physicalCardsInDeck after ApplyAnimationResult.
+				// Fallback to correctedIndex (currentCount - totalCount + i) if physical card cannot be resolved.
+				// NOTE: We pass these finalIndices into MoveCardToTopPopUpBatch rather than letting it look up
+				// indices itself, because the two-phase parallel animation needs every card's final deck
+				// position before Phase 1 starts (to compute pop-up peaks). Other batch types call
+				// MoveCardToIndex per-card, so they resolve indices individually inside the loop.
 				var finalIndices = new List<int>();
 				for (int i = 0; i < totalCount; i++)
 				{
+					var card = request.targetCards[i];
 					int correctedIndex = currentCount - totalCount + i;
 					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
-					finalIndices.Add(correctedIndex);
+					int actualPhysIndex = -1;
+					var combatUX2 = visuals as CombatUXManager;
+					if (combatUX2 != null)
+					{
+						var phys = combatUX2.GetPhysicalCard(card);
+						if (phys != null) actualPhysIndex = combatUX2.GetPhysicalCardDeckIndex(phys);
+					}
+					int targetIndex = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
+					string snapshotIdxStr = (hasSnapshot && request.targetIndices != null && i < request.targetIndices.Count) ? request.targetIndices[i].ToString() : "null";
+					Debug.Log("[RecorderAnimationPlayer] MoveToTopPopUpBatch card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount);
+					finalIndices.Add(targetIndex);
 				}
 
 				bool done = false;

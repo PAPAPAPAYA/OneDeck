@@ -99,8 +99,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float peelStaggerDelay = 0.04f;
 	[Tooltip("Distance to move reveal zone card downward out of screen when peeling starts")]
 	public float revealCardExitDistance = 6f;
-	public float secondaryLiftHeight = 0.4f;
-	public float secondaryLiftDuration = 0.25f;
+
 	[Tooltip("Enable PeelDeck focus animation during attack")]
 	public bool enablePeelDeck = true;
 
@@ -395,7 +394,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		AnimationStateTracker.me?.RegisterAnimation();
 
-		Debug.Log("[CombatUXManager] MoveCardWithAnimation START logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " targetPos=" + targetPosition + " physical=" + physicalCard.name + " physCurrentPos=" + physicalCard.transform.position + " isPending=" + physScript.isPendingSlotIn);
+		int actualPhysIndex = physicalCardsInDeck.IndexOf(physicalCard);
+		Debug.Log("[CombatUXManager] MoveCardWithAnimation START logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " targetPos=" + targetPosition + " physical=" + physicalCard.name + " actualPhysIndex=" + actualPhysIndex + " deckCount=" + physicalCardsInDeck.Count + " physCurrentPos=" + physicalCard.transform.position + " isPending=" + physScript.isPendingSlotIn);
 
 		// Create animation sequence
 		Sequence moveSequence = DOTween.Sequence();
@@ -490,6 +490,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// Phase 1: all cards arc in parallel to their pop-up peaks.
 	/// Phase 2: all cards slot in in parallel to their final deck top positions.
 	/// </summary>
+	/// <remarks>
+	/// targetIndices here are the FINAL deck indices (computed by RecorderAnimationPlayer
+	/// after ApplyAnimationResult). This method cannot resolve indices itself because
+	/// Phase 1 needs every card's final position up-front to calculate pop-up peaks.
+	/// </remarks>
 	public void MoveCardToTopPopUpBatch(List<GameObject> logicalCards, List<int> targetIndices,
 	    float duration, Action onComplete = null)
 	{
@@ -616,23 +621,25 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	/// <summary>
 	/// Calculate position coordinates at specified index for animation target positions.
-	/// Uses active deck count excluding pending slot-in cards, because pending cards
-	/// (e.g. new cards waiting for PopUp/SlotIn) should not affect the target position
-	/// of cards being actively moved by an animation.
+	/// Uses full deck count because pending cards still occupy slots in the final layout.
+	/// All callers pass logical indices based on combinedDeckZone.Count, so deckCount
+	/// must match that full count to avoid index/count mismatch.
 	/// </summary>
+	// VISUAL-FIX(2026-05-24): Stage/Bury peak and slot-in position offset when pending cards exist
+	//   Cause:    CalculateAnimationPositionAtIndex used activeCount excluding pending cards,
+	//             but callers pass logical indices based on full deck size. This caused
+	//             index/count mismatch: e.g. index=2 with deckCount=2 produced wrong position.
+	//   Affects:  MoveCardToTopPopUpBatch, MoveCardToIndex, MoveCardToBottom, MoveCardWithAnimation
+	//   Regress:  Reveal sacrificial_spirit (creates pending JU_ON) then soldier_skeleton (StageSelf);
+	//             verify SOLDIER_SKELETON's peak and slot-in positions match its logical top index.
+	//   Related:  sacrificial_spirit + soldier_skeleton, any card that creates pending then stages
 	private Vector3 CalculateAnimationPositionAtIndex(int index)
 	{
-		int activeCount = 0;
-		foreach (var card in physicalCardsInDeck)
-		{
-			var phys = card.GetComponent<CardPhysObjScript>();
-			if (phys != null && !phys.isPendingSlotIn)
-				activeCount++;
-		}
+		int fullCount = physicalCardsInDeck.Count;
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
-			index, activeCount, basePos, xOffset, yOffset, zOffset);
-		Debug.Log("[CombatUXManager] CalculateAnimationPositionAtIndex index=" + index + " activeCount=" + activeCount + " result=" + result);
+			index, fullCount, basePos, xOffset, yOffset, zOffset);
+		Debug.Log("[CombatUXManager] CalculateAnimationPositionAtIndex index=" + index + " fullCount=" + fullCount + " result=" + result);
 		return result;
 	}
 
@@ -958,7 +965,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var p = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
 			deckBefore += "[" + i + "]" + physicalCardsInDeck[i].name + "(pending=" + (p != null && p.isPendingSlotIn) + ") ";
 		}
-		Debug.Log("[CombatUXManager] ApplyAnimationResult START type=" + request.type + " deckBefore=" + deckBefore);
+		string targetIndicesStr = request.targetIndices != null ? string.Join(",", request.targetIndices) : "null";
+		Debug.Log("[CombatUXManager] ApplyAnimationResult START type=" + request.type + " targetIndices=" + targetIndicesStr + " snapshotDeckSize=" + request.snapshotDeckSize + " deckBefore=" + deckBefore);
 
 		switch (request.type)
 		{

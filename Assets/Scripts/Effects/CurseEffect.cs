@@ -52,6 +52,7 @@ namespace DefaultNamespace.Effects
 			CardScript targetCard = FindEnemyCardWithTypeID(cardTypeID.value);
 
 			// If not found, spawn one
+			bool isNewlyCreated = false;
 			if (targetCard == null)
 			{
 				if (cardPrefab == null)
@@ -60,12 +61,13 @@ namespace DefaultNamespace.Effects
 					return;
 				}
 				targetCard = CreateEnemyCard(cardPrefab);
+				isNewlyCreated = true;
 			}
 
 			// Apply Power status effect to target card
 			if (targetCard != null)
 			{
-				ApplyPowerToCardWithProjectile(targetCard, powerAmount);
+				ApplyPowerToCardWithProjectile(targetCard, powerAmount, isNewlyCreated);
 			}
 			// Debug.Log("[CurseEffect] EnhanceCurse END myCard=" + (myCard != null ? myCard.name : "null"));
 		}
@@ -120,6 +122,7 @@ namespace DefaultNamespace.Effects
 			CardScript targetCard = FindFriendlyCardWithTypeID(cardTypeID.value);
 
 			// If not found, spawn one
+			bool isNewlyCreated = false;
 			if (targetCard == null)
 			{
 				if (cardPrefab == null)
@@ -128,12 +131,13 @@ namespace DefaultNamespace.Effects
 					return;
 				}
 				targetCard = CreateFriendlyCard(cardPrefab);
+				isNewlyCreated = true;
 			}
 
 			// Apply Power status effect to target card
 			if (targetCard != null)
 			{
-				ApplyPowerToCardWithProjectile(targetCard, powerAmount);
+				ApplyPowerToCardWithProjectile(targetCard, powerAmount, isNewlyCreated);
 			}
 		}
 
@@ -273,7 +277,7 @@ namespace DefaultNamespace.Effects
 		/// Applies Power status effect to the specified card using a projectile animation.
 		/// The actual effect executes after the VFX reaches the target.
 		/// </summary>
-		public void ApplyPowerToCardWithProjectile(CardScript targetCard, int amount)
+		public void ApplyPowerToCardWithProjectile(CardScript targetCard, int amount, bool isNewlyCreated = false)
 		{
 			if (targetCard == null || amount <= 0) return;
 
@@ -285,14 +289,37 @@ namespace DefaultNamespace.Effects
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 			if (recorder != null)
 			{
-				// 1. Pop Up target card
-				recorder.animationRequests.Add(new AnimationRequest
+				// VISUAL-FIX(2026-05-24): Newly created curse card's projectile flies off-screen
+				//   Cause:    PopUpCard computes peak from current physical position (newCardPosition,
+				//             which is off-screen), so the projectile endPos is also off-screen.
+				//   Affects:  CurseEffect, PopUpCard, StatusEffectProjectile, MoveToPopUpPosition
+				//   Regress:  Reveal a card that enhances a curse type not present in deck (e.g. JU_ON)
+				//             and verify the projectile flies to the visible deck peak, not off-screen.
+				//   Related:  Any curse card with EnhanceCurse/EnhanceFriendlyCurse when target absent
+				if (isNewlyCreated)
 				{
-					type = AnimationRequestType.PopUp,
-					targetCard = targetCard.gameObject
-				});
+					// New card: fly from newCardPosition to deck peak (like AddTempCard)
+					int deckIndex = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.IndexOf(targetCard.gameObject) : -1;
+					if (deckIndex < 0) deckIndex = 0;
 
-				// 2. Play projectile while card is elevated
+					recorder.animationRequests.Add(new AnimationRequest
+					{
+						type = AnimationRequestType.MoveToPopUpPosition,
+						targetCard = targetCard.gameObject,
+						targetIndex = deckIndex
+					});
+				}
+				else
+				{
+					// Existing card: Pop Up from current deck position
+					recorder.animationRequests.Add(new AnimationRequest
+					{
+						type = AnimationRequestType.PopUp,
+						targetCard = targetCard.gameObject
+					});
+				}
+
+				// 2. Play projectile while card is at peak
 				recorder.animationRequests.Add(new AnimationRequest
 				{
 					type = AnimationRequestType.StatusEffectProjectile,
