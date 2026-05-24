@@ -84,8 +84,7 @@ public class CardPhysObjScript : MonoBehaviour
 	public bool isPlayingSpecialAnimation = false;
 	[Tooltip("Is pending slot-in animation (e.g. new card added by AddTempCard waiting for its SlotIn). Used by ApplyAnimationResult and CalculatePositionAtIndex to exclude pending cards from active deck count.")]
 	public bool isPendingSlotIn = false;
-	[Tooltip("Insert animation duration")]
-	public float insertDuration = 0.4f;
+
 
 	[HideInInspector]
 	public Vector3 popUpOriginalPosition;

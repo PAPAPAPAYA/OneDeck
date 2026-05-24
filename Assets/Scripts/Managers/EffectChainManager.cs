@@ -87,8 +87,6 @@ public class EffectChainManager : MonoBehaviour
 		newChainScript.chainID = chainNumber;
 		newChainScript.cardObject = myCard;
 		newChainScript.effectObject = myEffectInst;
-		newChainScript.open = true;
-		
 		// Remember the recorder that was active before creating this one.
 		// This ensures reactive effects are parented to the recorder that triggered them.
 		var previousRecorder = currentEffectRecorder;
@@ -177,7 +175,6 @@ public class EffectChainManager : MonoBehaviour
 		foreach (var recorder in openedEffectRecorders)
 		{
 			var rec = recorder.GetComponent<EffectRecorder>();
-			rec.open = false;
 			string reqSummary = "reqs=" + rec.animationRequests.Count;
 			for (int i = 0; i < rec.animationRequests.Count; i++)
 			{

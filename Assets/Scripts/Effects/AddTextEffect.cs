@@ -10,9 +10,7 @@ namespace DefaultNamespace.Effects
         [Tooltip("Text content to add to the combat log")]
         [TextArea(3, 10)]
         public string textToAdd = "";
-        
-        [Tooltip("Whether to automatically add newline at end of text")]
-        public bool addNewLine = true;
+
 
         /// <summary>
         /// Add text to the combat log
