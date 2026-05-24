@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发日报 - 2026-05-20 ~ 05-24</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		body {
+			font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+			background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+			min-height: 100vh;
+			color: #e0e0e0;
+			padding: 40px 20px;
+		}
+		.container {
+			max-width: 900px;
+			margin: 0 auto;
+		}
+		.header {
+			text-align: center;
+			margin-bottom: 40px;
+			padding: 30px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 20px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+		}
+		.header h1 {
+			font-size: 2.5em;
+			margin-bottom: 10px;
+			background: linear-gradient(90deg, #e94560, #ff6b6b);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+		.header .subtitle {
+			color: #888;
+			font-size: 1.1em;
+		}
+		.header .stats {
+			display: flex;
+			justify-content: center;
+			gap: 40px;
+			margin-top: 25px;
+			flex-wrap: wrap;
+		}
+		.stat-box {
+			text-align: center;
+		}
+		.stat-box .number {
+			font-size: 2em;
+			font-weight: bold;
+			color: #e94560;
+		}
+		.stat-box .label {
+			font-size: 0.9em;
+			color: #aaa;
+			margin-top: 5px;
+		}
+		.timeline {
+			position: relative;
+			padding-left: 30px;
+		}
+		.timeline::before {
+			content: '';
+			position: absolute;
+			left: 10px;
+			top: 0;
+			bottom: 0;
+			width: 3px;
+			background: linear-gradient(to bottom, #e94560, #533483);
+			border-radius: 3px;
+		}
+		.commit-card {
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 16px;
+			padding: 25px;
+			margin-bottom: 25px;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			backdrop-filter: blur(10px);
+			position: relative;
+			transition: transform 0.3s, box-shadow 0.3s;
+		}
+		.commit-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 10px 30px rgba(233, 69, 96, 0.15);
+		}
+		.commit-card::before {
+			content: '';
+			position: absolute;
+			left: -24px;
+			top: 30px;
+			width: 14px;
+			height: 14px;
+			background: #e94560;
+			border-radius: 50%;
+			border: 3px solid #1a1a2e;
+		}
+		.commit-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		.commit-title {
+			font-size: 1.3em;
+			font-weight: 600;
+			color: #fff;
+		}
+		.commit-time {
+			background: rgba(233, 69, 96, 0.15);
+			color: #e94560;
+			padding: 5px 15px;
+			border-radius: 20px;
+			font-size: 0.85em;
+			font-weight: 500;
+		}
+		.commit-desc {
+			color: #ccc;
+			line-height: 1.7;
+			margin-bottom: 15px;
+		}
+		.file-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin-top: 15px;
+		}
+		.file-tag {
+			background: rgba(83, 52, 131, 0.3);
+			color: #b8a9d9;
+			padding: 4px 12px;
+			border-radius: 8px;
+			font-size: 0.8em;
+			font-family: 'Consolas', monospace;
+		}
+		.file-tag.added {
+			background: rgba(46, 204, 113, 0.15);
+			color: #2ecc71;
+		}
+		.file-tag.modified {
+			background: rgba(241, 196, 15, 0.15);
+			color: #f1c40f;
+		}
+		.diff-stats {
+			display: flex;
+			gap: 20px;
+			margin-top: 15px;
+			font-size: 0.9em;
+		}
+		.diff-stat {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+		.diff-stat .plus {
+			color: #2ecc71;
+			font-weight: bold;
+		}
+		.diff-stat .minus {
+			color: #e74c3c;
+			font-weight: bold;
+		}
+		.section-title {
+			font-size: 1.5em;
+			margin: 40px 0 20px 0;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.section-title::before {
+			content: '';
+			width: 5px;
+			height: 25px;
+			background: #e94560;
+			border-radius: 3px;
+		}
+		.highlight-box {
+			background: linear-gradient(135deg, rgba(233, 69, 96, 0.1), rgba(83, 52, 131, 0.1));
+			border: 1px solid rgba(233, 69, 96, 0.3);
+			border-radius: 16px;
+			padding: 25px;
+			margin-top: 30px;
+		}
+		.highlight-box h3 {
+			color: #e94560;
+			margin-bottom: 15px;
+			font-size: 1.2em;
+		}
+		.highlight-box ul {
+			list-style: none;
+			padding: 0;
+		}
+		.highlight-box li {
+			padding: 8px 0;
+			padding-left: 25px;
+			position: relative;
+			color: #ddd;
+			line-height: 1.6;
+		}
+		.highlight-box li::before {
+			content: '▸';
+			position: absolute;
+			left: 0;
+			color: #e94560;
+		}
+		.tag {
+			display: inline-block;
+			padding: 2px 10px;
+			border-radius: 6px;
+			font-size: 0.75em;
+			font-weight: 600;
+			margin-left: 10px;
+		}
+		.tag.bugfix {
+			background: rgba(231, 76, 60, 0.2);
+			color: #e74c3c;
+		}
+		.tag.feature {
+			background: rgba(46, 204, 113, 0.2);
+			color: #2ecc71;
+		}
+		.tag.test {
+			background: rgba(52, 152, 219, 0.2);
+			color: #3498db;
+		}
+		.tag.docs {
+			background: rgba(155, 89, 182, 0.2);
+			color: #9b59b6;
+		}
+		.tag.refactor {
+			background: rgba(241, 196, 15, 0.2);
+			color: #f1c40f;
+		}
+		.footer {
+			text-align: center;
+			margin-top: 50px;
+			padding: 20px;
+			color: #666;
+			font-size: 0.9em;
+		}
+		.test-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: 12px;
+			margin-top: 15px;
+		}
+		.test-card {
+			background: rgba(255, 255, 255, 0.03);
+			border: 1px solid rgba(255, 255, 255, 0.06);
+			border-radius: 10px;
+			padding: 14px 16px;
+		}
+		.test-card .test-name {
+			font-weight: 600;
+			color: #fff;
+			font-size: 0.95em;
+			margin-bottom: 4px;
+		}
+		.test-card .test-count {
+			color: #888;
+			font-size: 0.85em;
+		}
+		.subsection {
+			font-size: 1.1em;
+			color: #bbb;
+			margin: 20px 0 10px 0;
+			font-weight: 600;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>OneDeck 开发日报</h1>
+			<div class="subtitle">2026年5月20日 ~ 5月24日 · 动画系统收尾与视觉缺陷集中修复</div>
+			<div class="stats">
+				<div class="stat-box">
+					<div class="number">10</div>
+					<div class="label">Git 提交</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">~5,800</div>
+					<div class="label">新增代码行</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">7</div>
+					<div class="label">新增测试牌组</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">12</div>
+					<div class="label">新增计划/文档</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-title">工作内容时间线</div>
+		<div class="timeline">
+			<!-- 5/20 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						PopUp + SlotIn 卡牌显隐动画基础架构
+						<span class="tag feature">Feature</span>
+					</div>
+					<div class="commit-time">5月20日</div>
+				</div>
+				<div class="commit-desc">
+					建立卡牌在牌组中"弹出-滑入"（PopUp / SlotIn）的基础动画体系，解决新增/放逐/状态效果卡牌在视觉上的突兀出现/消失问题。<br>
+					新增 <code>AnimationRequestType</code>：
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>PopUp</code> — 单卡从牌组中弹出到可视位置</li>
+						<li><code>SlotIn</code> — 卡牌滑入牌组指定位置</li>
+						<li><code>MoveToPopUpPosition</code> — 移动至弹出预备位置</li>
+					</ul>
+					同时扩展了 <code>ICombatVisuals</code> 与 <code>NullCombatVisuals</code> 接口，并为 <code>AddTempCard</code>、<code>ExileEffect</code>、<code>ConsumeStatusEffect</code> 接入新动画。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+2,037</span> 行</div>
+					<div class="diff-stat"><span class="minus">-44</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">AddTempCard.cs</span>
+					<span class="file-tag modified">ExileEffect.cs</span>
+					<span class="file-tag modified">AnimationRequest.cs</span>
+					<span class="file-tag added">exile test.asset</span>
+					<span class="file-tag added">stage test.asset</span>
+					<span class="file-tag added">pop-up-slot-in-animation-prd.md</span>
+					<span class="file-tag added">CardPopUpAnimationLogic.html</span>
+				</div>
+			</div>
+
+			<!-- 5/21 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Batch 状态效果动画 + PopUp / SlotIn 整合
+						<span class="tag feature">Feature</span>
+					</div>
+					<div class="commit-time">5月21日</div>
+				</div>
+				<div class="commit-desc">
+					将 <code>StatusEffectGiverEffect</code> 全面重构为支持批次动画：给多张友方卡牌施加状态效果时，统一捕获 <code>PopUpBatch</code> + <code>StatusEffectProjectile</code> + <code>SlotInBatch</code>，实现并行投射物飞行与顺序滑入。<br>
+					同时梳理了测试牌组目录结构，新增 <code>basic tests</code> 与 <code>chain tests</code> 分类，新增 4 个测试牌组。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+1,228</span> 行</div>
+					<div class="diff-stat"><span class="minus">-346</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">StatusEffectGiverEffect.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">CurseEffect.cs</span>
+					<span class="file-tag modified">BuryEffect.cs</span>
+					<span class="file-tag modified">StageEffect.cs</span>
+					<span class="file-tag added">give status effect test.asset</span>
+					<span class="file-tag added">multiple add test.asset</span>
+					<span class="file-tag added">add then exile test.asset</span>
+					<span class="file-tag added">statuseffectgivereffect-recorder-projectile-prd.md</span>
+					<span class="file-tag added">statuseffectgiver-popup-batch-plan.md</span>
+				</div>
+			</div>
+
+			<!-- 5/22 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						SlotIn 自定义曲线 + RevealZone 兜底 + PopUpBatch 重构
+						<span class="tag feature">Feature</span>
+						<span class="tag refactor">Refactor</span>
+					</div>
+					<div class="commit-time">5月22日</div>
+				</div>
+				<div class="commit-desc">
+					上午两个并行提交：<br>
+					1. <strong>SlotIn 自定义曲线</strong> — <code>CardPhysObjScript</code> 新增 z-bump 高度控制，<code>CombatUXManager</code> 支持 revealZone 为 null 时的 fallback 定位，避免卡牌在 reveal zone 缺失时飞向原点。<br>
+					2. <strong>PopUpBatch 动画 + StatusEffectGiver 精简</strong> — 将 StatusEffectGiverEffect 的 200+ 行冗余逻辑压缩为 100 行左右的核心批次流程；<code>BuryEffect</code> 接入 <code>PopUpBatch</code>，使被 bury 的卡牌先弹出再移入牌底。<br>
+					晚上更新 DevLog 标记多项视觉任务完成。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+119</span> 行</div>
+					<div class="diff-stat"><span class="minus">-227</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">StatusEffectGiverEffect.cs</span>
+					<span class="file-tag modified">BuryEffect.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+					<span class="file-tag modified">DevLog.cs</span>
+				</div>
+			</div>
+
+			<!-- 5/24 feat -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Stage 弹出弧线动画 + Deck Ordering Race Condition 修复
+						<span class="tag feature">Feature</span>
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">5月24日</div>
+				</div>
+				<div class="commit-desc">
+					新增 <code>MoveToTopPopUpBatch</code> 动画请求类型，为 <code>StageEffect</code> 实现"弹出弧线 → 顶端滑入"的视觉流程。解决的核心问题包括：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li>Stage 卡牌在 reactive chain 中被重复 reorder 导致的 race condition</li>
+						<li>Rift 召唤另一张 Rift 时，被 stage 的卡牌应直接进入 reveal zone 而非短暂落入牌组</li>
+						<li>Deprecated Decks 目录整理，将废弃测试牌组移入子文件夹</li>
+						<li><code>SACRIFICE_RITUAL</code>、<code>DR_MANHATTAN</code> 等卡牌 prefab 配置清理</li>
+					</ul>
+					新增 <code>move-to-top-popup-batch-prd.md</code> 与 <code>logic_animation_flow_evaluation.md</code> 设计评估文档。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+1,187</span> 行</div>
+					<div class="diff-stat"><span class="minus">-51</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">StageEffect.cs</span>
+					<span class="file-tag modified">BuryEffect.cs</span>
+					<span class="file-tag modified">AnimationRequest.cs</span>
+					<span class="file-tag modified">ICombatVisuals.cs</span>
+					<span class="file-tag added">move-to-top-popup-batch-prd.md</span>
+					<span class="file-tag added">logic_animation_flow_evaluation.md</span>
+				</div>
+			</div>
+
+			<!-- 5/24 fix 1 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						修复 Pending Slot-In 卡牌在牌组动画中的定位异常
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">5月24日</div>
+				</div>
+				<div class="commit-desc">
+					解决"当牌组中存在尚未完成 slot-in 动画的 pending 卡牌时，后续 bury/stage 导致物理卡牌位置错位"的问题。<br>
+					核心改动：在 <code>CardPhysObjScript</code> 中引入 z-bump 标记位，<code>CombatUXManager</code> 在计算 deck position 时过滤 pending 卡牌，确保新加入的卡牌不会与尚未落位的卡牌发生 Z-fighting 和索引偏移。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+103</span> 行</div>
+					<div class="diff-stat"><span class="minus">-29</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">PhysicalCardParent.prefab</span>
+					<span class="file-tag modified">StartCardParent.prefab</span>
+				</div>
+			</div>
+
+			<!-- 5/24 fix 2 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						修复 Distance-Zero Tween 与卡牌位置偏移
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">5月24日</div>
+				</div>
+				<div class="commit-desc">
+					修复多个视觉时序 bug：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li>卡牌起始位置与目标位置相同时 DOTween 产生 distance-zero tween 的警告与异常</li>
+						<li>BuryEffect / StageEffect 在调用 <code>SyncPhysicalCardsWithCombinedDeck</code> 时的 premature 同步问题</li>
+						<li>新增 <code>VISUAL-FIX(2026-05-24)</code> 标准化注释格式，建立视觉 bug 防御机制</li>
+					</ul>
+					同步建立了 <code>VisualBugPrevention_Guide.md</code> 与 <code>RegressionChecklist.md/html</code>。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+235</span> 行</div>
+					<div class="diff-stat"><span class="minus">-53</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">BuryEffect.cs</span>
+					<span class="file-tag modified">StageEffect.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+					<span class="file-tag added">VisualBugPrevention_Guide.md</span>
+					<span class="file-tag added">RegressionChecklist.md</span>
+					<span class="file-tag added">RegressionChecklist.html</span>
+				</div>
+			</div>
+
+			<!-- 5/24 fix 3 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						修复 Pending Cards 存在时的动画 Target Indices
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">5月24日</div>
+				</div>
+				<div class="commit-desc">
+					当牌组中存在 pending slot-in 卡牌时，<code>CurseEffect</code> 与 <code>StatusEffectProjectile</code> 的目标索引计算会出现漂移，导致状态效果投射物飞向错误位置。<br>
+					修复方案：在 <code>ICombatVisuals</code> 中暴露 <code>GetActualPhysicalIndex</code> 方法，<code>RecorderAnimationPlayer</code> 在播放前将逻辑索引转换为实际物理索引，确保投射物与目标卡牌精确对齐。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+697</span> 行</div>
+					<div class="diff-stat"><span class="minus">-49</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CurseEffect.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">AnimationRequest.cs</span>
+					<span class="file-tag modified">ICombatVisuals.cs</span>
+					<span class="file-tag modified">RegressionChecklist.md</span>
+				</div>
+			</div>
+
+			<!-- 5/24 refactor -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						清理效果与动画系统中的废弃字段
+						<span class="tag refactor">Refactor</span>
+					</div>
+					<div class="commit-time">5月24日</div>
+				</div>
+				<div class="commit-desc">
+					基于 <code>DeprecatedFields_Audit.md</code> 审计报告，移除确认无人使用的字段：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>EffectRecorder.sessionID</code> / <code>open</code> — 纯 dead code</li>
+						<li><code>EffectChainManager</code> 中未使用的 snapshot 相关字段</li>
+						<li><code>AddTextEffect</code> 中废弃的 inspector 配置</li>
+						<li><code>CardPhysObjScript</code> 中退役的 secondary lift 参数</li>
+					</ul>
+					同步产出 <code>DeprecatedFields_Audit.md</code> 作为长期技术债务追踪文档。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+2</span> 行</div>
+					<div class="diff-stat"><span class="minus">-10</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">EffectRecorder.cs</span>
+					<span class="file-tag modified">EffectChainManager.cs</span>
+					<span class="file-tag modified">AddTextEffect.cs</span>
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+					<span class="file-tag added">DeprecatedFields_Audit.md</span>
+				</div>
+			</div>
+
+			<!-- 5/24 test -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						测试同步：移除 Delay Card Tests + 断言适配
+						<span class="tag test">Test</span>
+					</div>
+					<div class="commit-time">5月24日</div>
+				</div>
+				<div class="commit-desc">
+					由于 Delay 机制在最新动画架构中行为已改变（delay 卡牌不再产生独立的物理移动动画，而是直接通过 deck sync 处理），移除 <code>CardManipulationTests</code> 中相关的 delay 测试用例（共 86 行）。<br>
+					同步更新 <code>VisualsCallTests</code>、<code>ExileEffectTests</code>、<code>ReactiveChainTests</code>、<code>EffectChainTests</code> 中的动画断言，使其与当前的 <code>MoveToTopPopUpBatch</code> 等新请求类型对齐。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+25</span> 行</div>
+					<div class="diff-stat"><span class="minus">-103</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CardManipulationTests.cs</span>
+					<span class="file-tag modified">VisualsCallTests.cs</span>
+					<span class="file-tag modified">ExileEffectTests.cs</span>
+					<span class="file-tag modified">ReactiveChainTests.cs</span>
+					<span class="file-tag modified">EffectChainTests.cs</span>
+				</div>
+			</div>
+
+			<!-- 5/24 chore -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						测试牌组配置更新
+						<span class="tag docs">Config</span>
+					</div>
+					<div class="commit-time">5月24日</div>
+				</div>
+				<div class="commit-desc">
+					在 GameScene 中新增 <code>soldier_skeleton test</code> 连锁测试牌组，用于验证 <code>SACRIFICIAL_SPIRIT + soldier_skeleton</code>、<code>RIFT + dummy</code> 等已知复杂组合。更新 <code>PlayerDeckRef</code> 默认引用。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+421</span> 行</div>
+					<div class="diff-stat"><span class="minus">-8</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag added">soldier_skeleton test.asset</span>
+					<span class="file-tag modified">PlayerDeckRef.asset</span>
+					<span class="file-tag modified">GameScene.unity</span>
+					<span class="file-tag modified">DevLog.cs</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-title">新增测试牌组</div>
+		<div class="test-grid">
+			<div class="test-card">
+				<div class="test-name">exile test</div>
+				<div class="test-count">基础 — 验证 ExileEffect 放逐自身/敌方的逻辑与动画</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">stage test</div>
+				<div class="test-count">基础 — 验证 StageEffect 置顶逻辑与 MoveToTopPopUpBatch</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">give status effect test</div>
+				<div class="test-count">基础 — 验证 StatusEffectGiver 批量赋予 Power</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">multiple add test</div>
+				<div class="test-count">基础 — 验证 AddTempCard 多次添加与 PopUp/SlotIn</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">add then exile test</div>
+				<div class="test-count">基础 — 验证添加后立即放逐的链式动画</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">exile + stage test</div>
+				<div class="test-count">连锁 — 验证放逐后触发 Stage 反应效果</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">soldier_skeleton test</div>
+				<div class="test-count">连锁 — 验证 RIFT / SACRIFICIAL_SPIRIT 多层嵌套反应</div>
+			</div>
+		</div>
+
+		<div class="highlight-box">
+			<h3>阶段重点工作总结</h3>
+			<ul>
+				<li><strong>PopUp / SlotIn 动画体系完成</strong> — 从 5/20 基础架构到 5/22 PopUpBatch + 自定义曲线，新增卡牌、被 bury/stage/exile 的卡牌均具备显眼的弹出-滑入视觉反馈，不再突兀出现/消失</li>
+				<li><strong>Stage 弧线动画落地</strong> — 5/24 的 <code>MoveToTopPopUpBatch</code> 让 Stage 效果拥有"弹出弧线 → 顶端滑入"的完整动画，解决了 Stage 卡牌在反应链中被 reorder 导致的 race condition</li>
+				<li><strong>Pending 卡牌定位问题根治</strong> — 连续三个提交（slot-in positioning → distance-zero tween → target indices）系统性地修复了 pending 卡牌在牌组中引发的 Z-fighting、索引漂移和投射物错位</li>
+				<li><strong>StatusEffectGiver 重构</strong> — 从 200+ 行的冗余逻辑精简为支持 batch 的核心流程，多目标状态效果动画从串行改为并行投射 + 顺序滑入，性能与表现双提升</li>
+				<li><strong>视觉 bug 防御机制建立</strong> — 引入 <code>VISUAL-FIX(YYYY-MM-DD)</code> 标准化注释、<code>RegressionChecklist</code> 版本控制、<code>VisualBugPrevention_Guide</code> 工作流规范，降低后续修复的回归风险</li>
+				<li><strong>技术债务审计启动</strong> — 产出 <code>DeprecatedFields_Audit.md</code>，识别 10 个废弃/半退役字段并清理其中 4 个纯 dead code</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box">
+			<h3>待办事项</h3>
+			<ul>
+				<li>运行全部 Edit Mode 测试，确认当前 Headless 用例全部通过（注意 delay 测试已移除）</li>
+				<li>在 Play Mode 中验证 SACRIFICIAL_SPIRIT + soldier_skeleton、RIFT_DRAGON + RIFT 等复杂组合的视觉效果</li>
+				<li>继续清理 <code>DeprecatedFields_Audit.md</code> 中标记的 semi-retired 字段（snapshotDeckSize、targetIndices 迁移）</li>
+				<li>推进剩余视觉效果：transfer status effect、consume status effect 的显隐动画</li>
+				<li>评估将 <code>moveToTopPopUpBatch</code> 内嵌的 deck-focus restoration 逻辑与 <code>PlayRequestCoroutine</code> 统一</li>
+				<li>继续推进商店系统（Shop）迭代与疲劳/ overtime 机制实现</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box" style="border-color: rgba(46, 204, 113, 0.4); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(52, 152, 219, 0.08));">
+			<h3 style="color: #2ecc71;">后续工作建议</h3>
+			<p style="color: #bbb; margin-bottom: 15px; font-size: 0.9em;">动画系统的底层基础设施已基本稳固，建议下一阶段从"修 bug"转向"建功能"：</p>
+			<ul>
+				<li><strong style="color: #2ecc71;">Play Mode 集成测试覆盖（高优先级）</strong><br>
+				利用新建的 soldier_skeleton test、exile + stage test 等牌组，在真机 Play Mode 中跑通复杂连锁，确保 PopUpBatch / MoveToTopPopUpBatch 在实际设备上的表现与 Headless 测试一致</li>
+				<li><strong style="color: #2ecc71;">剩余视觉动画补齐（中优先级）</strong><br>
+				transfer status effect、consume status effect、更好的 Power Wisp 粒子效果； infected 状态需要替换卡牌材质并增加毒液喷射效果</li>
+				<li><strong style="color: #2ecc71;">Gameplay 功能回归（高优先级）</strong><br>
+				疲劳/ overtime 机制设计实现、商店基于稀有度的 roll 权重迭代、感染（Infected）状态的完整视觉反馈</li>
+				<li><strong style="color: #2ecc71;">CombatUXManager 进一步拆分（中优先级）</strong><br>
+				当前 CombatUXManager 仍承担过多职责（deck sync、动画播放、位置计算、focus 管理），可考虑将 deck position 计算与动画调度继续外抽</li>
+				<li><strong style="color: #2ecc71;">配置自动化验证（中优先级）</strong><br>
+				基于现有 CardTypeIDValidator 扩展：检测 cardTypeID 重复、多 effect instance 循环风险、卡牌描述与 prefab 配置一致性比对</li>
+			</ul>
+		</div>
+
+		<div class="footer">
+			OneDeck Unity Roguelike Card Game | 开发者: PAPAYA<br>
+			生成时间: 2026-05-24 22:56
+		</div>
+	</div>
+</body>
+</html>

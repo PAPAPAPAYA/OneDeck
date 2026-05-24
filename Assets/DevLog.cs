@@ -2,7 +2,8 @@
 
 #region tools
 //! tools
-	//todo bug Recorder to prevent later fixes undermine former fixes
+	//// bug Recorder to prevent later fixes undermine former fixes
+	//todo make a summary generator skill
 	////   skill to generate commit messages
 	//  AnimationStateTracker checker  (low priority)
 #endregion
