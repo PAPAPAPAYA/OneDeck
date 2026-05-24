@@ -123,14 +123,12 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		var visuals = CombatManager.Me.visuals;
 		if (visuals == null) yield break;
 
-		// ------------------------------------------------------------------
-		// BUG FIX (E): Deck-move animations must play in normal deck layout.
-		// If deck is currently focused/peeled, restore it before any card
-		// position changes. Attack animations keep the focused state so
-		// consecutive attacks can shift focus smoothly via TransitionFocus.
-		// Do NOT remove this guard — removing it will regress the bug where
-		// bury/stage animations play in the wrong peeled layout.
-		// ------------------------------------------------------------------
+		// VISUAL-FIX(2026-05-18): Deck-move animations play in wrong peeled/focused layout
+		//   Cause:    When deck is focused/peeled, bury/stage animations use peeled positions
+		//             instead of normal deck layout, causing cards to fly to wrong spots
+		//   Affects:  RecorderAnimationPlayer, MoveToBottomBatch, MoveToTopBatch, MoveToIndex, PopUp
+		//   Regress:  Reveal any card with Bury or Stage while deck is focused (e.g. after clicking a card)
+		//   Related:  Any card with BuryNextXCards or StageSelf
 		if (request.type == AnimationRequestType.MoveToBottomBatch ||
 		    request.type == AnimationRequestType.MoveToTopBatch ||
 		    request.type == AnimationRequestType.MoveToBottom ||
@@ -149,10 +147,6 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				yield return combatUX.StartCoroutine(combatUX.RestoreDeckFocusCoroutine());
 			}
 		}
-		// ------------------------------------------------------------------
-		// END BUG FIX (E)
-		// ------------------------------------------------------------------
-
 		Debug.Log("[RecorderAnimationPlayer] PlayRequest type=" + request.type + " target=" + (request.targetCard != null ? request.targetCard.name : (request.attackerCard != null ? request.attackerCard.name : "null")));
 		switch (request.type)
 		{

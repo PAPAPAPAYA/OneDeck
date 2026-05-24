@@ -639,19 +639,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// <summary>
 	/// Calculate position for a pending card (e.g. PopUp / SlotIn).
 	/// Uses full deck count because pending cards still occupy slots in the final layout.
-	///
-	/// WHY THIS EXISTS:
-	//  CalculateAnimationPositionAtIndex uses activeCount (excludes pending cards).
-	//  This is correct for active card animations (bury/stage), but WRONG for pending
-	//  cards themselves: a pending RIFT needs its pop-up peak and slot-in target to
-	//  reflect its actual position within the complete deck layout.
-	///
-	//  We intentionally do NOT use CalculatePositionAtIndex here either, because
-	//  that method may be changed to active count per docs/logic_animation_flow_evaluation.md
-	//  section 4.1.1. This method provides a stable full-count path for pending cards.
-	///
-	//  DO NOT REPLACE WITH CalculateAnimationPositionAtIndex OR CalculatePositionAtIndex.
 	/// </summary>
+	// VISUAL-FIX(2026-05-24): Pending cards (RIFT/AddTempCard) have wrong pop-up peak and slot-in position
+	//   Cause:    CalculateAnimationPositionAtIndex uses activeCount which excludes pending cards.
+	//             Pending cards need full deck count to reflect their actual position in final layout.
+	//   Affects:  AddTempCard, PopUp, SlotIn, MoveToPopUpPosition, CalculatePositionForPendingCard
+	//   Regress:  Play RIFT_INSECT or BLACKSMITH; verify new card's pop-up peak and slot-in
+	//             target match its logical deck index within the complete deck.
+	//   Related:  RIFT_INSECT, BLACKSMITH
 	private Vector3 CalculatePositionForPendingCard(int index)
 	{
 		int fullCount = physicalCardsInDeck.Count;
@@ -975,8 +970,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					if (phys != null)
 					{
 						physicalCardsInDeck.Remove(phys);
-						// Skip over cards that are pending their own slot-in animation
-						// (e.g. cards added by AddTempCard in a subsequent effect chain)
+						// VISUAL-FIX(2026-05-24): ApplyAnimationResult inserts moved cards before pending slot-in cards
+						//   Cause:    Pending cards from AddTempCard (later chain) are still in physicalCardsInDeck
+						//             but must be skipped when inserting cards moved by bury/stage/apply.
+						//   Affects:  ApplyAnimationResult, MoveToBottomBatch, MoveToTopBatch, MoveToBottom, MoveToTop
+						//   Regress:  Chain AddTempCard then Bury in same combat; verify buried card lands after pending cards
+						//   Related:  RIFT_INSECT + any Bury card
 						int insertIndex = 0;
 						for (int i = 0; i < physicalCardsInDeck.Count; i++)
 						{
@@ -1004,8 +1003,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					if (phys != null)
 					{
 						physicalCardsInDeck.Remove(phys);
-						// Append after all non-special-animation cards
-						// (skip cards pending their own slot-in animation)
+						// VISUAL-FIX(2026-05-24): ApplyAnimationResult appends moved cards before pending slot-in cards
+						//   Cause:    Same as MoveToBottomBatch skip logic: pending cards must not block append position.
+						//   Affects:  ApplyAnimationResult, MoveToTopBatch, MoveToTop
+						//   Regress:  Same as MoveToBottomBatch skip logic
+						//   Related:  RIFT_INSECT + any Stage card
 						int appendIndex = physicalCardsInDeck.Count;
 						for (int i = physicalCardsInDeck.Count - 1; i >= 0; i--)
 						{
@@ -1745,10 +1747,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 		// Debug.Log("[CombatUXManager] AddPhysicalCardToDeck logical=" + logicalCard.name + " deckCountAfterInsert=" + physicalCardsInDeck.Count + " insertedAtIndex=0 deck=" + deckAfterInsert);
 
-		// Do NOT call UpdateAllPhysicalCardTargets here to avoid pre-moving
-		// existing cards before bury/stage animations (distance-zero bug).
-		// The new card gets an immediate spawn position above; its final deck position
-		// will be handled during the animation phase by ApplyAnimationResult + UpdateAllPhysicalCardTargets.
+		// VISUAL-FIX(2026-05-17): AddPhysicalCardToDeck pre-moves existing cards causing distance-zero tweens
+		//   Cause:    UpdateAllPhysicalCardTargets in logic phase starts tweens for all existing cards.
+		//             When bury/stage animation plays, cards are already at final positions (distance=0).
+		//   Affects:  AddPhysicalCardToDeck, AddTempCard, UpdateAllPhysicalCardTargets, ApplyAnimationResult
+		//   Regress:  Play a card that adds temp cards (e.g. RIFT_INSECT) then Bury; verify existing cards
+		//             animate with visible movement instead of snapping instantly.
+		//   Related:  RIFT_INSECT, BLACKSMITH
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
 			var cardAtIndex = physicalCardsInDeck[i];
@@ -2254,9 +2259,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			return;
 		}
 
-		// PENDING CARD FIX: pending cards must slot into positions based on full deck count.
-		// See CalculatePositionForPendingCard docs for full rationale.
-		// DO NOT CHANGE BACK TO CalculateAnimationPositionAtIndex.
+		// VISUAL-FIX(2026-05-24): Pending card slot-in uses wrong position (activeCount instead of fullCount)
+		//   Cause:    Same root cause as CalculatePositionForPendingCard: activeCount excludes pending cards.
+		//   Affects:  SlotInCard, MoveToPopUpPosition
+		//   Regress:  Same as CalculatePositionForPendingCard
+		//   Related:  RIFT_INSECT, BLACKSMITH
 		Vector3 targetPos = CalculatePositionForPendingCard(deckIndex);
 		Debug.Log("[CombatUXManager] SlotInCard logical=" + logicalCard.name + " deckIndex=" + deckIndex + " targetPos=" + targetPos + " isPending=" + physScript.isPendingSlotIn);
 
@@ -2309,12 +2316,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) { onComplete?.Invoke(); return; }
 		// Calculate peak position based on deck index (same formula as PopUpCard).
-		// PENDING CARD FIX: pending cards (e.g. RIFT from AddTempCard) need their pop-up
-		// peak calculated using full deck count, because they will occupy a slot in the
-		// final deck layout. CalculateAnimationPositionAtIndex uses activeCount which
-		// excludes pending cards, causing the peak to be offset by missing deck size.
-		// See CalculatePositionForPendingCard docs and docs/logic_animation_flow_evaluation.md.
-		// DO NOT CHANGE BACK TO CalculateAnimationPositionAtIndex.
+		// VISUAL-FIX(2026-05-24): Pending card pop-up peak is offset by missing deck size
+		//   Cause:    Same root cause as CalculatePositionForPendingCard: activeCount excludes pending cards.
+		//   Affects:  MoveCardToPopUpPosition, PopUp
+		//   Regress:  Same as CalculatePositionForPendingCard
+		//   Related:  RIFT_INSECT, BLACKSMITH
 
 		Vector3 deckPos = CalculatePositionForPendingCard(deckIndex);
 		Vector3 peakPos = deckPos + Vector3.up * popUpYOffset;

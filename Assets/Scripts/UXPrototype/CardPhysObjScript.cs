@@ -265,9 +265,12 @@ public class CardPhysObjScript : MonoBehaviour
 		// Debug.Log("[CardPhysObjScript] UpdateTargetPositionOnly card=" + name + " currentPos=" + transform.position + " newTarget=" + target);
 		TargetPosition = target;
 
-		// Only restart tween for cards that are still off-screen (incoming flight).
-		// Cards already in the deck must NOT be pre-moved here; their movement
-		// is handled by UpdateAllPhysicalCardTargets during the animation phase.
+		// VISUAL-FIX(2026-05-15): Cards pre-moved by UpdateTargetPositionOnly cause distance-zero tweens
+		//   Cause:    Restarting tween for cards already in the deck pre-moves them to final position.
+		//             Bury/stage animations then have no visible movement (distance=0).
+		//   Affects:  CardPhysObjScript, UpdateTargetPositionOnly, AddPhysicalCardToDeck
+		//   Regress:  Add a card to deck then trigger Bury/Stage; verify existing cards animate visibly
+		//   Related:  RIFT_INSECT, BLACKSMITH, any Bury/Stage card
 		bool isIncomingFlight = transform.position.y < -2f;
 		if (isIncomingFlight && _positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
 		{

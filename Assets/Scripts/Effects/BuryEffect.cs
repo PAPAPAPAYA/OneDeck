@@ -294,13 +294,20 @@ public class BuryEffect : EffectScript
 			}
 		}
 		
-		// Sync physical card list order with logical deck before animation
-		// In recorder-driven mode we skip Sync here. ApplyAnimationResult handles
-		// deck ordering during playback to preserve intermediate animation states.
+		// VISUAL-FIX(2026-05-18): Premature deck sync in Bury causes distance-zero tweens
+		//   Cause:    SyncPhysicalCardsWithCombinedDeck in logic phase pre-moves all physical cards
+		//             to final positions, so subsequent bury/stage animations have no visible movement
+		//   Affects:  BuryEffect, ApplyAnimationResult, UpdateAllPhysicalCardTargets
+		//   Regress:  Reveal a card with BuryNextXCards and verify cards animate with visible movement
+		//   Related:  Card_StoneShell, any Bury card
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 
-		// Snapshot target indices BEFORE raising events, because reactive effects (e.g. onMeBuried -> StageSelf)
-		// may modify the deck order, and we need to capture the post-bury indices for the bury animation.
+		// VISUAL-FIX(2026-05-15): Bury-then-Stage reactive chain causes wrong animation target index
+		//   Cause:    onMeBuried -> StageSelf modifies deck order AFTER bury logic but BEFORE
+		//             animation playback; without snapshot the animation uses stale indices
+		//   Affects:  BuryEffect, StageEffect, reactive chains, ApplyAnimationResult
+		//   Regress:  Reveal StoneShell (BuryNext2Cards) then reveal RisingFlame (StageSelf on bury)
+		//   Related:  Card_StoneShell, Card_RisingFlame
 		var buriedTargetIndices = new List<int>();
 		foreach (var card in buriedCards)
 		{

@@ -325,7 +325,12 @@ public class StageEffect : EffectScript
 			}
 		}
 		
-		// Sync physical card list order with logical deck before animation
+		// VISUAL-FIX(2026-05-18): Premature deck sync in Stage causes distance-zero tweens
+		//   Cause:    SyncPhysicalCardsWithCombinedDeck in logic phase pre-moves all physical cards
+		//             to final positions, so subsequent bury/stage animations have no visible movement
+		//   Affects:  StageEffect, ApplyAnimationResult, UpdateAllPhysicalCardTargets
+		//   Regress:  Reveal a card with StageSelf or StageNextXCards and verify animation movement
+		//   Related:  Card_RisingFlame, any Stage card
 		string deckBefore = "";
 		for (int i = 0; i < _combinedDeck.Count; i++)
 		{
@@ -333,12 +338,15 @@ public class StageEffect : EffectScript
 			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
 		}
 		// Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
-		// In recorder-driven mode we skip Sync here. ApplyAnimationResult handles
-		// deck ordering during playback to preserve intermediate animation states.
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
 		// Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
 
-		// Snapshot target indices BEFORE raising events, because reactive effects may modify deck order
+		// VISUAL-FIX(2026-05-15): Stage reactive chain causes wrong animation target index
+		//   Cause:    Reactive effects (e.g. onMeStaged -> BurySelf) may modify deck order after stage logic
+		//             but before animation playback; snapshot preserves correct post-stage indices
+		//   Affects:  StageEffect, reactive chains, ApplyAnimationResult
+		//   Regress:  Reveal a card that stages another card which has onMeStaged -> BurySelf
+		//   Related:  Card_RisingFlame, any card with reactive Stage/Bury
 		var stagedTargetIndices = new List<int>();
 		foreach (var card in stagedCards)
 		{
