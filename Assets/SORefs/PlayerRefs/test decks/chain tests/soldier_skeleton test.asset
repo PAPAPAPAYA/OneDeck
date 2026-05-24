@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: PlayerDeckRef
+  m_Name: soldier_skeleton test
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 1808145013887896563, guid: 09ca9c241e293ae41a470a35aee70408, type: 3}
+  - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
-  defaultDeck: {fileID: 11400000, guid: 5592e381b5fb6fc4aae1f3b8fe4fbdcd, type: 2}
-  resetOnStart: 1
-  description: player's deck, data only no instances
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: bury friendly + add curse

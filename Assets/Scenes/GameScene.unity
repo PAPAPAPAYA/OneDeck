@@ -2876,19 +2876,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
   useCustomOrder: 1
   customOrderPrefabs:
+  - {fileID: 1808145013887896563, guid: 09ca9c241e293ae41a470a35aee70408, type: 3}
   - {fileID: 8718476725744197808, guid: 6df20aaf8a054834fbe68a5dd7e5af4d, type: 3}
   - {fileID: 8718476725744197808, guid: 122c0d5cc83624e43961eb8a973d9bda, type: 3}
-  - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
   - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
   - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
-  - {fileID: 8718476725744197808, guid: 6333ce53aeedc944b82b0788c3921ccc, type: 3}
+  - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
   - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
+  - {fileID: 8718476725744197808, guid: 6333ce53aeedc944b82b0788c3921ccc, type: 3}
   - {fileID: 8718476725744197808, guid: 32c7492795cdf5d418e164a404fab845, type: 3}
   - {fileID: 8718476725744197808, guid: 8a9871274e7b5ed4ea2b5977f2d53aeb, type: 3}
+  - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
   - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
   - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
   - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
-  - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
+  - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
 --- !u!1 &1162866020
 GameObject:
   m_ObjectHideFlags: 0

@@ -27,6 +27,7 @@
 #endregion
 #region refactor
 //! refactor
+	//todo moveToTopPopUpBatch has its own deck-focus restoration logic which is the same to PlayRequestCoroutine
 	// localization stringSO to store chinese translation
 	//// clean up, since new animation system is complete
 	//// clean up pre effect event
@@ -112,12 +113,14 @@
 		//// added
 		//// exiled
 		//// given status effect
-		// consumed status effect
+		//// consumed status effect
+		//// give status effect
 		// transfered status effect
 		////buried
 		//// add
 			//// bury and add (sacrifice_ritual)
-		// staged
+			//// bury and enhence curse
+		//// staged
 	//todo status effect
 		// better power wisp
 		// power gain card particle
