@@ -50,9 +50,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -129,9 +126,6 @@ MonoBehaviour:
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -225,15 +219,6 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
-  exileCostCount: 0
-  exileCostCardTypeID: 
-  exileCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

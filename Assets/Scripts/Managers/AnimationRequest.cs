@@ -19,7 +19,8 @@ namespace DefaultNamespace
 		SlotIn,
 		MoveToPopUpPosition,
 		PopUpBatch,
-		SlotInBatch
+		SlotInBatch,
+		MoveToTopPopUpBatch
 	}
 
 	public class AnimationRequest

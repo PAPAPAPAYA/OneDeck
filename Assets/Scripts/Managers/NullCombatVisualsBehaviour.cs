@@ -86,6 +86,10 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 	public void MoveCardToPopUpPosition(GameObject logicalCard, int deckIndex, Action onComplete = null)
 		=> _nullVisuals.MoveCardToPopUpPosition(logicalCard, deckIndex, onComplete);
 
+	public void MoveCardToTopPopUpBatch(List<GameObject> logicalCards, List<int> targetIndices,
+	    float duration, Action onComplete = null)
+		=> _nullVisuals.MoveCardToTopPopUpBatch(logicalCards, targetIndices, duration, onComplete);
+
 	public void StopAllAnimations()
 		=> _nullVisuals.StopAllAnimations();
 

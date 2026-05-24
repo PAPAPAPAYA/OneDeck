@@ -66,6 +66,14 @@ public interface ICombatVisuals
 	/// </summary>
 	void MoveCardToPopUpPosition(GameObject logicalCard, int deckIndex, Action onComplete = null);
 
+	/// <summary>
+	/// Batch animation: arc via showPos to pop-up peak, then slot in to deck top.
+	/// Phase 1: all cards arc in parallel to their pop-up peaks.
+	/// Phase 2: all cards slot in in parallel to their final deck top positions.
+	/// </summary>
+	void MoveCardToTopPopUpBatch(List<GameObject> logicalCards, List<int> targetIndices,
+	    float duration, Action onComplete = null);
+
 	#endregion
 
 	#region Animation Control

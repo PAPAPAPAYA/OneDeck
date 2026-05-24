@@ -59,6 +59,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	[Tooltip("Arc trajectory ease type")]
 	public Ease revealToDeckEase = Ease.InOutQuad;
 	
+	[Header("DECK MOVE")]
+	[Tooltip("Arc fly duration for bury/stage deck-move animations")]
+	public float deckMoveArcDuration = 0.5f;
+	
 	[Header("DESTROY")]
 	[Tooltip("Target position for card destroy animation (graveyard position)")]
 	public Transform gravePosition;
@@ -482,6 +486,120 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// Batch animation: arc via showPos to pop-up peak, then slot in to deck top.
+	/// Phase 1: all cards arc in parallel to their pop-up peaks.
+	/// Phase 2: all cards slot in in parallel to their final deck top positions.
+	/// </summary>
+	public void MoveCardToTopPopUpBatch(List<GameObject> logicalCards, List<int> targetIndices,
+	    float duration, Action onComplete = null)
+	{
+		if (logicalCards == null || logicalCards.Count == 0)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		int totalCount = logicalCards.Count;
+		int phase1Done = 0;
+		int phase2Done = 0;
+
+		// Phase 1: Arc to pop-up peak (parallel)
+		for (int i = 0; i < totalCount; i++)
+		{
+			var logicalCard = logicalCards[i];
+			int finalIndex = targetIndices[i];
+
+			var cardScript = logicalCard.GetComponent<CardScript>();
+			if (cardScript == null) { phase1Done++; phase2Done++; continue; }
+
+			BuildCardScriptToPhysicalDictionary();
+			var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+			if (physicalCard == null) { phase1Done++; phase2Done++; continue; }
+
+			var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+			if (physScript == null) { phase1Done++; phase2Done++; continue; }
+
+			physScript.KillTweens();
+			physScript.isPlayingSpecialAnimation = true;
+			AnimationStateTracker.me?.RegisterAnimation();
+			BlockInput(this);
+
+			// Compute peak from FINAL deck position
+			Vector3 deckPos = CalculatePositionAtIndex(finalIndex);
+			Vector3 peakPos = deckPos + Vector3.up * popUpYOffset;
+			peakPos.z += popUpZBoost;
+			Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
+
+			// Arc via showPos
+			Sequence arcSeq = DOTween.Sequence();
+			float halfDuration = duration * 0.5f;
+
+			if (showPos != null)
+			{
+				arcSeq.Append(physicalCard.transform.DOMove(showPos.position, halfDuration).SetEase(Ease.OutQuad));
+				arcSeq.Append(physicalCard.transform.DOMove(peakPos, halfDuration).SetEase(Ease.InOutQuad));
+			}
+			else
+			{
+				// showPos is null: straight line to peak
+				arcSeq.Append(physicalCard.transform.DOMove(peakPos, duration).SetEase(Ease.OutQuad));
+			}
+
+			arcSeq.Join(physicalCard.transform.DOScale(peakScale, duration).SetEase(Ease.OutQuad));
+
+			arcSeq.OnComplete(() =>
+			{
+				phase1Done++;
+				if (phase1Done >= totalCount)
+				{
+					// All cards reached peak — start Phase 2
+					StartSlotInPhase();
+				}
+			});
+			arcSeq.Play();
+		}
+
+		void StartSlotInPhase()
+		{
+			for (int i = 0; i < totalCount; i++)
+			{
+				var logicalCard = logicalCards[i];
+				int finalIndex = targetIndices[i];
+
+				var cardScript = logicalCard.GetComponent<CardScript>();
+				if (cardScript == null) { phase2Done++; continue; }
+
+				var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
+				if (physicalCard == null) { phase2Done++; continue; }
+
+				var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+				if (physScript == null) { phase2Done++; continue; }
+
+				Vector3 targetPos = CalculatePositionAtIndex(finalIndex);
+
+				Sequence slotSeq = DOTween.Sequence();
+				slotSeq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, slotInDuration)));
+				slotSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, slotInDuration)));
+				slotSeq.OnComplete(() =>
+				{
+					physScript.isPlayingSpecialAnimation = false;
+					physScript.SetTargetPosition(targetPos);
+					physScript.SetTargetScale(physicalCardDeckSize);
+
+					phase2Done++;
+					if (phase2Done >= totalCount)
+					{
+						AnimationStateTracker.me?.CompleteAnimation();
+						UnblockInput(this);
+						onComplete?.Invoke();
+					}
+				});
+				slotSeq.Play();
+			}
+		}
+	}
+
+	/// <summary>
 	/// Calculate position coordinates at specified index
 	/// </summary>
 	public Vector3 CalculatePositionAtIndex(int index)
@@ -805,8 +923,20 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					if (phys != null)
 					{
 						physicalCardsInDeck.Remove(phys);
-						physicalCardsInDeck.Insert(0, phys);
-						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottomBatch inserted " + phys.name + " at index 0");
+						// Skip over cards that are pending their own slot-in animation
+						// (e.g. cards added by AddTempCard in a subsequent effect chain)
+						int insertIndex = 0;
+						for (int i = 0; i < physicalCardsInDeck.Count; i++)
+						{
+							var pendingPhys = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
+							if (pendingPhys != null && !pendingPhys.isPlayingSpecialAnimation)
+							{
+								break;
+							}
+							insertIndex = i + 1;
+						}
+						physicalCardsInDeck.Insert(insertIndex, phys);
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottomBatch inserted " + phys.name + " at index=" + insertIndex + " (skipped " + insertIndex + " pending cards)");
 					}
 					else
 					{
@@ -822,12 +952,47 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					if (phys != null)
 					{
 						physicalCardsInDeck.Remove(phys);
-						physicalCardsInDeck.Add(phys);
-						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTopBatch appended " + phys.name + " at end");
+						// Append after all non-special-animation cards
+						// (skip cards pending their own slot-in animation)
+						int appendIndex = physicalCardsInDeck.Count;
+						for (int i = physicalCardsInDeck.Count - 1; i >= 0; i--)
+						{
+							var pendingPhys = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
+							if (pendingPhys != null && !pendingPhys.isPlayingSpecialAnimation)
+							{
+								appendIndex = i + 1;
+								break;
+							}
+						}
+						physicalCardsInDeck.Insert(appendIndex, phys);
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTopBatch inserted " + phys.name + " at index=" + appendIndex + " (skipped " + (physicalCardsInDeck.Count - 1 - appendIndex) + " pending cards)");
 					}
 					else
 					{
 						// Debug.LogWarning("[CombatUXManager] ApplyAnimationResult MoveToTopBatch physical not found for " + card.name);
+					}
+				}
+				break;
+			case AnimationRequestType.MoveToTopPopUpBatch:
+				// Same as MoveToTopBatch: remove each target card and append after non-pending cards
+				if (request.targetCards == null) break;
+				foreach (var card in request.targetCards)
+				{
+					var phys = GetPhysicalCard(card);
+					if (phys != null)
+					{
+						physicalCardsInDeck.Remove(phys);
+						int appendIndex = physicalCardsInDeck.Count;
+						for (int i = physicalCardsInDeck.Count - 1; i >= 0; i--)
+						{
+							var pendingPhys = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
+							if (pendingPhys != null && !pendingPhys.isPlayingSpecialAnimation)
+							{
+								appendIndex = i + 1;
+								break;
+							}
+						}
+						physicalCardsInDeck.Insert(appendIndex, phys);
 					}
 				}
 				break;
@@ -838,8 +1003,19 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					if (phys != null)
 					{
 						physicalCardsInDeck.Remove(phys);
-						physicalCardsInDeck.Insert(0, phys);
-						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottom inserted " + phys.name + " at index 0");
+						// Skip over cards pending their own slot-in animation
+						int insertIndex = 0;
+						for (int i = 0; i < physicalCardsInDeck.Count; i++)
+						{
+							var pendingPhys = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
+							if (pendingPhys != null && !pendingPhys.isPlayingSpecialAnimation)
+							{
+								break;
+							}
+							insertIndex = i + 1;
+						}
+						physicalCardsInDeck.Insert(insertIndex, phys);
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToBottom inserted " + phys.name + " at index=" + insertIndex);
 					}
 				}
 				break;
@@ -850,8 +1026,19 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					if (phys != null)
 					{
 						physicalCardsInDeck.Remove(phys);
-						physicalCardsInDeck.Add(phys);
-						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTop appended " + phys.name + " at end");
+						// Append after all non-special-animation cards
+						int appendIndex = physicalCardsInDeck.Count;
+						for (int i = physicalCardsInDeck.Count - 1; i >= 0; i--)
+						{
+							var pendingPhys = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
+							if (pendingPhys != null && !pendingPhys.isPlayingSpecialAnimation)
+							{
+								appendIndex = i + 1;
+								break;
+							}
+						}
+						physicalCardsInDeck.Insert(appendIndex, phys);
+						// Debug.Log("[CombatUXManager] ApplyAnimationResult MoveToTop inserted " + phys.name + " at index=" + appendIndex);
 					}
 				}
 				break;
@@ -1533,6 +1720,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				else
 				{
 					// Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card inside effect chain, skipping auto-tween card=" + cardAtIndex.name);
+					// Prevent UpdateAllPhysicalCardTargets from prematurely tweening this card into the deck
+					// before its MoveToPopUpPosition + SlotIn recorder animation plays.
+					cardPhys.isPlayingSpecialAnimation = true;
 				}
 			}
 		}
@@ -1969,6 +2159,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) { onComplete?.Invoke(); return; }
+
+		// Guard against deck position updates interfering with the slot-in tween
+		physScript.isPlayingSpecialAnimation = true;
 
 		// Find current deck index
 		int deckIndex = physicalCardsInDeck.IndexOf(physicalCard);

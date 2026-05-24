@@ -357,16 +357,17 @@ public class StageEffect : EffectScript
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
-		string reqInfo = "StageBatch cards=" + stagedCards.Count + " indices=" + string.Join(",", stagedTargetIndices) + " deckSize=" + _combinedDeck.Count;
+		string reqInfo = "StagePopUpSlotIn cards=" + stagedCards.Count + " indices=" + string.Join(",", stagedTargetIndices) + " deckSize=" + _combinedDeck.Count;
 		// Debug.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null)
 		{
+			// Arc via showPos to pop-up peak, then slot in to top
 			recorder.animationRequests.Add(new AnimationRequest {
-				type = AnimationRequestType.MoveToTopBatch,
+				type = AnimationRequestType.MoveToTopPopUpBatch,
 				targetCards = stagedCards,
 				targetIndices = stagedTargetIndices,
 				snapshotDeckSize = _combinedDeck.Count,
-				duration = 0.5f,
+				duration = CombatUXManager.me != null ? CombatUXManager.me.deckMoveArcDuration : 0.5f,
 				useArc = true
 			});
 		}

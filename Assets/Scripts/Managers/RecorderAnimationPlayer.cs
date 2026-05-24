@@ -140,7 +140,8 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		    request.type == AnimationRequestType.SlotIn ||
 		    request.type == AnimationRequestType.MoveToPopUpPosition ||
 		    request.type == AnimationRequestType.PopUpBatch ||
-		    request.type == AnimationRequestType.SlotInBatch)
+		    request.type == AnimationRequestType.SlotInBatch ||
+		    request.type == AnimationRequestType.MoveToTopPopUpBatch)
 		{
 			var combatUX = visuals as CombatUXManager;
 			if (combatUX != null && combatUX.IsDeckFocused)
@@ -246,6 +247,38 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				}
 				yield return new WaitUntil(() => completedCount >= totalCount);
 				// Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch DONE");
+				break;
+			}
+			case AnimationRequestType.MoveToTopPopUpBatch:
+			{
+				// Deck-focus restoration (same guard as MoveToTopBatch)
+				var combatUX = visuals as CombatUXManager;
+				if (combatUX != null && combatUX.IsDeckFocused)
+				{
+					yield return combatUX.StartCoroutine(combatUX.RestoreDeckFocusCoroutine());
+				}
+
+				visuals.ApplyAnimationResult(request);
+				visuals.UpdateAllPhysicalCardTargets();
+
+				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
+				if (totalCount == 0) break;
+
+				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
+				int currentCount = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.Count : 0;
+
+				// Build final indices (same correction logic as MoveToTopBatch)
+				var finalIndices = new List<int>();
+				for (int i = 0; i < totalCount; i++)
+				{
+					int correctedIndex = currentCount - totalCount + i;
+					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
+					finalIndices.Add(correctedIndex);
+				}
+
+				bool done = false;
+				visuals.MoveCardToTopPopUpBatch(request.targetCards, finalIndices, request.duration, () => { done = true; });
+				yield return new WaitUntil(() => done);
 				break;
 			}
 			case AnimationRequestType.MoveToIndex:

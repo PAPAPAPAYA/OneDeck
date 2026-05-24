@@ -164,6 +164,13 @@ public class NullCombatVisuals : ICombatVisuals
 		onComplete?.Invoke();
 	}
 
+	public void MoveCardToTopPopUpBatch(List<GameObject> logicalCards, List<int> targetIndices,
+	    float duration, Action onComplete = null)
+	{
+		callLog.Add("MoveCardToTopPopUpBatch: " + (logicalCards?.Count ?? 0) + " cards");
+		onComplete?.Invoke();
+	}
+
 	public void StopAllAnimations()
 	{
 		callLog.Add("StopAllAnimations");

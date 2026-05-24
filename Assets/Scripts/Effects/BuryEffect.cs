@@ -346,7 +346,7 @@ public class BuryEffect : EffectScript
 				targetCards = buriedCards,
 				targetIndices = buriedTargetIndices,
 				snapshotDeckSize = _combinedDeck.Count,
-				duration = 0.5f,
+				duration = CombatUXManager.me != null ? CombatUXManager.me.deckMoveArcDuration : 0.5f,
 				useArc = true
 			});
 		}
