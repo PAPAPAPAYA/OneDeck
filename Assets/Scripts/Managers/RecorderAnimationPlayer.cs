@@ -261,13 +261,6 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToTopPopUpBatch:
 			{
-				// Deck-focus restoration (same guard as MoveToTopBatch)
-				var combatUX = visuals as CombatUXManager;
-				if (combatUX != null && combatUX.IsDeckFocused)
-				{
-					yield return combatUX.StartCoroutine(combatUX.RestoreDeckFocusCoroutine());
-				}
-
 				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 

@@ -130,6 +130,40 @@ namespace DefaultNamespace.Effects
 				return;
 			}
 
+			// Capture animation sequence before executing logic so playback order is:
+			// PopUp(self) -> Projectile(sources -> self) -> StatusEffectChange(all affected cards)
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			bool hasRecorder = recorder != null && RecorderAnimationPlayer.me != null;
+
+			if (hasRecorder)
+			{
+				// 1. Self pops up first
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.PopUp,
+					targetCard = myCard
+				});
+
+				// 2. Projectile from each consumed source card to self
+				foreach (var sourceCard in sourceCards)
+				{
+					recorder.animationRequests.Add(new AnimationRequest
+					{
+						type = AnimationRequestType.StatusEffectProjectile,
+						attackerCard = sourceCard.gameObject,
+						targetCard = myCard
+					});
+				}
+
+				// 3. Self slots back in after projectiles complete
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.SlotIn,
+					targetCard = myCard
+				});
+			}
+
 			// Remove 1 status effect layer from each source card
 			foreach (var card in sourceCards)
 			{

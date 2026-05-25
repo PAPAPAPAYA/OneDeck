@@ -28,7 +28,7 @@
 #endregion
 #region refactor
 //! refactor
-	//todo moveToTopPopUpBatch has its own deck-focus restoration logic which is the same to PlayRequestCoroutine
+	//// moveToTopPopUpBatch has its own deck-focus restoration logic which is the same to PlayRequestCoroutine
 	// localization stringSO to store chinese translation
 	//// clean up, since new animation system is complete
 	//// clean up pre effect event
@@ -103,8 +103,7 @@
 	//// tell kimi to make a configuration checker
 	//// rarity
 		//// rarity attibute in card script
-	// shop
-		//// iterate on shop based on rarity
+	//// iterate on shop based on rarity
 	// fake shuffle
 #endregion
 #region viscom
@@ -116,13 +115,15 @@
 		//// given status effect
 		//// consumed status effect
 		//// give status effect
-		// transfered status effect
+		//todo transfered status effect
+			// need to slot in before doing attack animatino
 		////buried
 		//// add
 			//// bury and add (sacrifice_ritual)
 			//// bury and enhence curse
 		//// staged
 	//todo status effect
+		// icon to show status effect
 		// better power wisp
 		// power gain card particle
 		// consume effect

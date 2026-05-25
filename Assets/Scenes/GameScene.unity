@@ -2876,6 +2876,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
   useCustomOrder: 1
   customOrderPrefabs:
+  - {fileID: 8718476725744197808, guid: 1c59f879b91f1e240b4c60911397cf9a, type: 3}
   - {fileID: 1808145013887896563, guid: 09ca9c241e293ae41a470a35aee70408, type: 3}
   - {fileID: 8718476725744197808, guid: 6df20aaf8a054834fbe68a5dd7e5af4d, type: 3}
   - {fileID: 8718476725744197808, guid: 122c0d5cc83624e43961eb8a973d9bda, type: 3}
@@ -3786,8 +3787,6 @@ MonoBehaviour:
   peelCardDuration: 0.18
   peelStaggerDelay: 0.04
   revealCardExitDistance: 8
-  secondaryLiftHeight: 0.4
-  secondaryLiftDuration: 0.25
   enablePeelDeck: 1
   physicalCardsInDeck: []
   physicalCardInRevealZone: {fileID: 0}
