@@ -115,8 +115,8 @@
 		//// given status effect
 		//// consumed status effect
 		//// give status effect
-		//todo transfered status effect
-			// need to slot in before doing attack animatino
+		//// transfered status effect
+			//// need to slot in before doing attack animatino
 		////buried
 		//// add
 			//// bury and add (sacrifice_ritual)
