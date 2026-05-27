@@ -76,14 +76,6 @@ public class CardFactory : MonoBehaviour
 	public GameObject CreateStartCard(GameObject startCardPrefab, Transform parent)
 	{
 		var instance = CreateLogicalCard(startCardPrefab, null, null, parent, "Start Card");
-		if (instance != null)
-		{
-			var cardScript = instance.GetComponent<CardScript>();
-			if (cardScript != null)
-			{
-				cardScript.isStartCard = true;
-			}
-		}
 		return instance;
 	}
 

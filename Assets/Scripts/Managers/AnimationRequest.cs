@@ -20,7 +20,8 @@ namespace DefaultNamespace
 		MoveToPopUpPosition,
 		PopUpBatch,
 		SlotInBatch,
-		MoveToTopPopUpBatch
+		MoveToTopPopUpBatch,
+		Shuffle
 	}
 
 	public class AnimationRequest
@@ -47,5 +48,6 @@ namespace DefaultNamespace
 		public int statusEffectAmount;
 		public ParticleSystem statusEffectParticlePrefab;
 		public float statusEffectParticleYOffset;
+		public GameObject sourceCard; // Used for Shuffle request (Start Card instance)
 	}
 }

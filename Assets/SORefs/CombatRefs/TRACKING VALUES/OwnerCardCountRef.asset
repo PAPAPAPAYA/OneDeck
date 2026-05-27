@@ -15,4 +15,4 @@ MonoBehaviour:
   value: 0
   valueOg: 0
   resetOnStart: 1
-  description: round is when in combat phase, one cycle of combined deck is finished
+  description: friendly card amount

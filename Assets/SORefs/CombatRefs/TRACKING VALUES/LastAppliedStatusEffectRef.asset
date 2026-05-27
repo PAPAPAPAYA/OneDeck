@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3b874ada8e4469ea42cee10707255e4, type: 3}
-  m_Name: HostileCursePowerCount
-  m_EditorClassIdentifier: 
+  m_Script: {fileID: 11500000, guid: 7f38260e18459384b8cf0db475b909d1, type: 3}
+  m_Name: LastAppliedStatusEffectRef
+  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectSO
   value: 0
   valueOg: 0
   resetOnStart: 1
-  description: hostile curse power amount
+  description: last applied status effect type

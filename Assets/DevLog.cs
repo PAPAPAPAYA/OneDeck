@@ -2,10 +2,12 @@
 
 #region tools
 //! tools
+	// recorder to automatically record deck to enemy decks
+		// prd half done, need review
 	//// bug Recorder to prevent later fixes undermine former fixes
 	//todo make a summary generator skill
 	////   skill to generate commit messages
-	//  AnimationStateTracker checker  (low priority)
+	////  AnimationStateTracker checker  (animation state tracker is old system)
 #endregion
 #region anything else
 //! anything else
@@ -28,6 +30,7 @@
 #endregion
 #region refactor
 //! refactor
+	//// consider refactor start card to be more like normal cards
 	//// moveToTopPopUpBatch has its own deck-focus restoration logic which is the same to PlayRequestCoroutine
 	// localization stringSO to store chinese translation
 	//// clean up, since new animation system is complete
@@ -123,7 +126,7 @@
 			//// bury and enhence curse
 		//// staged
 	//todo status effect
-		// icon to show status effect
+		//todo icon to show status effect
 		// better power wisp
 		// power gain card particle
 		// consume effect
@@ -155,7 +158,11 @@
 #region bugs
 //! bug
 	//// give power gives 2 times the power
+	//// make other value tracker related headless test
+	// test other value tracker related cards
 	// test on power gained: POWER_CRAVER
+		//// logic not working
+		//// make a power_craver headless test
 	// after shuffle: BOOSTER
 	// elder sorcerer
 	// snatcher

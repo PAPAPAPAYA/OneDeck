@@ -1128,6 +1128,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					}
 				}
 				break;
+			case AnimationRequestType.Shuffle:
+				// Update physicalCardsInDeck order to match shuffled logical order.
+				// Actual transform movement is handled by PlayShuffleAnimationInternal.
+				RebuildPhysicalDeckFromShuffledList(request.targetCards);
+				break;
 		}
 
 		InvalidateCardScriptCache();

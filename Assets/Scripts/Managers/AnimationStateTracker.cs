@@ -37,7 +37,7 @@ public class AnimationStateTracker : MonoBehaviour
 			_hasActiveBatch = true;
 		}
 		_pendingAnimations++;
-		// Animation registered
+		Debug.Log("[AnimationStateTracker] RegisterAnimation pending=" + _pendingAnimations);
 	}
 
 	/// <summary>
@@ -46,7 +46,7 @@ public class AnimationStateTracker : MonoBehaviour
 	public void CompleteAnimation()
 	{
 		_pendingAnimations--;
-		// Animation completed
+		Debug.Log("[AnimationStateTracker] CompleteAnimation pending=" + _pendingAnimations);
 		if (_pendingAnimations <= 0)
 		{
 			_pendingAnimations = 0;

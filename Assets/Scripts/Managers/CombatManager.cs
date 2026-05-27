@@ -78,7 +78,6 @@ public class CombatManager : MonoBehaviour
 
 	[Header("START CARD")]
 	public GameObject startCardPrefab; // Start Card prefab
-	private GameObject _startCardInstance; // Start Card instance (at the bottom of deck)
 
 	[Header("ZONES")]
 	public List<GameObject> combinedDeckZone;
@@ -182,11 +181,9 @@ public class CombatManager : MonoBehaviour
 		revealZone = null;
 		
 		// clean up start card
-		if (_startCardInstance != null)
-		{
-			Destroy(_startCardInstance);
-			_startCardInstance = null;
-		}
+		var startCard = FindStartCardInstance();
+		if (startCard != null)
+			Destroy(startCard);
 		
 		// clean up tracking stats
 		roundNumRef.value = 0;
@@ -259,9 +256,9 @@ public class CombatManager : MonoBehaviour
 		}
 
 		// Instantiate Start Card and add to the bottom of deck
-		_startCardInstance = factory.CreateStartCard(startCardPrefab, playerDeckParent.transform);
-		if (_startCardInstance != null)
-			combinedDeckZone.Add(_startCardInstance);
+		var startCardInstance = factory.CreateStartCard(startCardPrefab, playerDeckParent.transform);
+		if (startCardInstance != null)
+			combinedDeckZone.Add(startCardInstance);
 
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
@@ -314,6 +311,9 @@ public class CombatManager : MonoBehaviour
 	}
 
 
+	public void SetRaiseAfterShuffleOnNextReveal(bool value) => _raiseAfterShuffleOnNextReveal = value;
+	public void ResetShuffleTrackersPublic() => ResetShuffleTrackers();
+
 	private void ResetShuffleTrackers()
 	{
 		if (ValueTrackerManager.me == null) return;
@@ -345,6 +345,29 @@ public class CombatManager : MonoBehaviour
 	/// <summary>
 	/// Get the count of cards that actually participate in effect calculation in the deck (excluding Start Card)
 	/// </summary>
+	/// <summary>
+	/// Find Start Card instance in combinedDeckZone (or revealZone) by isStartCard flag.
+	/// Replaces the removed _startCardInstance cached reference.
+	/// </summary>
+	public GameObject FindStartCardInstance()
+	{
+		// Check revealZone first (Start Card might be there during combat)
+		if (revealZone != null)
+		{
+			var cs = revealZone.GetComponent<CardScript>();
+			if (cs != null && cs.isStartCard)
+				return revealZone;
+		}
+		foreach (var card in combinedDeckZone)
+		{
+			if (card == null) continue;
+			var cs = card.GetComponent<CardScript>();
+			if (cs != null && cs.isStartCard)
+				return card;
+		}
+		return null;
+	}
+
 	public int GetEffectiveDeckSize()
 	{
 		int count = 0;
@@ -385,6 +408,7 @@ public class CombatManager : MonoBehaviour
 		// 1. Safety wait for active animation batches
 		while (AnimationStateTracker.me != null && AnimationStateTracker.me.HasActiveBatch)
 		{
+			Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait waiting for HasActiveBatch. Pending=" + AnimationStateTracker.me.PendingAnimations);
 			yield return null;
 		}
 
@@ -403,6 +427,12 @@ public class CombatManager : MonoBehaviour
 					{
 						if (rec == null) continue;
 						var recorder = rec.GetComponent<EffectRecorder>();
+						bool isRoot = rec.transform.parent == EffectChainManager.Me.transform;
+						Debug.Log("[CombatManager] Collecting recorder chainID=" + (recorder != null ? recorder.chainID.ToString() : "null")
+							+ " card=" + (recorder != null && recorder.cardObject != null ? recorder.cardObject.name : "null")
+							+ " animationPlayed=" + (recorder != null ? recorder.animationPlayed.ToString() : "null")
+							+ " isRoot=" + isRoot
+							+ " reqCount=" + (recorder != null ? recorder.animationRequests.Count.ToString() : "null"));
 						if (recorder != null && !recorder.animationPlayed && rec.transform.parent == EffectChainManager.Me.transform)
 						{
 							roots.Add(rec);
@@ -425,7 +455,11 @@ public class CombatManager : MonoBehaviour
 				{
 					if (recObj == null) continue;
 					var recorder = recObj.GetComponent<EffectRecorder>();
-					if (recorder != null) recorder.animationPlayed = true;
+					if (recorder != null)
+					{
+						Debug.Log("[CombatManager] finally marking animationPlayed=true for chainID=" + recorder.chainID + " card=" + recorder.cardObject.name);
+						recorder.animationPlayed = true;
+					}
 				}
 			}
 
@@ -546,7 +580,11 @@ public class CombatManager : MonoBehaviour
 			// Start Card special handling: trigger effect = shuffle + new round
 			if (IsRevealedCardStartCard())
 			{
-				TriggerStartCardEffect();
+				// Start Card does NOT trigger onMeRevealed/onAnyCardRevealed/onHostileCardRevealed.
+				// It goes through CostNEffectContainer to create an EffectRecorder,
+				// but skips the normal reveal-event broadcast.
+				var container = revealZone.GetComponentInChildren<CostNEffectContainer>();
+				container?.InvokeEffectEvent();
 			}
 			else
 			{
@@ -643,41 +681,14 @@ public class CombatManager : MonoBehaviour
 		visuals.MoveRevealedCardToBottom(cardToBottom);
 	}
 
-	private void TriggerStartCardEffect()
+	/// <summary>
+	/// Called by RecorderAnimationPlayer via AnimationRequest.onComplete
+	/// after Start Card shuffle animation finishes.
+	/// </summary>
+	public void OnStartCardShuffleAnimationComplete()
 	{
-		if (revealZone == null) return;
-
-		var startCard = revealZone;
-		revealZone = null;
-
-		// Add Start Card back to deck (it is currently in revealZone, not in combinedDeckZone)
-		combinedDeckZone.Add(startCard);
-
-		// Execute logical shuffle first, determine each card's position
-		var shuffleOverride = GetComponent<ShuffleOrderOverride>();
-		if (shuffleOverride != null && shuffleOverride.useCustomOrder
-		    && shuffleOverride.customOrderPrefabs != null
-		    && shuffleOverride.customOrderPrefabs.Count > 0)
-		{
-			combinedDeckZone = ApplyCustomShuffleOrder(combinedDeckZone, shuffleOverride.customOrderPrefabs);
-		}
-		else
-		{
-			combinedDeckZone = UtilityFuncManagerScript.ShuffleList(combinedDeckZone);
-		}
-
-		// Play animation based on known shuffle result
-		// Start Card flies directly from Reveal Zone to new position, other cards fly from old to new position
-		visuals.PlayShuffleAnimation(startCard, combinedDeckZone, () =>
-		{
-			// After animation completes, refresh UI and prepare delayed afterShuffle
-			_infoDisplayer.RefreshDeckInfo();
-			_raiseAfterShuffleOnNextReveal = true; // Delay afterShuffle until first card reveal
-			ResetShuffleTrackers();
-
-			// New round start
-			HandleNewRoundStart();
-		});
+		_infoDisplayer.RefreshDeckInfo();
+		HandleNewRoundStart();
 	}
 
 	private void HandleNewRoundStart()
@@ -720,7 +731,7 @@ public class CombatManager : MonoBehaviour
 	/// Cards not in the list stay at the bottom preserving original relative order.
 	/// Start Card can be included in the list.
 	/// </summary>
-	private List<GameObject> ApplyCustomShuffleOrder(List<GameObject> currentDeck, List<GameObject> prefabOrder)
+	public List<GameObject> ApplyCustomShuffleOrder(List<GameObject> currentDeck, List<GameObject> prefabOrder)
 	{
 		var matchedInRevealOrder = new List<GameObject>();
 		var usedInstances = new HashSet<GameObject>();

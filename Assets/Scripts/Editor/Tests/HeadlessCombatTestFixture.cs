@@ -79,6 +79,8 @@ public abstract class HeadlessCombatTestFixture
 		ValueTrackerManager.enemyCardsBuriedCountRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.stagedOwnerRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.stagedEnemyRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.lastAppliedStatusEffectRef = CreateScriptableObject<StatusEffectSO>();
+		ValueTrackerManager.lastAppliedStatusEffectAmountRef = CreateScriptableObject<IntSO>();
 
 		// GameEventStorage
 		var gesObj = CreateGameObject("TestGameEventStorage");

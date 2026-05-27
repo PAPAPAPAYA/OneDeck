@@ -40,6 +40,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		recorder.animationPlayed = true;
 
 		string cardName = recorder.cardObject != null ? recorder.cardObject.name : "null";
+		Debug.Log("[RecorderAnimationPlayer] PlayRecorderCoroutine chainID=" + recorder.chainID + " card=" + cardName + " animationPlayed SET TO TRUE");
 		string reqSummary = "";
 		for (int i = 0; i < recorder.animationRequests.Count; i++)
 		{
@@ -428,6 +429,20 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					});
 				}
 				yield return new WaitUntil(() => completedCount >= totalCount);
+				break;
+			}
+			case AnimationRequestType.Shuffle:
+			{
+				// Sync physical deck order before animation starts
+				visuals.ApplyAnimationResult(request);
+
+				bool done = false;
+				visuals.PlayShuffleAnimation(request.sourceCard, request.targetCards, () =>
+				{
+					done = true;
+					if (request.onComplete != null) request.onComplete();
+				});
+				yield return new WaitUntil(() => done);
 				break;
 			}
 		}

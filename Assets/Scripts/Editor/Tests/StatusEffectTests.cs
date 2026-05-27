@@ -176,4 +176,61 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 
 		Assert.IsTrue(eventRaised, "onAnyCardGotPower should be raised when applying Power");
 	}
+
+	[Test]
+	public void AmplifyStatusEffectGain_DirectCall_AmplifiesPower()
+	{
+		var card = CreateCard(true, "AmplifierCard");
+		var cardScript = card.GetComponent<CardScript>();
+
+		var amplifier = CreateEffect<StatusEffectAmplifierEffect>(card);
+		amplifier.statusEffectToCount = EnumStorage.StatusEffect.Power;
+		amplifier.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		amplifier.statusEffectMultiplier = 3;
+		amplifier.canStatusEffectBeStacked = true;
+
+		CombatManager.lastCardGotStatusEffect = cardScript;
+		ValueTrackerManager.lastAppliedStatusEffectRef.value = EnumStorage.StatusEffect.Power;
+		ValueTrackerManager.lastAppliedStatusEffectAmountRef.value = 2;
+
+		amplifier.AmplifyStatusEffectGain();
+
+		int powerCount = EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, EnumStorage.StatusEffect.Power);
+		Assert.AreEqual(4, powerCount, "Multiplier=3, baseAmount=2, extra=2*(3-1)=4");
+	}
+
+	[Test]
+	public void AmplifyStatusEffectGain_EventTriggered_AmplifiesPower()
+	{
+		var card = CreateCard(true, "AmplifierCard");
+		var cardScript = card.GetComponent<CardScript>();
+
+		var container = CreateCostContainer(card);
+
+		var amplifier = CreateEffect<StatusEffectAmplifierEffect>(card);
+		amplifier.statusEffectToCount = EnumStorage.StatusEffect.Power;
+		amplifier.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		amplifier.statusEffectMultiplier = 2;
+		amplifier.canStatusEffectBeStacked = true;
+
+		container.effectEvent.AddListener(() => amplifier.AmplifyStatusEffectGain());
+
+		var listenerObj = CreateGameObject("StatusEffectListener");
+		listenerObj.transform.SetParent(card.transform);
+		var listener = listenerObj.AddComponent<GameEventListener>();
+		listener.@event = GameEventStorage.onMeGotStatusEffect;
+		listener.response.AddListener(() => container.InvokeEffectEventVoid());
+		GameEventStorage.onMeGotStatusEffect.RegisterListener(listener);
+
+		var giver = CreateEffect<StatusEffectGiverEffect>(card);
+		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+
+		EffectChainManager.MakeANewEffectRecorder(card, giver.gameObject);
+		giver.GiveSelfStatusEffect(1);
+		EffectChainManager.Me.PopCurrentRecorder();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		int powerCount = EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, EnumStorage.StatusEffect.Power);
+		Assert.AreEqual(2, powerCount, "Should have 1 base + 1 amplified Power");
+	}
 }

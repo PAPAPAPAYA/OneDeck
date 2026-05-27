@@ -170,7 +170,7 @@ MonoBehaviour:
   includeSelf: 0
   lastXCardsCount: 0
   statusEffectLayerCount: 0
-  xFriendlyCount: 2
+  xFriendlyCount: 1
   yFriendlyLayerCount: 1
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
