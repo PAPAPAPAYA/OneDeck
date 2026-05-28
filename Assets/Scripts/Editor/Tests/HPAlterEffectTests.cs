@@ -228,4 +228,66 @@ public class HPAlterEffectTests : HeadlessCombatTestFixture
 
 		Assert.AreEqual(100, OwnerStatus.hp, "Should cap at max HP");
 	}
+
+	[Test]
+	public void DecreaseTheirHp_EnemyCard_DamagesOwner()
+	{
+		var card = CreateCard(false, "EnemyAttacker");
+		var hpa = CreateEffect<HPAlterEffect>(card);
+		hpa.baseDmg = CreateScriptableObject<IntSO>();
+		hpa.baseDmg.value = 5;
+
+		EffectChainManager.MakeANewEffectRecorder(card, hpa.gameObject);
+		hpa.DecreaseTheirHp();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(95, OwnerStatus.hp, "Enemy card should deal damage to owner");
+		Assert.AreEqual(100, EnemyStatus.hp, "Enemy HP should remain unchanged");
+	}
+
+	[Test]
+	public void DecreaseMyHp_EnemyCard_DamagesEnemySelf()
+	{
+		var card = CreateCard(false, "EnemySelfDamager");
+		var hpa = CreateEffect<HPAlterEffect>(card);
+		hpa.baseDmg = CreateScriptableObject<IntSO>();
+		hpa.baseDmg.value = 5;
+
+		EffectChainManager.MakeANewEffectRecorder(card, hpa.gameObject);
+		hpa.DecreaseMyHp();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(95, EnemyStatus.hp, "Enemy card should deal self-damage to enemy");
+		Assert.AreEqual(100, OwnerStatus.hp, "Owner HP should remain unchanged");
+	}
+
+	[Test]
+	public void IncreaseMyHp_EnemyCard_HealsEnemySelf()
+	{
+		EnemyStatus.hp = 50;
+		var card = CreateCard(false, "EnemyHealer");
+		var hpa = CreateEffect<HPAlterEffect>(card);
+
+		EffectChainManager.MakeANewEffectRecorder(card, hpa.gameObject);
+		hpa.IncreaseMyHp(20);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(70, EnemyStatus.hp, "Enemy card should heal enemy self");
+		Assert.AreEqual(100, OwnerStatus.hp, "Owner HP should remain unchanged");
+	}
+
+	[Test]
+	public void IncreaseTheirHp_EnemyCard_HealsOwner()
+	{
+		OwnerStatus.hp = 50;
+		var card = CreateCard(false, "EnemyHealer");
+		var hpa = CreateEffect<HPAlterEffect>(card);
+
+		EffectChainManager.MakeANewEffectRecorder(card, hpa.gameObject);
+		hpa.IncreaseTheirHp(20);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(70, OwnerStatus.hp, "Enemy card should heal owner");
+		Assert.AreEqual(100, EnemyStatus.hp, "Enemy HP should remain unchanged");
+	}
 }

@@ -233,4 +233,54 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 		int powerCount = EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, EnumStorage.StatusEffect.Power);
 		Assert.AreEqual(2, powerCount, "Should have 1 base + 1 amplified Power");
 	}
+
+	[Test]
+	public void EnhanceCurse_EnemyCard_AppliesPowerToFriendlyCard()
+	{
+		var curseCard = CreateCard(false, "EnemyCurser");
+		var target = CreateCard(true, "FriendlyTarget");
+		target.GetComponent<CardScript>().cardTypeID = "curse_target";
+		CombatManager.combinedDeckZone.Add(target);
+
+		var curse = CreateEffect<CurseEffect>(curseCard);
+		curse.cardTypeID = CreateScriptableObject<StringSO>();
+		curse.cardTypeID.value = "curse_target";
+
+		EffectChainManager.MakeANewEffectRecorder(curseCard, curse.gameObject);
+		curse.EnhanceCurse(2);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		var targetScript = target.GetComponent<CardScript>();
+		int powerCount = 0;
+		foreach (var effect in targetScript.myStatusEffects)
+		{
+			if (effect == EnumStorage.StatusEffect.Power) powerCount++;
+		}
+		Assert.AreEqual(2, powerCount, "Enemy EnhanceCurse should apply Power to friendly (player) card");
+	}
+
+	[Test]
+	public void EnhanceFriendlyCurse_EnemyCard_AppliesPowerToEnemyCard()
+	{
+		var curseCard = CreateCard(false, "EnemyCurser");
+		var target = CreateCard(false, "EnemyTarget");
+		target.GetComponent<CardScript>().cardTypeID = "curse_target";
+		CombatManager.combinedDeckZone.Add(target);
+
+		var curse = CreateEffect<CurseEffect>(curseCard);
+		curse.cardTypeID = CreateScriptableObject<StringSO>();
+		curse.cardTypeID.value = "curse_target";
+
+		EffectChainManager.MakeANewEffectRecorder(curseCard, curse.gameObject);
+		curse.EnhanceFriendlyCurse(2);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		var targetScript = target.GetComponent<CardScript>();
+		int powerCount = 0;
+		foreach (var effect in targetScript.myStatusEffects)
+		{
+			if (effect == EnumStorage.StatusEffect.Power) powerCount++;
+		}
+		Assert.AreEqual(2, powerCount, "Enemy EnhanceFriendlyCurse should apply Power to enemy (self) card");
+	}
 }

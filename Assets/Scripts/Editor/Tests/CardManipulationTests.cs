@@ -69,4 +69,46 @@ public class CardManipulationTests : HeadlessCombatTestFixture
 		Assert.AreEqual(1, CombatManager.combinedDeckZone.Count, "Should remove 1 enemy minion");
 		Assert.IsTrue(CombatManager.combinedDeckZone.Contains(friendly), "Friendly card should remain");
 	}
+
+	[Test]
+	public void DestroyTheirMinions_EnemyCard_RemovesFriendlyMinions()
+	{
+		var destroyer = CreateCard(false, "EnemyDestroyer");
+		var friendlyMinion1 = CreateMinion(true, "FriendlyMinion1");
+		var friendlyMinion2 = CreateMinion(true, "FriendlyMinion2");
+		var enemyMinion = CreateMinion(false, "EnemyMinion");
+
+		CombatManager.combinedDeckZone.Add(friendlyMinion1);
+		CombatManager.combinedDeckZone.Add(friendlyMinion2);
+		CombatManager.combinedDeckZone.Add(enemyMinion);
+
+		var manip = CreateEffect<CardManipulationEffect>(destroyer);
+		EffectChainManager.MakeANewEffectRecorder(destroyer, manip.gameObject);
+		manip.DestroyTheirMinions(2);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(1, CombatManager.combinedDeckZone.Count, "Enemy should remove 2 friendly minions");
+		Assert.IsTrue(CombatManager.combinedDeckZone.Contains(enemyMinion), "Enemy minion should remain");
+	}
+
+	[Test]
+	public void DestroyMyMinions_EnemyCard_RemovesEnemyMinions()
+	{
+		var destroyer = CreateCard(false, "EnemyDestroyer");
+		var enemyMinion1 = CreateMinion(false, "EnemyMinion1");
+		var enemyMinion2 = CreateMinion(false, "EnemyMinion2");
+		var friendlyMinion = CreateMinion(true, "FriendlyMinion");
+
+		CombatManager.combinedDeckZone.Add(enemyMinion1);
+		CombatManager.combinedDeckZone.Add(enemyMinion2);
+		CombatManager.combinedDeckZone.Add(friendlyMinion);
+
+		var manip = CreateEffect<CardManipulationEffect>(destroyer);
+		EffectChainManager.MakeANewEffectRecorder(destroyer, manip.gameObject);
+		manip.DestroyMyMinions(2);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(1, CombatManager.combinedDeckZone.Count, "Enemy should remove 2 enemy minions");
+		Assert.IsTrue(CombatManager.combinedDeckZone.Contains(friendlyMinion), "Friendly minion should remain");
+	}
 }

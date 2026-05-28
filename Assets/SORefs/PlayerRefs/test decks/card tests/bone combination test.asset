@@ -15,6 +15,7 @@ MonoBehaviour:
   deck:
   - {fileID: 8718476725744197808, guid: df22b69929e09d042aa1c460d8e1e110, type: 3}
   - {fileID: 8718476725744197808, guid: dc22033fba831004f8dedc7fd80ced9f, type: 3}
+  - {fileID: 8718476725744197808, guid: dc22033fba831004f8dedc7fd80ced9f, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: almighty
