@@ -100,7 +100,7 @@ public class ValueTrackerManager : MonoBehaviour
 		}
 
 		var deck = CombatManager.Me.combinedDeckZone;
-		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
+		var enemyStatus = CombatManager.Me.enemyPlayerStatusRef;
 		int totalPower = 0;
 
 		foreach (var cardObj in deck)
@@ -109,7 +109,7 @@ public class ValueTrackerManager : MonoBehaviour
 			if (cardScript == null) continue;
 
 			// Check if it's a hostile card and card type id matches
-			bool isHostileCard = cardScript.myStatusRef != ownerStatus;
+			bool isHostileCard = cardScript.myStatusRef == enemyStatus;
 			bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
 
 			if (isHostileCard && isMatchingType)
@@ -130,7 +130,7 @@ public class ValueTrackerManager : MonoBehaviour
 			var cardScript = revealZone.GetComponent<CardScript>();
 			if (cardScript != null)
 			{
-				bool isHostileCard = cardScript.myStatusRef != ownerStatus;
+				bool isHostileCard = cardScript.myStatusRef == enemyStatus;
 				bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
 
 				if (isHostileCard && isMatchingType)
@@ -229,13 +229,13 @@ public class ValueTrackerManager : MonoBehaviour
 		if (enemyCardCountInDeckRef == null || CombatManager.Me == null) return;
 
 		var deck = CombatManager.Me.combinedDeckZone;
-		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
+		var enemyStatus = CombatManager.Me.enemyPlayerStatusRef;
 		int count = 0;
 
 		foreach (var cardObj in deck)
 		{
 			var cardScript = cardObj.GetComponent<CardScript>();
-			if (cardScript != null && cardScript.myStatusRef != ownerStatus)
+			if (cardScript != null && cardScript.myStatusRef == enemyStatus)
 			{
 				count++;
 			}
@@ -246,7 +246,7 @@ public class ValueTrackerManager : MonoBehaviour
 		if (revealZone != null)
 		{
 			var cardScript = revealZone.GetComponent<CardScript>();
-			if (cardScript != null && cardScript.myStatusRef != ownerStatus)
+			if (cardScript != null && cardScript.myStatusRef == enemyStatus)
 			{
 				count++;
 			}
