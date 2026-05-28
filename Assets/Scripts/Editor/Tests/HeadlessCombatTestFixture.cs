@@ -31,6 +31,9 @@ public abstract class HeadlessCombatTestFixture
 	private readonly List<GameObject> _createdObjects = new List<GameObject>();
 	private readonly List<ScriptableObject> _createdScriptables = new List<ScriptableObject>();
 
+	// Shared dummy UI to avoid repeated TextMeshProUGUI creation (triggers TLS allocator warnings)
+	private static TMPro.TextMeshProUGUI _sharedDummyText;
+
 	[SetUp]
 	public virtual void SetUp()
 	{
@@ -192,6 +195,16 @@ public abstract class HeadlessCombatTestFixture
 		CleanupSingletons();
 	}
 
+	[OneTimeTearDown]
+	public void OneTimeTearDown()
+	{
+		if (_sharedDummyText != null)
+		{
+			UnityEngine.Object.DestroyImmediate(_sharedDummyText.gameObject);
+			_sharedDummyText = null;
+		}
+	}
+
 	private void CleanupSingletons()
 	{
 		if (CombatManager.Me != null)
@@ -278,16 +291,19 @@ public abstract class HeadlessCombatTestFixture
 
 	private void SetupDummyUI()
 	{
-		var dummyTextObj = CreateGameObject("DummyText");
-		var dummyText = dummyTextObj.AddComponent<TMPro.TextMeshProUGUI>();
+		if (_sharedDummyText == null)
+		{
+			var dummyTextObj = new GameObject("SharedDummyText");
+			_sharedDummyText = dummyTextObj.AddComponent<TMPro.TextMeshProUGUI>();
+		}
 
-		InfoDisplayer.playerStatusDisplay = dummyText;
-		InfoDisplayer.enemyStatusDisplay = dummyText;
-		InfoDisplayer.revealZoneDisplay = dummyText;
-		InfoDisplayer.combatTipsDisplay = dummyText;
-		InfoDisplayer.effectResultDisplay = dummyText;
-		InfoDisplayer.playerDeckDisplay = dummyText;
-		InfoDisplayer.enemyDeckDisplay = dummyText;
+		InfoDisplayer.playerStatusDisplay = _sharedDummyText;
+		InfoDisplayer.enemyStatusDisplay = _sharedDummyText;
+		InfoDisplayer.revealZoneDisplay = _sharedDummyText;
+		InfoDisplayer.combatTipsDisplay = _sharedDummyText;
+		InfoDisplayer.effectResultDisplay = _sharedDummyText;
+		InfoDisplayer.playerDeckDisplay = _sharedDummyText;
+		InfoDisplayer.enemyDeckDisplay = _sharedDummyText;
 	}
 
 	#endregion

@@ -165,10 +165,10 @@
 	//// test on power gained: POWER_CRAVER
 		//// logic not working
 		//// make a power_craver headless test
-	// after shuffle: BOOSTER
-		// bugged: staged cards move prematurely
-	// elder sorcerer
-		// bugged: not working
+	//// after shuffle: BOOSTER
+		//// bugged: staged cards move prematurely
+	//// elder sorcerer
+		//// bugged: staged amount not tracked
 	// snatcher
 	//// more headless tests
 	//// almighty test

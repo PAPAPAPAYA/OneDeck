@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: power craver test
   m_EditorClassIdentifier: 
   deck:
+  - {fileID: 8718476725744197808, guid: 1e39f37e43a1d1d4fa44d3fcc58b80bc, type: 3}
   - {fileID: 8718476725744197808, guid: 0b03f80c1dcdf79418d4ba9e242a1aac, type: 3}
-  - {fileID: 8718476725744197808, guid: 6333ce53aeedc944b82b0788c3921ccc, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: almighty
