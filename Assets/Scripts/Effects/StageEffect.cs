@@ -317,6 +317,21 @@ public class StageEffect : EffectScript
 				_combinedDeck.Remove(targetCard);
 				_combinedDeck.Add(targetCard);  // add to bottom of list, top of deck
 				stagedCards.Add(targetCard);
+
+				// Track staged counts
+				if (ValueTrackerManager.me != null)
+				{
+					if (targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+					{
+						if (ValueTrackerManager.me.stagedOwnerRef != null)
+							ValueTrackerManager.me.stagedOwnerRef.value++;
+					}
+					else
+					{
+						if (ValueTrackerManager.me.stagedEnemyRef != null)
+							ValueTrackerManager.me.stagedEnemyRef.value++;
+					}
+				}
 				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);

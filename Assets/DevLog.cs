@@ -166,8 +166,9 @@
 		//// logic not working
 		//// make a power_craver headless test
 	// after shuffle: BOOSTER
-		// bugged
+		// bugged: staged cards move prematurely
 	// elder sorcerer
+		// bugged: not working
 	// snatcher
 	//// more headless tests
 	//// almighty test
