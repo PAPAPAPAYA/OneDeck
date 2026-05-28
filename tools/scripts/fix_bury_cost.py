@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 
-base_dir = Path("Assets/Prefabs/Cards/3.0 no cost (current)")
+base_dir = Path("../../Assets/Prefabs/Cards/3.0 no cost (current)")
 prefabs = list(base_dir.rglob("*.prefab"))
 
 fixed = []
@@ -13,7 +13,7 @@ for p in prefabs:
         new_content = re.sub(r"(buryCost):\s*\d+", r"\1: 0", content)
         if new_content != content:
             p.write_text(new_content, encoding="utf-8")
-            fixed.append(str(p.relative_to("Assets/Prefabs/Cards")))
+            fixed.append(str(p.relative_to("../../Assets/Prefabs/Cards")))
     except Exception as e:
         failed.append(f"{p}: {e}")
 

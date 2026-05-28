@@ -135,5 +135,5 @@ ax2.legend(loc='upper left')
 ax2.grid(True, alpha=0.3, axis='y')
 
 plt.tight_layout()
-plt.savefig('battle_simulation.png', dpi=150, bbox_inches='tight', facecolor='white')
+plt.savefig('../outputs/archive/battle_simulation.png', dpi=150, bbox_inches='tight', facecolor='white')
 print("图表已保存: battle_simulation.png")

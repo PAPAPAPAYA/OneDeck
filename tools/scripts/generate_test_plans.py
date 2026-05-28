@@ -7,9 +7,9 @@ import os
 import re
 from collections import defaultdict
 
-SCAN_PATH = "Assets/prefab_scan.json"
-LIST_PATH = "prefab_list.txt"
-OUTPUT_DIR = "docs/TestPlans"
+SCAN_PATH = "../../Assets/prefab_scan.json"
+LIST_PATH = "../outputs/archive/prefab_list.txt"
+OUTPUT_DIR = "../../docs/TestPlans"
 
 # ---------------------------------------------------------------------------
 # Helpers

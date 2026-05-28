@@ -457,7 +457,7 @@ public class CombatManager : MonoBehaviour
 					var recorder = recObj.GetComponent<EffectRecorder>();
 					if (recorder != null)
 					{
-						Debug.Log("[CombatManager] finally marking animationPlayed=true for chainID=" + recorder.chainID + " card=" + recorder.cardObject.name);
+						Debug.Log("[CombatManager] finally marking animationPlayed=true for chainID=" + recorder.chainID + " card=" + (recorder.cardObject != null ? recorder.cardObject.name : "null"));
 						recorder.animationPlayed = true;
 					}
 				}

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>ValueTrackerManager & Effect 测试对照表</title>
+	<style>
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background: #1a1a2e;
+			color: #eee;
+			padding: 20px;
+			line-height: 1.6;
+		}
+		h1 {
+			text-align: center;
+			margin-bottom: 10px;
+			color: #e0e0e0;
+		}
+		.subtitle {
+			text-align: center;
+			color: #888;
+			margin-bottom: 30px;
+			font-size: 14px;
+		}
+		.section {
+			max-width: 950px;
+			margin: 0 auto 40px auto;
+		}
+		.section-title {
+			font-size: 20px;
+			font-weight: bold;
+			margin-bottom: 15px;
+			padding-bottom: 8px;
+			border-bottom: 2px solid #e94560;
+			color: #e94560;
+		}
+		.item {
+			background: #16213e;
+			border-radius: 8px;
+			padding: 15px 20px;
+			margin-bottom: 12px;
+			display: flex;
+			align-items: flex-start;
+			gap: 15px;
+			transition: background 0.2s;
+		}
+		.item:hover {
+			background: #1f2b47;
+		}
+		.item.checked {
+			border-left: 4px solid #4ecca3;
+		}
+		.item.unchecked {
+			border-left: 4px solid #e94560;
+		}
+		.item.unused {
+			border-left: 4px solid #888;
+			opacity: 0.7;
+		}
+		.checkbox-wrap {
+			flex-shrink: 0;
+			padding-top: 2px;
+		}
+		.checkbox-wrap input[type="checkbox"] {
+			width: 22px;
+			height: 22px;
+			cursor: pointer;
+			accent-color: #4ecca3;
+		}
+		.content {
+			flex: 1;
+		}
+		.var-name {
+			font-weight: bold;
+			font-size: 16px;
+			color: #f5f5f5;
+			margin-bottom: 6px;
+		}
+		.effect-line {
+			color: #b8c5d6;
+			font-size: 14px;
+			margin-bottom: 4px;
+		}
+		.effect-line .label {
+			color: #e94560;
+			font-weight: 600;
+		}
+		.prefab-line {
+			color: #a0a0a0;
+			font-size: 13px;
+		}
+		.prefab-line .label {
+			color: #4ecca3;
+			font-weight: 600;
+		}
+		.prefab-path {
+			font-family: 'Consolas', monospace;
+			background: #0f3460;
+			padding: 2px 6px;
+			border-radius: 3px;
+			font-size: 12px;
+		}
+		.note {
+			color: #ff9f43;
+			font-size: 13px;
+			font-style: italic;
+		}
+		.progress-bar {
+			max-width: 950px;
+			margin: 0 auto 30px auto;
+			background: #16213e;
+			border-radius: 8px;
+			padding: 15px 20px;
+		}
+		.progress-text {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 8px;
+			font-size: 14px;
+		}
+		.progress-track {
+			width: 100%;
+			height: 10px;
+			background: #0f3460;
+			border-radius: 5px;
+			overflow: hidden;
+		}
+		.progress-fill {
+			height: 100%;
+			background: #4ecca3;
+			border-radius: 5px;
+			transition: width 0.3s ease;
+		}
+		.reset-btn {
+			display: block;
+			margin: 20px auto;
+			padding: 10px 24px;
+			background: #e94560;
+			color: white;
+			border: none;
+			border-radius: 6px;
+			cursor: pointer;
+			font-size: 14px;
+			font-weight: 600;
+		}
+		.reset-btn:hover {
+			background: #c73e54;
+		}
+		.nav-tabs {
+			max-width: 950px;
+			margin: 0 auto 20px auto;
+			display: flex;
+			gap: 10px;
+		}
+		.nav-tab {
+			flex: 1;
+			padding: 12px;
+			background: #16213e;
+			border: none;
+			border-radius: 8px;
+			color: #b8c5d6;
+			cursor: pointer;
+			font-size: 15px;
+			font-weight: 600;
+			text-align: center;
+		}
+		.nav-tab.active {
+			background: #e94560;
+			color: white;
+		}
+		.nav-tab:hover:not(.active) {
+			background: #1f2b47;
+		}
+		.tab-content {
+			display: none;
+		}
+		.tab-content.active {
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<h1>ValueTrackerManager & Effect 测试对照表</h1>
+	<div class="subtitle">勾选已完成测试的项，刷新页面后状态会自动保存</div>
+
+	<div class="progress-bar">
+		<div class="progress-text">
+			<span>测试进度</span>
+			<span id="progressLabel">0 / 0</span>
+		</div>
+		<div class="progress-track">
+			<div class="progress-fill" id="progressFill" style="width: 0%"></div>
+		</div>
+	</div>
+
+	<div class="nav-tabs">
+		<button class="nav-tab active" onclick="switchTab('vtm')">ValueTrackerManager</button>
+		<button class="nav-tab" onclick="switchTab('effects')">3.0 No Cost Effects</button>
+	</div>
+
+	<!-- Tab: ValueTrackerManager -->
+	<div id="tab-vtm" class="tab-content active">
+		<div class="section">
+			<div class="section-title">Tracker Refs</div>
+
+			<div class="item unused" data-id="friendlyInGraveAmountRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-friendlyInGraveAmountRef">
+				</div>
+				<div class="content">
+					<div class="var-name">friendlyInGraveAmountRef</div>
+					<div class="effect-line"><span class="label">效果：</span><span class="note">暂无效果类读取使用此变量（仅由 ValueTrackerManager.UpdateAllTrackers 更新）</span></div>
+					<div class="prefab-line"><span class="label">对应卡片：</span>—</div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="hostileCursePowerCount">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-hostileCursePowerCount">
+				</div>
+				<div class="content">
+					<div class="var-name">hostileCursePowerCount</div>
+					<div class="effect-line"><span class="label">效果：</span><span class="note">暂无效果类读取使用此变量（仅由 ValueTrackerManager.UpdateAllTrackers 更新）</span></div>
+					<div class="prefab-line"><span class="label">对应卡片：</span>—</div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="totalPowerCountInDeckRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-totalPowerCountInDeckRef">
+				</div>
+				<div class="content">
+					<div class="var-name">totalPowerCountInDeckRef</div>
+					<div class="effect-line"><span class="label">效果：</span><span class="note">暂无效果类读取使用此变量（仅由 ValueTrackerManager.UpdateAllTrackers 更新）</span></div>
+					<div class="prefab-line"><span class="label">对应卡片：</span>—</div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="ownerCardCountInDeckRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-ownerCardCountInDeckRef">
+				</div>
+				<div class="content">
+					<div class="var-name">ownerCardCountInDeckRef</div>
+					<div class="effect-line"><span class="label">效果：</span>HPAlterEffect.DecreaseTheirHp_BasedOnFriendlyCardCountInDeck()</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/FLESH_COMBINATION.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="enemyCardCountInDeckRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-enemyCardCountInDeckRef">
+				</div>
+				<div class="content">
+					<div class="var-name">enemyCardCountInDeckRef</div>
+					<div class="effect-line"><span class="label">效果：</span>HPAlterEffect.DecreaseTheirHp_BasedOnFriendlyCardCountInDeck()</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/FLESH_COMBINATION.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="ownerCardsBuriedCountRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-ownerCardsBuriedCountRef">
+				</div>
+				<div class="content">
+					<div class="var-name">ownerCardsBuriedCountRef</div>
+					<div class="effect-line"><span class="label">效果：</span>HPAlterEffect.DecreaseTheirHpTimes_BasedOnOpponentBuriedCount()</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/BONE_COMBINATION.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="enemyCardsBuriedCountRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-enemyCardsBuriedCountRef">
+				</div>
+				<div class="content">
+					<div class="var-name">enemyCardsBuriedCountRef</div>
+					<div class="effect-line"><span class="label">效果：</span>BuryEffect（在 bury 逻辑中递增此计数器）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="stagedOwnerRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-stagedOwnerRef">
+				</div>
+				<div class="content">
+					<div class="var-name">stagedOwnerRef</div>
+					<div class="effect-line"><span class="label">效果：</span>StatusEffectGiverEffect.GiveStatusEffectToXFriendly_BasedOnStaged()</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ELDER_SORCERER.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="stagedEnemyRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-stagedEnemyRef">
+				</div>
+				<div class="content">
+					<div class="var-name">stagedEnemyRef</div>
+					<div class="effect-line"><span class="label">效果：</span>StatusEffectGiverEffect.GiveStatusEffectToXFriendly_BasedOnStaged()</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ELDER_SORCERER.prefab</span></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section">
+			<div class="section-title">Last Applied Status Effect</div>
+
+			<div class="item unchecked" data-id="lastAppliedStatusEffectRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-lastAppliedStatusEffectRef">
+				</div>
+				<div class="content">
+					<div class="var-name">lastAppliedStatusEffectRef</div>
+					<div class="effect-line"><span class="label">效果：</span>StatusEffectAmplifierEffect.AmplifyStatusEffectGain()（读取） / EffectScript.ApplyStatusEffectCore()（写入）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/POWER_CRAVER.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="lastAppliedStatusEffectAmountRef">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-lastAppliedStatusEffectAmountRef">
+				</div>
+				<div class="content">
+					<div class="var-name">lastAppliedStatusEffectAmountRef</div>
+					<div class="effect-line"><span class="label">效果：</span>StatusEffectAmplifierEffect.AmplifyStatusEffectGain()（读取） / EffectScript.ApplyStatusEffectCore()（写入）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/POWER_CRAVER.prefab</span></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tab: 3.0 No Cost Effects -->
+	<div id="tab-effects" class="tab-content">
+		<div class="section">
+			<div class="section-title">Effect Scripts with Prefab References</div>
+
+			<div class="item unchecked" data-id="eff-AddTempCard">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-AddTempCard">
+				</div>
+				<div class="content">
+					<div class="var-name">AddTempCard</div>
+					<div class="effect-line"><span class="label">效果描述：</span>向卡组中临时添加指定卡片</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/CONFUSED_PORTALMANCER.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-BuryEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-BuryEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">BuryEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>将卡片 bury（放置到卡组底部）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-CurseEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-CurseEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">CurseEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>对目标卡片施加诅咒（Power + 负面效果）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/0_Common/UNDEAD_CURSER.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-ExileEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-ExileEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">ExileEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>将卡片从卡组中放逐（Exile）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/0_Common/RIFT.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-HPAlterEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-HPAlterEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">HPAlterEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>修改 HP（造成伤害或治疗）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-StageEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-StageEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">StageEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>将卡片 stage（放置到卡组顶部）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/1_Uncommon/UNSTABLE_PORTAL.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-ConsumeStatusEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-ConsumeStatusEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">ConsumeStatusEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>消耗目标卡片上的指定状态效果</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/2_Rare/SLIME.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-PowerReactionEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-PowerReactionEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">PowerReactionEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>当卡片获得 Power 时触发反应效果</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/WEAPON_SPIRIT.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-StatusEffectAmplifierEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-StatusEffectAmplifierEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">StatusEffectAmplifierEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>放大最后施加的状态效果层数</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/POWER_CRAVER.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-StatusEffectGiverEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-StatusEffectGiverEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">StatusEffectGiverEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>给目标卡片施加状态效果</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/AVENGER.prefab</span></div>
+				</div>
+			</div>
+
+			<div class="item unchecked" data-id="eff-TransferStatusEffectEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-TransferStatusEffectEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">TransferStatusEffectEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>将状态效果从一张卡片转移到另一张</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="prefab-path">Assets/Prefabs/Cards/3.0 no cost (current)/Curse/2_Rare/CROW_CROWD.prefab</span></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section">
+			<div class="section-title">Effect Scripts Not Used in 3.0 No Cost (Current)</div>
+
+			<div class="item unused" data-id="eff-AddTextEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-AddTextEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">AddTextEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>添加文字效果</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-CardManipulationEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-CardManipulationEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">CardManipulationEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>卡片操控（Revive 等，Graveyard 已废弃）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-ChangeCardTarget">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-ChangeCardTarget">
+				</div>
+				<div class="content">
+					<div class="var-name">ChangeCardTarget</div>
+					<div class="effect-line"><span class="label">效果描述：</span>改变卡片目标</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-ChangeHpAlterAmountEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-ChangeHpAlterAmountEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">ChangeHpAlterAmountEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>改变 HP 修改数值</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-HPMaxAlterEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-HPMaxAlterEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">HPMaxAlterEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>修改 HP 上限</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-PrintEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-PrintEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">PrintEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>打印日志效果</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-ShieldAlterEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-ShieldAlterEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">ShieldAlterEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>修改护盾值</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-StartCardShuffleEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-StartCardShuffleEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">StartCardShuffleEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>Start Card 洗牌效果</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果（由系统 Start Card 自动触发）</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-HeartChangeEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-HeartChangeEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">HeartChangeEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>改变卡片归属（HeartChanged）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-InfectionEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-InfectionEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">InfectionEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>感染效果（Infected）</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-ManaAlterEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-ManaAlterEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">ManaAlterEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>修改 Mana 状态效果层数</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果</span></div>
+				</div>
+			</div>
+
+			<div class="item unused" data-id="eff-DeckSizeIncreaseEffect">
+				<div class="checkbox-wrap">
+					<input type="checkbox" id="cb-eff-DeckSizeIncreaseEffect">
+				</div>
+				<div class="content">
+					<div class="var-name">DeckSizeIncreaseEffect</div>
+					<div class="effect-line"><span class="label">效果描述：</span>商店中增加卡组容量</div>
+					<div class="prefab-line"><span class="label">对应卡片：</span><span class="note">暂无 3.0 no cost (current) 卡片使用此效果（Shop 专用）</span></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<button class="reset-btn" onclick="resetAll()">重置所有勾选</button>
+
+	<script>
+		function switchTab(tabName) {
+			document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+			document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+			document.getElementById('tab-' + tabName).classList.add('active');
+			event.target.classList.add('active');
+			updateProgress();
+		}
+
+		function getVisibleCheckboxes() {
+			const activeTab = document.querySelector('.tab-content.active');
+			return activeTab.querySelectorAll('input[type="checkbox"]');
+		}
+
+		function updateProgress() {
+			const checkboxes = getVisibleCheckboxes();
+			const total = checkboxes.length;
+			const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+			const percent = total > 0 ? Math.round((checked / total) * 100) : 0;
+			document.getElementById('progressLabel').textContent = checked + ' / ' + total;
+			document.getElementById('progressFill').style.width = percent + '%';
+		}
+
+		function updateItemStyle(item, checked) {
+			if (item.classList.contains('unused')) return;
+			item.classList.remove('checked', 'unchecked');
+			item.classList.add(checked ? 'checked' : 'unchecked');
+		}
+
+		function saveState() {
+			const state = {};
+			document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+				state[cb.id] = cb.checked;
+			});
+			localStorage.setItem('vtm_test_state', JSON.stringify(state));
+		}
+
+		function loadState() {
+			const saved = localStorage.getItem('vtm_test_state');
+			if (!saved) return;
+			try {
+				const state = JSON.parse(saved);
+				document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+					if (state.hasOwnProperty(cb.id)) {
+						cb.checked = state[cb.id];
+						const item = cb.closest('.item');
+						updateItemStyle(item, cb.checked);
+					}
+				});
+			} catch (e) {
+				console.error('Failed to load state', e);
+			}
+		}
+
+		function resetAll() {
+			document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+				cb.checked = false;
+				const item = cb.closest('.item');
+				updateItemStyle(item, false);
+			});
+			saveState();
+			updateProgress();
+		}
+
+		document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+			cb.addEventListener('change', function() {
+				const item = this.closest('.item');
+				updateItemStyle(item, this.checked);
+				saveState();
+				updateProgress();
+			});
+		});
+
+		loadState();
+		updateProgress();
+	</script>
+</body>
+</html>

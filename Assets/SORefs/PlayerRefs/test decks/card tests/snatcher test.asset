@@ -10,11 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: dummy test
+  m_Name: snatcher test
   m_EditorClassIdentifier: 
   deck:
+  - {fileID: 8718476725744197808, guid: 11601bebe6043e34cbaa6c35dc3257b3, type: 3}
+  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
-  - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
+  - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
-  description: player default deck, will copy to player deck SO at start of game
+  description: almighty

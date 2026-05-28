@@ -9,7 +9,7 @@ import os
 import re
 
 # 项目根目录（脚本所在目录）
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS_DIR = os.path.join(PROJECT_ROOT, "Assets")
 
 # 输出路径

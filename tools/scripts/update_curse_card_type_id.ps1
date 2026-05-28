@@ -1,7 +1,7 @@
 # PowerShell script to update cursedCardTypeID in all CostNEffectContainer components
 # Target SO: Assets/SORefs/CombatRefs/CurseCardTypeID.asset
 
-$targetFolder = "Assets/Prefabs/Cards/3.0 no cost (current)"
+$targetFolder = "../../Assets/Prefabs/Cards/3.0 no cost (current)"
 $curseCardTypeIDGuid = "07a2aa375c0142b418e46314e9b2ca22"
 $curseCardTypeIDFileID = "11400000"
 $costNEffectContainerScriptGuid = "a21da06ba55646f29c59d9dbf90834b3"

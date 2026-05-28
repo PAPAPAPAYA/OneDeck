@@ -3,7 +3,7 @@ import os
 import re
 
 def get_all_prefabs():
-    base_path = 'Assets/Prefabs/Cards/3.0 no cost (current)'
+    base_path = '../../Assets/Prefabs/Cards/3.0 no cost (current)'
     prefabs = []
     for root, dirs, files in os.walk(base_path):
         for f in files:
@@ -133,7 +133,7 @@ def main():
     all_cursed_null = []
     
     for filepath in sorted(prefabs):
-        rel_path = os.path.relpath(filepath, 'Assets/Prefabs/Cards/3.0 no cost (current)')
+        rel_path = os.path.relpath(filepath, '../../Assets/Prefabs/Cards/3.0 no cost (current)')
         output_lines.append('')
         output_lines.append('[' + rel_path + ']')
         output_lines.append('-' * 60)
@@ -179,7 +179,7 @@ def main():
         output_lines.append('      GameObject: ' + item['go_name'] + ' [GO:' + item['go_id'] + ', Comp:' + item['component_id'] + ']')
     
     # Write to file with UTF-8 BOM for Notepad compatibility
-    with open('prefab_analysis_result.txt', 'w', encoding='utf-8-sig') as f:
+    with open('../outputs/latest/prefab_analysis_result.txt', 'w', encoding='utf-8-sig') as f:
         f.write('\n'.join(output_lines))
     
     print('分析完成！结果已保存到 prefab_analysis_result.txt')

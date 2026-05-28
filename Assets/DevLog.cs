@@ -1,9 +1,43 @@
  // devlog
-
+#region reminder
+//! reminder
+	// test strategies:
+		// strategy A: simulate logic in editor mode
+		// strategy B: simulate logic in play mode
+		// strategy C: regression batch test (different dimension, check if one type of configuration is correct)
+		// if an effect instance contains more than 1 effect, animations of those effects will be played, THEN other invoked effects' animations will be played;
+		// vs. if an effect instance contains only 1 effect, but the card has multiple effect instances, other invoked effefcts' animations will be played after each invoker effect's animation	
+	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
+	//// should we change [bury 1 friendly] to [bury next 2]?
+		//// it's more powerful, maybe should be benefit, not cost
+	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
+	// if we want to achieve synergy like "give power to next card" + "before power is given, stage self", we need to make the former a tag (like linger) to identify and react to
+	// same as "bury next 3 cards" + "before burying cards, stage self"
+	//// decrease [deathrattle], [bury] should be more than [if buried]
+	//// sort cards with "generating resources" and "consuming resources"
+	//// update cards
+	//// POWER_SIPHONER will one card destroy curse
+		//// 1. copy half power from all friendly
+	//// 2. transfer half power from all friendly
+		//// 3. transfer 1 power from all friendly - go with this one
+	//// multiple [stage friendly] will result in easy infinite, need figure out how to limit stage ability
+		//// armed_summoner: stage 1 friendly; deal 3 dmg
+			//// blood-letting summoner: stage 1 friendly; deal 2 dmg to self
+		//// unstable_portal: stage 1 friendly; if buried, bury 2 hostile
+			//// stage 1 friendly; bury 1 friendly
+		//// overcharged_summoner: stage 1 friendly; enhance next 2
+			//// consume 1 power: stage 1 friendly; enhance next 2
+		//// curse_summoner: stage 1 friendly; enhance 1 hostile curse
+			//// consume 1 hostile curse power: stage 1 friendly
+		//// advance_portal: stage 2 friendly
+			//// stage 2 friendly; gain 1 rest
+		//// almighty: stage 1 friendly; bury 1 hostile; enhance 1 friendly; add 1 [rift]; enhance 1 hostile [curse]
+			//// gain 1 rest
+#endregion
 #region tools
 //! tools
 	// recorder to automatically record deck to enemy decks
-		// prd half done, need review
+		// prd half done, need update
 	//// bug Recorder to prevent later fixes undermine former fixes
 	//todo make a summary generator skill
 	////   skill to generate commit messages
@@ -11,10 +45,6 @@
 #endregion
 #region anything else
 //! anything else
-	// test strategies:
-		// strategy A: simulate logic in editor mode
-		// strategy B: simulate logic in play mode
-		// strategy C: regression batch test (different dimension, check if one type of configuration is correct)
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
 	// add space after annotations
@@ -53,7 +83,7 @@
 	//// power reaction effect & when gain power, gain triple amount effect
 		//// new SO to store game object
 			//// can't do, SO can't store instance
-			// store it in combat manager, might move it out to a component
+			//// store it in combat manager, might move it out to a component
 		//// track last power receiver in value tracker manager
 		//// new method to give status effect to objSO
 		//// new SO to store last applied power amount
@@ -61,42 +91,14 @@
 	//// make all chinese into english to avoid encoding errors
 	//// curse card type id: make it a stringSO
 #endregion
-#region design
-//! design
-	// if an effect instance contains more than 1 effect, animations of those effects will be played, THEN other invoked effects' animations will be played;
-		// vs. if an effect instance contains only 1 effect, but the card has multiple effect instances, other invoked effefcts' animations will be played after each invoker effect's animation	
-	// dmg multiple times don't trigger multiple on dmg received event, dmg multiple times will be more about utilizing power
-	//// should we change [bury 1 friendly] to [bury next 2]?
-		//// it's more powerful, maybe should be benefit, not cost
-	//// should we change bury to only work on cards before start card?  no, there can be bury that only works on cards before start card
-	// if we want to achieve synergy like "give power to next card" + "before power is given, stage self", we need to make the former a tag (like linger) to identify and react to
-	// same as "bury next 3 cards" + "before burying cards, stage self"
-	//// decrease [deathrattle], [bury] should be more than [if buried]
-	//// sort cards with "generating resources" and "consuming resources"
-	//// update cards
-	//// POWER_SIPHONER will one card destroy curse
-		//// 1. copy half power from all friendly
-		//// 2. transfer half power from all friendly
-		//// 3. transfer 1 power from all friendly - go with this one
-	//// multiple [stage friendly] will result in easy infinite, need figure out how to limit stage ability
-		//// armed_summoner: stage 1 friendly; deal 3 dmg
-			//// blood-letting summoner: stage 1 friendly; deal 2 dmg to self
-		//// unstable_portal: stage 1 friendly; if buried, bury 2 hostile
-			//// stage 1 friendly; bury 1 friendly
-		//// overcharged_summoner: stage 1 friendly; enhance next 2
-			//// consume 1 power: stage 1 friendly; enhance next 2
-		//// curse_summoner: stage 1 friendly; enhance 1 hostile curse
-			//// consume 1 hostile curse power: stage 1 friendly
-		//// advance_portal: stage 2 friendly
-			//// stage 2 friendly; gain 1 rest
-		//// almighty: stage 1 friendly; bury 1 hostile; enhance 1 friendly; add 1 [rift]; enhance 1 hostile [curse]
-			//// gain 1 rest
-#endregion
 #region feature
 //! feature
 	// a more comprehensive test kit
 		// logic
+			// enemy side
 		// visual
+			//// test tracker
+			// test decks
 	//// effect chain manager issue
 	//// skill to check infinite card combos
 		//// GiveStatusEffectToXFriendly, GiveStatusEffectToLastXCards, GivePowerToCardThatGotPower
@@ -111,7 +113,7 @@
 #endregion
 #region viscom
 //! viscom
-	//todo need to show what's added / exiled / given status effect / consumed status effect
+	//// need to show what's added / exiled / given status effect / consumed status effect
 		//// pop up + slot in animation
 		//// added
 		//// exiled
@@ -159,14 +161,14 @@
 //! bug
 	//// give power gives 2 times the power
 	//// make other value tracker related headless test
-	// test other value tracker related cards
-	// test on power gained: POWER_CRAVER
+	//todo test other value tracker related cards
+	//// test on power gained: POWER_CRAVER
 		//// logic not working
 		//// make a power_craver headless test
 	// after shuffle: BOOSTER
+		// bugged
 	// elder sorcerer
 	// snatcher
-	// BONE_COMBINATION
 	//// more headless tests
 	//// almighty test
 		//// newly added cards will move to deck position, but z position still wrong
@@ -223,7 +225,7 @@
 
 
 
-//// oldtodo
+// oldtodo
 // bug
 	//// start card movement
 	//// attack animation need to check effect, not card owner

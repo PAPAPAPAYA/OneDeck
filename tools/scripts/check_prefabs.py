@@ -266,7 +266,7 @@ def check_prefab(path):
 
 
 def main():
-    base_dir = Path("Assets/Prefabs/Cards/3.0 no cost (current)")
+    base_dir = Path("../../Assets/Prefabs/Cards/3.0 no cost (current)")
     prefabs = list(base_dir.rglob("*.prefab"))
 
     all_issues = []
@@ -274,7 +274,7 @@ def main():
     clean_count = 0
 
     for p in sorted(prefabs):
-        rel = p.relative_to("Assets/Prefabs/Cards")
+        rel = p.relative_to("../../Assets/Prefabs/Cards")
         issues = check_prefab(str(p))
         if issues:
             prefab_with_issues += 1
