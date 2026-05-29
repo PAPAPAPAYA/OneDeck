@@ -30,7 +30,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AspectRatio: 1
-    - _CornerRadius: 0.15
+    - _CornerRadius: 0.107
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
