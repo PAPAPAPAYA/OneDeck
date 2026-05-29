@@ -114,7 +114,8 @@
 #endregion
 #region viscom
 //! viscom
-	// shadow curl
+	//todo dynamic shadow
+		// WIP
 	//// need to show what's added / exiled / given status effect / consumed status effect
 		//// pop up + slot in animation
 		//// added
