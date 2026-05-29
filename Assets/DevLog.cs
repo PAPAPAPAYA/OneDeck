@@ -37,9 +37,10 @@
 #region tools
 //! tools
 	// recorder to automatically record deck to enemy decks
-		// prd half done, need update
+		//todo prd half done, need update
 	//// bug Recorder to prevent later fixes undermine former fixes
-	//todo make a summary generator skill
+	//todo make a summary generator skill?
+	// make a debug skill?
 	////   skill to generate commit messages
 	////  AnimationStateTracker checker  (animation state tracker is old system)
 #endregion
@@ -113,6 +114,7 @@
 #endregion
 #region viscom
 //! viscom
+	// shadow curl
 	//// need to show what's added / exiled / given status effect / consumed status effect
 		//// pop up + slot in animation
 		//// added
@@ -129,9 +131,13 @@
 		//// staged
 	//todo status effect
 		//todo icon to show status effect
+			// sticker
 		// better power wisp
+			// line
 		// power gain card particle
+			// sticker
 		// consume effect
+			// sticker
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add
@@ -144,7 +150,7 @@
 	// better card move animatin
 		// change z dynamically
 	// motion design
-		//todo shake revealed card if cost not met / can't activate
+		// shake revealed card if cost not met / can't activate
 		//// enlarge card when event triggered
 			//// make status effect related effects to go through animation request system, so that they have emphasize animation
 		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
@@ -161,7 +167,7 @@
 //! bug
 	//// give power gives 2 times the power
 	//// make other value tracker related headless test
-	//todo test other value tracker related cards
+	//// test other value tracker related cards
 	//// test on power gained: POWER_CRAVER
 		//// logic not working
 		//// make a power_craver headless test
@@ -169,7 +175,7 @@
 		//// bugged: staged cards move prematurely
 	//// elder sorcerer
 		//// bugged: staged amount not tracked
-	// snatcher
+	//// snatcher
 	//// more headless tests
 	//// almighty test
 		//// newly added cards will move to deck position, but z position still wrong
@@ -225,8 +231,7 @@
 
 
 
-
-// oldtodo
+#region oldtodo
 // bug
 	//// start card movement
 	//// attack animation need to check effect, not card owner
@@ -535,3 +540,4 @@
 	//// documentation
 	//// document card system
 	//// document overarching system
+#endregion
