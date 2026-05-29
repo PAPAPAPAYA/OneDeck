@@ -114,8 +114,9 @@
 #endregion
 #region viscom
 //! viscom
-	//todo dynamic shadow
-		// WIP
+	//// dynamic shadow
+	//todo rounded corner
+		// WIP, shader direction currently feels a bit oval
 	//// need to show what's added / exiled / given status effect / consumed status effect
 		//// pop up + slot in animation
 		//// added
