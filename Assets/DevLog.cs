@@ -1,6 +1,11 @@
  // devlog
 #region reminder
 //! reminder
+	// physical card set up:
+		// card face
+			// sprite: 9-Sliced, scale .25f, .25f, .25f, Width 12.8f, Height 18.4f
+			// mat: Sprites-Default
+		// shadow:9-Sliced, scale 1,1,1, width 3.2, height 4.6, x=0.15f offset
 	// test strategies:
 		// strategy A: simulate logic in editor mode
 		// strategy B: simulate logic in play mode
@@ -115,8 +120,9 @@
 #region viscom
 //! viscom
 	//// dynamic shadow
-	//todo rounded corner
-		// WIP, shader direction currently feels a bit oval
+	//// rounded corner
+		//// shader direction currently feels a bit oval, shader direction can't work, shadow won't be correct
+		//// need to try 9-sliced
 	//// need to show what's added / exiled / given status effect / consumed status effect
 		//// pop up + slot in animation
 		//// added

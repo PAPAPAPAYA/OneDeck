@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck Card UI Mockups — Modern Card Designs</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+	<style>
+		body {
+			font-family: 'Inter', sans-serif;
+			background: #0c0c10;
+			color: #e8e8e8;
+		}
+		.font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+		
+		/* ── Phone Frame ── */
+		.phone-frame {
+			width: 380px;
+			min-height: 720px;
+			background: #14141a;
+			border-radius: 40px;
+			border: 10px solid #22222c;
+			overflow: hidden;
+			position: relative;
+			box-shadow: 0 30px 100px rgba(0,0,0,0.7);
+		}
+		.phone-notch {
+			position: absolute;
+			top: 0; left: 50%;
+			transform: translateX(-50%);
+			width: 130px; height: 32px;
+			background: #22222c;
+			border-bottom-left-radius: 18px;
+			border-bottom-right-radius: 18px;
+			z-index: 10;
+		}
+		.phone-screen {
+			padding: 50px 18px 28px 18px;
+			height: 100%;
+			overflow-y: auto;
+			scrollbar-width: none;
+		}
+		.phone-screen::-webkit-scrollbar { display: none; }
+		
+		/* ── Color Tokens ── */
+		:root {
+			--friendly: #87CEEB;
+			--friendly-dim: rgba(135,206,235,0.15);
+			--enemy: #FF9F43;
+			--enemy-dim: rgba(255,159,67,0.15);
+			--neutral: #888;
+		}
+		
+		/* ── Card Base: 3.2:4.6 = 16:23 ── */
+		.card-base {
+			width: 168px;
+			aspect-ratio: 16 / 23;
+			border-radius: 16px;
+			position: relative;
+			overflow: hidden;
+			flex-shrink: 0;
+			transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+			cursor: pointer;
+			user-select: none;
+		}
+		.card-base:hover {
+			transform: translateY(-4px) scale(1.02);
+		}
+		.card-base.pressing {
+			transform: scale(0.96);
+			transition: transform 0.1s ease;
+		}
+		.card-base.dragging {
+			transform: scale(1.05) rotate(3deg);
+			z-index: 50;
+			cursor: grabbing;
+		}
+		
+		/* ── Tooltip ── */
+		.tooltip {
+			position: fixed;
+			background: rgba(25,25,35,0.96);
+			backdrop-filter: blur(16px);
+			border: 1px solid rgba(255,255,255,0.1);
+			border-radius: 10px;
+			padding: 8px 14px;
+			font-size: 12px;
+			color: #eee;
+			pointer-events: none;
+			z-index: 9999;
+			white-space: nowrap;
+			opacity: 0;
+			transition: opacity 0.2s;
+			box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+		}
+		.tooltip.show { opacity: 1; }
+		
+		/* ── Status Dots ── */
+		.status-pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 3px;
+			padding: 2px 7px;
+			border-radius: 100px;
+			font-size: 9px;
+			font-weight: 600;
+			letter-spacing: 0.02em;
+			border: 1px solid;
+		}
+		.status-infected { background: rgba(100,200,80,0.12); color: #7dd85a; border-color: rgba(100,200,80,0.35); }
+		.status-mana     { background: rgba(100,149,237,0.12); color: #7aa8ff; border-color: rgba(100,149,237,0.35); }
+		.status-power    { background: rgba(255,165,0,0.12); color: #ffb84d; border-color: rgba(255,165,0,0.35); }
+		.status-rest     { background: rgba(147,112,219,0.12); color: #b894ff; border-color: rgba(147,112,219,0.35); }
+		.status-revive   { background: rgba(255,105,180,0.12); color: #ff7eb8; border-color: rgba(255,105,180,0.35); }
+		.status-counter  { background: rgba(200,200,200,0.12); color: #d0d0d0; border-color: rgba(200,200,200,0.35); }
+		.status-heart    { background: rgba(220,20,60,0.12); color: #ff4d6a; border-color: rgba(220,20,60,0.35); }
+		
+		/* ── Tag Chips ── */
+		.tag-chip {
+			font-size: 8px;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			padding: 2px 6px;
+			border-radius: 4px;
+		}
+		
+		/* ── Expand / Collapse ── */
+		.expand-fade {
+			max-height: 0;
+			overflow: hidden;
+			opacity: 0;
+			transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+		}
+		.expand-fade.open {
+			max-height: 200px;
+			opacity: 1;
+		}
+		
+		/* ═══════════════════════════════════════ */
+		/*  STYLE A: Modern Wallet Card            */
+		/* ═══════════════════════════════════════ */
+		.wallet-card {
+			background: linear-gradient(165deg, #1e1e2a 0%, #16161f 60%, #111118 100%);
+			border: 1px solid rgba(255,255,255,0.06);
+			box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+			display: flex;
+			flex-direction: column;
+		}
+		.wallet-card.friendly { border-color: rgba(135,206,235,0.15); }
+		.wallet-card.enemy    { border-color: rgba(255,159,67,0.15); }
+		.wallet-art {
+			height: 52%;
+			position: relative;
+			overflow: hidden;
+		}
+		.wallet-art::after {
+			content: '';
+			position: absolute;
+			bottom: 0; left: 0; right: 0;
+			height: 60%;
+			background: linear-gradient(to top, #1e1e2a 0%, transparent 100%);
+		}
+		.wallet-pattern {
+			position: absolute;
+			inset: 0;
+			opacity: 0.4;
+		}
+		.wallet-pattern.friendly {
+			background: radial-gradient(ellipse at 30% 80%, rgba(135,206,235,0.25) 0%, transparent 60%),
+				            radial-gradient(ellipse at 70% 20%, rgba(100,149,237,0.15) 0%, transparent 50%);
+		}
+		.wallet-pattern.enemy {
+			background: radial-gradient(ellipse at 70% 80%, rgba(255,159,67,0.25) 0%, transparent 60%),
+				            radial-gradient(ellipse at 30% 20%, rgba(255,100,50,0.15) 0%, transparent 50%);
+		}
+		.wallet-pattern.neutral {
+			background: radial-gradient(ellipse at 50% 100%, rgba(150,150,150,0.15) 0%, transparent 60%);
+		}
+		.wallet-shine {
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.03) 100%);
+		}
+		.wallet-rarity-common   { --r: #777; }
+		.wallet-rarity-uncommon { --r: #6DD5FA; }
+		.wallet-rarity-rare     { --r: #FFD700; }
+		.wallet-rarity-line {
+			height: 2px;
+			background: var(--r);
+			border-radius: 1px;
+			margin: 6px 0;
+		}
+		.wallet-rarity-rare .wallet-rarity-line {
+			box-shadow: 0 0 8px var(--r);
+			animation: shimmerLine 2.5s ease-in-out infinite;
+		}
+		@keyframes shimmerLine {
+			0%, 100% { opacity: 0.7; }
+			50% { opacity: 1; }
+		}
+		
+		/* ═══════════════════════════════════════ */
+		/*  STYLE B: Glassmorphism Card            */
+		/* ═══════════════════════════════════════ */
+		.glass-card {
+			background: rgba(255,255,255,0.03);
+			backdrop-filter: blur(24px) saturate(1.6);
+			-webkit-backdrop-filter: blur(24px) saturate(1.6);
+			border: 1px solid rgba(255,255,255,0.08);
+			box-shadow: 0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+			display: flex;
+			flex-direction: column;
+		}
+		.glass-card.friendly { border-color: rgba(135,206,235,0.2); box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 30px rgba(135,206,235,0.06), inset 0 1px 0 rgba(255,255,255,0.06); }
+		.glass-card.enemy    { border-color: rgba(255,159,67,0.2); box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 30px rgba(255,159,67,0.06), inset 0 1px 0 rgba(255,255,255,0.06); }
+		.glass-inner {
+			background: rgba(255,255,255,0.02);
+			border: 1px solid rgba(255,255,255,0.05);
+			border-radius: 12px;
+			margin: 10px;
+			flex: 1;
+			position: relative;
+			overflow: hidden;
+		}
+		.glass-glow-common   { --gc: rgba(180,180,180,0.08); }
+		.glass-glow-uncommon { --gc: rgba(109,213,250,0.15); }
+		.glass-glow-rare     { --gc: rgba(255,215,0,0.2); }
+		.glass-card::before {
+			content: '';
+			position: absolute;
+			inset: -1px;
+			border-radius: 16px;
+			padding: 1px;
+			background: linear-gradient(180deg, var(--gc, rgba(255,255,255,0.08)) 0%, transparent 60%);
+			-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+			-webkit-mask-composite: xor;
+			mask-composite: exclude;
+			pointer-events: none;
+		}
+		.glass-rare-pulse {
+			animation: glassPulse 3s ease-in-out infinite;
+		}
+		@keyframes glassPulse {
+			0%, 100% { box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 20px rgba(255,215,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06); }
+			50% { box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 45px rgba(255,215,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06); }
+		}
+		
+		/* ═══════════════════════════════════════ */
+		/*  STYLE C: Bento Card                    */
+		/* ═══════════════════════════════════════ */
+		.bento-card {
+			background: #181820;
+			border: 1px solid rgba(255,255,255,0.05);
+			box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+			padding: 10px;
+			display: grid;
+			grid-template-rows: 1fr auto auto;
+			gap: 6px;
+		}
+		.bento-cell {
+			background: rgba(255,255,255,0.03);
+			border: 1px solid rgba(255,255,255,0.05);
+			border-radius: 10px;
+			padding: 8px;
+			overflow: hidden;
+		}
+		.bento-cell.accent-f { background: rgba(135,206,235,0.06); border-color: rgba(135,206,235,0.12); }
+		.bento-cell.accent-e { background: rgba(255,159,67,0.06); border-color: rgba(255,159,67,0.12); }
+		.bento-art {
+			grid-row: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 32px;
+			position: relative;
+		}
+		.bento-rare-glow {
+			position: absolute;
+			inset: 0;
+			border-radius: 10px;
+			background: radial-gradient(circle at center, rgba(255,215,0,0.08) 0%, transparent 70%);
+		}
+		
+		/* ═══════════════════════════════════════ */
+		/*  STYLE D: Neo-Brutal Card               */
+		/* ═══════════════════════════════════════ */
+		.brutal-card {
+			background: #f0f0f5;
+			border: 3px solid #111;
+			box-shadow: 5px 5px 0 #111;
+			border-radius: 4px;
+			display: flex;
+			flex-direction: column;
+			color: #111;
+		}
+		.brutal-card.friendly { border-color: #4a90a4; box-shadow: 5px 5px 0 #4a90a4; }
+		.brutal-card.enemy    { border-color: #c47a35; box-shadow: 5px 5px 0 #c47a35; }
+		.brutal-card.neutral  { border-color: #666; box-shadow: 5px 5px 0 #666; }
+		.brutal-art {
+			height: 50%;
+			position: relative;
+			overflow: hidden;
+		}
+		.brutal-pattern {
+			position: absolute;
+			inset: 0;
+			background-size: 12px 12px;
+		}
+		.brutal-pattern.friendly {
+			background-color: #87CEEB;
+			background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.2) 6px, rgba(255,255,255,0.2) 12px);
+		}
+		.brutal-pattern.enemy {
+			background-color: #FF9F43;
+			background-image: radial-gradient(circle, rgba(255,255,255,0.2) 2px, transparent 2px);
+		}
+		.brutal-pattern.neutral {
+			background-color: #aaa;
+			background-image: repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(0,0,0,0.08) 8px, rgba(0,0,0,0.08) 9px);
+		}
+		.brutal-tag {
+			display: inline-block;
+			font-size: 7px;
+			font-weight: 900;
+			text-transform: uppercase;
+			letter-spacing: 0.1em;
+			padding: 2px 5px;
+			border: 2px solid #111;
+			background: #fff;
+			box-shadow: 2px 2px 0 #111;
+		}
+		.brutal-rare .brutal-tag { border-color: #b8860b; box-shadow: 2px 2px 0 #b8860b; }
+		.brutal-status {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 20px; height: 20px;
+			border: 2px solid #111;
+			background: #fff;
+			font-size: 10px;
+		}
+		.brutal-rare-line {
+			height: 4px;
+			background: repeating-linear-gradient(90deg, #FFD700, #FFA500 8px, #FFD700 16px);
+			border: 2px solid #111;
+			box-shadow: 2px 2px 0 #b8860b;
+		}
+		
+		/* ═══════════════════════════════════════ */
+		/*  STYLE E: Smart Stack Card              */
+		/* ═══════════════════════════════════════ */
+		.stack-wrapper {
+			position: relative;
+			width: 168px;
+			height: calc(168px * 23 / 16);
+			flex-shrink: 0;
+		}
+		.stack-shadow {
+			position: absolute;
+			border-radius: 16px;
+			inset: 0;
+			transform: translate(6px, 6px);
+			background: rgba(0,0,0,0.3);
+			z-index: 0;
+		}
+		.stack-shadow-2 {
+			position: absolute;
+			border-radius: 16px;
+			inset: 0;
+			transform: translate(3px, 3px);
+			background: rgba(0,0,0,0.2);
+			z-index: 1;
+		}
+		.stack-card {
+			position: relative;
+			z-index: 2;
+			width: 100%; height: 100%;
+			background: linear-gradient(170deg, #222230 0%, #1a1a25 50%, #13131c 100%);
+			border: 1px solid rgba(255,255,255,0.06);
+			box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+			border-radius: 16px;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+		}
+		.stack-card.friendly { border-color: rgba(135,206,235,0.12); }
+		.stack-card.enemy    { border-color: rgba(255,159,67,0.12); }
+		.stack-chip {
+			position: absolute;
+			bottom: -6px; left: 50%;
+			transform: translateX(-50%);
+			padding: 3px 10px;
+			border-radius: 100px;
+			font-size: 8px;
+			font-weight: 700;
+			letter-spacing: 0.06em;
+			z-index: 3;
+			white-space: nowrap;
+			border: 1px solid;
+		}
+		.stack-chip.friendly { background: #111118; color: var(--friendly); border-color: rgba(135,206,235,0.3); }
+		.stack-chip.enemy    { background: #111118; color: var(--enemy); border-color: rgba(255,159,67,0.3); }
+		.stack-chip.neutral  { background: #111118; color: #888; border-color: rgba(136,136,136,0.3); }
+		
+		/* ── Scrollbar hide ── */
+		.hide-scrollbar::-webkit-scrollbar { display: none; }
+	</style>
+</head>
+<body class="min-h-screen">
+	<div id="global-tooltip" class="tooltip"></div>
+	
+	<!-- Header -->
+	<header class="sticky top-0 z-40 bg-[#0c0c10]/90 backdrop-blur-xl border-b border-white/5">
+		<div class="max-w-[1400px] mx-auto px-8 py-5 flex items-center justify-between">
+			<div>
+				<h1 class="text-2xl font-bold tracking-tight text-white font-display">OneDeck Card UI</h1>
+				<p class="text-sm text-gray-500 mt-1">竖版卡片比例 3.2:4.6 &mdash; 5 种现代交互风格</p>
+			</div>
+			<div class="flex gap-2 text-xs">
+				<span class="px-3 py-1.5 rounded-full bg-white/5 text-gray-300 border border-white/10">单点展开</span>
+				<span class="px-3 py-1.5 rounded-full bg-white/5 text-gray-300 border border-white/10">长按详情</span>
+				<span class="px-3 py-1.5 rounded-full bg-white/5 text-gray-300 border border-white/10">拖拽排序</span>
+			</div>
+		</div>
+	</header>
+	
+	<main class="max-w-[1400px] mx-auto px-8 py-10 space-y-20">
+		
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<!--  A. Modern Wallet Card (Apple Card / 现代信用卡风格)   -->
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<section>
+			<div class="mb-8">
+				<h2 class="text-xl font-bold text-white flex items-center gap-3 font-display">
+					<span class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm font-bold border border-emerald-500/20">A</span>
+					Modern Wallet Card
+				</h2>
+				<p class="text-sm text-gray-400 mt-2 ml-[52px] leading-relaxed">
+					灵感来自 Apple Card 和现代金融 App 的卡片设计。竖版比例，大圆角，顶部抽象艺术区域（替代卡图），下方信息区。整体为深色磨砂质感，稀有度通过底部细线发光区分。
+				</p>
+			</div>
+			
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				<!-- Phone 1: Friendly Common -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base wallet-card friendly wallet-rarity-common"
+								 onclick="toggleWallet(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+								 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+								<!-- Art Area -->
+								<div class="wallet-art">
+									<div class="wallet-pattern friendly"></div>
+									<div class="wallet-shine"></div>
+									<div class="absolute inset-0 flex items-center justify-center text-4xl opacity-30">⚔️</div>
+								</div>
+								<!-- Info Area -->
+								<div class="px-3.5 pb-3 pt-0 flex-1 flex flex-col">
+									<h3 class="text-white font-bold text-[13px] leading-tight font-display">Flame Blade</h3>
+									<div class="wallet-rarity-line" style="--r:#777;"></div>
+									<div class="flex items-center justify-between mb-1.5">
+										<span class="text-[8px] text-gray-500 font-medium tracking-wider">COMMON</span>
+										<div class="w-1.5 h-1.5 rounded-full bg-[#87CEEB]"></div>
+									</div>
+									
+									<div class="expand-fade wallet-desc">
+										<p class="text-[9px] text-gray-400 leading-relaxed mb-2">Deal 3 damage to enemy player when revealed.</p>
+										<div class="flex gap-1 flex-wrap mb-1.5">
+											<span class="status-pill status-power" onmouseenter="showTip(event,'Power: Damage +1')" onmouseleave="hideTip()">⚡ Power</span>
+										</div>
+										<div class="flex gap-1">
+											<span class="tag-chip bg-emerald-500/10 text-emerald-400 border border-emerald-500/15">Linger</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500">单点展开描述</div>
+					</div>
+				</div>
+				
+				<!-- Phone 2: Enemy Rare -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base wallet-card enemy wallet-rarity-rare"
+								 onclick="toggleWallet(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+								 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+								<div class="wallet-art">
+									<div class="wallet-pattern enemy"></div>
+									<div class="wallet-shine"></div>
+									<div class="absolute inset-0 flex items-center justify-center text-4xl opacity-30">🔥</div>
+									<!-- Rare glow overlay -->
+									<div class="absolute inset-0 opacity-20" style="background: radial-gradient(circle at 50% 50%, rgba(255,215,0,0.4) 0%, transparent 70%);"></div>
+								</div>
+								<div class="px-3.5 pb-3 pt-0 flex-1 flex flex-col">
+									<h3 class="text-white font-bold text-[13px] leading-tight font-display">Soul Drain</h3>
+									<div class="wallet-rarity-line" style="--r:#FFD700;"></div>
+									<div class="flex items-center justify-between mb-1.5">
+										<span class="text-[8px] text-[#FFD700] font-medium tracking-wider">RARE</span>
+										<div class="w-1.5 h-1.5 rounded-full bg-[#FF9F43]"></div>
+									</div>
+									
+									<div class="expand-fade wallet-desc">
+										<p class="text-[9px] text-gray-400 leading-relaxed mb-2">When destroyed, deal 5 damage to all friendly cards. Costs 2 Mana.</p>
+										<div class="flex gap-1 flex-wrap mb-1.5">
+											<span class="status-pill status-infected" onmouseenter="showTip(event,'Infected')" onmouseleave="hideTip()">💀</span>
+											<span class="status-pill status-mana" onmouseenter="showTip(event,'Mana')" onmouseleave="hideTip()">✦</span>
+											<span class="status-pill status-power" onmouseenter="showTip(event,'Power')" onmouseleave="hideTip()">⚡</span>
+										</div>
+										<div class="flex gap-1">
+											<span class="tag-chip bg-red-500/10 text-red-400 border border-red-500/15">DeathRattle</span>
+											<span class="tag-chip bg-blue-500/10 text-blue-400 border border-blue-500/15">ManaX</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500">Rare 卡片有金色发光细线</div>
+					</div>
+				</div>
+				
+				<!-- Phone 3: Deck spread -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Deck Spread</div>
+						
+						<div class="flex justify-center items-end gap-[-8px]" style="gap: -8px;">
+							<div class="card-base wallet-card friendly wallet-rarity-common" style="transform: rotate(-8deg) translateX(12px); z-index:1;">
+								<div class="wallet-art"><div class="wallet-pattern friendly"></div><div class="wallet-shine"></div></div>
+								<div class="px-3 pt-0 pb-2.5"><h3 class="text-white font-semibold text-[11px]">Small Rat</h3><div class="wallet-rarity-line" style="--r:#777;"></div></div>
+							</div>
+							<div class="card-base wallet-card enemy wallet-rarity-uncommon" style="transform: rotate(0deg); z-index:2;">
+								<div class="wallet-art"><div class="wallet-pattern enemy"></div><div class="wallet-shine"></div></div>
+								<div class="px-3 pt-0 pb-2.5"><h3 class="text-white font-semibold text-[11px]">Ice Shield</h3><div class="wallet-rarity-line" style="--r:#6DD5FA;"></div></div>
+							</div>
+							<div class="card-base wallet-card friendly wallet-rarity-rare" style="transform: rotate(8deg) translateX(-12px); z-index:1;">
+								<div class="wallet-art"><div class="wallet-pattern friendly"></div><div class="wallet-shine"></div></div>
+								<div class="px-3 pt-0 pb-2.5"><h3 class="text-white font-semibold text-[11px]">Holy Light</h3><div class="wallet-rarity-line" style="--r:#FFD700;"></div></div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500 mt-5">Deck 中卡片扇形展开<br>点击任一卡片查看详情</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<!--  B. Glassmorphism Card (iOS / macOS 风格)              -->
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<section>
+			<div class="mb-8">
+				<h2 class="text-xl font-bold text-white flex items-center gap-3 font-display">
+					<span class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-sm font-bold border border-blue-500/20">B</span>
+					Glassmorphism Card
+				</h2>
+				<p class="text-sm text-gray-400 mt-2 ml-[52px] leading-relaxed">
+					玻璃拟态卡片，半透明磨砂质感配合微妙光晕。卡片内部有独立玻璃子区域。稀有度通过整体发光强度区分，Rare 卡片有呼吸脉冲动画。所属通过边框色调体现。
+				</p>
+			</div>
+			
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				<!-- Phone 1: Friendly Uncommon -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen" style="background: linear-gradient(180deg, #1a2030 0%, #121520 100%);">
+						<div class="text-center text-xs text-blue-300/40 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base glass-card friendly glass-glow-uncommon"
+								 onclick="toggleGlass(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+								 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+								<div class="glass-inner flex flex-col">
+									<!-- Top: Art placeholder with icon -->
+									<div class="flex-1 flex items-center justify-center relative">
+										<div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl" style="background: rgba(135,206,235,0.08); border: 1px solid rgba(135,206,235,0.15);">🛡️</div>
+										<div class="absolute top-2 right-2 text-[8px] text-[#6DD5FA] font-bold tracking-wider">UNCOMMON</div>
+									</div>
+									<!-- Bottom: Info -->
+									<div class="px-2.5 pb-2.5 pt-0">
+										<h3 class="text-white font-bold text-[13px] font-display">Ice Shield</h3>
+										<div class="h-px bg-white/10 my-1.5"></div>
+										
+										<div class="expand-fade glass-desc">
+											<p class="text-[9px] text-gray-400 leading-relaxed mb-2">Gain 4 Shield. If Shield exists, heal 2 HP.</p>
+											<div class="flex items-center justify-between">
+												<div class="flex gap-1">
+													<span class="status-pill status-counter" onmouseenter="showTip(event,'Counter')" onmouseleave="hideTip()">🛡</span>
+												</div>
+												<span class="tag-chip bg-white/5 text-gray-400 border border-white/10">Linger</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-blue-300/40">点击卡片展开详情</div>
+					</div>
+				</div>
+				
+				<!-- Phone 2: Enemy Rare with pulse -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen" style="background: linear-gradient(180deg, #2a2018 0%, #1a1510 100%);">
+						<div class="text-center text-xs text-orange-300/40 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base glass-card enemy glass-glow-rare glass-rare-pulse"
+								 onclick="toggleGlass(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+								 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+								<div class="glass-inner flex flex-col">
+									<div class="flex-1 flex items-center justify-center relative">
+										<div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl" style="background: rgba(255,159,67,0.08); border: 1px solid rgba(255,159,67,0.15);">🔥</div>
+										<div class="absolute top-2 right-2 text-[8px] text-[#FFD700] font-bold tracking-wider animate-pulse">RARE</div>
+									</div>
+									<div class="px-2.5 pb-2.5 pt-0">
+										<h3 class="text-white font-bold text-[13px] font-display">Doom Bringer</h3>
+										<div class="h-px bg-white/10 my-1.5"></div>
+										
+										<div class="expand-fade glass-desc">
+											<p class="text-[9px] text-gray-400 leading-relaxed mb-2">Destroy top 2 deck cards. Deal 3 damage per destroyed card.</p>
+											<div class="flex items-center justify-between">
+												<div class="flex gap-1">
+													<span class="status-pill status-power" onmouseenter="showTip(event,'Power')" onmouseleave="hideTip()">⚡</span>
+													<span class="status-pill status-infected" onmouseenter="showTip(event,'Infected')" onmouseleave="hideTip()">💀</span>
+													<span class="status-pill status-revive" onmouseenter="showTip(event,'Revive')" onmouseleave="hideTip()">♻</span>
+												</div>
+												<div class="flex gap-1">
+													<span class="tag-chip bg-white/5 text-gray-400 border border-white/10">DeathRattle</span>
+													<span class="tag-chip bg-white/5 text-gray-400 border border-white/10">ManaX</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-orange-300/40">Rare 有呼吸光晕动画</div>
+					</div>
+				</div>
+				
+				<!-- Phone 3: Rarity comparison -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen" style="background: linear-gradient(180deg, #1a1a25 0%, #111118 100%);">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Rarity Glow</div>
+						
+						<div class="flex justify-center gap-3 mb-4">
+							<div class="card-base glass-card glass-glow-common" style="width:80px;">
+								<div class="glass-inner flex items-center justify-center text-[9px] text-gray-500">Common</div>
+							</div>
+							<div class="card-base glass-card glass-glow-uncommon" style="width:80px;">
+								<div class="glass-inner flex items-center justify-center text-[9px] text-[#6DD5FA]">Uncommon</div>
+							</div>
+							<div class="card-base glass-card glass-glow-rare glass-rare-pulse" style="width:80px;">
+								<div class="glass-inner flex items-center justify-center text-[9px] text-[#FFD700]">Rare</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500">发光强度区分稀有度<br>长按卡片查看完整信息</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<!--  C. Bento Card (iOS Widget / 模块化卡片)               -->
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<section>
+			<div class="mb-8">
+				<h2 class="text-xl font-bold text-white flex items-center gap-3 font-display">
+					<span class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-sm font-bold border border-purple-500/20">C</span>
+					Bento Card
+				</h2>
+				<p class="text-sm text-gray-400 mt-2 ml-[52px] leading-relaxed">
+					卡片内部采用 Bento Grid 布局，像 iOS 锁屏小组件堆叠在一张卡片内。顶部为卡图占位区，中间名称与稀有度并列，底部为描述和状态区域。每个信息类型有独立的视觉容器。
+				</p>
+			</div>
+			
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				<!-- Phone 1: Friendly with many statuses -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base bento-card" data-owner="friendly"
+								 onclick="toggleBento(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+								 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+								<!-- Art Cell -->
+								<div class="bento-cell bento-art accent-f relative">
+									<span class="relative z-10 text-3xl">🗡️</span>
+									<div class="bento-rare-glow" style="display:none;"></div>
+								</div>
+								<!-- Name + Rarity Row -->
+								<div class="grid grid-cols-5 gap-1.5" style="height:44px;">
+									<div class="col-span-3 bento-cell accent-f flex flex-col justify-center">
+										<h3 class="text-white font-bold text-[12px] leading-tight font-display">Venomous Sting</h3>
+										<div class="flex items-center gap-1 mt-0.5">
+											<div class="w-1 h-2.5 rounded-full bg-[#87CEEB]"></div>
+											<span class="text-[7px] text-[#87CEEB]/70 font-medium">FRIENDLY</span>
+										</div>
+									</div>
+									<div class="col-span-2 bento-cell flex flex-col items-center justify-center">
+										<span class="text-sm">✦✦</span>
+										<span class="text-[7px] text-[#6DD5FA]">UNCOMMON</span>
+									</div>
+								</div>
+								<!-- Desc + Status Row -->
+								<div class="grid grid-cols-5 gap-1.5" style="height:52px;">
+									<div class="col-span-3 bento-cell flex flex-col justify-center">
+										<div class="expand-fade bento-desc">
+											<p class="text-[8px] text-gray-400 leading-snug">Deal 2 damage and apply Infected. Double damage if already infected.</p>
+										</div>
+									</div>
+									<div class="col-span-2 bento-cell flex flex-col justify-center gap-1">
+										<div class="text-[7px] text-gray-500 uppercase tracking-wider">Status</div>
+										<div class="flex gap-1">
+											<div class="w-5 h-5 rounded bg-[#64C850]/10 border border-[#64C850]/25 flex items-center justify-center text-[9px]" onmouseenter="showTip(event,'Infected')" onmouseleave="hideTip()">💀</div>
+											<div class="w-5 h-5 rounded bg-[#FFA500]/10 border border-[#FFA500]/25 flex items-center justify-center text-[9px]" onmouseenter="showTip(event,'Power')" onmouseleave="hideTip()">⚡</div>
+											<div class="w-5 h-5 rounded bg-[#9370DB]/10 border border-[#9370DB]/25 flex items-center justify-center text-[9px]" onmouseenter="showTip(event,'Rest')" onmouseleave="hideTip()">💤</div>
+										</div>
+									</div>
+								</div>
+								<!-- Tags Row -->
+								<div class="flex gap-1">
+									<span class="tag-chip bg-emerald-500/10 text-emerald-400 border border-emerald-500/15">Linger</span>
+									<span class="tag-chip bg-red-500/10 text-red-400 border border-red-500/15">DeathRattle</span>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500">内部 Bento 网格布局</div>
+					</div>
+				</div>
+				
+				<!-- Phone 2: Enemy Rare -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base bento-card" data-owner="enemy"
+								 onclick="toggleBento(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+								 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+								<div class="bento-cell bento-art accent-e relative">
+									<span class="relative z-10 text-3xl">🌑</span>
+									<div class="bento-rare-glow" style="display:block;"></div>
+								</div>
+								<div class="grid grid-cols-5 gap-1.5" style="height:44px;">
+									<div class="col-span-3 bento-cell accent-e flex flex-col justify-center">
+										<h3 class="text-white font-bold text-[12px] leading-tight font-display">Shadow Strike</h3>
+										<div class="flex items-center gap-1 mt-0.5">
+											<div class="w-1 h-2.5 rounded-full bg-[#FF9F43]"></div>
+											<span class="text-[7px] text-[#FF9F43]/70 font-medium">ENEMY</span>
+										</div>
+									</div>
+									<div class="col-span-2 bento-cell flex flex-col items-center justify-center relative overflow-hidden">
+										<span class="text-sm relative z-10">✦✦✦</span>
+										<span class="text-[7px] text-[#FFD700] relative z-10">RARE</span>
+										<div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent"></div>
+									</div>
+								</div>
+								<div class="grid grid-cols-5 gap-1.5" style="height:52px;">
+									<div class="col-span-3 bento-cell flex flex-col justify-center">
+										<div class="expand-fade bento-desc">
+											<p class="text-[8px] text-gray-400 leading-snug">Steal ownership of top friendly card. Card becomes hostile.</p>
+										</div>
+									</div>
+									<div class="col-span-2 bento-cell flex flex-col justify-center gap-1">
+										<div class="text-[7px] text-gray-500 uppercase tracking-wider">Status</div>
+										<div class="flex gap-1">
+											<div class="w-5 h-5 rounded bg-[#DC143C]/10 border border-[#DC143C]/25 flex items-center justify-center text-[9px]" onmouseenter="showTip(event,'HeartChanged')" onmouseleave="hideTip()">❤</div>
+										</div>
+									</div>
+								</div>
+								<div class="flex gap-1">
+									<span class="tag-chip bg-blue-500/10 text-blue-400 border border-blue-500/15">ManaX</span>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500">每个信息类型独立区块</div>
+					</div>
+				</div>
+				
+				<!-- Phone 3: Focus on cell -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Long Press Cell</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base bento-card" data-owner="friendly">
+								<div class="bento-cell bento-art accent-f"><span class="text-3xl">💚</span></div>
+								<div class="grid grid-cols-2 gap-1.5" style="height:40px;">
+									<div class="bento-cell accent-f flex flex-col justify-center">
+										<h3 class="text-white font-bold text-[12px] font-display">Heal Wave</h3>
+									</div>
+									<div class="bento-cell flex items-center justify-center">
+										<span class="text-[7px] text-gray-500">COMMON</span>
+									</div>
+								</div>
+								<div class="bento-cell flex flex-col justify-center">
+									<p class="text-[9px] text-gray-400 leading-snug">Heal all friendly cards for 2 HP.</p>
+								</div>
+							</div>
+						</div>
+						
+						<div class="bg-[#1e1e26] rounded-xl p-3 border border-white/5">
+							<div class="text-[10px] text-gray-500 mb-2">长按 Status 区块显示详情:</div>
+							<div class="flex gap-2">
+								<div class="w-10 h-10 rounded-xl bg-[#64C850]/10 border border-[#64C850]/25 flex items-center justify-center text-lg cursor-pointer"
+									 onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)">💀</div>
+								<div class="flex-1 flex items-center">
+									<span class="text-xs text-gray-400">Infected &mdash; Takes damage over time</span>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500 mt-4">长按单个 Bento 区块<br>可查看该区块详细信息</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<!--  D. Neo-Brutal Card (现代粗野主义)                      -->
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<section>
+			<div class="mb-8">
+				<h2 class="text-xl font-bold text-white flex items-center gap-3 font-display">
+					<span class="w-10 h-10 rounded-xl bg-pink-500/10 text-pink-400 flex items-center justify-center text-sm font-bold border border-pink-500/20">D</span>
+					Neo-Brutal Card
+				</h2>
+				<p class="text-sm text-gray-400 mt-2 ml-[52px] leading-relaxed">
+					现代粗野主义（Neo-Brutalism）卡片设计。高对比度、粗黑边框、硬阴影偏移、高饱和度色块。抛弃渐变和模糊，使用纯粹的几何与纹理。稀有度通过边框/阴影颜色区分。
+				</p>
+			</div>
+			
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				<!-- Phone 1: Friendly -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen" style="background: #f5f5f5;">
+						<div class="text-center text-xs text-gray-400 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base brutal-card friendly brutal-rare-common"
+								 onclick="toggleBrutal(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+								 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+								<div class="brutal-art">
+									<div class="brutal-pattern friendly"></div>
+									<div class="absolute inset-0 flex items-center justify-center text-4xl">⚔️</div>
+								</div>
+								<div class="px-2.5 pb-2.5 pt-1 flex-1 flex flex-col">
+									<h3 class="font-black text-[13px] leading-tight font-display">Flame Blade</h3>
+									<div class="brutal-rare-line mt-1.5 mb-1.5" style="background: #777; box-shadow: 2px 2px 0 #555;"></div>
+									<div class="flex items-center justify-between mb-1">
+										<span class="text-[8px] font-black text-gray-500 tracking-wider">COMMON</span>
+										<div class="w-2 h-2 bg-[#4a90a4]"></div>
+									</div>
+									
+									<div class="expand-fade brutal-desc">
+										<p class="text-[9px] text-gray-700 leading-relaxed mb-2 font-medium">Deal 3 damage to enemy player when revealed.</p>
+										<div class="flex gap-1 mb-1.5">
+											<div class="brutal-status" onmouseenter="showTip(event,'Power')" onmouseleave="hideTip()">⚡</div>
+										</div>
+										<div class="flex gap-1">
+											<span class="brutal-tag">Linger</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-400">粗边框 + 硬阴影</div>
+					</div>
+				</div>
+				
+				<!-- Phone 2: Enemy Rare -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen" style="background: #f5f5f5;">
+						<div class="text-center text-xs text-gray-400 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="card-base brutal-card enemy brutal-rare"
+								 onclick="toggleBrutal(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+								 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+								<div class="brutal-art">
+									<div class="brutal-pattern enemy"></div>
+									<div class="absolute inset-0 flex items-center justify-center text-4xl">🔥</div>
+								</div>
+								<div class="px-2.5 pb-2.5 pt-1 flex-1 flex flex-col">
+									<h3 class="font-black text-[13px] leading-tight font-display">Soul Drain</h3>
+									<div class="brutal-rare-line brutal-rare-line mt-1.5 mb-1.5"></div>
+									<div class="flex items-center justify-between mb-1">
+										<span class="text-[8px] font-black text-[#b8860b] tracking-wider">RARE</span>
+										<div class="w-2 h-2 bg-[#c47a35]"></div>
+									</div>
+									
+									<div class="expand-fade brutal-desc">
+										<p class="text-[9px] text-gray-700 leading-relaxed mb-2 font-medium">When destroyed, deal 5 damage to all friendly cards. Costs 2 Mana.</p>
+										<div class="flex gap-1 mb-1.5">
+											<div class="brutal-status" style="border-color:#64C850;" onmouseenter="showTip(event,'Infected')" onmouseleave="hideTip()">💀</div>
+											<div class="brutal-status" style="border-color:#6495ED;" onmouseenter="showTip(event,'Mana')" onmouseleave="hideTip()">✦</div>
+											<div class="brutal-status" style="border-color:#FFA500;" onmouseenter="showTip(event,'Power')" onmouseleave="hideTip()">⚡</div>
+										</div>
+										<div class="flex gap-1">
+											<span class="brutal-tag" style="border-color:#dc4444; box-shadow:2px 2px 0 #dc4444;">DeathRattle</span>
+											<span class="brutal-tag" style="border-color:#4488dc; box-shadow:2px 2px 0 #4488dc;">ManaX</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-400">Rare 有金色条纹 + 彩色标签</div>
+					</div>
+				</div>
+				
+				<!-- Phone 3: Deck -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen" style="background: #f5f5f5;">
+						<div class="text-center text-xs text-gray-400 mb-4 tracking-widest uppercase">Deck</div>
+						
+						<div class="flex justify-center items-end gap-1">
+							<div class="card-base brutal-card friendly brutal-rare-common" style="width:60px; transform:rotate(-10deg) translateX(8px);">
+								<div class="brutal-art" style="height:40%;"><div class="brutal-pattern friendly"></div></div>
+								<div class="px-1 pt-1"><div class="text-[7px] font-black">Rat</div></div>
+							</div>
+							<div class="card-base brutal-card enemy" style="width:60px; transform:rotate(0deg); border-color:#c47a35; box-shadow:3px 3px 0 #c47a35;">
+								<div class="brutal-art" style="height:40%;"><div class="brutal-pattern enemy"></div></div>
+								<div class="px-1 pt-1"><div class="text-[7px] font-black">Skull</div></div>
+							</div>
+							<div class="card-base brutal-card friendly brutal-rare" style="width:60px; transform:rotate(10deg) translateX(-8px);">
+								<div class="brutal-art" style="height:40%;"><div class="brutal-pattern friendly"></div></div>
+								<div class="px-1 pt-1"><div class="text-[7px] font-black">Dragon</div></div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-400 mt-5">亮色背景上的高对比卡片<br>点击展开描述</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<!--  E. Smart Stack Card (层叠智能卡片)                     -->
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<section>
+			<div class="mb-8">
+				<h2 class="text-xl font-bold text-white flex items-center gap-3 font-display">
+					<span class="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center text-sm font-bold border border-orange-500/20">E</span>
+					Smart Stack Card
+				</h2>
+				<p class="text-sm text-gray-400 mt-2 ml-[52px] leading-relaxed">
+					卡片带有物理厚度感，背后有多层阴影卡片堆叠。主卡片悬浮在前，底部有阵营标签芯片。灵感来自 iOS Smart Stack 和 Tinder 卡片堆叠。拖拽时卡片脱离堆叠，有物理反馈。
+				</p>
+			</div>
+			
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+				<!-- Phone 1: Friendly stack -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="stack-wrapper" draggable="true" ondragstart="dragStart(event)" ondragend="dragEnd(event)">
+								<div class="stack-shadow" style="background: rgba(135,206,235,0.08); border: 1px solid rgba(135,206,235,0.1);"></div>
+								<div class="stack-shadow-2" style="background: rgba(135,206,235,0.05); border: 1px solid rgba(135,206,235,0.08);"></div>
+								<div class="stack-card friendly"
+									 onclick="toggleStack(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+									 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+									<!-- Art area -->
+									<div class="h-[52%] relative overflow-hidden">
+										<div class="absolute inset-0" style="background: radial-gradient(ellipse at 30% 80%, rgba(135,206,235,0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 20%, rgba(100,149,237,0.08) 0%, transparent 50%);"></div>
+										<div class="absolute inset-0 flex items-center justify-center text-4xl opacity-40">⚔️</div>
+										<div class="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-[#13131c] to-transparent"></div>
+										<!-- Rarity badge -->
+										<div class="absolute top-2.5 right-2.5 text-[8px] font-bold text-gray-400 bg-black/40 backdrop-blur px-1.5 py-0.5 rounded">COMMON</div>
+									</div>
+									<!-- Info -->
+									<div class="px-3.5 pb-3 pt-0 flex-1 flex flex-col">
+										<h3 class="text-white font-bold text-[14px] font-display">Flame Blade</h3>
+										<div class="h-px bg-white/8 my-1.5"></div>
+										
+										<div class="expand-fade stack-desc">
+											<p class="text-[9px] text-gray-400 leading-relaxed mb-2">Deal 3 damage to enemy player when revealed.</p>
+											<div class="flex items-center justify-between">
+												<div class="flex gap-1">
+													<span class="status-pill status-power" onmouseenter="showTip(event,'Power')" onmouseleave="hideTip()">⚡</span>
+												</div>
+												<span class="tag-chip bg-white/5 text-gray-400 border border-white/10">Linger</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="stack-chip friendly">FRIENDLY</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500">背后有层叠阴影卡片<br>拖拽可移动卡片</div>
+					</div>
+				</div>
+				
+				<!-- Phone 2: Enemy Rare stack -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Reveal Zone</div>
+						
+						<div class="flex justify-center mb-6">
+							<div class="stack-wrapper" draggable="true" ondragstart="dragStart(event)" ondragend="dragEnd(event)">
+								<div class="stack-shadow" style="background: rgba(255,159,67,0.08); border: 1px solid rgba(255,159,67,0.1);"></div>
+								<div class="stack-shadow-2" style="background: rgba(255,159,67,0.05); border: 1px solid rgba(255,159,67,0.08);"></div>
+								<div class="stack-card enemy"
+									 onclick="toggleStack(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)"
+									 ontouchstart="startPress(this)" ontouchend="endPress(this)">
+									<div class="h-[52%] relative overflow-hidden">
+										<div class="absolute inset-0" style="background: radial-gradient(ellipse at 70% 80%, rgba(255,159,67,0.15) 0%, transparent 60%), radial-gradient(ellipse at 30% 20%, rgba(255,100,50,0.08) 0%, transparent 50%);"></div>
+										<div class="absolute inset-0" style="background: radial-gradient(circle at 50% 50%, rgba(255,215,0,0.06) 0%, transparent 70%);"></div>
+										<div class="absolute inset-0 flex items-center justify-center text-4xl opacity-40">🔥</div>
+										<div class="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-[#13131c] to-transparent"></div>
+										<div class="absolute top-2.5 right-2.5 text-[8px] font-bold text-[#FFD700] bg-black/40 backdrop-blur px-1.5 py-0.5 rounded animate-pulse">RARE</div>
+									</div>
+									<div class="px-3.5 pb-3 pt-0 flex-1 flex flex-col">
+										<h3 class="text-white font-bold text-[14px] font-display">Doom Bringer</h3>
+										<div class="h-px bg-white/8 my-1.5"></div>
+										
+										<div class="expand-fade stack-desc">
+											<p class="text-[9px] text-gray-400 leading-relaxed mb-2">Destroy top 2 deck cards. Deal 3 damage per destroyed card.</p>
+											<div class="flex items-center justify-between">
+												<div class="flex gap-1">
+													<span class="status-pill status-infected" onmouseenter="showTip(event,'Infected')" onmouseleave="hideTip()">💀</span>
+													<span class="status-pill status-mana" onmouseenter="showTip(event,'Mana')" onmouseleave="hideTip()">✦</span>
+													<span class="status-pill status-power" onmouseenter="showTip(event,'Power')" onmouseleave="hideTip()">⚡</span>
+												</div>
+												<div class="flex gap-1">
+													<span class="tag-chip bg-white/5 text-gray-400 border border-white/10">DeathRattle</span>
+													<span class="tag-chip bg-white/5 text-gray-400 border border-white/10">ManaX</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="stack-chip enemy">ENEMY</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500">Rare 卡片有额外金色光晕</div>
+					</div>
+				</div>
+				
+				<!-- Phone 3: Stacked deck -->
+				<div class="phone-frame">
+					<div class="phone-notch"></div>
+					<div class="phone-screen">
+						<div class="text-center text-xs text-gray-500 mb-4 tracking-widest uppercase">Deck Stack</div>
+						
+						<div class="flex justify-center items-center" style="height:240px;">
+							<div class="relative" style="width:168px; height:calc(168px * 23 / 16);">
+								<!-- Bottom card -->
+								<div class="absolute inset-0 rounded-2xl border border-white/5" style="background:#1a1a25; transform:translate(10px,10px) rotate(4deg);"></div>
+								<!-- Middle card -->
+								<div class="absolute inset-0 rounded-2xl border border-white/5" style="background:#1e1e2a; transform:translate(5px,5px) rotate(2deg);"></div>
+								<!-- Top card -->
+								<div class="absolute inset-0 rounded-2xl border border-[#87CEEB]/15 bg-gradient-to-b from-[#1e1e2a] to-[#13131c] overflow-hidden"
+									 onclick="toggleStack(this)" onmousedown="startPress(this)" onmouseup="endPress(this)" onmouseleave="endPress(this)">
+									<div class="h-[52%] relative">
+										<div class="absolute inset-0" style="background: radial-gradient(ellipse at 30% 80%, rgba(135,206,235,0.12) 0%, transparent 60%);"></div>
+										<div class="absolute inset-0 flex items-center justify-center text-4xl opacity-30">💚</div>
+										<div class="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-[#13131c] to-transparent"></div>
+									</div>
+									<div class="px-3.5 pt-0 pb-3">
+										<h3 class="text-white font-bold text-[14px] font-display">Heal Wave</h3>
+										<div class="h-px bg-white/8 my-1.5"></div>
+										<div class="expand-fade stack-desc">
+											<p class="text-[9px] text-gray-400 leading-relaxed">Heal all friendly cards for 2 HP.</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="text-center text-xs text-gray-500">Deck 中卡片层叠堆放在中心<br>点击顶部卡片展开</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<!--  设计决策总结                                          -->
+		<!-- ═══════════════════════════════════════════════════════ -->
+		<section class="border-t border-white/5 pt-12 pb-16">
+			<h2 class="text-xl font-bold text-white mb-6 font-display">设计决策说明</h2>
+			
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+				<div class="bg-[#14141a] rounded-2xl p-6 border border-white/5">
+					<h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+						<span class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs">1</span>
+						卡片比例与形态
+					</h3>
+					<p class="text-gray-400 leading-relaxed text-xs">
+						所有风格统一使用 <strong class="text-gray-300">3.2:4.6（16:23）</strong> 竖版比例，接近标准实体卡牌尺寸（如宝可梦卡 63mm×88mm ≈ 0.716）。区别于传统 TCG 的复杂边框和大量装饰元素，采用现代数字产品的设计语言：大圆角、留白、层级阴影。
+					</p>
+				</div>
+				
+				<div class="bg-[#14141a] rounded-2xl p-6 border border-white/5">
+					<h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+						<span class="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs">2</span>
+						所属阵营表现
+						</h3>
+					<p class="text-gray-400 leading-relaxed text-xs">
+						保留现有颜色约定（Friendly <code class="text-[#87CEEB]">#87CEEB</code> / Enemy <code class="text-[#FF9F43]">#FF9F43</code>），但通过现代方式呈现：A 风格用顶部渐变+侧边色点，B 用边框光晕，C 用 Bento cell 强调边框，D 用粗边框+硬阴影颜色，E 用层叠阴影色调+底部芯片。
+					</p>
+				</div>
+				
+				<div class="bg-[#14141a] rounded-2xl p-6 border border-white/5">
+					<h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+						<span class="w-6 h-6 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center text-xs">3</span>
+						稀有度信号
+						</h3>
+					<p class="text-gray-400 leading-relaxed text-xs">
+						放弃传统星星/宝石，改用<strong class="text-gray-300">动态光效</strong>作为稀有度信号：Common = 无发光/灰色静态线；Uncommon = 微光边框/蓝色线条；Rare = 呼吸脉冲动画/金色发光条纹。所有风格统一使用 <code class="text-yellow-500">wallet-rarity-line</code> 或 <code class="text-yellow-500">glass-glow</code> 类控制。
+					</p>
+				</div>
+				
+				<div class="bg-[#14141a] rounded-2xl p-6 border border-white/5">
+					<h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+						<span class="w-6 h-6 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center text-xs">4</span>
+						交互映射
+						</h3>
+					<p class="text-gray-400 leading-relaxed text-xs">
+						<strong class="text-gray-300">单点（Tap）</strong>：展开/折叠描述和 Status（所有风格）。<strong class="text-gray-300">长按（Long Press）</strong>：500ms 后自动展开 + Tooltip 提示 Status 名称。<strong class="text-gray-300">拖拽（Drag）</strong>：E 风格中卡片可拖拽移动，有物理倾斜反馈。所有交互仅使用这三种手势，符合项目约束。
+					</p>
+				</div>
+			</div>
+			
+			<!-- Status Effect Table -->
+			<div class="mt-8 bg-[#14141a] rounded-2xl border border-white/5 overflow-hidden">
+				<div class="px-6 py-4 border-b border-white/5">
+					<h3 class="text-white font-semibold text-sm">Status Effect 图标参考表</h3>
+				</div>
+				<div class="overflow-x-auto">
+					<table class="w-full text-xs">
+						<thead>
+							<tr class="border-b border-white/5 text-gray-500">
+								<th class="text-left px-6 py-3 font-medium">效果</th>
+								<th class="text-left px-6 py-3 font-medium">图标</th>
+								<th class="text-left px-6 py-3 font-medium">颜色</th>
+								<th class="text-left px-6 py-3 font-medium">说明</th>
+								<th class="text-left px-6 py-3 font-medium">当前实现</th>
+							</tr>
+						</thead>
+						<tbody class="text-gray-300">
+							<tr class="border-b border-white/5"><td class="px-6 py-3 font-medium">Infected</td><td class="px-6 py-3"><span class="status-pill status-infected">💀</span></td><td class="px-6 py-3 text-[#7dd85a]">#64C850</td><td class="px-6 py-3 text-gray-400">感染</td><td class="px-6 py-3 text-gray-500">绿色染色</td></tr>
+							<tr class="border-b border-white/5"><td class="px-6 py-3 font-medium">Mana</td><td class="px-6 py-3"><span class="status-pill status-mana">✦</span></td><td class="px-6 py-3 text-[#7aa8ff]">#6495ED</td><td class="px-6 py-3 text-gray-400">法力</td><td class="px-6 py-3 text-gray-500">文本显示</td></tr>
+							<tr class="border-b border-white/5"><td class="px-6 py-3 font-medium">Power</td><td class="px-6 py-3"><span class="status-pill status-power">⚡</span></td><td class="px-6 py-3 text-[#ffb84d]">#FFA500</td><td class="px-6 py-3 text-gray-400">力量（伤害+1）</td><td class="px-6 py-3 text-gray-500">橙色染色</td></tr>
+							<tr class="border-b border-white/5"><td class="px-6 py-3 font-medium">Rest</td><td class="px-6 py-3"><span class="status-pill status-rest">💤</span></td><td class="px-6 py-3 text-[#b894ff]">#9370DB</td><td class="px-6 py-3 text-gray-400">休息（跳过触发）</td><td class="px-6 py-3 text-gray-500">文本显示</td></tr>
+							<tr class="border-b border-white/5"><td class="px-6 py-3 font-medium">Revive</td><td class="px-6 py-3"><span class="status-pill status-revive">♻</span></td><td class="px-6 py-3 text-[#ff7eb8]">#FF69B4</td><td class="px-6 py-3 text-gray-400">复活</td><td class="px-6 py-3 text-gray-500">文本显示</td></tr>
+							<tr class="border-b border-white/5"><td class="px-6 py-3 font-medium">Counter</td><td class="px-6 py-3"><span class="status-pill status-counter">🛡</span></td><td class="px-6 py-3 text-[#d0d0d0]">#DCDCDC</td><td class="px-6 py-3 text-gray-400">反击/格挡</td><td class="px-6 py-3 text-gray-500">文本显示</td></tr>
+							<tr><td class="px-6 py-3 font-medium">HeartChanged</td><td class="px-6 py-3"><span class="status-pill status-heart">❤</span></td><td class="px-6 py-3 text-[#ff4d6a]">#DC143C</td><td class="px-6 py-3 text-gray-400">所有权改变</td><td class="px-6 py-3 text-gray-500">文本显示</td></tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+	</main>
+	
+	<script>
+		// ── Tooltip ──
+		const tooltip = document.getElementById('global-tooltip');
+		function showTip(e, text) {
+			tooltip.textContent = text;
+			tooltip.classList.add('show');
+			const rect = e.target.getBoundingClientRect();
+			tooltip.style.left = (rect.left + rect.width/2 - tooltip.offsetWidth/2) + 'px';
+			tooltip.style.top = (rect.top - tooltip.offsetHeight - 8) + 'px';
+		}
+		function hideTip() {
+			tooltip.classList.remove('show');
+		}
+		
+		// ── Long Press ──
+		let pressTimer = null;
+		let isLongPress = false;
+		
+		function startPress(el) {
+			isLongPress = false;
+			pressTimer = setTimeout(() => {
+				isLongPress = true;
+				el.classList.add('pressing');
+				// Auto expand on long press
+				const card = el.closest('.card-base, .stack-card, .stack-wrapper');
+				if (card) {
+					const desc = card.querySelector('.wallet-desc, .glass-desc, .bento-desc, .brutal-desc, .stack-desc');
+					if (desc && !desc.classList.contains('open')) {
+						desc.classList.add('open');
+					}
+				}
+			}, 500);
+		}
+		function endPress(el) {
+			clearTimeout(pressTimer);
+			el.classList.remove('pressing');
+		}
+		
+		// ── Style A: Wallet Toggle ──
+		function toggleWallet(card) {
+			if (isLongPress) return;
+			const desc = card.querySelector('.wallet-desc');
+			if (desc) desc.classList.toggle('open');
+		}
+		
+		// ── Style B: Glass Toggle ──
+		function toggleGlass(card) {
+			if (isLongPress) return;
+			const desc = card.querySelector('.glass-desc');
+			if (desc) desc.classList.toggle('open');
+		}
+		
+		// ── Style C: Bento Toggle ──
+		function toggleBento(card) {
+			if (isLongPress) return;
+			const desc = card.querySelector('.bento-desc');
+			if (desc) desc.classList.toggle('open');
+		}
+		
+		// ── Style D: Brutal Toggle ──
+		function toggleBrutal(card) {
+			if (isLongPress) return;
+			const desc = card.querySelector('.brutal-desc');
+			if (desc) desc.classList.toggle('open');
+		}
+		
+		// ── Style E: Stack Toggle ──
+		function toggleStack(card) {
+			if (isLongPress) return;
+			const desc = card.querySelector('.stack-desc');
+			if (desc) desc.classList.toggle('open');
+		}
+		
+		// ── Drag & Drop ──
+		function dragStart(e) {
+			const el = e.target.closest('.stack-wrapper, .card-base');
+			if (el) {
+				el.classList.add('dragging');
+				e.dataTransfer.effectAllowed = 'move';
+			}
+		}
+		function dragEnd(e) {
+			const el = e.target.closest('.stack-wrapper, .card-base');
+			if (el) el.classList.remove('dragging');
+		}
+		
+		// ── Prevent context menu ──
+		document.addEventListener('contextmenu', e => {
+			if (e.target.closest('.card-base, .stack-wrapper, .stack-card')) {
+				e.preventDefault();
+			}
+		});
+	</script>
+</body>
+</html>

@@ -1,11 +1,11 @@
-Shader "Custom/CardRoundedRect"
+Shader "Custom/CardRoundedRectWorldSpace"
 {
 	Properties
 	{
 		[MainTexture] _MainTex("Sprite Texture", 2D) = "white" {}
 		[MainColor] _Color("Tint", Color) = (1,1,1,1)
-		_CornerRadius("Corner Radius", Range(0, 0.5)) = 0.08
-		_AspectRatio("Aspect Ratio", Float) = 0.7
+		_CornerRadius("Corner Radius", Range(0, 0.5)) = 0.15
+		_MeshHalfSize("Mesh Half Size", Vector) = (0.5, 0.5, 0, 0)
 	}
 
 	SubShader
@@ -47,6 +47,8 @@ Shader "Custom/CardRoundedRect"
 				float4 positionCS : SV_POSITION;
 				float2 uv : TEXCOORD0;
 				float4 color : COLOR;
+				float2 positionRelWS : TEXCOORD1;
+				float2 halfSizeWS : TEXCOORD2;
 			};
 
 			TEXTURE2D(_MainTex);
@@ -56,7 +58,7 @@ Shader "Custom/CardRoundedRect"
 				float4 _MainTex_ST;
 				float4 _Color;
 				float _CornerRadius;
-				float _AspectRatio;
+				float2 _MeshHalfSize;
 			CBUFFER_END
 
 			Varyings vert(Attributes input)
@@ -65,18 +67,28 @@ Shader "Custom/CardRoundedRect"
 				output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
 				output.uv = TRANSFORM_TEX(input.uv, _MainTex);
 				output.color = input.color;
+
+				float3 scale = float3(
+					length(unity_ObjectToWorld._m00_m01_m02),
+					length(unity_ObjectToWorld._m10_m11_m12),
+					length(unity_ObjectToWorld._m20_m21_m22)
+				);
+
+				float3 worldPos = TransformObjectToWorld(input.positionOS.xyz);
+				float3 centerWS = unity_ObjectToWorld._m03_m13_m23;
+
+				output.positionRelWS = worldPos.xy - centerWS.xy;
+				output.halfSizeWS = _MeshHalfSize * scale.xy;
+
 				return output;
 			}
 
-			float RoundedRectAlpha(float2 uv, float radius, float aspect)
+			float RoundedRectAlpha(float2 relPos, float2 halfSize, float radiusRatio)
 			{
-				float2 scale = float2(1.0, aspect);
-				float2 halfSize = scale * 0.5;
-
 				float maxRadius = min(halfSize.x, halfSize.y);
-				radius = min(radius, maxRadius);
+				float radius = radiusRatio * maxRadius;
 
-				float2 absPos = abs((uv - 0.5) * scale);
+				float2 absPos = abs(relPos);
 				float2 q = absPos - halfSize + radius;
 				float d = length(max(q, 0.0)) - radius;
 
@@ -92,7 +104,7 @@ Shader "Custom/CardRoundedRect"
 				half4 texColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
 				half4 finalColor = texColor * input.color * _Color;
 
-				float alpha = RoundedRectAlpha(input.uv, _CornerRadius, _AspectRatio);
+				float alpha = RoundedRectAlpha(input.positionRelWS, input.halfSizeWS, _CornerRadius);
 				finalColor.a *= alpha;
 
 				return finalColor;
