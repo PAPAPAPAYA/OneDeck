@@ -41,8 +41,8 @@
 #endregion
 #region tools
 //! tools
-	// recorder to automatically record deck to enemy decks
-		//todo prd half done, need update
+	//todo recorder to automatically record deck to enemy decks
+		//// D:\Unity Projects\OneDeck\plans\prd-deck-enemy-recorder-2026-05-27.md
 	//// bug Recorder to prevent later fixes undermine former fixes
 	//todo make a summary generator skill?
 	// make a debug skill?
@@ -53,7 +53,6 @@
 //! anything else
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
-	// add space after annotations
 	//// show card tag ---- deathrattle, linger
 	//// cards tweaks
 	//// change rift to not be minion, need to have 1 rift to stage another rift
@@ -68,7 +67,7 @@
 //! refactor
 	//// consider refactor start card to be more like normal cards
 	//// moveToTopPopUpBatch has its own deck-focus restoration logic which is the same to PlayRequestCoroutine
-	// localization stringSO to store chinese translation
+	//todo localization stringSO to store chinese translation
 	//// clean up, since new animation system is complete
 	//// clean up pre effect event
 	// clean up or rather add a switch to toggle debug messages
@@ -99,12 +98,12 @@
 #endregion
 #region feature
 //! feature
-	// a more comprehensive test kit
-		// logic
-			// enemy side
-		// visual
+	//// a more comprehensive test kit
+		//// logic
+			//// enemy side
+		//// visual
 			//// test tracker
-			// test decks
+			//// test decks
 	//// effect chain manager issue
 	//// skill to check infinite card combos
 		//// GiveStatusEffectToXFriendly, GiveStatusEffectToLastXCards, GivePowerToCardThatGotPower
@@ -115,10 +114,13 @@
 	//// rarity
 		//// rarity attibute in card script
 	//// iterate on shop based on rarity
-	// fake shuffle
+	//todo fake shuffle
 #endregion
 #region viscom
 //! viscom
+	//// space after annotation
+	//todo update text after animation, not during logic
+	//// exclusive text area for status effect
 	//// dynamic shadow
 	//// rounded corner
 		//// shader direction currently feels a bit oval, shader direction can't work, shadow won't be correct
@@ -138,14 +140,11 @@
 			//// bury and enhence curse
 		//// staged
 	//todo status effect
-		//todo icon to show status effect
-			// sticker
+		//todo text to show status effect
 		// better power wisp
-			// line
-		// power gain card particle
-			// sticker
+			// dot, no trail
 		// consume effect
-			// sticker
+			// dot
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add
@@ -155,10 +154,10 @@
 		//// add rift
 	//// stage/bury and deck shift should happen at the same time
 		//// rift -> stage another card, staged card should go straight to reveal zone
-	// better card move animatin
+	// better card move animation
 		// change z dynamically
 	// motion design
-		// shake revealed card if cost not met / can't activate
+		//todo shake revealed card if cost not met / can't activate if card in reveal zone
 		//// enlarge card when event triggered
 			//// make status effect related effects to go through animation request system, so that they have emphasize animation
 		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus

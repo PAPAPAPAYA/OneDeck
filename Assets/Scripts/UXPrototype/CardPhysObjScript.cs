@@ -34,6 +34,7 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardPricePrint;
 	public TextMeshPro cardRarityPrint;
 	public TextMeshPro cardTagPrint;
+	public TextMeshPro cardStatusEffectPrint;
 
 	[Header("COLOR")]
 	public Color ownerCardColor;
@@ -223,16 +224,40 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private void UpdateStatusEffectDisplay()
 	{
-		if (cardImRepresenting == null || cardNamePrint == null) return;
+		if (cardImRepresenting == null) return;
 
 		var statusEffectText = CombatInfoDisplayer.me?.ProcessStatusEffectInfo(cardImRepresenting);
-		if (!string.IsNullOrEmpty(statusEffectText))
+
+		if (cardStatusEffectPrint != null)
 		{
-			cardNamePrint.text = "<size=12>" + statusEffectText + "\n</size><b>" + cardImRepresenting.GetDisplayName() + "</b>";
+			if (!string.IsNullOrEmpty(statusEffectText))
+			{
+				cardStatusEffectPrint.gameObject.SetActive(true);
+				cardStatusEffectPrint.text = statusEffectText;
+			}
+			else
+			{
+				cardStatusEffectPrint.gameObject.SetActive(false);
+			}
+		}
+
+		if (cardNamePrint == null) return;
+
+		if (cardStatusEffectPrint != null)
+		{
+			cardNamePrint.text = "<b>" + cardImRepresenting.GetDisplayName() + "</b>";
 		}
 		else
 		{
-			cardNamePrint.text = cardImRepresenting.GetDisplayName();
+			// Fallback for prefabs without cardStatusEffectPrint
+			if (!string.IsNullOrEmpty(statusEffectText))
+			{
+				cardNamePrint.text = "<size=12>" + statusEffectText + "\n</size><b>" + cardImRepresenting.GetDisplayName() + "</b>";
+			}
+			else
+			{
+				cardNamePrint.text = cardImRepresenting.GetDisplayName();
+			}
 		}
 	}
 
@@ -458,6 +483,7 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardCostPrint != null) cardCostPrint.color = textColor;
 		if (cardTagPrint != null) cardTagPrint.color = textColor;
 		if (cardRarityPrint != null) cardRarityPrint.color = textColor;
+		if (cardStatusEffectPrint != null) cardStatusEffectPrint.color = textColor;
 	}
 
 	/// <summary>

@@ -78,8 +78,8 @@ public class CombatInfoDisplayer : MonoBehaviour
 
 	public string ProcessStatusEffectInfo(CardScript card)
 	{
-		var statusEffectInfo = "";
-		
+		var lines = new System.Collections.Generic.List<string>();
+
 		// show revive status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Revive))
 		{
@@ -92,9 +92,9 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			statusEffectInfo += "[" + amount + " Revive]";
+			lines.Add("[" + amount + " Revive]");
 		}
-		
+
 		// show rest status effect
 		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Rest))
 		{
@@ -107,7 +107,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			statusEffectInfo += "[" + amount + " Rest Needed]";
+			lines.Add("[" + amount + " Rest Needed]");
 		}
 
 		// show infected status effect
@@ -122,7 +122,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			statusEffectInfo += "[" + infectedAmount + " Infected]";
+			lines.Add("[" + infectedAmount + " Infected]");
 		}
 
 		// show mana status effect
@@ -137,7 +137,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			statusEffectInfo += "[" + manaAmount + " Mana]";
+			lines.Add("[" + manaAmount + " Mana]");
 		}
 
 		// show heart changed status effect
@@ -152,7 +152,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			statusEffectInfo += "[" + heartChangeAmount + " Heart-Changed]";
+			lines.Add("[" + heartChangeAmount + " Heart-Changed]");
 		}
 
 		// show power status effect
@@ -167,7 +167,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			statusEffectInfo += "[" + powerAmount + " Power]";
+			lines.Add("[" + powerAmount + " Power]");
 		}
 
 		// show counter status effect
@@ -182,15 +182,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 				}
 			}
 
-			statusEffectInfo += "[" + counterAmount + " Counter]";
+			lines.Add("[" + counterAmount + " Counter]");
 		}
 
-		if (card.myStatusEffects.Count > 0)
-		{
-			statusEffectInfo += " ";
-		}
-
-		return statusEffectInfo;
+		return string.Join("\n", lines);
 	}
 
 	private void DisplayStatusInfo()
@@ -211,7 +206,8 @@ public class CombatInfoDisplayer : MonoBehaviour
 			// Skip Start Card
 			if (cardScript.isStartCard) continue;
 			
-			var playerCardString = ProcessStatusEffectInfo(cardScript) + cardScript.GetDisplayName() + "\n";
+			var statusEffectText = ProcessStatusEffectInfo(cardScript).Replace("\n", " ");
+			var playerCardString = statusEffectText + cardScript.GetDisplayName() + "\n";
 			playerDeckString += playerCardString;
 		}
 
@@ -223,7 +219,8 @@ public class CombatInfoDisplayer : MonoBehaviour
 			// Skip Start Card
 			if (cardScript.isStartCard) continue;
 			
-			var enemyCardString = ProcessStatusEffectInfo(cardScript) + cardScript.GetDisplayName() + "\n";
+			var statusEffectText = ProcessStatusEffectInfo(cardScript).Replace("\n", " ");
+			var enemyCardString = statusEffectText + cardScript.GetDisplayName() + "\n";
 			enemyDeckString += enemyCardString;
 		}
 

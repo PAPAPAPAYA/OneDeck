@@ -1,6 +1,6 @@
 # OneDeck — Enemy Deck Recorder Product Requirements Document (PRD)
 
-> **Version:** v1.0  
+> **Version:** v1.1  
 > **Date:** 2026-05-27  
 > **Status:** Draft — Aligned with Existing Codebase
 
@@ -15,7 +15,7 @@ However, there is no bridge between these two systems:
 - DeckSOs are manually authored and static.
 - There is no automated way to **turn a proven player deck (from PlayMode) into a reusable enemy DeckSO asset**.
 
-The Enemy Deck Recorder closes this gap. It sits in the scene as a MonoBehaviour, optionally auto-triggers at combat exit, and produces a new `.asset` file that can be immediately assigned to `CombatManager.enemyDeck` or `DeckSaver.defaultEnemyDecks`.
+The Enemy Deck Recorder closes this gap. It sits in the scene as a MonoBehaviour, auto-triggers when the player exits the Shop and enters Combat, and produces a new `.asset` file that can be immediately assigned to `CombatManager.enemyDeck` or `DeckSaver.defaultEnemyDecks`.
 
 ---
 
@@ -23,7 +23,7 @@ The Enemy Deck Recorder closes this gap. It sits in the scene as a MonoBehaviour
 
 | Goal | Description |
 |---|---|
-| **Auto-capture player deck** | At combat exit (or manual trigger), read the current `playerDeck` GameObject list and persist it. |
+| **Auto-capture player deck** | At Shop → Combat transition (or manual trigger), read the current `playerDeck` and persist it. |
 | **Produce reusable DeckSO assets** | Generate a new `DeckSO` `.asset` file under `Assets/SORefs/Decks/Recorded/` with all card prefabs resolved. |
 | **Stable card matching** | Use `CardScript.cardTypeID` to look up the original prefab from the global card database (same cache used by `DeckSaver`). |
 | **Non-destructive naming** | Each recording gets a unique filename; never overwrites an existing asset silently. |
@@ -39,10 +39,10 @@ The Enemy Deck Recorder closes this gap. It sits in the scene as a MonoBehaviour
 |---|---|---|
 | `DeckSO` | `Assets/Scripts/SOScripts/DeckSO.cs` | `List<GameObject> deck`, `defaultDeck`, `resetOnStart`, `description`. Already a `[CreateAssetMenu]` ScriptableObject. |
 | `CardScript` | `Assets/Scripts/Card/CardScript.cs` | Has `public string cardTypeID` (unique stable ID), `displayName`, `cardDesc`, `rarity`, `shopRollWeightMultiplier`, `takeUpSpace`, `isStartCard`, `isMinion`. |
-| `DeckSaver` | `Assets/Scripts/Managers/WriteRead/DeckSaver.cs` | Singleton. JSON persistence to `Application.persistentDataPath + "/deckdata.json"`. Uses `DeckSaveEntry` (`List<string> cardTypeIDs`). Has `BuildCardDatabaseCache()` via `shopPoolRef` + `additionalCardPrefabs`. |
+| `DeckSaver` | `Assets/Scripts/Managers/WriteRead/DeckSaver.cs` | Singleton. JSON persistence to `Application.persistentDataPath + "/deckdata.json"`. Uses `DeckSaveEntry` (`List<string> cardTypeIDs`). Has `BuildCardDatabaseCache()` via `shopPoolRef` + `additionalCardPrefabs`. Also holds `public DeckSO playerDeck`. |
 | `CardFactory` | `Assets/Scripts/Managers/CardFactory.cs` | Singleton. `CreateLogicalCard()` instantiates prefabs with ownership setup. |
 | `CombatManager` | `Assets/Scripts/Managers/CombatManager.cs` | Singleton. `playerDeck` and `enemyDeck` are both `DeckSO`. `GatherDecks()` iterates `deck` lists and calls `CardFactory` to instantiate. |
-| `PhaseManager` | `Assets/Scripts/Managers/PhaseManager.cs` | Drives Shop → Combat → Result loop. Fires `onExitCombatPhase` UnityEvent when combat ends. |
+| `PhaseManager` | `Assets/Scripts/Managers/PhaseManager.cs` | Drives Shop → Combat → Result loop. Fires `onEnterCombatPhase` UnityEvent when combat begins. |
 | `EffectRecorder` | `Assets/Scripts/Managers/EffectRecorder.cs` | Existing recorder for animation replay. **Unrelated** — this PRD is about deck recording, not effect recording. |
 | `DeckTester` | `Assets/Scripts/Managers/DeckTester.cs` | Auto-battle test harness. Tracks win rates and damage per session. |
 | `CardIDRetriever` | `Assets/Scripts/Managers/CardIDRetriever.cs` | Singleton. Assigns runtime `cardID` integers. Not used for stable identification. |
@@ -73,7 +73,7 @@ The Enemy Deck Recorder closes this gap. It sits in the scene as a MonoBehaviour
                         (bridges both systems)
 ```
 
-The Recorder reads from the **live `playerDeck`** (`DeckSO` with `List<GameObject>`) and produces a **new `DeckSO` asset** containing the same card prefabs, ready for reuse as an enemy deck.
+The Recorder reads from the **live `playerDeck`** (`DeckSO` with `List<GameObject>`) at the moment the player leaves Shop and enters Combat, and produces a **new `DeckSO` asset** containing the same card prefabs, ready for reuse as an enemy deck.
 
 ---
 
@@ -122,7 +122,7 @@ public class CardScript : MonoBehaviour
 1. `shopPoolRef.deck` (primary source)
 2. `additionalCardPrefabs` (overflow / non-shop cards)
 
-The Recorder **must reuse this same cache** (or build an identical one) to ensure card prefab resolution is consistent with the save/load system.
+The Recorder **reuses this same cache** via a new public getter on `DeckSaver` so that card prefab resolution is consistent with the save/load system and requires no duplicate configuration.
 
 ---
 
@@ -135,7 +135,7 @@ The Recorder **must reuse this same cache** (or build an identical one) to ensur
 | **Script Name** | `EnemyDeckRecorder` |
 | **Type** | `MonoBehaviour` |
 | **Namespace** | `TestWriteRead` (same as `DeckSaver` and `DeckData`) |
-| **Lifecycle** | Editor-only `#if UNITY_EDITOR` wrapper for asset creation; runtime portion is harmless in builds. |
+| **Lifecycle** | Editor-only `#if UNITY_EDITOR` wrapper for asset creation; runtime portion is a plain MonoBehaviour and safe in builds. |
 | **Location** | Attach to any scene GameObject (suggested: same object as `DeckSaver` or a dedicated "Tools" object). |
 
 ### 5.2 Inspector Interface
@@ -143,14 +143,10 @@ The Recorder **must reuse this same cache** (or build an identical one) to ensur
 ```
 Enemy Deck Recorder (Script)
 ─────────────────────────────
-[✓] Enable Auto Record              ← bool, triggers automatically on combat exit
+[✓] Enable Auto Record              ← bool, triggers automatically on Shop → Combat transition
 
-Source Deck
-  [PlayerDeckRef (DeckSO)________]  ← drag player DeckSO here
-
-Card Database
-  [ShopPoolRef (DeckSO)____________]  ← same as DeckSaver.shopPoolRef
-  [Additional Cards (GameObject[])_]  ← same as DeckSaver.additionalCardPrefabs
+Phase Manager
+  [PhaseManager (PhaseManager)____]  ← drag PhaseManager here
 
 Output Settings
   Output Folder   [SORefs/Decks/Recorded/]  ← relative to Assets/
@@ -159,11 +155,13 @@ Output Settings
 
 Advanced
   [✓] Append Session Number             ← include sessionNum in filename
-  [ ] Include Win/Loss in Description   ← auto-fill DeckSO.description
+  [ ] Include Combat Result in Description   ← auto-fill DeckSO.description with win/loss
 
 ─────────────────────────────
 [ Record Now ]  ← manual button (Editor-only)
 ```
+
+> **Note:** `Source Deck` and `Card Database` fields have been removed. The Recorder reads directly from `DeckSaver.Me.playerDeck` and resolves prefabs through `DeckSaver.Me.GetCardPrefabByTypeID()`.
 
 ### 5.3 Execution Flow — Auto Mode
 
@@ -171,22 +169,28 @@ Advanced
 [Enable Auto Record = true]
          │
          ▼
-[Combat Ends] ← PhaseManager.ExitingCombatPhase() / combatFinished = true
+[Shop Phase Ends] ← Player presses Space / autoSpace
          │
          ▼
-[EnemyDeckRecorder.OnCombatExit()] ← subscribed to PhaseManager.onExitCombatPhase
+[PhaseManager.ExitingShopPhase()]
+         │
+         ▼
+[PhaseManager.EnteringCombatPhase()]
+         │
+         ▼
+[EnemyDeckRecorder.OnCombatEnter()] ← subscribed to PhaseManager.onEnterCombatPhase
          │
          ▼
 [Validate]
-    ├──▶ sourcePlayerDeck != null
-    ├──▶ sourcePlayerDeck.deck.Count > 0
-    └──▶ (Optional) combatResult == Win → only record winning decks
+    ├──▶ DeckSaver.Me != null
+    ├──▶ DeckSaver.Me.playerDeck != null
+    └──▶ DeckSaver.Me.playerDeck.deck.Count > 0
          │
          ▼
 [Resolve Cards]
-    ├──▶ Iterate sourcePlayerDeck.deck (List<GameObject>)
-    │         ├──▶ For each cardInstance, read CardScript.cardTypeID
-    │         ├──▶ Look up original prefab in card database cache
+    ├──▶ Iterate DeckSaver.Me.playerDeck.deck (List<GameObject>)
+    │         ├──▶ For each card prefab, read CardScript.cardTypeID
+    │         ├──▶ Look up original prefab via DeckSaver.Me.GetCardPrefabByTypeID()
     │         └──▶ Add prefab to resolvedPrefabs list
     │
     └──▶ If any cardTypeID cannot be resolved:
@@ -198,7 +202,7 @@ Advanced
     ├──▶ ScriptableObject.CreateInstance<DeckSO>()
     ├──▶ deckSO.deck = resolvedPrefabs (List<GameObject>)
     ├──▶ deckSO.description = auto-generated text
-    │         e.g. "Recorded from player deck after session {N}. {W} wins."
+    │         e.g. "Recorded from player deck before session {N}."
     ├──▶ Ensure directory: Assets/{outputFolder}/
     ├──▶ string assetPath = $"Assets/{outputFolder}/{filename}.asset"
     ├──▶ Resolve naming collision:
@@ -217,6 +221,13 @@ Advanced
               DeckSaver.Me.defaultEnemyDecks.Add(deckSO)
 ```
 
+**Timing note:** `onEnterCombatPhase` fires **before** `CombatManager.GatherDecks()` executes. At this moment:
+- `playerDeck.deck` has been fully updated by the Shop phase.
+- Cards have not yet been instantiated into `combinedDeckZone`.
+- Start Card has not been injected yet.
+
+This is the ideal snapshot point.
+
 ### 5.4 Execution Flow — Manual Mode (Editor)
 
 ```
@@ -225,7 +236,7 @@ Advanced
          ▼
 [EnemyDeckRecorder.RecordNow()]
     ├──▶ Same validation + resolve + create logic as Auto Mode
-    └──▶ Does NOT require PlayMode — can record from any assigned source deck
+    └──▶ Reads from DeckSaver.Me.playerDeck at that moment
 ```
 
 ### 5.5 Naming Collision Resolution
@@ -261,8 +272,8 @@ Assets/
         └── Recorded/               ← new: auto-generated from player decks
             ├── RecordedDeck_20260527_143022.asset
             ├── RecordedDeck_20260527_143022_1.asset
-            ├── RecordedDeck_Session5_Win_20260528_090015.asset
-            └── RecordedDeck_Session12_Win_20260529_213045.asset
+            ├── RecordedDeck_Session0_20260528_090015.asset
+            └── RecordedDeck_Session5_20260529_213045.asset
 ```
 
 ---
@@ -283,13 +294,9 @@ Assets/
 
 ### 6.3 ✅ Card Database Source
 
-**Decision:** Reuse `DeckSaver`'s card database building logic.
+**Decision:** Reuse `DeckSaver`'s card database building logic via a public getter.
 
-**Rationale:** `DeckSaver` already has the canonical `BuildCardDatabaseCache()` method that reads from `shopPoolRef` + `additionalCardPrefabs`. The Recorder should either:
-- **Option A (Recommended):** Call `DeckSaver.Me._cardTypeToPrefabCache` directly (if accessible) or expose a public getter.
-- **Option B:** Duplicate the cache-building logic internally, using the same Inspector fields (`shopPoolRef`, `additionalCardPrefabs`).
-
-**Recommended:** Option A — add a public `GetCardPrefab(string cardTypeID)` method to `DeckSaver` so the Recorder can share the cache without duplicating configuration.
+**Rationale:** `DeckSaver` already has the canonical `BuildCardDatabaseCache()` method that reads from `shopPoolRef` + `additionalCardPrefabs`. The Recorder delegates all prefab lookups to `DeckSaver.Me.GetCardPrefabByTypeID(string)` so it shares the cache without duplicating configuration.
 
 ### 6.4 ✅ Enemy Deck Assignment
 
@@ -308,6 +315,8 @@ Assets/
 
 **Implementation:** During resolution, skip any card where `cardScript.isStartCard == true`.
 
+> **Note:** When recording from `playerDeck.deck` at `onEnterCombatPhase`, Start Card is not present yet (injected later by `GatherDecks()`). The filter is retained as future-proofing.
+
 ### 6.6 ✅ Status Effects / Runtime State
 
 **Decision:** Record only the **card prefab** (base type). Do NOT persist runtime state (applied status effects, modified HP, etc.).
@@ -322,27 +331,25 @@ Assets/
 
 1. Create an empty GameObject in the scene: `EnemyDeckRecorder`.
 2. Attach `EnemyDeckRecorder.cs`.
-3. Drag `PlayerDeckRef` (or the active player `DeckSO`) into **Source Deck**.
-4. Drag `ShopPoolRef` into **Card Database → Shop Pool Ref**.
-5. (Optional) Add any non-shop card prefabs to **Additional Cards**.
-6. Set **Output Folder** to `SORefs/Decks/Recorded` (or your preference).
-7. Set **Naming Prefix** to `RecordedDeck_`.
-8. (Optional) Check **Enable Auto Record** for hands-free capture.
+3. Drag `PhaseManager` into **Phase Manager** field.
+4. Set **Output Folder** to `SORefs/Decks/Recorded` (or your preference).
+5. Set **Naming Prefix** to `RecordedDeck_`.
+6. (Optional) Check **Enable Auto Record** for hands-free capture.
 
 ### 7.2 Per-Session Auto-Capture Workflow
 
-1. Enter PlayMode. Fight a combat session.
-2. Combat ends → `PhaseManager` fires `onExitCombatPhase`.
-3. `EnemyDeckRecorder` auto-triggers (if enabled).
-4. A new `.asset` appears in `Assets/SORefs/Decks/Recorded/`.
-5. (Optional) Drag the new asset into `CombatManager.enemyDeck` for the next fight.
-6. (Optional) Add it to `DeckSaver.defaultEnemyDecks` for session-based auto-loading.
+1. Enter PlayMode. Buy cards in Shop.
+2. Press Space (or auto-trigger) to enter Combat.
+3. `PhaseManager` fires `onEnterCombatPhase`.
+4. `EnemyDeckRecorder` auto-triggers (if enabled).
+5. A new `.asset` appears in `Assets/SORefs/Decks/Recorded/`.
+6. (Optional) Drag the new asset into `CombatManager.enemyDeck` for the next fight.
+7. (Optional) Add it to `DeckSaver.defaultEnemyDecks` for session-based auto-loading.
 
 ### 7.3 Manual Capture Workflow (Designer)
 
 1. In Edit Mode (no need to enter PlayMode):
-   - Configure a test player deck in a `DeckSO` asset.
-   - Drag it into `EnemyDeckRecorder` → **Source Deck**.
+   - Configure a test player deck in the `DeckSO` assigned to `DeckSaver.playerDeck`.
 2. Click **Record Now** in the Inspector.
 3. New `.asset` is created immediately.
 4. Use this asset for balancing tests in `DeckTester`.
@@ -354,7 +361,7 @@ Assets/
 | Item | Requirement |
 |---|---|
 | **Platform** | Editor asset-creation is `#if UNITY_EDITOR` guarded. Runtime portion is a plain MonoBehaviour and safe in builds. |
-| **Dependencies** | `UnityEditor` namespace (for `AssetDatabase`, `EditorUtility`). No external packages. |
+| **Dependencies** | `UnityEditor` namespace (for `AssetDatabase`, `EditorUtility`). No external packages. Depends on `DeckSaver` singleton being present in the scene. |
 | **Performance** | Asset creation is a one-time, low-frequency operation. Uses `AssetDatabase.CreateAsset()` — no runtime impact. |
 | **Compatibility** | Unity 6000.0.62f1, URP, Input System. No conflicts with `CombatUXManager`, `EffectChainManager`, or `RecorderAnimationPlayer`. |
 | **Version Control** | Output folder `Assets/SORefs/Decks/Recorded/` should be Git-tracked. `.asset` files are YAML text and merge-friendly. |
@@ -383,22 +390,12 @@ namespace TestWriteRead
     public class EnemyDeckRecorder : MonoBehaviour
     {
         [Header("Auto Record")]
-        [Tooltip("Automatically record player deck when combat exits")]
+        [Tooltip("Automatically record player deck when entering Combat phase")]
         public bool enableAutoRecord = false;
 
-        [Tooltip("Only record if player won the combat")]
-        public bool recordOnlyOnWin = false;
-
-        [Header("Source")]
-        [Tooltip("Player deck to record from")]
-        public DeckSO sourcePlayerDeck;
-
-        [Header("Card Database")]
-        [Tooltip("Shop pool — primary card database source")]
-        public DeckSO shopPoolRef;
-
-        [Tooltip("Additional card prefabs not in shop pool")]
-        public List<GameObject> additionalCardPrefabs;
+        [Header("Events")]
+        [Tooltip("PhaseManager that fires onEnterCombatPhase")]
+        public PhaseManager phaseManager;
 
         [Header("Output")]
         [Tooltip("Output folder relative to Assets/")]
@@ -413,46 +410,31 @@ namespace TestWriteRead
         [Tooltip("Append session number to filename")]
         public bool appendSessionNumber = true;
 
-        [Tooltip("Include win/loss info in DeckSO description")]
+        [Tooltip("Include session info in DeckSO description")]
         public bool includeResultInDescription = true;
-
-        // Internal cache
-        private Dictionary<string, GameObject> _cardTypeToPrefabCache;
 
         private void OnEnable()
         {
-            // Subscribe to combat exit if PhaseManager exposes the event
-            var phaseManager = FindObjectOfType<PhaseManager>();
             if (phaseManager != null)
             {
-                phaseManager.onExitCombatPhase.AddListener(OnCombatExit);
+                phaseManager.onEnterCombatPhase.AddListener(OnCombatEnter);
             }
         }
 
         private void OnDisable()
         {
-            var phaseManager = FindObjectOfType<PhaseManager>();
             if (phaseManager != null)
             {
-                phaseManager.onExitCombatPhase.RemoveListener(OnCombatExit);
+                phaseManager.onEnterCombatPhase.RemoveListener(OnCombatEnter);
             }
         }
 
         /// <summary>
-        /// Called automatically when combat exits (if subscribed to PhaseManager event)
+        /// Called automatically when entering Combat phase (if subscribed to PhaseManager event)
         /// </summary>
-        private void OnCombatExit()
+        private void OnCombatEnter()
         {
             if (!enableAutoRecord) return;
-
-            // Optional: check win condition
-            if (recordOnlyOnWin)
-            {
-                var combatManager = CombatManager.Me;
-                if (combatManager == null || combatManager.ownerPlayerStatusRef.hp <= 0)
-                    return; // Player lost — skip recording
-            }
-
             RecordDeck();
         }
 
@@ -461,28 +443,34 @@ namespace TestWriteRead
         /// </summary>
         public void RecordDeck()
         {
-            if (sourcePlayerDeck == null)
+            var deckSaver = DeckSaver.Me;
+            if (deckSaver == null)
             {
-                Debug.LogWarning("[EnemyDeckRecorder] Source player deck is null.");
+                Debug.LogWarning("[EnemyDeckRecorder] DeckSaver singleton is null.");
                 return;
             }
 
-            if (sourcePlayerDeck.deck == null || sourcePlayerDeck.deck.Count == 0)
+            var sourceDeck = deckSaver.playerDeck;
+            if (sourceDeck == null)
             {
-                Debug.LogWarning("[EnemyDeckRecorder] Source player deck is empty.");
+                Debug.LogWarning("[EnemyDeckRecorder] DeckSaver.playerDeck is null.");
                 return;
             }
 
-            BuildCardDatabaseCache();
+            if (sourceDeck.deck == null || sourceDeck.deck.Count == 0)
+            {
+                Debug.LogWarning("[EnemyDeckRecorder] Player deck is empty.");
+                return;
+            }
 
             var resolvedPrefabs = new List<GameObject>();
             var missingCards = new List<string>();
 
-            foreach (var cardInstance in sourcePlayerDeck.deck)
+            foreach (var cardPrefab in sourceDeck.deck)
             {
-                if (cardInstance == null) continue;
+                if (cardPrefab == null) continue;
 
-                var cardScript = cardInstance.GetComponent<CardScript>();
+                var cardScript = cardPrefab.GetComponent<CardScript>();
                 if (cardScript == null) continue;
 
                 // Skip Start Card — it's auto-added by CombatManager
@@ -491,11 +479,11 @@ namespace TestWriteRead
                 string typeID = GetCardTypeID(cardScript);
                 if (string.IsNullOrEmpty(typeID))
                 {
-                    missingCards.Add(cardInstance.name);
+                    missingCards.Add(cardPrefab.name);
                     continue;
                 }
 
-                var prefab = FindCardPrefabByTypeID(typeID);
+                var prefab = deckSaver.GetCardPrefabByTypeID(typeID);
                 if (prefab != null)
                 {
                     resolvedPrefabs.Add(prefab);
@@ -525,57 +513,12 @@ namespace TestWriteRead
 #endif
         }
 
-        #region Card Database Cache
-
-        private void BuildCardDatabaseCache()
-        {
-            _cardTypeToPrefabCache = new Dictionary<string, GameObject>();
-
-            if (shopPoolRef != null && shopPoolRef.deck != null)
-            {
-                foreach (var prefab in shopPoolRef.deck)
-                    AddCardToCache(prefab);
-            }
-
-            if (additionalCardPrefabs != null)
-            {
-                foreach (var prefab in additionalCardPrefabs)
-                    AddCardToCache(prefab);
-            }
-        }
-
-        private void AddCardToCache(GameObject prefab)
-        {
-            if (prefab == null) return;
-            var cardScript = prefab.GetComponent<CardScript>();
-            if (cardScript == null) return;
-
-            string typeID = GetCardTypeID(cardScript);
-            if (string.IsNullOrEmpty(typeID)) return;
-
-            if (_cardTypeToPrefabCache.ContainsKey(typeID))
-                return; // Skip duplicates silently
-
-            _cardTypeToPrefabCache[typeID] = prefab;
-        }
-
         private string GetCardTypeID(CardScript cardScript)
         {
             if (!string.IsNullOrEmpty(cardScript.cardTypeID))
                 return cardScript.cardTypeID;
             return cardScript.name;
         }
-
-        private GameObject FindCardPrefabByTypeID(string cardTypeID)
-        {
-            if (_cardTypeToPrefabCache == null || _cardTypeToPrefabCache.Count == 0)
-                BuildCardDatabaseCache();
-
-            _cardTypeToPrefabCache.TryGetValue(cardTypeID, out var prefab);
-            return prefab;
-        }
-
-        #endregion
 
 #if UNITY_EDITOR
 
@@ -609,7 +552,7 @@ namespace TestWriteRead
 
             if (appendSessionNumber)
             {
-                var sessionRef = FindObjectOfType<PhaseManager>()?.sessionNum;
+                var sessionRef = phaseManager != null ? phaseManager.sessionNum : null;
                 int sessionNum = sessionRef != null ? sessionRef.value : 0;
                 parts.Add($"Session{sessionNum}_");
             }
@@ -634,12 +577,9 @@ namespace TestWriteRead
 
             if (includeResultInDescription)
             {
-                var combatManager = CombatManager.Me;
-                if (combatManager != null)
-                {
-                    bool playerWon = combatManager.ownerPlayerStatusRef.hp > 0;
-                    lines.Add($"Result: {(playerWon ? "WIN" : "LOSE")}");
-                }
+                var sessionRef = phaseManager != null ? phaseManager.sessionNum : null;
+                int sessionNum = sessionRef != null ? sessionRef.value : 0;
+                lines.Add($"Session: {sessionNum}");
             }
 
             return string.Join("\n", lines);
@@ -671,7 +611,7 @@ namespace TestWriteRead
 }
 ```
 
-### 9.2 Optional: DeckSaver Extension
+### 9.2 Required: DeckSaver Extension
 
 Add a public getter to `DeckSaver` so `EnemyDeckRecorder` can reuse its cache:
 
@@ -687,22 +627,22 @@ public GameObject GetCardPrefabByTypeID(string cardTypeID)
 }
 ```
 
-If this is added, `EnemyDeckRecorder` can skip building its own cache and simply call `DeckSaver.Me?.GetCardPrefabByTypeID(typeID)`.
+With this method, `EnemyDeckRecorder` does not need its own `shopPoolRef` or `additionalCardPrefabs` fields.
 
 ---
 
 ## 10. Next Steps
 
-1. **Confirm approach:** Does the user want the standalone `EnemyDeckRecorder` (with its own cache), or a tighter integration where it delegates to `DeckSaver`?
+1. **Implement `DeckSaver.GetCardPrefabByTypeID()`** — add the public getter to `DeckSaver.cs`.
 2. **Implement `EnemyDeckRecorder.cs`** — place in `Assets/Scripts/Managers/WriteRead/` alongside `DeckSaver` and `DeckData`.
-3. **(Optional) Extend `DeckSaver`** — add `GetCardPrefabByTypeID()` public method.
-4. **Create output folder** — `Assets/SORefs/Decks/Recorded/`.
-5. **Add to scene** — attach `EnemyDeckRecorder` to the same GameObject as `DeckSaver` (or a dedicated tools object).
-6. **Wire events** — ensure `PhaseManager.onExitCombatPhase` fires (it already does via `ExitingCombatPhase()` → `InvokeExitCombatPhaseEvent()`).
-7. **Test:** Enter PlayMode → fight → exit combat → verify new `.asset` is created → assign to `CombatManager.enemyDeck` → verify next combat uses the recorded deck.
-8. **Update `DeckSaver`** documentation / in-game tooltip to mention the new Recorder workflow.
+3. **Create output folder** — `Assets/SORefs/Decks/Recorded/`.
+4. **Add to scene** — attach `EnemyDeckRecorder` to the same GameObject as `DeckSaver` (or a dedicated tools object). Drag `PhaseManager` into the Inspector field.
+5. **Wire events** — ensure `PhaseManager.onEnterCombatPhase` fires (it already does via `EnteringCombatPhase()` → `InvokeEnterCombatPhaseEvent()`).
+6. **Test:** Enter PlayMode → buy cards in Shop → press Space to enter Combat → verify new `.asset` is created → assign to `CombatManager.enemyDeck` → verify next combat uses the recorded deck.
+7. **Update documentation** — mention the new Recorder workflow in relevant docs.
 
 ---
 
 *Document generated: 2026-05-27*  
+*Updated: 2026-05-31*  
 *Aligned with: OneDeck Unity Project at `D:\Unity Projects\OneDeck`*

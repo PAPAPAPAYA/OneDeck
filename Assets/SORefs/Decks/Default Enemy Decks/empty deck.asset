@@ -10,11 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: PlayerDeckRef
+  m_Name: empty deck
   m_EditorClassIdentifier: 
-  deck:
-  - {fileID: 8718476725744197808, guid: 6333ce53aeedc944b82b0788c3921ccc, type: 3}
-  - {fileID: 8718476725744197808, guid: 6df20aaf8a054834fbe68a5dd7e5af4d, type: 3}
-  defaultDeck: {fileID: 11400000, guid: 211927a806b55724180a8e7e6cb21007, type: 2}
-  resetOnStart: 1
-  description: player's deck, data only no instances
+  deck: []
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: 
