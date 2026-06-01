@@ -48,13 +48,53 @@ public class CardScript : MonoBehaviour
 	public PlayerStatusSO theirStatusRef;
 	[Header("Status Effects")]
 	public List<EnumStorage.StatusEffect> myStatusEffects;
+	public List<EnumStorage.StatusEffect> displayMyStatusEffects;
+	private bool _hasDisplaySnapshot = false;
 	[Header("Tags")]
 	public List<EnumStorage.Tag> myTags;
 
+	/// <summary>
+	/// Capture a snapshot of current myStatusEffects for display purposes.
+	/// Once snapped, GetStatusEffectsForDisplay() returns the snapshotted list
+	/// until CommitDisplayState() is called (typically after animation completes).
+	/// </summary>
+	public void SnapshotDisplayState()
+	{
+		if (_hasDisplaySnapshot) return;
+		if (displayMyStatusEffects == null)
+			displayMyStatusEffects = new List<EnumStorage.StatusEffect>();
+		displayMyStatusEffects.Clear();
+		displayMyStatusEffects.AddRange(myStatusEffects);
+		_hasDisplaySnapshot = true;
+	}
 
+	/// <summary>
+	/// Commit the display state to match the current myStatusEffects.
+	/// Called after StatusEffectChange animation completes.
+	/// </summary>
+	public void CommitDisplayState()
+	{
+		if (displayMyStatusEffects == null)
+			displayMyStatusEffects = new List<EnumStorage.StatusEffect>();
+		displayMyStatusEffects.Clear();
+		displayMyStatusEffects.AddRange(myStatusEffects);
+		_hasDisplaySnapshot = false;
+	}
+
+	/// <summary>
+	/// Returns the status effects list that should be used for visual display.
+	/// If a display snapshot is active (during animation), returns the snapshot;
+	/// otherwise returns the live myStatusEffects list.
+	/// </summary>
+	public List<EnumStorage.StatusEffect> GetStatusEffectsForDisplay()
+	{
+		return _hasDisplaySnapshot ? displayMyStatusEffects : myStatusEffects;
+	}
 
 	private void OnEnable()
 	{
 		cardID = CardIDRetriever.Me.RetrieveCardID();
+		if (displayMyStatusEffects == null)
+			displayMyStatusEffects = new List<EnumStorage.StatusEffect>();
 	}
 }

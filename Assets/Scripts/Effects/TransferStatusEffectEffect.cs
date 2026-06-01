@@ -167,6 +167,11 @@ namespace DefaultNamespace.Effects
 			// Remove 1 status effect layer from each source card
 			foreach (var card in sourceCards)
 			{
+				// Snapshot display state before mutating so card text updates are deferred until animation completes
+				if (hasRecorder)
+				{
+					card.SnapshotDisplayState();
+				}
 				for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
 				{
 					if (card.myStatusEffects[i] == statusEffectToTransfer)
@@ -312,6 +317,13 @@ namespace DefaultNamespace.Effects
 			foreach (var card in sourceCards)
 			{
 				int removedCount = 0;
+				// Snapshot display state before mutating so card text updates are deferred until animation completes
+				var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+				var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+				if (recorder != null && RecorderAnimationPlayer.me != null)
+				{
+					card.SnapshotDisplayState();
+				}
 				for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
 				{
 					if (card.myStatusEffects[i] == statusEffectToTransfer)

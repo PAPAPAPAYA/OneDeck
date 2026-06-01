@@ -119,7 +119,7 @@
 #region viscom
 //! viscom
 	//// space after annotation
-	//todo update text after animation, not during logic
+	//// update text after animation, not during logic
 	//// exclusive text area for status effect
 	//// dynamic shadow
 	//// rounded corner

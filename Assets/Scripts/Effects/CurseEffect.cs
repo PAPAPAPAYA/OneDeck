@@ -398,6 +398,14 @@ namespace DefaultNamespace.Effects
 				int removeFromThisCard = Mathf.Min(cardPowerCount, amountToRemove);
 				int removedFromThisCard = 0;
 
+				// Snapshot display state before mutating so card text updates are deferred until animation completes
+				var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+				var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+				if (recorder != null && RecorderAnimationPlayer.me != null)
+				{
+					card.SnapshotDisplayState();
+				}
+
 				for (int i = card.myStatusEffects.Count - 1; i >= 0 && removeFromThisCard > 0; i--)
 				{
 					if (card.myStatusEffects[i] == EnumStorage.StatusEffect.Power)

@@ -49,5 +49,12 @@ namespace DefaultNamespace
 		public ParticleSystem statusEffectParticlePrefab;
 		public float statusEffectParticleYOffset;
 		public GameObject sourceCard; // Used for Shuffle request (Start Card instance)
+
+		/// <summary>
+		/// When true, StatusEffectChange will not commit the display state immediately.
+		/// Instead, the display state will be committed after the corresponding
+		/// StatusEffectProjectile animation completes (for targets that have a projectile).
+		/// </summary>
+		public bool deferDisplayCommit = false;
 	}
 }

@@ -226,7 +226,8 @@ public class CardPhysObjScript : MonoBehaviour
 	{
 		if (cardImRepresenting == null) return;
 
-		var statusEffectText = CombatInfoDisplayer.me?.ProcessStatusEffectInfo(cardImRepresenting);
+		var statusEffectsForDisplay = cardImRepresenting.GetStatusEffectsForDisplay();
+		var statusEffectText = CombatInfoDisplayer.me?.ProcessStatusEffectInfo(statusEffectsForDisplay);
 
 		if (cardStatusEffectPrint != null)
 		{

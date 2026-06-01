@@ -59,6 +59,10 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			// Debug.Log("[RecorderAnimationPlayer] Skipping emphasize: requests=" + recorder.animationRequests.Count + " card=" + cardName);
 		}
 
+		// Pre-scan to mark StatusEffectChange requests that should defer display commit
+		// until their corresponding StatusEffectProjectile animation completes
+		MarkDeferredDisplayCommits(recorder);
+
 		// Play all requests of this effect instance sequentially
 		foreach (var request in recorder.animationRequests)
 		{
@@ -115,6 +119,45 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		});
 
 		yield return new WaitUntil(() => done);
+	}
+
+	/// <summary>
+	/// Pre-scan a recorder's animation requests to mark StatusEffectChange requests
+	/// that should defer their display commit until the corresponding
+	/// StatusEffectProjectile animation completes.
+	/// </summary>
+	private void MarkDeferredDisplayCommits(EffectRecorder recorder)
+	{
+		if (recorder == null || recorder.animationRequests == null) return;
+
+		// Collect all targets that will receive a StatusEffectProjectile in this recorder
+		var projectileTargets = new HashSet<GameObject>();
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req == null || req.type != AnimationRequestType.StatusEffectProjectile) continue;
+			if (req.targetCard != null)
+				projectileTargets.Add(req.targetCard);
+			if (req.targetCards != null)
+			{
+				foreach (var t in req.targetCards)
+				{
+					if (t != null)
+						projectileTargets.Add(t);
+				}
+			}
+		}
+
+		if (projectileTargets.Count == 0) return;
+
+		// Mark StatusEffectChange requests whose target will receive a projectile
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req == null || req.type != AnimationRequestType.StatusEffectChange) continue;
+			if (req.targetCard != null && projectileTargets.Contains(req.targetCard))
+			{
+				req.deferDisplayCommit = true;
+			}
+		}
 	}
 
 	public IEnumerator PlayRequestCoroutine(AnimationRequest request)
@@ -339,6 +382,11 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					visuals.ApplyStatusTint(targetCardScript, request.statusEffect);
 				}
 
+				if (!request.deferDisplayCommit)
+				{
+					targetCardScript.CommitDisplayState();
+				}
+
 				request.onComplete?.Invoke();
 				break;
 			}
@@ -373,6 +421,16 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					onAllComplete: () => { done = true; }
 				);
 				yield return new WaitUntil(() => done);
+
+				// After projectile completes, commit display state for all targets
+				// (for targets whose StatusEffectChange was deferred)
+				foreach (var targetCardScript in targetCardScripts)
+				{
+					if (targetCardScript != null)
+					{
+						targetCardScript.CommitDisplayState();
+					}
+				}
 				break;
 			}
 			case AnimationRequestType.PopUp:

@@ -84,6 +84,14 @@ public class EffectScript : MonoBehaviour
 			}
 		}
 
+		// Snapshot display state before mutating so card text updates are deferred until animation completes
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null && RecorderAnimationPlayer.me != null)
+		{
+			targetCardScript.SnapshotDisplayState();
+		}
+
 		for (int i = 0; i < amount; i++)
 		{
 			targetCardScript.myStatusEffects.Add(effect);
@@ -100,8 +108,8 @@ public class EffectScript : MonoBehaviour
 		}
 
 		// Capture status effect change into AnimationRequest when recorder system is available
-		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
-		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		if (recorder != null)
 		{
 			UnityEngine.Debug.Log("[ApplyStatusEffectCore] Capturing StatusEffectChange for " + targetCardScript?.name + ". Recorder has " + recorder.animationRequests.Count + " requests before add.");

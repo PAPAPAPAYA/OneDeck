@@ -11,6 +11,13 @@ namespace DefaultNamespace.Effects
 		{
 			// first check if amount is met
 			if (!EnumStorage.DoesListContainAmountOfStatusEffect(myCardScript.myStatusEffects, amount, statusEffectToConsume)) return;
+			// Snapshot display state before mutating so card text updates are deferred until animation completes
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null && RecorderAnimationPlayer.me != null)
+			{
+				myCardScript.SnapshotDisplayState();
+			}
 			// then remove status effect
 			var amountRemoved = 0;
 			for (var i = myCardScript.myStatusEffects.Count - 1; i >= 0; i--)
@@ -65,6 +72,13 @@ namespace DefaultNamespace.Effects
 			for (var i = 0; i < targetCount; i++)
 			{
 				var targetCard = eligibleCards[i];
+				// Snapshot display state before mutating so card text updates are deferred until animation completes
+				var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+				var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+				if (recorder != null && RecorderAnimationPlayer.me != null)
+				{
+					targetCard.SnapshotDisplayState();
+				}
 				targetCard.myStatusEffects.Remove(statusEffectToConsume);
 				CapturePopUpStatusEffectChangeSlotIn(targetCard.gameObject, statusEffectToConsume, -1);
 			}

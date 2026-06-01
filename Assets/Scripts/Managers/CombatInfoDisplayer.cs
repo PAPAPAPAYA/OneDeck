@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
@@ -78,15 +79,20 @@ public class CombatInfoDisplayer : MonoBehaviour
 
 	public string ProcessStatusEffectInfo(CardScript card)
 	{
+		return ProcessStatusEffectInfo(card.myStatusEffects);
+	}
+
+	public string ProcessStatusEffectInfo(List<EnumStorage.StatusEffect> statusEffects)
+	{
 		var lines = new System.Collections.Generic.List<string>();
 
 		// show revive status effect
-		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Revive))
+		if (statusEffects.Contains(EnumStorage.StatusEffect.Revive))
 		{
 			var amount = 0;
-			foreach (var myTag in card.myStatusEffects)
+			foreach (var effect in statusEffects)
 			{
-				if (myTag == EnumStorage.StatusEffect.Revive)
+				if (effect == EnumStorage.StatusEffect.Revive)
 				{
 					amount++;
 				}
@@ -96,12 +102,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show rest status effect
-		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Rest))
+		if (statusEffects.Contains(EnumStorage.StatusEffect.Rest))
 		{
 			var amount = 0;
-			foreach (var myTag in card.myStatusEffects)
+			foreach (var effect in statusEffects)
 			{
-				if (myTag == EnumStorage.StatusEffect.Rest)
+				if (effect == EnumStorage.StatusEffect.Rest)
 				{
 					amount++;
 				}
@@ -111,12 +117,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show infected status effect
-		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Infected))
+		if (statusEffects.Contains(EnumStorage.StatusEffect.Infected))
 		{
 			var infectedAmount = 0;
-			foreach (var myTag in card.myStatusEffects)
+			foreach (var effect in statusEffects)
 			{
-				if (myTag == EnumStorage.StatusEffect.Infected)
+				if (effect == EnumStorage.StatusEffect.Infected)
 				{
 					infectedAmount++;
 				}
@@ -126,12 +132,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show mana status effect
-		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Mana))
+		if (statusEffects.Contains(EnumStorage.StatusEffect.Mana))
 		{
 			var manaAmount = 0;
-			foreach (var myTag in card.myStatusEffects)
+			foreach (var effect in statusEffects)
 			{
-				if (myTag == EnumStorage.StatusEffect.Mana)
+				if (effect == EnumStorage.StatusEffect.Mana)
 				{
 					manaAmount++;
 				}
@@ -141,12 +147,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show heart changed status effect
-		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.HeartChanged))
+		if (statusEffects.Contains(EnumStorage.StatusEffect.HeartChanged))
 		{
 			var heartChangeAmount = 0;
-			foreach (var myTag in card.myStatusEffects)
+			foreach (var effect in statusEffects)
 			{
-				if (myTag == EnumStorage.StatusEffect.HeartChanged)
+				if (effect == EnumStorage.StatusEffect.HeartChanged)
 				{
 					heartChangeAmount++;
 				}
@@ -156,12 +162,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show power status effect
-		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Power))
+		if (statusEffects.Contains(EnumStorage.StatusEffect.Power))
 		{
 			var powerAmount = 0;
-			foreach (var myTag in card.myStatusEffects)
+			foreach (var effect in statusEffects)
 			{
-				if (myTag == EnumStorage.StatusEffect.Power)
+				if (effect == EnumStorage.StatusEffect.Power)
 				{
 					powerAmount++;
 				}
@@ -171,12 +177,12 @@ public class CombatInfoDisplayer : MonoBehaviour
 		}
 
 		// show counter status effect
-		if (card.myStatusEffects.Contains(EnumStorage.StatusEffect.Counter))
+		if (statusEffects.Contains(EnumStorage.StatusEffect.Counter))
 		{
 			var counterAmount = 0;
-			foreach (var myTag in card.myStatusEffects)
+			foreach (var effect in statusEffects)
 			{
-				if (myTag == EnumStorage.StatusEffect.Counter)
+				if (effect == EnumStorage.StatusEffect.Counter)
 				{
 					counterAmount++;
 				}
