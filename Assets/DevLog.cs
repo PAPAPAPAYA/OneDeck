@@ -44,7 +44,7 @@
 	//todo recorder to automatically record deck to enemy decks
 		//// D:\Unity Projects\OneDeck\plans\prd-deck-enemy-recorder-2026-05-27.md
 	//// bug Recorder to prevent later fixes undermine former fixes
-	//todo make a summary generator skill?
+	// make a summary generator skill?
 	// make a debug skill?
 	////   skill to generate commit messages
 	////  AnimationStateTracker checker  (animation state tracker is old system)
@@ -115,6 +115,7 @@
 		//// rarity attibute in card script
 	//// iterate on shop based on rarity
 	//todo fake shuffle
+		// control friendly and hostile ratio
 #endregion
 #region viscom
 //! viscom
@@ -140,9 +141,10 @@
 			//// bury and enhence curse
 		//// staged
 	//todo status effect
-		//todo text to show status effect
-		// better power wisp
-			// dot, no trail
+		// counter wisp
+		//// text to show status effect
+		//// better power wisp
+			//// dot, no trail
 		// consume effect
 			// dot
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md

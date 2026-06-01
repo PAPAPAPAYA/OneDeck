@@ -3998,11 +3998,11 @@ MonoBehaviour:
   enablePeelDeck: 1
   physicalCardsInDeck: []
   physicalCardInRevealZone: {fileID: 0}
-  statusEffectProjectilePrefab: {fileID: 2816396703578066659, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}
+  statusEffectProjectilePrefab: {fileID: 2816396703578066659, guid: 6e1bf2e1c5da20d4d8c8358362afd9fb, type: 3}
   projectileDuration: 0.6
   projectileArcHeight: 2
   projectileStartOffset: {x: 0, y: 2, z: 0}
-  projectileEndOffset: {x: 0, y: 2, z: 0}
+  projectileEndOffset: {x: 0, y: 0, z: 0}
   projectileStaggerDelay: 0.05
 --- !u!1 &1457153432
 GameObject:
@@ -6221,7 +6221,7 @@ Transform:
   m_GameObject: {fileID: 2043192993}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 8, z: 0}
+  m_LocalPosition: {x: 0, y: 9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
