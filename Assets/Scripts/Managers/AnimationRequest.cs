@@ -21,7 +21,8 @@ namespace DefaultNamespace
 		PopUpBatch,
 		SlotInBatch,
 		MoveToTopPopUpBatch,
-		Shuffle
+		Shuffle,
+		Shake
 	}
 
 	public class AnimationRequest

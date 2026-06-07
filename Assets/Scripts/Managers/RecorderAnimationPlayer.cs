@@ -503,6 +503,22 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				yield return new WaitUntil(() => done);
 				break;
 			}
+			case AnimationRequestType.Shake:
+			{
+				if (request.targetCard == null) break;
+				GameObject physicalCard = visuals.GetPhysicalCard(request.targetCard);
+				if (physicalCard != null)
+				{
+					var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+					if (physScript != null)
+					{
+						bool done = false;
+						physScript.PlayCustomShake(() => { done = true; });
+						yield return new WaitUntil(() => done);
+					}
+				}
+				break;
+			}
 		}
 	}
 }

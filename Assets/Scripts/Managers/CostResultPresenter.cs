@@ -31,5 +31,9 @@ public class CostResultPresenter : MonoBehaviour
 		{
 			CombatLog.me?.Append(msg);
 		}
+
+		// Note: visual shake is now handled by the EffectRecorder system.
+		// CostNEffectContainer.InvokeEffectEvent() captures an AnimationRequestType.Shake
+		// into the current recorder, which RecorderAnimationPlayer plays in sequence.
 	}
 }

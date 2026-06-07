@@ -80,6 +80,14 @@ public class CardPhysObjScript : MonoBehaviour
 	private ShakeInstance _currentShakeInstance;
 	private bool _isShaking = false;
 
+	[Header("Custom Shake")]
+	[Tooltip("Max Z-rotation angle for cost-fail shake (degrees).")]
+	public float customShakeAngle = 15f;
+	[Tooltip("Duration for one side of the shake (seconds). Total ~4x this value.")]
+	public float customShakeHalfDuration = 0.1f;
+
+	private Tween _shakeTween;
+
 	[Header("Special Animation")]
 	[Tooltip("Is playing special animation")]
 	public bool isPlayingSpecialAnimation = false;
@@ -562,13 +570,34 @@ public class CardPhysObjScript : MonoBehaviour
 		_currentShakeInstance = null;
 	}
 
+	/// <summary>
+	/// Play a simple left-right shake using DOTween (no MilkShake).
+	/// Sequence: center -> left -> right -> center.
+	/// </summary>
+	public void PlayCustomShake(Action onComplete = null)
+	{
+		if (_shakeTween != null && _shakeTween.IsActive() && _shakeTween.IsPlaying()) return;
+
+		_shakeTween?.Kill();
+
+		var seq = DOTween.Sequence();
+		seq.Append(transform.DOLocalRotate(new Vector3(0, 0, customShakeAngle), customShakeHalfDuration).SetEase(Ease.OutQuad));
+		seq.Append(transform.DOLocalRotate(new Vector3(0, 0, -customShakeAngle), customShakeHalfDuration * 2f).SetEase(Ease.InOutQuad));
+		seq.Append(transform.DOLocalRotate(Vector3.zero, customShakeHalfDuration).SetEase(Ease.OutQuad));
+		if (onComplete != null)
+			seq.OnComplete(() => onComplete());
+		_shakeTween = seq;
+	}
+
 	private void OnDestroy()
 	{
 		// Stop all DOTween animations to prevent access after object destruction
 		_positionTween?.Kill();
 		_scaleTween?.Kill();
+		_shakeTween?.Kill();
 
 		_positionTween = null;
 		_scaleTween = null;
+		_shakeTween = null;
 	}
 }

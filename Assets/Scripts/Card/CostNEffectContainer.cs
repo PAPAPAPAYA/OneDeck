@@ -68,6 +68,23 @@ public class CostNEffectContainer : MonoBehaviour
 		if (_costNotMetFlag > 0)
 		{
 			var result = new CostCheckResult(false, new List<string>(_costFailMessages));
+
+			// VISUAL-FIX(2026-06-07): Capture shake animation into the effect recorder system
+			// so it plays in sequence with other effects (e.g. cost-fail shake before the next
+			// succeeding effect's animations). Previously shake was fire-and-forget outside the recorder.
+			if (EffectChainManager.Me != null)
+			{
+				EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject);
+				EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
+				var recorder = EffectChainManager.Me.currentEffectRecorder.GetComponent<EffectRecorder>();
+				recorder.animationRequests.Add(new AnimationRequest {
+					type = AnimationRequestType.Shake,
+					targetCard = _myCardScript.gameObject,
+					duration = 0.4f
+				});
+				EffectChainManager.Me.PopCurrentRecorder();
+			}
+
 			CostResultPresenter.me?.PresentCostFailure(result, _myCardScript, this);
 			_costFailMessages.Clear();
 			return result;

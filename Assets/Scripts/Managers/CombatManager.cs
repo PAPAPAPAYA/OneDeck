@@ -58,6 +58,13 @@ public class CombatManager : MonoBehaviour
 			var go = new GameObject("RecorderAnimationPlayer");
 			go.AddComponent<RecorderAnimationPlayer>();
 		}
+
+		// Ensure CostResultPresenter singleton exists for cost-failure feedback (shake + combat log)
+		if (CostResultPresenter.me == null)
+		{
+			var go = new GameObject("CostResultPresenter");
+			go.AddComponent<CostResultPresenter>();
+		}
 	}
 
 	#endregion

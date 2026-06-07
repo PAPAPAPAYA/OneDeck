@@ -38,6 +38,12 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 |---|----------|-----------------|------------|--------|--------------|
 | 6 | Deck-move animations play in wrong peeled/focused layout | `RecorderAnimationPlayer`, `CombatUXManager` | 2026-05-18 | ✅ | **Step:** Click a card to focus deck, then reveal Bury/Stage card<br>**Check:** Animation uses normal (non-focused) layout |
 
+## Cost Check Feedback
+
+| # | Scenario | System / Effect | Fixed Date | Status | Verification |
+|---|----------|-----------------|------------|--------|--------------|
+| 9 | Cost check failure has no visual feedback on card | `CostResultPresenter`, `CardPhysObjScript` | 2026-06-07 | ✅ | **Card:** Any card with a cost condition (e.g. Mana cost when Mana is 0)<br>**Check:** Revealed card shakes left-right via EffectRecorder sequence |
+
 ---
 
 ## Quick Search
@@ -62,3 +68,7 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `RecorderAnimationPlayer.cs` | 6 |
 | `ApplyAnimationResult` | 5 |
 | `CalculateAnimationPositionAtIndex` | 7 |
+| `CostResultPresenter.cs` | 9 |
+| `CostNEffectContainer.cs` | 9 |
+| `RecorderAnimationPlayer.cs` | 9 |
+| `AnimationRequest.cs` | 9 |
