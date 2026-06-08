@@ -285,4 +285,12 @@ If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.G
 
 ---
 
+## Agent Post-Mortem Notes
+
+- **Do not treat PRD scope as exhaustive**. Always independently trace the full execution flow before editing; PRDs can miss branches.
+- **Watch for sentinel conditions** (`return`, `else`, `continue`) that short-circuit the path you expect your code to run on.
+- **After moving code, do reachability check**: simulate the target scenario end-to-end and confirm the modified lines are actually executed.
+
+---
+
 **Glob**: Use `Assets/**/FileName.cs` instead of `**/FileName.cs`

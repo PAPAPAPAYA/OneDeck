@@ -98,6 +98,7 @@
 #endregion
 #region feature
 //! feature
+	//todo stage effect add new bool to control whether to exclude self
 	//// a more comprehensive test kit
 		//// logic
 			//// enemy side
@@ -160,6 +161,7 @@
 		// change z dynamically
 	// motion design
 		//todo shake revealed card if cost not met / can't activate if card in reveal zone
+			// need testing, especially need to check if custom shake properly only applied to card in reveal zone
 		//// enlarge card when event triggered
 			//// make status effect related effects to go through animation request system, so that they have emphasize animation
 		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
@@ -180,8 +182,11 @@
 	//// test on power gained: POWER_CRAVER
 		//// logic not working
 		//// make a power_craver headless test
-	//// after shuffle: BOOSTER
-		//// bugged: staged cards move prematurely
+	//todo after shuffle: BOOSTER
+		// bugged: staged cards move prematurely
+		// prd updated, need to let kimi reflect on mistake and update agents.md
+		// need to apply new prd changes
+		// animation still not played at correct timing
 	//// elder sorcerer
 		//// bugged: staged amount not tracked
 	//// snatcher

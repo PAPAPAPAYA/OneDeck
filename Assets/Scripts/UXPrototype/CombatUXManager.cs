@@ -146,7 +146,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckBefore += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		// Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck START deckBefore=" + deckBefore);
+		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck START deckBefore=" + deckBefore);
 
 		// Rebuild dictionary (includes cards from deck and reveal zone)
 		BuildCardScriptToPhysicalDictionary();
@@ -182,7 +182,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckList += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		// Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck done. deckCount=" + physicalCardsInDeck.Count + " revealZone=" + (physicalCardInRevealZone != null ? physicalCardInRevealZone.name : "null") + " deck=" + deckList);
+		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck done. deckCount=" + physicalCardsInDeck.Count + " revealZone=" + (physicalCardInRevealZone != null ? physicalCardInRevealZone.name : "null") + " deck=" + deckList);
 	}
 
 	/// <summary>

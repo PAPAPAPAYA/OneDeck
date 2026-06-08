@@ -43,6 +43,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | # | Scenario | System / Effect | Fixed Date | Status | Verification |
 |---|----------|-----------------|------------|--------|--------------|
 | 9 | Cost check failure has no visual feedback on card | `CostResultPresenter`, `CardPhysObjScript` | 2026-06-07 | ✅ | **Card:** Any card with a cost condition (e.g. Mana cost when Mana is 0)<br>**Check:** Revealed card shakes left-right via EffectRecorder sequence |
+| 10 | afterShuffle Stage animation is invisible (zero-distance tween) | `CombatManager`, `StartCardShuffleEffect`, `StageEffect` | 2026-06-08 | ⚠️ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** Dummy cards do NOT silently tween before Stage animation; `MoveToTopPopUpBatch` arc animation is visible |
 
 ---
 

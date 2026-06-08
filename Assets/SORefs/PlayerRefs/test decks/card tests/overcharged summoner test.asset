@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: '#1Deck'
+  m_Name: overcharged summoner test
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
-  - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
-  defaultDeck: {fileID: 11400000, guid: a940409aa7006eb409425fd5cfd33a8c, type: 2}
-  resetOnStart: 1
-  description: 
+  - {fileID: 8718476725744197808, guid: 40311cf1202c2d448b2af32198140ec7, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: almighty

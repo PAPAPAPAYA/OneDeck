@@ -110,7 +110,7 @@ public class EffectChainManager : MonoBehaviour
 		}
 
 		string parentName = isRoot ? "ROOT" : (previousRecorder != null ? previousRecorder.GetComponent<EffectRecorder>().chainID.ToString() : currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString());
-		// Debug.Log("[EffectChainManager] MakeANewEffectRecorder chain#" + chainNumber + " card=" + myCard.name + " effect=" + myEffectInst.name + " isRoot=" + isRoot + " parent=" + parentName + " stackSize=" + recorderStack.Count);
+		Debug.Log("[EffectChainManager] MakeANewEffectRecorder chain#" + chainNumber + " card=" + myCard.name + " effect=" + myEffectInst.name + " isRoot=" + isRoot + " parent=" + parentName + " stackSize=" + recorderStack.Count);
 	}
 
 	public bool EffectCanBeInvoked(string effectID)
@@ -164,7 +164,7 @@ public class EffectChainManager : MonoBehaviour
 			recorderStack.RemoveAt(recorderStack.Count - 1);
 			var newCurrent = currentEffectRecorder;
 			string newCurrentName = newCurrent != null ? "chain#" + newCurrent.GetComponent<EffectRecorder>().chainID + "[" + newCurrent.GetComponent<EffectRecorder>().cardObject.name + "]" : "null";
-			// Debug.Log("[EffectChainManager] PopCurrentRecorder popped=" + poppedName + " newCurrent=" + newCurrentName + " stackSize=" + recorderStack.Count);
+			Debug.Log("[EffectChainManager] PopCurrentRecorder popped=" + poppedName + " newCurrent=" + newCurrentName + " stackSize=" + recorderStack.Count);
 		}
 	}
 
@@ -183,7 +183,7 @@ public class EffectChainManager : MonoBehaviour
 			closedChainInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "/" + reqSummary + "];";
 		}
 		if (count > 0)
-			// Debug.Log("[EffectChainManager] CloseOpenedChain closing " + count + " recorders: " + closedChainInfo);
+			Debug.Log("[EffectChainManager] CloseOpenedChain closing " + count + " recorders: " + closedChainInfo);
 
 		UtilityFuncManagerScript.CopyList(openedEffectRecorders, closedEffectRecorders, false);
 		openedEffectRecorders.Clear();

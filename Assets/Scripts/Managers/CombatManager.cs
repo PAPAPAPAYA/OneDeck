@@ -472,7 +472,7 @@ public class CombatManager : MonoBehaviour
 
 			// Ensure input blocking is released
 			ResetInputBlock();
-			isPlayingEffectAnimations = false;
+			// NOTE: isPlayingEffectAnimations is reset AFTER UpdateAllPhysicalCardTargets below
 		}
 
 		// Wait for attack animations to finish before next reveal
@@ -483,6 +483,8 @@ public class CombatManager : MonoBehaviour
 		{
 			visuals.UpdateAllPhysicalCardTargets();
 		}
+
+		isPlayingEffectAnimations = false;
 
 		// Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait COMPLETE");
 		if (visuals != null)
@@ -524,6 +526,14 @@ public class CombatManager : MonoBehaviour
 				RevealNextCard();
 				awaitingRevealConfirm = false; // Enter Start Card effect trigger phase
 			}
+
+			// Trigger delayed afterShuffle event if pending (e.g. after Start Card shuffle)
+			if (_raiseAfterShuffleOnNextReveal)
+			{
+				_raiseAfterShuffleOnNextReveal = false;
+				GameEventStorage.me.afterShuffle.Raise();
+			}
+
 			return;
 		}
 
@@ -541,6 +551,15 @@ public class CombatManager : MonoBehaviour
 			{
 				RevealNextCard();
 				awaitingRevealConfirm = false;
+
+				// 3. Trigger delayed afterShuffle event if pending
+				// Moved here from RevealNextCard to ensure Start Card coroutine finishes first
+				if (_raiseAfterShuffleOnNextReveal)
+				{
+					_raiseAfterShuffleOnNextReveal = false;
+					GameEventStorage.me.afterShuffle.Raise();
+				}
+
 				EffectChainManager.Me.CloseOpenedChain();
 				return;
 			}
@@ -567,6 +586,14 @@ public class CombatManager : MonoBehaviour
 			{
 				RevealNextCard();
 				awaitingRevealConfirm = false; // Enter effect trigger phase
+			}
+
+			// 3. Trigger delayed afterShuffle event if pending
+			// Moved here from RevealNextCard to ensure Start Card coroutine finishes first
+			if (_raiseAfterShuffleOnNextReveal)
+			{
+				_raiseAfterShuffleOnNextReveal = false;
+				GameEventStorage.me.afterShuffle.Raise();
 			}
 
 			EffectChainManager.Me.CloseOpenedChain();
@@ -630,12 +657,12 @@ public class CombatManager : MonoBehaviour
 		// Record combat stats
 		GetComponent<CombatStatsLogger>()?.OnCardRevealed(cardRevealed);
 
-		// Trigger delayed afterShuffle event if pending
-		if (_raiseAfterShuffleOnNextReveal)
-		{
-			_raiseAfterShuffleOnNextReveal = false;
-			GameEventStorage.me.afterShuffle.Raise();
-		}
+		// afterShuffle raising removed from here — moved to RevealCards Phase 1
+		// if (_raiseAfterShuffleOnNextReveal)
+		// {
+		// 	_raiseAfterShuffleOnNextReveal = false;
+		// 	GameEventStorage.me.afterShuffle.Raise();
+		// }
 	}
 
 	private void TriggerRevealedCardEffect()

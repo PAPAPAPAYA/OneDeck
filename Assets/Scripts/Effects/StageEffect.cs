@@ -352,9 +352,9 @@ public class StageEffect : EffectScript
 			var cs = _combinedDeck[i].GetComponent<CardScript>();
 			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
 		}
-		// Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
+		Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
 		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
-		// Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
+		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
 
 		// VISUAL-FIX(2026-05-15): Stage reactive chain causes wrong animation target index
 		//   Cause:    Reactive effects (e.g. onMeStaged -> BurySelf) may modify deck order after stage logic
@@ -381,7 +381,7 @@ public class StageEffect : EffectScript
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
 		string reqInfo = "StagePopUpSlotIn cards=" + stagedCards.Count + " indices=" + string.Join(",", stagedTargetIndices) + " deckSize=" + _combinedDeck.Count;
-		// Debug.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
+		Debug.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null)
 		{
 			// Arc via showPos to pop-up peak, then slot in to top
