@@ -160,7 +160,7 @@
 	// better card move animation
 		// change z dynamically
 	// motion design
-		//todo shake revealed card if cost not met / can't activate if card in reveal zone
+		//shake revealed card if cost not met / can't activate if card in reveal zone
 			// need testing, especially need to check if custom shake properly only applied to card in reveal zone
 		//// enlarge card when event triggered
 			//// make status effect related effects to go through animation request system, so that they have emphasize animation
