@@ -273,7 +273,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// <summary>
 	/// Set target position (called by CombatUXManager), uses DOTween animation
 	/// </summary>
-	public void SetTargetPosition(Vector3 target)
+	public void SetTargetPosition(Vector3 target, Action onComplete = null)
 	{
 		// Debug.Log("[CardPhysObjScript] SetTargetPosition card=" + name + " currentPos=" + transform.position + " newTarget=" + target + " isPlayingSpecial=" + isPlayingSpecialAnimation);
 		TargetPosition = target;
@@ -281,11 +281,12 @@ public class CardPhysObjScript : MonoBehaviour
 		// If special animation is playing, do not start DOTween
 		if (isPlayingSpecialAnimation)
 		{
+			onComplete?.Invoke();
 			return;
 		}
 
 		// Start DOTween position animation
-		StartPositionTween();
+		StartPositionTween(onComplete);
 	}
 
 	/// <summary>
@@ -328,7 +329,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// <summary>
 	/// Start position DOTween animation
 	/// </summary>
-	private void StartPositionTween()
+	private void StartPositionTween(Action onComplete = null)
 	{
 		// If already animating and target is the same, do not restart
 		if (_positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
@@ -338,9 +339,14 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 
 		// Debug.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + moveDuration);
-		_positionTween = transform.DOMove(TargetPosition, moveDuration)
+		var tween = transform.DOMove(TargetPosition, moveDuration)
 			.SetEase(moveEase)
 			.SetUpdate(UpdateType.Normal, true);
+		if (onComplete != null)
+		{
+			tween.OnComplete(() => onComplete.Invoke());
+		}
+		_positionTween = tween;
 	}
 
 	/// <summary>

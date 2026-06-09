@@ -447,9 +447,21 @@ Player clicks trigger BOOSTER
 
 ## 5. Files Changed
 
+### 2026-06-08 (Base Fix)
+
 | # | File | Action | Lines of Change |
 |---|------|--------|-----------------|
 | 1 | `Assets/Scripts/Managers/CombatManager.cs` | Move `isPlayingEffectAnimations = false` to after `UpdateAllPhysicalCardTargets`; remove `afterShuffle` block from `RevealNextCard`; add guard to Round Start path; add relocated event in both Phase 1 paths | ~30 |
+
+### 2026-06-09 (Follow-up)
+
+| # | File | Action | Lines of Change |
+|---|------|--------|-----------------|
+| 2 | `Assets/Scripts/Managers/CombatManager.cs` | `RevealNextCard` accepts `onComplete` callback; Round Start path raises `afterShuffle` asynchronously after reveal-zone movement; Phase 2 adds `isPlayingEffectAnimations` guard | ~45 |
+| 3 | `Assets/Scripts/UXPrototype/CombatUXManager.cs` | `MoveCardToRevealZone`/`MovePhysicalCardToRevealZone` accept `onComplete`; `MoveCardToTopPopUpBatch` moves `RegisterAnimation`/`BlockInput` outside per-card loop | ~20 |
+| 4 | `Assets/Scripts/UXPrototype/CardPhysObjScript.cs` | `SetTargetPosition`/`StartPositionTween` accept and forward `onComplete` to DOTween `OnComplete` | ~10 |
+| 5 | `Assets/Scripts/Managers/ICombatVisuals.cs` | `MoveCardToRevealZone` signature adds `Action onComplete = null` | ~1 |
+| 6 | `Assets/Scripts/Managers/NullCombatVisuals.cs` / `NullCombatVisualsBehaviour.cs` | Callback compatibility | ~2 |
 
 ---
 
@@ -470,3 +482,33 @@ Player clicks trigger BOOSTER
 - The `Debug.Log` lines added for investigation in `CombatManager.cs`, `StageEffect.cs`, `CombatUXManager.cs`, and `EffectChainManager.cs` should be commented out or removed before merging this fix to keep production logs clean.
 - This PRD does **not** modify `StageEffect.SyncPhysicalCardsWithCombinedDeck()` call. The premature tween was caused by event timing, not by the sync call itself.
 - `_raiseAfterShuffleOnNextReveal` is only ever set by `StartCardShuffleEffect`. After a Start Card shuffle, the **Round Start path** (`revealZone == null && cardsRevealedThisRound == 0`) is the primary path that executes, because `StartCardShuffleEffect.ExecuteShuffleEffect()` sets `cm.revealZone = null` and `HandleNewRoundStart()` resets `cardsRevealedThisRound = 0`. The Phase 1 auto-reveal path is defensive coverage for mid-round exile scenarios.
+
+---
+
+## Appendix: 2026-06-09 Follow-up Changes
+
+Play Mode testing of the 06-08 base fix revealed three additional timing issues. These were fixed on 06-09 without modifying the 06-08 logic.
+
+### A.1 afterShuffle animations not playing until next player click
+
+**Cause**: The Round Start path raised `afterShuffle` but never called `PlayRecorderAnimationsAndWait()`. BOOSTER's Stage effect captured a `MoveToTopPopUpBatch` request into a new `EffectRecorder`, but the recorder sat unplayed until the player clicked again (entering Phase 2).
+
+**Fix**: Round Start path now calls `StartCoroutine(PlayRecorderAnimationsAndWait())` immediately after raising `afterShuffle`, so the Stage animation plays automatically without requiring a click.
+
+### A.2 BOOSTER overlaps deck cards
+
+**Cause**: `afterShuffle.Raise()` fired synchronously right after `RevealNextCard()` returned, while BOOSTER's physical card was still mid-flight (0.3s DOTween) from the deck to the reveal zone. The emphasize pulse and Stage animation therefore started from an intermediate deck position, causing BOOSTER to overlap surrounding cards.
+
+**Fix**: `RevealNextCard` now accepts `Action onMoveToRevealZoneComplete`. The `ICombatVisuals.MoveCardToRevealZone` signature and all implementations (`CombatUXManager`, `NullCombatVisuals`) were updated to forward the callback. The Round Start path waits for the callback before raising `afterShuffle`, ensuring BOOSTER is fully positioned in the reveal zone before any effect animation starts.
+
+### A.3 `MoveCardToTopPopUpBatch` deadlock (N `RegisterAnimation` vs 1 `CompleteAnimation`)
+
+**Cause**: Inside `MoveCardToTopPopUpBatch`, `AnimationStateTracker.me.RegisterAnimation()` and `BlockInput(this)` were called **per card** inside the Phase 1 loop, but `CompleteAnimation()` and `UnblockInput(this)` were only called **once** when the entire batch finished. This caused `pending` to grow and `IsInputBlocked` to stay true forever.
+
+**Fix**: Move `RegisterAnimation()` and `BlockInput(this)` to before the loop, so they are called exactly once and balance 1:1 with the single `CompleteAnimation()`/`UnblockInput()` at batch end.
+
+### A.4 Phase 2 race condition
+
+**Cause**: Because the Round Start path now asynchronously plays `PlayRecorderAnimationsAndWait()`, a player click during that playback could enter Phase 2 and start a second coroutine, racing `CloseOpenedChain`.
+
+**Fix**: Phase 2 entrance now has an `if (isPlayingEffectAnimations) return;` guard, identical to the existing guards in Round Start and Phase 1.

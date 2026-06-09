@@ -43,7 +43,10 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | # | Scenario | System / Effect | Fixed Date | Status | Verification |
 |---|----------|-----------------|------------|--------|--------------|
 | 9 | Cost check failure has no visual feedback on card | `CostResultPresenter`, `CardPhysObjScript` | 2026-06-07 | ✅ | **Card:** Any card with a cost condition (e.g. Mana cost when Mana is 0)<br>**Check:** Revealed card shakes left-right via EffectRecorder sequence |
-| 10 | afterShuffle Stage animation is invisible (zero-distance tween) | `CombatManager`, `StartCardShuffleEffect`, `StageEffect` | 2026-06-08 | ⚠️ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** Dummy cards do NOT silently tween before Stage animation; `MoveToTopPopUpBatch` arc animation is visible |
+| 10 | afterShuffle Stage animation is invisible (zero-distance tween) | `CombatManager`, `StartCardShuffleEffect`, `StageEffect` | 2026-06-08 | ✅ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** Dummy cards do NOT silently tween before Stage animation; `MoveToTopPopUpBatch` arc animation is visible |
+| 11 | afterShuffle effect animations not played until next player click | `CombatManager`, `EffectChainManager`, `RecorderAnimationPlayer` | 2026-06-09 | ✅ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** Stage animation plays **automatically** after auto-reveal completes, without waiting for player click; `isPlayingEffectAnimations` blocks Phase 2 during playback |
+| 12 | BOOSTER overlaps deck cards because afterShuffle starts before reveal-zone movement finishes | `CombatManager`, `ICombatVisuals`, `CombatUXManager`, `CardPhysObjScript` | 2026-06-09 | ✅ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** BOOSTER fully reaches reveal zone before its emphasize/Stage animation starts; no overlap with deck cards |
+| 13 | `MoveCardToTopPopUpBatch` dead-locks due to N `RegisterAnimation` calls vs 1 `CompleteAnimation` | `CombatUXManager`, `AnimationStateTracker`, `RecorderAnimationPlayer` | 2026-06-09 | ✅ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** `PlayRecorderAnimationsAndWait` does **not** wait 5s on timeout; `AnimationStateTracker` log shows `pending` returns to 0 after batch completes; `BlockInput`/`UnblockInput` are paired 1:1 |
 
 ---
 
@@ -61,15 +64,15 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 |---------|-------------|
 | `BuryEffect.cs` | 1, 2, 5, 7 |
 | `StageEffect.cs` | 1, 2, 5, 7 |
-| `CombatUXManager.cs` | 1, 3, 4, 6, 7 |
-| `EffectChainManager.cs` | 2 |
-| `CardPhysObjScript.cs` | 3 |
+| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13 |
+| `EffectChainManager.cs` | 2, 11 |
+| `CardPhysObjScript.cs` | 3, 12 |
 | `CurseEffect.cs` | 8 |
 | `AddTempCard.cs` | 4 |
-| `RecorderAnimationPlayer.cs` | 6 |
+| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13 |
 | `ApplyAnimationResult` | 5 |
 | `CalculateAnimationPositionAtIndex` | 7 |
 | `CostResultPresenter.cs` | 9 |
 | `CostNEffectContainer.cs` | 9 |
-| `RecorderAnimationPlayer.cs` | 9 |
 | `AnimationRequest.cs` | 9 |
+| `CombatManager.cs` | 10, 11, 12 |

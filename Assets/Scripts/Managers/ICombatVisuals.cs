@@ -161,7 +161,7 @@ public interface ICombatVisuals
 	/// <summary>
 	/// Move the physical card corresponding to the logical card into the reveal zone.
 	/// </summary>
-	void MoveCardToRevealZone(GameObject logicalCard);
+	void MoveCardToRevealZone(GameObject logicalCard, Action onComplete = null);
 
 	/// <summary>
 	/// Move the card currently in reveal zone back to bottom of deck.

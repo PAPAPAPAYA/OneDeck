@@ -42,7 +42,7 @@ Assets/
 ### Flow
 1. **GatherDecks**: Merge both decks, add Start Card to bottom.
 2. **Reveal**: Reveal cards one by one.
-3. **Start Card**: When revealed, triggers `CostNEffectContainer.InvokeEffectEvent()` → `StartCardShuffleEffect.ExecuteShuffleEffect()` → captures `AnimationRequestType.Shuffle` into the current `EffectRecorder`. Skips `onMeRevealed` / `onAnyCardRevealed` broadcasts.
+3. **Start Card**: Triggers shuffle effect → captures `AnimationRequestType.Shuffle`. Skips `onMeRevealed` / `onAnyCardRevealed`. `afterShuffle` fires **after** shuffle animation completes and next card reaches reveal zone.
 
 ### Zones
 - `combinedDeckZone` - Merged deck (index 0 = bottom, index Count-1 = top)
@@ -222,23 +222,25 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 - `EffectRecorder` fields: `sessionID`, `chainID`, `processedEffectID`, `cardObject`, `effectObject`, `animationRequests`, `animationPlayed`.
 - `EffectChainManager.recorderStack` tracks nested recorder creation; reactive effects attach as children of the **recorder that triggered them**.
 - `CurseEffect.ApplyPowerToCardWithProjectile()` captures `StatusEffectProjectile`.
-- `CombatManager.isPlayingEffectAnimations` blocks auto-reveal during playback.
-- `PlayRecorderAnimationsAndWait`: wait `HasActiveBatch` -> `CloseOpenedChain()` -> play roots -> `finally` marks all recorders played + `ResetInputBlock()` + `isPlayingEffectAnimations = false`.
+- `CombatManager.isPlayingEffectAnimations` blocks reveal/effect input during playback; reset **after** `UpdateAllPhysicalCardTargets()`.
+- `PlayRecorderAnimationsAndWait`: wait `HasActiveBatch` → `CloseOpenedChain()` → play roots → `finally` `ResetInputBlock()` → `UpdateAllPhysicalCardTargets()` → `isPlayingEffectAnimations = false`.
 - **Deck Focus Restoration**: `RecorderAnimationPlayer` restores normal deck layout before any deck-move request if `CombatUXManager.IsDeckFocused` is true.
-- Batch moves (`MoveToBottomBatch`/`MoveToTopBatch`) use `correctedIndex` absolute positions, ignoring `snapshotDeckSize` offsets.
+- Batch moves use `correctedIndex` absolute positions, ignoring `snapshotDeckSize` offsets.
 - `HPAlterEffect.isStatusEffectDamage = true` skips `Attack` animation capture.
 - **Fallback**: If `RecorderAnimationPlayer.me == null`, status effect changes trigger tint directly; `BuryEffect`/`StageEffect` still call `SyncPhysicalCardsWithCombinedDeck`.
 - `ExileEffect` sets `revealZone = null` when exiling the revealed card, and chains `Destroy` requests with `onComplete` on the last card.
 - `CombatManager.Awake()` auto-creates `RecorderAnimationPlayer` if missing.
+- **afterShuffle timing**: Raised **after** shuffle animation completes, next card reaches reveal zone, and `PlayRecorderAnimationsAndWait()` finishes. Round Start path waits for reveal-zone movement via `MoveCardToRevealZone` callback before raising.
 
 ### Card Movement (`ICombatVisuals` / `CombatUXManager`)
+- `MoveCardToRevealZone(card, onComplete)` — Move from deck to reveal zone; callback fires when movement finishes.
 - `MoveCardToBottom(card, duration, useArc, onComplete)`
 - `MoveCardToTop(card, duration, useArc, onComplete)`
 - `MoveCardToIndex(card, index, duration, useArc, onComplete)`
 - `DestroyCardWithAnimation(card, onComplete)`
 - `AddCardToDeckVisual(card)`
 - `SyncPhysicalCardsWithCombinedDeck()`
-- `ApplyAnimationResult(request)` — Updates `physicalCardsInDeck` order to reflect a completed animation request (e.g. inserting moved cards at bottom/top/index, removing destroyed cards).
+- `ApplyAnimationResult(request)` — Updates `physicalCardsInDeck` order to reflect a completed animation request.
 - `PlayShuffleAnimation(startCard, shuffledCards, onComplete)`
 
 **Note:** `MoveCardWithAnimation` skips `UpdateAllPhysicalCardTargets()` in its `OnComplete` when `RecorderAnimationPlayer.me != null`, because `RecorderAnimationPlayer` handles deck sync per-request via `ApplyAnimationResult`.
@@ -287,9 +289,10 @@ If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.G
 
 ## Agent Post-Mortem Notes
 
-- **Do not treat PRD scope as exhaustive**. Always independently trace the full execution flow before editing; PRDs can miss branches.
-- **Watch for sentinel conditions** (`return`, `else`, `continue`) that short-circuit the path you expect your code to run on.
-- **After moving code, do reachability check**: simulate the target scenario end-to-end and confirm the modified lines are actually executed.
+- **Do not treat PRD scope as exhaustive**. Independently trace full flow; PRDs can miss branches.
+- **Watch for sentinel conditions** (`return`, `else`, `continue`) that short-circuit expected paths.
+- **After moving code, do reachability check**: simulate end-to-end and confirm modified lines execute.
+- **Read the full method body**: earlier branches (e.g. Round Start before Phase 1) may be the real path.
 
 ---
 

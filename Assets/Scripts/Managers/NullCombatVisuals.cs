@@ -105,9 +105,10 @@ public class NullCombatVisuals : ICombatVisuals
 		return null; // No physical card in headless mode
 	}
 
-	public void MoveCardToRevealZone(GameObject logicalCard)
+	public void MoveCardToRevealZone(GameObject logicalCard, Action onComplete = null)
 	{
 		callLog.Add("MoveCardToRevealZone: " + (logicalCard?.name ?? "null"));
+		onComplete?.Invoke();
 	}
 
 	public void MoveRevealedCardToBottom(GameObject logicalCard, Action onComplete = null)

@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: PlayerDeckRef
+  m_Name: after shuffle test
   m_EditorClassIdentifier: 
   deck:
   - {fileID: 1808145013887896563, guid: 8593ebaa6314bd84595392018c30d7e2, type: 3}
-  defaultDeck: {fileID: 11400000, guid: 0042f3ba309f9034e8a0efc159e4503a, type: 2}
-  resetOnStart: 1
-  description: player's deck, data only no instances
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: player default deck, will copy to player deck SO at start of game

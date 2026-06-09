@@ -188,7 +188,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// <summary>
 	/// Move card from deck to reveal zone
 	/// </summary>
-	public void MovePhysicalCardToRevealZone(GameObject physicalCard)
+	public void MovePhysicalCardToRevealZone(GameObject physicalCard, Action onComplete = null)
 	{
 		var physScript = physicalCard != null ? physicalCard.GetComponent<CardPhysObjScript>() : null;
 
@@ -211,12 +211,17 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physScript.pendingRevealZoneMove = true;
 				physScript.pendingRevealPosition = physicalCardRevealPos.position;
 				physScript.pendingRevealScale = physicalCardRevealSize;
+				onComplete?.Invoke();
 			}
 			else
 			{
-				physScript.SetTargetPosition(physicalCardRevealPos.position);
+				physScript.SetTargetPosition(physicalCardRevealPos.position, onComplete);
 				physScript.SetTargetScale(physicalCardRevealSize);
 			}
+		}
+		else
+		{
+			onComplete?.Invoke();
 		}
 		// Update positions of remaining cards in deck
 		UpdateAllPhysicalCardTargets();
@@ -508,6 +513,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		int phase1Done = 0;
 		int phase2Done = 0;
 
+		// VISUAL-FIX(2026-06-09): MoveCardToTopPopUpBatch registers N animations but only completes 1
+		//   Cause:    RegisterAnimation and BlockInput were inside the Phase 1 loop (called per card),
+		//             but CompleteAnimation and UnblockInput were only called once when the whole batch finished.
+		//             This caused AnimationStateTracker.pending to grow and IsInputBlocked to stay true forever.
+		//   Affects:  MoveCardToTopPopUpBatch, AnimationStateTracker, CombatManager.IsInputBlocked
+		//   Regress:  Stage 2+ cards (e.g. BOOSTER afterShuffle→Stage); verify pending returns to 0
+		//             and input is unblocked after animation completes.
+		// Register a single animation batch for the entire pop-up + slot-in operation.
+		// Do NOT call per-card: RegisterAnimation/BlockInput must balance with CompleteAnimation/UnblockInput.
+		AnimationStateTracker.me?.RegisterAnimation();
+		BlockInput(this);
+
 		// Phase 1: Arc to pop-up peak (parallel)
 		for (int i = 0; i < totalCount; i++)
 		{
@@ -526,8 +543,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 			physScript.KillTweens();
 			physScript.isPlayingSpecialAnimation = true;
-			AnimationStateTracker.me?.RegisterAnimation();
-			BlockInput(this);
 
 			// Compute peak from FINAL deck position
 			Vector3 deckPos = CalculateAnimationPositionAtIndex(finalIndex);
@@ -2063,16 +2078,28 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// <summary>
 	/// ICombatVisuals: Move logical card to reveal zone.
 	/// </summary>
-	public void MoveCardToRevealZone(GameObject logicalCard)
+	public void MoveCardToRevealZone(GameObject logicalCard, Action onComplete = null)
 	{
-		if (logicalCard == null) return;
+		if (logicalCard == null)
+		{
+			onComplete?.Invoke();
+			return;
+		}
 		var cardScript = logicalCard.GetComponent<CardScript>();
-		if (cardScript == null) return;
+		if (cardScript == null)
+		{
+			onComplete?.Invoke();
+			return;
+		}
 		BuildCardScriptToPhysicalDictionary();
 		var physicalCard = GetPhysicalCardFromLogicalCard(cardScript);
 		if (physicalCard != null)
 		{
-			MovePhysicalCardToRevealZone(physicalCard);
+			MovePhysicalCardToRevealZone(physicalCard, onComplete);
+		}
+		else
+		{
+			onComplete?.Invoke();
 		}
 	}
 

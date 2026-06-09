@@ -518,20 +518,59 @@ public class CombatManager : MonoBehaviour
 		// ========== Round start: automatically reveal Start Card (player sees it directly) ==========
 		if (revealZone == null && cardsRevealedThisRound == 0)
 		{
+			// Guard: don't auto-reveal Start Card while effect recorder animations are playing
+			if (isPlayingEffectAnimations)
+			{
+				return;
+			}
+
 			visuals.InstantiateAllPhysicalCards();
 			
 			// Reveal Start Card (it's at the bottom of the list but top of the actual deck)
 			if (combinedDeckZone.Count > 0)
 			{
-				RevealNextCard();
+				// If afterShuffle is pending, wait for reveal-zone movement to finish before raising it.
+				// This prevents BOOSTER's emphasize/Stage animation from starting while the card is still
+				// mid-flight from the deck to the reveal zone.
+				if (_raiseAfterShuffleOnNextReveal)
+				{
+					isPlayingEffectAnimations = true;
+					RevealNextCard(() =>
+					{
+						_raiseAfterShuffleOnNextReveal = false;
+						GameEventStorage.me.afterShuffle.Raise();
+						
+						// VISUAL-FIX(2026-06-09): afterShuffle effect animations now play immediately via EffectRecorder flow
+						//   Cause:    afterShuffle was raised synchronously in Round Start path but PlayRecorderAnimationsAndWait
+						//             was never called, so captured animations sat unplayed until next player click.
+						//   Affects:  CombatManager.RevealCards Round Start path, EffectChainManager, RecorderAnimationPlayer
+						//   Regress:  Start Card shuffle → reveal BOOSTER (afterShuffle→Stage); verify Stage animation plays
+						//             automatically without requiring a player click.
+						//   Related:  PRD prd-aftershuffle-reveal-timing-fix-2026-06-08.md
+						//
+						// VISUAL-FIX(2026-06-09): BOOSTER overlaps deck cards because afterShuffle starts before reveal-zone move finishes
+						//   Cause:    RevealNextCard starts a 0.3s DOTween to reveal zone, but afterShuffle.Raise fired immediately,
+						//             so BOOSTER's emphasize + Stage animations started while BOOSTER was mid-flight.
+						//   Fix:      RevealNextCard now accepts an onComplete callback via ICombatVisuals.MoveCardToRevealZone.
+						//             Round Start path waits for the movement to finish before raising afterShuffle.
+						//   Affects:  ICombatVisuals, CombatUXManager, CardPhysObjScript, CombatManager
+						//   Regress:  Start Card shuffle → reveal BOOSTER; verify BOOSTER fully reaches reveal zone before
+						//             emphasize/Stage animation starts and ends at the correct reveal-zone position.
+						StartCoroutine(PlayRecorderAnimationsAndWait());
+					});
+				}
+				else
+				{
+					RevealNextCard();
+				}
 				awaitingRevealConfirm = false; // Enter Start Card effect trigger phase
 			}
-
-			// Trigger delayed afterShuffle event if pending (e.g. after Start Card shuffle)
-			if (_raiseAfterShuffleOnNextReveal)
+			else if (_raiseAfterShuffleOnNextReveal)
 			{
+				// Edge case: no cards left to reveal but afterShuffle is pending
 				_raiseAfterShuffleOnNextReveal = false;
 				GameEventStorage.me.afterShuffle.Raise();
+				StartCoroutine(PlayRecorderAnimationsAndWait());
 			}
 
 			return;
@@ -601,6 +640,19 @@ public class CombatManager : MonoBehaviour
 		// ========== Phase 2: Wait to trigger current card effect ==========
 		else
 		{
+			// VISUAL-FIX(2026-06-09): Prevent player from triggering next effect while afterShuffle animations play
+			//   Cause:    Round Start path now calls PlayRecorderAnimationsAndWait after afterShuffle.Raise.
+			//             Without this guard, a player click could start a second coroutine and race CloseOpenedChain.
+			//   Affects:  CombatManager.RevealCards Phase 2
+			//   Regress:  Start Card shuffle → reveal BOOSTER (afterShuffle→Stage); spam-click during Stage animation.
+			//             Verify no duplicate effect trigger or chain corruption.
+			//   Related:  PRD prd-aftershuffle-reveal-timing-fix-2026-06-08.md
+			// Guard: don't trigger effect while recorder animations are playing
+			if (isPlayingEffectAnimations)
+			{
+				return;
+			}
+
 			// Check if current card is valid
 			if (revealZone == null)
 			{
@@ -636,14 +688,14 @@ public class CombatManager : MonoBehaviour
 
 	// ========== Helper Methods ==========
 
-	private void RevealNextCard()
+	private void RevealNextCard(Action onMoveToRevealZoneComplete = null)
 	{
 		var cardRevealed = combinedDeckZone[^1].GetComponent<CardScript>();
 		revealZone = combinedDeckZone[^1];
 		combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);
 
 		// Physical movement: from deck to reveal zone
-		visuals.MoveCardToRevealZone(cardRevealed.gameObject);
+		visuals.MoveCardToRevealZone(cardRevealed.gameObject, onMoveToRevealZoneComplete);
 
 		// Display info (don't trigger effect)
 		cardsRevealedThisRound++;
