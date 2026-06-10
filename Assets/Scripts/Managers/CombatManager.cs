@@ -486,7 +486,7 @@ public class CombatManager : MonoBehaviour
 
 		isPlayingEffectAnimations = false;
 
-		// Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait COMPLETE");
+		Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait COMPLETE");
 		if (visuals != null)
 		{
 			string deckList = "";

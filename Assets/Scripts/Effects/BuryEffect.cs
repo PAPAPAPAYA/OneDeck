@@ -217,6 +217,7 @@ public class BuryEffect : EffectScript
 	{
 		if (amount <= 0) return;
 		_combinedDeck = combatManager.combinedDeckZone;
+		Debug.Log("[BuryEffect] BuryNextXCards START amount=" + amount + " myCard=" + myCard.name + " inReveal=" + (combatManager.revealZone != null && combatManager.revealZone == myCard) + " deckCount=" + _combinedDeck.Count);
 		int startIndex;
 		if (combatManager.revealZone != null && combatManager.revealZone == myCard)
 		{
@@ -250,7 +251,12 @@ public class BuryEffect : EffectScript
 		}
 		if (cardsToBury.Count > 0)
 		{
+			Debug.Log("[BuryEffect] BuryNextXCards found cardsToBury=" + cardsToBury.Count + " cards=" + string.Join(",", cardsToBury.ConvertAll(c => c.name)));
 			BuryChosenCards(cardsToBury, cardsToBury.Count);
+		}
+		else
+		{
+			Debug.Log("[BuryEffect] BuryNextXCards found NO cards to bury");
 		}
 	}
 
@@ -315,31 +321,22 @@ public class BuryEffect : EffectScript
 			buriedTargetIndices.Add(idx >= 0 ? idx : 0);
 		}
 
-		// 2. Raise events in logic phase
-		foreach (var buriedCard in buriedCards)
-		{
-			GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
-			GameEventStorage.me.onAnyCardBuried.Raise();
-			var buriedCardScript = buriedCard.GetComponent<CardScript>();
-			if (buriedCardScript != null && GameEventStorage.me.onFriendlyCardBuried != null)
-			{
-				if (buriedCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
-				{
-					GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
-				}
-				else
-				{
-					GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
-				}
-			}
-		}
-
-		// 3. Capture animation requests
+		// VISUAL-FIX(2026-06-10): Bury animation not played when buried card triggers reactive effects
+		//   Cause:    BuryChosenCards captured AnimationRequests AFTER raising onMeBuried, but
+		//             reactive effects (e.g. counter -> add a copy) called CloseOpenedChain,
+		//             destroying the current recorder before requests were written.
+		//   Affects:  BuryEffect, EffectChainManager, RecorderAnimationPlayer
+		//   Regress:  Deck: grave_punch, slime, start card. Reveal grave_punch (BuryNextXCards).
+		//             Verify slime plays PopUp + MoveToBottomBatch animation visibly.
+		//   Related:  grave_punch, slime
+		// 2. Capture animation requests BEFORE raising events, because reactive effects
+		// (e.g. onMeBuried -> counter -> add a copy) may call CloseOpenedChain and destroy
+		// the current recorder before we get a chance to write our requests.
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
 		string reqInfo = "BuryBatch cards=" + buriedCards.Count + " indices=" + string.Join(",", buriedTargetIndices) + " deckSize=" + _combinedDeck.Count;
-		// Debug.Log("[BuryEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
+		Debug.Log("[BuryEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null)
 		{
 			// PopUp so player can see which cards are being buried
@@ -356,6 +353,25 @@ public class BuryEffect : EffectScript
 				duration = CombatUXManager.me != null ? CombatUXManager.me.deckMoveArcDuration : 0.5f,
 				useArc = true
 			});
+		}
+
+		// 3. Raise events in logic phase
+		foreach (var buriedCard in buriedCards)
+		{
+			GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
+			GameEventStorage.me.onAnyCardBuried.Raise();
+			var buriedCardScript = buriedCard.GetComponent<CardScript>();
+			if (buriedCardScript != null && GameEventStorage.me.onFriendlyCardBuried != null)
+			{
+				if (buriedCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+				{
+					GameEventStorage.me.onFriendlyCardBuried.RaiseOwner();
+				}
+				else
+				{
+					GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+				}
+			}
 		}
 	}
 }

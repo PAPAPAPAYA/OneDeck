@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4233433623620450103}
   - component: {fileID: 4746729872514881848}
-  - component: {fileID: 5542815141345456484}
+  - component: {fileID: 3871602917735425597}
   m_Layer: 0
   m_Name: stage self
   m_TagString: Untagged
@@ -45,18 +45,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  cursedCardTypeID: {fileID: 0}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5542815141345456484}
-        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
+      - m_Target: {fileID: 3871602917735425597}
+        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
         m_MethodName: StageSelf
         m_Mode: 1
         m_Arguments:
@@ -67,7 +65,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &5542815141345456484
+--- !u!114 &3871602917735425597
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -76,11 +74,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 3220981790090631673}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eefb24a8c10cb53439f7e7db22e3daec, type: 3}
+  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardManipulationEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
   tagToCheck: 0
+  targetFriendly: 0
+  statusEffectToCheck: 0
 --- !u!1 &7538812023556790325
 GameObject:
   m_ObjectHideFlags: 0
@@ -91,8 +90,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4188612179286784546}
   - component: {fileID: 5915337404688717014}
-  - component: {fileID: 4014360001380625273}
-  - component: {fileID: 5750369825992399411}
+  - component: {fileID: 5239499472435415902}
   m_Layer: 0
   m_Name: stage 2 token
   m_TagString: Untagged
@@ -127,30 +125,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  cursedCardTypeID: {fileID: 0}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 5750369825992399411}
-        m_TargetAssemblyTypeName: MinionCostEffect, Assembly-CSharp
-        m_MethodName: ExecuteMinionCost
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4014360001380625273}
-        m_TargetAssemblyTypeName: CardManipulationEffect, Assembly-CSharp
+      - m_Target: {fileID: 5239499472435415902}
+        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
         m_MethodName: StageMyTokens
         m_Mode: 3
         m_Arguments:
@@ -161,7 +145,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &4014360001380625273
+--- !u!114 &5239499472435415902
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -170,24 +154,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 7538812023556790325}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eefb24a8c10cb53439f7e7db22e3daec, type: 3}
+  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardManipulationEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
   tagToCheck: 0
---- !u!114 &5750369825992399411
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f2ba1f09f81a75408a543fff3cbff4b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MinionCostEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  targetFriendly: 0
+  statusEffectToCheck: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,10 +209,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: BULLDOZER
+  cardTypeID: BIRTH_PORTAL
+  displayName: 
   cardDesc: 'If friendly minion added: stage self;
 
     stage 2 friendly token'
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -248,13 +223,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

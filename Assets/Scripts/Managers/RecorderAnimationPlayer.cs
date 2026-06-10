@@ -16,7 +16,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 
 	public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 	{
-		// Debug.Log("[RecorderAnimationPlayer] PlayRecordersCoroutine START rootCount=" + rootRecorders.Count);
+		Debug.Log("[RecorderAnimationPlayer] PlayRecordersCoroutine START rootCount=" + rootRecorders.Count);
 		AttackAnimationManager.me?.HoldDeckFocus();
 		try
 		{
@@ -56,7 +56,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		}
 		else
 		{
-			// Debug.Log("[RecorderAnimationPlayer] Skipping emphasize: requests=" + recorder.animationRequests.Count + " card=" + cardName);
+			Debug.Log("[RecorderAnimationPlayer] Skipping emphasize: requests=" + recorder.animationRequests.Count + " card=" + cardName);
 		}
 
 		// Pre-scan to mark StatusEffectChange requests that should defer display commit

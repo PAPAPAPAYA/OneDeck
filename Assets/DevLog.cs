@@ -67,7 +67,7 @@
 //! refactor
 	//// consider refactor start card to be more like normal cards
 	//// moveToTopPopUpBatch has its own deck-focus restoration logic which is the same to PlayRequestCoroutine
-	//todo localization stringSO to store chinese translation
+	// localization stringSO to store chinese translation
 	//// clean up, since new animation system is complete
 	//// clean up pre effect event
 	// clean up or rather add a switch to toggle debug messages
@@ -141,8 +141,8 @@
 			//// bury and add (sacrifice_ritual)
 			//// bury and enhence curse
 		//// staged
-	//todo status effect
-		// counter wisp
+	// status effect
+		//// counter wisp: use the same wisp as power
 		//// text to show status effect
 		//// better power wisp
 			//// dot, no trail
@@ -160,8 +160,9 @@
 	// better card move animation
 		// change z dynamically
 	// motion design
-		//shake revealed card if cost not met / can't activate if card in reveal zone
-			// need testing, especially need to check if custom shake properly only applied to card in reveal zone
+		////shake revealed card if cost not met / can't activate if card in reveal zone
+			//// need testing, especially need to check if custom shake is only applied to card in reveal zone
+			//// custom not only applied to card in reveal zone, but seems okay
 		//// enlarge card when event triggered
 			//// make status effect related effects to go through animation request system, so that they have emphasize animation
 		//// cards in front slide down/up, or rotate to disappear into left side of screen, to show card in focus
@@ -176,17 +177,22 @@
 #endregion
 #region bugs
 //! bug
+	//todo counter effect not spawning status effect projectile
+		// need Testing
+	//// card type id checker fix
+	//// need to check: [1] bury 1 friendly; if friendly buried, deal dmg; [2] if buried, deal dmg; if buried, bury 1 friendly; [3] dummy
+	//// grave_punch + slime bugged
 	//// give power gives 2 times the power
 	//// make other value tracker related headless test
 	//// test other value tracker related cards
 	//// test on power gained: POWER_CRAVER
 		//// logic not working
 		//// make a power_craver headless test
-	//todo after shuffle: BOOSTER
-		// bugged: staged cards move prematurely
-		// prd updated, need to let kimi reflect on mistake and update agents.md
-		// need to apply new prd changes
-		// animation still not played at correct timing
+	//// after shuffle: BOOSTER
+		//// bugged: staged cards move prematurely
+		//// prd updated, need to let kimi reflect on mistake and update agents.md
+		//// need to apply new prd changes
+		//// animation still not played at correct timing
 	//// elder sorcerer
 		//// bugged: staged amount not tracked
 	//// snatcher

@@ -39,18 +39,18 @@ public static class CardTypeIDValidator
 		{
 			hasIssue = true;
 			string paths = string.Join(", ", kvp.Value);
-			/* Debug.LogWarning($"[CardTypeIDValidator] Duplicate cardTypeID \"{kvp.Key}\" found in: {paths}",
-				AssetDatabase.LoadAssetAtPath<Object>(kvp.Value[0])); */
+			Debug.LogWarning($"[CardTypeIDValidator] Duplicate cardTypeID \"{kvp.Key}\" found in: {paths}",
+				AssetDatabase.LoadAssetAtPath<Object>(kvp.Value[0]));
 		}
 
 		foreach (string path in emptyIdPaths)
 		{
 			hasIssue = true;
-			/* Debug.LogWarning($"[CardTypeIDValidator] Empty cardTypeID in: {path}",
-				AssetDatabase.LoadAssetAtPath<Object>(path)); */
+			Debug.LogWarning($"[CardTypeIDValidator] Empty cardTypeID in: {path}",
+				AssetDatabase.LoadAssetAtPath<Object>(path)); 
 		}
 
-			/* if (!hasIssue)
-				Debug.Log("[CardTypeIDValidator] All cardTypeIDs are valid. No duplicates or empty IDs found."); */
+			if (!hasIssue)
+				Debug.Log("[CardTypeIDValidator] All cardTypeIDs are valid. No duplicates or empty IDs found."); 
 	}
 }

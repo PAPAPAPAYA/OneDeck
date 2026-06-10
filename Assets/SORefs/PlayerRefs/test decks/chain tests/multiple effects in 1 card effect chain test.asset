@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: PlayerDeckRef
+  m_Name: multiple effects in 1 card effect chain test
   m_EditorClassIdentifier: 
   deck:
   - {fileID: 1808145013887896563, guid: 1bafbaef2fb0d6b4d98d65925847096d, type: 3}
   - {fileID: 1808145013887896563, guid: 276b53576e814444e84a0b3ffd345aca, type: 3}
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
-  defaultDeck: {fileID: 11400000, guid: 16ecba6037c99854bb77b6dbfd682202, type: 2}
-  resetOnStart: 1
-  description: player's deck, data only no instances
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: bury friendly + add curse

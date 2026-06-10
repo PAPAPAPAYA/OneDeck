@@ -131,9 +131,16 @@ namespace DefaultNamespace.Effects
 		#endregion
 
 		#region Public Effect Methods
+		// VISUAL-FIX(2026-06-10): GiveSelfStatusEffect has no projectile animation
+		//   Cause:    GiveSelfStatusEffect only called ApplyStatusEffectCore, which captures
+		//             StatusEffectChange but not StatusEffectProjectile
+		//   Affects:  StatusEffectGiverEffect, RecorderAnimationPlayer, CombatUXManager
+		//   Regress:  Reveal a card whose effect calls GiveSelfStatusEffect (e.g. self-Power)
+		//             Check: card pops up, projectile flies in, then slots back in
 		public virtual void GiveSelfStatusEffect(int amount)
 		{
 			ApplyStatusEffectToCard(myCardScript, amount);
+			CaptureBatchStatusEffectAnimation(new List<CardScript> { myCardScript });
 		}
 
 		public virtual void GiveStatusEffect(int amount)

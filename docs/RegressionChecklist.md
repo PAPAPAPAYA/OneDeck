@@ -47,6 +47,8 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 11 | afterShuffle effect animations not played until next player click | `CombatManager`, `EffectChainManager`, `RecorderAnimationPlayer` | 2026-06-09 | ✅ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** Stage animation plays **automatically** after auto-reveal completes, without waiting for player click; `isPlayingEffectAnimations` blocks Phase 2 during playback |
 | 12 | BOOSTER overlaps deck cards because afterShuffle starts before reveal-zone movement finishes | `CombatManager`, `ICombatVisuals`, `CombatUXManager`, `CardPhysObjScript` | 2026-06-09 | ✅ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** BOOSTER fully reaches reveal zone before its emphasize/Stage animation starts; no overlap with deck cards |
 | 13 | `MoveCardToTopPopUpBatch` dead-locks due to N `RegisterAnimation` calls vs 1 `CompleteAnimation` | `CombatUXManager`, `AnimationStateTracker`, `RecorderAnimationPlayer` | 2026-06-09 | ✅ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** `PlayRecorderAnimationsAndWait` does **not** wait 5s on timeout; `AnimationStateTracker` log shows `pending` returns to 0 after batch completes; `BlockInput`/`UnblockInput` are paired 1:1 |
+| 14 | Bury animation lost when buried card triggers reactive effects that close the recorder chain | `BuryEffect`, `EffectChainManager`, `RecorderAnimationPlayer` | 2026-06-10 | ✅ | **Card:** grave_punch + slime + start card deck<br>**Check:** Reveal grave_punch (BuryNextXCards). Verify slime plays `PopUpBatch` + `MoveToBottomBatch` animation visibly; console shows `[BuryEffect] Capture request to recorder=chain#...` (not `null`) |
+| 15 | GiveSelfStatusEffect missing projectile animation | `StatusEffectGiverEffect`, `RecorderAnimationPlayer` | 2026-06-10 | ⚠️ | **Card:** Any card with GiveSelfStatusEffect (e.g. self-Power)<br>**Check:** Card pops up, projectile flies from self to self, then slots back in; `StatusEffectChange` already captured by `ApplyStatusEffectCore` |
 
 ---
 
@@ -62,7 +64,7 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 
 | File(s) | Related Rows |
 |---------|-------------|
-| `BuryEffect.cs` | 1, 2, 5, 7 |
+| `BuryEffect.cs` | 1, 2, 5, 7, 14 |
 | `StageEffect.cs` | 1, 2, 5, 7 |
 | `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13 |
 | `EffectChainManager.cs` | 2, 11 |

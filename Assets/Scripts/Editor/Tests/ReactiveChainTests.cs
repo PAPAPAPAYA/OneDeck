@@ -315,4 +315,68 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 		}
 		Assert.AreEqual(2, powerCount, "Curse target should have 2 Power stacks");
 	}
+
+	[Test]
+	public void BuryWithReactiveCloseChain_AnimationRequestsCapturedBeforeEvents()
+	{
+		// Simulate the exact scenario from the bug: grave_punch reveals and buries slime.
+		// Slime's onMeBuried triggers two reactive effects (counter -> add a copy).
+		// The second reactive effect calls CheckShouldIStartANewChain, which sees the
+		// first reactive effect's recorder (same card, different effect) and calls
+		// CloseOpenedChain, destroying the bury recorder BEFORE the old code path
+		// could capture animation requests.
+		var gravePunch = CreateCard(true, "GravePunch");
+		var slime = CreateCard(true, "Slime");
+		var startCard = CreateStartCard();
+
+		// Deck: [startCard, slime], gravePunch in reveal zone
+		CombatManager.combinedDeckZone.Add(startCard);
+		CombatManager.combinedDeckZone.Add(slime);
+		CombatManager.revealZone = gravePunch;
+
+		var buryEffect = CreateEffect<BuryEffect>(gravePunch);
+
+		// Slime has two different effects that will trigger on onMeBuried
+		var counterEffect = CreateEffect<StatusEffectGiverEffect>(slime);
+		var copyEffect = CreateEffect<AddTempCard>(slime);
+
+		// Listener on slime reacts to onMeBuried:
+		// 1. counter effect creates a recorder then pop
+		// 2. copy effect calls CheckShouldIStartANewChain and sees same card + different effect
+		//    -> CloseOpenedChain is called, closing all opened recorders including bury's
+		var listenerObj = CreateGameObject("BuryReactiveListener");
+		listenerObj.transform.SetParent(slime.transform);
+		var listener = listenerObj.AddComponent<GameEventListener>();
+		listener.@event = GameEventStorage.onMeBuried;
+		listener.response.AddListener(() => {
+			// Step 1: counter effect creates recorder (still leaves it in openedEffectRecorders)
+			EffectChainManager.MakeANewEffectRecorder(slime, counterEffect.gameObject);
+			EffectChainManager.Me.PopCurrentRecorder();
+
+			// Step 2: copy effect sees same card (slime) with different effect object
+			// in openedEffectRecorders, triggering CloseOpenedChain
+			EffectChainManager.CheckShouldIStartANewChain(slime, copyEffect.gameObject);
+		});
+		var ls = listenerObj.AddComponent<CardScript>();
+		ls.myStatusRef = OwnerStatus;
+		ls.myStatusEffects = new List<EnumStorage.StatusEffect>();
+		ls.myTags = new List<EnumStorage.Tag>();
+		GameEventStorage.onMeBuried.RegisterListener(listener);
+
+		// Execute: BuryNextXCards should bury slime
+		EffectChainManager.MakeANewEffectRecorder(gravePunch, buryEffect.gameObject);
+		buryEffect.BuryNextXCards(1);
+		EffectChainManager.Me.PopCurrentRecorder();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		// Assert: bury recorder was closed but already had its animation requests
+		Assert.AreEqual(2, EffectChainManager.Me.closedEffectRecorders.Count, "Should have 2 recorders: bury + counter");
+		var root = EffectChainManager.Me.closedEffectRecorders[0].GetComponent<EffectRecorder>();
+		Assert.AreEqual(2, root.animationRequests.Count, "Bury recorder should have 2 animation requests captured before reactive CloseOpenedChain");
+		Assert.AreEqual(AnimationRequestType.PopUpBatch, root.animationRequests[0].type, "First request should be PopUpBatch");
+		Assert.AreEqual(AnimationRequestType.MoveToBottomBatch, root.animationRequests[1].type, "Second request should be MoveToBottomBatch");
+
+		// Assert: slime is at bottom
+		Assert.AreEqual(slime, CombatManager.combinedDeckZone[0], "Slime should be at deck bottom");
+	}
 }
