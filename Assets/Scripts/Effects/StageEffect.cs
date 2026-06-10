@@ -16,6 +16,10 @@ public class StageEffect : EffectScript
 	public bool targetFriendly;
 	public EnumStorage.StatusEffect statusEffectToCheck;
 
+	[Header("Self Exclusion")]
+	[Tooltip("If true, the source card will not be selected when staging multiple cards")]
+	public bool excludeSelf = true;
+
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
@@ -71,7 +75,7 @@ public class StageEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript))
+			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript) || (excludeSelf && card == myCard))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -92,7 +96,7 @@ public class StageEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -113,7 +117,7 @@ public class StageEffect : EffectScript
 		{
 			var card = myTokens[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || !cardScript.isMinion)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || !cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				myTokens.RemoveAt(i);
 			}
@@ -134,7 +138,7 @@ public class StageEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion)
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -185,7 +189,8 @@ public class StageEffect : EffectScript
 			if (!cardScript.isMinion || 
 			    CombatManager.ShouldSkipEffectProcessing(cardScript) || 
 			    cardScript.myStatusRef != myCardScript.myStatusRef || 
-			    IsCardAtTop(card))
+			    IsCardAtTop(card) || 
+			    (excludeSelf && card == myCard))
 			{
 				friendlyMinions.RemoveAt(i);
 				continue;
@@ -263,7 +268,8 @@ public class StageEffect : EffectScript
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript) ||
 			    isFriendly != targetFriendly ||
 			    IsCardAtTop(card) ||
-			    cardScript.isMinion)
+			    cardScript.isMinion ||
+			    (excludeSelf && card == myCard))
 			{
 				eligibleCards.RemoveAt(i);
 			}

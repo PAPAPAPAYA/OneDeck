@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: beccc0e445995a14a90ea35c161a1dbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartCardShuffleEffect
+  startCardPositionStdDevFactor: 0.3
 --- !u!114 &7115491257903541512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,4 +136,5 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 

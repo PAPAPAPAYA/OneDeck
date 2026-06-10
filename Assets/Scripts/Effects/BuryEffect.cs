@@ -11,6 +11,10 @@ public class BuryEffect : EffectScript
 	[Header("Tag Configuration")]
 	public List<EnumStorage.Tag> tagsToCheck;
 
+	[Header("Self Exclusion")]
+	[Tooltip("If true, the source card will not be selected when burying multiple cards")]
+	public bool excludeSelf = true;
+
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
@@ -80,7 +84,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!CardHasAnyMatchingTag(cardScript) || IsCardAtBottom(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript))
+			if (!CardHasAnyMatchingTag(cardScript) || IsCardAtBottom(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript) || (excludeSelf && card == myCard))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -101,7 +105,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -122,7 +126,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!CardHasAnyMatchingTag(cardScript) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			if (!CardHasAnyMatchingTag(cardScript) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -197,7 +201,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				myCards.RemoveAt(i);
 			}

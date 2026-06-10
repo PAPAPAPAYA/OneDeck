@@ -51,6 +51,7 @@
 #endregion
 #region anything else
 //! anything else
+	///// add to agents.md: don't change code if not told
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
 	//// show card tag ---- deathrattle, linger
@@ -98,7 +99,8 @@
 #endregion
 #region feature
 //! feature
-	//todo stage effect add new bool to control whether to exclude self
+	//todo stage / bury effect add new bool to control whether to exclude self
+		// need testing
 	//// a more comprehensive test kit
 		//// logic
 			//// enemy side
@@ -115,8 +117,9 @@
 	//// rarity
 		//// rarity attibute in card script
 	//// iterate on shop based on rarity
-	//todo fake shuffle
-		// control friendly and hostile ratio
+	// fake shuffle
+		//? detect large amount of consecutive cards from one side
+		//// stddev for start card
 #endregion
 #region viscom
 //! viscom
@@ -177,8 +180,7 @@
 #endregion
 #region bugs
 //! bug
-	//todo counter effect not spawning status effect projectile
-		// need Testing
+	//// counter effect not spawning status effect projectile
 	//// card type id checker fix
 	//// need to check: [1] bury 1 friendly; if friendly buried, deal dmg; [2] if buried, deal dmg; if buried, bury 1 friendly; [3] dummy
 	//// grave_punch + slime bugged

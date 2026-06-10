@@ -50,6 +50,19 @@ public static class UtilityFuncManagerScript
 		}
 	}
 
+	/// <summary>
+	/// Generates a random number following Gaussian (normal) distribution using Box-Muller transform.
+	/// </summary>
+	/// <param name="mean">Center of the distribution.</param>
+	/// <param name="stdDev">Standard deviation (spread). Higher = more dispersed.</param>
+	public static float GaussianRandom(float mean, float stdDev)
+	{
+		float u1 = 1.0f - Random.value;
+		float u2 = 1.0f - Random.value;
+		float randStdNormal = Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Sin(2.0f * Mathf.PI * u2);
+		return mean + stdDev * randStdNormal;
+	}
+
 	// get a random point on a circle
 	public static Vector3 RandomPointOnUnitCircle(float radius)
 	{
