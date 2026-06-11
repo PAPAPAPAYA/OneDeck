@@ -12,6 +12,9 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 | **Comments & Docs** | English only |
 | **Encoding** | UTF-8 only |
 
+## Agent Behavior
+- **Code Changes**: Do not execute code modifications unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
+
 ## Core Loop
 
 `Shop` -> `Combat` -> `Result` -> `Shop`
@@ -289,7 +292,6 @@ If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.G
 
 ## Agent Post-Mortem Notes
 
-- **Code Changes**: Do not execute code modifications unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
 - **Do not treat PRD scope as exhaustive**. Independently trace full flow; PRDs can miss branches.
 - **Watch for sentinel conditions** (`return`, `else`, `continue`) that short-circuit expected paths.
 - **After moving code, do reachability check**: simulate end-to-end and confirm modified lines execute.

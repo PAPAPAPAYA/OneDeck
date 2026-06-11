@@ -49,7 +49,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: JIJI_THE_SECOND
   displayName: "\u6025\u6025\u4E8C\u4E16"
-  cardDesc: "\u6D17\u724C\u540E:\u9020\u62103\u4F24\u5BB3"
+  cardDesc: "\u6D17\u724C\u540E:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

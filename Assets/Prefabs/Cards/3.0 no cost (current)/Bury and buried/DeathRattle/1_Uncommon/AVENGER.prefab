@@ -233,7 +233,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: AVENGER
   displayName: "\u590D\u4EC7\u8005"
-  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b>3</b> \u4F24\u5BB3;\u88AB\u57CB\u846C:\u83B7\u5F97
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u88AB\u57CB\u846C:\u83B7\u5F97
     <b>2</b> \u529B\u91CF"
   rarity: 1
   takeUpSpace: 1

@@ -217,7 +217,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: GRAVE_INVITATION
   displayName: "\u51A5\u754C\u9080\u8BF7"
-  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b>4</b> \u4F24\u5BB3,\u5893\u5730\u6BCF\u6709
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u5893\u5730\u6BCF\u6709
     <b>1</b> \u53CB\u65B9:\u57CB\u846C <b>1</b> \u654C\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1

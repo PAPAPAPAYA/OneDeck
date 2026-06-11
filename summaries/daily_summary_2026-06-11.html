@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发日报 - 2026-05-25 ~ 06-11</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		body {
+			font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+			background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+			min-height: 100vh;
+			color: #e0e0e0;
+			padding: 40px 20px;
+		}
+		.container {
+			max-width: 900px;
+			margin: 0 auto;
+		}
+		.header {
+			text-align: center;
+			margin-bottom: 40px;
+			padding: 30px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 20px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+		}
+		.header h1 {
+			font-size: 2.5em;
+			margin-bottom: 10px;
+			background: linear-gradient(90deg, #e94560, #ff6b6b);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+		.header .subtitle {
+			color: #888;
+			font-size: 1.1em;
+		}
+		.header .stats {
+			display: flex;
+			justify-content: center;
+			gap: 40px;
+			margin-top: 25px;
+			flex-wrap: wrap;
+		}
+		.stat-box {
+			text-align: center;
+		}
+		.stat-box .number {
+			font-size: 2em;
+			font-weight: bold;
+			color: #e94560;
+		}
+		.stat-box .label {
+			font-size: 0.9em;
+			color: #aaa;
+			margin-top: 5px;
+		}
+		.timeline {
+			position: relative;
+			padding-left: 30px;
+		}
+		.timeline::before {
+			content: '';
+			position: absolute;
+			left: 10px;
+			top: 0;
+			bottom: 0;
+			width: 3px;
+			background: linear-gradient(to bottom, #e94560, #533483);
+			border-radius: 3px;
+		}
+		.commit-card {
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 16px;
+			padding: 25px;
+			margin-bottom: 25px;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			backdrop-filter: blur(10px);
+			position: relative;
+			transition: transform 0.3s, box-shadow 0.3s;
+		}
+		.commit-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 10px 30px rgba(233, 69, 96, 0.15);
+		}
+		.commit-card::before {
+			content: '';
+			position: absolute;
+			left: -24px;
+			top: 30px;
+			width: 14px;
+			height: 14px;
+			background: #e94560;
+			border-radius: 50%;
+			border: 3px solid #1a1a2e;
+		}
+		.commit-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		.commit-title {
+			font-size: 1.3em;
+			font-weight: 600;
+			color: #fff;
+		}
+		.commit-time {
+			background: rgba(233, 69, 96, 0.15);
+			color: #e94560;
+			padding: 5px 15px;
+			border-radius: 20px;
+			font-size: 0.85em;
+			font-weight: 500;
+		}
+		.commit-desc {
+			color: #ccc;
+			line-height: 1.7;
+			margin-bottom: 15px;
+		}
+		.file-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin-top: 15px;
+		}
+		.file-tag {
+			background: rgba(83, 52, 131, 0.3);
+			color: #b8a9d9;
+			padding: 4px 12px;
+			border-radius: 8px;
+			font-size: 0.8em;
+			font-family: 'Consolas', monospace;
+		}
+		.file-tag.added {
+			background: rgba(46, 204, 113, 0.15);
+			color: #2ecc71;
+		}
+		.file-tag.modified {
+			background: rgba(241, 196, 15, 0.15);
+			color: #f1c40f;
+		}
+		.diff-stats {
+			display: flex;
+			gap: 20px;
+			margin-top: 15px;
+			font-size: 0.9em;
+		}
+		.diff-stat {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+		.diff-stat .plus {
+			color: #2ecc71;
+			font-weight: bold;
+		}
+		.diff-stat .minus {
+			color: #e74c3c;
+			font-weight: bold;
+		}
+		.section-title {
+			font-size: 1.5em;
+			margin: 40px 0 20px 0;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.section-title::before {
+			content: '';
+			width: 5px;
+			height: 25px;
+			background: #e94560;
+			border-radius: 3px;
+		}
+		.highlight-box {
+			background: linear-gradient(135deg, rgba(233, 69, 96, 0.1), rgba(83, 52, 131, 0.1));
+			border: 1px solid rgba(233, 69, 96, 0.3);
+			border-radius: 16px;
+			padding: 25px;
+			margin-top: 30px;
+		}
+		.highlight-box h3 {
+			color: #e94560;
+			margin-bottom: 15px;
+			font-size: 1.2em;
+		}
+		.highlight-box ul {
+			list-style: none;
+			padding: 0;
+		}
+		.highlight-box li {
+			padding: 8px 0;
+			padding-left: 25px;
+			position: relative;
+			color: #ddd;
+			line-height: 1.6;
+		}
+		.highlight-box li::before {
+			content: '▸';
+			position: absolute;
+			left: 0;
+			color: #e94560;
+		}
+		.tag {
+			display: inline-block;
+			padding: 2px 10px;
+			border-radius: 6px;
+			font-size: 0.75em;
+			font-weight: 600;
+			margin-left: 10px;
+		}
+		.tag.bugfix {
+			background: rgba(231, 76, 60, 0.2);
+			color: #e74c3c;
+		}
+		.tag.feature {
+			background: rgba(46, 204, 113, 0.2);
+			color: #2ecc71;
+		}
+		.tag.test {
+			background: rgba(52, 152, 219, 0.2);
+			color: #3498db;
+		}
+		.tag.docs {
+			background: rgba(155, 89, 182, 0.2);
+			color: #9b59b6;
+		}
+		.tag.refactor {
+			background: rgba(241, 196, 15, 0.2);
+			color: #f1c40f;
+		}
+		.footer {
+			text-align: center;
+			margin-top: 50px;
+			padding: 20px;
+			color: #666;
+			font-size: 0.9em;
+		}
+		.test-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: 12px;
+			margin-top: 15px;
+		}
+		.test-card {
+			background: rgba(255, 255, 255, 0.03);
+			border: 1px solid rgba(255, 255, 255, 0.06);
+			border-radius: 10px;
+			padding: 14px 16px;
+		}
+		.test-card .test-name {
+			font-weight: 600;
+			color: #fff;
+			font-size: 0.95em;
+			margin-bottom: 4px;
+		}
+		.test-card .test-count {
+			color: #888;
+			font-size: 0.85em;
+		}
+		.subsection {
+			font-size: 1.1em;
+			color: #bbb;
+			margin: 20px 0 10px 0;
+			font-weight: 600;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>OneDeck 开发日报</h1>
+			<div class="subtitle">2026年5月25日 ~ 6月11日 · 视觉重制、Start Card重构与动画系统稳定化</div>
+			<div class="stats">
+				<div class="stat-box">
+					<div class="number">23</div>
+					<div class="label">Git 提交</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">~21,000</div>
+					<div class="label">新增代码行</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">24</div>
+					<div class="label">新增测试牌组</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">5</div>
+					<div class="label">新增设计文档</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-title">工作内容时间线</div>
+		<div class="timeline">
+			<!-- 5/25 ~ 5/27 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Start Card Shuffle 接入 EffectRecorder + 状态转移动画
+						<span class="tag feature">Feature</span>
+						<span class="tag refactor">Refactor</span>
+					</div>
+					<div class="commit-time">5月25日 ~ 27日</div>
+				</div>
+				<div class="commit-desc">
+					将 Start Card 的 shuffle 动画从独立的旧系统全面迁移至 <code>EffectRecorder</code> 体系：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>StartCardShuffleEffect</code> 新增脚本，捕获 <code>AnimationRequestType.Shuffle</code>，由 <code>RecorderAnimationPlayer</code> 统一调度</li>
+						<li><code>CombatManager</code> 移除旧 shuffle 回调，改由 <code>OnStartCardShuffleAnimationComplete()</code> 驱动后续流程</li>
+						<li><code>afterShuffle</code> 事件触发时机与 reveal-zone 动画解耦，为后续时序修复奠定基础</li>
+						<li><code>TransferStatusEffectEffect</code> 接入 <code>StatusEffectProjectile</code> + <code>SlotInBatch</code> 动画</li>
+						<li>去重 deck-focus restore 逻辑，避免多次聚焦导致的卡片跳动</li>
+					</ul>
+					同时新增大量 ValueTracker 引用（<code>HostileStagedCountRef</code>、<code>OwnerCardBuriedCountRef</code> 等）用于后续统计与条件判定。
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatManager.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">TransferStatusEffectEffect.cs</span>
+					<span class="file-tag added">StartCardShuffleEffect.cs</span>
+					<span class="file-tag added">ValueTrackerEffectTests.cs</span>
+					<span class="file-tag added">start-card-recorder-unification-prd.md</span>
+				</div>
+			</div>
+
+			<!-- 5/28 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Headless 测试扩展 + 工程清理与小修复
+						<span class="tag test">Test</span>
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">5月28日</div>
+				</div>
+				<div class="commit-desc">
+					大规模补充 Headless 测试覆盖，同时清理工程目录：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>新增测试</strong>: <code>AddTempCardTests</code>、<code>ConsumeStatusEffectTests</code>、<code>PowerReactionEffectTests</code>、<code>TransferStatusEffectEffectTests</code>、敌方视角测试（<code>ExileEffectTests</code>、<code>HPAlterEffectTests</code> 等）</li>
+						<li><strong>修复</strong>: <code>StageEffect</code> 新增 staged card 计数追踪；<code>ValueTrackerManager</code> 统计敌方卡牌时排除 Start Card</li>
+						<li><strong>工程清理</strong>: 废弃脚本归档、plans 目录规范化命名（统一加日期前缀）、<code>tools/</code> 脚本归入 <code>scripts/</code> 子目录</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag added">AddTempCardTests.cs</span>
+					<span class="file-tag added">ConsumeStatusEffectTests.cs</span>
+					<span class="file-tag added">PowerReactionEffectTests.cs</span>
+					<span class="file-tag added">TransferStatusEffectEffectTests.cs</span>
+					<span class="file-tag modified">StageEffect.cs</span>
+					<span class="file-tag modified">ValueTrackerManager.cs</span>
+				</div>
+			</div>
+
+			<!-- 5/29 ~ 5/30 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						卡牌视觉重制：动态阴影 + 圆角 Shader + 9-Sliced Sprites
+						<span class="tag feature">Feature</span>
+						<span class="tag refactor">Refactor</span>
+					</div>
+					<div class="commit-time">5月29日 ~ 30日</div>
+				</div>
+				<div class="commit-desc">
+					全面翻新卡牌视觉表现，从自定义 Shader 迁移至更灵活、更易于调参的 9-sliced sprite 体系：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>动态阴影</strong>: 新增 <code>Mat_CardShadow.mat</code>，卡牌在 deck 中时投射柔和阴影，增强层次感</li>
+						<li><strong>圆角 Shader</strong>: 新增 <code>CardRoundedRectWorldSpace.shader</code> 与 <code>CardRoundedRectWorldSpaceLit.shader</code>，支持世界空间 UV 与光照响应</li>
+						<li><strong>9-Sliced 迁移</strong>: <code>PhysicalCard.prefab</code> 与 <code>PhysicalCardParent.prefab</code> 改用 9-sliced 圆角贴图（<code>RoundedCorner.png</code>），边缘更清晰、缩放无畸变</li>
+						<li><strong>材质拆分</strong>: 区分 <code>Mat_CardFace_friendly</code> / <code>Mat_CardFace_hostile</code>，便于运行时切换阵营色调</li>
+					</ul>
+					产出 <code>CardUIMockups.html</code> 作为新 UI 设计的交互原型参考。
+				</div>
+				<div class="diff-stats">
+					<div class="diff-stat"><span class="plus">+7,500</span> 行</div>
+					<div class="diff-stat"><span class="minus">-2,100</span> 行</div>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">PhysicalCard.prefab</span>
+					<span class="file-tag modified">PhysicalCardParent.prefab</span>
+					<span class="file-tag modified">StartCard.prefab</span>
+					<span class="file-tag added">CardRoundedRectWorldSpace.shader</span>
+					<span class="file-tag added">CardRoundedRectWorldSpaceLit.shader</span>
+					<span class="file-tag added">Mat_CardShadow.mat</span>
+					<span class="file-tag added">CardUIMockups.html</span>
+				</div>
+			</div>
+
+			<!-- 5/31 ~ 6/1 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						状态效果文字区域 + 粒子效果优化
+						<span class="tag feature">Feature</span>
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">5月31日 ~ 6月1日</div>
+				</div>
+				<div class="commit-desc">
+					为卡牌添加独立的状态效果文字显示区，解决状态图标过多时互相遮挡的问题：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>CardPhysObjScript</code> 新增状态效果文本组件，<code>CombatInfoDisplayer</code> 负责统一更新</li>
+						<li><strong>延迟更新</strong>: 卡牌描述文字（damage / heal 数值）延迟到状态效果动画完成后刷新，避免动画期间数字跳动</li>
+						<li><strong>Power Wisp 粒子</strong>: 更新 <code>PS_PowerWispWIP 2.prefab</code>，Power 状态获得更明显的悬浮光点特效</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+					<span class="file-tag modified">CombatInfoDisplayer.cs</span>
+					<span class="file-tag modified">CardScript.cs</span>
+					<span class="file-tag modified">PS_PowerWispWIP 2.prefab</span>
+				</div>
+			</div>
+
+			<!-- 6/8 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Cost-Fail Shake 接入 EffectRecorder + Booster 修复
+						<span class="tag bugfix">Bugfix</span>
+						<span class="tag feature">Feature</span>
+					</div>
+					<div class="commit-time">6月8日</div>
+				</div>
+				<div class="commit-desc">
+					将费用不足时的卡牌抖动动画整合进 <code>EffectRecorder</code> 序列，使其与效果动画统一调度：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>CostNEffectContainer</code> 在 cost check 失败时触发 shake，由 <code>RecorderAnimationPlayer</code> 播放</li>
+						<li><code>CostResultPresenter</code> 新增 presenter 逻辑，支持 headless 测试断言</li>
+						<li><code>CardShake.asset</code> 调整参数，适配新的 recorder-based 播放时序</li>
+						<li>同步修复 <code>BOOSTER</code> 卡牌的多效果链触发问题（WIP）</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CostNEffectContainer.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">CombatManager.cs</span>
+					<span class="file-tag added">CostResultPresenterTests.cs</span>
+				</div>
+			</div>
+
+			<!-- 6/9 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						afterShuffle 时机修复与动画死锁根治
+						<span class="tag bugfix">Bugfix</span>
+						<span class="tag test">Test</span>
+					</div>
+					<div class="commit-time">6月9日</div>
+				</div>
+				<div class="commit-desc">
+					修复 Start Card shuffle 完成后整个动画系统卡死的严重问题：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>死锁根因</strong>: shuffle 动画完成后 <code>afterShuffle</code> 立即触发新效果链，但此时旧 chain 尚未关闭，导致 <code>isPlayingEffectAnimations</code> 永远无法重置</li>
+						<li><strong>修复方案</strong>: <code>CombatManager</code> 在 <code>PlayRecorderAnimationsAndWait()</code> 的 finally 块中确保 chain 关闭后再触发 round start / afterShuffle；reveal-zone 移动完成后通过回调精确控制事件时序</li>
+						<li><strong>测试覆盖</strong>: 新增 <code>AfterShuffleTimingTests.cs</code>（190 行），包含 4 个 headless 用例验证 afterShuffle 触发顺序与动画守卫</li>
+						<li>产出 <code>prd-aftershuffle-reveal-timing-fix-2026-06-08.md</code> 详细记录死锁场景与修复路径</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatManager.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+					<span class="file-tag added">AfterShuffleTimingTests.cs</span>
+					<span class="file-tag added">prd-aftershuffle-reveal-timing-fix-2026-06-08.md</span>
+				</div>
+			</div>
+
+			<!-- 6/10 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Bury/Stage 反应链动画修复 + 智能 Start Card 排除
+						<span class="tag bugfix">Bugfix</span>
+						<span class="tag feature">Feature</span>
+					</div>
+					<div class="commit-time">6月10日</div>
+				</div>
+				<div class="commit-desc">
+					集中修复 bury/stage 在反应链中的动画丢失与 Start Card 被错误处理的问题：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>Bury 动画丢失</strong>: 当 bury 触发 <code>onMeBuried</code> → Stage 自身时，被 stage 的卡牌因物理索引未刷新而丢失 slot-in 动画；修复方案为在 <code>BuryEffect</code> 中提前 snapshot 并在 <code>RecorderAnimationPlayer</code> 播放前同步物理顺序</li>
+						<li><strong>Self 状态效果动画丢失</strong>: 给自身施加状态效果（如 Power）时，若卡牌处于 reveal zone，<code>StatusEffectChange</code> 动画被跳过；通过 <code>StatusEffectGiverEffect.GiveSelfStatusEffect</code> 路径补全捕获</li>
+						<li><strong>智能 Start Card 排除</strong>: <code>BuryEffect</code> 与 <code>StageEffect</code> 在选择目标时自动跳过 <code>isStartCard</code>，避免将 neutral Start Card 埋入牌底或置顶导致流程异常</li>
+						<li>新增测试卡牌 <code>BUY_ONE_GET_ONE_FREE</code>、<code>CORPSE_CANNON</code>、<code>DOWNED_FIGHTER</code> 验证复杂连锁</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">BuryEffect.cs</span>
+					<span class="file-tag modified">StageEffect.cs</span>
+					<span class="file-tag modified">StartCardShuffleEffect.cs</span>
+					<span class="file-tag modified">StatusEffectGiverEffect.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag added">EffectRecorder_Architecture_Critique.md</span>
+				</div>
+			</div>
+
+			<!-- 6/11 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						动态卡牌描述与 dmg 占位符
+						<span class="tag feature">Feature</span>
+					</div>
+					<div class="commit-time">6月11日</div>
+				</div>
+				<div class="commit-desc">
+					为卡牌描述文本引入动态数值替换机制：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>CardScript</code> 新增 <code>GetDynamicDescription()</code>，解析描述中的 <code>{dmg}</code>、<code>{heal}</code> 等占位符并替换为实时数值</li>
+						<li>支持基于当前 Power / 状态效果层数自动计算最终伤害，描述与实际效果保持一致</li>
+						<li>更新多张卡牌 prefab 配置，将硬编码数值改为占位符格式（<code>GRAVE_PORTAL</code>、<code>MOTH_MAN</code>、<code>SNATCHER</code> 等）</li>
+						<li>新增测试牌组 <code>attack test</code>、<code>multiple attack test</code>、<code>moth man test</code> 验证动态描述刷新</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CardScript.cs</span>
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">GRAVE_PORTAL.prefab</span>
+					<span class="file-tag modified">SNATCHER.prefab</span>
+					<span class="file-tag added">attack test.asset</span>
+					<span class="file-tag added">moth man test.asset</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-title">新增测试牌组</div>
+		<div class="test-grid">
+			<div class="test-card">
+				<div class="test-name">attack test</div>
+				<div class="test-count">基础 — 验证动态描述中 dmg 占位符的单次攻击</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">multiple attack test</div>
+				<div class="test-count">基础 — 验证多次攻击与 dmg 累加显示</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">moth man test</div>
+				<div class="test-count">基础 — 验证 MOTH_MAN 诅咒与动态描述</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">transfer status effect test</div>
+				<div class="test-count">基础 — 验证 TransferStatusEffect 投射物动画</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">multiple status effect test</div>
+				<div class="test-count">基础 — 验证多状态效果同时显示</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">after shuffle test</div>
+				<div class="test-count">基础 — 验证 afterShuffle 时序与动画守卫</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">fail shake test</div>
+				<div class="test-count">基础 — 验证 cost-fail shake 在 recorder 序列中</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">give self status effect test</div>
+				<div class="test-count">基础 — 验证自身状态效果动画捕获</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">shuffle test</div>
+				<div class="test-count">基础 — 验证 Start Card shuffle 动画</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">snatcher bury / stage test</div>
+				<div class="test-count">连锁 — 验证 SNATCHER bury/stage 双路径</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">soldier skeleton test</div>
+				<div class="test-count">连锁 — 验证多层召唤与反应链</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">booster test</div>
+				<div class="test-count">连锁 — 验证 BOOSTER 多效果链触发</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">double power gain test</div>
+				<div class="test-count">连锁 — 验证连续 Power 叠加</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">bone / flesh combination test</div>
+				<div class="test-count">连锁 — 验证组合召唤机制</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">slime test / spike skeleton test</div>
+				<div class="test-count">卡牌 — 验证特定卡牌效果与动画</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">overcharged summoner test</div>
+				<div class="test-count">卡牌 — 验证高费召唤与 cost-fail 路径</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">JIJI_THE_KING / JIJI_THE_SECOND</div>
+				<div class="test-count">测试卡牌 — 复杂连锁与 afterShuffle 验证</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">BUY_ONE_GET_ONE_FREE / CORPSE_CANNON</div>
+				<div class="test-count">测试卡牌 — 多效果链与 bury/stage 反应</div>
+			</div>
+		</div>
+
+		<div class="highlight-box">
+			<h3>阶段重点工作总结</h3>
+			<ul>
+				<li><strong>Start Card Shuffle 全面重构</strong> — 从独立的旧动画系统迁移至 EffectRecorder 体系，shuffle 动画与后续效果链统一调度；产出 <code>start-card-recorder-unification-prd.md</code> 与 <code>EffectRecorder_Architecture_Critique.md</code> 两份架构文档</li>
+				<li><strong>afterShuffle 死锁根治</strong> — 6/9 的修复解决了 Start Card shuffle 后动画系统完全卡死的致命 bug，根本原因是大链未关闭即触发新链；新增 4 个 headless 测试防止回归</li>
+				<li><strong>卡牌视觉重制完成</strong> — 5/29-30 连续投入，完成动态阴影、圆角 Shader、9-sliced sprites 三大视觉升级，卡牌在 deck 中的层次感和边缘清晰度显著提升</li>
+				<li><strong>状态效果展示升级</strong> — 新增独立文字区域避免图标遮挡；Power Wisp 粒子特效更新；描述文字延迟刷新避免动画期间数字跳动</li>
+				<li><strong>Bury/Stage 反应链动画修复</strong> — 6/10 修复 bury 触发 stage 自身时 slot-in 动画丢失、self 状态效果动画被跳过等问题，同时引入 Start Card 智能排除避免中性卡牌被误操作</li>
+				<li><strong>Cost-Fail Shake 序列化</strong> — 费用不足抖动从即时播放改为纳入 EffectRecorder 序列，确保在复杂连锁中仍能被正确看到和测试</li>
+				<li><strong>Headless 测试爆发式增长</strong> — 新增 8 个测试类、18+ 个测试牌组，覆盖 AddTempCard、ConsumeStatus、PowerReact、TransferStatus、AfterShuffleTiming、CostResultPresenter 等 previously untested 领域</li>
+				<li><strong>动态卡牌描述落地</strong> — 6/11 引入 <code>{dmg}</code> 占位符机制，卡牌描述与实际战斗数值实时同步，为后续多语言与动态平衡调整打下基础</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box">
+			<h3>待办事项</h3>
+			<ul>
+				<li>运行全部 Edit Mode 测试（含新增 AfterShuffleTimingTests、CostResultPresenterTests），确认无回归</li>
+				<li>Play Mode 验证 BOOSTER 多效果链在实际设备上的表现（6/8 WIP 提交仍有未完全修复的分支）</li>
+				<li>继续推进动态卡牌描述的占位符扩展：支持 <code>{shield}</code>、<code>{heal}</code>、<code>{bury}</code> 等更多变量类型</li>
+				<li>评估 infected 状态视觉反馈：毒液喷射粒子 + 卡牌材质变色</li>
+				<li>商店系统（Shop）迭代与疲劳/ overtime 机制实现</li>
+				<li>清理 <code>EffectRecorder_Architecture_Critique.md</code> 中标记的架构债务（recorder 生命周期、tree traversal 性能）</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box" style="border-color: rgba(46, 204, 113, 0.4); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(52, 152, 219, 0.08));">
+			<h3 style="color: #2ecc71;">后续工作建议</h3>
+			<p style="color: #bbb; margin-bottom: 15px; font-size: 0.9em;">动画系统与视觉基础设施已趋于稳固，建议下一阶段重心向 Gameplay 与内容生产倾斜：</p>
+			<ul>
+				<li><strong style="color: #2ecc71;">Gameplay 功能回归（高优先级）</strong><br>
+				疲劳/ overtime 机制设计实现、商店基于稀有度的 roll 权重迭代、感染（Infected）状态的完整 gameplay 效果与视觉反馈</li>
+				<li><strong style="color: #2ecc71;">Play Mode 集成测试覆盖（高优先级）</strong><br>
+				利用 JIJI_THE_KING、CORPSE_CANNON、DOWNED_FIGHTER 等测试卡牌在真机 Play Mode 中跑通复杂连锁，确认 recorder-based 动画在实机上的表现</li>
+				<li><strong style="color: #2ecc71;">卡牌配置自动化（中优先级）</strong><br>
+				扩展 CardTypeIDValidator：检测动态描述占位符与 effect 实际数值的一致性、卡牌描述文本的多语言键完整性</li>
+				<li><strong style="color: #2ecc71;">CombatUXManager 职责拆分（中优先级）</strong><br>
+				当前 UXManager 仍同时承担 deck sync、动画播放、位置计算、focus 管理，建议将 deck position 计算模块外抽为独立服务</li>
+				<li><strong style="color: #2ecc71;">内容量产（中优先级）</strong><br>
+				基于已稳固的动画与效果框架，批量配置 3.0 no-cost 卡牌，填充卡牌池至目标数量</li>
+			</ul>
+		</div>
+
+		<div class="footer">
+			OneDeck Unity Roguelike Card Game | 开发者: PAPAYA<br>
+			生成时间: 2026-06-11 09:55
+		</div>
+	</div>
+</body>
+</html>

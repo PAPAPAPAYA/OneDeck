@@ -224,7 +224,7 @@ MonoBehaviour:
   cardTypeID: POWER_SIPHONER
   displayName: "\u529B\u91CF\u8679\u5438\u4EBA"
   cardDesc: "\u63ED\u6653\u65F6:\u8F6C\u79FB\u6240\u6709\u53CB\u65B9\u7684 <b>1</b>
-    \u529B\u91CF\u5230\u81EA\u8EAB,\u9020\u6210 <b>2</b> \u4F24\u5BB3 x <b>2</b>"
+    \u529B\u91CF\u5230\u81EA\u8EAB,\u9020\u6210 <b><dmg></b> \u4F24\u5BB3 x <b>2</b>"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

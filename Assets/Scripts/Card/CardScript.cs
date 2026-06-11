@@ -109,33 +109,56 @@ public class CardScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Computes the dynamic card description by replacing &lt;dmg&gt; with base damage
-	/// plus Power status effect count.
+	/// Computes the dynamic card description by replacing placeholders:
+	/// &lt;dmg&gt; with base damage plus Power status effect count,
+	/// &lt;counter&gt; with current Counter status effect count as an optional suffix.
 	/// </summary>
 	private string ComputeDynamicCardDesc()
 	{
-		if (string.IsNullOrEmpty(cardDesc) || !cardDesc.Contains("<dmg>"))
+		if (string.IsNullOrEmpty(cardDesc))
 			return cardDesc;
 
-		if (_cachedHpAlterEffect == null)
-			_cachedHpAlterEffect = GetComponentInChildren<HPAlterEffect>();
-		var hpAlter = _cachedHpAlterEffect;
-		if (hpAlter == null || hpAlter.baseDmg == null)
-			return cardDesc;
+		string desc = cardDesc;
 
-		int baseDmg = hpAlter.baseDmg.value;
-		int powerCount = 0;
-		foreach (var se in myStatusEffects)
+		// Replace <dmg> with computed damage value
+		if (desc.Contains("<dmg>"))
 		{
-			if (se == EnumStorage.StatusEffect.Power)
-				powerCount++;
+			if (_cachedHpAlterEffect == null)
+				_cachedHpAlterEffect = GetComponentInChildren<HPAlterEffect>();
+			var hpAlter = _cachedHpAlterEffect;
+			if (hpAlter != null && hpAlter.baseDmg != null)
+			{
+				int baseDmg = hpAlter.baseDmg.value + hpAlter.extraDmg;
+				int powerCount = 0;
+				foreach (var se in myStatusEffects)
+				{
+					if (se == EnumStorage.StatusEffect.Power)
+						powerCount++;
+				}
+
+				string dmgStr = baseDmg.ToString();
+				if (powerCount > 0)
+					dmgStr += " (+" + powerCount + ")";
+
+				desc = desc.Replace("<dmg>", dmgStr);
+			}
 		}
 
-		string dmgStr = baseDmg.ToString();
-		if (powerCount > 0)
-			dmgStr += " (+" + powerCount + ")";
+		// Replace <counter> with optional Counter suffix
+		if (desc.Contains("<counter>"))
+		{
+			int counterCount = 0;
+			foreach (var se in myStatusEffects)
+			{
+				if (se == EnumStorage.StatusEffect.Counter)
+					counterCount++;
+			}
 
-		return cardDesc.Replace("<dmg>", dmgStr);
+			string counterStr = counterCount > 0 ? " (-" + counterCount + ")" : "";
+			desc = desc.Replace("<counter>", counterStr);
+		}
+
+		return desc;
 	}
 
 	private void OnEnable()

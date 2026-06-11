@@ -230,7 +230,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UNFINISHED_ROBOT
   displayName: "\u672A\u5B8C\u6210\u7684\u673A\u5668\u4EBA"
-  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b>0</b> \u4F24\u5BB3,\u7FFB\u500D\u81EA\u8EAB\u529B\u91CF"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7FFB\u500D\u81EA\u8EAB\u529B\u91CF"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

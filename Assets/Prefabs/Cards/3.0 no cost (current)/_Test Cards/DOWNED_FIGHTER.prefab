@@ -134,8 +134,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: DOWNED_FIGHTER
   displayName: "\u5012\u5730\u7684\u6218\u58EB"
-  cardDesc: "\u88AB\u57CB\u846C,\u6D88\u8017 1 [\u529B\u91CF]: \u9020\u6210 5 \u4F24\u5BB3;\n\u63ED\u6653\u65F6:\u9020\u6210
-    3 \u4F24\u5BB3"
+  cardDesc: "\u88AB\u57CB\u846C,\u6D88\u8017 1 [\u529B\u91CF]: \u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\n\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

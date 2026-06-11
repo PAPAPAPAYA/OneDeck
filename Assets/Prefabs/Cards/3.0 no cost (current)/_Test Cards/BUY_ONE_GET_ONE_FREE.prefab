@@ -131,7 +131,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BUY_ONE_GET_ONE_FREE
   displayName: "\u4E70\u4E00\u9001\u4E00"
-  cardDesc: "\u88AB\u57CB\u846C:\u9020\u6210 6 \u4F24\u5BB3,\u7F6E\u9876 1 \u53CB\u65B9"
+  cardDesc: "\u88AB\u57CB\u846C:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7F6E\u9876 1 \u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

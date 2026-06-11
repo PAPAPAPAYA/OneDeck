@@ -51,7 +51,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: JIJI_THE_KING
   displayName: "\u6025\u6025\u56FD\u738B"
-  cardDesc: "\u6D17\u724C\u540E:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u9020\u62103\u4F24\u5BB3"
+  cardDesc: "\u6D17\u724C\u540E:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

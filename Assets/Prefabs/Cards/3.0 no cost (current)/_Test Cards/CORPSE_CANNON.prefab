@@ -134,8 +134,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: CORPSE_CANNON
   displayName: "\u5C38\u4F53\u5927\u70AE"
-  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C 1 \u53CB\u65B9;\n\u53CB\u65B9\u88AB\u57CB\u846C:\u9020\u6210
-    2 \u4F24\u5BB3"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C 1 \u53CB\u65B9;\n\u53CB\u65B9\u88AB\u57CB\u846C:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

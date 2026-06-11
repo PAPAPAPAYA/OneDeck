@@ -220,8 +220,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BODY_CANON
   displayName: "\u4EBA\u95F4\u5927\u70AE"
-  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C\u6240\u6709\u53CB\u65B9,\u5893\u5730\u6BCF\u6709\u4E00\u4E2A\u53CB\u65B9:\u9020\u6210
-    <b>3</b> \u4F24\u5BB3"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C\u6240\u6709\u53CB\u65B9,\u5893\u5730\u6BCF\u6709\u4E00\u4E2A\u53CB\u65B9:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
   rarity: 2
   takeUpSpace: 1
   isStartCard: 0

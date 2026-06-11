@@ -124,9 +124,11 @@
 #region viscom
 //! viscom
 	//todo dynamically change card description
+		// check
 		// dmg
-			// need testing
-		// counter
+			//? show dynamic dmg in ()
+			//// missing 1 
+		//// counter
 	//todo health bar
 		//? update health number when attack connects
 	//todo name + effect description on screen
@@ -157,8 +159,10 @@
 		//// text to show status effect
 		//// better power wisp
 			//// dot, no trail
-		// consume effect
-			// dot
+		//todo consume effect
+			// we do need consume status effect animation when status effect is transfered, but what about counter?
+			// indeed it's better to unify, as when consuming self's power should have animation
+			// dot flying away
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add
@@ -188,6 +192,7 @@
 #endregion
 #region bugs
 //! bug
+	//todo replace full width comma with half width
 	//// fix attack animation
 	//// counter effect not spawning status effect projectile
 	//// card type id checker fix
