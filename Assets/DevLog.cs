@@ -99,8 +99,8 @@
 #endregion
 #region feature
 //! feature
-	//todo stage / bury effect add new bool to control whether to exclude self
-		// need testing
+	//// stage / bury effect add new bool to control whether to exclude self
+		//// need testing
 	//// a more comprehensive test kit
 		//// logic
 			//// enemy side
@@ -123,6 +123,14 @@
 #endregion
 #region viscom
 //! viscom
+	//todo dynamically change card description
+		// dmg
+			// need testing
+		// counter
+	//todo health bar
+		//? update health number when attack connects
+	//todo name + effect description on screen
+	//todo implement new physical card template
 	//// space after annotation
 	//// update text after animation, not during logic
 	//// exclusive text area for status effect
@@ -180,6 +188,7 @@
 #endregion
 #region bugs
 //! bug
+	//// fix attack animation
 	//// counter effect not spawning status effect projectile
 	//// card type id checker fix
 	//// need to check: [1] bury 1 friendly; if friendly buried, deal dmg; [2] if buried, deal dmg; if buried, bury 1 friendly; [3] dummy

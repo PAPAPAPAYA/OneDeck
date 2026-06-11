@@ -1734,7 +1734,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		physScript.cardImRepresenting = cardScript;
 		newPhysicalCard.name = logicalCard.name + "'s physical card";
 		physScript.cardNamePrint.text = cardScript != null ? cardScript.GetDisplayName() : logicalCard.name;
-		physScript.cardDescPrint.text = cardScript.cardDesc;
+		physScript.cardDescPrint.text = cardScript != null ? cardScript.GetCardDescForDisplay() : string.Empty;
 
 		// Set initial scale
 		physScript.SetScaleImmediate(physicalCardDeckSize);
@@ -1849,7 +1849,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (cardScript != null && !cardScript.isStartCard)
 			{
 				physScript.cardNamePrint.text = cardScript != null ? cardScript.GetDisplayName() : card.name;
-				physScript.cardDescPrint.text = cardScript.cardDesc;
+				physScript.cardDescPrint.text = cardScript.GetCardDescForDisplay();
 			}
 
 			// Set initial position and scale immediately

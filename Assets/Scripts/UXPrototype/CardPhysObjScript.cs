@@ -134,6 +134,7 @@ public class CardPhysObjScript : MonoBehaviour
 
 		ApplyColor();
 		UpdateStatusEffectDisplay();
+		UpdateCardDescription();
 		UpdateCostDisplay();
 		UpdatePriceDisplay();
 		UpdateRarityDisplay();
@@ -268,6 +269,16 @@ public class CardPhysObjScript : MonoBehaviour
 				cardNamePrint.text = cardImRepresenting.GetDisplayName();
 			}
 		}
+	}
+
+	/// <summary>
+	/// Update Card Description display, resolves &lt;dmg&gt; placeholders dynamically
+	/// based on current Power status effects.
+	/// </summary>
+	private void UpdateCardDescription()
+	{
+		if (cardDescPrint == null || cardImRepresenting == null) return;
+		cardDescPrint.text = cardImRepresenting.GetCardDescForDisplay();
 	}
 
 	/// <summary>

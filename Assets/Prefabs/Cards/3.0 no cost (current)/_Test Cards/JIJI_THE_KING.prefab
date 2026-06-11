@@ -282,3 +282,4 @@ MonoBehaviour:
   tagToCheck: 0
   targetFriendly: 0
   statusEffectToCheck: 0
+  excludeSelf: 1

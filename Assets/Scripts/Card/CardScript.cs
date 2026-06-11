@@ -53,6 +53,9 @@ public class CardScript : MonoBehaviour
 	[Header("Tags")]
 	public List<EnumStorage.Tag> myTags;
 
+	private string _displayCardDesc;
+	private HPAlterEffect _cachedHpAlterEffect;
+
 	/// <summary>
 	/// Capture a snapshot of current myStatusEffects for display purposes.
 	/// Once snapped, GetStatusEffectsForDisplay() returns the snapshotted list
@@ -65,6 +68,7 @@ public class CardScript : MonoBehaviour
 			displayMyStatusEffects = new List<EnumStorage.StatusEffect>();
 		displayMyStatusEffects.Clear();
 		displayMyStatusEffects.AddRange(myStatusEffects);
+		_displayCardDesc = ComputeDynamicCardDesc();
 		_hasDisplaySnapshot = true;
 	}
 
@@ -78,6 +82,7 @@ public class CardScript : MonoBehaviour
 			displayMyStatusEffects = new List<EnumStorage.StatusEffect>();
 		displayMyStatusEffects.Clear();
 		displayMyStatusEffects.AddRange(myStatusEffects);
+		_displayCardDesc = null;
 		_hasDisplaySnapshot = false;
 	}
 
@@ -89,6 +94,48 @@ public class CardScript : MonoBehaviour
 	public List<EnumStorage.StatusEffect> GetStatusEffectsForDisplay()
 	{
 		return _hasDisplaySnapshot ? displayMyStatusEffects : myStatusEffects;
+	}
+
+	/// <summary>
+	/// Returns the card description that should be used for visual display.
+	/// If a display snapshot is active (during animation), returns the snapshot;
+	/// otherwise returns the live computed description with placeholders resolved.
+	/// </summary>
+	public string GetCardDescForDisplay()
+	{
+		if (_hasDisplaySnapshot)
+			return _displayCardDesc ?? cardDesc;
+		return ComputeDynamicCardDesc();
+	}
+
+	/// <summary>
+	/// Computes the dynamic card description by replacing &lt;dmg&gt; with base damage
+	/// plus Power status effect count.
+	/// </summary>
+	private string ComputeDynamicCardDesc()
+	{
+		if (string.IsNullOrEmpty(cardDesc) || !cardDesc.Contains("<dmg>"))
+			return cardDesc;
+
+		if (_cachedHpAlterEffect == null)
+			_cachedHpAlterEffect = GetComponentInChildren<HPAlterEffect>();
+		var hpAlter = _cachedHpAlterEffect;
+		if (hpAlter == null || hpAlter.baseDmg == null)
+			return cardDesc;
+
+		int baseDmg = hpAlter.baseDmg.value;
+		int powerCount = 0;
+		foreach (var se in myStatusEffects)
+		{
+			if (se == EnumStorage.StatusEffect.Power)
+				powerCount++;
+		}
+
+		string dmgStr = baseDmg.ToString();
+		if (powerCount > 0)
+			dmgStr += " (+" + powerCount + ")";
+
+		return cardDesc.Replace("<dmg>", dmgStr);
 	}
 
 	private void OnEnable()

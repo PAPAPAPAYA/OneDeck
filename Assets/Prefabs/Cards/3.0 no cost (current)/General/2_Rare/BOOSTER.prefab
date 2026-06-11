@@ -78,6 +78,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   tagsToCheck: 00000000
+  excludeSelf: 1
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -140,6 +141,7 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
 --- !u!114 &1906139755545017704
 MonoBehaviour:
@@ -277,3 +279,4 @@ MonoBehaviour:
   tagToCheck: 0
   targetFriendly: 0
   statusEffectToCheck: 0
+  excludeSelf: 1

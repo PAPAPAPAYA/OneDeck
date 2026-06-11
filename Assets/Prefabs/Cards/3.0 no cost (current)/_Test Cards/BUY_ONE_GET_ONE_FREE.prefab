@@ -80,6 +80,7 @@ MonoBehaviour:
   tagToCheck: 0
   targetFriendly: 0
   statusEffectToCheck: 0
+  excludeSelf: 1
 --- !u!1 &1808145013887896563
 GameObject:
   m_ObjectHideFlags: 0

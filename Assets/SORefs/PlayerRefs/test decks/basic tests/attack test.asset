@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: PlayerDeckRef
+  m_Name: attack test
   m_EditorClassIdentifier: 
   deck:
   - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
-  defaultDeck: {fileID: 11400000, guid: e0111c04f46c4d64c95b4b623816c6f6, type: 2}
-  resetOnStart: 1
-  description: player's deck, data only no instances
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: add rift + add curse
