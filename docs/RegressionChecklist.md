@@ -50,6 +50,12 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 14 | Bury animation lost when buried card triggers reactive effects that close the recorder chain | `BuryEffect`, `EffectChainManager`, `RecorderAnimationPlayer` | 2026-06-10 | ✅ | **Card:** grave_punch + slime + start card deck<br>**Check:** Reveal grave_punch (BuryNextXCards). Verify slime plays `PopUpBatch` + `MoveToBottomBatch` animation visibly; console shows `[BuryEffect] Capture request to recorder=chain#...` (not `null`) |
 | 15 | GiveSelfStatusEffect missing projectile animation | `StatusEffectGiverEffect`, `RecorderAnimationPlayer` | 2026-06-10 | ⚠️ | **Card:** Any card with GiveSelfStatusEffect (e.g. self-Power)<br>**Check:** Card pops up, projectile flies from self to self, then slots back in; `StatusEffectChange` already captured by `ApplyStatusEffectCore` |
 
+## Status Effect Consumption Animation
+
+| # | Scenario | System / Effect | Fixed Date | Status | Verification |
+|---|----------|-----------------|------------|--------|--------------|
+| 16 | ConsumeOwnStatusEffect missing projectile animation | `ConsumeStatusEffect`, `AnimationRequest`, `RecorderAnimationPlayer`, `CombatUXManager`, `ICombatVisuals` | 2026-06-12 | ⚠️ | **Card:** OVERCHARGED_SUMMONER (Power×1), DR_MANHATTAN (Power×4), ADVANCE_PORTAL (Counter×2), ALMIGHTY (Counter×2), SLIME (Counter×2)<br>**Check:** Revealed card pops up, projectile flies from card toward `statusEffectConsumePos`, status text updates after projectile lands, then card slots back in. No freeze or missing SlotIn. |
+
 ---
 
 ## Quick Search
@@ -76,5 +82,9 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `CalculateAnimationPositionAtIndex` | 7 |
 | `CostResultPresenter.cs` | 9 |
 | `CostNEffectContainer.cs` | 9 |
-| `AnimationRequest.cs` | 9 |
+| `AnimationRequest.cs` | 9, 16 |
 | `CombatManager.cs` | 10, 11, 12 |
+| `ConsumeStatusEffect.cs` | 16 |
+| `ICombatVisuals.cs` | 16 |
+| `NullCombatVisuals.cs` | 16 |
+| `NullCombatVisualsBehaviour.cs` | 16 |

@@ -394,6 +394,35 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			{
 				if (request.attackerCard == null) break;
 
+				// VISUAL-FIX(2026-06-12): Support projectile flying to a custom world position
+				//   Cause:    ConsumeOwnStatusEffect needed a projectile that flies to statusEffectConsumePos
+				//             instead of to another card, but StatusEffectProjectile only supported card targets.
+				//   Affects:  AnimationRequest, ICombatVisuals, CombatUXManager, RecorderAnimationPlayer, ConsumeStatusEffect
+				//   Regress:  Reveal a card whose effect calls ConsumeOwnStatusEffect (e.g. OVERCHARGED_SUMMONER)
+				//             Check: card pops up, projectile flies toward statusEffectConsumePos, then slots back in.
+				if (request.customProjectileEndPosition.HasValue)
+				{
+					bool customDone = false;
+					visuals.PlayStatusEffectProjectileToPosition(
+						request.attackerCard,
+						request.customProjectileEndPosition.Value,
+						onComplete: () => { customDone = true; }
+					);
+					yield return new WaitUntil(() => customDone);
+
+					// After projectile completes, commit display state for the source/target card
+					// (for targets whose StatusEffectChange was deferred)
+					if (request.targetCard != null)
+					{
+						var targetCardScript = request.targetCard.GetComponent<CardScript>();
+						if (targetCardScript != null)
+						{
+							targetCardScript.CommitDisplayState();
+						}
+					}
+					break;
+				}
+
 				// Build target list: prefer batch list, fall back to single targetCard
 				var targetCardScripts = new List<CardScript>();
 				if (request.targetCards != null && request.targetCards.Count > 0)

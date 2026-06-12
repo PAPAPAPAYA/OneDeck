@@ -37,6 +37,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	[Header("NEW CARD")]
 	public Transform physicalCardNewTempCardPos;
 	public Vector3 physicalCardNewTempCardSize;
+
+	[Header("STATUS EFFECT CONSUME")]
+	[Tooltip("World position where the consumed status effect projectile should fly to. Used by ConsumeOwnStatusEffect.")]
+	public Transform statusEffectConsumePos;
 	[Tooltip("Duration for new card to fly in from temp pos to peak position")]
 	public float newCardFlyInDuration = 0.25f;
 
@@ -2040,6 +2044,75 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					);
 				});
 		}
+	}
+
+	/// <summary>
+	/// Play a single status effect projectile from giver card to a custom world position.
+	/// Used when the projectile target is not a card (e.g. fly to newCardPos).
+	/// </summary>
+	public void PlayStatusEffectProjectileToPosition(
+		GameObject giverCard,
+		Vector3 endPosition,
+		Action onComplete = null)
+	{
+		UnityEngine.Debug.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition to " + endPosition + " — NO PopUp here, only parabolic projectile.");
+		if (statusEffectProjectilePrefab == null || giverCard == null)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		// Get physical card positions
+		BuildCardScriptToPhysicalDictionary();
+
+		Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset;
+		Vector3 endPos = endPosition + projectileEndOffset;
+
+		// Create effect instance
+		GameObject projectile = Instantiate(statusEffectProjectilePrefab, startPos, Quaternion.identity);
+
+		// Calculate parabolic midpoint
+		Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f) + Vector3.up * projectileArcHeight;
+
+		AnimationStateTracker.me?.RegisterAnimation();
+
+		// Create parabolic animation
+		Sequence projectileSequence = DOTween.Sequence();
+
+		// Phase 1: From start to midpoint (ascending)
+		projectileSequence.Append(
+			projectile.transform.DOMove(midPoint, projectileDuration * 0.5f)
+				.SetEase(Ease.OutQuad)
+		);
+
+		// Phase 2: From midpoint to end (descending)
+		projectileSequence.Append(
+			projectile.transform.DOMove(endPos, projectileDuration * 0.5f)
+				.SetEase(Ease.InQuad)
+		);
+
+		// Sync rotation: keep effect facing target
+		projectile.transform.LookAt(endPos);
+
+		// Safety kill: if the projectile GameObject is destroyed externally before the tween finishes,
+		// DOTween would throw a missing-Transform warning. Kill the sequence gracefully instead.
+		projectileSequence.OnUpdate(() =>
+		{
+			if (projectile == null)
+			{
+				projectileSequence.Kill(true);
+			}
+		});
+
+		// Animation complete: destroy effect and execute callback
+		projectileSequence.OnComplete(() =>
+		{
+			AnimationStateTracker.me?.CompleteAnimation();
+			Destroy(projectile);
+			onComplete?.Invoke();
+		});
+
+		projectileSequence.Play();
 	}
 
 	/// <summary>

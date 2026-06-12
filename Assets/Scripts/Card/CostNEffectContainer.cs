@@ -134,7 +134,7 @@ public class CostNEffectContainer : MonoBehaviour
 		_costNotMetFlag++;
 		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
 		_costFailMessages.Add(
-			"// [复活]不足，无法复活 " +
+			"// [复活]不足,无法复活 " +
 			cardOwnerInfo +
 			" [" + _myCardScript.gameObject.name + "]\n");
 	}
@@ -163,7 +163,7 @@ public class CostNEffectContainer : MonoBehaviour
 		_costNotMetFlag++;
 		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
 		_costFailMessages.Add(
-			"// [休息]状态已消耗，" +
+			"// [休息]状态已消耗," +
 			cardOwnerInfo +
 			" [" + _myCardScript.gameObject.name + "]跳过本回合\n");
 	}
@@ -184,7 +184,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, manaRequired, EnumStorage.StatusEffect.Mana)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
-		_costFailMessages.Add("// [法力]不足，无法激活[" + _myCardScript.gameObject.name + "]\n");
+		_costFailMessages.Add("// [法力]不足,无法激活[" + _myCardScript.gameObject.name + "]\n");
 	}
 
 	public void CheckCost_Power(int powerRequired)
@@ -192,7 +192,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, powerRequired, EnumStorage.StatusEffect.Power)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
-		_costFailMessages.Add("// [力量]不足，无法激活[" + _myCardScript.gameObject.name + "]\n");
+		_costFailMessages.Add("// [力量]不足,无法激活[" + _myCardScript.gameObject.name + "]\n");
 	}
 
 	public void CheckCost_InGrave()
@@ -226,7 +226,7 @@ public class CostNEffectContainer : MonoBehaviour
 		
 		// cost not met - not enough enemy cards in combined deck
 		_costNotMetFlag++;
-		_costFailMessages.Add("// 牌库中敌方卡牌不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + enemyCardCount + "张)\n");
+		_costFailMessages.Add("// 牌库中敌方卡牌不足,无法激活[" + _myCardScript.gameObject.name + "](需要" + enemyCardCount + "张)\n");
 	}
 
 	/// <summary>
@@ -239,7 +239,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, counterRequired, EnumStorage.StatusEffect.Counter)) return; // if check succeeded, do nothing
 		// if check failed, process
 		_costNotMetFlag++;
-		_costFailMessages.Add("// [计数]不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + counterRequired + "层)\n");
+		_costFailMessages.Add("// [计数]不足,无法激活[" + _myCardScript.gameObject.name + "](需要" + counterRequired + "层)\n");
 	}
 
 	/// <summary>
@@ -275,7 +275,7 @@ public class CostNEffectContainer : MonoBehaviour
 		if (startCardIndex == -1)
 		{
 			_costNotMetFlag++;
-			_costFailMessages.Add("// 牌库中没有起始牌，[" + _myCardScript.gameObject.name + "]无法激活\n");
+			_costFailMessages.Add("// 牌库中没有起始牌,[" + _myCardScript.gameObject.name + "]无法激活\n");
 			return;
 		}
 		
@@ -374,7 +374,7 @@ public class CostNEffectContainer : MonoBehaviour
 
 		// cost not met
 		_costNotMetFlag++;
-		_costFailMessages.Add("// 牌库中[" + targetCardTypeID.value + "]友方卡牌不足，无法激活[" + _myCardScript.gameObject.name + "](需要" + requiredCount + "张)\n");
+		_costFailMessages.Add("// 牌库中[" + targetCardTypeID.value + "]友方卡牌不足,无法激活[" + _myCardScript.gameObject.name + "](需要" + requiredCount + "张)\n");
 	}
 
 	#endregion

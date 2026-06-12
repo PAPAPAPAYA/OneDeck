@@ -1,0 +1,4 @@
+PATH:Assets/Prefabs/Cards/1.0 no cost/Exile/Mandela Effect.prefab
+NAME:Mandela Effect
+EVENT_BIND:CostNEffectContainer|CheckCost_Rested
+---

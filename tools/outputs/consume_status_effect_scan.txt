@@ -1,0 +1,96 @@
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/BigFireball.prefab
+NAME:BigFireball
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Fireball.prefab
+NAME:Fireball
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Force of the Dark Side.prefab
+NAME:Force of the Dark Side
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=3|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Shock.prefab
+NAME:Shock
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Work Out.prefab
+NAME:Work Out
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Shiv/Undead Shiv.prefab
+NAME:Undead Shiv
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Revive
+---
+PATH:Assets/Prefabs/Cards/2.0 token cost/Fly/Prince of the Flies.prefab
+NAME:Prince of the Flies
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=3|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/_Test Cards/DOWNED_FIGHTER.prefab
+NAME:DOWNED_FIGHTER
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:None
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/_Test Cards/GOLEM.prefab
+NAME:GOLEM
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/2_Rare/SLIME.prefab
+NAME:SLIME
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/OVERCHARGED_SUMMONER.prefab
+NAME:OVERCHARGED_SUMMONER
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/ADVANCE_PORTAL.prefab
+NAME:ADVANCE_PORTAL
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/DR_MANHATTAN.prefab
+NAME:DR_MANHATTAN
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=4|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ALMIGHTY.prefab
+NAME:ALMIGHTY
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/POWER_TRANSFER.prefab
+NAME:POWER_TRANSFER
+EVENT_BIND:CostNEffectContainer|ConsumeRandomEnemyCardsStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Power
+---
+PATH:Assets/Prefabs/StatusEffectResolvers/Undead Resolver.prefab
+NAME:Undead Resolver
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Revive
+---

@@ -123,6 +123,7 @@
 #endregion
 #region viscom
 //! viscom
+	// add chinese comma to font source
 	//todo dynamically change card description
 		// check
 		// dmg
@@ -163,6 +164,7 @@
 			// we do need consume status effect animation when status effect is transfered, but what about counter?
 			// indeed it's better to unify, as when consuming self's power should have animation
 			// dot flying away
+		//todo one dot one layer of status effect
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add
@@ -172,7 +174,7 @@
 		//// add rift
 	//// stage/bury and deck shift should happen at the same time
 		//// rift -> stage another card, staged card should go straight to reveal zone
-	// better card move animation
+	//? better card move animation
 		// change z dynamically
 	// motion design
 		////shake revealed card if cost not met / can't activate if card in reveal zone
@@ -192,7 +194,14 @@
 #endregion
 #region bugs
 //! bug
-	//todo replace full width comma with half width
+	// consume visual:
+		// DR_MANHATTAN
+			// need to reset status effect setting
+		// POWER_TRANSFER
+		// PREMATURE
+		// POWER_SIPHONER
+		// CROW_CROWD
+	//// replace full width comma with half width
 	//// fix attack animation
 	//// counter effect not spawning status effect projectile
 	//// card type id checker fix
@@ -252,7 +261,7 @@
 	//// some effects don't include card in reveal zone
 	//// test progress:
 		//// bury: ai tested
-			//// MARTYR (DEATHRATTLE 批次) — GiveAllFriendlyStatusEffect 不读取 includeSelf 字段，Martyr 自身总会获得 Power。
+			//// MARTYR (DEATHRATTLE 批次) — GiveAllFriendlyStatusEffect 不读取 includeSelf 字段,Martyr 自身总会获得 Power。
 	//// spike skeleton game event listener duplicates
 	//// slime lacks consumming counter
 	//// generate test plans

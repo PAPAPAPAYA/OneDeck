@@ -1,0 +1,340 @@
+PATH:Assets/Prefabs/Cards/1.0 no cost/Exile/Mandela Effect.prefab
+NAME:Mandela Effect
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Rest
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/HeartChange/HeartChange.prefab
+NAME:HeartChange
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=3|targetType=DefaultNamespace.Effects.HeartChangeEffect, Assembly-CSharp
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Infection/Corruption.prefab
+NAME:Corruption
+EVENT_BIND:CostNEffectContainer|GiveStatusEffectBasedOnStatusEffectCount|arg=4|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Infected
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Infection/Pandemic.prefab
+NAME:Pandemic
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=5|targetType=InfectionEffect, Assembly-CSharp
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Linger/Well Rested.prefab
+NAME:Well Rested
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=2|targetType=ManaAlterEffect, Assembly-CSharp
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/BigFireball.prefab
+NAME:BigFireball
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Dark Source.prefab
+NAME:Dark Source
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=5|targetType=ManaAlterEffect, Assembly-CSharp
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Fireball.prefab
+NAME:Fireball
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Force of the Dark Side.prefab
+NAME:Force of the Dark Side
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=3|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Meditate.prefab
+NAME:Meditate
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=3|targetType=ManaAlterEffect, Assembly-CSharp
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Shock.prefab
+NAME:Shock
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=2|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Mana/Work Out.prefab
+NAME:Work Out
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=3|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Mana
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Power/Lord of the Underworld.prefab
+NAME:Lord of the Underworld
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Power/PowerInflation.prefab
+NAME:PowerInflation
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=3|targetType=DefaultNamespace.Effects.GivePowerTagEffect, Assembly-CSharp
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Power/PowerUp.prefab
+NAME:PowerUp
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=1|targetType=DefaultNamespace.Effects.GivePowerTagEffect, Assembly-CSharp
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Revive/Undead Stab.prefab
+NAME:Undead Stab
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Revive
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Revive/Zombify.prefab
+NAME:Zombify
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Revive
+---
+PATH:Assets/Prefabs/Cards/1.0 no cost/Shiv/Undead Shiv.prefab
+NAME:Undead Shiv
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Revive
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Revive
+---
+PATH:Assets/Prefabs/Cards/2.0 token cost/Fly/Fly.prefab
+NAME:Fly
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Infected
+---
+PATH:Assets/Prefabs/Cards/2.0 token cost/Fly/Prince of the Flies.prefab
+NAME:Prince of the Flies
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Counter
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=3|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/_Recycle Bin/CURSED_CORPSE.prefab
+NAME:CURSED_CORPSE
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/_Recycle Bin/GRUDGE.prefab
+NAME:GRUDGE
+EVENT_BIND:CostNEffectContainer|GiveStatusEffectToLastXCards|arg=0|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/_Test Cards/ADD_RIFT_AND_CURSE.prefab
+NAME:ADD_RIFT_AND_CURSE
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/_Test Cards/CURSED_UNDERTAKER.prefab
+NAME:CURSED_UNDERTAKER
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/_Test Cards/DOWNED_FIGHTER.prefab
+NAME:DOWNED_FIGHTER
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:None
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/_Test Cards/GOLEM.prefab
+NAME:GOLEM
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/0_Common/UNDEAD_CURSER.prefab
+NAME:UNDEAD_CURSER
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/AVENGER.prefab
+NAME:AVENGER
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=2|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/2_Rare/MARTYR.prefab
+NAME:MARTYR
+EVENT_BIND:CostNEffectContainer|GiveAllFriendlyStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/2_Rare/SLIME.prefab
+NAME:SLIME
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Counter
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/2_Rare/DEATHBED_CURSE.prefab
+NAME:DEATHBED_CURSE
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/2_Rare/RIFT_DEVOURER.prefab
+NAME:RIFT_DEVOURER
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/CURSE_SUMMONER.prefab
+NAME:CURSE_SUMMONER
+EVENT_BIND:CostNEffectContainer|ConsumeHostileCursePower|arg=1|targetType=DefaultNamespace.Effects.CurseEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/POISONER.prefab
+NAME:POISONER
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/RIFT_CURSE.prefab
+NAME:RIFT_CURSE
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/CURSE_THIRST_SHAMAN.prefab
+NAME:CURSE_THIRST_SHAMAN
+EVENT_BIND:CostNEffectContainer|GiveStatusEffectToXFriendly_BasedOnIntSO|arg=0|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/CURSED_SKELETON.prefab
+NAME:CURSED_SKELETON
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/PREMATURE.prefab
+NAME:PREMATURE
+EVENT_BIND:CostNEffectContainer|ConsumeHostileCursePower|arg=1|targetType=DefaultNamespace.Effects.CurseEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/SACRIFICIAL_SPIRIT.prefab
+NAME:SACRIFICIAL_SPIRIT
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/SMALL_SCALE_DEATH.prefab
+NAME:SMALL_SCALE_DEATH
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/2_Rare/CROW_CROWD.prefab
+NAME:CROW_CROWD
+EVENT_BIND:CostNEffectContainer|TransferAllStatusEffectToHostileCurse|arg=0|targetType=DefaultNamespace.Effects.TransferStatusEffectEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.TransferStatusEffectEffect
+statusEffectToTransfer:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/2_Rare/CURSE_ENCHANTMENT.prefab
+NAME:CURSE_ENCHANTMENT
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/Curse/2_Rare/DETERIORATION.prefab
+NAME:DETERIORATION
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/BLACKSMITH.prefab
+NAME:BLACKSMITH
+EVENT_BIND:CostNEffectContainer|GiveStatusEffectToXFriendly|arg=2|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/BLIND_COMBAT_PRIEST.prefab
+NAME:BLIND_COMBAT_PRIEST
+EVENT_BIND:CostNEffectContainer|GiveStatusEffectToLastXCards|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/MAD_SCIENTIST.prefab
+NAME:MAD_SCIENTIST
+EVENT_BIND:CostNEffectContainer|GiveStatusEffectToLastXCards|arg=0|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/OVERCHARGED_SUMMONER.prefab
+NAME:OVERCHARGED_SUMMONER
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Power
+EVENT_BIND:CostNEffectContainer|GiveStatusEffectToLastXCards|arg=0|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/SIDE_EFFECT_PORTAL.prefab
+NAME:SIDE_EFFECT_PORTAL
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/ADVANCE_PORTAL.prefab
+NAME:ADVANCE_PORTAL
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Counter
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/DR_MANHATTAN.prefab
+NAME:DR_MANHATTAN
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=4|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/QUICK_RESPONSE_PROTOCOL.prefab
+NAME:QUICK_RESPONSE_PROTOCOL
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/TACTICAL_BREACHER.prefab
+NAME:TACTICAL_BREACHER
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ALMIGHTY.prefab
+NAME:ALMIGHTY
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.CurseEffect
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Counter
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffect|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Counter
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ELDER_SORCERER.prefab
+NAME:ELDER_SORCERER
+EVENT_BIND:CostNEffectContainer|GiveStatusEffectToXFriendly_BasedOnStaged|arg=1|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/POWER_SIPHONER.prefab
+NAME:POWER_SIPHONER
+EVENT_BIND:CostNEffectContainer|TransferOneStatusEffectToSelf|arg=0|targetType=DefaultNamespace.Effects.TransferStatusEffectEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.TransferStatusEffectEffect
+statusEffectToTransfer:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/POWER_TRANSFER.prefab
+NAME:POWER_TRANSFER
+EVENT_BIND:CostNEffectContainer|ConsumeRandomEnemyCardsStatusEffect|arg=2|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Power
+EVENT_BIND:CostNEffectContainer|GiveStatusEffect|arg=2|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/UNFINISHED_ROBOT.prefab
+NAME:UNFINISHED_ROBOT
+EVENT_BIND:CostNEffectContainer|GiveSelfStatusEffectBasedOnStatusEffectCount|arg=0|targetType=DefaultNamespace.Effects.StatusEffectGiverEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.StatusEffectGiverEffect
+statusEffectToGive:Power
+---
+PATH:Assets/Prefabs/StatusEffectResolvers/Undead Resolver.prefab
+NAME:Undead Resolver
+EVENT_BIND:CostNEffectContainer|ConsumeOwnStatusEffect|arg=1|targetType=DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
+COMPONENT:DefaultNamespace.Effects.ConsumeStatusEffect
+statusEffectToConsume:Revive
+---

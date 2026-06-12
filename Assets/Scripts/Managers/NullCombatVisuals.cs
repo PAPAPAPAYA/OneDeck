@@ -72,6 +72,12 @@ public class NullCombatVisuals : ICombatVisuals
 		onAllComplete?.Invoke();
 	}
 
+	public void PlayStatusEffectProjectileToPosition(GameObject giverCard, Vector3 endPosition, Action onComplete = null)
+	{
+		callLog.Add("PlayStatusEffectProjectileToPosition: " + (giverCard?.name ?? "null") + " -> " + endPosition);
+		onComplete?.Invoke();
+	}
+
 	public void ApplyStatusTint(CardScript targetCard, EnumStorage.StatusEffect effect)
 	{
 		callLog.Add("ApplyStatusTint: " + (targetCard?.name ?? "null") + " -> " + effect);

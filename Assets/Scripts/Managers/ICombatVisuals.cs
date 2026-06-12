@@ -113,6 +113,15 @@ public interface ICombatVisuals
 		float? customStaggerDelay = null);
 
 	/// <summary>
+	/// Play a single status effect projectile from giver card to a custom world position.
+	/// Used when the projectile target is not a card (e.g. fly to newCardPos).
+	/// </summary>
+	void PlayStatusEffectProjectileToPosition(
+		GameObject giverCard,
+		Vector3 endPosition,
+		Action onComplete = null);
+
+	/// <summary>
 	/// Apply visual tint for a status effect (Infected/Power) to the target card.
 	/// </summary>
 	void ApplyStatusTint(CardScript targetCard, EnumStorage.StatusEffect effect);

@@ -57,5 +57,13 @@ namespace DefaultNamespace
 		/// StatusEffectProjectile animation completes (for targets that have a projectile).
 		/// </summary>
 		public bool deferDisplayCommit = false;
+
+		/// <summary>
+		/// Optional custom end position for StatusEffectProjectile.
+		/// When set, the projectile flies to this world position instead of to targetCard/targetCards.
+		/// Used for effects like ConsumeOwnStatusEffect where the projectile should fly
+		/// to newCardPos rather than another card.
+		/// </summary>
+		public Vector3? customProjectileEndPosition;
 	}
 }

@@ -7,6 +7,12 @@ namespace DefaultNamespace.Effects
 	public class ConsumeStatusEffect : EffectScript
 	{
 		public EnumStorage.StatusEffect statusEffectToConsume;
+		// VISUAL-FIX(2026-06-12): ConsumeOwnStatusEffect missing projectile animation
+		//   Cause:    ConsumeOwnStatusEffect only captured PopUp -> StatusEffectChange -> SlotIn,
+		//             giving no clear visual feedback that the status effect was consumed.
+		//   Affects:  ConsumeStatusEffect, AnimationRequest, RecorderAnimationPlayer, CombatUXManager
+		//   Regress:  Reveal a card whose effect calls ConsumeOwnStatusEffect (e.g. OVERCHARGED_SUMMONER)
+		//             Check: card pops up, projectile flies toward statusEffectConsumePos, status text updates, then slots back in.
 		public void ConsumeOwnStatusEffect(int amount)
 		{
 			// first check if amount is met
@@ -29,7 +35,49 @@ namespace DefaultNamespace.Effects
 				}
 			}
 			// capture animation request for status effect consumption
-			CapturePopUpStatusEffectChangeSlotIn(myCardScript.gameObject, statusEffectToConsume, -amountRemoved);
+			if (recorder != null)
+			{
+				// 1. Pop Up
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.PopUp,
+					targetCard = myCardScript.gameObject
+				});
+
+				// 2. Projectile flies from this card to statusEffectConsumePos
+				Vector3 consumePos = CombatUXManager.me != null && CombatUXManager.me.statusEffectConsumePos != null
+					? CombatUXManager.me.statusEffectConsumePos.position
+					: myCardScript.transform.position;
+
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.StatusEffectProjectile,
+					attackerCard = myCard,
+					targetCard = myCardScript.gameObject,
+					customProjectileEndPosition = consumePos
+				});
+
+				// 3. Status Effect Change (tint + particles)
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.StatusEffectChange,
+					targetCard = myCardScript.gameObject,
+					statusEffect = statusEffectToConsume,
+					statusEffectAmount = -amountRemoved,
+					deferDisplayCommit = true
+				});
+
+				// 4. Slot In
+				recorder.animationRequests.Add(new AnimationRequest
+				{
+					type = AnimationRequestType.SlotIn,
+					targetCard = myCardScript.gameObject
+				});
+			}
+			else
+			{
+				CapturePopUpStatusEffectChangeSlotIn(myCardScript.gameObject, statusEffectToConsume, -amountRemoved);
+			}
 			// lastly, refresh info display
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}

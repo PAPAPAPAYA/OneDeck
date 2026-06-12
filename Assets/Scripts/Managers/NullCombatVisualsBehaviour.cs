@@ -41,6 +41,9 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 	public void PlayMultiStatusEffectProjectile(GameObject giverCard, List<CardScript> targetCards, Action<CardScript> onEachComplete, Action onAllComplete = null, float? customStaggerDelay = null)
 		=> _nullVisuals.PlayMultiStatusEffectProjectile(giverCard, targetCards, onEachComplete, onAllComplete, customStaggerDelay);
 
+	public void PlayStatusEffectProjectileToPosition(GameObject giverCard, Vector3 endPosition, Action onComplete = null)
+		=> _nullVisuals.PlayStatusEffectProjectileToPosition(giverCard, endPosition, onComplete);
+
 	public void ApplyStatusTint(CardScript targetCard, EnumStorage.StatusEffect effect)
 		=> _nullVisuals.ApplyStatusTint(targetCard, effect);
 
