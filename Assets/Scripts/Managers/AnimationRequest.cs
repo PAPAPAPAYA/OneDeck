@@ -65,5 +65,35 @@ namespace DefaultNamespace
 		/// to newCardPos rather than another card.
 		/// </summary>
 		public Vector3? customProjectileEndPosition;
+
+		// VISUAL-FIX(2026-06-12): Status effect projectiles do not reflect stack count
+		//   Cause:    AnimationRequest only carried target information; the visual layer had
+		//             no way to know how many status effect layers were being given/consumed,
+		//             so every effect played exactly one projectile regardless of stack count.
+		//   Affects:  AnimationRequest, ICombatVisuals, CombatUXManager, RecorderAnimationPlayer,
+		//             StatusEffectGiverEffect, CurseEffect, ConsumeStatusEffect
+		//   Regress:  Reveal a card that gives/consumes multiple status effect layers
+		//             Check: one projectile should spawn per layer, with randomized start
+		//             positions and staggered launch times, and the effect should wait until
+		//             the last projectile finishes before continuing.
+		/// <summary>
+		/// Number of projectiles to spawn per target for StatusEffectProjectile.
+		/// Defaults to 1. Set to the number of status effect layers being applied/consumed
+		/// so the visual matches the logic.
+		/// </summary>
+		public int projectileCount = 1;
+
+		/// <summary>
+		/// Random XY offset range applied to each projectile's start position.
+		/// X controls horizontal spread, Y controls vertical spread. Z is always 0.
+		/// </summary>
+		public Vector2 projectileStartRandomOffsetRange;
+
+		/// <summary>
+		/// Random delay range (seconds) for staggering projectile launches.
+		/// x = minimum delay, y = maximum delay. Each projectile picks a random value
+		/// in this range for its launch time.
+		/// </summary>
+		public Vector2 projectileStartTimeStaggerRange;
 	}
 }

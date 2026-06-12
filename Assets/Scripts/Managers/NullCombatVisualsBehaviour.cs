@@ -38,11 +38,11 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 	public void PlayAttackAnimation(GameObject attackerCard, bool isAttackingEnemy, Action onHit = null, Action onComplete = null)
 		=> _nullVisuals.PlayAttackAnimation(attackerCard, isAttackingEnemy, onHit, onComplete);
 
-	public void PlayMultiStatusEffectProjectile(GameObject giverCard, List<CardScript> targetCards, Action<CardScript> onEachComplete, Action onAllComplete = null, float? customStaggerDelay = null)
-		=> _nullVisuals.PlayMultiStatusEffectProjectile(giverCard, targetCards, onEachComplete, onAllComplete, customStaggerDelay);
+	public void PlayMultiStatusEffectProjectile(GameObject giverCard, List<CardScript> targetCards, Action<CardScript> onEachComplete, Action onAllComplete = null, float? customStaggerDelay = null, int projectileCount = 1, Vector2? projectileStartRandomOffsetRange = null, Vector2? projectileStartTimeStaggerRange = null)
+		=> _nullVisuals.PlayMultiStatusEffectProjectile(giverCard, targetCards, onEachComplete, onAllComplete, customStaggerDelay, projectileCount, projectileStartRandomOffsetRange, projectileStartTimeStaggerRange);
 
-	public void PlayStatusEffectProjectileToPosition(GameObject giverCard, Vector3 endPosition, Action onComplete = null)
-		=> _nullVisuals.PlayStatusEffectProjectileToPosition(giverCard, endPosition, onComplete);
+	public void PlayStatusEffectProjectileToPosition(GameObject giverCard, Vector3 endPosition, Action onComplete = null, int projectileCount = 1, Vector2? projectileStartRandomOffsetRange = null, Vector2? projectileStartTimeStaggerRange = null)
+		=> _nullVisuals.PlayStatusEffectProjectileToPosition(giverCard, endPosition, onComplete, projectileCount, projectileStartRandomOffsetRange, projectileStartTimeStaggerRange);
 
 	public void ApplyStatusTint(CardScript targetCard, EnumStorage.StatusEffect effect)
 		=> _nullVisuals.ApplyStatusTint(targetCard, effect);

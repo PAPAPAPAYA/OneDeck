@@ -406,7 +406,10 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					visuals.PlayStatusEffectProjectileToPosition(
 						request.attackerCard,
 						request.customProjectileEndPosition.Value,
-						onComplete: () => { customDone = true; }
+						onComplete: () => { customDone = true; },
+						projectileCount: request.projectileCount,
+						projectileStartRandomOffsetRange: request.projectileStartRandomOffsetRange.sqrMagnitude > 0f ? request.projectileStartRandomOffsetRange : (Vector2?)null,
+						projectileStartTimeStaggerRange: request.projectileStartTimeStaggerRange.sqrMagnitude > 0f ? request.projectileStartTimeStaggerRange : (Vector2?)null
 					);
 					yield return new WaitUntil(() => customDone);
 
@@ -447,7 +450,11 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					request.attackerCard,
 					targetCardScripts,
 					onEachComplete: null, // logic already resolved in logic phase
-					onAllComplete: () => { done = true; }
+					onAllComplete: () => { done = true; },
+					customStaggerDelay: null,
+					projectileCount: request.projectileCount,
+					projectileStartRandomOffsetRange: request.projectileStartRandomOffsetRange.sqrMagnitude > 0f ? request.projectileStartRandomOffsetRange : (Vector2?)null,
+					projectileStartTimeStaggerRange: request.projectileStartTimeStaggerRange.sqrMagnitude > 0f ? request.projectileStartTimeStaggerRange : (Vector2?)null
 				);
 				yield return new WaitUntil(() => done);
 

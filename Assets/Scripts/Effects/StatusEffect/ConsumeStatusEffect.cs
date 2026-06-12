@@ -54,7 +54,8 @@ namespace DefaultNamespace.Effects
 					type = AnimationRequestType.StatusEffectProjectile,
 					attackerCard = myCard,
 					targetCard = myCardScript.gameObject,
-					customProjectileEndPosition = consumePos
+					customProjectileEndPosition = consumePos,
+					projectileCount = amountRemoved
 				});
 
 				// 3. Status Effect Change (tint + particles)

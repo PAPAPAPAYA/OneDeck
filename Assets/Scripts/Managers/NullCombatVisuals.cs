@@ -59,22 +59,25 @@ public class NullCombatVisuals : ICombatVisuals
 		onComplete?.Invoke();
 	}
 
-	public void PlayMultiStatusEffectProjectile(GameObject giverCard, List<CardScript> targetCards, Action<CardScript> onEachComplete, Action onAllComplete = null, float? customStaggerDelay = null)
+	public void PlayMultiStatusEffectProjectile(GameObject giverCard, List<CardScript> targetCards, Action<CardScript> onEachComplete, Action onAllComplete = null, float? customStaggerDelay = null, int projectileCount = 1, Vector2? projectileStartRandomOffsetRange = null, Vector2? projectileStartTimeStaggerRange = null)
 	{
-		callLog.Add("PlayMultiStatusEffectProjectile: " + (giverCard?.name ?? "null") + " -> " + (targetCards?.Count ?? 0) + " targets");
+		callLog.Add("PlayMultiStatusEffectProjectile: " + (giverCard?.name ?? "null") + " -> " + (targetCards?.Count ?? 0) + " targets x" + projectileCount);
 		if (targetCards != null)
 		{
 			foreach (var target in targetCards)
 			{
-				onEachComplete?.Invoke(target);
+				for (int i = 0; i < projectileCount; i++)
+				{
+					onEachComplete?.Invoke(target);
+				}
 			}
 		}
 		onAllComplete?.Invoke();
 	}
 
-	public void PlayStatusEffectProjectileToPosition(GameObject giverCard, Vector3 endPosition, Action onComplete = null)
+	public void PlayStatusEffectProjectileToPosition(GameObject giverCard, Vector3 endPosition, Action onComplete = null, int projectileCount = 1, Vector2? projectileStartRandomOffsetRange = null, Vector2? projectileStartTimeStaggerRange = null)
 	{
-		callLog.Add("PlayStatusEffectProjectileToPosition: " + (giverCard?.name ?? "null") + " -> " + endPosition);
+		callLog.Add("PlayStatusEffectProjectileToPosition: " + (giverCard?.name ?? "null") + " -> " + endPosition + " x" + projectileCount);
 		onComplete?.Invoke();
 	}
 

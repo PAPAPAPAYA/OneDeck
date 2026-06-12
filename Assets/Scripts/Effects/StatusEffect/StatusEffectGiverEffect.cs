@@ -97,7 +97,7 @@ namespace DefaultNamespace.Effects
 			return result;
 		}
 
-		protected void CaptureBatchStatusEffectAnimation(List<CardScript> targetCards)
+		protected void CaptureBatchStatusEffectAnimation(List<CardScript> targetCards, int projectileCount = 1)
 		{
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
@@ -119,7 +119,8 @@ namespace DefaultNamespace.Effects
 			{
 				type = AnimationRequestType.StatusEffectProjectile,
 				attackerCard = myCard,
-				targetCards = targetGameObjects
+				targetCards = targetGameObjects,
+				projectileCount = projectileCount
 			});
 
 			recorder.animationRequests.Add(new AnimationRequest
@@ -140,7 +141,7 @@ namespace DefaultNamespace.Effects
 		public virtual void GiveSelfStatusEffect(int amount)
 		{
 			ApplyStatusEffectToCard(myCardScript, amount);
-			CaptureBatchStatusEffectAnimation(new List<CardScript> { myCardScript });
+			CaptureBatchStatusEffectAnimation(new List<CardScript> { myCardScript }, amount);
 		}
 
 		public virtual void GiveStatusEffect(int amount)
@@ -194,7 +195,7 @@ namespace DefaultNamespace.Effects
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 
 			// --- 4. Capture batch projectile animation ---
-			CaptureBatchStatusEffectAnimation(targetCards);
+			CaptureBatchStatusEffectAnimation(targetCards, 1);
 		}
 
 		public void GiveStatusEffectBasedOnStatusEffectCount()
@@ -233,7 +234,7 @@ namespace DefaultNamespace.Effects
 			}
 
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
-			CaptureBatchStatusEffectAnimation(targetCards);
+			CaptureBatchStatusEffectAnimation(targetCards, amount);
 		}
 
 		/// <summary>
@@ -285,7 +286,7 @@ namespace DefaultNamespace.Effects
 			}
 
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
-			CaptureBatchStatusEffectAnimation(targetCards);
+			CaptureBatchStatusEffectAnimation(targetCards, statusEffectLayerCount);
 		}
 
 		public virtual void GiveStatusEffectToXFriendly()
@@ -308,7 +309,7 @@ namespace DefaultNamespace.Effects
 			}
 
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
-			CaptureBatchStatusEffectAnimation(targetCards);
+			CaptureBatchStatusEffectAnimation(targetCards, yFriendlyLayerCount);
 		}
 
 		/// <summary>

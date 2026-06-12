@@ -283,4 +283,59 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 		}
 		Assert.AreEqual(2, powerCount, "Enemy EnhanceFriendlyCurse should apply Power to enemy (self) card");
 	}
+
+	[Test]
+	public void GiveSelfStatusEffect_CapturesProjectileCount()
+	{
+		var card = CreateCard(true, "SelfPowerGiver");
+		var giver = CreateEffect<StatusEffectGiverEffect>(card);
+		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+
+		EffectChainManager.MakeANewEffectRecorder(card, giver.gameObject);
+		giver.GiveSelfStatusEffect(3);
+
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		bool foundProjectile = false;
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req.type == AnimationRequestType.StatusEffectProjectile)
+			{
+				foundProjectile = true;
+				Assert.AreEqual(3, req.projectileCount, "Projectile count should match status effect layers given");
+			}
+		}
+		Assert.IsTrue(foundProjectile, "Should capture StatusEffectProjectile animation request");
+
+		EffectChainManager.Me.CloseOpenedChain();
+	}
+
+	[Test]
+	public void EnhanceCurse_CapturesProjectileCount()
+	{
+		var curseCard = CreateCard(true, "Curser");
+		var target = CreateCard(false, "CursedEnemy");
+		target.GetComponent<CardScript>().cardTypeID = "curse_target";
+		CombatManager.combinedDeckZone.Add(target);
+
+		var curse = CreateEffect<CurseEffect>(curseCard);
+		curse.cardTypeID = CreateScriptableObject<StringSO>();
+		curse.cardTypeID.value = "curse_target";
+
+		EffectChainManager.MakeANewEffectRecorder(curseCard, curse.gameObject);
+		curse.EnhanceCurse(3);
+
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		bool foundProjectile = false;
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req.type == AnimationRequestType.StatusEffectProjectile)
+			{
+				foundProjectile = true;
+				Assert.AreEqual(3, req.projectileCount, "Projectile count should match Power layers applied");
+			}
+		}
+		Assert.IsTrue(foundProjectile, "Should capture StatusEffectProjectile animation request");
+
+		EffectChainManager.Me.CloseOpenedChain();
+	}
 }

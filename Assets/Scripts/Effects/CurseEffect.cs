@@ -324,7 +324,8 @@ namespace DefaultNamespace.Effects
 				{
 					type = AnimationRequestType.StatusEffectProjectile,
 					attackerCard = myCard,
-					targetCard = targetCard.gameObject
+					targetCard = targetCard.gameObject,
+					projectileCount = amount
 				});
 
 				// 3. Slot In after projectile completes

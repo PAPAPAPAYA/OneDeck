@@ -165,6 +165,7 @@
 			// indeed it's better to unify, as when consuming self's power should have animation
 			// dot flying away
 		//todo one dot one layer of status effect
+			// need testing
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add

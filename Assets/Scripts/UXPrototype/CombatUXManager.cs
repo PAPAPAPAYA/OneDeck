@@ -1894,6 +1894,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public Vector3 projectileEndOffset = new Vector3(0, 0.5f, 0);
 	[Tooltip("Stagger delay between multiple projectiles (seconds)")]
 	public float projectileStaggerDelay = 0.05f;
+	[Tooltip("Default random XY offset range applied to each projectile start position")]
+	public Vector2 projectileStartRandomOffsetRange = new Vector2(0.2f, 0.2f);
+	[Tooltip("Default random delay range for staggering projectile launches (x=min, y=max)")]
+	public Vector2 projectileStartTimeStaggerRange = new Vector2(0f, 0.1f);
+	[Tooltip("Maximum total projectiles allowed per request (safety cap for high stacks)")]
+	public int maxProjectilesPerRequest = 30;
 
 	/// <summary>
 	/// Play parabolic projectile effect of status effect flying from giver to receiver
@@ -1913,55 +1919,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Get physical card positions
 		BuildCardScriptToPhysicalDictionary();
-		
+
 		Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset;
 		Vector3 endPos = GetCardWorldPosition(receiverCard) + projectileEndOffset;
 
-		// Create effect instance
-		GameObject projectile = Instantiate(statusEffectProjectilePrefab, startPos, Quaternion.identity);
-		
-		// Calculate parabolic midpoint
-		Vector3 midPoint = Vector3.Lerp(startPos, endPos, 0.5f) + Vector3.up * projectileArcHeight;
-
-		AnimationStateTracker.me?.RegisterAnimation();
-
-		// Create parabolic animation
-		Sequence projectileSequence = DOTween.Sequence();
-		
-		// Phase 1: From start to midpoint (ascending)
-		projectileSequence.Append(
-			projectile.transform.DOMove(midPoint, projectileDuration * 0.5f)
-				.SetEase(Ease.OutQuad)
-		);
-		
-		// Phase 2: From midpoint to end (descending)
-		projectileSequence.Append(
-			projectile.transform.DOMove(endPos, projectileDuration * 0.5f)
-				.SetEase(Ease.InQuad)
-		);
-		
-		// Sync rotation: keep effect facing target
-		projectile.transform.LookAt(endPos);
-
-		// Safety kill: if the projectile GameObject is destroyed externally before the tween finishes,
-		// DOTween would throw a missing-Transform warning. Kill the sequence gracefully instead.
-		projectileSequence.OnUpdate(() =>
-		{
-			if (projectile == null)
-			{
-				projectileSequence.Kill(true);
-			}
-		});
-
-		// Animation complete: destroy effect and execute callback
-		projectileSequence.OnComplete(() =>
-		{
-			AnimationStateTracker.me?.CompleteAnimation();
-			Destroy(projectile);
-			onComplete?.Invoke();
-		});
-
-		projectileSequence.Play();
+		SpawnProjectile(startPos, endPos, onComplete);
 	}
 
 	/// <summary>
@@ -1978,10 +1940,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		List<CardScript> targetCards,
 		System.Action<CardScript> onEachComplete,
 		System.Action onAllComplete = null,
-		float? customStaggerDelay = null)
+		float? customStaggerDelay = null,
+		int projectileCount = 1,
+		Vector2? projectileStartRandomOffsetRange = null,
+		Vector2? projectileStartTimeStaggerRange = null)
 	{
-		UnityEngine.Debug.Log("[CombatUXManager] PlayMultiStatusEffectProjectile START — REAL-TIME path, " + (targetCards?.Count ?? 0) + " targets. NO PopUp/SlotIn here!");
-		if (targetCards == null || targetCards.Count == 0)
+		UnityEngine.Debug.Log("[CombatUXManager] PlayMultiStatusEffectProjectile START — REAL-TIME path, " + (targetCards?.Count ?? 0) + " targets x" + projectileCount + ". NO PopUp/SlotIn here!");
+		if (targetCards == null || targetCards.Count == 0 || projectileCount <= 0)
 		{
 			onAllComplete?.Invoke();
 			return;
@@ -1992,83 +1957,183 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			foreach (var target in targetCards)
 			{
-				onEachComplete?.Invoke(target);
+				for (int i = 0; i < projectileCount; i++)
+				{
+					onEachComplete?.Invoke(target);
+				}
 			}
 			onAllComplete?.Invoke();
 			return;
 		}
 
+		Vector2 effectiveOffsetRange = projectileStartRandomOffsetRange ?? this.projectileStartRandomOffsetRange;
+		Vector2 effectiveStaggerRange = projectileStartTimeStaggerRange ?? this.projectileStartTimeStaggerRange;
+		// Fallback to legacy fixed stagger if no random range was provided explicitly.
+		if (projectileStartTimeStaggerRange == null && customStaggerDelay.HasValue)
+		{
+			effectiveStaggerRange = new Vector2(0f, customStaggerDelay.Value);
+		}
+		float minStagger = Mathf.Min(effectiveStaggerRange.x, effectiveStaggerRange.y);
+		float maxStagger = Mathf.Max(effectiveStaggerRange.x, effectiveStaggerRange.y);
+
+		// Safety cap: high stack counts can spawn an excessive number of projectiles.
+		int cappedProjectileCount = projectileCount;
+		int cappedTargetCount = targetCards.Count;
+		int requestedTotal = cappedTargetCount * cappedProjectileCount;
+		if (requestedTotal > maxProjectilesPerRequest)
+		{
+			cappedProjectileCount = Mathf.Max(1, maxProjectilesPerRequest / cappedTargetCount);
+			requestedTotal = cappedTargetCount * cappedProjectileCount;
+			if (requestedTotal > maxProjectilesPerRequest)
+			{
+				cappedTargetCount = Mathf.Max(1, maxProjectilesPerRequest / cappedProjectileCount);
+			}
+		}
+
 		BlockInput(this);
 		AnimationStateTracker.me?.RegisterAnimation();
 
-		float staggerDelay = customStaggerDelay ?? projectileStaggerDelay;
 		int completedCount = 0;
-		int totalCount = targetCards.Count;
+		int totalCount = cappedTargetCount * cappedProjectileCount;
 
-		for (int i = 0; i < targetCards.Count; i++)
+		for (int t = 0; t < cappedTargetCount; t++)
 		{
-			var targetCardScript = targetCards[i];
-			
-			// Staggered playback time
-				DOVirtual.DelayedCall(i * staggerDelay, () =>
+			var targetCardScript = targetCards[t];
+			if (targetCardScript == null) continue;
+
+			for (int p = 0; p < cappedProjectileCount; p++)
+			{
+				var capturedTarget = targetCardScript;
+				float delay = UnityEngine.Random.Range(minStagger, maxStagger);
+
+				DOVirtual.DelayedCall(delay, () =>
 				{
 					// Defensive: giver or target may have been destroyed (e.g. exiled) during the delay.
-					if (giverCard == null || targetCardScript == null || targetCardScript.gameObject == null)
+					if (giverCard == null || capturedTarget == null || capturedTarget.gameObject == null)
 					{
 						completedCount++;
-						if (completedCount >= totalCount)
-						{
-							UnblockInput(this);
-							AnimationStateTracker.me?.CompleteAnimation();
-							onAllComplete?.Invoke();
-						}
+						TryCompleteAll();
 						return;
 					}
 
-					PlayStatusEffectProjectile(
-						giverCard, 
-						targetCardScript.gameObject, 
-						() =>
-						{
-							// Single effect complete, execute effect for this target
-							onEachComplete?.Invoke(targetCardScript);
-							
-							completedCount++;
-							if (completedCount >= totalCount)
-							{
-								UnblockInput(this);
-								AnimationStateTracker.me?.CompleteAnimation();
-								onAllComplete?.Invoke();
-							}
-						}
-					);
+					BuildCardScriptToPhysicalDictionary();
+					Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset + GetRandomProjectileStartOffset(effectiveOffsetRange);
+					Vector3 endPos = GetCardWorldPosition(capturedTarget.gameObject) + projectileEndOffset;
+
+					SpawnProjectile(startPos, endPos, () =>
+					{
+						// Single effect complete, execute effect for this target
+						onEachComplete?.Invoke(capturedTarget);
+
+						completedCount++;
+						TryCompleteAll();
+					});
 				});
+			}
+		}
+
+		void TryCompleteAll()
+		{
+			if (completedCount >= totalCount)
+			{
+				UnblockInput(this);
+				AnimationStateTracker.me?.CompleteAnimation();
+				onAllComplete?.Invoke();
+			}
 		}
 	}
 
 	/// <summary>
-	/// Play a single status effect projectile from giver card to a custom world position.
+	/// Play status effect projectile(s) from giver card to a custom world position.
 	/// Used when the projectile target is not a card (e.g. fly to newCardPos).
 	/// </summary>
 	public void PlayStatusEffectProjectileToPosition(
 		GameObject giverCard,
 		Vector3 endPosition,
-		Action onComplete = null)
+		Action onComplete = null,
+		int projectileCount = 1,
+		Vector2? projectileStartRandomOffsetRange = null,
+		Vector2? projectileStartTimeStaggerRange = null)
 	{
-		UnityEngine.Debug.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition to " + endPosition + " — NO PopUp here, only parabolic projectile.");
+		UnityEngine.Debug.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition to " + endPosition + " count=" + projectileCount + " — NO PopUp here, only parabolic projectile.");
+		if (projectileCount <= 0)
+		{
+			onComplete?.Invoke();
+			return;
+		}
 		if (statusEffectProjectilePrefab == null || giverCard == null)
 		{
 			onComplete?.Invoke();
 			return;
 		}
 
-		// Get physical card positions
-		BuildCardScriptToPhysicalDictionary();
+		Vector2 effectiveOffsetRange = projectileStartRandomOffsetRange ?? this.projectileStartRandomOffsetRange;
+		Vector2 effectiveStaggerRange = projectileStartTimeStaggerRange ?? this.projectileStartTimeStaggerRange;
+		float minStagger = Mathf.Min(effectiveStaggerRange.x, effectiveStaggerRange.y);
+		float maxStagger = Mathf.Max(effectiveStaggerRange.x, effectiveStaggerRange.y);
 
-		Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset;
-		Vector3 endPos = endPosition + projectileEndOffset;
+		int cappedProjectileCount = Mathf.Min(projectileCount, maxProjectilesPerRequest);
+		if (cappedProjectileCount <= 0) cappedProjectileCount = 1;
 
-		// Create effect instance
+		// Single projectile: keep the old simple path (one AnimationStateTracker registration).
+		if (cappedProjectileCount == 1)
+		{
+			BuildCardScriptToPhysicalDictionary();
+			Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset + GetRandomProjectileStartOffset(effectiveOffsetRange);
+			Vector3 endPos = endPosition + projectileEndOffset;
+			SpawnProjectile(startPos, endPos, onComplete);
+			return;
+		}
+
+		// Multiple projectiles: block input and wait for all to finish.
+		BlockInput(this);
+		AnimationStateTracker.me?.RegisterAnimation();
+
+		int completedCount = 0;
+		int totalCount = cappedProjectileCount;
+
+		for (int i = 0; i < cappedProjectileCount; i++)
+		{
+			float delay = UnityEngine.Random.Range(minStagger, maxStagger);
+			DOVirtual.DelayedCall(delay, () =>
+			{
+				// Defensive: giver may have been destroyed during the delay.
+				if (giverCard == null)
+				{
+					completedCount++;
+					TryCompleteAll();
+					return;
+				}
+
+				BuildCardScriptToPhysicalDictionary();
+				Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset + GetRandomProjectileStartOffset(effectiveOffsetRange);
+				Vector3 endPos = endPosition + projectileEndOffset;
+
+				SpawnProjectile(startPos, endPos, () =>
+				{
+					completedCount++;
+					TryCompleteAll();
+				});
+			});
+		}
+
+		void TryCompleteAll()
+		{
+			if (completedCount >= totalCount)
+			{
+				UnblockInput(this);
+				AnimationStateTracker.me?.CompleteAnimation();
+				onComplete?.Invoke();
+			}
+		}
+	}
+
+	/// <summary>
+	/// Spawn a single parabolic projectile from startPos to endPos and invoke onComplete when done.
+	/// Handles one AnimationStateTracker registration/complete pair.
+	/// </summary>
+	private void SpawnProjectile(Vector3 startPos, Vector3 endPos, Action onComplete)
+	{
 		GameObject projectile = Instantiate(statusEffectProjectilePrefab, startPos, Quaternion.identity);
 
 		// Calculate parabolic midpoint
@@ -2113,6 +2178,15 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		});
 
 		projectileSequence.Play();
+	}
+
+	/// <summary>
+	/// Returns a random XY offset in the given range. Z is always 0.
+	/// </summary>
+	private Vector3 GetRandomProjectileStartOffset(Vector2 range)
+	{
+		if (range == Vector2.zero) return Vector3.zero;
+		return new Vector3(UnityEngine.Random.Range(-range.x, range.x), UnityEngine.Random.Range(-range.y, range.y), 0f);
 	}
 
 	/// <summary>

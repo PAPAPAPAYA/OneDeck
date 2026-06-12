@@ -105,21 +105,33 @@ public interface ICombatVisuals
 	/// <summary>
 	/// Play projectile VFX from giver card to each target card, invoking callbacks.
 	/// </summary>
+	/// <param name="projectileCount">Number of projectiles to spawn per target.</param>
+	/// <param name="projectileStartRandomOffsetRange">Random XY offset range for each projectile start position.</param>
+	/// <param name="projectileStartTimeStaggerRange">Random delay range (x=min, y=max) for staggering launches.</param>
 	void PlayMultiStatusEffectProjectile(
 		GameObject giverCard,
 		List<CardScript> targetCards,
 		Action<CardScript> onEachComplete,
 		Action onAllComplete = null,
-		float? customStaggerDelay = null);
+		float? customStaggerDelay = null,
+		int projectileCount = 1,
+		Vector2? projectileStartRandomOffsetRange = null,
+		Vector2? projectileStartTimeStaggerRange = null);
 
 	/// <summary>
-	/// Play a single status effect projectile from giver card to a custom world position.
+	/// Play status effect projectile(s) from giver card to a custom world position.
 	/// Used when the projectile target is not a card (e.g. fly to newCardPos).
 	/// </summary>
+	/// <param name="projectileCount">Number of projectiles to spawn.</param>
+	/// <param name="projectileStartRandomOffsetRange">Random XY offset range for each projectile start position.</param>
+	/// <param name="projectileStartTimeStaggerRange">Random delay range (x=min, y=max) for staggering launches.</param>
 	void PlayStatusEffectProjectileToPosition(
 		GameObject giverCard,
 		Vector3 endPosition,
-		Action onComplete = null);
+		Action onComplete = null,
+		int projectileCount = 1,
+		Vector2? projectileStartRandomOffsetRange = null,
+		Vector2? projectileStartTimeStaggerRange = null);
 
 	/// <summary>
 	/// Apply visual tint for a status effect (Infected/Power) to the target card.

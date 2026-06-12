@@ -59,11 +59,13 @@ public class ConsumeStatusEffectTests : HeadlessCombatTestFixture
 		consume.ConsumeOwnStatusEffect(2);
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
-		Assert.AreEqual(3, recorder.animationRequests.Count, "Should capture 3 animation requests (PopUp + StatusEffectChange + SlotIn)");
+		Assert.AreEqual(4, recorder.animationRequests.Count, "Should capture 4 animation requests (PopUp + StatusEffectProjectile + StatusEffectChange + SlotIn)");
 		Assert.AreEqual(AnimationRequestType.PopUp, recorder.animationRequests[0].type, "First should be PopUp");
-		Assert.AreEqual(AnimationRequestType.StatusEffectChange, recorder.animationRequests[1].type, "Second should be StatusEffectChange");
-		Assert.AreEqual(AnimationRequestType.SlotIn, recorder.animationRequests[2].type, "Third should be SlotIn");
-		Assert.AreEqual(-2, recorder.animationRequests[1].statusEffectAmount, "StatusEffectChange should reflect -2 amount");
+		Assert.AreEqual(AnimationRequestType.StatusEffectProjectile, recorder.animationRequests[1].type, "Second should be StatusEffectProjectile");
+		Assert.AreEqual(2, recorder.animationRequests[1].projectileCount, "Projectile count should match consumed stacks");
+		Assert.AreEqual(AnimationRequestType.StatusEffectChange, recorder.animationRequests[2].type, "Third should be StatusEffectChange");
+		Assert.AreEqual(AnimationRequestType.SlotIn, recorder.animationRequests[3].type, "Fourth should be SlotIn");
+		Assert.AreEqual(-2, recorder.animationRequests[2].statusEffectAmount, "StatusEffectChange should reflect -2 amount");
 
 		EffectChainManager.Me.CloseOpenedChain();
 	}

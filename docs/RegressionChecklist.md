@@ -55,6 +55,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | # | Scenario | System / Effect | Fixed Date | Status | Verification |
 |---|----------|-----------------|------------|--------|--------------|
 | 16 | ConsumeOwnStatusEffect missing projectile animation | `ConsumeStatusEffect`, `AnimationRequest`, `RecorderAnimationPlayer`, `CombatUXManager`, `ICombatVisuals` | 2026-06-12 | ⚠️ | **Card:** OVERCHARGED_SUMMONER (Power×1), DR_MANHATTAN (Power×4), ADVANCE_PORTAL (Counter×2), ALMIGHTY (Counter×2), SLIME (Counter×2)<br>**Check:** Revealed card pops up, projectile flies from card toward `statusEffectConsumePos`, status text updates after projectile lands, then card slots back in. No freeze or missing SlotIn. |
+| 17 | Status effect projectiles do not reflect stack count | `AnimationRequest`, `ICombatVisuals`, `RecorderAnimationPlayer`, `CombatUXManager`, `StatusEffectGiverEffect`, `CurseEffect`, `ConsumeStatusEffect` | 2026-06-12 | ⚠️ | **Card:** Any card that gives/consumes multiple status effect layers (e.g. DR_MANHATTAN consumes 4 Power, a card giving Power×3 to all friendly cards)<br>**Check:** One projectile spawns per status effect layer; start positions are randomized within `projectileStartRandomOffsetRange`; launch times are staggered within `projectileStartTimeStaggerRange`; animation waits until the last projectile lands before SlotIn/StatusEffectChange commit. Total projectiles respect `maxProjectilesPerRequest`. |
 
 ---
 
@@ -87,4 +88,12 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `ConsumeStatusEffect.cs` | 16 |
 | `ICombatVisuals.cs` | 16 |
 | `NullCombatVisuals.cs` | 16 |
-| `NullCombatVisualsBehaviour.cs` | 16 |
+| `NullCombatVisualsBehaviour.cs` | 16, 17 |
+| `AnimationRequest.cs` | 9, 16, 17 |
+| `StatusEffectGiverEffect.cs` | 17 |
+| `CurseEffect.cs` | 8, 17 |
+| `ConsumeStatusEffect.cs` | 16, 17 |
+| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17 |
+| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17 |
+| `ICombatVisuals.cs` | 16, 17 |
+| `NullCombatVisuals.cs` | 16, 17 |
