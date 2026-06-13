@@ -346,21 +346,22 @@ public class StageEffect : EffectScript
 			}
 		}
 		
-		// VISUAL-FIX(2026-05-18): Premature deck sync in Stage causes distance-zero tweens
-		//   Cause:    SyncPhysicalCardsWithCombinedDeck in logic phase pre-moves all physical cards
-		//             to final positions, so subsequent bury/stage animations have no visible movement
-		//   Affects:  StageEffect, ApplyAnimationResult, UpdateAllPhysicalCardTargets
-		//   Regress:  Reveal a card with StageSelf or StageNextXCards and verify animation movement
-		//   Related:  Card_RisingFlame, any Stage card
+		// VISUAL-FIX(2026-06-13): Remove logic-phase deck sync in Stage to fix SlotIn index corruption
+		//   Cause:    SyncPhysicalCardsWithCombinedDeck in logic phase pre-moves physical cards to final
+		//             positions, so a preceding consume effect's SlotInBatch queries the wrong top index.
+		//             Example: PREMATURE consumes JU_ON's curse Power, then Stage moves JU_ON to top;
+		//             SlotInBatch would land on the already-staged position instead of the original one.
+		//   Fix:      Physical deck reordering is deferred to RecorderAnimationPlayer via ApplyAnimationResult.
+		//   Affects:  StageEffect, ApplyAnimationResult, RecorderAnimationPlayer
+		//   Regress:  PREMATURE + JU_ON: verify PopUp/Projectile/SlotIn/Stage arc sequence is correct.
+		//   Related:  PRD stage-sync-removal-ju-on-slot-in-2026-06-13
 		string deckBefore = "";
 		for (int i = 0; i < _combinedDeck.Count; i++)
 		{
 			var cs = _combinedDeck[i].GetComponent<CardScript>();
 			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
 		}
-		Debug.Log("[StageEffect] StageChosenCards combinedDeck BEFORE sync: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null"));
-		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
-		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER sync. staged=" + stagedCards.Count);
+		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER logic move: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null") + " staged=" + stagedCards.Count);
 
 		// VISUAL-FIX(2026-05-15): Stage reactive chain causes wrong animation target index
 		//   Cause:    Reactive effects (e.g. onMeStaged -> BurySelf) may modify deck order after stage logic

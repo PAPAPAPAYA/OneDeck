@@ -361,6 +361,14 @@ namespace DefaultNamespace.Effects
 			}
 		}
 
+		// VISUAL-FIX(2026-06-13): ConsumeHostileCursePower has no PopUp/SlotIn/Projectile animation
+		//   Cause:    ConsumeHostileCursePower only captured StatusEffectChange per target, so players
+		//             could barely see Power being absorbed from enemy curse cards.
+		//   Affects:  CurseEffect, EffectScript, RecorderAnimationPlayer, CombatUXManager
+		//   Regress:  Reveal CURSE_SUMMONER or PREMATURE when enemy curse cards carry Power
+		//             Check: target curse cards pop up together, projectiles fly from each target
+		//             toward statusEffectConsumePos with one projectile per consumed layer, status
+		//             text updates after projectiles land, then all targets slot back in together.
 		/// <summary>
 		/// Consumes Power status effect from enemy cards matching cardTypeID.
 		/// </summary>
@@ -389,8 +397,23 @@ namespace DefaultNamespace.Effects
 			// Check if there is enough Power to consume
 			if (totalPower < amount) return;
 
-			// Consume Power (remove layer by layer from each card)
+			// Snapshot display state for all affected targets before mutating so card text updates
+			// are deferred until the projectile animation completes.
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null && RecorderAnimationPlayer.me != null)
+			{
+				foreach (var card in targetCards)
+				{
+					card.SnapshotDisplayState();
+				}
+			}
+
+			// Consume Power (remove layer by layer from each card) and record how much was removed
+			// from each target so the animation can spawn the correct number of projectiles.
 			int amountToRemove = amount;
+			var affectedTargets = new List<CardScript>();
+			var removedAmounts = new List<int>();
 			foreach (var card in targetCards)
 			{
 				if (amountToRemove <= 0) break;
@@ -398,14 +421,6 @@ namespace DefaultNamespace.Effects
 				int cardPowerCount = EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
 				int removeFromThisCard = Mathf.Min(cardPowerCount, amountToRemove);
 				int removedFromThisCard = 0;
-
-				// Snapshot display state before mutating so card text updates are deferred until animation completes
-				var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
-				var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-				if (recorder != null && RecorderAnimationPlayer.me != null)
-				{
-					card.SnapshotDisplayState();
-				}
 
 				for (int i = card.myStatusEffects.Count - 1; i >= 0 && removeFromThisCard > 0; i--)
 				{
@@ -418,7 +433,21 @@ namespace DefaultNamespace.Effects
 					}
 				}
 
-				CaptureStatusEffectChangeAnimationRequest(card.gameObject, EnumStorage.StatusEffect.Power, -removedFromThisCard);
+				if (removedFromThisCard > 0)
+				{
+					affectedTargets.Add(card);
+					removedAmounts.Add(removedFromThisCard);
+				}
+			}
+
+			// Capture batched consume animation: PopUp -> Projectile -> SlotIn
+			if (affectedTargets.Count > 0)
+			{
+				Vector3 consumePos = CombatUXManager.me != null && CombatUXManager.me.statusEffectConsumePos != null
+					? CombatUXManager.me.statusEffectConsumePos.position
+					: myCardScript.transform.position;
+
+				CaptureBatchStatusEffectConsumeAnimation(myCard, affectedTargets, EnumStorage.StatusEffect.Power, removedAmounts, consumePos);
 			}
 
 			// Output effect info

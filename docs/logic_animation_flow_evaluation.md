@@ -1,5 +1,13 @@
 # 卡片逻辑到动画流程评估报告
 
+> **⚠️ 历史参考文档（Historical Reference）**
+>
+> 本文档写于 2026-05 期间，用于评估是否应引入「分段式逻辑更新」方案。
+> 当前结论仍然成立：**不建议采用真正的分段式**，两阶段模型方向正确。
+> 但文档第 1 节描述的流程图中仍包含 `BuryEffect` / `StageEffect` 在逻辑阶段调用 `SyncPhysicalCardsWithCombinedDeck()` 的步骤，该步骤已在 **2026-06-13** 的动画补全工作中移除。
+> 近期的过渡方案是：逻辑阶段只修改 `combinedDeckZone`，物理牌组顺序由 `RecorderAnimationPlayer` 在动画阶段通过 `ApplyAnimationResult` 推进。
+> 如需了解当前实现，请优先参考 `AGENTS.md` 动画系统章节与 `plans/prd-stage-sync-removal-ju-on-slot-in-2026-06-13.md`。
+
 > 背景：修复 `SACRIFICE_RITUAL` bury/rift 视觉顺序问题后，对当前「逻辑→动画」架构的系统性评估。
 > 目标：评估是否需要「分段式逻辑更新」来避免逻辑与动画互相影响导致的显示错误。
 > 结论：**不建议采用分段式**。当前两阶段模型方向正确，问题根源在于 `physicalCardsInDeck` 的双重职责冲突，而非阶段划分本身。

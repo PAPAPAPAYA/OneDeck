@@ -1,5 +1,6 @@
 using DefaultNamespace;
 using DefaultNamespace.Effects;
+using DefaultNamespace.SOScripts;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -130,10 +131,12 @@ public class ConsumeStatusEffectTests : HeadlessCombatTestFixture
 		consume.ConsumeRandomEnemyCardsStatusEffect(1);
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
-		Assert.AreEqual(3, recorder.animationRequests.Count, "Should capture 3 animation requests per target");
-		Assert.AreEqual(AnimationRequestType.PopUp, recorder.animationRequests[0].type, "First should be PopUp");
-		Assert.AreEqual(AnimationRequestType.StatusEffectChange, recorder.animationRequests[1].type, "Second should be StatusEffectChange");
-		Assert.AreEqual(AnimationRequestType.SlotIn, recorder.animationRequests[2].type, "Third should be SlotIn");
+		Assert.AreEqual(4, recorder.animationRequests.Count, "Should capture 4 animation requests (StatusEffectChange + PopUpBatch + StatusEffectProjectile + SlotInBatch)");
+		Assert.AreEqual(AnimationRequestType.StatusEffectChange, recorder.animationRequests[0].type, "First should be StatusEffectChange");
+		Assert.AreEqual(AnimationRequestType.PopUpBatch, recorder.animationRequests[1].type, "Second should be PopUpBatch");
+		Assert.AreEqual(AnimationRequestType.StatusEffectProjectile, recorder.animationRequests[2].type, "Third should be StatusEffectProjectile");
+		Assert.IsTrue(recorder.animationRequests[2].reverseProjectile, "Projectile should be reverse (absorb)");
+		Assert.AreEqual(AnimationRequestType.SlotInBatch, recorder.animationRequests[3].type, "Fourth should be SlotInBatch");
 
 		EffectChainManager.Me.CloseOpenedChain();
 	}
@@ -178,5 +181,98 @@ public class ConsumeStatusEffectTests : HeadlessCombatTestFixture
 
 		Assert.IsFalse(friendly1.GetComponent<CardScript>().myStatusEffects.Contains(EnumStorage.StatusEffect.Power), "Friendly should lose Power (enemy's 'enemy' is friendly)");
 		Assert.IsTrue(enemy1.GetComponent<CardScript>().myStatusEffects.Contains(EnumStorage.StatusEffect.Power), "Enemy should retain Power");
+	}
+
+	[Test]
+	public void ConsumeHostileCursePower_RemovesPowerFromEnemyCurseCards()
+	{
+		const string curseTypeID = "CURSE_DUMMY";
+		var consumer = CreateCard(true, "CurseConsumer");
+		var enemyCurse1 = CreateCard(false, "EnemyCurse1", curseTypeID);
+		enemyCurse1.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		enemyCurse1.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		var enemyCurse2 = CreateCard(false, "EnemyCurse2", curseTypeID);
+		enemyCurse2.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		var otherEnemy = CreateCard(false, "OtherEnemy", "OTHER");
+		otherEnemy.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+
+		CombatManager.combinedDeckZone.Add(enemyCurse1);
+		CombatManager.combinedDeckZone.Add(enemyCurse2);
+		CombatManager.combinedDeckZone.Add(otherEnemy);
+
+		var curse = CreateEffect<CurseEffect>(consumer);
+		curse.cardTypeID = CreateScriptableObject<StringSO>();
+		curse.cardTypeID.value = curseTypeID;
+
+		EffectChainManager.MakeANewEffectRecorder(consumer, curse.gameObject);
+		curse.ConsumeHostileCursePower(2);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		int curse1Power = EnumStorage.GetStatusEffectCount(enemyCurse1.GetComponent<CardScript>().myStatusEffects, EnumStorage.StatusEffect.Power);
+		int curse2Power = EnumStorage.GetStatusEffectCount(enemyCurse2.GetComponent<CardScript>().myStatusEffects, EnumStorage.StatusEffect.Power);
+		int otherPower = EnumStorage.GetStatusEffectCount(otherEnemy.GetComponent<CardScript>().myStatusEffects, EnumStorage.StatusEffect.Power);
+
+		Assert.AreEqual(1, curse1Power, "EnemyCurse1 should lose 1 Power");
+		Assert.AreEqual(0, curse2Power, "EnemyCurse2 should lose all Power");
+		Assert.AreEqual(1, otherPower, "Other enemy card should retain Power");
+	}
+
+	[Test]
+	public void ConsumeHostileCursePower_CapturesBatchAnimationRequests()
+	{
+		const string curseTypeID = "CURSE_DUMMY";
+		var consumer = CreateCard(true, "CurseConsumer");
+		var enemyCurse1 = CreateCard(false, "EnemyCurse1", curseTypeID);
+		enemyCurse1.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		enemyCurse1.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		var enemyCurse2 = CreateCard(false, "EnemyCurse2", curseTypeID);
+		enemyCurse2.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+
+		CombatManager.combinedDeckZone.Add(enemyCurse1);
+		CombatManager.combinedDeckZone.Add(enemyCurse2);
+
+		var curse = CreateEffect<CurseEffect>(consumer);
+		curse.cardTypeID = CreateScriptableObject<StringSO>();
+		curse.cardTypeID.value = curseTypeID;
+
+		EffectChainManager.MakeANewEffectRecorder(consumer, curse.gameObject);
+		curse.ConsumeHostileCursePower(3);
+
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		Assert.AreEqual(5, recorder.animationRequests.Count, "Should capture 5 animation requests (StatusEffectChange x2 + PopUpBatch + StatusEffectProjectile + SlotInBatch)");
+		Assert.AreEqual(AnimationRequestType.StatusEffectChange, recorder.animationRequests[0].type, "First should be StatusEffectChange");
+		Assert.AreEqual(AnimationRequestType.StatusEffectChange, recorder.animationRequests[1].type, "Second should be StatusEffectChange");
+		Assert.AreEqual(AnimationRequestType.PopUpBatch, recorder.animationRequests[2].type, "Third should be PopUpBatch");
+		Assert.AreEqual(AnimationRequestType.StatusEffectProjectile, recorder.animationRequests[3].type, "Fourth should be StatusEffectProjectile");
+		Assert.IsTrue(recorder.animationRequests[3].reverseProjectile, "Projectile should be reverse (absorb toward consume position)");
+		Assert.IsTrue(recorder.animationRequests[3].customProjectileEndPosition.HasValue, "Projectile should have custom end position");
+		Assert.IsNotNull(recorder.animationRequests[3].projectileCountsPerTarget, "Should carry per-target projectile counts");
+		Assert.AreEqual(2, recorder.animationRequests[3].projectileCountsPerTarget.Count, "Should have per-target count for each target");
+		Assert.AreEqual(2, recorder.animationRequests[3].projectileCountsPerTarget[0], "First target should spawn 2 projectiles");
+		Assert.AreEqual(1, recorder.animationRequests[3].projectileCountsPerTarget[1], "Second target should spawn 1 projectile");
+
+		EffectChainManager.Me.CloseOpenedChain();
+	}
+
+	[Test]
+	public void ConsumeHostileCursePower_NotEnoughPower_DoesNothing()
+	{
+		const string curseTypeID = "CURSE_DUMMY";
+		var consumer = CreateCard(true, "CurseConsumer");
+		var enemyCurse = CreateCard(false, "EnemyCurse", curseTypeID);
+		enemyCurse.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+
+		CombatManager.combinedDeckZone.Add(enemyCurse);
+
+		var curse = CreateEffect<CurseEffect>(consumer);
+		curse.cardTypeID = CreateScriptableObject<StringSO>();
+		curse.cardTypeID.value = curseTypeID;
+
+		EffectChainManager.MakeANewEffectRecorder(consumer, curse.gameObject);
+		curse.ConsumeHostileCursePower(2);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		int powerCount = EnumStorage.GetStatusEffectCount(enemyCurse.GetComponent<CardScript>().myStatusEffects, EnumStorage.StatusEffect.Power);
+		Assert.AreEqual(1, powerCount, "Should not consume when not enough Power stacks");
 	}
 }

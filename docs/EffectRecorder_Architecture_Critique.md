@@ -1,5 +1,12 @@
 # EffectRecorder 架构审视与批评
 
+> **⚠️ 历史参考文档（Historical Reference）**
+>
+> 本文档写于 2026-06-10，用于记录当时 EffectRecorder / AnimationRequest / RecorderAnimationPlayer 体系的结构性问题。
+> 文中第 4 节引用的 `BuryEffect` / `StageEffect` 逻辑阶段 `SyncPhysicalCardsWithCombinedDeck()` 调用，已在 **2026-06-13** 的动画补全工作中移除。
+> 当前物理牌组重排序由 `RecorderAnimationPlayer` 在动画阶段通过 `ApplyAnimationResult` 统一处理。
+> 建议读者结合最新 `AGENTS.md` 动画系统章节与 `plans/prd-stage-sync-removal-ju-on-slot-in-2026-06-13.md` 理解当前实现。
+
 > 文档目的：记录对当前 EffectRecorder / AnimationRequest / RecorderAnimationPlayer 体系的分析结论，供后续迭代参考。
 > 产生时间：2026-06-10
 > 基于代码版本：当前工作目录 HEAD

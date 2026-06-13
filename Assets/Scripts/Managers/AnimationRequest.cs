@@ -29,6 +29,7 @@ namespace DefaultNamespace
 	{
 		public AnimationRequestType type;
 		public GameObject attackerCard;
+		public List<GameObject> attackerCards;
 		public bool isAttackingEnemy;
 		public GameObject targetCard;
 		public List<GameObject> targetCards;
@@ -95,5 +96,19 @@ namespace DefaultNamespace
 		/// in this range for its launch time.
 		/// </summary>
 		public Vector2 projectileStartTimeStaggerRange;
+
+		/// <summary>
+		/// When true, the status effect projectile flies from each target back to the giver card.
+		/// Used for absorption-style effects (e.g. consuming an enemy's status effect).
+		/// </summary>
+		public bool reverseProjectile;
+
+		/// <summary>
+		/// Per-target projectile counts for StatusEffectProjectile when targetCards is populated.
+		/// When null or empty, projectileCount is used uniformly for all targets.
+		/// Used to accurately reflect non-uniform status effect consumption (e.g. card A loses 2
+		/// layers while card B loses 1).
+		/// </summary>
+		public List<int> projectileCountsPerTarget;
 	}
 }

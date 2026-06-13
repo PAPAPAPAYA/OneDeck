@@ -59,14 +59,19 @@ public class NullCombatVisuals : ICombatVisuals
 		onComplete?.Invoke();
 	}
 
-	public void PlayMultiStatusEffectProjectile(GameObject giverCard, List<CardScript> targetCards, Action<CardScript> onEachComplete, Action onAllComplete = null, float? customStaggerDelay = null, int projectileCount = 1, Vector2? projectileStartRandomOffsetRange = null, Vector2? projectileStartTimeStaggerRange = null)
+	public void PlayMultiStatusEffectProjectile(GameObject giverCard, List<CardScript> targetCards, Action<CardScript> onEachComplete, Action onAllComplete = null, float? customStaggerDelay = null, int projectileCount = 1, Vector2? projectileStartRandomOffsetRange = null, Vector2? projectileStartTimeStaggerRange = null, bool reverseDirection = false, Vector3? customEndPosition = null, List<int> projectileCountsPerTarget = null)
 	{
-		callLog.Add("PlayMultiStatusEffectProjectile: " + (giverCard?.name ?? "null") + " -> " + (targetCards?.Count ?? 0) + " targets x" + projectileCount);
+		callLog.Add("PlayMultiStatusEffectProjectile: " + (giverCard?.name ?? "null") + " -> " + (targetCards?.Count ?? 0) + " targets x" + projectileCount + " reverseDirection=" + reverseDirection);
 		if (targetCards != null)
 		{
-			foreach (var target in targetCards)
+			for (int t = 0; t < targetCards.Count; t++)
 			{
-				for (int i = 0; i < projectileCount; i++)
+				var target = targetCards[t];
+				if (target == null) continue;
+				int count = (projectileCountsPerTarget != null && t < projectileCountsPerTarget.Count)
+					? projectileCountsPerTarget[t]
+					: projectileCount;
+				for (int i = 0; i < count; i++)
 				{
 					onEachComplete?.Invoke(target);
 				}

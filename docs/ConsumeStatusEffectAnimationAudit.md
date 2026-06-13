@@ -28,11 +28,11 @@
 
 | # | 效果脚本 | 方法 | 使用的卡牌 | 当前动画请求 | 缺失内容 | 建议补充方案 | 优先级 | 状态 | 完成日期 | 备注 |
 |---|----------|------|------------|--------------|----------|--------------|--------|------|----------|------|
-| 1 | `ConsumeStatusEffect.cs` | `ConsumeOwnStatusEffect(int amount)` | **3.0 活跃**：OVERCHARGED_SUMMONER（Power×1）、DR_MANHATTAN（Power×4）、ADVANCE_PORTAL（Counter×2）、ALMIGHTY（Counter×2）、SLIME（Counter×2）<br>旧版/测试：Fireball 系列（Mana）、Undead Shiv（Revive）、Prince of the Flies（Counter）、GOLEM（Counter）、DOWNED_FIGHTER（None） | `PopUp` → `StatusEffectChange` → `SlotIn` | 缺少 projectile / 自爆粒子 | 在自身位置播放一个状态消散粒子或一个从卡牌飞向自己的微型 projectile，明确表达"状态被吃掉" | P2 | ✅ | - | 目标就是发动卡牌本身，所以 projectile 可以是自环 |
-| 2 | `ConsumeStatusEffect.cs` | `ConsumeRandomEnemyCardsStatusEffect(int amount)` | **POWER_TRANSFER**（Power×2） | 对每个目标顺序播放 `PopUp → StatusEffectChange → SlotIn` | 缺少 StatusEffectProjectile；多目标未 batch | 改为 batch 流程：`PopUpBatch` + `StatusEffectProjectile`（source→所有目标，并行）+ `SlotInBatch` + `StatusEffectChange` | P1 | ⬜ Pending | - | 多个目标会排队，效率低 |
-| 3 | `CurseEffect.cs` | `ConsumeHostileCursePower(int amount)` | **CURSE_SUMMONER**、**PREMATURE** | 仅 `StatusEffectChange`（tint + particles） | 缺少 PopUp、SlotIn、Projectile | source 卡牌弹出 → projectile 飞向目标诅咒卡 → 目标 PopUp/SlotIn → `StatusEffectChange` | P0 | ⬜ Pending | - | 玩家几乎看不到 Power 被吸走 |
-| 4 | `TransferStatusEffectEffect.cs` | `TransferOneStatusEffectToSelf(bool fromFriendly)` | **POWER_SIPHONER**（Power） | self：`PopUp → StatusEffectProjectile(source→self) → SlotIn`；source 卡片：仅 `StatusEffectChange` | source 卡片没有 PopUp/SlotIn | 给每个 source 卡片也加上 `PopUp` 和 `SlotIn`，让来源卡也 visibly 弹出 | P1 | ⬜ Pending | - | 当前只有 self 在动，source 只是变色 |
-| 5 | `TransferStatusEffectEffect.cs` | `TransferAllStatusEffectToHostileCurse()` | **CROW_CROWD**（Power） | source 卡片：仅 `StatusEffectChange`；target curse：由 `ApplyStatusEffectCore` 生成 `StatusEffectChange` | 缺少 PopUp、SlotIn、Projectile | source 卡牌 batch 弹出 → projectile 飞向目标 curse → target PopUp/SlotIn；双方 `StatusEffectChange` | P0 | ⬜ Pending | - | 完全静态，最需要补充 |
+| 1 | `ConsumeStatusEffect.cs` | `ConsumeOwnStatusEffect(int amount)` | **3.0 活跃**：OVERCHARGED_SUMMONER（Power×1）、DR_MANHATTAN（Power×4）、ADVANCE_PORTAL（Counter×2）、ALMIGHTY（Counter×2）、SLIME（Counter×2）<br>旧版/测试：Fireball 系列（Mana）、Undead Shiv（Revive）、Prince of the Flies（Counter）、GOLEM（Counter）、DOWNED_FIGHTER（None） | `PopUp` → `StatusEffectProjectile`（自身→`statusEffectConsumePos`）→ `StatusEffectChange` → `SlotIn` | - | - | P2 | ✅ Done | 2026-06-13 | 目标就是发动卡牌本身，projectile 飞向 `statusEffectConsumePos` 作为自环/吸收表现；`StatusEffectChange` 在 projectile 落地后提交 |
+| 2 | `ConsumeStatusEffect.cs` | `ConsumeRandomEnemyCardsStatusEffect(int amount)` | **POWER_TRANSFER**（Power×2） | 改为 batch：`StatusEffectChange` → `PopUpBatch` → `StatusEffectProjectile`（所有目标→source，并行，吸收）→ `SlotInBatch` | - | - | P1 | ✅ Done | 2026-06-13 | 复用 `EffectScript.CaptureBatchStatusEffectConsumeAnimation(sourceCard, targets, effect, 1)`；`reverseProjectile=true`，终点为 source 卡位置；`StatusEffectChange` 先加入队列并被 `RecorderAnimationPlayer` 标记为 defer，projectile 落地后统一 commit |
+| 3 | `CurseEffect.cs` | `ConsumeHostileCursePower(int amount)` | **CURSE_SUMMONER**、**PREMATURE** | batch：`StatusEffectChange` → `PopUpBatch` → `StatusEffectProjectile`（所有目标→`statusEffectConsumePos`，并行，吸收）→ `SlotInBatch` | - | - | P0 | ✅ Done | 2026-06-13 | 调用 `CaptureBatchStatusEffectConsumeAnimation(myCard, affectedTargets, Power, removedAmounts, consumePos)`；`projectileCountsPerTarget=removedAmounts` 保证每层 Power 对应一个 projectile；目标卡 display 在 projectile 落地后 commit |
+| 4 | `TransferStatusEffectEffect.cs` | `TransferOneStatusEffectToSelf(bool fromFriendly)` | **POWER_SIPHONER**（Power） | batch：`PopUpBatch(sources) → PopUp(self) → StatusEffectProjectile(sources→self, 并行) → SlotInBatch(sources) → SlotIn(self) → StatusEffectChange(sources) → StatusEffectChange(self)` | - | - | P1 | ✅ Done | 2026-06-13 | 调用 `CaptureBatchStatusEffectTransferAnimation(sources, myCardScript, effect, amounts)`；`RecorderAnimationPlayer` 用 `attackerCards` + `targetCard` 路径播放多 source → 单 target projectile；target（self）display 在 projectile 落地后 commit，source display 在各自的 `StatusEffectChange` 中 commit（位于 SlotIn 之后） |
+| 5 | `TransferStatusEffectEffect.cs` | `TransferAllStatusEffectToHostileCurse()` | **CROW_CROWD**（Power） | batch：`PopUpBatch(sources) → PopUp(targetCurse) → StatusEffectProjectile(sources→targetCurse, 并行) → SlotInBatch(sources) → SlotIn(targetCurse) → StatusEffectChange(sources) → StatusEffectChange(targetCurse)` | - | - | P0 | ✅ Done | 2026-06-13 | `TransferStatusEffects()` 先调用 `CaptureBatchStatusEffectTransferAnimation`，再移除 source 状态并调用 `ApplyStatusEffectCore(targetCurse)`；targetCurse 的 `StatusEffectChange` 由 `ApplyStatusEffectCore` 追加并在 projectile 落地后 commit |
 | 6 | `ManaAlterEffect.cs` | `ConsumeMana(int amount)` | 当前没有 prefab 调用 | 仅 `StatusEffectChange` | 缺少 PopUp、SlotIn、Projectile | 如果启用，参考 `ConsumeOwnStatusEffect` 做 `PopUp → StatusEffectChange → SlotIn`，并考虑自环粒子 | P2 | ⏸️ On Hold | - | 代码存在但无 prefab 使用 |
 | 7 | `CostNEffectContainer.cs` | `CheckCost_Rested()` | Mandela Effect（1.0） | 无动画 | 无任何视觉反馈 | 给一个轻微的 Rest 消散粒子或卡牌抖动/变淡 | P2 | ⬜ Pending | - | 这是 cost 检查，不是 effect 事件，动画应极轻 |
 
@@ -42,17 +42,17 @@
 
 ### P0（必须优先补）
 
-- [ ] `CurseEffect.ConsumeHostileCursePower` 补全 PopUp / Projectile / SlotIn / StatusEffectChange
-- [ ] `TransferStatusEffectEffect.TransferAllStatusEffectToHostileCurse` 补全 source 与 target 的完整动画
+- [x] `CurseEffect.ConsumeHostileCursePower` 补全 PopUp / Projectile / SlotIn / StatusEffectChange
+- [x] `TransferStatusEffectEffect.TransferAllStatusEffectToHostileCurse` 补全 source 与 target 的完整动画
 
 ### P1（有基础但缺 projectile / batch）
 
-- [ ] `ConsumeRandomEnemyCardsStatusEffect` 改为 batch + projectile
-- [ ] `TransferStatusEffectEffect.TransferOneStatusEffectToSelf` source 卡片也弹出/缩回
+- [x] `ConsumeRandomEnemyCardsStatusEffect` 改为 batch + projectile
+- [x] `TransferStatusEffectEffect.TransferOneStatusEffectToSelf` source 卡片也弹出/缩回
 
 ### P2（自己消耗自己或已废弃）
 
-- [ ] `ConsumeOwnStatusEffect` 增加自环/消散粒子
+- [x] `ConsumeOwnStatusEffect` 已补充 projectile 自环/吸收动画
 - [ ] `CheckCost_Rested` 增加极轻微提示动画（如抖动/变淡）
 - [ ] `ConsumeMana` 待启用后参考 P2 方案补充
 
@@ -78,3 +78,8 @@
 | 日期 | 修改人 | 内容摘要 |
 |------|--------|----------|
 | 2026-06-12 | Kimi | 建立追踪表，标记所有待补充项 |
+| 2026-06-13 | Kimi | 完成 `ConsumeRandomEnemyCardsStatusEffect` batch + projectile 动画；新增 `EffectScript.CaptureBatchStatusEffectConsumeAnimation` 公共 Helper |
+| 2026-06-13 | Kimi | 完成 `CurseEffect.ConsumeHostileCursePower` batch + 自定义终点 projectile 动画；扩展 `CaptureBatchStatusEffectConsumeAnimation` 支持每目标不同层数与 `statusEffectConsumePos` |
+| 2026-06-13 | Kimi | 完成 `TransferStatusEffectEffect.TransferAllStatusEffectToHostileCurse` 与 `TransferOneStatusEffectToSelf` 的完整 batch 动画；新增 `EffectScript.CaptureBatchStatusEffectTransferAnimation` 公共 Helper |
+| 2026-06-13 | Kimi | 复核并更新 `ConsumeOwnStatusEffect`：实际已实现 `PopUp → StatusEffectProjectile → StatusEffectChange → SlotIn`，补充审计文档 |
+| 2026-06-13 | Kimi | 复核 P0/P1 项：`ConsumeHostileCursePower`、`ConsumeRandomEnemyCardsStatusEffect`、`TransferOneStatusEffectToSelf`、`TransferAllStatusEffectToHostileCurse` 实现与文档一致；修正 Transfer 项的动画请求顺序与 commit 时机描述 |

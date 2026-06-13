@@ -168,18 +168,18 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 
 ### AnimationRequest Types
 ```csharp
-enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange, StatusEffectProjectile, PopUp, SlotIn, MoveToPopUpPosition, PopUpBatch, SlotInBatch, MoveToTopPopUpBatch, Shuffle }
+enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange, StatusEffectProjectile, PopUp, SlotIn, MoveToPopUpPosition, PopUpBatch, SlotInBatch, MoveToTopPopUpBatch, Shuffle, Shake }
 ```
 - `HPAlterEffect` captures `Attack` requests (damage already resolved in logic phase; `onHit` is null).
 - `BuryEffect` captures `PopUpBatch` then `MoveToBottomBatch`.
 - `StageEffect` captures `MoveToTopPopUpBatch` (arc via showPos to pop-up peak, then slot in to deck top).
 - `StartCardShuffleEffect` captures `Shuffle` (sourceCard = startCard, targetCards = shuffled deck). `RecorderAnimationPlayer` handles it via `PlayShuffleAnimation`; `onComplete` calls `CombatManager.OnStartCardShuffleAnimationComplete()`.
 - `ExileEffect` captures `Destroy` (preceded by `PopUp` so the player sees the card being exiled).
-- `ApplyStatusEffectCore`, `ConsumeStatusEffect`, `ManaAlterEffect`, and `TransferStatusEffectEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
+- `ApplyStatusEffectCore` and `ManaAlterEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
 - `StatusEffectGiverEffect` — `GiveSelfStatusEffect` runs `ApplyStatusEffectCore` (auto-captures `StatusEffectChange` only). `GiveStatusEffect`, `GiveAllFriendlyStatusEffect`, `GiveStatusEffectToLastXCards`, and `GiveStatusEffectToXFriendly` run `ApplyStatusEffectCore` synchronously then capture `PopUpBatch` + `StatusEffectProjectile` + `SlotInBatch` via `CaptureBatchStatusEffectAnimation`.
 - `AddTempCard` captures `MoveToPopUpPosition` + `SlotIn` for each newly created card so it visibly enters the deck.
-- `CurseEffect` captures `PopUp` + `StatusEffectProjectile` + `SlotIn` (single-target).
-- `ConsumeStatusEffect` uses `CapturePopUpStatusEffectChangeSlotIn` to play `PopUp` + `StatusEffectChange` + `SlotIn` for consumption on deck cards.
+- `CurseEffect` captures `PopUp` + `StatusEffectProjectile` + `SlotIn` (single-target). `ConsumeHostileCursePower` captures batch `StatusEffectChange` + `PopUpBatch` + `StatusEffectProjectile` (toward `statusEffectConsumePos`, per-layer projectiles) + `SlotInBatch`.
+- `ConsumeStatusEffect` — `ConsumeOwnStatusEffect` captures `PopUp` + `StatusEffectProjectile` (with `customProjectileEndPosition`) + `StatusEffectChange` + `SlotIn`. `ConsumeRandomEnemyCardsStatusEffect` captures `StatusEffectChange` + `PopUpBatch` + `StatusEffectProjectile` (`reverseProjectile=true`) + `SlotInBatch` via `CaptureBatchStatusEffectConsumeAnimation`.
 - Batch types run all card movements in parallel and yield until the last completes.
 
 **`StatusEffectProjectile` semantics:**
@@ -230,7 +230,7 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 - **Deck Focus Restoration**: `RecorderAnimationPlayer` restores normal deck layout before any deck-move request if `CombatUXManager.IsDeckFocused` is true.
 - Batch moves use `correctedIndex` absolute positions, ignoring `snapshotDeckSize` offsets.
 - `HPAlterEffect.isStatusEffectDamage = true` skips `Attack` animation capture.
-- **Fallback**: If `RecorderAnimationPlayer.me == null`, status effect changes trigger tint directly; `BuryEffect`/`StageEffect` still call `SyncPhysicalCardsWithCombinedDeck`.
+- **Recorder path**: `BuryEffect`/`StageEffect` no longer call `SyncPhysicalCardsWithCombinedDeck` in the logic phase; deck reordering is applied by `RecorderAnimationPlayer` via `ApplyAnimationResult` during animation playback.
 - `ExileEffect` sets `revealZone = null` when exiling the revealed card, and chains `Destroy` requests with `onComplete` on the last card.
 - `CombatManager.Awake()` auto-creates `RecorderAnimationPlayer` if missing.
 - **afterShuffle timing**: Raised **after** shuffle animation completes, next card reaches reveal zone, and `PlayRecorderAnimationsAndWait()` finishes. Round Start path waits for reveal-zone movement via `MoveCardToRevealZone` callback before raising.
@@ -245,6 +245,7 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 - `SyncPhysicalCardsWithCombinedDeck()`
 - `ApplyAnimationResult(request)` — Updates `physicalCardsInDeck` order to reflect a completed animation request.
 - `PlayShuffleAnimation(startCard, shuffledCards, onComplete)`
+- `PlayStatusEffectProjectileToPosition(giverCard, endPosition, onComplete, ...)` — Single/projectile flight to a world position (e.g. `statusEffectConsumePos`), used by self-consume effects.
 
 **Note:** `MoveCardWithAnimation` skips `UpdateAllPhysicalCardTargets()` in its `OnComplete` when `RecorderAnimationPlayer.me != null`, because `RecorderAnimationPlayer` handles deck sync per-request via `ApplyAnimationResult`.
 

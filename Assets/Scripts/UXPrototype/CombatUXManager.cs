@@ -1930,11 +1930,15 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// Play multiple status effect projectile animations, supports staggered playback
 	/// Execute corresponding callback after effect reaches each target, final callback after all complete
 	/// </summary>
-	/// <param name="giverCard">Giver logical card</param>
+	/// <param name="giverCard">Giver logical card (or receiver when reverseDirection is true)</param>
 	/// <param name="targetCards">Target card list (CardScript)</param>
 	/// <param name="onEachComplete">Callback when each effect completes (parameter is target CardScript)</param>
 	/// <param name="onAllComplete">Callback after all effects complete</param>
 	/// <param name="customStaggerDelay">Custom stagger delay (null uses default value)</param>
+	/// <param name="reverseDirection">If true, projectiles fly from each target back to the giver card (absorb).</param>
+	/// <param name="customEndPosition">Optional override for the projectile end position. When reverseDirection is true,
+	/// projectiles fly from each target to this position instead of to the giver card.</param>
+	/// <param name="projectileCountsPerTarget">Optional per-target projectile counts. When null, projectileCount is used for every target.</param>
 	public void PlayMultiStatusEffectProjectile(
 		GameObject giverCard,
 		List<CardScript> targetCards,
@@ -1943,10 +1947,31 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		float? customStaggerDelay = null,
 		int projectileCount = 1,
 		Vector2? projectileStartRandomOffsetRange = null,
-		Vector2? projectileStartTimeStaggerRange = null)
+		Vector2? projectileStartTimeStaggerRange = null,
+		bool reverseDirection = false,
+		Vector3? customEndPosition = null,
+		List<int> projectileCountsPerTarget = null)
 	{
-		UnityEngine.Debug.Log("[CombatUXManager] PlayMultiStatusEffectProjectile START — REAL-TIME path, " + (targetCards?.Count ?? 0) + " targets x" + projectileCount + ". NO PopUp/SlotIn here!");
-		if (targetCards == null || targetCards.Count == 0 || projectileCount <= 0)
+		UnityEngine.Debug.Log("[CombatUXManager] PlayMultiStatusEffectProjectile START — REAL-TIME path, " + (targetCards?.Count ?? 0) + " targets. reverseDirection=" + reverseDirection + ". NO PopUp/SlotIn here!");
+		if (targetCards == null || targetCards.Count == 0)
+		{
+			onAllComplete?.Invoke();
+			return;
+		}
+
+		// Resolve per-target projectile counts. Fall back to projectileCount uniformly when not provided.
+		var effectiveCounts = new List<int>();
+		for (int i = 0; i < targetCards.Count; i++)
+		{
+			int count = (projectileCountsPerTarget != null && i < projectileCountsPerTarget.Count)
+				? projectileCountsPerTarget[i]
+				: projectileCount;
+			effectiveCounts.Add(Mathf.Max(0, count));
+		}
+
+		int totalProjectiles = 0;
+		foreach (var c in effectiveCounts) totalProjectiles += c;
+		if (totalProjectiles <= 0)
 		{
 			onAllComplete?.Invoke();
 			return;
@@ -1955,9 +1980,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// If prefab is not configured, execute effect directly (no animation)
 		if (statusEffectProjectilePrefab == null || giverCard == null)
 		{
-			foreach (var target in targetCards)
+			for (int t = 0; t < targetCards.Count; t++)
 			{
-				for (int i = 0; i < projectileCount; i++)
+				var target = targetCards[t];
+				if (target == null) continue;
+				for (int i = 0; i < effectiveCounts[t]; i++)
 				{
 					onEachComplete?.Invoke(target);
 				}
@@ -1977,31 +2004,32 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		float maxStagger = Mathf.Max(effectiveStaggerRange.x, effectiveStaggerRange.y);
 
 		// Safety cap: high stack counts can spawn an excessive number of projectiles.
-		int cappedProjectileCount = projectileCount;
-		int cappedTargetCount = targetCards.Count;
-		int requestedTotal = cappedTargetCount * cappedProjectileCount;
-		if (requestedTotal > maxProjectilesPerRequest)
+		if (totalProjectiles > maxProjectilesPerRequest)
 		{
-			cappedProjectileCount = Mathf.Max(1, maxProjectilesPerRequest / cappedTargetCount);
-			requestedTotal = cappedTargetCount * cappedProjectileCount;
-			if (requestedTotal > maxProjectilesPerRequest)
+			float scale = (float)maxProjectilesPerRequest / totalProjectiles;
+			for (int i = 0; i < effectiveCounts.Count; i++)
 			{
-				cappedTargetCount = Mathf.Max(1, maxProjectilesPerRequest / cappedProjectileCount);
+				if (effectiveCounts[i] > 0)
+				{
+					effectiveCounts[i] = Mathf.Max(1, Mathf.RoundToInt(effectiveCounts[i] * scale));
+				}
 			}
+			totalProjectiles = 0;
+			foreach (var c in effectiveCounts) totalProjectiles += c;
 		}
 
 		BlockInput(this);
 		AnimationStateTracker.me?.RegisterAnimation();
 
 		int completedCount = 0;
-		int totalCount = cappedTargetCount * cappedProjectileCount;
 
-		for (int t = 0; t < cappedTargetCount; t++)
+		for (int t = 0; t < targetCards.Count; t++)
 		{
 			var targetCardScript = targetCards[t];
 			if (targetCardScript == null) continue;
 
-			for (int p = 0; p < cappedProjectileCount; p++)
+			int countForTarget = effectiveCounts[t];
+			for (int p = 0; p < countForTarget; p++)
 			{
 				var capturedTarget = targetCardScript;
 				float delay = UnityEngine.Random.Range(minStagger, maxStagger);
@@ -2017,8 +2045,20 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					}
 
 					BuildCardScriptToPhysicalDictionary();
-					Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset + GetRandomProjectileStartOffset(effectiveOffsetRange);
-					Vector3 endPos = GetCardWorldPosition(capturedTarget.gameObject) + projectileEndOffset;
+					Vector3 startPos;
+					Vector3 endPos;
+					if (reverseDirection)
+					{
+						startPos = GetCardWorldPosition(capturedTarget.gameObject) + projectileStartOffset + GetRandomProjectileStartOffset(effectiveOffsetRange);
+						endPos = customEndPosition.HasValue
+							? customEndPosition.Value + projectileEndOffset
+							: GetCardWorldPosition(giverCard) + projectileEndOffset;
+					}
+					else
+					{
+						startPos = GetCardWorldPosition(giverCard) + projectileStartOffset + GetRandomProjectileStartOffset(effectiveOffsetRange);
+						endPos = GetCardWorldPosition(capturedTarget.gameObject) + projectileEndOffset;
+					}
 
 					SpawnProjectile(startPos, endPos, () =>
 					{
@@ -2034,7 +2074,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		void TryCompleteAll()
 		{
-			if (completedCount >= totalCount)
+			if (completedCount >= totalProjectiles)
 			{
 				UnblockInput(this);
 				AnimationStateTracker.me?.CompleteAnimation();

@@ -87,6 +87,14 @@ namespace DefaultNamespace.Effects
 		/// Randomly consume 1 statusEffectToConsume from X enemy cards in the combined deck.
 		/// </summary>
 		/// <param name="amount">Number of enemy cards to target</param>
+		// VISUAL-FIX(2026-06-13): ConsumeRandomEnemyCardsStatusEffect missing batch projectile animation
+		//   Cause:    Method captured PopUp -> StatusEffectChange -> SlotIn per target, causing sequential
+		//             animation queue and no visible projectile when consuming from multiple enemy cards.
+		//             Projectiles also flew source->target instead of target->source for an absorb effect.
+		//   Affects:  ConsumeStatusEffect, EffectScript, RecorderAnimationPlayer, CombatUXManager
+		//   Regress:  Reveal POWER_TRANSFER when multiple enemy cards have Power
+		//             Check: targets pop up together, projectiles fly from each target back to source in parallel,
+		//             status text updates, then all targets slot back in together.
 		public void ConsumeRandomEnemyCardsStatusEffect(int amount)
 		{
 			var eligibleCards = new List<CardScript>();
@@ -118,19 +126,32 @@ namespace DefaultNamespace.Effects
 
 			eligibleCards = UtilityFuncManagerScript.ShuffleList(eligibleCards);
 			var targetCount = Mathf.Min(amount, eligibleCards.Count);
+
+			var selectedTargets = new List<CardScript>();
 			for (var i = 0; i < targetCount; i++)
 			{
-				var targetCard = eligibleCards[i];
-				// Snapshot display state before mutating so card text updates are deferred until animation completes
-				var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
-				var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-				if (recorder != null && RecorderAnimationPlayer.me != null)
+				selectedTargets.Add(eligibleCards[i]);
+			}
+
+			// Snapshot display state before mutating so card text updates are deferred until animation completes
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null && RecorderAnimationPlayer.me != null)
+			{
+				foreach (var targetCard in selectedTargets)
 				{
 					targetCard.SnapshotDisplayState();
 				}
-				targetCard.myStatusEffects.Remove(statusEffectToConsume);
-				CapturePopUpStatusEffectChangeSlotIn(targetCard.gameObject, statusEffectToConsume, -1);
 			}
+
+			// Remove the status effect from all selected targets
+			foreach (var targetCard in selectedTargets)
+			{
+				targetCard.myStatusEffects.Remove(statusEffectToConsume);
+			}
+
+			// Capture batched animation: StatusEffectChange -> PopUpBatch -> Projectile -> SlotInBatch
+			CaptureBatchStatusEffectConsumeAnimation(myCard, selectedTargets, statusEffectToConsume, 1);
 
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}

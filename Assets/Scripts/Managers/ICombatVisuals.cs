@@ -105,9 +105,13 @@ public interface ICombatVisuals
 	/// <summary>
 	/// Play projectile VFX from giver card to each target card, invoking callbacks.
 	/// </summary>
-	/// <param name="projectileCount">Number of projectiles to spawn per target.</param>
+	/// <param name="projectileCount">Number of projectiles to spawn per target when projectileCountsPerTarget is null.</param>
 	/// <param name="projectileStartRandomOffsetRange">Random XY offset range for each projectile start position.</param>
 	/// <param name="projectileStartTimeStaggerRange">Random delay range (x=min, y=max) for staggering launches.</param>
+	/// <param name="reverseDirection">If true, projectiles fly from each target back to the giver card (absorb).</param>
+	/// <param name="customEndPosition">Optional override for the projectile end position. When reverseDirection is true,
+	/// projectiles fly from each target to this position instead of to the giver card.</param>
+	/// <param name="projectileCountsPerTarget">Optional per-target projectile counts. When null, projectileCount is used for every target.</param>
 	void PlayMultiStatusEffectProjectile(
 		GameObject giverCard,
 		List<CardScript> targetCards,
@@ -116,7 +120,10 @@ public interface ICombatVisuals
 		float? customStaggerDelay = null,
 		int projectileCount = 1,
 		Vector2? projectileStartRandomOffsetRange = null,
-		Vector2? projectileStartTimeStaggerRange = null);
+		Vector2? projectileStartTimeStaggerRange = null,
+		bool reverseDirection = false,
+		Vector3? customEndPosition = null,
+		List<int> projectileCountsPerTarget = null);
 
 	/// <summary>
 	/// Play status effect projectile(s) from giver card to a custom world position.

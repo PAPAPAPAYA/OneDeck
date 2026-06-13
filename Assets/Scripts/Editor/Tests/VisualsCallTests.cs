@@ -69,27 +69,6 @@ public class VisualsCallTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void BuryEffect_CallsSyncDeckOnce()
-	{
-		var card = CreateCard(true, "BuryCard");
-		var other = CreateCard(false, "OtherCard");
-		var target = CreateCard(false, "TargetCard");
-		CombatManager.combinedDeckZone.Add(target);
-		CombatManager.combinedDeckZone.Add(other);
-
-		var buryEffect = CreateEffect<BuryEffect>(card);
-		EffectChainManager.MakeANewEffectRecorder(card, buryEffect.gameObject);
-
-		int syncCallsBefore = NullVisuals.syncDeckCalls;
-		buryEffect.BuryTheirCards(1);
-		int syncCallsAfter = NullVisuals.syncDeckCalls;
-
-		Assert.AreEqual(1, syncCallsAfter - syncCallsBefore, "BuryEffect should call SyncPhysicalCardsWithCombinedDeck once");
-
-		EffectChainManager.Me.CloseOpenedChain();
-	}
-
-	[Test]
 	public void NullVisuals_GetPhysicalCard_ReturnsNull()
 	{
 		var card = CreateCard(true, "TestCard");

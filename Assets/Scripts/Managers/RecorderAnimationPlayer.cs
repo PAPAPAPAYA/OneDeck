@@ -392,7 +392,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.StatusEffectProjectile:
 			{
-				if (request.attackerCard == null) break;
+				if (request.attackerCard == null && (request.attackerCards == null || request.attackerCards.Count == 0)) break;
 
 				// VISUAL-FIX(2026-06-12): Support projectile flying to a custom world position
 				//   Cause:    ConsumeOwnStatusEffect needed a projectile that flies to statusEffectConsumePos
@@ -400,8 +400,58 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				//   Affects:  AnimationRequest, ICombatVisuals, CombatUXManager, RecorderAnimationPlayer, ConsumeStatusEffect
 				//   Regress:  Reveal a card whose effect calls ConsumeOwnStatusEffect (e.g. OVERCHARGED_SUMMONER)
 				//             Check: card pops up, projectile flies toward statusEffectConsumePos, then slots back in.
+				// VISUAL-FIX(2026-06-13): ConsumeHostileCursePower needs projectiles from multiple targets to a custom position
+				//   Cause:    ConsumeHostileCursePower consumes Power from multiple enemy curse cards and the
+				//             absorbed power should fly toward statusEffectConsumePos, but StatusEffectProjectile
+				//             only supported single-source-to-position or target-to-giver-card paths.
+				//   Affects:  CurseEffect, EffectScript, CombatUXManager, RecorderAnimationPlayer, AnimationRequest
+				//   Regress:  Reveal CURSE_SUMMONER or PREMATURE when multiple enemy curse cards carry Power
+				//             Check: all target curse cards pop up together, projectiles fly from each target
+				//             toward statusEffectConsumePos in parallel, status text updates after projectiles land,
+				//             then all targets slot back in together.
 				if (request.customProjectileEndPosition.HasValue)
 				{
+					// Multi-target reverse absorption to a custom world position.
+					if (request.reverseProjectile && request.targetCards != null && request.targetCards.Count > 0)
+					{
+						var customTargetCardScripts = new List<CardScript>();
+						foreach (var t in request.targetCards)
+						{
+							if (t == null) continue;
+							var cs = t.GetComponent<CardScript>();
+							if (cs != null) customTargetCardScripts.Add(cs);
+						}
+
+						if (customTargetCardScripts.Count > 0)
+						{
+							bool multiCustomDone = false;
+							visuals.PlayMultiStatusEffectProjectile(
+								request.attackerCard,
+								customTargetCardScripts,
+								onEachComplete: null, // logic already resolved in logic phase
+								onAllComplete: () => { multiCustomDone = true; },
+								customStaggerDelay: null,
+								projectileCount: request.projectileCount,
+								projectileStartRandomOffsetRange: request.projectileStartRandomOffsetRange.sqrMagnitude > 0f ? request.projectileStartRandomOffsetRange : (Vector2?)null,
+								projectileStartTimeStaggerRange: request.projectileStartTimeStaggerRange.sqrMagnitude > 0f ? request.projectileStartTimeStaggerRange : (Vector2?)null,
+								reverseDirection: true,
+								customEndPosition: request.customProjectileEndPosition.Value,
+								projectileCountsPerTarget: request.projectileCountsPerTarget
+							);
+							yield return new WaitUntil(() => multiCustomDone);
+
+							foreach (var targetCardScript in customTargetCardScripts)
+							{
+								if (targetCardScript != null)
+								{
+									targetCardScript.CommitDisplayState();
+								}
+							}
+						}
+						break;
+					}
+
+					// Single-source projectile to a custom world position.
 					bool customDone = false;
 					visuals.PlayStatusEffectProjectileToPosition(
 						request.attackerCard,
@@ -417,6 +467,54 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					// (for targets whose StatusEffectChange was deferred)
 					if (request.targetCard != null)
 					{
+						var targetCardScript = request.targetCard.GetComponent<CardScript>();
+						if (targetCardScript != null)
+						{
+							targetCardScript.CommitDisplayState();
+						}
+					}
+					break;
+				}
+
+				// VISUAL-FIX(2026-06-13): Support multiple source cards projecting toward a single target card
+				//   Cause:    TransferStatusEffectEffect moves status effects from several source cards
+				//             to one target card, but StatusEffectProjectile only supported one attacker
+				//             or one attacker to many targets. We need many attackers to one target.
+				//   Affects:  AnimationRequest, RecorderAnimationPlayer, CombatUXManager, EffectScript,
+				//             TransferStatusEffectEffect
+				//   Regress:  Reveal CROW_CROWD or POWER_SIPHONER with multiple source cards carrying status
+				//             Check: all source cards pop up, a single projectile (or one per layer) flies
+				//             from each source to the target in parallel, target display commits only after
+				//             the last projectile lands, then all cards slot back in.
+				if (request.attackerCards != null && request.attackerCards.Count > 0 && request.targetCard != null)
+				{
+					var sourceCardScripts = new List<CardScript>();
+					foreach (var s in request.attackerCards)
+					{
+						if (s == null) continue;
+						var cs = s.GetComponent<CardScript>();
+						if (cs != null) sourceCardScripts.Add(cs);
+					}
+
+					if (sourceCardScripts.Count > 0)
+					{
+						bool multiSourceDone = false;
+						visuals.PlayMultiStatusEffectProjectile(
+							request.targetCard,
+							sourceCardScripts,
+							onEachComplete: null, // logic already resolved in logic phase
+							onAllComplete: () => { multiSourceDone = true; },
+							customStaggerDelay: null,
+							projectileCount: request.projectileCount,
+							projectileStartRandomOffsetRange: request.projectileStartRandomOffsetRange.sqrMagnitude > 0f ? request.projectileStartRandomOffsetRange : (Vector2?)null,
+							projectileStartTimeStaggerRange: request.projectileStartTimeStaggerRange.sqrMagnitude > 0f ? request.projectileStartTimeStaggerRange : (Vector2?)null,
+							reverseDirection: true,
+							customEndPosition: null,
+							projectileCountsPerTarget: request.projectileCountsPerTarget
+						);
+						yield return new WaitUntil(() => multiSourceDone);
+
+						// Commit target card display state only after ALL source projectiles land
 						var targetCardScript = request.targetCard.GetComponent<CardScript>();
 						if (targetCardScript != null)
 						{
@@ -454,7 +552,10 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					customStaggerDelay: null,
 					projectileCount: request.projectileCount,
 					projectileStartRandomOffsetRange: request.projectileStartRandomOffsetRange.sqrMagnitude > 0f ? request.projectileStartRandomOffsetRange : (Vector2?)null,
-					projectileStartTimeStaggerRange: request.projectileStartTimeStaggerRange.sqrMagnitude > 0f ? request.projectileStartTimeStaggerRange : (Vector2?)null
+					projectileStartTimeStaggerRange: request.projectileStartTimeStaggerRange.sqrMagnitude > 0f ? request.projectileStartTimeStaggerRange : (Vector2?)null,
+					reverseDirection: request.reverseProjectile,
+					customEndPosition: null,
+					projectileCountsPerTarget: request.projectileCountsPerTarget
 				);
 				yield return new WaitUntil(() => done);
 

@@ -304,13 +304,14 @@ public class BuryEffect : EffectScript
 			}
 		}
 		
-		// VISUAL-FIX(2026-05-18): Premature deck sync in Bury causes distance-zero tweens
-		//   Cause:    SyncPhysicalCardsWithCombinedDeck in logic phase pre-moves all physical cards
-		//             to final positions, so subsequent bury/stage animations have no visible movement
-		//   Affects:  BuryEffect, ApplyAnimationResult, UpdateAllPhysicalCardTargets
-		//   Regress:  Reveal a card with BuryNextXCards and verify cards animate with visible movement
-		//   Related:  Card_StoneShell, any Bury card
-		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+		// VISUAL-FIX(2026-06-13): Remove logic-phase deck sync in Bury to keep animation indices consistent
+		//   Cause:    SyncPhysicalCardsWithCombinedDeck in logic phase pre-moves physical cards to final
+		//             positions, corrupting snapshot indices for a preceding consume effect's SlotInBatch
+		//             and causing distance-zero tweens for the bury animation itself.
+		//   Fix:      Physical deck reordering is deferred to RecorderAnimationPlayer via ApplyAnimationResult.
+		//   Affects:  BuryEffect, ApplyAnimationResult, RecorderAnimationPlayer
+		//   Regress:  StoneShell / grave_punch: verify PopUpBatch + MoveToBottomBatch animate with visible movement.
+		//   Related:  PRD stage-sync-removal-ju-on-slot-in-2026-06-13
 
 		// VISUAL-FIX(2026-05-15): Bury-then-Stage reactive chain causes wrong animation target index
 		//   Cause:    onMeBuried -> StageSelf modifies deck order AFTER bury logic but BEFORE

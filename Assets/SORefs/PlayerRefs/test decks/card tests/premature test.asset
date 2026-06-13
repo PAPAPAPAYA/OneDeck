@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: PlayerDeckRef
+  m_Name: premature test
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
-  - {fileID: 8718476725744197808, guid: 7c1c37bc4ca0aea409f012633149fc0c, type: 3}
-  defaultDeck: {fileID: 11400000, guid: 8e9657b76a24de143aefa1654e2a47ca, type: 2}
-  resetOnStart: 1
-  description: player's deck, data only no instances
+  - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
+  - {fileID: 1808145013887896563, guid: 2cc452f6440de7f4eb4a61f8ed869b59, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: bury friendly + add curse

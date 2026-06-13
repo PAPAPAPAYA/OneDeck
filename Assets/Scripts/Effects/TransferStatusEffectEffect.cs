@@ -131,47 +131,28 @@ namespace DefaultNamespace.Effects
 			}
 
 			// Capture animation sequence before executing logic so playback order is:
-			// PopUp(self) -> Projectile(sources -> self) -> StatusEffectChange(all affected cards)
+			// PopUpBatch(sources) -> PopUp(self) -> Projectile(sources -> self) ->
+			// SlotInBatch(sources) -> SlotIn(self) -> StatusEffectChange(all affected cards)
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 			bool hasRecorder = recorder != null && RecorderAnimationPlayer.me != null;
 
 			if (hasRecorder)
 			{
-				// 1. Self pops up first
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.PopUp,
-					targetCard = myCard
-				});
-
-				// 2. Projectile from each consumed source card to self
+				// Snapshot display state before mutating so card text updates are deferred until animation completes
 				foreach (var sourceCard in sourceCards)
 				{
-					recorder.animationRequests.Add(new AnimationRequest
-					{
-						type = AnimationRequestType.StatusEffectProjectile,
-						attackerCard = sourceCard.gameObject,
-						targetCard = myCard
-					});
+					sourceCard.SnapshotDisplayState();
 				}
 
-				// 3. Self slots back in after projectiles complete
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.SlotIn,
-					targetCard = myCard
-				});
+				var amounts = new List<int>();
+				for (int i = 0; i < sourceCards.Count; i++) amounts.Add(1);
+				CaptureBatchStatusEffectTransferAnimation(sourceCards, myCardScript, statusEffectToTransfer, amounts);
 			}
 
 			// Remove 1 status effect layer from each source card
 			foreach (var card in sourceCards)
 			{
-				// Snapshot display state before mutating so card text updates are deferred until animation completes
-				if (hasRecorder)
-				{
-					card.SnapshotDisplayState();
-				}
 				for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
 				{
 					if (card.myStatusEffects[i] == statusEffectToTransfer)
@@ -180,7 +161,11 @@ namespace DefaultNamespace.Effects
 						break; // remove only 1 layer
 					}
 				}
-				CaptureStatusEffectChangeAnimationRequest(card.gameObject, statusEffectToTransfer, -1);
+
+				if (!hasRecorder)
+				{
+					CaptureStatusEffectChangeAnimationRequest(card.gameObject, statusEffectToTransfer, -1);
+				}
 			}
 
 			// Apply status effects to self (1 layer per source card)
@@ -313,27 +298,47 @@ namespace DefaultNamespace.Effects
 		/// </summary>
 		private void TransferStatusEffects(List<CardScript> sourceCards, CardScript targetCard, int totalCount)
 		{
-			// Remove status effects from source cards
+			// Pre-calculate how many layers each source card will lose
+			var amountsPerSource = new List<int>();
 			foreach (var card in sourceCards)
 			{
-				int removedCount = 0;
-				// Snapshot display state before mutating so card text updates are deferred until animation completes
-				var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
-				var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-				if (recorder != null && RecorderAnimationPlayer.me != null)
+				int count = EnumStorage.GetStatusEffectCount(card.myStatusEffects, statusEffectToTransfer);
+				amountsPerSource.Add(count);
+			}
+
+			// Snapshot display state before mutating so card text updates are deferred until animation completes
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			bool hasRecorder = recorder != null && RecorderAnimationPlayer.me != null;
+			if (hasRecorder)
+			{
+				foreach (var card in sourceCards)
 				{
 					card.SnapshotDisplayState();
 				}
-				for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
+
+				// Capture transfer animation before mutating state
+				CaptureBatchStatusEffectTransferAnimation(sourceCards, targetCard, statusEffectToTransfer, amountsPerSource);
+			}
+
+			// Remove status effects from source cards
+			for (int i = 0; i < sourceCards.Count; i++)
+			{
+				var card = sourceCards[i];
+				int removedCount = amountsPerSource[i];
+				for (int j = card.myStatusEffects.Count - 1; j >= 0 && removedCount > 0; j--)
 				{
-					if (card.myStatusEffects[i] == statusEffectToTransfer)
+					if (card.myStatusEffects[j] == statusEffectToTransfer)
 					{
-						card.myStatusEffects.RemoveAt(i);
-						removedCount++;
+						card.myStatusEffects.RemoveAt(j);
+						removedCount--;
 					}
 				}
 
-				CaptureStatusEffectChangeAnimationRequest(card.gameObject, statusEffectToTransfer, -removedCount);
+				if (!hasRecorder)
+				{
+					CaptureStatusEffectChangeAnimationRequest(card.gameObject, statusEffectToTransfer, -amountsPerSource[i]);
+				}
 			}
 
 			// Use core method to add status effects to target card (trigger events and visuals)

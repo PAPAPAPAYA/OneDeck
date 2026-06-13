@@ -232,4 +232,194 @@ public class EffectScript : MonoBehaviour
 		});
 	}
 	#endregion
+
+
+	// VISUAL-FIX(2026-06-13): ConsumeRandomEnemyCardsStatusEffect has no projectile and queues PopUp/SlotIn per target
+	//   Cause:    ConsumeRandomEnemyCardsStatusEffect called CapturePopUpStatusEffectChangeSlotIn once per target,
+	//             so multiple targets played PopUp/SlotIn sequentially with no StatusEffectProjectile,
+	//             and projectiles flew source->target instead of target->source for an absorb effect.
+	//   Affects:  ConsumeStatusEffect, EffectScript, RecorderAnimationPlayer, CombatUXManager
+	//   Regress:  Reveal POWER_TRANSFER with multiple enemy cards carrying Power
+	//             Check: all target cards pop up together, projectiles fly from each target back to source in parallel,
+	//             status text updates after projectiles land, then all targets slot back in together.
+	protected void CaptureBatchStatusEffectConsumeAnimation(
+		GameObject sourceCard,
+		List<CardScript> targetCards,
+		EnumStorage.StatusEffect effect,
+		int amountPerTarget)
+	{
+		var amounts = new List<int>();
+		if (targetCards != null)
+		{
+			for (int i = 0; i < targetCards.Count; i++) amounts.Add(amountPerTarget);
+		}
+		CaptureBatchStatusEffectConsumeAnimation(sourceCard, targetCards, effect, amounts, null);
+	}
+
+	// VISUAL-FIX(2026-06-13): ConsumeHostileCursePower needs batch consume animation with per-target amounts
+	//   Cause:    ConsumeHostileCursePower can consume a variable number of Power layers from each
+	//             enemy curse card and the absorbed power should fly toward statusEffectConsumePos,
+	//             but no batch animation helper supported per-target counts or a custom end position.
+	//   Affects:  CurseEffect, EffectScript, RecorderAnimationPlayer, CombatUXManager, AnimationRequest
+	//   Regress:  Reveal CURSE_SUMMONER or PREMATURE when multiple enemy curse cards carry Power
+	//             Check: all target curse cards pop up together, projectiles fly from each target
+	//             toward statusEffectConsumePos with one projectile per consumed layer, status text
+	//             updates after projectiles land, then all targets slot back in together.
+	protected void CaptureBatchStatusEffectConsumeAnimation(
+		GameObject sourceCard,
+		List<CardScript> targetCards,
+		EnumStorage.StatusEffect effect,
+		List<int> amountsPerTarget,
+		Vector3? customProjectileEndPosition = null)
+	{
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder == null || targetCards == null || targetCards.Count == 0) return;
+
+		// Build filtered lists so targets with zero consumed amount do not animate.
+		var targetGameObjects = new List<GameObject>();
+		var filteredAmounts = new List<int>();
+		for (int i = 0; i < targetCards.Count; i++)
+		{
+			var target = targetCards[i];
+			if (target == null) continue;
+			int amount = (amountsPerTarget != null && i < amountsPerTarget.Count) ? amountsPerTarget[i] : 0;
+			if (amount <= 0) continue;
+			targetGameObjects.Add(target.gameObject);
+			filteredAmounts.Add(amount);
+		}
+		if (targetGameObjects.Count == 0) return;
+
+		// 1. Status Effect Change (RecorderAnimationPlayer will defer commit until projectile lands)
+		for (int i = 0; i < targetGameObjects.Count; i++)
+		{
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.StatusEffectChange,
+				targetCard = targetGameObjects[i],
+				statusEffect = effect,
+				statusEffectAmount = -filteredAmounts[i]
+			});
+		}
+
+		// 2. Pop Up all targets in parallel
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.PopUpBatch,
+			targetCards = targetGameObjects
+		});
+
+		// 3. Projectile flies from all targets back to source/custom position in parallel (absorb)
+		int maxProjectileCount = 1;
+		foreach (var amount in filteredAmounts)
+		{
+			if (amount > maxProjectileCount) maxProjectileCount = amount;
+		}
+
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.StatusEffectProjectile,
+			attackerCard = sourceCard,
+			targetCards = targetGameObjects,
+			projectileCount = maxProjectileCount,
+			projectileCountsPerTarget = filteredAmounts,
+			reverseProjectile = true,
+			customProjectileEndPosition = customProjectileEndPosition
+		});
+
+		// 4. Slot In all targets in parallel
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.SlotInBatch,
+			targetCards = targetGameObjects
+		});
+	}
+
+	// VISUAL-FIX(2026-06-13): TransferStatusEffectEffect has no PopUp/SlotIn/Projectile animation
+	//   Cause:    TransferAllStatusEffectToHostileCurse and TransferOneStatusEffectToSelf
+	//             only captured StatusEffectChange, giving no visible feedback that status
+	//             effects were moved from source cards to a target card.
+	//   Affects:  TransferStatusEffectEffect, EffectScript, RecorderAnimationPlayer, CombatUXManager
+	//   Regress:  Reveal CROW_CROWD (transfer all Power to hostile curse) or POWER_SIPHONER
+	//             (transfer 1 Power from each source to self). Check: source cards pop up together,
+	//             projectiles fly from each source to the target card, status text updates after
+	//             projectiles land, then all cards slot back in together.
+	protected void CaptureBatchStatusEffectTransferAnimation(
+		List<CardScript> sourceCards,
+		CardScript targetCard,
+		EnumStorage.StatusEffect effect,
+		List<int> amountsPerSource)
+	{
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder == null || sourceCards == null || sourceCards.Count == 0 || targetCard == null) return;
+
+		// Build filtered lists so sources with zero transferred amount do not animate.
+		var sourceGameObjects = new List<GameObject>();
+		var filteredAmounts = new List<int>();
+		for (int i = 0; i < sourceCards.Count; i++)
+		{
+			var source = sourceCards[i];
+			if (source == null) continue;
+			int amount = (amountsPerSource != null && i < amountsPerSource.Count) ? amountsPerSource[i] : 0;
+			if (amount <= 0) continue;
+			sourceGameObjects.Add(source.gameObject);
+			filteredAmounts.Add(amount);
+		}
+		if (sourceGameObjects.Count == 0) return;
+
+		// 1. Source cards pop up in parallel
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.PopUpBatch,
+			targetCards = sourceGameObjects
+		});
+
+		// 2. Target card pops up so the player sees where the status effects are going
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.PopUp,
+			targetCard = targetCard.gameObject
+		});
+
+		// 3. Projectiles fly from all source cards to the target card in parallel.
+		//    We use reverseProjectile semantics: giverCard = target, targetCards = sources,
+		//    so projectiles fly from each source back to the target (the actual receiver).
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.StatusEffectProjectile,
+			attackerCards = sourceGameObjects,
+			targetCard = targetCard.gameObject,
+			projectileCountsPerTarget = filteredAmounts,
+			reverseProjectile = true
+		});
+
+		// 4. Source cards slot back in in parallel
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.SlotInBatch,
+			targetCards = sourceGameObjects
+		});
+
+		// 5. Target card slots back in
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.SlotIn,
+			targetCard = targetCard.gameObject
+		});
+
+		// 6. Status effect change on source cards (executed after projectiles/slot-in so text
+		//    updates only when the visual transfer completes).
+		for (int i = 0; i < sourceGameObjects.Count; i++)
+		{
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.StatusEffectChange,
+				targetCard = sourceGameObjects[i],
+				statusEffect = effect,
+				statusEffectAmount = -filteredAmounts[i]
+			});
+		}
+	}
+
 }

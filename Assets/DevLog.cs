@@ -161,15 +161,16 @@
 		//// better power wisp
 			//// dot, no trail
 		//todo consume effect
-			// we do need consume status effect animation when status effect is transfered, but what about counter?
-			// indeed it's better to unify, as when consuming self's power should have animation
+			//// we do need consume status effect animation when status effect is transfered, but what about counter?
+			//// indeed it's better to unify, as when consuming self's power should have animation
 			// dot flying away
-				// need consult checklist and implement each one of consume effect
+				// need review?
+				//// need consult checklist and implement each one of consume effect
 		//todo one dot one layer of status effect
-			// need testing
+			//// need testing
 			// first projectile needs no random start pos
-			// color not working
-				// gave emission, need iterate more
+			//// color not working
+				//? give emission, need iterate more
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add
@@ -199,13 +200,6 @@
 #endregion
 #region bugs
 //! bug
-	// consume visual:
-		// DR_MANHATTAN
-			// need to reset status effect setting
-		// POWER_TRANSFER
-		// PREMATURE
-		// POWER_SIPHONER
-		// CROW_CROWD
 	//// replace full width comma with half width
 	//// fix attack animation
 	//// counter effect not spawning status effect projectile
