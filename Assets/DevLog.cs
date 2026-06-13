@@ -164,8 +164,12 @@
 			// we do need consume status effect animation when status effect is transfered, but what about counter?
 			// indeed it's better to unify, as when consuming self's power should have animation
 			// dot flying away
+				// need consult checklist and implement each one of consume effect
 		//todo one dot one layer of status effect
 			// need testing
+			// first projectile needs no random start pos
+			// color not working
+				// gave emission, need iterate more
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add
