@@ -165,17 +165,17 @@
 		//// text to show status effect
 		//// better power wisp
 			//// dot, no trail
-		//todo consume effect
+		//// consume effect
 			//// we do need consume status effect animation when status effect is transfered, but what about counter?
 			//// indeed it's better to unify, as when consuming self's power should have animation
-			// dot flying away
-				// need review?
+			// //dot flying away
+				//// need review?
 				//// need consult checklist and implement each one of consume effect
-		//todo one dot one layer of status effect
+		//// one dot one layer of status effect
 			//// need testing
-			// first projectile needs no random start pos
+			//// first projectile needs no random start pos
 			//// color not working
-				//? give emission, need iterate more
+				//// give emission, need iterate more
 	//// add and refine animation: D:\Unity Projects\OneDeck\docs\CombatEffectAnimations.md
 		//// curse
 			//// add
@@ -185,8 +185,8 @@
 		//// add rift
 	//// stage/bury and deck shift should happen at the same time
 		//// rift -> stage another card, staged card should go straight to reveal zone
-	//? better card move animation
-		// change z dynamically
+	//// better card move animation
+		//// change z dynamically
 	// motion design
 		////shake revealed card if cost not met / can't activate if card in reveal zone
 			//// need testing, especially need to check if custom shake is only applied to card in reveal zone

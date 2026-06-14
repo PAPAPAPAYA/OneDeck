@@ -2046,6 +2046,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			foreach (var c in effectiveCounts) totalProjectiles += c;
 		}
 
+		// VISUAL-FIX(2026-06-14): Disable projectile start randomness for single-layer status effects
+		//   Cause:    When an effect only gives/absorbs/consumes 1 status effect layer, the single
+		//             projectile should fly straight from the source card; random offset makes it
+		//             look off-center or miss the target.
+		//   Affects:  CombatUXManager, all status-effect giver/consumers, RecorderAnimationPlayer
+		//   Regress:  Reveal a card that gives/consumes exactly 1 status effect layer
+		//             Check: projectile starts at the center of the source card and lands cleanly.
+		if (totalProjectiles == 1)
+		{
+			effectiveOffsetRange = Vector2.zero;
+		}
+
 		BlockInput(this);
 		AnimationStateTracker.me?.RegisterAnimation();
 
@@ -2142,6 +2154,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		int cappedProjectileCount = Mathf.Min(projectileCount, maxProjectilesPerRequest);
 		if (cappedProjectileCount <= 0) cappedProjectileCount = 1;
+
+		// Single-layer status effect: do not randomize projectile start position.
+		if (cappedProjectileCount == 1)
+		{
+			effectiveOffsetRange = Vector2.zero;
+		}
 
 		// Single projectile: keep the old simple path (one AnimationStateTracker registration).
 		if (cappedProjectileCount == 1)
