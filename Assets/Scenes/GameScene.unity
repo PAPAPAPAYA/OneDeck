@@ -873,10 +873,10 @@ MonoBehaviour:
   hitShakePreset: {fileID: 11400000, guid: a8ff2a1b41435cf48a9c8b2cb7d1545e, type: 2}
   overshootDistance: 10
   bounceBackDuration: 0.1
-  windUpDistance: 3
+  windUpDistance: 5
   windUpDuration: 0.3
-  pauseAtTarget: 0.3
-  returnToRevealDuration: 0.2
+  pauseAtTarget: 0.25
+  returnToRevealDuration: 0.25
   isPlayingAttackAnimation: 0
 --- !u!4 &297125759
 Transform:
@@ -2608,7 +2608,7 @@ Transform:
   m_GameObject: {fileID: 831239650}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.5, z: -80}
+  m_LocalPosition: {x: 0, y: 4, z: -80}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

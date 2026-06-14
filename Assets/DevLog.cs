@@ -127,7 +127,7 @@
 #endregion
 #region viscom
 //! viscom
-	//todo stage和bury动画中卡片的z轴根据当前位置和目标位置计算，而不要使用固定值
+	//// arc animation uses dynamic z instead of static showPos' Z
 	// add chinese comma to font source
 	//// dynamically change card description
 		//// check

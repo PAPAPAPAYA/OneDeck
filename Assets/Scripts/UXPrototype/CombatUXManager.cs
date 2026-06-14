@@ -412,9 +412,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (shouldUseArc)
 		{
 			// Arc trajectory: Current -> Midpoint -> Target
+			// VISUAL-FIX(2026-06-14): showPos z was fixed at -80, causing cards to jump far away mid-arc.
+			//   Fix: use midpoint z between current card and target, keep showPos x/y.
+			//   Affects: MoveCardToTop, MoveCardToBottom, MoveCardToIndex, MoveRevealedCardToBottom.
+			//   Regress: Stage/Bury/Reveal-to-bottom animations should remain visible and land in correct order.
 			float halfDuration = config.duration * 0.5f;
+			Vector3 arcMidpoint = GetArcMidpoint(arcPoint.position, physicalCard.transform.position, targetPosition);
 			moveSequence.Append(
-				physicalCard.transform.DOMove(arcPoint.position, halfDuration).SetEase(config.ease)
+				physicalCard.transform.DOMove(arcMidpoint, halfDuration).SetEase(config.ease)
 			);
 			moveSequence.Append(
 				physicalCard.transform.DOMove(targetPosition, halfDuration).SetEase(config.ease)
@@ -495,6 +500,23 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// Returns showPos's x/y but with z set to the midpoint between start and target.
+	/// Used for arc trajectory so cards don't fly to the fixed scene z of showPos.
+	/// </summary>
+	/// <summary>
+	/// Returns a midpoint whose x/y come from baseMidpointPosition but z is the midpoint
+	/// between startPosition and targetPosition. Used for arc trajectory so cards don't fly
+	/// to the fixed scene z of showPos.
+	/// </summary>
+	private Vector3 GetArcMidpoint(Vector3 baseMidpointPosition, Vector3 startPosition, Vector3 targetPosition)
+	{
+		Vector3 mid = baseMidpointPosition;
+		mid.z = (startPosition.z + targetPosition.z) * 0.5f;
+		return mid;
+	}
+
+
+	/// <summary>
 	/// Batch animation: arc via showPos to pop-up peak, then slot in to deck top.
 	/// Phase 1: all cards arc in parallel to their pop-up peaks.
 	/// Phase 2: all cards slot in in parallel to their final deck top positions.
@@ -560,7 +582,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 			if (showPos != null)
 			{
-				arcSeq.Append(physicalCard.transform.DOMove(showPos.position, halfDuration).SetEase(Ease.OutQuad));
+				// VISUAL-FIX(2026-06-14): showPos z fixed at -80 caused Stage arc to jump far away.
+				//   Fix: arc midpoint z = midpoint of current card z and peak z.
+				Vector3 arcMidpoint = GetArcMidpoint(showPos.position, physicalCard.transform.position, peakPos);
+				arcSeq.Append(physicalCard.transform.DOMove(arcMidpoint, halfDuration).SetEase(Ease.OutQuad));
 				arcSeq.Append(physicalCard.transform.DOMove(peakPos, halfDuration).SetEase(Ease.InOutQuad));
 			}
 			else
@@ -817,8 +842,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (showPos != null)
 			{
 				// Use arc trajectory through showPos
+				// VISUAL-FIX(2026-06-14): showPos z fixed at -80 caused shuffle arc to jump far away.
+				//   Fix: arc midpoint z = midpoint of current card z and target z.
+				Vector3 arcMidpoint = GetArcMidpoint(showPos.position, physicalCard.transform.position, targetPos);
 				moveSequence.Append(
-					physicalCard.transform.DOMove(showPos.position, shuffleDuration * 0.5f).SetEase(Ease.OutQuad)
+					physicalCard.transform.DOMove(arcMidpoint, shuffleDuration * 0.5f).SetEase(Ease.OutQuad)
 				);
 				moveSequence.Append(
 					physicalCard.transform.DOMove(targetPos, shuffleDuration * 0.5f).SetEase(Ease.InQuad)

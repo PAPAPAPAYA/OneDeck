@@ -23,6 +23,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 2 | Bury-then-Stage reactive chain causes wrong animation target index | `BuryEffect`, `StageEffect`, `EffectChainManager` | 2026-05-15 | ✅ | **Card:** StoneShell buries RisingFlame (onMeBuried→StageSelf)<br>**Check:** Final deck position is correct |
 | 5 | Bury/Stage inserts moved card before pending slot-in cards | `ApplyAnimationResult`, `BuryEffect`, `StageEffect` | 2026-05-24 | ✅ | **Card:** Chain AddTempCard then Bury/Stage<br>**Check:** Moved card lands after pending cards |
 | 7 | Stage/Bury animation target offset when pending cards exist in deck | `CalculateAnimationPositionAtIndex`, `CombatUXManager`, `RecorderAnimationPlayer` | 2026-05-24 | ✅ | **Card:** sacrificial_spirit (creates pending JU_ON) then soldier_skeleton (StageSelf)<br>**Check:** Peak and slot-in positions match logical top index<br>同时验证 `RecorderAnimationPlayer` 使用 `actualPhysIndex` 而非 `correctedIndex` 作为动画目标索引（日志中 `actualPhysIndex == targetIndex`）。 |
+| 23 | Arc midpoint z jumps to fixed -80 during Stage/Bury/Shuffle/Reveal-to-bottom | `CombatUXManager`, `showPos` | 2026-06-14 | ⚠️ | **Card:** Any Bury/Stage card (e.g. StoneShell, grave_punch, RisingFlame, BOOSTER) + Start Card shuffle + normal reveal-to-bottom<br>**Check:** Mid-arc card z should be midway between start z and target z, not `-80`. Cards remain visible throughout the arc. |
 
 ## Card Adding & Pending Cards
 
