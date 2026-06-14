@@ -31,6 +31,23 @@ public class HPAlterEffect : EffectScript
 	[Tooltip("Status effect type to count")]
 	public EnumStorage.StatusEffect statusEffectToCheck;
 	
+	[Header("Dynamic Damage Display")]
+	[Tooltip("Optional real-time damage source to append in parentheses at the end of the card description")]
+	public DynamicDmgDisplaySource dynamicDmgDisplaySource = DynamicDmgDisplaySource.None;
+	[Tooltip("If true, self Power multiplies the displayed damage (e.g. X hits each dealing 1+Power). Otherwise self Power is added.")]
+	public bool dynamicDmgDisplayMultiplyByPower = false;
+	
+	/// <summary>
+	/// Data source for the optional dynamic damage suffix shown in card descriptions.
+	/// </summary>
+	public enum DynamicDmgDisplaySource
+	{
+		None,
+		TotalPowerCount,
+		FriendlyCardCount,
+		OpponentBuriedCount
+	}
+	
 	#endregion
 	
 	#region Private Helpers

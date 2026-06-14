@@ -83,6 +83,8 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: -2
   statusEffectToCheck: 0
+  dynamicDmgDisplaySource: 2
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0

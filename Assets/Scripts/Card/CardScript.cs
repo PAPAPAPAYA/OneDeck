@@ -112,6 +112,7 @@ public class CardScript : MonoBehaviour
 	/// Computes the dynamic card description by replacing placeholders:
 	/// &lt;dmg&gt; with base damage plus Power status effect count,
 	/// &lt;counter&gt; with current Counter status effect count as an optional suffix.
+	/// Also appends an optional parenthesized damage suffix configured on HPAlterEffect.
 	/// </summary>
 	private string ComputeDynamicCardDesc()
 	{
@@ -158,7 +159,77 @@ public class CardScript : MonoBehaviour
 			desc = desc.Replace("<counter>", counterStr);
 		}
 
-		return desc;
+		return AppendDynamicDamageSuffix(desc);
+	}
+
+	/// <summary>
+	/// Appends a parenthesized real-time damage estimate to the description
+	/// when the attached HPAlterEffect requests it.
+	/// Returns the original description if no source is configured or data is unavailable.
+	/// </summary>
+	private string AppendDynamicDamageSuffix(string desc)
+	{
+		if (_cachedHpAlterEffect == null)
+			_cachedHpAlterEffect = GetComponentInChildren<HPAlterEffect>();
+		var hpAlter = _cachedHpAlterEffect;
+		if (hpAlter == null)
+			return desc;
+
+		var source = hpAlter.dynamicDmgDisplaySource;
+		if (source == HPAlterEffect.DynamicDmgDisplaySource.None)
+			return desc;
+
+		if (ValueTrackerManager.me == null || CombatManager.Me == null)
+			return desc;
+
+		int selfPowerCount = 0;
+		if (myStatusEffects != null)
+		{
+			foreach (var se in myStatusEffects)
+			{
+				if (se == EnumStorage.StatusEffect.Power)
+					selfPowerCount++;
+			}
+		}
+
+		int baseValue = 0;
+		switch (source)
+		{
+			case HPAlterEffect.DynamicDmgDisplaySource.TotalPowerCount:
+				if (ValueTrackerManager.me.totalPowerCountInDeckRef != null)
+					baseValue = ValueTrackerManager.me.totalPowerCountInDeckRef.value;
+				break;
+			case HPAlterEffect.DynamicDmgDisplaySource.FriendlyCardCount:
+				if (myStatusRef == CombatManager.Me.ownerPlayerStatusRef)
+				{
+					if (ValueTrackerManager.me.ownerCardCountInDeckRef != null)
+						baseValue = ValueTrackerManager.me.ownerCardCountInDeckRef.value;
+				}
+				else
+				{
+					if (ValueTrackerManager.me.enemyCardCountInDeckRef != null)
+						baseValue = ValueTrackerManager.me.enemyCardCountInDeckRef.value;
+				}
+				break;
+			case HPAlterEffect.DynamicDmgDisplaySource.OpponentBuriedCount:
+				if (myStatusRef == CombatManager.Me.ownerPlayerStatusRef)
+				{
+					if (ValueTrackerManager.me.enemyCardsBuriedCountRef != null)
+						baseValue = ValueTrackerManager.me.enemyCardsBuriedCountRef.value;
+				}
+				else
+				{
+					if (ValueTrackerManager.me.ownerCardsBuriedCountRef != null)
+						baseValue = ValueTrackerManager.me.ownerCardsBuriedCountRef.value;
+				}
+				break;
+		}
+
+		int totalDmg = hpAlter.dynamicDmgDisplayMultiplyByPower
+			? baseValue * (1 + selfPowerCount)
+			: baseValue + selfPowerCount;
+
+		return desc + "(当前总伤害:" + totalDmg + ")";
 	}
 
 	private void OnEnable()

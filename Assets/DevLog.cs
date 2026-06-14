@@ -127,11 +127,12 @@
 #endregion
 #region viscom
 //! viscom
+	//todo stage和bury动画中卡片的z轴根据当前位置和目标位置计算，而不要使用固定值
 	// add chinese comma to font source
-	//todo dynamically change card description
-		// check
-		// dmg
-			//? show dynamic dmg in ()
+	//// dynamically change card description
+		//// check
+		//// dmg
+			//// show dynamic dmg in ()
 			//// missing 1 
 		//// counter
 	//todo health bar
