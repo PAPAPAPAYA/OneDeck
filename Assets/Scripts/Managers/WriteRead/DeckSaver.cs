@@ -167,6 +167,14 @@ namespace TestWriteRead
             return null;
         }
 
+        /// <summary>
+        /// Public getter for card prefab by cardTypeID. Used by EnemyDeckRecorder.
+        /// </summary>
+        public GameObject GetCardPrefabByTypeID(string cardTypeID)
+        {
+            return FindCardPrefabByTypeID(cardTypeID);
+        }
+
         #region Data Persistence
 
         /// <summary>

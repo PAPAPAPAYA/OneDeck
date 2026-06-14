@@ -39,9 +39,13 @@
 		//// almighty: stage 1 friendly; bury 1 hostile; enhance 1 friendly; add 1 [rift]; enhance 1 hostile [curse]
 			//// gain 1 rest
 #endregion
+#region docs
+//! docs
+	//// doc for all short-cuts
+#endregion
 #region tools
 //! tools
-	//todo recorder to automatically record deck to enemy decks
+	//// recorder to automatically record deck to enemy decks
 		//// D:\Unity Projects\OneDeck\plans\prd-deck-enemy-recorder-2026-05-27.md
 	//// bug Recorder to prevent later fixes undermine former fixes
 	// make a summary generator skill?
