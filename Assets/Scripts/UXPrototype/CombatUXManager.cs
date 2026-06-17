@@ -307,7 +307,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			{
 				moveType = CardMoveType.ToPosition, // Use ToPosition to apply the corrected position
 				customTarget = targetPos,
-				duration = revealToDeckAnimDuration,
+				duration = CombatAnimationSpeed.ScaleDuration(revealToDeckAnimDuration),
 				useArc = true,
 				arcMidpoint = showPos,
 				ease = revealToDeckEase,
@@ -408,6 +408,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Create animation sequence
 		Sequence moveSequence = DOTween.Sequence();
+		float scaledDuration = CombatAnimationSpeed.ScaleDuration(config.duration);
 
 		if (shouldUseArc)
 		{
@@ -416,7 +417,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			//   Fix: use midpoint z between current card and target, keep showPos x/y.
 			//   Affects: MoveCardToTop, MoveCardToBottom, MoveCardToIndex, MoveRevealedCardToBottom.
 			//   Regress: Stage/Bury/Reveal-to-bottom animations should remain visible and land in correct order.
-			float halfDuration = config.duration * 0.5f;
+			float halfDuration = scaledDuration * 0.5f;
 			Vector3 arcMidpoint = GetArcMidpoint(arcPoint.position, physicalCard.transform.position, targetPosition);
 			moveSequence.Append(
 				physicalCard.transform.DOMove(arcMidpoint, halfDuration).SetEase(config.ease)
@@ -429,7 +430,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			// Straight trajectory
 			moveSequence.Append(
-				physicalCard.transform.DOMove(targetPosition, config.duration).SetEase(config.ease)
+				physicalCard.transform.DOMove(targetPosition, scaledDuration).SetEase(config.ease)
 			);
 		}
 
@@ -438,7 +439,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			? cardDestroyTargetSize 
 			: physicalCardDeckSize;
 		moveSequence.Join(
-			physicalCard.transform.DOScale(targetScale, config.duration).SetEase(config.ease)
+			physicalCard.transform.DOScale(targetScale, scaledDuration).SetEase(config.ease)
 		);
 
 		// Animation complete callback
@@ -578,7 +579,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 			// Arc via showPos
 			Sequence arcSeq = DOTween.Sequence();
-			float halfDuration = duration * 0.5f;
+			float scaledDuration = CombatAnimationSpeed.ScaleDuration(duration);
+			float halfDuration = scaledDuration * 0.5f;
 
 			if (showPos != null)
 			{
@@ -591,10 +593,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			else
 			{
 				// showPos is null: straight line to peak
-				arcSeq.Append(physicalCard.transform.DOMove(peakPos, duration).SetEase(Ease.OutQuad));
+				arcSeq.Append(physicalCard.transform.DOMove(peakPos, scaledDuration).SetEase(Ease.OutQuad));
 			}
 
-			arcSeq.Join(physicalCard.transform.DOScale(peakScale, duration).SetEase(Ease.OutQuad));
+			arcSeq.Join(physicalCard.transform.DOScale(peakScale, scaledDuration).SetEase(Ease.OutQuad));
 
 			arcSeq.OnComplete(() =>
 			{
@@ -625,10 +627,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				if (physScript == null) { phase2Done++; continue; }
 
 				Vector3 targetPos = CalculateAnimationPositionAtIndex(finalIndex);
+				float scaledSlotInDuration = CombatAnimationSpeed.ScaleDuration(slotInDuration);
 
 				Sequence slotSeq = DOTween.Sequence();
-				slotSeq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, slotInDuration)));
-				slotSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, slotInDuration)));
+				slotSeq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, scaledSlotInDuration)));
+				slotSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, scaledSlotInDuration)));
 				slotSeq.OnComplete(() =>
 				{
 					physScript.isPlayingSpecialAnimation = false;
@@ -800,13 +803,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		int completedCount = 0;
 		int totalCount = shuffleTargets.Count;
-		float shuffleDuration = 0.5f; // Shuffle Animation duration
+		float shuffleDuration = CombatAnimationSpeed.ScaleDuration(0.5f); // Shuffle Animation duration
+		float scaledShuffleStaggerMaxDelay = CombatAnimationSpeed.ScaleDuration(shuffleStaggerMaxDelay);
 
 		// Generate random delay time for each card
 		var cardDelays = new Dictionary<GameObject, float>();
 		foreach (var kvp in shuffleTargets)
 		{
-			float delay = useStaggeredShuffleAnimation ? UnityEngine.Random.Range(0f, shuffleStaggerMaxDelay) : 0f;
+			float delay = useStaggeredShuffleAnimation ? UnityEngine.Random.Range(0f, scaledShuffleStaggerMaxDelay) : 0f;
 			cardDelays[kvp.Key] = delay;
 		}
 
@@ -1308,7 +1312,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			Vector3 offsetRevealPos = physicalCardRevealPos.position + _deckFocusOffset;
 			Vector3 exitPos = offsetRevealPos + Vector3.down * revealCardExitDistance;
 			animTotalCount++;
-			physicalCardInRevealZone.transform.DOMove(exitPos, peelCardDuration)
+			physicalCardInRevealZone.transform.DOMove(exitPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
 				.SetEase(Ease.InOutQuad)
 				.OnComplete(() =>
 				{
@@ -1336,10 +1340,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				Vector3 peelDirection = new Vector3(0f, -1f, 0f).normalized;
 				Vector3 peelPos = basePos + peelDirection * peelSlideDistance;
 
-				float peelDelay = (count - i) * peelStaggerDelay;
+				float peelDelay = CombatAnimationSpeed.ScaleDuration((count - i) * peelStaggerDelay);
 				animTotalCount++;
 				physScript.isPlayingSpecialAnimation = true;
-				card.transform.DOMove(peelPos, peelCardDuration)
+				card.transform.DOMove(peelPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
 					.SetEase(Ease.InOutQuad)
 					.SetDelay(peelDelay)
 					.OnComplete(() =>
@@ -1356,7 +1360,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				animTotalCount++;
 				physScript.isPlayingSpecialAnimation = true;
 				physScript.SetTargetPosition(basePos);
-				card.transform.DOMove(basePos, deckShiftDuration)
+				card.transform.DOMove(basePos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
 					.SetEase(Ease.OutQuad)
 					.OnComplete(() =>
 					{
@@ -1423,10 +1427,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 				newPeeledCards.Add(card);
 
-				float transDelay = (count - 1 - i) * peelStaggerDelay;
+				float transDelay = CombatAnimationSpeed.ScaleDuration((count - 1 - i) * peelStaggerDelay);
 				animTotalCount++;
 				physScript.isPlayingSpecialAnimation = true;
-				card.transform.DOMove(peelPos, peelCardDuration)
+				card.transform.DOMove(peelPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
 					.SetEase(Ease.InOutQuad)
 					.SetDelay(transDelay)
 					.OnComplete(() =>
@@ -1443,7 +1447,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				animTotalCount++;
 				physScript.isPlayingSpecialAnimation = true;
 				physScript.SetTargetPosition(basePos);
-				card.transform.DOMove(basePos, deckShiftDuration)
+				card.transform.DOMove(basePos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
 					.SetEase(Ease.OutQuad)
 					.OnComplete(() =>
 					{
@@ -1494,9 +1498,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (_peeledCards.Contains(card))
 			{
 				// Peeled card: return from peel position with stagger
-				float delay = i * peelStaggerDelay;
+				float delay = CombatAnimationSpeed.ScaleDuration(i * peelStaggerDelay);
 				totalCount++;
-				card.transform.DOMove(finalPos, peelCardDuration)
+				card.transform.DOMove(finalPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
 					.SetEase(Ease.InOutQuad)
 					.SetDelay(delay)
 					.OnComplete(() =>
@@ -1509,7 +1513,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			{
 				// Normal card: shift back to normal position
 				totalCount++;
-				card.transform.DOMove(finalPos, deckShiftDuration)
+				card.transform.DOMove(finalPos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
 					.SetEase(Ease.OutQuad)
 					.OnComplete(() =>
 					{
@@ -1534,7 +1538,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				}
 			}
 		}
-		float revealCardDelay = lastDeckCardStartDelay + peelStaggerDelay;
+		float revealCardDelay = CombatAnimationSpeed.ScaleDuration(lastDeckCardStartDelay + peelStaggerDelay);
 
 		// Restore reveal zone card back to reveal position after last deck card starts + stagger
 		if (physicalCardInRevealZone != null)
@@ -1547,7 +1551,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 
 			totalCount++;
-			physicalCardInRevealZone.transform.DOMove(revealPos, peelCardDuration)
+			physicalCardInRevealZone.transform.DOMove(revealPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
 				.SetEase(Ease.InOutQuad)
 				.SetDelay(revealCardDelay)
 				.OnComplete(() =>
@@ -1693,19 +1697,20 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Create exit animation
 		Sequence destroySequence = DOTween.Sequence();
+		float scaledDestroyDuration = CombatAnimationSpeed.ScaleDuration(cardDestroyAnimDuration);
 
 		// Move to grave position (if set)
 		if (gravePosition != null)
 		{
 			destroySequence.Append(
-				physicalCard.transform.DOMove(gravePosition.position, cardDestroyAnimDuration)
+				physicalCard.transform.DOMove(gravePosition.position, scaledDestroyDuration)
 					.SetEase(Ease.InQuad)
 			);
 		}
 
 		// Shrink
 		destroySequence.Join(
-			physicalCard.transform.DOScale(cardDestroyTargetSize, cardDestroyAnimDuration)
+			physicalCard.transform.DOScale(cardDestroyTargetSize, scaledDestroyDuration)
 				.SetEase(Ease.InQuad)
 		);
 
@@ -2028,8 +2033,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			effectiveStaggerRange = new Vector2(0f, customStaggerDelay.Value);
 		}
-		float minStagger = Mathf.Min(effectiveStaggerRange.x, effectiveStaggerRange.y);
-		float maxStagger = Mathf.Max(effectiveStaggerRange.x, effectiveStaggerRange.y);
+		float minStagger = CombatAnimationSpeed.ScaleDuration(Mathf.Min(effectiveStaggerRange.x, effectiveStaggerRange.y));
+		float maxStagger = CombatAnimationSpeed.ScaleDuration(Mathf.Max(effectiveStaggerRange.x, effectiveStaggerRange.y));
 
 		// Safety cap: high stack counts can spawn an excessive number of projectiles.
 		if (totalProjectiles > maxProjectilesPerRequest)
@@ -2149,8 +2154,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		Vector2 effectiveOffsetRange = projectileStartRandomOffsetRange ?? this.projectileStartRandomOffsetRange;
 		Vector2 effectiveStaggerRange = projectileStartTimeStaggerRange ?? this.projectileStartTimeStaggerRange;
-		float minStagger = Mathf.Min(effectiveStaggerRange.x, effectiveStaggerRange.y);
-		float maxStagger = Mathf.Max(effectiveStaggerRange.x, effectiveStaggerRange.y);
+		float minStagger = CombatAnimationSpeed.ScaleDuration(Mathf.Min(effectiveStaggerRange.x, effectiveStaggerRange.y));
+		float maxStagger = CombatAnimationSpeed.ScaleDuration(Mathf.Max(effectiveStaggerRange.x, effectiveStaggerRange.y));
 
 		int cappedProjectileCount = Mathf.Min(projectileCount, maxProjectilesPerRequest);
 		if (cappedProjectileCount <= 0) cappedProjectileCount = 1;
@@ -2229,16 +2234,17 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Create parabolic animation
 		Sequence projectileSequence = DOTween.Sequence();
+		float scaledProjectileDuration = CombatAnimationSpeed.ScaleDuration(projectileDuration);
 
 		// Phase 1: From start to midpoint (ascending)
 		projectileSequence.Append(
-			projectile.transform.DOMove(midPoint, projectileDuration * 0.5f)
+			projectile.transform.DOMove(midPoint, scaledProjectileDuration * 0.5f)
 				.SetEase(Ease.OutQuad)
 		);
 
 		// Phase 2: From midpoint to end (descending)
 		projectileSequence.Append(
-			projectile.transform.DOMove(endPos, projectileDuration * 0.5f)
+			projectile.transform.DOMove(endPos, scaledProjectileDuration * 0.5f)
 				.SetEase(Ease.InQuad)
 		);
 
@@ -2461,10 +2467,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		AnimationStateTracker.me?.RegisterAnimation();
 		BlockInput(this);
 
+		float scaledPopUpDuration = CombatAnimationSpeed.ScaleDuration(popUpDuration);
+		float scaledPopUpHoldDuration = CombatAnimationSpeed.ScaleDuration(popUpHoldDuration);
 		Sequence seq = DOTween.Sequence();
-		seq.Append(physicalCard.transform.DOMove(peakPos, popUpDuration).SetEase(popUpEase));
-		seq.Join(physicalCard.transform.DOScale(peakScale, popUpDuration).SetEase(popUpEase));
-		seq.AppendInterval(popUpHoldDuration);
+		seq.Append(physicalCard.transform.DOMove(peakPos, scaledPopUpDuration).SetEase(popUpEase));
+		seq.Join(physicalCard.transform.DOScale(peakScale, scaledPopUpDuration).SetEase(popUpEase));
+		seq.AppendInterval(scaledPopUpHoldDuration);
 		seq.OnComplete(() =>
 		{
 			AnimationStateTracker.me?.CompleteAnimation();
@@ -2515,9 +2523,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			AnimationStateTracker.me?.RegisterAnimation();
 			BlockInput(this);
 
+			float scaledFallbackSlotInDuration = CombatAnimationSpeed.ScaleDuration(slotInDuration);
 			Sequence fallbackSeq = DOTween.Sequence();
-			fallbackSeq.Append(ApplySlotInEase(physicalCard.transform.DOMove(originalPos, slotInDuration)));
-			fallbackSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(originalScale, slotInDuration)));
+			fallbackSeq.Append(ApplySlotInEase(physicalCard.transform.DOMove(originalPos, scaledFallbackSlotInDuration)));
+			fallbackSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(originalScale, scaledFallbackSlotInDuration)));
 			fallbackSeq.OnComplete(() =>
 			{
 				physScript.isPlayingSpecialAnimation = false;
@@ -2543,9 +2552,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		AnimationStateTracker.me?.RegisterAnimation();
 		BlockInput(this);
 
+		float scaledSlotInDuration = CombatAnimationSpeed.ScaleDuration(slotInDuration);
 		Sequence seq = DOTween.Sequence();
-		seq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, slotInDuration)));
-		seq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, slotInDuration)));
+		seq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, scaledSlotInDuration)));
+		seq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, scaledSlotInDuration)));
 		seq.OnComplete(() =>
 		{
 			physScript.isPlayingSpecialAnimation = false;
@@ -2606,11 +2616,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		AnimationStateTracker.me?.RegisterAnimation();
 		BlockInput(this);
 
+		float scaledFlyInDuration = CombatAnimationSpeed.ScaleDuration(newCardFlyInDuration);
+		float scaledPopUpHoldDuration = CombatAnimationSpeed.ScaleDuration(popUpHoldDuration);
+
 		// Straight line move to peak position, scaling to peak scale
 		Sequence seq = DOTween.Sequence();
-		seq.Append(physicalCard.transform.DOMove(peakPos, newCardFlyInDuration).SetEase(popUpEase));
-		seq.Join(physicalCard.transform.DOScale(peakScale, newCardFlyInDuration).SetEase(popUpEase));
-		seq.AppendInterval(popUpHoldDuration);
+		seq.Append(physicalCard.transform.DOMove(peakPos, scaledFlyInDuration).SetEase(popUpEase));
+		seq.Join(physicalCard.transform.DOScale(peakScale, scaledFlyInDuration).SetEase(popUpEase));
+		seq.AppendInterval(scaledPopUpHoldDuration);
 		seq.OnComplete(() =>
 		{
 			physScript.isPlayingSpecialAnimation = false;

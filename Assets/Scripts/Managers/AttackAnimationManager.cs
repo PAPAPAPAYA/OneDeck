@@ -285,7 +285,7 @@ public void ReleaseDeckFocus()
 				cameraShaker.Shake(hitShakePreset);
 			}
 			
-			yield return new WaitForSeconds(pauseAtTarget);
+			yield return new WaitForSeconds(CombatAnimationSpeed.ScaleDuration(pauseAtTarget));
 
 			// ========== Phase 5: Charge to overshoot position (past target) ==========
 			Vector3 overshootPos = CalculateOvershootPosition(targetPos, startPos);
@@ -356,13 +356,15 @@ public void ReleaseDeckFocus()
 		float targetAngle = CalculateRotationTowardsTarget(physicalCard.transform.position, targetPos);
 		
 		// Use longer duration to ensure rotation covers the whole process
-		float rotationDuration = Mathf.Max(scaleUpDuration, windUpDuration);
+		float scaledScaleUpDuration = CombatAnimationSpeed.ScaleDuration(scaleUpDuration);
+		float scaledWindUpDuration = CombatAnimationSpeed.ScaleDuration(windUpDuration);
+		float rotationDuration = Mathf.Max(scaledScaleUpDuration, scaledWindUpDuration);
 		
 		// Create sequence: scale up + rotate + wind up (simultaneous)
 		Sequence sequence = DOTween.Sequence();
 		
 		sequence.Append(
-			physicalCard.transform.DOScale(originalScale * attackScaleMultiplier, scaleUpDuration)
+			physicalCard.transform.DOScale(originalScale * attackScaleMultiplier, scaledScaleUpDuration)
 				.SetEase(Ease.OutQuad)
 		);
 		
@@ -372,7 +374,7 @@ public void ReleaseDeckFocus()
 		);
 		
 		sequence.Join(
-			physicalCard.transform.DOMove(windUpPos, windUpDuration)
+			physicalCard.transform.DOMove(windUpPos, scaledWindUpDuration)
 				.SetEase(Ease.OutQuad)
 		);
 		
@@ -435,13 +437,15 @@ public void ReleaseDeckFocus()
 		// Create sequence: move + scale down
 		Sequence chargeSequence = DOTween.Sequence();
 		
+		float scaledChargeDuration = CombatAnimationSpeed.ScaleDuration(chargeDuration);
+		
 		chargeSequence.Append(
-			physicalCard.transform.DOMove(targetPos, chargeDuration)
+			physicalCard.transform.DOMove(targetPos, scaledChargeDuration)
 				.SetEase(Ease.InCubic)
 		);
 		
 		chargeSequence.Join(
-			physicalCard.transform.DOScale(chargeTargetScale, chargeDuration)
+			physicalCard.transform.DOScale(chargeTargetScale, scaledChargeDuration)
 				.SetEase(Ease.InQuad)
 		);
 		
@@ -457,7 +461,7 @@ public void ReleaseDeckFocus()
 	{
 		bool completed = false;
 
-		physicalCard.transform.DOMove(overshootPos, bounceBackDuration * 0.5f)
+		physicalCard.transform.DOMove(overshootPos, CombatAnimationSpeed.ScaleDuration(bounceBackDuration * 0.5f))
 			.SetEase(Ease.OutQuad)
 			.OnComplete(() => completed = true);
 
@@ -474,19 +478,21 @@ public void ReleaseDeckFocus()
 		// Create sequence: move to reveal position + restore reveal size + zero rotation (sync with move)
 		Sequence returnSequence = DOTween.Sequence();
 		
+		float scaledReturnDuration = CombatAnimationSpeed.ScaleDuration(returnToRevealDuration);
+		
 		returnSequence.Append(
-			physicalCard.transform.DOMove(revealPos, returnToRevealDuration)
+			physicalCard.transform.DOMove(revealPos, scaledReturnDuration)
 				.SetEase(Ease.OutQuad)
 		);
 		
 		returnSequence.Join(
-			physicalCard.transform.DOScale(revealSize, returnToRevealDuration)
+			physicalCard.transform.DOScale(revealSize, scaledReturnDuration)
 				.SetEase(Ease.OutQuad)
 		);
 		
 		// Zero rotation, duration matches movement to ensure synchronous completion
 		returnSequence.Join(
-			physicalCard.transform.DORotate(Vector3.zero, returnToRevealDuration)
+			physicalCard.transform.DORotate(Vector3.zero, scaledReturnDuration)
 				.SetEase(Ease.OutQuad)
 		);
 		
@@ -504,18 +510,20 @@ public void ReleaseDeckFocus()
 		
 		Sequence returnSequence = DOTween.Sequence();
 		
+		float scaledReturnDuration = CombatAnimationSpeed.ScaleDuration(returnToRevealDuration);
+		
 		returnSequence.Append(
-			physicalCard.transform.DOMove(deckPos, returnToRevealDuration)
+			physicalCard.transform.DOMove(deckPos, scaledReturnDuration)
 				.SetEase(Ease.OutQuad)
 		);
 		
 		returnSequence.Join(
-			physicalCard.transform.DOScale(originalScale, returnToRevealDuration)
+			physicalCard.transform.DOScale(originalScale, scaledReturnDuration)
 				.SetEase(Ease.OutQuad)
 		);
 		
 		returnSequence.Join(
-			physicalCard.transform.DORotate(Vector3.zero, returnToRevealDuration)
+			physicalCard.transform.DORotate(Vector3.zero, scaledReturnDuration)
 				.SetEase(Ease.OutQuad)
 		);
 		

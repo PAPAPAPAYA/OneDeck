@@ -241,6 +241,7 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 - `ExileEffect` sets `revealZone = null` when exiling the revealed card, and chains `Destroy` requests with `onComplete` on the last card.
 - `CombatManager.Awake()` auto-creates `RecorderAnimationPlayer` if missing.
 - **afterShuffle timing**: Raised **after** shuffle animation completes, next card reaches reveal zone, and `PlayRecorderAnimationsAndWait()` finishes. Round Start path waits for reveal-zone movement via `MoveCardToRevealZone` callback before raising.
+- **Global Combat Animation Speed**: `CombatAnimationSpeed.SpeedScale` scales all Combat-phase card animation durations. `CombatManager.combatAnimationSpeedScale` initializes it. `CardPhysObjScript` only applies the scale when `currentGamePhaseRef` is `Combat`, so Shop card animations stay at normal speed.
 
 ### Card Movement (`ICombatVisuals` / `CombatUXManager`)
 - `MoveCardToRevealZone(card, onComplete)` — Move from deck to reveal zone; callback fires when movement finishes.

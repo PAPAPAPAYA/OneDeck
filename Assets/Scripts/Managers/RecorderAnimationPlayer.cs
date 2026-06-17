@@ -106,7 +106,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		bool done = false;
 		Vector3 originalScale = physicalCard.transform.localScale;
 		Vector3 targetScale = originalScale * 1.2f;
-		float halfDuration = 0.25f;
+		float halfDuration = CombatAnimationSpeed.ScaleDuration(0.25f);
 
 		Sequence seq = DOTween.Sequence();
 		seq.Append(physicalCard.transform.DOScale(targetScale, halfDuration).SetEase(Ease.OutQuad));

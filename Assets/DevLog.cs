@@ -109,8 +109,7 @@
 #region feature
 //! feature
 	//// update enemy hp max based on card type id amount in deck
-	//todo global animation speed scaler
-	//todo auto reveal
+	//// auto reveal
 	//// stage / bury effect add new bool to control whether to exclude self
 		//// need testing
 	//// a more comprehensive test kit
@@ -135,6 +134,9 @@
 #endregion
 #region viscom
 //! viscom
+	//todo global animation speed scaler
+		//todo need testing
+	// snappier card animation, like balatro
 	//// arc animation uses dynamic z instead of static showPos' Z
 	// add chinese comma to font source
 	//// dynamically change card description
@@ -214,6 +216,7 @@
 #endregion
 #region bugs
 //! bug
+	//todo need check headless tests
 	//// replace full width comma with half width
 	//// fix attack animation
 	//// counter effect not spawning status effect projectile

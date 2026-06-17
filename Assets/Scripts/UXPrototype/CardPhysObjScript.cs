@@ -350,7 +350,8 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 
 		Debug.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + moveDuration);
-		var tween = transform.DOMove(TargetPosition, moveDuration)
+		float scaledDuration = GetCombatScaledDuration(moveDuration);
+		var tween = transform.DOMove(TargetPosition, scaledDuration)
 			.SetEase(moveEase)
 			.SetUpdate(UpdateType.Normal, true);
 		if (onComplete != null)
@@ -370,9 +371,19 @@ public class CardPhysObjScript : MonoBehaviour
 			_scaleTween.Kill();
 		}
 
-		_scaleTween = transform.DOScale(TargetScale, moveDuration)
+		_scaleTween = transform.DOScale(TargetScale, GetCombatScaledDuration(moveDuration))
 			.SetEase(moveEase)
 			.SetUpdate(UpdateType.Normal, true);
+	}
+
+	/// <summary>
+	/// Returns the combat-scaled duration if the current phase is Combat, otherwise the base duration.
+	/// Used to keep Shop card animations unaffected by the global combat speed scaler.
+	/// </summary>
+	private float GetCombatScaledDuration(float baseDuration)
+	{
+		bool isCombat = currentGamePhaseRef != null && currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat;
+		return isCombat ? CombatAnimationSpeed.ScaleDuration(baseDuration) : baseDuration;
 	}
 
 	/// <summary>
@@ -597,10 +608,11 @@ public class CardPhysObjScript : MonoBehaviour
 
 		_shakeTween?.Kill();
 
+		float shakeHalfDuration = GetCombatScaledDuration(customShakeHalfDuration);
 		var seq = DOTween.Sequence();
-		seq.Append(transform.DOLocalRotate(new Vector3(0, 0, customShakeAngle), customShakeHalfDuration).SetEase(Ease.OutQuad));
-		seq.Append(transform.DOLocalRotate(new Vector3(0, 0, -customShakeAngle), customShakeHalfDuration * 2f).SetEase(Ease.InOutQuad));
-		seq.Append(transform.DOLocalRotate(Vector3.zero, customShakeHalfDuration).SetEase(Ease.OutQuad));
+		seq.Append(transform.DOLocalRotate(new Vector3(0, 0, customShakeAngle), shakeHalfDuration).SetEase(Ease.OutQuad));
+		seq.Append(transform.DOLocalRotate(new Vector3(0, 0, -customShakeAngle), shakeHalfDuration * 2f).SetEase(Ease.InOutQuad));
+		seq.Append(transform.DOLocalRotate(Vector3.zero, shakeHalfDuration).SetEase(Ease.OutQuad));
 		if (onComplete != null)
 			seq.OnComplete(() => onComplete());
 		_shakeTween = seq;

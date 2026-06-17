@@ -51,6 +51,7 @@ public class CombatManager : MonoBehaviour
 	private void Awake()
 	{
 		Me = this;
+		CombatAnimationSpeed.SpeedScale = combatAnimationSpeedScale;
 		
 		// Ensure RecorderAnimationPlayer singleton exists for effect-recorder-driven animation
 		if (RecorderAnimationPlayer.me == null)
@@ -65,6 +66,11 @@ public class CombatManager : MonoBehaviour
 			var go = new GameObject("CostResultPresenter");
 			go.AddComponent<CostResultPresenter>();
 		}
+	}
+
+	private void OnValidate()
+	{
+		CombatAnimationSpeed.SpeedScale = combatAnimationSpeedScale;
 	}
 
 	#endregion
@@ -105,6 +111,10 @@ public class CombatManager : MonoBehaviour
 	[Header("AUTO REVEAL")]
 	[Tooltip("If true, all player confirmations inside combat phase are skipped automatically.")]
 	public bool autoReveal;
+
+	[Header("GLOBAL ANIMATION SPEED")]
+	[Tooltip("Global speed scale for all Combat-phase card animations. 1 = normal, 2 = double speed.")]
+	[SerializeField] private float combatAnimationSpeedScale = 1f;
 
 	/// <summary>
 	/// Request to block player input. Uses reference counting to handle concurrent animations.
