@@ -55,6 +55,7 @@
 #endregion
 #region anything else
 //! anything else
+	// populate enemy decks
 	///// add to agents.md: don't change code if not told
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
@@ -136,7 +137,8 @@
 			//// missing 1 
 		//// counter
 	//todo health bar
-		//? update health number when attack connects
+		//// update health number when attack connects
+		//// need to test multiple attacks
 	//todo name + effect description on screen
 	//todo implement new physical card template
 	//// space after annotation

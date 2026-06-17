@@ -17,6 +17,19 @@ namespace TestWriteRead
     /// </summary>
     public class DeckSaver : MonoBehaviour
     {
+        #region Pool Entry
+        /// <summary>
+        /// A pool of enemy decks available for one session.
+        /// One deck is randomly selected when populating the enemy deck.
+        /// </summary>
+        [System.Serializable]
+        public class EnemyDeckPoolEntry
+        {
+            [Tooltip("Decks available for this session; one will be randomly selected")]
+            public List<DeckSO> decks = new List<DeckSO>();
+        }
+        #endregion
+
         #region SINGLETON
         public static DeckSaver Me;
 
@@ -49,9 +62,9 @@ namespace TestWriteRead
         [Tooltip("Additional card prefabs (optional, for cards not in shop pool)")]
         public List<GameObject> additionalCardPrefabs; // Additional cards (optional)
 
-        [Header("Default Enemy Decks")]
-        [Tooltip("When no deck for corresponding session exists in JSON, randomly select from this list")]
-        public List<DeckSO> defaultEnemyDecks; // Default enemy deck configuration list
+        [Header("Default Enemy Deck Pools")]
+        [Tooltip("Each entry corresponds to a session. When no deck for the session exists in JSON, randomly select one DeckSO from that session's pool")]
+        public List<EnemyDeckPoolEntry> defaultEnemyDeckPool = new List<EnemyDeckPoolEntry>(); // Default enemy deck pool configuration
 
         [Header("Debug")]
         [SerializeField] private bool printOnSave = true;
@@ -367,30 +380,40 @@ namespace TestWriteRead
         }
 
         /// <summary>
-        /// Select corresponding deck from default enemy deck list by current session number to populate.
-        /// session 1 -> list item 1, session 2 -> list item 2, and so on.
-        /// If session number exceeds list range, use last item.
+        /// Select corresponding deck pool from default enemy deck pools by current session number,
+        /// then randomly pick one DeckSO from that pool to populate the enemy deck.
+        /// session 0 -> pool[0], session 1 -> pool[1], and so on.
+        /// If session number exceeds pool range, use last pool.
         /// </summary>
         private void PopulateFromDefaultDecks()
         {
-            if (defaultEnemyDecks == null || defaultEnemyDecks.Count == 0)
+            if (defaultEnemyDeckPool == null || defaultEnemyDeckPool.Count == 0)
             {
-                // Debug.LogWarning($"[DeckSaver] Session {sessionNumber.value}: No JSON record and default deck list is empty, cannot populate enemy deck");
+                // Debug.LogWarning($"[DeckSaver] Session {sessionNumber.value}: No JSON record and default deck pool is empty, cannot populate enemy deck");
                 return;
             }
 
-            // Use session number directly as deck index (session 0 -> #1Deck, session 1 -> #2Deck)
-            int deckIndex = sessionNumber.value;
-            // If out of range, use last item
-            if (deckIndex >= defaultEnemyDecks.Count)
+            // Use session number directly as pool index (session 0 -> pool[0], session 1 -> pool[1])
+            int poolIndex = sessionNumber.value;
+            // If out of range, use last pool
+            if (poolIndex >= defaultEnemyDeckPool.Count)
             {
-                deckIndex = defaultEnemyDecks.Count - 1;
+                poolIndex = defaultEnemyDeckPool.Count - 1;
             }
-            var selectedDeck = defaultEnemyDecks[deckIndex];
+            var selectedPool = defaultEnemyDeckPool[poolIndex];
+
+            if (selectedPool == null || selectedPool.decks == null || selectedPool.decks.Count == 0)
+            {
+                // Debug.LogWarning($"[DeckSaver] Session {sessionNumber.value}: Selected default deck pool is empty, cannot populate enemy deck");
+                return;
+            }
+
+            // Randomly select one deck from the pool
+            var selectedDeck = selectedPool.decks[UnityEngine.Random.Range(0, selectedPool.decks.Count)];
 
             // Use utility function to copy deck
             UtilityFuncManagerScript.CopyGameObjectList(selectedDeck.deck, enemyDeckToPopulate.deck, true);
-            // Debug.Log($"[DeckSaver] Session {sessionNumber.value}: Loaded enemy deck from default list: {selectedDeck.name}");
+            // Debug.Log($"[DeckSaver] Session {sessionNumber.value}: Loaded enemy deck from default pool: {selectedDeck.name}");
         }
 
         /// <summary>

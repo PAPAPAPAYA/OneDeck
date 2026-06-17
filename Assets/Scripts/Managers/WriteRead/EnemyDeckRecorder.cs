@@ -13,7 +13,7 @@ namespace TestWriteRead
 	/// <summary>
 	/// Manual tool that records the current player deck as a reusable DeckSO asset.
 	/// Intended for designer workflows: run Play Mode, click "Record Now", then drag
-	/// the generated asset into CombatManager.enemyDeck or DeckSaver.defaultEnemyDecks.
+	/// the generated asset into CombatManager.enemyDeck or DeckSaver.defaultEnemyDeckPool.
 	/// </summary>
 	public class EnemyDeckRecorder : MonoBehaviour
 	{

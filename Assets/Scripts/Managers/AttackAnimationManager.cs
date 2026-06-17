@@ -545,6 +545,10 @@ public void ReleaseDeckFocus()
 		_isProcessingQueue = false;
 		isPlayingAttackAnimation = false;
 		
+		// If pending attack animations are cancelled, release any HP display snapshots
+		// so the UI does not stay stuck on stale values.
+		CombatInfoDisplayer.me?.ClearHpDisplayLocks();
+		
 		// Restore deck focus if active (unless held by RecorderAnimationPlayer batch)
 		if (_deckFocusHoldCount <= 0 && _combatUXManager != null && _combatUXManager.IsDeckFocused)
 		{

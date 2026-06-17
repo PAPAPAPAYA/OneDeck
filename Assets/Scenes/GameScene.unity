@@ -136,7 +136,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &13415597
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3713,6 +3713,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
   useCustomOrder: 1
   customOrderPrefabs:
+  - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 1e39f37e43a1d1d4fa44d3fcc58b80bc, type: 3}
   - {fileID: 8718476725744197808, guid: 0b03f80c1dcdf79418d4ba9e242a1aac, type: 3}
   - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
@@ -3826,7 +3827,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1174098153
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5753,17 +5754,27 @@ MonoBehaviour:
   enemyStatusRef: {fileID: 11400000, guid: 3e07a686113188f42aa506f5d45e14ba, type: 2}
   shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
   additionalCardPrefabs: []
-  defaultEnemyDecks:
-  - {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
-  - {fileID: 11400000, guid: a9ee6f1e763a474c816e99c233349c16, type: 2}
-  - {fileID: 11400000, guid: 07ae052ea61f4279a1f4796afaa90271, type: 2}
-  - {fileID: 11400000, guid: 176a73177c5547c0a6146eafc999867d, type: 2}
-  - {fileID: 11400000, guid: c4e6de0a03734ef9a1e0c03d13759ff4, type: 2}
-  - {fileID: 11400000, guid: 2bd732143cca4b0a8502f6a0b463e821, type: 2}
-  - {fileID: 11400000, guid: 60f5781b899246bdb1355846edd715d9, type: 2}
-  - {fileID: 11400000, guid: 5e2b1a4a3d00449883338fad16951177, type: 2}
-  - {fileID: 11400000, guid: 80d03d9c92644d97ab5b6e11e3ab4908, type: 2}
-  - {fileID: 11400000, guid: 7833fb4bf72a428c8d84e6bf933b4853, type: 2}
+  defaultEnemyDeckPool:
+  - decks:
+    - {fileID: 11400000, guid: 0e9bc1f40a83b0a4aa63ef4bef1f1a79, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: a9ee6f1e763a474c816e99c233349c16, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 07ae052ea61f4279a1f4796afaa90271, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 176a73177c5547c0a6146eafc999867d, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: c4e6de0a03734ef9a1e0c03d13759ff4, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 2bd732143cca4b0a8502f6a0b463e821, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 60f5781b899246bdb1355846edd715d9, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 5e2b1a4a3d00449883338fad16951177, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 80d03d9c92644d97ab5b6e11e3ab4908, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 7833fb4bf72a428c8d84e6bf933b4853, type: 2}
   printOnSave: 0
 --- !u!4 &1855501822
 Transform:
@@ -6811,7 +6822,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2012605458
 RectTransform:
   m_ObjectHideFlags: 0
