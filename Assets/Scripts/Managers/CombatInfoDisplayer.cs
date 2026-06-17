@@ -28,6 +28,14 @@ public class CombatInfoDisplayer : MonoBehaviour
 	public TextMeshProUGUI enemyDeckDisplay;
 
 	public bool showRevealedCardName;
+	
+	// HP display pending queue: logic updates HP immediately, but each Attack animation
+	// carries its own post-hit HP value. The UI shows the oldest pending value until
+	// the corresponding animation hits and calls CommitHpDisplay.
+	private Queue<int> _pendingOwnerHp = new Queue<int>();
+	private Queue<int> _pendingEnemyHp = new Queue<int>();
+	private int _displayedOwnerHp;
+	private int _displayedEnemyHp;
 
 	private void Update()
 	{
@@ -46,6 +54,70 @@ public class CombatInfoDisplayer : MonoBehaviour
 		effectResultDisplay.text = "";
 		playerDeckDisplay.text = "";
 		enemyDeckDisplay.text = "";
+		ClearHpDisplayLocks();
+	}
+	
+	/// <summary>
+	/// Queue a post-hit HP value for display. The first queued value freezes the UI on
+	/// preHitHp; each subsequent CommitHpDisplay pops the oldest value and shows it.
+	/// </summary>
+	/// <param name="target">Target player status</param>
+	/// <param name="preHitHp">HP value to freeze the display on before the first hit lands</param>
+	/// <param name="postHitHp">HP value to display when this attack hits</param>
+	public void SnapshotHpDisplay(PlayerStatusSO target, int preHitHp, int postHitHp)
+	{
+		if (target == null) return;
+		if (target == CombatManager.Me.ownerPlayerStatusRef)
+		{
+			if (_pendingOwnerHp.Count == 0)
+			{
+				_displayedOwnerHp = preHitHp;
+			}
+			_pendingOwnerHp.Enqueue(postHitHp);
+		}
+		else
+		{
+			if (_pendingEnemyHp.Count == 0)
+			{
+				_displayedEnemyHp = preHitHp;
+			}
+			_pendingEnemyHp.Enqueue(postHitHp);
+		}
+	}
+	
+	/// <summary>
+	/// Pop the oldest pending HP display value for the target. This makes the UI update
+	/// to the HP value that corresponds to the current hitting attack.
+	/// </summary>
+	/// <param name="target">Target player status</param>
+	public void CommitHpDisplay(PlayerStatusSO target)
+	{
+		if (target == null) return;
+		if (target == CombatManager.Me.ownerPlayerStatusRef)
+		{
+			if (_pendingOwnerHp.Count > 0)
+			{
+				_displayedOwnerHp = _pendingOwnerHp.Dequeue();
+			}
+		}
+		else
+		{
+			if (_pendingEnemyHp.Count > 0)
+			{
+				_displayedEnemyHp = _pendingEnemyHp.Dequeue();
+			}
+		}
+	}
+	
+	/// <summary>
+	/// Clear all pending HP display values. Used when animations are cancelled or combat ends.
+	/// </summary>
+	public void ClearHpDisplayLocks()
+	{
+		_pendingOwnerHp.Clear();
+		_pendingEnemyHp.Clear();
+		_displayedOwnerHp = 0;
+		_displayedEnemyHp = 0;
 	}
 
 	public string ReturnCardOwnerInfo(PlayerStatusSO statusRef)
@@ -196,12 +268,17 @@ public class CombatInfoDisplayer : MonoBehaviour
 
 	private void DisplayStatusInfo()
 	{
+		int playerHp = _pendingOwnerHp.Count > 0
+			? _displayedOwnerHp
+			: CombatManager.Me.ownerPlayerStatusRef.hp;
+		int enemyHp = _pendingEnemyHp.Count > 0
+			? _displayedEnemyHp
+			: CombatManager.Me.enemyPlayerStatusRef.hp;
+		
 		playerStatusDisplay.text =
-			"Your HP: <color=#90EE90>" + CombatManager.Me.ownerPlayerStatusRef.hp + "</color>\n" +
-			"Your SHIELD: <color=grey>" + CombatManager.Me.ownerPlayerStatusRef.shield + "</color>\n";
+			"Your HP: <color=#90EE90>" + playerHp + "</color>\n";
 		enemyStatusDisplay.text =
-			"Their HP: <color=#90EE90>" + CombatManager.Me.enemyPlayerStatusRef.hp + "</color>\n" +
-			"Their SHIELD: <color=grey>" + CombatManager.Me.enemyPlayerStatusRef.shield + "</color>\n";
+			"Their HP: <color=#90EE90>" + enemyHp + "</color>\n";
 	}
 
 	public void RefreshDeckInfo()

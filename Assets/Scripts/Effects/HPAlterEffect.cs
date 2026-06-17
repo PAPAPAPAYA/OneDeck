@@ -123,20 +123,30 @@ public class HPAlterEffect : EffectScript
 		// Determine attack target position: player card self-damage rushes to player position, enemy card self-damage rushes to enemy position
 		bool isAttackingEnemy = myCardScript.myStatusRef != combatManager.ownerPlayerStatusRef;
 		
-		// Move damage resolution and event raising to logic phase
-		ProcessDamage(totalDmg, myCardScript.myStatusRef);
-		CheckDmgTargets_DealingDmgToSelf(totalDmg);
-		
 		// Capture animation request
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-		if (recorder != null)
+		bool hasRecorder = recorder != null;
+		
+		var targetStatus = myCardScript.myStatusRef;
+		int preHitHp = targetStatus.hp;
+		
+		// Apply damage and raise events/log immediately so reactive chains and tests see the new state right away.
+		ProcessDamage(totalDmg, targetStatus);
+		CheckDmgTargets_DealingDmgToSelf(totalDmg);
+		
+		// Queue the post-hit HP value for display so the UI updates when this attack lands.
+		// In headless/test mode there is usually no real animation, so we only queue when a recorder exists.
+		if (hasRecorder)
 		{
+			CombatInfoDisplayer.me?.SnapshotHpDisplay(targetStatus, preHitHp, targetStatus.hp);
+			
+			var capturedTarget = targetStatus;
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.Attack,
 				attackerCard = myCard,
 				isAttackingEnemy = isAttackingEnemy,
-				onHit = null, // damage already resolved
+				onHit = () => CombatInfoDisplayer.me?.CommitHpDisplay(capturedTarget),
 				onComplete = null
 			});
 		}
@@ -398,20 +408,30 @@ public class HPAlterEffect : EffectScript
 		// Determine attack target (true=attack enemy, false=attack player self)
 		bool isAttackingEnemy = myCardScript.theirStatusRef != combatManager.ownerPlayerStatusRef;
 		
-		// Move damage resolution and event raising to logic phase
-		ProcessDamage(totalDmg, myCardScript.theirStatusRef);
-		CheckDmgTargets_DealingDmgToOpponent(totalDmg);
-		
 		// Capture animation request
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-		if (recorder != null)
+		bool hasRecorder = recorder != null;
+		
+		var targetStatus = myCardScript.theirStatusRef;
+		int preHitHp = targetStatus.hp;
+		
+		// Apply damage and raise events/log immediately so reactive chains and tests see the new state right away.
+		ProcessDamage(totalDmg, targetStatus);
+		CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+		
+		// Queue the post-hit HP value for display so the UI updates when this attack lands.
+		// In headless/test mode there is usually no real animation, so we only queue when a recorder exists.
+		if (hasRecorder)
 		{
+			CombatInfoDisplayer.me?.SnapshotHpDisplay(targetStatus, preHitHp, targetStatus.hp);
+			
+			var capturedTarget = targetStatus;
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.Attack,
 				attackerCard = myCard,
 				isAttackingEnemy = isAttackingEnemy,
-				onHit = null, // damage already resolved
+				onHit = () => CombatInfoDisplayer.me?.CommitHpDisplay(capturedTarget),
 				onComplete = null
 			});
 		}
