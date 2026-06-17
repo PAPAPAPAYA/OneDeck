@@ -102,6 +102,10 @@ public class CombatManager : MonoBehaviour
 	[Tooltip("True while effect recorder animations are playing. Prevents RevealCards from auto-revealing next card too early.")]
 	public bool isPlayingEffectAnimations;
 
+	[Header("AUTO REVEAL")]
+	[Tooltip("If true, all player confirmations inside combat phase are skipped automatically.")]
+	public bool autoReveal;
+
 	/// <summary>
 	/// Request to block player input. Uses reference counting to handle concurrent animations.
 	/// </summary>
@@ -614,7 +618,7 @@ public class CombatManager : MonoBehaviour
 			_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to reveal next card";
 			
 			visuals.InstantiateAllPhysicalCards();
-			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+			if (!ShouldAutoConfirm()) return;
 			CombatLog.me?.Clear();
 
 			// 1. Put current card back to bottom of deck
@@ -661,7 +665,7 @@ public class CombatManager : MonoBehaviour
 			}
 
 			_infoDisplayer.combatTipsDisplay.text = "TAP / SPACE to trigger effect";
-			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+			if (!ShouldAutoConfirm()) return;
 
 			// Start Card special handling: trigger effect = shuffle + new round
 			if (IsRevealedCardStartCard())
@@ -796,10 +800,22 @@ public class CombatManager : MonoBehaviour
 		if (combatFinished.value) return;
 
 		_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAP / SPACE to continue";
-		if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
+		if (!ShouldAutoConfirm()) return;
 
 		combatFinished.value = true;
 		visuals.ClearAllPhysicalCards();
+	}
+
+	/// <summary>
+	/// Check if the combat should auto-confirm the current player input.
+	/// Respects both the dedicated autoReveal flag and the legacy DeckTester.autoSpace flag.
+	/// </summary>
+	private bool ShouldAutoConfirm()
+	{
+		return Input.GetKeyDown(KeyCode.Space)
+		       || Input.GetMouseButtonDown(0)
+		       || autoReveal
+		       || (DeckTester.me != null && DeckTester.me.autoSpace);
 	}
 
 	private bool IsRevealedCardStartCard()

@@ -65,6 +65,13 @@ Assets/
 - First click: Reveal next card.
 - Second click: Trigger effect and place card at bottom.
 
+### Auto Reveal
+`CombatManager.autoReveal` (bool) skips all player confirmations inside the combat phase when set to `true`:
+- Revealing the next card.
+- Triggering the current card's effect.
+- Continuing after combat finishes.
+It does **not** affect shop/result phase transitions. For backward compatibility, `DeckTester.autoSpace` still acts as a global auto-confirm across all phases.
+
 ### Input Blocking
 `CombatManager.IsInputBlocked` uses reference counting via `BlockInput(requester)` / `UnblockInput(requester)`.
 
