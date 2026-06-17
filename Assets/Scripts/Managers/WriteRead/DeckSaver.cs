@@ -30,6 +30,21 @@ namespace TestWriteRead
         }
         #endregion
 
+        #region HP Bonus Entry
+        /// <summary>
+        /// Defines a card type that grants bonus HP/HPMax to the enemy when present in the enemy deck.
+        /// </summary>
+        [System.Serializable]
+        public class EnemyDeckHpBonusEntry
+        {
+            [Tooltip("Card type ID to detect in the enemy deck")]
+            public string cardTypeID;
+
+            [Tooltip("HP/HPMax bonus granted for each matching card")]
+            public int hpBonusPerCard = 1;
+        }
+        #endregion
+
         #region SINGLETON
         public static DeckSaver Me;
 
@@ -65,6 +80,10 @@ namespace TestWriteRead
         [Header("Default Enemy Deck Pools")]
         [Tooltip("Each entry corresponds to a session. When no deck for the session exists in JSON, randomly select one DeckSO from that session's pool")]
         public List<EnemyDeckPoolEntry> defaultEnemyDeckPool = new List<EnemyDeckPoolEntry>(); // Default enemy deck pool configuration
+
+        [Header("Enemy Deck HP Bonus")]
+        [Tooltip("Detect specific cardTypeIDs in the enemy deck and increase enemy HP/HPMax based on count")]
+        public List<EnemyDeckHpBonusEntry> enemyDeckHpBonuses = new List<EnemyDeckHpBonusEntry>();
 
         [Header("Debug")]
         [SerializeField] private bool printOnSave = true;
@@ -186,6 +205,67 @@ namespace TestWriteRead
         public GameObject GetCardPrefabByTypeID(string cardTypeID)
         {
             return FindCardPrefabByTypeID(cardTypeID);
+        }
+
+        /// <summary>
+        /// Calculate total HP bonus from a list of card prefabs.
+        /// </summary>
+        private int CalculateHpBonus(List<GameObject> deck)
+        {
+            int bonus = 0;
+            if (deck == null || enemyDeckHpBonuses.Count == 0) return bonus;
+
+            foreach (var cardPrefab in deck)
+            {
+                if (cardPrefab == null) continue;
+
+                var cardScript = cardPrefab.GetComponent<CardScript>();
+                if (cardScript == null) continue;
+
+                string typeID = GetCardTypeID(cardScript);
+                foreach (var entry in enemyDeckHpBonuses)
+                {
+                    if (entry.cardTypeID == typeID)
+                    {
+                        bonus += entry.hpBonusPerCard;
+                    }
+                }
+            }
+            return bonus;
+        }
+
+        /// <summary>
+        /// Calculate total HP bonus from a list of card type IDs.
+        /// </summary>
+        private int CalculateHpBonus(List<string> cardTypeIDs)
+        {
+            int bonus = 0;
+            if (cardTypeIDs == null || enemyDeckHpBonuses.Count == 0) return bonus;
+
+            foreach (var typeID in cardTypeIDs)
+            {
+                foreach (var entry in enemyDeckHpBonuses)
+                {
+                    if (entry.cardTypeID == typeID)
+                    {
+                        bonus += entry.hpBonusPerCard;
+                    }
+                }
+            }
+            return bonus;
+        }
+
+        /// <summary>
+        /// Apply calculated HP bonus to enemy status.
+        /// </summary>
+        private void ApplyEnemyHpBonus(int bonus)
+        {
+            if (enemyStatusRef == null || bonus <= 0) return;
+
+            enemyStatusRef.hpMax += bonus;
+            enemyStatusRef.hp += bonus;
+
+            // Debug.Log($"[DeckSaver] Enemy deck bonus applied: +{bonus} HP/HPMax");
         }
 
         #region Data Persistence
@@ -376,6 +456,10 @@ namespace TestWriteRead
             {
                 // Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards (enemy StatusRef not set, cannot apply hpMax)");
             }
+
+            // Apply HP bonus for specific cardTypeIDs in the loaded deck
+            ApplyEnemyHpBonus(CalculateHpBonus(randomDeck.cardTypeIDs));
+
             return true;
         }
 
@@ -414,6 +498,9 @@ namespace TestWriteRead
             // Use utility function to copy deck
             UtilityFuncManagerScript.CopyGameObjectList(selectedDeck.deck, enemyDeckToPopulate.deck, true);
             // Debug.Log($"[DeckSaver] Session {sessionNumber.value}: Loaded enemy deck from default pool: {selectedDeck.name}");
+
+            // Apply HP bonus for specific cardTypeIDs in the selected deck
+            ApplyEnemyHpBonus(CalculateHpBonus(enemyDeckToPopulate.deck));
         }
 
         /// <summary>

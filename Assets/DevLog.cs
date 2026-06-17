@@ -55,7 +55,11 @@
 #endregion
 #region anything else
 //! anything else
-	// populate enemy decks
+	//todo print stats with hot-key
+	// do a numerical analysis
+	//// add hpmax up and decksize up to shopPoolRef
+	//todo adjust hp
+	//todo populate enemy decks
 	///// add to agents.md: don't change code if not told
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
@@ -104,6 +108,9 @@
 #endregion
 #region feature
 //! feature
+	//// update enemy hp max based on card type id amount in deck
+	//todo global animation speed scaler
+	//todo auto reveal
 	//// stage / bury effect add new bool to control whether to exclude self
 		//// need testing
 	//// a more comprehensive test kit

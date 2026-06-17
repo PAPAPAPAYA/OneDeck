@@ -5757,8 +5757,10 @@ MonoBehaviour:
   defaultEnemyDeckPool:
   - decks:
     - {fileID: 11400000, guid: 0e9bc1f40a83b0a4aa63ef4bef1f1a79, type: 2}
+    - {fileID: 11400000, guid: 30df4bc3afeaba945b465a06bc9f501b, type: 2}
+    - {fileID: 11400000, guid: 7dc07f76785270d4d8db3c452594305d, type: 2}
   - decks:
-    - {fileID: 11400000, guid: a9ee6f1e763a474c816e99c233349c16, type: 2}
+    - {fileID: 11400000, guid: 09b4845adbe6979488f5a8f5e07238af, type: 2}
   - decks:
     - {fileID: 11400000, guid: 07ae052ea61f4279a1f4796afaa90271, type: 2}
   - decks:
@@ -5775,6 +5777,9 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 80d03d9c92644d97ab5b6e11e3ab4908, type: 2}
   - decks:
     - {fileID: 11400000, guid: 7833fb4bf72a428c8d84e6bf933b4853, type: 2}
+  enemyDeckHpBonuses:
+  - cardTypeID: SYSTEM_INCREASE_HP_MAX
+    hpBonusPerCard: 3
   printOnSave: 0
 --- !u!4 &1855501822
 Transform:
