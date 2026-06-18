@@ -3572,7 +3572,7 @@ MonoBehaviour:
   visualsOverride: {fileID: 0}
   currentGamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   currentCombatState: 0
-  ownerPlayerStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
+  ownerPlayerStatusRef: {fileID: 11400000, guid: 84acef08f82913949bdb9d8c11a8c317, type: 2}
   enemyPlayerStatusRef: {fileID: 11400000, guid: 3e07a686113188f42aa506f5d45e14ba, type: 2}
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   enemyDeck: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
@@ -3585,7 +3585,7 @@ MonoBehaviour:
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   cardsRevealedThisRound: 0
   isPlayingEffectAnimations: 0
-  autoReveal: 1
+  autoReveal: 0
   combatAnimationSpeedScale: 1.2
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 3
@@ -3713,7 +3713,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbc126ac2175bbf439e7642b6f5fb18d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
-  useCustomOrder: 0
+  useCustomOrder: 1
   customOrderPrefabs:
   - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 1e39f37e43a1d1d4fa44d3fcc58b80bc, type: 3}
@@ -3749,6 +3749,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 5f1781f6b0db2024cbd5bda35e63d834, type: 3}
   - {fileID: 1808145013887896563, guid: 2cc452f6440de7f4eb4a61f8ed869b59, type: 3}
   - {fileID: 1808145013887896563, guid: 89b82ea8fae7559478eb7d72b498de2f, type: 3}
+  - {fileID: 1808145013887896563, guid: 6050fd316b927014d90d8dc9bca4249f, type: 3}
   - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
   - {fileID: 1808145013887896563, guid: 276b53576e814444e84a0b3ffd345aca, type: 3}
   - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
@@ -3786,7 +3787,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ValueTrackerManager
   friendlyInGraveAmountRef: {fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}
-  hostileCursePowerCount: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
+  enemyCursePowerCount: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
+  ownerCursePowerCount: {fileID: 11400000, guid: fe20bd15130544d1b7548a9d96631617, type: 2}
   totalPowerCountInDeckRef: {fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}
   ownerCardCountInDeckRef: {fileID: 11400000, guid: 5a1ce2a824a63dc4bb3126221c6c5261, type: 2}
   enemyCardCountInDeckRef: {fileID: 11400000, guid: d1c97eb8b8ba557428e546ccdc02e5da, type: 2}
@@ -5752,7 +5754,7 @@ MonoBehaviour:
   heartLeft: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
   sessionNumber: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
   enemyDeckToPopulate: {fileID: 11400000, guid: b2bac9a3408909541a2ecfdfa0d75c27, type: 2}
-  playerStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
+  playerStatusRef: {fileID: 11400000, guid: 84acef08f82913949bdb9d8c11a8c317, type: 2}
   enemyStatusRef: {fileID: 11400000, guid: 3e07a686113188f42aa506f5d45e14ba, type: 2}
   shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
   additionalCardPrefabs:
@@ -7365,7 +7367,7 @@ MonoBehaviour:
   winCon: {fileID: 11400000, guid: fd82b03b1d056a840874a52a528f9626, type: 2}
   hearts: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
   heartMax: {fileID: 11400000, guid: 6a6c48f7abb1d914ba7365b479341052, type: 2}
-  playerStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
+  playerStatusRef: {fileID: 11400000, guid: 84acef08f82913949bdb9d8c11a8c317, type: 2}
   enemyStatusRef: {fileID: 11400000, guid: 3e07a686113188f42aa506f5d45e14ba, type: 2}
   playerDeckRef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   purseRef: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}

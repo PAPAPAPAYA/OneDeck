@@ -221,7 +221,9 @@
 #endregion
 #region bugs
 //! bug
-	//todo need check headless tests
+	//todo curse thirst shaman: basedOnIntSO issue
+		// need testing
+	//// need check headless tests
 	//// replace full width comma with half width
 	//// fix attack animation
 	//// counter effect not spawning status effect projectile

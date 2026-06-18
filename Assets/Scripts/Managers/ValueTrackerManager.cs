@@ -7,7 +7,8 @@ public class ValueTrackerManager : MonoBehaviour
 
 	[Header("Tracker Refs")]
 	public IntSO friendlyInGraveAmountRef;
-	public IntSO hostileCursePowerCount;
+	public IntSO enemyCursePowerCount;
+	public IntSO ownerCursePowerCount;
 	public IntSO totalPowerCountInDeckRef;
 	public IntSO ownerCardCountInDeckRef;
 	public IntSO enemyCardCountInDeckRef;
@@ -21,7 +22,7 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO lastAppliedStatusEffectAmountRef;
 
 	[Header("Curse Card Config")]
-	[Tooltip("Cursed card type ID, used to count total Power on corresponding enemy cards")]
+	[Tooltip("Cursed card type ID, used to count total Power on corresponding enemy and owner cards")]
 	public StringSO curseCardTypeId;
 
 	private void Awake()
@@ -35,7 +36,8 @@ public class ValueTrackerManager : MonoBehaviour
 	public void UpdateAllTrackers()
 	{
 		UpdateFriendlyInGraveAmount();
-		UpdateHostileCursePowerCount();
+		UpdateEnemyCursePowerCount();
+		UpdateOwnerCursePowerCount();
 		UpdateTotalPowerCountInDeck();
 		UpdateOwnerCardCountInDeck();
 		UpdateEnemyCardCountInDeck();
@@ -86,16 +88,16 @@ public class ValueTrackerManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Update HostileCursePowerCount: sum of Power status effects on enemy cards with card type id matching curseCardTypeId.
+	/// Update EnemyCursePowerCount: sum of Power status effects on enemy cards with card type id matching curseCardTypeId.
 	/// </summary>
-	private void UpdateHostileCursePowerCount()
+	private void UpdateEnemyCursePowerCount()
 	{
-		if (hostileCursePowerCount == null || CombatManager.Me == null) return;
+		if (enemyCursePowerCount == null || CombatManager.Me == null) return;
 
 		// If Cursed card type ID is not set, count is 0
 		if (curseCardTypeId == null || string.IsNullOrEmpty(curseCardTypeId.value))
 		{
-			hostileCursePowerCount.value = 0;
+			enemyCursePowerCount.value = 0;
 			return;
 		}
 
@@ -108,11 +110,11 @@ public class ValueTrackerManager : MonoBehaviour
 			var cardScript = cardObj.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 
-			// Check if it's a hostile card and card type id matches
-			bool isHostileCard = cardScript.myStatusRef == enemyStatus;
+			// Check if it's an enemy card and card type id matches
+			bool isEnemyCard = cardScript.myStatusRef == enemyStatus;
 			bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
 
-			if (isHostileCard && isMatchingType)
+			if (isEnemyCard && isMatchingType)
 			{
 				// Count Power status effects on this card
 				int powerCount = EnumStorage.GetStatusEffectCount(
@@ -130,10 +132,10 @@ public class ValueTrackerManager : MonoBehaviour
 			var cardScript = revealZone.GetComponent<CardScript>();
 			if (cardScript != null)
 			{
-				bool isHostileCard = cardScript.myStatusRef == enemyStatus;
+				bool isEnemyCard = cardScript.myStatusRef == enemyStatus;
 				bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
 
-				if (isHostileCard && isMatchingType)
+				if (isEnemyCard && isMatchingType)
 				{
 					int powerCount = EnumStorage.GetStatusEffectCount(
 						cardScript.myStatusEffects,
@@ -144,7 +146,69 @@ public class ValueTrackerManager : MonoBehaviour
 			}
 		}
 
-		hostileCursePowerCount.value = totalPower;
+		enemyCursePowerCount.value = totalPower;
+	}
+
+	/// <summary>
+	/// Update OwnerCursePowerCount: sum of Power status effects on owner cards with card type id matching curseCardTypeId.
+	/// </summary>
+	private void UpdateOwnerCursePowerCount()
+	{
+		if (ownerCursePowerCount == null || CombatManager.Me == null) return;
+
+		// If Cursed card type ID is not set, count is 0
+		if (curseCardTypeId == null || string.IsNullOrEmpty(curseCardTypeId.value))
+		{
+			ownerCursePowerCount.value = 0;
+			return;
+		}
+
+		var deck = CombatManager.Me.combinedDeckZone;
+		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
+		int totalPower = 0;
+
+		foreach (var cardObj in deck)
+		{
+			var cardScript = cardObj.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+
+			// Check if it's an owner card and card type id matches
+			bool isOwnerCard = cardScript.myStatusRef == ownerStatus;
+			bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
+
+			if (isOwnerCard && isMatchingType)
+			{
+				// Count Power status effects on this card
+				int powerCount = EnumStorage.GetStatusEffectCount(
+					cardScript.myStatusEffects,
+					EnumStorage.StatusEffect.Power
+				);
+				totalPower += powerCount;
+			}
+		}
+
+		// Include revealZone
+		var revealZone = CombatManager.Me.revealZone;
+		if (revealZone != null)
+		{
+			var cardScript = revealZone.GetComponent<CardScript>();
+			if (cardScript != null)
+			{
+				bool isOwnerCard = cardScript.myStatusRef == ownerStatus;
+				bool isMatchingType = cardScript.cardTypeID == curseCardTypeId?.value;
+
+				if (isOwnerCard && isMatchingType)
+				{
+					int powerCount = EnumStorage.GetStatusEffectCount(
+						cardScript.myStatusEffects,
+						EnumStorage.StatusEffect.Power
+					);
+					totalPower += powerCount;
+				}
+			}
+		}
+
+		ownerCursePowerCount.value = totalPower;
 	}
 
 	/// <summary>

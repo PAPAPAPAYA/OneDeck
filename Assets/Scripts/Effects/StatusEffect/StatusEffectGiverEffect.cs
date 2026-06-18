@@ -30,6 +30,12 @@ namespace DefaultNamespace.Effects
 		[Tooltip("Number of status effect layers to apply to each friendly card")]
 		public int yFriendlyLayerCount = 1;
 
+		[Header("Based on IntSO")]
+		[Tooltip("IntSO used when this card belongs to the owner/player")]
+		public IntSO ownerIntSO;
+		[Tooltip("IntSO used when this card belongs to the enemy")]
+		public IntSO enemyIntSO;
+
 		[Header("Particle System")]
 		[Tooltip("Particle system prefab to play when receiving status effect")]
 		public ParticleSystem statusEffectParticlePrefab;
@@ -313,12 +319,17 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// Based on the passed IntSO value, apply status effects to the same number of random friendly cards, each card receives 1 layer
+		/// Based on ownerIntSO/enemyIntSO, apply status effects to the same number of random friendly cards,
+		/// each card receives 1 layer. Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
 		/// </summary>
-		/// <param name="intSO">IntSO containing the number of friendly cards</param>
-		public virtual void GiveStatusEffectToXFriendly_BasedOnIntSO(IntSO intSO)
+		public virtual void GiveStatusEffectToXFriendly_BasedOnIntSO()
 		{
+			IntSO intSO = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef
+				? ownerIntSO
+				: enemyIntSO;
+
 			if (intSO == null) return;
+
 			int originalXFriendlyCount = xFriendlyCount;
 			int originalYFriendlyLayerCount = yFriendlyLayerCount;
 			xFriendlyCount = intSO.value;

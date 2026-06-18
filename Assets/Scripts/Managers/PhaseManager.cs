@@ -254,7 +254,8 @@ public class PhaseManager : MonoBehaviour
 		if (ValueTrackerManager.me != null)
 		{
 			ValueTrackerManager.me.friendlyInGraveAmountRef?.ResetToDefault();
-			ValueTrackerManager.me.hostileCursePowerCount?.ResetToDefault();
+			ValueTrackerManager.me.enemyCursePowerCount?.ResetToDefault();
+			ValueTrackerManager.me.ownerCursePowerCount?.ResetToDefault();
 			ValueTrackerManager.me.totalPowerCountInDeckRef?.ResetToDefault();
 			ValueTrackerManager.me.ownerCardCountInDeckRef?.ResetToDefault();
 			ValueTrackerManager.me.enemyCardCountInDeckRef?.ResetToDefault();
