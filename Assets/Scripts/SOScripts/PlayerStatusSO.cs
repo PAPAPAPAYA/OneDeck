@@ -15,12 +15,12 @@ public class PlayerStatusSO : ScriptableObject
 
         private void OnEnable()
         {
-                Reset();
+                ResetToDefault();
 		ResetHpMax();
 
 	}
 
-        public void Reset()
+        public void ResetToDefault()
         {
                 hp = hpOg;
                 shield = shieldOg;

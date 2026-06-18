@@ -127,8 +127,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_DECK_SIZE
-  displayName: 
-  cardDesc: Increase deck size by <color=yellow>1</color>
+  displayName: "\u5361\u4F4D\u589E\u52A0<\u5C0F>"
+  cardDesc: "\u5361\u4F4D\u589E\u52A0 <b>1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 0

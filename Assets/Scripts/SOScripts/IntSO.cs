@@ -15,4 +15,9 @@ public class IntSO : ScriptableObject
     {
         if (resetOnStart) value = valueOg;
     }
+
+    public void ResetToDefault()
+    {
+        value = valueOg;
+    }
 }

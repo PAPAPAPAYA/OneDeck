@@ -16,7 +16,15 @@ public class DeckSO : ScriptableObject
     private void OnEnable()
     {
         if (!resetOnStart) return;
-        deck.Clear();
+        ResetToDefault();
+    }
+
+    public void ResetToDefault()
+    {
+        if (deck == null)
+            deck = new List<GameObject>();
+        else
+            deck.Clear();
         if (defaultDeck)
         {
             UtilityFuncManagerScript.CopyGameObjectList(defaultDeck.deck, deck, true);

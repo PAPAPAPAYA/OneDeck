@@ -306,6 +306,33 @@ namespace TestWriteRead
             // Debug.Log("[CardWinRateTracker] All statistics data cleared");
         }
 
+        /// <summary>
+        /// Build a human-readable report of all tracked card win rates.
+        /// </summary>
+        public string GetAllStatsReportString()
+        {
+            if (_data == null || _data.allCardStats.Count == 0)
+            {
+                return "No card win rate data yet.";
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("=== CARD WIN RATE ===");
+
+            var sortedStats = _data.allCardStats
+                .OrderByDescending(s => s.WinRate)
+                .ThenByDescending(s => s.totalCombats)
+                .ToList();
+
+            foreach (var stat in sortedStats)
+            {
+                sb.AppendLine(stat.ToString());
+            }
+
+            sb.AppendLine($"Total cards tracked: {_data.allCardStats.Count}");
+            return sb.ToString();
+        }
+
         #endregion
 
         #region Debug Hotkeys

@@ -108,6 +108,11 @@
 #endregion
 #region feature
 //! feature
+	//// when saving enemy deck, detect if in result phase, if true then sessionnum --
+	//? adjust shop rarity probability gradually
+	//// game over
+		//// detect heart 0
+		//// detect win condition
 	//// update enemy hp max based on card type id amount in deck
 	//// auto reveal
 	//// stage / bury effect add new bool to control whether to exclude self
@@ -134,8 +139,8 @@
 #endregion
 #region viscom
 //! viscom
-	//todo global animation speed scaler
-		//todo need testing
+	//// global animation speed scaler
+		//// need testing
 	// snappier card animation, like balatro
 	//// arc animation uses dynamic z instead of static showPos' Z
 	// add chinese comma to font source

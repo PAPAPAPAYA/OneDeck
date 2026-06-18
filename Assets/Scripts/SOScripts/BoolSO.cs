@@ -14,4 +14,9 @@ public class BoolSO : ScriptableObject
     {
         if (resetOnStart) value = valueOg;
     }
+
+    public void ResetToDefault()
+    {
+        value = valueOg;
+    }
 }

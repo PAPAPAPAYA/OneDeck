@@ -664,7 +664,6 @@ RectTransform:
   - {fileID: 1501583255}
   - {fileID: 434224257}
   - {fileID: 1860532760}
-  - {fileID: 1980727395}
   m_Father: {fileID: 301309640}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1111,6 +1110,7 @@ Transform:
   - {fileID: 2012133714}
   - {fileID: 114813452}
   - {fileID: 508542133}
+  - {fileID: 1980727395}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
@@ -3430,8 +3430,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 500, y: 50}
+  m_AnchoredPosition: {x: -0.1415, y: 16.2277}
+  m_SizeDelta: {x: 1200, y: 2750}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1115368634
 MonoBehaviour:
@@ -3480,14 +3480,14 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 72
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 8
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -3586,6 +3586,7 @@ MonoBehaviour:
   cardsRevealedThisRound: 0
   isPlayingEffectAnimations: 0
   autoReveal: 1
+  combatAnimationSpeedScale: 1.2
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 3
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
@@ -5754,14 +5755,23 @@ MonoBehaviour:
   playerStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
   enemyStatusRef: {fileID: 11400000, guid: 3e07a686113188f42aa506f5d45e14ba, type: 2}
   shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
-  additionalCardPrefabs: []
+  additionalCardPrefabs:
+  - {fileID: 8718476725744197808, guid: 036c22b55cab33c44a3b319fdf0827a1, type: 3}
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
+  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   defaultEnemyDeckPool:
   - decks:
     - {fileID: 11400000, guid: 0e9bc1f40a83b0a4aa63ef4bef1f1a79, type: 2}
     - {fileID: 11400000, guid: 30df4bc3afeaba945b465a06bc9f501b, type: 2}
     - {fileID: 11400000, guid: 7dc07f76785270d4d8db3c452594305d, type: 2}
+    - {fileID: 11400000, guid: d3747b51cecbbc742856af3946737ba3, type: 2}
+    - {fileID: 11400000, guid: 63f86ca6a744e37419f4bc0a9e865289, type: 2}
+    - {fileID: 11400000, guid: 77818f7228babca43b3d860eb41125be, type: 2}
   - decks:
     - {fileID: 11400000, guid: 09b4845adbe6979488f5a8f5e07238af, type: 2}
+    - {fileID: 11400000, guid: 876a392d4c665324693cadc8eddd6a62, type: 2}
+    - {fileID: 11400000, guid: bb7a443ed247ecf44af3563da0526fac, type: 2}
   - decks:
     - {fileID: 11400000, guid: 07ae052ea61f4279a1f4796afaa90271, type: 2}
   - decks:
@@ -6690,19 +6700,19 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1980727391}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1115368633}
-  m_Father: {fileID: 114813452}
+  m_Father: {fileID: 301309640}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 720, y: 1480}
-  m_SizeDelta: {x: 1440, y: 2960}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
 --- !u!1 &2012133710
 GameObject:
   m_ObjectHideFlags: 0
@@ -7357,6 +7367,9 @@ MonoBehaviour:
   heartMax: {fileID: 11400000, guid: 6a6c48f7abb1d914ba7365b479341052, type: 2}
   playerStatusRef: {fileID: 11400000, guid: ff1156581c45c424da378609998c5ccb, type: 2}
   enemyStatusRef: {fileID: 11400000, guid: 3e07a686113188f42aa506f5d45e14ba, type: 2}
+  playerDeckRef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
+  purseRef: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}
+  playerDeckSizeRef: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
   onEnterCombatPhase:
     m_PersistentCalls:
       m_Calls:

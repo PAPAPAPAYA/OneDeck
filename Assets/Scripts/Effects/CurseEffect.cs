@@ -409,35 +409,47 @@ namespace DefaultNamespace.Effects
 				}
 			}
 
-			// Consume Power (remove layer by layer from each card) and record how much was removed
-			// from each target so the animation can spawn the correct number of projectiles.
+			// Consume Power (remove one layer at a time in round-robin across targets) and record
+			// how much was removed from each target so the animation can spawn the correct number
+			// of projectiles.
 			int amountToRemove = amount;
 			var affectedTargets = new List<CardScript>();
 			var removedAmounts = new List<int>();
-			foreach (var card in targetCards)
+			while (amountToRemove > 0)
 			{
-				if (amountToRemove <= 0) break;
-
-				int cardPowerCount = EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
-				int removeFromThisCard = Mathf.Min(cardPowerCount, amountToRemove);
-				int removedFromThisCard = 0;
-
-				for (int i = card.myStatusEffects.Count - 1; i >= 0 && removeFromThisCard > 0; i--)
+				bool removedAny = false;
+				foreach (var card in targetCards)
 				{
-					if (card.myStatusEffects[i] == EnumStorage.StatusEffect.Power)
+					if (amountToRemove <= 0) break;
+
+					int cardPowerCount = EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
+					if (cardPowerCount <= 0) continue;
+
+					// Remove one Power layer from this card
+					for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
 					{
-						card.myStatusEffects.RemoveAt(i);
-						removeFromThisCard--;
-						amountToRemove--;
-						removedFromThisCard++;
+						if (card.myStatusEffects[i] == EnumStorage.StatusEffect.Power)
+						{
+							card.myStatusEffects.RemoveAt(i);
+							amountToRemove--;
+							removedAny = true;
+
+							int existingIndex = affectedTargets.IndexOf(card);
+							if (existingIndex >= 0)
+							{
+								removedAmounts[existingIndex]++;
+							}
+							else
+							{
+								affectedTargets.Add(card);
+								removedAmounts.Add(1);
+							}
+							break;
+						}
 					}
 				}
 
-				if (removedFromThisCard > 0)
-				{
-					affectedTargets.Add(card);
-					removedAmounts.Add(removedFromThisCard);
-				}
+				if (!removedAny) break;
 			}
 
 			// Capture batched consume animation: PopUp -> Projectile -> SlotIn

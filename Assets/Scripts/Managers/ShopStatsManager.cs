@@ -354,6 +354,35 @@ namespace DefaultNamespace.Managers
             // Debug.Log("[ShopStatsManager] Stats reset");
         }
 
+        /// <summary>
+        /// Build a human-readable report of all tracked shop card stats.
+        /// </summary>
+        public string GetAllStatsReportString()
+        {
+            if (_statsData == null || _statsData.cardStats.Count == 0)
+            {
+                return "No shop stats data yet.";
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("=== SHOP STATS ===");
+            sb.AppendLine($"Total shop visits: {_statsData.totalShopVisits}");
+            sb.AppendLine($"Total rerolls: {_statsData.totalRerolls}");
+
+            var sortedStats = _statsData.cardStats
+                .OrderByDescending(s => s.PurchaseRate)
+                .ThenByDescending(s => s.appearCount)
+                .ToList();
+
+            foreach (var stat in sortedStats)
+            {
+                sb.AppendLine(stat.ToString());
+            }
+
+            sb.AppendLine($"Total cards tracked: {_statsData.cardStats.Count}");
+            return sb.ToString();
+        }
+
         #endregion
 
         #region Lifecycle

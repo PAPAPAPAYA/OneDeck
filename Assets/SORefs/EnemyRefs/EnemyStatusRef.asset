@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc6c639cfe7644ff8b297631a1d5f491, type: 3}
   m_Name: EnemyStatusRef
   m_EditorClassIdentifier: 
-  hp: 30
-  hpMax: 30
+  hp: 50
+  hpMax: 50
   shield: 0
-  hpOg: 50
-  hpMaxOg: 50
+  hpOg: 20
+  hpMaxOg: 20
   shieldOg: 0

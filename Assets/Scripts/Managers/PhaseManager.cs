@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using DefaultNamespace.Managers;
 using TMPro;
 using UnityEngine;
@@ -19,6 +20,15 @@ public class PhaseManager : MonoBehaviour
 	[Header("Status Refs")]
 	public PlayerStatusSO playerStatusRef;
 	public PlayerStatusSO enemyStatusRef;
+
+	[Header("Run Reset Refs")]
+	public DeckSO playerDeckRef;
+	public IntSO purseRef;
+	public IntSO playerDeckSizeRef;
+
+	// Run-ending state
+	private bool _isRunEnded;
+	private string _endMessage = "";
 
 	#region Enter/Exit Events
 	[Header("Phase Enter/Exit Events")]
@@ -71,6 +81,8 @@ public class PhaseManager : MonoBehaviour
 
 	private void OnEnable()
 	{
+		_isRunEnded = false;
+		_endMessage = "";
 		InvokeOnGameStartEvent();
 		ExitingCombatPhase();
 		ExitingResultPhase();
@@ -132,7 +144,18 @@ public class PhaseManager : MonoBehaviour
 				// Record player card win
 				TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: true);
 			}
-			sessionNum.value++;
+			// Check run-ending conditions after this combat's result is applied
+			if (hearts.value <= 0)
+			{
+				_isRunEnded = true;
+				_endMessage = "GAME OVER";
+			}
+			else if (wins.value >= winCon.value)
+			{
+				_isRunEnded = true;
+				_endMessage = "CONGRATS";
+			}
+
 			ExitingCombatPhase();
 			EnteringResultPhase();
 		}
@@ -141,16 +164,116 @@ public class PhaseManager : MonoBehaviour
 			ShowResult();
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 			ExitingResultPhase();
+			sessionNum.value++;
+			if (_isRunEnded)
+			{
+				ResetRun();
+			}
 			EnteringShopPhase();
 		}
 	}
 
 	private void ShowResult()
 	{
-		resultInfoDisplay.text = _resultText +
-		                         "\nYour Wins: " + wins.value + "/" + winCon.value +
-		                         "\nYour Hearts: " + hearts.value + "/" + heartMax.value +
-		                         "\n\nTAP / SPACE to continue";
+		var sb = new StringBuilder();
+		sb.AppendLine(_resultText);
+		sb.AppendLine("Your Wins: " + wins.value + "/" + winCon.value);
+		sb.AppendLine("Your Hearts: " + hearts.value + "/" + heartMax.value);
+
+		if (_isRunEnded)
+		{
+			sb.AppendLine("");
+			sb.AppendLine("===== " + _endMessage + " =====");
+			sb.AppendLine("");
+
+			var winRateReport = TestWriteRead.CardWinRateTracker.Me?.GetAllStatsReportString();
+			if (!string.IsNullOrEmpty(winRateReport))
+			{
+				sb.AppendLine(winRateReport);
+				sb.AppendLine("");
+			}
+
+			var shopReport = ShopStatsManager.Me?.GetAllStatsReportString();
+			if (!string.IsNullOrEmpty(shopReport))
+			{
+				sb.AppendLine(shopReport);
+				sb.AppendLine("");
+			}
+
+			sb.AppendLine("TAP / SPACE to start a new run");
+		}
+		else
+		{
+			sb.AppendLine("");
+			sb.AppendLine("TAP / SPACE to continue");
+		}
+
+		resultInfoDisplay.text = sb.ToString();
+	}
+
+	/// <summary>
+	/// Resets all run-level state so the player can start a fresh run.
+	/// CardWinRateTracker and ShopStatsManager data are intentionally preserved.
+	/// </summary>
+	private void ResetRun()
+	{
+		// Reset core IntSO/BoolSO refs to their original values
+		hearts?.ResetToDefault();
+		heartMax?.ResetToDefault();
+		wins?.ResetToDefault();
+		sessionNum?.ResetToDefault();
+		purseRef?.ResetToDefault();
+		playerDeckSizeRef?.ResetToDefault();
+		combatFinished?.ResetToDefault();
+
+		// Reset player deck back to its default deck
+		playerDeckRef?.ResetToDefault();
+
+		// Reset player/enemy status
+		playerStatusRef?.ResetToDefault();
+		playerStatusRef?.ResetHpMax();
+		enemyStatusRef?.ResetToDefault();
+		enemyStatusRef?.ResetHpMax();
+
+		// Reset combat manager counters
+		if (CombatManager.Me != null)
+		{
+			CombatManager.Me.roundNumRef?.ResetToDefault();
+			CombatManager.Me.totalCardsRevealed = 0;
+			CombatManager.Me.cardsRevealedThisRound = 0;
+		}
+
+		// Reset effect chain manager session counter
+		if (EffectChainManager.Me != null)
+		{
+			EffectChainManager.Me.sessionNumberRef?.ResetToDefault();
+			EffectChainManager.Me.chainNumber = 0;
+		}
+
+		// Reset value trackers
+		if (ValueTrackerManager.me != null)
+		{
+			ValueTrackerManager.me.friendlyInGraveAmountRef?.ResetToDefault();
+			ValueTrackerManager.me.hostileCursePowerCount?.ResetToDefault();
+			ValueTrackerManager.me.totalPowerCountInDeckRef?.ResetToDefault();
+			ValueTrackerManager.me.ownerCardCountInDeckRef?.ResetToDefault();
+			ValueTrackerManager.me.enemyCardCountInDeckRef?.ResetToDefault();
+			ValueTrackerManager.me.ownerCardsBuriedCountRef?.ResetToDefault();
+			ValueTrackerManager.me.enemyCardsBuriedCountRef?.ResetToDefault();
+			ValueTrackerManager.me.stagedOwnerRef?.ResetToDefault();
+			ValueTrackerManager.me.stagedEnemyRef?.ResetToDefault();
+			ValueTrackerManager.me.lastAppliedStatusEffectAmountRef?.ResetToDefault();
+		}
+
+		// Reset manager flags so starting cards and first-combat rewards can be given again
+		var startingCardManager = FindFirstObjectByType<StartingCardManager>(FindObjectsInactive.Include);
+		startingCardManager?.ResetForNewRun();
+
+		var combatStartCardGiver = FindFirstObjectByType<CombatStartCardGiver>(FindObjectsInactive.Include);
+		combatStartCardGiver?.ResetTriggerState();
+
+		_isRunEnded = false;
+		_endMessage = "";
 	}
 
 	#region entering and exiting funcs
@@ -186,8 +309,8 @@ public class PhaseManager : MonoBehaviour
 	#region shop phase
 	private void EnteringShopPhase()
 	{
-		playerStatusRef.Reset();
-		enemyStatusRef.Reset();
+		playerStatusRef.ResetToDefault();
+		enemyStatusRef.ResetToDefault();
 		InvokeEnterShopPhaseEvent();
 		
 		// change phase
