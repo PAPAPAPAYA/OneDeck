@@ -220,7 +220,35 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 			else
 			{
-				physScript.SetTargetPosition(physicalCardRevealPos.position, onComplete);
+				// VISUAL-FIX(2026-06-19): Block input and auto-reveal during reveal-zone flight
+				//   Cause:    When a card in reveal zone is exiled, the next card is auto-revealed.
+				//             If autoReveal is enabled, the card could be triggered while still
+				//             tweening to the reveal zone, causing visual mismatch.
+				//   Fix:      Treat reveal-zone movement like effect animations: block input and
+				//             set isPlayingEffectAnimations until the card reaches reveal zone.
+				//   Affects:  CombatUXManager, CombatManager, RevealCards flow
+				//   Regress:  Exile the revealed card with autoReveal enabled; verify the next card
+				//             reaches reveal zone before its effect triggers. Also verify normal
+				//             reveal and Round Start Start Card shuffle still work.
+				//   Related:  PRD exile-reveal-zone-lock-2026-06-19
+				bool wasAlreadyLocked = combatManager != null && combatManager.isPlayingEffectAnimations;
+				if (!wasAlreadyLocked && combatManager != null)
+				{
+					BlockInput(this);
+					combatManager.isPlayingEffectAnimations = true;
+				}
+
+				Action wrappedOnComplete = () =>
+				{
+					if (!wasAlreadyLocked && combatManager != null)
+					{
+						UnblockInput(this);
+						combatManager.isPlayingEffectAnimations = false;
+					}
+					onComplete?.Invoke();
+				};
+
+				physScript.SetTargetPosition(physicalCardRevealPos.position, wrappedOnComplete);
 				physScript.SetTargetScale(physicalCardRevealSize);
 			}
 		}

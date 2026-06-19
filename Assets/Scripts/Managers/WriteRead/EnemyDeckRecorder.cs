@@ -37,6 +37,7 @@ namespace TestWriteRead
 			if (!Application.isPlaying) return;
 			if (Input.GetKeyDown(recordHotkey))
 			{
+				print("?");
 				RecordDeck();
 			}
 		}

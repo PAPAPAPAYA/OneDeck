@@ -40,6 +40,26 @@ public static class UtilityFuncManagerScript
 		}
 	}
 
+	/// <summary>
+	/// Count how many cards in a DeckSO actually take up deck size.
+	/// </summary>
+	public static int CountCardsTakingUpSpace(DeckSO deck)
+	{
+		if (deck == null || deck.deck == null) return 0;
+
+		int count = 0;
+		foreach (var card in deck.deck)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.takeUpSpace)
+			{
+				count++;
+			}
+		}
+		return count;
+	}
+
 	// copy generic type list
 	public static void CopyList<T>(List<T> from, List<T> to, bool clearTargetList)
 	{

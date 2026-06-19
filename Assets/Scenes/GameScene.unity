@@ -721,7 +721,7 @@ MonoBehaviour:
   deckSize: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
   maxDeckSize: {fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}
   purse: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}
-  shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
+  shopPoolRef: {fileID: 11400000, guid: 1a1a5ea2598ea1e46b68bad1eacdeb23, type: 2}
   currentShopItemDeckRef: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
   rarityWeightRef: {fileID: 11400000, guid: a443338ae5fa3a844ae1dcfec0166515, type: 2}
   shopItemAmount: 3
@@ -3256,8 +3256,8 @@ MonoBehaviour:
   combatManager: {fileID: 1151980344}
   logCombatFlow: 0
   logEffectChains: 0
-  logAnimationPlayback: 1
-  logVisualSync: 1
+  logAnimationPlayback: 0
+  logVisualSync: 0
   logEditorTools: 0
   logTestManager: 0
 --- !u!4 &898235415
@@ -5833,6 +5833,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 8d7e56454c7467d4191cadf2984dd753, type: 2}
     - {fileID: 11400000, guid: 59cb48273ec0d41459488b9f4299953d, type: 2}
     - {fileID: 11400000, guid: 876a392d4c665324693cadc8eddd6a62, type: 2}
+    - {fileID: 11400000, guid: b8bf938f635b06e44929e94087fc2494, type: 2}
   - decks:
     - {fileID: 11400000, guid: 09b4845adbe6979488f5a8f5e07238af, type: 2}
     - {fileID: 11400000, guid: bb7a443ed247ecf44af3563da0526fac, type: 2}
@@ -7724,6 +7725,14 @@ PrefabInstance:
     - target: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428600347889550306, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_text
+      value: "\u5361\u4F4D\u589E\u52A0 <\u4E2D>"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7428600347889550306, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_fontSize
+      value: 17.25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: EnemyDeckForTesting
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 1808145013887896563, guid: 6050fd316b927014d90d8dc9bca4249f, type: 3}
+  - {fileID: 8718476725744197808, guid: 4fab5dcf4bb8f884fa0183640cccb494, type: 3}
   - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
+  - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
+  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   defaultDeck: {fileID: 11400000, guid: 47b0ebbd6e3127348899a6396755248c, type: 2}
-  resetOnStart: 1
+  resetOnStart: 0
   description: 

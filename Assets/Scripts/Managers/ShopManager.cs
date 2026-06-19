@@ -136,19 +136,24 @@ public class ShopManager : MonoBehaviour
 		var cardToBuyScript = cardToBuy.GetComponent<CardScript>();
 		if (cardToBuyScript.takeUpSpace) // if card player trying to buy takes up space in deck
 		{
-			if (playerDeckRef.deck.Count >= deckSize.value) return; // check if player deck not full
+			int actualSize = UtilityFuncManagerScript.CountCardsTakingUpSpace(playerDeckRef);
+			if (actualSize >= deckSize.value) return; // check if player deck not full
 		}
 		if (purse.value < cardToBuyScript.price.value) return; // check if affordable
 		purse.value -= cardToBuyScript.price.value; // pay the price
-		if (cardToBuyScript.takeUpSpace) // if card player tyring to buy takes up space in deck
-		{
-			playerDeckRef.deck.Add(cardToBuy); // add it to player deck
-		}
+
+		// Add the card to player deck regardless of whether it takes up space
+		playerDeckRef.deck.Add(cardToBuy);
+
 		currentShopItemDeckRef.deck.Remove(cardToBuy); // remove it from current shop item list
+
+		// Instantiate a temporary copy to fire onMeBought effects (e.g. IncreaseHpMax).
+		// Non-space cards will still be destroyed on shop exit and skipped in combat.
 		var cardToBuyInst = Instantiate(cardToBuy, transform);
 		cardToBuyInst.GetComponent<CardScript>().myStatusRef = CombatManager.Me.ownerPlayerStatusRef;
 		GameEventStorage.me?.onMeBought?.RaiseSpecific(cardToBuyInst); // buy timepoint: instantiate so it register as a listener
 		_boughtCardInstances.Add(cardToBuyInst); // Add to list, destroy uniformly when exiting shop
+
 		// record card bought
 		if (ShopStatsManager.Me != null)
 		{
@@ -168,7 +173,9 @@ public class ShopManager : MonoBehaviour
 	{
 		if (playerDeckRef.deck.Count - 1 < cardIndex) return; // check if card index valid
 		var cardToSell = playerDeckRef.deck[cardIndex]; // store card player tyring to sell
-		purse.value += cardToSell.GetComponent<CardScript>().price.value / 2; // get the money
+		var cardScript = cardToSell.GetComponent<CardScript>();
+		if (!cardScript.takeUpSpace) return; // non-space cards cannot be sold
+		purse.value += cardScript.price.value / 2; // get the money
 		playerDeckRef.deck.Remove(cardToSell); // remove it from player deck
 		
 		// Notify ShopUXManager to handle sell animation
@@ -250,16 +257,18 @@ public class ShopManager : MonoBehaviour
 	{
 		_deckInfoStr = "Your Deck:\n\n";
 		//deckInstList.Clear();
+		int displayIndex = 1;
 		for (var i = 0; i < playerDeckRef.deck.Count; i++)
 		{
 			var card = playerDeckRef.deck[i];
 			var cardScript = card.GetComponent<CardScript>();
 			if (!cardScript.takeUpSpace) continue; // if card doesn't take up space, skip it
 			_deckInfoStr +=
-				"#" + (i + 1) + " <size=+2><b>" + // number
+				"#" + displayIndex + " <size=+2><b>" + // number
 				card.name + // name
 				"</b></size>: <color=yellow>$" + cardScript.price.value / 2 + "</color>" + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
+			displayIndex++;
 		}
 	}
 

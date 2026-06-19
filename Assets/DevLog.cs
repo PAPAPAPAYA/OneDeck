@@ -55,10 +55,10 @@
 #endregion
 #region anything else
 //! anything else
+	//// increase deck size cards appear in shop chance
 	//// higher pop up pos to show card name
-	//todo card tweaks
-		//// curse_thirst_shaman exclude self
-		//// fix include self
+	//// curse_thirst_shaman exclude self
+	//// fix include self
 	//// show stats when game over
 	//// print stats with hot-key
 	// do a numerical analysis
@@ -231,8 +231,12 @@
 //! bug
 	//// deck increase price
 	//// crlf and tab
-	//? the fool
-	//? rift stages rift stages another card in auto-reveal
+	//// curse thirst beast
+	//// unstable portal, not death rattle
+	//// all for one dynamic dmg incorrect in shop, need to reset tracking value when entering shop
+	//// deck size increase "<" very big xs
+	//// health increase doesn't go to player deck ref
+	//// rift stages
 	//// curse thirst shaman: basedOnIntSO issue
 	//// other value tracking and basedOnIntSO()
 		//// grave_invitation
