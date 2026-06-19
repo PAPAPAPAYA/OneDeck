@@ -74,7 +74,7 @@ namespace DefaultNamespace.Effects
 				canStatusEffectBeStacked ? amount : 1);
 		}
 
-		protected List<CardScript> CollectFriendlyCards(bool filterCanReceive = false)
+		protected List<CardScript> CollectFriendlyCards(bool filterCanReceive = false, bool includeSelf = true)
 		{
 			var result = new List<CardScript>();
 			var combinedDeck = combatManager.combinedDeckZone;
@@ -83,6 +83,7 @@ namespace DefaultNamespace.Effects
 				var cardScript = card.GetComponent<CardScript>();
 				if (ShouldSkipCard(cardScript)) continue;
 				if (cardScript.myStatusRef != myCardScript.myStatusRef) continue;
+				if (!includeSelf && card == myCard) continue;
 				if (filterCanReceive && !CanReceiveStatusEffect(cardScript, statusEffectToGive)) continue;
 				result.Add(cardScript);
 			}
@@ -92,18 +93,21 @@ namespace DefaultNamespace.Effects
 				if (!ShouldSkipCard(revealCardScript) &&
 				    revealCardScript.myStatusRef == myCardScript.myStatusRef)
 				{
-					if (!filterCanReceive || CanReceiveStatusEffect(revealCardScript, statusEffectToGive))
+					if (includeSelf || combatManager.revealZone != myCard)
 					{
-						bool alreadyExists = result.Exists(c => c.gameObject == combatManager.revealZone);
-						if (!alreadyExists)
-							result.Add(revealCardScript);
+						if (!filterCanReceive || CanReceiveStatusEffect(revealCardScript, statusEffectToGive))
+						{
+							bool alreadyExists = result.Exists(c => c.gameObject == combatManager.revealZone);
+							if (!alreadyExists)
+								result.Add(revealCardScript);
+						}
 					}
 				}
 			}
 			return result;
 		}
 
-		protected void CaptureBatchStatusEffectAnimation(List<CardScript> targetCards, int projectileCount = 1)
+		protected void CaptureBatchStatusEffectAnimation(List<CardScript> targetCards, int projectileCount = 1, List<int> projectileCountsPerTarget = null)
 		{
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
@@ -126,7 +130,8 @@ namespace DefaultNamespace.Effects
 				type = AnimationRequestType.StatusEffectProjectile,
 				attackerCard = myCard,
 				targetCards = targetGameObjects,
-				projectileCount = projectileCount
+				projectileCount = projectileCount,
+				projectileCountsPerTarget = projectileCountsPerTarget
 			});
 
 			recorder.animationRequests.Add(new AnimationRequest
@@ -231,7 +236,7 @@ namespace DefaultNamespace.Effects
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			if (amount <= 0) return;
 
-			var targetCards = CollectFriendlyCards(filterCanReceive: true);
+			var targetCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
 			if (targetCards.Count <= 0) return;
 
 			foreach (var card in targetCards)
@@ -300,7 +305,7 @@ namespace DefaultNamespace.Effects
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			if (xFriendlyCount <= 0 || yFriendlyLayerCount <= 0) return;
 
-			var friendlyCards = CollectFriendlyCards(filterCanReceive: true);
+			var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
 			if (friendlyCards.Count <= 0) return;
 
 			friendlyCards = UtilityFuncManagerScript.ShuffleList(friendlyCards);
@@ -319,21 +324,53 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// Based on ownerIntSO/enemyIntSO, apply status effects to the same number of random friendly cards,
-		/// each card receives 1 layer. Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+		/// Based on ownerIntSO/enemyIntSO, repeat N times (where N is the IntSO value):
+		/// each iteration gives 1 layer of the status effect to one random friendly card.
+		/// The same card may be chosen multiple times.
+		/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
 		/// </summary>
 		public virtual void GiveStatusEffectToXFriendly_BasedOnIntSO()
 		{
 			IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 			if (intSO == null) return;
+			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
+			if (intSO.value <= 0) return;
 
-			int originalXFriendlyCount = xFriendlyCount;
-			int originalYFriendlyLayerCount = yFriendlyLayerCount;
-			xFriendlyCount = intSO.value;
-			yFriendlyLayerCount = 1;
-			GiveStatusEffectToXFriendly();
-			xFriendlyCount = originalXFriendlyCount;
-			yFriendlyLayerCount = originalYFriendlyLayerCount;
+			var targetCards = new List<CardScript>();
+
+			for (int i = 0; i < intSO.value; i++)
+			{
+				var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
+				if (friendlyCards.Count <= 0) break;
+
+				int randomIndex = Random.Range(0, friendlyCards.Count);
+				var targetCard = friendlyCards[randomIndex];
+
+				ApplyStatusEffectToCard(targetCard, 1);
+				targetCards.Add(targetCard);
+			}
+
+			if (targetCards.Count <= 0) return;
+
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+
+			var uniqueTargets = new List<CardScript>();
+			var projectileCountsPerTarget = new List<int>();
+			foreach (var card in targetCards)
+			{
+				int existingIndex = uniqueTargets.IndexOf(card);
+				if (existingIndex < 0)
+				{
+					uniqueTargets.Add(card);
+					projectileCountsPerTarget.Add(1);
+				}
+				else
+				{
+					projectileCountsPerTarget[existingIndex]++;
+				}
+			}
+
+			CaptureBatchStatusEffectAnimation(uniqueTargets, 1, projectileCountsPerTarget);
 		}
 
 		/// <summary>

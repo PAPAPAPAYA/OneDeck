@@ -145,7 +145,7 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 	#region CURSE_THIRST_SHAMAN - StatusEffectGiverEffect.GiveStatusEffectToXFriendly_BasedOnIntSO
 
 	[Test]
-	public void CurseThirstShaman_OwnerCard_UsesOwnerIntSOAndBuffsFriendlyCards()
+	public void CurseThirstShaman_OwnerCard_UsesOwnerIntSOAndBuffsRandomFriendlyCard()
 	{
 		var shaman = CreateCard(true, "OwnerCurseThirstShaman");
 		var friendly1 = CreateCard(true, "Friendly1");
@@ -165,22 +165,24 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 		EffectChainManager.Me.CloseOpenedChain();
 
 		int buffedFriendlyCount = 0;
+		int totalPowerLayers = 0;
+		totalPowerLayers += CountStatusEffect(friendly1, EnumStorage.StatusEffect.Power);
+		totalPowerLayers += CountStatusEffect(friendly2, EnumStorage.StatusEffect.Power);
 		if (HasStatusEffect(friendly1, EnumStorage.StatusEffect.Power)) buffedFriendlyCount++;
 		if (HasStatusEffect(friendly2, EnumStorage.StatusEffect.Power)) buffedFriendlyCount++;
 
-		Assert.AreEqual(1, buffedFriendlyCount, "Owner CURSE_THIRST_SHAMAN should buff ownerIntSO=1 friendly card");
+		Assert.AreEqual(1, totalPowerLayers, "Owner CURSE_THIRST_SHAMAN should apply ownerIntSO=1 Power layer total");
+		Assert.AreEqual(1, buffedFriendlyCount, "Exactly 1 friendly card should be buffed");
 		Assert.IsFalse(HasStatusEffect(enemyCard, EnumStorage.StatusEffect.Power), "Enemy card should not be buffed");
 	}
 
 	[Test]
-	public void CurseThirstShaman_EnemyCard_UsesEnemyIntSOAndBuffsEnemyFriendlyCards()
+	public void CurseThirstShaman_EnemyCard_UsesEnemyIntSOAndBuffsRandomEnemyFriendlyCards()
 	{
 		var shaman = CreateCard(false, "EnemyCurseThirstShaman");
 		var enemyFriendly1 = CreateCard(false, "EnemyFriendly1");
-		var enemyFriendly2 = CreateCard(false, "EnemyFriendly2");
 		var ownerCard = CreateCard(true, "OwnerCard");
 		CombatManager.combinedDeckZone.Add(enemyFriendly1);
-		CombatManager.combinedDeckZone.Add(enemyFriendly2);
 		CombatManager.combinedDeckZone.Add(ownerCard);
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
@@ -192,16 +194,13 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 		giver.GiveStatusEffectToXFriendly_BasedOnIntSO();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		int buffedEnemyFriendlyCount = 0;
-		if (HasStatusEffect(enemyFriendly1, EnumStorage.StatusEffect.Power)) buffedEnemyFriendlyCount++;
-		if (HasStatusEffect(enemyFriendly2, EnumStorage.StatusEffect.Power)) buffedEnemyFriendlyCount++;
-
-		Assert.AreEqual(2, buffedEnemyFriendlyCount, "Enemy CURSE_THIRST_SHAMAN should buff enemyIntSO=2 enemy-friendly cards");
+		Assert.AreEqual(2, CountStatusEffect(enemyFriendly1, EnumStorage.StatusEffect.Power),
+			"Enemy CURSE_THIRST_SHAMAN should apply enemyIntSO=2 Power layers total to the only enemy-friendly card");
 		Assert.IsFalse(HasStatusEffect(ownerCard, EnumStorage.StatusEffect.Power), "Owner card should not be buffed");
 	}
 
 	[Test]
-	public void CurseThirstShaman_IntSOValueExceedsFriendlyCount_BuffsAllAvailable()
+	public void CurseThirstShaman_IntSOValueExceedsFriendlyCount_StacksOnSameCard()
 	{
 		var shaman = CreateCard(true, "OwnerCurseThirstShaman");
 		var friendly1 = CreateCard(true, "Friendly1");
@@ -209,14 +208,15 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
-		giver.ownerIntSO = CreateIntSO(99);
-		giver.enemyIntSO = CreateIntSO(99);
+		giver.ownerIntSO = CreateIntSO(5);
+		giver.enemyIntSO = CreateIntSO(5);
 
 		EffectChainManager.MakeANewEffectRecorder(shaman, giver.gameObject);
 		giver.GiveStatusEffectToXFriendly_BasedOnIntSO();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.IsTrue(HasStatusEffect(friendly1, EnumStorage.StatusEffect.Power), "Should buff the only available friendly card");
+		Assert.AreEqual(5, CountStatusEffect(friendly1, EnumStorage.StatusEffect.Power),
+			"All repeated applications should stack on the only available friendly card");
 	}
 
 	[Test]
@@ -257,7 +257,61 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 		Assert.AreEqual(EnumStorage.StatusEffect.Power, ValueTrackerManager.lastAppliedStatusEffectRef.value,
 			"lastAppliedStatusEffectRef should track Power");
 		Assert.AreEqual(1, ValueTrackerManager.lastAppliedStatusEffectAmountRef.value,
-			"lastAppliedStatusEffectAmountRef should track 1 layer per target");
+			"lastAppliedStatusEffectAmountRef should track 1 layer per application");
+	}
+
+	[Test]
+	public void CurseThirstShaman_NoFriendlyCards_DoesNothing()
+	{
+		var shaman = CreateCard(true, "OwnerCurseThirstShaman");
+		var enemyCard = CreateCard(false, "EnemyCard");
+		CombatManager.combinedDeckZone.Add(enemyCard);
+
+		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
+		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.ownerIntSO = CreateIntSO(3);
+		giver.enemyIntSO = CreateIntSO(3);
+
+		EffectChainManager.MakeANewEffectRecorder(shaman, giver.gameObject);
+		giver.GiveStatusEffectToXFriendly_BasedOnIntSO();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.IsFalse(HasStatusEffect(enemyCard, EnumStorage.StatusEffect.Power), "Enemy card should not be buffed when no friendly cards exist");
+	}
+
+	[Test]
+	public void CurseThirstShaman_CapturesBatchAnimationRequests()
+	{
+		var shaman = CreateCard(true, "OwnerCurseThirstShaman");
+		var friendly1 = CreateCard(true, "Friendly1");
+		CombatManager.combinedDeckZone.Add(friendly1);
+
+		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
+		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.ownerIntSO = CreateIntSO(2);
+		giver.enemyIntSO = CreateIntSO(2);
+
+		EffectChainManager.MakeANewEffectRecorder(shaman, giver.gameObject);
+		giver.GiveStatusEffectToXFriendly_BasedOnIntSO();
+
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		AnimationRequest projectileRequest = null;
+		bool hasPopUpBatch = false;
+		bool hasSlotInBatch = false;
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req.type == AnimationRequestType.PopUpBatch) hasPopUpBatch = true;
+			if (req.type == AnimationRequestType.StatusEffectProjectile) projectileRequest = req;
+			if (req.type == AnimationRequestType.SlotInBatch) hasSlotInBatch = true;
+		}
+		Assert.IsTrue(hasPopUpBatch, "Should capture PopUpBatch animation request");
+		Assert.IsNotNull(projectileRequest, "Should capture StatusEffectProjectile animation request");
+		Assert.IsTrue(hasSlotInBatch, "Should capture SlotInBatch animation request");
+		Assert.IsNotNull(projectileRequest.projectileCountsPerTarget, "Should carry per-target projectile counts");
+		Assert.AreEqual(1, projectileRequest.projectileCountsPerTarget.Count, "Should have one per-target count entry");
+		Assert.AreEqual(2, projectileRequest.projectileCountsPerTarget[0], "Single target should spawn 2 projectiles for 2 stacked layers");
+
+		EffectChainManager.Me.CloseOpenedChain();
 	}
 
 	#endregion
