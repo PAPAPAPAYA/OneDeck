@@ -49,7 +49,9 @@ public class StartCardShuffleEffect : MonoBehaviour
 			float mean = (totalSize - 1) / 2.0f;
 			float stdDev = Mathf.Max(1f, totalSize * startCardPositionStdDevFactor);
 			int targetIndex = Mathf.RoundToInt(UtilityFuncManagerScript.GaussianRandom(mean, stdDev));
-			targetIndex = Mathf.Clamp(targetIndex, 0, totalSize - 1);
+			// Prevent Start Card from being placed at the top of the deck (index Count - 1),
+			// otherwise it would be revealed immediately and trigger another shuffle.
+			targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, totalSize - 2));
 
 			// Insert Start Card at the computed position
 			otherCards.Insert(targetIndex, startCard);

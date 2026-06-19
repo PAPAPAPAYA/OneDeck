@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DefaultNamespace;
 using DG.Tweening;
 using UnityEngine;
+using DefaultNamespace.Managers;
 
 public class RecorderAnimationPlayer : MonoBehaviour
 {
@@ -16,15 +17,23 @@ public class RecorderAnimationPlayer : MonoBehaviour
 
 	public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 	{
-		Debug.Log("[RecorderAnimationPlayer] PlayRecordersCoroutine START rootCount=" + rootRecorders.Count);
+		TestManager.Log("[RecorderAnimationPlayer] PlayRecordersCoroutine START rootCount=" + rootRecorders.Count);
 		AttackAnimationManager.me?.HoldDeckFocus();
 		try
 		{
 			foreach (var rootRecorder in rootRecorders)
 			{
-				if (rootRecorder == null) continue;
+				if (rootRecorder == null)
+				{
+					TestManager.Log("[RecorderAnimationPlayer] Skipping null/destroyed root recorder.");
+					continue;
+				}
 				var recorder = rootRecorder.GetComponent<EffectRecorder>();
-				if (recorder == null || recorder.animationPlayed) continue;
+				if (recorder == null || recorder.animationPlayed)
+				{
+					TestManager.Log("[RecorderAnimationPlayer] Skipping root recorder: recorder=" + (recorder == null ? "null" : "valid") + " played=" + (recorder != null ? recorder.animationPlayed.ToString() : "n/a"));
+					continue;
+				}
 				yield return StartCoroutine(PlayRecorderCoroutine(recorder));
 			}
 		}
@@ -37,17 +46,21 @@ public class RecorderAnimationPlayer : MonoBehaviour
 	public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 	{
 		if (recorder == null || recorder.animationPlayed) yield break;
+		if (recorder.gameObject == null)
+		{
+			TestManager.Log("[RecorderAnimationPlayer] PlayRecorderCoroutine: recorder GameObject was destroyed, skipping.");
+			yield break;
+		}
 		recorder.animationPlayed = true;
 
 		string cardName = recorder.cardObject != null ? recorder.cardObject.name : "null";
-		Debug.Log("[RecorderAnimationPlayer] PlayRecorderCoroutine chainID=" + recorder.chainID + " card=" + cardName + " animationPlayed SET TO TRUE");
+		TestManager.Log("[RecorderAnimationPlayer] PlayRecorderCoroutine chainID=" + recorder.chainID + " card=" + cardName + " animationPlayed SET TO TRUE");
 		string reqSummary = "";
 		for (int i = 0; i < recorder.animationRequests.Count; i++)
 		{
 			var r = recorder.animationRequests[i];
 			reqSummary += "[" + i + "]" + (r != null ? r.type.ToString() : "null") + " ";
 		}
-		// Debug.Log("[RecorderAnimationPlayer] === Playing recorder chainID=" + recorder.chainID + " card=" + cardName + " requests=" + recorder.animationRequests.Count + " childCount=" + recorder.transform.childCount + " reqs=" + reqSummary);
 
 		// Emphasize the source card before playing its effect animations
 		if (recorder.animationRequests.Count > 0 && recorder.cardObject != null)
@@ -56,7 +69,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log("[RecorderAnimationPlayer] Skipping emphasize: requests=" + recorder.animationRequests.Count + " card=" + cardName);
+			TestManager.Log("[RecorderAnimationPlayer] Skipping emphasize: requests=" + recorder.animationRequests.Count + " card=" + cardName);
 		}
 
 		// Pre-scan to mark StatusEffectChange requests that should defer display commit
@@ -76,6 +89,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		for (int i = 0; i < recorder.transform.childCount; i++)
 		{
 			var child = recorder.transform.GetChild(i);
+			if (child == null) continue;
 			var childRecorder = child.GetComponent<EffectRecorder>();
 			if (childRecorder != null && !childRecorder.animationPlayed)
 			{
@@ -167,6 +181,13 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		var visuals = CombatManager.Me.visuals;
 		if (visuals == null) yield break;
 
+		// Diagnostic log: report whether key referenced objects are alive before playing this request.
+		string targetState = "n/a";
+		if (request.targetCard != null) targetState = request.targetCard.name + "(alive)";
+		else if (request.targetCards != null) targetState = "batch[" + request.targetCards.Count + "]";
+		string attackerState = request.attackerCard != null ? request.attackerCard.name + "(alive)" : "n/a";
+		TestManager.Log("[RecorderAnimationPlayer] PlayRequest type=" + request.type + " target=" + targetState + " attacker=" + attackerState);
+
 		// VISUAL-FIX(2026-05-18): Deck-move animations play in wrong peeled/focused layout
 		//   Cause:    When deck is focused/peeled, bury/stage animations use peeled positions
 		//             instead of normal deck layout, causing cards to fly to wrong spots
@@ -191,11 +212,12 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				yield return combatUX.StartCoroutine(combatUX.RestoreDeckFocusCoroutine());
 			}
 		}
-		Debug.Log("[RecorderAnimationPlayer] PlayRequest type=" + request.type + " target=" + (request.targetCard != null ? request.targetCard.name : (request.attackerCard != null ? request.attackerCard.name : "null")));
+		TestManager.Log("[RecorderAnimationPlayer] PlayRequest type=" + request.type + " target=" + (request.targetCard != null ? request.targetCard.name : (request.attackerCard != null ? request.attackerCard.name : "null")));
 		switch (request.type)
 		{
 			case AnimationRequestType.Attack:
 			{
+				if (request.attackerCard == null) break;
 				bool done = false;
 				visuals.PlayAttackAnimation(request.attackerCard, request.isAttackingEnemy, request.onHit, () => { done = true; if (request.onComplete != null) request.onComplete(); });
 				yield return new WaitUntil(() => done);
@@ -203,6 +225,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToBottom:
 			{
+				if (request.targetCard == null) break;
 				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
@@ -218,19 +241,31 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
+				int filteredCount = 0;
+				for (int i = 0; i < totalCount; i++)
+				{
+					if (request.targetCards[i] != null) filteredCount++;
+				}
 				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
 				int currentCount = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.Count : 0;
 				var combatUX = visuals as CombatUXManager;
 				int physCount = combatUX != null ? combatUX.physicalCardsInDeck.Count : 0;
 				// Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch deckCounts combined=" + currentCount + " physical=" + physCount);
+				int processedIndex = 0;
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
+					if (card == null)
+					{
+						TestManager.Log("[RecorderAnimationPlayer] MoveToBottomBatch skipping destroyed card at index " + i);
+						continue;
+					}
 					// Bury (MoveToBottomBatch) sends cards to the absolute bottom of the physical deck.
 					// We read actualPhysIndex from physicalCardsInDeck after ApplyAnimationResult,
 					// because reactive effects (e.g. StageSelf) or pending slot-in cards may have altered deck order.
-					// correctedIndex (totalCount - 1 - i) is kept as fallback only when physical card cannot be resolved.
-					int correctedIndex = totalCount - 1 - i;
+					// correctedIndex (filteredCount - 1 - processedIndex) is kept as fallback only when physical card cannot be resolved.
+					int correctedIndex = filteredCount - 1 - processedIndex;
+					processedIndex++;
 					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
 					int actualPhysIndex = -1;
 					var combatUX2 = visuals as CombatUXManager;
@@ -241,19 +276,20 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					}
 					int targetIndex = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
 					string snapshotIdxStr = (hasSnapshot && request.targetIndices != null && i < request.targetIndices.Count) ? request.targetIndices[i].ToString() : "null";
-					Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount);
+					TestManager.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount);
 					visuals.MoveCardToIndex(card, targetIndex, request.duration, request.useArc, () =>
 					{
 						completedCount++;
-						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
+						if (request.onComplete != null && completedCount >= filteredCount) request.onComplete();
 					});
 				}
-				yield return new WaitUntil(() => completedCount >= totalCount);
+				yield return new WaitUntil(() => completedCount >= filteredCount);
 				// Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch DONE");
 				break;
 			}
 			case AnimationRequestType.MoveToTop:
 			{
+				if (request.targetCard == null) break;
 				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
@@ -269,19 +305,31 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
+				int filteredCount = 0;
+				for (int i = 0; i < totalCount; i++)
+				{
+					if (request.targetCards[i] != null) filteredCount++;
+				}
 				bool hasSnapshot = request.targetIndices != null && request.targetIndices.Count == totalCount;
 				int currentCount = CombatManager.Me != null ? CombatManager.Me.combinedDeckZone.Count : 0;
 				var combatUX = visuals as CombatUXManager;
 				int physCount = combatUX != null ? combatUX.physicalCardsInDeck.Count : 0;
 				// Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch deckCounts combined=" + currentCount + " physical=" + physCount);
+				int processedIndex = 0;
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
+					if (card == null)
+					{
+						TestManager.Log("[RecorderAnimationPlayer] MoveToTopBatch skipping destroyed card at index " + i);
+						continue;
+					}
 					// Stage (MoveToTopBatch) sends cards to the absolute top of the physical deck.
 					// We read actualPhysIndex from physicalCardsInDeck after ApplyAnimationResult,
 					// because reactive effects or pending slot-in cards may have altered deck order.
-					// correctedIndex (currentCount - totalCount + i) is kept as fallback only when physical card cannot be resolved.
-					int correctedIndex = currentCount - totalCount + i;
+					// correctedIndex (currentCount - filteredCount + processedIndex) is kept as fallback only when physical card cannot be resolved.
+					int correctedIndex = currentCount - filteredCount + processedIndex;
+					processedIndex++;
 					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
 					int actualPhysIndex = -1;
 					var combatUX2 = visuals as CombatUXManager;
@@ -292,14 +340,14 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					}
 					int targetIndex = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
 					string snapshotIdxStr = (hasSnapshot && request.targetIndices != null && i < request.targetIndices.Count) ? request.targetIndices[i].ToString() : "null";
-					Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount);
+					TestManager.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount);
 					visuals.MoveCardToIndex(card, targetIndex, request.duration, request.useArc, () =>
 					{
 						completedCount++;
-						if (request.onComplete != null && completedCount >= totalCount) request.onComplete();
+						if (request.onComplete != null && completedCount >= filteredCount) request.onComplete();
 					});
 				}
-				yield return new WaitUntil(() => completedCount >= totalCount);
+				yield return new WaitUntil(() => completedCount >= filteredCount);
 				// Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch DONE");
 				break;
 			}
@@ -320,11 +368,22 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				// indices itself, because the two-phase parallel animation needs every card's final deck
 				// position before Phase 1 starts (to compute pop-up peaks). Other batch types call
 				// MoveCardToIndex per-card, so they resolve indices individually inside the loop.
+				var filteredCards = new List<GameObject>();
+				int filteredCount = 0;
+				for (int i = 0; i < totalCount; i++)
+				{
+					if (request.targetCards[i] != null) filteredCount++;
+				}
 				var finalIndices = new List<int>();
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
-					int correctedIndex = currentCount - totalCount + i;
+					if (card == null)
+					{
+						TestManager.Log("[RecorderAnimationPlayer] MoveToTopPopUpBatch skipping destroyed card at index " + i);
+						continue;
+					}
+					int correctedIndex = currentCount - filteredCount + filteredCards.Count;
 					correctedIndex = Mathf.Clamp(correctedIndex, 0, currentCount - 1);
 					int actualPhysIndex = -1;
 					var combatUX2 = visuals as CombatUXManager;
@@ -335,17 +394,19 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					}
 					int targetIndex = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
 					string snapshotIdxStr = (hasSnapshot && request.targetIndices != null && i < request.targetIndices.Count) ? request.targetIndices[i].ToString() : "null";
-					Debug.Log("[RecorderAnimationPlayer] MoveToTopPopUpBatch card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount);
+					TestManager.Log("[RecorderAnimationPlayer] MoveToTopPopUpBatch card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount);
+					filteredCards.Add(card);
 					finalIndices.Add(targetIndex);
 				}
 
 				bool done = false;
-				visuals.MoveCardToTopPopUpBatch(request.targetCards, finalIndices, request.duration, () => { done = true; });
+				visuals.MoveCardToTopPopUpBatch(filteredCards, finalIndices, request.duration, () => { done = true; });
 				yield return new WaitUntil(() => done);
 				break;
 			}
 			case AnimationRequestType.MoveToIndex:
 			{
+				if (request.targetCard == null) break;
 				visuals.ApplyAnimationResult(request);
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
@@ -355,6 +416,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.Destroy:
 			{
+				if (request.targetCard == null) break;
 				visuals.ApplyAnimationResult(request);
 				bool done = false;
 				visuals.DestroyCardWithAnimation(request.targetCard, () => { done = true; if (request.onComplete != null) request.onComplete(); });
@@ -572,6 +634,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.PopUp:
 			{
+				if (request.targetCard == null) break;
 				bool done = false;
 				visuals.PopUpCard(request.targetCard, () => { done = true; if (request.onComplete != null) request.onComplete(); });
 				yield return new WaitUntil(() => done);
@@ -579,6 +642,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.MoveToPopUpPosition:
 			{
+				if (request.targetCard == null) break;
 				visuals.UpdateAllPhysicalCardTargets();
 				bool done = false;
 				visuals.MoveCardToPopUpPosition(request.targetCard, request.targetIndex, () => { done = true; if (request.onComplete != null) request.onComplete(); });
@@ -587,6 +651,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.SlotIn:
 			{
+				if (request.targetCard == null) break;
 				bool done = false;
 				visuals.SlotInCard(request.targetCard, () => { done = true; if (request.onComplete != null) request.onComplete(); });
 				yield return new WaitUntil(() => done);
@@ -597,16 +662,27 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
-				foreach (var card in request.targetCards)
+				int filteredCount = 0;
+				for (int i = 0; i < totalCount; i++)
 				{
+					if (request.targetCards[i] != null) filteredCount++;
+				}
+				for (int i = 0; i < totalCount; i++)
+				{
+					var card = request.targetCards[i];
+					if (card == null)
+					{
+						TestManager.Log("[RecorderAnimationPlayer] PopUpBatch skipping destroyed card at index " + i);
+						continue;
+					}
 					visuals.PopUpCard(card, () =>
 					{
 						completedCount++;
-						if (request.onComplete != null && completedCount >= totalCount)
+						if (request.onComplete != null && completedCount >= filteredCount)
 							request.onComplete();
 					});
 				}
-				yield return new WaitUntil(() => completedCount >= totalCount);
+				yield return new WaitUntil(() => completedCount >= filteredCount);
 				break;
 			}
 			case AnimationRequestType.SlotInBatch:
@@ -614,16 +690,27 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				int completedCount = 0;
 				int totalCount = request.targetCards != null ? request.targetCards.Count : 0;
 				if (totalCount == 0) break;
-				foreach (var card in request.targetCards)
+				int filteredCount = 0;
+				for (int i = 0; i < totalCount; i++)
 				{
+					if (request.targetCards[i] != null) filteredCount++;
+				}
+				for (int i = 0; i < totalCount; i++)
+				{
+					var card = request.targetCards[i];
+					if (card == null)
+					{
+						TestManager.Log("[RecorderAnimationPlayer] SlotInBatch skipping destroyed card at index " + i);
+						continue;
+					}
 					visuals.SlotInCard(card, () =>
 					{
 						completedCount++;
-						if (request.onComplete != null && completedCount >= totalCount)
+						if (request.onComplete != null && completedCount >= filteredCount)
 							request.onComplete();
 					});
 				}
-				yield return new WaitUntil(() => completedCount >= totalCount);
+				yield return new WaitUntil(() => completedCount >= filteredCount);
 				break;
 			}
 			case AnimationRequestType.Shuffle:

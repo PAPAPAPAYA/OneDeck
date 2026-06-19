@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DefaultNamespace;
 using DG.Tweening;
 using UnityEngine;
+using DefaultNamespace.Managers;
 
 public class CombatUXManager : MonoBehaviour, ICombatVisuals
 {
@@ -150,7 +151,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckBefore += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck START deckBefore=" + deckBefore);
+		TestManager.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck START deckBefore=" + deckBefore);
 
 		// Rebuild dictionary (includes cards from deck and reveal zone)
 		BuildCardScriptToPhysicalDictionary();
@@ -186,7 +187,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			deckList += "[" + i + "]" + physicalCardsInDeck[i].name + " ";
 		}
-		Debug.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck done. deckCount=" + physicalCardsInDeck.Count + " revealZone=" + (physicalCardInRevealZone != null ? physicalCardInRevealZone.name : "null") + " deck=" + deckList);
+		TestManager.Log("[CombatUXManager] SyncPhysicalCardsWithCombinedDeck done. deckCount=" + physicalCardsInDeck.Count + " revealZone=" + (physicalCardInRevealZone != null ? physicalCardInRevealZone.name : "null") + " deck=" + deckList);
 	}
 
 	/// <summary>
@@ -404,7 +405,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		AnimationStateTracker.me?.RegisterAnimation();
 
 		int actualPhysIndex = physicalCardsInDeck.IndexOf(physicalCard);
-		Debug.Log("[CombatUXManager] MoveCardWithAnimation START logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " targetPos=" + targetPosition + " physical=" + physicalCard.name + " actualPhysIndex=" + actualPhysIndex + " deckCount=" + physicalCardsInDeck.Count + " physCurrentPos=" + physicalCard.transform.position + " isPending=" + physScript.isPendingSlotIn);
+		TestManager.Log("[CombatUXManager] MoveCardWithAnimation START logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " targetPos=" + targetPosition + " physical=" + physicalCard.name + " actualPhysIndex=" + actualPhysIndex + " deckCount=" + physicalCardsInDeck.Count + " physCurrentPos=" + physicalCard.transform.position + " isPending=" + physScript.isPendingSlotIn);
 
 		// Create animation sequence
 		Sequence moveSequence = DOTween.Sequence();
@@ -662,7 +663,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, count, basePos, xOffset, yOffset, zOffset);
-		Debug.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result);
+		TestManager.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result);
 		return result;
 	}
 
@@ -686,7 +687,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, fullCount, basePos, xOffset, yOffset, zOffset);
-		Debug.Log("[CombatUXManager] CalculateAnimationPositionAtIndex index=" + index + " fullCount=" + fullCount + " result=" + result);
+		TestManager.Log("[CombatUXManager] CalculateAnimationPositionAtIndex index=" + index + " fullCount=" + fullCount + " result=" + result);
 		return result;
 	}
 
@@ -707,7 +708,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, fullCount, basePos, xOffset, yOffset, zOffset);
-		Debug.Log("[CombatUXManager] CalculatePositionForPendingCard index=" + index + " fullCount=" + fullCount + " result=" + result);
+		TestManager.Log("[CombatUXManager] CalculatePositionForPendingCard index=" + index + " fullCount=" + fullCount + " result=" + result);
 		return result;
 	}
 
@@ -982,7 +983,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			return;
 		}
-		Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets START deckCount=" + physicalCardsInDeck.Count);
+		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets START deckCount=" + physicalCardsInDeck.Count);
 		// Update card positions in deck
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
@@ -993,13 +994,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// Calculate target position
 			Vector3 targetPos = CalculatePositionAtIndex(i);
 			
-			Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets card=" + card.name + " index=" + i + " isPending=" + physScript.isPendingSlotIn + " currentPos=" + card.transform.position + " targetPos=" + targetPos);
+			TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets card=" + card.name + " index=" + i + " isPending=" + physScript.isPendingSlotIn + " currentPos=" + card.transform.position + " targetPos=" + targetPos);
 			
 			// Set target position and scale (card handles animation in its own Update)
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
 		}
-		Debug.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");
+		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");
 	}
 
 	/// <summary>
@@ -1017,7 +1018,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			deckBefore += "[" + i + "]" + physicalCardsInDeck[i].name + "(pending=" + (p != null && p.isPendingSlotIn) + ") ";
 		}
 		string targetIndicesStr = request.targetIndices != null ? string.Join(",", request.targetIndices) : "null";
-		Debug.Log("[CombatUXManager] ApplyAnimationResult START type=" + request.type + " targetIndices=" + targetIndicesStr + " snapshotDeckSize=" + request.snapshotDeckSize + " deckBefore=" + deckBefore);
+		TestManager.Log("[CombatUXManager] ApplyAnimationResult START type=" + request.type + " targetIndices=" + targetIndicesStr + " snapshotDeckSize=" + request.snapshotDeckSize + " deckBefore=" + deckBefore);
 
 		switch (request.type)
 		{
@@ -1194,7 +1195,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var p = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
 			deckAfter += "[" + i + "]" + physicalCardsInDeck[i].name + "(pending=" + (p != null && p.isPendingSlotIn) + ") ";
 		}
-		Debug.Log("[CombatUXManager] ApplyAnimationResult END deckCount=" + physicalCardsInDeck.Count + " deckAfter=" + deckAfter);
+		TestManager.Log("[CombatUXManager] ApplyAnimationResult END deckCount=" + physicalCardsInDeck.Count + " deckAfter=" + deckAfter);
 	}
 
 	#endregion
@@ -1943,7 +1944,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// <param name="onComplete">Effect complete callback (executed after effect reaches target)</param>
 	public void PlayStatusEffectProjectile(GameObject giverCard, GameObject receiverCard, Action onComplete = null)
 	{
-		UnityEngine.Debug.Log("[CombatUXManager] PlayStatusEffectProjectile for receiver=" + (receiverCard?.name ?? "null") + " — NO PopUp here, only parabolic projectile.");
+		TestManager.Log("[CombatUXManager] PlayStatusEffectProjectile for receiver=" + (receiverCard?.name ?? "null") + " — NO PopUp here, only parabolic projectile.");
 		if (statusEffectProjectilePrefab == null || giverCard == null || receiverCard == null)
 		{
 			onComplete?.Invoke();
@@ -1985,7 +1986,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Vector3? customEndPosition = null,
 		List<int> projectileCountsPerTarget = null)
 	{
-		UnityEngine.Debug.Log("[CombatUXManager] PlayMultiStatusEffectProjectile START — REAL-TIME path, " + (targetCards?.Count ?? 0) + " targets. reverseDirection=" + reverseDirection + ". NO PopUp/SlotIn here!");
+		TestManager.Log("[CombatUXManager] PlayMultiStatusEffectProjectile START — REAL-TIME path, " + (targetCards?.Count ?? 0) + " targets. reverseDirection=" + reverseDirection + ". NO PopUp/SlotIn here!");
 		if (targetCards == null || targetCards.Count == 0)
 		{
 			onAllComplete?.Invoke();
@@ -2140,7 +2141,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Vector2? projectileStartRandomOffsetRange = null,
 		Vector2? projectileStartTimeStaggerRange = null)
 	{
-		UnityEngine.Debug.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition to " + endPosition + " count=" + projectileCount + " — NO PopUp here, only parabolic projectile.");
+		TestManager.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition to " + endPosition + " count=" + projectileCount + " — NO PopUp here, only parabolic projectile.");
 		if (projectileCount <= 0)
 		{
 			onComplete?.Invoke();
@@ -2547,7 +2548,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		//   Regress:  Same as CalculatePositionForPendingCard
 		//   Related:  RIFT_INSECT, BLACKSMITH
 		Vector3 targetPos = CalculatePositionForPendingCard(deckIndex);
-		Debug.Log("[CombatUXManager] SlotInCard logical=" + logicalCard.name + " deckIndex=" + deckIndex + " targetPos=" + targetPos + " isPending=" + physScript.isPendingSlotIn);
+		TestManager.Log("[CombatUXManager] SlotInCard logical=" + logicalCard.name + " deckIndex=" + deckIndex + " targetPos=" + targetPos + " isPending=" + physScript.isPendingSlotIn);
 
 		AnimationStateTracker.me?.RegisterAnimation();
 		BlockInput(this);
@@ -2610,7 +2611,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		peakPos.z += popUpZBoost;
 		Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
 
-		Debug.Log("[CombatUXManager] MoveCardToPopUpPosition logical=" + logicalCard.name + " deckIndex=" + deckIndex + " deckPos=" + deckPos + " peakPos=" + peakPos + " isPending=" + physScript.isPendingSlotIn);
+		TestManager.Log("[CombatUXManager] MoveCardToPopUpPosition logical=" + logicalCard.name + " deckIndex=" + deckIndex + " deckPos=" + deckPos + " peakPos=" + peakPos + " isPending=" + physScript.isPendingSlotIn);
 
 		physScript.isPlayingSpecialAnimation = true;
 		AnimationStateTracker.me?.RegisterAnimation();

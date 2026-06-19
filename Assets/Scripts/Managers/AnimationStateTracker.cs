@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using DefaultNamespace.Managers;
 
 /// <summary>
 /// Global animation coordinator. When animations are playing, all GameEvent raises
@@ -37,7 +38,7 @@ public class AnimationStateTracker : MonoBehaviour
 			_hasActiveBatch = true;
 		}
 		_pendingAnimations++;
-		Debug.Log("[AnimationStateTracker] RegisterAnimation pending=" + _pendingAnimations);
+		TestManager.Log("[AnimationStateTracker] RegisterAnimation pending=" + _pendingAnimations);
 	}
 
 	/// <summary>
@@ -46,7 +47,7 @@ public class AnimationStateTracker : MonoBehaviour
 	public void CompleteAnimation()
 	{
 		_pendingAnimations--;
-		Debug.Log("[AnimationStateTracker] CompleteAnimation pending=" + _pendingAnimations);
+		TestManager.Log("[AnimationStateTracker] CompleteAnimation pending=" + _pendingAnimations);
 		if (_pendingAnimations <= 0)
 		{
 			_pendingAnimations = 0;

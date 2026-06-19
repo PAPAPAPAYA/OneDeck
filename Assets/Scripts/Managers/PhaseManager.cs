@@ -109,6 +109,13 @@ public class PhaseManager : MonoBehaviour
 		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat) // if in combat phase
 		{
 			if (!combatFinished.value) return;
+			// Guard: don't exit combat while effect recorder animations are still playing.
+			// Exiting early would Destroy cards/effect recorders that the coroutine is still accessing.
+			if (CombatManager.Me != null && CombatManager.Me.isPlayingEffectAnimations)
+			{
+				TestManager.Log("[PhaseManager] Combat finished but effect animations still playing; waiting before exiting combat phase.");
+				return;
+			}
 			if (playerStatusRef.hp <= 0)
 			{
 				if (enemyStatusRef.hp <= 0)

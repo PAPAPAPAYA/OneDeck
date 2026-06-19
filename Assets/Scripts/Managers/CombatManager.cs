@@ -426,11 +426,26 @@ public class CombatManager : MonoBehaviour
 	private System.Collections.IEnumerator PlayRecorderAnimationsAndWait()
 	{
 		isPlayingEffectAnimations = true;
+		TestManager.Log("[CombatManager] PlayRecorderAnimationsAndWait STARTED");
+
 		// 1. Safety wait for active animation batches
 		while (AnimationStateTracker.me != null && AnimationStateTracker.me.HasActiveBatch)
 		{
-			Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait waiting for HasActiveBatch. Pending=" + AnimationStateTracker.me.PendingAnimations);
+			if (this == null || gameObject == null)
+			{
+				TestManager.Log("[CombatManager] PlayRecorderAnimationsAndWait aborted during HasActiveBatch wait: object destroyed.");
+				yield break;
+			}
+			TestManager.Log("[CombatManager] PlayRecorderAnimationsAndWait waiting for HasActiveBatch. Pending=" + AnimationStateTracker.me.PendingAnimations);
 			yield return null;
+		}
+
+		// Extra guard: abort if this instance or the combat phase is no longer valid.
+		if (this == null || gameObject == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Combat)
+		{
+			TestManager.Log("[CombatManager] PlayRecorderAnimationsAndWait aborted after wait: object destroyed or not in Combat phase.");
+			isPlayingEffectAnimations = false;
+			yield break;
 		}
 
 		// 2. Close the chain
@@ -449,7 +464,7 @@ public class CombatManager : MonoBehaviour
 						if (rec == null) continue;
 						var recorder = rec.GetComponent<EffectRecorder>();
 						bool isRoot = rec.transform.parent == EffectChainManager.Me.transform;
-						Debug.Log("[CombatManager] Collecting recorder chainID=" + (recorder != null ? recorder.chainID.ToString() : "null")
+						TestManager.Log("[CombatManager] Collecting recorder chainID=" + (recorder != null ? recorder.chainID.ToString() : "null")
 							+ " card=" + (recorder != null && recorder.cardObject != null ? recorder.cardObject.name : "null")
 							+ " animationPlayed=" + (recorder != null ? recorder.animationPlayed.ToString() : "null")
 							+ " isRoot=" + isRoot
@@ -463,12 +478,18 @@ public class CombatManager : MonoBehaviour
 
 				if (roots.Count > 0)
 				{
+					TestManager.Log("[CombatManager] Playing " + roots.Count + " root recorder(s).");
 					yield return StartCoroutine(RecorderAnimationPlayer.me.PlayRecordersCoroutine(roots));
+				}
+				else
+				{
+					TestManager.Log("[CombatManager] No root recorders to play.");
 				}
 			}
 		}
 		finally
 		{
+			TestManager.Log("[CombatManager] PlayRecorderAnimationsAndWait finally block.");
 			// Mark all recorders in closedEffectRecorders as played to prevent replay on exception
 			if (EffectChainManager.Me != null && EffectChainManager.Me.closedEffectRecorders != null)
 			{
@@ -478,7 +499,7 @@ public class CombatManager : MonoBehaviour
 					var recorder = recObj.GetComponent<EffectRecorder>();
 					if (recorder != null)
 					{
-						Debug.Log("[CombatManager] finally marking animationPlayed=true for chainID=" + recorder.chainID + " card=" + (recorder.cardObject != null ? recorder.cardObject.name : "null"));
+						TestManager.Log("[CombatManager] finally marking animationPlayed=true for chainID=" + recorder.chainID + " card=" + (recorder.cardObject != null ? recorder.cardObject.name : "null"));
 						recorder.animationPlayed = true;
 					}
 				}
@@ -487,6 +508,13 @@ public class CombatManager : MonoBehaviour
 			// Ensure input blocking is released
 			ResetInputBlock();
 			// NOTE: isPlayingEffectAnimations is reset AFTER UpdateAllPhysicalCardTargets below
+		}
+
+		if (this == null || gameObject == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Combat)
+		{
+			TestManager.Log("[CombatManager] PlayRecorderAnimationsAndWait aborted before final layout: object destroyed or not in Combat phase.");
+			isPlayingEffectAnimations = false;
+			yield break;
 		}
 
 		// Wait for attack animations to finish before next reveal
@@ -500,7 +528,7 @@ public class CombatManager : MonoBehaviour
 
 		isPlayingEffectAnimations = false;
 
-		Debug.Log("[CombatManager] PlayRecorderAnimationsAndWait COMPLETE");
+		TestManager.Log("[CombatManager] PlayRecorderAnimationsAndWait COMPLETE");
 		if (visuals != null)
 		{
 			string deckList = "";
@@ -808,6 +836,14 @@ public class CombatManager : MonoBehaviour
 	private void HandleCombatFinished()
 	{
 		if (combatFinished.value) return;
+
+		// Guard: don't mark combat as finished while effect recorder animations are still playing.
+		// Otherwise PhaseManager may call ExitCombat() and Destroy cards that the animation coroutine is using.
+		if (isPlayingEffectAnimations)
+		{
+			TestManager.Log("[CombatManager] HandleCombatFinished blocked: effect animations still playing.");
+			return;
+		}
 
 		_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAP / SPACE to continue";
 		if (!ShouldAutoConfirm()) return;

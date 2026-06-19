@@ -55,13 +55,15 @@
 #endregion
 #region anything else
 //! anything else
+	//// higher pop up pos to show card name
 	//todo card tweaks
-		// curse_thirst_shaman exclude self
+		//// curse_thirst_shaman exclude self
+		//// fix include self
 	//// show stats when game over
-	//todo print stats with hot-key
+	//// print stats with hot-key
 	// do a numerical analysis
 	//// add hpmax up and decksize up to shopPoolRef
-	//todo adjust hp
+	//// adjust hp
 	//todo populate enemy decks
 	///// add to agents.md: don't change code if not told
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
@@ -139,7 +141,7 @@
 		//// rarity attibute in card script
 	//// iterate on shop based on rarity
 	// fake shuffle
-		//todo can we make it so that start card won't be at the top?
+		//// can we make it so that start card won't be at the top?
 		//? detect large amount of consecutive cards from one side
 		//// stddev for start card
 #endregion
@@ -227,6 +229,10 @@
 #endregion
 #region bugs
 //! bug
+	//// deck increase price
+	//// crlf and tab
+	//? the fool
+	//? rift stages rift stages another card in auto-reveal
 	//// curse thirst shaman: basedOnIntSO issue
 	//// other value tracking and basedOnIntSO()
 		//// grave_invitation

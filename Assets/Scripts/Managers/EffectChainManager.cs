@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DefaultNamespace;
 using UnityEngine;
+using DefaultNamespace.Managers;
 
 public class EffectChainManager : MonoBehaviour
 {
@@ -110,7 +111,7 @@ public class EffectChainManager : MonoBehaviour
 		}
 
 		string parentName = isRoot ? "ROOT" : (previousRecorder != null ? previousRecorder.GetComponent<EffectRecorder>().chainID.ToString() : currentEffectRecorderParent.GetComponent<EffectRecorder>().chainID.ToString());
-		Debug.Log("[EffectChainManager] MakeANewEffectRecorder chain#" + chainNumber + " card=" + myCard.name + " effect=" + myEffectInst.name + " isRoot=" + isRoot + " parent=" + parentName + " stackSize=" + recorderStack.Count);
+		TestManager.Log("[EffectChainManager] MakeANewEffectRecorder chain#" + chainNumber + " card=" + myCard.name + " effect=" + myEffectInst.name + " isRoot=" + isRoot + " parent=" + parentName + " stackSize=" + recorderStack.Count);
 	}
 
 	public bool EffectCanBeInvoked(string effectID)
@@ -145,7 +146,7 @@ public class EffectChainManager : MonoBehaviour
 
 		if (chainDepth > 99)
 		{
-			Debug.LogError("ERROR: chain depth reached limit");
+			TestManager.LogError("[EffectChainManager] ERROR: chain depth reached limit");
 			return false;
 		}
 
@@ -164,7 +165,7 @@ public class EffectChainManager : MonoBehaviour
 			recorderStack.RemoveAt(recorderStack.Count - 1);
 			var newCurrent = currentEffectRecorder;
 			string newCurrentName = newCurrent != null ? "chain#" + newCurrent.GetComponent<EffectRecorder>().chainID + "[" + newCurrent.GetComponent<EffectRecorder>().cardObject.name + "]" : "null";
-			Debug.Log("[EffectChainManager] PopCurrentRecorder popped=" + poppedName + " newCurrent=" + newCurrentName + " stackSize=" + recorderStack.Count);
+			TestManager.Log("[EffectChainManager] PopCurrentRecorder popped=" + poppedName + " newCurrent=" + newCurrentName + " stackSize=" + recorderStack.Count);
 		}
 	}
 
@@ -172,18 +173,32 @@ public class EffectChainManager : MonoBehaviour
 	{
 		int count = openedEffectRecorders.Count;
 		string closedChainInfo = "";
+		int skippedCount = 0;
 		foreach (var recorder in openedEffectRecorders)
 		{
+			if (recorder == null)
+			{
+				skippedCount++;
+				continue;
+			}
 			var rec = recorder.GetComponent<EffectRecorder>();
+			if (rec == null)
+			{
+				skippedCount++;
+				continue;
+			}
+			// Guard against destroyed card/effect objects left in recorders.
+			string cardName = rec.cardObject != null ? rec.cardObject.name : "null";
+			string effectName = rec.effectObject != null ? rec.effectObject.name : "null";
 			string reqSummary = "reqs=" + rec.animationRequests.Count;
 			for (int i = 0; i < rec.animationRequests.Count; i++)
 			{
 				reqSummary += "[" + i + "]" + rec.animationRequests[i].type;
 			}
-			closedChainInfo += "chain#" + rec.chainID + "[" + rec.cardObject.name + "/" + rec.effectObject.name + "/" + reqSummary + "];";
+			closedChainInfo += "chain#" + rec.chainID + "[" + cardName + "/" + effectName + "/" + reqSummary + "];";
 		}
 		if (count > 0)
-			Debug.Log("[EffectChainManager] CloseOpenedChain closing " + count + " recorders: " + closedChainInfo);
+			TestManager.Log("[EffectChainManager] CloseOpenedChain closing " + count + " recorders (skipped " + skippedCount + " destroyed): " + closedChainInfo);
 
 		UtilityFuncManagerScript.CopyList(openedEffectRecorders, closedEffectRecorders, false);
 		openedEffectRecorders.Clear();

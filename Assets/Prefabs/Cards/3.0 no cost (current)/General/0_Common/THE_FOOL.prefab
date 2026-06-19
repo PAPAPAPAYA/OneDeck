@@ -45,12 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -80,13 +77,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
   extraDmg: 2
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &270621688628183383
 GameObject:
   m_ObjectHideFlags: 0
@@ -132,12 +132,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -167,10 +164,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StageEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   tagToCheck: 0
   targetFriendly: 0
   statusEffectToCheck: 4
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -221,7 +220,10 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: THE_FOOL
   displayName: "\u611A\u8005"
-  cardDesc: "\u63ed\u6653\u65f6:\u7f6e\u9876\u529b\u91cf\u6700\u591a\u7684\u654c\u65b9,\u9020\u6210 <b>4</b> \u4f24\u5bb3"
+  cardDesc: "\u63ED\u6653\u65F6:\u7F6E\u9876\u529B\u91CF\u6700\u591A\u7684\u654C\u65B9,\u9020\u6210
+    <b>4</b> \u4F24\u5BB3"
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -229,13 +231,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

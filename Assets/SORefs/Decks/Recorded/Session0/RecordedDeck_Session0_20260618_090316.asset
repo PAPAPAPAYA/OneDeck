@@ -10,11 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: EnemyDeckForTesting
-  m_EditorClassIdentifier: 
+  m_Name: RecordedDeck_Session0_20260618_090316
+  m_EditorClassIdentifier: Assembly-CSharp::DeckSO
   deck:
-  - {fileID: 1808145013887896563, guid: 6050fd316b927014d90d8dc9bca4249f, type: 3}
   - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
-  defaultDeck: {fileID: 11400000, guid: 47b0ebbd6e3127348899a6396755248c, type: 2}
-  resetOnStart: 1
-  description: 
+  - {fileID: 8718476725744197808, guid: 4fab5dcf4bb8f884fa0183640cccb494, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: 'Auto-recorded player deck.
+
+    Cards: 2
+
+    Missing: 0
+
+    Session:
+    1
+
+    Recorded: 2026-06-18 09:03:16'

@@ -99,3 +99,9 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `NullCombatVisualsBehaviour.cs` | 16, 17, 19 |
 | `StatusEffectGiverEffect.cs` | 17 |
 | `EffectScript.cs` | 18, 19 |
+
+## Lifecycle & Destroy Guards
+
+| # | Scenario | System / Effect | Fixed Date | Status | Verification |
+|---|----------|-----------------|------------|--------|--------------|
+| 26 | `MissingReferenceException` when exiting combat while effect animations are still playing | `CombatManager`, `PhaseManager`, `EffectChainManager`, `RecorderAnimationPlayer` | 2026-06-19 | ⚠️ | **Step:** Trigger a combat-ending effect (e.g. last revealed card kills enemy) while `isPlayingEffectAnimations == true`, or spam-click/auto-reveal through combat end.<br>**Check:** PhaseManager waits for `isPlayingEffectAnimations == false` before calling `ExitCombat()`; `HandleCombatFinished()` does not set `combatFinished` until animations complete; `CloseOpenedChain()` and `RecorderAnimationPlayer` skip destroyed cards/recorders instead of crashing; console shows no `MissingReferenceException` from `PlayRecorderAnimationsAndWait`. |

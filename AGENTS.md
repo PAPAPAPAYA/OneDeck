@@ -14,6 +14,7 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 
 ## Agent Behavior
 - **Code Changes**: Do not execute code modifications unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
+- **Document Format**: If any file is found to violate the CRLF + Tab leading-indent standard, convert it to the compliant format before editing.
 
 ## Core Loop
 
@@ -203,10 +204,10 @@ Example (BuryEffect):
 var targetIndices = new List<int>();
 foreach (var card in buriedCards) { targetIndices.Add(_combinedDeck.IndexOf(card)); }
 recorder.animationRequests.Add(new AnimationRequest {
-    type = AnimationRequestType.MoveToBottomBatch,
-    targetCards = buriedCards,
-    targetIndices = targetIndices,  // snapshot
-    ...
+	type = AnimationRequestType.MoveToBottomBatch,
+	targetCards = buriedCards,
+	targetIndices = targetIndices,  // snapshot
+	...
 });
 ```
 
@@ -273,13 +274,7 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 
 ## Color Tags
 
-| Type | Tag |
-|------|-----|
-| Damage | `<color=red>` |
-| Heal | `<color=#90EE90>` |
-| Shield | `<color=grey>` |
-| Friendly | `<color=#87CEEB>` |
-| Enemy | `<color=orange>` |
+Damage `<color=red>`, Heal `<color=#90EE90>`, Shield `<color=grey>`, Friendly `<color=#87CEEB>`, Enemy `<color=orange>`
 
 ---
 
@@ -301,9 +296,4 @@ If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.G
 
 ## Agent Post-Mortem Notes
 
-- **Do not treat PRD scope as exhaustive**. Independently trace full flow; PRDs can miss branches.
-- **Watch for sentinel conditions** (`return`, `else`, `continue`) that short-circuit expected paths.
-- **After moving code, do reachability check**: simulate end-to-end and confirm modified lines execute.
-- **Read the full method body**: earlier branches (e.g. Round Start before Phase 1) may be the real path.
-
-**Glob**: Use `Assets/**/FileName.cs` instead of `**/FileName.cs`
+- Trace full flow independently; PRDs can miss branches. Watch for sentinel conditions (`return`/`else`/`continue`). After moving code, do a reachability check. Read the full method body — earlier branches may be the real path. **Glob**: Use `Assets/**/FileName.cs` instead of `**/FileName.cs`

@@ -134,7 +134,7 @@ MonoBehaviour:
   takeUpSpace: 0
   isStartCard: 0
   isMinion: 0
-  price: {fileID: 11400000, guid: e57676058a6a9344883c99c068362e4f, type: 2}
+  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

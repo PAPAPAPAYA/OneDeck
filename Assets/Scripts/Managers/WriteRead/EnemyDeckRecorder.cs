@@ -7,6 +7,7 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+using DefaultNamespace.Managers;
 
 namespace TestWriteRead
 {
@@ -48,27 +49,27 @@ namespace TestWriteRead
 		{
 			if (!Application.isPlaying)
 			{
-				Debug.LogWarning("[EnemyDeckRecorder] Recording is only available in Play Mode.");
+				TestManager.LogWarning("[EnemyDeckRecorder] Recording is only available in Play Mode.");
 				return;
 			}
 
 			var deckSaver = DeckSaver.Me;
 			if (deckSaver == null)
 			{
-				Debug.LogWarning("[EnemyDeckRecorder] DeckSaver singleton is null.");
+				TestManager.LogWarning("[EnemyDeckRecorder] DeckSaver singleton is null.");
 				return;
 			}
 
 			var sourceDeck = deckSaver.playerDeck;
 			if (sourceDeck == null)
 			{
-				Debug.LogWarning("[EnemyDeckRecorder] DeckSaver.playerDeck is null.");
+				TestManager.LogWarning("[EnemyDeckRecorder] DeckSaver.playerDeck is null.");
 				return;
 			}
 
 			if (sourceDeck.deck == null || sourceDeck.deck.Count == 0)
 			{
-				Debug.LogWarning("[EnemyDeckRecorder] Player deck is empty.");
+				TestManager.LogWarning("[EnemyDeckRecorder] Player deck is empty.");
 				return;
 			}
 
@@ -105,20 +106,20 @@ namespace TestWriteRead
 
 			if (missingCards.Count > 0)
 			{
-				Debug.LogWarning("[EnemyDeckRecorder] Could not resolve " + missingCards.Count +
+				TestManager.LogWarning("[EnemyDeckRecorder] Could not resolve " + missingCards.Count +
 					" card(s): " + string.Join(", ", missingCards));
 			}
 
 			if (resolvedPrefabs.Count == 0)
 			{
-				Debug.LogError("[EnemyDeckRecorder] No cards could be resolved. Aborting.");
+				TestManager.LogError("[EnemyDeckRecorder] No cards could be resolved. Aborting.");
 				return;
 			}
 
 #if UNITY_EDITOR
 			CreateDeckAsset(resolvedPrefabs, missingCards);
 #else
-			Debug.Log("[EnemyDeckRecorder] Asset creation is only available in Editor.");
+			TestManager.Log("[EnemyDeckRecorder] Asset creation is only available in Editor.");
 #endif
 		}
 
@@ -127,7 +128,7 @@ namespace TestWriteRead
 			if (!string.IsNullOrEmpty(cardScript.cardTypeID))
 				return cardScript.cardTypeID;
 
-			Debug.LogWarning("[EnemyDeckRecorder] Card " + cardScript.name +
+			TestManager.LogWarning("[EnemyDeckRecorder] Card " + cardScript.name +
 				" has no cardTypeID, falling back to GameObject name.");
 			return cardScript.name;
 		}
@@ -143,21 +144,32 @@ namespace TestWriteRead
 			deckSO.resetOnStart = false;
 			deckSO.description = GenerateDescription(resolvedPrefabs.Count, missingCards.Count);
 
+			string sessionFolder = GetSessionSubfolder();
 			string filename = GenerateFilename();
-			string assetPath = ResolveUniqueAssetPath(outputFolder, filename);
+			string assetPath = ResolveUniqueAssetPath(sessionFolder, filename);
 
-			string fullFolder = Path.Combine(Application.dataPath, outputFolder);
+			string fullFolder = Path.Combine(Application.dataPath, sessionFolder);
 			if (!Directory.Exists(fullFolder))
 				Directory.CreateDirectory(fullFolder);
 
 			AssetDatabase.CreateAsset(deckSO, assetPath);
 			AssetDatabase.SaveAssets();
+			AssetDatabase.Refresh();
 
 			EditorUtility.FocusProjectWindow();
 			Selection.activeObject = deckSO;
 
-			Debug.Log("[EnemyDeckRecorder] Recorded enemy deck: " + assetPath +
+			TestManager.Log("[EnemyDeckRecorder] Recorded enemy deck: " + assetPath +
 				" (" + resolvedPrefabs.Count + " cards)");
+		}
+
+		private string GetSessionSubfolder()
+		{
+			var deckSaver = DeckSaver.Me;
+			int sessionNum = deckSaver != null && deckSaver.sessionNumber != null
+				? deckSaver.sessionNumber.value
+				: 0;
+			return Path.Combine(outputFolder, "Session" + sessionNum);
 		}
 
 		private string GenerateFilename()

@@ -3,6 +3,7 @@ using DG.Tweening;
 using MilkShake;
 using TMPro;
 using UnityEngine;
+using DefaultNamespace.Managers;
 
 public class CardPhysObjScript : MonoBehaviour
 {
@@ -286,7 +287,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	public void SetTargetPosition(Vector3 target, Action onComplete = null)
 	{
-		Debug.Log("[CardPhysObjScript] SetTargetPosition card=" + name + " currentPos=" + transform.position + " newTarget=" + target + " isPlayingSpecial=" + isPlayingSpecialAnimation);
+		TestManager.Log("[CardPhysObjScript] SetTargetPosition card=" + name + " currentPos=" + transform.position + " newTarget=" + target + " isPlayingSpecial=" + isPlayingSpecialAnimation);
 		TargetPosition = target;
 
 		// If special animation is playing, do not start DOTween
@@ -349,7 +350,7 @@ public class CardPhysObjScript : MonoBehaviour
 			_positionTween.Kill();
 		}
 
-		Debug.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + moveDuration);
+		TestManager.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + moveDuration);
 		float scaledDuration = GetCombatScaledDuration(moveDuration);
 		var tween = transform.DOMove(TargetPosition, scaledDuration)
 			.SetEase(moveEase)

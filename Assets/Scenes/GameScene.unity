@@ -3250,10 +3250,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d395f692b9ee8f04c8266542b1569c21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
-  isTestMode: 0
+  isTestMode: 1
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
+  logCombatFlow: 0
+  logEffectChains: 0
+  logAnimationPlayback: 1
+  logVisualSync: 1
+  logEditorTools: 0
+  logTestManager: 0
 --- !u!4 &898235415
 Transform:
   m_ObjectHideFlags: 0
@@ -3633,7 +3639,7 @@ MonoBehaviour:
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   cardsRevealedThisRound: 0
   isPlayingEffectAnimations: 0
-  autoReveal: 1
+  autoReveal: 0
   combatAnimationSpeedScale: 1.2
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 3
@@ -3761,7 +3767,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbc126ac2175bbf439e7642b6f5fb18d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
-  useCustomOrder: 0
+  useCustomOrder: 1
   customOrderPrefabs:
   - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 1e39f37e43a1d1d4fa44d3fcc58b80bc, type: 3}
@@ -3791,6 +3797,8 @@ MonoBehaviour:
   - {fileID: 1808145013887896563, guid: 1bafbaef2fb0d6b4d98d65925847096d, type: 3}
   - {fileID: 1808145013887896563, guid: 0a03aa84eb476e6418b1ecb480fdea93, type: 3}
   - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
+  - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
+  - {fileID: 8718476725744197808, guid: 4fab5dcf4bb8f884fa0183640cccb494, type: 3}
   - {fileID: 8718476725744197808, guid: 34cb2689cd769a848953305e9f110e46, type: 3}
   - {fileID: 1808145013887896563, guid: b0dfbfc59e957c645917dd54906142e0, type: 3}
   - {fileID: 8718476725744197808, guid: 5e25fb0d284ff6a4180e42d242344a9f, type: 3}
@@ -5029,7 +5037,7 @@ MonoBehaviour:
   gravePosition: {fileID: 490140365}
   cardDestroyAnimDuration: 0.3
   cardDestroyTargetSize: {x: 1, y: 1, z: 1}
-  popUpYOffset: 1.5
+  popUpYOffset: 1.8
   popUpZBoost: 0
   popUpScaleMultiplier: 1
   popUpDuration: 0.16
@@ -5812,7 +5820,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
   - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
-  useDebugEnemyDeck: 0
+  useDebugEnemyDeck: 1
   debugEnemyDeck: {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
   defaultEnemyDeckPool:
   - decks:
@@ -5822,12 +5830,15 @@ MonoBehaviour:
     - {fileID: 11400000, guid: d3747b51cecbbc742856af3946737ba3, type: 2}
     - {fileID: 11400000, guid: 63f86ca6a744e37419f4bc0a9e865289, type: 2}
     - {fileID: 11400000, guid: 77818f7228babca43b3d860eb41125be, type: 2}
+    - {fileID: 11400000, guid: 8d7e56454c7467d4191cadf2984dd753, type: 2}
+    - {fileID: 11400000, guid: 59cb48273ec0d41459488b9f4299953d, type: 2}
+    - {fileID: 11400000, guid: 876a392d4c665324693cadc8eddd6a62, type: 2}
   - decks:
     - {fileID: 11400000, guid: 09b4845adbe6979488f5a8f5e07238af, type: 2}
-    - {fileID: 11400000, guid: 876a392d4c665324693cadc8eddd6a62, type: 2}
     - {fileID: 11400000, guid: bb7a443ed247ecf44af3563da0526fac, type: 2}
+    - {fileID: 11400000, guid: 429d6ef5bf4940b40bb90036bdf1b015, type: 2}
   - decks:
-    - {fileID: 11400000, guid: 07ae052ea61f4279a1f4796afaa90271, type: 2}
+    - {fileID: 11400000, guid: fada3dcbeb94d954297a33b6e95220e8, type: 2}
   - decks:
     - {fileID: 11400000, guid: 176a73177c5547c0a6146eafc999867d, type: 2}
   - decks:

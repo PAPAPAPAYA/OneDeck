@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using DefaultNamespace;
 using DefaultNamespace.SOScripts;
 using UnityEngine;
+using DefaultNamespace.Managers;
 
 public class EffectScript : MonoBehaviour
 {
@@ -124,7 +125,7 @@ public class EffectScript : MonoBehaviour
 		recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		if (recorder != null)
 		{
-			UnityEngine.Debug.Log("[ApplyStatusEffectCore] Capturing StatusEffectChange for " + targetCardScript?.name + ". Recorder has " + recorder.animationRequests.Count + " requests before add.");
+			TestManager.Log("[ApplyStatusEffectCore] Capturing StatusEffectChange for " + targetCardScript?.name + ". Recorder has " + recorder.animationRequests.Count + " requests before add.");
 			recorder.animationRequests.Add(new AnimationRequest
 			{
 				type = AnimationRequestType.StatusEffectChange,

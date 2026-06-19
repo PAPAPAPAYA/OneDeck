@@ -35,6 +35,39 @@ namespace DefaultNamespace.Managers
 		[Tooltip("Optional CombatManager reference. Auto-resolves from CombatManager.Me if null.")]
 		[SerializeField] private CombatManager combatManager;
 
+		#region Log Switches
+
+		public enum LogCategory
+		{
+			CombatFlow,
+			EffectChains,
+			AnimationPlayback,
+			VisualSync,
+			EditorTools,
+			TestManager
+		}
+
+		[Header("Log Switches")]
+		[Tooltip("Log combat flow messages from CombatManager and PhaseManager.")]
+		public bool logCombatFlow = true;
+
+		[Tooltip("Log effect chain messages from EffectChainManager, BuryEffect, StageEffect, and ApplyStatusEffectCore.")]
+		public bool logEffectChains = true;
+
+		[Tooltip("Log animation playback messages from RecorderAnimationPlayer and AnimationStateTracker.")]
+		public bool logAnimationPlayback = true;
+
+		[Tooltip("Log visual/deck sync messages from CombatUXManager and CardPhysObjScript.")]
+		public bool logVisualSync = true;
+
+		[Tooltip("Log editor tool messages from EnemyDeckRecorder and CardTypeIDValidator.")]
+		public bool logEditorTools = true;
+
+		[Tooltip("Log TestManager internal messages.")]
+		public bool logTestManager = true;
+
+		#endregion
+
 		private void Start()
 		{
 			ResolveReferences();
@@ -87,7 +120,7 @@ namespace DefaultNamespace.Managers
 				combatManager.autoReveal = !isTestMode;
 			}
 
-			Debug.Log("[TestManager] Test mode " + (isTestMode ? "ENABLED" : "DISABLED"));
+			TestManager.Log("[TestManager] Test mode " + (isTestMode ? "ENABLED" : "DISABLED"));
 		}
 
 		/// <summary>
@@ -110,5 +143,120 @@ namespace DefaultNamespace.Managers
 				combatManager = CombatManager.Me;
 			}
 		}
+
+		#region Logging API
+
+		public static void Log(object message)
+		{
+			LogInternal(message, null, LogType.Log);
+		}
+
+		public static void Log(object message, Object context)
+		{
+			LogInternal(message, context, LogType.Log);
+		}
+
+		public static void LogWarning(object message)
+		{
+			LogInternal(message, null, LogType.Warning);
+		}
+
+		public static void LogWarning(object message, Object context)
+		{
+			LogInternal(message, context, LogType.Warning);
+		}
+
+		public static void LogError(object message)
+		{
+			LogInternal(message, null, LogType.Error);
+		}
+
+		public static void LogError(object message, Object context)
+		{
+			LogInternal(message, context, LogType.Error);
+		}
+
+		private static void LogInternal(object message, Object context, LogType logType)
+		{
+			if (Me == null)
+			{
+				ForwardToUnity(message, context, logType);
+				return;
+			}
+
+			LogCategory category = InferCategory(message?.ToString() ?? string.Empty);
+			if (!IsEnabled(category))
+			{
+				return;
+			}
+
+			ForwardToUnity(message, context, logType);
+		}
+
+		private static void ForwardToUnity(object message, Object context, LogType logType)
+		{
+			bool hasContext = context != null;
+			switch (logType)
+			{
+				case LogType.Warning:
+					if (hasContext) Debug.LogWarning(message, context);
+					else Debug.LogWarning(message);
+					break;
+				case LogType.Error:
+					if (hasContext) Debug.LogError(message, context);
+					else Debug.LogError(message);
+					break;
+				default:
+					if (hasContext) Debug.Log(message, context);
+					else Debug.Log(message);
+					break;
+			}
+		}
+
+		private static LogCategory InferCategory(string message)
+		{
+			if (message.Contains("[CombatManager]") || message.Contains("[PhaseManager]"))
+			{
+				return LogCategory.CombatFlow;
+			}
+			if (message.Contains("[EffectChainManager]") || message.Contains("[BuryEffect]") ||
+			    message.Contains("[StageEffect]") || message.Contains("[ApplyStatusEffectCore]"))
+			{
+				return LogCategory.EffectChains;
+			}
+			if (message.Contains("[RecorderAnimationPlayer]") || message.Contains("[AnimationStateTracker]"))
+			{
+				return LogCategory.AnimationPlayback;
+			}
+			if (message.Contains("[CombatUXManager]") || message.Contains("[CardPhysObjScript]"))
+			{
+				return LogCategory.VisualSync;
+			}
+			if (message.Contains("[EnemyDeckRecorder]") || message.Contains("[CardTypeIDValidator]"))
+			{
+				return LogCategory.EditorTools;
+			}
+			if (message.Contains("[TestManager]"))
+			{
+				return LogCategory.TestManager;
+			}
+			return LogCategory.CombatFlow;
+		}
+
+		private static bool IsEnabled(LogCategory category)
+		{
+			switch (category)
+			{
+				case LogCategory.CombatFlow: return Me.logCombatFlow;
+				case LogCategory.EffectChains: return Me.logEffectChains;
+				case LogCategory.AnimationPlayback: return Me.logAnimationPlayback;
+				case LogCategory.VisualSync: return Me.logVisualSync;
+				case LogCategory.EditorTools: return Me.logEditorTools;
+				case LogCategory.TestManager: return Me.logTestManager;
+				default: return true;
+			}
+		}
+
+		#endregion
 	}
 }

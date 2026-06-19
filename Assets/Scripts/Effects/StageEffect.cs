@@ -261,7 +261,10 @@ public class StageEffect : EffectScript
 	}
 
 	/// <summary>
-	/// Stage 1 card with the most target status effects. Randomly choose if multiple cards tie.
+	/// Stage 1 card with the most target status effects.
+	/// The candidate pool is controlled by <see cref="targetFriendly"/>:
+	/// when <see cref="targetFriendly"/> is true, only friendly cards (cards sharing
+	/// this card's owner) are considered. Ties are broken randomly.
 	/// </summary>
 	public void StageCardWithMostStatusEffect()
 	{
@@ -269,7 +272,7 @@ public class StageEffect : EffectScript
 		var eligibleCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, eligibleCards, true);
 
-		// Filter: matching owner, not at top, not Minion, don't skip effect processing
+		// Filter: matching owner per targetFriendly, not at top, not Minion, don't skip effect processing
 		for (int i = eligibleCards.Count - 1; i >= 0; i--)
 		{
 			var card = eligibleCards[i];
@@ -371,7 +374,7 @@ public class StageEffect : EffectScript
 			var cs = _combinedDeck[i].GetComponent<CardScript>();
 			deckBefore += "[" + i + "]" + (cs != null ? cs.gameObject.name : "null") + " ";
 		}
-		Debug.Log("[StageEffect] StageChosenCards combinedDeck AFTER logic move: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null") + " staged=" + stagedCards.Count);
+		TestManager.Log("[StageEffect] StageChosenCards combinedDeck AFTER logic move: " + deckBefore + " | revealZone=" + (combatManager.revealZone != null ? combatManager.revealZone.name : "null") + " staged=" + stagedCards.Count);
 
 		// VISUAL-FIX(2026-05-15): Stage reactive chain causes wrong animation target index
 		//   Cause:    Reactive effects (e.g. onMeStaged -> BurySelf) may modify deck order after stage logic
@@ -398,7 +401,7 @@ public class StageEffect : EffectScript
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
 		string reqInfo = "StagePopUpSlotIn cards=" + stagedCards.Count + " indices=" + string.Join(",", stagedTargetIndices) + " deckSize=" + _combinedDeck.Count;
-		Debug.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
+		TestManager.Log("[StageEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null)
 		{
 			// Arc via showPos to pop-up peak, then slot in to top

@@ -229,7 +229,7 @@ public class BuryEffect : EffectScript
 	{
 		if (amount <= 0) return;
 		_combinedDeck = combatManager.combinedDeckZone;
-		Debug.Log("[BuryEffect] BuryNextXCards START amount=" + amount + " myCard=" + myCard.name + " inReveal=" + (combatManager.revealZone != null && combatManager.revealZone == myCard) + " deckCount=" + _combinedDeck.Count);
+		TestManager.Log("[BuryEffect] BuryNextXCards START amount=" + amount + " myCard=" + myCard.name + " inReveal=" + (combatManager.revealZone != null && combatManager.revealZone == myCard) + " deckCount=" + _combinedDeck.Count);
 		int startIndex;
 		if (combatManager.revealZone != null && combatManager.revealZone == myCard)
 		{
@@ -263,12 +263,12 @@ public class BuryEffect : EffectScript
 		}
 		if (cardsToBury.Count > 0)
 		{
-			Debug.Log("[BuryEffect] BuryNextXCards found cardsToBury=" + cardsToBury.Count + " cards=" + string.Join(",", cardsToBury.ConvertAll(c => c.name)));
+			TestManager.Log("[BuryEffect] BuryNextXCards found cardsToBury=" + cardsToBury.Count + " cards=" + string.Join(",", cardsToBury.ConvertAll(c => c.name)));
 			BuryChosenCards(cardsToBury, cardsToBury.Count);
 		}
 		else
 		{
-			Debug.Log("[BuryEffect] BuryNextXCards found NO cards to bury");
+			TestManager.Log("[BuryEffect] BuryNextXCards found NO cards to bury");
 		}
 	}
 
@@ -349,7 +349,7 @@ public class BuryEffect : EffectScript
 		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
 		string recorderInfo = recorder != null ? "chain#" + recorder.chainID + "[" + recorder.cardObject.name + "]" : "null";
 		string reqInfo = "BuryBatch cards=" + buriedCards.Count + " indices=" + string.Join(",", buriedTargetIndices) + " deckSize=" + _combinedDeck.Count;
-		Debug.Log("[BuryEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
+		TestManager.Log("[BuryEffect] Capture request to recorder=" + recorderInfo + " " + reqInfo);
 		if (recorder != null)
 		{
 			// PopUp so player can see which cards are being buried

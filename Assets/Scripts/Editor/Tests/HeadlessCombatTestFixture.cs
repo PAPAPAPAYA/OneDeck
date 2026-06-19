@@ -164,9 +164,10 @@ public abstract class HeadlessCombatTestFixture
 		// Dummy UI to prevent NullReferenceException in RefreshDeckInfo / ShowCardInfo
 		SetupDummyUI();
 
-		// Prevent CombatManager.Update and CombatInfoDisplayer.Update from running combat logic
+		// Set phase to Combat so combat coroutines (e.g. PlayRecorderAnimationsAndWait) run normally in headless tests.
+		// MonoBehaviour.Update is not automatically invoked in Edit Mode tests, so this does not cause unwanted side effects.
 		var gamePhaseSo = CreateScriptableObject<GamePhaseSO>();
-		gamePhaseSo.currentGamePhase = EnumStorage.GamePhase.Shop;
+		gamePhaseSo.currentGamePhase = EnumStorage.GamePhase.Combat;
 		CombatManager.currentGamePhaseRef = gamePhaseSo;
 		InfoDisplayer.gamePhase = gamePhaseSo;
 
