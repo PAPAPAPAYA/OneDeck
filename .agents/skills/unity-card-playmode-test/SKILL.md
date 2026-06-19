@@ -33,7 +33,7 @@ This skill provides a reusable workflow for running **Strategy B — Play Mode I
 | 11 | **Enemy cards need correct parent & status ref** | Curse tests often require an enemy `JU_ON` in the deck. Instantiating with `playerDeckParent` makes it a friendly card. | Create a separate `CreateEnemyCard` helper that uses `cm.enemyDeckParent` and sets `myStatusRef = cm.enemyPlayerStatusRef`. |
 | 12 | **Stage effect appears to do nothing** | `StageMyCards` / `StageSelf` excludes cards already at the top of `combinedDeckZone` (`IsCardAtTop` check). If the only eligible card is at index `Count-1`, the filtered list is empty. | Add an extra dummy card **after** the target card in `combinedDeckZone` so the target is **not** at the top. |
 | 13 | **Cost check `EnemyCursedCardHasPower` fails unexpectedly** | This cost requires the enemy curse card's Power to be **strictly greater** than the parameter (e.g. `> 1` for `intArg=1`). A JU_ON with exactly 1 Power will fail the check. | Pre-buff the enemy JU_ON with enough Power stacks before the trigger (e.g. 2+ Power for `intArg=1`). |
-| 14 | **Multi-Listener cards trigger wrong Container** | Some cards (e.g. `CURSE_THIRST_BEAST`) have **multiple GameEventListeners** on the root object, each bound to a **different CostNEffectContainer** via `InvokeEffectEvent`. `OnMeRevealed` may trigger the "deal dmg" Container while `OnHostileCurseRevealed` triggers the "stage self" Container. | Inspect the prefab's `GameEventListener` response targets (via `SerializedProperty`) to know which Listener maps to which Container. Do not assume all Containers share the same trigger event. |
+| 14 | **Multi-Listener cards trigger wrong Container** | Some cards (e.g. `CURSE_THIRST_BEAST`) have **multiple GameEventListener**s on the root object, each bound to a **different CostNEffectContainer** via `InvokeEffectEvent`. `OnMeRevealed` may trigger the "deal dmg" Container while `OnHostileCurseRevealed` triggers the "stage self" Container. | Inspect the prefab's `GameEventListener` response targets (via `SerializedProperty`) to know which Listener maps to which Container. Do not assume all Containers share the same trigger event. |
 | 15 | **`PlayRecorderAnimationsAndWait` not started in direct tests** | `CombatManager.RevealCards()` starts the coroutine automatically, but direct `InvokeEffectEvent()` or `TriggerRevealEffect` bypasses it | To test the full animation flow, manually start the coroutine via reflection after your effect trigger; or use `TriggerRevealEffect` inside a real reveal cycle by setting `cm.awaitingRevealConfirm = false` first |
 | 16 | **Animation request capture not visible in single-frame tests** | `HPAlterEffect` now captures `AnimationRequest` on the recorder instead of immediately raising `onDamageDealt` | Damage is still resolved synchronously (good for tests), but the `AnimationRequest` is only visible on `EffectRecorder.animationRequests`; inspect `EffectChainManager.Me.closedEffectRecorders` after calling `CloseOpenedChain()` |
 
@@ -376,3 +376,19 @@ return 0;
 - [ ] Old test card is `DestroyImmediate`-ed at the end
 - [ ] **Animation tests**: If verifying `RecorderAnimationPlayer` behavior, call `CloseOpenedChain()` after trigger and inspect `closedEffectRecorders` for captured `AnimationRequest`s
 - [ ] **Coroutine tests**: If testing the full animation phase, ensure `PlayRecorderAnimationsAndWait` is started and yield enough frames for `AnimationStateTracker` to go idle
+
+## 11. Committing Test Artifacts
+
+Play Mode tests may generate runtime deck-record assets under:
+
+```
+Assets/SORefs/Decks/Recorded/SessionN/RecordedDeck_SessionN_YYYYMMDD_HHMMSS.asset
+```
+
+**Do not exclude or ignore these files.** They are intentionally tracked in version control to preserve test session state and ensure reproducibility.
+
+When committing after a Play Mode test session:
+
+- Include any new or modified `RecordedDeck_*.asset` and `.meta` files in the same commit as the code/test changes.
+- Do not treat them as temporary or disposable artifacts.
+- If a new `SessionN` folder is created, commit both the folder's `.meta` file and its contents.
