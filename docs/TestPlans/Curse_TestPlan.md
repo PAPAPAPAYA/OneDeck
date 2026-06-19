@@ -318,7 +318,7 @@ X = 敌方 JU_ON 的 Power 层数
 ### Implementation Chain
 
 1. `GameEventListener` 监听 `onMeRevealed`。
-2. `CurseEffect.EnhanceCurseWithCoefficient(IntSO)`:
+2. `CurseEffect.EnhanceCurseWithCoefficient_BasedOnIntSO()`:
    - `powerCoefficient = 2`
    - `enhanceStacks = IntSO.value / 2`
 

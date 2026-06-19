@@ -324,10 +324,7 @@ namespace DefaultNamespace.Effects
 		/// </summary>
 		public virtual void GiveStatusEffectToXFriendly_BasedOnIntSO()
 		{
-			IntSO intSO = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef
-				? ownerIntSO
-				: enemyIntSO;
-
+			IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 			if (intSO == null) return;
 
 			int originalXFriendlyCount = xFriendlyCount;

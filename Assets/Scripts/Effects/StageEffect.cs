@@ -20,6 +20,12 @@ public class StageEffect : EffectScript
 	[Tooltip("If true, the source card will not be selected when staging multiple cards")]
 	public bool excludeSelf = true;
 
+	[Header("Based on IntSO")]
+	[Tooltip("IntSO used when this card belongs to the owner/player")]
+	public IntSO ownerIntSO;
+	[Tooltip("IntSO used when this card belongs to the enemy")]
+	public IntSO enemyIntSO;
+
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
@@ -206,8 +212,12 @@ public class StageEffect : EffectScript
 		StageChosenCards(friendlyMinions, friendlyMinions.Count);
 	}
 
-	public void StageMyCards_BasedOnIntSO(IntSO intSO)
+	public void StageMyCards_BasedOnIntSO()
 	{
+		IntSO intSO = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef
+			? ownerIntSO
+			: enemyIntSO;
+
 		if (intSO == null) return;
 		StageMyCards(intSO.value);
 	}

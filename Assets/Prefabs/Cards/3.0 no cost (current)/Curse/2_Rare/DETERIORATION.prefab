@@ -52,6 +52,7 @@ MonoBehaviour:
   cardDesc: "\u63ED\u6653\u65F6,\u654C\u65B9[\u8BC5\u5492]\u6BCF\u6709 <b>2</b> \u529B\u91CF:\u589E\u5F3A
     <b>1</b> \u654C\u65B9[\u8BC5\u5492]"
   rarity: 2
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -59,13 +60,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139,12 +135,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -152,11 +145,11 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8814234606693951482}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.CurseEffect, Assembly-CSharp
-        m_MethodName: EnhanceCurseWithCoefficient
-        m_Mode: 2
+        m_MethodName: EnhanceCurseWithCoefficient_BasedOnIntSO
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
-          m_ObjectArgumentAssemblyTypeName: IntSO, Assembly-CSharp
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -174,10 +167,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f31b527b368e7342ba80945e347d10a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
   statusEffectResolverPrefab: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
   powerCoefficient: 2
+  ownerIntSO: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
+  enemyIntSO: {fileID: 11400000, guid: fe20bd15130544d1b7548a9d96631617, type: 2}

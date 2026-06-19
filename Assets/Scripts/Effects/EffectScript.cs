@@ -36,6 +36,18 @@ public class EffectScript : MonoBehaviour
 	{
 		return GetCardOwnerColor(myCardScript.myStatusRef);
 	}
+
+	/// <summary>
+	/// Selects the IntSO that matches this card's owner faction.
+	/// Returns ownerIntSO if the card belongs to the owner/player, otherwise enemyIntSO.
+	/// </summary>
+	protected IntSO GetIntSOForOwner(IntSO ownerIntSO, IntSO enemyIntSO)
+	{
+		if (myCardScript == null || combatManager == null) return null;
+		return myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef
+			? ownerIntSO
+			: enemyIntSO;
+	}
 	#endregion
 
 	#region Helper Methods - Status Effect Application Core

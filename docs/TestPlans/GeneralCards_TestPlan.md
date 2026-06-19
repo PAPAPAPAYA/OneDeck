@@ -84,7 +84,7 @@
 ### Implementation Chain
 
 1. `GameEventListener` 监听 `onMeRevealed`。
-2. `HPAlterEffect.DecreaseTheirHp_BasedOnIntSO(IntSO)`：将 IntSO 的值叠加到 extraDmg，然后调用 `DecreaseTheirHp()`。
+2. `HPAlterEffect.DecreaseTheirHp_BasedOnIntSO()`：根据阵营选择 `ownerIntSO` 或 `enemyIntSO`，将 IntSO 的值叠加到 extraDmg，然后调用 `DecreaseTheirHp()`。
 
 ### Effect Formula
 

@@ -237,7 +237,7 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 - **Deck Focus Restoration**: `RecorderAnimationPlayer` restores normal deck layout before any deck-move request if `CombatUXManager.IsDeckFocused` is true.
 - Batch moves use `correctedIndex` absolute positions, ignoring `snapshotDeckSize` offsets.
 - `HPAlterEffect.isStatusEffectDamage = true` skips `Attack` animation capture.
-- **Recorder path**: `BuryEffect`/`StageEffect` no longer call `SyncPhysicalCardsWithCombinedDeck` in the logic phase; deck reordering is applied by `RecorderAnimationPlayer` via `ApplyAnimationResult` during animation playback.
+- **Recorder path**: `BuryEffect`/`StageEffect`/`ExileEffect` no longer call `SyncPhysicalCardsWithCombinedDeck` in the logic phase; deck reordering/destruction is applied by `RecorderAnimationPlayer` via `ApplyAnimationResult` during animation playback.
 - `ExileEffect` sets `revealZone = null` when exiling the revealed card, and chains `Destroy` requests with `onComplete` on the last card.
 - `CombatManager.Awake()` auto-creates `RecorderAnimationPlayer` if missing.
 - **afterShuffle timing**: Raised **after** shuffle animation completes, next card reaches reveal zone, and `PlayRecorderAnimationsAndWait()` finishes. Round Start path waits for reveal-zone movement via `MoveCardToRevealZone` callback before raising.

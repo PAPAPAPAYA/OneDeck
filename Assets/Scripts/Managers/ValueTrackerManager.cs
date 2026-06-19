@@ -5,15 +5,21 @@ public class ValueTrackerManager : MonoBehaviour
 {
 	public static ValueTrackerManager me;
 
-	[Header("Tracker Refs")]
-	public IntSO friendlyInGraveAmountRef;
-	public IntSO enemyCursePowerCount;
+	[Header("InGraveCount")]
+	public IntSO ownerInGraveAmountRef;
+	public IntSO enemyInGraveAmountRef;
+	[Header("CursePowerCount")]
 	public IntSO ownerCursePowerCount;
+	public IntSO enemyCursePowerCount;
+	[Header("TotalPowerCount")]
 	public IntSO totalPowerCountInDeckRef;
+	[Header("CardCountInDeck")]
 	public IntSO ownerCardCountInDeckRef;
 	public IntSO enemyCardCountInDeckRef;
+	[Header("CardBuriedCount")]
 	public IntSO ownerCardsBuriedCountRef;
 	public IntSO enemyCardsBuriedCountRef;
+	[Header("StagedCard")]
 	public IntSO stagedOwnerRef;
 	public IntSO stagedEnemyRef;
 
@@ -35,7 +41,8 @@ public class ValueTrackerManager : MonoBehaviour
 	/// </summary>
 	public void UpdateAllTrackers()
 	{
-		UpdateFriendlyInGraveAmount();
+		UpdateOwnerInGraveAmount();
+		UpdateEnemyInGraveAmount();
 		UpdateEnemyCursePowerCount();
 		UpdateOwnerCursePowerCount();
 		UpdateTotalPowerCountInDeck();
@@ -44,12 +51,12 @@ public class ValueTrackerManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Update FriendlyInGraveAmount: count friendly cards in combinedDeckZone below the Start Card (smaller index).
+	/// Update OwnerInGraveAmount: count owner cards in combinedDeckZone below the Start Card (smaller index).
 	/// These cards will be revealed after the Start Card and are considered in the "graveyard".
 	/// </summary>
-	private void UpdateFriendlyInGraveAmount()
+	private void UpdateOwnerInGraveAmount()
 	{
-		if (friendlyInGraveAmountRef == null || CombatManager.Me == null) return;
+		if (ownerInGraveAmountRef == null || CombatManager.Me == null) return;
 
 		var deck = CombatManager.Me.combinedDeckZone;
 		int startCardIndex = -1;
@@ -68,11 +75,11 @@ public class ValueTrackerManager : MonoBehaviour
 		// If Start Card is not found, count is 0
 		if (startCardIndex < 0)
 		{
-			friendlyInGraveAmountRef.value = 0;
+			ownerInGraveAmountRef.value = 0;
 			return;
 		}
 
-		// Count friendly cards with index smaller than Start Card
+		// Count owner cards with index smaller than Start Card
 		int count = 0;
 		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
 		for (int i = 0; i < startCardIndex; i++)
@@ -84,7 +91,51 @@ public class ValueTrackerManager : MonoBehaviour
 			}
 		}
 
-		friendlyInGraveAmountRef.value = count;
+		ownerInGraveAmountRef.value = count;
+	}
+
+	/// <summary>
+	/// Update EnemyInGraveAmount: count enemy cards in combinedDeckZone below the Start Card (smaller index).
+	/// These cards will be revealed after the Start Card and are considered in the "graveyard".
+	/// </summary>
+	private void UpdateEnemyInGraveAmount()
+	{
+		if (enemyInGraveAmountRef == null || CombatManager.Me == null) return;
+
+		var deck = CombatManager.Me.combinedDeckZone;
+		int startCardIndex = -1;
+
+		// Find the Start Card's index
+		for (int i = 0; i < deck.Count; i++)
+		{
+			var cardScript = deck[i].GetComponent<CardScript>();
+			if (cardScript != null && cardScript.isStartCard)
+			{
+				startCardIndex = i;
+				break;
+			}
+		}
+
+		// If Start Card is not found, count is 0
+		if (startCardIndex < 0)
+		{
+			enemyInGraveAmountRef.value = 0;
+			return;
+		}
+
+		// Count enemy cards with index smaller than Start Card
+		int count = 0;
+		var enemyStatus = CombatManager.Me.enemyPlayerStatusRef;
+		for (int i = 0; i < startCardIndex; i++)
+		{
+			var cardScript = deck[i].GetComponent<CardScript>();
+			if (cardScript != null && cardScript.myStatusRef == enemyStatus)
+			{
+				count++;
+			}
+		}
+
+		enemyInGraveAmountRef.value = count;
 	}
 
 	/// <summary>

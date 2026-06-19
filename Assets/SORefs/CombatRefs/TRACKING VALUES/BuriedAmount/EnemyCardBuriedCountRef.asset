@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: '#1Deck'
+  m_Script: {fileID: 11500000, guid: a3b874ada8e4469ea42cee10707255e4, type: 3}
+  m_Name: EnemyCardBuriedCountRef
   m_EditorClassIdentifier: 
-  deck: []
-  defaultDeck: {fileID: 11400000, guid: e4f7f6aa5fd36e848ac951450f3e4ba7, type: 2}
+  value: 0
+  valueOg: 0
   resetOnStart: 1
-  description: 
+  description: hostile card buried amount this round

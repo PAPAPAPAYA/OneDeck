@@ -31,6 +31,12 @@ public class HPAlterEffect : EffectScript
 	[Tooltip("Status effect type to count")]
 	public EnumStorage.StatusEffect statusEffectToCheck;
 	
+	[Header("Based on IntSO")]
+	[Tooltip("IntSO used when this card belongs to the owner/player")]
+	public IntSO ownerIntSO;
+	[Tooltip("IntSO used when this card belongs to the enemy")]
+	public IntSO enemyIntSO;
+	
 	[Header("Dynamic Damage Display")]
 	[Tooltip("Optional real-time damage source to append in parentheses at the end of the card description")]
 	public DynamicDmgDisplaySource dynamicDmgDisplaySource = DynamicDmgDisplaySource.None;
@@ -452,48 +458,74 @@ public class HPAlterEffect : EffectScript
 
 	#region IntSO Based Effects
 
-	public void DecreaseTheirHp_BasedOnIntSO(IntSO intSO)
+	/// <summary>
+	/// Based on ownerIntSO/enemyIntSO, decrease opponent HP.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// </summary>
+	public virtual void DecreaseTheirHp_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
 		extraDmg += intSO.value;
 		DecreaseTheirHp();
 		extraDmg = 0;
 	}
 
-	public void DecreaseMyHp_BasedOnIntSO(IntSO intSO)
+	/// <summary>
+	/// Based on ownerIntSO/enemyIntSO, decrease own HP.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// </summary>
+	public virtual void DecreaseMyHp_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
 		extraDmg += intSO.value;
 		DecreaseMyHp();
 		extraDmg = 0;
 	}
 
-	public void IncreaseTheirHp_BasedOnIntSO(IntSO intSO)
+	/// <summary>
+	/// Based on ownerIntSO/enemyIntSO, increase opponent HP.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// </summary>
+	public virtual void IncreaseTheirHp_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
 		IncreaseTheirHp(intSO.value);
 	}
 
-	public void IncreaseMyHp_BasedOnIntSO(IntSO intSO)
+	/// <summary>
+	/// Based on ownerIntSO/enemyIntSO, increase own HP.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// </summary>
+	public virtual void IncreaseMyHp_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
 		IncreaseMyHp(intSO.value);
 	}
 
 	/// <summary>
-	/// Decrease opponent HP multiple times, each dealing baseDmg + extraDmg damage
+	/// Based on ownerIntSO/enemyIntSO, decrease opponent HP multiple times.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// Each hit deals baseDmg + extraDmg damage.
 	/// </summary>
-	/// <param name="timesIntSO">Damage times</param>
-	public void DecreaseTheirHpTimesIntSO(IntSO timesIntSO)
+	public virtual void DecreaseTheirHpTimes_BasedOnIntSO()
 	{
-		if (timesIntSO == null) return;
-		
-		int times = timesIntSO.value;
-		for (int i = 0; i < times; i++)
-		{
-			// print("call DecreaseTheirHp()");
-			DecreaseTheirHp();
-		}
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
+		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
+		DecreaseTheirHpTimesX(intSO.value);
 	}
 
 	/// <summary>

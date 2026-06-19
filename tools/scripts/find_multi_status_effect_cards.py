@@ -51,7 +51,7 @@ CURSE_INT_METHODS = {
 }
 
 CURSE_DYNAMIC_METHODS = {
-    "EnhanceCurseBasedOnIntSO",
+    "EnhanceCurse_BasedOnIntSO",
     "EnhanceCurseWithCoefficient",
 }
 

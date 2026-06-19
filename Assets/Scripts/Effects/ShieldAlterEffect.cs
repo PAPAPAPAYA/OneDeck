@@ -7,15 +7,28 @@ namespace DefaultNamespace.Effects
 		[HideInInspector]
 		public int shieldUpAmountAlter;
 
+		[Header("Based on IntSO")]
+		[Tooltip("IntSO used when this card belongs to the owner/player")]
+		public IntSO ownerIntSO;
+		[Tooltip("IntSO used when this card belongs to the enemy")]
+		public IntSO enemyIntSO;
+
 		public void UpMyShield(int amount)
 		{
 			myCardScript.myStatusRef.shield += amount + shieldUpAmountAlter;
 			CheckShieldUpTarget_UppingSelfShield(amount);
 		}
 
-		public void UpMyShield_BasedOnIntSO(IntSO intSO)
+		/// <summary>
+		/// Based on ownerIntSO/enemyIntSO, increase own shield.
+		/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+		/// </summary>
+		public virtual void UpMyShield_BasedOnIntSO()
 		{
+			IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 			if (intSO == null) return;
+			if (intSO.value <= 0) return;
+
 			UpMyShield(intSO.value);
 		}
 		private void CheckShieldUpTarget_UppingSelfShield(int shieldAmount)

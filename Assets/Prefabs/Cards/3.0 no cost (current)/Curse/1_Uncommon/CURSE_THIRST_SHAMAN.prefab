@@ -179,7 +179,7 @@ MonoBehaviour:
   statusEffectLayerCount: 1
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
-  ownerIntSO: {fileID: 11400000, guid: fe20bd15130544d1b7548a9d96631617, type: 2}
-  enemyIntSO: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
+  ownerIntSO: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
+  enemyIntSO: {fileID: 11400000, guid: fe20bd15130544d1b7548a9d96631617, type: 2}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0

@@ -29,6 +29,12 @@ namespace DefaultNamespace.Effects
 		[Tooltip("Coefficient: for every this much IntSO value, enhance enemy curse by 1")]
 		public int powerCoefficient = 1;
 
+		[Header("Based on IntSO")]
+		[Tooltip("IntSO used when this card belongs to the owner/player")]
+		public IntSO ownerIntSO;
+		[Tooltip("IntSO used when this card belongs to the enemy")]
+		public IntSO enemyIntSO;
+
 		/// <summary>
 		/// Enhances curse: if no enemy card with the specified cardTypeID exists in combinedDeckZone,
 		/// spawns one of that type, then applies Power status effect to that enemy card.
@@ -73,30 +79,33 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// Enhances curse: enhances enemy curse based on IntSO value.
+		/// Enhances curse based on IntSO value.
+		/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
 		/// </summary>
-		/// <param name="powerAmountSO">IntSO storing Power stack amount.</param>
-		public void EnhanceCurseBasedOnIntSO(IntSO powerAmountSO)
+		public virtual void EnhanceCurse_BasedOnIntSO()
 		{
-			if (powerAmountSO == null) return;
-			EnhanceCurse(powerAmountSO.value);
+			IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
+			if (intSO == null) return;
+			EnhanceCurse(intSO.value);
 		}
 
 		/// <summary>
-		/// Enhances curse (with coefficient): calculates enhancement stacks from IntSO value and coefficient,
+		/// Enhances curse (with coefficient) based on ownerIntSO/enemyIntSO.
+		/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+		/// Calculates enhancement stacks from IntSO value and coefficient,
 		/// enhancing curse by 1 for every powerCoefficient points.
 		/// </summary>
-		/// <param name="powerAmountSO">IntSO storing Power stack amount.</param>
-		public void EnhanceCurseWithCoefficient(IntSO powerAmountSO)
+		public virtual void EnhanceCurseWithCoefficient_BasedOnIntSO()
 		{
-			if (powerAmountSO == null) return;
+			IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
+			if (intSO == null) return;
 			if (powerCoefficient <= 0)
 			{
 				// Debug.LogWarning("[CurseEffect] powerCoefficient must be greater than 0!");
 				return;
 			}
 
-			int calculatedPower = powerAmountSO.value / powerCoefficient;
+			int calculatedPower = intSO.value / powerCoefficient;
 			EnhanceCurse(calculatedPower);
 		}
 

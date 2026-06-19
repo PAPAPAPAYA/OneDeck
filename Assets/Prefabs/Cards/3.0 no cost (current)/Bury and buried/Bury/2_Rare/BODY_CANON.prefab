@@ -58,11 +58,11 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1359544507321340075}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHpTimesIntSO
-        m_Mode: 2
+        m_MethodName: DecreaseTheirHpTimes_BasedOnIntSO
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}
-          m_ObjectArgumentAssemblyTypeName: IntSO, Assembly-CSharp
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -87,6 +87,8 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: 1
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}
+  enemyIntSO: {fileID: 11400000, guid: 6a71e8c2b741fd84abafa02a92d21951, type: 2}
 --- !u!1 &7538812023556790325
 GameObject:
   m_ObjectHideFlags: 0

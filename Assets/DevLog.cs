@@ -55,6 +55,9 @@
 #endregion
 #region anything else
 //! anything else
+	//todo card tweaks
+		// curse_thirst_shaman exclude self
+	//// show stats when game over
 	//todo print stats with hot-key
 	// do a numerical analysis
 	//// add hpmax up and decksize up to shopPoolRef
@@ -108,6 +111,8 @@
 #endregion
 #region feature
 //! feature
+	//// add a test manager
+	//// an override slot for enemy deck
 	//// when saving enemy deck, detect if in result phase, if true then sessionnum --
 	//? adjust shop rarity probability gradually
 	//// game over
@@ -134,6 +139,7 @@
 		//// rarity attibute in card script
 	//// iterate on shop based on rarity
 	// fake shuffle
+		//todo can we make it so that start card won't be at the top?
 		//? detect large amount of consecutive cards from one side
 		//// stddev for start card
 #endregion
@@ -221,8 +227,15 @@
 #endregion
 #region bugs
 //! bug
-	//todo curse thirst shaman: basedOnIntSO issue
-		// need testing
+	//// curse thirst shaman: basedOnIntSO issue
+	//// other value tracking and basedOnIntSO()
+		//// grave_invitation
+		//// deterioration
+		//// cursed_skeleton
+		//// body_canon
+		//// all_for_one
+	//// docs/BasedOnIntSO_EffectMethods_RefactorPlan.md
+	//// add headless tests to test both side of based on intSO methods -> done, see Assets/Scripts/Editor/Tests/IntSOBasedEffectFactionTests.cs
 	//// need check headless tests
 	//// replace full width comma with half width
 	//// fix attack animation

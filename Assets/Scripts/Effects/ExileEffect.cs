@@ -16,6 +16,12 @@ public class ExileEffect : EffectScript
 	[Tooltip("Target card type ID for exile filtering (e.g., 'fly')")]
 	public StringSO cardTypeIDSO;
 
+	[Header("Based on IntSO")]
+	[Tooltip("IntSO used when this card belongs to the owner/player")]
+	public IntSO ownerIntSO;
+	[Tooltip("IntSO used when this card belongs to the enemy")]
+	public IntSO enemyIntSO;
+
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
@@ -242,15 +248,29 @@ public class ExileEffect : EffectScript
 		ExileChosenCards(cardsToExile, amount);
 	}
 
-	public void ExileMyCards_BasedOnIntSO(IntSO intSO)
+	/// <summary>
+	/// Based on ownerIntSO/enemyIntSO, exile friendly cards.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// </summary>
+	public virtual void ExileMyCards_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
 		ExileMyCards(intSO.value);
 	}
 
-	public void ExileTheirCards_BasedOnIntSO(IntSO intSO)
+	/// <summary>
+	/// Based on ownerIntSO/enemyIntSO, exile enemy cards.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// </summary>
+	public virtual void ExileTheirCards_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
 		ExileTheirCards(intSO.value);
 	}
 
@@ -314,8 +334,16 @@ public class ExileEffect : EffectScript
 			}
 		}
 
-		// Sync physical card list order with logical deck
-		combatManager.visuals.SyncPhysicalCardsWithCombinedDeck();
+		// VISUAL-FIX(2026-06-19): Remove logic-phase deck sync in Exile to align with Bury/Stage refactor
+		//   Cause:    SyncPhysicalCardsWithCombinedDeck in logic phase rebuilds physicalCardsInDeck to
+		//             match the post-exile logical deck, prematurely applying the final deck order and
+		//             removing intermediate state needed by chained animations.
+		//   Fix:      Physical deck removal is deferred to RecorderAnimationPlayer via
+		//             ApplyAnimationResult(Destroy) during the animation phase.
+		//   Affects:  ExileEffect, RecorderAnimationPlayer, ApplyAnimationResult
+		//   Regress:  Reveal any Exile card; exile the currently revealed card; chain
+		//             GiveStatusEffect -> Exile on the same target.
+		//   Related:  PRD exile-effect-sync-removal-2026-06-19
 
 		// Capture animation requests
 		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;

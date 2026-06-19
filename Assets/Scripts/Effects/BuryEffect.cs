@@ -15,6 +15,12 @@ public class BuryEffect : EffectScript
 	[Tooltip("If true, the source card will not be selected when burying multiple cards")]
 	public bool excludeSelf = true;
 
+	[Header("Based on IntSO")]
+	[Tooltip("IntSO used when this card belongs to the owner/player")]
+	public IntSO ownerIntSO;
+	[Tooltip("IntSO used when this card belongs to the enemy")]
+	public IntSO enemyIntSO;
+
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
@@ -178,14 +184,16 @@ public class BuryEffect : EffectScript
 		BuryChosenCards(cardsWithTag, amount);
 	}
 
-	public void BuryTheirCards_BasedOnIntSO(IntSO intSO)
+	public void BuryTheirCards_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
 		BuryTheirCards(intSO.value);
 	}
 
-	public void BuryMyCards_BasedOnIntSO(IntSO intSO)
+	public void BuryMyCards_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
 		BuryMyCards(intSO.value);
 	}

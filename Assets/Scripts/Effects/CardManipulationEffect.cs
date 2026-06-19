@@ -13,6 +13,12 @@ public class CardManipulationEffect : EffectScript
 	[Header("Tag Configuration")]
 	public EnumStorage.Tag tagToCheck;
 
+	[Header("Based on IntSO")]
+	[Tooltip("IntSO used when this card belongs to the owner/player")]
+	public IntSO ownerIntSO;
+	[Tooltip("IntSO used when this card belongs to the enemy")]
+	public IntSO enemyIntSO;
+
 	/// <summary>
 	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
 	/// </summary>
@@ -261,15 +267,29 @@ public class CardManipulationEffect : EffectScript
 
 	#region IntSO Based Effects
 
-	public void DestroyTheirMinions_BasedOnIntSO(IntSO intSO)
+	/// <summary>
+	/// Based on ownerIntSO/enemyIntSO, destroy enemy Minion cards.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// </summary>
+	public virtual void DestroyTheirMinions_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
 		DestroyTheirMinions(intSO.value);
 	}
 
-	public void DestroyMyMinions_BasedOnIntSO(IntSO intSO)
+	/// <summary>
+	/// Based on ownerIntSO/enemyIntSO, destroy friendly Minion cards.
+	/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
+	/// </summary>
+	public virtual void DestroyMyMinions_BasedOnIntSO()
 	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 		if (intSO == null) return;
+		if (intSO.value <= 0) return;
+
 		DestroyMyMinions(intSO.value);
 	}
 

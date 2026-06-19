@@ -77,6 +77,13 @@ namespace TestWriteRead
         [Tooltip("Additional card prefabs (optional, for cards not in shop pool)")]
         public List<GameObject> additionalCardPrefabs; // Additional cards (optional)
 
+        [Header("Debug Enemy Deck")]
+        [Tooltip("When enabled, enemy deck always uses Debug Enemy Deck, bypassing JSON save and default pool")]
+        public bool useDebugEnemyDeck = false;
+
+        [Tooltip("Fixed enemy deck used when Use Debug Enemy Deck is enabled")]
+        public DeckSO debugEnemyDeck;
+
         [Header("Default Enemy Deck Pools")]
         [Tooltip("Each entry corresponds to a session. When no deck for the session exists in JSON, randomly select one DeckSO from that session's pool")]
         public List<EnemyDeckPoolEntry> defaultEnemyDeckPool = new List<EnemyDeckPoolEntry>(); // Default enemy deck pool configuration
@@ -403,6 +410,14 @@ namespace TestWriteRead
         /// </summary>
         public void PopulateEnemyDeckBySessionNumber()
         {
+            // Debug override: use fixed enemy deck for testing
+            if (useDebugEnemyDeck && debugEnemyDeck != null)
+            {
+                UtilityFuncManagerScript.CopyGameObjectList(debugEnemyDeck.deck, enemyDeckToPopulate.deck, true);
+                ApplyEnemyHpBonus(CalculateHpBonus(enemyDeckToPopulate.deck));
+                return;
+            }
+
             // Try loading from JSON first
             if (TryLoadFromJson())
             {

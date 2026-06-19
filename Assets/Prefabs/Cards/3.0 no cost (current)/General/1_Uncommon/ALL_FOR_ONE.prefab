@@ -56,11 +56,11 @@ MonoBehaviour:
       - m_Target: {fileID: 5316563494723346686}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
         m_MethodName: DecreaseTheirHp_BasedOnIntSO
-        m_Mode: 2
+        m_Mode: 1
         m_Arguments:
-          m_ObjectArgument: {fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}
-          m_ObjectArgumentAssemblyTypeName: IntSO, Assembly-CSharp
-          m_IntArgument: 1
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -83,6 +83,8 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: -2
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}
+  enemyIntSO: {fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}
   dynamicDmgDisplaySource: 1
   dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &8718476725744197808

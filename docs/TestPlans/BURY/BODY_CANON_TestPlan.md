@@ -15,37 +15,37 @@
 ## Implementation Chain
 
 1. **Card Revealed**: `GameEventListener` on root detects `onMeRevealed` and invokes both child `CostNEffectContainer`s.
-2. **Container 1 - "bury 12 friendly cards"**: No cost check. `BuryEffect.BuryMyCards(12)` shuffles and buries up to 12 eligible friendly cards.
-3. **Container 2 - "deal 3 dmg x friendly after start card"**: No cost check. `ValueTrackerManager.UpdateAllTrackers()` refreshes `FriendlyInGraveAmountRef`. `HPAlterEffect.DecreaseTheirHpTimesIntSO(FriendlyInGraveAmountRef)` deals damage repeatedly.
-4. **Final Result**: Opponent receives `3 * N` damage (where `N = FriendlyInGraveAmountRef.value`), and up to 12 friendly cards are moved to the bottom of the deck.
+2. **Container 1 - "bury 12 owner cards"**: No cost check. `BuryEffect.BuryMyCards(12)` shuffles and buries up to 12 eligible owner cards.
+3. **Container 2 - "deal 3 dmg x owner after start card"**: No cost check. `ValueTrackerManager.UpdateAllTrackers()` refreshes `OwnerInGraveAmountRef`. `HPAlterEffect.DecreaseTheirHpTimesIntSO(OwnerInGraveAmountRef)` deals damage repeatedly.
+4. **Final Result**: Opponent receives `3 * N` damage (where `N = OwnerInGraveAmountRef.value`), and up to 12 owner cards are moved to the bottom of the deck.
 
 ### Effect Formula
 
 ```
 BuryMyCards(12):
-  eligibleFriendlyCards = combinedDeckZone
+  eligibleOwnerCards = combinedDeckZone
     .Where(card => !ShouldSkipEffectProcessing)
     .Where(card => card.owner == this.owner)
     .Where(card => !card.IsAtBottom)
     .Where(card => !card.isMinion)
-  shuffle(eligibleFriendlyCards)
-  buryCount = min(12, eligibleFriendlyCards.Count)
+  shuffle(eligibleOwnerCards)
+  buryCount = min(12, eligibleOwnerCards.Count)
 
-DecreaseTheirHpTimesIntSO(FriendlyInGraveAmountRef):
+DecreaseTheirHpTimesIntSO(OwnerInGraveAmountRef):
   damagePerHit = baseDmg.value(2) + extraDmg(1) + powerStacksOnSelf
-  hitCount = FriendlyInGraveAmountRef.value
+  hitCount = OwnerInGraveAmountRef.value
   totalDamage = damagePerHit * hitCount
 ```
 
-> **Note:** `FriendlyInGraveAmountRef` counts friendly cards with index **smaller** than the Start Card's index in `combinedDeckZone`. Burying cards moves them to index 0 (bottom), which may change this count for subsequent effects if trackers are refreshed.
+> **Note:** `OwnerInGraveAmountRef` counts owner cards with index **smaller** than the Start Card's index in `combinedDeckZone`. Burying cards moves them to index 0 (bottom), which may change this count for subsequent effects if trackers are refreshed.
 
 ### Important Implementation Details
 
-- **Execution Order**: Two containers are siblings under the root. UnityEvent invocation order follows sibling order (top-to-bottom in Hierarchy). Container 1 (bury) runs before Container 2 (damage). `UpdateAllTrackers()` inside Container 2 will recalculate `FriendlyInGraveAmountRef` **after** the bury operation.
+- **Execution Order**: Two containers are siblings under the root. UnityEvent invocation order follows sibling order (top-to-bottom in Hierarchy). Container 1 (bury) runs before Container 2 (damage). `UpdateAllTrackers()` inside Container 2 will recalculate `OwnerInGraveAmountRef` **after** the bury operation.
 - **Bury Filter**: `BuryMyCards` excludes minions, neutral cards, cards already at the bottom, and enemy cards.
 - **Double-Application Check**: `baseDmg = 2`, `extraDmg = 1`. `DecreaseTheirHp()` adds them automatically. Each hit deals `3` base damage.
 - **Power Interaction**: If BODY_CANON has Power status effects, each hit gains `+1` damage.
-- **Empty Deck Edge Case**: If no friendly cards are eligible, bury does nothing. If `FriendlyInGraveAmountRef = 0`, damage container fires zero times.
+- **Empty Deck Edge Case**: If no owner cards are eligible, bury does nothing. If `OwnerInGraveAmountRef = 0`, damage container fires zero times.
 
 ---
 
@@ -67,13 +67,13 @@ Use `unity-MCP` `execute_code` to simulate combat state directly without enterin
 
 | ID | Scenario | Deck / State Setup | Expected Result | Validation Point |
 |----|----------|-------------------|-----------------|------------------|
-| A-1 | Base case: 3 friendly cards, 1 enemy, Start Card in middle | combinedDeckZone = [Start, Enemy, FriendlyA, FriendlyB, FriendlyC] (bottom to top). Card at top. | Buries 3 friendly cards to bottom. FriendlyInGraveAmountRef = 0 (all friendly above Start). Total damage = 0. | Bury count capped by eligible cards; damage scales with grave count. |
-| A-2 | Friendly cards below Start Card | combinedDeckZone = [FriendlyA, Start, Enemy, FriendlyB] (bottom to top). Card at top. | Buries FriendlyA only (1 card). FriendlyInGraveAmountRef = 1. Damage = 3 * 1 = 3. | Grave counting excludes cards above Start Card. |
-| A-3 | More than 12 friendly cards eligible | 15 friendly cards in deck, none at bottom, no minions. | Buries exactly 12 friendly cards. Damage = 3 * graveCount (after bury). | Bury amount clamps at parameter (12). |
-| A-4 | Zero eligible friendly cards | Deck contains only enemy cards and Start Card. | Bury does nothing. FriendlyInGraveAmountRef = 0. Damage = 0. | Graceful no-op when cost/target is missing. |
+| A-1 | Base case: 3 owner cards, 1 enemy, Start Card in middle | combinedDeckZone = [Start, Enemy, OwnerCardA, OwnerCardB, OwnerCardC] (bottom to top). Card at top. | Buries 3 owner cards to bottom. OwnerInGraveAmountRef = 0 (all owner cards above Start). Total damage = 0. | Bury count capped by eligible cards; damage scales with grave count. |
+| A-2 | Owner cards below Start Card | combinedDeckZone = [OwnerCardA, Start, Enemy, OwnerCardB] (bottom to top). Card at top. | Buries OwnerCardA only (1 card). OwnerInGraveAmountRef = 1. Damage = 3 * 1 = 3. | Grave counting excludes cards above Start Card. |
+| A-3 | More than 12 owner cards eligible | 15 owner cards in deck, none at bottom, no minions. | Buries exactly 12 owner cards. Damage = 3 * graveCount (after bury). | Bury amount clamps at parameter (12). |
+| A-4 | Zero eligible owner cards | Deck contains only enemy cards and Start Card. | Bury does nothing. OwnerInGraveAmountRef = 0. Damage = 0. | Graceful no-op when cost/target is missing. |
 | A-5 | Card has 2 Power status effects | Same as A-2, but BODY_CANON has 2 Power stacks. | Damage per hit = 3 + 2 = 5. Total = 5 * graveCount. | Power correctly adds +1 per stack to every hit. |
-| A-6 | Buried cards include minions | Deck has 3 friendly cards, 2 of which are minions. | Bury skips minions. Only 1 non-minion friendly is buried. | Minion filter works in BuryMyCards. |
-| A-7 | Enemy perspective (card belongs to enemy) | Instantiate card for enemy player. Deck mirrors A-2. | Buries enemy's own friendly cards. Damages player (owner). | Faction perspective flips correctly. |
+| A-6 | Buried cards include minions | Deck has 3 owner cards, 2 of which are minions. | Bury skips minions. Only 1 non-minion owner card is buried. | Minion filter works in BuryMyCards. |
+| A-7 | Enemy perspective (card belongs to enemy) | Instantiate card for enemy player. Deck mirrors A-2. | Buries enemy's own owner cards. Damages player (owner). | Faction perspective flips correctly. |
 
 #### Pros
 - Fast execution (seconds).
@@ -88,7 +88,7 @@ Run the actual combat scene and verify the full player-interaction flow.
 
 #### Steps
 1. Open the Combat scene (or transition from Shop to Combat).
-2. Ensure the test deck contains BODY_CANON and a mix of friendly/enemy cards.
+2. Ensure the test deck contains BODY_CANON and a mix of owner/enemy cards.
 3. Enter Play Mode and advance until BODY_CANON is revealed.
 4. Record the relevant game state before and after the effect triggers.
 5. Cross-reference the observed result with the expected logic.
@@ -123,7 +123,7 @@ Batch-read all prefabs in the `Bury and buried` folder to verify consistent fiel
 |--------|------|----------------|
 | `HPAlterEffect` | `Assets/Scripts/Effects/HPAlterEffect.cs` | Damage calculation and delivery |
 | `BuryEffect` | `Assets/Scripts/Effects/BuryEffect.cs` | Bury cards to bottom of deck |
-| `ValueTrackerManager` | `Assets/Scripts/Managers/ValueTrackerManager.cs` | Tracks `FriendlyInGraveAmountRef` |
+| `ValueTrackerManager` | `Assets/Scripts/Managers/ValueTrackerManager.cs` | Tracks `OwnerInGraveAmountRef` |
 | `CostNEffectContainer` | `Assets/Scripts/Card/CostNEffectContainer.cs` | Cost checking and effect invocation |
 | `CombatManager` | `Assets/Scripts/Managers/CombatManager.cs` | Manages `combinedDeckZone` and `revealZone` |
 | `GameEventStorage` | `Assets/Scripts/Managers/GameEventStorage.cs` | Centralized GameEvent references |
