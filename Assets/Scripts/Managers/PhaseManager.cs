@@ -319,6 +319,26 @@ public class PhaseManager : MonoBehaviour
 	{
 		playerStatusRef.ResetToDefault();
 		enemyStatusRef.ResetToDefault();
+
+		// Reset combat-scoped value trackers so stale values do not leak into the shop phase.
+		if (ValueTrackerManager.me != null)
+		{
+			ValueTrackerManager.me.ownerInGraveAmountRef?.ResetToDefault();
+			ValueTrackerManager.me.enemyInGraveAmountRef?.ResetToDefault();
+			ValueTrackerManager.me.ownerCursePowerCount?.ResetToDefault();
+			ValueTrackerManager.me.enemyCursePowerCount?.ResetToDefault();
+			ValueTrackerManager.me.totalPowerCountInDeckRef?.ResetToDefault();
+			ValueTrackerManager.me.ownerCardCountInDeckRef?.ResetToDefault();
+			ValueTrackerManager.me.enemyCardCountInDeckRef?.ResetToDefault();
+			ValueTrackerManager.me.ownerCardsBuriedCountRef?.ResetToDefault();
+			ValueTrackerManager.me.enemyCardsBuriedCountRef?.ResetToDefault();
+			ValueTrackerManager.me.stagedOwnerRef?.ResetToDefault();
+			ValueTrackerManager.me.stagedEnemyRef?.ResetToDefault();
+			ValueTrackerManager.me.lastAppliedStatusEffectAmountRef?.ResetToDefault();
+			if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
+				ValueTrackerManager.me.lastAppliedStatusEffectRef.value = ValueTrackerManager.me.lastAppliedStatusEffectRef.valueOg;
+		}
+
 		InvokeEnterShopPhaseEvent();
 		
 		// change phase
