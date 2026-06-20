@@ -717,13 +717,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
+  sessionNum: {fileID: 11400000, guid: ddc84abce9dd11346a80cbe0a1d66751, type: 2}
   playerDeckRef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   deckSize: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
   maxDeckSize: {fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}
   purse: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}
-  shopPoolRef: {fileID: 11400000, guid: 1a1a5ea2598ea1e46b68bad1eacdeb23, type: 2}
+  shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
   currentShopItemDeckRef: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
   rarityWeightRef: {fileID: 11400000, guid: a443338ae5fa3a844ae1dcfec0166515, type: 2}
+  sessionRarityWeights:
+  - startSession: 0
+    rarityWeightRef: {fileID: 11400000, guid: dfaa7256975899e47ba5317715b5b3cf, type: 2}
+  - startSession: 3
+    rarityWeightRef: {fileID: 11400000, guid: a443338ae5fa3a844ae1dcfec0166515, type: 2}
+  - startSession: 6
+    rarityWeightRef: {fileID: 11400000, guid: a17bb43656fdd4c43855c831f1e7ec10, type: 2}
   shopItemAmount: 3
   payCheck: {fileID: 11400000, guid: fe5315966a51f1645bb27607137ec573, type: 2}
   phaseInfo: 'Press <b>[SPACE]</b> to EXIT SHOP
@@ -3250,12 +3258,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d395f692b9ee8f04c8266542b1569c21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
-  isTestMode: 1
+  isTestMode: 0
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
   logCombatFlow: 0
-  logEffectChains: 0
+  logEffectChains: 1
   logAnimationPlayback: 0
   logVisualSync: 0
   logEditorTools: 0
@@ -3639,7 +3647,7 @@ MonoBehaviour:
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   cardsRevealedThisRound: 0
   isPlayingEffectAnimations: 0
-  autoReveal: 0
+  autoReveal: 1
   combatAnimationSpeedScale: 1.2
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   overtimeRoundThreshold: 3
@@ -3767,7 +3775,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbc126ac2175bbf439e7642b6f5fb18d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
-  useCustomOrder: 1
+  useCustomOrder: 0
   customOrderPrefabs:
   - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 1e39f37e43a1d1d4fa44d3fcc58b80bc, type: 3}
@@ -5820,7 +5828,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
   - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
-  useDebugEnemyDeck: 1
+  useDebugEnemyDeck: 0
   debugEnemyDeck: {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
   defaultEnemyDeckPool:
   - decks:
@@ -5840,16 +5848,21 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 429d6ef5bf4940b40bb90036bdf1b015, type: 2}
   - decks:
     - {fileID: 11400000, guid: fada3dcbeb94d954297a33b6e95220e8, type: 2}
+    - {fileID: 11400000, guid: f875de0760033124abb54f7289f3b3ae, type: 2}
+    - {fileID: 11400000, guid: 5ba20b833e9c260458317591af4705f0, type: 2}
   - decks:
-    - {fileID: 11400000, guid: 176a73177c5547c0a6146eafc999867d, type: 2}
+    - {fileID: 11400000, guid: 276a4f94359c01f4ba0a51d2bb9dd43a, type: 2}
+    - {fileID: 11400000, guid: a5caf3d8f9efe5a4daa65a0dcb43369b, type: 2}
   - decks:
-    - {fileID: 11400000, guid: c4e6de0a03734ef9a1e0c03d13759ff4, type: 2}
+    - {fileID: 11400000, guid: 3a0fe8f6b9871f5499c98fb59606aee7, type: 2}
+    - {fileID: 11400000, guid: 5e11162f767d3dc4cb20ce599221d2c6, type: 2}
   - decks:
-    - {fileID: 11400000, guid: 2bd732143cca4b0a8502f6a0b463e821, type: 2}
+    - {fileID: 11400000, guid: 0b21f16d94ba6164fab29e9b41add769, type: 2}
+    - {fileID: 11400000, guid: 7abfbab6c745f074d98a806b81a34c7e, type: 2}
   - decks:
-    - {fileID: 11400000, guid: 60f5781b899246bdb1355846edd715d9, type: 2}
+    - {fileID: 11400000, guid: 7ed7fe48c63ba134192c4501ca6e3187, type: 2}
   - decks:
-    - {fileID: 11400000, guid: 5e2b1a4a3d00449883338fad16951177, type: 2}
+    - {fileID: 11400000, guid: 469ba931f15c522449b6be334aa55b0c, type: 2}
   - decks:
     - {fileID: 11400000, guid: 80d03d9c92644d97ab5b6e11e3ab4908, type: 2}
   - decks:

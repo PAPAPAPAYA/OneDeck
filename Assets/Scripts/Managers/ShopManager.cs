@@ -16,8 +16,17 @@ public class ShopManager : MonoBehaviour
 	}
 	#endregion
 
+	[Serializable]
+	public class SessionRarityWeightEntry
+	{
+		[Tooltip("This entry takes effect from this session number onward (inclusive).")]
+		public int startSession;
+		public ShopRarityWeightSO rarityWeightRef;
+	}
+
 	[Header("flow ref")]
 	public GamePhaseSO gamePhaseRef;
+	public IntSO sessionNum;
 
 	[Header("player ref")]
 	public DeckSO playerDeckRef;
@@ -29,6 +38,8 @@ public class ShopManager : MonoBehaviour
 	public DeckSO shopPoolRef;
 	public DeckSO currentShopItemDeckRef;
 	public ShopRarityWeightSO rarityWeightRef;
+	[Tooltip("Session-based rarity weight overrides. Matches the entry with the highest startSession <= current sessionNum. Falls back to rarityWeightRef if none match.")]
+	public List<SessionRarityWeightEntry> sessionRarityWeights;
 	[Range(1, 6)]
 	public int shopItemAmount;
 	public IntSO payCheck;
@@ -39,6 +50,30 @@ public class ShopManager : MonoBehaviour
 
 	[Tooltip("Store instantiated cards when purchased, destroy uniformly when exiting shop")]
 	private List<GameObject> _boughtCardInstances = new List<GameObject>();
+
+	/// <summary>
+	/// Resolves the active rarity weight table based on the current session number.
+	/// Returns the matching session override if available; otherwise falls back to rarityWeightRef.
+	/// </summary>
+	private ShopRarityWeightSO GetActiveRarityWeightRef()
+	{
+		if (sessionRarityWeights != null && sessionRarityWeights.Count > 0 && sessionNum != null)
+		{
+			ShopRarityWeightSO bestMatch = null;
+			int bestStart = int.MinValue;
+			foreach (var entry in sessionRarityWeights)
+			{
+				if (entry.rarityWeightRef == null) continue;
+				if (entry.startSession <= sessionNum.value && entry.startSession > bestStart)
+				{
+					bestMatch = entry.rarityWeightRef;
+					bestStart = entry.startSession;
+				}
+			}
+			if (bestMatch != null) return bestMatch;
+		}
+		return rarityWeightRef;
+	}
 
 	[Header("UI objects")]
 	public TextMeshProUGUI phaseInfoDisplay;
@@ -284,7 +319,8 @@ public class ShopManager : MonoBehaviour
 			var cardScript = cardPrefab.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 
-			float rarityWeight = rarityWeightRef != null ? rarityWeightRef.GetWeight(cardScript.rarity) : 1f;
+			var activeRarityWeightRef = GetActiveRarityWeightRef();
+			float rarityWeight = activeRarityWeightRef != null ? activeRarityWeightRef.GetWeight(cardScript.rarity) : 1f;
 			float finalWeight = rarityWeight * cardScript.shopRollWeightMultiplier;
 
 			if (finalWeight <= 0f) continue;
