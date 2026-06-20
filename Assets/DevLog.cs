@@ -45,6 +45,7 @@
 #endregion
 #region tools
 //! tools
+	//// shop pool ref check skill
 	//// recorder to automatically record deck to enemy decks
 		//// D:\Unity Projects\OneDeck\plans\prd-deck-enemy-recorder-2026-05-27.md
 	//// bug Recorder to prevent later fixes undermine former fixes
@@ -55,13 +56,15 @@
 #endregion
 #region anything else
 //! anything else
+	//// more bury?
+	//// more if staged?
 	//// increase deck size cards appear in shop chance
 	//// higher pop up pos to show card name
 	//// curse_thirst_shaman exclude self
 	//// fix include self
 	//// show stats when game over
 	//// print stats with hot-key
-	// do a numerical analysis
+	//todo do a numerical analysis
 	//// add hpmax up and decksize up to shopPoolRef
 	//// adjust hp
 	//todo populate enemy decks
@@ -229,6 +232,8 @@
 #endregion
 #region bugs
 //! bug
+	//// quick response protocal needs to consume counter and take out linger condition
+	
 	//// deck increase price
 	//// crlf and tab
 	//// curse thirst beast
