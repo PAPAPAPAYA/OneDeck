@@ -81,9 +81,13 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 5f1781f6b0db2024cbd5bda35e63d834, type: 3}
   - {fileID: 8718476725744197808, guid: ad8079f6ef9e09e4588f671cc8202250, type: 3}
   - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
-  - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
   - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   - {fileID: 8718476725744197808, guid: 036c22b55cab33c44a3b319fdf0827a1, type: 3}
+  - {fileID: 1808145013887896563, guid: f38a675234c3fdc4088b8e4d189a74de, type: 3}
+  - {fileID: 8718476725744197808, guid: 123bd6e2e91a92144aa25a515048a2dd, type: 3}
+  - {fileID: 1808145013887896563, guid: 276b53576e814444e84a0b3ffd345aca, type: 3}
+  - {fileID: 1808145013887896563, guid: 1bafbaef2fb0d6b4d98d65925847096d, type: 3}
+  - {fileID: 8718476725744197808, guid: 3efb5a32b6315bf4d9f8f3d934e96dcc, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: shop pool

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1530240537997146901
+--- !u!1 &737859422163823363
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,23 +8,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4506905638677875164}
-  - component: {fileID: 5537569433110105298}
-  - component: {fileID: 7132340352972987781}
+  - component: {fileID: 3681815569383182409}
+  - component: {fileID: 3779585793234524990}
+  - component: {fileID: 850421576032473282}
   m_Layer: 0
-  m_Name: deal dmg
+  m_Name: enhance hostile curse
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4506905638677875164
+--- !u!4 &3681815569383182409
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1530240537997146901}
+  m_GameObject: {fileID: 737859422163823363}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -33,13 +33,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2317113664871565864}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5537569433110105298
+--- !u!114 &3779585793234524990
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1530240537997146901}
+  m_GameObject: {fileID: 737859422163823363}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
@@ -53,36 +53,38 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7132340352972987781}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
-        m_Mode: 1
+      - m_Target: {fileID: 850421576032473282}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.CurseEffect, Assembly-CSharp
+        m_MethodName: EnhanceCurse
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &7132340352972987781
+--- !u!114 &850421576032473282
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1530240537997146901}
+  m_GameObject: {fileID: 737859422163823363}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f31b527b368e7342ba80945e347d10a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
-  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
-  dmgAmountAlter: 0
-  healAmountAlter: 0
-  isStatusEffectDamage: 0
-  extraDmg: 0
-  statusEffectToCheck: 0
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
+  cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
+  statusEffectResolverPrefab: {fileID: 0}
+  statusEffectParticlePrefab: {fileID: 0}
+  particleYOffset: 0
+  powerCoefficient: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!1 &1808145013887896563
 GameObject:
   m_ObjectHideFlags: 0
@@ -94,9 +96,8 @@ GameObject:
   - component: {fileID: 2317113664871565864}
   - component: {fileID: 2701497416063894489}
   - component: {fileID: 6233935548096134504}
-  - component: {fileID: 8601065402640550955}
   m_Layer: 0
-  m_Name: CORPSE_CANNON
+  m_Name: SACRIFICIAL_CURSE
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -116,7 +117,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7347418108214000764}
-  - {fileID: 4506905638677875164}
+  - {fileID: 3681815569383182409}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2701497416063894489
@@ -132,9 +133,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: CORPSE_CANNON
-  displayName: "\u5C38\u4F53\u5927\u70AE"
-  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C 1 \u53CB\u65B9;\n\u53CB\u65B9\u88AB\u57CB\u846C:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
+  cardTypeID: SACRIFICIAL_CURSE
+  displayName: "\u732E\u796D\u8BC5\u5492"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9,\u589E\u5F3A <b>2</b>
+    \u654C\u65B9[\u8BC5\u5492]"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -174,23 +176,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &8601065402640550955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1808145013887896563}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
-  event: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
-  response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 5537569433110105298}
+      - m_Target: {fileID: 3779585793234524990}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid
         m_Mode: 1
@@ -212,7 +198,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7347418108214000764}
   - component: {fileID: 7449076752151853866}
-  - component: {fileID: 8795448460262930087}
+  - component: {fileID: 8316969459921798129}
   m_Layer: 0
   m_Name: bury friendly
   m_TagString: Untagged
@@ -255,7 +241,7 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8795448460262930087}
+      - m_Target: {fileID: 8316969459921798129}
         m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
         m_MethodName: BuryMyCards
         m_Mode: 3
@@ -267,7 +253,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &8795448460262930087
+--- !u!114 &8316969459921798129
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -279,4 +265,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb08dbd2c6066ac468526e104b9095a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
-  tagsToCheck: 
+  tagsToCheck: 00000000
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}

@@ -10,11 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 834418638395040871}
   - component: {fileID: 3408854323514059765}
-  - component: {fileID: 7514892832312545785}
-  - component: {fileID: 7407874903602815974}
-  - component: {fileID: 648923932305892316}
+  - component: {fileID: 3456448224895526048}
   m_Layer: 0
-  m_Name: check and exile rift and deal dmg
+  m_Name: 'add [rift]'
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51,38 +49,103 @@ MonoBehaviour:
   targetCardTypeID: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
   checkCostEvent:
     m_PersistentCalls:
+      m_Calls: []
+  effectEvent:
+    m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3408854323514059765}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_HasOwnCardOfType
-        m_Mode: 3
+      - m_Target: {fileID: 3456448224895526048}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
+        m_MethodName: AddCardToMe
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_ObjectArgument: {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  preEffectEvent:
+--- !u!114 &3456448224895526048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270621688628183383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8da5b23dfa04f2bb3a8add21531e513, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AddTempCard
+  cardCount: 1
+  curseCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+--- !u!1 &3458722372583112977
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 316773111631763146}
+  - component: {fileID: 2942912113200071995}
+  - component: {fileID: 2814069841442407729}
+  - component: {fileID: 6865625390785001126}
+  m_Layer: 0
+  m_Name: deal dmg and add rift
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &316773111631763146
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3458722372583112977}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3828591620990538636}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2942912113200071995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3458722372583112977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
+  checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 648923932305892316}
-        m_TargetAssemblyTypeName: ExileEffect, Assembly-CSharp
-        m_MethodName: ExileMyCardsWithTypeID
-        m_Mode: 3
+      - m_Target: {fileID: 6865625390785001126}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AddTempCard, Assembly-CSharp
+        m_MethodName: AddCardToMe
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
           m_IntArgument: 2
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 7514892832312545785}
+      - m_Target: {fileID: 2814069841442407729}
         m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
         m_MethodName: DecreaseTheirHp
         m_Mode: 1
@@ -94,13 +157,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &7514892832312545785
+--- !u!114 &2814069841442407729
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 270621688628183383}
+  m_GameObject: {fileID: 3458722372583112977}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
@@ -110,34 +173,26 @@ MonoBehaviour:
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
-  extraDmg: 4
+  extraDmg: 2
   statusEffectToCheck: 0
---- !u!114 &7407874903602815974
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
+--- !u!114 &6865625390785001126
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 270621688628183383}
+  m_GameObject: {fileID: 3458722372583112977}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 290072fa332eaa14084b1a8dc471d809, type: 3}
+  m_Script: {fileID: 11500000, guid: e8da5b23dfa04f2bb3a8add21531e513, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExileCostEffect
---- !u!114 &648923932305892316
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 270621688628183383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48fd28867eaa8fc44bcf68c773e7d076, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExileEffect
-  tagToCheck: 0
-  cardTypeIDSO: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AddTempCard
+  cardCount: 1
+  curseCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -169,6 +224,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 316773111631763146}
   - {fileID: 834418638395040871}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -187,7 +243,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_DRAGON
   displayName: "\u6B21\u5143\u9F99"
-  cardDesc: "\u63ED\u6653\u65F6,\u53BB\u9664 <b>2</b> [\u6B21\u5143\u88C2\u7F1D]:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
+  cardDesc: "\u63ED\u6653\u65F6:\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D],\u9020\u6210
+    <b>4</b> \u4F24\u5BB3;\n\u88AB\u7F6E\u9876:\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -197,16 +254,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
-  exileCostCount: 0
-  exileCostCardTypeID: 
-  exileCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

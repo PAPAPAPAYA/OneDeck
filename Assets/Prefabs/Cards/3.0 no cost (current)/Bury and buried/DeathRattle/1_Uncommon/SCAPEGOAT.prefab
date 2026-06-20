@@ -81,6 +81,8 @@ MonoBehaviour:
   targetFriendly: 0
   statusEffectToCheck: 0
   excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!1 &1808145013887896563
 GameObject:
   m_ObjectHideFlags: 0
@@ -93,7 +95,7 @@ GameObject:
   - component: {fileID: 2701497416063894489}
   - component: {fileID: 6233935548096134504}
   m_Layer: 0
-  m_Name: BUY_ONE_GET_ONE_FREE
+  m_Name: SCAPEGOAT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -129,9 +131,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: BUY_ONE_GET_ONE_FREE
-  displayName: "\u4E70\u4E00\u9001\u4E00"
-  cardDesc: "\u88AB\u57CB\u846C:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7F6E\u9876 1 \u53CB\u65B9"
+  cardTypeID: SCAPEGOAT
+  displayName: "\u66FF\u6B7B\u9B3C"
+  cardDesc: "\u88AB\u57CB\u846C:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7F6E\u9876
+    1 \u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -142,7 +145,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 03000000
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -264,5 +267,9 @@ MonoBehaviour:
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
-  extraDmg: 4
+  extraDmg: 3
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
