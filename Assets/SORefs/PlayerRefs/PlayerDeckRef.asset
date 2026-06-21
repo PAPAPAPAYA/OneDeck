@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: PlayerDeckRef
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: 1c59f879b91f1e240b4c60911397cf9a, type: 3}
+  - {fileID: 8718476725744197808, guid: 5f1781f6b0db2024cbd5bda35e63d834, type: 3}
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
-  defaultDeck: {fileID: 11400000, guid: ee4530dafd22f70419f68d5b7075d6c8, type: 2}
+  defaultDeck: {fileID: 11400000, guid: 6b82382b79ee9474da64b2f8b960a38a, type: 2}
   resetOnStart: 1
   description: player's deck, data only no instances
