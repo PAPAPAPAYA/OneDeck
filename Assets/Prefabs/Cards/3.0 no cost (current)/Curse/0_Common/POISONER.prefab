@@ -49,8 +49,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: POISONER
-  displayName: "\u5DEB\u5E08"
-  cardDesc: "\u63ED\u6653\u65F6:\u589E\u5F3A <b>1</b> \u654C\u65B9[\u8BC5\u5492],\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
+  displayName: "\u5492\u5E08"
+  cardDesc: "\u63ED\u6653\u65F6:\u589E\u5F3A <b>1</b> \u654C\u65B9[\u8BC5\u5492],\u9020\u6210
+    <b><dmg></b> \u4F24\u5BB3"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -60,16 +61,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
-  exileCostCount: 0
-  exileCostCardTypeID: 
-  exileCostOwner: 0
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,9 +153,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -196,6 +186,10 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: 1
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &6947502767563041322
 GameObject:
   m_ObjectHideFlags: 0
@@ -246,9 +240,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -282,3 +273,5 @@ MonoBehaviour:
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
   powerCoefficient: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}

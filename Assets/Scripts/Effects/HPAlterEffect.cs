@@ -78,6 +78,21 @@ public class HPAlterEffect : EffectScript
 	}
 
 	/// <summary>
+	/// Count Power status effects on a card for logging.
+	/// </summary>
+	private int CountPower(CardScript card)
+	{
+		int count = 0;
+		if (card == null || card.myStatusEffects == null) return 0;
+		foreach (var se in card.myStatusEffects)
+		{
+			if (se == EnumStorage.StatusEffect.Power)
+				count++;
+		}
+		return count;
+	}
+
+	/// <summary>
 	/// Process shield and HP reduction
 	/// </summary>
 	/// <param name="dmgAmount">Damage amount</param>
@@ -116,6 +131,8 @@ public class HPAlterEffect : EffectScript
 	{
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
+		int baseDmgValue = baseDmg != null ? baseDmg.value : 0;
+		TestManager.Log("[DynamicDamageDisplay] DecreaseMyHp card=" + myCardScript.GetDisplayName() + " totalDmg=" + totalDmg + " baseDmg=" + baseDmgValue + " extraDmg=" + extraDmg + " powerCount=" + CountPower(myCardScript) + " desc=[" + myCardScript.GetCardDescForDisplay() + "]");
 		
 		// Status effect damage doesn't trigger attack animation, execute directly
 		if (isStatusEffectDamage)
@@ -401,6 +418,8 @@ public class HPAlterEffect : EffectScript
 	{
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
+		int baseDmgValue = baseDmg != null ? baseDmg.value : 0;
+		TestManager.Log("[DynamicDamageDisplay] DecreaseTheirHp card=" + myCardScript.GetDisplayName() + " totalDmg=" + totalDmg + " baseDmg=" + baseDmgValue + " extraDmg=" + extraDmg + " powerCount=" + CountPower(myCardScript) + " desc=[" + myCardScript.GetCardDescForDisplay() + "]");
 		
 		// Status effect damage doesn't trigger attack animation, execute directly
 		if (isStatusEffectDamage)

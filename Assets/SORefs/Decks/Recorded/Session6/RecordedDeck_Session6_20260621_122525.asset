@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
+  m_Name: RecordedDeck_Session6_20260621_122525
+  m_EditorClassIdentifier: Assembly-CSharp::DeckSO
+  deck:
+  - {fileID: 8718476725744197808, guid: e006a42febf6bc445b9f95b5180bf9b8, type: 3}
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 8718476725744197808, guid: 122c0d5cc83624e43961eb8a973d9bda, type: 3}
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 8718476725744197808, guid: c05a5ea8fe0eafd4c82cb5f5416938bb, type: 3}
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 8718476725744197808, guid: b31febef4787aa6428fa95992a2ed7e5, type: 3}
+  - {fileID: 8718476725744197808, guid: 8a9871274e7b5ed4ea2b5977f2d53aeb, type: 3}
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 8718476725744197808, guid: 8507f0b52a8cc2e41a12752f65e6d063, type: 3}
+  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
+  - {fileID: 8718476725744197808, guid: 8f4c64d4b391fdb4d85ac189d11f9389, type: 3}
+  - {fileID: 1808145013887896563, guid: 276b53576e814444e84a0b3ffd345aca, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: 'Auto-recorded player deck.
+
+    Cards: 15
+
+    Missing: 0
+
+    Session:
+    6
+
+    Recorded: 2026-06-21 12:25:25'

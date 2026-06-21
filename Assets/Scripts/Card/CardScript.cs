@@ -55,6 +55,7 @@ public class CardScript : MonoBehaviour
 
 	private string _displayCardDesc;
 	private HPAlterEffect _cachedHpAlterEffect;
+	private int _lastDmgPlaceholderLogFrame = -1;
 
 	/// <summary>
 	/// Capture a snapshot of current myStatusEffects for display purposes.
@@ -70,6 +71,12 @@ public class CardScript : MonoBehaviour
 		displayMyStatusEffects.AddRange(myStatusEffects);
 		_displayCardDesc = ComputeDynamicCardDesc();
 		_hasDisplaySnapshot = true;
+
+		TestManager.Log("[DynamicDamageDisplay] SnapshotDisplayState card=" + GetDisplayName() + " hasSnapshot=" + _hasDisplaySnapshot + " desc=[" + (_displayCardDesc ?? cardDesc) + "]");
+		if (_displayCardDesc != null && _displayCardDesc.Contains("<dmg>"))
+		{
+			TestManager.LogWarning("[DynamicDamageDisplay] SnapshotDisplayState contains raw <dmg>! card=" + GetDisplayName() + " cardDesc=[" + cardDesc + "]");
+		}
 	}
 
 	/// <summary>
@@ -98,8 +105,14 @@ public class CardScript : MonoBehaviour
 		displayMyStatusEffects.Clear();
 		if (baseline != null)
 			displayMyStatusEffects.AddRange(baseline);
-		_displayCardDesc = null;
+		_displayCardDesc = ComputeDynamicCardDesc(displayMyStatusEffects);
 		_hasDisplaySnapshot = true;
+
+		TestManager.Log("[DynamicDamageDisplay] SetDisplayBaseline card=" + GetDisplayName() + " baselineCount=" + (baseline != null ? baseline.Count : 0) + " _displayCardDesc recomputed=[" + (_displayCardDesc ?? "null") + "]");
+		if (_displayCardDesc != null && _displayCardDesc.Contains("<dmg>"))
+		{
+			TestManager.LogWarning("[DynamicDamageDisplay] SetDisplayBaseline recomputed desc still contains raw <dmg>! card=" + GetDisplayName() + " cardDesc=[" + cardDesc + "]");
+		}
 	}
 
 	/// <summary>
@@ -109,7 +122,7 @@ public class CardScript : MonoBehaviour
 	public void ApplyDisplayDelta(EnumStorage.StatusEffect effect, int delta)
 	{
 		ApplyStatusEffectDeltaToList(displayMyStatusEffects, effect, delta);
-		_displayCardDesc = null;
+		_displayCardDesc = ComputeDynamicCardDesc(displayMyStatusEffects);
 	}
 
 	/// <summary>
@@ -142,15 +155,34 @@ public class CardScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Whether a display snapshot is currently active.
+	/// </summary>
+	public bool HasDisplaySnapshot => _hasDisplaySnapshot;
+
+	/// <summary>
 	/// Returns the card description that should be used for visual display.
 	/// If a display snapshot is active (during animation), returns the snapshot;
 	/// otherwise returns the live computed description with placeholders resolved.
 	/// </summary>
 	public string GetCardDescForDisplay()
 	{
-		if (_hasDisplaySnapshot)
-			return _displayCardDesc ?? cardDesc;
-		return ComputeDynamicCardDesc();
+		string result = _hasDisplaySnapshot
+			? (_displayCardDesc ?? ComputeDynamicCardDesc(displayMyStatusEffects))
+			: ComputeDynamicCardDesc();
+		if (result != null && result.Contains("<dmg>") && Time.frameCount != _lastDmgPlaceholderLogFrame)
+		{
+			_lastDmgPlaceholderLogFrame = Time.frameCount;
+			TestManager.LogWarning("[DynamicDamageDisplay] GetCardDescForDisplay returning raw <dmg>! card=" + GetDisplayName() + " hasSnapshot=" + _hasDisplaySnapshot + " _displayCardDesc=" + (_displayCardDesc ?? "null") + " cardDesc=[" + cardDesc + "]");
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// Computes the dynamic card description using the live myStatusEffects list.
+	/// </summary>
+	private string ComputeDynamicCardDesc()
+	{
+		return ComputeDynamicCardDesc(myStatusEffects);
 	}
 
 	/// <summary>
@@ -158,8 +190,10 @@ public class CardScript : MonoBehaviour
 	/// &lt;dmg&gt; with base damage plus Power status effect count,
 	/// &lt;counter&gt; with current Counter status effect count as an optional suffix.
 	/// Also appends an optional parenthesized damage suffix configured on HPAlterEffect.
+	/// The provided statusEffects list is used for Power/Counter counting so that
+	/// display snapshots and baselines stay consistent.
 	/// </summary>
-	private string ComputeDynamicCardDesc()
+	private string ComputeDynamicCardDesc(List<EnumStorage.StatusEffect> statusEffects)
 	{
 		if (string.IsNullOrEmpty(cardDesc))
 			return cardDesc;
@@ -176,10 +210,13 @@ public class CardScript : MonoBehaviour
 			{
 				int baseDmg = hpAlter.baseDmg.value + hpAlter.extraDmg;
 				int powerCount = 0;
-				foreach (var se in myStatusEffects)
+				if (statusEffects != null)
 				{
-					if (se == EnumStorage.StatusEffect.Power)
-						powerCount++;
+					foreach (var se in statusEffects)
+					{
+						if (se == EnumStorage.StatusEffect.Power)
+							powerCount++;
+					}
 				}
 
 				string dmgStr = baseDmg.ToString();
@@ -188,23 +225,33 @@ public class CardScript : MonoBehaviour
 
 				desc = desc.Replace("<dmg>", dmgStr);
 			}
+			else
+			{
+				if (hpAlter == null)
+					TestManager.LogWarning("[DynamicDamageDisplay] ComputeDynamicCardDesc <dmg> found but no HPAlterEffect child on card=" + GetDisplayName());
+				else
+					TestManager.LogWarning("[DynamicDamageDisplay] ComputeDynamicCardDesc <dmg> found but baseDmg is null on card=" + GetDisplayName());
+			}
 		}
 
 		// Replace <counter> with optional Counter suffix
 		if (desc.Contains("<counter>"))
 		{
 			int counterCount = 0;
-			foreach (var se in myStatusEffects)
+			if (statusEffects != null)
 			{
-				if (se == EnumStorage.StatusEffect.Counter)
-					counterCount++;
+				foreach (var se in statusEffects)
+				{
+					if (se == EnumStorage.StatusEffect.Counter)
+						counterCount++;
+				}
 			}
 
 			string counterStr = counterCount > 0 ? " (-" + counterCount + ")" : "";
 			desc = desc.Replace("<counter>", counterStr);
 		}
 
-		return AppendDynamicDamageSuffix(desc);
+		return AppendDynamicDamageSuffix(desc, statusEffects);
 	}
 
 	/// <summary>
@@ -213,6 +260,14 @@ public class CardScript : MonoBehaviour
 	/// Returns the original description if no source is configured or data is unavailable.
 	/// </summary>
 	private string AppendDynamicDamageSuffix(string desc)
+	{
+		return AppendDynamicDamageSuffix(desc, myStatusEffects);
+	}
+
+	/// <summary>
+	/// Appends a parenthesized real-time damage estimate using the provided status effect list.
+	/// </summary>
+	private string AppendDynamicDamageSuffix(string desc, List<EnumStorage.StatusEffect> statusEffects)
 	{
 		if (_cachedHpAlterEffect == null)
 			_cachedHpAlterEffect = GetComponentInChildren<HPAlterEffect>();
@@ -228,9 +283,9 @@ public class CardScript : MonoBehaviour
 			return desc;
 
 		int selfPowerCount = 0;
-		if (myStatusEffects != null)
+		if (statusEffects != null)
 		{
-			foreach (var se in myStatusEffects)
+			foreach (var se in statusEffects)
 			{
 				if (se == EnumStorage.StatusEffect.Power)
 					selfPowerCount++;

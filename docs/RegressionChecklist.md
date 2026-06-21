@@ -33,6 +33,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 3 | Existing cards snap instantly when new card added + Bury/Stage | `CardPhysObjScript`, `AddPhysicalCardToDeck`, `CombatUXManager` | 2026-05-17 | ✅ | **Card:** RIFT_INSECT adds card then Bury triggers<br>**Check:** Existing cards tween visibly instead of snapping |
 | 4 | Pending cards (RIFT/AddTempCard) have wrong pop-up peak / slot-in position | `AddTempCard`, `PopUp`, `SlotIn`, `CombatUXManager` | 2026-05-24 | ✅ | **Card:** RIFT_INSECT or BLACKSMITH<br>**Check:** Pop-up peak and slot-in target match logical deck index |
 | 8 | Newly created curse card's projectile flies off-screen | `CurseEffect`, `MoveToPopUpPosition`, `CombatUXManager` | 2026-05-24 | ✅ | **Card:** Any curse card that enhances a type not present in deck (e.g. JU_ON)<br>**Check:** Projectile flies to visible deck peak, not off-screen |
+| 32 | Overtime fatigue cards appear instantly without popup/slot-in animation | `CombatManager.AddFatigueCards`, `StartCardShuffleEffect`, `RecorderAnimationPlayer` | 2026-06-21 | ⚠️ | **Setup:** Set `overtimeRoundThreshold=1` and `fatigueAmount>=1`. Play combat past round 1.<br>**Check:** When the new round starts, fatigue cards fly from popup position into the deck before the Start Card shuffle animation plays. Cards do not snap instantly. |
 
 ## Layout & Focus
 
@@ -68,6 +69,14 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 21 | TransferAllStatusEffectToHostileCurse has no PopUp/SlotIn/Projectile animation | `TransferStatusEffectEffect`, `EffectScript`, `RecorderAnimationPlayer`, `CombatUXManager`, `AnimationRequest` | 2026-06-13 | ⚠️ | **Card:** CROW_CROWD when friendly/hostile cards carry Power and a hostile curse card is present<br>**Check:** Source cards pop up together; target curse card pops up; projectiles fly from each source to the target curse card **in parallel**; target curse status text commits only after the **last** projectile lands; source cards and target curse card slot back in together. No freeze or missing SlotIn. |
 | 22 | TransferOneStatusEffectToSelf source cards do not PopUp/SlotIn | `TransferStatusEffectEffect`, `EffectScript`, `RecorderAnimationPlayer`, `CombatUXManager`, `AnimationRequest` | 2026-06-13 | ⚠️ | **Card:** POWER_SIPHONER when friendly/hostile cards carry the target status effect<br>**Check:** Source cards pop up together; self card pops up; projectiles fly from each source to self **in parallel**; self card status text commits only after the **last** projectile lands; source cards and self card slot back in together. No freeze or missing SlotIn. |
 | 24 | Single-layer status effect projectile has random start offset | `CombatUXManager` | 2026-06-14 | ⚠️ | **Card:** Any card that gives/consumes exactly 1 status effect layer (e.g. self-Power×1, ConsumeOwnStatusEffect×1, GiveStatusEffect×1 to a single target)<br>**Check:** Projectile starts at the center of the source card (`effectiveOffsetRange == Vector2.zero`) and flies straight to the target; no visible XY jitter. Multi-layer effects still randomize. |
+
+---
+
+## Card Description & Dynamic Damage
+
+| # | Scenario | System / Effect | Fixed Date | Status | Verification |
+|---|----------|-----------------|------------|--------|--------------|
+| 32 | Dynamic damage `<dmg>` placeholder shows as raw text during attack animation | `CardScript`, `RecorderAnimationPlayer` | 2026-06-21 | ⚠️ | **Card:** UNFINISHED_ROBOT (or any card with `<dmg>` in description that also receives a pending StatusEffectChange during its attack animation).<br>**Check:** During the attack animation, the card description shows the resolved number (e.g. `0 (+1)`) instead of `<dmg>`; Console shows no `[DynamicDamageDisplay] ... raw <dmg> ...` warnings. |
 
 ---
 

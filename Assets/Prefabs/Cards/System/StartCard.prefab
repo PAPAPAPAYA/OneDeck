@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: beccc0e445995a14a90ea35c161a1dbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartCardShuffleEffect
-  startCardPositionStdDevFactor: 0.3
+  startCardPositionStdDevFactor: 0.2
 --- !u!114 &7115491257903541512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125,8 +125,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: START_CARD
-  displayName: 
-  cardDesc: 
+  displayName: "\u65F6\u7A7A\u53D8\u52A8"
+  cardDesc: "\u63ED\u6653:\u6D17\u724C"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

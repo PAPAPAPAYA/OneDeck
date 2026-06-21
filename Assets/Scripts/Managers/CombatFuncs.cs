@@ -22,17 +22,17 @@ namespace DefaultNamespace.Managers
 			_combatManager = GetComponent<CombatManager>();
 		}
 
-		public void AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
+		public GameObject AddCardInTheMiddleOfCombat(GameObject cardToAdd, bool belongsToSessionOwner)
 		{
 			var factory = CardFactory.me;
 			if (factory == null)
 			{
 				// Debug.LogError("[CombatFuncs] CardFactory is not available!");
-				return;
+				return null;
 			}
 
 			var targetStatus = belongsToSessionOwner ? _combatManager.ownerPlayerStatusRef : _combatManager.enemyPlayerStatusRef;
-			factory.SpawnCardForPlayer(cardToAdd, targetStatus, deckIndex: 0, triggerMinionEvent: belongsToSessionOwner);
+			return factory.SpawnCardForPlayer(cardToAdd, targetStatus, deckIndex: 0, triggerMinionEvent: belongsToSessionOwner);
 		}
 
 		public GameObject AddCard_TargetSpecific(GameObject cardToAdd, PlayerStatusSO targetPlayerStatus)

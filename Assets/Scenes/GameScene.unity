@@ -3264,10 +3264,11 @@ MonoBehaviour:
   combatManager: {fileID: 1151980344}
   logCombatFlow: 0
   logEffectChains: 0
-  logAnimationPlayback: 1
-  logVisualSync: 1
+  logAnimationPlayback: 0
+  logVisualSync: 0
   logEditorTools: 0
   logTestManager: 0
+  logDynamicDamageDisplay: 1
 --- !u!4 &898235415
 Transform:
   m_ObjectHideFlags: 0
@@ -3650,7 +3651,7 @@ MonoBehaviour:
   autoReveal: 0
   combatAnimationSpeedScale: 1.2
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
-  overtimeRoundThreshold: 3
+  overtimeRoundThreshold: 5
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
   fatigueAmount: 1
   fatigueRevealThreshold: 0
@@ -3797,7 +3798,6 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 437c02dc3a189364787d86a0cbfb3583, type: 3}
   - {fileID: 8718476725744197808, guid: 32c7492795cdf5d418e164a404fab845, type: 3}
   - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
-  - {fileID: 8718476725744197808, guid: 40311cf1202c2d448b2af32198140ec7, type: 3}
   - {fileID: 8718476725744197808, guid: 628ac090bb98bd44793ab0b66581a326, type: 3}
   - {fileID: 8718476725744197808, guid: 7c1c37bc4ca0aea409f012633149fc0c, type: 3}
   - {fileID: 8718476725744197808, guid: 8507f0b52a8cc2e41a12752f65e6d063, type: 3}
@@ -3805,6 +3805,7 @@ MonoBehaviour:
   - {fileID: 1808145013887896563, guid: 0a03aa84eb476e6418b1ecb480fdea93, type: 3}
   - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
   - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
+  - {fileID: 8718476725744197808, guid: 40311cf1202c2d448b2af32198140ec7, type: 3}
   - {fileID: 8718476725744197808, guid: 4fab5dcf4bb8f884fa0183640cccb494, type: 3}
   - {fileID: 8718476725744197808, guid: 34cb2689cd769a848953305e9f110e46, type: 3}
   - {fileID: 1808145013887896563, guid: b0dfbfc59e957c645917dd54906142e0, type: 3}
@@ -3814,6 +3815,8 @@ MonoBehaviour:
   - {fileID: 1808145013887896563, guid: 89b82ea8fae7559478eb7d72b498de2f, type: 3}
   - {fileID: 1808145013887896563, guid: 6050fd316b927014d90d8dc9bca4249f, type: 3}
   - {fileID: 8718476725744197808, guid: 123bd6e2e91a92144aa25a515048a2dd, type: 3}
+  - {fileID: 8718476725744197808, guid: ad8079f6ef9e09e4588f671cc8202250, type: 3}
+  - {fileID: 1808145013887896563, guid: f9eb5df8692df6c469784deee41abea8, type: 3}
   - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
   - {fileID: 1808145013887896563, guid: 276b53576e814444e84a0b3ffd345aca, type: 3}
   - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
@@ -5145,7 +5148,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableStats: 1
-  resetOnStart: 1
+  resetOnStart: 0
   printOnSave: 0
 --- !u!4 &1457153434
 Transform:
@@ -5848,6 +5851,9 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 3939f88bf0acbe74c8fdd1d65ff35703, type: 2}
     - {fileID: 11400000, guid: 50af131858533ee478422383fbdf3977, type: 2}
     - {fileID: 11400000, guid: 93f02c81c27108d4a9987ca6585135fa, type: 2}
+    - {fileID: 11400000, guid: a5a98613f39503a449d3d2e3f52a65d3, type: 2}
+    - {fileID: 11400000, guid: 7f81b314dfa2a2f4caab674fa03eea77, type: 2}
+    - {fileID: 11400000, guid: 1f7cdf2bb4abdc545923b7090d93159e, type: 2}
   - decks:
     - {fileID: 11400000, guid: 09b4845adbe6979488f5a8f5e07238af, type: 2}
     - {fileID: 11400000, guid: bb7a443ed247ecf44af3563da0526fac, type: 2}
@@ -5857,6 +5863,8 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 015b76f373ec7a24bb838786cc9cf924, type: 2}
     - {fileID: 11400000, guid: f3e6750704407674ab631c000605f1c2, type: 2}
     - {fileID: 11400000, guid: 2d4b09d71ed94a5499e67ef3059afc2a, type: 2}
+    - {fileID: 11400000, guid: 7022c9039ccbba145b58893223c51fd3, type: 2}
+    - {fileID: 11400000, guid: daee7c6cfc68415418c67bd0541bdd0c, type: 2}
   - decks:
     - {fileID: 11400000, guid: fada3dcbeb94d954297a33b6e95220e8, type: 2}
     - {fileID: 11400000, guid: f875de0760033124abb54f7289f3b3ae, type: 2}
@@ -5864,19 +5872,27 @@ MonoBehaviour:
     - {fileID: 11400000, guid: d30df1cb6d3dae045a1216b69eb92f1f, type: 2}
     - {fileID: 11400000, guid: 7176a799b7c602c4b817ef9bf0a266d6, type: 2}
     - {fileID: 11400000, guid: 5f7c8a29eda0fe84e825e43e207d35f1, type: 2}
+    - {fileID: 11400000, guid: a72c4b7a452cbd34f8360b13f62bedf6, type: 2}
+    - {fileID: 11400000, guid: 2d5e718b81ef7214c8221e416086aec9, type: 2}
   - decks:
     - {fileID: 11400000, guid: 276a4f94359c01f4ba0a51d2bb9dd43a, type: 2}
     - {fileID: 11400000, guid: a5caf3d8f9efe5a4daa65a0dcb43369b, type: 2}
     - {fileID: 11400000, guid: 69cf8fbcf0e1f654eb30b226b646399d, type: 2}
+    - {fileID: 11400000, guid: 1bb0a8b9eb872cc4b92376267c0be1c2, type: 2}
+    - {fileID: 11400000, guid: 3f2617ab9531ba844955352568148513, type: 2}
   - decks:
     - {fileID: 11400000, guid: 3a0fe8f6b9871f5499c98fb59606aee7, type: 2}
     - {fileID: 11400000, guid: 5e11162f767d3dc4cb20ce599221d2c6, type: 2}
     - {fileID: 11400000, guid: 30e0816c516833e4782495ad3deb5fac, type: 2}
+    - {fileID: 11400000, guid: d69096eb664d04144b35f72adb0ab684, type: 2}
   - decks:
     - {fileID: 11400000, guid: 0b21f16d94ba6164fab29e9b41add769, type: 2}
     - {fileID: 11400000, guid: 7abfbab6c745f074d98a806b81a34c7e, type: 2}
+    - {fileID: 11400000, guid: 027a7e04d93ce2b47a1b1bc67c20afcb, type: 2}
+    - {fileID: 11400000, guid: a16cf608ddbb4dc4188641df33c50554, type: 2}
   - decks:
     - {fileID: 11400000, guid: 7ed7fe48c63ba134192c4501ca6e3187, type: 2}
+    - {fileID: 11400000, guid: f7fdac23074be5649b6c835837ed31b5, type: 2}
   - decks:
     - {fileID: 11400000, guid: 469ba931f15c522449b6be334aa55b0c, type: 2}
   - decks:
@@ -7798,7 +7814,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   switchOnTracking: 1
-  resetOnStart: 1
+  resetOnStart: 0
   printOnSave: 0
 --- !u!4 &2103892657
 Transform:
@@ -8055,11 +8071,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.82
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.09
+      value: -0.7
       objectReference: {fileID: 0}
     - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
       propertyPath: m_LocalPosition.z

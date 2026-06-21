@@ -279,7 +279,14 @@ public class CardPhysObjScript : MonoBehaviour
 	private void UpdateCardDescription()
 	{
 		if (cardDescPrint == null || cardImRepresenting == null) return;
-		cardDescPrint.text = cardImRepresenting.GetCardDescForDisplay();
+
+		string displayDesc = cardImRepresenting.GetCardDescForDisplay();
+		cardDescPrint.text = displayDesc;
+
+		if (displayDesc != null && displayDesc.Contains("<dmg>") && cardImRepresenting.HasDisplaySnapshot)
+		{
+			TestManager.LogWarning("[DynamicDamageDisplay] UpdateCardDescription showing raw <dmg> during snapshot card=" + cardImRepresenting.GetDisplayName() + " cardDesc=[" + cardImRepresenting.cardDesc + "]");
+		}
 	}
 
 	/// <summary>

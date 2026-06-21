@@ -57,6 +57,10 @@
 #endregion
 #region anything else
 //! anything else
+	//// fatigue on round reactivate
+	//// fatigue card face text
+	//// start card card face text
+	//todo think about player intent vs actual happen probability
 	//// nerf grave_punch
 	//// more bury?
 	//// more if staged?
@@ -118,9 +122,10 @@
 #endregion
 #region feature
 //! feature
+	//todo if card tries to activate while not in reveal zone, popup first
 	//// bury only buries card after start card index
 	//// projectile animation for give power to card that got power
-	//todo give power only give power to cards that deals dmg? might be too strong?
+	//// give power only give power to cards that deals dmg? might be too strong and awkward?
 	// proper play mode tester skill
 	//// add a test manager
 	//// an override slot for enemy deck
@@ -238,8 +243,11 @@
 #endregion
 #region bugs
 //! bug
+	//// rift dragon
+	//todo check game event listener and card description inconsistency
+	//// dynamic dmg display
 	//// quick response protocal needs to consume counter and take out linger condition
-	//todo sacrificial sword gives status effect to fixed card
+	//// sacrificial sword gives status effect to fixed card
 	//// deck increase price
 	//// crlf and tab
 	//// curse thirst beast

@@ -137,7 +137,7 @@ MonoBehaviour:
   displayName: "\u732E\u796D\u8BC5\u5492"
   cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9,\u589E\u5F3A <b>2</b>
     \u654C\u65B9[\u8BC5\u5492]"
-  rarity: 1
+  rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0

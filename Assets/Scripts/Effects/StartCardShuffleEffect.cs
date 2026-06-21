@@ -18,6 +18,16 @@ public class StartCardShuffleEffect : MonoBehaviour
 	public void ExecuteShuffleEffect()
 	{
 		var cm = CombatManager.Me;
+
+		// Round number increment (moved from HandleNewRoundStart so fatigue and shuffle
+		// share the same EffectRecorder animation phase)
+		cm.roundNumRef.value++;
+		cm.cardsRevealedThisRound = 0;
+		cm.GetComponent<CombatInfoDisplayer>()?.ClearInfo();
+
+		// Overtime fatigue check: add fatigue cards and capture their popup/slot-in animations
+		cm.CheckFatigueNAddFatigue();
+
 		var startCard = cm.revealZone;
 		cm.revealZone = null;
 
