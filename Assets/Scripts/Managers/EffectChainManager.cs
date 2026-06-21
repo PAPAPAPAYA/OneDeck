@@ -88,6 +88,13 @@ public class EffectChainManager : MonoBehaviour
 		newChainScript.chainID = chainNumber;
 		newChainScript.cardObject = myCard;
 		newChainScript.effectObject = myEffectInst;
+		// Snapshot whether the source card is the currently revealed card. Some effects
+		// (e.g. StartCardShuffleEffect) clear CombatManager.revealZone during execution,
+		// so the animation phase cannot rely on the live value.
+		newChainScript.sourceWasInRevealZone =
+			CombatManager.Me != null &&
+			CombatManager.Me.revealZone != null &&
+			CombatManager.Me.revealZone == myCard;
 		// Remember the recorder that was active before creating this one.
 		// This ensures reactive effects are parented to the recorder that triggered them.
 		var previousRecorder = currentEffectRecorder;

@@ -79,25 +79,70 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			reqSummary += "[" + i + "]" + (r != null ? r.type.ToString() : "null") + " ";
 		}
 
-		// Emphasize the source card before playing its effect animations
-		if (recorder.animationRequests.Count > 0 && recorder.cardObject != null)
+		// VISUAL-FIX(2026-06-21): Pop up off-reveal source cards before emphasize/shake
+		//   Cause:    Cards activated from the deck (reactive effects) had no visual cue to show
+		//             the player which card was about to trigger, making it hard to follow chains.
+		//   Fix:      Pop the source card up from the deck, play the success emphasize or cost-fail
+		//             shake while it is still at the popup peak, then slot it back in before
+		//             playing the remaining effect animations. Skip popup for the revealed card
+		//             using a snapshot because StartCardShuffleEffect clears revealZone during
+		//             logic execution.
+		//   Affects:  RecorderAnimationPlayer, CombatUXManager, CardPhysObjScript, EffectRecorder, EffectChainManager, CostNEffectContainer
+		//   Regress:  Trigger a reactive deck effect (e.g. afterShuffle StageSelf, onMeGotPower);
+		//             verify popup -> emphasize -> slotin -> effect animation order.
+		//             Trigger a cost-fail reaction; verify popup -> shake -> slotin (no emphasize).
+		//             Reveal Start Card and verify it does NOT popup before its shuffle animation.
+		bool sourceNeedsPopup = recorder.animationRequests.Count > 0
+			&& recorder.cardObject != null
+			&& !recorder.sourceWasInRevealZone;
+
+		if (sourceNeedsPopup)
 		{
-			yield return StartCoroutine(PlayEmphasizeAnimation(recorder.cardObject));
+			yield return StartCoroutine(PlayOffRevealPopupCoroutine(recorder.cardObject));
 		}
-		else
+
+		// Play the source-card feedback while it is still popped up.
+		// Success recorders emphasize; cost-fail recorders shake.
+		if (recorder.cardObject != null)
 		{
-			TestManager.Log("[RecorderAnimationPlayer] Skipping emphasize: requests=" + recorder.animationRequests.Count + " card=" + cardName);
+			if (recorder.isCostFailRecorder)
+			{
+				// Play the single shake request while the card is still at the popup peak.
+				var shakeRequest = recorder.animationRequests.Count > 0 ? recorder.animationRequests[0] : null;
+				if (shakeRequest != null)
+				{
+					yield return StartCoroutine(PlayRequestCoroutine(shakeRequest));
+				}
+			}
+			else if (recorder.animationRequests.Count > 0)
+			{
+				yield return StartCoroutine(PlayEmphasizeAnimation(recorder.cardObject));
+			}
+			else
+			{
+				TestManager.Log("[RecorderAnimationPlayer] Skipping emphasize: requests=" + recorder.animationRequests.Count + " card=" + cardName);
+			}
+		}
+
+		// Return the source card to the deck before the remaining effect animations run.
+		if (sourceNeedsPopup)
+		{
+			yield return StartCoroutine(SlotInSourceCardCoroutine(recorder.cardObject));
 		}
 
 		// Pre-scan to mark StatusEffectChange requests that should defer display commit
 		// until their corresponding StatusEffectProjectile animation completes
 		MarkDeferredDisplayCommits(recorder);
 
-		// Play all requests of this effect instance sequentially
+		// Play all remaining requests of this effect instance sequentially
 		foreach (var request in recorder.animationRequests)
 		{
 			if (request != null)
 			{
+				// Shake was already played above for cost-fail recorders.
+				if (recorder.isCostFailRecorder && request.type == AnimationRequestType.Shake)
+					continue;
+
 				yield return StartCoroutine(PlayRequestCoroutine(request));
 			}
 		}
@@ -152,6 +197,41 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		});
 
 		yield return new WaitUntil(() => done);
+	}
+
+	/// <summary>
+	/// Pop the source card up from the deck so the player can see which card is about to trigger.
+	/// The caller is responsible for slotting it back in and for verifying the card was not the
+	/// revealed card when the recorder was created.
+	/// </summary>
+	private IEnumerator PlayOffRevealPopupCoroutine(GameObject logicalCard)
+	{
+		if (logicalCard == null) yield break;
+		if (CombatManager.Me == null) yield break;
+
+		var visuals = CombatManager.Me.visuals;
+		if (visuals == null) yield break;
+
+		bool popupDone = false;
+		visuals.PopUpCard(logicalCard, () => popupDone = true);
+		yield return new WaitUntil(() => popupDone);
+	}
+
+	/// <summary>
+	/// Slot the source card back into the deck after its popup feedback (emphasize/shake) has
+	/// finished playing.
+	/// </summary>
+	private IEnumerator SlotInSourceCardCoroutine(GameObject logicalCard)
+	{
+		if (logicalCard == null) yield break;
+		if (CombatManager.Me == null) yield break;
+
+		var visuals = CombatManager.Me.visuals;
+		if (visuals == null) yield break;
+
+		bool slotInDone = false;
+		visuals.SlotInCard(logicalCard, () => slotInDone = true);
+		yield return new WaitUntil(() => slotInDone);
 	}
 
 	/// <summary>

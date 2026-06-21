@@ -78,6 +78,7 @@ public class CostNEffectContainer : MonoBehaviour
 				EffectChainManager.Me.CheckShouldIStartANewChain(_myCardScript.gameObject, gameObject);
 				EffectChainManager.Me.MakeANewEffectRecorder(_myCardScript.gameObject, gameObject);
 				var recorder = EffectChainManager.Me.currentEffectRecorder.GetComponent<EffectRecorder>();
+				recorder.isCostFailRecorder = true;
 				recorder.animationRequests.Add(new AnimationRequest {
 					type = AnimationRequestType.Shake,
 					targetCard = _myCardScript.gameObject,

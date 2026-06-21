@@ -55,6 +55,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 30 | PowerReactionEffect nested Power text commits incrementally per projectile | `PowerReactionEffect`, `RecorderAnimationPlayer`, `CardScript`, `AnimationRequest`, `EffectScript`, `ConsumeStatusEffect` | 2026-06-20 | ⚠️ | **Card:** SACRIFICIAL_SWORD + POWER_CRAVER + WEAPON_SPIRIT in deck.<br>**Check:** After SACRIFICIAL_SWORD's projectile lands, POWER_CRAVER's text shows 1 Power. After WEAPON_SPIRIT's reaction projectile lands, text updates to 2 Power. The reaction's Power is not visible before its projectile arrives. |
 | 31 | AmplifyStatusEffectGain missing projectile animation | `StatusEffectAmplifierEffect`, `StatusEffectGiverEffect`, `RecorderAnimationPlayer` | 2026-06-21 | ⚠️ | **Card:** Any card with `StatusEffectAmplifierEffect` on `onMeGotStatusEffect` (e.g. self-Power amplifier).<br>**Check:** When the amplifier triggers, the card pops up, projectile flies in, then slots back in; `StatusEffectChange` already captured by `ApplyStatusEffectCore` inside `GiveSelfStatusEffect`. |
 | 20 | JU_ON consumed by PREMATURE then Staged slots back to wrong position | `StageEffect`, `BuryEffect`, `RecorderAnimationPlayer`, `ApplyAnimationResult` | 2026-06-13 | ⚠️ | **Card:** PREMATURE + JU_ON in enemy deck<br>**Check:** PREMATURE reveals and consumes JU_ON's curse Power; JU_ON pops up from original deck position, projectile flies to `statusEffectConsumePos`, slots back to original index, then Stage arc moves it to deck top. No zero-distance SlotIn or misplaced landing. |
+| 33 | Off-reveal card activations have no visual cue before emphasize/shake | `RecorderAnimationPlayer`, `CombatUXManager`, `CardPhysObjScript`, `EffectRecorder`, `EffectChainManager`, `CostNEffectContainer` | 2026-06-21 | ⚠️ | **Card:** Any reactive deck effect (e.g. BOOSTER afterShuffle→StageSelf, WEAPON_SPIRIT onFriendlyCardGotPower) or a cost-fail reaction from a deck card.<br>**Check:** Success activations: popup -> emphasize -> slotin -> effect animation. Cost-fail activations: popup -> shake -> slotin (no emphasize). Reveal-zone cards do not popup. `AnimationStateTracker.pending` returns to 0 after popup/slot-in. |
 
 ## Status Effect Consumption Animation
 
@@ -89,13 +90,14 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `CardPhysObjScript.cs` | 3, 12 |
 | `CurseEffect.cs` | 8, 17, 19 |
 | `AddTempCard.cs` | 4 |
-| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19 |
+| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33 |
 | `ApplyAnimationResult` | 5 |
 | `CalculateAnimationPositionAtIndex` | 7 |
 | `CostResultPresenter.cs` | 9 |
-| `CostNEffectContainer.cs` | 9 |
+| `CostNEffectContainer.cs` | 9, 33 |
+| `EffectRecorder.cs` | 33 |
 | `AnimationRequest.cs` | 9, 16, 17, 19, 30 |
-| `CardScript.cs` | 30 |
+| `CardScript.cs` | 30, 32 |
 | `CombatManager.cs` | 10, 11, 12 |
 | `ConsumeStatusEffect.cs` | 16, 17, 18, 30 |
 | `ICombatVisuals.cs` | 16, 17, 19 |
