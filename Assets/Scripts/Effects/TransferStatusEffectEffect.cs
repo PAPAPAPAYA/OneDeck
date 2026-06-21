@@ -269,6 +269,15 @@ namespace DefaultNamespace.Effects
 				// Check if it's a target side (friendly or hostile) card
 				if (cardScript.myStatusRef != targetStatusRef) continue;
 
+				// When transferring from friendly, exclude the hostile curse card type itself from source
+				if (isFromFriendly &&
+				    curseCardTypeID != null &&
+				    !string.IsNullOrEmpty(curseCardTypeID.value) &&
+				    cardScript.cardTypeID == curseCardTypeID.value)
+				{
+					continue;
+				}
+
 				// Check if it has the specified status effect
 				if (EnumStorage.GetStatusEffectCount(cardScript.myStatusEffects, statusEffectToTransfer) > 0)
 				{
@@ -283,6 +292,7 @@ namespace DefaultNamespace.Effects
 				if (revealCardScript != null &&
 				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
 				    revealCardScript.myStatusRef == targetStatusRef &&
+				    !(isFromFriendly && curseCardTypeID != null && !string.IsNullOrEmpty(curseCardTypeID.value) && revealCardScript.cardTypeID == curseCardTypeID.value) &&
 				    EnumStorage.GetStatusEffectCount(revealCardScript.myStatusEffects, statusEffectToTransfer) > 0 &&
 				    !result.Exists(c => c.gameObject == combatManager.revealZone))
 				{
