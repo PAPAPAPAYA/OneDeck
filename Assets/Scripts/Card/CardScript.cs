@@ -123,6 +123,9 @@ public class CardScript : MonoBehaviour
 	{
 		ApplyStatusEffectDeltaToList(displayMyStatusEffects, effect, delta);
 		_displayCardDesc = ComputeDynamicCardDesc(displayMyStatusEffects);
+		TestManager.Log("[StatusEffectDisplay] ApplyDisplayDelta card=" + GetDisplayName() +
+			" effect=" + effect + " delta=" + delta +
+			" displayCount=" + (displayMyStatusEffects != null ? displayMyStatusEffects.Count : 0));
 	}
 
 	/// <summary>

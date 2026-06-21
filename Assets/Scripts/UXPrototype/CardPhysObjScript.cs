@@ -69,6 +69,7 @@ public class CardPhysObjScript : MonoBehaviour
 	private TintState _currentTintState = TintState.None;
 	private float _tintTimer = 0f;
 	private float _currentTintIntensity = 0f; // Currently displayed tint intensity (used for smooth transition)
+	private string _lastLoggedStatusEffectText;
 
 	public enum TintState { None, Infected, Power }
 
@@ -269,6 +270,17 @@ public class CardPhysObjScript : MonoBehaviour
 			{
 				cardNamePrint.text = cardImRepresenting.GetDisplayName();
 			}
+		}
+
+		// Log only when status effect text actually changes to avoid Update() spam.
+		if (statusEffectText != _lastLoggedStatusEffectText)
+		{
+			TestManager.Log("[StatusEffectDisplay] UpdateStatusEffectDisplay card=" + cardImRepresenting.GetDisplayName() +
+				" hasSnapshot=" + cardImRepresenting.HasDisplaySnapshot +
+				" count=" + (statusEffectsForDisplay != null ? statusEffectsForDisplay.Count : 0) +
+				" old=[" + (_lastLoggedStatusEffectText ?? "null") + "]" +
+				" new=[" + (statusEffectText ?? "null") + "]");
+			_lastLoggedStatusEffectText = statusEffectText;
 		}
 	}
 

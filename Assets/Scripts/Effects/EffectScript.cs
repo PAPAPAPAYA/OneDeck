@@ -281,6 +281,7 @@ public class EffectScript : MonoBehaviour
 	//             Check: all target curse cards pop up together, projectiles fly from each target
 	//             toward statusEffectConsumePos with one projectile per consumed layer, status text
 	//             updates after projectiles land, then all targets slot back in together.
+	//   Updated(2026-06-21): Source cards now update status text when projectiles spawn.
 	protected void CaptureBatchStatusEffectConsumeAnimation(
 		GameObject sourceCard,
 		List<CardScript> targetCards,
@@ -306,7 +307,7 @@ public class EffectScript : MonoBehaviour
 		}
 		if (targetGameObjects.Count == 0) return;
 
-		// 1. Status Effect Change (RecorderAnimationPlayer will defer commit until projectile lands)
+		// 1. Status Effect Change (consume source cards update display when projectile spawns)
 		for (int i = 0; i < targetGameObjects.Count; i++)
 		{
 			recorder.animationRequests.Add(new AnimationRequest
@@ -315,7 +316,9 @@ public class EffectScript : MonoBehaviour
 				targetCard = targetGameObjects[i],
 				statusEffect = effect,
 				statusEffectAmount = -filteredAmounts[i],
-				statusEffectDelta = -filteredAmounts[i]
+				statusEffectDelta = -filteredAmounts[i],
+				deferDisplayCommit = true,
+				applyDisplayDeltaOnProjectileSpawn = true
 			});
 		}
 
@@ -361,6 +364,8 @@ public class EffectScript : MonoBehaviour
 	//             (transfer 1 Power from each source to self). Check: source cards pop up together,
 	//             projectiles fly from each source to the target card, status text updates after
 	//             projectiles land, then all cards slot back in together.
+	//   Updated(2026-06-21): Source cards now update status text when the projectile spawns;
+	//             target card still updates after the last projectile lands.
 	protected void CaptureBatchStatusEffectTransferAnimation(
 		List<CardScript> sourceCards,
 		CardScript targetCard,
@@ -425,8 +430,7 @@ public class EffectScript : MonoBehaviour
 			targetCard = targetCard.gameObject
 		});
 
-		// 6. Status effect change on source cards (executed after projectiles/slot-in so text
-		//    updates only when the visual transfer completes).
+		// 6. Status effect change on source cards (transfer source cards update display when projectile spawns)
 		for (int i = 0; i < sourceGameObjects.Count; i++)
 		{
 			recorder.animationRequests.Add(new AnimationRequest
@@ -435,7 +439,9 @@ public class EffectScript : MonoBehaviour
 				targetCard = sourceGameObjects[i],
 				statusEffect = effect,
 				statusEffectAmount = -filteredAmounts[i],
-				statusEffectDelta = -filteredAmounts[i]
+				statusEffectDelta = -filteredAmounts[i],
+				deferDisplayCommit = true,
+				applyDisplayDeltaOnProjectileSpawn = true
 			});
 		}
 	}

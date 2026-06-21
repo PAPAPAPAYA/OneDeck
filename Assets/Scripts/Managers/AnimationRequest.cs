@@ -67,9 +67,17 @@ namespace DefaultNamespace
 		public bool deferDisplayCommit = false;
 
 		/// <summary>
+		/// When true and this StatusEffectChange is paired with a StatusEffectProjectile,
+		/// the display delta is applied as soon as the projectile is spawned (flight starts).
+		/// Used for consume/transfer effects where the source card should visually lose the
+		/// status effect at the beginning of the projectile animation.
+		/// </summary>
+		public bool applyDisplayDeltaOnProjectileSpawn = false;
+
+		/// <summary>
 		/// Internal flag used by RecorderAnimationPlayer to ensure a StatusEffectChange's
-		/// display delta is applied exactly once, whether immediately or when its linked
-		/// projectile lands.
+		/// display delta is applied exactly once, whether immediately, when its linked
+		/// projectile spawns, or when the projectile lands.
 		/// </summary>
 		public bool displayDeltaApplied = false;
 

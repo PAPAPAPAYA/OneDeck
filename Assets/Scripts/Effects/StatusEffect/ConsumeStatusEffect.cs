@@ -13,6 +13,7 @@ namespace DefaultNamespace.Effects
 		//   Affects:  ConsumeStatusEffect, AnimationRequest, RecorderAnimationPlayer, CombatUXManager
 		//   Regress:  Reveal a card whose effect calls ConsumeOwnStatusEffect (e.g. OVERCHARGED_SUMMONER)
 		//             Check: card pops up, projectile flies toward statusEffectConsumePos, status text updates, then slots back in.
+		//   Updated(2026-06-21): Status text now updates when the projectile spawns (flight starts).
 		public void ConsumeOwnStatusEffect(int amount)
 		{
 			// first check if amount is met
@@ -58,7 +59,7 @@ namespace DefaultNamespace.Effects
 					projectileCount = amountRemoved
 				});
 
-				// 3. Status Effect Change (tint + particles)
+				// 3. Status Effect Change (consume source card updates display when projectile spawns)
 				recorder.animationRequests.Add(new AnimationRequest
 				{
 					type = AnimationRequestType.StatusEffectChange,
@@ -66,7 +67,8 @@ namespace DefaultNamespace.Effects
 					statusEffect = statusEffectToConsume,
 					statusEffectAmount = -amountRemoved,
 					statusEffectDelta = -amountRemoved,
-					deferDisplayCommit = true
+					deferDisplayCommit = true,
+					applyDisplayDeltaOnProjectileSpawn = true
 				});
 
 				// 4. Slot In
@@ -96,6 +98,7 @@ namespace DefaultNamespace.Effects
 		//   Regress:  Reveal POWER_TRANSFER when multiple enemy cards have Power
 		//             Check: targets pop up together, projectiles fly from each target back to source in parallel,
 		//             status text updates, then all targets slot back in together.
+		//   Updated(2026-06-21): Target cards now update status text when projectiles spawn.
 		public void ConsumeRandomEnemyCardsStatusEffect(int amount)
 		{
 			var eligibleCards = new List<CardScript>();

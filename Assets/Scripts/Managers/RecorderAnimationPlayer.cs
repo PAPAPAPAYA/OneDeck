@@ -243,11 +243,21 @@ public class RecorderAnimationPlayer : MonoBehaviour
 	{
 		if (recorder == null || recorder.animationRequests == null) return;
 
-		// Collect all targets that will receive a StatusEffectProjectile in this recorder
+		// Collect all targets that will receive a StatusEffectProjectile in this recorder.
+		// For reverse projectiles (absorb/transfer), the source cards listed in attackerCards
+		// are the ones losing the status effect, so they must also defer.
 		var projectileTargets = new HashSet<GameObject>();
 		foreach (var req in recorder.animationRequests)
 		{
 			if (req == null || req.type != AnimationRequestType.StatusEffectProjectile) continue;
+			if (req.reverseProjectile && req.attackerCards != null)
+			{
+				foreach (var a in req.attackerCards)
+				{
+					if (a != null)
+						projectileTargets.Add(a);
+				}
+			}
 			if (req.targetCard != null)
 				projectileTargets.Add(req.targetCard);
 			if (req.targetCards != null)
@@ -272,6 +282,73 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 		}
 	}
+
+	/// <summary>
+	/// Apply display deltas for StatusEffectChange requests that should commit when a
+	/// projectile spawns (consume/transfer source cards). This is called before the
+	/// projectile flight begins so the source card text updates at the start of the animation.
+	/// </summary>
+	private void ApplySpawnDeltasForProjectile(EffectRecorder recorder, AnimationRequest projectileRequest)
+	{
+		if (recorder == null || recorder.animationRequests == null || projectileRequest == null) return;
+
+		// Collect all cards involved in this projectile request.
+		var involvedCards = new HashSet<GameObject>();
+		if (projectileRequest.attackerCard != null)
+			involvedCards.Add(projectileRequest.attackerCard);
+		if (projectileRequest.attackerCards != null)
+		{
+			foreach (var a in projectileRequest.attackerCards)
+			{
+				if (a != null)
+					involvedCards.Add(a);
+			}
+		}
+		if (projectileRequest.targetCard != null)
+			involvedCards.Add(projectileRequest.targetCard);
+		if (projectileRequest.targetCards != null)
+		{
+			foreach (var t in projectileRequest.targetCards)
+			{
+				if (t != null)
+					involvedCards.Add(t);
+			}
+		}
+
+		if (involvedCards.Count == 0) return;
+
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req == null || req.type != AnimationRequestType.StatusEffectChange) continue;
+			if (!req.applyDisplayDeltaOnProjectileSpawn) continue;
+			if (req.displayDeltaApplied) continue;
+			if (req.targetCard == null) continue;
+			if (!involvedCards.Contains(req.targetCard)) continue;
+
+			var targetCardScript = req.targetCard.GetComponent<CardScript>();
+			if (targetCardScript != null)
+			{
+				targetCardScript.ApplyDisplayDelta(req.statusEffect, req.statusEffectDelta);
+				req.displayDeltaApplied = true;
+			}
+		}
+	}
+
+	// VISUAL-FIX(2026-06-21): Consume/transfer source cards should update status text when projectile spawns
+	//   Cause:    All StatusEffectChange deltas were deferred until the projectile landed, so cards
+	//             losing status effects (consume/transfer) appeared to still have the effect until
+	//             the projectile finished flying. Players expected the source card text to update
+	//             the moment the status effect left the card.
+	//   Fix:      Add applyDisplayDeltaOnProjectileSpawn flag. For consume/transfer source cards,
+	//             RecorderAnimationPlayer applies the negative delta immediately when the projectile
+	//             is spawned. Cards receiving status effects keep the existing deferred-until-land
+	//             behavior.
+	//   Affects:  AnimationRequest, RecorderAnimationPlayer, EffectScript, ConsumeStatusEffect,
+	//             TransferStatusEffectEffect
+	//   Regress:  Reveal OVERCHARGED_SUMMONER (ConsumeOwnStatusEffect), POWER_TRANSFER
+	//             (ConsumeRandomEnemyCardsStatusEffect), CROW_CROWD/POWER_SIPHONER
+	//             (TransferStatusEffectEffect). Check: source card status text updates at the
+	//             start of projectile flight; target card status text still updates after landing.
 
 	// VISUAL-FIX(2026-06-20): Per-projectile status effect display commit
 	//   Cause:    CommitDisplayState() copied the full current myStatusEffects list, so when
@@ -641,7 +718,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					visuals.ApplyStatusTint(targetCardScript, request.statusEffect);
 				}
 
-				if (!request.deferDisplayCommit)
+				if (!request.deferDisplayCommit && !request.displayDeltaApplied)
 				{
 					targetCardScript.ApplyDisplayDelta(request.statusEffect, request.statusEffectDelta);
 					request.displayDeltaApplied = true;
@@ -653,6 +730,9 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			case AnimationRequestType.StatusEffectProjectile:
 			{
 				if (request.attackerCard == null && (request.attackerCards == null || request.attackerCards.Count == 0)) break;
+
+				// Consume/transfer source cards update display as soon as the projectile spawns.
+				ApplySpawnDeltasForProjectile(_currentRecorder, request);
 
 				// VISUAL-FIX(2026-06-12): Support projectile flying to a custom world position
 				//   Cause:    ConsumeOwnStatusEffect needed a projectile that flies to statusEffectConsumePos

@@ -45,7 +45,8 @@ namespace DefaultNamespace.Managers
 			VisualSync,
 			EditorTools,
 			TestManager,
-			DynamicDamageDisplay
+			DynamicDamageDisplay,
+			StatusEffectDisplay
 		}
 
 		[Header("Log Switches")]
@@ -69,6 +70,9 @@ namespace DefaultNamespace.Managers
 
 		[Tooltip("Log dynamic damage display messages from CardScript, HPAlterEffect, and CardPhysObjScript.")]
 		public bool logDynamicDamageDisplay = true;
+
+		[Tooltip("Log status effect display messages from CardPhysObjScript and CardScript display state.")]
+		public bool logStatusEffectDisplay = true;
 
 		#endregion
 
@@ -248,6 +252,10 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.DynamicDamageDisplay;
 			}
+			if (message.Contains("[StatusEffectDisplay]"))
+			{
+				return LogCategory.StatusEffectDisplay;
+			}
 			return LogCategory.CombatFlow;
 		}
 
@@ -262,6 +270,7 @@ namespace DefaultNamespace.Managers
 				case LogCategory.EditorTools: return Me.logEditorTools;
 				case LogCategory.TestManager: return Me.logTestManager;
 				case LogCategory.DynamicDamageDisplay: return Me.logDynamicDamageDisplay;
+				case LogCategory.StatusEffectDisplay: return Me.logStatusEffectDisplay;
 				default: return true;
 			}
 		}
