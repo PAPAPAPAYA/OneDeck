@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -62,9 +62,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -92,7 +89,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc6889e6c567d804ab804fe4840a1fb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.PowerReactionEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 0
@@ -104,6 +100,8 @@ MonoBehaviour:
   statusEffectLayerCount: 1
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
   powerAmount: 1
@@ -160,6 +158,7 @@ MonoBehaviour:
   cardDesc: "\u8426\u7ED5;\u5F53\u53CB\u65B9\u83B7\u5F97\u529B\u91CF\u65F6:\u7ED9\u4E88\u8BE5\u53CB\u65B9
     <b>1</b> \u529B\u91CF"
   rarity: 1
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
@@ -167,13 +166,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
-  myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
+  displayMyStatusEffects: 
+  myTags: 01000000
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

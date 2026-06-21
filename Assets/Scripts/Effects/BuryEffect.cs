@@ -56,12 +56,41 @@ public class BuryEffect : EffectScript
 		return index == 0;
 	}
 
+	/// <summary>
+	/// Find the current index of the Start Card in combinedDeck.
+	/// Returns -1 if no Start Card is present.
+	/// </summary>
+	private int GetStartCardIndex()
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		for (int i = 0; i < _combinedDeck.Count; i++)
+		{
+			var cardScript = _combinedDeck[i].GetComponent<CardScript>();
+			if (cardScript != null && cardScript.isStartCard)
+				return i;
+		}
+		return -1;
+	}
+
+	/// <summary>
+	/// Check if card is below the Start Card in deck order (index < startCardIndex).
+	/// Always returns false when no Start Card is found.
+	/// </summary>
+	private bool IsCardBelowStartCard(GameObject card)
+	{
+		int startCardIndex = GetStartCardIndex();
+		if (startCardIndex < 0) return false;
+		return GetCardIndexInCombinedDeck(card) < startCardIndex;
+	}
+
 	public void BurySelf() // put self at the bottom of the deck
 	{
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardToBury = transform.parent.gameObject;
 		// If already at bottom, no need to bury
 		if (IsCardAtBottom(cardToBury)) return;
+		// Do not bury cards below the Start Card boundary
+		if (IsCardBelowStartCard(cardToBury)) return;
 		var cardsToBury = new List<GameObject> { cardToBury };
 		BuryChosenCards(cardsToBury, 1);
 	}
@@ -90,7 +119,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!CardHasAnyMatchingTag(cardScript) || IsCardAtBottom(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript) || (excludeSelf && card == myCard))
+			if (!CardHasAnyMatchingTag(cardScript) || IsCardAtBottom(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript) || (excludeSelf && card == myCard) || IsCardBelowStartCard(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -111,7 +140,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard) || IsCardBelowStartCard(card))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -132,7 +161,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!CardHasAnyMatchingTag(cardScript) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard))
+			if (!CardHasAnyMatchingTag(cardScript) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard) || IsCardBelowStartCard(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -153,7 +182,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = theirCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || IsCardBelowStartCard(card))
 			{
 				theirCards.RemoveAt(i);
 			}
@@ -174,7 +203,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!CardHasAnyMatchingTag(cardScript) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion)
+			if (!CardHasAnyMatchingTag(cardScript) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || IsCardBelowStartCard(card))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -209,7 +238,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard) || IsCardBelowStartCard(card))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -221,7 +250,7 @@ public class BuryEffect : EffectScript
 	/// <summary>
 	/// Bury the next X cards in deck order (cards before this card in combined deck, i.e. closer to bottom).
 	/// Iterates backwards from the current card's position and buries each valid target.
-	/// Skips cards that should be ignored, are minions, or are already at the bottom.
+	/// Skips cards that should be ignored, are minions, are already at the bottom, or are below the Start Card.
 	/// If this card is in the reveal zone, starts from the bottom of the deck instead.
 	/// </summary>
 	/// <param name="amount">Number of cards to bury</param>
@@ -247,11 +276,15 @@ public class BuryEffect : EffectScript
 				}
 			}
 			if (currentIndex < 0) return;
+			// If this card is already below the Start Card, it cannot bury anything toward the bottom
+			if (IsCardBelowStartCard(myCard)) return;
 			startIndex = currentIndex - 1;
 		}
+		int startCardIndex = GetStartCardIndex();
+		int loopLowerBound = startCardIndex >= 0 ? startCardIndex : 0;
 		var cardsToBury = new List<GameObject>();
 		int cardsFound = 0;
-		for (int i = startIndex; i >= 0 && cardsFound < amount; i--)
+		for (int i = startIndex; i >= loopLowerBound && cardsFound < amount; i--)
 		{
 			var targetCard = _combinedDeck[i];
 			var targetCardScript = targetCard.GetComponent<CardScript>();

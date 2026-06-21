@@ -192,10 +192,11 @@ public class ShopManager : MonoBehaviour
 		// record card bought
 		if (ShopStatsManager.Me != null)
 		{
-			var cardTypeID = cardToBuy.GetComponent<CardScript>()?.cardTypeID;
+			var cardScript = cardToBuy.GetComponent<CardScript>();
+			var cardTypeID = cardScript?.cardTypeID;
 			if (!string.IsNullOrEmpty(cardTypeID))
 			{
-				ShopStatsManager.Me.RecordCardBought(cardTypeID, cardToBuy.name);
+				ShopStatsManager.Me.RecordCardBought(cardTypeID, cardScript.GetDisplayName());
 			}
 		}
 		GatherPlayerDeckInfo();
@@ -339,10 +340,11 @@ public class ShopManager : MonoBehaviour
 			// record card appeared
 			if (ShopStatsManager.Me != null)
 			{
-				var cardTypeID = card.GetComponent<CardScript>()?.cardTypeID;
+				var cardScript = card.GetComponent<CardScript>();
+				var cardTypeID = cardScript?.cardTypeID;
 				if (!string.IsNullOrEmpty(cardTypeID))
 				{
-					ShopStatsManager.Me.RecordCardAppeared(cardTypeID, card.name);
+					ShopStatsManager.Me.RecordCardAppeared(cardTypeID, cardScript.GetDisplayName());
 				}
 			}
 		}

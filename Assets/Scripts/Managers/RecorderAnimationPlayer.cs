@@ -10,6 +10,9 @@ public class RecorderAnimationPlayer : MonoBehaviour
 {
 	public static RecorderAnimationPlayer me;
 
+	private HashSet<CardScript> _baselineCards = new HashSet<CardScript>();
+	private EffectRecorder _currentRecorder;
+
 	void Awake()
 	{
 		me = this;
@@ -21,6 +24,10 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		AttackAnimationManager.me?.HoldDeckFocus();
 		try
 		{
+			// Compute per-card display baselines before any animation plays so that
+			// StatusEffectChange text updates can be applied incrementally per projectile.
+			ComputeAndApplyDisplayBaselines(rootRecorders);
+
 			foreach (var rootRecorder in rootRecorders)
 			{
 				if (rootRecorder == null)
@@ -40,6 +47,14 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		finally
 		{
 			AttackAnimationManager.me?.ReleaseDeckFocus();
+
+			// Commit display state for all cards that received a baseline so display
+			// returns to live state after all animations complete.
+			foreach (var card in _baselineCards)
+			{
+				if (card != null) card.CommitDisplayState();
+			}
+			_baselineCards.Clear();
 		}
 	}
 
@@ -52,6 +67,8 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			yield break;
 		}
 		recorder.animationPlayed = true;
+		var previousRecorder = _currentRecorder;
+		_currentRecorder = recorder;
 
 		string cardName = recorder.cardObject != null ? recorder.cardObject.name : "null";
 		TestManager.Log("[RecorderAnimationPlayer] PlayRecorderCoroutine chainID=" + recorder.chainID + " card=" + cardName + " animationPlayed SET TO TRUE");
@@ -96,6 +113,8 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				yield return StartCoroutine(PlayRecorderCoroutine(childRecorder));
 			}
 		}
+
+		_currentRecorder = previousRecorder;
 	}
 
 	/// <summary>
@@ -171,6 +190,104 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			{
 				req.deferDisplayCommit = true;
 			}
+		}
+	}
+
+	// VISUAL-FIX(2026-06-20): Per-projectile status effect display commit
+	//   Cause:    CommitDisplayState() copied the full current myStatusEffects list, so when
+	//             multiple effects gave status effects to the same card (e.g. PowerReactionEffect),
+	//             the first projectile landing refreshed the text to include all pending layers.
+	//   Fix:      Track statusEffectDelta per StatusEffectChange request, compute a pre-animation
+	//             baseline, and apply deltas incrementally as each StatusEffectProjectile completes.
+	//   Affects:  AnimationRequest, EffectScript, CardScript, RecorderAnimationPlayer, ConsumeStatusEffect
+	//   Regress:  Reveal SACRIFICIAL_SWORD with POWER_CRAVER and WEAPON_SPIRIT in deck. Check that
+	//             POWER_CRAVER's Power text shows 1 after the first projectile, then 2 after the
+	//             WEAPON_SPIRIT reaction projectile lands.
+	//   Related:  PRD power-reaction-status-effect-delta-commit-2026-06-20
+
+	/// <summary>
+	/// Pre-scan the entire recorder tree and compute a per-card display baseline.
+	/// The baseline equals the current myStatusEffects minus all pending statusEffectDeltas,
+	/// so GetStatusEffectsForDisplay() returns the state before any pending animations.
+	/// </summary>
+	private void ComputeAndApplyDisplayBaselines(List<GameObject> rootRecorders)
+	{
+		_baselineCards.Clear();
+
+		var allRecorders = new List<EffectRecorder>();
+		foreach (var root in rootRecorders)
+		{
+			if (root == null) continue;
+			var recorder = root.GetComponent<EffectRecorder>();
+			CollectAllRecorders(recorder, allRecorders);
+		}
+
+		var pendingDeltas = new Dictionary<CardScript, Dictionary<EnumStorage.StatusEffect, int>>();
+		foreach (var recorder in allRecorders)
+		{
+			if (recorder == null || recorder.animationRequests == null) continue;
+			foreach (var req in recorder.animationRequests)
+			{
+				if (req == null || req.type != AnimationRequestType.StatusEffectChange) continue;
+				if (req.targetCard == null) continue;
+				var targetCardScript = req.targetCard.GetComponent<CardScript>();
+				if (targetCardScript == null) continue;
+
+				if (!pendingDeltas.ContainsKey(targetCardScript))
+					pendingDeltas[targetCardScript] = new Dictionary<EnumStorage.StatusEffect, int>();
+				if (!pendingDeltas[targetCardScript].ContainsKey(req.statusEffect))
+					pendingDeltas[targetCardScript][req.statusEffect] = 0;
+				pendingDeltas[targetCardScript][req.statusEffect] += req.statusEffectDelta;
+
+				_baselineCards.Add(targetCardScript);
+			}
+		}
+
+		foreach (var cardEntry in pendingDeltas)
+		{
+			var card = cardEntry.Key;
+			var baseline = new List<EnumStorage.StatusEffect>(card.myStatusEffects);
+			foreach (var effectEntry in cardEntry.Value)
+			{
+				CardScript.ApplyStatusEffectDeltaToList(baseline, effectEntry.Key, -effectEntry.Value);
+			}
+			card.SetDisplayBaseline(baseline);
+		}
+	}
+
+	/// <summary>
+	/// Recursively collect all EffectRecorders in the recorder tree (depth-first).
+	/// </summary>
+	private void CollectAllRecorders(EffectRecorder recorder, List<EffectRecorder> result)
+	{
+		if (recorder == null) return;
+		result.Add(recorder);
+		for (int i = 0; i < recorder.transform.childCount; i++)
+		{
+			var child = recorder.transform.GetChild(i);
+			if (child == null) continue;
+			var childRecorder = child.GetComponent<EffectRecorder>();
+			if (childRecorder != null)
+				CollectAllRecorders(childRecorder, result);
+		}
+	}
+
+	/// <summary>
+	/// Apply all still-deferred StatusEffectChange deltas for the given target in the given recorder.
+	/// Each delta is applied exactly once.
+	/// </summary>
+	private void ApplyDeferredDeltasForTarget(EffectRecorder recorder, CardScript targetCardScript)
+	{
+		if (recorder == null || targetCardScript == null) return;
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req == null || req.type != AnimationRequestType.StatusEffectChange) continue;
+			if (req.displayDeltaApplied) continue;
+			if (!req.deferDisplayCommit) continue;
+			if (req.targetCard != targetCardScript.gameObject) continue;
+
+			targetCardScript.ApplyDisplayDelta(req.statusEffect, req.statusEffectDelta);
+			req.displayDeltaApplied = true;
 		}
 	}
 
@@ -446,7 +563,8 @@ public class RecorderAnimationPlayer : MonoBehaviour
 
 				if (!request.deferDisplayCommit)
 				{
-					targetCardScript.CommitDisplayState();
+					targetCardScript.ApplyDisplayDelta(request.statusEffect, request.statusEffectDelta);
+					request.displayDeltaApplied = true;
 				}
 
 				request.onComplete?.Invoke();
@@ -506,7 +624,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 							{
 								if (targetCardScript != null)
 								{
-									targetCardScript.CommitDisplayState();
+									ApplyDeferredDeltasForTarget(_currentRecorder, targetCardScript);
 								}
 							}
 						}
@@ -525,14 +643,13 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					);
 					yield return new WaitUntil(() => customDone);
 
-					// After projectile completes, commit display state for the source/target card
-					// (for targets whose StatusEffectChange was deferred)
+					// After projectile completes, apply deferred display deltas for the source/target card.
 					if (request.targetCard != null)
 					{
 						var targetCardScript = request.targetCard.GetComponent<CardScript>();
 						if (targetCardScript != null)
 						{
-							targetCardScript.CommitDisplayState();
+							ApplyDeferredDeltasForTarget(_currentRecorder, targetCardScript);
 						}
 					}
 					break;
@@ -576,11 +693,11 @@ public class RecorderAnimationPlayer : MonoBehaviour
 						);
 						yield return new WaitUntil(() => multiSourceDone);
 
-						// Commit target card display state only after ALL source projectiles land
+						// Apply deferred display deltas for the target card only after ALL source projectiles land.
 						var targetCardScript = request.targetCard.GetComponent<CardScript>();
 						if (targetCardScript != null)
 						{
-							targetCardScript.CommitDisplayState();
+							ApplyDeferredDeltasForTarget(_currentRecorder, targetCardScript);
 						}
 					}
 					break;
@@ -621,13 +738,12 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				);
 				yield return new WaitUntil(() => done);
 
-				// After projectile completes, commit display state for all targets
-				// (for targets whose StatusEffectChange was deferred)
+				// After projectile completes, apply deferred display deltas for all targets.
 				foreach (var targetCardScript in targetCardScripts)
 				{
 					if (targetCardScript != null)
 					{
-						targetCardScript.CommitDisplayState();
+						ApplyDeferredDeltasForTarget(_currentRecorder, targetCardScript);
 					}
 				}
 				break;

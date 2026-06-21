@@ -14,7 +14,7 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 
 ## Agent Behavior
 - **Code Changes**: Do not execute code modifications unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
-- **Document Format**: If any file is found to violate the CRLF + Tab leading-indent standard, convert it to the compliant format before editing.
+- **Document Format**: If any non Unity-generated file is found to violate the CRLF + Tab leading-indent standard, convert it to the compliant format before editing.
 
 ## Core Loop
 
@@ -194,6 +194,15 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 - `targetCard` populated, `targetCards` null/empty → single-target projectile (back-compat).
 - `targetCard` null, `targetCards` populated → multi-target projectile; all targets fly in parallel with stagger.
 - Do not populate both simultaneously.
+
+### Per-Projectile Status Effect Display Commit
+
+- `AnimationRequest.statusEffectDelta` carries the signed display delta for every `StatusEffectChange` request.
+- `RecorderAnimationPlayer` computes a per-card display baseline (`myStatusEffects - sum of all pending deltas`) across the entire recorder tree before playing any root recorder.
+- Deltas are applied incrementally during playback:
+  - Non-deferred `StatusEffectChange`: delta applied immediately when the request plays.
+  - Deferred `StatusEffectChange` (targets with a matching `StatusEffectProjectile` in the same recorder): delta applied when the projectile completes.
+- This ensures nested same-target status giving (e.g. `PowerReactionEffect`) updates the card text per projectile instead of committing the full card state on the first landing.
 
 ### Snapshot Target Indices
 `AnimationRequest` carries an optional `List<int> targetIndices` (parallel to `targetCards`). Effects that move cards within the deck must **snapshot** each target card's logical index at capture time **before** raising reactive events (e.g. `onMeBuried` → `StageSelf`), because reactive effects may modify deck order and pollute the index.

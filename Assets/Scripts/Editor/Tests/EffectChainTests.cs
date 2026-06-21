@@ -25,7 +25,7 @@ public class EffectChainTests : HeadlessCombatTestFixture
 	[Test]
 	public void ChainDepthExceeds99_BlocksFurtherEffects()
 	{
-		UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType.Error, "ERROR: chain depth reached limit");
+		UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType.Error, "[EffectChainManager] ERROR: chain depth reached limit");
 
 		var card = CreateCard(true, "TestCard");
 		var effectObj = CreateGameObject("EffectObj");

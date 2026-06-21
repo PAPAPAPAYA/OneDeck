@@ -87,6 +87,51 @@ public class CardScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Set the display baseline to the provided list and lock the display snapshot.
+	/// Called by RecorderAnimationPlayer before playing animations so that
+	/// GetStatusEffectsForDisplay() returns the state before any pending animations.
+	/// </summary>
+	public void SetDisplayBaseline(List<EnumStorage.StatusEffect> baseline)
+	{
+		if (displayMyStatusEffects == null)
+			displayMyStatusEffects = new List<EnumStorage.StatusEffect>();
+		displayMyStatusEffects.Clear();
+		if (baseline != null)
+			displayMyStatusEffects.AddRange(baseline);
+		_displayCardDesc = null;
+		_hasDisplaySnapshot = true;
+	}
+
+	/// <summary>
+	/// Apply a signed status effect delta to the display list.
+	/// Positive delta adds layers; negative delta removes layers.
+	/// </summary>
+	public void ApplyDisplayDelta(EnumStorage.StatusEffect effect, int delta)
+	{
+		ApplyStatusEffectDeltaToList(displayMyStatusEffects, effect, delta);
+		_displayCardDesc = null;
+	}
+
+	/// <summary>
+	/// Helper that applies a signed status effect delta to any status effect list.
+	/// Positive delta adds layers; negative delta removes layers.
+	/// </summary>
+	public static void ApplyStatusEffectDeltaToList(List<EnumStorage.StatusEffect> list, EnumStorage.StatusEffect effect, int delta)
+	{
+		if (list == null) return;
+		if (delta > 0)
+		{
+			for (int i = 0; i < delta; i++)
+				list.Add(effect);
+		}
+		else if (delta < 0)
+		{
+			for (int i = 0; i < -delta; i++)
+				list.Remove(effect);
+		}
+	}
+
+	/// <summary>
 	/// Returns the status effects list that should be used for visual display.
 	/// If a display snapshot is active (during animation), returns the snapshot;
 	/// otherwise returns the live myStatusEffects list.

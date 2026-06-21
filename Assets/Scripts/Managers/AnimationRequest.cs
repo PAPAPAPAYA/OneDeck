@@ -48,6 +48,13 @@ namespace DefaultNamespace
 		// StatusEffectChange specific fields
 		public EnumStorage.StatusEffect statusEffect;
 		public int statusEffectAmount;
+		/// <summary>
+		/// For StatusEffectChange requests: the signed delta applied to the target's display state.
+		/// Positive = gain layers, negative = lose layers. Used by RecorderAnimationPlayer to
+		/// apply status effect text updates incrementally per projectile instead of committing
+		/// the full card state.
+		/// </summary>
+		public int statusEffectDelta = 0;
 		public ParticleSystem statusEffectParticlePrefab;
 		public float statusEffectParticleYOffset;
 		public GameObject sourceCard; // Used for Shuffle request (Start Card instance)
@@ -58,6 +65,13 @@ namespace DefaultNamespace
 		/// StatusEffectProjectile animation completes (for targets that have a projectile).
 		/// </summary>
 		public bool deferDisplayCommit = false;
+
+		/// <summary>
+		/// Internal flag used by RecorderAnimationPlayer to ensure a StatusEffectChange's
+		/// display delta is applied exactly once, whether immediately or when its linked
+		/// projectile lands.
+		/// </summary>
+		public bool displayDeltaApplied = false;
 
 		/// <summary>
 		/// Optional custom end position for StatusEffectProjectile.

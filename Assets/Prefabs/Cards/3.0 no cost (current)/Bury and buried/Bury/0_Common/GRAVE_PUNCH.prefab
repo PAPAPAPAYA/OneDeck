@@ -50,9 +50,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -84,8 +81,12 @@ MonoBehaviour:
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
-  extraDmg: 1
+  extraDmg: 0
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &7538812023556790325
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,9 +137,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -167,6 +165,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   tagsToCheck: 00000000
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,7 +218,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: GRAVE_PUNCH
   displayName: "\u5C38\u7206"
-  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9,\u9020\u6210 <b><dmg></b> \u4F24\u5BB3 x <b>2</b>"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9,\u9020\u6210 <b><dmg></b>
+    \u4F24\u5BB3 x <b>2</b>"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -227,13 +229,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

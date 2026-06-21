@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
+  m_Name: RecordedDeck_Session0_20260620_214223
+  m_EditorClassIdentifier: Assembly-CSharp::DeckSO
+  deck:
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 1808145013887896563, guid: a750f6e9b6b291443b9334fa13fdca99, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: 'Auto-recorded player deck.
+
+    Cards: 2
+
+    Missing: 0
+
+    Session:
+    0
+
+    Recorded: 2026-06-20 21:42:23'

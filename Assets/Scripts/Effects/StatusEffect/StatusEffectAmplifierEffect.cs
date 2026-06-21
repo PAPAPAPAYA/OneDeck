@@ -26,9 +26,13 @@ namespace DefaultNamespace.Effects
 			int extraAmount = lastAmount.value * (statusEffectMultiplier - 1);
 			if (extraAmount > 0)
 			{
-				ApplyStatusEffectCore(myCardScript, statusEffectToGive, extraAmount,
-					myStatusEffectResolverScript, statusEffectParticlePrefab, particleYOffset,
-					canStatusEffectBeStacked ? extraAmount : 1);
+				// VISUAL-FIX(2026-06-21): AmplifyStatusEffectGain has no projectile animation
+				//   Cause:    AmplifyStatusEffectGain called ApplyStatusEffectCore directly,
+				//             which captures StatusEffectChange but not StatusEffectProjectile
+				//   Affects:  StatusEffectAmplifierEffect, StatusEffectGiverEffect, RecorderAnimationPlayer
+				//   Regress:  Reveal a card whose onMeGotStatusEffect triggers AmplifyStatusEffectGain
+				//             Check: card pops up, projectile flies in, then slots back in
+				GiveSelfStatusEffect(extraAmount);
 				CombatInfoDisplayer.me?.RefreshDeckInfo();
 			}
 		}

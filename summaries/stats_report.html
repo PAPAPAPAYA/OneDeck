@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneDeck 统计报告</title>
+    <style>
+        :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #c9d1d9; --muted: #8b949e; --accent: #58a6ff; --win: #3fb950; --loss: #f85149; --buy: #a371f7; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+        header { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; }
+        h1 { margin: 0 0 8px; font-size: 32px; }
+        .subtitle { color: var(--muted); font-size: 14px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .card h2 { margin: 0 0 16px; font-size: 18px; color: var(--accent); }
+        .metric { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .metric:last-child { border-bottom: none; }
+        .metric .value { font-weight: 600; font-size: 18px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: rgba(88, 166, 255, 0.1); color: var(--accent); font-weight: 600; position: sticky; top: 0; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        .rate-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+        .rate-bar > div { height: 100%; border-radius: 3px; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .tag-win { background: rgba(63, 185, 80, 0.2); color: var(--win); }
+        .tag-loss { background: rgba(248, 81, 73, 0.2); color: var(--loss); }
+        .tag-buy { background: rgba(163, 113, 247, 0.2); color: var(--buy); }
+        .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .section h2 { margin: 0 0 20px; font-size: 20px; color: var(--accent); }
+        .footer { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OneDeck 统计报告</h1>
+            <div class="subtitle">数据来源：Application.persistentDataPath（SmallGrass/OneDeck）</div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h2>战斗胜率概览</h2>
+                <div class="metric"><span>追踪卡牌数</span><span class="value">7</span></div>
+                <div class="metric"><span>总战斗场次</span><span class="value">13</span></div>
+                <div class="metric"><span>数据更新时间</span><span class="value">2026-06-20 22:24:47</span></div>
+            </div>
+            <div class="card">
+                <h2>商店购买概览</h2>
+                <div class="metric"><span>商店访问次数</span><span class="value">4</span></div>
+                <div class="metric"><span>总刷新次数</span><span class="value">5</span></div>
+                <div class="metric"><span>数据更新时间</span><span class="value">2026-06-20 22:25:33</span></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>卡牌战斗胜率详情</h2>
+            <table>
+                <thead><tr><th>卡牌类型 ID</th><th>总战斗</th><th>胜场</th><th>败场</th><th>胜率</th></tr></thead>
+                <tbody><tr><td><strong>SACRIFICE_RITUAL</strong></td><td>3</td><td><span class="tag tag-win">0</span></td><td><span class="tag tag-loss">3</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--loss);"></div></div></td></tr><tr><td><strong>SOLDIER_SKELETON</strong></td><td>2</td><td><span class="tag tag-win">0</span></td><td><span class="tag tag-loss">2</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--loss);"></div></div></td></tr><tr><td><strong>TACTICAL_BREACHER</strong></td><td>2</td><td><span class="tag tag-win">0</span></td><td><span class="tag tag-loss">2</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--loss);"></div></div></td></tr><tr><td><strong>SYSTEM_INCREASE_DECK_SIZE</strong></td><td>2</td><td><span class="tag tag-win">0</span></td><td><span class="tag tag-loss">2</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--loss);"></div></div></td></tr><tr><td><strong>MOTH_MAN</strong></td><td>2</td><td><span class="tag tag-win">0</span></td><td><span class="tag tag-loss">2</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--loss);"></div></div></td></tr><tr><td><strong>THE_FOOL</strong></td><td>1</td><td><span class="tag tag-win">0</span></td><td><span class="tag tag-loss">1</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--loss);"></div></div></td></tr><tr><td><strong>RIFT_SUMMONER</strong></td><td>1</td><td><span class="tag tag-win">0</span></td><td><span class="tag tag-loss">1</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--loss);"></div></div></td></tr></tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>商店卡牌出现与购买详情</h2>
+            <table>
+                <thead><tr><th>卡牌类型 ID</th><th>卡牌名称</th><th>出现次数</th><th>购买次数</th><th>购买率</th></tr></thead>
+                <tbody><tr><td><strong>SOLDIER_SKELETON</strong></td><td>骷髅士兵</td><td>1</td><td><span class="tag tag-buy">1</span></td><td>100.0%<div class="rate-bar"><div style="width:100.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>TACTICAL_BREACHER</strong></td><td>战术爆破手</td><td>1</td><td><span class="tag tag-buy">1</span></td><td>100.0%<div class="rate-bar"><div style="width:100.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>MOTH_MAN</strong></td><td>飞蛾人</td><td>1</td><td><span class="tag tag-buy">1</span></td><td>100.0%<div class="rate-bar"><div style="width:100.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>THE_FOOL</strong></td><td>愚者</td><td>1</td><td><span class="tag tag-buy">1</span></td><td>100.0%<div class="rate-bar"><div style="width:100.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>RIFT_SUMMONER</strong></td><td>裂缝召唤师</td><td>1</td><td><span class="tag tag-buy">1</span></td><td>100.0%<div class="rate-bar"><div style="width:100.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>SYSTEM_INCREASE_DECK_SIZE</strong></td><td>卡位增加 <中></td><td>3</td><td><span class="tag tag-buy">2</span></td><td>66.7%<div class="rate-bar"><div style="width:66.7%; background:var(--buy);"></div></div></td></tr><tr><td><strong>SACRIFICE_RITUAL</strong></td><td>献祭仪式</td><td>4</td><td><span class="tag tag-buy">1</span></td><td>25.0%<div class="rate-bar"><div style="width:25.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>FALL_INTO_RIFT</strong></td><td>坠入裂缝</td><td>2</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>RIFT_INSECT</strong></td><td>次元虫</td><td>2</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>MAD_SCIENTIST</strong></td><td>疯狂科学家</td><td>2</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>SIDE_EFFECT_PORTAL</strong></td><td>有副作用的传送门</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>RIFT_CURSE</strong></td><td>异次元的诅咒</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>POISONER</strong></td><td>巫师</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>UNSTABLE_PORTAL</strong></td><td>不稳定传送门</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>BLIND_COMBAT_PRIEST</strong></td><td>盲眼战斗牧师</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>GRAVE_PUNCH</strong></td><td>尸爆</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>POWER_SURGE</strong></td><td>能量迸发</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>CURSED_CORPSE</strong></td><td>被诅咒的尸体</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr><tr><td><strong>GRAVE_PORTAL</strong></td><td>冥界裂缝</td><td>1</td><td><span class="tag tag-buy">0</span></td><td>0.0%<div class="rate-bar"><div style="width:0.0%; background:var(--buy);"></div></div></td></tr></tbody>
+            </table>
+        </div>
+
+        <div class="footer">报告生成时间：2026-06-20 22:43:45 · 原始文件：card_winrate.json / shop_stats.json</div>
+    </div>
+</body>
+</html>

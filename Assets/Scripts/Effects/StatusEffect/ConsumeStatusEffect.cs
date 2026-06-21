@@ -65,6 +65,7 @@ namespace DefaultNamespace.Effects
 					targetCard = myCardScript.gameObject,
 					statusEffect = statusEffectToConsume,
 					statusEffectAmount = -amountRemoved,
+					statusEffectDelta = -amountRemoved,
 					deferDisplayCommit = true
 				});
 

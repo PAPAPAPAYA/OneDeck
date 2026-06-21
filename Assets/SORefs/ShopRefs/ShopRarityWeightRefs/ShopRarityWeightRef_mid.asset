@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShopRarityWeightSO
   entries:
   - rarity: 0
-    weight: 80
+    weight: 75
   - rarity: 1
-    weight: 15
+    weight: 18
   - rarity: 2
-    weight: 5
+    weight: 7

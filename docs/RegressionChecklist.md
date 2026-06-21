@@ -51,6 +51,9 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 13 | `MoveCardToTopPopUpBatch` dead-locks due to N `RegisterAnimation` calls vs 1 `CompleteAnimation` | `CombatUXManager`, `AnimationStateTracker`, `RecorderAnimationPlayer` | 2026-06-09 | ✅ | **Card:** BOOSTER (afterShuffle→Stage) after Start Card shuffle<br>**Check:** `PlayRecorderAnimationsAndWait` does **not** wait 5s on timeout; `AnimationStateTracker` log shows `pending` returns to 0 after batch completes; `BlockInput`/`UnblockInput` are paired 1:1 |
 | 14 | Bury animation lost when buried card triggers reactive effects that close the recorder chain | `BuryEffect`, `EffectChainManager`, `RecorderAnimationPlayer` | 2026-06-10 | ✅ | **Card:** grave_punch + slime + start card deck<br>**Check:** Reveal grave_punch (BuryNextXCards). Verify slime plays `PopUpBatch` + `MoveToBottomBatch` animation visibly; console shows `[BuryEffect] Capture request to recorder=chain#...` (not `null`) |
 | 15 | GiveSelfStatusEffect missing projectile animation | `StatusEffectGiverEffect`, `RecorderAnimationPlayer` | 2026-06-10 | ⚠️ | **Card:** Any card with GiveSelfStatusEffect (e.g. self-Power)<br>**Check:** Card pops up, projectile flies from self to self, then slots back in; `StatusEffectChange` already captured by `ApplyStatusEffectCore` |
+| 29 | GivePowerToCardThatGotPower missing projectile animation | `PowerReactionEffect`, `StatusEffectGiverEffect`, `RecorderAnimationPlayer` | 2026-06-20 | ⚠️ | **Card:** WEAPON_SPIRIT (onFriendlyCardGotPower → GivePowerToCardThatGotPower)<br>**Check:** Target card pops up, projectile flies from source to target, then slots back in; `StatusEffectChange` already captured by `ApplyStatusEffectCore` |
+| 30 | PowerReactionEffect nested Power text commits incrementally per projectile | `PowerReactionEffect`, `RecorderAnimationPlayer`, `CardScript`, `AnimationRequest`, `EffectScript`, `ConsumeStatusEffect` | 2026-06-20 | ⚠️ | **Card:** SACRIFICIAL_SWORD + POWER_CRAVER + WEAPON_SPIRIT in deck.<br>**Check:** After SACRIFICIAL_SWORD's projectile lands, POWER_CRAVER's text shows 1 Power. After WEAPON_SPIRIT's reaction projectile lands, text updates to 2 Power. The reaction's Power is not visible before its projectile arrives. |
+| 31 | AmplifyStatusEffectGain missing projectile animation | `StatusEffectAmplifierEffect`, `StatusEffectGiverEffect`, `RecorderAnimationPlayer` | 2026-06-21 | ⚠️ | **Card:** Any card with `StatusEffectAmplifierEffect` on `onMeGotStatusEffect` (e.g. self-Power amplifier).<br>**Check:** When the amplifier triggers, the card pops up, projectile flies in, then slots back in; `StatusEffectChange` already captured by `ApplyStatusEffectCore` inside `GiveSelfStatusEffect`. |
 | 20 | JU_ON consumed by PREMATURE then Staged slots back to wrong position | `StageEffect`, `BuryEffect`, `RecorderAnimationPlayer`, `ApplyAnimationResult` | 2026-06-13 | ⚠️ | **Card:** PREMATURE + JU_ON in enemy deck<br>**Check:** PREMATURE reveals and consumes JU_ON's curse Power; JU_ON pops up from original deck position, projectile flies to `statusEffectConsumePos`, slots back to original index, then Stage arc moves it to deck top. No zero-distance SlotIn or misplaced landing. |
 
 ## Status Effect Consumption Animation
@@ -91,14 +94,16 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `CalculateAnimationPositionAtIndex` | 7 |
 | `CostResultPresenter.cs` | 9 |
 | `CostNEffectContainer.cs` | 9 |
-| `AnimationRequest.cs` | 9, 16, 17, 19 |
+| `AnimationRequest.cs` | 9, 16, 17, 19, 30 |
+| `CardScript.cs` | 30 |
 | `CombatManager.cs` | 10, 11, 12 |
-| `ConsumeStatusEffect.cs` | 16, 17, 18 |
+| `ConsumeStatusEffect.cs` | 16, 17, 18, 30 |
 | `ICombatVisuals.cs` | 16, 17, 19 |
 | `NullCombatVisuals.cs` | 16, 17, 19 |
 | `NullCombatVisualsBehaviour.cs` | 16, 17, 19 |
 | `StatusEffectGiverEffect.cs` | 17 |
-| `EffectScript.cs` | 18, 19 |
+| `PowerReactionEffect.cs` | 30 |
+| `EffectScript.cs` | 18, 19, 30 |
 
 ## Lifecycle & Destroy Guards
 

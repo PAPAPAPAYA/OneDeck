@@ -45,6 +45,7 @@
 #endregion
 #region tools
 //! tools
+	//// skill to populate default enemy deck Pool
 	//// shop pool ref check skill
 	//// recorder to automatically record deck to enemy decks
 		//// D:\Unity Projects\OneDeck\plans\prd-deck-enemy-recorder-2026-05-27.md
@@ -56,6 +57,7 @@
 #endregion
 #region anything else
 //! anything else
+	//// nerf grave_punch
 	//// more bury?
 	//// more if staged?
 	//// increase deck size cards appear in shop chance
@@ -116,10 +118,14 @@
 #endregion
 #region feature
 //! feature
+	//// bury only buries card after start card index
+	//// projectile animation for give power to card that got power
+	//todo give power only give power to cards that deals dmg? might be too strong?
+	// proper play mode tester skill
 	//// add a test manager
 	//// an override slot for enemy deck
 	//// when saving enemy deck, detect if in result phase, if true then sessionnum --
-	//? adjust shop rarity probability gradually
+	//// adjust shop rarity probability gradually
 	//// game over
 		//// detect heart 0
 		//// detect win condition
@@ -233,7 +239,7 @@
 #region bugs
 //! bug
 	//// quick response protocal needs to consume counter and take out linger condition
-	
+	//todo sacrificial sword gives status effect to fixed card
 	//// deck increase price
 	//// crlf and tab
 	//// curse thirst beast

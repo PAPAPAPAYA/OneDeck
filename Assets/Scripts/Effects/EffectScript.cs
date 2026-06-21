@@ -132,6 +132,7 @@ public class EffectScript : MonoBehaviour
 				targetCard = targetCardScript.gameObject,
 				statusEffect = effect,
 				statusEffectAmount = amount,
+				statusEffectDelta = amount,
 				statusEffectParticlePrefab = particlePrefab,
 				statusEffectParticleYOffset = particleYOffset
 			});
@@ -198,7 +199,8 @@ public class EffectScript : MonoBehaviour
 				type = AnimationRequestType.StatusEffectChange,
 				targetCard = targetCard,
 				statusEffect = effect,
-				statusEffectAmount = amount
+				statusEffectAmount = amount,
+				statusEffectDelta = amount
 			});
 		}
 		else
@@ -234,7 +236,8 @@ public class EffectScript : MonoBehaviour
 			type = AnimationRequestType.StatusEffectChange,
 			targetCard = targetCard,
 			statusEffect = effect,
-			statusEffectAmount = amount
+			statusEffectAmount = amount,
+			statusEffectDelta = amount
 		});
 
 		// 3. Slot In
@@ -311,7 +314,8 @@ public class EffectScript : MonoBehaviour
 				type = AnimationRequestType.StatusEffectChange,
 				targetCard = targetGameObjects[i],
 				statusEffect = effect,
-				statusEffectAmount = -filteredAmounts[i]
+				statusEffectAmount = -filteredAmounts[i],
+				statusEffectDelta = -filteredAmounts[i]
 			});
 		}
 
@@ -430,7 +434,8 @@ public class EffectScript : MonoBehaviour
 				type = AnimationRequestType.StatusEffectChange,
 				targetCard = sourceGameObjects[i],
 				statusEffect = effect,
-				statusEffectAmount = -filteredAmounts[i]
+				statusEffectAmount = -filteredAmounts[i],
+				statusEffectDelta = -filteredAmounts[i]
 			});
 		}
 	}
