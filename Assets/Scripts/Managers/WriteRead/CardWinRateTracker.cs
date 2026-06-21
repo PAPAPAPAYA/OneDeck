@@ -53,6 +53,7 @@ namespace TestWriteRead
 
         // Current combat deck snapshot (recorded at combat start)
         private List<string> _currentCombatPlayerCardTypeIDs = new();
+        private List<string> _currentCombatEnemyCardTypeIDs = new();
 
         /// <summary>
         /// Called at combat start, records cards in current player deck (pass prefab list)
@@ -83,17 +84,48 @@ namespace TestWriteRead
         }
 
         /// <summary>
+        /// Called at combat start, records cards in current enemy deck (pass prefab list)
+        /// </summary>
+        public void RecordEnemyDeckSnapshot(List<GameObject> enemyCardPrefabs)
+        {
+            if (!switchOnTracking) return;
+
+            _currentCombatEnemyCardTypeIDs.Clear();
+
+            foreach (var cardPrefab in enemyCardPrefabs)
+            {
+                if (cardPrefab == null) continue;
+
+                var cardScript = cardPrefab.GetComponent<CardScript>();
+                if (cardScript == null) continue;
+
+                string typeID = GetCardTypeID(cardScript);
+                if (!string.IsNullOrEmpty(typeID))
+                {
+                    _currentCombatEnemyCardTypeIDs.Add(typeID);
+                }
+            }
+
+            _currentCombatEnemyCardTypeIDs = _currentCombatEnemyCardTypeIDs.Distinct().ToList();
+        }
+
+        /// <summary>
         /// Called at combat end, updates stats for all participating cards
         /// </summary>
         /// <param name="playerWon">Whether player won</param>
         public void RecordCombatResult(bool playerWon)
         {
             if (!switchOnTracking) return;
-            if (_currentCombatPlayerCardTypeIDs.Count == 0) return;
+            if (_currentCombatPlayerCardTypeIDs.Count == 0 && _currentCombatEnemyCardTypeIDs.Count == 0) return;
 
             foreach (var cardTypeID in _currentCombatPlayerCardTypeIDs)
             {
                 UpdateCardStats(cardTypeID, playerWon);
+            }
+
+            foreach (var cardTypeID in _currentCombatEnemyCardTypeIDs)
+            {
+                UpdateCardStats(cardTypeID, !playerWon);
             }
 
             SaveData();

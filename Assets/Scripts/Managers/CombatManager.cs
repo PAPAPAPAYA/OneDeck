@@ -290,13 +290,14 @@ public class CombatManager : MonoBehaviour
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 
-		// Record player deck snapshot (for win rate stats) - query directly from playerDeck, no need to wait for instantiation
+		// Record deck snapshots (for win rate stats) - query directly from decks, no need to wait for instantiation
 		TestWriteRead.CardWinRateTracker.Me?.RecordPlayerDeckSnapshot(playerDeck.deck);
+		TestWriteRead.CardWinRateTracker.Me?.RecordEnemyDeckSnapshot(enemyDeck.deck);
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
 	}
 
-	private void CheckFatigueNAddFatigue()
+	public void CheckFatigueNAddFatigue()
 	{
 		// Fatigue check based on round number (called before Start Card shuffle)
 		if (roundNumRef.value <= overtimeRoundThreshold) return;
@@ -324,17 +325,52 @@ public class CombatManager : MonoBehaviour
 	
 	private void AddFatigueCards()
 	{
+		// VISUAL-FIX(2026-06-21): Overtime fatigue cards now play popup + slot-in animation
+		//   Cause:    AddFatigueCards inserted cards directly into combinedDeckZone without capturing
+		//             animation requests, so fatigue cards appeared instantly instead of flying in.
+		//   Fix:      Capture MoveToPopUpPosition + SlotIn AnimationRequests into the current
+		//             EffectRecorder (Start Card Shuffle recorder) so RecorderAnimationPlayer
+		//             plays them with the same timing as AddTempCard.
+		//   Affects:  CombatManager.AddFatigueCards, StartCardShuffleEffect, RecorderAnimationPlayer
+		//   Regress:  Enter Overtime (round > overtimeRoundThreshold). Verify fatigue cards fly
+		//             from popup position into the deck before the Start Card shuffle animation.
+		//   Related:  Plan discussed 2026-06-21
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+
 		// add fatigue to owner side
 		for (var i = 0; i < fatigueAmount; i++)
 		{
-			_combatFuncs.AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, true);
+			var newCard = _combatFuncs.AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, true);
+			CaptureFatigueCardAnimation(newCard, recorder);
 		}
 
 		// add fatigue to enemy side
 		for (var i = 0; i < fatigueAmount; i++)
 		{
-			_combatFuncs.AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, false);
+			var newCard = _combatFuncs.AddCardInTheMiddleOfCombat(cardToAddWhenOvertime, false);
+			CaptureFatigueCardAnimation(newCard, recorder);
 		}
+	}
+
+	private void CaptureFatigueCardAnimation(GameObject card, EffectRecorder recorder)
+	{
+		if (card == null || recorder == null) return;
+
+		int deckIndex = combinedDeckZone.IndexOf(card);
+		if (deckIndex < 0) deckIndex = 0;
+
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.MoveToPopUpPosition,
+			targetCard = card,
+			targetIndex = deckIndex
+		});
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.SlotIn,
+			targetCard = card
+		});
 	}
 
 
@@ -827,11 +863,6 @@ public class CombatManager : MonoBehaviour
 
 	private void HandleNewRoundStart()
 	{
-		// Round number increment
-		roundNumRef.value++;
-		cardsRevealedThisRound = 0;
-		_infoDisplayer.ClearInfo();
-		
 		// Physical card reset
 		visuals.ReviveAllPhysicalCards();
 		
