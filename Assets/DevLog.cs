@@ -50,13 +50,15 @@
 	//// recorder to automatically record deck to enemy decks
 		//// D:\Unity Projects\OneDeck\plans\prd-deck-enemy-recorder-2026-05-27.md
 	//// bug Recorder to prevent later fixes undermine former fixes
-	// make a summary generator skill?
-	// make a debug skill?
+	//? make a summary generator skill
+	//? make a debug skill
 	////   skill to generate commit messages
 	////  AnimationStateTracker checker  (animation state tracker is old system)
 #endregion
 #region anything else
 //! anything else
+	//? minus dmg for curse?
+	//// purse + $1
 	//// fatigue on round reactivate
 	//// fatigue card face text
 	//// start card card face text
@@ -122,11 +124,11 @@
 #endregion
 #region feature
 //! feature
-	//todo if card tries to activate while not in reveal zone, popup first
+	//// if card tries to activate while not in reveal zone, popup first
 	//// bury only buries card after start card index
 	//// projectile animation for give power to card that got power
 	//// give power only give power to cards that deals dmg? might be too strong and awkward?
-	// proper play mode tester skill
+	//todo proper play mode tester skill
 	//// add a test manager
 	//// an override slot for enemy deck
 	//// when saving enemy deck, detect if in result phase, if true then sessionnum --
@@ -243,8 +245,9 @@
 #endregion
 #region bugs
 //! bug
+	//// visual bug: transfer status effect的时候更新物理卡片的status effect文字
 	//// rift dragon
-	//todo check game event listener and card description inconsistency
+	//// check game event listener and card description inconsistency
 	//// dynamic dmg display
 	//// quick response protocal needs to consume counter and take out linger condition
 	//// sacrificial sword gives status effect to fixed card

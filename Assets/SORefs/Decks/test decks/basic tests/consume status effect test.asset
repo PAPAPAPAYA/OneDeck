@@ -9,10 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3b874ada8e4469ea42cee10707255e4, type: 3}
-  m_Name: PurseRef
+  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
+  m_Name: consume status effect test
   m_EditorClassIdentifier: 
-  value: 2
-  valueOg: 2
-  resetOnStart: 1
-  description: player's money
+  deck:
+  - {fileID: 1808145013887896563, guid: b0dfbfc59e957c645917dd54906142e0, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: add rift + add curse

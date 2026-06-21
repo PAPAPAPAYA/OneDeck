@@ -3268,7 +3268,8 @@ MonoBehaviour:
   logVisualSync: 0
   logEditorTools: 0
   logTestManager: 0
-  logDynamicDamageDisplay: 1
+  logDynamicDamageDisplay: 0
+  logStatusEffectDisplay: 1
 --- !u!4 &898235415
 Transform:
   m_ObjectHideFlags: 0
