@@ -41,6 +41,9 @@
 #endregion
 #region docs
 //! docs
+	// obsidian
+		// first check tag in engine
+		// update
 	//// doc for all short-cuts
 #endregion
 #region tools
@@ -57,6 +60,7 @@
 #endregion
 #region anything else
 //! anything else
+	//todo connect to notion/obsidian
 	//? minus dmg for curse?
 	//// purse + $1
 	//// fatigue on round reactivate

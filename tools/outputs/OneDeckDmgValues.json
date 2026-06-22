@@ -1,0 +1,234 @@
+[
+  {
+    "prefabName": "GRAVE_PUNCH",
+    "cardTypeID": "GRAVE_PUNCH",
+    "baseDmg": 2,
+    "extraDmg": 0,
+    "powerCount": 0,
+    "totalDmg": 2
+  },
+  {
+    "prefabName": "CORPSE_CANON",
+    "cardTypeID": "CORPSE_CANON",
+    "baseDmg": 2,
+    "extraDmg": 0,
+    "powerCount": 0,
+    "totalDmg": 2
+  },
+  {
+    "prefabName": "GRAVE_INVITATION",
+    "cardTypeID": "GRAVE_INVITATION",
+    "baseDmg": 2,
+    "extraDmg": 2,
+    "powerCount": 0,
+    "totalDmg": 4
+  },
+  {
+    "prefabName": "BODY_CANON",
+    "cardTypeID": "BODY_CANON",
+    "baseDmg": 2,
+    "extraDmg": -1,
+    "powerCount": 0,
+    "totalDmg": 1
+  },
+  {
+    "prefabName": "SOLDIER_SKELETON",
+    "cardTypeID": "SOLDIER_SKELETON",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "AVENGER",
+    "cardTypeID": "AVENGER",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "CURSED_CORPSE",
+    "cardTypeID": "CURSED_CORPSE",
+    "baseDmg": 2,
+    "extraDmg": -1,
+    "powerCount": 0,
+    "totalDmg": 1
+  },
+  {
+    "prefabName": "SCAPEGOAT",
+    "cardTypeID": "SCAPEGOAT",
+    "baseDmg": 2,
+    "extraDmg": 3,
+    "powerCount": 0,
+    "totalDmg": 5
+  },
+  {
+    "prefabName": "SPIKE_SKELETON",
+    "cardTypeID": "SPIKE_SKELETON",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "GRAVE_KEEPER",
+    "cardTypeID": "GRAVE_KEEPER",
+    "baseDmg": 2,
+    "extraDmg": 4,
+    "powerCount": 0,
+    "totalDmg": 6
+  },
+  {
+    "prefabName": "SLIME",
+    "cardTypeID": "SLIME",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "RIFT_INSECT",
+    "cardTypeID": "RIFT_INSECT",
+    "baseDmg": 2,
+    "extraDmg": 0,
+    "powerCount": 0,
+    "totalDmg": 2
+  },
+  {
+    "prefabName": "RIFT_MONSTER",
+    "cardTypeID": "RIFT_MONSTER",
+    "baseDmg": 2,
+    "extraDmg": 2,
+    "powerCount": 0,
+    "totalDmg": 4
+  },
+  {
+    "prefabName": "RIFT_DEVOURER",
+    "cardTypeID": "RIFT_DEVOURER",
+    "baseDmg": 2,
+    "extraDmg": 0,
+    "powerCount": 0,
+    "totalDmg": 2
+  },
+  {
+    "prefabName": "POISONER",
+    "cardTypeID": "POISONER",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "CURSE_THIRST_BEAST",
+    "cardTypeID": "CURSE_THIRST_BEAST",
+    "baseDmg": 2,
+    "extraDmg": 2,
+    "powerCount": 0,
+    "totalDmg": 4
+  },
+  {
+    "prefabName": "BLACKSMITH",
+    "cardTypeID": "BLACKSMITH",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "COFFIN_MAKER",
+    "cardTypeID": "COFFIN_MAKER",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "BONE_COMBINATION",
+    "cardTypeID": "BONE_COMBINATION",
+    "baseDmg": 2,
+    "extraDmg": -1,
+    "powerCount": 0,
+    "totalDmg": 1
+  },
+  {
+    "prefabName": "GOBLIN_ASSASSIN_TEAM",
+    "cardTypeID": "GOBLIN_ASSASIN_TEAM",
+    "baseDmg": 2,
+    "extraDmg": 2,
+    "powerCount": 0,
+    "totalDmg": 4
+  },
+  {
+    "prefabName": "GOBLIN_CHARGE_TEAM",
+    "cardTypeID": "GOBLIN_CHARGE_TEAM",
+    "baseDmg": 2,
+    "extraDmg": 0,
+    "powerCount": 0,
+    "totalDmg": 2
+  },
+  {
+    "prefabName": "POWER_CRAVER",
+    "cardTypeID": "POWER_CRAVER",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "POWER_SURGE",
+    "cardTypeID": "POWER_SURGE",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "SNATCHER",
+    "cardTypeID": "SNATCHER",
+    "baseDmg": 2,
+    "extraDmg": 1,
+    "powerCount": 0,
+    "totalDmg": 3
+  },
+  {
+    "prefabName": "TACTICAL_BREACHER",
+    "cardTypeID": "TACTICAL_BREACHER",
+    "baseDmg": 2,
+    "extraDmg": 2,
+    "powerCount": 0,
+    "totalDmg": 4
+  },
+  {
+    "prefabName": "ALMIGHTY",
+    "cardTypeID": "ALMIGHTY",
+    "baseDmg": 2,
+    "extraDmg": -1,
+    "powerCount": 0,
+    "totalDmg": 1
+  },
+  {
+    "prefabName": "ETERNAL_GHOST",
+    "cardTypeID": "ETERNAL_GHOST",
+    "baseDmg": 2,
+    "extraDmg": -1,
+    "powerCount": 0,
+    "totalDmg": 1
+  },
+  {
+    "prefabName": "POWER_SIPHONER",
+    "cardTypeID": "POWER_SIPHONER",
+    "baseDmg": 2,
+    "extraDmg": 0,
+    "powerCount": 0,
+    "totalDmg": 2
+  },
+  {
+    "prefabName": "UNFINISHED_ROBOT",
+    "cardTypeID": "UNFINISHED_ROBOT",
+    "baseDmg": 2,
+    "extraDmg": -2,
+    "powerCount": 1,
+    "totalDmg": 1
+  }
+]

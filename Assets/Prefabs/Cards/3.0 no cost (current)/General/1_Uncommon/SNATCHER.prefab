@@ -81,6 +81,8 @@ MonoBehaviour:
   targetFriendly: 0
   statusEffectToCheck: 0
   excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!1 &2364835784064896257
 GameObject:
   m_ObjectHideFlags: 0
@@ -160,6 +162,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   tagsToCheck: 00000000
   excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!1 &2635718925342889943
 GameObject:
   m_ObjectHideFlags: 0
@@ -243,6 +247,10 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: 1
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -308,7 +316,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 03000000
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

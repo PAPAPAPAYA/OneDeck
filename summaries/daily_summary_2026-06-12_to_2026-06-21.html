@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发日报 - 2026-06-12 ~ 06-21</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		body {
+			font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+			background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+			min-height: 100vh;
+			color: #e0e0e0;
+			padding: 40px 20px;
+		}
+		.container {
+			max-width: 900px;
+			margin: 0 auto;
+		}
+		.header {
+			text-align: center;
+			margin-bottom: 40px;
+			padding: 30px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 20px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+		}
+		.header h1 {
+			font-size: 2.5em;
+			margin-bottom: 10px;
+			background: linear-gradient(90deg, #e94560, #ff6b6b);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+		.header .subtitle {
+			color: #888;
+			font-size: 1.1em;
+		}
+		.header .stats {
+			display: flex;
+			justify-content: center;
+			gap: 40px;
+			margin-top: 25px;
+			flex-wrap: wrap;
+		}
+		.stat-box {
+			text-align: center;
+		}
+		.stat-box .number {
+			font-size: 2em;
+			font-weight: bold;
+			color: #e94560;
+		}
+		.stat-box .label {
+			font-size: 0.9em;
+			color: #aaa;
+			margin-top: 5px;
+		}
+		.timeline {
+			position: relative;
+			padding-left: 30px;
+		}
+		.timeline::before {
+			content: '';
+			position: absolute;
+			left: 10px;
+			top: 0;
+			bottom: 0;
+			width: 3px;
+			background: linear-gradient(to bottom, #e94560, #533483);
+			border-radius: 3px;
+		}
+		.commit-card {
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 16px;
+			padding: 25px;
+			margin-bottom: 25px;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			backdrop-filter: blur(10px);
+			position: relative;
+			transition: transform 0.3s, box-shadow 0.3s;
+		}
+		.commit-card:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 10px 30px rgba(233, 69, 96, 0.15);
+		}
+		.commit-card::before {
+			content: '';
+			position: absolute;
+			left: -24px;
+			top: 30px;
+			width: 14px;
+			height: 14px;
+			background: #e94560;
+			border-radius: 50%;
+			border: 3px solid #1a1a2e;
+		}
+		.commit-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		.commit-title {
+			font-size: 1.3em;
+			font-weight: 600;
+			color: #fff;
+		}
+		.commit-time {
+			background: rgba(233, 69, 96, 0.15);
+			color: #e94560;
+			padding: 5px 15px;
+			border-radius: 20px;
+			font-size: 0.85em;
+			font-weight: 500;
+		}
+		.commit-desc {
+			color: #ccc;
+			line-height: 1.7;
+			margin-bottom: 15px;
+		}
+		.file-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin-top: 15px;
+		}
+		.file-tag {
+			background: rgba(83, 52, 131, 0.3);
+			color: #b8a9d9;
+			padding: 4px 12px;
+			border-radius: 8px;
+			font-size: 0.8em;
+			font-family: 'Consolas', monospace;
+		}
+		.file-tag.added {
+			background: rgba(46, 204, 113, 0.15);
+			color: #2ecc71;
+		}
+		.file-tag.modified {
+			background: rgba(241, 196, 15, 0.15);
+			color: #f1c40f;
+		}
+		.diff-stats {
+			display: flex;
+			gap: 20px;
+			margin-top: 15px;
+			font-size: 0.9em;
+		}
+		.diff-stat {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+		}
+		.diff-stat .plus {
+			color: #2ecc71;
+			font-weight: bold;
+		}
+		.diff-stat .minus {
+			color: #e74c3c;
+			font-weight: bold;
+		}
+		.section-title {
+			font-size: 1.5em;
+			margin: 40px 0 20px 0;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.section-title::before {
+			content: '';
+			width: 5px;
+			height: 25px;
+			background: #e94560;
+			border-radius: 3px;
+		}
+		.highlight-box {
+			background: linear-gradient(135deg, rgba(233, 69, 96, 0.1), rgba(83, 52, 131, 0.1));
+			border: 1px solid rgba(233, 69, 96, 0.3);
+			border-radius: 16px;
+			padding: 25px;
+			margin-top: 30px;
+		}
+		.highlight-box h3 {
+			color: #e94560;
+			margin-bottom: 15px;
+			font-size: 1.2em;
+		}
+		.highlight-box ul {
+			list-style: none;
+			padding: 0;
+		}
+		.highlight-box li {
+			padding: 8px 0;
+			padding-left: 25px;
+			position: relative;
+			color: #ddd;
+			line-height: 1.6;
+		}
+		.highlight-box li::before {
+			content: '▸';
+			position: absolute;
+			left: 0;
+			color: #e94560;
+		}
+		.tag {
+			display: inline-block;
+			padding: 2px 10px;
+			border-radius: 6px;
+			font-size: 0.75em;
+			font-weight: 600;
+			margin-left: 10px;
+		}
+		.tag.bugfix {
+			background: rgba(231, 76, 60, 0.2);
+			color: #e74c3c;
+		}
+		.tag.feature {
+			background: rgba(46, 204, 113, 0.2);
+			color: #2ecc71;
+		}
+		.tag.test {
+			background: rgba(52, 152, 219, 0.2);
+			color: #3498db;
+		}
+		.tag.docs {
+			background: rgba(155, 89, 182, 0.2);
+			color: #9b59b6;
+		}
+		.tag.refactor {
+			background: rgba(241, 196, 15, 0.2);
+			color: #f1c40f;
+		}
+		.footer {
+			text-align: center;
+			margin-top: 50px;
+			padding: 20px;
+			color: #666;
+			font-size: 0.9em;
+		}
+		.test-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: 12px;
+			margin-top: 15px;
+		}
+		.test-card {
+			background: rgba(255, 255, 255, 0.03);
+			border: 1px solid rgba(255, 255, 255, 0.06);
+			border-radius: 10px;
+			padding: 14px 16px;
+		}
+		.test-card .test-name {
+			font-weight: 600;
+			color: #fff;
+			font-size: 0.95em;
+			margin-bottom: 4px;
+		}
+		.test-card .test-count {
+			color: #888;
+			font-size: 0.85em;
+		}
+		.subsection {
+			font-size: 1.1em;
+			color: #bbb;
+			margin: 20px 0 10px 0;
+			font-weight: 600;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>OneDeck 开发日报</h1>
+			<div class="subtitle">2026年6月12日 ~ 6月21日 · 敌方卡组系统、状态特效收尾与元游戏循环</div>
+			<div class="stats">
+				<div class="stat-box">
+					<div class="number">41</div>
+					<div class="label">Git 提交</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">680</div>
+					<div class="label">项目文件变更</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">+103K</div>
+					<div class="label">新增代码/配置行</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">5,176</div>
+					<div class="label">脚本新增行</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-title">工作内容时间线</div>
+		<div class="timeline">
+			<!-- 6/12 ~ 6/14 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						状态效果抛射物系统收尾
+						<span class="tag feature">Feature</span>
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">6月12日 ~ 14日</div>
+				</div>
+				<div class="commit-desc">
+					完成 Transfer / Consume / Give 状态效果的全套抛射物动画，并修复多目标同时飞行时的视觉错位：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>ConsumeStatusEffect</code> 新增抛射物动画路径，自身消耗时飞向固定 consume position，敌方批量消耗时反向飞行</li>
+						<li>抛射物视觉层数与卡牌实际 stack count 挂钩，多层状态会生成对应数量的飞行特效</li>
+						<li>修复批量状态转移动画中 deck 物理顺序提前同步导致的 slot-in 错乱与 projectile 落点偏移</li>
+						<li>单层抛射物移除随机偏移，保证单目标状态给予的落点稳定可预测</li>
+					</ul>
+					产出 <code>StatusEffectProjectileSystem.md</code> 记录系统语义与使用规范。
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">ConsumeStatusEffect.cs</span>
+					<span class="file-tag modified">StatusEffectGiverEffect.cs</span>
+					<span class="file-tag modified">TransferStatusEffectEffect.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag added">StatusEffectProjectileSystem.md</span>
+				</div>
+			</div>
+
+			<!-- 6/14 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						敌方卡组记录器与动态卡牌描述
+						<span class="tag feature">Feature</span>
+					</div>
+					<div class="commit-time">6月14日</div>
+				</div>
+				<div class="commit-desc">
+					为后续元游戏循环搭建敌方卡组基础设施，并扩展卡牌描述的动态数值能力：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>EnemyDeckRecorder</code> 加入场景，提供对局中敌方卡组的引用与 prefab 查找</li>
+						<li><code>CardScript</code> 新增动态伤害后缀（damage suffix），支持在描述末尾追加实时伤害数值</li>
+						<li>卡牌位移动画的弧线中点 Z 改为动态计算，避免跨 deck 移动时卡片穿模或层级错误</li>
+						<li>场景布局开始调整，为新的视觉风格做准备</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag added">WriteRead/EnemyDeckRecorder.cs</span>
+					<span class="file-tag modified">CardScript.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">GameScene.unity</span>
+					<span class="file-tag added">prd-deck-enemy-recorder-2026-06-14.md</span>
+				</div>
+			</div>
+
+			<!-- 6/17 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						单局体验优化：敌方卡组池、自动揭示与动画速度
+						<span class="tag feature">Feature</span>
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">6月17日</div>
+					</div>
+				<div class="commit-desc">
+					在战斗节奏与重玩体验上投入大量调整：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>按 Session 随机敌方卡组池</strong>：每场 run 从 <code>DefaultEnemyDeckPool</code> 中随机抽取若干卡组作为本局可选敌人，提升重玩多样性</li>
+						<li><strong>敌方 HP 加成</strong>：根据卡组配置给敌方卡牌附加 HP bonus，拉开难度曲线</li>
+						<li><strong>战斗内自动确认</strong>：新增 <code>CombatManager.autoReveal</code>，仅跳过战斗阶段的点击确认，不影响商店/结果界面</li>
+						<li><strong>全局战斗动画速度</strong>：新增 <code>CombatAnimationSpeed.SpeedScale</code>，战斗阶段所有卡牌动画统一加速</li>
+						<li>同步修复 HP 显示与攻击动画时序不一致的问题</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatManager.cs</span>
+					<span class="file-tag modified">CombatFuncs.cs</span>
+					<span class="file-tag modified">CombatInfoDisplayer.cs</span>
+					<span class="file-tag added">CombatAnimationSpeed.cs</span>
+					<span class="file-tag modified">EnemyDeckRef.asset</span>
+					<span class="file-tag modified">ShopRarityWeightSO.asset</span>
+				</div>
+			</div>
+
+			<!-- 6/18 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						单局结束检测与录制卡组资产
+						<span class="tag feature">Feature</span>
+						<span class="tag test">Test</span>
+					</div>
+					<div class="commit-time">6月18日</div>
+					</div>
+				<div class="commit-desc">
+					补全 run 级别的生命周期管理，并大规模录制测试/敌方卡组资产：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><code>CombatManager</code> / <code>PhaseManager</code> 新增 run end 检测与整局重置逻辑，失败或胜利后可重新开局</li>
+						<li>新增大量 <code>Assets/SORefs/Decks/Recorded</code> 下按 session 归类的敌方卡组资产</li>
+						<li>补充测试牌组覆盖新费用与状态效果组合</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatManager.cs</span>
+					<span class="file-tag modified">PhaseManager.cs</span>
+					<span class="file-tag added">*.asset（Recorded Decks）</span>
+				</div>
+			</div>
+
+			<!-- 6/19 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						IntSO 参数重构与效果生命周期加固
+						<span class="tag refactor">Refactor</span>
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">6月19日</div>
+					</div>
+				<div class="commit-desc">
+					清理效果配置中过度依赖运行时 ScriptableObject 查找的旧模式，并修复跨场景状态污染：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li>将大量基于 <code>IntSO</code> 参数的效果改为直接的 <code>owner / enemy</code> 字段，减少运行时装箱与查找开销</li>
+						<li>移除 <code>ExileEffect</code> 逻辑阶段对 deck 的同步，统一由动画阶段 <code>ApplyAnimationResult</code> 处理</li>
+						<li><code>PowerReactionEffect</code> 支持按 IntSO 值重复随机友方 buff，并为每个目标生成独立抛射物</li>
+						<li>战斗退出时加固效果动画生命周期，防止 coroutine 在场景卸载后继续访问已销毁对象</li>
+						<li><code>PhaseManager</code> 进入商店时重置战斗级 ValueTracker，避免跨局数值污染</li>
+						<li>补全 <code>takeUpSpace</code> 处理，修复 exile reveal-zone 竞态条件</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">EffectScript.cs</span>
+					<span class="file-tag modified">HPAlterEffect.cs</span>
+					<span class="file-tag modified">ShieldAlterEffect.cs</span>
+					<span class="file-tag modified">ExileEffect.cs</span>
+					<span class="file-tag modified">PowerReactionEffect.cs</span>
+					<span class="file-tag modified">PhaseManager.cs</span>
+					<span class="file-tag added">Refactor_IntSO_Parameter_To_OwnerEnemy_Fields.md</span>
+					<span class="file-tag added">prd-exile-effect-sync-removal-2026-06-19.md</span>
+				</div>
+			</div>
+
+			<!-- 6/20 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						商店稀有度覆盖与卡组池检查工具
+						<span class="tag feature">Feature</span>
+						<span class="tag test">Tool</span>
+					</div>
+					<div class="commit-time">6月20日</div>
+					</div>
+				<div class="commit-desc">
+					推进商店系统与 Agent Skill 工具链：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>Session-based 稀有度权重覆盖</strong>：商店可根据当前 run 的配置动态调整稀有度 roll 权重</li>
+						<li>新增 <code>check-default-enemy-deck-pool</code> Agent Skill，自动校验 <code>DefaultEnemyDeckPool</code> 是否包含所有 Recorded 卡组</li>
+						<li>更新 <code>unity-card-listener-check</code> 等 Skill，支持新版 IntSO 字段配置</li>
+						<li>继续录制并同步 session 卡组资产，清理冗余 card prefab</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">ShopManager.cs</span>
+					<span class="file-tag modified">ShopRarityWeightSO.cs</span>
+					<span class="file-tag added">check-default-enemy-deck-pool/SKILL.md</span>
+					<span class="file-tag modified">unity-card-listener-check/SKILL.md</span>
+					<span class="file-tag added">find_multi_status_effect_cards.py</span>
+				</div>
+			</div>
+
+			<!-- 6/21 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						最终冲刺：逐投射物状态增量、描述匹配修复与平衡调整
+						<span class="tag feature">Feature</span>
+						<span class="tag bugfix">Bugfix</span>
+						<span class="tag refactor">Refactor</span>
+					</div>
+					<div class="commit-time">6月21日</div>
+					</div>
+				<div class="commit-desc">
+					本阶段最后一天集中解决多层状态动画的显示正确性与卡牌描述一致性：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>Per-projectile 状态增量</strong>：在 <code>AnimationRequest.statusEffectDelta</code> 中携带带符号显示增量，<code>RecorderAnimationPlayer</code> 在投射物命中/落地时才提交该层增量，避免多层加成一次性提前显示</li>
+						<li><strong>卡牌描述响应匹配</strong>：修复 <code>unity-card-listener-check</code> 中 GameEventListener 与 CostNEffectContainer 的 false positive 匹配</li>
+						<li><strong>Reveal source popup</strong>： emphasize/shake 反馈前先将 source card 从 reveal zone popup 到展示位，提升可读性</li>
+						<li><strong>动态伤害显示 + 疲劳动画</strong>：HP 伤害数字与动画同步，round-start fatigue 纳入动画序列</li>
+						<li><strong>平衡调整</strong>：削弱 <code>CROW_CROWD</code>、调整 <code>SIDE_EFFECT_PORTAL</code> 与 <code>POWER_TRANSFER</code> 效果参数</li>
+						<li><strong>敌方卡组池同步</strong>：将录制好的 session 卡组批量同步到 <code>DefaultEnemyDeckPool</code></li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">AnimationRequest.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">CombatManager.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">CardScript.cs</span>
+					<span class="file-tag modified">TransferStatusEffectEffect.cs</span>
+					<span class="file-tag modified">CROW_CROWD.prefab</span>
+					<span class="file-tag modified">SIDE_EFFECT_PORTAL.prefab</span>
+					<span class="file-tag modified">POWER_TRANSFER.prefab</span>
+					<span class="file-tag added">prd-power-reaction-status-effect-delta-commit-2026-06-20.md</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-title">新增/更新技能与工具</div>
+		<div class="test-grid">
+			<div class="test-card">
+				<div class="test-name">check-default-enemy-deck-pool</div>
+				<div class="test-count">校验 DefaultEnemyDeckPool 与 Recorded 卡组同步</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">unity-card-listener-check</div>
+				<div class="test-count">修复 false positive，支持新版 effect 字段</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">find_multi_status_effect_cards.py</div>
+				<div class="test-count">自动找出带多层状态效果的卡牌配置</div>
+			</div>
+			<div class="test-card">
+				<div class="test-name">CardWinRateTracker</div>
+				<div class="test-count">开始追踪敌方卡牌在战斗中的胜率</div>
+			</div>
+		</div>
+
+		<div class="highlight-box">
+			<h3>阶段重点工作总结</h3>
+			<ul>
+				<li><strong>状态效果抛射物系统完成</strong> — Consume/Transfer/Give 全部接入 StatusEffectProjectile + SlotInBatch，多层 stack 按数量生成飞行特效，落地/命中时才提交该层增量，解决多层加成显示跳变问题</li>
+				<li><strong>敌方卡组与元游戏循环落地</strong> — 引入 DefaultEnemyDeckPool、按 Session 随机抽取、敌方 HP 加成、run end 检测与整局重置，游戏从单战斗进入可循环的 run 结构</li>
+				<li><strong>战斗体验加速</strong> — <code>CombatManager.autoReveal</code> 与 <code>CombatAnimationSpeed.SpeedScale</code> 双管齐下，减少重复点击与等待</li>
+				<li><strong>IntSO 参数重构</strong> — 效果配置从运行时 SO 查找迁移到直接 owner/enemy 字段，降低运行时开销并减少配置错误</li>
+				<li><strong>效果生命周期加固</strong> — 战斗退出时 coroutine 安全终止，PhaseManager 进入商店时重置战斗级 ValueTracker，ExileEffect 移除逻辑阶段 sync 避免竞态</li>
+				<li><strong>商店系统扩展</strong> — Session-based 稀有度权重覆盖，为后续难度曲线与事件驱动商店做准备</li>
+				<li><strong>卡牌描述一致性</strong> — 修复 listener 匹配误报，新增 damage suffix 与动态伤害显示，描述与实际效果更同步</li>
+				<li><strong>卡牌平衡</strong> — 调整 CROW_CROWD、SIDE_EFFECT_PORTAL、POWER_TRANSFER 等关键卡牌参数</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box">
+			<h3>待办事项</h3>
+			<ul>
+				<li>运行全部 Edit Mode / Play Mode 测试，验证 IntSO 重构后效果 faction 绑定无回归</li>
+				<li>在 Play Mode 中跑通完整 run 循环：Shop → Combat → Result → 重置 → Shop</li>
+				<li>验证 DefaultEnemyDeckPool 中所有录制卡组可被正确随机抽取并加载</li>
+				<li>继续扩展动态描述占位符：支持 <code>{shield}</code>、<code>{heal}</code>、<code>{bury}</code> 等变量</li>
+				<li>评估 Infected 状态视觉反馈：毒液喷射粒子 + 卡牌材质变色</li>
+				<li>实现疲劳（fatigue）与 overtime 的 gameplay 数值与视觉表现</li>
+				<li>清理 <code>EffectRecorder_Architecture_Critique.md</code> 中标记的架构债务（recorder 生命周期、tree traversal 性能）</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box" style="border-color: rgba(46, 204, 113, 0.4); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(52, 152, 219, 0.08));">
+			<h3 style="color: #2ecc71;">后续工作建议</h3>
+			<p style="color: #bbb; margin-bottom: 15px; font-size: 0.9em;">动画系统与视觉基础设施已趋于稳固，本阶段重点是元游戏循环与内容量产：</p>
+			<ul>
+				<li><strong style="color: #2ecc71;">元游戏循环打磨（高优先级）</strong><br>
+				完整跑通 run 生命周期，补充 Shop → Result → 重置 的 UX 与数据持久化；实现疲劳/ overtime 机制并接入动画序列</li>
+				<li><strong style="color: #2ecc71;">Play Mode 集成测试（高优先级）</strong><br>
+				在真机/编辑器 Play Mode 中验证 autoReveal、动画速度缩放、敌方卡组随机化、run end 重置等功能的实机表现</li>
+				<li><strong style="color: #2ecc71;">敌方卡组内容生产（中优先级）</strong><br>
+				继续录制并平衡 session 卡组，利用 check-default-enemy-deck-pool skill 保持池子同步</li>
+				<li><strong style="color: #2ecc71;">卡牌配置自动化（中优先级）</strong><br>
+				扩展 CardTypeIDValidator 与 unity-card-listener-check，检测动态描述占位符与 effect 实际数值的一致性</li>
+				<li><strong style="color: #2ecc71;">CombatUXManager 职责拆分（中优先级）</strong><br>
+				将 deck position 计算、focus 管理、动画播放拆分为独立服务，降低当前 UXManager 的复杂度</li>
+			</ul>
+		</div>
+
+		<div class="footer">
+			OneDeck Unity Roguelike Card Game | 开发者: PAPAYA<br>
+			生成时间: 2026-06-21 19:18
+		</div>
+	</div>
+</body>
+</html>

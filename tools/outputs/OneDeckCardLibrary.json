@@ -1,0 +1,677 @@
+[
+  {
+    "prefabName": "GRAVE_PUNCH",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab",
+    "cardTypeID": "GRAVE_PUNCH",
+    "displayName": "尸爆",
+    "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,造成 <b><dmg></b> 伤害 x <b>2</b>",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "GRAVE_TOGETHER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/0_Common/GRAVE_TOGETHER.prefab",
+    "cardTypeID": "GRAVE_TOGETHER",
+    "displayName": "同路人",
+    "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,埋葬 <b>2</b> 敌方",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CORPSE_CANON",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/1_Uncommon/CORPSE_CANON.prefab",
+    "cardTypeID": "CORPSE_CANON",
+    "displayName": "冥界大炮",
+    "cardDesc": "揭晓时:埋葬 1 友方;\n友方被埋葬:造成 <b><dmg></b> 伤害",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "GRAVE_INVITATION",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/1_Uncommon/GRAVE_INVITATION.prefab",
+    "cardTypeID": "GRAVE_INVITATION",
+    "displayName": "冥界邀请",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,墓地每有 <b>1</b> 友方:埋葬 <b>1</b> 敌方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "UNSTABLE_PORTAL",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/1_Uncommon/UNSTABLE_PORTAL.prefab",
+    "cardTypeID": "UNSTABLE_PORTAL",
+    "displayName": "不稳定传送门",
+    "cardDesc": "揭晓时:置顶 <b>1</b> 友方,埋葬 <b>1</b> 友方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "BODY_CANON",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/2_Rare/BODY_CANON.prefab",
+    "cardTypeID": "BODY_CANON",
+    "displayName": "人间大炮",
+    "cardDesc": "揭晓时:埋葬所有友方,墓地每有一个友方:造成 <b>1</b> 次 <b><dmg></b> 伤害",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "LARGE_SCALE_DEATH",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/2_Rare/LARGE_SCALE_DEATH.prefab",
+    "cardTypeID": "LARGE_SCALE_DEATH",
+    "displayName": "大范围死亡",
+    "cardDesc": "揭晓时:埋葬后 <b>4</b> 卡",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "WISE_BURIAL",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/Bury/2_Rare/WISE_BURIAL.prefab",
+    "cardTypeID": "WISE_BURIAL",
+    "displayName": "不愚蠢的埋葬",
+    "cardDesc": "被置顶:埋葬 <b>1</b> 友方[亡语]/[萦绕]",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "GRAVE_PORTAL",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/0_Common/GRAVE_PORTAL.prefab",
+    "cardTypeID": "GRAVE_PORTAL",
+    "displayName": "冥界裂缝",
+    "cardDesc": "揭晓时:埋葬 <b>1</b> 敌方;被埋葬:置顶 <b>1</b> 友方",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SOLDIER_SKELETON",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/0_Common/SOLDIER_SKELETON.prefab",
+    "cardTypeID": "SOLDIER_SKELETON",
+    "displayName": "骷髅士兵",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:置顶自身",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "UNDEAD_CURSER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/0_Common/UNDEAD_CURSER.prefab",
+    "cardTypeID": "UNDEAD_CURSER",
+    "displayName": "不死诅咒者",
+    "cardDesc": "揭晓时:增强敌方[诅咒] <b>1</b>;\n被埋葬:增强敌方[诅咒] <b>1</b>",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "AVENGER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/AVENGER.prefab",
+    "cardTypeID": "AVENGER",
+    "displayName": "复仇者",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:获得 <b>2</b> 力量",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CONFUSED_PORTALMANCER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/CONFUSED_PORTALMANCER.prefab",
+    "cardTypeID": "CONFUSED_PORTALMANCER",
+    "displayName": "错乱传送术士",
+    "cardDesc": "揭晓时:埋葬 <b>1</b> 友方;\n被埋葬:生成 <b>3</b> [次元裂缝] ",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CURSED_CORPSE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/CURSED_CORPSE.prefab",
+    "cardTypeID": "CURSED_CORPSE",
+    "displayName": "被诅咒的尸体",
+    "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒];被埋葬:造成 <b><dmg></b> x <b>3</b> 伤害",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SCAPEGOAT",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/SCAPEGOAT.prefab",
+    "cardTypeID": "SCAPEGOAT",
+    "displayName": "替死鬼",
+    "cardDesc": "被埋葬:造成 <b><dmg></b> 伤害,置顶 1 友方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SPIKE_SKELETON",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/1_Uncommon/SPIKE_SKELETON.prefab",
+    "cardTypeID": "SPIKE_SKELETON",
+    "displayName": "针刺骷髅",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:造成 <b><dmg></b> 伤害 x <b>2</b>",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "GRAVE_KEEPER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/2_Rare/GRAVE_KEEPER.prefab",
+    "cardTypeID": "GRAVE_KEEPER",
+    "displayName": "守墓人",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;当卡被埋葬时:置顶自身",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "MARTYR",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/2_Rare/MARTYR.prefab",
+    "cardTypeID": "MARTYR",
+    "displayName": "殉道者",
+    "cardDesc": "被埋葬:所有友方获得 <b>1</b> 力量",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SLIME",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Bury and buried/DeathRattle/2_Rare/SLIME.prefab",
+    "cardTypeID": "SLIME",
+    "displayName": "史莱姆",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被埋葬::添加自身到卡组中",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "FALL_INTO_RIFT",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/0_Common/FALL_INTO_RIFT.prefab",
+    "cardTypeID": "FALL_INTO_RIFT",
+    "displayName": "坠入裂缝",
+    "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],埋葬 <b>1</b> 敌方",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "RIFT_INSECT",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/0_Common/RIFT_INSECT.prefab",
+    "cardTypeID": "RIFT_INSECT",
+    "displayName": "次元虫",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;生成 <b>1</b> [次元裂缝]",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SACRIFICE_RITUAL",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/0_Common/SACRIFICE_RITUAL.prefab",
+    "cardTypeID": "SACRIFICE_RITUAL",
+    "displayName": "献祭仪式",
+    "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,生成 <b>2</b> [次元裂缝]",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "RIFT_COFFIN",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_COFFIN.prefab",
+    "cardTypeID": "RIFT_COFFIN",
+    "displayName": "次元棺材",
+    "cardDesc": "萦绕;当友方被去除时:埋葬 <b>1</b> 敌方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "RIFT_DRAGON",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_DRAGON.prefab",
+    "cardTypeID": "RIFT_DRAGON",
+    "displayName": "次元龙",
+    "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],造成 <b>4</b> 伤害;\n被置顶:生成 <b>1</b> [次元裂缝]",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "RIFT_GUIDE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_GUIDE.prefab",
+    "cardTypeID": "RIFT_GUIDE",
+    "displayName": "次元引导者",
+    "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:埋葬 <b>2</b> 敌方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "RIFT_MONSTER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_MONSTER.prefab",
+    "cardTypeID": "RIFT_MONSTER",
+    "displayName": "次元兽",
+    "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:造成 <b><dmg></b> 伤害",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "RIFT_SUMMONER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/1_Uncommon/RIFT_SUMMONER.prefab",
+    "cardTypeID": "RIFT_SUMMONER",
+    "displayName": "裂缝召唤师",
+    "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:置顶 <b>2</b> 友方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "DEATHBED_CURSE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/2_Rare/DEATHBED_CURSE.prefab",
+    "cardTypeID": "DEATHBED_CURSE",
+    "displayName": "临终诅咒",
+    "cardDesc": "萦绕;当友方被去除时:敌方[诅咒]获得 <b>1</b> 力量",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "RIFT_DEVOURER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Conjure/2_Rare/RIFT_DEVOURER.prefab",
+    "cardTypeID": "RIFT_DEVOURER",
+    "displayName": "次元吞噬者",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;当友方被去除时:获得 <b>1</b> 力量",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CURSE_SUMMONER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/CURSE_SUMMONER.prefab",
+    "cardTypeID": "CURSE_THIRST_SUMMONER",
+    "displayName": "咒食的召唤师",
+    "cardDesc": "揭晓时,消耗敌方[诅咒] <b>1</b> 力量:置顶 <b>1</b> 友方",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "POISONER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/POISONER.prefab",
+    "cardTypeID": "POISONER",
+    "displayName": "咒师",
+    "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],造成 <b><dmg></b> 伤害",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "RIFT_CURSE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/0_Common/RIFT_CURSE.prefab",
+    "cardTypeID": "RIFT_CURSE",
+    "displayName": "异次元的诅咒",
+    "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],生成 <b>1</b> [次元裂缝]",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CURSED_SKELETON",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/CURSED_SKELETON.prefab",
+    "cardTypeID": "CURSED_SKELETON",
+    "displayName": "被诅咒的骷髅",
+    "cardDesc": "揭晓时,墓地每有 <b>1</b> 友方:增强 <b>1</b> 敌方[诅咒]",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CURSE_THIRST_BEAST",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/CURSE_THIRST_BEAST.prefab",
+    "cardTypeID": "CURSE_THIRST_BEAST",
+    "displayName": "咒食的野兽",
+    "cardDesc": "当敌方[诅咒]揭晓时:置顶自身;\n揭晓时:造成 <b><dmg></b> 伤害",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CURSE_THIRST_SHAMAN",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/CURSE_THIRST_SHAMAN.prefab",
+    "cardTypeID": "CURSE_THIRST_SHAMAN",
+    "displayName": "咒食的萨满",
+    "cardDesc": "揭晓时,敌方[诅咒]每有 <b>1</b> 力量:给予 <b>1</b> 友方 <b>1</b> 力量",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "MOTH_MAN",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/MOTH_MAN.prefab",
+    "cardTypeID": "MOTH_MAN",
+    "displayName": "飞蛾人",
+    "cardDesc": "当敌方[诅咒]获得力量时:置顶 <b>1</b> 友方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "PREMATURE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/PREMATURE.prefab",
+    "cardTypeID": "PREMATURE",
+    "displayName": "拔苗助长",
+    "cardDesc": "揭晓时,敌方[诅咒]力量 - <b>1</b> :置顶敌方[诅咒]",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SACRIFICIAL_CURSE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/SACRIFICIAL_CURSE.prefab",
+    "cardTypeID": "SACRIFICIAL_CURSE",
+    "displayName": "献祭诅咒",
+    "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,增强 <b>2</b> 敌方[诅咒]",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SMALL_SCALE_DEATH",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/1_Uncommon/SMALL_SCALE_DEATH.prefab",
+    "cardTypeID": "SMALL_SCALE_DEATH",
+    "displayName": "小范围死亡",
+    "cardDesc": "揭晓时:埋葬后 <b>2</b> 卡,增强 <b>1</b> 敌方[诅咒]",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CROW_CROWD",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/2_Rare/CROW_CROWD.prefab",
+    "cardTypeID": "CROW_CROWD",
+    "displayName": "乌合之众",
+    "cardDesc": "揭晓时:将所有友方的力量(排除友方[诅咒])转移到敌方的[诅咒]",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CURSE_ENCHANTMENT",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/2_Rare/CURSE_ENCHANTMENT.prefab",
+    "cardTypeID": "CURSE_ENCHANTMENT",
+    "displayName": "诅咒附魔",
+    "cardDesc": "萦绕;当敌人受到伤害时:增强 <b>1</b> 敌方[诅咒]",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "DETERIORATION",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/2_Rare/DETERIORATION.prefab",
+    "cardTypeID": "DETERIORATION",
+    "displayName": "恶化",
+    "cardDesc": "揭晓时,敌方[诅咒]每有 <b>2</b> 力量:增强 <b>1</b> 敌方[诅咒]",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "PROLIFERATING_CURSE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/Curse/2_Rare/PROLIFERATING_CURSE.prefab",
+    "cardTypeID": "PROLIFERATING_CURSE",
+    "displayName": "增殖的厄运",
+    "cardDesc": "揭晓时:复制敌方 <b>1</b> [诅咒]",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "BLACKSMITH",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/BLACKSMITH.prefab",
+    "cardTypeID": "BLACKSMITH",
+    "displayName": "铁匠",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,给予一个友方 <b>1</b> 力量",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "BLIND_COMBAT_PRIEST",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/BLIND_COMBAT_PRIEST.prefab",
+    "cardTypeID": "BLIND_COMBAT_PRIEST",
+    "displayName": "盲眼战斗牧师",
+    "cardDesc": "揭晓时:给予下 <b>1</b> 卡 <b>3</b> 力量",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "COFFIN_MAKER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/COFFIN_MAKER.prefab",
+    "cardTypeID": "COFFIN_MAKER",
+    "displayName": "棺材制造者",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,埋葬 <b>1</b> 敌方",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "CURSE_THIRST_SUMMONER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/CURSE_THIRST_SUMMONER.prefab",
+    "cardTypeID": "CURSE_THIRST_SUMMONER",
+    "displayName": "咒食的召唤师",
+    "cardDesc": "揭晓时,消耗敌方[诅咒] <b>1</b> 力量:置顶 <b>1</b> 友方;\n揭晓时:给予下 <b>1</b> 卡 <b>2</b> 力量",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "MAD_SCIENTIST",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/MAD_SCIENTIST.prefab",
+    "cardTypeID": "MAD_SCIENTIST",
+    "displayName": "疯狂科学家",
+    "cardDesc": "揭晓时:给予下 <b>3</b> 卡 <b>2</b> 力量",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SACRIFICIAL_SWORD",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/SACRIFICIAL_SWORD.prefab",
+    "cardTypeID": "SACRIFICIAL_SWORD",
+    "displayName": "献祭剑",
+    "cardDesc": "揭晓:埋葬 <b>1</b> 友方,给予 <b>1</b> 友方 <b>2</b> 力量",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SIDE_EFFECT_PORTAL",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/SIDE_EFFECT_PORTAL.prefab",
+    "cardTypeID": "SIDE_EFFECT_PORTAL",
+    "displayName": "有副作用的传送门",
+    "cardDesc": "揭晓时:增强自身诅咒 <b>1</b> ,置顶 <b>1</b> 友方",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "THE_FOOL",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/0_Common/THE_FOOL.prefab",
+    "cardTypeID": "THE_FOOL",
+    "displayName": "愚者",
+    "cardDesc": "揭晓时:置顶力量最多的敌方,造成 <b>4</b> 伤害",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "ADVANCE_PORTAL",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/ADVANCE_PORTAL.prefab",
+    "cardTypeID": "ADVANCE_PORTAL",
+    "displayName": "高等传送门",
+    "cardDesc": "每揭晓 <b>2<counter></b> 次:置顶 <b>2</b> 友方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "ALL_FOR_ONE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/ALL_FOR_ONE.prefab",
+    "cardTypeID": "ALL_FOR_ONE",
+    "displayName": "人人为我",
+    "cardDesc": "揭晓时:造成所有卡的力量数量的伤害",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "ANTI_CREATURE_WEAPON",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/ANTI_CREATURE_WEAPON.prefab",
+    "cardTypeID": "ANTI_CREATURE_WEAPON",
+    "displayName": "对生物兵器",
+    "cardDesc": "揭晓时:埋葬 <b>2</b> 敌方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "BONE_COMBINATION",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/BONE_COMBINATION.prefab",
+    "cardTypeID": "BONE_COMBINATION",
+    "displayName": "碎骨聚集体",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害 x 本回合被埋葬的敌方数量",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "DR_MANHATTAN",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/DR_MANHATTAN.prefab",
+    "cardTypeID": "DR_MANHATTAN",
+    "displayName": "曼哈顿博士",
+    "cardDesc": "揭晓时,消耗 <b>3</b> 力量:置顶 <b>2</b> 友方,埋葬 <b>2</b> 敌方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "FLESH_COMBINATION",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/FLESH_COMBINATION.prefab",
+    "cardTypeID": "FLESH_COMBINATION",
+    "displayName": "血肉聚集体",
+    "cardDesc": "揭晓时:造成友方数量的伤害",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "GOBLIN_ASSASSIN_TEAM",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/GOBLIN_ASSASSIN_TEAM.prefab",
+    "cardTypeID": "GOBLIN_ASSASIN_TEAM",
+    "displayName": "哥布林暗杀部队",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:埋葬 <b>1</b> 敌方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "GOBLIN_CHARGE_TEAM",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/GOBLIN_CHARGE_TEAM.prefab",
+    "cardTypeID": "GOBLIN_CHARGE_TEAM",
+    "displayName": "哥布林冲锋部队",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被置顶:造成 <b><dmg></b> 伤害",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "POWER_CRAVER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/POWER_CRAVER.prefab",
+    "cardTypeID": "POWER_CRAVER",
+    "displayName": "力量渴求者",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;获得力量时:获得 <b>2</b> 倍力量",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "POWER_SURGE",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/POWER_SURGE.prefab",
+    "cardTypeID": "POWER_SURGE",
+    "displayName": "能量迸发",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被置顶:给予 <b>2</b> 友方 <b>1</b> 力量",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "QUICK_RESPONSE_PROTOCOL",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/QUICK_RESPONSE_PROTOCOL.prefab",
+    "cardTypeID": "QUICK_RESPONSE_PROTOCOL",
+    "displayName": "快速响应协议",
+    "cardDesc": "萦绕;\n再有 <b>3<counter></b> 敌人被揭晓:置顶 <b>1</b> 友方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "SNATCHER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/SNATCHER.prefab",
+    "cardTypeID": "SNATCHER",
+    "displayName": "屠夫",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:置顶 <b>1</b> 友方;被埋葬:埋葬 <b>1</b> 敌方",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "TACTICAL_BREACHER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/TACTICAL_BREACHER.prefab",
+    "cardTypeID": "TACTICAL_BREACHER",
+    "displayName": "战术爆破手",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:获得 <b>1</b> 力量",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "WEAPON_SPIRIT",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/1_Uncommon/WEAPON_SPIRIT.prefab",
+    "cardTypeID": "WEAPON_SPIRIT",
+    "displayName": "武器精灵",
+    "cardDesc": "萦绕;当友方获得力量时:给予该友方 <b>1</b> 力量",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "ALMIGHTY",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ALMIGHTY.prefab",
+    "cardTypeID": "ALMIGHTY",
+    "displayName": "全能人",
+    "cardDesc": "揭晓 <b>2<counter></b> 次:造成 <b><dmg></b> 伤害,置顶 <b>1</b> 友方,埋葬 <b>1</b> 敌方,给予 <b>1</b> 友方力量,生成 <b>1</b> [次元裂缝],增强 <b>1</b> 敌方[诅咒]",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "BOOSTER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/BOOSTER.prefab",
+    "cardTypeID": "BOOSTER",
+    "displayName": "推进器",
+    "cardDesc": "洗牌后:置顶 <b>2</b> 友方;揭晓时:埋葬 <b>1</b> 友方",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "ELDER_SORCERER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ELDER_SORCERER.prefab",
+    "cardTypeID": "ELDER_SORCERER",
+    "displayName": "远古魔法使用者",
+    "cardDesc": "揭晓时,本回合每置顶过 <b>1</b> 友方:给予 <b>1</b> 友方 <b>1</b> 力量",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "ETERNAL_GHOST",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/ETERNAL_GHOST.prefab",
+    "cardTypeID": "ETERNAL_GHOST",
+    "displayName": "不散的恶灵",
+    "cardDesc": "萦绕;当敌人受到伤害时:造成 <b><dmg></b> 伤害",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "POWER_SIPHONER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/POWER_SIPHONER.prefab",
+    "cardTypeID": "POWER_SIPHONER",
+    "displayName": "力量虹吸人",
+    "cardDesc": "揭晓时:转移所有友方的 <b>1</b> 力量到自身,造成 <b><dmg></b> 伤害 x <b>2</b>",
+    "rarity": "Rare",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "POWER_TRANSFER",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/POWER_TRANSFER.prefab",
+    "cardTypeID": "POWER_TRANSFER",
+    "displayName": "力量转移",
+    "cardDesc": "揭晓时:去除 <b>2</b> 敌方 <b>1</b> 力量,给予友方 <b>1</b> 力量 <b>2</b> 次",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "UNFINISHED_ROBOT",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/General/2_Rare/UNFINISHED_ROBOT.prefab",
+    "cardTypeID": "UNFINISHED_ROBOT",
+    "displayName": "未完成的机器人",
+    "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,翻倍自身力量",
+    "rarity": "Rare",
+    "myStatusEffects": "Power"
+  },
+  {
+    "prefabName": "IncreaseDeckSize",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/_UTILITY/IncreaseDeckSize.prefab",
+    "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE",
+    "displayName": "卡位增加 <中>",
+    "cardDesc": "卡位增加 <b>2</b>",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "IncreaseDeckSizeLite",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/_UTILITY/IncreaseDeckSizeLite.prefab",
+    "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE",
+    "displayName": "卡位增加 <小>",
+    "cardDesc": "卡位增加 <b>1</b>",
+    "rarity": "Common",
+    "myStatusEffects": ""
+  },
+  {
+    "prefabName": "IncreaseHpMax",
+    "assetPath": "Assets/Prefabs/Cards/3.0 no cost (current)/_UTILITY/IncreaseHpMax.prefab",
+    "cardTypeID": "SYSTEM_INCREASE_HP_MAX",
+    "displayName": "早睡早起",
+    "cardDesc": "生命值上限增加 <b>3</b>",
+    "rarity": "Uncommon",
+    "myStatusEffects": ""
+  }
+]
