@@ -1,0 +1,662 @@
+[
+  {
+    "file": "ADVANCE_PORTAL",
+    "displayName": "高等传送门",
+    "tags": [
+      "预言"
+    ],
+    "effectDesc": "每揭晓 **2<counter>** 次:置顶 **2** 友方"
+  },
+  {
+    "file": "ALL_FOR_ONE",
+    "displayName": "人人为我",
+    "tags": [
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:造成所有卡的力量数量的伤害"
+  },
+  {
+    "file": "ALMIGHTY",
+    "displayName": "全能人",
+    "tags": [
+      "任意门",
+      "伤害",
+      "埋葬敌方",
+      "强化",
+      "污染",
+      "预言"
+    ],
+    "effectDesc": "揭晓 **2<counter>** 次:造成 **1** 伤害,置顶 **1** 友方,埋葬 **1** 敌方,给予 **1** 友方力量,生成 **1** [次元裂缝],增强 **1** 敌方[诅咒]"
+  },
+  {
+    "file": "ANTI_CREATURE_WEAPON",
+    "displayName": "对生物兵器",
+    "tags": [
+      "埋葬敌方"
+    ],
+    "effectDesc": "揭晓时:埋葬 **2** 敌方"
+  },
+  {
+    "file": "AVENGER",
+    "displayName": "复仇者",
+    "tags": [
+      "亡语",
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害;被埋葬:获得 **2** 力量"
+  },
+  {
+    "file": "BLACKSMITH",
+    "displayName": "铁匠",
+    "tags": [
+      "伤害",
+      "强化"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害,给予一个友方 **1** 力量"
+  },
+  {
+    "file": "BLIND_COMBAT_PRIEST",
+    "displayName": "盲眼战斗牧师",
+    "tags": [
+      "强化"
+    ],
+    "effectDesc": "揭晓时:给予下 **1** 卡 **3** 力量"
+  },
+  {
+    "file": "BODY_CANON",
+    "displayName": "人间大炮",
+    "tags": [
+      "伤害",
+      "埋葬友方"
+    ],
+    "effectDesc": "揭晓时:埋葬所有友方,墓地每有一个友方:造成 **1** 次 **1** 伤害"
+  },
+  {
+    "file": "BONE_COMBINATION",
+    "displayName": "碎骨聚集体",
+    "tags": [
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:造成 **1** 伤害 x 本回合被埋葬的敌方数量"
+  },
+  {
+    "file": "BOOSTER",
+    "displayName": "推进器",
+    "tags": [
+      "埋葬友方",
+      "预言"
+    ],
+    "effectDesc": "洗牌后:置顶 **2** 友方;揭晓时:埋葬 **1** 友方"
+  },
+  {
+    "file": "COFFIN_MAKER",
+    "displayName": "棺材制造者",
+    "tags": [
+      "伤害",
+      "埋葬敌方"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害,埋葬 **1** 敌方"
+  },
+  {
+    "file": "CONFUSED_PORTALMANCER",
+    "displayName": "错乱传送术士",
+    "tags": [
+      "亡语",
+      "任意门",
+      "埋葬友方"
+    ],
+    "effectDesc": "揭晓时:埋葬 **1** 友方;\n被埋葬:生成 **3** [次元裂缝]"
+  },
+  {
+    "file": "CORPSE_CANON",
+    "displayName": "冥界大炮",
+    "tags": [
+      "亡语",
+      "伤害",
+      "埋葬友方"
+    ],
+    "effectDesc": "揭晓时:埋葬 1 友方;\r\n友方被埋葬:造成 **2** 伤害"
+  },
+  {
+    "file": "CROW_CROWD",
+    "displayName": "乌合之众",
+    "tags": [
+      "污染"
+    ],
+    "effectDesc": "揭晓时:将所有友方的力量(排除友方[诅咒])转移到敌方的[诅咒]"
+  },
+  {
+    "file": "CURSE_ENCHANTMENT",
+    "displayName": "诅咒附魔",
+    "tags": [
+      "污染",
+      "萦绕"
+    ],
+    "effectDesc": "萦绕;当敌人受到伤害时:增强 **1** 敌方[诅咒]"
+  },
+  {
+    "file": "CURSE_SUMMONER",
+    "displayName": "咒食的召唤师",
+    "tags": [
+      "污染",
+      "消化",
+      "预言"
+    ],
+    "effectDesc": "揭晓时,消耗敌方[诅咒] **1** 力量:置顶 **1** 友方"
+  },
+  {
+    "file": "CURSE_THIRST_BEAST",
+    "displayName": "咒食的野兽",
+    "tags": [
+      "伤害",
+      "预言"
+    ],
+    "effectDesc": "当敌方[诅咒]揭晓时:置顶自身;\r\n揭晓时:造成 **4** 伤害"
+  },
+  {
+    "file": "CURSE_THIRST_SHAMAN",
+    "displayName": "咒食的萨满",
+    "tags": [
+      "强化"
+    ],
+    "effectDesc": "揭晓时,敌方[诅咒]每有 **1** 力量:给予 **1** 友方 **1** 力量"
+  },
+  {
+    "file": "CURSE_THIRST_SUMMONER",
+    "displayName": "咒食的召唤师",
+    "tags": [
+      "强化",
+      "消化",
+      "预言"
+    ],
+    "effectDesc": "揭晓时,消耗敌方[诅咒] **1** 力量:置顶 **1** 友方;\r\n揭晓时:给予下 **1** 卡 **2** 力量"
+  },
+  {
+    "file": "CURSED_CORPSE",
+    "displayName": "被诅咒的尸体",
+    "tags": [
+      "亡语",
+      "伤害",
+      "污染"
+    ],
+    "effectDesc": "揭晓时:增强 **1** 敌方[诅咒];被埋葬:造成 **1** x **3** 伤害"
+  },
+  {
+    "file": "CURSED_SKELETON",
+    "displayName": "被诅咒的骷髅",
+    "tags": [
+      "污染"
+    ],
+    "effectDesc": "揭晓时,墓地每有 **1** 友方:增强 **1** 敌方[诅咒]"
+  },
+  {
+    "file": "DEATHBED_CURSE",
+    "displayName": "临终诅咒",
+    "tags": [
+      "污染",
+      "萦绕"
+    ],
+    "effectDesc": "萦绕;当友方被去除时:敌方[诅咒]获得 **1** 力量"
+  },
+  {
+    "file": "DETERIORATION",
+    "displayName": "恶化",
+    "tags": [
+      "污染"
+    ],
+    "effectDesc": "揭晓时,敌方[诅咒]每有 **2** 力量:增强 **1** 敌方[诅咒]"
+  },
+  {
+    "file": "DR_MANHATTAN",
+    "displayName": "曼哈顿博士",
+    "tags": [
+      "埋葬敌方",
+      "消化",
+      "预言"
+    ],
+    "effectDesc": "揭晓时,消耗 **3** 力量:置顶 **2** 友方,埋葬 **2** 敌方"
+  },
+  {
+    "file": "ELDER_SORCERER",
+    "displayName": "远古魔法使用者",
+    "tags": [
+      "强化"
+    ],
+    "effectDesc": "揭晓时,本回合每置顶过 **1** 友方:给予 **1** 友方 **1** 力量"
+  },
+  {
+    "file": "ETERNAL_GHOST",
+    "displayName": "不散的恶灵",
+    "tags": [
+      "伤害",
+      "萦绕"
+    ],
+    "effectDesc": "萦绕;当敌人受到伤害时:造成 **1** 伤害"
+  },
+  {
+    "file": "FALL_INTO_RIFT",
+    "displayName": "坠入裂缝",
+    "tags": [
+      "任意门",
+      "埋葬敌方"
+    ],
+    "effectDesc": "揭晓时:生成 **1** [次元裂缝],埋葬 **1** 敌方"
+  },
+  {
+    "file": "FLESH_COMBINATION",
+    "displayName": "血肉聚集体",
+    "tags": [
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:造成友方数量的伤害"
+  },
+  {
+    "file": "GOBLIN_ASSASSIN_TEAM",
+    "displayName": "哥布林暗杀部队",
+    "tags": [
+      "伤害",
+      "埋葬敌方"
+    ],
+    "effectDesc": "揭晓时:造成 **4** 伤害;被置顶:埋葬 **1** 敌方"
+  },
+  {
+    "file": "GOBLIN_CHARGE_TEAM",
+    "displayName": "哥布林冲锋部队",
+    "tags": [
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:造成 **2** 伤害;\r\n被置顶:造成 **2** 伤害"
+  },
+  {
+    "file": "GRAVE_INVITATION",
+    "displayName": "冥界邀请",
+    "tags": [
+      "伤害",
+      "埋葬敌方"
+    ],
+    "effectDesc": "揭晓时:造成 **4** 伤害,墓地每有 **1** 友方:埋葬 **1** 敌方"
+  },
+  {
+    "file": "GRAVE_KEEPER",
+    "displayName": "守墓人",
+    "tags": [
+      "亡语",
+      "伤害",
+      "预言"
+    ],
+    "effectDesc": "揭晓时:造成 **6** 伤害;当卡被埋葬时:置顶自身"
+  },
+  {
+    "file": "GRAVE_PORTAL",
+    "displayName": "冥界裂缝",
+    "tags": [
+      "亡语",
+      "埋葬敌方",
+      "预言"
+    ],
+    "effectDesc": "揭晓时:埋葬 **1** 敌方;被埋葬:置顶 **1** 友方"
+  },
+  {
+    "file": "GRAVE_PUNCH",
+    "displayName": "尸爆",
+    "tags": [
+      "伤害",
+      "埋葬友方"
+    ],
+    "effectDesc": "揭晓时:埋葬 **1** 友方,造成 **2** 伤害 x **2**"
+  },
+  {
+    "file": "GRAVE_TOGETHER",
+    "displayName": "同路人",
+    "tags": [
+      "埋葬友方",
+      "埋葬敌方"
+    ],
+    "effectDesc": "揭晓时:埋葬 **1** 友方,埋葬 **2** 敌方"
+  },
+  {
+    "file": "IncreaseDeckSize",
+    "displayName": "卡位增加 <中>",
+    "tags": [],
+    "effectDesc": "卡位增加 **2**"
+  },
+  {
+    "file": "IncreaseDeckSizeLite",
+    "displayName": "卡位增加 <小>",
+    "tags": [],
+    "effectDesc": "卡位增加 **1**"
+  },
+  {
+    "file": "IncreaseHpMax",
+    "displayName": "早睡早起",
+    "tags": [],
+    "effectDesc": "生命值上限增加 **3**"
+  },
+  {
+    "file": "LARGE_SCALE_DEATH",
+    "displayName": "大范围死亡",
+    "tags": [
+      "随机埋葬"
+    ],
+    "effectDesc": "揭晓时:埋葬后 **4** 卡"
+  },
+  {
+    "file": "MAD_SCIENTIST",
+    "displayName": "疯狂科学家",
+    "tags": [
+      "强化"
+    ],
+    "effectDesc": "揭晓时:给予下 **3** 卡 **2** 力量"
+  },
+  {
+    "file": "MARTYR",
+    "displayName": "殉道者",
+    "tags": [
+      "亡语",
+      "强化"
+    ],
+    "effectDesc": "被埋葬:所有友方获得 **1** 力量"
+  },
+  {
+    "file": "MOTH_MAN",
+    "displayName": "飞蛾人",
+    "tags": [
+      "预言"
+    ],
+    "effectDesc": "当敌方[诅咒]获得力量时:置顶 **1** 友方"
+  },
+  {
+    "file": "POISONER",
+    "displayName": "咒师",
+    "tags": [
+      "伤害",
+      "污染"
+    ],
+    "effectDesc": "揭晓时:增强 **1** 敌方[诅咒],造成 **3** 伤害"
+  },
+  {
+    "file": "POWER_CRAVER",
+    "displayName": "力量渴求者",
+    "tags": [
+      "伤害",
+      "强化"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害;获得力量时:获得 **2** 倍力量"
+  },
+  {
+    "file": "POWER_SIPHONER",
+    "displayName": "力量虹吸人",
+    "tags": [
+      "伤害",
+      "强化",
+      "消化"
+    ],
+    "effectDesc": "揭晓时:转移所有友方的 **1** 力量到自身,造成 **2** 伤害 x **2**"
+  },
+  {
+    "file": "POWER_SURGE",
+    "displayName": "能量迸发",
+    "tags": [
+      "伤害",
+      "强化"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害;\r\n被置顶:给予 **2** 友方 **1** 力量"
+  },
+  {
+    "file": "POWER_TRANSFER",
+    "displayName": "力量转移",
+    "tags": [
+      "强化"
+    ],
+    "effectDesc": "揭晓时:去除 **2** 敌方 **1** 力量,给予友方 **1** 力量 **2** 次"
+  },
+  {
+    "file": "PREMATURE",
+    "displayName": "拔苗助长",
+    "tags": [
+      "污染"
+    ],
+    "effectDesc": "揭晓时,敌方[诅咒]力量 - **1** :置顶敌方[诅咒]"
+  },
+  {
+    "file": "PROLIFERATING_CURSE",
+    "displayName": "增殖的厄运",
+    "tags": [
+      "污染"
+    ],
+    "effectDesc": "揭晓时:复制敌方 **1** [诅咒]"
+  },
+  {
+    "file": "QUICK_RESPONSE_PROTOCOL",
+    "displayName": "快速响应协议",
+    "tags": [
+      "萦绕",
+      "预言"
+    ],
+    "effectDesc": "萦绕;\r\n再有 **3<counter>** 敌人被揭晓:置顶 **1** 友方"
+  },
+  {
+    "file": "RIFT_COFFIN",
+    "displayName": "次元棺材",
+    "tags": [
+      "埋葬敌方",
+      "萦绕"
+    ],
+    "effectDesc": "萦绕;当友方被去除时:埋葬 **1** 敌方"
+  },
+  {
+    "file": "RIFT_CURSE",
+    "displayName": "异次元的诅咒",
+    "tags": [
+      "任意门",
+      "污染"
+    ],
+    "effectDesc": "揭晓时:增强 **1** 敌方[诅咒],生成 **1** [次元裂缝]"
+  },
+  {
+    "file": "RIFT_DEVOURER",
+    "displayName": "次元吞噬者",
+    "tags": [
+      "伤害",
+      "强化"
+    ],
+    "effectDesc": "揭晓时:造成 **2** 伤害;当友方被去除时:获得 **1** 力量"
+  },
+  {
+    "file": "RIFT_DRAGON",
+    "displayName": "次元龙",
+    "tags": [
+      "任意门",
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:生成 **1** [次元裂缝],造成 **4** 伤害;\n被置顶:生成 **1** [次元裂缝]"
+  },
+  {
+    "file": "RIFT_GUIDE",
+    "displayName": "次元引导者",
+    "tags": [
+      "吞噬",
+      "埋葬敌方"
+    ],
+    "effectDesc": "揭晓时,去除 **1** [次元裂缝]:埋葬 **2** 敌方"
+  },
+  {
+    "file": "RIFT_INSECT",
+    "displayName": "次元虫",
+    "tags": [
+      "任意门",
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:造成 **2** 伤害;生成 **1** [次元裂缝]"
+  },
+  {
+    "file": "RIFT_MONSTER",
+    "displayName": "次元兽",
+    "tags": [
+      "伤害",
+      "吞噬"
+    ],
+    "effectDesc": "揭晓时,去除 **1** [次元裂缝]:造成 **6** 伤害"
+  },
+  {
+    "file": "RIFT_SUMMONER",
+    "displayName": "裂缝召唤师",
+    "tags": [
+      "吞噬"
+    ],
+    "effectDesc": "揭晓时,去除 **1** [次元裂缝]:置顶 **2** 友方"
+  },
+  {
+    "file": "SACRIFICE_RITUAL",
+    "displayName": "献祭仪式",
+    "tags": [
+      "任意门",
+      "埋葬友方"
+    ],
+    "effectDesc": "揭晓时:埋葬 **1** 友方,生成 **2** [次元裂缝]"
+  },
+  {
+    "file": "SACRIFICIAL_CURSE",
+    "displayName": "献祭诅咒",
+    "tags": [
+      "埋葬友方",
+      "污染"
+    ],
+    "effectDesc": "揭晓时:埋葬 **1** 友方,增强 **2** 敌方[诅咒]"
+  },
+  {
+    "file": "SACRIFICIAL_SWORD",
+    "displayName": "献祭剑",
+    "tags": [
+      "埋葬友方",
+      "强化"
+    ],
+    "effectDesc": "揭晓:埋葬 **1** 友方,给予 **1** 友方 **2** 力量"
+  },
+  {
+    "file": "SCAPEGOAT",
+    "displayName": "替死鬼",
+    "tags": [
+      "亡语",
+      "伤害",
+      "预言"
+    ],
+    "effectDesc": "被埋葬:造成 **5** 伤害,置顶 1 友方"
+  },
+  {
+    "file": "SIDE_EFFECT_PORTAL",
+    "displayName": "有副作用的传送门",
+    "tags": [
+      "污染"
+    ],
+    "effectDesc": "揭晓时:增强自身诅咒 **1** ,置顶 **1** 友方"
+  },
+  {
+    "file": "SLIME",
+    "displayName": "史莱姆",
+    "tags": [
+      "亡语",
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害;\r\n被埋葬::添加自身到卡组中"
+  },
+  {
+    "file": "SMALL_SCALE_DEATH",
+    "displayName": "小范围死亡",
+    "tags": [
+      "伤害",
+      "污染"
+    ],
+    "effectDesc": "揭晓时:埋葬后 **2** 卡,增强 **1** 敌方[诅咒]"
+  },
+  {
+    "file": "SNATCHER",
+    "displayName": "屠夫",
+    "tags": [
+      "伤害",
+      "埋葬敌方",
+      "预言"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害;被置顶:置顶 **1** 友方;被埋葬:埋葬 **1** 敌方"
+  },
+  {
+    "file": "SOLDIER_SKELETON",
+    "displayName": "骷髅士兵",
+    "tags": [
+      "亡语",
+      "伤害",
+      "预言"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害;被埋葬:置顶自身"
+  },
+  {
+    "file": "SPIKE_SKELETON",
+    "displayName": "针刺骷髅",
+    "tags": [
+      "亡语",
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:造成 **3** 伤害;被埋葬:造成 **3** 伤害 x **2**"
+  },
+  {
+    "file": "TACTICAL_BREACHER",
+    "displayName": "战术爆破手",
+    "tags": [
+      "伤害",
+      "强化"
+    ],
+    "effectDesc": "揭晓时:造成 **4** 伤害;被置顶:获得 **1** 力量"
+  },
+  {
+    "file": "THE_FOOL",
+    "displayName": "愚者",
+    "tags": [
+      "伤害"
+    ],
+    "effectDesc": "揭晓时:置顶力量最多的敌方,造成 **4** 伤害"
+  },
+  {
+    "file": "UNDEAD_CURSER",
+    "displayName": "不死诅咒者",
+    "tags": [
+      "亡语",
+      "污染"
+    ],
+    "effectDesc": "揭晓时:增强敌方[诅咒] **1**;\n被埋葬:增强敌方[诅咒] **1**"
+  },
+  {
+    "file": "UNFINISHED_ROBOT",
+    "displayName": "未完成的机器人",
+    "tags": [
+      "伤害",
+      "强化"
+    ],
+    "effectDesc": "揭晓时:造成 **1** 伤害,翻倍自身力量"
+  },
+  {
+    "file": "UNSTABLE_PORTAL",
+    "displayName": "不稳定传送门",
+    "tags": [
+      "埋葬友方",
+      "预言"
+    ],
+    "effectDesc": "揭晓时:置顶 **1** 友方,埋葬 **1** 友方"
+  },
+  {
+    "file": "WEAPON_SPIRIT",
+    "displayName": "武器精灵",
+    "tags": [
+      "强化",
+      "萦绕"
+    ],
+    "effectDesc": "萦绕;当友方获得力量时:给予该友方 **1** 力量"
+  },
+  {
+    "file": "WISE_BURIAL",
+    "displayName": "不愚蠢的埋葬",
+    "tags": [
+      "埋葬友方"
+    ],
+    "effectDesc": "被置顶:埋葬 **1** 友方[亡语]/[萦绕]"
+  }
+]

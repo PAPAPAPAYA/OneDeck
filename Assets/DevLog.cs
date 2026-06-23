@@ -42,8 +42,8 @@
 #region docs
 //! docs
 	// obsidian
-		// first check tag in engine
-		// update
+		//// first check tag in engine
+		// update tags
 	//// doc for all short-cuts
 #endregion
 #region tools
@@ -53,14 +53,13 @@
 	//// recorder to automatically record deck to enemy decks
 		//// D:\Unity Projects\OneDeck\plans\prd-deck-enemy-recorder-2026-05-27.md
 	//// bug Recorder to prevent later fixes undermine former fixes
-	//? make a summary generator skill
 	//? make a debug skill
 	////   skill to generate commit messages
 	////  AnimationStateTracker checker  (animation state tracker is old system)
 #endregion
 #region anything else
 //! anything else
-	//todo connect to notion/obsidian
+	//// connect to notion/obsidian
 	//? minus dmg for curse?
 	//// purse + $1
 	//// fatigue on round reactivate
@@ -79,7 +78,7 @@
 	//todo do a numerical analysis
 	//// add hpmax up and decksize up to shopPoolRef
 	//// adjust hp
-	//todo populate enemy decks
+	//// populate enemy decks
 	///// add to agents.md: don't change code if not told
 	//// add to agents.md a reminder of smaller index = further away from camera = smaller z position
 	//// remember to check combat stats logger CSVs
@@ -100,7 +99,7 @@
 	// localization stringSO to store chinese translation
 	//// clean up, since new animation system is complete
 	//// clean up pre effect event
-	// clean up or rather add a switch to toggle debug messages
+	//// clean up or rather add a switch to toggle debug messages
 	//// simplify and split up CombatUXManager
 		//// simiplified a little bit
 	//// more animation need to be cleaned up (ex. deck group animation)
