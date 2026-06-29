@@ -34,6 +34,10 @@ Assets/
 └── docs/
 ```
 
+## External References
+
+- **Obsidian Vault**: `C:/Users/damen/Documents/Obsidian Vault/OneDeck`
+
 ## Core Architecture
 
 - **Singletons**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`, `CombatFuncs.me`, `CardFactory.me`, `CardIDRetriever.Me`, `AnimationStateTracker.me`, `CombatInfoDisplayer.me`, `CombatLog.me`, `CostResultPresenter.me`, `RecorderAnimationPlayer.me`
@@ -206,19 +210,6 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 
 ### Snapshot Target Indices
 `AnimationRequest` carries an optional `List<int> targetIndices` (parallel to `targetCards`). Effects that move cards within the deck must **snapshot** each target card's logical index at capture time **before** raising reactive events (e.g. `onMeBuried` → `StageSelf`), because reactive effects may modify deck order and pollute the index.
-
-Example (BuryEffect):
-```csharp
-// Snapshot AFTER SyncPhysicalCardsWithCombinedDeck but BEFORE RaiseSpecific
-var targetIndices = new List<int>();
-foreach (var card in buriedCards) { targetIndices.Add(_combinedDeck.IndexOf(card)); }
-recorder.animationRequests.Add(new AnimationRequest {
-	type = AnimationRequestType.MoveToBottomBatch,
-	targetCards = buriedCards,
-	targetIndices = targetIndices,  // snapshot
-	...
-});
-```
 
 ### ApplyAnimationResult
 `ICombatVisuals` exposes `ApplyAnimationResult(AnimationRequest request)`. `RecorderAnimationPlayer` calls it **before** each deck-move request (alongside `UpdateAllPhysicalCardTargets`) so that:

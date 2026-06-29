@@ -1,4 +1,53 @@
- // devlog
+ //! devlog
+ #region v 0.2.1
+ 
+ #region  tool
+ 	// proper play mode tester skill
+ 	// debug skill
+ #endregion
+ 
+ #region text
+	// localization stringSO to store chinese translation
+ #endregion
+ 
+ #region shop
+	// lock shop items
+	// show description when card clicked in shop
+	// enemy deck hint
+	// recover heart card
+	// add shop option card
+	// income card
+	// shop upgrade card
+	// card slot upgrade card
+	// independent card pool
+	// drag card to rearrange
+	// storage
+ #endregion
+ 
+ #region combat
+	// detect large amount of cards from one side and reroll
+	// show description when card clicked in combat
+	// pause
+	// hover card to pause and pop up card
+	// click card to pop up card
+	// new interface
+		// name + effect description on screen
+		// health ratio bar
+		// player icon and name
+		// health / max health
+	// new card template
+	// replay
+	// statistic
+	// animation speed
+ #endregion
+ 
+ #region visual
+ 	// when card pops up and emphasize or shake, detect if still need to pop, if so, don't slot in
+ #endregion
+ 
+ #endregion
+ 
+#region v 0.2.0
 #region reminder
 //! reminder
 	// physical card set up:
@@ -41,9 +90,11 @@
 #endregion
 #region docs
 //! docs
-	// obsidian
+	//// obsidian
 		//// first check tag in engine
-		// update tags
+		//// update tags
+		//// card model: how much dmg in 1 turn max, min, ave
+		//// cost + cost meeting relation
 	//// doc for all short-cuts
 #endregion
 #region tools
@@ -53,19 +104,20 @@
 	//// recorder to automatically record deck to enemy decks
 		//// D:\Unity Projects\OneDeck\plans\prd-deck-enemy-recorder-2026-05-27.md
 	//// bug Recorder to prevent later fixes undermine former fixes
-	//? make a debug skill
 	////   skill to generate commit messages
 	////  AnimationStateTracker checker  (animation state tracker is old system)
 #endregion
 #region anything else
 //! anything else
+	//// damage_analysis_report_10v10
 	//// connect to notion/obsidian
 	//? minus dmg for curse?
 	//// purse + $1
 	//// fatigue on round reactivate
 	//// fatigue card face text
 	//// start card card face text
-	//todo think about player intent vs actual happen probability
+	//// think about player intent vs actual happen probability
+		//// stability
 	//// nerf grave_punch
 	//// more bury?
 	//// more if staged?
@@ -75,7 +127,8 @@
 	//// fix include self
 	//// show stats when game over
 	//// print stats with hot-key
-	//todo do a numerical analysis
+	//// do a numerical analysis
+		//// continue to find new tests to run
 	//// add hpmax up and decksize up to shopPoolRef
 	//// adjust hp
 	//// populate enemy decks
@@ -96,8 +149,7 @@
 //! refactor
 	//// consider refactor start card to be more like normal cards
 	//// moveToTopPopUpBatch has its own deck-focus restoration logic which is the same to PlayRequestCoroutine
-	// localization stringSO to store chinese translation
-	//// clean up, since new animation system is complete
+	/////// clean up, since new animation system is complete
 	//// clean up pre effect event
 	//// clean up or rather add a switch to toggle debug messages
 	//// simplify and split up CombatUXManager
@@ -127,11 +179,11 @@
 #endregion
 #region feature
 //! feature
+	
 	//// if card tries to activate while not in reveal zone, popup first
 	//// bury only buries card after start card index
 	//// projectile animation for give power to card that got power
 	//// give power only give power to cards that deals dmg? might be too strong and awkward?
-	//todo proper play mode tester skill
 	//// add a test manager
 	//// an override slot for enemy deck
 	//// when saving enemy deck, detect if in result phase, if true then sessionnum --
@@ -159,29 +211,25 @@
 	//// rarity
 		//// rarity attibute in card script
 	//// iterate on shop based on rarity
-	// fake shuffle
+	//// fake shuffle
 		//// can we make it so that start card won't be at the top?
-		//? detect large amount of consecutive cards from one side
 		//// stddev for start card
 #endregion
 #region viscom
 //! viscom
 	//// global animation speed scaler
 		//// need testing
-	// snappier card animation, like balatro
+	//// snappier card animation, like balatro
 	//// arc animation uses dynamic z instead of static showPos' Z
-	// add chinese comma to font source
 	//// dynamically change card description
 		//// check
 		//// dmg
 			//// show dynamic dmg in ()
 			//// missing 1 
 		//// counter
-	//todo health bar
+	//// health bar
 		//// update health number when attack connects
 		//// need to test multiple attacks
-	//todo name + effect description on screen
-	//todo implement new physical card template
 	//// space after annotation
 	//// update text after animation, not during logic
 	//// exclusive text area for status effect
@@ -344,10 +392,9 @@
 	//// when curse is added, power wisp target pos is weird cause curse is not yet in position
 	//// bury animation bugged, suspect stage also has same problem
 #endregion
+#endregion
 
-
-
-#region oldtodo
+#region v 0.1.0
 // bug
 	//// start card movement
 	//// attack animation need to check effect, not card owner

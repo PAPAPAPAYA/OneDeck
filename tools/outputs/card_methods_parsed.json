@@ -1,0 +1,868 @@
+[
+  {
+    "name": "ADVANCE_PORTAL",
+    "desc": "每揭晓 **2<counter>** 次:置顶 **2** 友方",
+    "entries": [
+      {
+        "trigger": "每揭晓 **2<counter>** 次",
+        "actions": "置顶 **2** 友方"
+      }
+    ]
+  },
+  {
+    "name": "ALL_FOR_ONE",
+    "desc": "揭晓时:造成所有卡的力量数量的伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成所有卡的力量数量的伤害"
+      }
+    ]
+  },
+  {
+    "name": "ALMIGHTY",
+    "desc": "揭晓 **2<counter>** 次:造成 **1** 伤害,置顶 **1** 友方,埋葬 **1** 敌方,给予 **1** 友方力量,生成 **1** [次元裂缝],增强 **1** 敌方[诅咒]",
+    "entries": [
+      {
+        "trigger": "揭晓 **2<counter>** 次",
+        "actions": "造成 **1** 伤害,置顶 **1** 友方,埋葬 **1** 敌方,给予 **1** 友方力量,生成 **1** [次元裂缝],增强 **1** 敌方[诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "ANTI_CREATURE_WEAPON",
+    "desc": "揭晓时:埋葬 **2** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 **2** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "AVENGER",
+    "desc": "揭晓时:造成 **3** 伤害;被埋葬:获得 **2** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": "获得 **2** 力量"
+      }
+    ]
+  },
+  {
+    "name": "BLACKSMITH",
+    "desc": "揭晓时:造成 **3** 伤害,给予一个友方 **1** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害,给予一个友方 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "BLIND_COMBAT_PRIEST",
+    "desc": "揭晓时:给予下 **1** 卡 **3** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "给予下 **1** 卡 **3** 力量"
+      }
+    ]
+  },
+  {
+    "name": "BODY_CANON",
+    "desc": "揭晓时,埋葬所有友方,墓地每有一个友方:造成 **1** 次 **1** 伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时,埋葬所有友方,墓地每有一个友方",
+        "actions": "造成 **1** 次 **1** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "BONE_COMBINATION",
+    "desc": "揭晓时:造成 **1** 伤害 x 本回合被埋葬的敌方数量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **1** 伤害 x 本回合被埋葬的敌方数量"
+      }
+    ]
+  },
+  {
+    "name": "BOOSTER",
+    "desc": "洗牌后:置顶 **2** 友方;揭晓时:埋葬 **1** 友方",
+    "entries": [
+      {
+        "trigger": "洗牌后",
+        "actions": "置顶 **2** 友方"
+      },
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 **1** 友方"
+      }
+    ]
+  },
+  {
+    "name": "COFFIN_MAKER",
+    "desc": "揭晓时:造成 **3** 伤害,埋葬 **1** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害,埋葬 **1** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "CONFUSED_PORTALMANCER",
+    "desc": "揭晓时:埋葬 **1** 友方;\n被埋葬:生成 **3** [次元裂缝]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 **1** 友方"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": "生成 **3** [次元裂缝]"
+      }
+    ]
+  },
+  {
+    "name": "CORPSE_CANON",
+    "desc": "揭晓时:埋葬 1 友方;\n友方被埋葬:造成 **2** 伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 1 友方"
+      },
+      {
+        "trigger": "友方被埋葬",
+        "actions": "造成 **2** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "CROW_CROWD",
+    "desc": "揭晓时:将所有友方的力量(排除友方[诅咒])转移到敌方的[诅咒]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "将所有友方的力量(排除友方[诅咒])转移到敌方的[诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "CURSED_CORPSE",
+    "desc": "揭晓时:增强 **1** 敌方[诅咒];被埋葬:造成 **1** x **3** 伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "增强 **1** 敌方[诅咒]"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": "造成 **1** x **3** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "CURSED_SKELETON",
+    "desc": "揭晓时,墓地每有 **1** 友方:增强 **1** 敌方[诅咒]",
+    "entries": [
+      {
+        "trigger": "揭晓时,墓地每有 **1** 友方",
+        "actions": "增强 **1** 敌方[诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "CURSE_ENCHANTMENT",
+    "desc": "萦绕;当敌人受到伤害时:增强 **1** 敌方[诅咒]",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "萦绕"
+      },
+      {
+        "trigger": "当敌人受到伤害时",
+        "actions": "增强 **1** 敌方[诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "CURSE_SUMMONER",
+    "desc": "揭晓时,消耗敌方[诅咒] **1** 力量:置顶 **1** 友方",
+    "entries": [
+      {
+        "trigger": "揭晓时,消耗敌方[诅咒] **1** 力量",
+        "actions": "置顶 **1** 友方"
+      }
+    ]
+  },
+  {
+    "name": "CURSE_THIRST_BEAST",
+    "desc": "当敌方[诅咒]揭晓时:置顶自身;\n揭晓时:造成 **4** 伤害",
+    "entries": [
+      {
+        "trigger": "当敌方[诅咒]揭晓时",
+        "actions": "置顶自身"
+      },
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **4** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "CURSE_THIRST_SHAMAN",
+    "desc": "揭晓时,敌方[诅咒]每有 **1** 力量:给予 **1** 友方 **1** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时,敌方[诅咒]每有 **1** 力量",
+        "actions": "给予 **1** 友方 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "CURSE_THIRST_SUMMONER",
+    "desc": "揭晓时,消耗敌方[诅咒] **1** 力量:置顶 **1** 友方;\n揭晓时:给予下 **1** 卡 **2** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时,消耗敌方[诅咒] **1** 力量",
+        "actions": "置顶 **1** 友方"
+      },
+      {
+        "trigger": "揭晓时",
+        "actions": "给予下 **1** 卡 **2** 力量"
+      }
+    ]
+  },
+  {
+    "name": "DEATHBED_CURSE",
+    "desc": "萦绕;当友方被去除时:敌方[诅咒]获得 **1** 力量",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "萦绕"
+      },
+      {
+        "trigger": "当友方被去除时",
+        "actions": "敌方[诅咒]获得 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "DETERIORATION",
+    "desc": "揭晓时,敌方[诅咒]每有 **2** 力量:增强 **1** 敌方[诅咒]",
+    "entries": [
+      {
+        "trigger": "揭晓时,敌方[诅咒]每有 **2** 力量",
+        "actions": "增强 **1** 敌方[诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "DR_MANHATTAN",
+    "desc": "揭晓时,消耗 **3** 力量:置顶 **2** 友方,埋葬 **2** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时,消耗 **3** 力量",
+        "actions": "置顶 **2** 友方,埋葬 **2** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "ELDER_SORCERER",
+    "desc": "揭晓时,本回合每置顶过 **1** 友方:给予 **1** 友方 **1** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时,本回合每置顶过 **1** 友方",
+        "actions": "给予 **1** 友方 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "ETERNAL_GHOST",
+    "desc": "萦绕;当敌人受到伤害时:造成 **1** 伤害",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "萦绕"
+      },
+      {
+        "trigger": "当敌人受到伤害时",
+        "actions": "造成 **1** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "FALL_INTO_RIFT",
+    "desc": "揭晓时:生成 **1** [次元裂缝],埋葬 **1** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "生成 **1** [次元裂缝],埋葬 **1** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "FLESH_COMBINATION",
+    "desc": "揭晓时:造成友方数量的伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成友方数量的伤害"
+      }
+    ]
+  },
+  {
+    "name": "GOBLIN_ASSASSIN_TEAM",
+    "desc": "揭晓时:造成 **4** 伤害;被置顶:埋葬 **1** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **4** 伤害"
+      },
+      {
+        "trigger": "被置顶",
+        "actions": "埋葬 **1** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "GOBLIN_CHARGE_TEAM",
+    "desc": "揭晓时:造成 **2** 伤害;\n被置顶:造成 **2** 伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **2** 伤害"
+      },
+      {
+        "trigger": "被置顶",
+        "actions": "造成 **2** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "GRAVE_INVITATION",
+    "desc": "揭晓时:造成 **4** 伤害,墓地每有 **1** 友方:埋葬 **1** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **4** 伤害,墓地每有 **1** 友方:埋葬 **1** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "GRAVE_KEEPER",
+    "desc": "揭晓时:造成 **6** 伤害;当卡被埋葬时:置顶自身",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **6** 伤害"
+      },
+      {
+        "trigger": "当卡被埋葬时",
+        "actions": "置顶自身"
+      }
+    ]
+  },
+  {
+    "name": "GRAVE_PORTAL",
+    "desc": "揭晓时:埋葬 **1** 敌方;被埋葬:置顶 **1** 友方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 **1** 敌方"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": "置顶 **1** 友方"
+      }
+    ]
+  },
+  {
+    "name": "GRAVE_PUNCH",
+    "desc": "揭晓时:埋葬 **1** 友方,造成 **2** 伤害 x **2**",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 **1** 友方,造成 **2** 伤害 x **2**"
+      }
+    ]
+  },
+  {
+    "name": "GRAVE_TOGETHER",
+    "desc": "揭晓时:埋葬 **1** 友方,埋葬 **2** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 **1** 友方,埋葬 **2** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "IncreaseDeckSize",
+    "desc": "卡位增加 **2**",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "卡位增加 **2**"
+      }
+    ]
+  },
+  {
+    "name": "IncreaseDeckSizeLite",
+    "desc": "卡位增加 **1**",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "卡位增加 **1**"
+      }
+    ]
+  },
+  {
+    "name": "IncreaseHpMax",
+    "desc": "生命值上限增加 **3**",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "生命值上限增加 **3**"
+      }
+    ]
+  },
+  {
+    "name": "LARGE_SCALE_DEATH",
+    "desc": "揭晓时:埋葬后 **4** 卡",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬后 **4** 卡"
+      }
+    ]
+  },
+  {
+    "name": "MAD_SCIENTIST",
+    "desc": "揭晓时:给予下 **3** 卡 **2** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "给予下 **3** 卡 **2** 力量"
+      }
+    ]
+  },
+  {
+    "name": "MARTYR",
+    "desc": "被埋葬:所有友方获得 **1** 力量",
+    "entries": [
+      {
+        "trigger": "被埋葬",
+        "actions": "所有友方获得 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "MOTH_MAN",
+    "desc": "当敌方[诅咒]获得力量时:置顶 **1** 友方",
+    "entries": [
+      {
+        "trigger": "当敌方[诅咒]获得力量时",
+        "actions": "置顶 **1** 友方"
+      }
+    ]
+  },
+  {
+    "name": "POISONER",
+    "desc": "揭晓时:增强 **1** 敌方[诅咒],造成 **3** 伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "增强 **1** 敌方[诅咒],造成 **3** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "POWER_CRAVER",
+    "desc": "揭晓时:造成 **3** 伤害;获得力量时:获得 **2** 倍力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害"
+      },
+      {
+        "trigger": "获得力量时",
+        "actions": "获得 **2** 倍力量"
+      }
+    ]
+  },
+  {
+    "name": "POWER_SIPHONER",
+    "desc": "揭晓时:转移所有友方的 **1** 力量到自身,造成 **2** 伤害 x **2**",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "转移所有友方的 **1** 力量到自身,造成 **2** 伤害 x **2**"
+      }
+    ]
+  },
+  {
+    "name": "POWER_SURGE",
+    "desc": "揭晓时:造成 **3** 伤害;\n被置顶:给予 **2** 友方 **1** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害"
+      },
+      {
+        "trigger": "被置顶",
+        "actions": "给予 **2** 友方 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "POWER_TRANSFER",
+    "desc": "揭晓时:去除 **2** 敌方 **1** 力量,给予友方 **1** 力量 **2** 次",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "去除 **2** 敌方 **1** 力量,给予友方 **1** 力量 **2** 次"
+      }
+    ]
+  },
+  {
+    "name": "PREMATURE",
+    "desc": "揭晓时,敌方[诅咒]力量 - **1** :置顶敌方[诅咒]",
+    "entries": [
+      {
+        "trigger": "揭晓时,敌方[诅咒]力量 - **1**",
+        "actions": "置顶敌方[诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "PROLIFERATING_CURSE",
+    "desc": "揭晓时:复制敌方 **1** [诅咒]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "复制敌方 **1** [诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "QUICK_RESPONSE_PROTOCOL",
+    "desc": "萦绕;\n再有 **3<counter>** 敌人被揭晓:置顶 **1** 友方",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "萦绕"
+      },
+      {
+        "trigger": "再有 **3<counter>** 敌人被揭晓",
+        "actions": "置顶 **1** 友方"
+      }
+    ]
+  },
+  {
+    "name": "RIFT_COFFIN",
+    "desc": "萦绕;当友方被去除时:埋葬 **1** 敌方",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "萦绕"
+      },
+      {
+        "trigger": "当友方被去除时",
+        "actions": "埋葬 **1** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "RIFT_CURSE",
+    "desc": "揭晓时:增强 **1** 敌方[诅咒],生成 **1** [次元裂缝]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "增强 **1** 敌方[诅咒],生成 **1** [次元裂缝]"
+      }
+    ]
+  },
+  {
+    "name": "RIFT_DEVOURER",
+    "desc": "揭晓时:造成 **2** 伤害;当友方被去除时:获得 **1** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **2** 伤害"
+      },
+      {
+        "trigger": "当友方被去除时",
+        "actions": "获得 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "RIFT_DRAGON",
+    "desc": "揭晓时:生成 **1** [次元裂缝],造成 **4** 伤害;\n被置顶:生成 **1** [次元裂缝]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "生成 **1** [次元裂缝],造成 **4** 伤害"
+      },
+      {
+        "trigger": "被置顶",
+        "actions": "生成 **1** [次元裂缝]"
+      }
+    ]
+  },
+  {
+    "name": "RIFT_GUIDE",
+    "desc": "揭晓时,去除 **1** [次元裂缝]:埋葬 **2** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时,去除 **1** [次元裂缝]",
+        "actions": "埋葬 **2** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "RIFT_INSECT",
+    "desc": "揭晓时:造成 **2** 伤害;生成 **1** [次元裂缝]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **2** 伤害"
+      },
+      {
+        "trigger": "(无触发)",
+        "actions": "生成 **1** [次元裂缝]"
+      }
+    ]
+  },
+  {
+    "name": "RIFT_MONSTER",
+    "desc": "揭晓时,去除 **1** [次元裂缝]:造成 **6** 伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时,去除 **1** [次元裂缝]",
+        "actions": "造成 **6** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "RIFT_SUMMONER",
+    "desc": "揭晓时,去除 **1** [次元裂缝]:置顶 **2** 友方",
+    "entries": [
+      {
+        "trigger": "揭晓时,去除 **1** [次元裂缝]",
+        "actions": "置顶 **2** 友方"
+      }
+    ]
+  },
+  {
+    "name": "SACRIFICE_RITUAL",
+    "desc": "揭晓时:埋葬 **1** 友方,生成 **2** [次元裂缝]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 **1** 友方,生成 **2** [次元裂缝]"
+      }
+    ]
+  },
+  {
+    "name": "SACRIFICIAL_CURSE",
+    "desc": "揭晓时:埋葬 **1** 友方,增强 **2** 敌方[诅咒]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬 **1** 友方,增强 **2** 敌方[诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "SACRIFICIAL_SWORD",
+    "desc": "揭晓:埋葬 **1** 友方,给予 **1** 友方 **2** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓",
+        "actions": "埋葬 **1** 友方,给予 **1** 友方 **2** 力量"
+      }
+    ]
+  },
+  {
+    "name": "SCAPEGOAT",
+    "desc": "被埋葬:造成 **5** 伤害,置顶 1 友方",
+    "entries": [
+      {
+        "trigger": "被埋葬",
+        "actions": "造成 **5** 伤害,置顶 1 友方"
+      }
+    ]
+  },
+  {
+    "name": "SIDE_EFFECT_PORTAL",
+    "desc": "揭晓时:增强自身诅咒 **1** ,置顶 **1** 友方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "增强自身诅咒 **1** ,置顶 **1** 友方"
+      }
+    ]
+  },
+  {
+    "name": "SLIME",
+    "desc": "揭晓时:造成 **3** 伤害;\n被埋葬::添加自身到卡组中",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": ":添加自身到卡组中"
+      }
+    ]
+  },
+  {
+    "name": "SMALL_SCALE_DEATH",
+    "desc": "揭晓时:埋葬后 **2** 卡,增强 **1** 敌方[诅咒]",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "埋葬后 **2** 卡,增强 **1** 敌方[诅咒]"
+      }
+    ]
+  },
+  {
+    "name": "SNATCHER",
+    "desc": "揭晓时:造成 **3** 伤害;被置顶:置顶 **1** 友方;被埋葬:埋葬 **1** 敌方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害"
+      },
+      {
+        "trigger": "被置顶",
+        "actions": "置顶 **1** 友方"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": "埋葬 **1** 敌方"
+      }
+    ]
+  },
+  {
+    "name": "SOLDIER_SKELETON",
+    "desc": "揭晓时:造成 **3** 伤害;被埋葬:置顶自身",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": "置顶自身"
+      }
+    ]
+  },
+  {
+    "name": "SPIKE_SKELETON",
+    "desc": "揭晓时:造成 **3** 伤害;被埋葬:造成 **3** 伤害 x **2**",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **3** 伤害"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": "造成 **3** 伤害 x **2**"
+      }
+    ]
+  },
+  {
+    "name": "TACTICAL_BREACHER",
+    "desc": "揭晓时:造成 **4** 伤害;被置顶:获得 **1** 力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **4** 伤害"
+      },
+      {
+        "trigger": "被置顶",
+        "actions": "获得 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "THE_FOOL",
+    "desc": "揭晓时:置顶力量最多的敌方,造成 **4** 伤害",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "置顶力量最多的敌方,造成 **4** 伤害"
+      }
+    ]
+  },
+  {
+    "name": "UNDEAD_CURSER",
+    "desc": "揭晓时:增强敌方[诅咒] **1**;\n被埋葬:增强敌方[诅咒] **1**",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "增强敌方[诅咒] **1**"
+      },
+      {
+        "trigger": "被埋葬",
+        "actions": "增强敌方[诅咒] **1**"
+      }
+    ]
+  },
+  {
+    "name": "UNFINISHED_ROBOT",
+    "desc": "揭晓时:造成 **1** 伤害,翻倍自身力量",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "造成 **1** 伤害,翻倍自身力量"
+      }
+    ]
+  },
+  {
+    "name": "UNSTABLE_PORTAL",
+    "desc": "揭晓时:置顶 **1** 友方,埋葬 **1** 友方",
+    "entries": [
+      {
+        "trigger": "揭晓时",
+        "actions": "置顶 **1** 友方,埋葬 **1** 友方"
+      }
+    ]
+  },
+  {
+    "name": "WEAPON_SPIRIT",
+    "desc": "萦绕;当友方获得力量时:给予该友方 **1** 力量",
+    "entries": [
+      {
+        "trigger": "(无触发)",
+        "actions": "萦绕"
+      },
+      {
+        "trigger": "当友方获得力量时",
+        "actions": "给予该友方 **1** 力量"
+      }
+    ]
+  },
+  {
+    "name": "WISE_BURIAL",
+    "desc": "被置顶:埋葬 **1** 友方[亡语]/[萦绕]",
+    "entries": [
+      {
+        "trigger": "被置顶",
+        "actions": "埋葬 **1** 友方[亡语]/[萦绕]"
+      }
+    ]
+  }
+]
