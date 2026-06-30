@@ -56,7 +56,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 30 | PowerReactionEffect nested Power text commits incrementally per projectile | `PowerReactionEffect`, `RecorderAnimationPlayer`, `CardScript`, `AnimationRequest`, `EffectScript`, `ConsumeStatusEffect` | 2026-06-20 | ⚠️ | **Card:** SACRIFICIAL_SWORD + POWER_CRAVER + WEAPON_SPIRIT in deck.<br>**Check:** After SACRIFICIAL_SWORD's projectile lands, POWER_CRAVER's text shows 1 Power. After WEAPON_SPIRIT's reaction projectile lands, text updates to 2 Power. The reaction's Power is not visible before its projectile arrives. |
 | 31 | AmplifyStatusEffectGain missing projectile animation | `StatusEffectAmplifierEffect`, `StatusEffectGiverEffect`, `RecorderAnimationPlayer` | 2026-06-21 | ⚠️ | **Card:** Any card with `StatusEffectAmplifierEffect` on `onMeGotStatusEffect` (e.g. self-Power amplifier).<br>**Check:** When the amplifier triggers, the card pops up, projectile flies in, then slots back in; `StatusEffectChange` already captured by `ApplyStatusEffectCore` inside `GiveSelfStatusEffect`. |
 | 20 | JU_ON consumed by PREMATURE then Staged slots back to wrong position | `StageEffect`, `BuryEffect`, `RecorderAnimationPlayer`, `ApplyAnimationResult` | 2026-06-13 | ⚠️ | **Card:** PREMATURE + JU_ON in enemy deck<br>**Check:** PREMATURE reveals and consumes JU_ON's curse Power; JU_ON pops up from original deck position, projectile flies to `statusEffectConsumePos`, slots back to original index, then Stage arc moves it to deck top. No zero-distance SlotIn or misplaced landing. |
-| 33 | Off-reveal card activations have no visual cue before emphasize/shake | `RecorderAnimationPlayer`, `CombatUXManager`, `CardPhysObjScript`, `EffectRecorder`, `EffectChainManager`, `CostNEffectContainer` | 2026-06-21 | ⚠️ | **Card:** Any reactive deck effect (e.g. BOOSTER afterShuffle→StageSelf, WEAPON_SPIRIT onFriendlyCardGotPower) or a cost-fail reaction from a deck card.<br>**Check:** Success activations: popup -> emphasize -> slotin -> effect animation. Cost-fail activations: popup -> shake -> slotin (no emphasize). Reveal-zone cards do not popup. `AnimationStateTracker.pending` returns to 0 after popup/slot-in. |
+| ~~33~~ | ~~Off-reveal card activations have no visual cue before emphasize/shake~~ | ~~`RecorderAnimationPlayer`, `CombatUXManager`, `CardPhysObjScript`, `EffectRecorder`, `EffectChainManager`, `CostNEffectContainer`~~ | ~~2026-06-21~~ | ~~(Obsolete 2026-06-30)~~ | ~~Superseded by row 35: source card stays at popup peak during its effect animation.~~ |
 
 ## Status Effect Consumption Animation
 
@@ -70,6 +70,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 22 | TransferOneStatusEffectToSelf source cards do not PopUp/SlotIn | `TransferStatusEffectEffect`, `EffectScript`, `RecorderAnimationPlayer`, `CombatUXManager`, `AnimationRequest` | 2026-06-13 | ⚠️ | **Card:** POWER_SIPHONER when friendly/hostile cards carry the target status effect<br>**Check:** Source cards pop up together; self card pops up; projectiles fly from each source to self **in parallel**; self card status text commits only after the **last** projectile lands; source cards and self card slot back in together. No freeze or missing SlotIn. |
 | 24 | Single-layer status effect projectile has random start offset | `CombatUXManager` | 2026-06-14 | ⚠️ | **Card:** Any card that gives/consumes exactly 1 status effect layer (e.g. self-Power×1, ConsumeOwnStatusEffect×1, GiveStatusEffect×1 to a single target)<br>**Check:** Projectile starts at the center of the source card (`effectiveOffsetRange == Vector2.zero`) and flies straight to the target; no visible XY jitter. Multi-layer effects still randomize. |
 | 34 | Consume/transfer source cards update status text when projectile spawns | `RecorderAnimationPlayer`, `AnimationRequest`, `EffectScript`, `ConsumeStatusEffect`, `TransferStatusEffectEffect` | 2026-06-21 | ⚠️ | **Card:** OVERCHARGED_SUMMONER (ConsumeOwnStatusEffect), POWER_TRANSFER (ConsumeRandomEnemyCardsStatusEffect), CROW_CROWD/POWER_SIPHONER (TransferStatusEffectEffect)<br>**Check:** Source/target cards losing status effects show updated text the moment the projectile is spawned (flight starts). Cards receiving status effects still update only after the projectile lands. |
+| 35 | Off-reveal source card stays at popup peak during its effect animation | `RecorderAnimationPlayer`, `CombatUXManager`, `CardPhysObjScript` | 2026-06-30 | ⚠️ | **Card:** WEAPON_SPIRIT/POWER_CRAVER reaction (`onFriendlyCardGotPower`→`GiveSelfStatusEffect`), OVERCHARGED_SUMMONER (`ConsumeOwnStatusEffect`), BOOSTER afterShuffle→`StageSelf`, or any reactive Bury/Stage.<br>**Check:** popup → emphasize/shake → source card stays at peak while the effect-specific animation plays → single slotin at the end. No visible return-to-deck between emphasize and the effect animation; no second popup. `AnimationStateTracker.pending` returns to 0 after the full sequence. |
 
 ---
 
@@ -96,12 +97,12 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 |---------|-------------|
 | `BuryEffect.cs` | 1, 2, 5, 7, 14 |
 | `StageEffect.cs` | 1, 2, 5, 7 |
-| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19 |
+| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35 |
 | `EffectChainManager.cs` | 2, 11 |
-| `CardPhysObjScript.cs` | 3, 12 |
+| `CardPhysObjScript.cs` | 3, 12, 35 |
 | `CurseEffect.cs` | 8, 17, 19 |
 | `AddTempCard.cs` | 4 |
-| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33 |
+| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33, 35 |
 | `ApplyAnimationResult` | 5 |
 | `CalculateAnimationPositionAtIndex` | 7 |
 | `CostResultPresenter.cs` | 9 |

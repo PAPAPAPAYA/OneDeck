@@ -79,17 +79,17 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			reqSummary += "[" + i + "]" + (r != null ? r.type.ToString() : "null") + " ";
 		}
 
-		// VISUAL-FIX(2026-06-21): Pop up off-reveal source cards before emphasize/shake
-		//   Cause:    Cards activated from the deck (reactive effects) had no visual cue to show
-		//             the player which card was about to trigger, making it hard to follow chains.
-		//   Fix:      Pop the source card up from the deck, play the success emphasize or cost-fail
-		//             shake while it is still at the popup peak, then slot it back in before
-		//             playing the remaining effect animations. Skip popup for the revealed card
-		//             using a snapshot because StartCardShuffleEffect clears revealZone during
-		//             logic execution.
+		// VISUAL-FIX(2026-06-30): Off-reveal source cards stay at popup peak during effect animation
+		//   Cause:    Cards activated from the deck were popped up, emphasized, then immediately
+		//             slotted back in before the recorder's own effect animations ran. Many effects
+		//             then captured their own PopUp/PopUpBatch, causing a second popup/slotin cycle.
+		//   Fix:      Pop the source card up, play emphasize/shake while it stays at peak, then play
+		//             the recorder's effect animations. Skip redundant PopUp/PopUpBatch requests for
+		//             cards already at peak. Slot the source card back in once after its own requests
+		//             finish, unless an effect already slotted it in.
 		//   Affects:  RecorderAnimationPlayer, CombatUXManager, CardPhysObjScript, EffectRecorder, EffectChainManager, CostNEffectContainer
 		//   Regress:  Trigger a reactive deck effect (e.g. afterShuffle StageSelf, onMeGotPower);
-		//             verify popup -> emphasize -> slotin -> effect animation order.
+		//             verify popup -> emphasize -> stay at peak -> effect animation -> slotin.
 		//             Trigger a cost-fail reaction; verify popup -> shake -> slotin (no emphasize).
 		//             Reveal Start Card and verify it does NOT popup before its shuffle animation.
 		bool sourceNeedsPopup = recorder.animationRequests.Count > 0
@@ -124,26 +124,57 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 		}
 
-		// Return the source card to the deck before the remaining effect animations run.
-		if (sourceNeedsPopup)
-		{
-			yield return StartCoroutine(SlotInSourceCardCoroutine(recorder.cardObject));
-		}
-
 		// Pre-scan to mark StatusEffectChange requests that should defer display commit
 		// until their corresponding StatusEffectProjectile animation completes
 		MarkDeferredDisplayCommits(recorder);
 
-		// Play all remaining requests of this effect instance sequentially
+		// Play all remaining requests of this effect instance sequentially.
+		// Skip redundant popups for cards already at the popup peak (e.g. the source card
+		// popped up above, or a card already lifted by an earlier request in this recorder).
 		foreach (var request in recorder.animationRequests)
 		{
-			if (request != null)
-			{
-				// Shake was already played above for cost-fail recorders.
-				if (recorder.isCostFailRecorder && request.type == AnimationRequestType.Shake)
-					continue;
+			if (request == null) continue;
 
-				yield return StartCoroutine(PlayRequestCoroutine(request));
+			// Shake was already played above for cost-fail recorders.
+			if (recorder.isCostFailRecorder && request.type == AnimationRequestType.Shake)
+				continue;
+
+			if (request.type == AnimationRequestType.PopUp)
+			{
+				var phys = GetPhysicalCardScript(request.targetCard);
+				if (phys != null && phys.isPoppedUp)
+					continue;
+			}
+			else if (request.type == AnimationRequestType.PopUpBatch)
+			{
+				var filtered = new List<GameObject>();
+				if (request.targetCards != null)
+				{
+					foreach (var card in request.targetCards)
+					{
+						if (card == null) continue;
+						var phys = GetPhysicalCardScript(card);
+						if (phys != null && phys.isPoppedUp)
+							continue;
+						filtered.Add(card);
+					}
+				}
+				if (filtered.Count == 0) continue;
+				request.targetCards = filtered;
+			}
+
+			yield return StartCoroutine(PlayRequestCoroutine(request));
+		}
+
+		// Return the source card to the deck once its own effect animations are done.
+		// If the effect already slotted it in (e.g. StatusEffect SlotInBatch / Stage Batch),
+		// isPoppedUp will be false and we skip the redundant slot-in.
+		if (sourceNeedsPopup && recorder.cardObject != null)
+		{
+			var sourcePhys = GetPhysicalCardScript(recorder.cardObject);
+			if (sourcePhys != null && sourcePhys.isPoppedUp)
+			{
+				yield return StartCoroutine(SlotInSourceCardCoroutine(recorder.cardObject));
 			}
 		}
 
@@ -160,6 +191,19 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		}
 
 		_currentRecorder = previousRecorder;
+	}
+
+	/// <summary>
+	/// Helper to get the CardPhysObjScript for a logical card via the current visuals.
+	/// </summary>
+	private CardPhysObjScript GetPhysicalCardScript(GameObject logicalCard)
+	{
+		if (logicalCard == null || CombatManager.Me == null) return null;
+		var visuals = CombatManager.Me.visuals;
+		if (visuals == null) return null;
+		var physicalCard = visuals.GetPhysicalCard(logicalCard);
+		if (physicalCard == null) return null;
+		return physicalCard.GetComponent<CardPhysObjScript>();
 	}
 
 	/// <summary>
@@ -191,7 +235,11 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		seq.Append(physicalCard.transform.DOScale(originalScale, halfDuration).SetEase(Ease.OutQuad));
 		seq.OnComplete(() =>
 		{
-			physScript.isPlayingSpecialAnimation = false;
+			// VISUAL-FIX(2026-06-30): Keep popped-up source cards at peak through effect animation.
+			//   If the card is still in popup state, do not clear isPlayingSpecialAnimation here;
+			//   SlotInCard / MoveCardWithAnimation will clear it when the card returns to deck.
+			if (!physScript.isPoppedUp)
+				physScript.isPlayingSpecialAnimation = false;
 			AnimationStateTracker.me?.CompleteAnimation();
 			done = true;
 		});

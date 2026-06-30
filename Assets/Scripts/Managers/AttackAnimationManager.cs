@@ -264,6 +264,9 @@ public void ReleaseDeckFocus()
 		Vector3 targetPos = targetTransform.position;
 		Vector3 originalScale = physicalCard.transform.localScale;
 
+		// Capture popup state so we can keep the card at peak if it was popped up for an off-reveal effect.
+		bool wasPoppedUp = physScript.isPoppedUp;
+
 		// Mark that special animation is playing to prevent CardPhysObjScript from overriding DOTween
 		physScript.isPlayingSpecialAnimation = true;
 
@@ -301,18 +304,29 @@ public void ReleaseDeckFocus()
 			}
 			else
 			{
-				// Return to deck position (respects focus offset)
-				int deckIndex = _combatUXManager.GetPhysicalCardDeckIndex(physicalCard);
-				Vector3 deckPos = deckIndex >= 0
-					? _combatUXManager.CalculatePositionAtIndex(deckIndex)
-					: startPos;
+				// Return to deck position (respects focus offset), or back to popup peak if the card
+				// was popped up for an off-reveal effect animation.
+				Vector3 deckPos;
+				if (wasPoppedUp)
+				{
+					deckPos = startPos;
+				}
+				else
+				{
+					int deckIndex = _combatUXManager.GetPhysicalCardDeckIndex(physicalCard);
+					deckPos = deckIndex >= 0
+						? _combatUXManager.CalculatePositionAtIndex(deckIndex)
+						: startPos;
+				}
 				yield return ReturnToDeckFromOvershootAnimation(physicalCard, deckPos, originalScale);
 			}
 		}
 		finally
 		{
-			// Ensure special animation flag is always restored
-			physScript.isPlayingSpecialAnimation = false;
+			// Ensure special animation flag is always restored, unless the card should remain at
+			// the popup peak until the caller slots it back in.
+			if (!wasPoppedUp)
+				physScript.isPlayingSpecialAnimation = false;
 			
 			// Update CardPhysObjScript target position to prevent snapping
 			if (isInRevealZone)
@@ -322,6 +336,12 @@ public void ReleaseDeckFocus()
 
 				physScript.SetTargetPosition(revealPos);
 				physScript.SetTargetScale(revealSize);
+			}
+			else if (wasPoppedUp)
+			{
+				// Keep target at the popup peak so the final SlotIn can animate from the correct position.
+				physScript.SetTargetPosition(startPos);
+				physScript.SetTargetScale(originalScale);
 			}
 			else
 			{

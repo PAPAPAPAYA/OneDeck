@@ -95,6 +95,8 @@ public class CardPhysObjScript : MonoBehaviour
 	public bool isPlayingSpecialAnimation = false;
 	[Tooltip("Is pending slot-in animation (e.g. new card added by AddTempCard waiting for its SlotIn). Used by ApplyAnimationResult and CalculatePositionAtIndex to exclude pending cards from active deck count.")]
 	public bool isPendingSlotIn = false;
+	[Tooltip("Is currently popped up to peak position (PopUpCard/MoveCardToPopUpPosition). Cleared by SlotInCard or any deck-move animation that ends at a deck position.")]
+	public bool isPoppedUp = false;
 
 
 	[HideInInspector]

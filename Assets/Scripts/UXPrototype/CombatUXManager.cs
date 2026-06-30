@@ -479,6 +479,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			UnblockInput(this);
 
 			physScript.isPlayingSpecialAnimation = false;
+			physScript.isPoppedUp = false;
 
 			// If pending reveal zone move, go directly to reveal zone instead of default target
 			if (physScript.pendingRevealZoneMove)
@@ -664,6 +665,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				slotSeq.OnComplete(() =>
 				{
 					physScript.isPlayingSpecialAnimation = false;
+					physScript.isPoppedUp = false;
 					physScript.SetTargetPosition(targetPos);
 					physScript.SetTargetScale(physicalCardDeckSize);
 
@@ -903,6 +905,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				if (physScript != null)
 				{
 					physScript.isPlayingSpecialAnimation = false;
+					physScript.isPoppedUp = false;
 					physScript.SetTargetPosition(targetPos);
 					physScript.SetTargetScale(physicalCardDeckSize);
 				}
@@ -2462,7 +2465,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	/// <summary>
 	/// ICombatVisuals: Pop Up a card from its current position so the player can see it clearly.
-	/// Sets isPlayingSpecialAnimation=true. Card remains at peak until SlotIn is called.
+	/// Sets isPlayingSpecialAnimation=true and isPoppedUp=true. Card remains at peak until SlotIn is called.
 	/// </summary>
 	public void PopUpCard(GameObject logicalCard, Action onComplete = null)
 	{
@@ -2493,6 +2496,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
 
 		physScript.isPlayingSpecialAnimation = true;
+		physScript.isPoppedUp = true;
+		physScript.SetTargetPosition(peakPos);
+		physScript.SetTargetScale(peakScale);
 		AnimationStateTracker.me?.RegisterAnimation();
 		BlockInput(this);
 
@@ -2513,7 +2519,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	/// <summary>
 	/// ICombatVisuals: Slot In a card from its pop-up position back to its correct deck position.
-	/// Clears isPlayingSpecialAnimation and syncs target position/scale.
+	/// Clears isPlayingSpecialAnimation/isPoppedUp and syncs target position/scale.
 	/// </summary>
 	public void SlotInCard(GameObject logicalCard, Action onComplete = null)
 	{
@@ -2545,6 +2551,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			{
 				physScript.isPlayingSpecialAnimation = false;
 				physScript.isPendingSlotIn = false;
+				physScript.isPoppedUp = false;
 				onComplete?.Invoke();
 				return;
 			}
@@ -2560,6 +2567,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			{
 				physScript.isPlayingSpecialAnimation = false;
 				physScript.isPendingSlotIn = false;
+				physScript.isPoppedUp = false;
 				physScript.SetTargetPosition(originalPos);
 				physScript.SetTargetScale(originalScale);
 				AnimationStateTracker.me?.CompleteAnimation();
@@ -2589,6 +2597,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			physScript.isPlayingSpecialAnimation = false;
 			physScript.isPendingSlotIn = false;
+			physScript.isPoppedUp = false;
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
 			AnimationStateTracker.me?.CompleteAnimation();
@@ -2642,6 +2651,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		TestManager.Log("[CombatUXManager] MoveCardToPopUpPosition logical=" + logicalCard.name + " deckIndex=" + deckIndex + " deckPos=" + deckPos + " peakPos=" + peakPos + " isPending=" + physScript.isPendingSlotIn);
 
 		physScript.isPlayingSpecialAnimation = true;
+		physScript.isPoppedUp = true;
+		physScript.SetTargetPosition(peakPos);
+		physScript.SetTargetScale(peakScale);
 		AnimationStateTracker.me?.RegisterAnimation();
 		BlockInput(this);
 
