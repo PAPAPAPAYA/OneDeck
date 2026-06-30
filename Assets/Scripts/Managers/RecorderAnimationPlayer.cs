@@ -92,12 +92,37 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		//             verify popup -> emphasize -> stay at peak -> effect animation -> slotin.
 		//             Trigger a cost-fail reaction; verify popup -> shake -> slotin (no emphasize).
 		//             Reveal Start Card and verify it does NOT popup before its shuffle animation.
+
+		// VISUAL-FIX(2026-06-30): Chained off-reveal attacks popup the next card before focus transition
+		//   Cause:    RecorderAnimationPlayer popped the source card up before playing its requests.
+		//             The Attack request then called FocusOnCardCoroutine/TransitionFocusCoroutine,
+		//             so the deck transition happened after the popup, making the next attack look
+		//             like it started while the deck was still adjusting.
+		//   Affects:  RecorderAnimationPlayer, CombatUXManager, AttackAnimationManager
+		//   Regress:  Trigger a chain of two off-reveal attacks (e.g. BOOSTER StageSelf ->
+		//             two GOBLIN_CHARGE_TEAM OnMeStaged). Verify the focus transition to the
+		//             second card completes before its popup starts.
+		//   Related:  Card_GOBLIN_CHARGE_TEAM, Card_BOOSTER
 		bool sourceNeedsPopup = recorder.animationRequests.Count > 0
 			&& recorder.cardObject != null
 			&& !recorder.sourceWasInRevealZone;
 
 		if (sourceNeedsPopup)
 		{
+			// Focus deck on the source card before popping it up.
+			// This lets the smart focus transition finish first, so the next attack
+			// does not appear to start while the deck is still transitioning.
+			var sourceCardScript = recorder.cardObject.GetComponent<CardScript>();
+			if (sourceCardScript != null && CombatManager.Me != null)
+			{
+				var visuals = CombatManager.Me.visuals;
+				var combatUX = visuals as CombatUXManager;
+				if (combatUX != null && combatUX.enablePeelDeck)
+				{
+					yield return combatUX.StartCoroutine(combatUX.FocusOnCardCoroutine(sourceCardScript));
+				}
+			}
+
 			yield return StartCoroutine(PlayOffRevealPopupCoroutine(recorder.cardObject));
 		}
 
@@ -216,6 +241,8 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		var visuals = CombatManager.Me.visuals;
 		if (visuals == null) yield break;
 
+		TestManager.Log("[RecorderAnimationPlayer] PlayEmphasizeAnimation START card=" + logicalCard.name + " time=" + Time.time);
+
 		GameObject physicalCard = visuals.GetPhysicalCard(logicalCard);
 		if (physicalCard == null) yield break;
 
@@ -260,9 +287,13 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		var visuals = CombatManager.Me.visuals;
 		if (visuals == null) yield break;
 
+		TestManager.Log("[RecorderAnimationPlayer] PlayOffRevealPopupCoroutine START card=" + logicalCard.name + " time=" + Time.time);
+
 		bool popupDone = false;
 		visuals.PopUpCard(logicalCard, () => popupDone = true);
 		yield return new WaitUntil(() => popupDone);
+
+		TestManager.Log("[RecorderAnimationPlayer] PlayOffRevealPopupCoroutine END card=" + logicalCard.name + " time=" + Time.time);
 	}
 
 	/// <summary>

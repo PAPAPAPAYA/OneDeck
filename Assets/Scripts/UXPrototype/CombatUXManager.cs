@@ -1273,6 +1273,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			yield break;
 		}
 
+		TestManager.Log("[CombatUXManager] FocusOnCardCoroutine START target=" + targetCard.name + " targetIndex=" + targetIndex + " isFocused=" + _isDeckFocused + " currentFocus=" + (_currentFocusCard != null ? _currentFocusCard.name : "null") + " time=" + Time.time);
+
 		if (!_isDeckFocused)
 		{
 
@@ -1301,6 +1303,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		_currentFocusCard = targetCard;
 		_isDeckFocused = true;
 
+		TestManager.Log("[CombatUXManager] FocusOnCardCoroutine END target=" + targetCard.name + " time=" + Time.time);
+
 	}
 
 	/// <summary>
@@ -1309,6 +1313,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	private IEnumerator StartPeelCoroutine(int targetIndex)
 	{
 
+		TestManager.Log("[CombatUXManager] StartPeelCoroutine START targetIndex=" + targetIndex + " time=" + Time.time);
 		
 		var count = physicalCardsInDeck.Count;
 		if (count == 0 || targetIndex < 0 || targetIndex >= count)
@@ -1405,6 +1410,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		yield return new WaitUntil(() => animCompletedCount >= animTotalCount);
 
 		AnimationStateTracker.me?.CompleteAnimation();
+
+		TestManager.Log("[CombatUXManager] StartPeelCoroutine END targetIndex=" + targetIndex + " time=" + Time.time);
 	}
 
 	/// <summary>
@@ -1412,6 +1419,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private IEnumerator TransitionFocusCoroutine(int newTargetIndex, int currentTargetIndex)
 	{
+
+		TestManager.Log("[CombatUXManager] TransitionFocusCoroutine START newIndex=" + newTargetIndex + " currentIndex=" + currentTargetIndex + " time=" + Time.time);
 
 		var count = physicalCardsInDeck.Count;
 		if (count == 0 || newTargetIndex < 0 || newTargetIndex >= count)
@@ -1495,6 +1504,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Update peeled state
 		_peeledCards = newPeeledCards;
+
+		TestManager.Log("[CombatUXManager] TransitionFocusCoroutine END newIndex=" + newTargetIndex + " currentIndex=" + currentTargetIndex + " time=" + Time.time);
 	}
 
 	/// <summary>

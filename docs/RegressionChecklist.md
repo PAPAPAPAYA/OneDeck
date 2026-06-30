@@ -40,6 +40,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | # | Scenario | System / Effect | Fixed Date | Status | Verification |
 |---|----------|-----------------|------------|--------|--------------|
 | 6 | Deck-move animations play in wrong peeled/focused layout | `RecorderAnimationPlayer`, `CombatUXManager` | 2026-05-18 | ✅ | **Step:** Click a card to focus deck, then reveal Bury/Stage card<br>**Check:** Animation uses normal (non-focused) layout |
+| 36 | Chained off-reveal attacks popup before focus transition | `RecorderAnimationPlayer`, `CombatUXManager`, `AttackAnimationManager` | 2026-06-30 | ⚠️ | **Card:** BOOSTER (`StageSelf` → two `GOBLIN_CHARGE_TEAM` `OnMeStaged`)<br>**Check:** After the first off-reveal attack ends, the deck focus transitions to the second card **before** it pops up/emphasizes. The popup does not start while the deck is still transitioning. |
 
 ## Cost Check Feedback
 

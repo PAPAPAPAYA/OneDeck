@@ -51,10 +51,10 @@
 	// replay
 	// statistic
 	// animation speed
- #endregion
- 
- #region visual
- 	//todo when card pops up and emphasize or shake, detect if still need to pop, if so, don't slot in
+	//// when card pops up and emphasize or shake, detect if still need to pop, if so, don't slot in
+	//// after peel deck, need to wait for it until next animation
+	//todo don't popup if attack in deck
+	//todo check and update regression checklist
  #endregion
  
  #endregion

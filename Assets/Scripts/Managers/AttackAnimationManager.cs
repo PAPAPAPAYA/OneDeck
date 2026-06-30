@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DefaultNamespace.Managers;
 using DG.Tweening;
 using MilkShake;
 using UnityEngine;
@@ -179,6 +180,11 @@ public void ReleaseDeckFocus()
 	private IEnumerator PlayAttackAnimationCoroutine(AttackAnimData data)
 	{
 		isPlayingAttackAnimation = true;
+
+		// Get physical card
+		CardScript cardScript = data.attackerLogicalCard.GetComponent<CardScript>();
+
+		TestManager.Log("[RecorderAnimationPlayer] PlayAttackAnimationCoroutine START attacker=" + (cardScript != null ? cardScript.name : "null") + " isInRevealZone=" + (_combatManager != null && _combatManager.revealZone == data.attackerLogicalCard) + " time=" + Time.time);
 		
 		// Block player input
 		if (_combatManager != null)
@@ -187,7 +193,6 @@ public void ReleaseDeckFocus()
 		}
 
 		// Get physical card
-		CardScript cardScript = data.attackerLogicalCard.GetComponent<CardScript>();
 		if (cardScript == null)
 		{
 
@@ -245,7 +250,9 @@ public void ReleaseDeckFocus()
 		if (!isInRevealZone)
 		{
 
+			TestManager.Log("[RecorderAnimationPlayer] PlayAttackAnimationCoroutine calling FocusOnCardCoroutine attacker=" + cardScript.name + " time=" + Time.time);
 			yield return StartCoroutine(_combatUXManager.FocusOnCardCoroutine(cardScript));
+			TestManager.Log("[RecorderAnimationPlayer] PlayAttackAnimationCoroutine FocusOnCardCoroutine DONE attacker=" + cardScript.name + " time=" + Time.time);
 
 		}
 		else
@@ -357,6 +364,8 @@ public void ReleaseDeckFocus()
 
 		// Mark animation complete
 		isPlayingAttackAnimation = false;
+
+		TestManager.Log("[RecorderAnimationPlayer] PlayAttackAnimationCoroutine END attacker=" + (cardScript != null ? cardScript.name : "null") + " time=" + Time.time);
 		
 		// Restore player input
 		ReleasePlayerInput();

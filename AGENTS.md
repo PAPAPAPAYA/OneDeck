@@ -13,7 +13,7 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 | **Encoding** | UTF-8 only |
 
 ## Agent Behavior
-- **Code Changes**: Do not execute code modifications unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
+- **Code Changes**: Do not execute code modifications except adding logs, unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
 - **Document Format**: If any non Unity-generated file is found to violate the CRLF + Tab leading-indent standard, convert it to the compliant format before editing.
 
 ## Core Loop
