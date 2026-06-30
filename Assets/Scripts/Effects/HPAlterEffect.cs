@@ -38,6 +38,8 @@ public class HPAlterEffect : EffectScript
 	public IntSO enemyIntSO;
 	
 	[Header("Dynamic Damage Display")]
+	[Tooltip("Key used for <dmg:key> placeholders. Leave empty to act as the default <dmg> source. Do NOT include the 'dmg:' prefix; for <dmg:foo>, enter 'foo'.")]
+	public string damageDisplayKey = "";
 	[Tooltip("Optional real-time damage source to append in parentheses at the end of the card description")]
 	public DynamicDmgDisplaySource dynamicDmgDisplaySource = DynamicDmgDisplaySource.None;
 	[Tooltip("If true, self Power multiplies the displayed damage (e.g. X hits each dealing 1+Power). Otherwise self Power is added.")]

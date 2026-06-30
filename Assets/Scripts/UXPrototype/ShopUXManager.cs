@@ -114,11 +114,13 @@ public class ShopUXManager : MonoBehaviour
 				physObjScript.SetScaleImmediate(Vector3.zero);
 				physObjScript.SetTargetScale(physCardSize);
 				
-				// Set card description
-				if (physObjScript.cardDescPrint != null)
-				{
-					physObjScript.cardDescPrint.text = cardScript.cardDesc;
-				}
+				// VISUAL-FIX(2026-06-30): Shop cards show raw <dmg> placeholders instead of damage numbers
+				//   Cause:    ShopUXManager initialized cardDescPrint.text with raw cardDesc,
+				//             bypassing CardScript.GetCardDescForDisplay() used in combat
+				//   Affects:  ShopUXManager, CardPhysObjScript, CardScript
+				//   Regress:  Enter Shop phase and check that cards with <dmg> show numeric damage
+				//   Related:  GOBLIN_CHARGE_TEAM, any card with <dmg> or <dmg:key>
+				SetShopCardDescription(physObjScript, cardScript);
 			}
 			else
 			{
@@ -240,11 +242,13 @@ public class ShopUXManager : MonoBehaviour
 				physObjScript.SetScaleImmediate(Vector3.zero);
 				physObjScript.SetTargetScale(physCardSize);
 				
-				// Set card description
-				if (physObjScript.cardDescPrint != null)
-				{
-					physObjScript.cardDescPrint.text = cardScript.cardDesc;
-				}
+				// VISUAL-FIX(2026-06-30): Shop cards show raw <dmg> placeholders instead of damage numbers
+				//   Cause:    ShopUXManager initialized cardDescPrint.text with raw cardDesc,
+				//             bypassing CardScript.GetCardDescForDisplay() used in combat
+				//   Affects:  ShopUXManager, CardPhysObjScript, CardScript
+				//   Regress:  Enter Shop phase and check that cards with <dmg> show numeric damage
+				//   Related:  GOBLIN_CHARGE_TEAM, any card with <dmg> or <dmg:key>
+				SetShopCardDescription(physObjScript, cardScript);
 			}
 			else
 			{
@@ -766,11 +770,13 @@ public class ShopUXManager : MonoBehaviour
 				physObjScript.SetScaleImmediate(Vector3.zero);
 				physObjScript.SetTargetScale(physCardSize);
 				
-				// Set card description
-				if (physObjScript.cardDescPrint != null)
-				{
-					physObjScript.cardDescPrint.text = cardScript.cardDesc;
-				}
+				// VISUAL-FIX(2026-06-30): Shop cards show raw <dmg> placeholders instead of damage numbers
+				//   Cause:    ShopUXManager initialized cardDescPrint.text with raw cardDesc,
+				//             bypassing CardScript.GetCardDescForDisplay() used in combat
+				//   Affects:  ShopUXManager, CardPhysObjScript, CardScript
+				//   Regress:  Enter Shop phase and check that cards with <dmg> show numeric damage
+				//   Related:  GOBLIN_CHARGE_TEAM, any card with <dmg> or <dmg:key>
+				SetShopCardDescription(physObjScript, cardScript);
 			}
 			else
 			{
@@ -783,5 +789,15 @@ public class ShopUXManager : MonoBehaviour
 		}
 		
 		// Debug.Log($"[ShopUXManager] Reroll complete, spawned {_spawnedShopCards.Count} new shop cards.");
+	}
+
+	/// <summary>
+	/// Sets the card description on a shop physical card, resolving dynamic &lt;dmg&gt; placeholders.
+	/// Centralizes the description initialization for all shop spawn paths.
+	/// </summary>
+	private void SetShopCardDescription(CardPhysObjScript physObjScript, CardScript cardScript)
+	{
+		if (physObjScript == null || physObjScript.cardDescPrint == null || cardScript == null) return;
+		physObjScript.cardDescPrint.text = cardScript.GetCardDescForDisplay();
 	}
 }

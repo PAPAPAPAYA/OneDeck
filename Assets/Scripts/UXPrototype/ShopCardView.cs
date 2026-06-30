@@ -215,7 +215,12 @@ public class ShopCardView : MonoBehaviour
 		}
 
 		_isEnlarged = true;
-		// Debug.Log("[ShopCardView] Card enlarged: " + (_cardPhysObj.cardImRepresenting != null ? _cardPhysObj.cardImRepresenting.gameObject.name : "null"));
+
+		// DIAGNOSTIC: log dynamic damage resolution state when player enlarges a shop card.
+		if (_cardPhysObj != null && _cardPhysObj.cardImRepresenting != null)
+		{
+			_cardPhysObj.cardImRepresenting.LogDynamicDamageDiagnostics("ShopEnlarge");
+		}
 	}
 
 	/// <summary>

@@ -78,6 +78,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | # | Scenario | System / Effect | Fixed Date | Status | Verification |
 |---|----------|-----------------|------------|--------|--------------|
 | 32 | Dynamic damage `<dmg>` placeholder shows as raw text during attack animation | `CardScript`, `RecorderAnimationPlayer` | 2026-06-21 | ⚠️ | **Card:** UNFINISHED_ROBOT (or any card with `<dmg>` in description that also receives a pending StatusEffectChange during its attack animation).<br>**Check:** During the attack animation, the card description shows the resolved number (e.g. `0 (+1)`) instead of `<dmg>`; Console shows no `[DynamicDamageDisplay] ... raw <dmg> ...` warnings. |
+| 33 | Shop cards show raw `<dmg>` / `<dmg:key>` placeholders instead of damage numbers | `ShopUXManager`, `CardPhysObjScript`, `CardScript` | 2026-06-30 | ⚠️ | **Card:** Any card with `<dmg>` or `<dmg:key>` in description (e.g. GOBLIN_CHARGE_TEAM).<br>**Check:** Enter Shop phase and verify the card description shows numeric damage values instead of raw placeholders. |
 
 ---
 

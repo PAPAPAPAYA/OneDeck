@@ -1,17 +1,29 @@
  //! devlog
  #region v 0.2.1
  
+ #region clean up
+ 
+ #endregion
+ 
+ #region card
+	
+ #endregion
+ 
  #region  tool
  	// proper play mode tester skill
  	// debug skill
  #endregion
  
  #region text
+	// world building
 	// localization stringSO to store chinese translation
+	//// goblin charge team dmg text
+		//// dynamic dmg display is wrong
  #endregion
  
  #region shop
-	// lock shop items
+	//// check for purse value when rerolling
+	//  lock shop items
 	// show description when card clicked in shop
 	// enemy deck hint
 	// recover heart card
@@ -42,7 +54,7 @@
  #endregion
  
  #region visual
- 	// when card pops up and emphasize or shake, detect if still need to pop, if so, don't slot in
+ 	//todo when card pops up and emphasize or shake, detect if still need to pop, if so, don't slot in
  #endregion
  
  #endregion

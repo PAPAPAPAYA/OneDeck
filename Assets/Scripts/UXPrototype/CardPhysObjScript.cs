@@ -295,7 +295,7 @@ public class CardPhysObjScript : MonoBehaviour
 		string displayDesc = cardImRepresenting.GetCardDescForDisplay();
 		cardDescPrint.text = displayDesc;
 
-		if (displayDesc != null && displayDesc.Contains("<dmg>") && cardImRepresenting.HasDisplaySnapshot)
+		if (displayDesc != null && CardScript.ContainsAnyDamagePlaceholder(displayDesc) && cardImRepresenting.HasDisplaySnapshot)
 		{
 			TestManager.LogWarning("[DynamicDamageDisplay] UpdateCardDescription showing raw <dmg> during snapshot card=" + cardImRepresenting.GetDisplayName() + " cardDesc=[" + cardImRepresenting.cardDesc + "]");
 		}

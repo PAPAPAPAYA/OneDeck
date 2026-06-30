@@ -45,12 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -80,13 +77,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
   extraDmg: 0
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &3371817080769182879
 GameObject:
   m_ObjectHideFlags: 0
@@ -132,12 +133,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  preEffectEvent:
     m_PersistentCalls:
       m_Calls: []
   effectEvent:
@@ -167,13 +165,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
   extraDmg: 2
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: staged
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -225,7 +227,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: GOBLIN_CHARGE_TEAM
   displayName: "\u54E5\u5E03\u6797\u51B2\u950B\u90E8\u961F"
-  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\n\u88AB\u7F6E\u9876:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\n\u88AB\u7F6E\u9876:\u9020\u6210
+    <b><dmg:staged></b> \u4F24\u5BB3"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -235,13 +238,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

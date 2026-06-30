@@ -54,8 +54,12 @@ public class CardScript : MonoBehaviour
 	public List<EnumStorage.Tag> myTags;
 
 	private string _displayCardDesc;
-	private HPAlterEffect _cachedHpAlterEffect;
-	private int _lastDmgPlaceholderLogFrame = -1;
+	[System.NonSerialized]
+	private List<HPAlterEffect> _cachedHpAlterEffects;
+	[System.NonSerialized]
+	private Dictionary<string, HPAlterEffect> _hpAlterByKey;
+	[System.NonSerialized]
+	private HPAlterEffect _defaultHpAlterEffect;
 
 	/// <summary>
 	/// Capture a snapshot of current myStatusEffects for display purposes.
@@ -73,7 +77,7 @@ public class CardScript : MonoBehaviour
 		_hasDisplaySnapshot = true;
 
 		TestManager.Log("[DynamicDamageDisplay] SnapshotDisplayState card=" + GetDisplayName() + " hasSnapshot=" + _hasDisplaySnapshot + " desc=[" + (_displayCardDesc ?? cardDesc) + "]");
-		if (_displayCardDesc != null && _displayCardDesc.Contains("<dmg>"))
+		if (_displayCardDesc != null && ContainsAnyDamagePlaceholder(_displayCardDesc))
 		{
 			TestManager.LogWarning("[DynamicDamageDisplay] SnapshotDisplayState contains raw <dmg>! card=" + GetDisplayName() + " cardDesc=[" + cardDesc + "]");
 		}
@@ -109,7 +113,7 @@ public class CardScript : MonoBehaviour
 		_hasDisplaySnapshot = true;
 
 		TestManager.Log("[DynamicDamageDisplay] SetDisplayBaseline card=" + GetDisplayName() + " baselineCount=" + (baseline != null ? baseline.Count : 0) + " _displayCardDesc recomputed=[" + (_displayCardDesc ?? "null") + "]");
-		if (_displayCardDesc != null && _displayCardDesc.Contains("<dmg>"))
+		if (_displayCardDesc != null && ContainsAnyDamagePlaceholder(_displayCardDesc))
 		{
 			TestManager.LogWarning("[DynamicDamageDisplay] SetDisplayBaseline recomputed desc still contains raw <dmg>! card=" + GetDisplayName() + " cardDesc=[" + cardDesc + "]");
 		}
@@ -163,6 +167,113 @@ public class CardScript : MonoBehaviour
 	public bool HasDisplaySnapshot => _hasDisplaySnapshot;
 
 	/// <summary>
+	/// Caches all HPAlterEffect components on this card and indexes them by damageDisplayKey.
+	/// The first effect with an empty key (or the first effect overall) becomes the default &lt;dmg&gt; source.
+	/// </summary>
+	private void CacheHpAlterEffects()
+	{
+		// Rescan if cache is missing or was previously populated empty.
+		if (_cachedHpAlterEffects != null && _cachedHpAlterEffects.Count > 0) return;
+		HPAlterEffect[] found = GetComponentsInChildren<HPAlterEffect>(true);
+		_cachedHpAlterEffects = new List<HPAlterEffect>(found != null ? found : new HPAlterEffect[0]);
+		_hpAlterByKey = new Dictionary<string, HPAlterEffect>();
+		_defaultHpAlterEffect = null;
+		foreach (var hpAlter in _cachedHpAlterEffects)
+		{
+			if (hpAlter == null) continue;
+			string key = hpAlter.damageDisplayKey ?? "";
+			// Tolerate designers entering 'dmg:foo' instead of 'foo' for <dmg:foo> placeholders.
+			if (!string.IsNullOrEmpty(key) && key.StartsWith("dmg:"))
+				key = key.Substring(4);
+			if (string.IsNullOrEmpty(key))
+			{
+				if (_defaultHpAlterEffect == null)
+					_defaultHpAlterEffect = hpAlter;
+			}
+			else if (!_hpAlterByKey.ContainsKey(key))
+			{
+				_hpAlterByKey.Add(key, hpAlter);
+			}
+		}
+		if (_defaultHpAlterEffect == null && _cachedHpAlterEffects.Count > 0)
+			_defaultHpAlterEffect = _cachedHpAlterEffects[0];
+		TestManager.Log("[DynamicDamageDisplay] CacheHpAlterEffects card=" + GetDisplayName() + " go='" + gameObject.name + "' instanceID=" + gameObject.GetInstanceID() + " childCount=" + transform.childCount + " rawFound=" + (found != null ? found.Length : -1) + " cached=" + _cachedHpAlterEffects.Count + " " + GetHpAlterDiagnosticString());
+	}
+
+	/// <summary>
+	/// Returns the HPAlterEffect that should be used for a damage placeholder.
+	/// Empty key returns the default source; named key returns the matching effect.
+	/// </summary>
+	private HPAlterEffect GetHpAlterEffectForPlaceholder(string key)
+	{
+		CacheHpAlterEffects();
+		if (string.IsNullOrEmpty(key))
+			return _defaultHpAlterEffect;
+		HPAlterEffect result;
+		if (_hpAlterByKey != null && _hpAlterByKey.TryGetValue(key, out result))
+			return result;
+		return null;
+	}
+
+	/// <summary>
+	/// Builds a diagnostic string listing all cached HPAlterEffects and the default source.
+	/// Does NOT trigger a cache rebuild to avoid recursion.
+	/// </summary>
+	private string GetHpAlterDiagnosticString()
+	{
+		int count = _cachedHpAlterEffects != null ? _cachedHpAlterEffects.Count : -1;
+		System.Text.StringBuilder sb = new System.Text.StringBuilder();
+		sb.Append("HPAlterCount=").Append(count);
+		if (_cachedHpAlterEffects != null)
+		{
+			sb.Append(" [");
+			for (int i = 0; i < _cachedHpAlterEffects.Count; i++)
+			{
+				var hpAlter = _cachedHpAlterEffects[i];
+				if (hpAlter == null) continue;
+				if (i > 0) sb.Append(", ");
+				sb.Append("{");
+				sb.Append("idx=").Append(i);
+				sb.Append(" key='").Append(hpAlter.damageDisplayKey ?? "<empty>").Append("'");
+				sb.Append(" baseDmg=").Append(hpAlter.baseDmg != null ? hpAlter.baseDmg.value.ToString() : "NULL");
+				sb.Append(" go='").Append(hpAlter.gameObject.name).Append("'");
+				sb.Append("}");
+			}
+			sb.Append("]");
+		}
+		sb.Append(" default='").Append(_defaultHpAlterEffect != null ? (_defaultHpAlterEffect.damageDisplayKey ?? "<empty>") : "NULL").Append("'");
+		return sb.ToString();
+	}
+
+	/// <summary>
+	/// Logs a one-shot diagnostic dump for dynamic damage display issues.
+	/// Safe to call from UI input handlers (e.g. shop card enlarge).
+	/// </summary>
+	public void LogDynamicDamageDiagnostics(string context)
+	{
+		CacheHpAlterEffects();
+		string computedDesc = GetCardDescForDisplay();
+		HPAlterEffect[] freshEffects = GetComponentsInChildren<HPAlterEffect>(true);
+		TestManager.Log("[DynamicDamageDisplay] DIAGNOSTIC context=" + context +
+			" card=" + GetDisplayName() +
+			" go='" + gameObject.name + "'" +
+			" instanceID=" + gameObject.GetInstanceID() +
+			" childCount=" + transform.childCount +
+			" freshHpAlterCount=" + (freshEffects != null ? freshEffects.Length : -1) +
+			" cachedHpAlterCount=" + (_cachedHpAlterEffects != null ? _cachedHpAlterEffects.Count : -1) +
+			"\ncardDesc=[" + cardDesc + "]\ncomputed=[" + computedDesc + "]\n" +
+			GetHpAlterDiagnosticString());
+	}
+
+	/// <summary>
+	/// Returns true if the description contains any unresolved &lt;dmg&gt; or &lt;dmg:key&gt; placeholder.
+	/// </summary>
+	public static bool ContainsAnyDamagePlaceholder(string desc)
+	{
+		return !string.IsNullOrEmpty(desc) && desc.IndexOf("<dmg") >= 0;
+	}
+
+	/// <summary>
 	/// Returns the card description that should be used for visual display.
 	/// If a display snapshot is active (during animation), returns the snapshot;
 	/// otherwise returns the live computed description with placeholders resolved.
@@ -172,11 +283,7 @@ public class CardScript : MonoBehaviour
 		string result = _hasDisplaySnapshot
 			? (_displayCardDesc ?? ComputeDynamicCardDesc(displayMyStatusEffects))
 			: ComputeDynamicCardDesc();
-		if (result != null && result.Contains("<dmg>") && Time.frameCount != _lastDmgPlaceholderLogFrame)
-		{
-			_lastDmgPlaceholderLogFrame = Time.frameCount;
-			TestManager.LogWarning("[DynamicDamageDisplay] GetCardDescForDisplay returning raw <dmg>! card=" + GetDisplayName() + " hasSnapshot=" + _hasDisplaySnapshot + " _displayCardDesc=" + (_displayCardDesc ?? "null") + " cardDesc=[" + cardDesc + "]");
-		}
+		// Per-frame placeholder warning removed; use LogDynamicDamageDiagnostics() on demand (e.g. shop card enlarge).
 		return result;
 	}
 
@@ -201,41 +308,7 @@ public class CardScript : MonoBehaviour
 		if (string.IsNullOrEmpty(cardDesc))
 			return cardDesc;
 
-		string desc = cardDesc;
-
-		// Replace <dmg> with computed damage value
-		if (desc.Contains("<dmg>"))
-		{
-			if (_cachedHpAlterEffect == null)
-				_cachedHpAlterEffect = GetComponentInChildren<HPAlterEffect>();
-			var hpAlter = _cachedHpAlterEffect;
-			if (hpAlter != null && hpAlter.baseDmg != null)
-			{
-				int baseDmg = hpAlter.baseDmg.value + hpAlter.extraDmg;
-				int powerCount = 0;
-				if (statusEffects != null)
-				{
-					foreach (var se in statusEffects)
-					{
-						if (se == EnumStorage.StatusEffect.Power)
-							powerCount++;
-					}
-				}
-
-				string dmgStr = baseDmg.ToString();
-				if (powerCount > 0)
-					dmgStr += " (+" + powerCount + ")";
-
-				desc = desc.Replace("<dmg>", dmgStr);
-			}
-			else
-			{
-				if (hpAlter == null)
-					TestManager.LogWarning("[DynamicDamageDisplay] ComputeDynamicCardDesc <dmg> found but no HPAlterEffect child on card=" + GetDisplayName());
-				else
-					TestManager.LogWarning("[DynamicDamageDisplay] ComputeDynamicCardDesc <dmg> found but baseDmg is null on card=" + GetDisplayName());
-			}
-		}
+		string desc = ReplaceDamagePlaceholders(cardDesc, statusEffects);
 
 		// Replace <counter> with optional Counter suffix
 		if (desc.Contains("<counter>"))
@@ -258,6 +331,73 @@ public class CardScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Replaces &lt;dmg&gt; and &lt;dmg:key&gt; placeholders with computed damage values.
+	/// Empty key maps to the default HPAlterEffect; named keys map to matching effects.
+	/// </summary>
+	private string ReplaceDamagePlaceholders(string desc, List<EnumStorage.StatusEffect> statusEffects)
+	{
+		if (string.IsNullOrEmpty(desc) || desc.IndexOf("<dmg") < 0)
+			return desc;
+
+		System.Text.StringBuilder sb = new System.Text.StringBuilder();
+		int i = 0;
+		while (i < desc.Length)
+		{
+			int start = desc.IndexOf("<dmg", i);
+			if (start < 0)
+			{
+				sb.Append(desc.Substring(i));
+				break;
+			}
+
+			sb.Append(desc.Substring(i, start - i));
+
+			int end = desc.IndexOf(">", start);
+			if (end < 0)
+			{
+				sb.Append(desc.Substring(start));
+				break;
+			}
+
+			string placeholder = desc.Substring(start, end - start + 1);
+			string key = "";
+			if (placeholder.Length > 5 && placeholder[4] == ':')
+				key = placeholder.Substring(5, placeholder.Length - 6);
+
+			var hpAlter = GetHpAlterEffectForPlaceholder(key);
+			if (hpAlter != null && hpAlter.baseDmg != null)
+			{
+				int baseDmg = hpAlter.baseDmg.value + hpAlter.extraDmg;
+				int powerCount = 0;
+				if (statusEffects != null)
+				{
+					foreach (var se in statusEffects)
+					{
+						if (se == EnumStorage.StatusEffect.Power)
+							powerCount++;
+					}
+				}
+
+				string dmgStr = baseDmg.ToString();
+				if (powerCount > 0)
+					dmgStr += " (+" + powerCount + ")";
+
+				TestManager.Log("[DynamicDamageDisplay] ReplaceDamagePlaceholders resolved placeholder=" + placeholder + " key='" + key + "' to dmg=" + dmgStr + " on card=" + GetDisplayName());
+				sb.Append(dmgStr);
+			}
+			else
+			{
+				sb.Append(placeholder);
+				// Per-frame placeholder warning removed; use LogDynamicDamageDiagnostics() on demand.
+			}
+
+			i = end + 1;
+		}
+
+		return sb.ToString();
+	}
+
+	/// <summary>
 	/// Appends a parenthesized real-time damage estimate to the description
 	/// when the attached HPAlterEffect requests it.
 	/// Returns the original description if no source is configured or data is unavailable.
@@ -272,9 +412,8 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	private string AppendDynamicDamageSuffix(string desc, List<EnumStorage.StatusEffect> statusEffects)
 	{
-		if (_cachedHpAlterEffect == null)
-			_cachedHpAlterEffect = GetComponentInChildren<HPAlterEffect>();
-		var hpAlter = _cachedHpAlterEffect;
+		CacheHpAlterEffects();
+		var hpAlter = _defaultHpAlterEffect;
 		if (hpAlter == null)
 			return desc;
 
