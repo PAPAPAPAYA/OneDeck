@@ -43,6 +43,7 @@ public class ShopManager : MonoBehaviour
 	[Range(1, 6)]
 	public int shopItemAmount;
 	public IntSO payCheck;
+	public IntSO RerollPriceRef;
 	[TextArea]
 	[Tooltip("button prompts and other general info")]
 	public string phaseInfo;
@@ -418,6 +419,8 @@ public class ShopManager : MonoBehaviour
 
 	public void Reroll()
 	{
+		if (RerollPriceRef == null || purse.value < RerollPriceRef.value) return;
+		
 		// First generate new shop item data
 		GenerateShopItems();
 		UpdateShopItemInfo();
@@ -426,7 +429,7 @@ public class ShopManager : MonoBehaviour
 		{
 			ShopStatsManager.Me.RecordReroll();
 		}
-		purse.value--;
+		purse.value -= RerollPriceRef.value;
 		
 		// Notify ShopUXManager to handle reroll animation and regenerate physical cards
 		ShopUXManager.Instance?.OnReroll();
