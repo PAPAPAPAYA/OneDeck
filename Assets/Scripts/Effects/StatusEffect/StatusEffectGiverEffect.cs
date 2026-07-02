@@ -122,14 +122,14 @@ namespace DefaultNamespace.Effects
 			recorder.animationRequests.Add(new AnimationRequest
 			{
 				type = AnimationRequestType.PopUpBatch,
-				targetCards = targetGameObjects
+				targetCards = new List<GameObject>(targetGameObjects)
 			});
 
 			recorder.animationRequests.Add(new AnimationRequest
 			{
 				type = AnimationRequestType.StatusEffectProjectile,
 				attackerCard = myCard,
-				targetCards = targetGameObjects,
+				targetCards = new List<GameObject>(targetGameObjects),
 				projectileCount = projectileCount,
 				projectileCountsPerTarget = projectileCountsPerTarget
 			});
@@ -137,7 +137,7 @@ namespace DefaultNamespace.Effects
 			recorder.animationRequests.Add(new AnimationRequest
 			{
 				type = AnimationRequestType.SlotInBatch,
-				targetCards = targetGameObjects
+				targetCards = new List<GameObject>(targetGameObjects)
 			});
 		}
 		#endregion

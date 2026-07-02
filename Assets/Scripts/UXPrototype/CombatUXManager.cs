@@ -1989,6 +1989,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		TestManager.Log("[CombatUXManager] PlayStatusEffectProjectile for receiver=" + (receiverCard?.name ?? "null") + " — NO PopUp here, only parabolic projectile.");
 		if (statusEffectProjectilePrefab == null || giverCard == null || receiverCard == null)
 		{
+			TestManager.Log("[CombatUXManager] PlayStatusEffectProjectile early return: prefab=" + (statusEffectProjectilePrefab != null) + " giver=" + (giverCard != null) + " receiver=" + (receiverCard != null));
 			onComplete?.Invoke();
 			return;
 		}
@@ -2031,6 +2032,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		TestManager.Log("[CombatUXManager] PlayMultiStatusEffectProjectile START — REAL-TIME path, " + (targetCards?.Count ?? 0) + " targets. reverseDirection=" + reverseDirection + ". NO PopUp/SlotIn here!");
 		if (targetCards == null || targetCards.Count == 0)
 		{
+			TestManager.Log("[CombatUXManager] PlayMultiStatusEffectProjectile early return: no targetCards");
 			onAllComplete?.Invoke();
 			return;
 		}
@@ -2049,6 +2051,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		foreach (var c in effectiveCounts) totalProjectiles += c;
 		if (totalProjectiles <= 0)
 		{
+			TestManager.Log("[CombatUXManager] PlayMultiStatusEffectProjectile early return: totalProjectiles <= 0");
 			onAllComplete?.Invoke();
 			return;
 		}
@@ -2056,6 +2059,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// If prefab is not configured, execute effect directly (no animation)
 		if (statusEffectProjectilePrefab == null || giverCard == null)
 		{
+			TestManager.Log("[CombatUXManager] PlayMultiStatusEffectProjectile early return: prefab=" + (statusEffectProjectilePrefab != null) + " giver=" + (giverCard != null));
 			for (int t = 0; t < targetCards.Count; t++)
 			{
 				var target = targetCards[t];
@@ -2106,6 +2110,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			effectiveOffsetRange = Vector2.zero;
 		}
 
+		TestManager.Log("[CombatUXManager] PlayMultiStatusEffectProjectile spawning " + totalProjectiles + " projectiles for giver=" + giverCard.name);
 		BlockInput(this);
 		AnimationStateTracker.me?.RegisterAnimation();
 
@@ -2186,11 +2191,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		TestManager.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition to " + endPosition + " count=" + projectileCount + " — NO PopUp here, only parabolic projectile.");
 		if (projectileCount <= 0)
 		{
+			TestManager.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition early return: projectileCount <= 0");
 			onComplete?.Invoke();
 			return;
 		}
 		if (statusEffectProjectilePrefab == null || giverCard == null)
 		{
+			TestManager.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition early return: prefab=" + (statusEffectProjectilePrefab != null) + " giver=" + (giverCard != null));
 			onComplete?.Invoke();
 			return;
 		}
@@ -2212,6 +2219,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Single projectile: keep the old simple path (one AnimationStateTracker registration).
 		if (cappedProjectileCount == 1)
 		{
+			TestManager.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition spawning 1 projectile");
 			BuildCardScriptToPhysicalDictionary();
 			Vector3 startPos = GetCardWorldPosition(giverCard) + projectileStartOffset + GetRandomProjectileStartOffset(effectiveOffsetRange);
 			Vector3 endPos = endPosition + projectileEndOffset;
@@ -2220,6 +2228,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 
 		// Multiple projectiles: block input and wait for all to finish.
+		TestManager.Log("[CombatUXManager] PlayStatusEffectProjectileToPosition spawning " + cappedProjectileCount + " projectiles");
 		BlockInput(this);
 		AnimationStateTracker.me?.RegisterAnimation();
 
@@ -2268,6 +2277,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private void SpawnProjectile(Vector3 startPos, Vector3 endPos, Action onComplete)
 	{
+		TestManager.Log("[CombatUXManager] SpawnProjectile START startPos=" + startPos + " endPos=" + endPos + " distance=" + Vector3.Distance(startPos, endPos));
 		GameObject projectile = Instantiate(statusEffectProjectilePrefab, startPos, Quaternion.identity);
 
 		// Calculate parabolic midpoint
@@ -2307,6 +2317,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Animation complete: destroy effect and execute callback
 		projectileSequence.OnComplete(() =>
 		{
+			TestManager.Log("[CombatUXManager] SpawnProjectile COMPLETE startPos=" + startPos + " endPos=" + endPos);
 			AnimationStateTracker.me?.CompleteAnimation();
 			Destroy(projectile);
 			onComplete?.Invoke();

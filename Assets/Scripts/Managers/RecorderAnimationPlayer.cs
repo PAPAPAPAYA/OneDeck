@@ -13,13 +13,28 @@ public class RecorderAnimationPlayer : MonoBehaviour
 	private HashSet<CardScript> _baselineCards = new HashSet<CardScript>();
 	private EffectRecorder _currentRecorder;
 
+	/// <summary>
+	/// Tracks logical cards that are currently being held at the popup peak.
+	/// A card remains held across all recorders that share it as source until the
+	/// pending count reaches zero, at which point it is slotted back in.
+	/// </summary>
+	private HashSet<GameObject> _heldSourceCards = new HashSet<GameObject>();
+
+	/// <summary>
+	/// Pre-computed number of pending recorders that reference each source card.
+	/// Used to defer slot-in until the last recorder for that card finishes.
+	/// </summary>
+	private Dictionary<GameObject, int> _sourceCardPendingCounts = new Dictionary<GameObject, int>();
+
 	void Awake()
 	{
 		me = this;
 	}
 
-	public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
+public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 	{
+		_heldSourceCards.Clear();
+		_sourceCardPendingCounts.Clear();
 		TestManager.Log("[RecorderAnimationPlayer] PlayRecordersCoroutine START rootCount=" + rootRecorders.Count);
 		AttackAnimationManager.me?.HoldDeckFocus();
 		try
@@ -27,6 +42,10 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			// Compute per-card display baselines before any animation plays so that
 			// StatusEffectChange text updates can be applied incrementally per projectile.
 			ComputeAndApplyDisplayBaselines(rootRecorders);
+
+			// Compute how many recorders reference each source card so slot-in can be
+			// deferred until the last recorder for that card finishes playing.
+			ComputeSourceCardPendingCounts(rootRecorders);
 
 			foreach (var rootRecorder in rootRecorders)
 			{
@@ -55,10 +74,16 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				if (card != null) card.CommitDisplayState();
 			}
 			_baselineCards.Clear();
+
+			// Safety: any source card still held (e.g. interrupted playback) is released
+			// from the held set. We do not attempt a visual slot-in here because game state
+			// may be inconsistent; clearing the set prevents stale state on the next batch.
+			_heldSourceCards.Clear();
+			_sourceCardPendingCounts.Clear();
 		}
 	}
 
-	public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
+public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 	{
 		if (recorder == null || recorder.animationPlayed) yield break;
 		if (recorder.gameObject == null)
@@ -79,51 +104,85 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			reqSummary += "[" + i + "]" + (r != null ? r.type.ToString() : "null") + " ";
 		}
 
-		// VISUAL-FIX(2026-06-30): Off-reveal source cards stay at popup peak during effect animation
-		//   Cause:    Cards activated from the deck were popped up, emphasized, then immediately
-		//             slotted back in before the recorder's own effect animations ran. Many effects
-		//             then captured their own PopUp/PopUpBatch, causing a second popup/slotin cycle.
-		//   Fix:      Pop the source card up, play emphasize/shake while it stays at peak, then play
-		//             the recorder's effect animations. Skip redundant PopUp/PopUpBatch requests for
-		//             cards already at peak. Slot the source card back in once after its own requests
-		//             finish, unless an effect already slotted it in.
-		//   Affects:  RecorderAnimationPlayer, CombatUXManager, CardPhysObjScript, EffectRecorder, EffectChainManager, CostNEffectContainer
-		//   Regress:  Trigger a reactive deck effect (e.g. afterShuffle StageSelf, onMeGotPower);
-		//             verify popup -> emphasize -> stay at peak -> effect animation -> slotin.
-		//             Trigger a cost-fail reaction; verify popup -> shake -> slotin (no emphasize).
-		//             Reveal Start Card and verify it does NOT popup before its shuffle animation.
+		// VISUAL-FIX(2026-07-01): Centralize off-reveal source-card popup/slotin in RecorderAnimationPlayer
+		//   Cause:    PopUp/SlotIn logic was split between RecorderAnimationPlayer auto-handling and
+		//             individual effect-captured requests. Each recorder independently popped up and
+		//             slotted in its source card, causing the same card to bounce when multiple
+		//             recorders (e.g. multiple CostNEffectContainers or reactive children) targeted it.
+		//   Fix:      Pop up an off-reveal source card the first time any recorder needs it, keep it
+		//             at peak across all recorders that share the same source, and slot it in once
+		//             the last such recorder finishes. Built-in PopUp/SlotIn requests are kept as
+		//             fallback for target cards; duplicates targeting the source card are skipped.
+		//             Attack recorders reuse an existing popup instead of peel-focus when the source
+		//             is already held; otherwise they keep peel-deck focus and skip the emphasize
+		//             scale pulse so the attack animation is the sole source-card feedback.
+		//   Affects:  RecorderAnimationPlayer
+		//   Regress:  Trigger a card with multiple CostNEffectContainers (some cost-fail, some success)
+		//             while off-reveal. Verify popup -> shake(s) / emphasize(s) / effect animations
+		//             -> single slotin. Also verify off-reveal Attack still peels/focuses correctly
+		//             and does NOT play emphasize.
 
-		// VISUAL-FIX(2026-06-30): Chained off-reveal attacks popup the next card before focus transition
-		//   Cause:    RecorderAnimationPlayer popped the source card up before playing its requests.
-		//             The Attack request then called FocusOnCardCoroutine/TransitionFocusCoroutine,
-		//             so the deck transition happened after the popup, making the next attack look
-		//             like it started while the deck was still adjusting.
-		//   Affects:  RecorderAnimationPlayer, CombatUXManager, AttackAnimationManager
-		//   Regress:  Trigger a chain of two off-reveal attacks (e.g. BOOSTER StageSelf ->
-		//             two GOBLIN_CHARGE_TEAM OnMeStaged). Verify the focus transition to the
-		//             second card completes before its popup starts.
-		//   Related:  Card_GOBLIN_CHARGE_TEAM, Card_BOOSTER
-		bool sourceNeedsPopup = recorder.animationRequests.Count > 0
+		bool sourceIsOffReveal = recorder.animationRequests.Count > 0
 			&& recorder.cardObject != null
 			&& !recorder.sourceWasInRevealZone;
+		bool sourceNeedsPeelFocus = sourceIsOffReveal && HasAttackRequest(recorder);
+		bool sourceNeedsPopup = sourceIsOffReveal && !HasAttackRequest(recorder);
 
-		if (sourceNeedsPopup)
+		TestManager.Log("[RecorderAnimationPlayer] sourceWasInRevealZone=" + recorder.sourceWasInRevealZone + " sourceIsOffReveal=" + sourceIsOffReveal + " sourceNeedsPopup=" + sourceNeedsPopup + " sourceNeedsPeelFocus=" + sourceNeedsPeelFocus);
+
+		if (sourceNeedsPeelFocus && recorder.cardObject != null)
 		{
-			// Focus deck on the source card before popping it up.
-			// This lets the smart focus transition finish first, so the next attack
-			// does not appear to start while the deck is still transitioning.
-			var sourceCardScript = recorder.cardObject.GetComponent<CardScript>();
-			if (sourceCardScript != null && CombatManager.Me != null)
+			// Only peel if the card has not already been popped up by another recorder.
+			// If a built-in request (e.g. MoveToTopPopUpBatch) already slotted it back in,
+			// remove the stale held state so the attack path can still use peel focus.
+			bool shouldPeelFocus = true;
+			if (_heldSourceCards.Contains(recorder.cardObject))
 			{
-				var visuals = CombatManager.Me.visuals;
-				var combatUX = visuals as CombatUXManager;
-				if (combatUX != null && combatUX.enablePeelDeck)
+				var sourcePhys = GetPhysicalCardScript(recorder.cardObject);
+				if (sourcePhys != null && !sourcePhys.isPoppedUp)
 				{
-					yield return combatUX.StartCoroutine(combatUX.FocusOnCardCoroutine(sourceCardScript));
+					_heldSourceCards.Remove(recorder.cardObject);
+				}
+				else
+				{
+					shouldPeelFocus = false;
 				}
 			}
+			if (shouldPeelFocus)
+			{
+				var sourceCardScript = recorder.cardObject.GetComponent<CardScript>();
+				if (sourceCardScript != null && CombatManager.Me != null)
+				{
+					var visuals = CombatManager.Me.visuals;
+					var combatUX = visuals as CombatUXManager;
+					if (combatUX != null && combatUX.enablePeelDeck)
+					{
+						yield return combatUX.StartCoroutine(combatUX.FocusOnCardCoroutine(sourceCardScript));
+					}
+				}
+			}
+		}
 
-			yield return StartCoroutine(PlayOffRevealPopupCoroutine(recorder.cardObject));
+		if (sourceNeedsPopup && recorder.cardObject != null)
+		{
+			bool shouldPopUp = true;
+			if (_heldSourceCards.Contains(recorder.cardObject))
+			{
+				var sourcePhys = GetPhysicalCardScript(recorder.cardObject);
+				if (sourcePhys != null && !sourcePhys.isPoppedUp)
+				{
+					_heldSourceCards.Remove(recorder.cardObject);
+				}
+				else
+				{
+					shouldPopUp = false;
+				}
+			}
+			if (shouldPopUp)
+			{
+				yield return StartCoroutine(PlayOffRevealPopupCoroutine(recorder.cardObject));
+				_heldSourceCards.Add(recorder.cardObject);
+			}
 		}
 
 		// Play the source-card feedback while it is still popped up.
@@ -139,7 +198,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					yield return StartCoroutine(PlayRequestCoroutine(shakeRequest));
 				}
 			}
-			else if (recorder.animationRequests.Count > 0)
+			else if (recorder.animationRequests.Count > 0 && !sourceNeedsPeelFocus)
 			{
 				yield return StartCoroutine(PlayEmphasizeAnimation(recorder.cardObject));
 			}
@@ -154,8 +213,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		MarkDeferredDisplayCommits(recorder);
 
 		// Play all remaining requests of this effect instance sequentially.
-		// Skip redundant popups for cards already at the popup peak (e.g. the source card
-		// popped up above, or a card already lifted by an earlier request in this recorder).
+		// Skip redundant popups/slotins for the source card (handled automatically above/below).
 		foreach (var request in recorder.animationRequests)
 		{
 			if (request == null) continue;
@@ -163,6 +221,12 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			// Shake was already played above for cost-fail recorders.
 			if (recorder.isCostFailRecorder && request.type == AnimationRequestType.Shake)
 				continue;
+
+			if (ShouldSkipRequestForSourceCard(request, recorder.cardObject))
+			{
+				TestManager.Log("[RecorderAnimationPlayer] Skipping request via ShouldSkipRequestForSourceCard: type=" + request.type + " sourceWasInRevealZone=" + recorder.sourceWasInRevealZone + " sourceIsOffReveal=" + sourceIsOffReveal);
+				continue;
+			}
 
 			if (request.type == AnimationRequestType.PopUp)
 			{
@@ -191,19 +255,8 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			yield return StartCoroutine(PlayRequestCoroutine(request));
 		}
 
-		// Return the source card to the deck once its own effect animations are done.
-		// If the effect already slotted it in (e.g. StatusEffect SlotInBatch / Stage Batch),
-		// isPoppedUp will be false and we skip the redundant slot-in.
-		if (sourceNeedsPopup && recorder.cardObject != null)
-		{
-			var sourcePhys = GetPhysicalCardScript(recorder.cardObject);
-			if (sourcePhys != null && sourcePhys.isPoppedUp)
-			{
-				yield return StartCoroutine(SlotInSourceCardCoroutine(recorder.cardObject));
-			}
-		}
-
-		// After all requests of this effect instance are done, recurse into children (effect-instance-boundary interleave)
+		// Recurse into children before finalizing the source-card slot-in, so that any
+		// child recorder targeting the same source card can reuse the popup peak.
 		for (int i = 0; i < recorder.transform.childCount; i++)
 		{
 			var child = recorder.transform.GetChild(i);
@@ -212,6 +265,28 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			if (childRecorder != null && !childRecorder.animationPlayed)
 			{
 				yield return StartCoroutine(PlayRecorderCoroutine(childRecorder));
+			}
+		}
+
+		// Decrement pending count for this recorder's source card. When the last recorder
+		// for a held source card finishes, slot the card back in.
+		if (recorder.cardObject != null && _sourceCardPendingCounts.ContainsKey(recorder.cardObject))
+		{
+			_sourceCardPendingCounts[recorder.cardObject]--;
+			if (_sourceCardPendingCounts[recorder.cardObject] <= 0)
+			{
+				_sourceCardPendingCounts.Remove(recorder.cardObject);
+				if (_heldSourceCards.Contains(recorder.cardObject))
+				{
+					var sourcePhys = GetPhysicalCardScript(recorder.cardObject);
+					bool sourceStillPoppedUp = sourcePhys != null && sourcePhys.isPoppedUp;
+					bool sourceInRevealZone = CombatManager.Me != null && CombatManager.Me.revealZone == recorder.cardObject;
+					if (sourceStillPoppedUp && !sourceInRevealZone)
+					{
+						yield return StartCoroutine(SlotInSourceCardCoroutine(recorder.cardObject));
+					}
+					_heldSourceCards.Remove(recorder.cardObject);
+				}
 			}
 		}
 
@@ -230,6 +305,55 @@ public class RecorderAnimationPlayer : MonoBehaviour
 		if (physicalCard == null) return null;
 		return physicalCard.GetComponent<CardPhysObjScript>();
 	}
+
+	/// <summary>
+	/// Return true if the recorder contains an Attack animation request.
+	/// </summary>
+	private bool HasAttackRequest(EffectRecorder recorder)
+	{
+		if (recorder == null || recorder.animationRequests == null) return false;
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req != null && req.type == AnimationRequestType.Attack)
+				return true;
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Returns true if the given request is a redundant PopUp/SlotIn request targeting the
+	/// source card, which is already handled by the automatic popup/slotin wrapper.
+	/// For batch requests, the source card is removed from the target list; the request is
+	/// skipped only if the list becomes empty.
+	/// </summary>
+	private bool ShouldSkipRequestForSourceCard(AnimationRequest request, GameObject sourceCard)
+	{
+		if (sourceCard == null || request == null) return false;
+
+		switch (request.type)
+		{
+			case AnimationRequestType.PopUp:
+				return request.targetCard == sourceCard;
+			case AnimationRequestType.PopUpBatch:
+			{
+				if (request.targetCards == null) return false;
+				int originalCount = request.targetCards.Count;
+				request.targetCards.RemoveAll(card => card == sourceCard);
+				return request.targetCards.Count == 0 && originalCount > 0;
+			}
+			case AnimationRequestType.SlotIn:
+				return request.targetCard == sourceCard;
+			case AnimationRequestType.SlotInBatch:
+			{
+				if (request.targetCards == null) return false;
+				int originalCount = request.targetCards.Count;
+				request.targetCards.RemoveAll(card => card == sourceCard);
+				return request.targetCards.Count == 0 && originalCount > 0;
+			}
+		}
+		return false;
+	}
+
 
 	/// <summary>
 	/// Play emphasize animation (scale up then back to original) on the card that triggered the effect.
@@ -507,6 +631,35 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				CollectAllRecorders(childRecorder, result);
 		}
 	}
+
+	/// <summary>
+	/// Pre-scan the entire recorder tree and count how many recorders reference each
+	/// source card. This lets slot-in be deferred until the last recorder for that card
+	/// finishes, keeping the card at the popup peak across multiple recorders.
+	/// </summary>
+	private void ComputeSourceCardPendingCounts(List<GameObject> rootRecorders)
+	{
+		_sourceCardPendingCounts.Clear();
+
+		var allRecorders = new List<EffectRecorder>();
+		foreach (var root in rootRecorders)
+		{
+			if (root == null) continue;
+			var recorder = root.GetComponent<EffectRecorder>();
+			CollectAllRecorders(recorder, allRecorders);
+		}
+
+		foreach (var recorder in allRecorders)
+		{
+			if (recorder == null || recorder.cardObject == null) continue;
+			if (recorder.animationRequests == null || recorder.animationRequests.Count == 0) continue;
+
+			if (!_sourceCardPendingCounts.ContainsKey(recorder.cardObject))
+				_sourceCardPendingCounts[recorder.cardObject] = 0;
+			_sourceCardPendingCounts[recorder.cardObject]++;
+		}
+	}
+
 
 	/// <summary>
 	/// Apply all still-deferred StatusEffectChange deltas for the given target in the given recorder.
@@ -808,7 +961,12 @@ public class RecorderAnimationPlayer : MonoBehaviour
 			}
 			case AnimationRequestType.StatusEffectProjectile:
 			{
-				if (request.attackerCard == null && (request.attackerCards == null || request.attackerCards.Count == 0)) break;
+				TestManager.Log("[RecorderAnimationPlayer] StatusEffectProjectile request attacker=" + (request.attackerCard != null ? request.attackerCard.name : "null") + " targetCard=" + (request.targetCard != null ? request.targetCard.name : "null") + " targetCardsCount=" + (request.targetCards != null ? request.targetCards.Count : 0) + " customEndPos=" + request.customProjectileEndPosition.HasValue + " reverse=" + request.reverseProjectile);
+				if (request.attackerCard == null && (request.attackerCards == null || request.attackerCards.Count == 0))
+				{
+					TestManager.Log("[RecorderAnimationPlayer] StatusEffectProjectile skipped: no attacker");
+					break;
+				}
 
 				// Consume/transfer source cards update display as soon as the projectile spawns.
 				ApplySpawnDeltasForProjectile(_currentRecorder, request);
@@ -830,6 +988,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				//             then all targets slot back in together.
 				if (request.customProjectileEndPosition.HasValue)
 				{
+					TestManager.Log("[RecorderAnimationPlayer] StatusEffectProjectile taking customProjectileEndPosition branch");
 					// Multi-target reverse absorption to a custom world position.
 					if (request.reverseProjectile && request.targetCards != null && request.targetCards.Count > 0)
 					{
@@ -906,6 +1065,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 				//             the last projectile lands, then all cards slot back in.
 				if (request.attackerCards != null && request.attackerCards.Count > 0 && request.targetCard != null)
 				{
+					TestManager.Log("[RecorderAnimationPlayer] StatusEffectProjectile taking multi-source-to-single-target branch");
 					var sourceCardScripts = new List<CardScript>();
 					foreach (var s in request.attackerCards)
 					{
@@ -942,6 +1102,7 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					break;
 				}
 
+				TestManager.Log("[RecorderAnimationPlayer] StatusEffectProjectile taking standard multi-target branch");
 				// Build target list: prefer batch list, fall back to single targetCard
 				var targetCardScripts = new List<CardScript>();
 				if (request.targetCards != null && request.targetCards.Count > 0)
@@ -959,8 +1120,13 @@ public class RecorderAnimationPlayer : MonoBehaviour
 					if (cs != null) targetCardScripts.Add(cs);
 				}
 
-				if (targetCardScripts.Count == 0) break;
+				if (targetCardScripts.Count == 0)
+				{
+					TestManager.Log("[RecorderAnimationPlayer] StatusEffectProjectile standard branch has no valid targets");
+					break;
+				}
 
+				TestManager.Log("[RecorderAnimationPlayer] StatusEffectProjectile calling PlayMultiStatusEffectProjectile with " + targetCardScripts.Count + " targets, projectileCount=" + request.projectileCount);
 				bool done = false;
 				visuals.PlayMultiStatusEffectProjectile(
 					request.attackerCard,

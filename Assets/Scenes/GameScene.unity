@@ -3264,13 +3264,13 @@ MonoBehaviour:
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
   logCombatFlow: 0
-  logEffectChains: 0
+  logEffectChains: 1
   logAnimationPlayback: 1
   logVisualSync: 1
   logEditorTools: 0
   logTestManager: 0
   logDynamicDamageDisplay: 0
-  logStatusEffectDisplay: 0
+  logStatusEffectDisplay: 1
 --- !u!4 &898235415
 Transform:
   m_ObjectHideFlags: 0
@@ -3822,6 +3822,10 @@ MonoBehaviour:
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
   - {fileID: 1808145013887896563, guid: 930c5f0c5c3b8b843ba4df3ae46c66c3, type: 3}
+  - {fileID: 8718476725744197808, guid: 1c59f879b91f1e240b4c60911397cf9a, type: 3}
+  - {fileID: 1808145013887896563, guid: f9eb5df8692df6c469784deee41abea8, type: 3}
+  - {fileID: 8718476725744197808, guid: 3236fb73b80b8d14191101f85fd6f272, type: 3}
+  - {fileID: 8718476725744197808, guid: 3236fb73b80b8d14191101f85fd6f272, type: 3}
   - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
   - {fileID: 8718476725744197808, guid: 628ac090bb98bd44793ab0b66581a326, type: 3}
   - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}

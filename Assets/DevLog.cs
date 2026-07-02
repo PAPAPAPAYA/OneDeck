@@ -53,8 +53,12 @@
 	// animation speed
 	//// when card pops up and emphasize or shake, detect if still need to pop, if so, don't slot in
 	//// after peel deck, need to wait for it until next animation
-	//todo don't popup if attack in deck
+	//// don't popup if attack in deck
+	//// popup need to wait for restore after peel deck
+	//todo also need to detect if card activation failed, don't slot in, wait for last slot in
 	//todo check and update regression checklist
+	//todo not peel but shift deck pos to popup card
+		//D:\Unity Projects\OneDeck\plans\plan-popup-deck-centering-2026-07-01.md
  #endregion
  
  #endregion

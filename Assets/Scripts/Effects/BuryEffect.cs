@@ -388,12 +388,12 @@ public class BuryEffect : EffectScript
 			// PopUp so player can see which cards are being buried
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.PopUpBatch,
-				targetCards = buriedCards
+				targetCards = new List<GameObject>(buriedCards)
 			});
 
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.MoveToBottomBatch,
-				targetCards = buriedCards,
+				targetCards = new List<GameObject>(buriedCards),
 				targetIndices = buriedTargetIndices,
 				snapshotDeckSize = _combinedDeck.Count,
 				duration = CombatUXManager.me != null ? CombatUXManager.me.deckMoveArcDuration : 0.5f,

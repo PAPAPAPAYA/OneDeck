@@ -204,8 +204,8 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 - `AnimationRequest.statusEffectDelta` carries the signed display delta for every `StatusEffectChange` request.
 - `RecorderAnimationPlayer` computes a per-card display baseline (`myStatusEffects - sum of all pending deltas`) across the entire recorder tree before playing any root recorder.
 - Deltas are applied incrementally during playback:
-  - Non-deferred `StatusEffectChange`: delta applied immediately when the request plays.
-  - Deferred `StatusEffectChange` (targets with a matching `StatusEffectProjectile` in the same recorder): delta applied when the projectile completes.
+	- Non-deferred `StatusEffectChange`: delta applied immediately when the request plays.
+	- Deferred `StatusEffectChange` (targets with a matching `StatusEffectProjectile` in the same recorder): delta applied when the projectile completes.
 - This ensures nested same-target status giving (e.g. `PowerReactionEffect`) updates the card text per projectile instead of committing the full card state on the first landing.
 
 ### Snapshot Target Indices
@@ -225,6 +225,14 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 
 ### Emphasize Animation
 Before playing an effect recorder's requests, the source card (`recorder.cardObject`) plays a brief scale pulse (1.2x over 0.25s, then back) to visually signal which card triggered the effect. Skipped if the recorder has no requests or no card object.
+
+### Source-Card PopUp / SlotIn
+- Off-reveal source cards (`recorder.sourceWasInRevealZone == false`) are automatically **popped up** before the first recorder's emphasize/shake and **slotted in** once after the last recorder that shares the same source card finishes.
+- Pop-up/slot-in is scoped **per card**, not per recorder: if the same source card appears in multiple recorders (multiple `CostNEffectContainer`s or reactive children), it stays at the popup peak across all of them and only returns to the deck once.
+- Built-in `PopUp`/`PopUpBatch`/`SlotIn`/`SlotInBatch` requests targeting the source card are skipped as duplicates; target cards still use those requests normally.
+- `MoveToTopPopUpBatch` is kept unchanged: a staged source card moves from its current popup peak to the top peak and slots in. If this slots the source card back in early, later recorders for the same source will pop it up again.
+- Off-reveal **Attack** recorders skip popup and keep the existing peel-deck focus path. If the source card is already being held at peak, the attack recorder reuses that popup instead of peeling.
+- If the source card is destroyed, exiled, or moved to the reveal zone before the final slot-in, automatic slot-in is skipped.
 
 ### AnimationStateTracker (Legacy Safety Net)
 Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until `HasActiveBatch == false` before closing the chain, ensuring any legacy-queued events flush naturally.

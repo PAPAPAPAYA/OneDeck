@@ -177,4 +177,130 @@ public class RecorderAnimationPlayerTests : HeadlessCombatTestFixture
 		Assert.IsTrue(root1.animationPlayed, "Root1 should be marked as played");
 		Assert.IsTrue(root2.animationPlayed, "Root2 should be marked as played");
 	}
+
+	[UnityTest]
+	public IEnumerator PlayRecorderCoroutine_OffRevealSourceCard_PopsUpBeforeRequests()
+	{
+		var source = CreateCard(true, "SourceCard");
+		var target = CreateCard(true, "TargetCard");
+
+		var recorderGo = CreateGameObject("RootRecorder");
+		var recorder = recorderGo.AddComponent<EffectRecorder>();
+		recorder.cardObject = source;
+		recorder.sourceWasInRevealZone = false;
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.StatusEffectChange,
+			targetCard = target,
+			statusEffect = EnumStorage.StatusEffect.Power,
+			statusEffectAmount = 1
+		});
+
+		var playerGo = CreateGameObject("Player");
+		var player = playerGo.AddComponent<RecorderAnimationPlayer>();
+		RecorderAnimationPlayer.me = player;
+
+		int popUpsBefore = NullVisuals.popUpCardCalls;
+
+		yield return player.PlayRecorderCoroutine(recorder);
+
+		Assert.AreEqual(popUpsBefore + 1, NullVisuals.popUpCardCalls, "Off-reveal source card should be popped up automatically");
+		int popUpIndex = NullVisuals.callLog.FindIndex(x => x.StartsWith("PopUpCard"));
+		int statusChangeIndex = NullVisuals.callLog.FindIndex(x => x.StartsWith("ApplyStatusTint"));
+		Assert.Less(popUpIndex, statusChangeIndex, "PopUp should happen before the effect request");
+	}
+
+	[UnityTest]
+	public IEnumerator PlayRecorderCoroutine_OffRevealSourceCard_SkipsBuiltInSlotIn()
+	{
+		var source = CreateCard(true, "SourceCard");
+
+		var recorderGo = CreateGameObject("RootRecorder");
+		var recorder = recorderGo.AddComponent<EffectRecorder>();
+		recorder.cardObject = source;
+		recorder.sourceWasInRevealZone = false;
+		recorder.animationRequests.Add(new AnimationRequest { type = AnimationRequestType.SlotIn, targetCard = source });
+
+		var playerGo = CreateGameObject("Player");
+		var player = playerGo.AddComponent<RecorderAnimationPlayer>();
+		RecorderAnimationPlayer.me = player;
+
+		yield return player.PlayRecorderCoroutine(recorder);
+
+		Assert.IsFalse(NullVisuals.callLog.Exists(x => x.StartsWith("SlotInCard")), "Built-in SlotIn for source card should be skipped; auto-slotin is responsible");
+	}
+
+	[UnityTest]
+	public IEnumerator PlayRecorderCoroutine_OffRevealAttackRecorder_DoesNotPopUp()
+	{
+		var source = CreateCard(true, "SourceCard");
+
+		var recorderGo = CreateGameObject("RootRecorder");
+		var recorder = recorderGo.AddComponent<EffectRecorder>();
+		recorder.cardObject = source;
+		recorder.sourceWasInRevealZone = false;
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.Attack,
+			attackerCard = source,
+			isAttackingEnemy = true
+		});
+
+		var playerGo = CreateGameObject("Player");
+		var player = playerGo.AddComponent<RecorderAnimationPlayer>();
+		RecorderAnimationPlayer.me = player;
+
+		int popUpsBefore = NullVisuals.popUpCardCalls;
+
+		yield return player.PlayRecorderCoroutine(recorder);
+
+		Assert.AreEqual(popUpsBefore, NullVisuals.popUpCardCalls, "Off-reveal Attack recorder should not auto-popup");
+		Assert.AreEqual(1, NullVisuals.playAttackAnimCalls, "Attack request should still play");
+	}
+
+	[UnityTest]
+	public IEnumerator PlayRecordersCoroutine_SameSourceMultipleRecorders_PopsUpOnce()
+	{
+		var source = CreateCard(true, "SourceCard");
+
+		var r1 = CreateGameObject("R1").AddComponent<EffectRecorder>();
+		r1.cardObject = source;
+		r1.sourceWasInRevealZone = false;
+		r1.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.StatusEffectChange,
+			targetCard = source,
+			statusEffect = EnumStorage.StatusEffect.Power,
+			statusEffectAmount = 1
+		});
+
+		var r2 = CreateGameObject("R2").AddComponent<EffectRecorder>();
+		r2.cardObject = source;
+		r2.sourceWasInRevealZone = false;
+		r2.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.StatusEffectChange,
+			targetCard = source,
+			statusEffect = EnumStorage.StatusEffect.Power,
+			statusEffectAmount = 1
+		});
+
+		var roots = new System.Collections.Generic.List<GameObject>
+		{
+			r1.gameObject,
+			r2.gameObject
+		};
+
+		var playerGo = CreateGameObject("Player");
+		var player = playerGo.AddComponent<RecorderAnimationPlayer>();
+		RecorderAnimationPlayer.me = player;
+
+		int popUpsBefore = NullVisuals.popUpCardCalls;
+
+		yield return player.PlayRecordersCoroutine(roots);
+
+		Assert.AreEqual(popUpsBefore + 1, NullVisuals.popUpCardCalls, "Same source card across multiple recorders should popup only once");
+	}
+
+
 }

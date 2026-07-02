@@ -326,7 +326,7 @@ public class EffectScript : MonoBehaviour
 		recorder.animationRequests.Add(new AnimationRequest
 		{
 			type = AnimationRequestType.PopUpBatch,
-			targetCards = targetGameObjects
+			targetCards = new List<GameObject>(targetGameObjects)
 		});
 
 		// 3. Projectile flies from all targets back to source/custom position in parallel (absorb)
@@ -340,7 +340,7 @@ public class EffectScript : MonoBehaviour
 		{
 			type = AnimationRequestType.StatusEffectProjectile,
 			attackerCard = sourceCard,
-			targetCards = targetGameObjects,
+			targetCards = new List<GameObject>(targetGameObjects),
 			projectileCount = maxProjectileCount,
 			projectileCountsPerTarget = filteredAmounts,
 			reverseProjectile = true,
@@ -351,7 +351,7 @@ public class EffectScript : MonoBehaviour
 		recorder.animationRequests.Add(new AnimationRequest
 		{
 			type = AnimationRequestType.SlotInBatch,
-			targetCards = targetGameObjects
+			targetCards = new List<GameObject>(targetGameObjects)
 		});
 	}
 
@@ -394,7 +394,7 @@ public class EffectScript : MonoBehaviour
 		recorder.animationRequests.Add(new AnimationRequest
 		{
 			type = AnimationRequestType.PopUpBatch,
-			targetCards = sourceGameObjects
+			targetCards = new List<GameObject>(sourceGameObjects)
 		});
 
 		// 2. Target card pops up so the player sees where the status effects are going
@@ -410,7 +410,7 @@ public class EffectScript : MonoBehaviour
 		recorder.animationRequests.Add(new AnimationRequest
 		{
 			type = AnimationRequestType.StatusEffectProjectile,
-			attackerCards = sourceGameObjects,
+			attackerCards = new List<GameObject>(sourceGameObjects),
 			targetCard = targetCard.gameObject,
 			projectileCountsPerTarget = filteredAmounts,
 			reverseProjectile = true
@@ -420,7 +420,7 @@ public class EffectScript : MonoBehaviour
 		recorder.animationRequests.Add(new AnimationRequest
 		{
 			type = AnimationRequestType.SlotInBatch,
-			targetCards = sourceGameObjects
+			targetCards = new List<GameObject>(sourceGameObjects)
 		});
 
 		// 5. Target card slots back in

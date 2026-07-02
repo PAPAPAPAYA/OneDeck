@@ -40,7 +40,10 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | # | Scenario | System / Effect | Fixed Date | Status | Verification |
 |---|----------|-----------------|------------|--------|--------------|
 | 6 | Deck-move animations play in wrong peeled/focused layout | `RecorderAnimationPlayer`, `CombatUXManager` | 2026-05-18 | ✅ | **Step:** Click a card to focus deck, then reveal Bury/Stage card<br>**Check:** Animation uses normal (non-focused) layout |
-| 36 | Chained off-reveal attacks popup before focus transition | `RecorderAnimationPlayer`, `CombatUXManager`, `AttackAnimationManager` | 2026-06-30 | ⚠️ | **Card:** BOOSTER (`StageSelf` → two `GOBLIN_CHARGE_TEAM` `OnMeStaged`)<br>**Check:** After the first off-reveal attack ends, the deck focus transitions to the second card **before** it pops up/emphasizes. The popup does not start while the deck is still transitioning. |
+| ~~36~~ | ~~Chained off-reveal attacks popup before focus transition~~ | ~~`RecorderAnimationPlayer`, `CombatUXManager`, `AttackAnimationManager`~~ | ~~2026-06-30~~ | ~~(Obsolete 2026-07-01)~~ | ~~Off-reveal Attack recorders no longer popup; superseded by row 37.~~ |
+| ~~37~~ | ~~Off-reveal Attack cards skip popup, use peel-deck focus + emphasize~~ | ~~`RecorderAnimationPlayer`, `CombatUXManager`~~ | ~~2026-07-01~~ | ~~(Obsolete 2026-07-02)~~ | ~~Superseded by row 41: off-reveal Attack cards no longer play emphasize; peel-deck focus is now the sole source-card feedback before the attack animation.~~ |
+| 41 | Off-reveal Attack cards skip popup and emphasize, use peel-deck focus only | `RecorderAnimationPlayer`, `CombatUXManager` | 2026-07-02 | ⚠️ | **Card:** BOOSTER (`StageSelf` → two `GOBLIN_CHARGE_TEAM` `OnMeStaged`) or any off-reveal attack<br>**Check:** Deck peels to the source card, then attack animation plays directly. No emphasize scale pulse and no popup peak/slot-in cycle for the attacker.<br>**Also check non-Attack off-reveal effect (e.g. StageSelf/Bury):** popup → emphasize → effect → slotin; verify there is **no** peel-deck focus transition. |
+| 42 | Batch status effect animation helpers share `targetCards` list, causing projectile/target list to be cleared when `ShouldSkipRequestForSourceCard` mutates an earlier request | `StatusEffectGiverEffect`, `EffectScript`, `BuryEffect`, `RecorderAnimationPlayer` | 2026-07-02 | ⚠️ | **Card:** UNFINISHED_ROBOT (`GiveSelfStatusEffect`) or any card that gives a status effect to itself/batch targets (e.g. self-Power, GiveAllFriendlyStatusEffect, POWER_TRANSFER consume/transfer).<br>**Check:** `StatusEffectProjectile` request has valid targets and `[CombatUXManager] SpawnProjectile START/COMPLETE` logs appear; `PopUpBatch`/`SlotInBatch` no longer empty the shared list used by the projectile request. Bury/Stage/Transfer/Consume batch helpers also use independent list copies. |
 
 ## Cost Check Feedback
 
@@ -71,7 +74,10 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 22 | TransferOneStatusEffectToSelf source cards do not PopUp/SlotIn | `TransferStatusEffectEffect`, `EffectScript`, `RecorderAnimationPlayer`, `CombatUXManager`, `AnimationRequest` | 2026-06-13 | ⚠️ | **Card:** POWER_SIPHONER when friendly/hostile cards carry the target status effect<br>**Check:** Source cards pop up together; self card pops up; projectiles fly from each source to self **in parallel**; self card status text commits only after the **last** projectile lands; source cards and self card slot back in together. No freeze or missing SlotIn. |
 | 24 | Single-layer status effect projectile has random start offset | `CombatUXManager` | 2026-06-14 | ⚠️ | **Card:** Any card that gives/consumes exactly 1 status effect layer (e.g. self-Power×1, ConsumeOwnStatusEffect×1, GiveStatusEffect×1 to a single target)<br>**Check:** Projectile starts at the center of the source card (`effectiveOffsetRange == Vector2.zero`) and flies straight to the target; no visible XY jitter. Multi-layer effects still randomize. |
 | 34 | Consume/transfer source cards update status text when projectile spawns | `RecorderAnimationPlayer`, `AnimationRequest`, `EffectScript`, `ConsumeStatusEffect`, `TransferStatusEffectEffect` | 2026-06-21 | ⚠️ | **Card:** OVERCHARGED_SUMMONER (ConsumeOwnStatusEffect), POWER_TRANSFER (ConsumeRandomEnemyCardsStatusEffect), CROW_CROWD/POWER_SIPHONER (TransferStatusEffectEffect)<br>**Check:** Source/target cards losing status effects show updated text the moment the projectile is spawned (flight starts). Cards receiving status effects still update only after the projectile lands. |
-| 35 | Off-reveal source card stays at popup peak during its effect animation | `RecorderAnimationPlayer`, `CombatUXManager`, `CardPhysObjScript` | 2026-06-30 | ⚠️ | **Card:** WEAPON_SPIRIT/POWER_CRAVER reaction (`onFriendlyCardGotPower`→`GiveSelfStatusEffect`), OVERCHARGED_SUMMONER (`ConsumeOwnStatusEffect`), BOOSTER afterShuffle→`StageSelf`, or any reactive Bury/Stage.<br>**Check:** popup → emphasize/shake → source card stays at peak while the effect-specific animation plays → single slotin at the end. No visible return-to-deck between emphasize and the effect animation; no second popup. `AnimationStateTracker.pending` returns to 0 after the full sequence. |
+| ~~35~~ | ~~Off-reveal source card stays at popup peak during its effect animation~~ | ~~`RecorderAnimationPlayer`, `CombatUXManager`, `CardPhysObjScript`~~ | ~~2026-06-30~~ | ~~(Obsolete 2026-07-01)~~ | ~~Superseded by row 38: source-card slot-in is now deferred until the entire recorder subtree finishes.~~ |
+| ~~38~~ | ~~Off-reveal source card slot-in deferred until recorder subtree finishes~~ | ~~`RecorderAnimationPlayer`~~ | ~~2026-07-01~~ | ~~(Obsolete 2026-07-01)~~ | ~~Superseded by row 39: slot-in now happens after the recorder's own requests finish, not after the subtree.~~ |
+| ~~39~~ | ~~Off-reveal source card auto popup/slotin scoped to recorder's own requests~~ | ~~`RecorderAnimationPlayer`~~ | ~~2026-07-01~~ | ~~(Obsolete 2026-07-01)~~ | ~~Superseded by row 40: popup/slotin scope is now per source card across all recorders in a batch.~~ |
+| 40 | Off-reveal source card auto popup/slotin scoped per card across recorders | `RecorderAnimationPlayer` | 2026-07-01 | ⚠️ | **Card:** Any card with multiple `CostNEffectContainer`s or reactive chains while off-reveal (e.g. multi-cost or onMeBuried→StageSelf).<br>**Check:** The source card pops up once before its first recorder's emphasize/shake, stays at peak across all recorders that share it, and slots in once after the last such recorder finishes. No bounce/popup-per-recorder. Built-in PopUp/SlotIn requests targeting the source card are skipped. Attack recorders reuse the existing popup or fall back to peel-deck focus. |
 
 ---
 
@@ -96,14 +102,14 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 
 | File(s) | Related Rows |
 |---------|-------------|
-| `BuryEffect.cs` | 1, 2, 5, 7, 14 |
+| `BuryEffect.cs` | 1, 2, 5, 7, 14, 42 |
 | `StageEffect.cs` | 1, 2, 5, 7 |
 | `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35 |
 | `EffectChainManager.cs` | 2, 11 |
 | `CardPhysObjScript.cs` | 3, 12, 35 |
 | `CurseEffect.cs` | 8, 17, 19 |
 | `AddTempCard.cs` | 4 |
-| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33, 35 |
+| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33, 35, 38, 40, 41, 42 |
 | `ApplyAnimationResult` | 5 |
 | `CalculateAnimationPositionAtIndex` | 7 |
 | `CostResultPresenter.cs` | 9 |
@@ -116,9 +122,9 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `ICombatVisuals.cs` | 16, 17, 19 |
 | `NullCombatVisuals.cs` | 16, 17, 19 |
 | `NullCombatVisualsBehaviour.cs` | 16, 17, 19 |
-| `StatusEffectGiverEffect.cs` | 17 |
+| `StatusEffectGiverEffect.cs` | 17, 42 |
 | `PowerReactionEffect.cs` | 30 |
-| `EffectScript.cs` | 18, 19, 30 |
+| `EffectScript.cs` | 18, 19, 30, 42 |
 
 ## Lifecycle & Destroy Guards
 
