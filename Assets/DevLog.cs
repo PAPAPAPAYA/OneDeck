@@ -15,6 +15,7 @@
  #endregion
  
  #region text
+	//todo add a text color change
 	// world building
 	// localization stringSO to store chinese translation
 	//// goblin charge team dmg text
@@ -55,7 +56,7 @@
 	//// after peel deck, need to wait for it until next animation
 	//// don't popup if attack in deck
 	//// popup need to wait for restore after peel deck
-	//todo also need to detect if card activation failed, don't slot in, wait for last slot in
+	//// also need to detect if card activation failed, don't slot in, wait for last slot in
 	//todo check and update regression checklist
 	//todo not peel but shift deck pos to popup card
 		//D:\Unity Projects\OneDeck\plans\plan-popup-deck-centering-2026-07-01.md

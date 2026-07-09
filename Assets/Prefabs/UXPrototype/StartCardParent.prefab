@@ -168,6 +168,7 @@ MonoBehaviour:
   customShakeHalfDuration: 0.1
   isPlayingSpecialAnimation: 0
   isPendingSlotIn: 0
+  isPoppedUp: 0
   popUpOriginalPosition: {x: 0, y: 0, z: 0}
   popUpOriginalScale: {x: 0, y: 0, z: 0}
   pendingRevealZoneMove: 0
@@ -368,15 +369,15 @@ PrefabInstance:
       objectReference: {fileID: -5177388603050735206, guid: ee4c724560d27684d969ba363b913448, type: 3}
     - target: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_Color.b
-      value: 0
+      value: 0.7921569
       objectReference: {fileID: 0}
     - target: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_Color.g
-      value: 0.6117647
+      value: 0.8352941
       objectReference: {fileID: 0}
     - target: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_Color.r
-      value: 0.89411765
+      value: 0.8509804
       objectReference: {fileID: 0}
     - target: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_DrawMode

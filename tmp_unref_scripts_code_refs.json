@@ -1,0 +1,757 @@
+[
+  {
+    "path": "DevLog.cs",
+    "class_names": [
+      "to",
+      "DevLog"
+    ],
+    "used_in": [
+      "DOTween\\Modules\\DOTweenModuleAudio.cs",
+      "DOTween\\Modules\\DOTweenModuleEPOOutline.cs",
+      "DOTween\\Modules\\DOTweenModulePhysics.cs",
+      "DOTween\\Modules\\DOTweenModulePhysics2D.cs",
+      "DOTween\\Modules\\DOTweenModuleSprite.cs",
+      "DOTween\\Modules\\DOTweenModuleUI.cs",
+      "DOTween\\Modules\\DOTweenModuleUIToolkit.cs",
+      "DOTween\\Modules\\DOTweenModuleUnityVersion.cs",
+      "DOTween\\Modules\\DOTweenModuleUtils.cs",
+      "MilkShake\\Scripts\\IShakeParameters.cs",
+      "MilkShake\\Scripts\\ShakeInstance.cs",
+      "MilkShake\\Scripts\\ShakeParameters.cs",
+      "MilkShake\\Scripts\\ShakePreset.cs",
+      "MilkShake\\Scripts\\ShakeType.cs",
+      "MilkShake\\Scripts\\Shaker.cs",
+      "Scripts\\Card\\CardEventTrigger.cs",
+      "Scripts\\Card\\CardScript.cs",
+      "Scripts\\Card\\CostNEffectContainer.cs",
+      "Scripts\\Editor\\CardMaker.cs",
+      "Scripts\\Editor\\Tests\\AddTempCardTests.cs",
+      "Scripts\\Editor\\Tests\\AfterShuffleTimingTests.cs",
+      "Scripts\\Editor\\Tests\\CombatIntegrationTests.cs",
+      "Scripts\\Editor\\Tests\\EffectChainTests.cs",
+      "Scripts\\Editor\\Tests\\HPAlterEffectTests.cs",
+      "Scripts\\Editor\\Tests\\HeadlessCombatTestFixture.cs",
+      "Scripts\\Editor\\Tests\\IntSOBasedEffectFactionTests.cs",
+      "Scripts\\Editor\\Tests\\PowerReactionEffectTests.cs",
+      "Scripts\\Editor\\Tests\\ReactiveChainTests.cs",
+      "Scripts\\Editor\\Tests\\StatusEffectTests.cs",
+      "Scripts\\Editor\\Tests\\ValueTrackerEffectTests.cs",
+      "Scripts\\Editor\\Tests\\VisualsCallTests.cs",
+      "Scripts\\Effects\\AddTempCard.cs",
+      "Scripts\\Effects\\AddTextEffect.cs",
+      "Scripts\\Effects\\BuryEffect.cs",
+      "Scripts\\Effects\\CardManipulationEffect.cs",
+      "Scripts\\Effects\\CurseEffect.cs",
+      "Scripts\\Effects\\EffectScript.cs",
+      "Scripts\\Effects\\ExileEffect.cs",
+      "Scripts\\Effects\\HPAlterEffect.cs",
+      "Scripts\\Effects\\ShieldAlterEffect.cs",
+      "Scripts\\Effects\\StageEffect.cs",
+      "Scripts\\Effects\\StartCardShuffleEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\ConsumeStatusEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\InfectionEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\PowerReactionEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\StatusEffectGiverEffect.cs",
+      "Scripts\\Effects\\TransferStatusEffectEffect.cs",
+      "Scripts\\Effects\\shop\\DeckSizeIncreaseEffect.cs",
+      "Scripts\\Managers\\AnimationRequest.cs",
+      "Scripts\\Managers\\AnimationStateTracker.cs",
+      "Scripts\\Managers\\AttackAnimationManager.cs",
+      "Scripts\\Managers\\CardFactory.cs",
+      "Scripts\\Managers\\CombatInfoDisplayer.cs",
+      "Scripts\\Managers\\CombatLog.cs",
+      "Scripts\\Managers\\CombatManager.cs",
+      "Scripts\\Managers\\CombatStartCardGiver.cs",
+      "Scripts\\Managers\\CombatStatsLogger.cs",
+      "Scripts\\Managers\\CostResultPresenter.cs",
+      "Scripts\\Managers\\DeckTester.cs",
+      "Scripts\\Managers\\EffectChainManager.cs",
+      "Scripts\\Managers\\GameEventListener.cs",
+      "Scripts\\Managers\\GameEventStorage.cs",
+      "Scripts\\Managers\\ICombatVisuals.cs",
+      "Scripts\\Managers\\NullCombatVisuals.cs",
+      "Scripts\\Managers\\NullCombatVisualsBehaviour.cs",
+      "Scripts\\Managers\\PhaseManager.cs",
+      "Scripts\\Managers\\RecorderAnimationPlayer.cs",
+      "Scripts\\Managers\\ShopManager.cs",
+      "Scripts\\Managers\\ShopStatsManager.cs",
+      "Scripts\\Managers\\ShuffleOrderOverride.cs",
+      "Scripts\\Managers\\StartingCardManager.cs",
+      "Scripts\\Managers\\TestManager.cs",
+      "Scripts\\Managers\\UtilityFuncManagerScript.cs",
+      "Scripts\\Managers\\ValueTrackerManager.cs",
+      "Scripts\\Managers\\WriteRead\\CardWinRateTracker.cs",
+      "Scripts\\Managers\\WriteRead\\DeckSaver.cs",
+      "Scripts\\Managers\\WriteRead\\EnemyDeckRecorder.cs",
+      "Scripts\\SOScripts\\CostCheckResult.cs",
+      "Scripts\\SOScripts\\DeckSO.cs",
+      "Scripts\\SOScripts\\IntSO.cs",
+      "Scripts\\SOScripts\\PlayerStatusSO.cs",
+      "Scripts\\UXPrototype\\CardMoveConfig.cs",
+      "Scripts\\UXPrototype\\CardPhysObjScript.cs",
+      "Scripts\\UXPrototype\\CombatUXManager.cs",
+      "Scripts\\UXPrototype\\ShopCardView.cs",
+      "Scripts\\UXPrototype\\ShopUXManager.cs",
+      "TutorialInfo\\Scripts\\Editor\\ReadmeEditor.cs"
+    ]
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModuleAudio.cs",
+    "class_names": [
+      "DOTweenModuleAudio"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModuleEPOOutline.cs",
+    "class_names": [
+      "DOTweenModuleEPOOutline"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModulePhysics.cs",
+    "class_names": [
+      "DOTweenModulePhysics"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModulePhysics2D.cs",
+    "class_names": [
+      "DOTweenModulePhysics2D"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModuleSprite.cs",
+    "class_names": [
+      "DOTweenModuleSprite"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModuleUI.cs",
+    "class_names": [
+      "DOTweenModuleUI",
+      "Utils"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModuleUIToolkit.cs",
+    "class_names": [
+      "DOTweenModuleUIToolkit"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModuleUnityVersion.cs",
+    "class_names": [
+      "DOTweenModuleUnityVersion",
+      "DOTweenCYInstruction",
+      "WaitForCompletion",
+      "WaitForRewind",
+      "WaitForKill",
+      "WaitForElapsedLoops",
+      "WaitForPosition",
+      "WaitForStart"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "DOTween\\Modules\\DOTweenModuleUtils.cs",
+    "class_names": [
+      "DOTweenModuleUtils",
+      "Physics"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "MilkShake\\Scripts\\IShakeParameters.cs",
+    "class_names": [
+      "IShakeParameters"
+    ],
+    "used_in": [
+      "MilkShake\\Scripts\\ShakeInstance.cs",
+      "MilkShake\\Scripts\\ShakeParameters.cs",
+      "MilkShake\\Scripts\\ShakePreset.cs",
+      "MilkShake\\Scripts\\Shaker.cs"
+    ]
+  },
+  {
+    "path": "MilkShake\\Scripts\\ShakeInstance.cs",
+    "class_names": [
+      "ShakeInstance"
+    ],
+    "used_in": [
+      "MilkShake\\Demo\\Scripts\\CustomShake.cs",
+      "MilkShake\\Demo\\Scripts\\ShakeButton.cs",
+      "MilkShake\\Scripts\\Shaker.cs",
+      "Scripts\\UXPrototype\\CardPhysObjScript.cs"
+    ]
+  },
+  {
+    "path": "MilkShake\\Scripts\\ShakeParameters.cs",
+    "class_names": [
+      "ShakeParameters"
+    ],
+    "used_in": [
+      "MilkShake\\Demo\\Scripts\\CustomShake.cs",
+      "MilkShake\\Demo\\Scripts\\ShakeClicker.cs",
+      "MilkShake\\Scripts\\ShakeInstance.cs"
+    ]
+  },
+  {
+    "path": "MilkShake\\Scripts\\ShakeResult.cs",
+    "class_names": [
+      "ShakeResult"
+    ],
+    "used_in": [
+      "MilkShake\\Scripts\\ShakeInstance.cs",
+      "MilkShake\\Scripts\\Shaker.cs"
+    ]
+  },
+  {
+    "path": "MilkShake\\Scripts\\ShakeState.cs",
+    "class_names": [
+      "ShakeState"
+    ],
+    "used_in": [
+      "MilkShake\\Scripts\\ShakeInstance.cs"
+    ]
+  },
+  {
+    "path": "MilkShake\\Scripts\\ShakeType.cs",
+    "class_names": [
+      "ShakeType"
+    ],
+    "used_in": [
+      "MilkShake\\Demo\\Scripts\\CustomShake.cs",
+      "MilkShake\\Scripts\\IShakeParameters.cs",
+      "MilkShake\\Scripts\\ShakeInstance.cs",
+      "MilkShake\\Scripts\\ShakeParameters.cs",
+      "MilkShake\\Scripts\\ShakePreset.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Card\\CardEventTrigger.cs",
+    "class_names": [
+      "CardEventTrigger"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\AddADividerToCostNEffectScript.cs",
+    "class_names": [
+      "AddADividerToCostNEffectScript"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\CardMaker.cs",
+    "class_names": [
+      "CardMaker"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\CardTypeIDValidator.cs",
+    "class_names": [
+      "CardTypeIDValidator"
+    ],
+    "used_in": [
+      "Scripts\\Managers\\TestManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Editor\\RaiseGameEventButton.cs",
+    "class_names": [
+      "RaiseGameEventButton"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\AddTempCardTests.cs",
+    "class_names": [
+      "AddTempCardTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\AfterShuffleTimingTests.cs",
+    "class_names": [
+      "AfterShuffleTimingTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\CardManipulationTests.cs",
+    "class_names": [
+      "CardManipulationTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\CombatFlowTests.cs",
+    "class_names": [
+      "CombatFlowTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\CombatIntegrationTests.cs",
+    "class_names": [
+      "CombatIntegrationTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\ConsumeStatusEffectTests.cs",
+    "class_names": [
+      "ConsumeStatusEffectTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\CostCheckTests.cs",
+    "class_names": [
+      "CostCheckTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\CostResultPresenterTests.cs",
+    "class_names": [
+      "CostResultPresenterTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\EffectChainTests.cs",
+    "class_names": [
+      "EffectChainTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\ExileEffectTests.cs",
+    "class_names": [
+      "ExileEffectTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\HeadlessCombatTestFixture.cs",
+    "class_names": [
+      "HeadlessCombatTestFixture"
+    ],
+    "used_in": [
+      "Scripts\\Editor\\Tests\\AddTempCardTests.cs",
+      "Scripts\\Editor\\Tests\\AfterShuffleTimingTests.cs",
+      "Scripts\\Editor\\Tests\\CardManipulationTests.cs",
+      "Scripts\\Editor\\Tests\\CombatFlowTests.cs",
+      "Scripts\\Editor\\Tests\\CombatIntegrationTests.cs",
+      "Scripts\\Editor\\Tests\\ConsumeStatusEffectTests.cs",
+      "Scripts\\Editor\\Tests\\CostCheckTests.cs",
+      "Scripts\\Editor\\Tests\\CostResultPresenterTests.cs",
+      "Scripts\\Editor\\Tests\\EffectChainTests.cs",
+      "Scripts\\Editor\\Tests\\ExileEffectTests.cs",
+      "Scripts\\Editor\\Tests\\HPAlterEffectTests.cs",
+      "Scripts\\Editor\\Tests\\IntSOBasedEffectFactionTests.cs",
+      "Scripts\\Editor\\Tests\\PowerReactionEffectTests.cs",
+      "Scripts\\Editor\\Tests\\ReactiveChainTests.cs",
+      "Scripts\\Editor\\Tests\\RecorderAnimationPlayerTests.cs",
+      "Scripts\\Editor\\Tests\\ShieldAlterTests.cs",
+      "Scripts\\Editor\\Tests\\StatusEffectTests.cs",
+      "Scripts\\Editor\\Tests\\TransferStatusEffectEffectTests.cs",
+      "Scripts\\Editor\\Tests\\ValueTrackerEffectTests.cs",
+      "Scripts\\Editor\\Tests\\VisualsCallTests.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\HPAlterEffectTests.cs",
+    "class_names": [
+      "HPAlterEffectTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\IntSOBasedEffectFactionTests.cs",
+    "class_names": [
+      "IntSOBasedEffectFactionTests"
+    ],
+    "used_in": [
+      "DevLog.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\PowerReactionEffectTests.cs",
+    "class_names": [
+      "PowerReactionEffectTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\ReactiveChainTests.cs",
+    "class_names": [
+      "ReactiveChainTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\RecorderAnimationPlayerTests.cs",
+    "class_names": [
+      "RecorderAnimationPlayerTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\ShieldAlterTests.cs",
+    "class_names": [
+      "ShieldAlterTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\StatusEffectTests.cs",
+    "class_names": [
+      "StatusEffectTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\TransferStatusEffectEffectTests.cs",
+    "class_names": [
+      "TransferStatusEffectEffectTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\ValueTrackerEffectTests.cs",
+    "class_names": [
+      "ValueTrackerEffectTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Editor\\Tests\\VisualsCallTests.cs",
+    "class_names": [
+      "VisualsCallTests"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Effects\\ChangeHpAlterAmountEffect.cs",
+    "class_names": [
+      "ChangeHpAlterAmountEffect"
+    ],
+    "used_in": []
+  },
+  {
+    "path": "Scripts\\Effects\\EffectScript.cs",
+    "class_names": [
+      "EffectScript"
+    ],
+    "used_in": [
+      "Scripts\\Editor\\Tests\\HeadlessCombatTestFixture.cs",
+      "Scripts\\Effects\\AddTempCard.cs",
+      "Scripts\\Effects\\AddTextEffect.cs",
+      "Scripts\\Effects\\BuryEffect.cs",
+      "Scripts\\Effects\\CardManipulationEffect.cs",
+      "Scripts\\Effects\\ChangeCardTarget.cs",
+      "Scripts\\Effects\\ChangeHpAlterAmountEffect.cs",
+      "Scripts\\Effects\\CurseEffect.cs",
+      "Scripts\\Effects\\ExileEffect.cs",
+      "Scripts\\Effects\\HPAlterEffect.cs",
+      "Scripts\\Effects\\HPMaxAlterEffect.cs",
+      "Scripts\\Effects\\PrintEffect.cs",
+      "Scripts\\Effects\\ShieldAlterEffect.cs",
+      "Scripts\\Effects\\StageEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\ConsumeStatusEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\StatusEffectGiverEffect.cs",
+      "Scripts\\Effects\\TransferStatusEffectEffect.cs",
+      "Scripts\\Effects\\shop\\DeckSizeIncreaseEffect.cs",
+      "Scripts\\Managers\\RecorderAnimationPlayer.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\AnimationRequest.cs",
+    "class_names": [
+      "AnimationRequest"
+    ],
+    "used_in": [
+      "Scripts\\Card\\CostNEffectContainer.cs",
+      "Scripts\\Editor\\Tests\\AfterShuffleTimingTests.cs",
+      "Scripts\\Editor\\Tests\\EffectChainTests.cs",
+      "Scripts\\Editor\\Tests\\IntSOBasedEffectFactionTests.cs",
+      "Scripts\\Editor\\Tests\\RecorderAnimationPlayerTests.cs",
+      "Scripts\\Effects\\AddTempCard.cs",
+      "Scripts\\Effects\\BuryEffect.cs",
+      "Scripts\\Effects\\CardManipulationEffect.cs",
+      "Scripts\\Effects\\CurseEffect.cs",
+      "Scripts\\Effects\\EffectScript.cs",
+      "Scripts\\Effects\\ExileEffect.cs",
+      "Scripts\\Effects\\HPAlterEffect.cs",
+      "Scripts\\Effects\\StageEffect.cs",
+      "Scripts\\Effects\\StartCardShuffleEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\ConsumeStatusEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\StatusEffectGiverEffect.cs",
+      "Scripts\\Managers\\CombatManager.cs",
+      "Scripts\\Managers\\EffectRecorder.cs",
+      "Scripts\\Managers\\ICombatVisuals.cs",
+      "Scripts\\Managers\\NullCombatVisuals.cs",
+      "Scripts\\Managers\\NullCombatVisualsBehaviour.cs",
+      "Scripts\\Managers\\RecorderAnimationPlayer.cs",
+      "Scripts\\UXPrototype\\CombatUXManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\CombatAnimationSpeed.cs",
+    "class_names": [
+      "CombatAnimationSpeed"
+    ],
+    "used_in": [
+      "Scripts\\Managers\\AttackAnimationManager.cs",
+      "Scripts\\Managers\\CombatManager.cs",
+      "Scripts\\Managers\\RecorderAnimationPlayer.cs",
+      "Scripts\\UXPrototype\\CardPhysObjScript.cs",
+      "Scripts\\UXPrototype\\CombatUXManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\CombatStartCardGiver.cs",
+    "class_names": [
+      "CombatStartCardGiver"
+    ],
+    "used_in": [
+      "Scripts\\Managers\\PhaseManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\CostResultPresenter.cs",
+    "class_names": [
+      "CostResultPresenter"
+    ],
+    "used_in": [
+      "Scripts\\Card\\CostNEffectContainer.cs",
+      "Scripts\\Editor\\Tests\\CostResultPresenterTests.cs",
+      "Scripts\\Managers\\CombatManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\EnumStorage.cs",
+    "class_names": [
+      "EnumStorage"
+    ],
+    "used_in": [
+      "Scripts\\Card\\CardScript.cs",
+      "Scripts\\Card\\CostNEffectContainer.cs",
+      "Scripts\\Editor\\Tests\\AddTempCardTests.cs",
+      "Scripts\\Editor\\Tests\\ConsumeStatusEffectTests.cs",
+      "Scripts\\Editor\\Tests\\CostCheckTests.cs",
+      "Scripts\\Editor\\Tests\\HPAlterEffectTests.cs",
+      "Scripts\\Editor\\Tests\\HeadlessCombatTestFixture.cs",
+      "Scripts\\Editor\\Tests\\IntSOBasedEffectFactionTests.cs",
+      "Scripts\\Editor\\Tests\\PowerReactionEffectTests.cs",
+      "Scripts\\Editor\\Tests\\ReactiveChainTests.cs",
+      "Scripts\\Editor\\Tests\\RecorderAnimationPlayerTests.cs",
+      "Scripts\\Editor\\Tests\\StatusEffectTests.cs",
+      "Scripts\\Editor\\Tests\\TransferStatusEffectEffectTests.cs",
+      "Scripts\\Editor\\Tests\\ValueTrackerEffectTests.cs",
+      "Scripts\\Effects\\AddTempCard.cs",
+      "Scripts\\Effects\\BuryEffect.cs",
+      "Scripts\\Effects\\CardManipulationEffect.cs",
+      "Scripts\\Effects\\CurseEffect.cs",
+      "Scripts\\Effects\\EffectScript.cs",
+      "Scripts\\Effects\\ExileEffect.cs",
+      "Scripts\\Effects\\HPAlterEffect.cs",
+      "Scripts\\Effects\\StageEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\ConsumeStatusEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\ManaAlterEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\PowerReactionEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\StatusEffectAmplifierEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\StatusEffectGiverEffect.cs",
+      "Scripts\\Effects\\TransferStatusEffectEffect.cs",
+      "Scripts\\Managers\\AnimationRequest.cs",
+      "Scripts\\Managers\\CombatInfoDisplayer.cs",
+      "Scripts\\Managers\\CombatManager.cs",
+      "Scripts\\Managers\\ICombatVisuals.cs",
+      "Scripts\\Managers\\NullCombatVisuals.cs",
+      "Scripts\\Managers\\NullCombatVisualsBehaviour.cs",
+      "Scripts\\Managers\\PhaseManager.cs",
+      "Scripts\\Managers\\RecorderAnimationPlayer.cs",
+      "Scripts\\Managers\\ShopManager.cs",
+      "Scripts\\Managers\\ValueTrackerManager.cs",
+      "Scripts\\SOScripts\\GamePhaseSO.cs",
+      "Scripts\\SOScripts\\ShopRarityWeightSO.cs",
+      "Scripts\\SOScripts\\StatusEffectSO.cs",
+      "Scripts\\UXPrototype\\CardPhysObjScript.cs",
+      "Scripts\\UXPrototype\\CombatUXManager.cs",
+      "Scripts\\UXPrototype\\ShopCardView.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\ICombatVisuals.cs",
+    "class_names": [
+      "ICombatVisuals"
+    ],
+    "used_in": [
+      "Scripts\\Managers\\AnimationRequest.cs",
+      "Scripts\\Managers\\CombatManager.cs",
+      "Scripts\\Managers\\NullCombatVisuals.cs",
+      "Scripts\\Managers\\NullCombatVisualsBehaviour.cs",
+      "Scripts\\Managers\\RecorderAnimationPlayer.cs",
+      "Scripts\\UXPrototype\\CombatUXManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\NullCombatVisuals.cs",
+    "class_names": [
+      "NullCombatVisuals"
+    ],
+    "used_in": [
+      "Scripts\\Editor\\Tests\\HeadlessCombatTestFixture.cs",
+      "Scripts\\Managers\\NullCombatVisualsBehaviour.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\NullCombatVisualsBehaviour.cs",
+    "class_names": [
+      "NullCombatVisualsBehaviour"
+    ],
+    "used_in": [
+      "Scripts\\Managers\\CombatManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\RecorderAnimationPlayer.cs",
+    "class_names": [
+      "RecorderAnimationPlayer"
+    ],
+    "used_in": [
+      "Scripts\\Card\\CardScript.cs",
+      "Scripts\\Editor\\Tests\\AfterShuffleTimingTests.cs",
+      "Scripts\\Editor\\Tests\\EffectChainTests.cs",
+      "Scripts\\Editor\\Tests\\HeadlessCombatTestFixture.cs",
+      "Scripts\\Editor\\Tests\\RecorderAnimationPlayerTests.cs",
+      "Scripts\\Editor\\Tests\\TransferStatusEffectEffectTests.cs",
+      "Scripts\\Effects\\BuryEffect.cs",
+      "Scripts\\Effects\\CurseEffect.cs",
+      "Scripts\\Effects\\EffectScript.cs",
+      "Scripts\\Effects\\ExileEffect.cs",
+      "Scripts\\Effects\\StageEffect.cs",
+      "Scripts\\Effects\\StartCardShuffleEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\ConsumeStatusEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\ManaAlterEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\PowerReactionEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\StatusEffectAmplifierEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\StatusEffectGiverEffect.cs",
+      "Scripts\\Effects\\TransferStatusEffectEffect.cs",
+      "Scripts\\Managers\\AnimationRequest.cs",
+      "Scripts\\Managers\\AttackAnimationManager.cs",
+      "Scripts\\Managers\\CombatManager.cs",
+      "Scripts\\Managers\\CostResultPresenter.cs",
+      "Scripts\\Managers\\ICombatVisuals.cs",
+      "Scripts\\Managers\\TestManager.cs",
+      "Scripts\\UXPrototype\\CombatUXManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\UtilityFuncManagerScript.cs",
+    "class_names": [
+      "UtilityFuncManagerScript"
+    ],
+    "used_in": [
+      "Scripts\\Editor\\Tests\\CombatIntegrationTests.cs",
+      "Scripts\\Effects\\BuryEffect.cs",
+      "Scripts\\Effects\\CardManipulationEffect.cs",
+      "Scripts\\Effects\\ExileEffect.cs",
+      "Scripts\\Effects\\HPAlterEffect.cs",
+      "Scripts\\Effects\\StageEffect.cs",
+      "Scripts\\Effects\\StartCardShuffleEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\ConsumeStatusEffect.cs",
+      "Scripts\\Effects\\StatusEffect\\StatusEffectGiverEffect.cs",
+      "Scripts\\Managers\\CombatStartCardGiver.cs",
+      "Scripts\\Managers\\EffectChainManager.cs",
+      "Scripts\\Managers\\ShopManager.cs",
+      "Scripts\\Managers\\WriteRead\\DeckSaver.cs",
+      "Scripts\\SOScripts\\DeckSO.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\WriteRead\\CardWinRateData.cs",
+    "class_names": [
+      "CardStats",
+      "CardWinRateData"
+    ],
+    "used_in": [
+      "Scripts\\Managers\\WriteRead\\CardWinRateTracker.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\Managers\\WriteRead\\DeckData.cs",
+    "class_names": [
+      "DeckSaveEntry",
+      "DeckData"
+    ],
+    "used_in": [
+      "Scripts\\Managers\\WriteRead\\DeckSaver.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\SOScripts\\CostCheckResult.cs",
+    "class_names": [
+      "CostCheckResult"
+    ],
+    "used_in": [
+      "Scripts\\Card\\CostNEffectContainer.cs",
+      "Scripts\\Editor\\Tests\\CostResultPresenterTests.cs",
+      "Scripts\\Managers\\CostResultPresenter.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\UXPrototype\\CardMoveConfig.cs",
+    "class_names": [
+      "CardMoveConfig"
+    ],
+    "used_in": [
+      "Scripts\\UXPrototype\\CombatUXManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\UXPrototype\\CombatCardView.cs",
+    "class_names": [
+      "CombatCardView"
+    ],
+    "used_in": [
+      "Scripts\\UXPrototype\\CardPhysObjScript.cs",
+      "Scripts\\UXPrototype\\CombatUXManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\UXPrototype\\DeckPositionCalculator.cs",
+    "class_names": [
+      "DeckPositionCalculator"
+    ],
+    "used_in": [
+      "Scripts\\UXPrototype\\CombatUXManager.cs"
+    ]
+  },
+  {
+    "path": "Scripts\\UXPrototype\\ShopCardView.cs",
+    "class_names": [
+      "ShopCardView"
+    ],
+    "used_in": [
+      "Scripts\\UXPrototype\\ShopUXManager.cs"
+    ]
+  },
+  {
+    "path": "TutorialInfo\\Scripts\\Editor\\ReadmeEditor.cs",
+    "class_names": [
+      "ReadmeEditor"
+    ],
+    "used_in": []
+  }
+]
