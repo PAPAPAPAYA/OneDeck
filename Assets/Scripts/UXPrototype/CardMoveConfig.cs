@@ -30,6 +30,7 @@ public class CardMoveConfig
 	public bool destroyAfterMove = false;      // Whether to destroy after move
 	public Action onComplete;                  // Animation complete callback
 	public Action onStart;                     // Animation start callback
+	public Vector3? targetScaleOverride;       // Optional landing scale override (e.g. cascade scale for ToPosition moves); null = default by moveType
 	
 	// Convenient constructors
 	public static CardMoveConfig ToTop(float duration = 0.5f, bool useArc = true, Action onComplete = null)

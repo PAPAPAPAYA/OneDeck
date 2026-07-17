@@ -52,6 +52,33 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float xOffset;
 	[Tooltip("Deck card Y-axis offset (upward offset per card)")]
 	public float yOffset;
+
+	[Header("CASCADE DECK LAYOUT")]
+	[Tooltip("Enable the Smooth Curve Cascade deck layout. When false, the legacy linear fan is used byte-for-byte.")]
+	public bool enableCascadeDeckLayout = true;
+	[Tooltip("Demo px to world unit conversion; tune so the 150px demo card matches the current physical card width")]
+	public float cascadePxToWorld = 0.01f;
+	[Tooltip("Front segment length in cards (demo: 6)")]
+	public int cascadeShrinkCount = 6;
+	[Tooltip("Smallest card scale at the tail (demo: 0.55)")]
+	public float cascadeMinScale = 0.55f;
+	[Tooltip("Scale falloff steepness (demo: 2)")]
+	public float cascadeScalePower = 2f;
+	[Tooltip("Front spacing in demo px (demo: 60, 70)")]
+	public Vector2 cascadeStartSpacing = new Vector2(60f, 70f);
+	[Tooltip("Tail spacing in demo px (demo: 8, 12)")]
+	public Vector2 cascadeMinSpacing = new Vector2(8f, 12f);
+	[Tooltip("Spacing falloff steepness (demo: 2)")]
+	public float cascadeSpacingPower = 2f;
+	[Tooltip("Tail return strength (demo curveWidth: 0.55)")]
+	[Range(0f, 1f)] public float cascadeTailReturn = 0.55f;
+	[Tooltip("Per-component sign mirror of the canonical curve; (-1, +1) = front up-left (demo)")]
+	public Vector2 cascadeDirection = new Vector2(-1f, 1f);
+	[Tooltip("Mirror = tail bends toward the opposite side (demo); Same = tail keeps the front direction")]
+	public CascadeTailBend cascadeTailBend = CascadeTailBend.Mirror;
+	[Tooltip("Scale the position jitter by the card's cascade scale so the tail stays clean")]
+	public bool cascadeScaleJitterWithCard = true;
+
 	[Header("NEW CARD")]
 	public Transform physicalCardNewTempCardPos;
 	public Vector3 physicalCardNewTempCardSize;
@@ -351,20 +378,24 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			int effectiveCount = physicalCardsInDeck.Count - 1;
 			if (effectiveCount < 1) effectiveCount = 1; // At least 1 to avoid calculation errors
 			
-			Vector3 targetPos = new Vector3(
-				physicalCardDeckPos.position.x + xOffset * (effectiveCount - 1),
-				physicalCardDeckPos.position.y + yOffset * (effectiveCount - 1),
-				physicalCardDeckPos.position.z - zOffset * 0
-			);
+			// VISUAL-FIX(2026-07-17): Reveal-to-bottom must land on the cascade curve, not the raw linear fan.
+			//   Cause:    This site duplicated the linear formula inline (xOffset*(effectiveCount-1)),
+			//             bypassing the DeckPositionCalculator seam. Rerouted through the calculator
+			//             (index 0 = deck bottom); legacy path is numerically identical.
+			//   Affects:  MoveRevealedCardToBottom (second-click reveal-to-bottom arc).
+			//   Regress:  Reveal a card and click again; the card arcs to the cascade tail end
+			//             (or the legacy linear bottom when enableCascadeDeckLayout = false).
+			Vector3 targetPos = DeckPositionCalculator.CalculatePositionAtIndex(
+				0, effectiveCount, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
 
-			// Apply per-card layout offset
+			// Apply per-card layout offset (scaled down for deep cascade cards)
 			if (physScript != null)
 			{
 				if (randomizeOffsetOnReturnFromReveal)
 				{
 					_deckOffsetProvider.AssignOffset(physScript);
 				}
-				targetPos += _deckOffsetProvider.GetPositionOffset(physScript);
+				targetPos += _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(0, effectiveCount);
 			}
 			// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom targetPos=" + targetPos + " effectiveCount=" + effectiveCount);
 
@@ -385,6 +416,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				useArc = true,
 				arcMidpoint = showPos,
 				ease = revealToDeckEase,
+				// Cascade: land at the deepest tail scale (uniform deck size when the flag is off)
+				targetScaleOverride = GetDeckScaleAtIndex(0, effectiveCount),
 				onComplete = wrappedOnComplete
 			};
 			MoveCardWithAnimation(card, config);
@@ -508,10 +541,34 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			);
 		}
 
-		// Scale animation: Final size determined by target type
-		Vector3 targetScale = config.moveType == CardMoveType.ToGrave 
-			? cardDestroyTargetSize 
-			: physicalCardDeckSize;
+		// VISUAL-FIX(2026-07-17): Deck-bound moves must land at the card's cascade depth scale.
+		//   Cause:    Every move tweened scale to the uniform physicalCardDeckSize, stomping the
+		//             per-index cascade scale (card visibly "breathes" after landing).
+		//   Affects:  MoveCardWithAnimation (Bury/Stage/Delay ToTop/ToBottom/ToIndex), ToPosition override.
+		//   Regress:  With cascade on, Bury/Stage a card; its scale lands at its depth scale directly.
+		Vector3 targetScale;
+		switch (config.moveType)
+		{
+			case CardMoveType.ToGrave:
+				targetScale = cardDestroyTargetSize;
+				break;
+			case CardMoveType.ToTop:
+				// Reveal-zone bound subcase keeps the legacy uniform deck size;
+				// the completion handler swaps in pendingRevealScale anyway.
+				targetScale = (combatManager.revealZone == physScript.cardImRepresenting.gameObject)
+					? physicalCardDeckSize
+					: GetDeckScaleAtIndex(physicalCardsInDeck.Count - 1);
+				break;
+			case CardMoveType.ToBottom:
+				targetScale = GetDeckScaleAtIndex(0);
+				break;
+			case CardMoveType.ToIndex:
+				targetScale = GetDeckScaleAtIndex(config.targetIndex);
+				break;
+			default: // ToPosition
+				targetScale = config.targetScaleOverride ?? physicalCardDeckSize;
+				break;
+		}
 		moveSequence.Join(
 			physicalCard.transform.DOScale(targetScale, scaledDuration).SetEase(config.ease)
 		);
@@ -709,21 +766,23 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 				if (physScript == null) { phase2Done++; continue; }
 
-				Vector3 baseTargetPos = CalculateAnimationPositionAtIndex(finalIndex);
-				Vector3 targetPos = baseTargetPos + _deckOffsetProvider.GetPositionOffset(physScript);
+				// Cascade: GetFinalDeckPositionForCard consolidates layout + scale-aware jitter;
+				// slot-in must land at the card's cascade depth scale, not the uniform deck size.
+				Vector3 targetPos = GetFinalDeckPositionForCard(physScript, finalIndex);
 				Quaternion targetRot = GetFinalDeckRotationForCard(physScript);
+				Vector3 targetScale = GetDeckScaleAtIndex(finalIndex);
 				float scaledSlotInDuration = CombatAnimationSpeed.ScaleDuration(slotInDuration);
 
 				Sequence slotSeq = DOTween.Sequence();
 				slotSeq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, scaledSlotInDuration)));
-				slotSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, scaledSlotInDuration)));
+				slotSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(targetScale, scaledSlotInDuration)));
 				slotSeq.Join(ApplySlotInEase(physicalCard.transform.DOLocalRotate(targetRot.eulerAngles, scaledSlotInDuration)));
 				slotSeq.OnComplete(() =>
 				{
 					physScript.isPlayingSpecialAnimation = false;
 					physScript.isPoppedUp = false;
 					physScript.SetTargetPosition(targetPos);
-					physScript.SetTargetScale(physicalCardDeckSize);
+					physScript.SetTargetScale(targetScale);
 					physScript.SetTargetRotation(targetRot);
 
 					phase2Done++;
@@ -739,6 +798,80 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 	}
 
+	#region Cascade Deck Layout helpers
+
+	/// <summary>
+	/// Build the pure-math cascade params from the serialized Inspector fields.
+	/// </summary>
+	private DeckCascadeLayout.Params BuildCascadeLayoutParams()
+	{
+		return new DeckCascadeLayout.Params
+		{
+			shrinkCount = cascadeShrinkCount,
+			minScale = cascadeMinScale,
+			scalePower = cascadeScalePower,
+			startSpacingX = cascadeStartSpacing.x,
+			startSpacingY = cascadeStartSpacing.y,
+			minSpacingX = cascadeMinSpacing.x,
+			minSpacingY = cascadeMinSpacing.y,
+			spacingPower = cascadeSpacingPower,
+			tailReturn = cascadeTailReturn,
+			tailBendSign = cascadeTailBend == CascadeTailBend.Mirror ? 1f : -1f,
+			arcSamples = 300
+		};
+	}
+
+	/// <summary>
+	/// Build the cascade config carrier for DeckPositionCalculator. Null-safe:
+	/// when enableCascadeDeckLayout is false the calculator runs the legacy linear formula.
+	/// </summary>
+	private DeckPositionCalculator.CascadeConfig BuildCascadeConfig()
+	{
+		return new DeckPositionCalculator.CascadeConfig
+		{
+			enabled = enableCascadeDeckLayout,
+			pxToWorld = cascadePxToWorld,
+			direction = cascadeDirection,
+			layoutParams = BuildCascadeLayoutParams()
+		};
+	}
+
+	/// <summary>
+	/// Deck scale for the card at the given unity deck index (0 = bottom, count-1 = top).
+	/// Cascade mode: physicalCardDeckSize * per-depth cascade scale. Legacy mode: uniform physicalCardDeckSize.
+	/// </summary>
+	public Vector3 GetDeckScaleAtIndex(int unityIndex)
+	{
+		return GetDeckScaleAtIndex(unityIndex, physicalCardsInDeck.Count);
+	}
+
+	/// <summary>
+	/// Count-parameterized overload for callers computing against a future deck size
+	/// (e.g. MoveRevealedCardToBottom uses effectiveCount before the reveal resolves).
+	/// </summary>
+	private Vector3 GetDeckScaleAtIndex(int unityIndex, int count)
+	{
+		if (!enableCascadeDeckLayout) return physicalCardDeckSize;
+		if (count <= 0) return physicalCardDeckSize;
+		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
+		int cascadeIndex = count - 1 - clamped;
+		return physicalCardDeckSize * DeckCascadeLayout.ComputeScale(cascadeIndex, count, BuildCascadeLayoutParams());
+	}
+
+	/// <summary>
+	/// Jitter amplitude multiplier for a deck index. Cascade mode scales the position jitter
+	/// by the card's cascade scale so the tight tail spacing does not look ragged.
+	/// </summary>
+	private float GetCascadeJitterScale(int unityIndex, int count)
+	{
+		if (!enableCascadeDeckLayout || !cascadeScaleJitterWithCard || count <= 1) return 1f;
+		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
+		int cascadeIndex = count - 1 - clamped;
+		return DeckCascadeLayout.ComputeScale(cascadeIndex, count, BuildCascadeLayoutParams());
+	}
+
+	#endregion
+
 	/// <summary>
 	/// Calculate position coordinates at specified index using full deck count.
 	/// Use this for global deck layout updates (UpdateAllPhysicalCardTargets, shuffle, focus).
@@ -749,7 +882,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var count = physicalCardsInDeck.Count;
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
-			index, count, basePos, xOffset, yOffset, zOffset);
+			index, count, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
 		TestManager.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result);
 		return result;
 	}
@@ -773,7 +906,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		int fullCount = physicalCardsInDeck.Count;
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
-			index, fullCount, basePos, xOffset, yOffset, zOffset);
+			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
 		TestManager.Log("[CombatUXManager] CalculateAnimationPositionAtIndex index=" + index + " fullCount=" + fullCount + " result=" + result);
 		return result;
 	}
@@ -792,12 +925,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	/// <summary>
 	/// Get the final deck position for a specific card, including its layout offset.
+	/// Cascade mode scales the position jitter by the card's cascade scale (cascadeScaleJitterWithCard).
 	/// </summary>
 	private Vector3 GetFinalDeckPositionForCard(CardPhysObjScript physScript, int index)
 	{
 		Vector3 basePos = CalculatePositionAtIndex(index);
 		if (physScript == null) return basePos;
-		return basePos + _deckOffsetProvider.GetPositionOffset(physScript);
+		return basePos + _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, physicalCardsInDeck.Count);
 	}
 
 
@@ -844,7 +978,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		int fullCount = physicalCardsInDeck.Count;
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
-			index, fullCount, basePos, xOffset, yOffset, zOffset);
+			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
 		TestManager.Log("[CombatUXManager] CalculatePositionForPendingCard index=" + index + " fullCount=" + fullCount + " result=" + result);
 		return result;
 	}
@@ -865,12 +999,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 
 		// 1. Calculate target position for each card (based on known shuffle result)
-		var shuffleTargets = CalculateShuffleTargets(shuffledCards);
+		var shuffleTargets = CalculateShuffleTargets(shuffledCards, out var shuffleIndices);
 
 		// 2. Play move animations for all cards simultaneously
 		// Start Card flies from Reveal Zone directly to new position
 		// Other cards fly from current position to new position
-		PlayShuffleAnimationInternal(shuffleTargets, () =>
+		PlayShuffleAnimationInternal(shuffleTargets, shuffleIndices, () =>
 		{
 			// 3. After animation completes, rebuild physical card list to match logical order
 			RebuildPhysicalDeckFromShuffledList(shuffledCards);
@@ -908,14 +1042,17 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
-	/// Calculate target position for each card after Shuffle
+	/// Calculate target position for each card after Shuffle.
+	/// Also outputs each card's shuffled deck index so the animation can tween
+	/// to the card's cascade depth scale (uniform when cascade is disabled).
 	/// </summary>
 	/// <param name="shuffledCards">Card order after shuffle</param>
+	/// <param name="shuffleIndices">Output: shuffled deck index per physical card</param>
 	/// <returns>Target position for each physical card</returns>
-	private Dictionary<GameObject, Vector3> CalculateShuffleTargets(List<GameObject> shuffledCards)
+	private Dictionary<GameObject, Vector3> CalculateShuffleTargets(List<GameObject> shuffledCards, out Dictionary<GameObject, int> shuffleIndices)
 	{
 		var targets = new Dictionary<GameObject, Vector3>();
-		var count = shuffledCards.Count;
+		shuffleIndices = new Dictionary<GameObject, int>();
 
 		for (int i = 0; i < shuffledCards.Count; i++)
 		{
@@ -926,12 +1063,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (physicalCard == null) continue;
 
 			var physScript = physicalCard.GetComponent<CardPhysObjScript>();
-			Vector3 baseTargetPos = CalculatePositionAtIndex(i);
-			Vector3 targetPos = physScript != null
-				? baseTargetPos + _deckOffsetProvider.GetPositionOffset(physScript)
-				: baseTargetPos;
-
-			targets[physicalCard] = targetPos;
+			targets[physicalCard] = GetFinalDeckPositionForCard(physScript, i);
+			shuffleIndices[physicalCard] = i;
 		}
 
 		return targets;
@@ -941,8 +1074,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// Internal method: Play Shuffle move animation
 	/// </summary>
 	/// <param name="shuffleTargets">Target position for each physical card</param>
+	/// <param name="shuffleIndices">Shuffled deck index per physical card (for cascade scale)</param>
 	/// <param name="onComplete">Callback after animation completes</param>
-	private void PlayShuffleAnimationInternal(Dictionary<GameObject, Vector3> shuffleTargets, Action onComplete)
+	private void PlayShuffleAnimationInternal(Dictionary<GameObject, Vector3> shuffleTargets, Dictionary<GameObject, int> shuffleIndices, Action onComplete)
 	{
 		if (shuffleTargets.Count == 0)
 		{
@@ -1015,9 +1149,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				);
 			}
 
-			// Sync scale
+			// Sync scale: cascade mode tweens each card to its own depth scale (uniform when disabled)
+			Vector3 targetScale = (shuffleIndices != null && shuffleIndices.TryGetValue(physicalCard, out int deckIndex))
+				? GetDeckScaleAtIndex(deckIndex)
+				: physicalCardDeckSize;
 			moveSequence.Join(
-				physicalCard.transform.DOScale(physicalCardDeckSize, shuffleDuration).SetEase(Ease.InOutQuad)
+				physicalCard.transform.DOScale(targetScale, shuffleDuration).SetEase(Ease.InOutQuad)
 			);
 
 			moveSequence.OnComplete(() =>
@@ -1027,7 +1164,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					physScript.isPlayingSpecialAnimation = false;
 					physScript.isPoppedUp = false;
 					physScript.SetTargetPosition(targetPos);
-					physScript.SetTargetScale(physicalCardDeckSize);
+					physScript.SetTargetScale(targetScale);
 				}
 
 				completedCount++;
@@ -1149,8 +1286,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets card=" + card.name + " index=" + i + " isPending=" + physScript.isPendingSlotIn + " currentPos=" + card.transform.position + " targetPos=" + targetPos);
 
 			// Set target position, rotation and scale (card handles animation in its own Update)
+			// Cascade mode: per-index depth scale (uniform physicalCardDeckSize when disabled)
 			physScript.SetTargetPosition(targetPos);
-			physScript.SetTargetScale(physicalCardDeckSize);
+			physScript.SetTargetScale(GetDeckScaleAtIndex(i));
 			physScript.SetTargetRotation(targetRot);
 		}
 		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");
@@ -1447,11 +1585,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		AnimationStateTracker.me?.RegisterAnimation();
 
 		// Compute deck focus offset first so reveal zone can follow the same offset
+		// VISUAL-FIX(2026-07-17): Peel focus must derive from the cascade position, not raw linear math.
+		//   Cause:    noOffsetX/Y duplicated the linear formula inline, bypassing the layout seam;
+		//             in cascade mode the focused card missed deckFocusTargetPos.
+		//   Affects:  StartPeelCoroutine (deck focus offset computation).
+		//   Regress:  Trigger an off-reveal Attack with cascade on; the focused card lands on deckFocusTargetPos.
 		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
-		float noOffsetX = physicalCardDeckPos.position.x + xOffset * (count - 1 - targetIndex);
-		float noOffsetY = physicalCardDeckPos.position.y + yOffset * (count - 1 - targetIndex);
-		float offsetX = desiredX - noOffsetX;
-		float offsetY = physicalCardDeckPos.position.y - noOffsetY;
+		Vector3 noOffsetPos = DeckPositionCalculator.CalculatePositionAtIndex(
+			targetIndex, count, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
+		float offsetX = desiredX - noOffsetPos.x;
+		float offsetY = physicalCardDeckPos.position.y - noOffsetPos.y;
 		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
 
 		// Animate all cards to their final positions (parallel) including reveal zone exit
@@ -1554,11 +1697,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		AnimationStateTracker.me?.RegisterAnimation();
 
 		// Recompute deck focus offset for new target
+		// VISUAL-FIX(2026-07-17): Focus transition must derive from the cascade position (same as StartPeelCoroutine).
+		//   Affects:  TransitionFocusCoroutine (deck focus offset recomputation).
+		//   Regress:  Chain two off-reveal effects with cascade on; focus lands on deckFocusTargetPos both times.
 		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
-		float noOffsetX = physicalCardDeckPos.position.x + xOffset * (count - 1 - newTargetIndex);
-		float noOffsetY = physicalCardDeckPos.position.y + yOffset * (count - 1 - newTargetIndex);
-		float offsetX = desiredX - noOffsetX;
-		float offsetY = physicalCardDeckPos.position.y - noOffsetY;
+		Vector3 noOffsetPos = DeckPositionCalculator.CalculatePositionAtIndex(
+			newTargetIndex, count, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
+		float offsetX = desiredX - noOffsetPos.x;
+		float offsetY = physicalCardDeckPos.position.y - noOffsetPos.y;
 		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
 
 		// Determine which cards should be peeled at the end
@@ -2016,7 +2162,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					// Place it behind all existing cards so later spawns never overlap earlier ones.
 					targetPos.z = backMostZ + zBump;
 					cardPhys.SetTargetPosition(targetPos);
-					cardPhys.SetTargetScale(physicalCardDeckSize);
+					cardPhys.SetTargetScale(GetDeckScaleAtIndex(i));
 					cardPhys.SetTargetRotation(targetRot);
 					// Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
 				}
@@ -2092,6 +2238,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			Quaternion rot = GetFinalDeckRotationForCard(physScript);
 			physScript.SetPositionImmediate(pos);
 			physScript.SetRotationImmediate(rot);
+			// Cascade: per-depth scale immediately so the deck never opens with a uniform-scale frame
+			physScript.SetScaleImmediate(GetDeckScaleAtIndex(i));
 		}
 
 		// Rebuild dictionary mapping
@@ -2750,9 +2898,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		//   Affects:  SlotInCard, MoveToPopUpPosition
 		//   Regress:  Same as CalculatePositionForPendingCard
 		//   Related:  RIFT_INSECT, BLACKSMITH
-		Vector3 baseTargetPos = CalculatePositionForPendingCard(deckIndex);
-		Vector3 targetPos = baseTargetPos + _deckOffsetProvider.GetPositionOffset(physScript);
+		// Consolidated 2026-07-17: GetFinalDeckPositionForCard keeps the same FULL-count semantics
+		// and adds cascade scale-aware jitter; slot-in lands at the cascade depth scale.
+		Vector3 targetPos = GetFinalDeckPositionForCard(physScript, deckIndex);
 		Quaternion targetRot = GetFinalDeckRotationForCard(physScript);
+		Vector3 targetScale = GetDeckScaleAtIndex(deckIndex);
 		TestManager.Log("[CombatUXManager] SlotInCard logical=" + logicalCard.name + " deckIndex=" + deckIndex + " targetPos=" + targetPos + " isPending=" + physScript.isPendingSlotIn);
 
 		AnimationStateTracker.me?.RegisterAnimation();
@@ -2761,7 +2911,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		float scaledSlotInDuration = CombatAnimationSpeed.ScaleDuration(slotInDuration);
 		Sequence seq = DOTween.Sequence();
 		seq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, scaledSlotInDuration)));
-		seq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, scaledSlotInDuration)));
+		seq.Join(ApplySlotInEase(physicalCard.transform.DOScale(targetScale, scaledSlotInDuration)));
 		seq.Join(ApplySlotInEase(physicalCard.transform.DOLocalRotate(targetRot.eulerAngles, scaledSlotInDuration)));
 		seq.OnComplete(() =>
 		{
@@ -2769,7 +2919,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physScript.isPendingSlotIn = false;
 			physScript.isPoppedUp = false;
 			physScript.SetTargetPosition(targetPos);
-			physScript.SetTargetScale(physicalCardDeckSize);
+			physScript.SetTargetScale(targetScale);
 			physScript.SetTargetRotation(targetRot);
 			AnimationStateTracker.me?.CompleteAnimation();
 			UnblockInput(this);

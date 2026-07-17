@@ -357,7 +357,8 @@ public void ReleaseDeckFocus()
 				{
 					Vector3 deckPos = _combatUXManager.CalculatePositionAtIndex(deckIndex);
 					physScript.SetTargetPosition(deckPos);
-					physScript.SetTargetScale(_combatUXManager.physicalCardDeckSize);
+					// Cascade: restore the card's per-depth scale (uniform deck size when cascade is disabled)
+					physScript.SetTargetScale(_combatUXManager.GetDeckScaleAtIndex(deckIndex));
 				}
 			}
 		}
