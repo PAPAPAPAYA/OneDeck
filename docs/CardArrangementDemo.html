@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneDeck 物理卡片排列方案 Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: #0f1a1f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .intro {
+            padding: 30px 40px 10px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .intro h1 {
+            font-size: 28px;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .intro p {
+            line-height: 1.8;
+            color: #b0c0c8;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            padding: 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #263740;
+            border: 1px solid #334750;
+            border-radius: 6px;
+            color: #b0c0c8;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .tab:hover {
+            background: #334750;
+        }
+
+        .tab.active {
+            background: #c9981f;
+            color: #0f1a1f;
+            border-color: #c9981f;
+            font-weight: bold;
+        }
+
+        .section {
+            display: none;
+            padding: 20px 40px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .section-desc {
+            color: #90a0a8;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .demo-area {
+            width: 100%;
+            height: 520px;
+            background: #1c2b32;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.3);
+        }
+
+        /* Card base style */
+        .card {
+            width: 150px;
+            height: 210px;
+            border-radius: 14px;
+            position: absolute;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.38);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            height: 30px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 7px;
+        }
+
+        /* Color palette matching the reference image */
+        .color-front { background: #d4d0c8; }
+        .color-gold { background: #c9981f; }
+        .color-red { background: #b71c2c; }
+        .color-light { background: #e8e4dc; }
+
+        /* Method 1: CSS Transform absolute positioning */
+        #method1 .card {
+            top: 65%;
+            left: 55%;
+            margin-top: -105px;
+            margin-left: -75px;
+            transform-origin: center center;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Method 2: CSS Grid + Transform */
+        #method2 .demo-area {
+            display: grid;
+            place-items: center;
+        }
+
+        #method2 .stack-container {
+            position: relative;
+            width: 150px;
+            height: 210px;
+        }
+
+        #method2 .card {
+            top: 0;
+            left: 0;
+            transform-origin: center center;
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Method 3: Canvas */
+        #canvasDemo {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Method 4: Three.js container */
+        #threeDemo {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 18px;
+            background: #263740;
+            border: 1px solid #334750;
+            border-radius: 5px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn:hover {
+            background: #334750;
+        }
+
+        .eval-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .eval-card {
+            background: #1a262c;
+            border: 1px solid #2a3a42;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .eval-card h3 {
+            color: #c9981f;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .eval-card ul {
+            list-style: none;
+        }
+
+        .eval-card li {
+            padding: 4px 0;
+            font-size: 13px;
+            color: #a8b8c0;
+        }
+
+        .eval-card li.pro::before {
+            content: '✓ ';
+            color: #4caf50;
+        }
+
+        .eval-card li.con::before {
+            content: '✗ ';
+            color: #e57373;
+        }
+
+        .eval-card li.cost::before {
+            content: '◎ ';
+            color: #64b5f6;
+        }
+
+        .param-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .param-row label {
+            font-size: 13px;
+            color: #90a0a8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .param-row input[type="range"] {
+            width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="intro">
+        <h1>OneDeck 物理卡片排列方案</h1>
+        <p><strong>目标排列描述：</strong>参考图展示的是一种「平滑曲线级联堆叠（Smooth Curve Cascade Stack）」。最前方卡片最大、位于右下；前段卡片沿平滑曲线朝「左上」方向展开，同时逐步缩小、间隔逐步减小；到达转折点后曲线自然地弯向「右上」，卡片尺寸趋于稳定，间隔收缩至最小值并保持。整体形成一条连续的弧线纵深，而非生硬折线。</p>
+        <p>本 Demo 使用 20 张卡片，复现参考图的配色与折线级联排列，并提供可调参数观察不同 X 值与间距曲线的效果。</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-target="method1">方案A：绝对定位 + CSS Transform</div>
+        <div class="tab" data-target="method2">方案B：容器堆叠 + Transform</div>
+        <div class="tab" data-target="method3">方案C：Canvas 2D 绘制</div>
+        <div class="tab" data-target="method4">方案D：WebGL/Three.js 透视</div>
+    </div>
+
+    <!-- Method 1 -->
+    <div class="section active" id="method1">
+        <h2 class="section-title">方案 A：绝对定位 + CSS Transform（Unity 对应：RectTransform 手动计算）</h2>
+        <p class="section-desc">
+            在 Unity 中相当于每张卡片的 RectTransform 通过脚本按索引计算 localPosition、localScale。逻辑简单、可控性最高，是最直接的实现方式。
+        </p>
+        <div class="param-row">
+            <label>前 X 张: <span id="valX1">6</span><input type="range" id="rangeX1" min="3" max="12" value="6"></label>
+            <label>最小缩放: <span id="valScale1">0.55</span><input type="range" id="rangeScale1" min="0.3" max="0.8" step="0.05" value="0.55"></label>
+            <label>缩放衰减陡峭度: <span id="valScalePower1">2</span><input type="range" id="rangeScalePower1" min="1" max="8" step="0.5" value="2"></label>
+            <label>前端水平间距: <span id="valStartSpace1">60</span><input type="range" id="rangeStartSpace1" min="20" max="120" value="60"></label>
+            <label>前端垂直间距: <span id="valStartSpaceY1">70</span><input type="range" id="rangeStartSpaceY1" min="20" max="120" value="70"></label>
+            <label>后端水平间距: <span id="valSpace1">8</span><input type="range" id="rangeSpace1" min="2" max="30" value="8"></label>
+            <label>后端垂直间距: <span id="valSpaceY1">12</span><input type="range" id="rangeSpaceY1" min="2" max="40" value="12"></label>
+            <label>间距衰减陡峭度: <span id="valPower1">2</span><input type="range" id="rangePower1" min="1" max="8" step="0.5" value="2"></label>
+            <label>右上回弯: <span id="valCurve1">0.55</span><input type="range" id="rangeCurve1" min="0" max="1" step="0.05" value="0.55"></label>
+        </div>
+        <div class="demo-area" id="demo1"></div>
+        <div class="controls">
+            <button class="btn" onclick="renderMethod1()">重播排列</button>
+            <button class="btn" onclick="toggleHover1()">悬停展开</button>
+        </div>
+        <div class="eval-grid">
+            <div class="eval-card">
+                <h3>实现成本</h3>
+                <ul>
+                    <li class="cost">低：只需在 CombatUXManager 中增加排列计算函数</li>
+                    <li class="cost">无需额外包或 Shader</li>
+                </ul>
+            </div>
+            <div class="eval-card">
+                <h3>优势</h3>
+                <ul>
+                    <li class="pro">完全可控，便于与现有 DOTween 动画集成</li>
+                    <li class="pro">易于响应 Reveal / Bury / Stage 等事件实时更新</li>
+                    <li class="pro">原生 UI 或 World Space 都适用</li>
+                </ul>
+            </div>
+            <div class="eval-card">
+                <h3>劣势</h3>
+                <ul>
+                    <li class="con">卡片数量极大时（>100）布局计算会线性增长</li>
+                    <li class="con">需要手动处理层级排序（Sorting Order）</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Method 2 -->
+    <div class="section" id="method2">
+        <h2 class="section-title">方案 B：容器堆叠 + Transform（Unity 对应：父物体作为布局锚点）</h2>
+        <p class="section-desc">
+            将所有卡片放入一个 StackContainer，父物体只负责整体位置，子物体通过局部坐标偏移。Unity 中可保留现有 CardPhysObjScript 的父子结构，仅修改局部偏移量。
+        </p>
+        <div class="demo-area" id="demo2">
+            <div class="stack-container" id="stackContainer"></div>
+        </div>
+        <div class="controls">
+            <button class="btn" onclick="renderMethod2()">重播排列</button>
+            <button class="btn" onclick="toggleSpread2()">扇形展开</button>
+        </div>
+        <div class="eval-grid">
+            <div class="eval-card">
+                <h3>实现成本</h3>
+                <ul>
+                    <li class="cost">中低：需要重构 CardPhysObjScript 的父级关系</li>
+                    <li class="cost">保留现有组件，改动集中在布局函数</li>
+                </ul>
+            </div>
+            <div class="eval-card">
+                <h3>优势</h3>
+                <ul>
+                    <li class="pro">整体移动牌库时只需移动父物体</li>
+                    <li class="pro">动画可复用现有 Tween，对现有代码侵入性小</li>
+                    <li class="pro">便于做整体入场/离场动画</li>
+                </ul>
+            </div>
+            <div class="eval-card">
+                <h3>劣势</h3>
+                <ul>
+                    <li class="con">卡片单独飞出（如 Attack / Exile）时需要临时脱离父级</li>
+                    <li class="con">层级控制仍需要显式设置 sibling index 或 sorting order</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Method 3 -->
+    <div class="section" id="method3">
+        <h2 class="section-title">方案 C：Canvas 2D 绘制（Unity 对应：自定义 IMGUI/Editor 或 SpriteRenderer 动态绘制）</h2>
+        <p class="section-desc">
+            不依赖单个 Card GameObject，而是在一个 RenderTexture 或 Canvas 上一次性绘制所有卡片。Unity 中可用 SpriteRenderer + 动态 Texture，或 UI RawImage + RenderTexture。
+        </p>
+        <div class="param-row">
+            <label>前 X 张: <span id="valX3">6</span><input type="range" id="rangeX3" min="3" max="12" value="6"></label>
+            <label>最小缩放: <span id="valScale3">0.55</span><input type="range" id="rangeScale3" min="0.3" max="0.8" step="0.05" value="0.55"></label>
+            <label>缩放衰减陡峭度: <span id="valScalePower3">2</span><input type="range" id="rangeScalePower3" min="1" max="8" step="0.5" value="2"></label>
+            <label>前端水平间距: <span id="valStartSpace3">60</span><input type="range" id="rangeStartSpace3" min="20" max="120" value="60"></label>
+            <label>前端垂直间距: <span id="valStartSpaceY3">70</span><input type="range" id="rangeStartSpaceY3" min="20" max="120" value="70"></label>
+            <label>后端水平间距: <span id="valSpace3">8</span><input type="range" id="rangeSpace3" min="2" max="30" value="8"></label>
+            <label>后端垂直间距: <span id="valSpaceY3">12</span><input type="range" id="rangeSpaceY3" min="2" max="40" value="12"></label>
+            <label>间距衰减陡峭度: <span id="valPower3">2</span><input type="range" id="rangePower3" min="1" max="8" step="0.5" value="2"></label>
+            <label>右上回弯: <span id="valCurve3">0.55</span><input type="range" id="rangeCurve3" min="0" max="1" step="0.05" value="0.55"></label>
+        </div>
+        <div class="demo-area">
+            <canvas id="canvasDemo"></canvas>
+        </div>
+        <div class="controls">
+            <button class="btn" onclick="renderCanvas()">重绘</button>
+            <button class="btn" onclick="animateCanvas()">动画重绘</button>
+        </div>
+        <div class="eval-grid">
+            <div class="eval-card">
+                <h3>实现成本</h3>
+                <ul>
+                    <li class="cost">中高：需要实现绘制管线，交互检测较复杂</li>
+                    <li class="cost">在 Unity 中通常需要 RenderTexture 或自定义 Mesh</li>
+                </ul>
+            </div>
+            <div class="eval-card">
+                <h3>优势</h3>
+                <ul>
+                    <li class="pro">性能最好，大量卡片时 Draw Call 极低</li>
+                    <li class="pro">可轻松实现复杂几何、阴影、渐变</li>
+                    <li class="pro">适合用作远景牌库或缩略图</li>
+                </ul>
+            </div>
+            <div class="eval-card">
+                <h3>劣势</h3>
+                <ul>
+                    <li class="con">单张卡片交互（Hover/Click/Drag）需要额外实现命中检测</li>
+                    <li class="con">与现有 CardPhysObjScript 动画体系不兼容</li>
+                    <li class="con">开发和调试成本高</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Method 4 -->
+    <div class="section" id="method4">
+        <h2 class="section-title">方案 D：WebGL/Three.js 透视（Unity 对应：真正的 3D 透视相机）</h2>
+        <p class="section-desc">
+            将卡片作为 3D 空间中的 Quad/Plane，利用透视相机的自然深度产生缩放。Unity 中只需把卡片放在 World Space 3D 空间中，使用 Perspective Camera，Z 轴深度即可产生大小差异。
+        </p>
+        <div class="demo-area">
+            <canvas id="threeDemo"></canvas>
+        </div>
+        <div class="controls">
+            <button class="btn" onclick="initThree()">重置视角</button>
+            <button class="btn" onclick="rotateThree()">旋转查看</button>
+        </div>
+        <div class="eval-grid">
+            <div class="eval-card">
+                <h3>实现成本</h3>
+                <ul>
+                    <li class="cost">中：需要把 UI 卡片改为 World Space 3D Quad 或启用 3D 旋转</li>
+                    <li class="cost">相机和光照需要重新调整</li>
+                </ul>
+            </div>
+            <div class="eval-card">
+                <h3>优势</h3>
+                <ul>
+                    <li class="pro">透视效果最自然，无需手动缩放计算</li>
+                    <li class="pro">可叠加 3D 翻转、弯曲、光照等高级效果</li>
+                    <li class="pro">视觉上限最高</li>
+                </ul>
+            </div>
+            <div class="eval-card">
+                <h3>劣势</h3>
+                <ul>
+                    <li class="con">与现有 2D UI 动画体系冲突大，改造成本高</li>
+                    <li class="con">需要处理 3D 层级、遮挡和点击射线检测</li>
+                    <li class="con">对美术资源一致性要求高</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script>
+        // Common card color palette matching the reference image
+        const CARD_COLORS = ['#d4d0c8', '#c9981f', '#b71c2c', '#e8e4dc'];
+        const TOTAL_CARDS = 20;
+        const BG_COLOR = '#1c2b32';
+
+        // Layout parameters (use an object so slider callbacks can mutate them)
+        const params = {
+            shrinkCount: 6,
+            minScale: 0.55,
+            scalePower: 2,
+            startSpacingX: 60,
+            startSpacingY: 70,
+            minSpacingX: 8,
+            minSpacingY: 12,
+            curveWidth: 0.55,
+            spacingPower: 2
+        };
+
+        // Cache for smooth curve positions
+        const positionsCache = [];
+
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function smoothstep(t) { return t * t * (3 - 2 * t); }
+
+        function getCardColor(index) {
+            // Front card -> back card color cycling
+            if (index === 0) return CARD_COLORS[0];       // front: light gray
+            if (index === 1) return CARD_COLORS[1];       // 2nd: gold
+            if (index === 2) return CARD_COLORS[2];       // 3rd: red
+            if (index >= TOTAL_CARDS - 2) return CARD_COLORS[3]; // last 2: light
+            return CARD_COLORS[2];                        // middle: red
+        }
+
+        function getColorClass(index) {
+            const color = getCardColor(index);
+            if (color === '#d4d0c8') return 'color-front';
+            if (color === '#c9981f') return 'color-gold';
+            if (color === '#b71c2c') return 'color-red';
+            return 'color-light';
+        }
+
+        // Ease-out curve for spacing shrink
+        function easeOutQuad(t) { return t * (2 - t); }
+        function easeOutPower(t, power) { return 1 - Math.pow(1 - t, power); }
+        function easeInOutQuad(t) { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+
+        // Smooth Bezier curve cascade layout: up-left peak then up-right tail
+        function computeSmoothPositions() {
+            positionsCache.length = 0;
+
+            // Quadratic Bezier control points
+            const P0 = { x: 0, y: 0 };
+            // Peak pulls the curve up-left, roughly around the shrinkCount
+            const peakX = params.startSpacingX * params.shrinkCount * 0.85;
+            const peakY = params.startSpacingY * params.shrinkCount * 0.85;
+            const P1 = { x: -peakX, y: -peakY };
+            // Tail ends up-right, with slight return toward center
+            const tailReturn = params.curveWidth; // 0 = straight up-left peak, 1 = strong right return
+            const tailX = -peakX * (1 - tailReturn) + params.minSpacingX * (TOTAL_CARDS - params.shrinkCount) * tailReturn * 0.6;
+            const tailY = -peakY - params.minSpacingY * (TOTAL_CARDS - params.shrinkCount);
+            const P2 = { x: tailX, y: tailY };
+
+            // Dense sampling for arc-length parameterization
+            const samples = [];
+            const sampleCount = 300;
+            let prev = P0;
+            let totalLength = 0;
+            samples.push({ x: P0.x, y: P0.y, len: 0 });
+            for (let i = 1; i <= sampleCount; i++) {
+                const t = i / sampleCount;
+                const inv = 1 - t;
+                const x = inv * inv * P0.x + 2 * inv * t * P1.x + t * t * P2.x;
+                const y = inv * inv * P0.y + 2 * inv * t * P1.y + t * t * P2.y;
+                const dx = x - prev.x;
+                const dy = y - prev.y;
+                totalLength += Math.sqrt(dx * dx + dy * dy);
+                samples.push({ x, y, len: totalLength });
+                prev = { x, y };
+            }
+
+            // Place cards along the curve with decreasing spacing
+            positionsCache.push({ x: P0.x, y: P0.y });
+            let currentLen = 0;
+            for (let i = 1; i < TOTAL_CARDS; i++) {
+                const t = i / Math.max(1, TOTAL_CARDS - 1);
+                const spacingX = lerp(params.startSpacingX, params.minSpacingX, easeOutPower(t, params.spacingPower));
+                const spacingY = lerp(params.startSpacingY, params.minSpacingY, easeOutPower(t, params.spacingPower));
+                const stepSize = Math.sqrt(spacingX * spacingX + spacingY * spacingY) * 0.5;
+                currentLen += stepSize;
+
+                // Find sample at this arc length
+                const targetLen = Math.min(currentLen, totalLength);
+                let s = 1;
+                while (s < samples.length && samples[s].len < targetLen) s++;
+                const a = samples[s - 1];
+                const b = samples[s];
+                if (!b) {
+                    positionsCache.push({ x: P2.x, y: P2.y });
+                    continue;
+                }
+                const segLen = b.len - a.len;
+                const localT = segLen > 0 ? (targetLen - a.len) / segLen : 0;
+                positionsCache.push({
+                    x: lerp(a.x, b.x, localT),
+                    y: lerp(a.y, b.y, localT)
+                });
+            }
+        }
+
+        function getCascadeParams(index) {
+            if (positionsCache.length === 0) computeSmoothPositions();
+            const t = index / Math.max(1, TOTAL_CARDS - 1);
+            const scale = 1.0 - (1.0 - params.minScale) * easeOutPower(t, params.scalePower);
+            const pos = positionsCache[index] || { x: 0, y: 0 };
+            return { scale, offsetX: pos.x, offsetY: pos.y };
+        }
+
+        // ==================== Method 1 ====================
+        function renderMethod1() {
+            const container = document.getElementById('demo1');
+            container.innerHTML = '';
+            // Render back-to-front so z-index works naturally
+            for (let i = TOTAL_CARDS - 1; i >= 0; i--) {
+                const card = document.createElement('div');
+                card.className = 'card ' + getColorClass(i);
+                const { scale, offsetX, offsetY } = getCascadeParams(i);
+                card.style.zIndex = TOTAL_CARDS - i;
+                card.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+                container.appendChild(card);
+            }
+        }
+
+        let hoverExpanded1 = false;
+        function toggleHover1() {
+            hoverExpanded1 = !hoverExpanded1;
+            const cards = document.querySelectorAll('#demo1 .card');
+            cards.forEach((card, idx) => {
+                const i = TOTAL_CARDS - 1 - idx;
+                const { scale, offsetX, offsetY } = getCascadeParams(i);
+                const mult = hoverExpanded1 ? 2.8 : 1;
+                card.style.transform = `translate(${offsetX * mult}px, ${offsetY * mult}px) scale(${scale})`;
+            });
+        }
+
+        // ==================== Method 2 ====================
+        function renderMethod2() {
+            const container = document.getElementById('stackContainer');
+            container.innerHTML = '';
+            for (let i = TOTAL_CARDS - 1; i >= 0; i--) {
+                const card = document.createElement('div');
+                card.className = 'card ' + getColorClass(i);
+                card.style.zIndex = TOTAL_CARDS - i;
+                const { scale, offsetX, offsetY } = getCascadeParams(i);
+                card.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+                container.appendChild(card);
+            }
+        }
+
+        let spread2 = false;
+        function toggleSpread2() {
+            spread2 = !spread2;
+            const cards = document.querySelectorAll('#stackContainer .card');
+            cards.forEach((card, idx) => {
+                const i = TOTAL_CARDS - 1 - idx;
+                const { scale, offsetX, offsetY } = getCascadeParams(i);
+                const mult = spread2 ? 2.5 : 1;
+                card.style.transform = `translate(${offsetX * mult}px, ${offsetY * mult}px) scale(${scale})`;
+            });
+        }
+
+        // ==================== Method 3 ====================
+        function renderCanvas(animate = false) {
+            const canvas = document.getElementById('canvasDemo');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const centerX = rect.width * 0.55;
+            const centerY = rect.height * 0.65;
+            const baseW = 150;
+            const baseH = 210;
+
+            function draw(progress = 1) {
+                ctx.clearRect(0, 0, rect.width, rect.height);
+                ctx.fillStyle = BG_COLOR;
+                ctx.fillRect(0, 0, rect.width, rect.height);
+
+                for (let i = TOTAL_CARDS - 1; i >= 0; i--) {
+                    const p = getCascadeParams(i);
+                    const scale = 1 - (1 - p.scale) * progress;
+                    const offsetX = p.offsetX * progress;
+                    const offsetY = p.offsetY * progress;
+                    const w = baseW * scale;
+                    const h = baseH * scale;
+                    const x = centerX + offsetX - w / 2;
+                    const y = centerY + offsetY - h / 2;
+
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0.38)';
+                    ctx.shadowBlur = 18;
+                    ctx.shadowOffsetY = 10;
+                    ctx.fillStyle = getCardColor(i);
+                    roundRect(ctx, x, y, w, h, 11 * scale);
+                    ctx.fill();
+
+                    // highlight bar
+                    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+                    roundRect(ctx, x + 8 * scale, y + 8 * scale, w - 16 * scale, 26 * scale, 5 * scale);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            if (animate) {
+                let t = 0;
+                function frame() {
+                    t += 0.02;
+                    draw(Math.min(1, t));
+                    if (t < 1) requestAnimationFrame(frame);
+                }
+                frame();
+            } else {
+                draw(1);
+            }
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function animateCanvas() {
+            renderCanvas(true);
+        }
+
+        // ==================== Method 4 ====================
+        let threeScene, threeCamera, threeRenderer, threeCards = [];
+        function initThree() {
+            const canvas = document.getElementById('threeDemo');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            if (threeRenderer) {
+                threeRenderer.dispose();
+                canvas.innerHTML = '';
+            }
+
+            threeScene = new THREE.Scene();
+            threeScene.background = new THREE.Color(BG_COLOR);
+
+            threeCamera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.1, 1000);
+            threeCamera.position.set(0, 0, 32);
+
+            threeRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            threeRenderer.setSize(rect.width, rect.height);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.85);
+            threeScene.add(ambient);
+            const dir = new THREE.DirectionalLight(0xffffff, 0.4);
+            dir.position.set(5, 10, 10);
+            threeScene.add(dir);
+
+            threeCards.forEach(c => threeScene.remove(c));
+            threeCards = [];
+
+            const geometry = new THREE.PlaneGeometry(3.0, 4.2);
+            for (let i = TOTAL_CARDS - 1; i >= 0; i--) {
+                const material = new THREE.MeshBasicMaterial({
+                    color: getCardColor(i),
+                    side: THREE.DoubleSide
+                });
+                const card = new THREE.Mesh(geometry, material);
+                const p = getCascadeParams(i);
+                card.position.set(p.offsetX * 0.04, -p.offsetY * 0.04, -i * 0.35);
+                card.scale.set(p.scale, p.scale, p.scale);
+                threeScene.add(card);
+                threeCards.push(card);
+
+                const barGeo = new THREE.PlaneGeometry(2.5, 0.5);
+                const barMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12 });
+                const bar = new THREE.Mesh(barGeo, barMat);
+                bar.position.set(0, 1.55, 0.01);
+                card.add(bar);
+            }
+
+            function animate() {
+                if (!threeRenderer) return;
+                requestAnimationFrame(animate);
+                threeRenderer.render(threeScene, threeCamera);
+            }
+            animate();
+        }
+
+        let rotating = false;
+        function rotateThree() {
+            rotating = !rotating;
+            if (!rotating || !threeCamera) return;
+            let angle = 0;
+            function spin() {
+                if (!rotating) return;
+                angle += 0.01;
+                threeCamera.position.x = Math.sin(angle) * 32;
+                threeCamera.position.z = Math.cos(angle) * 32;
+                threeCamera.lookAt(0, 0, 0);
+                requestAnimationFrame(spin);
+            }
+            spin();
+        }
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.target).classList.add('active');
+                if (tab.dataset.target === 'method3') renderCanvas();
+                if (tab.dataset.target === 'method4') initThree();
+            });
+        });
+
+        // Parameter sliders
+        function bindSlider(id, variable, displayId, callback) {
+            const slider = document.getElementById(id);
+            const display = document.getElementById(displayId);
+            slider.addEventListener('input', (e) => {
+                params[variable] = parseFloat(e.target.value);
+                display.textContent = e.target.value;
+                if (callback) callback();
+            });
+        }
+
+        function invalidateCache() { positionsCache.length = 0; }
+
+        bindSlider('rangeX1', 'shrinkCount', 'valX1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangeScale1', 'minScale', 'valScale1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangeScalePower1', 'scalePower', 'valScalePower1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangeStartSpace1', 'startSpacingX', 'valStartSpace1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangeStartSpaceY1', 'startSpacingY', 'valStartSpaceY1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangeSpace1', 'minSpacingX', 'valSpace1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangeSpaceY1', 'minSpacingY', 'valSpaceY1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangePower1', 'spacingPower', 'valPower1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangeCurve1', 'curveWidth', 'valCurve1', () => { invalidateCache(); renderMethod1(); renderMethod2(); });
+        bindSlider('rangeX3', 'shrinkCount', 'valX3', () => { invalidateCache(); renderCanvas(); });
+        bindSlider('rangeScale3', 'minScale', 'valScale3', () => { invalidateCache(); renderCanvas(); });
+        bindSlider('rangeScalePower3', 'scalePower', 'valScalePower3', () => { invalidateCache(); renderCanvas(); });
+        bindSlider('rangeStartSpace3', 'startSpacingX', 'valStartSpace3', () => { invalidateCache(); renderCanvas(); });
+        bindSlider('rangeStartSpaceY3', 'startSpacingY', 'valStartSpaceY3', () => { invalidateCache(); renderCanvas(); });
+        bindSlider('rangeSpace3', 'minSpacingX', 'valSpace3', () => { invalidateCache(); renderCanvas(); });
+        bindSlider('rangeSpaceY3', 'minSpacingY', 'valSpaceY3', () => { invalidateCache(); renderCanvas(); });
+        bindSlider('rangePower3', 'spacingPower', 'valPower3', () => { invalidateCache(); renderCanvas(); });
+        bindSlider('rangeCurve3', 'curveWidth', 'valCurve3', () => { invalidateCache(); renderCanvas(); });
+
+        // Initial render
+        renderMethod1();
+        renderMethod2();
+        window.addEventListener('resize', () => {
+            if (document.getElementById('method3').classList.contains('active')) renderCanvas();
+            if (document.getElementById('method4').classList.contains('active')) initThree();
+        });
+    </script>
+</body>
+</html>

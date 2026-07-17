@@ -4,7 +4,7 @@
 
 ### 1.1 Goal
 
-Replace the current linear-fan physical deck layout with the "Smooth Curve Cascade Stack" validated in `CardArrangementDemo.html` (method A + smooth curve, decision locked 2026-07-17):
+Replace the current linear-fan physical deck layout with the "Smooth Curve Cascade Stack" validated in `docs/CardArrangementDemo.html` (method A + smooth curve, decision locked 2026-07-17):
 
 - Front card (deck top, first revealed) is largest and sits at the anchor (bottom-right).
 - Front segment expands up-left along a smooth curve while size and spacing shrink progressively.
@@ -20,7 +20,7 @@ Replace the current linear-fan physical deck layout with the "Smooth Curve Casca
 
 ### 1.3 Source of Truth for the Algorithm
 
-`CardArrangementDemo.html`, functions `computeSmoothPositions()` (lines 498-558) and `getCascadeParams()` (lines 560-566). The C# port must reproduce this math 1:1 before any tuning.
+`docs/CardArrangementDemo.html`, functions `computeSmoothPositions()` (lines 498-558) and `getCascadeParams()` (lines 560-566). The C# port must reproduce this math 1:1 before any tuning.
 
 ---
 
