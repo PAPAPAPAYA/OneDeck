@@ -19,12 +19,29 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		me = this;
 		visuals = this;
+
+		_deckOffsetProvider = new DeckLayoutOffsetProvider
+		{
+			PositionOffsetRange = randomDeckPositionOffsetRange,
+			RotationOffsetRange = randomDeckRotationOffsetRange
+		};
 	}
 	#endregion
 
 	[Header("REFERENCES")]
 	[SerializeField] private CombatManager combatManager;
 	public float zOffset;
+
+	[Header("DECK LAYOUT OFFSET")]
+	[Tooltip("Random position offset range for cards in the deck (XY = plane, Z = depth)")]
+	[SerializeField] private Vector3 randomDeckPositionOffsetRange = new Vector3(0.05f, 0.05f, 0f);
+	[Tooltip("Random rotation offset range for cards in the deck (mainly Z-axis in degrees)")]
+	[SerializeField] private Vector3 randomDeckRotationOffsetRange = new Vector3(0f, 0f, 5f);
+	[Tooltip("Re-randomize offsets after Start Card shuffle")]
+	[SerializeField] private bool randomizeOffsetOnShuffle = true;
+	[Tooltip("Re-randomize offset when a revealed card returns to the bottom of the deck")]
+	[SerializeField] private bool randomizeOffsetOnReturnFromReveal = false;
+
 
 	[Header("ANIMATION SETTINGS")]
 	[Tooltip("Whether shuffle animation uses random staggered timing")]
@@ -122,6 +139,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	private bool _isDeckFocused = false;
 	private CardScript _currentFocusCard = null;
 	private Vector3 _deckFocusOffset = Vector3.zero;
+
+	// Deck layout offset provider: keeps messy-deck decisions separate from pure position calculation.
+	private DeckLayoutOffsetProvider _deckOffsetProvider;
 	private List<GameObject> _peeledCards = new List<GameObject>();
 	public bool IsDeckFocused => _isDeckFocused;
 
@@ -211,6 +231,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			// If card is playing special animation, set pending reveal zone move
 			// so that when special animation finishes, it goes directly to reveal zone
+			// Reveal zone cards should be displayed cleanly without deck layout offset
+			physScript.SetRotationImmediate(Quaternion.identity);
+
 			if (physScript.isPlayingSpecialAnimation)
 			{
 				physScript.pendingRevealZoneMove = true;
@@ -250,6 +273,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 				physScript.SetTargetPosition(physicalCardRevealPos.position, wrappedOnComplete);
 				physScript.SetTargetScale(physicalCardRevealSize);
+				physScript.SetTargetRotation(Quaternion.identity);
 			}
 		}
 		else
@@ -316,6 +340,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		InvalidateCardScriptCache();
 		// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom inserted " + physicalCard.name + " at index 0 deckCount=" + physicalCardsInDeck.Count);
 
+		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+
 		// If showPos is configured, use universal animation system
 		if (showPos != null)
 		{
@@ -330,7 +356,26 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physicalCardDeckPos.position.y + yOffset * (effectiveCount - 1),
 				physicalCardDeckPos.position.z - zOffset * 0
 			);
+
+			// Apply per-card layout offset
+			if (physScript != null)
+			{
+				if (randomizeOffsetOnReturnFromReveal)
+				{
+					_deckOffsetProvider.AssignOffset(physScript);
+				}
+				targetPos += _deckOffsetProvider.GetPositionOffset(physScript);
+			}
 			// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom targetPos=" + targetPos + " effectiveCount=" + effectiveCount);
+
+			Action wrappedOnComplete = () =>
+			{
+				if (physScript != null)
+				{
+					physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
+				}
+				onComplete?.Invoke();
+			};
 
 			var config = new CardMoveConfig
 			{
@@ -340,7 +385,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				useArc = true,
 				arcMidpoint = showPos,
 				ease = revealToDeckEase,
-				onComplete = onComplete
+				onComplete = wrappedOnComplete
 			};
 			MoveCardWithAnimation(card, config);
 		}
@@ -395,16 +440,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				}
 				else
 				{
-					targetPosition = CalculateAnimationPositionAtIndex(physicalCardsInDeck.Count - 1);
+					targetPosition = GetFinalDeckPositionForCard(physScript, physicalCardsInDeck.Count - 1);
 				}
 				break;
 			case CardMoveType.ToBottom:
 			{
-				targetPosition = CalculateAnimationPositionAtIndex(0);
+				targetPosition = GetFinalDeckPositionForCard(physScript, 0);
 				break;
 			}
 			case CardMoveType.ToIndex:
-				targetPosition = CalculateAnimationPositionAtIndex(config.targetIndex);
+				targetPosition = GetFinalDeckPositionForCard(physScript, config.targetIndex);
 				break;
 			case CardMoveType.ToPosition:
 				targetPosition = config.customTarget ?? physicalCard.transform.position;
@@ -492,6 +537,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			{
 				physScript.SetTargetPosition(targetPosition);
 				physScript.SetTargetScale(targetScale);
+				// Apply deck layout rotation only when landing back in the deck
+				bool landingInRevealZone = combatManager.revealZone == physScript.cardImRepresenting.gameObject;
+				if (config.moveType != CardMoveType.ToGrave
+				    && config.moveType != CardMoveType.ToPosition
+				    && !landingInRevealZone)
+				{
+					physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
+				}
 			}
 
 			if (config.destroyAfterMove)
@@ -656,18 +709,22 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 				if (physScript == null) { phase2Done++; continue; }
 
-				Vector3 targetPos = CalculateAnimationPositionAtIndex(finalIndex);
+				Vector3 baseTargetPos = CalculateAnimationPositionAtIndex(finalIndex);
+				Vector3 targetPos = baseTargetPos + _deckOffsetProvider.GetPositionOffset(physScript);
+				Quaternion targetRot = GetFinalDeckRotationForCard(physScript);
 				float scaledSlotInDuration = CombatAnimationSpeed.ScaleDuration(slotInDuration);
 
 				Sequence slotSeq = DOTween.Sequence();
 				slotSeq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, scaledSlotInDuration)));
 				slotSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, scaledSlotInDuration)));
+				slotSeq.Join(ApplySlotInEase(physicalCard.transform.DOLocalRotate(targetRot.eulerAngles, scaledSlotInDuration)));
 				slotSeq.OnComplete(() =>
 				{
 					physScript.isPlayingSpecialAnimation = false;
 					physScript.isPoppedUp = false;
 					physScript.SetTargetPosition(targetPos);
 					physScript.SetTargetScale(physicalCardDeckSize);
+					physScript.SetTargetRotation(targetRot);
 
 					phase2Done++;
 					if (phase2Done >= totalCount)
@@ -732,6 +789,56 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	//   Regress:  Play RIFT_INSECT or BLACKSMITH; verify new card's pop-up peak and slot-in
 	//             target match its logical deck index within the complete deck.
 	//   Related:  RIFT_INSECT, BLACKSMITH
+
+	/// <summary>
+	/// Get the final deck position for a specific card, including its layout offset.
+	/// </summary>
+	private Vector3 GetFinalDeckPositionForCard(CardPhysObjScript physScript, int index)
+	{
+		Vector3 basePos = CalculatePositionAtIndex(index);
+		if (physScript == null) return basePos;
+		return basePos + _deckOffsetProvider.GetPositionOffset(physScript);
+	}
+
+
+
+	/// <summary>
+	/// Re-randomize layout offsets for every card currently in the deck.
+	/// </summary>
+	private void RandomizeDeckLayoutOffsetsForAllCards()
+	{
+		for (int i = 0; i < physicalCardsInDeck.Count; i++)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+			var physScript = card.GetComponent<CardPhysObjScript>();
+			if (physScript == null) continue;
+			_deckOffsetProvider.AssignOffset(physScript);
+		}
+	}
+	/// <summary>
+	/// Apply the current deck layout rotation to every card in the deck.
+	/// Called after shuffle or any other full-deck reset.
+	/// </summary>
+	private void ApplyDeckLayoutRotationToAllCards()
+	{
+		for (int i = 0; i < physicalCardsInDeck.Count; i++)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+			var physScript = card.GetComponent<CardPhysObjScript>();
+			if (physScript == null) continue;
+			physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
+		}
+	}
+	/// <summary>
+	/// Get the final deck rotation for a specific card, including its layout offset.
+	/// </summary>
+	private Quaternion GetFinalDeckRotationForCard(CardPhysObjScript physScript)
+	{
+		if (physScript == null) return Quaternion.identity;
+		return _deckOffsetProvider.GetRotationOffset(physScript);
+	}
 	private Vector3 CalculatePositionForPendingCard(int index)
 	{
 		int fullCount = physicalCardsInDeck.Count;
@@ -767,6 +874,15 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			// 3. After animation completes, rebuild physical card list to match logical order
 			RebuildPhysicalDeckFromShuffledList(shuffledCards);
+
+			// Re-randomize messy-deck offsets if configured, then sync rotations
+			if (randomizeOffsetOnShuffle)
+			{
+				RandomizeDeckLayoutOffsetsForAllCards();
+			}
+			ApplyDeckLayoutRotationToAllCards();
+			UpdateAllPhysicalCardTargets();
+
 			// Restore player input
 			UnblockInput(this);
 			onComplete?.Invoke();
@@ -809,7 +925,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var physicalCard = GetPhysicalCardFromLogicalCard(logicalCard);
 			if (physicalCard == null) continue;
 
-			Vector3 targetPos = CalculatePositionAtIndex(i);
+			var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+			Vector3 baseTargetPos = CalculatePositionAtIndex(i);
+			Vector3 targetPos = physScript != null
+				? baseTargetPos + _deckOffsetProvider.GetPositionOffset(physScript)
+				: baseTargetPos;
 
 			targets[physicalCard] = targetPos;
 		}
@@ -1022,14 +1142,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var physScript = card.GetComponent<CardPhysObjScript>();
 			if (physScript == null) continue;
 
-			// Calculate target position
-			Vector3 targetPos = CalculatePositionAtIndex(i);
-			
+			// Calculate target position including per-card layout offset
+			Vector3 targetPos = GetFinalDeckPositionForCard(physScript, i);
+			Quaternion targetRot = GetFinalDeckRotationForCard(physScript);
+
 			TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets card=" + card.name + " index=" + i + " isPending=" + physScript.isPendingSlotIn + " currentPos=" + card.transform.position + " targetPos=" + targetPos);
-			
-			// Set target position and scale (card handles animation in its own Update)
+
+			// Set target position, rotation and scale (card handles animation in its own Update)
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
+			physScript.SetTargetRotation(targetRot);
 		}
 		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");
 	}
@@ -1344,6 +1466,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (revealPhysScript != null)
 			{
 				revealPhysScript.isPlayingSpecialAnimation = true;
+				revealPhysScript.SetRotationImmediate(Quaternion.identity);
 			}
 
 			Vector3 offsetRevealPos = physicalCardRevealPos.position + _deckFocusOffset;
@@ -1366,7 +1489,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var physScript = card.GetComponent<CardPhysObjScript>();
 			if (physScript == null) continue;
 
-			Vector3 basePos = CalculatePositionAtIndex(i);
+			Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
 			bool willPeel = i > targetIndex;
 
 			if (willPeel)
@@ -1375,7 +1498,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				_peeledCards.Add(card);
 
 				Vector3 peelDirection = new Vector3(0f, -1f, 0f).normalized;
-				Vector3 peelPos = basePos + peelDirection * peelSlideDistance;
+				Vector3 peelPos = finalPos + peelDirection * peelSlideDistance;
 
 				float peelDelay = CombatAnimationSpeed.ScaleDuration((count - i) * peelStaggerDelay);
 				animTotalCount++;
@@ -1388,6 +1511,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						animCompletedCount++;
 						// Ensure TargetPosition is synced to peelPos before releasing special animation flag
 						physScript.SetTargetPosition(peelPos);
+						physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
 						physScript.isPlayingSpecialAnimation = false;
 					});
 			}
@@ -1396,8 +1520,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				// Shift this card to deck position
 				animTotalCount++;
 				physScript.isPlayingSpecialAnimation = true;
-				physScript.SetTargetPosition(basePos);
-				card.transform.DOMove(basePos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
+				physScript.SetTargetPosition(finalPos);
+				physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
+				card.transform.DOMove(finalPos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
 					.SetEase(Ease.OutQuad)
 					.OnComplete(() =>
 					{
@@ -1457,14 +1582,15 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var physScript = card.GetComponent<CardPhysObjScript>();
 			if (physScript == null) continue;
 
-			Vector3 basePos = CalculatePositionAtIndex(i);
-			physScript.SetTargetPosition(basePos);
+			Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
+			physScript.SetTargetPosition(finalPos);
+			physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
 
 			if (shouldBePeeled.Contains(card))
 			{
 				// This card should be peeled
 				Vector3 peelDirection = new Vector3(0f, -1f, 0f).normalized;
-				Vector3 peelPos = basePos + peelDirection * peelSlideDistance;
+				Vector3 peelPos = finalPos + peelDirection * peelSlideDistance;
 
 				newPeeledCards.Add(card);
 
@@ -1479,6 +1605,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						animCompletedCount++;
 						// Ensure TargetPosition is synced to peelPos before releasing special animation flag
 						physScript.SetTargetPosition(peelPos);
+						physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
 						physScript.isPlayingSpecialAnimation = false;
 					});
 			}
@@ -1487,8 +1614,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				// This card stays in deck
 				animTotalCount++;
 				physScript.isPlayingSpecialAnimation = true;
-				physScript.SetTargetPosition(basePos);
-				card.transform.DOMove(basePos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
+				physScript.SetTargetPosition(finalPos);
+				card.transform.DOMove(finalPos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
 					.SetEase(Ease.OutQuad)
 					.OnComplete(() =>
 					{
@@ -1534,9 +1661,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var physScript = card.GetComponent<CardPhysObjScript>();
 			if (physScript == null) continue;
 
-			Vector3 finalPos = CalculatePositionAtIndex(i);
+			Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
 			physScript.isPlayingSpecialAnimation = true;
 			physScript.SetTargetPosition(finalPos);
+			physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
 
 			if (_peeledCards.Contains(card))
 			{
@@ -1604,6 +1732,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					{
 						revealPhysScript.SetTargetPosition(revealPos);
 						revealPhysScript.SetTargetScale(physicalCardRevealSize);
+						revealPhysScript.SetTargetRotation(Quaternion.identity);
 						revealPhysScript.isPlayingSpecialAnimation = false;
 					}
 				});
@@ -1666,6 +1795,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Clear dictionary cache
 		_cardScriptToPhysicalCache.Clear();
+
+		// Clear deck layout offsets
+		_deckOffsetProvider?.Clear();
 	}
 
 	/// <summary>
@@ -1819,6 +1951,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Set initial scale
 		physScript.SetScaleImmediate(physicalCardDeckSize);
 
+		// Assign deck layout offset so SlotIn lands with the correct messy-deck pose
+		_deckOffsetProvider.AssignOffset(physScript);
+
 		// Insert into physical card list
 		physicalCardsInDeck.Insert(0, newPhysicalCard);
 		InvalidateCardScriptCache();
@@ -1868,7 +2003,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var cardPhys = cardAtIndex.GetComponent<CardPhysObjScript>();
 			if (cardPhys == null) continue;
 
-			Vector3 targetPos = CalculatePositionAtIndex(i);
+			Vector3 targetPos = GetFinalDeckPositionForCard(cardPhys, i);
+			Quaternion targetRot = GetFinalDeckRotationForCard(cardPhys);
 			if (cardAtIndex == newPhysicalCard)
 			{
 				// If inside an active effect chain, do NOT auto-tween the new card.
@@ -1881,6 +2017,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					targetPos.z = backMostZ + zBump;
 					cardPhys.SetTargetPosition(targetPos);
 					cardPhys.SetTargetScale(physicalCardDeckSize);
+					cardPhys.SetTargetRotation(targetRot);
 					// Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card tween START card=" + cardAtIndex.name + " index=" + i + " targetPos=" + targetPos);
 				}
 				else
@@ -1891,6 +2028,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					cardPhys.isPlayingSpecialAnimation = true;
 					cardPhys.isPendingSlotIn = true;
 				}
+			}
+			else
+			{
+				// Existing card: keep its messy-deck rotation in sync
+				cardPhys.SetTargetPosition(targetPos);
+				cardPhys.SetTargetRotation(targetRot);
 			}
 		}
 	}
@@ -1939,14 +2082,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 		InvalidateCardScriptCache();
 
-		// Set initial position
+		// Set initial position and rotation, including per-card layout offset
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
 			var physScript = physicalCardsInDeck[i].GetComponent<CardPhysObjScript>();
-			var count = physicalCardsInDeck.Count;
-			Vector3 pos = DeckPositionCalculator.CalculatePositionAtIndex(
-				i, count, physicalCardDeckPos.position, xOffset, yOffset, zOffset);
+			if (physScript == null) continue;
+			_deckOffsetProvider.AssignOffset(physScript);
+			Vector3 pos = GetFinalDeckPositionForCard(physScript, i);
+			Quaternion rot = GetFinalDeckRotationForCard(physScript);
 			physScript.SetPositionImmediate(pos);
+			physScript.SetRotationImmediate(rot);
 		}
 
 		// Rebuild dictionary mapping
@@ -2605,7 +2750,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		//   Affects:  SlotInCard, MoveToPopUpPosition
 		//   Regress:  Same as CalculatePositionForPendingCard
 		//   Related:  RIFT_INSECT, BLACKSMITH
-		Vector3 targetPos = CalculatePositionForPendingCard(deckIndex);
+		Vector3 baseTargetPos = CalculatePositionForPendingCard(deckIndex);
+		Vector3 targetPos = baseTargetPos + _deckOffsetProvider.GetPositionOffset(physScript);
+		Quaternion targetRot = GetFinalDeckRotationForCard(physScript);
 		TestManager.Log("[CombatUXManager] SlotInCard logical=" + logicalCard.name + " deckIndex=" + deckIndex + " targetPos=" + targetPos + " isPending=" + physScript.isPendingSlotIn);
 
 		AnimationStateTracker.me?.RegisterAnimation();
@@ -2615,6 +2762,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Sequence seq = DOTween.Sequence();
 		seq.Append(ApplySlotInEase(physicalCard.transform.DOMove(targetPos, scaledSlotInDuration)));
 		seq.Join(ApplySlotInEase(physicalCard.transform.DOScale(physicalCardDeckSize, scaledSlotInDuration)));
+		seq.Join(ApplySlotInEase(physicalCard.transform.DOLocalRotate(targetRot.eulerAngles, scaledSlotInDuration)));
 		seq.OnComplete(() =>
 		{
 			physScript.isPlayingSpecialAnimation = false;
@@ -2622,6 +2770,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physScript.isPoppedUp = false;
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(physicalCardDeckSize);
+			physScript.SetTargetRotation(targetRot);
 			AnimationStateTracker.me?.CompleteAnimation();
 			UnblockInput(this);
 			onComplete?.Invoke();

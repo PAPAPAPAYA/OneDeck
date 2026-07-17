@@ -15,7 +15,6 @@
  #endregion
  
  #region text
-	//todo add a text color change
 	// world building
 	// localization stringSO to store chinese translation
 	//// goblin charge team dmg text

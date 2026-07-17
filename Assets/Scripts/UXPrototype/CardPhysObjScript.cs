@@ -29,6 +29,7 @@ public class CardPhysObjScript : MonoBehaviour
 	[Header("LOOK")]
 	public SpriteRenderer cardFace;
 	public SpriteRenderer cardEdge;
+	public SpriteRenderer cardImg;
 	public TextMeshPro cardCostPrint;
 	public TextMeshPro cardNamePrint;
 	public TextMeshPro cardDescPrint;
@@ -44,6 +45,12 @@ public class CardPhysObjScript : MonoBehaviour
 	public Color opponentCardEdgeColor;
 	public Color ownerTextColor;
 	public Color opponentTextColor;
+
+	[Header("CARD ART")]
+	[Tooltip("Card face sprite used when this card is owned by the player")]
+	public Sprite ownerCardFaceSprite;
+	[Tooltip("Card face sprite used when this card is owned by the opponent")]
+	public Sprite opponentCardFaceSprite;
 
 	[Header("TINT - Infected")]
 	[Tooltip("Tint color for Infected state")]
@@ -77,6 +84,7 @@ public class CardPhysObjScript : MonoBehaviour
 	[Header("ANIMATION")]
 	public Vector3 TargetPosition { get; private set; }
 	public Vector3 TargetScale { get; private set; }
+	public Quaternion TargetRotation { get; private set; }
 
 	// ========== Shake related ==========
 	private ShakeInstance _currentShakeInstance;
@@ -116,9 +124,16 @@ public class CardPhysObjScript : MonoBehaviour
 	public float moveDuration = 0.3f;
 	[Tooltip("Ease type for move animation")]
 	public Ease moveEase = Ease.OutQuad;
+	[Tooltip("Animation duration to rotate to target rotation")]
+	public float rotationDuration = 0.3f;
+	[Tooltip("Ease type for rotation animation")]
+	public Ease rotationEase = Ease.OutQuad;
+	[Tooltip("Use local rotation for deck layout rotation tween")]
+	public bool useLocalRotation = true;
 
 	private Tweener _positionTween;
 	private Tweener _scaleTween;
+	private Tweener _rotationTween;
 
 	void OnEnable()
 	{
@@ -360,6 +375,32 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Set target local rotation (called by CombatUXManager), uses DOTween animation.
+	/// </summary>
+	public void SetTargetRotation(Quaternion target, Action onComplete = null)
+	{
+		TargetRotation = target;
+
+		// If special animation is playing, do not start DOTween
+		if (isPlayingSpecialAnimation)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		// Start DOTween rotation animation
+		StartRotationTween(onComplete);
+	}
+
+	/// <summary>
+	/// Update target local rotation without starting a DOTween.
+	/// </summary>
+	public void UpdateTargetRotationOnly(Quaternion target)
+	{
+		TargetRotation = target;
+	}
+
+	/// <summary>
 	/// Start position DOTween animation
 	/// </summary>
 	private void StartPositionTween(Action onComplete = null)
@@ -396,6 +437,39 @@ public class CardPhysObjScript : MonoBehaviour
 		_scaleTween = transform.DOScale(TargetScale, GetCombatScaledDuration(moveDuration))
 			.SetEase(moveEase)
 			.SetUpdate(UpdateType.Normal, true);
+	}
+
+	/// <summary>
+	/// Start rotation DOTween animation
+	/// </summary>
+	private void StartRotationTween(Action onComplete = null)
+	{
+		if (_rotationTween != null && _rotationTween.IsActive() && _rotationTween.IsPlaying())
+		{
+			_rotationTween.Kill();
+		}
+
+		float scaledDuration = GetCombatScaledDuration(rotationDuration);
+		Vector3 targetEuler = TargetRotation.eulerAngles;
+		Tweener tween;
+		if (useLocalRotation)
+		{
+			tween = transform.DOLocalRotate(targetEuler, scaledDuration)
+				.SetEase(rotationEase)
+				.SetUpdate(UpdateType.Normal, true);
+		}
+		else
+		{
+			tween = transform.DORotate(targetEuler, scaledDuration)
+				.SetEase(rotationEase)
+				.SetUpdate(UpdateType.Normal, true);
+		}
+
+		if (onComplete != null)
+		{
+			tween.OnComplete(() => onComplete.Invoke());
+		}
+		_rotationTween = tween;
 	}
 
 	/// <summary>
@@ -441,6 +515,22 @@ public class CardPhysObjScript : MonoBehaviour
 		transform.localScale = scale;
 	}
 
+	/// <summary>
+	/// Set local rotation immediately (no animation)
+	/// </summary>
+	public void SetRotationImmediate(Quaternion rotation)
+	{
+		// Stop ongoing DOTween rotation animation
+		if (_rotationTween != null && _rotationTween.IsActive())
+		{
+			_rotationTween.Kill();
+			_rotationTween = null;
+		}
+
+		TargetRotation = rotation;
+		transform.localRotation = rotation;
+	}
+
 	#region Special Animation
 
 	/// <summary>
@@ -458,15 +548,17 @@ public class CardPhysObjScript : MonoBehaviour
 	#endregion
 
 	/// <summary>
-	/// Kill active DOTween tweens for position and scale.
+	/// Kill active DOTween tweens for position, scale and rotation.
 	/// Called by CombatCardView when special animation is playing.
 	/// </summary>
 	public void KillTweens()
 	{
 		_positionTween?.Kill();
 		_scaleTween?.Kill();
+		_rotationTween?.Kill();
 		_positionTween = null;
 		_scaleTween = null;
+		_rotationTween = null;
 	}
 
 	private void ApplyColor()
@@ -482,6 +574,7 @@ public class CardPhysObjScript : MonoBehaviour
 		// Determine base color
 		Color baseFaceColor;
 		Color baseEdgeColor = ownerCardEdgeColor;
+		bool isOwner = true;
 
 		if (cardImRepresenting.myStatusRef == null)
 		{
@@ -490,10 +583,21 @@ public class CardPhysObjScript : MonoBehaviour
 		else if (cardImRepresenting.myStatusRef != CombatManager.Me?.ownerPlayerStatusRef)
 		{
 			baseFaceColor = opponentCardColor;
+			isOwner = false;
 		}
 		else
 		{
 			baseFaceColor = ownerCardColor;
+		}
+
+		// Update card face art based on ownership
+		if (cardImg != null)
+		{
+			Sprite targetSprite = isOwner ? ownerCardFaceSprite : opponentCardFaceSprite;
+			if (targetSprite != null)
+			{
+				cardImg.sprite = targetSprite;
+			}
 		}
 
 		// Calculate target tint intensity
@@ -645,10 +749,12 @@ public class CardPhysObjScript : MonoBehaviour
 		// Stop all DOTween animations to prevent access after object destruction
 		_positionTween?.Kill();
 		_scaleTween?.Kill();
+		_rotationTween?.Kill();
 		_shakeTween?.Kill();
 
 		_positionTween = null;
 		_scaleTween = null;
+		_rotationTween = null;
 		_shakeTween = null;
 	}
 }
