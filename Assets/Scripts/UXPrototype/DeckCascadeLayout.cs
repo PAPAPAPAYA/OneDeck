@@ -37,6 +37,9 @@ public static class DeckCascadeLayout
 		public float tailReturn;      // demo "curveWidth": 0 = straight peak, 1 = strong return (demo: 0.55)
 		public float tailBendSign;    // +1 = Mirror (demo), -1 = Same (keep front direction)
 		public int arcSamples;        // Bezier sampling density (demo: 300)
+		public bool coverageNormalize; // Plan B: stretch per-card steps so small decks still reach the curve's hook
+		public float coverageTarget;  // target walk coverage of the curve (0.62 ~= natural coverage at 20 cards)
+		public float coverageCap;     // max step stretch factor (demo: 2.5)
 	}
 
 	// Last-result cache so per-index callers do not recompute the whole curve per card.
@@ -114,15 +117,31 @@ public static class DeckCascadeLayout
 			prevY = y;
 		}
 
-		// Walk cards along the curve with decreasing spacing (demo loop 1:1).
-		float currentLen = 0f;
+		// Pass 1: per-card step lengths from the spacing falloff (demo semantics).
+		var steps = new float[deckCount];
+		float rawTotal = 0f;
 		for (int i = 1; i < deckCount; i++)
 		{
 			float t = i / (float)Mathf.Max(1, deckCount - 1);
 			float spacingX = Mathf.Lerp(p.startSpacingX, p.minSpacingX, EaseOutPower(t, p.spacingPower));
 			float spacingY = Mathf.Lerp(p.startSpacingY, p.minSpacingY, EaseOutPower(t, p.spacingPower));
-			float stepSize = Mathf.Sqrt(spacingX * spacingX + spacingY * spacingY) * 0.5f;
-			currentLen += stepSize;
+			steps[i] = Mathf.Sqrt(spacingX * spacingX + spacingY * spacingY) * 0.5f;
+			rawTotal += steps[i];
+		}
+
+		// Coverage normalization (Plan B): one shared factor so the walk reaches
+		// coverageTarget of the curve, clamped to [1, coverageCap] (stretch only).
+		// 0.62 ~= natural coverage at 20 cards, so large decks stay byte-identical
+		// while small decks still reach the curve's hook region.
+		float stepFactor = 1f;
+		if (p.coverageNormalize && rawTotal > 0f && totalLength > 0f)
+			stepFactor = Mathf.Clamp(p.coverageTarget * totalLength / rawTotal, 1f, p.coverageCap);
+
+		// Pass 2: walk cards along the curve with decreasing spacing (demo loop 1:1).
+		float currentLen = 0f;
+		for (int i = 1; i < deckCount; i++)
+		{
+			currentLen += steps[i] * stepFactor;
 
 			// Find the sample pair bracketing targetLen (demo linear scan 1:1).
 			float targetLen = Mathf.Min(currentLen, totalLength);

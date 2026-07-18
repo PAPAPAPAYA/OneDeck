@@ -25,6 +25,12 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 7 | Stage/Bury animation target offset when pending cards exist in deck | `CalculateAnimationPositionAtIndex`, `CombatUXManager`, `RecorderAnimationPlayer` | 2026-05-24 | ✅ | **Card:** sacrificial_spirit (creates pending JU_ON) then soldier_skeleton (StageSelf)<br>**Check:** Peak and slot-in positions match logical top index<br>同时验证 `RecorderAnimationPlayer` 使用 `actualPhysIndex` 而非 `correctedIndex` 作为动画目标索引（日志中 `actualPhysIndex == targetIndex`）。 |
 | 23 | Arc midpoint z jumps to fixed -80 during Stage/Bury/Shuffle/Reveal-to-bottom | `CombatUXManager`, `showPos` | 2026-06-14 | ⚠️ | **Card:** Any Bury/Stage card (e.g. StoneShell, grave_punch, RisingFlame, BOOSTER) + Start Card shuffle + normal reveal-to-bottom<br>**Check:** Mid-arc card z should be midway between start z and target z, not `-80`. Cards remain visible throughout the arc. |
 | 25 | ExileEffect still syncs physical deck in logic phase | `ExileEffect`, `RecorderAnimationPlayer`, `ApplyAnimationResult` | 2026-06-19 | ⚠️ | **Card:** Any Exile card (ExileSelf / ExileMyCards / ExileTheirCards)<br>**Check:** Exiled card pops up from current position, then plays destroy animation; remaining cards tween to correct positions after last destroy completes. Verify exiling the currently revealed card and chaining GiveStatusEffect → Exile on the same target. |
+| 43 | Cascade deck layout replaces the linear fan; all deck positions follow the smooth curve | `DeckCascadeLayout`, `DeckPositionCalculator`, `CombatUXManager` | 2026-07-17 | ⚠️ | **Setup:** Toggle `CombatUXManager.enableCascadeDeckLayout`.<br>**Check:** With the flag on, the deck renders as a smooth cascade arc: front card (deck top) largest at the `physicalCardDeckPos` anchor, front segment sweeping up-left with shrinking size/spacing, tail hooking back at minimum spacing. With the flag off, the legacy linear fan renders byte-for-byte. |
+| 44 | Reveal entry and reveal-to-bottom follow the cascade curve | `CombatUXManager`, `CombatManager` | 2026-07-17 | ⚠️ | **Card:** Any card.<br>**Check:** The top card flies from the cascade front anchor to the reveal zone with no visual jump; clicking again arcs it to the cascade tail end (index 0) at the deepest tail scale (legacy linear bottom when the flag is off). |
+| 45 | Bury/Stage/Exile peak and slot-in positions land on the cascade curve at per-depth scale | `BuryEffect`, `StageEffect`, `ExileEffect`, `CombatUXManager` | 2026-07-17 | ⚠️ | **Card:** StoneShell (Bury), grave_punch (Bury), RisingFlame/BOOSTER (Stage), any Exile card.<br>**Check:** Pop-up peaks, arc paths and slot-in targets follow the cascade curve; the moved card's scale lands directly at its cascade depth scale (no uniform-scale frame and no post-landing "breathing"). |
+| 46 | Reactive chain bury → stage intermediate states render on the cascade curve | `ApplyAnimationResult`, `RecorderAnimationPlayer`, `BuryEffect`, `StageEffect` | 2026-07-17 | ⚠️ | **Card:** StoneShell buries RisingFlame (onMeBuried→StageSelf).<br>**Check:** Each intermediate deck state during the chain follows the cascade curve; the first animation's result is preserved instead of being overwritten by the final deck state. |
+| 47 | Shuffle animation re-layouts the whole deck on the cascade curve | `StartCardShuffleEffect`, `CombatUXManager` | 2026-07-17 | ⚠️ | **Setup:** Reach the Start Card shuffle (or an overtime round re-shuffle).<br>**Check:** After shuffling, every card tweens to its cascade position with its per-index depth scale (uniform scale only when the flag is off); no linear-fan or zero-distance frames. |
+| 50 | Reveal-zone card counts as cascade front card; deck no longer re-layouts on reveal | `CombatUXManager`, `GetCascadeDeckCount`, `MoveRevealedCardToBottom`, peel focus | 2026-07-17 | ⚠️ | **Setup:** Toggle `CombatUXManager.revealCardCountsAsDeckFront` (cascade must be on).<br>**Check:** With the flag on, revealing a card moves only the revealed card to the reveal zone — the rest of the deck does NOT slide or reshape; the reveal card visually covers the front slot (hovering toward camera). Clicking again arcs the card to the cascade tail and the deck slides forward exactly one step. Bury/Stage/AddTempCard targets and peel focus (`deckFocusTargetPos`) stay consistent while the reveal zone is occupied. With the flag off, the legacy per-reveal re-layout returns byte-for-byte. |
 
 ## Card Adding & Pending Cards
 
@@ -34,6 +40,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 4 | Pending cards (RIFT/AddTempCard) have wrong pop-up peak / slot-in position | `AddTempCard`, `PopUp`, `SlotIn`, `CombatUXManager` | 2026-05-24 | ✅ | **Card:** RIFT_INSECT or BLACKSMITH<br>**Check:** Pop-up peak and slot-in target match logical deck index |
 | 8 | Newly created curse card's projectile flies off-screen | `CurseEffect`, `MoveToPopUpPosition`, `CombatUXManager` | 2026-05-24 | ✅ | **Card:** Any curse card that enhances a type not present in deck (e.g. JU_ON)<br>**Check:** Projectile flies to visible deck peak, not off-screen |
 | 32 | Overtime fatigue cards appear instantly without popup/slot-in animation | `CombatManager.AddFatigueCards`, `StartCardShuffleEffect`, `RecorderAnimationPlayer` | 2026-06-21 | ⚠️ | **Setup:** Set `overtimeRoundThreshold=1` and `fatigueAmount>=1`. Play combat past round 1.<br>**Check:** When the new round starts, fatigue cards fly from popup position into the deck before the Start Card shuffle animation plays. Cards do not snap instantly. |
+| 48 | AddTempCard pending slot-in lands on the cascade curve | `AddTempCard`, `CombatUXManager` | 2026-07-17 | ⚠️ | **Card:** RIFT_INSECT or BLACKSMITH.<br>**Check:** Pop-up peak and slot-in target match the cascade position computed with the FULL deck count (pending cards included); slot-in scale equals the card's cascade depth scale. |
 
 ## Layout & Focus
 
@@ -44,6 +51,8 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | ~~37~~ | ~~Off-reveal Attack cards skip popup, use peel-deck focus + emphasize~~ | ~~`RecorderAnimationPlayer`, `CombatUXManager`~~ | ~~2026-07-01~~ | ~~(Obsolete 2026-07-02)~~ | ~~Superseded by row 41: off-reveal Attack cards no longer play emphasize; peel-deck focus is now the sole source-card feedback before the attack animation.~~ |
 | 41 | Off-reveal Attack cards skip popup and emphasize, use peel-deck focus only | `RecorderAnimationPlayer`, `CombatUXManager` | 2026-07-02 | ⚠️ | **Card:** BOOSTER (`StageSelf` → two `GOBLIN_CHARGE_TEAM` `OnMeStaged`) or any off-reveal attack<br>**Check:** Deck peels to the source card, then attack animation plays directly. No emphasize scale pulse and no popup peak/slot-in cycle for the attacker.<br>**Also check non-Attack off-reveal effect (e.g. StageSelf/Bury):** popup → emphasize → effect → slotin; verify there is **no** peel-deck focus transition. |
 | 42 | Batch status effect animation helpers share `targetCards` list, causing projectile/target list to be cleared when `ShouldSkipRequestForSourceCard` mutates an earlier request | `StatusEffectGiverEffect`, `EffectScript`, `BuryEffect`, `RecorderAnimationPlayer` | 2026-07-02 | ⚠️ | **Card:** UNFINISHED_ROBOT (`GiveSelfStatusEffect`) or any card that gives a status effect to itself/batch targets (e.g. self-Power, GiveAllFriendlyStatusEffect, POWER_TRANSFER consume/transfer).<br>**Check:** `StatusEffectProjectile` request has valid targets and `[CombatUXManager] SpawnProjectile START/COMPLETE` logs appear; `PopUpBatch`/`SlotInBatch` no longer empty the shared list used by the projectile request. Bury/Stage/Transfer/Consume batch helpers also use independent list copies. |
+| 49 | Deck focus peel and popup centering derive from cascade positions | `CombatUXManager`, `AttackAnimationManager`, `RecorderAnimationPlayer` | 2026-07-17 | ⚠️ | **Card:** BOOSTER or any off-reveal attack/effect with cascade on.<br>**Check:** The peeled/focused card lands exactly on `deckFocusTargetPos`; chained off-reveal effects re-focus correctly each time; releasing focus restores the cascade layout. |
+| 51 | Reveal-zone card occluded by the deck once deck count grows (deck front z crosses the fixed reveal z) | `CombatUXManager`, `GetRevealZonePosition`, `UpdateAllPhysicalCardTargets`, `CardPhysObjScript` | 2026-07-18 | ⚠️ | **Step:** Small deck (e.g. 10 cards): reveal a card — it must land exactly at the configured `physicalCardRevealPos` z (legacy behavior). Then grow the deck mid-combat (RIFT_INSECT / BLACKSMITH `AddTempCard`) or start with a 30+ card deck and reveal.<br>**Check:** Reveal card always renders in front of the deck front card by `revealZoneZGap` (default `|zOffset|`); while a card sits in the reveal zone, adding cards to the deck re-clamps its z (front-only, never pushed back). Peel focus exit/restore, Start Card shuffle reveal, and reveal-entry input unblock (no soft-lock) all unchanged. |
 
 ## Cost Check Feedback
 
@@ -102,22 +111,24 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 
 | File(s) | Related Rows |
 |---------|-------------|
-| `BuryEffect.cs` | 1, 2, 5, 7, 14, 42 |
-| `StageEffect.cs` | 1, 2, 5, 7 |
-| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35 |
+| `BuryEffect.cs` | 1, 2, 5, 7, 14, 42, 45, 46 |
+| `StageEffect.cs` | 1, 2, 5, 7, 45, 46 |
+| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35, 43, 44, 45, 47, 48, 49, 51 |
 | `EffectChainManager.cs` | 2, 11 |
-| `CardPhysObjScript.cs` | 3, 12, 35 |
+| `CardPhysObjScript.cs` | 3, 12, 35, 51 |
 | `CurseEffect.cs` | 8, 17, 19 |
-| `AddTempCard.cs` | 4 |
-| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33, 35, 38, 40, 41, 42 |
-| `ApplyAnimationResult` | 5 |
-| `CalculateAnimationPositionAtIndex` | 7 |
+| `AddTempCard.cs` | 4, 48 |
+| `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33, 35, 38, 40, 41, 42, 46, 49 |
+| `ApplyAnimationResult` | 5, 46 |
+| `CalculateAnimationPositionAtIndex` | 7, 44, 45, 48 |
+| `DeckCascadeLayout.cs` | 43 |
+| `DeckPositionCalculator.cs` | 43 |
 | `CostResultPresenter.cs` | 9 |
 | `CostNEffectContainer.cs` | 9, 33 |
 | `EffectRecorder.cs` | 33 |
 | `AnimationRequest.cs` | 9, 16, 17, 19, 30 |
 | `CardScript.cs` | 30, 32 |
-| `CombatManager.cs` | 10, 11, 12 |
+| `CombatManager.cs` | 10, 11, 12, 44 |
 | `ConsumeStatusEffect.cs` | 16, 17, 18, 30 |
 | `ICombatVisuals.cs` | 16, 17, 19 |
 | `NullCombatVisuals.cs` | 16, 17, 19 |

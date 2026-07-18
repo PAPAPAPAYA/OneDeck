@@ -86,6 +86,13 @@ public class CardPhysObjScript : MonoBehaviour
 	public Vector3 TargetScale { get; private set; }
 	public Quaternion TargetRotation { get; private set; }
 
+	/// <summary>
+	/// True while a DOTween position tween is actively playing (e.g. reveal-entry flight).
+	/// CombatUXManager uses this to avoid restarting such tweens: a restart kills the
+	/// in-flight tween and its completion callback would never fire (VISUAL-FIX 2026-07-18).
+	/// </summary>
+	public bool IsPositionTweenPlaying => _positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying();
+
 	// ========== Shake related ==========
 	private ShakeInstance _currentShakeInstance;
 	private bool _isShaking = false;

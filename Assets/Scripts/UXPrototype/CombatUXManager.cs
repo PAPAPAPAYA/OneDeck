@@ -78,6 +78,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public CascadeTailBend cascadeTailBend = CascadeTailBend.Mirror;
 	[Tooltip("Scale the position jitter by the card's cascade scale so the tail stays clean")]
 	public bool cascadeScaleJitterWithCard = true;
+	[Tooltip("Coverage normalization (Plan B): stretch per-card steps so small decks still reach the curve's hook")]
+	public bool cascadeCoverageNormalize = true;
+	[Tooltip("Target walk coverage of the curve; ~0.62 keeps the 20-card layout unchanged")]
+	[Range(0.3f, 1f)] public float cascadeCoverageTarget = 0.62f;
+	[Tooltip("Max step stretch factor for small decks (demo: 2.5)")]
+	[Range(1f, 4f)] public float cascadeCoverageCap = 2.5f;
+	[Tooltip("Reveal-zone card counts as the cascade front card (cascadeIndex 0); deck cards sit one cascade step deeper while a card is revealed")]
+	public bool revealCardCountsAsDeckFront = true;
 
 	[Header("NEW CARD")]
 	public Transform physicalCardNewTempCardPos;
@@ -99,6 +107,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	[Header("REVEAL")]
 	public Transform physicalCardRevealPos;
 	public Vector3 physicalCardRevealSize;
+	[Tooltip("Min z gap the reveal-zone card keeps in front of the deck's front-most card (smaller z = closer to camera). 0 = auto: uses |zOffset|.")]
+	public float revealZoneZGap = 0f;
 	
 	[Header("REVEAL TO DECK ANIMATION")]
 	[Tooltip("Midpoint when card goes from reveal zone to deck bottom (arc trajectory)")]
@@ -264,7 +274,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (physScript.isPlayingSpecialAnimation)
 			{
 				physScript.pendingRevealZoneMove = true;
-				physScript.pendingRevealPosition = physicalCardRevealPos.position;
+				physScript.pendingRevealPosition = GetRevealZonePosition();
 				physScript.pendingRevealScale = physicalCardRevealSize;
 				onComplete?.Invoke();
 			}
@@ -298,7 +308,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					onComplete?.Invoke();
 				};
 
-				physScript.SetTargetPosition(physicalCardRevealPos.position, wrappedOnComplete);
+				physScript.SetTargetPosition(GetRevealZonePosition(), wrappedOnComplete);
 				physScript.SetTargetScale(physicalCardRevealSize);
 				physScript.SetTargetRotation(Quaternion.identity);
 			}
@@ -323,7 +333,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			yield return null;
 			timer += Time.deltaTime;
 		}
-		physScript.SetTargetPosition(physicalCardRevealPos.position);
+		physScript.SetTargetPosition(GetRevealZonePosition());
 		physScript.SetTargetScale(physicalCardRevealSize);
 	}
 
@@ -377,6 +387,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// So effectiveCount = physicalCardsInDeck.Count - 1 is needed to calculate correct position
 			int effectiveCount = physicalCardsInDeck.Count - 1;
 			if (effectiveCount < 1) effectiveCount = 1; // At least 1 to avoid calculation errors
+			// Cascade + reveal-front counting: the -1 above (next card leaving for the reveal zone)
+			// and the +1 from that card occupying the cascade front slot cancel out,
+			// so the returned card lands at the deepest slot of the unchanged curve.
+			if (enableCascadeDeckLayout && revealCardCountsAsDeckFront)
+				effectiveCount = physicalCardsInDeck.Count;
 			
 			// VISUAL-FIX(2026-07-17): Reveal-to-bottom must land on the cascade curve, not the raw linear fan.
 			//   Cause:    This site duplicated the linear formula inline (xOffset*(effectiveCount-1)),
@@ -469,7 +484,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				// if reveal zone is me, move to reveal zone instead of deck top
 				if (combatManager.revealZone == physScript.cardImRepresenting.gameObject)
 				{
-					targetPosition = physicalCardRevealPos.position;
+					targetPosition = GetRevealZonePosition();
 				}
 				else
 				{
@@ -817,7 +832,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			spacingPower = cascadeSpacingPower,
 			tailReturn = cascadeTailReturn,
 			tailBendSign = cascadeTailBend == CascadeTailBend.Mirror ? 1f : -1f,
-			arcSamples = 300
+			arcSamples = 300,
+			coverageNormalize = cascadeCoverageNormalize,
+			coverageTarget = cascadeCoverageTarget,
+			coverageCap = cascadeCoverageCap
 		};
 	}
 
@@ -837,12 +855,32 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// Effective cascade deck count. With revealCardCountsAsDeckFront on, the reveal-zone card
+	/// occupies cascadeIndex 0 (the front slot), so every deck card sits one cascade step deeper.
+	/// Legacy linear path is unaffected: all cascade helpers early-return when cascade is disabled.
+	/// </summary>
+	// VISUAL-FIX(2026-07-17): Deck re-laid out (slide + curve reshape) on every reveal/return cycle.
+	//   Cause:    Cascade count excluded the reveal-zone card; revealing dropped the count by 1,
+	//             recomputing the whole curve and shifting every remaining card one step forward.
+	//   Affects:  All cascade position/scale/jitter callers (layout, popup peaks, slot-in, peel focus).
+	//   Regress:  With the toggle on, revealing a card must NOT move the rest of the deck;
+	//             returning it to the bottom slides the deck forward exactly one step.
+	//             Toggle revealCardCountsAsDeckFront off to restore the legacy per-reveal re-layout.
+	private int GetCascadeDeckCount()
+	{
+		int count = physicalCardsInDeck.Count;
+		if (enableCascadeDeckLayout && revealCardCountsAsDeckFront && physicalCardInRevealZone != null)
+			count++;
+		return count;
+	}
+
+	/// <summary>
 	/// Deck scale for the card at the given unity deck index (0 = bottom, count-1 = top).
 	/// Cascade mode: physicalCardDeckSize * per-depth cascade scale. Legacy mode: uniform physicalCardDeckSize.
 	/// </summary>
 	public Vector3 GetDeckScaleAtIndex(int unityIndex)
 	{
-		return GetDeckScaleAtIndex(unityIndex, physicalCardsInDeck.Count);
+		return GetDeckScaleAtIndex(unityIndex, GetCascadeDeckCount());
 	}
 
 	/// <summary>
@@ -879,7 +917,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	public Vector3 CalculatePositionAtIndex(int index)
 	{
-		var count = physicalCardsInDeck.Count;
+		var count = GetCascadeDeckCount();
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, count, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
@@ -903,7 +941,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	//   Related:  sacrificial_spirit + soldier_skeleton, any card that creates pending then stages
 	private Vector3 CalculateAnimationPositionAtIndex(int index)
 	{
-		int fullCount = physicalCardsInDeck.Count;
+		int fullCount = GetCascadeDeckCount();
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
@@ -931,7 +969,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		Vector3 basePos = CalculatePositionAtIndex(index);
 		if (physScript == null) return basePos;
-		return basePos + _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, physicalCardsInDeck.Count);
+		return basePos + _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, GetCascadeDeckCount());
 	}
 
 
@@ -975,7 +1013,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 	private Vector3 CalculatePositionForPendingCard(int index)
 	{
-		int fullCount = physicalCardsInDeck.Count;
+		int fullCount = GetCascadeDeckCount();
 		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
@@ -1261,6 +1299,45 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	#region Responsibility 3: Tell Physical Card target position based on list order
 
+	// VISUAL-FIX(2026-07-18): Reveal-zone card occluded by the deck once deck count grows large
+	//   Cause:    Deck z = basePos.z - zOffset*index (smaller z = closer to camera), so the deck
+	//             front card moves toward the camera as deck count grows, while the reveal-zone
+	//             position z was a fixed transform value. Large decks end up in front of the
+	//             revealed card.
+	//   Affects:  GetRevealZonePosition, all reveal-zone position callers,
+	//             UpdateAllPhysicalCardTargets (continuous tracking half of this fix)
+	//   Regress:  Small deck: reveal card sits exactly at physicalCardRevealPos (z unchanged).
+	//             Large deck (30+ cards, or grown mid-combat via AddTempCard): reveal card stays
+	//             revealZoneZGap in front of the deck front card. Peel focus exit/restore and
+	//             Start Card shuffle reveal behave as before.
+	/// <summary>
+	/// Reveal zone position with z clamped in front of the deck's front-most card (smallest z).
+	/// Min-clamp only: small decks keep the configured z byte-for-byte; large decks stay
+	/// revealZoneZGap in front of the front card. Scans TargetPosition (tween-final values),
+	/// mirroring the backMostZ scan in AddPhysicalCardToDeck. Cards mid-animation
+	/// (popup peak, pending slot-in) are excluded: only cards resting in the deck occlude.
+	/// </summary>
+	public Vector3 GetRevealZonePosition()
+	{
+		Vector3 revealPos = physicalCardRevealPos.position;
+
+		float frontMostZ = float.MaxValue;
+		foreach (var card in physicalCardsInDeck)
+		{
+			if (card == null) continue;
+			var phys = card.GetComponent<CardPhysObjScript>();
+			if (phys == null) continue;
+			if (phys.isPlayingSpecialAnimation || phys.isPendingSlotIn || phys.isPoppedUp) continue;
+			frontMostZ = Mathf.Min(frontMostZ, phys.TargetPosition.z);
+		}
+		if (frontMostZ == float.MaxValue)
+			return revealPos; // Deck empty (or fully mid-animation): no occlusion possible
+
+		float gap = revealZoneZGap > 0.0001f ? revealZoneZGap : Mathf.Abs(zOffset);
+		revealPos.z = Mathf.Min(revealPos.z, frontMostZ - gap);
+		return revealPos;
+	}
+
 	/// <summary>
 	/// Update all cards' target positions based on physicalCardsInDeck order
 	/// </summary>
@@ -1290,6 +1367,25 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physScript.SetTargetPosition(targetPos);
 			physScript.SetTargetScale(GetDeckScaleAtIndex(i));
 			physScript.SetTargetRotation(targetRot);
+		}
+		// VISUAL-FIX(2026-07-18): continuous half of the reveal-zone occlusion fix (see above).
+		// Deck count changes mid-combat (AddTempCard, Stage, Bury...), so the reveal card's
+		// target z is re-clamped on every deck layout update. Front-only (never push back),
+		// and skipped while a position tween is playing: StartPositionTween kills a restarted
+		// tween without firing its completion callback (reveal-entry input unblock would be lost).
+		if (physicalCardInRevealZone != null)
+		{
+			var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+			if (revealPhys != null && !revealPhys.isPlayingSpecialAnimation && !revealPhys.IsPositionTweenPlaying)
+			{
+				float clampedZ = GetRevealZonePosition().z;
+				Vector3 revealTarget = revealPhys.TargetPosition;
+				if (clampedZ < revealTarget.z - 0.0001f)
+				{
+					revealTarget.z = clampedZ;
+					revealPhys.SetTargetPosition(revealTarget);
+				}
+			}
 		}
 		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");
 	}
@@ -1591,8 +1687,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		//   Affects:  StartPeelCoroutine (deck focus offset computation).
 		//   Regress:  Trigger an off-reveal Attack with cascade on; the focused card lands on deckFocusTargetPos.
 		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
+		// Layout count includes the reveal-zone card as the cascade front slot (GetCascadeDeckCount);
+		// the local 'count' stays the physical list size for bounds checks and card iteration.
 		Vector3 noOffsetPos = DeckPositionCalculator.CalculatePositionAtIndex(
-			targetIndex, count, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
+			targetIndex, GetCascadeDeckCount(), physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
 		float offsetX = desiredX - noOffsetPos.x;
 		float offsetY = physicalCardDeckPos.position.y - noOffsetPos.y;
 		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
@@ -1612,7 +1710,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				revealPhysScript.SetRotationImmediate(Quaternion.identity);
 			}
 
-			Vector3 offsetRevealPos = physicalCardRevealPos.position + _deckFocusOffset;
+			Vector3 offsetRevealPos = GetRevealZonePosition() + _deckFocusOffset;
 			Vector3 exitPos = offsetRevealPos + Vector3.down * revealCardExitDistance;
 			animTotalCount++;
 			physicalCardInRevealZone.transform.DOMove(exitPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
@@ -1701,8 +1799,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		//   Affects:  TransitionFocusCoroutine (deck focus offset recomputation).
 		//   Regress:  Chain two off-reveal effects with cascade on; focus lands on deckFocusTargetPos both times.
 		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
+		// Layout count includes the reveal-zone card as the cascade front slot (GetCascadeDeckCount);
+		// the local 'count' stays the physical list size for bounds checks and card iteration.
 		Vector3 noOffsetPos = DeckPositionCalculator.CalculatePositionAtIndex(
-			newTargetIndex, count, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
+			newTargetIndex, GetCascadeDeckCount(), physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
 		float offsetX = desiredX - noOffsetPos.x;
 		float offsetY = physicalCardDeckPos.position.y - noOffsetPos.y;
 		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
@@ -1860,7 +1960,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Restore reveal zone card back to reveal position after last deck card starts + stagger
 		if (physicalCardInRevealZone != null)
 		{
-			Vector3 revealPos = physicalCardRevealPos.position;
+			Vector3 revealPos = GetRevealZonePosition();
 			var revealPhysScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
 			if (revealPhysScript != null)
 			{

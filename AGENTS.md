@@ -66,6 +66,17 @@ Assets/
 - **Stage** sends cards to `index Count-1` (top, first revealed).
 - **Delay** moves a card toward `index 0` by 1 slot (later reveal).
 
+### Physical Deck Layout (Cascade)
+- The combat physical deck uses the **Smooth Curve Cascade Stack**: the front card (deck top) is largest at the `physicalCardDeckPos` anchor; the front segment sweeps up-left with progressively shrinking size/spacing; after the turning point the tail hooks back at minimum spacing. Shop layout is unaffected.
+- `CombatUXManager.enableCascadeDeckLayout` (default `true`) toggles cascade vs the legacy linear fan. Legacy `xOffset/yOffset/zOffset` fields only serve the fallback path.
+- `CombatUXManager.revealCardCountsAsDeckFront` (default `true`) counts the reveal-zone card as cascadeIndex 0 (the front slot), so every deck card sits one cascade step deeper while a card is revealed. Single source of truth: `GetCascadeDeckCount()` = `physicalCardsInDeck.Count` + 1 when the toggle is on, cascade is enabled, and `physicalCardInRevealZone != null`. Effect: revealing a card no longer re-lays-out the deck; the deck slides forward one step only when the card returns to the bottom. In `MoveRevealedCardToBottom` the legacy `effectiveCount = Count - 1` (next card leaving) and the +1 front slot cancel out, so it passes `physicalCardsInDeck.Count` when the toggle is on.
+- All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(..., CascadeConfig)`. Every caller (layout, popup peaks, slot-in, reveal entry, reveal-to-bottom, `MoveCardToIndex`, peel focus) inherits the curve with no caller-side changes.
+- `DeckCascadeLayout` (pure static, unit-testable) holds the Bezier + arc-length math ported 1:1 from `docs/CardArrangementDemo.html`; results are cached per `(deckCount, pxToWorld, Params)`.
+- Index mapping: `cascadeIndex = deckCount - 1 - unityIndex` (cascadeIndex 0 = front card = deck top). Z depth keeps the existing formula `basePos.z - zOffset * index`.
+- Per-index scale: `GetDeckScaleAtIndex(i)` = `physicalCardDeckSize` × cascade scale; position jitter is multiplied by the card's cascade scale when `cascadeScaleJitterWithCard` is on so the tight tail stays clean.
+- **Coverage normalization (Plan B)**: per-card steps are scaled by one shared factor `clamp(cascadeCoverageTarget × curveLength / rawStepSum, 1, cascadeCoverageCap)` (stretch only, never compress), so small decks still reach the curve's hook region instead of looking straight. Defaults: normalize on, target 0.62, cap 2.5. Large decks sit above the target coverage naturally → factor 1 → layout unchanged.
+- EditMode coverage: `Assets/Scripts/Editor/Tests/DeckCascadeLayoutTests.cs` (golden values generated from the demo).
+
 ### Controls
 - First click: Reveal next card.
 - Second click: Trigger effect and place card at bottom.
@@ -148,6 +159,8 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 | `CardScript` | `Assets/Scripts/Card/CardScript.cs` |
 | `CostNEffectContainer` | `Assets/Scripts/Card/CostNEffectContainer.cs` |
 | `CombatUXManager` | `Assets/Scripts/UXPrototype/CombatUXManager.cs` |
+| `DeckCascadeLayout` | `Assets/Scripts/UXPrototype/DeckCascadeLayout.cs` |
+| `DeckPositionCalculator` | `Assets/Scripts/UXPrototype/DeckPositionCalculator.cs` |
 | `GameEventStorage` | `Assets/Scripts/Managers/GameEventStorage.cs` |
 | `ValueTrackerManager` | `Assets/Scripts/Managers/ValueTrackerManager.cs` |
 | `EnumStorage` | `Assets/Scripts/Managers/EnumStorage.cs` |
@@ -266,6 +279,8 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 
 **Note:** `MoveCardWithAnimation` skips `UpdateAllPhysicalCardTargets()` in its `OnComplete` when `RecorderAnimationPlayer.me != null`, because `RecorderAnimationPlayer` handles deck sync per-request via `ApplyAnimationResult`.
 
+**Deck Layout:** All deck position targets come from the cascade curve via `DeckPositionCalculator.CalculatePositionAtIndex` (see Combat System → Physical Deck Layout). `UpdateAllPhysicalCardTargets` sets per-index cascade scales via `GetDeckScaleAtIndex`.
+
 ## Critical Rules
 
 - **HPAlterEffect**: Automatically adds `baseDmg.value`; set `baseDmg` to 0 when passing a specific value.
@@ -286,11 +301,11 @@ Damage `<color=red>`, Heal `<color=#90EE90>`, Shield `<color=grey>`, Friendly `<
 
 ---
 
-## Unity MCP `execute_code` (CodeDom)
+## Unity MCP `execute_code`
 
-Default compiler is `codedom` (C# 6). Constraints:
+Roslyn compiler is installed (verified 2026-07-18). Default `compiler: "auto"` resolves to Roslyn (C# 12+); string interpolation, null-conditional, pattern matching, `using` declarations, etc. all work. `codedom` (C# 6) remains only as a fallback — if Roslyn is ever unavailable, respect these constraints:
 
-| Forbidden | Alternative |
+| Forbidden (codedom only) | Alternative |
 |-----------|-------------|
 | `using` declarations | Fully-qualified names (`UnityEngine.Debug.Log`) |
 | `return;` (void) | `return <value>;` on **all** paths |

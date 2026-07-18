@@ -25,13 +25,22 @@ public class DeckCascadeLayoutTests
 		spacingPower = 2f,
 		tailReturn = 0.55f,
 		tailBendSign = 1f,
-		arcSamples = 300
+		arcSamples = 300,
+		coverageNormalize = true,
+		coverageTarget = 0.62f,
+		coverageCap = 2.5f
 	};
 
 	// Golden table, cascadeIndex 0 = front card. Demo canvas space (px, y-down), 20 cards, default params.
-	private static readonly float[] DemoOffsetX = { 0.000000f, -26.976117f, -50.708670f, -71.437442f, -89.407633f, -104.864177f, -118.053650f, -129.221152f, -138.604595f, -146.433537f, -152.927459f, -158.290250f, -162.707804f, -166.347683f, -169.355862f, -171.861251f, -173.968229f, -175.768123f, -177.330278f, -178.706468f };
-	private static readonly float[] DemoOffsetY = { 0.000000f, -32.329032f, -62.428867f, -90.346299f, -116.130639f, -139.838936f, -161.535366f, -181.294006f, -199.202259f, -215.360946f, -229.884581f, -242.902873f, -254.560130f, -265.013638f, -274.433029f, -282.997010f, -290.893967f, -298.317209f, -305.466257f, -312.544636f };
+	// Regenerated with coverage normalization on: natural coverage at 20 cards is 60.4% < 62% target,
+	// so stepFactor = 1.0269 (offsets shifted ~2.7% vs the pre-coverage table).
+	private static readonly float[] DemoOffsetX = { 0.000000f, -27.688865f, -52.020592f, -73.241939f, -91.603136f, -107.357957f, -120.759201f, -132.061262f, -141.512913f, -149.352730f, -155.811779f, -161.101737f, -165.418197f, -168.935492f, -171.807315f, -174.162682f, -176.111604f, -177.742703f, -179.123840f, -180.300406f };
+	private static readonly float[] DemoOffsetY = { 0.000000f, -33.208018f, -64.147127f, -92.862523f, -119.403541f, -143.824835f, -166.190375f, -186.572603f, -205.057250f, -221.745291f, -236.751033f, -250.206456f, -262.257953f, -273.066569f, -282.805762f, -291.660553f, -299.823957f, -307.496077f, -314.882447f, -322.193076f };
 	private static readonly float[] DemoScale = { 1.000000f, 0.953878f, 0.910249f, 0.869114f, 0.830471f, 0.794321f, 0.760665f, 0.729501f, 0.700831f, 0.674654f, 0.650970f, 0.629778f, 0.611080f, 0.594875f, 0.581163f, 0.569945f, 0.561219f, 0.554986f, 0.551247f, 0.550000f };
+
+	// Golden table for 6 cards, coverage normalization on: factor clamps to coverageCap (2.5).
+	private static readonly float[] Demo6OffsetX = { 0.000000f, -51.123329f, -83.333573f, -102.783497f, -114.947334f, -124.554884f };
+	private static readonly float[] Demo6OffsetY = { 0.000000f, -61.791394f, -103.826560f, -131.127175f, -149.325581f, -164.579252f };
 
 	// A1: ComputeOffsets matches the demo golden table for the same (deckCount, Params).
 	// Unity canonical = both axes negated (front up-right), scaled by pxToWorld.
@@ -160,5 +169,43 @@ public class DeckCascadeLayoutTests
 			Assert.AreEqual(expected, DeckPositionCalculator.CalculatePositionAtIndex(i, count, basePos, xOffset, yOffset, zOffset, disabled), "disabled config at index " + i);
 			Assert.AreEqual(expected, DeckPositionCalculator.CalculatePositionAtIndex(i, count, basePos, xOffset, yOffset, zOffset, null), "explicit null at index " + i);
 		}
+	}
+
+	// A6: coverage normalization (Plan B). 6 cards, default params: factor clamps to
+	// coverageCap (2.5), so the small-deck walk still reaches the curve's hook region.
+	[Test]
+	public void A6_CoverageNormalize_SmallDeckMatchesGolden()
+	{
+		var offsets = DeckCascadeLayout.ComputeOffsets(6, DefaultParams, PxToWorld);
+		Assert.AreEqual(6, offsets.Length, "offset count");
+		for (int i = 0; i < 6; i++)
+		{
+			float expectedX = -Demo6OffsetX[i] * PxToWorld;
+			float expectedY = -Demo6OffsetY[i] * PxToWorld;
+			Assert.AreEqual(expectedX, offsets[i].x, PosEpsilon, "offset x at cascadeIndex " + i);
+			Assert.AreEqual(expectedY, offsets[i].y, PosEpsilon, "offset y at cascadeIndex " + i);
+		}
+	}
+
+	// A6b: disabling normalization keeps the short walk (pre-Plan-B behavior), and the
+	// stretched walk moves the deepest card much further along the curve. Also proves
+	// the result cache keys on the coverage fields (same deckCount, different Params).
+	[Test]
+	public void A6_CoverageNormalize_OffKeepsShortWalk()
+	{
+		var off = DefaultParams;
+		off.coverageNormalize = false;
+		var offsetsOn = DeckCascadeLayout.ComputeOffsets(6, DefaultParams, PxToWorld);
+		var offsetsOff = DeckCascadeLayout.ComputeOffsets(6, off, PxToWorld);
+
+		Assert.AreEqual(Vector2.zero, offsetsOn[0], "front card at anchor (on)");
+		Assert.AreEqual(Vector2.zero, offsetsOff[0], "front card at anchor (off)");
+		float magOn = offsetsOn[5].magnitude;
+		float magOff = offsetsOff[5].magnitude;
+		Assert.Greater(magOn, magOff * 1.5f, "normalization should stretch the small-deck walk");
+
+		// Re-query with the original params: cache must not return the "off" result.
+		var offsetsOnAgain = DeckCascadeLayout.ComputeOffsets(6, DefaultParams, PxToWorld);
+		Assert.AreEqual(offsetsOn[5], offsetsOnAgain[5], "cache must key on coverage fields");
 	}
 }
