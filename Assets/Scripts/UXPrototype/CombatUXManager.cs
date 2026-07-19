@@ -300,6 +300,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 				Action wrappedOnComplete = () =>
 				{
+					// A2 (VISUAL-FIX 2026-07-18): re-clamp reveal z on landing. The entry z may have
+					// been computed against a transient deck state, and the deck-layout tracking in
+					// UpdateAllPhysicalCardTargets skips this tween while it plays. The tween is
+					// finished here, so restarting the position tween inside the re-clamp is safe.
+					ReClampRevealZoneTargetZ();
 					if (!wasAlreadyLocked && combatManager != null)
 					{
 						UnblockInput(this);
@@ -1302,40 +1307,63 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	// VISUAL-FIX(2026-07-18): Reveal-zone card occluded by the deck once deck count grows large
 	//   Cause:    Deck z = basePos.z - zOffset*index (smaller z = closer to camera), so the deck
 	//             front card moves toward the camera as deck count grows, while the reveal-zone
-	//             position z was a fixed transform value. Large decks end up in front of the
-	//             revealed card.
+	//             position z was a fixed transform value. The first version of this fix scanned
+	//             live TargetPosition values, but staggered deck animations (shuffle landing,
+	//             initial layout) made the scan transient: the true front card was mid-flight and
+	//             excluded, so the clamp used a shallower card and baked in a wrong z
+	//             (play-mode trace: excluded=1 produced -6.0 instead of -6.5). Front z is now
+	//             computed analytically from the same formula DeckPositionCalculator uses,
+	//             which is immune to animation state.
 	//   Affects:  GetRevealZonePosition, all reveal-zone position callers,
-	//             UpdateAllPhysicalCardTargets (continuous tracking half of this fix)
+	//             UpdateAllPhysicalCardTargets (continuous tracking half of this fix),
+	//             MovePhysicalCardToRevealZone (re-clamp on entry-tween completion),
+	//             AttackAnimationManager (attack return flight + post-attack target)
 	//   Regress:  Small deck: reveal card sits exactly at physicalCardRevealPos (z unchanged).
 	//             Large deck (30+ cards, or grown mid-combat via AddTempCard): reveal card stays
-	//             revealZoneZGap in front of the deck front card. Peel focus exit/restore and
-	//             Start Card shuffle reveal behave as before.
+	//             revealZoneZGap in front of the deck front card, including the round-start
+	//             re-reveal right after the Start Card shuffle. Peel focus exit/restore unchanged.
 	/// <summary>
 	/// Reveal zone position with z clamped in front of the deck's front-most card (smallest z).
 	/// Min-clamp only: small decks keep the configured z byte-for-byte; large decks stay
-	/// revealZoneZGap in front of the front card. Scans TargetPosition (tween-final values),
-	/// mirroring the backMostZ scan in AddPhysicalCardToDeck. Cards mid-animation
-	/// (popup peak, pending slot-in) are excluded: only cards resting in the deck occlude.
+	/// revealZoneZGap in front of the front card. Front z is analytic
+	/// (basePos.z - zOffset * frontIndex, same formula as DeckPositionCalculator), so it is
+	/// exact even while deck cards are mid-animation. |randomDeckPositionOffsetRange.z| is
+	/// subtracted as a jitter safety margin (0 in the current scene).
 	/// </summary>
 	public Vector3 GetRevealZonePosition()
 	{
 		Vector3 revealPos = physicalCardRevealPos.position;
+		if (physicalCardsInDeck.Count == 0)
+			return revealPos; // Deck empty: no occlusion possible
 
-		float frontMostZ = float.MaxValue;
-		foreach (var card in physicalCardsInDeck)
-		{
-			if (card == null) continue;
-			var phys = card.GetComponent<CardPhysObjScript>();
-			if (phys == null) continue;
-			if (phys.isPlayingSpecialAnimation || phys.isPendingSlotIn || phys.isPoppedUp) continue;
-			frontMostZ = Mathf.Min(frontMostZ, phys.TargetPosition.z);
-		}
-		if (frontMostZ == float.MaxValue)
-			return revealPos; // Deck empty (or fully mid-animation): no occlusion possible
-
+		// Front card = last list entry (index Count-1); z formula matches DeckPositionCalculator.
+		// _deckFocusOffset.z is always 0 but included for correctness.
+		float frontMostZ = physicalCardDeckPos.position.z + _deckFocusOffset.z
+			- zOffset * (physicalCardsInDeck.Count - 1);
 		float gap = revealZoneZGap > 0.0001f ? revealZoneZGap : Mathf.Abs(zOffset);
-		revealPos.z = Mathf.Min(revealPos.z, frontMostZ - gap);
+		float jitterMargin = Mathf.Abs(randomDeckPositionOffsetRange.z);
+		revealPos.z = Mathf.Min(revealPos.z, frontMostZ - gap - jitterMargin);
 		return revealPos;
+	}
+
+	/// <summary>
+	/// Front-only re-clamp of the reveal-zone card's target z (never pushes back).
+	/// Callers must ensure no in-flight position tween carries a completion callback they still
+	/// need: SetTargetPosition restarts the tween and a restart kills the old tween without
+	/// firing its callback. Cards held at a popup peak (isPlayingSpecialAnimation) are skipped.
+	/// </summary>
+	private void ReClampRevealZoneTargetZ()
+	{
+		if (physicalCardInRevealZone == null) return;
+		var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+		if (revealPhys == null || revealPhys.isPlayingSpecialAnimation) return;
+		float clampedZ = GetRevealZonePosition().z;
+		Vector3 revealTarget = revealPhys.TargetPosition;
+		if (clampedZ < revealTarget.z - 0.0001f)
+		{
+			revealTarget.z = clampedZ;
+			revealPhys.SetTargetPosition(revealTarget);
+		}
 	}
 
 	/// <summary>
@@ -1368,23 +1396,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physScript.SetTargetScale(GetDeckScaleAtIndex(i));
 			physScript.SetTargetRotation(targetRot);
 		}
-		// VISUAL-FIX(2026-07-18): continuous half of the reveal-zone occlusion fix (see above).
-		// Deck count changes mid-combat (AddTempCard, Stage, Bury...), so the reveal card's
-		// target z is re-clamped on every deck layout update. Front-only (never push back),
-		// and skipped while a position tween is playing: StartPositionTween kills a restarted
-		// tween without firing its completion callback (reveal-entry input unblock would be lost).
+		// VISUAL-FIX(2026-07-18): continuous half of the reveal-zone occlusion fix (see
+		// GetRevealZonePosition). Deck count changes mid-combat (AddTempCard, Stage, Bury...),
+		// so the reveal card's target z is re-clamped on every deck layout update. Skipped while
+		// a position tween plays: a restart kills the in-flight tween without firing its
+		// completion callback (the reveal-entry tween carries the input unblock). The entry
+		// tween re-clamps itself on landing via wrappedOnComplete.
 		if (physicalCardInRevealZone != null)
 		{
 			var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
-			if (revealPhys != null && !revealPhys.isPlayingSpecialAnimation && !revealPhys.IsPositionTweenPlaying)
+			if (revealPhys != null && !revealPhys.IsPositionTweenPlaying)
 			{
-				float clampedZ = GetRevealZonePosition().z;
-				Vector3 revealTarget = revealPhys.TargetPosition;
-				if (clampedZ < revealTarget.z - 0.0001f)
-				{
-					revealTarget.z = clampedZ;
-					revealPhys.SetTargetPosition(revealTarget);
-				}
+				ReClampRevealZoneTargetZ();
 			}
 		}
 		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");

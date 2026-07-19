@@ -269,6 +269,10 @@ public void ReleaseDeckFocus()
 
 		Vector3 startPos = physicalCard.transform.position;
 		Vector3 targetPos = targetTransform.position;
+		// Keep the whole attack in the attacker's current z plane: wind-up already uses
+		// startPos.z, and charge/overshoot derive from targetPos, so pinning targetPos.z
+		// here removes any z drift mid-flight (VISUAL-FIX 2026-07-18, reveal-z family).
+		targetPos.z = startPos.z;
 		Vector3 originalScale = physicalCard.transform.localScale;
 
 		// Capture popup state so we can keep the card at peak if it was popped up for an off-reveal effect.
@@ -305,7 +309,10 @@ public void ReleaseDeckFocus()
 			if (isInRevealZone)
 			{
 				// Return to reveal position
-				Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
+				// VISUAL-FIX(2026-07-18): must use the dynamically z-clamped reveal position
+				// (see CombatUXManager.GetRevealZonePosition); the raw transform z sits behind
+				// large decks and the returning attacker gets occluded by deck front cards.
+				Vector3 revealPos = _combatUXManager.GetRevealZonePosition();
 				Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
 				yield return ReturnToRevealFromOvershootAnimation(physicalCard, revealPos, revealSize, originalScale);
 			}
@@ -338,7 +345,8 @@ public void ReleaseDeckFocus()
 			// Update CardPhysObjScript target position to prevent snapping
 			if (isInRevealZone)
 			{
-				Vector3 revealPos = _combatUXManager.physicalCardRevealPos.position;
+				// VISUAL-FIX(2026-07-18): dynamically z-clamped reveal position, same as above.
+				Vector3 revealPos = _combatUXManager.GetRevealZonePosition();
 				Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
 
 				physScript.SetTargetPosition(revealPos);

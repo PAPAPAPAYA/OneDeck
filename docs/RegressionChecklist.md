@@ -52,7 +52,15 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 41 | Off-reveal Attack cards skip popup and emphasize, use peel-deck focus only | `RecorderAnimationPlayer`, `CombatUXManager` | 2026-07-02 | ⚠️ | **Card:** BOOSTER (`StageSelf` → two `GOBLIN_CHARGE_TEAM` `OnMeStaged`) or any off-reveal attack<br>**Check:** Deck peels to the source card, then attack animation plays directly. No emphasize scale pulse and no popup peak/slot-in cycle for the attacker.<br>**Also check non-Attack off-reveal effect (e.g. StageSelf/Bury):** popup → emphasize → effect → slotin; verify there is **no** peel-deck focus transition. |
 | 42 | Batch status effect animation helpers share `targetCards` list, causing projectile/target list to be cleared when `ShouldSkipRequestForSourceCard` mutates an earlier request | `StatusEffectGiverEffect`, `EffectScript`, `BuryEffect`, `RecorderAnimationPlayer` | 2026-07-02 | ⚠️ | **Card:** UNFINISHED_ROBOT (`GiveSelfStatusEffect`) or any card that gives a status effect to itself/batch targets (e.g. self-Power, GiveAllFriendlyStatusEffect, POWER_TRANSFER consume/transfer).<br>**Check:** `StatusEffectProjectile` request has valid targets and `[CombatUXManager] SpawnProjectile START/COMPLETE` logs appear; `PopUpBatch`/`SlotInBatch` no longer empty the shared list used by the projectile request. Bury/Stage/Transfer/Consume batch helpers also use independent list copies. |
 | 49 | Deck focus peel and popup centering derive from cascade positions | `CombatUXManager`, `AttackAnimationManager`, `RecorderAnimationPlayer` | 2026-07-17 | ⚠️ | **Card:** BOOSTER or any off-reveal attack/effect with cascade on.<br>**Check:** The peeled/focused card lands exactly on `deckFocusTargetPos`; chained off-reveal effects re-focus correctly each time; releasing focus restores the cascade layout. |
-| 51 | Reveal-zone card occluded by the deck once deck count grows (deck front z crosses the fixed reveal z) | `CombatUXManager`, `GetRevealZonePosition`, `UpdateAllPhysicalCardTargets`, `CardPhysObjScript` | 2026-07-18 | ⚠️ | **Step:** Small deck (e.g. 10 cards): reveal a card — it must land exactly at the configured `physicalCardRevealPos` z (legacy behavior). Then grow the deck mid-combat (RIFT_INSECT / BLACKSMITH `AddTempCard`) or start with a 30+ card deck and reveal.<br>**Check:** Reveal card always renders in front of the deck front card by `revealZoneZGap` (default `|zOffset|`); while a card sits in the reveal zone, adding cards to the deck re-clamps its z (front-only, never pushed back). Peel focus exit/restore, Start Card shuffle reveal, and reveal-entry input unblock (no soft-lock) all unchanged. |
+| 51 | Reveal-zone card occluded by the deck once deck count grows (deck front z crosses the fixed reveal z); first fix used a live TargetPosition scan that sampled transient mid-animation states and baked in a wrong z, so front z is now analytic + landing re-clamp; attack return path in `AttackAnimationManager` also read the raw reveal pos and was routed through the helper | `CombatUXManager`, `GetRevealZonePosition`, `ReClampRevealZoneTargetZ`, `UpdateAllPhysicalCardTargets`, `CardPhysObjScript`, `AttackAnimationManager` | 2026-07-18 | ⚠️ | **Step:** (a) Small deck (e.g. 10 cards): reveal a card — it must land exactly at the configured `physicalCardRevealPos` z (legacy behavior). (b) 30+ card deck or mid-combat growth (RIFT_INSECT / BLACKSMITH `AddTempCard`): reveal — card must stay `revealZoneZGap` (default `|zOffset|`) in front of the deck front card. (c) Round-start Start Card shuffle → re-reveal while deck cards are still settling: reveal card must end up in front of the front card, never at equal z. (d) Reveal-zone attacker (e.g. BLACKSMITH) with a deck large enough to overlap the reveal zone: the attack return flight and the post-attack resting position must stay in front of the deck front card; the whole attack (wind-up/charge/overshoot) stays in the attacker's z plane with no z drift mid-flight.<br>**Check:** No overlap between reveal-zone card and deck front in all four cases; reveal-entry input unblock works (no soft-lock); peel focus exit/restore and shuffle visuals unchanged. |
+
+---
+
+## UI & HUD
+
+| # | Scenario | System / Effect | Fixed Date | Status | Verification |
+|---|----------|-----------------|------------|--------|--------------|
+| 52 | HP compare bar renders fully in the enemy color (Filled `Image` ignores `fillAmount` when `sprite` is null, full-quad red segment covers the player segment) | `CombatHPBarPresenter` | 2026-07-18 | ⚠️ | **Setup:** Enter combat at 20/20 HP.<br>**Check:** Bar shows a left player-color half and a right enemy-color half; uneven HP renders proportional segment widths. Attack hits tween the segments and play ghost/flash/shake on the damaged side only; heals flash the healed side only. |
 
 ## Cost Check Feedback
 
@@ -114,11 +122,13 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `BuryEffect.cs` | 1, 2, 5, 7, 14, 42, 45, 46 |
 | `StageEffect.cs` | 1, 2, 5, 7, 45, 46 |
 | `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35, 43, 44, 45, 47, 48, 49, 51 |
+| `CombatHPBarPresenter.cs` | 52 |
 | `EffectChainManager.cs` | 2, 11 |
 | `CardPhysObjScript.cs` | 3, 12, 35, 51 |
 | `CurseEffect.cs` | 8, 17, 19 |
 | `AddTempCard.cs` | 4, 48 |
 | `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33, 35, 38, 40, 41, 42, 46, 49 |
+| `AttackAnimationManager.cs` | 51 |
 | `ApplyAnimationResult` | 5, 46 |
 | `CalculateAnimationPositionAtIndex` | 7, 44, 45, 48 |
 | `DeckCascadeLayout.cs` | 43 |
