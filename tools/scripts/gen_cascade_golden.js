@@ -1,5 +1,5 @@
 // Generates golden reference values for DeckCascadeLayoutTests by replicating
-// docs/CardArrangementDemo.html computeSmoothPositions()/getCascadeParams() VERBATIM
+// docs/demo/CardArrangementDemo.html computeSmoothPositions()/getCascadeParams() VERBATIM
 // (including the coverage normalization "Plan B" step-factor pass).
 // Run: node tools/scripts/gen_cascade_golden.js [cardCount]
 const TOTAL_CARDS = parseInt(process.argv[2] || "20", 10);

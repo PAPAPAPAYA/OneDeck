@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// EditMode tests for DeckCascadeLayout and the DeckPositionCalculator cascade branch.
 /// PRD: plans/prd-card-cascade-layout-2026-07-17.md, section 6.1 (tests A1-A5).
-/// Golden values generated from docs/CardArrangementDemo.html via
+/// Golden values generated from docs/demo/CardArrangementDemo.html via
 /// tools/scripts/gen_cascade_golden.js (demo algorithm replicated verbatim).
 /// </summary>
 public class DeckCascadeLayoutTests

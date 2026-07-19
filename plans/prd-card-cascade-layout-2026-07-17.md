@@ -8,7 +8,7 @@
 
 The current combat deck layout is a linear fan: `DeckPositionCalculator.CalculatePositionAtIndex` spaces cards with constant `xOffset`/`yOffset` per index and a uniform scale (`physicalCardDeckSize`). This reads as a flat, mechanical stack.
 
-A layout exploration was conducted in `docs/CardArrangementDemo.html` (currently untracked; this feature adds it to git, see section 4), which iterated through three target shapes:
+A layout exploration was conducted in `docs/demo/CardArrangementDemo.html` (currently untracked; this feature adds it to git, see section 4), which iterated through three target shapes:
 
 1. **v1 — Diagonal Cascade Stack**: pure diagonal, exponential shrink.
 2. **v2 — Polyline Cascade Stack**: front segment up-left with shrinking, then a hard turn up-right at minimum spacing ("hook / L-shape").
@@ -44,7 +44,7 @@ Replace the linear-fan combat deck layout with the **Smooth Curve Cascade Stack*
 
 | Document | Role |
 |----------|------|
-| `docs/CardArrangementDemo.html` (`computeSmoothPositions`, `getCascadeParams`) | Algorithm source of truth |
+| `docs/demo/CardArrangementDemo.html` (`computeSmoothPositions`, `getCascadeParams`) | Algorithm source of truth |
 | `plans/plan-card-cascade-layout-2026-07-17.md` | Working plan this PRD supersedes |
 
 ---
@@ -62,7 +62,7 @@ Replace the linear-fan combat deck layout with the **Smooth Curve Cascade Stack*
 - Combat physical deck only (`physicalCardsInDeck`).
 - `docs/RegressionChecklist.md` rows and `VISUAL-FIX` comment blocks per project rules.
 - `AGENTS.md` deck layout description update.
-- Add `docs/CardArrangementDemo.html` to git (no content change) — it is the algorithm source of truth and must not remain a working-tree-only file.
+- Add `docs/demo/CardArrangementDemo.html` to git (no content change) — it is the algorithm source of truth and must not remain a working-tree-only file.
 
 ### 2.2 Out of Scope
 
@@ -268,7 +268,7 @@ Legacy `xOffset`/`yOffset`/`zOffset` fields stay for the fallback path.
 | 6 | `Assets/Scripts/UXPrototype/CardPhysObjScript.cs` | Fix stale `isPendingSlotIn` XML comment (2.1) | 1 comment block |
 | 7 | `docs/RegressionChecklist.md` | One row per section-6.2 scenario | 12 rows |
 | 8 | `AGENTS.md` | Update deck layout description (Zones / Card Movement) | ~5 lines |
-| 9 | `docs/CardArrangementDemo.html` | Add to git, no content change (2.1) | — |
+| 9 | `docs/demo/CardArrangementDemo.html` | Add to git, no content change (2.1) | — |
 
 ---
 

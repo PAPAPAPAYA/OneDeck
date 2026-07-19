@@ -9,7 +9,7 @@ public enum CascadeTailBend { Mirror, Same }
 
 /// <summary>
 /// Pure static helper that computes the Smooth Curve Cascade deck layout.
-/// Ported 1:1 from docs/CardArrangementDemo.html (computeSmoothPositions / getCascadeParams).
+/// Ported 1:1 from docs/demo/CardArrangementDemo.html (computeSmoothPositions / getCascadeParams).
 /// No scene dependencies; fully unit-testable (see Assets/Scripts/Editor/Tests/DeckCascadeLayoutTests.cs).
 ///
 /// Coordinate convention:
