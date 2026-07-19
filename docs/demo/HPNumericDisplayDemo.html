@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HP Numeric Display Demo</title>
+<style>
+	body {
+		margin: 0;
+		padding: 40px 24px;
+		background: #ececf0;
+		color: #1a1a1a;
+		font-family: "Segoe UI", Arial, sans-serif;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 32px;
+	}
+
+	h1 {
+		font-size: 18px;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	/* The numeric HP display: current HP on top, thick divider, max HP below.
+	   Container shrink-wraps to the widest number, so the divider at 100% width
+	   always matches the number width, as in the reference image. */
+	.hp-numeric {
+		position: relative;
+		display: inline-flex;
+		flex-direction: column;
+		align-items: stretch;
+		font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+		font-weight: 900;
+		font-size: 72px;
+		line-height: 1;
+		color: #141414;
+		user-select: none;
+	}
+
+	.hp-numeric .hp-value {
+		text-align: center;
+		letter-spacing: -0.02em;
+		transition: color 0.25s ease;
+	}
+
+	.hp-numeric .hp-divider {
+		height: 0.11em;
+		margin: 0.06em 0;
+		background: #141414;
+		transition: background-color 0.25s ease;
+	}
+
+	/* Hidden probe used by the fixed-digit-width toggle to measure the width
+	   of N digits in the component font. */
+	.hp-measure {
+		position: absolute;
+		top: 0;
+		left: 0;
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	/* Zero-out state: current number and divider go gray. The drop animation
+	   itself is played via the Web Animations API from JS. */
+	.hp-numeric.zero #hpCurrent {
+		color: #8a8a90;
+	}
+
+	.hp-numeric.zero .hp-divider {
+		background: #8a8a90;
+	}
+
+	.controls {
+		background: #ffffff;
+		border: 1px solid #d5d5dc;
+		border-radius: 8px;
+		padding: 16px 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		min-width: 340px;
+	}
+
+	.control-row {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.control-row label {
+		width: 90px;
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	.control-row input[type="range"] {
+		flex: 1;
+	}
+
+	.control-row .value-label {
+		width: 40px;
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+		font-size: 14px;
+	}
+
+	.button-row {
+		display: flex;
+		justify-content: center;
+		gap: 8px;
+	}
+
+	.button-row button {
+		padding: 6px 14px;
+		font-size: 14px;
+		font-weight: 600;
+		border: 1px solid #b8b8c2;
+		border-radius: 6px;
+		background: #f6f6f9;
+		cursor: pointer;
+	}
+
+	.button-row button:hover {
+		background: #e8e8ee;
+	}
+
+	.toggle-row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 8px 16px;
+		border-top: 1px solid #e2e2e8;
+		padding-top: 12px;
+	}
+
+	.toggle-row label {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		cursor: pointer;
+	}
+</style>
+</head>
+<body>
+
+<h1>HP Numeric Display Demo</h1>
+
+<div class="hp-numeric" id="hpNumeric">
+	<div class="hp-value" id="hpCurrent">15</div>
+	<div class="hp-divider"></div>
+	<div class="hp-value" id="hpMax">88</div>
+	<div class="hp-value hp-measure" id="hpMeasure" aria-hidden="true"></div>
+</div>
+
+<div class="controls">
+	<div class="control-row">
+		<label for="currentSlider">Current HP</label>
+		<input type="range" id="currentSlider" min="0" max="200" value="15">
+		<span class="value-label" id="currentLabel">15</span>
+	</div>
+	<div class="control-row">
+		<label for="maxSlider">Max HP</label>
+		<input type="range" id="maxSlider" min="1" max="200" value="88">
+		<span class="value-label" id="maxLabel">88</span>
+	</div>
+	<div class="button-row">
+		<button data-delta="-10">-10</button>
+		<button data-delta="-1">-1</button>
+		<button data-delta="1">+1</button>
+		<button data-delta="10">+10</button>
+	</div>
+	<div class="toggle-row">
+		<label><input type="checkbox" id="tglShake" checked> Hit shake</label>
+		<label><input type="checkbox" id="tglEase" checked> Ease-out finish</label>
+		<label><input type="checkbox" id="tglDigit" checked> Fixed digit width</label>
+		<label><input type="checkbox" id="tglZero" checked> Zero-out effect</label>
+	</div>
+</div>
+
+<script>
+	(function () {
+		var componentEl = document.getElementById('hpNumeric');
+		var currentEl = document.getElementById('hpCurrent');
+		var maxEl = document.getElementById('hpMax');
+		var measureEl = document.getElementById('hpMeasure');
+		var currentSlider = document.getElementById('currentSlider');
+		var maxSlider = document.getElementById('maxSlider');
+		var currentLabel = document.getElementById('currentLabel');
+		var maxLabel = document.getElementById('maxLabel');
+
+		var currentHP = 15;
+		var maxHP = 88;
+		var lastRenderedCurrent = currentHP;
+
+		// Feature toggles, wired to the checkboxes below.
+		var flags = { shake: true, easeOut: true, digitFix: true, zeroFx: true };
+
+		// Counting animation: each number ticks toward its target one point per
+		// step. A new target mid-count simply re-aims the running timer, so the
+		// displayed value turns around from wherever it currently is.
+		var STEP_MS = 50;
+
+		// Ease-out finish: the last few steps stretch their delay so the count
+		// settles into the final value instead of stopping abruptly.
+		var EASE_OUT_STEPS = 5;
+		var EASE_OUT_EXTRA_MS = 35;
+
+		function stepDelay(remaining) {
+			if (!flags.easeOut || remaining > EASE_OUT_STEPS) {
+				return STEP_MS;
+			}
+			return STEP_MS + (EASE_OUT_STEPS + 1 - remaining) * EASE_OUT_EXTRA_MS;
+		}
+
+		// Zero-out effect: when the displayed current HP reaches 0, the number
+		// drops and grays out (persistent state via the .zero class); reviving
+		// cancels the drop and restores the color.
+		var zeroAnimation = null;
+
+		function updateZeroState() {
+			var atZero = parseInt(currentEl.textContent, 10) === 0;
+			var isZero = componentEl.classList.contains('zero');
+			if (flags.zeroFx && atZero && !isZero) {
+				componentEl.classList.add('zero');
+				zeroAnimation = currentEl.animate([
+					{ transform: 'scale(1) translateY(0)' },
+					{ transform: 'scale(0.7) translateY(0.06em)' },
+					{ transform: 'scale(0.85) translateY(0.04em)' }
+				], { duration: 350, easing: 'ease-out', fill: 'forwards' });
+			} else if ((!flags.zeroFx || !atZero) && isZero) {
+				componentEl.classList.remove('zero');
+				if (zeroAnimation !== null) {
+					zeroAnimation.cancel();
+					zeroAnimation = null;
+				}
+			}
+		}
+
+		function createCounter(el, onDisplayChanged) {
+			var displayed = parseInt(el.textContent, 10);
+			var target = displayed;
+			var timer = null;
+
+			function tick() {
+				if (displayed === target) {
+					timer = null;
+					return;
+				}
+				displayed += displayed < target ? 1 : -1;
+				el.textContent = displayed;
+				if (onDisplayChanged) {
+					onDisplayChanged();
+				}
+				if (displayed !== target) {
+					timer = setTimeout(tick, stepDelay(Math.abs(target - displayed)));
+				} else {
+					timer = null;
+				}
+			}
+
+			return {
+				setTarget: function (value) {
+					target = value;
+					if (timer === null && displayed !== target) {
+						timer = setTimeout(tick, stepDelay(Math.abs(target - displayed)));
+					}
+				}
+			};
+		}
+
+		var currentCounter = createCounter(currentEl, updateZeroState);
+		var maxCounter = createCounter(maxEl, null);
+
+		// Hit shake: the whole component shakes sideways when HP drops. The
+		// amplitude grows with the damage and is capped so big hits stay readable.
+		function playShake(damage) {
+			var amplitude = Math.min(10, 2 + damage * 0.3);
+			componentEl.animate([
+				{ transform: 'translateX(0)' },
+				{ transform: 'translateX(' + (-amplitude) + 'px)' },
+				{ transform: 'translateX(' + amplitude + 'px)' },
+				{ transform: 'translateX(' + (-amplitude * 0.6) + 'px)' },
+				{ transform: 'translateX(' + (amplitude * 0.6) + 'px)' },
+				{ transform: 'translateX(' + (-amplitude * 0.25) + 'px)' },
+				{ transform: 'translateX(0)' }
+			], { duration: 300, easing: 'ease-out' });
+		}
+
+		// Fixed digit width: reserve the width of the max HP digit count on both
+		// numbers, so counting across 9/10 or 99/100 never shifts the layout.
+		function applyDigitFix() {
+			if (!flags.digitFix) {
+				currentEl.style.minWidth = '';
+				maxEl.style.minWidth = '';
+				return;
+			}
+			var digits = String(maxHP).length;
+			var probe = '';
+			for (var i = 0; i < digits; i++) {
+				probe += '0';
+			}
+			measureEl.textContent = probe;
+			var width = measureEl.offsetWidth + 'px';
+			currentEl.style.minWidth = width;
+			maxEl.style.minWidth = width;
+		}
+
+		function clampCurrent() {
+			if (currentHP > maxHP) {
+				currentHP = maxHP;
+			}
+			if (currentHP < 0) {
+				currentHP = 0;
+			}
+		}
+
+		// Sliders and labels always show the logical value immediately; the big
+		// numbers catch up via the counting animation.
+		function render() {
+			clampCurrent();
+			if (flags.shake && currentHP < lastRenderedCurrent) {
+				playShake(lastRenderedCurrent - currentHP);
+			}
+			lastRenderedCurrent = currentHP;
+			currentSlider.value = currentHP;
+			maxSlider.value = maxHP;
+			currentLabel.textContent = currentHP;
+			maxLabel.textContent = maxHP;
+			applyDigitFix();
+			currentCounter.setTarget(currentHP);
+			maxCounter.setTarget(maxHP);
+			updateZeroState();
+		}
+
+		currentSlider.addEventListener('input', function () {
+			currentHP = parseInt(currentSlider.value, 10);
+			render();
+		});
+
+		maxSlider.addEventListener('input', function () {
+			maxHP = parseInt(maxSlider.value, 10);
+			if (maxHP < 1) {
+				maxHP = 1;
+			}
+			render();
+		});
+
+		var buttons = document.querySelectorAll('.button-row button');
+		for (var i = 0; i < buttons.length; i++) {
+			buttons[i].addEventListener('click', function () {
+				var delta = parseInt(this.getAttribute('data-delta'), 10);
+				currentHP += delta;
+				render();
+			});
+		}
+
+		function bindToggle(id, key, onChange) {
+			document.getElementById(id).addEventListener('change', function () {
+				flags[key] = this.checked;
+				if (onChange) {
+					onChange();
+				}
+			});
+		}
+
+		bindToggle('tglShake', 'shake', null);
+		bindToggle('tglEase', 'easeOut', null);
+		bindToggle('tglDigit', 'digitFix', applyDigitFix);
+		bindToggle('tglZero', 'zeroFx', updateZeroState);
+
+		render();
+	})();
+</script>
+
+</body>
+</html>
