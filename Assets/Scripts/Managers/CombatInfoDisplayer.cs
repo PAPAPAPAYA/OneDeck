@@ -110,6 +110,30 @@ public class CombatInfoDisplayer : MonoBehaviour
 	}
 	
 	/// <summary>
+	/// Displayed owner HP exactly as shown by DisplayStatusInfo (queue-frozen value when
+	/// pending values exist, live hp otherwise). Read-only accessor for presentation-only
+	/// UI (e.g. CombatHPBarPresenter) that must stay in sync with the HP text.
+	/// </summary>
+	public int GetDisplayedOwnerHp()
+	{
+		return _pendingOwnerHp.Count > 0
+			? _displayedOwnerHp
+			: CombatManager.Me.ownerPlayerStatusRef.hp;
+	}
+
+	/// <summary>
+	/// Displayed enemy HP exactly as shown by DisplayStatusInfo (queue-frozen value when
+	/// pending values exist, live hp otherwise). Read-only accessor for presentation-only
+	/// UI (e.g. CombatHPBarPresenter) that must stay in sync with the HP text.
+	/// </summary>
+	public int GetDisplayedEnemyHp()
+	{
+		return _pendingEnemyHp.Count > 0
+			? _displayedEnemyHp
+			: CombatManager.Me.enemyPlayerStatusRef.hp;
+	}
+
+	/// <summary>
 	/// Clear all pending HP display values. Used when animations are cancelled or combat ends.
 	/// </summary>
 	public void ClearHpDisplayLocks()

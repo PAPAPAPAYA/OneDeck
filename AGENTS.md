@@ -29,7 +29,7 @@ Assets/
 │   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, AddTextEffect, CardManipulationEffect, ChangeCardTarget, ChangeHpAlterAmountEffect, HPMaxAlterEffect, PrintEffect, TransferStatusEffectEffect, BuryCostEffect, DelayCostEffect, ExposeCostEffect, MinionCostEffect, StartCardShuffleEffect, shop/DeckSizeIncreaseEffect, StatusEffect/
 │   ├── Card/           # CardScript, CostNEffectContainer, CardEventTrigger
 │   ├── SOScripts/      # GameEvent, PlayerStatusSO, StatusEffectSO, DeckSO, BoolSO, CostCheckResult, GamePhaseSO, IntSO, ShopRarityWeightSO, StringSO
-│   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript, CombatCardView, ShopCardView
+│   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript, CombatCardView, ShopCardView, CombatHPBarPresenter
 ├── Prefabs/Cards/      # 3.0 no cost (current), System/, StatusEffectResolvers/
 └── docs/
 ```
@@ -159,6 +159,7 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 | `CardScript` | `Assets/Scripts/Card/CardScript.cs` |
 | `CostNEffectContainer` | `Assets/Scripts/Card/CostNEffectContainer.cs` |
 | `CombatUXManager` | `Assets/Scripts/UXPrototype/CombatUXManager.cs` |
+| `CombatHPBarPresenter` | `Assets/Scripts/UXPrototype/CombatHPBarPresenter.cs` |
 | `DeckCascadeLayout` | `Assets/Scripts/UXPrototype/DeckCascadeLayout.cs` |
 | `DeckPositionCalculator` | `Assets/Scripts/UXPrototype/DeckPositionCalculator.cs` |
 | `GameEventStorage` | `Assets/Scripts/Managers/GameEventStorage.cs` |

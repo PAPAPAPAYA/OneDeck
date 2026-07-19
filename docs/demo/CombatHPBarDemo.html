@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Combat HP Compare Bar Demo</title>
+<style>
+	body {
+		margin: 0;
+		padding: 40px 24px;
+		background: #22323a;
+		color: #e6e6e6;
+		font-family: "Segoe UI", Arial, sans-serif;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 32px;
+	}
+
+	/* The HP compare bar: left = player share, right = enemy share.
+	   Widths are animated via transform: scaleX (GPU composited, no layout). */
+	#hpBar {
+		position: relative;
+		overflow: hidden;
+		border-radius: 4px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+	}
+
+	#hpBar .seg {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		width: 100%;
+		transition: transform 0.25s ease-out, background-color 0.2s ease;
+	}
+
+	#playerSeg { left: 0; transform-origin: left center; }
+	#enemySeg { right: 0; transform-origin: right center; }
+
+	/* Damage ghost trail / heal flash overlay, one per side.
+	   Positioned by JS at hit time; animated via Web Animations API. */
+	#hpBar .ghost {
+		position: absolute;
+		top: 0;
+		height: 100%;
+		opacity: 0;
+		pointer-events: none;
+		background: rgba(255, 255, 255, 0.8);
+	}
+
+	/* Low HP warning pulse (toggled by JS when a side's share < 25%). */
+	#hpBar .seg.low {
+		animation: lowPulse 0.9s ease-in-out infinite;
+	}
+
+	@keyframes lowPulse {
+		50% { filter: brightness(1.7); }
+	}
+
+	.controls {
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 8px;
+		padding: 20px 24px;
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		gap: 14px 16px;
+		align-items: center;
+		min-width: 460px;
+	}
+
+	.controls label {
+		white-space: nowrap;
+		font-size: 14px;
+	}
+
+	.controls input[type="range"] {
+		width: 100%;
+	}
+
+	.controls input[type="number"] {
+		width: 72px;
+	}
+
+	.controls input[type="color"] {
+		width: 48px;
+		height: 28px;
+		padding: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+	}
+
+	.btnrow {
+		display: flex;
+		gap: 8px;
+	}
+
+	.btnrow button {
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.25);
+		border-radius: 4px;
+		color: #e6e6e6;
+		padding: 4px 12px;
+		cursor: pointer;
+	}
+
+	.btnrow button:hover {
+		background: rgba(255, 255, 255, 0.22);
+	}
+</style>
+</head>
+<body>
+
+	<!-- HP compare bar -->
+	<div id="hpBar">
+		<div class="seg" id="playerSeg"></div>
+		<div class="seg" id="enemySeg"></div>
+		<div class="ghost" id="playerGhost"></div>
+		<div class="ghost" id="enemyGhost"></div>
+	</div>
+
+	<!-- Runtime configuration panel -->
+	<div class="controls">
+		<label for="playerHP">Player HP</label>
+		<input type="range" id="playerHP" min="0" max="200" step="1">
+		<input type="number" id="playerHPNum" min="0" max="200" step="1">
+
+		<label for="enemyHP">Enemy HP</label>
+		<input type="range" id="enemyHP" min="0" max="200" step="1">
+		<input type="number" id="enemyHPNum" min="0" max="200" step="1">
+
+		<label>Simulate Player</label>
+		<div class="btnrow">
+			<button data-side="player" data-d="-10">-10</button>
+			<button data-side="player" data-d="-5">-5</button>
+			<button data-side="player" data-d="5">+5</button>
+			<button data-side="player" data-d="10">+10</button>
+		</div>
+		<span></span>
+
+		<label>Simulate Enemy</label>
+		<div class="btnrow">
+			<button data-side="enemy" data-d="-10">-10</button>
+			<button data-side="enemy" data-d="-5">-5</button>
+			<button data-side="enemy" data-d="5">+5</button>
+			<button data-side="enemy" data-d="10">+10</button>
+		</div>
+		<span></span>
+
+		<label for="barWidth">Bar Width (px)</label>
+		<input type="range" id="barWidth" min="100" max="1200" step="10">
+		<input type="number" id="barWidthNum" min="100" max="1200" step="10">
+
+		<label for="barHeight">Bar Height (px)</label>
+		<input type="range" id="barHeight" min="8" max="120" step="1">
+		<input type="number" id="barHeightNum" min="8" max="120" step="1">
+
+		<label for="playerColor">Player Color</label>
+		<span></span>
+		<input type="color" id="playerColor">
+
+		<label for="enemyColor">Enemy Color</label>
+		<span></span>
+		<input type="color" id="enemyColor">
+	</div>
+
+<script>
+	// Default configuration, sampled from the combat mockup.
+	const cfg = {
+		playerHP: 30,
+		enemyHP: 12,
+		barWidth: 460,
+		barHeight: 28,
+		playerColor: "#d2d2c8",
+		enemyColor: "#c02727"
+	};
+
+	const LOW_HP_THRESHOLD = 0.25;
+	const GHOST_MIN_DELTA = 0.004; // ignore share changes smaller than 0.4%
+
+	const bar = document.getElementById("hpBar");
+	const playerSeg = document.getElementById("playerSeg");
+	const enemySeg = document.getElementById("enemySeg");
+	const playerGhost = document.getElementById("playerGhost");
+	const enemyGhost = document.getElementById("enemyGhost");
+
+	// Currently displayed player share (fraction 0..1).
+	let currentPct = 0.5;
+	// Far edge of an unfinished ghost trail per side (playerPct coordinates),
+	// so rapid successive hits accumulate into one continuous trail.
+	const ghostEdge = { player: null, enemy: null };
+
+	function computePlayerPct() {
+		const total = cfg.playerHP + cfg.enemyHP;
+		return total > 0 ? cfg.playerHP / total : 0.5;
+	}
+
+	function applyWidths(p) {
+		playerSeg.style.transform = "scaleX(" + p + ")";
+		enemySeg.style.transform = "scaleX(" + (1 - p) + ")";
+	}
+
+	function updateLowHp() {
+		const total = cfg.playerHP + cfg.enemyHP;
+		if (total <= 0) {
+			playerSeg.classList.remove("low");
+			enemySeg.classList.remove("low");
+			return;
+		}
+		const ps = cfg.playerHP / total;
+		playerSeg.classList.toggle("low", ps > 0 && ps < LOW_HP_THRESHOLD);
+		enemySeg.classList.toggle("low", ps < 1 && (1 - ps) < LOW_HP_THRESHOLD);
+	}
+
+	// Configuration path: direct value changes (sliders / number boxes) re-render
+	// without combat effects. Only the simulate buttons trigger juice.
+	function render() {
+		bar.style.width = cfg.barWidth + "px";
+		bar.style.height = cfg.barHeight + "px";
+		playerSeg.style.backgroundColor = cfg.playerColor;
+		enemySeg.style.backgroundColor = cfg.enemyColor;
+		currentPct = computePlayerPct();
+		applyWidths(currentPct);
+		updateLowHp();
+	}
+
+	// Effect path: a simulated HP change with damage ghost, flash and shake.
+	function changeHP(side, delta) {
+		const oldPct = currentPct;
+		if (side === "player") cfg.playerHP = Math.max(0, cfg.playerHP + delta);
+		else cfg.enemyHP = Math.max(0, cfg.enemyHP + delta);
+		syncHpInputs();
+		currentPct = computePlayerPct();
+		applyWidths(currentPct);
+		updateLowHp();
+		if (Math.abs(currentPct - oldPct) < GHOST_MIN_DELTA) return;
+		if (delta < 0) playDamage(side, oldPct, currentPct);
+		else playHeal(side, oldPct, currentPct);
+	}
+
+	function positionGhost(ghost, leftPct, rightPct, originSide) {
+		ghost.style.left = (leftPct * 100) + "%";
+		ghost.style.width = ((rightPct - leftPct) * 100) + "%";
+		ghost.style.transformOrigin = originSide + " center";
+		ghost.style.transform = "scaleX(1)";
+		ghost.style.opacity = 1;
+	}
+
+	// Damage: white ghost covers the just-lost region, holds, then collapses
+	// onto the new boundary. Successive hits extend the same trail.
+	function playDamage(side, oldPct, newPct) {
+		const ghost = side === "player" ? playerGhost : enemyGhost;
+		let edge = oldPct;
+		if (ghostEdge[side] !== null) {
+			edge = side === "player" ? Math.max(ghostEdge[side], oldPct) : Math.min(ghostEdge[side], oldPct);
+		}
+		ghostEdge[side] = edge;
+		const left = side === "player" ? newPct : edge;
+		const right = side === "player" ? edge : newPct;
+		positionGhost(ghost, left, right, side === "player" ? "left" : "right");
+		ghost.getAnimations().forEach(a => a.cancel());
+		const anim = ghost.animate([
+			{ transform: "scaleX(1)", opacity: 1, offset: 0 },
+			{ transform: "scaleX(1)", opacity: 1, offset: 0.45 },
+			{ transform: "scaleX(0)", opacity: 0, offset: 1 }
+		], { duration: 780, easing: "ease-in", fill: "forwards" });
+		anim.onfinish = () => {
+			ghostEdge[side] = null;
+			ghost.style.opacity = 0;
+		};
+		flashSide(side);
+		shakeBar(newPct - oldPct);
+	}
+
+	// Heal: bright flash over the just-gained region, fading out quickly.
+	function playHeal(side, oldPct, newPct) {
+		const ghost = side === "player" ? playerGhost : enemyGhost;
+		ghostEdge[side] = null;
+		const left = Math.min(oldPct, newPct);
+		const right = Math.max(oldPct, newPct);
+		positionGhost(ghost, left, right, "center");
+		ghost.getAnimations().forEach(a => a.cancel());
+		const anim = ghost.animate([
+			{ opacity: 0.75 },
+			{ opacity: 0 }
+		], { duration: 450, easing: "ease-out", fill: "forwards" });
+		anim.onfinish = () => { ghost.style.opacity = 0; };
+	}
+
+	// Hit flash: the damaged side flashes white for a beat.
+	function flashSide(side) {
+		const seg = side === "player" ? playerSeg : enemySeg;
+		seg.animate([
+			{ filter: "brightness(2.4)" },
+			{ filter: "brightness(1)" }
+		], { duration: 220, easing: "ease-out" });
+	}
+
+	// Bar shake: amplitude scales with the lost share, decaying oscillation.
+	function shakeBar(deltaPct) {
+		const amp = Math.min(14, Math.max(2, Math.abs(deltaPct) * bar.offsetWidth * 0.12));
+		bar.animate([
+			{ transform: "translateX(0px)" },
+			{ transform: "translateX(" + (-amp) + "px)" },
+			{ transform: "translateX(" + (amp * 0.7) + "px)" },
+			{ transform: "translateX(" + (-amp * 0.45) + "px)" },
+			{ transform: "translateX(" + (amp * 0.2) + "px)" },
+			{ transform: "translateX(0px)" }
+		], { duration: 320, easing: "ease-out" });
+	}
+
+	// Bind a slider + number box pair to one numeric config key (no effects).
+	function bindNumeric(key, sliderId, numberId, onAfter) {
+		const slider = document.getElementById(sliderId);
+		const number = document.getElementById(numberId);
+		slider.value = cfg[key];
+		number.value = cfg[key];
+
+		slider.addEventListener("input", () => {
+			cfg[key] = Math.max(0, Number(slider.value));
+			number.value = cfg[key];
+			render();
+		});
+		number.addEventListener("input", () => {
+			cfg[key] = Math.max(0, Number(number.value));
+			slider.value = cfg[key];
+			render();
+		});
+	}
+
+	// Bind a color picker to one color config key.
+	function bindColor(key, inputId) {
+		const input = document.getElementById(inputId);
+		input.value = cfg[key];
+		input.addEventListener("input", () => {
+			cfg[key] = input.value;
+			render();
+		});
+	}
+
+	function syncHpInputs() {
+		document.getElementById("playerHP").value = cfg.playerHP;
+		document.getElementById("playerHPNum").value = cfg.playerHP;
+		document.getElementById("enemyHP").value = cfg.enemyHP;
+		document.getElementById("enemyHPNum").value = cfg.enemyHP;
+	}
+
+	bindNumeric("playerHP", "playerHP", "playerHPNum");
+	bindNumeric("enemyHP", "enemyHP", "enemyHPNum");
+	bindNumeric("barWidth", "barWidth", "barWidthNum");
+	bindNumeric("barHeight", "barHeight", "barHeightNum");
+	bindColor("playerColor", "playerColor");
+	bindColor("enemyColor", "enemyColor");
+
+	document.querySelectorAll(".btnrow button").forEach(btn => {
+		btn.addEventListener("click", () => {
+			changeHP(btn.dataset.side, Number(btn.dataset.d));
+		});
+	});
+
+	render();
+</script>
+
+</body>
+</html>
