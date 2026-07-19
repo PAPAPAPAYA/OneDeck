@@ -1,5 +1,6 @@
 ---
 name: unity-card-listener-check
+last_reviewed: never
 description: Verify that OneDeck card descriptions (cardDesc) match the actual GameEventListener -> CostNEffectContainer -> Effect method bindings. Use when asked to check card descriptions against listeners, validate card response mappings, audit GameEventListener configurations, or re-run the card-desc-vs-response check.
 ---
 
@@ -31,7 +32,7 @@ The check flags:
 
 ### Step 1: Extract Listener Bindings from Unity
 
-Run the C# snippet below via Unity MCP `execute_code` (default `codedom` compiler). It scans all prefabs under `Assets/Prefabs/Cards/3.0 no cost (current)`, reads every `GameEventListener`, follows its `Response` to each `CostNEffectContainer`, and dumps the bound effect/cost methods to `docs/CardDesc_Response_Check.txt`.
+Run the C# snippet below via Unity MCP `execute_code` (`compiler: "auto"`, the default, resolves to Roslyn / C# 12+). It scans all prefabs under `Assets/Prefabs/Cards/3.0 no cost (current)`, reads every `GameEventListener`, follows its `Response` to each `CostNEffectContainer`, and dumps the bound effect/cost methods to `docs/CardDesc_Response_Check.txt`.
 
 ```csharp
 string root = "Assets/Prefabs/Cards/3.0 no cost (current)";

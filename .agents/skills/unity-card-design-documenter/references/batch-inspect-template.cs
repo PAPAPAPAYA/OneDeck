@@ -2,11 +2,11 @@
 //
 // Usage:
 // 1. Populate the `paths` array with all target prefab asset paths.
-// 2. Run via execute_code (compiler: "codedom").
+// 2. Run via execute_code (compiler: "auto" — the default, resolves to Roslyn / C# 12+).
 // 3. Output is written to `docs/CardDesign_GenerationLog.txt` (overwrites old file).
 // 4. Read the log file and parse lines starting with "CARD|".
 //
-// Constraint: codedom (C# 6) - no $"", no ?., no file-level using, must return value.
+// This template intentionally sticks to C# 6-compatible syntax so it also compiles on the codedom fallback.
 
 {
 	string[] paths = new string[] {
@@ -195,7 +195,7 @@
 		// Effect component fields on children
 		foreach (UnityEngine.Transform child in prefab.transform)
 		{
-			string safeName = safeName.Replace("[", "(").Replace("]", ")");
+			string safeName = child.name.Replace("[", "(").Replace("]", ")");
 			var hpAlter = child.GetComponent<HPAlterEffect>();
 			if (hpAlter != null)
 			{

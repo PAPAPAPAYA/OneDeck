@@ -1,5 +1,6 @@
 ---
 name: unity-read-prefab-serialized
+last_reviewed: never
 description: Read Unity .prefab serialized component data via unity-MCP execute_code. Use when Kimi needs to inspect prefab configurations programmatically, including UnityEvent bindings, component field values, serialized references, and array/list contents. Covers CardScript, CostNEffectContainer, HPAlterEffect, and any MonoBehaviour fields exposed in the Inspector.
 ---
 
@@ -7,19 +8,19 @@ description: Read Unity .prefab serialized component data via unity-MCP execute_
 
 Inspect Unity prefab component configurations through unity-MCP's `execute_code` tool. This avoids manual Editor clicking and enables batch/card-by-card automation.
 
-## Constraints (execute_code + codedom)
+## Constraints (execute_code compiler)
 
-The Unity-MCP `execute_code` uses the **codedom** compiler (C# 6) with strict rules:
+The Unity-MCP `execute_code` tool defaults to `compiler: "auto"`, which resolves to **Roslyn (C# 12+)** (verified 2026-07-18). Modern C# — `$""` interpolation, `?.` null-conditional, `using` declarations, pattern matching — works out of the box.
 
-| Rule | Fix |
-|------|-----|
-| No file-level `using` declarations | Use fully-qualified names (`UnityEngine.Debug.Log`) or wrap in a code block with `{ ... }` and place `using` inside (not recommended; fully-qualified is safer) |
-| `return` must return a value on **all** paths | End every execution with `return 0;` (or any value convertible to `object`) |
-| No `return;` (void return) | Always `return <value>;` |
-| No `$""` string interpolation | Use `+` concatenation or `string.Format` |
-| No `?.` null-conditional operator | Use explicit `!= null ? ... : ...` |
+`codedom` (C# 6) remains as a fallback only. If Roslyn is ever unavailable, respect these constraints:
 
-**Always** set `compiler: "codedom"` (or omit, as it is the default).
+| Forbidden (codedom only) | Alternative |
+|-----------|-------------|
+| File-level `using` declarations | Fully-qualified names (`UnityEngine.Debug.Log`) |
+| `return;` (void) | `return <value>;` on **all** paths |
+| `$""` string interpolation | `+` concatenation or `string.Format` |
+| `?.` null-conditional operator | Explicit `!= null` checks |
+| `yield return` | No coroutines |
 
 ## Workflow
 

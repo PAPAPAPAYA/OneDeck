@@ -1,5 +1,6 @@
 ---
 name: unity-card-design-documenter
+last_reviewed: never
 description: Batch inspect Unity card prefabs under a folder and generate a structured card design Markdown document. Use when the user asks to catalog, document, or export card designs from a prefab directory.
 ---
 
@@ -33,9 +34,9 @@ Record the paths; you will feed them into the batch inspection script.
 
 ### Step 2: Batch Inspect Prefabs
 
-Use `execute_code` (with `compiler: "codedom"`) to load every prefab, read `CardScript` and child `CostNEffectContainer`s, and write the data to `docs/CardDesign_GenerationLog.txt`.
+Use `execute_code` (default `compiler: "auto"`, resolves to Roslyn / C# 12+) to load every prefab, read `CardScript` and child `CostNEffectContainer`s, and write the data to `docs/CardDesign_GenerationLog.txt`.
 
-> **Constraint reminder:** `codedom` does not support `$""` interpolation, `?.` null-conditional, file-level `using`, or `return;` (void). Use fully-qualified names, explicit null checks, and always `return <value>;`.
+> **Compiler note:** Roslyn (C# 12+) is the default `execute_code` compiler since 2026-07-18, so `$""` interpolation, `?.`, and file-level `using` all work. Only if the `codedom` (C# 6) fallback is ever needed: use fully-qualified names, explicit null checks, and always `return <value>;`.
 
 > **Batch size:** Because output goes to a file instead of the console, you can inspect all prefabs in a single run. No need to split into multiple batches.
 

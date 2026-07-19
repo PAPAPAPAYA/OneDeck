@@ -1,5 +1,6 @@
 ---
 name: unity-card-test-planning
+last_reviewed: never
 description: Generate structured test plans for Unity card prefabs in the OneDeck project. Use when the user asks to evaluate, test, or plan testing for a specific card's effect functionality, or wants to verify that a card prefab behaves correctly.
 ---
 
@@ -16,7 +17,7 @@ This skill provides a reusable workflow for analyzing any card prefab and produc
 
 ### Step 1: Extract Prefab Serialized Data
 
-Use `execute_code` (with `compiler: "codedom"`) to read the target prefab programmatically.
+Use `execute_code` (default `compiler: "auto"`, resolves to Roslyn / C# 12+) to read the target prefab programmatically.
 
 **Components to inspect:**
 - `CardScript` – `cardTypeID`, `cardDesc`, `isMinion`, cost fields (`buryCost`, `delayCost`, `exposeCost`, `minionCostCount`), `myStatusEffects`, `myTags`
@@ -24,7 +25,7 @@ Use `execute_code` (with `compiler: "codedom"`) to read the target prefab progra
 - `GameEventListener`(s) – which `GameEvent` triggers which `CostNEffectContainer`
 - Effect components (e.g., `HPAlterEffect`, `ShieldAlterEffect`, `BuryEffect`, etc.) – public fields like `baseDmg`, `extraDmg`, `isStatusEffectDamage`, `statusEffectToCheck`
 
-> **Constraint reminder:** `codedom` does not support `$""` interpolation, `?.` null-conditional, or file-level `using`. Use fully-qualified names or explicit null checks.
+> **Compiler note:** Roslyn (C# 12+) is the default `execute_code` compiler since 2026-07-18 — `$""` interpolation, `?.`, and file-level `using` all work. Only if the `codedom` (C# 6) fallback is ever needed: use fully-qualified names and explicit null checks.
 
 ### Step 2: Trace the Effect Chain in Code
 
@@ -65,6 +66,8 @@ For the analyzed card, write down:
 ### Step 4: Design Test Cases
 
 Structure tests into two strategies:
+
+> **Which strategy when:** see the decision table in `.agents/skills/unity-card-playmode-test/SKILL.md` Section 1.1 (Strategy B vs. EditMode NUnit) — the single source of truth for this choice.
 
 #### Strategy A – Programmatic Unit Test (Editor Mode)
 Directly invoke the effect method after constructing a controlled `CombatManager` state. This is the fastest way to validate arithmetic.

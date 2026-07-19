@@ -1,5 +1,6 @@
 ---
 name: unity-card-infinity-check
+last_reviewed: never
 description: Check OneDeck card designs for infinite loop combos (single-card, two-card, three-card). Use when analyzing card design documents, prefab configurations, or effect changes to detect same-turn infinite loops, resource inflation, and state explosion risks. Trigger on requests like "check cards for infinite loops", "analyze infinite combos", "review card design for balance issues", or when modifying card effects involving Stage, Bury, DeathRattle, Linger, or self-replication.
 ---
 

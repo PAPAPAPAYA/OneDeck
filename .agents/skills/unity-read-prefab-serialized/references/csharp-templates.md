@@ -1,6 +1,6 @@
 # C# Code Templates for Prefab Inspection
 
-All snippets assume `compiler: "codedom"`. Wrap code in `{ ... return 0; }` to satisfy the return-value requirement.
+All snippets compile under the default `compiler: "auto"` (Roslyn, C# 12+) and remain compatible with the `codedom` (C# 6) fallback. Wrap code in `{ ... return 0; }` to satisfy the return-value requirement.
 
 ## Template 1: Full Card Prefab Inspection
 

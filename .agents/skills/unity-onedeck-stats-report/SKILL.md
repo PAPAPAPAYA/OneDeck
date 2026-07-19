@@ -1,5 +1,6 @@
 ---
 name: unity-onedeck-stats-report
+last_reviewed: never
 description: Generate an HTML report from OneDeck's card_winrate.json and shop_stats.json persistence files. Use when the user asks to view, summarize, export, or format combat win rate and shop purchase statistics.
 ---
 
