@@ -61,14 +61,53 @@
 		pointer-events: none;
 	}
 
-	/* Zero-out state: current number and divider go gray. The drop animation
-	   itself is played via the Web Animations API from JS. */
+	/* Digit roll: each digit is a 1em window over a vertical strip holding
+	   three 0-9 cycles, so rolls crossing the 0/9 boundary always have room in
+	   either direction. The strip slides via transform; --digit-w (set by the
+	   fixed-digit-width toggle) gives every digit the same box width. */
+	.hp-numeric .digits {
+		display: inline-flex;
+		justify-content: center;
+	}
+
+	.hp-numeric .digit {
+		display: inline-block;
+		width: var(--digit-w, auto);
+		height: 1em;
+		overflow: hidden;
+		text-align: center;
+		vertical-align: top;
+	}
+
+	.hp-numeric .digit-strip {
+		display: block;
+		will-change: transform;
+	}
+
+	.hp-numeric .digit-strip > span {
+		display: block;
+		height: 1em;
+	}
+
+	/* Zero-out state: current number and divider go gray. The drop-through-
+	   divider animation itself is played via the Web Animations API from JS. */
 	.hp-numeric.zero #hpCurrent {
 		color: #8a8a90;
 	}
 
 	.hp-numeric.zero .hp-divider {
 		background: #8a8a90;
+	}
+
+	/* Low-HP warning: at or below 25% max HP the current number breathes red
+	   until it either heals back up or zeroes out. */
+	.hp-numeric.low #hpCurrent {
+		animation: hpLowPulse 1.15s ease-in-out infinite;
+	}
+
+	@keyframes hpLowPulse {
+		0%, 100% { color: #141414; text-shadow: none; }
+		50% { color: #c0392b; text-shadow: 0 0 0.25em rgba(192, 57, 43, 0.45); }
 	}
 
 	.controls {
@@ -149,7 +188,7 @@
 
 <div class="hp-numeric" id="hpNumeric">
 	<div class="hp-value" id="hpCurrent">15</div>
-	<div class="hp-divider"></div>
+	<div class="hp-divider" id="hpDivider"></div>
 	<div class="hp-value" id="hpMax">88</div>
 	<div class="hp-value hp-measure" id="hpMeasure" aria-hidden="true"></div>
 </div>
@@ -167,8 +206,10 @@
 	</div>
 	<div class="button-row">
 		<button data-delta="-10">-10</button>
+		<button data-delta="-5">-5</button>
 		<button data-delta="-1">-1</button>
 		<button data-delta="1">+1</button>
+		<button data-delta="5">+5</button>
 		<button data-delta="10">+10</button>
 	</div>
 	<div class="toggle-row">
@@ -176,6 +217,10 @@
 		<label><input type="checkbox" id="tglEase" checked> Ease-out finish</label>
 		<label><input type="checkbox" id="tglDigit" checked> Fixed digit width</label>
 		<label><input type="checkbox" id="tglZero" checked> Zero-out effect</label>
+		<label><input type="checkbox" id="tglLand" checked> Landing pop</label>
+		<label><input type="checkbox" id="tglLow" checked> Low-HP pulse</label>
+		<label><input type="checkbox" id="tglMaxFx" checked> Max-HP glide</label>
+		<label><input type="checkbox" id="tglScroll"> Digit roll</label>
 	</div>
 </div>
 
@@ -183,6 +228,7 @@
 	(function () {
 		var componentEl = document.getElementById('hpNumeric');
 		var currentEl = document.getElementById('hpCurrent');
+		var dividerEl = document.getElementById('hpDivider');
 		var maxEl = document.getElementById('hpMax');
 		var measureEl = document.getElementById('hpMeasure');
 		var currentSlider = document.getElementById('currentSlider');
@@ -195,61 +241,251 @@
 		var lastRenderedCurrent = currentHP;
 
 		// Feature toggles, wired to the checkboxes below.
-		var flags = { shake: true, easeOut: true, digitFix: true, zeroFx: true };
+		var flags = { shake: true, easeOut: true, digitFix: true, zeroFx: true, landPop: true, lowFx: true, maxFx: true, scroll: false };
 
-		// Counting animation: each number ticks toward its target one point per
-		// step. A new target mid-count simply re-aims the running timer, so the
-		// displayed value turns around from wherever it currently is.
+		// Adaptive counting: small deltas tick one point per STEP_MS as before, but
+		// large deltas switch to multi-point steps so the whole count lands inside
+		// TARGET_COUNT_MS instead of dragging on (e.g. -100 no longer takes 5s).
+		// A new target mid-count simply re-aims the running timer, so the displayed
+		// value turns around from wherever it currently is.
 		var STEP_MS = 50;
+		var TARGET_COUNT_MS = 500;
 
-		// Ease-out finish: the last few steps stretch their delay so the count
-		// settles into the final value instead of stopping abruptly.
-		var EASE_OUT_STEPS = 5;
+		// Ease-out finish: the last EASE_OUT_POINTS points always tick one-by-one
+		// with stretched delays, so the count settles into the final value.
+		var EASE_OUT_POINTS = 5;
 		var EASE_OUT_EXTRA_MS = 35;
 
-		function stepDelay(remaining) {
-			if (!flags.easeOut || remaining > EASE_OUT_STEPS) {
-				return STEP_MS;
+		function stepSizeFor(remaining) {
+			if (remaining <= EASE_OUT_POINTS) {
+				return 1;
 			}
-			return STEP_MS + (EASE_OUT_STEPS + 1 - remaining) * EASE_OUT_EXTRA_MS;
+			var fastSteps = Math.max(1, Math.floor(TARGET_COUNT_MS / STEP_MS));
+			return Math.max(1, Math.ceil(remaining / fastSteps));
 		}
 
-		// Zero-out effect: when the displayed current HP reaches 0, the number
-		// drops and grays out (persistent state via the .zero class); reviving
-		// cancels the drop and restores the color.
-		var zeroAnimation = null;
+		function stepDelay(remaining) {
+			if (!flags.easeOut || remaining > EASE_OUT_POINTS) {
+				return STEP_MS;
+			}
+			return STEP_MS + (EASE_OUT_POINTS + 1 - remaining) * EASE_OUT_EXTRA_MS;
+		}
+
+		// Zero-out effect (enhanced): when the displayed current HP reaches 0, the
+		// number drops through the divider while fading out, then a gray "0" settles
+		// back into place and the divider snap-flashes. Reviving cancels everything
+		// and restores the color instantly.
+		var zeroAnimations = [];
+
+		function cancelZeroFx() {
+			for (var i = 0; i < zeroAnimations.length; i++) {
+				zeroAnimations[i].cancel();
+			}
+			zeroAnimations = [];
+		}
 
 		function updateZeroState() {
-			var atZero = parseInt(currentEl.textContent, 10) === 0;
+			var atZero = currentCounter.getDisplayed() === 0;
 			var isZero = componentEl.classList.contains('zero');
 			if (flags.zeroFx && atZero && !isZero) {
 				componentEl.classList.add('zero');
-				zeroAnimation = currentEl.animate([
-					{ transform: 'scale(1) translateY(0)' },
-					{ transform: 'scale(0.7) translateY(0.06em)' },
-					{ transform: 'scale(0.85) translateY(0.04em)' }
-				], { duration: 350, easing: 'ease-out', fill: 'forwards' });
+				var drop = currentEl.animate([
+					{ transform: 'translateY(0) scale(1)', opacity: 1 },
+					{ transform: 'translateY(0.16em) scale(0.97)', opacity: 0.9, offset: 0.3 },
+					{ transform: 'translateY(0.8em) scale(0.9)', opacity: 0 }
+				], { duration: 380, easing: 'cubic-bezier(.55,.06,.68,.19)', fill: 'forwards' });
+				drop.onfinish = function () {
+					if (!componentEl.classList.contains('zero')) {
+						return;
+					}
+					// Release the forwards fill (snaps back to the natural slot) and
+					// settle the gray zero back in from slightly above.
+					drop.cancel();
+					var settle = currentEl.animate([
+						{ transform: 'translateY(-0.08em)', opacity: 0 },
+						{ transform: 'translateY(0) scale(1)', opacity: 1 }
+					], { duration: 200, easing: 'ease-out' });
+					zeroAnimations.push(settle);
+				};
+				var flash = dividerEl.animate([
+					{ opacity: 1 },
+					{ opacity: 0.15 },
+					{ opacity: 1 },
+					{ opacity: 0.25 },
+					{ opacity: 1 }
+				], { duration: 420, easing: 'ease-out' });
+				zeroAnimations.push(drop, flash);
 			} else if ((!flags.zeroFx || !atZero) && isZero) {
 				componentEl.classList.remove('zero');
-				if (zeroAnimation !== null) {
-					zeroAnimation.cancel();
-					zeroAnimation = null;
-				}
+				cancelZeroFx();
 			}
 		}
 
-		function createCounter(el, onDisplayChanged) {
+		// Digit roll (odometer) display. Each digit is a window over a strip of
+		// three 0-9 cycles; the canonical resting spot for digit d is index 10+d
+		// (middle cycle), so a roll can travel up to 9 steps either way and then
+		// snap back to the middle cycle invisibly once it finishes.
+		var STRIP_HTML = (function () {
+			var html = '';
+			for (var cycle = 0; cycle < 3; cycle++) {
+				for (var d = 0; d <= 9; d++) {
+					html += '<span>' + d + '</span>';
+				}
+			}
+			return html;
+		})();
+
+		// Roll pacing: the tick loop re-aims the strips on every step, so a
+		// single-step roll must settle fast enough to read as continuous motion.
+		// Duration grows with how many digits the strip passes, and digits start
+		// with a right-to-left stagger, like carry propagation.
+		var ROLL_BASE_MS = 90;
+		var ROLL_PER_STEP_MS = 50;
+		var ROLL_STAGGER_MS = 45;
+
+		function createScrollDisplay(el) {
+			var built = false;
+			var container = null;
+			var strips = []; // left-to-right; each { wrap, strip, idx, gen }
+
+			function canonical(digit) {
+				return 10 + digit;
+			}
+
+			function makeDigit(digit) {
+				var wrap = document.createElement('span');
+				wrap.className = 'digit';
+				var strip = document.createElement('span');
+				strip.className = 'digit-strip';
+				strip.innerHTML = STRIP_HTML;
+				var idx = canonical(digit);
+				strip.style.transform = 'translateY(' + (-idx) + 'em)';
+				wrap.appendChild(strip);
+				return { wrap: wrap, strip: strip, idx: idx, gen: 0 };
+			}
+
+			function scheduleSnap(entry, canonIdx, waitMs, gen) {
+				setTimeout(function () {
+					if (entry.gen !== gen) {
+						return;
+					}
+					entry.strip.style.transition = 'none';
+					entry.strip.style.transform = 'translateY(' + (-canonIdx) + 'em)';
+					entry.idx = canonIdx;
+				}, waitMs + 30);
+			}
+
+			return {
+				isBuilt: function () {
+					return built;
+				},
+				build: function (value) {
+					container = document.createElement('span');
+					container.className = 'digits';
+					el.textContent = '';
+					el.appendChild(container);
+					strips = [];
+					var s = String(value);
+					for (var i = 0; i < s.length; i++) {
+						var entry = makeDigit(parseInt(s.charAt(i), 10));
+						strips.push(entry);
+						container.appendChild(entry.wrap);
+					}
+					built = true;
+				},
+				teardown: function (value) {
+					el.textContent = value;
+					built = false;
+					container = null;
+					strips = [];
+				},
+				// Rolls every digit toward the given value. Direction follows the
+				// sign of the current tick; each digit travels the shortest
+				// number of steps in that direction. Returns the total time
+				// until the last digit lands.
+				setValue: function (value, direction) {
+					var s = String(value);
+					while (strips.length < s.length) {
+						var added = makeDigit(0);
+						strips.unshift(added);
+						container.insertBefore(added.wrap, container.firstChild);
+					}
+					while (strips.length > s.length) {
+						var removed = strips.shift();
+						container.removeChild(removed.wrap);
+					}
+					var totalMs = 0;
+					for (var i = 0; i < s.length; i++) {
+						var entry = strips[i];
+						var fromRight = s.length - 1 - i;
+						var targetDigit = parseInt(s.charAt(i), 10);
+						// Base the roll on the canonical spot of the digit the
+						// strip is committed to; mid-flight re-aims still start
+						// visually from wherever the strip currently is.
+						var base = canonical(entry.idx % 10);
+						var currentDigit = base - 10;
+						if (targetDigit === currentDigit) {
+							entry.strip.style.transition = 'none';
+							entry.strip.style.transform = 'translateY(' + (-base) + 'em)';
+							entry.idx = base;
+							continue;
+						}
+						var k;
+						if (direction > 0) {
+							k = targetDigit > currentDigit ? canonical(targetDigit) : 20 + targetDigit;
+						} else {
+							k = targetDigit < currentDigit ? canonical(targetDigit) : targetDigit;
+						}
+						var steps = Math.abs(k - base);
+						var dur = ROLL_BASE_MS + steps * ROLL_PER_STEP_MS;
+						var delay = fromRight * ROLL_STAGGER_MS;
+						var gen = ++entry.gen;
+						entry.strip.style.transition = 'transform ' + dur + 'ms cubic-bezier(.3,.7,.35,1) ' + delay + 'ms';
+						entry.strip.style.transform = 'translateY(' + (-k) + 'em)';
+						entry.idx = k;
+						scheduleSnap(entry, canonical(targetDigit), delay + dur, gen);
+						totalMs = Math.max(totalMs, delay + dur);
+					}
+					return totalMs;
+				}
+			};
+		}
+
+		function createCounter(el, onDisplayChanged, onSettled) {
 			var displayed = parseInt(el.textContent, 10);
 			var target = displayed;
 			var timer = null;
+			var scroll = createScrollDisplay(el);
+
+			// Digit roll is a rendering style for the same tick loop: every tick
+			// re-aims the strips one step further, so the digits spin continuously
+			// and share the counter's adaptive pacing (big change = longer count).
+			function showValue(value, direction) {
+				if (scroll.isBuilt()) {
+					scroll.setValue(value, direction);
+				} else {
+					el.textContent = value;
+				}
+			}
+
+			function syncDisplayMode() {
+				if (flags.scroll && !scroll.isBuilt()) {
+					scroll.build(displayed);
+				} else if (!flags.scroll && scroll.isBuilt()) {
+					scroll.teardown(displayed);
+				}
+			}
 
 			function tick() {
 				if (displayed === target) {
 					timer = null;
 					return;
 				}
-				displayed += displayed < target ? 1 : -1;
-				el.textContent = displayed;
+				var direction = displayed < target ? 1 : -1;
+				var remaining = Math.abs(target - displayed);
+				var step = Math.min(remaining, stepSizeFor(remaining));
+				displayed += direction * step;
+				showValue(displayed, direction);
 				if (onDisplayChanged) {
 					onDisplayChanged();
 				}
@@ -257,43 +493,125 @@
 					timer = setTimeout(tick, stepDelay(Math.abs(target - displayed)));
 				} else {
 					timer = null;
+					if (onSettled) {
+						onSettled(el, displayed);
+					}
 				}
 			}
 
 			return {
 				setTarget: function (value) {
 					target = value;
+					syncDisplayMode();
+					// First step runs synchronously so the number starts moving
+					// in the same frame as the hit shake, not one tick behind it.
 					if (timer === null && displayed !== target) {
-						timer = setTimeout(tick, stepDelay(Math.abs(target - displayed)));
+						tick();
 					}
+				},
+				getDisplayed: function () {
+					return displayed;
 				}
 			};
 		}
 
-		var currentCounter = createCounter(currentEl, updateZeroState);
-		var maxCounter = createCounter(maxEl, null);
+		// Landing pop: when a number finishes counting (or rolling), it stamps
+		// into place with a tiny scale overshoot. Skipped when the current HP
+		// lands on 0 — the zero-out drop is the feedback there.
+		function playLandPop(el, value) {
+			if (!flags.landPop) {
+				return;
+			}
+			if (el === currentEl && flags.zeroFx && value === 0) {
+				return;
+			}
+			el.animate([
+				{ transform: 'scale(1)' },
+				{ transform: 'scale(1.07)', offset: 0.45 },
+				{ transform: 'scale(1)' }
+			], { duration: 140, easing: 'ease-out' });
+		}
 
-		// Hit shake: the whole component shakes sideways when HP drops. The
+		var currentCounter = createCounter(currentEl, updateZeroState, playLandPop);
+		var maxCounter = createCounter(maxEl, null, playLandPop);
+
+		// Hit shake: the whole component shakes when HP drops, now with a small
+		// rotation and vertical jitter so the impact feels less mechanical. The
 		// amplitude grows with the damage and is capped so big hits stay readable.
 		function playShake(damage) {
 			var amplitude = Math.min(10, 2 + damage * 0.3);
+			var rot = Math.min(2.2, amplitude * 0.22);
 			componentEl.animate([
-				{ transform: 'translateX(0)' },
-				{ transform: 'translateX(' + (-amplitude) + 'px)' },
-				{ transform: 'translateX(' + amplitude + 'px)' },
-				{ transform: 'translateX(' + (-amplitude * 0.6) + 'px)' },
-				{ transform: 'translateX(' + (amplitude * 0.6) + 'px)' },
-				{ transform: 'translateX(' + (-amplitude * 0.25) + 'px)' },
-				{ transform: 'translateX(0)' }
-			], { duration: 300, easing: 'ease-out' });
+				{ transform: 'translate(0px, 0px) rotate(0deg)' },
+				{ transform: 'translate(' + (-amplitude) + 'px, ' + (amplitude * 0.2) + 'px) rotate(' + (-rot) + 'deg)' },
+				{ transform: 'translate(' + amplitude + 'px, ' + (-amplitude * 0.15) + 'px) rotate(' + rot + 'deg)' },
+				{ transform: 'translate(' + (-amplitude * 0.6) + 'px, ' + (amplitude * 0.1) + 'px) rotate(' + (-rot * 0.6) + 'deg)' },
+				{ transform: 'translate(' + (amplitude * 0.6) + 'px, 0px) rotate(' + (rot * 0.5) + 'deg)' },
+				{ transform: 'translate(' + (-amplitude * 0.25) + 'px, 0px) rotate(' + (-rot * 0.25) + 'deg)' },
+				{ transform: 'translate(0px, 0px) rotate(0deg)' }
+			], { duration: 320, easing: 'ease-out' });
+		}
+
+		// Low-HP warning: at or below 25% max HP (and above 0) the current number
+		// breathes red via the .low class. Driven by the logical value, so the
+		// pulse starts the moment the hit lands, not when the count finishes.
+		function updateLowState() {
+			var atLow = currentHP > 0 && currentHP <= Math.max(1, Math.floor(maxHP * 0.25));
+			componentEl.classList.toggle('low', flags.lowFx && atLow);
+		}
+
+		// Max-HP glide: the divider always matches the widest number. A
+		// ResizeObserver catches container width changes (max digit count changes,
+		// digit-fix re-reservations) and tweens the divider from its current width
+		// to the new one with a quick opacity pulse, instead of letting it jump.
+		var lastComponentWidth = null;
+		var dividerGlide = null;
+
+		function onComponentResize(newWidth) {
+			if (lastComponentWidth === null) {
+				lastComponentWidth = newWidth;
+				return;
+			}
+			var oldWidth = lastComponentWidth;
+			lastComponentWidth = newWidth;
+			if (!flags.maxFx || Math.abs(newWidth - oldWidth) < 1) {
+				return;
+			}
+			// Measure the live (possibly mid-glide) width first, then cancel the
+			// previous glide so chained resizes continue from where they are.
+			var startWidth = dividerEl.getBoundingClientRect().width;
+			if (dividerGlide !== null) {
+				dividerGlide.cancel();
+				dividerGlide = null;
+			}
+			dividerEl.style.width = startWidth + 'px';
+			var glide = dividerEl.animate([
+				{ width: startWidth + 'px', opacity: 0.35 },
+				{ width: newWidth + 'px', opacity: 1 }
+			], { duration: 240, easing: 'ease-out' });
+			dividerGlide = glide;
+			glide.onfinish = function () {
+				if (dividerGlide === glide) {
+					dividerEl.style.width = '';
+					dividerGlide = null;
+				}
+			};
+		}
+
+		if (typeof ResizeObserver !== 'undefined') {
+			new ResizeObserver(function (entries) {
+				onComponentResize(entries[0].contentRect.width);
+			}).observe(componentEl);
 		}
 
 		// Fixed digit width: reserve the width of the max HP digit count on both
 		// numbers, so counting across 9/10 or 99/100 never shifts the layout.
+		// In digit-roll mode the same probe also fixes every digit's box width.
 		function applyDigitFix() {
 			if (!flags.digitFix) {
 				currentEl.style.minWidth = '';
 				maxEl.style.minWidth = '';
+				componentEl.style.removeProperty('--digit-w');
 				return;
 			}
 			var digits = String(maxHP).length;
@@ -305,6 +623,7 @@
 			var width = measureEl.offsetWidth + 'px';
 			currentEl.style.minWidth = width;
 			maxEl.style.minWidth = width;
+			componentEl.style.setProperty('--digit-w', (measureEl.offsetWidth / digits) + 'px');
 		}
 
 		function clampCurrent() {
@@ -332,6 +651,7 @@
 			currentCounter.setTarget(currentHP);
 			maxCounter.setTarget(maxHP);
 			updateZeroState();
+			updateLowState();
 		}
 
 		currentSlider.addEventListener('input', function () {
@@ -369,6 +689,10 @@
 		bindToggle('tglEase', 'easeOut', null);
 		bindToggle('tglDigit', 'digitFix', applyDigitFix);
 		bindToggle('tglZero', 'zeroFx', updateZeroState);
+		bindToggle('tglLand', 'landPop', null);
+		bindToggle('tglLow', 'lowFx', updateLowState);
+		bindToggle('tglMaxFx', 'maxFx', null);
+		bindToggle('tglScroll', 'scroll', render);
 
 		render();
 	})();
