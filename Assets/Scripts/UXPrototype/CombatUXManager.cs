@@ -270,6 +270,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// so that when special animation finishes, it goes directly to reveal zone
 			// Reveal zone cards should be displayed cleanly without deck layout offset
 			physScript.SetRotationImmediate(Quaternion.identity);
+			// Face-down rule: entering the reveal zone flips the card face-up
+			physScript.SetFaceUp(true, true);
 
 			if (physScript.isPlayingSpecialAnimation)
 			{
@@ -370,6 +372,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			onComplete?.Invoke();
 			return;
 		}
+
+		// Face-down rule: returning to the deck covers the card (skipped for ever-revealed cards)
+		var physForFlip = physicalCard.GetComponent<CardPhysObjScript>();
+		if (physForFlip != null) physForFlip.SetFaceUp(false, true);
 
 		// Clear reveal zone reference
 		if (physicalCardInRevealZone == physicalCard)
@@ -477,6 +483,17 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) return;
+
+		// Face-down rule: moves that land in the deck cover the card (stage popup / reveal paths
+		// flip up separately). The ToTop subcase heading to the reveal zone stays face-up.
+		bool landsInRevealZone = config.moveType == CardMoveType.ToTop
+			&& physScript.cardImRepresenting != null
+			&& combatManager.revealZone == physScript.cardImRepresenting.gameObject;
+		if (!landsInRevealZone
+			&& (config.moveType == CardMoveType.ToBottom || config.moveType == CardMoveType.ToIndex || config.moveType == CardMoveType.ToTop))
+		{
+			physScript.SetFaceUp(false, true);
+		}
 
 		// Kill existing tweens from UpdateAllPhysicalCardTargets to prevent conflict with special animation
 		physScript.KillTweens();
@@ -730,6 +747,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 			physScript.KillTweens();
 			physScript.isPlayingSpecialAnimation = true;
+			// Face-down rule: staged cards flip face-up during the arc and stay up on deck top
+			physScript.SetFaceUp(true, true);
 
 			// Compute peak from FINAL deck position
 			Vector3 deckPos = CalculateAnimationPositionAtIndex(finalIndex);
@@ -1208,6 +1227,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					physScript.isPoppedUp = false;
 					physScript.SetTargetPosition(targetPos);
 					physScript.SetTargetScale(targetScale);
+					// Shuffle rule: every deck card lands face-down and forgets it was revealed
+					// (force bypasses the everRevealed cover guard). Start Card keeps its face.
+					if (!physScript.isPhysicalStartCard)
+					{
+						physScript.SetFaceUp(false, true, true);
+						physScript.ClearRevealedMemory();
+					}
 				}
 
 				completedCount++;
@@ -2217,6 +2243,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		physScript.cardNamePrint.text = cardScript != null ? cardScript.GetDisplayName() : logicalCard.name;
 		physScript.cardDescPrint.text = cardScript != null ? cardScript.GetCardDescForDisplay() : string.Empty;
 
+		// Face-down rule: mid-combat additions enter covered; their PopUp/SlotIn requests flip them up/down
+		physScript.SetFaceUp(false, false);
+
 		// Set initial scale
 		physScript.SetScaleImmediate(physicalCardDeckSize);
 
@@ -2346,6 +2375,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 			// Set initial position and scale immediately
 			physScript.SetScaleImmediate(physicalCardDeckSize);
+
+			// Face-down rule: combat deck cards enter covered; the Start Card keeps its face (no hidden info)
+			if (cardScript == null || !cardScript.isStartCard)
+			{
+				physScript.SetFaceUp(false, false);
+			}
 
 			physicalCardsInDeck.Add(newPhysicalCard);
 		}
@@ -2921,6 +2956,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Kill existing tweens to prevent conflicts
 		physScript.KillTweens();
+		// Face-down rule: popping a card up shows its face
+		physScript.SetFaceUp(true, true);
 
 		// Save original transform so SlotIn can restore it for reveal-zone cards
 		physScript.popUpOriginalPosition = physicalCard.transform.position;
@@ -2975,6 +3012,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Guard against deck position updates interfering with the slot-in tween
 		physScript.isPlayingSpecialAnimation = true;
+		// Face-down rule: returning to the static deck covers the card (skipped for ever-revealed cards)
+		physScript.SetFaceUp(false, true);
 
 		// Find current deck index
 		int deckIndex = physicalCardsInDeck.IndexOf(physicalCard);
@@ -3080,6 +3119,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) { onComplete?.Invoke(); return; }
+		// Face-down rule: a new card pops up to show its face before slotting in
+		physScript.SetFaceUp(true, true);
 		// Calculate peak position based on deck index (same formula as PopUpCard).
 		// VISUAL-FIX(2026-05-24): Pending card pop-up peak is offset by missing deck size
 		//   Cause:    Same root cause as CalculatePositionForPendingCard: activeCount excludes pending cards.

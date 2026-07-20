@@ -113,6 +113,20 @@ public class CardPhysObjScript : MonoBehaviour
 	[Tooltip("Is currently popped up to peak position (PopUpCard/MoveCardToPopUpPosition). Cleared by SlotInCard or any deck-move animation that ends at a deck position.")]
 	public bool isPoppedUp = false;
 
+	// ========== Face Down / Flip ==========
+	[Header("FLIP")]
+	[Tooltip("Total flip duration (seconds); scaled by combat animation speed in Combat phase")]
+	public float flipDuration = 0.3f;
+
+	/// <summary>False while the card shows its back (static in the combat deck).</summary>
+	public bool isFaceUp { get; private set; } = true;
+	/// <summary>True once the card has been shown face-up. Rule: such cards are never covered again (shuffle overrides via force + ClearRevealedMemory).</summary>
+	public bool everRevealed { get; private set; }
+
+	private Transform _flipRoot;
+	private SpriteRenderer _cardBackRenderer;
+	private Transform[] _faceElements;
+	private Tween _flipTween;
 
 	[HideInInspector]
 	public Vector3 popUpOriginalPosition;
@@ -142,6 +156,11 @@ public class CardPhysObjScript : MonoBehaviour
 	private Tweener _scaleTween;
 	private Tweener _rotationTween;
 
+	void Awake()
+	{
+		BuildFlipRoot();
+	}
+
 	void OnEnable()
 	{
 		_combatUXManager = CombatUXManager.me;
@@ -158,13 +177,22 @@ public class CardPhysObjScript : MonoBehaviour
 			pendingRevealZoneMove = false;
 		}
 
-		ApplyColor();
-		UpdateStatusEffectDisplay();
-		UpdateCardDescription();
-		UpdateCostDisplay();
-		UpdatePriceDisplay();
-		UpdateRarityDisplay();
-		UpdateTagDisplay();
+		// Face-down cards skip all face-content writers (name/desc/status/tint/colors)
+		// so no information leaks onto the card back; the back only tracks ownership color.
+		if (isFaceUp)
+		{
+			ApplyColor();
+			UpdateStatusEffectDisplay();
+			UpdateCardDescription();
+			UpdateCostDisplay();
+			UpdatePriceDisplay();
+			UpdateRarityDisplay();
+			UpdateTagDisplay();
+		}
+		else
+		{
+			ApplyBackColor();
+		}
 		UpdateTintTimer();
 	}
 
@@ -538,6 +566,197 @@ public class CardPhysObjScript : MonoBehaviour
 		transform.localRotation = rotation;
 	}
 
+	#region Face Down / Flip
+
+	/// <summary>
+	/// Builds the FlipRoot container and the placeholder card back at runtime (no prefab edits).
+	/// Flip tweens act only on FlipRoot.localScale.x so they never fight the root transform
+	/// tweens owned by deck layout / move animations. FlipRoot is parented next to the face
+	/// elements (under the shaker child) so card shakes still apply to the face content.
+	/// </summary>
+	private void BuildFlipRoot()
+	{
+		if (cardFace == null) return; // e.g. start card prefab: flip disabled
+
+		var faces = new System.Collections.Generic.List<Transform>();
+		if (cardFace != null) faces.Add(cardFace.transform);
+		if (cardEdge != null) faces.Add(cardEdge.transform);
+		if (cardImg != null) faces.Add(cardImg.transform);
+		if (cardNamePrint != null) faces.Add(cardNamePrint.transform);
+		if (cardDescPrint != null) faces.Add(cardDescPrint.transform);
+		if (cardCostPrint != null) faces.Add(cardCostPrint.transform);
+		if (cardPricePrint != null) faces.Add(cardPricePrint.transform);
+		if (cardRarityPrint != null) faces.Add(cardRarityPrint.transform);
+		if (cardTagPrint != null) faces.Add(cardTagPrint.transform);
+		if (cardStatusEffectPrint != null) faces.Add(cardStatusEffectPrint.transform);
+
+		var flipRootGo = new GameObject("FlipRoot");
+		_flipRoot = flipRootGo.transform;
+		_flipRoot.SetParent(cardFace.transform.parent, false);
+		var faceParent = cardFace.transform.parent; // capture before reparenting (it becomes _flipRoot below)
+		foreach (var t in faces)
+		{
+			// worldPositionStays: true keeps the exact current pose regardless of parent depth
+			t.SetParent(_flipRoot, true);
+		}
+		_faceElements = faces.ToArray();
+
+		// Shadows squash with the flip but are NOT part of the face visibility toggle:
+		// the card back keeps its silhouette/drop shadow when face-down.
+		var bigShadow = faceParent.Find("PhysicalCardBigShadow");
+		if (bigShadow != null) bigShadow.SetParent(_flipRoot, true);
+		var rimShadow = faceParent.Find("PhysicalCardShadow");
+		if (rimShadow != null) rimShadow.SetParent(_flipRoot, true);
+
+		// Placeholder back: same sprite as the face with a neutral tint. Real back art can
+		// replace this later without touching code.
+		// VISUAL-FIX(2026-07-20): Card back renders tiny / effectively invisible
+		//   Cause:    CardBack was created via AddComponent<SpriteRenderer> with default
+		//             drawMode=Simple. The face uses Sliced drawMode with explicit size
+		//             (6.4 x 9.2); the sprite is 256px at 256 PPU (1 unit native), so the
+		//             back rendered at ~0.4 units and the deck looked like bare shadows.
+		//   Affects:  CardPhysObjScript, BuildFlipRoot
+		//   Regress:  Cover any card; the back must render at the same size as the face
+		//             (drawMode/size/sharedMaterial are copied from cardFace).
+		//   Related:  plan-card-flip-face-down-2026-07-20
+		var backGo = new GameObject("CardBack");
+		_cardBackRenderer = backGo.AddComponent<SpriteRenderer>();
+		_cardBackRenderer.sprite = cardFace.sprite;
+		_cardBackRenderer.color = ownerCardColor;
+		_cardBackRenderer.sortingLayerID = cardFace.sortingLayerID;
+		_cardBackRenderer.sortingOrder = cardFace.sortingOrder;
+		_cardBackRenderer.drawMode = cardFace.drawMode;
+		if (cardFace.drawMode == SpriteDrawMode.Sliced)
+		{
+			_cardBackRenderer.size = cardFace.size;
+		}
+		_cardBackRenderer.sharedMaterial = cardFace.sharedMaterial;
+		var backTransform = _cardBackRenderer.transform;
+		backTransform.SetParent(_flipRoot, false);
+		backTransform.localPosition = cardFace.transform.localPosition;
+		backTransform.localRotation = cardFace.transform.localRotation;
+		backTransform.localScale = cardFace.transform.localScale;
+		backGo.SetActive(false);
+	}
+
+	/// <summary>
+	/// Flip the card face-up / face-down with a 2D squash flip on FlipRoot.
+	/// Rules: a card that was ever revealed is never covered again (cover calls are skipped);
+	/// the shuffle rule bypasses this via force=true plus ClearRevealedMemory().
+	/// </summary>
+	/// <param name="faceUp">True = show face, false = show back.</param>
+	/// <param name="animated">True = squash flip tween; false = instant swap.</param>
+	/// <param name="force">Bypass the everRevealed cover guard (shuffle rule only).</param>
+	public void SetFaceUp(bool faceUp, bool animated, bool force = false, System.Action onComplete = null)
+	{
+		if (isFaceUp == faceUp)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+		// Revealed cards never cover again (hard rule; shuffle bypasses via force).
+		if (!faceUp && !force && everRevealed)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		isFaceUp = faceUp;
+		if (faceUp) everRevealed = true;
+
+		if (_flipRoot == null)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		KillFlipTween();
+		if (!animated)
+		{
+			ApplyFaceVisibility();
+			onComplete?.Invoke();
+			return;
+		}
+
+		float halfDuration = GetCombatScaledDuration(flipDuration * 0.5f);
+		Sequence flipSeq = DOTween.Sequence();
+		flipSeq.Append(_flipRoot.DOScaleX(0f, halfDuration).SetEase(Ease.InQuad));
+		flipSeq.AppendCallback(() => ApplyFaceVisibility());
+		flipSeq.Append(_flipRoot.DOScaleX(1f, halfDuration).SetEase(Ease.OutQuad));
+		flipSeq.SetUpdate(UpdateType.Normal, true);
+		flipSeq.OnComplete(() =>
+		{
+			_flipTween = null;
+			onComplete?.Invoke();
+		});
+		_flipTween = flipSeq;
+	}
+
+	/// <summary>
+	/// Clear the "was revealed" memory. Called by the shuffle force-cover rule so a
+	/// shuffled card counts as fresh hidden information again.
+	/// </summary>
+	public void ClearRevealedMemory()
+	{
+		everRevealed = false;
+	}
+
+	private void ApplyFaceVisibility()
+	{
+		if (_faceElements != null)
+		{
+			for (int i = 0; i < _faceElements.Length; i++)
+			{
+				if (_faceElements[i] != null) _faceElements[i].gameObject.SetActive(isFaceUp);
+			}
+		}
+		if (_cardBackRenderer != null)
+		{
+			_cardBackRenderer.gameObject.SetActive(!isFaceUp);
+		}
+	}
+
+	/// <summary>
+	/// Tint the card back by ownership (mirrors the ownership check in ApplyColor).
+	/// Called every frame while face-down so ownership changes (HeartChanged) show up on the back.
+	/// </summary>
+	private void ApplyBackColor()
+	{
+		if (_cardBackRenderer == null) return;
+
+		Color backColor;
+		if (cardImRepresenting == null || cardImRepresenting.myStatusRef == null
+			|| cardImRepresenting.myStatusRef == CombatManager.Me?.ownerPlayerStatusRef)
+		{
+			backColor = ownerCardColor;
+		}
+		else
+		{
+			backColor = opponentCardColor;
+		}
+		_cardBackRenderer.color = backColor;
+	}
+
+	/// <summary>
+	/// Kill the flip tween. NOT part of KillTweens() on purpose: CombatCardView calls
+	/// KillTweens() every frame during special animations, which would freeze a flip
+	/// mid-squash. The flip tween lives on FlipRoot and is managed by SetFaceUp only.
+	/// </summary>
+	private void KillFlipTween()
+	{
+		if (_flipTween != null && _flipTween.IsActive())
+		{
+			_flipTween.Kill();
+		}
+		_flipTween = null;
+		if (_flipRoot != null)
+		{
+			_flipRoot.localScale = Vector3.one;
+		}
+	}
+
+	#endregion
+
 	#region Special Animation
 
 	/// <summary>
@@ -758,10 +977,12 @@ public class CardPhysObjScript : MonoBehaviour
 		_scaleTween?.Kill();
 		_rotationTween?.Kill();
 		_shakeTween?.Kill();
+		_flipTween?.Kill();
 
 		_positionTween = null;
 		_scaleTween = null;
 		_rotationTween = null;
 		_shakeTween = null;
+		_flipTween = null;
 	}
 }

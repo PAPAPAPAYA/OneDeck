@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>OneDeck - 盖牌/翻面机制 Demo</title>
+<style>
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body { background: #141519; color: #dfe3ea; font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif; padding: 16px; user-select: none; }
+	h1 { font-size: 18px; margin-bottom: 4px; }
+	.sub { color: #8b93a5; font-size: 12px; margin-bottom: 12px; }
+	.wrap { display: flex; gap: 16px; align-items: flex-start; }
+
+	#playArea { position: relative; width: 760px; height: 560px; background: #1c1e24; border: 1px solid #2c2f38; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+	.zoneLabel { position: absolute; font-size: 11px; color: #6b7386; letter-spacing: 2px; }
+	#revealZoneBox { position: absolute; left: 430px; top: 60px; width: 150px; height: 198px; border: 2px dashed #4a5165; border-radius: 10px; }
+	#deckZoneBox { position: absolute; left: 20px; top: 180px; width: 220px; height: 340px; border: 1px solid #262a33; border-radius: 10px; }
+	#tempZoneLabel { position: absolute; left: 600px; top: 520px; font-size: 11px; color: #6b7386; }
+
+	.card { position: absolute; left: 0; top: 0; width: 120px; height: 168px; will-change: transform, opacity; }
+	.flipInner { width: 100%; height: 100%; position: relative; }
+	.face { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 9px; overflow: hidden; }
+
+	.front { background: linear-gradient(160deg, #262b36, #1b1f28); padding: 8px; display: none; flex-direction: column; }
+	.front.player { border: 3px solid #87CEEB; }
+	.front.enemy { border: 3px solid #ffa500; }
+	.front .cname { font-weight: bold; font-size: 13px; color: #ffffff; line-height: 1.2; }
+	.front .cowner { font-size: 9px; margin-top: 2px; }
+	.front.player .cowner { color: #87CEEB; }
+	.front.enemy .cowner { color: #ffa500; }
+	.front .cdesc { font-size: 10px; color: #aab2c5; margin-top: 8px; line-height: 1.4; }
+	.front .cstatus { margin-top: auto; background: #d97706; color: #fff; font-size: 10px; border-radius: 4px; padding: 2px 6px; align-self: flex-start; }
+
+	.back { background: repeating-linear-gradient(45deg, #3a3f4b, #3a3f4b 8px, #333845 8px, #333845 16px); border: 3px solid #565d70; display: none; align-items: center; justify-content: center; }
+	.back .q { width: 46px; height: 46px; border-radius: 50%; border: 2px solid #6b7386; color: #8b93a5; font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+
+	#sidePanel { width: 320px; flex-shrink: 0; }
+	.panelBox { background: #1c1e24; border: 1px solid #2c2f38; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+	.panelBox h2 { font-size: 13px; color: #9aa3b8; margin-bottom: 8px; letter-spacing: 1px; }
+	button { display: block; width: 100%; margin-bottom: 6px; padding: 8px 10px; background: #2a2f3c; color: #dfe3ea; border: 1px solid #3c4252; border-radius: 6px; font-size: 13px; text-align: left; cursor: pointer; }
+	button:hover:not(:disabled) { background: #343a4a; }
+	button:disabled { opacity: 0.35; cursor: default; }
+	button .map { display: block; font-size: 10px; color: #6b7386; margin-top: 2px; }
+
+	.switchRow { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+	.switchRow input { display: none; }
+	.switchRow .slider { width: 34px; height: 18px; border-radius: 9px; background: #3c4252; position: relative; transition: background 0.2s; flex-shrink: 0; }
+	.switchRow .slider::after { content: ""; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #dfe3ea; transition: left 0.2s; }
+	.switchRow input:checked + .slider { background: #4a7fb5; }
+	.switchRow input:checked + .slider::after { left: 18px; }
+	.switchHint { font-size: 10px; color: #6b7386; margin-top: 6px; line-height: 1.5; }
+
+	#knownInfo { font-size: 12px; line-height: 1.7; color: #b8c0d0; }
+	#knownInfo .secret { color: #6b7386; }
+	#knownInfo .known { color: #ffd27d; }
+
+	#logPanel { max-height: 220px; overflow-y: auto; font-size: 11px; line-height: 1.6; }
+	#logPanel div { padding: 2px 0; border-bottom: 1px solid #23262f; color: #9aa3b8; }
+	#logPanel div:first-child { color: #dfe3ea; }
+</style>
+</head>
+<body>
+<h1>OneDeck 盖牌/翻面机制 Demo</h1>
+<div class="sub">静态牌库 = 盖牌 &nbsp;|&nbsp; 翻开 / Stage / 弹出 = 亮牌 &nbsp;|&nbsp; Stage 落位后保持亮牌 &nbsp;|&nbsp; 回牌库 = 盖回 &nbsp;|&nbsp; 洗牌后 = 固定全部盖回 (plan-card-flip-face-down-2026-07-20)</div>
+<div class="wrap">
+	<div id="playArea">
+		<div id="revealZoneBox"></div>
+		<div class="zoneLabel" style="left:452px; top:38px;">REVEAL ZONE</div>
+		<div id="deckZoneBox"></div>
+		<div class="zoneLabel" style="left:30px; top:186px;">DECK (顶 = 前下方大卡)</div>
+		<div id="tempZoneLabel">新卡入场位置 →</div>
+	</div>
+	<div id="sidePanel">
+		<div class="panelBox">
+			<h2>玩家可见信息</h2>
+			<div id="knownInfo"></div>
+		</div>
+		<div class="panelBox">
+			<h2>规则开关</h2>
+			<label class="switchRow">
+				<input type="checkbox" id="chkNeverCover" checked>
+				<span class="slider"></span>
+				<span>被翻开过的卡片不再盖回</span>
+			</label>
+			<div class="switchHint">开启后:任何亮过相的卡(翻开 / Stage / 弹出 / 新卡展示)保持正面朝上, 直到被 Exile 或洗牌(洗牌固定全部盖回并重置记忆)。关闭则恢复默认盖回规则。</div>
+		</div>
+		<div class="panelBox">
+			<h2>操作 (对应 Unity 挂钩点)</h2>
+			<button id="btnReveal">翻开下一张<span class="map">MovePhysicalCardToRevealZone + SetFaceUp(true)</span></button>
+			<button id="btnResolve">触发效果 · 回到底部<span class="map">MoveRevealedCardToBottom + SetFaceUp(false)</span></button>
+			<button id="btnStage">Stage 随机卡到牌库顶<span class="map">MoveToTopPopUpBatch + SetFaceUp(true) 落位保持</span></button>
+			<button id="btnBury">Bury 顶牌<span class="map">PopUpCard(up) → MoveToBottom(down)</span></button>
+			<button id="btnExile">Exile 顶牌<span class="map">PopUpCard(up) → Destroy</span></button>
+			<button id="btnAddTemp">新增临时卡<span class="map">AddPhysicalCardToDeck(down) → PopUp(up) → SlotIn(down)</span></button>
+			<button id="btnShuffle">洗牌<span class="map">PlayShuffleAnimation → 结束后固定全部盖回(强制)</span></button>
+			<button id="btnReset">重置<span class="map">Reset</span></button>
+		</div>
+		<div class="panelBox">
+			<h2>日志</h2>
+			<div id="logPanel"></div>
+		</div>
+	</div>
+</div>
+
+<script>
+"use strict";
+
+// ========== 位置常量 (卡片 120x168, 以 translate 左上角定位) ==========
+const DECK_FRONT = { x: 90, y: 340 };          // 牌库顶(前)卡位置
+const DEPTH_STEP = { x: -5, y: -11 };          // 每深一层的偏移(左上)
+const DEPTH_SCALE = 0.04;                      // 每深一层缩小
+const MIN_SCALE = 0.6;
+const PEAK = { x: 180, y: 110, s: 1.05 };      // PopUp 峰值位置
+const REVEAL_POS = { x: 445, y: 75, s: 1.0 };  // reveal zone 内
+const TEMP_SPAWN = { x: 620, y: 360, s: 0.9 }; // 新卡入场
+
+const playArea = document.getElementById("playArea");
+const logPanel = document.getElementById("logPanel");
+const knownInfo = document.getElementById("knownInfo");
+
+let deck = [];        // deck[0] = 底部(最后翻开), deck[length-1] = 顶(下一张翻开)
+let revealed = null;  // reveal zone 中的卡
+let animating = false;
+let tempCardSeq = 0;
+let neverCoverAgain = true; // 规则开关: 被翻开过的卡不再盖回 (默认开启, 与 Unity 实现的固定行为一致)
+
+const INITIAL_CARDS = [
+	{ name: "Meditate",      owner: "player", desc: "翻开时:获得 1 点 Mana" },
+	{ name: "Shield Up",     owner: "player", desc: "翻开时:获得 2 点护盾" },
+	{ name: "Rift Insect",   owner: "player", desc: "翻开时:添加 1 张临时虫卡到牌库", status: "Power ×2" },
+	{ name: "Blacksmith",    owner: "player", desc: "翻开时:己方卡获得 Power" },
+	{ name: "Eternal Ghost", owner: "enemy",  desc: "翻开时:敌方回复 2 点生命" },
+	{ name: "Snatcher",      owner: "enemy",  desc: "翻开时:偷取 1 点护盾" },
+	{ name: "Curse Caller",  owner: "enemy",  desc: "翻开时:向牌库施加诅咒" },
+	{ name: "Goblin Charge", owner: "player", desc: "翻开时:造成 2 点伤害" }
+];
+
+// ========== 工具 ==========
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function log(msg) {
+	const div = document.createElement("div");
+	div.textContent = msg;
+	logPanel.insertBefore(div, logPanel.firstChild);
+}
+
+function deckSlotPos(index) {
+	// 数组 index -> 视觉位置; d=0 为牌库顶(最前)
+	const d = deck.length - 1 - index;
+	const cd = Math.min(d, 14);
+	return {
+		x: DECK_FRONT.x + DEPTH_STEP.x * cd,
+		y: DECK_FRONT.y + DEPTH_STEP.y * cd,
+		s: Math.max(1 - DEPTH_SCALE * d, MIN_SCALE),
+		z: 300 - d
+	};
+}
+
+function moveTo(card, pos, ms) {
+	card.pos = { x: pos.x, y: pos.y, s: pos.s != null ? pos.s : 1 };
+	card.el.style.transition = "transform " + ms + "ms ease";
+	card.el.style.transform = "translate(" + card.pos.x + "px," + card.pos.y + "px) scale(" + card.pos.s + ")";
+	if (pos.z != null) card.el.style.zIndex = pos.z;
+	return wait(ms + 30);
+}
+
+// ========== 翻面核心 (对应 CardPhysObjScript.SetFaceUp + FlipRoot squash) ==========
+function applyFaceVisibility(card) {
+	card.front.style.display = card.faceUp ? "flex" : "none";
+	card.back.style.display = card.faceUp ? "none" : "flex";
+}
+
+// 规则开关判定: 该卡本次是否需要盖回
+function willCover(card) {
+	return !(neverCoverAgain && card.everRevealed);
+}
+
+// force=true 时跳过"不再盖回"判定 (洗牌固定全部盖回专用)
+function setFaceUp(card, up, animated, force) {
+	if (card.faceUp === up) return Promise.resolve();
+	// 规则开关: 被翻开过的卡不再盖回 (force 时跳过此判定)
+	if (!up && !force && !willCover(card)) return Promise.resolve();
+	card.faceUp = up;
+	if (up) card.everRevealed = true;
+	const inner = card.flipInner;
+	if (!animated) {
+		inner.style.transition = "none";
+		inner.style.transform = "scaleX(1)";
+		applyFaceVisibility(card);
+		return Promise.resolve();
+	}
+	// squash flip: scaleX 1 -> 0 (换面) -> 1, 不动根节点位置/缩放
+	return new Promise(resolve => {
+		inner.style.transition = "transform 160ms ease-in";
+		inner.style.transform = "scaleX(0)";
+		setTimeout(() => {
+			applyFaceVisibility(card);
+			inner.style.transition = "transform 160ms ease-out";
+			inner.style.transform = "scaleX(1)";
+			setTimeout(resolve, 180);
+		}, 170);
+	});
+}
+
+// ========== 卡片创建 ==========
+function makeCard(def) {
+	const el = document.createElement("div");
+	el.className = "card";
+	const flipInner = document.createElement("div");
+	flipInner.className = "flipInner";
+
+	const front = document.createElement("div");
+	front.className = "face front " + def.owner;
+	let statusHtml = def.status ? '<div class="cstatus">' + def.status + "</div>" : "";
+	front.innerHTML =
+		'<div class="cname">' + def.name + "</div>" +
+		'<div class="cowner">' + (def.owner === "player" ? "己方" : "敌方") + "</div>" +
+		'<div class="cdesc">' + def.desc + "</div>" + statusHtml;
+
+	const back = document.createElement("div");
+	back.className = "face back";
+	back.innerHTML = '<div class="q">?</div>';
+
+	flipInner.appendChild(front);
+	flipInner.appendChild(back);
+	el.appendChild(flipInner);
+	playArea.appendChild(el);
+
+	const card = { el: el, flipInner: flipInner, front: front, back: back,
+		name: def.name, owner: def.owner, desc: def.desc, faceUp: true, everRevealed: false,
+		pos: { x: 0, y: 0, s: 1 } };
+	setFaceUp(card, false, false); // 入场默认盖牌
+	return card;
+}
+
+// ========== 布局 ==========
+function layoutDeck(ms, exceptCard) {
+	const jobs = [];
+	for (let i = 0; i < deck.length; i++) {
+		const c = deck[i];
+		if (c === exceptCard) continue;
+		jobs.push(moveTo(c, deckSlotPos(i), ms || 400));
+	}
+	return Promise.all(jobs);
+}
+
+// ========== 状态面板 ==========
+function refreshUI() {
+	const topCard = deck.length > 0 ? deck[deck.length - 1] : null;
+	let html = "牌库剩余:<b>" + deck.length + "</b> 张<br>";
+	html += "牌库顶:";
+	if (!topCard) html += '<span class="secret">(空)</span>';
+	else if (topCard.faceUp) html += '<span class="known">【' + topCard.name + "】(可见)</span>";
+	else html += '<span class="secret">??? (未知)</span>';
+	html += "<br>Reveal Zone:";
+	if (revealed) html += '<span class="known">【' + revealed.name + "】</span>";
+	else html += '<span class="secret">(空)</span>';
+	html += '<br><span class="secret">盖牌时:名称/描述/归属色/状态标记均不可见</span>';
+	if (neverCoverAgain) html += '<br><span class="known">规则开启:翻开过的卡不再盖回(洗牌除外)</span>';
+	knownInfo.innerHTML = html;
+
+	const noDeck = deck.length === 0;
+	btnReveal.disabled = animating || revealed !== null || noDeck;
+	btnResolve.disabled = animating || revealed === null;
+	btnStage.disabled = animating || deck.filter(c => !c.faceUp).length === 0;
+	btnBury.disabled = animating || noDeck;
+	btnExile.disabled = animating || noDeck;
+	btnAddTemp.disabled = animating;
+	btnShuffle.disabled = animating || deck.length < 2;
+	btnReset.disabled = animating;
+}
+
+async function runAsync(fn) {
+	if (animating) return;
+	animating = true;
+	refreshUI();
+	try { await fn(); } finally {
+		animating = false;
+		refreshUI();
+	}
+}
+
+// ========== 场景 1: 翻开下一张 (MovePhysicalCardToRevealZone + flip up) ==========
+async function doReveal() {
+	await runAsync(async () => {
+		const c = deck.pop();
+		revealed = c;
+		c.el.style.zIndex = 400;
+		layoutDeck(400);
+		log("从牌库顶飞出一张盖牌...");
+		await Promise.all([moveTo(c, REVEAL_POS, 650), setFaceUp(c, true, true)]);
+		log("翻开【" + c.name + "】(" + (c.owner === "player" ? "己方" : "敌方") + ") — 飞行途中翻面");
+	});
+}
+
+// ========== 场景 2: 触发效果, 回到底部 (MoveRevealedCardToBottom + flip down) ==========
+async function doResolve() {
+	await runAsync(async () => {
+		const c = revealed;
+		revealed = null;
+		log("触发【" + c.name + "】的效果, 随后弧线飞回牌库底" + (willCover(c) ? "并盖回" : " (规则开启:保持亮牌)"));
+		deck.unshift(c); // index 0 = 底部
+		const mid = { x: (c.pos.x + 120) / 2 + 60, y: c.pos.y - 60, s: 1.0, z: 350 };
+		await Promise.all([moveTo(c, mid, 300), setFaceUp(c, false, true)]);
+		layoutDeck(420);
+		await wait(450);
+		log("【" + c.name + "】已回到牌库底" + (willCover(c) ? "并盖回, 玩家不再知道它的位置" : ", 依然亮着"));
+	});
+}
+
+// ========== 场景 3: Stage (MoveToTopPopUpBatch, 落位保持亮牌) ==========
+async function doStage() {
+	await runAsync(async () => {
+		const candidates = deck.filter(c => !c.faceUp);
+		const c = candidates[Math.floor(Math.random() * candidates.length)];
+		deck.splice(deck.indexOf(c), 1);
+		deck.push(c); // 移到数组顶
+		c.el.style.zIndex = 400;
+		layoutDeck(400);
+		log("某效果将牌库中一张卡 Stage 到顶...");
+		await Promise.all([moveTo(c, PEAK, 400), setFaceUp(c, true, true)]);
+		await wait(280);
+		await moveTo(c, deckSlotPos(deck.length - 1), 380);
+		log("【" + c.name + "】被 Stage 到牌库顶 — 落位后保持亮牌, 玩家知道下一张是什么");
+	});
+}
+
+// ========== 场景 4: Bury 顶牌 (PopUp 亮牌 -> MoveToBottom 盖回) ==========
+async function doBury() {
+	await runAsync(async () => {
+		const c = deck.pop();
+		deck.unshift(c); // 逻辑上先移到底部
+		c.el.style.zIndex = 400;
+		log("Bury 代价: 顶牌弹出到峰值 (亮牌)...");
+		await Promise.all([moveTo(c, PEAK, 380), setFaceUp(c, true, true)]);
+		await wait(420);
+		log("【" + c.name + "】被埋到牌库底" + (willCover(c) ? ", 飞行途中盖回" : " (规则开启:保持亮牌)"));
+		layoutDeck(420);
+		await Promise.all([moveTo(c, deckSlotPos(0), 420), setFaceUp(c, false, true)]);
+	});
+}
+
+// ========== 场景 5: Exile 顶牌 (PopUp 亮牌 -> Destroy) ==========
+async function doExile() {
+	await runAsync(async () => {
+		const c = deck.pop();
+		c.el.style.zIndex = 400;
+		layoutDeck(400);
+		log("Exile: 顶牌弹出 (亮牌), 让玩家看清被放逐的是哪张...");
+		await Promise.all([moveTo(c, PEAK, 380), setFaceUp(c, true, true)]);
+		await wait(450);
+		c.el.style.transition = "transform 420ms ease-in, opacity 420ms";
+		c.el.style.transform = "translate(" + c.pos.x + "px," + (c.pos.y - 30) + "px) scale(0.2)";
+		c.el.style.opacity = "0";
+		await wait(450);
+		c.el.remove();
+		log("【" + c.name + "】已被放逐 (销毁)");
+	});
+}
+
+// ========== 场景 6: 新增临时卡 (入场盖牌 -> PopUp 亮 -> SlotIn 盖回) ==========
+async function doAddTemp() {
+	await runAsync(async () => {
+		tempCardSeq++;
+		const c = makeCard({ name: "Temp Bug #" + tempCardSeq, owner: "player", desc: "临时卡:离场时销毁" });
+		moveTo(c, TEMP_SPAWN, 1);
+		log("新临时卡以盖牌状态入场...");
+		await wait(120);
+		deck.unshift(c); // AddPhysicalCardToDeck: insert(0)
+		layoutDeck(400);
+		await Promise.all([moveTo(c, PEAK, 400), setFaceUp(c, true, true)]);
+		log("新卡【" + c.name + "】弹出展示 (MoveToPopUpPosition)");
+		await wait(420);
+		await Promise.all([moveTo(c, deckSlotPos(0), 420), setFaceUp(c, false, true)]);
+		log("【" + c.name + "】SlotIn 落回牌库底" + (willCover(c) ? ", 盖回" : " (规则开启:保持亮牌)"));
+	});
+}
+
+// ========== 场景 7: 洗牌 (结束后固定全部盖回, 无视"不再盖回"开关) ==========
+async function doShuffle() {
+	await runAsync(async () => {
+		log("Start Card 触发洗牌 — 洗牌途中各卡保持当前正/盖状态");
+		for (let k = 0; k < 3; k++) {
+			const jobs = deck.map(c => moveTo(c, {
+				x: c.pos.x + (Math.random() * 70 - 35),
+				y: c.pos.y + (Math.random() * 50 - 25),
+				s: c.pos.s
+			}, 130));
+			await Promise.all(jobs);
+		}
+		// Fisher-Yates
+		for (let i = deck.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			const t = deck[i]; deck[i] = deck[j]; deck[j] = t;
+		}
+		// 固定规则: 洗牌结束后全部盖回 (强制, 无视"不再盖回"开关), 并重置翻开记忆
+		const coverJobs = deck.filter(c => c.faceUp).map(c => setFaceUp(c, false, true, true));
+		layoutDeck(450);
+		await Promise.all(coverJobs.concat([wait(480)]));
+		deck.forEach(c => { c.everRevealed = false; });
+		const coveredCount = coverJobs.length;
+		log("洗牌完成 — 顺序已变, 全部盖回" + (coveredCount > 0 ? " (" + coveredCount + " 张亮牌被强制盖回, 记忆重置)" : ""));
+	});
+}
+
+// ========== 重置 ==========
+async function doReset() {
+	await runAsync(async () => {
+		deck.forEach(c => c.el.remove());
+		if (revealed) revealed.el.remove();
+		deck = [];
+		revealed = null;
+		tempCardSeq = 0;
+		INITIAL_CARDS.forEach(def => deck.push(makeCard(def)));
+		layoutDeck(1);
+		await wait(60);
+		log("已重置: 8 张卡全部盖牌入场 (对应 InstantiateAllPhysicalCards)");
+	});
+}
+
+document.getElementById("btnReveal").addEventListener("click", doReveal);
+document.getElementById("btnResolve").addEventListener("click", doResolve);
+document.getElementById("btnStage").addEventListener("click", doStage);
+document.getElementById("btnBury").addEventListener("click", doBury);
+document.getElementById("btnExile").addEventListener("click", doExile);
+document.getElementById("btnAddTemp").addEventListener("click", doAddTemp);
+document.getElementById("btnShuffle").addEventListener("click", doShuffle);
+document.getElementById("btnReset").addEventListener("click", doReset);
+document.getElementById("chkNeverCover").addEventListener("change", e => {
+	neverCoverAgain = e.target.checked;
+	log(neverCoverAgain ? "规则开关开启:被翻开过的卡不再盖回 (洗牌仍会固定全部盖回)" : "规则开关关闭:恢复默认盖回规则");
+	refreshUI();
+});
+
+// 初始化
+INITIAL_CARDS.forEach(def => deck.push(makeCard(def)));
+layoutDeck(1);
+refreshUI();
+log("战斗开始: 8 张卡全部盖牌 (对应 InstantiateAllPhysicalCards 后统一 SetFaceUp(false, instant))");
+</script>
+</body>
+</html>
