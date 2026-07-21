@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发日报 - 2026-06-22 ~ 07-20</title>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body {
+			font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+			background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+			min-height: 100vh;
+			color: #e0e0e0;
+			padding: 40px 20px;
+		}
+		.container { max-width: 900px; margin: 0 auto; }
+		.header {
+			text-align: center;
+			margin-bottom: 40px;
+			padding: 30px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 20px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+		}
+		.header h1 {
+			font-size: 2.5em;
+			margin-bottom: 10px;
+			background: linear-gradient(90deg, #e94560, #ff6b6b);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+		.header .subtitle { color: #888; font-size: 1.1em; }
+		.header .stats {
+			display: flex;
+			justify-content: center;
+			gap: 40px;
+			margin-top: 25px;
+			flex-wrap: wrap;
+		}
+		.stat-box { text-align: center; }
+		.stat-box .number { font-size: 2em; font-weight: bold; color: #e94560; }
+		.stat-box .label { font-size: 0.9em; color: #aaa; margin-top: 5px; }
+		.theme-banner {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 15px;
+			margin-bottom: 40px;
+		}
+		.theme-card {
+			background: linear-gradient(160deg, rgba(233, 69, 96, 0.12), rgba(83, 52, 131, 0.12));
+			border: 1px solid rgba(233, 69, 96, 0.25);
+			border-radius: 14px;
+			padding: 18px;
+			text-align: center;
+		}
+		.theme-card .icon { font-size: 1.8em; margin-bottom: 8px; }
+		.theme-card .name { font-weight: 600; color: #fff; margin-bottom: 4px; }
+		.theme-card .desc { font-size: 0.85em; color: #999; }
+		.timeline { position: relative; padding-left: 30px; }
+		.timeline::before {
+			content: '';
+			position: absolute;
+			left: 10px; top: 0; bottom: 0;
+			width: 3px;
+			background: linear-gradient(to bottom, #e94560, #533483);
+			border-radius: 3px;
+		}
+		.commit-card {
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 16px;
+			padding: 25px;
+			margin-bottom: 25px;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			backdrop-filter: blur(10px);
+			position: relative;
+			transition: transform 0.3s, box-shadow 0.3s;
+		}
+		.commit-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(233, 69, 96, 0.15); }
+		.commit-card::before {
+			content: '';
+			position: absolute;
+			left: -24px; top: 30px;
+			width: 14px; height: 14px;
+			background: #e94560;
+			border-radius: 50%;
+			border: 3px solid #1a1a2e;
+		}
+		.commit-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		.commit-title { font-size: 1.3em; font-weight: 600; color: #fff; }
+		.commit-time {
+			background: rgba(233, 69, 96, 0.15);
+			color: #e94560;
+			padding: 5px 15px;
+			border-radius: 20px;
+			font-size: 0.85em;
+			font-weight: 500;
+		}
+		.commit-desc { color: #ccc; line-height: 1.7; margin-bottom: 15px; }
+		.file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+		.file-tag {
+			background: rgba(83, 52, 131, 0.3);
+			color: #b8a9d9;
+			padding: 4px 12px;
+			border-radius: 8px;
+			font-size: 0.8em;
+			font-family: 'Consolas', monospace;
+		}
+		.file-tag.added { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
+		.file-tag.modified { background: rgba(241, 196, 15, 0.15); color: #f1c40f; }
+		.section-title {
+			font-size: 1.5em;
+			margin: 40px 0 20px 0;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.section-title::before {
+			content: '';
+			width: 5px; height: 25px;
+			background: #e94560;
+			border-radius: 3px;
+		}
+		.highlight-box {
+			background: linear-gradient(135deg, rgba(233, 69, 96, 0.1), rgba(83, 52, 131, 0.1));
+			border: 1px solid rgba(233, 69, 96, 0.3);
+			border-radius: 16px;
+			padding: 25px;
+			margin-top: 30px;
+		}
+		.highlight-box h3 { color: #e94560; margin-bottom: 15px; font-size: 1.2em; }
+		.highlight-box ul { list-style: none; padding: 0; }
+		.highlight-box li {
+			padding: 8px 0 8px 25px;
+			position: relative;
+			color: #ddd;
+			line-height: 1.6;
+		}
+		.highlight-box li::before { content: '▸'; position: absolute; left: 0; color: #e94560; }
+		.tag {
+			display: inline-block;
+			padding: 2px 10px;
+			border-radius: 6px;
+			font-size: 0.75em;
+			font-weight: 600;
+			margin-left: 10px;
+		}
+		.tag.bugfix { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+		.tag.feature { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+		.tag.test { background: rgba(52, 152, 219, 0.2); color: #3498db; }
+		.tag.docs { background: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+		.tag.refactor { background: rgba(241, 196, 15, 0.2); color: #f1c40f; }
+		.todo-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+			gap: 12px;
+			margin-top: 15px;
+		}
+		.todo-card {
+			background: rgba(255, 255, 255, 0.03);
+			border: 1px solid rgba(255, 255, 255, 0.06);
+			border-radius: 10px;
+			padding: 14px 16px;
+		}
+		.todo-card.done { border-color: rgba(46, 204, 113, 0.25); }
+		.todo-card .todo-name { font-weight: 600; color: #fff; font-size: 0.95em; margin-bottom: 4px; }
+		.todo-card .todo-name .check { color: #2ecc71; margin-right: 6px; }
+		.todo-card .todo-meta { color: #888; font-size: 0.85em; }
+		.todo-card .todo-tag {
+			display: inline-block;
+			padding: 1px 8px;
+			border-radius: 5px;
+			font-size: 0.75em;
+			margin-right: 5px;
+			background: rgba(83, 52, 131, 0.35);
+			color: #b8a9d9;
+		}
+		.footer { text-align: center; margin-top: 50px; padding: 20px; color: #666; font-size: 0.9em; }
+		code {
+			background: rgba(255, 255, 255, 0.08);
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-family: 'Consolas', monospace;
+			font-size: 0.9em;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>OneDeck 开发日报</h1>
+			<div class="subtitle">2026年6月22日 ~ 7月20日 · 牌桌视觉全面翻新：瀑布卡组布局、HP 数字化与翻面系统</div>
+			<div class="stats">
+				<div class="stat-box">
+					<div class="number">35</div>
+					<div class="label">Git 提交</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">11</div>
+					<div class="label">活跃开发日</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">+3,661</div>
+					<div class="label">脚本新增行</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">8 / 32</div>
+					<div class="label">Notion 待办完成</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="theme-banner">
+			<div class="theme-card">
+				<div class="icon">🂠</div>
+				<div class="name">瀑布卡组布局</div>
+				<div class="desc">贝塞尔曲线堆叠 + 覆盖度归一化</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🃏</div>
+				<div class="name">翻面 / 卡背系统</div>
+				<div class="desc">卡组默认扣置，揭示才亮明</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">❤️</div>
+				<div class="name">HP 数字化</div>
+				<div class="desc">数字滚动 + 对比条 + 自适应计数</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🛠️</div>
+				<div class="name">工具链升级</div>
+				<div class="desc">unity-mcp git 化 + 新 Skill</div>
+			</div>
+		</div>
+
+		<div class="section-title">工作内容时间线</div>
+		<div class="timeline">
+			<!-- 6/22 ~ 6/23 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						卡牌平衡微调与 Obsidian 工具
+						<span class="tag refactor">Balance</span>
+					</div>
+					<div class="commit-time">6月22日 ~ 23日</div>
+				</div>
+				<div class="commit-desc">
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li>更新一批卡牌的 Tag 配置，削弱 Quick Response Protocol</li>
+						<li>生成 Obsidian vault 同步工具，衔接外部设计文档</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">*.prefab（Card Tags）</span>
+					<span class="file-tag added">obsidian tool</span>
+				</div>
+			</div>
+
+			<!-- 6/29 ~ 6/30 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						商店重掷定价与源卡弹出修复
+						<span class="tag feature">Feature</span>
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">6月29日 ~ 30日</div>
+				</div>
+				<div class="commit-desc">
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>可配置重掷价格</strong>：商店 reroll 价格可调，并加入购买力检查，钱不够时禁止重掷</li>
+						<li>修复商店卡牌描述中动态伤害占位符（<code>{damage}</code> 等）不解析的问题</li>
+						<li>修复 deck focus 过渡期间 off-reveal 攻击动画误弹出的问题</li>
+						<li>修复 off-reveal 源卡在效果动画期间未停留在 popup 峰值位置的问题</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">ShopManager.cs</span>
+					<span class="file-tag modified">ShopUXManager.cs</span>
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+				</div>
+			</div>
+
+			<!-- 7/2 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						集中式源卡 PopUp / SlotIn
+						<span class="tag refactor">Refactor</span>
+					</div>
+					<div class="commit-time">7月2日</div>
+				</div>
+				<div class="commit-desc">
+					将 off-reveal 源卡的弹出/归位逻辑收拢到 <code>RecorderAnimationPlayer</code> 统一管理：同一源卡跨多个 recorder 只弹出一次、最后统一归位；内置重复的 PopUp/SlotIn 请求自动去重；源卡被销毁/流放/进入揭示区时跳过自动归位。
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">RecorderAnimationPlayer.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+				</div>
+			</div>
+
+			<!-- 7/9 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						圆角 shader
+						<span class="tag feature">Visual</span>
+					</div>
+					<div class="commit-time">7月9日</div>
+				</div>
+				<div class="commit-desc">
+					新增圆角 shader，为后续新卡面模板与新界面做视觉准备。
+				</div>
+				<div class="file-list">
+					<span class="file-tag added">RoundedCorner shader</span>
+				</div>
+			</div>
+
+			<!-- 7/17 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						瀑布式卡组布局（Cascade Deck Layout）
+						<span class="tag feature">Feature</span>
+					</div>
+					<div class="commit-time">7月17日</div>
+				</div>
+				<div class="commit-desc">
+					物理卡组从直线扇形改为<strong>平滑曲线瀑布堆叠</strong>，1:1 移植自 <code>CardArrangementDemo.html</code> 的贝塞尔 + 弧长数学：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li>新增纯静态可单测的 <code>DeckCascadeLayout</code>，结果按 (deckCount, pxToWorld, Params) 缓存；EditMode 金值测试覆盖</li>
+						<li>所有位置计算统一收口到 <code>DeckPositionCalculator.CalculatePositionAtIndex</code>，布局/弹出/归位/揭示全部继承曲线</li>
+						<li>索引映射 <code>cascadeIndex = deckCount - 1 - unityIndex</code>，Z 深度保持原公式</li>
+						<li><strong>随机扰动</strong>：卡牌位置加入抖动，且抖动量随卡牌 cascade scale 缩放，尾部保持干净（对应 Notion「卡片排列随机扰动」✅）</li>
+						<li><strong>阵营卡面</strong>：不同 owner 使用不同卡面美术资源（对应 Notion「不同阵营不同卡面」✅）</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag added">DeckCascadeLayout.cs</span>
+					<span class="file-tag added">DeckPositionCalculator.cs</span>
+					<span class="file-tag added">DeckCascadeLayoutTests.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+				</div>
+			</div>
+
+			<!-- 7/18 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Cascade 覆盖度归一化 + 揭示前置位
+						<span class="tag feature">Feature</span>
+						<span class="tag bugfix">Bugfix</span>
+					</div>
+					<div class="commit-time">7月18日</div>
+				</div>
+				<div class="commit-desc">
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>覆盖度归一化（Plan B）</strong>：按共享系数拉伸每卡步距（只伸不缩），小卡组也能到达曲线 hook 区而不是看起来一条直线（对应 Notion「动态根据卡组中卡片数量改变cascade的数值」✅）</li>
+						<li><strong>揭示前置位</strong>：<code>revealCardCountsAsDeckFront</code> 让揭示区卡牌占据 cascadeIndex 0，揭示时牌堆不再重排，只在前卡回底时整体前移一位（对应 Notion「deck pos的cascade数值从第二位开始」✅）</li>
+						<li>修复揭示区卡牌被牌堆遮挡的 occlusion 问题</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag modified">DeckCascadeLayout.cs</span>
+					<span class="file-tag modified">DeckPositionCalculator.cs</span>
+				</div>
+			</div>
+
+			<!-- 7/19 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						Z 深度稳定化、HP 对比条与工具链升级
+						<span class="tag feature">Feature</span>
+						<span class="tag bugfix">Bugfix</span>
+						<span class="tag test">Tool</span>
+					</div>
+					<div class="commit-time">7月19日</div>
+				</div>
+				<div class="commit-desc">
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>解析式 reveal-z 钳制</strong>：揭示区 Z 位置动态根据 combined deck 末位卡计算，攻击动画 Z 层级同步稳定（对应 Notion「reveal zone的z位置动态根据combineddeck最后一张卡改变」✅）</li>
+						<li><strong>HP 对比条</strong>：新增 <code>CombatHPBarPresenter</code> 对比显示，带队列化显示同步，先看到掉血预览再结算</li>
+						<li><strong>unity-mcp 改为 git 源</strong>：从内嵌包切换为 UPM git 引用，Roslyn 编译器（C# 12+）验证可用</li>
+						<li>新增 <code>unity-skill-review</code> Skill 与 Skill 注册表，支持季度轮换审查（对应 Notion「play mode测试skill」✅ 同期落地）</li>
+						<li>新增 HP 数字显示 demo 页（digit roll / v2 两版截图）</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag added">CombatHPBarPresenter.cs</span>
+					<span class="file-tag modified">Packages/manifest.json</span>
+					<span class="file-tag added">unity-skill-review/SKILL.md</span>
+					<span class="file-tag added">HPNumericDisplayDemo.html</span>
+				</div>
+			</div>
+
+			<!-- 7/20 -->
+			<div class="commit-card">
+				<div class="commit-header">
+					<div class="commit-title">
+						HP 数字滚动显示 + 卡组翻面系统
+						<span class="tag feature">Feature</span>
+					</div>
+					<div class="commit-time">7月20日</div>
+				</div>
+				<div class="commit-desc">
+					本阶段收官的两大视觉特性：<br>
+					<ul style="margin-left: 20px; margin-top: 10px; color: #ccc;">
+						<li><strong>HP 数字化显示</strong>：新增 <code>HPNumericDisplay</code> / <code>HPNumericCounter</code>，支持自适应计数速度与逐位数字滚动（digit roll），替代纯血条的读数体验</li>
+						<li><strong>翻面 / 卡背系统</strong>：卡组默认扣置（卡背隐藏名称/描述/状态/阵营信息），揭示、弹出、Stage 置顶时翻明；2D 挤压翻转跑在运行时构建的 <code>FlipRoot</code> 上，不与布局/移动 tween 冲突</li>
+						<li><strong>永不扣回规则</strong>：亮明过的卡保持面明直到流放或洗牌；洗牌落地时强制全员扣回并清除记忆（对应 Notion「反转卡片揭晓？」✅）</li>
+						<li>卡背复用卡面 sprite 并按阵营着色，阴影随翻转挤压但保持可见</li>
+						<li>产出 <code>CardFlipDemo.html</code> 演示页</li>
+					</ul>
+				</div>
+				<div class="file-list">
+					<span class="file-tag added">HPNumericDisplay.cs</span>
+					<span class="file-tag added">HPNumericCounter.cs</span>
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+					<span class="file-tag added">CardFlipDemo.html</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-title">Notion TODO RESERVOIR · 已完成（本期）</div>
+		<div class="todo-grid">
+			<div class="todo-card done">
+				<div class="todo-name"><span class="check">✓</span>新卡片模板</div>
+				<div class="todo-meta"><span class="todo-tag">视觉</span>7月20日完成</div>
+			</div>
+			<div class="todo-card done">
+				<div class="todo-name"><span class="check">✓</span>不同阵营不同卡面</div>
+				<div class="todo-meta"><span class="todo-tag">视觉</span>7月20日完成</div>
+			</div>
+			<div class="todo-card done">
+				<div class="todo-name"><span class="check">✓</span>反转卡片揭晓？</div>
+				<div class="todo-meta"><span class="todo-tag">局内</span><span class="todo-tag">视觉</span>7月20日完成</div>
+			</div>
+			<div class="todo-card done">
+				<div class="todo-name"><span class="check">✓</span>play mode测试skill</div>
+				<div class="todo-meta"><span class="todo-tag">工具</span>7月19日完成</div>
+			</div>
+			<div class="todo-card done">
+				<div class="todo-name"><span class="check">✓</span>reveal zone的z位置动态改变</div>
+				<div class="todo-meta"><span class="todo-tag">局内</span><span class="todo-tag">视觉</span>7月19日完成</div>
+			</div>
+			<div class="todo-card done">
+				<div class="todo-name"><span class="check">✓</span>deck pos的cascade数值从第二位开始</div>
+				<div class="todo-meta"><span class="todo-tag">局内</span><span class="todo-tag">视觉</span>7月19日完成</div>
+			</div>
+			<div class="todo-card done">
+				<div class="todo-name"><span class="check">✓</span>动态根据卡组数量改变cascade数值</div>
+				<div class="todo-meta"><span class="todo-tag">局内</span><span class="todo-tag">视觉</span>7月18日完成</div>
+			</div>
+			<div class="todo-card done">
+				<div class="todo-name"><span class="check">✓</span>卡片排列随机扰动</div>
+				<div class="todo-meta"><span class="todo-tag">局内</span><span class="todo-tag">视觉</span>7月17日完成</div>
+			</div>
+		</div>
+
+		<div class="section-title">Notion TODO RESERVOIR · 待完成（24 项）</div>
+		<div class="highlight-box" style="border-color: rgba(241, 196, 15, 0.35);">
+			<h3 style="color: #f1c40f;">局内 / 视觉（紧接着的工作）</h3>
+			<ul>
+				<li><strong>需要调整 showPos</strong>（7/20 新增）— 视觉展示位待校准</li>
+				<li><strong>伤害跳字</strong>（7/20 新增）— HP 数字化的下一步：伤害飘字反馈</li>
+				<li>新界面 · 移动卡组到popup card · 悬停/点击弹出卡片并提示 · 暂停 · 重放 · 可调动画速度 · 统计数据 · 检测过于不平衡的卡片排列</li>
+			</ul>
+		</div>
+		<div class="highlight-box" style="border-color: rgba(83, 52, 131, 0.5);">
+			<h3 style="color: #b8a9d9;">局外 / 卡片</h3>
+			<ul>
+				<li>商店方向：商店锁定 · 增加商店选项卡 · 商店升级卡 · 增加收入卡 · 回复心脏卡</li>
+				<li>结构方向：卡位升级 · 独立卡池 · 拖动卡片排列卡片 · 仓库 · 敌人卡组提示</li>
+			</ul>
+		</div>
+		<div class="highlight-box" style="border-color: rgba(155, 89, 182, 0.4);">
+			<h3 style="color: #9b59b6;">工具 / 文档 / 维护</h3>
+			<ul>
+				<li>debug skill · 字段string SO用于统一修改 · 显示tips</li>
+				<li>世界观文档 · 检查并更新 regression checklist</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box">
+			<h3>阶段重点工作总结</h3>
+			<ul>
+				<li><strong>牌桌视觉全面翻新</strong> — 瀑布曲线布局 + 随机扰动 + 阵营卡面 + 翻面系统，战斗画面从「功能原型」向「可展示品质」迈进了一大步</li>
+				<li><strong>布局数学收口</strong> — 所有卡组位置统一走 <code>DeckPositionCalculator</code> 单一接缝，EditMode 金值测试兜底，后续调整曲线参数零调用方改动</li>
+				<li><strong>HP 读数体验升级</strong> — 血条阴影 → 对比条 → 数字滚动三级跳，伤害预览与结算分离</li>
+				<li><strong>Z 深度系统稳定</strong> — 解析式钳制替代经验偏移，揭示/攻击/遮挡问题一并解决</li>
+				<li><strong>工具链 git 化</strong> — unity-mcp 走 UPM git 源，Skill 体系新增 review 轮换机制</li>
+				<li><strong>待办完成率 8/32</strong> — 完成项全部集中在视觉主题，与本期目标一致；showPos 调整与伤害跳字已排入下期</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box" style="border-color: rgba(46, 204, 113, 0.4); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(52, 152, 219, 0.08));">
+			<h3 style="color: #2ecc71;">后续工作建议</h3>
+			<p style="color: #bbb; margin-bottom: 15px; font-size: 0.9em;">视觉基础设施（布局/翻面/HP 显示）已成型，下期建议沿两条线推进：</p>
+			<ul>
+				<li><strong style="color: #2ecc71;">视觉收尾（高优先级）</strong><br>
+				调整 showPos、落地伤害跳字，让 HP 数字化形成完整反馈闭环；顺带更新 regression checklist</li>
+				<li><strong style="color: #2ecc71;">Play Mode 验证（高优先级）</strong><br>
+				用新落地的 play mode 测试 skill 实机验证 cascade 布局、翻面时序与洗牌强制扣回在真实战斗中的表现</li>
+				<li><strong style="color: #2ecc71;">局内易用性（中优先级）</strong><br>
+				悬停/点击弹卡提示、暂停、可调动画速度——都是提升试玩反馈质量的低成本项</li>
+				<li><strong style="color: #2ecc71;">局外系统启动（中优先级）</strong><br>
+				商店锁定 / 升级卡 / 收入卡等待办已积压较久，可择一启动作为元游戏深化的切入点</li>
+			</ul>
+		</div>
+
+		<div class="footer">
+			OneDeck Unity Roguelike Card Game | 开发者: PAPAYA<br>
+			数据来源: git log + Notion TODO RESERVOIR | 生成时间: 2026-07-21
+		</div>
+	</div>
+</body>
+</html>
