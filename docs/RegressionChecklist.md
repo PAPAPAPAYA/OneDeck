@@ -62,6 +62,8 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | # | Scenario | System / Effect | Fixed Date | Status | Verification |
 |---|----------|-----------------|------------|--------|--------------|
 | 52 | HP compare bar renders fully in the enemy color (Filled `Image` ignores `fillAmount` when `sprite` is null, full-quad red segment covers the player segment) | `CombatHPBarPresenter` | 2026-07-18 | ⚠️ | **Setup:** Enter combat at 20/20 HP.<br>**Check:** Bar shows a left player-color half and a right enemy-color half; uneven HP renders proportional segment widths. Attack hits tween the segments and play ghost/flash/shake on the damaged side only; heals flash the healed side only. |
+| 53 | HP compare bar drop shadow renders incorrectly or duplicates | `CombatHPBarPresenter` | 2026-07-21 | ⚠️ | **Step:** Enter combat.<br>**Check:** A single `BarShadow` renders behind all six segments (sibling index 0), offset down-right as one whole-bar silhouette (not per-segment). Take a hit: the shadow shakes with `barRoot`, never detaches or lags; ghost/flash/low-HP pulse leave the shadow shape unchanged. Combat -> Shop -> Combat: still exactly one `BarShadow` child. Unwire `barShadow` (or delete the child) and re-enter Play Mode: warning logged, fallback shadow created at `Awake()`, bar fully functional. |
+| 54 | HP bar outer corners must stay rounded at any fill level; the moving fill seam must stay a straight vertical edge | `GameScene.unity` (`HPBarRoot/BarClip`), `CombatHPBarPresenter` | 2026-07-21 | ⚠️ | **Setup:** Enter combat at any HP split.<br>**Check:** All four outer corners of the bar render rounded (same `9-Sliced` sprite as PlayerIcon) at full, partial and near-empty fill; the PlayerSeg/EnemySeg seam stays a hard vertical line while fill tweens; ghost/flash layers never spill past the rounded corners; `BarShadow` is rounded and offset down-right; bar shake/low-HP pulse keep the silhouette intact. Corner radius tuning: `BarClip` Image `Pixels Per Unit Multiplier`. |
 
 ## Cost Check Feedback
 
@@ -123,7 +125,8 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 | `BuryEffect.cs` | 1, 2, 5, 7, 14, 42, 45, 46 |
 | `StageEffect.cs` | 1, 2, 5, 7, 45, 46 |
 | `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35, 43, 44, 45, 47, 48, 49, 51 |
-| `CombatHPBarPresenter.cs` | 52 |
+| `CombatHPBarPresenter.cs` | 52, 53, 54 |
+| `GameScene.unity` (`HPBarRoot`) | 54 |
 | `EffectChainManager.cs` | 2, 11 |
 | `CardPhysObjScript.cs` | 3, 12, 35, 51, 53 |
 | `CurseEffect.cs` | 8, 17, 19 |

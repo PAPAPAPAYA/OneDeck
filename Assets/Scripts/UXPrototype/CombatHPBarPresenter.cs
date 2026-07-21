@@ -21,6 +21,9 @@ public class CombatHPBarPresenter : MonoBehaviour
 	public Image enemyFlash;
 	public GamePhaseSO gamePhaseRef;
 	public Canvas canvas;
+	// NOT part of the missing-reference guard in Awake(): when unwired, Awake
+	// creates a fallback shadow instead of disabling the component.
+	public Image barShadow;
 
 	[Header("Colors")]
 	public Color playerColor = new Color(0.824f, 0.824f, 0.784f); // demo #d2d2c8
@@ -45,6 +48,11 @@ public class CombatHPBarPresenter : MonoBehaviour
 	public float pulseTargetAlpha = 0.55f;
 	public float pulseHalfDuration = 0.45f;
 	public float ghostMinDelta = 0.004f;
+
+	[Header("Shadow (single tuning entry point; Awake normalizes the scene Image)")]
+	public Vector2 shadowOffset = new Vector2(4f, -4f);
+	public float shadowPadding = 6f;
+	public Color shadowColor = new Color(0f, 0f, 0f, 0.35f);
 
 	private int _displayedPlayerHp;
 	private int _displayedEnemyHp;
@@ -88,6 +96,7 @@ public class CombatHPBarPresenter : MonoBehaviour
 		//             and a right enemy-color half; uneven HP must render proportional
 		//             segment widths (e.g. 10/20 vs 20 -> 1/3 vs 2/3).
 		EnsureFilledSprites();
+		EnsureBarShadow();
 		playerSeg.color = playerColor;
 		enemySeg.color = enemyColor;
 		SetAlpha(playerGhost, 0f);
@@ -449,6 +458,32 @@ public class CombatHPBarPresenter : MonoBehaviour
 			enemyFlash.sprite = _fallbackWhiteSprite;
 		}
 		Debug.LogWarning("[CombatHPBarPresenter] A Filled image had no sprite; assigned a generated white sprite (fillAmount is ignored without one). Wire Assets/Sprites/WhiteSquare.png in the scene.");
+	}
+
+	// One stretched shadow behind the whole bar silhouette (per-segment Shadow
+	// components were rejected: seam lines + fragmented moving shadows during
+	// ghost/flash animations). The presenter fields are the single tuning entry
+	// point for offset/padding/color; the scene Image only owns the sprite.
+	// Fallback is Awake-time only and does not heal mid-session deletion.
+	private void EnsureBarShadow()
+	{
+		if (barShadow == null)
+		{
+			var go = new GameObject("BarShadow", typeof(RectTransform), typeof(Image));
+			go.transform.SetParent(barRoot, false);
+			barShadow = go.GetComponent<Image>();
+			barShadow.type = Image.Type.Simple;
+			barShadow.raycastTarget = false;
+			barShadow.sprite = playerSeg.sprite; // guaranteed non-null by EnsureFilledSprites()
+			Debug.LogWarning("[CombatHPBarPresenter] barShadow not wired; created a fallback BarShadow child. Author one under HPBarRoot in the scene.");
+		}
+		RectTransform rt = barShadow.rectTransform;
+		rt.anchorMin = Vector2.zero;
+		rt.anchorMax = Vector2.one;
+		rt.offsetMin = new Vector2(shadowOffset.x - shadowPadding, shadowOffset.y - shadowPadding);
+		rt.offsetMax = new Vector2(shadowOffset.x + shadowPadding, shadowOffset.y + shadowPadding);
+		barShadow.color = shadowColor;
+		rt.SetSiblingIndex(0);
 	}
 
 	// timeScale (not ScaleDuration) so SetDelay-based holds scale with the global
