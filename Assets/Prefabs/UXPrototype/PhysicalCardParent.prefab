@@ -354,7 +354,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -5177388603050735206, guid: ee4c724560d27684d969ba363b913448, type: 3}
-  m_Color: {r: 0.039215688, g: 0.05490196, b: 0.09803922, a: 1}
+  m_Color: {r: 0.039215688, g: 0.05490196, b: 0.09803922, a: 0.5019608}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
@@ -627,6 +627,7 @@ MonoBehaviour:
   isPlayingSpecialAnimation: 0
   isPendingSlotIn: 0
   isPoppedUp: 0
+  flipDuration: 0.3
   popUpOriginalPosition: {x: 0, y: 0, z: 0}
   popUpOriginalScale: {x: 0, y: 0, z: 0}
   pendingRevealZoneMove: 0
