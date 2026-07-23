@@ -39,12 +39,12 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardStatusEffectPrint;
 
 	[Header("COLOR")]
-	public Color ownerCardColor;
-	public Color ownerCardEdgeColor;
-	public Color opponentCardColor;
-	public Color opponentCardEdgeColor;
-	public Color ownerTextColor;
-	public Color opponentTextColor;
+	public ColorSO ownerCardColor;
+	public ColorSO ownerCardEdgeColor;
+	public ColorSO opponentCardColor;
+	public ColorSO opponentCardEdgeColor;
+	public ColorSO ownerTextColor;
+	public ColorSO opponentTextColor;
 
 	[Header("CARD ART")]
 	[Tooltip("Card face sprite used when this card is owned by the player")]
@@ -54,14 +54,14 @@ public class CardPhysObjScript : MonoBehaviour
 
 	[Header("TINT - Infected")]
 	[Tooltip("Tint color for Infected state")]
-	public Color infectedTintColor = new Color(0.4f, 0.8f, 0.2f);
+	public ColorSO infectedTintColor;
 	[Tooltip("Tint intensity for Infected state")]
 	[Range(0f, 1f)]
 	public float infectedTintIntensity = 0.5f;
 
 	[Header("TINT - Power")]
 	[Tooltip("Tint color for Power state")]
-	public Color powerTintColor = new Color(1f, 0.6f, 0.1f);
+	public ColorSO powerTintColor;
 	[Tooltip("Tint intensity for Power state")]
 	[Range(0f, 1f)]
 	public float powerTintIntensity = 0.5f;
@@ -194,6 +194,7 @@ public class CardPhysObjScript : MonoBehaviour
 			ApplyBackColor();
 		}
 		UpdateTintTimer();
+		UpdateHover();
 	}
 
 	/// <summary>
@@ -225,10 +226,27 @@ public class CardPhysObjScript : MonoBehaviour
 	{
 		if (cardTagPrint == null || cardImRepresenting == null) return;
 
-		if (cardImRepresenting.myTags == null || cardImRepresenting.myTags.Count == 0)
+		string tagText = GetTagText();
+		if (string.IsNullOrEmpty(tagText))
 		{
 			cardTagPrint.gameObject.SetActive(false);
 			return;
+		}
+
+		cardTagPrint.gameObject.SetActive(true);
+		cardTagPrint.text = tagText;
+	}
+
+	/// <summary>
+	/// Build the tag display text ("[Tag] [Tag]"), skipping Tag.None.
+	/// Shared by the in-card tag print and the hover tooltip (single source of truth).
+	/// Returns an empty string when there are no visible tags.
+	/// </summary>
+	public string GetTagText()
+	{
+		if (cardImRepresenting == null || cardImRepresenting.myTags == null || cardImRepresenting.myTags.Count == 0)
+		{
+			return string.Empty;
 		}
 
 		System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -247,15 +265,7 @@ public class CardPhysObjScript : MonoBehaviour
 			hasVisibleTag = true;
 		}
 
-		if (hasVisibleTag)
-		{
-			cardTagPrint.gameObject.SetActive(true);
-			cardTagPrint.text = sb.ToString();
-		}
-		else
-		{
-			cardTagPrint.gameObject.SetActive(false);
-		}
+		return hasVisibleTag ? sb.ToString() : string.Empty;
 	}
 
 	/// <summary>
@@ -622,7 +632,7 @@ public class CardPhysObjScript : MonoBehaviour
 		var backGo = new GameObject("CardBack");
 		_cardBackRenderer = backGo.AddComponent<SpriteRenderer>();
 		_cardBackRenderer.sprite = cardFace.sprite;
-		_cardBackRenderer.color = ownerCardColor;
+		_cardBackRenderer.color = ownerCardColor.value;
 		_cardBackRenderer.sortingLayerID = cardFace.sortingLayerID;
 		_cardBackRenderer.sortingOrder = cardFace.sortingOrder;
 		_cardBackRenderer.drawMode = cardFace.drawMode;
@@ -728,11 +738,11 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardImRepresenting == null || cardImRepresenting.myStatusRef == null
 			|| cardImRepresenting.myStatusRef == CombatManager.Me?.ownerPlayerStatusRef)
 		{
-			backColor = ownerCardColor;
+			backColor = ownerCardColor.value;
 		}
 		else
 		{
-			backColor = opponentCardColor;
+			backColor = opponentCardColor.value;
 		}
 		_cardBackRenderer.color = backColor;
 	}
@@ -799,21 +809,21 @@ public class CardPhysObjScript : MonoBehaviour
 
 		// Determine base color
 		Color baseFaceColor;
-		Color baseEdgeColor = ownerCardEdgeColor;
+		Color baseEdgeColor = ownerCardEdgeColor.value;
 		bool isOwner = true;
 
 		if (cardImRepresenting.myStatusRef == null)
 		{
-			baseFaceColor = ownerCardColor;
+			baseFaceColor = ownerCardColor.value;
 		}
 		else if (cardImRepresenting.myStatusRef != CombatManager.Me?.ownerPlayerStatusRef)
 		{
-			baseFaceColor = opponentCardColor;
+			baseFaceColor = opponentCardColor.value;
 			isOwner = false;
 		}
 		else
 		{
-			baseFaceColor = ownerCardColor;
+			baseFaceColor = ownerCardColor.value;
 		}
 
 		// Update card face art based on ownership
@@ -844,11 +854,11 @@ public class CardPhysObjScript : MonoBehaviour
 			switch (_currentTintState)
 			{
 				case TintState.Infected:
-					tintColor = infectedTintColor;
+					tintColor = infectedTintColor.value;
 					intensity = infectedTintIntensity;
 					break;
 				case TintState.Power:
-					tintColor = powerTintColor;
+					tintColor = powerTintColor.value;
 					intensity = powerTintIntensity;
 					break;
 				default:
@@ -866,7 +876,7 @@ public class CardPhysObjScript : MonoBehaviour
 		cardEdge.color = finalEdgeColor;
 
 		// Apply text color based on ownership
-		Color textColor = baseFaceColor == ownerCardColor ? ownerTextColor : opponentTextColor;
+		Color textColor = baseFaceColor == ownerCardColor.value ? ownerTextColor.value : opponentTextColor.value;
 		if (cardNamePrint != null) cardNamePrint.color = textColor;
 		if (cardDescPrint != null) cardDescPrint.color = textColor;
 		if (cardCostPrint != null) cardCostPrint.color = textColor;
@@ -970,8 +980,202 @@ public class CardPhysObjScript : MonoBehaviour
 		_shakeTween = seq;
 	}
 
+	#region Hover Tag Tooltip
+
+	[Header("HOVER")]
+	[Tooltip("Delay before the tag tooltip appears (seconds). Not scaled by combat animation speed.")]
+	public float hoverDelay = 0.2f;
+
+	/// <summary>
+	/// Static hover owner: only the frontmost card under the cursor reacts. Unity fires
+	/// OnMouseEnter for every collider under the cursor, so overlapping cascade cards
+	/// arbitrate here: owner = strictly smaller world z (deck front has the smallest z).
+	/// </summary>
+	private static CardPhysObjScript _currentHoverOwner;
+
+	private bool _hoverActive;
+	private bool _hoverPoppedUp;
+	private bool _savedAutoRevealValid;
+	private bool _savedAutoReveal;
+	private float _hoverTooltipTimer = -1f;
+
+	void OnMouseEnter()
+	{
+		if (cardImRepresenting == null)
+		{
+			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=no cardImRepresenting (start card)");
+			return;
+		}
+		if (!isFaceUp)
+		{
+			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=face-down (Rule 1)");
+			return;
+		}
+		if (IsHoverBlockedByCombatState())
+		{
+			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=animation/input blocked");
+			return;
+		}
+
+		// Z arbitration: ownership transfers only to a strictly closer card;
+		// equal or deeper cards under the cursor do nothing.
+		if (_currentHoverOwner != null && _currentHoverOwner != this)
+		{
+			if (transform.position.z >= _currentHoverOwner.transform.position.z)
+			{
+				TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=not owner (myZ=" + transform.position.z + " ownerZ=" + _currentHoverOwner.transform.position.z + " owner=" + _currentHoverOwner.name + ")");
+				return;
+			}
+			TestManager.Log("[Hover] ownership transfer " + _currentHoverOwner.name + " -> " + name);
+			_currentHoverOwner.EndHover("ownership lost to " + name);
+		}
+		_currentHoverOwner = this;
+		BeginHover();
+	}
+
+	// NOTE: OnMouseExit is intentionally NOT used to end the hover. PopUpCard moves the
+	// card out from under the cursor, which would fire OnMouseExit immediately and undo
+	// the pop-up / cancel the pending tooltip. UpdateHover() polls the cursor position
+	// against the collider every frame instead.
+
+	private Collider2D _hoverCollider;
+	private Camera _hoverCamera;
+
+	private bool IsCursorOverCard()
+	{
+		if (_hoverCollider == null) return true; // no collider: cannot test, stay hovered
+		if (_hoverCamera == null)
+		{
+			_hoverCamera = Camera.main;
+			if (_hoverCamera == null) return true; // no camera: cannot test, stay hovered
+		}
+		Vector3 screenPos = Input.mousePosition;
+		screenPos.z = _hoverCamera.WorldToScreenPoint(transform.position).z;
+		Vector3 worldPos = _hoverCamera.ScreenToWorldPoint(screenPos);
+		return _hoverCollider.OverlapPoint(worldPos);
+	}
+
+	private bool IsRevealZoneCard()
+	{
+		return _combatUXManager != null && _combatUXManager.physicalCardInRevealZone == gameObject;
+	}
+
+	private bool IsInCombatPhase()
+	{
+		return currentGamePhaseRef != null && currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat;
+	}
+
+	private static bool IsHoverBlockedByCombatState()
+	{
+		var cm = CombatManager.Me;
+		if (cm == null) return false;
+		return cm.isPlayingEffectAnimations || cm.IsInputBlocked;
+	}
+
+	private void BeginHover()
+	{
+		_hoverActive = true;
+		_hoverTooltipTimer = hoverDelay;
+		_hoverCollider = GetComponent<Collider2D>();
+		TestManager.Log("[Hover] BeginHover card=" + name + " faceUp=" + isFaceUp + " revealZone=" + IsRevealZoneCard() + " combat=" + IsInCombatPhase() + " tags=[" + GetTagText() + "]");
+
+		if (!IsInCombatPhase()) return; // Shop: tooltip only, no pop-up / autoReveal pause
+
+		// Pause autoReveal immediately so it cannot advance during hoverDelay.
+		var cm = CombatManager.Me;
+		if (cm != null && cm.autoReveal)
+		{
+			_savedAutoReveal = cm.autoReveal;
+			_savedAutoRevealValid = true;
+			cm.autoReveal = false;
+		}
+
+		// The reveal-zone card is already fully displayed; pop-up would be redundant.
+		if (IsRevealZoneCard()) return;
+
+		if (CombatUXManager.visuals != null)
+		{
+			_hoverPoppedUp = true;
+			CombatUXManager.visuals.PopUpCard(cardImRepresenting.gameObject);
+		}
+	}
+
+	/// <summary>
+	/// End the hover: restore autoReveal, slot the card back in, cancel/hide the tooltip.
+	/// Safe to call when not hovering.
+	/// </summary>
+	private void EndHover(string reason = "")
+	{
+		if (!_hoverActive) return;
+		TestManager.Log("[Hover] EndHover card=" + name + " reason=" + reason + " poppedUp=" + _hoverPoppedUp + " restoreAutoReveal=" + _savedAutoRevealValid);
+		_hoverActive = false;
+		_hoverTooltipTimer = -1f;
+		CardTagTooltip.HideFor(this);
+
+		if (_savedAutoRevealValid)
+		{
+			_savedAutoRevealValid = false;
+			var cm = CombatManager.Me;
+			if (cm != null) cm.autoReveal = _savedAutoReveal;
+		}
+
+		if (_hoverPoppedUp)
+		{
+			_hoverPoppedUp = false;
+			if (CombatUXManager.visuals != null && cardImRepresenting != null)
+			{
+				CombatUXManager.visuals.SlotInCard(cardImRepresenting.gameObject);
+			}
+		}
+	}
+
+	private void UpdateHover()
+	{
+		if (!_hoverActive) return;
+
+		// Force-hide: card flipped face-down, animation playback started, input blocked
+		// by something OTHER than our own pop-up (PopUpCard blocks input itself), or
+		// the phase changed away from Combat while popped up.
+		var cm = CombatManager.Me;
+		bool animPlaying = cm != null && cm.isPlayingEffectAnimations;
+		bool externallyBlocked = cm != null && cm.IsInputBlocked && !_hoverPoppedUp;
+		if (!isFaceUp || animPlaying || externallyBlocked || (_hoverPoppedUp && !IsInCombatPhase()))
+		{
+			if (_currentHoverOwner == this) _currentHoverOwner = null;
+			EndHover("force-hide (faceDown=" + !isFaceUp + " animPlaying=" + animPlaying + " externallyBlocked=" + externallyBlocked + " phaseLeft=" + (_hoverPoppedUp && !IsInCombatPhase()) + ")");
+			return;
+		}
+
+		// Cursor left the card (the card may have moved to the pop-up peak, so this
+		// poll replaces OnMouseExit).
+		if (!IsCursorOverCard())
+		{
+			if (_currentHoverOwner == this) _currentHoverOwner = null;
+			EndHover("cursor left card");
+			return;
+		}
+
+		if (_hoverTooltipTimer >= 0f)
+		{
+			_hoverTooltipTimer -= Time.deltaTime;
+			if (_hoverTooltipTimer < 0f)
+			{
+				TestManager.Log("[Hover] tooltip delay elapsed, ShowFor card=" + name + " tags=[" + GetTagText() + "]");
+				CardTagTooltip.ShowFor(this);
+			}
+		}
+	}
+
+	#endregion
+
 	private void OnDestroy()
 	{
+		if (_currentHoverOwner == this)
+		{
+			_currentHoverOwner = null;
+		}
+		EndHover("OnDestroy");
+
 		// Stop all DOTween animations to prevent access after object destruction
 		_positionTween?.Kill();
 		_scaleTween?.Kill();
