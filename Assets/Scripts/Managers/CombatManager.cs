@@ -66,6 +66,13 @@ public class CombatManager : MonoBehaviour
 			var go = new GameObject("CostResultPresenter");
 			go.AddComponent<CostResultPresenter>();
 		}
+
+		// Ensure CombatPerCardStatsTracker singleton exists for the Result screen per-card stats
+		if (CombatPerCardStatsTracker.Me == null)
+		{
+			var go = new GameObject("CombatPerCardStatsTracker");
+			go.AddComponent<CombatPerCardStatsTracker>();
+		}
 	}
 
 	private void OnValidate()
@@ -294,6 +301,9 @@ public class CombatManager : MonoBehaviour
 		TestWriteRead.CardWinRateTracker.Me?.RecordPlayerDeckSnapshot(playerDeck.deck);
 		TestWriteRead.CardWinRateTracker.Me?.RecordEnemyDeckSnapshot(enemyDeck.deck);
 
+		// Start a fresh per-card stats session for this combat (Result screen reads this store)
+		CombatPerCardStatsTracker.Me?.BeginSession();
+
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
 	}
 
@@ -302,7 +312,7 @@ public class CombatManager : MonoBehaviour
 		// Fatigue check based on round number (called before Start Card shuffle)
 		if (roundNumRef.value <= overtimeRoundThreshold) return;
 		
-		var msg = $"<color=red>疲劳!</color> 回合{roundNumRef.value} > {overtimeRoundThreshold}";
+		var msg = $"{GameColorPalette.Me.damage.OpenTag}疲劳!</color> 回合{roundNumRef.value} > {overtimeRoundThreshold}";
 		// print(msg);
 		CombatLog.me?.Append(msg);
 		AddFatigueCards();
@@ -317,7 +327,7 @@ public class CombatManager : MonoBehaviour
 		// Only trigger when revealed card count equals threshold exactly (to avoid duplicate triggers)
 		if (totalCardsRevealed != fatigueRevealThreshold) return;
 		
-		var msg = $"<color=red>疲劳!</color> 已揭示{totalCardsRevealed}张卡牌";
+		var msg = $"{GameColorPalette.Me.damage.OpenTag}疲劳!</color> 已揭示{totalCardsRevealed}张卡牌";
 		// print(msg);
 		CombatLog.me?.Append(msg);
 		AddFatigueCards();

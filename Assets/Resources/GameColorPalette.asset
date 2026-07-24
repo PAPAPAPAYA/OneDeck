@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 272a03ea9f070854984512e23ab944ce, type: 3}
+  m_Name: GameColorPalette
+  m_EditorClassIdentifier: Assembly-CSharp::GameColorPalette
+  friendly: {fileID: 11400000, guid: 7aee590485d8f004ab84565129e1e177, type: 2}
+  enemy: {fileID: 11400000, guid: 73f024b06aa16084095df59216c10020, type: 2}
+  damage: {fileID: 11400000, guid: 09d5d31216729844bb92e91baa2519ec, type: 2}
+  heal: {fileID: 11400000, guid: e63d0df8ae180124890ae593bea456d4, type: 2}
+  shield: {fileID: 11400000, guid: 6f830690132d4dc48963690b205dceaf, type: 2}
+  highlight: {fileID: 11400000, guid: 366a0633d5cb04f4eaaa8fb8bf2862d4, type: 2}
+  ownerCardColor: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  opponentCardColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  ownerCardEdgeColor: {fileID: 11400000, guid: bfbeefc029be442458376d2920f541e7, type: 2}
+  opponentCardEdgeColor: {fileID: 11400000, guid: 799aa4bb927bd7c4086c9785efc352ad, type: 2}
+  ownerTextColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  opponentTextColor: {fileID: 11400000, guid: a2bed2d662297484a895326cb79d54a1, type: 2}
+  infectedTint: {fileID: 11400000, guid: 0ee71c2a56afabd43953bdbdd0353cd2, type: 2}
+  powerTint: {fileID: 11400000, guid: 294511ee47c574442a58dd8c288f6159, type: 2}
+  hpBarPlayer: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  hpBarEnemy: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  hpBarShadow: {fileID: 11400000, guid: 95b2170f52a207a49ad23f1f4e463db0, type: 2}
+  hpNormal: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  hpLow: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  hpZeroGray: {fileID: 11400000, guid: e74364fef9c21894bb806162ee62060d, type: 2}

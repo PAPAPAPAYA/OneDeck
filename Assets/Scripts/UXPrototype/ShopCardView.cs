@@ -61,7 +61,7 @@ public class ShopCardView : MonoBehaviour
 		int displayPrice = _cardPhysObj.shopItemIndex >= 0
 			? _cardPhysObj.cardImRepresenting.price.value
 			: _cardPhysObj.cardImRepresenting.price.value / 2;
-		_cardPhysObj.cardPricePrint.text = "<color=yellow>$" + displayPrice + "</color>";
+		_cardPhysObj.cardPricePrint.text = GameColorPalette.Me.highlight.OpenTag + "$" + displayPrice + "</color>";
 	}
 
 	#endregion

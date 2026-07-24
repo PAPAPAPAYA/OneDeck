@@ -200,17 +200,15 @@ namespace DefaultNamespace.Effects
 
 		private void LogTransferToSelfEffect(List<CardScript> sourceCards, int totalCount, bool fromFriendly)
 		{
-			string thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
-				"<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
-			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
-				"#87CEEB" : "orange";
+			string thisCardOwnerString = GetMyCardOwnerPrefix();
+			string thisCardColor = GetMyCardOwnerColor();
 			string effectNameCN = StatusEffectToCN(statusEffectToTransfer);
 
 			AppendLog(
 				"// " + thisCardOwnerString +
 				"<color=" + thisCardColor + ">" + myCard.name + "</color>]从" +
-				"<color=" + (fromFriendly ? "#87CEEB" : "orange") + ">" + (fromFriendly ? "友方" : "敌方") + "</color>卡牌吸收了" +
-				"<color=yellow>" + totalCount + "</color>层[" + effectNameCN + "]");
+				"<color=" + (fromFriendly ? GameColorPalette.Me.friendly.Hex : GameColorPalette.Me.enemy.Hex) + ">" + (fromFriendly ? "友方" : "敌方") + "</color>卡牌吸收了" +
+				GameColorPalette.Me.highlight.OpenTag + totalCount + "</color>层[" + effectNameCN + "]");
 		}
 
 		/// <summary>
@@ -373,19 +371,16 @@ namespace DefaultNamespace.Effects
 				(myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "你的" : "敌方的") :
 				(myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef ? "你的" : "敌方的");
 
-			string thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
-				"<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
-			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
-				"#87CEEB" : "orange";
-			string targetCardColor = targetCard.myStatusRef == combatManager.ownerPlayerStatusRef ?
-				"#87CEEB" : "orange";
+			string thisCardOwnerString = GetMyCardOwnerPrefix();
+			string thisCardColor = GetMyCardOwnerColor();
+			string targetCardColor = GetCardOwnerColor(targetCard.myStatusRef);
 
 			string effectNameCN = StatusEffectToCN(statusEffectToTransfer);
 			AppendLog(
 				"// " + thisCardOwnerString +
 				"<color=" + thisCardColor + ">" + myCard.name + "</color>]将" +
-				"<color=yellow>" + totalCount + "</color>层[" + effectNameCN + "]从" +
-				"<color=" + (isFromFriendly ? "#87CEEB" : "orange") + ">" + (isFromFriendly ? "友方" : "敌方") + "</color>卡牌转移到了" +
+				GameColorPalette.Me.highlight.OpenTag + totalCount + "</color>层[" + effectNameCN + "]从" +
+				"<color=" + (isFromFriendly ? GameColorPalette.Me.friendly.Hex : GameColorPalette.Me.enemy.Hex) + ">" + (isFromFriendly ? "友方" : "敌方") + "</color>卡牌转移到了" +
 				"<color=" + targetCardColor + ">" + targetCard.name + "</color>]");
 		}
 	}

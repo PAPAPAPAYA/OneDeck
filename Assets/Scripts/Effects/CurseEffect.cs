@@ -238,15 +238,13 @@ namespace DefaultNamespace.Effects
 				var newCardScript = newCard.GetComponent<CardScript>();
 				
 				// Output effect info
-				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-					"<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
-				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-					"#87CEEB" : "orange";
+				var thisCardOwnerString = GetMyCardOwnerPrefix();
+				string thisCardColor = GetMyCardOwnerColor();
 				
 				AppendLog(
 					"// " + thisCardOwnerString +
 					"<color=" + thisCardColor + ">" + myCard.name + "</color>]诅咒并创建了" +
-					"<color=#87CEEB>友方</color>[<color=#87CEEB>" + newCard.name + "</color>]");
+					GameColorPalette.Me.friendly.OpenTag + "友方</color>[" + GameColorPalette.Me.friendly.OpenTag + newCard.name + "</color>]");
 				
 				return newCardScript;
 			}
@@ -267,15 +265,13 @@ namespace DefaultNamespace.Effects
 				var newCardScript = newCard.GetComponent<CardScript>();
 				
 				// Output effect info
-				var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-					"<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
-				string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-					"#87CEEB" : "orange";
+				var thisCardOwnerString = GetMyCardOwnerPrefix();
+				string thisCardColor = GetMyCardOwnerColor();
 				
 				AppendLog(
 					"// " + thisCardOwnerString +
 					"<color=" + thisCardColor + ">" + myCard.name + "</color>]诅咒并创建了" +
-					"<color=orange>敌方</color>[<color=orange>" + newCard.name + "</color>]");
+					GameColorPalette.Me.enemy.OpenTag + "敌方</color>[" + GameColorPalette.Me.enemy.OpenTag + newCard.name + "</color>]");
 				
 				return newCardScript;
 			}
@@ -472,15 +468,14 @@ namespace DefaultNamespace.Effects
 			}
 
 			// Output effect info
-			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"<color=#87CEEB>Your</color> [" : "<color=orange>Enemy's</color> [";
-			string thisCardColor = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? 
-				"#87CEEB" : "orange";
+			var thisCardOwnerString = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ?
+				GameColorPalette.Me.friendly.OpenTag + "Your</color> [" : GameColorPalette.Me.enemy.OpenTag + "Enemy's</color> [";
+			string thisCardColor = GetMyCardOwnerColor();
 
 			AppendLog(
 				"// " + thisCardOwnerString +
 				"<color=" + thisCardColor + ">" + myCard.name + "</color>]从被诅咒的卡牌中吸收了" +
-				"<color=yellow>" + amount + "</color>层[力量]");
+				GameColorPalette.Me.highlight.OpenTag + amount + "</color>层[力量]");
 
 			// Refresh info display
 			CombatInfoDisplayer.me?.RefreshDeckInfo();

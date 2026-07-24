@@ -27,12 +27,12 @@ public class StageEffect : EffectScript
 	public IntSO enemyIntSO;
 
 	/// <summary>
-	/// Get card owner's color tag (Player=#87CEEB, Enemy=orange)
+	/// Get card owner's color tag (delegates to base palette-aware helper)
 	/// </summary>
 	private string GetCardColorTag(GameObject card)
 	{
 		var cardStatus = card.GetComponent<CardScript>().myStatusRef;
-		return cardStatus == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+		return GetCardOwnerColor(cardStatus);
 	}
 
 	/// <summary>
@@ -40,7 +40,7 @@ public class StageEffect : EffectScript
 	/// </summary>
 	private string GetMyCardColorTag()
 	{
-		return myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+		return GetMyCardOwnerColor();
 	}
 
 	/// <summary>

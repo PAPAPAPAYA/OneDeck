@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Damage Floater Demo - Tunable Punch Float</title>
+<style>
+	body {
+		margin: 0;
+		font-family: "Segoe UI", Arial, sans-serif;
+		background: #1e1e24;
+		color: #ddd;
+	}
+	header {
+		padding: 16px 24px;
+		border-bottom: 1px solid #333;
+	}
+	header h1 { margin: 0 0 4px; font-size: 18px; }
+	header p { margin: 0; font-size: 13px; color: #888; }
+	.layout {
+		display: grid;
+		grid-template-columns: 1fr 300px;
+		gap: 16px;
+		padding: 16px 24px;
+	}
+	.stage {
+		position: relative;
+		height: 480px;
+		background: #26262e;
+		border: 1px solid #3a3a44;
+		border-radius: 8px;
+		cursor: pointer;
+		user-select: none;
+		overflow: hidden;
+	}
+	.stage .hint {
+		position: absolute;
+		bottom: 8px;
+		width: 100%;
+		text-align: center;
+		font-size: 11px;
+		color: #555;
+		pointer-events: none;
+	}
+	.anchor {
+		position: absolute;
+		left: 50%;
+		top: 55%;
+		transform: translate(-50%, -50%);
+		width: 70px;
+		height: 100px;
+		background: #3a3f4a;
+		border: 2px solid #555c6a;
+		border-radius: 6px;
+		pointer-events: none;
+	}
+	.anchor::after {
+		content: "CARD";
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 11px;
+		color: #777;
+	}
+	.panel {
+		background: #26262e;
+		border: 1px solid #3a3a44;
+		border-radius: 8px;
+		padding: 12px 14px;
+		font-size: 12px;
+		align-self: start;
+		max-height: 480px;
+		overflow-y: auto;
+	}
+	.panel h2 {
+		margin: 0 0 8px;
+		font-size: 13px;
+		border-bottom: 1px solid #3a3a44;
+		padding-bottom: 6px;
+	}
+	.param {
+		display: grid;
+		grid-template-columns: 110px 1fr 42px;
+		gap: 8px;
+		align-items: center;
+		margin-bottom: 6px;
+	}
+	.param label { color: #999; }
+	.param input[type=range] { width: 100%; }
+	.param .val { color: #ddd; text-align: right; font-variant-numeric: tabular-nums; }
+	.panel .btns {
+		display: flex;
+		gap: 8px;
+		margin-top: 10px;
+	}
+	.panel button {
+		background: #3d6fb4;
+		color: #fff;
+		border: none;
+		border-radius: 4px;
+		padding: 6px 12px;
+		cursor: pointer;
+		font-size: 12px;
+	}
+	.panel button:hover { background: #4a80c9; }
+	.panel button.secondary { background: #444; }
+	.panel button.secondary:hover { background: #555; }
+	.panel .export {
+		margin-top: 10px;
+	}
+	.panel textarea {
+		width: 100%;
+		height: 110px;
+		background: #1a1a20;
+		color: #9fd;
+		border: 1px solid #3a3a44;
+		border-radius: 4px;
+		font-size: 10px;
+		font-family: Consolas, monospace;
+		resize: vertical;
+		box-sizing: border-box;
+	}
+
+	.floater {
+		position: absolute;
+		font-weight: bold;
+		color: #ff3b30;
+		text-shadow: 0 0 4px rgba(0,0,0,.8), 0 2px 2px rgba(0,0,0,.6);
+		pointer-events: none;
+		white-space: nowrap;
+		will-change: transform, opacity;
+	}
+</style>
+</head>
+<body>
+<header>
+	<h1>Damage Floater Demo &mdash; Punch 入场 + 上飘淡出（参数可调）</h1>
+	<p>右侧滑条实时调整动画参数；调好后可从底部导出关键帧数值。点击演示区触发。</p>
+</header>
+<div class="layout">
+	<div class="stage" id="stage">
+		<div class="anchor"></div>
+		<div class="hint">click to spawn</div>
+	</div>
+	<div class="panel">
+		<h2>Parameters</h2>
+		<div id="params"></div>
+		<div class="btns">
+			<button id="trigger">Trigger</button>
+			<button id="burst" class="secondary">Burst ×5</button>
+			<button id="reset" class="secondary">Reset</button>
+		</div>
+		<div class="export">
+			<h2>Keyframes</h2>
+			<textarea id="export" readonly></textarea>
+		</div>
+	</div>
+</div>
+
+<style id="kf"></style>
+
+<script>
+// ---- Tunable parameters: [key, label, min, max, step, default] ----
+const PARAMS = [
+	['fontSize',      'font size (px)',     16, 60,  1,    30],
+	['punchScale',    'punch scale',        1.2, 4,  0.05, 2.2],
+	['squashScale',   'squash scale',       0.5, 1,  0.01, 0.85],
+	['overshootScale','overshoot scale',    1, 1.5,  0.01, 1.08],
+	['punchInTime',   'punch in (s)',       0.1, 1,  0.01, 0.38],
+	['holdTime',      'hold (s)',           0, 2,   0.01, 0.45],
+	['fadeTime',      'fade out (s)',       0.1, 2, 0.01, 0.36],
+	['floatUpDist',   'float up (px)',      0, 200, 1,    62],
+	['jitter',        'x jitter (px)',      0, 100, 1,    40]
+];
+const DEFAULTS = {};
+PARAMS.forEach(p => DEFAULTS[p[0]] = p[5]);
+let vals = Object.assign({}, DEFAULTS);
+
+const kfStyle = document.getElementById('kf');
+const exportBox = document.getElementById('export');
+
+// Build keyframes: punch phase (0 -> punchIn%), hold (-> holdEnd%), float+fade (-> 100%)
+function rebuildKeyframes() {
+	const total = vals.punchInTime + vals.holdTime + vals.fadeTime;
+	const pIn = vals.punchInTime / total * 100;
+	const holdEnd = (vals.punchInTime + vals.holdTime) / total * 100;
+	// Sub-steps inside the punch phase (same ratios as the fixed version: 12/22/32 of 38%)
+	const s1 = pIn * 0.32, s2 = pIn * 0.58, s3 = pIn;
+	const css = `@keyframes punchFloat {
+	0%    { opacity: 0; transform: translate(-50%, 0) scale(${vals.punchScale}); }
+	${s1.toFixed(1)}% { opacity: 1; transform: translate(-50%, -8px) scale(${vals.squashScale}); }
+	${s2.toFixed(1)}% { transform: translate(-50%, -14px) scale(${vals.overshootScale}); }
+	${s3.toFixed(1)}% { transform: translate(-50%, -18px) scale(1); }
+	${holdEnd.toFixed(1)}% { opacity: 1; transform: translate(-50%, -22px) scale(1); }
+	100%  { opacity: 0; transform: translate(-50%, -${vals.floatUpDist}px) scale(.95); }
+}`;
+	kfStyle.textContent = css;
+	exportBox.value =
+		'// total ' + total.toFixed(2) + 's = punch ' + vals.punchInTime +
+		's + hold ' + vals.holdTime + 's + fade ' + vals.fadeTime + 's\n' + css;
+}
+
+// ---- Build param sliders ----
+const paramsDiv = document.getElementById('params');
+PARAMS.forEach(([key, label, min, max, step]) => {
+	const row = document.createElement('div');
+	row.className = 'param';
+	row.innerHTML = `<label>${label}</label>` +
+		`<input type="range" min="${min}" max="${max}" step="${step}" value="${vals[key]}" data-key="${key}">` +
+		`<span class="val" id="val-${key}">${vals[key]}</span>`;
+	paramsDiv.appendChild(row);
+	row.querySelector('input').addEventListener('input', e => {
+		vals[key] = parseFloat(e.target.value);
+		document.getElementById('val-' + key).textContent = e.target.value;
+		rebuildKeyframes();
+	});
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+	vals = Object.assign({}, DEFAULTS);
+	document.querySelectorAll('#params input').forEach(inp => {
+		inp.value = vals[inp.dataset.key];
+		document.getElementById('val-' + inp.dataset.key).textContent = inp.value;
+	});
+	rebuildKeyframes();
+});
+
+// ---- Spawning ----
+const stage = document.getElementById('stage');
+
+function spawnFloater(amount, x, y) {
+	const rect = stage.getBoundingClientRect();
+	const el = document.createElement('div');
+	el.className = 'floater';
+	el.textContent = '-' + amount;
+	const total = vals.punchInTime + vals.holdTime + vals.fadeTime;
+	el.style.fontSize = vals.fontSize + 'px';
+	el.style.animation = `punchFloat ${total}s cubic-bezier(.2,.8,.3,1) forwards`;
+	const px = (x !== undefined) ? (x - rect.left) : rect.width / 2;
+	const py = (y !== undefined) ? (y - rect.top) : rect.height * 0.55;
+	const jitter = (Math.random() - 0.5) * vals.jitter;
+	el.style.left = (px + jitter) + 'px';
+	el.style.top = py + 'px';
+	stage.appendChild(el);
+	el.addEventListener('animationend', () => el.remove());
+}
+
+stage.addEventListener('click', e => spawnFloater(12, e.clientX, e.clientY));
+document.getElementById('trigger').addEventListener('click', () => spawnFloater(12));
+document.getElementById('burst').addEventListener('click', () => {
+	for (let i = 0; i < 5; i++) setTimeout(() => spawnFloater(12), i * 120);
+});
+
+rebuildKeyframes();
+setTimeout(() => spawnFloater(12), 400);
+</script>
+</body>
+</html>

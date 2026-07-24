@@ -608,17 +608,17 @@ MonoBehaviour:
   cardRarityPrint: {fileID: 7010064298356579603}
   cardTagPrint: {fileID: 314579976763047269}
   cardStatusEffectPrint: {fileID: 4937761455632982440}
-  ownerCardColor: {r: 0.8509804, g: 0.8352941, b: 0.7921569, a: 1}
-  ownerCardEdgeColor: {r: 0.8509804, g: 0.8352941, b: 0.7921569, a: 1}
-  opponentCardColor: {r: 0.52156866, g: 0.08235294, b: 0.13725491, a: 1}
-  opponentCardEdgeColor: {r: 0.65882355, g: 0.11372549, b: 0.15294118, a: 1}
-  ownerTextColor: {r: 0.039215688, g: 0.05490196, b: 0.09803922, a: 1}
-  opponentTextColor: {r: 0.85098046, g: 0.8352942, b: 0.79215693, a: 1}
+  ownerCardColor: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  ownerCardEdgeColor: {fileID: 11400000, guid: bfbeefc029be442458376d2920f541e7, type: 2}
+  opponentCardColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  opponentCardEdgeColor: {fileID: 11400000, guid: 799aa4bb927bd7c4086c9785efc352ad, type: 2}
+  ownerTextColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  opponentTextColor: {fileID: 11400000, guid: a2bed2d662297484a895326cb79d54a1, type: 2}
   ownerCardFaceSprite: {fileID: 21300000, guid: ab9d41756409caf498b8d953c1336ac6, type: 3}
   opponentCardFaceSprite: {fileID: 21300000, guid: 9373a30dd81c88b4794ad1ae25d20f57, type: 3}
-  infectedTintColor: {r: 0.4, g: 0.8, b: 0.2, a: 1}
+  infectedTintColor: {fileID: 11400000, guid: 0ee71c2a56afabd43953bdbdd0353cd2, type: 2}
   infectedTintIntensity: 0.5
-  powerTintColor: {r: 1, g: 0.6, b: 0.1, a: 1}
+  powerTintColor: {fileID: 11400000, guid: 294511ee47c574442a58dd8c288f6159, type: 2}
   powerTintIntensity: 0.5
   tintDuration: 1
   tintTransitionSpeed: 5

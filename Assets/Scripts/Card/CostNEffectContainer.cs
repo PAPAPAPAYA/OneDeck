@@ -113,6 +113,10 @@ public class CostNEffectContainer : MonoBehaviour
 		{
 			EffectChainManager.Me.lastEffectObject = gameObject;
 
+			// Per-card combat stats: count every successful container invocation (inside the
+			// EffectCanBeInvoked branch only — loop-guard early return above must not count).
+			CombatPerCardStatsTracker.Me?.RecordTrigger(_myCardScript);
+
 			effectEvent?.Invoke(); // invoke effects
 		}
 		else

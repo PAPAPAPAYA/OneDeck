@@ -20,12 +20,14 @@ public class EffectScript : MonoBehaviour
 	#region Helper Methods - Card Ownership & Colors
 	protected string GetCardOwnerPrefix(PlayerStatusSO statusRef)
 	{
-		return statusRef == combatManager.ownerPlayerStatusRef ? "<color=#87CEEB>你的</color>[" : "<color=orange>敌方的</color>[";
+		return statusRef == combatManager.ownerPlayerStatusRef
+			? GameColorPalette.Me.friendly.OpenTag + "你的</color>["
+			: GameColorPalette.Me.enemy.OpenTag + "敌方的</color>[";
 	}
 
 	protected string GetCardOwnerColor(PlayerStatusSO statusRef)
 	{
-		return statusRef == combatManager.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+		return statusRef == combatManager.ownerPlayerStatusRef ? GameColorPalette.Me.friendly.Hex : GameColorPalette.Me.enemy.Hex;
 	}
 
 	protected string GetMyCardOwnerPrefix()
@@ -82,6 +84,11 @@ public class EffectScript : MonoBehaviour
 		// Raise Power-related events when a card gains Power
 		if (effect == EnumStorage.StatusEffect.Power)
 		{
+			// Per-card combat stats: Power stacks granted (by this effect's card) and received (by target).
+			// Transfers via TransferStatusEffectEffect also pass through here and count (locked decision 2026-07-23).
+			CombatPerCardStatsTracker.Me?.RecordPowerGiven(myCardScript, amount);
+			CombatPerCardStatsTracker.Me?.RecordPowerReceived(targetCardScript, amount);
+
 			combatManager.lastCardGotPower = targetCardScript;
 			GameEventStorage.me?.onAnyCardGotPower?.Raise();
 			GameEventStorage.me?.onMeGotPower?.RaiseSpecific(targetCardScript.gameObject);
@@ -174,7 +181,7 @@ public class EffectScript : MonoBehaviour
 			"<color=" + thisCardColor + ">" + myCard.name + "</color>]给予" +
 			targetCardOwnerString +
 			"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>]" +
-			"<color=yellow>" + amount + "</color>层[" + effectNameCN + "]");
+			GameColorPalette.Me.highlight.OpenTag + amount + "</color>层[" + effectNameCN + "]");
 	}
 	#endregion
 

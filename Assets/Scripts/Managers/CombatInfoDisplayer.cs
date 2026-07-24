@@ -160,7 +160,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 	{
 		if (!showRevealedCardName) return;
 		// Card name color: blue for player, orange for enemy
-		string cardNameColor = ownersCard ? "#87CEEB" : "orange";
+		string cardNameColor = ownersCard ? GameColorPalette.Me.friendly.Hex : GameColorPalette.Me.enemy.Hex;
 		revealZoneDisplay.text = "#" + cardNumber + "\n" +// card num
 		                         ProcessStatusEffectInfo(cardRevealed) + // tags
 		                         "<color=" + cardNameColor + ">" + cardRevealed.GetDisplayName() + "</color>:" + // card name with color
@@ -170,7 +170,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 	public void ShowStartCardInfo(int cardNumber)
 	{
 		if (!showRevealedCardName) return;
-		revealZoneDisplay.text = "#" + cardNumber + "\n<color=grey>--- Start Card ---</color>";
+		revealZoneDisplay.text = "#" + cardNumber + "\n" + GameColorPalette.Me.shield.OpenTag + "--- Start Card ---</color>";
 	}
 
 	public string ProcessStatusEffectInfo(CardScript card)
@@ -300,9 +300,9 @@ public class CombatInfoDisplayer : MonoBehaviour
 			: CombatManager.Me.enemyPlayerStatusRef.hp;
 		
 		playerStatusDisplay.text =
-			"Your HP: <color=#90EE90>" + playerHp + "</color>\n";
+			"Your HP: " + GameColorPalette.Me.heal.OpenTag + playerHp + "</color>\n";
 		enemyStatusDisplay.text =
-			"Their HP: <color=#90EE90>" + enemyHp + "</color>\n";
+			"Their HP: " + GameColorPalette.Me.heal.OpenTag + enemyHp + "</color>\n";
 	}
 
 	public void RefreshDeckInfo()

@@ -79,6 +79,10 @@ public class PhaseManager : MonoBehaviour
 	public TextMeshProUGUI resultInfoDisplay;
 	private string _resultText;
 
+	[Header("Result Stats Panel")]
+	[Tooltip("Layout of the per-card combat stats panel shown during the Result phase. In Play Mode, editing these values rebuilds the panel immediately (OnValidate); a 'Rebuild Stats Panel' context menu entry is also available.")]
+	public ResultStatsPanelLayout resultStatsPanelLayout = new ResultStatsPanelLayout();
+
 	private void OnEnable()
 	{
 		_isRunEnded = false;
@@ -303,7 +307,10 @@ public class PhaseManager : MonoBehaviour
 	private void EnteringResultPhase()
 	{
 		InvokeEnterResultPhaseEvent();
-		
+
+		// Build the per-card combat stats panel once on phase entry (never per frame)
+		ShowStatsPanel();
+
 		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Result;
 	}
@@ -312,7 +319,56 @@ public class PhaseManager : MonoBehaviour
 	{
 		InvokeExitResultPhaseEvent();
 		resultInfoDisplay.text = "";
+		if (_statsPanel != null)
+		{
+			_statsPanel.Clear();
+		}
 	}
+
+	private ResultStatsPanel _statsPanel;
+
+	private void ShowStatsPanel()
+	{
+		if (resultInfoDisplay == null) return;
+		var canvas = resultInfoDisplay.GetComponentInParent<Canvas>();
+		if (canvas == null) return;
+
+		if (_statsPanel == null)
+		{
+			var go = new GameObject("ResultStatsPanel");
+			_statsPanel = go.AddComponent<ResultStatsPanel>();
+		}
+
+		var rows = CombatPerCardStatsTracker.Me != null
+			? CombatPerCardStatsTracker.Me.GetSessionRows()
+			: null;
+		_statsPanel.Build(canvas, rows, resultStatsPanelLayout);
+	}
+
+	private void RebuildStatsPanel()
+	{
+		if (_statsPanel == null) return;
+		if (currentGamePhaseRef == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Result) return;
+		ShowStatsPanel();
+	}
+
+	// Right-click the component header in the Inspector to rebuild the stats panel manually.
+	[ContextMenu("Rebuild Stats Panel")]
+	private void RebuildStatsPanelContextMenu()
+	{
+		RebuildStatsPanel();
+	}
+
+#if UNITY_EDITOR
+	// Live layout tuning: any Inspector edit to resultStatsPanelLayout during Play Mode
+	// rebuilds the panel immediately. (Keyboard-based rebuild was dropped: Input.GetKeyDown
+	// only fires while the Game view has focus, which it never has while editing the Inspector.)
+	private void OnValidate()
+	{
+		if (!Application.isPlaying) return;
+		RebuildStatsPanel();
+	}
+#endif
 	#endregion
 	#region shop phase
 	private void EnteringShopPhase()

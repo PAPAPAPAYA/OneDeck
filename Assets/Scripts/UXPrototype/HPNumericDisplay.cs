@@ -49,9 +49,9 @@ public class HPNumericDisplay : MonoBehaviour
 	public bool enableZeroOut = true;
 
 	[Header("Colors")]
-	public Color normalColor = new Color(0.078f, 0.078f, 0.078f); // demo #141414
-	public Color lowHpColor = new Color(0.753f, 0.224f, 0.169f); // demo #c0392b
-	public Color zeroGrayColor = new Color(0.541f, 0.541f, 0.565f); // demo #8a8a90
+	public ColorSO normalColor;
+	public ColorSO lowHpColor;
+	public ColorSO zeroGrayColor;
 
 	[Header("Counting (demo constants)")]
 	public int stepMs = 50;
@@ -293,8 +293,8 @@ public class HPNumericDisplay : MonoBehaviour
 		_currentCanvasGroup.DOKill();
 		_currentCanvasGroup.alpha = 1f;
 		divider.DOKill();
-		SetCurrentColorInstant(normalColor);
-		SetDividerInstant(normalColor, 1f);
+		SetCurrentColorInstant(normalColor.value);
+		SetDividerInstant(normalColor.value, 1f);
 		KillAllStripTweens();
 		_current.counting = false;
 		_max.counting = false;
@@ -594,7 +594,7 @@ public class HPNumericDisplay : MonoBehaviour
 		tmp.enableWordWrapping = false;
 		tmp.overflowMode = TextOverflowModes.Overflow;
 		tmp.raycastTarget = false;
-		tmp.color = _zeroActive ? zeroGrayColor : normalColor;
+		tmp.color = _zeroActive ? zeroGrayColor.value : normalColor.value;
 		var entry = new DigitStrip { slot = slotRt, strip = stripRt, text = tmp, idx = Canonical(0) };
 		SetStripY(entry, entry.idx);
 		return entry;
@@ -749,10 +749,10 @@ public class HPNumericDisplay : MonoBehaviour
 		foreach (TMP_Text text in CurrentColorTargets())
 		{
 			text.DOKill();
-			ApplySpeed(text.DOColor(zeroGrayColor, stateColorFadeDuration));
+			ApplySpeed(text.DOColor(zeroGrayColor.value, stateColorFadeDuration));
 		}
 		divider.DOKill();
-		ApplySpeed(divider.DOColor(zeroGrayColor, stateColorFadeDuration));
+		ApplySpeed(divider.DOColor(zeroGrayColor.value, stateColorFadeDuration));
 		// Drop through the divider while fading and shrinking.
 		_zeroDropSequence = DOTween.Sequence();
 		_zeroDropSequence.Append(currentRoot.DOAnchorPosY(_currentRootBasePos.y - zeroDropEm * _em, zeroDropDuration).SetEase(Ease.InCubic));
@@ -796,9 +796,9 @@ public class HPNumericDisplay : MonoBehaviour
 		_currentCanvasGroup.DOKill();
 		_currentCanvasGroup.alpha = 1f;
 		divider.DOKill();
-		SetDividerInstant(normalColor, 1f);
+		SetDividerInstant(normalColor.value, 1f);
 		// Restore instantly; UpdateLowPulse restarts the pulse from here if still low.
-		SetCurrentColorInstant(normalColor);
+		SetCurrentColorInstant(normalColor.value);
 	}
 
 	private void UpdateLowPulse(int hp, int hpMax)
@@ -813,13 +813,13 @@ public class HPNumericDisplay : MonoBehaviour
 		{
 			foreach (TMP_Text text in CurrentColorTargets())
 			{
-				_pulseTweens.Add(ApplySpeed(text.DOColor(lowHpColor, lowHpPulseHalfDuration).SetLoops(-1, LoopType.Yoyo)));
+				_pulseTweens.Add(ApplySpeed(text.DOColor(lowHpColor.value, lowHpPulseHalfDuration).SetLoops(-1, LoopType.Yoyo)));
 			}
 		}
 		else
 		{
 			KillPulseTweens();
-			SetCurrentColorInstant(_zeroActive ? zeroGrayColor : normalColor);
+			SetCurrentColorInstant(_zeroActive ? zeroGrayColor.value : normalColor.value);
 		}
 	}
 

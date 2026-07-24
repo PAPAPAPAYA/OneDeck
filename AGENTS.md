@@ -25,11 +25,11 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 ```
 Assets/
 ├── Scripts/
-│   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, AttackAnimationManager, CardFactory, CardIDRetriever, CombatInfoDisplayer, CombatLog, CombatStartCardGiver, CombatStatsLogger, CostResultPresenter, DeckTester, EffectRecorder, RecorderAnimationPlayer, GameEventListener, ICombatVisuals + Null*, ShopStatsManager, StartingCardManager, UtilityFuncManagerScript, WriteRead/
+│   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, AttackAnimationManager, CardFactory, CardIDRetriever, CombatInfoDisplayer, CombatLog, CombatStartCardGiver, CombatStatsLogger, CostResultPresenter, DeckTester, EffectRecorder, RecorderAnimationPlayer, GameEventListener, ICombatVisuals + Null*, ShopStatsManager, StartingCardManager, UtilityFuncManagerScript, WriteRead/ (CardWinRateTracker, CombatPerCardStatsTracker, DeckSaver, EnemyDeckRecorder)
 │   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, AddTextEffect, CardManipulationEffect, ChangeCardTarget, ChangeHpAlterAmountEffect, HPMaxAlterEffect, PrintEffect, TransferStatusEffectEffect, BuryCostEffect, DelayCostEffect, ExposeCostEffect, MinionCostEffect, StartCardShuffleEffect, shop/DeckSizeIncreaseEffect, StatusEffect/
 │   ├── Card/           # CardScript, CostNEffectContainer, CardEventTrigger
 │   ├── SOScripts/      # GameEvent, PlayerStatusSO, StatusEffectSO, DeckSO, BoolSO, CostCheckResult, GamePhaseSO, IntSO, ShopRarityWeightSO, StringSO
-│   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript, CombatCardView, ShopCardView, CombatHPBarPresenter, CombatIconPresenter, HPNumericDisplay, HPNumericCounter
+│   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript, CombatCardView, ShopCardView, CombatHPBarPresenter, CombatIconPresenter, HPNumericDisplay, HPNumericCounter, ResultStatsPanel
 ├── Prefabs/Cards/      # 3.0 no cost (current), System/, StatusEffectResolvers/
 └── docs/
 ```
@@ -40,7 +40,7 @@ Assets/
 
 ## Core Architecture
 
-- **Singletons**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`, `CombatFuncs.me`, `CardFactory.me`, `CardIDRetriever.Me`, `AnimationStateTracker.me`, `CombatInfoDisplayer.me`, `CombatLog.me`, `CostResultPresenter.me`, `RecorderAnimationPlayer.me`
+- **Singletons**: `CombatManager.Me`, `ShopManager.me`, `GameEventStorage.me`, `ValueTrackerManager.me`, `EffectChainManager.Me`, `CombatFuncs.me`, `CardFactory.me`, `CardIDRetriever.Me`, `AnimationStateTracker.me`, `CombatInfoDisplayer.me`, `CombatLog.me`, `CostResultPresenter.me`, `RecorderAnimationPlayer.me`, `CombatPerCardStatsTracker.Me`
 - **Event-driven**: `GameEvent` SO + `GameEventListener`
 - **Component-based Cards**: `CardScript` + `EffectContainers` + `Effects`
 - **Visual Abstraction**: `ICombatVisuals` interface. `CombatManager.visuals` falls back to `CombatUXManager.visuals`, or inject via `visualsOverride` (e.g. `NullCombatVisualsBehaviour` for headless tests).
@@ -172,7 +172,42 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 | `CombatLog` | `Assets/Scripts/Managers/CombatLog.cs` |
 | `StatusEffectGiverEffect` | `Assets/Scripts/Effects/StatusEffect/StatusEffectGiverEffect.cs` |
 | `StartCardShuffleEffect` | `Assets/Scripts/Effects/StartCardShuffleEffect.cs` |
+| `CombatPerCardStatsTracker` | `Assets/Scripts/Managers/WriteRead/CombatPerCardStatsTracker.cs` |
+| `ResultStatsPanel` | `Assets/Scripts/UXPrototype/ResultStatsPanel.cs` |
 | `GameRules` | `docs/GameRules.md` |
+
+## Result Screen Per-Card Stats
+
+The Result phase shows a scrollable per-card stats table of the combat that just finished
+(plan: `plans/plan-result-per-card-stats-2026-07-23.md`).
+
+- **Store**: `CombatPerCardStatsTracker.Me` (singleton, auto-created by `CombatManager.Awake()`).
+  Session-scoped, no persistence: `BeginSession()` wipes the store in `CombatManager.GatherDecks()`.
+- **Rows keyed by `(cardTypeID, faction)`** (`CardFaction.Player/Enemy`, resolved via
+  `myStatusRef == CombatManager.Me.ownerPlayerStatusRef`); same card type on both sides = two rows.
+  Neutral/start cards are excluded by the `IsNeutralCard` guard in `Add()` — the single exclusion point.
+- **Stats** (`CombatStatType`): `DamageDealtToOpponent`, `DamageDealtToSelf` (both raw pre-shield
+  amounts), `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains),
+  `PowerGiven` / `PowerReceived` (stack amounts; transfers count).
+- **Hooks**: `CostNEffectContainer.InvokeEffectEvent()` (inside the `EffectCanBeInvoked` true branch),
+  `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self`, `EffectScript.ApplyStatusEffectCore` Power branch.
+- **Extending**: new stat = one `CombatStatType` entry + one `CombatStatRegistry` entry + one
+  `Record*()` call. UI columns derive from `CombatStatRegistry` (`columnSortPriority` = column order;
+  row sort lives in `GetSessionRows()`, by `DamageDealtToOpponent` desc then faction).
+- **UI**: `ResultStatsPanel` builds the scrollable table entirely at runtime (no prefab/scene wiring).
+  The panel root is its **own Canvas + CanvasScaler** (reference resolution from layout config,
+  match width), so font sizes/row heights are independent of the game canvas scaling.
+  `PhaseManager.EnteringResultPhase()` builds it once (never per frame); `ExitingResultPhase()` clears it.
+- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction
+  anchors (`anchorMin/anchorMax`), reference resolution, font/row sizes, column flex weights,
+  `rowHorizontalPadding` (narrows rows), background alpha. In Play Mode, Inspector edits rebuild
+  the panel immediately via `OnValidate`; a `Rebuild Stats Panel` context-menu entry also exists.
+  (No keyboard rebuild: `Input.GetKeyDown` only fires while the Game view has focus, which it
+  never has while editing the Inspector.)
+- **Runtime-built UI pitfall**: after setting stretch anchors on a fresh RectTransform, always
+  zero `offsetMin/offsetMax` — the default 100×100 sizeDelta otherwise leaks into the final rect
+  (this caused Content to be 100px wider than the Viewport, pushing rows past the panel edge).
+- EditMode tests: `Assets/Scripts/Editor/Tests/CombatPerCardStatsTrackerTests.cs`.
 
 ## Minion Cost Mechanism
 
@@ -312,6 +347,8 @@ Deck cards are face-down by default (card back; name/desc/status/ownership info 
 ## Color Tags
 
 Damage `<color=red>`, Heal `<color=#90EE90>`, Shield `<color=grey>`, Friendly `<color=#87CEEB>`, Enemy `<color=orange>`
+
+**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette` (`Assets/Resources/GameColorPalette.asset`). Log/rich-text colors: use `GameColorPalette.Me.<name>.OpenTag` / `.Hex` (lazy static singleton; never hardcode hex strings). Component colors (`CardPhysObjScript`, `CombatHPBarPresenter`, `HPNumericDisplay`): serialized `ColorSO` fields wired to palette assets. To change a color, edit the ColorSO asset — do not touch code.
 
 ---
 

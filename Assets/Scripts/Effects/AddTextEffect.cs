@@ -31,7 +31,7 @@ namespace DefaultNamespace.Effects
             if (string.IsNullOrEmpty(textToAdd))
                 return;
 
-            string myColor = myCardScript.myStatusRef == CombatManager.Me.ownerPlayerStatusRef ? "#87CEEB" : "orange";
+            string myColor = GetMyCardOwnerColor();
             AppendLog($"// [<color={myColor}>" + myCard.name + $"</color>] {textToAdd}");
         }
         

@@ -303,7 +303,7 @@ public class ShopManager : MonoBehaviour
 			_deckInfoStr +=
 				"#" + displayIndex + " <size=+2><b>" + // number
 				card.name + // name
-				"</b></size>: <color=yellow>$" + cardScript.price.value / 2 + "</color>" + // price
+				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + cardScript.price.value / 2 + "</color>" + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
 			displayIndex++;
 		}
@@ -389,7 +389,7 @@ public class ShopManager : MonoBehaviour
 			_shopInfoStr +=
 				"#" + (i + 1) + " <size=+2><b>" + // number
 				card.name + // name
-				"</b></size>: <color=yellow>$" + cardScript.price.value + "</color>" + // price
+				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + cardScript.price.value + "</color>" + // price
 				"\n" + cardScript.cardDesc + "\n\n"; // desc
 		}
 	}
@@ -406,15 +406,15 @@ public class ShopManager : MonoBehaviour
 
 	private void ShowShopTips()
 	{
-		string currentMode = sellMode ? "<color=yellow>Selling</color>" : "<color=yellow>Buying</color>";
+		string currentMode = sellMode ? GameColorPalette.Me.highlight.OpenTag + "Selling</color>" : GameColorPalette.Me.highlight.OpenTag + "Buying</color>";
 		phaseInfoDisplay.text = phaseInfo + " Current: " + currentMode;
 								
 	}
 	private void ShowPlayerStats()
 	{
 		playerStatsDisplay.text = 
-			"HP Max: <color=#90EE90>" + CombatManager.Me.ownerPlayerStatusRef.hpMax + "</color>" +
-			"\nYou have: <color=yellow>$" + purse.value + "</color> (+$12/combat)";
+			"HP Max: " + GameColorPalette.Me.heal.OpenTag + CombatManager.Me.ownerPlayerStatusRef.hpMax + "</color>" +
+			"\nYou have: " + GameColorPalette.Me.highlight.OpenTag + "$" + purse.value + "</color> (+$12/combat)";
 	}
 
 	public void Reroll()

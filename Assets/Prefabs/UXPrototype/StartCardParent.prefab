@@ -154,17 +154,17 @@ MonoBehaviour:
   cardRarityPrint: {fileID: 0}
   cardTagPrint: {fileID: 0}
   cardStatusEffectPrint: {fileID: 0}
-  ownerCardColor: {r: 0, g: 0, b: 0, a: 0}
-  ownerCardEdgeColor: {r: 0, g: 0, b: 0, a: 0}
-  opponentCardColor: {r: 0, g: 0, b: 0, a: 0}
-  opponentCardEdgeColor: {r: 0, g: 0, b: 0, a: 0}
-  ownerTextColor: {r: 0, g: 0, b: 0, a: 0}
-  opponentTextColor: {r: 0, g: 0, b: 0, a: 0}
+  ownerCardColor: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  ownerCardEdgeColor: {fileID: 11400000, guid: bfbeefc029be442458376d2920f541e7, type: 2}
+  opponentCardColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  opponentCardEdgeColor: {fileID: 11400000, guid: 799aa4bb927bd7c4086c9785efc352ad, type: 2}
+  ownerTextColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  opponentTextColor: {fileID: 11400000, guid: a2bed2d662297484a895326cb79d54a1, type: 2}
   ownerCardFaceSprite: {fileID: 0}
   opponentCardFaceSprite: {fileID: 0}
-  infectedTintColor: {r: 0.4, g: 0.8, b: 0.2, a: 1}
+  infectedTintColor: {fileID: 11400000, guid: 0ee71c2a56afabd43953bdbdd0353cd2, type: 2}
   infectedTintIntensity: 0.5
-  powerTintColor: {r: 1, g: 0.6, b: 0.1, a: 1}
+  powerTintColor: {fileID: 11400000, guid: 294511ee47c574442a58dd8c288f6159, type: 2}
   powerTintIntensity: 0.5
   tintDuration: 1.5
   tintTransitionSpeed: 5
@@ -173,6 +173,7 @@ MonoBehaviour:
   isPlayingSpecialAnimation: 0
   isPendingSlotIn: 0
   isPoppedUp: 0
+  flipDuration: 0.3
   popUpOriginalPosition: {x: 0, y: 0, z: 0}
   popUpOriginalScale: {x: 0, y: 0, z: 0}
   pendingRevealZoneMove: 0

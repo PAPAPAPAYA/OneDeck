@@ -4038,9 +4038,9 @@ MonoBehaviour:
   digitRoll: 1
   enableLowHpPulse: 0
   enableZeroOut: 0
-  normalColor: {r: 0.039215688, g: 0.05490196, b: 0.09803922, a: 1}
-  lowHpColor: {r: 0.52156866, g: 0.08235294, b: 0.13725491, a: 1}
-  zeroGrayColor: {r: 0.541, g: 0.541, b: 0.565, a: 1}
+  normalColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  lowHpColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  zeroGrayColor: {fileID: 11400000, guid: e74364fef9c21894bb806162ee62060d, type: 2}
   stepMs: 50
   targetCountMs: 500
   easeOutPoints: 5
@@ -5085,9 +5085,9 @@ MonoBehaviour:
   digitRoll: 1
   enableLowHpPulse: 1
   enableZeroOut: 1
-  normalColor: {r: 0.039215688, g: 0.05490196, b: 0.09803922, a: 1}
-  lowHpColor: {r: 0.52156866, g: 0.08235294, b: 0.13725491, a: 1}
-  zeroGrayColor: {r: 0.541, g: 0.541, b: 0.565, a: 1}
+  normalColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  lowHpColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  zeroGrayColor: {fileID: 11400000, guid: e74364fef9c21894bb806162ee62060d, type: 2}
   stepMs: 50
   targetCountMs: 500
   easeOutPoints: 5
@@ -7413,8 +7413,8 @@ MonoBehaviour:
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   canvas: {fileID: 114813451}
   barShadow: {fileID: 840536120}
-  playerColor: {r: 0.8509804, g: 0.8352941, b: 0.7921569, a: 1}
-  enemyColor: {r: 0.52156866, g: 0.08235294, b: 0.13725491, a: 1}
+  playerColor: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  enemyColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
   shareTweenDuration: 0.25
   ghostHoldDelay: 0.35
   ghostCollapseDuration: 0.43
@@ -7435,7 +7435,7 @@ MonoBehaviour:
   ghostMinDelta: 0.004
   shadowOffset: {x: 20, y: -20}
   shadowPadding: 0
-  shadowColor: {r: 0.039215688, g: 0.05490196, b: 0.09803922, a: 0.6}
+  shadowColor: {fileID: 11400000, guid: 95b2170f52a207a49ad23f1f4e463db0, type: 2}
 --- !u!1 &1499031966
 GameObject:
   m_ObjectHideFlags: 0
@@ -10333,6 +10333,19 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   resultInfoDisplay: {fileID: 1115368634}
+  resultStatsPanelLayout:
+    anchorMin: {x: 0.05, y: 0.03}
+    anchorMax: {x: 0.95, y: 0.32}
+    referenceResolution: {x: 1080, y: 1920}
+    sortingOrder: 200
+    fontSize: 40
+    headerFontSize: 40
+    rowHeight: 60
+    nameColumnFlex: 1.6
+    factionColumnFlex: 0.8
+    statColumnFlex: 1
+    rowHorizontalPadding: 0
+    backgroundAlpha: 0.6
 --- !u!1 &2043192993
 GameObject:
   m_ObjectHideFlags: 0

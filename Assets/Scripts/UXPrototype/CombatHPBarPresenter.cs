@@ -26,8 +26,8 @@ public class CombatHPBarPresenter : MonoBehaviour
 	public Image barShadow;
 
 	[Header("Colors")]
-	public Color playerColor = new Color(0.824f, 0.824f, 0.784f); // demo #d2d2c8
-	public Color enemyColor = new Color(0.753f, 0.153f, 0.153f); // demo #c02727
+	public ColorSO playerColor;
+	public ColorSO enemyColor;
 
 	[Header("Tuning (defaults from CombatHPBarDemo.html)")]
 	public float shareTweenDuration = 0.25f;
@@ -52,7 +52,7 @@ public class CombatHPBarPresenter : MonoBehaviour
 	[Header("Shadow (single tuning entry point; Awake normalizes the scene Image)")]
 	public Vector2 shadowOffset = new Vector2(4f, -4f);
 	public float shadowPadding = 6f;
-	public Color shadowColor = new Color(0f, 0f, 0f, 0.35f);
+	public ColorSO shadowColor;
 
 	private int _displayedPlayerHp;
 	private int _displayedEnemyHp;
@@ -97,8 +97,8 @@ public class CombatHPBarPresenter : MonoBehaviour
 		//             segment widths (e.g. 10/20 vs 20 -> 1/3 vs 2/3).
 		EnsureFilledSprites();
 		EnsureBarShadow();
-		playerSeg.color = playerColor;
-		enemySeg.color = enemyColor;
+		playerSeg.color = playerColor.value;
+		enemySeg.color = enemyColor.value;
 		SetAlpha(playerGhost, 0f);
 		SetAlpha(enemyGhost, 0f);
 		SetAlpha(playerFlash, 0f);
@@ -482,7 +482,7 @@ public class CombatHPBarPresenter : MonoBehaviour
 		rt.anchorMax = Vector2.one;
 		rt.offsetMin = new Vector2(shadowOffset.x - shadowPadding, shadowOffset.y - shadowPadding);
 		rt.offsetMax = new Vector2(shadowOffset.x + shadowPadding, shadowOffset.y + shadowPadding);
-		barShadow.color = shadowColor;
+		barShadow.color = shadowColor.value;
 		rt.SetSiblingIndex(0);
 	}
 

@@ -48,17 +48,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae01b7f8cc298dc4b8e2bad1431dacc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isPhysicalStartCard: 0
   cardImRepresenting: {fileID: 0}
-  sequencer: {fileID: 0}
+  currentGamePhaseRef: {fileID: 0}
+  shopItemIndex: -1
+  holdTimeRequired: 0.5
+  cardShaker: {fileID: 0}
+  cardShakePreset: {fileID: 0}
   cardFace: {fileID: 3532074199001407903}
   cardEdge: {fileID: 712244450632118919}
+  cardImg: {fileID: 0}
+  cardCostPrint: {fileID: 0}
   cardNamePrint: {fileID: 7335164701174182519}
   cardDescPrint: {fileID: 2140511339476960898}
-  ownerCardColor: {r: 0.227451, g: 0.32156864, b: 0.80392164, a: 1}
-  ownerCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
-  opponentCardColor: {r: 0.6981132, g: 0.38082948, b: 0.18770024, a: 1}
-  opponentCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
-  lerpSpeed: 10
+  cardPricePrint: {fileID: 0}
+  cardRarityPrint: {fileID: 0}
+  cardTagPrint: {fileID: 0}
+  cardStatusEffectPrint: {fileID: 0}
+  ownerCardColor: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  ownerCardEdgeColor: {fileID: 11400000, guid: bfbeefc029be442458376d2920f541e7, type: 2}
+  opponentCardColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  opponentCardEdgeColor: {fileID: 11400000, guid: 799aa4bb927bd7c4086c9785efc352ad, type: 2}
+  ownerTextColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  opponentTextColor: {fileID: 11400000, guid: a2bed2d662297484a895326cb79d54a1, type: 2}
+  ownerCardFaceSprite: {fileID: 0}
+  opponentCardFaceSprite: {fileID: 0}
+  infectedTintColor: {fileID: 11400000, guid: 0ee71c2a56afabd43953bdbdd0353cd2, type: 2}
+  infectedTintIntensity: 0.5
+  powerTintColor: {fileID: 11400000, guid: 294511ee47c574442a58dd8c288f6159, type: 2}
+  powerTintIntensity: 0.5
+  tintDuration: 1.5
+  tintTransitionSpeed: 5
+  customShakeAngle: 15
+  customShakeHalfDuration: 0.1
+  isPlayingSpecialAnimation: 0
+  isPendingSlotIn: 0
+  isPoppedUp: 0
+  flipDuration: 0.3
+  popUpOriginalPosition: {x: 0, y: 0, z: 0}
+  popUpOriginalScale: {x: 0, y: 0, z: 0}
+  pendingRevealZoneMove: 0
+  pendingRevealPosition: {x: 0, y: 0, z: 0}
+  pendingRevealScale: {x: 0, y: 0, z: 0}
+  moveDuration: 0.3
+  moveEase: 6
+  rotationDuration: 0.3
+  rotationEase: 6
+  useLocalRotation: 1
 --- !u!1 &5605928274986627538
 GameObject:
   m_ObjectHideFlags: 0
@@ -116,6 +152,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -137,9 +175,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &7335164701174182519
 MonoBehaviour:
@@ -199,6 +239,7 @@ MonoBehaviour:
   m_VerticalAlignment: 1024
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -292,6 +333,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -313,9 +356,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &2140511339476960898
 MonoBehaviour:
@@ -375,6 +420,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -445,6 +491,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &712244450632118919
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -463,6 +510,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -484,9 +533,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 0.9671107, b: 0.9213836, a: 1}
   m_FlipX: 0
@@ -496,7 +547,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &6660535032677159528
 GameObject:
@@ -532,6 +582,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3532074199001407903
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -550,6 +601,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -571,9 +624,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.1975792, g: 0.203516, b: 0.2264151, a: 1}
   m_FlipX: 0
@@ -583,5 +638,4 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0

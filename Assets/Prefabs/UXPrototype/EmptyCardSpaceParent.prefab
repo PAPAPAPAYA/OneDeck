@@ -45,19 +45,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae01b7f8cc298dc4b8e2bad1431dacc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isPhysicalStartCard: 0
   cardImRepresenting: {fileID: 0}
   currentGamePhaseRef: {fileID: 0}
   shopItemIndex: -1
   holdTimeRequired: 0.5
+  cardShaker: {fileID: 0}
+  cardShakePreset: {fileID: 0}
   cardFace: {fileID: 1935702268097011818}
   cardEdge: {fileID: 2466541846867850098}
+  cardImg: {fileID: 0}
+  cardCostPrint: {fileID: 0}
   cardNamePrint: {fileID: 5625894641483297666}
   cardDescPrint: {fileID: 3921530853659920247}
-  ownerCardColor: {r: 0.227451, g: 0.32156864, b: 0.80392164, a: 1}
-  ownerCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
-  opponentCardColor: {r: 0.6981132, g: 0.38082948, b: 0.18770024, a: 1}
-  opponentCardEdgeColor: {r: 1, g: 0.96862745, b: 0.92156863, a: 1}
-  lerpSpeed: 10
+  cardPricePrint: {fileID: 0}
+  cardRarityPrint: {fileID: 0}
+  cardTagPrint: {fileID: 0}
+  cardStatusEffectPrint: {fileID: 0}
+  ownerCardColor: {fileID: 0}
+  ownerCardEdgeColor: {fileID: 0}
+  opponentCardColor: {fileID: 0}
+  opponentCardEdgeColor: {fileID: 0}
+  ownerTextColor: {fileID: 0}
+  opponentTextColor: {fileID: 0}
+  ownerCardFaceSprite: {fileID: 0}
+  opponentCardFaceSprite: {fileID: 0}
+  infectedTintColor: {fileID: 0}
+  infectedTintIntensity: 0.5
+  powerTintColor: {fileID: 0}
+  powerTintIntensity: 0.5
+  tintDuration: 1.5
+  tintTransitionSpeed: 5
+  customShakeAngle: 15
+  customShakeHalfDuration: 0.1
+  isPlayingSpecialAnimation: 0
+  isPendingSlotIn: 0
+  isPoppedUp: 0
+  flipDuration: 0.3
+  popUpOriginalPosition: {x: 0, y: 0, z: 0}
+  popUpOriginalScale: {x: 0, y: 0, z: 0}
+  pendingRevealZoneMove: 0
+  pendingRevealPosition: {x: 0, y: 0, z: 0}
+  pendingRevealScale: {x: 0, y: 0, z: 0}
+  moveDuration: 0.3
+  moveEase: 6
+  rotationDuration: 0.3
+  rotationEase: 6
+  useLocalRotation: 1
 --- !u!1001 &3159429277176955381
 PrefabInstance:
   m_ObjectHideFlags: 0

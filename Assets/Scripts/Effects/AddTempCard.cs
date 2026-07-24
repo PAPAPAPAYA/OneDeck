@@ -24,11 +24,11 @@ namespace DefaultNamespace.Effects
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				AppendLog("// [<color=#87CEEB>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + cardToAdd.name + "</color>]");
+				AppendLog("// [" + GameColorPalette.Me.friendly.OpenTag + myCard.name + "</color>]向" + GameColorPalette.Me.friendly.OpenTag + "你</color>添加了" + GameColorPalette.Me.highlight.OpenTag + cardCount + "</color>张[" + GameColorPalette.Me.friendly.OpenTag + cardToAdd.name + "</color>]");
 			}
 			else // if this card belong to enemy
 			{
-				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + cardToAdd.name + "</color>]");
+				AppendLog("// [" + GameColorPalette.Me.enemy.OpenTag + myCard.name + "</color>]向" + GameColorPalette.Me.enemy.OpenTag + "敌人</color>添加了" + GameColorPalette.Me.highlight.OpenTag + cardCount + "</color>张[" + GameColorPalette.Me.enemy.OpenTag + cardToAdd.name + "</color>]");
 			}
 		}
 
@@ -41,11 +41,11 @@ namespace DefaultNamespace.Effects
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				AppendLog("// [<color=#87CEEB>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + cardToAdd.name + "</color>]");
+				AppendLog("// [" + GameColorPalette.Me.friendly.OpenTag + myCard.name + "</color>]向" + GameColorPalette.Me.enemy.OpenTag + "敌人</color>添加了" + GameColorPalette.Me.highlight.OpenTag + cardCount + "</color>张[" + GameColorPalette.Me.enemy.OpenTag + cardToAdd.name + "</color>]");
 			}
 			else // if this card belong to enemy
 			{
-				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + cardToAdd.name + "</color>]");
+				AppendLog("// [" + GameColorPalette.Me.enemy.OpenTag + myCard.name + "</color>]向" + GameColorPalette.Me.friendly.OpenTag + "你</color>添加了" + GameColorPalette.Me.highlight.OpenTag + cardCount + "</color>张[" + GameColorPalette.Me.friendly.OpenTag + cardToAdd.name + "</color>]");
 			}
 		}
 
@@ -58,11 +58,11 @@ namespace DefaultNamespace.Effects
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				AppendLog("// [<color=#87CEEB>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + myCard.name + "</color>]");
+				AppendLog("// [" + GameColorPalette.Me.friendly.OpenTag + myCard.name + "</color>]向" + GameColorPalette.Me.friendly.OpenTag + "你</color>添加了" + GameColorPalette.Me.highlight.OpenTag + cardCount + "</color>张[" + GameColorPalette.Me.friendly.OpenTag + myCard.name + "</color>]");
 			}
 			else // if this card belong to enemy
 			{
-				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + myCard.name + "</color>]");
+				AppendLog("// [" + GameColorPalette.Me.enemy.OpenTag + myCard.name + "</color>]向" + GameColorPalette.Me.enemy.OpenTag + "敌人</color>添加了" + GameColorPalette.Me.highlight.OpenTag + cardCount + "</color>张[" + GameColorPalette.Me.enemy.OpenTag + myCard.name + "</color>]");
 			}
 		}
 
@@ -75,11 +75,11 @@ namespace DefaultNamespace.Effects
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
 			{
-				AppendLog("// [<color=#87CEEB>" + myCard.name + "</color>]向<color=orange>敌人</color>添加了<color=yellow>" + cardCount + "</color>张[<color=orange>" + myCard.name + "</color>]");
+				AppendLog("// [" + GameColorPalette.Me.friendly.OpenTag + myCard.name + "</color>]向" + GameColorPalette.Me.enemy.OpenTag + "敌人</color>添加了" + GameColorPalette.Me.highlight.OpenTag + cardCount + "</color>张[" + GameColorPalette.Me.enemy.OpenTag + myCard.name + "</color>]");
 			}
 			else // if this card belong to enemy
 			{
-				AppendLog("// [<color=orange>" + myCard.name + "</color>]向<color=#87CEEB>你</color>添加了<color=yellow>" + cardCount + "</color>张[<color=#87CEEB>" + myCard.name + "</color>]");
+				AppendLog("// [" + GameColorPalette.Me.enemy.OpenTag + myCard.name + "</color>]向" + GameColorPalette.Me.friendly.OpenTag + "你</color>添加了" + GameColorPalette.Me.highlight.OpenTag + cardCount + "</color>张[" + GameColorPalette.Me.friendly.OpenTag + myCard.name + "</color>]");
 			}
 		}
 
@@ -164,11 +164,11 @@ namespace DefaultNamespace.Effects
 			// Log result
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
 			{
-				AppendLog($"// [<color=#87CEEB>{myCard.name}</color>]从敌方复制了<color=yellow>{cardCount}</color>张[<color=orange>{cardPrefab.name}</color>]给<color=orange>敌人</color>");
+				AppendLog($"// [{GameColorPalette.Me.friendly.OpenTag}{myCard.name}</color>]从敌方复制了{GameColorPalette.Me.highlight.OpenTag}{cardCount}</color>张[{GameColorPalette.Me.enemy.OpenTag}{cardPrefab.name}</color>]给{GameColorPalette.Me.enemy.OpenTag}敌人</color>");
 			}
 			else
 			{
-				AppendLog($"// [<color=orange>{myCard.name}</color>]从你方复制了<color=yellow>{cardCount}</color>张[<color=#87CEEB>{cardPrefab.name}</color>]给<color=#87CEEB>你</color>");
+				AppendLog($"// [{GameColorPalette.Me.enemy.OpenTag}{myCard.name}</color>]从你方复制了{GameColorPalette.Me.highlight.OpenTag}{cardCount}</color>张[{GameColorPalette.Me.friendly.OpenTag}{cardPrefab.name}</color>]给{GameColorPalette.Me.friendly.OpenTag}你</color>");
 			}
 		}
 	}
