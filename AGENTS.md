@@ -311,7 +311,7 @@ Deck cards are face-down by default (card back; name/desc/status/ownership info 
 - `ClearRevealedMemory()` — resets `everRevealed` (shuffle only).
 - Face-down skips all face writers in `Update()` (`ApplyColor`, status/desc/tag/rarity/cost/price), so nothing leaks onto the back.
 - Flip triggers (all in `CombatUXManager`): `InstantiateAllPhysicalCards` / `AddPhysicalCardToDeck` (covered on entry), `MovePhysicalCardToRevealZone` (up), `PopUpCard` (up), `SlotInCard` (down), `MoveRevealedCardToBottom` (down), `MoveCardWithAnimation` ToBottom/ToIndex/ToTop (down; reveal-zone-bound ToTop excluded), `MoveCardToTopPopUpBatch` (up; staged cards stay up on deck top), `MoveCardToPopUpPosition` (up).
-- **Shuffle force-cover rule**: `PlayStartCardShuffleAnimation` covers every deck card on landing (`force: true`) and clears `everRevealed` — overrides the never-cover rule. Start Card keeps its face.
+- **Shuffle force-cover rule**: `PlayStartCardShuffleAnimation` covers every deck card mid-flight at the arc midpoint (via `InsertCallback` at stagger delay + half shuffle duration, `force: true`) and clears `everRevealed` — overrides the never-cover rule; cards land already face-down. Start Card keeps its face.
 - The flip tween is deliberately NOT killed by `KillTweens()` (CombatCardView calls it every frame during special animations, which would freeze a flip mid-squash).
 
 ### Card Movement (`ICombatVisuals` / `CombatUXManager`)

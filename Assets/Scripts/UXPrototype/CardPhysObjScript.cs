@@ -587,6 +587,14 @@ public class CardPhysObjScript : MonoBehaviour
 	private void BuildFlipRoot()
 	{
 		if (cardFace == null) return; // e.g. start card prefab: flip disabled
+		// VISUAL-FIX(2026-07-24): NullReferenceException in Awake for shop empty-slot placeholders
+		//   Cause:    EmptyCardSpaceParent.prefab wires cardFace but none of the ColorSO fields,
+		//             so the cardFace guard passed and ownerCardColor.value threw (shop empty
+		//             slot instantiation aborted mid-Awake).
+		//   Affects:  CardPhysObjScript.BuildFlipRoot (shop emptyCardSpacePrefab)
+		//   Regress:  Enter the shop with empty deck slots; empty slots spawn with no NRE and
+		//             render their normal placeholder face (flip/back machinery skipped).
+		if (ownerCardColor == null || opponentCardColor == null) return;
 
 		var faces = new System.Collections.Generic.List<Transform>();
 		if (cardFace != null) faces.Add(cardFace.transform);

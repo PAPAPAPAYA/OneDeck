@@ -31,6 +31,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 46 | Reactive chain bury → stage intermediate states render on the cascade curve | `ApplyAnimationResult`, `RecorderAnimationPlayer`, `BuryEffect`, `StageEffect` | 2026-07-17 | ⚠️ | **Card:** StoneShell buries RisingFlame (onMeBuried→StageSelf).<br>**Check:** Each intermediate deck state during the chain follows the cascade curve; the first animation's result is preserved instead of being overwritten by the final deck state. |
 | 47 | Shuffle animation re-layouts the whole deck on the cascade curve | `StartCardShuffleEffect`, `CombatUXManager` | 2026-07-17 | ⚠️ | **Setup:** Reach the Start Card shuffle (or an overtime round re-shuffle).<br>**Check:** After shuffling, every card tweens to its cascade position with its per-index depth scale (uniform scale only when the flag is off); no linear-fan or zero-distance frames. |
 | 50 | Reveal-zone card counts as cascade front card; deck no longer re-layouts on reveal | `CombatUXManager`, `GetCascadeDeckCount`, `MoveRevealedCardToBottom`, peel focus | 2026-07-17 | ⚠️ | **Setup:** Toggle `CombatUXManager.revealCardCountsAsDeckFront` (cascade must be on).<br>**Check:** With the flag on, revealing a card moves only the revealed card to the reveal zone — the rest of the deck does NOT slide or reshape; the reveal card visually covers the front slot (hovering toward camera). Clicking again arcs the card to the cascade tail and the deck slides forward exactly one step. Bury/Stage/AddTempCard targets and peel focus (`deckFocusTargetPos`) stay consistent while the reveal zone is occupied. With the flag off, the legacy per-reveal re-layout returns byte-for-byte. |
+| 56 | Shuffle flip-down happens on landing, exposing faces (and shuffle order) mid-flight | `CombatUXManager`, `PlayShuffleAnimationInternal` | 2026-07-24 | ⚠️ | **Setup:** Reach the Start Card shuffle (or an overtime round re-shuffle).<br>**Check:** Every non-Start card flips face-down around its arc midpoint (mid-flight, staggered per card) and lands already face-down; Start Card keeps its face. Post-shuffle layout, scales, and input unblock are unchanged. |
 
 ## Card Adding & Pending Cards
 
@@ -66,6 +67,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 54 | HP bar outer corners must stay rounded at any fill level; the moving fill seam must stay a straight vertical edge | `GameScene.unity` (`HPBarRoot/BarClip`), `CombatHPBarPresenter` | 2026-07-21 | ⚠️ | **Setup:** Enter combat at any HP split.<br>**Check:** All four outer corners of the bar render rounded (same `9-Sliced` sprite as PlayerIcon) at full, partial and near-empty fill; the PlayerSeg/EnemySeg seam stays a hard vertical line while fill tweens; ghost/flash layers never spill past the rounded corners; `BarShadow` is rounded and offset down-right; bar shake/low-HP pulse keep the silhouette intact. Corner radius tuning: `BarClip` Image `Pixels Per Unit Multiplier`. |
 
 | 55 | Player/Enemy icons stay visible outside the Combat phase | `CombatIconPresenter`, `GameScene.unity` (`PlayerIcon`, `EnemyIcon`) | 2026-07-22 | ⚠️ | **Step:** Play through Combat -> Shop -> Combat.<br>**Check:** Both icons are inactive during Shop/Result phases and reappear at their anchored top corners on entering Combat; Awake never leaves them visible before the first combat. |
+| 57 | NullReferenceException when shop spawns empty-slot placeholders (`EmptyCardSpaceParent` wires `cardFace` but no ColorSOs; `BuildFlipRoot` hit `ownerCardColor.value`) | `CardPhysObjScript`, `BuildFlipRoot`, `ShopUXManager` | 2026-07-24 | ⚠️ | **Setup:** Enter the shop with fewer cards than `deckSize` (or sell a card) so empty slots spawn/respawn.<br>**Check:** No NRE in Console; empty slots render their normal placeholder face and purchase/sell flows work; combat flips (reveal, shuffle cover) are unaffected. |
 
 ## Cost Check Feedback
 
@@ -126,11 +128,11 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 |---------|-------------|
 | `BuryEffect.cs` | 1, 2, 5, 7, 14, 42, 45, 46 |
 | `StageEffect.cs` | 1, 2, 5, 7, 45, 46 |
-| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35, 43, 44, 45, 47, 48, 49, 51 |
+| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35, 43, 44, 45, 47, 48, 49, 51, 56 |
 | `CombatHPBarPresenter.cs` | 52, 53, 54 |
 | `GameScene.unity` (`HPBarRoot`) | 54 |
 | `EffectChainManager.cs` | 2, 11 |
-| `CardPhysObjScript.cs` | 3, 12, 35, 51, 53 |
+| `CardPhysObjScript.cs` | 3, 12, 35, 51, 53, 57 |
 | `CurseEffect.cs` | 8, 17, 19 |
 | `AddTempCard.cs` | 4, 48 |
 | `RecorderAnimationPlayer.cs` | 6, 9, 11, 13, 17, 19, 33, 35, 38, 40, 41, 42, 46, 49 |

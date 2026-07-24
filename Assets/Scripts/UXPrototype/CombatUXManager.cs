@@ -1219,6 +1219,27 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physicalCard.transform.DOScale(targetScale, shuffleDuration).SetEase(Ease.InOutQuad)
 			);
 
+			// VISUAL-FIX(2026-07-24): Cards stayed face-up for the whole shuffle flight and only
+			//   flipped face-down on landing, exposing faces (and shuffle order) mid-animation.
+			//   Cause:    Flip-down ran in the move sequence's OnComplete (after landing).
+			//   Fix:      Trigger the flip at the arc midpoint via InsertCallback so each card
+			//             flips while airborne and lands already face-down.
+			//   Affects:  PlayShuffleAnimationInternal (Start Card shuffle / overtime re-shuffle)
+			//   Regress:  Reach the Start Card shuffle; every non-Start card must be face-down
+			//             around the arc midpoint and land face-down; Start Card keeps its face.
+			if (physScript != null && !physScript.isPhysicalStartCard)
+			{
+				// InsertCallback time counts from sequence start, so include the stagger delay.
+				float flipTime = delay + shuffleDuration * 0.5f;
+				moveSequence.InsertCallback(flipTime, () =>
+				{
+					// Shuffle rule: every deck card flips face-down and forgets it was revealed
+					// (force bypasses the everRevealed cover guard). Start Card keeps its face.
+					physScript.SetFaceUp(false, true, true);
+					physScript.ClearRevealedMemory();
+				});
+			}
+
 			moveSequence.OnComplete(() =>
 			{
 				if (physScript != null)
@@ -1227,13 +1248,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					physScript.isPoppedUp = false;
 					physScript.SetTargetPosition(targetPos);
 					physScript.SetTargetScale(targetScale);
-					// Shuffle rule: every deck card lands face-down and forgets it was revealed
-					// (force bypasses the everRevealed cover guard). Start Card keeps its face.
-					if (!physScript.isPhysicalStartCard)
-					{
-						physScript.SetFaceUp(false, true, true);
-						physScript.ClearRevealedMemory();
-					}
 				}
 
 				completedCount++;
