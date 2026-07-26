@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24e8cea97c7341179c6174ad691474ef, type: 3}
-  m_Name: TagDesc_Linger
+  m_Name: TagName_DeathRattle
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.SOScripts.StringSO
-  value: "\u4F4D\u4E8E[\u8BB0\u5FC6]\u65F6\u89E6\u53D1\u6548\u679C"
+  value: "亡语"
   reset: 0

@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24e8cea97c7341179c6174ad691474ef, type: 3}
   m_Name: TagDesc_DeathRattle
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.SOScripts.StringSO
-  value: "\u4EA1\u8BED:\u88AB\u57CB\u846C\u65F6\u89E6\u53D1\u6548\u679C"
+  value: "\u88AB[\u9057\u5FD8]\u65F6\u89E6\u53D1\u6548\u679C"
   reset: 0

@@ -15,7 +15,10 @@ MonoBehaviour:
   entries:
   - tag: 1
     description: {fileID: 11400000, guid: faee5e42b97369242b7ca905fc3221f8, type: 2}
+    displayName: {fileID: 11400000, guid: 24106b1ff9853fb1eb1bb8b8e1de1703, type: 2}
   - tag: 3
     description: {fileID: 11400000, guid: fd21222a0cdb6bc4592cc2a67be0fd31, type: 2}
+    displayName: {fileID: 11400000, guid: 33e3e6f00b79ed94386b4b48f14dce49, type: 2}
   - tag: 2
     description: {fileID: 11400000, guid: 2ea3c5c5cb66e494dac7a708a78d3e51, type: 2}
+    displayName: {fileID: 11400000, guid: f9c9ef139fa077012d0b273bed95f962, type: 2}

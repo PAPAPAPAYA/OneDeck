@@ -276,7 +276,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: QUICK_RESPONSE_PROTOCOL
   displayName: "\u5FEB\u901F\u54CD\u5E94\u534F\u8BAE"
-  cardDesc: "\u8426\u7ED5;\n\u518D\u6709 <b>4<counter></b> \u654C\u4EBA\u88AB\u63ED\u6653:\u7F6E\u9876
+  cardDesc: "<tag:Linger>;\n\u518D\u6709 <b>4<counter></b> \u654C\u4EBA\u88AB\u63ED\u6653:\u7F6E\u9876
     <b>1</b> \u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1

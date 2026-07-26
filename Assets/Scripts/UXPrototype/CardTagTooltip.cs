@@ -80,7 +80,7 @@ public class CardTagTooltip : MonoBehaviour
 				sb.Append("\n\n");
 			}
 			sb.Append("<b>[");
-			sb.Append(tag.ToString());
+			sb.Append(TagTooltipDatabaseSO.GetTagDisplayName(tag));
 			sb.Append("]</b>");
 			string description = GetTagDescription(db, tag);
 			if (!string.IsNullOrEmpty(description))

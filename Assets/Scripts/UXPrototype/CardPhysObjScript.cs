@@ -260,7 +260,7 @@ public class CardPhysObjScript : MonoBehaviour
 				sb.Append(" ");
 			}
 			sb.Append("[");
-			sb.Append(tag.ToString());
+			sb.Append(TagTooltipDatabaseSO.GetTagDisplayName(tag));
 			sb.Append("]");
 			hasVisibleTag = true;
 		}

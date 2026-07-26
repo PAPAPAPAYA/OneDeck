@@ -164,7 +164,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 		revealZoneDisplay.text = "#" + cardNumber + "\n" +// card num
 		                         ProcessStatusEffectInfo(cardRevealed) + // tags
 		                         "<color=" + cardNameColor + ">" + cardRevealed.GetDisplayName() + "</color>:" + // card name with color
-		                         "\n" + cardRevealed.cardDesc; // card description
+		                         "\n" + cardRevealed.GetCardDescForDisplay(); // card description
 	}
 
 	public void ShowStartCardInfo(int cardNumber)

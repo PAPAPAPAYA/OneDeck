@@ -26,6 +26,7 @@ public class CardMaker : EditorWindow
 
 		_cardName = EditorGUILayout.TextField("Card Name", _cardName);
 		_cardDescription = EditorGUILayout.TextArea(_cardDescription);
+		EditorGUILayout.HelpBox("Description placeholders: <dmg> / <dmg:key> = dynamic damage, <counter> = Counter count, <tag:EnumName> = tag display name (e.g. <tag:DeathRattle>, synced from TagTooltipDatabase).", MessageType.Info);
 		_takeUpSpaceInDeck = EditorGUILayout.Toggle("Take Up Space", _takeUpSpaceInDeck);
 		_cardPrice = (IntSO)EditorGUILayout.ObjectField("Card Price", _cardPrice, typeof(IntSO), false);
 		for (int i = 0; i < _gameEvents.Count; i++)

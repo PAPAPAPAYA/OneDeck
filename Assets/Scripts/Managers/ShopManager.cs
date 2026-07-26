@@ -304,7 +304,7 @@ public class ShopManager : MonoBehaviour
 				"#" + displayIndex + " <size=+2><b>" + // number
 				card.name + // name
 				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + cardScript.price.value / 2 + "</color>" + // price
-				"\n" + cardScript.cardDesc + "\n\n"; // desc
+				"\n" + cardScript.GetCardDescForDisplay() + "\n\n"; // desc
 			displayIndex++;
 		}
 	}
@@ -390,7 +390,7 @@ public class ShopManager : MonoBehaviour
 				"#" + (i + 1) + " <size=+2><b>" + // number
 				card.name + // name
 				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + cardScript.price.value + "</color>" + // price
-				"\n" + cardScript.cardDesc + "\n\n"; // desc
+				"\n" + cardScript.GetCardDescForDisplay() + "\n\n"; // desc
 		}
 	}
 

@@ -135,6 +135,12 @@ enum StatusEffect { None, Infected, Mana, HeartChanged, Power, Rest, Revive, Cou
 enum Tag { None, Linger, ManaX, DeathRattle }
 ```
 
+#### Tag Display Name & Tooltip
+- `TagTooltipDatabaseSO` (`Assets/Resources/TagTooltipDatabase.asset`, lazy singleton `Me`) maps each tag to a `displayName` StringSO (`Assets/SORefs/Strings/TagNames/`) and a tooltip `description` StringSO (`Assets/SORefs/Strings/TagTooltips/`). All StringSO assets must have `reset = false`.
+- **Single source of truth**: every user-visible tag text resolves through `TagTooltipDatabaseSO.GetTagDisplayName(tag)` (falls back to the enum name when unconfigured) — the in-card tag print, the hover tooltip title (`CardTagTooltip`), and cardDesc `<tag:EnumName>` placeholders. To rename a tag, edit only the `TagName_*.asset` value.
+- **cardDesc placeholder**: `<tag:EnumName>` renders as the display name (no brackets added — authors write `[<tag:X>]` for the bracketed style). Resolved inside `CardScript.ComputeDynamicCardDesc`, so display snapshots are covered. Never hand-write tag names in cardDesc.
+- Hover tooltip: `CardTagTooltip` (self-built canvas), triggered from `CardPhysObjScript` hover (`hoverDelay`).
+
 ## Events
 
 ### Card-Specific

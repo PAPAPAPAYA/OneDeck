@@ -298,7 +298,8 @@ public class CardScript : MonoBehaviour
 	/// <summary>
 	/// Computes the dynamic card description by replacing placeholders:
 	/// &lt;dmg&gt; with base damage plus Power status effect count,
-	/// &lt;counter&gt; with current Counter status effect count as an optional suffix.
+	/// &lt;counter&gt; with current Counter status effect count as an optional suffix,
+	/// &lt;tag:EnumName&gt; with the tag's bracketed display name.
 	/// Also appends an optional parenthesized damage suffix configured on HPAlterEffect.
 	/// The provided statusEffects list is used for Power/Counter counting so that
 	/// display snapshots and baselines stay consistent.
@@ -327,7 +328,60 @@ public class CardScript : MonoBehaviour
 			desc = desc.Replace("<counter>", counterStr);
 		}
 
+		desc = ReplaceTagPlaceholders(desc);
+
 		return AppendDynamicDamageSuffix(desc, statusEffects);
+	}
+
+	/// <summary>
+	/// Replaces &lt;tag:EnumName&gt; placeholders with the tag's display name
+	/// (e.g. &lt;tag:DeathRattle&gt; -&gt; 亡语) via TagTooltipDatabaseSO, so
+	/// renaming a tag's display name syncs every card description. No brackets
+	/// are added — authors write [ ] around the placeholder when they want the
+	/// bracketed style. Unparseable placeholders are left as-is with a warning.
+	/// </summary>
+	private static string ReplaceTagPlaceholders(string desc)
+	{
+		if (string.IsNullOrEmpty(desc) || desc.IndexOf("<tag:") < 0)
+			return desc;
+
+		System.Text.StringBuilder sb = new System.Text.StringBuilder();
+		int i = 0;
+		while (i < desc.Length)
+		{
+			int start = desc.IndexOf("<tag:", i, System.StringComparison.Ordinal);
+			if (start < 0)
+			{
+				sb.Append(desc.Substring(i));
+				break;
+			}
+
+			sb.Append(desc.Substring(i, start - i));
+
+			int end = desc.IndexOf(">", start);
+			if (end < 0)
+			{
+				sb.Append(desc.Substring(start));
+				break;
+			}
+
+			string placeholder = desc.Substring(start, end - start + 1);
+			string tagName = desc.Substring(start + 5, end - start - 5);
+			EnumStorage.Tag tag;
+			if (System.Enum.TryParse(tagName, out tag) && System.Enum.IsDefined(typeof(EnumStorage.Tag), tag) && tag != EnumStorage.Tag.None)
+			{
+				sb.Append(TagTooltipDatabaseSO.GetTagDisplayName(tag));
+			}
+			else
+			{
+				TestManager.LogWarning("[TagDisplay] ReplaceTagPlaceholders could not resolve placeholder=" + placeholder);
+				sb.Append(placeholder);
+			}
+
+			i = end + 1;
+		}
+
+		return sb.ToString();
 	}
 
 	/// <summary>
