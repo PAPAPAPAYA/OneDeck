@@ -5009,6 +5009,7 @@ MonoBehaviour:
   logTestManager: 0
   logDynamicDamageDisplay: 0
   logStatusEffectDisplay: 0
+  logDamageFloater: 0
 --- !u!4 &898235415
 Transform:
   m_ObjectHideFlags: 0
@@ -10738,7 +10739,6 @@ MonoBehaviour:
   fadeTime: 0.36
   floatUpDistPx: 62
   jitterPx: 40
-  debugLogs: 1
 --- !u!1001 &15491487674759769
 PrefabInstance:
   m_ObjectHideFlags: 0
