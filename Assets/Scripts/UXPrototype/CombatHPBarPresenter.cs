@@ -106,6 +106,28 @@ public class CombatHPBarPresenter : MonoBehaviour
 		barRoot.gameObject.SetActive(false);
 	}
 
+	// Live-retune the shadow while editing in Play Mode: Inspector edits to
+	// shadowOffset/shadowPadding/shadowColor renormalize the wired shadow Image
+	// immediately. Skips the Awake fallback creation and null shadowColor.
+	// Deferred: touching the RectTransform inside OnValidate raises
+	// OnRectTransformDimensionsChange via SendMessage, which Unity forbids there.
+	private void OnValidate()
+	{
+		if (barShadow == null || shadowColor == null)
+		{
+			return;
+		}
+#if UNITY_EDITOR
+		UnityEditor.EditorApplication.delayCall += () =>
+		{
+			if (barShadow != null && shadowColor != null)
+			{
+				NormalizeBarShadow();
+			}
+		};
+#endif
+	}
+
 	private void Update()
 	{
 		bool inCombat = gamePhaseRef.Value() == EnumStorage.GamePhase.Combat;
@@ -477,6 +499,14 @@ public class CombatHPBarPresenter : MonoBehaviour
 			barShadow.sprite = playerSeg.sprite; // guaranteed non-null by EnsureFilledSprites()
 			Debug.LogWarning("[CombatHPBarPresenter] barShadow not wired; created a fallback BarShadow child. Author one under HPBarRoot in the scene.");
 		}
+		NormalizeBarShadow();
+	}
+
+	// Applies shadowOffset/shadowPadding/shadowColor to the wired shadow Image.
+	// Separate from EnsureBarShadow so OnValidate can retune without creating
+	// the fallback GameObject (object creation from OnValidate is unsafe).
+	private void NormalizeBarShadow()
+	{
 		RectTransform rt = barShadow.rectTransform;
 		rt.anchorMin = Vector2.zero;
 		rt.anchorMax = Vector2.one;
