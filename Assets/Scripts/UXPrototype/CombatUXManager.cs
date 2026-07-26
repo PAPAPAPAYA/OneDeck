@@ -135,8 +135,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float popUpYOffset = 1.5f;
 	[Tooltip("Z offset toward camera for Pop Up (negative = closer/frontmost)")]
 	public float popUpZBoost = -1.0f;
-	[Tooltip("Scale multiplier at Pop Up peak")]
-	public float popUpScaleMultiplier = 1.15f;
+	[Tooltip("Scale multiplier at Pop Up peak, relative to the card's current TargetScale (cascade depth scale or reveal size). Default 1.0 = pop up does not rescale, matching the reveal-zone card experience (reveal pop up scale / reveal card scale).")]
+	public float popUpScaleMultiplier = 1f;
 	[Tooltip("Time to reach Pop Up peak position")]
 	public float popUpDuration = 0.25f;
 	[Tooltip("Time to hold at Pop Up peak position before onComplete fires")]
@@ -754,7 +754,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			Vector3 deckPos = CalculateAnimationPositionAtIndex(finalIndex);
 			Vector3 peakPos = deckPos + Vector3.up * popUpYOffset;
 			peakPos.z += popUpZBoost;
-			Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
+			Vector3 peakScale = GetPopUpPeakScale(physScript);
 
 			// Arc via showPos
 			Sequence arcSeq = DOTween.Sequence();
@@ -918,6 +918,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
 		int cascadeIndex = count - 1 - clamped;
 		return physicalCardDeckSize * DeckCascadeLayout.ComputeScale(cascadeIndex, count, BuildCascadeLayoutParams());
+	}
+
+	/// <summary>
+	/// Pop Up peak scale: the card's current TargetScale (cascade depth scale or reveal size)
+	/// multiplied by popUpScaleMultiplier. Falls back to physicalCardDeckSize when TargetScale
+	/// was never initialized (Vector3.zero).
+	/// </summary>
+	private Vector3 GetPopUpPeakScale(CardPhysObjScript physScript)
+	{
+		Vector3 baseScale = physScript.TargetScale;
+		if (baseScale == Vector3.zero) baseScale = physicalCardDeckSize;
+		return baseScale * popUpScaleMultiplier;
 	}
 
 	/// <summary>
@@ -2982,7 +2994,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Vector3 peakPos = currentPos + Vector3.up * popUpYOffset;
 		peakPos.z += popUpZBoost;
 
-		Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
+		Vector3 peakScale = GetPopUpPeakScale(physScript);
 
 		physScript.isPlayingSpecialAnimation = true;
 		physScript.isPoppedUp = true;
@@ -3145,7 +3157,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Vector3 deckPos = CalculatePositionForPendingCard(deckIndex);
 		Vector3 peakPos = deckPos + Vector3.up * popUpYOffset;
 		peakPos.z += popUpZBoost;
-		Vector3 peakScale = physicalCardDeckSize * popUpScaleMultiplier;
+		Vector3 peakScale = GetPopUpPeakScale(physScript);
 
 		TestManager.Log("[CombatUXManager] MoveCardToPopUpPosition logical=" + logicalCard.name + " deckIndex=" + deckIndex + " deckPos=" + deckPos + " peakPos=" + peakPos + " isPending=" + physScript.isPendingSlotIn);
 

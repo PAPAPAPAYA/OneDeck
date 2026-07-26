@@ -32,6 +32,7 @@ If a row becomes obsolete (code refactored away), mark it `~~strikethrough~~` an
 | 47 | Shuffle animation re-layouts the whole deck on the cascade curve | `StartCardShuffleEffect`, `CombatUXManager` | 2026-07-17 | ⚠️ | **Setup:** Reach the Start Card shuffle (or an overtime round re-shuffle).<br>**Check:** After shuffling, every card tweens to its cascade position with its per-index depth scale (uniform scale only when the flag is off); no linear-fan or zero-distance frames. |
 | 50 | Reveal-zone card counts as cascade front card; deck no longer re-layouts on reveal | `CombatUXManager`, `GetCascadeDeckCount`, `MoveRevealedCardToBottom`, peel focus | 2026-07-17 | ⚠️ | **Setup:** Toggle `CombatUXManager.revealCardCountsAsDeckFront` (cascade must be on).<br>**Check:** With the flag on, revealing a card moves only the revealed card to the reveal zone — the rest of the deck does NOT slide or reshape; the reveal card visually covers the front slot (hovering toward camera). Clicking again arcs the card to the cascade tail and the deck slides forward exactly one step. Bury/Stage/AddTempCard targets and peel focus (`deckFocusTargetPos`) stay consistent while the reveal zone is occupied. With the flag off, the legacy per-reveal re-layout returns byte-for-byte. |
 | 56 | Shuffle flip-down happens on landing, exposing faces (and shuffle order) mid-flight | `CombatUXManager`, `PlayShuffleAnimationInternal` | 2026-07-24 | ⚠️ | **Setup:** Reach the Start Card shuffle (or an overtime round re-shuffle).<br>**Check:** Every non-Start card flips face-down around its arc midpoint (mid-flight, staggered per card) and lands already face-down; Start Card keeps its face. Post-shuffle layout, scales, and input unblock are unchanged. |
+| 58 | Pop-up peak scale is relative to the card's current TargetScale instead of the uniform deck size | `CombatUXManager`, `GetPopUpPeakScale` | 2026-07-26 | ⚠️ | **Card:** Any Bury/Stage card sitting deep in the cascade tail (e.g. StoneShell buried from the tail, BOOSTER StageSelf), plus AddTempCard (RIFT_INSECT / BLACKSMITH).<br>**Check:** Pop-up peak scale = the card's current `TargetScale` × `popUpScaleMultiplier` (default 1.0 = no rescale at peak); deep tail cards stay proportionally small at the peak and slot back in at their cascade depth scale with no scale pop; reveal-zone cards pop up at reveal size unchanged; `popUpScaleMultiplier` > 1 still enlarges every card proportionally. |
 
 ## Card Adding & Pending Cards
 
@@ -128,7 +129,7 @@ Before editing any code in `Effects/`, `UXPrototype/`, or `Managers/Animation*.c
 |---------|-------------|
 | `BuryEffect.cs` | 1, 2, 5, 7, 14, 42, 45, 46 |
 | `StageEffect.cs` | 1, 2, 5, 7, 45, 46 |
-| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35, 43, 44, 45, 47, 48, 49, 51, 56 |
+| `CombatUXManager.cs` | 1, 3, 4, 6, 7, 12, 13, 17, 19, 35, 43, 44, 45, 47, 48, 49, 51, 56, 58 |
 | `CombatHPBarPresenter.cs` | 52, 53, 54 |
 | `GameScene.unity` (`HPBarRoot`) | 54 |
 | `EffectChainManager.cs` | 2, 11 |
