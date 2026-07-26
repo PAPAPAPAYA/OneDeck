@@ -968,8 +968,6 @@ RectTransform:
   - {fileID: 1026264817}
   - {fileID: 309960882}
   - {fileID: 2053927130}
-  - {fileID: 149181873}
-  - {fileID: 1595399513}
   - {fileID: 2141516292}
   - {fileID: 1546991834}
   m_Father: {fileID: 301309640}
@@ -979,41 +977,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!1 &149181872
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 149181873}
-  m_Layer: 0
-  m_Name: PlayerFloaterAnchor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &149181873
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 149181872}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 114813452}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: 10}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &152842584
 GameObject:
   m_ObjectHideFlags: 0
@@ -7722,41 +7685,6 @@ RectTransform:
   m_AnchoredPosition: {x: 350, y: -35}
   m_SizeDelta: {x: 130, y: 160}
   m_Pivot: {x: 0.5, y: 1}
---- !u!1 &1595399512
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1595399513}
-  m_Layer: 0
-  m_Name: EnemyFloaterAnchor
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1595399513
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1595399512}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 114813452}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 10}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1644714603
 GameObject:
   m_ObjectHideFlags: 0
@@ -10797,11 +10725,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DamageFloaterPresenter
   floaterLayer: {fileID: 1546991834}
-  playerAnchor: {fileID: 149181873}
-  enemyAnchor: {fileID: 1595399513}
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   canvas: {fileID: 114813451}
-  font: {fileID: 0}
+  font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   fontSize: 30
   punchScale: 2.2
   squashScale: 0.85
@@ -10812,6 +10738,7 @@ MonoBehaviour:
   fadeTime: 0.36
   floatUpDistPx: 62
   jitterPx: 40
+  debugLogs: 1
 --- !u!1001 &15491487674759769
 PrefabInstance:
   m_ObjectHideFlags: 0

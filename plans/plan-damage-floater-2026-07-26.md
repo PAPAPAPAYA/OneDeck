@@ -10,9 +10,10 @@ floating delta numbers were out of scope there — this plan picks them up)
 
 Add floating damage numbers to the combat UI, matching the validated HTML demo:
 
-- When a player takes damage, a red `-N` text spawns above that side's HP
-	numeric display, plays **punch in -> hold -> float up + fade out**, then
-	destroys itself.
+- When a player takes damage, a red `-N` text spawns at that side's attack
+	target position (`AttackAnimationManager.playerTargetPos` /
+	`enemyTargetPos` — the world position the attacking card charges to),
+	plays **punch in -> hold -> float up + fade out**, then destroys itself.
 - One presenter handles both sides (player / enemy), driven by the same
 	displayed-HP pipeline as `CombatHPBarPresenter` and `HPNumericDisplay`.
 - Pure presentation; no game-logic, effect, or animation-system changes.
@@ -69,19 +70,21 @@ Why polling instead of extending the animation system:
 FloaterLayer (RectTransform, full-stretch, sibling of the HP displays;
               NOT under a LayoutGroup; no Graphic of its own)
 DamageFloaterPresenter (component, on any object under the same canvas)
-PlayerFloaterAnchor (empty RectTransform, just above PlayerHPDisplay)
-EnemyFloaterAnchor  (empty RectTransform, just above EnemyHPDisplay)
 ```
 
 - All floaters are runtime-created children of `FloaterLayer`; every graphic
 	has `raycastTarget = false` (combat input is click-driven).
-- Anchors are dedicated static transforms, NOT the `HPNumericDisplay` roots —
-	the display root shakes on hit (`HPNumericDisplay.PlayShake`,
-	`HPNumericDisplay.cs:698`), and anchoring to it would jitter every spawn
-	position.
-- Spawn position: `anchor.position` -> screen point -> local point in
-	`FloaterLayer` via `RectTransformUtility.ScreenPointToLocalPointInRectangle`
-	(camera = null for ScreenSpaceOverlay), plus random x jitter.
+- Spawn base position: the attacked side's attack target, read at spawn time
+	from `AttackAnimationManager.me.playerTargetPos` / `enemyTargetPos`
+	(`AttackAnimationManager.cs:24-26`). No scene anchors needed.
+- Position conversion: world position -> screen point via `Camera.main` ->
+	local point in `FloaterLayer` via
+	`RectTransformUtility.ScreenPointToLocalPointInRectangle` (camera = null
+	for ScreenSpaceOverlay), plus random x jitter.
+- The attack targets sit at/outside the camera frustum edges, so the final
+	local point is clamped into `FloaterLayer` (`ClampToLayer`), reserving the
+	float-up distance + text height above the spawn point so the whole
+	animation stays on screen.
 
 ### 3.2 `DamageFloaterTimeline` (pure static, unit-testable)
 
@@ -104,8 +107,7 @@ Location: `Assets/Scripts/UXPrototype/DamageFloaterPresenter.cs` (next to
 Serialized:
 
 - `gamePhaseRef` (`GamePhaseSO`, same asset as the bar), `floaterLayer`,
-	`playerAnchor`, `enemyAnchor`, `canvas` (auto-resolve via
-	`GetComponentInParent`).
+	`canvas` (auto-resolve via `GetComponentInParent`).
 - Optional `font` (TMP_FontAsset; null = TMP default, same as
 	`CardTagTooltip`/`ResultStatsPanel` runtime text).
 - All tuning constants with demo defaults (section 7).
@@ -173,7 +175,7 @@ same conversion as the bar's shake):
 | Demo feature | Unity implementation |
 |---|---|
 | Click / Trigger / Burst spawn | Poll-based spawn on displayed-HP drop (section 2) |
-| Card anchor at 55% stage height | Serialized per-side `playerAnchor` / `enemyAnchor` RectTransforms above the HP numeric displays |
+| Card anchor at 55% stage height | `AttackAnimationManager.me.playerTargetPos` / `enemyTargetPos` (world), converted to layer-local via `Camera.main` |
 | Punch scale/squash/overshoot | `DOScale` segments on the floater root (section 4) |
 | Opacity keyframes | `CanvasGroup.DOFade` segments |
 | Y drift waypoints | `DOAnchorPosY` segments, px / `canvas.scaleFactor` |
@@ -194,8 +196,8 @@ same conversion as the bar's shake):
 3. New `Assets/Scripts/Editor/Tests/DamageFloaterTimelineTests.cs` — golden
 	values for `KeyframeTimes` ported from the demo defaults (same pattern as
 	`DeckCascadeLayoutTests` / `HPNumericCounterTests`).
-4. Combat scene: build the section-3.1 hierarchy, wire `gamePhaseRef`,
-	anchors, and `floaterLayer`.
+4. Combat scene: build the section-3.1 hierarchy, wire `gamePhaseRef` and
+	`floaterLayer`.
 5. No changes to `CombatInfoDisplayer`, `HPAlterEffect`,
 	`RecorderAnimationPlayer`, `AttackAnimationManager`, or any effect logic.
 6. `AGENTS.md`: add `DamageFloaterPresenter` to the UXPrototype list when

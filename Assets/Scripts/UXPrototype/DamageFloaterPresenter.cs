@@ -1,15 +1,19 @@
 using System.Collections.Generic;
+using DefaultNamespace.Managers;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Floating damage numbers above each side's HP numeric display. Pure presentation;
-/// no game-logic changes. Polls CombatInfoDisplayer's displayed HP values — the same
-/// queue-frozen values the HP text, compare bar, and numeric display show — so a
-/// floater spawns on the exact frame a hit lands. Damage only; heals and full-shield
-/// absorbs produce no floater (consistent with the HP bar and numeric display).
+/// Floating damage numbers at each side's attack target position
+/// (AttackAnimationManager.playerTargetPos / enemyTargetPos — the world position
+/// the attacking card charges to). Pure presentation; no game-logic changes.
+/// Polls CombatInfoDisplayer's displayed HP values — the same queue-frozen values
+/// the HP text, compare bar, and numeric display show — so a floater spawns on
+/// the exact frame a hit lands. Damage only; heals and full-shield absorbs
+/// produce no floater (consistent with the HP bar and numeric display).
+/// Diagnostic logs route through TestManager (LogCategory.DamageFloater).
 /// Motion design validated in docs/demo/DamageFloaterDemo.html.
 /// Plan: plans/plan-damage-floater-2026-07-26.md
 /// </summary>
@@ -17,8 +21,6 @@ public class DamageFloaterPresenter : MonoBehaviour
 {
 	[Header("Wiring")]
 	public RectTransform floaterLayer;
-	public RectTransform playerAnchor;
-	public RectTransform enemyAnchor;
 	public GamePhaseSO gamePhaseRef;
 	public Canvas canvas;
 
@@ -51,9 +53,10 @@ public class DamageFloaterPresenter : MonoBehaviour
 
 	private void Awake()
 	{
-		if (floaterLayer == null || playerAnchor == null || enemyAnchor == null || gamePhaseRef == null)
+		if (floaterLayer == null || gamePhaseRef == null)
 		{
-			Debug.LogError("[DamageFloaterPresenter] Missing serialized reference(s), disabling.");
+			Debug.LogError("[DamageFloater] Missing serialized reference(s) (floaterLayer="
+				+ (floaterLayer != null) + ", gamePhaseRef=" + (gamePhaseRef != null) + "), disabling.");
 			enabled = false;
 			return;
 		}
@@ -61,6 +64,14 @@ public class DamageFloaterPresenter : MonoBehaviour
 		{
 			canvas = GetComponentInParent<Canvas>();
 		}
+		TestManager.Log("[DamageFloater] Awake OK on '" + gameObject.name + "'"
+			+ " | canvas=" + (canvas != null ? canvas.name : "NULL")
+			+ " renderMode=" + (canvas != null ? canvas.renderMode.ToString() : "-")
+			+ " | floaterLayer='" + floaterLayer.name + "' rect=" + floaterLayer.rect
+			+ " | gamePhaseRef=" + gamePhaseRef.name
+			+ " | font=" + (font != null ? font.name : "TMP default")
+			+ " | AttackAnimationManager.me=" + (AttackAnimationManager.me != null)
+			+ " | Camera.main=" + (Camera.main != null ? Camera.main.name : "NULL"));
 	}
 
 	private void Update()
@@ -88,10 +99,14 @@ public class DamageFloaterPresenter : MonoBehaviour
 		// floater on the side that was not hit. Positive deltas (heals) are ignored.
 		if (playerHp < _displayedPlayerHp)
 		{
+			TestManager.Log("[DamageFloater] Player displayed HP drop: " + _displayedPlayerHp + " -> " + playerHp
+				+ " (dmg " + (_displayedPlayerHp - playerHp) + ")");
 			SpawnFloater(true, _displayedPlayerHp - playerHp);
 		}
 		if (enemyHp < _displayedEnemyHp)
 		{
+			TestManager.Log("[DamageFloater] Enemy displayed HP drop: " + _displayedEnemyHp + " -> " + enemyHp
+				+ " (dmg " + (_displayedEnemyHp - enemyHp) + ")");
 			SpawnFloater(false, _displayedEnemyHp - enemyHp);
 		}
 
@@ -111,10 +126,14 @@ public class DamageFloaterPresenter : MonoBehaviour
 		CleanupFloaters();
 		_displayedPlayerHp = CombatInfoDisplayer.me != null ? CombatInfoDisplayer.me.GetDisplayedOwnerHp() : 0;
 		_displayedEnemyHp = CombatInfoDisplayer.me != null ? CombatInfoDisplayer.me.GetDisplayedEnemyHp() : 0;
+		TestManager.Log("[DamageFloater] EnterCombat. Synced displayed HP player=" + _displayedPlayerHp
+			+ " enemy=" + _displayedEnemyHp
+			+ (CombatInfoDisplayer.me == null ? " | WARNING: CombatInfoDisplayer.me is null, HP reads as 0" : ""));
 	}
 
 	private void ExitCombat()
 	{
+		TestManager.Log("[DamageFloater] ExitCombat. Cleaning up " + _active.Count + " live floater(s).");
 		CleanupFloaters();
 	}
 
@@ -140,10 +159,28 @@ public class DamageFloaterPresenter : MonoBehaviour
 
 	private void SpawnFloater(bool playerSide, int amount)
 	{
-		RectTransform anchor = playerSide ? playerAnchor : enemyAnchor;
-		Vector2 local = AnchorToLayerLocal(anchor);
+		// Base position = the attack target the card charges to (world space).
+		Transform target = AttackAnimationManager.me != null
+			? (playerSide ? AttackAnimationManager.me.playerTargetPos : AttackAnimationManager.me.enemyTargetPos)
+			: null;
+		if (target == null)
+		{
+			TestManager.LogWarning("[DamageFloater] Skipping floater (side=" + (playerSide ? "player" : "enemy")
+				+ ", amount=" + amount + "): AttackAnimationManager.me="
+				+ (AttackAnimationManager.me != null) + ", target transform missing.");
+			return;
+		}
+		if (Camera.main == null)
+		{
+			TestManager.LogWarning("[DamageFloater] Skipping floater (side=" + (playerSide ? "player" : "enemy")
+				+ ", amount=" + amount + "): Camera.main is null, cannot convert world position.");
+			return;
+		}
+		Vector3 worldPos = target.position;
+		Vector2 local = WorldToLayerLocal(worldPos);
 		float px = PxToLocal();
 		local.x += Random.Range(-jitterPx * 0.5f, jitterPx * 0.5f) * px;
+		local = ClampToLayer(local, px);
 
 		var go = new GameObject("DamageFloater", typeof(RectTransform));
 		go.transform.SetParent(floaterLayer, false);
@@ -170,12 +207,20 @@ public class DamageFloaterPresenter : MonoBehaviour
 		var group = go.AddComponent<CanvasGroup>();
 		group.alpha = 0f;
 
+		TestManager.Log("[DamageFloater] Spawned '" + tmp.text + "' side=" + (playerSide ? "player" : "enemy")
+			+ " | target='" + target.name + "' world=" + worldPos
+			+ " | layerLocal=" + local + " (layer rect=" + floaterLayer.rect + ")"
+			+ " | px->local=" + px + " | font=" + (tmp.font != null ? tmp.font.name : "NULL")
+			+ " | color=" + tmp.color + " | scale=" + punchScale + " | duration="
+			+ (punchInTime + holdTime + fadeTime) + "s / SpeedScale=" + CombatAnimationSpeed.SpeedScale);
+
 		var entry = new ActiveFloater { go = go };
 		entry.seq = PlayTimeline(rt, group, local.y, px);
 		_active.Add(entry);
 		entry.seq.OnComplete(() =>
 		{
 			_active.Remove(entry);
+			TestManager.Log("[DamageFloater] Floater '" + tmp.text + "' finished, destroyed.");
 			Destroy(go);
 		});
 	}
@@ -192,12 +237,43 @@ public class DamageFloaterPresenter : MonoBehaviour
 		return 1f / scaleFactor;
 	}
 
-	private Vector2 AnchorToLayerLocal(RectTransform anchor)
+	// World position (the attack target) -> layer-local units. WorldToScreenPoint
+	// needs the world camera (Camera.main); the overlay-canvas local conversion
+	// takes a null camera.
+	private Vector2 WorldToLayerLocal(Vector3 worldPos)
 	{
-		Camera cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
-		Vector2 screen = RectTransformUtility.WorldToScreenPoint(cam, anchor.position);
+		Camera worldCam = Camera.main;
+		if (worldCam == null)
+		{
+			return Vector2.zero;
+		}
+		Vector2 screen = worldCam.WorldToScreenPoint(worldPos);
+		Camera uiCam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
 		Vector2 local;
-		RectTransformUtility.ScreenPointToLocalPointInRectangle(floaterLayer, screen, cam, out local);
+		RectTransformUtility.ScreenPointToLocalPointInRectangle(floaterLayer, screen, uiCam, out local);
+		return local;
+	}
+
+	// VISUAL-FIX(2026-07-26): Damage floaters spawn fully off-screen at the top corners
+	//   Cause:    The spawn base position is the attack target (world (±3, 6)), which
+	//             sits outside the camera frustum (visible half-extents ≈ ±2.79 x,
+	//             ±6.06 y): x maps ~7.5% past the screen edge and y to 99% of the top
+	//             edge, and the float-up drift carries the text even further out.
+	//   Affects:  DamageFloaterPresenter.SpawnFloater
+	//   Regress:  Deal damage to each side in combat: the floater must stay fully
+	//             visible on screen for its whole lifetime (punch, hold, float-up).
+	private Vector2 ClampToLayer(Vector2 local, float px)
+	{
+		Rect rect = floaterLayer.rect;
+		// Horizontal: keep the whole text inside (1.5 em ≈ half of a "-123" string).
+		// Vertical: reserve the float-up distance plus text height above the spawn
+		// point so the END of the float stays visible too, not just the spawn frame.
+		float xMargin = fontSize * 1.5f * px;
+		float yMargin = fontSize * px + 10f * px;
+		float yMin = rect.yMin + yMargin;
+		float yMax = Mathf.Max(yMin, rect.yMax - floatUpDistPx * px - yMargin);
+		local.x = Mathf.Clamp(local.x, rect.xMin + xMargin, rect.xMax - xMargin);
+		local.y = Mathf.Clamp(local.y, yMin, yMax);
 		return local;
 	}
 

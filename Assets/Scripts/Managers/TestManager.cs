@@ -46,7 +46,8 @@ namespace DefaultNamespace.Managers
 			EditorTools,
 			TestManager,
 			DynamicDamageDisplay,
-			StatusEffectDisplay
+			StatusEffectDisplay,
+			DamageFloater
 		}
 
 		[Header("Log Switches")]
@@ -73,6 +74,9 @@ namespace DefaultNamespace.Managers
 
 		[Tooltip("Log status effect display messages from CardPhysObjScript and CardScript display state.")]
 		public bool logStatusEffectDisplay = true;
+
+		[Tooltip("Log damage floater messages from DamageFloaterPresenter.")]
+		public bool logDamageFloater = true;
 
 		#endregion
 
@@ -256,6 +260,10 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.StatusEffectDisplay;
 			}
+			if (message.Contains("[DamageFloater]"))
+			{
+				return LogCategory.DamageFloater;
+			}
 			return LogCategory.CombatFlow;
 		}
 
@@ -271,6 +279,7 @@ namespace DefaultNamespace.Managers
 				case LogCategory.TestManager: return Me.logTestManager;
 				case LogCategory.DynamicDamageDisplay: return Me.logDynamicDamageDisplay;
 				case LogCategory.StatusEffectDisplay: return Me.logStatusEffectDisplay;
+				case LogCategory.DamageFloater: return Me.logDamageFloater;
 				default: return true;
 			}
 		}
