@@ -363,6 +363,8 @@ namespace TestWriteRead
         public void SavePlayerDeckToJson()
         {
             if (!switchOnSaveLoad) return;
+            // Tutorial combat: never persist the tutorial deck as the player deck.
+            if (TutorialManager.IsTutorialActive) return;
 
             // Create deck entry
             var deckEntry = CreateDeckSaveEntry();
@@ -410,6 +412,9 @@ namespace TestWriteRead
         /// </summary>
         public void PopulateEnemyDeckBySessionNumber()
         {
+            // Tutorial combat: the enemy deck is provided by TutorialManager.
+            if (TutorialManager.IsTutorialActive) return;
+
             // Debug override: use fixed enemy deck for testing
             if (useDebugEnemyDeck && debugEnemyDeck != null)
             {

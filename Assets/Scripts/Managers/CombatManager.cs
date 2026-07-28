@@ -297,9 +297,13 @@ public class CombatManager : MonoBehaviour
 		_infoDisplayer.RefreshDeckInfo();
 		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
 
-		// Record deck snapshots (for win rate stats) - query directly from decks, no need to wait for instantiation
-		TestWriteRead.CardWinRateTracker.Me?.RecordPlayerDeckSnapshot(playerDeck.deck);
-		TestWriteRead.CardWinRateTracker.Me?.RecordEnemyDeckSnapshot(enemyDeck.deck);
+		// Record deck snapshots (for win rate stats) - query directly from decks, no need to wait for instantiation.
+		// Skipped during the tutorial combat so the tutorial deck does not leak into win-rate records.
+		if (!TutorialManager.IsTutorialActive)
+		{
+			TestWriteRead.CardWinRateTracker.Me?.RecordPlayerDeckSnapshot(playerDeck.deck);
+			TestWriteRead.CardWinRateTracker.Me?.RecordEnemyDeckSnapshot(enemyDeck.deck);
+		}
 
 		// Start a fresh per-card stats session for this combat (Result screen reads this store)
 		CombatPerCardStatsTracker.Me?.BeginSession();

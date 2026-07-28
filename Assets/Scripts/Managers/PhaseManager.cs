@@ -88,9 +88,17 @@ public class PhaseManager : MonoBehaviour
 		_isRunEnded = false;
 		_endMessage = "";
 		InvokeOnGameStartEvent();
-		ExitingCombatPhase();
-		ExitingResultPhase();
-		EnteringShopPhase();
+		if (TutorialManager.IsTutorialActive)
+		{
+			// First launch: run the scripted tutorial combat instead of the shop.
+			EnteringCombatPhase();
+		}
+		else
+		{
+			ExitingCombatPhase();
+			ExitingResultPhase();
+			EnteringShopPhase();
+		}
 	}
 
 	private void Update()
@@ -118,6 +126,15 @@ public class PhaseManager : MonoBehaviour
 			if (CombatManager.Me != null && CombatManager.Me.isPlayingEffectAnimations)
 			{
 				TestManager.Log("[PhaseManager] Combat finished but effect animations still playing; waiting before exiting combat phase.");
+				return;
+			}
+			if (TutorialManager.IsTutorialActive)
+			{
+				// Tutorial combat: scripted outcome. Skip wins/hearts/stats bookkeeping
+				// and go straight to the first real shop phase (no Result phase).
+				ExitingCombatPhase();
+				TutorialManager.Me.EndTutorial();
+				EnteringShopPhase();
 				return;
 			}
 			if (playerStatusRef.hp <= 0)

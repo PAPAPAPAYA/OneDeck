@@ -7116,6 +7116,55 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1151980345}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1404473907
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1404473909}
+  - component: {fileID: 1404473908}
+  m_Layer: 0
+  m_Name: TutorialManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1404473908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1404473907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 282ff85755733f944a2a5e09408f5e24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialManager
+  tutorialPlayerDeck: {fileID: 0}
+  tutorialEnemyDeck: {fileID: 0}
+  tutorialRevealOrder: []
+  tutorialPlayerHP: 20
+  tutorialEnemyHP: 10
+--- !u!4 &1404473909
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1404473907}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1420054338
 GameObject:
   m_ObjectHideFlags: 0
@@ -7228,6 +7277,11 @@ MonoBehaviour:
   cascadeCoverageTarget: 0.62
   cascadeCoverageCap: 2.5
   revealCardCountsAsDeckFront: 1
+  useDynamicArcMidpoint: 1
+  arcMidpointCurveT: 0.5
+  arcMidpointOffset: {x: 0, y: 0}
+  arcMidScaleEnabled: 1
+  arcMidScaleMultiplier: 1.2
   physicalCardNewTempCardPos: {fileID: 2043192994}
   physicalCardNewTempCardSize: {x: 1, y: 1, z: 1}
   statusEffectConsumePos: {fileID: 1349775169}
@@ -8168,15 +8222,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 770.93884
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.00003
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1597.0306
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8209,6 +8263,10 @@ PrefabInstance:
     - target: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_Name
       value: PhysicalCardParent
+      objectReference: {fileID: 0}
+    - target: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -10339,6 +10397,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1404473908}
+        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
+        m_MethodName: SetupTutorialCombat
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onExitCombatPhase:
     m_PersistentCalls:
       m_Calls:
@@ -10441,7 +10511,19 @@ MonoBehaviour:
       m_Calls: []
   onGameStart:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1404473908}
+        m_TargetAssemblyTypeName: TutorialManager, Assembly-CSharp
+        m_MethodName: CheckTutorialOnGameStart
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   resultInfoDisplay: {fileID: 1115368634}
   resultStatsPanelLayout:
     anchorMin: {x: 0.05, y: 0.03}
@@ -11020,3 +11102,4 @@ SceneRoots:
   - {fileID: 1341150769}
   - {fileID: 476468884}
   - {fileID: 1839028489}
+  - {fileID: 1404473909}
