@@ -11,6 +11,7 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 | **Command Separator** | PowerShell uses `;` instead of `&&` |
 | **Comments & Docs** | English only |
 | **Encoding** | UTF-8 only |
+| **AGENTS.md Size** | Keep this file under 32 KB; trim or condense before it exceeds the limit |
 
 ## Agent Behavior
 - **Code Changes**: Do not execute code modifications except adding logs, unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
@@ -76,6 +77,7 @@ Assets/
 - Per-index scale: `GetDeckScaleAtIndex(i)` = `physicalCardDeckSize` × cascade scale; position jitter is multiplied by the card's cascade scale when `cascadeScaleJitterWithCard` is on so the tight tail stays clean.
 - **Coverage normalization (Plan B)**: per-card steps are scaled by one shared factor `clamp(cascadeCoverageTarget × curveLength / rawStepSum, 1, cascadeCoverageCap)` (stretch only, never compress), so small decks still reach the curve's hook region instead of looking straight. Defaults: normalize on, target 0.62, cap 2.5. Large decks sit above the target coverage naturally → factor 1 → layout unchanged.
 - EditMode coverage: `Assets/Scripts/Editor/Tests/DeckCascadeLayoutTests.cs` (golden values generated from the demo).
+- **Dynamic arc midpoint (replaces fixed `showPos`)**: with `CombatUXManager.useDynamicArcMidpoint` on (default), all deck-bound arcs (reveal→bottom, Stage batch, ToTop/ToBottom/ToIndex, shuffle) compute their midpoint from the cascade walk at `arcMidpointCurveT` plus `arcMidpointOffset`, via the `TryGetArcMidpointPosition` seam and `DeckCascadeLayout.ComputeOffsetAtCurveT` (fractional interpolation of the cached walked offsets). Fallback order: explicit `CardMoveConfig.arcMidpoint` > dynamic > legacy scene `showPos`. With `arcMidScaleEnabled` (default on), dynamic arcs scale two-phase: current → `physicalCardDeckSize × arcMidScaleMultiplier` → landing scale; legacy/explicit paths keep the single joined scale tween. Scene aid: `OnDrawGizmosSelected` draws the computed midpoint (cyan sphere).
 
 ### Controls
 - First click: Reveal next card.
@@ -157,62 +159,20 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 
 ## Key Files
 
-| Name | Path |
-|------|------|
-| `CombatManager` | `Assets/Scripts/Managers/CombatManager.cs` |
-| `CombatFuncs` | `Assets/Scripts/Managers/CombatFuncs.cs` |
-| `HPAlterEffect` | `Assets/Scripts/Effects/HPAlterEffect.cs` |
-| `CardScript` | `Assets/Scripts/Card/CardScript.cs` |
-| `CostNEffectContainer` | `Assets/Scripts/Card/CostNEffectContainer.cs` |
-| `CombatUXManager` | `Assets/Scripts/UXPrototype/CombatUXManager.cs` |
-| `CombatHPBarPresenter` | `Assets/Scripts/UXPrototype/CombatHPBarPresenter.cs` |
-| `DeckCascadeLayout` | `Assets/Scripts/UXPrototype/DeckCascadeLayout.cs` |
-| `DeckPositionCalculator` | `Assets/Scripts/UXPrototype/DeckPositionCalculator.cs` |
-| `GameEventStorage` | `Assets/Scripts/Managers/GameEventStorage.cs` |
-| `ValueTrackerManager` | `Assets/Scripts/Managers/ValueTrackerManager.cs` |
-| `EnumStorage` | `Assets/Scripts/Managers/EnumStorage.cs` |
-| `AnimationStateTracker` | `Assets/Scripts/Managers/AnimationStateTracker.cs` |
-| `RecorderAnimationPlayer` | `Assets/Scripts/Managers/RecorderAnimationPlayer.cs` |
-| `CardFactory` | `Assets/Scripts/Managers/CardFactory.cs` |
-| `ICombatVisuals` | `Assets/Scripts/Managers/ICombatVisuals.cs` |
-| `CombatLog` | `Assets/Scripts/Managers/CombatLog.cs` |
-| `StatusEffectGiverEffect` | `Assets/Scripts/Effects/StatusEffect/StatusEffectGiverEffect.cs` |
-| `StartCardShuffleEffect` | `Assets/Scripts/Effects/StartCardShuffleEffect.cs` |
-| `CombatPerCardStatsTracker` | `Assets/Scripts/Managers/WriteRead/CombatPerCardStatsTracker.cs` |
-| `ResultStatsPanel` | `Assets/Scripts/UXPrototype/ResultStatsPanel.cs` |
-| `GameRules` | `docs/GameRules.md` |
+All under `Assets/Scripts/` in the folder matching their role: `Managers/CombatManager.cs`, `Managers/CombatFuncs.cs`, `Managers/GameEventStorage.cs`, `Managers/ValueTrackerManager.cs`, `Managers/EnumStorage.cs`, `Managers/AnimationStateTracker.cs`, `Managers/RecorderAnimationPlayer.cs`, `Managers/CardFactory.cs`, `Managers/ICombatVisuals.cs`, `Managers/CombatLog.cs`, `Managers/WriteRead/CombatPerCardStatsTracker.cs`, `Effects/HPAlterEffect.cs`, `Effects/StatusEffect/StatusEffectGiverEffect.cs`, `Effects/StartCardShuffleEffect.cs`, `Card/CardScript.cs`, `Card/CostNEffectContainer.cs`, `UXPrototype/CombatUXManager.cs`, `UXPrototype/CombatHPBarPresenter.cs`, `UXPrototype/DeckCascadeLayout.cs`, `UXPrototype/DeckPositionCalculator.cs`, `UXPrototype/ResultStatsPanel.cs`. Game rules: `docs/GameRules.md`.
 
 ## Result Screen Per-Card Stats
 
-The Result phase shows a scrollable per-card stats table of the combat that just finished
-(plan: `plans/plan-result-per-card-stats-2026-07-23.md`).
+Scrollable per-card stats table of the combat that just finished (plan: `plans/plan-result-per-card-stats-2026-07-23.md`).
 
-- **Store**: `CombatPerCardStatsTracker.Me` (singleton, auto-created by `CombatManager.Awake()`).
-  Session-scoped, no persistence: `BeginSession()` wipes the store in `CombatManager.GatherDecks()`.
-- **Rows keyed by `(cardTypeID, faction)`** (`CardFaction.Player/Enemy`, resolved via
-  `myStatusRef == CombatManager.Me.ownerPlayerStatusRef`); same card type on both sides = two rows.
-  Neutral/start cards are excluded by the `IsNeutralCard` guard in `Add()` — the single exclusion point.
-- **Stats** (`CombatStatType`): `DamageDealtToOpponent`, `DamageDealtToSelf` (both raw pre-shield
-  amounts), `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains),
-  `PowerGiven` / `PowerReceived` (stack amounts; transfers count).
-- **Hooks**: `CostNEffectContainer.InvokeEffectEvent()` (inside the `EffectCanBeInvoked` true branch),
-  `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self`, `EffectScript.ApplyStatusEffectCore` Power branch.
-- **Extending**: new stat = one `CombatStatType` entry + one `CombatStatRegistry` entry + one
-  `Record*()` call. UI columns derive from `CombatStatRegistry` (`columnSortPriority` = column order;
-  row sort lives in `GetSessionRows()`, by `DamageDealtToOpponent` desc then faction).
-- **UI**: `ResultStatsPanel` builds the scrollable table entirely at runtime (no prefab/scene wiring).
-  The panel root is its **own Canvas + CanvasScaler** (reference resolution from layout config,
-  match width), so font sizes/row heights are independent of the game canvas scaling.
-  `PhaseManager.EnteringResultPhase()` builds it once (never per frame); `ExitingResultPhase()` clears it.
-- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction
-  anchors (`anchorMin/anchorMax`), reference resolution, font/row sizes, column flex weights,
-  `rowHorizontalPadding` (narrows rows), background alpha. In Play Mode, Inspector edits rebuild
-  the panel immediately via `OnValidate`; a `Rebuild Stats Panel` context-menu entry also exists.
-  (No keyboard rebuild: `Input.GetKeyDown` only fires while the Game view has focus, which it
-  never has while editing the Inspector.)
-- **Runtime-built UI pitfall**: after setting stretch anchors on a fresh RectTransform, always
-  zero `offsetMin/offsetMax` — the default 100×100 sizeDelta otherwise leaks into the final rect
-  (this caused Content to be 100px wider than the Viewport, pushing rows past the panel edge).
+- **Store**: `CombatPerCardStatsTracker.Me` (singleton, auto-created by `CombatManager.Awake()`). Session-scoped, no persistence: `BeginSession()` wipes the store in `CombatManager.GatherDecks()`.
+- **Rows keyed by `(cardTypeID, faction)`** (resolved via `myStatusRef == CombatManager.Me.ownerPlayerStatusRef`); same card type on both sides = two rows. Neutral/start cards excluded by the `IsNeutralCard` guard in `Add()` — the single exclusion point.
+- **Stats** (`CombatStatType`): `DamageDealtToOpponent`, `DamageDealtToSelf` (both raw pre-shield amounts), `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains), `PowerGiven`/`PowerReceived` (stack amounts; transfers count).
+- **Hooks**: `CostNEffectContainer.InvokeEffectEvent()` (inside the `EffectCanBeInvoked` true branch), `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self`, `EffectScript.ApplyStatusEffectCore` Power branch.
+- **Extending**: new stat = one `CombatStatType` entry + one `CombatStatRegistry` entry + one `Record*()` call. Column order = `columnSortPriority`; row sort in `GetSessionRows()` (by `DamageDealtToOpponent` desc then faction).
+- **UI**: `ResultStatsPanel` builds the table fully at runtime (no prefab/scene wiring) with its own Canvas + CanvasScaler, so font/row sizes are independent of game canvas scaling. `PhaseManager.EnteringResultPhase()` builds it once; `ExitingResultPhase()` clears it.
+- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction anchors, reference resolution, font/row sizes, column flex weights, `rowHorizontalPadding`, background alpha. Play Mode Inspector edits rebuild immediately via `OnValidate`; a `Rebuild Stats Panel` context-menu entry also exists.
+- **Runtime-built UI pitfall**: after setting stretch anchors on a fresh RectTransform, always zero `offsetMin/offsetMax` — the default 100×100 sizeDelta otherwise leaks into the final rect.
 - EditMode tests: `Assets/Scripts/Editor/Tests/CombatPerCardStatsTrackerTests.cs`.
 
 ## Minion Cost Mechanism
@@ -360,15 +320,7 @@ Damage `<color=red>`, Heal `<color=#90EE90>`, Shield `<color=grey>`, Friendly `<
 
 ## Unity MCP `execute_code`
 
-Roslyn compiler is installed (verified 2026-07-18). Default `compiler: "auto"` resolves to Roslyn (C# 12+); string interpolation, null-conditional, pattern matching, `using` declarations, etc. all work. `codedom` (C# 6) remains only as a fallback — if Roslyn is ever unavailable, respect these constraints:
-
-| Forbidden (codedom only) | Alternative |
-|-----------|-------------|
-| `using` declarations | Fully-qualified names (`UnityEngine.Debug.Log`) |
-| `return;` (void) | `return <value>;` on **all** paths |
-| `$""` interpolation | `+` or `string.Format` |
-| `?.` null-conditional | Explicit `!= null` checks |
-| `yield return` | No coroutines |
+Roslyn compiler is installed (verified 2026-07-18). Default `compiler: "auto"` resolves to Roslyn (C# 12+; all modern syntax works). `codedom` (C# 6) is fallback only — if ever forced, avoid `using` declarations, bare void `return;`, `$""` interpolation, `?.`, and `yield return` (use fully-qualified names, explicit null checks, `string.Format`, return a value on all paths, no coroutines).
 
 If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.GetType("GameEventListener, Assembly-CSharp")`.
 

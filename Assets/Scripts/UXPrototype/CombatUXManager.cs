@@ -87,6 +87,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	[Tooltip("Reveal-zone card counts as the cascade front card (cascadeIndex 0); deck cards sit one cascade step deeper while a card is revealed")]
 	public bool revealCardCountsAsDeckFront = true;
 
+	[Header("DYNAMIC ARC MIDPOINT")]
+	[Tooltip("Compute the arc midpoint (showPos) dynamically from the current cascade deck shape. Off = legacy fixed showPos behavior byte-for-byte.")]
+	public bool useDynamicArcMidpoint = true;
+	[Tooltip("Normalized position along the cascade walk: 0 = front card, 1 = deepest tail")]
+	[Range(0f, 1f)] public float arcMidpointCurveT = 0.5f;
+	[Tooltip("World-space x/y offset added after the curve point (replaces hand-placing showPos)")]
+	public Vector2 arcMidpointOffset = Vector2.zero;
+	[Tooltip("Two-phase arc scale: current -> mid -> landing scale. Off = legacy single joined scale tween.")]
+	public bool arcMidScaleEnabled = true;
+	[Tooltip("Mid-arc display scale = physicalCardDeckSize * this multiplier")]
+	public float arcMidScaleMultiplier = 1.2f;
+
 	[Header("NEW CARD")]
 	public Transform physicalCardNewTempCardPos;
 	public Vector3 physicalCardNewTempCardSize;
@@ -390,8 +402,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 
-		// If showPos is configured, use universal animation system
-		if (showPos != null)
+		// If an arc midpoint source exists (dynamic cascade midpoint or legacy showPos), use universal animation system
+		if (showPos != null || IsDynamicArcMidpointActive(null))
 		{
 			// [Key Fix] When calculating target position, consider that one card will be revealed
 			// At this time physicalCardsInDeck contains the card about to be revealed, but it will be removed when animation completes
@@ -440,7 +452,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				customTarget = targetPos,
 				duration = CombatAnimationSpeed.ScaleDuration(revealToDeckAnimDuration),
 				useArc = true,
-				arcMidpoint = showPos,
+				// arcMidpoint left null: the seam resolves the dynamic cascade midpoint (or legacy showPos fallback)
 				ease = revealToDeckEase,
 				// Cascade: land at the deepest tail scale (uniform deck size when the flag is off)
 				targetScaleOverride = GetDeckScaleAtIndex(0, effectiveCount),
@@ -532,9 +544,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				break;
 		}
 
-		// Determine arc midpoint
-		Transform arcPoint = config.arcMidpoint ?? showPos;
-		bool shouldUseArc = config.useArc && arcPoint != null && config.moveType != CardMoveType.ToGrave;
+		// Determine arc midpoint: dynamic cascade-curve point, explicit override, or legacy showPos
+		bool dynamicArc = IsDynamicArcMidpointActive(config.arcMidpoint);
+		Vector3 arcMidpoint = Vector3.zero;
+		bool shouldUseArc = config.useArc && config.moveType != CardMoveType.ToGrave
+			&& TryGetArcMidpointPosition(config.arcMidpoint, physicalCard.transform.position, targetPosition, out arcMidpoint);
 
 		// Callback: Animation start
 		config.onStart?.Invoke();
@@ -562,7 +576,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			//   Affects: MoveCardToTop, MoveCardToBottom, MoveCardToIndex, MoveRevealedCardToBottom.
 			//   Regress: Stage/Bury/Reveal-to-bottom animations should remain visible and land in correct order.
 			float halfDuration = scaledDuration * 0.5f;
-			Vector3 arcMidpoint = GetArcMidpoint(arcPoint.position, physicalCard.transform.position, targetPosition);
 			moveSequence.Append(
 				physicalCard.transform.DOMove(arcMidpoint, halfDuration).SetEase(config.ease)
 			);
@@ -606,9 +619,20 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				targetScale = config.targetScaleOverride ?? physicalCardDeckSize;
 				break;
 		}
-		moveSequence.Join(
-			physicalCard.transform.DOScale(targetScale, scaledDuration).SetEase(config.ease)
-		);
+		// Dynamic arc: two-phase scale (current -> mid-arc display scale -> landing scale).
+		// Legacy/explicit-override paths keep the single joined scale tween byte-for-byte.
+		if (dynamicArc && arcMidScaleEnabled && shouldUseArc)
+		{
+			float halfDuration = scaledDuration * 0.5f;
+			moveSequence.Insert(0f, physicalCard.transform.DOScale(GetArcMidScale(), halfDuration).SetEase(config.ease));
+			moveSequence.Insert(halfDuration, physicalCard.transform.DOScale(targetScale, halfDuration).SetEase(config.ease));
+		}
+		else
+		{
+			moveSequence.Join(
+				physicalCard.transform.DOScale(targetScale, scaledDuration).SetEase(config.ease)
+			);
+		}
 
 		// Animation complete callback
 		moveSequence.OnComplete(() =>
@@ -693,6 +717,80 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		return mid;
 	}
 
+	/// <summary>
+	/// True when the dynamic arc midpoint path is active for this move: cascade layout on,
+	/// useDynamicArcMidpoint on, and no explicit CardMoveConfig.arcMidpoint override.
+	/// </summary>
+	private bool IsDynamicArcMidpointActive(Transform explicitOverride)
+	{
+		return explicitOverride == null && useDynamicArcMidpoint && enableCascadeDeckLayout;
+	}
+
+	/// <summary>
+	/// Arc midpoint for deck-bound flights. Dynamic path: point at arcMidpointCurveT along the
+	/// cascade walk (same anchor, direction mirror, pxToWorld and deck-focus offset as the layout
+	/// seam, so revealCardCountsAsDeckFront and peel focus carry over) plus arcMidpointOffset;
+	/// z = midpoint of start/target z (same rule as GetArcMidpoint). explicitOverride always wins
+	/// for back-compat; otherwise falls back to the legacy showPos-based midpoint. Returns false
+	/// when no arc point exists (caller then flies straight).
+	/// </summary>
+	private bool TryGetArcMidpointPosition(Transform explicitOverride, Vector3 startPosition, Vector3 targetPosition, out Vector3 midpoint)
+	{
+		if (explicitOverride != null)
+		{
+			midpoint = GetArcMidpoint(explicitOverride.position, startPosition, targetPosition);
+			return true;
+		}
+		if (IsDynamicArcMidpointActive(null))
+		{
+			int count = GetCascadeDeckCount();
+			Vector2 offset = DeckCascadeLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildCascadeLayoutParams(), cascadePxToWorld);
+			float signX = cascadeDirection.x >= 0f ? 1f : -1f;
+			float signY = cascadeDirection.y >= 0f ? 1f : -1f;
+			Vector3 basePos = physicalCardDeckPos.position + _deckFocusOffset;
+			midpoint = new Vector3(
+				basePos.x + offset.x * signX + arcMidpointOffset.x,
+				basePos.y + offset.y * signY + arcMidpointOffset.y,
+				(startPosition.z + targetPosition.z) * 0.5f);
+			return true;
+		}
+		if (showPos != null)
+		{
+			midpoint = GetArcMidpoint(showPos.position, startPosition, targetPosition);
+			return true;
+		}
+		midpoint = Vector3.zero;
+		return false;
+	}
+
+	/// <summary>
+	/// Mid-arc display scale for two-phase arc tweens: physicalCardDeckSize * arcMidScaleMultiplier.
+	/// </summary>
+	private Vector3 GetArcMidScale()
+	{
+		return physicalCardDeckSize * arcMidScaleMultiplier;
+	}
+
+	/// <summary>
+	/// Scene-view aid: draws the dynamic arc midpoint for the current deck count so
+	/// arcMidpointCurveT / arcMidpointOffset can be tuned visually.
+	/// </summary>
+	private void OnDrawGizmosSelected()
+	{
+		if (!useDynamicArcMidpoint || !enableCascadeDeckLayout) return;
+		if (physicalCardDeckPos == null) return;
+		int count = GetCascadeDeckCount();
+		if (count < 1) return;
+		Vector2 offset = DeckCascadeLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildCascadeLayoutParams(), cascadePxToWorld);
+		float signX = cascadeDirection.x >= 0f ? 1f : -1f;
+		float signY = cascadeDirection.y >= 0f ? 1f : -1f;
+		Vector3 pos = physicalCardDeckPos.position + _deckFocusOffset;
+		pos.x += offset.x * signX + arcMidpointOffset.x;
+		pos.y += offset.y * signY + arcMidpointOffset.y;
+		Gizmos.color = Color.cyan;
+		Gizmos.DrawWireSphere(pos, 0.25f);
+	}
+
 
 	/// <summary>
 	/// Batch animation: arc via showPos to pop-up peak, then slot in to deck top.
@@ -756,26 +854,35 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			peakPos.z += popUpZBoost;
 			Vector3 peakScale = GetPopUpPeakScale(physScript);
 
-			// Arc via showPos
+			// Arc via the dynamic cascade midpoint (or legacy showPos fallback)
 			Sequence arcSeq = DOTween.Sequence();
 			float scaledDuration = CombatAnimationSpeed.ScaleDuration(duration);
 			float halfDuration = scaledDuration * 0.5f;
+			bool dynamicArc = IsDynamicArcMidpointActive(null);
 
-			if (showPos != null)
+			if (TryGetArcMidpointPosition(null, physicalCard.transform.position, peakPos, out Vector3 arcMidpoint))
 			{
 				// VISUAL-FIX(2026-06-14): showPos z fixed at -80 caused Stage arc to jump far away.
 				//   Fix: arc midpoint z = midpoint of current card z and peak z.
-				Vector3 arcMidpoint = GetArcMidpoint(showPos.position, physicalCard.transform.position, peakPos);
 				arcSeq.Append(physicalCard.transform.DOMove(arcMidpoint, halfDuration).SetEase(Ease.OutQuad));
 				arcSeq.Append(physicalCard.transform.DOMove(peakPos, halfDuration).SetEase(Ease.InOutQuad));
 			}
 			else
 			{
-				// showPos is null: straight line to peak
+				// No arc midpoint source: straight line to peak
 				arcSeq.Append(physicalCard.transform.DOMove(peakPos, scaledDuration).SetEase(Ease.OutQuad));
 			}
 
-			arcSeq.Join(physicalCard.transform.DOScale(peakScale, scaledDuration).SetEase(Ease.OutQuad));
+			// Dynamic arc: two-phase scale (current -> mid-arc display scale -> peak scale).
+			if (dynamicArc && arcMidScaleEnabled)
+			{
+				arcSeq.Insert(0f, physicalCard.transform.DOScale(GetArcMidScale(), halfDuration).SetEase(Ease.OutQuad));
+				arcSeq.Insert(halfDuration, physicalCard.transform.DOScale(peakScale, halfDuration).SetEase(Ease.OutQuad));
+			}
+			else
+			{
+				arcSeq.Join(physicalCard.transform.DOScale(peakScale, scaledDuration).SetEase(Ease.OutQuad));
+			}
 
 			arcSeq.OnComplete(() =>
 			{
@@ -1202,12 +1309,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				moveSequence.AppendInterval(delay);
 			}
 
-			if (showPos != null)
+			bool dynamicArc = IsDynamicArcMidpointActive(null);
+			if (TryGetArcMidpointPosition(null, physicalCard.transform.position, targetPos, out Vector3 arcMidpoint))
 			{
-				// Use arc trajectory through showPos
+				// Use arc trajectory through the dynamic cascade midpoint (or legacy showPos fallback)
 				// VISUAL-FIX(2026-06-14): showPos z fixed at -80 caused shuffle arc to jump far away.
 				//   Fix: arc midpoint z = midpoint of current card z and target z.
-				Vector3 arcMidpoint = GetArcMidpoint(showPos.position, physicalCard.transform.position, targetPos);
 				moveSequence.Append(
 					physicalCard.transform.DOMove(arcMidpoint, shuffleDuration * 0.5f).SetEase(Ease.OutQuad)
 				);
@@ -1227,9 +1334,19 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			Vector3 targetScale = (shuffleIndices != null && shuffleIndices.TryGetValue(physicalCard, out int deckIndex))
 				? GetDeckScaleAtIndex(deckIndex)
 				: physicalCardDeckSize;
-			moveSequence.Join(
-				physicalCard.transform.DOScale(targetScale, shuffleDuration).SetEase(Ease.InOutQuad)
-			);
+			// Dynamic arc: two-phase scale (current -> mid-arc display scale -> depth scale).
+			// Insert times are absolute, so include the stagger delay.
+			if (dynamicArc && arcMidScaleEnabled)
+			{
+				moveSequence.Insert(delay, physicalCard.transform.DOScale(GetArcMidScale(), shuffleDuration * 0.5f).SetEase(Ease.OutQuad));
+				moveSequence.Insert(delay + shuffleDuration * 0.5f, physicalCard.transform.DOScale(targetScale, shuffleDuration * 0.5f).SetEase(Ease.InQuad));
+			}
+			else
+			{
+				moveSequence.Join(
+					physicalCard.transform.DOScale(targetScale, shuffleDuration).SetEase(Ease.InOutQuad)
+				);
+			}
 
 			// VISUAL-FIX(2026-07-24): Cards stayed face-up for the whole shuffle flight and only
 			//   flipped face-down on landing, exposing faces (and shuffle order) mid-animation.

@@ -68,6 +68,23 @@ public static class DeckCascadeLayout
 	}
 
 	/// <summary>
+	/// Offset (pre-direction-mirror) at a fractional position along the cascade walk.
+	/// t in [0,1]: 0 = front card, 1 = deepest card. Interpolates between the two bracketing
+	/// card offsets from the cached ComputeOffsets, so coverage normalization and small-deck
+	/// clamping are inherited for free. Used by the dynamic arc midpoint (showPos) seam.
+	/// </summary>
+	public static Vector2 ComputeOffsetAtCurveT(int deckCount, float t, Params p, float pxToWorld)
+	{
+		Vector2[] offsets = ComputeOffsets(deckCount, p, pxToWorld);
+		if (offsets.Length == 0) return Vector2.zero;
+		float ci = Mathf.Clamp01(t) * (offsets.Length - 1);
+		int lo = Mathf.FloorToInt(ci);
+		int hi = Mathf.CeilToInt(ci);
+		if (lo == hi) return offsets[lo];
+		return Vector2.Lerp(offsets[lo], offsets[hi], ci - lo);
+	}
+
+	/// <summary>
 	/// Per-card scale multiplier. cascadeIndex 0 (front) = 1, deepest card approaches minScale.
 	/// </summary>
 	public static float ComputeScale(int cascadeIndex, int deckCount, Params p)

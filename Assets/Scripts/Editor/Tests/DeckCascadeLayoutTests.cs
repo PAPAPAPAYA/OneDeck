@@ -208,4 +208,38 @@ public class DeckCascadeLayoutTests
 		var offsetsOnAgain = DeckCascadeLayout.ComputeOffsets(6, DefaultParams, PxToWorld);
 		Assert.AreEqual(offsetsOn[5], offsetsOnAgain[5], "cache must key on coverage fields");
 	}
+
+	// A7: ComputeOffsetAtCurveT (dynamic arc midpoint helper) interpolates the walked offsets.
+	[Test]
+	public void A7_OffsetAtCurveT_MatchesBracketingOffsets()
+	{
+		var offsets = DeckCascadeLayout.ComputeOffsets(20, DefaultParams, PxToWorld);
+
+		// t=0 pins the front card, t=1 pins the deepest card.
+		Assert.AreEqual(offsets[0], DeckCascadeLayout.ComputeOffsetAtCurveT(20, 0f, DefaultParams, PxToWorld), "t=0");
+		Assert.AreEqual(offsets[19], DeckCascadeLayout.ComputeOffsetAtCurveT(20, 1f, DefaultParams, PxToWorld), "t=1");
+
+		// t=0.5 with 20 cards -> cascadeIndex 9.5 -> midpoint of offsets[9]/offsets[10].
+		Vector2 expectedMid = Vector2.Lerp(offsets[9], offsets[10], 0.5f);
+		Vector2 actualMid = DeckCascadeLayout.ComputeOffsetAtCurveT(20, 0.5f, DefaultParams, PxToWorld);
+		Assert.AreEqual(expectedMid.x, actualMid.x, ScaleEpsilon, "t=0.5 x");
+		Assert.AreEqual(expectedMid.y, actualMid.y, ScaleEpsilon, "t=0.5 y");
+
+		// Out-of-range t clamps to the walk ends.
+		Assert.AreEqual(offsets[0], DeckCascadeLayout.ComputeOffsetAtCurveT(20, -0.5f, DefaultParams, PxToWorld), "t<0 clamps");
+		Assert.AreEqual(offsets[19], DeckCascadeLayout.ComputeOffsetAtCurveT(20, 1.5f, DefaultParams, PxToWorld), "t>1 clamps");
+	}
+
+	// A7b: edge deck counts never throw; the coverage-normalized small-deck walk is inherited.
+	[Test]
+	public void A7_OffsetAtCurveT_EdgeCountsAndCoverage()
+	{
+		Assert.AreEqual(Vector2.zero, DeckCascadeLayout.ComputeOffsetAtCurveT(0, 0.5f, DefaultParams, PxToWorld), "deckCount 0");
+		Assert.AreEqual(Vector2.zero, DeckCascadeLayout.ComputeOffsetAtCurveT(1, 0.5f, DefaultParams, PxToWorld), "deckCount 1");
+
+		// 6 cards: t=1 must equal the coverage-normalized deepest offset (golden table).
+		Vector2 tail = DeckCascadeLayout.ComputeOffsetAtCurveT(6, 1f, DefaultParams, PxToWorld);
+		Assert.AreEqual(-Demo6OffsetX[5] * PxToWorld, tail.x, PosEpsilon, "small-deck tail x");
+		Assert.AreEqual(-Demo6OffsetY[5] * PxToWorld, tail.y, PosEpsilon, "small-deck tail y");
+	}
 }
