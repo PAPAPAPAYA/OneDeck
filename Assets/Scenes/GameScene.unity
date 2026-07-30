@@ -284,7 +284,7 @@ Transform:
   m_GameObject: {fileID: 17063022}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.7, y: -0.7, z: 0}
+  m_LocalPosition: {x: 0.7, y: -1.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3499,7 +3499,7 @@ Transform:
   m_GameObject: {fileID: 521203767}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.7, y: -0.7, z: -5}
+  m_LocalPosition: {x: 0.7, y: -1.4, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5730,10 +5730,10 @@ MonoBehaviour:
   autoReveal: 0
   combatAnimationSpeedScale: 1.2
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
-  overtimeRoundThreshold: 5
+  overtimeRoundThreshold: 20
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
   fatigueAmount: 1
-  fatigueRevealThreshold: 0
+  fatigueRevealThreshold: 99
   totalCardsRevealed: 0
   lastCardGotStatusEffect: {fileID: 0}
   lastCardGotPower: {fileID: 0}
@@ -7265,10 +7265,10 @@ MonoBehaviour:
   cascadePxToWorld: 0.021
   cascadeShrinkCount: 4
   cascadeMinScale: 0.45
-  cascadeScalePower: 4
-  cascadeStartSpacing: {x: 90, y: 50}
+  cascadeScalePower: 3
+  cascadeStartSpacing: {x: 70, y: 60}
   cascadeMinSpacing: {x: 7, y: 7}
-  cascadeSpacingPower: 4
+  cascadeSpacingPower: 3
   cascadeTailReturn: 1
   cascadeDirection: {x: -1, y: 1}
   cascadeTailBend: 0
@@ -7279,9 +7279,9 @@ MonoBehaviour:
   revealCardCountsAsDeckFront: 1
   useDynamicArcMidpoint: 1
   arcMidpointCurveT: 0.5
-  arcMidpointOffset: {x: 0, y: 0}
+  arcMidpointOffset: {x: 1, y: 2}
   arcMidScaleEnabled: 1
-  arcMidScaleMultiplier: 1.2
+  arcMidScaleMultiplier: 0.6
   physicalCardNewTempCardPos: {fileID: 2043192994}
   physicalCardNewTempCardSize: {x: 1, y: 1, z: 1}
   statusEffectConsumePos: {fileID: 1349775169}
@@ -8271,22 +8271,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 2424560831447566516, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 8194172770049208083, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 1590914822883340471, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1 &1855501820
 GameObject:
