@@ -163,6 +163,31 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 			}
 		}
 
+		// VISUAL-FIX(2026-07-30): Emphasize/popup plays while deck is still peel-focused
+		//   Cause:    Attack and deck-move request paths both yield RestoreDeckFocusCoroutine
+		//             when IsDeckFocused, but the source-card popup/emphasize feedback had no
+		//             such guard. After an off-reveal Attack recorder peels the deck (and the
+		//             batch-wide HoldDeckFocus keeps it focused), the next recorder's emphasize
+		//             played on top of the still-peeled deck instead of waiting for the restore.
+		//   Fix:      For non-attack recorders, wait for RestoreDeckFocusCoroutine before the
+		//             popup/emphasize feedback, mirroring the attack path. Attack recorders
+		//             (sourceNeedsPeelFocus) are excluded so consecutive attacks still use the
+		//             smooth TransitionFocusCoroutine instead of restore-then-re-peel.
+		//   Affects:  RecorderAnimationPlayer
+		//   Regress:  Deck with an off-reveal attack card (e.g. SPIKE_SKELETON) chained before
+		//             a reveal-zone effect card (e.g. GRAVE_PUNCH). Verify the emphasize pulse
+		//             plays only after the deck restores to its normal layout. Also verify
+		//             consecutive off-reveal attacks still transition focus without a restore.
+		if (!sourceNeedsPeelFocus && CombatManager.Me != null)
+		{
+			var restoreUX = CombatManager.Me.visuals as CombatUXManager;
+			if (restoreUX != null && restoreUX.IsDeckFocused)
+			{
+				TestManager.Log("[RecorderAnimationPlayer] Deck still focused before popup/emphasize; waiting for RestoreDeckFocusCoroutine card=" + cardName);
+				yield return restoreUX.StartCoroutine(restoreUX.RestoreDeckFocusCoroutine());
+			}
+		}
+
 		if (sourceNeedsPopup && recorder.cardObject != null)
 		{
 			bool shouldPopUp = true;
