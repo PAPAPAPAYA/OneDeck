@@ -212,6 +212,39 @@ public class ResultStatsPanelTests : HeadlessCombatTestFixture
 		panel.Clear();
 	}
 
+	[Test]
+	public void Build_DamageColumns_ShowShareOfColumnTotal()
+	{
+		var canvasGo = CreateGameObject("TestCanvas3");
+		var canvas = canvasGo.AddComponent<Canvas>();
+
+		var panelGo = CreateGameObject("TestResultStatsPanel3");
+		var panel = panelGo.AddComponent<ResultStatsPanel>();
+
+		var rows = new List<PerCardStatRecord>
+		{
+			MakeRow("big", "Big", CardFaction.Player, CombatStatType.DamageDealtToOpponent, 12f),
+			MakeRow("small", "Small", CardFaction.Player, CombatStatType.DamageDealtToOpponent, 4f)
+		};
+
+		panel.Build(canvas, rows);
+
+		var content = canvas.transform.Find("ResultStatsPanelRoot/Body/ScrollView/Viewport/Content");
+		Assert.IsNotNull(content);
+
+		// Cell order per row: 0=Card, 1=Side, 2=Dmg>Opp (first registry column)
+		var bigDmgCell = content.GetChild(0).GetChild(2).GetComponentInChildren<TMPro.TextMeshProUGUI>();
+		var smallDmgCell = content.GetChild(1).GetChild(2).GetComponentInChildren<TMPro.TextMeshProUGUI>();
+		Assert.AreEqual("12 (75%)", bigDmgCell.text, "Damage cell shows value and share of the combat-wide column total");
+		Assert.AreEqual("4 (25%)", smallDmgCell.text);
+
+		// Dmg>Self (cell 3) has a zero total: plain number, no percentage
+		var bigSelfCell = content.GetChild(0).GetChild(3).GetComponentInChildren<TMPro.TextMeshProUGUI>();
+		Assert.AreEqual("0", bigSelfCell.text);
+
+		panel.Clear();
+	}
+
 	private static PerCardStatRecord MakeRow(string id, string name, CardFaction faction, CombatStatType stat, float value)
 	{
 		var record = new PerCardStatRecord

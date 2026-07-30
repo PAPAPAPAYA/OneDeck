@@ -10,12 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: PlayerDeckRef
-  m_EditorClassIdentifier: 
+  m_Name: RecordedDeck_Session0_20260730_225153
+  m_EditorClassIdentifier: Assembly-CSharp::DeckSO
   deck:
+  - {fileID: 8718476725744197808, guid: b31febef4787aa6428fa95992a2ed7e5, type: 3}
+  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
+  - {fileID: 8718476725744197808, guid: 3835a44c230c51f4bb44d983485ee07e, type: 3}
   - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
   - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  defaultDeck: {fileID: 11400000, guid: 02a481959776c8e4e908da6540c601a8, type: 2}
-  resetOnStart: 1
-  description: player's deck, data only no instances
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: 'Auto-recorded player deck.
+
+    Cards: 3
+
+    Missing: 2
+
+    Session:
+    0
+
+    Recorded: 2026-07-30 22:51:53'

@@ -35,6 +35,12 @@ public class CombatStatDef
 	public string columnHeader;
 	public int columnSortPriority;
 
+	/// <summary>
+	/// When true, the Result panel appends the value's share of the column total
+	/// (e.g. "12 (34%)") — the card's contribution to the combat-wide sum of this stat.
+	/// </summary>
+	public bool showPercentageOfTotal;
+
 	/// <summary>Rich-text hex color for this column, sourced from the central palette. Falls back to white.</summary>
 	public string ColorHex
 	{
@@ -62,8 +68,8 @@ public static class CombatStatRegistry
 {
 	public static readonly List<CombatStatDef> Stats = new List<CombatStatDef>
 	{
-		new CombatStatDef { type = CombatStatType.DamageDealtToOpponent, columnHeader = "Dmg>Opp", columnSortPriority = 0 },
-		new CombatStatDef { type = CombatStatType.DamageDealtToSelf, columnHeader = "Dmg>Self", columnSortPriority = 1 },
+		new CombatStatDef { type = CombatStatType.DamageDealtToOpponent, columnHeader = "Dmg>Opp", columnSortPriority = 0, showPercentageOfTotal = true },
+		new CombatStatDef { type = CombatStatType.DamageDealtToSelf, columnHeader = "Dmg>Self", columnSortPriority = 1, showPercentageOfTotal = true },
 		new CombatStatDef { type = CombatStatType.TriggerCount, columnHeader = "Trig", columnSortPriority = 2 },
 		new CombatStatDef { type = CombatStatType.PowerGiven, columnHeader = "PowGive", columnSortPriority = 3 },
 		new CombatStatDef { type = CombatStatType.PowerReceived, columnHeader = "PowRecv", columnSortPriority = 4 }

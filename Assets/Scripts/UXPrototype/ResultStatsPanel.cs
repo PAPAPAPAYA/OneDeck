@@ -71,6 +71,7 @@ public class ResultStatsPanel : MonoBehaviour
 		_parentCanvas = canvas;
 		_rows = rows;
 		_layout = layout ?? new ResultStatsPanelLayout();
+		ComputeColumnTotals(rows);
 
 		// Root: own Canvas + CanvasScaler so internal pixels are predictable regardless of the game canvas
 		var rootGo = new GameObject("ResultStatsPanelRoot", typeof(RectTransform));
@@ -224,13 +225,46 @@ public class ResultStatsPanel : MonoBehaviour
 		{
 			string value = isHeader
 				? def.columnHeader
-				: ((int)row.GetValue(def.type)).ToString();
+				: FormatStatValue(def, row);
 			var cell = CreateCell(parent, value, _layout.statColumnFlex, TextAlignmentOptions.Center, isHeader);
 			if (!isHeader && ColorUtility.TryParseHtmlString(def.ColorHex, out var statColor))
 			{
 				cell.color = statColor;
 			}
 		}
+	}
+
+	// Column totals across all rows, computed in Build for stats with showPercentageOfTotal
+	private readonly Dictionary<CombatStatType, float> _columnTotals = new Dictionary<CombatStatType, float>();
+
+	private void ComputeColumnTotals(List<PerCardStatRecord> rows)
+	{
+		_columnTotals.Clear();
+		foreach (var def in CombatStatRegistry.Stats)
+		{
+			if (!def.showPercentageOfTotal) continue;
+			float total = 0f;
+			if (rows != null)
+			{
+				foreach (var row in rows) total += row.GetValue(def.type);
+			}
+			_columnTotals[def.type] = total;
+		}
+	}
+
+	/// <summary>
+	/// "12 (34%)" for stats marked showPercentageOfTotal (share of the column total,
+	/// i.e. this card's contribution to the combat-wide sum); plain number otherwise.
+	/// </summary>
+	private string FormatStatValue(CombatStatDef def, PerCardStatRecord row)
+	{
+		float value = row.GetValue(def.type);
+		if (!def.showPercentageOfTotal) return ((int)value).ToString();
+		if (value <= 0f) return "0";
+		float total = _columnTotals.TryGetValue(def.type, out var t) ? t : 0f;
+		if (total <= 0f) return ((int)value).ToString();
+		int pct = Mathf.RoundToInt(value / total * 100f);
+		return (int)value + " (" + pct + "%)";
 	}
 
 	private TextMeshProUGUI CreateCell(Transform parent, string text, float flexWidth, TextAlignmentOptions alignment, bool isHeader)
