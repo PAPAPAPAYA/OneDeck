@@ -246,6 +246,7 @@ public class CombatManager : MonoBehaviour
 	private void Update()
 	{
 		if (currentGamePhaseRef.Value() != EnumStorage.GamePhase.Combat) return;
+		CheckDebugOvertimeShortcut();
 		switch (currentCombatState)
 		{
 			case EnumStorage.CombatState.GatherDeckLists:
@@ -309,6 +310,20 @@ public class CombatManager : MonoBehaviour
 		CombatPerCardStatsTracker.Me?.BeginSession();
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
+	}
+
+	private void CheckDebugOvertimeShortcut()
+	{
+		// Test shortcut: Ctrl+Shift+O during Combat phase triggers overtime fatigue immediately.
+		// Only fires when input is not blocked (i.e. no animation playback / confirm pending).
+		if (!Input.GetKeyDown(KeyCode.O)) return;
+		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl)) return;
+		if (!Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift)) return;
+		if (IsInputBlocked || isPlayingEffectAnimations) return;
+
+		var msg = $"{GameColorPalette.Me.damage.OpenTag}疲劳!</color> 测试快捷键触发Overtime";
+		CombatLog.me?.Append(msg);
+		AddFatigueCards();
 	}
 
 	public void CheckFatigueNAddFatigue()
