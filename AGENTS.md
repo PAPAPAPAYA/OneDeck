@@ -11,11 +11,12 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 | **Command Separator** | PowerShell uses `;` instead of `&&` |
 | **Comments & Docs** | English only |
 | **Encoding** | UTF-8 only |
-| **AGENTS.md Size** | Keep this file under 32 KB; trim or condense before it exceeds the limit |
+| **AGENTS.md Size** | Hard limit 32 KB (32,768 bytes). After ANY edit to this file, run `wc -c AGENTS.md`; if over the limit, trim before finishing. Keep ≥ 1 KB headroom |
 
 ## Agent Behavior
 - **Code Changes**: Do not execute code modifications except adding logs, unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
 - **Document Format**: If any non Unity-generated file is found to violate the CRLF + Tab leading-indent standard, convert it to the compliant format before editing.
+- **Editing AGENTS.md**: When adding content, condense wording or move detail into `plans/`/`docs/` files and reference them. Never finish an edit with the file over the 32 KB limit — the size check is part of the edit.
 
 ## Core Loop
 
@@ -51,7 +52,7 @@ Assets/
 ### Flow
 1. **GatherDecks**: Merge both decks, add Start Card to bottom.
 2. **Reveal**: Reveal cards one by one.
-3. **Start Card**: Triggers shuffle effect → captures `AnimationRequestType.Shuffle`. Skips `onMeRevealed` / `onAnyCardRevealed`. `afterShuffle` fires **after** shuffle animation completes and next card reaches reveal zone.
+3. **Start Card**: Triggers shuffle effect → captures `AnimationRequestType.Shuffle`. Skips `onMeRevealed` / `onAnyCardRevealed`.
 
 ### Zones
 - `combinedDeckZone` - Merged deck (index 0 = bottom, index Count-1 = top)
@@ -61,8 +62,7 @@ Assets/
 - `index 0` = bottom = **last revealed** = furthest back in visual stack.
 - `index Count-1` = top = **first revealed** = frontmost in visual stack.
 - Reveal flow always pops `combinedDeckZone[^1]` (the top card).
-- **"Next" in deck order** means cards at lower indices (closer to bottom, revealed later). This is the direction `BuryNextXCards` travels.
-- **"Before this card in deck order"** also means lower indices — do not confuse with "before" in time/reveal order, which would mean higher indices.
+- **"Next" / "before this card" in deck order** means lower indices (closer to bottom, revealed later) — not "before" in time/reveal order. This is the direction `BuryNextXCards` travels.
 - **Bury** sends cards to `index 0` (bottom, last revealed).
 - **Stage** sends cards to `index Count-1` (top, first revealed).
 - **Delay** moves a card toward `index 0` by 1 slot (later reveal).
@@ -70,14 +70,14 @@ Assets/
 ### Physical Deck Layout (Cascade)
 - The combat physical deck uses the **Smooth Curve Cascade Stack**: the front card (deck top) is largest at the `physicalCardDeckPos` anchor; the front segment sweeps up-left with progressively shrinking size/spacing; after the turning point the tail hooks back at minimum spacing. Shop layout is unaffected.
 - `CombatUXManager.enableCascadeDeckLayout` (default `true`) toggles cascade vs the legacy linear fan. Legacy `xOffset/yOffset/zOffset` fields only serve the fallback path.
-- `CombatUXManager.revealCardCountsAsDeckFront` (default `true`) counts the reveal-zone card as cascadeIndex 0 (the front slot), so every deck card sits one cascade step deeper while a card is revealed. Single source of truth: `GetCascadeDeckCount()` = `physicalCardsInDeck.Count` + 1 when the toggle is on, cascade is enabled, and `physicalCardInRevealZone != null`. Effect: revealing a card no longer re-lays-out the deck; the deck slides forward one step only when the card returns to the bottom. In `MoveRevealedCardToBottom` the legacy `effectiveCount = Count - 1` (next card leaving) and the +1 front slot cancel out, so it passes `physicalCardsInDeck.Count` when the toggle is on.
-- All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(..., CascadeConfig)`. Every caller (layout, popup peaks, slot-in, reveal entry, reveal-to-bottom, `MoveCardToIndex`, peel focus) inherits the curve with no caller-side changes.
+- `CombatUXManager.revealCardCountsAsDeckFront` (default `true`) counts the reveal-zone card as cascadeIndex 0 (front slot), so revealing no longer re-lays-out the deck — it slides forward one step only when the card returns to the bottom. Single source of truth: `GetCascadeDeckCount()`. In `MoveRevealedCardToBottom` the legacy `effectiveCount = Count - 1` and the +1 front slot cancel out, so it passes `physicalCardsInDeck.Count`.
+- All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(..., CascadeConfig)`; every caller (layout, popup peaks, slot-in, reveal entry/exit, `MoveCardToIndex`, peel focus) inherits the curve unchanged.
 - `DeckCascadeLayout` (pure static, unit-testable) holds the Bezier + arc-length math ported 1:1 from `docs/demo/CardArrangementDemo.html`; results are cached per `(deckCount, pxToWorld, Params)`.
 - Index mapping: `cascadeIndex = deckCount - 1 - unityIndex` (cascadeIndex 0 = front card = deck top). Z depth keeps the existing formula `basePos.z - zOffset * index`.
 - Per-index scale: `GetDeckScaleAtIndex(i)` = `physicalCardDeckSize` × cascade scale; position jitter is multiplied by the card's cascade scale when `cascadeScaleJitterWithCard` is on so the tight tail stays clean.
-- **Coverage normalization (Plan B)**: per-card steps are scaled by one shared factor `clamp(cascadeCoverageTarget × curveLength / rawStepSum, 1, cascadeCoverageCap)` (stretch only, never compress), so small decks still reach the curve's hook region instead of looking straight. Defaults: normalize on, target 0.62, cap 2.5. Large decks sit above the target coverage naturally → factor 1 → layout unchanged.
+- **Coverage normalization**: per-card steps share one stretch-only scale factor (clamped by `cascadeCoverageCap`) so small decks still reach the curve's hook region instead of looking straight; large decks stay above the target coverage naturally and are unaffected.
 - EditMode coverage: `Assets/Scripts/Editor/Tests/DeckCascadeLayoutTests.cs` (golden values generated from the demo).
-- **Dynamic arc midpoint (replaces fixed `showPos`)**: with `CombatUXManager.useDynamicArcMidpoint` on (default), all deck-bound arcs (reveal→bottom, Stage batch, ToTop/ToBottom/ToIndex, shuffle) compute their midpoint from the cascade walk at `arcMidpointCurveT` plus `arcMidpointOffset`, via the `TryGetArcMidpointPosition` seam and `DeckCascadeLayout.ComputeOffsetAtCurveT` (fractional interpolation of the cached walked offsets). Fallback order: explicit `CardMoveConfig.arcMidpoint` > dynamic > legacy scene `showPos`. With `arcMidScaleEnabled` (default on), dynamic arcs scale two-phase: current → `physicalCardDeckSize × arcMidScaleMultiplier` → landing scale; legacy/explicit paths keep the single joined scale tween. Scene aid: `OnDrawGizmosSelected` draws the computed midpoint (cyan sphere).
+- **Dynamic arc midpoint (replaces fixed `showPos`)**: with `CombatUXManager.useDynamicArcMidpoint` on (default), all deck-bound arcs (reveal→bottom, Stage batch, ToTop/ToBottom/ToIndex, shuffle) compute their midpoint from the cascade walk at `arcMidpointCurveT` plus `arcMidpointOffset`, via the `TryGetArcMidpointPosition` seam and `DeckCascadeLayout.ComputeOffsetAtCurveT`. Fallback order: explicit `CardMoveConfig.arcMidpoint` > dynamic > legacy scene `showPos`. With `arcMidScaleEnabled` (default on), dynamic arcs scale two-phase via `arcMidScaleMultiplier`. Scene aid: `OnDrawGizmosSelected` draws the midpoint.
 
 ### Controls
 - First click: Reveal next card.
@@ -139,8 +139,8 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 
 #### Tag Display Name & Tooltip
 - `TagTooltipDatabaseSO` (`Assets/Resources/TagTooltipDatabase.asset`, lazy singleton `Me`) maps each tag to a `displayName` StringSO (`Assets/SORefs/Strings/TagNames/`) and a tooltip `description` StringSO (`Assets/SORefs/Strings/TagTooltips/`). All StringSO assets must have `reset = false`.
-- **Single source of truth**: every user-visible tag text resolves through `TagTooltipDatabaseSO.GetTagDisplayName(tag)` (falls back to the enum name when unconfigured) — the in-card tag print, the hover tooltip title (`CardTagTooltip`), and cardDesc `<tag:EnumName>` placeholders. To rename a tag, edit only the `TagName_*.asset` value.
-- **cardDesc placeholder**: `<tag:EnumName>` renders as the display name (no brackets added — authors write `[<tag:X>]` for the bracketed style). Resolved inside `CardScript.ComputeDynamicCardDesc`, so display snapshots are covered. Never hand-write tag names in cardDesc.
+- **Single source of truth**: every user-visible tag text resolves through `TagTooltipDatabaseSO.GetTagDisplayName(tag)` (falls back to the enum name when unconfigured) — in-card tag print, hover tooltip title (`CardTagTooltip`), and cardDesc `<tag:EnumName>` placeholders. To rename a tag, edit only the `TagName_*.asset` value.
+- **cardDesc placeholder**: `<tag:EnumName>` renders as the display name (no brackets added — authors write `[<tag:X>]` for the bracketed style), resolved inside `CardScript.ComputeDynamicCardDesc`. Never hand-write tag names in cardDesc.
 - Hover tooltip: `CardTagTooltip` (self-built canvas), triggered from `CardPhysObjScript` hover (`hoverDelay`).
 
 ## Events
@@ -159,19 +159,19 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 
 ## Key Files
 
-All under `Assets/Scripts/` in the folder matching their role: `Managers/CombatManager.cs`, `Managers/CombatFuncs.cs`, `Managers/GameEventStorage.cs`, `Managers/ValueTrackerManager.cs`, `Managers/EnumStorage.cs`, `Managers/AnimationStateTracker.cs`, `Managers/RecorderAnimationPlayer.cs`, `Managers/CardFactory.cs`, `Managers/ICombatVisuals.cs`, `Managers/CombatLog.cs`, `Managers/WriteRead/CombatPerCardStatsTracker.cs`, `Effects/HPAlterEffect.cs`, `Effects/StatusEffect/StatusEffectGiverEffect.cs`, `Effects/StartCardShuffleEffect.cs`, `Card/CardScript.cs`, `Card/CostNEffectContainer.cs`, `UXPrototype/CombatUXManager.cs`, `UXPrototype/CombatHPBarPresenter.cs`, `UXPrototype/DeckCascadeLayout.cs`, `UXPrototype/DeckPositionCalculator.cs`, `UXPrototype/ResultStatsPanel.cs`. Game rules: `docs/GameRules.md`.
+All under `Assets/Scripts/` in the folder matching their role: `Managers/CombatManager`, `Managers/CombatFuncs`, `Managers/GameEventStorage`, `Managers/ValueTrackerManager`, `Managers/EnumStorage`, `Managers/AnimationStateTracker`, `Managers/RecorderAnimationPlayer`, `Managers/CardFactory`, `Managers/ICombatVisuals`, `Managers/CombatLog`, `Managers/WriteRead/CombatPerCardStatsTracker`, `Effects/HPAlterEffect`, `Effects/StatusEffect/StatusEffectGiverEffect`, `Effects/StartCardShuffleEffect`, `Card/CardScript`, `Card/CostNEffectContainer`, `UXPrototype/CombatUXManager`, `UXPrototype/CombatHPBarPresenter`, `UXPrototype/DeckCascadeLayout`, `UXPrototype/DeckPositionCalculator`, `UXPrototype/ResultStatsPanel`. Game rules: `docs/GameRules.md`.
 
 ## Result Screen Per-Card Stats
 
 Split two-half panel (top = player-created cards, bottom = enemy-created cards) of the combat that just finished (plan: `plans/plan-result-per-card-stats-2026-07-23.md`).
 
 - **Store**: `CombatPerCardStatsTracker.Me` (singleton, auto-created by `CombatManager.Awake()`). Session-scoped, no persistence: `BeginSession()` wipes the store (records, deck-count snapshot, creator-side registry) in `CombatManager.GatherDecks()`.
-- **Rows keyed by `(cardTypeID, creatorSide)`** — the faction that CREATED the card, not its current owner: initial-deck cards = their deck's owner (registered by `RegisterDeckComposition(combinedDeckZone)` right after `BeginSession()`); mid-combat cards = the effect source's faction (`RegisterGeneratedCard`, funneled through `CombatFuncs.AddCard_TargetSpecific(..., creatorCard)`; all call sites pass `myCardScript`). Fallback for unregistered cards = owner faction. Neutral/start cards excluded by the `IsNeutralCard` guard in `Add()` — the single exclusion point.
-- **Damage attribution is creator-relative**: `RecordDamage(source, amount, victimSide)` counts `DamageDealtToOpponent` when the victim opposes the CREATOR (so a player-generated enemy-owned curse hurting the enemy is player-side damage-to-opponent), else `DamageDealtToSelf`. Recorded damage is the **actual HP lost by the victim** — `ProcessDamage` returns the hp delta, so shield-soaked and overkill amounts are excluded (supersedes the raw pre-shield decision of 2026-07-23). Other stats: `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains), `PowerGiven`/`PowerReceived` (stack amounts; transfers count). `DamageDealtToSelf` is recorded but hidden from the panel via `CombatStatDef.showInResultPanel = false`.
+- **Rows keyed by `(cardTypeID, creatorSide)`** — the faction that CREATED the card, not its current owner: initial-deck cards via `RegisterDeckComposition(combinedDeckZone)`; mid-combat cards via `RegisterGeneratedCard` (funneled through `CombatFuncs.AddCard_TargetSpecific(..., creatorCard)`; all call sites pass `myCardScript`). Fallback = owner faction. Neutral/start cards excluded by the `IsNeutralCard` guard in `Add()` — the single exclusion point.
+- **Damage attribution is creator-relative**: `RecordDamage(source, amount, victimSide)` counts `DamageDealtToOpponent` when the victim opposes the CREATOR, else `DamageDealtToSelf`. Recorded damage is the **actual HP lost** (`ProcessDamage` hp delta — shield-soaked and overkill amounts excluded). Other stats: `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains), `PowerGiven`/`PowerReceived` (stack amounts; transfers count). `DamageDealtToSelf` is recorded but hidden via `CombatStatDef.showInResultPanel = false`.
 - **Hooks**: `CostNEffectContainer.InvokeEffectEvent()` (inside the `EffectCanBeInvoked` true branch), `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self` (each computes `victimSide` from owner/their status refs), `EffectScript.ApplyStatusEffectCore` Power branch.
-- **Row display**: name + copy-count suffix `" (X)"` (initial-deck copies per `(cardTypeID, creatorSide)`, from the `_deckCounts` snapshot; shown only when X ≥ 2; mid-combat cards default to 1). Row sort in `GetSessionRows()` (by `DamageDealtToOpponent` desc then faction).
-- **UI**: `ResultStatsPanel` builds two stacked halves fully at runtime (no prefab/scene wiring) with its own Canvas + CanvasScaler. Each half = faction-colored title (`YOU`/`ENEMY`) + header + scrollable rows with all registry columns; `showPercentageOfTotal` columns render `"12 (34%)"` — share of THAT HALF's column total. `PhaseManager.EnteringResultPhase()` builds it once; `ExitingResultPhase()` clears it. Total rounds of the combat are shown separately via a `Rounds: N` line in `PhaseManager.ShowResult()`. It reads `CombatManager.roundsLastCombat` (captured in `ExitCombat()` before `roundNumRef` resets — `onExitCombatPhase` fires before the Result phase, so reading `roundNumRef` there would always show 0) minus 1: the start card's combat-opening shuffle increments the counter but is not a real round.
-- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction anchors, reference resolution, font/row sizes (`rowHeight` = title/header/row height), column flex weights (`nameColumnFlex`/`statColumnFlex`), `rowHorizontalPadding`, `rowSpacing` (vertical gap between title/header/rows in each half), background alpha. Play Mode Inspector edits rebuild immediately via `OnValidate`; a `Rebuild Stats Panel` context-menu entry also exists.
+- **Row display**: name + copy-count suffix `" (X)"` (initial-deck copies from the `_deckCounts` snapshot; shown only when X ≥ 2; mid-combat cards default to 1). Row sort in `GetSessionRows()` (by `DamageDealtToOpponent` desc then faction).
+- **UI**: `ResultStatsPanel` builds two stacked halves fully at runtime (no prefab/scene wiring) with its own Canvas + CanvasScaler. Each half = faction-colored title (`YOU`/`ENEMY`) + header + scrollable rows with all registry columns; `showPercentageOfTotal` columns render `"12 (34%)"` — share of THAT HALF's column total. `PhaseManager.EnteringResultPhase()` builds it once; `ExitingResultPhase()` clears it. Total rounds are shown via a `Rounds: N` line in `PhaseManager.ShowResult()`, reading `CombatManager.roundsLastCombat` (captured in `ExitCombat()` before `roundNumRef` resets) minus 1 — the start card's opening shuffle is not a real round.
+- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction anchors, reference resolution, font/row sizes, column flex weights, paddings/spacing, background alpha. Play Mode Inspector edits rebuild immediately via `OnValidate`; `Rebuild Stats Panel` context-menu entry exists.
 - **Runtime-built UI pitfall**: after setting stretch anchors on a fresh RectTransform, always zero `offsetMin/offsetMax` — the default 100×100 sizeDelta otherwise leaks into the final rect.
 - EditMode tests: `Assets/Scripts/Editor/Tests/CombatPerCardStatsTrackerTests.cs`.
 
@@ -199,14 +199,14 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 ```
 - `HPAlterEffect` captures `Attack` requests (damage already resolved in logic phase; `onHit` is null).
 - `BuryEffect` captures `PopUpBatch` then `MoveToBottomBatch`.
-- `StageEffect` captures `MoveToTopPopUpBatch` (arc via showPos to pop-up peak, then slot in to deck top).
+- `StageEffect` captures `MoveToTopPopUpBatch` (arc to pop-up peak, then slot in to deck top).
 - `StartCardShuffleEffect` captures `Shuffle` (sourceCard = startCard, targetCards = shuffled deck). `RecorderAnimationPlayer` handles it via `PlayShuffleAnimation`; `onComplete` calls `CombatManager.OnStartCardShuffleAnimationComplete()`.
 - `ExileEffect` captures `Destroy` (preceded by `PopUp` so the player sees the card being exiled).
 - `ApplyStatusEffectCore` and `ManaAlterEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
-- `StatusEffectGiverEffect` — `GiveSelfStatusEffect` runs `ApplyStatusEffectCore` (auto-captures `StatusEffectChange` only). `GiveStatusEffect`, `GiveAllFriendlyStatusEffect`, `GiveStatusEffectToLastXCards`, and `GiveStatusEffectToXFriendly` run `ApplyStatusEffectCore` synchronously then capture `PopUpBatch` + `StatusEffectProjectile` + `SlotInBatch` via `CaptureBatchStatusEffectAnimation`.
+- `StatusEffectGiverEffect` — `GiveSelfStatusEffect` runs `ApplyStatusEffectCore` (auto-captures `StatusEffectChange` only). The other `Give*` methods (`GiveStatusEffect`, `GiveAllFriendlyStatusEffect`, `GiveStatusEffectToLastXCards`, `GiveStatusEffectToXFriendly`) run it synchronously then capture `PopUpBatch` + `StatusEffectProjectile` + `SlotInBatch` via `CaptureBatchStatusEffectAnimation`.
 - `AddTempCard` captures `MoveToPopUpPosition` + `SlotIn` for each newly created card so it visibly enters the deck.
 - `CurseEffect` captures `PopUp` + `StatusEffectProjectile` + `SlotIn` (single-target). `ConsumeHostileCursePower` captures batch `StatusEffectChange` + `PopUpBatch` + `StatusEffectProjectile` (toward `statusEffectConsumePos`, per-layer projectiles) + `SlotInBatch`.
-- `ConsumeStatusEffect` — `ConsumeOwnStatusEffect` captures `PopUp` + `StatusEffectProjectile` (with `customProjectileEndPosition`) + `StatusEffectChange` + `SlotIn`. `ConsumeRandomEnemyCardsStatusEffect` captures `StatusEffectChange` + `PopUpBatch` + `StatusEffectProjectile` (`reverseProjectile=true`) + `SlotInBatch` via `CaptureBatchStatusEffectConsumeAnimation`.
+- `ConsumeStatusEffect` — `ConsumeOwnStatusEffect` captures `PopUp` + `StatusEffectProjectile` (`customProjectileEndPosition`) + `StatusEffectChange` + `SlotIn`. `ConsumeRandomEnemyCardsStatusEffect` captures batch `StatusEffectChange` + `PopUpBatch` + `StatusEffectProjectile` (`reverseProjectile=true`) + `SlotInBatch` via `CaptureBatchStatusEffectConsumeAnimation`.
 - Batch types run all card movements in parallel and yield until the last completes.
 
 **`StatusEffectProjectile` semantics:**
@@ -217,11 +217,8 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 ### Per-Projectile Status Effect Display Commit
 
 - `AnimationRequest.statusEffectDelta` carries the signed display delta for every `StatusEffectChange` request.
-- `RecorderAnimationPlayer` computes a per-card display baseline (`myStatusEffects - sum of all pending deltas`) across the entire recorder tree before playing any root recorder.
-- Deltas are applied incrementally during playback:
-	- Non-deferred `StatusEffectChange`: delta applied immediately when the request plays.
-	- Deferred `StatusEffectChange` (targets with a matching `StatusEffectProjectile` in the same recorder): delta applied when the projectile completes.
-- This ensures nested same-target status giving (e.g. `PowerReactionEffect`) updates the card text per projectile instead of committing the full card state on the first landing.
+- `RecorderAnimationPlayer` computes a per-card display baseline (`myStatusEffects - sum of all pending deltas`) across the recorder tree before playback.
+- Deltas apply incrementally: non-deferred requests when played; deferred ones (targets with a matching `StatusEffectProjectile` in the same recorder) when the projectile completes — so nested same-target giving (e.g. `PowerReactionEffect`) updates card text per projectile instead of committing full state on the first landing.
 
 ### Snapshot Target Indices
 `AnimationRequest` carries an optional `List<int> targetIndices` (parallel to `targetCards`). Effects that move cards within the deck must **snapshot** each target card's logical index at capture time **before** raising reactive events (e.g. `onMeBuried` → `StageSelf`), because reactive effects may modify deck order and pollute the index.
@@ -229,25 +226,23 @@ enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, 
 ### ApplyAnimationResult
 `ICombatVisuals` exposes `ApplyAnimationResult(AnimationRequest request)`. `RecorderAnimationPlayer` calls it **before** each deck-move request (alongside `UpdateAllPhysicalCardTargets`) so that:
 1. `physicalCardsInDeck` order is advanced to the post-animation state **before** the tween starts.
-2. All cards tween to their new positions in parallel (the moved card plays its arc/special animation while other cards slide smoothly).
-3. Reactive chains (e.g. bury → stage) display correctly: the first animation's result is preserved instead of being overwritten by the final deck state.
+2. All cards tween to new positions in parallel (the moved card plays its arc; others slide smoothly).
+3. Reactive chains (e.g. bury → stage) display correctly: the first animation's result is preserved instead of overwritten by the final deck state.
 
 ### RecorderAnimationPlayer
-- Singleton. Owns the animation-phase coroutine.
+- Singleton. Owns the animation-phase coroutine; falls back to old visual path when `RecorderAnimationPlayer.me == null`.
 - Wraps playback in `AttackAnimationManager.HoldDeckFocus()` / `ReleaseDeckFocus()`.
-- For deck-move requests, calls `ApplyAnimationResult(request)` **before** `UpdateAllPhysicalCardTargets()` so the physical deck order matches the animation intent and all cards tween in parallel.
-- Falls back to old visual path when `RecorderAnimationPlayer.me == null`.
 
 ### Emphasize Animation
 Before playing an effect recorder's requests, the source card (`recorder.cardObject`) plays a brief scale pulse (1.2x over 0.25s, then back) to visually signal which card triggered the effect. Skipped if the recorder has no requests or no card object.
 
 ### Source-Card PopUp / SlotIn
 - Off-reveal source cards (`recorder.sourceWasInRevealZone == false`) are automatically **popped up** before the first recorder's emphasize/shake and **slotted in** once after the last recorder that shares the same source card finishes.
-- Pop-up/slot-in is scoped **per card**, not per recorder: if the same source card appears in multiple recorders (multiple `CostNEffectContainer`s or reactive children), it stays at the popup peak across all of them and only returns to the deck once.
+- Pop-up/slot-in is scoped **per card**, not per recorder: the same source card across multiple recorders stays at the popup peak and returns to the deck only once.
 - Built-in `PopUp`/`PopUpBatch`/`SlotIn`/`SlotInBatch` requests targeting the source card are skipped as duplicates; target cards still use those requests normally.
-- `MoveToTopPopUpBatch` is kept unchanged: a staged source card moves from its current popup peak to the top peak and slots in. If this slots the source card back in early, later recorders for the same source will pop it up again.
-- Off-reveal **Attack** recorders skip popup and keep the existing peel-deck focus path. If the source card is already being held at peak, the attack recorder reuses that popup instead of peeling.
-- If the source card is destroyed, exiled, or moved to the reveal zone before the final slot-in, automatic slot-in is skipped.
+- `MoveToTopPopUpBatch` is kept unchanged: a staged source card moves from its current popup peak to the top peak and slots in; later recorders for the same source pop it up again.
+- Off-reveal **Attack** recorders skip popup and keep the peel-deck focus path; if the source is already held at peak, the attack recorder reuses that popup.
+- Automatic slot-in is skipped if the source card is destroyed, exiled, or moved to the reveal zone first.
 
 ### AnimationStateTracker (Legacy Safety Net)
 Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until `HasActiveBatch == false` before closing the chain, ensuring any legacy-queued events flush naturally.
@@ -261,23 +256,23 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 - **Deck Focus Restoration**: `RecorderAnimationPlayer` restores normal deck layout before any deck-move request if `CombatUXManager.IsDeckFocused` is true.
 - Batch moves use `correctedIndex` absolute positions, ignoring `snapshotDeckSize` offsets.
 - `HPAlterEffect.isStatusEffectDamage = true` skips `Attack` animation capture.
-- **Recorder path**: `BuryEffect`/`StageEffect`/`ExileEffect` no longer call `SyncPhysicalCardsWithCombinedDeck` in the logic phase; deck reordering/destruction is applied by `RecorderAnimationPlayer` via `ApplyAnimationResult` during animation playback.
+- **Recorder path**: `BuryEffect`/`StageEffect`/`ExileEffect` no longer call `SyncPhysicalCardsWithCombinedDeck` in the logic phase; `RecorderAnimationPlayer.ApplyAnimationResult` applies reordering/destruction during playback.
 - `ExileEffect` sets `revealZone = null` when exiling the revealed card, and chains `Destroy` requests with `onComplete` on the last card.
 - `CombatManager.Awake()` auto-creates `RecorderAnimationPlayer` if missing.
-- **afterShuffle timing**: Raised **after** shuffle animation completes, next card reaches reveal zone, and `PlayRecorderAnimationsAndWait()` finishes. Round Start path waits for reveal-zone movement via `MoveCardToRevealZone` callback before raising.
-- **Global Combat Animation Speed**: `CombatAnimationSpeed.SpeedScale` scales all Combat-phase card animation durations. `CombatManager.combatAnimationSpeedScale` initializes it. `CardPhysObjScript` only applies the scale when `currentGamePhaseRef` is `Combat`, so Shop card animations stay at normal speed.
+- **afterShuffle timing**: Raised after shuffle animation completes, next card reaches reveal zone, and `PlayRecorderAnimationsAndWait()` finishes. Round Start path waits for the `MoveCardToRevealZone` callback before raising.
+- **Global Combat Animation Speed**: `CombatAnimationSpeed.SpeedScale` (init from `CombatManager.combatAnimationSpeedScale`) scales all Combat-phase card animation durations; `CardPhysObjScript` applies it only in the Combat phase, so Shop animations stay at normal speed.
 
 ### Face-Down / Flip System
 
 Deck cards are face-down by default (card back; name/desc/status/ownership info hidden). State lives on `CardPhysObjScript`:
 
 - `isFaceUp` (default `true`; combat deck spawn paths cover cards), `everRevealed` (set on any face-up flip).
-- `SetFaceUp(bool faceUp, bool animated, bool force = false, Action onComplete = null)` — 2D squash flip (scaleX 1→0→1) on the runtime-built `FlipRoot` child; never tweens the root transform, so layout/move tweens are unaffected. `FlipRoot` is built in `Awake()` under the face elements' parent (shaker child), reparenting `cardFace/cardEdge/cardImg` + all prints; `PhysicalCardBigShadow`/`PhysicalCardShadow` are also reparented under it (squash with the flip) but stay always visible; the placeholder `CardBack` reuses the face sprite, tinted per ownership (`ownerCardColor`/`opponentCardColor`, tracked every frame). Duration via `flipDuration` (combat-speed scaled).
+- `SetFaceUp(bool faceUp, bool animated, bool force = false, Action onComplete = null)` — 2D squash flip (scaleX 1→0→1) on the runtime-built `FlipRoot` child (built in `Awake()`, reparenting face elements, prints, shadows); never tweens the root transform, so layout/move tweens are unaffected. `CardBack` reuses the face sprite, tinted per ownership (`ownerCardColor`/`opponentCardColor`) every frame. Duration via `flipDuration` (combat-speed scaled).
 - **Never-cover rule (hardcoded, no toggle)**: cover calls are skipped when `everRevealed` — a card once shown stays face-up until exiled or shuffled. `force: true` bypasses the guard (shuffle only).
 - `ClearRevealedMemory()` — resets `everRevealed` (shuffle only).
 - Face-down skips all face writers in `Update()` (`ApplyColor`, status/desc/tag/rarity/cost/price), so nothing leaks onto the back.
 - Flip triggers (all in `CombatUXManager`): `InstantiateAllPhysicalCards` / `AddPhysicalCardToDeck` (covered on entry), `MovePhysicalCardToRevealZone` (up), `PopUpCard` (up), `SlotInCard` (down), `MoveRevealedCardToBottom` (down), `MoveCardWithAnimation` ToBottom/ToIndex/ToTop (down; reveal-zone-bound ToTop excluded), `MoveCardToTopPopUpBatch` (up; staged cards stay up on deck top), `MoveCardToPopUpPosition` (up).
-- **Shuffle force-cover rule**: `PlayStartCardShuffleAnimation` covers every deck card mid-flight at the arc midpoint (via `InsertCallback` at stagger delay + half shuffle duration, `force: true`) and clears `everRevealed` — overrides the never-cover rule; cards land already face-down. Start Card keeps its face.
+- **Shuffle force-cover rule**: `PlayStartCardShuffleAnimation` covers every deck card mid-flight at the arc midpoint (`force: true`) and clears `everRevealed` — overrides the never-cover rule; cards land already face-down. Start Card keeps its face.
 - The flip tween is deliberately NOT killed by `KillTweens()` (CombatCardView calls it every frame during special animations, which would freeze a flip mid-squash).
 
 ### Card Movement (`ICombatVisuals` / `CombatUXManager`)
@@ -314,13 +309,13 @@ Deck cards are face-down by default (card back; name/desc/status/ownership info 
 
 Damage `<color=red>`, Heal `<color=#90EE90>`, Shield `<color=grey>`, Friendly `<color=#87CEEB>`, Enemy `<color=orange>`
 
-**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette` (`Assets/Resources/GameColorPalette.asset`). Log/rich-text colors: use `GameColorPalette.Me.<name>.OpenTag` / `.Hex` (lazy static singleton; never hardcode hex strings). Component colors (`CardPhysObjScript`, `CombatHPBarPresenter`, `HPNumericDisplay`): serialized `ColorSO` fields wired to palette assets. To change a color, edit the ColorSO asset — do not touch code.
+**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette` (`Assets/Resources/GameColorPalette.asset`, lazy singleton `Me`). Log/rich-text: use `GameColorPalette.Me.<name>.OpenTag` / `.Hex` — never hardcode hex strings. Components (`CardPhysObjScript`, `CombatHPBarPresenter`, `HPNumericDisplay`) use serialized `ColorSO` fields wired to palette assets. To change a color, edit the ColorSO asset — do not touch code.
 
 ---
 
 ## Unity MCP `execute_code`
 
-Roslyn compiler is installed (verified 2026-07-18). Default `compiler: "auto"` resolves to Roslyn (C# 12+; all modern syntax works). `codedom` (C# 6) is fallback only — if ever forced, avoid `using` declarations, bare void `return;`, `$""` interpolation, `?.`, and `yield return` (use fully-qualified names, explicit null checks, `string.Format`, return a value on all paths, no coroutines).
+Roslyn compiler installed (verified 2026-07-18); `compiler: "auto"` resolves to Roslyn (C# 12+, all modern syntax works). `codedom` (C# 6) is fallback only — if forced, avoid `using` declarations, bare void `return;`, `$""` interpolation, `?.`, and `yield return` (use fully-qualified names, explicit null checks, `string.Format`, return a value on all paths, no coroutines).
 
 If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.GetType("GameEventListener, Assembly-CSharp")`.
 
