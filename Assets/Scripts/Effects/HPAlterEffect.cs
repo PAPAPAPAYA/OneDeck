@@ -111,14 +111,17 @@ public class HPAlterEffect : EffectScript
 	}
 	
 	/// <summary>
-	/// Process damage (extract common logic, including shield and HP processing)
+	/// Process damage (extract common logic, including shield and HP processing).
+	/// Returns the actual HP loss (shield-soaked and overkill amounts excluded) for stats recording.
 	/// </summary>
 	/// <param name="totalDmg">Total damage amount</param>
 	/// <param name="targetStatus">Target player status</param>
-	private void ProcessDamage(int totalDmg, PlayerStatusSO targetStatus)
+	private int ProcessDamage(int totalDmg, PlayerStatusSO targetStatus)
 	{
+		int hpBefore = targetStatus.hp;
 		ProcessShieldNHp(totalDmg, targetStatus);
 		targetStatus.hp = Mathf.Clamp(targetStatus.hp, 0, targetStatus.hpMax);
+		return hpBefore - targetStatus.hp;
 	}
 
 	#endregion
@@ -139,8 +142,8 @@ public class HPAlterEffect : EffectScript
 		// Status effect damage doesn't trigger attack animation, execute directly
 		if (isStatusEffectDamage)
 		{
-			ProcessDamage(totalDmg, myCardScript.myStatusRef);
-			CheckDmgTargets_DealingDmgToSelf(totalDmg);
+			int statusHpLoss = ProcessDamage(totalDmg, myCardScript.myStatusRef);
+			CheckDmgTargets_DealingDmgToSelf(totalDmg, statusHpLoss);
 			dmgAmountAlter = 0;
 			return;
 		}
@@ -157,8 +160,8 @@ public class HPAlterEffect : EffectScript
 		int preHitHp = targetStatus.hp;
 		
 		// Apply damage and raise events/log immediately so reactive chains and tests see the new state right away.
-		ProcessDamage(totalDmg, targetStatus);
-		CheckDmgTargets_DealingDmgToSelf(totalDmg);
+		int actualHpLoss = ProcessDamage(totalDmg, targetStatus);
+		CheckDmgTargets_DealingDmgToSelf(totalDmg, actualHpLoss);
 		
 		// Queue the post-hit HP value for display so the UI updates when this attack lands.
 		// In headless/test mode there is usually no real animation, so we only queue when a recorder exists.
@@ -186,8 +189,8 @@ public class HPAlterEffect : EffectScript
 	public void DecreaseMyHpFromStatusEffect(int dmgAmount)
 	{
 		int totalDmg = dmgAmount + baseDmg.value;
-		ProcessDamage(totalDmg, myCardScript.myStatusRef);
-		CheckDmgTargets_DealingDmgToSelf(totalDmg);
+		int actualHpLoss = ProcessDamage(totalDmg, myCardScript.myStatusRef);
+		CheckDmgTargets_DealingDmgToSelf(totalDmg, actualHpLoss);
 	}
 
 	#endregion
@@ -426,8 +429,8 @@ public class HPAlterEffect : EffectScript
 		// Status effect damage doesn't trigger attack animation, execute directly
 		if (isStatusEffectDamage)
 		{
-			ProcessDamage(totalDmg, myCardScript.theirStatusRef);
-			CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+			int statusHpLoss = ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+			CheckDmgTargets_DealingDmgToOpponent(totalDmg, statusHpLoss);
 			dmgAmountAlter = 0;
 			return;
 		}
@@ -444,8 +447,8 @@ public class HPAlterEffect : EffectScript
 		int preHitHp = targetStatus.hp;
 		
 		// Apply damage and raise events/log immediately so reactive chains and tests see the new state right away.
-		ProcessDamage(totalDmg, targetStatus);
-		CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+		int actualHpLoss = ProcessDamage(totalDmg, targetStatus);
+		CheckDmgTargets_DealingDmgToOpponent(totalDmg, actualHpLoss);
 		
 		// Queue the post-hit HP value for display so the UI updates when this attack lands.
 		// In headless/test mode there is usually no real animation, so we only queue when a recorder exists.
@@ -473,8 +476,8 @@ public class HPAlterEffect : EffectScript
 	public void DecreaseTheirHpFromStatusEffect(int dmgAmount)
 	{
 		int totalDmg = dmgAmount + baseDmg.value;
-		ProcessDamage(totalDmg, myCardScript.theirStatusRef);
-		CheckDmgTargets_DealingDmgToOpponent(totalDmg);
+		int actualHpLoss = ProcessDamage(totalDmg, myCardScript.theirStatusRef);
+		CheckDmgTargets_DealingDmgToOpponent(totalDmg, actualHpLoss);
 	}
 
 	#region IntSO Based Effects
@@ -586,10 +589,12 @@ public class HPAlterEffect : EffectScript
 	/// Check damage source and target, trigger corresponding events and display text (when dealing damage to opponent)
 	/// </summary>
 	/// <param name="dmgAmount">Damage amount</param>
-	private void CheckDmgTargets_DealingDmgToOpponent(int dmgAmount)
+	private void CheckDmgTargets_DealingDmgToOpponent(int dmgAmount, int actualHpLoss)
 	{
-		// Per-card combat stats: raw pre-shield damage output (locked decision 2026-07-23)
-		CombatPerCardStatsTracker.Me?.RecordDamageToOpponent(myCardScript, dmgAmount);
+		// Per-card combat stats: actual HP lost by the victim — shield-soaked and overkill
+		// amounts excluded (supersedes the raw pre-shield decision of 2026-07-23).
+		var victimSide = myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef ? CardFaction.Player : CardFaction.Enemy;
+		CombatPerCardStatsTracker.Me?.RecordDamage(myCardScript, actualHpLoss, victimSide);
 
 		if (myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef) // enemy dealt dmg to player
 		{
@@ -611,10 +616,12 @@ public class HPAlterEffect : EffectScript
 	/// Check damage source and target, trigger corresponding events and display text (when dealing damage to self)
 	/// </summary>
 	/// <param name="dmgAmount">Damage amount</param>
-	private void CheckDmgTargets_DealingDmgToSelf(int dmgAmount)
+	private void CheckDmgTargets_DealingDmgToSelf(int dmgAmount, int actualHpLoss)
 	{
-		// Per-card combat stats: raw pre-shield self-damage output (locked decision 2026-07-23)
-		CombatPerCardStatsTracker.Me?.RecordDamageToSelf(myCardScript, dmgAmount);
+		// Per-card combat stats: actual HP lost by the victim — shield-soaked and overkill
+		// amounts excluded (supersedes the raw pre-shield decision of 2026-07-23).
+		var victimSide = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? CardFaction.Player : CardFaction.Enemy;
+		CombatPerCardStatsTracker.Me?.RecordDamage(myCardScript, actualHpLoss, victimSide);
 
 		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // player dealt dmg to player
 		{

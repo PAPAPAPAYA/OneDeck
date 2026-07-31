@@ -163,6 +163,9 @@ public class CombatManager : MonoBehaviour
 
 	[Header("OVERTIME")]
 	public IntSO roundNumRef;
+
+	/// <summary>Round count of the last finished combat, captured in ExitCombat before roundNumRef resets (Result screen display).</summary>
+	[HideInInspector] public int roundsLastCombat;
 	public int overtimeRoundThreshold;
 	public GameObject cardToAddWhenOvertime;
 	[Tooltip("Add this amount of fatigue to both players")]
@@ -219,7 +222,8 @@ public class CombatManager : MonoBehaviour
 		if (startCard != null)
 			Destroy(startCard);
 		
-		// clean up tracking stats
+		// clean up tracking stats (capture the finished combat's round count for the Result screen first)
+		roundsLastCombat = roundNumRef.value;
 		roundNumRef.value = 0;
 		cardsRevealedThisRound = 0;
 		totalCardsRevealed = 0;
@@ -314,6 +318,8 @@ public class CombatManager : MonoBehaviour
 
 		// Start a fresh per-card stats session for this combat (Result screen reads this store)
 		CombatPerCardStatsTracker.Me?.BeginSession();
+		// Snapshot the initial deck: creator side + copy counts for the Result screen rows
+		CombatPerCardStatsTracker.Me?.RegisterDeckComposition(combinedDeckZone);
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
 	}

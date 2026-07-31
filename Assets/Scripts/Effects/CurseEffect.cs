@@ -229,7 +229,7 @@ namespace DefaultNamespace.Effects
 		/// </summary>
 		private CardScript CreateFriendlyCard(GameObject cardToCreate)
 		{
-			CombatFuncs.me.AddCard_TargetSpecific(cardToCreate, myCardScript.myStatusRef);
+			CombatFuncs.me.AddCard_TargetSpecific(cardToCreate, myCardScript.myStatusRef, myCardScript);
 			
 			// Get the newly added card (at the first position of combinedDeckZone)
 			if (combatManager.combinedDeckZone.Count > 0)
@@ -256,7 +256,7 @@ namespace DefaultNamespace.Effects
 		/// </summary>
 		private CardScript CreateEnemyCard(GameObject cardToCreate)
 		{
-			CombatFuncs.me.AddCard_TargetSpecific(cardToCreate, myCardScript.theirStatusRef);
+			CombatFuncs.me.AddCard_TargetSpecific(cardToCreate, myCardScript.theirStatusRef, myCardScript);
 			
 			// Get the newly added card (at the first position of combinedDeckZone)
 			if (combatManager.combinedDeckZone.Count > 0)

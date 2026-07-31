@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,12 +32,15 @@ public class ResultStatsPanelLayout
 
 	[Header("Column Weights (flexible widths)")]
 	public float nameColumnFlex = 1.6f;
-	public float factionColumnFlex = 0.8f;
 	public float statColumnFlex = 1f;
 
 	[Header("Row Width")]
-	[Tooltip("Extra left/right inset for header and rows inside the panel body, in reference-resolution pixels. Increase to make rows narrower.")]
+	[Tooltip("Extra left/right inset for title/header/rows inside each half, in reference-resolution pixels. Increase to make rows narrower.")]
 	public float rowHorizontalPadding = 0f;
+
+	[Header("Spacing (reference-resolution pixels)")]
+	[Tooltip("Vertical gap between title, header and rows inside each half")]
+	public float rowSpacing = 4f;
 
 	[Header("Background")]
 	[Range(0f, 1f)]
@@ -46,8 +50,13 @@ public class ResultStatsPanelLayout
 /// <summary>
 /// Result-screen per-card combat stats panel. Built entirely at runtime (no prefab/scene wiring):
 /// PhaseManager creates one instance, calls Build() once on entering the Result phase,
-/// and Clear() on exit. Header and row columns are generated from CombatStatRegistry,
-/// so a new stat automatically becomes a new column.
+/// and Clear() on exit.
+///
+/// The panel is split into two stacked halves: top = cards created by the Player, bottom = cards
+/// created by the Enemy (a player-generated enemy-owned curse counts as player-created). Each half
+/// shows one row per card type: display name with a copy-count suffix " (X)" (initial-deck copies,
+/// shown only when X >= 2) plus all registry stat columns; percentage columns show the row's
+/// share of that half's column total.
 ///
 /// The panel root is its own Canvas + CanvasScaler, so font sizes and row heights use the
 /// configured reference resolution and stay readable regardless of the game canvas scaling.
@@ -71,7 +80,6 @@ public class ResultStatsPanel : MonoBehaviour
 		_parentCanvas = canvas;
 		_rows = rows;
 		_layout = layout ?? new ResultStatsPanelLayout();
-		ComputeColumnTotals(rows);
 
 		// Root: own Canvas + CanvasScaler so internal pixels are predictable regardless of the game canvas
 		var rootGo = new GameObject("ResultStatsPanelRoot", typeof(RectTransform));
@@ -103,27 +111,98 @@ public class ResultStatsPanel : MonoBehaviour
 		var bg = bodyGo.AddComponent<Image>();
 		bg.color = new Color(0f, 0f, 0f, _layout.backgroundAlpha);
 
-		// Header row (top of panel body)
-		float hPad = _layout.rowHorizontalPadding;
-		var headerGo = new GameObject("Header", typeof(RectTransform));
-		headerGo.transform.SetParent(bodyGo.transform, false);
-		var headerRect = (RectTransform)headerGo.transform;
-		headerRect.anchorMin = new Vector2(0f, 1f);
-		headerRect.anchorMax = new Vector2(1f, 1f);
-		headerRect.pivot = new Vector2(0.5f, 1f);
-		headerRect.offsetMin = new Vector2(8f + hPad, -_layout.rowHeight - 4f);
-		headerRect.offsetMax = new Vector2(-8f - hPad, -4f);
-		ConfigureRowLayout(headerGo);
-		BuildRowCells(headerGo.transform, "Card", "Side", null, true);
+		// Two stacked halves inside the body: top = player-created cards, bottom = enemy-created cards
+		var halvesGo = new GameObject("Halves", typeof(RectTransform));
+		halvesGo.transform.SetParent(bodyGo.transform, false);
+		var halvesRect = (RectTransform)halvesGo.transform;
+		halvesRect.anchorMin = Vector2.zero;
+		halvesRect.anchorMax = Vector2.one;
+		halvesRect.offsetMin = new Vector2(8f, 8f);
+		halvesRect.offsetMax = new Vector2(-8f, -8f);
+		var halvesLayout = halvesGo.AddComponent<VerticalLayoutGroup>();
+		halvesLayout.childControlWidth = true;
+		halvesLayout.childForceExpandWidth = true;
+		halvesLayout.childControlHeight = true;
+		halvesLayout.childForceExpandHeight = true;
+		halvesLayout.spacing = 8f;
 
-		// Scroll view below the header
+		BuildHalf(halvesGo.transform, CardFaction.Player, rows);
+		BuildHalf(halvesGo.transform, CardFaction.Enemy, rows);
+	}
+
+	/// <summary>Rebuild the panel with the last Build() arguments (for live layout tuning in Play Mode).</summary>
+	public void Rebuild()
+	{
+		if (_parentCanvas == null) return;
+		Build(_parentCanvas, _rows, _layout);
+	}
+
+	/// <summary>Destroy the built panel. Call on Result phase exit.</summary>
+	public void Clear()
+	{
+		if (_root != null)
+		{
+			if (Application.isPlaying)
+			{
+				Destroy(_root.gameObject);
+			}
+			else
+			{
+				DestroyImmediate(_root.gameObject);
+			}
+			_root = null;
+		}
+	}
+
+	/// <summary>
+	/// Build one half (title + header + scrollable rows) for one creator faction.
+	/// </summary>
+	private void BuildHalf(Transform parent, CardFaction faction, List<PerCardStatRecord> allRows)
+	{
+		var halfGo = new GameObject("Half_" + faction, typeof(RectTransform));
+		halfGo.transform.SetParent(parent, false);
+		var halfLayout = halfGo.AddComponent<VerticalLayoutGroup>();
+		halfLayout.childControlWidth = true;
+		halfLayout.childForceExpandWidth = true;
+		halfLayout.childControlHeight = true;
+		halfLayout.childForceExpandHeight = false;
+		halfLayout.spacing = _layout.rowSpacing;
+		int hPad = Mathf.RoundToInt(_layout.rowHorizontalPadding);
+		halfLayout.padding = new RectOffset(hPad, hPad, 0, 0);
+
+		var rows = allRows == null
+			? new List<PerCardStatRecord>()
+			: allRows.Where(r => r.faction == faction).ToList();
+
+		// Half totals per stat column: the base for each row's share percentages
+		var halfTotals = new Dictionary<CombatStatType, float>();
+		foreach (var def in CombatStatRegistry.Stats)
+		{
+			float total = 0f;
+			foreach (var row in rows) total += row.GetValue(def.type);
+			halfTotals[def.type] = total;
+		}
+
+		// Title ("YOU" / "ENEMY") in the faction color
+		var titleGo = new GameObject("Title", typeof(RectTransform));
+		titleGo.transform.SetParent(halfGo.transform, false);
+		var titleElement = titleGo.AddComponent<LayoutElement>();
+		titleElement.preferredHeight = _layout.rowHeight;
+		CreateText(titleGo.transform, FactionLabel(faction), FactionColor(faction), TextAlignmentOptions.Center, true);
+
+		// Header row: Card + one cell per registry column
+		var headerGo = new GameObject("Header", typeof(RectTransform));
+		headerGo.transform.SetParent(halfGo.transform, false);
+		var headerElement = headerGo.AddComponent<LayoutElement>();
+		headerElement.preferredHeight = _layout.rowHeight;
+		ConfigureRowLayout(headerGo);
+		BuildRowCells(headerGo.transform, "Card", null, true, null);
+
+		// Scroll view below the header, taking the half's remaining height
 		var scrollGo = new GameObject("ScrollView", typeof(RectTransform));
-		scrollGo.transform.SetParent(bodyGo.transform, false);
-		var scrollRect = (RectTransform)scrollGo.transform;
-		scrollRect.anchorMin = new Vector2(0f, 0f);
-		scrollRect.anchorMax = new Vector2(1f, 1f);
-		scrollRect.offsetMin = new Vector2(8f + hPad, 8f);
-		scrollRect.offsetMax = new Vector2(-8f - hPad, -_layout.rowHeight - 8f);
+		scrollGo.transform.SetParent(halfGo.transform, false);
+		var scrollElement = scrollGo.AddComponent<LayoutElement>();
+		scrollElement.flexibleHeight = 1f;
 		var scroll = scrollGo.AddComponent<ScrollRect>();
 		scroll.horizontal = false;
 		scroll.scrollSensitivity = _layout.rowHeight;
@@ -158,48 +237,24 @@ public class ResultStatsPanel : MonoBehaviour
 		fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 		scroll.content = contentRect;
 
-		if (rows == null || rows.Count == 0)
+		if (rows.Count == 0)
 		{
 			var emptyGo = new GameObject("EmptyRow", typeof(RectTransform));
 			emptyGo.transform.SetParent(contentGo.transform, false);
 			var emptyElement = emptyGo.AddComponent<LayoutElement>();
 			emptyElement.preferredHeight = _layout.rowHeight;
-			CreateText(emptyGo.transform, "No card stats recorded this combat.", Color.white, TextAlignmentOptions.Center, false);
+			CreateText(emptyGo.transform, "No damage recorded.", Color.white, TextAlignmentOptions.Center, false);
 			return;
 		}
 
 		foreach (var row in rows)
 		{
-			var rowGo = new GameObject("Row_" + row.cardTypeID + "_" + row.faction, typeof(RectTransform));
+			var rowGo = new GameObject("Row_" + row.cardTypeID, typeof(RectTransform));
 			rowGo.transform.SetParent(contentGo.transform, false);
 			var rowElement = rowGo.AddComponent<LayoutElement>();
 			rowElement.preferredHeight = _layout.rowHeight;
 			ConfigureRowLayout(rowGo);
-			BuildRowCells(rowGo.transform, row.displayName, FactionLabel(row.faction), row, false);
-		}
-	}
-
-	/// <summary>Rebuild the panel with the last Build() arguments (for live layout tuning in Play Mode).</summary>
-	public void Rebuild()
-	{
-		if (_parentCanvas == null) return;
-		Build(_parentCanvas, _rows, _layout);
-	}
-
-	/// <summary>Destroy the built panel. Call on Result phase exit.</summary>
-	public void Clear()
-	{
-		if (_root != null)
-		{
-			if (Application.isPlaying)
-			{
-				Destroy(_root.gameObject);
-			}
-			else
-			{
-				DestroyImmediate(_root.gameObject);
-			}
-			_root = null;
+			BuildRowCells(rowGo.transform, DisplayNameWithCount(row), row, false, halfTotals);
 		}
 	}
 
@@ -213,19 +268,14 @@ public class ResultStatsPanel : MonoBehaviour
 		layout.spacing = 8f;
 	}
 
-	private void BuildRowCells(Transform parent, string cardName, string factionLabel, PerCardStatRecord row, bool isHeader)
+	private void BuildRowCells(Transform parent, string cardName, PerCardStatRecord row, bool isHeader, Dictionary<CombatStatType, float> halfTotals)
 	{
 		var nameText = CreateCell(parent, cardName, _layout.nameColumnFlex, TextAlignmentOptions.Left, isHeader);
 		nameText.color = Color.white;
 
-		var factionText = CreateCell(parent, factionLabel, _layout.factionColumnFlex, TextAlignmentOptions.Center, isHeader);
-		factionText.color = FactionColor(row, isHeader);
-
 		foreach (var def in CombatStatRegistry.GetColumnsSorted())
 		{
-			string value = isHeader
-				? def.columnHeader
-				: FormatStatValue(def, row);
+			string value = isHeader ? def.columnHeader : FormatStatValue(def, row, halfTotals);
 			var cell = CreateCell(parent, value, _layout.statColumnFlex, TextAlignmentOptions.Center, isHeader);
 			if (!isHeader && ColorUtility.TryParseHtmlString(def.ColorHex, out var statColor))
 			{
@@ -234,34 +284,22 @@ public class ResultStatsPanel : MonoBehaviour
 		}
 	}
 
-	// Column totals across all rows, computed in Build for stats with showPercentageOfTotal
-	private readonly Dictionary<CombatStatType, float> _columnTotals = new Dictionary<CombatStatType, float>();
-
-	private void ComputeColumnTotals(List<PerCardStatRecord> rows)
+	/// <summary>Display name with a copy-count suffix " (X)", shown only for 2+ copies in the initial deck.</summary>
+	private static string DisplayNameWithCount(PerCardStatRecord row)
 	{
-		_columnTotals.Clear();
-		foreach (var def in CombatStatRegistry.Stats)
-		{
-			if (!def.showPercentageOfTotal) continue;
-			float total = 0f;
-			if (rows != null)
-			{
-				foreach (var row in rows) total += row.GetValue(def.type);
-			}
-			_columnTotals[def.type] = total;
-		}
+		return row.instanceCount >= 2 ? row.displayName + " (" + row.instanceCount + ")" : row.displayName;
 	}
 
 	/// <summary>
-	/// "12 (34%)" for stats marked showPercentageOfTotal (share of the column total,
-	/// i.e. this card's contribution to the combat-wide sum); plain number otherwise.
+	/// "12 (34%)" for stats marked showPercentageOfTotal — the row's share of this half's
+	/// column total; plain number otherwise (or when the half total is zero).
 	/// </summary>
-	private string FormatStatValue(CombatStatDef def, PerCardStatRecord row)
+	private string FormatStatValue(CombatStatDef def, PerCardStatRecord row, Dictionary<CombatStatType, float> halfTotals)
 	{
 		float value = row.GetValue(def.type);
 		if (!def.showPercentageOfTotal) return ((int)value).ToString();
 		if (value <= 0f) return "0";
-		float total = _columnTotals.TryGetValue(def.type, out var t) ? t : 0f;
+		float total = halfTotals != null && halfTotals.TryGetValue(def.type, out var t) ? t : 0f;
 		if (total <= 0f) return ((int)value).ToString();
 		int pct = Mathf.RoundToInt(value / total * 100f);
 		return (int)value + " (" + pct + "%)";
@@ -309,12 +347,11 @@ public class ResultStatsPanel : MonoBehaviour
 		return faction == CardFaction.Player ? "YOU" : "ENEMY";
 	}
 
-	private static Color FactionColor(PerCardStatRecord row, bool isHeader)
+	private static Color FactionColor(CardFaction faction)
 	{
-		if (isHeader || row == null) return Color.white;
 		var palette = GameColorPalette.Me;
 		if (palette == null) return Color.white;
-		var so = row.faction == CardFaction.Player ? palette.ownerCardColor : palette.opponentCardColor;
+		var so = faction == CardFaction.Player ? palette.ownerCardColor : palette.opponentCardColor;
 		return so != null ? so.value : Color.white;
 	}
 }

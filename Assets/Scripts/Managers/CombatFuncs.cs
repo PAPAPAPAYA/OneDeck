@@ -35,7 +35,7 @@ namespace DefaultNamespace.Managers
 			return factory.SpawnCardForPlayer(cardToAdd, targetStatus, deckIndex: 0, triggerMinionEvent: belongsToSessionOwner);
 		}
 
-		public GameObject AddCard_TargetSpecific(GameObject cardToAdd, PlayerStatusSO targetPlayerStatus)
+		public GameObject AddCard_TargetSpecific(GameObject cardToAdd, PlayerStatusSO targetPlayerStatus, CardScript creatorCard = null)
 		{
 			var factory = CardFactory.me;
 			if (factory == null)
@@ -45,7 +45,13 @@ namespace DefaultNamespace.Managers
 			}
 
 			bool isFriendlyCard = targetPlayerStatus == _combatManager.ownerPlayerStatusRef;
-			return factory.SpawnCardForPlayer(cardToAdd, targetPlayerStatus, deckIndex: 0, triggerMinionEvent: isFriendlyCard);
+			var newCard = factory.SpawnCardForPlayer(cardToAdd, targetPlayerStatus, deckIndex: 0, triggerMinionEvent: isFriendlyCard);
+			// Attribute the new card to the effect source's faction for the Result screen stats
+			if (creatorCard != null && newCard != null)
+			{
+				CombatPerCardStatsTracker.Me?.RegisterGeneratedCard(newCard.GetComponent<CardScript>(), creatorCard);
+			}
+			return newCard;
 		}
 		
 		public List<CardScript> ReturnPlayerCardScripts()

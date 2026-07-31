@@ -19,7 +19,7 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.myStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.myStatusRef, myCardScript);
 				CapturePopUpSlotInForNewCard(newCard);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
@@ -36,7 +36,7 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.theirStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.theirStatusRef, myCardScript);
 				CapturePopUpSlotInForNewCard(newCard);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
@@ -53,7 +53,7 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.myStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.myStatusRef, myCardScript);
 				CapturePopUpSlotInForNewCard(newCard);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
@@ -70,7 +70,7 @@ namespace DefaultNamespace.Effects
 		{
 			for (int i = 0; i < cardCount; i++)
 			{
-				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.theirStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(myCard, myCardScript.theirStatusRef, myCardScript);
 				CapturePopUpSlotInForNewCard(newCard);
 			}
 			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef) // if this card belongs to player
@@ -148,7 +148,7 @@ namespace DefaultNamespace.Effects
 			// Copy selected card to the triggerer's opponent and copy status effects
 			for (int i = 0; i < cardCount; i++)
 			{
-				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardPrefab, myCardScript.theirStatusRef);
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardPrefab, myCardScript.theirStatusRef, myCardScript);
 				
 				// Copy status effects to new card
 				if (newCard != null)

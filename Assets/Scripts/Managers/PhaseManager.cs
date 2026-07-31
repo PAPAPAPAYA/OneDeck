@@ -205,6 +205,10 @@ public class PhaseManager : MonoBehaviour
 	{
 		var sb = new StringBuilder();
 		sb.AppendLine(_resultText);
+		// roundNumRef is reset by CombatManager.ExitCombat (via onExitCombatPhase) before this phase runs;
+		// roundsLastCombat holds the finished combat's count. -1: the start card's combat-opening
+		// shuffle increments the counter but is not a real round.
+		sb.AppendLine("Rounds: " + Mathf.Max(0, CombatManager.Me.roundsLastCombat - 1));
 		sb.AppendLine("Your Wins: " + wins.value + "/" + winCon.value);
 		sb.AppendLine("Your Hearts: " + hearts.value + "/" + heartMax.value);
 
