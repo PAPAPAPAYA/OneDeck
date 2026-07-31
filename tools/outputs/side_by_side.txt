@@ -1,0 +1,790 @@
+==============================================================================
+NOTION BLACKSMITH [common] name=None category=产出资源
+  N-desc: 'deal dmg;\napply 1 power to friendly'
+UNITY  General/0_Common/BLACKSMITH.prefab
+  U-name: '铁匠'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害,给予一个友方 <b>1</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[apply power to friendly]: cost=- | effect=StatusEffectGiverEffect.GiveStatusEffectToXFriendly(2)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None
+  comp StatusEffectGiverEffect[apply power to friendly]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=0, xFriendlyCount=1, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION BLIND_COMBAT_PRIEST [common] name=None category=产出资源
+  N-desc: 'apply 3 power to next card'
+  UNITY: -- missing --
+==============================================================================
+NOTION COFFIN_MAKER [common] name=None category=无条件
+  N-desc: 'bury 1 hostile; deal dmg'
+UNITY  General/0_Common/COFFIN_MAKER.prefab
+  U-name: '棺材制造者'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害,埋葬 <b>1</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[bury hostile]: cost=- | effect=BuryEffect.BuryTheirCards(1)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None
+  comp BuryEffect[bury hostile]: tagsToCheck=00000000
+==============================================================================
+NOTION FALL_INTO_RIFT [common] name='坠入裂缝' category=产出资源
+  N-desc: 'add [conjure];\nbury 1 hostile'
+UNITY  Conjure/0_Common/FALL_INTO_RIFT.prefab
+  U-name: '坠入裂缝'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:生成 <b>1</b> [次元裂缝],埋葬 <b>1</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['add [rift]']: cost=- | effect=AddTempCard.AddCardToMe(0, RIFT)
+  container[bury hostile]: cost=- | effect=BuryEffect.BuryTheirCards(1)
+  comp AddTempCard['add [rift]']: cardCount=1
+  comp BuryEffect[bury hostile]: tagsToCheck=00000000
+==============================================================================
+NOTION GRAVE_PORTAL [common] name='冥界传送门' category=需要满足条件
+  N-desc: 'bury 1 hostile;\nif buried, stage 1 friendly'
+UNITY  Bury and buried/DeathRattle/0_Common/GRAVE_PORTAL.prefab
+  U-name: '冥界裂缝'  rarity=common  tags='03000000'  status=''
+  U-desc: '揭晓时:埋葬 <b>1</b> 敌方;被埋葬:置顶 <b>1</b> 友方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury hostile]: cost=- | effect=BuryEffect.BuryTheirCards(1)
+  container[stage friendly (1)]: cost=- | effect=StageEffect.StageMyCards(1)
+  comp BuryEffect[bury hostile]: tagsToCheck=00000000, excludeSelf=1
+  comp StageEffect[stage friendly (1)]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+==============================================================================
+NOTION GRAVE_PUNCH [common] name='尸爆' category=必定能满足条件
+  N-desc: 'bury 1 friendly; deal dmg x 2'
+UNITY  Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab
+  U-name: '尸爆'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:埋葬 <b>1</b> 友方,造成 <b><dmg></b> 伤害 x <b>2</b>'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHpTimesX(2)
+  container[bury]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=0, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp BuryEffect[bury]: tagsToCheck=00000000, excludeSelf=1
+==============================================================================
+NOTION GRAVE_TOGETHER [common] name='同路人' category=必定能满足条件
+  N-desc: 'bury 1 friendly; bury 2 hostile'
+UNITY  Bury and buried/Bury/0_Common/GRAVE_TOGETHER.prefab
+  U-name: '同路人'  rarity=?  tags=''  status=''
+  U-desc: '揭晓时:埋葬 <b>1</b> 友方,埋葬 <b>2</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury hostile]: cost=- | effect=BuryEffect.BuryTheirCards(2)
+  container[bury friendly]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  comp BuryEffect[bury hostile]: tagsToCheck=
+  comp BuryEffect[bury friendly]: tagsToCheck=
+==============================================================================
+NOTION MAD_SCIENTIST [common] name=None category=产出资源
+  N-desc: 'apply 1 power to next 3 cards'
+UNITY  General/0_Common/MAD_SCIENTIST.prefab
+  U-name: '疯狂科学家'  rarity=?  tags=''  status=''
+  U-desc: '揭晓时:给予下 <b>3</b> 卡 <b>2</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[apply power to next cards]: cost=- | effect=StatusEffectGiverEffect.GiveStatusEffectToLastXCards(0)
+  comp StatusEffectGiverEffect[apply power to next cards]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=3, statusEffectLayerCount=2, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION POISONER [common] name=None category=产出资源
+  N-desc: 'hostile [curse] +power; deal dmg'
+UNITY  Curse/0_Common/POISONER.prefab
+  U-name: '咒师'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:增强 <b>1</b> 敌方[诅咒],造成 <b><dmg></b> 伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container['enhence hostile [ju-on]']: cost=- | effect=CurseEffect.EnhanceCurse(1)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp CurseEffect['enhence hostile [ju-on]']: particleYOffset=0, powerCoefficient=1
+==============================================================================
+NOTION RIFT_CURSE [common] name=None category=产出资源
+  N-desc: 'hostile [curse] +power; add [conjure]'
+UNITY  Curse/0_Common/RIFT_CURSE.prefab
+  U-name: '异次元的诅咒'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:增强 <b>1</b> 敌方[诅咒],生成 <b>1</b> [次元裂缝]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['enhance hostile [ju-on]']: cost=- | effect=CurseEffect.EnhanceCurse(1)
+  container['add [rift]']: cost=- | effect=AddTempCard.AddCardToMe(0, RIFT)
+  comp CurseEffect['enhance hostile [ju-on]']: particleYOffset=0, powerCoefficient=1
+  comp AddTempCard['add [rift]']: cardCount=1
+==============================================================================
+NOTION RIFT_INSECT [common] name='次元虫' category=产出资源
+  N-desc: 'add [conjure]; deal dmg'
+UNITY  Conjure/0_Common/RIFT_INSECT.prefab
+  U-name: '次元虫'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;生成 <b>1</b> [次元裂缝]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container['add 1 [rift]']: cost=- | effect=AddTempCard.AddCardToMe(0, RIFT)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=0, statusEffectToCheck=None
+  comp AddTempCard['add 1 [rift]']: cardCount=1
+==============================================================================
+NOTION SACRIFICE_RITUAL [common] name='献祭仪式' category=产出资源
+  N-desc: 'bury 1 friendly; add 2 [conjure]'
+UNITY  Conjure/0_Common/SACRIFICE_RITUAL.prefab
+  U-name: '献祭仪式'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:埋葬 <b>1</b> 友方,生成 <b>2</b> [次元裂缝]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury friendly]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  container['add [rift]']: cost=- | effect=AddTempCard.AddCardToMe(0, RIFT)
+  comp BuryEffect[bury friendly]: tagsToCheck=00000000, excludeSelf=1
+  comp AddTempCard['add [rift]']: cardCount=2
+==============================================================================
+NOTION SACRIFICIAL_SPIRIT [common] name=None category=产出资源
+  N-desc: 'bury 1 friendly;\nhostile [curse] +power'
+  UNITY: -- missing --
+==============================================================================
+NOTION SIDE_EFFECT_PORTAL [common] name=None category=必定能满足条件
+  N-desc: 'enhance self [curse] 2;\nstage 1 friendly'
+UNITY  General/0_Common/SIDE_EFFECT_PORTAL.prefab
+  U-name: '有副作用的传送门'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:增强自身诅咒 <b>1</b> ,置顶 <b>1</b> 友方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[enhance friendly curse]: cost=- | effect=CurseEffect.EnhanceFriendlyCurse(1)
+  container[stage friendly]: cost=- | effect=StageEffect.StageMyCards(1)
+  comp CurseEffect[enhance friendly curse]: particleYOffset=0, powerCoefficient=1
+  comp StageEffect[stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+==============================================================================
+NOTION SKELETON_SOLDIER [common] name='骷髅士兵' category=需要满足条件
+  N-desc: 'if buried, stage self; deal dmg'
+UNITY  Bury and buried/DeathRattle/0_Common/SOLDIER_SKELETON.prefab
+  U-name: '骷髅士兵'  rarity=common  tags='03000000'  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;被埋葬:置顶自身'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[stage self]: cost=- | effect=StageEffect.StageSelf(0)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None
+  comp StageEffect[stage self]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None
+==============================================================================
+NOTION THE_FOOL [common] name=None category=必定能满足条件
+  N-desc: 'stage hostile with most power;\ndeal dmg'
+UNITY  General/0_Common/THE_FOOL.prefab
+  U-name: '愚者'  rarity=common  tags=''  status=''
+  U-desc: '揭晓时:置顶力量最多的敌方,造成 <b>4</b> 伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[stage hostile with most power]: cost=- | effect=StageEffect.StageCardWithMostStatusEffect(0)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=2, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp StageEffect[stage hostile with most power]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=Power, excludeSelf=1
+==============================================================================
+NOTION UNDEAD_CURSER [common] name=None category=需要满足条件
+  N-desc: 'enhance hostile [curse] 1;\nif buried, enhance hostile [curse] 1'
+UNITY  Curse/0_Common/UNDEAD_CURSER.prefab
+  U-name: '不死诅咒者'  rarity=common  tags='03000000'  status=''
+  U-desc: '揭晓时:增强敌方[诅咒] <b>2</b>;\n被埋葬:增强敌方[诅咒] <b>1</b>'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['enhence hostile [curse]']: cost=- | effect=CurseEffect.EnhanceCurse(1)
+  container[enhence hostile [curse] 2]: cost=- | effect=CurseEffect.EnhanceCurse(2)
+  comp CurseEffect['enhence hostile [curse]']: particleYOffset=0, powerCoefficient=1
+  comp CurseEffect[enhence hostile [curse] 2]: particleYOffset=0, powerCoefficient=1
+==============================================================================
+NOTION ADVANCE_PORTAL [uncommon] name=None category=必定能满足条件
+  N-desc: 'reveal 2 times: stage 2 friendly'
+UNITY  General/1_Uncommon/ADVANCE_PORTAL.prefab
+  U-name: '高等传送门'  rarity=uncommon  tags=''  status=''
+  U-desc: '每揭晓 <b>2<counter></b> 次:置顶 <b>2</b> 友方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[add counter]: cost=- | effect=StatusEffectGiverEffect.GiveSelfStatusEffect(1)
+  container[consume counter to stage friendly]: cost=CostNEffectContainer.CheckCost_Counter(2) | effect=ConsumeStatusEffect.ConsumeOwnStatusEffect(2); StageEffect.StageMyCards(2)
+  comp StatusEffectGiverEffect[add counter]: canStatusEffectBeStacked=1, statusEffectToGive=Counter, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+  comp StageEffect[consume counter to stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None
+  comp ConsumeStatusEffect[consume counter to stage friendly]: statusEffectToConsume=7
+==============================================================================
+NOTION ALL_FOR_ONE [uncommon] name=None category=必定能满足条件
+  N-desc: 'deal dmg = all cards power amount'
+UNITY  General/1_Uncommon/ALL_FOR_ONE.prefab
+  U-name: '人人为我'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:造成所有卡的力量数量的伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg = total power count]: cost=- | effect=HPAlterEffect.DecreaseTheirHp_BasedOnIntSO(0)
+  comp HPAlterEffect[deal dmg = total power count]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=-2, statusEffectToCheck=None, dynamicDmgDisplaySource=1, dynamicDmgDisplayMultiplyByPower=0
+==============================================================================
+NOTION ANTI_CREATURE_WEAPON [uncommon] name=None category=无条件
+  N-desc: 'bury 2 hostile'
+UNITY  General/1_Uncommon/ANTI_CREATURE_WEAPON.prefab
+  U-name: '对生物兵器'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:埋葬 <b>2</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury hostile]: cost=- | effect=BuryEffect.BuryTheirCards(2)
+  comp BuryEffect[bury hostile]: tagsToCheck=
+==============================================================================
+NOTION AVENGER [uncommon] name='复仇者' category=需要满足条件
+  N-desc: 'deal dmg; if buried, + 2 power'
+UNITY  Bury and buried/DeathRattle/1_Uncommon/AVENGER.prefab
+  U-name: '复仇者'  rarity=uncommon  tags='03000000'  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;被埋葬:获得 <b>2</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[gain power]: cost=- | effect=StatusEffectGiverEffect.GiveSelfStatusEffect(2)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None
+  comp StatusEffectGiverEffect[gain power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION BONE_COMBINATION [uncommon] name=None category=需要满足条件
+  N-desc: 'for each hostile card buried this turn, deal dmg'
+UNITY  General/1_Uncommon/BONE_COMBINATION.prefab
+  U-name: '碎骨聚集体'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害 x 本回合被埋葬的敌方数量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg x hostile buried amount]: cost=- | effect=HPAlterEffect.DecreaseTheirHpTimes_BasedOnOpponentBuriedCount(1)
+  comp HPAlterEffect[deal dmg x hostile buried amount]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=-1, statusEffectToCheck=None, dynamicDmgDisplaySource=3, dynamicDmgDisplayMultiplyByPower=1
+==============================================================================
+NOTION CONFUSED_PORTALMANCER [uncommon] name=None category=需要满足条件
+  N-desc: 'bury 1 friendly;\nif buried, add 3 [rift]'
+UNITY  Bury and buried/DeathRattle/1_Uncommon/CONFUSED_PORTALMANCER.prefab
+  U-name: '错乱传送术士'  rarity=uncommon  tags='03000000'  status=''
+  U-desc: '揭晓时:埋葬 <b>1</b> 友方;\n被埋葬:生成 <b>3</b> [次元裂缝] '
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['add [rift]']: cost=- | effect=AddTempCard.AddCardToMe(1, RIFT)
+  container[bury friendly]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  comp AddTempCard['add [rift]']: cardCount=3
+  comp BuryEffect[bury friendly]: tagsToCheck=
+==============================================================================
+NOTION CURSED_SKELETON [uncommon] name=None category=无条件
+  N-desc: 'hostile [curse] +power = friendly card in grave'
+UNITY  Curse/1_Uncommon/CURSED_SKELETON.prefab
+  U-name: '被诅咒的骷髅'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时,墓地每有 <b>1</b> 友方:增强 <b>1</b> 敌方[诅咒]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[enhance hostile curse for each friendly in grave]: cost=- | effect=CurseEffect.EnhanceCurse_BasedOnIntSO(0)
+  comp CurseEffect[enhance hostile curse for each friendly in grave]: particleYOffset=0, powerCoefficient=1
+==============================================================================
+NOTION CURSE_THIRST_BEAST [uncommon] name=None category=需要满足条件
+  N-desc: 'linger: if hostile [curse] revealed, deal dmg'
+UNITY  Curse/1_Uncommon/CURSE_THIRST_BEAST.prefab
+  U-name: '咒食的野兽'  rarity=uncommon  tags=''  status=''
+  U-desc: '当敌方[诅咒]揭晓时:置顶自身;\n揭晓时:造成 <b><dmg></b> 伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnHostileCurseRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[stage self]: cost=- | effect=StageEffect.StageSelf(1)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=2, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp StageEffect[stage self]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+==============================================================================
+NOTION CURSE_THIRST_SHAMAN [uncommon] name=None category=需要满足条件
+  N-desc: 'apply power to friendly = hostile [curse] power'
+UNITY  Curse/1_Uncommon/CURSE_THIRST_SHAMAN.prefab
+  U-name: '咒食的萨满'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时,敌方[诅咒]每有 <b>1</b> 力量:给予 <b>1</b> 友方 <b>1</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[apply power to friendly = hostile curse power]: cost=- | effect=StatusEffectGiverEffect.GiveStatusEffectToXFriendly_BasedOnIntSO(0)
+  comp StatusEffectGiverEffect[apply power to friendly = hostile curse power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION CURSE_THIRST_SUMMONER [uncommon] name=None category=产出资源
+  N-desc: 'hostile [curse] -power; stage 1 friendly'
+UNITY  General/1_Uncommon/CURSE_THIRST_SUMMONER.prefab
+  U-name: '咒食的大召唤师'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时,消耗敌方[诅咒] <b>2</b> 力量:置顶 <b>1</b> 友方;\n揭晓时:给予下 <b>1</b> 卡 <b>2</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[consume hostile curse power to stage friendly]: cost=CostNEffectContainer.CheckCost_EnemyCursedCardHasPower(2) | effect=CurseEffect.ConsumeHostileCursePower(2); StageEffect.StageMyCards(1)
+  container[enhance next card]: cost=- | effect=StatusEffectGiverEffect.GiveStatusEffectToLastXCards(0)
+  comp CurseEffect[consume hostile curse power to stage friendly]: particleYOffset=0, powerCoefficient=1
+  comp StageEffect[consume hostile curse power to stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+  comp StatusEffectGiverEffect[enhance next card]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=1, statusEffectLayerCount=2, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION DR_MANHATTAN [uncommon] name=None category=消耗资源
+  N-desc: 'remove 4 power:\nstage 2 friendly\nbury 2 hostile'
+UNITY  General/1_Uncommon/DR_MANHATTAN.prefab
+  U-name: '曼哈顿博士'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时,消耗 <b>2</b> 力量:置顶 <b>2</b> 友方,埋葬 <b>2</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[consume power, stage firneldy bury hostile]: cost=CostNEffectContainer.CheckCost_Power(2) | effect=ConsumeStatusEffect.ConsumeOwnStatusEffect(2); StageEffect.StageMyCards(2); BuryEffect.BuryTheirCards(2)
+  comp ConsumeStatusEffect[consume power, stage firneldy bury hostile]: statusEffectToConsume=4
+  comp StageEffect[consume power, stage firneldy bury hostile]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+  comp BuryEffect[consume power, stage firneldy bury hostile]: tagsToCheck=00000000, excludeSelf=1
+==============================================================================
+NOTION FLESH_COMBINATION [uncommon] name=None category=必定能满足条件
+  N-desc: 'deal dmg = friendly card amount'
+UNITY  General/1_Uncommon/FLESH_COMBINATION.prefab
+  U-name: '血肉聚集体'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:造成友方数量的伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg  = friendly card count]: cost=- | effect=HPAlterEffect.DecreaseTheirHp_BasedOnFriendlyCardCountInDeck(1)
+  comp HPAlterEffect[deal dmg  = friendly card count]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=-2, statusEffectToCheck=None, dynamicDmgDisplaySource=2, dynamicDmgDisplayMultiplyByPower=0
+==============================================================================
+NOTION GOBLIN_ASSASIN_TEAM [uncommon] name=None category=需要满足条件
+  N-desc: 'deal dmg; if staged, bury 1 hostile'
+UNITY  General/1_Uncommon/GOBLIN_ASSASSIN_TEAM.prefab
+  U-name: '哥布林暗杀部队'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;被置顶:埋葬 <b>1</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeStaged -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury hostile]: cost=- | effect=BuryEffect.BuryTheirCards(1)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(1)
+  comp BuryEffect[bury hostile]: tagsToCheck=
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=2, statusEffectToCheck=None
+==============================================================================
+NOTION GOBLIN_CHARGE_TEAM [uncommon] name=None category=需要满足条件
+  N-desc: 'deal dmg; if staged, deal dmg'
+UNITY  General/1_Uncommon/GOBLIN_CHARGE_TEAM.prefab
+  U-name: '哥布林冲锋部队'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;\n被置顶:造成 <b><dmg:staged></b> 伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeStaged -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(2)
+  container[deal dmg (1)]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(2)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=0, statusEffectToCheck=None, damageDisplayKey=, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp HPAlterEffect[deal dmg (1)]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=2, statusEffectToCheck=None, damageDisplayKey=staged, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+==============================================================================
+NOTION GRAVE_INVITATION [uncommon] name='冥界邀请' category=无条件
+  N-desc: 'deal dmg, for each friendly in grave, bury 1 hostile'
+UNITY  Bury and buried/Bury/1_Uncommon/GRAVE_INVITATION.prefab
+  U-name: '冥界邀请'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害,墓地每有 <b>1</b> 友方:埋葬 <b>1</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury hostile based on friendly in grave]: cost=- | effect=BuryEffect.BuryTheirCards_BasedOnIntSO(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(2)
+  comp BuryEffect[bury hostile based on friendly in grave]: tagsToCheck=00000000, excludeSelf=1
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=2, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+==============================================================================
+NOTION MOTH_MAN [uncommon] name=None category=需要满足条件
+  N-desc: 'linger: if hostile [curse] power increased, stage 1 friendly'
+UNITY  Curse/1_Uncommon/MOTH_MAN.prefab
+  U-name: '飞蛾人'  rarity=uncommon  tags=''  status=''
+  U-desc: '当敌方[诅咒]获得力量时:置顶 <b>1</b> 友方'
+  listen: OnEnemyCurseCardGotPower -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[stage friendly]: cost=- | effect=StageEffect.StageMyCards(1)
+  comp StageEffect[stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+==============================================================================
+NOTION OVERCHARGED_SUMMONER [uncommon] name=None category=消耗资源
+  N-desc: 'consume 1 power:\nstage 1 friendly,\napply 2 power to next card'
+  UNITY: -- missing --
+==============================================================================
+NOTION POWER_CRAVER [uncommon] name=None category=无条件
+  N-desc: 'deal dmg;\ndouble power gain'
+UNITY  General/1_Uncommon/POWER_CRAVER.prefab
+  U-name: '力量渴求者'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;获得力量时:获得 <b>2</b> 倍力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeGotStatusEffect -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(1)
+  container[gain double power]: cost=- | effect=StatusEffectAmplifierEffect.AmplifyStatusEffectGain(0)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp StatusEffectAmplifierEffect[gain double power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=Power, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0, statusEffectMultiplier=2
+==============================================================================
+NOTION POWER_TRANSFER [uncommon] name=None category=需要满足条件
+  N-desc: 'remove 2 random hostile power, apply 2 random friendly power'
+UNITY  General/2_Rare/POWER_TRANSFER.prefab
+  U-name: '力量转移'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:去除 <b>2</b> 敌方 <b>1</b> 力量,给予友方 <b>1</b> 力量 <b>2</b> 次'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[consume hostile power]: cost=- | effect=ConsumeStatusEffect.ConsumeRandomEnemyCardsStatusEffect(2)
+  container[give friendly power]: cost=- | effect=StatusEffectGiverEffect.GiveStatusEffect(2)
+  comp ConsumeStatusEffect[consume hostile power]: statusEffectToConsume=4
+  comp StatusEffectGiverEffect[give friendly power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION PREMATURE [uncommon] name=None category=消耗资源
+  N-desc: 'hostile [curse] - power; stage hostile [curse]'
+UNITY  Curse/1_Uncommon/PREMATURE.prefab
+  U-name: '拔苗助长'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时,敌方[诅咒]力量 - <b>1</b> :置顶敌方[诅咒]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[consume 1 hostile [ju-on] power, stage it]: cost=CostNEffectContainer.CheckCost_EnemyCursedCardHasPower(1) | effect=CurseEffect.ConsumeHostileCursePower(1); StageEffect.StageTheirSpecificCard(1, 'JU_ON')
+  comp StageEffect[consume 1 hostile [ju-on] power, stage it]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None
+  comp CurseEffect[consume 1 hostile [ju-on] power, stage it]: particleYOffset=0, powerCoefficient=1
+==============================================================================
+NOTION QUICK_RESPONSE_PROTOCOL [uncommon] name=None category=必定能满足条件
+  N-desc: 'linger: every 3 hostile cards revealed, stage 1 friendly'
+UNITY  General/1_Uncommon/QUICK_RESPONSE_PROTOCOL.prefab
+  U-name: '快速响应协议'  rarity=uncommon  tags='01000000'  status=''
+  U-desc: '<tag:Linger>;\n再有 <b>4<counter></b> 敌人被揭晓:置顶 <b>1</b> 友方'
+  listen: OnHostileRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[add counter]: cost=CostNEffectContainer.CheckCost_IndexBeforeStartCard(0) | effect=StatusEffectGiverEffect.GiveSelfStatusEffect(1)
+  container[if counter requirement met, consume counter and stage friendly]: cost=CostNEffectContainer.CheckCost_Counter(4) | effect=ConsumeStatusEffect.ConsumeOwnStatusEffect(4); StageEffect.StageMyCards(1)
+  comp StatusEffectGiverEffect[add counter]: canStatusEffectBeStacked=1, statusEffectToGive=Counter, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+  comp StageEffect[if counter requirement met, consume counter and stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+  comp ConsumeStatusEffect[if counter requirement met, consume counter and stage friendly]: statusEffectToConsume=7
+==============================================================================
+NOTION RIFT_COFFIN [uncommon] name='次元棺材' category=需要满足条件
+  N-desc: 'linger: if [conjure] is exiled, bury 1 hostile'
+UNITY  Conjure/1_Uncommon/RIFT_COFFIN.prefab
+  U-name: '次元棺材'  rarity=uncommon  tags='01000000'  status=''
+  U-desc: '<tag:Linger>;当友方被去除时:埋葬 <b>1</b> 敌方'
+  listen: OnFriendlyCardExiled -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury 1 hostile]: cost=CostNEffectContainer.CheckCost_IndexBeforeStartCard(0) | effect=BuryEffect.BuryTheirCards(1)
+  comp BuryEffect[bury 1 hostile]: tagsToCheck=
+==============================================================================
+NOTION RIFT_DRAGON [uncommon] name='次元龙' category=消耗资源
+  N-desc: 'exile 2 [conjure];\ndeal dmg'
+UNITY  Conjure/1_Uncommon/RIFT_DRAGON.prefab
+  U-name: '次元龙'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:生成 <b>1</b> [次元裂缝],造成 <b>4</b> 伤害;\n被置顶:生成 <b>1</b> [次元裂缝]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeStaged -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['add [rift]']: cost=- | effect=AddTempCard.AddCardToMe(0, RIFT)
+  container[deal dmg and add rift]: cost=- | effect=AddTempCard.AddCardToMe(2, RIFT); HPAlterEffect.DecreaseTheirHp(0)
+  comp AddTempCard['add [rift]']: cardCount=1
+  comp HPAlterEffect[deal dmg and add rift]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=2, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp AddTempCard[deal dmg and add rift]: cardCount=1
+==============================================================================
+NOTION RIFT_GUIDE [uncommon] name=None category=消耗资源
+  N-desc: 'exile 1 friendly [conjure]: bury 2 hostile'
+UNITY  Conjure/1_Uncommon/RIFT_GUIDE.prefab
+  U-name: '次元引导者'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时,去除 <b>1</b> [次元裂缝]:埋葬 <b>2</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[check and exile rift and bury hostile]: cost=CostNEffectContainer.CheckCost_HasOwnCardOfType(1) | effect=ExileEffect.ExileMyCardsWithTypeID(1); BuryEffect.BuryTheirCards(2)
+  comp BuryEffect[check and exile rift and bury hostile]: tagsToCheck=00000000
+  comp ExileEffect[check and exile rift and bury hostile]: tagToCheck=0
+==============================================================================
+NOTION RIFT_MONSTER [uncommon] name='次元兽' category=消耗资源
+  N-desc: 'exile 1 [rift]:\ndeal dmg'
+UNITY  Conjure/1_Uncommon/RIFT_MONSTER.prefab
+  U-name: '次元兽'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时,去除 <b>1</b> [次元裂缝]:造成 <b><dmg></b> 伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=CostNEffectContainer.CheckCost_HasOwnCardOfType(1) | effect=ExileEffect.ExileMyCardsWithTypeID(1); HPAlterEffect.DecreaseTheirHp(0)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=4, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp ExileEffect[deal dmg]: tagToCheck=0
+==============================================================================
+NOTION RIFT_SUMMONER [uncommon] name='裂缝召唤师' category=消耗资源
+  N-desc: 'exile [conjure];\nstage 1 friendly'
+UNITY  Conjure/1_Uncommon/RIFT_SUMMONER.prefab
+  U-name: '裂缝召唤师'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时,去除 <b>1</b> [次元裂缝]:置顶 <b>2</b> 友方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[check and exile rift and stage friendly]: cost=CostNEffectContainer.CheckCost_HasOwnCardOfType(1) | effect=ExileEffect.ExileMyCardsWithTypeID(1); StageEffect.StageMyCards(2)
+  comp StageEffect[check and exile rift and stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None
+  comp ExileEffect[check and exile rift and stage friendly]: tagToCheck=0
+==============================================================================
+NOTION SMALL_SCALE_DEATH [uncommon] name=None category=必定能满足条件
+  N-desc: 'bury next 2,\nenhance hostile [curse] by 1'
+UNITY  Curse/1_Uncommon/SMALL_SCALE_DEATH.prefab
+  U-name: '小范围死亡'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:埋葬后 <b>2</b> 卡,增强 <b>1</b> 敌方[诅咒]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[enhance hostile curse]: cost=- | effect=CurseEffect.EnhanceCurse(1)
+  container[bury next 2]: cost=- | effect=BuryEffect.BuryNextXCards(2)
+  comp CurseEffect[enhance hostile curse]: particleYOffset=0, powerCoefficient=1
+  comp BuryEffect[bury next 2]: tagsToCheck=00000000
+==============================================================================
+NOTION SNATCHER [uncommon] name=None category=需要满足条件
+  N-desc: 'deal dmg;\nif staged: stage friendly;\nif buried, bury hostile'
+UNITY  General/1_Uncommon/SNATCHER.prefab
+  U-name: '屠夫'  rarity=uncommon  tags='03000000'  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;被置顶:置顶 <b>1</b> 友方;被埋葬:埋葬 <b>1</b> 敌方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeStaged -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[stage friendly]: cost=- | effect=StageEffect.StageMyCards(1)
+  container[bury hostile]: cost=- | effect=BuryEffect.BuryTheirCards(1)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(2)
+  comp StageEffect[stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+  comp BuryEffect[bury hostile]: tagsToCheck=00000000, excludeSelf=1
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+==============================================================================
+NOTION SPIKE_SKELETON [uncommon] name='针刺骷髅' category=需要满足条件
+  N-desc: 'deal dmg; if buried, deal dmg x 2'
+UNITY  Bury and buried/DeathRattle/1_Uncommon/SPIKE_SKELETON.prefab
+  U-name: '针刺骷髅'  rarity=uncommon  tags='03000000'  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;被埋葬:造成 <b><dmg></b> 伤害 x <b>2</b>'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[deal dmg multiple times]: cost=- | effect=HPAlterEffect.DecreaseTheirHpTimesX(2)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None
+  comp HPAlterEffect[deal dmg multiple times]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=0, statusEffectToCheck=None
+==============================================================================
+NOTION TACTICAL_BREACHER [uncommon] name=None category=需要满足条件
+  N-desc: 'if staged, gain power; deal dmg'
+UNITY  General/1_Uncommon/TACTICAL_BREACHER.prefab
+  U-name: '战术爆破手'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;被置顶:获得 <b>1</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeStaged -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[gain power]: cost=- | effect=StatusEffectGiverEffect.GiveSelfStatusEffect(1)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(1)
+  comp StatusEffectGiverEffect[gain power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=2, statusEffectToCheck=None
+==============================================================================
+NOTION UNSTABLE_PORTAL [uncommon] name='不稳定传送门' category=必定能满足条件
+  N-desc: 'stage 1 friendly; bury 1 friendly'
+UNITY  Bury and buried/Bury/1_Uncommon/UNSTABLE_PORTAL.prefab
+  U-name: '不稳定传送门'  rarity=uncommon  tags=''  status=''
+  U-desc: '揭晓时:置顶 <b>1</b> 友方,埋葬 <b>1</b> 友方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury friendly]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  container[stage friendly]: cost=- | effect=StageEffect.StageMyCards(1)
+  comp BuryEffect[bury friendly]: tagsToCheck=00000000, excludeSelf=1
+  comp StageEffect[stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+==============================================================================
+NOTION WEAPON_SPIRIT [uncommon] name=None category=需要满足条件
+  N-desc: 'linger: if power is added to friendly, add 1 more'
+UNITY  General/1_Uncommon/WEAPON_SPIRIT.prefab
+  U-name: '武器精灵'  rarity=uncommon  tags='01000000'  status=''
+  U-desc: '<tag:Linger>;当友方获得力量时:给予该友方 <b>1</b> 力量'
+  listen: OnFriendlyCardGotPower -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[if in grave, apply power to last friendly power reciever]: cost=CostNEffectContainer.CheckCost_IndexBeforeStartCard(0) | effect=PowerReactionEffect.GivePowerToCardThatGotPower(0)
+  comp PowerReactionEffect[if in grave, apply power to last friendly power reciever]: canStatusEffectBeStacked=1, statusEffectToGive=None, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0, powerAmount=1, excludeSelf=0
+==============================================================================
+NOTION ALMIGHTY [rare] name=None category=必定能满足条件
+  N-desc: 'reveal 2 times:\ndeal 1 dmg;\nstage 1 friendly;\nbury 1 hostile;\nenhance 1 friendly;\nadd 1 [rift];\nenhance 1 hostile [curse];'
+UNITY  General/2_Rare/ALMIGHTY.prefab
+  U-name: '全能人'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓 <b>2<counter></b> 次:造成 <b><dmg></b> 伤害,置顶 <b>1</b> 友方,埋葬 <b>1</b> 敌方,给予 <b>1</b> 友方力量,生成 <b>1</b> [次元裂缝],增强 <b>1</b> 敌方[诅咒]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[consume counter to deal dmg; stage friendly; bury hostile; give friendly]: cost=CostNEffectContainer.CheckCost_Counter(2) | effect=ConsumeStatusEffect.ConsumeOwnStatusEffect(2); HPAlterEffect.DecreaseTheirHp(0); StageEffect.StageMyCards(1); BuryEffect.BuryTheirCards(1); StatusEffectGiverEffect.GiveStatusEffect(1); AddTempCard.AddCardToMe(0, RIFT); CurseEffect.EnhanceCurse(1)
+  container[gain counter]: cost=- | effect=StatusEffectGiverEffect.GiveSelfStatusEffect(1)
+  comp StageEffect[consume counter to deal dmg; stage friendly; bury hostile; give friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+  comp BuryEffect[consume counter to deal dmg; stage friendly; bury hostile; give friendly]: tagsToCheck=00000000, excludeSelf=1
+  comp AddTempCard[consume counter to deal dmg; stage friendly; bury hostile; give friendly]: cardCount=1
+  comp CurseEffect[consume counter to deal dmg; stage friendly; bury hostile; give friendly]: particleYOffset=0, powerCoefficient=1
+  comp ConsumeStatusEffect[consume counter to deal dmg; stage friendly; bury hostile; give friendly]: statusEffectToConsume=7
+  comp StatusEffectGiverEffect[consume counter to deal dmg; stage friendly; bury hostile; give friendly]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=1, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+  comp HPAlterEffect[consume counter to deal dmg; stage friendly; bury hostile; give friendly]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=-1, statusEffectToCheck=None
+  comp StatusEffectGiverEffect[gain counter]: canStatusEffectBeStacked=1, statusEffectToGive=Counter, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION BODY_CANON [rare] name='人间大炮' category=必定能满足条件
+  N-desc: 'bury all friendly in queue, deal dmg x buried amount'
+UNITY  Bury and buried/Bury/2_Rare/BODY_CANON.prefab
+  U-name: '人间大炮'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓时:埋葬所有友方,墓地每有一个友方:造成 <b>1</b> 次 <b><dmg></b> 伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal 1 dmg x friendly after start card]: cost=- | effect=HPAlterEffect.DecreaseTheirHpTimes_BasedOnIntSO(0)
+  container[bury all friendly cards]: cost=- | effect=BuryEffect.BuryAllMyCards(0)
+  comp HPAlterEffect[deal 1 dmg x friendly after start card]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=-1, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp BuryEffect[bury all friendly cards]: tagsToCheck=00000000, excludeSelf=1
+==============================================================================
+NOTION BOOSTER [rare] name=None category=必定能满足条件
+  N-desc: 'if shuffled, stage 2 friendly; bury 1 friendly'
+UNITY  General/2_Rare/BOOSTER.prefab
+  U-name: '推进器'  rarity=rare  tags=''  status=''
+  U-desc: '洗牌后:置顶 <b>2</b> 友方;揭晓时:埋葬 <b>1</b> 友方'
+  listen: AfterShuffle -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury friendly]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  container[stage friendly]: cost=- | effect=StageEffect.StageMyCards(2)
+  comp BuryEffect[bury friendly]: tagsToCheck=00000000, excludeSelf=1
+  comp StageEffect[stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+==============================================================================
+NOTION CROW_CROWD [rare] name=None category=需要满足条件
+  N-desc: 'transfer all friendly power to hostile [curse]'
+UNITY  Curse/2_Rare/CROW_CROWD.prefab
+  U-name: '乌合之众'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓时:将所有友方的力量(排除友方[诅咒])转移到敌方的[诅咒]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['transfer all friendly power to hostile [curse]']: cost=- | effect=TransferStatusEffectEffect.TransferAllStatusEffectToHostileCurse(0)
+  comp TransferStatusEffectEffect['transfer all friendly power to hostile [curse]']: isFromFriendly=1, statusEffectToTransfer=4, particleYOffset=0
+==============================================================================
+NOTION CURSE_ENCHANTMENT [rare] name=None category=需要满足条件
+  N-desc: 'linger: hostile [curse] +power = enemy dmg received'
+UNITY  Curse/2_Rare/CURSE_ENCHANTMENT.prefab
+  U-name: '诅咒附魔'  rarity=rare  tags='01000000'  status=''
+  U-desc: '<tag:Linger>;\n当敌人受到伤害时:增强 <b>1</b> 敌方[诅咒]'
+  listen: OnTheirPlayerTookDmg -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['if in grave, enhance hostile [curse]']: cost=CostNEffectContainer.CheckCost_IndexBeforeStartCard(0) | effect=CurseEffect.EnhanceCurse(1)
+  comp CurseEffect['if in grave, enhance hostile [curse]']: particleYOffset=0, powerCoefficient=1
+==============================================================================
+NOTION DEATHBED_CURSE [rare] name=None category=需要满足条件
+  N-desc: 'linger: if friendly [conjure] is exiled, hostile [curse] +power'
+UNITY  Conjure/2_Rare/DEATHBED_CURSE.prefab
+  U-name: '临终诅咒'  rarity=rare  tags='01000000'  status=''
+  U-desc: '<tag:Linger>;当友方被去除时:敌方[诅咒]获得 <b>1</b> 力量'
+  listen: OnFriendlyCardExiled -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['if in grave: hostile [curse] + power']: cost=CostNEffectContainer.CheckCost_IndexBeforeStartCard(0) | effect=CurseEffect.EnhanceCurse(1)
+  comp CurseEffect['if in grave: hostile [curse] + power']: particleYOffset=0, powerCoefficient=1
+==============================================================================
+NOTION DETERIORATION [rare] name=None category=需要满足条件
+  N-desc: 'for each 2 power hostile [curse] has, hostile [curse] +power'
+UNITY  Curse/2_Rare/DETERIORATION.prefab
+  U-name: '恶化'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓时,敌方[诅咒]每有 <b>2</b> 力量:增强 <b>1</b> 敌方[诅咒]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[for 2 power hostile [curse] power, enhance 1]: cost=- | effect=CurseEffect.EnhanceCurseWithCoefficient_BasedOnIntSO(0)
+  comp CurseEffect[for 2 power hostile [curse] power, enhance 1]: particleYOffset=0, powerCoefficient=2
+==============================================================================
+NOTION ELDER_SORCERER [rare] name=None category=需要满足条件
+  N-desc: 'for each friendly card staged this turn, apply power to friendly'
+UNITY  General/2_Rare/ELDER_SORCERER.prefab
+  U-name: '远古魔法使用者'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓时,本回合每置顶过 <b>1</b> 友方:给予 <b>1</b> 友方 <b>1</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[give friendly power x staged friendly this round]: cost=- | effect=StatusEffectGiverEffect.GiveStatusEffectToXFriendly_BasedOnStaged(1)
+  comp StatusEffectGiverEffect[give friendly power x staged friendly this round]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION ETERNAL_GHOST [rare] name=None category=必定能满足条件
+  N-desc: 'linger: 每次敌人受到伤害，造成1伤害'
+UNITY  General/2_Rare/ETERNAL_GHOST.prefab
+  U-name: '不散的恶灵'  rarity=rare  tags='01000000'  status=''
+  U-desc: '<tag:Linger>;\n当敌人受到伤害时:造成 <b><dmg></b> 伤害'
+  listen: OnTheirPlayerTookDmg -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[if in grave, deal dmg]: cost=CostNEffectContainer.CheckCost_IndexBeforeStartCard(0) | effect=HPAlterEffect.DecreaseTheirHp(0)
+  comp HPAlterEffect[if in grave, deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=-1, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+==============================================================================
+NOTION GRAVE_KEEPER [rare] name='守墓人' category=需要满足条件
+  N-desc: 'if card buried, stage self; deal dmg'
+UNITY  Bury and buried/DeathRattle/2_Rare/GRAVE_KEEPER.prefab
+  U-name: '守墓人'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;当卡被埋葬时:置顶自身'
+  listen: OnFriendlyCardBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[stage self]: cost=- | effect=StageEffect.StageSelf(0)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=4, statusEffectToCheck=None
+  comp StageEffect[stage self]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None
+==============================================================================
+NOTION LARGE_SCALE_DEATH [rare] name=None category=无条件
+  N-desc: 'bury next 4 cards'
+UNITY  Bury and buried/Bury/2_Rare/LARGE_SCALE_DEATH.prefab
+  U-name: '大范围死亡'  rarity=rare  tags='00000000'  status=''
+  U-desc: '揭晓时:埋葬后 <b>4</b> 卡'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury next cards]: cost=- | effect=BuryEffect.BuryNextXCards(4)
+  comp BuryEffect[bury next cards]: tagsToCheck=00000000, excludeSelf=1
+==============================================================================
+NOTION MARTYR [rare] name=None category=需要满足条件
+  N-desc: 'if buried, all friendly +power'
+UNITY  Bury and buried/DeathRattle/2_Rare/MARTYR.prefab
+  U-name: '殉道者'  rarity=rare  tags='03000000'  status=''
+  U-desc: '被埋葬:所有友方获得 <b>1</b> 力量'
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[give all friendly power]: cost=- | effect=StatusEffectGiverEffect.GiveAllFriendlyStatusEffect(1)
+  comp StatusEffectGiverEffect[give all friendly power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+NOTION POWER_SIPHONER [rare] name=None category=必定能满足条件
+  N-desc: 'transfer 1 power from all friendly to me\ndeal dmg x 2'
+UNITY  General/2_Rare/POWER_SIPHONER.prefab
+  U-name: '力量虹吸人'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓时:转移所有友方的 <b>1</b> 力量到自身,造成 <b><dmg></b> 伤害 x <b>2</b>'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg multiple times]: cost=- | effect=HPAlterEffect.DecreaseTheirHpTimesX(2)
+  container[transfer 1 friendly power to me]: cost=- | effect=TransferStatusEffectEffect.TransferOneStatusEffectToSelf(0)
+  comp HPAlterEffect[deal dmg multiple times]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=0, statusEffectToCheck=None
+  comp TransferStatusEffectEffect[transfer 1 friendly power to me]: isFromFriendly=1, statusEffectToTransfer=4, particleYOffset=0
+==============================================================================
+NOTION PROLIFERATING_CURSE [rare] name=None category=需要满足条件
+  N-desc: 'copy hostile [curse]'
+UNITY  Curse/2_Rare/PROLIFERATING_CURSE.prefab
+  U-name: '增殖的厄运'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓时:复制敌方 <b>1</b> [诅咒]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[copy 1 hostile curse]: cost=- | effect=AddTempCard.CopyEnemyCurseCardToThem(0)
+  comp AddTempCard[copy 1 hostile curse]: cardCount=1
+==============================================================================
+NOTION RIFT_DEVOURER [rare] name=None category=需要满足条件
+  N-desc: 'deal dmg;\nwhen friendly exiled, gain power'
+UNITY  Conjure/2_Rare/RIFT_DEVOURER.prefab
+  U-name: '次元吞噬者'  rarity=rare  tags=''  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;当友方被去除时:获得 <b>1</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnFriendlyCardExiled -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[gain power]: cost=- | effect=StatusEffectGiverEffect.GiveSelfStatusEffect(1)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=0, statusEffectToCheck=None
+  comp StatusEffectGiverEffect[gain power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=5
+==============================================================================
+NOTION SLIME [rare] name=None category=需要满足条件
+  N-desc: 'if buried twice, copy self; deal dmg'
+UNITY  Bury and buried/DeathRattle/2_Rare/SLIME.prefab
+  U-name: '史莱姆'  rarity=rare  tags='03000000'  status=''
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;\n被埋葬::添加自身到卡组中'
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  container[add a copy of self, consume counter]: cost=- | effect=AddTempCard.AddSelfToMe(0)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp AddTempCard[add a copy of self, consume counter]: cardCount=1
+==============================================================================
+NOTION UNFINISHED_ROBOT [rare] name=None category=产出资源
+  N-desc: 'deal dmg;\n1 power;\ndouble self power'
+UNITY  General/2_Rare/UNFINISHED_ROBOT.prefab
+  U-name: '未完成的机器人'  rarity=rare  tags=''  status='04000000'
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害,翻倍自身力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[double self power]: cost=- | effect=StatusEffectGiverEffect.GiveSelfStatusEffectBasedOnStatusEffectCount(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(0)
+  comp StatusEffectGiverEffect[double self power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=Power, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=0, yFriendlyLayerCount=1, particleYOffset=0
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=-2, statusEffectToCheck=None
+==============================================================================
+NOTION WISE_BURIAL [rare] name=None category=需要满足条件
+  N-desc: 'if staged, bury 1 friendly [if buried]/[linger]'
+UNITY  Bury and buried/Bury/2_Rare/WISE_BURIAL.prefab
+  U-name: '不愚蠢的埋葬'  rarity=rare  tags=''  status=''
+  U-desc: '被置顶:埋葬 <b>1</b> 友方[<tag:DeathRattle>]/[<tag:Linger>]'
+  listen: OnMeStaged -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container['bury 1 friendly [Deathrattle]/[Linger]']: cost=- | effect=BuryEffect.BuryMyCardsWithTag(1)
+  comp BuryEffect['bury 1 friendly [Deathrattle]/[Linger]']: tagsToCheck=0300000001000000
+==============================================================================
+UNITY-ONLY Bury and buried/Bury/1_Uncommon/CORPSE_CANON.prefab
+  U-name: '冥界大炮'  rarity=uncommon
+  U-desc: '揭晓时:埋葬 1 友方;\n友方被埋葬:造成 <b><dmg></b> 伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnFriendlyCardBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(1)
+  container[bury friendly]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=0, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp BuryEffect[bury friendly]: tagsToCheck=, excludeSelf=1
+==============================================================================
+UNITY-ONLY Bury and buried/DeathRattle/1_Uncommon/CURSED_CORPSE.prefab
+  U-name: '被诅咒的尸体'  rarity=uncommon
+  U-desc: '揭晓时:增强 <b>1</b> 敌方[诅咒];被埋葬:造成 <b><dmg></b> x <b>3</b> 伤害'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg multiple times]: cost=- | effect=HPAlterEffect.DecreaseTheirHpTimesX(3)
+  container[enhance hostile [ju-on], deal dmg multiple times]: cost=- | effect=CurseEffect.EnhanceCurse(1)
+  comp HPAlterEffect[deal dmg multiple times]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=-1, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp CurseEffect[enhance hostile [ju-on], deal dmg multiple times]: particleYOffset=0, powerCoefficient=1
+==============================================================================
+UNITY-ONLY Curse/0_Common/CURSE_SUMMONER.prefab
+  U-name: '咒食的召唤师'  rarity=common
+  U-desc: '揭晓时,消耗敌方[诅咒] <b>1</b> 力量:置顶 <b>1</b> 友方'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[consume hostile [ju-on] power, stage friendly]: cost=CostNEffectContainer.CheckCost_EnemyCursedCardHasPower(1) | effect=CurseEffect.ConsumeHostileCursePower(1); StageEffect.StageMyCards(1)
+  comp StageEffect[consume hostile [ju-on] power, stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None
+  comp CurseEffect[consume hostile [ju-on] power, stage friendly]: particleYOffset=0, powerCoefficient=1
+==============================================================================
+UNITY-ONLY _UTILITY/IncreaseDeckSize.prefab
+  U-name: '卡位增加 <中>'  rarity=uncommon
+  U-desc: '卡位增加 <b>2</b>'
+  listen: OnMeBought -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[Increase 2 deck size]: cost=- | effect=DeckSizeIncreaseEffect.IncreaseDeckSizeBy(2)
+  comp DeckSizeIncreaseEffect[Increase 2 deck size]: 
+==============================================================================
+UNITY-ONLY _UTILITY/IncreaseDeckSizeLite.prefab
+  U-name: '卡位增加 <小>'  rarity=common
+  U-desc: '卡位增加 <b>1</b>'
+  listen: OnMeBought -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[Increase 1 deck size]: cost=- | effect=DeckSizeIncreaseEffect.IncreaseDeckSizeBy(1)
+  comp DeckSizeIncreaseEffect[Increase 1 deck size]: 
+==============================================================================
+UNITY-ONLY _UTILITY/IncreaseHpMax.prefab
+  U-name: '早睡早起'  rarity=uncommon
+  U-desc: '生命值上限增加 <b>3</b>'
+  listen: OnMeBought -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[Increase 3 hp max]: cost=- | effect=HPMaxAlterEffect.IncreaseMyHpMax(3)
+  comp HPMaxAlterEffect[Increase 3 hp max]: 
+==============================================================================
+UNITY-ONLY General/1_Uncommon/POWER_SURGE.prefab
+  U-name: '能量迸发'  rarity=uncommon
+  U-desc: '揭晓时:造成 <b><dmg></b> 伤害;\n被置顶:给予 <b>2</b> 友方 <b>1</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  listen: OnMeStaged -> CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(1)
+  container[give friendly power]: cost=- | effect=StatusEffectGiverEffect.GiveStatusEffectToXFriendly(2)
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=1, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0
+  comp StatusEffectGiverEffect[give friendly power]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=1, xFriendlyCount=2, yFriendlyLayerCount=1, particleYOffset=0
+==============================================================================
+UNITY-ONLY Curse/1_Uncommon/SACRIFICIAL_CURSE.prefab
+  U-name: '献祭诅咒'  rarity=common
+  U-desc: '揭晓时:埋葬 <b>1</b> 友方,增强 <b>2</b> 敌方[诅咒]'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[enhance hostile curse]: cost=- | effect=CurseEffect.EnhanceCurse(2)
+  container[bury friendly]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  comp CurseEffect[enhance hostile curse]: particleYOffset=0, powerCoefficient=1
+  comp BuryEffect[bury friendly]: tagsToCheck=00000000, excludeSelf=1
+==============================================================================
+UNITY-ONLY General/0_Common/SACRIFICIAL_SWORD.prefab
+  U-name: '献祭剑'  rarity=common
+  U-desc: '揭晓:埋葬 <b>1</b> 友方,给予 <b>1</b> 友方 <b>2</b> 力量'
+  listen: OnMeRevealed -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[bury friendly]: cost=- | effect=BuryEffect.BuryMyCards(1)
+  container[apply power to friendly]: cost=- | effect=StatusEffectGiverEffect.GiveStatusEffectToXFriendly(2)
+  comp BuryEffect[bury friendly]: tagsToCheck=, excludeSelf=1
+  comp StatusEffectGiverEffect[apply power to friendly]: canStatusEffectBeStacked=1, statusEffectToGive=Power, statusEffectToCount=None, spreadEvenly=0, target=0, includeSelf=0, lastXCardsCount=0, statusEffectLayerCount=0, xFriendlyCount=1, yFriendlyLayerCount=2, particleYOffset=0
+==============================================================================
+UNITY-ONLY Bury and buried/DeathRattle/1_Uncommon/SCAPEGOAT.prefab
+  U-name: '替死鬼'  rarity=uncommon
+  U-desc: '被埋葬:造成 <b><dmg></b> 伤害,置顶 1 友方'
+  listen: OnMeBuried -> CostNEffectContainer.InvokeEffectEventVoid(0); CostNEffectContainer.InvokeEffectEventVoid(0)
+  container[stage friendly]: cost=- | effect=StageEffect.StageMyCards(1)
+  container[deal dmg]: cost=- | effect=HPAlterEffect.DecreaseTheirHp(1)
+  comp StageEffect[stage friendly]: tagToCheck=0, targetFriendly=0, statusEffectToCheck=None, excludeSelf=1
+  comp HPAlterEffect[deal dmg]: dmgAmountAlter=0, healAmountAlter=0, isStatusEffectDamage=0, extraDmg=3, statusEffectToCheck=None, dynamicDmgDisplaySource=0, dynamicDmgDisplayMultiplyByPower=0

@@ -1,0 +1,84 @@
+== ONLY IN NOTION (missing from Unity set) ==
+  BLIND_COMBAT_PRIEST [common] name=None
+  GOBLIN_ASSASIN_TEAM [uncommon] name=None
+  OVERCHARGED_SUMMONER [uncommon] name=None
+  SACRIFICIAL_SPIRIT [common] name=None
+  SKELETON_SOLDIER [common] name='骷髅士兵'
+== ONLY IN UNITY (missing from Notion) ==
+  CORPSE_CANON [uncommon] displayName='冥界大炮' (Bury and buried/Bury/1_Uncommon/CORPSE_CANON.prefab)
+  CURSED_CORPSE [uncommon] displayName='被诅咒的尸体' (Bury and buried/DeathRattle/1_Uncommon/CURSED_CORPSE.prefab)
+  CURSE_SUMMONER [common] displayName='咒食的召唤师' (Curse/0_Common/CURSE_SUMMONER.prefab)
+  GOBLIN_ASSASSIN_TEAM [uncommon] displayName='哥布林暗杀部队' (General/1_Uncommon/GOBLIN_ASSASSIN_TEAM.prefab)
+  IncreaseDeckSize [?] displayName='卡位增加 <中>' (_UTILITY/IncreaseDeckSize.prefab)
+  IncreaseDeckSizeLite [?] displayName='卡位增加 <小>' (_UTILITY/IncreaseDeckSizeLite.prefab)
+  IncreaseHpMax [?] displayName='早睡早起' (_UTILITY/IncreaseHpMax.prefab)
+  POWER_SURGE [uncommon] displayName='能量迸发' (General/1_Uncommon/POWER_SURGE.prefab)
+  SACRIFICIAL_CURSE [uncommon] displayName='献祭诅咒' (Curse/1_Uncommon/SACRIFICIAL_CURSE.prefab)
+  SACRIFICIAL_SWORD [common] displayName='献祭剑' (General/0_Common/SACRIFICIAL_SWORD.prefab)
+  SCAPEGOAT [uncommon] displayName='替死鬼' (Bury and buried/DeathRattle/1_Uncommon/SCAPEGOAT.prefab)
+  SOLDIER_SKELETON [common] displayName='骷髅士兵' (Bury and buried/DeathRattle/0_Common/SOLDIER_SKELETON.prefab)
+
+== NEAR-MATCH HINTS ==
+  Notion GOBLIN_ASSASIN_TEAM ~ Unity ['GOBLIN_ASSASSIN_TEAM']
+  Notion OVERCHARGED_SUMMONER ~ Unity ['CURSE_SUMMONER']
+  Notion SACRIFICIAL_SPIRIT ~ Unity ['SACRIFICIAL_SWORD', 'SACRIFICIAL_CURSE']
+  Unity GOBLIN_ASSASSIN_TEAM ~ Notion ['GOBLIN_ASSASIN_TEAM']
+  Unity SACRIFICIAL_CURSE ~ Notion ['SACRIFICIAL_SPIRIT']
+  Unity SACRIFICIAL_SWORD ~ Notion ['SACRIFICIAL_SPIRIT']
+
+== RARITY MISMATCHES (matched files) ==
+  GRAVE_TOGETHER: notion=common unityField=? unityFolder=common
+  MAD_SCIENTIST: notion=common unityField=? unityFolder=common
+  POWER_TRANSFER: notion=uncommon unityField=uncommon unityFolder=rare
+  SACRIFICE_RITUAL: notion=common unityField=uncommon unityFolder=common
+
+== NAME vs DISPLAYNAME ==
+  ADVANCE_PORTAL: notion=None unity='高等传送门'
+  ALL_FOR_ONE: notion=None unity='人人为我'
+  ALMIGHTY: notion=None unity='全能人'
+  ANTI_CREATURE_WEAPON: notion=None unity='对生物兵器'
+  BLACKSMITH: notion=None unity='铁匠'
+  BONE_COMBINATION: notion=None unity='碎骨聚集体'
+  BOOSTER: notion=None unity='推进器'
+  COFFIN_MAKER: notion=None unity='棺材制造者'
+  CONFUSED_PORTALMANCER: notion=None unity='错乱传送术士'
+  CROW_CROWD: notion=None unity='乌合之众'
+  CURSED_SKELETON: notion=None unity='被诅咒的骷髅'
+  CURSE_ENCHANTMENT: notion=None unity='诅咒附魔'
+  CURSE_THIRST_BEAST: notion=None unity='咒食的野兽'
+  CURSE_THIRST_SHAMAN: notion=None unity='咒食的萨满'
+  CURSE_THIRST_SUMMONER: notion=None unity='咒食的大召唤师'
+  DEATHBED_CURSE: notion=None unity='临终诅咒'
+  DETERIORATION: notion=None unity='恶化'
+  DR_MANHATTAN: notion=None unity='曼哈顿博士'
+  ELDER_SORCERER: notion=None unity='远古魔法使用者'
+  ETERNAL_GHOST: notion=None unity='不散的恶灵'
+  FLESH_COMBINATION: notion=None unity='血肉聚集体'
+  GOBLIN_CHARGE_TEAM: notion=None unity='哥布林冲锋部队'
+  GRAVE_PORTAL: notion='冥界传送门' unity='冥界裂缝'
+  LARGE_SCALE_DEATH: notion=None unity='大范围死亡'
+  MAD_SCIENTIST: notion=None unity='疯狂科学家'
+  MARTYR: notion=None unity='殉道者'
+  MOTH_MAN: notion=None unity='飞蛾人'
+  POISONER: notion=None unity='咒师'
+  POWER_CRAVER: notion=None unity='力量渴求者'
+  POWER_SIPHONER: notion=None unity='力量虹吸人'
+  POWER_TRANSFER: notion=None unity='力量转移'
+  PREMATURE: notion=None unity='拔苗助长'
+  PROLIFERATING_CURSE: notion=None unity='增殖的厄运'
+  QUICK_RESPONSE_PROTOCOL: notion=None unity='快速响应协议'
+  RIFT_CURSE: notion=None unity='异次元的诅咒'
+  RIFT_DEVOURER: notion=None unity='次元吞噬者'
+  RIFT_GUIDE: notion=None unity='次元引导者'
+  SIDE_EFFECT_PORTAL: notion=None unity='有副作用的传送门'
+  SLIME: notion=None unity='史莱姆'
+  SMALL_SCALE_DEATH: notion=None unity='小范围死亡'
+  SNATCHER: notion=None unity='屠夫'
+  TACTICAL_BREACHER: notion=None unity='战术爆破手'
+  THE_FOOL: notion=None unity='愚者'
+  UNDEAD_CURSER: notion=None unity='不死诅咒者'
+  UNFINISHED_ROBOT: notion=None unity='未完成的机器人'
+  WEAPON_SPIRIT: notion=None unity='武器精灵'
+  WISE_BURIAL: notion=None unity='不愚蠢的埋葬'
+
+== UNITY displayName EMPTY (info) ==

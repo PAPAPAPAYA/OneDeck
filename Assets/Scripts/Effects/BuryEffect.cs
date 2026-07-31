@@ -21,6 +21,12 @@ public class BuryEffect : EffectScript
 	[Tooltip("IntSO used when this card belongs to the enemy")]
 	public IntSO enemyIntSO;
 
+	[Header("Start Card Boundary")]
+	[Tooltip("If true, BuryNextXCards ignores the Start Card boundary: the Start Card itself and cards below it become valid targets")]
+	// TEST-ONLY(2026-07-31): Added to test Start Card burial behavior in BuryNextXCards.
+	// Only affects BuryNextXCards. Revisit/remove once the test concludes.
+	public bool ignoreStartCardBoundary = false;
+
 	/// <summary>
 	/// Get card owner's color tag (delegates to base palette-aware helper)
 	/// </summary>
@@ -252,6 +258,8 @@ public class BuryEffect : EffectScript
 	/// Iterates backwards from the current card's position and buries each valid target.
 	/// Skips cards that should be ignored, are minions, are already at the bottom, or are below the Start Card.
 	/// If this card is in the reveal zone, starts from the bottom of the deck instead.
+	/// TEST-ONLY(2026-07-31): when ignoreStartCardBoundary is on, the Start Card itself and cards
+	/// below it also become valid targets, and the below-Start-Card source guard is bypassed.
 	/// </summary>
 	/// <param name="amount">Number of cards to bury</param>
 	public void BuryNextXCards(int amount)
@@ -277,18 +285,22 @@ public class BuryEffect : EffectScript
 			}
 			if (currentIndex < 0) return;
 			// If this card is already below the Start Card, it cannot bury anything toward the bottom
-			if (IsCardBelowStartCard(myCard)) return;
+			// TEST-ONLY(2026-07-31): bypassed when ignoreStartCardBoundary is on.
+			if (!ignoreStartCardBoundary && IsCardBelowStartCard(myCard)) return;
 			startIndex = currentIndex - 1;
 		}
 		int startCardIndex = GetStartCardIndex();
-		int loopLowerBound = startCardIndex >= 0 ? startCardIndex : 0;
+		// TEST-ONLY(2026-07-31): ignoreStartCardBoundary lets the loop dig past the Start Card down to index 0.
+		int loopLowerBound = !ignoreStartCardBoundary && startCardIndex >= 0 ? startCardIndex : 0;
 		var cardsToBury = new List<GameObject>();
 		int cardsFound = 0;
 		for (int i = startIndex; i >= loopLowerBound && cardsFound < amount; i--)
 		{
 			var targetCard = _combinedDeck[i];
 			var targetCardScript = targetCard.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(targetCardScript)) continue;
+			if (targetCardScript == null) continue;
+			// TEST-ONLY(2026-07-31): ignoreStartCardBoundary lets the neutral Start Card become a valid target.
+			if (!ignoreStartCardBoundary && CombatManager.ShouldSkipEffectProcessing(targetCardScript)) continue;
 			if (targetCardScript.isMinion) continue;
 			if (IsCardAtBottom(targetCard)) continue;
 			cardsToBury.Add(targetCard);

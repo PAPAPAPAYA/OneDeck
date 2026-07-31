@@ -1,0 +1,2946 @@
+[
+ {
+  "prefab": "Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab",
+  "cardID": "0",
+  "cardTypeID": "GRAVE_PUNCH",
+  "displayName": "尸爆",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,造成 <b><dmg></b> 伤害 x <b>2</b>",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "bury",
+   "GRAVE_PUNCH"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHpTimesX",
+    "int": "2"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/Bury/0_Common/GRAVE_TOGETHER.prefab",
+  "cardID": "0",
+  "cardTypeID": "GRAVE_TOGETHER",
+  "displayName": "同路人",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,埋葬 <b>2</b> 敌方",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "bury friendly",
+   "GRAVE_TOGETHER"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "2"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/Bury/1_Uncommon/CORPSE_CANON.prefab",
+  "cardID": "0",
+  "cardTypeID": "CORPSE_CANON",
+  "displayName": "冥界大炮",
+  "cardDesc": "揭晓时:埋葬 1 友方;\n友方被埋葬:造成 <b><dmg></b> 伤害",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "CORPSE_CANON",
+   "bury friendly"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/Bury/1_Uncommon/GRAVE_INVITATION.prefab",
+  "cardID": "0",
+  "cardTypeID": "GRAVE_INVITATION",
+  "displayName": "冥界邀请",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,墓地每有 <b>1</b> 友方:埋葬 <b>1</b> 敌方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "deal dmg",
+   "GRAVE_INVITATION"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards_BasedOnIntSO",
+    "int": "0"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/Bury/1_Uncommon/UNSTABLE_PORTAL.prefab",
+  "cardID": "0",
+  "cardTypeID": "UNSTABLE_PORTAL",
+  "displayName": "不稳定传送门",
+  "cardDesc": "揭晓时:置顶 <b>1</b> 友方,埋葬 <b>1</b> 友方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "stage friendly",
+   "UNSTABLE_PORTAL"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/Bury/2_Rare/BODY_CANON.prefab",
+  "cardID": "0",
+  "cardTypeID": "BODY_CANON",
+  "displayName": "人间大炮",
+  "cardDesc": "揭晓时:埋葬所有友方,墓地每有一个友方:造成 <b>1</b> 次 <b><dmg></b> 伤害",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "bury all friendly cards",
+   "BODY_CANON"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHpTimes_BasedOnIntSO",
+    "int": "0"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryAllMyCards",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/Bury/2_Rare/LARGE_SCALE_DEATH.prefab",
+  "cardID": "0",
+  "cardTypeID": "LARGE_SCALE_DEATH",
+  "displayName": "大范围死亡",
+  "cardDesc": "揭晓时:埋葬后 <b>4</b> 卡",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "00000000",
+  "childObjects": [
+   "LARGE_SCALE_DEATH"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryNextXCards",
+    "int": "4"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/Bury/2_Rare/WISE_BURIAL.prefab",
+  "cardID": "0",
+  "cardTypeID": "WISE_BURIAL",
+  "displayName": "不愚蠢的埋葬",
+  "cardDesc": "被置顶:埋葬 <b>1</b> 友方[<tag:DeathRattle>]/[<tag:Linger>]",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "WISE_BURIAL"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCardsWithTag",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/0_Common/GRAVE_PORTAL.prefab",
+  "cardID": "0",
+  "cardTypeID": "GRAVE_PORTAL",
+  "displayName": "冥界裂缝",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 敌方;被埋葬:置顶 <b>1</b> 友方",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "stage friendly (1)",
+   "GRAVE_PORTAL"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "1"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/0_Common/SOLDIER_SKELETON.prefab",
+  "cardID": "0",
+  "cardTypeID": "SOLDIER_SKELETON",
+  "displayName": "骷髅士兵",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:置顶自身",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "stage self",
+   "SOLDIER_SKELETON"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageSelf",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/0_Common/UNDEAD_CURSER.prefab",
+  "cardID": "0",
+  "cardTypeID": "UNDEAD_CURSER",
+  "displayName": "不死诅咒者",
+  "cardDesc": "揭晓时:增强敌方[诅咒] <b>1</b>;\n被埋葬:增强敌方[诅咒] <b>1</b>",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "UNDEAD_CURSER"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/AVENGER.prefab",
+  "cardID": "0",
+  "cardTypeID": "AVENGER",
+  "displayName": "复仇者",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:获得 <b>2</b> 力量",
+  "rarity": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "gain power",
+   "AVENGER"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveSelfStatusEffect",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/CONFUSED_PORTALMANCER.prefab",
+  "cardID": "0",
+  "cardTypeID": "CONFUSED_PORTALMANCER",
+  "displayName": "错乱传送术士",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方;\n被埋葬:生成 <b>3</b> [次元裂缝] ",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "bury friendly",
+   "CONFUSED_PORTALMANCER"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddCardToMe",
+    "int": "1"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/CURSED_CORPSE.prefab",
+  "cardID": "0",
+  "cardTypeID": "CURSED_CORPSE",
+  "displayName": "被诅咒的尸体",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒];被埋葬:造成 <b><dmg></b> x <b>3</b> 伤害",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "deal dmg multiple times",
+   "enhance hostile [ju-on], deal dmg multiple times"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHpTimesX",
+    "int": "3"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/SCAPEGOAT.prefab",
+  "cardID": "0",
+  "cardTypeID": "SCAPEGOAT",
+  "displayName": "替死鬼",
+  "cardDesc": "被埋葬:造成 <b><dmg></b> 伤害,置顶 1 友方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "SCAPEGOAT",
+   "deal dmg"
+  ],
+  "effectCalls": [
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/SPIKE_SKELETON.prefab",
+  "cardID": "0",
+  "cardTypeID": "SPIKE_SKELETON",
+  "displayName": "针刺骷髅",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:造成 <b><dmg></b> 伤害 x <b>2</b>",
+  "rarity": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "deal dmg multiple times",
+   "SPIKE_SKELETON"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHpTimesX",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/2_Rare/GRAVE_KEEPER.prefab",
+  "cardID": "0",
+  "cardTypeID": "GRAVE_KEEPER",
+  "displayName": "守墓人",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;当卡被埋葬时:置顶自身",
+  "rarity": "2",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "stage self",
+   "GRAVE_KEEPER"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageSelf",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/2_Rare/MARTYR.prefab",
+  "cardID": "0",
+  "cardTypeID": "MARTYR",
+  "displayName": "殉道者",
+  "cardDesc": "被埋葬:所有友方获得 <b>1</b> 力量",
+  "rarity": "2",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "MARTYR"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveAllFriendlyStatusEffect",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/2_Rare/SLIME.prefab",
+  "cardID": "0",
+  "cardTypeID": "SLIME",
+  "displayName": "史莱姆",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被埋葬::添加自身到卡组中",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "add a copy of self, consume counter",
+   "SLIME"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddSelfToMe",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/0_Common/FALL_INTO_RIFT.prefab",
+  "cardID": "0",
+  "cardTypeID": "FALL_INTO_RIFT",
+  "displayName": "坠入裂缝",
+  "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],埋葬 <b>1</b> 敌方",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "bury hostile",
+   "FALL_INTO_RIFT"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddCardToMe",
+    "int": "0"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/0_Common/RIFT_INSECT.prefab",
+  "cardID": "0",
+  "cardTypeID": "RIFT_INSECT",
+  "displayName": "次元虫",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;生成 <b>1</b> [次元裂缝]",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "'add 1 [rift]'",
+   "RIFT_INSECT"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddCardToMe",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/0_Common/SACRIFICE_RITUAL.prefab",
+  "cardID": "0",
+  "cardTypeID": "SACRIFICE_RITUAL",
+  "displayName": "献祭仪式",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,生成 <b>2</b> [次元裂缝]",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "'add [rift]'",
+   "SACRIFICE_RITUAL"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddCardToMe",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_COFFIN.prefab",
+  "cardID": "0",
+  "cardTypeID": "RIFT_COFFIN",
+  "displayName": "次元棺材",
+  "cardDesc": "<tag:Linger>;当友方被去除时:埋葬 <b>1</b> 敌方",
+  "rarity": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "01000000",
+  "childObjects": [
+   "RIFT_COFFIN"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_IndexBeforeStartCard",
+    "int": "0"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_DRAGON.prefab",
+  "cardID": "0",
+  "cardTypeID": "RIFT_DRAGON",
+  "displayName": "次元龙",
+  "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],造成 <b>4</b> 伤害;\n被置顶:生成 <b>1</b> [次元裂缝]",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "deal dmg and add rift",
+   "RIFT_DRAGON"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddCardToMe",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddCardToMe",
+    "int": "2"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_GUIDE.prefab",
+  "cardID": "0",
+  "cardTypeID": "RIFT_GUIDE",
+  "displayName": "次元引导者",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:埋葬 <b>2</b> 敌方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "RIFT_GUIDE"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_HasOwnCardOfType",
+    "int": "1"
+   },
+   {
+    "type": "ExileEffect, Assembly-CSharp",
+    "method": "ExileMyCardsWithTypeID",
+    "int": "1"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_MONSTER.prefab",
+  "cardID": "0",
+  "cardTypeID": "RIFT_MONSTER",
+  "displayName": "次元兽",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:造成 <b><dmg></b> 伤害",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "RIFT_MONSTER"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_HasOwnCardOfType",
+    "int": "1"
+   },
+   {
+    "type": "ExileEffect, Assembly-CSharp",
+    "method": "ExileMyCardsWithTypeID",
+    "int": "1"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_SUMMONER.prefab",
+  "cardID": "0",
+  "cardTypeID": "RIFT_SUMMONER",
+  "displayName": "裂缝召唤师",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:置顶 <b>2</b> 友方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "RIFT_SUMMONER"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_HasOwnCardOfType",
+    "int": "1"
+   },
+   {
+    "type": "ExileEffect, Assembly-CSharp",
+    "method": "ExileMyCardsWithTypeID",
+    "int": "1"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/2_Rare/DEATHBED_CURSE.prefab",
+  "cardID": "0",
+  "cardTypeID": "DEATHBED_CURSE",
+  "displayName": "临终诅咒",
+  "cardDesc": "<tag:Linger>;当友方被去除时:敌方[诅咒]获得 <b>1</b> 力量",
+  "rarity": "2",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "01000000",
+  "childObjects": [
+   "DEATHBED_CURSE"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_IndexBeforeStartCard",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Conjure/2_Rare/RIFT_DEVOURER.prefab",
+  "cardID": "0",
+  "cardTypeID": "RIFT_DEVOURER",
+  "displayName": "次元吞噬者",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;当友方被去除时:获得 <b>1</b> 力量",
+  "rarity": "2",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "gain power",
+   "RIFT_DEVOURER"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveSelfStatusEffect",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/0_Common/CURSE_SUMMONER.prefab",
+  "cardID": "0",
+  "cardTypeID": "CURSE_THIRST_SUMMONER",
+  "displayName": "咒食的召唤师",
+  "cardDesc": "揭晓时,消耗敌方[诅咒] <b>1</b> 力量:置顶 <b>1</b> 友方",
+  "rarity": "0",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "consume hostile [ju-on] power, stage friendly"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_EnemyCursedCardHasPower",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "ConsumeHostileCursePower",
+    "int": "1"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/0_Common/POISONER.prefab",
+  "cardID": "0",
+  "cardTypeID": "POISONER",
+  "displayName": "咒师",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],造成 <b><dmg></b> 伤害",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "deal dmg",
+   "'enhence hostile [ju-on]'"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/0_Common/RIFT_CURSE.prefab",
+  "cardID": "0",
+  "cardTypeID": "RIFT_CURSE",
+  "displayName": "异次元的诅咒",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],生成 <b>1</b> [次元裂缝]",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "'enhance hostile [ju-on]'",
+   "'add [rift]'"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddCardToMe",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/1_Uncommon/CURSED_SKELETON.prefab",
+  "cardID": "0",
+  "cardTypeID": "CURSED_SKELETON",
+  "displayName": "被诅咒的骷髅",
+  "cardDesc": "揭晓时,墓地每有 <b>1</b> 友方:增强 <b>1</b> 敌方[诅咒]",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "enhance hostile curse for each friendly in grave"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse_BasedOnIntSO",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/1_Uncommon/CURSE_THIRST_BEAST.prefab",
+  "cardID": "0",
+  "cardTypeID": "CURSE_THIRST_BEAST",
+  "displayName": "咒食的野兽",
+  "cardDesc": "当敌方[诅咒]揭晓时:置顶自身;\n揭晓时:造成 <b><dmg></b> 伤害",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "deal dmg",
+   "stage self"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageSelf",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/1_Uncommon/CURSE_THIRST_SHAMAN.prefab",
+  "cardID": "0",
+  "cardTypeID": "CURSE_THIRST_SHAMAN",
+  "displayName": "咒食的萨满",
+  "cardDesc": "揭晓时,敌方[诅咒]每有 <b>1</b> 力量:给予 <b>1</b> 友方 <b>1</b> 力量",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "apply power to friendly = hostile curse power"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffectToXFriendly_BasedOnIntSO",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/1_Uncommon/MOTH_MAN.prefab",
+  "cardID": "0",
+  "cardTypeID": "MOTH_MAN",
+  "displayName": "飞蛾人",
+  "cardDesc": "当敌方[诅咒]获得力量时:置顶 <b>1</b> 友方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "stage friendly"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/1_Uncommon/PREMATURE.prefab",
+  "cardID": "0",
+  "cardTypeID": "PREMATURE",
+  "displayName": "拔苗助长",
+  "cardDesc": "揭晓时,敌方[诅咒]力量 - <b>1</b> :置顶敌方[诅咒]",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "consume 1 hostile [ju-on] power, stage it"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_EnemyCursedCardHasPower",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "ConsumeHostileCursePower",
+    "int": "1"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageTheirSpecificCard",
+    "int": "1",
+    "str": "JU_ON"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/1_Uncommon/SACRIFICIAL_CURSE.prefab",
+  "cardID": "0",
+  "cardTypeID": "SACRIFICIAL_CURSE",
+  "displayName": "献祭诅咒",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,增强 <b>2</b> 敌方[诅咒]",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "SACRIFICIAL_CURSE",
+   "bury friendly"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/1_Uncommon/SMALL_SCALE_DEATH.prefab",
+  "cardID": "0",
+  "cardTypeID": "SMALL_SCALE_DEATH",
+  "displayName": "小范围死亡",
+  "cardDesc": "揭晓时:埋葬后 <b>2</b> 卡,增强 <b>1</b> 敌方[诅咒]",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "bury next 2",
+   "SMALL_SCALE_DEATH"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "1"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryNextXCards",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/2_Rare/CROW_CROWD.prefab",
+  "cardID": "0",
+  "cardTypeID": "CROW_CROWD",
+  "displayName": "乌合之众",
+  "cardDesc": "揭晓时:将所有友方的力量(排除友方[诅咒])转移到敌方的[诅咒]",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "'transfer all friendly power to hostile [curse]'"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.TransferStatusEffectEffect",
+    "method": "TransferAllStatusEffectToHostileCurse",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/2_Rare/CURSE_ENCHANTMENT.prefab",
+  "cardID": "0",
+  "cardTypeID": "CURSE_ENCHANTMENT",
+  "displayName": "诅咒附魔",
+  "cardDesc": "<tag:Linger>;\n当敌人受到伤害时:增强 <b>1</b> 敌方[诅咒]",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "01000000",
+  "childObjects": [
+   "'if in grave, enhance hostile [curse]'"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_IndexBeforeStartCard",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "1"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/2_Rare/DETERIORATION.prefab",
+  "cardID": "0",
+  "cardTypeID": "DETERIORATION",
+  "displayName": "恶化",
+  "cardDesc": "揭晓时,敌方[诅咒]每有 <b>2</b> 力量:增强 <b>1</b> 敌方[诅咒]",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "for 2 power hostile [curse] power, enhance 1"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurseWithCoefficient_BasedOnIntSO",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "Curse/2_Rare/PROLIFERATING_CURSE.prefab",
+  "cardID": "0",
+  "cardTypeID": "PROLIFERATING_CURSE",
+  "displayName": "增殖的厄运",
+  "cardDesc": "揭晓时:复制敌方 <b>1</b> [诅咒]",
+  "rarity": "2",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "copy 1 hostile curse"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "CopyEnemyCurseCardToThem",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/0_Common/BLACKSMITH.prefab",
+  "cardID": "0",
+  "cardTypeID": "BLACKSMITH",
+  "displayName": "铁匠",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,给予一个友方 <b>1</b> 力量",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "apply power to friendly",
+   "BLACKSMITH"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffectToXFriendly",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/0_Common/COFFIN_MAKER.prefab",
+  "cardID": "0",
+  "cardTypeID": "COFFIN_MAKER",
+  "displayName": "棺材制造者",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,埋葬 <b>1</b> 敌方",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "bury hostile",
+   "COFFIN_MAKER"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/0_Common/MAD_SCIENTIST.prefab",
+  "cardID": "0",
+  "cardTypeID": "MAD_SCIENTIST",
+  "displayName": "疯狂科学家",
+  "cardDesc": "揭晓时:给予下 <b>3</b> 卡 <b>2</b> 力量",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "MAD_SCIENTIST"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffectToLastXCards",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/0_Common/SACRIFICIAL_SWORD.prefab",
+  "cardID": "0",
+  "cardTypeID": "SACRIFICIAL_SWORD",
+  "displayName": "献祭剑",
+  "cardDesc": "揭晓:埋葬 <b>1</b> 友方,给予 <b>1</b> 友方 <b>2</b> 力量",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "apply power to friendly",
+   "SACRIFICIAL_SWORD"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffectToXFriendly",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/0_Common/SIDE_EFFECT_PORTAL.prefab",
+  "cardID": "0",
+  "cardTypeID": "SIDE_EFFECT_PORTAL",
+  "displayName": "有副作用的传送门",
+  "cardDesc": "揭晓时:增强自身诅咒 <b>1</b> ,置顶 <b>1</b> 友方",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "stage friendly",
+   "SIDE_EFFECT_PORTAL"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceFriendlyCurse",
+    "int": "1"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/0_Common/THE_FOOL.prefab",
+  "cardID": "0",
+  "cardTypeID": "THE_FOOL",
+  "displayName": "愚者",
+  "cardDesc": "揭晓时:置顶力量最多的敌方,造成 <b>4</b> 伤害",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "stage hostile with most power",
+   "THE_FOOL"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageCardWithMostStatusEffect",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/ADVANCE_PORTAL.prefab",
+  "cardID": "0",
+  "cardTypeID": "ADVANCE_PORTAL",
+  "displayName": "高等传送门",
+  "cardDesc": "每揭晓 <b>2<counter></b> 次:置顶 <b>2</b> 友方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "consume counter to stage friendly",
+   "ADVANCE_PORTAL"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveSelfStatusEffect",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_Counter",
+    "int": "2"
+   },
+   {
+    "type": "DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp",
+    "method": "ConsumeOwnStatusEffect",
+    "int": "2"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/ALL_FOR_ONE.prefab",
+  "cardID": "0",
+  "cardTypeID": "ALL_FOR_ONE",
+  "displayName": "人人为我",
+  "cardDesc": "揭晓时:造成所有卡的力量数量的伤害",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "ALL_FOR_ONE"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp_BasedOnIntSO",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/ANTI_CREATURE_WEAPON.prefab",
+  "cardID": "0",
+  "cardTypeID": "ANTI_CREATURE_WEAPON",
+  "displayName": "对生物兵器",
+  "cardDesc": "揭晓时:埋葬 <b>2</b> 敌方",
+  "rarity": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "ANTI_CREATURE_WEAPON"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/BONE_COMBINATION.prefab",
+  "cardID": "0",
+  "cardTypeID": "BONE_COMBINATION",
+  "displayName": "碎骨聚集体",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害 x 本回合被埋葬的敌方数量",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "BONE_COMBINATION"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHpTimes_BasedOnOpponentBuriedCount",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/CURSE_THIRST_SUMMONER.prefab",
+  "cardID": "0",
+  "cardTypeID": "CURSE_THIRST_SUMMONER",
+  "displayName": "咒食的大召唤师",
+  "cardDesc": "揭晓时,消耗敌方[诅咒] <b>2</b> 力量:置顶 <b>1</b> 友方;\n揭晓时:给予下 <b>1</b> 卡 <b>2</b> 力量",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "enhance next card",
+   "CURSE_THIRST_SUMMONER"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_EnemyCursedCardHasPower",
+    "int": "2"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "ConsumeHostileCursePower",
+    "int": "2"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffectToLastXCards",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/DR_MANHATTAN.prefab",
+  "cardID": "0",
+  "cardTypeID": "DR_MANHATTAN",
+  "displayName": "曼哈顿博士",
+  "cardDesc": "揭晓时,消耗 <b>2</b> 力量:置顶 <b>2</b> 友方,埋葬 <b>2</b> 敌方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "DR_MANHATTAN"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_Power",
+    "int": "2"
+   },
+   {
+    "type": "DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp",
+    "method": "ConsumeOwnStatusEffect",
+    "int": "2"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "2"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/FLESH_COMBINATION.prefab",
+  "cardID": "0",
+  "cardTypeID": "FLESH_COMBINATION",
+  "displayName": "血肉聚集体",
+  "cardDesc": "揭晓时:造成友方数量的伤害",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "FLESH_COMBINATION"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp_BasedOnFriendlyCardCountInDeck",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/GOBLIN_ASSASSIN_TEAM.prefab",
+  "cardID": "0",
+  "cardTypeID": "GOBLIN_ASSASIN_TEAM",
+  "displayName": "哥布林暗杀部队",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:埋葬 <b>1</b> 敌方",
+  "rarity": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "deal dmg",
+   "GOBLIN_ASSASSIN_TEAM"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "1"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/GOBLIN_CHARGE_TEAM.prefab",
+  "cardID": "0",
+  "cardTypeID": "GOBLIN_CHARGE_TEAM",
+  "displayName": "哥布林冲锋部队",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被置顶:造成 <b><dmg:staged></b> 伤害",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "deal dmg (1)",
+   "GOBLIN_CHARGE_TEAM"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "2"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/POWER_CRAVER.prefab",
+  "cardID": "0",
+  "cardTypeID": "POWER_CRAVER",
+  "displayName": "力量渴求者",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;获得力量时:获得 <b>2</b> 倍力量",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "gain double power",
+   "POWER_CRAVER"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectAmplifierEffect",
+    "method": "AmplifyStatusEffectGain",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/POWER_SURGE.prefab",
+  "cardID": "0",
+  "cardTypeID": "POWER_SURGE",
+  "displayName": "能量迸发",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被置顶:给予 <b>2</b> 友方 <b>1</b> 力量",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "give friendly power",
+   "POWER_SURGE"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffectToXFriendly",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/QUICK_RESPONSE_PROTOCOL.prefab",
+  "cardID": "0",
+  "cardTypeID": "QUICK_RESPONSE_PROTOCOL",
+  "displayName": "快速响应协议",
+  "cardDesc": "<tag:Linger>;\n再有 <b>4<counter></b> 敌人被揭晓:置顶 <b>1</b> 友方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "01000000",
+  "childObjects": [
+   "if counter requirement met, consume counter and stage friendly",
+   "QUICK_RESPONSE_PROTOCOL"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_IndexBeforeStartCard",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveSelfStatusEffect",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_Counter",
+    "int": "4"
+   },
+   {
+    "type": "DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp",
+    "method": "ConsumeOwnStatusEffect",
+    "int": "4"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/SNATCHER.prefab",
+  "cardID": "0",
+  "cardTypeID": "SNATCHER",
+  "displayName": "屠夫",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:置顶 <b>1</b> 友方;被埋葬:埋葬 <b>1</b> 敌方",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "03000000",
+  "childObjects": [
+   "bury hostile",
+   "deal dmg",
+   "SNATCHER"
+  ],
+  "effectCalls": [
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "1"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/TACTICAL_BREACHER.prefab",
+  "cardID": "0",
+  "cardTypeID": "TACTICAL_BREACHER",
+  "displayName": "战术爆破手",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:获得 <b>1</b> 力量",
+  "rarity": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "deal dmg",
+   "TACTICAL_BREACHER"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveSelfStatusEffect",
+    "int": "1"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/1_Uncommon/WEAPON_SPIRIT.prefab",
+  "cardID": "0",
+  "cardTypeID": "WEAPON_SPIRIT",
+  "displayName": "武器精灵",
+  "cardDesc": "<tag:Linger>;当友方获得力量时:给予该友方 <b>1</b> 力量",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "01000000",
+  "childObjects": [
+   "WEAPON_SPIRIT"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_IndexBeforeStartCard",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.PowerReactionEffect, Assembly-CSharp",
+    "method": "GivePowerToCardThatGotPower",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/2_Rare/ALMIGHTY.prefab",
+  "cardID": "0",
+  "cardTypeID": "ALMIGHTY",
+  "displayName": "全能人",
+  "cardDesc": "揭晓 <b>2<counter></b> 次:造成 <b><dmg></b> 伤害,置顶 <b>1</b> 友方,埋葬 <b>1</b> 敌方,给予 <b>1</b> 友方力量,生成 <b>1</b> [次元裂缝],增强 <b>1</b> 敌方[诅咒]",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "gain counter",
+   "ALMIGHTY"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_Counter",
+    "int": "2"
+   },
+   {
+    "type": "DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp",
+    "method": "ConsumeOwnStatusEffect",
+    "int": "2"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "1"
+   },
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryTheirCards",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffect",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.AddTempCard, Assembly-CSharp",
+    "method": "AddCardToMe",
+    "int": "0"
+   },
+   {
+    "type": "DefaultNamespace.Effects.CurseEffect, Assembly-CSharp",
+    "method": "EnhanceCurse",
+    "int": "1"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveSelfStatusEffect",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/2_Rare/BOOSTER.prefab",
+  "cardID": "0",
+  "cardTypeID": "BOOSTER",
+  "displayName": "推进器",
+  "cardDesc": "洗牌后:置顶 <b>2</b> 友方;揭晓时:埋葬 <b>1</b> 友方",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "BOOSTER",
+   "stage friendly"
+  ],
+  "effectCalls": [
+   {
+    "type": "BuryEffect, Assembly-CSharp",
+    "method": "BuryMyCards",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "StageEffect, Assembly-CSharp",
+    "method": "StageMyCards",
+    "int": "2"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/2_Rare/ELDER_SORCERER.prefab",
+  "cardID": "0",
+  "cardTypeID": "ELDER_SORCERER",
+  "displayName": "远古魔法使用者",
+  "cardDesc": "揭晓时,本回合每置顶过 <b>1</b> 友方:给予 <b>1</b> 友方 <b>1</b> 力量",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "ELDER_SORCERER"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffectToXFriendly_BasedOnStaged",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/2_Rare/ETERNAL_GHOST.prefab",
+  "cardID": "0",
+  "cardTypeID": "ETERNAL_GHOST",
+  "displayName": "不散的恶灵",
+  "cardDesc": "<tag:Linger>;\n当敌人受到伤害时:造成 <b><dmg></b> 伤害",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "01000000",
+  "childObjects": [
+   "ETERNAL_GHOST"
+  ],
+  "effectCalls": [
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "CheckCost_IndexBeforeStartCard",
+    "int": "0"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/2_Rare/POWER_SIPHONER.prefab",
+  "cardID": "0",
+  "cardTypeID": "POWER_SIPHONER",
+  "displayName": "力量虹吸人",
+  "cardDesc": "揭晓时:转移所有友方的 <b>1</b> 力量到自身,造成 <b><dmg></b> 伤害 x <b>2</b>",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "transfer 1 friendly power to me",
+   "POWER_SIPHONER"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHpTimesX",
+    "int": "2"
+   },
+   {
+    "type": "DefaultNamespace.Effects.TransferStatusEffectEffect",
+    "method": "TransferOneStatusEffectToSelf",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/2_Rare/POWER_TRANSFER.prefab",
+  "cardID": "0",
+  "cardTypeID": "POWER_TRANSFER",
+  "displayName": "力量转移",
+  "cardDesc": "揭晓时:去除 <b>2</b> 敌方 <b>1</b> 力量,给予友方 <b>1</b> 力量 <b>2</b> 次",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "give friendly power",
+   "POWER_TRANSFER"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp",
+    "method": "ConsumeRandomEnemyCardsStatusEffect",
+    "int": "2"
+   },
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveStatusEffect",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "General/2_Rare/UNFINISHED_ROBOT.prefab",
+  "cardID": "0",
+  "cardTypeID": "UNFINISHED_ROBOT",
+  "displayName": "未完成的机器人",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,翻倍自身力量",
+  "rarity": "2",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "1",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "04000000",
+  "myTags": "",
+  "childObjects": [
+   "deal dmg",
+   "UNFINISHED_ROBOT"
+  ],
+  "effectCalls": [
+   {
+    "type": "DefaultNamespace.Effects.StatusEffectGiverEffect",
+    "method": "GiveSelfStatusEffectBasedOnStatusEffectCount",
+    "int": "0"
+   },
+   {
+    "type": "HPAlterEffect, Assembly-CSharp",
+    "method": "DecreaseTheirHp",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "_UTILITY/IncreaseDeckSize.prefab",
+  "cardID": "0",
+  "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE",
+  "displayName": "卡位增加 <中>",
+  "cardDesc": "卡位增加 <b>2</b>",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1.2",
+  "takeUpSpace": "0",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "IncreaseDeckSize"
+  ],
+  "effectCalls": [
+   {
+    "type": "DeckSizeIncreaseEffect, Assembly-CSharp",
+    "method": "IncreaseDeckSizeBy",
+    "int": "2"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "_UTILITY/IncreaseDeckSizeLite.prefab",
+  "cardID": "0",
+  "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE",
+  "displayName": "卡位增加 <小>",
+  "cardDesc": "卡位增加 <b>1</b>",
+  "rarity": "0",
+  "shopRollWeightMultiplier": "1.5",
+  "takeUpSpace": "0",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "IncreaseDeckSizeLite"
+  ],
+  "effectCalls": [
+   {
+    "type": "DeckSizeIncreaseEffect, Assembly-CSharp",
+    "method": "IncreaseDeckSizeBy",
+    "int": "1"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ },
+ {
+  "prefab": "_UTILITY/IncreaseHpMax.prefab",
+  "cardID": "0",
+  "cardTypeID": "SYSTEM_INCREASE_HP_MAX",
+  "displayName": "早睡早起",
+  "cardDesc": "生命值上限增加 <b>3</b>",
+  "rarity": "1",
+  "shopRollWeightMultiplier": "1",
+  "takeUpSpace": "0",
+  "isStartCard": "0",
+  "isMinion": "0",
+  "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+  "myStatusEffects": "",
+  "myTags": "",
+  "childObjects": [
+   "IncreaseHpMax"
+  ],
+  "effectCalls": [
+   {
+    "type": "HPMaxAlterEffect, Assembly-CSharp",
+    "method": "IncreaseMyHpMax",
+    "int": "3"
+   },
+   {
+    "type": "CostNEffectContainer, Assembly-CSharp",
+    "method": "InvokeEffectEventVoid",
+    "int": "0"
+   }
+  ],
+  "componentTypes": []
+ }
+]

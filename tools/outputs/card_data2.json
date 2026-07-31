@@ -1,0 +1,6623 @@
+[
+ {
+  "prefab": "Bury and buried/Bury/0_Common/GRAVE_PUNCH.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "GRAVE_PUNCH",
+   "displayName": "尸爆",
+   "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,造成 <b><dmg></b> 伤害 x <b>2</b>",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "GRAVE_PUNCH",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHpTimesX",
+      "int": 2,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "bury",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "3959115325634738855": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "0",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "170494010142903675": {
+    "type": "BuryEffect.cs",
+    "go": "bury",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/Bury/0_Common/GRAVE_TOGETHER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "GRAVE_TOGETHER",
+   "displayName": "同路人",
+   "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,埋葬 <b>2</b> 敌方",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "GRAVE_TOGETHER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury hostile",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 2,
+      "targetGo": "bury hostile"
+     }
+    ]
+   },
+   {
+    "go": "bury friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "8876120594014979081": {
+    "type": "BuryEffect.cs",
+    "go": "bury hostile",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagsToCheck": ""
+    }
+   },
+   "2849769100448172307": {
+    "type": "BuryEffect.cs",
+    "go": "bury friendly",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagsToCheck": ""
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/Bury/1_Uncommon/CORPSE_CANON.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CORPSE_CANON",
+   "displayName": "冥界大炮",
+   "cardDesc": "揭晓时:埋葬 1 友方;\n友方被埋葬:造成 <b><dmg></b> 伤害",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CORPSE_CANON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnFriendlyCardBuried.asset",
+    "go": "CORPSE_CANON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 1,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "bury friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7132340352972987781": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "0",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "8795448460262930087": {
+    "type": "BuryEffect.cs",
+    "go": "bury friendly",
+    "fields": {
+     "tagsToCheck": "",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/Bury/1_Uncommon/GRAVE_INVITATION.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "GRAVE_INVITATION",
+   "displayName": "冥界邀请",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,墓地每有 <b>1</b> 友方:埋葬 <b>1</b> 敌方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "GRAVE_INVITATION",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury hostile based on friendly in grave",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards_BasedOnIntSO",
+      "int": 0,
+      "targetGo": "bury hostile based on friendly in grave"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 2,
+      "targetGo": "deal dmg"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "121881359689528381": {
+    "type": "BuryEffect.cs",
+    "go": "bury hostile based on friendly in grave",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}",
+     "enemyIntSO": "{fileID: 11400000, guid: 6a71e8c2b741fd84abafa02a92d21951, type: 2}"
+    }
+   },
+   "8743518470759395260": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "2",
+     "statusEffectToCheck": "0",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/Bury/1_Uncommon/UNSTABLE_PORTAL.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "UNSTABLE_PORTAL",
+   "displayName": "不稳定传送门",
+   "cardDesc": "揭晓时:置顶 <b>1</b> 友方,埋葬 <b>1</b> 友方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "UNSTABLE_PORTAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "UNSTABLE_PORTAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury friendly"
+     }
+    ]
+   },
+   {
+    "go": "stage friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "stage friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "8876120594014979081": {
+    "type": "BuryEffect.cs",
+    "go": "bury friendly",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "7261412153255619070": {
+    "type": "StageEffect.cs",
+    "go": "stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/Bury/2_Rare/BODY_CANON.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "BODY_CANON",
+   "displayName": "人间大炮",
+   "cardDesc": "揭晓时:埋葬所有友方,墓地每有一个友方:造成 <b>1</b> 次 <b><dmg></b> 伤害",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "BODY_CANON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal 1 dmg x friendly after start card",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHpTimes_BasedOnIntSO",
+      "int": 0,
+      "targetGo": "deal 1 dmg x friendly after start card"
+     }
+    ]
+   },
+   {
+    "go": "bury all friendly cards",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryAllMyCards",
+      "int": 0,
+      "targetGo": "bury all friendly cards"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal 1 dmg x friendly after start card",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "-1",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}",
+     "enemyIntSO": "{fileID: 11400000, guid: 6a71e8c2b741fd84abafa02a92d21951, type: 2}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "6691177984462249146": {
+    "type": "BuryEffect.cs",
+    "go": "bury all friendly cards",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/Bury/2_Rare/LARGE_SCALE_DEATH.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "LARGE_SCALE_DEATH",
+   "displayName": "大范围死亡",
+   "cardDesc": "揭晓时:埋葬后 <b>4</b> 卡",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "00000000"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "LARGE_SCALE_DEATH",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury next cards",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryNextXCards",
+      "int": 4,
+      "targetGo": "bury next cards"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "6203818819553469257": {
+    "type": "BuryEffect.cs",
+    "go": "bury next cards",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/Bury/2_Rare/WISE_BURIAL.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "WISE_BURIAL",
+   "displayName": "不愚蠢的埋葬",
+   "cardDesc": "被置顶:埋葬 <b>1</b> 友方[<tag:DeathRattle>]/[<tag:Linger>]",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeStaged.asset",
+    "go": "WISE_BURIAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'bury 1 friendly [Deathrattle]/[Linger]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCardsWithTag",
+      "int": 1,
+      "targetGo": "'bury 1 friendly [Deathrattle]/[Linger]'"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "8423640758078931932": {
+    "type": "BuryEffect.cs",
+    "go": "'bury 1 friendly [Deathrattle]/[Linger]'",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagsToCheck": "0300000001000000"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/0_Common/GRAVE_PORTAL.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "GRAVE_PORTAL",
+   "displayName": "冥界裂缝",
+   "cardDesc": "揭晓时:埋葬 <b>1</b> 敌方;被埋葬:置顶 <b>1</b> 友方",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "03000000"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "GRAVE_PORTAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeBuried.asset",
+    "go": "GRAVE_PORTAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury hostile",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 1,
+      "targetGo": "bury hostile"
+     }
+    ]
+   },
+   {
+    "go": "stage friendly (1)",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "stage friendly (1)"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7125105978710227966": {
+    "type": "BuryEffect.cs",
+    "go": "bury hostile",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1"
+    }
+   },
+   "5900956953276217268": {
+    "type": "StageEffect.cs",
+    "go": "stage friendly (1)",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/0_Common/SOLDIER_SKELETON.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SOLDIER_SKELETON",
+   "displayName": "骷髅士兵",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:置顶自身",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "03000000",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SOLDIER_SKELETON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeBuried.asset",
+    "go": "SOLDIER_SKELETON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "stage self",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageSelf",
+      "int": 0,
+      "targetGo": "stage self"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "6832810485530567621": {
+    "type": "StageEffect.cs",
+    "go": "stage self",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/AVENGER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "AVENGER",
+   "displayName": "复仇者",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:获得 <b>2</b> 力量",
+   "rarity": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "03000000",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "AVENGER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeBuried.asset",
+    "go": "AVENGER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "gain power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveSelfStatusEffect",
+      "int": 2,
+      "targetGo": "gain power"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "3979709113611227747": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "gain power",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 385316958995927269, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/CONFUSED_PORTALMANCER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CONFUSED_PORTALMANCER",
+   "displayName": "错乱传送术士",
+   "cardDesc": "揭晓时:埋葬 <b>1</b> 友方;\n被埋葬:生成 <b>3</b> [次元裂缝] ",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "03000000",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CONFUSED_PORTALMANCER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeBuried.asset",
+    "go": "CONFUSED_PORTALMANCER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'add [rift]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddCardToMe",
+      "int": 1,
+      "obj": "RIFT.prefab",
+      "targetGo": "'add [rift]'"
+     }
+    ]
+   },
+   {
+    "go": "bury friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "2240642233228271431": {
+    "type": "AddTempCard.cs",
+    "go": "'add [rift]'",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "cardCount": "3",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}"
+    }
+   },
+   "1597356829752025836": {
+    "type": "BuryEffect.cs",
+    "go": "bury friendly",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagsToCheck": ""
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/CURSED_CORPSE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CURSED_CORPSE",
+   "displayName": "被诅咒的尸体",
+   "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒];被埋葬:造成 <b><dmg></b> x <b>3</b> 伤害",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "03000000"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CURSED_CORPSE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeBuried.asset",
+    "go": "CURSED_CORPSE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg multiple times",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHpTimesX",
+      "int": 3,
+      "targetGo": "deal dmg multiple times"
+     }
+    ]
+   },
+   {
+    "go": "enhance hostile [ju-on], deal dmg multiple times",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 1,
+      "targetGo": "enhance hostile [ju-on], deal dmg multiple times"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "2723055001528862354": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg multiple times",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "-1",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "3163636518556247340": {
+    "type": "CurseEffect.cs",
+    "go": "enhance hostile [ju-on], deal dmg multiple times",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/SCAPEGOAT.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SCAPEGOAT",
+   "displayName": "替死鬼",
+   "cardDesc": "被埋葬:造成 <b><dmg></b> 伤害,置顶 1 友方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "03000000"
+  },
+  "listeners": [
+   {
+    "event": "OnMeBuried.asset",
+    "go": "SCAPEGOAT",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "stage friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "stage friendly"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 1,
+      "targetGo": "deal dmg"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5218886900634954564": {
+    "type": "StageEffect.cs",
+    "go": "stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "5512404631855342793": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "3",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/1_Uncommon/SPIKE_SKELETON.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SPIKE_SKELETON",
+   "displayName": "针刺骷髅",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:造成 <b><dmg></b> 伤害 x <b>2</b>",
+   "rarity": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "03000000",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SPIKE_SKELETON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeBuried.asset",
+    "go": "SPIKE_SKELETON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg multiple times",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHpTimesX",
+      "int": 2,
+      "targetGo": "deal dmg multiple times"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "155396253852350705": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg multiple times",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "0",
+     "statusEffectToCheck": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/2_Rare/GRAVE_KEEPER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "GRAVE_KEEPER",
+   "displayName": "守墓人",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;当卡被埋葬时:置顶自身",
+   "rarity": "2",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnFriendlyCardBuried.asset",
+    "go": "GRAVE_KEEPER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "GRAVE_KEEPER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "stage self",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageSelf",
+      "int": 0,
+      "targetGo": "stage self"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "4",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "2778327919258514538": {
+    "type": "StageEffect.cs",
+    "go": "stage self",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/2_Rare/MARTYR.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "MARTYR",
+   "displayName": "殉道者",
+   "cardDesc": "被埋葬:所有友方获得 <b>1</b> 力量",
+   "rarity": "2",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "03000000",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeBuried.asset",
+    "go": "MARTYR",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "give all friendly power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveAllFriendlyStatusEffect",
+      "int": 1,
+      "targetGo": "give all friendly power"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "9212655993766041603": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "give all friendly power",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 385316958995927269, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Bury and buried/DeathRattle/2_Rare/SLIME.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SLIME",
+   "displayName": "史莱姆",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被埋葬::添加自身到卡组中",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "03000000"
+  },
+  "listeners": [
+   {
+    "event": "OnMeBuried.asset",
+    "go": "SLIME",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SLIME",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "add a copy of self, consume counter",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddSelfToMe",
+      "int": 0,
+      "targetGo": "add a copy of self, consume counter"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7907413060530675377": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "1238789155915027209": {
+    "type": "AddTempCard.cs",
+    "go": "add a copy of self, consume counter",
+    "fields": {
+     "cardCount": "1",
+     "curseCardTypeID": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/0_Common/FALL_INTO_RIFT.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "FALL_INTO_RIFT",
+   "displayName": "坠入裂缝",
+   "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],埋葬 <b>1</b> 敌方",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "FALL_INTO_RIFT",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'add [rift]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddCardToMe",
+      "int": 0,
+      "obj": "RIFT.prefab",
+      "targetGo": "'add [rift]'"
+     }
+    ]
+   },
+   {
+    "go": "bury hostile",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 1,
+      "targetGo": "bury hostile"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7386279966630511073": {
+    "type": "AddTempCard.cs",
+    "go": "'add [rift]'",
+    "fields": {
+     "cardCount": "1",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}"
+    }
+   },
+   "439443863281673025": {
+    "type": "BuryEffect.cs",
+    "go": "bury hostile",
+    "fields": {
+     "tagsToCheck": "00000000"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/0_Common/RIFT_INSECT.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "RIFT_INSECT",
+   "displayName": "次元虫",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;生成 <b>1</b> [次元裂缝]",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "RIFT_INSECT",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "'add 1 [rift]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddCardToMe",
+      "int": 0,
+      "obj": "RIFT.prefab",
+      "targetGo": "'add 1 [rift]'"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1970246900769268874": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "0",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "273218565643503644": {
+    "type": "AddTempCard.cs",
+    "go": "'add 1 [rift]'",
+    "fields": {
+     "cardCount": "1",
+     "curseCardTypeID": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/0_Common/SACRIFICE_RITUAL.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SACRIFICE_RITUAL",
+   "displayName": "献祭仪式",
+   "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,生成 <b>2</b> [次元裂缝]",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SACRIFICE_RITUAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury friendly"
+     }
+    ]
+   },
+   {
+    "go": "'add [rift]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddCardToMe",
+      "int": 0,
+      "obj": "RIFT.prefab",
+      "targetGo": "'add [rift]'"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1750634523173734784": {
+    "type": "BuryEffect.cs",
+    "go": "bury friendly",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "7527285285389357061": {
+    "type": "AddTempCard.cs",
+    "go": "'add [rift]'",
+    "fields": {
+     "cardCount": "2",
+     "curseCardTypeID": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_COFFIN.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "RIFT_COFFIN",
+   "displayName": "次元棺材",
+   "cardDesc": "<tag:Linger>;当友方被去除时:埋葬 <b>1</b> 敌方",
+   "rarity": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "01000000",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnFriendlyCardExiled.asset",
+    "go": "RIFT_COFFIN",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury 1 hostile",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_IndexBeforeStartCard",
+      "int": 0
+     }
+    ],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 1,
+      "targetGo": "bury 1 hostile"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "845177496907614834": {
+    "type": "BuryEffect.cs",
+    "go": "bury 1 hostile",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagsToCheck": ""
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_DRAGON.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "RIFT_DRAGON",
+   "displayName": "次元龙",
+   "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],造成 <b>4</b> 伤害;\n被置顶:生成 <b>1</b> [次元裂缝]",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "RIFT_DRAGON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeStaged.asset",
+    "go": "RIFT_DRAGON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'add [rift]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddCardToMe",
+      "int": 0,
+      "obj": "RIFT.prefab",
+      "targetGo": "'add [rift]'"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg and add rift",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddCardToMe",
+      "int": 2,
+      "obj": "RIFT.prefab",
+      "targetGo": "deal dmg and add rift"
+     },
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg and add rift"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "3456448224895526048": {
+    "type": "AddTempCard.cs",
+    "go": "'add [rift]'",
+    "fields": {
+     "cardCount": "1",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}"
+    }
+   },
+   "2814069841442407729": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg and add rift",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "2",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "6865625390785001126": {
+    "type": "AddTempCard.cs",
+    "go": "deal dmg and add rift",
+    "fields": {
+     "cardCount": "1",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_GUIDE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "RIFT_GUIDE",
+   "displayName": "次元引导者",
+   "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:埋葬 <b>2</b> 敌方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "RIFT_GUIDE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "check and exile rift and bury hostile",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_HasOwnCardOfType",
+      "int": 1
+     }
+    ],
+    "effect": [
+     {
+      "on": "ExileEffect.cs",
+      "method": "ExileMyCardsWithTypeID",
+      "int": 1,
+      "targetGo": "check and exile rift and bury hostile"
+     },
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 2,
+      "targetGo": "check and exile rift and bury hostile"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "6110833506389419724": {
+    "type": "BuryEffect.cs",
+    "go": "check and exile rift and bury hostile",
+    "fields": {
+     "tagsToCheck": "00000000"
+    }
+   },
+   "3130667770415808563": {
+    "type": "ExileEffect.cs",
+    "go": "check and exile rift and bury hostile",
+    "fields": {
+     "tagToCheck": "0",
+     "cardTypeIDSO": "{fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_MONSTER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "RIFT_MONSTER",
+   "displayName": "次元兽",
+   "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:造成 <b><dmg></b> 伤害",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "RIFT_MONSTER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_HasOwnCardOfType",
+      "int": 1
+     }
+    ],
+    "effect": [
+     {
+      "on": "ExileEffect.cs",
+      "method": "ExileMyCardsWithTypeID",
+      "int": 1,
+      "targetGo": "deal dmg"
+     },
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7514892832312545785": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "4",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "2887664233486724233": {
+    "type": "ExileEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "tagToCheck": "0",
+     "cardTypeIDSO": "{fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/1_Uncommon/RIFT_SUMMONER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "RIFT_SUMMONER",
+   "displayName": "裂缝召唤师",
+   "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:置顶 <b>2</b> 友方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "RIFT_SUMMONER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "check and exile rift and stage friendly",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_HasOwnCardOfType",
+      "int": 1
+     }
+    ],
+    "effect": [
+     {
+      "on": "ExileEffect.cs",
+      "method": "ExileMyCardsWithTypeID",
+      "int": 1,
+      "targetGo": "check and exile rift and stage friendly"
+     },
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 2,
+      "targetGo": "check and exile rift and stage friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "277766295408443174": {
+    "type": "StageEffect.cs",
+    "go": "check and exile rift and stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "8304428491955403819": {
+    "type": "ExileEffect.cs",
+    "go": "check and exile rift and stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "cardTypeIDSO": "{fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/2_Rare/DEATHBED_CURSE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "DEATHBED_CURSE",
+   "displayName": "临终诅咒",
+   "cardDesc": "<tag:Linger>;当友方被去除时:敌方[诅咒]获得 <b>1</b> 力量",
+   "rarity": "2",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "01000000",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnFriendlyCardExiled.asset",
+    "go": "DEATHBED_CURSE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'if in grave: hostile [curse] + power'",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_IndexBeforeStartCard",
+      "int": 0
+     }
+    ],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 1,
+      "targetGo": "'if in grave: hostile [curse] + power'"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "3584879872435597626": {
+    "type": "CurseEffect.cs",
+    "go": "'if in grave: hostile [curse] + power'",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 385316958995927269, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Conjure/2_Rare/RIFT_DEVOURER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "RIFT_DEVOURER",
+   "displayName": "次元吞噬者",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;当友方被去除时:获得 <b>1</b> 力量",
+   "rarity": "2",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "RIFT_DEVOURER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnFriendlyCardExiled.asset",
+    "go": "RIFT_DEVOURER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "gain power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveSelfStatusEffect",
+      "int": 1,
+      "targetGo": "gain power"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1891993902138470350": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "0",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "6188154729733476432": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "gain power",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 385316958995927269, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}",
+     "particleYOffset": "5"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/0_Common/CURSE_SUMMONER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CURSE_THIRST_SUMMONER",
+   "displayName": "咒食的召唤师",
+   "cardDesc": "揭晓时,消耗敌方[诅咒] <b>1</b> 力量:置顶 <b>1</b> 友方",
+   "rarity": "0",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CURSE_SUMMONER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "consume hostile [ju-on] power, stage friendly",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_EnemyCursedCardHasPower",
+      "int": 1
+     }
+    ],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "ConsumeHostileCursePower",
+      "int": 1,
+      "targetGo": "consume hostile [ju-on] power, stage friendly"
+     },
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "consume hostile [ju-on] power, stage friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5804767994645335557": {
+    "type": "StageEffect.cs",
+    "go": "consume hostile [ju-on] power, stage friendly",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "7717586853736928302": {
+    "type": "CurseEffect.cs",
+    "go": "consume hostile [ju-on] power, stage friendly",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/0_Common/POISONER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "POISONER",
+   "displayName": "咒师",
+   "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],造成 <b><dmg></b> 伤害",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "POISONER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "'enhence hostile [ju-on]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 1,
+      "targetGo": "'enhence hostile [ju-on]'"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "4108770269165058805": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "8669991410060710143": {
+    "type": "CurseEffect.cs",
+    "go": "'enhence hostile [ju-on]'",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/0_Common/RIFT_CURSE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "RIFT_CURSE",
+   "displayName": "异次元的诅咒",
+   "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],生成 <b>1</b> [次元裂缝]",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "RIFT_CURSE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'enhance hostile [ju-on]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 1,
+      "targetGo": "'enhance hostile [ju-on]'"
+     }
+    ]
+   },
+   {
+    "go": "'add [rift]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddCardToMe",
+      "int": 0,
+      "obj": "RIFT.prefab",
+      "targetGo": "'add [rift]'"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "8669991410060710143": {
+    "type": "CurseEffect.cs",
+    "go": "'enhance hostile [ju-on]'",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1"
+    }
+   },
+   "7495993100851933438": {
+    "type": "AddTempCard.cs",
+    "go": "'add [rift]'",
+    "fields": {
+     "cardCount": "1",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/0_Common/UNDEAD_CURSER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "UNDEAD_CURSER",
+   "displayName": "不死诅咒者",
+   "cardDesc": "揭晓时:增强敌方[诅咒] <b>2</b>;\n被埋葬:增强敌方[诅咒] <b>1</b>",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "03000000"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "UNDEAD_CURSER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeBuried.asset",
+    "go": "UNDEAD_CURSER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'enhence hostile [curse]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 1,
+      "targetGo": "'enhence hostile [curse]'"
+     }
+    ]
+   },
+   {
+    "go": "enhence hostile [curse] 2",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 2,
+      "targetGo": "enhence hostile [curse] 2"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "2486737577577430108": {
+    "type": "CurseEffect.cs",
+    "go": "'enhence hostile [curse]'",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "7650730865510969378": {
+    "type": "CurseEffect.cs",
+    "go": "enhence hostile [curse] 2",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/1_Uncommon/CURSED_SKELETON.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CURSED_SKELETON",
+   "displayName": "被诅咒的骷髅",
+   "cardDesc": "揭晓时,墓地每有 <b>1</b> 友方:增强 <b>1</b> 敌方[诅咒]",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CURSED_SKELETON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "enhance hostile curse for each friendly in grave",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse_BasedOnIntSO",
+      "int": 0,
+      "targetGo": "enhance hostile curse for each friendly in grave"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "8669991410060710143": {
+    "type": "CurseEffect.cs",
+    "go": "enhance hostile curse for each friendly in grave",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}",
+     "enemyIntSO": "{fileID: 11400000, guid: 6a71e8c2b741fd84abafa02a92d21951, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/1_Uncommon/CURSE_THIRST_BEAST.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CURSE_THIRST_BEAST",
+   "displayName": "咒食的野兽",
+   "cardDesc": "当敌方[诅咒]揭晓时:置顶自身;\n揭晓时:造成 <b><dmg></b> 伤害",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CURSE_THIRST_BEAST",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnHostileCurseRevealed.asset",
+    "go": "CURSE_THIRST_BEAST",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "stage self",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageSelf",
+      "int": 1,
+      "targetGo": "stage self"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "2232452929475643465": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "2",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "5804767994645335557": {
+    "type": "StageEffect.cs",
+    "go": "stage self",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/1_Uncommon/CURSE_THIRST_SHAMAN.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CURSE_THIRST_SHAMAN",
+   "displayName": "咒食的萨满",
+   "cardDesc": "揭晓时,敌方[诅咒]每有 <b>1</b> 力量:给予 <b>1</b> 友方 <b>1</b> 力量",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CURSE_THIRST_SHAMAN",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "apply power to friendly = hostile curse power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffectToXFriendly_BasedOnIntSO",
+      "int": 0,
+      "targetGo": "apply power to friendly = hostile curse power"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5971998725031926139": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "apply power to friendly = hostile curse power",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "ownerIntSO": "{fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}",
+     "enemyIntSO": "{fileID: 11400000, guid: fe20bd15130544d1b7548a9d96631617, type: 2}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/1_Uncommon/MOTH_MAN.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "MOTH_MAN",
+   "displayName": "飞蛾人",
+   "cardDesc": "当敌方[诅咒]获得力量时:置顶 <b>1</b> 友方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnEnemyCurseCardGotPower.asset",
+    "go": "MOTH_MAN",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "stage friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "stage friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5804767994645335557": {
+    "type": "StageEffect.cs",
+    "go": "stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/1_Uncommon/PREMATURE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "PREMATURE",
+   "displayName": "拔苗助长",
+   "cardDesc": "揭晓时,敌方[诅咒]力量 - <b>1</b> :置顶敌方[诅咒]",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "PREMATURE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "consume 1 hostile [ju-on] power, stage it",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_EnemyCursedCardHasPower",
+      "int": 1
+     }
+    ],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "ConsumeHostileCursePower",
+      "int": 1,
+      "targetGo": "consume 1 hostile [ju-on] power, stage it"
+     },
+     {
+      "on": "StageEffect.cs",
+      "method": "StageTheirSpecificCard",
+      "int": 1,
+      "str": "JU_ON",
+      "targetGo": "consume 1 hostile [ju-on] power, stage it"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5804767994645335557": {
+    "type": "StageEffect.cs",
+    "go": "consume 1 hostile [ju-on] power, stage it",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "3314759192248625085": {
+    "type": "CurseEffect.cs",
+    "go": "consume 1 hostile [ju-on] power, stage it",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/1_Uncommon/SACRIFICIAL_CURSE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SACRIFICIAL_CURSE",
+   "displayName": "献祭诅咒",
+   "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,增强 <b>2</b> 敌方[诅咒]",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SACRIFICIAL_CURSE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "enhance hostile curse",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 2,
+      "targetGo": "enhance hostile curse"
+     }
+    ]
+   },
+   {
+    "go": "bury friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "850421576032473282": {
+    "type": "CurseEffect.cs",
+    "go": "enhance hostile curse",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "8316969459921798129": {
+    "type": "BuryEffect.cs",
+    "go": "bury friendly",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/1_Uncommon/SMALL_SCALE_DEATH.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SMALL_SCALE_DEATH",
+   "displayName": "小范围死亡",
+   "cardDesc": "揭晓时:埋葬后 <b>2</b> 卡,增强 <b>1</b> 敌方[诅咒]",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SMALL_SCALE_DEATH",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "enhance hostile curse",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 1,
+      "targetGo": "enhance hostile curse"
+     }
+    ]
+   },
+   {
+    "go": "bury next 2",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryNextXCards",
+      "int": 2,
+      "targetGo": "bury next 2"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5689445365476504761": {
+    "type": "CurseEffect.cs",
+    "go": "enhance hostile curse",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1"
+    }
+   },
+   "1924760719970565178": {
+    "type": "BuryEffect.cs",
+    "go": "bury next 2",
+    "fields": {
+     "tagsToCheck": "00000000"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/2_Rare/CROW_CROWD.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CROW_CROWD",
+   "displayName": "乌合之众",
+   "cardDesc": "揭晓时:将所有友方的力量(排除友方[诅咒])转移到敌方的[诅咒]",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CROW_CROWD",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'transfer all friendly power to hostile [curse]'",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "TransferStatusEffectEffect.cs",
+      "method": "TransferAllStatusEffectToHostileCurse",
+      "int": 0,
+      "targetGo": "'transfer all friendly power to hostile [curse]'"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "4644680257732904595": {
+    "type": "TransferStatusEffectEffect.cs",
+    "go": "'transfer all friendly power to hostile [curse]'",
+    "fields": {
+     "isFromFriendly": "1",
+     "statusEffectToTransfer": "4",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/2_Rare/CURSE_ENCHANTMENT.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CURSE_ENCHANTMENT",
+   "displayName": "诅咒附魔",
+   "cardDesc": "<tag:Linger>;\n当敌人受到伤害时:增强 <b>1</b> 敌方[诅咒]",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "01000000"
+  },
+  "listeners": [
+   {
+    "event": "OnTheirPlayerTookDmg.asset",
+    "go": "CURSE_ENCHANTMENT",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "'if in grave, enhance hostile [curse]'",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_IndexBeforeStartCard",
+      "int": 0
+     }
+    ],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 1,
+      "targetGo": "'if in grave, enhance hostile [curse]'"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "803213763070102562": {
+    "type": "CurseEffect.cs",
+    "go": "'if in grave, enhance hostile [curse]'",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/2_Rare/DETERIORATION.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "DETERIORATION",
+   "displayName": "恶化",
+   "cardDesc": "揭晓时,敌方[诅咒]每有 <b>2</b> 力量:增强 <b>1</b> 敌方[诅咒]",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "DETERIORATION",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "for 2 power hostile [curse] power, enhance 1",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurseWithCoefficient_BasedOnIntSO",
+      "int": 0,
+      "targetGo": "for 2 power hostile [curse] power, enhance 1"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "8814234606693951482": {
+    "type": "CurseEffect.cs",
+    "go": "for 2 power hostile [curse] power, enhance 1",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "2",
+     "ownerIntSO": "{fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}",
+     "enemyIntSO": "{fileID: 11400000, guid: fe20bd15130544d1b7548a9d96631617, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "Curse/2_Rare/PROLIFERATING_CURSE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "PROLIFERATING_CURSE",
+   "displayName": "增殖的厄运",
+   "cardDesc": "揭晓时:复制敌方 <b>1</b> [诅咒]",
+   "rarity": "2",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "PROLIFERATING_CURSE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "copy 1 hostile curse",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "AddTempCard.cs",
+      "method": "CopyEnemyCurseCardToThem",
+      "int": 0,
+      "targetGo": "copy 1 hostile curse"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "4826763367012806502": {
+    "type": "AddTempCard.cs",
+    "go": "copy 1 hostile curse",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "cardCount": "1",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/0_Common/BLACKSMITH.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "BLACKSMITH",
+   "displayName": "铁匠",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,给予一个友方 <b>1</b> 力量",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "BLACKSMITH",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "apply power to friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffectToXFriendly",
+      "int": 2,
+      "targetGo": "apply power to friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "949936792400636641": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "apply power to friendly",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "0",
+     "xFriendlyCount": "1",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/0_Common/COFFIN_MAKER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "COFFIN_MAKER",
+   "displayName": "棺材制造者",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,埋葬 <b>1</b> 敌方",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "COFFIN_MAKER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "bury hostile",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 1,
+      "targetGo": "bury hostile"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "8053776274151350462": {
+    "type": "BuryEffect.cs",
+    "go": "bury hostile",
+    "fields": {
+     "tagsToCheck": "00000000"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/0_Common/MAD_SCIENTIST.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "MAD_SCIENTIST",
+   "displayName": "疯狂科学家",
+   "cardDesc": "揭晓时:给予下 <b>3</b> 卡 <b>2</b> 力量",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "MAD_SCIENTIST",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "apply power to next cards",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffectToLastXCards",
+      "int": 0,
+      "targetGo": "apply power to next cards"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "2280545656298681491": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "apply power to next cards",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "3",
+     "statusEffectLayerCount": "2",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/0_Common/SACRIFICIAL_SWORD.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SACRIFICIAL_SWORD",
+   "displayName": "献祭剑",
+   "cardDesc": "揭晓:埋葬 <b>1</b> 友方,给予 <b>1</b> 友方 <b>2</b> 力量",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SACRIFICIAL_SWORD",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury friendly"
+     }
+    ]
+   },
+   {
+    "go": "apply power to friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffectToXFriendly",
+      "int": 2,
+      "targetGo": "apply power to friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1761356069273952819": {
+    "type": "BuryEffect.cs",
+    "go": "bury friendly",
+    "fields": {
+     "tagsToCheck": "",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "949936792400636641": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "apply power to friendly",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "0",
+     "xFriendlyCount": "1",
+     "yFriendlyLayerCount": "2",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/0_Common/SIDE_EFFECT_PORTAL.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SIDE_EFFECT_PORTAL",
+   "displayName": "有副作用的传送门",
+   "cardDesc": "揭晓时:增强自身诅咒 <b>1</b> ,置顶 <b>1</b> 友方",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SIDE_EFFECT_PORTAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SIDE_EFFECT_PORTAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "enhance friendly curse",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceFriendlyCurse",
+      "int": 1,
+      "targetGo": "enhance friendly curse"
+     }
+    ]
+   },
+   {
+    "go": "stage friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "stage friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7065875926087339847": {
+    "type": "CurseEffect.cs",
+    "go": "enhance friendly curse",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "6966482593004164177": {
+    "type": "StageEffect.cs",
+    "go": "stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/0_Common/THE_FOOL.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "THE_FOOL",
+   "displayName": "愚者",
+   "cardDesc": "揭晓时:置顶力量最多的敌方,造成 <b>4</b> 伤害",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "THE_FOOL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "stage hostile with most power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageCardWithMostStatusEffect",
+      "int": 0,
+      "targetGo": "stage hostile with most power"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7909921029184482369": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "2",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "633876007519965972": {
+    "type": "StageEffect.cs",
+    "go": "stage hostile with most power",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "4",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/ADVANCE_PORTAL.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "ADVANCE_PORTAL",
+   "displayName": "高等传送门",
+   "cardDesc": "每揭晓 <b>2<counter></b> 次:置顶 <b>2</b> 友方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "ADVANCE_PORTAL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "add counter",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveSelfStatusEffect",
+      "int": 1,
+      "targetGo": "add counter"
+     }
+    ]
+   },
+   {
+    "go": "consume counter to stage friendly",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_Counter",
+      "int": 2
+     }
+    ],
+    "effect": [
+     {
+      "on": "ConsumeStatusEffect.cs",
+      "method": "ConsumeOwnStatusEffect",
+      "int": 2,
+      "targetGo": "consume counter to stage friendly"
+     },
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 2,
+      "targetGo": "consume counter to stage friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1856333855234317735": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "add counter",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "7",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   },
+   "6382889524050659034": {
+    "type": "StageEffect.cs",
+    "go": "consume counter to stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "7956716747616918608": {
+    "type": "ConsumeStatusEffect.cs",
+    "go": "consume counter to stage friendly",
+    "fields": {
+     "statusEffectToConsume": "7"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/ALL_FOR_ONE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "ALL_FOR_ONE",
+   "displayName": "人人为我",
+   "cardDesc": "揭晓时:造成所有卡的力量数量的伤害",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "ALL_FOR_ONE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg = total power count",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp_BasedOnIntSO",
+      "int": 0,
+      "targetGo": "deal dmg = total power count"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5316563494723346686": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg = total power count",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "-2",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}",
+     "enemyIntSO": "{fileID: 11400000, guid: 2d062c2be35fd6543a4bd1f90439ffea, type: 2}",
+     "dynamicDmgDisplaySource": "1",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/ANTI_CREATURE_WEAPON.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "ANTI_CREATURE_WEAPON",
+   "displayName": "对生物兵器",
+   "cardDesc": "揭晓时:埋葬 <b>2</b> 敌方",
+   "rarity": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "ANTI_CREATURE_WEAPON",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury hostile",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 2,
+      "targetGo": "bury hostile"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5876964604227770773": {
+    "type": "BuryEffect.cs",
+    "go": "bury hostile",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagsToCheck": ""
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/BONE_COMBINATION.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "BONE_COMBINATION",
+   "displayName": "碎骨聚集体",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害 x 本回合被埋葬的敌方数量",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "BONE_COMBINATION",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg x hostile buried amount",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHpTimes_BasedOnOpponentBuriedCount",
+      "int": 1,
+      "targetGo": "deal dmg x hostile buried amount"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg x hostile buried amount",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "-1",
+     "statusEffectToCheck": "0",
+     "dynamicDmgDisplaySource": "3",
+     "dynamicDmgDisplayMultiplyByPower": "1"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/CURSE_THIRST_SUMMONER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "CURSE_THIRST_SUMMONER",
+   "displayName": "咒食的大召唤师",
+   "cardDesc": "揭晓时,消耗敌方[诅咒] <b>2</b> 力量:置顶 <b>1</b> 友方;\n揭晓时:给予下 <b>1</b> 卡 <b>2</b> 力量",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "CURSE_THIRST_SUMMONER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "consume hostile curse power to stage friendly",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_EnemyCursedCardHasPower",
+      "int": 2
+     }
+    ],
+    "effect": [
+     {
+      "on": "CurseEffect.cs",
+      "method": "ConsumeHostileCursePower",
+      "int": 2,
+      "targetGo": "consume hostile curse power to stage friendly"
+     },
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "consume hostile curse power to stage friendly"
+     }
+    ]
+   },
+   {
+    "go": "enhance next card",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffectToLastXCards",
+      "int": 0,
+      "targetGo": "enhance next card"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1301791032689869417": {
+    "type": "CurseEffect.cs",
+    "go": "consume hostile curse power to stage friendly",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "3396948184596767659": {
+    "type": "StageEffect.cs",
+    "go": "consume hostile curse power to stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "7288527331841238507": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "enhance next card",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "1",
+     "statusEffectLayerCount": "2",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/DR_MANHATTAN.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "DR_MANHATTAN",
+   "displayName": "曼哈顿博士",
+   "cardDesc": "揭晓时,消耗 <b>2</b> 力量:置顶 <b>2</b> 友方,埋葬 <b>2</b> 敌方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "DR_MANHATTAN",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "consume power, stage firneldy bury hostile",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_Power",
+      "int": 2
+     }
+    ],
+    "effect": [
+     {
+      "on": "ConsumeStatusEffect.cs",
+      "method": "ConsumeOwnStatusEffect",
+      "int": 2,
+      "targetGo": "consume power, stage firneldy bury hostile"
+     },
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 2,
+      "targetGo": "consume power, stage firneldy bury hostile"
+     },
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 2,
+      "targetGo": "consume power, stage firneldy bury hostile"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "4684995344891370140": {
+    "type": "ConsumeStatusEffect.cs",
+    "go": "consume power, stage firneldy bury hostile",
+    "fields": {
+     "statusEffectToConsume": "4"
+    }
+   },
+   "7907964307070441852": {
+    "type": "StageEffect.cs",
+    "go": "consume power, stage firneldy bury hostile",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "2493173758063986808": {
+    "type": "BuryEffect.cs",
+    "go": "consume power, stage firneldy bury hostile",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/FLESH_COMBINATION.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "FLESH_COMBINATION",
+   "displayName": "血肉聚集体",
+   "cardDesc": "揭晓时:造成友方数量的伤害",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "FLESH_COMBINATION",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg  = friendly card count",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp_BasedOnFriendlyCardCountInDeck",
+      "int": 1,
+      "targetGo": "deal dmg  = friendly card count"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg  = friendly card count",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "-2",
+     "statusEffectToCheck": "0",
+     "dynamicDmgDisplaySource": "2",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/GOBLIN_ASSASSIN_TEAM.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "GOBLIN_ASSASIN_TEAM",
+   "displayName": "哥布林暗杀部队",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:埋葬 <b>1</b> 敌方",
+   "rarity": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "GOBLIN_ASSASSIN_TEAM",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeStaged.asset",
+    "go": "GOBLIN_ASSASSIN_TEAM",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury hostile",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 1,
+      "targetGo": "bury hostile"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 1,
+      "targetGo": "deal dmg"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "3736876001932743542": {
+    "type": "BuryEffect.cs",
+    "go": "bury hostile",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "tagsToCheck": ""
+    }
+   },
+   "5316563494723346686": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "2",
+     "statusEffectToCheck": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/GOBLIN_CHARGE_TEAM.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "GOBLIN_CHARGE_TEAM",
+   "displayName": "哥布林冲锋部队",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被置顶:造成 <b><dmg:staged></b> 伤害",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "GOBLIN_CHARGE_TEAM",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeStaged.asset",
+    "go": "GOBLIN_CHARGE_TEAM",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 2,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg (1)",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 2,
+      "targetGo": "deal dmg (1)"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "559669299673512837": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "0",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "damageDisplayKey": "",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "2278633291997169226": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg (1)",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "2",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "damageDisplayKey": "staged",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/POWER_CRAVER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "POWER_CRAVER",
+   "displayName": "力量渴求者",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;获得力量时:获得 <b>2</b> 倍力量",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "POWER_CRAVER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeGotStatusEffect.asset",
+    "go": "POWER_CRAVER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 1,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "gain double power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectAmplifierEffect.cs",
+      "method": "AmplifyStatusEffectGain",
+      "int": 0,
+      "targetGo": "gain double power"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5316563494723346686": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "6768499326345013118": {
+    "type": "StatusEffectAmplifierEffect.cs",
+    "go": "gain double power",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "4",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "statusEffectMultiplier": "2"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/POWER_SURGE.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "POWER_SURGE",
+   "displayName": "能量迸发",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\n被置顶:给予 <b>2</b> 友方 <b>1</b> 力量",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "POWER_SURGE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeStaged.asset",
+    "go": "POWER_SURGE",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 1,
+      "targetGo": "deal dmg"
+     }
+    ]
+   },
+   {
+    "go": "give friendly power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffectToXFriendly",
+      "int": 2,
+      "targetGo": "give friendly power"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "3158584760998256467": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   },
+   "1931614542014225915": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "give friendly power",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "2",
+     "yFriendlyLayerCount": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/QUICK_RESPONSE_PROTOCOL.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "QUICK_RESPONSE_PROTOCOL",
+   "displayName": "快速响应协议",
+   "cardDesc": "<tag:Linger>;\n再有 <b>4<counter></b> 敌人被揭晓:置顶 <b>1</b> 友方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "01000000"
+  },
+  "listeners": [
+   {
+    "event": "OnHostileRevealed.asset",
+    "go": "QUICK_RESPONSE_PROTOCOL",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "add counter",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_IndexBeforeStartCard",
+      "int": 0
+     }
+    ],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveSelfStatusEffect",
+      "int": 1,
+      "targetGo": "add counter"
+     }
+    ]
+   },
+   {
+    "go": "if counter requirement met, consume counter and stage friendly",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_Counter",
+      "int": 4
+     }
+    ],
+    "effect": [
+     {
+      "on": "ConsumeStatusEffect.cs",
+      "method": "ConsumeOwnStatusEffect",
+      "int": 4,
+      "targetGo": "if counter requirement met, consume counter and stage friendly"
+     },
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "if counter requirement met, consume counter and stage friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "4103491037857827543": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "add counter",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "7",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   },
+   "5093075312488622560": {
+    "type": "StageEffect.cs",
+    "go": "if counter requirement met, consume counter and stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "1646528922670492588": {
+    "type": "ConsumeStatusEffect.cs",
+    "go": "if counter requirement met, consume counter and stage friendly",
+    "fields": {
+     "statusEffectToConsume": "7"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/SNATCHER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SNATCHER",
+   "displayName": "屠夫",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:置顶 <b>1</b> 友方;被埋葬:埋葬 <b>1</b> 敌方",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "03000000"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "SNATCHER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeStaged.asset",
+    "go": "SNATCHER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeBuried.asset",
+    "go": "SNATCHER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "stage friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "stage friendly"
+     }
+    ]
+   },
+   {
+    "go": "bury hostile",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 1,
+      "targetGo": "bury hostile"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 2,
+      "targetGo": "deal dmg"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "877230821181285917": {
+    "type": "StageEffect.cs",
+    "go": "stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "4892750680444333227": {
+    "type": "BuryEffect.cs",
+    "go": "bury hostile",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}"
+    }
+   },
+   "8380297118486034760": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "1",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/TACTICAL_BREACHER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "TACTICAL_BREACHER",
+   "displayName": "战术爆破手",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:获得 <b>1</b> 力量",
+   "rarity": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "TACTICAL_BREACHER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeStaged.asset",
+    "go": "TACTICAL_BREACHER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "gain power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveSelfStatusEffect",
+      "int": 1,
+      "targetGo": "gain power"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 1,
+      "targetGo": "deal dmg"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "5217800351774937536": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "gain power",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   },
+   "5316563494723346686": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "effectResultString": "{fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}",
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "2",
+     "statusEffectToCheck": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/1_Uncommon/WEAPON_SPIRIT.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "WEAPON_SPIRIT",
+   "displayName": "武器精灵",
+   "cardDesc": "<tag:Linger>;当友方获得力量时:给予该友方 <b>1</b> 力量",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "01000000"
+  },
+  "listeners": [
+   {
+    "event": "OnFriendlyCardGotPower.asset",
+    "go": "WEAPON_SPIRIT",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "if in grave, apply power to last friendly power reciever",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_IndexBeforeStartCard",
+      "int": 0
+     }
+    ],
+    "effect": [
+     {
+      "on": "PowerReactionEffect.cs",
+      "method": "GivePowerToCardThatGotPower",
+      "int": 0,
+      "targetGo": "if in grave, apply power to last friendly power reciever"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "6757882006032749863": {
+    "type": "PowerReactionEffect.cs",
+    "go": "if in grave, apply power to last friendly power reciever",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "0",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerAmount": "1",
+     "excludeSelf": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/2_Rare/ALMIGHTY.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "ALMIGHTY",
+   "displayName": "全能人",
+   "cardDesc": "揭晓 <b>2<counter></b> 次:造成 <b><dmg></b> 伤害,置顶 <b>1</b> 友方,埋葬 <b>1</b> 敌方,给予 <b>1</b> 友方力量,生成 <b>1</b> [次元裂缝],增强 <b>1</b> 敌方[诅咒]",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "ALMIGHTY",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_Counter",
+      "int": 2
+     }
+    ],
+    "effect": [
+     {
+      "on": "ConsumeStatusEffect.cs",
+      "method": "ConsumeOwnStatusEffect",
+      "int": 2,
+      "targetGo": "consume counter to deal dmg; stage friendly; bury hostile; give friendly"
+     },
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "consume counter to deal dmg; stage friendly; bury hostile; give friendly"
+     },
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 1,
+      "targetGo": "consume counter to deal dmg; stage friendly; bury hostile; give friendly"
+     },
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryTheirCards",
+      "int": 1,
+      "targetGo": "consume counter to deal dmg; stage friendly; bury hostile; give friendly"
+     },
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffect",
+      "int": 1,
+      "targetGo": "consume counter to deal dmg; stage friendly; bury hostile; give friendly"
+     },
+     {
+      "on": "AddTempCard.cs",
+      "method": "AddCardToMe",
+      "int": 0,
+      "obj": "RIFT.prefab",
+      "targetGo": "consume counter to deal dmg; stage friendly; bury hostile; give friendly"
+     },
+     {
+      "on": "CurseEffect.cs",
+      "method": "EnhanceCurse",
+      "int": 1,
+      "targetGo": "consume counter to deal dmg; stage friendly; bury hostile; give friendly"
+     }
+    ]
+   },
+   {
+    "go": "gain counter",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveSelfStatusEffect",
+      "int": 1,
+      "targetGo": "gain counter"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "3363569435199126571": {
+    "type": "StageEffect.cs",
+    "go": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1"
+    }
+   },
+   "5876964604227770773": {
+    "type": "BuryEffect.cs",
+    "go": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1"
+    }
+   },
+   "3583010953411538909": {
+    "type": "AddTempCard.cs",
+    "go": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "fields": {
+     "cardCount": "1",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}"
+    }
+   },
+   "2228815078584909110": {
+    "type": "CurseEffect.cs",
+    "go": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "fields": {
+     "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "cardPrefab": "{fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0",
+     "powerCoefficient": "1"
+    }
+   },
+   "1980091464538312827": {
+    "type": "ConsumeStatusEffect.cs",
+    "go": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "fields": {
+     "statusEffectToConsume": "7"
+    }
+   },
+   "8859623698287760490": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "1",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   },
+   "3542089464337725451": {
+    "type": "HPAlterEffect.cs",
+    "go": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "-1",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "6535371549024205037": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "gain counter",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "7",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/2_Rare/BOOSTER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "BOOSTER",
+   "displayName": "推进器",
+   "cardDesc": "洗牌后:置顶 <b>2</b> 友方;揭晓时:埋葬 <b>1</b> 友方",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "AfterShuffle.asset",
+    "go": "BOOSTER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   },
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "BOOSTER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "bury friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "BuryEffect.cs",
+      "method": "BuryMyCards",
+      "int": 1,
+      "targetGo": "bury friendly"
+     }
+    ]
+   },
+   {
+    "go": "stage friendly",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StageEffect.cs",
+      "method": "StageMyCards",
+      "int": 2,
+      "targetGo": "stage friendly"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7238262431803804898": {
+    "type": "BuryEffect.cs",
+    "go": "bury friendly",
+    "fields": {
+     "tagsToCheck": "00000000",
+     "excludeSelf": "1"
+    }
+   },
+   "7892105985084736317": {
+    "type": "StageEffect.cs",
+    "go": "stage friendly",
+    "fields": {
+     "tagToCheck": "0",
+     "targetFriendly": "0",
+     "statusEffectToCheck": "0",
+     "excludeSelf": "1"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/2_Rare/ELDER_SORCERER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "ELDER_SORCERER",
+   "displayName": "远古魔法使用者",
+   "cardDesc": "揭晓时,本回合每置顶过 <b>1</b> 友方:给予 <b>1</b> 友方 <b>1</b> 力量",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "ELDER_SORCERER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "give friendly power x staged friendly this round",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffectToXFriendly_BasedOnStaged",
+      "int": 1,
+      "targetGo": "give friendly power x staged friendly this round"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "2874181013776840369": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "give friendly power x staged friendly this round",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/2_Rare/ETERNAL_GHOST.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "ETERNAL_GHOST",
+   "displayName": "不散的恶灵",
+   "cardDesc": "<tag:Linger>;\n当敌人受到伤害时:造成 <b><dmg></b> 伤害",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": "01000000"
+  },
+  "listeners": [
+   {
+    "event": "OnTheirPlayerTookDmg.asset",
+    "go": "ETERNAL_GHOST",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "if in grave, deal dmg",
+    "checkCost": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "CheckCost_IndexBeforeStartCard",
+      "int": 0
+     }
+    ],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "if in grave, deal dmg"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "1359544507321340075": {
+    "type": "HPAlterEffect.cs",
+    "go": "if in grave, deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "-1",
+     "statusEffectToCheck": "0",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "dynamicDmgDisplaySource": "0",
+     "dynamicDmgDisplayMultiplyByPower": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/2_Rare/POWER_SIPHONER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "POWER_SIPHONER",
+   "displayName": "力量虹吸人",
+   "cardDesc": "揭晓时:转移所有友方的 <b>1</b> 力量到自身,造成 <b><dmg></b> 伤害 x <b>2</b>",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "POWER_SIPHONER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "deal dmg multiple times",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHpTimesX",
+      "int": 2,
+      "targetGo": "deal dmg multiple times"
+     }
+    ]
+   },
+   {
+    "go": "transfer 1 friendly power to me",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "TransferStatusEffectEffect.cs",
+      "method": "TransferOneStatusEffectToSelf",
+      "int": 0,
+      "targetGo": "transfer 1 friendly power to me"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7769281556516018209": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg multiple times",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "0",
+     "statusEffectToCheck": "0"
+    }
+   },
+   "6594858768936703534": {
+    "type": "TransferStatusEffectEffect.cs",
+    "go": "transfer 1 friendly power to me",
+    "fields": {
+     "isFromFriendly": "1",
+     "statusEffectToTransfer": "4",
+     "curseCardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+     "statusEffectResolverPrefab": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/2_Rare/POWER_TRANSFER.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "POWER_TRANSFER",
+   "displayName": "力量转移",
+   "cardDesc": "揭晓时:去除 <b>2</b> 敌方 <b>1</b> 力量,给予友方 <b>1</b> 力量 <b>2</b> 次",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "POWER_TRANSFER",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "consume hostile power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "ConsumeStatusEffect.cs",
+      "method": "ConsumeRandomEnemyCardsStatusEffect",
+      "int": 2,
+      "targetGo": "consume hostile power"
+     }
+    ]
+   },
+   {
+    "go": "give friendly power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveStatusEffect",
+      "int": 2,
+      "targetGo": "give friendly power"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "670199791437565454": {
+    "type": "ConsumeStatusEffect.cs",
+    "go": "consume hostile power",
+    "fields": {
+     "statusEffectToConsume": "4"
+    }
+   },
+   "3720441144108403305": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "give friendly power",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "0",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "ownerIntSO": "{fileID: 0}",
+     "enemyIntSO": "{fileID: 0}",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "General/2_Rare/UNFINISHED_ROBOT.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "UNFINISHED_ROBOT",
+   "displayName": "未完成的机器人",
+   "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,翻倍自身力量",
+   "rarity": "2",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "1",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "04000000",
+   "myTags": "",
+   "delayCost": "0",
+   "buryCost": "0",
+   "exposeCost": "0",
+   "minionCostCount": "0",
+   "minionCostCardTypeID": "",
+   "minionCostOwner": "0",
+   "exileCostCount": "0",
+   "exileCostCardTypeID": "",
+   "exileCostOwner": "0"
+  },
+  "listeners": [
+   {
+    "event": "OnMeRevealed.asset",
+    "go": "UNFINISHED_ROBOT",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     },
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "double self power",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "StatusEffectGiverEffect.cs",
+      "method": "GiveSelfStatusEffectBasedOnStatusEffectCount",
+      "int": 0,
+      "targetGo": "double self power"
+     }
+    ]
+   },
+   {
+    "go": "deal dmg",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPAlterEffect.cs",
+      "method": "DecreaseTheirHp",
+      "int": 0,
+      "targetGo": "deal dmg"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "2370261081127142453": {
+    "type": "StatusEffectGiverEffect.cs",
+    "go": "double self power",
+    "fields": {
+     "myStatusEffectResolverScript": "{fileID: 0}",
+     "canStatusEffectBeStacked": "1",
+     "statusEffectToGive": "4",
+     "statusEffectToCount": "4",
+     "spreadEvenly": "0",
+     "target": "0",
+     "includeSelf": "0",
+     "lastXCardsCount": "0",
+     "statusEffectLayerCount": "1",
+     "xFriendlyCount": "0",
+     "yFriendlyLayerCount": "1",
+     "statusEffectParticlePrefab": "{fileID: 0}",
+     "particleYOffset": "0"
+    }
+   },
+   "515972566327908958": {
+    "type": "HPAlterEffect.cs",
+    "go": "deal dmg",
+    "fields": {
+     "baseDmg": "{fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}",
+     "dmgAmountAlter": "0",
+     "healAmountAlter": "0",
+     "isStatusEffectDamage": "0",
+     "extraDmg": "-2",
+     "statusEffectToCheck": "0"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "_UTILITY/IncreaseDeckSize.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE",
+   "displayName": "卡位增加 <中>",
+   "cardDesc": "卡位增加 <b>2</b>",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1.2",
+   "takeUpSpace": "0",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeBought.asset",
+    "go": "IncreaseDeckSize",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "Increase 2 deck size",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "DeckSizeIncreaseEffect.cs",
+      "method": "IncreaseDeckSizeBy",
+      "int": 2,
+      "targetGo": "Increase 2 deck size"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "6107012632210937845": {
+    "type": "DeckSizeIncreaseEffect.cs",
+    "go": "Increase 2 deck size",
+    "fields": {
+     "myDeckSize": "{fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}",
+     "maxDeckSize": "{fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "_UTILITY/IncreaseDeckSizeLite.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE",
+   "displayName": "卡位增加 <小>",
+   "cardDesc": "卡位增加 <b>1</b>",
+   "rarity": "0",
+   "shopRollWeightMultiplier": "1.5",
+   "takeUpSpace": "0",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeBought.asset",
+    "go": "IncreaseDeckSizeLite",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "Increase 1 deck size",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "DeckSizeIncreaseEffect.cs",
+      "method": "IncreaseDeckSizeBy",
+      "int": 1,
+      "targetGo": "Increase 1 deck size"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "6107012632210937845": {
+    "type": "DeckSizeIncreaseEffect.cs",
+    "go": "Increase 1 deck size",
+    "fields": {
+     "myDeckSize": "{fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}",
+     "maxDeckSize": "{fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}"
+    }
+   }
+  }
+ },
+ {
+  "prefab": "_UTILITY/IncreaseHpMax.prefab",
+  "card": {
+   "cardID": "0",
+   "cardTypeID": "SYSTEM_INCREASE_HP_MAX",
+   "displayName": "早睡早起",
+   "cardDesc": "生命值上限增加 <b>3</b>",
+   "rarity": "1",
+   "shopRollWeightMultiplier": "1",
+   "takeUpSpace": "0",
+   "isStartCard": "0",
+   "isMinion": "0",
+   "price": "{fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}",
+   "myStatusRef": "{fileID: 0}",
+   "theirStatusRef": "{fileID: 0}",
+   "myStatusEffects": "",
+   "displayMyStatusEffects": "",
+   "myTags": ""
+  },
+  "listeners": [
+   {
+    "event": "OnMeBought.asset",
+    "go": "IncreaseHpMax",
+    "response": [
+     {
+      "on": "CostNEffectContainer",
+      "method": "InvokeEffectEventVoid",
+      "int": 0
+     }
+    ]
+   }
+  ],
+  "containers": [
+   {
+    "go": "Increase 3 hp max",
+    "checkCost": [],
+    "effect": [
+     {
+      "on": "HPMaxAlterEffect.cs",
+      "method": "IncreaseMyHpMax",
+      "int": 3,
+      "targetGo": "Increase 3 hp max"
+     }
+    ]
+   }
+  ],
+  "components": {
+   "7009360386835812218": {
+    "type": "HPMaxAlterEffect.cs",
+    "go": "Increase 3 hp max",
+    "fields": {}
+   }
+  }
+ }
+]

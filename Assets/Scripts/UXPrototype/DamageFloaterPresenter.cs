@@ -182,6 +182,34 @@ public class DamageFloaterPresenter : MonoBehaviour
 		local.x += Random.Range(-jitterPx * 0.5f, jitterPx * 0.5f) * px;
 		local = ClampToLayer(local, px);
 
+		var go = CreateFloaterObject(local, amount);
+		var rt = (RectTransform)go.transform;
+		var tmp = go.GetComponent<TextMeshProUGUI>();
+		var group = go.GetComponent<CanvasGroup>();
+
+		TestManager.Log("[DamageFloater] Spawned '" + tmp.text + "' side=" + (playerSide ? "player" : "enemy")
+			+ " | target='" + target.name + "' world=" + worldPos
+			+ " | layerLocal=" + local + " (layer rect=" + floaterLayer.rect + ")"
+			+ " | px->local=" + px + " | font=" + (tmp.font != null ? tmp.font.name : "NULL")
+			+ " | color=" + tmp.color + " | scale=" + punchScale + " | duration="
+			+ (punchInTime + holdTime + fadeTime) + "s / SpeedScale=" + CombatAnimationSpeed.SpeedScale);
+
+		var entry = new ActiveFloater { go = go };
+		entry.seq = PlayTimeline(rt, group, local.y, px);
+		_active.Add(entry);
+		entry.seq.OnComplete(() =>
+		{
+			_active.Remove(entry);
+			TestManager.Log("[DamageFloater] Floater '" + tmp.text + "' finished, destroyed.");
+			Destroy(go);
+		});
+	}
+
+	// Builds the floater GameObject (TMP text + black shadow + CanvasGroup) at a
+	// layer-local position. Shared by the gameplay spawn path above and the
+	// edit-mode preview (DamageFloaterPresenterEditor).
+	private GameObject CreateFloaterObject(Vector2 local, int amount)
+	{
 		var go = new GameObject("DamageFloater", typeof(RectTransform));
 		go.transform.SetParent(floaterLayer, false);
 		var rt = (RectTransform)go.transform;
@@ -206,23 +234,24 @@ public class DamageFloaterPresenter : MonoBehaviour
 
 		var group = go.AddComponent<CanvasGroup>();
 		group.alpha = 0f;
+		return go;
+	}
 
-		TestManager.Log("[DamageFloater] Spawned '" + tmp.text + "' side=" + (playerSide ? "player" : "enemy")
-			+ " | target='" + target.name + "' world=" + worldPos
-			+ " | layerLocal=" + local + " (layer rect=" + floaterLayer.rect + ")"
-			+ " | px->local=" + px + " | font=" + (tmp.font != null ? tmp.font.name : "NULL")
-			+ " | color=" + tmp.color + " | scale=" + punchScale + " | duration="
-			+ (punchInTime + holdTime + fadeTime) + "s / SpeedScale=" + CombatAnimationSpeed.SpeedScale);
-
-		var entry = new ActiveFloater { go = go };
-		entry.seq = PlayTimeline(rt, group, local.y, px);
-		_active.Add(entry);
-		entry.seq.OnComplete(() =>
-		{
-			_active.Remove(entry);
-			TestManager.Log("[DamageFloater] Floater '" + tmp.text + "' finished, destroyed.");
-			Destroy(go);
-		});
+	// Edit-mode preview entry point (called by DamageFloaterPresenterEditor):
+	// builds a floater at an explicit layer-local position with no gameplay
+	// wiring (no HP polling, no attack-target lookup). The returned Sequence
+	// uses manual update because DOTween does not tick outside Play Mode — the
+	// caller ticks it via DOTween.ManualUpdate and destroys the object with
+	// DestroyImmediate when done.
+	public Sequence SpawnPreviewFloater(Vector2 localPos, int amount, out GameObject floater)
+	{
+		float px = PxToLocal();
+		floater = CreateFloaterObject(localPos, amount);
+		var rt = (RectTransform)floater.transform;
+		var group = floater.GetComponent<CanvasGroup>();
+		Sequence seq = PlayTimeline(rt, group, localPos.y, px);
+		seq.SetUpdate(UpdateType.Manual);
+		return seq;
 	}
 
 	// Demo px -> layer-local units via the canvas scale factor (the bar's shake
