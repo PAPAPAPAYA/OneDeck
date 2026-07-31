@@ -133,6 +133,14 @@ public class CardPhysObjScript : MonoBehaviour
 	[HideInInspector]
 	public Vector3 popUpOriginalScale;
 
+	/// <summary>Active PopUpCard/SlotInCard DOTween sequence plus its onComplete callback.
+	/// Owned by CombatUXManager; lets the opposite operation interrupt a mid-flight seq and run
+	/// its completion bookkeeping exactly once (VISUAL-FIX 2026-07-31, see CombatUXManager).</summary>
+	[HideInInspector]
+	public Tween activePopUpSlotInSeq;
+	[HideInInspector]
+	public Action activePopUpSlotInOnComplete;
+
 	[Header("Reveal Zone Pending")]
 	[Tooltip("When special animation finishes, move to reveal zone instead of default target")]
 	public bool pendingRevealZoneMove = false;
@@ -194,6 +202,7 @@ public class CardPhysObjScript : MonoBehaviour
 			ApplyBackColor();
 		}
 		UpdateTintTimer();
+		UpdatePendingHover();
 		UpdateHover();
 	}
 
@@ -1003,12 +1012,22 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private bool _hoverActive;
 	private bool _hoverPoppedUp;
+	private bool _hoverPending;
 	private bool _savedAutoRevealValid;
 	private bool _savedAutoReveal;
 	private float _hoverTooltipTimer = -1f;
 
 	void OnMouseEnter()
 	{
+		// VISUAL-FIX(2026-07-31): a moving card can re-cross a stationary cursor (its collider sweeps
+		// through the cursor during pop-up/slot-in or another card's move), firing OnMouseEnter again
+		// for a card that is already hovering. Re-running BeginHover would pop the card up a second
+		// time mid-flight and make it climb without bound.
+		if (_hoverActive)
+		{
+			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=already hovering (duplicate enter)");
+			return;
+		}
 		if (cardImRepresenting == null)
 		{
 			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=no cardImRepresenting (start card)");
@@ -1019,9 +1038,23 @@ public class CardPhysObjScript : MonoBehaviour
 			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=face-down (Rule 1)");
 			return;
 		}
+		// VISUAL-FIX(2026-07-31): Fast hover A->B left card B dead until cursor re-entry
+		//   Cause:    (1) PopUpCard/SlotInCard hold an input block (CombatUXManager), so a fast
+		//             A->B gesture rejected B's only OnMouseEnter via the combat-state gate or
+		//             z-arbitration, and (2) nothing re-checked B afterwards — Unity never re-fires
+		//             OnMouseEnter while the cursor stays on the card. Fixes: (a) the combat-state
+		//             gate ignores PopUpCard/SlotInCard input blocks (IsInputBlockedByNonPopUp), so
+		//             a newly hovered card pops up immediately while another card's pop-up/slot-in
+		//             is still playing; (b) _hoverPending + UpdatePendingHover cover the remaining
+		//             transient rejections (real input blocks, z-arbitration loss).
+		//   Affects:  CardPhysObjScript hover (combat pop-up + tag tooltip)
+		//   Regress:  Hover face-up card A, move to face-up card B mid-pop-up: B pops up
+		//             immediately while A slots back in parallel; reveal-entry/shuffle/effect
+		//             animations still block hover.
 		if (IsHoverBlockedByCombatState())
 		{
-			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=animation/input blocked");
+			TestManager.Log("[Hover] OnMouseEnter PENDING card=" + name + " reason=animation/input blocked");
+			_hoverPending = true;
 			return;
 		}
 
@@ -1031,7 +1064,8 @@ public class CardPhysObjScript : MonoBehaviour
 		{
 			if (transform.position.z >= _currentHoverOwner.transform.position.z)
 			{
-				TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=not owner (myZ=" + transform.position.z + " ownerZ=" + _currentHoverOwner.transform.position.z + " owner=" + _currentHoverOwner.name + ")");
+				TestManager.Log("[Hover] OnMouseEnter PENDING card=" + name + " reason=not owner (myZ=" + transform.position.z + " ownerZ=" + _currentHoverOwner.transform.position.z + " owner=" + _currentHoverOwner.name + ")");
+				_hoverPending = true;
 				return;
 			}
 			TestManager.Log("[Hover] ownership transfer " + _currentHoverOwner.name + " -> " + name);
@@ -1051,7 +1085,13 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private bool IsCursorOverCard()
 	{
-		if (_hoverCollider == null) return true; // no collider: cannot test, stay hovered
+		// Lazy: pending-hover cards (VISUAL-FIX 2026-07-31) never reached BeginHover, which used
+		// to be the only place that assigned _hoverCollider.
+		if (_hoverCollider == null)
+		{
+			_hoverCollider = GetComponent<Collider2D>();
+			if (_hoverCollider == null) return true; // no collider: cannot test, stay hovered
+		}
 		if (_hoverCamera == null)
 		{
 			_hoverCamera = Camera.main;
@@ -1077,12 +1117,26 @@ public class CardPhysObjScript : MonoBehaviour
 	{
 		var cm = CombatManager.Me;
 		if (cm == null) return false;
-		return cm.isPlayingEffectAnimations || cm.IsInputBlocked;
+		return cm.isPlayingEffectAnimations || IsInputBlockedByNonPopUp(cm);
+	}
+
+	/// <summary>
+	/// True when combat input is blocked by anything OTHER than PopUpCard/SlotInCard sequences
+	/// (VISUAL-FIX 2026-07-31). Pop-up/slot-in blocks are hover-initiated (or recorder-driven,
+	/// already covered by isPlayingEffectAnimations), so they must not gate hover: a newly
+	/// hovered card pops up immediately while another card's pop-up/slot-in is still playing.
+	/// </summary>
+	private static bool IsInputBlockedByNonPopUp(CombatManager cm)
+	{
+		if (cm == null || !cm.IsInputBlocked) return false;
+		int popUpBlocks = CombatUXManager.me != null ? CombatUXManager.me.PopUpSlotInInputBlockCount : 0;
+		return cm.InputBlockCount - Mathf.Min(popUpBlocks, cm.InputBlockCount) > 0;
 	}
 
 	private void BeginHover()
 	{
 		_hoverActive = true;
+		_hoverPending = false;
 		_hoverTooltipTimer = hoverDelay;
 		_hoverCollider = GetComponent<Collider2D>();
 		TestManager.Log("[Hover] BeginHover card=" + name + " faceUp=" + isFaceUp + " revealZone=" + IsRevealZoneCard() + " combat=" + IsInCombatPhase() + " tags=[" + GetTagText() + "]");
@@ -1137,16 +1191,46 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// Retry a hover that was rejected at OnMouseEnter time by a transient gate (input block,
+	/// effect animations, or z-arbitration loss) — see the VISUAL-FIX(2026-07-31) block in
+	/// OnMouseEnter. Re-runs the same gates every frame; resumes through the normal ownership
+	/// path once they pass. Cleared if the cursor leaves the card before the gates open.
+	/// </summary>
+	private void UpdatePendingHover()
+	{
+		if (!_hoverPending) return;
+		if (cardImRepresenting == null || !isFaceUp || !IsCursorOverCard())
+		{
+			TestManager.Log("[Hover] pending cleared card=" + name + " cardGone=" + (cardImRepresenting == null) + " faceUp=" + isFaceUp);
+			_hoverPending = false;
+			return;
+		}
+		if (IsHoverBlockedByCombatState()) return;
+		if (_currentHoverOwner != null && _currentHoverOwner != this && transform.position.z >= _currentHoverOwner.transform.position.z) return;
+
+		if (_currentHoverOwner != null && _currentHoverOwner != this)
+		{
+			TestManager.Log("[Hover] pending ownership transfer " + _currentHoverOwner.name + " -> " + name);
+			_currentHoverOwner.EndHover("ownership lost to " + name + " (pending)");
+		}
+		TestManager.Log("[Hover] pending resume card=" + name);
+		_currentHoverOwner = this;
+		_hoverPending = false;
+		BeginHover();
+	}
+
 	private void UpdateHover()
 	{
 		if (!_hoverActive) return;
 
-		// Force-hide: card flipped face-down, animation playback started, input blocked
-		// by something OTHER than our own pop-up (PopUpCard blocks input itself), or
-		// the phase changed away from Combat while popped up.
+		// Force-hide: card flipped face-down, animation playback started, input blocked by
+		// something OTHER than pop-up/slot-in sequences (those never gate hover — see
+		// IsInputBlockedByNonPopUp, VISUAL-FIX 2026-07-31), or the phase changed away from
+		// Combat while popped up.
 		var cm = CombatManager.Me;
 		bool animPlaying = cm != null && cm.isPlayingEffectAnimations;
-		bool externallyBlocked = cm != null && cm.IsInputBlocked && !_hoverPoppedUp;
+		bool externallyBlocked = IsInputBlockedByNonPopUp(cm) && !_hoverPoppedUp;
 		if (!isFaceUp || animPlaying || externallyBlocked || (_hoverPoppedUp && !IsInCombatPhase()))
 		{
 			if (_currentHoverOwner == this) _currentHoverOwner = null;

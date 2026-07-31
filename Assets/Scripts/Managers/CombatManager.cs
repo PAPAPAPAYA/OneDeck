@@ -110,6 +110,9 @@ public class CombatManager : MonoBehaviour
 	[Tooltip("Block player input when playing Stage/Bury animation")]
 	public bool IsInputBlocked { get; private set; }
 	private int _inputBlockCount = 0;
+	/// <summary>Current input-block reference count. Lets hover logic exclude PopUpCard/SlotInCard
+	/// blocks (tracked separately by CombatUXManager.PopUpSlotInInputBlockCount, VISUAL-FIX 2026-07-31).</summary>
+	public int InputBlockCount => _inputBlockCount;
 
 	[Header("ANIMATION LOCK")]
 	[Tooltip("True while effect recorder animations are playing. Prevents RevealCards from auto-revealing next card too early.")]
@@ -149,6 +152,9 @@ public class CombatManager : MonoBehaviour
 	{
 		_inputBlockCount = 0;
 		IsInputBlocked = false;
+		// Keep the popup/slot-in block sub-count in sync (VISUAL-FIX 2026-07-31); without this a
+		// stale sub-count could mask real input blocks when the hover gate subtracts it.
+		CombatUXManager.me?.ResetPopUpSlotInInputBlockCount();
 	}
 
 	[Header("SUPPLEMENT COMPONENTS")]

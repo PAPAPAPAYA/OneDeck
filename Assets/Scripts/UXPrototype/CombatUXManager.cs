@@ -3097,18 +3097,36 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) { onComplete?.Invoke(); return; }
 
+		// Interrupt a still-running SlotInCard seq on this card (VISUAL-FIX 2026-07-31).
+		bool interrupted = InterruptActivePopUpSlotIn(physScript, "PopUpCard");
 		// Kill existing tweens to prevent conflicts
 		physScript.KillTweens();
 		// Face-down rule: popping a card up shows its face
 		physScript.SetFaceUp(true, true);
 
-		// Save original transform so SlotIn can restore it for reveal-zone cards
-		physScript.popUpOriginalPosition = physicalCard.transform.position;
-		physScript.popUpOriginalScale = physicalCard.transform.localScale;
+		// Save original transform so SlotIn can restore it for reveal-zone cards.
+		// Skipped after a mid-flight interrupt: the first pop-up's restore point is still the
+		// correct one — overwriting it with a mid-air position would corrupt the fallback restore.
+		if (!interrupted)
+		{
+			physScript.popUpOriginalPosition = physicalCard.transform.position;
+			physScript.popUpOriginalScale = physicalCard.transform.localScale;
+		}
 
-		// Compute peak position from CURRENT world position
-		Vector3 currentPos = physicalCard.transform.position;
-		Vector3 peakPos = currentPos + Vector3.up * popUpYOffset;
+		// VISUAL-FIX(2026-07-31): Re-pop-up made the card climb forever
+		//   Cause:    The peak was computed as current position + popUpYOffset. Once hover
+		//             re-entry became possible mid pop-up/slot-in (parallel pop-up fix above),
+		//             each re-pop-up stacked another YOffset on a card that was already airborne.
+		//   Affects:  CombatUXManager.PopUpCard (deck cards)
+		//   Regress:  Wiggle the cursor on/off a face-up deck card repeatedly: the card must
+		//             always rise to the same peak above its deck slot, never higher.
+		// Compute peak from the card's LOGICAL deck slot so a re-pop-up can never stack
+		// popUpYOffset on itself; non-deck cards (reveal zone) keep legacy current-pos math.
+		int popupDeckIndex = physicalCardsInDeck.IndexOf(physicalCard);
+		Vector3 popupBasePos = popupDeckIndex >= 0
+			? GetFinalDeckPositionForCard(physScript, popupDeckIndex)
+			: physicalCard.transform.position;
+		Vector3 peakPos = popupBasePos + Vector3.up * popUpYOffset;
 		peakPos.z += popUpZBoost;
 
 		Vector3 peakScale = GetPopUpPeakScale(physScript);
@@ -3118,7 +3136,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		physScript.SetTargetPosition(peakPos);
 		physScript.SetTargetScale(peakScale);
 		AnimationStateTracker.me?.RegisterAnimation();
-		BlockInput(this);
+		BlockPopUpSlotInInput();
 
 		float scaledPopUpDuration = CombatAnimationSpeed.ScaleDuration(popUpDuration);
 		float scaledPopUpHoldDuration = CombatAnimationSpeed.ScaleDuration(popUpHoldDuration);
@@ -3128,11 +3146,18 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		seq.AppendInterval(scaledPopUpHoldDuration);
 		seq.OnComplete(() =>
 		{
+			if (physScript.activePopUpSlotInSeq == seq)
+			{
+				physScript.activePopUpSlotInSeq = null;
+				physScript.activePopUpSlotInOnComplete = null;
+			}
 			AnimationStateTracker.me?.CompleteAnimation();
-			UnblockInput(this);
+			UnblockPopUpSlotInInput();
 			onComplete?.Invoke();
 		});
 		seq.Play();
+		physScript.activePopUpSlotInSeq = seq;
+		physScript.activePopUpSlotInOnComplete = onComplete;
 	}
 
 	/// <summary>
@@ -3153,6 +3178,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) { onComplete?.Invoke(); return; }
 
+		// Interrupt a still-running PopUpCard seq on this card (VISUAL-FIX 2026-07-31).
+		InterruptActivePopUpSlotIn(physScript, "SlotInCard");
 		// Guard against deck position updates interfering with the slot-in tween
 		physScript.isPlayingSpecialAnimation = true;
 		// Face-down rule: returning to the static deck covers the card (skipped for ever-revealed cards)
@@ -3177,7 +3204,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 
 			AnimationStateTracker.me?.RegisterAnimation();
-			BlockInput(this);
+			BlockPopUpSlotInInput();
 
 			float scaledFallbackSlotInDuration = CombatAnimationSpeed.ScaleDuration(slotInDuration);
 			Sequence fallbackSeq = DOTween.Sequence();
@@ -3185,16 +3212,23 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			fallbackSeq.Join(ApplySlotInEase(physicalCard.transform.DOScale(originalScale, scaledFallbackSlotInDuration)));
 			fallbackSeq.OnComplete(() =>
 			{
+				if (physScript.activePopUpSlotInSeq == fallbackSeq)
+				{
+					physScript.activePopUpSlotInSeq = null;
+					physScript.activePopUpSlotInOnComplete = null;
+				}
 				physScript.isPlayingSpecialAnimation = false;
 				physScript.isPendingSlotIn = false;
 				physScript.isPoppedUp = false;
 				physScript.SetTargetPosition(originalPos);
 				physScript.SetTargetScale(originalScale);
 				AnimationStateTracker.me?.CompleteAnimation();
-				UnblockInput(this);
+				UnblockPopUpSlotInInput();
 				onComplete?.Invoke();
 			});
 			fallbackSeq.Play();
+			physScript.activePopUpSlotInSeq = fallbackSeq;
+			physScript.activePopUpSlotInOnComplete = onComplete;
 			return;
 		}
 
@@ -3211,7 +3245,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		TestManager.Log("[CombatUXManager] SlotInCard logical=" + logicalCard.name + " deckIndex=" + deckIndex + " targetPos=" + targetPos + " isPending=" + physScript.isPendingSlotIn);
 
 		AnimationStateTracker.me?.RegisterAnimation();
-		BlockInput(this);
+		BlockPopUpSlotInInput();
 
 		float scaledSlotInDuration = CombatAnimationSpeed.ScaleDuration(slotInDuration);
 		Sequence seq = DOTween.Sequence();
@@ -3220,6 +3254,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		seq.Join(ApplySlotInEase(physicalCard.transform.DOLocalRotate(targetRot.eulerAngles, scaledSlotInDuration)));
 		seq.OnComplete(() =>
 		{
+			if (physScript.activePopUpSlotInSeq == seq)
+			{
+				physScript.activePopUpSlotInSeq = null;
+				physScript.activePopUpSlotInOnComplete = null;
+			}
 			physScript.isPlayingSpecialAnimation = false;
 			physScript.isPendingSlotIn = false;
 			physScript.isPoppedUp = false;
@@ -3227,10 +3266,47 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physScript.SetTargetScale(targetScale);
 			physScript.SetTargetRotation(targetRot);
 			AnimationStateTracker.me?.CompleteAnimation();
-			UnblockInput(this);
+			UnblockPopUpSlotInInput();
 			onComplete?.Invoke();
 		});
 		seq.Play();
+		physScript.activePopUpSlotInSeq = seq;
+		physScript.activePopUpSlotInOnComplete = onComplete;
+	}
+
+	// VISUAL-FIX(2026-07-31): Fast hover A->B left B dead and A's tweens fighting
+	//   Cause:    (1) PopUpCard's sequence was never killed by SlotInCard, so pop-up and slot-in
+	//             tweens fought over the same transform, and the pop-up's input block lived on
+	//             through the hold interval after the hover was already over, delaying B further.
+	//             (2) B's OnMouseEnter was rejected by that input block with no retry (fixed in
+	//             CardPhysObjScript via _hoverPending).
+	//   Affects:  CombatUXManager.PopUpCard, CombatUXManager.SlotInCard, CardPhysObjScript hover
+	//   Regress:  Hover face-up card A, move to face-up B mid-pop-up: A slots back from mid-air
+	//             in one clean motion, B pops up ~slotInDuration later, input unblocked afterwards.
+	/// <summary>
+	/// Interrupt a still-running PopUpCard/SlotInCard sequence on this card: kill the tween and
+	/// run its completion bookkeeping exactly once (animation tracker, input unblock, onComplete).
+	/// The saved onComplete MUST be invoked: RecorderAnimationPlayer coroutines block on
+	/// WaitUntil(done) fed by these callbacks (PlayOffRevealPopupCoroutine/SlotInSourceCardCoroutine),
+	/// so killing a seq without invoking its onComplete would soft-lock the animation phase.
+	/// Returns true when a sequence was actually interrupted (callers use it to preserve
+	/// first-pop-up state such as popUpOriginalPosition, VISUAL-FIX 2026-07-31).
+	/// </summary>
+	private bool InterruptActivePopUpSlotIn(CardPhysObjScript physScript, string reason)
+	{
+		if (physScript == null) return false;
+		Tween active = physScript.activePopUpSlotInSeq;
+		if (active == null || !active.IsActive() || !active.IsPlaying()) return false;
+
+		TestManager.Log("[CombatUXManager] InterruptActivePopUpSlotIn card=" + physScript.name + " reason=" + reason);
+		Action pendingOnComplete = physScript.activePopUpSlotInOnComplete;
+		physScript.activePopUpSlotInSeq = null;
+		physScript.activePopUpSlotInOnComplete = null;
+		active.Kill();
+		AnimationStateTracker.me?.CompleteAnimation();
+		UnblockPopUpSlotInInput();
+		pendingOnComplete?.Invoke();
+		return true;
 	}
 
 	/// <summary>
@@ -3317,6 +3393,32 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public void UnblockInput(object requester)
 	{
 		combatManager?.UnblockInput(requester);
+	}
+
+	// How many of the current CombatManager input blocks belong to PopUpCard/SlotInCard
+	// (VISUAL-FIX 2026-07-31). CardPhysObjScript's hover gate subtracts this so a new hover
+	// pops up immediately while another card's pop-up/slot-in is still playing.
+	private int _popUpSlotInInputBlockCount = 0;
+	public int PopUpSlotInInputBlockCount => _popUpSlotInInputBlockCount;
+
+	/// <summary>Called by CombatManager.ResetInputBlock to keep the sub-count in sync.</summary>
+	public void ResetPopUpSlotInInputBlockCount()
+	{
+		_popUpSlotInInputBlockCount = 0;
+	}
+
+	/// <summary>BlockInput for PopUpCard/SlotInCard sequences; pairs with UnblockPopUpSlotInInput.</summary>
+	private void BlockPopUpSlotInInput()
+	{
+		_popUpSlotInInputBlockCount++;
+		BlockInput(this);
+	}
+
+	/// <summary>UnblockInput for PopUpCard/SlotInCard sequences; pairs with BlockPopUpSlotInInput.</summary>
+	private void UnblockPopUpSlotInInput()
+	{
+		_popUpSlotInInputBlockCount = Mathf.Max(0, _popUpSlotInInputBlockCount - 1);
+		UnblockInput(this);
 	}
 
 	#endregion
