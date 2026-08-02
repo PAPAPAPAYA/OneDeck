@@ -32,7 +32,17 @@ public class ShopManager : MonoBehaviour
 	public DeckSO playerDeckRef;
 	public IntSO deckSize;
 	public IntSO maxDeckSize;
+	[Tooltip("ON: copies sharing a cardTypeID take a single deck slot (first copy only) and stack in the shop display.")]
+	public BoolSO duplicateCopiesShareSlotRef;
 	public IntSO purse;
+
+	/// <summary>
+	/// True when the duplicate-copies-share-slot rule is enabled (null-safe).
+	/// </summary>
+	public bool DuplicateCopiesShareSlot
+	{
+		get { return duplicateCopiesShareSlotRef != null && duplicateCopiesShareSlotRef.value; }
+	}
 
 	[Header("shop")]
 	public DeckSO shopPoolRef;
@@ -172,8 +182,15 @@ public class ShopManager : MonoBehaviour
 		var cardToBuyScript = cardToBuy.GetComponent<CardScript>();
 		if (cardToBuyScript.takeUpSpace) // if card player trying to buy takes up space in deck
 		{
-			int actualSize = UtilityFuncManagerScript.CountCardsTakingUpSpace(playerDeckRef);
-			if (actualSize >= deckSize.value) return; // check if player deck not full
+			// Duplicate-slot rule: a copy of an already-owned cardTypeID costs no slot
+			bool isFreeDuplicate = DuplicateCopiesShareSlot
+				&& !string.IsNullOrEmpty(cardToBuyScript.cardTypeID)
+				&& UtilityFuncManagerScript.DeckContainsCardType(playerDeckRef, cardToBuyScript.cardTypeID);
+			if (!isFreeDuplicate)
+			{
+				int actualSize = UtilityFuncManagerScript.CountCardsTakingUpSpace(playerDeckRef, DuplicateCopiesShareSlot);
+				if (actualSize >= deckSize.value) return; // check if player deck not full
+			}
 		}
 		if (purse.value < cardToBuyScript.price.value) return; // check if affordable
 		purse.value -= cardToBuyScript.price.value; // pay the price

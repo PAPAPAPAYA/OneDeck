@@ -36,6 +36,12 @@ public class ShopUXManager : MonoBehaviour
 	public DeckSO playerDeck;
 	public Vector3 playerDeckPos;
 	public Transform playerDeckStartPos;
+
+	[Header("Duplicate Stacking")]
+	[Tooltip("Per-copy offset for stacked duplicate cards (negative x = left, positive y = up)")]
+	public Vector3 duplicateStackOffset = new Vector3(-0.12f, 0.12f, -0.02f);
+	[Tooltip("Max copy index used for the stack offset; extra copies clamp to this offset")]
+	public int duplicateStackMaxOffsetCount = 5;
 	
 	[Header("Camera Scroll Settings")]
 	[Tooltip("Whether to enable mouse wheel to control camera up/down movement")]
@@ -171,7 +177,160 @@ public class ShopUXManager : MonoBehaviour
 		ClearSpawnedShopCards();
 		ClearSpawnedPlayerCards();
 	}
-	
+
+	/// <summary>
+	/// True when the duplicate-copies-share-slot rule is enabled (null-safe).
+	/// </summary>
+	private bool DuplicateStackingEnabled
+	{
+		get { return ShopManager.me != null && ShopManager.me.DuplicateCopiesShareSlot; }
+	}
+
+	/// <summary>
+	/// Grid position for a player-deck slot index (shared row/column math for cards and placeholders).
+	/// </summary>
+	private Vector3 GetPlayerDeckSlotPosition(int slotIndex)
+	{
+		int row = slotIndex / objPerRow;
+		int col = slotIndex % objPerRow;
+		return playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
+	}
+
+	/// <summary>
+	/// Assigns player-deck grid slots. With DuplicateStackingEnabled, the first card of each
+	/// cardTypeID takes the next slot and further copies stack toward the upper-left of that slot.
+	/// </summary>
+	private class StackSlotAssigner
+	{
+		private readonly ShopUXManager _owner;
+		private readonly Dictionary<string, int> _slotByType = new Dictionary<string, int>();
+		private readonly Dictionary<string, int> _copyCountByType = new Dictionary<string, int>();
+
+		public int NextSlot { get; private set; }
+
+		public StackSlotAssigner(ShopUXManager owner)
+		{
+			_owner = owner;
+		}
+
+		public Vector3 Assign(string cardTypeID, out bool isStackedCopy)
+		{
+			isStackedCopy = false;
+			if (!_owner.DuplicateStackingEnabled || string.IsNullOrEmpty(cardTypeID))
+			{
+				return _owner.GetPlayerDeckSlotPosition(NextSlot++);
+			}
+			int slot;
+			if (!_slotByType.TryGetValue(cardTypeID, out slot))
+			{
+				_slotByType[cardTypeID] = NextSlot;
+				_copyCountByType[cardTypeID] = 0;
+				return _owner.GetPlayerDeckSlotPosition(NextSlot++);
+			}
+			int copyIndex = Mathf.Min(_copyCountByType[cardTypeID] + 1, _owner.duplicateStackMaxOffsetCount);
+			_copyCountByType[cardTypeID] = copyIndex;
+			isStackedCopy = true;
+			return _owner.GetPlayerDeckSlotPosition(slot) + _owner.duplicateStackOffset * copyIndex;
+		}
+
+		/// <summary>
+		/// Reserve the next grid slot for an empty-space placeholder.
+		/// </summary>
+		public Vector3 AssignPlaceholder()
+		{
+			return _owner.GetPlayerDeckSlotPosition(NextSlot++);
+		}
+	}
+
+	/// <summary>
+	/// Recompute target positions for every player-deck card and placeholder:
+	/// unique cardTypeIDs take grid slots, duplicates stack upper-left, placeholders follow.
+	/// </summary>
+	private void RelayoutPlayerDeckCards()
+	{
+		var assigner = new StackSlotAssigner(this);
+		var placeholders = new List<CardPhysObjScript>();
+		foreach (var card in _spawnedPlayerCards)
+		{
+			if (card == null) continue;
+			var physObj = card.GetComponent<CardPhysObjScript>();
+			if (physObj == null) continue;
+			if (physObj.cardImRepresenting == null)
+			{
+				placeholders.Add(physObj);
+				continue;
+			}
+			physObj.SetTargetPosition(assigner.Assign(physObj.cardImRepresenting.cardTypeID, out bool isStackedCopy));
+			SetPriceSuppressed(card, isStackedCopy);
+		}
+		foreach (var placeholder in placeholders)
+		{
+			placeholder.SetTargetPosition(assigner.AssignPlaceholder());
+		}
+	}
+
+	/// <summary>
+	/// Show the price print only on the base card of a duplicate stack; stacked copies hide it.
+	/// </summary>
+	private static void SetPriceSuppressed(GameObject card, bool suppressed)
+	{
+		var view = card.GetComponent<ShopCardView>();
+		if (view != null)
+		{
+			view.suppressPriceDisplay = suppressed;
+		}
+	}
+
+	/// <summary>
+	/// Find the first empty-slot placeholder in _spawnedPlayerCards, or -1.
+	/// </summary>
+	private int FindFirstPlaceholderIndex()
+	{
+		for (int i = 0; i < _spawnedPlayerCards.Count; i++)
+		{
+			var physObj = _spawnedPlayerCards[i].GetComponent<CardPhysObjScript>();
+			if (physObj != null && physObj.cardImRepresenting == null)
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/// <summary>
+	/// Find the last player-deck card whose CardScript has the given cardTypeID, or -1.
+	/// </summary>
+	private int FindLastPlayerCardIndexOfType(string cardTypeID)
+	{
+		int index = -1;
+		for (int i = 0; i < _spawnedPlayerCards.Count; i++)
+		{
+			var physObj = _spawnedPlayerCards[i].GetComponent<CardPhysObjScript>();
+			if (physObj != null && physObj.cardImRepresenting != null
+				&& physObj.cardImRepresenting.cardTypeID == cardTypeID)
+			{
+				index = i;
+			}
+		}
+		return index;
+	}
+
+	/// <summary>
+	/// Remove a purchased card from the shop list and re-index the remaining shop cards.
+	/// </summary>
+	private void RemoveFromShopCards(int purchasedCardIndex)
+	{
+		_spawnedShopCards.RemoveAt(purchasedCardIndex);
+		for (int i = 0; i < _spawnedShopCards.Count; i++)
+		{
+			CardPhysObjScript physObj = _spawnedShopCards[i].GetComponent<CardPhysObjScript>();
+			if (physObj != null)
+			{
+				physObj.shopItemIndex = i;
+			}
+		}
+	}
+
 	/// <summary>
 	/// Instantiate physical cards in player deck
 	/// Auto-wrap based on objPerRow, use yOffset for vertical offset per row
@@ -196,7 +355,7 @@ public class ShopUXManager : MonoBehaviour
 		}
 		
 		// Iterate through playerDeck.deck to instantiate physical cards
-		int cardCount = 0;
+		var slotAssigner = new StackSlotAssigner(this);
 		for (int i = 0; i < playerDeck.deck.Count; i++)
 		{
 			GameObject cardPrefab = playerDeck.deck[i];
@@ -220,12 +379,8 @@ public class ShopUXManager : MonoBehaviour
 				continue;
 			}
 			
-			// Calculate row/column position
-			int row = cardCount / objPerRow;      // Current row
-			int col = cardCount % objPerRow;      // Current column
-			
-			// Calculate final position: start from playerDeckPos - xOffset (consistent with shop cards), xOffset horizontal, yOffset vertical wrap
-			Vector3 spawnPosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
+			// Calculate position: grid slot per unique cardTypeID, duplicates stack upper-left when the toggle is on
+			Vector3 spawnPosition = slotAssigner.Assign(cardScript.cardTypeID, out bool isStackedCopy);
 			
 			// Instantiate physical card
 			Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
@@ -234,6 +389,8 @@ public class ShopUXManager : MonoBehaviour
 			// Get CardPhysObjScript and setup
 			CardPhysObjScript physObjScript = physicalCard.GetComponent<CardPhysObjScript>();
 			physicalCard.AddComponent<ShopCardView>();
+			// Stacked duplicate copies hide their price; only the base card of a stack shows it
+			SetPriceSuppressed(physicalCard, isStackedCopy);
 			if (physObjScript != null)
 			{
 				physObjScript.cardImRepresenting = cardScript;
@@ -258,20 +415,16 @@ public class ShopUXManager : MonoBehaviour
 			
 			// Record instantiated card
 			_spawnedPlayerCards.Add(physicalCard);
-			cardCount++;
 		}
 		
-		// Instantiate empty slot placeholders based on deckSize and current deck count
+		// Instantiate empty slot placeholders based on deckSize and used grid slots
 		if (ShopManager.me != null && ShopManager.me.deckSize != null && emptyCardSpacePrefab != null)
 		{
-			int emptySlots = ShopManager.me.deckSize.value - cardCount;
+			int emptySlots = ShopManager.me.deckSize.value - slotAssigner.NextSlot;
 			for (int i = 0; i < emptySlots; i++)
 			{
-				// Calculate row/column position (continue after cards)
-				int row = cardCount / objPerRow;
-				int col = cardCount % objPerRow;
-				
-				Vector3 spawnPosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
+				// Calculate position (continue after cards)
+				Vector3 spawnPosition = slotAssigner.AssignPlaceholder();
 				
 				// Instantiate empty slot placeholder
 				Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
@@ -293,7 +446,6 @@ public class ShopUXManager : MonoBehaviour
 				
 				// Record instantiated empty space
 				_spawnedPlayerCards.Add(emptySpace);
-				cardCount++;
 			}
 		}
 	}
@@ -368,37 +520,53 @@ public class ShopUXManager : MonoBehaviour
 		if (cardScript != null && !cardScript.takeUpSpace)
 		{
 			// If doesn't occupy space, remove directly from _spawnedShopCards and destroy
-			_spawnedShopCards.RemoveAt(purchasedCardIndex);
-			
-			// Update shopItemIndex for remaining shop cards
-			for (int i = 0; i < _spawnedShopCards.Count; i++)
-			{
-				CardPhysObjScript physObj = _spawnedShopCards[i].GetComponent<CardPhysObjScript>();
-				if (physObj != null)
-				{
-					physObj.shopItemIndex = i;
-				}
-			}
-			
+			RemoveFromShopCards(purchasedCardIndex);
 			Destroy(purchasedCard);
 			// Debug.Log($"[ShopUXManager] Card purchased (no space), destroyed immediately");
 			return;
 		}
 		
-		// 3. Cards occupying space: find and remove an emptyCardSpace
-		GameObject emptySpaceToRemove = null;
-		int emptySpaceIndex = -1;
-		for (int i = 0; i < _spawnedPlayerCards.Count; i++)
+		// 3. Duplicate-slot rule: copies of an already-owned cardTypeID stack onto it.
+		// Grid slots no longer match list indices, so positions come from RelayoutPlayerDeckCards.
+		if (DuplicateStackingEnabled && cardScript != null && !string.IsNullOrEmpty(cardScript.cardTypeID))
 		{
-			// Determine emptyCardSpace by checking if has CardPhysObjScript and cardImRepresenting is null
-			var physObj = _spawnedPlayerCards[i].GetComponent<CardPhysObjScript>();
-			if (physObj != null && physObj.cardImRepresenting == null)
+			RemoveFromShopCards(purchasedCardIndex);
+			if (purchasedCardPhys != null)
 			{
-				emptySpaceToRemove = _spawnedPlayerCards[i];
-				emptySpaceIndex = i;
-				break;
+				// Clear shopItemIndex, mark as no longer a shop item
+				purchasedCardPhys.shopItemIndex = -1;
 			}
+			
+			int lastCopyIndex = FindLastPlayerCardIndexOfType(cardScript.cardTypeID);
+			if (lastCopyIndex >= 0)
+			{
+				// Stack onto the existing copies; no placeholder is consumed
+				_spawnedPlayerCards.Insert(lastCopyIndex + 1, purchasedCard);
+			}
+			else
+			{
+				// First copy of its type: consume a placeholder
+				int placeholderIndex = FindFirstPlaceholderIndex();
+				if (placeholderIndex >= 0)
+				{
+					GameObject placeholder = _spawnedPlayerCards[placeholderIndex];
+					_spawnedPlayerCards.RemoveAt(placeholderIndex);
+					Destroy(placeholder);
+					_spawnedPlayerCards.Insert(placeholderIndex, purchasedCard);
+				}
+				else
+				{
+					// If emptyCardSpace not found (deck full), add to end
+					_spawnedPlayerCards.Add(purchasedCard);
+				}
+			}
+			RelayoutPlayerDeckCards();
+			return;
 		}
+		
+		// 4. Cards occupying space (legacy path): find and remove an emptyCardSpace
+		int emptySpaceIndex = FindFirstPlaceholderIndex();
+		GameObject emptySpaceToRemove = emptySpaceIndex >= 0 ? _spawnedPlayerCards[emptySpaceIndex] : null;
 		
 		// Remove found emptyCardSpace
 		if (emptySpaceToRemove != null)
@@ -407,20 +575,10 @@ public class ShopUXManager : MonoBehaviour
 			Destroy(emptySpaceToRemove);
 		}
 		
-		// 4. Remove from _spawnedShopCards
-		_spawnedShopCards.RemoveAt(purchasedCardIndex);
+		// 5. Remove from _spawnedShopCards
+		RemoveFromShopCards(purchasedCardIndex);
 		
-		// Update shopItemIndex for remaining shop cards
-		for (int i = 0; i < _spawnedShopCards.Count; i++)
-		{
-			CardPhysObjScript physObj = _spawnedShopCards[i].GetComponent<CardPhysObjScript>();
-			if (physObj != null)
-			{
-				physObj.shopItemIndex = i;
-			}
-		}
-		
-		// 5. Insert at removed emptyCardSpace position (if found)
+		// 6. Insert at removed emptyCardSpace position (if found)
 		if (emptySpaceIndex >= 0)
 		{
 			_spawnedPlayerCards.Insert(emptySpaceIndex, purchasedCard);
@@ -432,7 +590,7 @@ public class ShopUXManager : MonoBehaviour
 			emptySpaceIndex = _spawnedPlayerCards.Count - 1;
 		}
 		
-		// 6. Calculate new position in player deck (fill empty slot position)
+		// 7. Calculate new position in player deck (fill empty slot position)
 		int row = emptySpaceIndex / objPerRow;
 		int col = emptySpaceIndex % objPerRow;
 		
@@ -472,16 +630,48 @@ public class ShopUXManager : MonoBehaviour
 			return;
 		}
 		
-		// 2. Remove from _spawnedPlayerCards
+		// 2. Duplicate-slot rule: the grid slot is only returned when the sold card was the last copy of its type
+		CardPhysObjScript soldCardPhys = soldCardInstance.GetComponent<CardPhysObjScript>();
+		if (DuplicateStackingEnabled)
+		{
+			string soldTypeID = soldCardPhys != null && soldCardPhys.cardImRepresenting != null
+				? soldCardPhys.cardImRepresenting.cardTypeID : null;
+			_spawnedPlayerCards.RemoveAt(spawnedIndex);
+			bool stackRemains = !string.IsNullOrEmpty(soldTypeID) && FindLastPlayerCardIndexOfType(soldTypeID) >= 0;
+			
+			if (soldCardPhys != null)
+			{
+				// Set target position to shop start position (play sell animation)
+				Vector3 shopStartPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;
+				Vector3 soldSlotPosition = soldCardPhys.TargetPosition;
+				soldCardPhys.SetTargetPosition(shopStartPosition);
+				soldCardPhys.SetTargetScale(Vector3.zero); // Scale down simultaneously
+				
+				// Start coroutine to destroy card after animation; placeholder only returns for the last copy
+				StartCoroutine(DestroySoldCardAndSpawnEmpty(soldCardInstance, soldSlotPosition, _spawnedPlayerCards.Count, !stackRemains));
+			}
+			else
+			{
+				// If no CardPhysObjScript, destroy directly and spawn empty slot for the last copy
+				Destroy(soldCardInstance);
+				if (!stackRemains)
+				{
+					SpawnEmptySpaceAt(GetPlayerDeckSlotPosition(0), _spawnedPlayerCards.Count);
+				}
+			}
+			RelayoutPlayerDeckCards();
+			return;
+		}
+		
+		// 3. Remove from _spawnedPlayerCards
 		_spawnedPlayerCards.RemoveAt(spawnedIndex);
 		
-		// 3. Calculate empty slot position
+		// 4. Calculate empty slot position
 		int row = spawnedIndex / objPerRow;
 		int col = spawnedIndex % objPerRow;
 		Vector3 emptySpacePosition = playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
 		
-		// 4. Set sold card's target position to shop start position (play sell animation)
-		CardPhysObjScript soldCardPhys = soldCardInstance.GetComponent<CardPhysObjScript>();
+		// 5. Set sold card's target position to shop start position (play sell animation)
 		if (soldCardPhys != null)
 		{
 			// Set target position to shop start position
@@ -501,9 +691,9 @@ public class ShopUXManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Coroutine: Wait for sell animation to complete, then destroy card and spawn empty slot
+	/// Coroutine: Wait for sell animation to complete, then destroy card and optionally spawn empty slot
 	/// </summary>
-	private System.Collections.IEnumerator DestroySoldCardAndSpawnEmpty(GameObject soldCard, Vector3 position, int insertIndex)
+	private System.Collections.IEnumerator DestroySoldCardAndSpawnEmpty(GameObject soldCard, Vector3 position, int insertIndex, bool spawnEmpty = true)
 	{
 		// Wait for animation to complete (using CardPhysObjScript's moveDuration, default 0.3s, add a buffer)
 		float waitTime = 0.35f;
@@ -524,7 +714,16 @@ public class ShopUXManager : MonoBehaviour
 		}
 		
 		// Spawn empty slot
-		SpawnEmptySpaceAt(position, insertIndex);
+		if (spawnEmpty)
+		{
+			SpawnEmptySpaceAt(position, insertIndex);
+		}
+		
+		// Duplicate-slot rule: list indices no longer match grid slots, fix all positions
+		if (DuplicateStackingEnabled)
+		{
+			RelayoutPlayerDeckCards();
+		}
 	}
 	
 	/// <summary>
@@ -574,8 +773,9 @@ public class ShopUXManager : MonoBehaviour
 		if (emptyCardSpacePrefab == null || ShopManager.me == null || ShopManager.me.deckSize == null)
 			return;
 		
-		// Calculate current card count (non-empty slots)
+		// Calculate current grid slots used (unique cardTypeIDs when the duplicate-slot rule is on)
 		int cardCount = 0;
+		var countedTypeIDs = new HashSet<string>();
 		foreach (var card in _spawnedPlayerCards)
 		{
 			if (card != null)
@@ -583,7 +783,18 @@ public class ShopUXManager : MonoBehaviour
 				var physObj = card.GetComponent<CardPhysObjScript>();
 				if (physObj != null && physObj.cardImRepresenting != null)
 				{
-					cardCount++;
+					string typeID = physObj.cardImRepresenting.cardTypeID;
+					if (DuplicateStackingEnabled && !string.IsNullOrEmpty(typeID))
+					{
+						if (countedTypeIDs.Add(typeID))
+						{
+							cardCount++;
+						}
+					}
+					else
+					{
+						cardCount++;
+					}
 				}
 			}
 		}
@@ -643,6 +854,12 @@ public class ShopUXManager : MonoBehaviour
 		if (newEmptySlots > 0)
 		{
 			// Debug.Log($"[ShopUXManager] Spawned {newEmptySlots} additional empty spaces. Total player cards: {_spawnedPlayerCards.Count}");
+		}
+		
+		// Duplicate-slot rule: list indices no longer match grid slots, fix all positions
+		if (DuplicateStackingEnabled)
+		{
+			RelayoutPlayerDeckCards();
 		}
 	}
 

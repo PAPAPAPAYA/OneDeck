@@ -1,0 +1,570 @@
+[
+ {
+  "file": "GRAVE_PUNCH",
+  "displayName": "尸爆",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,造成 <b><dmg></b>    伤害 x <b>2</b>",
+  "folder": "Bury and buried/Bury/0_Common"
+ },
+ {
+  "file": "GRAVE_TOGETHER",
+  "displayName": "同路人",
+  "rarity": "",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,埋葬 <b>2</b> 敌方",
+  "folder": "Bury and buried/Bury/0_Common"
+ },
+ {
+  "file": "CORPSE_CANON",
+  "displayName": "冥界大炮",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:埋葬 1 友方;\\n友方被埋葬:造成    <b><dmg></b> 伤害",
+  "folder": "Bury and buried/Bury/1_Uncommon"
+ },
+ {
+  "file": "GRAVE_INVITATION",
+  "displayName": "冥界邀请",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,墓地每有    <b>1</b> 友方:埋葬 <b>1</b> 敌方",
+  "folder": "Bury and buried/Bury/1_Uncommon"
+ },
+ {
+  "file": "UNSTABLE_PORTAL",
+  "displayName": "不稳定传送门",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:置顶 <b>1</b> 友方,埋葬 <b>1</b>    友方",
+  "folder": "Bury and buried/Bury/1_Uncommon"
+ },
+ {
+  "file": "BODY_CANON",
+  "displayName": "人间大炮",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时:埋葬所有友方,墓地每有一个友方:造成    <b>1</b> 次 <b><dmg></b> 伤害",
+  "folder": "Bury and buried/Bury/2_Rare"
+ },
+ {
+  "file": "LARGE_SCALE_DEATH",
+  "displayName": "大范围死亡",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时:埋葬后 <b>4</b> 卡",
+  "folder": "Bury and buried/Bury/2_Rare"
+ },
+ {
+  "file": "WISE_BURIAL",
+  "displayName": "不愚蠢的埋葬",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "被置顶:埋葬 <b>1</b> 友方[<tag:DeathRattle>]/[<tag:Linger>]",
+  "folder": "Bury and buried/Bury/2_Rare"
+ },
+ {
+  "file": "GRAVE_PORTAL",
+  "displayName": "冥界裂缝",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 敌方;被埋葬:置顶    <b>1</b> 友方",
+  "folder": "Bury and buried/DeathRattle/0_Common"
+ },
+ {
+  "file": "SOLDIER_SKELETON",
+  "displayName": "骷髅士兵",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:置顶自身",
+  "folder": "Bury and buried/DeathRattle/0_Common"
+ },
+ {
+  "file": "AVENGER",
+  "displayName": "复仇者",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:获得    <b>2</b> 力量",
+  "folder": "Bury and buried/DeathRattle/1_Uncommon"
+ },
+ {
+  "file": "CONFUSED_PORTALMANCER",
+  "displayName": "错乱传送术士",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方;\\n被埋葬:生成    <b>3</b> [次元裂缝] ",
+  "folder": "Bury and buried/DeathRattle/1_Uncommon"
+ },
+ {
+  "file": "CURSED_CORPSE",
+  "displayName": "被诅咒的尸体",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒];被埋葬:造成    <b><dmg></b> x <b>3</b> 伤害",
+  "folder": "Bury and buried/DeathRattle/1_Uncommon"
+ },
+ {
+  "file": "SCAPEGOAT",
+  "displayName": "替死鬼",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "被埋葬:造成 <b><dmg></b> 伤害,置顶    1 友方",
+  "folder": "Bury and buried/DeathRattle/1_Uncommon"
+ },
+ {
+  "file": "SPIKE_SKELETON",
+  "displayName": "针刺骷髅",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被埋葬:造成 <b><dmg></b> 伤害 x <b>2</b>",
+  "folder": "Bury and buried/DeathRattle/1_Uncommon"
+ },
+ {
+  "file": "GRAVE_KEEPER",
+  "displayName": "守墓人",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "友方被埋葬时:置顶自身;\\n揭晓时:造成    <b><dmg></b> 伤害",
+  "folder": "Bury and buried/DeathRattle/2_Rare"
+ },
+ {
+  "file": "MARTYR",
+  "displayName": "殉道者",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "被埋葬:所有友方获得 <b>1</b> 力量",
+  "folder": "Bury and buried/DeathRattle/2_Rare"
+ },
+ {
+  "file": "SLIME",
+  "displayName": "史莱姆",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\\n被埋葬:添加自身到卡组中",
+  "folder": "Bury and buried/DeathRattle/2_Rare"
+ },
+ {
+  "file": "FALL_INTO_RIFT",
+  "displayName": "坠入裂缝",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],埋葬    <b>1</b> 敌方",
+  "folder": "Conjure/0_Common"
+ },
+ {
+  "file": "RIFT_INSECT",
+  "displayName": "次元虫",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;生成 <b>1</b>    [次元裂缝]",
+  "folder": "Conjure/0_Common"
+ },
+ {
+  "file": "RIFT_COFFIN",
+  "displayName": "次元棺材",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "<tag:Linger>;当友方被去除时:埋葬    <b>1</b> 敌方",
+  "folder": "Conjure/1_Uncommon"
+ },
+ {
+  "file": "RIFT_DRAGON",
+  "displayName": "次元龙",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],造成    <b>4</b> 伤害;\\n被置顶:生成 <b>1</b> [次元裂缝]",
+  "folder": "Conjure/1_Uncommon"
+ },
+ {
+  "file": "RIFT_GUIDE",
+  "displayName": "次元引导者",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:埋葬    <b>2</b> 敌方",
+  "folder": "Conjure/1_Uncommon"
+ },
+ {
+  "file": "RIFT_MONSTER",
+  "displayName": "次元兽",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:造成    <b><dmg></b> 伤害",
+  "folder": "Conjure/1_Uncommon"
+ },
+ {
+  "file": "RIFT_SUMMONER",
+  "displayName": "裂缝召唤师",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:置顶    <b>2</b> 友方",
+  "folder": "Conjure/1_Uncommon"
+ },
+ {
+  "file": "SACRIFICE_RITUAL",
+  "displayName": "献祭仪式",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,生成 <b>2</b>    [次元裂缝]",
+  "folder": "Conjure/1_Uncommon"
+ },
+ {
+  "file": "DEATHBED_CURSE",
+  "displayName": "临终诅咒",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "<tag:Linger>;当友方被去除时:敌方[诅咒]获得    <b>1</b> 力量",
+  "folder": "Conjure/2_Rare"
+ },
+ {
+  "file": "RIFT_DEVOURER",
+  "displayName": "次元吞噬者",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;当友方被去除时:获得    <b>1</b> 力量",
+  "folder": "Conjure/2_Rare"
+ },
+ {
+  "file": "CURSE_THIRST_SUMMONER",
+  "displayName": "咒食的召唤师",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "当敌方[诅咒]揭晓时:置顶自身;\\n揭晓时:置顶    <b>1</b> 友方",
+  "folder": "Curse/0_Common"
+ },
+ {
+  "file": "POISONER",
+  "displayName": "咒师",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],造成    <b><dmg></b> 伤害",
+  "folder": "Curse/0_Common"
+ },
+ {
+  "file": "RIFT_CURSE",
+  "displayName": "异次元的诅咒",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],生成    <b>1</b> [次元裂缝]",
+  "folder": "Curse/0_Common"
+ },
+ {
+  "file": "SACRIFICIAL_CURSE",
+  "displayName": "献祭诅咒",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,增强 <b>3</b>    敌方[诅咒]",
+  "folder": "Curse/0_Common"
+ },
+ {
+  "file": "UNDEAD_CURSER",
+  "displayName": "不死诅咒者",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:增强敌方[诅咒] <b>2</b>;\\n被埋葬:增强敌方[诅咒]    <b>1</b>",
+  "folder": "Curse/0_Common"
+ },
+ {
+  "file": "CURSED_SKELETON",
+  "displayName": "被诅咒的骷髅",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时,墓地每有 <b>1</b> 友方:增强    <b>1</b> 敌方[诅咒]",
+  "folder": "Curse/1_Uncommon"
+ },
+ {
+  "file": "CURSE_THIRST_BEAST",
+  "displayName": "咒食的野兽",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "当敌方[诅咒]揭晓时:置顶自身;\\n揭晓时:造成    <b><dmg></b> 伤害",
+  "folder": "Curse/1_Uncommon"
+ },
+ {
+  "file": "CURSE_THIRST_SHAMAN",
+  "displayName": "咒食的萨满",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时,敌方[诅咒]每有 <b>1</b> 力量:给予    <b>1</b> 友方 <b>1</b> 力量",
+  "folder": "Curse/1_Uncommon"
+ },
+ {
+  "file": "MOTH_MAN",
+  "displayName": "飞蛾人",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "当敌方[诅咒]获得力量时:置顶    <b>1</b> 友方",
+  "folder": "Curse/1_Uncommon"
+ },
+ {
+  "file": "PREMATURE",
+  "displayName": "拔苗助长",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时,敌方[诅咒]力量 - <b>1</b>    :置顶敌方[诅咒]",
+  "folder": "Curse/1_Uncommon"
+ },
+ {
+  "file": "SMALL_SCALE_DEATH",
+  "displayName": "小范围死亡",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:埋葬后 <b>2</b> 卡,增强 <b>1</b>    敌方[诅咒]",
+  "folder": "Curse/1_Uncommon"
+ },
+ {
+  "file": "CROW_CROWD",
+  "displayName": "乌合之众",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时:将所有友方的力量(排除友方[诅咒])转移到敌方的[诅咒]",
+  "folder": "Curse/2_Rare"
+ },
+ {
+  "file": "CURSE_ENCHANTMENT",
+  "displayName": "诅咒附魔",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "<tag:Linger>;\\n当敌人受到伤害时:增强    <b>1</b> 敌方[诅咒]",
+  "folder": "Curse/2_Rare"
+ },
+ {
+  "file": "DETERIORATION",
+  "displayName": "恶化",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时,敌方[诅咒]每有 <b>2</b> 力量:增强    <b>1</b> 敌方[诅咒]",
+  "folder": "Curse/2_Rare"
+ },
+ {
+  "file": "PROLIFERATING_CURSE",
+  "displayName": "增殖的厄运",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时:复制敌方 <b>1</b> [诅咒]",
+  "folder": "Curse/2_Rare"
+ },
+ {
+  "file": "BLACKSMITH",
+  "displayName": "铁匠",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,给予一个友方    <b>1</b> 力量",
+  "folder": "General/0_Common"
+ },
+ {
+  "file": "COFFIN_MAKER",
+  "displayName": "棺材制造者",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,埋葬 <b>1</b>    敌方",
+  "folder": "General/0_Common"
+ },
+ {
+  "file": "MAD_SCIENTIST",
+  "displayName": "疯狂科学家",
+  "rarity": "",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:给予下 <b>3</b> 卡 <b>2</b> 力量",
+  "folder": "General/0_Common"
+ },
+ {
+  "file": "SACRIFICIAL_SWORD",
+  "displayName": "献祭剑",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓:埋葬 <b>1</b> 友方,给予 <b>1</b>    友方 <b>2</b> 力量",
+  "folder": "General/0_Common"
+ },
+ {
+  "file": "SIDE_EFFECT_PORTAL",
+  "displayName": "有副作用的传送门",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:增强自身诅咒 <b>1</b> ,置顶    <b>1</b> 友方",
+  "folder": "General/0_Common"
+ },
+ {
+  "file": "THE_FOOL",
+  "displayName": "愚者",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "揭晓时:置顶力量最多的敌方,造成    <b>4</b> 伤害",
+  "folder": "General/0_Common"
+ },
+ {
+  "file": "ADVANCE_PORTAL",
+  "displayName": "高等传送门",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "每揭晓 <b>2<counter></b> 次:置顶 <b>2</b> 友方",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "ALL_FOR_ONE",
+  "displayName": "人人为我",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成所有卡的力量数量的伤害",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "ANTI_CREATURE_WEAPON",
+  "displayName": "对生物兵器",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:埋葬 <b>2</b> 敌方",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "BONE_COMBINATION",
+  "displayName": "碎骨聚集体",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害 x 本回合被埋葬的敌方数量",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "CURSE_THIRST_SUMMONER",
+  "displayName": "咒食的大召唤师",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时,消耗敌方[诅咒] <b>2</b> 力量:置顶    <b>1</b> 友方;\\n揭晓时:给予下 <b>1</b> 卡    <b>2</b> 力量",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "DR_MANHATTAN",
+  "displayName": "曼哈顿博士",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时,消耗 <b>2</b> 力量:置顶 <b>2</b>    友方,埋葬 <b>2</b> 敌方",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "FLESH_COMBINATION",
+  "displayName": "血肉聚集体",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成友方数量的伤害",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "GOBLIN_ASSASSIN_TEAM",
+  "displayName": "哥布林暗杀部队",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:埋葬    <b>1</b> 敌方",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "GOBLIN_CHARGE_TEAM",
+  "displayName": "哥布林冲锋部队",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\\n被置顶:造成    <b><dmg:staged></b> 伤害",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "POWER_CRAVER",
+  "displayName": "力量渴求者",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;获得力量时:获得    <b>2</b> 倍力量",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "POWER_SURGE",
+  "displayName": "能量迸发",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;\\n被置顶:给予    <b>2</b> 友方 <b>1</b> 力量",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "POWER_TRANSFER",
+  "displayName": "力量转移",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:去除 <b>2</b> 敌方 <b>1</b> 力量,给予友方    <b>1</b> 力量 <b>2</b> 次",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "QUICK_RESPONSE_PROTOCOL",
+  "displayName": "快速响应协议",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "<tag:Linger>;\\n再有 <b>4<counter></b> 敌人被揭晓:置顶    <b>1</b> 友方",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "SNATCHER",
+  "displayName": "屠夫",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:置顶    <b>1</b> 友方;被埋葬:埋葬 <b>1</b> 敌方",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "TACTICAL_BREACHER",
+  "displayName": "战术爆破手",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:获得    <b>1</b> 力量",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "WEAPON_SPIRIT",
+  "displayName": "武器精灵",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "<tag:Linger>;当友方获得力量时:给予该友方    <b>1</b> 力量",
+  "folder": "General/1_Uncommon"
+ },
+ {
+  "file": "ALMIGHTY",
+  "displayName": "全能人",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓 <b>2<counter></b> 次:造成 <b><dmg></b> 伤害,置顶    <b>1</b> 友方,埋葬 <b>1</b> 敌方,给予 <b>1</b>    友方力量,生成 <b>1</b> [次元裂缝],增强    <b>1</b> 敌方[诅咒]",
+  "folder": "General/2_Rare"
+ },
+ {
+  "file": "BOOSTER",
+  "displayName": "推进器",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "洗牌后:置顶 <b>2</b> 友方;揭晓时:埋葬    <b>1</b> 友方",
+  "folder": "General/2_Rare"
+ },
+ {
+  "file": "ELDER_SORCERER",
+  "displayName": "远古魔法使用者",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时,本回合每置顶过 <b>1</b>    友方:给予 <b>1</b> 友方 <b>1</b> 力量",
+  "folder": "General/2_Rare"
+ },
+ {
+  "file": "ETERNAL_GHOST",
+  "displayName": "不散的恶灵",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "<tag:Linger>;\\n当敌人受到伤害时:造成    <b><dmg></b> 伤害",
+  "folder": "General/2_Rare"
+ },
+ {
+  "file": "POWER_SIPHONER",
+  "displayName": "力量虹吸人",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时:转移所有友方的 <b>1</b>    力量到自身,造成 <b><dmg></b> 伤害 x <b>2</b>",
+  "folder": "General/2_Rare"
+ },
+ {
+  "file": "UNFINISHED_ROBOT",
+  "displayName": "未完成的机器人",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "揭晓时:造成 <b><dmg></b> 伤害,翻倍自身力量",
+  "folder": "General/2_Rare"
+ }
+]

@@ -36,6 +36,9 @@ public class ShopCardView : MonoBehaviour
 
 	#region Shop Display
 
+	[Tooltip("Hide the price print (set for stacked duplicate copies; only the base card of a stack shows price)")]
+	public bool suppressPriceDisplay = false;
+
 	/// <summary>
 	/// Update price display, only shown in Shop Phase.
 	/// </summary>
@@ -50,7 +53,8 @@ public class ShopCardView : MonoBehaviour
 			return;
 		}
 
-		if (_cardPhysObj.cardImRepresenting == null)
+		// Stacked duplicate copies hide their price; only the base card of a stack shows it
+		if (_cardPhysObj.cardImRepresenting == null || suppressPriceDisplay)
 		{
 			_cardPhysObj.cardPricePrint.gameObject.SetActive(false);
 			return;

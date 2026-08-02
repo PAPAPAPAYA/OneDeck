@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartCardShuffleEffect
   startCardPositionStdDevFactor: 0.2
+  startCardPlacement: 1
 --- !u!114 &7115491257903541512
 MonoBehaviour:
   m_ObjectHideFlags: 0

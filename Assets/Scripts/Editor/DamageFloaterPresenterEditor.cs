@@ -36,11 +36,11 @@ public class DamageFloaterPresenterEditor : Editor
 			{
 				if (GUILayout.Button("Preview Player Hit"))
 				{
-					StartPreview(presenter, -0.25f);
+					StartPreview(presenter, true);
 				}
 				if (GUILayout.Button("Preview Enemy Hit"))
 				{
-					StartPreview(presenter, 0.25f);
+					StartPreview(presenter, false);
 				}
 			}
 		}
@@ -50,7 +50,7 @@ public class DamageFloaterPresenterEditor : Editor
 		}
 	}
 
-	private void StartPreview(DamageFloaterPresenter presenter, float xFraction)
+	private void StartPreview(DamageFloaterPresenter presenter, bool playerSide)
 	{
 		StopPreview();
 		if (Application.isPlaying)
@@ -59,8 +59,8 @@ public class DamageFloaterPresenterEditor : Editor
 			return;
 		}
 		Rect rect = presenter.floaterLayer.rect;
-		Vector2 local = rect.center + new Vector2(rect.width * xFraction, 0f);
-		_seq = presenter.SpawnPreviewFloater(local, s_previewAmount, out _go);
+		Vector2 local = rect.center + new Vector2(rect.width * (playerSide ? -0.25f : 0.25f), 0f);
+		_seq = presenter.SpawnPreviewFloater(local, s_previewAmount, playerSide, out _go);
 		_go.name = PreviewName;
 		_go.hideFlags = HideFlags.DontSave;
 		_lastTick = EditorApplication.timeSinceStartup;

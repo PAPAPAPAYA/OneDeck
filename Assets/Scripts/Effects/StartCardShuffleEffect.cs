@@ -15,6 +15,14 @@ public class StartCardShuffleEffect : MonoBehaviour
 	         "e.g. 0.15 means ~68% of placements fall within +/-15% of deck size from center.")]
 	[SerializeField] private float startCardPositionStdDevFactor = 0.15f;
 
+	public enum StartCardPlacement { Gaussian, AlwaysBottom }
+
+	[Tooltip("Where the Start Card is inserted on shuffle. " +
+	         "Gaussian = random via Gaussian distribution using the std dev factor above. " +
+	         "AlwaysBottom = fixed at deck bottom (index 0, revealed last). " +
+	         "Does not apply when a ShuffleOrderOverride custom order is used.")]
+	[SerializeField] private StartCardPlacement startCardPlacement = StartCardPlacement.Gaussian;
+
 	public void ExecuteShuffleEffect()
 	{
 		var cm = CombatManager.Me;
@@ -54,14 +62,24 @@ public class StartCardShuffleEffect : MonoBehaviour
 			}
 			otherCards = UtilityFuncManagerScript.ShuffleList(otherCards);
 
-			// Determine Start Card position using Gaussian distribution centered on deck middle
-			int totalSize = otherCards.Count + 1;
-			float mean = (totalSize - 1) / 2.0f;
-			float stdDev = Mathf.Max(1f, totalSize * startCardPositionStdDevFactor);
-			int targetIndex = Mathf.RoundToInt(UtilityFuncManagerScript.GaussianRandom(mean, stdDev));
-			// Prevent Start Card from being placed at the top of the deck (index Count - 1),
-			// otherwise it would be revealed immediately and trigger another shuffle.
-			targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, totalSize - 2));
+			// Determine Start Card position
+			int targetIndex;
+			if (startCardPlacement == StartCardPlacement.AlwaysBottom)
+			{
+				// Fixed at deck bottom (index 0 = revealed last)
+				targetIndex = 0;
+			}
+			else
+			{
+				// Gaussian distribution centered on deck middle
+				int totalSize = otherCards.Count + 1;
+				float mean = (totalSize - 1) / 2.0f;
+				float stdDev = Mathf.Max(1f, totalSize * startCardPositionStdDevFactor);
+				targetIndex = Mathf.RoundToInt(UtilityFuncManagerScript.GaussianRandom(mean, stdDev));
+				// Prevent Start Card from being placed at the top of the deck (index Count - 1),
+				// otherwise it would be revealed immediately and trigger another shuffle.
+				targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, totalSize - 2));
+			}
 
 			// Insert Start Card at the computed position
 			otherCards.Insert(targetIndex, startCard);

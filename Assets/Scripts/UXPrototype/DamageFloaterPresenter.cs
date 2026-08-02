@@ -28,8 +28,18 @@ public class DamageFloaterPresenter : MonoBehaviour
 	[Tooltip("Null = TMP default font asset (same as CardTagTooltip / ResultStatsPanel runtime text).")]
 	public TMP_FontAsset font;
 
+	[Header("Colors")]
+	[Tooltip("Floater color on the player side. Null = GameColorPalette damage.")]
+	public ColorSO playerColor;
+	[Tooltip("Floater color on the enemy side. Null = GameColorPalette damage.")]
+	public ColorSO enemyColor;
+
 	[Header("Tuning (defaults from DamageFloaterDemo.html)")]
 	public float fontSize = 30f;
+	[Tooltip("Bold floater text (TMP faux bold if the font asset has no bold face).")]
+	public bool bold;
+	[Tooltip("Italic floater text (TMP faux italic if the font asset has no italic face).")]
+	public bool italic;
 	public float punchScale = 2.2f;
 	public float squashScale = 0.85f;
 	public float overshootScale = 1.08f;
@@ -182,7 +192,7 @@ public class DamageFloaterPresenter : MonoBehaviour
 		local.x += Random.Range(-jitterPx * 0.5f, jitterPx * 0.5f) * px;
 		local = ClampToLayer(local, px);
 
-		var go = CreateFloaterObject(local, amount);
+		var go = CreateFloaterObject(local, amount, playerSide);
 		var rt = (RectTransform)go.transform;
 		var tmp = go.GetComponent<TextMeshProUGUI>();
 		var group = go.GetComponent<CanvasGroup>();
@@ -208,7 +218,7 @@ public class DamageFloaterPresenter : MonoBehaviour
 	// Builds the floater GameObject (TMP text + black shadow + CanvasGroup) at a
 	// layer-local position. Shared by the gameplay spawn path above and the
 	// edit-mode preview (DamageFloaterPresenterEditor).
-	private GameObject CreateFloaterObject(Vector2 local, int amount)
+	private GameObject CreateFloaterObject(Vector2 local, int amount, bool playerSide)
 	{
 		var go = new GameObject("DamageFloater", typeof(RectTransform));
 		go.transform.SetParent(floaterLayer, false);
@@ -223,8 +233,18 @@ public class DamageFloaterPresenter : MonoBehaviour
 		}
 		tmp.text = "-" + amount;
 		tmp.fontSize = fontSize;
+		FontStyles style = FontStyles.Normal;
+		if (bold)
+		{
+			style |= FontStyles.Bold;
+		}
+		if (italic)
+		{
+			style |= FontStyles.Italic;
+		}
+		tmp.fontStyle = style;
 		tmp.alignment = TextAlignmentOptions.Center;
-		tmp.color = DamageColor();
+		tmp.color = DamageColor(playerSide);
 		tmp.raycastTarget = false;
 
 		// uGUI equivalent of the demo's black text-shadow.
@@ -243,10 +263,10 @@ public class DamageFloaterPresenter : MonoBehaviour
 	// uses manual update because DOTween does not tick outside Play Mode — the
 	// caller ticks it via DOTween.ManualUpdate and destroys the object with
 	// DestroyImmediate when done.
-	public Sequence SpawnPreviewFloater(Vector2 localPos, int amount, out GameObject floater)
+	public Sequence SpawnPreviewFloater(Vector2 localPos, int amount, bool playerSide, out GameObject floater)
 	{
 		float px = PxToLocal();
-		floater = CreateFloaterObject(localPos, amount);
+		floater = CreateFloaterObject(localPos, amount, playerSide);
 		var rt = (RectTransform)floater.transform;
 		var group = floater.GetComponent<CanvasGroup>();
 		Sequence seq = PlayTimeline(rt, group, localPos.y, px);
@@ -333,8 +353,15 @@ public class DamageFloaterPresenter : MonoBehaviour
 		return ApplySpeed(seq);
 	}
 
-	private static Color DamageColor()
+	// Per-side floater color: the serialized ColorSO fields win; both fall back
+	// to the palette damage color, then to the demo red.
+	private Color DamageColor(bool playerSide)
 	{
+		ColorSO sideColor = playerSide ? playerColor : enemyColor;
+		if (sideColor != null)
+		{
+			return sideColor.value;
+		}
 		if (GameColorPalette.Me != null && GameColorPalette.Me.damage != null)
 		{
 			return GameColorPalette.Me.damage.value;

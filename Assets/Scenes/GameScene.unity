@@ -284,7 +284,7 @@ Transform:
   m_GameObject: {fileID: 17063022}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.7, y: -1.4, z: 0}
+  m_LocalPosition: {x: 0.7, y: -2.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1027,6 +1027,7 @@ MonoBehaviour:
   playerDeckRef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   deckSize: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
   maxDeckSize: {fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}
+  duplicateCopiesShareSlotRef: {fileID: 11400000, guid: fd87b57f64db6b41a89afa46f9fa7a96, type: 2}
   purse: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}
   shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
   currentShopItemDeckRef: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
@@ -2445,6 +2446,8 @@ MonoBehaviour:
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   playerDeckPos: {x: 0, y: 1.2, z: 0}
   playerDeckStartPos: {fileID: 478120492}
+  duplicateStackOffset: {x: -0.1, y: 0.1, z: 0.02}
+  duplicateStackMaxOffsetCount: 5
   enableCameraScroll: 0
   cameraScrollSpeed: 5
   cameraMinY: -1
@@ -3499,7 +3502,7 @@ Transform:
   m_GameObject: {fileID: 521203767}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.7, y: -1.4, z: -5}
+  m_LocalPosition: {x: 0.7, y: -2.1, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5001,7 +5004,7 @@ MonoBehaviour:
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
-  logCombatFlow: 0
+  logCombatFlow: 1
   logEffectChains: 0
   logAnimationPlayback: 0
   logVisualSync: 0
@@ -10521,10 +10524,11 @@ MonoBehaviour:
     fontSize: 40
     headerFontSize: 40
     rowHeight: 60
-    nameColumnFlex: 1.6
+    headerRowHeight: 60
+    nameColumnFlex: 1
     statColumnFlex: 1
     rowHorizontalPadding: 0
-    rowSpacing: 4
+    rowSpacing: 1
     backgroundAlpha: 0.6
 --- !u!1 &2043192993
 GameObject:
@@ -10810,16 +10814,20 @@ MonoBehaviour:
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   canvas: {fileID: 114813451}
   font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  fontSize: 30
-  punchScale: 2.2
+  playerColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  enemyColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  fontSize: 150
+  bold: 1
+  italic: 0
+  punchScale: 6
   squashScale: 0.85
-  overshootScale: 1.08
-  finalScale: 0.95
-  punchInTime: 0.38
-  holdTime: 0.45
+  overshootScale: 1.1
+  finalScale: 1
+  punchInTime: 0.3
+  holdTime: 0
   fadeTime: 0.36
-  floatUpDistPx: 62
-  jitterPx: 40
+  floatUpDistPx: 248
+  jitterPx: 400
 --- !u!1001 &15491487674759769
 PrefabInstance:
   m_ObjectHideFlags: 0

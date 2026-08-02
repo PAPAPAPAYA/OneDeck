@@ -1536,6 +1536,23 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// Guarded re-clamp of the reveal-zone card's target z against the analytic deck front z.
+	/// Skipped while the reveal card has a position tween playing: SetTargetPosition restarts
+	/// the tween and a restart kills the in-flight tween without firing its completion callback
+	/// (the reveal-entry tween carries the input unblock; it re-clamps itself on landing via
+	/// wrappedOnComplete in MovePhysicalCardToRevealZone).
+	/// </summary>
+	private void TryReClampRevealZoneTargetZ()
+	{
+		if (physicalCardInRevealZone == null) return;
+		var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+		if (revealPhys != null && !revealPhys.IsPositionTweenPlaying)
+		{
+			ReClampRevealZoneTargetZ();
+		}
+	}
+
+	/// <summary>
 	/// Update all cards' target positions based on physicalCardsInDeck order
 	/// </summary>
 	public void UpdateAllPhysicalCardTargets()
@@ -1571,14 +1588,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// a position tween plays: a restart kills the in-flight tween without firing its
 		// completion callback (the reveal-entry tween carries the input unblock). The entry
 		// tween re-clamps itself on landing via wrappedOnComplete.
-		if (physicalCardInRevealZone != null)
-		{
-			var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
-			if (revealPhys != null && !revealPhys.IsPositionTweenPlaying)
-			{
-				ReClampRevealZoneTargetZ();
-			}
-		}
+		TryReClampRevealZoneTargetZ();
 		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");
 	}
 
@@ -2477,6 +2487,19 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				cardPhys.SetTargetRotation(targetRot);
 			}
 		}
+
+		// VISUAL-FIX(2026-08-02): Reveal-zone card z not updated when cards are generated into the deck
+		//   Cause:    AddPhysicalCardToDeck shifts every deck card one cascade step toward the
+		//             camera, but the reveal-zone card lives outside physicalCardsInDeck and was
+		//             only re-clamped at the end of PlayRecorderAnimationsAndWait — the deck front
+		//             card could slide in front of the reveal card for the whole animation phase.
+		//   Affects:  AddPhysicalCardToDeck, CardFactory.SpawnCardToDeck (AddTempCard),
+		//             TryReClampRevealZoneTargetZ, UpdateAllPhysicalCardTargets
+		//   Regress:  Play a card that adds temp cards (e.g. RIFT_INSECT) with a card in the
+		//             reveal zone and a near-capacity deck; verify the reveal-zone card stays in
+		//             front of the deck front card during the PopUp/SlotIn animation, not only
+		//             after it.
+		TryReClampRevealZoneTargetZ();
 	}
 
 	#region Initialization

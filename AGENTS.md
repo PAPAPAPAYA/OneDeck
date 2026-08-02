@@ -171,7 +171,7 @@ Split two-half panel (top = player-created cards, bottom = enemy-created cards) 
 - **Hooks**: `CostNEffectContainer.InvokeEffectEvent()` (inside the `EffectCanBeInvoked` true branch), `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self` (each computes `victimSide` from owner/their status refs), `EffectScript.ApplyStatusEffectCore` Power branch.
 - **Row display**: name + copy-count suffix `" (X)"` (initial-deck copies from the `_deckCounts` snapshot; shown only when X ≥ 2; mid-combat cards default to 1). Row sort in `GetSessionRows()` (by `DamageDealtToOpponent` desc then faction).
 - **UI**: `ResultStatsPanel` builds two stacked halves fully at runtime (no prefab/scene wiring) with its own Canvas + CanvasScaler. Each half = faction-colored title (`YOU`/`ENEMY`) + header + scrollable rows with all registry columns; `showPercentageOfTotal` columns render `"12 (34%)"` — share of THAT HALF's column total. `PhaseManager.EnteringResultPhase()` builds it once; `ExitingResultPhase()` clears it. Total rounds are shown via a `Rounds: N` line in `PhaseManager.ShowResult()`, reading `CombatManager.roundsLastCombat` (captured in `ExitCombat()` before `roundNumRef` resets) minus 1 — the start card's opening shuffle is not a real round.
-- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction anchors, reference resolution, font/row sizes, column flex weights, paddings/spacing, background alpha. Play Mode Inspector edits rebuild immediately via `OnValidate`; `Rebuild Stats Panel` context-menu entry exists.
+- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction anchors, reference resolution, font/row sizes (`headerRowHeight` = title/header rows, independent from data `rowHeight`), column flex weights, paddings/spacing, background alpha. Play Mode Inspector edits rebuild immediately via `OnValidate`; `Rebuild Stats Panel` context-menu entry exists.
 - **Runtime-built UI pitfall**: after setting stretch anchors on a fresh RectTransform, always zero `offsetMin/offsetMax` — the default 100×100 sizeDelta otherwise leaks into the final rect.
 - EditMode tests: `Assets/Scripts/Editor/Tests/CombatPerCardStatsTrackerTests.cs`.
 
@@ -181,6 +181,10 @@ Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
 - `minionCostCount` - Number required
 - `minionCostCardTypeID` - Filter by card type ID (empty = no restriction)
 - `minionCostOwner` - `Me` / `Them` / `Random`
+
+## Duplicate Slot Rule
+
+`ShopManager.duplicateCopiesShareSlotRef` (BoolSO in `Assets/SORefs/ShopRefs/`, default OFF). ON: copies sharing a `cardTypeID` take 1 deck slot (first copy only) when buying, and the shop display stacks duplicates upper-left (`ShopUXManager.duplicateStackOffset` / `duplicateStackMaxOffsetCount`). Count via `UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, duplicatesShareSlot)`; empty `cardTypeID` never deduped. Only the base card of a stack shows price (`ShopCardView.suppressPriceDisplay`). `CombatStartCardGiver` and enemy deck unaffected. Plan: `plans/plan-duplicate-cards-share-deck-slot-2026-07-31.md`.
 
 ## Animation System
 

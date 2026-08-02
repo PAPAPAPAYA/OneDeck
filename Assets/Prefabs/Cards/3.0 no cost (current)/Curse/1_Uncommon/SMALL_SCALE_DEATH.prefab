@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8647719441115905817}
   - component: {fileID: 1702827142943980848}
-  - component: {fileID: 5689445365476504761}
+  - component: {fileID: 1776088352703107964}
   m_Layer: 0
   m_Name: enhance hostile curse
   m_TagString: Untagged
@@ -50,25 +50,22 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5689445365476504761}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.CurseEffect, Assembly-CSharp
-        m_MethodName: EnhanceCurse
-        m_Mode: 3
+      - m_Target: {fileID: 1776088352703107964}
+        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_MethodName: DecreaseTheirHp
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &5689445365476504761
+--- !u!114 &1776088352703107964
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -77,15 +74,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 1257442562744154510}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f31b527b368e7342ba80945e347d10a, type: 3}
+  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
-  cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
-  cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
-  statusEffectResolverPrefab: {fileID: 0}
-  statusEffectParticlePrefab: {fileID: 0}
-  particleYOffset: 0
-  powerCoefficient: 1
+  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
+  dmgAmountAlter: 0
+  healAmountAlter: 0
+  isStatusEffectDamage: 0
+  extraDmg: 0
+  statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &7538812023556790325
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,9 +138,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -167,6 +166,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   tagsToCheck: 00000000
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  ignoreStartCardBoundary: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,8 +220,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SMALL_SCALE_DEATH
   displayName: "\u5C0F\u8303\u56F4\u6B7B\u4EA1"
-  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C\u540E <b>2</b> \u5361,\u589E\u5F3A <b>1</b>
-    \u654C\u65B9[\u8BC5\u5492]"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C\u540E <b>2</b> \u5361,\u9020\u6210 <b><dmg></b>
+    \u4F24\u5BB3"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -228,16 +231,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
-  exileCostCount: 0
-  exileCostCardTypeID: 
-  exileCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

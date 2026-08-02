@@ -17,6 +17,8 @@ namespace DefaultNamespace.Effects
 		public EnumStorage.TargetType target;
 		[Tooltip("if true, will include the card itself in reveal zone when giving status effect")]
 		public bool includeSelf = false;
+		[Tooltip("if true, only cards that can damage the enemy (have a DecreaseTheirHp effect bound) are eligible targets")]
+		public bool onlyTargetEnemyDamagingCards = true;
 
 		[Header("Apply to Last X Cards")]
 		[Tooltip("Apply status effects to the X cards after the current card (index decreasing direction)")]
@@ -64,6 +66,14 @@ namespace DefaultNamespace.Effects
 				return false;
 			return true;
 		}
+
+		protected bool PassesDamageFilter(CardScript cardScript)
+		{
+			if (!onlyTargetEnemyDamagingCards) return true;
+			bool has = UtilityFuncManagerScript.HasDecreaseTheirHpEffect(cardScript.gameObject);
+			DefaultNamespace.Managers.TestManager.Log("[DamageFilter] card=" + cardScript.GetDisplayName() + " hasDecreaseTheirHp=" + has);
+			return has;
+		}
 		#endregion
 
 		#region Helper Methods - Common Operations
@@ -84,6 +94,7 @@ namespace DefaultNamespace.Effects
 				if (ShouldSkipCard(cardScript)) continue;
 				if (cardScript.myStatusRef != myCardScript.myStatusRef) continue;
 				if (!includeSelf && card == myCard) continue;
+				if (!PassesDamageFilter(cardScript)) continue;
 				if (filterCanReceive && !CanReceiveStatusEffect(cardScript, statusEffectToGive)) continue;
 				result.Add(cardScript);
 			}
@@ -91,7 +102,8 @@ namespace DefaultNamespace.Effects
 			{
 				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
 				if (!ShouldSkipCard(revealCardScript) &&
-				    revealCardScript.myStatusRef == myCardScript.myStatusRef)
+				    revealCardScript.myStatusRef == myCardScript.myStatusRef &&
+				    PassesDamageFilter(revealCardScript))
 				{
 					if (includeSelf || combatManager.revealZone != myCard)
 					{
@@ -172,7 +184,8 @@ namespace DefaultNamespace.Effects
 			for (var i = cardsToGiveTag.Count - 1; i >= 0; i--)
 			{
 				var targetCardScript = cardsToGiveTag[i].GetComponent<CardScript>();
-				if (ShouldSkipCard(targetCardScript) || !MatchesTargetFilter(targetCardScript, target))
+				if (ShouldSkipCard(targetCardScript) || !MatchesTargetFilter(targetCardScript, target) ||
+				    !PassesDamageFilter(targetCardScript))
 					cardsToGiveTag.RemoveAt(i);
 			}
 			if (!canStatusEffectBeStacked)
@@ -285,6 +298,7 @@ namespace DefaultNamespace.Effects
 				var targetCard = combinedDeck[i];
 				var targetCardScript = targetCard.GetComponent<CardScript>();
 				if (ShouldSkipCard(targetCardScript)) continue;
+				if (!PassesDamageFilter(targetCardScript)) continue;
 				if (!CanReceiveStatusEffect(targetCardScript, statusEffectToGive)) continue;
 				targetCards.Add(targetCardScript);
 				cardsGiven++;
@@ -305,7 +319,10 @@ namespace DefaultNamespace.Effects
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			if (xFriendlyCount <= 0 || yFriendlyLayerCount <= 0) return;
 
+			DefaultNamespace.Managers.TestManager.Log("[DamageFilter] GiveStatusEffectToXFriendly on " + myCardScript.GetDisplayName() +
+				" onlyTargetEnemyDamagingCards=" + onlyTargetEnemyDamagingCards);
 			var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
+			DefaultNamespace.Managers.TestManager.Log("[DamageFilter] candidates after filter=" + friendlyCards.Count);
 			if (friendlyCards.Count <= 0) return;
 
 			friendlyCards = UtilityFuncManagerScript.ShuffleList(friendlyCards);

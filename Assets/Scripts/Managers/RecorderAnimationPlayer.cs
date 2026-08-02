@@ -161,6 +161,27 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 					}
 				}
 			}
+
+			// VISUAL-FIX(2026-08-02): Off-reveal attack card struck face-down (card back visible)
+			//   Cause:    The peel-focus attack path (FocusOnCardCoroutine -> Attack request) never
+			//             flipped the attacker face-up; only PopUpCard did. A never-revealed deck
+			//             card therefore played its attack animation showing its card back.
+			//   Fix:      After the peel completes (and regardless of enablePeelDeck), flip the
+			//             source card face-up and wait for the flip before the Attack request.
+			//             isFaceUp makes it idempotent: staged / previously revealed / already
+			//             popped-up cards skip. SetFaceUp(true) sets everRevealed, so the card
+			//             stays face-up afterwards via the never-cover rule until shuffled.
+			//   Affects:  RecorderAnimationPlayer.PlayRecordersCoroutine (peel-focus attack path)
+			//   Regress:  Deck with a never-revealed off-reveal attack card (e.g. SPIKE_SKELETON):
+			//             verify peel -> flip -> attack, card stays face-up after. Consecutive
+			//             attacks on the same card flip only once; reveal-zone attacks unchanged.
+			var flipPhys = GetPhysicalCardScript(recorder.cardObject);
+			if (flipPhys != null && !flipPhys.isFaceUp)
+			{
+				bool flipDone = false;
+				flipPhys.SetFaceUp(true, true, onComplete: () => flipDone = true);
+				yield return new WaitUntil(() => flipDone);
+			}
 		}
 
 		// VISUAL-FIX(2026-07-30): Emphasize/popup plays while deck is still peel-focused

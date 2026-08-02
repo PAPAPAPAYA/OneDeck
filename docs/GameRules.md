@@ -91,7 +91,7 @@ A round consists of revealing cards from the top of `combinedDeckZone` one by on
 When the Start Card is revealed:
 
 - It triggers a shuffle of `combinedDeckZone`.
-- After the shuffle, the Start Card is placed back at the **bottom**.
+- After the shuffle, the Start Card is reinserted at a position determined by its `StartCardShuffleEffect.startCardPlacement`: `Gaussian` (default) = Gaussian distribution centered on the deck middle (never at the top, to avoid an immediate re-shuffle); `AlwaysBottom` = fixed at the **bottom**. A `ShuffleOrderOverride` custom order takes precedence over both.
 - A new round begins.
 
 > Start Cards are **neutral** (`isStartCard == true`). They are skipped by effect processing.

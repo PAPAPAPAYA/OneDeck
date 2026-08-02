@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using UnityEngine;
+using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 public static class UtilityFuncManagerScript
@@ -45,19 +46,94 @@ public static class UtilityFuncManagerScript
 	/// </summary>
 	public static int CountCardsTakingUpSpace(DeckSO deck)
 	{
+		return CountCardsTakingUpSpace(deck, false);
+	}
+
+	/// <summary>
+	/// Count how many cards in a DeckSO actually take up deck size.
+	/// When duplicatesShareSlot is true, cards sharing a non-empty cardTypeID count as a
+	/// single slot (first copy takes the slot, further copies are free).
+	/// Cards with a null/empty cardTypeID are never deduplicated.
+	/// </summary>
+	public static int CountCardsTakingUpSpace(DeckSO deck, bool duplicatesShareSlot)
+	{
 		if (deck == null || deck.deck == null) return 0;
 
 		int count = 0;
+		HashSet<string> countedTypeIDs = duplicatesShareSlot ? new HashSet<string>() : null;
 		foreach (var card in deck.deck)
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript != null && cardScript.takeUpSpace)
+			if (cardScript == null || !cardScript.takeUpSpace) continue;
+			if (countedTypeIDs != null && !string.IsNullOrEmpty(cardScript.cardTypeID)
+				&& !countedTypeIDs.Add(cardScript.cardTypeID))
 			{
-				count++;
+				continue; // duplicate copy: free
 			}
+			count++;
 		}
 		return count;
+	}
+
+	/// <summary>
+	/// Check whether a DeckSO contains any card with the given cardTypeID.
+	/// </summary>
+	public static bool DeckContainsCardType(DeckSO deck, string cardTypeID)
+	{
+		if (deck == null || deck.deck == null || string.IsNullOrEmpty(cardTypeID)) return false;
+
+		foreach (var card in deck.deck)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.cardTypeID == cardTypeID)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// Check whether a card can damage the enemy, i.e. it has any HPAlterEffect method whose
+	/// name starts with "DecreaseTheirHp" bound via persistent UnityEvent calls
+	/// (CostNEffectContainer.effectEvent or GameEventListener.response).
+	/// Only serialized Inspector bindings are visible; runtime AddListener bindings are not.
+	/// </summary>
+	public static bool HasDecreaseTheirHpEffect(GameObject card)
+	{
+		if (card == null) return false;
+		var containers = card.GetComponentsInChildren<CostNEffectContainer>(true);
+		foreach (var container in containers)
+		{
+			if (container != null && EventTargetsDecreaseTheirHp(container.effectEvent)) return true;
+		}
+		var listeners = card.GetComponentsInChildren<DefaultNamespace.GameEventListener>(true);
+		foreach (var listener in listeners)
+		{
+			if (listener != null && EventTargetsDecreaseTheirHp(listener.response)) return true;
+		}
+		return false;
+	}
+
+	private static bool EventTargetsDecreaseTheirHp(UnityEvent unityEvent)
+	{
+		if (unityEvent == null) return false;
+		for (int i = 0; i < unityEvent.GetPersistentEventCount(); i++)
+		{
+			string methodName = unityEvent.GetPersistentMethodName(i);
+			if (unityEvent.GetPersistentTarget(i) is HPAlterEffect &&
+				!string.IsNullOrEmpty(methodName) &&
+				methodName.StartsWith("DecreaseTheirHp"))
+			{
+				var targetComponent = unityEvent.GetPersistentTarget(i) as Component;
+				DefaultNamespace.Managers.TestManager.Log("[DamageFilter] matched binding: " + methodName + " on " +
+					(targetComponent != null ? targetComponent.gameObject.name : "null"));
+				return true;
+			}
+		}
+		return false;
 	}
 
 	// copy generic type list

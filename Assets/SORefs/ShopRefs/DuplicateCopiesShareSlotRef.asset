@@ -9,12 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc6c639cfe7644ff8b297631a1d5f491, type: 3}
-  m_Name: PlayerStatusRef
+  m_Script: {fileID: 11500000, guid: 277615387ab2f0f41ab6becdd460c0f7, type: 3}
+  m_Name: DuplicateCopiesShareSlotRef
   m_EditorClassIdentifier: 
-  hp: 0
-  hpMax: 25
-  shield: 0
-  hpOg: 20
-  hpMaxOg: 25
-  shieldOg: 0
+  value: 0
+  valueOg: 0
+  resetOnStart: 0
+  description: ON - copies sharing a cardTypeID take a single deck slot (first copy
+    only) and stack in the shop display

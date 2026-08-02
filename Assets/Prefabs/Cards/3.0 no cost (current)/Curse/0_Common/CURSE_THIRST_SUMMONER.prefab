@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &270621688628183383
+--- !u!1 &1223529725167660343
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,97 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 834418638395040871}
-  - component: {fileID: 3408854323514059765}
-  - component: {fileID: 1359544507321340075}
-  m_Layer: 0
-  m_Name: deal dmg
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &834418638395040871
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 270621688628183383}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3828591620990538636}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3408854323514059765
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 270621688628183383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
-  targetCardTypeID: {fileID: 0}
-  checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  effectEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1359544507321340075}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &1359544507321340075
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 270621688628183383}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
-  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
-  dmgAmountAlter: 0
-  healAmountAlter: 0
-  isStatusEffectDamage: 0
-  extraDmg: 4
-  statusEffectToCheck: 0
-  ownerIntSO: {fileID: 0}
-  enemyIntSO: {fileID: 0}
-  damageDisplayKey: 
-  dynamicDmgDisplaySource: 0
-  dynamicDmgDisplayMultiplyByPower: 0
---- !u!1 &7538812023556790325
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4188612179286784546}
-  - component: {fileID: 5915337404688717014}
-  - component: {fileID: 2778327919258514538}
+  - component: {fileID: 1111234628625696154}
+  - component: {fileID: 1417396165874424666}
+  - component: {fileID: 5510643612805829867}
   m_Layer: 0
   m_Name: stage self
   m_TagString: Untagged
@@ -106,28 +18,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4188612179286784546
+--- !u!4 &1111234628625696154
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
+  m_GameObject: {fileID: 1223529725167660343}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3828591620990538636}
+  m_Father: {fileID: 2317113664871565864}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5915337404688717014
+--- !u!114 &1417396165874424666
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
+  m_GameObject: {fileID: 1223529725167660343}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
@@ -141,25 +53,25 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2778327919258514538}
+      - m_Target: {fileID: 5510643612805829867}
         m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
         m_MethodName: StageSelf
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &2778327919258514538
+--- !u!114 &5510643612805829867
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7538812023556790325}
+  m_GameObject: {fileID: 1223529725167660343}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
@@ -171,7 +83,7 @@ MonoBehaviour:
   excludeSelf: 1
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
---- !u!1 &8718476725744197808
+--- !u!1 &1808145013887896563
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -179,52 +91,52 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3828591620990538636}
-  - component: {fileID: 7915703419504864441}
-  - component: {fileID: 5681035199836309128}
-  - component: {fileID: -4728943355192809547}
+  - component: {fileID: 2317113664871565864}
+  - component: {fileID: 2701497416063894489}
+  - component: {fileID: 4485615667128222772}
+  - component: {fileID: 6233935548096134504}
   m_Layer: 0
-  m_Name: GRAVE_KEEPER
+  m_Name: CURSE_THIRST_SUMMONER
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3828591620990538636
+--- !u!4 &2317113664871565864
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
+  m_GameObject: {fileID: 1808145013887896563}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -1.30689, y: -0, z: -0.27956}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4188612179286784546}
-  - {fileID: 834418638395040871}
+  - {fileID: 1111234628625696154}
+  - {fileID: 7347418108214000764}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7915703419504864441
+--- !u!114 &2701497416063894489
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
+  m_GameObject: {fileID: 1808145013887896563}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: GRAVE_KEEPER
-  displayName: "\u5B88\u5893\u4EBA"
-  cardDesc: "\u53CB\u65B9\u88AB\u57CB\u846C\u65F6:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u9020\u6210
-    <b><dmg></b> \u4F24\u5BB3"
-  rarity: 2
+  cardTypeID: CURSE_THIRST_SUMMONER
+  displayName: "\u5492\u98DF\u7684\u53EC\u5524\u5E08"
+  cardDesc: "\u5F53\u654C\u65B9[\u8BC5\u5492]\u63ED\u6653\u65F6:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u7F6E\u9876
+    <b>1</b> \u53CB\u65B9"
+  rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
@@ -235,23 +147,23 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
---- !u!114 &5681035199836309128
+--- !u!114 &4485615667128222772
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
+  m_GameObject: {fileID: 1808145013887896563}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
-  event: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
+  event: {fileID: 11400000, guid: 60c44989abfa91a41bcc3e450ac57bc7, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 5915337404688717014}
+      - m_Target: {fileID: 1417396165874424666}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid
         m_Mode: 1
@@ -263,13 +175,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &-4728943355192809547
+--- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
+  m_GameObject: {fileID: 1808145013887896563}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
@@ -279,7 +191,7 @@ MonoBehaviour:
   response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3408854323514059765}
+      - m_Target: {fileID: 7449076752151853866}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid
         m_Mode: 1
@@ -291,3 +203,86 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1 &6947502767563041322
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7347418108214000764}
+  - component: {fileID: 7449076752151853866}
+  - component: {fileID: 5804767994645335557}
+  m_Layer: 0
+  m_Name: stage friendly
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7347418108214000764
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6947502767563041322}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2317113664871565864}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7449076752151853866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6947502767563041322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  targetCardTypeID: {fileID: 0}
+  checkCostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  effectEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5804767994645335557}
+        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
+        m_MethodName: StageMyCards
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &5804767994645335557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6947502767563041322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
+  tagToCheck: 0
+  targetFriendly: 0
+  statusEffectToCheck: 0
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}

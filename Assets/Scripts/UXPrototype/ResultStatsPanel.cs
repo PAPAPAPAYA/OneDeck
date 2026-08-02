@@ -26,9 +26,14 @@ public class ResultStatsPanelLayout
 	public int sortingOrder = 200;
 
 	[Header("Typography (reference-resolution pixels)")]
+	[Tooltip("Font size of the data rows (card names and stat values).")]
 	public float fontSize = 40f;
+	[Tooltip("Font size of the half titles (YOU/ENEMY) and the column header row (Card, Dmg>Opp, ...).")]
 	public float headerFontSize = 40f;
+	[Tooltip("Height of each data row (one row per card type). Also used as the scroll sensitivity.")]
 	public float rowHeight = 60f;
+	[Tooltip("Height of the half title (YOU/ENEMY) and the column header row. Independent from rowHeight so tightening the header area does not change the spacing between data rows.")]
+	public float headerRowHeight = 60f;
 
 	[Header("Column Weights (flexible widths)")]
 	public float nameColumnFlex = 1.6f;
@@ -183,18 +188,30 @@ public class ResultStatsPanel : MonoBehaviour
 			halfTotals[def.type] = total;
 		}
 
+		// VISUAL-FIX(2026-08-02): Header row stretches to fill half the panel, centering its text
+		//   with huge gaps above/below (looks like broken row spacing)
+		//   Cause:    ConfigureRowLayout adds a HorizontalLayoutGroup with childForceExpandHeight=true,
+		//             which reports flexibleHeight=1; LayoutElement.flexibleHeight=-1 falls through to it,
+		//             so the parent VerticalLayoutGroup shares the leftover height equally between Header
+		//             and ScrollView. Explicit flexibleHeight=0 blocks the leak. Same guard applied to
+		//             Title/rows defensively (TMP/HLG children can expose flexibleHeight).
+		//   Affects:  ResultStatsPanel half layout (Title / Header / ScrollView / data rows)
+		//   Regress:  Result phase: header row height must equal headerRowHeight exactly and sit directly
+		//             under the title; data rows start flush under the header.
 		// Title ("YOU" / "ENEMY") in the faction color
 		var titleGo = new GameObject("Title", typeof(RectTransform));
 		titleGo.transform.SetParent(halfGo.transform, false);
 		var titleElement = titleGo.AddComponent<LayoutElement>();
-		titleElement.preferredHeight = _layout.rowHeight;
+		titleElement.preferredHeight = _layout.headerRowHeight;
+		titleElement.flexibleHeight = 0f;
 		CreateText(titleGo.transform, FactionLabel(faction), FactionColor(faction), TextAlignmentOptions.Center, true);
 
 		// Header row: Card + one cell per registry column
 		var headerGo = new GameObject("Header", typeof(RectTransform));
 		headerGo.transform.SetParent(halfGo.transform, false);
 		var headerElement = headerGo.AddComponent<LayoutElement>();
-		headerElement.preferredHeight = _layout.rowHeight;
+		headerElement.preferredHeight = _layout.headerRowHeight;
+		headerElement.flexibleHeight = 0f;
 		ConfigureRowLayout(headerGo);
 		BuildRowCells(headerGo.transform, "Card", null, true, null);
 
@@ -243,6 +260,7 @@ public class ResultStatsPanel : MonoBehaviour
 			emptyGo.transform.SetParent(contentGo.transform, false);
 			var emptyElement = emptyGo.AddComponent<LayoutElement>();
 			emptyElement.preferredHeight = _layout.rowHeight;
+			emptyElement.flexibleHeight = 0f; // see VISUAL-FIX(2026-08-02) above
 			CreateText(emptyGo.transform, "No damage recorded.", Color.white, TextAlignmentOptions.Center, false);
 			return;
 		}
@@ -253,6 +271,7 @@ public class ResultStatsPanel : MonoBehaviour
 			rowGo.transform.SetParent(contentGo.transform, false);
 			var rowElement = rowGo.AddComponent<LayoutElement>();
 			rowElement.preferredHeight = _layout.rowHeight;
+			rowElement.flexibleHeight = 0f; // see VISUAL-FIX(2026-08-02) above
 			ConfigureRowLayout(rowGo);
 			BuildRowCells(rowGo.transform, DisplayNameWithCount(row), row, false, halfTotals);
 		}

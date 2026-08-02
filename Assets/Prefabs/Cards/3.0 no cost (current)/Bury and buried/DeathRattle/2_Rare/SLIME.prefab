@@ -85,6 +85,7 @@ MonoBehaviour:
   statusEffectToCheck: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &6144443996281573302
@@ -99,7 +100,7 @@ GameObject:
   - component: {fileID: 711042354993321843}
   - component: {fileID: 1238789155915027209}
   m_Layer: 0
-  m_Name: add a copy of self, consume counter
+  m_Name: add a copy of self
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -217,7 +218,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SLIME
   displayName: "\u53F2\u83B1\u59C6"
-  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\n\u88AB\u57CB\u846C::\u6DFB\u52A0\u81EA\u8EAB\u5230\u5361\u7EC4\u4E2D"
+  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\n\u88AB\u57CB\u846C:\u6DFB\u52A0\u81EA\u8EAB\u5230\u5361\u7EC4\u4E2D"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

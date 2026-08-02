@@ -52,4 +52,8 @@ public class GameColorPalette : ScriptableObject
 	public ColorSO hpNormal;
 	public ColorSO hpLow;
 	public ColorSO hpZeroGray;
+
+	[Header("Damage Floater")]
+	public ColorSO floaterPlayer;
+	public ColorSO floaterEnemy;
 }
