@@ -669,6 +669,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// <summary>
 	/// Flip the card face-up / face-down with a 2D squash flip on FlipRoot.
 	/// Rules: a card that was ever revealed is never covered again (cover calls are skipped);
+	/// the Start Card never covers either (it has no hidden info and spawns face-up);
 	/// the shuffle rule bypasses this via force=true plus ClearRevealedMemory().
 	/// </summary>
 	/// <param name="faceUp">True = show face, false = show back.</param>
@@ -681,8 +682,22 @@ public class CardPhysObjScript : MonoBehaviour
 			onComplete?.Invoke();
 			return;
 		}
+		// VISUAL-FIX(2026-08-02): Start Card silently became face-down, then hover pop-up stopped working
+		//   Cause:    The Start Card spawns face-up WITHOUT a flip, so the early-return above
+		//             (isFaceUp == faceUp) means everRevealed is never set for it. The never-cover
+		//             guard only checked everRevealed, so the first cover trigger after spawn
+		//             (hover SlotInCard, MoveCardWithAnimation ToBottom/ToIndex/ToTop,
+		//             MoveRevealedCardToBottom) covered the Start Card, and the face-down hover
+		//             gate (OnMouseEnter, Rule 1) then blocked its pop-up intermittently.
+		//             Design rule: the Start Card has no hidden info and must always keep its
+		//             face (InstantiateAllPhysicalCards spawn, shuffle skip) — so cover calls on
+		//             it are now skipped outright (force still wins, consistent with everRevealed).
+		//   Affects:  CardPhysObjScript.SetFaceUp (all cover paths), CardPhysObjScript hover
+		//   Regress:  In Combat, hover-pop the Start Card and let it slot back in; also move it
+		//             via Bury/Stage/Delay: it must stay face-up after every move and remain
+		//             hover-poppable. Other cards' cover / never-cover behavior unchanged.
 		// Revealed cards never cover again (hard rule; shuffle bypasses via force).
-		if (!faceUp && !force && everRevealed)
+		if (!faceUp && !force && (everRevealed || isPhysicalStartCard))
 		{
 			onComplete?.Invoke();
 			return;
@@ -1028,9 +1043,24 @@ public class CardPhysObjScript : MonoBehaviour
 			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=already hovering (duplicate enter)");
 			return;
 		}
-		if (cardImRepresenting == null)
+		// VISUAL-FIX(2026-08-02): Hovering the Start Card popped up the cards behind it
+		//   Cause:    Three gaps removed the Start Card from combat hover: (1) StartCardParent.prefab
+		//             had no BoxCollider2D (PhysicalCardParent/MinionPhysicalCardParent both have one),
+		//             so OnMouseEnter never fired on it and it never joined the _currentHoverOwner
+		//             z-arbitration; (2) the hover gates early-returned on cardImRepresenting == null,
+		//             classifying the Start Card as non-hoverable; (3) the prefab's currentGamePhaseRef
+		//             was unwired (null), so IsInCombatPhase() was false and BeginHover took the
+		//             tooltip-only shop path — the Start Card claimed ownership (occluding cards
+		//             behind it) but never popped up. Fix: prefab gained a BoxCollider2D (size copied
+		//             from PhysicalCardParent) and the shared GamePhaseSO reference; the gates now
+		//             exempt isPhysicalStartCard so the Start Card hovers (and pops up) like any card.
+		//   Affects:  StartCardParent.prefab, CardPhysObjScript hover (OnMouseEnter, UpdatePendingHover)
+		//   Regress:  In Combat, hover the Start Card: it pops up itself and cards behind it stay
+		//             slotted; move the cursor from the Start Card onto a behind card's visible area:
+		//             that card pops up; hover->leave->hover keeps the Start Card face-up after slot-in.
+		if (cardImRepresenting == null && !isPhysicalStartCard)
 		{
-			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=no cardImRepresenting (start card)");
+			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=no cardImRepresenting");
 			return;
 		}
 		if (!isFaceUp)
@@ -1155,7 +1185,10 @@ public class CardPhysObjScript : MonoBehaviour
 		// The reveal-zone card is already fully displayed; pop-up would be redundant.
 		if (IsRevealZoneCard()) return;
 
-		if (CombatUXManager.visuals != null)
+		// cardImRepresenting is expected to be set for the Start Card too (InstantiateAllPhysicalCards);
+		// the null guard keeps a genuinely cardless physical Start Card as an occluder-only hover
+		// (claims ownership, no pop-up) instead of throwing.
+		if (CombatUXManager.visuals != null && cardImRepresenting != null)
 		{
 			_hoverPoppedUp = true;
 			CombatUXManager.visuals.PopUpCard(cardImRepresenting.gameObject);
@@ -1200,7 +1233,7 @@ public class CardPhysObjScript : MonoBehaviour
 	private void UpdatePendingHover()
 	{
 		if (!_hoverPending) return;
-		if (cardImRepresenting == null || !isFaceUp || !IsCursorOverCard())
+		if ((cardImRepresenting == null && !isPhysicalStartCard) || !isFaceUp || !IsCursorOverCard())
 		{
 			TestManager.Log("[Hover] pending cleared card=" + name + " cardGone=" + (cardImRepresenting == null) + " faceUp=" + isFaceUp);
 			_hoverPending = false;
