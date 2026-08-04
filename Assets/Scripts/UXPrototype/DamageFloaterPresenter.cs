@@ -9,10 +9,14 @@ using UnityEngine.UI;
 /// Floating damage numbers at each side's attack target position
 /// (AttackAnimationManager.playerTargetPos / enemyTargetPos — the world position
 /// the attacking card charges to). Pure presentation; no game-logic changes.
-/// Polls CombatInfoDisplayer's displayed HP values — the same queue-frozen values
-/// the HP text, compare bar, and numeric display show — so a floater spawns on
-/// the exact frame a hit lands. Damage only; heals and full-shield absorbs
-/// produce no floater (consistent with the HP bar and numeric display).
+/// Primary path: CombatInfoDisplayer.onHpDisplayCommitted fires once per attack hit
+/// carrying THAT hit's own actual HP loss, so each floater shows the correct number
+/// no matter how reactive chains interleave logic order and animation playback
+/// order (VISUAL-FIX(2026-08-04) below). Fallback path: frame polling of the
+/// displayed HP, but ONLY while a side has no pending attack commits — this covers
+/// HP drops that have no hit moment (status-effect damage, legacy no-recorder
+/// path). Damage only; heals and full-shield absorbs produce no floater
+/// (consistent with the HP bar and numeric display).
 /// Diagnostic logs route through TestManager (LogCategory.DamageFloater).
 /// Motion design validated in docs/demo/DamageFloaterDemo.html.
 /// Plan: plans/plan-damage-floater-2026-07-26.md
@@ -104,18 +108,27 @@ public class DamageFloaterPresenter : MonoBehaviour
 		int playerHp = CombatInfoDisplayer.me != null ? CombatInfoDisplayer.me.GetDisplayedOwnerHp() : 0;
 		int enemyHp = CombatInfoDisplayer.me != null ? CombatInfoDisplayer.me.GetDisplayedEnemyHp() : 0;
 
+		// Polling fallback only for sides with NO pending attack commits: while a side
+		// is frozen, per-hit floaters arrive via onHpDisplayCommitted and a frame diff
+		// here would double-count or misattribute them. The fallback covers HP drops
+		// with no hit moment (status-effect damage, legacy no-recorder path).
+		bool playerFrozen = CombatInfoDisplayer.me != null && CombatInfoDisplayer.me.HasPendingHpDisplay(true);
+		bool enemyFrozen = CombatInfoDisplayer.me != null && CombatInfoDisplayer.me.HasPendingHpDisplay(false);
+
 		// Classify PER SIDE from each side's own displayed-HP delta — same rule as
 		// CombatHPBarPresenter, so one side's change can never spawn a phantom
 		// floater on the side that was not hit. Positive deltas (heals) are ignored.
-		if (playerHp < _displayedPlayerHp)
+		if (!playerFrozen && playerHp < _displayedPlayerHp)
 		{
-			TestManager.Log("[DamageFloater] Player displayed HP drop: " + _displayedPlayerHp + " -> " + playerHp
+			TestManager.Log("[DamageFloater] Player displayed HP drop (fallback poll): frame=" + Time.frameCount
+				+ " " + _displayedPlayerHp + " -> " + playerHp
 				+ " (dmg " + (_displayedPlayerHp - playerHp) + ")");
 			SpawnFloater(true, _displayedPlayerHp - playerHp);
 		}
-		if (enemyHp < _displayedEnemyHp)
+		if (!enemyFrozen && enemyHp < _displayedEnemyHp)
 		{
-			TestManager.Log("[DamageFloater] Enemy displayed HP drop: " + _displayedEnemyHp + " -> " + enemyHp
+			TestManager.Log("[DamageFloater] Enemy displayed HP drop (fallback poll): frame=" + Time.frameCount
+				+ " " + _displayedEnemyHp + " -> " + enemyHp
 				+ " (dmg " + (_displayedEnemyHp - enemyHp) + ")");
 			SpawnFloater(false, _displayedEnemyHp - enemyHp);
 		}
@@ -124,8 +137,83 @@ public class DamageFloaterPresenter : MonoBehaviour
 		_displayedEnemyHp = enemyHp;
 	}
 
+	// VISUAL-FIX(2026-08-04): Floater numbers swapped between hits — Corpse
+	//   Explosion (2x2, buries Eternal Ghost mid-effect) + Ghost (1 on bury) showed
+	//   2/1/2 instead of 2/2/1.
+	//   Cause:    The old design diffed the displayed HP between frames, and the
+	//             display itself was driven by a FIFO of absolute post-hit values
+	//             enqueued in logic order but popped in animation playback order.
+	//             Reactive chains (bury -> onMeBuried damage) made those orders
+	//             diverge, attaching each number to the wrong hit.
+	//   Affects:  DamageFloaterPresenter (now driven by onHpDisplayCommitted),
+	//             CombatInfoDisplayer.CommitHpDisplay (carries per-hit hpLoss)
+	//   Regress:  Combat where a card buries Eternal Ghost between its own two
+	//             hits: floaters must read 2 (reveal hit), 2 (parent attack anim),
+	//             1 (ghost attack anim). Also: a hit fully absorbed by shield
+	//             spawns no floater; status-effect damage still floats via the
+	//             fallback poll once the display unfreezes.
+	// Per-hit commit event: one floater per attack hit with THAT hit's own actual
+	// HP loss. Also keeps the fallback cache in sync with the frozen display.
+	private void OnHpDisplayCommitted(bool isOwner, int hpLoss, int newDisplayed)
+	{
+		if (isOwner)
+		{
+			_displayedPlayerHp = newDisplayed;
+		}
+		else
+		{
+			_displayedEnemyHp = newDisplayed;
+		}
+		if (hpLoss > 0)
+		{
+			TestManager.Log("[DamageFloater] Commit-driven floater: frame=" + Time.frameCount
+				+ " side=" + (isOwner ? "player" : "enemy") + " hpLoss=" + hpLoss
+				+ " displayed=" + newDisplayed);
+			SpawnFloater(isOwner, hpLoss);
+		}
+	}
+
+	// The pending locks were cancelled mid-flight (ClearHpDisplayLocks): the cached
+	// values are stale, so silently reseed from the getters (now live-HP backed)
+	// instead of letting the fallback poll show a huge phantom diff.
+	private void OnHpDisplayLocksCleared()
+	{
+		ResyncDisplayedCache();
+	}
+
+	private void ResyncDisplayedCache()
+	{
+		_displayedPlayerHp = CombatInfoDisplayer.me != null ? CombatInfoDisplayer.me.GetDisplayedOwnerHp() : 0;
+		_displayedEnemyHp = CombatInfoDisplayer.me != null ? CombatInfoDisplayer.me.GetDisplayedEnemyHp() : 0;
+	}
+
+	private bool _displayEventsSubscribed;
+
+	private void SubscribeDisplayEvents()
+	{
+		if (_displayEventsSubscribed || CombatInfoDisplayer.me == null)
+		{
+			return;
+		}
+		CombatInfoDisplayer.me.onHpDisplayCommitted += OnHpDisplayCommitted;
+		CombatInfoDisplayer.me.onHpDisplayLocksCleared += OnHpDisplayLocksCleared;
+		_displayEventsSubscribed = true;
+	}
+
+	private void UnsubscribeDisplayEvents()
+	{
+		if (!_displayEventsSubscribed || CombatInfoDisplayer.me == null)
+		{
+			return;
+		}
+		CombatInfoDisplayer.me.onHpDisplayCommitted -= OnHpDisplayCommitted;
+		CombatInfoDisplayer.me.onHpDisplayLocksCleared -= OnHpDisplayLocksCleared;
+		_displayEventsSubscribed = false;
+	}
+
 	private void OnDisable()
 	{
+		UnsubscribeDisplayEvents();
 		CleanupFloaters();
 	}
 
@@ -134,8 +222,8 @@ public class DamageFloaterPresenter : MonoBehaviour
 	private void EnterCombat()
 	{
 		CleanupFloaters();
-		_displayedPlayerHp = CombatInfoDisplayer.me != null ? CombatInfoDisplayer.me.GetDisplayedOwnerHp() : 0;
-		_displayedEnemyHp = CombatInfoDisplayer.me != null ? CombatInfoDisplayer.me.GetDisplayedEnemyHp() : 0;
+		SubscribeDisplayEvents();
+		ResyncDisplayedCache();
 		TestManager.Log("[DamageFloater] EnterCombat. Synced displayed HP player=" + _displayedPlayerHp
 			+ " enemy=" + _displayedEnemyHp
 			+ (CombatInfoDisplayer.me == null ? " | WARNING: CombatInfoDisplayer.me is null, HP reads as 0" : ""));
@@ -143,6 +231,7 @@ public class DamageFloaterPresenter : MonoBehaviour
 
 	private void ExitCombat()
 	{
+		UnsubscribeDisplayEvents();
 		TestManager.Log("[DamageFloater] ExitCombat. Cleaning up " + _active.Count + " live floater(s).");
 		CleanupFloaters();
 	}

@@ -137,7 +137,7 @@ public class HPAlterEffect : EffectScript
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
 		int baseDmgValue = baseDmg != null ? baseDmg.value : 0;
-		TestManager.Log("[DynamicDamageDisplay] DecreaseMyHp card=" + myCardScript.GetDisplayName() + " totalDmg=" + totalDmg + " baseDmg=" + baseDmgValue + " extraDmg=" + extraDmg + " powerCount=" + CountPower(myCardScript) + " desc=[" + myCardScript.GetCardDescForDisplay() + "]");
+		TestManager.Log("[DynamicDamageDisplay] DecreaseMyHp frame=" + Time.frameCount + " card=" + myCardScript.GetDisplayName() + " totalDmg=" + totalDmg + " baseDmg=" + baseDmgValue + " extraDmg=" + extraDmg + " powerCount=" + CountPower(myCardScript) + " desc=[" + myCardScript.GetCardDescForDisplay() + "]");
 		
 		// Status effect damage doesn't trigger attack animation, execute directly
 		if (isStatusEffectDamage)
@@ -159,25 +159,47 @@ public class HPAlterEffect : EffectScript
 		var targetStatus = myCardScript.myStatusRef;
 		int preHitHp = targetStatus.hp;
 		
-		// Apply damage and raise events/log immediately so reactive chains and tests see the new state right away.
+		// Apply damage immediately so reactive chains and tests see the new state right away.
 		int actualHpLoss = ProcessDamage(totalDmg, targetStatus);
-		CheckDmgTargets_DealingDmgToSelf(totalDmg, actualHpLoss);
 		
-		// Queue the post-hit HP value for display so the UI updates when this attack lands.
-		// In headless/test mode there is usually no real animation, so we only queue when a recorder exists.
+		// VISUAL-FIX(2026-08-04): HP display jumped at reveal time (25 -> 23 before any
+		//   attack animation), then every commit displayed a wrong value until the
+		//   pending count drained and the getter fell back to live HP (the "+1
+		//   correction" on the last hit).
+		//   Cause:    The display snapshot ran AFTER CheckDmgTargets raised the damage
+		//             events, so a nested reactive hit (Linger on onTheirPlayerTookDmg,
+		//             e.g. ETERNAL_GHOST reacting to SMALL_SCALE_DEATH) resolved FIRST
+		//             and its mid-burst preHitHp won the batch freeze.
+		//   Affects:  HPAlterEffect.DecreaseMyHp / DecreaseTheirHp snapshot order,
+		//             CombatInfoDisplayer freeze value
+		//   Regress:  SMALL_SCALE_DEATH + ETERNAL_GHOST: the enemy HP text must stay
+		//             at 25 until the first attack animation lands, then step 23 -> 21
+		//             -> 20 with no final fallback jump.
+		// Freeze the HP display and capture the attack BEFORE raising damage events,
+		// so the outermost hit always snapshots first. The animation's onHit commits
+		// THIS hit's own actual HP loss (order-independent — see CombatInfoDisplayer).
+		// In headless/test mode there is usually no real animation, so we only
+		// snapshot when a recorder exists.
 		if (hasRecorder)
 		{
-			CombatInfoDisplayer.me?.SnapshotHpDisplay(targetStatus, preHitHp, targetStatus.hp);
+			CombatInfoDisplayer.me?.SnapshotHpDisplay(targetStatus, preHitHp);
 			
 			var capturedTarget = targetStatus;
+			var capturedHpLoss = actualHpLoss;
+			TestManager.Log("[DamageFloater] Capture attack frame=" + Time.frameCount
+				+ " card=" + myCardScript.GetDisplayName() + " side="
+				+ (targetStatus == combatManager.ownerPlayerStatusRef ? "player" : "enemy")
+				+ " actualHpLoss=" + actualHpLoss + " totalDmg=" + totalDmg);
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.Attack,
 				attackerCard = myCard,
 				isAttackingEnemy = isAttackingEnemy,
-				onHit = () => CombatInfoDisplayer.me?.CommitHpDisplay(capturedTarget),
+				onHit = () => CombatInfoDisplayer.me?.CommitHpDisplay(capturedTarget, capturedHpLoss),
 				onComplete = null
 			});
 		}
+		
+		CheckDmgTargets_DealingDmgToSelf(totalDmg, actualHpLoss);
 		
 		dmgAmountAlter = 0;
 	}
@@ -424,7 +446,7 @@ public class HPAlterEffect : EffectScript
 		DmgCalculator();
 		int totalDmg = extraDmg + dmgAmountAlter;
 		int baseDmgValue = baseDmg != null ? baseDmg.value : 0;
-		TestManager.Log("[DynamicDamageDisplay] DecreaseTheirHp card=" + myCardScript.GetDisplayName() + " totalDmg=" + totalDmg + " baseDmg=" + baseDmgValue + " extraDmg=" + extraDmg + " powerCount=" + CountPower(myCardScript) + " desc=[" + myCardScript.GetCardDescForDisplay() + "]");
+		TestManager.Log("[DynamicDamageDisplay] DecreaseTheirHp frame=" + Time.frameCount + " card=" + myCardScript.GetDisplayName() + " totalDmg=" + totalDmg + " baseDmg=" + baseDmgValue + " extraDmg=" + extraDmg + " powerCount=" + CountPower(myCardScript) + " desc=[" + myCardScript.GetCardDescForDisplay() + "]");
 		
 		// Status effect damage doesn't trigger attack animation, execute directly
 		if (isStatusEffectDamage)
@@ -446,25 +468,47 @@ public class HPAlterEffect : EffectScript
 		var targetStatus = myCardScript.theirStatusRef;
 		int preHitHp = targetStatus.hp;
 		
-		// Apply damage and raise events/log immediately so reactive chains and tests see the new state right away.
+		// Apply damage immediately so reactive chains and tests see the new state right away.
 		int actualHpLoss = ProcessDamage(totalDmg, targetStatus);
-		CheckDmgTargets_DealingDmgToOpponent(totalDmg, actualHpLoss);
 		
-		// Queue the post-hit HP value for display so the UI updates when this attack lands.
-		// In headless/test mode there is usually no real animation, so we only queue when a recorder exists.
+		// VISUAL-FIX(2026-08-04): HP display jumped at reveal time (25 -> 23 before any
+		//   attack animation), then every commit displayed a wrong value until the
+		//   pending count drained and the getter fell back to live HP (the "+1
+		//   correction" on the last hit).
+		//   Cause:    The display snapshot ran AFTER CheckDmgTargets raised the damage
+		//             events, so a nested reactive hit (Linger on onTheirPlayerTookDmg,
+		//             e.g. ETERNAL_GHOST reacting to SMALL_SCALE_DEATH) resolved FIRST
+		//             and its mid-burst preHitHp won the batch freeze.
+		//   Affects:  HPAlterEffect.DecreaseMyHp / DecreaseTheirHp snapshot order,
+		//             CombatInfoDisplayer freeze value
+		//   Regress:  SMALL_SCALE_DEATH + ETERNAL_GHOST: the enemy HP text must stay
+		//             at 25 until the first attack animation lands, then step 23 -> 21
+		//             -> 20 with no final fallback jump.
+		// Freeze the HP display and capture the attack BEFORE raising damage events,
+		// so the outermost hit always snapshots first. The animation's onHit commits
+		// THIS hit's own actual HP loss (order-independent — see CombatInfoDisplayer).
+		// In headless/test mode there is usually no real animation, so we only
+		// snapshot when a recorder exists.
 		if (hasRecorder)
 		{
-			CombatInfoDisplayer.me?.SnapshotHpDisplay(targetStatus, preHitHp, targetStatus.hp);
+			CombatInfoDisplayer.me?.SnapshotHpDisplay(targetStatus, preHitHp);
 			
 			var capturedTarget = targetStatus;
+			var capturedHpLoss = actualHpLoss;
+			TestManager.Log("[DamageFloater] Capture attack frame=" + Time.frameCount
+				+ " card=" + myCardScript.GetDisplayName() + " side="
+				+ (targetStatus == combatManager.ownerPlayerStatusRef ? "player" : "enemy")
+				+ " actualHpLoss=" + actualHpLoss + " totalDmg=" + totalDmg);
 			recorder.animationRequests.Add(new AnimationRequest {
 				type = AnimationRequestType.Attack,
 				attackerCard = myCard,
 				isAttackingEnemy = isAttackingEnemy,
-				onHit = () => CombatInfoDisplayer.me?.CommitHpDisplay(capturedTarget),
+				onHit = () => CombatInfoDisplayer.me?.CommitHpDisplay(capturedTarget, capturedHpLoss),
 				onComplete = null
 			});
 		}
+		
+		CheckDmgTargets_DealingDmgToOpponent(totalDmg, actualHpLoss);
 		
 		dmgAmountAlter = 0;
 	}

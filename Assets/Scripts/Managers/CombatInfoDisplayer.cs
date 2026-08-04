@@ -29,13 +29,28 @@ public class CombatInfoDisplayer : MonoBehaviour
 
 	public bool showRevealedCardName;
 	
-	// HP display pending queue: logic updates HP immediately, but each Attack animation
-	// carries its own post-hit HP value. The UI shows the oldest pending value until
-	// the corresponding animation hits and calls CommitHpDisplay.
-	private Queue<int> _pendingOwnerHp = new Queue<int>();
-	private Queue<int> _pendingEnemyHp = new Queue<int>();
+	// HP display freeze: logic updates HP immediately, but the UI must not run ahead
+	// of the attack animations. Each attack snapshots (freezes) the display once, and
+	// commits its OWN actual HP loss when its animation lands — order-independent by
+	// design (see VISUAL-FIX below). The old absolute-value FIFO popped in playback
+	// order while values were enqueued in logic order, so reactive chains (e.g.
+	// bury -> onMeBuried damage) swapped damage numbers between hits.
+	private int _pendingOwnerHpCount;
+	private int _pendingEnemyHpCount;
 	private int _displayedOwnerHp;
 	private int _displayedEnemyHp;
+
+	/// <summary>
+	/// Fired after each CommitHpDisplay: (isOwner, hpLossOfThisHit, newDisplayedHp).
+	/// Presentation-only consumers (DamageFloaterPresenter) spawn one floater per hit.
+	/// </summary>
+	public event Action<bool, int, int> onHpDisplayCommitted;
+
+	/// <summary>
+	/// Fired when pending locks are cleared (animations cancelled / combat reset) so
+	/// consumers can silently resync to the live HP instead of showing a stale diff.
+	/// </summary>
+	public event Action onHpDisplayLocksCleared;
 
 	private void Update()
 	{
@@ -58,53 +73,81 @@ public class CombatInfoDisplayer : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Queue a post-hit HP value for display. The first queued value freezes the UI on
-	/// preHitHp; each subsequent CommitHpDisplay pops the oldest value and shows it.
+	/// Freeze the HP display for one pending attack hit. The first snapshot freezes the
+	/// UI on preHitHp; each CommitHpDisplay subtracts that hit's own HP loss.
 	/// </summary>
 	/// <param name="target">Target player status</param>
 	/// <param name="preHitHp">HP value to freeze the display on before the first hit lands</param>
-	/// <param name="postHitHp">HP value to display when this attack hits</param>
-	public void SnapshotHpDisplay(PlayerStatusSO target, int preHitHp, int postHitHp)
+	public void SnapshotHpDisplay(PlayerStatusSO target, int preHitHp)
 	{
 		if (target == null) return;
 		if (target == CombatManager.Me.ownerPlayerStatusRef)
 		{
-			if (_pendingOwnerHp.Count == 0)
+			if (_pendingOwnerHpCount == 0)
 			{
 				_displayedOwnerHp = preHitHp;
 			}
-			_pendingOwnerHp.Enqueue(postHitHp);
+			_pendingOwnerHpCount++;
+			TestManager.Log("[DamageFloater] Snapshot frame=" + Time.frameCount
+				+ " side=player preHitHp=" + preHitHp + " pending=" + _pendingOwnerHpCount);
 		}
 		else
 		{
-			if (_pendingEnemyHp.Count == 0)
+			if (_pendingEnemyHpCount == 0)
 			{
 				_displayedEnemyHp = preHitHp;
 			}
-			_pendingEnemyHp.Enqueue(postHitHp);
+			_pendingEnemyHpCount++;
+			TestManager.Log("[DamageFloater] Snapshot frame=" + Time.frameCount
+				+ " side=enemy preHitHp=" + preHitHp + " pending=" + _pendingEnemyHpCount);
 		}
 	}
 	
+	// VISUAL-FIX(2026-08-04): Damage floater numbers swapped between hits (Corpse
+	//   Explosion 2x2 + Eternal Ghost 1 showed as 2/1/2 instead of 2/2/1)
+	//   Cause:    The old FIFO queue stored absolute post-hit HP values in LOGIC
+	//             order, but CommitHpDisplay popped them in ANIMATION PLAYBACK order.
+	//             A reactive chain (bury -> onMeBuried damage) resolves its damage
+	//             between the parent's two hits in logic, yet plays its attack
+	//             animation after the parent's — so each commit popped a snapshot
+	//             belonging to a different hit. Sum and final HP stayed correct;
+	//             only the per-hit numbers were misattributed.
+	//   Affects:  CombatInfoDisplayer.CommitHpDisplay, HPAlterEffect damage capture,
+	//             DamageFloaterPresenter (now event-driven per commit)
+	//   Regress:  Combat with a card that buries Eternal Ghost between its own two
+	//             hits: floaters must read 2 (reveal hit), 2 (parent anim), 1 (ghost anim)
 	/// <summary>
-	/// Pop the oldest pending HP display value for the target. This makes the UI update
-	/// to the HP value that corresponds to the current hitting attack.
+	/// Commit one attack hit: subtract its OWN actual HP loss (captured at logic
+	/// time, so playback order no longer matters) from the displayed value and
+	/// notify presentation consumers via onHpDisplayCommitted.
 	/// </summary>
 	/// <param name="target">Target player status</param>
-	public void CommitHpDisplay(PlayerStatusSO target)
+	/// <param name="hpLoss">Actual HP lost by this hit (shield-soaked / overkill excluded)</param>
+	public void CommitHpDisplay(PlayerStatusSO target, int hpLoss)
 	{
 		if (target == null) return;
 		if (target == CombatManager.Me.ownerPlayerStatusRef)
 		{
-			if (_pendingOwnerHp.Count > 0)
+			if (_pendingOwnerHpCount > 0)
 			{
-				_displayedOwnerHp = _pendingOwnerHp.Dequeue();
+				_pendingOwnerHpCount--;
+				_displayedOwnerHp -= hpLoss;
+				TestManager.Log("[DamageFloater] Commit frame=" + Time.frameCount
+					+ " side=player hpLoss=" + hpLoss + " displayed=" + _displayedOwnerHp
+					+ " pendingLeft=" + _pendingOwnerHpCount);
+				onHpDisplayCommitted?.Invoke(true, hpLoss, _displayedOwnerHp);
 			}
 		}
 		else
 		{
-			if (_pendingEnemyHp.Count > 0)
+			if (_pendingEnemyHpCount > 0)
 			{
-				_displayedEnemyHp = _pendingEnemyHp.Dequeue();
+				_pendingEnemyHpCount--;
+				_displayedEnemyHp -= hpLoss;
+				TestManager.Log("[DamageFloater] Commit frame=" + Time.frameCount
+					+ " side=enemy hpLoss=" + hpLoss + " displayed=" + _displayedEnemyHp
+					+ " pendingLeft=" + _pendingEnemyHpCount);
+				onHpDisplayCommitted?.Invoke(false, hpLoss, _displayedEnemyHp);
 			}
 		}
 	}
@@ -116,7 +159,7 @@ public class CombatInfoDisplayer : MonoBehaviour
 	/// </summary>
 	public int GetDisplayedOwnerHp()
 	{
-		return _pendingOwnerHp.Count > 0
+		return _pendingOwnerHpCount > 0
 			? _displayedOwnerHp
 			: CombatManager.Me.ownerPlayerStatusRef.hp;
 	}
@@ -128,20 +171,37 @@ public class CombatInfoDisplayer : MonoBehaviour
 	/// </summary>
 	public int GetDisplayedEnemyHp()
 	{
-		return _pendingEnemyHp.Count > 0
+		return _pendingEnemyHpCount > 0
 			? _displayedEnemyHp
 			: CombatManager.Me.enemyPlayerStatusRef.hp;
 	}
 
 	/// <summary>
-	/// Clear all pending HP display values. Used when animations are cancelled or combat ends.
+	/// True while attack hits are pending commit for the given side (display frozen).
+	/// Frame-polling consumers must not diff HP for a frozen side — per-hit losses
+	/// already arrive via onHpDisplayCommitted.
+	/// </summary>
+	public bool HasPendingHpDisplay(bool isOwner)
+	{
+		return isOwner ? _pendingOwnerHpCount > 0 : _pendingEnemyHpCount > 0;
+	}
+
+	/// <summary>
+	/// Clear all pending HP display locks. Used when animations are cancelled or combat ends.
+	/// Notifies consumers so they can silently resync to the live HP.
 	/// </summary>
 	public void ClearHpDisplayLocks()
 	{
-		_pendingOwnerHp.Clear();
-		_pendingEnemyHp.Clear();
+		if (_pendingOwnerHpCount > 0 || _pendingEnemyHpCount > 0)
+		{
+			TestManager.Log("[DamageFloater] ClearHpDisplayLocks frame=" + Time.frameCount
+				+ " pendingPlayer=" + _pendingOwnerHpCount + " pendingEnemy=" + _pendingEnemyHpCount);
+		}
+		_pendingOwnerHpCount = 0;
+		_pendingEnemyHpCount = 0;
 		_displayedOwnerHp = 0;
 		_displayedEnemyHp = 0;
+		onHpDisplayLocksCleared?.Invoke();
 	}
 
 	public string ReturnCardOwnerInfo(PlayerStatusSO statusRef)
@@ -292,10 +352,10 @@ public class CombatInfoDisplayer : MonoBehaviour
 
 	private void DisplayStatusInfo()
 	{
-		int playerHp = _pendingOwnerHp.Count > 0
+		int playerHp = _pendingOwnerHpCount > 0
 			? _displayedOwnerHp
 			: CombatManager.Me.ownerPlayerStatusRef.hp;
-		int enemyHp = _pendingEnemyHp.Count > 0
+		int enemyHp = _pendingEnemyHpCount > 0
 			? _displayedEnemyHp
 			: CombatManager.Me.enemyPlayerStatusRef.hp;
 		
