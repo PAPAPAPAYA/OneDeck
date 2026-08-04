@@ -72,10 +72,11 @@ public class CombatPerCardStatsTrackerTests : HeadlessCombatTestFixture
 		_tracker.RecordDamage(generatedCard, 5f, CardFaction.Enemy);
 
 		var rows = _tracker.GetSessionRows();
-		Assert.AreEqual(1, rows.Count);
-		Assert.AreEqual(CardFaction.Player, rows[0].faction, "Row must be attributed to the creator side, not the owner side");
-		Assert.AreEqual(5f, rows[0].GetValue(CombatStatType.DamageDealtToOpponent));
-		Assert.AreEqual(0f, rows[0].GetValue(CombatStatType.DamageDealtToSelf));
+		var curseRow = rows.Find(r => r.cardTypeID == "curse");
+		Assert.IsNotNull(curseRow);
+		Assert.AreEqual(CardFaction.Player, curseRow.faction, "Row must be attributed to the creator side, not the owner side");
+		Assert.AreEqual(5f, curseRow.GetValue(CombatStatType.DamageDealtToOpponent));
+		Assert.AreEqual(0f, curseRow.GetValue(CombatStatType.DamageDealtToSelf));
 	}
 
 	[Test]
@@ -246,6 +247,112 @@ public class CombatPerCardStatsTrackerTests : HeadlessCombatTestFixture
 		Assert.AreEqual(1, rows.Count);
 		Assert.AreEqual(CardFaction.Enemy, rows[0].faction);
 		Assert.AreEqual(4f, rows[0].GetValue(CombatStatType.DamageDealtToSelf));
+	}
+
+	[Test]
+	public void RegisterDeckComposition_PreCreatesZeroRowsForEveryDeckCard()
+	{
+		var copyA = CreateCard(true, "FireImp A", "fire_imp");
+		var copyB = CreateCard(true, "FireImp B", "fire_imp");
+		var enemyCard = CreateCard(false, "Spider", "spider");
+		var startCard = CreateStartCard(); // neutral: no row even with pre-creation
+
+		_tracker.RegisterDeckComposition(new List<GameObject> { copyA, copyB, enemyCard, startCard });
+
+		var rows = _tracker.GetSessionRows();
+		Assert.AreEqual(2, rows.Count, "Every non-neutral deck card type shows even without any recorded stat");
+		var playerRow = rows.Find(r => r.cardTypeID == "fire_imp");
+		var enemyRow = rows.Find(r => r.cardTypeID == "spider");
+		Assert.AreEqual(2, playerRow.instanceCount, "Copy count snapshot still applies to pre-created rows");
+		Assert.AreEqual(0f, playerRow.GetValue(CombatStatType.TriggerCount));
+		Assert.AreEqual(0f, enemyRow.GetValue(CombatStatType.DamageDealtToOpponent));
+	}
+
+	[Test]
+	public void RegisterGeneratedCard_CountsGenerationOnCreator_AndPreCreatesZeroRow()
+	{
+		var creator = CreateCard(true, "Giver", "giver").GetComponent<CardScript>();
+		var generated = CreateCard(false, "Curse", "curse").GetComponent<CardScript>();
+
+		_tracker.RegisterGeneratedCard(generated, creator);
+		_tracker.RegisterGeneratedCard(CreateCard(false, "Curse2", "curse").GetComponent<CardScript>(), creator);
+
+		var rows = _tracker.GetSessionRows();
+		Assert.AreEqual(2, rows.Count);
+		var creatorRow = rows.Find(r => r.cardTypeID == "giver");
+		var generatedRow = rows.Find(r => r.cardTypeID == "curse");
+		Assert.AreEqual(2f, creatorRow.GetValue(CombatStatType.CardsGenerated), "Each generation counts once on the creator");
+		Assert.AreEqual(CardFaction.Player, generatedRow.faction, "Generated card row is attributed to the creator side");
+		Assert.AreEqual(0f, generatedRow.GetValue(CombatStatType.TriggerCount), "Generated card shows even with zero stats");
+	}
+
+	[Test]
+	public void RecordBury_SplitsSourceSideByOwnerRelativeToSource_AndCountsVictim()
+	{
+		var source = CreateCard(true, "Undertaker", "undertaker").GetComponent<CardScript>();
+		var friendlyVictim = CreateCard(true, "Ally", "ally").GetComponent<CardScript>();
+		var enemyVictim = CreateCard(false, "Foe", "foe").GetComponent<CardScript>();
+
+		_tracker.RecordBury(source, friendlyVictim);
+		_tracker.RecordBury(source, enemyVictim);
+
+		var rows = _tracker.GetSessionRows();
+		var sourceRow = rows.Find(r => r.cardTypeID == "undertaker");
+		Assert.AreEqual(1f, sourceRow.GetValue(CombatStatType.FriendlyBuried));
+		Assert.AreEqual(1f, sourceRow.GetValue(CombatStatType.EnemyBuried));
+		Assert.AreEqual(1f, rows.Find(r => r.cardTypeID == "ally").GetValue(CombatStatType.TimesBuried));
+		Assert.AreEqual(1f, rows.Find(r => r.cardTypeID == "foe").GetValue(CombatStatType.TimesBuried));
+	}
+
+	[Test]
+	public void RecordBury_EnemySourceBuryingEnemyCard_CountsAsFriendlyForSource()
+	{
+		var enemySource = CreateCard(false, "EnemyUndertaker", "enemy_undertaker").GetComponent<CardScript>();
+		var enemyVictim = CreateCard(false, "EnemyAlly", "enemy_ally").GetComponent<CardScript>();
+
+		_tracker.RecordBury(enemySource, enemyVictim);
+
+		var sourceRow = _tracker.GetSessionRows().Find(r => r.cardTypeID == "enemy_undertaker");
+		Assert.AreEqual(1f, sourceRow.GetValue(CombatStatType.FriendlyBuried), "Friendly/enemy is relative to the burying card's owner");
+		Assert.AreEqual(0f, sourceRow.GetValue(CombatStatType.EnemyBuried));
+	}
+
+	[Test]
+	public void RecordStage_CountsFriendlySourceSideOnly_ButAlwaysCountsVictim()
+	{
+		var source = CreateCard(true, "Promoter", "promoter").GetComponent<CardScript>();
+		var friendly = CreateCard(true, "Ally", "ally").GetComponent<CardScript>();
+		var enemy = CreateCard(false, "Foe", "foe").GetComponent<CardScript>();
+
+		_tracker.RecordStage(source, friendly);
+		_tracker.RecordStage(source, enemy);
+
+		var rows = _tracker.GetSessionRows();
+		var sourceRow = rows.Find(r => r.cardTypeID == "promoter");
+		Assert.AreEqual(1f, sourceRow.GetValue(CombatStatType.FriendlyStaged), "Only friendly stagings count source-side (no enemy-staged column by design)");
+		Assert.AreEqual(1f, rows.Find(r => r.cardTypeID == "ally").GetValue(CombatStatType.TimesStaged));
+		Assert.AreEqual(1f, rows.Find(r => r.cardTypeID == "foe").GetValue(CombatStatType.TimesStaged), "Victim side counts even when the staged card is enemy-owned");
+	}
+
+	[Test]
+	public void RecordBuryAndStage_SkipNeutralParticipants()
+	{
+		var startCard = CreateStartCard().GetComponent<CardScript>();
+		var normal = CreateCard(true, "Ally", "ally").GetComponent<CardScript>();
+
+		_tracker.RecordBury(startCard, normal);   // neutral source: no source-side count
+		_tracker.RecordBury(normal, startCard);   // neutral victim: neither side counts
+		_tracker.RecordStage(startCard, normal);
+		_tracker.RecordStage(normal, startCard);
+
+		var rows = _tracker.GetSessionRows();
+		Assert.AreEqual(1, rows.Count, "Only the normal card may appear");
+		Assert.AreEqual("ally", rows[0].cardTypeID);
+		Assert.AreEqual(1f, rows[0].GetValue(CombatStatType.TimesBuried), "Victim side still counts when the source is neutral");
+		Assert.AreEqual(1f, rows[0].GetValue(CombatStatType.TimesStaged));
+		Assert.AreEqual(0f, rows[0].GetValue(CombatStatType.FriendlyBuried), "Burying the neutral start card counts on neither side");
+		Assert.AreEqual(0f, rows[0].GetValue(CombatStatType.EnemyBuried));
+		Assert.AreEqual(0f, rows[0].GetValue(CombatStatType.FriendlyStaged));
 	}
 }
 

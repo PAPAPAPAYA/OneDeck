@@ -70,9 +70,7 @@ namespace DefaultNamespace.Effects
 		protected bool PassesDamageFilter(CardScript cardScript)
 		{
 			if (!onlyTargetEnemyDamagingCards) return true;
-			bool has = UtilityFuncManagerScript.HasDecreaseTheirHpEffect(cardScript.gameObject);
-			DefaultNamespace.Managers.TestManager.Log("[DamageFilter] card=" + cardScript.GetDisplayName() + " hasDecreaseTheirHp=" + has);
-			return has;
+			return UtilityFuncManagerScript.HasDecreaseTheirHpEffect(cardScript.gameObject);
 		}
 		#endregion
 
@@ -319,10 +317,7 @@ namespace DefaultNamespace.Effects
 			if (statusEffectToGive == EnumStorage.StatusEffect.None) return;
 			if (xFriendlyCount <= 0 || yFriendlyLayerCount <= 0) return;
 
-			DefaultNamespace.Managers.TestManager.Log("[DamageFilter] GiveStatusEffectToXFriendly on " + myCardScript.GetDisplayName() +
-				" onlyTargetEnemyDamagingCards=" + onlyTargetEnemyDamagingCards);
 			var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
-			DefaultNamespace.Managers.TestManager.Log("[DamageFilter] candidates after filter=" + friendlyCards.Count);
 			if (friendlyCards.Count <= 0) return;
 
 			friendlyCards = UtilityFuncManagerScript.ShuffleList(friendlyCards);

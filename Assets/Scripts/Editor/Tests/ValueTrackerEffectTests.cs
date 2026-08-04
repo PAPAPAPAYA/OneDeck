@@ -150,6 +150,7 @@ public class ValueTrackerEffectTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(giverCard);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 
 		EffectChainManager.MakeANewEffectRecorder(giverCard, giver.gameObject);
 		giver.GiveStatusEffectToXFriendly_BasedOnStaged(1);
@@ -180,6 +181,7 @@ public class ValueTrackerEffectTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(giverCard);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 
 		EffectChainManager.MakeANewEffectRecorder(giverCard, giver.gameObject);
 		giver.GiveStatusEffectToXFriendly_BasedOnStaged(1);
@@ -205,6 +207,7 @@ public class ValueTrackerEffectTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(giverCard);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 
 		EffectChainManager.MakeANewEffectRecorder(giverCard, giver.gameObject);
 		giver.GiveStatusEffectToXFriendly_BasedOnStaged(1);

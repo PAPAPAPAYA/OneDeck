@@ -85,10 +85,13 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
+  onlyTargetEnemyDamagingCards: 0
   lastXCardsCount: 0
   statusEffectLayerCount: 1
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
 --- !u!1 &1808145013887896563
@@ -301,6 +304,11 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: 7
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!114 &6948339226739266510
 MonoBehaviour:
   m_ObjectHideFlags: 0

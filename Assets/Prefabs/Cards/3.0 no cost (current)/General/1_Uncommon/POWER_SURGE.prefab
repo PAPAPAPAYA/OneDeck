@@ -85,6 +85,7 @@ MonoBehaviour:
   statusEffectToCheck: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &2635718925342889943
@@ -172,6 +173,7 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
+  onlyTargetEnemyDamagingCards: 1
   lastXCardsCount: 0
   statusEffectLayerCount: 1
   xFriendlyCount: 2

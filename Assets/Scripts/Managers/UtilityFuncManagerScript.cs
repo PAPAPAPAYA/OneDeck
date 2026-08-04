@@ -127,9 +127,6 @@ public static class UtilityFuncManagerScript
 				!string.IsNullOrEmpty(methodName) &&
 				methodName.StartsWith("DecreaseTheirHp"))
 			{
-				var targetComponent = unityEvent.GetPersistentTarget(i) as Component;
-				DefaultNamespace.Managers.TestManager.Log("[DamageFilter] matched binding: " + methodName + " on " +
-					(targetComponent != null ? targetComponent.gameObject.name : "null"));
 				return true;
 			}
 		}

@@ -349,6 +349,9 @@ public class BuryEffect : EffectScript
 							ValueTrackerManager.me.enemyCardsBuriedCountRef.value++;
 					}
 				}
+
+				// Per-card result stats: source-side friendly/enemy split + victim TimesBuried
+				CombatPerCardStatsTracker.Me?.RecordBury(myCardScript, targetCardScript);
 				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);

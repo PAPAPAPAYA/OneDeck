@@ -50,9 +50,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -88,10 +85,13 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
+  onlyTargetEnemyDamagingCards: 0
   lastXCardsCount: 0
   statusEffectLayerCount: 1
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
 --- !u!1 &2635718925342889943
@@ -157,9 +157,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -202,6 +199,9 @@ MonoBehaviour:
   tagToCheck: 0
   targetFriendly: 0
   statusEffectToCheck: 0
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!114 &7956716747616918608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,16 +275,8 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
-  exileCostCount: 0
-  exileCostCardTypeID: 
-  exileCostOwner: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -175,6 +175,7 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
+  onlyTargetEnemyDamagingCards: 1
   lastXCardsCount: 0
   statusEffectLayerCount: 1
   xFriendlyCount: 0

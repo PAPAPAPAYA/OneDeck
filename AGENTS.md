@@ -28,7 +28,7 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 Assets/
 ├── Scripts/
 │   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, AttackAnimationManager, CardFactory, CardIDRetriever, CombatInfoDisplayer, CombatLog, CombatStartCardGiver, CombatStatsLogger, CostResultPresenter, DeckTester, EffectRecorder, RecorderAnimationPlayer, GameEventListener, ICombatVisuals + Null*, ShopStatsManager, StartingCardManager, UtilityFuncManagerScript, WriteRead/ (CardWinRateTracker, CombatPerCardStatsTracker, DeckSaver, EnemyDeckRecorder)
-│   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, AddTextEffect, CardManipulationEffect, ChangeCardTarget, ChangeHpAlterAmountEffect, HPMaxAlterEffect, PrintEffect, TransferStatusEffectEffect, BuryCostEffect, DelayCostEffect, ExposeCostEffect, MinionCostEffect, StartCardShuffleEffect, shop/DeckSizeIncreaseEffect, StatusEffect/
+│   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, AddTextEffect, CardManipulationEffect, ChangeCardTarget, ChangeHpAlterAmountEffect, HPMaxAlterEffect, PrintEffect, TransferStatusEffectEffect, StartCardShuffleEffect, shop/DeckSizeIncreaseEffect, StatusEffect/
 │   ├── Card/           # CardScript, CostNEffectContainer, CardEventTrigger
 │   ├── SOScripts/      # GameEvent, PlayerStatusSO, StatusEffectSO, DeckSO, BoolSO, CostCheckResult, GamePhaseSO, IntSO, ShopRarityWeightSO, StringSO
 │   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript, CombatCardView, ShopCardView, CombatHPBarPresenter, CombatIconPresenter, HPNumericDisplay, HPNumericCounter, ResultStatsPanel, DamageFloaterPresenter, DamageFloaterTimeline
@@ -72,12 +72,13 @@ Assets/
 - `CombatUXManager.enableCascadeDeckLayout` (default `true`) toggles cascade vs the legacy linear fan. Legacy `xOffset/yOffset/zOffset` fields only serve the fallback path.
 - `CombatUXManager.revealCardCountsAsDeckFront` (default `true`) counts the reveal-zone card as cascadeIndex 0 (front slot), so revealing no longer re-lays-out the deck — it slides forward one step only when the card returns to the bottom. Single source of truth: `GetCascadeDeckCount()`. In `MoveRevealedCardToBottom` the legacy `effectiveCount = Count - 1` and the +1 front slot cancel out, so it passes `physicalCardsInDeck.Count`.
 - All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(..., CascadeConfig)`; every caller (layout, popup peaks, slot-in, reveal entry/exit, `MoveCardToIndex`, peel focus) inherits the curve unchanged.
+- **Peel deck focus**: no offset/marker — while focused, `_focusSegmentCount` (focus index + 1) drives the layout seams via `GetLayoutDeckCount()`, so the focus card sits on the cascade front slot at `physicalCardDeckPos` (max scale); peeled cards slide down off-screen from their current positions; restore = full cascade re-layout incl. scales. `deckFocusTargetPos` is deprecated.
 - `DeckCascadeLayout` (pure static, unit-testable) holds the Bezier + arc-length math ported 1:1 from `docs/demo/CardArrangementDemo.html`; results are cached per `(deckCount, pxToWorld, Params)`.
 - Index mapping: `cascadeIndex = deckCount - 1 - unityIndex` (cascadeIndex 0 = front card = deck top). Z depth keeps the existing formula `basePos.z - zOffset * index`.
 - Per-index scale: `GetDeckScaleAtIndex(i)` = `physicalCardDeckSize` × cascade scale; position jitter is multiplied by the card's cascade scale when `cascadeScaleJitterWithCard` is on so the tight tail stays clean.
 - **Coverage normalization**: per-card steps share one stretch-only scale factor (clamped by `cascadeCoverageCap`) so small decks still reach the curve's hook region instead of looking straight; large decks stay above the target coverage naturally and are unaffected.
 - EditMode coverage: `Assets/Scripts/Editor/Tests/DeckCascadeLayoutTests.cs` (golden values generated from the demo).
-- **Dynamic arc midpoint (replaces fixed `showPos`)**: with `CombatUXManager.useDynamicArcMidpoint` on (default), all deck-bound arcs (reveal→bottom, Stage batch, ToTop/ToBottom/ToIndex, shuffle) compute their midpoint from the cascade walk at `arcMidpointCurveT` plus `arcMidpointOffset`, via the `TryGetArcMidpointPosition` seam and `DeckCascadeLayout.ComputeOffsetAtCurveT`. Fallback order: explicit `CardMoveConfig.arcMidpoint` > dynamic > legacy scene `showPos`. With `arcMidScaleEnabled` (default on), dynamic arcs scale two-phase via `arcMidScaleMultiplier`. Scene aid: `OnDrawGizmosSelected` draws the midpoint.
+- **Dynamic arc midpoint (replaces fixed `showPos`)**: with `CombatUXManager.useDynamicArcMidpoint` on (default), deck-bound arcs (reveal→bottom, Stage batch, ToTop/ToBottom/ToIndex, shuffle) compute their midpoint from the cascade walk at `arcMidpointCurveT` + `arcMidpointOffset` (`TryGetArcMidpointPosition` seam, `DeckCascadeLayout.ComputeOffsetAtCurveT`). Fallback: explicit `CardMoveConfig.arcMidpoint` > dynamic > legacy scene `showPos`. With `arcMidScaleEnabled` (default on), dynamic arcs scale two-phase via `arcMidScaleMultiplier`. Gizmo: `OnDrawGizmosSelected`.
 
 ### Controls
 - First click: Reveal next card.
@@ -110,16 +111,7 @@ Flow: Check cost -> `preEffectEvent` -> Check effect chain -> Execute effect.
 - **Chain closing**: `CloseOpenedChain()` finalizes recorders and clears state.
 
 ### Cost Types
-| Method | Description |
-|--------|-------------|
-| `Mana(n)` | Requires n Mana stacks |
-| `Rested()` | Consumes Rest status |
-| `Revive(n)` | Requires n Revive stacks |
-| `HasEnemyCard(n)` | Requires n enemy cards in deck |
-| `Token Cost` | Consume N friendly Minions of specified type |
-| `Bury Cost` | Place N friendly cards at bottom |
-| `Delay Cost` | Delay N own cards by 1 position |
-| `Expose Cost` | Expose N enemy cards to top |
+Cost checks are `CheckCost_*` methods on `CostNEffectContainer`: `Mana`, `Rested`, `Revive`, `Infected`, `Power`, `Counter`, `InGrave`, `HasEnemyCardInCombinedDeck`, `HasOwnCardOfType`, `IndexBeforeStartCard`, `EnemyCursedCardHasPower`. Failures call `SetCostNotMet(message)`.
 
 ### Status Effects
 ```csharp
@@ -166,25 +158,20 @@ All under `Assets/Scripts/` in the folder matching their role: `Managers/CombatM
 Split two-half panel (top = player-created cards, bottom = enemy-created cards) of the combat that just finished (plan: `plans/plan-result-per-card-stats-2026-07-23.md`).
 
 - **Store**: `CombatPerCardStatsTracker.Me` (singleton, auto-created by `CombatManager.Awake()`). Session-scoped, no persistence: `BeginSession()` wipes the store (records, deck-count snapshot, creator-side registry) in `CombatManager.GatherDecks()`.
-- **Rows keyed by `(cardTypeID, creatorSide)`** — the faction that CREATED the card, not its current owner: initial-deck cards via `RegisterDeckComposition(combinedDeckZone)`; mid-combat cards via `RegisterGeneratedCard` (funneled through `CombatFuncs.AddCard_TargetSpecific(..., creatorCard)`; all call sites pass `myCardScript`). Fallback = owner faction. Neutral/start cards excluded by the `IsNeutralCard` guard in `Add()` — the single exclusion point.
-- **Damage attribution is creator-relative**: `RecordDamage(source, amount, victimSide)` counts `DamageDealtToOpponent` when the victim opposes the CREATOR, else `DamageDealtToSelf`. Recorded damage is the **actual HP lost** (`ProcessDamage` hp delta — shield-soaked and overkill amounts excluded). Other stats: `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains), `PowerGiven`/`PowerReceived` (stack amounts; transfers count). `DamageDealtToSelf` is recorded but hidden via `CombatStatDef.showInResultPanel = false`.
-- **Hooks**: `CostNEffectContainer.InvokeEffectEvent()` (inside the `EffectCanBeInvoked` true branch), `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self` (each computes `victimSide` from owner/their status refs), `EffectScript.ApplyStatusEffectCore` Power branch.
+- **Rows keyed by `(cardTypeID, creatorSide)`** — the faction that CREATED the card, not its current owner: initial-deck cards via `RegisterDeckComposition(combinedDeckZone)`; mid-combat cards via `RegisterGeneratedCard` (funneled through `CombatFuncs.AddCard_TargetSpecific(..., creatorCard)`; all call sites pass `myCardScript`). Fallback = owner faction. Neutral/start cards excluded by the `IsNeutralCard` guard in `EnsureRecord()` — the single exclusion point. Both register paths **pre-create an all-zero row**, so every deck/generated card shows even if it never triggered.
+- **Damage attribution is creator-relative**: `RecordDamage(source, amount, victimSide)` counts `DamageDealtToOpponent` when the victim opposes the CREATOR, else `DamageDealtToSelf` (recorded but hidden via `CombatStatDef.showInResultPanel = false`). Recorded damage is the **actual HP lost** (`ProcessDamage` hp delta — shield-soaked/overkill excluded). Other stats: `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains), `PowerGiven`/`PowerReceived` (stack amounts; transfers count), `CardsGenerated` (per `RegisterGeneratedCard`, on the creator), `RecordBury`/`RecordStage` — source-side split by victim owner relative to the SOURCE's owner (`FriendlyBuried`/`EnemyBuried`; stage friendly-only), victim-side `TimesBuried`/`TimesStaged` always count, neutral victims count neither side.
+- **Hooks**: `CostNEffectContainer.InvokeEffectEvent()` (inside the `EffectCanBeInvoked` true branch), `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self` (each computes `victimSide` from owner/their status refs), `EffectScript.ApplyStatusEffectCore` Power branch, `BuryEffect.BuryChosenCards` / `StageEffect.StageChosenCards` (in the moved-cards loop).
 - **Row display**: name + copy-count suffix `" (X)"` (initial-deck copies from the `_deckCounts` snapshot; shown only when X ≥ 2; mid-combat cards default to 1). Row sort in `GetSessionRows()` (by `DamageDealtToOpponent` desc then faction).
 - **UI**: `ResultStatsPanel` builds two stacked halves fully at runtime (no prefab/scene wiring) with its own Canvas + CanvasScaler. Each half = faction-colored title (`YOU`/`ENEMY`) + header + scrollable rows with all registry columns; `showPercentageOfTotal` columns render `"12 (34%)"` — share of THAT HALF's column total. `PhaseManager.EnteringResultPhase()` builds it once; `ExitingResultPhase()` clears it. Total rounds are shown via a `Rounds: N` line in `PhaseManager.ShowResult()`, reading `CombatManager.roundsLastCombat` (captured in `ExitCombat()` before `roundNumRef` resets) minus 1 — the start card's opening shuffle is not a real round.
-- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction anchors, reference resolution, font/row sizes (`headerRowHeight` = title/header rows, independent from data `rowHeight`), column flex weights, paddings/spacing, background alpha. Play Mode Inspector edits rebuild immediately via `OnValidate`; `Rebuild Stats Panel` context-menu entry exists.
+- **Layout tuning**: `PhaseManager.resultStatsPanelLayout` (`ResultStatsPanelLayout`) — screen-fraction anchors, reference resolution, font/row sizes (incl. `headerRowHeight` for title/header rows), column flex weights, paddings/spacing, background alpha. Play Mode Inspector edits rebuild immediately via `OnValidate`; `Rebuild Stats Panel` context-menu entry exists.
 - **Runtime-built UI pitfall**: after setting stretch anchors on a fresh RectTransform, always zero `offsetMin/offsetMax` — the default 100×100 sizeDelta otherwise leaks into the final rect.
 - EditMode tests: `Assets/Scripts/Editor/Tests/CombatPerCardStatsTrackerTests.cs`.
-
-## Minion Cost Mechanism
-
-Consumes N eligible Minion cards (`isMinion == true`) from `combinedDeckZone`.
-- `minionCostCount` - Number required
-- `minionCostCardTypeID` - Filter by card type ID (empty = no restriction)
-- `minionCostOwner` - `Me` / `Them` / `Random`
 
 ## Duplicate Slot Rule
 
 `ShopManager.duplicateCopiesShareSlotRef` (BoolSO in `Assets/SORefs/ShopRefs/`, default OFF). ON: copies sharing a `cardTypeID` take 1 deck slot (first copy only) when buying, and the shop display stacks duplicates upper-left (`ShopUXManager.duplicateStackOffset` / `duplicateStackMaxOffsetCount`). Count via `UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, duplicatesShareSlot)`; empty `cardTypeID` never deduped. Only the base card of a stack shows price (`ShopCardView.suppressPriceDisplay`). `CombatStartCardGiver` and enemy deck unaffected. Plan: `plans/plan-duplicate-cards-share-deck-slot-2026-07-31.md`.
+
+**Shop Empty Slots**: persistent background objects (`ShopUXManager._spawnedEmptySlots`, one per deckSize grid slot, at `emptySlotZOffset` behind cards) — never consumed/respawned by buy/sell; spawned only on shop entry and deckSize increase via `SpawnEmptySlots` with an in-place overshoot pop (`CardPhysObjScript.SetTargetScale(target, Ease.OutBack, duration, delay)`, stagger `emptySlotSpawnStagger`). `_spawnedPlayerCards` holds real cards only; buy/sell just add/remove + `RelayoutPlayerDeckCards()` (sold cards compact left).
 
 ## Animation System
 
@@ -268,16 +255,7 @@ Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until 
 
 ### Face-Down / Flip System
 
-Deck cards are face-down by default (card back; name/desc/status/ownership info hidden). State lives on `CardPhysObjScript`:
-
-- `isFaceUp` (default `true`; combat deck spawn paths cover cards), `everRevealed` (set on any face-up flip).
-- `SetFaceUp(bool faceUp, bool animated, bool force = false, Action onComplete = null)` — 2D squash flip (scaleX 1→0→1) on the runtime-built `FlipRoot` child (built in `Awake()`, reparenting face elements, prints, shadows); never tweens the root transform, so layout/move tweens are unaffected. `CardBack` reuses the face sprite, tinted per ownership (`ownerCardColor`/`opponentCardColor`) every frame. Duration via `flipDuration` (combat-speed scaled).
-- **Never-cover rule (hardcoded, no toggle)**: cover calls are skipped when `everRevealed` — a card once shown stays face-up until exiled or shuffled. `force: true` bypasses the guard (shuffle only).
-- `ClearRevealedMemory()` — resets `everRevealed` (shuffle only).
-- Face-down skips all face writers in `Update()` (`ApplyColor`, status/desc/tag/rarity/cost/price), so nothing leaks onto the back.
-- Flip triggers (all in `CombatUXManager`): `InstantiateAllPhysicalCards` / `AddPhysicalCardToDeck` (covered on entry), `MovePhysicalCardToRevealZone` (up), `PopUpCard` (up), `SlotInCard` (down), `MoveRevealedCardToBottom` (down), `MoveCardWithAnimation` ToBottom/ToIndex/ToTop (down; reveal-zone-bound ToTop excluded), `MoveCardToTopPopUpBatch` (up; staged cards stay up on deck top), `MoveCardToPopUpPosition` (up).
-- **Shuffle force-cover rule**: `PlayStartCardShuffleAnimation` covers every deck card mid-flight at the arc midpoint (`force: true`) and clears `everRevealed` — overrides the never-cover rule; cards land already face-down. Start Card keeps its face.
-- The flip tween is deliberately NOT killed by `KillTweens()` (CombatCardView calls it every frame during special animations, which would freeze a flip mid-squash).
+Deck cards are face-down by default; state lives on `CardPhysObjScript` (`isFaceUp` / `everRevealed` / `SetFaceUp`), flips are triggered from `CombatUXManager`. Hardcoded **never-cover rule**: a card once shown stays face-up until exiled or shuffled (shuffle force-covers at the arc midpoint). Full details: `docs/FaceDownFlipSystem.md`.
 
 ### Card Movement (`ICombatVisuals` / `CombatUXManager`)
 - `MoveCardToRevealZone(card, onComplete)` — Move from deck to reveal zone; callback fires when movement finishes.
@@ -298,11 +276,11 @@ Deck cards are face-down by default (card back; name/desc/status/ownership info 
 ## Critical Rules
 
 - **HPAlterEffect**: Automatically adds `baseDmg.value`; set `baseDmg` to 0 when passing a specific value.
-- **cardTypeID**: Used for saving / statistics / Minion cost filtering (not instance ID).
+- **cardTypeID**: Used for saving / statistics / card-type filtering (not instance ID).
 - **Anti-loop**: Do not attach multiple looping effect instances to the same card.
 - **GameEvent.Raise**: Use `Raise()` only for non-faction-specific events. For owner/opponent events, use `RaiseOwner()` / `RaiseOpponent()` based on the trigger object's faction. Direct `Raise()` on faction events is prohibited.
 - **Neutral Cards**: `isStartCard == true` cards are neutral and skipped by `ShouldSkipEffectProcessing()`.
-- **CardScript Cost Fields**: `buryCost`, `delayCost`, `exposeCost`, `minionCostCount`, `minionCostCardTypeID`, `minionCostOwner`.
+- **CardScript Cost Fields**: removed in the 3.0 no-cost redesign (no `buryCost`/`delayCost`/`exposeCost`/`minionCost*` fields).
 - **CardScript Properties**: `displayName` (falls back to GameObject name via `GetDisplayName()`), `shopRollWeightMultiplier`, `IsNeutralCard`, `CanBeAffectedByEffects`, `takeUpSpace` (`false` cards stay in DeckSO but are not instantiated in shop/combat and cannot be sold).
 - **Graveyard Removed**: Graveyard mechanic is deprecated. `CardManipulationEffect.Revive*` methods are no-ops.
 - **Input Block Reference Counting**: `BlockInput`/`UnblockInput` use reference counting; always pair them.

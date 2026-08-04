@@ -92,6 +92,7 @@ MonoBehaviour:
   rotationDuration: 0.3
   rotationEase: 6
   useLocalRotation: 1
+  hoverDelay: 0.2
 --- !u!1001 &3159429277176955381
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -100,6 +101,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7461672541327700133}
     m_Modifications:
+    - target: {fileID: 712244450632118919, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1e97ae6a73070d143b007cdf12246aab, type: 2}
     - target: {fileID: 2965191703410159382, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
       propertyPath: m_Name
       value: EmptyCardSpace
@@ -107,6 +112,46 @@ PrefabInstance:
     - target: {fileID: 2965191703410159382, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3405380334321664605, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3405380334321664605, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 4.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3405380334321664605, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5714286
+      objectReference: {fileID: 0}
+    - target: {fileID: 3405380334321664605, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3532074199001407903, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_Color.a
+      value: 0.5019608
+      objectReference: {fileID: 0}
+    - target: {fileID: 3532074199001407903, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_Color.b
+      value: 0.09803922
+      objectReference: {fileID: 0}
+    - target: {fileID: 3532074199001407903, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_Color.g
+      value: 0.05490196
+      objectReference: {fileID: 0}
+    - target: {fileID: 3532074199001407903, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_Color.r
+      value: 0.039215688
+      objectReference: {fileID: 0}
+    - target: {fileID: 3532074199001407903, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1e97ae6a73070d143b007cdf12246aab, type: 2}
+    - target: {fileID: 6381094520674841682, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8626697447207491093, guid: 0094adaf65217804cb5e1adb6952966c, type: 3}
       propertyPath: m_LocalScale.x

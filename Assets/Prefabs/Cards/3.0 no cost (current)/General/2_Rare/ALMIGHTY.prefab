@@ -173,6 +173,8 @@ MonoBehaviour:
   targetFriendly: 0
   statusEffectToCheck: 0
   excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!114 &5876964604227770773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -187,6 +189,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   tagsToCheck: 00000000
   excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  ignoreStartCardBoundary: 0
 --- !u!114 &3583010953411538909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,6 +224,8 @@ MonoBehaviour:
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
   powerCoefficient: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!114 &1980091464538312827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -250,11 +257,14 @@ MonoBehaviour:
   statusEffectToCount: 0
   spreadEvenly: 0
   target: 0
-  includeSelf: 1
+  includeSelf: 0
+  onlyTargetEnemyDamagingCards: 1
   lastXCardsCount: 0
   statusEffectLayerCount: 1
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
 --- !u!114 &3542089464337725451
@@ -275,6 +285,11 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: -1
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &5555191548067297752
 GameObject:
   m_ObjectHideFlags: 0
@@ -360,10 +375,13 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
+  onlyTargetEnemyDamagingCards: 0
   lastXCardsCount: 0
   statusEffectLayerCount: 1
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
 --- !u!1 &8718476725744197808

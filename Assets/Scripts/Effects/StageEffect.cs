@@ -351,6 +351,9 @@ public class StageEffect : EffectScript
 							ValueTrackerManager.me.stagedEnemyRef.value++;
 					}
 				}
+
+				// Per-card result stats: source-side friendly-only + victim TimesStaged
+				CombatPerCardStatsTracker.Me?.RecordStage(myCardScript, targetCardScript);
 				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);

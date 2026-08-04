@@ -157,6 +157,7 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 		giver.ownerIntSO = CreateIntSO(1);
 		giver.enemyIntSO = CreateIntSO(2);
 
@@ -187,6 +188,7 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 		giver.ownerIntSO = CreateIntSO(1);
 		giver.enemyIntSO = CreateIntSO(2);
 
@@ -208,6 +210,7 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 		giver.ownerIntSO = CreateIntSO(5);
 		giver.enemyIntSO = CreateIntSO(5);
 
@@ -228,6 +231,7 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 		giver.ownerIntSO = CreateIntSO(0);
 		giver.enemyIntSO = CreateIntSO(0);
 
@@ -247,6 +251,7 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 		giver.ownerIntSO = CreateIntSO(1);
 		giver.enemyIntSO = CreateIntSO(1);
 
@@ -269,6 +274,7 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 		giver.ownerIntSO = CreateIntSO(3);
 		giver.enemyIntSO = CreateIntSO(3);
 
@@ -288,6 +294,7 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 
 		var giver = CreateEffect<StatusEffectGiverEffect>(shaman);
 		giver.statusEffectToGive = EnumStorage.StatusEffect.Power;
+		giver.onlyTargetEnemyDamagingCards = false;
 		giver.ownerIntSO = CreateIntSO(2);
 		giver.enemyIntSO = CreateIntSO(2);
 

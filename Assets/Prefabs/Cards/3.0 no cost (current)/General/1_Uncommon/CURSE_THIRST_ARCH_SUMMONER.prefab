@@ -213,6 +213,7 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
+  onlyTargetEnemyDamagingCards: 1
   lastXCardsCount: 1
   statusEffectLayerCount: 2
   xFriendlyCount: 0
@@ -233,7 +234,7 @@ GameObject:
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
   m_Layer: 0
-  m_Name: CURSE_THIRST_SUMMONER
+  m_Name: CURSE_THIRST_ARCH_SUMMONER
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

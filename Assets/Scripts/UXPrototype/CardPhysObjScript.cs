@@ -429,6 +429,21 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Set target scale with an explicit ease and duration (e.g. Ease.OutBack for
+	/// overshoot spawn pop). Used by ShopUXManager for empty-slot spawn animation.
+	/// </summary>
+	public void SetTargetScale(Vector3 target, Ease easeOverride, float durationOverride, float delay = 0f)
+	{
+		TargetScale = target;
+
+		// If special animation is playing, do not start DOTween
+		if (isPlayingSpecialAnimation) return;
+
+		// Start DOTween scale animation with overrides
+		StartScaleTween(easeOverride, durationOverride, delay);
+	}
+
+	/// <summary>
 	/// Set target local rotation (called by CombatUXManager), uses DOTween animation.
 	/// </summary>
 	public void SetTargetRotation(Quaternion target, Action onComplete = null)
@@ -481,15 +496,17 @@ public class CardPhysObjScript : MonoBehaviour
 	/// <summary>
 	/// Start scale DOTween animation
 	/// </summary>
-	private void StartScaleTween()
+	private void StartScaleTween(Ease? easeOverride = null, float? durationOverride = null, float delay = 0f)
 	{
 		if (_scaleTween != null && _scaleTween.IsActive() && _scaleTween.IsPlaying())
 		{
 			_scaleTween.Kill();
 		}
 
-		_scaleTween = transform.DOScale(TargetScale, GetCombatScaledDuration(moveDuration))
-			.SetEase(moveEase)
+		float duration = durationOverride.HasValue ? durationOverride.Value : GetCombatScaledDuration(moveDuration);
+		_scaleTween = transform.DOScale(TargetScale, duration)
+			.SetEase(easeOverride.HasValue ? easeOverride.Value : moveEase)
+			.SetDelay(delay)
 			.SetUpdate(UpdateType.Normal, true);
 	}
 

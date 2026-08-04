@@ -163,6 +163,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public AnimationCurve slotInCurve;
 
 	[Header("DECK FOCUS / PEEL")]
+	[Tooltip("Deprecated: the focus card moves to the cascade front slot (physicalCardDeckPos anchor). Kept for scene serialization compatibility only.")]
 	public Transform deckFocusTargetPos;
 	public float peelSlideDistance = 4f;
 	public float deckShiftDuration = 0.3f;
@@ -187,7 +188,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	// Deck focus runtime state
 	private bool _isDeckFocused = false;
 	private CardScript _currentFocusCard = null;
-	private Vector3 _deckFocusOffset = Vector3.zero;
+	// Focused segment count (0 = not focused). While peel-focused, the layout seams
+	// (CalculatePositionAtIndex / GetDeckScaleAtIndex / GetCascadeJitterScale) use this
+	// count instead of GetCascadeDeckCount(), so the focus card (unity index
+	// _focusSegmentCount - 1) maps to cascadeIndex 0: the cascade front slot at the
+	// physicalCardDeckPos anchor with the maximum cascade scale.
+	private int _focusSegmentCount = 0;
 
 	// Deck layout offset provider: keeps messy-deck decisions separate from pure position calculation.
 	private DeckLayoutOffsetProvider _deckOffsetProvider;
@@ -728,8 +734,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	/// <summary>
 	/// Arc midpoint for deck-bound flights. Dynamic path: point at arcMidpointCurveT along the
-	/// cascade walk (same anchor, direction mirror, pxToWorld and deck-focus offset as the layout
-	/// seam, so revealCardCountsAsDeckFront and peel focus carry over) plus arcMidpointOffset;
+	/// cascade walk (same anchor, direction mirror and pxToWorld as the layout seam, so
+	/// revealCardCountsAsDeckFront carries over) plus arcMidpointOffset;
 	/// z = midpoint of start/target z (same rule as GetArcMidpoint). explicitOverride always wins
 	/// for back-compat; otherwise falls back to the legacy showPos-based midpoint. Returns false
 	/// when no arc point exists (caller then flies straight).
@@ -747,7 +753,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			Vector2 offset = DeckCascadeLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildCascadeLayoutParams(), cascadePxToWorld);
 			float signX = cascadeDirection.x >= 0f ? 1f : -1f;
 			float signY = cascadeDirection.y >= 0f ? 1f : -1f;
-			Vector3 basePos = physicalCardDeckPos.position + _deckFocusOffset;
+			Vector3 basePos = physicalCardDeckPos.position;
 			midpoint = new Vector3(
 				basePos.x + offset.x * signX + arcMidpointOffset.x,
 				basePos.y + offset.y * signY + arcMidpointOffset.y,
@@ -784,7 +790,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Vector2 offset = DeckCascadeLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildCascadeLayoutParams(), cascadePxToWorld);
 		float signX = cascadeDirection.x >= 0f ? 1f : -1f;
 		float signY = cascadeDirection.y >= 0f ? 1f : -1f;
-		Vector3 pos = physicalCardDeckPos.position + _deckFocusOffset;
+		Vector3 pos = physicalCardDeckPos.position;
 		pos.x += offset.x * signX + arcMidpointOffset.x;
 		pos.y += offset.y * signY + arcMidpointOffset.y;
 		Gizmos.color = Color.cyan;
@@ -1006,12 +1012,24 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// Deck count used by the position/scale/jitter layout seams. While the deck is
+	/// peel-focused this is the focused segment count (focus card = cascade front slot
+	/// at the physicalCardDeckPos anchor); otherwise the full cascade count.
+	/// </summary>
+	private int GetLayoutDeckCount()
+	{
+		if (_isDeckFocused && _focusSegmentCount > 0)
+			return _focusSegmentCount;
+		return GetCascadeDeckCount();
+	}
+
+	/// <summary>
 	/// Deck scale for the card at the given unity deck index (0 = bottom, count-1 = top).
 	/// Cascade mode: physicalCardDeckSize * per-depth cascade scale. Legacy mode: uniform physicalCardDeckSize.
 	/// </summary>
 	public Vector3 GetDeckScaleAtIndex(int unityIndex)
 	{
-		return GetDeckScaleAtIndex(unityIndex, GetCascadeDeckCount());
+		return GetDeckScaleAtIndex(unityIndex, GetLayoutDeckCount());
 	}
 
 	/// <summary>
@@ -1054,14 +1072,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	#endregion
 
 	/// <summary>
-	/// Calculate position coordinates at specified index using full deck count.
+	/// Calculate position coordinates at specified index using the layout deck count.
 	/// Use this for global deck layout updates (UpdateAllPhysicalCardTargets, shuffle, focus).
 	/// Pending cards are included because they still physically occupy space in the deck.
+	/// While peel-focused, the count is the focused segment count, so segment cards keep
+	/// their own unity index and the focus card lands on the cascade front slot.
 	/// </summary>
 	public Vector3 CalculatePositionAtIndex(int index)
 	{
-		var count = GetCascadeDeckCount();
-		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
+		var count = GetLayoutDeckCount();
+		var basePos = physicalCardDeckPos.position;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, count, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
 		TestManager.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result);
@@ -1072,7 +1092,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// Calculate position coordinates at specified index for animation target positions.
 	/// Uses full deck count because pending cards still occupy slots in the final layout.
 	/// All callers pass logical indices based on combinedDeckZone.Count, so deckCount
-	/// must match that full count to avoid index/count mismatch.
+	/// must match that full count to avoid index/count mismatch. Deliberately NOT
+	/// focus-segment aware: RecorderAnimationPlayer restores deck focus before any
+	/// deck-move request, so this seam never runs mid-focus.
 	/// </summary>
 	// VISUAL-FIX(2026-05-24): Stage/Bury peak and slot-in position offset when pending cards exist
 	//   Cause:    CalculateAnimationPositionAtIndex used activeCount excluding pending cards,
@@ -1085,7 +1107,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	private Vector3 CalculateAnimationPositionAtIndex(int index)
 	{
 		int fullCount = GetCascadeDeckCount();
-		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
+		var basePos = physicalCardDeckPos.position;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
 		TestManager.Log("[CombatUXManager] CalculateAnimationPositionAtIndex index=" + index + " fullCount=" + fullCount + " result=" + result);
@@ -1112,7 +1134,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		Vector3 basePos = CalculatePositionAtIndex(index);
 		if (physScript == null) return basePos;
-		return basePos + _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, GetCascadeDeckCount());
+		return basePos + _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, GetLayoutDeckCount());
 	}
 
 
@@ -1157,7 +1179,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	private Vector3 CalculatePositionForPendingCard(int index)
 	{
 		int fullCount = GetCascadeDeckCount();
-		var basePos = physicalCardDeckPos.position + _deckFocusOffset;
+		var basePos = physicalCardDeckPos.position;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
 			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
 		TestManager.Log("[CombatUXManager] CalculatePositionForPendingCard index=" + index + " fullCount=" + fullCount + " result=" + result);
@@ -1506,8 +1528,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			return revealPos; // Deck empty: no occlusion possible
 
 		// Front card = last list entry (index Count-1); z formula matches DeckPositionCalculator.
-		// _deckFocusOffset.z is always 0 but included for correctness.
-		float frontMostZ = physicalCardDeckPos.position.z + _deckFocusOffset.z
+		float frontMostZ = physicalCardDeckPos.position.z
 			- zOffset * (physicalCardsInDeck.Count - 1);
 		float gap = revealZoneZGap > 0.0001f ? revealZoneZGap : Mathf.Abs(zOffset);
 		float jitterMargin = Mathf.Abs(randomDeckPositionOffsetRange.z);
@@ -1866,42 +1887,35 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
-	/// Start peeling deck to expose target card at specified index
+	/// Start peeling deck to expose target card at specified index.
+	/// Cards in front (index > targetIndex) slide down off-screen from their CURRENT
+	/// positions; the remaining segment [0..targetIndex] re-layouts through the cascade
+	/// seam with _focusSegmentCount = targetIndex + 1, so the focus card lands on the
+	/// cascade front slot (physicalCardDeckPos anchor, maximum cascade scale).
 	/// </summary>
 	private IEnumerator StartPeelCoroutine(int targetIndex)
 	{
 
 		TestManager.Log("[CombatUXManager] StartPeelCoroutine START targetIndex=" + targetIndex + " time=" + Time.time);
-		
+
 		var count = physicalCardsInDeck.Count;
 		if (count == 0 || targetIndex < 0 || targetIndex >= count)
 			yield break;
 
-		// Mark deck as focused early to prevent UpdateAllPhysicalCardTargets from interfering during peel
+		// Mark deck as focused early to prevent UpdateAllPhysicalCardTargets from interfering
+		// during peel. The segment count drives the layout seams; the exiting reveal-zone card
+		// does NOT occupy a cascade slot, so the +1 from revealCardCountsAsDeckFront must not
+		// leak into the segment count.
 		_isDeckFocused = true;
+		_focusSegmentCount = targetIndex + 1;
 
 		AnimationStateTracker.me?.RegisterAnimation();
-
-		// Compute deck focus offset first so reveal zone can follow the same offset
-		// VISUAL-FIX(2026-07-17): Peel focus must derive from the cascade position, not raw linear math.
-		//   Cause:    noOffsetX/Y duplicated the linear formula inline, bypassing the layout seam;
-		//             in cascade mode the focused card missed deckFocusTargetPos.
-		//   Affects:  StartPeelCoroutine (deck focus offset computation).
-		//   Regress:  Trigger an off-reveal Attack with cascade on; the focused card lands on deckFocusTargetPos.
-		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
-		// Layout count includes the reveal-zone card as the cascade front slot (GetCascadeDeckCount);
-		// the local 'count' stays the physical list size for bounds checks and card iteration.
-		Vector3 noOffsetPos = DeckPositionCalculator.CalculatePositionAtIndex(
-			targetIndex, GetCascadeDeckCount(), physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
-		float offsetX = desiredX - noOffsetPos.x;
-		float offsetY = physicalCardDeckPos.position.y - noOffsetPos.y;
-		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
 
 		// Animate all cards to their final positions (parallel) including reveal zone exit
 		int animCompletedCount = 0;
 		int animTotalCount = 0;
 
-		// Move reveal zone card out of screen downward (respecting deck offset to keep relative XY unchanged)
+		// Move reveal zone card out of screen downward
 		if (physicalCardInRevealZone != null)
 		{
 
@@ -1912,8 +1926,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				revealPhysScript.SetRotationImmediate(Quaternion.identity);
 			}
 
-			Vector3 offsetRevealPos = GetRevealZonePosition() + _deckFocusOffset;
-			Vector3 exitPos = offsetRevealPos + Vector3.down * revealCardExitDistance;
+			Vector3 exitPos = GetRevealZonePosition() + Vector3.down * revealCardExitDistance;
 			animTotalCount++;
 			physicalCardInRevealZone.transform.DOMove(exitPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
 				.SetEase(Ease.InOutQuad)
@@ -1932,16 +1945,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var physScript = card.GetComponent<CardPhysObjScript>();
 			if (physScript == null) continue;
 
-			Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
 			bool willPeel = i > targetIndex;
 
 			if (willPeel)
 			{
-				// Peel this card
+				// Peel this card: straight down from its CURRENT transform position. Never
+				// route through the layout seam — out-of-segment indices would clamp onto
+				// the focus slot and peel from the wrong origin.
 				_peeledCards.Add(card);
 
-				Vector3 peelDirection = new Vector3(0f, -1f, 0f).normalized;
-				Vector3 peelPos = finalPos + peelDirection * peelSlideDistance;
+				Vector3 peelPos = card.transform.position + Vector3.down * peelSlideDistance;
 
 				float peelDelay = CombatAnimationSpeed.ScaleDuration((count - i) * peelStaggerDelay);
 				animTotalCount++;
@@ -1960,10 +1973,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 			else
 			{
-				// Shift this card to deck position
+				// Segment card: shift to its cascade position inside the focused segment and
+				// scale to the segment depth scale (focus card grows to the front-slot scale).
+				Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
+				Vector3 finalScale = GetDeckScaleAtIndex(i, _focusSegmentCount);
 				animTotalCount++;
 				physScript.isPlayingSpecialAnimation = true;
 				physScript.SetTargetPosition(finalPos);
+				physScript.SetTargetScale(finalScale);
 				physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
 				card.transform.DOMove(finalPos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
 					.SetEase(Ease.OutQuad)
@@ -1972,6 +1989,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						animCompletedCount++;
 						physScript.isPlayingSpecialAnimation = false;
 					});
+				card.transform.DOScale(finalScale, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
+					.SetEase(Ease.OutQuad);
 			}
 		}
 
@@ -1983,7 +2002,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
-	/// Transition focus from one card to another
+	/// Transition focus from one card to another. Recomputes the focused segment count
+	/// (newTargetIndex + 1) and diffs the peeled set: cards leaving the segment peel
+	/// down from their current position, cards entering/staying in the segment tween
+	/// to the new segment cascade layout (position + scale). Already-peeled cards that
+	/// stay peeled are left untouched (peeling them again would double the slide).
 	/// </summary>
 	private IEnumerator TransitionFocusCoroutine(int newTargetIndex, int currentTargetIndex)
 	{
@@ -1996,18 +2019,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		AnimationStateTracker.me?.RegisterAnimation();
 
-		// Recompute deck focus offset for new target
-		// VISUAL-FIX(2026-07-17): Focus transition must derive from the cascade position (same as StartPeelCoroutine).
-		//   Affects:  TransitionFocusCoroutine (deck focus offset recomputation).
-		//   Regress:  Chain two off-reveal effects with cascade on; focus lands on deckFocusTargetPos both times.
-		float desiredX = deckFocusTargetPos != null ? deckFocusTargetPos.position.x : physicalCardDeckPos.position.x;
-		// Layout count includes the reveal-zone card as the cascade front slot (GetCascadeDeckCount);
-		// the local 'count' stays the physical list size for bounds checks and card iteration.
-		Vector3 noOffsetPos = DeckPositionCalculator.CalculatePositionAtIndex(
-			newTargetIndex, GetCascadeDeckCount(), physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
-		float offsetX = desiredX - noOffsetPos.x;
-		float offsetY = physicalCardDeckPos.position.y - noOffsetPos.y;
-		_deckFocusOffset = new Vector3(offsetX, offsetY, 0f);
+		// Recompute the focused segment count; the layout seams pick it up immediately.
+		_focusSegmentCount = newTargetIndex + 1;
 
 		// Determine which cards should be peeled at the end
 		var shouldBePeeled = new HashSet<GameObject>();
@@ -2030,17 +2043,19 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var physScript = card.GetComponent<CardPhysObjScript>();
 			if (physScript == null) continue;
 
-			Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
-			physScript.SetTargetPosition(finalPos);
-			physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
-
 			if (shouldBePeeled.Contains(card))
 			{
-				// This card should be peeled
-				Vector3 peelDirection = new Vector3(0f, -1f, 0f).normalized;
-				Vector3 peelPos = finalPos + peelDirection * peelSlideDistance;
-
 				newPeeledCards.Add(card);
+
+				if (_peeledCards.Contains(card))
+				{
+					// Already peeled and stays peeled: leave it off-screen untouched.
+					continue;
+				}
+
+				// Newly peeled: straight down from its CURRENT position (never through
+				// the layout seam — out-of-segment indices would clamp onto the focus slot).
+				Vector3 peelPos = card.transform.position + Vector3.down * peelSlideDistance;
 
 				float transDelay = CombatAnimationSpeed.ScaleDuration((count - 1 - i) * peelStaggerDelay);
 				animTotalCount++;
@@ -2059,10 +2074,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 			else
 			{
-				// This card stays in deck
+				// Segment card: tween to the new segment cascade layout (position + scale).
+				Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
+				Vector3 finalScale = GetDeckScaleAtIndex(i, _focusSegmentCount);
 				animTotalCount++;
 				physScript.isPlayingSpecialAnimation = true;
 				physScript.SetTargetPosition(finalPos);
+				physScript.SetTargetScale(finalScale);
+				physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
 				card.transform.DOMove(finalPos, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
 					.SetEase(Ease.OutQuad)
 					.OnComplete(() =>
@@ -2070,6 +2089,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						animCompletedCount++;
 						physScript.isPlayingSpecialAnimation = false;
 					});
+				card.transform.DOScale(finalScale, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
+					.SetEase(Ease.OutQuad);
 			}
 		}
 
@@ -2084,7 +2105,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
-	/// Restore deck focus: return all peeled cards and reset offset
+	/// Restore deck focus: return all peeled cards and re-layout the full cascade.
+	/// Clears the focused segment count first so the layout seams hand out full-deck
+	/// cascade positions/scales, then tweens every card (position AND scale) to that
+	/// layout; peeled cards return from below with stagger.
 	/// </summary>
 	public IEnumerator RestoreDeckFocusCoroutine()
 	{
@@ -2095,8 +2119,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		AnimationStateTracker.me?.RegisterAnimation();
 
-		// Clear offset so all cards calculate their final normal positions
-		_deckFocusOffset = Vector3.zero;
+		// Clear the segment count so the layout seams return full-deck cascade
+		// positions/scales. _isDeckFocused stays true until the end to keep the
+		// UpdateAllPhysicalCardTargets guard active during the restore.
+		_focusSegmentCount = 0;
 
 		int completedCount = 0;
 		int totalCount = 0;
@@ -2110,8 +2136,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (physScript == null) continue;
 
 			Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
+			Vector3 finalScale = GetDeckScaleAtIndex(i);
 			physScript.isPlayingSpecialAnimation = true;
 			physScript.SetTargetPosition(finalPos);
+			physScript.SetTargetScale(finalScale);
 			physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
 
 			if (_peeledCards.Contains(card))
@@ -2127,6 +2155,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						completedCount++;
 						physScript.isPlayingSpecialAnimation = false;
 					});
+				card.transform.DOScale(finalScale, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
+					.SetEase(Ease.InOutQuad)
+					.SetDelay(delay);
 			}
 			else
 			{
@@ -2139,6 +2170,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 						completedCount++;
 						physScript.isPlayingSpecialAnimation = false;
 					});
+				card.transform.DOScale(finalScale, CombatAnimationSpeed.ScaleDuration(deckShiftDuration))
+					.SetEase(Ease.OutQuad);
 			}
 		}
 
