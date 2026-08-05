@@ -24,6 +24,12 @@ public class AfterShuffleTimingTests : HeadlessCombatTestFixture
 	[TearDown]
 	public override void TearDown()
 	{
+		// Reset the auto-play capture seam if a test left it on
+		if (CombatManager != null)
+		{
+			CombatManager.captureRecorderAutoPlayForTesting = false;
+			CombatManager.pendingRecorderAutoPlay = null;
+		}
 		// Ensure no stale singletons from created recorders
 		if (RecorderAnimationPlayer.me != null)
 		{
@@ -102,15 +108,20 @@ public class AfterShuffleTimingTests : HeadlessCombatTestFixture
 			EffectChainManager.MakeANewEffectRecorder(recorderGo, recorderGo);
 		});
 
+		// Capture the auto-play coroutine so this test can drive it frame-by-frame
+		// (StartCoroutine is not pumped reliably in headless EditMode runs)
+		CombatManager.captureRecorderAutoPlayForTesting = true;
+
 		InvokeRevealCards();
 
 		// Immediately after RevealCards returns, Round Start path has set the flag to true
 		// and started PlayRecorderAnimationsAndWait.
 		Assert.IsTrue(CombatManager.isPlayingEffectAnimations, "Flag should be true after Round Start auto-plays afterShuffle animations");
 		Assert.IsTrue(_afterShuffleRaised, "afterShuffle should have been raised before coroutine completes");
+		Assert.IsNotNull(CombatManager.pendingRecorderAutoPlay, "Auto-play enumerator should have been captured");
 
-		// Wait one frame for PlayRecorderAnimationsAndWait coroutine to complete
-		yield return null;
+		// Drive the captured coroutine to completion via the test runner
+		yield return CombatManager.pendingRecorderAutoPlay;
 
 		Assert.IsFalse(CombatManager.isPlayingEffectAnimations, "Flag should be false after auto-play completes");
 	}
@@ -180,7 +191,9 @@ public class AfterShuffleTimingTests : HeadlessCombatTestFixture
 		Assert.IsNotNull(method, "PlayRecorderAnimationsAndWait method should exist");
 		var enumerator = (IEnumerator)method.Invoke(CombatManager, null);
 
-		yield return CombatManager.StartCoroutine(enumerator);
+		// Yield the enumerator directly so the test runner drives it frame-by-frame
+		// (StartCoroutine is not pumped reliably in headless EditMode runs)
+		yield return enumerator;
 
 		Assert.IsFalse(CombatManager.isPlayingEffectAnimations, "Flag should be false after coroutine completes");
 		Assert.Greater(NullVisuals.updateTargetCalls, updateTargetCallsBefore, "UpdateAllPhysicalCardTargets should have been called");

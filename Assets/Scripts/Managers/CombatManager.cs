@@ -562,7 +562,7 @@ public class CombatManager : MonoBehaviour
 				if (roots.Count > 0)
 				{
 					TestManager.Log("[CombatManager] Playing " + roots.Count + " root recorder(s).");
-					yield return StartCoroutine(RecorderAnimationPlayer.me.PlayRecordersCoroutine(roots));
+					yield return RecorderAnimationPlayer.me.PlayRecordersCoroutine(roots);
 				}
 				else
 				{
@@ -601,7 +601,7 @@ public class CombatManager : MonoBehaviour
 		}
 
 		// Wait for attack animations to finish before next reveal
-		yield return StartCoroutine(WaitForAttackAnimationsBeforeNextReveal());
+		yield return WaitForAttackAnimationsBeforeNextReveal();
 
 		// Ensure all physical cards tween to their final positions after recorder animations complete.
 		if (visuals != null)
@@ -625,6 +625,28 @@ public class CombatManager : MonoBehaviour
 				}
 			}
 			// Debug.Log("[CombatManager] Final deck state: " + deckList);
+		}
+	}
+
+	/// <summary>
+	/// Test seam: when set, the auto-play enumerator is captured in <see cref="pendingRecorderAutoPlay"/>
+	/// instead of being started as a coroutine, so EditMode tests can drive it frame-by-frame themselves
+	/// (StartCoroutine is not pumped reliably in headless EditMode runs).
+	/// </summary>
+	public bool captureRecorderAutoPlayForTesting;
+	public System.Collections.IEnumerator pendingRecorderAutoPlay;
+
+	private void StartRecorderAutoPlay()
+	{
+		var e = PlayRecorderAnimationsAndWait();
+		if (captureRecorderAutoPlayForTesting)
+		{
+			e.MoveNext(); // run synchronously up to the first yield, same as StartCoroutine
+			pendingRecorderAutoPlay = e;
+		}
+		else
+		{
+			StartCoroutine(e);
 		}
 	}
 
@@ -681,7 +703,7 @@ public class CombatManager : MonoBehaviour
 						//   Affects:  ICombatVisuals, CombatUXManager, CardPhysObjScript, CombatManager
 						//   Regress:  Start Card shuffle → reveal BOOSTER; verify BOOSTER fully reaches reveal zone before
 						//             emphasize/Stage animation starts and ends at the correct reveal-zone position.
-						StartCoroutine(PlayRecorderAnimationsAndWait());
+						StartRecorderAutoPlay();
 					});
 				}
 				else
@@ -695,7 +717,7 @@ public class CombatManager : MonoBehaviour
 				// Edge case: no cards left to reveal but afterShuffle is pending
 				_raiseAfterShuffleOnNextReveal = false;
 				GameEventStorage.me.afterShuffle.Raise();
-				StartCoroutine(PlayRecorderAnimationsAndWait());
+				StartRecorderAutoPlay();
 			}
 
 			return;
@@ -807,7 +829,7 @@ public class CombatManager : MonoBehaviour
 
 			
 			// Wait for all attack animations to complete before allowing next operation
-			StartCoroutine(PlayRecorderAnimationsAndWait());
+			StartRecorderAutoPlay();
 		}
 	}
 
