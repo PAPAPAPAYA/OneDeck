@@ -306,3 +306,4 @@ If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.G
 ## Agent Post-Mortem Notes
 
 - Trace full flow independently; PRDs can miss branches. Watch for sentinel conditions (`return`/`else`/`continue`). After moving code, do a reachability check. Read the full method body — earlier branches may be the real path. **Glob**: Use `Assets/**/FileName.cs` instead of `**/FileName.cs`
+- Pixelation shaders: toggle `PixelationEffectController.me`; canvases SSC. Plan: `plans/plan-pixelation-shader-2026-08-05.md`.

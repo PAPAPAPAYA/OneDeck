@@ -113,7 +113,10 @@ public class CardTagTooltip : MonoBehaviour
 	private void BuildUI()
 	{
 		_canvas = gameObject.AddComponent<Canvas>();
-		_canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+		// Screen Space - Camera so the fullscreen pixelation pass covers the tooltip too.
+		_canvas.renderMode = RenderMode.ScreenSpaceCamera;
+		_canvas.worldCamera = Camera.main;
+		_canvas.planeDistance = 100f;
 		_canvas.sortingOrder = 300; // above the existing Combat/Shop canvases
 		var scaler = gameObject.AddComponent<CanvasScaler>();
 		scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
