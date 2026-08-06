@@ -161,6 +161,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public Ease slotInEase = Ease.InOutQuad;
 	[Tooltip("Optional custom curve for Slot In. If assigned, overrides slotInEase.")]
 	public AnimationCurve slotInCurve;
+	[Tooltip("Delay after hover before the card pops up (seconds). Not scaled by combat animation speed. 0 = pop up on the next frame after hover.")]
+	public float hoverPopUpDelay = 0.1f;
 
 	[Header("DECK FOCUS / PEEL")]
 	[Tooltip("Deprecated: the focus card moves to the cascade front slot (physicalCardDeckPos anchor). Kept for scene serialization compatibility only.")]

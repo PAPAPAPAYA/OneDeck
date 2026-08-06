@@ -1048,6 +1048,7 @@ public class CardPhysObjScript : MonoBehaviour
 	private bool _savedAutoRevealValid;
 	private bool _savedAutoReveal;
 	private float _hoverTooltipTimer = -1f;
+	private float _hoverPopUpTimer = -1f;
 
 	void OnMouseEnter()
 	{
@@ -1207,8 +1208,19 @@ public class CardPhysObjScript : MonoBehaviour
 		// (claims ownership, no pop-up) instead of throwing.
 		if (CombatUXManager.visuals != null && cardImRepresenting != null)
 		{
-			_hoverPoppedUp = true;
-			CombatUXManager.visuals.PopUpCard(cardImRepresenting.gameObject);
+			float delay = CombatUXManager.me != null ? CombatUXManager.me.hoverPopUpDelay : 0.1f;
+			if (delay <= 0f)
+			{
+				_hoverPoppedUp = true;
+				CombatUXManager.visuals.PopUpCard(cardImRepresenting.gameObject);
+			}
+			else
+			{
+				// Counted down in UpdateHover; the force-hide / cursor-left checks there run
+				// first, so leaving the card (or any force-hide condition) before the delay
+				// elapses cancels the pop-up via EndHover.
+				_hoverPopUpTimer = delay;
+			}
 		}
 	}
 
@@ -1222,6 +1234,7 @@ public class CardPhysObjScript : MonoBehaviour
 		TestManager.Log("[Hover] EndHover card=" + name + " reason=" + reason + " poppedUp=" + _hoverPoppedUp + " restoreAutoReveal=" + _savedAutoRevealValid);
 		_hoverActive = false;
 		_hoverTooltipTimer = -1f;
+		_hoverPopUpTimer = -1f;
 		CardTagTooltip.HideFor(this);
 
 		if (_savedAutoRevealValid)
@@ -1295,6 +1308,18 @@ public class CardPhysObjScript : MonoBehaviour
 			if (_currentHoverOwner == this) _currentHoverOwner = null;
 			EndHover("cursor left card");
 			return;
+		}
+
+		if (_hoverPopUpTimer >= 0f)
+		{
+			_hoverPopUpTimer -= Time.deltaTime;
+			if (_hoverPopUpTimer < 0f && !_hoverPoppedUp
+				&& CombatUXManager.visuals != null && cardImRepresenting != null)
+			{
+				TestManager.Log("[Hover] pop-up delay elapsed, PopUpCard card=" + name);
+				_hoverPoppedUp = true;
+				CombatUXManager.visuals.PopUpCard(cardImRepresenting.gameObject);
+			}
 		}
 
 		if (_hoverTooltipTimer >= 0f)
