@@ -100,3 +100,7 @@ InitTestScene*.unity*
 
 # Playwright MCP browser automation output (page snapshots, console dumps)
 .playwright-mcp/
+
+# ZCode / MCP tool temp dirs (never commit)
+.reasonix/
+.tmp-mcp-scan/
