@@ -41,14 +41,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Intensity: 0.2
-    - _Levels: 5
-    - _LineWidth: 2
-    - _NoiseScale: 10
-    - _Speed: 0.02
+    - _FBM2Freq: 2
+    - _Intensity: 0.05
+    - _Levels: 3
+    - _LineWidth: 3
+    - _NoiseScale: 6
+    - _Speed: 0.1
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
-    - _BgColor: {r: 0.03921569, g: 0.054901943, b: 0.09803919, a: 1}
+    - _BgColor: {r: 0.101960786, g: 0.1882353, b: 0.21568628, a: 1}
     - _LineColor: {r: 0.8509804, g: 0.8352941, b: 0.7921569, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
