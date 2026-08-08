@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 1057845463582774450}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.15, y: -0.15, z: 0.2}
+  m_LocalPosition: {x: 0.15, y: -0.15, z: 0.25}
   m_LocalScale: {x: 0.5, y: 0.5, z: 2}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -108,7 +108,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &3298692197362561715
 RectTransform:
   m_ObjectHideFlags: 0
@@ -894,15 +894,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_Color.b
-      value: 0.15294118
+      value: 0.13725491
       objectReference: {fileID: 0}
     - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_Color.g
-      value: 0.11372549
+      value: 0.08235294
       objectReference: {fileID: 0}
     - target: {fileID: 4267500038551813406, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_Color.r
-      value: 0.65882355
+      value: 0.52156866
       objectReference: {fileID: 0}
     - target: {fileID: 4759902342002104225, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_IsActive
@@ -1038,7 +1038,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6864152151116630169, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7026088297016873808, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_SizeDelta.x
