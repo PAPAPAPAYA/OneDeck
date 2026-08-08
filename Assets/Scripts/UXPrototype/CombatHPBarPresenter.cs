@@ -54,6 +54,12 @@ public class CombatHPBarPresenter : MonoBehaviour
 	public float shadowPadding = 6f;
 	public ColorSO shadowColor;
 
+	[Header("Edit Mode Preview")]
+	[Tooltip("Edit Mode only: shows the bar with a sample HP split so the real segment arrangement is visible in the Scene/Game view without entering Play Mode.")]
+	public bool editModePreview = true;
+	public int previewPlayerHp = 20;
+	public int previewEnemyHp = 20;
+
 	private int _displayedPlayerHp;
 	private int _displayedEnemyHp;
 	private bool _wasInCombat;
@@ -106,17 +112,16 @@ public class CombatHPBarPresenter : MonoBehaviour
 		barRoot.gameObject.SetActive(false);
 	}
 
-	// Live-retune the shadow while editing in Play Mode: Inspector edits to
+	// Live-retune the shadow while editing: Inspector edits to
 	// shadowOffset/shadowPadding/shadowColor renormalize the wired shadow Image
 	// immediately. Skips the Awake fallback creation and null shadowColor.
+	// Also applies the Edit Mode preview (segment fills + colors, same fill math as
+	// EnterCombat) so the real bar arrangement is visible in the Scene/Game view
+	// without entering Play Mode.
 	// Deferred: touching the RectTransform inside OnValidate raises
 	// OnRectTransformDimensionsChange via SendMessage, which Unity forbids there.
 	private void OnValidate()
 	{
-		if (barShadow == null || shadowColor == null)
-		{
-			return;
-		}
 #if UNITY_EDITOR
 		UnityEditor.EditorApplication.delayCall += () =>
 		{
@@ -124,6 +129,17 @@ public class CombatHPBarPresenter : MonoBehaviour
 			{
 				NormalizeBarShadow();
 			}
+			if (Application.isPlaying || !editModePreview || barRoot == null || playerSeg == null
+				|| enemySeg == null || playerColor == null || enemyColor == null)
+			{
+				return;
+			}
+			int total = Mathf.Max(1, previewPlayerHp + previewEnemyHp);
+			float pct = (float)previewPlayerHp / total;
+			playerSeg.fillAmount = pct;
+			enemySeg.fillAmount = 1f - pct;
+			playerSeg.color = playerColor.value;
+			enemySeg.color = enemyColor.value;
 		};
 #endif
 	}

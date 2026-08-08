@@ -83,6 +83,12 @@ public class HPNumericDisplay : MonoBehaviour
 	public float stateColorFadeDuration = 0.25f;
 	public float dividerGlideDuration = 0.24f;
 
+	[Header("Edit Mode Preview")]
+	[Tooltip("Edit Mode only: mirrors the Awake layout math and shows previewHp/previewHpMax so the real arrangement and digit sizes are visible in the Scene/Game view without entering Play Mode. Odometer strips are not built; plain text at the same fontSize represents the layout exactly.")]
+	public bool editModePreview = true;
+	public int previewHp = 12;
+	public int previewHpMax = 20;
+
 	private const int StripCycles = 3;
 	private const int DigitsPerCycle = 10;
 
@@ -199,6 +205,62 @@ public class HPNumericDisplay : MonoBehaviour
 		}
 		displayRoot.gameObject.SetActive(false);
 	}
+
+	// Edit Mode preview: mirrors the Awake layout math (same constants, same seam)
+	// and writes sample values so the real arrangement and digit sizes are visible
+	// in the Scene/Game view without entering Play Mode. Odometer strips are not
+	// built; plain text uses the same fontSize and the same roots, so it already
+	// represents the layout exactly. Saved scene values are inert: Awake and combat
+	// entry fully rebuild layout and text at runtime.
+	// Deferred: touching the RectTransform inside OnValidate raises
+	// OnRectTransformDimensionsChange via SendMessage, which Unity forbids there.
+	private void OnValidate()
+	{
+#if UNITY_EDITOR
+		if (Application.isPlaying || !editModePreview || displayRoot == null || currentRoot == null
+			|| currentPlain == null || currentStrips == null || divider == null
+			|| maxRoot == null || maxPlain == null || maxStrips == null)
+		{
+			return;
+		}
+		UnityEditor.EditorApplication.delayCall += ApplyEditModePreview;
+#endif
+	}
+
+#if UNITY_EDITOR
+	private void ApplyEditModePreview()
+	{
+		if (Application.isPlaying || !editModePreview || displayRoot == null || currentRoot == null
+			|| currentPlain == null || currentStrips == null || divider == null
+			|| maxRoot == null || maxPlain == null || maxStrips == null)
+		{
+			return;
+		}
+		_em = currentPlain.fontSize;
+		_digitWidth = currentPlain.GetPreferredValues("0").x;
+		if (_digitWidth <= 0.01f)
+		{
+			_digitWidth = _em * 0.6f;
+		}
+		_fixedDigitCount = Mathf.Max(DigitCount(previewHp), DigitCount(previewHpMax));
+		SetTopCenter(currentRoot);
+		SetTopCenter(maxRoot);
+		SetTopCenter(divider.rectTransform);
+		StretchFull(currentPlain.rectTransform);
+		StretchFull(maxPlain.rectTransform);
+		StretchFull(currentStrips);
+		StretchFull(maxStrips);
+		LayoutRoots();
+		currentPlain.text = previewHp.ToString();
+		maxPlain.text = previewHpMax.ToString();
+		if (normalColor != null)
+		{
+			currentPlain.color = normalColor.value;
+			maxPlain.color = normalColor.value;
+			divider.color = normalColor.value;
+		}
+	}
+#endif
 
 	private void Update()
 	{
