@@ -311,6 +311,16 @@ public class CardPhysObjScript : MonoBehaviour
 		var statusEffectsForDisplay = cardImRepresenting.GetStatusEffectsForDisplay();
 		var statusEffectText = CombatInfoDisplayer.me?.ProcessStatusEffectInfo(statusEffectsForDisplay);
 
+		// R1: life display — remaining reveals this round (combat), or lifeMax on shop cards
+		int lifeToShow = cardImRepresenting.currentLife;
+		if (lifeToShow <= 0 && GetComponent<ShopCardView>() != null)
+			lifeToShow = cardImRepresenting.lifeMax;
+		if (lifeToShow > 0)
+		{
+			string lifeText = "<color=" + GameColorPalette.Me.damage.Hex + ">❤</color> " + lifeToShow;
+			statusEffectText = string.IsNullOrEmpty(statusEffectText) ? lifeText : statusEffectText + "\n" + lifeText;
+		}
+
 		if (cardStatusEffectPrint != null)
 		{
 			if (!string.IsNullOrEmpty(statusEffectText))

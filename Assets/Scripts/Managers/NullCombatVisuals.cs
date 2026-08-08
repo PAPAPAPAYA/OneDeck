@@ -131,6 +131,12 @@ public class NullCombatVisuals : ICombatVisuals
 		onComplete?.Invoke();
 	}
 
+	public void MoveRevealedCardToIndex(GameObject logicalCard, int index, Action onComplete = null)
+	{
+		callLog.Add("MoveRevealedCardToIndex: " + (logicalCard?.name ?? "null") + " index=" + index);
+		onComplete?.Invoke();
+	}
+
 	public void InstantiateAllPhysicalCards()
 	{
 		callLog.Add("InstantiateAllPhysicalCards");

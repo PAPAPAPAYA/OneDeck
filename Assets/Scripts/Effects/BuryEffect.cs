@@ -375,6 +375,18 @@ public class BuryEffect : EffectScript
 		//   Affects:  BuryEffect, StageEffect, reactive chains, ApplyAnimationResult
 		//   Regress:  Reveal StoneShell (BuryNext2Cards) then reveal RisingFlame (StageSelf on bury)
 		//   Related:  Card_StoneShell, Card_RisingFlame
+		// R2 (PRD 4.5): bounce candidates — buried cards with life left will return to the
+		// queue tail instead of resting in the grave. Life is consumed AFTER reactive
+		// resolution below (a staged/exiled/destroyed card does not bounce and keeps its life).
+		var bounceCandidates = new List<GameObject>();
+		var bounceRequests = new List<AnimationRequest>();
+		foreach (var card in buriedCards)
+		{
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.currentLife > 0)
+				bounceCandidates.Add(card);
+		}
+
 		var buriedTargetIndices = new List<int>();
 		foreach (var card in buriedCards)
 		{
@@ -406,14 +418,42 @@ public class BuryEffect : EffectScript
 				targetCards = new List<GameObject>(buriedCards)
 			});
 
-			recorder.animationRequests.Add(new AnimationRequest {
-				type = AnimationRequestType.MoveToBottomBatch,
-				targetCards = new List<GameObject>(buriedCards),
-				targetIndices = buriedTargetIndices,
-				snapshotDeckSize = _combinedDeck.Count,
-				duration = CombatUXManager.me != null ? CombatUXManager.me.deckMoveArcDuration : 0.5f,
-				useArc = true
-			});
+			// Bounce candidates skip MoveToBottomBatch: they fly to the queue tail instead
+			// (single MoveToIndex requests, played sequentially after the batch).
+			var nonBounceCards = new List<GameObject>();
+			var nonBounceIndices = new List<int>();
+			for (int i = 0; i < buriedCards.Count; i++)
+			{
+				if (bounceCandidates.Contains(buriedCards[i])) continue;
+				nonBounceCards.Add(buriedCards[i]);
+				nonBounceIndices.Add(buriedTargetIndices[i]);
+			}
+			if (nonBounceCards.Count > 0)
+			{
+				recorder.animationRequests.Add(new AnimationRequest {
+					type = AnimationRequestType.MoveToBottomBatch,
+					targetCards = nonBounceCards,
+					targetIndices = nonBounceIndices,
+					snapshotDeckSize = _combinedDeck.Count,
+					duration = CombatUXManager.me != null ? CombatUXManager.me.deckMoveArcDuration : 0.5f,
+					useArc = true
+				});
+			}
+
+			// targetIndex is a placeholder here: the final queue-tail index is patched after
+			// reactive resolution (4.5) so the animation matches the post-reaction deck state.
+			foreach (var card in bounceCandidates)
+			{
+				var bounceRequest = new AnimationRequest {
+					type = AnimationRequestType.MoveToIndex,
+					targetCard = card,
+					targetIndex = 0,
+					duration = CombatUXManager.me != null ? CombatUXManager.me.deckMoveArcDuration : 0.5f,
+					useArc = true
+				};
+				recorder.animationRequests.Add(bounceRequest);
+				bounceRequests.Add(bounceRequest);
+			}
 		}
 
 		// 3. Raise events in logic phase
@@ -431,6 +471,34 @@ public class BuryEffect : EffectScript
 				else
 				{
 					GameEventStorage.me.onFriendlyCardBuried.RaiseOpponent();
+				}
+			}
+		}
+
+		// 4. R2 bounce (PRD 4.5): applied AFTER reactive resolution — only when the card is
+		// still in the grave (not staged, exiled, or destroyed by reactions). The buried card
+		// stays at index 0 while its events resolve, so CheckCost_IndexBeforeStartCard and
+		// Linger semantics are unaffected. Bounced cards stack at the queue tail LIFO.
+		if (bounceCandidates.Count > 0)
+		{
+			_combinedDeck = combatManager.combinedDeckZone; // reactions may have reassigned the list
+			int startCardIndex = GetStartCardIndex();
+			if (startCardIndex >= 0)
+			{
+				foreach (var card in bounceCandidates)
+				{
+					int idx = GetCardIndexInCombinedDeck(card);
+					if (idx < 0 || idx >= startCardIndex) continue; // gone, or staged above the Start Card
+					var cardScript = card.GetComponent<CardScript>();
+					if (cardScript == null) continue;
+					cardScript.currentLife--;
+					_combinedDeck.RemoveAt(idx);
+					_combinedDeck.Insert(startCardIndex + 1, card); // inserts above the Start Card don't move it
+					foreach (var req in bounceRequests)
+					{
+						if (req.targetCard == card)
+							req.targetIndex = _combinedDeck.IndexOf(card);
+					}
 				}
 			}
 		}

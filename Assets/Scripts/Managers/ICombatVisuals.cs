@@ -196,6 +196,12 @@ public interface ICombatVisuals
 	/// </summary>
 	void MoveRevealedCardToBottom(GameObject logicalCard, Action onComplete = null);
 
+	/// <summary>
+	/// R2: Move the card currently in reveal zone to a specific deck index
+	/// (used for the life-system bounce to the queue tail).
+	/// </summary>
+	void MoveRevealedCardToIndex(GameObject logicalCard, int index, Action onComplete = null);
+
 	#endregion
 
 	#region Lifecycle

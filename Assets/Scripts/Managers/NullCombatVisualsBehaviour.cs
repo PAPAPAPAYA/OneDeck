@@ -65,6 +65,9 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 	public void MoveRevealedCardToBottom(GameObject logicalCard, Action onComplete = null)
 		=> _nullVisuals.MoveRevealedCardToBottom(logicalCard, onComplete);
 
+	public void MoveRevealedCardToIndex(GameObject logicalCard, int index, Action onComplete = null)
+		=> _nullVisuals.MoveRevealedCardToIndex(logicalCard, index, onComplete);
+
 	public void InstantiateAllPhysicalCards()
 		=> _nullVisuals.InstantiateAllPhysicalCards();
 

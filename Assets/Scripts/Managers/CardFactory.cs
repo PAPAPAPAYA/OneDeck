@@ -60,6 +60,8 @@ public class CardFactory : MonoBehaviour
 		{
 			cardScript.myStatusRef = myStatus;
 			cardScript.theirStatusRef = theirStatus;
+			// R1: fresh instances start a round at full life
+			cardScript.currentLife = cardScript.lifeMax;
 		}
 		else
 		{

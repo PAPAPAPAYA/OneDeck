@@ -909,9 +909,42 @@ public class CombatManager : MonoBehaviour
 		var cardToBottom = revealZone;
 		revealZone = null;
 
+		// R2: cards with life left bounce to the queue tail (just above the Start Card)
+		// and will be revealed again this round.
+		var cardScript = cardToBottom.GetComponent<CardScript>();
+		int destIndex = cardScript != null ? ResolveGravePlacement(cardScript) : 0;
+		if (destIndex > 0)
+		{
+			combinedDeckZone.Insert(destIndex, cardToBottom);
+			visuals.MoveRevealedCardToIndex(cardToBottom, destIndex);
+			return;
+		}
+
 		// Put back to bottom of deck (index 0)
 		combinedDeckZone.Insert(0, cardToBottom);
 		visuals.MoveRevealedCardToBottom(cardToBottom);
+	}
+
+	/// <summary>
+	/// R2/R3: Determine the destination index for a card entering the grave.
+	/// A card with life left (lifeMax > 0, currentLife > 0) bounces to the queue tail
+	/// (startCardIndex + 1) and consumes 1 life, so it will be revealed again this round.
+	/// Everything else goes to index 0 (grave) unchanged.
+	/// Returns 0 (grave) when the Start Card cannot be located (R13: shuffle window).
+	/// </summary>
+	public int ResolveGravePlacement(CardScript card)
+	{
+		if (card != null && card.currentLife > 0)
+		{
+			var startCard = FindStartCardInstance();
+			int startIdx = startCard != null ? combinedDeckZone.IndexOf(startCard) : -1;
+			if (startIdx >= 0)
+			{
+				card.currentLife--;
+				return startIdx + 1;
+			}
+		}
+		return 0;
 	}
 
 	/// <summary>
@@ -928,7 +961,15 @@ public class CombatManager : MonoBehaviour
 	{
 		// Physical card reset
 		visuals.ReviveAllPhysicalCards();
-		
+
+		// R4: life resets at the start of every round
+		foreach (var card in combinedDeckZone)
+		{
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null)
+				cardScript.currentLife = cardScript.lifeMax;
+		}
+
 		// Round start event
 		GameEventStorage.me.beforeRoundStart.Raise();
 	}

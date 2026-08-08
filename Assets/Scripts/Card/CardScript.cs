@@ -53,6 +53,12 @@ public class CardScript : MonoBehaviour
 	[Header("Tags")]
 	public List<EnumStorage.Tag> myTags;
 
+	[Header("Life")]
+	[Tooltip("How many times this card may be revealed per round. 0 = current behavior (once per round).")]
+	public int lifeMax = 0;
+	[HideInInspector]
+	public int currentLife = 0;
+
 	private string _displayCardDesc;
 	[System.NonSerialized]
 	private List<HPAlterEffect> _cachedHpAlterEffects;

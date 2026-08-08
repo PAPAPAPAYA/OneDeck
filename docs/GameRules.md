@@ -173,7 +173,31 @@ A card flagged as `isMinion == true`. Minion cards can be consumed as a cost for
 
 ### Damage Multiplication (`x N`)
 
-Some effects deal damage "x N", meaning the damage effect is executed N separate times. Each instance is a separate damage event and can trigger on-damage reactions independently.
+Some effects deal damage "x N" (e.g. `HPAlterEffect.DecreaseTheirHpTimesX(N)`), meaning the damage effect is executed N separate times:
+
+- Each hit is a **separate damage application**: damage is resolved against shield/HP independently per hit, and each hit plays its own attack animation.
+- Power stacks are counted **per hit** (`DmgCalculator()` runs on every loop iteration), so the total damage is `N x (baseDmg + Power)` — Power scales the entire package, not just one hit.
+- The hits are **not** independent reaction events: the whole loop executes inside a single effect invocation with the chain kept open, and the anti-loop guard (`EffectChainManager.EffectCanBeInvoked` — same card instance + same effect object already processed in the opened chains) lets on-damage reactions trigger only **once** per chain, not once per hit.
+
+### Life (Reveals per Round)
+
+Some cards carry a `life` stat (`CardScript.lifeMax`): how many times the card may be revealed per round. `lifeMax = 0` (the default for all current cards) reproduces the classic behavior exactly — the card reveals once per round. The authoritative rules are R1–R13 below (plan: `plans/prd-card-life-system-2026-08-07.md`).
+
+- **R1 (Life stat)**: Every card has `lifeMax` (configured, >= 0, default 0; design range 0–3) and `currentLife` (runtime). `currentLife` is reset to `lifeMax` at the start of every round.
+- **R2 (Bounce rule)**: Whenever a card with `currentLife > 0` would be placed into the grave (destination index 0 region, below the Start Card): decrement `currentLife` by 1 and place the card at the **queue tail** instead — the slot immediately above the Start Card (`startCardIndex + 1`). The card will be revealed again this round.
+- **R3 (Life 0)**: A card with `currentLife == 0` (or `lifeMax == 0`) is placed into the grave normally. Current behavior is unchanged.
+- **R4 (Reset)**: At round start (Start Card shuffle completes), every card in `combinedDeckZone` has `currentLife = lifeMax`. The Start Card is fixed at `lifeMax = 0`.
+- **R5 (Rest)**: Rest skips the card's trigger but **not** the life consumption or the bounce.
+- **R6 (Curses and tokens)**: Curse cards (`[curse]`, e.g. JU_ON) and rift tokens (`[次元裂缝]`) are hard-fixed to `lifeMax = 0` unless an explicit exception is approved.
+- **R7 (Symmetric)**: The rules apply identically to both sides (async PVP target; recorded enemy decks are test/fallback only).
+- **R8 (Neutral)**: The Start Card never consumes life and never bounces.
+- **R9 (Stage)**: Staging a card from the grave gives it one extra reveal but does **not** restore life. The normal rule applies when the staged card returns.
+- **R10 (Exile)**: Exile removes the card from the game; no life interaction. Exile remains the only hard removal.
+- **R11 (Fatigue)**: `totalCardsRevealed` counts every reveal, including bounce re-reveals — life cards accelerate fatigue (accepted lever, not a bug).
+- **R12 (Delay exception)**: Delay shifts a card one slot toward the bottom and never triggers the bounce, even if the shift crosses below the Start Card.
+- **R13 (Shuffle window)**: Bounces do not occur during the end-of-round shuffle resolution; the life reset (R4) follows immediately.
+
+**Bounce placement details**: multiple bounced cards stack at the queue tail **LIFO** (the last card bounced is the topmost of the tail stack, i.e. revealed first). When a card with life left is buried, its bury events (`onMeBuried` / `onAnyCardBuried` / `onFriendlyCardBuried`) fire normally with the card in the grave; the bounce applies **after** reactive resolution, and only if reactions did not stage, exile, or destroy the card. The queue tail doubles as the **setup** slot for positional targeting predicates (e.g. “bury the deepest active friendly”).
 
 ---
 

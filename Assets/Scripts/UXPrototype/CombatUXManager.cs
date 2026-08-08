@@ -370,7 +370,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	/// <param name="card">Logical card GameObject</param>
 	/// <param name="onComplete">Animation complete callback (optional)</param>
-	public void MoveRevealedCardToBottom(GameObject card, Action onComplete = null)
+	/// <summary>
+	/// Move the card currently in reveal zone back to the deck at a specific index.
+	/// index 0 = bottom (current behavior); the life-system bounce uses the queue-tail index
+	/// (just above the Start Card).
+	/// </summary>
+	public void MoveRevealedCardToIndex(GameObject card, int index, Action onComplete = null)
 	{
 		GameObject physicalCard;
 
@@ -403,8 +408,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physicalCardInRevealZone = null;
 		}
 
-		// Add to bottom of deck (index 0)
-		physicalCardsInDeck.Insert(0, physicalCard);
+		// Add to deck at the requested index
+		physicalCardsInDeck.Insert(Mathf.Clamp(index, 0, physicalCardsInDeck.Count), physicalCard);
 		InvalidateCardScriptCache();
 		// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom inserted " + physicalCard.name + " at index 0 deckCount=" + physicalCardsInDeck.Count);
 
@@ -432,7 +437,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			//   Regress:  Reveal a card and click again; the card arcs to the cascade tail end
 			//             (or the legacy linear bottom when enableCascadeDeckLayout = false).
 			Vector3 targetPos = DeckPositionCalculator.CalculatePositionAtIndex(
-				0, effectiveCount, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
+				index, effectiveCount, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
 
 			// Apply per-card layout offset (scaled down for deep cascade cards)
 			if (physScript != null)
@@ -441,7 +446,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				{
 					_deckOffsetProvider.AssignOffset(physScript);
 				}
-				targetPos += _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(0, effectiveCount);
+				targetPos += _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, effectiveCount);
 			}
 			// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom targetPos=" + targetPos + " effectiveCount=" + effectiveCount);
 
@@ -463,7 +468,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				// arcMidpoint left null: the seam resolves the dynamic cascade midpoint (or legacy showPos fallback)
 				ease = revealToDeckEase,
 				// Cascade: land at the deepest tail scale (uniform deck size when the flag is off)
-				targetScaleOverride = GetDeckScaleAtIndex(0, effectiveCount),
+				targetScaleOverride = GetDeckScaleAtIndex(index, effectiveCount),
 				onComplete = wrappedOnComplete
 			};
 			MoveCardWithAnimation(card, config);
@@ -474,6 +479,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			UpdateAllPhysicalCardTargets();
 			onComplete?.Invoke();
 		}
+	}
+
+	/// <summary>
+	/// Move the card currently in reveal zone back to bottom of deck.
+	/// </summary>
+	public void MoveRevealedCardToBottom(GameObject card, Action onComplete = null)
+	{
+		MoveRevealedCardToIndex(card, 0, onComplete);
 	}
 
 	#endregion
