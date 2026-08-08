@@ -281,6 +281,8 @@ public class ShopManager : MonoBehaviour
 
 	public void ExitShop()
 	{
+		// DIAG-LOG(2026-08-08): tracing why the shop Exit button may appear dead
+		Debug.Log("[ShopButton] ExitShop() called. phase=" + (gamePhaseRef != null ? gamePhaseRef.currentGamePhase.ToString() : "null"));
 		// Ensure statistics are saved
 		if (ShopStatsManager.Me != null)
 		{
@@ -436,7 +438,13 @@ public class ShopManager : MonoBehaviour
 
 	public void Reroll()
 	{
-		if (RerollPriceRef == null || purse.value < RerollPriceRef.value) return;
+		// DIAG-LOG(2026-08-08): tracing why the shop Reroll button may appear dead
+		Debug.Log("[ShopButton] Reroll() clicked. phase=" + (gamePhaseRef != null ? gamePhaseRef.currentGamePhase.ToString() : "null") + " purse=" + (purse != null ? purse.value : -1) + " price=" + (RerollPriceRef != null ? RerollPriceRef.value : -1));
+		if (RerollPriceRef == null || purse.value < RerollPriceRef.value)
+		{
+			Debug.Log("[ShopButton] Reroll() early return: cost not met. purse=" + (purse != null ? purse.value : -1) + " price=" + (RerollPriceRef != null ? RerollPriceRef.value : -1));
+			return;
+		}
 		
 		// First generate new shop item data
 		GenerateShopItems();
@@ -447,6 +455,7 @@ public class ShopManager : MonoBehaviour
 			ShopStatsManager.Me.RecordReroll();
 		}
 		purse.value -= RerollPriceRef.value;
+		Debug.Log("[ShopButton] Reroll() succeeded. shopItems=" + (currentShopItemDeckRef != null ? currentShopItemDeckRef.deck.Count : -1) + " ShopUXManager.Instance=" + (ShopUXManager.Instance != null ? "exists" : "NULL"));
 		
 		// Notify ShopUXManager to handle reroll animation and regenerate physical cards
 		ShopUXManager.Instance?.OnReroll();
