@@ -183,6 +183,8 @@ public class CardPhysObjScript : MonoBehaviour
 			SetTargetPosition(pendingRevealPosition);
 			SetTargetScale(pendingRevealScale);
 			pendingRevealZoneMove = false;
+			// Float Stack: pending reveal entry also drives the big shadow to the anchor.
+			if (_combatUXManager != null) _combatUXManager.TryDriveRevealBigShadow(this);
 		}
 
 		// Face-down cards skip all face-content writers (name/desc/status/tint/colors)
@@ -658,7 +660,14 @@ public class CardPhysObjScript : MonoBehaviour
 		// Shadows squash with the flip but are NOT part of the face visibility toggle:
 		// the card back keeps its silhouette/drop shadow when face-down.
 		var bigShadow = faceParent.Find("PhysicalCardBigShadow");
-		if (bigShadow != null) bigShadow.SetParent(_flipRoot, true);
+		if (bigShadow != null)
+		{
+			bigShadow.SetParent(_flipRoot, true);
+			// Float Stack layout: CombatUXManager drives this shadow to the deck anchor
+			// while this card is revealed; auto-wire the reference here (prefab untouched).
+			if (bigShadowRenderer == null)
+				bigShadowRenderer = bigShadow.GetComponent<SpriteRenderer>();
+		}
 		var rimShadow = faceParent.Find("PhysicalCardShadow");
 		if (rimShadow != null) rimShadow.SetParent(_flipRoot, true);
 
@@ -693,6 +702,97 @@ public class CardPhysObjScript : MonoBehaviour
 		backGo.SetActive(false);
 	}
 
+	#region Big Shadow drive (Float Stack layout)
+
+	[Header("Big Shadow (Float Stack layout)")]
+	[Tooltip("PhysicalCardBigShadow renderer. Auto-wired by name in BuildFlipRoot when left empty; CombatUXManager drives it to the deck anchor while this card is revealed in Float Stack mode.")]
+	public SpriteRenderer bigShadowRenderer;
+
+	private bool _bigShadowDriven;
+	private bool _bigShadowSuppressed;
+	private Vector3 _bigShadowHomeLocalPos;
+	private Vector3 _bigShadowHomeLocalScale;
+	private Quaternion _bigShadowHomeLocalRot;
+	private float _bigShadowHomeAlpha;
+
+	public bool IsBigShadowDriven => _bigShadowDriven;
+
+	/// <summary>
+	/// Float Stack mode suppresses deck cards' big shadows (only the revealed card keeps
+	/// one, driven to the deck anchor). Idempotent; never touches a driven shadow.
+	/// </summary>
+	public void SetBigShadowSuppressed(bool suppressed)
+	{
+		_bigShadowSuppressed = suppressed;
+		if (_bigShadowDriven) return;
+		if (bigShadowRenderer != null && bigShadowRenderer.gameObject.activeSelf == suppressed)
+			bigShadowRenderer.gameObject.SetActive(!suppressed);
+	}
+
+	/// <summary>
+	/// Begin driving the big shadow to an external anchor pose: re-parents to anchorParent
+	/// keeping the current world pose (the in-deck follow pose), then tweens local position /
+	/// scale / rotation to the anchor pose in sync with the reveal flight (moveDuration/moveEase),
+	/// fading in over the first 40% of it.
+	/// </summary>
+	public void DriveBigShadowToPose(Transform anchorParent, Vector3 targetLocalPos, float scaleMultiplier, float targetAlpha)
+	{
+		if (bigShadowRenderer == null || anchorParent == null) return;
+		if (_bigShadowDriven) RestoreBigShadowFromDrive(true);
+		_bigShadowDriven = true;
+		var t = bigShadowRenderer.transform;
+		_bigShadowHomeLocalPos = t.localPosition;
+		_bigShadowHomeLocalScale = t.localScale;
+		_bigShadowHomeLocalRot = t.localRotation;
+		_bigShadowHomeAlpha = bigShadowRenderer.color.a;
+		t.SetParent(anchorParent, true); // keeps the in-deck world pose
+		bigShadowRenderer.gameObject.SetActive(true);
+		var startColor = bigShadowRenderer.color;
+		startColor.a = 0f;
+		bigShadowRenderer.color = startColor;
+		float duration = GetCombatScaledDuration(moveDuration);
+		Vector3 targetLocalScale = t.localScale * scaleMultiplier; // anchorParent scale assumed 1
+		t.DOLocalMove(targetLocalPos, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
+		t.DOScale(targetLocalScale, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
+		t.DOLocalRotateQuaternion(Quaternion.identity, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
+		bigShadowRenderer.DOFade(targetAlpha, duration * 0.4f).SetUpdate(UpdateType.Normal, true);
+	}
+
+	/// <summary>
+	/// Stop driving the big shadow: fade out, then re-parent back to the card and restore
+	/// the recorded home pose. instant = true skips the fade and restores immediately.
+	/// </summary>
+	public void RestoreBigShadowFromDrive(bool instant)
+	{
+		if (!_bigShadowDriven || bigShadowRenderer == null) return;
+		_bigShadowDriven = false;
+		var t = bigShadowRenderer.transform;
+		t.DOKill();
+		bigShadowRenderer.DOKill();
+		System.Action restore = () =>
+		{
+			if (this == null || bigShadowRenderer == null) return; // card destroyed mid-fade
+			t.SetParent(_flipRoot != null ? _flipRoot : transform, false);
+			t.localPosition = _bigShadowHomeLocalPos;
+			t.localScale = _bigShadowHomeLocalScale;
+			t.localRotation = _bigShadowHomeLocalRot;
+			var c = bigShadowRenderer.color;
+			c.a = _bigShadowHomeAlpha;
+			bigShadowRenderer.color = c;
+			bigShadowRenderer.gameObject.SetActive(!_bigShadowSuppressed);
+		};
+		if (instant)
+		{
+			restore();
+		}
+		else
+		{
+			bigShadowRenderer.DOFade(0f, GetCombatScaledDuration(0.25f)).SetUpdate(UpdateType.Normal, true).OnComplete(() => restore());
+		}
+	}
+
+	#endregion
+	
 	/// <summary>
 	/// Flip the card face-up / face-down with a 2D squash flip on FlipRoot.
 	/// Rules: a card that was ever revealed is never covered again (cover calls are skipped);

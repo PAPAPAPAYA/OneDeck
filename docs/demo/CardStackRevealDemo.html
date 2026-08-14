@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 悬浮揭示堆叠排列 Demo</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+			background: #0f1a1f;
+			color: #e0e0e0;
+			min-height: 100vh;
+		}
+
+		.intro {
+			padding: 30px 40px 10px;
+			max-width: 1400px;
+			margin: 0 auto;
+		}
+
+		.intro h1 {
+			font-size: 28px;
+			margin-bottom: 12px;
+			color: #fff;
+		}
+
+		.intro p {
+			line-height: 1.8;
+			color: #b0c0c8;
+			margin-bottom: 10px;
+		}
+
+		.intro code {
+			background: #263740;
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-size: 13px;
+		}
+
+		.section {
+			padding: 20px 40px 40px;
+			max-width: 1400px;
+			margin: 0 auto;
+		}
+
+		.demo-area {
+			width: 100%;
+			height: 560px;
+			background: #b8b5ae;
+			border-radius: 12px;
+			position: relative;
+			overflow: hidden;
+			box-shadow: inset 0 0 60px rgba(0,0,0,0.15);
+		}
+
+		/* All cards share one anchor (the shadow position); transform places them. */
+		.card {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			position: absolute;
+			top: 60%;
+			left: 55%;
+			margin-top: -105px;
+			margin-left: -75px;
+			box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+			border: 1px solid rgba(0,0,0,0.06);
+			transform-origin: center center;
+			transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		.card.revealed {
+			box-shadow: 0 24px 48px rgba(0,0,0,0.35);
+		}
+
+		.card::after {
+			content: '';
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			right: 10px;
+			height: 30px;
+			background: rgba(255,255,255,0.12);
+			border-radius: 7px;
+		}
+
+		.card .idx {
+			position: absolute;
+			bottom: 8px;
+			left: 0;
+			right: 0;
+			text-align: center;
+			font-size: 13px;
+			font-weight: bold;
+			opacity: 0.8;
+			pointer-events: none;
+		}
+
+		/* Color palette matching the reference image */
+		.color-front { background: #d4d0c8; }
+		.color-gold { background: #c9981f; }
+		.color-red { background: #b71c2c; }
+		.color-light { background: #e8e4dc; }
+
+		.color-front .idx, .color-light .idx { color: #4a5458; }
+		.color-gold .idx, .color-red .idx { color: rgba(255,255,255,0.85); }
+
+		/* Card-shaped silhouette shadow: sits at the anchor, directly under the revealed card. */
+		.stack-shadow {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			position: absolute;
+			top: 60%;
+			left: 55%;
+			margin-top: -105px;
+			margin-left: -75px;
+			background: #43534d;
+			transition: opacity 0.25s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), filter 0.3s ease;
+			pointer-events: none;
+		}
+
+		.controls {
+			margin-top: 16px;
+			display: flex;
+			gap: 12px;
+			flex-wrap: wrap;
+		}
+
+		.btn {
+			padding: 8px 18px;
+			background: #263740;
+			border: 1px solid #334750;
+			border-radius: 5px;
+			color: #e0e0e0;
+			cursor: pointer;
+			font-size: 13px;
+		}
+
+		.btn:hover {
+			background: #334750;
+		}
+
+		.param-row {
+			display: flex;
+			gap: 20px;
+			margin-bottom: 12px;
+			flex-wrap: wrap;
+		}
+
+		.param-row label {
+			font-size: 13px;
+			color: #90a0a8;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.param-row input[type="range"] {
+			width: 110px;
+		}
+
+		.eval-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 16px;
+			margin-top: 16px;
+		}
+
+		.eval-card {
+			background: #1a262c;
+			border: 1px solid #2a3a42;
+			border-radius: 8px;
+			padding: 16px;
+		}
+
+		.eval-card h3 {
+			color: #c9981f;
+			font-size: 15px;
+			margin-bottom: 10px;
+		}
+
+		.eval-card ul {
+			list-style: none;
+		}
+
+		.eval-card li {
+			padding: 4px 0;
+			font-size: 13px;
+			color: #a8b8c0;
+		}
+
+		.eval-card li.pro::before {
+			content: '✓ ';
+			color: #4caf50;
+		}
+
+		.eval-card li.con::before {
+			content: '✗ ';
+			color: #e57373;
+		}
+
+		.eval-card li.cost::before {
+			content: '◎ ';
+			color: #64b5f6;
+		}
+	</style>
+</head>
+<body>
+	<div class="intro">
+		<h1>OneDeck 悬浮揭示堆叠排列 Demo</h1>
+		<p><strong>目标排列描述：</strong>卡组直接堆叠，不设横向扇形偏移；越往后的卡越高，每张抬高固定步长（stackStepY，可调，支持负数 = 向下堆叠）。最前方是<strong>被揭示的卡</strong>：放大一定倍率（可调），并向左上偏移悬浮。揭示卡带一个<strong>卡形阴影</strong>，阴影大小与揭示卡相同（同步缩放倍率）；<strong>阴影的位置就是整套排列的锚点</strong> —— 揭示卡的左偏移（floatX）和上偏移（upY）都直接基于阴影位置，后面的堆叠卡也基于阴影位置做 y 轴逐级偏移。整体效果：揭示卡悬浮在卡组上方。</p>
+		<p>揭示流程（点「揭示下一张」或点击演示区）：当前揭示卡的阴影<strong>渐变消失</strong>，同时该卡缩小并飞向卡组<strong>最后面</strong>（最高槽位 = 牌库底）；堆叠卡整体下滑一级；新的牌库顶<strong>放大、向左上偏移</strong>完成揭示 —— 阴影从该卡在卡组中的位置和大小出发，与揭示动画同步放大并移动到锚点最终位置。牌序映射：揭示卡 = <code>combinedDeckZone[Count-1]</code>（牌库顶），堆叠第 1 级 = 下一张，最高槽位 = <code>combinedDeckZone[0]</code>（牌库底）—— 与 reveal→bottom 语义同构。</p>
+	</div>
+
+	<div class="section">
+		<div class="param-row">
+			<label>卡片数: <span id="valCount">8</span><input type="range" id="rangeCount" min="3" max="30" step="1" value="8"></label>
+			<label>堆叠步长 stepY: <span id="valStepY">14</span><input type="range" id="rangeStepY" min="-40" max="40" step="1" value="14"></label>
+			<label>揭示放大倍率: <span id="valRevealScale">1.18</span><input type="range" id="rangeRevealScale" min="1" max="1.5" step="0.01" value="1.18"></label>
+			<label>揭示左移 floatX: <span id="valFloatX">55</span><input type="range" id="rangeFloatX" min="0" max="120" step="1" value="55"></label>
+			<label>揭示上移 upY: <span id="valUpY">70</span><input type="range" id="rangeUpY" min="-140" max="140" step="1" value="70"></label>
+			<label>旋转抖动°: <span id="valRot">1.5</span><input type="range" id="rangeRot" min="0" max="5" step="0.1" value="1.5"></label>
+		</div>
+		<div class="param-row">
+			<label>阴影透明度: <span id="valShadowOp">0.85</span><input type="range" id="rangeShadowOp" min="0" max="1" step="0.05" value="0.85"></label>
+			<label>阴影模糊: <span id="valShadowBlur">6</span><input type="range" id="rangeShadowBlur" min="0" max="20" step="1" value="6"></label>
+			<label>阴影偏移X: <span id="valShadowOX">0</span><input type="range" id="rangeShadowOX" min="-30" max="30" step="1" value="0"></label>
+			<label>阴影偏移Y: <span id="valShadowOY">0</span><input type="range" id="rangeShadowOY" min="-30" max="30" step="1" value="0"></label>
+		</div>
+		<div class="demo-area" id="demo">
+			<div class="stack-shadow" id="stackShadow"></div>
+		</div>
+		<div class="controls">
+			<button class="btn" onclick="advance()">揭示下一张</button>
+			<button class="btn" onclick="toggleAuto()" id="btnAuto">自动播放</button>
+			<button class="btn" onclick="render(true)">重播排列</button>
+		</div>
+		<div class="eval-grid">
+			<div class="eval-card">
+				<h3>位置计算（Unity 映射）</h3>
+				<ul>
+					<li class="pro">锚点 = 阴影位置 = physicalCardDeckPos；所有卡位都是锚点 + 固定偏移的纯函数</li>
+					<li class="pro">堆叠卡 i（i=1 为下一张）：offset = (0, −stepY·i)；揭示卡：offset = (−floatX, −upY)，scale = revealScale（阴影同 scale）</li>
+					<li class="pro">可并入 DeckPositionCalculator 作为第三种布局模式；揭示卡即 reveal-zone 等价物</li>
+				</ul>
+			</div>
+			<div class="eval-card">
+				<h3>层级与牌序</h3>
+				<ul>
+					<li class="pro">z 序：揭示卡 &gt; 阴影 &gt; 堆叠第 1 级 &gt; … &gt; 最高槽位（牌库底）</li>
+					<li class="pro">揭示传送带：揭示卡归位到最高槽位（index 0），其余每卡降一级，与 MoveCardToBottom 语义同构</li>
+					<li class="pro">阴影是独立视觉元素：揭示卡归位时渐隐，新卡揭示时在锚点淡入</li>
+				</ul>
+			</div>
+			<div class="eval-card">
+				<h3>与现有 cascade / arc 的差异</h3>
+				<ul>
+					<li class="cost">最简布局：无缩放衰减、无曲线、无弧长表，偏移是分段线性纯函数</li>
+					<li class="cost">阴影元素需要在 ICombatVisuals 增加一个 reveal 阴影槽（或在 CardPhysObjScript 上挂剪影子物体）</li>
+					<li class="con">堆叠只露底边一条缝，卡面信息全被遮挡，读牌依赖揭示卡本身</li>
+					<li class="con">牌很多时总高度 = stepY·(N−1)，需要按 deckSize 上限核算屏幕占位</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Layout parameters (sliders mutate this object)
+		const params = {
+			cardCount: 8,
+			stepY: 14,          // fixed y step per stack card, px (cards further back sit higher; negative = downward stack)
+			revealScale: 1.18,  // revealed card scale multiplier (the shadow uses the same scale)
+			revealFloatX: 55,   // revealed card left offset from the shadow position, px
+			revealUpY: 70,      // revealed card up offset from the shadow position, px
+			rotJitter: 1.5,     // per-card stack rotation jitter, degrees (deterministic by card id)
+			shadowOpacity: 0.85,
+			shadowBlur: 6,
+			shadowOffsetX: 0,
+			shadowOffsetY: 0
+		};
+
+		// slots[0] = revealed card (deck top); slots[1..n-1] = stack slots front-to-back
+		// (slot 1 = next card to reveal, slot n-1 = deck bottom).
+		let slots = [];
+		let busy = false;
+		let autoTimer = null;
+
+		// Colors carry no deck-order meaning — each card draws a random palette color at deal time.
+		function randomColorClass() {
+			const roll = Math.random();
+			if (roll < 0.35) return 'color-red';
+			if (roll < 0.7) return 'color-light';
+			if (roll < 0.85) return 'color-front';
+			return 'color-gold';
+		}
+
+		function cardId(creationIndex) {
+			return creationIndex < 26 ? String.fromCharCode(65 + creationIndex) : String(creationIndex + 1);
+		}
+
+		// Deterministic pseudo-random in [-1, 1) per card id, for the stack rotation jitter.
+		function pseudoRandom(seed) {
+			const h = (seed * 2654435761) % 4294967296;
+			return (h / 4294967296) * 2 - 1;
+		}
+
+		// Role -> transform. Everything derives from the shadow position:
+		// role 0 = revealed (float up-left by floatX/upY from the shadow, scaled); role i = stack slot i.
+		function roleTransform(role, cardEl) {
+			const n = slots.length;
+			if (role === 0) {
+				return {
+					x: -params.revealFloatX,
+					y: -params.revealUpY,
+					scale: params.revealScale,
+					rot: 0,
+					z: n + 10
+				};
+			}
+			return {
+				x: 0,
+				y: -params.stepY * role,
+				scale: 1,
+				rot: pseudoRandom(cardEl._cid) * params.rotJitter,
+				z: n - role
+			};
+		}
+
+		function roleLabel(role, cardEl) {
+			if (role === 0) return cardEl.dataset.cid + ' · 牌库顶·揭示中';
+			if (role === 1) return cardEl.dataset.cid + ' · 下一张';
+			if (role === slots.length - 1) return cardEl.dataset.cid + ' · 牌库底';
+			return cardEl.dataset.cid + ' · 槽位 ' + role;
+		}
+
+		function applyCard(cardEl, role, delay) {
+			const t = roleTransform(role, cardEl);
+			cardEl.style.transitionDelay = delay + 's';
+			cardEl.style.zIndex = t.z;
+			cardEl.style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px) rotate(' + t.rot + 'deg) scale(' + t.scale + ')';
+			cardEl.classList.toggle('revealed', role === 0);
+			cardEl.querySelector('.idx').textContent = roleLabel(role, cardEl);
+		}
+
+		function applyShadow(delay, visible) {
+			const s = document.getElementById('stackShadow');
+			s.style.transitionDelay = delay + 's';
+			s.style.opacity = visible ? params.shadowOpacity : 0;
+			s.style.filter = 'blur(' + params.shadowBlur + 'px)';
+			// The shadow matches the revealed card's size (same scale), at the anchor position.
+			s.style.transform = 'translate(' + params.shadowOffsetX + 'px, ' + params.shadowOffsetY + 'px) rotate(0deg) scale(' + params.revealScale + ')';
+			s.style.zIndex = slots.length + 5;
+		}
+
+		// Jump the shadow to a transform instantly (no transition), used to start the
+		// shadow at the revealed card's in-deck transform before animating to the anchor.
+		function snapShadowTo(x, y, rot) {
+			const s = document.getElementById('stackShadow');
+			s.style.transition = 'none';
+			s.style.transitionDelay = '0s';
+			s.style.transform = 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg) scale(1)';
+			s.style.opacity = 0;
+			void s.offsetWidth; // force reflow so the snap applies before the animated target
+			s.style.transition = '';
+		}
+
+		function render(animate) {
+			const demo = document.getElementById('demo');
+			demo.querySelectorAll('.card').forEach(c => c.remove());
+			slots = [];
+			const n = params.cardCount;
+			for (let i = 0; i < n; i++) {
+				const card = document.createElement('div');
+				card.className = 'card ' + randomColorClass();
+				card.dataset.cid = cardId(i);
+				card._cid = i;
+				card.innerHTML = '<span class="idx"></span>';
+				if (animate) {
+					card.style.opacity = '0';
+					card.style.transform = 'translate(0px, 0px) scale(0.3)';
+				}
+				demo.appendChild(card);
+				slots.push(card);
+			}
+			// Roles 0..n-1 assigned in creation order: card A revealed, rest stacked.
+			for (let i = 0; i < n; i++) {
+				applyCard(slots[i], i, animate ? i * 0.06 : 0);
+				if (animate) slots[i].style.opacity = '1';
+			}
+			applyShadow(animate ? n * 0.06 : 0, true);
+			clearDelaysLater();
+		}
+
+		function clearDelaysLater() {
+			setTimeout(() => {
+				document.querySelectorAll('#demo .card').forEach(c => c.style.transitionDelay = '0s');
+				document.getElementById('stackShadow').style.transitionDelay = '0s';
+			}, 1200);
+		}
+
+		// Reveal cycle: current revealed card's shadow fades out while the card shrinks and
+		// flies to the stack back (deck bottom); stack slides down one slot; the new deck top
+		// floats up-left and scales up, and the shadow fades back in at the anchor.
+		function advance() {
+			if (busy || slots.length < 2) return;
+			busy = true;
+			const n = slots.length;
+			const returning = slots[0];
+
+			// Rotate roles: revealed -> back (role n-1); every stack card one slot forward.
+			for (let i = 0; i < n - 1; i++) slots[i] = slots[i + 1];
+			slots[n - 1] = returning;
+
+			// 1. Old shadow fades out immediately.
+			applyShadow(0, false);
+			// 2. Returning card shrinks and flies to the back slot, above everything while flying.
+			returning.style.zIndex = n + 20;
+			applyCard(returning, n - 1, 0);
+			// 3. Stack cards slide down one slot (slight delay so the return flight reads first).
+			for (let i = 1; i < n - 1; i++) applyCard(slots[i], i, 0.12);
+			// 4. New deck top floats up-left and scales up (revealed). The shadow starts at
+			//    that card's in-deck transform (stack slot 1 position/rotation, base size)
+			//    and scales up + moves to the anchor in sync with the card's flight.
+			//    Snapped only after the old shadow's fade-out completes (0.25s).
+			const revealed = slots[0];
+			setTimeout(() => {
+				const origin = roleTransform(1, revealed);
+				snapShadowTo(origin.x, origin.y, origin.rot);
+				applyShadow(0, true); // animate origin -> anchor in sync with the card flight
+			}, 300);
+			applyCard(revealed, 0, 0.3);
+			// Restore the returning card's stack z after its flight lands.
+			setTimeout(() => { returning.style.zIndex = roleTransform(n - 1, returning).z; }, 550);
+			setTimeout(() => { busy = false; clearDelaysLater(); }, 1000);
+		}
+
+		function toggleAuto() {
+			if (autoTimer) {
+				clearInterval(autoTimer);
+				autoTimer = null;
+				document.getElementById('btnAuto').textContent = '自动播放';
+			} else {
+				autoTimer = setInterval(advance, 1500);
+				document.getElementById('btnAuto').textContent = '停止自动';
+			}
+		}
+
+		function bindSlider(id, variable, displayId, onChanged) {
+			const slider = document.getElementById(id);
+			const display = document.getElementById(displayId);
+			slider.addEventListener('input', (e) => {
+				params[variable] = parseFloat(e.target.value);
+				display.textContent = e.target.value;
+				onChanged();
+			});
+		}
+
+		function applyStatic() {
+			for (let i = 0; i < slots.length; i++) applyCard(slots[i], i, 0);
+			applyShadow(0, true);
+		}
+
+		bindSlider('rangeCount', 'cardCount', 'valCount', () => render(false));
+		bindSlider('rangeStepY', 'stepY', 'valStepY', applyStatic);
+		bindSlider('rangeRevealScale', 'revealScale', 'valRevealScale', applyStatic);
+		bindSlider('rangeFloatX', 'revealFloatX', 'valFloatX', applyStatic);
+		bindSlider('rangeUpY', 'revealUpY', 'valUpY', applyStatic);
+		bindSlider('rangeRot', 'rotJitter', 'valRot', applyStatic);
+		bindSlider('rangeShadowOp', 'shadowOpacity', 'valShadowOp', applyStatic);
+		bindSlider('rangeShadowBlur', 'shadowBlur', 'valShadowBlur', applyStatic);
+		bindSlider('rangeShadowOX', 'shadowOffsetX', 'valShadowOX', applyStatic);
+		bindSlider('rangeShadowOY', 'shadowOffsetY', 'valShadowOY', applyStatic);
+
+		document.getElementById('demo').addEventListener('click', advance);
+
+		// Initial deal
+		render(true);
+	</script>
+</body>
+</html>

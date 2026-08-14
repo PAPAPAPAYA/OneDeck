@@ -87,6 +87,48 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	[Tooltip("Reveal-zone card counts as the cascade front card (cascadeIndex 0); deck cards sit one cascade step deeper while a card is revealed")]
 	public bool revealCardCountsAsDeckFront = true;
 
+	[Header("ARC LOOP DECK LAYOUT")]
+	[Tooltip("Use the Elliptical Arc Loop deck layout instead of the cascade (requires enableCascadeDeckLayout = true). Plan: plans/plan-arc-loop-deck-layout-2026-08-12.md")]
+	public bool enableArcLoopDeckLayout = false;
+	[Tooltip("Demo px to world unit conversion for the arc loop")]
+	public float arcLoopPxToWorld = 0.01f;
+	[Tooltip("Loop radii in demo px (demo: 195, 155)")]
+	public Vector2 arcLoopRadii = new Vector2(195f, 155f);
+	[Tooltip("Superellipse exponent: 2 = true ellipse, higher = squarer (demo: 2)")]
+	[Range(1.5f, 5f)] public float arcLoopExponent = 2f;
+	[Tooltip("Rigid in-plane tilt in degrees; positive = left half lower, right half higher (demo: 45)")]
+	[Range(-45f, 45f)] public float arcLoopTiltDeg = 45f;
+	[Tooltip("Curvature weight: 0 = uniform arc length, higher = bends pack denser (demo: 3)")]
+	[Range(0f, 3f)] public float arcLoopCurveDensity = 3f;
+	[Tooltip("Scale of the highest/back-most card (demo: 0.7)")]
+	[Range(0.3f, 1f)] public float arcLoopMinScale = 0.7f;
+	[Tooltip("Height-scale falloff steepness (demo: 1)")]
+	[Range(0.5f, 3f)] public float arcLoopScalePower = 1f;
+	[Tooltip("Deck bottom slot left of the deck top (mirrored loop)")]
+	public bool arcLoopMirror = false;
+	[Tooltip("Arc-length/curvature table resolution (demo: 720)")]
+	public int arcLoopSamples = 720;
+
+	[Header("DECK LAYOUT MODE")]
+	[Tooltip("Combat deck layout selector. Legacy toggles still map: enableCascadeDeckLayout=false forces Linear; enableArcLoopDeckLayout=true (while this is left at Cascade) forces ArcLoop.")]
+	public DeckLayoutMode deckLayoutMode = DeckLayoutMode.Cascade;
+
+	[Header("FLOAT STACK REVEAL LAYOUT")]
+	[Tooltip("Direct stack with a floating revealed card. Plan: plans/plan-float-stack-reveal-layout-2026-08-13.md; demo: docs/demo/CardStackRevealDemo.html")]
+	public float floatStackPxToWorld = 0.01f;
+	[Tooltip("Fixed y step per stack slot in demo px; signed (negative = downward stack) (demo: 14)")]
+	public float floatStackStepY = 14f;
+	[Tooltip("Revealed card scale multiplier (demo: 1.07)")]
+	public float floatStackRevealScale = 1.07f;
+	[Tooltip("Revealed card left offset from the shadow anchor, demo px (demo: 16)")]
+	public float floatStackRevealFloatX = 16f;
+	[Tooltip("Revealed card up offset from the shadow anchor, demo px; signed (demo: -14)")]
+	public float floatStackRevealUpY = -14f;
+	[Tooltip("Extra offset of the driven big shadow from the anchor, demo px (canvas y-down) (demo: 0, 30)")]
+	public Vector2 floatStackShadowOffset = new Vector2(0f, 30f);
+	[Tooltip("Driven big shadow target alpha (demo: 0.85)")]
+	[Range(0f, 1f)] public float floatStackShadowOpacity = 0.85f;
+
 	[Header("DYNAMIC ARC MIDPOINT")]
 	[Tooltip("Compute the arc midpoint (showPos) dynamically from the current cascade deck shape. Off = legacy fixed showPos behavior byte-for-byte.")]
 	public bool useDynamicArcMidpoint = true;
@@ -297,7 +339,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			{
 				physScript.pendingRevealZoneMove = true;
 				physScript.pendingRevealPosition = GetRevealZonePosition();
-				physScript.pendingRevealScale = physicalCardRevealSize;
+				physScript.pendingRevealScale = GetRevealZoneScale();
 				onComplete?.Invoke();
 			}
 			else
@@ -336,8 +378,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				};
 
 				physScript.SetTargetPosition(GetRevealZonePosition(), wrappedOnComplete);
-				physScript.SetTargetScale(physicalCardRevealSize);
+				physScript.SetTargetScale(GetRevealZoneScale());
 				physScript.SetTargetRotation(Quaternion.identity);
+				// Float Stack: the card's own big shadow starts at its in-deck pose and
+				// tweens to the deck anchor in sync with this reveal flight.
+				TryDriveRevealBigShadow(physScript);
 			}
 		}
 		else
@@ -361,7 +406,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			timer += Time.deltaTime;
 		}
 		physScript.SetTargetPosition(GetRevealZonePosition());
-		physScript.SetTargetScale(physicalCardRevealSize);
+		physScript.SetTargetScale(GetRevealZoneScale());
 	}
 
 	/// <summary>
@@ -408,6 +453,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physicalCardInRevealZone = null;
 		}
 
+		// Float Stack: the revealed card returns into the deck — fade its driven big
+		// shadow out during the return flight.
+		ReleaseDrivenBigShadow(false);
+
 		// Add to deck at the requested index
 		physicalCardsInDeck.Insert(Mathf.Clamp(index, 0, physicalCardsInDeck.Count), physicalCard);
 		InvalidateCardScriptCache();
@@ -428,6 +477,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// so the returned card lands at the deepest slot of the unchanged curve.
 			if (enableCascadeDeckLayout && revealCardCountsAsDeckFront)
 				effectiveCount = physicalCardsInDeck.Count;
+			// Float Stack: the returned card lands at the stack back slot (count = post-insert).
+			if (IsFloatStackLayoutActive)
+				effectiveCount = physicalCardsInDeck.Count;
 			
 			// VISUAL-FIX(2026-07-17): Reveal-to-bottom must land on the cascade curve, not the raw linear fan.
 			//   Cause:    This site duplicated the linear formula inline (xOffset*(effectiveCount-1)),
@@ -437,7 +489,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			//   Regress:  Reveal a card and click again; the card arcs to the cascade tail end
 			//             (or the legacy linear bottom when enableCascadeDeckLayout = false).
 			Vector3 targetPos = DeckPositionCalculator.CalculatePositionAtIndex(
-				index, effectiveCount, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig());
+				index, effectiveCount, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig(), BuildArcLoopConfig(), BuildFloatStackConfig());
 
 			// Apply per-card layout offset (scaled down for deep cascade cards)
 			if (physScript != null)
@@ -744,7 +796,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private bool IsDynamicArcMidpointActive(Transform explicitOverride)
 	{
-		return explicitOverride == null && useDynamicArcMidpoint && enableCascadeDeckLayout;
+		return explicitOverride == null && useDynamicArcMidpoint && EffectiveDeckLayoutMode != DeckLayoutMode.Linear;
 	}
 
 	/// <summary>
@@ -764,14 +816,34 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 		if (IsDynamicArcMidpointActive(null))
 		{
-			int count = GetCascadeDeckCount();
-			Vector2 offset = DeckCascadeLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildCascadeLayoutParams(), cascadePxToWorld);
-			float signX = cascadeDirection.x >= 0f ? 1f : -1f;
-			float signY = cascadeDirection.y >= 0f ? 1f : -1f;
+			int count = IsFloatStackLayoutActive ? physicalCardsInDeck.Count : GetCascadeDeckCount();
 			Vector3 basePos = physicalCardDeckPos.position;
+			float midX;
+			float midY;
+			if (IsFloatStackLayoutActive)
+			{
+				// Float Stack: arc midpoint above the stack back slot (one step beyond it).
+				midX = basePos.x;
+				midY = basePos.y + floatStackStepY * (count + 1) * floatStackPxToWorld;
+			}
+			else if (IsArcLoopLayoutActive)
+			{
+				// Arc Loop: slot offsets are already final (tilt/mirror baked in), no direction mirror.
+				Vector2 offset = DeckArcLoopLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildArcLoopLayoutParams(), arcLoopPxToWorld);
+				midX = basePos.x + offset.x;
+				midY = basePos.y + offset.y;
+			}
+			else
+			{
+				Vector2 offset = DeckCascadeLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildCascadeLayoutParams(), cascadePxToWorld);
+				float signX = cascadeDirection.x >= 0f ? 1f : -1f;
+				float signY = cascadeDirection.y >= 0f ? 1f : -1f;
+				midX = basePos.x + offset.x * signX;
+				midY = basePos.y + offset.y * signY;
+			}
 			midpoint = new Vector3(
-				basePos.x + offset.x * signX + arcMidpointOffset.x,
-				basePos.y + offset.y * signY + arcMidpointOffset.y,
+				midX + arcMidpointOffset.x,
+				midY + arcMidpointOffset.y,
 				(startPosition.z + targetPosition.z) * 0.5f);
 			return true;
 		}
@@ -798,16 +870,32 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private void OnDrawGizmosSelected()
 	{
-		if (!useDynamicArcMidpoint || !enableCascadeDeckLayout) return;
+		if (!useDynamicArcMidpoint || EffectiveDeckLayoutMode == DeckLayoutMode.Linear) return;
 		if (physicalCardDeckPos == null) return;
-		int count = GetCascadeDeckCount();
+		int count = IsFloatStackLayoutActive ? physicalCardsInDeck.Count : GetCascadeDeckCount();
 		if (count < 1) return;
-		Vector2 offset = DeckCascadeLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildCascadeLayoutParams(), cascadePxToWorld);
-		float signX = cascadeDirection.x >= 0f ? 1f : -1f;
-		float signY = cascadeDirection.y >= 0f ? 1f : -1f;
 		Vector3 pos = physicalCardDeckPos.position;
-		pos.x += offset.x * signX + arcMidpointOffset.x;
-		pos.y += offset.y * signY + arcMidpointOffset.y;
+		if (IsFloatStackLayoutActive)
+		{
+			// Float Stack: midpoint above the stack back slot (see TryGetArcMidpointPosition).
+			pos.y += floatStackStepY * (count + 1) * floatStackPxToWorld + arcMidpointOffset.y;
+			pos.x += arcMidpointOffset.x;
+		}
+		else if (IsArcLoopLayoutActive)
+		{
+			// Arc Loop: slot offsets are already final (tilt/mirror baked in).
+			Vector2 offset = DeckArcLoopLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildArcLoopLayoutParams(), arcLoopPxToWorld);
+			pos.x += offset.x + arcMidpointOffset.x;
+			pos.y += offset.y + arcMidpointOffset.y;
+		}
+		else
+		{
+			Vector2 offset = DeckCascadeLayout.ComputeOffsetAtCurveT(count, arcMidpointCurveT, BuildCascadeLayoutParams(), cascadePxToWorld);
+			float signX = cascadeDirection.x >= 0f ? 1f : -1f;
+			float signY = cascadeDirection.y >= 0f ? 1f : -1f;
+			pos.x += offset.x * signX + arcMidpointOffset.x;
+			pos.y += offset.y * signY + arcMidpointOffset.y;
+		}
 		Gizmos.color = Color.cyan;
 		Gizmos.DrawWireSphere(pos, 0.25f);
 	}
@@ -1007,6 +1095,80 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// Effective combat deck layout mode, mapping the legacy toggles onto the enum:
+	/// enableCascadeDeckLayout=false -> Linear; enableArcLoopDeckLayout=true with the enum
+	/// left at Cascade -> ArcLoop; otherwise deckLayoutMode rules. Single resolution point
+	/// for every layout branch.
+	/// </summary>
+	private DeckLayoutMode EffectiveDeckLayoutMode
+	{
+		get
+		{
+			if (!enableCascadeDeckLayout) return DeckLayoutMode.Linear;
+			if (deckLayoutMode == DeckLayoutMode.Cascade && enableArcLoopDeckLayout) return DeckLayoutMode.ArcLoop;
+			return deckLayoutMode;
+		}
+	}
+
+	private bool IsArcLoopLayoutActive => EffectiveDeckLayoutMode == DeckLayoutMode.ArcLoop;
+	private bool IsFloatStackLayoutActive => EffectiveDeckLayoutMode == DeckLayoutMode.FloatStack;
+
+	private DeckArcLoopLayout.Params BuildArcLoopLayoutParams()
+	{
+		return new DeckArcLoopLayout.Params
+		{
+			radiusX = arcLoopRadii.x,
+			radiusY = arcLoopRadii.y,
+			exponent = arcLoopExponent,
+			tiltDeg = arcLoopTiltDeg,
+			curveDensity = arcLoopCurveDensity,
+			minScale = arcLoopMinScale,
+			scalePower = arcLoopScalePower,
+			mirror = arcLoopMirror,
+			arcSamples = arcLoopSamples
+		};
+	}
+
+	/// <summary>
+	/// Build the arc loop config carrier for DeckPositionCalculator. Disabled (skipped)
+	/// unless both enableCascadeDeckLayout and enableArcLoopDeckLayout are on.
+	/// </summary>
+	private DeckPositionCalculator.ArcLoopConfig BuildArcLoopConfig()
+	{
+		return new DeckPositionCalculator.ArcLoopConfig
+		{
+			enabled = IsArcLoopLayoutActive,
+			pxToWorld = arcLoopPxToWorld,
+			layoutParams = BuildArcLoopLayoutParams()
+		};
+	}
+
+	private DeckFloatStackLayout.Params BuildFloatStackLayoutParams()
+	{
+		return new DeckFloatStackLayout.Params
+		{
+			stepY = floatStackStepY,
+			revealScale = floatStackRevealScale,
+			revealFloatX = floatStackRevealFloatX,
+			revealUpY = floatStackRevealUpY
+		};
+	}
+
+	/// <summary>
+	/// Build the float stack config carrier for DeckPositionCalculator. Enabled only when
+	/// the effective deck layout mode is FloatStack.
+	/// </summary>
+	private DeckPositionCalculator.FloatStackConfig BuildFloatStackConfig()
+	{
+		return new DeckPositionCalculator.FloatStackConfig
+		{
+			enabled = IsFloatStackLayoutActive,
+			pxToWorld = floatStackPxToWorld,
+			layoutParams = BuildFloatStackLayoutParams()
+		};
+	}
+
+	/// <summary>
 	/// Effective cascade deck count. With revealCardCountsAsDeckFront on, the reveal-zone card
 	/// occupies cascadeIndex 0 (the front slot), so every deck card sits one cascade step deeper.
 	/// Legacy linear path is unaffected: all cascade helpers early-return when cascade is disabled.
@@ -1035,6 +1197,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		if (_isDeckFocused && _focusSegmentCount > 0)
 			return _focusSegmentCount;
+		// Float Stack: the reveal +1 does NOT apply — the stack always starts one step
+		// above the anchor (slot 0 is the shadow's home), so the raw count is used.
+		if (IsFloatStackLayoutActive)
+			return physicalCardsInDeck.Count;
 		return GetCascadeDeckCount();
 	}
 
@@ -1056,6 +1222,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (!enableCascadeDeckLayout) return physicalCardDeckSize;
 		if (count <= 0) return physicalCardDeckSize;
 		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
+		// Float Stack mode: uniform deck size (no depth scale in this layout).
+		if (IsFloatStackLayoutActive) return physicalCardDeckSize;
+		// Arc Loop mode: height-normalized depth scale from the loop layout.
+		if (IsArcLoopLayoutActive)
+			return physicalCardDeckSize * DeckArcLoopLayout.ComputeScale(clamped, count, BuildArcLoopLayoutParams(), arcLoopPxToWorld);
 		int cascadeIndex = count - 1 - clamped;
 		return physicalCardDeckSize * DeckCascadeLayout.ComputeScale(cascadeIndex, count, BuildCascadeLayoutParams());
 	}
@@ -1079,7 +1250,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	private float GetCascadeJitterScale(int unityIndex, int count)
 	{
 		if (!enableCascadeDeckLayout || !cascadeScaleJitterWithCard || count <= 1) return 1f;
+		// Float Stack mode: uniform scale, jitter stays full strength.
+		if (IsFloatStackLayoutActive) return 1f;
 		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
+		// Arc Loop mode: jitter scales with the loop's height-normalized depth scale.
+		if (IsArcLoopLayoutActive)
+			return DeckArcLoopLayout.ComputeScale(clamped, count, BuildArcLoopLayoutParams(), arcLoopPxToWorld);
 		int cascadeIndex = count - 1 - clamped;
 		return DeckCascadeLayout.ComputeScale(cascadeIndex, count, BuildCascadeLayoutParams());
 	}
@@ -1098,7 +1274,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var count = GetLayoutDeckCount();
 		var basePos = physicalCardDeckPos.position;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
-			index, count, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
+			index, count, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig(), BuildArcLoopConfig(), BuildFloatStackConfig());
 		TestManager.Log("[CombatUXManager] CalculatePositionAtIndex index=" + index + " count=" + count + " result=" + result);
 		return result;
 	}
@@ -1121,10 +1297,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	//   Related:  sacrificial_spirit + soldier_skeleton, any card that creates pending then stages
 	private Vector3 CalculateAnimationPositionAtIndex(int index)
 	{
-		int fullCount = GetCascadeDeckCount();
+		// Float Stack: raw physical count (see GetLayoutDeckCount).
+		int fullCount = IsFloatStackLayoutActive ? physicalCardsInDeck.Count : GetCascadeDeckCount();
 		var basePos = physicalCardDeckPos.position;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
-			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
+			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig(), BuildArcLoopConfig(), BuildFloatStackConfig());
 		TestManager.Log("[CombatUXManager] CalculateAnimationPositionAtIndex index=" + index + " fullCount=" + fullCount + " result=" + result);
 		return result;
 	}
@@ -1539,6 +1716,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public Vector3 GetRevealZonePosition()
 	{
 		Vector3 revealPos = physicalCardRevealPos.position;
+		// Float Stack: the reveal pose is layout-driven (anchor + float offset); the
+		// legacy physicalCardRevealPos only provides the unclamped z.
+		if (IsFloatStackLayoutActive)
+		{
+			Vector2 floatOffset = DeckFloatStackLayout.ComputeRevealOffset(BuildFloatStackLayoutParams(), floatStackPxToWorld);
+			revealPos.x = physicalCardDeckPos.position.x + floatOffset.x;
+			revealPos.y = physicalCardDeckPos.position.y + floatOffset.y;
+		}
 		if (physicalCardsInDeck.Count == 0)
 			return revealPos; // Deck empty: no occlusion possible
 
@@ -1549,6 +1734,75 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		float jitterMargin = Mathf.Abs(randomDeckPositionOffsetRange.z);
 		revealPos.z = Mathf.Min(revealPos.z, frontMostZ - gap - jitterMargin);
 		return revealPos;
+	}
+
+	/// <summary>
+	/// Reveal-zone card scale. Float Stack: layout-driven (deck size × revealScale).
+	/// All other modes: the configured physicalCardRevealSize, byte-for-byte.
+	/// </summary>
+	private Vector3 GetRevealZoneScale()
+	{
+		if (IsFloatStackLayoutActive)
+			return physicalCardDeckSize * floatStackRevealScale;
+		return physicalCardRevealSize;
+	}
+
+	// Float Stack: the revealed card whose big shadow is currently driven to the deck anchor.
+	private CardPhysObjScript _floatStackShadowCard;
+
+	/// <summary>
+	/// Float Stack mode: drive the revealed card's own big shadow to the deck anchor.
+	/// The shadow starts from the card's in-deck follow pose and tweens to the anchor pose
+	/// in sync with the reveal flight (see CardPhysObjScript.DriveBigShadowToPose).
+	/// </summary>
+	public void TryDriveRevealBigShadow(CardPhysObjScript physScript)
+	{
+		if (!IsFloatStackLayoutActive || physScript == null) return;
+		if (physScript.bigShadowRenderer == null) return;
+		if (_floatStackShadowCard == physScript) return; // already driving this one
+		ReleaseDrivenBigShadow(true); // safety: instantly restore any previously driven shadow
+		// z: just in front of the deck's front-most stack card (behind the revealed card).
+		int count = physicalCardsInDeck.Count;
+		float frontGap = Mathf.Abs(zOffset) * 0.5f + 0.001f;
+		float localZ = count > 0 ? -zOffset * (count - 1) - frontGap : 0f;
+		Vector3 targetLocalPos = new Vector3(
+			floatStackShadowOffset.x * floatStackPxToWorld,
+			-floatStackShadowOffset.y * floatStackPxToWorld,
+			localZ);
+		physScript.DriveBigShadowToPose(physicalCardDeckPos, targetLocalPos, floatStackRevealScale, floatStackShadowOpacity);
+		_floatStackShadowCard = physScript;
+	}
+
+	/// <summary>
+	/// Release the currently driven big shadow (fade out, then restore to its card);
+	/// instant = true restores without the fade. Idempotent.
+	/// </summary>
+	private void ReleaseDrivenBigShadow(bool instant)
+	{
+		if (_floatStackShadowCard == null) return;
+		var card = _floatStackShadowCard;
+		_floatStackShadowCard = null;
+		card.RestoreBigShadowFromDrive(instant);
+	}
+
+	/// <summary>
+	/// Float Stack mode shows the big shadow only on the revealed card; every deck card's
+	/// big shadow is suppressed. Also releases any driven shadow when the mode was switched
+	/// away mid-reveal. Idempotent — safe to call on every deck layout update.
+	/// </summary>
+	private void ApplyFloatStackShadowSuppression()
+	{
+		bool suppress = IsFloatStackLayoutActive;
+		if (!suppress && _floatStackShadowCard != null)
+			ReleaseDrivenBigShadow(true);
+		for (int i = 0; i < physicalCardsInDeck.Count; i++)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+			var phys = card.GetComponent<CardPhysObjScript>();
+			if (phys == null) continue;
+			phys.SetBigShadowSuppressed(suppress);
+		}
 	}
 
 	/// <summary>
@@ -1618,6 +1872,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			physScript.SetTargetScale(GetDeckScaleAtIndex(i));
 			physScript.SetTargetRotation(targetRot);
 		}
+		// Float Stack mode: deck cards never show their big shadow (only the revealed card's,
+		// driven to the anchor). Idempotent per-card guarded toggle.
+		ApplyFloatStackShadowSuppression();
 		// VISUAL-FIX(2026-07-18): continuous half of the reveal-zone occlusion fix (see
 		// GetRevealZonePosition). Deck count changes mid-combat (AddTempCard, Stage, Bury...),
 		// so the reveal card's target z is re-clamped on every deck layout update. Skipped while
@@ -2227,7 +2484,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					if (revealPhysScript != null)
 					{
 						revealPhysScript.SetTargetPosition(revealPos);
-						revealPhysScript.SetTargetScale(physicalCardRevealSize);
+						revealPhysScript.SetTargetScale(GetRevealZoneScale());
 						revealPhysScript.SetTargetRotation(Quaternion.identity);
 						revealPhysScript.isPlayingSpecialAnimation = false;
 					}
@@ -2269,6 +2526,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	public void ClearAllPhysicalCards()
 	{
+		// Float Stack: restore any driven big shadow to its card first so it is
+		// destroyed together with the card below (it is re-parented away while driven).
+		ReleaseDrivenBigShadow(true);
+
 		// Stop all special animations that may be playing
 		StopAllSpecialAnimations();
 		
@@ -2362,6 +2623,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (physicalCardInRevealZone == physicalCard)
 		{
 			physicalCardInRevealZone = null;
+			// Float Stack: an exiled/destroyed-while-revealed card's driven big shadow
+			// fades out and restores before the card is destroyed.
+			var destroyedPhys = physicalCard.GetComponent<CardPhysObjScript>();
+			if (destroyedPhys != null && destroyedPhys == _floatStackShadowCard)
+				ReleaseDrivenBigShadow(false);
 		}
 
 		AnimationStateTracker.me?.RegisterAnimation();

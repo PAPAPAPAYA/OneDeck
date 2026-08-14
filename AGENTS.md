@@ -67,18 +67,20 @@ Assets/
 - **Stage** sends cards to `index Count-1` (top, first revealed).
 - **Delay** moves a card toward `index 0` by 1 slot (later reveal).
 
-### Physical Deck Layout (Cascade)
-- The combat physical deck uses the **Smooth Curve Cascade Stack**: the front card (deck top) is largest at the `physicalCardDeckPos` anchor; the front segment sweeps up-left with progressively shrinking size/spacing; after the turning point the tail hooks back at minimum spacing. Shop layout is unaffected.
-- `CombatUXManager.enableCascadeDeckLayout` (default `true`) toggles cascade vs the legacy linear fan. Legacy `xOffset/yOffset/zOffset` fields only serve the fallback path.
-- `CombatUXManager.revealCardCountsAsDeckFront` (default `true`) counts the reveal-zone card as cascadeIndex 0 (front slot), so revealing no longer re-lays-out the deck — it slides forward one step only when the card returns to the bottom. Single source of truth: `GetCascadeDeckCount()`. In `MoveRevealedCardToBottom` the legacy `effectiveCount = Count - 1` and the +1 front slot cancel out, so it passes `physicalCardsInDeck.Count`.
-- All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(..., CascadeConfig)`; every caller (layout, popup peaks, slot-in, reveal entry/exit, `MoveCardToIndex`, peel focus) inherits the curve unchanged.
-- **Peel deck focus**: no offset/marker — while focused, `_focusSegmentCount` (focus index + 1) drives the layout seams via `GetLayoutDeckCount()`, so the focus card sits on the cascade front slot at `physicalCardDeckPos` (max scale); peeled cards slide down off-screen from their current positions; restore = full cascade re-layout incl. scales. `deckFocusTargetPos` is deprecated.
-- `DeckCascadeLayout` (pure static, unit-testable) holds the Bezier + arc-length math ported 1:1 from `docs/demo/CardArrangementDemo.html`; results are cached per `(deckCount, pxToWorld, Params)`.
-- Index mapping: `cascadeIndex = deckCount - 1 - unityIndex` (cascadeIndex 0 = front card = deck top). Z depth keeps the existing formula `basePos.z - zOffset * index`.
-- Per-index scale: `GetDeckScaleAtIndex(i)` = `physicalCardDeckSize` × cascade scale; position jitter is multiplied by the card's cascade scale when `cascadeScaleJitterWithCard` is on so the tight tail stays clean.
-- **Coverage normalization**: per-card steps share one stretch-only scale factor (clamped by `cascadeCoverageCap`) so small decks still reach the curve's hook region instead of looking straight; large decks stay above the target coverage naturally and are unaffected.
-- EditMode coverage: `Assets/Scripts/Editor/Tests/DeckCascadeLayoutTests.cs` (golden values generated from the demo).
-- **Dynamic arc midpoint (replaces fixed `showPos`)**: with `CombatUXManager.useDynamicArcMidpoint` on (default), deck-bound arcs (reveal→bottom, Stage batch, ToTop/ToBottom/ToIndex, shuffle) compute their midpoint from the cascade walk at `arcMidpointCurveT` + `arcMidpointOffset` (`TryGetArcMidpointPosition` seam, `DeckCascadeLayout.ComputeOffsetAtCurveT`). Fallback: explicit `CardMoveConfig.arcMidpoint` > dynamic > legacy scene `showPos`. With `arcMidScaleEnabled` (default on), dynamic arcs scale two-phase via `arcMidScaleMultiplier`. Gizmo: `OnDrawGizmosSelected`.
+### Physical Deck Layout (Cascade / Arc Loop / Float Stack)
+- Selector: `deckLayoutMode` enum {Linear, Cascade, ArcLoop, FloatStack}; legacy bools map: cascade off→Linear; arc on + enum at Cascade→ArcLoop.
+- Cascade: front card (deck top) largest at the `physicalCardDeckPos` anchor; front sweeps up-left shrinking; tail hooks back tight. Shop unaffected. Legacy `xOffset/yOffset/zOffset` fields only serve the Linear fallback.
+- `revealCardCountsAsDeckFront` (default `true`, cascade/arc only): the reveal-zone card holds the layout front slot, so revealing does not re-layout the deck; it slides one step on return. Source of truth: `GetCascadeDeckCount()`.
+- All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(...)`; every caller (layout, popup, slot-in, reveal, peel focus) inherits the active layout.
+- **Peel deck focus**: `_focusSegmentCount` (focus index + 1) drives the layout seams via `GetLayoutDeckCount()` — focus card on the front slot at the anchor (max scale); peeled cards slide off-screen; restore = full re-layout. `deckFocusTargetPos` deprecated.
+- `DeckCascadeLayout` (pure static, unit-testable): Bezier + arc-length math ported 1:1 from `docs/demo/CardArrangementDemo.html`; cached per `(deckCount, pxToWorld, Params)`.
+- Cascade index mapping: `cascadeIndex = deckCount - 1 - unityIndex` (0 = front card = deck top). Z: `basePos.z - zOffset * index`.
+- Per-index scale: `GetDeckScaleAtIndex(i)` = `physicalCardDeckSize` × layout scale; `cascadeScaleJitterWithCard` multiplies position jitter by the same scale.
+- **Coverage normalization**: one stretch-only factor (cap `cascadeCoverageCap`) lets small decks reach the curve's hook region; large decks unaffected.
+- EditMode coverage: `DeckCascadeLayoutTests.cs` / `DeckArcLoopLayoutTests.cs` / `DeckFloatStackLayoutTests.cs` (demo goldens).
+- **Dynamic arc midpoint (replaces `showPos`)**: `useDynamicArcMidpoint` (default on) — deck-bound arcs take their midpoint from the layout walk at `arcMidpointCurveT` + `arcMidpointOffset` (`TryGetArcMidpointPosition`). Fallback: explicit `CardMoveConfig.arcMidpoint` > dynamic > `showPos`.
+- **Arc Loop mode**: superellipse loop; slots by curvature-weighted arc length (w=0 = uniform); deck top = tilted loop's visual lowest point, deck bottom adjacent up the right; scale by screen height, z by depth rank; cards upright. PRD: `plans/plan-arc-loop-deck-layout-2026-08-12.md`.
+- **Float Stack mode**: direct stack, index j → anchor + (0, stepY·(count−j))·px, z by index; reveal pose = anchor + (−floatX, +upY)·px, scale ×revealScale; layout count = raw physical count (no reveal +1). Revealed card's `PhysicalCardBigShadow` is driven to the anchor (re-parent + tween synced to the reveal flight, fades on return); other cards' big shadows suppressed. PRD: `plans/plan-float-stack-reveal-layout-2026-08-13.md`; demo: `docs/demo/CardStackRevealDemo.html`.
 
 ### Controls
 - First click: Reveal next card.
@@ -151,7 +153,7 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 
 ## Key Files
 
-All under `Assets/Scripts/` in the folder matching their role: `Managers/CombatManager`, `Managers/CombatFuncs`, `Managers/GameEventStorage`, `Managers/ValueTrackerManager`, `Managers/EnumStorage`, `Managers/AnimationStateTracker`, `Managers/RecorderAnimationPlayer`, `Managers/CardFactory`, `Managers/ICombatVisuals`, `Managers/CombatLog`, `Managers/WriteRead/CombatPerCardStatsTracker`, `Effects/HPAlterEffect`, `Effects/StatusEffect/StatusEffectGiverEffect`, `Effects/StartCardShuffleEffect`, `Card/CardScript`, `Card/CostNEffectContainer`, `UXPrototype/CombatUXManager`, `UXPrototype/CombatHPBarPresenter`, `UXPrototype/DeckCascadeLayout`, `UXPrototype/DeckPositionCalculator`, `UXPrototype/ResultStatsPanel`. Game rules: `docs/GameRules.md`.
+All under `Assets/Scripts/` in the folder matching their role: `Managers/CombatManager`, `Managers/CombatFuncs`, `Managers/GameEventStorage`, `Managers/ValueTrackerManager`, `Managers/EnumStorage`, `Managers/AnimationStateTracker`, `Managers/RecorderAnimationPlayer`, `Managers/CardFactory`, `Managers/ICombatVisuals`, `Managers/CombatLog`, `Managers/WriteRead/CombatPerCardStatsTracker`, `Effects/HPAlterEffect`, `Effects/StatusEffect/StatusEffectGiverEffect`, `Effects/StartCardShuffleEffect`, `Card/CardScript`, `Card/CostNEffectContainer`, `UXPrototype/CombatUXManager`, `UXPrototype/CombatHPBarPresenter`, `UXPrototype/DeckCascadeLayout`, `UXPrototype/DeckArcLoopLayout`, `UXPrototype/DeckFloatStackLayout`, `UXPrototype/DeckPositionCalculator`, `UXPrototype/ResultStatsPanel`. Game rules: `docs/GameRules.md`.
 
 ## Result Screen Per-Card Stats
 

@@ -8505,6 +8505,24 @@ MonoBehaviour:
   cascadeCoverageTarget: 0.62
   cascadeCoverageCap: 2.5
   revealCardCountsAsDeckFront: 1
+  enableArcLoopDeckLayout: 0
+  arcLoopPxToWorld: 0.01
+  arcLoopRadii: {x: 195, y: 155}
+  arcLoopExponent: 2
+  arcLoopTiltDeg: 45
+  arcLoopCurveDensity: 3
+  arcLoopMinScale: 0.7
+  arcLoopScalePower: 1
+  arcLoopMirror: 0
+  arcLoopSamples: 720
+  deckLayoutMode: 1
+  floatStackPxToWorld: 0.01
+  floatStackStepY: 14
+  floatStackRevealScale: 1.07
+  floatStackRevealFloatX: 16
+  floatStackRevealUpY: -14
+  floatStackShadowOffset: {x: 0, y: 30}
+  floatStackShadowOpacity: 0.85
   useDynamicArcMidpoint: 1
   arcMidpointCurveT: 0.5
   arcMidpointOffset: {x: 1, y: 2}

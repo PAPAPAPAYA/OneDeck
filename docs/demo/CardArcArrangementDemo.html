@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 圆弧发牌排列 Demo</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+			background: #0f1a1f;
+			color: #e0e0e0;
+			min-height: 100vh;
+		}
+
+		.intro {
+			padding: 30px 40px 10px;
+			max-width: 1400px;
+			margin: 0 auto;
+		}
+
+		.intro h1 {
+			font-size: 28px;
+			margin-bottom: 12px;
+			color: #fff;
+		}
+
+		.intro p {
+			line-height: 1.8;
+			color: #b0c0c8;
+			margin-bottom: 10px;
+		}
+
+		.intro code {
+			background: #263740;
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-size: 13px;
+		}
+
+		.section {
+			padding: 20px 40px 40px;
+			max-width: 1400px;
+			margin: 0 auto;
+		}
+
+		.demo-area {
+			width: 100%;
+			height: 560px;
+			background: #1c2b32;
+			border-radius: 12px;
+			position: relative;
+			overflow: hidden;
+			box-shadow: inset 0 0 60px rgba(0,0,0,0.3);
+		}
+
+		/* All cards share one anchor at the area center; transform places them on the arc. */
+		.card {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin-top: -105px;
+			margin-left: -75px;
+			box-shadow: 0 10px 28px rgba(0,0,0,0.38);
+			border: 1px solid rgba(255,255,255,0.08);
+			transform-origin: center center;
+			transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+		}
+
+		.card::after {
+			content: '';
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			right: 10px;
+			height: 30px;
+			background: rgba(255,255,255,0.12);
+			border-radius: 7px;
+		}
+
+		.card .idx {
+			position: absolute;
+			bottom: 8px;
+			left: 0;
+			right: 0;
+			text-align: center;
+			font-size: 13px;
+			font-weight: bold;
+			opacity: 0.8;
+			pointer-events: none;
+		}
+
+		/* Color palette matching the reference image */
+		.color-front { background: #d4d0c8; }
+		.color-gold { background: #c9981f; }
+		.color-red { background: #b71c2c; }
+		.color-light { background: #e8e4dc; }
+
+		.color-front .idx, .color-light .idx { color: #4a5458; }
+		.color-gold .idx, .color-red .idx { color: rgba(255,255,255,0.85); }
+
+		#guideSvg {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+		}
+
+		.controls {
+			margin-top: 16px;
+			display: flex;
+			gap: 12px;
+			flex-wrap: wrap;
+		}
+
+		.btn {
+			padding: 8px 18px;
+			background: #263740;
+			border: 1px solid #334750;
+			border-radius: 5px;
+			color: #e0e0e0;
+			cursor: pointer;
+			font-size: 13px;
+		}
+
+		.btn:hover {
+			background: #334750;
+		}
+
+		.param-row {
+			display: flex;
+			gap: 20px;
+			margin-bottom: 12px;
+			flex-wrap: wrap;
+		}
+
+		.param-row label {
+			font-size: 13px;
+			color: #90a0a8;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.param-row input[type="range"] {
+			width: 120px;
+		}
+
+		.param-row select {
+			background: #263740;
+			border: 1px solid #334750;
+			border-radius: 4px;
+			color: #e0e0e0;
+			padding: 3px 6px;
+			font-size: 12px;
+		}
+
+		.eval-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+			gap: 16px;
+			margin-top: 16px;
+		}
+
+		.eval-card {
+			background: #1a262c;
+			border: 1px solid #2a3a42;
+			border-radius: 8px;
+			padding: 16px;
+		}
+
+		.eval-card h3 {
+			color: #c9981f;
+			font-size: 15px;
+			margin-bottom: 10px;
+		}
+
+		.eval-card ul {
+			list-style: none;
+		}
+
+		.eval-card li {
+			padding: 4px 0;
+			font-size: 13px;
+			color: #a8b8c0;
+		}
+
+		.eval-card li.pro::before {
+			content: '✓ ';
+			color: #4caf50;
+		}
+
+		.eval-card li.con::before {
+			content: '✗ ';
+			color: #e57373;
+		}
+
+		.eval-card li.cost::before {
+			content: '◎ ';
+			color: #64b5f6;
+		}
+	</style>
+</head>
+<body>
+	<div class="intro">
+		<h1>OneDeck 圆弧发牌排列 Demo</h1>
+		<p><strong>目标排列描述：</strong>参考图展示的是一种「椭圆弧循环队列（Elliptical Arc Loop）」。卡片沿一整条椭圆弧分布，槽位按「弧长 + 曲率加权密度」排布（弯折越剧烈的地方卡越密）。<strong>牌库顶</strong>（下一张要揭示的牌）= 整圈视觉最低、最前方的卡；<strong>牌库底</strong>（<code>combinedDeckZone[0]</code>）= 沿弧与它相邻的下一张卡 —— 也就是卡片被揭示、触发效果后要回到的位置。牌序从牌库底沿右侧上行、越过圆弧顶端、沿左侧下行，回到牌库顶。</p>
+		<p>揭示流程 = 循环传送带：牌库顶飞出 → 落到牌库底的位置 → 其余每张牌沿弧前进一格。z 序按高度：越低越靠前，同层左压右。<strong>纵深缩放</strong>：按屏幕高度归一 —— 最低（最前）= 1.0，最高（最后）= 后方最小缩放，与 z 序同源。<strong>倾斜角</strong>：整圈在屏幕平面内刚性旋转（正值 = 左半低、右半高），不做锚定；牌库顶槽位自动对准倾斜后整圈的视觉最低点。<strong>弯处加密</strong>：槽位沿弧按密度 1 + w·κ/κ̄ 分布，w = 0 时等弧长均匀分布，w 越大弯折处（曲率大）越密。卡片自身始终保持竖直。圆弧的两根轴（radiusX / radiusY）可独立调整；「轮廓方度」在标准椭圆（2.0）与更接近参考图「两侧近似竖直列」的方圆轮廓（&gt;2）之间连续过渡。</p>
+	</div>
+
+	<div class="section">
+		<div class="param-row">
+			<label>卡片数: <span id="valCount">8</span><input type="range" id="rangeCount" min="4" max="30" step="1" value="8"></label>
+			<label>水平半径 radiusX: <span id="valRX">105</span><input type="range" id="rangeRX" min="0" max="260" step="5" value="105"></label>
+			<label>垂直半径 radiusY: <span id="valRY">145</span><input type="range" id="rangeRY" min="20" max="240" step="5" value="145"></label>
+			<label>轮廓方度: <span id="valExp">2.0</span><input type="range" id="rangeExp" min="1.5" max="5" step="0.1" value="2"></label>
+			<label>卡片缩放: <span id="valScale">1.00</span><input type="range" id="rangeScale" min="0.6" max="1.2" step="0.05" value="1"></label>
+			<label>后方最小缩放: <span id="valMinScale">0.70</span><input type="range" id="rangeMinScale" min="0.3" max="1" step="0.05" value="0.7"></label>
+			<label>缩放衰减: <span id="valScalePow">1.00</span><input type="range" id="rangeScalePow" min="0.5" max="3" step="0.25" value="1"></label>
+			<label>倾斜角°(正=左低右高): <span id="valTilt">0</span><input type="range" id="rangeTilt" min="-45" max="45" step="1" value="0"></label>
+			<label>弯处加密强度: <span id="valDens">1.0</span><input type="range" id="rangeDens" min="0" max="3" step="0.1" value="1"></label>
+			<label>牌库底位置:
+				<select id="selMirror">
+					<option value="right" selected>在牌库顶右侧（与参考图一致）</option>
+					<option value="left">在牌库顶左侧（镜像）</option>
+				</select>
+			</label>
+			<label>显示辅助轮廓: <input type="checkbox" id="chkGuide" checked></label>
+		</div>
+		<div class="demo-area" id="demo">
+			<svg id="guideSvg"><path id="guidePath" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-dasharray="5 5"/></svg>
+		</div>
+		<div class="controls">
+			<button class="btn" onclick="deal()">重播发牌</button>
+			<button class="btn" onclick="revealOne()">模拟揭示（顶 → 底）</button>
+			<button class="btn" onclick="toggleSpread()">展开/收拢</button>
+		</div>
+		<div class="eval-grid">
+			<div class="eval-card">
+				<h3>位置计算（Unity 映射）</h3>
+				<ul>
+					<li class="pro">弧长 + 曲率采样表（720 点）+ 二分查找；形状参数变化才重建，倾斜/牌数变化只重查表</li>
+					<li class="pro">槽位按密度 1 + w·κ/κ̄ 沿弧分布：w = 0 等弧长，w 越大弯折处越密（κ̄ = 2π/L）</li>
+					<li class="pro">纵深缩放 = 1 − (1−minScale)·f(高度归一 t)，最低 = 1，最高 = minScale，与 z 序同源</li>
+					<li class="pro">倾斜 = 面内刚体旋转（不锚定），牌库顶槽位以加权弧坐标对准视觉最低点，卡片不旋转</li>
+					<li class="pro">index = Count-1（牌库顶）→ 整圈视觉最低点；index = 0（牌库底）→ 沿弧相邻下一槽</li>
+					<li class="cost">可并入 DeckPositionCalculator；弧长缓存模式与 DeckCascadeLayout 同款</li>
+				</ul>
+			</div>
+			<div class="eval-card">
+				<h3>层级与牌序</h3>
+				<ul>
+					<li class="pro">z 序只由高度决定：越低越靠前（牌库顶 z 最高，弧顶最低）</li>
+					<li class="pro">同层左右不互相遮挡（radiusX 足够时），约定同层左压右</li>
+					<li class="pro">揭示 = pop 弧底 + insert 到 index 0，所有卡沿弧走一格，与现有 MoveCardToBottom 语义完全同构</li>
+				</ul>
+			</div>
+			<div class="eval-card">
+				<h3>与现有 cascade 的差异</h3>
+				<ul>
+					<li class="cost">缩放只随视觉纵深（角距离）变化：无 per-index 间距衰减、无覆盖率归一化</li>
+					<li class="cost">牌数变化只改加权步长 D/Count，整副牌始终铺满整圈</li>
+					<li class="con">牌很多时（&gt;20）弧底附近相邻卡角距小，牌库底会几乎被牌库顶完全遮挡</li>
+					<li class="con">横向占位随 radiusX 增大，注意与 reveal zone / 手牌区的屏幕分区</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Layout parameters (sliders mutate this object)
+		const params = {
+			cardCount: 8,
+			radiusX: 105,
+			radiusY: 145,
+			exponent: 2.0,   // 2 = true ellipse; higher = squarer sides (closer to the reference's columns)
+			cardScale: 1.0,
+			tiltDeg: 0,      // in-plane tilt of the whole loop; positive = left half lower, right half higher
+			curveDensity: 1.0, // curvature weight: 0 = uniform arc length, higher = bends pack denser
+			minScale: 0.7,   // scale of the backmost card (arc top); deck top is always 1.0
+			scalePower: 1.0, // falloff steepness of the depth scale
+			mirror: false,   // false = deck bottom sits right of the front card (matches the reference)
+			showGuide: true,
+			spread: false
+		};
+		const SPREAD_MULT = 1.55;
+
+		// slotOrder[k] = card element currently at deck index k
+		// (k = 0: deck bottom, right of the front card; k = Count-1: deck top, front center).
+		let slotOrder = [];
+
+		// Signed power helper for the superellipse shaping
+		function spow(value, power) {
+			return Math.sign(value) * Math.pow(Math.abs(value), power);
+		}
+
+		// Slot k sits on the loop at angle alpha = 2*PI*(k+1)/N, measured from the
+		// bottom of the arc and climbing the right side first.
+		// Untilted superellipse point at parameter angle alpha.
+		// alpha = 0 is the loop bottom; positive alpha climbs the right side.
+		function loopBasePoint(alpha) {
+			const shape = 2 / params.exponent;
+			const mult = params.spread ? SPREAD_MULT : 1;
+			const side = params.mirror ? -1 : 1;
+			return {
+				x: side * params.radiusX * mult * spow(Math.sin(alpha), shape),
+				y: params.radiusY * mult * spow(Math.cos(alpha), shape)
+			};
+		}
+
+		// Rigid in-plane tilt applied to a base point (positive = left half lower, right half higher).
+		function tiltPoint(p) {
+			const phi = params.tiltDeg * Math.PI / 180;
+			const cos = Math.cos(phi), sin = Math.sin(phi);
+			return { x: p.x * cos + p.y * sin, y: -p.x * sin + p.y * cos };
+		}
+
+		// Outline point, used by the guide path.
+		function loopPoint(alpha) {
+			return tiltPoint(loopBasePoint(alpha));
+		}
+
+		// Arc-length + curvature sample table of the untilted loop (rotation-invariant).
+		// Rebuilt only when the loop shape or the density weight changes.
+		const ARC_SAMPLES = 720;
+		let arcTable = null;
+
+		function buildArcTable() {
+			const pts = [];
+			for (let i = 0; i <= ARC_SAMPLES; i++) {
+				pts.push(loopBasePoint((i / ARC_SAMPLES) * Math.PI * 2));
+			}
+			const segLen = [], kappa = [];
+			let totalLen = 0;
+			for (let i = 0; i < ARC_SAMPLES; i++) {
+				const dx = pts[i + 1].x - pts[i].x, dy = pts[i + 1].y - pts[i].y;
+				const len = Math.sqrt(dx * dx + dy * dy);
+				segLen.push(len);
+				totalLen += len;
+			}
+			// Menger curvature through each sample (wraparound)
+			for (let i = 0; i < ARC_SAMPLES; i++) {
+				const a = pts[(i - 1 + ARC_SAMPLES) % ARC_SAMPLES];
+				const b = pts[i];
+				const c = pts[(i + 1) % ARC_SAMPLES];
+				const abx = b.x - a.x, aby = b.y - a.y;
+				const bcx = c.x - b.x, bcy = c.y - b.y;
+				const cax = c.x - a.x, cay = c.y - a.y;
+				const cross = abx * bcy - aby * bcx;
+				const denom = Math.sqrt((abx * abx + aby * aby) * (bcx * bcx + bcy * bcy) * (cax * cax + cay * cay));
+				kappa.push(denom > 0 ? 2 * Math.abs(cross) / denom : 0);
+			}
+			let kappaSum = 0;
+			for (let i = 0; i < ARC_SAMPLES; i++) kappaSum += kappa[i] * segLen[i];
+			const kappaMean = kappaSum / totalLen;
+			// Density per segment = 1 + w * kappa / kappaMean (trapezoid over endpoints)
+			const cumDensity = [0];
+			let totalDensity = 0;
+			for (let i = 0; i < ARC_SAMPLES; i++) {
+				const rhoA = 1 + params.curveDensity * kappa[i] / kappaMean;
+				const rhoB = 1 + params.curveDensity * kappa[(i + 1) % ARC_SAMPLES] / kappaMean;
+				totalDensity += (rhoA + rhoB) / 2 * segLen[i];
+				cumDensity.push(totalDensity);
+			}
+			arcTable = { pts, cumDensity, totalDensity };
+		}
+
+		function ensureArcTable() {
+			if (!arcTable) buildArcTable();
+		}
+
+		function invalidateArcTable() {
+			arcTable = null;
+		}
+
+		// Weighted arc coordinate of the loop's visual lowest point under the current tilt.
+		// The deck top slot is pinned there, not to the parametric bottom.
+		function loopBottomDensityCoord() {
+			let best = 0, bestY = -Infinity;
+			for (let i = 0; i < ARC_SAMPLES; i++) {
+				const y = tiltPoint(arcTable.pts[i]).y;
+				if (y > bestY) { bestY = y; best = i; }
+			}
+			return arcTable.cumDensity[best];
+		}
+
+		// Tilted loop point at weighted arc coordinate d (wraps around the loop).
+		function pointAtDensity(d) {
+			const t = arcTable;
+			let dd = d % t.totalDensity;
+			if (dd < 0) dd += t.totalDensity;
+			let lo = 0, hi = ARC_SAMPLES;
+			while (lo < hi) {
+				const mid = (lo + hi) >> 1;
+				if (t.cumDensity[mid + 1] <= dd) lo = mid + 1; else hi = mid;
+			}
+			const segStart = t.cumDensity[lo];
+			const segEnd = t.cumDensity[lo + 1];
+			const f = segEnd > segStart ? (dd - segStart) / (segEnd - segStart) : 0;
+			const a = t.pts[lo], b = t.pts[lo + 1];
+			return tiltPoint({ x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f });
+		}
+
+		function slotPosition(k, n, bottomD) {
+			return pointAtDensity(bottomD + (k + 1) / n * arcTable.totalDensity);
+		}
+
+		// z order comes from height only: lower on screen = more front.
+		// Ties (same-level left/right pair) resolve left-over-right (higher deck index on top).
+		function computeZOrder(n, bottomD) {
+			const entries = [];
+			for (let k = 0; k < n; k++) {
+				entries.push({ k: k, y: slotPosition(k, n, bottomD).y });
+			}
+			entries.sort((a, b) => (a.y - b.y) || (a.k - b.k)); // backmost (smallest y) first
+			const zOf = new Array(n);
+			entries.forEach((entry, rank) => { zOf[entry.k] = rank + 1; });
+			return zOf;
+		}
+
+		// Colors carry no deck-order meaning — each card draws a random palette color at deal time.
+		function randomColorClass() {
+			const roll = Math.random();
+			if (roll < 0.35) return 'color-red';
+			if (roll < 0.7) return 'color-light';
+			if (roll < 0.85) return 'color-front';
+			return 'color-gold';
+		}
+
+		function cardId(creationIndex) {
+			return creationIndex < 26 ? String.fromCharCode(65 + creationIndex) : String(creationIndex + 1);
+		}
+
+		function slotLabel(card, k, n) {
+			let suffix = '';
+			if (k === 0) suffix = ' · 牌库底';
+			else if (k === n - 1) suffix = ' · 牌库顶';
+			return card.dataset.cid + ' · idx ' + k + suffix;
+		}
+
+		function render(animate) {
+			const demo = document.getElementById('demo');
+			demo.querySelectorAll('.card').forEach(c => c.remove());
+			slotOrder = [];
+			const n = params.cardCount;
+			ensureArcTable();
+			const bottomD = loopBottomDensityCoord();
+			for (let k = 0; k < n; k++) {
+				const card = document.createElement('div');
+				card.className = 'card ' + randomColorClass();
+				card.dataset.cid = cardId(k);
+				card.innerHTML = '<span class="idx"></span>';
+				if (animate) {
+					// Start stacked at the front (loop's visual bottom), then deal into place from deck bottom upward.
+					const front = slotPosition(n - 1, n, bottomD);
+					card.style.opacity = '0';
+					card.style.transform = 'translate(' + front.x + 'px, ' + front.y + 'px) scale(0.3)';
+					card.style.transitionDelay = (k * 0.06) + 's';
+				}
+				demo.appendChild(card);
+				slotOrder.push(card);
+			}
+			updateGuide();
+			applyLayout(!animate);
+			if (animate) {
+				requestAnimationFrame(() => requestAnimationFrame(() => applyLayout(false)));
+			}
+		}
+
+		function applyLayout(clearDelay) {
+			const n = slotOrder.length;
+			if (n === 0) return;
+			ensureArcTable();
+			const bottomD = loopBottomDensityCoord();
+			const zOf = computeZOrder(n, bottomD);
+			// Depth scale is driven by screen height: the visually lowest (frontmost)
+			// slot is 1.0, the highest (backmost) slot is minScale.
+			const positions = [];
+			let yMin = Infinity, yMax = -Infinity;
+			for (let k = 0; k < n; k++) {
+				const p = slotPosition(k, n, bottomD);
+				positions.push(p);
+				if (p.y < yMin) yMin = p.y;
+				if (p.y > yMax) yMax = p.y;
+			}
+			slotOrder.forEach((card, k) => {
+				const pos = positions[k];
+				const depthT = yMax > yMin ? (yMax - pos.y) / (yMax - yMin) : 0;
+				const falloff = 1 - Math.pow(1 - depthT, params.scalePower);
+				const depth = 1 - (1 - params.minScale) * falloff;
+				if (clearDelay) card.style.transitionDelay = '0s';
+				card.style.opacity = '1';
+				card.style.zIndex = card.classList.contains('flying') ? 100 + zOf[k] : zOf[k];
+				card.style.transform = 'translate(' + pos.x + 'px, ' + pos.y + 'px) scale(' + (params.cardScale * depth) + ')';
+				card.querySelector('.idx').textContent = slotLabel(card, k, n);
+			});
+		}
+
+		// Guide outline samples the same superellipse so it matches any exponent.
+		function updateGuide() {
+			const svg = document.getElementById('guideSvg');
+			const path = document.getElementById('guidePath');
+			if (!params.showGuide) {
+				path.setAttribute('d', '');
+				return;
+			}
+			const rect = svg.getBoundingClientRect();
+			const cx = rect.width / 2;
+			const cy = rect.height / 2;
+			let d = '';
+			for (let i = 0; i <= 120; i++) {
+				const p = loopPoint((i / 120) * Math.PI * 2);
+				d += (i === 0 ? 'M' : 'L') + (cx + p.x).toFixed(1) + ' ' + (cy + p.y).toFixed(1);
+			}
+			path.setAttribute('d', d + 'Z');
+		}
+
+		function deal() {
+			render(true);
+		}
+
+		// Reveal simulation: pop the deck top (front center), insert it at deck
+		// bottom (right of the new front card); every other card advances one slot.
+		function revealOne() {
+			const n = slotOrder.length;
+			if (n < 2) return;
+			const card = slotOrder.pop();
+			slotOrder.unshift(card);
+			card.classList.add('flying'); // stay on top during the flight
+			applyLayout(true);
+			clearTimeout(revealOne._timer);
+			revealOne._timer = setTimeout(() => {
+				card.classList.remove('flying');
+				applyLayout(true);
+			}, 600);
+		}
+
+		function toggleSpread() {
+			params.spread = !params.spread;
+			invalidateArcTable();
+			applyLayout(true);
+			updateGuide();
+		}
+
+		function bindSlider(id, variable, displayId, onChanged) {
+			const slider = document.getElementById(id);
+			const display = document.getElementById(displayId);
+			slider.addEventListener('input', (e) => {
+				params[variable] = parseFloat(e.target.value);
+				display.textContent = e.target.value;
+				onChanged();
+			});
+		}
+
+		bindSlider('rangeCount', 'cardCount', 'valCount', () => render(false));
+		bindSlider('rangeRX', 'radiusX', 'valRX', () => { invalidateArcTable(); applyLayout(true); updateGuide(); });
+		bindSlider('rangeRY', 'radiusY', 'valRY', () => { invalidateArcTable(); applyLayout(true); updateGuide(); });
+		bindSlider('rangeExp', 'exponent', 'valExp', () => { invalidateArcTable(); applyLayout(true); updateGuide(); });
+		bindSlider('rangeScale', 'cardScale', 'valScale', () => applyLayout(true));
+		bindSlider('rangeMinScale', 'minScale', 'valMinScale', () => applyLayout(true));
+		bindSlider('rangeScalePow', 'scalePower', 'valScalePow', () => applyLayout(true));
+		bindSlider('rangeTilt', 'tiltDeg', 'valTilt', () => { applyLayout(true); updateGuide(); });
+		bindSlider('rangeDens', 'curveDensity', 'valDens', () => { invalidateArcTable(); applyLayout(true); });
+
+		document.getElementById('selMirror').addEventListener('change', (e) => {
+			params.mirror = e.target.value === 'left';
+			invalidateArcTable();
+			applyLayout(true);
+			updateGuide();
+		});
+		document.getElementById('chkGuide').addEventListener('change', (e) => {
+			params.showGuide = e.target.checked;
+			updateGuide();
+		});
+
+		// Initial deal
+		deal();
+		window.addEventListener('resize', updateGuide);
+	</script>
+</body>
+</html>
