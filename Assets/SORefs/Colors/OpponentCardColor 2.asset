@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe7686bffff299143ad9a848844bda45, type: 3}
   m_Name: OpponentCardColor 2
   m_EditorClassIdentifier: Assembly-CSharp::ColorSO
-  value: {r: 0.32, g: 0.050526313, b: 0.08421052, a: 1}
+  value: {r: 0.5019608, g: 0.078431375, b: 0.14117648, a: 1}
   description: Opponent card face/back color (also HP bar enemy, low HP)
