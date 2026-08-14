@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Never-Selected Cards — 从未被选择过的卡片</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1180px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; }
+	h2 { font-size: 1.12rem; margin: 26px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 220px; }
+	.kpi .num { font-size: 1.55rem; font-weight: 700; font-family: Consolas, monospace; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; }
+	.mono { font-family: Consolas, monospace; }
+	.id { color: var(--accent); font-weight: 600; white-space: nowrap; }
+	.desc { white-space: pre-line; }
+	.prefab { white-space: pre-line; color: var(--dim); font-size: 0.78rem; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.stale { color: var(--bad); font-size: 0.75rem; margin-top: 4px; }
+	.rtag { display: inline-block; font-size: 0.72rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; }
+	ul { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+</style>
+</head>
+<body>
+
+<h1>Never-Selected Cards <span style="color:var(--bad)">23</span> / 71</h1>
+<div class="sub">从未被选择过的卡片 · 来源：Assets/SORefs/Decks/Recorded（69 副去重后卡组中 0 次出现）· 效果：Notion「one deck demo cards」库（2026-08-13 查询）· 对照：prefab 中文 cardDesc</div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num" style="color:var(--bad)">23</div><div class="lbl">从未被选择的卡片（占可选 71 张的 32%）</div></div>
+	<div class="kpi"><div class="num" style="color:var(--good)">1</div><div class="lbl">Common 未被选择</div></div>
+	<div class="kpi"><div class="num" style="color:var(--accent)">14</div><div class="lbl">Uncommon 未被选择</div></div>
+	<div class="kpi"><div class="num" style="color:var(--warn)">8</div><div class="lbl">Rare 未被选择</div></div>
+</div>
+
+<h2>卡片清单（按稀有度排序）</h2>
+<div class="card">
+	<table id="tbl"></table>
+	<div class="note">
+		效果列 = Notion 卡片库原文（英文为主；个别条目为中文混合，原样保留）。对照列 = 当前 prefab 的 cardDesc（中文，仅作核对）。
+		标注 <span style="color:var(--bad)">⚠ stale</span> 的 Notion 条目与 prefab 明显不一致，以 prefab 为准。
+	</div>
+</div>
+
+<script>
+const ROWS = [{"id": "MAD_SCIENTIST", "name": "疯狂科学家", "rarity": "common", "desc": "apply 2 power to next 3 cards", "note": "", "prefabDesc": "揭晓时:给予下 <b>3</b> 卡 <b>2</b> 力量"}, {"id": "ADVANCE_PORTAL", "name": "高等传送门", "rarity": "uncommon", "desc": "reveal 2 times: stage 2 friendly", "note": "", "prefabDesc": "每揭晓 <b>2<counter></b> 次:置顶 <b>2</b> 友方"}, {"id": "ANTI_CREATURE_WEAPON", "name": "对生物兵器", "rarity": "uncommon", "desc": "bury 2 hostile", "note": "", "prefabDesc": "揭晓时:埋葬 <b>2</b> 敌方"}, {"id": "BONE_COMBINATION", "name": "碎骨聚集体", "rarity": "uncommon", "desc": "for each hostile card buried this turn, deal dmg", "note": "", "prefabDesc": "揭晓时:造成 <b><dmg></b> 伤害 x 本回合被埋葬的敌方数量"}, {"id": "CURSED_CORPSE", "name": "被诅咒的尸体", "rarity": "uncommon", "desc": "enhance hostile [curse] 1;\nif buried, deal dmg x 3", "note": "", "prefabDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒];被埋葬:造成\n    <b><dmg></b> x <b>3</b> 伤害"}, {"id": "CURSED_SKELETON", "name": "被诅咒的骷髅", "rarity": "uncommon", "desc": "hostile [curse] +power = friendly card in grave", "note": "", "prefabDesc": "揭晓时,墓地每有 <b>1</b> 友方:增强\n    <b>1</b> 敌方[诅咒]"}, {"id": "CURSE_THIRST_ARCH_SUMMONER", "name": "咒食的大召唤师", "rarity": "uncommon", "desc": "consume 2 hostile [curse] power: stage 1 friendly;\napply 2 power to next card", "note": "Notion file name = CURSE_THIRST_SUMMONER (naming mismatch)", "prefabDesc": "揭晓时,消耗敌方[诅咒] <b>2</b> 力量:置顶\n    <b>1</b> 友方;\n揭晓时:给予下 <b>1</b> 卡\n    <b>2</b> 力量"}, {"id": "DR_MANHATTAN", "name": "曼哈顿博士", "rarity": "uncommon", "desc": "remove 2 power:\nstage 2 friendly\nbury 2 hostile", "note": "", "prefabDesc": "揭晓时,消耗 <b>2</b> 力量:置顶 <b>2</b>\n    友方,埋葬 <b>2</b> 敌方"}, {"id": "FLESH_COMBINATION", "name": "血肉聚集体", "rarity": "uncommon", "desc": "deal dmg = friendly card amount", "note": "", "prefabDesc": "揭晓时:造成友方数量的伤害"}, {"id": "GOBLIN_ASSASSIN_TEAM", "name": "哥布林暗杀部队", "rarity": "uncommon", "desc": "deal dmg; if staged, bury 1 hostile", "note": "", "prefabDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:埋葬\n    <b>1</b> 敌方"}, {"id": "GRAVE_INVITATION", "name": "冥界邀请", "rarity": "uncommon", "desc": "deal dmg, for each friendly in grave, bury 1 hostile", "note": "", "prefabDesc": "揭晓时:造成 <b><dmg></b> 伤害,墓地每有\n    <b>1</b> 友方:埋葬 <b>1</b> 敌方"}, {"id": "POWER_TRANSFER", "name": "力量转移", "rarity": "uncommon", "desc": "remove 2 random hostile power, apply 2 random friendly power", "note": "", "prefabDesc": "揭晓时:去除 <b>2</b> 敌方 <b>1</b> 力量,给予友方\n    <b>1</b> 力量 <b>2</b> 次"}, {"id": "PREMATURE", "name": "拔苗助长", "rarity": "uncommon", "desc": "hostile [curse] - power; stage hostile [curse]", "note": "", "prefabDesc": "揭晓时,敌方[诅咒]力量 - <b>1</b>\n    :置顶敌方[诅咒]"}, {"id": "RIFT_GUIDE", "name": "次元引导者", "rarity": "uncommon", "desc": "exile 1 friendly [conjure]: bury 2 hostile", "note": "", "prefabDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:埋葬\n    <b>2</b> 敌方"}, {"id": "RIFT_MONSTER", "name": "次元兽", "rarity": "uncommon", "desc": "exile 1 [rift]:\ndeal dmg", "note": "", "prefabDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:造成\n    <b><dmg></b> 伤害"}, {"id": "SNATCHER", "name": "屠夫", "rarity": "uncommon", "desc": "deal dmg;\nif staged: stage friendly;\nif buried, bury hostile", "note": "", "prefabDesc": "揭晓时:造成 <b><dmg></b> 伤害;被置顶:置顶\n    <b>1</b> 友方;被埋葬:埋葬 <b>1</b> 敌方"}, {"id": "ALMIGHTY", "name": "全能人", "rarity": "rare", "desc": "reveal 2 times:\ndeal 1 dmg;\nstage 1 friendly;\nbury 1 hostile;\nenhance 1 friendly;\nadd 1 [rift];\nenhance 1 hostile [curse];", "note": "", "prefabDesc": "揭晓 <b>2<counter></b> 次:造成 <b><dmg></b> 伤害,置顶\n    <b>1</b> 友方,埋葬 <b>1</b> 敌方,给予 <b>1</b>\n    友方力量,生成 <b>1</b> [次元裂缝],增强\n    <b>1</b> 敌方[诅咒]"}, {"id": "BOOSTER", "name": "推进器", "rarity": "rare", "desc": "if shuffled, stage 2 friendly; bury 1 friendly", "note": "", "prefabDesc": "洗牌后:置顶 <b>2</b> 友方;揭晓时:埋葬\n    <b>1</b> 友方"}, {"id": "DETERIORATION", "name": "恶化", "rarity": "rare", "desc": "for each 2 power hostile [curse] has, hostile [curse] +power", "note": "", "prefabDesc": "揭晓时,敌方[诅咒]每有 <b>2</b> 力量:增强\n    <b>1</b> 敌方[诅咒]"}, {"id": "ETERNAL_GHOST", "name": "不散的恶灵", "rarity": "rare", "desc": "linger: 每次敌人受到伤害，造成1伤害", "note": "", "prefabDesc": "<tag:Linger>;\n当敌人受到伤害时:造成\n    <b><dmg></b> 伤害"}, {"id": "POWER_SIPHONER", "name": "力量虹吸人", "rarity": "rare", "desc": "transfer 1 power from all friendly to me\ndeal dmg x 2", "note": "", "prefabDesc": "揭晓时:转移所有友方的 <b>1</b>\n    力量到自身,造成 <b><dmg></b> 伤害 x <b>2</b>"}, {"id": "PROLIFERATING_CURSE", "name": "增殖的厄运", "rarity": "rare", "desc": "copy hostile [curse]", "note": "", "prefabDesc": "揭晓时:复制敌方 <b>1</b> [诅咒]"}, {"id": "WISE_BURIAL", "name": "不愚蠢的埋葬", "rarity": "rare", "desc": "if staged, bury 1 friendly [if buried]/[linger]", "note": "Notion entry possibly stale — prefab says: 揭晓:埋葬 2 友方[DeathRattle]/[Linger]", "prefabDesc": "揭晓:埋葬 <b>2</b> 友方[<tag:DeathRattle>]/[<tag:Linger>]"}];
+const RAR_COLOR = {"common": "#9ece6a", "uncommon": "#7aa2f7", "rare": "#e0af68"};
+document.getElementById("tbl").innerHTML =
+	"<thead><tr><th>cardTypeID</th><th>名称</th><th>Rarity</th><th>效果（Notion 卡片库）</th><th>对照：prefab cardDesc（中文）</th></tr></thead><tbody>" +
+	ROWS.map(r => {
+		const stale = r.id === "WISE_BURIAL";
+		return "<tr>" +
+			'<td class="mono id">' + r.id + "</td>" +
+			"<td>" + r.name + "</td>" +
+			'<td><span class="rtag" style="color:' + RAR_COLOR[r.rarity] + ";border-color:" + RAR_COLOR[r.rarity] + '">' + r.rarity + "</span></td>" +
+			'<td class="desc">' + r.desc + (r.note ? '<div class="stale">' + (stale ? "⚠ " : "") + r.note + "</div>" : "") + "</td>" +
+			'<td class="prefab">' + r.prefabDesc + "</td>" +
+			"</tr>";
+	}).join("") + "</tbody>";
+</script>
+</body>
+</html>
