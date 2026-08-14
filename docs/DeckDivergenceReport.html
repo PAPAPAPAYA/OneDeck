@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deck Divergence Report v2 — Recorded Decks 不重合度分析</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1180px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; }
+	h2 { font-size: 1.12rem; margin: 26px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 220px; }
+	.kpi .num { font-size: 1.55rem; font-weight: 700; font-family: Consolas, monospace; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.blue { color: var(--accent); } .warn { color: var(--warn); } .good { color: var(--good); } .bad { color: var(--bad); }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 5px 9px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; }
+	td:first-child, th:first-child { text-align: left; }
+	.mono { font-family: Consolas, monospace; }
+	.never { background: rgba(247,118,142,.12); }
+	.chart { width: 100%; display: block; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	ul { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.tag { display: inline-block; font-size: 0.72rem; padding: 1px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+	.tag-warn { background: rgba(224,175,104,.15); color: var(--warn); border: 1px solid rgba(224,175,104,.4); }
+	.tag-good { background: rgba(158,206,106,.12); color: var(--good); border: 1px solid rgba(158,206,106,.35); }
+</style>
+</head>
+<body>
+
+<h1>Deck Divergence Report <span style="color:var(--accent)">v2</span></h1>
+<div class="sub">Recorded Decks 不重合度分析 · 69 副（去重后）· 剔除两张系统卡 + Δt≤24h 配对 · 2026-08-13 · D = 1 − 多重集 Jaccard</div>
+
+<div class="kpis">
+	<div class="kpi">
+		<div class="num good">0.9427 ≈ 0.9424</div>
+		<div class="lbl">实测 meanD vs 稀有度加权随机基线 —— 卡组差异与随机商店抽牌无统计学差异</div>
+	</div>
+	<div class="kpi">
+		<div class="num blue">median D = 1.0</div>
+		<div class="lbl">半数以上跨天卡组对共享 0 张核心卡 —— 全库层面体验高度分化</div>
+	</div>
+	<div class="kpi">
+		<div class="num bad">1.0 → 4.0</div>
+		<div class="lbl">DECK_SIZE 平均持有张数（S0→S6/S7）—— 系统卡是唯一剩下的收敛漏斗</div>
+	</div>
+	<div class="kpi">
+		<div class="num warn">23 / 71</div>
+		<div class="lbl">可选中 32% 的卡从未被选择 —— 真正的设计余量在卡池头部，不在卡组相似度</div>
+	</div>
+</div>
+
+<h2>1 · Session 内不重合度：观察 vs 双基线</h2>
+<div class="card">
+	<svg id="chartWithin" class="chart" style="height:330px"></svg>
+	<div class="note">橙=实测（核心卡、跨天配对）；蓝=均匀随机基线；灰=稀有度加权基线。v1 的"后期单调收敛"消失——各 session 平缓在 0.92-0.95，中位数几乎全为 1.0（多数配对零交集）。S4/S6/S7 样本小。</div>
+</div>
+
+<h2>2 · 相邻 Session 不重合度</h2>
+<div class="card">
+	<svg id="chartAdj" class="chart" style="height:280px"></svg>
+	<div class="note">v1 的 0.91→0.48 单调下降不复存在；剔除系统卡与同天配对后平缓在 0.92-0.94（S7×S6 仅 1 对）。</div>
+</div>
+
+<h2>3 · 总体分布（1541 跨天配对）</h2>
+<div class="card">
+	<svg id="chartHist" class="chart" style="height:280px"></svg>
+	<div class="note">73.5% 的配对落在 0.9-1.0；D≤0.5 仅 11 对。实测分布与稀有度加权随机基线（mean 0.9424 / P5 0.75）几乎重合。</div>
+</div>
+
+<h2>4 · 系统卡专栏：数量随进度变化</h2>
+<div class="card">
+	<svg id="chartSys" class="chart" style="height:300px"></svg>
+	<div class="note">柱=总张数；点线=持有者平均张数。DECK_SIZE 从 S0 就出现、每持有者平均 1.0→4.0 张单调涨；HP_MAX 从 S2 出现、涨到 ~2.2。后期卡组把 2-6 个槽位交给这两张卡。</div>
+</div>
+
+<h2>5 · 全卡片表（75 张）</h2>
+<div class="card">
+	<div style="margin-bottom:8px" id="neverBox"></div>
+	<table id="tblCards"></table>
+	<div class="note">粉底 = 从未被选择。✗ = 被使用过但不在当前商店池。"Sessions" = 该卡出现过的 session 编号。</div>
+</div>
+
+<h2>6 · 最相似 Top 8（跨天、核心卡）</h2>
+<div class="card">
+	<table id="tblTop"></table>
+</div>
+
+<h2>7 · 结论</h2>
+<div class="card">
+	<ul>
+		<li><b>"卡组过于类似"不成立（核心卡层面）</b>——实测分布与稀有度加权随机几乎重合，中位 D=1.0。<span class="tag tag-good">卡池是约束，不是玩家偏好</span></li>
+		<li><b>v1 的后期收敛是分解伪影</b>——系统卡 + 同天谱系配对造成；剔除后收敛曲线消失。</li>
+		<li><b>唯一的真漏斗 = 两张系统卡</b>——DECK_SIZE 每持有者 1.0→4.0 张。<span class="tag tag-warn">改这里才有收益</span></li>
+		<li><b>23 张可选卡零出场</b>——真正的差异化余量在"没人要的卡"，用 CardWinRateTracker 交叉验证后修最差的一批。</li>
+	</ul>
+</div>
+<div class="note">局限：单一玩家数据；跨 6 周版本混杂（按要求未按日期分组）；加权基线为独立抽取近似（非完整商店模拟）；S6/S7 样本小；≤24h 剔除会连同一晚的不同局一起剔除（略保守）。方法细节见 docs/DeckDivergenceReport.md。</div>
+
+<script>
+const CARDS = [{"id": "SYSTEM_INCREASE_DECK_SIZE", "rarity": 1, "mult": 1.2, "inPool": true, "decks": 41, "share": 0.5942, "copies": 94, "avg": 2.2927, "sessions": "0,1,2,3,4,5,6,7"}, {"id": "RIFT_INSECT", "rarity": 0, "mult": 1, "inPool": true, "decks": 19, "share": 0.2754, "copies": 20, "avg": 1.0526, "sessions": "0,1,2,3,4,5"}, {"id": "SYSTEM_INCREASE_HP_MAX", "rarity": 1, "mult": 1, "inPool": true, "decks": 17, "share": 0.2464, "copies": 27, "avg": 1.5882, "sessions": "2,3,4,5,6,7"}, {"id": "SACRIFICE_RITUAL", "rarity": 1, "mult": 1, "inPool": true, "decks": 16, "share": 0.2319, "copies": 16, "avg": 1, "sessions": "0,1,2,3,4,5,6,7"}, {"id": "SOLDIER_SKELETON", "rarity": 0, "mult": 1, "inPool": true, "decks": 15, "share": 0.2174, "copies": 15, "avg": 1, "sessions": "0,1,2,3,4,5"}, {"id": "RIFT_CURSE", "rarity": 0, "mult": 1, "inPool": true, "decks": 14, "share": 0.2029, "copies": 14, "avg": 1, "sessions": "0,1,2,3,4,5"}, {"id": "UNDEAD_CURSER", "rarity": 0, "mult": 1, "inPool": true, "decks": 13, "share": 0.1884, "copies": 14, "avg": 1.0769, "sessions": "0,1,2,3,4"}, {"id": "SACRIFICIAL_CURSE", "rarity": 0, "mult": 1, "inPool": true, "decks": 12, "share": 0.1739, "copies": 14, "avg": 1.1667, "sessions": "0,1,2,3,4,5"}, {"id": "QUICK_RESPONSE_PROTOCOL", "rarity": 1, "mult": 1, "inPool": true, "decks": 11, "share": 0.1594, "copies": 11, "avg": 1, "sessions": "1,2,3,4,5,6,7"}, {"id": "SLIME", "rarity": 2, "mult": 1, "inPool": true, "decks": 11, "share": 0.1594, "copies": 11, "avg": 1, "sessions": "1,2,3,4,5,6,7"}, {"id": "CORPSE_CANON", "rarity": 1, "mult": 1, "inPool": true, "decks": 10, "share": 0.1449, "copies": 10, "avg": 1, "sessions": "1,2,3,4,5,6"}, {"id": "GRAVE_TOGETHER", "rarity": 0, "mult": 1, "inPool": true, "decks": 10, "share": 0.1449, "copies": 10, "avg": 1, "sessions": "0,1,2,3,5,6,7"}, {"id": "POISONER", "rarity": 0, "mult": 1, "inPool": true, "decks": 10, "share": 0.1449, "copies": 11, "avg": 1.1, "sessions": "0,1,2,3"}, {"id": "SPIKE_SKELETON", "rarity": 1, "mult": 1, "inPool": true, "decks": 10, "share": 0.1449, "copies": 10, "avg": 1, "sessions": "0,1,2,3,4,5,6"}, {"id": "FALL_INTO_RIFT", "rarity": 0, "mult": 1, "inPool": true, "decks": 9, "share": 0.1304, "copies": 9, "avg": 1, "sessions": "0,1,2,3,4,5"}, {"id": "UNFINISHED_ROBOT", "rarity": 2, "mult": 1, "inPool": true, "decks": 9, "share": 0.1304, "copies": 9, "avg": 1, "sessions": "1,2,3,4,5,6"}, {"id": "GRAVE_PUNCH", "rarity": 0, "mult": 1, "inPool": true, "decks": 8, "share": 0.1159, "copies": 8, "avg": 1, "sessions": "0,1,2,3,4,5,7"}, {"id": "THE_FOOL", "rarity": 0, "mult": 1, "inPool": true, "decks": 8, "share": 0.1159, "copies": 8, "avg": 1, "sessions": "0,1,2"}, {"id": "SACRIFICIAL_SWORD", "rarity": 0, "mult": 1, "inPool": true, "decks": 7, "share": 0.1014, "copies": 7, "avg": 1, "sessions": "1,2,3,4"}, {"id": "CURSE_THIRST_SHAMAN", "rarity": 1, "mult": 1, "inPool": true, "decks": 5, "share": 0.0725, "copies": 5, "avg": 1, "sessions": "0,2,3,4,5"}, {"id": "DEATHBED_CURSE", "rarity": 2, "mult": 1, "inPool": true, "decks": 5, "share": 0.0725, "copies": 5, "avg": 1, "sessions": "2,3,4,5"}, {"id": "LARGE_SCALE_DEATH", "rarity": 2, "mult": 1, "inPool": true, "decks": 5, "share": 0.0725, "copies": 5, "avg": 1, "sessions": "2,3,4,5,6"}, {"id": "UNSTABLE_PORTAL", "rarity": 1, "mult": 1, "inPool": true, "decks": 5, "share": 0.0725, "copies": 5, "avg": 1, "sessions": "5,6,7"}, {"id": "COFFIN_MAKER", "rarity": 0, "mult": 1, "inPool": true, "decks": 4, "share": 0.058, "copies": 4, "avg": 1, "sessions": "0,1,2"}, {"id": "CURSE_THIRST_SUMMONER_OLD", "rarity": 0, "mult": 1, "inPool": false, "decks": 4, "share": 0.058, "copies": 4, "avg": 1, "sessions": "0,1,2"}, {"id": "GOBLIN_CHARGE_TEAM", "rarity": 1, "mult": 1, "inPool": true, "decks": 4, "share": 0.058, "copies": 4, "avg": 1, "sessions": "0,1"}, {"id": "GRAVE_KEEPER", "rarity": 2, "mult": 1, "inPool": true, "decks": 4, "share": 0.058, "copies": 4, "avg": 1, "sessions": "3,5,6,7"}, {"id": "GRAVE_PORTAL", "rarity": 0, "mult": 1, "inPool": true, "decks": 4, "share": 0.058, "copies": 4, "avg": 1, "sessions": "1,2,3,4"}, {"id": "RIFT_DEVOURER", "rarity": 2, "mult": 1, "inPool": true, "decks": 4, "share": 0.058, "copies": 4, "avg": 1, "sessions": "0,3,5,6"}, {"id": "RIFT_DRAGON", "rarity": 1, "mult": 1, "inPool": true, "decks": 4, "share": 0.058, "copies": 4, "avg": 1, "sessions": "3,5,6"}, {"id": "SMALL_SCALE_DEATH", "rarity": 1, "mult": 1, "inPool": true, "decks": 4, "share": 0.058, "copies": 4, "avg": 1, "sessions": "0,4,5,6"}, {"id": "AVENGER", "rarity": 1, "mult": 1, "inPool": true, "decks": 3, "share": 0.0435, "copies": 3, "avg": 1, "sessions": "2,5,6"}, {"id": "BODY_CANON", "rarity": 2, "mult": 1, "inPool": true, "decks": 3, "share": 0.0435, "copies": 3, "avg": 1, "sessions": "3,5,6"}, {"id": "CURSE_ENCHANTMENT", "rarity": 2, "mult": 1, "inPool": true, "decks": 3, "share": 0.0435, "copies": 3, "avg": 1, "sessions": "3,4,5"}, {"id": "ELDER_SORCERER", "rarity": 2, "mult": 1, "inPool": true, "decks": 3, "share": 0.0435, "copies": 3, "avg": 1, "sessions": "2,3,4"}, {"id": "POWER_SURGE", "rarity": 1, "mult": 1, "inPool": true, "decks": 3, "share": 0.0435, "copies": 3, "avg": 1, "sessions": "2,3,4"}, {"id": "RIFT_COFFIN", "rarity": 1, "mult": 1, "inPool": true, "decks": 3, "share": 0.0435, "copies": 3, "avg": 1, "sessions": "3,5,6"}, {"id": "TACTICAL_BREACHER", "rarity": 1, "mult": 1, "inPool": true, "decks": 3, "share": 0.0435, "copies": 3, "avg": 1, "sessions": "0,1,2"}, {"id": "ALL_FOR_ONE", "rarity": 1, "mult": 1, "inPool": true, "decks": 2, "share": 0.029, "copies": 2, "avg": 1, "sessions": "4,5"}, {"id": "BLACKSMITH", "rarity": 0, "mult": 1, "inPool": true, "decks": 2, "share": 0.029, "copies": 2, "avg": 1, "sessions": "0,2"}, {"id": "CURSE_THIRST_BEAST", "rarity": 1, "mult": 1, "inPool": true, "decks": 2, "share": 0.029, "copies": 2, "avg": 1, "sessions": "2,3"}, {"id": "CURSE_THIRST_SUMMONER", "rarity": 0, "mult": 1, "inPool": true, "decks": 2, "share": 0.029, "copies": 2, "avg": 1, "sessions": "0,4"}, {"id": "MOTH_MAN", "rarity": 1, "mult": 1, "inPool": true, "decks": 2, "share": 0.029, "copies": 2, "avg": 1, "sessions": "1,2"}, {"id": "POWER_CRAVER", "rarity": 1, "mult": 1, "inPool": true, "decks": 2, "share": 0.029, "copies": 2, "avg": 1, "sessions": "1,2"}, {"id": "WEAPON_SPIRIT", "rarity": 1, "mult": 1, "inPool": true, "decks": 2, "share": 0.029, "copies": 2, "avg": 1, "sessions": "1,2"}, {"id": "ZOMBIE", "rarity": 0, "mult": 1, "inPool": false, "decks": 2, "share": 0.029, "copies": 3, "avg": 1.5, "sessions": "0"}, {"id": "CONFUSED_PORTALMANCER", "rarity": 1, "mult": 1, "inPool": true, "decks": 1, "share": 0.0145, "copies": 1, "avg": 1, "sessions": "2"}, {"id": "CROW_CROWD", "rarity": 2, "mult": 1, "inPool": true, "decks": 1, "share": 0.0145, "copies": 1, "avg": 1, "sessions": "2"}, {"id": "MARTYR", "rarity": 2, "mult": 1, "inPool": true, "decks": 1, "share": 0.0145, "copies": 1, "avg": 1, "sessions": "6"}, {"id": "RIFT_SUMMONER", "rarity": 1, "mult": 1, "inPool": true, "decks": 1, "share": 0.0145, "copies": 1, "avg": 1, "sessions": "2"}, {"id": "SCAPEGOAT", "rarity": 1, "mult": 1, "inPool": true, "decks": 1, "share": 0.0145, "copies": 1, "avg": 1, "sessions": "6"}, {"id": "SIDE_EFFECT_PORTAL", "rarity": 0, "mult": 1, "inPool": true, "decks": 1, "share": 0.0145, "copies": 1, "avg": 1, "sessions": "0"}, {"id": "ADVANCE_PORTAL", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "ALMIGHTY", "rarity": 2, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "ANTI_CREATURE_WEAPON", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "BONE_COMBINATION", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "BOOSTER", "rarity": 2, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "CURSED_CORPSE", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "CURSED_SKELETON", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "CURSE_THIRST_ARCH_SUMMONER", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "DETERIORATION", "rarity": 2, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "DR_MANHATTAN", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "ETERNAL_GHOST", "rarity": 2, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "FLESH_COMBINATION", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "GOBLIN_ASSASSIN_TEAM", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "GRAVE_INVITATION", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "MAD_SCIENTIST", "rarity": 0, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "POWER_SIPHONER", "rarity": 2, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "POWER_TRANSFER", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "PREMATURE", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "PROLIFERATING_CURSE", "rarity": 2, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "RIFT_GUIDE", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "RIFT_MONSTER", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "SNATCHER", "rarity": 1, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}, {"id": "WISE_BURIAL", "rarity": 2, "mult": 1, "inPool": true, "decks": 0, "share": 0, "copies": 0, "avg": 0, "sessions": ""}];
+const WITHIN = [{"num": 0, "decks": 22, "pairs": 178, "meanD": 0.9425, "medianD": 1, "minD": 0.3333, "maxD": 1, "meanDset": 0.9389, "mostA": "RecordedDeck_Session0_20260617_220337", "mostB": "RecordedDeck_Session0_20260621_120948", "uniBaseMean": 0.9801, "uniP5": 0.75, "wgtBaseMean": 0.9444, "wgtP5": 0.6667, "belowUniMean": 0.2079, "belowUniP5": 0.0562, "belowWgtMean": 0.2079, "belowWgtP5": 0.0169}, {"num": 1, "decks": 13, "pairs": 51, "meanD": 0.9158, "medianD": 1, "minD": 0.5, "maxD": 1, "meanDset": 0.9158, "mostA": "RecordedDeck_Session1_20260618_090604", "mostB": "RecordedDeck_Session1_20260620_214318", "uniBaseMean": 0.9737, "uniP5": 0.8333, "wgtBaseMean": 0.9241, "wgtP5": 0.75, "belowUniMean": 0.3922, "belowUniP5": 0.1373, "belowWgtMean": 0.3922, "belowWgtP5": 0.0784}, {"num": 2, "decks": 11, "pairs": 29, "meanD": 0.9477, "medianD": 1, "minD": 0.75, "maxD": 1, "meanDset": 0.9477, "mostA": "RecordedDeck_Session2_20260620_172257", "mostB": "RecordedDeck_Session2_20260802_215441", "uniBaseMean": 0.965, "uniP5": 0.8571, "wgtBaseMean": 0.9367, "wgtP5": 0.75, "belowUniMean": 0.3793, "belowUniP5": 0.069, "belowWgtMean": 0.3793, "belowWgtP5": 0}, {"num": 3, "decks": 8, "pairs": 19, "meanD": 0.9273, "medianD": 1, "minD": 0.625, "maxD": 1, "meanDset": 0.926, "mostA": "RecordedDeck_Session3_20260620_172453", "mostB": "RecordedDeck_Session3_20260802_220110", "uniBaseMean": 0.9588, "uniP5": 0.875, "wgtBaseMean": 0.9307, "wgtP5": 0.7778, "belowUniMean": 0.4737, "belowUniP5": 0.1579, "belowWgtMean": 0.4737, "belowWgtP5": 0.0526}, {"num": 4, "decks": 5, "pairs": 7, "meanD": 0.9542, "medianD": 1, "minD": 0.8462, "maxD": 1, "meanDset": 0.9531, "mostA": "RecordedDeck_Session4_20260621_135129", "mostB": "RecordedDeck_Session4_20260802_220343", "uniBaseMean": 0.9573, "uniP5": 0.8333, "wgtBaseMean": 0.9447, "wgtP5": 0.8182, "belowUniMean": 0.4286, "belowUniP5": 0, "belowWgtMean": 0.4286, "belowWgtP5": 0}, {"num": 5, "decks": 6, "pairs": 11, "meanD": 0.9325, "medianD": 0.9286, "minD": 0.8182, "maxD": 1, "meanDset": 0.9286, "mostA": "RecordedDeck_Session5_20260619_224210", "mostB": "RecordedDeck_Session5_20260623_211852", "uniBaseMean": 0.9512, "uniP5": 0.8182, "wgtBaseMean": 0.9384, "wgtP5": 0.8182, "belowUniMean": 0.5455, "belowUniP5": 0, "belowWgtMean": 0.5455, "belowWgtP5": 0}, {"num": 6, "decks": 3, "pairs": 2, "meanD": 0.9167, "medianD": 1, "minD": 0.8333, "maxD": 1, "meanDset": 0.9167, "mostA": "RecordedDeck_Session6_20260620_173204", "mostB": "RecordedDeck_Session6_20260803_100803", "uniBaseMean": 0.9473, "uniP5": 0.8333, "wgtBaseMean": 0.9327, "wgtP5": 0.8333, "belowUniMean": 0.5, "belowUniP5": 0, "belowWgtMean": 0.5, "belowWgtP5": 0}, {"num": 7, "decks": 1, "pairs": 0, "meanD": null, "medianD": null, "minD": null, "maxD": null, "meanDset": null, "mostA": "", "mostB": "", "uniBaseMean": 0, "uniP5": 0, "wgtBaseMean": 0, "wgtP5": 0, "belowUniMean": 0, "belowUniP5": 0, "belowWgtMean": 0, "belowWgtP5": 0}];
+const ADJ = [{"num": 1, "pairs": 200, "meanD": 0.925, "meanDset": 0.9229}, {"num": 2, "pairs": 80, "meanD": 0.9246, "meanDset": 0.9246}, {"num": 3, "pairs": 48, "meanD": 0.9447, "meanDset": 0.9434}, {"num": 4, "pairs": 24, "meanD": 0.9386, "meanDset": 0.9374}, {"num": 5, "pairs": 19, "meanD": 0.9359, "meanDset": 0.9332}, {"num": 6, "pairs": 10, "meanD": 0.9278, "meanDset": 0.9254}, {"num": 7, "pairs": 1, "meanD": 0.8333, "meanDset": 0.8333}];
+const SYS = {"SYSTEM_INCREASE_DECK_SIZE": {"perSession": [{"num": 0, "decks": 22, "withCard": 5, "copies": 5}, {"num": 1, "decks": 13, "withCard": 7, "copies": 9}, {"num": 2, "decks": 11, "withCard": 9, "copies": 15}, {"num": 3, "decks": 8, "withCard": 7, "copies": 17}, {"num": 4, "decks": 5, "withCard": 4, "copies": 13}, {"num": 5, "decks": 6, "withCard": 5, "copies": 19}, {"num": 6, "decks": 3, "withCard": 3, "copies": 12}, {"num": 7, "decks": 1, "withCard": 1, "copies": 4}]}, "SYSTEM_INCREASE_HP_MAX": {"perSession": [{"num": 0, "decks": 22, "withCard": 0, "copies": 0}, {"num": 1, "decks": 13, "withCard": 0, "copies": 0}, {"num": 2, "decks": 11, "withCard": 1, "copies": 1}, {"num": 3, "decks": 8, "withCard": 3, "copies": 3}, {"num": 4, "decks": 5, "withCard": 4, "copies": 5}, {"num": 5, "decks": 6, "withCard": 5, "copies": 11}, {"num": 6, "decks": 3, "withCard": 3, "copies": 5}, {"num": 7, "decks": 1, "withCard": 1, "copies": 2}]}};
+const HIST = [0, 0, 1, 3, 0, 7, 26, 64, 308, 1132];
+const NEVER = ["ADVANCE_PORTAL", "ALMIGHTY", "ANTI_CREATURE_WEAPON", "BONE_COMBINATION", "BOOSTER", "CURSED_CORPSE", "CURSED_SKELETON", "CURSE_THIRST_ARCH_SUMMONER", "DETERIORATION", "DR_MANHATTAN", "ETERNAL_GHOST", "FLESH_COMBINATION", "GOBLIN_ASSASSIN_TEAM", "GRAVE_INVITATION", "MAD_SCIENTIST", "POWER_SIPHONER", "POWER_TRANSFER", "PREMATURE", "PROLIFERATING_CURSE", "RIFT_GUIDE", "RIFT_MONSTER", "SNATCHER", "WISE_BURIAL"];
+const TOP8 = [[0.25, 1, "RecordedDeck_Session1_20260617_221111", 3, 2, "RecordedDeck_Session2_20260620_213426", 4], [0.3333, 0, "RecordedDeck_Session0_20260617_220337", 2, 0, "RecordedDeck_Session0_20260621_120948", 3], [0.3333, 0, "RecordedDeck_Session0_20260618_083500", 2, 1, "RecordedDeck_Session1_20260619_170312", 3], [0.3333, 0, "RecordedDeck_Session0_20260618_095053", 2, 0, "RecordedDeck_Session0_20260621_134439", 3], [0.5, 0, "RecordedDeck_Session0_20260617_220337", 2, 2, "RecordedDeck_Session2_20260620_213426", 4], [0.5, 0, "RecordedDeck_Session0_20260619_154054", 2, 1, "RecordedDeck_Session1_20260620_222140", 4], [0.5, 0, "RecordedDeck_Session0_20260619_220115", 3, 1, "RecordedDeck_Session1_20260618_090604", 3], [0.5, 0, "RecordedDeck_Session0_20260621_120948", 3, 1, "RecordedDeck_Session1_20260617_221111", 3]];
+const RAR = ["Common", "Uncommon", "Rare"];
+
+function bars(svgId, items, unit, opts) {
+	const svg = document.getElementById(svgId);
+	const W = 860, H = 330, L = 46, R = 14, T = 18, B = 46;
+	const iw = W - L - R, ih = H - T - B;
+	const n = items.length, slot = iw / n;
+	let out = "";
+	for (let g = 0; g <= 4; g++) {
+		const v = g / 4;
+		const y = T + (1 - v) * ih;
+		out += `<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2e3442" stroke-width="1"/>`;
+		out += `<text x="${L-8}" y="${y+4}" fill="#8b93a3" font-size="10" text-anchor="end">${(v).toFixed(2)}</text>`;
+	}
+	items.forEach((it, i) => {
+		const cx = L + slot * i + slot / 2;
+		out += `<text x="${cx}" y="${H-B+16}" fill="#8b93a3" font-size="10" text-anchor="middle">${it.label}</text>`;
+	});
+	const bW = Math.min(30, slot * 0.24);
+	items.forEach((it, i) => {
+		const cx = L + slot * i + slot / 2;
+		it.bars.forEach((b, bi) => {
+			const x0 = cx + (bi - (it.bars.length - 1) / 2) * (bW + 4);
+			const y = T + (1 - b.v) * ih;
+			out += `<rect x="${x0 - bW/2}" y="${y}" width="${bW}" height="${T + ih - y}" fill="${b.c}" rx="2"/>`;
+		});
+		if (it.extra) {
+			out += `<text x="${cx}" y="${T + (1 - Math.max(...it.bars.map(b => b.v))) * ih + 16}" fill="#e0af68" font-size="9" text-anchor="middle">${it.extra}</text>`;
+		}
+	});
+	out += `<text x="${L}" y="${T-6}" fill="#8b93a3" font-size="10">${unit}</text>`;
+	svg.innerHTML = out;
+	svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+}
+function line(svgId, series, yMin, yMax, xLabels) {
+	const svg = document.getElementById(svgId);
+	const W = 860, H = 280, L = 46, R = 14, T = 16, B = 34;
+	const iw = W - L - R, ih = H - T - B;
+	const n = xLabels.length;
+	const X = i => L + i * (iw / (n - 1));
+	const Y = v => T + (yMax - v) / (yMax - yMin) * ih;
+	let out = "";
+	for (let g = 0; g <= 4; g++) {
+		const v = yMin + (yMax - yMin) * g / 4;
+		out += `<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" stroke="#2e3442" stroke-width="1"/>`;
+		out += `<text x="${L-8}" y="${Y(v)+4}" fill="#8b93a3" font-size="10" text-anchor="end">${v.toFixed(2)}</text>`;
+	}
+	xLabels.forEach((lb, i) => out += `<text x="${X(i)}" y="${H-B+16}" fill="#8b93a3" font-size="10" text-anchor="middle">${lb}</text>`);
+	series.forEach(s => {
+		const pts = s.values.map((v, i) => `${X(i)},${Y(v)}`).join(" ");
+		out += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2"/>`;
+		s.values.forEach((v, i) => out += `<circle cx="${X(i)}" cy="${Y(v)}" r="3" fill="${s.color}"/>`);
+	});
+	svg.innerHTML = out;
+	svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+}
+
+// chart 1
+bars("chartWithin", WITHIN.filter(w => w.pairs > 0).map(w => ({
+	label: "S" + w.num,
+	bars: [
+		{ v: w.meanD, c: "#e0af68" },
+		{ v: w.uniBaseMean, c: "#7aa2f7" },
+		{ v: w.wgtBaseMean, c: "#565f73" }
+	]
+})), "D (不重合度)");
+
+// chart 2
+line("chartAdj", [
+	{ name: "meanD", color: "#e0af68", values: ADJ.filter(a => a.pairs > 0).map(a => a.meanD) }
+], 0.8, 1.0, ADJ.filter(a => a.pairs > 0).map(a => "S" + a.num + "×S" + (a.num - 1)));
+
+// chart 3 histogram
+(function () {
+	const svg = document.getElementById("chartHist");
+	const W = 860, H = 280, L = 46, R = 14, T = 16, B = 40;
+	const iw = W - L - R, ih = H - T - B;
+	const n = HIST.length, slot = iw / n;
+	const mx = Math.max(...HIST);
+	let out = "";
+	for (let g = 0; g <= 4; g++) {
+		const v = g / 4;
+		const y = T + (1 - v) * ih;
+		out += `<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2e3442" stroke-width="1"/>`;
+		out += `<text x="${L-8}" y="${y+4}" fill="#8b93a3" font-size="10" text-anchor="end">${Math.round(v*mx)}</text>`;
+	}
+	HIST.forEach((cnt, i) => {
+		const x0 = L + slot * i + 4;
+		const h = cnt / mx * ih;
+		out += `<rect x="${x0}" y="${T+ih-h}" width="${slot-8}" height="${h}" fill="#7aa2f7" rx="2"/>`;
+		out += `<text x="${x0+(slot-8)/2}" y="${T+ih-h-4}" fill="#c8ccd4" font-size="9" text-anchor="middle">${cnt}</text>`;
+		out += `<text x="${x0+(slot-8)/2}" y="${H-B+16}" fill="#8b93a3" font-size="9" text-anchor="middle">${(i/10).toFixed(1)}</text>`;
+	});
+	svg.innerHTML = out;
+	svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+})();
+
+// chart 4 system cards
+(function () {
+	const svg = document.getElementById("chartSys");
+	const W = 860, H = 300, L = 60, R = 40, T = 18, B = 40;
+	const iw = W - L - R, ih = H - T - B;
+	const A = SYS.SYSTEM_INCREASE_DECK_SIZE.perSession, HP = SYS.SYSTEM_INCREASE_HP_MAX.perSession;
+	const mx = Math.max(...A.map(x => x.copies), ...HP.map(x => x.copies));
+	const n = A.length, slot = iw / n;
+	let out = "";
+	for (let g = 0; g <= 4; g++) {
+		const v = g / 4;
+		const y = T + (1 - v) * ih;
+		out += `<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2e3442" stroke-width="1"/>`;
+		out += `<text x="${L-8}" y="${y+4}" fill="#8b93a3" font-size="10" text-anchor="end">${Math.round(v*mx)}</text>`;
+	}
+	A.forEach((x, i) => {
+		const cx = L + slot * i + slot / 2;
+		const hA = x.copies / mx * ih, hB = HP[i].copies / mx * ih;
+		out += `<rect x="${cx-slot*0.22}" y="${T+ih-hA}" width="${slot*0.34}" height="${hA}" fill="#e0af68" rx="2"/>`;
+		out += `<text x="${cx-slot*0.05}" y="${T+ih-hA-4}" fill="#e0af68" font-size="9" text-anchor="middle">${x.copies}</text>`;
+		out += `<rect x="${cx+slot*0.05}" y="${T+ih-hB}" width="${slot*0.34}" height="${hB}" fill="#7aa2f7" rx="2"/>`;
+		out += `<text x="${cx+slot*0.22}" y="${T+ih-hB-4}" fill="#7aa2f7" font-size="9" text-anchor="middle">${HP[i].copies}</text>`;
+		const avgA = x.withCard ? (x.copies / x.withCard).toFixed(1) : "0";
+		out += `<text x="${cx-slot*0.05}" y="${T+8}" fill="#e0af68" font-size="8" text-anchor="middle">${avgA}</text>`;
+		out += `<text x="${cx}" y="${H-B+16}" fill="#8b93a3" font-size="10" text-anchor="middle">S${x.num}</text>`;
+	});
+	out += `<text x="${L}" y="${T-6}" fill="#8b93a3" font-size="10">张数（柱）/ 持有者平均（小字） · 橙=DECK_SIZE · 蓝=HP_MAX</text>`;
+	svg.innerHTML = out;
+	svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+})();
+
+// card table
+document.getElementById("neverBox").innerHTML =
+	"<b style='color:var(--bad)'>从未被选择（23 / 71 可选）：</b> " + NEVER.join(", ");
+document.getElementById("tblCards").innerHTML =
+	"<thead><tr><th>cardTypeID</th><th>Rarity</th><th>Mult</th><th>池</th><th>卡组数</th><th>渗透率</th><th>张数</th><th>平均</th><th>Sessions</th></tr></thead><tbody>" +
+	CARDS.map(c => {
+		const never = c.decks === 0 && c.inPool;
+		return `<tr class="${never ? "never" : ""}">` +
+			`<td class="mono">${c.id}</td><td>${RAR[c.rarity]}</td><td class="mono">${c.mult}</td>` +
+			`<td>${c.inPool ? "✓" : "✗"}</td><td class="mono">${c.decks}</td><td class="mono">${(c.share*100).toFixed(1)}%</td>` +
+			`<td class="mono">${c.copies}</td><td class="mono">${c.avg}</td><td class="mono">${c.sessions}</td></tr>`;
+	}).join("") + "</tbody>";
+
+document.getElementById("tblTop").innerHTML =
+	"<thead><tr><th>D</th><th>卡组 A</th><th>卡组 B</th></tr></thead><tbody>" +
+	TOP8.map(t => `<tr><td class="mono">${t[0]}</td><td class="mono">S${t[1]} ${t[2]} (${t[3]}张)</td><td class="mono">S${t[4]} ${t[5]} (${t[6]}张)</td></tr>`).join("") + "</tbody>";
+</script>
+</body>
+</html>
