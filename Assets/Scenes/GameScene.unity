@@ -8939,8 +8939,6 @@ MonoBehaviour:
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   canvas: {fileID: 114813451}
   barShadow: {fileID: 840536120}
-  playerColor: {fileID: 11400000, guid: 26ce20a8085bc7e44a35331ef352fd51, type: 2}
-  enemyColor: {fileID: 11400000, guid: 30dadf4305911e449bda1000f5eee1f8, type: 2}
   shareTweenDuration: 0.25
   ghostHoldDelay: 0.35
   ghostCollapseDuration: 0.43
@@ -8961,7 +8959,6 @@ MonoBehaviour:
   ghostMinDelta: 0.004
   shadowOffset: {x: 20, y: -20}
   shadowPadding: 0
-  shadowColor: {fileID: 11400000, guid: 95b2170f52a207a49ad23f1f4e463db0, type: 2}
   editModePreview: 1
   previewPlayerHp: 20
   previewEnemyHp: 20
@@ -11655,7 +11652,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7411765, g: 0.7294118, b: 0.7019608, a: 1}
+  m_Color: {r: 0.7490196, g: 0.7372549, b: 0.70980394, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
