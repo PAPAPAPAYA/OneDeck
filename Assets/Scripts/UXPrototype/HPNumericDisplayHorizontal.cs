@@ -48,6 +48,14 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	[Tooltip("Gap between digit groups and the slash, in em.")]
 	public float groupGapEm = 0.15f;
 
+	[Header("Layout")]
+	[Tooltip("Max digit group vertical offset from the row center, in em (positive = lower). 0 = same centerline as current.")]
+	public float maxOffsetYEm = 0f;
+	[Tooltip("Slash vertical offset from the row center, in em (positive = lower). 0 = centered.")]
+	public float slashOffsetYEm = 0f;
+	[Tooltip("Slash horizontal offset from its default slot between the digit groups, in em (positive = right).")]
+	public float slashOffsetXEm = 0f;
+
 	[Header("Counting (demo constants, shared with HPNumericDisplay)")]
 	public int stepMs = 50;
 	public int targetCountMs = 500;
@@ -96,6 +104,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		public Tween tween;
 		public float digitWidth;
 		public float lineHeight;
+		public float slotOffsetY; // vertical offset keeping the visible digit line centered in its group box
 	}
 
 	private readonly CounterState _current = new CounterState();
@@ -111,6 +120,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	private float _maxDigitWidth = 8f;
 	private float _slashWidth = 10f;
 	private float _stripLineSpacing;
+	private float _glyphBlockEm = 1f; // font glyph block (ascent - descent) in em; digit mask slots size/offset by it
 	private int _fixedDigitCount = 1;
 	private int _fixedMaxDigitCount = 1;
 	private string _stripText;
@@ -149,6 +159,12 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		_stripLineSpacing = 100f * (fontAsset.faceInfo.pointSize - fontAsset.faceInfo.lineHeight) / fontAsset.faceInfo.pointSize;
 		currentPlain.lineSpacing = _stripLineSpacing;
 		maxPlain.lineSpacing = _stripLineSpacing;
+		// The font's glyph block (ascent - descent) is usually != 1em (RobotoCondensed-Bold: 1.172em);
+		// the digit mask slots are sized/offset by it so runtime strips center like the preview (see
+		// VISUAL-FIX(2026-08-15) in CreateStrip).
+		_glyphBlockEm = fontAsset.faceInfo.pointSize > 0f
+			? (fontAsset.faceInfo.ascentLine - fontAsset.faceInfo.descentLine) / fontAsset.faceInfo.pointSize
+			: 1f;
 		_digitWidth = currentPlain.GetPreferredValues("0").x;
 		if (_digitWidth <= 0.01f)
 		{
@@ -368,9 +384,9 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		currentRoot.anchoredPosition = new Vector2(x, _em * 0.5f);
 		float slashX = x + width + gap;
 		slashText.rectTransform.sizeDelta = new Vector2(_slashWidth, _em);
-		slashText.rectTransform.anchoredPosition = new Vector2(slashX + _slashWidth * 0.5f, 0f);
+		slashText.rectTransform.anchoredPosition = new Vector2(slashX + _slashWidth * 0.5f + slashOffsetXEm * _em, slashOffsetYEm * _em);
 		maxRoot.sizeDelta = new Vector2(maxWidth, _maxEm);
-		maxRoot.anchoredPosition = new Vector2(slashX + _slashWidth + gap, _maxEm * 0.5f);
+		maxRoot.anchoredPosition = new Vector2(slashX + _slashWidth + gap, _maxEm * 0.5f + maxOffsetYEm * _em);
 	}
 
 	private static void StretchFull(RectTransform rt)
@@ -599,14 +615,23 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		float digitWidth = isMaxGroup ? _maxDigitWidth : _digitWidth;
 		float lineHeight = isMaxGroup ? _maxEm : _em;
 		float fontSize = isMaxGroup ? _maxEm : _em;
+		// VISUAL-FIX(2026-08-15): Runtime digit strips render ~11px lower than the Edit Mode plain-text preview
+		//   Cause:     The mask slot was 1em tall with the strip line top-aligned to it, but the font's glyph
+		//              block (ascent - descent, 1.172em for RobotoCondensed-Bold) is taller than 1em, so TMP
+		//              Center alignment (preview) and the top-anchored strip line land the digits
+		//              (glyphBlockEm - 1) * lineHeight / 2 apart vertically.
+		//   Affects:   HPNumericDisplayHorizontal digit strips (current + max groups)
+		//   Regress:   Edit Mode preview (previewHp=12/20) vs Play Mode combat digits: vertical centers must
+		//              match; digit-count growth (99->100) and hit shake/landing pop must be unchanged.
+		float blockHeight = lineHeight * _glyphBlockEm;
 		var slotGo = new GameObject("Digit", typeof(RectTransform));
 		var slotRt = (RectTransform)slotGo.transform;
 		slotRt.SetParent(container, false);
 		slotRt.anchorMin = new Vector2(0.5f, 1f);
 		slotRt.anchorMax = new Vector2(0.5f, 1f);
 		slotRt.pivot = new Vector2(0.5f, 1f);
-		slotRt.sizeDelta = new Vector2(digitWidth, lineHeight);
-		slotRt.anchoredPosition = Vector2.zero;
+		slotRt.sizeDelta = new Vector2(digitWidth, blockHeight);
+		slotRt.anchoredPosition = new Vector2(0f, (blockHeight - lineHeight) * 0.5f);
 		slotGo.AddComponent<RectMask2D>();
 
 		var stripGo = new GameObject("Strip", typeof(RectTransform));
@@ -629,7 +654,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		tmp.overflowMode = TextOverflowModes.Overflow;
 		tmp.raycastTarget = false;
 		tmp.color = NormalColorValue;
-		var entry = new DigitStrip { slot = slotRt, strip = stripRt, text = tmp, idx = Canonical(0), digitWidth = digitWidth, lineHeight = lineHeight };
+		var entry = new DigitStrip { slot = slotRt, strip = stripRt, text = tmp, idx = Canonical(0), digitWidth = digitWidth, lineHeight = lineHeight, slotOffsetY = (blockHeight - lineHeight) * 0.5f };
 		SetStripY(entry, entry.idx);
 		return entry;
 	}
@@ -639,7 +664,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		for (int i = 0; i < strips.Count; i++)
 		{
 			float x = (i - (strips.Count - 1) * 0.5f) * strips[i].digitWidth;
-			strips[i].slot.anchoredPosition = new Vector2(x, 0f);
+			strips[i].slot.anchoredPosition = new Vector2(x, strips[i].slotOffsetY);
 		}
 	}
 
@@ -710,7 +735,10 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		foreach (DigitStrip entry in strips)
 		{
 			entry.lineHeight = measured;
-			entry.slot.sizeDelta = new Vector2(entry.digitWidth, measured);
+			float block = measured * _glyphBlockEm;
+			entry.slotOffsetY = (block - measured) * 0.5f;
+			entry.slot.sizeDelta = new Vector2(entry.digitWidth, block);
+			entry.slot.anchoredPosition = new Vector2(0f, entry.slotOffsetY);
 			entry.strip.sizeDelta = new Vector2(entry.digitWidth, measured * DigitsPerCycle * StripCycles);
 			SetStripY(entry, entry.idx);
 		}
