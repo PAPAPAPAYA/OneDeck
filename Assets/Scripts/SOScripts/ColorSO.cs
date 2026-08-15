@@ -16,4 +16,29 @@ public class ColorSO : ScriptableObject
 
 	/// <summary>Opening rich-text tag, e.g. "&lt;color=#87CEEB&gt;". Pair with "&lt;/color&gt;".</summary>
 	public string OpenTag => "<color=" + Hex + ">";
+
+#if UNITY_EDITOR
+	/// <summary>
+	/// Raised in the editor when this asset's serialized data changes (Inspector
+	/// edit, undo/redo). HUD edit-mode previews subscribe to live-update.
+	/// </summary>
+	public static event System.Action<ColorSO> Changed;
+
+	private void OnValidate()
+	{
+		if (Changed != null)
+		{
+			try
+			{
+				Changed(this);
+			}
+			catch (System.Exception e)
+			{
+				// A dead subscriber (stale delegate to a destroyed object) must
+				// not break the live-preview chain for the remaining subscribers.
+				Debug.LogError("[ColorSO] Color change broadcast failed: " + e);
+			}
+		}
+	}
+#endif
 }

@@ -32,12 +32,6 @@ public class DamageFloaterPresenter : MonoBehaviour
 	[Tooltip("Null = TMP default font asset (same as CardTagTooltip / ResultStatsPanel runtime text).")]
 	public TMP_FontAsset font;
 
-	[Header("Colors")]
-	[Tooltip("Floater color on the player side. Null = GameColorPalette damage.")]
-	public ColorSO playerColor;
-	[Tooltip("Floater color on the enemy side. Null = GameColorPalette damage.")]
-	public ColorSO enemyColor;
-
 	[Header("Tuning (defaults from DamageFloaterDemo.html)")]
 	public float fontSize = 30f;
 	[Tooltip("Bold floater text (TMP faux bold if the font asset has no bold face).")]
@@ -77,6 +71,11 @@ public class DamageFloaterPresenter : MonoBehaviour
 		if (canvas == null)
 		{
 			canvas = GetComponentInParent<Canvas>();
+		}
+		GameColorPalette palette = GameColorPalette.Me;
+		if (palette != null && (palette.floaterPlayer == null || palette.floaterEnemy == null))
+		{
+			Debug.LogWarning("[DamageFloaterPresenter] GameColorPalette floater fields (floaterPlayer/floaterEnemy) not fully wired; unwired colors fall back to white.");
 		}
 		TestManager.Log("[DamageFloater] Awake OK on '" + gameObject.name + "'"
 			+ " | canvas=" + (canvas != null ? canvas.name : "NULL")
@@ -442,20 +441,12 @@ public class DamageFloaterPresenter : MonoBehaviour
 		return ApplySpeed(seq);
 	}
 
-	// Per-side floater color: the serialized ColorSO fields win; both fall back
-	// to the palette damage color, then to the demo red.
+	// Per-side floater color: palette-authoritative (GameColorPalette "Damage
+	// Floater" group, both sides share one asset); white fallback when unwired
+	// (guarded by GameColorPaletteWiringTests).
 	private Color DamageColor(bool playerSide)
 	{
-		ColorSO sideColor = playerSide ? playerColor : enemyColor;
-		if (sideColor != null)
-		{
-			return sideColor.value;
-		}
-		if (GameColorPalette.Me != null && GameColorPalette.Me.damage != null)
-		{
-			return GameColorPalette.Me.damage.value;
-		}
-		return new Color(1f, 0.23f, 0.19f); // demo #ff3b30 fallback
+		return playerSide ? GameColorPalette.FloaterPlayerColor : GameColorPalette.FloaterEnemyColor;
 	}
 
 	// timeScale (not ScaleDuration) so the whole sequence scales with the global

@@ -26,11 +26,12 @@ MonoBehaviour:
   opponentTextColor: {fileID: 11400000, guid: a2bed2d662297484a895326cb79d54a1, type: 2}
   infectedTint: {fileID: 11400000, guid: 0ee71c2a56afabd43953bdbdd0353cd2, type: 2}
   powerTint: {fileID: 11400000, guid: 294511ee47c574442a58dd8c288f6159, type: 2}
-  hpBarPlayer: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
-  hpBarEnemy: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
+  hpBarPlayer: {fileID: 11400000, guid: 26ce20a8085bc7e44a35331ef352fd51, type: 2}
+  hpBarEnemy: {fileID: 11400000, guid: 30dadf4305911e449bda1000f5eee1f8, type: 2}
   hpBarShadow: {fileID: 11400000, guid: 95b2170f52a207a49ad23f1f4e463db0, type: 2}
-  hpNormal: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  hpNormalPlayer: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
+  hpNormalEnemy: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
   hpLow: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
   hpZeroGray: {fileID: 11400000, guid: e74364fef9c21894bb806162ee62060d, type: 2}
-  floaterPlayer: {fileID: 11400000, guid: 2be4cae6ded0a5d41999ced784d601b1, type: 2}
-  floaterEnemy: {fileID: 11400000, guid: 54ca5eb09c31b214aad71bc7a3859f5e, type: 2}
+  floaterPlayer: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
+  floaterEnemy: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}

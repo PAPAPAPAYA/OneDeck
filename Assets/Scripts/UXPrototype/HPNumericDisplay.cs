@@ -48,11 +48,6 @@ public class HPNumericDisplay : MonoBehaviour
 	[Tooltip("Zero-out: drop through the divider, gray settle, divider flash. Toggling off mid-state cancels and restores next frame.")]
 	public bool enableZeroOut = true;
 
-	[Header("Colors")]
-	public ColorSO normalColor;
-	public ColorSO lowHpColor;
-	public ColorSO zeroGrayColor;
-
 	[Header("Counting (demo constants)")]
 	public int stepMs = 50;
 	public int targetCountMs = 500;
@@ -151,6 +146,12 @@ public class HPNumericDisplay : MonoBehaviour
 		{
 			_currentCanvasGroup = currentRoot.gameObject.AddComponent<CanvasGroup>();
 		}
+		GameColorPalette palette = GameColorPalette.Me;
+		if (palette != null && ((side == Side.Player ? palette.hpNormalPlayer : palette.hpNormalEnemy) == null
+			|| palette.hpLow == null || palette.hpZeroGray == null))
+		{
+			Debug.LogWarning("[HPNumericDisplay] GameColorPalette HP fields (hpNormalPlayer/hpNormalEnemy, hpLow, hpZeroGray) not fully wired; unwired colors fall back to white.");
+		}
 		_em = currentPlain.fontSize;
 		TMP_FontAsset fontAsset = currentPlain.font;
 		// 1em line advance: TMP's line advance is
@@ -217,6 +218,10 @@ public class HPNumericDisplay : MonoBehaviour
 	private void OnValidate()
 	{
 #if UNITY_EDITOR
+		if (!Application.isPlaying)
+		{
+			SubscribeColorEvents();
+		}
 		if (Application.isPlaying || !editModePreview || displayRoot == null || currentRoot == null
 			|| currentPlain == null || currentStrips == null || divider == null
 			|| maxRoot == null || maxPlain == null || maxStrips == null)
@@ -253,12 +258,9 @@ public class HPNumericDisplay : MonoBehaviour
 		LayoutRoots();
 		currentPlain.text = previewHp.ToString();
 		maxPlain.text = previewHpMax.ToString();
-		if (normalColor != null)
-		{
-			currentPlain.color = normalColor.value;
-			maxPlain.color = normalColor.value;
-			divider.color = normalColor.value;
-		}
+		currentPlain.color = NormalColorValue;
+		maxPlain.color = NormalColorValue;
+		divider.color = NormalColorValue;
 	}
 #endif
 
@@ -300,10 +302,70 @@ public class HPNumericDisplay : MonoBehaviour
 		CheckDigitGrowth(hp, hpMax);
 	}
 
+	private void OnEnable()
+	{
+#if UNITY_EDITOR
+		if (!Application.isPlaying)
+		{
+			SubscribeColorEvents();
+		}
+#endif
+	}
+
 	private void OnDisable()
 	{
 		CleanupVisuals();
+#if UNITY_EDITOR
+		UnsubscribeColorEvents();
+#endif
 	}
+
+	private void OnDestroy()
+	{
+#if UNITY_EDITOR
+		UnsubscribeColorEvents();
+#endif
+	}
+
+#if UNITY_EDITOR
+	private bool _colorEventsSubscribed;
+
+	// Subscribed from OnEnable and OnValidate so edit-mode live updates do not
+	// depend on lifecycle timing (scene load, recompile, re-enter edit mode).
+	private void SubscribeColorEvents()
+	{
+		if (_colorEventsSubscribed)
+		{
+			return;
+		}
+		_colorEventsSubscribed = true;
+		ColorSO.Changed += OnEditorColorChanged;
+		GameColorPalette.Changed += OnEditorColorChanged;
+	}
+
+	private void UnsubscribeColorEvents()
+	{
+		if (!_colorEventsSubscribed)
+		{
+			return;
+		}
+		_colorEventsSubscribed = false;
+		ColorSO.Changed -= OnEditorColorChanged;
+		GameColorPalette.Changed -= OnEditorColorChanged;
+	}
+
+	// A palette-side asset/field change re-applies the Edit Mode preview so HUD
+	// colors live-update while tuning GameColorPalette (or a ColorSO asset).
+	private void OnEditorColorChanged(ColorSO changed)
+	{
+		UnityEditor.EditorApplication.delayCall += ApplyEditModePreview;
+	}
+
+	private void OnEditorColorChanged()
+	{
+		UnityEditor.EditorApplication.delayCall += ApplyEditModePreview;
+	}
+#endif
 
 	// ------------------------------------------------------------------ phases
 
@@ -355,8 +417,8 @@ public class HPNumericDisplay : MonoBehaviour
 		_currentCanvasGroup.DOKill();
 		_currentCanvasGroup.alpha = 1f;
 		divider.DOKill();
-		SetCurrentColorInstant(normalColor.value);
-		SetDividerInstant(normalColor.value, 1f);
+		SetCurrentColorInstant(NormalColorValue);
+		SetDividerInstant(NormalColorValue, 1f);
 		KillAllStripTweens();
 		_current.counting = false;
 		_max.counting = false;
@@ -405,6 +467,9 @@ public class HPNumericDisplay : MonoBehaviour
 	}
 
 	// ------------------------------------------------------------------ polling
+
+	// Per-side normal color from the palette ("HP Bar / Numeric" group).
+	private Color NormalColorValue => side == Side.Player ? GameColorPalette.HpNormalPlayerColor : GameColorPalette.HpNormalEnemyColor;
 
 	private int GetDisplayedHp()
 	{
@@ -656,7 +721,7 @@ public class HPNumericDisplay : MonoBehaviour
 		tmp.enableWordWrapping = false;
 		tmp.overflowMode = TextOverflowModes.Overflow;
 		tmp.raycastTarget = false;
-		tmp.color = _zeroActive ? zeroGrayColor.value : normalColor.value;
+		tmp.color = _zeroActive ? GameColorPalette.HpZeroGrayColor : NormalColorValue;
 		var entry = new DigitStrip { slot = slotRt, strip = stripRt, text = tmp, idx = Canonical(0) };
 		SetStripY(entry, entry.idx);
 		return entry;
@@ -811,10 +876,10 @@ public class HPNumericDisplay : MonoBehaviour
 		foreach (TMP_Text text in CurrentColorTargets())
 		{
 			text.DOKill();
-			ApplySpeed(text.DOColor(zeroGrayColor.value, stateColorFadeDuration));
+			ApplySpeed(text.DOColor(GameColorPalette.HpZeroGrayColor, stateColorFadeDuration));
 		}
 		divider.DOKill();
-		ApplySpeed(divider.DOColor(zeroGrayColor.value, stateColorFadeDuration));
+		ApplySpeed(divider.DOColor(GameColorPalette.HpZeroGrayColor, stateColorFadeDuration));
 		// Drop through the divider while fading and shrinking.
 		_zeroDropSequence = DOTween.Sequence();
 		_zeroDropSequence.Append(currentRoot.DOAnchorPosY(_currentRootBasePos.y - zeroDropEm * _em, zeroDropDuration).SetEase(Ease.InCubic));
@@ -858,9 +923,9 @@ public class HPNumericDisplay : MonoBehaviour
 		_currentCanvasGroup.DOKill();
 		_currentCanvasGroup.alpha = 1f;
 		divider.DOKill();
-		SetDividerInstant(normalColor.value, 1f);
+		SetDividerInstant(NormalColorValue, 1f);
 		// Restore instantly; UpdateLowPulse restarts the pulse from here if still low.
-		SetCurrentColorInstant(normalColor.value);
+		SetCurrentColorInstant(NormalColorValue);
 	}
 
 	private void UpdateLowPulse(int hp, int hpMax)
@@ -875,13 +940,13 @@ public class HPNumericDisplay : MonoBehaviour
 		{
 			foreach (TMP_Text text in CurrentColorTargets())
 			{
-				_pulseTweens.Add(ApplySpeed(text.DOColor(lowHpColor.value, lowHpPulseHalfDuration).SetLoops(-1, LoopType.Yoyo)));
+				_pulseTweens.Add(ApplySpeed(text.DOColor(GameColorPalette.HpLowColor, lowHpPulseHalfDuration).SetLoops(-1, LoopType.Yoyo)));
 			}
 		}
 		else
 		{
 			KillPulseTweens();
-			SetCurrentColorInstant(_zeroActive ? zeroGrayColor.value : normalColor.value);
+			SetCurrentColorInstant(_zeroActive ? GameColorPalette.HpZeroGrayColor : NormalColorValue);
 		}
 	}
 

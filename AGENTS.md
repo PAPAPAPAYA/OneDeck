@@ -293,7 +293,7 @@ Deck cards are face-down by default; state lives on `CardPhysObjScript` (`isFace
 
 Damage `<color=red>`, Heal `<color=#90EE90>`, Shield `<color=grey>`, Friendly `<color=#87CEEB>`, Enemy `<color=orange>`
 
-**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette` (`Assets/Resources/GameColorPalette.asset`, lazy singleton `Me`). Log/rich-text: use `GameColorPalette.Me.<name>.OpenTag` / `.Hex` — never hardcode hex strings. Components (`CardPhysObjScript`, `CombatHPBarPresenter`, `HPNumericDisplay`) use serialized `ColorSO` fields wired to palette assets. To change a color, edit the ColorSO asset — do not touch code.
+**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette`. Log/rich-text: `GameColorPalette.Me.<name>.OpenTag`/`.Hex` — never hardcode hex. Components (`CardPhysObjScript`) use serialized `ColorSO` fields; HUD components read `GameColorPalette.<Name>Color` statics — HUD colors live in the palette's "HP Bar / Numeric"/"Damage Floater" groups, Edit Mode previews live-update. To change a color, edit the ColorSO asset.
 
 ---
 

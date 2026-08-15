@@ -25,10 +25,6 @@ public class CombatHPBarPresenter : MonoBehaviour
 	// creates a fallback shadow instead of disabling the component.
 	public Image barShadow;
 
-	[Header("Colors")]
-	public ColorSO playerColor;
-	public ColorSO enemyColor;
-
 	[Header("Tuning (defaults from CombatHPBarDemo.html)")]
 	public float shareTweenDuration = 0.25f;
 	public float ghostHoldDelay = 0.35f;
@@ -52,7 +48,6 @@ public class CombatHPBarPresenter : MonoBehaviour
 	[Header("Shadow (single tuning entry point; Awake normalizes the scene Image)")]
 	public Vector2 shadowOffset = new Vector2(4f, -4f);
 	public float shadowPadding = 6f;
-	public ColorSO shadowColor;
 
 	[Header("Edit Mode Preview")]
 	[Tooltip("Edit Mode only: shows the bar with a sample HP split so the real segment arrangement is visible in the Scene/Game view without entering Play Mode.")]
@@ -103,8 +98,13 @@ public class CombatHPBarPresenter : MonoBehaviour
 		//             segment widths (e.g. 10/20 vs 20 -> 1/3 vs 2/3).
 		EnsureFilledSprites();
 		EnsureBarShadow();
-		playerSeg.color = playerColor.value;
-		enemySeg.color = enemyColor.value;
+		GameColorPalette palette = GameColorPalette.Me;
+		if (palette != null && (palette.hpBarPlayer == null || palette.hpBarEnemy == null || palette.hpBarShadow == null))
+		{
+			Debug.LogWarning("[CombatHPBarPresenter] GameColorPalette HP bar fields (hpBarPlayer/hpBarEnemy/hpBarShadow) not fully wired; unwired colors fall back to white.");
+		}
+		playerSeg.color = GameColorPalette.HpBarPlayerColor;
+		enemySeg.color = GameColorPalette.HpBarEnemyColor;
 		SetAlpha(playerGhost, 0f);
 		SetAlpha(enemyGhost, 0f);
 		SetAlpha(playerFlash, 0f);
@@ -113,36 +113,49 @@ public class CombatHPBarPresenter : MonoBehaviour
 	}
 
 	// Live-retune the shadow while editing: Inspector edits to
-	// shadowOffset/shadowPadding/shadowColor renormalize the wired shadow Image
-	// immediately. Skips the Awake fallback creation and null shadowColor.
-	// Also applies the Edit Mode preview (segment fills + colors, same fill math as
-	// EnterCombat) so the real bar arrangement is visible in the Scene/Game view
-	// without entering Play Mode.
+	// shadowOffset/shadowPadding renormalize the wired shadow Image immediately
+	// (skips the Awake fallback creation). Also applies the Edit Mode preview
+	// (segment fills + colors, same fill math as EnterCombat) so the real bar
+	// arrangement is visible in the Scene/Game view without entering Play Mode;
+	// palette color changes live-update via the ColorSO/GameColorPalette events.
 	// Deferred: touching the RectTransform inside OnValidate raises
 	// OnRectTransformDimensionsChange via SendMessage, which Unity forbids there.
 	private void OnValidate()
 	{
 #if UNITY_EDITOR
+		if (!Application.isPlaying)
+		{
+			SubscribeColorEvents();
+		}
 		UnityEditor.EditorApplication.delayCall += () =>
 		{
-			if (barShadow != null && shadowColor != null)
+			if (barShadow != null)
 			{
 				NormalizeBarShadow();
 			}
-			if (Application.isPlaying || !editModePreview || barRoot == null || playerSeg == null
-				|| enemySeg == null || playerColor == null || enemyColor == null)
-			{
-				return;
-			}
-			int total = Mathf.Max(1, previewPlayerHp + previewEnemyHp);
-			float pct = (float)previewPlayerHp / total;
-			playerSeg.fillAmount = pct;
-			enemySeg.fillAmount = 1f - pct;
-			playerSeg.color = playerColor.value;
-			enemySeg.color = enemyColor.value;
+			ApplyEditModePreview();
 		};
 #endif
 	}
+
+#if UNITY_EDITOR
+	// Same fill math as EnterCombat with palette colors, so the real segment
+	// arrangement is visible in the Scene/Game view without entering Play Mode.
+	private void ApplyEditModePreview()
+	{
+		if (Application.isPlaying || !editModePreview || barRoot == null || playerSeg == null
+			|| enemySeg == null)
+		{
+			return;
+		}
+		int total = Mathf.Max(1, previewPlayerHp + previewEnemyHp);
+		float pct = (float)previewPlayerHp / total;
+		playerSeg.fillAmount = pct;
+		enemySeg.fillAmount = 1f - pct;
+		playerSeg.color = GameColorPalette.HpBarPlayerColor;
+		enemySeg.color = GameColorPalette.HpBarEnemyColor;
+	}
+#endif
 
 	private void Update()
 	{
@@ -215,10 +228,70 @@ public class CombatHPBarPresenter : MonoBehaviour
 		enemyFlash.fillAmount = enemySeg.fillAmount;
 	}
 
+	private void OnEnable()
+	{
+#if UNITY_EDITOR
+		if (!Application.isPlaying)
+		{
+			SubscribeColorEvents();
+		}
+#endif
+	}
+
 	private void OnDisable()
 	{
 		CleanupVisuals();
+#if UNITY_EDITOR
+		UnsubscribeColorEvents();
+#endif
 	}
+
+	private void OnDestroy()
+	{
+#if UNITY_EDITOR
+		UnsubscribeColorEvents();
+#endif
+	}
+
+#if UNITY_EDITOR
+	private bool _colorEventsSubscribed;
+
+	// Subscribed from OnEnable and OnValidate so edit-mode live updates do not
+	// depend on lifecycle timing (scene load, recompile, re-enter edit mode).
+	private void SubscribeColorEvents()
+	{
+		if (_colorEventsSubscribed)
+		{
+			return;
+		}
+		_colorEventsSubscribed = true;
+		ColorSO.Changed += OnEditorColorChanged;
+		GameColorPalette.Changed += OnEditorColorChanged;
+	}
+
+	private void UnsubscribeColorEvents()
+	{
+		if (!_colorEventsSubscribed)
+		{
+			return;
+		}
+		_colorEventsSubscribed = false;
+		ColorSO.Changed -= OnEditorColorChanged;
+		GameColorPalette.Changed -= OnEditorColorChanged;
+	}
+
+	// A palette-side asset/field change re-applies the Edit Mode preview so HUD
+	// colors live-update while tuning GameColorPalette (or a ColorSO asset).
+	private void OnEditorColorChanged(ColorSO changed)
+	{
+		UnityEditor.EditorApplication.delayCall += ApplyEditModePreview;
+	}
+
+	private void OnEditorColorChanged()
+	{
+		UnityEditor.EditorApplication.delayCall += ApplyEditModePreview;
+	}
+#endif
 
 	// Silent sync to the current displayed values on combat entry: no tweens, no
 	// effects, so the first frame never plays a phantom damage/heal from defaults.
@@ -528,7 +601,7 @@ public class CombatHPBarPresenter : MonoBehaviour
 		rt.anchorMax = Vector2.one;
 		rt.offsetMin = new Vector2(shadowOffset.x - shadowPadding, shadowOffset.y - shadowPadding);
 		rt.offsetMax = new Vector2(shadowOffset.x + shadowPadding, shadowOffset.y + shadowPadding);
-		barShadow.color = shadowColor.value;
+		barShadow.color = GameColorPalette.HpBarShadowColor;
 		rt.SetSiblingIndex(0);
 	}
 

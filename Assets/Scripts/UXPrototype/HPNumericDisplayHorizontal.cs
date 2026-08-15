@@ -48,9 +48,6 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	[Tooltip("Gap between digit groups and the slash, in em.")]
 	public float groupGapEm = 0.15f;
 
-	[Header("Colors")]
-	public ColorSO normalColor;
-
 	[Header("Counting (demo constants, shared with HPNumericDisplay)")]
 	public int stepMs = 50;
 	public int targetCountMs = 500;
@@ -135,6 +132,11 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		{
 			canvas = GetComponentInParent<Canvas>();
 		}
+		GameColorPalette palette = GameColorPalette.Me;
+		if (palette != null && (side == Side.Player ? palette.hpNormalPlayer : palette.hpNormalEnemy) == null)
+		{
+			Debug.LogWarning("[HPNumericDisplayHorizontal] GameColorPalette hpNormal" + (side == Side.Player ? "Player" : "Enemy") + " not wired; color falls back to white.");
+		}
 		_em = currentPlain.fontSize;
 		_maxEm = _em * maxFontScale;
 		maxPlain.fontSize = _maxEm;
@@ -196,7 +198,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		// for the Edit Mode preview (restored there on serialization).
 		currentPlain.gameObject.SetActive(false);
 		maxPlain.gameObject.SetActive(false);
-		slashText.color = normalColor.value;
+		slashText.color = NormalColorValue;
 		// Combat input is click-driven: no graphic of this display may intercept raycasts.
 		foreach (Graphic graphic in displayRoot.GetComponentsInChildren<Graphic>(true))
 		{
@@ -241,10 +243,70 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		CheckDigitGrowth(hp, hpMax);
 	}
 
+	private void OnEnable()
+	{
+#if UNITY_EDITOR
+		if (!Application.isPlaying)
+		{
+			SubscribeColorEvents();
+		}
+#endif
+	}
+
 	private void OnDisable()
 	{
 		CleanupVisuals();
+#if UNITY_EDITOR
+		UnsubscribeColorEvents();
+#endif
 	}
+
+	private void OnDestroy()
+	{
+#if UNITY_EDITOR
+		UnsubscribeColorEvents();
+#endif
+	}
+
+#if UNITY_EDITOR
+	private bool _colorEventsSubscribed;
+
+	// Subscribed from OnEnable and OnValidate so edit-mode live updates do not
+	// depend on lifecycle timing (scene load, recompile, re-enter edit mode).
+	private void SubscribeColorEvents()
+	{
+		if (_colorEventsSubscribed)
+		{
+			return;
+		}
+		_colorEventsSubscribed = true;
+		ColorSO.Changed += OnEditorColorChanged;
+		GameColorPalette.Changed += OnEditorColorChanged;
+	}
+
+	private void UnsubscribeColorEvents()
+	{
+		if (!_colorEventsSubscribed)
+		{
+			return;
+		}
+		_colorEventsSubscribed = false;
+		ColorSO.Changed -= OnEditorColorChanged;
+		GameColorPalette.Changed -= OnEditorColorChanged;
+	}
+
+	// A palette-side asset/field change re-applies the Edit Mode preview so HUD
+	// colors live-update while tuning GameColorPalette (or a ColorSO asset).
+	private void OnEditorColorChanged(ColorSO changed)
+	{
+		UnityEditor.EditorApplication.delayCall += ApplyEditModePreview;
+	}
+
+	private void OnEditorColorChanged()
+	{
+		UnityEditor.EditorApplication.delayCall += ApplyEditModePreview;
+	}
+#endif
 
 	// ------------------------------------------------------------------ phases
 
@@ -332,6 +394,9 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	}
 
 	// ------------------------------------------------------------------ polling
+
+	// Per-side normal color from the palette ("HP Bar / Numeric" group).
+	private Color NormalColorValue => side == Side.Player ? GameColorPalette.HpNormalPlayerColor : GameColorPalette.HpNormalEnemyColor;
 
 	private int GetDisplayedHp()
 	{
@@ -563,7 +628,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		tmp.enableWordWrapping = false;
 		tmp.overflowMode = TextOverflowModes.Overflow;
 		tmp.raycastTarget = false;
-		tmp.color = normalColor.value;
+		tmp.color = NormalColorValue;
 		var entry = new DigitStrip { slot = slotRt, strip = stripRt, text = tmp, idx = Canonical(0), digitWidth = digitWidth, lineHeight = lineHeight };
 		SetStripY(entry, entry.idx);
 		return entry;
@@ -749,6 +814,10 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	private void OnValidate()
 	{
 #if UNITY_EDITOR
+		if (!Application.isPlaying)
+		{
+			SubscribeColorEvents();
+		}
 		if (Application.isPlaying || !editModePreview || displayRoot == null || currentRoot == null
 			|| currentPlain == null || currentStrips == null || slashText == null
 			|| maxRoot == null || maxPlain == null || maxStrips == null)
@@ -799,12 +868,9 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		maxPlain.text = previewHpMax.ToString();
 		currentPlain.gameObject.SetActive(true);
 		maxPlain.gameObject.SetActive(true);
-		if (normalColor != null)
-		{
-			currentPlain.color = normalColor.value;
-			maxPlain.color = normalColor.value;
-			slashText.color = normalColor.value;
-		}
+		currentPlain.color = NormalColorValue;
+		maxPlain.color = NormalColorValue;
+		slashText.color = NormalColorValue;
 	}
 #endif
 }
