@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Combat deck layout modes selectable on CombatUXManager.deckLayoutMode.
-/// Legacy toggles map onto this enum (see CombatUXManager.EffectiveDeckLayoutMode).
+/// deckLayoutMode is the single source of truth for the active combat deck layout.
 /// </summary>
 public enum DeckLayoutMode { Linear, Cascade, ArcLoop, FloatStack }
 
@@ -100,7 +100,7 @@ public static class DeckPositionCalculator
 		//             the branch lives here so every caller (wrappers, peel focus, reveal-to-bottom)
 		//             inherits the curve. The legacy formula below is preserved byte-for-byte.
 		//   Affects:  All CombatUXManager deck position callers (layout, popup peaks, slot-in, peel focus).
-		//   Regress:  Set enableCascadeDeckLayout = false; the deck must render as the old linear fan.
+		//   Regress:  Set deckLayoutMode = Linear; the deck must render as the old linear fan.
 		if (cascade != null && cascade.enabled && deckCount > 0)
 		{
 			Vector2[] offsets = DeckCascadeLayout.ComputeOffsets(deckCount, cascade.layoutParams, cascade.pxToWorld);

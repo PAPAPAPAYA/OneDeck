@@ -8495,7 +8495,6 @@ MonoBehaviour:
   shuffleStaggerMaxDelay: 0.3
   xOffset: 0.15
   yOffset: 0.15
-  enableCascadeDeckLayout: 1
   cascadePxToWorld: 0.021
   cascadeShrinkCount: 4
   cascadeMinScale: 1
@@ -8511,7 +8510,6 @@ MonoBehaviour:
   cascadeCoverageTarget: 0.62
   cascadeCoverageCap: 2.5
   revealCardCountsAsDeckFront: 1
-  enableArcLoopDeckLayout: 0
   arcLoopPxToWorld: 0.01
   arcLoopRadii: {x: 195, y: 155}
   arcLoopExponent: 2
@@ -8521,8 +8519,8 @@ MonoBehaviour:
   arcLoopScalePower: 1
   arcLoopMirror: 0
   arcLoopSamples: 720
-  deckLayoutMode: 1
-  floatStackPxToWorld: 0.01
+  deckLayoutMode: 3
+  floatStackPxToWorld: 0.021
   floatStackStepY: 14
   floatStackRevealScale: 1.07
   floatStackRevealFloatX: 16

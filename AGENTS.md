@@ -68,7 +68,7 @@ Assets/
 - **Delay** moves a card toward `index 0` by 1 slot (later reveal).
 
 ### Physical Deck Layout (Cascade / Arc Loop / Float Stack)
-- Selector: `deckLayoutMode` enum {Linear, Cascade, ArcLoop, FloatStack}; legacy bools map: cascade off→Linear; arc on + enum at Cascade→ArcLoop.
+- Selector: `deckLayoutMode` enum {Linear, Cascade, ArcLoop, FloatStack} — single source of truth (legacy layout toggles removed 2026-08-15).
 - Cascade: front card (deck top) largest at the `physicalCardDeckPos` anchor; front sweeps up-left shrinking; tail hooks back tight. Shop unaffected. Legacy `xOffset/yOffset/zOffset` fields only serve the Linear fallback.
 - `revealCardCountsAsDeckFront` (default `true`, cascade/arc only): the reveal-zone card holds the layout front slot, so revealing does not re-layout the deck; it slides one step on return. Source of truth: `GetCascadeDeckCount()`.
 - All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(...)`; every caller (layout, popup, slot-in, reveal, peel focus) inherits the active layout.

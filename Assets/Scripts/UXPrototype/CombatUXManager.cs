@@ -54,8 +54,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float yOffset;
 
 	[Header("CASCADE DECK LAYOUT")]
-	[Tooltip("Enable the Smooth Curve Cascade deck layout. When false, the legacy linear fan is used byte-for-byte.")]
-	public bool enableCascadeDeckLayout = true;
 	[Tooltip("Demo px to world unit conversion; tune so the 150px demo card matches the current physical card width")]
 	public float cascadePxToWorld = 0.01f;
 	[Tooltip("Front segment length in cards (demo: 6)")]
@@ -88,8 +86,6 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public bool revealCardCountsAsDeckFront = true;
 
 	[Header("ARC LOOP DECK LAYOUT")]
-	[Tooltip("Use the Elliptical Arc Loop deck layout instead of the cascade (requires enableCascadeDeckLayout = true). Plan: plans/plan-arc-loop-deck-layout-2026-08-12.md")]
-	public bool enableArcLoopDeckLayout = false;
 	[Tooltip("Demo px to world unit conversion for the arc loop")]
 	public float arcLoopPxToWorld = 0.01f;
 	[Tooltip("Loop radii in demo px (demo: 195, 155)")]
@@ -110,7 +106,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public int arcLoopSamples = 720;
 
 	[Header("DECK LAYOUT MODE")]
-	[Tooltip("Combat deck layout selector. Legacy toggles still map: enableCascadeDeckLayout=false forces Linear; enableArcLoopDeckLayout=true (while this is left at Cascade) forces ArcLoop.")]
+	// VISUAL-FIX(2026-08-15): deckLayoutMode is now the single layout selector; the legacy
+	//   toggles enableCascadeDeckLayout / enableArcLoopDeckLayout were removed.
+	//   Cause:    The raw toggles leaked into BuildCascadeConfig / GetCascadeDeckCount /
+	//             GetDeckScaleAtIndex / GetCascadeJitterScale, so the enum's Linear value
+	//             never took effect (cascade kept rendering) and enableArcLoopDeckLayout
+	//             was fully redundant with deckLayoutMode = ArcLoop.
+	//   Affects:  All combat deck layout selection (positions, scales, jitter, reveal-front count).
+	//   Regress:  Set deckLayoutMode to each of Linear / Cascade / ArcLoop / FloatStack; each
+	//             mode must render its own layout and the legacy toggles no longer exist.
+	[Tooltip("Combat deck layout selector. Single source of truth: Linear = legacy fan, Cascade = smooth curve, ArcLoop = elliptical loop, FloatStack = direct stack with floating reveal.")]
 	public DeckLayoutMode deckLayoutMode = DeckLayoutMode.Cascade;
 
 	[Header("FLOAT STACK REVEAL LAYOUT")]
@@ -475,7 +480,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// Cascade + reveal-front counting: the -1 above (next card leaving for the reveal zone)
 			// and the +1 from that card occupying the cascade front slot cancel out,
 			// so the returned card lands at the deepest slot of the unchanged curve.
-			if (enableCascadeDeckLayout && revealCardCountsAsDeckFront)
+			if ((deckLayoutMode == DeckLayoutMode.Cascade || deckLayoutMode == DeckLayoutMode.ArcLoop) && revealCardCountsAsDeckFront)
 				effectiveCount = physicalCardsInDeck.Count;
 			// Float Stack: the returned card lands at the stack back slot (count = post-insert).
 			if (IsFloatStackLayoutActive)
@@ -487,7 +492,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			//             (index 0 = deck bottom); legacy path is numerically identical.
 			//   Affects:  MoveRevealedCardToBottom (second-click reveal-to-bottom arc).
 			//   Regress:  Reveal a card and click again; the card arcs to the cascade tail end
-			//             (or the legacy linear bottom when enableCascadeDeckLayout = false).
+			//             (or the legacy linear bottom when deckLayoutMode = Linear).
 			Vector3 targetPos = DeckPositionCalculator.CalculatePositionAtIndex(
 				index, effectiveCount, physicalCardDeckPos.position, xOffset, yOffset, zOffset, BuildCascadeConfig(), BuildArcLoopConfig(), BuildFloatStackConfig());
 
@@ -796,7 +801,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private bool IsDynamicArcMidpointActive(Transform explicitOverride)
 	{
-		return explicitOverride == null && useDynamicArcMidpoint && EffectiveDeckLayoutMode != DeckLayoutMode.Linear;
+		return explicitOverride == null && useDynamicArcMidpoint && deckLayoutMode != DeckLayoutMode.Linear;
 	}
 
 	/// <summary>
@@ -870,7 +875,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private void OnDrawGizmosSelected()
 	{
-		if (!useDynamicArcMidpoint || EffectiveDeckLayoutMode == DeckLayoutMode.Linear) return;
+		if (!useDynamicArcMidpoint || deckLayoutMode == DeckLayoutMode.Linear) return;
 		if (physicalCardDeckPos == null) return;
 		int count = IsFloatStackLayoutActive ? physicalCardsInDeck.Count : GetCascadeDeckCount();
 		if (count < 1) return;
@@ -1081,37 +1086,21 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	/// <summary>
 	/// Build the cascade config carrier for DeckPositionCalculator. Null-safe:
-	/// when enableCascadeDeckLayout is false the calculator runs the legacy linear formula.
+	/// when the mode is not Cascade the calculator runs the legacy linear formula.
 	/// </summary>
 	private DeckPositionCalculator.CascadeConfig BuildCascadeConfig()
 	{
 		return new DeckPositionCalculator.CascadeConfig
 		{
-			enabled = enableCascadeDeckLayout,
+			enabled = deckLayoutMode == DeckLayoutMode.Cascade,
 			pxToWorld = cascadePxToWorld,
 			direction = cascadeDirection,
 			layoutParams = BuildCascadeLayoutParams()
 		};
 	}
 
-	/// <summary>
-	/// Effective combat deck layout mode, mapping the legacy toggles onto the enum:
-	/// enableCascadeDeckLayout=false -> Linear; enableArcLoopDeckLayout=true with the enum
-	/// left at Cascade -> ArcLoop; otherwise deckLayoutMode rules. Single resolution point
-	/// for every layout branch.
-	/// </summary>
-	private DeckLayoutMode EffectiveDeckLayoutMode
-	{
-		get
-		{
-			if (!enableCascadeDeckLayout) return DeckLayoutMode.Linear;
-			if (deckLayoutMode == DeckLayoutMode.Cascade && enableArcLoopDeckLayout) return DeckLayoutMode.ArcLoop;
-			return deckLayoutMode;
-		}
-	}
-
-	private bool IsArcLoopLayoutActive => EffectiveDeckLayoutMode == DeckLayoutMode.ArcLoop;
-	private bool IsFloatStackLayoutActive => EffectiveDeckLayoutMode == DeckLayoutMode.FloatStack;
+	private bool IsArcLoopLayoutActive => deckLayoutMode == DeckLayoutMode.ArcLoop;
+	private bool IsFloatStackLayoutActive => deckLayoutMode == DeckLayoutMode.FloatStack;
 
 	private DeckArcLoopLayout.Params BuildArcLoopLayoutParams()
 	{
@@ -1131,7 +1120,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	/// <summary>
 	/// Build the arc loop config carrier for DeckPositionCalculator. Disabled (skipped)
-	/// unless both enableCascadeDeckLayout and enableArcLoopDeckLayout are on.
+	/// unless the deck layout mode is ArcLoop.
 	/// </summary>
 	private DeckPositionCalculator.ArcLoopConfig BuildArcLoopConfig()
 	{
@@ -1183,7 +1172,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	private int GetCascadeDeckCount()
 	{
 		int count = physicalCardsInDeck.Count;
-		if (enableCascadeDeckLayout && revealCardCountsAsDeckFront && physicalCardInRevealZone != null)
+		if ((deckLayoutMode == DeckLayoutMode.Cascade || deckLayoutMode == DeckLayoutMode.ArcLoop) && revealCardCountsAsDeckFront && physicalCardInRevealZone != null)
 			count++;
 		return count;
 	}
@@ -1219,7 +1208,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private Vector3 GetDeckScaleAtIndex(int unityIndex, int count)
 	{
-		if (!enableCascadeDeckLayout) return physicalCardDeckSize;
+		if (deckLayoutMode == DeckLayoutMode.Linear) return physicalCardDeckSize;
 		if (count <= 0) return physicalCardDeckSize;
 		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
 		// Float Stack mode: uniform deck size (no depth scale in this layout).
@@ -1249,7 +1238,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private float GetCascadeJitterScale(int unityIndex, int count)
 	{
-		if (!enableCascadeDeckLayout || !cascadeScaleJitterWithCard || count <= 1) return 1f;
+		if (deckLayoutMode == DeckLayoutMode.Linear || !cascadeScaleJitterWithCard || count <= 1) return 1f;
 		// Float Stack mode: uniform scale, jitter stays full strength.
 		if (IsFloatStackLayoutActive) return 1f;
 		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
