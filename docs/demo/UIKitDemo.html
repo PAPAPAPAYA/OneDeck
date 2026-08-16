@@ -17,7 +17,8 @@
 			2. Any element with class="phys" + data-interactive gets the full
 			   hover/press/cancel state machine automatically — no new JS.
 			   Add data-longpress + data-lp-action="BUY" for long-press behavior,
-			   or data-tip="text" on any element for a tooltip.
+			   or data-tips='[["tag","text"], ...]' on any element for tooltip(s).
+		   data-hover-text="..." on a .phys swaps the face text while hovered.
 			3. New global parameter = one entry in the PARAMS array; the control
 			   panel, state object and spec JSON are generated from it.
 			4. After the feel is confirmed, sync values into
@@ -33,7 +34,10 @@
 			--hl: 4px;                              /* hover lift (extra travel toward light) */
 			--du: 120ms;                            /* hover / release duration */
 			--dp: 60ms;                             /* press duration */
-			--ease: cubic-bezier(.2,.7,.3,1);       /* motion curve */
+			--ease: cubic-bezier(.2,.7,.3,1);       /* motion curve; overshoot mode is built live from the 回弹强度 param */
+			--deny: 6px;                            /* disabled refusal: slide-out distance */
+			--denyAmp: 0.4;                         /* disabled refusal: horizontal shake amplitude (ratio of --deny) */
+			--denyDur: 750ms;                       /* disabled refusal: total duration, derived in JS from the phase params */
 
 			/* palette (Unity side: ColorSO / GameColorPalette, never hardcode hex there) */
 			--paper: #9aa097;      /* page stage gray, from shop mockup */
@@ -220,6 +224,16 @@
 			transform: none;
 		}
 
+		/* Disabled refusal ("head-shake no"): slides out toward the light by --deny,
+		   wiggles LEFT-RIGHT around that point (pure x, amplitude --deny * --denyAmp,
+		   decaying x0.55 per wiggle), recenters, holds (denyHold), then retreats.
+		   Shadow mirrors the
+		   face offset (ground-anchored). The @keyframes deny-shake rule is generated
+		   at runtime by buildDenyKeyframes() from the phase params (slide-out ms,
+		   wiggle count, per-swing ms, retreat ms) into <style id="denyKeyframes">.
+		   Plays once per pointer enter via the .deny class. */
+		.phys-face.deny { animation: deny-shake var(--denyDur) var(--ease); }
+
 		/* long-press progress fill (inside the face, bottom-up) */
 		.lp-fill {
 			position: absolute;
@@ -320,33 +334,32 @@
 			cursor: default;
 		}
 
-		/* tooltip trigger: NOT physical — recolor only, to stay distinct from clickable */
-		.tag {
-			background: var(--panel);
-			color: var(--face);
-			padding: 4px 12px;
-			border-radius: 5px;
-			font-size: 13px;
-			cursor: help;
-			transition: background 100ms linear;
-		}
-		.tag:hover { background: #767b74; }
+		/* tooltip: an attachment of an interactive host (e.g. a card), never a
+		   standalone element. Flat, non-physical, pointer-events: none.
+		   One host may carry several items (stacked); a hard cap comes later. */
 		#tip {
 			position: fixed;
 			z-index: 100;
-			background: var(--ink);
-			color: var(--face);
-			font-size: 13px;
-			padding: 8px 12px;
-			border-radius: 6px;
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
 			pointer-events: none;
 			opacity: 0;
 			visibility: hidden;
 			transform: translateY(4px);
 			transition: opacity 150ms ease-out, transform 150ms ease-out, visibility 150ms;
-			max-width: 260px;
 		}
 		#tip.on { opacity: 1; visibility: visible; transform: translateY(0); }
+		.tip-item {
+			background: var(--ink);
+			color: var(--face);
+			font-size: 13px;
+			padding: 8px 12px;
+			border-radius: 6px;
+			max-width: 260px;
+		}
+		.tip-tag { font-weight: 700; margin-right: 6px; }
+		.card-tags { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
 
 		/* tokens section */
 		.swatches { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -386,6 +399,8 @@
 		}
 		footer h3 { color: #d5dde2; font-size: 14px; margin-bottom: 6px; }
 	</style>
+	<!-- the @keyframes deny-shake rule is generated here at runtime (buildDenyKeyframes) -->
+	<style id="denyKeyframes"></style>
 </head>
 <body>
 
@@ -422,7 +437,8 @@
 			<li>四态：<b>静止</b>（带阴影）→ <b>悬停</b>（向左上升起，阴影留在原地）→ <b>按下</b>（落到阴影上，阴影消失）→ <b>松开激活</b>。</li>
 			<li>按住时移出元素 = 取消（松开不触发）；保持按住移回 = 重新按下。</li>
 			<li>激活时机在<b>松开</b>，不在按下——给取消留机会。</li>
-			<li>禁用态：暗面、无阴影、无悬停响应、<code>cursor: not-allowed</code>。</li>
+			<li><b>hover 换文案</b>：静止显示价格，悬停换成动作文案（<code>data-hover-text</code>，示例 <code>$4</code> → <code>买入</code>）；文案即时切换不做淡入淡出——浮起动画已经承载了过渡感；点击行为不变，移出恢复原文案。仅用于纯文本面的按钮。</li>
+			<li>禁用态：暗面、无阴影、<code>cursor: not-allowed</code>；mouseenter 时播放一次拒绝动效（平移出一截 → <b>摇头</b> → 停留 → 退回原位），每次进入只播一次，重新进入再播。摇头方式可选<b>左右平移</b>或<b>旋转</b>（旋转幅度独立，单位°），平移出 / 次数 / 单程 / 幅度 / 停留 / 退回均可在参数条配置。</li>
 		</ul>
 		<div class="stage">
 			<div class="demo-block">
@@ -438,10 +454,16 @@
 				<span class="demo-caption">图标按钮</span>
 			</div>
 			<div class="demo-block">
+				<div class="phys" data-interactive data-name="价格按钮" data-hover-text="买入">
+					<button class="phys-face btn">$4</button>
+				</div>
+				<span class="demo-caption">hover 换文案</span>
+			</div>
+			<div class="demo-block">
 				<div class="phys is-disabled" data-name="重掷(禁用)">
 					<button class="phys-face btn">重掷 $1</button>
 				</div>
-				<span class="demo-caption">禁用（钱不够）</span>
+				<span class="demo-caption">禁用（钱不够）· 悬停试试</span>
 			</div>
 		</div>
 		<div class="log"></div>
@@ -500,21 +522,34 @@
 
 	<!-- ===================== 04 tooltip ===================== -->
 	<section id="tooltip" data-title="04 悬停提示 Tooltip">
-		<div class="spec-head"><h2>04 悬停提示 Tooltip</h2><span class="tag-status">v0.1 草案</span></div>
+		<div class="spec-head"><h2>04 悬停提示 Tooltip</h2><span class="tag-status">v0.2 草案</span></div>
 		<ul class="notes">
-			<li>tooltip 触发物<b>不是</b>可点击元素，不使用物理浮起——仅变色 + <code>cursor: help</code>，避免和按钮混淆。</li>
-			<li>悬停满 <code>tipDelay</code> 后 tooltip 浮现（轻微上移淡入）；移出立即消失。</li>
-			<li>tooltip 本身平面、无阴影物理、<code>pointer-events: none</code>（永不挡交互）。</li>
-			<li>对应 Unity 侧 <code>CombatUXManager.hoverPopUpDelay</code> 的同类参数。</li>
+			<li>tooltip 是<b>可交互元素的附属属性</b>，不是独立元素：宿主保持自身 hover 物理（卡片照常浮起），tooltip 在悬停满 <code>tipDelay</code> 后叠加出现；移出立即消失。</li>
+			<li>位置优先级：<b>宿主左侧、垂直居中</b> → 左侧视口空间小于 <code>Tooltip 边距</code> 参数则<b>翻转到右侧</b>；垂直方向视口内收拢（硬边距 8px）；宿主移动（窗口 resize / 缩放 / 滚动）时 tooltip <b>实时跟随重排</b>。</li>
+			<li>一个宿主可挂<b>多条 tooltip</b>，纵向堆叠（示例卡 B 有两条；条数之后会有硬上限）。</li>
+			<li>tooltip 本身平面、无阴影物理、<code>pointer-events: none</code>（永不挡交互）；内容 = 标签名 + 描述。</li>
+			<li>对应 Unity 侧 <code>CardTagTooltip</code>（<code>CardPhysObjScript</code> hover 触发）与 <code>CombatUXManager.hoverPopUpDelay</code> 的同类参数。</li>
 		</ul>
-		<div class="stage" style="align-items:center;">
+		<div class="stage">
 			<div class="demo-block">
-				<span class="tag" data-tip="被埋葬时触发效果">&lt;亡语&gt;</span>
-				<span class="demo-caption">悬停我</span>
+				<div class="phys" data-interactive data-name="单标签卡" data-tips='[["亡语","被埋葬时触发效果"]]'>
+					<div class="phys-face card-face">
+						<div class="card-art"></div>
+						<div class="card-tags">&lt;亡语&gt;</div>
+						<div class="card-name">示例卡 A</div>
+					</div>
+				</div>
+				<span class="demo-caption">hover 卡片 · 左侧空间不足翻到右侧</span>
 			</div>
 			<div class="demo-block">
-				<span class="tag" data-tip="增强 1 友方">&lt;增益&gt;</span>
-				<span class="demo-caption">悬停我</span>
+				<div class="phys" data-interactive data-name="双标签卡" data-tips='[["亡语","被埋葬时触发效果"],["法力X","法力消耗为 X"]]'>
+					<div class="phys-face card-face">
+						<div class="card-art"></div>
+						<div class="card-tags">&lt;亡语&gt; &lt;法力X&gt;</div>
+						<div class="card-name">示例卡 B</div>
+					</div>
+				</div>
+				<span class="demo-caption">hover 卡片 · 多条 tooltip 堆叠</span>
 			</div>
 		</div>
 	</section>
@@ -552,14 +587,14 @@
 		<div class="spec-head"><h2>06 规则与状态矩阵</h2><span class="tag-status">随参数实时更新</span></div>
 		<ul class="notes">
 			<li><b>R1 光源</b>：全局左上。浮起元素阴影投向右下；凹槽元素内阴影在左上。</li>
-			<li><b>R2 可交互性</b>：可交互 = 亮面 + 阴影（浮起）；只读 = 平面；禁用 = 暗面 + 无阴影 + 无响应。</li>
+			<li><b>R2 可交互性</b>：可交互 = 亮面 + 阴影（浮起）；只读 = 平面；禁用 = 暗面 + 无阴影 + 拒绝动效（mouseenter 一次：平移 <code data-show="denyShift"></code> 后摇头 <code data-show="denyWiggles"></code> 次——方式可选左右平移/旋转——单程 <code data-show="denyWiggleDur"></code>，幅度 <code data-show="denyAmp"></code>，停留 <code data-show="denyHold"></code> 再归位）。</li>
 			<li><b>R3 静止</b>：阴影偏移 <code data-show="restShadow"></code>。</li>
 			<li><b>R4 悬停</b>：面向左上位移 <code data-show="hoverLift"></code>，时长 <code data-show="hoverDur"></code>；阴影同步增大等量偏移，视觉上固定在地面。</li>
 			<li><b>R5 按下</b>：面在 <code data-show="pressDur"></code> 内落到阴影位置（落点可用参数切到"回原位"对比手感），阴影归零。按压要脆，时长必须短于悬停。</li>
 			<li><b>R6 保持与取消</b>：按住不松 = 保持按下态；按住移出 = 取消（松开不触发）；按住移回 = 重新按下。</li>
 			<li><b>R7 激活时机</b>：点击在松开时触发，不在按下时。</li>
 			<li><b>R8 长按</b>：阈值 <code data-show="lpThreshold"></code>，进度填充从底部升起，到阈值立即触发，提前松开取消。</li>
-			<li><b>R9 Tooltip</b>：悬停 <code data-show="tipDelay"></code> 后浮现；触发物仅变色，不浮起。</li>
+			<li><b>R9 Tooltip</b>：可交互元素的附属属性（宿主保持自身 hover 物理），悬停 <code data-show="tipDelay"></code> 后浮现；位置 = 宿主左侧垂直居中，左侧间隙小于 <code data-show="tipMargin"></code> 翻转右侧，视口 8px 硬收拢；宿主移动时跟随重排；单元素可挂多条纵向堆叠。</li>
 		</ul>
 		<table class="matrix">
 			<tr><th>状态</th><th>面的位置</th><th>阴影</th><th>光标</th><th>响应</th></tr>
@@ -567,7 +602,7 @@
 			<tr><td>悬停 hover</td><td>左上 −hl</td><td>rs+hl</td><td>pointer</td><td>—</td></tr>
 			<tr><td>按下 pressed</td><td>+rs（落点参数）</td><td>0</td><td>pointer</td><td>长按计时开始</td></tr>
 			<tr><td>按住移出 held-out</td><td>回到悬停/静止</td><td>恢复</td><td>pointer</td><td>取消，松开不触发</td></tr>
-			<tr><td>禁用 disabled</td><td>原位</td><td>0（暗面）</td><td>not-allowed</td><td>无</td></tr>
+			<tr><td>禁用 disabled</td><td>原位（enter 播拒绝动效）</td><td>0（暗面）</td><td>not-allowed</td><td>仅拒绝反馈</td></tr>
 			<tr><td>只读 read-only</td><td>原位</td><td>0（平面）</td><td>default</td><td>无</td></tr>
 		</table>
 	</section>
@@ -575,7 +610,7 @@
 	<footer>
 		<h3>如何新增组件（保持本页可延展）</h3>
 		1) 复制任意 <code>&lt;section data-title&gt;</code> 作为模板（目录会自动收录）。
-		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；长按加 <code>data-longpress data-lp-action="..."</code>；提示加 <code>data-tip="..."</code>。无需写新 JS。
+		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；长按加 <code>data-longpress data-lp-action="..."</code>；提示加 <code>data-tips='[["标签","描述"]]'</code>（可多条）；悬停换文案加 <code>data-hover-text="..."</code>。无需写新 JS。
 		3) 新全局参数 = 在 <code>PARAMS</code> 数组加一项，参数条、状态对象、规格 JSON 自动生成。
 		4) 手感确认后，把数值同步进 <code>docs/UIUX_Guidelines.md</code> 与 Unity 实现。<br>
 		版本：v0.1 · 2026-08-15 · 初版（令牌 / 按钮 / 长按卡片 / tooltip / 只读与凹槽 / 状态矩阵）
@@ -593,19 +628,40 @@
 			{ key: 'hoverDur',    label: '悬停时长',          min: 0,   max: 400,  step: 10,  def: 120, unit: 'ms', css: '--du' },
 			{ key: 'pressDur',    label: '按压时长',          min: 0,   max: 300,  step: 10,  def: 60,  unit: 'ms', css: '--dp' },
 			{ key: 'ease',        label: '缓动',              type: 'select',
-				options: [['cubic-bezier(.2,.7,.3,1)', 'smooth'], ['cubic-bezier(.2,.9,.25,1.3)', 'overshoot'], ['linear', 'linear']],
+				options: [['cubic-bezier(.2,.7,.3,1)', 'smooth'], ['overshoot', 'overshoot 回弹'], ['linear', 'linear']],
 				def: 'cubic-bezier(.2,.7,.3,1)', css: '--ease' },
+			{ key: 'overshoot',   label: '回弹强度',          min: 1,   max: 3,    step: 0.05, def: 1.7 },
 			{ key: 'pressTarget', label: '按压落点',          type: 'select',
 				options: [['ground', '落到阴影上'], ['rest', '回到原位']],
 				def: 'ground' },
 			{ key: 'lpThreshold', label: '长按阈值',          min: 200, max: 1200, step: 50,  def: 500, unit: 'ms' },
 			{ key: 'tipDelay',    label: 'Tooltip 延迟',      min: 0,   max: 800,  step: 50,  def: 250, unit: 'ms' },
+			{ key: 'tipMargin',   label: 'Tooltip 边距',      min: 8,   max: 64,   step: 2,   def: 24,  unit: 'px' },
+			{ key: 'denyShift',   label: '拒绝位移 deny',     min: 2,   max: 16,   step: 1,   def: 6,   unit: 'px', css: '--deny' },
+			{ key: 'denyAmp',     label: '抖动幅度',          min: 0.1, max: 1,    step: 0.05, def: 0.4,            css: '--denyAmp' },
+			{ key: 'denyMode',    label: '摇头方式',          type: 'select',
+				options: [['translate', '左右平移'], ['rotate', '旋转']],
+				def: 'translate' },
+			{ key: 'denyRotAmp',  label: '旋转幅度',          min: 1,   max: 15,   step: 0.5,  def: 5,   unit: '°' },
+			{ key: 'denyOut',     label: '平移出时长',        min: 40,  max: 300,  step: 10,  def: 80,  unit: 'ms' },
+			{ key: 'denyWiggles', label: '摇头次数',          min: 1,   max: 4,    step: 1,   def: 2 },
+			{ key: 'denyWiggleDur', label: '单程摆动时长',    min: 60,  max: 400,  step: 10,  def: 110, unit: 'ms' },
+			{ key: 'denyHold',    label: '停留时长',          min: 0,   max: 1000, step: 50,  def: 150, unit: 'ms' },
+			{ key: 'denyRetreat', label: '退回时长',          min: 40,  max: 400,  step: 10,  def: 120, unit: 'ms' },
 		];
 		const state = {};
 		const root = document.documentElement;
 
 		function applyParam(p) {
 			const v = state[p.key];
+			if (p.key === 'ease' || p.key === 'overshoot') {
+				/* overshoot mode builds cubic-bezier(0.34, strength, 0.64, 1) live
+				   from the strength slider; other modes use the select value as-is */
+				root.style.setProperty('--ease', state.ease === 'overshoot'
+					? 'cubic-bezier(0.34, ' + state.overshoot + ', 0.64, 1)'
+					: state.ease);
+				return;
+			}
 			if (p.css) root.style.setProperty(p.css, v + (p.unit || ''));
 			if (p.key === 'pressTarget') document.body.classList.toggle('press-rest', v === 'rest');
 		}
@@ -614,6 +670,52 @@
 				const p = PARAMS.find(p => p.key === sp.dataset.show);
 				sp.textContent = state[sp.dataset.show] + (p && p.unit ? p.unit : '');
 			});
+			buildDenyKeyframes();
+		}
+
+		/* Generates @keyframes deny-shake from the phase params, so every structural
+		   aspect of the refusal motion is tunable live:
+		   slide out (denyOut) -> denyWiggles x swing pairs (each swing denyWiggleDur
+		   ms, amplitude decaying x0.55 per wiggle; denyMode selects a horizontal
+		   translation wiggle, or a rotation wiggle at denyRotAmp degrees) -> recenter
+		   (one extra swing) -> hold at the out point (denyHold) -> retreat
+		   (denyRetreat). Distances stay driven by the --deny / --denyAmp CSS vars;
+		   the derived total duration feeds --denyDur. */
+		function buildDenyKeyframes() {
+			const out = state.denyOut, s = state.denyWiggleDur, n = state.denyWiggles, hold = state.denyHold, back = state.denyRetreat;
+			const total = out + (2 * n + 1) * s + hold + back;
+			const rot = state.denyMode === 'rotate';
+			const rotAmp = state.denyRotAmp;
+			const D = 'var(--deny)', A = 'var(--denyAmp)';
+			const pct = t => (t / total * 100).toFixed(2) + '%';
+			const tx = f => 'calc(' + D + ' * ' + f + ')'; /* face offset factor; -1 = the out point */
+			const kf = (t, fx, sx, deg) => {
+				const tf = rot
+					? 'translate(' + fx + ', ' + tx(-1) + ') rotate(' + (deg || 0) + 'deg)'
+					: 'translate(' + fx + ', ' + tx(-1) + ')';
+				return '\t\t\t' + pct(t) + ' { transform: ' + tf + '; box-shadow: ' + sx + ' ' + D + ' 0 0 var(--shadow-c); }\n';
+			};
+			const rest = rot ? 'translate(0, 0) rotate(0deg)' : 'translate(0, 0)';
+			let css = '@keyframes deny-shake {\n';
+			css += '\t\t\t0% { transform: ' + rest + '; box-shadow: 0 0 0 0 var(--shadow-c); }\n';
+			css += kf(out, tx(-1), D, 0);
+			for (let k = 1; k <= n; k++) {
+				const a = Math.pow(0.55, k - 1).toFixed(3);
+				if (rot) {
+					const deg = (rotAmp * a).toFixed(2);
+					css += kf(out + (2 * k - 1) * s, tx(-1), D, +deg); /* swing: rotate +deg */
+					css += kf(out + 2 * k * s,       tx(-1), D, -deg); /* swing: rotate -deg */
+				} else {
+					css += kf(out + (2 * k - 1) * s, tx('(' + A + ' * ' + a + ' - 1)'), 'calc(' + D + ' * (1 - ' + A + ' * ' + a + '))'); /* swing right */
+					css += kf(out + 2 * k * s,       tx('(-1 - ' + A + ' * ' + a + ')'), 'calc(' + D + ' * (1 + ' + A + ' * ' + a + '))'); /* swing left */
+				}
+			}
+			css += kf(out + (2 * n + 1) * s, tx(-1), D, 0); /* recenter at the out point */
+			if (hold > 0) css += kf(out + (2 * n + 1) * s + hold, tx(-1), D, 0); /* hold, then retreat */
+			css += '\t\t\t100% { transform: ' + rest + '; box-shadow: 0 0 0 0 var(--shadow-c); }\n';
+			css += '\t\t}';
+			document.getElementById('denyKeyframes').textContent = css;
+			root.style.setProperty('--denyDur', total + 'ms');
 		}
 
 		(function buildControls() {
@@ -719,6 +821,17 @@
 
 		function isDisabled(el) { return el.classList.contains('is-disabled'); }
 
+		/* Disabled refusal: replay the deny-shake animation once per pointer enter. */
+		document.querySelectorAll('.phys.is-disabled').forEach(el => {
+			const face = el.querySelector('.phys-face');
+			el.addEventListener('pointerenter', () => {
+				face.classList.remove('deny');
+				void face.offsetWidth; /* reflow: allow the animation to restart */
+				face.classList.add('deny');
+			});
+			el.addEventListener('animationend', () => face.classList.remove('deny'));
+		});
+
 		function lpResetFill(el, ms) {
 			const fill = el.querySelector('.lp-fill');
 			if (!fill) return;
@@ -803,23 +916,63 @@
 			el._cancelled = false;
 		});
 
-		/* ===================== tooltip ===================== */
+		/* ===================== tooltip =====================
+		   Attached to interactive hosts via data-tips='[["tag","text"], ...]'.
+		   Placement: left of the host, vertically centered; flips to the right
+		   side when the left gap would be smaller than state.tipMargin; always
+		   clamped into the viewport with an 8px hard margin. The position is
+		   RE-COMPUTED on scroll/resize while visible — the host may move under
+		   a fixed-position tooltip (window resize, zoom, page scroll). */
 		const tip = document.getElementById('tip');
-		document.querySelectorAll('[data-tip]').forEach(el => {
+		let tipHost = null;
+		function positionTip() {
+			if (!tipHost) return;
+			const r = tipHost.getBoundingClientRect();
+			const tw = tip.offsetWidth, th = tip.offsetHeight, M = 8, F = state.tipMargin;
+			let left = r.left - tw - 10;
+			if (left < F) left = r.right + 10; /* left side cramped -> flip to the right side */
+			left = Math.min(Math.max(left, M), window.innerWidth - tw - M);
+			let top = r.top + r.height / 2 - th / 2;
+			top = Math.min(Math.max(top, M), window.innerHeight - th - M);
+			tip.style.left = left + 'px';
+			tip.style.top = top + 'px';
+		}
+		function showTips(el) {
+			const items = JSON.parse(el.dataset.tips || '[]');
+			if (!items.length) return;
+			tipHost = el;
+			tip.innerHTML = items.map(([tag, text]) =>
+				'<div class="tip-item"><span class="tip-tag">&lt;' + tag + '&gt;</span>' + text + '</div>').join('');
+			tip.style.visibility = 'visible'; /* measurable while still transparent */
+			positionTip();
+			tip.classList.add('on');
+		}
+		function hideTips() {
+			tipHost = null;
+			tip.classList.remove('on');
+		}
+		window.addEventListener('resize', positionTip);
+		window.addEventListener('scroll', positionTip, true); /* capture: any scroller */
+		document.querySelectorAll('[data-tips]').forEach(el => {
 			el.addEventListener('pointerenter', () => {
-				el._tipTimer = setTimeout(() => {
-					tip.textContent = el.dataset.tip;
-					tip.style.visibility = 'visible';
-					const r = el.getBoundingClientRect();
-					tip.style.left = Math.max(8, r.left + r.width / 2 - tip.offsetWidth / 2) + 'px';
-					tip.style.top = (r.top - tip.offsetHeight - 10) + 'px';
-					tip.classList.add('on');
-				}, state.tipDelay);
+				el._tipTimer = setTimeout(() => showTips(el), state.tipDelay);
 			});
 			el.addEventListener('pointerleave', () => {
 				clearTimeout(el._tipTimer);
-				tip.classList.remove('on');
+				hideTips();
 			});
+		});
+
+		/* ===================== hover text swap =====================
+		   Buttons with data-hover-text show alternate text while hovered
+		   (rest text is captured on init). For text-only faces (buttons). */
+		document.querySelectorAll('.phys[data-hover-text]').forEach(el => {
+			const face = el.querySelector('.phys-face');
+			const restText = face.textContent;
+			el.addEventListener('pointerenter', () => {
+				if (!isDisabled(el)) face.textContent = el.dataset.hoverText;
+			});
+			el.addEventListener('pointerleave', () => { face.textContent = restText; });
 		});
 
 		/* ===================== token swatches ===================== */

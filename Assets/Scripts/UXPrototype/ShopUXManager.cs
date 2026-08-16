@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DefaultNamespace.Managers;
 using UnityEngine;
 using DG.Tweening;
 
@@ -684,7 +685,7 @@ public class ShopUXManager : MonoBehaviour
 	public void OnReroll()
 	{
 		// DIAG-LOG(2026-08-08): tracing why the shop Reroll button may appear dead
-		Debug.Log("[ShopButton] ShopUXManager.OnReroll() called. existingCards=" + _spawnedShopCards.Count + " startPos=" + (shopItemStartPos != null ? shopItemStartPos.name : "null"));
+		TestManager.Log("[ShopButton] ShopUXManager.OnReroll() called. existingCards=" + _spawnedShopCards.Count + " startPos=" + (shopItemStartPos != null ? shopItemStartPos.name : "null"));
 		// 1. Make existing shop cards fly to shop start position and shrink
 		AnimateShopCardsExit();
 		
@@ -720,7 +721,7 @@ public class ShopUXManager : MonoBehaviour
 	private System.Collections.IEnumerator SpawnNewShopCardsAfterDelay()
 	{
 		// DIAG-LOG(2026-08-08): probe 1 - coroutine entered
-		Debug.Log("[ShopButton] Coroutine entered. waitTime=" + (_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null ? _spawnedShopCards[0].GetComponent<CardPhysObjScript>() != null ? _spawnedShopCards[0].GetComponent<CardPhysObjScript>().moveDuration + 0.05f : 0.35f : 0.35f) + " timeScale=" + Time.timeScale);
+		TestManager.Log("[ShopButton] Coroutine entered. waitTime=" + (_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null ? _spawnedShopCards[0].GetComponent<CardPhysObjScript>() != null ? _spawnedShopCards[0].GetComponent<CardPhysObjScript>().moveDuration + 0.05f : 0.35f : 0.35f) + " timeScale=" + Time.timeScale);
 		// Wait for animation to complete (using CardPhysObjScript's moveDuration, default 0.3s, add a buffer)
 		float waitTime = 0.35f;
 		if (_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null)
@@ -733,7 +734,7 @@ public class ShopUXManager : MonoBehaviour
 		}
 		yield return new WaitForSeconds(waitTime);
 		// DIAG-LOG(2026-08-08): probe 2 - past the wait
-		Debug.Log("[ShopButton] Coroutine past WaitForSeconds. elapsed=" + Time.time);
+		TestManager.Log("[ShopButton] Coroutine past WaitForSeconds. elapsed=" + Time.time);
 		
 		// Destroy old shop cards
 		foreach (var card in _spawnedShopCards)
@@ -748,7 +749,7 @@ public class ShopUXManager : MonoBehaviour
 		// Generate new shop physical cards
 		SpawnShopCardsInternal();
 		// DIAG-LOG(2026-08-08): tracing whether the reroll visual refresh completed
-		Debug.Log("[ShopButton] Reroll visual refresh done. newCards=" + _spawnedShopCards.Count);
+		TestManager.Log("[ShopButton] Reroll visual refresh done. newCards=" + _spawnedShopCards.Count);
 	}
 	
 	/// <summary>

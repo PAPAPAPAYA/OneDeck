@@ -312,8 +312,19 @@ public void ReleaseDeckFocus()
 				// VISUAL-FIX(2026-07-18): must use the dynamically z-clamped reveal position
 				// (see CombatUXManager.GetRevealZonePosition); the raw transform z sits behind
 				// large decks and the returning attacker gets occluded by deck front cards.
+				// VISUAL-FIX(2026-08-16): Reveal-zone attacker stays shrunk after the attack in
+				//   Float Stack mode — the return path used the raw physicalCardRevealSize (1,1,1)
+				//   instead of the layout-driven reveal scale (deckSize * revealScale * globalScale),
+				//   so the card landed at deck size and the finally-block target kept it there.
+				//   Other modes are unaffected (GetRevealZoneScale() falls back to physicalCardRevealSize).
+				//   Affects:  PlayAttackAnimationCoroutine reveal-zone return (return tween + target
+				//             sync), CombatUXManager.GetRevealZoneScale (now public)
+				//   Regress:  Float Stack mode: attack with a reveal-zone card (e.g. BLACKSMITH) —
+				//             after the return it must rest at reveal size, not deck size; Cascade/
+				//             Linear/ArcLoop attack returns unchanged; reveal z clamp (2026-07-18)
+				//             unchanged.
 				Vector3 revealPos = _combatUXManager.GetRevealZonePosition();
-				Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
+				Vector3 revealSize = _combatUXManager.GetRevealZoneScale();
 				yield return ReturnToRevealFromOvershootAnimation(physicalCard, revealPos, revealSize, originalScale);
 			}
 			else
@@ -347,7 +358,7 @@ public void ReleaseDeckFocus()
 			{
 				// VISUAL-FIX(2026-07-18): dynamically z-clamped reveal position, same as above.
 				Vector3 revealPos = _combatUXManager.GetRevealZonePosition();
-				Vector3 revealSize = _combatUXManager.physicalCardRevealSize;
+				Vector3 revealSize = _combatUXManager.GetRevealZoneScale();
 
 				physScript.SetTargetPosition(revealPos);
 				physScript.SetTargetScale(revealSize);

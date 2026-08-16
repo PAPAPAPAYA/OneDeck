@@ -119,19 +119,27 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public DeckLayoutMode deckLayoutMode = DeckLayoutMode.Cascade;
 
 	[Header("FLOAT STACK REVEAL LAYOUT")]
-	[Tooltip("Direct stack with a floating revealed card. Plan: plans/plan-float-stack-reveal-layout-2026-08-13.md; demo: docs/demo/CardStackRevealDemo.html")]
+	[Tooltip("demo px -> world conversion factor. Every px-unit float-stack param is multiplied by this; scales the whole layout uniformly without changing proportions. Plans: plans/plan-float-stack-reveal-layout-2026-08-13.md, plans/plan-float-stack-center-scale-2026-08-15.md; demo: docs/demo/CardStackRevealDemo.html")]
 	public float floatStackPxToWorld = 0.01f;
-	[Tooltip("Fixed y step per stack slot in demo px; signed (negative = downward stack) (demo: 14)")]
+	[Tooltip("Fixed y step per stack slot, demo px. Positive = stack grows upward (next-to-reveal card lowest); negative = downward stack (skips compression and the bottom limit). (demo: 14)")]
 	public float floatStackStepY = 14f;
-	[Tooltip("Revealed card scale multiplier (demo: 1.07)")]
+	[Tooltip("Revealed card scale multiplier over the deck card size (the bound shadow matches it). Stacks with the global compress scale. (demo: 1.07)")]
 	public float floatStackRevealScale = 1.07f;
-	[Tooltip("Revealed card left offset from the shadow anchor, demo px (demo: 16)")]
+	[Tooltip("Revealed card left offset from the shadow home (slot 0 = one step below the lowest stack card), demo px. (demo: 16)")]
 	public float floatStackRevealFloatX = 16f;
-	[Tooltip("Revealed card up offset from the shadow anchor, demo px; signed (demo: -14)")]
+	[Tooltip("Revealed card up offset from the shadow home (slot 0), demo px. Negative sinks the card below the stack base = lowest element of the composition (shipped look); positive floats it upward. (demo: -14)")]
 	public float floatStackRevealUpY = -14f;
-	[Tooltip("Extra offset of the driven big shadow from the anchor, demo px (canvas y-down) (demo: 0, 30)")]
+	[Tooltip("Compression trigger height, demo px. When stepY*deckCount exceeds this, globalScale = maxHeightPx/(stepY*deckCount) shrinks cards AND the step together (compress-only; small decks are never stretched). 0 = off. (demo: 250)")]
+	public float floatStackMaxHeightPx = 250f;
+	[Tooltip("Floor of the global compress scale. Once floored, extra cards only grow the stack upward (until the bottom limit pins). Sizing rule: maxHeightPx / (stepY * hardCapCount). (demo: 0.55)")]
+	public float floatStackMinScale = 0.55f;
+	[Tooltip("Max px any card face (the lower of deck bottom edge / revealed card bottom edge) may sink below the anchor before the whole stack lifts and only grows upward; the soft shadow may bleed past. 0 = off. (demo: 270)")]
+	public float floatStackBottomLimitPx = 270f;
+	[Tooltip("Card-face half height in demo px, used by the bottom-limit edge math (= card prefab face world height at scale 1 / 2 / pxToWorld). (demo: 105)")]
+	public float floatStackCardHalfHeightPx = 105f;
+	[Tooltip("Extra offset of the driven big shadow from slot 0, demo px (canvas y-down: +Y = downward). (demo: 0, 30)")]
 	public Vector2 floatStackShadowOffset = new Vector2(0f, 30f);
-	[Tooltip("Driven big shadow target alpha (demo: 0.85)")]
+	[Tooltip("Driven big shadow target alpha (0-1). The shadow is bound to the revealed card at a constant offset. (demo: 0.85)")]
 	[Range(0f, 1f)] public float floatStackShadowOpacity = 0.85f;
 
 	[Header("DYNAMIC ARC MIDPOINT")]
@@ -829,7 +837,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			{
 				// Float Stack: arc midpoint above the stack back slot (one step beyond it).
 				midX = basePos.x;
-				midY = basePos.y + floatStackStepY * (count + 1) * floatStackPxToWorld;
+				midY = basePos.y + DeckFloatStackLayout.ComputeArcMidYPx(count, BuildFloatStackLayoutParams()) * floatStackPxToWorld;
 			}
 			else if (IsArcLoopLayoutActive)
 			{
@@ -883,7 +891,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (IsFloatStackLayoutActive)
 		{
 			// Float Stack: midpoint above the stack back slot (see TryGetArcMidpointPosition).
-			pos.y += floatStackStepY * (count + 1) * floatStackPxToWorld + arcMidpointOffset.y;
+			pos.y += DeckFloatStackLayout.ComputeArcMidYPx(count, BuildFloatStackLayoutParams()) * floatStackPxToWorld + arcMidpointOffset.y;
 			pos.x += arcMidpointOffset.x;
 		}
 		else if (IsArcLoopLayoutActive)
@@ -1139,7 +1147,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			stepY = floatStackStepY,
 			revealScale = floatStackRevealScale,
 			revealFloatX = floatStackRevealFloatX,
-			revealUpY = floatStackRevealUpY
+			revealUpY = floatStackRevealUpY,
+			maxHeightPx = floatStackMaxHeightPx,
+			minScale = floatStackMinScale,
+			bottomLimitPx = floatStackBottomLimitPx,
+			cardHalfHeightPx = floatStackCardHalfHeightPx
 		};
 	}
 
@@ -1211,8 +1223,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (deckLayoutMode == DeckLayoutMode.Linear) return physicalCardDeckSize;
 		if (count <= 0) return physicalCardDeckSize;
 		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
-		// Float Stack mode: uniform deck size (no depth scale in this layout).
-		if (IsFloatStackLayoutActive) return physicalCardDeckSize;
+		// Float Stack mode: uniform deck size scaled by the global compress scale (ComputeFrame).
+		if (IsFloatStackLayoutActive)
+			return physicalCardDeckSize * DeckFloatStackLayout.ComputeFrame(count, BuildFloatStackLayoutParams()).globalScale;
 		// Arc Loop mode: height-normalized depth scale from the loop layout.
 		if (IsArcLoopLayoutActive)
 			return physicalCardDeckSize * DeckArcLoopLayout.ComputeScale(clamped, count, BuildArcLoopLayoutParams(), arcLoopPxToWorld);
@@ -1238,9 +1251,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// </summary>
 	private float GetCascadeJitterScale(int unityIndex, int count)
 	{
-		if (deckLayoutMode == DeckLayoutMode.Linear || !cascadeScaleJitterWithCard || count <= 1) return 1f;
-		// Float Stack mode: uniform scale, jitter stays full strength.
-		if (IsFloatStackLayoutActive) return 1f;
+		if (deckLayoutMode == DeckLayoutMode.Linear || count <= 1) return 1f;
+		// Float Stack mode: jitter decays with the global compress scale.
+		if (IsFloatStackLayoutActive)
+			return DeckFloatStackLayout.ComputeFrame(count, BuildFloatStackLayoutParams()).globalScale;
+		if (!cascadeScaleJitterWithCard) return 1f;
 		int clamped = Mathf.Clamp(unityIndex, 0, count - 1);
 		// Arc Loop mode: jitter scales with the loop's height-normalized depth scale.
 		if (IsArcLoopLayoutActive)
@@ -1371,6 +1386,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		// Block player input
 		BlockInput(this);
+		TestManager.Log("[CombatUXManager] PlayStartCardShuffleAnimation START cards=" + (shuffledCards != null ? shuffledCards.Count : -1) + " time=" + Time.time);
+		// VISUAL-FIX(2026-08-16): suspend + reset hover state around the shuffle — the flight
+		// sweeps face-up cards under a stationary cursor and the pending-hover queue would pop
+		// them after the shuffle (see ResetAllCombatHovers in CardPhysObjScript).
+		CardPhysObjScript.ResetAllCombatHovers(true);
 			
 		// Get Start Card physical card
 		BuildCardScriptToPhysicalDictionary();
@@ -1381,6 +1401,19 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			physicalCardInRevealZone = null;
 		}
+
+		// VISUAL-FIX(2026-08-15): Start Card's driven big shadow was never released on the
+		//   shuffle path, leaving a ghost shadow at the shadow home during/after the shuffle.
+		//   Cause:    Every other reveal-zone exit releases the driven shadow
+		//             (MoveRevealedCardToBottom, destroy-while-revealed, ClearAllPhysicalCards,
+		//             mode switch), but PlayStartCardShuffleAnimation cleared
+		//             physicalCardInRevealZone without releasing; the shadow stayed driven
+		//             (suppression skips driven shadows) until the next reveal's safety release.
+		//   Affects:  PlayStartCardShuffleAnimation (Start Card shuffle in Float Stack mode).
+		//   Regress:  Reveal the Start Card and trigger the shuffle: its shadow must fade out
+		//             as the shuffle flight begins; no shadow lingers at the shadow home
+		//             (slot 0) after the Start Card lands in the deck.
+		ReleaseDrivenBigShadow(false);
 
 		// 1. Calculate target position for each card (based on known shuffle result)
 		var shuffleTargets = CalculateShuffleTargets(shuffledCards, out var shuffleIndices);
@@ -1403,6 +1436,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 			// Restore player input
 			UnblockInput(this);
+			// Resume hover: the deck has fully re-laid out; no pending hover may survive
+			// (VISUAL-FIX 2026-08-16, see ResetAllCombatHovers in CardPhysObjScript).
+			CardPhysObjScript.ResetAllCombatHovers(false);
+			TestManager.Log("[CombatUXManager] PlayStartCardShuffleAnimation DONE time=" + Time.time);
 			onComplete?.Invoke();
 		});
 	}
@@ -1709,7 +1746,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// legacy physicalCardRevealPos only provides the unclamped z.
 		if (IsFloatStackLayoutActive)
 		{
-			Vector2 floatOffset = DeckFloatStackLayout.ComputeRevealOffset(BuildFloatStackLayoutParams(), floatStackPxToWorld);
+			Vector2 floatOffset = DeckFloatStackLayout.ComputeRevealOffset(physicalCardsInDeck.Count, BuildFloatStackLayoutParams(), floatStackPxToWorld);
 			revealPos.x = physicalCardDeckPos.position.x + floatOffset.x;
 			revealPos.y = physicalCardDeckPos.position.y + floatOffset.y;
 		}
@@ -1728,11 +1765,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// <summary>
 	/// Reveal-zone card scale. Float Stack: layout-driven (deck size × revealScale).
 	/// All other modes: the configured physicalCardRevealSize, byte-for-byte.
+	/// Also used by the attack return path (AttackAnimationManager) so a reveal-zone
+	/// attacker rests at the correct enlarged size after its animation.
 	/// </summary>
-	private Vector3 GetRevealZoneScale()
+	public Vector3 GetRevealZoneScale()
 	{
 		if (IsFloatStackLayoutActive)
-			return physicalCardDeckSize * floatStackRevealScale;
+			return physicalCardDeckSize * floatStackRevealScale
+				* DeckFloatStackLayout.ComputeFrame(physicalCardsInDeck.Count, BuildFloatStackLayoutParams()).globalScale;
 		return physicalCardRevealSize;
 	}
 
@@ -1740,8 +1780,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	private CardPhysObjScript _floatStackShadowCard;
 
 	/// <summary>
-	/// Float Stack mode: drive the revealed card's own big shadow to the deck anchor.
-	/// The shadow starts from the card's in-deck follow pose and tweens to the anchor pose
+	/// Float Stack mode: drive the revealed card's own big shadow to its home (slot 0: one step below the lowest stack slot).
+	/// The shadow starts from the card's in-deck follow pose and tweens to its slot-0 home pose
 	/// in sync with the reveal flight (see CardPhysObjScript.DriveBigShadowToPose).
 	/// </summary>
 	public void TryDriveRevealBigShadow(CardPhysObjScript physScript)
@@ -1756,9 +1796,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		float localZ = count > 0 ? -zOffset * (count - 1) - frontGap : 0f;
 		Vector3 targetLocalPos = new Vector3(
 			floatStackShadowOffset.x * floatStackPxToWorld,
-			-floatStackShadowOffset.y * floatStackPxToWorld,
+			(DeckFloatStackLayout.ComputeShadowHomeYPx(count, BuildFloatStackLayoutParams()) - floatStackShadowOffset.y) * floatStackPxToWorld,
 			localZ);
-		physScript.DriveBigShadowToPose(physicalCardDeckPos, targetLocalPos, floatStackRevealScale, floatStackShadowOpacity);
+		// Stable size base: the reveal card's own target scale, not the card's live scale —
+		// see VISUAL-FIX(2026-08-16) in DriveBigShadowToPose. The shadow renders at this
+		// scale times its baked local scale, so it matches the reveal card on every re-drive.
+		physScript.DriveBigShadowToPose(physicalCardDeckPos, targetLocalPos, GetRevealZoneScale(), floatStackShadowOpacity);
 		_floatStackShadowCard = physScript;
 	}
 
@@ -1793,6 +1836,36 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			phys.SetBigShadowSuppressed(suppress);
 		}
 	}
+
+	/// <summary>
+	/// Play Mode live retune: Inspector edits re-layout the deck and re-pose the
+	/// reveal-zone card + driven big shadow immediately (mirrors the
+	/// ResultStatsPanelLayout OnValidate workflow). Works for every layout mode;
+	/// the float-stack knobs (stepY / maxHeightPx / minScale / bottomLimitPx ...)
+	/// are the primary tuning target.
+	/// </summary>
+	private void OnValidate()
+	{
+		if (!Application.isPlaying) return;
+		if (physicalCardDeckPos == null || physicalCardsInDeck == null) return;
+		UpdateAllPhysicalCardTargets();
+		if (physicalCardInRevealZone != null)
+		{
+			var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+			if (revealPhys != null)
+			{
+				revealPhys.SetTargetPosition(GetRevealZonePosition());
+				revealPhys.SetTargetScale(GetRevealZoneScale());
+			}
+		}
+		var driven = _floatStackShadowCard;
+		if (driven != null)
+		{
+			ReleaseDrivenBigShadow(true);
+			TryDriveRevealBigShadow(driven);
+		}
+	}
+
 
 	/// <summary>
 	/// Front-only re-clamp of the reveal-zone card's target z (never pushes back).

@@ -167,7 +167,38 @@ public class CardPhysObjScript : MonoBehaviour
 	void Awake()
 	{
 		BuildFlipRoot();
+		// VISUAL-FIX(2026-08-15): Start Card's big shadow always visible in the deck.
+		//   Cause:    The start card prefab wires no cardFace, so BuildFlipRoot returns
+		//             early and its big-shadow auto-wire never runs; bigShadowRenderer
+		//             stayed null, so SetBigShadowSuppressed and the reveal shadow drive
+		//             both no-opped and the prefab's PhysicalCardBigShadow child rendered
+		//             forever (also true for any prefab skipping BuildFlipRoot).
+		//   Affects:  CardPhysObjScript.Awake (start card / unwired prefabs).
+		//   Regress:  Float Stack mode: the start card's big shadow is hidden in the deck,
+		//             drives to slot 0 on its reveal, fades out on the shuffle, and stays
+		//             hidden afterwards; normal cards are unaffected (already auto-wired).
+		if (bigShadowRenderer == null)
+		{
+			var shadow = FindDeepChild(transform, "PhysicalCardBigShadow");
+			if (shadow != null) bigShadowRenderer = shadow.GetComponent<SpriteRenderer>();
+		}
 	}
+
+	/// <summary>
+	/// Recursive child search by name (Transform.Find only walks direct paths).
+	/// </summary>
+	private static Transform FindDeepChild(Transform root, string childName)
+	{
+		for (int i = 0; i < root.childCount; i++)
+		{
+			var child = root.GetChild(i);
+			if (child.name == childName) return child;
+			var found = FindDeepChild(child, childName);
+			if (found != null) return found;
+		}
+		return null;
+	}
+
 
 	void OnEnable()
 	{
@@ -733,9 +764,23 @@ public class CardPhysObjScript : MonoBehaviour
 	/// Begin driving the big shadow to an external anchor pose: re-parents to anchorParent
 	/// keeping the current world pose (the in-deck follow pose), then tweens local position /
 	/// scale / rotation to the anchor pose in sync with the reveal flight (moveDuration/moveEase),
-	/// fading in over the first 40% of it.
+	/// fading in over the first 40% of it. baseScale is the caller's target card world scale
+	/// (reveal-card scale); the shadow renders at baseScale times its own baked local scale.
 	/// </summary>
-	public void DriveBigShadowToPose(Transform anchorParent, Vector3 targetLocalPos, float scaleMultiplier, float targetAlpha)
+	// VISUAL-FIX(2026-08-16): Float Stack big shadow grows on every play-mode Inspector edit.
+	//   Cause:    targetLocalScale was t.localScale * scaleMultiplier, capturing the card's
+	//             LIVE scale after SetParent(anchor, true). The first drive runs at reveal
+	//             entry while the card still sits at deck-pose scale (correct), but the
+	//             OnValidate re-drive captures the card's settled reveal scale
+	//             (deckSize * revealScale * globalScale), compounding the revealScale factor
+	//             per edit; large decks (globalScale < 1) also rendered the shadow smaller
+	//             than the reveal card (an extra * globalScale).
+	//   Affects:  CombatUXManager.TryDriveRevealBigShadow / OnValidate (Float Stack mode)
+	//   Regress:  Float Stack mode: reveal a card, then in play mode drag floatStackShadowOffset
+	//             or floatStackRevealScale — the shadow only moves / tracks the reveal card size
+	//             and never grows; large decks keep the shadow equal to the reveal card; the
+	//             next reveal and the return-flight fade (2026-08-15) stay unchanged.
+	public void DriveBigShadowToPose(Transform anchorParent, Vector3 targetLocalPos, Vector3 baseScale, float targetAlpha)
 	{
 		if (bigShadowRenderer == null || anchorParent == null) return;
 		if (_bigShadowDriven) RestoreBigShadowFromDrive(true);
@@ -751,7 +796,10 @@ public class CardPhysObjScript : MonoBehaviour
 		startColor.a = 0f;
 		bigShadowRenderer.color = startColor;
 		float duration = GetCombatScaledDuration(moveDuration);
-		Vector3 targetLocalScale = t.localScale * scaleMultiplier; // anchorParent scale assumed 1
+		// Stable size target: baseScale (reveal-card world scale) * the shadow's baked home
+		// scale, captured at drive start. Not t.localScale — that varies with the card's live
+		// (possibly mid-flight) scale, so re-drives would compound the revealScale factor.
+		Vector3 targetLocalScale = Vector3.Scale(baseScale, _bigShadowHomeLocalScale); // anchorParent scale assumed 1
 		t.DOLocalMove(targetLocalPos, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
 		t.DOScale(targetLocalScale, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
 		t.DOLocalRotateQuaternion(Quaternion.identity, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
@@ -1152,6 +1200,22 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	private static CardPhysObjScript _currentHoverOwner;
 
+	/// <summary>
+	/// While true, hover is suspended (shuffle window): OnMouseEnter does not arm pending
+	/// hovers and UpdatePendingHover waits. VISUAL-FIX(2026-08-16): a face-up card sweeping
+	/// under a stationary cursor during the shuffle flight armed _hoverPending, which resumed
+	/// after the shuffle and popped the card up without the player hovering it.
+	/// </summary>
+	private static bool hoverSuspended;
+
+	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+	private static void ResetHoverSuspensionStatics()
+	{
+		// Editor play sessions can skip domain reload, so statics persist between sessions;
+		// a stale suspension would silently disable combat hover.
+		hoverSuspended = false;
+	}
+
 	private bool _hoverActive;
 	private bool _hoverPoppedUp;
 	private bool _hoverPending;
@@ -1159,6 +1223,50 @@ public class CardPhysObjScript : MonoBehaviour
 	private bool _savedAutoReveal;
 	private float _hoverTooltipTimer = -1f;
 	private float _hoverPopUpTimer = -1f;
+
+	// VISUAL-FIX(2026-08-16): After a shuffle, the Start Card (the only card that stays
+	//   face-up) popped up on its own.
+	//   Cause:    During the shuffle flight face-up cards sweep under a stationary cursor;
+	//             OnMouseEnter's blocked-state branch (isPlayingEffectAnimations / input
+	//             block) queued the hover (_hoverPending) instead of skipping it. When the
+	//             shuffle ended and the gates opened, UpdatePendingHover resumed the stale
+	//             pending on the Start Card (it landed under the cursor, face-up) and popped
+	//             it up with no new cursor interaction. Deck cards self-cleared via the
+	//             face-down cover; the shuffle path itself never touched hover state.
+	//   Affects:  PlayStartCardShuffleAnimation (shuffle suspend/resume), OnMouseEnter,
+	//             UpdatePendingHover, RuntimeInitialize static reset
+	//   Regress:  Park the cursor over the deck during the Start Card shuffle (or overtime
+	//             re-shuffle) and keep it still: no card pops up after the shuffle; moving
+	//             the cursor onto the face-up Start Card afterwards pops it up normally.
+	/// <summary>
+	/// Shuffle boundary hover reset: end the active hover, clear every combat card's pending
+	/// hover, and suspend/unsuspend hover arming while the shuffle animation plays. The
+	/// shuffle re-arranges every card under the cursor, so any pre-shuffle hover state is
+	/// stale; arming new pending hovers mid-flight would pop cards up without a real hover.
+	/// </summary>
+	public static void ResetAllCombatHovers(bool suspend)
+	{
+		hoverSuspended = suspend;
+		if (_currentHoverOwner != null)
+			_currentHoverOwner.EndHover("shuffle reset");
+		var mgr = CombatUXManager.me;
+		if (mgr == null) return;
+		if (mgr.physicalCardsInDeck != null)
+		{
+			for (int i = 0; i < mgr.physicalCardsInDeck.Count; i++)
+			{
+				var card = mgr.physicalCardsInDeck[i];
+				if (card == null) continue;
+				var phys = card.GetComponent<CardPhysObjScript>();
+				if (phys != null) phys._hoverPending = false;
+			}
+		}
+		if (mgr.physicalCardInRevealZone != null)
+		{
+			var phys = mgr.physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+			if (phys != null) phys._hoverPending = false;
+		}
+	}
 
 	void OnMouseEnter()
 	{
@@ -1169,6 +1277,14 @@ public class CardPhysObjScript : MonoBehaviour
 		if (_hoverActive)
 		{
 			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=already hovering (duplicate enter)");
+			return;
+		}
+		// VISUAL-FIX(2026-08-16): never arm pending hovers during a suspended window
+		// (shuffle flight) — a card that merely sweeps under the cursor must not pop up
+		// after the shuffle without a real hover.
+		if (hoverSuspended)
+		{
+			TestManager.Log("[Hover] OnMouseEnter SKIP card=" + name + " reason=hover suspended");
 			return;
 		}
 		// VISUAL-FIX(2026-08-02): Hovering the Start Card popped up the cards behind it
@@ -1373,9 +1489,10 @@ public class CardPhysObjScript : MonoBehaviour
 	private void UpdatePendingHover()
 	{
 		if (!_hoverPending) return;
+		if (hoverSuspended) return; // shuffle window: pendings were cleared by the reset; arming is skipped
 		if ((cardImRepresenting == null && !isPhysicalStartCard) || !isFaceUp || !IsCursorOverCard())
 		{
-			TestManager.Log("[Hover] pending cleared card=" + name + " cardGone=" + (cardImRepresenting == null) + " faceUp=" + isFaceUp);
+			TestManager.Log("[Hover] pending cleared card=" + name + " cardGone=" + (cardImRepresenting == null) + " faceUp=" + isFaceUp + " cursorOver=" + IsCursorOverCard());
 			_hoverPending = false;
 			return;
 		}

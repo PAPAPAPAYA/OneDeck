@@ -51,7 +51,7 @@
 
 		.demo-area {
 			width: 100%;
-			height: 560px;
+			height: 700px;
 			background: #b8b5ae;
 			border-radius: 12px;
 			position: relative;
@@ -111,7 +111,7 @@
 		.color-front .idx, .color-light .idx { color: #4a5458; }
 		.color-gold .idx, .color-red .idx { color: rgba(255,255,255,0.85); }
 
-		/* Card-shaped silhouette shadow: tracks the stack bottom (slot 0), under the lowest stack card. */
+		/* Card-shaped silhouette shadow: home = slot 0 (one step below the lowest stack slot). */
 		.stack-shadow {
 			width: 150px;
 			height: 210px;
@@ -241,9 +241,9 @@
 <body>
 	<div class="intro">
 		<h1>OneDeck 悬浮揭示堆叠排列 Demo</h1>
-		<p><strong>目标排列描述：</strong>卡组直接堆叠，不设横向扇形偏移；越往后的卡越高，每张抬高固定步长（stackStepY，可调，支持负数 = 向下堆叠）。<strong>锚点 = 卡组中心</strong>（置于屏幕中心）：任意卡片数量下，卡组关于锚点上下对称居中。最前方是<strong>被揭示的卡</strong>：放大一定倍率（可调），并向左上偏移悬浮 —— 揭示姿态相对锚点固定，不随卡组数量漂移。揭示卡带一个<strong>卡形阴影</strong>，阴影大小与揭示卡相同（同步缩放倍率）；<strong>阴影跟随栈底</strong>（最低槽位再向下一级，即 slot 0 的家）。整体效果：揭示卡悬浮在卡组上方。</p>
-		<p><strong>大卡组自适应（新增）：</strong>① 压缩：当 <code>stepY·卡组数</code> 超过 <code>maxHeightPx</code> 时，全局缩放 <code>globalScale = maxHeightPx / (stepY·卡组数)</code>，钳制在 <code>[minScale, 1]</code> —— 只缩不拉，小卡组保持自然步长；<strong>步长与缩放绑定</strong>（有效步长 = stepY·globalScale），总高真正被压进 maxHeightPx。② 下探极限：最低槽位（下一张）低于锚点超过 <code>bottomLimitPx</code> 后，整栈抬升把栈底钉在极限处（红色虚线），之后卡组只向上长、不再处理 —— 保证揭示卡区域不被侵占。两个参数设为 0 即关闭，退回纯居中行为。</p>
-		<p>揭示流程（点「揭示下一张」或点击演示区）：当前揭示卡的阴影<strong>渐变消失</strong>，同时该卡缩小并飞向卡组<strong>最后面</strong>（最高槽位 = 牌库底）；堆叠卡整体下滑一级；新的牌库顶<strong>放大、向左上偏移</strong>完成揭示 —— 阴影从该卡在卡组中的位置和大小出发，与揭示动画同步放大并移动到栈底最终位置。牌序映射：揭示卡 = <code>combinedDeckZone[Count-1]</code>（牌库顶），堆叠第 1 级 = 下一张，最高槽位 = <code>combinedDeckZone[0]</code>（牌库底）—— 与 reveal→bottom 语义同构。</p>
+		<p><strong>目标排列描述：</strong>卡组直接堆叠，不设横向扇形偏移；越往后的卡越高，每张抬高固定步长（stackStepY，可调，支持负数 = 向下堆叠）。<strong>锚点 = 卡组中心</strong>（置于屏幕中心）：任意卡片数量下，卡组关于锚点上下对称居中。<strong>一切从阴影的家推导</strong>：阴影家 = 栈底 slot 0（最低卡再向下一级）+ shadowOffset，随居中/钉底的栈底移动；<strong>被揭示的卡</strong> = 阴影家 + (−floatX, −upY)，放大一定倍率（可调）—— 默认 upY = −14，揭示卡沉在栈底之下，是整组卡组的<strong>最低元素</strong>（拖回 70 = 原版悬浮构图）。阴影大小与揭示卡相同（同步缩放倍率），与揭示卡保持恒定偏移（绑定），整段揭示飞行同步移动。整体效果：揭示卡在卡组最下方悬浮。</p>
+		<p><strong>大卡组自适应（新增）：</strong>① 压缩：当 <code>stepY·卡组数</code> 超过 <code>maxHeightPx</code> 时，全局缩放 <code>globalScale = maxHeightPx / (stepY·卡组数)</code>，钳制在 <code>[minScale, 1]</code> —— 只缩不拉，小卡组保持自然步长；<strong>步长与缩放绑定</strong>（有效步长 = stepY·globalScale），总高真正被压进 maxHeightPx。② 下探极限：<strong>所有卡面的最低点</strong>（卡组视觉底边与揭示卡底边取更低者；阴影是软元素，允许越线）低于锚点超过 <code>bottomLimitPx</code> 后，整栈抬升把最低点钉在极限处（红色虚线），卡面主体完全不越线，之后卡组只向上长、不再处理。两个参数设为 0 即关闭，退回纯居中行为。卡组缩回时 lift 连续退回 0，自动回到居中。</p>
+		<p>揭示流程（点「揭示下一张」或点击演示区）：当前揭示卡的阴影<strong>渐变消失</strong>，同时该卡缩小并飞向卡组<strong>最后面</strong>（最高槽位 = 牌库底）；堆叠卡整体下滑一级；新的牌库顶<strong>放大、向左下偏移</strong>完成揭示 —— 阴影从该卡在卡组中的位置和大小出发，与揭示动画同步放大并移动到栈底 slot 0 的最终位置。牌序映射：揭示卡 = <code>combinedDeckZone[Count-1]</code>（牌库顶），堆叠第 1 级 = 下一张，最高槽位 = <code>combinedDeckZone[0]</code>（牌库底）—— 与 reveal→bottom 语义同构。</p>
 	</div>
 
 	<div class="section">
@@ -252,19 +252,19 @@
 			<label>堆叠步长 stepY: <span id="valStepY">14</span><input type="range" id="rangeStepY" min="-40" max="40" step="1" value="14"></label>
 			<label>揭示放大倍率: <span id="valRevealScale">1.18</span><input type="range" id="rangeRevealScale" min="1" max="1.5" step="0.01" value="1.18"></label>
 			<label>揭示左移 floatX: <span id="valFloatX">55</span><input type="range" id="rangeFloatX" min="0" max="120" step="1" value="55"></label>
-			<label>揭示上移 upY: <span id="valUpY">70</span><input type="range" id="rangeUpY" min="-140" max="140" step="1" value="70"></label>
+			<label title="相对阴影家的垂直偏移；负数 = 沉到栈底之下">揭示上移 upY: <span id="valUpY">-14</span><input type="range" id="rangeUpY" min="-140" max="140" step="1" value="-14"></label>
 			<label>旋转抖动°: <span id="valRot">1.5</span><input type="range" id="rangeRot" min="0" max="5" step="0.1" value="1.5"></label>
 		</div>
 		<div class="param-row">
 			<label title="stepY·卡组数 超过该高度时开始整体压缩；0 = 关闭">压缩触发高度 maxHeightPx: <span id="valMaxHeight">250</span><input type="range" id="rangeMaxHeight" min="0" max="500" step="5" value="250"></label>
 			<label title="全局缩放的最小值（触底后不再继续缩）">缩放下限 minScale: <span id="valMinScale">0.55</span><input type="range" id="rangeMinScale" min="0.3" max="1" step="0.05" value="0.55"></label>
-			<label title="最低槽位允许低于锚点的最大距离；触底后整栈抬升、只向上长；0 = 关闭">下探极限 bottomLimitPx: <span id="valBottomLimit">180</span><input type="range" id="rangeBottomLimit" min="0" max="300" step="5" value="180"></label>
+			<label title="所有卡面（含揭示卡）允许低于锚点的最大距离；触底后整栈抬升、只向上长；0 = 关闭">下探极限 bottomLimitPx: <span id="valBottomLimit">270</span><input type="range" id="rangeBottomLimit" min="0" max="300" step="5" value="270"></label>
 		</div>
 		<div class="param-row">
 			<label>阴影透明度: <span id="valShadowOp">0.85</span><input type="range" id="rangeShadowOp" min="0" max="1" step="0.05" value="0.85"></label>
 			<label>阴影模糊: <span id="valShadowBlur">6</span><input type="range" id="rangeShadowBlur" min="0" max="20" step="1" value="6"></label>
-			<label>阴影偏移X: <span id="valShadowOX">0</span><input type="range" id="rangeShadowOX" min="-30" max="30" step="1" value="0"></label>
-			<label>阴影偏移Y: <span id="valShadowOY">0</span><input type="range" id="rangeShadowOY" min="-30" max="30" step="1" value="0"></label>
+			<label title="阴影相对栈底 slot 0 的额外水平偏移">阴影偏移X: <span id="valShadowOX">0</span><input type="range" id="rangeShadowOX" min="-30" max="30" step="1" value="0"></label>
+			<label title="阴影相对栈底 slot 0 的额外垂直偏移">阴影偏移Y: <span id="valShadowOY">0</span><input type="range" id="rangeShadowOY" min="-30" max="30" step="1" value="0"></label>
 		</div>
 		<div class="demo-area" id="demo">
 			<div class="stack-shadow" id="stackShadow"></div>
@@ -280,9 +280,10 @@
 			<div class="eval-card">
 				<h3>位置计算（Unity 映射）</h3>
 				<ul>
-					<li class="pro">锚点 = 卡组中心 = physicalCardDeckPos（置于屏幕中心）；所有卡位都是锚点 + 纯函数偏移</li>
-					<li class="pro">堆叠卡 i（i=1 为下一张）：y = step·(n/2 − i) − lift；揭示卡：(−floatX, −upY) 锚点固定，scale = revealScale·globalScale（阴影同 scale）</li>
-					<li class="pro">frame：globalScale = clamp(maxHeightPx / (stepY·deckCount), minScale, 1)；step = stepY·globalScale；lift = max(0, step·(deckCount−1)/2 − bottomLimitPx)</li>
+					<li class="pro">锚点 = 卡组中心 = physicalCardDeckPos（置于屏幕中心）；堆叠卡位 = 锚点 + 纯函数偏移</li>
+					<li class="pro">堆叠卡 i（i=1 为下一张）：y = step·(n/2 − i) − lift；揭示卡 = slot 0 + (−floatX, −upY)，slot 0 = step·(n/2) − lift（栈底/阴影家）</li>
+					<li class="pro">阴影家 = slot 0 + shadowOffset，与揭示卡保持恒定偏移（绑定），scale = revealScale·globalScale，揭示飞行全程同步</li>
+					<li class="pro">frame：globalScale = clamp(maxHeightPx / (stepY·deckCount), minScale, 1)；step = stepY·globalScale；lift = max(0, max(卡组底边, 揭示卡底边) − bottomLimitPx)（约束所有卡面最低点；阴影允许越线）</li>
 					<li class="pro">可并入 DeckPositionCalculator 的 FloatStack 分支；揭示卡即 reveal-zone 等价物</li>
 				</ul>
 			</div>
@@ -291,15 +292,15 @@
 				<ul>
 					<li class="pro">z 序：揭示卡 &gt; 阴影 &gt; 堆叠第 1 级 &gt; … &gt; 最高槽位（牌库底）</li>
 					<li class="pro">揭示传送带：揭示卡归位到最高槽位（index 0），其余每卡降一级，与 MoveCardToBottom 语义同构</li>
-					<li class="pro">阴影是独立视觉元素：跟随栈底（slot 0 = 最低槽位下一级）；揭示卡归位时渐隐，新卡揭示时在栈底淡入</li>
+					<li class="pro">阴影家 = 栈底 slot 0，随居中/钉底的栈底移动；揭示卡归位时渐隐，新卡揭示时从其在卡组中的位置同步飞入</li>
 				</ul>
 			</div>
 			<div class="eval-card">
 				<h3>大卡组三段行为</h3>
 				<ul>
-					<li class="pro">小卡组：纯居中，scale = 1，步长不拉伸（只缩不拉）</li>
+					<li class="pro">小卡组：纯居中，scale = 1，揭示卡+阴影在栈底之下悬浮</li>
 					<li class="pro">中卡组：步长与缩放绑定压缩，总高 ≈ maxHeightPx，minScale 触底</li>
-					<li class="pro">大卡组：栈底钉在 bottomLimitPx，只向上长；揭示区不被侵占</li>
+					<li class="pro">大卡组：所有卡面最低点（含揭示卡）钉在 bottomLimitPx，卡面不越线，只向上长；缩回自动回居中</li>
 					<li class="con">堆叠只露底边一条缝，卡面信息全被遮挡，读牌依赖揭示卡本身</li>
 				</ul>
 			</div>
@@ -307,20 +308,24 @@
 	</div>
 
 	<script>
+		// Card visual half-height, px (CSS card height 210 / 2) — used to measure card-face
+		// bottom edges against bottomLimitPx.
+		const CARD_HALF_HEIGHT = 105;
+
 		// Layout parameters (sliders mutate this object)
 		const params = {
 			cardCount: 8,
 			stepY: 14,          // fixed y step per stack card, px (cards further back sit higher; negative = downward stack)
 			revealScale: 1.18,  // revealed card scale multiplier (the shadow uses the same scale)
-			revealFloatX: 55,   // revealed card left offset from the anchor, px
-			revealUpY: 70,      // revealed card up offset from the anchor, px
+			revealFloatX: 55,   // revealed card left offset from the shadow home (slot 0), px
+			revealUpY: -14,     // revealed card up offset from the shadow home, px (negative = sinks below the stack base = lowest element)
 			rotJitter: 1.5,     // per-card stack rotation jitter, degrees (deterministic by card id)
 			maxHeightPx: 250,   // stack height that triggers global compression; 0 = off
 			minScale: 0.55,     // floor for the global compress scale
-			bottomLimitPx: 180, // max distance the lowest slot may sink below the anchor; 0 = off
+			bottomLimitPx: 270, // max distance ANY card face (deck bottom edge or revealed card bottom edge) may sink below the anchor; 0 = off
 			shadowOpacity: 0.85,
 			shadowBlur: 6,
-			shadowOffsetX: 0,
+			shadowOffsetX: 0,   // extra shadow offset from slot 0 (the deck base), px
 			shadowOffsetY: 0
 		};
 
@@ -352,8 +357,11 @@
 		// Layout frame for a given deck count (deck count excludes the revealed card):
 		// - globalScale: compress-only (clamped to [minScale, 1]); small decks keep the natural step.
 		// - step: effective step, bound to the scale so compression actually shortens the stack.
-		// - lift: upward shift pinning the lowest slot at bottomLimitPx once it would breach it
-		//   (bottom-pinned growth afterwards; the deck top simply grows higher, unhandled).
+		// - lift: upward shift pinning the LOWEST CARD-FACE POINT (max of the deck's visual
+		//   bottom edge and the revealed card's bottom edge; the soft shadow may bleed past)
+		//   at bottomLimitPx once it would breach it; afterwards the deck only grows upward.
+		//   Continuous in deck count: when the deck shrinks back, lift returns to 0 and the
+		//   stack re-centers automatically.
 		// stepY <= 0 (downward stack) skips scale/limit and runs pure centering.
 		function computeFrame(deckCount) {
 			let scale = 1;
@@ -362,23 +370,27 @@
 			}
 			const step = params.stepY * scale;
 			let lift = 0;
-			if (params.bottomLimitPx > 0 && step > 0 && deckCount > 1) {
-				const drop = step * (deckCount - 1) / 2; // lowest slot (next-to-reveal) below the anchor
+			if (params.bottomLimitPx > 0 && step > 0 && deckCount > 0) {
+				const slot0 = step * (deckCount + 1) / 2; // shadow home, one step below the lowest slot
+				const deckBottom = step * (deckCount - 1) / 2 + CARD_HALF_HEIGHT * scale;
+				const revealBottom = slot0 - params.revealUpY + CARD_HALF_HEIGHT * scale * params.revealScale;
+				const drop = Math.max(deckBottom, revealBottom); // lowest card-face point below the anchor
 				if (drop > params.bottomLimitPx) lift = drop - params.bottomLimitPx;
 			}
 			return { scale: scale, step: step, lift: lift };
 		}
 
-		// Role -> transform. The anchor is the stack CENTER (screen center); the shadow tracks
-		// the stack bottom (slot 0). role 0 = revealed (anchor-fixed up-left pose; scale follows
-		// the global compress scale); role i = stack slot i (1 = next to reveal = lowest on screen).
+		// Role -> transform. Everything derives from the shadow's home (slot 0), which follows
+		// the centered/pinned stack bottom. role 0 = revealed (float up-left from the shadow
+		// home; with negative upY it sinks below the stack base = lowest element); role i =
+		// stack slot i (1 = next to reveal = lowest stack card on screen).
 		function roleTransform(role, cardEl) {
 			const n = slots.length;
 			const frame = computeFrame(n - 1);
 			if (role === 0) {
 				return {
 					x: -params.revealFloatX,
-					y: -params.revealUpY,
+					y: frame.step * (n / 2) - frame.lift - params.revealUpY,
 					scale: params.revealScale * frame.scale,
 					rot: 0,
 					z: n + 10
@@ -413,18 +425,20 @@
 			const s = document.getElementById('stackShadow');
 			const n = slots.length;
 			const frame = computeFrame(n - 1);
-			// Slot 0 = the shadow's home, one step below the lowest stack slot.
-			const homeY = frame.step * (n / 2) - frame.lift;
 			s.style.transitionDelay = delay + 's';
 			s.style.opacity = visible ? params.shadowOpacity : 0;
 			s.style.filter = 'blur(' + params.shadowBlur + 'px)';
-			// The shadow matches the revealed card's size (same scale, incl. the global compress scale).
-			s.style.transform = 'translate(' + params.shadowOffsetX + 'px, ' + (homeY + params.shadowOffsetY) + 'px) rotate(0deg) scale(' + (params.revealScale * frame.scale) + ')';
+			// Shadow home = slot 0 (one step below the lowest stack slot) + shadowOffset.
+			// The revealed card derives from the same home, so card and shadow keep a
+			// constant offset (bound pair); scale matches the revealed card.
+			const homeX = params.shadowOffsetX;
+			const homeY = frame.step * (n / 2) - frame.lift + params.shadowOffsetY;
+			s.style.transform = 'translate(' + homeX + 'px, ' + homeY + 'px) rotate(0deg) scale(' + (params.revealScale * frame.scale) + ')';
 			s.style.zIndex = n + 5;
 		}
 
 		// Jump the shadow to a transform instantly (no transition), used to start the
-		// shadow at the revealed card's in-deck transform before animating to the stack bottom.
+		// shadow at the revealed card's in-deck transform before animating to its home.
 		function snapShadowTo(x, y, rot, scale) {
 			const s = document.getElementById('stackShadow');
 			s.style.transition = 'none';
@@ -446,15 +460,19 @@
 			} else {
 				line.style.display = 'none';
 			}
-			const lowest = frame.step * (n / 2 - 1) - frame.lift;      // role 1 (next to reveal) = lowest on screen
-			const top = frame.step * (n / 2 - (n - 1)) - frame.lift;   // role n-1 (deck bottom) = highest on screen
-			const shadowHome = frame.step * (n / 2) - frame.lift;
+			const halfH = CARD_HALF_HEIGHT * frame.scale;
+			const slot0Y = frame.step * (n / 2) - frame.lift;
+			const topEdge = frame.step * (n / 2 - (n - 1)) - frame.lift - halfH; // deck top edge (negative = above)
+			const deckBottom = frame.step * (n / 2 - 1) - frame.lift + halfH;    // deck visual bottom edge
+			const revealBottom = slot0Y - params.revealUpY + halfH * params.revealScale;
+			const bottomEdge = Math.max(deckBottom, revealBottom);               // lowest card-face point
+			const shadowHomeY = slot0Y + params.shadowOffsetY;
 			document.getElementById('frameReadout').textContent =
 				'deckCount=' + (n - 1) +
 				' · scale=' + frame.scale.toFixed(2) +
 				' · step=' + frame.step.toFixed(1) + 'px' +
 				' · lift=' + frame.lift.toFixed(1) + 'px' +
-				' · 最高槽=' + top.toFixed(1) + 'px · 最低槽=' + lowest.toFixed(1) + 'px · 阴影=' + shadowHome.toFixed(1) + 'px' +
+				' · 顶边=' + topEdge.toFixed(1) + 'px · 底边=' + bottomEdge.toFixed(1) + 'px · 阴影=' + shadowHomeY.toFixed(1) + 'px' +
 				'（相对锚点，+ = 向下）';
 		}
 
@@ -495,7 +513,8 @@
 
 		// Reveal cycle: current revealed card's shadow fades out while the card shrinks and
 		// flies to the stack back (deck bottom); stack slides down one slot; the new deck top
-		// floats up-left and scales up, and the shadow fades back in at the stack bottom.
+		// floats down-left to the shadow home and scales up, and the shadow fades back in at
+		// its slot-0 home.
 		function advance() {
 			if (busy || slots.length < 2) return;
 			busy = true;
@@ -513,15 +532,15 @@
 			applyCard(returning, n - 1, 0);
 			// 3. Stack cards slide down one slot (slight delay so the return flight reads first).
 			for (let i = 1; i < n - 1; i++) applyCard(slots[i], i, 0.12);
-			// 4. New deck top floats up-left and scales up (revealed). The shadow starts at
+			// 4. New deck top floats down-left and scales up (revealed). The shadow starts at
 			//    that card's in-deck transform (stack slot 1 position/rotation, compressed size)
-			//    and scales up + moves to the stack bottom in sync with the card's flight.
+			//    and scales up + moves to its slot-0 home in sync with the card's flight.
 			//    Snapped only after the old shadow's fade-out completes (0.25s).
 			const revealed = slots[0];
 			setTimeout(() => {
 				const origin = roleTransform(1, revealed);
 				snapShadowTo(origin.x, origin.y, origin.rot, origin.scale);
-				applyShadow(0, true); // animate origin -> stack bottom in sync with the card flight
+				applyShadow(0, true); // animate origin -> slot-0 home in sync with the card flight
 			}, 300);
 			applyCard(revealed, 0, 0.3);
 			// Restore the returning card's stack z after its flight lands.

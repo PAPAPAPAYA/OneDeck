@@ -314,7 +314,7 @@ public class PhaseManager : MonoBehaviour
 	public void EnteringCombatPhase()
 	{
 		// DIAG-LOG(2026-08-08): tracing why the shop Exit button may appear dead
-		Debug.Log("[ShopButton] PhaseManager.EnteringCombatPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
+		TestManager.Log("[ShopButton] PhaseManager.EnteringCombatPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
 		InvokeEnterCombatPhaseEvent();
 		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;
@@ -427,7 +427,7 @@ public class PhaseManager : MonoBehaviour
 	public void ExitingShopPhase()
 	{
 		// DIAG-LOG(2026-08-08): tracing why the shop Exit button may appear dead
-		Debug.Log("[ShopButton] PhaseManager.ExitingShopPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
+		TestManager.Log("[ShopButton] PhaseManager.ExitingShopPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
 		InvokeExitShopPhaseEvent();
 	}
 	#endregion

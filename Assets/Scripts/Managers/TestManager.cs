@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TestWriteRead;
 using UnityEngine;
 
@@ -45,10 +46,12 @@ namespace DefaultNamespace.Managers
 			VisualSync,
 			EditorTools,
 			TestManager,
-			DynamicDamageDisplay,
-			StatusEffectDisplay,
-			DamageFloater
-		}
+		DynamicDamageDisplay,
+		StatusEffectDisplay,
+		DamageFloater,
+		ShopFlow,
+		Uncategorized
+	}
 
 		[Header("Log Switches")]
 		[Tooltip("Log combat flow messages from CombatManager and PhaseManager.")]
@@ -77,6 +80,12 @@ namespace DefaultNamespace.Managers
 
 		[Tooltip("Log damage floater messages from DamageFloaterPresenter.")]
 		public bool logDamageFloater = true;
+
+		[Tooltip("Log shop flow messages from ShopManager, ShopUXManager, and PhaseManager shop transitions.")]
+		public bool logShopFlow = true;
+
+		[Tooltip("Log messages whose tag is not recognized by InferCategory (new or untagged logs).")]
+		public bool logUncategorized = true;
 
 		#endregion
 
@@ -192,8 +201,13 @@ namespace DefaultNamespace.Managers
 		{
 			if (Me == null)
 			{
-				ForwardToUnity(message, context, logType);
-				return;
+				// Edit-mode / pre-Awake logs: resolve the scene instance so the switches still apply.
+				Me = Object.FindFirstObjectByType<TestManager>();
+				if (Me == null)
+				{
+					ForwardToUnity(message, context, logType);
+					return;
+				}
 			}
 
 			LogCategory category = InferCategory(message?.ToString() ?? string.Empty);
@@ -225,11 +239,19 @@ namespace DefaultNamespace.Managers
 			}
 		}
 
+#if UNITY_EDITOR
+		private static readonly HashSet<string> _warnedUnrecognizedTags = new HashSet<string>();
+#endif
+
 		private static LogCategory InferCategory(string message)
 		{
 			if (message.Contains("[CombatManager]") || message.Contains("[PhaseManager]"))
 			{
 				return LogCategory.CombatFlow;
+			}
+			if (message.Contains("[ShopButton]"))
+			{
+				return LogCategory.ShopFlow;
 			}
 			if (message.Contains("[EffectChainManager]") || message.Contains("[BuryEffect]") ||
 			    message.Contains("[StageEffect]") || message.Contains("[ApplyStatusEffectCore]"))
@@ -240,7 +262,8 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.AnimationPlayback;
 			}
-			if (message.Contains("[CombatUXManager]") || message.Contains("[CardPhysObjScript]"))
+			if (message.Contains("[CombatUXManager]") || message.Contains("[CardPhysObjScript]") ||
+			    message.Contains("[Hover]"))
 			{
 				return LogCategory.VisualSync;
 			}
@@ -256,7 +279,7 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.DynamicDamageDisplay;
 			}
-			if (message.Contains("[StatusEffectDisplay]"))
+			if (message.Contains("[StatusEffectDisplay]") || message.Contains("[TagDisplay]"))
 			{
 				return LogCategory.StatusEffectDisplay;
 			}
@@ -264,7 +287,25 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.DamageFloater;
 			}
-			return LogCategory.CombatFlow;
+			WarnUnrecognizedTag(message);
+			return LogCategory.Uncategorized;
+		}
+
+		/// <summary>
+		/// Editor-only tripwire: warn once per unrecognized [Tag] prefix so new logs
+		/// cannot silently fall into the Uncategorized bucket.
+		/// </summary>
+		private static void WarnUnrecognizedTag(string message)
+		{
+#if UNITY_EDITOR
+			int open = message.IndexOf('[');
+			if (open < 0) return;
+			int close = message.IndexOf(']', open + 1);
+			if (close < 0) return;
+			string tag = message.Substring(open + 1, close - open - 1);
+			if (!_warnedUnrecognizedTags.Add(tag)) return;
+			Debug.LogWarning("TestManager: unrecognized log tag '[" + tag + "]' routed to Uncategorized — add it to InferCategory if it should have its own switch.");
+#endif
 		}
 
 		private static bool IsEnabled(LogCategory category)
@@ -280,6 +321,8 @@ namespace DefaultNamespace.Managers
 				case LogCategory.DynamicDamageDisplay: return Me.logDynamicDamageDisplay;
 				case LogCategory.StatusEffectDisplay: return Me.logStatusEffectDisplay;
 				case LogCategory.DamageFloater: return Me.logDamageFloater;
+				case LogCategory.ShopFlow: return Me.logShopFlow;
+				case LogCategory.Uncategorized: return Me.logUncategorized;
 				default: return true;
 			}
 		}

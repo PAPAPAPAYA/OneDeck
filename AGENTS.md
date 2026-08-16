@@ -11,10 +11,11 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 | **Command Separator** | PowerShell uses `;` instead of `&&` |
 | **Comments & Docs** | English only |
 | **Encoding** | UTF-8 only |
-| **AGENTS.md Size** | Hard limit 32 KB (32,768 bytes). After ANY edit to this file, run `wc -c AGENTS.md`; if over the limit, trim before finishing. Keep ≥ 1 KB headroom |
+| **AGENTS.md Size** | Hard limit 32 KB (32,768 bytes). After any edit, run `wc -c AGENTS.md`; trim if over. Keep ≥ 1 KB headroom |
 
 ## Agent Behavior
 - **Code Changes**: Do not execute code modifications except adding logs, unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
+- **Play Mode Tests**: Do not run Play Mode tests unless the user explicitly requests them (Strategy B / `unity-card-playmode-test`).
 - **Document Format**: If any non Unity-generated file is found to violate the CRLF + Tab leading-indent standard, convert it to the compliant format before editing.
 - **Editing AGENTS.md**: When adding content, condense wording or move detail into `plans/`/`docs/` files and reference them. Never finish an edit with the file over the 32 KB limit — the size check is part of the edit.
 
@@ -80,7 +81,7 @@ Assets/
 - EditMode coverage: `DeckCascadeLayoutTests.cs` / `DeckArcLoopLayoutTests.cs` / `DeckFloatStackLayoutTests.cs` (demo goldens).
 - **Dynamic arc midpoint (replaces `showPos`)**: `useDynamicArcMidpoint` (default on) — deck-bound arcs take their midpoint from the layout walk at `arcMidpointCurveT` + `arcMidpointOffset` (`TryGetArcMidpointPosition`). Fallback: explicit `CardMoveConfig.arcMidpoint` > dynamic > `showPos`.
 - **Arc Loop mode**: superellipse loop; slots by curvature-weighted arc length (w=0 = uniform); deck top = tilted loop's visual lowest point, deck bottom adjacent up the right; scale by screen height, z by depth rank; cards upright. PRD: `plans/plan-arc-loop-deck-layout-2026-08-12.md`.
-- **Float Stack mode**: direct stack, index j → anchor + (0, stepY·(count−j))·px, z by index; reveal pose = anchor + (−floatX, +upY)·px, scale ×revealScale; layout count = raw physical count (no reveal +1). Revealed card's `PhysicalCardBigShadow` is driven to the anchor (re-parent + tween synced to the reveal flight, fades on return); other cards' big shadows suppressed. PRD: `plans/plan-float-stack-reveal-layout-2026-08-13.md`; demo: `docs/demo/CardStackRevealDemo.html`.
+- **Float Stack mode**: centered stack (anchor = stack center); index j → anchor + (0, step·(count−2j−1)/2 + lift)·px; count = raw physical count. Scale/lift: `DeckFloatStackLayout.ComputeFrame`; reveal & shadow derive from slot 0 (1 step below the lowest slot): reveal = slot0 + (−floatX, +upY)·px, ×revealScale×globalScale; shadow bound to the reveal card; other big shadows off. PRD: `plans/plan-float-stack-center-scale-2026-08-15.md`; demo: `docs/demo/CardStackRevealDemo.html`.
 
 ### Controls
 - First click: Reveal next card.
@@ -91,7 +92,7 @@ Assets/
 - Revealing the next card.
 - Triggering the current card's effect.
 - Continuing after combat finishes.
-It does **not** affect shop/result phase transitions. For backward compatibility, `DeckTester.autoSpace` still acts as a global auto-confirm across all phases.
+It does **not** affect shop/result phase transitions. `DeckTester.autoSpace` still acts as a global auto-confirm across all phases.
 
 ### Input Blocking
 `CombatManager.IsInputBlocked` uses reference counting via `BlockInput(requester)` / `UnblockInput(requester)`.
@@ -293,13 +294,13 @@ Deck cards are face-down by default; state lives on `CardPhysObjScript` (`isFace
 
 Damage `<color=red>`, Heal `<color=#90EE90>`, Shield `<color=grey>`, Friendly `<color=#87CEEB>`, Enemy `<color=orange>`
 
-**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette`. Log/rich-text: `GameColorPalette.Me.<name>.OpenTag`/`.Hex` — never hardcode hex. Components (`CardPhysObjScript`) use serialized `ColorSO` fields; HUD components read `GameColorPalette.<Name>Color` statics — HUD colors live in the palette's "HP Bar / Numeric"/"Damage Floater" groups, Edit Mode previews live-update. To change a color, edit the ColorSO asset.
+**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette`. Log/rich-text: `GameColorPalette.Me.<name>.OpenTag`/`.Hex` — never hardcode hex. Components (`CardPhysObjScript`) use serialized `ColorSO` fields; HUD components read `GameColorPalette.<Name>Color` statics — HUD colors live in the palette's "HP Bar / Numeric"/"Damage Floater" groups, Edit Mode previews live-update.
 
 ---
 
 ## Unity MCP `execute_code`
 
-Roslyn compiler installed (verified 2026-07-18); `compiler: "auto"` resolves to Roslyn (C# 12+, all modern syntax works). `codedom` (C# 6) is fallback only — if forced, avoid `using` declarations, bare void `return;`, `$""` interpolation, `?.`, and `yield return` (use fully-qualified names, explicit null checks, `string.Format`, return a value on all paths, no coroutines).
+Roslyn compiler installed; `compiler: "auto"` resolves to Roslyn (C# 12+, all modern syntax works). `codedom` (C# 6) is fallback only — if forced, avoid `using` declarations, bare void `return;`, `$""` interpolation, `?.`, and `yield return` (use fully-qualified names, explicit null checks, `string.Format`, return a value on all paths, no coroutines).
 
 If a project type is not resolved (e.g. `GameEventListener`), use `System.Type.GetType("GameEventListener, Assembly-CSharp")`.
 
