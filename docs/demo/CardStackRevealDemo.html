@@ -236,6 +236,126 @@
 			content: '◎ ';
 			color: #64b5f6;
 		}
+
+		/* ===== Shadow follow-mode simulation section ===== */
+		.sim-title {
+			font-size: 20px;
+			color: #fff;
+			margin-bottom: 8px;
+		}
+
+		.sim-sub {
+			font-size: 13px;
+			color: #90a0a8;
+			margin-bottom: 12px;
+			line-height: 1.7;
+			max-width: 1200px;
+		}
+
+		.sim-shadow {
+			transition: none;
+		}
+
+		.sim-stack {
+			transition: none;
+		}
+
+		.sim-card {
+			width: 150px;
+			height: 210px;
+			position: absolute;
+			top: 60%;
+			left: 55%;
+			margin-top: -105px;
+			margin-left: -75px;
+			transform-origin: center center;
+		}
+
+		.sim-flip {
+			width: 100%;
+			height: 100%;
+			position: relative;
+			transform-origin: center center;
+		}
+
+		.sim-face, .sim-back {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			border-radius: 14px;
+			border: 1px solid rgba(0,0,0,0.06);
+			box-shadow: 0 24px 48px rgba(0,0,0,0.35);
+		}
+
+		.sim-face::after {
+			content: '';
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			right: 10px;
+			height: 30px;
+			background: rgba(255,255,255,0.12);
+			border-radius: 7px;
+		}
+
+		.sim-face .idx {
+			position: absolute;
+			bottom: 8px;
+			left: 0;
+			right: 0;
+			text-align: center;
+			font-size: 13px;
+			font-weight: bold;
+			opacity: 0.8;
+			pointer-events: none;
+		}
+
+		.sim-back {
+			background: #33454e;
+			display: none;
+		}
+
+		.sim-back::after {
+			content: '';
+			position: absolute;
+			top: 8px;
+			left: 8px;
+			right: 8px;
+			bottom: 8px;
+			border: 2px solid rgba(255,255,255,0.18);
+			border-radius: 9px;
+		}
+
+		.sim-target {
+			position: absolute;
+			top: 60%;
+			left: 55%;
+			width: 30px;
+			height: 30px;
+			margin-top: -15px;
+			margin-left: -15px;
+			border: 2px dashed rgba(183, 28, 44, 0.8);
+			border-radius: 50%;
+			transform: translate(170px, -150px);
+			z-index: 999;
+			pointer-events: none;
+		}
+
+		.btn.btn-active {
+			background: #c9981f;
+			border-color: #c9981f;
+			color: #1a262c;
+		}
+
+		.controls label.chk {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+			font-size: 13px;
+			color: #90a0a8;
+		}
 	</style>
 </head>
 <body>
@@ -251,8 +371,8 @@
 			<label>卡片数: <span id="valCount">8</span><input type="range" id="rangeCount" min="3" max="60" step="1" value="8"></label>
 			<label>堆叠步长 stepY: <span id="valStepY">14</span><input type="range" id="rangeStepY" min="-40" max="40" step="1" value="14"></label>
 			<label>揭示放大倍率: <span id="valRevealScale">1.18</span><input type="range" id="rangeRevealScale" min="1" max="1.5" step="0.01" value="1.18"></label>
-			<label>揭示左移 floatX: <span id="valFloatX">55</span><input type="range" id="rangeFloatX" min="0" max="120" step="1" value="55"></label>
-			<label title="相对阴影家的垂直偏移；负数 = 沉到栈底之下">揭示上移 upY: <span id="valUpY">-14</span><input type="range" id="rangeUpY" min="-140" max="140" step="1" value="-14"></label>
+			<label>揭示左移 floatX: <span id="valFloatX">17</span><input type="range" id="rangeFloatX" min="0" max="120" step="1" value="17"></label>
+			<label title="相对阴影家的垂直偏移；负数 = 沉到栈底之下">揭示上移 upY: <span id="valUpY">-15</span><input type="range" id="rangeUpY" min="-140" max="140" step="1" value="-15"></label>
 			<label>旋转抖动°: <span id="valRot">1.5</span><input type="range" id="rangeRot" min="0" max="5" step="0.1" value="1.5"></label>
 		</div>
 		<div class="param-row">
@@ -262,9 +382,9 @@
 		</div>
 		<div class="param-row">
 			<label>阴影透明度: <span id="valShadowOp">0.85</span><input type="range" id="rangeShadowOp" min="0" max="1" step="0.05" value="0.85"></label>
-			<label>阴影模糊: <span id="valShadowBlur">6</span><input type="range" id="rangeShadowBlur" min="0" max="20" step="1" value="6"></label>
+			<label>阴影模糊: <span id="valShadowBlur">0</span><input type="range" id="rangeShadowBlur" min="0" max="20" step="1" value="0"></label>
 			<label title="阴影相对栈底 slot 0 的额外水平偏移">阴影偏移X: <span id="valShadowOX">0</span><input type="range" id="rangeShadowOX" min="-30" max="30" step="1" value="0"></label>
-			<label title="阴影相对栈底 slot 0 的额外垂直偏移">阴影偏移Y: <span id="valShadowOY">0</span><input type="range" id="rangeShadowOY" min="-30" max="30" step="1" value="0"></label>
+			<label title="阴影相对栈底 slot 0 的额外垂直偏移">阴影偏移Y: <span id="valShadowOY">30</span><input type="range" id="rangeShadowOY" min="-30" max="60" step="1" value="30"></label>
 		</div>
 		<div class="demo-area" id="demo">
 			<div class="stack-shadow" id="stackShadow"></div>
@@ -307,6 +427,64 @@
 		</div>
 	</div>
 
+	<div class="section">
+		<h2 class="sim-title">阴影跟随验证 · Flip / Attack 同步(plan-float-stack-shadow-follow-2026-08-16)</h2>
+		<p class="sim-sub"><strong>静态钉住</strong> = 当前发布行为(阴影 tween 到 slot-0 home 后不再移动,flip/attack 全程脱同步);<strong>每帧跟随</strong> = 新机制(阴影 = 卡实时位姿 + 恒定偏移,flip 时 pivot 校正压扁,可选旋转跟随)。几何与上方参数滑条实时联动;红色虚线圈 = 攻击目标。翻面和攻击可叠加(压扁在 flip 包装层、冲锋在卡根,正交合成,与 Unity 的 _flipRoot / 卡根分工一致)。</p>
+		<div class="demo-area" id="simDemo">
+			<div class="stack-shadow sim-shadow" id="simShadow"></div>
+			<div class="sim-target" id="simTarget"></div>
+			<div class="sim-card" id="simCard">
+				<div class="sim-flip" id="simFlip">
+					<div class="sim-face color-gold" id="simFace"><span class="idx">A · 揭示中</span></div>
+					<div class="sim-back" id="simBack"></div>
+				</div>
+			</div>
+		</div>
+		<div class="controls">
+			<button class="btn" id="btnSimFlip">翻面 Flip</button>
+			<button class="btn" id="btnSimAttack">攻击 Attack</button>
+			<button class="btn" id="btnSimReset">重置</button>
+			<button class="btn" id="btnModeStatic">静态钉住(现状)</button>
+			<button class="btn btn-active" id="btnModeFollow">每帧跟随(新)</button>
+			<label class="chk" title="跟随卡的 z 旋转;静止时 = identity"><input type="checkbox" id="chkFollowRot" checked> 旋转跟随</label>
+			<label class="chk" title="flip 压扁时 posX = 卡.x + 偏移.x·squashX(绕卡中心塌缩);关掉 = 绕阴影自身中心缩放(错误读法)"><input type="checkbox" id="chkPivot" checked> pivot 校正</label>
+			<label class="chk" title="攻击浮起时影子沿光源反方向增加的偏移距离;随 wind-up 渐入、冲刺保持、回程收回"><span id="valLiftDist">30</span>px<input type="range" id="rangeLiftDist" min="0" max="100" step="1" value="30" style="width:90px"> 浮起偏移</label>
+			<label class="chk" title="光源反方向(屏幕坐标:0=右, 90=下, -90=上)。默认 45 = 右下,与 prefab PhysicalCardBigShadow 局部偏移 (0.15, -0.15) 一致"><span id="valLiftAng">45</span>°<input type="range" id="rangeLiftAng" min="-180" max="180" step="5" value="45" style="width:110px"> 偏移方向</label>
+		</div>
+		<div class="frame-readout" id="simReadout"></div>
+		<div class="eval-grid">
+			<div class="eval-card">
+				<h3>跟随规则(plan §2 的浏览器映射)</h3>
+				<ul>
+					<li class="pro">静止:跟随位姿 ≡ 静态位姿;偏移 = (floatX + 阴影偏移X, upY + 阴影偏移Y),与卡组数、压缩、抬升完全无关(lift 与 step·(n+1)/2 精确对消)</li>
+					<li class="pro">每帧:x/y = 卡位姿 + 偏移×k(k = 卡实时缩放/静止缩放 —— 冲刺 0.85x 时偏移同步收近,wind-up 1.4x 时推远;静止 k=1 恒等);flip 时 posX = 卡.x + 偏移.x·k·squashX —— 阴影绕卡中心塌缩,而非绕自身中心</li>
+					<li class="pro">scale = 卡实时缩放(x 再乘 squashX);rotation 跟随可开关,静止时 = identity</li>
+					<li class="pro">z 钉死在牌堆最前(front-gap),攻击/回程的 z 漂移不进阴影</li>
+					<li class="pro">攻击浮起:偏移 += 光源反方向单位向量·浮起偏移·attackLiftK(随 wind-up 0→1,冲刺保持,回程收回),同样乘 k;与 flip squash 正交(浮起偏移不乘 squashX)</li>
+				</ul>
+			</div>
+			<div class="eval-card">
+				<h3>操作验证点</h3>
+				<ul>
+					<li class="pro">翻面:跟随模式下阴影与卡同步压扁回弹;关掉「pivot 校正」可见绕自身中心缩放(错误读法,横向侧滑)</li>
+					<li class="pro">攻击:阴影跟随 wind-up(1.4x)/冲刺(0.85x)/过冲/回程,归位后跟随误差 = 0.00px</li>
+					<li class="pro">「静态钉住」= 现状:flip/attack 全程阴影不动 —— 两种模式随时切换,切换带 0.45s 滑入(blend)</li>
+					<li class="pro">跟随误差(readout)静止与运动中均应恒为 0;偏移量与卡组数无关(拖卡片数验证)</li>
+				</ul>
+			</div>
+			<div class="eval-card">
+				<h3>攻击浮起读法(2026-08-16 定案)</h3>
+				<ul>
+					<li class="pro">攻击 = 卡浮起:影子沿光源反方向增加偏移(默认右下 45°,取自 prefab PhysicalCardBigShadow 局部偏移 (0.15,−0.15))</li>
+					<li class="pro">时序:wind-up 偏移渐入 → 冲刺/过冲保持 → 回程收回;全程跟随位置 + 旋转</li>
+					<li class="pro">偏移直接基于卡片大小:总偏移 ×(卡实时缩放/静止缩放) —— 冲刺 0.85x 时影子同步收近,wind-up 1.4x 时推远(2026-08-16 定案)</li>
+					<li class="con">「压到牌堆之下」已否决:最上方的卡浮起后,其影子不可能落在其他卡片下面;z 保持钉在牌堆最前</li>
+					<li class="pro">用「浮起偏移 / 偏移方向」两个滑条定型手感,再移植到 BigShadowFollower(liftOffsetWorld + lift 权重)</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
 	<script>
 		// Card visual half-height, px (CSS card height 210 / 2) — used to measure card-face
 		// bottom edges against bottomLimitPx.
@@ -317,16 +495,17 @@
 			cardCount: 8,
 			stepY: 14,          // fixed y step per stack card, px (cards further back sit higher; negative = downward stack)
 			revealScale: 1.18,  // revealed card scale multiplier (the shadow uses the same scale)
-			revealFloatX: 55,   // revealed card left offset from the shadow home (slot 0), px
-			revealUpY: -14,     // revealed card up offset from the shadow home, px (negative = sinks below the stack base = lowest element)
+			revealFloatX: 17,   // revealed card left offset from the shadow home (slot 0), px
+			revealUpY: -15,     // revealed card up offset from the shadow home, px (negative = sinks below the stack base = lowest element)
 			rotJitter: 1.5,     // per-card stack rotation jitter, degrees (deterministic by card id)
 			maxHeightPx: 250,   // stack height that triggers global compression; 0 = off
 			minScale: 0.55,     // floor for the global compress scale
 			bottomLimitPx: 270, // max distance ANY card face (deck bottom edge or revealed card bottom edge) may sink below the anchor; 0 = off
 			shadowOpacity: 0.85,
-			shadowBlur: 6,
+			shadowBlur: 0,
 			shadowOffsetX: 0,   // extra shadow offset from slot 0 (the deck base), px
-			shadowOffsetY: 0
+			shadowOffsetY: 30
+			// defaults synced 2026-08-16 from the user's tuning screenshot (floatX 17, upY -15, blur 0, offsetY 30)
 		};
 
 		// slots[0] = revealed card (deck top); slots[1..n-1] = stack slots front-to-back
@@ -384,8 +563,8 @@
 		// the centered/pinned stack bottom. role 0 = revealed (float up-left from the shadow
 		// home; with negative upY it sinks below the stack base = lowest element); role i =
 		// stack slot i (1 = next to reveal = lowest stack card on screen).
-		function roleTransform(role, cardEl) {
-			const n = slots.length;
+		function roleTransform(role, cardEl, deckTotal) {
+			const n = deckTotal === undefined ? slots.length : deckTotal;
 			const frame = computeFrame(n - 1);
 			if (role === 0) {
 				return {
@@ -593,6 +772,321 @@
 
 		// Initial deal
 		render(true);
+
+		/* ===== Shadow follow-mode simulation (plan-float-stack-shadow-follow-2026-08-16 §3.1) =====
+		   'static' reproduces the shipped behavior (the shadow tweens to the slot-0 home once,
+		   then never moves through flip/attack). 'follow' mirrors the proposed BigShadowFollower:
+		   per-frame shadow = card live pose + constant rest offset, pivot-corrected flip squash,
+		   optional rotation follow, z pinned at the deck front. The rest offset derives from the
+		   bound pair: home - reveal = (shadowOffsetX + revealFloatX, shadowOffsetY + revealUpY),
+		   independent of deck count / compression / lift. */
+		const sim = {
+			mode: 'follow',
+			followRot: true,
+			pivotCorrect: true,
+			liftDist: 30,      // attack-lift shadow offset distance, px (2026-08-16 user decision)
+			liftAng: 45,       // anti-light direction, screen degrees (0 = right, 90 = down); 45 = right-down, from the prefab's PhysicalCardBigShadow local offset (0.15, -0.15)
+			attackLiftK: 0,    // 0 = rest, 1 = fully lifted (ramps with the wind-up, holds through charge/overshoot, eases back on return)
+			pose: { x: 0, y: 0, s: 1, rot: 0, squash: 1 },   // revealed card live pose (squash = _flipRoot.localScale.x)
+			rest: { x: 0, y: 0, s: 1 },                      // reveal home
+			home: { x: 0, y: 0, s: 1 },                      // shadow slot-0 home
+			shadow: { x: 0, y: 0, sx: 1, sy: 1, rot: 0 },    // current shadow pose (driven every frame)
+			staticShadow: { x: 0, y: 0, sx: 1, sy: 1, rot: 0 },
+			blend: 1,
+			blendFrom: null,
+			faceUp: true,
+			attacking: false,
+			flipping: false,
+			stackN: 0
+		};
+		const simStackEls = {};
+		const simTweens = [];
+		const simEls = {};
+		const SIM_ATTACK_TARGET = { x: 170, y: -150 }; // px from the anchor, up-right over the stack
+		const SIM_BLEND_DURATION = 0.45; // ~ Unity moveDuration (the drive tween-in)
+
+		function simLerp(a, b, k) { return a + (b - a) * k; }
+		function simEaseInQuad(k) { return k * k; }
+		function simEaseOutQuad(k) { return 1 - (1 - k) * (1 - k); }
+		function simEaseOutCubic(k) { return 1 - Math.pow(1 - k, 3); }
+		function simEaseInOutQuad(k) { return k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; }
+
+		function addSimTween(dur, ease, onUpdate, onComplete) {
+			simTweens.push({ t: 0, dur: Math.max(0.0001, dur), ease: ease, update: onUpdate, done: onComplete });
+		}
+
+		function stepSimTweens(dt) {
+			for (let i = simTweens.length - 1; i >= 0; i--) {
+				const tw = simTweens[i];
+				tw.t += dt;
+				const k = Math.min(1, tw.t / tw.dur);
+				tw.update(tw.ease(k));
+				if (k >= 1) {
+					simTweens.splice(i, 1);
+					if (tw.done) tw.done();
+				}
+			}
+		}
+
+		// Bound-pair rest offset (shadow home - reveal home), px. Exact for any deckCount:
+		// liftPx and step*(n+1)/2 cancel out of the difference.
+		function followOffsetPx() {
+			return { x: params.shadowOffsetX + params.revealFloatX, y: params.shadowOffsetY + params.revealUpY };
+		}
+
+		function rebuildSimStack(n) {
+			Object.keys(simStackEls).forEach(function (key) { simStackEls[key].remove(); delete simStackEls[key]; });
+			for (let i = 1; i < n; i++) {
+				const el = document.createElement('div');
+				el.className = 'card sim-stack ' + randomColorClass();
+				el._cid = i;
+				el.innerHTML = '<span class="idx">' + cardId(i) + ' · 槽位 ' + i + '</span>';
+				simEls.demo.appendChild(el);
+				simStackEls[i] = el;
+			}
+			sim.stackN = n;
+		}
+
+		function updateSimLayout(rebuild) {
+			const n = params.cardCount;
+			if (rebuild || n !== sim.stackN) rebuildSimStack(n);
+			const frame = computeFrame(n - 1);
+			const slot0Y = frame.step * (n / 2) - frame.lift;
+			sim.rest = { x: -params.revealFloatX, y: slot0Y - params.revealUpY, s: params.revealScale * frame.scale };
+			sim.home = { x: params.shadowOffsetX, y: slot0Y + params.shadowOffsetY, s: params.revealScale * frame.scale };
+			for (let i = 1; i < n; i++) {
+				const t = roleTransform(i, simStackEls[i], n);
+				simStackEls[i].style.zIndex = t.z;
+				simStackEls[i].style.transform = 'translate(' + t.x + 'px, ' + t.y + 'px) rotate(' + t.rot + 'deg) scale(' + t.scale + ')';
+			}
+			simEls.card.style.zIndex = n + 10;
+			if (!sim.attacking) {
+				sim.pose.x = sim.rest.x; sim.pose.y = sim.rest.y;
+				sim.pose.s = sim.rest.s; sim.pose.rot = 0;
+			}
+			if (sim.mode === 'static') driveStaticShadow();
+		}
+
+		// Static (shipped) behavior: glide the shadow to its slot-0 home, then hold it there.
+		function driveStaticShadow() {
+			const from = { x: sim.shadow.x, y: sim.shadow.y, sx: sim.shadow.sx, sy: sim.shadow.sy, rot: sim.shadow.rot };
+			const home = sim.home;
+			addSimTween(SIM_BLEND_DURATION, simEaseOutCubic, function (k) {
+				sim.staticShadow = {
+					x: simLerp(from.x, home.x, k),
+					y: simLerp(from.y, home.y, k),
+					sx: simLerp(from.sx, home.s, k),
+					sy: simLerp(from.sy, home.s, k),
+					rot: simLerp(from.rot, 0, k)
+				};
+			});
+		}
+
+		// Follow drive: blend 0 -> 1 from the current shadow pose into the live follow pose,
+		// matching the plan's blend-weight glide-in.
+		function driveFollowShadow() {
+			sim.blendFrom = { x: sim.shadow.x, y: sim.shadow.y, sx: sim.shadow.sx, sy: sim.shadow.sy, rot: sim.shadow.rot };
+			sim.blend = 0;
+			addSimTween(SIM_BLEND_DURATION, simEaseOutCubic, function (k) { sim.blend = k; }, function () { sim.blend = 1; sim.blendFrom = null; });
+		}
+
+		// Flip squash on the flip wrapper only (Unity: _flipRoot.DOScaleX), face/back swap at the
+		// midpoint (Unity: ApplyFaceVisibility callback).
+		function simFlip() {
+			if (sim.flipping) return;
+			sim.flipping = true;
+			const p = sim.pose;
+			addSimTween(0.15, simEaseInQuad, function (k) { p.squash = 1 - k; }, function () {
+				sim.faceUp = !sim.faceUp;
+				simEls.face.style.display = sim.faceUp ? '' : 'none';
+				simEls.back.style.display = sim.faceUp ? 'none' : 'block'; // explicit 'block': the .sim-back CSS rule is display:none, so clearing the inline style would keep it hidden
+				addSimTween(0.15, simEaseOutQuad, function (k) { p.squash = k; }, function () {
+					p.squash = 1;
+					sim.flipping = false;
+				});
+			});
+		}
+
+		// Approximates AttackAnimationManager: wind-up + 1.4x scale-up + rotate toward target,
+		// charge at 0.85x, overshoot past the target, return to the rest pose.
+		function simAttack() {
+			if (sim.attacking) return;
+			sim.attacking = true;
+			const p = sim.pose;
+			const startX = p.x, startY = p.y, startS = p.s;
+			const dx = SIM_ATTACK_TARGET.x - startX, dy = SIM_ATTACK_TARGET.y - startY;
+			const len = Math.hypot(dx, dy) || 1;
+			const dirX = dx / len, dirY = dy / len;
+			const windX = startX - dirX * 45, windY = startY - dirY * 45;
+			const rotTo = Math.max(-25, Math.min(25, Math.atan2(dirX, -dirY) * 180 / Math.PI * 0.5));
+			const overX = SIM_ATTACK_TARGET.x + dirX * 50, overY = SIM_ATTACK_TARGET.y + dirY * 50;
+			addSimTween(0.32, simEaseOutQuad, function (k) {
+				p.x = simLerp(startX, windX, k); p.y = simLerp(startY, windY, k);
+				p.s = simLerp(startS, startS * 1.4, k);
+				p.rot = simLerp(0, rotTo, k);
+				sim.attackLiftK = k; // the card lifts with the wind-up: shadow offset ramps anti-light
+			}, function () {
+				addSimTween(0.16, simEaseInQuad, function (k) {
+					p.x = simLerp(windX, SIM_ATTACK_TARGET.x, k); p.y = simLerp(windY, SIM_ATTACK_TARGET.y, k);
+					p.s = simLerp(startS * 1.4, startS * 0.85, k);
+				}, function () {
+					addSimTween(0.12, simEaseOutQuad, function (k) {
+						p.x = simLerp(SIM_ATTACK_TARGET.x, overX, k); p.y = simLerp(SIM_ATTACK_TARGET.y, overY, k);
+					}, function () {
+						addSimTween(0.45, simEaseInOutQuad, function (k) {
+							p.x = simLerp(overX, sim.rest.x, k); p.y = simLerp(overY, sim.rest.y, k);
+							p.s = simLerp(startS * 0.85, sim.rest.s, k);
+							p.rot = simLerp(rotTo, 0, k);
+							sim.attackLiftK = 1 - k; // settles back to the rest offset as the card lands
+						}, function () { sim.attacking = false; sim.attackLiftK = 0; });
+					});
+				});
+			});
+		}
+
+		function simReset() {
+			simTweens.length = 0;
+			sim.attacking = false;
+			sim.attackLiftK = 0;
+			sim.flipping = false;
+			sim.faceUp = true;
+			simEls.face.style.display = '';
+			simEls.back.style.display = 'none';
+			sim.pose = { x: sim.rest.x, y: sim.rest.y, s: sim.rest.s, rot: 0, squash: 1 };
+			if (sim.mode === 'follow') {
+				sim.blend = 1;
+				sim.blendFrom = null;
+			} else {
+				driveStaticShadow();
+			}
+		}
+
+		function setSimMode(mode) {
+			if (sim.mode === mode) return;
+			sim.mode = mode;
+			simEls.btnStatic.classList.toggle('btn-active', mode === 'static');
+			simEls.btnFollow.classList.toggle('btn-active', mode === 'follow');
+			if (mode === 'follow') driveFollowShadow(); else driveStaticShadow();
+		}
+
+		function applySimCard() {
+			simEls.card.style.transform = 'translate(' + sim.pose.x + 'px, ' + sim.pose.y + 'px) rotate(' + sim.pose.rot + 'deg) scale(' + sim.pose.s + ')';
+			simEls.flip.style.transform = 'scaleX(' + sim.pose.squash + ')';
+		}
+
+		function applySimShadow() {
+			let tx, ty, tsx, tsy, trot;
+			if (sim.mode === 'follow') {
+				const off = followOffsetPx();
+				const sq = sim.pose.squash;
+				// Scale-proportional offset (2026-08-16 user decision): the whole offset scales
+				// with the card's live scale ratio — the attack charge shrink (0.85x) pulls the
+				// shadow in, the wind-up grow (1.4x) pushes it out. k == 1 at rest, so the rest
+				// identity is preserved.
+				const k = sim.rest.s !== 0 ? sim.pose.s / sim.rest.s : 1;
+				// Attack lift: world-space anti-light offset — scales with k like the rest
+				// offset, but stays orthogonal to the flip squash (never multiplied by squashX).
+				const rad = sim.liftAng * Math.PI / 180;
+				const liftX = Math.cos(rad) * sim.liftDist * sim.attackLiftK * k;
+				const liftY = Math.sin(rad) * sim.liftDist * sim.attackLiftK * k;
+				tx = sim.pose.x + (sim.pivotCorrect ? off.x * k * sq : off.x * k) + liftX;
+				ty = sim.pose.y + off.y * k + liftY;
+				tsx = sim.pose.s * sq;
+				tsy = sim.pose.s;
+				trot = sim.followRot ? sim.pose.rot : 0;
+				if (sim.blend < 1 && sim.blendFrom) {
+					tx = simLerp(sim.blendFrom.x, tx, sim.blend);
+					ty = simLerp(sim.blendFrom.y, ty, sim.blend);
+					tsx = simLerp(sim.blendFrom.sx, tsx, sim.blend);
+					tsy = simLerp(sim.blendFrom.sy, tsy, sim.blend);
+					trot = simLerp(sim.blendFrom.rot, trot, sim.blend);
+				}
+			} else {
+				tx = sim.staticShadow.x; ty = sim.staticShadow.y;
+				tsx = sim.staticShadow.sx; tsy = sim.staticShadow.sy;
+				trot = sim.staticShadow.rot;
+			}
+			sim.shadow = { x: tx, y: ty, sx: tsx, sy: tsy, rot: trot };
+			simEls.shadow.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) rotate(' + trot + 'deg) scale(' + tsx + ', ' + tsy + ')';
+			simEls.shadow.style.opacity = params.shadowOpacity;
+			simEls.shadow.style.filter = 'blur(' + params.shadowBlur + 'px)';
+			// z stays pinned at the deck front even mid-attack (demote option rejected 2026-08-16:
+			// the lifted topmost card's shadow must not slide under the stack).
+			simEls.shadow.style.zIndex = sim.stackN + 5;
+		}
+
+		function updateSimReadout() {
+			const off = followOffsetPx();
+			const rad = sim.liftAng * Math.PI / 180;
+			const k = sim.rest.s !== 0 ? sim.pose.s / sim.rest.s : 1;
+			const liftX = Math.cos(rad) * sim.liftDist * sim.attackLiftK * k;
+			const liftY = Math.sin(rad) * sim.liftDist * sim.attackLiftK * k;
+			let errText = '';
+			if (sim.mode === 'follow' && sim.blend >= 1) {
+				const expectX = sim.pose.x + (sim.pivotCorrect ? off.x * k * sim.pose.squash : off.x * k) + liftX;
+				const err = Math.hypot(sim.shadow.x - expectX, sim.shadow.y - (sim.pose.y + off.y * k + liftY));
+				errText = ' · 跟随误差=' + err.toFixed(2) + 'px';
+			}
+			simEls.readout.textContent =
+				'模式=' + (sim.mode === 'follow' ? '每帧跟随' : '静态钉住(现状)') +
+				' · 恒定偏移=(' + off.x.toFixed(0) + ', ' + off.y.toFixed(0) + ')px(与卡组数无关,×缩放比 ' + k.toFixed(2) + ')' +
+				' · squashX=' + sim.pose.squash.toFixed(2) +
+				(sim.attackLiftK > 0 ? ' · 浮起偏移=(' + liftX.toFixed(1) + ', ' + liftY.toFixed(1) + ')px' : '') +
+				errText;
+		}
+
+		let simLastTs = 0;
+		function simTick(ts) {
+			requestAnimationFrame(simTick);
+			if (window.__simPaused) { simLastTs = ts; return; } // validation freeze-frame hook
+			if (!simLastTs) simLastTs = ts;
+			const dt = Math.min(0.05, (ts - simLastTs) / 1000);
+			simLastTs = ts;
+			stepSimTweens(dt);
+			applySimCard();
+			applySimShadow();
+			updateSimReadout();
+		}
+
+		function initShadowFollowSim() {
+			simEls.demo = document.getElementById('simDemo');
+			simEls.card = document.getElementById('simCard');
+			simEls.flip = document.getElementById('simFlip');
+			simEls.face = document.getElementById('simFace');
+			simEls.back = document.getElementById('simBack');
+			simEls.shadow = document.getElementById('simShadow');
+			simEls.readout = document.getElementById('simReadout');
+			simEls.btnStatic = document.getElementById('btnModeStatic');
+			simEls.btnFollow = document.getElementById('btnModeFollow');
+			updateSimLayout(true);
+			sim.pose = { x: sim.rest.x, y: sim.rest.y, s: sim.rest.s, rot: 0, squash: 1 };
+			sim.shadow = { x: sim.home.x, y: sim.home.y, sx: sim.home.s, sy: sim.home.s, rot: 0 };
+			sim.staticShadow = { x: sim.home.x, y: sim.home.y, sx: sim.home.s, sy: sim.home.s, rot: 0 };
+			document.getElementById('btnSimFlip').addEventListener('click', simFlip);
+			document.getElementById('btnSimAttack').addEventListener('click', simAttack);
+			document.getElementById('btnSimReset').addEventListener('click', simReset);
+			simEls.btnStatic.addEventListener('click', function () { setSimMode('static'); });
+			simEls.btnFollow.addEventListener('click', function () { setSimMode('follow'); });
+			document.getElementById('chkFollowRot').addEventListener('change', function (e) { sim.followRot = e.target.checked; });
+			document.getElementById('chkPivot').addEventListener('change', function (e) { sim.pivotCorrect = e.target.checked; });
+			document.getElementById('rangeLiftDist').addEventListener('input', function (e) {
+				sim.liftDist = parseFloat(e.target.value);
+				document.getElementById('valLiftDist').textContent = e.target.value;
+			});
+			document.getElementById('rangeLiftAng').addEventListener('input', function (e) {
+				sim.liftAng = parseFloat(e.target.value);
+				document.getElementById('valLiftAng').textContent = e.target.value;
+			});
+			// Keep the simulation in sync with the top section's layout sliders.
+			const layoutSliders = ['rangeCount', 'rangeStepY', 'rangeRevealScale', 'rangeFloatX', 'rangeUpY', 'rangeRot', 'rangeMaxHeight', 'rangeMinScale', 'rangeBottomLimit', 'rangeShadowOX', 'rangeShadowOY'];
+			layoutSliders.forEach(function (id) {
+				document.getElementById(id).addEventListener('input', function () { updateSimLayout(id === 'rangeCount'); });
+			});
+			window.__sim = sim; // validation hook (read-only inspection in the browser)
+			requestAnimationFrame(simTick);
+		}
+
+		initShadowFollowSim();
 	</script>
 </body>
 </html>
