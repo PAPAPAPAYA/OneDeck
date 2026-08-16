@@ -8744,14 +8744,17 @@ MonoBehaviour:
   floatStackPxToWorld: 0.021
   floatStackStepY: 14
   floatStackRevealScale: 1.07
-  floatStackRevealFloatX: 6
+  floatStackRevealFloatX: 15
   floatStackRevealUpY: -14
   floatStackMaxHeightPx: 250
   floatStackMinScale: 0.55
   floatStackBottomLimitPx: 270
   floatStackCardHalfHeightPx: 105
-  floatStackShadowOffset: {x: 0, y: 20}
+  floatStackShadowOffset: {x: 0, y: 30}
   floatStackShadowOpacity: 0.85
+  floatStackShadowFollowRotation: 1
+  floatStackShadowFollowLiftDir: {x: 1, y: -1}
+  floatStackShadowFollowLiftDistance: 0.1
   useDynamicArcMidpoint: 0
   arcMidpointCurveT: 0.5
   arcMidpointOffset: {x: 1, y: 2}

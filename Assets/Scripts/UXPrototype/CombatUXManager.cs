@@ -141,6 +141,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public Vector2 floatStackShadowOffset = new Vector2(0f, 30f);
 	[Tooltip("Driven big shadow target alpha (0-1). The shadow is bound to the revealed card at a constant offset. (demo: 0.85)")]
 	[Range(0f, 1f)] public float floatStackShadowOpacity = 0.85f;
+	[Tooltip("Float Stack: the driven big shadow copies the revealed card's z rotation (attack tilt). Off = shadow stays axis-aligned while following. (plan-float-stack-shadow-follow-2026-08-16)")]
+	public bool floatStackShadowFollowRotation = true;
+	[Tooltip("Float Stack: anti-light direction of the attack-lift shadow offset, world xy (normalized at use). Default (1,-1) = screen right-down, from the prefab's PhysicalCardBigShadow local offset (0.15,-0.15). Tune in play mode.")]
+	public Vector2 floatStackShadowFollowLiftDir = new Vector2(1f, -1f);
+	[Tooltip("Float Stack: attack-lift shadow offset distance at full lift, world units. Ramps in with the attack wind-up, holds through the charge/overshoot, eases back on the return. Tune in play mode.")]
+	public float floatStackShadowFollowLiftDistance = 0.3f;
 
 	[Header("DYNAMIC ARC MIDPOINT")]
 	[Tooltip("Compute the arc midpoint (showPos) dynamically from the current cascade deck shape. Off = legacy fixed showPos behavior byte-for-byte.")]
@@ -1801,7 +1807,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Stable size base: the reveal card's own target scale, not the card's live scale —
 		// see VISUAL-FIX(2026-08-16) in DriveBigShadowToPose. The shadow renders at this
 		// scale times its baked local scale, so it matches the reveal card on every re-drive.
-		physScript.DriveBigShadowToPose(physicalCardDeckPos, targetLocalPos, GetRevealZoneScale(), floatStackShadowOpacity);
+		Vector3 revealScale = GetRevealZoneScale();
+		// Follow offset = shadow home minus reveal home, both at their rest poses (bound pair;
+		// count-invariant — liftPx and effectiveStepY*(count+1)/2 cancel out of the difference).
+		Vector3 followOffsetWorld = physicalCardDeckPos.TransformPoint(targetLocalPos) - GetRevealZonePosition();
+		Vector2 liftDir = floatStackShadowFollowLiftDir;
+		if (liftDir.sqrMagnitude < 0.0001f) liftDir = new Vector2(1f, -1f); // never a zero vector
+		Vector3 liftOffsetWorld = liftDir.normalized * floatStackShadowFollowLiftDistance;
+		physScript.DriveBigShadowToPose(physicalCardDeckPos, targetLocalPos, revealScale, floatStackShadowOpacity, followOffsetWorld, floatStackShadowFollowRotation, liftOffsetWorld);
 		_floatStackShadowCard = physScript;
 	}
 

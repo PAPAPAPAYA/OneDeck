@@ -745,6 +745,7 @@ public class CardPhysObjScript : MonoBehaviour
 	private Vector3 _bigShadowHomeLocalScale;
 	private Quaternion _bigShadowHomeLocalRot;
 	private float _bigShadowHomeAlpha;
+	private BigShadowFollower _bigShadowFollower;
 
 	public bool IsBigShadowDriven => _bigShadowDriven;
 
@@ -762,10 +763,12 @@ public class CardPhysObjScript : MonoBehaviour
 
 	/// <summary>
 	/// Begin driving the big shadow to an external anchor pose: re-parents to anchorParent
-	/// keeping the current world pose (the in-deck follow pose), then tweens local position /
-	/// scale / rotation to the anchor pose in sync with the reveal flight (moveDuration/moveEase),
-	/// fading in over the first 40% of it. baseScale is the caller's target card world scale
-	/// (reveal-card scale); the shadow renders at baseScale times its own baked local scale.
+	/// keeping the current world pose (the in-deck follow pose), fades in over the first 40%
+	/// of moveDuration, and attaches/inits a BigShadowFollower that tracks the revealed card's
+	/// live pose every frame (plan-float-stack-shadow-follow-2026-08-16 §2). baseScale is the
+	/// caller's target card world scale (reveal-card rest scale); the follower renders the
+	/// shadow at the card's live scale times its own baked local scale, and keeps the rest
+	/// offset proportional to the live/rest scale ratio.
 	/// </summary>
 	// VISUAL-FIX(2026-08-16): Float Stack big shadow grows on every play-mode Inspector edit.
 	//   Cause:    targetLocalScale was t.localScale * scaleMultiplier, capturing the card's
@@ -780,7 +783,7 @@ public class CardPhysObjScript : MonoBehaviour
 	//             or floatStackRevealScale — the shadow only moves / tracks the reveal card size
 	//             and never grows; large decks keep the shadow equal to the reveal card; the
 	//             next reveal and the return-flight fade (2026-08-15) stay unchanged.
-	public void DriveBigShadowToPose(Transform anchorParent, Vector3 targetLocalPos, Vector3 baseScale, float targetAlpha)
+	public void DriveBigShadowToPose(Transform anchorParent, Vector3 targetLocalPos, Vector3 baseScale, float targetAlpha, Vector3 followOffsetWorld, bool followRotation, Vector3 liftOffsetWorld)
 	{
 		if (bigShadowRenderer == null || anchorParent == null) return;
 		if (_bigShadowDriven) RestoreBigShadowFromDrive(true);
@@ -796,19 +799,26 @@ public class CardPhysObjScript : MonoBehaviour
 		startColor.a = 0f;
 		bigShadowRenderer.color = startColor;
 		float duration = GetCombatScaledDuration(moveDuration);
-		// Stable size target: baseScale (reveal-card world scale) * the shadow's baked home
-		// scale, captured at drive start. Not t.localScale — that varies with the card's live
+		// Follow-mode drive: the follower applies the slot-0 home pose (targetLocalPos.z = the
+		// pinned front-gap z) plus the card's live offset every frame. Enable/disable (never
+		// destroy + re-add): a same-frame release+drive (OnValidate re-drive) would otherwise
+		// re-Init a component that is already marked for destruction.
+		if (_bigShadowFollower == null)
+			_bigShadowFollower = bigShadowRenderer.GetComponent<BigShadowFollower>();
+		if (_bigShadowFollower == null)
+			_bigShadowFollower = bigShadowRenderer.gameObject.AddComponent<BigShadowFollower>();
+		// Stable size base: baseScale (reveal-card rest world scale) + the shadow's baked home
+		// scale, captured at drive start — not t.localScale, which varies with the card's live
 		// (possibly mid-flight) scale, so re-drives would compound the revealScale factor.
-		Vector3 targetLocalScale = Vector3.Scale(baseScale, _bigShadowHomeLocalScale); // anchorParent scale assumed 1
-		t.DOLocalMove(targetLocalPos, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
-		t.DOScale(targetLocalScale, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
-		t.DOLocalRotateQuaternion(Quaternion.identity, duration).SetEase(moveEase).SetUpdate(UpdateType.Normal, true);
+		_bigShadowFollower.Init(transform, _flipRoot, anchorParent, followOffsetWorld, baseScale, _bigShadowHomeLocalScale, targetLocalPos.z, followRotation, liftOffsetWorld, duration, moveEase);
 		bigShadowRenderer.DOFade(targetAlpha, duration * 0.4f).SetUpdate(UpdateType.Normal, true);
 	}
 
 	/// <summary>
 	/// Stop driving the big shadow: fade out, then re-parent back to the card and restore
 	/// the recorded home pose. instant = true skips the fade and restores immediately.
+	/// The follower stays ENABLED during the fade so the shadow keeps tracking the return
+	/// arc while fading out; it is only disabled inside the restore callback.
 	/// </summary>
 	public void RestoreBigShadowFromDrive(bool instant)
 	{
@@ -820,6 +830,12 @@ public class CardPhysObjScript : MonoBehaviour
 		System.Action restore = () =>
 		{
 			if (this == null || bigShadowRenderer == null) return; // card destroyed mid-fade
+			// Disable (not destroy) the follower BEFORE the re-parent: a same-frame
+			// release+drive (OnValidate re-drive) re-Inits this same component, and a live
+			// follower would otherwise overwrite the restored home pose on its next LateUpdate.
+			// If the card is destroyed mid-drive, the follower self-destructs the whole shadow
+			// GameObject, so no orphan cleanup is needed here.
+			if (_bigShadowFollower != null) _bigShadowFollower.enabled = false;
 			t.SetParent(_flipRoot != null ? _flipRoot : transform, false);
 			t.localPosition = _bigShadowHomeLocalPos;
 			t.localScale = _bigShadowHomeLocalScale;
@@ -837,6 +853,17 @@ public class CardPhysObjScript : MonoBehaviour
 		{
 			bigShadowRenderer.DOFade(0f, GetCombatScaledDuration(0.25f)).SetUpdate(UpdateType.Normal, true).OnComplete(() => restore());
 		}
+	}
+
+	/// <summary>
+	/// Lift hook for AttackAnimationManager (wind-up/return) and RecorderAnimationPlayer
+	/// (emphasize pulse): ramps the driven big shadow's anti-light lift offset
+	/// (0 = rest, 1 = fully lifted). No-op unless the shadow is currently driven.
+	/// </summary>
+	public void SetBigShadowLift(float target, float duration)
+	{
+		if (!_bigShadowDriven || _bigShadowFollower == null) return;
+		_bigShadowFollower.SetLift(target, duration);
 	}
 
 	#endregion

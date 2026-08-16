@@ -285,6 +285,11 @@ public void ReleaseDeckFocus()
 		{
 			// ========== Phase 1+2: Scale up + Rotate + Wind up (simultaneous) ==========
 			Vector3 windUpPos = CalculateWindUpPosition(startPos, targetPos);
+			// Float Stack: the revealed card's driven big shadow grows its anti-light lift
+			// offset with the wind-up (attack = card lifted), holds it through the
+			// charge/overshoot, and eases back across the return (2026-08-16 decision;
+			// no-op when the attacker's shadow is not driven).
+			physScript.SetBigShadowLift(1f, Mathf.Max(CombatAnimationSpeed.ScaleDuration(scaleUpDuration), CombatAnimationSpeed.ScaleDuration(windUpDuration)));
 			yield return ScaleUpAndWindUpAnimation(physicalCard, originalScale, targetPos, windUpPos);
 
 			// ========== Phase 3: Charge to target pos (enemy/player position), scale down simultaneously ==========
@@ -306,6 +311,8 @@ public void ReleaseDeckFocus()
 			yield return OvershootAnimation(physicalCard, overshootPos);
 
 			// ========== Phase 6: Return to appropriate position ==========
+			// Ease the attack-lift offset back to rest across the return flight.
+			physScript.SetBigShadowLift(0f, CombatAnimationSpeed.ScaleDuration(returnToRevealDuration));
 			if (isInRevealZone)
 			{
 				// Return to reveal position
@@ -348,6 +355,8 @@ public void ReleaseDeckFocus()
 		}
 		finally
 		{
+			// Exception safety: never leave the lift offset stuck on the driven shadow.
+			if (physScript != null) physScript.SetBigShadowLift(0f, 0.1f);
 			// Ensure special animation flag is always restored, unless the card should remain at
 			// the popup peak until the caller slots it back in.
 			if (!wasPoppedUp)

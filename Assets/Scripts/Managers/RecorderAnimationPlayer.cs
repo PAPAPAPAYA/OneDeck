@@ -427,8 +427,13 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 		Vector3 targetScale = originalScale * 1.2f;
 		float halfDuration = CombatAnimationSpeed.ScaleDuration(0.25f);
 
+		// Float Stack: the emphasize pulse is a small "lift" — the driven big shadow grows the
+		// anti-light offset with the scale-up and settles it back with the scale-down (no-op
+		// unless the card's shadow is driven, i.e. the card is the revealed card).
+		physScript.SetBigShadowLift(1f, halfDuration);
 		Sequence seq = DOTween.Sequence();
 		seq.Append(physicalCard.transform.DOScale(targetScale, halfDuration).SetEase(Ease.OutQuad));
+		seq.AppendCallback(() => physScript.SetBigShadowLift(0f, halfDuration));
 		seq.Append(physicalCard.transform.DOScale(originalScale, halfDuration).SetEase(Ease.OutQuad));
 		seq.OnComplete(() =>
 		{
