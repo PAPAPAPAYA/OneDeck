@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OneDeck 卡池 v4 — 核心公式设计总案</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1320px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 200px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; }
+	.mono { font-family: Consolas, monospace; }
+	.id { color: var(--accent); font-weight: 600; white-space: nowrap; font-size: 0.8rem; }
+	.desc { white-space: pre-line; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.rtag { display: inline-block; font-size: 0.72rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; white-space: nowrap; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px; white-space: nowrap; }
+	ul { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.tagcell { font-size: 0.76rem; color: var(--dim); }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.exp { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 12px 0; background: #1a1e27; }
+	.exp h3 { margin-top: 0; }
+	.exp .axis { color: var(--warn); font-family: Consolas, monospace; font-size: 0.9rem; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.formula { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 16px 20px; margin: 14px 0; font-size: 1rem; }
+	.formula .f { font-size: 1.25rem; font-weight: 700; color: #e6e9ef; font-family: Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<h1>OneDeck 卡池 v4 — 核心公式设计总案</h1>
+<div class="sub">2026-08-16 · 迭代自 v3（docs/CardPoolV3_Design_CoreExperiences.html）· 用户确认：①「攻击」= 攻击力 + 力量每段计入 ② 动态攻击力常态结算 ③ 全部旧卡统一转写中文关键词文案 · 新规则：卡组 12 卡位上限仅作用于商店阶段，combat 生成卡不受限 · 全部卡池文案已统一为关键词格式</div>
+
+<div class="kpis" id="kpis"></div>
+
+<h2>0. 核心公式与两个乘区</h2>
+<div class="card">
+	<div class="formula">
+		<div class="f">总伤害 = 造成伤害的次数（第一乘区） × 造成伤害的大小（第二乘区）</div>
+		<div style="margin-top:8px">诅咒流派：敌方自伤 = 诅咒力量（大小） × 诅咒被揭晓次数 × 诅咒数量（次数）——增殖的厄运是<b>线性</b>加上「数量」乘区（复制体不再被复制），不是 1→2→4 指数。</div>
+	</div>
+	<h3>0.1 第一乘区（次数）的体验清单</h3>
+	<table>
+		<thead><tr><th>次数来源</th><th>代表卡</th><th>体验</th></tr></thead>
+		<tbody>
+			<tr><td>攻击者数量</td><td>集结号、军火库、血肉聚集体（攻击力=友方卡牌数量）</td><td>铺场越多，总输出越高（E9）</td></tr>
+			<tr><td>单卡攻击次数</td><td>尸爆（攻击×2）、针刺骷髅（被埋葬:攻击×2）、被诅咒的尸体（被埋葬:攻击×3）、碎骨聚集体（攻击×本回合埋葬数）</td><td>力量 × 段数的乘法滚动（E1）</td></tr>
+			<tr><td>攻击次数授予（新）</td><td class="good">战训教官、嗜血、亘古沉眠者（「攻击 +1 次」永久可叠加）</td><td>把次数乘区直接发给其他卡——新的第一乘区授予体验</td></tr>
+			<tr><td>揭晓/置顶次数</td><td>远古魔法使用者、战术爆破手、能量迸发、守墓人</td><td>每回合反复揭晓同一张卡（E6）</td></tr>
+			<tr><td>诅咒揭晓次数</td><td class="good">丧钟、送葬人、恶魔低语、拔苗助长（置顶敌方诅咒）</td><td>敌方诅咒每回合多揭晓一次 = 多一次自伤（E4）</td></tr>
+			<tr><td>埋葬节奏（不分敌我）</td><td class="good">乱葬坑、大范围死亡、白骨地</td><td>不断埋葬让敌人行动失效，己方因亡语/埋葬收益获益（E11）</td></tr>
+		</tbody>
+	</table>
+	<h3>0.2 第二乘区（大小）的空间分析</h3>
+	<p class="lead">当前第二乘区只有力量。力量作为「通用胶水」让所有流派互通（这是优点，保留）。第二乘区可以有三个形态：</p>
+	<table>
+		<thead><tr><th>形态</th><th>机制</th><th>定位</th><th>本版卡</th></tr></thead>
+		<tbody>
+			<tr><td><b>力量</b>（通用）</td><td>每段伤害 +1，可叠加，跨回合持久</td><td>通用胶水：任何流派都能用，构筑自由度的底座</td><td>铁匠、疯狂科学家、武器精灵、集结号……</td></tr>
+			<tr><td><b>攻击力成长</b>（定向）</td><td>卡面攻击力 +N（固有属性，永久）</td><td>流派定向：只有攻击武备/锻造类卡能提供，直接喂养「攻击力 = X」卡（王牌、战争英雄、血肉聚集体）——比力量更深但更窄，与力量可叠加（每段 = 攻击力 + 力量）</td><td class="good">锻炉（+1 攻击力）、军备竞赛（全体 +1 攻击力）</td></tr>
+			<tr><td><b>易伤</b>（敌方侧）</td><td>敌方每段受到的攻击伤害 +1，可叠加</td><td>与次数、力量都相乘（每段都加成）——高风险高回报：它是纯进攻轴，不给自己任何防御；与「次数授予」组合是最大爆发的入口</td><td class="good">弱点标注（敌方受到的攻击伤害 +1）</td></tr>
+		</tbody>
+	</table>
+	<div class="note">设计原则：力量保持通用（不稀释构筑自由度）；攻击力成长与易伤是流派门控的深水区（攻击武备/爆发的专属深挖）。</div>
+	<h3>0.3 结构规则更新</h3>
+	<ul>
+		<li class="good"><b>卡组 12 卡位上限仅作用于商店阶段</b>：combat 中生成的卡（史莱姆复制、诅咒复制、次元裂缝等）不受限制。→ 史莱姆的饱和点消失，达成难度回归「埋葬源密度 + 回合数」；增殖厄运的诅咒数可以滚到 8-10 张。</li>
+		<li>疲劳（总揭晓数）仍是天然节流阀：复制/翻倍流揭晓越多，疲劳越快。</li>
+		<li>链系统（同卡同效果一链一次 + 深度 99）保证无真无限循环。</li>
+	</ul>
+	<h3>0.4 关键词体系（全池统一格式）</h3>
+	<table>
+		<thead><tr><th>关键词</th><th>定义</th></tr></thead>
+		<tbody>
+			<tr><td class="mono">攻击</td><td>造成 X 点伤害，X = 卡面攻击力 + 自身力量（力量每段计入；攻击力动态时<b>常态结算</b>——结算时实时读取，如血肉聚集体有多少友方就一直有多少攻击力）</td></tr>
+			<tr><td class="mono">攻击 ×N</td><td>N 段攻击（每段独立结算）</td></tr>
+			<tr><td class="mono">攻击 +N 次</td><td>该卡每次揭晓的攻击段数永久 +N（可叠加）——第一乘区授予</td></tr>
+			<tr><td class="mono">攻击力 = Y</td><td>结算时攻击力实时取 Y（动态攻击力）</td></tr>
+			<tr><td class="mono">增强</td><td>敌方[负面]/[诅咒] +1 力量（不存在时自动生成 JU_ON）</td></tr>
+			<tr><td class="mono">易伤</td><td>敌方每段受到的攻击伤害 +1（可叠加，永久）</td></tr>
+			<tr><td class="mono">沉睡 / 唤醒</td><td>休眠于 start card 之后；事件驱动唤醒，唤醒落点 = 准备位（规则见 v2 文档 §2）</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>1. 核心体验库（E1-E11）</h2>
+<div class="card">
+	<p class="lead">v3 的 E1-E10 保留并修订，新增 E11（无差别埋葬）。锚点卡含本版新增（标 <span class="good">新</span>）。</p>
+
+	<div class="exp">
+		<h3>E1 力量 × 段数（乘法）</h3>
+		<div class="axis">轴：段数（次数） × (攻击力 + 力量)（大小）</div>
+		<p>锚点：力量虹吸人（攻击×2）、尸爆（攻击×2）、针刺骷髅（被埋葬:攻击×2）、被诅咒的尸体（被埋葬:攻击×3）、碎骨聚集体（攻击×本回合埋葬数）、不散的恶灵、人间大炮；<span class="good">新增次数授予：战训教官、嗜血</span></p>
+		<p><b>达成难度</b>：次数源（×N 卡、攻击+N 次卡）与力量源双密度；段数卡常绑定触发时机（被埋葬/被置顶）。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E2 指数翻倍</h3>
+		<div class="axis">轴：每事件 ×2</div>
+		<p>锚点：未完成的机器人（翻倍自身力量）、力量渴求者（获得力量时:获得 2 倍力量）</p>
+		<p><b>达成难度</b>：1 点力量种子；每回合 1 次揭晓；被埋葬 = 断档；疲劳加速。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E3 自我复制</h3>
+		<div class="axis">轴：卡组内同名卡数 × 每回合触发次数</div>
+		<p>锚点：史莱姆（被埋葬:添加自身到卡组中）</p>
+		<p class="good"><b>规则更新</b>：combat 生成卡不受 12 卡位限制 → 史莱姆可无限增殖，饱和点移除。</p>
+		<p><b>达成难度</b>：埋葬源密度（每次埋葬 = 1 张新史莱姆，但新卡要先在牌库中被揭晓才能发挥）；回合数（增殖是线性每回合 1-2 次，不是指数）；疲劳（卡越多揭晓越多，后期疲劳加速）。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E4 诅咒倍增（敌方自伤）</h3>
+		<div class="axis">轴：诅咒力量 × 诅咒被揭晓次数 × 诅咒数量</div>
+		<p>锚点：增殖的厄运（线性复制给敌方、继承力量）、恶化、诅咒附魔、乌合之众、咒师、异次元的诅咒；<span class="good">新增揭晓次数件：丧钟、送葬人（置顶敌方诅咒）、拔苗助长（重做）</span></p>
+		<p><b>体验修正</b>：基础轴 = 力量 × 揭晓次数（每张诅咒每回合自伤 1 次 = 力量；置顶让它多揭晓 = 揭晓次数 +1）；增殖是加「数量」乘区——复制体线性增加（1,2,3,4…），总数 = 力量 × 揭晓次数 × 数量。</p>
+		<p><b>达成难度</b>：先造敌方诅咒（增强源）；揭晓次数需要置顶工具密度（新卡补足）；力量需要增强源密度；敌方消耗/放逐反制。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E5 墓地连锁</h3>
+		<div class="axis">轴：埋葬事件数 × 单事件收益</div>
+		<p>锚点：守墓人（每当友方被埋葬:置顶自身）、冥界大炮、墓碑、殉道者、复仇者、错乱传送术士；<span class="good">新增：乱葬坑/白骨地（见 E11）、招魂（置顶最深友方[萦绕]）</span></p>
+		<p><b>达成难度</b>：埋葬源密度；循环卡需要「被埋葬 → 置顶回来 → 再被埋葬」完整回路。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E6 置顶循环</h3>
+		<div class="axis">轴：置顶次数 × 力量</div>
+		<p>锚点：远古魔法使用者、高等传送门、快速响应协议、战术爆破手、能量迸发、哥布林冲锋部队、守墓人、愚者、传令官；<span class="good">诅咒侧：丧钟/送葬人/恶魔低语把置顶循环用在敌方诅咒上（E4 揭晓次数）</span></p>
+		<p><b>达成难度</b>：置顶源密度；每次置顶放弃当前揭晓顺序（机会成本）。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E7 裂缝资源流</h3>
+		<div class="axis">轴：裂缝数 × 消耗收益</div>
+		<p>锚点：次元吞噬者、次元兽、次元龙、裂缝召唤师、次元虫、坠入裂缝、献祭仪式、错乱传送术士、次元胚胎；<span class="good">新增：裂隙窃贼（去除敌方裂缝 → 生成己方裂缝）</span></p>
+		<p><b>达成难度</b>：生成源密度；生成/消耗比例；combat 生成不受限 → 献祭仪式/错乱传送术士可以滚裂缝。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E8 沉睡兑现（含中卡扩充 + 终极沉睡）</h3>
+		<div class="axis">轴：条件规模 → 一次性兑现（大卡）/ 小条件小兑现（中卡）</div>
+		<p>大卡锚点：沉睡的巨像（5 力量:攻击力=力量;攻击×2）、次元胚胎（5 裂缝）、古代兵器（第 3 回合）、蓄势待发（攻击力=回合数;攻击×2）、亡魂之茧（3 埋葬:攻击）</p>
+		<p class="good"><b>中卡（新增）</b>：浅眠者（2 力量:攻击）、春眠（第 2 回合:2 友方攻击者 2 力量）、梦游者（本回合敌方 3 次伤害:攻击×2）、冬眠（第 3 回合:攻击力=力量;攻击;获得 2 力量）——简单条件 + 中等收益，作为沉睡流的前期密度件</p>
+		<p class="good"><b>终极沉睡（新增）</b>：亘古沉眠者——极难唤醒（10 力量 + 第 5 回合），唤醒时给所有友方[攻击者]永久「攻击 +1 次」——夸张的资源获取（第一乘区全体授予），几乎意味着胜利，但唤醒本身是巨大达成难度</p>
+		<p><b>达成难度</b>：条件规模（大卡需要流派密度喂条件）；沉睡期零贡献（卡位成本）；唤醒落点固定（准备位）。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E9 攻击集结</h3>
+		<div class="axis">轴：攻击力总和（固有）× 力量（可叠攻击力成长）</div>
+		<p>锚点：战争英雄（攻击力=总攻击）、王牌（攻击力=最高攻击）、血肉聚集体、人人为我、集结号、军议、传令官；<span class="good">新增第二乘区件：锻炉、军备竞赛（攻击力 +N）、弱点标注（易伤）</span></p>
+		<p><b>达成难度</b>：攻击者密度；攻击力成长源密度（新轴）；力量叠乘。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E10 力量虹吸/收割</h3>
+		<div class="axis">轴：全场力量 → 单体集中</div>
+		<p>锚点：力量虹吸人、乌合之众、诅咒共鸣、力量转移</p>
+		<p><b>达成难度</b>：全场力量积累；收割时机（早收少、晚收多但暴露）。</p>
+	</div>
+
+	<div class="exp">
+		<h3>E11 无差别埋葬（新增）</h3>
+		<div class="axis">轴：埋葬事件数（不分敌我） → 敌人行动失效 + 己方收益</div>
+		<p>锚点：<span class="good">乱葬坑（埋葬下 3 张卡，不分敌我）、白骨地（萦绕:每当任意卡被埋葬:获得 1 力量）</span> + 大范围死亡（埋葬下 4 张卡）+ 墓碑（友方[亡语]被埋葬:攻击）+ 守墓人 + 碎骨聚集体（攻击×本回合埋葬的敌方数）</p>
+		<p><b>体验</b>：不断埋葬（不分敌我）让敌人的卡永远到不了揭晓——敌方行动失效；而己方因为亡语卡（被埋葬触发）和埋葬收益卡（白骨地、墓碑、碎骨聚集体）越埋越强——「我把桌子掀了，但我在桌下捡钱」。</p>
+		<p><b>达成难度</b>：无差别埋葬也会埋掉己方关键卡（需要亡语密度对冲）；埋葬源密度；每次埋葬 = 己方一张卡掉节奏（卡位成本）。</p>
+	</div>
+</div>
+
+<h2>2. 无上限化与达成难度（v3 → v4 更新）</h2>
+<div class="card">
+	<table>
+		<thead><tr><th>项</th><th>v3</th><th>v4</th></tr></thead>
+		<tbody>
+			<tr><td>史莱姆</td><td>卡组上限 12 = 饱和点</td><td class="good">combat 生成不受限 → 饱和点移除；难度 = 埋葬源密度 + 回合数 + 疲劳</td></tr>
+			<tr><td>增殖的厄运</td><td>复制继承力量（二次方风险表述）</td><td class="good">明确为<b>线性</b>复制（复制体不被再复制）；轴 = 力量 × 揭晓次数 × 数量；揭晓次数乘区由置顶诅咒卡补足</td></tr>
+			<tr><td>诅咒共鸣 / 不散的恶灵</td><td>无上限（v3 已移除）</td><td>保持无上限；难度 = 敌方诅咒力量（双刃）与伤害事件密度</td></tr>
+			<tr><td>攻击次数</td><td>无此机制</td><td class="good">「攻击 +N 次」永久可叠加——第一乘区授予，无上限；难度 = 授予源密度</td></tr>
+			<tr><td>第二乘区</td><td>仅力量</td><td class="good">+ 攻击力成长（定向）、+ 易伤（敌方侧）——均为永久叠加</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>3. 完整卡池（117 张，全卡统一中文关键词文案）</h2>
+<div class="card">
+	<table id="pool"></table>
+	<div class="note">
+		状态徽章：<span class="badge" style="color:#9ece6a;border-color:#9ece6a">库内新文案</span> = Notion 中已是中文关键词格式（原样采用）· <span class="badge" style="color:#7aa2f7;border-color:#7aa2f7">本轮转写</span> = 英文旧文案按关键词格式统一转写（内容不变）· <span class="badge" style="color:#e0af68;border-color:#e0af68">建议重做</span> = 未选卡改案 · <span class="badge" style="color:#f7768e;border-color:#f7768e">新增</span> = 新卡。
+		攻击力列：库内已有值 / 新增卡设计值（— = 0 或无攻击）。「攻击 +N 次」「易伤」「+N 攻击力」为 v4 新关键词。
+	</div>
+</div>
+
+<h2>4. 建议重做（11 张，从未被选择）</h2>
+<div class="card">
+	<table id="rework"></table>
+	<div class="note">拔苗助长本轮改为「置顶敌方诅咒」工具（回应诅咒揭晓次数乘区的支持缺口）；其余 10 张延续 v3 定向改案。其余 12 张未选卡已被库内新文案重做，以库内版本为准。</div>
+</div>
+
+<h2>5. 新增卡（46 张）</h2>
+<div class="card">
+	<table id="new"></table>
+	<div class="note">按 v4 反馈扩充：置顶敌方诅咒 ×2、攻击次数授予 ×2、无差别埋葬 ×2、攻击力成长 ×2、易伤 ×1、沉睡中卡 ×4、终极沉睡 ×1、跨 tag 定向 ×3（萦绕/力量给予/敌方裂缝）+ v3 的 29 张。</div>
+</div>
+
+<h2>6. 达成难度总览（高上限卡）</h2>
+<div class="card">
+	<table>
+		<thead><tr><th>卡</th><th>数学轴</th><th>达成难度</th></tr></thead>
+		<tbody>
+			<tr><td>未完成的机器人</td><td>×2/事件</td><td>1 点力量种子 → 力量源密度 → 每回合 1 次揭晓 → 被埋葬 = 断档</td></tr>
+			<tr><td>力量渴求者</td><td>×2/获得力量</td><td>力量给予源密度（不给力量 = 白板）</td></tr>
+			<tr><td>史莱姆</td><td>复制（无饱和）</td><td>埋葬源密度（每次埋葬 +1 张）→ 线性增长 → 疲劳随卡数加速</td></tr>
+			<tr><td>增殖的厄运</td><td>力量×揭晓次数×数量</td><td>先造敌方诅咒 → 增强密度（力量）→ 置顶诅咒密度（揭晓次数）→ 每回合 1 次复制（数量线性）</td></tr>
+			<tr><td>亘古沉眠者（新）</td><td>全体攻击次数 +1</td><td>10 力量种子 + 活到第 5 回合 + 沉睡期零贡献——极难，唤醒即胜利</td></tr>
+			<tr><td>沉睡的巨像</td><td>力量×段数</td><td>5 力量种子 → 沉睡期零贡献 → 唤醒落点固定</td></tr>
+			<tr><td>战争英雄</td><td>总攻击</td><td>攻击者密度 + 攻击力成长源（新第二乘区）→ 力量叠乘</td></tr>
+			<tr><td>嗜血（新）</td><td>全体攻击次数 +1</td><td>攻击者密度 + 埋葬 1 友方成本 → 授予源密度</td></tr>
+			<tr><td>军火库</td><td>宽力量</td><td>攻击者密度 + 每回合埋葬 1 友方</td></tr>
+			<tr><td>人间大炮</td><td>墓地数×攻击</td><td>先铺墓地 → 一次兑现 → 铺完自己也没了</td></tr>
+			<tr><td>乱葬坑/大范围死亡</td><td>无差别埋葬</td><td>埋葬也埋掉己方关键卡 → 需要亡语密度对冲</td></tr>
+			<tr><td>弱点标注（新）</td><td>易伤（每段 +1）</td><td>纯进攻轴无防御 → 与次数×力量组合才兑现；单卡效果线性</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>7. 正反馈与循环监控</h2>
+<div class="card">
+	<ul>
+		<li><b>无限循环安全</b>：链系统（同卡同效果一链一次 + 深度 99）——无上限设计的地基。</li>
+		<li><b>组合爆炸 = 目标</b>：次数授予 × 力量 × 攻击力成长 × 易伤 的多乘区叠乘、诅咒 力量×揭晓×数量——都是玩家要的幻想。<b>监控点</b>：敌方反制窗口（消耗诅咒力量、放逐、噩梦）；结算时间（多段攻击的动画时长——攻击次数授予卡需要关注动画性能）。</li>
+		<li><b>疲劳 = 天然自限</b>：复制/次数流揭晓数上升 → 疲劳加速。</li>
+		<li><b>商店卡位上限 12</b>：只限制购买，不限制 combat 生成——生成流（史莱姆/诅咒/裂缝）的成长完全由节奏与疲劳约束。</li>
+	</ul>
+</div>
+
+<h2>8. 开放问题</h2>
+<div class="card">
+	<ul>
+		<li>「攻击 +N 次」的实现：段数作为卡牌持久状态（可叠加、跨回合、可被埋葬后保留）——需要 CardScript 新字段；动画上多段攻击的播放性能。</li>
+		<li>「易伤」是敌方玩家级状态（每段 +1）——需要敌方侧状态存储；与「力量」的结算顺序（加性，无歧义）。</li>
+		<li>「攻击力 +N」与动态攻击力（攻击力 = Y）的叠加：常态结算时取「基础 + 加成」；血肉聚集体/人人为我的动态值是否吃攻击力成长——建议吃（同为攻击力轴）。</li>
+		<li>亘古沉眠者的唤醒条件（10 力量 + 第 5 回合）与奖励（全体攻击 +1 次）是否达到「唤醒即胜利」的目标强度。</li>
+		<li>46 张新增卡与 11 张重做卡是否入库（Notion）——按约定先不入库。</li>
+		<li>117 张的总量 vs 原始 100 张目标：扩充方向（沉睡中卡/置顶诅咒/次数授予/无差别埋葬）带来净增 17 张，是否接受此规模。</li>
+	</ul>
+</div>
+
+<script>
+const RAR_COLOR = {"common":"#9ece6a","uncommon":"#7aa2f7","rare":"#e0af68"};
+const ARCH_LABEL = {"grave":"墓地亡语","rift":"次元裂缝","curse":"诅咒","general":"通用","sleep":"沉睡觉醒","move":"交换位移","attack":"攻击武备"};
+const STATUS = {
+	upd: '<span class="badge" style="color:#9ece6a;border-color:#9ece6a">库内新文案</span>',
+	conv: '<span class="badge" style="color:#7aa2f7;border-color:#7aa2f7">本轮转写</span>',
+	rw: '<span class="badge" style="color:#e0af68;border-color:#e0af68">建议重做</span>',
+	"new": '<span class="badge" style="color:#f7768e;border-color:#f7768e">新增</span>'
+};
+function rar(s) { return '<span class="rtag" style="color:' + RAR_COLOR[s] + ";border-color:" + RAR_COLOR[s] + '">' + s + "</span>"; }
+
+// ---- 卡池 117：71 现有（34 库内 + 26 转写 + 11 重做）+ 46 新增 ----
+const POOL = [
+// 墓地亡语（28）
+{id:"GRAVE_PUNCH",n:"尸爆",r:"common",a:"1",t:"攻击者 埋葬 埋葬友方",arch:"grave",d:"埋葬 1 张友方卡;攻击 ×2",s:"upd"},
+{id:"GRAVE_TOGETHER",n:"同路人",r:"common",a:"—",t:"埋葬 埋葬友方 埋葬敌方",arch:"grave",d:"埋葬 1 张友方卡;埋葬 2 张敌方卡",s:"conv"},
+{id:"CORPSE_CANON",n:"冥界大炮",r:"uncommon",a:"1",t:"攻击者 埋葬 埋葬友方",arch:"grave",d:"埋葬 1 张友方卡;每当友方被埋葬:攻击",s:"upd"},
+{id:"GRAVE_INVITATION",n:"冥界邀请",r:"uncommon",a:"1",t:"攻击者 埋葬 埋葬敌方",arch:"grave",d:"墓地每有 1 张友方卡:埋葬 1 张敌方卡",s:"upd"},
+{id:"UNSTABLE_PORTAL",n:"不稳定传送门",r:"uncommon",a:"—",t:"置顶 置顶友方 埋葬 埋葬友方 通用",arch:"grave",d:"置顶 1 张友方卡;埋葬 1 张友方卡",s:"conv"},
+{id:"BODY_CANON",n:"人间大炮",r:"rare",a:"1",t:"攻击者 埋葬 埋葬友方",arch:"grave",d:"埋葬所有友方卡;墓地每有 1 张友方卡:攻击",s:"upd"},
+{id:"LARGE_SCALE_DEATH",n:"大范围死亡",r:"rare",a:"—",t:"埋葬 埋葬友方 埋葬敌方",arch:"grave",d:"埋葬下 4 张卡（不分敌我）",s:"conv"},
+{id:"WISE_BURIAL",n:"不愚蠢的埋葬",r:"rare",a:"—",t:"埋葬 埋葬友方",arch:"grave",d:"揭晓时:埋葬 2 张友方[亡语]/[萦绕]",s:"conv"},
+{id:"GRAVE_PORTAL",n:"冥界裂缝",r:"common",a:"—",t:"置顶 置顶友方 埋葬 被埋葬 埋葬敌方",arch:"grave",d:"埋葬 1 张敌方卡;被埋葬:置顶 1 张友方卡",s:"conv"},
+{id:"SOLDIER_SKELETON",n:"骷髅士兵",r:"common",a:"1",t:"攻击者 埋葬 被埋葬 置顶 置顶友方",arch:"grave",d:"被埋葬:置顶自身",s:"upd"},
+{id:"UNDEAD_CURSER",n:"不死诅咒者",r:"common",a:"—",t:"敌方[curse]加强 [curse] 被埋葬 埋葬",arch:"grave",d:"增强 2 敌方[负面];被埋葬:增强 1 敌方[负面]",s:"conv"},
+{id:"AVENGER",n:"复仇者",r:"uncommon",a:"1",t:"攻击者 埋葬 被埋葬 友方力量 力量",arch:"grave",d:"被埋葬:获得 2 力量",s:"upd"},
+{id:"CONFUSED_PORTALMANCER",n:"错乱传送术士",r:"uncommon",a:"—",t:"埋葬 埋葬友方 被埋葬 conjure 生成[conjure]",arch:"grave",d:"埋葬 1 张友方卡;被埋葬:生成 3 张[次元裂缝]",s:"conv"},
+{id:"CURSED_CORPSE",n:"被诅咒的尸体",r:"uncommon",a:"1",t:"攻击者 [curse] 敌方[curse]加强 被埋葬 埋葬",arch:"grave",d:"增强 1 张敌方[诅咒];被埋葬:攻击 ×3",s:"upd"},
+{id:"SCAPEGOAT",n:"替死鬼",r:"uncommon",a:"1",t:"攻击者 被埋葬 埋葬 置顶 置顶友方",arch:"grave",d:"被埋葬:攻击,置顶 1 张友方卡",s:"upd"},
+{id:"SPIKE_SKELETON",n:"针刺骷髅",r:"uncommon",a:"1",t:"攻击者 被埋葬 埋葬",arch:"grave",d:"被埋葬:攻击 ×2",s:"upd"},
+{id:"GRAVE_KEEPER",n:"守墓人",r:"rare",a:"1",t:"攻击者 埋葬 被埋葬 置顶友方 置顶",arch:"grave",d:"每当友方被埋葬:置顶自身",s:"upd"},
+{id:"MARTYR",n:"殉道者",r:"rare",a:"—",t:"埋葬 被埋葬 力量 友方力量",arch:"grave",d:"被埋葬:所有友方卡 +1 力量",s:"conv"},
+{id:"SLIME",n:"史莱姆",r:"rare",a:"1",t:"攻击者 埋葬 被埋葬",arch:"grave",d:"被埋葬:添加自身到卡组中（不受卡位上限限制）",s:"upd"},
+{id:"BONE_COMBINATION",n:"碎骨聚集体",r:"uncommon",a:"1",t:"攻击者 埋葬 通用",arch:"grave",d:"攻击 ×本回合被埋葬的敌方数量",s:"upd"},
+{id:"SMALL_SCALE_DEATH",n:"小范围死亡",r:"uncommon",a:"1",t:"攻击者 埋葬 埋葬友方 埋葬敌方",arch:"grave",d:"埋葬后 2 卡",s:"upd"},
+{id:"DRAG_UNDER",n:"深埋",r:"common",a:"—",t:"埋葬 亡语",arch:"grave",d:"埋葬 1 张友方[亡语]（最深）",s:"new"},
+{id:"GRAVE_FEEDER",n:"喂尸人",r:"common",a:"1",t:"攻击者 埋葬 亡语",arch:"grave",d:"埋葬 1 张友方[亡语];攻击",s:"new"},
+{id:"TOMBSTONE",n:"墓碑",r:"common",a:"1",t:"攻击者 萦绕 亡语",arch:"grave",d:"萦绕:每当友方[亡语]被埋葬:攻击",s:"new"},
+{id:"REBIRTH",n:"轮回",r:"rare",a:"—",t:"置顶 力量 亡语",arch:"grave",d:"置顶 1 张友方[亡语]（最深）;其获得 2 力量",s:"new"},
+{id:"NECROMANCY",n:"招魂",r:"uncommon",a:"—",t:"置顶 萦绕",arch:"grave",d:"置顶 1 张友方[萦绕]（最深）",s:"new"},
+{id:"MASS_GRAVE",n:"乱葬坑",r:"common",a:"—",t:"埋葬 埋葬友方 埋葬敌方",arch:"grave",d:"埋葬下 3 张卡（不分敌我）",s:"new"},
+{id:"BONE_FIELD",n:"白骨地",r:"uncommon",a:"—",t:"萦绕 力量",arch:"grave",d:"萦绕:每当任意卡被埋葬:获得 1 力量",s:"new"},
+// 次元裂缝（11）
+{id:"FALL_INTO_RIFT",n:"坠入裂缝",r:"common",a:"—",t:"conjure 生成[conjure] 埋葬 埋葬敌方",arch:"rift",d:"生成 1 张[次元裂缝];埋葬 1 张敌方卡",s:"conv"},
+{id:"RIFT_INSECT",n:"次元虫",r:"common",a:"1",t:"攻击者 conjure 生成[conjure]",arch:"rift",d:"生成 1 [次元裂缝]",s:"upd"},
+{id:"SACRIFICE_RITUAL",n:"献祭仪式",r:"uncommon",a:"—",t:"埋葬友方 生成[conjure] 埋葬 conjure",arch:"rift",d:"埋葬 1 张友方卡;生成 2 张[次元裂缝]",s:"conv"},
+{id:"RIFT_COFFIN",n:"次元棺材",r:"uncommon",a:"—",t:"linger [conjure]被消耗 埋葬敌方 埋葬 conjure",arch:"rift",d:"萦绕:每当友方被去除:埋葬 1 张敌方卡",s:"conv"},
+{id:"RIFT_DRAGON",n:"次元龙",r:"uncommon",a:"4",t:"攻击者 消耗[conjure] conjure",arch:"rift",d:"生成 1 [次元裂缝];被置顶:生成 1 [次元裂缝]",s:"upd"},
+{id:"RIFT_GUIDE",n:"次元引导者",r:"uncommon",a:"—",t:"conjure 消耗[conjure] 埋葬 埋葬敌方",arch:"rift",d:"去除 1 张友方[次元裂缝]:埋葬 2 张敌方[攻击者]",s:"rw"},
+{id:"RIFT_MONSTER",n:"次元兽",r:"uncommon",a:"1",t:"攻击者 消耗[conjure] conjure",arch:"rift",d:"去除 1 张[次元裂缝]:攻击",s:"upd"},
+{id:"RIFT_SUMMONER",n:"裂缝召唤师",r:"uncommon",a:"—",t:"conjure 置顶 置顶友方 消耗[conjure]",arch:"rift",d:"去除 1 张友方[次元裂缝]:置顶 2 张友方卡",s:"conv"},
+{id:"DEATHBED_CURSE",n:"临终诅咒",r:"rare",a:"—",t:"linger conjure [conjure]被消耗 [curse] 敌方[curse]加强",arch:"rift",d:"萦绕:每当友方被去除:增强 1 敌方[负面]",s:"conv"},
+{id:"RIFT_DEVOURER",n:"次元吞噬者",r:"rare",a:"1",t:"攻击者 conjure [conjure]被消耗 力量 友方力量",arch:"rift",d:"当友方被去除时:获得 1 力量",s:"upd"},
+{id:"RIFT_THIEF",n:"裂隙窃贼",r:"uncommon",a:"—",t:"conjure 消耗[conjure] 生成[conjure]",arch:"rift",d:"去除 1 张敌方[次元裂缝]:生成 1 张友方[次元裂缝]",s:"new"},
+// 诅咒（19）
+{id:"CURSE_THIRST_SUMMONER",n:"咒食的召唤师",r:"common",a:"—",t:"[curse] 置顶 置顶友方",arch:"curse",d:"当敌方[诅咒]揭晓时:置顶自身;揭晓时:置顶 1 张友方卡",s:"conv"},
+{id:"POISONER",n:"咒师",r:"common",a:"1",t:"攻击者 [curse] 敌方[curse]加强",arch:"curse",d:"增强 1 张敌方[诅咒]",s:"upd"},
+{id:"RIFT_CURSE",n:"异次元的诅咒",r:"common",a:"—",t:"[curse] 敌方[curse]加强 conjure 生成[conjure]",arch:"curse",d:"增强 1 张敌方[诅咒];生成 1 张[次元裂缝]",s:"conv"},
+{id:"CURSED_SKELETON",n:"被诅咒的骷髅",r:"uncommon",a:"—",t:"[curse] 敌方[curse]加强 埋葬",arch:"curse",d:"增强 1 张敌方[负面];墓地每有 1 张友方[亡语]:额外增强 1",s:"rw"},
+{id:"CURSE_THIRST_BEAST",n:"咒食的野兽",r:"uncommon",a:"1",t:"攻击者 [curse]",arch:"curse",d:"当敌方[诅咒]揭晓时:置顶自身",s:"upd"},
+{id:"CURSE_THIRST_SHAMAN",n:"咒食的萨满",r:"uncommon",a:"—",t:"[curse] 消耗敌方[curse]力量 力量 友方力量",arch:"curse",d:"给予 1 张友方卡[敌方[负面]力量]点力量",s:"conv"},
+{id:"MOTH_MAN",n:"飞蛾人",r:"uncommon",a:"—",t:"消耗敌方[curse]力量 [curse] 置顶 置顶友方",arch:"curse",d:"当敌方[负面]力量增加时:置顶 1 张友方卡",s:"conv"},
+{id:"PREMATURE",n:"拔苗助长",r:"uncommon",a:"—",t:"置顶 消耗敌方[curse]力量 [curse]",arch:"curse",d:"消耗敌方[负面] 1 力量:置顶 1 张敌方[负面]",s:"rw"},
+{id:"SACRIFICIAL_CURSE",n:"献祭诅咒",r:"common",a:"—",t:"埋葬 埋葬友方 [curse] 敌方[curse]加强",arch:"curse",d:"埋葬 1 张友方卡;增强 3 敌方[负面]",s:"conv"},
+{id:"CROW_CROWD",n:"乌合之众",r:"rare",a:"—",t:"力量 友方力量 [curse] 敌方[curse]加强",arch:"curse",d:"转移所有友方力量（除友方[负面]）到敌方[负面]",s:"conv"},
+{id:"CURSE_ENCHANTMENT",n:"诅咒附魔",r:"rare",a:"—",t:"linger 敌方[curse]加强 [curse]",arch:"curse",d:"萦绕:每当敌方受伤:增强 1 敌方[负面]",s:"conv"},
+{id:"DETERIORATION",n:"恶化",r:"rare",a:"—",t:"[curse] 敌方[curse]加强",arch:"curse",d:"增强 1 张敌方[负面];其每有 4 力量:额外增强 1",s:"rw"},
+{id:"PROLIFERATING_CURSE",n:"增殖的厄运",r:"rare",a:"—",t:"[curse] 敌方[curse]加强",arch:"curse",d:"复制 1 张敌方[负面]给敌方（复制体继承其力量,线性,不被再复制）",s:"conv"},
+{id:"CURSE_THIRST_ARCH_SUMMONER",n:"咒食的大召唤师",r:"uncommon",a:"—",t:"[curse] 置顶 置顶友方 消耗敌方[curse]力量",arch:"curse",d:"消耗敌方[负面] 2 力量:置顶 1 张友方[攻击者]并给予其 2 力量",s:"rw"},
+{id:"DEVIL_WHISPER",n:"恶魔低语",r:"uncommon",a:"—",t:"置顶 负面",arch:"curse",d:"置顶 1 张敌方[负面];其获得 1 力量",s:"new"},
+{id:"PURIFYING_FLAME",n:"净化之火",r:"uncommon",a:"4",t:"攻击者 负面",arch:"curse",d:"去除 1 张友方[负面];攻击",s:"new"},
+{id:"CURSE_RESONANCE",n:"诅咒共鸣",r:"uncommon",a:"—",t:"负面 力量",arch:"curse",d:"敌方[负面]每有 1 力量:获得 1 力量",s:"new"},
+{id:"DEATH_KNELT",n:"丧钟",r:"common",a:"—",t:"置顶 置顶敌方 负面",arch:"curse",d:"置顶 1 张敌方[负面]",s:"new"},
+{id:"UNDERTAKER",n:"送葬人",r:"uncommon",a:"—",t:"置顶 置顶敌方 负面",arch:"curse",d:"置顶 1 张敌方[负面]（最高力量）",s:"new"},
+// 通用（27）
+{id:"BLACKSMITH",n:"铁匠",r:"common",a:"1",t:"通用 攻击者 力量 友方力量",arch:"general",d:"给予 1 张友方卡 1 力量",s:"upd"},
+{id:"COFFIN_MAKER",n:"棺材制造者",r:"common",a:"1",t:"攻击者 埋葬 埋葬敌方",arch:"general",d:"埋葬 1 张敌方卡",s:"upd"},
+{id:"MAD_SCIENTIST",n:"疯狂科学家",r:"common",a:"—",t:"力量 通用",arch:"general",d:"给予下 3 张友方卡 2 力量",s:"rw"},
+{id:"SACRIFICIAL_SWORD",n:"献祭剑",r:"common",a:"—",t:"埋葬 埋葬友方 力量 友方力量",arch:"general",d:"埋葬 1 张友方卡;给予 1 张友方卡 2 力量",s:"conv"},
+{id:"SIDE_EFFECT_PORTAL",n:"有副作用的传送门",r:"common",a:"—",t:"置顶 置顶友方 [curse] 友方[curse]加强",arch:"general",d:"增强自身[诅咒] 1;置顶 1 张友方卡",s:"conv"},
+{id:"THE_FOOL",n:"愚者",r:"common",a:"4",t:"攻击者 置顶 置顶敌方 通用",arch:"general",d:"置顶力量最多的敌方卡",s:"upd"},
+{id:"ADVANCE_PORTAL",n:"高等传送门",r:"uncommon",a:"—",t:"置顶 置顶友方 通用",arch:"general",d:"每揭晓 2 次:置顶 2 张友方[攻击者]",s:"rw"},
+{id:"ALL_FOR_ONE",n:"人人为我",r:"uncommon",a:"0",t:"力量 通用",arch:"general",d:"攻击力 = 所有卡的力量总和（常态结算）",s:"upd"},
+{id:"ANTI_CREATURE_WEAPON",n:"对生物兵器",r:"uncommon",a:"—",t:"埋葬 埋葬敌方 通用",arch:"general",d:"埋葬下 2 张敌方[攻击者]",s:"rw"},
+{id:"DR_MANHATTAN",n:"曼哈顿博士",r:"uncommon",a:"—",t:"通用 力量 置顶 置顶友方 埋葬 埋葬敌方 消耗友方力量",arch:"general",d:"消耗自身 2 力量:置顶 2 张友方[攻击者];埋葬 2 张敌方[攻击者]",s:"rw"},
+{id:"FLESH_COMBINATION",n:"血肉聚集体",r:"uncommon",a:"0",t:"通用",arch:"general",d:"攻击力 = 友方卡牌数量（常态结算）",s:"upd"},
+{id:"GOBLIN_ASSASSIN_TEAM",n:"哥布林暗杀部队",r:"uncommon",a:"1",t:"攻击者 置顶 被置顶 埋葬 埋葬敌方 通用",arch:"general",d:"被置顶:埋葬 1 张敌方卡",s:"upd"},
+{id:"GOBLIN_CHARGE_TEAM",n:"哥布林冲锋部队",r:"uncommon",a:"1",t:"攻击者 置顶 被置顶 通用",arch:"general",d:"被置顶:攻击",s:"upd"},
+{id:"POWER_CRAVER",n:"力量渴求者",r:"uncommon",a:"1",t:"通用 攻击者 力量 友方力量",arch:"general",d:"获得力量时:获得 2 倍力量",s:"upd"},
+{id:"POWER_SURGE",n:"能量迸发",r:"uncommon",a:"1",t:"攻击者 通用 力量 友方力量 置顶 被置顶",arch:"general",d:"被置顶:给予 2 张友方卡 1 力量",s:"upd"},
+{id:"QUICK_RESPONSE_PROTOCOL",n:"快速响应协议",r:"uncommon",a:"—",t:"linger 通用 置顶 置顶友方",arch:"general",d:"萦绕:每 4 张敌方卡揭晓:置顶 1 张友方卡",s:"conv"},
+{id:"SNATCHER",n:"屠夫",r:"uncommon",a:"1",t:"攻击者 埋葬 埋葬敌方 被埋葬 置顶 被置顶 置顶友方 通用",arch:"general",d:"被置顶:置顶 1 张友方卡;被埋葬:埋葬 1 张敌方卡",s:"upd"},
+{id:"TACTICAL_BREACHER",n:"战术爆破手",r:"uncommon",a:"1",t:"通用 攻击者 力量 友方力量 置顶 被置顶",arch:"general",d:"被置顶:获得 1 力量",s:"upd"},
+{id:"WEAPON_SPIRIT",n:"武器精灵",r:"uncommon",a:"—",t:"通用 力量 友方力量 linger",arch:"general",d:"萦绕:每当友方获得力量:额外 +1",s:"conv"},
+{id:"ALMIGHTY",n:"全能人",r:"rare",a:"1",t:"通用 攻击者 置顶 置顶友方 埋葬 埋葬敌方 力量 友方力量 [curse] 敌方[curse]加强 conjure 生成[conjure]",arch:"general",d:"揭晓 2 次:攻击,置顶 1 张友方卡,埋葬 1 张敌方卡,给予 1 张友方卡力量,生成 1 [次元裂缝],增强 1 张敌方[诅咒]",s:"upd"},
+{id:"BOOSTER",n:"推进器",r:"rare",a:"—",t:"埋葬 埋葬友方 置顶 置顶友方",arch:"general",d:"洗牌后:置顶 2 张友方[攻击者];揭晓时:埋葬 1 张友方[亡语]",s:"rw"},
+{id:"ELDER_SORCERER",n:"远古魔法使用者",r:"rare",a:"—",t:"置顶 力量 友方力量 通用",arch:"general",d:"本回合每置顶 1 张友方卡:给予 1 张友方卡 1 力量",s:"conv"},
+{id:"ETERNAL_GHOST",n:"不散的恶灵",r:"rare",a:"1",t:"通用 攻击者",arch:"general",d:"萦绕:每当敌人受到伤害:攻击",s:"upd"},
+{id:"POWER_SIPHONER",n:"力量虹吸人",r:"rare",a:"1",t:"攻击者 力量 友方力量 通用",arch:"general",d:"转移所有友方 1 力量到自身;攻击 ×2",s:"upd"},
+{id:"POWER_TRANSFER",n:"力量转移",r:"uncommon",a:"—",t:"通用 力量 友方力量",arch:"general",d:"去除 1 张敌方[攻击者]（最高攻击）1 力量:给予 1 张友方[攻击者]（最低攻击）1 力量",s:"rw"},
+{id:"UNFINISHED_ROBOT",n:"未完成的机器人",r:"rare",a:"1",t:"攻击者 力量 友方力量 通用",arch:"general",d:"翻倍自身力量",s:"upd"},
+{id:"MIMIC",n:"模仿者",r:"uncommon",a:"—",t:"力量给予 复制",arch:"general",d:"复制 1 张友方[力量给予]入己方牌库",s:"new"},
+// 沉睡觉醒（15）
+{id:"SLEEPING_GIANT",n:"沉睡的巨像",r:"rare",a:"0",t:"沉睡 力量",arch:"sleep",d:"【沉睡】直到拥有 5 力量;攻击力 = 自身力量;攻击 ×2",s:"new"},
+{id:"RIFT_EMBRYO",n:"次元胚胎",r:"rare",a:"4",t:"攻击者 conjure 生成[conjure]",arch:"sleep",d:"【沉睡】直到存在 5 张友方[次元裂缝];揭晓时:生成 2 张[次元裂缝]",s:"new"},
+{id:"WAKE_BELL",n:"晨钟",r:"uncommon",a:"—",t:"唤醒 力量",arch:"sleep",d:"唤醒 1 张友方[沉睡];其获得 1 力量;若不存在:给予 1 张友方[攻击者] 1 力量",s:"new"},
+{id:"NIGHTMARE",n:"噩梦",r:"uncommon",a:"—",t:"沉睡 攻击者",arch:"sleep",d:"使 1 张敌方[攻击者]（最高攻击）[沉睡]（直到其主人受到 3 次伤害）",s:"new"},
+{id:"NIGHT_WATCHER",n:"守夜人",r:"uncommon",a:"—",t:"萦绕 唤醒 力量",arch:"sleep",d:"萦绕:每当友方[沉睡]被唤醒:获得 1 力量",s:"new"},
+{id:"PILLOW_TALK",n:"枕边低语",r:"common",a:"—",t:"沉睡 力量",arch:"sleep",d:"给予 1 张友方[沉睡] 2 力量;若不存在:给予自身 2 力量",s:"new"},
+{id:"WRAITH_COCOON",n:"亡魂之茧",r:"uncommon",a:"6",t:"攻击者 沉睡 埋葬",arch:"sleep",d:"【沉睡】直到本回合埋葬 3 张友方卡;揭晓时:攻击",s:"new"},
+{id:"ANCIENT_WEAPON",n:"古代兵器",r:"rare",a:"8",t:"攻击者 沉睡",arch:"sleep",d:"【沉睡】直到第 3 回合开始;揭晓时:攻击;获得 3 力量",s:"new"},
+{id:"CHARGING",n:"蓄势待发",r:"uncommon",a:"0",t:"沉睡 力量",arch:"sleep",d:"【沉睡】直到第 2 回合开始;攻击力 = 当前回合数;攻击 ×2;获得 1 力量",s:"new"},
+{id:"GREAT_AWAKENING",n:"大觉醒",r:"rare",a:"—",t:"唤醒 力量",arch:"sleep",d:"唤醒所有友方[沉睡];各获得 1 力量",s:"new"},
+{id:"LIGHT_SLEEPER",n:"浅眠者",r:"common",a:"2",t:"攻击者 沉睡",arch:"sleep",d:"【沉睡】直到拥有 2 力量;揭晓时:攻击",s:"new"},
+{id:"SPRING_SLEEP",n:"春眠",r:"common",a:"—",t:"沉睡 力量",arch:"sleep",d:"【沉睡】直到第 2 回合开始;揭晓时:给予 1 张友方[攻击者] 2 力量",s:"new"},
+{id:"SLEEPWALKER",n:"梦游者",r:"uncommon",a:"2",t:"攻击者 沉睡",arch:"sleep",d:"【沉睡】直到本回合敌方受到 3 次伤害;揭晓时:攻击 ×2",s:"new"},
+{id:"HIBERNATION",n:"冬眠",r:"uncommon",a:"0",t:"沉睡 力量",arch:"sleep",d:"【沉睡】直到第 3 回合开始;揭晓时:攻击力 = 自身力量;攻击;获得 2 力量",s:"new"},
+{id:"ETERNAL_SLEEPER",n:"亘古沉眠者",r:"rare",a:"0",t:"沉睡 攻击者 力量",arch:"sleep",d:"【沉睡】直到拥有 10 力量 且 第 5 回合开始;唤醒时:所有友方[攻击者]获得「攻击 +1 次」（永久）;攻击力 = 自身力量;攻击 ×2",s:"new"},
+// 交换位移（5）
+{id:"SOUL_SWAP",n:"灵魂交换",r:"uncommon",a:"—",t:"置顶 置顶友方",arch:"move",d:"揭晓时:与下一张友方[亡语]交换位置（该卡置顶,自身移至其原位置）",s:"new"},
+{id:"POSITION_SWAP",n:"位置交换",r:"uncommon",a:"—",t:"交换 攻击者",arch:"move",d:"交换 1 张友方[攻击者]与 1 张敌方[攻击者]的位置",s:"new"},
+{id:"TIME_WARP",n:"时光倒流",r:"uncommon",a:"—",t:"延迟",arch:"move",d:"延迟下 2 张敌方卡",s:"new"},
+{id:"GRAVE_DIGGER",n:"掘墓人",r:"common",a:"—",t:"埋葬",arch:"move",d:"埋葬下 2 张敌方卡",s:"new"},
+{id:"HERALD",n:"传令官",r:"common",a:"—",t:"置顶 攻击者",arch:"move",d:"置顶 1 张友方[攻击者]（最高攻击）",s:"new"},
+// 攻击武备（12）
+{id:"RALLY",n:"集结号",r:"common",a:"—",t:"力量 攻击者",arch:"attack",d:"给予所有友方[攻击者] 1 力量",s:"new"},
+{id:"WAR_COUNCIL",n:"军议",r:"uncommon",a:"—",t:"力量 攻击者",arch:"attack",d:"给予 1 张友方[攻击者]（最低攻击） 2 力量",s:"new"},
+{id:"ACE",n:"王牌",r:"uncommon",a:"0",t:"攻击者 伤害",arch:"attack",d:"攻击力 = 友方最高攻击（常态结算）;攻击",s:"new"},
+{id:"ASSASSIN",n:"刺客",r:"uncommon",a:"—",t:"埋葬 攻击者",arch:"attack",d:"埋葬 1 张敌方[攻击者]（最高攻击）",s:"new"},
+{id:"OATH_OF_WAR",n:"战争之誓",r:"common",a:"1",t:"攻击者 力量",arch:"attack",d:"给予 1 张友方[攻击者] 2 力量;攻击",s:"new"},
+{id:"ARSENAL",n:"军火库",r:"rare",a:"—",t:"力量 埋葬 攻击者",arch:"attack",d:"给予所有友方[攻击者] 2 力量;埋葬 1 张友方卡",s:"new"},
+{id:"WAR_HERO",n:"战争英雄",r:"rare",a:"0",t:"攻击者 伤害",arch:"attack",d:"攻击力 = 友方[攻击者]总攻击（常态结算）;攻击;若总攻击 ≥ 8:获得 3 力量",s:"new"},
+{id:"DRILL_MASTER",n:"战训教官",r:"common",a:"—",t:"攻击次数 攻击者",arch:"attack",d:"给予 1 张友方[攻击者] 攻击 +1 次",s:"new"},
+{id:"BLOODLUST",n:"嗜血",r:"uncommon",a:"—",t:"攻击次数 攻击者 埋葬",arch:"attack",d:"给予所有友方[攻击者] 攻击 +1 次;埋葬 1 张友方卡",s:"new"},
+{id:"FORGE",n:"锻炉",r:"common",a:"—",t:"攻击力成长 攻击者",arch:"attack",d:"给予 1 张友方[攻击者] +1 攻击力（永久）",s:"new"},
+{id:"ARMS_RACE",n:"军备竞赛",r:"uncommon",a:"—",t:"攻击力成长 攻击者 埋葬",arch:"attack",d:"给予所有友方[攻击者] +1 攻击力（永久）;埋葬 1 张友方卡",s:"new"},
+{id:"MARK_WEAKNESS",n:"弱点标注",r:"uncommon",a:"—",t:"易伤",arch:"attack",d:"敌方受到的攻击伤害 +1（每段,可叠加,永久）",s:"new"}
+];
+
+// ---- 建议重做 11 张 ----
+const REWORK = [
+{id:"MAD_SCIENTIST",n:"疯狂科学家",r:"common",old:"apply 2 power to next 3 cards",neww:"给予下 3 张友方卡 2 力量",why:"原效果可能 buff 敌方卡；改友方定向后成为力量源密度件。",exp:"E1 E2"},
+{id:"ADVANCE_PORTAL",n:"高等传送门",r:"uncommon",old:"reveal 2 times: stage 2 friendly",neww:"每揭晓 2 次:置顶 2 张友方[攻击者]",why:"置顶收益定向到攻击者 = 前排调度器。",exp:"E6 E9"},
+{id:"ANTI_CREATURE_WEAPON",n:"对生物兵器",r:"uncommon",old:"bury 2 hostile",neww:"埋葬下 2 张敌方[攻击者]",why:"位置 × Tag 定向，处理即将揭晓的威胁。",exp:"E9"},
+{id:"CURSED_SKELETON",n:"被诅咒的骷髅",r:"uncommon",old:"hostile [curse] +power = friendly card in grave",neww:"增强 1 张敌方[负面];墓地每有 1 张友方[亡语]:额外增强 1",why:"改按友方[亡语]密度稳定成长（无上限），与 E5 挂钩。",exp:"E4 E5"},
+{id:"CURSE_THIRST_ARCH_SUMMONER",n:"咒食的大召唤师",r:"uncommon",old:"consume 2 hostile [curse] power: stage 1 friendly; apply 2 power to next card",neww:"消耗敌方[负面] 2 力量:置顶 1 张友方[攻击者]并给予其 2 力量",why:"双条件双收益随机 → 单条件、收益定向。",exp:"E4 E9"},
+{id:"DR_MANHATTAN",n:"曼哈顿博士",r:"uncommon",old:"remove 2 power: stage 2 friendly; bury 2 hostile",neww:"消耗自身 2 力量:置顶 2 张友方[攻击者];埋葬 2 张敌方[攻击者]",why:"「消耗 2 力量」来源不明 → 消耗自身，双收益定向。",exp:"E9"},
+{id:"POWER_TRANSFER",n:"力量转移",r:"uncommon",old:"remove 2 random hostile power, apply 2 random friendly power",neww:"去除 1 张敌方[攻击者]（最高攻击）1 力量:给予 1 张友方[攻击者]（最低攻击）1 力量",why:"双重随机 → 双重数值定向。",exp:"E1 E10"},
+{id:"PREMATURE",n:"拔苗助长",r:"uncommon",old:"hostile [curse] - power; stage hostile [curse]",neww:"消耗敌方[负面] 1 力量:置顶 1 张敌方[负面]",why:"v4 修正：成为「置顶敌方诅咒」工具（E4 揭晓次数乘区）——消耗 1 力量换一次额外自伤，代价即达成难度。",exp:"E4 E6"},
+{id:"RIFT_GUIDE",n:"次元引导者",r:"uncommon",old:"exile 1 friendly [conjure]: bury 2 hostile",neww:"去除 1 张友方[次元裂缝]:埋葬 2 张敌方[攻击者]",why:"埋葬目标定向到攻击者。",exp:"E7"},
+{id:"BOOSTER",n:"推进器",r:"rare",old:"if shuffled, stage 2 friendly; bury 1 friendly",neww:"洗牌后:置顶 2 张友方[攻击者];揭晓时:埋葬 1 张友方[亡语]",why:"胶水卡双线随机 → 定向后成为前排 + 亡语引擎的双向胶水。",exp:"E5 E6"},
+{id:"DETERIORATION",n:"恶化",r:"rare",old:"for each 2 power hostile [curse] has, hostile [curse] +power",neww:"增强 1 张敌方[负面];其每有 4 力量:额外增强 1",why:"原系数 <2 力量时 no-op；保底 + 阈值成长（无上限）。",exp:"E4"}
+];
+
+// ---- 新增 46 张 ----
+const NEWC = [
+{id:"SLEEPING_GIANT",n:"沉睡的巨像",r:"rare",a:"0",t:"沉睡 力量",d:"【沉睡】直到拥有 5 力量;攻击力 = 自身力量;攻击 ×2",why:"E8 门槛核心（原型①）：5 力量种子，唤醒即力量×2 段。",exp:"E1 E8"},
+{id:"RIFT_EMBRYO",n:"次元胚胎",r:"rare",a:"4",t:"攻击者 conjure 生成[conjure]",d:"【沉睡】直到存在 5 张友方[次元裂缝];揭晓时:生成 2 张[次元裂缝]",why:"E8 × E7（原型③）：裂缝流中期爆发。",exp:"E7 E8"},
+{id:"SOUL_SWAP",n:"灵魂交换",r:"uncommon",a:"—",t:"置顶 置顶友方",d:"揭晓时:与下一张友方[亡语]交换位置（该卡置顶,自身移至其原位置）",why:"原型②：E5 亡语接力。",exp:"E5 E6"},
+{id:"WAKE_BELL",n:"晨钟",r:"uncommon",a:"—",t:"唤醒 力量",d:"唤醒 1 张友方[沉睡];其获得 1 力量;若不存在:给予 1 张友方[攻击者] 1 力量",why:"E8 加速器，带兜底。",exp:"E8"},
+{id:"NIGHTMARE",n:"噩梦",r:"uncommon",a:"—",t:"沉睡 攻击者",d:"使 1 张敌方[攻击者]（最高攻击）[沉睡]（直到其主人受到 3 次伤害）",why:"敌方沉睡控制。",exp:"E9"},
+{id:"NIGHT_WATCHER",n:"守夜人",r:"uncommon",a:"—",t:"萦绕 唤醒 力量",d:"萦绕:每当友方[沉睡]被唤醒:获得 1 力量",why:"E8 回报，唤醒越多力量越多。",exp:"E8"},
+{id:"PILLOW_TALK",n:"枕边低语",r:"common",a:"—",t:"沉睡 力量",d:"给予 1 张友方[沉睡] 2 力量;若不存在:给予自身 2 力量",why:"E8 喂力量工具，兜底不白板。",exp:"E8"},
+{id:"WRAITH_COCOON",n:"亡魂之茧",r:"uncommon",a:"6",t:"攻击者 沉睡 埋葬",d:"【沉睡】直到本回合埋葬 3 张友方卡;揭晓时:攻击",why:"E5 喂它，登场时墓地已成。",exp:"E5 E8 E9"},
+{id:"ANCIENT_WEAPON",n:"古代兵器",r:"rare",a:"8",t:"攻击者 沉睡",d:"【沉睡】直到第 3 回合开始;揭晓时:攻击;获得 3 力量",why:"回合门槛强卡：8 攻 = E9 大核心。",exp:"E8 E9"},
+{id:"CHARGING",n:"蓄势待发",r:"uncommon",a:"0",t:"沉睡 力量",d:"【沉睡】直到第 2 回合开始;攻击力 = 当前回合数;攻击 ×2;获得 1 力量",why:"回合数成长（无上限），短局低价值。",exp:"E8"},
+{id:"GREAT_AWAKENING",n:"大觉醒",r:"rare",a:"—",t:"唤醒 力量",d:"唤醒所有友方[沉睡];各获得 1 力量",why:"E8 爆发层。",exp:"E8"},
+{id:"LIGHT_SLEEPER",n:"浅眠者",r:"common",a:"2",t:"攻击者 沉睡",d:"【沉睡】直到拥有 2 力量;揭晓时:攻击",why:"v4 中卡：任何力量源都能喂醒，沉睡流前期密度件。",exp:"E8"},
+{id:"SPRING_SLEEP",n:"春眠",r:"common",a:"—",t:"沉睡 力量",d:"【沉睡】直到第 2 回合开始;揭晓时:给予 1 张友方[攻击者] 2 力量",why:"v4 中卡：简单回合条件，buff 件。",exp:"E8 E9"},
+{id:"SLEEPWALKER",n:"梦游者",r:"uncommon",a:"2",t:"攻击者 沉睡",d:"【沉睡】直到本回合敌方受到 3 次伤害;揭晓时:攻击 ×2",why:"v4 中卡：伤害事件喂醒，E1 段数件。",exp:"E1 E8"},
+{id:"HIBERNATION",n:"冬眠",r:"uncommon",a:"0",t:"沉睡 力量",d:"【沉睡】直到第 3 回合开始;揭晓时:攻击力 = 自身力量;攻击;获得 2 力量",why:"v4 中卡：中后期力量兑现。",exp:"E8"},
+{id:"ETERNAL_SLEEPER",n:"亘古沉眠者",r:"rare",a:"0",t:"沉睡 攻击者 力量",d:"【沉睡】直到拥有 10 力量 且 第 5 回合开始;唤醒时:所有友方[攻击者]获得「攻击 +1 次」（永久）;攻击力 = 自身力量;攻击 ×2",why:"v4 终极沉睡：极难唤醒（10 力量 + 第 5 回合），唤醒 = 全体攻击次数 +1（第一乘区全体授予）= 夸张资源获取，几乎意味着胜利。",exp:"E1 E8"},
+{id:"POSITION_SWAP",n:"位置交换",r:"uncommon",a:"—",t:"交换 攻击者",d:"交换 1 张友方[攻击者]与 1 张敌方[攻击者]的位置",why:"攻防位置手术。",exp:"E6 E9"},
+{id:"TIME_WARP",n:"时光倒流",r:"uncommon",a:"—",t:"延迟",d:"延迟下 2 张敌方卡",why:"纯顺序控制。",exp:"E6"},
+{id:"GRAVE_DIGGER",n:"掘墓人",r:"common",a:"—",t:"埋葬",d:"埋葬下 2 张敌方卡",why:"位置谓词「下 X 张敌方卡」。",exp:"E5 E6"},
+{id:"HERALD",n:"传令官",r:"common",a:"—",t:"置顶 攻击者",d:"置顶 1 张友方[攻击者]（最高攻击）",why:"友方 tutor。",exp:"E6 E9"},
+{id:"RALLY",n:"集结号",r:"common",a:"—",t:"力量 攻击者",d:"给予所有友方[攻击者] 1 力量",why:"E9 宽 buff（全集零随机）。",exp:"E9"},
+{id:"WAR_COUNCIL",n:"军议",r:"uncommon",a:"—",t:"力量 攻击者",d:"给予 1 张友方[攻击者]（最低攻击） 2 力量",why:"补短 buff。",exp:"E9"},
+{id:"ACE",n:"王牌",r:"uncommon",a:"0",t:"攻击者 伤害",d:"攻击力 = 友方最高攻击（常态结算）;攻击",why:"攻击复读。",exp:"E9"},
+{id:"ASSASSIN",n:"刺客",r:"uncommon",a:"—",t:"埋葬 攻击者",d:"埋葬 1 张敌方[攻击者]（最高攻击）",why:"攻击检索移除。",exp:"E9"},
+{id:"OATH_OF_WAR",n:"战争之誓",r:"common",a:"1",t:"攻击者 力量",d:"给予 1 张友方[攻击者] 2 力量;攻击",why:"小型 buff + 攻击底座。",exp:"E1 E9"},
+{id:"ARSENAL",n:"军火库",r:"rare",a:"—",t:"力量 埋葬 攻击者",d:"给予所有友方[攻击者] 2 力量;埋葬 1 张友方卡",why:"E9 引擎，埋葬成本对冲。",exp:"E5 E9"},
+{id:"WAR_HERO",n:"战争英雄",r:"rare",a:"0",t:"攻击者 伤害",d:"攻击力 = 友方[攻击者]总攻击（常态结算）;攻击;若总攻击 ≥ 8:获得 3 力量",why:"E9 终结：总攻击越大越强。",exp:"E9"},
+{id:"DRILL_MASTER",n:"战训教官",r:"common",a:"—",t:"攻击次数 攻击者",d:"给予 1 张友方[攻击者] 攻击 +1 次",why:"v4 次数授予件（第一乘区）：把段数直接发给攻击者，永久可叠加。",exp:"E1 E9"},
+{id:"BLOODLUST",n:"嗜血",r:"uncommon",a:"—",t:"攻击次数 攻击者 埋葬",d:"给予所有友方[攻击者] 攻击 +1 次;埋葬 1 张友方卡",why:"v4 次数授予引擎：全体段数 +1，埋葬成本对冲。",exp:"E1 E5 E9"},
+{id:"FORGE",n:"锻炉",r:"common",a:"—",t:"攻击力成长 攻击者",d:"给予 1 张友方[攻击者] +1 攻击力（永久）",why:"v4 第二乘区新形态（定向）：攻击力成长，喂养攻击力 = X 卡。",exp:"E9"},
+{id:"ARMS_RACE",n:"军备竞赛",r:"uncommon",a:"—",t:"攻击力成长 攻击者 埋葬",d:"给予所有友方[攻击者] +1 攻击力（永久）;埋葬 1 张友方卡",why:"v4 第二乘区引擎：全体攻击力成长。",exp:"E5 E9"},
+{id:"MARK_WEAKNESS",n:"弱点标注",r:"uncommon",a:"—",t:"易伤",d:"敌方受到的攻击伤害 +1（每段,可叠加,永久）",why:"v4 第二乘区新形态（敌方侧）：每段伤害 +1，与次数 × 力量都相乘——纯进攻轴，无防御。",exp:"E1 E9"},
+{id:"DRAG_UNDER",n:"深埋",r:"common",a:"—",t:"埋葬 亡语",d:"埋葬 1 张友方[亡语]（最深）",why:"位置谓词「最深」+ Tag。",exp:"E5"},
+{id:"GRAVE_FEEDER",n:"喂尸人",r:"common",a:"1",t:"攻击者 埋葬 亡语",d:"埋葬 1 张友方[亡语];攻击",why:"E5 加速器。",exp:"E1 E5"},
+{id:"TOMBSTONE",n:"墓碑",r:"common",a:"1",t:"攻击者 萦绕 亡语",d:"萦绕:每当友方[亡语]被埋葬:攻击",why:"E5 计数伤害，无上限。",exp:"E1 E5"},
+{id:"REBIRTH",n:"轮回",r:"rare",a:"—",t:"置顶 力量 亡语",d:"置顶 1 张友方[亡语]（最深）;其获得 2 力量",why:"最深亡语 tutor。",exp:"E5 E6"},
+{id:"NECROMANCY",n:"招魂",r:"uncommon",a:"—",t:"置顶 萦绕",d:"置顶 1 张友方[萦绕]（最深）",why:"v4 跨 tag 定向：利用「萦绕」tag 的检索（此前无卡消费）。",exp:"E5 E6"},
+{id:"MASS_GRAVE",n:"乱葬坑",r:"common",a:"—",t:"埋葬 埋葬友方 埋葬敌方",d:"埋葬下 3 张卡（不分敌我）",why:"v4 E11 核心：无差别埋葬让敌人行动失效。",exp:"E11"},
+{id:"BONE_FIELD",n:"白骨地",r:"uncommon",a:"—",t:"萦绕 力量",d:"萦绕:每当任意卡被埋葬:获得 1 力量",why:"v4 E11 收益件：我埋谁都赚（无上限）。",exp:"E5 E11"},
+{id:"DEVIL_WHISPER",n:"恶魔低语",r:"uncommon",a:"—",t:"置顶 负面",d:"置顶 1 张敌方[负面];其获得 1 力量",why:"E4 加速：敌方诅咒提前揭晓 + 增强。",exp:"E4 E6"},
+{id:"PURIFYING_FLAME",n:"净化之火",r:"uncommon",a:"4",t:"攻击者 负面",d:"去除 1 张友方[负面];攻击",why:"己方负面出口。",exp:"E4"},
+{id:"CURSE_RESONANCE",n:"诅咒共鸣",r:"uncommon",a:"—",t:"负面 力量",d:"敌方[负面]每有 1 力量:获得 1 力量",why:"E10 变体（无上限）：敌方诅咒越大自己越强。",exp:"E4 E10"},
+{id:"DEATH_KNELT",n:"丧钟",r:"common",a:"—",t:"置顶 置顶敌方 负面",d:"置顶 1 张敌方[负面]",why:"v4 E4 揭晓次数件（common 底座）：敌方诅咒每回合多自伤一次。",exp:"E4 E6"},
+{id:"UNDERTAKER",n:"送葬人",r:"uncommon",a:"—",t:"置顶 置顶敌方 负面",d:"置顶 1 张敌方[负面]（最高力量）",why:"v4 E4 揭晓次数件（数值定向）：优先送最强的诅咒上路。",exp:"E4 E6"},
+{id:"RIFT_THIEF",n:"裂隙窃贼",r:"uncommon",a:"—",t:"conjure 消耗[conjure] 生成[conjure]",d:"去除 1 张敌方[次元裂缝]:生成 1 张友方[次元裂缝]",why:"v4 跨 tag 定向：敌方裂缝检索（E7 资源争夺）。",exp:"E7"},
+{id:"MIMIC",n:"模仿者",r:"uncommon",a:"—",t:"力量给予 复制",d:"复制 1 张友方[力量给予]入己方牌库",why:"v4 跨 tag 定向：消费「力量给予」能力 tag 的复制引擎。",exp:"E1"}
+];
+
+// ---- 渲染 ----
+const KPI_EL = document.getElementById("kpis");
+const byStatus = c => POOL.filter(x => x.s === c).length;
+const byRar = r => POOL.filter(x => x.r === r).length;
+const archCount = {};
+POOL.forEach(x => { archCount[x.arch] = (archCount[x.arch] || 0) + 1; });
+KPI_EL.innerHTML = [
+	['<span class="good">' + POOL.length + "</span>", "总卡池（71 现有 + 46 新增）"],
+	['<span class="good">' + byStatus("upd") + "</span>", "库内新文案"],
+	['<span style="color:#7aa2f7">' + byStatus("conv") + "</span>", "本轮统一转写"],
+	['<span class="warn">' + byStatus("rw") + "</span>", "建议重做（未选卡）"],
+	['<span style="color:#f7768e">' + byStatus("new") + "</span>", "新增卡"],
+	['<span style="color:#9ece6a">' + byRar("common") + "</span> / <span style='color:#7aa2f7'>" + byRar("uncommon") + "</span> / <span style='color:#e0af68'>" + byRar("rare") + "</span>", "稀有度 C / U / R"],
+	['<span>11</span>', "核心体验（E1-E11）"],
+	['<span>3</span>', "第二乘区形态（力量/攻击力成长/易伤）"],
+	['<span>' + archCount["sleep"] + "</span> / <span>" + archCount["attack"] + "</span> / <span>" + archCount["curse"] + "</span>", "沉睡/攻击/诅咒 张数"]
+].map(x => '<div class="kpi"><div class="num">' + x[0] + '</div><div class="lbl">' + x[1] + "</div></div>").join("");
+
+function renderPool() {
+	let html = "";
+	let lastArch = "";
+	POOL.forEach(x => {
+		if (x.arch !== lastArch) {
+			html += '<tr class="arch-head"><td colspan="8">' + ARCH_LABEL[x.arch] + "（" + POOL.filter(y => y.arch === x.arch).length + " 张）</td></tr>";
+			lastArch = x.arch;
+		}
+		html += "<tr>" +
+			'<td class="mono id">' + x.id + "</td>" +
+			"<td>" + x.n + "</td>" +
+			"<td>" + rar(x.r) + "</td>" +
+			"<td class='mono'>" + x.a + "</td>" +
+			'<td class="tagcell">' + x.t + "</td>" +
+			"<td>" + x.arch + "</td>" +
+			'<td class="desc">' + x.d + "</td>" +
+			"<td>" + STATUS[x.s] + "</td>" +
+			"</tr>";
+	});
+	document.getElementById("pool").innerHTML = "<thead><tr><th>cardTypeID</th><th>名称</th><th>稀有度</th><th>攻击力</th><th>Tag</th><th>流派</th><th>效果（统一关键词文案）</th><th>状态</th></tr></thead><tbody>" + html + "</tbody>";
+}
+
+function renderRework() {
+	document.getElementById("rework").innerHTML = "<thead><tr><th>ID</th><th>名称</th><th>稀有度</th><th>当前文案（Notion）</th><th>建议改案</th><th>理由</th><th>体验</th></tr></thead><tbody>" +
+		REWORK.map(x => "<tr>" +
+			'<td class="mono id">' + x.id + "</td>" +
+			"<td>" + x.n + "</td>" +
+			"<td>" + rar(x.r) + "</td>" +
+			'<td class="desc">' + x.old + "</td>" +
+			'<td class="desc good">' + x.neww + "</td>" +
+			"<td>" + x.why + "</td>" +
+			"<td>" + x.exp + "</td>" +
+			"</tr>").join("") + "</tbody>";
+}
+
+function renderNew() {
+	document.getElementById("new").innerHTML = "<thead><tr><th>ID</th><th>名称</th><th>稀有度</th><th>攻击力</th><th>Tag</th><th>效果</th><th>设计意图</th><th>体验</th></tr></thead><tbody>" +
+		NEWC.map(x => "<tr>" +
+			'<td class="mono id">' + x.id + "</td>" +
+			"<td>" + x.n + "</td>" +
+			"<td>" + rar(x.r) + "</td>" +
+			"<td class='mono'>" + x.a + "</td>" +
+			'<td class="tagcell">' + x.t + "</td>" +
+			'<td class="desc">' + x.d + "</td>" +
+			"<td>" + x.why + "</td>" +
+			"<td>" + x.exp + "</td>" +
+			"</tr>").join("") + "</tbody>";
+}
+
+renderPool();
+renderRework();
+renderNew();
+</script>
+</body>
+</html>
