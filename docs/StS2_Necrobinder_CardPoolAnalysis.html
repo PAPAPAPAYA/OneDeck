@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>杀戮尖塔2 Necrobinder 卡组结构拆解 — 条件 · 收益 · 稀有度分布 · 构筑图谱</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+		--purple: #bb9af7; --cyan: #7dcfff;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+	.mono { font-family: Consolas, monospace; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+	.b-doom { color: #f7768e; border-color: #f7768e88; }
+	.b-soul { color: #7dcfff; border-color: #7dcfff88; }
+	.b-osty { color: #9ece6a; border-color: #9ece6a88; }
+	.b-eth { color: #bb9af7; border-color: #bb9af788; }
+	.b-eng { color: #e0af68; border-color: #e0af6888; }
+	.b-gen { color: #8b93a3; border-color: #8b93a388; }
+	.b-mp { color: #ff9e64; border-color: #ff9e6488; }
+	.star { color: #e0af68; font-weight: 700; }
+	ul { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.bad { color: var(--bad); }
+	.purple { color: var(--purple); }
+	.cyan { color: var(--cyan); }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.keycard { background: #1a1e27; border: 1px solid #e0af6855; border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 0.85rem; }
+	.keycard .kc-name { font-weight: 700; color: #e0af68; }
+	.r-tag { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; white-space: nowrap; }
+	.r-basic { color: #8b93a3; border-color: #8b93a388; }
+	.r-common { color: #9ece6a; border-color: #9ece6a88; }
+	.r-uncommon { color: #7dcfff; border-color: #7dcfff88; }
+	.r-rare { color: #bb9af7; border-color: #bb9af788; }
+	.r-ancient { color: #e0af68; border-color: #e0af6888; }
+	.changed { color: #e0af68; font-weight: 700; }
+	@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style>
+</head>
+<body>
+
+<h1>杀戮尖塔 2 · Necrobinder 卡组结构拆解</h1>
+<div class="sub">2026-08-17(v2)· 卡牌数据源:<a href="https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Cards_List">slaythespire.wiki.gg 官方卡表</a>(Cargo 数据,91 张,含多人模式内容与最新平衡补丁)· 机制规则:sts2front / untapped.gg / IGN 交叉验证 · 中文译名为参考译名(EA 无官方中文),一律以英文原文为准 · v2 相对 v1(sts2-wiki 数据,88 张)的差异见<a href="#appendixB">附录 B</a> · 同系列:<a href="StS2_Ironclad_CardPoolAnalysis.html">Ironclad</a> / <a href="StS2_Silent_CardPoolAnalysis.html">Silent</a> / <a href="StS2_Defect_CardPoolAnalysis.html">Defect</a> / <a href="StS2_Regent_CardPoolAnalysis.html">Regent</a></div>
+
+<div class="kpis" id="kpis">
+	<div class="kpi"><div class="num">91</div><div class="lbl">Necrobinder 卡池总数(含 4 张起始卡、5 张多人模式专属)</div></div>
+	<div class="kpi"><div class="num">5</div><div class="lbl">稀有度档位:Basic / Common / Uncommon / Rare / Ancient</div></div>
+	<div class="kpi"><div class="num">4+1</div><div class="lbl">四条主轴(Doom / Soul / Osty / Ethereal)+ 高费能量暗轴</div></div>
+	<div class="kpi"><div class="num">66 HP</div><div class="lbl">全游戏最低血量,靠 Osty 第二条血条补偿</div></div>
+	<div class="kpi"><div class="num">0</div><div class="lbl">Common 中的能力卡数量 —— 能力卡从 Uncommon 才开始登场</div></div>
+</div>
+
+<h2>0. 角色骨架</h2>
+<div class="card">
+	<ul>
+		<li><b>属性</b>:66 HP(全角色最低)、3 能量、起始遗物 <b>Bound Phylactery</b>(每回合开始 Summon 1)。</li>
+		<li><b>起始牌组</b>(12 张):Strike ×5、Defend ×5、Bodyguard ×1、Unleash ×1 —— 相当于「迷你 Barricade + 迷你 Body Slam」直接内置于初始卡组:Bodyguard 每回合给 Osty 加血(遗物再 +1),Unleash 按 Osty 当前 HP 打伤害。这是全游戏强度最高的起始模板之一。</li>
+		<li><b>战斗伙伴 Osty</b>(巨型骨手):起始 1 HP;<span class="good">「Die for You」</span> 拦截所有未格挡的攻击伤害(溢出部分才打到你)= 第二条血条;攻击全部由卡牌驱动,<span class="good">不吃 Necrobinder 自身的力量 / 虚弱 / 易伤</span>(但吃 Calcify 等 Osty 专属加成);死亡后由下一次 Summon 以 1 HP 复活。</li>
+		<li><b>卡池组织方式</b>:四类「条件资源」(Doom 阈值 / Soul 频率 / Osty 血条 / Ethereal 计数)+ 一张把它们互相接通的桥梁网络。没有任何一张卡是纯孤岛,这是本拆解的核心结论。</li>
+		<li><b>多人模式内容</b>:当前卡池含 5 张多人模式专属卡(Cacophony / Soulbound / Underworld / Glimpse Beyond / Legion of Bone),机制围绕「ALL players」展开 —— 玩家之间的攻击、抽牌、Soul 产出互相喂给对方(见各轴小节标注 <span class="badge b-mp">多人</span>)。</li>
+	</ul>
+	<div class="note">资源轴速览:Doom = <span class="bad">阈值资源</span>(叠到 ≥HP 即处决);Soul = <span class="cyan">频率资源</span>(0 费抽 2 的 token,打出次数即收益);Osty HP = <span class="good">蓄水池资源</span>(防守即成长);Ethereal = <span class="purple">计数资源</span>(打出/抽到次数换倍数)。</div>
+</div>
+
+<h2>1. 条件体系:有什么条件、怎么满足、换来什么</h2>
+<p class="lead">Necrobinder 卡池的「条件」可归为五组。每行按 <b>条件 → 判定方式 → 满足(制造)手段 → 兑现(收益)</b> 展开。</p>
+
+<h3>1.1 A 组:敌人身上的状态积累(Doom 阈值系)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定时机</th><th style="width:30%">由哪些卡满足(制造)</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr>
+				<td><b>敌 Doom ≥ 当前 HP</b></td>
+				<td>敌人回合结束时(对玩家自身同样生效)</td>
+				<td>Blight Strike(伤转 Doom)、Scourge、Negative Pulse、Deathbringer、Countdown(每回合自动机)、No Escape、Oblivion、Reaper Form(攻击附 Doom)<span class="badge b-mp">多人</span> Underworld(队友攻击附 Doom)</td>
+				<td class="good"><b>即死处决</b>:无视格挡、无视阶段转换(跳过 BOSS 变身/分裂)、不触发受伤类效果、Doom 不衰减</td>
+			</tr>
+			<tr>
+				<td><b>敌已有 Doom 量</b></td>
+				<td>施放时实时读取</td>
+				<td>任意 Doom 源先叠底</td>
+				<td><b>No Escape</b>:每已有 10 点 Doom 额外 +5(增幅循环,越叠越快)</td>
+			</tr>
+			<tr>
+				<td><b>本回合已施放过 Doom</b></td>
+				<td>回合内布尔判断</td>
+				<td>任意 Doom 源(哪怕 1 点)</td>
+				<td><b>Death's Door</b>:格挡 6 额外再结算 2 次 = 18 格挡</td>
+			</tr>
+			<tr>
+				<td><b>敌人带着 debuff</b></td>
+				<td>持续状态</td>
+				<td>Fear / Defy / Putrefy / High Five / Deathbringer / Doom 本身</td>
+				<td><b>Sleight of Flesh</b>(每次施放 debuff 造成 9 伤)、<b>Misery</b>(扩散到全敌)、<b>Debilitate</b>(易伤/虚弱效果 ×2,持续 3 回合)</td>
+			</tr>
+		</tbody>
+	</table>
+	<div class="note">Doom 的关键性质:不随时间衰减、不吃格挡、不触发「受伤/被攻击」类反应 —— 它只做一件事:把「敌人还活着」变成一个倒计时。设计上 Doom 轴的全部压力都在<b>防守端</b>(拖到回合结束),因此该轴自带一整排防御件(Shroud / Death's Door 系)。</div>
+</div>
+
+<h3>1.2 B 组:Osty 的存活与行动状态</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr>
+				<td><b>Osty 存活</b></td>
+				<td>持续状态</td>
+				<td>任何 Summon 效果复活/维持(死亡后下一次 Summon 以 1 HP 复活)</td>
+				<td><b>Bone Shards</b>(全敌 9 伤 + 9 格挡,随后牺牲 Osty)、<b>Sacrifice</b>(Osty 死亡,获得 <span class="changed">3×</span> 最大 HP 格挡)、Unleash / Protector 的伤害部分</td>
+			</tr>
+			<tr>
+				<td><b>Osty 本回合已攻击过</b></td>
+				<td>回合内计数</td>
+				<td>Poke / Fetch / Snap / Unleash / Sweeping Gaze 等任意 Osty 攻击卡</td>
+				<td><b>Flatten</b> 0 费化(2 费 → 0 费,12 伤)、<b>Rattle</b> 额外段数(每已攻击 1 次 +1 段)、<b>Sic 'Em</b> 每击中 1 次 Summon 3</td>
+			</tr>
+			<tr>
+				<td><b>Osty 当前 HP / 最大 HP 的大小</b></td>
+				<td>实时读取</td>
+				<td>所有 Summon 效果 + 遗物(蓄水池越大越好)</td>
+				<td><b>Unleash</b>(伤害 = 6 + 当前 HP)、<b>Protector</b>(伤害 = 10 + 最大 HP)、<b>Sacrifice</b>(格挡 = 3×最大 HP)、<b>Necro Mastery</b>(Osty 每次掉血,全敌同步掉等量 HP)</td>
+			</tr>
+		</tbody>
+	</table>
+	<div class="note">Osty 轴的特殊性:血条本身就是<b>防守收益</b>(拦截攻击),所以「养 Osty」不需要额外的防御卡投入 —— 这是 Necrobinder 前期的经济性来源。</div>
+</div>
+
+<h3>1.3 C 组:本场 / 本回合的过程计数</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">计数口径</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr>
+				<td><b>本场打出过多少张 Ethereal 卡</b></td>
+				<td>本场战斗累计</td>
+				<td>Defile / Defy / Fear / Parse / Seance / Enfeebling Touch / Lethality / Demesne(自带)、Sculpting Strike 与 Call of the Void 制造</td>
+				<td><b>Pull from Below</b>(每张 5 伤)、<b>Banshee's Cry</b>(每张费用 -2,9 费群伤 33 可压到 0)</td>
+			</tr>
+			<tr>
+				<td><b>消耗堆里有多少 Soul</b></td>
+				<td>本场战斗累计</td>
+				<td>Soul 打出后进入消耗堆</td>
+				<td><b>Soul Storm</b>:每张 Soul +4 伤害</td>
+			</tr>
+			<tr>
+				<td><b>消耗堆里有 Ethereal 卡</b></td>
+				<td>本场战斗累计</td>
+				<td>打出任何 Ethereal 卡后进入消耗堆</td>
+				<td><b>Eidolon</b>:把消耗堆中所有 Ethereal 卡重新打出(免费再触发一轮计数件)</td>
+			</tr>
+			<tr>
+				<td><b>本回合抽了多少张牌</b></td>
+				<td>回合内累计</td>
+				<td>Soul、Parse、Pagestorm、Call of the Void、Scourge、Fetch</td>
+				<td><b>Death March</b>:每抽 1 张 +4 伤害<span class="badge b-mp">多人</span><b>Cacophony</b>:全员合计每抽 33 张,对随机敌 66 伤</td>
+			</tr>
+			<tr>
+				<td><b>打出过 2+ 费卡</b></td>
+				<td>回合内 / 事件触发</td>
+				<td>Reap、Bury、Squeeze、Reanimate、End of Days、Banshee's Cry、The Scythe 等</td>
+				<td><b>Right Hand Hand</b> 从弃牌堆回手(0 费 Osty 攻击无限循环)、<b>Danse Macabre</b> 每次 +4 格挡</td>
+			</tr>
+			<tr>
+				<td><b>任何人死亡</b></td>
+				<td>事件触发</td>
+				<td>敌人被处决 / 被杀死、Osty 牺牲、随从死亡</td>
+				<td><b>Melancholy</b>:每次死亡费用 -1(3 费 13 格挡可降到 0)</td>
+			</tr>
+			<tr>
+				<td><b>打出 Soul</b></td>
+				<td>事件触发</td>
+				<td>Soul 生成卡(见 Soul 轴)</td>
+				<td><b>Haunt</b>(随机敌 -7 HP,无视格挡)、<b>Devour Life</b>(Summon 1,升级 2)</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.4 D 组:玩家自我付出的代价(负资源换正资源)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:24%">代价条件</th><th style="width:38%">付出形式</th><th>换来的收益</th></tr></thead>
+		<tbody>
+			<tr>
+				<td><b>对自己施放 Doom</b></td>
+				<td>Neurosurge(每回合开始自 +3 Doom);自己回合结束时 Doom ≥ HP 同样即死</td>
+				<td class="good">Neurosurge:0 费 +3 能量 + 抽 2(升级 +4 能量)</td>
+			</tr>
+			<tr>
+				<td><b>透支能量(新版 Borrowed Time)</b></td>
+				<td>Borrowed Time(1 费):本回合所有卡费用 +1</td>
+				<td class="good">获得 4 能量(升级 6)—— 当回合净赚 3~5 费,代价是当回合后续出牌变贵;把「回合内爆发」与「回合后支付」分开</td>
+			</tr>
+			<tr>
+				<td><b>失去力量</b></td>
+				<td>Friendship(-2 力量,升级 -1)、Shared Fate(敌我双减,升级敌方 -3)</td>
+				<td>Friendship:每回合 +1 能量;<span class="cyan">关键细节:Osty 的攻击不吃你的力量 —— 负力量对 Osty 流几乎无感</span></td>
+			</tr>
+			<tr>
+				<td><b>给敌方发牌</b></td>
+				<td>Glimpse Beyond(全玩家 +3 Soul)、Legion of Bone(敌我双方 Summon 6)<span class="badge b-mp">多人</span></td>
+				<td>这两张已改为多人模式专属;单人模式不再出现「给敌方发牌」的代价型卡</td>
+			</tr>
+			<tr>
+				<td><b>献祭 Osty</b></td>
+				<td>Bone Shards / Sacrifice 令 Osty 死亡</td>
+				<td>爆发输出 + 格挡(见 B 组);代价是下一条血条要重新养(下次 Summon 1 HP 复活)</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.5 E 组:牌库 / 手牌工程</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:24%">条件</th><th style="width:38%">满足手段</th><th>收益</th></tr></thead>
+		<tbody>
+			<tr>
+				<td><b>弃牌堆里有卡</b></td>
+				<td>任何打出的卡</td>
+				<td>Dredge 捡 3 张上手(消耗)、Graveblast 捡 1 张(伤害附带)、Drain Power 随机升级 2 张</td>
+			</tr>
+			<tr>
+				<td><b>牌组里有废卡 / 诅咒卡</b></td>
+				<td>战斗塞入的垃圾、未升级的普卡</td>
+				<td>Seance 把 1 张变成 Soul(Ethereal)、Cleanse 直接消耗 1 张(附带 Summon 3)、Forbidden Grimoire 战斗结束永久移除 1 张</td>
+			</tr>
+			<tr>
+				<td><b>手牌里有关键卡</b></td>
+				<td>任意高价值卡</td>
+				<td>Snap 加 Retain(保跨回合)、Sculpting Strike 加 Ethereal(转 Ethereal 计数)、Transfigure 加 Replay(费用 +1 但打出两次)</td>
+			</tr>
+			<tr>
+				<td><b>打出高费卡</b></td>
+				<td>2+ 费卡</td>
+				<td>Right Hand Hand 回手循环、Danse Macabre 格挡、Lethality 首张攻击 +50%(Ethereal,不打就消耗)</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>2. 收益体系:条件被满足后,卡池提供哪五类回报</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">收益类型</th><th style="width:44%">定义</th><th>代表兑现卡</th></tr></thead>
+		<tbody>
+			<tr><td class="bad"><b>① 处决</b></td><td>Doom ≥ HP 即死,无视格挡 / 阶段转换 / 受伤反应 —— 全池唯一「绕过防御端」的终结手段</td><td>End of Days(立即处决)、Time's Up(Doom 转即时伤害,不再消耗)、Doom 阈值本身</td></tr>
+			<tr><td><b>② 伤害</b></td><td>四种形态:直伤、Osty 伤害(不吃己方力量,吃 Calcify)、反射(敌掉血同步)、无消耗扣血</td><td>Reap / Bury(直伤)、Unleash / Protector / Squeeze(Osty)、Necro Mastery(反射)、Haunt / Sleight of Flesh / Capture Spirit(扣血)</td></tr>
+			<tr><td class="good"><b>③ 防御</b></td><td>格挡、条件格挡、Osty 肉盾(第二条血条)、敌方降力</td><td>Defend / Delay / Undeath、Death's Door / Danse Macabre / Shroud / Melancholy、Bodyguard 系、Enfeebling Touch</td></tr>
+			<tr><td class="warn"><b>④ 资源</b></td><td>能量(当回合 / 跨回合 / 每回合 / 透支)与抽牌(即时 / 触发式)</td><td>Wisp / Borrowed Time / Neurosurge / Invoke / Delay / Friendship / Demesne;Soul / Parse / Pagestorm / Call of the Void / Scourge</td></tr>
+			<tr><td class="purple"><b>⑤ 牌库工程</b></td><td>升级、回收、转化、移除、关键词赋予(Retain / Ethereal / Replay)、复制、Ethereal 回收</td><td>Drain Power、Dredge / Graveblast、Seance、Cleanse / Forbidden Grimoire、Snap / Sculpting Strike / Transfigure、Undeath、Eidolon</td></tr>
+		</tbody>
+	</table>
+	<div class="note">值得注意:收益 ③④⑤ 几乎全部可以<b>附在攻击卡上</b>(Graveblast 捡牌、Snap 加 Retain、Drain Power 升级、Reave 产 Soul……)——Necrobinder 的「一张卡干两件事」密度极高,这是它运转起来不卡手的结构性原因。</div>
+</div>
+
+<h2>3. 稀有度分布:每档稀有度装了什么功能</h2>
+<div class="card">
+	<h3>3.1 数量与类型构成</h3>
+	<table>
+		<thead><tr><th>稀有度</th><th>数量</th><th>占比</th><th>攻击</th><th>技能</th><th>能力</th><th>能力卡占比</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>4</td><td>4.4%</td><td>2</td><td>2</td><td>0</td><td>0%</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>20</td><td>22.0%</td><td>12</td><td>8</td><td>0</td><td><b>0%</b></td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>38</td><td>41.8%</td><td>12</td><td>16</td><td>10</td><td>26%</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>27</td><td>29.7%</td><td>8</td><td>10</td><td>9</td><td>33%</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>2</td><td>2.2%</td><td>1</td><td>0</td><td>1</td><td>50%</td></tr>
+			<tr class="arch-head"><td>合计</td><td>91</td><td>100%</td><td>35</td><td>36</td><td>20</td><td>22%</td></tr>
+		</tbody>
+	</table>
+	<div class="note">相比 v1(88 张):Uncommon +2(Soulbound、Underworld,均为多人)、Rare +1(Cacophony,多人)。</div>
+	<h3>3.2 每档稀有度的设计职责</h3>
+	<table>
+		<thead><tr><th style="width:12%">档位</th><th style="width:30%">承载功能</th><th>代表卡</th></tr></thead>
+		<tbody>
+			<tr>
+				<td><span class="r-tag r-basic">Basic</span></td>
+				<td>轴种子:把两条轴的最小可用单位直接塞进起始牌组</td>
+				<td>Unleash(Osty 伤害种子)、Bodyguard(Osty 血条种子)</td>
+			</tr>
+			<tr>
+				<td><span class="r-tag r-common">Common</span></td>
+				<td class="good"><b>轴入口 + 基础攻防</b>:每张 Common 都是「一张卡 + 一个条件制造动作」。没有能力卡 —— 全部即打即用,零成长承诺,帮助玩家在无信息压力下学会「制造条件」</td>
+				<td>Doom 入口 ×3(Blight Strike / Scourge / Negative Pulse)、Soul 入口 ×2(Reave / Grave Warden)、Osty 入口 ×4(Poke / Snap / Flatten / 血条系)、Ethereal 入口 ×2(Sculpting Strike / Defile)、能量 Wisp</td>
+			</tr>
+			<tr>
+				<td><span class="r-tag r-uncommon">Uncommon</span></td>
+				<td class="warn"><b>主轴组件 + 第一轮封顶</b>:能力卡登场(自动机、放大器、防御件),量产件出现;同时也是<b>桥梁最密集</b>的档位(跨轴连接卡大多在这里)</td>
+				<td>Countdown(自动机)、Calcify(放大器)、Shroud / Danse Macabre(防御件)、Capture Spirit / Severance / Dirge(量产)、No Escape(增幅)、Deathbringer / Bury / Pull from Below(第一轮封顶)、Sleight of Flesh(桥)</td>
+			</tr>
+			<tr>
+				<td><span class="r-tag r-rare">Rare</span></td>
+				<td class="bad"><b>封顶件 + 转换件 + 引擎</b>:大数字(处决、52 伤、Summon 20)、轴间转化(攻击→Doom、Soul→Osty)、以及把整个牌组转速拉起来的引擎</td>
+				<td>End of Days(处决)、Reanimate / Sacrifice / Banshee's Cry / Bury 系、Reaper Form / Devour Life / Necro Mastery(转换)、Demesne / Neurosurge / Call of the Void / Eidolon(引擎)</td>
+			</tr>
+			<tr>
+				<td><span class="r-tag r-ancient">Ancient</span></td>
+				<td>轴封顶的极端化 + 永久牌库工程</td>
+				<td>Protector(Osty 伤害 = 10 + 最大 HP)、Forbidden Grimoire(Eternal,永久移除卡)</td>
+			</tr>
+		</tbody>
+	</table>
+	<div class="note">结构性结论:<b>稀有度 = 「入口 → 组件 → 封顶」的递进</b>。Common 无能力卡是刻意的 —— 新玩家在前期学会「制造条件」,中期(Uncommon)拿到自动机把条件自动化,后期(Rare)拿到封顶件把条件兑换成大数字。桥梁卡集中在 Uncommon(前期就能串轴)+ Rare(后期才允许轴间转化)。</div>
+</div>
+
+<h2>4. 五条轴与构筑关键卡</h2>
+
+<h3>4.1 Doom 轴(阈值 / 处决)</h3>
+<div class="card">
+	<div class="flow">施放 Doom → 叠到 ≥ 敌当前 HP → 敌回合结束即死(无视格挡) → 防守拖回合 → 继续叠下一只</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>入口</td><td>Blight Strike ★ / Scourge ★ / Negative Pulse</td><td>伤转 Doom、纯 Doom + 过牌、群 Doom + 格挡 —— 前期的三选一标配</td></tr>
+			<tr><td>自动机</td><td>Countdown ★</td><td>每回合开始白送 6 Doom(升级 9),Doom 轴的中期发动机</td></tr>
+			<tr><td>增幅</td><td>No Escape ★</td><td>每已有 10 Doom 再 +5 —— 叠 Doom 的速度本身是乘区</td></tr>
+			<tr><td>群上</td><td>Deathbringer</td><td>全敌 21 Doom + 虚弱,一卡启动全屏倒计时</td></tr>
+			<tr><td>增量引擎</td><td>Oblivion ★ / Reaper Form</td><td>0 费:本回合每打 1 张牌 +3 Doom(与 0 费连打联动);攻击造成伤害附等量 Doom(把攻击流整体转进 Doom)</td></tr>
+			<tr><td>防御件</td><td>Shroud ★ / Death's Door</td><td>施放 Doom 得格挡(与 Countdown 联动 = 每回合免费格挡);本回合施放过 Doom 则 18 格挡</td></tr>
+			<tr><td class="bad">封顶</td><td>End of Days ★ / Time's Up ★</td><td>全敌 29 Doom + 立即处决已达标者;Doom 存量转即时伤害,<span class="changed">不再消耗</span> → 可重复使用,Doom 越高越接近「每回合白打一次大数字」</td></tr>
+			<tr><td class="bad">多人</td><td>Underworld <span class="badge b-mp">多人</span></td><td>本回合队友每次攻击造成伤害 → 附加等量 Doom;多人局把整队的攻击输出变成 Doom 增速器</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Blight Strike、Scourge、Countdown、No Escape、End of Days、Time's Up、Shroud</span><br>引擎形态:Blight Strike / Reaper Form(攻防一体地叠 Doom)+ Countdown + No Escape 的「增幅循环」+ Shroud 的自给防守 —— Doom 轴是五轴中<b>最不需要额外攻击卡</b>的一轴,叠层本身就是输出。</div>
+</div>
+
+<h3>4.2 Soul 轴(频率 / 过牌)</h3>
+<div class="card">
+	<div class="flow">生成 Soul → 打出 Soul(0 费,抽 2,消耗)→ 每次打出触发 Haunt / Devour Life → Soul 进消耗堆喂养 Soul Storm</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>入口</td><td>Grave Warden ★ / Reave</td><td>格挡 + Soul(公认最强普卡,攻防过牌三合一);伤害 + Soul</td></tr>
+			<tr><td>量产</td><td>Capture Spirit ★ / Severance ★ / Dirge ★ / Glimpse Beyond <span class="badge b-mp">多人</span></td><td>无伤扣血 + 3 Soul;13 伤 + 三区各 1 Soul;X 费 Summon 3X + X Soul(双轴);全玩家 +3 Soul</td></tr>
+			<tr><td>转化</td><td>Seance ★</td><td>0 费把牌组任意死卡变 Soul —— 牌库工程与 Soul 产出的合体</td></tr>
+			<tr><td class="bad">兑现</td><td>Haunt ★ / Soul Storm ★ / Devour Life ★</td><td>每次打出 -7 HP(频率形态);每张存量 +4 伤(存量形态);打出 Soul → Summon(转 Osty 轴)</td></tr>
+			<tr><td class="bad">多人</td><td>Soulbound <span class="badge b-mp">多人</span></td><td>选择一名队友:你每生成 1 张 Soul,他牌组 +1 Soul —— 把 Soul 频率转成跨玩家资源</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Grave Warden、Capture Spirit、Severance、Dirge、Seance、Haunt、Soul Storm、Devour Life</span><br>引擎形态:Grave Warden / Capture Spirit / Severance 制造 Soul → 打出即抽 2 → Haunt 每次 -7 HP + Devour Life 喂 Osty。Soul 轴的本质是「<b>把过牌本身变成伤害/成长</b>」,循环越快收益越高,是高层进阶最强形态。</div>
+</div>
+
+<h3>4.3 Osty / Summon 轴(蓄水池 / 第二条血条)</h3>
+<div class="card">
+	<div class="flow">Summon 蓄血(Osty 拦截攻击=防守)→ Osty 攻击卡兑现(Unleash / Flatten / Rattle / Squeeze)→ 牺牲变现(Bone Shards / Sacrifice)→ 反射(Necro Mastery)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>血条</td><td>Bodyguard ★(起始)/ Afterlife / Pull Aggro / Spur / Cleanse / Invoke / Dirge / Reanimate ★</td><td>Summon 数值从 4 到 20;Invoke 跨回合 +能量,Dirge 双轴,Reanimate 一卡 20 血</td></tr>
+			<tr><td>攻击</td><td>Unleash ★(起始)/ Poke / Snap / Flatten / Fetch / Rattle / High Five / Sic 'Em / Right Hand Hand / Squeeze ★ / Protector ★</td><td>0 费打点(Poke / Fetch / Right Hand Hand)、按 HP 打点(Unleash / Protector)、次数乘法(Rattle)、自我增长(Sic 'Em,每击中 Summon 3)</td></tr>
+			<tr><td>增幅</td><td>Calcify ★ / Squeeze / Sentry Mode</td><td>Osty 攻击全体 +4;Squeeze 后其他 Osty 攻击 +5;每回合自动 Sweeping Gaze(10 伤)</td></tr>
+			<tr><td class="bad">牺牲变现</td><td>Bone Shards ★ / Sacrifice ★</td><td>全敌 9 伤 + 9 格挡换 Osty 死;<span class="changed">3×</span>最大 HP 格挡换 Osty 死 —— 血条一次性兑现(新版倍率上调)</td></tr>
+			<tr><td>反射</td><td>Necro Mastery ★</td><td>Summon 5 + Osty 每次掉血全敌同步掉 —— 防守伤害一体</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Bodyguard、Unleash、Reanimate、Bone Shards、Sacrifice、Calcify、Necro Mastery、Sic 'Em</span><br>引擎形态:Dirge / Reanimate 把血条推到 20+ → Osty 每回合吃下全部攻击(防守免费)→ Necro Mastery 把受到的伤害反射给全敌 → Sacrifice 在关键时刻 3× 血量换格挡。Osty 轴是五轴中<b>攻防一体化程度最高</b>的一轴。</div>
+</div>
+
+<h3>4.4 Ethereal 轴(计数 / 倍数)</h3>
+<div class="card">
+	<div class="flow">制造 / 获得 Ethereal 卡 → 打出它们(否则回合结束自耗)→ 计数兑现:Pull from Below(伤害)、Banshee's Cry(降费)、Pagestorm(过牌)、Spirit of Ash(格挡)、Eidolon(回收再打)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>制造</td><td>Sculpting Strike ★ / Call of the Void ★</td><td>手牌 1 张加 Ethereal;每回合开始 1 张随机卡上手并加 Ethereal(自动机)</td></tr>
+			<tr><td>自带</td><td>Defile ★ / Defy / Fear / Parse / Seance / Enfeebling Touch / Lethality / Demesne</td><td>13 伤、格挡 + 虚弱、7 伤 + 易伤、抽 3、转化、敌降力、首击 +50%、能量引擎 —— 新版把更多泛用卡标记为 Ethereal(Lethality / Demesne / Fear),Ethereal 计数源显著变多</td></tr>
+			<tr><td>降费</td><td>Veilpiercer ★</td><td>下张 Ethereal 卡 0 费 —— 与 Bury(4 费 52 伤)组合的启动钥匙</td></tr>
+			<tr><td>计数兑现</td><td>Pull from Below ★ / Banshee's Cry ★ / Pagestorm ★ / Spirit of Ash</td><td>每张 5 伤;9 费群伤按计数降到 0(需 4~5 张 Ethereal);抽到 Ethereal 抽 1;打出 Ethereal 得格挡</td></tr>
+			<tr><td class="bad">回收封顶</td><td>Eidolon ★(新版)</td><td>把消耗堆中所有 Ethereal 卡重新打出 —— Ethereal 轴从「计数」升级为「复用」:Defile / Pull from Below / Spirit of Ash 全部再触发一轮</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Sculpting Strike、Call of the Void、Veilpiercer、Pull from Below、Banshee's Cry、Pagestorm、Eidolon</span><br>经典三卡组合:<b>Sculpting Strike 给 Bury 加 Ethereal → Veilpiercer 让 Bury 0 费 → 4 费 52 伤白打</b>;新版加入 Eidolon 后,一轮 Ethereal 组件可以被「回收重打」,爆发上限再翻一倍。Ethereal 轴是五轴中<b>成型最晚但单回合爆发最高</b>的一轴。</div>
+</div>
+
+<h3>4.5 高费 / 能量暗轴(大数字美学)</h3>
+<div class="card">
+	<div class="flow">能量件把费用做平(Wisp / Borrowed Time / Neurosurge / Invoke / Friendship / Demesne)→ 高费大牌打出(Reap / Bury / Banshee's Cry / Squeeze / Reanimate / End of Days)→ 高费回报件放大(Right Hand Hand 回手 / Danse Macabre 格挡 / Transfigure Replay / Lethality 首击)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>高费大牌</td><td>Reap(3 费 27)/ Bury ★(4 费 52)/ Banshee's Cry ★(<span class="changed">9 费</span> 33 群,每张 Ethereal -2)/ Squeeze(3 费 25+)/ Reanimate(3 费 20)/ End of Days(3 费处决)/ Eradicate(X 费 X 段)</td><td>每费伤害效率 9~13,远超普卡 —— 大数字本体;Banshee 升到 9 费后几乎只能靠 Ethereal 轴解锁</td></tr>
+			<tr><td>能量件</td><td>Wisp ★ / Borrowed Time ★(新版)/ Neurosurge ★ / Invoke ★ / Friendship / Demesne ★ / Delay</td><td>0 费 +1;1 费透支 +4(全卡 +1 费);自 Doom +3 抽 2;下回合 +2;-2 力换每回合 +1;每回合 +1 +1 抽(带 Ethereal);跨回合</td></tr>
+			<tr><td>高费回报件</td><td>Right Hand Hand ★ / Danse Macabre / Transfigure ★ / Lethality</td><td>打出 2+ 费卡即回手(0 费 Osty 攻击循环);打出 2+ 费得格挡;给大牌加 Replay(一次投资打两次);首张攻击 +50%(Ethereal 版,时机约束更强)</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Borrowed Time、Neurosurge、Wisp、Transfigure、Right Hand Hand、Bury</span><br>新版引擎原型:Borrowed Time(1 费透支 4 能量,当回合多打 2~3 张高费卡,「借来的时间」名副其实)→ Right Hand Hand 免费攻击循环。Transfigure + Dirge / Severance / Reanimate 是公认的高价值 Replay 目标。</div>
+</div>
+
+<h2>5. 构筑之间的桥梁:跨轴连接卡</h2>
+<div class="card">
+	<p class="lead">Necrobinder 卡池的设计精髓:四条轴不是孤岛,<b>桥梁卡把任意两轴接通</b>,最终形成「Doom ↔ Soul ↔ Osty ↔ Ethereal」的闭环网络。以下按连接方向列出全部桥梁:</p>
+	<table>
+		<thead><tr><th style="width:22%">连接</th><th style="width:26%">桥梁卡</th><th>原理</th></tr></thead>
+		<tbody>
+			<tr><td>Soul ↔ Osty</td><td><b>Dirge ★</b>、Devour Life ★</td><td>Dirge 一张卡同时投两条轴(X 费 Summon 3X + X Soul);Devour Life 把 Soul 的打出频率变成 Osty 血条</td></tr>
+			<tr><td>攻击 → Soul</td><td>Reave、Severance、Grave Warden、Capture Spirit</td><td>伤害 / 防御附带 Soul 产出,攻击流自动获得过牌引擎<span class="badge b-mp">多人</span> Soulbound 把产出共享给队友</td></tr>
+			<tr><td>攻击 → Doom</td><td><b>Reaper Form ★</b>、Blight Strike</td><td>任何攻击造成伤害都附等量 Doom —— 攻击流整体转进 Doom 计数<span class="badge b-mp">多人</span> Underworld 把队友的攻击也计入</td></tr>
+			<tr><td>0 费连打 → Doom</td><td>Oblivion ★</td><td>每打 1 张牌 +3 Doom,与 Wisp / Right Hand Hand / Undeath 的 0 费循环联动</td></tr>
+			<tr><td>Soul → 伤害</td><td>Haunt ★、Soul Storm ★</td><td>频率形态(每次打出 -7 HP)与存量形态(每张 +4 伤)两种兑现</td></tr>
+			<tr><td>Osty → 伤害 / 防御</td><td>Necro Mastery ★、Bone Shards ★、Sacrifice ★</td><td>反射 / 牺牲爆发 / 血条兑现 —— Osty 血条既是防守也是资源池</td></tr>
+			<tr><td>debuff → 伤害</td><td>Sleight of Flesh ★、Misery ★、Debilitate</td><td>每次施放 debuff 9 伤;单敌 debuff 扩散全敌;易伤 / 虚弱效果 ×2 —— 与 Doom 轴天然互喂(Countdown 每回合自动 debuff = 稳定 9 伤)</td></tr>
+			<tr><td>Doom → 防御</td><td>Shroud ★、Death's Door</td><td>Doom 轴自带的防守闭环,让「拖回合」可行</td></tr>
+			<tr><td>Doom → 即时伤害</td><td>Time's Up ★</td><td>Doom 存量转当回合输出,<span class="changed">不再消耗</span> → 从一次性兑现升级为可重复引擎</td></tr>
+			<tr><td>Ethereal → 复用</td><td>Eidolon ★(新版)</td><td>消耗堆所有 Ethereal 卡重新打出 —— Ethereal 轴内部的「回收」桥梁,也是本轴新的封顶方向</td></tr>
+			<tr><td>高费 → 运转</td><td>Right Hand Hand ★、Transfigure ★、Danse Macabre</td><td>高费卡是触发源:回手 / Replay / 格挡</td></tr>
+			<tr><td>任意轴 → 防守底板</td><td>Undeath ★、Seance、Snap</td><td>0 费自复制无限格挡;死卡转 Soul;关键卡保 Retain</td></tr>
+		</tbody>
+	</table>
+	<div class="note">闭环示例(全轴接通的最短路径):<span class="mono">Reaper Form(攻击→Doom)+ Blight Strike → Shroud(Doom→防御)+ Countdown 自动叠 → End of Days 处决;同局再挂 Devour Life(打出 Soul→Osty),用 Grave Warden / Capture Spirit 供 Soul,Haunt 补伤害 —— 四条轴在同一套牌里互相供能。</span></div>
+</div>
+
+<h2>6. 运转卡 vs 伤害卡</h2>
+<div class="card">
+	<h3>6.1 运转卡(Engine):把牌组转起来</h3>
+	<table>
+		<thead><tr><th style="width:18%">功能</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>抽牌</td><td><b>Soul token ★</b>(0 费抽 2,轴本体)、Parse、Pagestorm、Call of the Void、Scourge(+1)、Fetch(+1)</td><td>Soul 是卡池的抽牌货币;Pagestorm / Call of the Void 是 Ethereal 侧的抽牌机</td></tr>
+			<tr><td>能量</td><td><b>Wisp ★、Borrowed Time ★(透支)、Neurosurge ★</b>、Invoke、Friendship、Demesne、Delay</td><td>0 费 +1 / 透支 4(全卡 +1 费)/ 自 Doom +3 抽 2 / 跨回合 / 力量换 / 每回合 / 跨回合</td></tr>
+			<tr><td>回收 / 牌库</td><td><b>Dredge ★</b>、Graveblast、Cleanse、Seance、Drain Power(升级)、Forbidden Grimoire(移除)、<b>Eidolon ★</b>(Ethereal 回收)</td><td>弃牌堆打捞、废卡转化 / 消耗 / 永久移除、Ethereal 卡重新打出</td></tr>
+			<tr><td>关键词赋予</td><td><b>Snap</b>(Retain)、<b>Sculpting Strike</b>(Ethereal)、<b>Transfigure ★</b>(Replay)</td><td>把普通卡升级成带关键词的运转件</td></tr>
+			<tr><td>复制 / 回手</td><td>Undeath、Transfigure、Right Hand Hand</td><td>0 费自复制无限格挡;大牌打两次;高费触发回手</td></tr>
+		</tbody>
+	</table>
+	<h3>6.2 伤害卡:兑现输出</h3>
+	<table>
+		<thead><tr><th style="width:18%">形态</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>纯直伤</td><td>Reap、Bury ★、Sow、Defile、Eradicate、Banshee's Cry(群)</td><td>每费效率 9~13 的大数字集中在高费端</td></tr>
+			<tr><td>成长型</td><td>The Scythe(13 伤,永久 +5)、Hang(所有 Hang 互相翻倍)、Death March(抽牌计数)、Pull from Below(Ethereal 计数)、Soul Storm(存量 +4/张)、Time's Up(Doom 存量,可重复)</td><td>六种不同的「存量 → 伤害」形态,是伤害卡的真正主体</td></tr>
+			<tr><td>Osty 伤害</td><td>Unleash ★、Protector、Squeeze、Poke、Snap、Flatten、Fetch、Rattle、High Five、Sic 'Em、Right Hand Hand、Bone Shards、Sweeping Gaze</td><td>不吃己方力量 / 虚弱,吃 Calcify 与 Squeeze 增幅</td></tr>
+			<tr><td>反射 / 扣血</td><td>Necro Mastery、Haunt、Sleight of Flesh、Capture Spirit</td><td>无视格挡的伤害形态(Osty 反射、Soul 频率、debuff 触发、直接扣血)</td></tr>
+			<tr><td>处决</td><td>End of Days ★</td><td>Doom 轴专属终结</td></tr>
+			<tr><td>多人</td><td>Cacophony <span class="badge b-mp">多人</span></td><td>全员合计抽牌计数器,每 33 张对随机敌 66 伤(升级 99)</td></tr>
+		</tbody>
+	</table>
+	<h3>6.3 一张卡干两件事的「半运转半伤害」名单</h3>
+	<p class="lead">这是 Necrobinder 运转流畅的结构性原因 —— 大量卡同时具备攻防 / 攻转属性:</p>
+	<ul>
+		<li><b>Graveblast</b>:4 伤 + 弃牌堆捡 1 张(伤害 + 回收)</li>
+		<li><b>Severance</b>:13 伤 + 三区 Soul(伤害 + 量产)</li>
+		<li><b>Reave / Blight Strike</b>:伤害 + Soul / Doom(伤害 + 条件制造)</li>
+		<li><b>Snap / Fetch / Right Hand Hand</b>:Osty 打点 + Retain / 抽牌 / 回手</li>
+		<li><b>Drain Power</b>:10 伤 + 升级 2 张(伤害 + 牌库工程)</li>
+		<li><b>Scourge / Negative Pulse / Death's Door / Shroud</b>:Doom + 抽牌 / 格挡(条件 + 防守)</li>
+		<li><b>Undeath</b>:0 费格挡 + 自复制(防守 + 运转,也是 Oblivion 的 0 费触发器)</li>
+	</ul>
+</div>
+
+<h2>7. 设计观察(设计视角总结)</h2>
+<div class="card">
+	<ol>
+		<li><b>条件资源化,收益两段式</b>:每张轴入口卡只负责「制造条件 + 基础攻防」,条件兑现全部交给独立兑现卡(Haunt / Soul Storm / End of Days / Pull from Below)。这保证了入口卡单张不超模,兑现卡单独抓取时无用 —— 迫使玩家跨卡组牌。</li>
+		<li><b>桥梁网络是卡池的骨架</b>:Dirge / Reaper Form / Devour Life / Necro Mastery / Sleight of Flesh 五张桥,把四条轴连成环。任何两条轴都能互喂,构筑自由度来自桥梁密度而非单卡强度。</li>
+		<li><b>自我代价 = 能量来源(两代形态)</b>:第一代是「自 Doom」(Neurosurge —— 拿能量,攒倒计时);第二代是「透支」(Borrowed Time —— 拿 4 费,本回合全卡 +1 费)。两种都是「现在多打,之后还」的句式,风险兑现时点不同。</li>
+		<li><b>稀有度分层 = 学习路径</b>:Common 全无能力卡、Uncommon 给自动机与桥梁、Rare 给封顶与转换 —— 玩家先学会制造条件,再学会自动化,最后学会兑换。</li>
+		<li><b>处决机制解决"防御端无限成长"问题</b>:Doom 无视格挡与阶段转换,是对「叠甲型 / 多阶段 BOSS」的专用反制;作为代价,它要求玩家自带防守拖回合 —— 一轴同时承担进攻与防守叙事。</li>
+		<li><b>新版补丁的三个方向</b>:① 泛用卡贴 Ethereal 标签(Fear / Lethality / Demesne)—— 增加 Ethereal 计数源;② Time's Up 去消耗 + Eidolon 重做 —— Doom 与 Ethereal 两轴从「一次性兑现」转向「可重复引擎」;③ Borrowed Time 重做 —— 自我代价从自伤转向透支,风险从「血量」转到「节奏」。</li>
+	</ol>
+	<div class="note">对 OneDeck 的参考点:① 条件卡(制造)与兑现卡(消费)的两段式结构;② 桥梁卡的密度决定构筑自由度;③ 「负资源换正资源」作为费用系统的补充维度;④ 条件收益设计为「频率 × 存量」双形态(Haunt vs Soul Storm);⑤ 兑现件从一次性向可重复演进(Time's Up / Eidolon)是延长构筑寿命的常见手段。</div>
+</div>
+
+<h2 id="appendixB">附录 B. 版本变动清单(v1 旧数据 → v2 wiki.gg 最新)</h2>
+<div class="card">
+	<p class="lead">v1 数据源(sts2-wiki.org)落后于当前版本;以下为核对 <a href="https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Cards_List">wiki.gg 官方卡表</a>后确认的差异。</p>
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:42%">v1(旧)</th><th>v2(最新)</th></tr></thead>
+		<tbody>
+			<tr class="arch-head"><td colspan="3">新增卡(3 张,均为多人模式)</td></tr>
+			<tr><td><b>Cacophony</b> 喧哗</td><td>—</td><td>Rare 能力 2 费:全员合计每抽 33 张,对随机敌 66 伤(升级 99)</td></tr>
+			<tr><td><b>Soulbound</b> 灵魂绑定</td><td>—</td><td>Uncommon 能力 1 费:选一名队友,你生成 Soul 时他牌组 +1 Soul(升级 Innate)</td></tr>
+			<tr><td><b>Underworld</b> 冥界</td><td>—</td><td>Uncommon 技能 2 费:本回合队友攻击造成伤害时,附加等量 Doom,消耗</td></tr>
+			<tr class="arch-head"><td colspan="3">改为多人模式专属(2 张)</td></tr>
+			<tr><td><b>Glimpse Beyond / Legion of Bone</b></td><td>单人可用(敌我双方都受益的双刃剑)</td><td>多人专属:「ALL players」的协同语义只存在于多人局</td></tr>
+			<tr class="arch-head"><td colspan="3">重做 / 大改(2 张)</td></tr>
+			<tr><td><b>Borrowed Time</b> 借来的时间</td><td>0 费:自 +3 Doom,+1 能量(升级 +2)</td><td class="changed">1 费:获得 4 能量(升级 6),本回合所有卡费用 +1 —— 从自伤换费改为透支换费</td></tr>
+			<tr><td><b>Eidolon</b> 幻灵</td><td>消耗整个手牌,9 张 → 1 无实体</td><td class="changed">把消耗堆中所有 Ethereal 卡重新打出,消耗 —— 从防御条件件改为 Ethereal 回收封顶件</td></tr>
+			<tr class="arch-head"><td colspan="3">数值 / 关键词调整(主要)</td></tr>
+			<tr><td><b>Banshee's Cry</b></td><td>6 费,每张 Ethereal -2</td><td class="changed">9 费,每张 Ethereal -2(需 5 张 Ethereal 才能 0 费)</td></tr>
+			<tr><td><b>The Scythe</b></td><td>3 伤,永久 +1</td><td class="changed">13 伤,永久 +5(升级 +7)</td></tr>
+			<tr><td><b>Sacrifice</b></td><td>2×最大 HP 格挡</td><td class="changed">3×最大 HP 格挡,并自带 Retain</td></tr>
+			<tr><td><b>Soul Storm</b></td><td>每 Soul +2 伤</td><td class="changed">每 Soul +4 伤(升级 +6)</td></tr>
+			<tr><td><b>Time's Up</b></td><td>造成 = Doom 的伤害,消耗</td><td class="changed">不再消耗(升级 Retain)—— 可重复使用的 Doom 兑现件</td></tr>
+			<tr><td><b>Haunt / Shroud / Danse Macabre / Sic 'Em / Countdown</b></td><td>-6 HP / +2 格挡 / +3 格挡 / Summon 2 / 6 Doom</td><td class="changed">-7 HP / +3 格挡 / +4 格挡 / Summon 3 / 6 Doom(升级 9)</td></tr>
+			<tr><td><b>Death March / Debilitate / Reave / Sculpting Strike</b></td><td>+3/张 · 7 伤 · 9 伤 · 8 伤</td><td class="changed">+4/张(升级 +6)· 10 伤 · 10 伤 · 9 伤</td></tr>
+			<tr><td><b>Fear / Lethality / Demesne</b></td><td>无关键词 / 无关键词 / 无关键词</td><td class="changed">新增 Ethereal(Fear 同时是新的 Ethereal 计数源)</td></tr>
+			<tr><td><b>Reap / Sow / Spur / Eradicate</b></td><td>无关键词</td><td class="changed">新增 Retain(普卡大数字与 Osty 续航卡获得跨回合保牌能力)</td></tr>
+			<tr><td><b>Enfeebling Touch / Putrefy / Spirit of Ash / Shared Fate</b> 升级</td><td>升级文本数据存疑(-3 力 / 1+1 / +1 格挡 / 敌 -1 力)</td><td class="good">升级文本修正:-11 力 / 3+3 / +5 格挡 / 敌 -3 力(v1 的四处存疑项全部解决)</td></tr>
+			<tr><td><b>Dirge / Dredge</b></td><td>无消耗 / 升级 Retain</td><td class="changed">Dirge 自带消耗;Dredge 升级 Retain</td></tr>
+			<tr><td><b>Devour Life / Grave Warden / Defy / Calcify / Sleight of Flesh / Misery 等</b></td><td>Summon 1 · 10 格挡 · 7 格挡 · +8 · 17 伤 · 无 Retain</td><td>Summon 2 · 11 格挡 · 9 格挡 · +6 · 13 伤 · Retain + 9 伤(其余小幅数值更新见附录 A)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>附录 A. 全部 91 张卡</h2>
+<div class="card">
+	<p class="lead">分组按稀有度;升级文本以 wiki.gg 收录为准(未收录时标注「同基础」);「0 费」处原文为 "costs 0 1 Energy",按社区通行解读;多人模式专属卡标注 <span class="badge b-mp">多人</span>。</p>
+
+	<h3>A.1 Basic(4)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:9%">升级</th><th style="width:26%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Strike</b> 打击</td><td>攻击</td><td>1</td><td>造成 6 点伤害</td><td>9 伤</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Defend</b> 防御</td><td>技能</td><td>1</td><td>获得 5 格挡</td><td>8 格挡</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Unleash</b> 释放</td><td>攻击</td><td>1</td><td>Osty 造成 6 点伤害,额外伤害 = Osty 当前 HP</td><td>9 伤</td><td><span class="badge b-osty">Osty·伤害</span><span class="star">★ 轴种子</span></td></tr>
+			<tr><td><b>Bodyguard</b> 保镖</td><td>技能</td><td>1</td><td>Summon 5</td><td>Summon 7</td><td><span class="badge b-osty">Osty·血条</span><span class="star">★ 轴种子</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.2 Common(20)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:26%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Blight Strike</b> 枯萎打击</td><td>攻击</td><td>1</td><td>造成 8 伤,附加等量 Doom</td><td>10 伤</td><td><span class="badge b-doom">Doom·入口</span><span class="badge b-gen">桥:伤害→Doom</span><span class="star">★</span></td></tr>
+			<tr><td><b>Defile</b> 亵渎</td><td>攻击</td><td>1</td><td>Ethereal。造成 13 伤</td><td>17 伤</td><td><span class="badge b-eth">Ethereal·载体</span></td></tr>
+			<tr><td><b>Drain Power</b> 汲取之力</td><td>攻击</td><td>1</td><td>造成 10 伤,升级弃牌堆 2 张随机卡</td><td>12 伤 / 3 张</td><td><span class="badge b-gen">伤害+牌库工程</span></td></tr>
+			<tr><td><b>Fear</b> 恐惧</td><td>攻击</td><td>1</td><td>Ethereal。造成 7 伤,附加 1 易伤</td><td>8 伤 / 2 易伤</td><td><span class="badge b-eth">Ethereal·载体</span><span class="badge b-gen">debuff·制造</span></td></tr>
+			<tr><td><b>Flatten</b> 拍扁</td><td>攻击</td><td>2</td><td>Osty 造成 12 伤;若 Osty 本回合已攻击,本卡 0 费</td><td>16 伤</td><td><span class="badge b-osty">Osty·攻击</span><span class="badge b-gen">条件·降费</span></td></tr>
+			<tr><td><b>Graveblast</b> 墓穴爆破</td><td>攻击</td><td>1</td><td>造成 4 伤,弃牌堆捡 1 张上手,消耗</td><td>6 伤 / 不消耗</td><td><span class="badge b-gen">伤害+回收</span></td></tr>
+			<tr><td><b>Poke</b> 戳</td><td>攻击</td><td>0</td><td>Osty 造成 6 伤</td><td>9 伤</td><td><span class="badge b-osty">Osty·0费打点</span></td></tr>
+			<tr><td><b>Reap</b> 收割</td><td>攻击</td><td>3</td><td>Retain。造成 27 伤</td><td>33 伤</td><td><span class="badge b-eng">高费·直伤</span></td></tr>
+			<tr><td><b>Reave</b> 掠夺</td><td>攻击</td><td>1</td><td>造成 10 伤,牌组加入 1 Soul</td><td>13 伤 / Soul+</td><td><span class="badge b-soul">Soul·入口</span><span class="badge b-gen">桥:攻击→Soul</span></td></tr>
+			<tr><td><b>Sculpting Strike</b> 雕塑打击</td><td>攻击</td><td>1</td><td>造成 9 伤,手牌 1 张获得 Ethereal</td><td>12 伤</td><td><span class="badge b-eth">Ethereal·制造</span><span class="star">★</span></td></tr>
+			<tr><td><b>Snap</b> 弹指</td><td>攻击</td><td>1</td><td>Osty 造成 7 伤,手牌 1 张获得 Retain</td><td>10 伤</td><td><span class="badge b-osty">Osty·攻击</span><span class="badge b-eng">运转·保留</span></td></tr>
+			<tr><td><b>Sow</b> 播种</td><td>攻击</td><td>1</td><td>Retain。对全体敌人造成 8 伤</td><td>11 伤</td><td><span class="badge b-gen">群伤</span></td></tr>
+			<tr><td><b>Afterlife</b> 来世</td><td>技能</td><td>1</td><td>Summon 6,消耗</td><td>Summon 9</td><td><span class="badge b-osty">Osty·血条</span></td></tr>
+			<tr><td><b>Defy</b> 藐视</td><td>技能</td><td>1</td><td>Ethereal。获得 6 格挡,附加 1 虚弱</td><td>9 格挡 / 1 虚弱</td><td><span class="badge b-eth">Ethereal·载体</span><span class="badge b-gen">防御</span></td></tr>
+			<tr><td><b>Grave Warden</b> 守墓人</td><td>技能</td><td>1</td><td>获得 8 格挡,牌组加入 1 Soul</td><td>11 格挡</td><td><span class="badge b-soul">Soul·入口</span><span class="badge b-gen">防御</span><span class="star">★ 最强普卡</span></td></tr>
+			<tr><td><b>Invoke</b> 祈唤</td><td>技能</td><td>1</td><td>下回合 Summon 2 并获得 2 能量</td><td>Summon 3 / 3 能量</td><td><span class="badge b-eng">能量+血条</span><span class="badge b-osty">跨回合</span></td></tr>
+			<tr><td><b>Negative Pulse</b> 负脉冲</td><td>技能</td><td>1</td><td>获得 5 格挡,对全体敌人附加 7 Doom</td><td>6 格挡 / 11 Doom</td><td><span class="badge b-doom">Doom·入口</span><span class="badge b-gen">防御</span></td></tr>
+			<tr><td><b>Pull Aggro</b> 拉仇恨</td><td>技能</td><td>2</td><td>Summon 4,获得 7 格挡</td><td>Summon 5 / 9 格挡</td><td><span class="badge b-osty">Osty·血条</span><span class="badge b-gen">防御</span></td></tr>
+			<tr><td><b>Scourge</b> 天罚</td><td>技能</td><td>1</td><td>附加 13 Doom,抽 1 张</td><td>16 Doom / 抽 2</td><td><span class="badge b-doom">Doom·入口</span><span class="badge b-eng">运转·过牌</span><span class="star">★</span></td></tr>
+			<tr><td><b>Wisp</b> 魂火</td><td>技能</td><td>0</td><td>获得 1 能量,消耗</td><td>Retain</td><td><span class="badge b-eng">能量·0费</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.3 Uncommon(38)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:26%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Bone Shards</b> 骨片</td><td>攻击</td><td>1</td><td>Osty 存活时:对全体敌人造成 9 伤,获得 9 格挡,Osty 死亡</td><td>12 伤 / 12 格挡</td><td><span class="badge b-osty">Osty·牺牲爆发</span><span class="star">★</span></td></tr>
+			<tr><td><b>Bury</b> 埋葬</td><td>攻击</td><td>4</td><td>造成 52 伤</td><td>63 伤</td><td><span class="badge b-eng">高费·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Death March</b> 死亡行军</td><td>攻击</td><td>1</td><td>造成 8 伤;本回合每抽 1 张牌 +4 伤</td><td>9 伤 / +6 伤/张</td><td><span class="badge b-gen">抽牌×伤害</span></td></tr>
+			<tr><td><b>Debilitate</b> 衰弱</td><td>攻击</td><td>1</td><td>造成 10 伤;该敌易伤/虚弱效果 ×2,持续 3 回合</td><td>12 伤</td><td><span class="badge b-gen">debuff·放大器</span></td></tr>
+			<tr><td><b>Fetch</b> 取回</td><td>攻击</td><td>0</td><td>Osty 造成 3 伤;本回合首次打出时抽 1</td><td>6 伤</td><td><span class="badge b-osty">Osty·0费</span><span class="badge b-eng">运转·过牌</span></td></tr>
+			<tr><td><b>High Five</b> 击掌</td><td>攻击</td><td>2</td><td>Osty 造成 11 伤,对全体敌人附加 2 易伤</td><td>13 伤 / 3 易伤</td><td><span class="badge b-osty">Osty·攻击</span><span class="badge b-gen">debuff·制造</span></td></tr>
+			<tr><td><b>Pull from Below</b> 自下方拉扯</td><td>攻击</td><td>1</td><td>本场每打出过 1 张 Ethereal 卡,造成 5 伤</td><td>7 伤/张</td><td><span class="badge b-eth">Ethereal·封顶伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Rattle</b> 骨响</td><td>攻击</td><td>1</td><td>Osty 造成 7 伤;本回合他每多攻击 1 次,多打 1 段</td><td>9 伤</td><td><span class="badge b-osty">Osty·次数乘法</span></td></tr>
+			<tr><td><b>Right Hand Hand</b> 右手之手</td><td>攻击</td><td>0</td><td>Osty 造成 4 伤;打出 2+ 费卡后,本卡从弃牌堆回手</td><td>6 伤</td><td><span class="badge b-eng">高费·回手循环</span><span class="star">★</span></td></tr>
+			<tr><td><b>Severance</b> 断魂</td><td>攻击</td><td>2</td><td>造成 13 伤;牌组、手牌、弃牌堆各加入 1 Soul</td><td>18 伤</td><td><span class="badge b-soul">Soul·量产</span><span class="star">★</span></td></tr>
+			<tr><td><b>Sic 'Em</b> 上!咬他!</td><td>攻击</td><td>1</td><td>Osty 造成 5 伤;本回合 Osty 每击中该敌 1 次,Summon 3</td><td>6 伤 / Summon 4</td><td><span class="badge b-osty">Osty·自我增长</span></td></tr>
+			<tr><td><b>Veilpiercer</b> 破纱者</td><td>攻击</td><td>1</td><td>造成 10 伤;下一张 Ethereal 卡 0 费</td><td>13 伤</td><td><span class="badge b-eth">Ethereal·降费</span><span class="star">★</span></td></tr>
+			<tr><td><b>Borrowed Time</b> 借来的时间</td><td>技能</td><td>1</td><td>获得 4 能量;本回合所有卡费用 +1</td><td>6 能量</td><td><span class="badge b-eng">能量·透支</span><span class="badge b-gen">自我代价</span><span class="star">★ 新版</span></td></tr>
+			<tr><td><b>Capture Spirit</b> 捕获灵魂</td><td>技能</td><td>1</td><td>敌人失去 3 HP,牌组加入 3 Soul</td><td>4 HP / 4 Soul</td><td><span class="badge b-soul">Soul·量产</span><span class="badge b-gen">无伤输出</span><span class="star">★</span></td></tr>
+			<tr><td><b>Cleanse</b> 净化</td><td>技能</td><td>1</td><td>Summon 3,消耗牌组 1 张卡</td><td>Summon 5</td><td><span class="badge b-osty">Osty·血条</span><span class="badge b-eng">牌库工程</span></td></tr>
+			<tr><td><b>Death's Door</b> 死亡之门</td><td>技能</td><td>1</td><td>获得 6 格挡;本回合施放过 Doom 则额外结算 2 次</td><td>7 格挡</td><td><span class="badge b-doom">Doom·条件防御</span></td></tr>
+			<tr><td><b>Deathbringer</b> 死亡使者</td><td>技能</td><td>2</td><td>对全体敌人附加 21 Doom 和 1 虚弱</td><td>26 Doom</td><td><span class="badge b-doom">Doom·群上封顶</span></td></tr>
+			<tr><td><b>Delay</b> 拖延</td><td>技能</td><td>2</td><td>获得 11 格挡;下回合获得 1 能量</td><td>13 格挡 / 2 能量</td><td><span class="badge b-gen">防御</span><span class="badge b-eng">能量·跨回合</span></td></tr>
+			<tr><td><b>Dirge</b> 挽歌</td><td>技能</td><td>X</td><td>Summon 3 ×X 次,牌组加入 X 张 Soul,消耗</td><td>Summon 4×X / Soul+</td><td><span class="badge b-soul">Soul</span><span class="badge b-osty">Osty</span><span class="badge b-gen">桥梁之王</span><span class="star">★</span></td></tr>
+			<tr><td><b>Dredge</b> 打捞</td><td>技能</td><td>1</td><td>弃牌堆捡 3 张上手,消耗</td><td>Retain</td><td><span class="badge b-eng">运转·回收</span><span class="star">★</span></td></tr>
+			<tr><td><b>Enfeebling Touch</b> 衰弱之触</td><td>技能</td><td>1</td><td>Ethereal。该敌本回合失去 8 力量</td><td>11 力量</td><td><span class="badge b-eth">Ethereal·载体</span><span class="badge b-gen">敌方降力</span></td></tr>
+			<tr><td><b>Legion of Bone</b> 白骨军团</td><td>技能</td><td>2</td><td>敌我双方 Summon 6,消耗</td><td>Summon 8</td><td><span class="badge b-osty">Osty·血条</span><span class="badge b-mp">多人专属</span></td></tr>
+			<tr><td><b>Melancholy</b> 忧郁</td><td>技能</td><td>3</td><td>获得 13 格挡;任何人死亡时,本卡费用 -1</td><td>17 格挡</td><td><span class="badge b-gen">条件降费·防御</span></td></tr>
+			<tr><td><b>No Escape</b> 无处可逃</td><td>技能</td><td>1</td><td>附加 10 Doom;该敌每已有 10 Doom,额外 +5</td><td>15 Doom 起</td><td><span class="badge b-doom">Doom·增幅核心</span><span class="star">★</span></td></tr>
+			<tr><td><b>Parse</b> 解析</td><td>技能</td><td>1</td><td>Ethereal。抽 3 张</td><td>抽 4</td><td><span class="badge b-eth">Ethereal·载体</span><span class="badge b-eng">运转·过牌</span></td></tr>
+			<tr><td><b>Putrefy</b> 腐化</td><td>技能</td><td>1</td><td>附加 2 虚弱和 2 易伤,消耗</td><td>3 / 3</td><td><span class="badge b-gen">debuff·制造</span></td></tr>
+			<tr><td><b>Spur</b> 激励</td><td>技能</td><td>1</td><td>Retain。Summon 3,Osty 回复 5 HP</td><td>Summon 5 / 7 HP</td><td><span class="badge b-osty">Osty·续航</span></td></tr>
+			<tr><td><b>Underworld</b> 冥界</td><td>技能</td><td>2</td><td>本回合队友攻击造成伤害时,附加等量 Doom,消耗</td><td>同基础</td><td><span class="badge b-doom">Doom·多人</span><span class="badge b-mp">多人新增</span></td></tr>
+			<tr><td><b>Calcify</b> 石化</td><td>能力</td><td>1</td><td>Osty 的攻击额外造成 4 伤</td><td>+6 伤</td><td><span class="badge b-osty">Osty·攻击放大器</span><span class="star">★</span></td></tr>
+			<tr><td><b>Countdown</b> 倒计时</td><td>能力</td><td>1</td><td>回合开始:随机敌人附加 6 Doom</td><td>9 Doom</td><td><span class="badge b-doom">Doom·自动机</span><span class="star">★</span></td></tr>
+			<tr><td><b>Danse Macabre</b> 死亡之舞</td><td>能力</td><td>1</td><td>打出 2+ 费卡时,获得 4 格挡</td><td>+6 格挡</td><td><span class="badge b-eng">高费·防御件</span></td></tr>
+			<tr><td><b>Friendship</b> 友谊</td><td>能力</td><td>1</td><td>失去 2 力量;每回合开始获得 1 能量</td><td>-1 力量</td><td><span class="badge b-eng">能量·力量转换</span><span class="badge b-gen">自我代价</span></td></tr>
+			<tr><td><b>Haunt</b> 萦绕</td><td>能力</td><td>1</td><td>打出 Soul 时,随机敌人失去 7 HP</td><td>-9 HP</td><td><span class="badge b-soul">Soul·频率伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Lethality</b> 致命性</td><td>能力</td><td>1</td><td>Ethereal。每回合第一张攻击 +50% 伤害</td><td>+75%</td><td><span class="badge b-eth">Ethereal·载体</span><span class="badge b-gen">通用伤害放大器</span></td></tr>
+			<tr><td><b>Pagestorm</b> 书页风暴</td><td>能力</td><td>1</td><td>抽到 Ethereal 卡时,抽 1 张</td><td>降费</td><td><span class="badge b-eth">Ethereal·运转</span><span class="star">★</span></td></tr>
+			<tr><td><b>Shroud</b> 裹尸布</td><td>能力</td><td>1</td><td>施放 Doom 时,获得 3 格挡</td><td>+4 格挡</td><td><span class="badge b-doom">Doom·防御件</span><span class="star">★</span></td></tr>
+			<tr><td><b>Sleight of Flesh</b> 血肉戏法</td><td>能力</td><td>2</td><td>对敌人施放 debuff 时,该敌受到 9 伤</td><td>13 伤</td><td><span class="badge b-gen">debuff→伤害</span><span class="star">★ 桥</span></td></tr>
+			<tr><td><b>Soulbound</b> 灵魂绑定</td><td>能力</td><td>1</td><td>选一名队友:你生成 Soul 时,他牌组 +1 Soul</td><td>Innate</td><td><span class="badge b-soul">Soul·多人</span><span class="badge b-mp">多人新增</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.4 Rare(27)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:26%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Banshee's Cry</b> 女妖之嚎</td><td>攻击</td><td>9</td><td>对全体敌人造成 33 伤;本场每打出 1 张 Ethereal 卡,费用 -2</td><td>同基础</td><td><span class="badge b-eth">Ethereal·群伤封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Eradicate</b> 根除</td><td>攻击</td><td>X</td><td>Retain。造成 11 伤 ×X 次</td><td>14 伤</td><td><span class="badge b-eng">能量→直伤</span></td></tr>
+			<tr><td><b>Hang</b> 悬挂</td><td>攻击</td><td>1</td><td>造成 10 伤;所有 Hang 卡对该敌的伤害翻倍</td><td>13 伤</td><td><span class="badge b-gen">成长直伤·互相翻倍</span></td></tr>
+			<tr><td><b>Misery</b> 苦难</td><td>攻击</td><td>0</td><td>造成 7 伤;该敌身上的所有 debuff 扩散到全体敌人</td><td>Retain / 9 伤</td><td><span class="badge b-gen">debuff·扩散</span><span class="star">★ 桥</span></td></tr>
+			<tr><td><b>Soul Storm</b> 灵魂风暴</td><td>攻击</td><td>1</td><td>造成 9 伤;消耗堆每有 1 张 Soul,+4 伤</td><td>+6 伤/张</td><td><span class="badge b-soul">Soul·存量伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Squeeze</b> 紧握</td><td>攻击</td><td>3</td><td>Osty 造成 25 伤;你其他所有 Osty 攻击卡伤害 +5</td><td>30 伤 / +6</td><td><span class="badge b-osty">Osty·攻击封顶</span></td></tr>
+			<tr><td><b>The Scythe</b> 镰刀</td><td>攻击</td><td>2</td><td>造成 13 伤;本卡伤害永久 +5,消耗</td><td>+7/次</td><td><span class="badge b-gen">成长直伤·卡面成长</span></td></tr>
+			<tr><td><b>Time's Up</b> 时间到</td><td>攻击</td><td>2</td><td>造成等于该敌 Doom 的伤害</td><td>Retain</td><td><span class="badge b-doom">Doom→即时伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Call of the Void</b> 虚空呼唤</td><td>能力</td><td>1</td><td>回合开始:1 张随机卡上手并获得 Ethereal</td><td>Innate</td><td><span class="badge b-eth">Ethereal·自动机</span><span class="star">★</span></td></tr>
+			<tr><td><b>Demesne</b> 领地</td><td>能力</td><td>3</td><td>Ethereal。回合开始:获得 1 能量,额外抽 1 张</td><td>降费</td><td><span class="badge b-eng">能量·引擎</span><span class="star">★</span></td></tr>
+			<tr><td><b>Devour Life</b> 吞噬生命</td><td>能力</td><td>1</td><td>打出 Soul 时,Summon 1</td><td>Summon 2</td><td><span class="badge b-soul">Soul→Osty</span><span class="badge b-osty">桥</span><span class="star">★</span></td></tr>
+			<tr><td><b>Necro Mastery</b> 死灵掌握</td><td>能力</td><td>2</td><td>Summon 5;Osty 每次失去 HP,全体敌人同步失去等量 HP</td><td>Summon 8</td><td><span class="badge b-osty">Osty→反射伤害</span><span class="star">★ 桥</span></td></tr>
+			<tr><td><b>Neurosurge</b> 神经脉冲</td><td>能力</td><td>0</td><td>获得 3 能量,抽 2 张;回合开始:对自己附加 3 Doom</td><td>4 能量</td><td><span class="badge b-eng">能量·引擎</span><span class="badge b-doom">自我代价</span><span class="star">★</span></td></tr>
+			<tr><td><b>Reaper Form</b> 收割者形态</td><td>能力</td><td>3</td><td>攻击造成伤害时,附加等量 Doom</td><td>Retain</td><td><span class="badge b-doom">攻击→Doom</span><span class="star">★ 桥之王</span></td></tr>
+			<tr><td><b>Sentry Mode</b> 哨兵模式</td><td>能力</td><td>2</td><td>回合开始:手牌加入 1 张 Sweeping Gaze</td><td>降费</td><td><span class="badge b-osty">Osty·自动攻击</span></td></tr>
+			<tr><td><b>Spirit of Ash</b> 灰烬之灵</td><td>能力</td><td>1</td><td>打出 Ethereal 卡时,获得 4 格挡</td><td>+5 格挡</td><td><span class="badge b-eth">Ethereal·防御件</span></td></tr>
+			<tr><td><b>Cacophony</b> 喧哗</td><td>能力</td><td>2</td><td>全员合计每抽 33 张,对随机敌人造成 66 伤</td><td>99 伤</td><td><span class="badge b-gen">多人·抽牌计数器</span><span class="badge b-mp">多人新增</span></td></tr>
+			<tr><td><b>Eidolon</b> 幻灵</td><td>技能</td><td>2</td><td>把消耗堆中所有 Ethereal 卡重新打出,消耗</td><td>降费</td><td><span class="badge b-eth">Ethereal·回收封顶</span><span class="star">★ 新版</span></td></tr>
+			<tr><td><b>End of Days</b> 末日降临</td><td>技能</td><td>3</td><td>对全体敌人附加 29 Doom;Doom ≥ HP 的敌人立即死亡</td><td>37 Doom</td><td><span class="badge b-doom">Doom·处决封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Glimpse Beyond</b> 彼岸一瞥</td><td>技能</td><td>1</td><td>敌我双方牌组各加入 3 Soul,消耗</td><td>4 Soul</td><td><span class="badge b-soul">Soul·量产</span><span class="badge b-mp">多人专属</span></td></tr>
+			<tr><td><b>Oblivion</b> 湮灭</td><td>技能</td><td>0</td><td>本回合每打出 1 张牌,对敌人附加 3 Doom</td><td>4 Doom/张</td><td><span class="badge b-doom">Doom·增量引擎</span><span class="star">★</span></td></tr>
+			<tr><td><b>Reanimate</b> 复活</td><td>技能</td><td>3</td><td>Summon 20,消耗</td><td>Summon 25</td><td><span class="badge b-osty">Osty·血条封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Sacrifice</b> 献祭</td><td>技能</td><td>1</td><td>Retain。Osty 存活时:他死亡,你获得 3×他最大 HP 的格挡</td><td>降费</td><td><span class="badge b-osty">Osty→防御封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Seance</b> 通灵</td><td>技能</td><td>0</td><td>Ethereal。牌组 1 张卡转化为 Soul</td><td>Soul+</td><td><span class="badge b-soul">Soul·转化</span><span class="badge b-eng">牌库工程</span><span class="star">★</span></td></tr>
+			<tr><td><b>Shared Fate</b> 共命运</td><td>技能</td><td>0</td><td>你失去 2 力量,敌人失去 2 力量,消耗</td><td>敌 -3 力</td><td><span class="badge b-gen">敌我双减·双刃剑</span></td></tr>
+			<tr><td><b>Transfigure</b> 变形</td><td>技能</td><td>1</td><td>手牌 1 张获得 Replay(费用 +1),消耗</td><td>不消耗</td><td><span class="badge b-eng">复制引擎·高费放大</span><span class="star">★</span></td></tr>
+			<tr><td><b>Undeath</b> 不死</td><td>技能</td><td>0</td><td>获得 7 格挡,弃牌堆加入 1 张本卡复制</td><td>9 格挡</td><td><span class="badge b-gen">无限格挡·运转</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.5 Ancient(2)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:26%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Protector</b> 守护者</td><td>攻击</td><td>1</td><td>Osty 造成 10 伤,额外伤害 = Osty 最大 HP</td><td>15 伤 / 降费</td><td><span class="badge b-osty">Osty·伤害封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Forbidden Grimoire</b> 禁忌魔典</td><td>能力</td><td>2</td><td>战斗结束时,可移除牌组 1 张卡。Eternal</td><td>降费</td><td><span class="badge b-gen">永久牌库工程</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.6 生成 token(非卡池卡)</h3>
+	<table>
+		<thead><tr><th>token</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th>来源</th></tr></thead>
+		<tbody>
+			<tr><td><b>Soul</b> 灵魂</td><td>技能</td><td>0</td><td>抽 2 张,消耗</td><td>Reave / Grave Warden / Capture Spirit / Severance / Dirge / Glimpse Beyond / Seance;Soul+ 为升级版</td></tr>
+			<tr><td><b>Sweeping Gaze</b> 扫视</td><td>攻击</td><td>0</td><td>Osty 对随机敌人造成 10 伤,消耗</td><td>Sentry Mode(每回合开始)</td></tr>
+		</tbody>
+	</table>
+	<div class="note">数据说明:v2 卡牌数据取自 slaythespire.wiki.gg 官方卡表(Cargo 导出,2026-08-17),含最新平衡补丁与多人模式内容;关键词(Ethereal / Retain / Doom / Soul / Summon 等)来自 wiki 的卡面标注;升级文本以 wiki 收录为准,「降费」类升级的具体数值以游戏内为准。</div>
+</div>
+
+</body>
+</html>

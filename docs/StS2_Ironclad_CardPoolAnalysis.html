@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>杀戮尖塔2 Ironclad 卡组结构拆解 — 条件 · 收益 · 稀有度分布 · 构筑图谱</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+		--purple: #bb9af7; --cyan: #7dcfff;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+	.mono { font-family: Consolas, monospace; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+	.b-strong { color: #f7768e; border-color: #f7768e88; }
+	.b-exh { color: #e0af68; border-color: #e0af6888; }
+	.b-hp { color: #9ece6a; border-color: #9ece6a88; }
+	.b-vuln { color: #bb9af7; border-color: #bb9af788; }
+	.b-block { color: #7dcfff; border-color: #7dcfff88; }
+	.b-gen { color: #8b93a3; border-color: #8b93a388; }
+	.b-mp { color: #ff9e64; border-color: #ff9e6488; }
+	.star { color: #e0af68; font-weight: 700; }
+	ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.bad { color: var(--bad); }
+	.purple { color: var(--purple); }
+	.cyan { color: var(--cyan); }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.keycard { background: #1a1e27; border: 1px solid #e0af6855; border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 0.85rem; }
+	.keycard .kc-name { font-weight: 700; color: #e0af68; }
+	.r-tag { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; white-space: nowrap; }
+	.r-basic { color: #8b93a3; border-color: #8b93a388; }
+	.r-common { color: #9ece6a; border-color: #9ece6a88; }
+	.r-uncommon { color: #7dcfff; border-color: #7dcfff88; }
+	.r-rare { color: #bb9af7; border-color: #bb9af788; }
+	.r-ancient { color: #e0af68; border-color: #e0af6888; }
+	@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style>
+</head>
+<body>
+
+<h1>杀戮尖塔 2 · Ironclad 卡组结构拆解</h1>
+<div class="sub">2026-08-17 · 卡牌数据源:<a href="https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Cards_List">slaythespire.wiki.gg 官方卡表</a>(Cargo 数据,90 张,含最新平衡补丁)· 机制规则:Spire Codex / Mobalytics / untapped.gg 交叉验证 · 中文译名为参考译名,一律以英文原文为准 · 同系列:<a href="StS2_Necrobinder_CardPoolAnalysis.html">Necrobinder</a> / <a href="StS2_Silent_CardPoolAnalysis.html">Silent</a> / <a href="StS2_Defect_CardPoolAnalysis.html">Defect</a> / <a href="StS2_Regent_CardPoolAnalysis.html">Regent</a></div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num">90</div><div class="lbl">卡池总数(全角色最少 —— 起始卡只有 3 张)</div></div>
+	<div class="kpi"><div class="num">27</div><div class="lbl">带 Exhaust 的卡数(全游消耗密度最高,身份关键词)</div></div>
+	<div class="kpi"><div class="num">5+2</div><div class="lbl">主线:力量 / 消耗 / 自伤(HP 即资源)/ 易伤 / 格挡 + 0费连打 / Strike 族</div></div>
+	<div class="kpi"><div class="num">80 HP</div><div class="lbl">全游最高血量 + Burning Blood 战后回 6 —— 血量本身就是可消耗资源</div></div>
+	<div class="kpi"><div class="num">0</div><div class="lbl">Common 中的能力卡数量(与 Necrobinder 相同的入口层设计)</div></div>
+</div>
+
+<h2>0. 角色骨架</h2>
+<div class="card">
+	<ul>
+		<li><b>属性</b>:80 HP(全角色最高)、3 能量、起始遗物 <b>Burning Blood</b>(每场战斗后回复 6 HP)。</li>
+		<li><b>起始牌组</b>(10 张):Strike ×5、Defend ×4、Bash ×1 —— 唯一的职业卡是 Bash(2 费 8 伤 + 2 易伤),把「易伤」作为起手教学。</li>
+		<li><b>身份关键词</b>:<span class="badge b-exh">Exhaust(27 张)</span> 全游最密集 —— 消耗堆不只是机制,而是「计数资源」与「二次使用区」;<span class="badge b-strong">力量</span> 与 <span class="badge b-vuln">易伤</span> 是两条经典成长轴;新补丁强化了 <span class="badge b-hp">自伤(HP 即资源)</span> —— 放血换能量 / 力量 / 伤害是 StS2 铁甲的招牌句式。</li>
+		<li><b>新机制</b>:<b>Fatal</b>(击杀非随从敌人时触发 —— Feed 击杀 +3 最大 HP)、<b>Plating</b>(回合结束获得格挡,回合开始 -1 的衰减甲 —— Stone Armor)、<b>Giant Rock</b>(1 费 16 伤 token,由 Primal Force 把整手攻击转化而来)、<b>Strike 卡族</b>(Perfected Strike 按 Strike 卡计数、Hellraiser 自动打出抽到的 Strike)。</li>
+	</ul>
+	<div class="note">资源轴速览:力量 = <span class="bad">成长轴</span>(每段伤害 +1);消耗堆 = <span class="warn">计数/回收轴</span>(Ashen Strike / Pact's End / Midnight / Howl from Beyond);HP = <span class="good">可透支资源</span>(Offering / Bloodletting / Rupture / Inferno);格挡 = <span class="cyan">存量轴</span>(Barricade / Body Slam / Juggernaut)。</div>
+</div>
+
+<h2>1. 条件体系:有什么条件、怎么满足、换来什么</h2>
+
+<h3>1.1 A 组:敌人身上的状态(易伤系)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>敌带有易伤</b></td><td>持续状态</td><td>Bash / Thunderclap / Taunt / Tremble / Uppercut / Molten Fist</td><td><b>Dismantle</b> 打两段、<b>Molten Fist</b> 把敌易伤翻倍、<b>Colossus</b> 本回合对易伤敌受伤减半</td></tr>
+			<tr><td><b>敌易伤层数</b></td><td>施放/结算时读取</td><td>任意易伤源叠层</td><td><b>Bully</b>:每层 +2 伤;<b>Dominate</b>:每层 +1 力量(然后消耗)</td></tr>
+			<tr><td><b>施放易伤事件</b></td><td>事件触发</td><td>任意易伤源</td><td><b>Vicious</b>:施放易伤时抽 1 张</td></tr>
+			<tr><td><b>敌处于易伤状态时被打</b></td><td>伤害结算</td><td>—</td><td><b>Cruelty</b>:易伤敌额外承受 25% 伤害(能力,全局)</td></tr>
+			<tr><td><b>敌力量过高</b></td><td>持续状态</td><td>—</td><td><b>Mangle</b>:20 伤 + 敌本回合 -10 力量(硬解)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.2 B 组:自伤历史(HP 即资源)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>本回合掉过血</b></td><td>回合内布尔</td><td>主动放血(见下)或被打</td><td><b>Spite</b>:打两段(0 费 5×2)</td></tr>
+			<tr><td><b>本场掉血次数</b></td><td>本场计数</td><td>每回合被打 / 放血都计入</td><td><b>Tear Asunder</b>:每掉血 1 次 +1 段(成长型多段)</td></tr>
+			<tr><td><b>回合内掉血事件</b></td><td>事件触发</td><td>主动或被动掉血</td><td><b>Rupture</b>:+1 力量;<b>Inferno</b>:全敌 1 伤 ×(本回合掉血量)</td></tr>
+			<tr><td><b>主动放血(代价)</b></td><td>打出时支付</td><td>Offering(-6 HP)、Bloodletting(-3 HP)、Hemokinesis(-2 HP)、Brand(-1 HP)、Blood Wall(-2 HP)、Breakthrough(-1 HP)、Crimson Mantle(每回合 -1 HP)</td><td class="good">2 能量+抽 3 / 1 能量 / 15 伤 / 1 力量 / 16 格挡 / 全敌 9 伤 / 每回合 7 格挡 —— 血量的统一兑换率 ≈ 1 HP : 1~2 费</td></tr>
+		</tbody>
+	</table>
+	<div class="note">自伤轴与 80 HP + Burning Blood 形成闭环:血量是「可再生透支资源」,全角色独一份 —— 其他角色用能量/牌库/星币做代价,Ironclad 用血。</div>
+</div>
+
+<h3>1.3 C 组:消耗堆计数(身份核心)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">计数口径</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>消耗堆卡数</b></td><td>本场累计</td><td>任何消耗(自身消耗卡 / Fiend Fire / Stoke / Second Wind / Cinder / True Grit / Havoc……)</td><td><b>Ashen Strike</b>:每张 +3 伤;<b>Pact's End</b>:≥3 张时全敌 18 伤;<b>Midnight</b>:每张 -1 费(12 费 60 伤可归零)</td></tr>
+			<tr><td><b>消耗事件</b></td><td>事件触发</td><td>任何卡被消耗</td><td><b>Dark Embrace</b>:抽 1;<b>Feel No Pain</b>:+3 格挡;<b>Drum of Battle</b>:消耗时 +1 能量;<b>Evil Eye</b>:本回合消耗过则 8+8 格挡</td></tr>
+			<tr><td><b>回合结束仍在消耗堆</b></td><td>回合末检查</td><td>打出后未回收</td><td><b>Howl from Beyond</b>:回合结束时从消耗堆再打一次(全敌 18 伤) —— 消耗堆=二次使用区</td></tr>
+			<tr><td><b>消耗手牌数</b></td><td>打出时结算</td><td>—</td><td><b>Fiend Fire</b>:消耗整手,每张 7 伤;<b>Stoke</b>:消耗整手,每张补 1 张随机卡;<b>Second Wind</b>:消耗所有非攻击,每张 5 格挡</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.4 D 组:格挡存量 / 攻击次数 / 牌库工程</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>当前格挡量</b></td><td>实时读取</td><td>任何格挡源 + Barricade 保留</td><td><b>Body Slam</b>:伤害 = 当前格挡(0 费化的大数字)</td></tr>
+			<tr><td><b>获得格挡事件</b></td><td>事件触发</td><td>任何格挡源</td><td><b>Juggernaut</b>:随机敌 5 伤;<b>Unmovable</b>:每回合首次获得格挡翻倍;<b>Rage</b>(反向):攻击时 +3 格挡</td></tr>
+			<tr><td><b>本回合攻击打出数</b></td><td>回合内计数</td><td>—</td><td><b>Stomp</b>:每张 -1 费;<b>Juggling</b>:第 3 张攻击复制上手;<b>One-Two Punch</b>:下张攻击双打;<b>Unrelenting</b>:下张攻击 0 费</td></tr>
+			<tr><td><b>Strike 卡计数</b></td><td>打出/抽到时</td><td>Strike + 复制卡(Anger / Outrage / Hellraiser 生成)</td><td><b>Perfected Strike</b>:每张 Strike 族 +2 伤;<b>Hellraiser</b>:抽到 Strike 自动打出(0 费触发引擎)</td></tr>
+			<tr><td><b>牌堆顶 / 弃牌堆</b></td><td>读取</td><td>—</td><td><b>Havoc / Cascade</b>:免费打牌堆顶;<b>Headbutt</b>:弃牌堆 1 张置顶;<b>Aggression</b>:每回合回收 1 张攻击;<b>Pillage</b>:抽到非攻击为止</td></tr>
+			<tr><td><b>击杀(Fatal)</b></td><td>事件触发</td><td>任意伤害收尾</td><td><b>Feed</b>:击杀 → 最大 HP +3(永久成长,本场可叠加)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>2. 收益体系</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">收益类型</th><th style="width:44%">定义</th><th>代表兑现卡</th></tr></thead>
+		<tbody>
+			<tr><td class="bad"><b>① 力量</b></td><td>每段攻击伤害 +1,跨回合持久 —— 通用乘区,所有攻击流的地基</td><td>Inflame、Demon Form(每回合 +3)、Setup Strike(临时)、Brand、Rupture(掉血 +1)、Fight Me!(敌我双 +3)、Expect a Fight(力量→格挡的防守版)</td></tr>
+			<tr><td class="purple"><b>② 易伤</b></td><td>敌受击伤害 +50%,且是 StS2 铁甲的<b>计数触发源</b>(Bully / Dominate / Vicious / Cruelty 全部按易伤层数/事件结算)</td><td>Thunderclap(群)、Tremble(3 层)、Uppercut、Molten Fist(翻倍)、Bash(起始)</td></tr>
+			<tr><td class="cyan"><b>③ 格挡</b></td><td>普通格挡 + Plating(衰减甲)+ 条件格挡 + 格挡保留</td><td>Impervious(30)、Shrug It Off、Barricade(保留)、Unmovable(翻倍)、Stone Armor(Plating 4)、Rage(攻击→格挡)、Flame Barrier(反弹 4)</td></tr>
+			<tr><td class="warn"><b>④ 能量</b></td><td>放血换能量 / 每回合自动能量 / 降费</td><td>Offering、Bloodletting、Pyre(每回合 +1)、Forgotten Ritual、Drum of Battle、Unrelenting(下张 0 费)、Stomp(降费)</td></tr>
+			<tr><td class="good"><b>⑤ HP 与牌库工程</b></td><td>回血 / 最大 HP 成长;消耗堆回收、升级、免费打</td><td>Feed(Fatal +3 最大 HP)、Not Yet(奶 10);Armaments(升级)、Dark Embrace / Stoke(消耗→抽)、Havoc / Cascade / Infernal Blade(免费打)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>3. 稀有度分布</h2>
+<div class="card">
+	<h3>3.1 数量与类型构成</h3>
+	<table>
+		<thead><tr><th>稀有度</th><th>数量</th><th>占比</th><th>攻击</th><th>技能</th><th>能力</th><th>能力卡占比</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>3</td><td>3.3%</td><td>2</td><td>1</td><td>0</td><td>0%</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>20</td><td>22.2%</td><td>12</td><td>8</td><td>0</td><td><b>0%</b></td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>38</td><td>42.2%</td><td>15</td><td>14</td><td>9</td><td>24%</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>27</td><td>30.0%</td><td>8</td><td>9</td><td>10</td><td>37%</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>2</td><td>2.2%</td><td>1</td><td>0</td><td>1</td><td>50%</td></tr>
+			<tr class="arch-head"><td>合计</td><td>90</td><td>100%</td><td>39</td><td>31</td><td>20</td><td>22%</td></tr>
+		</tbody>
+	</table>
+	<h3>3.2 每档稀有度的设计职责</h3>
+	<table>
+		<thead><tr><th style="width:12%">档位</th><th style="width:30%">承载功能</th><th>代表卡</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>全角色唯一 3 张起始 —— 职业卡直接承担「易伤教学」(Bash 2 易伤)</td><td>Bash(易伤种子)</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td class="good"><b>轴入口 + 基础攻防</b>:每张 Common 都是「一张卡 + 一个条件制造动作」;无能力卡,零成长承诺</td><td>易伤入口(Bash 系 Thunderclap / Taunt / Tremble)、自伤入口(Hemokinesis 类)、消耗入口(Cinder / True Grit / Havoc)、格挡+抽牌(Shrug It Off)、0 费连打(Anger)</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td class="warn"><b>主轴组件 + 桥梁密集区</b>:能力卡登场(放大器 / 自动机),消耗-抽牌-格挡三向桥都在这里</td><td>Rupture / Inferno(自伤→力/伤)、Feel No Pain / Dark Embrace(消耗→防/抽)、Rage / Juggernaut(攻防互转)、Ashen Strike(消耗计数)、Rampage(成长)</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td class="bad"><b>封顶件 + 转换件 + 引擎</b>:大数字与全局放大器</td><td>Fiend Fire / Pact's End / Midnight(消耗封顶)、Demon Form(力量封顶)、Barricade / Body Slam(格挡封顶)、Offering(自伤能量引擎)、Primal Force(转化)</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>轴封顶的极端化</td><td>Break(20 伤 + 5 易伤)、Corruption(技能 0 费但消耗 —— 消耗流的终极形态)</td></tr>
+		</tbody>
+	</table>
+	<div class="note">结构性结论:Ironclad 的 Common 入口密度集中在<b>易伤</b>(4 张)与<b>消耗</b>(3 张)两条身份轴上;Rare 的能力卡占比(37%)全角色最高 —— 大数字和全局引擎都依赖能力卡常驻。</div>
+</div>
+
+<h2>4. 主线与构筑关键卡</h2>
+
+<h3>4.1 消耗轴(身份核心)</h3>
+<div class="card">
+	<div class="flow">制造消耗(自耗 / Fiend Fire / Stoke / Second Wind)→ 消耗堆计数(Ashen Strike / Pact's End / Midnight 降费)→ 消耗事件回报(Dark Embrace 抽 / Feel No Pain 防)→ 二次使用(Howl from Beyond)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>消耗源</td><td>Cinder / True Grit / Havoc / Burning Pact / Second Wind / Fiend Fire / Stoke / Corruption(Ancient)</td><td>主动消耗手牌/牌堆的卡,把消耗量做出来</td></tr>
+			<tr><td>计数兑现</td><td>Ashen Strike ★ / Pact's End ★ / Midnight ★ / Howl from Beyond ★</td><td>每张 +3 伤;≥3 张全敌 18;12 费 60 伤按消耗数归零;回合末从消耗堆再打</td></tr>
+			<tr><td>事件回报</td><td>Dark Embrace ★ / Feel No Pain ★ / Drum of Battle / Evil Eye / Second Wind</td><td>每次消耗:抽 1 / +3 防 / +1 能量 / 8+8 防 / 5 防/张</td></tr>
+			<tr><td class="bad">封顶</td><td>Fiend Fire ★ / Corruption</td><td>整手变伤害(7/张);技能全 0 费但消耗 —— 消耗流闭环终点</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Fiend Fire、Pact's End、Ashen Strike、Midnight、Dark Embrace、Feel No Pain、Howl from Beyond、Corruption</span><br>引擎形态:Dark Embrace(消耗抽 1)+ 大量消耗源 → Ashen Strike / Pact's End 每回合白涨 → Howl from Beyond 回合末免费再打 → Midnight 最终归零。消耗轴是「垃圾经济学」的正统 —— 消耗越多的牌组,越强。</div>
+</div>
+
+<h3>4.2 力量轴</h3>
+<div class="card">
+	<div class="flow">堆力量(Inflame / Demon Form / Brand / Rupture / Setup Strike)→ 多段攻击兑现(Whirlwind / Twin Strike / Sword Boomerang / Conflagration)→ 段数×力量乘法滚动</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>力量源</td><td>Inflame ★ / Demon Form ★ / Setup Strike / Brand / Fight Me! / Monologue 系</td><td>永久 / 每回合 / 临时 / 放血换 / 敌我双给(升满 3)</td></tr>
+			<tr><td>自伤联动</td><td>Rupture ★ / Inferno / Tear Asunder</td><td>掉血 → +1 力;掉血 → 全敌伤害;掉血次数 → 段数 —— 力量与自伤两轴互相喂养</td></tr>
+			<tr><td>多段兑现</td><td>Whirlwind ★ / Sword Boomerang / Twin Strike / Conflagration / Stomp</td><td>把力量乘进每段;Whirlwind 是 X 费群攻</td></tr>
+			<tr><td>单段大数</td><td>Bludgeon / Mangle / Rampage ★</td><td>32 伤 / 20 伤 + 敌 -10 力 / 本场每打出 +5</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Demon Form、Inflame、Rupture、Whirlwind、Rampage、Twin Strike</span><br>引擎形态:首回合 Demon Form / Rupture+放血 → 中盘 Whirlwind / Boomerang 每段吃满力量。力量轴是铁甲的「数值地板」,任何牌组都可挂 1-2 张。</div>
+</div>
+
+<h3>4.3 自伤轴(HP 即资源)</h3>
+<div class="card">
+	<div class="flow">80 HP + 战后回 6 → 放血换资源(Offering / Bloodletting / Hemokinesis / Brand / Blood Wall)→ 掉血事件反哺(Rupture 力 / Inferno 伤 / Spite 段 / Tear Asunder 段)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>放血兑换</td><td>Offering ★ / Bloodletting / Hemokinesis ★ / Brand / Blood Wall / Breakthrough</td><td>6 HP→2 能量抽 3;3 HP→1 能量;2 HP→15 伤;1 HP→1 力;2 HP→16 防;1 HP→全敌 9 伤</td></tr>
+			<tr><td>掉血回报</td><td>Rupture ★ / Inferno ★ / Spite / Tear Asunder ★ / Crimson Mantle / Pyre</td><td>掉血 +1 力;掉血全敌伤;本回合掉血双段;本场掉血次数 +1 段/次;每回合 -1 HP 换 7 防;每回合 +1 能量</td></tr>
+			<tr><td>血线安全</td><td>Burning Blood(遗物)/ Not Yet / Feed ★ / Colossus</td><td>战后回 6;奶 10;击杀永久 +3 最大 HP(本场成长);对易伤敌减伤 50%</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Offering、Hemokinesis、Rupture、Tear Asunder、Inferno、Feed、Not Yet</span><br>引擎形态:Offering 起手白赚 2 费 3 牌 → Rupture 把掉血变成永久力量 → Tear Asunder 每回合掉血越打段数越多 → Feed 收尾时把血线重新拉高。自伤轴是「用血买速度」,也是三轴里唯一自带回血闭环的。</div>
+</div>
+
+<h3>4.4 易伤轴</h3>
+<div class="card">
+	<div class="flow">上易伤(Bash / Thunderclap / Tremble / Uppercut)→ 层数放大(Bully +2/层、Dominate 每层 +1 力)→ 事件回报(Vicious 抽牌 / Cruelty +25% 伤)→ 翻倍(Molten Fist)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>上易伤</td><td>Bash(起始)/ Thunderclap ★ / Tremble / Uppercut / Taunt / Break(Ancient)</td><td>单/群/高额(3 层)/ 附带虚弱 / 附带格挡 / 5 层</td></tr>
+			<tr><td>层数兑现</td><td>Bully ★ / Dominate ★ / Dismantle / Molten Fist ★</td><td>每层 +2 伤;每层 +1 力;有易伤则两段;易伤翻倍</td></tr>
+			<tr><td>事件/全局</td><td>Vicious ★ / Cruelty ★ / Colossus / Mangle</td><td>施放抽 1;易伤敌 +25% 伤害;对易伤敌减伤;敌 -10 力</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Thunderclap、Bully、Dominate、Molten Fist、Vicious、Cruelty、Dismantle</span><br>引擎形态:Thunderclap 全屏易伤 → Vicious 每回合补牌 → Bully / Dominate 把层数变成数值 → Molten Fist 翻倍滚动。易伤轴是铁甲最便宜的成长轴 —— 单卡即用,不占能力卡槽。</div>
+</div>
+
+<h3>4.5 格挡 / 坦克轴</h3>
+<div class="card">
+	<div class="flow">堆格挡(Impervious / Shrug / Unmovable / Barricade 保留)→ 存量兑现(Body Slam)→ 格挡事件回报(Juggernaut 5 伤 / Rage 反向)→ Plating 衰减甲(Stone Armor)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>格挡源</td><td>Impervious ★ / Shrug It Off ★ / Blood Wall / Iron Wave / Flame Barrier / Expect a Fight(力量×5)</td><td>30 一次性 / 8+抽 / 16 放血 / 5+5 攻 / 12+反弹 / 15+力量放大</td></tr>
+			<tr><td>保留/翻倍</td><td>Barricade ★ / Unmovable ★ / Stone Armor ★(Plating)</td><td>格挡不消失;首获翻倍;每回合 +4 衰减甲(回合开始 -1)</td></tr>
+			<tr><td>存量兑现</td><td>Body Slam ★ / Juggernaut ★ / Rage ★</td><td>伤害 = 格挡;获得格挡时打 5;攻击时 +3 防 —— 攻防双向互转</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Barricade、Body Slam、Juggernaut、Impervious、Unmovable、Stone Armor、Rage</span><br>引擎形态:Barricade 保留 → 每回合格挡滚雪球 → Body Slam 把格挡打成伤害 → Juggernaut 每跳 5 伤。格挡轴是「防守即进攻」—— 与 Necrobinder 的 Osty 蓄水池同构,但用可保留的格挡而非血条。</div>
+</div>
+
+<h3>4.6 0 费 / 连打轴</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>0 费打点</td><td>Anger / Outrage / Spite / Bully / Rampage 系</td><td>0 费自复制(Anger 弃牌堆复制、Outrage 敌我双方复制)/ 条件 0 费</td></tr>
+			<tr><td>连打</td><td>One-Two Punch ★ / Unrelenting ★ / Juggling ★ / Stampede / Hellraiser ★</td><td>下张攻击双打;下张 0 费;第 3 张攻击复制上手;回合末随机攻击再打;抽到 Strike 自动打</td></tr>
+			<tr><td>转化</td><td>Primal Force ★ → Giant Rock</td><td>整手攻击变 16 伤巨石 —— 0 费流与爆发流的交汇点</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:One-Two Punch、Unrelenting、Juggling、Hellraiser、Primal Force、Anger</span><br>引擎形态:One-Two Punch + 高费攻击 = 每费翻倍;Hellraiser + 一堆 0 费 Strike 复制 = 自动开枪。0 费轴是铁甲的「频率」出口。</div>
+</div>
+
+<h2>5. 构筑之间的桥梁</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">连接</th><th style="width:26%">桥梁卡</th><th>原理</th></tr></thead>
+		<tbody>
+			<tr><td>消耗 → 抽牌</td><td>Dark Embrace ★、Burning Pact、Drum of Battle、Stoke</td><td>消耗事件变成过牌 —— 消耗流的发动机</td></tr>
+			<tr><td>消耗 → 格挡</td><td>Feel No Pain ★、Second Wind、Evil Eye</td><td>消耗事件/手牌变成防御 —— 消耗流的生存端</td></tr>
+			<tr><td>消耗 → 伤害</td><td>Ashen Strike、Fiend Fire、Pact's End、Midnight、Howl from Beyond、Cinder、Thrash</td><td>消耗量/消耗堆计数变成伤害 —— 身份轴的三向闭环</td></tr>
+			<tr><td>自伤 → 力量</td><td>Rupture ★、Brand</td><td>掉血事件 → 永久力量 —— 自伤与力量轴互喂</td></tr>
+			<tr><td>自伤 → 伤害 / 防御</td><td>Spite、Tear Asunder、Inferno、Hemokinesis、Blood Wall</td><td>掉血条件/次数/兑换 → 段数、AOE、直伤、格挡</td></tr>
+			<tr><td>自伤 → 能量</td><td>Offering ★、Bloodletting、Crimson Mantle(自伤→格挡)</td><td>HP 是第二能量条 —— 全角色最独特的资源桥</td></tr>
+			<tr><td>格挡 → 伤害</td><td>Body Slam ★、Juggernaut ★</td><td>格挡存量/事件 → 伤害;Rage 反向(攻击→格挡)</td></tr>
+			<tr><td>易伤 → 抽牌 / 力量 / 伤害</td><td>Vicious ★、Dominate ★、Bully、Cruelty、Dismantle</td><td>易伤同时是 debuff、计数器和事件源 —— 一张 debuff 打通三条收益</td></tr>
+			<tr><td>击杀 → 成长</td><td>Feed ★(Fatal)</td><td>击杀 → 最大 HP 永久 +3,与自伤轴对冲血线压力</td></tr>
+			<tr><td>任意攻击 → 免费</td><td>One-Two Punch、Unrelenting、Juggling、Stampede、Hellraiser</td><td>把「打出一张攻击」变成事件源</td></tr>
+			<tr><td>多人</td><td>Blaze、Demonic Shield、Outrage、Tank <span class="badge b-mp">多人</span></td><td>力量/格挡/垃圾卡跨玩家共享,Tank 是「我挨打,队友减伤」的嘲讽坦克</td></tr>
+		</tbody>
+	</table>
+	<div class="note">闭环示例:<span class="mono">Offering(自伤→能量)→ Fiend Fire 消耗整手 → Dark Embrace 抽满 / Feel No Pain 补防 → Ashen Strike / Pact's End 涨伤 → 击杀后 Feed 回血 → 下回合再放血。</span>消耗、自伤、力量三条主线共用一个资源循环。</div>
+</div>
+
+<h2>6. 运转卡 vs 伤害卡</h2>
+<div class="card">
+	<h3>6.1 运转卡(Engine)</h3>
+	<table>
+		<thead><tr><th style="width:18%">功能</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>抽牌</td><td><b>Shrug It Off ★</b>、Pommel Strike、Battle Trance、Pillage、Headbutt(置顶)、Dark Embrace(消耗触发)</td><td>普通过牌 + 条件过牌(消耗 / 非攻击停止)</td></tr>
+			<tr><td>能量</td><td><b>Offering ★、Bloodletting ★</b>、Pyre、Forgotten Ritual、Drum of Battle、Unrelenting / Stomp(降费)</td><td>放血换能量是主力 —— 能量成本由 HP 支付</td></tr>
+			<tr><td>免费打出</td><td>Havoc、Cascade、Infernal Blade、Aggression(回收)、Stampede</td><td>牌堆顶免费打 / 弃牌堆回收攻击 / 回合末自动打</td></tr>
+			<tr><td>牌库工程</td><td>Armaments(升级)、Stoke(消耗→补卡)、Burning Pact、Second Wind、True Grit</td><td>升级、滤牌、消耗垃圾</td></tr>
+			<tr><td>连打赋予</td><td>One-Two Punch、Juggling、Hellraiser、Unrelenting</td><td>把频率发给其他攻击卡 —— 第一乘区授予</td></tr>
+		</tbody>
+	</table>
+	<h3>6.2 伤害卡</h3>
+	<table>
+		<thead><tr><th style="width:18%">形态</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>纯直伤</td><td>Bludgeon(32)、Mangle(20)、Reap 系、Break(Ancient 20+5 易伤)</td><td>大数字集中在高费/远古</td></tr>
+			<tr><td>成长型</td><td>Rampage(每打出 +5)、The Scythe 系、Tear Asunder(掉血段数)、Perfected Strike(Strike 计数)、Ashen Strike(消耗计数)</td><td>五种不同的存量 → 伤害形态</td></tr>
+			<tr><td>多段</td><td>Sword Boomerang、Twin Strike、Whirlwind、Conflagration、Stomp、Unrelenting</td><td>力量乘区的主要载体</td></tr>
+			<tr><td>群伤</td><td>Breakthrough、Thunderclap、Conflagration、Whirlwind、Stomp、Howl from Beyond、Pact's End</td><td>放血换 AOE 是铁甲特色(Breakthrough 1 HP→9 全敌)</td></tr>
+			<tr><td>条件型</td><td>Body Slam(格挡)、Bully(易伤层)、Dismantle(易伤两段)、Spite(掉血双段)、Molten Fist(翻倍)、Feed(Fatal)</td><td>条件 = 铁甲伤害卡的主体</td></tr>
+			<tr><td>转化</td><td>Primal Force → Giant Rock(16 伤)、Fiend Fire(整手 7/张)</td><td>把资源一次性变现</td></tr>
+		</tbody>
+	</table>
+	<h3>6.3 一张卡干两件事</h3>
+	<ul>
+		<li><b>Pommel Strike</b>:9 伤 + 抽 1(伤害 + 过牌)</li>
+		<li><b>Headbutt</b>:9 伤 + 弃牌堆置顶(伤害 + 回收)</li>
+		<li><b>Pillage</b>:6 伤 + 抽到非攻击(伤害 + 过滤)</li>
+		<li><b>Iron Wave</b>:5 防 + 5 伤;Shrug It Off:8 防 + 抽 1</li>
+		<li><b>Rage / Juggernaut / Body Slam</b>:攻击↔格挡双向桥</li>
+		<li><b>Cinder</b>:18 伤 + 消耗 1 张(伤害 + 消耗源)</li>
+		<li><b>Hemokinesis / Brand</b>:伤害/力量 + 掉血事件(触发 Rupture / Spite)</li>
+		<li><b>Unrelenting</b>:14 伤 + 下张攻击 0 费(伤害 + 降费)</li>
+		<li><b>Second Wind</b>:整手非攻击变格挡(防御 + 消耗源)</li>
+	</ul>
+</div>
+
+<h2>7. 设计观察</h2>
+<div class="card">
+	<ol>
+		<li><b>消耗堆 = 铁甲的「第二牌库」</b>:计数兑现(Ashen Strike / Pact's End / Midnight)与二次使用(Howl from Beyond)让「消耗」从代价变成收益 —— 与 Silent 的弃牌、Defect 的状态卡回收、Regent 的锻造是同一设计母题(垃圾经济学)的四种变体。</li>
+		<li><b>HP 是可透支资源</b>:全角色唯一把生命当作费用支付手段的角色(Offering / Bloodletting / Hemokinesis),且用 80 最高血量 + 战后回血 + Fatal 成长(Feed)构建闭环 —— 「用血买速度,用击杀还血」。</li>
+		<li><b>易伤是「三合一」debuff</b>:同时是增伤(50%)、计数器(Bully 层数)、事件源(Vicious 抽牌 / Dominate 力量)—— 一张 debuff 打通三条收益线,这是 StS2 铁甲相对 StS1 的最大设计升级。</li>
+		<li><b>能力卡 Rare 占比全角色最高(37%)</b>:大数字与全局引擎都依赖常驻能力(Demon Form / Barricade / Dark Embrace / Corruption),这意味着铁甲的构筑节奏是「先立引擎,再滚动」。</li>
+		<li><b>多段攻击是力量的唯一乘区出口</b>:Sword Boomerang / Whirlwind / Conflagration 把力量乘进每段 —— 力量轴的存在让多段卡天然保值,反之亦然。</li>
+	</ol>
+	<div class="note">对 OneDeck 的参考:① 「负资源(HP)换正资源(能量/力量)」与 Necrobinder 的自我 Doom 同句式,代价类型决定了牌组风险形状;② 一个 debuff 同时充当「状态、计数器、事件源」三职,是提高卡池联动密度的低成本手段;③ 消耗/弃牌/回收三类「垃圾经济学」可以并存于同一卡池的不同角色,形成差异化身份。</div>
+</div>
+
+<h2>附录 A. 全部 90 张卡</h2>
+<div class="card">
+	<p class="lead">分组按稀有度;升级文本以 wiki.gg 收录为准(「降费」类升级数值以游戏内为准);多人模式专属卡标注 <span class="badge b-mp">多人</span>。</p>
+
+	<h3>A.1 Basic(3)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Strike</b> 打击</td><td>攻击</td><td>1</td><td>造成 6 伤</td><td>9 伤</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Defend</b> 防御</td><td>技能</td><td>1</td><td>获得 5 格挡</td><td>8 格挡</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Bash</b> 重击</td><td>攻击</td><td>2</td><td>造成 8 伤,附加 2 易伤</td><td>10 伤 / 3 易伤</td><td><span class="badge b-vuln">易伤·种子</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.2 Common(20)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Anger</b> 愤怒</td><td>攻击</td><td>0</td><td>造成 6 伤,弃牌堆加入 1 张自身复制</td><td>8 伤</td><td><span class="badge b-gen">0费·自复制</span></td></tr>
+			<tr><td><b>Body Slam</b> 身体撞击</td><td>攻击</td><td>1</td><td>造成等于当前格挡的伤害</td><td>0 费</td><td><span class="badge b-block">格挡→伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Breakthrough</b> 突破</td><td>攻击</td><td>1</td><td>失去 1 HP,对全体敌人造成 9 伤</td><td>12 伤</td><td><span class="badge b-hp">自伤·群伤</span></td></tr>
+			<tr><td><b>Cinder</b> 余烬</td><td>攻击</td><td>2</td><td>造成 18 伤,消耗手牌 1 张随机卡</td><td>22 伤</td><td><span class="badge b-exh">伤害+消耗源</span></td></tr>
+			<tr><td><b>Headbutt</b> 头槌</td><td>攻击</td><td>1</td><td>造成 9 伤,弃牌堆 1 张卡置顶牌组</td><td>12 伤</td><td><span class="badge b-gen">伤害+回收</span></td></tr>
+			<tr><td><b>Iron Wave</b> 铁浪</td><td>攻击</td><td>1</td><td>获得 5 格挡,造成 5 伤</td><td>7/7</td><td><span class="badge b-gen">攻防一体</span></td></tr>
+			<tr><td><b>Molten Fist</b> 熔岩之拳</td><td>攻击</td><td>1</td><td>造成 10 伤,该敌易伤翻倍,消耗</td><td>14 伤</td><td><span class="badge b-vuln">易伤·翻倍</span></td></tr>
+			<tr><td><b>Perfected Strike</b> 完美打击</td><td>攻击</td><td>2</td><td>造成 6 伤,你的每张含 "Strike" 的卡 +2 伤</td><td>+3 伤/张</td><td><span class="badge b-gen">Strike 族计数</span></td></tr>
+			<tr><td><b>Pommel Strike</b> 剑柄打击</td><td>攻击</td><td>1</td><td>造成 9 伤,抽 1 张</td><td>抽 2</td><td><span class="badge b-gen">伤害+过牌</span></td></tr>
+			<tr><td><b>Setup Strike</b> 预备打击</td><td>攻击</td><td>1</td><td>造成 7 伤,本回合获得 3 力量</td><td>4 力量</td><td><span class="badge b-strong">力量·临时</span></td></tr>
+			<tr><td><b>Sword Boomerang</b> 剑回旋镖</td><td>攻击</td><td>1</td><td>随机敌人 3 次,每次 3 伤</td><td>4 伤×3</td><td><span class="badge b-strong">多段·力量载体</span></td></tr>
+			<tr><td><b>Thunderclap</b> 雷击</td><td>攻击</td><td>1</td><td>全体敌人 4 伤 + 1 易伤</td><td>6 伤</td><td><span class="badge b-vuln">易伤·群上</span><span class="star">★</span></td></tr>
+			<tr><td><b>Twin Strike</b> 双重打击</td><td>攻击</td><td>1</td><td>造成 5 伤两次</td><td>7 伤×2</td><td><span class="badge b-strong">多段·力量载体</span></td></tr>
+			<tr><td><b>Armaments</b> 军备</td><td>技能</td><td>1</td><td>获得 5 格挡,升级手牌 1 张</td><td>升级所有</td><td><span class="badge b-gen">牌库工程</span></td></tr>
+			<tr><td><b>Blood Wall</b> 血墙</td><td>技能</td><td>2</td><td>失去 2 HP,获得 16 格挡</td><td>20 格挡</td><td><span class="badge b-hp">自伤·防御</span></td></tr>
+			<tr><td><b>Havoc</b> 浩劫</td><td>技能</td><td>1</td><td>免费打出牌堆顶 1 张并消耗</td><td>0 费</td><td><span class="badge b-exh">免费打+消耗源</span></td></tr>
+			<tr><td><b>Shrug It Off</b> 耸肩</td><td>技能</td><td>1</td><td>获得 8 格挡,抽 1 张</td><td>11 格挡</td><td><span class="badge b-block">防御+过牌</span><span class="star">★</span></td></tr>
+			<tr><td><b>Taunt</b> 嘲讽</td><td>技能</td><td>1</td><td>获得 6 格挡,附加 1 易伤</td><td>9 格挡</td><td><span class="badge b-vuln">防御+易伤</span></td></tr>
+			<tr><td><b>Tremble</b> 战栗</td><td>技能</td><td>1</td><td>附加 3 易伤,消耗</td><td>4 易伤</td><td><span class="badge b-vuln">易伤·高额</span></td></tr>
+			<tr><td><b>True Grit</b> 坚毅</td><td>技能</td><td>1</td><td>获得 7 格挡,随机消耗手牌 1 张</td><td>选择消耗</td><td><span class="badge b-exh">防御+消耗源</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.3 Uncommon(38)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Ashen Strike</b> 灰烬打击</td><td>攻击</td><td>1</td><td>造成 6 伤,消耗堆每有 1 张卡 +3 伤</td><td>+4 伤/张</td><td><span class="badge b-exh">消耗·计数伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Bludgeon</b> 重棒</td><td>攻击</td><td>3</td><td>造成 32 伤</td><td>42 伤</td><td><span class="badge b-gen">大数字直伤</span></td></tr>
+			<tr><td><b>Bully</b> 霸凌</td><td>攻击</td><td>0</td><td>造成 4 伤,该敌每有 1 层易伤 +2 伤</td><td>+3 伤/层</td><td><span class="badge b-vuln">易伤·层数兑现</span></td></tr>
+			<tr><td><b>Dismantle</b> 拆解</td><td>攻击</td><td>1</td><td>造成 8 伤;敌有易伤则打两次</td><td>11 伤</td><td><span class="badge b-vuln">易伤·条件双段</span></td></tr>
+			<tr><td><b>Fight Me!</b> 来打我!</td><td>攻击</td><td>2</td><td>造成 5 伤两次,获得 3 力量,该敌获得 1 力量</td><td>5 力量</td><td><span class="badge b-strong">力量·敌我双给</span></td></tr>
+			<tr><td><b>Hemokinesis</b> 血魔法</td><td>攻击</td><td>1</td><td>失去 2 HP,造成 15 伤</td><td>20 伤</td><td><span class="badge b-hp">自伤·直伤</span><span class="star">★</span></td></tr>
+			<tr><td><b>Howl from Beyond</b> 彼岸嚎叫</td><td>攻击</td><td>3</td><td>全敌 18 伤;回合结束若在消耗堆,再打一次</td><td>24 伤</td><td><span class="badge b-exh">消耗堆·二次使用</span><span class="star">★</span></td></tr>
+			<tr><td><b>Outrage</b> 义愤</td><td>攻击</td><td>0</td><td>造成 9 伤,敌我双方弃牌堆各加 1 张复制</td><td>12 伤</td><td><span class="badge b-gen">0费·双向复制</span></td></tr>
+			<tr><td><b>Pillage</b> 掠夺</td><td>攻击</td><td>1</td><td>造成 6 伤,抽牌直到抽到非攻击卡</td><td>8 伤</td><td><span class="badge b-gen">伤害+过滤</span></td></tr>
+			<tr><td><b>Rampage</b> 暴怒</td><td>攻击</td><td>1</td><td>造成 10 伤,本场本卡伤害 +5</td><td>+8/次</td><td><span class="badge b-gen">成长直伤</span></td></tr>
+			<tr><td><b>Spite</b> 怨恨</td><td>攻击</td><td>0</td><td>造成 5 伤;本回合掉过血则打两次</td><td>8 伤</td><td><span class="badge b-hp">自伤·条件双段</span></td></tr>
+			<tr><td><b>Stomp</b> 践踏</td><td>攻击</td><td>3</td><td>全敌 12 伤;本回合每打出 1 张攻击 -1 费</td><td>15 伤</td><td><span class="badge b-gen">群伤·连打降费</span></td></tr>
+			<tr><td><b>Unrelenting</b> 无情</td><td>攻击</td><td>2</td><td>造成 14 伤;下一张攻击 0 费</td><td>18 伤</td><td><span class="badge b-gen">伤害+降费</span></td></tr>
+			<tr><td><b>Uppercut</b> 上勾拳</td><td>攻击</td><td>2</td><td>造成 13 伤,附加 1 虚弱和 1 易伤</td><td>16 伤</td><td><span class="badge b-vuln">伤害+双 debuff</span></td></tr>
+			<tr><td><b>Whirlwind</b> 旋风斩</td><td>攻击</td><td>X</td><td>全体敌人 X 次,每次 5 伤</td><td>8 伤/段</td><td><span class="badge b-strong">多段·力量载体</span><span class="star">★</span></td></tr>
+			<tr><td><b>Battle Trance</b> 战斗狂乱</td><td>技能</td><td>0</td><td>抽 3 张;本回合不能再抽牌</td><td>抽 4</td><td><span class="badge b-gen">爆发过牌</span></td></tr>
+			<tr><td><b>Blaze</b> 烈焰</td><td>技能</td><td>2</td><td>另一名玩家获得 5 力量</td><td>7 力量</td><td><span class="badge b-mp">多人·力量共享</span></td></tr>
+			<tr><td><b>Bloodletting</b> 放血</td><td>技能</td><td>0</td><td>失去 3 HP,获得 1 能量</td><td>2 能量</td><td><span class="badge b-hp">自伤·能量</span><span class="star">★</span></td></tr>
+			<tr><td><b>Burning Pact</b> 燃烧契约</td><td>技能</td><td>1</td><td>消耗 1 张手牌,抽 2 张</td><td>抽 3</td><td><span class="badge b-exh">消耗+过牌</span></td></tr>
+			<tr><td><b>Colossus</b> 巨人</td><td>技能</td><td>1</td><td>获得 4 格挡;本回合受到易伤敌的伤害 -50%</td><td>6 格挡</td><td><span class="badge b-vuln">易伤·减伤</span></td></tr>
+			<tr><td><b>Demonic Shield</b> 恶魔盾</td><td>技能</td><td>0</td><td>失去 1 HP,另一名玩家获得等于你格挡的格挡,消耗</td><td>—</td><td><span class="badge b-mp">多人·格挡共享</span></td></tr>
+			<tr><td><b>Drum of Battle</b> 战鼓</td><td>技能</td><td>1</td><td>抽 2 张;本卡被消耗时获得 1 能量</td><td>2 能量</td><td><span class="badge b-exh">消耗→能量</span></td></tr>
+			<tr><td><b>Evil Eye</b> 邪眼</td><td>技能</td><td>1</td><td>获得 8 格挡;本回合消耗过卡则再获得 8 格挡</td><td>10+10</td><td><span class="badge b-exh">消耗·条件防御</span></td></tr>
+			<tr><td><b>Expect a Fight</b> 期待一战</td><td>技能</td><td>3</td><td>获得 15 格挡;每有 1 点力量 +5 格挡</td><td>+6/力量</td><td><span class="badge b-strong">力量→防御</span></td></tr>
+			<tr><td><b>Flame Barrier</b> 火焰屏障</td><td>技能</td><td>2</td><td>获得 12 格挡;本回合每次被攻击反伤 4</td><td>16 防 / 6 反伤</td><td><span class="badge b-block">防御+反弹</span></td></tr>
+			<tr><td><b>Forgotten Ritual</b> 遗忘仪式</td><td>技能</td><td>1</td><td>获得 1 能量,消耗</td><td>2 能量</td><td><span class="badge b-gen">能量·一次性</span></td></tr>
+			<tr><td><b>Infernal Blade</b> 地狱之刃</td><td>技能</td><td>1</td><td>手牌加入 1 张随机攻击,本回合免费,消耗</td><td>—</td><td><span class="badge b-gen">随机攻击·免费</span></td></tr>
+			<tr><td><b>Rage</b> 狂怒</td><td>技能</td><td>0</td><td>本回合每打出 1 张攻击获得 3 格挡</td><td>5 格挡</td><td><span class="badge b-block">攻击→格挡</span><span class="star">★</span></td></tr>
+			<tr><td><b>Second Wind</b> 第二口气</td><td>技能</td><td>1</td><td>消耗手牌所有非攻击卡,每张获得 5 格挡</td><td>7 格挡/张</td><td><span class="badge b-exh">消耗→防御</span></td></tr>
+			<tr><td><b>Cruelty</b> 残忍</td><td>能力</td><td>1</td><td>易伤敌人额外承受 25% 伤害</td><td>50%</td><td><span class="badge b-vuln">易伤·放大器</span><span class="star">★</span></td></tr>
+			<tr><td><b>Feel No Pain</b> 无痛</td><td>能力</td><td>1</td><td>每消耗 1 张卡获得 3 格挡</td><td>4 格挡</td><td><span class="badge b-exh">消耗→防御</span><span class="star">★</span></td></tr>
+			<tr><td><b>Inferno</b> 炼狱</td><td>能力</td><td>1</td><td>回合开始失去 1 HP;本回合掉血时全敌受到等量伤害</td><td>2 HP 换等量</td><td><span class="badge b-hp">自伤→群伤</span></td></tr>
+			<tr><td><b>Inflame</b> 点燃</td><td>能力</td><td>1</td><td>获得 2 力量</td><td>3 力量</td><td><span class="badge b-strong">力量·基础</span><span class="star">★</span></td></tr>
+			<tr><td><b>Juggling</b> 杂耍</td><td>能力</td><td>1</td><td>每回合第 3 张攻击复制 1 张上手</td><td>第 2 张</td><td><span class="badge b-gen">连打·复制</span></td></tr>
+			<tr><td><b>Rupture</b> 破裂</td><td>能力</td><td>1</td><td>本回合掉血时获得 1 力量</td><td>2 力量</td><td><span class="badge b-hp">自伤→力量</span><span class="star">★</span></td></tr>
+			<tr><td><b>Stampede</b> 奔逃</td><td>能力</td><td>2</td><td>回合结束:手牌 1 张随机攻击自动打出</td><td>2 张</td><td><span class="badge b-gen">自动攻击</span></td></tr>
+			<tr><td><b>Stone Armor</b> 石甲</td><td>能力</td><td>1</td><td>获得 4 Plating(回合末得格挡,回合初 -1)</td><td>6 Plating</td><td><span class="badge b-block">Plating·衰减甲</span></td></tr>
+			<tr><td><b>Vicious</b> 恶毒</td><td>能力</td><td>1</td><td>施放易伤时抽 1 张</td><td>抽 2</td><td><span class="badge b-vuln">易伤→过牌</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.4 Rare(27)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Conflagration</b> 大火</td><td>攻击</td><td>1</td><td>全体敌人 2 伤 ×4 次</td><td>3 伤×4</td><td><span class="badge b-strong">多段群伤</span></td></tr>
+			<tr><td><b>Feed</b> 吞噬</td><td>攻击</td><td>1</td><td>造成 10 伤;Fatal(击杀):最大 HP +3,消耗</td><td>12 伤 / +4</td><td><span class="badge b-hp">Fatal·成长</span><span class="star">★</span></td></tr>
+			<tr><td><b>Fiend Fire</b> 恶魔之火</td><td>攻击</td><td>2</td><td>消耗整手,每张造成 7 伤,消耗</td><td>10 伤/张</td><td><span class="badge b-exh">消耗·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Mangle</b> 撕碎</td><td>攻击</td><td>3</td><td>造成 20 伤;该敌本回合 -10 力量</td><td>26 伤 / -15 力</td><td><span class="badge b-gen">硬解·敌降力</span></td></tr>
+			<tr><td><b>Midnight</b> 午夜</td><td>攻击</td><td>12</td><td>造成 60 伤;任何人本场每消耗 1 张卡 -1 费</td><td>75 伤</td><td><span class="badge b-exh">消耗·降费封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Pact's End</b> 契约终结</td><td>攻击</td><td>0</td><td>消耗堆 ≥3 张时:全体敌人 18 伤</td><td>24 伤</td><td><span class="badge b-exh">消耗·阈值群伤</span><span class="star">★</span></td></tr>
+			<tr><td><b>Tear Asunder</b> 撕裂</td><td>攻击</td><td>2</td><td>造成 5 伤;本场每掉血 1 次 +1 段</td><td>7 伤</td><td><span class="badge b-hp">自伤·段数成长</span><span class="star">★</span></td></tr>
+			<tr><td><b>Thrash</b> 鞭打</td><td>攻击</td><td>1</td><td>造成 4 伤两次;消耗手牌 1 张随机攻击,其伤害加入本卡</td><td>6 伤</td><td><span class="badge b-exh">伤害+吞噬攻击</span></td></tr>
+			<tr><td><b>Aggression</b> 侵略</td><td>能力</td><td>1</td><td>回合开始:弃牌堆 1 张随机攻击上手</td><td>2 张</td><td><span class="badge b-gen">回收·自动机</span></td></tr>
+			<tr><td><b>Barricade</b> 路障</td><td>能力</td><td>3</td><td>回合开始不再移除格挡</td><td>2 费</td><td><span class="badge b-block">格挡·保留</span><span class="star">★</span></td></tr>
+			<tr><td><b>Crimson Mantle</b> 深红披风</td><td>能力</td><td>1</td><td>回合开始:失去 1 HP,获得 7 格挡</td><td>9 格挡</td><td><span class="badge b-hp">自伤→格挡自动机</span></td></tr>
+			<tr><td><b>Dark Embrace</b> 黑暗拥抱</td><td>能力</td><td>2</td><td>每消耗 1 张卡抽 1 张</td><td>1 费</td><td><span class="badge b-exh">消耗→过牌</span><span class="star">★</span></td></tr>
+			<tr><td><b>Demon Form</b> 恶魔形态</td><td>能力</td><td>3</td><td>回合开始:+3 力量</td><td>+4</td><td><span class="badge b-strong">力量·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Hellraiser</b> 地狱使者</td><td>能力</td><td>2</td><td>抽到含 "Strike" 的卡时自动对随机敌打出</td><td>1 费</td><td><span class="badge b-gen">Strike 自动机</span></td></tr>
+			<tr><td><b>Juggernaut</b> 主宰</td><td>能力</td><td>2</td><td>获得格挡时,随机敌受到 5 伤</td><td>7 伤</td><td><span class="badge b-block">格挡→伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Pyre</b> 火葬</td><td>能力</td><td>2</td><td>回合开始获得 1 能量</td><td>2 能量</td><td><span class="badge b-gen">能量·自动机</span></td></tr>
+			<tr><td><b>Tank</b> 坦克</td><td>能力</td><td>1</td><td>你受到的敌人伤害 +50%,队友受到的 -50%</td><td>—</td><td><span class="badge b-mp">多人·嘲讽坦克</span></td></tr>
+			<tr><td><b>Unmovable</b> 不动</td><td>能力</td><td>2</td><td>每回合首次从卡牌获得格挡时翻倍</td><td>1 费</td><td><span class="badge b-block">格挡·翻倍</span></td></tr>
+			<tr><td><b>Brand</b> 烙印</td><td>技能</td><td>0</td><td>失去 1 HP,消耗 1 张手牌,获得 1 力量</td><td>2 力量</td><td><span class="badge b-hp">自伤+消耗→力量</span></td></tr>
+			<tr><td><b>Cascade</b> 瀑布</td><td>技能</td><td>X</td><td>免费打出牌堆顶 X 张卡</td><td>—</td><td><span class="badge b-gen">免费打·X费</span></td></tr>
+			<tr><td><b>Dominate</b> 支配</td><td>技能</td><td>1</td><td>附加 1 易伤;该敌每有 1 层易伤获得 1 力量,消耗</td><td>2 力量/层</td><td><span class="badge b-vuln">易伤→力量</span><span class="star">★</span></td></tr>
+			<tr><td><b>Impervious</b> 坚不可摧</td><td>技能</td><td>2</td><td>获得 30 格挡,消耗</td><td>40 格挡</td><td><span class="badge b-block">大数字格挡</span><span class="star">★</span></td></tr>
+			<tr><td><b>Not Yet</b> 还早</td><td>技能</td><td>2</td><td>回复 10 HP,消耗</td><td>16 HP</td><td><span class="badge b-hp">回血</span></td></tr>
+			<tr><td><b>Offering</b> 祭品</td><td>技能</td><td>0</td><td>失去 6 HP,获得 2 能量,抽 3 张,消耗</td><td>3 能量</td><td><span class="badge b-hp">自伤·能量引擎</span><span class="star">★</span></td></tr>
+			<tr><td><b>One-Two Punch</b> 一二连击</td><td>技能</td><td>1</td><td>本回合下一张攻击额外打一次</td><td>下两张</td><td><span class="badge b-gen">连打授予</span><span class="star">★</span></td></tr>
+			<tr><td><b>Primal Force</b> 原始力量</td><td>技能</td><td>0</td><td>手牌所有攻击转化为 Giant Rock(16 伤)</td><td>20 伤巨石</td><td><span class="badge b-gen">转化·爆发</span><span class="star">★</span></td></tr>
+			<tr><td><b>Stoke</b> 添柴</td><td>技能</td><td>1</td><td>消耗整手,每张补 1 张随机卡上手</td><td>2 费→1 费</td><td><span class="badge b-exh">消耗→换牌</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.5 Ancient(2)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Break</b> 破碎</td><td>攻击</td><td>1</td><td>造成 20 伤,附加 5 易伤</td><td>26 伤</td><td><span class="badge b-vuln">易伤·封顶</span></td></tr>
+			<tr><td><b>Corruption</b> 腐化</td><td>能力</td><td>3</td><td>技能 0 费;打出技能时消耗它</td><td>2 费</td><td><span class="badge b-exh">消耗流·终极形态</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.6 生成 token</h3>
+	<table>
+		<thead><tr><th>token</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th>来源</th></tr></thead>
+		<tbody>
+			<tr><td><b>Giant Rock</b> 巨石</td><td>攻击</td><td>1</td><td>造成 16 伤(升级 20)</td><td>Primal Force 转化手牌攻击</td></tr>
+		</tbody>
+	</table>
+	<div class="note">数据说明:卡牌数据取自 slaythespire.wiki.gg 官方卡表(Cargo 导出,2026-08-17);「0 费」处原文为 "costs 0 1 Energy" 的按 0 费理解;多人模式卡(Tank / Blaze / Demonic Shield / Outrage)标注 <span class="badge b-mp">多人</span>。</div>
+</div>
+
+</body>
+</html>

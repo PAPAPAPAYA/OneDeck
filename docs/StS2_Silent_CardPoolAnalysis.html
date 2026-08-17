@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>杀戮尖塔2 Silent 卡组结构拆解 — 条件 · 收益 · 稀有度分布 · 构筑图谱</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+		--purple: #bb9af7; --cyan: #7dcfff;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+	.mono { font-family: Consolas, monospace; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+	.b-sly { color: #7dcfff; border-color: #7dcfff88; }
+	.b-shiv { color: #e0af68; border-color: #e0af6888; }
+	.b-poison { color: #9ece6a; border-color: #9ece6a88; }
+	.b-discard { color: #bb9af7; border-color: #bb9af788; }
+	.b-dex { color: #7dcfff; border-color: #7dcfff88; }
+	.b-gen { color: #8b93a3; border-color: #8b93a388; }
+	.b-mp { color: #ff9e64; border-color: #ff9e6488; }
+	.star { color: #e0af68; font-weight: 700; }
+	ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.bad { color: var(--bad); }
+	.purple { color: var(--purple); }
+	.cyan { color: var(--cyan); }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.keycard { background: #1a1e27; border: 1px solid #e0af6855; border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 0.85rem; }
+	.keycard .kc-name { font-weight: 700; color: #e0af68; }
+	.r-tag { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; white-space: nowrap; }
+	.r-basic { color: #8b93a3; border-color: #8b93a388; }
+	.r-common { color: #9ece6a; border-color: #9ece6a88; }
+	.r-uncommon { color: #7dcfff; border-color: #7dcfff88; }
+	.r-rare { color: #bb9af7; border-color: #bb9af788; }
+	.r-ancient { color: #e0af68; border-color: #e0af6888; }
+	@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style>
+</head>
+<body>
+
+<h1>杀戮尖塔 2 · Silent 卡组结构拆解</h1>
+<div class="sub">2026-08-17 · 卡牌数据源:<a href="https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Cards_List">slaythespire.wiki.gg 官方卡表</a>(Cargo 数据,91 张,含最新平衡补丁)· 机制规则:Spire Codex / Mobalytics / untapped.gg 交叉验证 · 中文译名为参考译名,一律以英文原文为准 · 同系列:<a href="StS2_Necrobinder_CardPoolAnalysis.html">Necrobinder</a> / <a href="StS2_Ironclad_CardPoolAnalysis.html">Ironclad</a> / <a href="StS2_Defect_CardPoolAnalysis.html">Defect</a> / <a href="StS2_Regent_CardPoolAnalysis.html">Regent</a></div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num">91</div><div class="lbl">卡池总数</div></div>
+	<div class="kpi"><div class="num">46</div><div class="lbl">技能卡数量(占比 50.5%,全游最高 —— 攻击靠 token 与免费触发兑现)</div></div>
+	<div class="kpi"><div class="num">9</div><div class="lbl">带 Sly 的卡数 —— 弃牌免费打,StS2 静默者的身份关键词</div></div>
+	<div class="kpi"><div class="num">13+13</div><div class="lbl">Shiv 与 Poison 相关卡各 13 张 —— 两条经典副轴</div></div>
+	<div class="kpi"><div class="num">12</div><div class="lbl">起始牌组张数(全角色最大)+ Ring of the Snake 开局抽 2</div></div>
+</div>
+
+<h2>0. 角色骨架</h2>
+<div class="card">
+	<ul>
+		<li><b>属性</b>:70 HP、3 能量、起始遗物 <b>Ring of the Snake</b>(每场战斗开局额外抽 2 张)。</li>
+		<li><b>起始牌组</b>(12 张,全角色最大):Strike ×5、Defend ×5、Neutralize(0 费 3 伤 + 虚弱)、Survivor(8 格挡 + 弃 1 张)—— 弃牌动作从第一回合就存在,为 Sly 轴做教学铺垫。</li>
+		<li><b>身份关键词</b>:<span class="badge b-sly">Sly(9 张)</span> —— 从手牌被弃置时自动 0 费打出,是 StS2 静默者的核心新机制;<span class="badge b-shiv">Shiv</span> 与 <span class="badge b-poison">毒</span> 延续 StS1 双轴;<span class="badge b-dex">敏捷</span> 与 Retain / 弃牌协同构成运转层。</li>
+		<li><b>结构性特征</b>:技能卡占一半(46/91)—— 静默者的攻击密度由「Shiv token」「Sly 免费打」「毒 DoT」三种不占卡位的伤害源补足,本体卡大量承担运转与防守。</li>
+	</ul>
+	<div class="note">资源轴速览:Sly = <span class="cyan">免费触发轴</span>(弃牌即 0 费打出);Shiv = <span class="warn">token 频率轴</span>(0 费打点);毒 = <span class="good">DoT 存量轴</span>(叠层→触发);弃牌 = <span class="purple">事件源</span>(Reflex / Tactician / Hidden Daggers / Storm of Steel 全部按弃牌结算)。</div>
+</div>
+
+<h2>1. 条件体系</h2>
+
+<h3>1.1 A 组:弃牌事件(身份核心)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>从手牌弃置 Sly 卡</b></td><td>回合内弃牌事件(含回合末手牌上限弃置)</td><td>Survivor / Prepared / Dagger Throw / Acrobatics / Calculated Gamble / Hidden Daggers / Storm of Steel / Shadow Step / Tools of the Trade 等任意弃牌口</td><td class="good">该卡<b>自动 0 费打出</b>(伤害 / 格挡 / 抽牌 / 能量照常结算)—— 弃牌从「亏损动作」变成「免费施放」</td></tr>
+			<tr><td><b>弃牌事件</b></td><td>事件触发</td><td>同上任意弃牌</td><td><b>Reflex</b>:抽 2;<b>Tactician</b>:+1 能量;<b>Hidden Daggers</b>:加 2 张 Shiv;<b>Storm of Steel</b>:每弃 1 张加 1 张 Shiv</td></tr>
+			<tr><td><b>本回合弃牌数</b></td><td>回合内计数</td><td>弃牌口叠次数(Calculated Gamble 一次弃整手)</td><td><b>Memento Mori</b>:每弃 1 张 +4 伤(弃牌数×伤害)</td></tr>
+			<tr><td><b>弃空手牌</b></td><td>事件</td><td>Calculated Gamble / Storm of Steel / Shadow Step</td><td><b>Shadow Step</b>:弃整手 → 下回合攻击伤害翻倍;<b>Calculated Gamble</b>:弃整手 → 抽等量</td></tr>
+		</tbody>
+	</table>
+	<div class="note">Sly 的触发细节:必须是「从手牌弃置」(回合末上限弃置也算);从牌组直接磨进弃牌堆不算。弃牌顺序即施放顺序 —— 弃 1 张 Sly Reflex 抽 2 → 再弃再抽,链式触发是静默者无限引擎的物理基础。</div>
+</div>
+
+<h3>1.2 B 组:毒(DoT 存量)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>敌带毒</b></td><td>持续状态</td><td>Deadly Poison / Poisoned Stab / Snakebite / Bouncing Flask / Haze / Noxious Fumes / Envenom / Corrosive Wave</td><td><b>Bubble Bubble</b>:再叠 9 毒;<b>Mirage</b>:获得等于全敌毒量的格挡(毒→防御桥)</td></tr>
+			<tr><td><b>毒触发事件</b></td><td>回合结算</td><td>毒每回合扣血结算</td><td><b>Accelerant</b>:毒额外触发 1 次(触发频率乘区)</td></tr>
+			<tr><td><b>毒存量</b></td><td>结算时读取</td><td>任意毒源</td><td><b>Outbreak</b>:全敌 9 毒并<b>立即触发</b>(存量一次兑现);<b>Strangle</b>:本回合每打 1 张牌敌 -2 HP</td></tr>
+			<tr><td><b>攻击造成未格挡伤害</b></td><td>事件触发</td><td>任意攻击</td><td><b>Envenom</b>:附加 1 毒(攻击→毒桥)</td></tr>
+			<tr><td><b>抽到卡</b></td><td>事件触发</td><td>任意抽牌</td><td><b>Corrosive Wave</b>:本回合每抽 1 张全敌 +2 毒(抽牌→毒桥)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.3 C 组:计数条件(抽牌 / 打出 / 手牌)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">计数口径</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>本回合抽牌数</b></td><td>回合内累计</td><td>任何过牌(Soul 系无;静默者靠自身抽牌卡)</td><td><b>Murder</b>:每抽 1 张 +1 伤(本场累计的抽牌量);<b>Speedster</b>:回合内抽牌时全敌 2 伤;<b>Corrosive Wave</b>:每抽 1 张全敌 2 毒</td></tr>
+			<tr><td><b>本回合攻击打出数</b></td><td>回合内累计</td><td>—</td><td><b>Finisher</b>:每张 +6 伤(回合末大数字)</td></tr>
+			<tr><td><b>手牌技能数</b></td><td>打出时读取</td><td>—</td><td><b>Flechettes</b>:每张 +5 伤</td></tr>
+			<tr><td><b>本回合技能打出数</b></td><td>回合内累计</td><td>—</td><td><b>Pinpoint</b>:每张 -1 费(15 伤可归 0)</td></tr>
+			<tr><td><b>手牌其他卡数</b></td><td>打出时读取</td><td>—</td><td><b>Precise Cut</b>:每张 -2 伤(手越少越痛)</td></tr>
+			<tr><td><b>牌组为空</b></td><td>打出时检查</td><td>整场抽干牌库</td><td><b>Grand Finale</b>:全敌 60 伤(极端条件件)</td></tr>
+			<tr><td><b>Shiv 在消耗堆</b></td><td>本场累计</td><td>打出过的 Shiv 全部进入消耗堆</td><td><b>Knife Trap</b>:把消耗堆所有 Shiv 全部打出(存量兑现)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.4 D 组:自我代价 / 双刃剑</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">代价</th><th style="width:38%">付出形式</th><th>收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>敏捷衰减</b></td><td>Wraith Form(Ancient):获得 2 无实体,每回合开始 -1 敏捷</td><td class="good">本回合无敌(伤害/HP 损失降为 1)—— 用未来防御换现在</td></tr>
+			<tr><td><b>本回合不能抽牌</b></td><td>Bullet Time:手牌全部 0 费</td><td>整手免费 —— 爆发回合,代价是下回合无牌</td></tr>
+			<tr><td><b>弃空手牌</b></td><td>Shadow Step / Storm of Steel</td><td>下回合攻击翻倍 / 每弃 1 张 1 刀</td></tr>
+			<tr><td><b>敌我双减</b></td><td>Malaise:敌 -X 力量 -X 虚弱(同时削弱自身节奏)</td><td>硬解 + 保护(消耗)</td></tr>
+			<tr><td><b>击杀条件</b></td><td>The Hunt:Fatal(击杀)→ 额外卡牌奖励</td><td>资源成长(本场累计)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>2. 收益体系</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">收益类型</th><th style="width:44%">定义</th><th>代表兑现卡</th></tr></thead>
+		<tbody>
+			<tr><td class="cyan"><b>① 免费施放(Sly)</b></td><td>弃牌即 0 费打出 —— 静默者独有的「第二出牌通道」,与弃牌口数量成正比</td><td>Flick-Flack / Ricochet / Untouchable / Reflex / Tactician / Abrasive / Sneaky + Master Planner(技能永久获得 Sly)</td></tr>
+			<tr><td class="warn"><b>② Shiv 频率</b></td><td>0 费 4 伤 token 攻击,吃力量/敏捷外的专属增幅(Accuracy)</td><td>Blade Dance / Cloak and Dagger / Infinite Blades / Leading Strike / Fan of Knives / Phantom Blades / Knife Trap / Up My Sleeve</td></tr>
+			<tr><td class="good"><b>③ 毒(DoT)</b></td><td>每回合扣血、无视格挡、叠加成长 —— 唯一不依赖攻击次数的伤害源</td><td>Outbreak(立即触发)/ Accelerant(触发 +1 次)/ Mirage(毒→格挡)/ Envenom(攻击附毒)</td></tr>
+			<tr><td><b>④ 防御</b></td><td>敏捷→格挡、Sly 免费格挡、保留、无实体、Thorns</td><td>Footwork / Anticipate / Untouchable / Abrasive / Wraith Form / Afterimage / Shadowmeld / Blur</td></tr>
+			<tr><td class="purple"><b>⑤ 牌库工程</b></td><td>弃牌回手、Retain、抽牌、随机卡、复制、升级</td><td>Expertise / Well-Laid Plans / Nightmare(3 复制)/ Calculated Gamble / Escape Plan</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>3. 稀有度分布</h2>
+<div class="card">
+	<h3>3.1 数量与类型构成</h3>
+	<table>
+		<thead><tr><th>稀有度</th><th>数量</th><th>占比</th><th>攻击</th><th>技能</th><th>能力</th><th>技能卡占比</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>4</td><td>4.4%</td><td>2</td><td>2</td><td>0</td><td>50%</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>20</td><td>22.0%</td><td>9</td><td>11</td><td>0</td><td>55%</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>38</td><td>41.8%</td><td>11</td><td>20</td><td>7</td><td>53%</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>27</td><td>29.7%</td><td>4</td><td>13</td><td>10</td><td>48%</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>2</td><td>2.2%</td><td>1</td><td>0</td><td>1</td><td>0%</td></tr>
+			<tr class="arch-head"><td>合计</td><td>91</td><td>100%</td><td>27</td><td>46</td><td>18</td><td>50.5%</td></tr>
+		</tbody>
+	</table>
+	<h3>3.2 每档稀有度的设计职责</h3>
+	<table>
+		<thead><tr><th style="width:12%">档位</th><th style="width:30%">承载功能</th><th>代表卡</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>弃牌教学:Survivor 从第一回合教「弃牌」,Neutralize 给 0 费 debuff 模板</td><td>Survivor(弃牌口)、Neutralize(0 费双职)</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td class="good"><b>轴入口</b>:Sly 入口(Flick-Flack / Ricochet / Untouchable)、毒入口(Poisoned Stab / Deadly Poison)、Shiv 入口(Blade Dance / Cloak and Dagger / Leading Strike)、弃牌口(Prepared / Dagger Throw)</td><td>无能力卡;技能占比 55% —— 入口即运转</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td class="warn"><b>组件与桥梁密集区</b>:弃牌-免费触发链的核心件、毒触发件、Shiv 增幅件</td><td>Calculated Gamble / Reflex / Tactician / Hidden Daggers / Hand Trick(Sly 授予)、Accelerant / Outbreak 系 / Mirage、Accuracy / Phantom Blades / Infinite Blades</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td class="bad"><b>封顶件与全局引擎</b>:计数伤害(Murder / Grand Finale)、全局放大器(Envenom / Afterimage / Serpent Form)、Sly 引擎(Master Planner)、复制(Nightmare)</td><td>Master Planner / Murder / Fan of Knives / Knife Trap / Wraith Form / Bullet Time / Nightmare / The Hunt(Fatal)</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>轴封顶的极端化</td><td>Suppress(0 费 Innate 11 伤 + 3 虚弱)、Wraith Form(2 无实体)</td></tr>
+		</tbody>
+	</table>
+	<div class="note">结构性结论:静默者是全角色中<b>唯一 Common 阶段技能卡过半</b>的角色 —— 攻击输出交给 token(Sly 免费打 / Shiv)兑现,所以入口卡天然是「运转+防御」形态;Rare 只有 4 张攻击卡,说明其伤害封顶几乎全部由能力卡与条件件承担。</div>
+</div>
+
+<h2>4. 主线与构筑关键卡</h2>
+
+<h3>4.1 弃牌 / Sly 轴(身份核心)</h3>
+<div class="card">
+	<div class="flow">弃牌口(Prepared / Dagger Throw / Acrobatics / Calculated Gamble / Storm of Steel)→ 弃置 Sly 卡自动 0 费打出 → 弃牌事件回报(Reflex 抽 2 / Tactician 能量 / Hidden Daggers 刀 / Memento Mori 计数)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>弃牌口</td><td>Survivor(起始)/ Prepared ★ / Dagger Throw / Acrobatics ★ / Calculated Gamble ★ / Hidden Daggers / Storm of Steel / Shadow Step / Tools of the Trade</td><td>把弃牌做成常规动作;Calculated Gamble 弃整手抽等量 = 全卡池最强滤牌</td></tr>
+			<tr><td>Sly 卡</td><td>Flick-Flack ★ / Ricochet / Untouchable / Reflex ★ / Tactician ★ / Abrasive</td><td>弃置即免费打出:全敌 7 伤 / 随机 3×4 / 6 防 / 抽 2 / +1 能量 / 敏捷+Thorns</td></tr>
+			<tr><td>Sly 授予</td><td>Hand Trick(本回合技能 +Sly)/ Master Planner ★(能力:打出技能即获得 Sly)</td><td>把「任意技能」变成弃置免费打 —— Sly 引擎本体</td></tr>
+			<tr><td>弃牌计数</td><td>Memento Mori ★ / Storm of Steel</td><td>每弃 1 张 +4 伤;每弃 1 张 1 刀 —— 弃牌量本身是乘区</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Master Planner、Calculated Gamble、Reflex、Tactician、Acrobatics、Prepared、Flick-Flack、Memento Mori、Storm of Steel</span><br>引擎形态:Master Planner(技能获得 Sly)+ 任意弃牌口 → 弃 Reflex 抽 2、弃 Tactician 得能量、弃 Untouchable 免费 6 防 → Calculated Gamble 整手循环 —— 社区公认的无限引擎原型:弃牌越多,免费施放越多,抽得越多。</div>
+</div>
+
+<h3>4.2 毒轴</h3>
+<div class="card">
+	<div class="flow">叠毒(Deadly Poison / Poisoned Stab / Snakebite / Bouncing Flask / Haze / Noxious Fumes)→ 触发端放大(Accelerant +1 次 / Outbreak 立即触发)→ 存量兑现(Mirage 格挡 / Strangle 打牌扣血)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>叠毒</td><td>Deadly Poison ★ / Poisoned Stab / Snakebite(Retain)/ Bouncing Flask(随机 3×3)/ Haze(群)/ Noxious Fumes(每回合全敌 2)</td><td>单/群/自动机三种叠法;Snakebite 的 Retain 保证关键回合满额</td></tr>
+			<tr><td>触发端</td><td>Accelerant ★ / Outbreak ★ / Corrosive Wave</td><td>触发 +1 次(频率乘区);全敌 9 毒并立即触发(存量兑现);每抽 1 张全敌 2 毒</td></tr>
+			<tr><td>转换</td><td>Envenom ★(攻击附毒)/ Bubble Bubble(带毒再叠 9)/ Mirage(毒→格挡)/ Strangle(打牌扣血)/ Malaise(敌 -X 力)</td><td>毒轴与攻击流、防御流的双向桥</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Deadly Poison、Noxious Fumes、Accelerant、Outbreak、Envenom、Mirage、Bubble Bubble</span><br>引擎形态:Noxious Fumes 每回合自动叠 → Accelerant 让毒多跳一次 → Outbreak 在 BOSS 战时一次兑现全层 —— 毒是「存得住的伤害」,回合数越长越强。</div>
+</div>
+
+<h3>4.3 Shiv 轴</h3>
+<div class="card">
+	<div class="flow">产刀(Blade Dance / Cloak and Dagger / Leading Strike / Infinite Blades / Up My Sleeve)→ 增幅(Accuracy +4/刀 / Phantom Blades 首刀 +9)→ 形态升级(Fan of Knives 全敌 / Knife Trap 存量兑现)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>产刀</td><td>Blade Dance ★(3 刀)/ Cloak and Dagger(防+1 刀)/ Leading Strike / Infinite Blades(每回合 1 刀)/ Up My Sleeve(3 刀,降费)/ Storm of Steel(弃牌产刀)</td><td>频率来源;Up My Sleeve 每回合降 1 费 = 无限续杯</td></tr>
+			<tr><td>增幅</td><td>Accuracy ★ / Phantom Blades ★ / Fan of Knives ★</td><td>每刀 +4;Shiv 获得 Retain + 首刀 +9;Shiv 全敌(群伤形态)</td></tr>
+			<tr><td>存量兑现</td><td>Knife Trap ★ / Blade of Ink(Inky Shiv)</td><td>消耗堆所有刀一次打出;Inky Shiv 是自带毒/特效的刀</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Blade Dance、Accuracy、Phantom Blades、Fan of Knives、Knife Trap、Infinite Blades、Up My Sleeve</span><br>引擎形态:Infinite Blades / Up My Sleeve 每回合免费产刀 → Accuracy 每刀 +4 → Fan of Knives 群伤化 → Knife Trap 把打过的刀再打一遍。Shiv 轴是「频率 × 单刀伤害」的乘法结构,与毒轴的「存量 × 触发」并列。</div>
+</div>
+
+<h3>4.4 抽牌 / 计数轴</h3>
+<div class="card">
+	<div class="flow">高速过牌(Escape Plan / Expertise / Acrobatics / Adrenaline / Bullet Time)→ 计数兑现(Murder 每抽 +1 / Speedster 抽牌全敌伤 / Finisher 攻击数 / Flechettes 技能数)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>过牌</td><td>Escape Plan ★(抽到技能 +3 防)/ Expertise(抽 2 并 Retain)/ Acrobatics(抽 3 弃 1)/ Adrenaline(1 能量抽 2)/ Backflip(5 防抽 2)/ Tools of the Trade</td><td>抽牌同时带防御/弃牌 —— 过牌即防守</td></tr>
+			<tr><td>计数兑现</td><td>Murder ★(本场每抽 1 张 +1 伤)/ Speedster(回合内抽牌全敌 2 伤)/ Finisher ★(攻击数 ×6)/ Flechettes(技能数 ×5)/ Skewer(X 段)/ Precise Cut(手牌越少越痛)</td><td>把「抽了多少 / 打了多少」变成伤害 —— 静默者的成长型大数字全部挂在这类计数上</td></tr>
+			<tr><td>极端</td><td>Grand Finale ★(牌组空 → 全敌 60)/ Bullet Time(整手 0 费)/ Nightmare(3 复制)</td><td>条件极端的封顶件</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Murder、Finisher、Escape Plan、Adrenaline、Bullet Time、Grand Finale、Nightmare</span><br>引擎形态:Adrenaline + Escape Plan 连抽 → Murder 本场累计每抽 +1 → 中后期单卡 30+ 伤;Bullet Time 回合把整手归零。</div>
+</div>
+
+<h3>4.5 敏捷 / 防御轴</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>敏捷</td><td>Footwork ★(+2 永久)/ Anticipate(临时 +2)/ Abrasive(Sly,+1 敏 +4 刺)/ Fade(mp 队友)</td><td>每点敏捷 = 每张格挡卡 +1 —— 防御乘区</td></tr>
+			<tr><td>格挡形态</td><td>Backflip / Blur(下回合保留)/ Afterimage ★(每打 1 卡 +1 防)/ Shadowmeld(格挡获得翻倍)/ Wraith Form(2 无实体)/ Deflect / Dodge and Roll</td><td>Afterimage 把「打出频率」变成防御 —— 与 Sly / 刀轴天然联动</td></tr>
+			<tr><td>保留</td><td>Well-Laid Plans ★(回合末不弃手)/ Snakebite(Retain)/ Expertise</td><td>手牌工程 —— 保证关键卡跨回合</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Footwork、Afterimage、Wraith Form、Well-Laid Plans、Blur、Shadowmeld</span><br>引擎形态:Afterimage + 高频率牌组(刀 / Sly / 0 费)= 每回合 10+ 免费格挡;Wraith Form 是 BOSS 战终极保险。</div>
+</div>
+
+<h2>5. 构筑之间的桥梁</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">连接</th><th style="width:26%">桥梁卡</th><th>原理</th></tr></thead>
+		<tbody>
+			<tr><td>弃牌 → 免费施放</td><td>Sly 全体(Master Planner ★ / Hand Trick 制造)</td><td>弃牌口 + Sly = 第二出牌通道 —— 身份轴的发动机</td></tr>
+			<tr><td>弃牌 → 抽牌 / 能量</td><td>Reflex ★、Tactician ★</td><td>弃牌事件变成过牌/能量 —— 无限循环的燃料</td></tr>
+			<tr><td>弃牌 → Shiv</td><td>Hidden Daggers ★、Storm of Steel ★</td><td>弃牌量 → 刀数,两轴互喂</td></tr>
+			<tr><td>弃牌 → 伤害</td><td>Memento Mori ★、Shadow Step(弃空手 → 攻击翻倍)</td><td>弃牌计数变成伤害乘区</td></tr>
+			<tr><td>毒 → 防御</td><td>Mirage ★(全敌毒量 → 格挡)</td><td>DoT 存量同时是防御资源</td></tr>
+			<tr><td>毒 → 伤害</td><td>Outbreak ★、Accelerant ★、Strangle、Bubble Bubble</td><td>触发频率 / 立即兑现 / 打牌扣血 —— 三种兑现形态</td></tr>
+			<tr><td>攻击 → 毒</td><td>Envenom ★</td><td>攻击流自动转毒 —— 双轴合流</td></tr>
+			<tr><td>抽牌 → 毒 / 伤害 / 防御</td><td>Corrosive Wave、Murder、Speedster、Escape Plan</td><td>抽牌同时是四路事件源 —— 静默者最强的通用桥</td></tr>
+			<tr><td>打出频率 → 防御</td><td>Afterimage ★、Serpent Form(每打 1 卡 4 伤)</td><td>频率轴(刀 / Sly)自动获得防御或伤害</td></tr>
+			<tr><td>Shiv → 防御 / 群伤</td><td>Cloak and Dagger(防+刀)、Fan of Knives(全敌)</td><td>刀轴的形态切换</td></tr>
+			<tr><td>击杀 → 资源</td><td>The Hunt ★(Fatal → 额外卡牌奖励)</td><td>终局成长</td></tr>
+			<tr><td>多人</td><td>Blade Symphony、Concoct、Fade、Flanking、Sneaky <span class="badge b-mp">多人</span></td><td>刀/毒/敏捷跨玩家共享,Flanking 让队友伤害翻倍</td></tr>
+		</tbody>
+	</table>
+	<div class="note">闭环示例:<span class="mono">Master Planner(技能 → Sly)+ Acrobatics 弃 Reflex → 抽 2 → 弃 Tactician → +1 能量 → 弃 Flick-Flack 免费全敌伤 → Calculated Gamble 弃整手再抽满 → 循环。</span>弃牌、抽牌、免费施放三条线共用同一个动作。</div>
+</div>
+
+<h2>6. 运转卡 vs 伤害卡</h2>
+<div class="card">
+	<h3>6.1 运转卡(Engine)</h3>
+	<table>
+		<thead><tr><th style="width:18%">功能</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>弃牌口</td><td><b>Prepared ★、Acrobatics ★、Calculated Gamble ★、Dagger Throw、Hidden Daggers、Storm of Steel、Shadow Step、Tools of the Trade</b></td><td>弃牌 = 静默者的能量货币 —— 所有 Sly/事件桥的开关</td></tr>
+			<tr><td>抽牌</td><td>Escape Plan、Expertise、Backflip、Adrenaline、Reflex(弃置触发)、Bullet Time、Prophesize 系</td><td>过牌即事件源</td></tr>
+			<tr><td>能量</td><td>Adrenaline、Tactician(弃置触发)、Sidestep(下回合)</td><td>能量件不多 —— 静默者用「免费施放」代替能量</td></tr>
+			<tr><td>保留 / 工程</td><td>Well-Laid Plans ★、Expertise、Snakebite(Retain)、Up My Sleeve(降费)、Nightmare(复制)</td><td>手牌跨回合工程</td></tr>
+			<tr><td>Sly 引擎</td><td>Master Planner ★、Hand Trick</td><td>把任意技能纳入免费通道 —— 全卡池最强运转件之一</td></tr>
+		</tbody>
+	</table>
+	<h3>6.2 伤害卡</h3>
+	<table>
+		<thead><tr><th style="width:18%">形态</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>计数成长</td><td>Murder(抽牌计数)、Memento Mori(弃牌计数)、Finisher(攻击计数)、Flechettes(技能计数)、Precise Cut(手牌数)、Speedster(抽牌触发)</td><td>静默者的成长型伤害全部是「动作计数」—— 运转本身即输出</td></tr>
+			<tr><td>token 伤害</td><td>Shiv 系(Blade Dance / Accuracy / Fan of Knives / Phantom Blades / Knife Trap)、Sly 免费打(Flick-Flack / Ricochet)</td><td>不占卡位的伤害源</td></tr>
+			<tr><td>DoT</td><td>毒系(Deadly Poison / Noxious Fumes / Outbreak / Accelerant / Envenom)</td><td>存量 × 触发</td></tr>
+			<tr><td>纯直伤</td><td>Predator、Slice、Assassinate、Backstab、Echoing Slash(击杀连打)、Sucker Punch</td><td>瞬发打点</td></tr>
+			<tr><td>极端封顶</td><td>Grand Finale(全敌 60)、Knife Trap、Shadow Step(攻击翻倍回合)</td><td>条件大数字</td></tr>
+		</tbody>
+	</table>
+	<h3>6.3 一张卡干两件事</h3>
+	<ul>
+		<li><b>Dagger Throw</b>:9 伤 + 抽 1 + 弃 1(伤害 + 双运转)</li>
+		<li><b>Escape Plan</b>:抽 1 + 抽到技能得 3 防(过牌 + 防御)</li>
+		<li><b>Cloak and Dagger</b>:6 防 + 1 刀(防御 + 输出源)</li>
+		<li><b>Leading Strike</b>:3 伤 + 2 刀(伤害 + 输出源)</li>
+		<li><b>Hidden Daggers</b>:弃 2 + 2 刀(弃牌口 + 输出源)</li>
+		<li><b>Backflip</b>:5 防 + 抽 2;Acrobatics:抽 3 + 弃 1</li>
+		<li><b>Strangle</b>:8 伤 + 本回合打牌扣血(直伤 + DoT)</li>
+		<li><b>Flechettes / Finisher</b>:技能/攻击计数兑现 —— 半运转半伤害</li>
+		<li><b>Malaise</b>:敌 -X 力 -X 虚弱(硬解 + 保护)</li>
+	</ul>
+</div>
+
+<h2>7. 设计观察</h2>
+<div class="card">
+	<ol>
+		<li><b>弃牌从「代价」变成「收入」</b>:StS1 的弃牌是弃牌流的代价,StS2 的 Sly 让弃牌变成「免费施放通道」—— 这是静默者最大的机制升级。弃牌口(运转)与 Sly 卡(兑现)的两段式结构与 Necrobinder 的「条件制造/条件兑现」完全同构。</li>
+		<li><b>技能卡过半 = 攻击外包</b>:46/91 的技能占比说明静默者的攻击密度全部交给 token(Shiv / Sly 免费打 / 毒),本体卡负责「制造频率」—— 与铁甲的「本体大数字」是相反的解法。</li>
+		<li><b>动作计数 = 成长型伤害的统一句式</b>:Murder(抽)、Memento Mori(弃)、Finisher(攻)、Flechettes(技)、Speedster(抽触发)—— 五张计数卡把「运转动作」本身变成伤害乘区,运转越好的牌组天然越强。</li>
+		<li><b>毒是唯一的「可储存伤害」</b>:其他角色的伤害要么即时要么计数,毒可以跨回合储存并在任意时刻兑现(Outbreak)—— 与 Doom 的「阈值处决」形成对比:毒是渐进兑现,Doom 是阈值即死。</li>
+		<li><b>能力卡全部是「频率放大器」</b>:Envenom / Afterimage / Serpent Form / Speedster / Fan of Knives 都是「每当 X 就 Y」的触发式能力 —— 静默者的能力卡不提供大数字,只放大已有动作。</li>
+	</ol>
+	<div class="note">对 OneDeck 的参考:① 「弃牌/消耗/回收 = 免费资源」的垃圾经济学第三形态(铁甲消耗、静默者弃牌、Defect 状态回收、Regent 转化);② 动作计数伤害(抽/弃/攻/技)是让运转卡池自动获得输出能力的低耦合手段;③ token 攻击(Shiv)是解决「技能卡过半」角色输出密度的标准答案。</div>
+</div>
+
+<h2>附录 A. 全部 91 张卡</h2>
+<div class="card">
+	<p class="lead">分组按稀有度;升级文本以 wiki.gg 收录为准;多人模式专属卡标注 <span class="badge b-mp">多人</span>。</p>
+
+	<h3>A.1 Basic(4)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Strike</b> 打击</td><td>攻击</td><td>1</td><td>造成 6 伤</td><td>9 伤</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Defend</b> 防御</td><td>技能</td><td>1</td><td>获得 5 格挡</td><td>8 格挡</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Neutralize</b> 中和</td><td>攻击</td><td>0</td><td>造成 3 伤,附加 1 虚弱</td><td>4 伤 / 2 虚弱</td><td><span class="badge b-gen">0费·debuff</span></td></tr>
+			<tr><td><b>Survivor</b> 幸存者</td><td>技能</td><td>1</td><td>获得 8 格挡,弃 1 张手牌</td><td>11 格挡</td><td><span class="badge b-discard">弃牌口·教学</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.2 Common(20)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Dagger Spray</b> 飞刀雨</td><td>攻击</td><td>1</td><td>全体敌人 4 伤两次</td><td>6 伤×2</td><td><span class="badge b-gen">群伤</span></td></tr>
+			<tr><td><b>Dagger Throw</b> 飞刀</td><td>攻击</td><td>1</td><td>造成 9 伤,抽 1 张,弃 1 张</td><td>12 伤</td><td><span class="badge b-discard">伤害+弃牌口</span></td></tr>
+			<tr><td><b>Flick-Flack</b> 弹击</td><td>攻击</td><td>1</td><td>Sly。全体敌人 7 伤</td><td>10 伤</td><td><span class="badge b-sly">Sly·群伤</span><span class="star">★</span></td></tr>
+			<tr><td><b>Leading Strike</b> 先手打击</td><td>攻击</td><td>1</td><td>造成 3 伤,手牌加 2 张 Shiv</td><td>4 伤 / 3 刀</td><td><span class="badge b-shiv">伤害+产刀</span></td></tr>
+			<tr><td><b>Poisoned Stab</b> 毒刃</td><td>攻击</td><td>1</td><td>造成 6 伤,附加 3 毒</td><td>8 伤 / 4 毒</td><td><span class="badge b-poison">毒·入口</span></td></tr>
+			<tr><td><b>Predator</b> 捕食者</td><td>攻击</td><td>2</td><td>造成 15 伤;下回合抽 2 张</td><td>20 伤</td><td><span class="badge b-gen">直伤+跨回合过牌</span></td></tr>
+			<tr><td><b>Ricochet</b> 跳弹</td><td>攻击</td><td>2</td><td>Sly。随机敌人 4 次,每次 3 伤</td><td>4 伤×4</td><td><span class="badge b-sly">Sly·多段</span></td></tr>
+			<tr><td><b>Slice</b> 削切</td><td>攻击</td><td>0</td><td>造成 6 伤</td><td>9 伤</td><td><span class="badge b-gen">0费直伤</span></td></tr>
+			<tr><td><b>Sucker Punch</b> 偷袭</td><td>攻击</td><td>1</td><td>造成 8 伤,附加 1 虚弱</td><td>11 伤</td><td><span class="badge b-gen">伤害+虚弱</span></td></tr>
+			<tr><td><b>Anticipate</b> 预判</td><td>技能</td><td>0</td><td>本回合获得 2 敏捷</td><td>3 敏捷</td><td><span class="badge b-dex">敏捷·临时</span></td></tr>
+			<tr><td><b>Backflip</b> 后空翻</td><td>技能</td><td>1</td><td>获得 5 格挡,抽 2 张</td><td>7 格挡</td><td><span class="badge b-gen">防御+过牌</span></td></tr>
+			<tr><td><b>Blade Dance</b> 刀舞</td><td>技能</td><td>1</td><td>手牌加 3 张 Shiv,消耗</td><td>4 刀</td><td><span class="badge b-shiv">产刀·入口</span><span class="star">★</span></td></tr>
+			<tr><td><b>Cloak and Dagger</b> 斗篷与匕首</td><td>技能</td><td>1</td><td>获得 6 格挡,手牌加 1 张 Shiv</td><td>8 防 / 2 刀</td><td><span class="badge b-shiv">防御+产刀</span></td></tr>
+			<tr><td><b>Deadly Poison</b> 致命毒药</td><td>技能</td><td>1</td><td>附加 5 毒</td><td>7 毒</td><td><span class="badge b-poison">毒·入口</span><span class="star">★</span></td></tr>
+			<tr><td><b>Deflect</b> 格挡</td><td>技能</td><td>0</td><td>获得 4 格挡</td><td>7 格挡</td><td><span class="badge b-gen">0费防御</span></td></tr>
+			<tr><td><b>Dodge and Roll</b> 闪避翻滚</td><td>技能</td><td>1</td><td>获得 4 格挡;下回合再获得 4 格挡</td><td>6+6</td><td><span class="badge b-gen">跨回合防御</span></td></tr>
+			<tr><td><b>Piercing Wail</b> 刺耳尖啸</td><td>技能</td><td>1</td><td>全体敌人本回合 -6 力量,消耗</td><td>-8 力量</td><td><span class="badge b-gen">硬解·群降力</span></td></tr>
+			<tr><td><b>Prepared</b> 预备</td><td>技能</td><td>0</td><td>抽 1 张,弃 1 张</td><td>抽 2 弃 2</td><td><span class="badge b-discard">弃牌口·0费</span><span class="star">★</span></td></tr>
+			<tr><td><b>Snakebite</b> 蛇咬</td><td>技能</td><td>2</td><td>Retain。附加 7 毒</td><td>9 毒</td><td><span class="badge b-poison">毒·保留</span></td></tr>
+			<tr><td><b>Untouchable</b> 不可触碰</td><td>技能</td><td>2</td><td>Sly。获得 6 格挡</td><td>9 格挡</td><td><span class="badge b-sly">Sly·防御</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.3 Uncommon(38)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Backstab</b> 背刺</td><td>攻击</td><td>0</td><td>Innate。造成 11 伤,消耗</td><td>15 伤</td><td><span class="badge b-gen">起手爆发</span></td></tr>
+			<tr><td><b>Dash</b> 冲刺</td><td>攻击</td><td>2</td><td>获得 10 格挡,造成 10 伤</td><td>13/13</td><td><span class="badge b-gen">攻防一体</span></td></tr>
+			<tr><td><b>Echoing Slash</b> 回响斩</td><td>攻击</td><td>1</td><td>全体敌人 10 伤;每击杀 1 个敌人重复此效果</td><td>13 伤</td><td><span class="badge b-gen">击杀连打</span></td></tr>
+			<tr><td><b>Finisher</b> 终结技</td><td>攻击</td><td>1</td><td>本回合每打出 1 张攻击 +6 伤</td><td>+8 伤/张</td><td><span class="badge b-gen">攻击计数</span><span class="star">★</span></td></tr>
+			<tr><td><b>Flechettes</b> 飞镖</td><td>攻击</td><td>1</td><td>手牌每有 1 张技能 +5 伤</td><td>+7 伤/张</td><td><span class="badge b-gen">技能计数</span></td></tr>
+			<tr><td><b>Memento Mori</b> 勿忘我</td><td>攻击</td><td>1</td><td>造成 9 伤;本回合每弃 1 张 +4 伤</td><td>+5 伤/弃</td><td><span class="badge b-discard">弃牌计数伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Pinpoint</b> 精准</td><td>攻击</td><td>3</td><td>造成 15 伤;本回合每打出 1 张技能 -1 费</td><td>18 伤</td><td><span class="badge b-gen">技能数降费</span></td></tr>
+			<tr><td><b>Pounce</b> 猛扑</td><td>攻击</td><td>2</td><td>造成 14 伤;下一张技能 0 费</td><td>18 伤</td><td><span class="badge b-gen">伤害+降费</span></td></tr>
+			<tr><td><b>Precise Cut</b> 精准切割</td><td>攻击</td><td>0</td><td>造成 13 伤;手牌每有 1 张其他卡 -2 伤</td><td>16 伤</td><td><span class="badge b-gen">手牌数条件</span></td></tr>
+			<tr><td><b>Skewer</b> 串刺</td><td>攻击</td><td>X</td><td>造成 8 伤 ×X 次</td><td>11 伤</td><td><span class="badge b-gen">X费多段</span></td></tr>
+			<tr><td><b>Strangle</b> 绞杀</td><td>攻击</td><td>1</td><td>造成 8 伤;本回合每打 1 张卡该敌 -2 HP</td><td>11 伤 / -3 HP</td><td><span class="badge b-poison">直伤+扣血</span></td></tr>
+			<tr><td><b>Acrobatics</b> 杂技</td><td>技能</td><td>1</td><td>抽 3 张,弃 1 张</td><td>抽 4</td><td><span class="badge b-discard">弃牌口·核心</span><span class="star">★</span></td></tr>
+			<tr><td><b>Blade Symphony</b> 刀剑交响</td><td>技能</td><td>2</td><td>所有玩家手牌各加 2 张 Shiv</td><td>3 刀</td><td><span class="badge b-mp">多人·产刀</span></td></tr>
+			<tr><td><b>Blur</b> 模糊</td><td>技能</td><td>1</td><td>获得 5 格挡;下回合格挡不消失</td><td>8 格挡</td><td><span class="badge b-dex">格挡·保留</span></td></tr>
+			<tr><td><b>Bouncing Flask</b> 弹跳瓶</td><td>技能</td><td>2</td><td>随机敌人 3 次,每次 3 毒</td><td>4 毒×3</td><td><span class="badge b-poison">毒·随机多段</span></td></tr>
+			<tr><td><b>Bubble Bubble</b> 泡泡</td><td>技能</td><td>1</td><td>敌带毒时:再附加 9 毒</td><td>12 毒</td><td><span class="badge b-poison">毒·存量放大</span></td></tr>
+			<tr><td><b>Calculated Gamble</b> 计算过的豪赌</td><td>技能</td><td>0</td><td>弃整手,抽等量,消耗</td><td>不消耗</td><td><span class="badge b-discard">弃牌口·整手循环</span><span class="star">★</span></td></tr>
+			<tr><td><b>Concoct</b> 调制</td><td>技能</td><td>0</td><td>选一名队友:本回合其攻击造成伤害时附加毒</td><td>2 毒</td><td><span class="badge b-mp">多人·毒共享</span></td></tr>
+			<tr><td><b>Escape Plan</b> 逃生计划</td><td>技能</td><td>0</td><td>抽 1 张;抽到技能则获得 3 格挡</td><td>5 格挡</td><td><span class="badge b-gen">过牌+条件防御</span><span class="star">★</span></td></tr>
+			<tr><td><b>Expertise</b> 专精</td><td>技能</td><td>1</td><td>抽 2 张,它们本回合获得 Retain</td><td>抽 3</td><td><span class="badge b-gen">过牌+保留</span></td></tr>
+			<tr><td><b>Expose</b> 暴露</td><td>技能</td><td>0</td><td>移除该敌所有 Artifact 与格挡,附加 2 易伤,消耗</td><td>3 易伤</td><td><span class="badge b-gen">硬解·清防</span></td></tr>
+			<tr><td><b>Fade</b> 消隐</td><td>技能</td><td>0</td><td>Retain。另一名玩家本回合 +6 敏捷</td><td>+8</td><td><span class="badge b-mp">多人·敏捷共享</span></td></tr>
+			<tr><td><b>Hand Trick</b> 手法</td><td>技能</td><td>1</td><td>获得 7 格挡;手牌 1 张技能本回合获得 Sly</td><td>9 格挡</td><td><span class="badge b-sly">Sly·授予</span></td></tr>
+			<tr><td><b>Haze</b> 迷雾</td><td>技能</td><td>2</td><td>全体敌人 4 毒 + 1 虚弱</td><td>6 毒</td><td><span class="badge b-poison">毒·群上</span></td></tr>
+			<tr><td><b>Hidden Daggers</b> 暗刃</td><td>技能</td><td>0</td><td>弃 2 张,手牌加 2 张 Shiv</td><td>3 刀</td><td><span class="badge b-discard">弃牌→产刀</span></td></tr>
+			<tr><td><b>Leg Sweep</b> 扫堂腿</td><td>技能</td><td>2</td><td>附加 2 虚弱,获得 11 格挡</td><td>3 虚弱 / 13 防</td><td><span class="badge b-gen">防御+虚弱</span></td></tr>
+			<tr><td><b>Mirage</b> 海市蜃楼</td><td>技能</td><td>1</td><td>获得等于全敌毒量的格挡,消耗</td><td>2×毒量</td><td><span class="badge b-poison">毒→防御桥</span><span class="star">★</span></td></tr>
+			<tr><td><b>Reflex</b> 反射</td><td>技能</td><td>3</td><td>Sly。抽 2 张</td><td>抽 3</td><td><span class="badge b-sly">Sly·过牌</span><span class="star">★</span></td></tr>
+			<tr><td><b>Sidestep</b> 侧移</td><td>技能</td><td>0</td><td>下回合获得 1 能量</td><td>2 能量</td><td><span class="badge b-gen">能量·跨回合</span></td></tr>
+			<tr><td><b>Tactician</b> 战术家</td><td>技能</td><td>3</td><td>Sly。获得 1 能量</td><td>2 能量</td><td><span class="badge b-sly">Sly·能量</span><span class="star">★</span></td></tr>
+			<tr><td><b>Up My Sleeve</b> 袖中乾坤</td><td>技能</td><td>2</td><td>手牌加 3 张 Shiv;本卡费用 -1</td><td>4 刀</td><td><span class="badge b-shiv">产刀·降费循环</span></td></tr>
+			<tr><td><b>Accelerant</b> 加速剂</td><td>能力</td><td>1</td><td>毒额外触发 1 次</td><td>2 次</td><td><span class="badge b-poison">毒·触发频率</span><span class="star">★</span></td></tr>
+			<tr><td><b>Accuracy</b> 精准</td><td>能力</td><td>1</td><td>Shiv 额外造成 4 伤</td><td>+6 伤</td><td><span class="badge b-shiv">Shiv·增幅</span><span class="star">★</span></td></tr>
+			<tr><td><b>Footwork</b> 步法</td><td>能力</td><td>1</td><td>获得 2 敏捷</td><td>3 敏捷</td><td><span class="badge b-dex">敏捷·永久</span><span class="star">★</span></td></tr>
+			<tr><td><b>Infinite Blades</b> 无尽之刃</td><td>能力</td><td>1</td><td>回合开始:手牌加 1 张 Shiv</td><td>2 刀</td><td><span class="badge b-shiv">产刀·自动机</span></td></tr>
+			<tr><td><b>Noxious Fumes</b> 毒雾</td><td>能力</td><td>1</td><td>回合开始:全体敌人 +2 毒</td><td>3 毒</td><td><span class="badge b-poison">毒·自动机</span><span class="star">★</span></td></tr>
+			<tr><td><b>Phantom Blades</b> 幻影之刃</td><td>能力</td><td>2</td><td>Shiv 获得 Retain;每回合首张 Shiv +9 伤</td><td>+12 伤</td><td><span class="badge b-shiv">Shiv·保留+增幅</span></td></tr>
+			<tr><td><b>Speedster</b> 疾行者</td><td>能力</td><td>2</td><td>回合内抽牌时:全体敌人 2 伤</td><td>3 伤</td><td><span class="badge b-gen">抽牌→伤害</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.4 Rare(27)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Assassinate</b> 刺杀</td><td>攻击</td><td>0</td><td>Innate。造成 10 伤,附加 1 易伤,消耗</td><td>14 伤</td><td><span class="badge b-gen">起手爆发</span></td></tr>
+			<tr><td><b>Grand Finale</b> 终曲</td><td>攻击</td><td>0</td><td>仅当牌组为空时可打出:全体敌人 60 伤</td><td>70 伤</td><td><span class="badge b-gen">极端条件·封顶</span></td></tr>
+			<tr><td><b>Murder</b> 谋杀</td><td>攻击</td><td>3</td><td>造成 1 伤;本场每抽 1 张 +1 伤</td><td>+2 伤/抽</td><td><span class="badge b-gen">抽牌计数·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>The Hunt</b> 猎杀</td><td>攻击</td><td>1</td><td>造成 10 伤;Fatal(击杀):额外获得卡牌奖励,消耗</td><td>14 伤</td><td><span class="badge b-gen">Fatal·资源成长</span></td></tr>
+			<tr><td><b>Abrasive</b> 磨蚀</td><td>能力</td><td>3</td><td>Sly。获得 1 敏捷,获得 4 荆棘</td><td>2 敏 / 7 刺</td><td><span class="badge b-sly">Sly·防御能力</span></td></tr>
+			<tr><td><b>Afterimage</b> 残影</td><td>能力</td><td>1</td><td>每打出 1 张卡获得 1 格挡</td><td>2 格挡</td><td><span class="badge b-dex">频率→防御</span><span class="star">★</span></td></tr>
+			<tr><td><b>Envenom</b> 淬毒</td><td>能力</td><td>2</td><td>攻击造成未格挡伤害时附加 1 毒</td><td>2 毒</td><td><span class="badge b-poison">攻击→毒桥</span><span class="star">★</span></td></tr>
+			<tr><td><b>Fan of Knives</b> 飞刀扇</td><td>能力</td><td>2</td><td>Shiv 现在攻击全体敌人;手牌加 4 张 Shiv</td><td>5 刀</td><td><span class="badge b-shiv">Shiv·群伤形态</span><span class="star">★</span></td></tr>
+			<tr><td><b>Master Planner</b> 王牌策划</td><td>能力</td><td>2</td><td>打出技能时,该技能获得 Sly</td><td>1 费</td><td><span class="badge b-sly">Sly·引擎</span><span class="star">★ 全卡池最强运转件之一</span></td></tr>
+			<tr><td><b>Serpent Form</b> 蛇形</td><td>能力</td><td>3</td><td>每打出 1 张卡,随机敌人 4 伤</td><td>6 伤</td><td><span class="badge b-gen">频率→伤害</span></td></tr>
+			<tr><td><b>Sneaky</b> 鬼祟</td><td>能力</td><td>2</td><td>Sly。另一名玩家攻击敌人时,你获得 1 格挡</td><td>2 格挡</td><td><span class="badge b-mp">多人·防御共享</span></td></tr>
+			<tr><td><b>Tools of the Trade</b> 惯用工具</td><td>能力</td><td>1</td><td>回合开始:抽 1 张,弃 1 张</td><td>—</td><td><span class="badge b-discard">弃牌口·自动机</span></td></tr>
+			<tr><td><b>Tracking</b> 追踪</td><td>能力</td><td>2</td><td>虚弱敌人受到攻击伤害 +50%</td><td>+75%</td><td><span class="badge b-gen">虚弱·放大器</span></td></tr>
+			<tr><td><b>Well-Laid Plans</b> 深谋远虑</td><td>能力</td><td>2</td><td>回合结束不再弃置手牌</td><td>1 费</td><td><span class="badge b-gen">手牌·保留</span><span class="star">★</span></td></tr>
+			<tr><td><b>Adrenaline</b> 肾上腺素</td><td>技能</td><td>0</td><td>获得 1 能量,抽 2 张,消耗</td><td>2 能量</td><td><span class="badge b-gen">能量+过牌</span><span class="star">★</span></td></tr>
+			<tr><td><b>Blade of Ink</b> 墨刃</td><td>技能</td><td>1</td><td>手牌加 2 张 Inky Shiv</td><td>3 刀</td><td><span class="badge b-shiv">特效刀</span></td></tr>
+			<tr><td><b>Bullet Time</b> 子弹时间</td><td>技能</td><td>3</td><td>本回合不能再抽牌;手牌全部免费</td><td>2 费</td><td><span class="badge b-gen">整手 0 费爆发</span></td></tr>
+			<tr><td><b>Burst</b> 爆发</td><td>技能</td><td>1</td><td>本回合下一张技能额外打一次</td><td>下两张</td><td><span class="badge b-gen">技能连打</span></td></tr>
+			<tr><td><b>Corrosive Wave</b> 腐蚀波</td><td>技能</td><td>1</td><td>本回合每抽 1 张牌,全体敌人 +2 毒</td><td>3 毒</td><td><span class="badge b-poison">抽牌→毒桥</span></td></tr>
+			<tr><td><b>Flanking</b> 侧翼</td><td>技能</td><td>2</td><td>该敌本回合受到其他玩家伤害翻倍</td><td>—</td><td><span class="badge b-mp">多人·伤害放大</span></td></tr>
+			<tr><td><b>Knife Trap</b> 刀阵</td><td>技能</td><td>2</td><td>把消耗堆中所有 Shiv 全部打出</td><td>—</td><td><span class="badge b-shiv">Shiv·存量兑现</span><span class="star">★</span></td></tr>
+			<tr><td><b>Malaise</b> 萎靡</td><td>技能</td><td>X</td><td>该敌失去 X 力量,附加 X 虚弱,消耗</td><td>X+1</td><td><span class="badge b-gen">硬解·双 debuff</span></td></tr>
+			<tr><td><b>Nightmare</b> 噩梦</td><td>技能</td><td>3</td><td>选 1 张手牌;下回合手牌加 3 张其复制,消耗</td><td>4 复制</td><td><span class="badge b-gen">复制·引擎</span></td></tr>
+			<tr><td><b>Outbreak</b> 爆发</td><td>技能</td><td>3</td><td>全体敌人 9 毒;毒立即触发</td><td>12 毒</td><td><span class="badge b-poison">毒·立即兑现</span><span class="star">★</span></td></tr>
+			<tr><td><b>Shadow Step</b> 影步</td><td>技能</td><td>1</td><td>弃整手;下回合攻击伤害翻倍</td><td>—</td><td><span class="badge b-discard">弃牌→爆发</span></td></tr>
+			<tr><td><b>Shadowmeld</b> 影遁</td><td>技能</td><td>1</td><td>本回合获得的格挡翻倍</td><td>—</td><td><span class="badge b-dex">格挡·翻倍</span></td></tr>
+			<tr><td><b>Storm of Steel</b> 钢铁风暴</td><td>技能</td><td>1</td><td>弃整手;每弃 1 张手牌加 1 张 Shiv</td><td>2 刀/弃</td><td><span class="badge b-discard">弃牌→产刀</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.5 Ancient(2)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Suppress</b> 压制</td><td>攻击</td><td>0</td><td>Innate。造成 11 伤,附加 3 虚弱</td><td>15 伤</td><td><span class="badge b-gen">起手·硬解</span></td></tr>
+			<tr><td><b>Wraith Form</b> 怨灵形态</td><td>能力</td><td>3</td><td>获得 2 无实体;回合开始 -1 敏捷</td><td>3 无实体</td><td><span class="badge b-dex">无实体·终极防御</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.6 生成 token</h3>
+	<table>
+		<thead><tr><th>token</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th>来源</th></tr></thead>
+		<tbody>
+			<tr><td><b>Shiv</b> 匕首</td><td>攻击</td><td>0</td><td>造成 4 伤,消耗</td><td>Blade Dance / Cloak and Dagger / Leading Strike / Infinite Blades / Hidden Daggers / Storm of Steel / Blade of Ink 等;Inky Shiv 为特效版</td></tr>
+		</tbody>
+	</table>
+	<div class="note">数据说明:卡牌数据取自 slaythespire.wiki.gg 官方卡表(Cargo 导出,2026-08-17);多人模式卡(Sneaky / Blade Symphony / Concoct / Fade / Flanking)标注 <span class="badge b-mp">多人</span>。</div>
+</div>
+
+</body>
+</html>

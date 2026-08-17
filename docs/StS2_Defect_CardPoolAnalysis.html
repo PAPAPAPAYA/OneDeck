@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>杀戮尖塔2 Defect 卡组结构拆解 — 条件 · 收益 · 稀有度分布 · 构筑图谱</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+		--purple: #bb9af7; --cyan: #7dcfff;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+	.mono { font-family: Consolas, monospace; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+	.b-orb { color: #7dcfff; border-color: #7dcfff88; }
+	.b-focus { color: #bb9af7; border-color: #bb9af788; }
+	.b-zero { color: #e0af68; border-color: #e0af6888; }
+	.b-status { color: #9ece6a; border-color: #9ece6a88; }
+	.b-energy { color: #f7768e; border-color: #f7768e88; }
+	.b-gen { color: #8b93a3; border-color: #8b93a388; }
+	.b-mp { color: #ff9e64; border-color: #ff9e6488; }
+	.star { color: #e0af68; font-weight: 700; }
+	ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.bad { color: var(--bad); }
+	.purple { color: var(--purple); }
+	.cyan { color: var(--cyan); }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.keycard { background: #1a1e27; border: 1px solid #e0af6855; border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 0.85rem; }
+	.keycard .kc-name { font-weight: 700; color: #e0af68; }
+	.r-tag { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; white-space: nowrap; }
+	.r-basic { color: #8b93a3; border-color: #8b93a388; }
+	.r-common { color: #9ece6a; border-color: #9ece6a88; }
+	.r-uncommon { color: #7dcfff; border-color: #7dcfff88; }
+	.r-rare { color: #bb9af7; border-color: #bb9af788; }
+	.r-ancient { color: #e0af68; border-color: #e0af6888; }
+	@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style>
+</head>
+<body>
+
+<h1>杀戮尖塔 2 · Defect 卡组结构拆解</h1>
+<div class="sub">2026-08-17 · 卡牌数据源:<a href="https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Cards_List">slaythespire.wiki.gg 官方卡表</a>(Cargo 数据,91 张,含最新平衡补丁)· 机制规则:Spire Codex / untapped.gg / intoindiegames 交叉验证 · 中文译名为参考译名,一律以英文原文为准 · 同系列:<a href="StS2_Necrobinder_CardPoolAnalysis.html">Necrobinder</a> / <a href="StS2_Ironclad_CardPoolAnalysis.html">Ironclad</a> / <a href="StS2_Silent_CardPoolAnalysis.html">Silent</a> / <a href="StS2_Regent_CardPoolAnalysis.html">Regent</a></div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num">91</div><div class="lbl">卡池总数</div></div>
+	<div class="kpi"><div class="num">25</div><div class="lbl">带 Channel 关键词的卡数 —— 球系统是绝对主体</div></div>
+	<div class="kpi"><div class="num">5</div><div class="lbl">球类型:闪电 / 冰霜 / 暗 / 等离子 / Glass(新)</div></div>
+	<div class="kpi"><div class="num">10</div><div class="lbl">状态卡回收相关卡(Compact / Fuel / Smokestack / Trash to Treasure 等)—— 垃圾经济学第三形态</div></div>
+	<div class="kpi"><div class="num">75 HP</div><div class="lbl">Cracked Core:开局 Channel 1 闪电 —— 第一回合就有被动收益</div></div>
+</div>
+
+<h2>0. 角色骨架</h2>
+<div class="card">
+	<ul>
+		<li><b>属性</b>:75 HP、3 能量、起始遗物 <b>Cracked Core</b>(每场战斗开始 Channel 1 闪电球)。</li>
+		<li><b>起始牌组</b>(10 张):Strike ×4、Defend ×4、Zap(Channel 1 闪电)、Dualcast(Evoke 右球两次)—— 两个职业卡就是「造球」与「爆球」的最小教学单元。</li>
+		<li><b>核心系统 · 球(Orb)</b>:Channel = 把球塞进球槽(默认 3 槽,从右往左排);每回合开始自动触发所有球的被动;Evoke = 从右数第一个球触发其 Evoke 效果并移除。五种球:<span class="badge b-orb">闪电</span>(被动:随机敌 3 伤;Evoke:8 伤)、<span class="badge b-orb">冰霜</span>(被动:5 格挡;Evoke:10 格挡)、<span class="badge b-orb">暗</span>(被动:伤害翻倍成长;Evoke:打出积累值)、<span class="badge b-orb">等离子</span>(被动:1 能量;Evoke:2 能量)、<span class="badge b-orb">Glass(新)</span>(被动:全敌 4 伤但每回合 -1 衰减至停摆;Evoke:全敌 8 伤)。</li>
+		<li><b>新机制</b>:<b>Glass 球</b> —— 衰减型 AOE 球,需要「快进快出」(及时 Evoke);<b>Fuel</b> —— 0 费状态卡,由状态卡转化而来,打出抽 1 + 能量,把「垃圾状态」变成资源;<b>Focus 双形态</b> —— 永久(Defragment)+ 临时(Hotfix / Synchronize / Focused Strike),且 StS2 移除了 StS1 的「永久 Focus 唯一来源」垄断。</li>
+		<li><b>结构性特征</b>:能力卡 21 张全角色最多;Uncommon 技能 20 张 —— 球系统的「操作卡」全部集中在中期档位。</li>
+	</ul>
+	<div class="note">资源轴速览:球 = <span class="cyan">被动收益池</span>(每回合自动结算,可 Evoke 兑现);Focus = <span class="purple">球的通用放大器</span>;0 费卡 = <span class="warn">频率轴</span>(Claw / All for One / Feral);状态卡 = <span class="good">可回收垃圾</span>(自塞状态换即时收益,再二次变现)。</div>
+</div>
+
+<h2>1. 条件体系</h2>
+
+<h3>1.1 A 组:球状态(核心)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>unique 球种类数</b></td><td>实时读取</td><td>同时持有 2+ 种球(闪电+冰霜、或经 Rainbow / Chaos 混球)</td><td><b>Compile Driver</b>:每种 +1 抽;<b>Coolant</b>:回合开始每种 2 格挡;<b>Synchronize</b>:每种 +1 临时 Focus —— 混球是收益乘区</td></tr>
+			<tr><td><b>球的数量</b></td><td>实时读取</td><td>任意 Channel 卡</td><td><b>Barrage</b>:每个已 Channel 球 +5 伤(本场累计)</td></tr>
+			<tr><td><b>右球是谁</b></td><td>Evoke 时读取</td><td>Channel 顺序决定(从右往左)</td><td><b>Dualcast / Multi-Cast / Quadcast / Shatter</b>:Evoke 右球 N 次 —— 操作端</td></tr>
+			<tr><td><b>回合开始被动触发</b></td><td>自动结算</td><td>—</td><td><b>Loop</b>:额外触发右球被动;<b>Consuming Shadow</b>:回合结束 Evoke 左球(暗球兑现自动机)</td></tr>
+			<tr><td><b>本场 Channel 过的闪电数</b></td><td>本场计数</td><td>任意闪电 Channel</td><td><b>Voltaic</b>:Channel 等量闪电(存量指数兑现)</td></tr>
+			<tr><td><b>持有冰霜球</b></td><td>持续状态</td><td>Glacier / Cold Snap / Coolheaded / Chill / Ice Lance</td><td><b>Hailstorm</b>:回合结束全敌 6 伤(冰霜=防御+伤害双职)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.2 B 组:状态卡事件(垃圾经济学)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>生成状态卡</b></td><td>事件触发</td><td>Overclock(塞 Burn)、Fight Through(塞 2 Wound)、Gunk Up(塞 Slimed)、Boost Away(塞 Dazed)、TURBO(塞 Void)、敌人塞的垃圾</td><td><b>Trash to Treasure</b>:Channel 1 随机球;<b>Smokestack</b>:全敌 5 伤;<b>Rocket Punch</b>:本卡费用 -1 —— 自塞状态 = 主动触发源</td></tr>
+			<tr><td><b>抽到状态卡</b></td><td>事件触发</td><td>牌组里的任意状态卡上手</td><td><b>Iteration</b>:抽 2 张(把「抽到垃圾」变成收益)</td></tr>
+			<tr><td><b>手牌有状态卡</b></td><td>打出时读取</td><td>—</td><td><b>Compact</b>:全部转化为 Fuel(0 费,抽 1 + 能量)—— 垃圾的直接资源化</td></tr>
+			<tr><td><b>消耗状态卡</b></td><td>打出时结算</td><td>—</td><td><b>Flak Cannon</b>:消耗所有状态卡,每张随机敌 8 伤(垃圾→爆发伤害)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.3 C 组:0 费 / 能量 / 击杀</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>打出 0 费攻击</b></td><td>事件触发</td><td>Claw / Beam Cell / Go for the Eyes / FTL / Tesla Coil / Scrape 等</td><td><b>Feral</b>:每回合首张 0 费攻击回手(无限循环件)</td></tr>
+			<tr><td><b>弃牌堆有 0 费卡</b></td><td>读取</td><td>任何 0 费卡打出后</td><td><b>All for One</b>:全部捡回(0 费流核心回收件)</td></tr>
+			<tr><td><b>本场 Claw 打出次数</b></td><td>本场计数</td><td>—</td><td><b>Claw</b>:每次打出全卡池 Claw +2 伤(自我成长循环)</td></tr>
+			<tr><td><b>本回合在其他卡上花费的能量</b></td><td>回合内计数</td><td>任意高费卡</td><td><b>Helix Drill</b>:每花费 1 能量 +3 伤(能量→伤害桥)</td></tr>
+			<tr><td><b>击杀敌人</b></td><td>事件触发</td><td>—</td><td><b>Sunder</b>:击杀后获得 3 能量(斩杀→下回合滚雪球)</td></tr>
+			<tr><td><b>本回合打出卡数 &lt; 3</b></td><td>回合内计数</td><td>—</td><td><b>FTL</b>:抽 1(起手节奏件)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.4 D 组:Focus(球的乘区)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">来源形态</th><th style="width:30%">卡</th><th>收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>永久 Focus</b></td><td>本场持久</td><td>Defragment(+1)、Biased Cognition(Ancient,+5 但每回合 -1)</td><td rowspan="3">Focus 统一放大所有球的被动与 Evoke 数值 —— 全卡池唯一的「球系统通用乘区」;临时 Focus(Hotfix +2 / Synchronize 每 unique 球 +1 / Focused Strike +1)解决爆发回合的球强度</td></tr>
+			<tr><td><b>临时 Focus</b></td><td>本回合</td><td>Hotfix、Synchronize、Focused Strike</td></tr>
+			<tr><td><b>失去 Focus</b></td><td>一次性代价</td><td>Hyperbeam(24 全敌伤,本回合 -3 Focus)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>2. 收益体系</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">收益类型</th><th style="width:44%">定义</th><th>代表兑现卡</th></tr></thead>
+		<tbody>
+			<tr><td class="cyan"><b>① 球被动收益</b></td><td>每回合自动结算的伤害/格挡/能量 —— 「零操作收益」,防守即挂机</td><td>闪电(3 伤)、冰霜(5 防)、暗(成长)、等离子(1 能量)、Glass(全敌 4 伤衰减)</td></tr>
+			<tr><td class="purple"><b>② Evoke 兑现</b></td><td>把球一次性兑现并腾出槽位 —— 操作收益</td><td>Dualcast / Multi-Cast / Quadcast / Shatter(全球 ×2)/ Tesla Coil(全部闪电打出)</td></tr>
+			<tr><td class="warn"><b>③ 0 费频率</b></td><td>不占能量的打点与循环</td><td>Claw(成长)、Beam Cell、Go for the Eyes、FTL、All for One(回收)、Feral(回手)、Scrape(滤牌)</td></tr>
+			<tr><td class="good"><b>④ 状态卡回收</b></td><td>垃圾 → 能量 / 抽牌 / 球 / 伤害 / 降费</td><td>Compact(Fuel)、Scavenge、Trash to Treasure、Smokestack、Iteration、Flak Cannon、Rocket Punch</td></tr>
+			<tr><td class="bad"><b>⑤ 能量</b></td><td>当回合爆发 / 跨回合 / 击杀滚雪球</td><td>TURBO(+2 塞 Void)、Charge Battery、Double Energy、Supercritical(+4)、Fusion(等离子)、Sunder(击杀 +3)、Subroutine(能力→能量)、Helix Drill(花费→伤害)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>3. 稀有度分布</h2>
+<div class="card">
+	<h3>3.1 数量与类型构成</h3>
+	<table>
+		<thead><tr><th>稀有度</th><th>数量</th><th>占比</th><th>攻击</th><th>技能</th><th>能力</th><th>技能卡占比</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>4</td><td>4.4%</td><td>1</td><td>3</td><td>0</td><td>75%</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>20</td><td>22.0%</td><td>12</td><td>8</td><td>0</td><td>40%</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>38</td><td>41.8%</td><td>8</td><td>20</td><td>10</td><td>53%</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>27</td><td>29.7%</td><td>8</td><td>9</td><td>10</td><td>33%</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>2</td><td>2.2%</td><td>0</td><td>1</td><td>1</td><td>50%</td></tr>
+			<tr class="arch-head"><td>合计</td><td>91</td><td>100%</td><td>29</td><td>41</td><td>21</td><td>45%</td></tr>
+		</tbody>
+	</table>
+	<h3>3.2 每档稀有度的设计职责</h3>
+	<table>
+		<thead><tr><th style="width:12%">档位</th><th style="width:30%">承载功能</th><th>代表卡</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>造球(Zap)与爆球(Dualcast)的最小教学单元</td><td>Zap、Dualcast</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td class="good"><b>球入口 + 基础攻防</b>:Common 攻击全部附带 Channel(球形闪电 / 寒冰突袭 / 扫射),技能给球+防御双职;0 费入口(Claw / Beam Cell)</td><td>Ball Lightning、Cold Snap、Barrage、Compile Driver、Claw、Coolheaded、Leap</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td class="warn"><b>球的操作件与转换件最密集</b>:20 张技能(冰川 / 混沌 / 暴风 / 黑暗 / 超频……)+ 10 张能力(自动机与放大器)</td><td>Glacier、Tempest、Darkness、Chaos、Voltaic 系、Loop、Capacitor、Storm、Compact、Overclock、Trash to Treasure 系</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td class="bad"><b>封顶件与引擎</b>:全球兑现(Shatter)、存量兑现(Voltaic / Genetic Algorithm / All for One)、能量引擎(Supercritical / Meteor Strike / Reboot)、全局能力(Echo Form / Creative AI / Buffer)</td><td>Shatter、All for One、Voltaic、Echo Form、Creative AI、Reboot、Genetic Algorithm、Supercritical、Meteor Strike</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>轴封顶的极端化</td><td>Biased Cognition(+5 Focus 每回合 -1)、Quadcast(Evoke 4 次)</td></tr>
+		</tbody>
+	</table>
+	<div class="note">结构性结论:Defect 是唯一「Basic 阶段技能占 3/4」的角色 —— 因为球系统本身承担输出,职业卡不需要攻击卡;Uncommon 技能 20 张说明「操作球」的动作卡是卡池的中坚。</div>
+</div>
+
+<h2>4. 主线与构筑关键卡</h2>
+
+<h3>4.1 球伤害轴(闪电 / 暗 / Glass)</h3>
+<div class="card">
+	<div class="flow">Channel 球(Ball Lightning / Tempest / Darkness / Glasswork)→ 每回合被动结算 → Evoke 兑现(Dualcast / Multi-Cast / Shatter / Tesla Coil)→ Focus 放大</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>闪电源</td><td>Ball Lightning ★(7 伤 + 1 球)/ Tempest(X 球)/ Voltaic ★(存量兑现)/ Zap(起始)/ Lightning Rod(延迟 2 回合)</td><td>高频小伤 + 被动滚动;Voltaic 是本场 Channel 过的闪电全量再 Channel —— 指数增长件</td></tr>
+			<tr><td>暗球</td><td>Darkness ★(+被动触发)/ Null / Consuming Shadow ★(回合末自动 Evoke 左球)/ Rainbow</td><td>被动翻倍成长,Evoke 时一次性兑现 —— 「存伤害」形态</td></tr>
+			<tr><td>Glass(新)</td><td>Glasswork ★ / Refract / Spinner(每回合 1 球)/ Shatter ★</td><td>全敌 4 伤衰减(每回合 -1),Evoke 全敌 8 —— 快进快出,群战特化</td></tr>
+			<tr><td class="bad">兑现</td><td>Dualcast / Multi-Cast ★ / Quadcast(Ancient)/ Shatter(全球 ×2)/ Tesla Coil(全部闪电打出)/ Thunder ★(Evoke 闪电 8 伤/球)</td><td>把被动池一次变现;Shatter + Glass 是 AOE 爆发组合拳</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Ball Lightning、Tempest、Voltaic、Darkness、Shatter、Multi-Cast、Thunder、Defragment</span><br>引擎形态:Defragment 永久 Focus → 被动球数值滚雪球 → Voltaic / Tempest 把球数做上去 → Shatter / Multi-Cast 全量兑现。球伤害轴是「被动池 + 兑现操作」的两段式,与 Necrobinder 的 Osty(纯被动)相比多了一个操作层。</div>
+</div>
+
+<h3>4.2 球防御轴(冰霜)</h3>
+<div class="card">
+	<div class="flow">Channel 冰霜(Glacier / Cold Snap / Coolheaded / Chill / Ice Lance)→ 每回合被动 5 防 + Focus 放大 → Loop 额外触发 → Hailstorm 把防御转伤害</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>冰霜源</td><td>Glacier ★(6 防 + 2 球)/ Cold Snap / Coolheaded(1 球 + 抽 1)/ Chill(每敌 1 球)/ Ice Lance(3 球)/ Hibernate(mp 全队)</td><td>Glacier 是冰霜轴核心 —— 单卡 2 球 + 即时防御</td></tr>
+			<tr><td>被动放大器</td><td>Loop ★(额外触发右球)/ Coolant(每 unique 球 2 防)/ Focus 系</td><td>把冰霜被动从 5 防滚到 10+ 防/回合</td></tr>
+			<tr><td>防御转伤害</td><td>Hailstorm ★(回合末有冰霜则全敌 6 伤)</td><td>冰霜轴自动获得输出 —— 防守即伤害</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Glacier、Loop、Coolant、Coolheaded、Hailstorm、Defragment</span><br>引擎形态:Glacier 起手 2 冰霜 + Defragment → 每回合被动 12+ 防 → Loop 再触发一次 → Hailstorm 每回合全敌 6 伤。球防御轴是「挂机防守」—— 与静默者 Afterimage 同构,但完全零操作。</div>
+</div>
+
+<h3>4.3 Focus 轴</h3>
+<div class="card">
+	<div class="flow">永久 Focus(Defragment / Biased Cognition)+ 临时 Focus(Hotfix / Synchronize / Focused Strike)→ 所有球收益放大 → Hyperbeam 用 Focus 换爆发</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>永久</td><td>Defragment ★(+1)/ Biased Cognition(Ancient,+5 但每回合 -1)</td><td>Defragment 是球系的地基;Biased 是「先强后衰」的双刃</td></tr>
+			<tr><td>临时</td><td>Hotfix ★(+2 本回合)/ Synchronize(每 unique 球 +1)/ Focused Strike(+1)</td><td>爆发回合的球强度 —— 不需要长期投入</td></tr>
+			<tr><td>兑现</td><td>Hyperbeam ★(24 全敌,本回合 -3 Focus)/ Shatter 系</td><td>把 Focus 一次性换成 AOE —— 「用未来换现在」第三例</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Defragment、Biased Cognition、Hotfix、Synchronize、Hyperbeam</span><br>Focus 是球系的唯一通用乘区 —— 与铁甲的力量、Necrobinder 的 Osty 增幅(Calcify)同职,但作用对象是「每回合自动结算的被动池」,所以成长感最强。</div>
+</div>
+
+<h3>4.4 0 费流</h3>
+<div class="card">
+	<div class="flow">0 费打点(Claw / Beam Cell / Go for the Eyes / FTL / Tesla Coil)→ 回收循环(All for One / Feral / Scrape / Adaptive Strike)→ Claw 自我成长</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>0 费打点</td><td>Claw ★(每次 +2 伤)/ Beam Cell(1 易伤)/ Go for the Eyes(敌要攻击则虚弱)/ FTL(首 3 卡内抽 1)/ Tesla Coil(3 伤 + 触发全部闪电)</td><td>不占能量的频率源</td></tr>
+			<tr><td>回收循环</td><td>All for One ★(弃牌堆全部 0 费捡回)/ Feral ★(首张 0 费攻击回手)/ Scrape(抽 4 滤 0 费)/ Adaptive Strike(0 费复制)</td><td>无限循环的物理基础 —— 打出去又回来</td></tr>
+			<tr><td>能量支持</td><td>Supercritical ★(+4 能量)/ TURBO / Double Energy</td><td>0 费流本身不吃能量,能量全部用于 All for One 的启动</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Claw、All for One、Feral、Scrape、Adaptive Strike、Supercritical</span><br>引擎形态:Claw 每打 +2 伤(全卡池共享成长)→ Feral 回手 → All for One 整批回收 → 每回合刀数翻倍。0 费流是「频率 × 成长」的双乘区结构,与静默者 Shiv 轴同构但自带回收闭环。</div>
+</div>
+
+<h3>4.5 状态卡回收轴(垃圾经济学)</h3>
+<div class="card">
+	<div class="flow">自塞状态(Overclock / Fight Through / Gunk Up / Boost Away / TURBO)→ 状态事件回报(Trash to Treasure 球 / Smokestack 伤 / Rocket Punch 降费 / Iteration 抽)→ Compact 转化为 Fuel(能量 + 抽牌)→ Flak Cannon 全部变现</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>塞状态</td><td>Overclock ★(抽 2 塞 Burn)/ Fight Through(13 防塞 2 Wound)/ Gunk Up(3×4 伤塞 Slimed)/ Boost Away(6 防塞 Dazed)/ TURBO(2 能量塞 Void)</td><td>用状态卡付账换即时收益 —— 与铁甲「用 HP 付账」同句式,代价是牌库污染</td></tr>
+			<tr><td>事件回报</td><td>Trash to Treasure ★(生成状态 → 随机球)/ Smokestack ★(生成状态 → 全敌 5 伤)/ Rocket Punch ★(生成状态 → 降费)/ Iteration ★(抽到状态 → 抽 2)</td><td>把「制造垃圾」变成主动触发源 —— 四条回报线</td></tr>
+			<tr><td>终极回收</td><td>Compact ★(手牌状态 → Fuel)/ Flak Cannon ★(消耗全部状态 → 8 伤/张)/ Scavenge(消耗 1 张 → 下回合能量)</td><td>Fuel 是 0 费「抽 1 + 能量」的状态卡 —— 垃圾变成永动机燃料</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Overclock、Compact、Trash to Treasure、Smokestack、Iteration、Flak Cannon、Rocket Punch</span><br>引擎形态:Overclock 抽 2(塞 1 Burn)→ Trash to Treasure 每张 Burn 变成球 → Smokestack 全敌伤害 → Compact 把 Burn 变 Fuel → Fuel 再抽再产 —— 状态卡从「惩罚」变成「循环燃料」,社区公认的无限引擎原型(Overclock + Compact + 任意兑现件)。</div>
+</div>
+
+<h3>4.6 能量轴</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>爆发能量</td><td>Supercritical ★(+4)/ TURBO(+2 塞 Void)/ Double Energy(翻倍)/ Charge Battery(7 防 + 下回合 +1)</td><td>爆发回合的燃料;TURBO 与状态回收轴互喂</td></tr>
+			<tr><td>持续能量</td><td>Fusion(等离子)/ Meteor Strike(3 等离子)/ Subroutine(能力 → +1 能量)/ Scavenge(下回合)/ Energy Surge(mp 全队)</td><td>等离子球 = 每回合 1 能量的被动收益池</td></tr>
+			<tr><td>能量→伤害</td><td>Helix Drill ★(每花费 1 能量 +3 伤)/ Sunder(击杀 +3 能量)/ Reboot(整副牌重洗抽 4)</td><td>能量花费本身变成伤害计数 —— 高费卡越多越强</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Supercritical、TURBO、Fusion、Helix Drill、Sunder、Reboot</span><br>引擎形态:Supercritical 起手 +4 → Meteor Strike 24 伤 + 3 等离子(后续每回合 +3 能量)→ Helix Drill 把花费变伤害 → Reboot 重洗循环。能量轴是 Defect 的「大数字暗轴」。</div>
+</div>
+
+<h2>5. 构筑之间的桥梁</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">连接</th><th style="width:26%">桥梁卡</th><th>原理</th></tr></thead>
+		<tbody>
+			<tr><td>球 → 伤害</td><td>Thunder ★、Tesla Coil、Shatter、Hailstorm、Consuming Shadow</td><td>闪电/冰霜/暗/Glass 的兑现件 —— 被动池的操作出口</td></tr>
+			<tr><td>球 → 防御</td><td>Coolant ★、Hibernate(mp 全队冰霜格挡)、Loop</td><td>冰霜系与 unique 球计数 → 格挡</td></tr>
+			<tr><td>状态 → 球 / 伤害 / 能量 / 降费 / 抽牌</td><td>Trash to Treasure、Smokestack、Compact(Fuel)、Rocket Punch、Iteration、Flak Cannon、Scavenge</td><td>垃圾经济学的七条回报线 —— 全卡池最密集的「代价→收益」桥网络</td></tr>
+			<tr><td>0 费 → 循环</td><td>All for One ★、Feral ★、Scrape、Adaptive Strike</td><td>0 费卡的回收闭环 —— 频率轴的永动机</td></tr>
+			<tr><td>能量 → 伤害</td><td>Helix Drill ★、Sunder、Hyperbeam(Focus→伤害)</td><td>花费/放弃资源 → 爆发</td></tr>
+			<tr><td>能力 → 球 / 能量</td><td>Storm(能力 → 闪电)、Subroutine(能力 → 能量)、Signal Boost(能力双打)、White Noise(随机能力免费)</td><td>能力卡是触发源 —— 能力流自动转球流</td></tr>
+			<tr><td>球种类 → 抽牌 / Focus</td><td>Compile Driver(unique 球抽 1)、Synchronize(unique 球 Focus)</td><td>混球(彩虹 / 混沌)是收益乘区</td></tr>
+			<tr><td>击杀 → 能量</td><td>Sunder ★</td><td>斩杀滚雪球</td></tr>
+			<tr><td>多人</td><td>One for All、Energy Surge、Imitation Learning、Ignition、Hibernate <span class="badge b-mp">多人</span></td><td>0 费增幅 / 能量 / 能力复制跨玩家共享</td></tr>
+		</tbody>
+	</table>
+	<div class="note">闭环示例:<span class="mono">Overclock(抽 2 塞 Burn)→ Trash to Treasure(Burn → 球)+ Smokestack(全敌伤)→ Compact(Burn → Fuel)→ Fuel 抽 1 + 能量 → 再 Overclock —— 垃圾→球→伤害→能量→抽牌的完整循环。</span></div>
+</div>
+
+<h2>6. 运转卡 vs 伤害卡</h2>
+<div class="card">
+	<h3>6.1 运转卡(Engine)</h3>
+	<table>
+		<thead><tr><th style="width:18%">功能</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>抽牌</td><td><b>Skim ★、Compile Driver ★、Sweeping Beam、Coolheaded、FTL、Scrape、Iteration(状态触发)、Reboot(重洗)</b></td><td>Compile Driver 按球种类抽 —— 运转与球轴挂钩</td></tr>
+			<tr><td>能量</td><td>TURBO、Charge Battery、Double Energy、Supercritical、Fusion、Scavenge、Subroutine、Meteor Strike(3 等离子)</td><td>爆发 + 持续双形态</td></tr>
+			<tr><td>回收 / 工程</td><td>All for One(0 费回收)、Hologram(弃牌堆捡 1)、Compact(状态→Fuel)、White Noise(随机能力)、Creative AI(每回合能力)、Modded(球槽 +1)、Boot Sequence(Innate 10 防)</td><td>球槽、弃牌堆、能力池三个方向的工程</td></tr>
+			<tr><td>自动机</td><td>Spinner(每回合 Glass)、Machine Learning(每回合 +1 抽)、Storm / Subroutine / Loop / Smokestack / Iteration / Trash to Treasure</td><td>Defect 的能力卡几乎全是「每当 X 就 Y」的触发机</td></tr>
+		</tbody>
+	</table>
+	<h3>6.2 伤害卡</h3>
+	<table>
+		<thead><tr><th style="width:18%">形态</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>球兑现</td><td>Shatter(全球 ×2)、Multi-Cast / Dualcast / Quadcast、Tesla Coil、Voltaic(存量)、Thunder(能力)、Consuming Shadow</td><td>被动池的操作出口</td></tr>
+			<tr><td>直伤</td><td>Sunder(26)、Meteor Strike(24)、Hyperbeam(24 全敌)、Ice Lance(19)、Adaptive Strike(18)、Rocket Punch、Refract</td><td>高费大数字集中在 Rare</td></tr>
+			<tr><td>成长型</td><td>Claw(每次 +2)、Genetic Algorithm(每次 +3 防)、Barrage(球数计数)、Voltaic(闪电存量)、Helix Drill(能量计数)</td><td>五种存量 → 数值</td></tr>
+			<tr><td>0 费频率</td><td>Claw、Beam Cell、Go for the Eyes、FTL、Tesla Coil、Scrape</td><td>不占能量的打点</td></tr>
+			<tr><td>群伤</td><td>Sweeping Beam、Uproar、Hyperbeam、Shatter(Glass 配合)、Hailstorm、Smokestack(能力)、Flak Cannon</td><td>Glass 球使 AOE 成为 Defect 的新维度</td></tr>
+		</tbody>
+	</table>
+	<h3>6.3 一张卡干两件事</h3>
+	<ul>
+		<li><b>Ball Lightning</b>:7 伤 + 1 球(伤害 + 被动池)</li>
+		<li><b>Cold Snap / Coolheaded</b>:伤害/过牌 + 1 冰霜球(攻防双职)</li>
+		<li><b>Compile Driver</b>:7 伤 + 按球种类抽牌(伤害 + 运转)</li>
+		<li><b>Sweeping Beam</b>:6 全敌伤 + 抽 1;Uproar:6×2 伤 + 免费打牌堆 1 张</li>
+		<li><b>Focused Strike</b>:9 伤 + 临时 Focus(伤害 + 乘区)</li>
+		<li><b>Rocket Punch</b>:13 伤 + 状态触发降费(伤害 + 降费)</li>
+		<li><b>Hologram</b>:3 防 + 弃牌堆回收;Boot Sequence:Innate 10 防</li>
+		<li><b>Go for the Eyes</b>:3 伤 + 条件虚弱(伤害 + debuff)</li>
+		<li><b>Overclock</b>:抽 2 + 塞 Burn(运转 + 状态触发源)</li>
+		<li><b>Scrape</b>:7 伤 + 抽 4 滤 0 费(伤害 + 循环件)</li>
+	</ul>
+</div>
+
+<h2>7. 设计观察</h2>
+<div class="card">
+	<ol>
+		<li><b>球 = 零操作的被动收益池</b>:每回合自动结算的伤害/格挡/能量,与 Necrobinder 的 Osty(拦截+攻击)、铁甲的格挡存量同构,但 Defect 多了「Evoke 兑现」这个操作层 —— 被动池(挂机)与主动兑现(操作)的两段式是球系统的核心张力。</li>
+		<li><b>Glass 球 = 衰减型 AOE</b>:被动每回合 -1 的衰减设计,强制「快进快出」(Channel 后及时 Evoke)—— 与 Doom 的「阈值即死」相反,Glass 是「越快兑现越强」的时效资源。</li>
+		<li><b>状态卡 = 主动制造的垃圾</b>:其他角色被塞状态是惩罚,Defect 可以<b>自己塞</b>(Overclock / TURBO / Fight Through)然后用七条回报线二次变现 —— 这是「垃圾经济学」的最完整形态,也是无限引擎的温床。</li>
+		<li><b>Focus 双形态</b>:永久(Defragment)+ 临时(Hotfix / Synchronize)并存,配合 Biased Cognition 的「+5 但每回合 -1」—— 「用未来换现在」的句式在三个角色里反复出现(Neurosurge 自 Doom / Borrowed Time 透支 / Wraith Form 减敏捷 / Hyperbeam 减 Focus),说明这是 StS2 设计团队的核心偏好。</li>
+		<li><b>Common 攻击全部附带 Channel</b>:12 张 Common 攻击里 8 张产球 —— 入口卡把「造球」做成攻击的附属动作,让新玩家第一回合就理解被动池的价值。</li>
+	</ol>
+	<div class="note">对 OneDeck 的参考:① 「被动池 + 兑现操作」双段式(球 ↔ Osty ↔ 格挡存量)是防守资源进攻化的三种解法;② 自塞状态的「主动垃圾」设计让 debuff 类卡牌从惩罚变成资源,可借鉴为代价型卡的标准句式;③ 衰减资源(Glass)与阈值资源(Doom)、存量资源(Soul Storm)并列,是条件收益的三种时间形态。</div>
+</div>
+
+<h2>附录 A. 全部 91 张卡</h2>
+<div class="card">
+	<p class="lead">分组按稀有度;升级文本以 wiki.gg 收录为准;多人模式专属卡标注 <span class="badge b-mp">多人</span>。</p>
+
+	<h3>A.1 Basic(4)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Strike</b> 打击</td><td>攻击</td><td>1</td><td>造成 6 伤</td><td>9 伤</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Defend</b> 防御</td><td>技能</td><td>1</td><td>获得 5 格挡</td><td>8 格挡</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Zap</b> 电击</td><td>技能</td><td>1</td><td>Channel 1 闪电</td><td>0 费</td><td><span class="badge b-orb">造球·教学</span><span class="star">★</span></td></tr>
+			<tr><td><b>Dualcast</b> 双重施放</td><td>技能</td><td>1</td><td>Evoke 右球两次</td><td>0 费</td><td><span class="badge b-orb">爆球·教学</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.2 Common(20)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Ball Lightning</b> 球形闪电</td><td>攻击</td><td>1</td><td>造成 7 伤,Channel 1 闪电</td><td>10 伤</td><td><span class="badge b-orb">闪电·入口</span><span class="star">★</span></td></tr>
+			<tr><td><b>Barrage</b> 弹幕</td><td>攻击</td><td>1</td><td>本场每个已 Channel 的球 +5 伤</td><td>+7 伤/球</td><td><span class="badge b-orb">球数计数</span></td></tr>
+			<tr><td><b>Beam Cell</b> 光束电池</td><td>攻击</td><td>0</td><td>造成 3 伤,附加 1 易伤</td><td>4 伤</td><td><span class="badge b-zero">0费·易伤</span></td></tr>
+			<tr><td><b>Claw</b> 爪击</td><td>攻击</td><td>0</td><td>造成 3 伤;所有 Claw 卡本场 +2 伤</td><td>+3 伤</td><td><span class="badge b-zero">0费·自我成长</span><span class="star">★</span></td></tr>
+			<tr><td><b>Cold Snap</b> 寒冰突袭</td><td>攻击</td><td>1</td><td>造成 6 伤,Channel 1 冰霜</td><td>9 伤</td><td><span class="badge b-orb">冰霜·入口</span></td></tr>
+			<tr><td><b>Compile Driver</b> 编译驱动</td><td>攻击</td><td>1</td><td>造成 7 伤;每有 1 种 unique 球抽 1 张</td><td>10 伤</td><td><span class="badge b-orb">伤害+运转</span><span class="star">★</span></td></tr>
+			<tr><td><b>Focused Strike</b> 聚焦打击</td><td>攻击</td><td>1</td><td>造成 9 伤,本回合 +1 Focus</td><td>12 伤</td><td><span class="badge b-focus">伤害+临时 Focus</span></td></tr>
+			<tr><td><b>Go for the Eyes</b> 攻眼</td><td>攻击</td><td>0</td><td>造成 3 伤;敌本回合意图攻击则附加 1 虚弱</td><td>4 伤</td><td><span class="badge b-zero">0费·条件 debuff</span></td></tr>
+			<tr><td><b>Gunk Up</b> 弄脏</td><td>攻击</td><td>1</td><td>造成 4 伤 ×3 次,弃牌堆加 1 张 Slimed</td><td>5 伤×3</td><td><span class="badge b-status">多段+塞状态</span></td></tr>
+			<tr><td><b>Momentum Strike</b> 动量打击</td><td>攻击</td><td>1</td><td>造成 11 伤;本卡费用降为 0</td><td>14 伤</td><td><span class="badge b-zero">降费·一次性</span></td></tr>
+			<tr><td><b>Sweeping Beam</b> 横扫光束</td><td>攻击</td><td>1</td><td>全体敌人 6 伤,抽 1 张</td><td>8 伤</td><td><span class="badge b-gen">群伤+过牌</span></td></tr>
+			<tr><td><b>Uproar</b> 喧嚣</td><td>攻击</td><td>2</td><td>造成 6 伤两次,免费打出牌堆 1 张随机攻击</td><td>8 伤×2</td><td><span class="badge b-gen">多段+免费打</span></td></tr>
+			<tr><td><b>Boost Away</b> 推离</td><td>技能</td><td>0</td><td>获得 6 格挡,弃牌堆加 1 张 Dazed</td><td>9 格挡</td><td><span class="badge b-status">防御+塞状态</span></td></tr>
+			<tr><td><b>Charge Battery</b> 充电电池</td><td>技能</td><td>1</td><td>获得 7 格挡;下回合获得 1 能量</td><td>10 防 / 2 能量</td><td><span class="badge b-energy">防御+能量</span></td></tr>
+			<tr><td><b>Coolheaded</b> 冷静</td><td>技能</td><td>1</td><td>Channel 1 冰霜,抽 1 张</td><td>抽 2</td><td><span class="badge b-orb">冰霜+过牌</span></td></tr>
+			<tr><td><b>Hologram</b> 全息投影</td><td>技能</td><td>1</td><td>获得 3 格挡,弃牌堆 1 张捡回,消耗</td><td>不消耗</td><td><span class="badge b-gen">防御+回收</span></td></tr>
+			<tr><td><b>Hotfix</b> 热修</td><td>技能</td><td>0</td><td>本回合 +2 Focus,消耗</td><td>+3</td><td><span class="badge b-focus">临时 Focus</span><span class="star">★</span></td></tr>
+			<tr><td><b>Leap</b> 跳跃</td><td>技能</td><td>1</td><td>获得 9 格挡</td><td>12 格挡</td><td><span class="badge b-gen">纯防御</span></td></tr>
+			<tr><td><b>Lightning Rod</b> 避雷针</td><td>技能</td><td>1</td><td>获得 4 格挡;接下来 2 回合开始各 Channel 1 闪电</td><td>2 球/回合</td><td><span class="badge b-orb">延迟造球</span></td></tr>
+			<tr><td><b>TURBO</b> 涡轮</td><td>技能</td><td>0</td><td>获得 2 能量,弃牌堆加 1 张 Void</td><td>3 能量</td><td><span class="badge b-energy">能量+塞状态</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.3 Uncommon(38)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>FTL</b> 超光速</td><td>攻击</td><td>0</td><td>造成 5 伤;本回合已打出卡 &lt;3 张时抽 1</td><td>8 伤</td><td><span class="badge b-zero">0费·起手节奏</span></td></tr>
+			<tr><td><b>Null</b> 虚空</td><td>攻击</td><td>2</td><td>造成 10 伤,附加 1 虚弱,Channel 1 暗</td><td>13 伤</td><td><span class="badge b-orb">暗·入口</span></td></tr>
+			<tr><td><b>Refract</b> 折射</td><td>攻击</td><td>3</td><td>造成 10 伤两次,Channel 2 Glass</td><td>13 伤×2</td><td><span class="badge b-orb">Glass·入口</span></td></tr>
+			<tr><td><b>Rocket Punch</b> 火箭拳</td><td>攻击</td><td>2</td><td>造成 13 伤,抽 1;每生成 1 张状态卡本卡 -1 费</td><td>16 伤</td><td><span class="badge b-status">伤害+状态降费</span></td></tr>
+			<tr><td><b>Scrape</b> 刮擦</td><td>攻击</td><td>1</td><td>造成 7 伤,抽 4 张,弃掉其中所有非 0 费卡</td><td>10 伤</td><td><span class="badge b-zero">伤害+滤0费</span></td></tr>
+			<tr><td><b>Sunder</b> 裂解</td><td>攻击</td><td>3</td><td>造成 26 伤;击杀敌人获得 3 能量</td><td>32 伤 / +3 能</td><td><span class="badge b-energy">斩杀·能量滚雪球</span><span class="star">★</span></td></tr>
+			<tr><td><b>Synthesis</b> 合成</td><td>攻击</td><td>2</td><td>造成 14 伤;下一张能力 0 费</td><td>18 伤</td><td><span class="badge b-gen">伤害+能力降费</span></td></tr>
+			<tr><td><b>Tesla Coil</b> 特斯拉线圈</td><td>攻击</td><td>0</td><td>造成 3 伤;触发场上全部闪电</td><td>5 伤</td><td><span class="badge b-orb">0费·闪电兑现</span></td></tr>
+			<tr><td><b>Boot Sequence</b> 启动序列</td><td>技能</td><td>0</td><td>Innate。获得 10 格挡,消耗</td><td>14 格挡</td><td><span class="badge b-gen">起手防御</span></td></tr>
+			<tr><td><b>Chaos</b> 混沌</td><td>技能</td><td>1</td><td>Channel 1 随机球</td><td>2 球</td><td><span class="badge b-orb">随机造球</span></td></tr>
+			<tr><td><b>Chill</b> 寒流</td><td>技能</td><td>0</td><td>每个敌人 Channel 1 冰霜,消耗</td><td>不消耗</td><td><span class="badge b-orb">群战冰霜</span></td></tr>
+			<tr><td><b>Compact</b> 压缩</td><td>技能</td><td>1</td><td>获得 6 格挡;手牌所有状态卡转化为 Fuel</td><td>8 格挡 / Fuel+</td><td><span class="badge b-status">状态→Fuel</span><span class="star">★</span></td></tr>
+			<tr><td><b>Darkness</b> 黑暗</td><td>技能</td><td>1</td><td>Channel 1 暗,触发所有暗球被动</td><td>触发 2 次</td><td><span class="badge b-orb">暗·成长</span></td></tr>
+			<tr><td><b>Double Energy</b> 双倍能量</td><td>技能</td><td>1</td><td>能量翻倍,消耗</td><td>—</td><td><span class="badge b-energy">能量·翻倍</span></td></tr>
+			<tr><td><b>Energy Surge</b> 能量激涌</td><td>技能</td><td>1</td><td>所有玩家获得 1 能量,消耗</td><td>2 能量</td><td><span class="badge b-mp">多人·能量共享</span></td></tr>
+			<tr><td><b>Fight Through</b> 奋战</td><td>技能</td><td>1</td><td>获得 13 格挡,弃牌堆加 2 张 Wound</td><td>16 格挡</td><td><span class="badge b-status">防御+塞状态</span></td></tr>
+			<tr><td><b>Fusion</b> 融合</td><td>技能</td><td>1</td><td>Channel 1 等离子,消耗</td><td>不消耗</td><td><span class="badge b-energy">等离子·能量球</span></td></tr>
+			<tr><td><b>Glacier</b> 冰川</td><td>技能</td><td>2</td><td>获得 6 格挡,Channel 2 冰霜</td><td>8 防 / 3 球</td><td><span class="badge b-orb">冰霜·核心</span><span class="star">★</span></td></tr>
+			<tr><td><b>Glasswork</b> 玻璃工艺</td><td>技能</td><td>1</td><td>获得 5 格挡,Channel 1 Glass</td><td>7 防</td><td><span class="badge b-orb">Glass·防御入口</span></td></tr>
+			<tr><td><b>Hibernate</b> 冬眠</td><td>技能</td><td>2</td><td>本回合冰霜为所有队友提供格挡;Channel 2 冰霜</td><td>3 球</td><td><span class="badge b-mp">多人·冰霜共享</span></td></tr>
+			<tr><td><b>Ignition</b> 点火</td><td>技能</td><td>1</td><td>另一名玩家 Channel 等离子,消耗</td><td>—</td><td><span class="badge b-mp">多人·能量共享</span></td></tr>
+			<tr><td><b>Overclock</b> 超频</td><td>技能</td><td>0</td><td>抽 2 张,弃牌堆加 1 张 Burn</td><td>抽 3</td><td><span class="badge b-status">过牌+塞状态</span><span class="star">★</span></td></tr>
+			<tr><td><b>Scavenge</b> 拾荒</td><td>技能</td><td>1</td><td>消耗 1 张手牌;下回合获得 1 能量</td><td>2 能量</td><td><span class="badge b-status">消耗→能量</span></td></tr>
+			<tr><td><b>Shadow Shield</b> 暗影护盾</td><td>技能</td><td>2</td><td>获得 11 格挡,Channel 1 暗</td><td>14 防</td><td><span class="badge b-orb">防御+暗球</span></td></tr>
+			<tr><td><b>Skim</b> 略读</td><td>技能</td><td>1</td><td>抽 3 张</td><td>抽 4</td><td><span class="badge b-gen">纯过牌</span><span class="star">★</span></td></tr>
+			<tr><td><b>Synchronize</b> 同步</td><td>技能</td><td>1</td><td>每有 1 种 unique 球,本回合 +1 Focus</td><td>+2/种</td><td><span class="badge b-focus">临时 Focus·混球</span></td></tr>
+			<tr><td><b>Tempest</b> 风暴</td><td>技能</td><td>X</td><td>Channel X 闪电</td><td>X+1</td><td><span class="badge b-orb">闪电·X费</span><span class="star">★</span></td></tr>
+			<tr><td><b>White Noise</b> 白噪声</td><td>技能</td><td>1</td><td>手牌加 1 张随机能力,本回合免费,消耗</td><td>—</td><td><span class="badge b-gen">随机能力·免费</span></td></tr>
+			<tr><td><b>Bulk Up</b> 增肌</td><td>能力</td><td>2</td><td>失去 1 球槽,获得 2 力量和 2 敏捷</td><td>3/3</td><td><span class="badge b-gen">球槽换攻防</span></td></tr>
+			<tr><td><b>Capacitor</b> 电容器</td><td>能力</td><td>1</td><td>获得 2 球槽</td><td>3 球槽</td><td><span class="badge b-orb">球槽·扩展</span></td></tr>
+			<tr><td><b>Feral</b> 野性</td><td>能力</td><td>2</td><td>每回合首张 0 费攻击打完后回手</td><td>1 费</td><td><span class="badge b-zero">0费·回手循环</span><span class="star">★</span></td></tr>
+			<tr><td><b>Hailstorm</b> 冰雹</td><td>能力</td><td>1</td><td>回合结束:持有冰霜球时全敌 6 伤</td><td>9 伤</td><td><span class="badge b-orb">冰霜→伤害</span></td></tr>
+			<tr><td><b>Iteration</b> 迭代</td><td>能力</td><td>1</td><td>每回合首次抽到状态卡时抽 2 张</td><td>抽 3</td><td><span class="badge b-status">状态→过牌</span><span class="star">★</span></td></tr>
+			<tr><td><b>Loop</b> 循环</td><td>能力</td><td>1</td><td>回合开始:额外触发右球被动</td><td>触发 2 次</td><td><span class="badge b-orb">被动·额外触发</span><span class="star">★</span></td></tr>
+			<tr><td><b>Smokestack</b> 烟囱</td><td>能力</td><td>1</td><td>每生成 1 张状态卡,全体敌人 5 伤</td><td>7 伤</td><td><span class="badge b-status">状态→伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Storm</b> 风暴</td><td>能力</td><td>1</td><td>每打出 1 张能力,Channel 1 闪电</td><td>2 球</td><td><span class="badge b-orb">能力→球</span></td></tr>
+			<tr><td><b>Subroutine</b> 子程序</td><td>能力</td><td>1</td><td>每打出 1 张能力,获得 1 能量</td><td>2 能量</td><td><span class="badge b-energy">能力→能量</span></td></tr>
+			<tr><td><b>Thunder</b> 雷鸣</td><td>能力</td><td>1</td><td>Evoke 闪电时,每个被击中的敌人受到 8 伤</td><td>11 伤</td><td><span class="badge b-orb">闪电·兑现放大</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.4 Rare(27)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Adaptive Strike</b> 自适应打击</td><td>攻击</td><td>2</td><td>造成 18 伤,弃牌堆加 1 张本卡的 0 费复制</td><td>24 伤</td><td><span class="badge b-zero">0费复制</span></td></tr>
+			<tr><td><b>All for One</b> 一网打尽</td><td>攻击</td><td>2</td><td>造成 10 伤;弃牌堆所有 0 费卡捡回</td><td>14 伤</td><td><span class="badge b-zero">0费·回收核心</span><span class="star">★</span></td></tr>
+			<tr><td><b>Flak Cannon</b> 防空炮</td><td>攻击</td><td>2</td><td>消耗所有状态卡,每张随机敌 8 伤</td><td>11 伤/张</td><td><span class="badge b-status">状态→爆发</span><span class="star">★</span></td></tr>
+			<tr><td><b>Helix Drill</b> 螺旋钻</td><td>攻击</td><td>0</td><td>本回合在其他卡上每花费 1 能量 +3 伤</td><td>+4 伤/费</td><td><span class="badge b-energy">能量→伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Hyperbeam</b> 超光束</td><td>攻击</td><td>2</td><td>全体敌人 24 伤;本回合 -3 Focus</td><td>28 伤</td><td><span class="badge b-focus">Focus→AOE</span></td></tr>
+			<tr><td><b>Ice Lance</b> 冰矛</td><td>攻击</td><td>3</td><td>造成 19 伤,Channel 3 冰霜</td><td>24 伤</td><td><span class="badge b-orb">直伤+冰霜</span></td></tr>
+			<tr><td><b>Meteor Strike</b> 流星打击</td><td>攻击</td><td>5</td><td>造成 24 伤,Channel 3 等离子</td><td>30 伤</td><td><span class="badge b-energy">大数字+能量球</span></td></tr>
+			<tr><td><b>Shatter</b> 粉碎</td><td>攻击</td><td>1</td><td>全体敌人 7 伤;Evoke 所有球两次,消耗</td><td>10 伤</td><td><span class="badge b-orb">全球兑现·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Buffer</b> 缓冲</td><td>能力</td><td>2</td><td>防止下一次失去 HP</td><td>2 层</td><td><span class="badge b-gen">免伤</span></td></tr>
+			<tr><td><b>Consuming Shadow</b> 吞噬之影</td><td>能力</td><td>2</td><td>Channel 2 暗;回合结束 Evoke 左球</td><td>3 暗球</td><td><span class="badge b-orb">暗·兑现自动机</span></td></tr>
+			<tr><td><b>Coolant</b> 冷却剂</td><td>能力</td><td>1</td><td>回合开始:每有 1 种 unique 球获得 2 格挡</td><td>3 格挡</td><td><span class="badge b-orb">混球→防御</span><span class="star">★</span></td></tr>
+			<tr><td><b>Creative AI</b> 创造型AI</td><td>能力</td><td>3</td><td>回合开始:手牌加 1 张随机能力</td><td>2 费</td><td><span class="badge b-gen">能力·自动机</span></td></tr>
+			<tr><td><b>Defragment</b> 碎片整理</td><td>能力</td><td>1</td><td>获得 1 Focus</td><td>2 Focus</td><td><span class="badge b-focus">Focus·地基</span><span class="star">★</span></td></tr>
+			<tr><td><b>Echo Form</b> 回响形态</td><td>能力</td><td>3</td><td>Ethereal。每回合首张卡额外打一次</td><td>2 费</td><td><span class="badge b-gen">连打·引擎</span></td></tr>
+			<tr><td><b>Machine Learning</b> 机器学习</td><td>能力</td><td>1</td><td>回合开始:额外抽 1 张</td><td>抽 2</td><td><span class="badge b-gen">抽牌·自动机</span></td></tr>
+			<tr><td><b>One for All</b> 一人全要</td><td>能力</td><td>1</td><td>所有玩家的 0 费攻击 +3 伤</td><td>+5 伤</td><td><span class="badge b-mp">多人·0费增幅</span></td></tr>
+			<tr><td><b>Spinner</b> 纺锤</td><td>能力</td><td>1</td><td>回合开始:Channel 1 Glass</td><td>2 球</td><td><span class="badge b-orb">Glass·自动机</span></td></tr>
+			<tr><td><b>Trash to Treasure</b> 变废为宝</td><td>能力</td><td>1</td><td>每生成 1 张状态卡,Channel 1 随机球</td><td>2 球</td><td><span class="badge b-status">状态→球</span><span class="star">★</span></td></tr>
+			<tr><td><b>Genetic Algorithm</b> 遗传算法</td><td>技能</td><td>1</td><td>获得 1 格挡;本卡格挡永久 +3,消耗</td><td>+4/次</td><td><span class="badge b-gen">成长防御</span></td></tr>
+			<tr><td><b>Imitation Learning</b> 模仿学习</td><td>技能</td><td>1</td><td>选一名队友:其接下来 2 张能力打出时,你打出其复制</td><td>3 次</td><td><span class="badge b-mp">多人·能力复制</span></td></tr>
+			<tr><td><b>Modded</b> 改装</td><td>技能</td><td>0</td><td>获得 1 球槽,抽 1 张;本卡费用 +1</td><td>—</td><td><span class="badge b-orb">球槽·成长</span></td></tr>
+			<tr><td><b>Multi-Cast</b> 多重施放</td><td>技能</td><td>X</td><td>Evoke 右球 X 次</td><td>X+1</td><td><span class="badge b-orb">Evoke·X费</span><span class="star">★</span></td></tr>
+			<tr><td><b>Rainbow</b> 彩虹</td><td>技能</td><td>2</td><td>Channel 1 闪电、1 冰霜、1 暗,消耗</td><td>—</td><td><span class="badge b-orb">混球·一键</span></td></tr>
+			<tr><td><b>Reboot</b> 重启</td><td>技能</td><td>0</td><td>全部卡洗回牌组,抽 4 张,消耗</td><td>抽 5</td><td><span class="badge b-gen">重洗·引擎</span></td></tr>
+			<tr><td><b>Signal Boost</b> 信号增幅</td><td>技能</td><td>1</td><td>下一张能力额外打一次,消耗</td><td>下两张</td><td><span class="badge b-gen">能力连打</span></td></tr>
+			<tr><td><b>Supercritical</b> 超临界</td><td>技能</td><td>0</td><td>获得 4 能量,消耗</td><td>5 能量</td><td><span class="badge b-energy">能量·爆发</span><span class="star">★</span></td></tr>
+			<tr><td><b>Voltaic</b> 伏特</td><td>技能</td><td>3</td><td>Channel 本场已 Channel 过的闪电等量的闪电,消耗</td><td>4 费→3 费</td><td><span class="badge b-orb">闪电·存量兑现</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.5 Ancient(2)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Biased Cognition</b> 偏见认知</td><td>能力</td><td>1</td><td>获得 5 Focus;回合开始 -1 Focus</td><td>6 Focus</td><td><span class="badge b-focus">Focus·双刃封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Quadcast</b> 四重施放</td><td>技能</td><td>1</td><td>Evoke 右球 4 次</td><td>0 费</td><td><span class="badge b-orb">Evoke·封顶</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.6 生成 token / 状态卡</h3>
+	<table>
+		<thead><tr><th>token</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th>来源</th></tr></thead>
+		<tbody>
+			<tr><td><b>Fuel</b> 燃料</td><td>状态</td><td>0</td><td>打出:抽 1 张,获得 1 能量,消耗(Fuel+ 更强)</td><td>Compact 转化手牌状态卡</td></tr>
+			<tr><td><b>Slimed / Dazed / Wound / Burn / Void</b></td><td>状态</td><td>—</td><td>标准状态卡(废牌 / 虚耗 / 卡手 / 灼伤 / 虚空)</td><td>Gunk Up / Boost Away / Fight Through / Overclock / TURBO 及敌人</td></tr>
+		</tbody>
+	</table>
+	<div class="note">数据说明:卡牌数据取自 slaythespire.wiki.gg 官方卡表(Cargo 导出,2026-08-17);多人模式卡(One for All / Energy Surge / Imitation Learning / Ignition / Hibernate)标注 <span class="badge b-mp">多人</span>。</div>
+</div>
+
+</body>
+</html>

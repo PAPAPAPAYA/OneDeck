@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OneDeck 卡池 v5 — 迭代设计总案</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+		--purple: #bb9af7; --cyan: #7dcfff;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+	.mono { font-family: Consolas, monospace; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+	.b-new { color: #f7768e; border-color: #f7768e88; }
+	.b-rw { color: #e0af68; border-color: #e0af6888; }
+	.b-rule { color: #7dcfff; border-color: #7dcfff88; }
+	.b-move { color: #bb9af7; border-color: #bb9af788; }
+	.b-good { color: #9ece6a; border-color: #9ece6a88; }
+	.star { color: #e0af68; font-weight: 700; }
+	ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.bad { color: var(--bad); }
+	.purple { color: var(--purple); }
+	.cyan { color: var(--cyan); }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+	.r-tag { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; white-space: nowrap; }
+	.r-common { color: #9ece6a; border-color: #9ece6a88; }
+	.r-uncommon { color: #7dcfff; border-color: #7dcfff88; }
+	.r-rare { color: #bb9af7; border-color: #bb9af788; }
+	@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style>
+</head>
+<body>
+
+<h1>OneDeck 卡池 v5 — 迭代设计总案</h1>
+<div class="sub">2026-08-17 · 迭代自 v4（docs/CardPoolV4_Design_CoreFormula.html,117 张）· 用户 14 项设计指令逐条落实 · 前置分析:docs/OneDeck_V4_CardPoolAnalysis.html（v4 结构拆解）与 docs/StS2_DesignSynthesis_ForOneDeck.html（StS2 对照审计）· 总量 117 → 132（17 新增 − 2 合并）</div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num">132</div><div class="lbl">v5 卡池总量(117 − 2 合并 + 17 新增)</div></div>
+	<div class="kpi"><div class="num">27/57/48</div><div class="lbl">稀有度 C / U / R(20.5% / 43.2% / 36.4%)—— R 从 26 增至 48</div></div>
+	<div class="kpi"><div class="num">1</div><div class="lbl">数值系统:力量与攻击力统一为攻击力(删减合并)</div></div>
+	<div class="kpi"><div class="num">3</div><div class="lbl">新规则:置顶排除沉睡 / 沉睡免疫埋葬 / 去除敌方裂缝移除</div></div>
+	<div class="kpi"><div class="num">14</div><div class="lbl">设计指令逐条落实(见 §0 对照表)</div></div>
+</div>
+
+<h2>0. 变更总览(14 项 → 落实方式)</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:6%">#</th><th style="width:28%">指令</th><th style="width:44%">落实方式</th><th>章节</th></tr></thead>
+		<tbody>
+			<tr><td>1</td><td><b>力量与攻击力统一为攻击力</b></td><td>删除「力量」数值,全池统一为「攻击力」;攻击武备与通用轴的重复卡合并(锻炉→铁匠、军备竞赛→集结号);受影响卡约 30 张文案改写</td><td>§1</td></tr>
+			<tr><td>2</td><td><b>敌方攻击力减少</b></td><td>新增 3 张:虚弱诅咒(C)/ 衰弱光环(U)/ 寂静术(R)</td><td>§3.1</td></tr>
+			<tr><td>3</td><td><b>敌方沉睡</b></td><td>敌方[沉睡]机制正式化(跳过揭晓与效果,条件唤醒);新增 安眠曲(R,全体敌方攻击者沉睡);噩梦保留</td><td>§2.2 / §3.2</td></tr>
+			<tr><td>4</td><td><b>不要「去除敌方裂缝」</b></td><td>裂隙窃贼重做(友方事件再生,移除去除敌方方向);全池确认无其他去除敌方裂缝卡</td><td>§4.3</td></tr>
+			<tr><td>5</td><td><b>稀有度比例,更多 R</b></td><td>C 31→27、U 60→57、R 26→48(16 张 U→R、5 张 C→U);R 占比 22%→36%</td><td>§6</td></tr>
+			<tr><td>6</td><td><b>诅咒 × 沉睡桥</b></td><td>新增 咒蚀之眠(R,沉睡条件=诅咒攻击力)与 梦魇低语(U,敌方负面沉睡蓄力)</td><td>§3.3</td></tr>
+			<tr><td>7</td><td><b>更多沉睡入轴(通用机制)</b></td><td>新增 尸眠(墓地)/ 裂缝沉眠(裂缝)/ 武备沉眠(攻击)/ 梦呓(唤醒引擎);沉睡成为跨轴通用「后期大怪」机制</td><td>§3.4</td></tr>
+			<tr><td>8</td><td><b>置顶排除沉睡</b></td><td>规则:【置顶】不能指定[沉睡]卡(敌我通用)</td><td>§2.1</td></tr>
+			<tr><td>9</td><td><b>给予萦绕卡沉睡</b></td><td>新增 安眠(U):给予 1 张友方[萦绕]卡[沉睡]——沉睡免疫置顶/埋葬 = 萦绕卡稳定化</td><td>§2.1 / §3.5</td></tr>
+			<tr><td>10</td><td><b>提高特定卡稳定性的卡</b></td><td>新增 殉葬师(给予[埋葬]卡[亡语],无差别埋葬自埋自触发)与 修碑人(给予[亡语]卡[萦绕])</td><td>§3.5</td></tr>
+			<tr><td>11</td><td><b>更多位移卡</b></td><td>新增 回响者(友方被置顶时置顶自身)/ 王座调度(最高攻击攻击者移至 Start Card 前)/ 王座光环(Start Card 前区域 buff)</td><td>§3.6</td></tr>
+			<tr><td>12</td><td><b>攻击力 = 敌方诅咒攻击力</b></td><td>新增 镜面诅咒(R,攻击力 = 敌方[负面]攻击力总和);咒蚀之眠同族</td><td>§3.7</td></tr>
+			<tr><td>13</td><td><b>推进器 / 全能人重做</b></td><td>推进器:洗牌依赖 → 事件驱动;全能人:六路小收益 → 三轴聚合决定性输出</td><td>§4.1 / §4.2</td></tr>
+			<tr><td>14</td><td><b>评估:裂缝置顶 2 友方</b></td><td>评估结论:1:2 兑换率可用,但目标需限定[攻击者],连锁风险见 §7</td><td>§7</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>1. 经济统一:单一攻击力</h2>
+<div class="card">
+	<div class="verdict">
+		删除「力量」数值。全池唯一数值 = <b>攻击力</b>(卡面基础值 + 永久成长),攻击结算 = 攻击力 × 段数;易伤(敌方每段 +1)与「攻击 +N 次」保留。<b>理由</b>:力量与攻击力成长在 v4 中承担同一角色(每段加值),两套授予卡(铁匠系 vs 锻炉系)互为重复;统一后授予卡密度减半、动态攻击力(攻击力 = Y)语义更干净。
+	</div>
+	<h3>1.1 关键词体系(v5)</h3>
+	<table>
+		<thead><tr><th>关键词</th><th>定义</th></tr></thead>
+		<tbody>
+			<tr><td class="mono">攻击</td><td>造成 X 点伤害,X = 卡面攻击力(含永久成长,每段计入);动态攻击力(攻击力 = Y)常态结算</td></tr>
+			<tr><td class="mono">攻击 ×N</td><td>N 段攻击(每段独立结算)</td></tr>
+			<tr><td class="mono">攻击 +N 次</td><td>该卡每次揭晓的攻击段数永久 +N(可叠加)——第一乘区授予</td></tr>
+			<tr><td class="mono">攻击力 = Y</td><td>结算时攻击力实时取 Y(动态攻击力)</td></tr>
+			<tr><td class="mono">+N 攻击力</td><td>卡面攻击力永久 +N(可叠加)——原「力量」「攻击力成长」合并后的唯一授予形式</td></tr>
+			<tr><td class="mono">增强</td><td>敌方[负面]/[诅咒] 攻击力 +1(不存在时自动生成 JU_ON)</td></tr>
+			<tr><td class="mono">易伤</td><td>敌方每段受到的攻击伤害 +1(可叠加,永久)</td></tr>
+			<tr><td class="mono">沉睡 / 唤醒</td><td>见 §2.1 规则更新</td></tr>
+		</tbody>
+	</table>
+	<h3>1.2 受影响卡一览(力量 → 攻击力)</h3>
+	<table>
+		<thead><tr><th style="width:22%">卡</th><th style="width:16%">稀有度</th><th>v5 文案(数值统一后)</th></tr></thead>
+		<tbody>
+			<tr><td><b>铁匠</b>(合并锻炉)</td><td>C</td><td>给予 1 张友方卡 +1 攻击力(永久)—— 锻炉并入,攻击武备不再重复</td></tr>
+			<tr><td><b>集结号</b>(合并军备竞赛)</td><td>C</td><td>给予所有友方[攻击者] +1 攻击力(永久)</td></tr>
+			<tr><td>疯狂科学家</td><td>C</td><td>给予下 3 张友方卡 +2 攻击力</td></tr>
+			<tr><td>献祭剑</td><td>C</td><td>埋葬 1 张友方卡;给予 1 张友方卡 +2 攻击力</td></tr>
+			<tr><td>战争之誓</td><td>C</td><td>给予 1 张友方[攻击者] +2 攻击力;攻击</td></tr>
+			<tr><td>军议</td><td>U</td><td>给予 1 张友方[攻击者](最低攻击力)+2 攻击力</td></tr>
+			<tr><td>军火库</td><td>R</td><td>给予所有友方[攻击者] +2 攻击力;埋葬 1 张友方卡</td></tr>
+			<tr><td>殉道者</td><td>R</td><td>被埋葬:所有友方卡 +1 攻击力</td></tr>
+			<tr><td>复仇者</td><td>U</td><td>被埋葬:获得 2 攻击力</td></tr>
+			<tr><td>白骨地</td><td><span class="badge b-move">U→R</span></td><td>萦绕:每当任意卡被埋葬:获得 1 攻击力</td></tr>
+			<tr><td>武器精灵</td><td><span class="badge b-move">U→R</span></td><td>萦绕:每当友方获得攻击力:额外 +1</td></tr>
+			<tr><td>攻击力渴求者(原力量渴求者)</td><td>R</td><td>获得攻击力时:获得 2 倍攻击力</td></tr>
+			<tr><td>攻击力虹吸人(原力量虹吸人)</td><td>R</td><td>转移所有友方 1 攻击力到自身;攻击 ×2</td></tr>
+			<tr><td>未完成的机器人</td><td>R</td><td>翻倍自身攻击力</td></tr>
+			<tr><td>攻击力转移(原力量转移)</td><td>U</td><td>去除 1 张敌方[攻击者](最高攻击力)1 攻击力:给予 1 张友方[攻击者](最低攻击力)1 攻击力</td></tr>
+			<tr><td>曼哈顿博士</td><td>U</td><td>消耗自身 2 攻击力:置顶 2 张友方[攻击者];埋葬 2 张敌方[攻击者]</td></tr>
+			<tr><td>人人为我</td><td>U</td><td>攻击力 = 所有友方卡攻击力总和(常态结算)</td></tr>
+			<tr><td>能量迸发 / 战术爆破手</td><td>U</td><td>被置顶:2 张友方卡 / 自身 +1 攻击力</td></tr>
+			<tr><td>枕边低语 / 晨钟 / 守夜人 / 大觉醒</td><td>C/U/U/R</td><td>沉睡喂料与唤醒回报统一为「+N 攻击力」</td></tr>
+			<tr><td>冬眠(重做)</td><td>U</td><td>【沉睡】直到第 3 回合开始;唤醒时:攻击 ×2;获得 2 攻击力(原「攻击力=自身力量」自我引用,废弃)</td></tr>
+			<tr><td>沉睡的巨像(重做)</td><td>R</td><td>【沉睡】直到拥有 5 攻击力;唤醒时:攻击 ×2;获得 3 攻击力</td></tr>
+			<tr><td>亘古沉眠者(重做)</td><td>R</td><td>【沉睡】直到拥有 10 攻击力 且 第 5 回合开始;唤醒时:所有友方[攻击者]获得「攻击 +1 次」(永久);攻击 ×2</td></tr>
+			<tr><td>乌合之众</td><td>R</td><td>转移所有友方[攻击者]攻击力(除友方[负面])到敌方[负面]</td></tr>
+			<tr><td>诅咒共鸣</td><td><span class="badge b-move">U→R</span></td><td>敌方[负面]每有 1 攻击力:获得 1 攻击力</td></tr>
+			<tr><td>咒食系(萨满/大召唤师/拔苗助长/飞蛾人)</td><td>U</td><td>「敌方[负面]力量」全部改为「敌方[负面]攻击力」</td></tr>
+			<tr><td>恶化的阈值 / 增殖的厄运继承 / 恶魔低语 / 送葬人</td><td>R/U</td><td>同上,诅咒轴数值统一为攻击力</td></tr>
+		</tbody>
+	</table>
+	<div class="note">删减结果:攻击武备轴 12 → 10 张(锻炉、军备竞赛并入);通用轴与攻击轴的力量授予不再重复;E2(攻击力渴求者 ×2 / 未完成的机器人)、E10(攻击力虹吸人 / 乌合之众)语义不变。</div>
+</div>
+
+<h2>2. 规则更新</h2>
+<div class="card">
+	<h3>2.1 沉睡机制正式化(含置顶排除)</h3>
+	<table>
+		<thead><tr><th style="width:22%">规则</th><th>定义</th></tr></thead>
+		<tbody>
+			<tr><td><span class="badge b-rule">新</span> <b>沉睡状态</b></td><td>沉睡中的卡:① 揭晓时跳过效果结算(不触发,不攻击);② <b>不能被【置顶】指定</b>(敌我通用)—— 沉睡着在自己的牌库位置稳定待机;③ <b>不能被埋葬</b>(免疫乱葬坑 / 大范围死亡 / 深埋等)—— 沉睡 = 保护;④ 条件满足后于下次揭晓时唤醒并正常结算(唤醒落点 = 准备位,沿用 v4)</td></tr>
+			<tr><td><span class="badge b-rule">新</span> <b>敌方沉睡</b></td><td>敌方卡同样可被赋予[沉睡]:跳过其揭晓与效果,直到条件满足(如「主人受到 3 次伤害」)唤醒。与友方沉睡共用同一状态</td></tr>
+			<tr><td><span class="badge b-rule">新</span> <b>去除敌方裂缝移除</b></td><td>全池不再有「去除敌方[次元裂缝]」的效果(裂隙窃贼重做,§4.3)—— 玩家不能直接消灭敌方资源;敌方裂缝只能通过其自身生命周期互动</td></tr>
+			<tr><td>沿用</td><td>12 卡位上限(仅商店)/ 疲劳节流 / 链系统 / Start Card always bottom</td></tr>
+		</tbody>
+	</table>
+	<div class="note">设计意图:沉睡从「友方条件兑现」升级为通用状态(友方蓄力 / 敌方控制 / 稳定性保护);「置顶排除沉睡」保证沉睡卡不被提前拉出(提前揭晓沉睡卡 = 浪费一次揭晓),「免疫埋葬」让安眠(§3.5)成为萦绕卡的稳定化手段。</div>
+</div>
+
+<h2>3. 新增卡(17 张)</h2>
+
+<h3>3.1 敌方攻击力减少(指令 2)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>虚弱诅咒</b></td><td>C</td><td>敌方[攻击者](最高攻击力) 攻击力 -2</td><td>入口级硬解 —— 对照 StS2 Enfeebling Touch;不依赖格挡,直接拆伤害源</td></tr>
+			<tr><td><b>衰弱光环</b></td><td>U</td><td>萦绕:每当敌方[攻击者]被置顶:其攻击力 -1</td><td>事件型硬解 —— 与 E6 置顶流联动(敌方被置顶 = 攻击力衰减)</td></tr>
+			<tr><td><b>寂静术</b></td><td>R</td><td>全体敌方[攻击者] 攻击力 -2;若敌方存在[负面]:额外 -1</td><td>群解 + 诅咒流联动桥(有负面 = 更狠)—— 敌方侧资源同时是增伤条件</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>3.2 敌方沉睡(指令 3)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>安眠曲</b></td><td>R</td><td>全体敌方[攻击者] [沉睡](直到其主人受到 3 次伤害)</td><td>群控封顶件 —— 敌方大怪回合的硬停摆;3 次伤害唤醒 = 敌方反制窗口</td></tr>
+			<tr><td><b>噩梦</b>(保留)</td><td>U</td><td>使 1 张敌方[攻击者](最高攻击力)[沉睡](直到其主人受到 3 次伤害)</td><td>单点版,入口教学</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>3.3 诅咒 × 沉睡桥(指令 6)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>咒蚀之眠</b></td><td>R</td><td>【沉睡】直到敌方[负面]拥有 3 攻击力;唤醒时:攻击 ×2;攻击力 = 敌方[负面]最高攻击力(常态结算)</td><td>友方侧桥:沉睡条件 = 诅咒存量,唤醒兑现 = 诅咒攻击力 × 段数 —— 诅咒流的后期大怪</td></tr>
+			<tr><td><b>梦魇低语</b></td><td>U</td><td>给予 1 张敌方[负面] [沉睡](直到其主人受到 3 次伤害);沉睡期间其每回合 +1 攻击力</td><td>敌方侧桥:牺牲当前自伤频率,换取攻击力成长 —— 沉睡 = 蓄力,唤醒 = 更大自伤爆发(延迟满足)</td></tr>
+		</tbody>
+	</table>
+	<div class="note">两卡合起来形成完整桥:梦魇低语把敌方负面「存起来养」(每回合 +1),咒蚀之眠 / 镜面诅咒把它「取出来打」。</div>
+</div>
+
+<h3>3.4 沉睡入轴(指令 7,通用机制)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>尸眠</b></td><td>U</td><td>【沉睡】直到墓地有 3 张友方卡;唤醒时:攻击 ×2;攻击力 = 墓地友方卡数(常态结算)</td><td>墓地 × 沉睡 —— 后期墓地成型后的大怪(对局前后差异)</td></tr>
+			<tr><td><b>裂缝沉眠</b></td><td>U</td><td>【沉睡】直到存在 3 张友方[次元裂缝];唤醒时:攻击;生成 2 张[次元裂缝]</td><td>裂缝 × 沉睡 —— 与次元胚胎同族的中卡档(胚胎是 5 裂缝 Rare)</td></tr>
+			<tr><td><b>武备沉眠</b></td><td>R</td><td>【沉睡】直到友方[攻击者]攻击力总和 ≥ 10;唤醒时:攻击 ×2;给予所有友方[攻击者] +1 攻击力(永久)</td><td>攻击 × 沉睡 —— 后期大怪 + 全体成长,攻击轴的「终局宣言」</td></tr>
+			<tr><td><b>梦呓</b></td><td>U</td><td>萦绕:每当友方[沉睡]被唤醒:置顶 1 张友方[攻击者](最高攻击力)</td><td>唤醒调度引擎 —— 沉睡轴的支持件,让「唤醒潮」变成节奏收益</td></tr>
+		</tbody>
+	</table>
+	<div class="note">对局前后差异(指令 7 的目标):前期小怪互推(小攻击力互啄、互相埋葬),后期各轴沉睡大怪唤醒(尸眠 / 咒蚀之眠 / 武备沉眠 / 亘古沉眠者)—— 类似游戏王 / 万智牌 / 炉石的「前期铺资源、后期大怪登场」节奏。实现手段:沉睡条件全部绑定「存量 / 回合数」,与前期节奏天然错峰。</div>
+</div>
+
+<h3>3.5 稳定性支持卡(指令 9、10)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>安眠</b></td><td>U</td><td>给予 1 张友方[萦绕]卡 [沉睡];其被唤醒时:获得 1 攻击力</td><td>指令 9:萦绕卡稳定化 —— 沉睡免疫置顶与埋葬,保护白骨地 / 守夜人 / 武器精灵等不被乱葬坑埋掉;唤醒还送 1 攻击力</td></tr>
+			<tr><td><b>殉葬师</b></td><td>U</td><td>给予 1 张友方[埋葬]卡 [亡语]:被埋葬时:攻击</td><td>指令 10(用户例子):无差别埋葬埋掉其他[埋葬]卡(乱葬坑埋乱葬坑)的痛点 → 被埋的埋葬卡也能反打</td></tr>
+			<tr><td><b>修碑人</b></td><td>U</td><td>给予 1 张友方[亡语]卡 [萦绕]:每当友方卡被埋葬:其亡语触发 1 次</td><td>指令 10 第二例:亡语卡需要「先被埋葬再被触发」,萦绕化让它在场时也能吃到埋葬事件 —— 亡语稳定性</td></tr>
+		</tbody>
+	</table>
+	<div class="note">设计思路(指令 10):稳定性卡必须「具体到某种卡」—— 针对该卡型的已知痛点(埋葬卡被埋、萦绕卡被埋/被置顶、亡语卡触发窗口),而不是泛泛的「保护友方卡」。</div>
+</div>
+
+<h3>3.6 位移卡(指令 11)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>回响者</b></td><td>U</td><td>萦绕:每当友方卡被置顶:置顶自身</td><td>用户点子①:置顶事件链 —— 每次置顶都把它顶回来,成为「置顶流」的常驻触发源</td></tr>
+			<tr><td><b>王座调度</b></td><td>R</td><td>将 1 张友方[攻击者](最高攻击力)移动到 Start Card 前</td><td>用户点子②:后期大怪调度 —— 把主力藏到最后(Start Card 前 = 最晚揭晓),配合沉睡轴「大怪登场」叙事</td></tr>
+			<tr><td><b>王座光环</b></td><td>U</td><td>Start Card 前 2 张友方[攻击者] +1 攻击力(永久)</td><td>用户点子③:Start Card 前区域 buff —— 「王座区」概念:最后的卡获得成长,强化后期叙事</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>3.7 攻击力 = 敌方诅咒攻击力(指令 12)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>镜面诅咒</b></td><td>R</td><td>攻击力 = 敌方[负面]攻击力总和(常态结算);攻击</td><td>指令 12:敌方诅咒攻击力越大自己越强 —— 诅咒流的第三兑现形态(咒蚀之眠 = 最高攻击力 ×段数;镜面诅咒 = 总和 ×1)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>4. 重做卡(6 张)</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:14%">卡</th><th style="width:8%">稀有度</th><th style="width:38%">v4 文案(问题)</th><th>v5 文案(重做)</th></tr></thead>
+		<tbody>
+			<tr><td><b>推进器</b></td><td>R</td><td>洗牌后:置顶 2 张友方[攻击者];揭晓时:埋葬 1 张友方[亡语](洗牌事件在 Start Card always bottom 下极少发生,仅剩「提前友方卡」,效果不显著)</td><td class="good"><b>萦绕:每当友方[攻击者]被埋葬:置顶 2 张友方[攻击者];揭晓时:埋葬 1 张友方[亡语]</b> —— 洗牌依赖改为事件驱动:墓地流每埋一个攻击者就调度两个,与亡语埋葬形成自循环</td></tr>
+			<tr><td><b>全能人</b></td><td>R</td><td>揭晓 2 次:攻击,置顶 1 友方,埋葬 1 敌方,给予 1 友方力量,生成 1 裂缝,增强 1 负面(六路各一点,无决定性,后期 Rare 无人选)</td><td class="good"><b>攻击;攻击力 = 墓地友方卡数 + 友方[次元裂缝]数 + 敌方[负面]攻击力总和(常态结算,三轴聚合);若攻击力 ≥ 15:攻击 ×2;揭晓时:生成 1 [次元裂缝];增强 1 敌方[负面]</b> —— 保留多轴味道(自喂两路),但输出变成三轴存量的聚合大数字,有决定性</td></tr>
+			<tr><td><b>裂隙窃贼</b></td><td>U</td><td>去除 1 张敌方[次元裂缝]:生成 1 张友方[次元裂缝](指令 4:去除敌方裂缝移除)</td><td class="good"><b>生成 1 张[次元裂缝];萦绕:每当友方[次元裂缝]被去除:生成 1 张[次元裂缝]</b> —— 从「偷敌方」改为「友方裂缝再生」:去除动作反而喂自己,与次元兽 / 裂缝召唤师的消费循环闭环</td></tr>
+			<tr><td><b>冬眠</b></td><td>U</td><td>攻击力 = 自身力量(统一后自我引用失效)</td><td class="good">【沉睡】直到第 3 回合开始;唤醒时:攻击 ×2;获得 2 攻击力</td></tr>
+			<tr><td><b>沉睡的巨像</b></td><td>R</td><td>攻击力 = 自身力量;攻击 ×2(同上)</td><td class="good">【沉睡】直到拥有 5 攻击力;唤醒时:攻击 ×2;获得 3 攻击力</td></tr>
+			<tr><td><b>亘古沉眠者</b></td><td>R</td><td>攻击力 = 自身力量;攻击 ×2;唤醒:全体「攻击 +1 次」(同上)</td><td class="good">【沉睡】直到拥有 10 攻击力 且 第 5 回合开始;唤醒时:所有友方[攻击者]获得「攻击 +1 次」(永久);攻击 ×2</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>5. 合并与删减</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:30%">合并</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td><b>锻炉 → 铁匠</b></td><td>锻炉(单卡 +1 攻击力)= 铁匠(单卡 +1 力量)在统一后完全重复,并入铁匠(§1.2)</td></tr>
+			<tr><td><b>军备竞赛 → 集结号</b></td><td>军备竞赛(全体 +1 攻击力,埋 1 友方)与集结号(全体 +1 力量)统一后重复;保留集结号,代价版删除 —— 「全体授予带代价」由 军火库(R)承担</td></tr>
+			<tr><td>攻击武备轴</td><td>12 → 10 张(指令 1 的删减目标达成);剩余:集结号、军议、战争之誓、战训教官、嗜血、刺客、王牌、军火库、战争英雄、弱点标注</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>6. 稀有度重排(指令 5)</h2>
+<div class="card">
+	<h3>6.1 最终比例</h3>
+	<table>
+		<thead><tr><th>稀有度</th><th>v4</th><th>v5</th><th>占比</th><th>对照 StS2</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>31(26.5%)</td><td>27(20.5%)</td><td>↓</td><td>22% ✓</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>60(51.3%)</td><td>57(43.2%)</td><td>↓</td><td>42% ✓</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>26(22.2%)</td><td><b>48(36.4%)</b></td><td class="good">↑ 几乎翻倍</td><td>30% —— 更高,符合「更多 R」</td></tr>
+		</tbody>
+	</table>
+	<h3>6.2 移动明细</h3>
+	<table>
+		<thead><tr><th style="width:16%">方向</th><th style="width:44%">卡</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>C → U(5)</b></td><td>浅眠者、春眠、枕边低语、乱葬坑、丧钟</td><td>沉睡教学卡上移(修复 P2-1:Common 零贡献卡);乱葬坑 / 丧钟为引擎类工具,上移符合「U = 组件层」</td></tr>
+			<tr><td><b>U → R(16)</b></td><td>嗜血、武器精灵、白骨地、墓碑、诅咒共鸣、碎骨聚集体、王牌、献祭仪式、送葬人、守夜人、次元兽、咒食的大召唤师、蓄势待发、被诅咒的尸体、飞蛾人、次元棺材</td><td>全部为「无上限引擎 / 存量兑现 / 双轴转换」—— 对照 StS2 的 R 层标准(引擎 / 封顶 / 转换),v4 把它们放在 U 是 R 层稀疏的主因</td></tr>
+		</tbody>
+	</table>
+	<div class="note">R 层 48 张的新职责:封顶(人间大炮 / 乌合之众 / 攻击力虹吸人 / 未完成的机器人 / 咒蚀之眠 / 镜面诅咒 / 全能人)、引擎(攻击力渴求者 / 武器精灵 / 白骨地 / 守墓人 / 诅咒共鸣 / 飞蛾人 / 送葬人)、沉睡大怪(亘古沉眠者 / 武备沉眠 / 咒蚀之眠 / 王座调度)、群控与硬解(安眠曲 / 寂静术 / 王座调度)、形态升级(新增 3 张,见下)。</div>
+</div>
+
+<h2>7. 评估:裂缝置顶 2 友方(指令 14)</h2>
+<div class="card">
+	<h3>7.1 现状</h3>
+	<p class="lead">裂缝召唤师(v5 保持 U):去除 1 张友方[次元裂缝]:置顶 2 张友方[攻击者](v5 目标限定为[攻击者])。</p>
+	<h3>7.2 评估</h3>
+	<table>
+		<thead><tr><th>维度</th><th>分析</th><th>结论</th></tr></thead>
+		<tbody>
+			<tr><td><b>兑换率</b></td><td>1 裂缝 → 2 次置顶 = 2 次「被置顶」事件 + 2 张卡提前揭晓。对照:次元引导者(1 裂缝 → 埋葬 2 敌方[攻击者],控制型)同为 1:2 —— 召唤师(收益型)与引导者(控制型)对等,数值上成立</td><td class="good">1:2 可用</td></tr>
+			<tr><td><b>成本</b></td><td>裂缝是可再生货币(生成源密度高:献祭仪式 / 错乱传送术士 / 次元虫),但生成有卡位与节奏成本;去除 = 放弃裂缝的其他兑现(次元兽攻击 / 吞噬者力量)</td><td class="good">成本真实存在</td></tr>
+			<tr><td><b>风险点</b></td><td>与「被置顶」事件卡的连锁:1 裂缝 → 2 次置顶 → 能量迸发 / 战术爆破手 / 哥布林冲锋部队各触发 2 次 = 单回合 2 攻击力 + 2 次攻击;若未来出现「单回合多次去除裂缝」的引擎,1:2 会被放大</td><td class="warn">需目标限定</td></tr>
+			<tr><td><b>建议</b></td><td>① 目标限定为友方[攻击者](防止对任意卡的无差别调度);② 保持 1:2 数值;③ 监控点:若出现裂缝去除引擎(如裂隙窃贼重做后的再生循环),把 1:2 降为 1:2[攻击者] 或 1:1.5</td><td class="good">限定后放行</td></tr>
+		</tbody>
+	</table>
+	<div class="verdict">结论:裂缝 → 置顶 2 友方在「目标限定 [攻击者]」前提下可用,兑换率与次元引导者对等;主要风险是与被置顶事件卡的连锁爆发,通过目标限定与后续监控控制。</div>
+</div>
+
+<h2>8. 达成难度与监控(v5 高上限卡)</h2>
+<div class="card">
+	<table>
+		<thead><tr><th>卡</th><th>数学轴</th><th>达成难度</th></tr></thead>
+		<tbody>
+			<tr><td>全能人(重做)</td><td>墓地 + 裂缝 + 诅咒攻击力 三轴聚合</td><td>三轴密度都要喂;≥15 触发 ×2 —— 中期「什么轴都玩一点」的回报</td></tr>
+			<tr><td>咒蚀之眠 / 镜面诅咒</td><td>敌方[负面]攻击力(最高 / 总和)</td><td>增强源密度;敌方反制 = 消耗 / 放逐负面;梦魇低语蓄力可加速</td></tr>
+			<tr><td>武备沉眠</td><td>全体攻击力 ≥ 10 → 全体 +1(永久)</td><td>攻击轴后期;沉睡期零贡献(免疫埋葬的代价是节奏)</td></tr>
+			<tr><td>王座调度 + 王座光环</td><td>Start Card 前区域化</td><td>大怪要活到后期;光环 buff 区域固定,敌方可用延迟 / 埋葬干扰</td></tr>
+			<tr><td>安眠曲</td><td>全体敌方沉睡(3 次伤害唤醒)</td><td>敌方反制窗口 = 快速受 3 次伤害;沉睡免疫埋葬使敌方无法自解(注意与敌方机制互检)</td></tr>
+			<tr><td>推进器(重做)</td><td>攻击者被埋葬 → 置顶 2</td><td>需要攻击者死亡密度;与守墓人 / 哥布林系联动时注意置顶链长度</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>9. 开放问题</h2>
+<div class="card">
+	<ul>
+		<li><b>沉睡免疫埋葬是否过强</b>:乱葬坑埋不了沉睡卡 = 无差别埋葬流对沉睡卡失效;若测试中过强,退化为「仅免疫置顶」(指令 8 的最小实现)。</li>
+		<li><b>攻击力统一后的强度面</b>:攻击力渴求者(×2)与未完成的机器人(翻倍)现在作用于唯一数值,是否比 v4(力量)更强 —— 建议保留,达成难度不变,数值面更直观。</li>
+		<li><b>敌方[负面]攻击力与敌方[攻击者]攻击力</b>:建议同一数值池(都叫攻击力),增强 / 降攻 / 沉睡统一适用;确认 JU_ON 生成的负面初始攻击力(建议 1)。</li>
+		<li><b>「王座区」(Start Card 前)的判定</b>:需要引擎支持「Start Card 前 N 张」的位置谓词(与「下 2 张」「最深」同族)。</li>
+		<li><b>17 新卡 + 2 合并的规模</b>(117 → 132):指令 7(沉睡入轴)与指令 11(位移)各贡献 3-4 张,是否接受此规模;若需收缩,优先砍 尸眠 / 裂缝沉眠 之一(与次元胚胎重复度最高)。</li>
+		<li><b>17 张新卡与稀有度移动是否入库(Notion)</b>:按约定先不入库,确认后统一同步。</li>
+	</ul>
+</div>
+
+</body>
+</html>

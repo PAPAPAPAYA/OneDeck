@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OneDeck v4 卡池结构拆解 — 条件 · 收益 · 稀有度分布 · 构筑图谱</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+		--purple: #bb9af7; --cyan: #7dcfff;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+	.mono { font-family: Consolas, monospace; }
+	.id { color: var(--accent); font-weight: 600; white-space: nowrap; font-size: 0.8rem; }
+	.desc { white-space: pre-line; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+	.b-grave { color: #9ece6a; border-color: #9ece6a88; }
+	.b-rift { color: #7dcfff; border-color: #7dcfff88; }
+	.b-curse { color: #f7768e; border-color: #f7768e88; }
+	.b-power { color: #e0af68; border-color: #e0af6888; }
+	.b-sleep { color: #bb9af7; border-color: #bb9af788; }
+	.b-move { color: #7dcfff; border-color: #7dcfff88; }
+	.b-attack { color: #9ece6a; border-color: #9ece6a88; }
+	.b-gen { color: #8b93a3; border-color: #8b93a388; }
+	.b-cyan { color: #7aa2f7; border-color: #7aa2f788; }
+	.b-warn { color: #e0af68; border-color: #e0af6888; }
+	.b-bad { color: #f7768e; border-color: #f7768e88; }
+	.star { color: #e0af68; font-weight: 700; }
+	ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.bad { color: var(--bad); }
+	.purple { color: var(--purple); }
+	.cyan { color: var(--cyan); }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.keycard { background: #1a1e27; border: 1px solid #e0af6855; border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 0.85rem; }
+	.keycard .kc-name { font-weight: 700; color: #e0af68; }
+	.r-tag { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; white-space: nowrap; }
+	.r-common { color: #9ece6a; border-color: #9ece6a88; }
+	.r-uncommon { color: #7dcfff; border-color: #7dcfff88; }
+	.r-rare { color: #bb9af7; border-color: #bb9af788; }
+	.tagcell { font-size: 0.76rem; color: var(--dim); }
+	@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style>
+</head>
+<body>
+
+<h1>OneDeck v4 卡池结构拆解</h1>
+<div class="sub">2026-08-17 · 数据源:docs/CardPoolV4_Design_CoreFormula.html(117 张,全卡脚本提取核验)· 以 StS2 五角色分析同款框架拆解(骨架 / 条件 / 收益 / 稀有度 / 轴 / 桥 / 运转伤害)· 缺口与建议详见 docs/StS2_DesignSynthesis_ForOneDeck.html(§2.3 审计)· 同系列:<a href="StS2_Necrobinder_CardPoolAnalysis.html">Necrobinder</a> / <a href="StS2_Ironclad_CardPoolAnalysis.html">Ironclad</a> / <a href="StS2_Silent_CardPoolAnalysis.html">Silent</a> / <a href="StS2_Defect_CardPoolAnalysis.html">Defect</a> / <a href="StS2_Regent_CardPoolAnalysis.html">Regent</a> / <a href="StS2_DesignSynthesis_ForOneDeck.html">设计总结</a></div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num">117</div><div class="lbl">卡池总数(71 现有 + 46 新增)</div></div>
+	<div class="kpi"><div class="num">7</div><div class="lbl">流派:墓地 / 裂缝 / 诅咒 / 通用 / 沉睡 / 位移 / 攻击</div></div>
+	<div class="kpi"><div class="num">31/60/26</div><div class="lbl">稀有度 C / U / R —— U 层占 51%,全游最厚</div></div>
+	<div class="kpi"><div class="num">0</div><div class="lbl">费用系统 —— 全部互动发生在揭晓 / 置顶 / 埋葬三个动作上</div></div>
+	<div class="kpi"><div class="num">51</div><div class="lbl">带力量相关 tag 的卡数(44%)—— 全池最大胶水</div></div>
+</div>
+
+<h2>0. 角色骨架</h2>
+<div class="card">
+	<ul>
+		<li><b>核心循环</b>:Shop → Combat → Result;双 deck(玩家 + 敌方)合并洗牌,一卡一卡揭晓,Start Card 沉底并触发洗牌。</li>
+		<li><b>三个动作即全部语法</b>:<span class="cyan">揭晓</span>(结算卡面效果,卡进墓地)、<span class="warn">置顶</span>(插队提前揭晓,触发「被置顶」事件)、<span class="good">埋葬</span>(把卡从牌库送进墓地:送走敌方 = 控制,埋葬友方 = 触发亡语 + 喂墓地)。无费用系统 —— 与 StS2 五角色全部依赖能量/星币形成根本差异。</li>
+		<li><b>结构规则</b>:12 卡位上限仅限商店;combat 生成卡不受限(史莱姆/诅咒/裂缝可增殖);疲劳(总揭晓数)为天然节流阀;链系统(同卡同效果一链一次 + 深度 99)保证无真无限。</li>
+		<li><b>数值经济</b>:攻击 = 卡面攻击力 + 力量(每段计入);第二乘区三形态:力量(通用)、攻击力成长(定向,卡面 +N)、易伤(敌方每段 +1)。</li>
+		<li><b>双 deck 合并 = 独有维度</b>:敌方卡是可被操作的资源 —— 增强敌方[负面]/[诅咒](种诅咒)、去除敌方[次元裂缝](抢资源)、无差别埋葬(掀桌子)。StS2 无对应物,这是 OneDeck 的差异化资产。</li>
+	</ul>
+	<div class="note">资源轴速览:墓地 = <span class="good">埋葬存量</span>(亡语 / 计数 / 存量兑现);次元裂缝 = <span class="cyan">生成资源</span>(生成→去除兑现);诅咒 = <span class="bad">敌方侧资源</span>(力量 × 揭晓次数 × 数量);力量 = <span class="warn">通用乘区</span>;沉睡 = <span class="purple">条件规模</span>(唤醒兑现);位移 = <span class="cyan">动作轴</span>(置顶 / 交换 / 延迟);攻击 = <span class="good">兑现层</span>(攻击力 / 段数)。</div>
+</div>
+
+<h2>1. 条件体系:有什么条件、怎么满足、换来什么</h2>
+
+<h3>1.1 A 组:埋葬 / 墓地条件(事件 + 存量)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">由哪些卡满足(制造)</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>本卡被埋葬</b></td><td>事件触发</td><td>尸爆 / 喂尸人 / 同路人 / 乱葬坑 / 大范围死亡 / 敌方埋葬</td><td>亡语兑现:<b>针刺骷髅</b>(攻击×2)、<b>骷髅士兵</b>(置顶自身)、<b>史莱姆</b>(复制自身)、<b>复仇者</b>(+2 力量)、<b>替死鬼</b>(攻击+置顶友方)、<b>错乱传送术士</b>(生成 3 裂缝)、<b>不死诅咒者</b>(增强负面)、<b>被诅咒的尸体</b>(攻击×3)</td></tr>
+			<tr><td><b>友方被埋葬</b></td><td>事件触发</td><td>任意埋葬友方卡(尸爆 / 喂尸人 / 深埋 / 献祭仪式 / 献祭剑 / 同路人……)</td><td><b>守墓人</b>(置顶自身=循环)、<b>冥界大炮</b>(攻击)、<b>墓碑</b>(友方[亡语]被埋葬时攻击)、<b>殉道者</b>(全体友方+1 力量)、<b>招魂</b>(消费方,置顶最深友方[萦绕])</td></tr>
+			<tr><td><b>任意卡被埋葬(不分敌我)</b></td><td>事件触发</td><td>乱葬坑 / 大范围死亡 / 任何埋葬</td><td><b>白骨地</b>:+1 力量(无上限)—— E11 收益件</td></tr>
+			<tr><td><b>墓地存量(友方墓地块数)</b></td><td>实时读取</td><td>任何埋葬积累</td><td><b>冥界邀请</b>(每 1 张埋 1 张敌方)、<b>人间大炮</b>(每 1 张攻击,埋葬全部友方后)、<b>被诅咒的骷髅</b>(每 1 张[亡语]额外增强 1)、<b>碎骨聚集体</b>(本回合埋葬敌方数 × 段数)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.2 B 组:置顶 / 揭晓条件</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>本卡被置顶</b></td><td>事件触发</td><td>传令官 / 高等传送门 / 愚者 / 屠夫 / 哥布林系 / 轮回 / 招魂 / 不稳定传送门 等任意置顶源</td><td><b>哥布林冲锋部队</b>(攻击)、<b>哥布林暗杀部队</b>(埋葬 1 敌方)、<b>能量迸发</b>(2 张友方 +1 力量)、<b>战术爆破手</b>(+1 力量)、<b>屠夫</b>(置顶 1 友方)、<b>次元龙</b>(生成 1 裂缝)、<b>推进器</b>(埋葬 1 友方[亡语])—— 置顶 = 免费再触发一次</td></tr>
+			<tr><td><b>本回合/累计置顶数量</b></td><td>计数</td><td>任意置顶动作</td><td><b>远古魔法使用者</b>:每置顶 1 张友方卡,给予 1 张友方卡 1 力量(引擎);<b>高等传送门</b>:每揭晓 2 次置顶 2 张攻击者</td></tr>
+			<tr><td><b>揭晓计数</b></td><td>本场/回合计数</td><td>—</td><td><b>全能人</b>:揭晓 2 次触发六路收益;蓄势待发:攻击力 = 回合数</td></tr>
+			<tr><td><b>敌方卡揭晓</b></td><td>事件触发</td><td>敌方回合</td><td><b>快速响应协议</b>:每 4 张敌方卡揭晓置顶 1 友方;<b>咒食的召唤师 / 咒食的野兽</b>:敌方[诅咒]揭晓时置顶自身</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.3 C 组:诅咒 / 敌方[负面]条件(敌方侧资源)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>敌方[负面]力量存量</b></td><td>实时读取</td><td>咒师 / 献祭诅咒 / 被诅咒的尸体 / 不死诅咒者 / 诅咒附魔 / 恶魔低语 / 异次元的诅咒 / 恶化</td><td><b>咒食的萨满</b>(存量 → 友方力量)、<b>咒食的大召唤师</b>(消耗 2 力量:置顶攻击者 + 2 力量)、<b>拔苗助长</b>(消耗 1 力量:置顶负面)、<b>诅咒共鸣</b>(每 1 力量 → 1 力量,引擎)、<b>乌合之众</b>(全部力量转移,封顶)</td></tr>
+			<tr><td><b>敌方[负面]力量增加(增强事件)</b></td><td>事件触发</td><td>任意增强</td><td><b>飞蛾人</b>:置顶 1 张友方卡(增强事件 = 节奏收益)</td></tr>
+			<tr><td><b>敌方[负面]揭晓</b></td><td>事件触发</td><td>丧钟 / 送葬人 / 恶魔低语 / 拔苗助长 置顶,或自然揭晓</td><td><b>咒食的召唤师 / 咒食的野兽</b>:置顶自身(诅咒揭晓次数 = 自伤频率,每回合多揭晓一次 = 多一次自伤)</td></tr>
+			<tr><td><b>敌方[负面]数量</b></td><td>实时读取</td><td>任意增强 / 生成</td><td><b>增殖的厄运</b>:复制 1 张(线性,数量乘区);<b>净化之火</b>:去除友方[负面]后攻击(己方负面出口)</td></tr>
+			<tr><td><b>敌方受伤</b></td><td>事件触发</td><td>任意伤害</td><td><b>诅咒附魔</b>:增强 1 负面;<b>不散的恶灵</b>:攻击(萦绕,无上限)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.4 D 组:力量条件(通用乘区)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>力量存量</b></td><td>实时读取</td><td>铁匠 / 集结号 / 军议 / 疯狂科学家 / 战争之誓 / 能量迸发 / 战术爆破手 / 献祭剑 / 殉道者 / 白骨地……</td><td><b>人人为我</b>(攻击力 = 全体力量总和)、<b>沉睡的巨像</b>(5 力量唤醒)、<b>亘古沉眠者</b>(10 力量唤醒)、<b>冬眠</b>(攻击力 = 自身力量)、<b>力量虹吸人</b>(全场力量集中 ×2 段)、<b>枕边低语</b>(喂沉睡卡)</td></tr>
+			<tr><td><b>获得力量事件</b></td><td>事件触发</td><td>任意力量给予</td><td><b>力量渴求者</b>:获得 2 倍;<b>武器精灵</b>:额外 +1(萦绕)—— 力量事件 = 乘区放大源</td></tr>
+			<tr><td><b>消耗自身力量</b></td><td>支付型</td><td>—</td><td><b>曼哈顿博士</b>:消耗 2 力量 → 置顶 2 攻击者 + 埋葬 2 敌方攻击者;<b>拔苗助长</b>:消耗敌方 1 力量 → 置顶</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.5 E 组:沉睡条件(条件规模)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件形态</th><th style="width:24%">门槛</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>力量条件</b></td><td>2 / 5 / 10 力量</td><td>枕边低语 / 晨钟 / 守夜人 / 任何力量源</td><td>浅眠者(2 力量:攻击)、沉睡的巨像(5 力量:攻击力=力量 ×2)、亘古沉眠者(10 力量 + 第 5 回合:全体攻击 +1 次,永久)</td></tr>
+			<tr><td><b>回合条件</b></td><td>第 2 / 3 / 5 回合开始</td><td>活到对应回合</td><td>春眠(第 2 回合:友方攻击者 +2 力量)、蓄势待发(第 2 回合:攻击力=回合数 ×2)、冬眠(第 3 回合:攻击力=力量)、古代兵器(第 3 回合:8 攻 +3 力量)、亘古沉眠者</td></tr>
+			<tr><td><b>事件条件</b></td><td>本回合埋葬 3 友方 / 敌方受 3 次伤害</td><td>亡魂之茧(墓地事件)、梦游者(伤害事件)</td><td>亡魂之茧:攻击;梦游者:攻击 ×2</td></tr>
+			<tr><td><b>存量条件</b></td><td>5 张友方[次元裂缝]</td><td>次元胚胎(自生 + 裂缝流)</td><td>唤醒后每揭晓生成 2 裂缝 —— 沉睡 ↔ 裂缝桥</td></tr>
+			<tr><td><b>敌方沉睡(控制)</b></td><td>敌方[攻击者]沉睡(主人受 3 次伤害)</td><td>噩梦</td><td>敌方攻击者停摆 —— 沉睡是控制也是条件</td></tr>
+		</tbody>
+	</table>
+	<div class="note">沉睡是 OneDeck 的「用未来换现在」—— 零贡献期换条件规模兑现;唤醒落点固定(准备位)。</div>
+</div>
+
+<h3>1.6 F 组:裂缝条件 / G 组:敌方攻击者条件 / H 组:无差别与击杀</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">组</th><th style="width:20%">条件</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td rowspan="3"><b>F 裂缝</b></td><td><b>裂缝存量</b></td><td>次元虫 / 坠入裂缝 / 献祭仪式 / 次元龙 / 错乱传送术士 / 裂隙窃贼</td><td><b>次元兽</b>(去除 1:攻击)、<b>裂缝召唤师</b>(去除 1:置顶 2 友方)、<b>次元引导者</b>(去除 1:埋葬 2 敌方攻击者)、<b>次元胚胎</b>(5 裂缝沉睡唤醒)</td></tr>
+			<tr><td><b>友方被去除</b></td><td>任意去除(次元兽等消费 + 敌方去除)</td><td><b>次元吞噬者</b>(+1 力量)、<b>次元棺材</b>(埋葬 1 敌方)、<b>临终诅咒</b>(增强 1 负面)—— 去除事件 = 三路回报</td></tr>
+			<tr><td><b>敌方裂缝</b></td><td>敌方生成的裂缝</td><td><b>裂隙窃贼</b>:去除敌方裂缝 → 生成己方裂缝(资源争夺)</td></tr>
+			<tr><td rowspan="2"><b>G 敌方攻击者</b></td><td><b>敌方[攻击者](最高攻击)</b></td><td>—</td><td><b>刺客</b>(埋葬)、<b>力量转移</b>(去除 1 力量给最低攻击友方)、<b>对生物兵器</b>(埋葬下 2 张)、<b>愚者</b>(置顶力量最多的敌方卡)</td></tr>
+			<tr><td><b>敌方[攻击者]沉睡</b></td><td>噩梦</td><td>停摆控制</td></tr>
+			<tr><td><b>H 无差别</b></td><td><b>埋葬不分敌我</b></td><td>乱葬坑(3 张)、大范围死亡(4 张)</td><td>敌方行动失效 + 己方亡语 / 白骨地收益 ——「掀桌子,在桌下捡钱」</td></tr>
+		</tbody>
+	</table>
+	<div class="note">对照 StS2 的缺口(详见设计总结 §2.2):<b>击杀兑现(Fatal)缺失</b>—— 埋葬敌方[攻击者]没有任何「击杀即收益」的专属兑现;G 组只有「去除/埋葬」没有「处决」。<b>回合开始自动机为零</b>—— 全部自动机都是事件触发型。</div>
+</div>
+
+<h2>2. 收益体系</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">收益类型</th><th style="width:44%">定义</th><th>代表兑现卡</th></tr></thead>
+		<tbody>
+			<tr><td class="bad"><b>① 攻击</b></td><td>卡面攻击力 + 力量(每段),动态攻击力(攻击力 = Y)常态结算 —— 最终兑现层</td><td>尸爆(×2)、针刺骷髅(被埋葬 ×2)、碎骨聚集体(埋葬数 × 段)、人人为我(总力量)、王牌(最高攻击)、战争英雄(总攻击)、力量虹吸人(×2)、蓄势待发(回合数)</td></tr>
+			<tr><td class="warn"><b>② 力量</b></td><td>每段 +1,通用胶水;三种获取:给予 / 转移 / 事件放大(×2 / +1)</td><td>铁匠、集结号、军议、殉道者、白骨地、力量渴求者、武器精灵、力量虹吸人、乌合之众</td></tr>
+			<tr><td class="cyan"><b>③ 置顶(节奏)</b></td><td>插队提前揭晓 = 免费再触发;被置顶事件 = 第二套触发通道(对照 StS2 的 Sly)</td><td>传令官、高等传送门、愚者、轮回、招魂、能量迸发、哥布林冲锋部队、战术爆破手</td></tr>
+			<tr><td class="good"><b>④ 埋葬(控制 + 计数)</b></td><td>送走敌方 = 行动失效;埋葬友方 = 亡语 + 墓地存量</td><td>棺材制造者、掘墓人、刺客、对生物兵器、乱葬坑、大范围死亡、深埋、喂尸人</td></tr>
+			<tr><td class="purple"><b>⑤ 生成(裂缝资源)</b></td><td>裂缝 = 可累积、可被去除兑现、可被敌方操作</td><td>次元虫、献祭仪式、错乱传送术士、次元龙、次元胚胎、裂隙窃贼</td></tr>
+			<tr><td class="bad"><b>⑥ 增强(敌方侧资源)</b></td><td>敌方[负面]/[诅咒]力量 = 诅咒流货币;增强事件也是触发源(飞蛾人)</td><td>咒师、献祭诅咒、诅咒附魔、恶化、增殖的厄运、恶魔低语、丧钟、送葬人</td></tr>
+			<tr><td class="purple"><b>⑦ 沉睡唤醒</b></td><td>条件规模 → 一次性大兑现;唤醒事件也是资源(守夜人)</td><td>浅眠者、蓄势待发、冬眠、沉睡的巨像、古代兵器、大觉醒、亘古沉眠者</td></tr>
+			<tr><td><b>⑧ 新乘区</b></td><td>攻击力成长(+N 卡面,定向)与易伤(敌方每段 +1)与攻击次数授予(攻击 +N 次)—— v4 新增三件</td><td>锻炉、军备竞赛、弱点标注、战训教官、嗜血</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>3. 稀有度分布</h2>
+<div class="card">
+	<h3>3.1 数量与 tag 构成</h3>
+	<table>
+		<thead><tr><th>稀有度</th><th>数量</th><th>占比</th><th>对照 StS2 单角色</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>31</td><td>26.5%</td><td>StS2 约 22% —— 偏高(入口层更厚)</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>60</td><td><b>51.3%</b></td><td class="warn">StS2 约 42% —— 明显更厚(组件层过重)</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>26</td><td>22.2%</td><td class="warn">StS2 约 30% —— 偏薄(封顶层稀疏)</td></tr>
+			<tr class="arch-head"><td>合计</td><td>117</td><td>100%</td><td>StS2 无 Basic/Ancient 档(无起始职业卡)</td></tr>
+		</tbody>
+	</table>
+	<h3>3.2 主要 tag 分布(全池)</h3>
+	<table>
+		<thead><tr><th>tag</th><th>张数</th><th>含义</th><th>对照 StS2</th></tr></thead>
+		<tbody>
+			<tr><td class="mono">攻击者</td><td>55(47%)</td><td>可攻击的卡 —— 全池近半</td><td>StS2 攻击卡约 30-43%(按角色)—— 攻击密度更高</td></tr>
+			<tr><td class="mono">埋葬 / 置顶</td><td>44 / 30</td><td>两个核心动作</td><td>无对应(StS2 无牌库顺序操作)</td></tr>
+			<tr><td class="mono">力量 / 友方力量</td><td>35 / 16(44%)</td><td>通用乘区</td><td>与 StS2 力量/敏捷/Focus 同为最大胶水</td></tr>
+			<tr><td class="mono">[curse] / 敌方[curse]加强</td><td>19 / 12</td><td>诅咒轴</td><td>无对应(StS2 无敌方卡资源)</td></tr>
+			<tr><td class="mono">conjure 系(生成/去除/被消耗)</td><td>15+8+5+3</td><td>裂缝轴</td><td>无对应(StS2 无共享资源卡)</td></tr>
+			<tr><td class="mono">沉睡 / 唤醒</td><td>11 / 3</td><td>沉睡轴</td><td>StS2 无沉睡;等价物 = 「回合/条件门槛卡」(Wraith Form / Barricade)</td></tr>
+			<tr><td class="mono">攻击次数 / 攻击力成长 / 易伤</td><td>2 / 2 / 1</td><td>v4 新乘区</td><td>次数授予 = StS2 无正式版;攻击力成长 ≈ Forge;易伤 ≈ Vulnerable</td></tr>
+		</tbody>
+	</table>
+	<h3>3.3 每档稀有度的设计职责</h3>
+	<table>
+		<thead><tr><th style="width:12%">档位</th><th style="width:30%">承载功能</th><th>代表卡</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-common">Common</span>(31)</td><td class="good"><b>入口与基础动作</b>:制造桥主力(伤/防 + 顺带资源)、基础埋葬/置顶/增强工具;数值 1 的授予教学(集结号全体 1 力量 / 锻炉单卡 +1 攻击力 / 战训教官单卡 +1 次)</td><td>尸爆、喂尸人、献祭诅咒、丧钟、铁匠、集结号、锻炉、传令官、掘墓人、乱葬坑</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span>(60)</td><td class="warn"><b>组件 + 桥 + 轻引擎主力</b>:轻兑现约 20 张几乎全在这;事件自动机(萦绕 / 被置顶 / 被埋葬)主力;沉睡中卡与条件件;位置谓词定向(最高攻击 / 最深)</td><td>碎骨聚集体、咒食的大召唤师、次元兽、墓碑、白骨地、守夜人、晨钟、嗜血、军备竞赛、弱点标注、王牌、梦游者、冬眠、招魂、裂隙窃贼</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span>(26)</td><td class="bad"><b>封顶 + 引擎 + 转换</b>:存量大兑现(人间大炮 / 乌合之众 / 力量虹吸人 / 战争英雄)、指数引擎(未完成的机器人 / 力量渴求者)、全体授予(军火库 / 亘古沉眠者 / 大觉醒)、复制增长(史莱姆 / 增殖的厄运)、沉睡大卡(沉睡的巨像 / 古代兵器 / 次元胚胎)</td><td>人间大炮、乌合之众、力量虹吸人、未完成的机器人、亘古沉眠者、战争英雄、全能人、史莱姆、增殖的厄运、大觉醒、军火库</td></tr>
+		</tbody>
+	</table>
+	<div class="note">结构性结论:<b>U 层 51% 是 v4 与 StS2 的最大稀有度差异</b> —— 中间层组件密度极高(事件自动机 + 轻兑现 + 桥),而 Rare 封顶层只占 22%。结合 §2.3 审计:U 层干净(无重转换混入),问题在 R 层「封顶体验稀疏 + 形态升级为零」;以及 Common 层 3 张沉睡教学卡(浅眠者 / 春眠 / 枕边低语)违背「入口层即打即用」(设计总结 P2-1)。</div>
+</div>
+
+<h2>4. 七条轴与构筑关键卡</h2>
+
+<h3>4.1 墓地亡语轴(E5/E11)</h3>
+<div class="card">
+	<div class="flow">埋葬友方(喂尸人 / 深埋 / 尸爆 / 同路人)→ 亡语触发(针刺骷髅 ×2 / 骷髅士兵置顶 / 史莱姆复制)→ 事件回报(守墓人循环 / 墓碑攻击 / 白骨地力量)→ 存量兑现(人间大炮)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>埋葬源</td><td>尸爆 ★ / 喂尸人 ★ / 深埋 / 同路人 / 乱葬坑 / 大范围死亡</td><td>制造埋葬事件与墓地存量;乱葬坑 / 大范围死亡 = 无差别埋葬(敌方失效)</td></tr>
+			<tr><td>亡语兑现</td><td>针刺骷髅 ★(×2)/ 被诅咒的尸体(×3)/ 骷髅士兵(置顶循环)/ 史莱姆 ★(复制)/ 替死鬼 / 复仇者(2 力)</td><td>被埋葬即收益 —— 死亡不是损失是触发</td></tr>
+			<tr><td>事件回报</td><td>守墓人 ★(置顶自身=永动机)/ 墓碑 ★(亡语被埋葬:攻击)/ 冥界大炮(友方被埋葬:攻击)/ 白骨地 ★(任意埋葬:+1 力)/ 殉道者(全体 1 力)/ 轮回(置顶亡语+2 力)</td><td>把埋葬频率变成伤害与力量</td></tr>
+			<tr><td class="bad">封顶</td><td>人间大炮 ★</td><td>埋葬全部友方,墓地每张攻击 —— 墓地存量一次兑现</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:守墓人、人间大炮、史莱姆、碎骨聚集体、墓碑、白骨地、冥界大炮、针刺骷髅</span><br>引擎形态:守墓人(被埋葬置顶自身)+ 任意埋葬源 = 每回合免费再触发;史莱姆越埋越多;白骨地让「埋谁都赚」;最终人间大炮收菜。与铁甲消耗流的「垃圾经济学」同构,但兑现端是亡语与墓地存量。</div>
+</div>
+
+<h3>4.2 次元裂缝轴(E7)</h3>
+<div class="card">
+	<div class="flow">生成裂缝(次元虫 / 坠入裂缝 / 献祭仪式 / 错乱传送术士)→ 去除兑现(次元兽攻击 / 裂缝召唤师置顶 / 次元引导者埋葬)→ 去除事件回报(次元吞噬者力量 / 次元棺材 / 临终诅咒)→ 沉睡联动(次元胚胎)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>生成源</td><td>次元虫 ★ / 坠入裂缝 / 献祭仪式 ★ / 错乱传送术士 / 次元龙 / 裂隙窃贼 ★</td><td>生成不受 12 卡位限制 → 可滚雪球;裂隙窃贼抢敌方裂缝</td></tr>
+			<tr><td>去除兑现</td><td>次元兽 ★ / 裂缝召唤师 / 次元引导者 / 次元吞噬者 ★</td><td>去除 1 裂缝 → 攻击 / 置顶 / 埋葬 —— 裂缝是「可消费的货币」</td></tr>
+			<tr><td>事件回报</td><td>次元棺材 / 临终诅咒</td><td>友方被去除 → 埋葬敌方 / 增强负面(跨轴)</td></tr>
+			<tr><td class="bad">沉睡联动</td><td>次元胚胎 ★</td><td>5 裂缝唤醒 → 每揭晓生成 2 裂缝 —— 裂缝 ↔ 沉睡桥</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:次元吞噬者、次元兽、献祭仪式、次元胚胎、裂隙窃贼、裂缝召唤师</span><br>引擎形态:献祭仪式(埋 1 友方生成 2 裂缝)循环 → 次元吞噬者每被去除 +1 力 → 次元兽把裂缝变攻击。裂缝轴是「生成-消费」的资源循环,对照 Defect 的球系统(被动池 + 兑现操作)。<span class="warn">缺口:无 Rare 存量封顶(审计②,建议 次元坍缩)。</span></div>
+</div>
+
+<h3>4.3 诅咒轴(E4)</h3>
+<div class="card">
+	<div class="flow">增强敌方[负面](咒师 / 献祭诅咒 / 被诅咒的尸体)→ 置顶加揭晓次数(丧钟 / 送葬人 / 恶魔低语 / 拔苗助长)→ 数量增殖(增殖的厄运)→ 存量兑现(咒食的萨满 / 大召唤师 / 乌合之众 / 诅咒共鸣)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>增强源</td><td>咒师 ★ / 献祭诅咒 / 被诅咒的尸体 / 诅咒附魔 ★ / 恶化 / 恶魔低语 / 不死诅咒者</td><td>诅咒力量 = 大小乘区;诅咒附魔把敌方受伤变成增强事件</td></tr>
+			<tr><td>揭晓次数</td><td>丧钟 ★ / 送葬人 ★ / 恶魔低语 / 拔苗助长 ★</td><td>置顶敌方[负面] = 每回合多自伤一次 —— v4 补足的乘区</td></tr>
+			<tr><td>数量增殖</td><td>增殖的厄运 ★ / 咒食的召唤师</td><td>复制线性增长(1,2,3…),复制体继承力量;敌方诅咒揭晓 = 咒食系置顶自身(节奏)</td></tr>
+			<tr><td class="bad">存量兑现</td><td>咒食的萨满 / 咒食的大召唤师 ★ / 乌合之众 ★ / 诅咒共鸣 ★ / 净化之火</td><td>诅咒力量 → 友方力量 / 置顶 / 全部转移 —— 敌方侧资源反哺己方</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:增殖的厄运、丧钟、送葬人、乌合之众、咒食的大召唤师、诅咒共鸣、诅咒附魔</span><br>引擎形态:诅咒附魔(敌方受伤→增强)自动叠力量 → 丧钟 / 送葬人置顶 = 每回合多揭晓 → 增殖的厄运线性加数量 → 乌合之众 / 诅咒共鸣把敌方力量搬回家。轴 = 力量 × 揭晓次数 × 数量,三乘区结构是 v4 最完整的公式轴。<span class="warn">缺口:诅咒 × 沉睡轴桥空位(审计③)。</span></div>
+</div>
+
+<h3>4.4 通用 / 力量轴(E1/E2/E10)</h3>
+<div class="card">
+	<div class="flow">力量制造(铁匠 / 集结号 / 军议 / 疯狂科学家)→ 事件放大(力量渴求者 ×2 / 武器精灵 +1)→ 段数兑现(攻击 ×N 卡)→ 收割 / 翻倍(力量虹吸人 / 未完成的机器人)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>力量源</td><td>铁匠 ★ / 集结号 ★ / 军议 / 疯狂科学家 / 战争之誓 / 能量迸发 / 战术爆破手 / 献祭剑 / 殉道者 / 白骨地</td><td>单卡 / 全体 / 事件触发三种形态 —— 力量源密度全池最高</td></tr>
+			<tr><td>事件放大</td><td>力量渴求者 ★(×2)/ 武器精灵 ★(额外 +1)/ 远古魔法使用者(置顶→力量)/ 守夜人(唤醒→力量)</td><td>力量事件本身是乘区 —— E2 指数入口</td></tr>
+			<tr><td>段数兑现</td><td>力量虹吸人 ★(全场集中 ×2)/ 尸爆 / 针刺骷髅 / 碎骨聚集体 / 蓄势待发</td><td>力量 × 段数乘法滚动(E1)</td></tr>
+			<tr><td class="bad">封顶</td><td>未完成的机器人 ★(×2)/ 人人为我 ★(总力量)/ 战争英雄(总攻击 + 3 力)</td><td>力量 / 攻击存量 → 大数字</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:未完成的机器人、力量渴求者、力量虹吸人、人人为我、远古魔法使用者、武器精灵、集结号</span><br>力量是全池胶水(44% 卡带力量 tag)—— 与 StS2 五角色一致;E1(段数×力量)与 E2(指数)共用同一资源,是 v4 的数值地基。</div>
+</div>
+
+<h3>4.5 沉睡觉醒轴(E8)</h3>
+<div class="card">
+	<div class="flow">喂条件(枕边低语 / 晨钟 / 守夜人 / 大觉醒)→ 沉睡卡兑现(浅眠者 / 蓄势待发 / 冬眠 / 沉睡的巨像 / 古代兵器)→ 终极(亘古沉眠者)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>条件喂料</td><td>枕边低语 ★(沉睡卡 +2 力,兜底)/ 晨钟 ★(唤醒 +1 力,兜底)/ 守夜人 ★(唤醒事件 → 力量)/ 大觉醒 ★(全体唤醒 +1 力)</td><td>唤醒加速器全部带兜底 —— 无沉睡卡时不白板(StS2 无对应,是 v4 的优点)</td></tr>
+			<tr><td>兑现层</td><td>浅眠者 / 蓄势待发(攻击力=回合数 ×2)/ 冬眠(攻击力=力量)/ 梦游者(伤害事件 ×2)/ 亡魂之茧(埋葬事件)/ 沉睡的巨像 ★(力量 × 段数)/ 古代兵器(8 攻 +3 力)</td><td>条件规模 → 段数 / 动态攻击力 —— 每个兑现都吃不同的条件形态</td></tr>
+			<tr><td class="bad">终极</td><td>亘古沉眠者 ★</td><td>10 力量 + 第 5 回合唤醒 → 全体攻击 +1 次(第一乘区全体授予,永久)—— 唤醒即胜利</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:亘古沉眠者、沉睡的巨像、大觉醒、晨钟、枕边低语、守夜人、蓄势待发</span><br>沉睡轴 = 条件规模 → 一次性兑现;与 StS2 的「用未来换现在」(Wraith Form / Neurosurge)同构,但 v4 的唤醒支持卡全部带兜底,失败成本更低 —— 这是比 StS2 更宽容的设计。</div>
+</div>
+
+<h3>4.6 交换位移轴(E6)</h3>
+<div class="card">
+	<div class="flow">置顶友方(传令官 / 高等传送门 / 轮回 / 招魂)→ 被置顶事件(哥布林冲锋部队 / 能量迸发 / 战术爆破手 / 屠夫)→ 位置手术(灵魂交换 / 位置交换 / 时光倒流)→ 敌方埋葬(掘墓人 / 棺材制造者)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>置顶源</td><td>传令官 ★(最高攻击攻击者)/ 高等传送门 / 愚者 ★(敌方力量最多)/ 轮回(最深亡语 +2 力)/ 招魂(最深萦绕)</td><td>位置谓词定向(最高 / 最深)—— 可预测的调度</td></tr>
+			<tr><td>被置顶事件</td><td>哥布林冲锋部队 ★(攻击)/ 哥布林暗杀部队(埋葬敌方)/ 能量迸发 ★(2 友方 +1 力)/ 战术爆破手 ★(+1 力)/ 屠夫(置顶友方)/ 次元龙(裂缝)</td><td>置顶 = 免费再触发 —— 第二触发通道(对照 Silent 的 Sly)</td></tr>
+			<tr><td>位置手术</td><td>灵魂交换(与亡语交换)/ 位置交换(敌我攻击者互换)/ 时光倒流(延迟敌方 2 张)</td><td>双 deck 独有的顺序控制</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:传令官、哥布林冲锋部队、能量迸发、战术爆破手、愚者、位置交换、高等传送门</span><br>位移轴是「节奏轴」—— 不直接给数值,给触发次数与顺序控制;被置顶事件卡把置顶动作变成资源。E6 置顶循环是 v4 最接近 StS2「频率授予」的机制。</div>
+</div>
+
+<h3>4.7 攻击武备轴(E9)</h3>
+<div class="card">
+	<div class="flow">力量授予(集结号 / 军议 / 战争之誓)→ 攻击力成长(锻炉 / 军备竞赛)→ 次数授予(战训教官 / 嗜血)→ 动态攻击力(王牌 / 战争英雄 / 人人为我 / 血肉聚集体)→ 易伤(弱点标注)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>乘区授予</td><td>集结号 ★(全体 1 力)/ 军议(最低攻击 +2 力)/ 锻炉 ★(+1 攻击力)/ 军备竞赛 ★(全体 +1 攻击力)/ 战训教官(+1 次)/ 嗜血 ★(全体 +1 次,埋 1 友方)</td><td>三个第二乘区(力量 / 攻击力成长 / 次数)的授予件 —— 数值 1 起步,可叠加</td></tr>
+			<tr><td>动态攻击力</td><td>王牌 ★(最高攻击)/ 战争英雄 ★(总攻击 + 阈值力量)/ 人人为我(总力量)/ 血肉聚集体(友方数量)</td><td>常态结算 —— 吃全池成长,是攻击轴的兑现层</td></tr>
+			<tr><td>敌方侧</td><td>弱点标注 ★(敌方每段 +1)/ 刺客(埋葬最高攻击)/ 对生物兵器(埋葬下 2 攻击者)</td><td>易伤 = 与次数、力量都相乘的第三乘区;刺客系 = 威胁移除</td></tr>
+			<tr><td class="bad">封顶</td><td>军火库 ★(全体 2 力量,埋 1 友方)/ 战争英雄</td><td>全体授予 + 总攻击兑现</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:战争英雄、王牌、嗜血、锻炉、军备竞赛、弱点标注、集结号、军火库</span><br>攻击轴是 v4 的「数值终点」—— 三乘区(力量 × 攻击力成长 × 易伤)与次数乘区(攻击 +N 次)在此汇合;动态攻击力卡(王牌 / 战争英雄)把全池成长变成单卡输出。</div>
+</div>
+
+<h2>5. 构筑之间的桥梁</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">连接</th><th style="width:30%">桥梁卡</th><th>原理</th></tr></thead>
+		<tbody>
+			<tr><td>墓地 ↔ 攻击</td><td>冥界大炮、墓碑、碎骨聚集体、喂尸人、尸爆、嗜血、军备竞赛、军火库</td><td>埋葬事件/存量 → 伤害与乘区授予 —— 最密的桥(8 张)</td></tr>
+			<tr><td>墓地 ↔ 诅咒</td><td>被诅咒的尸体、不死诅咒者、献祭诅咒、被诅咒的骷髅</td><td>埋葬 → 增强敌方[负面](双 deck 独有的桥)</td></tr>
+			<tr><td>墓地 ↔ 裂缝</td><td>错乱传送术士(埋葬→生成)、次元棺材(去除→埋葬·反向)</td><td>两轴互喂</td></tr>
+			<tr><td>墓地 ↔ 沉睡</td><td>亡魂之茧(埋葬 3 友方唤醒)</td><td>墓地事件 = 沉睡条件</td></tr>
+			<tr><td>裂缝 ↔ 诅咒</td><td>异次元的诅咒(双投)、临终诅咒(去除→增强·反向)</td><td>生成 + 增强并行投资</td></tr>
+			<tr><td>裂缝 ↔ 攻击 / 力量</td><td>次元兽、次元引导者(裂缝→攻击);次元吞噬者(去除→力量)</td><td>裂缝存量 → 输出</td></tr>
+			<tr><td>裂缝 ↔ 沉睡</td><td>次元胚胎(5 裂缝唤醒)</td><td>存量条件沉睡</td></tr>
+			<tr><td>诅咒 ↔ 攻击 / 力量</td><td>咒食的大召唤师、咒食的萨满、净化之火、乌合之众、诅咒共鸣、飞蛾人</td><td>敌方侧资源 → 己方输出 —— 双 deck 独有</td></tr>
+			<tr><td>沉睡 ↔ 攻击 / 力量</td><td>浅眠者、蓄势待发、冬眠、亘古沉眠者、枕边低语、晨钟、守夜人、大觉醒</td><td>条件规模 → 段数 / 乘区 —— 第二密的桥</td></tr>
+			<tr><td>位移 ↔ 攻击 / 力量</td><td>传令官、哥布林冲锋部队、能量迸发、战术爆破手、屠夫、位置交换、愚者</td><td>置顶动作 → 触发 / 控制</td></tr>
+			<tr><td>通用 ↔ 一切</td><td>全能人(六路)、力量渴求者、远古魔法使用者、不散的恶灵、快速响应协议、曼哈顿博士、模仿者、有副作用的传送门</td><td>力量胶水轴与全轴连通</td></tr>
+			<tr><td class="bad">空位</td><td>诅咒 × 沉睡 —— 无桥(审计③)</td><td>建议:咒蚀之眠 / 梦魇低语(见设计总结 §2.3.4)</td></tr>
+		</tbody>
+	</table>
+	<div class="note">闭环示例(五轴接通):<span class="mono">喂尸人(埋亡语)→ 被诅咒的尸体(被埋葬:攻击×3 + 增强诅咒)→ 诅咒附魔(敌方受伤→增强)→ 丧钟(置顶诅咒,每回合多自伤)→ 乌合之众(诅咒力量→友方力量)→ 蓄势待发(力量×回合数攻击)→ 人间大炮收菜。</span></div>
+</div>
+
+<h2>6. 运转卡 vs 伤害卡</h2>
+<div class="card">
+	<h3>6.1 运转卡(Engine):把牌库转起来</h3>
+	<table>
+		<thead><tr><th style="width:18%">功能</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>置顶(调度)</td><td><b>传令官 ★、高等传送门、愚者、轮回、招魂、不稳定传送门、推进器、快速响应协议</b></td><td>把关键卡提前 —— 位置谓词(最高攻击 / 最深)保证可预测</td></tr>
+			<tr><td>埋葬(喂料)</td><td><b>喂尸人 ★、深埋、同路人、献祭仪式、掘墓人、棺材制造者、乱葬坑、大范围死亡</b></td><td>制造事件与存量;无差别埋葬是控制+喂料双职</td></tr>
+			<tr><td>生成(资源)</td><td>次元虫、坠入裂缝、献祭仪式、次元龙、裂隙窃贼</td><td>裂缝 = 可消费货币</td></tr>
+			<tr><td>增强(种诅咒)</td><td>咒师、献祭诅咒、恶魔低语、诅咒附魔、恶化、不死诅咒者</td><td>敌方侧资源制造</td></tr>
+			<tr><td>乘区授予</td><td><b>铁匠、集结号、军议、疯狂科学家、锻炉、军备竞赛、战训教官、嗜血、枕边低语、晨钟、守夜人</b></td><td>力量 / 攻击力成长 / 次数 / 沉睡条件 四路喂料</td></tr>
+			<tr><td>事件放大</td><td>力量渴求者、武器精灵、远古魔法使用者、守夜人、白骨地、守墓人、能量迸发、战术爆破手</td><td>把事件变成乘区 —— 运转即成长</td></tr>
+		</tbody>
+	</table>
+	<h3>6.2 伤害卡:兑现输出</h3>
+	<table>
+		<thead><tr><th style="width:18%">形态</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>段数兑现</td><td>尸爆(×2)、针刺骷髅(被埋葬 ×2)、被诅咒的尸体(×3)、碎骨聚集体(埋葬数 × 段)、梦游者(×2)、力量虹吸人(×2)、蓄势待发(×2)、亘古沉眠者(×2)</td><td>力量 × 段数乘法 —— E1 主体</td></tr>
+			<tr><td>动态攻击力</td><td>人人为我、王牌、战争英雄、血肉聚集体、冬眠、沉睡的巨像、蓄势待发</td><td>攻击力 = 存量(常态结算)—— 吃全池成长</td></tr>
+			<tr><td>存量大兑现</td><td>人间大炮(墓地)、乌合之众(力量→诅咒)、冥界邀请(墓地→埋葬)</td><td>Rare 封顶 —— 但裂缝方向缺失(审计②)</td></tr>
+			<tr><td>事件伤害</td><td>墓碑(亡语埋葬)、冥界大炮(友方埋葬)、不散的恶灵(敌方受伤)、哥布林冲锋部队(被置顶)、次元兽(去除裂缝)</td><td>萦绕 / 被置顶 / 被埋葬事件 → 攻击 —— 事件自动机兑现</td></tr>
+			<tr><td>敌方侧伤害</td><td>诅咒自伤(力量 × 揭晓次数 × 数量)、弱点标注(易伤每段 +1)</td><td>双 deck 独有的「敌方替自己打」</td></tr>
+		</tbody>
+	</table>
+	<h3>6.3 一张卡干两件事(半运转半伤害)</h3>
+	<ul>
+		<li><b>尸爆</b>:埋 1 友方 + 攻击 ×2(喂料 + 输出)</li>
+		<li><b>喂尸人</b>:埋 1 亡语 + 攻击(喂料 + 输出)</li>
+		<li><b>冥界大炮</b>:埋 1 友方 + 友方被埋葬时攻击(喂料 + 引擎伤害)</li>
+		<li><b>墓碑</b>:萦绕亡语埋葬时攻击(引擎 + 伤害)</li>
+		<li><b>哥布林冲锋部队</b>:被置顶时攻击(调度 + 输出)</li>
+		<li><b>战争之誓</b>:+2 力量 + 攻击(授予 + 输出)</li>
+		<li><b>次元兽</b>:去除裂缝 + 攻击(消费 + 输出)</li>
+		<li><b>净化之火</b>:去除友方负面 + 攻击(清理 + 输出)</li>
+		<li><b>晨钟</b>:唤醒 + 1 力量(喂料 + 授予)</li>
+		<li><b>能量迸发 / 战术爆破手</b>:被置顶 + 力量(调度 + 授予)</li>
+		<li><b>嗜血 / 军备竞赛</b>:全体授予 + 埋 1 友方(授予 + 喂料)</li>
+		<li><b>同路人</b>:埋 1 友方 + 埋 2 敌方(双向喂料)</li>
+	</ul>
+</div>
+
+<h2>7. 设计观察</h2>
+<div class="card">
+	<ol>
+		<li><b>三动作语法 = 无费用的节奏经济</b>:StS2 五角色的货币(能量 / 星币 / 球 / 弃牌)在 OneDeck 全部缺席,等价物是「节奏」(置顶 = 免费再触发)与「存量」(墓地 / 裂缝 / 诅咒力量)。置顶-被置顶事件对(Silent 弃牌-Sly 对)是全池的触发密度来源 —— 这套语法自洽且与 StS2 完全不同,是 OneDeck 的结构性优势。</li>
+		<li><b>双 deck 合并 = 独有维度</b>:敌方卡是可操作的资源(增强敌方[负面] / 去除敌方裂缝 / 无差别埋葬 / 敌方诅咒揭晓触发)—— StS2 五角色全部没有。这既是差异化资产,也是「敌方降力 / 处决 / 敌方沉睡」等缺口存在的原因:这些维度在 StS2 是标配,在 OneDeck 还未长出。</li>
+		<li><b>位置谓词是 OneDeck 独有的定向语言</b>:(最高攻击 / 最低攻击 / 最深 / 下 2 张 / 力量最多)—— StS2 的同类效果几乎全是随机或玩家选择。位置谓词把「调度」变成可预测的策略深度,是 v4 最被低估的设计。</li>
+		<li><b>力量胶水 44%</b>:与 StS2 一致(力量 / 敏捷 / Focus 同为最大胶水);第二乘区三形态(力量通用 / 攻击力成长定向 / 易伤敌方侧)+ 次数授予,结构上比 StS2 更完整。</li>
+		<li><b>稀有度结构差异</b>:U 层 51%(StS2 42%)—— 组件与事件自动机密度全游最高,代价是 R 层仅 22%,封顶体验稀疏;且事件自动机(24 张)与回合自动机(0 张)比例失衡。</li>
+		<li><b>三大缺口(详见设计总结 §2.2 / §2.3)</b>:① 击杀兑现(Fatal)缺失 —— StS2 四角色全有;② 回合开始自动机为零;③ 形态升级型为零(数值放大有,触发次数 / 群伤化 / 载体全局化无)。另有诅咒 × 沉睡轴桥空位。</li>
+		<li><b>宽容的失败成本</b>:沉睡喂料卡全部带兜底(晨钟 / 枕边低语无沉睡卡时不白板)—— 比 StS2 的「零贡献期」(Wraith Form 减敏捷 / Borrowed Time 全卡 +1 费)更宽容,代价是极值上限略低。这是设计取向的选择,不是缺陷。</li>
+	</ol>
+	<div class="note">对照结论:OneDeck v4 的骨架(两段式 / 多乘区 / 桥网络 / 无上限自限)与 StS2 成熟结构一致,且拥有 StS2 没有的双 deck 维度与位置谓词语言;主要改进空间集中在「Rare 封顶体验」(形态升级 + 裂缝封顶)、「击杀兑现」与「回合自动机」三个方向(落地清单见设计总结 §5)。</div>
+</div>
+
+<h2>附录 A. 全部 117 张卡</h2>
+<div class="card">
+	<p class="lead">按流派分组;状态徽章:<span class="badge b-gen">库内新文案</span> = Notion 中文关键词格式 · <span class="badge b-cyan">转写</span> = 旧文案统一转写 · <span class="badge b-warn">建议重做</span> = 未选卡改案 · <span class="badge b-bad">新增</span> = v4 新卡。攻击力列:— = 0 / 无攻击。</p>
+	<table>
+		<thead><tr><th style="width:16%">cardTypeID</th><th style="width:9%">名称</th><th style="width:8%">稀有度</th><th style="width:5%">攻击力</th><th style="width:20%">Tag</th><th>效果(统一关键词文案)</th><th style="width:10%">状态</th></tr></thead>
+		<tbody>
+<tr class="arch-head"><td colspan="6">墓地亡语（28 张）</td></tr>
+<tr><td class="mono id">GRAVE_PUNCH</td><td>尸爆</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 埋葬友方</td><td class="desc">GRAVE_PUNCH</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">GRAVE_TOGETHER</td><td>同路人</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬友方 埋葬敌方</td><td class="desc">GRAVE_TOGETHER</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">CORPSE_CANON</td><td>冥界大炮</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 埋葬友方</td><td class="desc">CORPSE_CANON</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">GRAVE_INVITATION</td><td>冥界邀请</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 埋葬敌方</td><td class="desc">GRAVE_INVITATION</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">UNSTABLE_PORTAL</td><td>不稳定传送门</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">置顶 置顶友方 埋葬 埋葬友方 通用</td><td class="desc">UNSTABLE_PORTAL</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">BODY_CANON</td><td>人间大炮</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 埋葬友方</td><td class="desc">BODY_CANON</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">LARGE_SCALE_DEATH</td><td>大范围死亡</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬友方 埋葬敌方</td><td class="desc">LARGE_SCALE_DEATH</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">WISE_BURIAL</td><td>不愚蠢的埋葬</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬友方</td><td class="desc">WISE_BURIAL</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">GRAVE_PORTAL</td><td>冥界裂缝</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">置顶 置顶友方 埋葬 被埋葬 埋葬敌方</td><td class="desc">GRAVE_PORTAL</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">SOLDIER_SKELETON</td><td>骷髅士兵</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 被埋葬 置顶 置顶友方</td><td class="desc">SOLDIER_SKELETON</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">UNDEAD_CURSER</td><td>不死诅咒者</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">敌方[curse]加强 [curse] 被埋葬 埋葬</td><td class="desc">UNDEAD_CURSER</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">AVENGER</td><td>复仇者</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 被埋葬 友方力量 力量</td><td class="desc">AVENGER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">CONFUSED_PORTALMANCER</td><td>错乱传送术士</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬友方 被埋葬 conjure 生成[conjure]</td><td class="desc">CONFUSED_PORTALMANCER</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">CURSED_CORPSE</td><td>被诅咒的尸体</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 [curse] 敌方[curse]加强 被埋葬 埋葬</td><td class="desc">CURSED_CORPSE</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">SCAPEGOAT</td><td>替死鬼</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 被埋葬 埋葬 置顶 置顶友方</td><td class="desc">SCAPEGOAT</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">SPIKE_SKELETON</td><td>针刺骷髅</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 被埋葬 埋葬</td><td class="desc">SPIKE_SKELETON</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">GRAVE_KEEPER</td><td>守墓人</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 被埋葬 置顶友方 置顶</td><td class="desc">GRAVE_KEEPER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">MARTYR</td><td>殉道者</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">埋葬 被埋葬 力量 友方力量</td><td class="desc">MARTYR</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">SLIME</td><td>史莱姆</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 被埋葬</td><td class="desc">SLIME</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">BONE_COMBINATION</td><td>碎骨聚集体</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 通用</td><td class="desc">BONE_COMBINATION</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">SMALL_SCALE_DEATH</td><td>小范围死亡</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 埋葬友方 埋葬敌方</td><td class="desc">SMALL_SCALE_DEATH</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">DRAG_UNDER</td><td>深埋</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">埋葬 亡语</td><td class="desc">DRAG_UNDER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">GRAVE_FEEDER</td><td>喂尸人</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 亡语</td><td class="desc">GRAVE_FEEDER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">TOMBSTONE</td><td>墓碑</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">攻击者 萦绕 亡语</td><td class="desc">TOMBSTONE</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">REBIRTH</td><td>轮回</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">置顶 力量 亡语</td><td class="desc">REBIRTH</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">NECROMANCY</td><td>招魂</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">置顶 萦绕</td><td class="desc">NECROMANCY</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">MASS_GRAVE</td><td>乱葬坑</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬友方 埋葬敌方</td><td class="desc">MASS_GRAVE</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">BONE_FIELD</td><td>白骨地</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">萦绕 力量</td><td class="desc">BONE_FIELD</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr class="arch-head"><td colspan="6">次元裂缝（11 张）</td></tr>
+<tr><td class="mono id">FALL_INTO_RIFT</td><td>坠入裂缝</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">conjure 生成[conjure] 埋葬 埋葬敌方</td><td class="desc">FALL_INTO_RIFT</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">RIFT_INSECT</td><td>次元虫</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">攻击者 conjure 生成[conjure]</td><td class="desc">RIFT_INSECT</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">SACRIFICE_RITUAL</td><td>献祭仪式</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">埋葬友方 生成[conjure] 埋葬 conjure</td><td class="desc">SACRIFICE_RITUAL</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">RIFT_COFFIN</td><td>次元棺材</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">linger [conjure]被消耗 埋葬敌方 埋葬 conjure</td><td class="desc">RIFT_COFFIN</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">RIFT_DRAGON</td><td>次元龙</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">4</td><td class="tagcell">攻击者 消耗[conjure] conjure</td><td class="desc">RIFT_DRAGON</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">RIFT_GUIDE</td><td>次元引导者</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">conjure 消耗[conjure] 埋葬 埋葬敌方</td><td class="desc">RIFT_GUIDE</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">RIFT_MONSTER</td><td>次元兽</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 消耗[conjure] conjure</td><td class="desc">RIFT_MONSTER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">RIFT_SUMMONER</td><td>裂缝召唤师</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">conjure 置顶 置顶友方 消耗[conjure]</td><td class="desc">RIFT_SUMMONER</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">DEATHBED_CURSE</td><td>临终诅咒</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">linger conjure [conjure]被消耗 [curse] 敌方[curse]加强</td><td class="desc">DEATHBED_CURSE</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">RIFT_DEVOURER</td><td>次元吞噬者</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">1</td><td class="tagcell">攻击者 conjure [conjure]被消耗 力量 友方力量</td><td class="desc">RIFT_DEVOURER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">RIFT_THIEF</td><td>裂隙窃贼</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">conjure 消耗[conjure] 生成[conjure]</td><td class="desc">RIFT_THIEF</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr class="arch-head"><td colspan="6">诅咒（19 张）</td></tr>
+<tr><td class="mono id">CURSE_THIRST_SUMMONER</td><td>咒食的召唤师</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">[curse] 置顶 置顶友方</td><td class="desc">CURSE_THIRST_SUMMONER</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">POISONER</td><td>咒师</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">攻击者 [curse] 敌方[curse]加强</td><td class="desc">POISONER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">RIFT_CURSE</td><td>异次元的诅咒</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">[curse] 敌方[curse]加强 conjure 生成[conjure]</td><td class="desc">RIFT_CURSE</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">CURSED_SKELETON</td><td>被诅咒的骷髅</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">[curse] 敌方[curse]加强 埋葬</td><td class="desc">CURSED_SKELETON</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">CURSE_THIRST_BEAST</td><td>咒食的野兽</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 [curse]</td><td class="desc">CURSE_THIRST_BEAST</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">CURSE_THIRST_SHAMAN</td><td>咒食的萨满</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">[curse] 消耗敌方[curse]力量 力量 友方力量</td><td class="desc">CURSE_THIRST_SHAMAN</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">MOTH_MAN</td><td>飞蛾人</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">消耗敌方[curse]力量 [curse] 置顶 置顶友方</td><td class="desc">MOTH_MAN</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">PREMATURE</td><td>拔苗助长</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">置顶 消耗敌方[curse]力量 [curse]</td><td class="desc">PREMATURE</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">SACRIFICIAL_CURSE</td><td>献祭诅咒</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬友方 [curse] 敌方[curse]加强</td><td class="desc">SACRIFICIAL_CURSE</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">CROW_CROWD</td><td>乌合之众</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">力量 友方力量 [curse] 敌方[curse]加强</td><td class="desc">CROW_CROWD</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">CURSE_ENCHANTMENT</td><td>诅咒附魔</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">linger 敌方[curse]加强 [curse]</td><td class="desc">CURSE_ENCHANTMENT</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">DETERIORATION</td><td>恶化</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">[curse] 敌方[curse]加强</td><td class="desc">DETERIORATION</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">PROLIFERATING_CURSE</td><td>增殖的厄运</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">[curse] 敌方[curse]加强</td><td class="desc">PROLIFERATING_CURSE</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">CURSE_THIRST_ARCH_SUMMONER</td><td>咒食的大召唤师</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">[curse] 置顶 置顶友方 消耗敌方[curse]力量</td><td class="desc">CURSE_THIRST_ARCH_SUMMONER</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">DEVIL_WHISPER</td><td>恶魔低语</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">置顶 负面</td><td class="desc">DEVIL_WHISPER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">PURIFYING_FLAME</td><td>净化之火</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">4</td><td class="tagcell">攻击者 负面</td><td class="desc">PURIFYING_FLAME</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">CURSE_RESONANCE</td><td>诅咒共鸣</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">负面 力量</td><td class="desc">CURSE_RESONANCE</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">DEATH_KNELT</td><td>丧钟</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">置顶 置顶敌方 负面</td><td class="desc">DEATH_KNELT</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">UNDERTAKER</td><td>送葬人</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">置顶 置顶敌方 负面</td><td class="desc">UNDERTAKER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr class="arch-head"><td colspan="6">通用（27 张）</td></tr>
+<tr><td class="mono id">BLACKSMITH</td><td>铁匠</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">通用 攻击者 力量 友方力量</td><td class="desc">BLACKSMITH</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">COFFIN_MAKER</td><td>棺材制造者</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 埋葬敌方</td><td class="desc">COFFIN_MAKER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">MAD_SCIENTIST</td><td>疯狂科学家</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">力量 通用</td><td class="desc">MAD_SCIENTIST</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">SACRIFICIAL_SWORD</td><td>献祭剑</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬友方 力量 友方力量</td><td class="desc">SACRIFICIAL_SWORD</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">SIDE_EFFECT_PORTAL</td><td>有副作用的传送门</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">置顶 置顶友方 [curse] 友方[curse]加强</td><td class="desc">SIDE_EFFECT_PORTAL</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">THE_FOOL</td><td>愚者</td><td><span class="r-tag r-common">common</span></td><td class="mono">4</td><td class="tagcell">攻击者 置顶 置顶敌方 通用</td><td class="desc">THE_FOOL</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">ADVANCE_PORTAL</td><td>高等传送门</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">置顶 置顶友方 通用</td><td class="desc">ADVANCE_PORTAL</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">ALL_FOR_ONE</td><td>人人为我</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">0</td><td class="tagcell">力量 通用</td><td class="desc">ALL_FOR_ONE</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">ANTI_CREATURE_WEAPON</td><td>对生物兵器</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬敌方 通用</td><td class="desc">ANTI_CREATURE_WEAPON</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">DR_MANHATTAN</td><td>曼哈顿博士</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">通用 力量 置顶 置顶友方 埋葬 埋葬敌方 消耗友方力量</td><td class="desc">DR_MANHATTAN</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">FLESH_COMBINATION</td><td>血肉聚集体</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">0</td><td class="tagcell">通用</td><td class="desc">FLESH_COMBINATION</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">GOBLIN_ASSASSIN_TEAM</td><td>哥布林暗杀部队</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 置顶 被置顶 埋葬 埋葬敌方 通用</td><td class="desc">GOBLIN_ASSASSIN_TEAM</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">GOBLIN_CHARGE_TEAM</td><td>哥布林冲锋部队</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 置顶 被置顶 通用</td><td class="desc">GOBLIN_CHARGE_TEAM</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">POWER_CRAVER</td><td>力量渴求者</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">通用 攻击者 力量 友方力量</td><td class="desc">POWER_CRAVER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">POWER_SURGE</td><td>能量迸发</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 通用 力量 友方力量 置顶 被置顶</td><td class="desc">POWER_SURGE</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">QUICK_RESPONSE_PROTOCOL</td><td>快速响应协议</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">linger 通用 置顶 置顶友方</td><td class="desc">QUICK_RESPONSE_PROTOCOL</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">SNATCHER</td><td>屠夫</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 埋葬 埋葬敌方 被埋葬 置顶 被置顶 置顶友方 通用</td><td class="desc">SNATCHER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">TACTICAL_BREACHER</td><td>战术爆破手</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">通用 攻击者 力量 友方力量 置顶 被置顶</td><td class="desc">TACTICAL_BREACHER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">WEAPON_SPIRIT</td><td>武器精灵</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">通用 力量 友方力量 linger</td><td class="desc">WEAPON_SPIRIT</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">ALMIGHTY</td><td>全能人</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">1</td><td class="tagcell">通用 攻击者 置顶 置顶友方 埋葬 埋葬敌方 力量 友方力量 [curse] 敌方[curse]加强 conjure 生成[conjure]</td><td class="desc">ALMIGHTY</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">BOOSTER</td><td>推进器</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">埋葬 埋葬友方 置顶 置顶友方</td><td class="desc">BOOSTER</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">ELDER_SORCERER</td><td>远古魔法使用者</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">置顶 力量 友方力量 通用</td><td class="desc">ELDER_SORCERER</td><td><span class="badge b-cyan">转写</span></td></tr>
+<tr><td class="mono id">ETERNAL_GHOST</td><td>不散的恶灵</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">1</td><td class="tagcell">通用 攻击者</td><td class="desc">ETERNAL_GHOST</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">POWER_SIPHONER</td><td>力量虹吸人</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">1</td><td class="tagcell">攻击者 力量 友方力量 通用</td><td class="desc">POWER_SIPHONER</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">POWER_TRANSFER</td><td>力量转移</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">通用 力量 友方力量</td><td class="desc">POWER_TRANSFER</td><td><span class="badge b-warn">建议重做</span></td></tr>
+<tr><td class="mono id">UNFINISHED_ROBOT</td><td>未完成的机器人</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">1</td><td class="tagcell">攻击者 力量 友方力量 通用</td><td class="desc">UNFINISHED_ROBOT</td><td><span class="badge b-gen">库内新文案</span></td></tr>
+<tr><td class="mono id">MIMIC</td><td>模仿者</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">力量给予 复制</td><td class="desc">MIMIC</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr class="arch-head"><td colspan="6">沉睡觉醒（15 张）</td></tr>
+<tr><td class="mono id">SLEEPING_GIANT</td><td>沉睡的巨像</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">0</td><td class="tagcell">沉睡 力量</td><td class="desc">SLEEPING_GIANT</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">RIFT_EMBRYO</td><td>次元胚胎</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">4</td><td class="tagcell">攻击者 conjure 生成[conjure]</td><td class="desc">RIFT_EMBRYO</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">WAKE_BELL</td><td>晨钟</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">唤醒 力量</td><td class="desc">WAKE_BELL</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">NIGHTMARE</td><td>噩梦</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">沉睡 攻击者</td><td class="desc">NIGHTMARE</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">NIGHT_WATCHER</td><td>守夜人</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">萦绕 唤醒 力量</td><td class="desc">NIGHT_WATCHER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">PILLOW_TALK</td><td>枕边低语</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">沉睡 力量</td><td class="desc">PILLOW_TALK</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">WRAITH_COCOON</td><td>亡魂之茧</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">6</td><td class="tagcell">攻击者 沉睡 埋葬</td><td class="desc">WRAITH_COCOON</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">ANCIENT_WEAPON</td><td>古代兵器</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">8</td><td class="tagcell">攻击者 沉睡</td><td class="desc">ANCIENT_WEAPON</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">CHARGING</td><td>蓄势待发</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">0</td><td class="tagcell">沉睡 力量</td><td class="desc">CHARGING</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">GREAT_AWAKENING</td><td>大觉醒</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">唤醒 力量</td><td class="desc">GREAT_AWAKENING</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">LIGHT_SLEEPER</td><td>浅眠者</td><td><span class="r-tag r-common">common</span></td><td class="mono">2</td><td class="tagcell">攻击者 沉睡</td><td class="desc">LIGHT_SLEEPER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">SPRING_SLEEP</td><td>春眠</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">沉睡 力量</td><td class="desc">SPRING_SLEEP</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">SLEEPWALKER</td><td>梦游者</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">2</td><td class="tagcell">攻击者 沉睡</td><td class="desc">SLEEPWALKER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">HIBERNATION</td><td>冬眠</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">0</td><td class="tagcell">沉睡 力量</td><td class="desc">HIBERNATION</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">ETERNAL_SLEEPER</td><td>亘古沉眠者</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">0</td><td class="tagcell">沉睡 攻击者 力量</td><td class="desc">ETERNAL_SLEEPER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr class="arch-head"><td colspan="6">交换位移（5 张）</td></tr>
+<tr><td class="mono id">SOUL_SWAP</td><td>灵魂交换</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">置顶 置顶友方</td><td class="desc">SOUL_SWAP</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">POSITION_SWAP</td><td>位置交换</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">交换 攻击者</td><td class="desc">POSITION_SWAP</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">TIME_WARP</td><td>时光倒流</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">延迟</td><td class="desc">TIME_WARP</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">GRAVE_DIGGER</td><td>掘墓人</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">埋葬</td><td class="desc">GRAVE_DIGGER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">HERALD</td><td>传令官</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">置顶 攻击者</td><td class="desc">HERALD</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr class="arch-head"><td colspan="6">攻击武备（12 张）</td></tr>
+<tr><td class="mono id">RALLY</td><td>集结号</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">力量 攻击者</td><td class="desc">RALLY</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">WAR_COUNCIL</td><td>军议</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">力量 攻击者</td><td class="desc">WAR_COUNCIL</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">ACE</td><td>王牌</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">0</td><td class="tagcell">攻击者 伤害</td><td class="desc">ACE</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">ASSASSIN</td><td>刺客</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">埋葬 攻击者</td><td class="desc">ASSASSIN</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">OATH_OF_WAR</td><td>战争之誓</td><td><span class="r-tag r-common">common</span></td><td class="mono">1</td><td class="tagcell">攻击者 力量</td><td class="desc">OATH_OF_WAR</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">ARSENAL</td><td>军火库</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">力量 埋葬 攻击者</td><td class="desc">ARSENAL</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">WAR_HERO</td><td>战争英雄</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">0</td><td class="tagcell">攻击者 伤害</td><td class="desc">WAR_HERO</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">DRILL_MASTER</td><td>战训教官</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">攻击次数 攻击者</td><td class="desc">DRILL_MASTER</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">BLOODLUST</td><td>嗜血</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">攻击次数 攻击者 埋葬</td><td class="desc">BLOODLUST</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">FORGE</td><td>锻炉</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">攻击力成长 攻击者</td><td class="desc">FORGE</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">ARMS_RACE</td><td>军备竞赛</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">攻击力成长 攻击者 埋葬</td><td class="desc">ARMS_RACE</td><td><span class="badge b-bad">新增</span></td></tr>
+<tr><td class="mono id">MARK_WEAKNESS</td><td>弱点标注</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">易伤</td><td class="desc">MARK_WEAKNESS</td><td><span class="badge b-bad">新增</span></td></tr>
+		</tbody>
+	</table>
+	<div class="note">数据说明:全卡数据由脚本从 docs/CardPoolV4_Design_CoreFormula.html 的 POOL 数组提取(2026-08-17);「库内新文案」与「转写」的区分以 v4 文档为准。</div>
+</div>
+
+</body>
+</html>

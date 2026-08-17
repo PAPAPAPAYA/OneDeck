@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StS2 五角色卡池设计总结 → OneDeck 卡池调整建议</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+		--purple: #bb9af7; --cyan: #7dcfff;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+	.mono { font-family: Consolas, monospace; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+	.p0 { color: #f7768e; border-color: #f7768e88; }
+	.p1 { color: #e0af68; border-color: #e0af6888; }
+	.p2 { color: #9ece6a; border-color: #9ece6a88; }
+	.star { color: #e0af68; font-weight: 700; }
+	ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.bad { color: var(--bad); }
+	.purple { color: var(--purple); }
+	.cyan { color: var(--cyan); }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+	.rec { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 14px 0; background: #1a1e27; }
+	.rec h3 { margin-top: 0; }
+	.rec .tag-row { margin: 4px 0 8px; }
+	@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style>
+</head>
+<body>
+
+<h1>StS2 五角色卡池设计总结 → OneDeck 卡池调整建议</h1>
+<div class="sub">2026-08-17(v1.2,补 OneDeck 桥与转换件全量审计 §2.3)· 基于五份角色分析(Necrobinder / Ironclad / Silent / Defect / Regent,453 张卡)与 OneDeck v4 卡池(117 张, docs/CardPoolV4_Design_CoreFormula.html)的对照 · 目标:为 OneDeck 卡库调整提供可执行建议 · 每条建议均给出 StS2 证据与 OneDeck 落点</div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num">453</div><div class="lbl">StS2 五角色卡池总样本(90-91 张/角色)</div></div>
+	<div class="kpi"><div class="num">12</div><div class="lbl">跨角色反复出现的卡池设计规律(本总结提炼)</div></div>
+	<div class="kpi"><div class="num">5</div><div class="lbl">P0 结构性建议(新维度,建议 v5 纳入)</div></div>
+	<div class="kpi"><div class="num">4+5</div><div class="lbl">P1 维度扩充 / P2 微调建议</div></div>
+</div>
+
+<h2>0. 核心结论(TL;DR)</h2>
+<div class="card">
+	<div class="verdict">
+		<b>OneDeck v4 已经做对了的事</b>(与 StS2 的结构一致,不必动):两段式条件/兑现(入口卡造条件、兑现卡消费)、多乘区(次数 × 力量/攻击力成长/易伤)、垃圾经济学(埋葬=弃牌经济、敌方诅咒=资源)、置顶循环=频率授予(E6)、沉睡=「用未来换现在」、无上限哲学 + 疲劳/链系统自限。
+	</div>
+	<div class="verdict">
+		<b>v4 相对 StS2 的结构性缺口</b>(P0,共 5 项):① 无「击杀兑现」维度(StS2 四角色全有 Fatal/斩杀收益);② 回合开始自动机密度过低(StS2 每角色 4-6 张,OneDeck 近乎为零);③ 敌方降力(硬解)维度缺失(StS2 每角色 1-4 张);④ 「运转即输出」的动作计数兑现卡不足;⑤ 自我代价句式只有「沉睡」一种形态,缺「透支型」(当回合爆发、下回合付代价)。
+	</div>
+	<div class="verdict">
+		<b>不需要做的事</b>:不要引入费用/能量/星币系统(OneDeck 无费用是优势——它的节奏语法是「揭晓/置顶/埋葬」三动作,StS2 的货币经济无对应载体);不要引入「手牌」(准备位与置顶已覆盖);不要把 StS2 的 PvE 单角色思路照搬(双 deck 合并是 OneDeck 独有维度,敌方诅咒/敌方裂缝/无差别埋葬没有 StS2 对应物)。
+	</div>
+</div>
+
+<h2>1. 从五份分析提炼的 StS2 卡池设计语法</h2>
+
+<h3>1.1 卡池骨架:稀有度 = 学习路径</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:14%">规律</th><th style="width:46%">证据(五角色一致)</th><th>设计含义</th></tr></thead>
+		<tbody>
+			<tr><td><b>Common 层无能力卡</b></td><td>五角色 Common 的能力卡数均为 <b>0</b>;全部即打即用、零成长承诺</td><td>入口层只教「制造条件」,不教「立引擎」——新玩家前期无信息压力</td></tr>
+			<tr><td><b>Uncommon = 组件与桥梁密集区</b></td><td>每个角色的跨轴桥(13/11/12/9/12 条)大部分落在 Uncommon;自动机、放大器、防御件都在这里</td><td>中期获得「让条件自动化」的组件,桥让玩家开始串轴</td></tr>
+			<tr><td><b>Rare = 封顶件 + 转换件 + 引擎</b></td><td>处决(End of Days)、大数字(Bury 52 / Devastate 35 / Comet 33)、轴间转换(Reaper Form / Devour Life)、引擎(Demesne / Neurosurge / The Smith)</td><td>后期才允许「把条件兑换成大数字」与「轴间转化」</td></tr>
+			<tr><td><b>起始牌组 = 机制教学单元</b></td><td>Bash 教易伤、Survivor 教弃牌、Zap/Dualcast 教造球与爆球、Venerate/Falling Star 教双货币</td><td>每角色起始 2 张职业卡直接演示核心机制的最小操作</td></tr>
+			<tr><td><b>攻/技/能比例 = 角色性格</b></td><td>Silent 技能 50.5%(攻击靠 token 与免费触发)、Ironclad 攻击 43%(本体大数字)、Defect 能力 23%(被动池)、Regent 技能 45%(操作密度)</td><td>攻击密度缺口由 token(Shiv/随从/Sly 免费打)与 DoT(毒)补足</td></tr>
+		</tbody>
+	</table>
+	<div class="note">OneDeck 对应:稀有度 C/U/R 已有;但「Common 层即打即用」原则被 2 张 Common 沉睡卡(浅眠者/春眠)打破——沉睡是零贡献卡,StS2 的零贡献/立引擎卡全部在 Rare 档(Wraith Form/Barricade/Demon Form)。见 P2-1。</div>
+</div>
+
+<h3>1.2 条件语法:资源化、两段式、事件源三职</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:14%">规律</th><th style="width:46%">证据</th><th>设计含义</th></tr></thead>
+		<tbody>
+			<tr><td><b>条件资源化</b></td><td>Doom(阈值)、Soul(频率)、Osty HP(蓄水池)、Ethereal(计数)、星币(存款)、Forge(集中成长)、消耗堆(计数)、弃牌(事件)、状态卡(事件)、球(被动池)——五角色 10 种资源</td><td>卡池的「轴」= 一种资源类型 + 一组制造卡 + 一组兑现卡;条件本身可积累、可计数、可跨回合</td></tr>
+			<tr><td><b>两段式收益</b></td><td>入口卡只「制造条件 + 基础攻防」(Reave 伤+Soul、Blight Strike 伤+Doom、Wrought in War 伤+Forge);兑现卡独立存在(Haunt 兑现 Soul、End of Days 兑现 Doom、Ashen Strike 兑现消耗、Black Hole 兑现星币)(跨体系卡三分法见 §1.6)</td><td>入口卡单张不超模,兑现卡单独抓取无用——<b>迫使玩家跨卡组牌</b>,这是构筑深度的来源</td></tr>
+			<tr><td><b>事件源三职</b></td><td>一个 debuff/动作同时是「状态 + 计数器 + 事件源」:Ironclad 易伤 = 增伤 50%(状态)+ Bully 按层数 +2(计数器)+ Vicious 施放抽牌 / Dominate 每层 +1 力(事件源);Silent 弃牌 = 弃牌口(动作)+ Sly 免费打(事件)+ Reflex/Tactician 回报(事件)+ Memento Mori 计数(计数器)</td><td>同一条件被 3-5 张卡从不同角度消费 = 卡池联动密度的低成本来源</td></tr>
+			<tr><td><b>击杀兑现(Fatal)</b></td><td>四角色全有:Feed(+3 最大 HP)、The Hunt(额外卡牌奖励)、Sunder(+3 能量)、Knockout Blow(+1 星)、Echoing Slash(击杀连打)</td><td>「斩杀本身是收益事件」——让攻击卡在战斗中期有明确的正反馈</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.3 资源经济语法:垃圾经济学四形态 + 自我代价</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:14%">规律</th><th style="width:46%">证据</th><th>设计含义</th></tr></thead>
+		<tbody>
+			<tr><td><b>垃圾经济学(四形态)</b></td><td>铁甲消耗 → 计数/二次使用(Ashen Strike / Howl from Beyond);静默者弃牌 → 免费施放(Sly + Reflex/Tactician);Defect 状态回收 → Fuel 能量(Overclock 自塞 Burn + Compact 转化);Regent 随从转化 → 0 费战力(BEGONE! 把 Strike 变随从)</td><td>四个角色用四种方式把「废卡/惩罚」变成资源 —— 这是 roguelike 卡牌「构筑正反馈」的标准解法</td></tr>
+			<tr><td><b>自我代价句式(「用未来换现在」)</b></td><td>自 Doom(Neurosurge)、透支(Borrowed Time +4 费全卡 +1)、敏捷衰减(Wraith Form)、Focus 衰减(Biased Cognition)、结束回合(Void Form)、放血换能量(Offering)——五种变体</td><td>代价型卡 = 高风险高回报的节奏杠杆;代价的「支付时点」决定风险形状(即时 HP / 下回合 / 每回合衰减)</td></tr>
+			<tr><td><b>运转即输出</b></td><td>动作计数伤害:Murder(每抽 +1)、Memento Mori(每弃 +4)、Finisher(每攻 +6)、Flechettes(每技 +5)、Death March(每抽 +3)、Helix Drill(每花费 1 能量 +3)</td><td>把「运转动作」本身变成伤害乘区 —— 运转越好的牌组天然越强,不需额外输出卡</td></tr>
+			<tr><td><b>集中成长 vs 分散成长</b></td><td>集中:Forge 全卡喂一把 Blade;分散:Claw 全池共享成长 / The Scythe 单卡成长 / Feed 永久成长 / 毒存量成长</td><td>成长结构的四种形态,决定构筑目标的清晰度</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.4 兑现语法:频率×存量、被动池、三种时间形态</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:14%">规律</th><th style="width:46%">证据</th><th>设计含义</th></tr></thead>
+		<tbody>
+			<tr><td><b>频率 × 存量双形态</b></td><td>Haunt(每打 Soul -6 HP,频率)vs Soul Storm(每张存量 +2,存量);毒:叠层(存量)vs Outbreak(立即触发,兑现);暗球:被动翻倍(存量)vs Evoke(兑现)</td><td>同一资源提供两种兑现卡,一种吃「打出次数」一种吃「积累量」——资源被消费两次</td></tr>
+			<tr><td><b>被动池 + 兑现操作</b></td><td>球(每回合自动结算 + Evoke 操作)、Osty(拦截 + 按 HP 打伤害)、格挡存量(Body Slam)、玻璃球(衰减 + 及时 Evoke)</td><td>「挂机收益 + 手动兑现」的两段式是防守资源进攻化的通用解法</td></tr>
+			<tr><td><b>条件收益的三种时间形态</b></td><td>阈值(Doom ≥ HP 即死)、衰减(Glass 每回合 -1,越快兑现越强)、存量(消耗堆 Soul 数 / Forge 总量)</td><td>同一「兑现」机制可做成即时、延迟、永续三种节奏</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.5 桥梁语法:桥密度 = 构筑自由度</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:14%">规律</th><th style="width:46%">证据</th><th>设计含义</th></tr></thead>
+		<tbody>
+			<tr><td><b>桥把任意两轴接通</b></td><td>每角色 9-13 条桥,最终形成闭环网络:Necrobinder「Doom↔Soul↔Osty↔Ethereal」、Ironclad「消耗↔自伤↔力量」、Silent「弃牌↔抽牌↔Sly↔毒」、Defect「球↔状态↔0费↔能量」、Regent「星币↔Forge↔创造」;桥的内部结构与稀有度梯度见 §1.6(制造桥 / 轻兑现 / 重转换)</td><td>任何两条轴都能互喂,构筑自由度来自桥密度而非单卡强度</td></tr>
+			<tr><td><b>通用胶水保持通用</b></td><td>力量/敏捷/Focus 在所有轴里都生效,不被流派门控</td><td>通用乘区不稀释,定向乘区(攻击力成长/易伤/次数授予)才做流派门控</td></tr>
+			<tr><td><b>双主线并行</b></td><td>Regent 星币轴与 Forge 轴互不消耗同一资源,可同时运转;Necrobinder 四轴闭环</td><td>「互不竞争资源」的主线可以并行,「竞争同一资源」的主线互斥(社区:星币与 Forge 不混)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.6 跨体系卡三分法(修正「桥梁卡 / 转换件」用法)</h3>
+<div class="card">
+	<p class="lead">初版总结把「桥梁卡」与「转换件」混用——两者指涉同一批跨体系卡,但粒度不同。核对五角色数据后,跨体系卡应分三型:<b>制造桥</b>(不消费,并行投资)与<b>转换件</b>(消费 A 产出 B,含轻兑现与重转换两个强度档)。「转换件」是兑换型子集的正式称呼,不再与「桥梁卡」互称。</p>
+	<table>
+		<thead><tr><th style="width:16%">型</th><th style="width:30%">机制</th><th style="width:10%">消费?</th><th style="width:14%">分布</th><th>例(按角色)</th></tr></thead>
+		<tbody>
+			<tr><td><b>制造桥(入口桥)</b></td><td>动作 A 顺带制造资源 B,一卡两职</td><td>否(并行投资)</td><td>Common + Uncommon</td><td>Reave(伤→Soul)、Blight Strike(伤→Doom)、Wrought in War(伤→Forge)、Solar Strike(伤→星)、Grave Warden(防→Soul)、Overclock(抽→状态)</td></tr>
+			<tr><td><b>轻兑现(转换件·轻)</b></td><td>消费 B 的一次事件 / 小存量 → 即时小收益</td><td>是(单次)</td><td>Uncommon 为主</td><td>Haunt(Soul→伤)、Shroud(Doom→防)、Rupture(掉血→力)、Thunder(Evoke→伤)、Mirage(毒→防)、Bully(易伤层→伤)、Black Hole(星→伤)、Memento Mori(弃牌→伤)、Conqueror(Blade 条件双倍)</td></tr>
+			<tr><td><b>重转换(转换件·重)</b></td><td>三副面孔:① 引擎型(事件→收益常驻自动机)② 封顶型(存量→大数字)③ 形态升级型(载体全局化:群伤 / 双打 / 永久)</td><td>是(持续 / 存量)</td><td>Rare 为主</td><td>引擎:Reaper Form、Devour Life、Dark Embrace、Master Planner、Envenom、Afterimage、Trash to Treasure、Monarch's Gaze;封顶:Soul Storm、Time's Up、Sacrifice、Shatter、Flak Cannon、Helix Drill、Dominate;形态:Seeking Edge、Sword Sage、Fan of Knives</td></tr>
+		</tbody>
+	</table>
+	<div class="note">关键区分:制造桥<b>不消费</b>——Dirge(X 费 Summon 3X + X Soul)是双轴并行加注,不是转换;转换件<b>必须消费</b>(吃掉事件、层数或存量,产出另一条轴的收益)。这解释了 Dirge 这个「桥梁之王」放在 Uncommon 不违和:它是制造桥,不是转换件。</div>
+
+	<h3>1.6.1 Uncommon vs Rare 跨体系卡的系统性差别</h3>
+	<table>
+		<thead><tr><th style="width:18%">维度</th><th style="width:36%">Uncommon(轻)</th><th>Rare(重)</th></tr></thead>
+		<tbody>
+			<tr><td><b>收益粒度</b></td><td>单次小值(1-9 单位):Thunder 8 伤、Sleight of Flesh 9 伤、Vicious 抽 1</td><td>存量 ×N(Soul Storm +4/张、Flak Cannon 8/张、Time's Up = Doom 总量)或全体 / 永久(Dark Embrace 每消耗都抽、Seeking Edge 全敌化)</td></tr>
+			<tr><td><b>系统性</b></td><td>点对点:这张卡触发的那一次转换(Radiate 只管本回合、Conqueror 只管本回合、Phantom Blades 只给 Shiv 加 Retain)</td><td>系统对系统:整条轴的事件全部转过去(Master Planner 每个技能 +Sly、Reaper Form 每次攻击附 Doom、Envenom 每次未格挡伤害附毒、Necro Mastery 每次 Osty 掉血反射全敌)</td></tr>
+			<tr><td><b>结果可累积性</b></td><td>即时消耗品:伤害、格挡、抽牌,即用即走</td><td>永久 / 可累积资源:力量、Sly、Replay、Blade 伤害、毒自动机</td></tr>
+		</tbody>
+	</table>
+	<div class="flow">一句话:Uncommon 桥 = 交换生(低成本试错串轴);Rare 桥 = 合并(把两条轴焊成一条主循环)。</div>
+
+	<h3>1.6.2 同一转换的两代同堂(成对对照)</h3>
+	<table>
+		<thead><tr><th style="width:14%">角色</th><th style="width:40%">Uncommon(轻版)</th><th>Rare(重版)</th></tr></thead>
+		<tbody>
+			<tr><td>Silent</td><td>Hand Trick:本回合 1 张技能 +Sly</td><td>Master Planner:打出技能即永久 +Sly(引擎)</td></tr>
+			<tr><td>Ironclad</td><td>Vicious:施放易伤 → 抽 1</td><td>Dominate:每易伤层 → 永久力量(封顶)</td></tr>
+			<tr><td>Necrobinder</td><td>Haunt:每次打出 Soul → -6 HP(频率)</td><td>Soul Storm:存量 +4/张(封顶);Devour Life:每次打出 Soul → Summon(引擎)</td></tr>
+			<tr><td>Defect</td><td>Thunder:Evoke 闪电 → 8 伤(事件)</td><td>Shatter:全球 ×2 兑现(封顶);Trash to Treasure:状态→球自动机(引擎)</td></tr>
+			<tr><td>Regent</td><td>Conqueror:Blade 本回合双倍(条件)</td><td>Seeking Edge:Blade 永久群伤化;Sword Sage:Blade 永久 Replay(形态升级)</td></tr>
+		</tbody>
+	</table>
+
+	<h3>1.6.3 例外规则与 OneDeck 检查清单</h3>
+	<ul>
+		<li><b>例外 1:基础资源兑换可放 Common</b>——Body Slam(格挡→伤害)、Reave(伤→Soul)在 Common 是刻意的:基础资源的兑换是教学,体系资源(毒 / Doom / 星 / 球)的兑换才需要 U/R 梯度。</li>
+		<li><b>例外 2:Uncommon 允许轻引擎与双投制造桥</b>——Thunder / Rupture / Vicious / Smokestack / Storm / Subroutine 都是 Uncommon 的单事件轻引擎,Dirge 是 Uncommon 的双投制造桥;违和的是 Uncommon 出现「封顶型」或「全局引擎型」。</li>
+		<li><b>OneDeck 检查 ①(U 层)</b>:U 层是否混入重转换?与 P2-1(Common 沉睡卡)同病——破坏「轻试错」中间层。</li>
+		<li><b>OneDeck 检查 ②(R 层)</b>:封顶型总量不缺(人间大炮 / 乌合之众 / 力量虹吸人 / 未完成的机器人 / 亘古沉眠者 / 大觉醒 / 次元胚胎 / 战争英雄,约 9 张,与 StS2 每角色 3-4 张相当);缺的是两个方向:<b>裂缝存量的 Rare 封顶兑现</b>(P1-1)与<b>形态升级型</b>(全池为零,见 §2.3 审计)。v1.1 此条判断过苛,以 v1.2 审计为准。</li>
+		<li><b>OneDeck 检查 ③(入口桥)</b>:v4 的「一张卡干两件事」密度已达标(制造桥遍布 C/U),保持即可。</li>
+	</ul>
+</div>
+
+<h2>2. OneDeck v4 现状诊断</h2>
+<div class="card">
+	<h3>2.1 v4 与 StS2 一致的设计(确认保留)</h3>
+	<table>
+		<thead><tr><th style="width:26%">v4 机制</th><th style="width:40%">StS2 对应</th><th>判断</th></tr></thead>
+		<tbody>
+			<tr><td>两段式:增强/置顶/埋葬(制造)与攻击×N/攻击力=Y(兑现)</td><td>入口卡 vs 兑现卡(全角色)</td><td class="good">一致,保留</td></tr>
+			<tr><td>多乘区:次数 × (力量通用 + 攻击力成长定向 + 易伤敌方侧)</td><td>力量/敏捷/Focus 通用乘区 + 定向乘区</td><td class="good">一致且超前(StS2 没有「次数授予」的正式关键词,OneDeck 有)</td></tr>
+			<tr><td>垃圾经济学:埋葬=墓地计数、敌方诅咒=资源</td><td>消耗/弃牌/状态回收/转化四形态</td><td class="good">已有一形态+敌方侧变体</td></tr>
+			<tr><td>置顶循环(E6)= 频率授予</td><td>Silent 弃牌循环 / Ironclad 0 费连打</td><td class="good">同构</td></tr>
+			<tr><td>沉睡(E8)= 条件规模兑现 + 零贡献期</td><td>「用未来换现在」句式(五角色)</td><td class="good">同构,且中卡密度已补(v4 新增 4 张)</td></tr>
+			<tr><td>无上限哲学 + 疲劳 + 链系统自限</td><td>Claw/Forge/毒无上限 + 回合数自限</td><td class="good">一致</td></tr>
+			<tr><td>桥网络:唤醒系/置顶敌方诅咒/跨 tag 定向/E11</td><td>每角色 9-13 条桥</td><td class="good">桥密度已达标,且「置顶敌方诅咒」是双 deck 独有的桥</td></tr>
+		</tbody>
+	</table>
+
+	<h3>2.2 诊断结论(缺口清单)</h3>
+	<table>
+		<thead><tr><th style="width:8%">编号</th><th style="width:24%">缺口</th><th style="width:38%">StS2 证据(密度)</th><th>v4 现状</th></tr></thead>
+		<tbody>
+			<tr><td>G1</td><td><b>击杀兑现(Fatal)缺失</b></td><td>Ironclad Feed / Silent The Hunt / Defect Sunder / Regent Knockout Blow,四角色全有</td><td>只有碎骨聚集体(埋葬计数)与 Echoing Slash 类;无「击杀即收益」的专属兑现卡</td></tr>
+			<tr><td>G2</td><td><b>回合开始自动机近为零</b></td><td>Countdown / Furnace / Genesis / Infinite Blades / Noxious Fumes / Spinner / Sentry Mode / Sealed Throne / Pyre / Crimson Mantle / Dark Embrace 系,每角色 4-6 张</td><td>v4 自动机全部是「事件触发」(每当被埋葬/被置顶/被去除),「每回合开始:收益」类仅沉睡的回合门槛用到,无收益型回合自动机</td></tr>
+			<tr><td>G3</td><td><b>敌方降力(硬解)缺失</b></td><td>Enfeebling Touch(-8 力)/ Mangle(-10 力)/ Malaise / Piercing Wail / Dying Star / Resonance / Monarch's Gaze,每角色 1-4 张</td><td>只有力量转移(去除敌方 1 力量,Uncommon);「敌方[攻击者] -N 力量」无卡</td></tr>
+			<tr><td>G4</td><td><b>运转即输出的计数兑现不足</b></td><td>Murder / Memento Mori / Finisher / Flechettes / Death March / Helix Drill / Lunar Blast,每角色 2-5 张</td><td>有碎骨聚集体(埋葬数)、蓄势待发(回合数)、战术爆破手(被置顶);「本回合揭晓数/置顶数」计数兑现仅此数张</td></tr>
+			<tr><td>G5</td><td><b>自我代价只有「沉睡」一型</b></td><td>自伤(Offering)/ 自 Doom / 透支 / 衰减 / 结束回合,五种变体</td><td>代价 = 埋葬友方(卡位成本)+ 增强自身诅咒(双刃)+ 沉睡(零贡献期);缺「当回合爆发、下回合支付」的透支型</td></tr>
+			<tr><td>G6</td><td><b>Common 层出现零贡献卡</b></td><td>StS2 的 Common 全即打即用;零贡献/立引擎卡全部 Rare</td><td>浅眠者/春眠(Common 沉睡)= 零贡献期,违背入口层原则</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>2.3 OneDeck v4 桥与转换件审计(按三分法全量分类)</h3>
+<div class="card">
+	<p class="lead">对 v4 全部 117 张卡按 §1.6 三分法(制造桥 / 轻兑现 / 重转换)人工分类;跨体系卡(效果涉及两条轴以上)约 60 张。审计目标:① U 层是否混入重转换;② R 层重转换的完整性;③ 轴对轴桥网络是否有空位。</p>
+	<h4>2.3.1 类型分布</h4>
+	<table>
+		<thead><tr><th>类型</th><th style="width:9%">约数量</th><th style="width:36%">代表卡</th><th>结论</th></tr></thead>
+		<tbody>
+			<tr><td><b>制造桥(入口桥)</b></td><td>~20</td><td>尸爆、喂尸人、献祭诅咒、不死诅咒者、异次元的诅咒、错乱传送术士、有副作用的传送门、枕边低语、净化之火、嗜血、军备竞赛、军火库、灵魂交换、传令官、轮回、全能人(六路)</td><td class="good">密度达标(遍布 C/U),检查③通过</td></tr>
+			<tr><td><b>轻兑现(转换件·轻)</b></td><td>~20</td><td>碎骨聚集体、咒食的萨满、咒食的大召唤师、拔苗助长、力量转移、曼哈顿博士、次元兽、裂缝召唤师、次元引导者、晨钟、模仿者、王牌、浅眠者、春眠、冬眠、蓄势待发</td><td class="good">充足,且多数带「位置谓词」定向(最高攻击 / 最深),优于 StS2 的随机版</td></tr>
+			<tr><td><b>轻引擎(事件自动机)</b></td><td>~24</td><td>墓碑、守墓人、白骨地、复仇者、次元棺材、临终诅咒、次元吞噬者、飞蛾人、诅咒共鸣、哥布林冲锋部队、哥布林暗杀部队、能量迸发、战术爆破手、屠夫、快速响应协议、武器精灵、远古魔法使用者、不散的恶灵、推进器、高等传送门、守夜人、冥界大炮</td><td class="warn">密度高于 StS2(萦绕 / 被置顶 / 被埋葬事件体系)——OneDeck 特色;但「事件自动机」与「回合自动机(每回合开始:收益)」比例失衡,后者仍为零(呼应 G2)</td></tr>
+			<tr><td><b>重转换·封顶型</b></td><td>~9</td><td>人间大炮(墓地存量→攻击)、乌合之众(力量→诅咒力量)、力量虹吸人(力量×2)、未完成的机器人(力量×2)、亘古沉眠者(全体次数授予)、大觉醒(全体唤醒)、次元胚胎(裂缝沉睡)、战争英雄(总攻击)、古代兵器</td><td class="good">总量与 StS2 相当;但方向集中在力量 / 墓地 / 沉睡,缺裂缝存量封顶(P1-1)</td></tr>
+			<tr><td><b>重转换·引擎型(全局乘法)</b></td><td>~5</td><td>力量渴求者(获得力量×2)、远古魔法使用者(置顶→力量)、守墓人(埋葬→置顶)、白骨地(埋葬→力量)、武器精灵(获得力量+1)</td><td class="good">足够</td></tr>
+			<tr><td><b>重转换·形态升级型</b></td><td><b class="bad">0</b></td><td>—</td><td class="bad"><b>全池为零,最大缺口</b>:无「触发次数放大 / 效果形态改变 / 载体全局化」卡(对照 StS2:Accelerant 毒触发+1、Fan of Knives Shiv 群伤、Seeking Edge Blade 群伤、Sword Sage Replay、Master Planner Sly 永久化、Phantom Blades Retain)</td></tr>
+		</tbody>
+	</table>
+	<h4>2.3.2 轴对轴桥矩阵(7 轴)</h4>
+	<p class="lead">单元格 = 两条轴之间的桥卡(类型);通用轴(力量胶水)与所有轴连通,略;位移轴为动作轴(置顶 / 埋葬 / 交换 / 延迟),与诅咒轴的「置顶」动作已连通(丧钟 / 送葬人 / 恶魔低语)。</p>
+	<table>
+		<thead><tr><th style="width:8%"></th><th style="width:24%">墓地</th><th style="width:22%">裂缝</th><th style="width:22%">诅咒</th><th style="width:22%">沉睡</th></tr></thead>
+		<tbody>
+			<tr><td><b>墓地</b></td><td>—</td><td>错乱传送术士(制造);次元棺材(引擎·反向)</td><td>被诅咒的尸体(制造+兑现)、不死诅咒者(制造)、献祭诅咒(制造·代价)</td><td>亡魂之茧(沉睡条件=墓地事件)</td></tr>
+			<tr><td><b>裂缝</b></td><td></td><td>—</td><td>异次元的诅咒(制造·双投)、临终诅咒(引擎·反向)</td><td>次元胚胎(沉睡条件=裂缝存量)</td></tr>
+			<tr><td><b>诅咒</b></td><td></td><td></td><td>—</td><td class="bad"><b>空位</b>:无任何诅咒 × 沉睡桥</td></tr>
+			<tr><td><b>沉睡</b></td><td></td><td></td><td></td><td>—</td></tr>
+		</tbody>
+	</table>
+	<div class="note">补充:沉睡 × 攻击桥密集(浅眠者 / 梦游者 / 蓄势待发 / 春眠 / 冬眠 / 亘古沉眠者 / 沉睡的巨像 / 古代兵器 / 噩梦);攻击 × 墓地、攻击 × 力量桥密集;7 轴中 6 轴两两连通。<b>唯一资源轴空位 = 诅咒 × 沉睡</b>。</div>
+	<h4>2.3.3 审计结论(4 条)</h4>
+	<ul>
+		<li class="bad"><b>① 形态升级型为零(最大缺口)</b>:v4 的放大全部是「数值型」(武器精灵 +1、力量渴求者 ×2、白骨地 +1/次),没有「触发次数 +1」「攻击群伤化」「载体全局化」——StS2 每角色 1-3 张。形态升级是「同一批卡的第二成长维度」,也是 Rare 层最有辨识度的封顶体验。</li>
+		<li class="warn"><b>② 裂缝存量缺 Rare 封顶兑现</b>:次元兽 / 裂缝召唤师 / 次元引导者全是 U 轻兑现(每次去除 1 张);对照墓地有 人间大炮(R,存量→攻击),裂缝轴没有对应物。</li>
+		<li class="warn"><b>③ 诅咒 × 沉睡轴桥空位</b>:7 轴矩阵唯一资源轴空位;两轴各自都是「条件积累」型(诅咒力量 / 沉睡条件),天然可互喂,缺一张桥。</li>
+		<li class="good"><b>④ U 层干净,轻引擎密度是特色</b>:U 层无封顶型 / 全局引擎型混入(军火库在 Rare 正确);事件自动机(~24 张)密度高于 StS2,是萦绕体系的自然结果——保持。</li>
+	</ul>
+	<h4>2.3.4 对应新增卡建议(6 张,并入 §3)</h4>
+	<table>
+		<thead><tr><th style="width:14%">卡(草案)</th><th style="width:9%">稀有度</th><th style="width:38%">效果</th><th>对照与理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>墓园共鸣</b></td><td>Rare</td><td>萦绕:每当友方[亡语]被埋葬:其亡语额外触发 1 次</td><td>对照 Accelerant(毒触发 +1 次)——触发次数放大,E5 闭环;达成难度 = 萦绕卡存活 + 亡语密度</td></tr>
+			<tr><td><b>战旗</b></td><td>Rare</td><td>萦绕:友方[攻击者]的攻击对全体敌人生效;每回合埋葬 1 张友方卡</td><td>对照 Fan of Knives / Seeking Edge(群伤化)——最高形态升级,代价对冲达成难度</td></tr>
+			<tr><td><b>回声</b></td><td>Rare</td><td>给予 1 张友方[攻击者] [萦绕]:每当其被置顶:额外触发 1 次</td><td>对照 Sword Sage(Replay)/ Phantom Blades——置顶频率放大,E6 闭环</td></tr>
+			<tr><td><b>咒蚀之眠</b></td><td>Uncommon</td><td>【沉睡】直到敌方[负面]拥有 3 力量;唤醒时:攻击 ×2;攻击力 = 敌方[负面]力量(常态结算)</td><td>填补诅咒 × 沉睡空位:沉睡条件 = 诅咒存量,唤醒兑现 = 诅咒力量 × 段数</td></tr>
+			<tr><td><b>梦魇低语</b></td><td>Uncommon</td><td>给予 1 张敌方[负面] [沉睡](直到其主人受到 3 次伤害)</td><td>对照噩梦(敌方[攻击者]沉睡)的诅咒版——敌方诅咒沉睡 = 自伤暂停,防守工具</td></tr>
+			<tr><td><b>次元坍缩</b></td><td>Rare</td><td>攻击;去除任意数量友方[次元裂缝]:每去除 1 张攻击 ×1</td><td>对照人间大炮(墓地存量→攻击)的裂缝版——P1-1 落地,裂缝存量 Rare 封顶</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>3. 调整建议</h2>
+
+<h3>3.1 P0 — 结构性建议(v5 建议纳入)</h3>
+
+<div class="rec">
+	<h3>P0-1 新增「处决/击杀」兑现维度(Fatal)<span class="badge p0">新关键词</span></h3>
+	<div class="tag-row"><span class="badge p0">P0</span><span class="badge" style="color:#7dcfff;border-color:#7dcfff88">建议 3-5 张新卡</span></div>
+	<p><b>StS2 证据</b>:四角色全部有击杀兑现,收益形态多样——永久成长(Feed 最大 HP)、资源(The Hunt 卡牌奖励 / Sunder 能量 / Knockout Blow 星币)、连打(Echoing Slash)。击杀是战斗中最强的正反馈时刻,StS2 把它做成关键词(Fatal)并给出四种兑现形态。</p>
+	<p><b>OneDeck 落点</b>:OneDeck 中「敌方卡被埋葬」= 击杀,建议定义关键词 <span class="mono">处决</span>:<b>「处决:埋葬 1 张敌方[攻击者] 时触发」</b>——与现有系统零冲突(埋葬事件已存在)。建议新卡:</p>
+	<ul>
+		<li><span class="mono">斩首(Common,攻击者)</span>:攻击;处决:给予 1 张友方[攻击者] 1 力量 —— 击杀即成长,入口层教学卡</li>
+		<li><span class="mono">噬魂者(Uncommon,攻击者)</span>:处决:给予所有友方[攻击者] +1 攻击力(永久)—— 把第二乘区成长挂在击杀上</li>
+		<li><span class="mono">处刑人(Uncommon)</span>:处决:置顶 1 张友方[攻击者](最高攻击)—— 击杀 = 节奏续杯,与 E6 闭环</li>
+		<li><span class="mono">死神镰刀(Rare,攻击者)</span>:攻击 ×2;处决:攻击 ×2 —— 斩杀滚雪球,双 deck 下敌方卡密度高,达成难度可控</li>
+	</ul>
+	<p><b>设计要点</b>:双 deck 合并意味着敌方[攻击者]埋葬频率天然高(敌方卡也会被自己埋葬?),需要限定「由本卡造成的埋葬」避免白嫖;收益上限对齐 StS2 的 Feed(每场最多 2-3 次触发)。</p>
+</div>
+
+<div class="rec">
+	<h3>P0-2 补「回合开始自动机」节奏件<span class="badge p0">卡池维度</span></h3>
+	<div class="tag-row"><span class="badge p0">P0</span><span class="badge" style="color:#7dcfff;border-color:#7dcfff88">建议 3-4 张新卡</span></div>
+	<p><b>StS2 证据</b>:每角色 4-6 张「回合开始自动机」:Countdown(每回合 Doom)、Furnace(每回合 Forge)、Genesis(每回合星币)、Infinite Blades(每回合 Shiv)、Noxious Fumes(每回合毒)、Spinner(每回合 Glass)、Dark Embrace 系。自动机把「条件制造」从手动变成免费——是构筑中期「引擎感」的来源。OneDeck 的事件自动机(萦绕)已经很丰富,但回合自动机为零。</p>
+	<p><b>OneDeck 落点</b>(利用 OneDeck 已有的回合时机,即蓄势待发/春眠使用的「第 N 回合开始」):</p>
+	<ul>
+		<li><span class="mono">暮鼓(Uncommon,萦绕)</span>:每回合开始:增强 1 敌方[负面] —— 诅咒流自动机,对照 Countdown</li>
+		<li><span class="mono">招魂幡(Uncommon,萦绕)</span>:每回合开始:置顶 1 张友方[亡语](最深)—— 墓地流自动机,对照 Furnace</li>
+		<li><span class="mono">军号(Uncommon,萦绕)</span>:每回合开始:给予 1 张友方[攻击者](最低攻击) 1 力量 —— 攻击流自动机,对照 Genesis</li>
+		<li><span class="mono">黎明守卫(Rare,萦绕)</span>:每回合开始:唤醒 1 张友方[沉睡];若不存在:给予 1 张友方[攻击者] 2 力量 —— 沉睡流自动机,对照 Sealed Throne</li>
+	</ul>
+	<p><b>设计要点</b>:自动机的收益要「小且稳定」(对照 Countdown 6 Doom/回合),不要做成每回合大数值;与萦绕 tag 复用现有事件系统,实现成本低。</p>
+</div>
+
+<div class="rec">
+	<h3>P0-3 补「敌方降力」硬解维度<span class="badge p0">卡池维度</span></h3>
+	<div class="tag-row"><span class="badge p0">P0</span><span class="badge" style="color:#7dcfff;border-color:#7dcfff88">建议 2-3 张新卡</span></div>
+	<p><b>StS2 证据</b>:每角色 1-4 张敌降力卡,全部是「硬解」定位:Enfeebling Touch(敌 -8 力本回合)、Mangle(20 伤 + -10 力)、Malaise(X 费 -X 力 -X 虚弱)、Piercing Wail(全敌 -6 力)、Dying Star(全敌 -9 力)、Resonance(你 +1 敌 -1)。它们解决「敌方大攻击回合」的防守缺口——不需要格挡,直接拆掉伤害源。</p>
+	<p><b>OneDeck 落点</b>:敌方[攻击者]的力量是 StS2 敌方攻击力的对应物。建议:</p>
+	<ul>
+		<li><span class="mono">虚弱诅咒(Common)</span>:敌方[攻击者](最高攻击) -2 力量 —— 入口级硬解,对照 Enfeebling Touch</li>
+		<li><span class="mono">衰弱光环(Uncommon,萦绕)</span>:每当敌方[攻击者]被置顶:其 -1 力量 —— 事件型硬解,与 E6 置顶流联动(注意:这与「置顶敌方诅咒」桥不冲突,负面 tag 与攻击者 tag 互斥)</li>
+		<li><span class="mono">寂静术(Rare)</span>:全体敌方[攻击者] -2 力量;若敌方存在[负面]:额外 -1 —— 群解 + 诅咒流联动桥</li>
+	</ul>
+	<p><b>设计要点</b>:敌方[负面]的力量是诅咒流资源(增强),敌方[攻击者]的力量是防守维度,两套互不干扰;降力卡的数值参考 StS2 的 -6~-10(敌攻击基数大)按 OneDeck 的力量经济折算(-2~-3)。</p>
+</div>
+
+<div class="rec">
+	<h3>P0-4 补「运转即输出」动作计数兑现<span class="badge p0">卡池维度</span></h3>
+	<div class="tag-row"><span class="badge p0">P0</span><span class="badge" style="color:#7dcfff;border-color:#7dcfff88">建议 2-3 张新卡</span></div>
+	<p><b>StS2 证据</b>:动作计数伤害是 StS2 让「运转卡池自动获得输出」的标准解法——Murder(抽牌计数)、Memento Mori(弃牌计数)、Finisher(攻击计数)、Helix Drill(能量计数)、Lunar Blast(技能计数)。玩家运转得越好,伤害越高,不需要额外输出卡。</p>
+	<p><b>OneDeck 落点</b>:OneDeck 的三个核心动作是揭晓/置顶/埋葬,已有碎骨聚集体(埋葬数)与远古魔法使用者(置顶数→力量),建议补:</p>
+	<ul>
+		<li><span class="mono">连击大师(Uncommon,攻击者)</span>:攻击;本回合每置顶 1 张友方卡:攻击 ×1(可叠加)—— 置顶次数 → 段数,与 E6 闭环</li>
+		<li><span class="mono">揭晓计数器(Rare,攻击者)</span>:攻击力 = 本回合揭晓过的友方[攻击者]数量(常态结算)—— 动态攻击力新形态,与 E9 闭环</li>
+	</ul>
+	<p><b>设计要点</b>:与 v4 已有「攻击 ×本回合埋葬数」「攻击力 = 回合数」同句式,直接复用关键词,无新机制成本。</p>
+</div>
+
+<div class="rec">
+	<h3>P0-5 补「透支型」自我代价(第二形态)<span class="badge p0">新句式</span></h3>
+	<div class="tag-row"><span class="badge p0">P0</span><span class="badge" style="color:#7dcfff;border-color:#7dcfff88">建议 2-3 张新卡</span></div>
+	<p><b>StS2 证据</b>:「用未来换现在」的五种变体里,OneDeck 只有「零贡献期」(沉睡)一种。Borrowed Time(透支:当回合 +4 费,全卡 +1 费)与 Void Form(结束回合,下回合前 2 张免费)证明「当回合爆发 + 下回合支付」的节奏杠杆是可行句式。</p>
+	<p><b>OneDeck 落点</b>(OneDeck 的「下回合代价」可表达为:下回合不能置顶 / 敌方先揭晓 N 张 / 下回合跳过自身揭晓):</p>
+	<ul>
+		<li><span class="mono">透支契约(Uncommon)</span>:给予 1 张友方[攻击者] 攻击 +2 次;下回合敌方先揭晓 2 张 —— 第一乘区透支,对照 Borrowed Time</li>
+		<li><span class="mono">亡者冲锋(Rare,攻击者)</span>:攻击 ×3;下回合你跳过 1 次揭晓 —— 大爆发换节奏损失,对照 Void Form</li>
+	</ul>
+	<p><b>设计要点</b>:代价必须可感知且可规划(下回合 X 张 / 跳过 1 次),不能是模糊的「下回合变弱」;数值按「透支 = 2 倍当回合收益」折算。</p>
+</div>
+
+<h3>3.2 P1 — 维度扩充建议</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:18%">建议</th><th style="width:34%">StS2 证据</th><th>OneDeck 落点</th></tr></thead>
+		<tbody>
+			<tr><td><b>P1-1 存量兑现卡的「频率×存量」双形态</b></td><td>Haunt(频率)vs Soul Storm(存量)对同一资源提供两种兑现卡</td><td>诅咒流已有力量×揭晓×数量;裂缝流缺 Rare 存量封顶(审计②:次元兽等全为 U 轻兑现)→ 新增 <b>次元坍缩</b>(§2.3.4),对照人间大炮的墓地版做裂缝版</td></tr>
+			<tr><td><b>P1-2 三时间形态的兑现</b></td><td>阈值(Doom 即死)/ 衰减(Glass)/ 存量(Soul Storm)</td><td>OneDeck 已有存量(墓地/裂缝/诅咒力量)与阈值(沉睡条件);建议给沉睡流补「衰减型」兑现(唤醒后每回合 -1 力量,越快用越强)——对照 Glass,给沉睡一个「唤醒后时效性」的张力</td></tr>
+			<tr><td><b>P1-3 集中成长体验</b></td><td>Regent Forge:所有锻造卡喂一把 Blade(70-100+ 伤害)</td><td>OneDeck 有分散成长(卡面攻击力 +N)与全池成长(Claw 类);建议评估「单卡集中成长」(如:攻击力 = 本卡获得的力量,可叠加)——对照王牌/战争英雄的动态攻击力,可加「攻击力 = 自身获得的力量总和(常态结算)」</td></tr>
+			<tr><td><b>P1-4 双主线并行验证</b></td><td>Regent 星币轴 + Forge 轴互不竞争</td><td>v4 的沉睡×诅咒(枕边低语/守夜人)、墓地×攻击(嗜血/军备竞赛)已是并行双轴;建议检查「攻击武备」与「诅咒」两轴是否有桥(目前诅咒流增强敌方、攻击流强化友方,缺互喂桥,可加 1 张)</td></tr>
+			<tr><td><b>P1-5 敌方互动的防守端</b></td><td>Flame Barrier(反弹)、Reflect(反射)、Colossus(对易伤敌减伤)、Bone Shards(牺牲 Osty 换 AoE+防)</td><td>OneDeck 的防守全是格挡/埋葬敌方;建议评估「敌方攻击反弹/减伤」型卡 1-2 张(如:萦绕:每当敌方[攻击者]攻击:其 -1 力量)——与 P0-3 合并考虑</td></tr>
+			<tr><td><b>P1-6 形态升级型(触发次数 / 形态放大)</b></td><td>Accelerant(毒触发+1 次)、Fan of Knives(Shiv 群伤)、Seeking Edge(Blade 群伤)、Sword Sage(Replay)、Master Planner(Sly 永久化)、Phantom Blades(Retain+首刀增幅)</td><td>v4 放大全为数值型(+1 / ×2),形态升级为零(审计①,最大缺口)→ 新增 3 张:<b>墓园共鸣 / 战旗 / 回声</b>(§2.3.4)</td></tr>
+			<tr><td><b>P1-7 诅咒 × 沉睡轴桥</b></td><td>各角色轴对轴网络无资源轴空位(Necrobinder 四轴闭环、Defect 状态→球七路回报)</td><td>7 轴矩阵唯一资源轴空位 = 诅咒 × 沉睡(审计③)→ 新增 2 张:<b>咒蚀之眠 / 梦魇低语</b>(§2.3.4)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>3.3 P2 — 微调建议</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:18%">建议</th><th style="width:34%">StS2 证据</th><th>OneDeck 落点</th></tr></thead>
+		<tbody>
+			<tr><td><b>P2-1 Common 层零贡献卡检查</b></td><td>StS2 Common 无能力卡、零贡献/立引擎卡全在 Rare</td><td>浅眠者/春眠是 Common 沉睡(零贡献期)——建议:要么上移到 Uncommon,要么给 Common 沉睡卡加「兜底」(枕边低语已有兜底,春眠没有)——对照 StS2「入口层即打即用」原则</td></tr>
+			<tr><td><b>P2-2 起始教学单元</b></td><td>每角色起始 2 张职业卡教核心机制</td><td>OneDeck 的 Start Card 是中立洗牌卡;建议评估:是否在商店起始/教程局给 1 张「新手锚点卡」(如:教程局必出 1 张铁匠/集结号)降低学习曲线</td></tr>
+			<tr><td><b>P2-3 达成难度展示</b></td><td>StS2 高上限卡的难度 = 源密度 + 回合数(社区共识)</td><td>v4 的达成难度表已经很清晰;建议给「亘古沉眠者」补对照 StS2 Feed 的中间档(10 力量 + 5 回合可能过苛,可评估 8 力量 + 4 回合)——与 v4 开放问题一致</td></tr>
+			<tr><td><b>P2-4 多段攻击性能</b></td><td>Silent 刀流 / Rattle 段数也有动画压力</td><td>与 v4 开放问题一致;StS2 的解法是段数动画短促并行,建议播放时同帧并行而非串行</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>4. 五角色速览对照(附录)</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:10%">角色</th><th style="width:16%">资源/身份</th><th style="width:26%">主线轴</th><th style="width:18%">桥网络</th><th>给 OneDeck 的独特参考</th></tr></thead>
+		<tbody>
+			<tr><td><b>Necrobinder</b></td><td>Doom 阈值 / Soul 频率 / Osty 蓄水池 / Ethereal 计数</td><td>Doom 处决、Soul 循环、Osty 攻防一体、Ethereal 计数、高费大数字</td><td>5 张桥连成四轴闭环(Dirge / Reaper Form / Devour Life / Necro Mastery / Sleight of Flesh)</td><td>自我代价两代形态(自 Doom → 透支);兑现件从一次性到可重复(Time's Up / Eidolon);「处决绕过防御端」的终结设计</td></tr>
+			<tr><td><b>Ironclad</b></td><td>消耗堆计数 / HP 即资源 / 易伤</td><td>消耗、力量、自伤、易伤、格挡、0 费连打</td><td>消耗↔抽/防/伤三向闭环;自伤↔力量/能量;格挡↔伤害</td><td>「三职 debuff」(易伤=状态+计数器+事件源);垃圾经济学第一形态;Fatal 击杀成长(Feed)</td></tr>
+			<tr><td><b>Silent</b></td><td>Sly 免费触发 / 弃牌事件 / 毒 DoT / Shiv</td><td>弃牌Sly、毒、Shiv、抽牌计数、敏捷防御</td><td>弃牌↔免费打/抽/能/刀/计数五向</td><td>动作计数伤害(Murder/Memento Mori/Finisher)= 运转即输出;技能卡过半的攻击外包解法;Wraith Form 衰减代价</td></tr>
+			<tr><td><b>Defect</b></td><td>球被动池 / Focus / 状态卡回收 / 0 费</td><td>球伤害、冰霜防御、Focus、0 费循环、状态回收、能量</td><td>状态→球/伤/能/降费/抽七条回报线</td><td>被动池+兑现操作的两段式;Glass 衰减资源;自塞状态的主动垃圾经济;「用未来换现在」第三变体(Hyperbeam/Biased)</td></tr>
+			<tr><td><b>Regent</b></td><td>星币存款 / Forge 集中成长 / 随从转化 / 创造</td><td>星币、Forge、随从、创造、大数字</td><td>星↔伤/防/能;Forge↔Blade 全兑现;创造三路变现;双主线并行</td><td>跨回合货币=可储存经济;集中成长(所有卡喂一张);大数字密度全游最高;垃圾经济学第四形态</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>5. 建议落地顺序</h2>
+<div class="card">
+	<ol>
+		<li><b>P0-1 处决关键词</b>:3-5 张新卡 + 1 关键词定义 —— 实现成本最低(复用埋葬事件),收益最明确(击杀正反馈)。<span class="good">建议 v5 第一批。</span></li>
+		<li><b>P0-2 回合自动机</b>:3-4 张萦绕卡 —— 复用萦绕系统,「每回合开始」时机已存在(沉睡回合门槛)。<span class="good">v5 第一批。</span></li>
+		<li><b>P0-3 敌降力</b>:2-3 张 —— 与 P1-5 合并设计,补防守维度。<span class="good">v5 第二批。</span></li>
+		<li><b>P0-4 / P0-5</b>:动作计数与透支句式各 2-3 张 —— 复用关键词,无新机制。<span class="good">v5 第二批。</span></li>
+		<li><b>P2-1</b>:Common 沉睡卡决策(上移或加兜底)—— 一行改动。</li>
+		<li><b>P1 系列</b>:按卡池规模目标(117 → 约 135)评估增量;<b>P1-6(形态升级 3 张)与 P1-7(诅咒×沉睡桥 2 张)优先</b>——它们直接填补审计发现的两个空位,每项 2-3 张。</li>
+	</ol>
+	<div class="note">总体判断:v4 的结构(两段式、多乘区、桥网络、无上限自限)与 StS2 成熟结构一致,不需要动骨架;P0 五项是「已有语法内补全维度」,全部复用现有关键词/时机/事件,新增约 13-17 张卡(117 → 约 130-134),不引入新系统。</div>
+</div>
+
+</body>
+</html>

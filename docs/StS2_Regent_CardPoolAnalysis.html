@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>杀戮尖塔2 Regent 卡组结构拆解 — 条件 · 收益 · 稀有度分布 · 构筑图谱</title>
+<style>
+	:root {
+		--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+		--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+		--purple: #bb9af7; --cyan: #7dcfff;
+	}
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+	body {
+		background: var(--bg); color: var(--text);
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+	}
+	h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+	h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+	h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+	.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+	.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+	.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+	.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+	.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+	table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+	th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+	.mono { font-family: Consolas, monospace; }
+	.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+	.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+	.b-star { color: #e0af68; border-color: #e0af6888; }
+	.b-forge { color: #f7768e; border-color: #f7768e88; }
+	.b-minion { color: #7dcfff; border-color: #7dcfff88; }
+	.b-colorless { color: #bb9af7; border-color: #bb9af788; }
+	.b-big { color: #9ece6a; border-color: #9ece6a88; }
+	.b-gen { color: #8b93a3; border-color: #8b93a388; }
+	.b-mp { color: #ff9e64; border-color: #ff9e6488; }
+	.star { color: #e0af68; font-weight: 700; }
+	ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+	li { margin: 3px 0; }
+	.lead { font-size: 0.92rem; margin: 8px 0; }
+	.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+	.dim { color: var(--dim); }
+	.warn { color: var(--warn); }
+	.good { color: var(--good); }
+	.bad { color: var(--bad); }
+	.purple { color: var(--purple); }
+	.cyan { color: var(--cyan); }
+	.arch-head td { background: var(--card2); font-weight: 700; color: #e6e9ef; font-size: 0.9rem; }
+	.keycard { background: #1a1e27; border: 1px solid #e0af6855; border-radius: 8px; padding: 10px 14px; margin: 8px 0; font-size: 0.85rem; }
+	.keycard .kc-name { font-weight: 700; color: #e0af68; }
+	.r-tag { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; white-space: nowrap; }
+	.r-basic { color: #8b93a3; border-color: #8b93a388; }
+	.r-common { color: #9ece6a; border-color: #9ece6a88; }
+	.r-uncommon { color: #7dcfff; border-color: #7dcfff88; }
+	.r-rare { color: #bb9af7; border-color: #bb9af788; }
+	.r-ancient { color: #e0af68; border-color: #e0af6888; }
+	@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style>
+</head>
+<body>
+
+<h1>杀戮尖塔 2 · Regent 卡组结构拆解</h1>
+<div class="sub">2026-08-17 · 卡牌数据源:<a href="https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Cards_List">slaythespire.wiki.gg 官方卡表</a>(Cargo 数据,91 张,含最新平衡补丁)· 机制规则:STSWiki / Turtle Beach / untapped.gg 交叉验证 · 中文译名为参考译名,一律以英文原文为准 · 同系列:<a href="StS2_Necrobinder_CardPoolAnalysis.html">Necrobinder</a> / <a href="StS2_Ironclad_CardPoolAnalysis.html">Ironclad</a> / <a href="StS2_Silent_CardPoolAnalysis.html">Silent</a> / <a href="StS2_Defect_CardPoolAnalysis.html">Defect</a></div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num">91</div><div class="lbl">卡池总数</div></div>
+	<div class="kpi"><div class="num">2</div><div class="lbl">资源系统:能量 + 星币(星币跨回合保留、无上限)—— 全游唯一双货币角色</div></div>
+	<div class="kpi"><div class="num">12</div><div class="lbl">带 Forge 的卡数 —— 王权之刃(Sovereign Blade)单局内永久成长</div></div>
+	<div class="kpi"><div class="num">16</div><div class="lbl">带星币关键词的卡数(获得/花费/计数)</div></div>
+	<div class="kpi"><div class="num">75 HP</div><div class="lbl">Divine Right:开局 3 星 —— 第一回合就有「存款」</div></div>
+</div>
+
+<h2>0. 角色骨架</h2>
+<div class="card">
+	<ul>
+		<li><b>属性</b>:75 HP(Ascension 2+ 为 60)、3 能量、起始遗物 <b>Divine Right</b>(每场战斗开始获得 3 星)。</li>
+		<li><b>起始牌组</b>(10 张):Strike ×4、Defend ×4、Falling Star(0 费 8 伤 + 虚弱 + 易伤)、Venerate(获得 2 星)—— 两个职业卡直接演示「花现成资源打爆发」与「积累星币」两种节奏。</li>
+		<li><b>核心系统 · 星币(Stars)</b>:与能量平行的第二货币。<b>回合结束不清零、无上限</b> —— 是「存得住的钱」。16 张卡围绕星的获得/花费/计数展开;自动机(Genesis / The Sealed Throne / Venerate)提供每回合稳定收入。</li>
+		<li><b>核心系统 · Forge(锻造)</b>:打出带 Forge 关键词的卡时,<b>王权之刃(Sovereign Blade)</b>被创造(本场首张);此后每次 Forge 永久提高其伤害 —— 单局内一个集中成长的武器。Blade 是 2 费 Retain 攻击卡,伤害可滚到 70-100+。</li>
+		<li><b>其他机制</b>:<b>随从转化</b>(BEGONE! / CHARGE!! / GUARDS!!! 把卡变成 0 费随从 token)、<b>创造</b>(随机无色卡入手,4 张相关卡 + 3 张兑现件)、<b>Debris</b>(负面状态塞手)、Plating(衰减甲)、Vigor(下次攻击增伤)。</li>
+	</ul>
+	<div class="note">资源轴速览:星币 = <span class="warn">存款轴</span>(跨回合积累,获得/花费都是事件源);Forge = <span class="bad">单武器成长轴</span>;随从 = <span class="cyan">转化战力轴</span>(牌库工程 + 0 费打点);创造 = <span class="purple">随机收益轴</span>(无色卡池)。</div>
+</div>
+
+<h2>1. 条件体系</h2>
+
+<h3>1.1 A 组:星币事件(身份核心)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>获得星币</b></td><td>事件触发(每次获得独立结算)</td><td>Venerate / Glow / Hidden Cache / Solar Strike / Gather Light / Alignment / Genesis(每回合 2)/ The Sealed Throne(每打 1 牌 1 星)/ Royal Gamble(9 星)/ Big Bang / Knockout Blow(击杀)/ Hegemony / Convergence / Constellation(mp)</td><td><b>Black Hole</b>:每次全敌 3 伤;<b>Radiate</b>:本回合每获得 1 星全敌 3 伤 —— 得星频率 = 伤害频率</td></tr>
+			<tr><td><b>花费星币</b></td><td>事件触发</td><td>任意花星卡(取决于构筑)</td><td><b>Child of the Stars</b>:每花费 1 星获得 2 格挡 —— 花星 = 防御</td></tr>
+			<tr><td><b>星币存量</b></td><td>实时读取</td><td>跨回合积累(回合结束不清零)</td><td>星币是可存储资源 —— 存量本身是「提前量」:这回合不花,下回合大数字</td></tr>
+			<tr><td><b>每花费 4 能量</b></td><td>事件计数</td><td>任意高费卡</td><td><b>Orbit</b>:获得 1 能量(能量回收件)</td></tr>
+		</tbody>
+	</table>
+	<div class="note">星币与能量的本质区别:能量是「当回合预算」,星币是「跨回合存款」。自动机(Genesis / Sealed Throne)把星币做成稳定收入后,Black Hole / Radiate 让「每回合得星」自动变成伤害 —— 星币轴是「存款 + 利息」的数值结构。</div>
+</div>
+
+<h3>1.2 B 组:锻造计数(Forge)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>本场 Forge 总量</b></td><td>本场累计</td><td>Wrought in War / Spoils of Battle / Refine Blade / Bulwark / Beat into Shape / The Smith(30!)/ Furnace(每回合 5)/ Summon Forth / Conqueror / Big Bang / Seeking Edge</td><td class="good"><b>王权之刃伤害成长</b>(每次 Forge 永久 +对应数值)—— 单武器集中成长,战斗内不回退</td></tr>
+			<tr><td><b>打出首张 Forge 卡</b></td><td>本场首事件</td><td>—</td><td>创造 Sovereign Blade(2 费 Retain 攻击)—— 之后每张 Forge 卡都在喂它</td></tr>
+			<tr><td><b>锻造事件</b></td><td>事件触发</td><td>任意 Forge 卡</td><td><b>Hammer Time</b>:队友同步锻造(多人)</td></tr>
+			<tr><td><b>Blade 的持有状态</b></td><td>位置检查</td><td>在牌组/弃牌堆/手牌任意位置</td><td><b>Summon Forth</b>:锻造 8 并从任意位置拉回手;<b>Conqueror</b>:Blade 本回合伤害翻倍;<b>Seeking Edge</b>:Blade 攻击全体;<b>Sword Sage</b>:Blade 获得 Replay 1(打两次);<b>Parry</b>:Blade 获得 10 格挡</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.3 C 组:创造 / 打出计数 / 抽牌事件</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">条件</th><th style="width:20%">判定方式</th><th style="width:30%">满足手段</th><th>兑现收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>创造卡牌</b></td><td>事件触发</td><td>Manifest Authority / Spectrum Shift(每回合自动机)/ Bundle of Joy / Quasar / Heirloom Hammer(复制无色)/ Largesse(mp)/ 随从转化卡</td><td><b>Arsenal</b>:+1 力量;<b>Pillar of Creation</b>:+2 格挡;<b>Supermassive</b>:本卡 +3 伤/张 —— 创造频率 = 三路收益</td></tr>
+			<tr><td><b>本回合技能打出数</b></td><td>回合内计数</td><td>—</td><td><b>Lunar Blast</b>:每张 +4 伤;<b>Make It So</b>:每 3 张技能回手(0 费循环件)</td></tr>
+			<tr><td><b>本回合打出 ≥5 张</b></td><td>回合内计数</td><td>—</td><td><b>Pale Blue Dot</b>:下回合开始抽 1</td></tr>
+			<tr><td><b>打出任意卡</b></td><td>事件触发</td><td>—</td><td><b>The Sealed Throne</b>(Ancient):+1 星;<b>Monologue</b>:本回合 +1 力量</td></tr>
+			<tr><td><b>抽到本卡</b></td><td>事件触发</td><td>—</td><td><b>Kingly Kick</b>:费用 -1;<b>Kingly Punch</b>:本场伤害 +4 —— 抽到即成长</td></tr>
+			<tr><td><b>击杀敌人</b></td><td>事件触发</td><td>—</td><td><b>Knockout Blow</b>:30 伤 + 击杀得 1 星(斩杀→存款)</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>1.4 D 组:自我代价 / 双刃剑</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">代价</th><th style="width:38%">付出形式</th><th>收益</th></tr></thead>
+		<tbody>
+			<tr><td><b>Debris 塞手</b></td><td>Collision Course(10 伤 + 1 碎片)、Crash Landing(21 全敌 + 塞满碎片)—— 碎片是消耗型废牌</td><td class="good">大数字 AOE 的代价是下回合手牌污染;目前无专属回收件(与 Defect 的状态回收形成对照)</td></tr>
+			<tr><td><b>结束回合</b></td><td>Void Form(Ethereal):本回合结束;前 2 张牌 0 费</td><td>把「下回合的 0 费」提前 —— 回合经济重构</td></tr>
+			<tr><td><b>滤牌代价</b></td><td>Tyranny:回合开始抽 1 并消耗手牌 1 张</td><td>持续滤牌引擎(有选择权)</td></tr>
+			<tr><td><b>敌我双减</b></td><td>Dying Star(Ethereal):全敌 9 伤 + 全体 -9 力量;Resonance:你 +1 力,敌 -1 力;Shared Fate 系</td><td>硬解型 debuff</td></tr>
+			<tr><td><b>Ethereal 约束</b></td><td>Dying Star / Void Form / Demesne 系</td><td>当回合必须使用,否则消失 —— 时机卡</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>2. 收益体系</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">收益类型</th><th style="width:44%">定义</th><th>代表兑现卡</th></tr></thead>
+		<tbody>
+			<tr><td class="warn"><b>① 星币</b></td><td>跨回合存款货币;获得/花费都是事件源 —— 全游唯一「可储存的代价/收益」</td><td>Venerate / Genesis / Sealed Throne(收入)、Black Hole / Radiate(得星伤害)、Child of the Stars(花星格挡)、Royal Gamble(9 星)</td></tr>
+			<tr><td class="bad"><b>② 王权之刃</b></td><td>单武器集中成长:Forge 越多,Blade 越痛,战斗内不回退 —— 所有锻造卡的共同兑现池</td><td>The Smith(30)、Furnace(自动机)、Summon Forth / Conqueror / Seeking Edge / Sword Sage / Parry(形态升级)</td></tr>
+			<tr><td class="cyan"><b>③ 随从战力</b></td><td>把废卡转化为 0 费随从 token(打击/俯冲/牺牲)—— 牌库工程 + 即时战力</td><td>BEGONE! / CHARGE!! / GUARDS!!!</td></tr>
+			<tr><td class="purple"><b>④ 创造(随机无色)</b></td><td>随机收益:无色卡池是 Regent 的「外挂卡库」,创造事件被 Arsenal / Pillar / Supermassive 二次变现</td><td>Manifest Authority / Spectrum Shift / Bundle of Joy / Quasar / Heirloom Hammer</td></tr>
+			<tr><td class="good"><b>⑤ 大数字</b></td><td>全游最高单卡数值密度:35 / 33(0 费)/ 49 / 21×全敌</td><td>Devastate、Comet、Seven Stars、Heavenly Drill、Crash Landing、Kingly Punch、Bombardment</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h2>3. 稀有度分布</h2>
+<div class="card">
+	<h3>3.1 数量与类型构成</h3>
+	<table>
+		<thead><tr><th>稀有度</th><th>数量</th><th>占比</th><th>攻击</th><th>技能</th><th>能力</th><th>攻击卡占比</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>4</td><td>4.4%</td><td>2</td><td>2</td><td>0</td><td>50%</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>20</td><td>22.0%</td><td>8</td><td>12</td><td>0</td><td>40%</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>38</td><td>41.8%</td><td>11</td><td>19</td><td>8</td><td>29%</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>27</td><td>29.7%</td><td>9</td><td>8</td><td>10</td><td>33%</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>2</td><td>2.2%</td><td>1</td><td>0</td><td>1</td><td>50%</td></tr>
+			<tr class="arch-head"><td>合计</td><td>91</td><td>100%</td><td>31</td><td>41</td><td>19</td><td>34%</td></tr>
+		</tbody>
+	</table>
+	<h3>3.2 每档稀有度的设计职责</h3>
+	<table>
+		<thead><tr><th style="width:12%">档位</th><th style="width:30%">承载功能</th><th>代表卡</th></tr></thead>
+		<tbody>
+			<tr><td><span class="r-tag r-basic">Basic</span></td><td>双货币教学:Venerate 教「存星」,Falling Star 教「白嫖爆发」(0 费 8 伤双 debuff)</td><td>Falling Star、Venerate</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td class="good"><b>轴入口</b>:星币入口(Glow / Hidden Cache / Solar Strike / Gather Light / Alignment)、Forge 入口(Wrought in War / Spoils of Battle / Refine Blade)、随从入口(BEGONE!)、基础大数字(Astral Pulse / Celestial Might / Collision Course)</td><td>无能力卡;12 张技能 —— 入口即经济</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td class="warn"><b>主轴组件 + 桥梁密集区</b>:星币兑现件(Black Hole / Radiate / Child of the Stars)、Forge 中件(Bulwark / Summon Forth / Conqueror)、创造件(Manifest / Quasar)、大数字(Devastate 35)</td><td>19 张技能 —— 操作卡密度全游最高档之一</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td class="bad"><b>封顶件与引擎</b>:Forge 封顶(The Smith 30 / Furnace 自动机)、Blade 形态升级(Seeking Edge / Sword Sage)、星币自动机(Genesis)、大数字封顶(Comet / Seven Stars / Crash Landing / Heavenly Drill)、全局引擎(Arsenal / Hammer Time / Void Form)</td><td>The Smith、Genesis、Comet、Seven Stars、Heavenly Drill、Arsenal、Void Form</td></tr>
+			<tr><td><span class="r-tag r-ancient">Ancient</span></td><td>轴封顶的极端化</td><td>Meteor Shower(0 费 14 全敌 + 双 debuff)、The Sealed Throne(每打 1 牌 1 星)</td></tr>
+		</tbody>
+	</table>
+	<div class="note">结构性结论:Regent 的 Uncommon 技能卡 19 张全角色并列最高 —— 星币操作、锻造操作、创造操作全部集中在中期;Rare 的能力卡 10 张里 6 张是「自动机」(Genesis / Furnace / Spectrum Shift / Arsenal / Monarch's Gaze / Tyranny),说明 Regent 的后期是「让经济自己转」。</div>
+</div>
+
+<h2>4. 主线与构筑关键卡</h2>
+
+<h3>4.1 星币轴(存款经济)</h3>
+<div class="card">
+	<div class="flow">存星(Venerate / Glow / Hidden Cache / Solar Strike / Genesis / Sealed Throne)→ 每回合自动收入 → 得星事件兑现(Black Hole / Radiate)→ 花星防御(Child of the Stars)→ 大爆发(Royal Gamble 9 星)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>收入</td><td>Venerate ★(2 星,起始)/ Glow(1 星+抽)/ Hidden Cache(1 星,下回合 3 星)/ Solar Strike(9 伤+1 星)/ Gather Light(8 防+1 星)/ Alignment(1 星)/ Genesis ★(每回合 2 星)/ The Sealed Throne ★(Ancient,每打 1 牌 1 星)</td><td>收入件全部附带基础攻防 —— 星币是「打牌的白送收益」</td></tr>
+			<tr><td>兑现</td><td>Black Hole ★(每得/花 1 星全敌 3 伤)/ Radiate ★(本回合每得 1 星全敌 3 伤)/ Child of the Stars ★(每花 1 星 2 防)</td><td>得星频率 = 伤害;花星 = 防御 —— 星币事件双路兑现</td></tr>
+			<tr><td>爆发</td><td>Royal Gamble ★(9 星)/ Knockout Blow(30 伤 + 击杀 1 星)/ Convergence(下回合 1 能 1 星 + 保留)/ Hegemony(15 伤下回合 1 星)/ Big Bang(1 能 1 星 + Forge 5)</td><td>星币存量的一次性兑现与跨轴桥</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Venerate、Genesis、The Sealed Throne、Royal Gamble、Black Hole、Radiate、Child of the Stars、Solar Strike</span><br>引擎形态:Genesis + Sealed Throne 每回合稳定 3-4 星 → Black Hole 每回合全敌 9-12 伤(白送)→ 关键回合 Royal Gamble 9 星 + Radiate 连打。星币轴是「存款 + 利息」—— 所有其他角色都没有跨回合货币,这是 Regent 的独有节奏。</div>
+</div>
+
+<h3>4.2 Forge / 王权之刃轴(单武器成长)</h3>
+<div class="card">
+	<div class="flow">首张 Forge 卡创造 Blade → 每次 Forge 永久提高 Blade 伤害 → 形态升级(全敌 / Replay / 格挡 / 双倍)→ 拉回手(Summon Forth)每回合打出</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>锻造源</td><td>Wrought in War ★(7 伤 + Forge 7)/ Spoils of Battle(Forge 6 + 抽 2)/ Refine Blade(Forge 8 + 下回合星)/ Bulwark(12 防 + Forge 10)/ Beat into Shape(Forge 5 + 每命中 +5)/ Furnace ★(每回合 Forge 5)/ Big Bang(Forge 5)/ The Smith ★(Forge 30!)/ Hammer Time(全队,mp)</td><td>锻造全部附带攻防/过牌 —— Forge 是「打牌的附加成长」;The Smith 一卡封顶</td></tr>
+			<tr><td>Blade 形态</td><td>Summon Forth ★(Forge 8 + 拉回手)/ Conqueror ★(Forge 3 + 本回合双倍)/ Seeking Edge ★(Blade 全敌)/ Sword Sage ★(Replay 1)/ Parry(Blade +10 防)</td><td>从「单敌大数字」到「全敌」到「打两次」—— Blade 的形态随构筑升级</td></tr>
+			<tr><td>兑现</td><td>Sovereign Blade 本体(2 费 Retain)</td><td>70-100+ 伤害的单卡终结</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Wrought in War、The Smith、Furnace、Summon Forth、Conqueror、Seeking Edge、Sword Sage</span><br>引擎形态:Furnace 每回合白送 Forge 5 → Wrought in War 打牌时再锻造 → The Smith 一次性 +30 → Summon Forth 每回合把 Blade 拉回手 → Seeking Edge 群伤化。Forge 轴是「所有卡共同喂养一张卡」的集中式成长 —— 与 Claw(全卡池共享成长)相反。</div>
+</div>
+
+<h3>4.3 随从 / 转化轴</h3>
+<div class="card">
+	<div class="flow">废卡转化(BEGONE! 手牌 1 张 → Minion Strike / CHARGE!! 牌组 2 张 → Minion Dive Bomb / GUARDS!!! 任意张 → Minion Sacrifice)→ 0 费战力 token → 牌库瘦身</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>转化</td><td>BEGONE! ★(1 张 → Minion Strike)/ CHARGE!!(牌组 2 张 → Minion Dive Bomb)/ GUARDS!!!(任意张 → Minion Sacrifice,消耗)</td><td>把 Strike / 废卡变成 0 费随从攻击 —— 牌库工程 + 即时战力双职</td></tr>
+			<tr><td>随从 token</td><td>Minion Strike / Minion Dive Bomb / Minion Sacrifice</td><td>0 费攻击/爆炸/牺牲三种形态的免费战力</td></tr>
+			<tr><td>联动</td><td>Arsenal(创造 → +1 力)/ Pillar of Creation(创造 → +2 防)/ Supermassive(每创造 +3 伤)</td><td>随从转化计入「创造」事件 —— 转化轴自动获得三路回报</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:BEGONE!、CHARGE!!、GUARDS!!!、Arsenal、Pillar of Creation、Supermassive</span><br>引擎形态:BEGONE! 把起始 Strike 变随从 → 牌组变薄、手牌多 0 费打点 → Arsenal 每张创造 +1 力 → Supermassive 越打越痛。转化轴是「垃圾经济学」的第四形态(铁甲消耗 / 静默者弃牌 / Defect 状态回收 / Regent 转化)。</div>
+</div>
+
+<h3>4.4 创造 / 无色轴</h3>
+<div class="card">
+	<div class="flow">随机无色卡入手(Manifest Authority / Spectrum Shift / Bundle of Joy / Quasar / Heirloom Hammer 复制)→ 创造事件回报(Arsenal 力 / Pillar 防 / Supermassive 伤)→ 无色卡自带异质效果</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>创造源</td><td>Manifest Authority ★(7 防 + 1 无色)/ Spectrum Shift ★(每回合 1 无色,自动机)/ Bundle of Joy(3 张)/ Quasar ★(3 选 1)/ Heirloom Hammer(20 伤 + 复制 1 张无色)</td><td>无色卡池 = Regent 的外挂卡库(类似白噪声/地狱之刃,但做成主线)</td></tr>
+			<tr><td>事件回报</td><td>Arsenal ★(+1 力/张)/ Pillar of Creation(+2 防/张)/ Supermassive(+3 伤/张,自身上限高)</td><td>创造频率三路变现</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Manifest Authority、Spectrum Shift、Quasar、Arsenal、Pillar of Creation、Supermassive、Heirloom Hammer</span><br>引擎形态:Spectrum Shift 每回合白送 1 张无色 → Arsenal + Pillar 每回合白涨 → Heirloom Hammer 复制关键无色卡。创造轴是「随机性收益」—— 每张无色卡自带独立机制,构筑自由度来自卡池宽度。</div>
+</div>
+
+<h3>4.5 大数字轴</h3>
+<div class="card">
+	<div class="flow">Devastate(35)/ Comet(0 费 33 + 双 debuff)/ Seven Stars(7×7 全敌)/ Heavenly Drill(X 费,X≥4 翻倍)/ Bombardment(消耗堆再打)/ Kingly Punch(抽到 +4)/ Crash Landing(21 全敌)/ Knockout Blow(30 + 击杀得星)/ Make It So(0 费循环)</div>
+	<table>
+		<thead><tr><th style="width:16%">环节</th><th style="width:44%">卡</th><th>作用</th></tr></thead>
+		<tbody>
+			<tr><td>纯大数字</td><td>Devastate ★(35)/ Comet ★(0 费 33!)/ Seven Stars ★(49 全敌)/ Heavenly Drill ★(X 费,X≥4 翻倍)/ Knockout Blow(30)/ Crash Landing(21 全敌)/ Bombardment(18,消耗堆回合末再打)</td><td>每费效率 10-17 —— 全游最高的大数字密度;与 Necrobinder 的 Bury(52)同风格</td></tr>
+			<tr><td>成长大数字</td><td>Kingly Punch ★(抽到 +4)/ Kingly Kick(抽到 -1 费)/ Make It So ★(每 3 技能回手)/ Lunar Blast(技能数 ×4)</td><td>抽牌/技能计数 → 数值 —— 运转即成长</td></tr>
+			<tr><td>支持</td><td>Energy 系(无专属能量件,靠星币轴与 Converge)/ Gamma Blast(0 费 13 + 双 debuff)/ Meteor Shower(Ancient)</td><td>大数字轴的启动费靠能量件与星币轴共同供给</td></tr>
+		</tbody>
+	</table>
+	<div class="keycard"><span class="kc-name">构筑关键卡:Devastate、Comet、Seven Stars、Heavenly Drill、Kingly Punch、Make It So、Bombardment</span><br>引擎形态:Comet 0 费 33 伤是白嫖大数字 → Kingly Punch 每抽到一次 +4 → Make It So 每 3 技能回手无限续 → Bombardment 消耗堆回合末再打。大数字轴是 Regent 的「结算层」—— 星币与 Forge 两轴养出来的钱最终都花在这里。</div>
+</div>
+
+<h2>5. 构筑之间的桥梁</h2>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:22%">连接</th><th style="width:26%">桥梁卡</th><th>原理</th></tr></thead>
+		<tbody>
+			<tr><td>星 → 伤害</td><td>Black Hole ★、Radiate ★</td><td>得星/花星事件 → 全敌伤害 —— 星币轴的进攻出口</td></tr>
+			<tr><td>星 → 防御</td><td>Child of the Stars ★</td><td>花星 → 格挡 —— 星币轴的防守出口</td></tr>
+			<tr><td>能量 ↔ 星</td><td>Big Bang(1 能 1 星 + Forge 5)、Convergence(下回合 1 能 1 星)、Orbit(花 4 能回 1 能)</td><td>双货币互转 —— 唯一的跨货币桥</td></tr>
+			<tr><td>Forge → 伤害 / 防御 / 群伤</td><td>Sovereign Blade 本体、Conqueror(双倍)、Seeking Edge(全敌)、Sword Sage(Replay)、Parry(格挡)</td><td>锻造总量 → 单武器全部兑现 —— 集中式成长</td></tr>
+			<tr><td>Forge → 星</td><td>Refine Blade(Forge 8 + 下回合星)、Big Bang</td><td>两轴互相供能</td></tr>
+			<tr><td>创造 → 力量 / 防御 / 伤害</td><td>Arsenal ★、Pillar of Creation ★、Supermassive ★</td><td>创造事件三路变现 —— 随从转化也计入</td></tr>
+			<tr><td>技能数 → 伤害 / 循环</td><td>Lunar Blast、Make It So ★</td><td>技能频率 → 大数字与回手循环</td></tr>
+			<tr><td>击杀 → 星</td><td>Knockout Blow ★</td><td>斩杀 → 存款(下回合滚雪球)</td></tr>
+			<tr><td>抽牌 → 成长 / 降费</td><td>Kingly Punch、Kingly Kick</td><td>抽到即变强 —— 与牌组厚度正相关</td></tr>
+			<tr><td>打牌 → 星 / 力量</td><td>The Sealed Throne(Ancient)、Monologue</td><td>打出频率本身是事件源</td></tr>
+			<tr><td>多人</td><td>Hammer Time(全队锻造)、Tutor、Largesse、Constellation、Plot <span class="badge b-mp">多人</span></td><td>锻造 / 无色卡 / 星币 / 抽牌跨玩家共享 —— 全游多人桥最多的角色</td></tr>
+		</tbody>
+	</table>
+	<div class="note">闭环示例:<span class="mono">Venerate / Genesis 存星 → Black Hole 每回合全敌伤 → Royal Gamble 9 星爆发 → 同时 Wrought in War / Furnace 喂 Blade → Summon Forth 拉回 → Seeking Edge 全敌 + Sword Sage 双打。</span>星币轴与 Forge 轴互不消耗同一资源,可以并行运转 —— 这是 Regent「双主线」构筑的基础。</div>
+</div>
+
+<h2>6. 运转卡 vs 伤害卡</h2>
+<div class="card">
+	<h3>6.1 运转卡(Engine)</h3>
+	<table>
+		<thead><tr><th style="width:18%">功能</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>星币收入</td><td>Venerate ★、Glow、Hidden Cache、Solar Strike、Gather Light、Alignment、Genesis ★、The Sealed Throne ★、Royal Gamble</td><td>收入件全部附带攻防 —— 打牌白送钱</td></tr>
+			<tr><td>抽牌</td><td>Glow、Glimmer(抽 3 置顶 1)、Prophesize ★(抽 6!)、Photon Cut、Guiding Star(下回合抽 2)、Foregone Conclusion(下回合 2 张上手)、Big Bang、Decisions, Decisions</td><td>Prophesize 是全游最强单卡过牌之一</td></tr>
+			<tr><td>自动机</td><td>Furnace(每回合 Forge 5)、Genesis(每回合 2 星)、Spectrum Shift(每回合 1 无色)、The Sealed Throne(每打 1 牌 1 星)、Tyranny(抽 1 消耗 1)、Pale Blue Dot(5 张触发)</td><td>Regent 后期 = 让经济自己转</td></tr>
+			<tr><td>牌库工程</td><td>BEGONE! / CHARGE!! / GUARDS!!!(转化瘦身)、Cosmic Indifference(弃牌置顶)、Particle Wall(0 费回手)、Convergence(保留手牌)、Refine Blade</td><td>转化 = 牌库瘦身 + 战力双职</td></tr>
+			<tr><td>能量</td><td>Orbit(花 4 回 1)、Convergence(下回合 1 能)、Big Bang(1 能)</td><td>Regent 能量件偏少 —— 双货币下能量不是瓶颈</td></tr>
+		</tbody>
+	</table>
+	<h3>6.2 伤害卡</h3>
+	<table>
+		<thead><tr><th style="width:18%">形态</th><th style="width:52%">卡</th><th>说明</th></tr></thead>
+		<tbody>
+			<tr><td>纯大数字</td><td>Devastate(35)、Comet(0 费 33)、Seven Stars(49 全敌)、Heavenly Drill(X 翻倍)、Knockout Blow(30)、Crash Landing(21 全敌)、Bombardment、Celestial Might、Kingly Kick(27)</td><td>全游最高单卡数值密度</td></tr>
+			<tr><td>成长型</td><td>Sovereign Blade(Forge 成长)、Kingly Punch(抽到 +4)、Supermassive(创造计数)、Lunar Blast(技能计数)、Beat into Shape(命中计数)、Shining Strike(置顶循环)</td><td>集中成长(Blade)+ 计数成长(其余)</td></tr>
+			<tr><td>0 费 / token</td><td>Falling Star(起始)、Gamma Blast、Astral Pulse、Radiate(星触发)、Minion 系、Stardust(X 段)、Make It So(0 费循环)</td><td>免费打点 + 随从战力</td></tr>
+			<tr><td>星币兑现</td><td>Black Hole(能力)、Radiate</td><td>存款利息 → 伤害</td></tr>
+			<tr><td>群伤</td><td>Astral Pulse、Crush Under(附 -1 力)、Crash Landing、Seven Stars、Meteor Shower(Ancient)、Bombardment</td><td>AOE 密度同样全游前列</td></tr>
+		</tbody>
+	</table>
+	<h3>6.3 一张卡干两件事</h3>
+	<ul>
+		<li><b>Solar Strike</b>:9 伤 + 1 星(伤害 + 存款)</li>
+		<li><b>Wrought in War</b>:7 伤 + Forge 7(伤害 + 成长)</li>
+		<li><b>Spoils of Battle</b>:Forge 6 + 抽 2(成长 + 过牌)</li>
+		<li><b>Shining Strike</b>:8 伤 + 1 星 + 置顶(伤害 + 存款 + 循环)</li>
+		<li><b>Photon Cut</b>:10 伤 + 抽 1 + 置顶(伤害 + 过滤)</li>
+		<li><b>Bulwark</b>:12 防 + Forge 10(防御 + 成长)</li>
+		<li><b>Refine Blade</b>:Forge 8 + 下回合星(成长 + 存款)</li>
+		<li><b>Gather Light</b>:8 防 + 1 星;Glow:1 星 + 抽 1 + 下回合抽 1</li>
+		<li><b>BEGONE!</b>:转化 1 张 + 0 费随从(牌库工程 + 战力)</li>
+		<li><b>Knockout Blow</b>:30 伤 + 击杀 1 星(大数字 + 存款)</li>
+		<li><b>Resonance</b>:你 +1 力,敌 -1 力(成长 + 硬解)</li>
+		<li><b>Heirloom Hammer</b>:20 伤 + 复制无色卡(大数字 + 创造)</li>
+	</ul>
+</div>
+
+<h2>7. 设计观察</h2>
+<div class="card">
+	<ol>
+		<li><b>双货币 = 全游唯一「可储存经济」</b>:能量是当回合预算,星币是跨回合存款 —— 这让 Regent 的构筑节奏完全不同:其他角色「每回合重新规划」,Regent「先存后花」。自动机(Genesis / Sealed Throne)把存款做成稳定收入后,Black Hole / Radiate 让「得星」自动变成伤害 —— 存款 + 利息的数值结构。</li>
+		<li><b>Forge = 集中式成长</b>:与 Claw(全卡池共享成长)、The Scythe(单卡成长)都不同,Forge 是「所有卡共同喂养一张卡」—— 王权之刃是唯一兑现池。这种设计的优点:构筑目标极度清晰(所有锻造卡指向同一终点);缺点:Blade 被移除/未抽到时锻造卡全部贬值(Summon Forth 的存在正是补偿)。</li>
+		<li><b>创造 = 随机收益的「外挂卡库」</b>:把无色卡池做成 Regent 的第四轴,创造事件被 Arsenal / Pillar / Supermassive 三路变现 —— 与 Defect 的白噪声、铁甲的地狱之刃同构,但升级为主线。随机性收益需要事件回报件兜底,这是「创造」设计的必要条件。</li>
+		<li><b>垃圾经济学第四形态</b>:铁甲消耗、静默者弃牌、Defect 状态回收、Regent 随从转化 —— 四个角色用四种方式把「废卡」变成资源。转化是其中最温和的(不损失卡面价值,只是换形态),适合作为新角色(Regent)的入门机制。</li>
+		<li><b>大数字密度全游最高</b>:Devastate 35 / Comet 33(0 费)/ Seven Stars 49 —— 与 Necrobinder 的 Bury 52、铁甲的 Bludgeon 32 同属「大数字美学」,但 Regent 把它做成了主线而非个别卡。</li>
+	</ol>
+	<div class="note">对 OneDeck 的参考:① 跨回合货币(星币)是区别于「当回合费用」的第二个经济维度,自动机收入 + 事件兑现(得星=伤害)是其标准句式;② 集中式成长(所有卡喂一张)与分散式成长(Claw / 卡面成长)的选择决定构筑目标清晰度;③ 双主线互不消耗同一资源(星币轴 + Forge 轴)是「并行构筑」的可行性基础。</div>
+</div>
+
+<h2>附录 A. 全部 91 张卡</h2>
+<div class="card">
+	<p class="lead">分组按稀有度;升级文本以 wiki.gg 收录为准;多人模式专属卡标注 <span class="badge b-mp">多人</span>。</p>
+
+	<h3>A.1 Basic(4)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Strike</b> 打击</td><td>攻击</td><td>1</td><td>造成 6 伤</td><td>9 伤</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Defend</b> 防御</td><td>技能</td><td>1</td><td>获得 5 格挡</td><td>8 格挡</td><td><span class="badge b-gen">基础</span></td></tr>
+			<tr><td><b>Falling Star</b> 流星</td><td>攻击</td><td>0</td><td>造成 8 伤,附加 1 虚弱和 1 易伤</td><td>11 伤</td><td><span class="badge b-gen">0费·双debuff</span><span class="star">★</span></td></tr>
+			<tr><td><b>Venerate</b> 崇敬</td><td>技能</td><td>1</td><td>获得 2 星</td><td>3 星</td><td><span class="badge b-star">星币·存款</span><span class="star">★ 承重墙</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.2 Common(20)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Astral Pulse</b> 星界脉冲</td><td>攻击</td><td>0</td><td>全体敌人 6 伤两次</td><td>8 伤×2</td><td><span class="badge b-big">0费群伤</span></td></tr>
+			<tr><td><b>Celestial Might</b> 天界威能</td><td>攻击</td><td>2</td><td>造成 6 伤 ×3 次</td><td>8 伤×3</td><td><span class="badge b-big">多段直伤</span></td></tr>
+			<tr><td><b>Collision Course</b> 碰撞航向</td><td>攻击</td><td>0</td><td>造成 10 伤,手牌加 1 张 Debris</td><td>14 伤</td><td><span class="badge b-gen">0费直伤+塞垃圾</span></td></tr>
+			<tr><td><b>Crescent Spear</b> 新月之矛</td><td>攻击</td><td>1</td><td>造成 8 伤;你的每张有费用的卡 +2 伤</td><td>+3 伤/张</td><td><span class="badge b-gen">牌组计数</span></td></tr>
+			<tr><td><b>Crush Under</b> 碾碎</td><td>攻击</td><td>1</td><td>全体敌人 8 伤;全体敌人本回合 -1 力量</td><td>11 伤</td><td><span class="badge b-gen">群伤+降力</span></td></tr>
+			<tr><td><b>Photon Cut</b> 光子切割</td><td>攻击</td><td>1</td><td>造成 10 伤,抽 1 张,手牌 1 张置顶牌组</td><td>13 伤</td><td><span class="badge b-gen">伤害+过滤</span></td></tr>
+			<tr><td><b>Solar Strike</b> 日耀打击</td><td>攻击</td><td>1</td><td>造成 9 伤,获得 1 星</td><td>12 伤</td><td><span class="badge b-star">伤害+存款</span><span class="star">★</span></td></tr>
+			<tr><td><b>Wrought in War</b> 战火锻造</td><td>攻击</td><td>1</td><td>造成 7 伤,Forge 7</td><td>10 伤</td><td><span class="badge b-forge">伤害+锻造</span><span class="star">★</span></td></tr>
+			<tr><td><b>BEGONE!</b> 滚开!</td><td>技能</td><td>1</td><td>手牌选 1 张转化为 Minion Strike</td><td>2 张</td><td><span class="badge b-minion">转化·随从</span><span class="star">★</span></td></tr>
+			<tr><td><b>Cloak of Stars</b> 星之斗篷</td><td>技能</td><td>0</td><td>获得 7 格挡</td><td>10 格挡</td><td><span class="badge b-gen">0费防御</span></td></tr>
+			<tr><td><b>Cosmic Indifference</b> 宇宙冷漠</td><td>技能</td><td>1</td><td>获得 6 格挡,弃牌堆 1 张置顶牌组</td><td>9 格挡</td><td><span class="badge b-gen">防御+回收</span></td></tr>
+			<tr><td><b>Gather Light</b> 聚光</td><td>技能</td><td>1</td><td>获得 8 格挡,获得 1 星</td><td>11 防</td><td><span class="badge b-star">防御+存款</span></td></tr>
+			<tr><td><b>Glitterstream</b> 流光</td><td>技能</td><td>1</td><td>获得 11 格挡;下回合获得 5 格挡</td><td>14+5</td><td><span class="badge b-gen">跨回合防御</span></td></tr>
+			<tr><td><b>Glow</b> 微光</td><td>技能</td><td>1</td><td>获得 1 星,抽 1 张;下回合抽 1 张</td><td>2 星</td><td><span class="badge b-star">存款+过牌</span></td></tr>
+			<tr><td><b>Guiding Star</b> 指路星</td><td>技能</td><td>1</td><td>造成 12 伤;下回合抽 2 张</td><td>16 伤</td><td><span class="badge b-gen">直伤+跨回合过牌</span></td></tr>
+			<tr><td><b>Hidden Cache</b> 隐藏宝库</td><td>技能</td><td>1</td><td>获得 1 星;下回合获得 3 星</td><td>4 星(下回合)</td><td><span class="badge b-star">存款·延迟</span></td></tr>
+			<tr><td><b>Know Thy Place</b> 认清位置</td><td>技能</td><td>0</td><td>附加 1 虚弱和 1 易伤,消耗</td><td>2/2</td><td><span class="badge b-gen">0费双 debuff</span></td></tr>
+			<tr><td><b>Patter</b> 絮语</td><td>技能</td><td>1</td><td>获得 8 格挡,获得 2 Vigor</td><td>11 防 / 3 Vigor</td><td><span class="badge b-gen">防御+下击增伤</span></td></tr>
+			<tr><td><b>Refine Blade</b> 精炼之刃</td><td>技能</td><td>1</td><td>Forge 8;下回合获得 1 星</td><td>Forge 10</td><td><span class="badge b-forge">锻造+存款</span></td></tr>
+			<tr><td><b>Spoils of Battle</b> 战利品</td><td>技能</td><td>1</td><td>Forge 6,抽 2 张</td><td>Forge 8</td><td><span class="badge b-forge">锻造+过牌</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.3 Uncommon(38)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Devastate</b> 毁灭</td><td>攻击</td><td>1</td><td>造成 35 伤</td><td>45 伤</td><td><span class="badge b-big">大数字·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Gamma Blast</b> 伽马爆破</td><td>攻击</td><td>0</td><td>造成 13 伤,附加 2 虚弱和 2 易伤</td><td>16 伤</td><td><span class="badge b-gen">0费直伤+双 debuff</span></td></tr>
+			<tr><td><b>Hegemony</b> 霸权</td><td>攻击</td><td>2</td><td>造成 15 伤;下回合获得 1 星</td><td>19 伤</td><td><span class="badge b-star">伤害+存款</span></td></tr>
+			<tr><td><b>Kingly Kick</b> 王者踢击</td><td>攻击</td><td>4</td><td>造成 27 伤;每次抽到本卡费用 -1</td><td>32 伤</td><td><span class="badge b-big">大数字·抽到降费</span></td></tr>
+			<tr><td><b>Kingly Punch</b> 王者重拳</td><td>攻击</td><td>1</td><td>造成 8 伤;每次抽到本卡本场伤害 +4</td><td>+6/次</td><td><span class="badge b-big">成长·抽到变强</span><span class="star">★</span></td></tr>
+			<tr><td><b>Knockout Blow</b> 击倒</td><td>攻击</td><td>3</td><td>造成 30 伤;击杀敌人获得 1 星</td><td>38 伤</td><td><span class="badge b-star">大数字+击杀存款</span><span class="star">★</span></td></tr>
+			<tr><td><b>Lunar Blast</b> 月华爆破</td><td>攻击</td><td>0</td><td>本回合每打出 1 张技能 +4 伤</td><td>+6 伤/技能</td><td><span class="badge b-gen">技能计数伤害</span></td></tr>
+			<tr><td><b>Radiate</b> 辐射</td><td>攻击</td><td>0</td><td>本回合每获得 1 星,全体敌人 3 伤</td><td>4 伤/星</td><td><span class="badge b-star">星→群伤</span><span class="star">★</span></td></tr>
+			<tr><td><b>Shining Strike</b> 闪耀打击</td><td>攻击</td><td>1</td><td>造成 8 伤,获得 1 星,本卡置顶牌组</td><td>11 伤 / 2 星</td><td><span class="badge b-star">伤害+存款+循环</span></td></tr>
+			<tr><td><b>Stardust</b> 星尘</td><td>攻击</td><td>0</td><td>随机敌人 X 次,每次 5 伤</td><td>7 伤/段</td><td><span class="badge b-big">X费多段</span></td></tr>
+			<tr><td><b>Supermassive</b> 超大质量</td><td>攻击</td><td>1</td><td>造成 5 伤;本场每创造 1 张卡 +3 伤</td><td>+4 伤/张</td><td><span class="badge b-colorless">创造计数伤害</span><span class="star">★</span></td></tr>
+			<tr><td><b>Alignment</b> 校准</td><td>技能</td><td>0</td><td>获得 1 星</td><td>2 星</td><td><span class="badge b-star">存款·0费</span></td></tr>
+			<tr><td><b>Bulwark</b> 堡垒</td><td>技能</td><td>2</td><td>获得 12 格挡,Forge 10</td><td>15 防 / Forge 12</td><td><span class="badge b-forge">防御+锻造</span></td></tr>
+			<tr><td><b>CHARGE!!</b> 冲锋!!</td><td>技能</td><td>1</td><td>牌组选 2 张转化为 Minion Dive Bomb</td><td>3 张</td><td><span class="badge b-minion">转化·随从</span></td></tr>
+			<tr><td><b>Conqueror</b> 征服者</td><td>技能</td><td>1</td><td>Forge 3;王权之刃本回合伤害翻倍</td><td>Forge 5</td><td><span class="badge b-forge">锻造+Blade 爆发</span><span class="star">★</span></td></tr>
+			<tr><td><b>Constellation</b> 星座</td><td>技能</td><td>0</td><td>另一名玩家抽 1 张、获得 1 星和 9 格挡</td><td>—</td><td><span class="badge b-mp">多人·全资源共享</span></td></tr>
+			<tr><td><b>Convergence</b> 汇合</td><td>技能</td><td>1</td><td>下回合获得 1 能量和 1 星;本回合保留手牌</td><td>2 能 2 星</td><td><span class="badge b-star">跨回合双资源+保留</span></td></tr>
+			<tr><td><b>Glimmer</b> 微闪</td><td>技能</td><td>1</td><td>抽 3 张,手牌 1 张置顶牌组</td><td>抽 4</td><td><span class="badge b-gen">过牌+过滤</span></td></tr>
+			<tr><td><b>Largesse</b> 慷慨</td><td>技能</td><td>0</td><td>另一名玩家手牌加 1 张随机无色卡</td><td>—</td><td><span class="badge b-mp">多人·无色共享</span></td></tr>
+			<tr><td><b>Manifest Authority</b> 显化威权</td><td>技能</td><td>1</td><td>获得 7 格挡,手牌加 1 张随机无色卡</td><td>10 防</td><td><span class="badge b-colorless">防御+创造</span><span class="star">★</span></td></tr>
+			<tr><td><b>Monologue</b> 独白</td><td>技能</td><td>0</td><td>本回合每打出 1 张牌 +1 力量(本回合)</td><td>+2 力量</td><td><span class="badge b-gen">打出计数力量</span></td></tr>
+			<tr><td><b>Particle Wall</b> 粒子墙</td><td>技能</td><td>0</td><td>获得 9 格挡;本卡回到手牌</td><td>12 格挡</td><td><span class="badge b-gen">0费·回手循环</span></td></tr>
+			<tr><td><b>Plot</b> 密谋</td><td>技能</td><td>1</td><td>下回合所有玩家抽 2 张</td><td>抽 3</td><td><span class="badge b-mp">多人·过牌共享</span></td></tr>
+			<tr><td><b>Prophesize</b> 预言</td><td>技能</td><td>2</td><td>抽 6 张</td><td>抽 7</td><td><span class="badge b-gen">爆发过牌</span><span class="star">★</span></td></tr>
+			<tr><td><b>Quasar</b> 类星体</td><td>技能</td><td>0</td><td>3 张随机无色卡选 1 张加入手牌</td><td>—</td><td><span class="badge b-colorless">创造·选择</span><span class="star">★</span></td></tr>
+			<tr><td><b>Reflect</b> 反射</td><td>技能</td><td>1</td><td>获得 15 格挡;本回合被格挡的攻击伤害反射给攻击者</td><td>20 防</td><td><span class="badge b-gen">防御+反弹</span></td></tr>
+			<tr><td><b>Resonance</b> 共鸣</td><td>技能</td><td>1</td><td>你获得 1 力量;全体敌人 -1 力量</td><td>2 力</td><td><span class="badge b-gen">成长+硬解</span></td></tr>
+			<tr><td><b>Royal Gamble</b> 皇家豪赌</td><td>技能</td><td>0</td><td>获得 9 星,消耗</td><td>12 星</td><td><span class="badge b-star">存款·爆发</span><span class="star">★</span></td></tr>
+			<tr><td><b>Summon Forth</b> 召唤而来</td><td>技能</td><td>1</td><td>Forge 8;王权之刃从任意位置加入手牌</td><td>Forge 10</td><td><span class="badge b-forge">锻造+Blade 上手</span><span class="star">★</span></td></tr>
+			<tr><td><b>Terraforming</b> 地形改造</td><td>技能</td><td>1</td><td>获得 7 Vigor</td><td>10 Vigor</td><td><span class="badge b-gen">下次攻击增伤</span></td></tr>
+			<tr><td><b>Black Hole</b> 黑洞</td><td>能力</td><td>1</td><td>每获得或花费 1 星,全体敌人 3 伤</td><td>4 伤</td><td><span class="badge b-star">星→群伤·自动机</span><span class="star">★</span></td></tr>
+			<tr><td><b>Child of the Stars</b> 星辰之子</td><td>能力</td><td>1</td><td>每花费 1 星获得 2 格挡</td><td>3 格挡</td><td><span class="badge b-star">花星→防御</span><span class="star">★</span></td></tr>
+			<tr><td><b>Furnace</b> 熔炉</td><td>能力</td><td>1</td><td>回合开始:Forge 5</td><td>Forge 8</td><td><span class="badge b-forge">锻造·自动机</span><span class="star">★</span></td></tr>
+			<tr><td><b>Orbit</b> 轨道</td><td>能力</td><td>2</td><td>每花费 4 能量获得 1 能量</td><td>每 3 能量</td><td><span class="badge b-gen">能量·回收</span></td></tr>
+			<tr><td><b>Pale Blue Dot</b> 暗淡蓝点</td><td>能力</td><td>1</td><td>每回合打出 ≥5 张时,下回合开始抽 1</td><td>4 张</td><td><span class="badge b-gen">打出计数·过牌</span></td></tr>
+			<tr><td><b>Parry</b> 招架</td><td>能力</td><td>1</td><td>王权之刃获得 10 格挡</td><td>14 格挡</td><td><span class="badge b-forge">Blade→防御</span></td></tr>
+			<tr><td><b>Pillar of Creation</b> 创世之柱</td><td>能力</td><td>1</td><td>每创造 1 张卡获得 2 格挡</td><td>3 格挡</td><td><span class="badge b-colorless">创造→防御</span><span class="star">★</span></td></tr>
+			<tr><td><b>Spectrum Shift</b> 光谱位移</td><td>能力</td><td>2</td><td>回合开始:手牌加 1 张随机无色卡</td><td>1 费</td><td><span class="badge b-colorless">创造·自动机</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.4 Rare(27)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Beat into Shape</b> 打成形</td><td>攻击</td><td>1</td><td>造成 5 伤,Forge 5;本回合每已命中该敌一次额外 Forge 5</td><td>Forge 7</td><td><span class="badge b-forge">锻造·连打计数</span></td></tr>
+			<tr><td><b>Bombardment</b> 轰炸</td><td>攻击</td><td>3</td><td>造成 18 伤;回合结束在消耗堆则再打一次</td><td>24 伤</td><td><span class="badge b-big">消耗堆·二次使用</span></td></tr>
+			<tr><td><b>Comet</b> 彗星</td><td>攻击</td><td>0</td><td>造成 33 伤,附加 3 虚弱和 3 易伤</td><td>40 伤</td><td><span class="badge b-big">0费大数字·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Crash Landing</b> 迫降</td><td>攻击</td><td>1</td><td>全体敌人 21 伤;手牌塞满 Debris</td><td>26 伤</td><td><span class="badge b-big">群伤·代价型</span></td></tr>
+			<tr><td><b>Dying Star</b> 垂死之星</td><td>攻击</td><td>1</td><td>Ethereal。全体敌人 9 伤;全体敌人本回合 -9 力量</td><td>12 伤</td><td><span class="badge b-gen">群伤+硬解</span></td></tr>
+			<tr><td><b>Heavenly Drill</b> 天钻</td><td>攻击</td><td>X</td><td>造成 8 伤 ×X 次;若 X≥4 则翻倍</td><td>11 伤/段</td><td><span class="badge b-big">X费·翻倍</span><span class="star">★</span></td></tr>
+			<tr><td><b>Heirloom Hammer</b> 传家宝锤</td><td>攻击</td><td>2</td><td>造成 20 伤;手牌 1 张无色卡复制 1 张</td><td>25 伤</td><td><span class="badge b-colorless">大数字+创造</span></td></tr>
+			<tr><td><b>Make It So</b> 就这样办</td><td>攻击</td><td>0</td><td>造成 6 伤;每回合打出 3 张技能后本卡回手</td><td>9 伤</td><td><span class="badge b-big">0费·技能循环</span><span class="star">★</span></td></tr>
+			<tr><td><b>Seven Stars</b> 七星</td><td>攻击</td><td>2</td><td>全体敌人 7 伤 ×7 次</td><td>9 伤×7</td><td><span class="badge b-big">群伤·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Arsenal</b> 军械库</td><td>能力</td><td>1</td><td>每创造 1 张卡获得 1 力量</td><td>2 力量</td><td><span class="badge b-colorless">创造→力量</span><span class="star">★</span></td></tr>
+			<tr><td><b>Genesis</b> 创世纪</td><td>能力</td><td>2</td><td>回合开始:获得 2 星</td><td>3 星</td><td><span class="badge b-star">星币·自动机</span><span class="star">★</span></td></tr>
+			<tr><td><b>Hammer Time</b> 锤击时刻</td><td>能力</td><td>2</td><td>你 Forge 时,所有队友同步 Forge</td><td>1 费</td><td><span class="badge b-mp">多人·锻造共享</span></td></tr>
+			<tr><td><b>Monarch's Gaze</b> 君主凝视</td><td>能力</td><td>2</td><td>你攻击敌人时,其本回合 -1 力量</td><td>—</td><td><span class="badge b-gen">攻击→降力自动机</span></td></tr>
+			<tr><td><b>Neutron Aegis</b> 中子神盾</td><td>能力</td><td>1</td><td>获得 8 Plating(回合末得格挡,回合初 -1)</td><td>12 Plating</td><td><span class="badge b-gen">Plating·衰减甲</span></td></tr>
+			<tr><td><b>Royalties</b> 版税</td><td>能力</td><td>1</td><td>战斗结束获得 30 金</td><td>50 金</td><td><span class="badge b-gen">经济·金</span></td></tr>
+			<tr><td><b>Seeking Edge</b> 寻锋</td><td>能力</td><td>1</td><td>Forge 7;王权之刃现在攻击全体敌人</td><td>Forge 10</td><td><span class="badge b-forge">Blade·群伤化</span><span class="star">★</span></td></tr>
+			<tr><td><b>Sword Sage</b> 剑圣</td><td>能力</td><td>2</td><td>王权之刃获得 Replay 1(打出两次)</td><td>1 费</td><td><span class="badge b-forge">Blade·双打</span><span class="star">★</span></td></tr>
+			<tr><td><b>Tyranny</b> 暴政</td><td>能力</td><td>1</td><td>回合开始:抽 1 张,消耗手牌 1 张</td><td>—</td><td><span class="badge b-gen">滤牌·自动机</span></td></tr>
+			<tr><td><b>Void Form</b> 虚空形态</td><td>能力</td><td>3</td><td>Ethereal。结束本回合;之后 2 张牌免费</td><td>3 张</td><td><span class="badge b-gen">回合重构·引擎</span></td></tr>
+			<tr><td><b>Big Bang</b> 大爆炸</td><td>技能</td><td>0</td><td>抽 1 张,获得 1 能量和 1 星,Forge 5,消耗</td><td>Forge 8</td><td><span class="badge b-forge">全资源·桥之王</span><span class="star">★</span></td></tr>
+			<tr><td><b>Bundle of Joy</b> 欢乐礼包</td><td>技能</td><td>1</td><td>手牌加 3 张随机无色卡,消耗</td><td>4 张</td><td><span class="badge b-colorless">创造·量产</span></td></tr>
+			<tr><td><b>Decisions, Decisions</b> 抉择</td><td>技能</td><td>0</td><td>抽 3 张;选手牌 1 张技能打出 3 次,消耗</td><td>4 次</td><td><span class="badge b-gen">技能连打·引擎</span></td></tr>
+			<tr><td><b>Foregone Conclusion</b> 既定结论</td><td>技能</td><td>1</td><td>下回合牌组 2 张加入手牌</td><td>3 张</td><td><span class="badge b-gen">跨回合过牌</span></td></tr>
+			<tr><td><b>GUARDS!!!</b> 卫兵!!!</td><td>技能</td><td>2</td><td>手牌任意数量卡转化为 Minion Sacrifice,消耗</td><td>—</td><td><span class="badge b-minion">转化·批量</span></td></tr>
+			<tr><td><b>I Am Invincible</b> 我无敌</td><td>技能</td><td>1</td><td>获得 10 格挡;回合结束在牌堆顶则再打一次</td><td>14 格挡</td><td><span class="badge b-gen">置顶循环·防御</span></td></tr>
+			<tr><td><b>The Smith</b> 铁匠</td><td>技能</td><td>1</td><td>Forge 30</td><td>Forge 40</td><td><span class="badge b-forge">锻造·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>Tutor</b> 导师</td><td>技能</td><td>1</td><td>另一名玩家从牌组选 1 张加入手牌</td><td>—</td><td><span class="badge b-mp">多人·检索共享</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.5 Ancient(2)</h3>
+	<table>
+		<thead><tr><th>卡牌</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th style="width:14%">升级</th><th style="width:24%">定位</th></tr></thead>
+		<tbody>
+			<tr><td><b>Meteor Shower</b> 流星雨</td><td>攻击</td><td>0</td><td>全体敌人 14 伤;全体敌人附加 2 虚弱和 2 易伤</td><td>18 伤</td><td><span class="badge b-big">0费群伤·封顶</span><span class="star">★</span></td></tr>
+			<tr><td><b>The Sealed Throne</b> 封印王座</td><td>能力</td><td>1</td><td>每打出 1 张卡获得 1 星</td><td>2 星</td><td><span class="badge b-star">星币·打牌自动机</span><span class="star">★</span></td></tr>
+		</tbody>
+	</table>
+
+	<h3>A.6 生成 token</h3>
+	<table>
+		<thead><tr><th>token</th><th style="width:6%">类型</th><th style="width:6%">费</th><th>效果</th><th>来源</th></tr></thead>
+		<tbody>
+			<tr><td><b>Sovereign Blade</b> 王权之刃</td><td>攻击</td><td>2</td><td>Retain。伤害随 Forge 成长(基础 ~10-16),战斗中不回退</td><td>本场首张 Forge 卡;Summon Forth 拉回手</td></tr>
+			<tr><td><b>Minion Strike / Dive Bomb / Sacrifice</b> 随从</td><td>攻击</td><td>0</td><td>0 费随从攻击 / 自爆 / 牺牲 token,消耗</td><td>BEGONE! / CHARGE!! / GUARDS!!! 转化</td></tr>
+			<tr><td><b>Debris</b> 碎片</td><td>状态</td><td>—</td><td>负面状态卡,塞手</td><td>Collision Course / Crash Landing</td></tr>
+		</tbody>
+	</table>
+	<div class="note">数据说明:卡牌数据取自 slaythespire.wiki.gg 官方卡表(Cargo 导出,2026-08-17);多人模式卡(Hammer Time / Tutor / Largesse / Constellation / Plot)标注 <span class="badge b-mp">多人</span>;Vigor = 下次攻击额外伤害。</div>
+</div>
+
+</body>
+</html>
