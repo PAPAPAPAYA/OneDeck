@@ -337,7 +337,7 @@ public class DamageFloaterPresenter : MonoBehaviour
 
 		// uGUI equivalent of the demo's black text-shadow.
 		var shadow = go.AddComponent<Shadow>();
-		shadow.effectColor = new Color(0f, 0f, 0f, 0.6f);
+		shadow.effectColor = GameColorPalette.FloaterShadowColor;
 		shadow.effectDistance = new Vector2(0f, -2f);
 
 		var group = go.AddComponent<CanvasGroup>();

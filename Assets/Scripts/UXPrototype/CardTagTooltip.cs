@@ -127,7 +127,7 @@ public class CardTagTooltip : MonoBehaviour
 		_panel = panelGo.AddComponent<RectTransform>();
 		_panel.pivot = new Vector2(0f, 0.5f);
 		var bg = panelGo.AddComponent<Image>();
-		bg.color = new Color(0f, 0f, 0f, 0.85f);
+		bg.color = GameColorPalette.TooltipBgColor;
 		var fitter = panelGo.AddComponent<ContentSizeFitter>();
 		fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
 		fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -139,7 +139,7 @@ public class CardTagTooltip : MonoBehaviour
 		textGo.transform.SetParent(panelGo.transform, false);
 		_text = textGo.AddComponent<TextMeshProUGUI>();
 		_text.fontSize = 28;
-		_text.color = Color.white;
+		_text.color = GameColorPalette.TooltipTextColor;
 		_text.richText = true; // tag titles use <b>
 		_text.raycastTarget = false;
 		bg.raycastTarget = false;

@@ -144,27 +144,18 @@ MonoBehaviour:
   holdTimeRequired: 0.5
   cardShaker: {fileID: 0}
   cardShakePreset: {fileID: 0}
-  cardFace: {fileID: 0}
-  cardEdge: {fileID: 0}
+  cardFace: {fileID: 3473898615914785401}
   cardImg: {fileID: 0}
   cardCostPrint: {fileID: 0}
-  cardNamePrint: {fileID: 0}
-  cardDescPrint: {fileID: 0}
+  cardNamePrint: {fileID: 4862150238569319107}
+  cardDescPrint: {fileID: 3311838246655014247}
   cardPricePrint: {fileID: 0}
   cardRarityPrint: {fileID: 0}
   cardTagPrint: {fileID: 0}
   cardStatusEffectPrint: {fileID: 0}
-  ownerCardColor: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
-  ownerCardEdgeColor: {fileID: 11400000, guid: bfbeefc029be442458376d2920f541e7, type: 2}
-  opponentCardColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
-  opponentCardEdgeColor: {fileID: 11400000, guid: 799aa4bb927bd7c4086c9785efc352ad, type: 2}
-  ownerTextColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
-  opponentTextColor: {fileID: 11400000, guid: a2bed2d662297484a895326cb79d54a1, type: 2}
   ownerCardFaceSprite: {fileID: 0}
   opponentCardFaceSprite: {fileID: 0}
-  infectedTintColor: {fileID: 11400000, guid: 0ee71c2a56afabd43953bdbdd0353cd2, type: 2}
   infectedTintIntensity: 0.5
-  powerTintColor: {fileID: 11400000, guid: 294511ee47c574442a58dd8c288f6159, type: 2}
   powerTintIntensity: 0.5
   tintDuration: 1.5
   tintTransitionSpeed: 5
@@ -1069,3 +1060,30 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3036411943647600460, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
   m_PrefabInstance: {fileID: 3718179147836573522}
   m_PrefabAsset: {fileID: 0}
+--- !u!212 &3473898615914785401 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
+  m_PrefabInstance: {fileID: 3718179147836573522}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4862150238569319107 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4862150238569319107, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
+  m_PrefabInstance: {fileID: 3718179147836573522}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3311838246655014247 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3311838246655014247, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
+  m_PrefabInstance: {fileID: 3718179147836573522}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

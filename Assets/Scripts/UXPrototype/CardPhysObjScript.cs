@@ -28,7 +28,6 @@ public class CardPhysObjScript : MonoBehaviour
 
 	[Header("LOOK")]
 	public SpriteRenderer cardFace;
-	public SpriteRenderer cardEdge;
 	public SpriteRenderer cardImg;
 	public TextMeshPro cardCostPrint;
 	public TextMeshPro cardNamePrint;
@@ -38,14 +37,6 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardTagPrint;
 	public TextMeshPro cardStatusEffectPrint;
 
-	[Header("COLOR")]
-	public ColorSO ownerCardColor;
-	public ColorSO ownerCardEdgeColor;
-	public ColorSO opponentCardColor;
-	public ColorSO opponentCardEdgeColor;
-	public ColorSO ownerTextColor;
-	public ColorSO opponentTextColor;
-
 	[Header("CARD ART")]
 	[Tooltip("Card face sprite used when this card is owned by the player")]
 	public Sprite ownerCardFaceSprite;
@@ -53,15 +44,11 @@ public class CardPhysObjScript : MonoBehaviour
 	public Sprite opponentCardFaceSprite;
 
 	[Header("TINT - Infected")]
-	[Tooltip("Tint color for Infected state")]
-	public ColorSO infectedTintColor;
 	[Tooltip("Tint intensity for Infected state")]
 	[Range(0f, 1f)]
 	public float infectedTintIntensity = 0.5f;
 
 	[Header("TINT - Power")]
-	[Tooltip("Tint color for Power state")]
-	public ColorSO powerTintColor;
 	[Tooltip("Tint intensity for Power state")]
 	[Range(0f, 1f)]
 	public float powerTintIntensity = 0.5f;
@@ -655,19 +642,12 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	private void BuildFlipRoot()
 	{
-		if (cardFace == null) return; // e.g. start card prefab: flip disabled
-		// VISUAL-FIX(2026-07-24): NullReferenceException in Awake for shop empty-slot placeholders
-		//   Cause:    EmptyCardSpaceParent.prefab wires cardFace but none of the ColorSO fields,
-		//             so the cardFace guard passed and ownerCardColor.value threw (shop empty
-		//             slot instantiation aborted mid-Awake).
-		//   Affects:  CardPhysObjScript.BuildFlipRoot (shop emptyCardSpacePrefab)
-		//   Regress:  Enter the shop with empty deck slots; empty slots spawn with no NRE and
-		//             render their normal placeholder face (flip/back machinery skipped).
-		if (ownerCardColor == null || opponentCardColor == null) return;
+		if (cardFace == null) return; // e.g. StartCardParent historically, EmptyCardSpaceParent: flip machinery skipped
+		// Colors are palette-driven since 2026-08-17 (GameColorPalette statics, no serialized
+		// ColorSO fields); the old null-color guard (VISUAL-FIX 2026-07-24) is obsolete.
 
 		var faces = new System.Collections.Generic.List<Transform>();
 		if (cardFace != null) faces.Add(cardFace.transform);
-		if (cardEdge != null) faces.Add(cardEdge.transform);
 		if (cardImg != null) faces.Add(cardImg.transform);
 		if (cardNamePrint != null) faces.Add(cardNamePrint.transform);
 		if (cardDescPrint != null) faces.Add(cardDescPrint.transform);
@@ -716,7 +696,7 @@ public class CardPhysObjScript : MonoBehaviour
 		var backGo = new GameObject("CardBack");
 		_cardBackRenderer = backGo.AddComponent<SpriteRenderer>();
 		_cardBackRenderer.sprite = cardFace.sprite;
-		_cardBackRenderer.color = ownerCardColor.value;
+		_cardBackRenderer.color = GameColorPalette.OwnerCardColor;
 		_cardBackRenderer.sortingLayerID = cardFace.sortingLayerID;
 		_cardBackRenderer.sortingOrder = cardFace.sortingOrder;
 		_cardBackRenderer.drawMode = cardFace.drawMode;
@@ -969,14 +949,18 @@ public class CardPhysObjScript : MonoBehaviour
 		if (_cardBackRenderer == null) return;
 
 		Color backColor;
-		if (cardImRepresenting == null || cardImRepresenting.myStatusRef == null
+		if (isPhysicalStartCard)
+		{
+			backColor = GameColorPalette.StartCardColor;
+		}
+		else if (cardImRepresenting == null || cardImRepresenting.myStatusRef == null
 			|| cardImRepresenting.myStatusRef == CombatManager.Me?.ownerPlayerStatusRef)
 		{
-			backColor = ownerCardColor.value;
+			backColor = GameColorPalette.OwnerCardColor;
 		}
 		else
 		{
-			backColor = opponentCardColor.value;
+			backColor = GameColorPalette.OpponentCardColor;
 		}
 		_cardBackRenderer.color = backColor;
 	}
@@ -1033,31 +1017,34 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private void ApplyColor()
 	{
-		if (isPhysicalStartCard) return;
-		// Start Card has no cardImRepresenting, keep default color or special handling
-		if (cardImRepresenting == null)
+		// Start Card has no cardImRepresenting and no ownership; its color/text come from
+		// the dedicated start-card palette slots.
+		if (!isPhysicalStartCard && cardImRepresenting == null)
 		{
-			// Start Card can set a special color, or keep as is
+			// Shop empty-slot placeholders keep their baked prefab colors.
 			return;
 		}
 
-		// Determine base color
+		// Determine base color (single source: GameColorPalette)
 		Color baseFaceColor;
-		Color baseEdgeColor = ownerCardEdgeColor.value;
 		bool isOwner = true;
 
-		if (cardImRepresenting.myStatusRef == null)
+		if (isPhysicalStartCard)
 		{
-			baseFaceColor = ownerCardColor.value;
+			baseFaceColor = GameColorPalette.StartCardColor;
+		}
+		else if (cardImRepresenting.myStatusRef == null)
+		{
+			baseFaceColor = GameColorPalette.OwnerCardColor;
 		}
 		else if (cardImRepresenting.myStatusRef != CombatManager.Me?.ownerPlayerStatusRef)
 		{
-			baseFaceColor = opponentCardColor.value;
+			baseFaceColor = GameColorPalette.OpponentCardColor;
 			isOwner = false;
 		}
 		else
 		{
-			baseFaceColor = ownerCardColor.value;
+			baseFaceColor = GameColorPalette.OwnerCardColor;
 		}
 
 		// Update card face art based on ownership
@@ -1078,7 +1065,6 @@ public class CardPhysObjScript : MonoBehaviour
 
 		// Apply Tint
 		Color finalFaceColor = baseFaceColor;
-		Color finalEdgeColor = baseEdgeColor;
 
 		if (_currentTintIntensity > 0.01f)
 		{
@@ -1088,11 +1074,11 @@ public class CardPhysObjScript : MonoBehaviour
 			switch (_currentTintState)
 			{
 				case TintState.Infected:
-					tintColor = infectedTintColor.value;
+					tintColor = GameColorPalette.InfectedTintColor;
 					intensity = infectedTintIntensity;
 					break;
 				case TintState.Power:
-					tintColor = powerTintColor.value;
+					tintColor = GameColorPalette.PowerTintColor;
 					intensity = powerTintIntensity;
 					break;
 				default:
@@ -1103,14 +1089,13 @@ public class CardPhysObjScript : MonoBehaviour
 
 			float appliedIntensity = intensity * _currentTintIntensity;
 			finalFaceColor = Color.Lerp(baseFaceColor, baseFaceColor * tintColor, appliedIntensity);
-			finalEdgeColor = Color.Lerp(baseEdgeColor, baseEdgeColor * tintColor, appliedIntensity);
 		}
 
 		cardFace.color = finalFaceColor;
-		cardEdge.color = finalEdgeColor;
 
 		// Apply text color based on ownership
-		Color textColor = baseFaceColor == ownerCardColor.value ? ownerTextColor.value : opponentTextColor.value;
+		Color textColor = isPhysicalStartCard ? GameColorPalette.StartCardTextColor
+			: isOwner ? GameColorPalette.OwnerTextColor : GameColorPalette.OpponentTextColor;
 		if (cardNamePrint != null) cardNamePrint.color = textColor;
 		if (cardDescPrint != null) cardDescPrint.color = textColor;
 		if (cardCostPrint != null) cardCostPrint.color = textColor;

@@ -52,8 +52,7 @@ MonoBehaviour:
   holdTimeRequired: 0.5
   cardShaker: {fileID: 0}
   cardShakePreset: {fileID: 0}
-  cardFace: {fileID: 1935702268097011818}
-  cardEdge: {fileID: 2466541846867850098}
+  cardFace: {fileID: 0}
   cardImg: {fileID: 0}
   cardCostPrint: {fileID: 0}
   cardNamePrint: {fileID: 5625894641483297666}
@@ -62,17 +61,9 @@ MonoBehaviour:
   cardRarityPrint: {fileID: 0}
   cardTagPrint: {fileID: 0}
   cardStatusEffectPrint: {fileID: 0}
-  ownerCardColor: {fileID: 0}
-  ownerCardEdgeColor: {fileID: 0}
-  opponentCardColor: {fileID: 0}
-  opponentCardEdgeColor: {fileID: 0}
-  ownerTextColor: {fileID: 0}
-  opponentTextColor: {fileID: 0}
   ownerCardFaceSprite: {fileID: 0}
   opponentCardFaceSprite: {fileID: 0}
-  infectedTintColor: {fileID: 0}
   infectedTintIntensity: 0.5
-  powerTintColor: {fileID: 0}
   powerTintIntensity: 0.5
   tintDuration: 1.5
   tintTransitionSpeed: 5

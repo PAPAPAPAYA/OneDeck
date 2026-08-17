@@ -114,7 +114,9 @@ public class ResultStatsPanel : MonoBehaviour
 		bodyRect.offsetMax = Vector2.zero;
 
 		var bg = bodyGo.AddComponent<Image>();
-		bg.color = new Color(0f, 0f, 0f, _layout.backgroundAlpha);
+		// RGB from the palette; alpha stays a layout knob (backgroundAlpha).
+		Color bgColor = GameColorPalette.ResultPanelBgColor;
+		bg.color = new Color(bgColor.r, bgColor.g, bgColor.b, _layout.backgroundAlpha);
 
 		// Two stacked halves inside the body: top = player-created cards, bottom = enemy-created cards
 		var halvesGo = new GameObject("Halves", typeof(RectTransform));
@@ -261,7 +263,7 @@ public class ResultStatsPanel : MonoBehaviour
 			var emptyElement = emptyGo.AddComponent<LayoutElement>();
 			emptyElement.preferredHeight = _layout.rowHeight;
 			emptyElement.flexibleHeight = 0f; // see VISUAL-FIX(2026-08-02) above
-			CreateText(emptyGo.transform, "No damage recorded.", Color.white, TextAlignmentOptions.Center, false);
+			CreateText(emptyGo.transform, "No damage recorded.", GameColorPalette.ResultPanelTextColor, TextAlignmentOptions.Center, false);
 			return;
 		}
 
@@ -290,7 +292,7 @@ public class ResultStatsPanel : MonoBehaviour
 	private void BuildRowCells(Transform parent, string cardName, PerCardStatRecord row, bool isHeader, Dictionary<CombatStatType, float> halfTotals)
 	{
 		var nameText = CreateCell(parent, cardName, _layout.nameColumnFlex, TextAlignmentOptions.Left, isHeader);
-		nameText.color = Color.white;
+		nameText.color = GameColorPalette.ResultPanelTextColor;
 
 		foreach (var def in CombatStatRegistry.GetColumnsSorted())
 		{
@@ -330,7 +332,7 @@ public class ResultStatsPanel : MonoBehaviour
 		cellGo.transform.SetParent(parent, false);
 		var element = cellGo.AddComponent<LayoutElement>();
 		element.flexibleWidth = flexWidth;
-		var tmp = CreateText(cellGo.transform, text, Color.white, alignment, isHeader);
+		var tmp = CreateText(cellGo.transform, text, GameColorPalette.ResultPanelTextColor, alignment, isHeader);
 		return tmp;
 	}
 
@@ -368,9 +370,6 @@ public class ResultStatsPanel : MonoBehaviour
 
 	private static Color FactionColor(CardFaction faction)
 	{
-		var palette = GameColorPalette.Me;
-		if (palette == null) return Color.white;
-		var so = faction == CardFaction.Player ? palette.ownerCardColor : palette.opponentCardColor;
-		return so != null ? so.value : Color.white;
+		return faction == CardFaction.Player ? GameColorPalette.OwnerCardColor : GameColorPalette.OpponentCardColor;
 	}
 }

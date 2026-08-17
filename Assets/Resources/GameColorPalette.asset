@@ -19,19 +19,24 @@ MonoBehaviour:
   shield: {fileID: 11400000, guid: 6f830690132d4dc48963690b205dceaf, type: 2}
   highlight: {fileID: 11400000, guid: 366a0633d5cb04f4eaaa8fb8bf2862d4, type: 2}
   ownerCardColor: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
-  opponentCardColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
-  ownerCardEdgeColor: {fileID: 11400000, guid: bfbeefc029be442458376d2920f541e7, type: 2}
-  opponentCardEdgeColor: {fileID: 11400000, guid: 799aa4bb927bd7c4086c9785efc352ad, type: 2}
-  ownerTextColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  opponentCardColor: {fileID: 11400000, guid: 98c5b8e47841efc41a1c0f788c72e79e, type: 2}
+  ownerTextColor: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
   opponentTextColor: {fileID: 11400000, guid: a2bed2d662297484a895326cb79d54a1, type: 2}
+  startCardColor: {fileID: 11400000, guid: d71c8071673a44b4bb326b782b3cd282, type: 2}
+  startCardTextColor: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
   infectedTint: {fileID: 11400000, guid: 0ee71c2a56afabd43953bdbdd0353cd2, type: 2}
   powerTint: {fileID: 11400000, guid: 294511ee47c574442a58dd8c288f6159, type: 2}
   hpBarPlayer: {fileID: 11400000, guid: 26ce20a8085bc7e44a35331ef352fd51, type: 2}
-  hpBarEnemy: {fileID: 11400000, guid: 30dadf4305911e449bda1000f5eee1f8, type: 2}
+  hpBarEnemy: {fileID: 11400000, guid: ca296abf7be675e4da84c27084cce3b6, type: 2}
   hpBarShadow: {fileID: 11400000, guid: 95b2170f52a207a49ad23f1f4e463db0, type: 2}
   hpNormalPlayer: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
-  hpNormalEnemy: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  hpNormalEnemy: {fileID: 11400000, guid: 26ce20a8085bc7e44a35331ef352fd51, type: 2}
   hpLow: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
   hpZeroGray: {fileID: 11400000, guid: e74364fef9c21894bb806162ee62060d, type: 2}
   floaterPlayer: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
-  floaterEnemy: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
+  floaterEnemy: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  floaterShadow: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
+  tooltipBg: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
+  tooltipText: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  resultPanelBg: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
+  resultPanelText: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}

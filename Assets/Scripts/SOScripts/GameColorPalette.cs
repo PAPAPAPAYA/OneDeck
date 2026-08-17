@@ -38,10 +38,10 @@ public class GameColorPalette : ScriptableObject
 	[Header("Physical Card")]
 	public ColorSO ownerCardColor;
 	public ColorSO opponentCardColor;
-	public ColorSO ownerCardEdgeColor;
-	public ColorSO opponentCardEdgeColor;
 	public ColorSO ownerTextColor;
 	public ColorSO opponentTextColor;
+	public ColorSO startCardColor;
+	public ColorSO startCardTextColor;
 	public ColorSO infectedTint;
 	public ColorSO powerTint;
 
@@ -57,6 +57,13 @@ public class GameColorPalette : ScriptableObject
 	[Header("Damage Floater")]
 	public ColorSO floaterPlayer;
 	public ColorSO floaterEnemy;
+	public ColorSO floaterShadow;
+
+	[Header("Overlay Panels")]
+	public ColorSO tooltipBg;
+	public ColorSO tooltipText;
+	public ColorSO resultPanelBg;
+	public ColorSO resultPanelText;
 
 	// Resolved HUD colors — the single source the HUD components (HPNumericDisplay,
 	// HPNumericDisplayHorizontal, CombatHPBarPresenter) read from; they keep no
@@ -73,6 +80,24 @@ public class GameColorPalette : ScriptableObject
 	// pattern as the HP group; both sides share one asset by design.
 	public static Color FloaterPlayerColor => Me != null && Me.floaterPlayer != null ? Me.floaterPlayer.value : Color.white;
 	public static Color FloaterEnemyColor => Me != null && Me.floaterEnemy != null ? Me.floaterEnemy.value : Color.white;
+	public static Color FloaterShadowColor => Me != null && Me.floaterShadow != null ? Me.floaterShadow.value : Color.white;
+
+	// Overlay panel colors ("Overlay Panels" group) — tag tooltip and result stats panel.
+	public static Color TooltipBgColor => Me != null && Me.tooltipBg != null ? Me.tooltipBg.value : Color.white;
+	public static Color TooltipTextColor => Me != null && Me.tooltipText != null ? Me.tooltipText.value : Color.white;
+	public static Color ResultPanelBgColor => Me != null && Me.resultPanelBg != null ? Me.resultPanelBg.value : Color.white;
+	public static Color ResultPanelTextColor => Me != null && Me.resultPanelText != null ? Me.resultPanelText.value : Color.white;
+
+	// Physical card colors — the single source CardPhysObjScript reads from (it keeps
+	// no serialized color fields). White fallback keeps a miswired palette visible.
+	public static Color OwnerCardColor => Me != null && Me.ownerCardColor != null ? Me.ownerCardColor.value : Color.white;
+	public static Color OpponentCardColor => Me != null && Me.opponentCardColor != null ? Me.opponentCardColor.value : Color.white;
+	public static Color OwnerTextColor => Me != null && Me.ownerTextColor != null ? Me.ownerTextColor.value : Color.white;
+	public static Color OpponentTextColor => Me != null && Me.opponentTextColor != null ? Me.opponentTextColor.value : Color.white;
+	public static Color StartCardColor => Me != null && Me.startCardColor != null ? Me.startCardColor.value : Color.white;
+	public static Color StartCardTextColor => Me != null && Me.startCardTextColor != null ? Me.startCardTextColor.value : Color.white;
+	public static Color InfectedTintColor => Me != null && Me.infectedTint != null ? Me.infectedTint.value : Color.white;
+	public static Color PowerTintColor => Me != null && Me.powerTint != null ? Me.powerTint.value : Color.white;
 
 #if UNITY_EDITOR
 	/// <summary>
