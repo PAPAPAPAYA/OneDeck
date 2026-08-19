@@ -65,6 +65,13 @@ public class GameColorPalette : ScriptableObject
 	public ColorSO resultPanelBg;
 	public ColorSO resultPanelText;
 
+	[Header("UI Kit / Physical UI")]
+	public ColorSO cardArtBg;	// card art zone (dark navy) — UIKitDemo --card-art
+	public ColorSO cardShadow;	// hard shadow under lifted physical faces — --shadow-c
+	public ColorSO cardFaceDim;	// disabled face — --face-dim
+	public ColorSO cardTextSoft;	// secondary card text — --ink-soft
+	public ColorSO slotRecess;	// recessed empty deck slot — --recess
+
 	// Resolved HUD colors — the single source the HUD components (HPNumericDisplay,
 	// HPNumericDisplayHorizontal, CombatHPBarPresenter) read from; they keep no
 	// serialized color fields. White fallback keeps a miswired palette visible.
@@ -98,6 +105,14 @@ public class GameColorPalette : ScriptableObject
 	public static Color StartCardTextColor => Me != null && Me.startCardTextColor != null ? Me.startCardTextColor.value : Color.white;
 	public static Color InfectedTintColor => Me != null && Me.infectedTint != null ? Me.infectedTint.value : Color.white;
 	public static Color PowerTintColor => Me != null && Me.powerTint != null ? Me.powerTint.value : Color.white;
+
+	// UI kit / physical UI colors ("UI Kit / Physical UI" group) — card template
+	// v2 zones and the physical interaction tokens from docs/demo/UIKitDemo.html.
+	public static Color CardArtBgColor => Me != null && Me.cardArtBg != null ? Me.cardArtBg.value : Color.white;
+	public static Color CardShadowColor => Me != null && Me.cardShadow != null ? Me.cardShadow.value : Color.white;
+	public static Color CardFaceDimColor => Me != null && Me.cardFaceDim != null ? Me.cardFaceDim.value : Color.white;
+	public static Color CardTextSoftColor => Me != null && Me.cardTextSoft != null ? Me.cardTextSoft.value : Color.white;
+	public static Color SlotRecessColor => Me != null && Me.slotRecess != null ? Me.slotRecess.value : Color.white;
 
 #if UNITY_EDITOR
 	/// <summary>

@@ -40,3 +40,8 @@ MonoBehaviour:
   tooltipText: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
   resultPanelBg: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
   resultPanelText: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
+  cardArtBg: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
+  cardShadow: {fileID: 11400000, guid: 613ca7750fec48e58fbc7570e52386f7, type: 2}
+  cardFaceDim: {fileID: 11400000, guid: 6aa62d183ef24cbf9889766cd953d9e7, type: 2}
+  cardTextSoft: {fileID: 11400000, guid: 5e4eef3c417549e68ab5890dbf9c54f8, type: 2}
+  slotRecess: {fileID: 11400000, guid: 2e7057f8a6dc41da9599f99984fcc01c, type: 2}

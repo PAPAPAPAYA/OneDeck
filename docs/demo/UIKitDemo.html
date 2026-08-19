@@ -48,6 +48,7 @@
 			--ink: #1c1e1c;        /* primary text / dark card */
 			--ink-soft: #5a5e58;   /* secondary text */
 			--shadow-c: #232723;   /* hard shadow */
+			--card-art: #121824;   /* card art zone (dark navy) */
 
 			/* shape */
 			--r-btn: 8px;
@@ -267,26 +268,85 @@
 			line-height: 1;
 		}
 
+		/* physical card template v2 (2026-08-18). Zones, top to bottom:
+		   art (dark rounded box, illustration placeholder) -> rarity (✦x1-3,
+		   right-aligned just under the art's bottom-right) -> effect (auto
+		   "> " prefix, clamps to 2 lines) -> divider -> bottom row: name
+		   (left, bold, ellipsis) + attack (right, same baseline, larger).
+		   The rarity row flex-grows to absorb the free space, so the effect
+		   hugs the divider and a second line grows UPWARD; cards with no
+		   effect omit .card-effect entirely (:empty guard hides any dangling
+		   ">"). All inner sizes are em-based off the card's font-size:
+		   .zoom scales the whole card for anatomy. */
 		.card-face {
 			width: 118px;
 			height: 164px;
 			border-radius: var(--r-card);
-			padding: 9px;
+			padding: 7px 8px;
 			display: flex;
 			flex-direction: column;
-			gap: 6px;
+			font-size: 13px; /* em reference for every inner zone */
 		}
 		.card-art {
-			flex: 1;
-			border-radius: 6px;
-			background: #d8d9d3;
+			flex: none;
+			height: 56%;
+			border-radius: 5px;
+			background: var(--card-art);
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			font-size: 34px;
+			font-size: 2.4em;
+			color: #39424e;
 		}
-		.card-name { font-size: 13px; font-weight: 700; }
-		.card-frac { font-size: 11px; text-align: right; color: var(--ink-soft); }
+		.card-rarity {
+			flex: 1 0 auto; /* absorbs the free space: the effect below hugs the divider */
+			margin-top: 2px;
+			padding-right: 1px;
+			text-align: right;
+			font-size: 0.68em;
+			line-height: 1.3;
+			letter-spacing: 0.12em;
+			color: var(--card-art);
+		}
+		.card-effect {
+			font-size: 0.74em;
+			line-height: 1.35;
+			color: var(--ink);
+			overflow: hidden;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+		}
+		.card-effect:empty { display: none; } /* no-effect cards keep no dangling ">" */
+		.card-effect::before { content: '> '; } /* authored marker, not part of cardDesc */
+		.card-divider {
+			margin: 3px 0;
+			height: 1px;
+			background: var(--ink);
+			opacity: 0.65;
+		}
+		.card-bottom {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+		}
+		.card-name {
+			min-width: 0;
+			font-size: 1em;
+			font-weight: 800;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+		.card-atk { flex: none; padding-left: 4px; font-size: 1.3em; font-weight: 800; line-height: 1; }
+		.card-face.zoom {
+			width: 202px;
+			height: 280px;
+			padding: 12px 13px;
+			border-radius: 14px;
+			font-size: 22px;
+		}
+		.card-face.zoom .card-art { border-radius: 8px; }
 		.card-price {
 			font-size: 18px;
 			font-weight: 800;
@@ -359,11 +419,10 @@
 			max-width: 260px;
 		}
 		.tip-tag { font-weight: 700; margin-right: 6px; }
-		.card-tags { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
 
 		/* tokens section */
 		.swatches { display: flex; flex-wrap: wrap; gap: 12px; }
-		.swatch { width: 108px; font-size: 11px; color: #9fb2bc; }
+		.swatch { width: 128px; font-size: 11px; color: #9fb2bc; }
 		.swatch .box {
 			height: 44px;
 			border-radius: 6px;
@@ -371,6 +430,7 @@
 			margin-bottom: 4px;
 		}
 		.swatch code { font-size: 10px; padding: 1px 4px; }
+		.swatch .umap { font-size: 10px; color: #7fdca4; font-family: Consolas, monospace; margin-top: 2px; }
 
 		/* rules section */
 		table.matrix {
@@ -422,8 +482,9 @@
 	<section id="tokens" data-title="01 设计令牌 Tokens">
 		<div class="spec-head"><h2>01 设计令牌 Tokens</h2><span class="tag-status">v0.1 草案</span></div>
 		<ul class="notes">
-			<li>颜色令牌对应 Unity 侧的 <code>ColorSO</code> / <code>GameColorPalette</code>——实现时只准引用令牌名，禁止写死 hex。</li>
-			<li>物理令牌（阴影偏移、位移、时长、缓动）见顶部参数条，实时可调；当前值显示在第 06 节的规则正文中。</li>
+			<li><b>颜色权威在 Unity 侧</b>：本文档的 hex 仅为演示站位色，不移植；生产色以 <code>GameColorPalette</code> 为准——每个色板下方标注了对应的 palette 字段与 ColorSO 资产，实现时只准引用字段名，禁止写死 hex。</li>
+			<li>tooltip 底/字 = <code>tooltipBg</code>/<code>tooltipText</code>（Navy/GreyWhite）；价格与数字强调 = <code>highlight</code>（LogHighlight #FFEB04）。</li>
+			<li>物理令牌（阴影偏移、位移、时长、缓动）见顶部参数条，实时可调；当前值显示在第 07 节的规则正文中。</li>
 		</ul>
 		<div class="stage" style="align-items:flex-start; background:#20292f; box-shadow:none;">
 			<div class="swatches" id="swatches"></div>
@@ -469,9 +530,114 @@
 		<div class="log"></div>
 	</section>
 
-	<!-- ===================== 03 long-press card ===================== -->
-	<section id="longpress" data-title="03 长按卡片 Long-Press Card">
-		<div class="spec-head"><h2>03 长按卡片 Long-Press Card</h2><span class="tag-status">v0.1 草案</span></div>
+	<!-- ===================== 03 card template ===================== -->
+	<section id="cardtemplate" data-title="03 卡牌模板 Card Template">
+		<div class="spec-head"><h2>03 卡牌模板 Card Template</h2><span class="tag-status">v1.1 模板 · 2026-08-18</span></div>
+		<ul class="notes">
+			<li>分区（自上而下）：<b>卡图区</b>（深色圆角，插画预留位）→ <b>稀有度</b>（卡图右下方，✦×1~3，右对齐）→ <b>效果描述</b>（自动 <code>&gt;</code> 前缀，最多两行截断）→ 分隔线 → <b>底行</b>：卡名（左，粗体，过长省略号）＋ 攻击力（右，同基线、更大字号）。</li>
+			<li>效果描述<b>贴分隔线、从下往上排</b>：稀有度行 <code>flex-grow</code> 吸收弹性留白，效果文案第二行向上生长；<b>无效果卡省略效果行</b>（<code>.card-effect:empty</code> 兜底隐藏，不留孤悬的 <code>&gt;</code>）。</li>
+			<li>卡面内部尺寸全部基于卡片字号的 em 相对单位——<code>.card-face.zoom</code> 只改字号即整体放大，供解剖展示。</li>
+			<li>交互物理与按钮完全一致（同一套 <code>.phys</code> 状态机）；价格等商店附属信息挂在卡外，不进卡面。</li>
+			<li>卡图底色与稀有度星标 = 令牌 <code>--card-art</code>；卡面文字 / 分隔线 = <code>--ink</code>。</li>
+			<li>待定：实装插画后稀有度星标的可读性。</li>
+		</ul>
+		<div class="stage tall">
+			<div class="demo-block">
+				<div class="phys" data-interactive data-name="蓝色的鱼(放大解剖)">
+					<div class="phys-face card-face zoom">
+						<div class="card-art"></div>
+						<div class="card-rarity">✦✦✦</div>
+						<div class="card-effect">增强 1 友方</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">蓝色的鱼</span>
+							<span class="card-atk">1</span>
+						</div>
+					</div>
+				</div>
+				<span class="demo-caption">解剖样 · zoom（可悬停/按下）</span>
+			</div>
+			<div class="demo-block">
+				<div class="phys" data-interactive data-name="苔衣小鼠">
+					<div class="phys-face card-face">
+						<div class="card-art"></div>
+						<div class="card-rarity">✦</div>
+						<div class="card-effect">治疗 1 点生命</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">苔衣小鼠</span>
+							<span class="card-atk">1</span>
+						</div>
+					</div>
+				</div>
+				<span class="demo-caption">一星 ✦</span>
+			</div>
+			<div class="demo-block">
+				<div class="phys" data-interactive data-name="铁壳龟">
+					<div class="phys-face card-face">
+						<div class="card-art"></div>
+						<div class="card-rarity">✦✦</div>
+						<div class="card-effect">获得 2 点护盾</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">铁壳龟</span>
+							<span class="card-atk">2</span>
+						</div>
+					</div>
+				</div>
+				<span class="demo-caption">二星 ✦✦</span>
+			</div>
+			<div class="demo-block">
+				<div class="phys" data-interactive data-name="蓝色的鱼">
+					<div class="phys-face card-face">
+						<div class="card-art"></div>
+						<div class="card-rarity">✦✦✦</div>
+						<div class="card-effect">增强 1 友方</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">蓝色的鱼</span>
+							<span class="card-atk">1</span>
+						</div>
+					</div>
+				</div>
+				<span class="demo-caption">三星 ✦✦✦（同模板图）</span>
+			</div>
+			<div class="demo-block">
+				<div class="phys" data-interactive data-name="深海灯笼鱼">
+					<div class="phys-face card-face">
+						<div class="card-art"></div>
+						<div class="card-rarity">✦✦</div>
+						<div class="card-effect">被埋葬时：随机将两张友方卡洗回卡组顶部</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">名字很长的深海灯笼鱼</span>
+							<span class="card-atk">12</span>
+						</div>
+					</div>
+				</div>
+				<span class="demo-caption">压力样 · 长名省略 / 效果两行截断</span>
+			</div>
+			<div class="demo-block">
+				<div class="phys" data-interactive data-name="小石子">
+					<div class="phys-face card-face">
+						<div class="card-art"></div>
+						<div class="card-rarity">✦</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">小石子</span>
+							<span class="card-atk">1</span>
+						</div>
+					</div>
+				</div>
+				<span class="demo-caption">无效果卡 · 省略效果行</span>
+			</div>
+		</div>
+		<div class="log"></div>
+	</section>
+
+	<!-- ===================== 04 long-press card ===================== -->
+	<section id="longpress" data-title="04 长按卡片 Long-Press Card">
+		<div class="spec-head"><h2>04 长按卡片 Long-Press Card</h2><span class="tag-status">v0.1 草案</span></div>
 		<ul class="notes">
 			<li>购买 / 售出是<b>长按</b>操作：按下后进度填充从底部升起，到达阈值<b>立即触发</b>（不等松开）。</li>
 			<li>未到阈值松开 = 取消；按住移出 = 取消。取消无任何副作用。</li>
@@ -485,8 +651,13 @@
 					<div class="phys-face card-face">
 						<div class="lp-fill"></div>
 						<div class="card-art"></div>
-						<div class="card-name">蓝色的鱼</div>
-						<div class="card-frac">1/3</div>
+						<div class="card-rarity">✦✦✦</div>
+						<div class="card-effect">增强 1 友方</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">蓝色的鱼</span>
+							<span class="card-atk">1</span>
+						</div>
 					</div>
 				</div>
 				<span class="card-price">$3</span>
@@ -497,8 +668,13 @@
 					<div class="phys-face card-face">
 						<div class="lp-fill"></div>
 						<div class="card-art">▦</div>
-						<div class="card-name">卡组卡</div>
-						<div class="card-frac">2/5</div>
+						<div class="card-rarity">✦✦</div>
+						<div class="card-effect">抽一张卡</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">卡组卡</span>
+							<span class="card-atk">2</span>
+						</div>
 					</div>
 				</div>
 				<span class="card-price">$2</span>
@@ -509,8 +685,13 @@
 					<div class="phys-face card-face">
 						<div class="lp-fill"></div>
 						<div class="card-art"></div>
-						<div class="card-name">买不起的鱼</div>
-						<div class="card-frac">1/3</div>
+						<div class="card-rarity">✦✦✦</div>
+						<div class="card-effect">增强 2 友方</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">买不起的鱼</span>
+							<span class="card-atk">3</span>
+						</div>
 					</div>
 				</div>
 				<span class="card-price">$8</span>
@@ -520,9 +701,9 @@
 		<div class="log"></div>
 	</section>
 
-	<!-- ===================== 04 tooltip ===================== -->
-	<section id="tooltip" data-title="04 悬停提示 Tooltip">
-		<div class="spec-head"><h2>04 悬停提示 Tooltip</h2><span class="tag-status">v0.2 草案</span></div>
+	<!-- ===================== 05 tooltip ===================== -->
+	<section id="tooltip" data-title="05 悬停提示 Tooltip">
+		<div class="spec-head"><h2>05 悬停提示 Tooltip</h2><span class="tag-status">v0.2 草案</span></div>
 		<ul class="notes">
 			<li>tooltip 是<b>可交互元素的附属属性</b>，不是独立元素：宿主保持自身 hover 物理（卡片照常浮起），tooltip 在悬停满 <code>tipDelay</code> 后叠加出现；移出立即消失。</li>
 			<li>位置优先级：<b>宿主左侧、垂直居中</b> → 左侧视口空间小于 <code>Tooltip 边距</code> 参数则<b>翻转到右侧</b>；垂直方向视口内收拢（硬边距 8px）；宿主移动（窗口 resize / 缩放 / 滚动）时 tooltip <b>实时跟随重排</b>。</li>
@@ -535,8 +716,13 @@
 				<div class="phys" data-interactive data-name="单标签卡" data-tips='[["亡语","被埋葬时触发效果"]]'>
 					<div class="phys-face card-face">
 						<div class="card-art"></div>
-						<div class="card-tags">&lt;亡语&gt;</div>
-						<div class="card-name">示例卡 A</div>
+						<div class="card-rarity">✦✦</div>
+						<div class="card-effect">&lt;亡语&gt; 被埋葬时抽一张卡</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">示例卡 A</span>
+							<span class="card-atk">1</span>
+						</div>
 					</div>
 				</div>
 				<span class="demo-caption">hover 卡片 · 左侧空间不足翻到右侧</span>
@@ -545,8 +731,13 @@
 				<div class="phys" data-interactive data-name="双标签卡" data-tips='[["亡语","被埋葬时触发效果"],["法力X","法力消耗为 X"]]'>
 					<div class="phys-face card-face">
 						<div class="card-art"></div>
-						<div class="card-tags">&lt;亡语&gt; &lt;法力X&gt;</div>
-						<div class="card-name">示例卡 B</div>
+						<div class="card-rarity">✦✦✦</div>
+						<div class="card-effect">&lt;亡语&gt; &lt;法力X&gt; 造成 X 点伤害</div>
+						<div class="card-divider"></div>
+						<div class="card-bottom">
+							<span class="card-name">示例卡 B</span>
+							<span class="card-atk">2</span>
+						</div>
 					</div>
 				</div>
 				<span class="demo-caption">hover 卡片 · 多条 tooltip 堆叠</span>
@@ -554,9 +745,9 @@
 		</div>
 	</section>
 
-	<!-- ===================== 05 read-only & recessed ===================== -->
-	<section id="readonly" data-title="05 只读与凹槽 Read-only / Recessed">
-		<div class="spec-head"><h2>05 只读元素与凹槽</h2><span class="tag-status">v0.1 草案</span></div>
+	<!-- ===================== 06 read-only & recessed ===================== -->
+	<section id="readonly" data-title="06 只读与凹槽 Read-only / Recessed">
+		<div class="spec-head"><h2>06 只读元素与凹槽</h2><span class="tag-status">v0.1 草案</span></div>
 		<ul class="notes">
 			<li><b>信息展示元素一律平面</b>：无阴影、无位移、<code>cursor: default</code>。"可交互 = 亮面浮起"的逆命题必须成立，否则玩家会对着 HP 数字点半天。</li>
 			<li>空卡位是<b>凹槽</b>（recessed）：内阴影在左上——与浮起元素相反，符合同一光源。</li>
@@ -582,9 +773,9 @@
 		</div>
 	</section>
 
-	<!-- ===================== 06 rules & state matrix ===================== -->
-	<section id="rules" data-title="06 规则与状态矩阵">
-		<div class="spec-head"><h2>06 规则与状态矩阵</h2><span class="tag-status">随参数实时更新</span></div>
+	<!-- ===================== 07 rules & state matrix ===================== -->
+	<section id="rules" data-title="07 规则与状态矩阵">
+		<div class="spec-head"><h2>07 规则与状态矩阵</h2><span class="tag-status">随参数实时更新</span></div>
 		<ul class="notes">
 			<li><b>R1 光源</b>：全局左上。浮起元素阴影投向右下；凹槽元素内阴影在左上。</li>
 			<li><b>R2 可交互性</b>：可交互 = 亮面 + 阴影（浮起）；只读 = 平面；禁用 = 暗面 + 无阴影 + 拒绝动效（mouseenter 一次：平移 <code data-show="denyShift"></code> 后摇头 <code data-show="denyWiggles"></code> 次——方式可选左右平移/旋转——单程 <code data-show="denyWiggleDur"></code>，幅度 <code data-show="denyAmp"></code>，停留 <code data-show="denyHold"></code> 再归位）。</li>
@@ -613,7 +804,10 @@
 		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；长按加 <code>data-longpress data-lp-action="..."</code>；提示加 <code>data-tips='[["标签","描述"]]'</code>（可多条）；悬停换文案加 <code>data-hover-text="..."</code>。无需写新 JS。
 		3) 新全局参数 = 在 <code>PARAMS</code> 数组加一项，参数条、状态对象、规格 JSON 自动生成。
 		4) 手感确认后，把数值同步进 <code>docs/UIUX_Guidelines.md</code> 与 Unity 实现。<br>
-		版本：v0.1 · 2026-08-15 · 初版（令牌 / 按钮 / 长按卡片 / tooltip / 只读与凹槽 / 状态矩阵）
+		版本：v0.4 · 2026-08-18 · 01 节色板标注 GameColorPalette 映射（文档色 = 演示站位，生产以 palette 为准）<br>
+	版本：v0.3 · 2026-08-18 · 效果文本贴分隔线、从下往上排；无效果卡省略效果行；缓动默认 overshoot；摇头次数默认 1 次<br>
+	版本：v0.2 · 2026-08-18 · 新增 03 卡牌模板（卡图区 / 稀有度✦1~3 / 效果描述 / 卡名＋攻击力底行）；04、05 节卡片迁移到新模板<br>
+	版本：v0.1 · 2026-08-15 · 初版（令牌 / 按钮 / 长按卡片 / tooltip / 只读与凹槽 / 状态矩阵）
 	</footer>
 
 	<div id="tip"></div>
@@ -629,7 +823,7 @@
 			{ key: 'pressDur',    label: '按压时长',          min: 0,   max: 300,  step: 10,  def: 60,  unit: 'ms', css: '--dp' },
 			{ key: 'ease',        label: '缓动',              type: 'select',
 				options: [['cubic-bezier(.2,.7,.3,1)', 'smooth'], ['overshoot', 'overshoot 回弹'], ['linear', 'linear']],
-				def: 'cubic-bezier(.2,.7,.3,1)', css: '--ease' },
+				def: 'overshoot', css: '--ease' },
 			{ key: 'overshoot',   label: '回弹强度',          min: 1,   max: 3,    step: 0.05, def: 1.7 },
 			{ key: 'pressTarget', label: '按压落点',          type: 'select',
 				options: [['ground', '落到阴影上'], ['rest', '回到原位']],
@@ -644,7 +838,7 @@
 				def: 'translate' },
 			{ key: 'denyRotAmp',  label: '旋转幅度',          min: 1,   max: 15,   step: 0.5,  def: 5,   unit: '°' },
 			{ key: 'denyOut',     label: '平移出时长',        min: 40,  max: 300,  step: 10,  def: 80,  unit: 'ms' },
-			{ key: 'denyWiggles', label: '摇头次数',          min: 1,   max: 4,    step: 1,   def: 2 },
+			{ key: 'denyWiggles', label: '摇头次数',          min: 1,   max: 4,    step: 1,   def: 1 },
 			{ key: 'denyWiggleDur', label: '单程摆动时长',    min: 60,  max: 400,  step: 10,  def: 110, unit: 'ms' },
 			{ key: 'denyHold',    label: '停留时长',          min: 0,   max: 1000, step: 50,  def: 150, unit: 'ms' },
 			{ key: 'denyRetreat', label: '退回时长',          min: 40,  max: 400,  step: 10,  def: 120, unit: 'ms' },
@@ -977,13 +1171,21 @@
 
 		/* ===================== token swatches ===================== */
 		(function buildSwatches() {
+			/* 3rd element = the GameColorPalette field / ColorSO asset this token maps
+			   to in production; the doc hex values are demo stand-ins only. */
 			const tokens = [
-				['--paper', 'paper 舞台灰'], ['--panel', 'panel 面板'], ['--recess', 'recess 凹槽'],
-				['--face', 'face 亮面'], ['--face-dim', 'face-dim 禁用'],
-				['--ink', 'ink 主文字'], ['--ink-soft', 'ink-soft 次要'], ['--shadow-c', 'shadow 硬阴影'],
+				['--paper', 'paper 舞台灰', '舞台背景 · 不进 palette'],
+				['--panel', 'panel 面板', '面板背景 · 不进 palette'],
+				['--recess', 'recess 凹槽', 'slotRecess → SlotRecess（新）'],
+				['--face', 'face 亮面', 'ownerCardColor → GreyWhite'],
+				['--face-dim', 'face-dim 禁用', 'cardFaceDim → CardFaceDim（新）'],
+				['--ink', 'ink 主文字', 'ownerTextColor → Navy'],
+				['--ink-soft', 'ink-soft 次要', 'cardTextSoft → CardTextSoft（新）'],
+				['--shadow-c', 'shadow 硬阴影', 'cardShadow → UIShadow（新）'],
+				['--card-art', 'card-art 卡图区', 'cardArtBg → Black'],
 			];
 			const host = document.getElementById('swatches');
-			tokens.forEach(([v, label]) => {
+			tokens.forEach(([v, label, umap]) => {
 				const d = document.createElement('div');
 				d.className = 'swatch';
 				const box = document.createElement('div');
@@ -996,6 +1198,12 @@
 				const c = document.createElement('code');
 				c.textContent = v;
 				d.appendChild(c);
+				if (umap) {
+					const m = document.createElement('div');
+					m.className = 'umap';
+					m.textContent = umap;
+					d.appendChild(m);
+				}
 				host.appendChild(d);
 			});
 		})();
