@@ -60,11 +60,11 @@
 <body>
 
 <h1>OneDeck 卡池 v5 — 迭代设计总案</h1>
-<div class="sub">2026-08-17 · 迭代自 v4（docs/CardPoolV4_Design_CoreFormula.html,117 张）· 用户 14 项设计指令逐条落实 · 前置分析:docs/OneDeck_V4_CardPoolAnalysis.html（v4 结构拆解）与 docs/StS2_DesignSynthesis_ForOneDeck.html（StS2 对照审计）· 总量 117 → 132（17 新增 − 2 合并）</div>
+<div class="sub">2026-08-17 · 迭代自 v4（docs/CardPoolV4_Design_CoreFormula.html,117 张）· 用户 14 项设计指令逐条落实 · 前置分析:docs/OneDeck_V4_CardPoolAnalysis.html（v4 结构拆解）与 docs/StS2_DesignSynthesis_ForOneDeck.html（StS2 对照审计）· 总量 117 → 138（23 新增 − 2 合并）</div>
 
 <div class="kpis">
-	<div class="kpi"><div class="num">132</div><div class="lbl">v5 卡池总量(117 − 2 合并 + 17 新增)</div></div>
-	<div class="kpi"><div class="num">27/57/48</div><div class="lbl">稀有度 C / U / R(20.5% / 43.2% / 36.4%)—— R 从 26 增至 48</div></div>
+	<div class="kpi"><div class="num">138</div><div class="lbl">v5 卡池总量(117 − 2 合并 + 23 新增)</div></div>
+	<div class="kpi"><div class="num">27/58/53</div><div class="lbl">稀有度 C / U / R(19.6% / 42.0% / 38.4%)—— R 从 26 增至 53</div></div>
 	<div class="kpi"><div class="num">1</div><div class="lbl">数值系统:力量与攻击力统一为攻击力(删减合并)</div></div>
 	<div class="kpi"><div class="num">3</div><div class="lbl">新规则:置顶排除沉睡 / 沉睡免疫埋葬 / 去除敌方裂缝移除</div></div>
 	<div class="kpi"><div class="num">14</div><div class="lbl">设计指令逐条落实(见 §0 对照表)</div></div>
@@ -248,6 +248,32 @@
 	</table>
 </div>
 
+<h3>3.8 形态升级(指令 10 补充,合成分析 §2.3.4 落地)</h3>
+<div class="card">
+	<p class="lead">v4 审计最大缺口:放大全部是「数值型」(+1 / ×2),无「触发次数 / 效果形态 / 载体全局化」。以下 5 张全部 Rare,补上 StS2 同职(Accelerant 触发+1 / Fan of Knives 群伤 / Sword Sage Replay),其中 裂隙尖啸 与 苏醒之雷 为用户指令新增(裂缝 / 沉睡形态升级)。</p>
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>墓园共鸣</b></td><td>R</td><td>萦绕:每当友方[亡语]被埋葬:其亡语额外触发 1 次</td><td>触发次数放大 —— 对照 Accelerant(毒触发 +1 次);E5 墓地连锁的频率翻倍器;达成难度 = 萦绕卡存活 + 亡语密度</td></tr>
+			<tr><td><b>战旗</b></td><td>R</td><td>萦绕:友方[攻击者]的攻击对全体敌人生效;每回合埋葬 1 张友方卡</td><td>群伤化 —— 对照 Fan of Knives / Seeking Edge;最高形态升级,用代价(每回合埋 1 友方)对冲达成难度</td></tr>
+			<tr><td><b>回声</b></td><td>R</td><td>给予 1 张友方[攻击者] [萦绕]:每当其被置顶:额外触发 1 次</td><td>置顶频率放大 —— 对照 Sword Sage(Replay)/ Phantom Blades;E6 置顶循环的翻倍器</td></tr>
+			<tr><td><b>裂隙尖啸</b><span class="badge b-new">新指令</span></td><td>R</td><td>所有友方[次元裂缝]获得「被置顶:随机敌方[攻击者] 攻击力 -1」(在其被去除前结算)</td><td>裂缝形态升级:被置顶事件(先于去除)触发降攻 —— 用户指令;对照 衰弱光环(事件型硬解)的裂缝版;达成难度 = 裂缝被置顶频率(与 E6 置顶流联动)</td></tr>
+			<tr><td><b>苏醒之雷</b><span class="badge b-new">新指令</span></td><td>R</td><td>萦绕:每当友方[沉睡]被唤醒:其攻击 ×1(攻击力 = 其自身攻击力)</td><td>沉睡形态升级:唤醒即挥击 —— 用户指令;与大觉醒(全体唤醒)/ 梦呓(唤醒→置顶)形成唤醒连锁;达成难度 = 唤醒频率</td></tr>
+		</tbody>
+	</table>
+</div>
+
+<h3>3.9 亡语直接触发(新增,不埋葬)</h3>
+<div class="card">
+	<table>
+		<thead><tr><th style="width:16%">卡</th><th style="width:8%">稀有度</th><th style="width:40%">效果</th><th>理由</th></tr></thead>
+		<tbody>
+			<tr><td><b>招魂者</b><span class="badge b-new">新指令</span></td><td>U</td><td>触发 1 张友方[亡语]卡(最深)的亡语 1 次(不埋葬)</td><td>用户指令:亡语触发不再需要「先埋葬再触发」—— 修碑人仍需埋葬事件,此卡直接调度;针刺骷髅(×2)/ 史莱姆(复制)/ 守墓人(置顶自身)可被主动触发;链系统 + 疲劳保证无真无限</td></tr>
+		</tbody>
+	</table>
+	<div class="note">检查补充:友方被埋葬 → 置顶 / 移至 Start Card 前 的组合目前不存在(守墓人仅置顶自身;冥界裂缝 / 替死鬼是自身被埋葬时置顶 1 张友方;v4 无任何「移至 Start Card 前」效果,v5 仅 王座调度 / 王座光环 且非事件触发)。若需要「友方被埋葬 → 调度友方」的完整形态,可在后续迭代补(如:萦绕:每当友方[亡语]被埋葬:置顶 1 张友方[攻击者])。</div>
+</div>
+
 <h2>4. 重做卡(6 张)</h2>
 <div class="card">
 	<table>
@@ -281,9 +307,9 @@
 	<table>
 		<thead><tr><th>稀有度</th><th>v4</th><th>v5</th><th>占比</th><th>对照 StS2</th></tr></thead>
 		<tbody>
-			<tr><td><span class="r-tag r-common">Common</span></td><td>31(26.5%)</td><td>27(20.5%)</td><td>↓</td><td>22% ✓</td></tr>
-			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>60(51.3%)</td><td>57(43.2%)</td><td>↓</td><td>42% ✓</td></tr>
-			<tr><td><span class="r-tag r-rare">Rare</span></td><td>26(22.2%)</td><td><b>48(36.4%)</b></td><td class="good">↑ 几乎翻倍</td><td>30% —— 更高,符合「更多 R」</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>31(26.5%)</td><td>27(19.6%)</td><td>↓</td><td>22% ✓</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>60(51.3%)</td><td>58(42.0%)</td><td>↓</td><td>42% ✓</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>26(22.2%)</td><td><b>53(38.4%)</b></td><td class="good">↑ 几乎翻倍</td><td>30% —— 更高,符合「更多 R」</td></tr>
 		</tbody>
 	</table>
 	<h3>6.2 移动明细</h3>
@@ -294,7 +320,7 @@
 			<tr><td><b>U → R(16)</b></td><td>嗜血、武器精灵、白骨地、墓碑、诅咒共鸣、碎骨聚集体、王牌、献祭仪式、送葬人、守夜人、次元兽、咒食的大召唤师、蓄势待发、被诅咒的尸体、飞蛾人、次元棺材</td><td>全部为「无上限引擎 / 存量兑现 / 双轴转换」—— 对照 StS2 的 R 层标准(引擎 / 封顶 / 转换),v4 把它们放在 U 是 R 层稀疏的主因</td></tr>
 		</tbody>
 	</table>
-	<div class="note">R 层 48 张的新职责:封顶(人间大炮 / 乌合之众 / 攻击力虹吸人 / 未完成的机器人 / 咒蚀之眠 / 镜面诅咒 / 全能人)、引擎(攻击力渴求者 / 武器精灵 / 白骨地 / 守墓人 / 诅咒共鸣 / 飞蛾人 / 送葬人)、沉睡大怪(亘古沉眠者 / 武备沉眠 / 咒蚀之眠 / 王座调度)、群控与硬解(安眠曲 / 寂静术 / 王座调度)、形态升级(新增 3 张,见下)。</div>
+	<div class="note">R 层 48 张的新职责:封顶(人间大炮 / 乌合之众 / 攻击力虹吸人 / 未完成的机器人 / 咒蚀之眠 / 镜面诅咒 / 全能人)、引擎(攻击力渴求者 / 武器精灵 / 白骨地 / 守墓人 / 诅咒共鸣 / 飞蛾人 / 送葬人)、沉睡大怪(亘古沉眠者 / 武备沉眠 / 咒蚀之眠 / 王座调度)、群控与硬解(安眠曲 / 寂静术 / 王座调度)、形态升级(新增 5 张,见 §3.8)。</div>
 </div>
 
 <h2>7. 评估:裂缝置顶 2 友方(指令 14)</h2>
@@ -336,7 +362,7 @@
 		<li><b>攻击力统一后的强度面</b>:攻击力渴求者(×2)与未完成的机器人(翻倍)现在作用于唯一数值,是否比 v4(力量)更强 —— 建议保留,达成难度不变,数值面更直观。</li>
 		<li><b>敌方[负面]攻击力与敌方[攻击者]攻击力</b>:建议同一数值池(都叫攻击力),增强 / 降攻 / 沉睡统一适用;确认 JU_ON 生成的负面初始攻击力(建议 1)。</li>
 		<li><b>「王座区」(Start Card 前)的判定</b>:需要引擎支持「Start Card 前 N 张」的位置谓词(与「下 2 张」「最深」同族)。</li>
-		<li><b>17 新卡 + 2 合并的规模</b>(117 → 132):指令 7(沉睡入轴)与指令 11(位移)各贡献 3-4 张,是否接受此规模;若需收缩,优先砍 尸眠 / 裂缝沉眠 之一(与次元胚胎重复度最高)。</li>
+		<li><b>23 新卡 + 2 合并的规模</b>(117 → 138):指令 7(沉睡入轴)与指令 11(位移)各贡献 3-4 张,是否接受此规模;若需收缩,优先砍 尸眠 / 裂缝沉眠 之一(与次元胚胎重复度最高)。</li>
 		<li><b>17 张新卡与稀有度移动是否入库(Notion)</b>:按约定先不入库,确认后统一同步。</li>
 	</ul>
 </div>
