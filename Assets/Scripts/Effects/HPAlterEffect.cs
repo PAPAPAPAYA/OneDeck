@@ -76,7 +76,7 @@ public class HPAlterEffect : EffectScript
 		}
 
 		// add base dmg
-		dmgAmountAlter += baseDmg.value;
+		dmgAmountAlter += baseDmg != null ? baseDmg.value : 0;
 	}
 
 	/// <summary>
@@ -125,7 +125,17 @@ public class HPAlterEffect : EffectScript
 	}
 
 	#endregion
-	
+
+	/// <summary>
+	/// Total damage for one hit: base damage (baseDmg + Power layers + dmgAmountAlter) plus extraDmg.
+	/// Virtual so AttackEffect can substitute the card attack attribute as the damage source.
+	/// </summary>
+	protected virtual int ComputeTotalDamage()
+	{
+		DmgCalculator();
+		return extraDmg + dmgAmountAlter;
+	}
+
 	#region Damage Effects
 	
 	/// <summary>
@@ -134,8 +144,7 @@ public class HPAlterEffect : EffectScript
 	/// </summary>
 	public void DecreaseMyHp()
 	{
-		DmgCalculator();
-		int totalDmg = extraDmg + dmgAmountAlter;
+		int totalDmg = ComputeTotalDamage();
 		int baseDmgValue = baseDmg != null ? baseDmg.value : 0;
 		TestManager.Log("[DynamicDamageDisplay] DecreaseMyHp frame=" + Time.frameCount + " card=" + myCardScript.GetDisplayName() + " totalDmg=" + totalDmg + " baseDmg=" + baseDmgValue + " extraDmg=" + extraDmg + " powerCount=" + CountPower(myCardScript) + " desc=[" + myCardScript.GetCardDescForDisplay() + "]");
 		
@@ -443,8 +452,7 @@ public class HPAlterEffect : EffectScript
 	/// </summary>
 	public void DecreaseTheirHp()
 	{
-		DmgCalculator();
-		int totalDmg = extraDmg + dmgAmountAlter;
+		int totalDmg = ComputeTotalDamage();
 		int baseDmgValue = baseDmg != null ? baseDmg.value : 0;
 		TestManager.Log("[DynamicDamageDisplay] DecreaseTheirHp frame=" + Time.frameCount + " card=" + myCardScript.GetDisplayName() + " totalDmg=" + totalDmg + " baseDmg=" + baseDmgValue + " extraDmg=" + extraDmg + " powerCount=" + CountPower(myCardScript) + " desc=[" + myCardScript.GetCardDescForDisplay() + "]");
 		

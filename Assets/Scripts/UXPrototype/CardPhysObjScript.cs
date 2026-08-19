@@ -36,6 +36,7 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardRarityPrint;
 	public TextMeshPro cardTagPrint;
 	public TextMeshPro cardStatusEffectPrint;
+	public TextMeshPro cardAttackPrint;
 
 	[Header("CARD ART")]
 	[Tooltip("Card face sprite used when this card is owned by the player")]
@@ -216,6 +217,7 @@ public class CardPhysObjScript : MonoBehaviour
 			UpdatePriceDisplay();
 			UpdateRarityDisplay();
 			UpdateTagDisplay();
+			UpdateAttackDisplay();
 		}
 		else
 		{
@@ -295,6 +297,27 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 
 		return hasVisibleTag ? sb.ToString() : string.Empty;
+	}
+
+	/// <summary>
+	/// Update the attack attribute display (bottom-right of the card face).
+	/// Hidden for legacy cards with no attack; shows "X" or "X×N" (N = attack times).
+	/// </summary>
+	private void UpdateAttackDisplay()
+	{
+		if (cardAttackPrint == null || cardImRepresenting == null) return;
+
+		if (!cardImRepresenting.HasAttackDisplay)
+		{
+			cardAttackPrint.gameObject.SetActive(false);
+			return;
+		}
+
+		cardAttackPrint.gameObject.SetActive(true);
+		int times = cardImRepresenting.GetAttackTimes();
+		cardAttackPrint.text = times > 1
+			? cardImRepresenting.GetAttack() + "×" + times
+			: cardImRepresenting.GetAttack().ToString();
 	}
 
 	/// <summary>
@@ -656,6 +679,7 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardRarityPrint != null) faces.Add(cardRarityPrint.transform);
 		if (cardTagPrint != null) faces.Add(cardTagPrint.transform);
 		if (cardStatusEffectPrint != null) faces.Add(cardStatusEffectPrint.transform);
+		if (cardAttackPrint != null) faces.Add(cardAttackPrint.transform);
 
 		var flipRootGo = new GameObject("FlipRoot");
 		_flipRoot = flipRootGo.transform;
@@ -711,6 +735,27 @@ public class CardPhysObjScript : MonoBehaviour
 		backTransform.localRotation = cardFace.transform.localRotation;
 		backTransform.localScale = cardFace.transform.localScale;
 		backGo.SetActive(false);
+
+		// Attack attribute print (bottom-right corner placeholder; real UI comes later).
+		// Created at runtime so no prefab edits are needed; joins the flip faces.
+		if (cardAttackPrint == null && cardDescPrint != null && cardFace != null)
+		{
+			var attackGo = new GameObject("AttackPrint");
+			cardAttackPrint = attackGo.AddComponent<TextMeshPro>();
+			cardAttackPrint.font = cardDescPrint.font;
+			cardAttackPrint.fontSize = cardDescPrint.fontSize * 1.5f;
+			cardAttackPrint.fontStyle = FontStyles.Bold;
+			cardAttackPrint.alignment = TextAlignmentOptions.Center;
+			cardAttackPrint.enableWordWrapping = false;
+			var attackTransform = attackGo.transform;
+			attackTransform.SetParent(_flipRoot, false);
+			Vector3 faceCenter = cardFace.transform.localPosition;
+			attackTransform.localPosition = new Vector3(
+				faceCenter.x + cardFace.size.x * 0.5f - 0.55f,
+				faceCenter.y - cardFace.size.y * 0.5f + 0.55f,
+				-0.02f);
+			faces.Add(attackTransform);
+		}
 	}
 
 	#region Big Shadow drive (Float Stack layout)
@@ -1102,6 +1147,7 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardTagPrint != null) cardTagPrint.color = textColor;
 		if (cardRarityPrint != null) cardRarityPrint.color = textColor;
 		if (cardStatusEffectPrint != null) cardStatusEffectPrint.color = textColor;
+		if (cardAttackPrint != null) cardAttackPrint.color = textColor;
 	}
 
 	/// <summary>

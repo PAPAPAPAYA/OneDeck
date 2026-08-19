@@ -29,6 +29,7 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onTheirPlayerShieldUpped;
 	public GameEvent afterShuffle; // used for effects that put cards on top or bottom
 	public GameEvent beforeRoundStart; // used for effects that activate once in a round
+	public GameEvent onAnyCardAttacked; // raised when any card performs an attack action (once per action, not per segment)
 	
 	[Header("minion related")]
 	public GameEvent onFriendlyMinionAdded; // Triggered when a friendly minion is added to the deck

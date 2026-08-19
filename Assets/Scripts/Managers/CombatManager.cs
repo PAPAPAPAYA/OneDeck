@@ -967,7 +967,10 @@ public class CombatManager : MonoBehaviour
 		{
 			var cardScript = card.GetComponent<CardScript>();
 			if (cardScript != null)
+			{
 				cardScript.currentLife = cardScript.lifeMax;
+				cardScript.ResetRoundAttackModifiers();
+			}
 		}
 
 		// Round start event

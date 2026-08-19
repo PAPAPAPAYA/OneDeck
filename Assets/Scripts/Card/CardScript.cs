@@ -59,6 +59,85 @@ public class CardScript : MonoBehaviour
 	[HideInInspector]
 	public int currentLife = 0;
 
+	[Header("Attack")]
+	[Tooltip("Base attack printed on the card face (per-prefab constant).")]
+	public int printedAttack;
+	[Tooltip("Permanent attack growth (merges the former Power / attack-growth mechanic). Persists across rounds within a combat; not persisted across combats.")]
+	[HideInInspector]
+	public int attackGrowth;
+	[Tooltip("This-round temporary attack modifier (e.g. -2 this round). Cleared at each round start.")]
+	[HideInInspector]
+	public int attackModThisRound;
+	[Tooltip("Permanent extra attack segments (attack +N times). Stackable; preserved through bury/stage.")]
+	[HideInInspector]
+	public int extraAttackTimes;
+
+	[System.NonSerialized]
+	private Func<int> _attackResolver;
+
+	/// <summary>
+	/// Whether this card shows an attack value on its face. Legacy cards (all-zero attack) keep the old face.
+	/// </summary>
+	public bool HasAttackDisplay => _attackResolver != null || printedAttack != 0 || attackGrowth != 0 || attackModThisRound != 0 || extraAttackTimes != 0;
+
+	/// <summary>
+	/// Current attack value (single settlement entry point). Dynamic attack (attack = Y, resolved live)
+	/// overrides base + growth + this-round modifier.
+	/// </summary>
+	public int GetAttack()
+	{
+		if (_attackResolver != null) return _attackResolver();
+		return printedAttack + attackGrowth + attackModThisRound;
+	}
+
+	/// <summary>
+	/// Set a dynamic attack resolver (attack = Y, resolved at settlement time). Pass null to restore base + growth.
+	/// </summary>
+	public void SetAttackResolver(Func<int> resolver)
+	{
+		_attackResolver = resolver;
+	}
+
+	/// <summary>
+	/// Permanent attack change (enhance / weaken / transfer / siphon). Stackable, kept until combat ends.
+	/// </summary>
+	public void ModifyAttack(int delta)
+	{
+		attackGrowth += delta;
+	}
+
+	/// <summary>
+	/// This-round attack change (e.g. -2 this round); cleared at each round start.
+	/// </summary>
+	public void ModifyAttackThisRound(int delta)
+	{
+		attackModThisRound += delta;
+	}
+
+	/// <summary>
+	/// Number of attack segments per attack action (1 + permanent extra segments).
+	/// </summary>
+	public int GetAttackTimes()
+	{
+		return 1 + extraAttackTimes;
+	}
+
+	/// <summary>
+	/// Permanent attack segment change (attack +N times). Stackable; preserved through bury/stage.
+	/// </summary>
+	public void ModifyAttackTimes(int delta)
+	{
+		extraAttackTimes += delta;
+	}
+
+	/// <summary>
+	/// Clear this-round temporary attack modifiers. Called by CombatManager at each round start.
+	/// </summary>
+	public void ResetRoundAttackModifiers()
+	{
+		attackModThisRound = 0;
+	}
+
 	private string _displayCardDesc;
 	[System.NonSerialized]
 	private List<HPAlterEffect> _cachedHpAlterEffects;
