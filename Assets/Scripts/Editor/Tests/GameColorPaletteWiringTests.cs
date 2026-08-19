@@ -1,17 +1,29 @@
+using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// EditMode wiring guard for the HUD color single-source mapping: the six
-/// GameColorPalette "HP Bar / Numeric" fields must be wired to the canonical
-/// ColorSO assets and stay distinct, and the resolved GameColorPalette.<Name>Color
-/// statics must return those assets' values. Prevents silent HUD recolors from
-/// an accidental palette rewiring.
+/// EditMode wiring guard for the GameColorPalette single-source mapping.
+///
+/// The palette is the single source for all game colors (components keep no
+/// serialized color fields and read GameColorPalette statics), so exact
+/// field-to-asset mappings are free to iterate. These tests therefore pin only
+/// color-agnostic invariants:
+///   1. every ColorSO field is wired to an asset in the canonical Colors folder;
+///   2. the resolved GameColorPalette.<Name>Color statics return wired values;
+///   3. fields that must stay visually distinguishable (player vs enemy, start
+///      card vs faction cards) never resolve to the same color.
+/// Color value tweaks and asset swaps never require touching this file.
+/// Golden field->asset pinning removed 2026-08-19 — it broke on every color
+/// iteration (overlay/text fields were unified onto Navy/GreyWhite and the
+/// goldens went stale), so rewiring is now guarded structurally instead.
 /// </summary>
 public class GameColorPaletteWiringTests
 {
 	private const string PalettePath = "Assets/Resources/GameColorPalette.asset";
+	private const string ColorsFolder = "Assets/SORefs/Colors/";
 
 	private static GameColorPalette LoadPalette()
 	{
@@ -20,124 +32,83 @@ public class GameColorPaletteWiringTests
 		return palette;
 	}
 
-	private static ColorSO LoadColor(string path)
+	private static IEnumerable<FieldInfo> ColorFields()
 	{
-		ColorSO so = AssetDatabase.LoadAssetAtPath<ColorSO>(path);
-		Assert.NotNull(so, "ColorSO asset missing at " + path);
-		return so;
+		foreach (FieldInfo field in typeof(GameColorPalette).GetFields(BindingFlags.Public | BindingFlags.Instance))
+		{
+			if (field.FieldType == typeof(ColorSO))
+			{
+				yield return field;
+			}
+		}
+	}
+
+	// Reflection-driven so newly added palette fields are covered automatically.
+	[Test]
+	public void AllColorFields_Wired()
+	{
+		GameColorPalette palette = LoadPalette();
+		List<string> missing = new List<string>();
+		foreach (FieldInfo field in ColorFields())
+		{
+			if (field.GetValue(palette) == null)
+			{
+				missing.Add(field.Name);
+			}
+		}
+		Assert.IsEmpty(missing, "Unwired palette fields (wire them in " + PalettePath + "): " + string.Join(", ", missing));
 	}
 
 	[Test]
-	public void HpFields_AllWired()
+	public void WiredColors_LiveInCanonicalFolder()
 	{
 		GameColorPalette palette = LoadPalette();
-		Assert.NotNull(palette.hpNormalPlayer, "hpNormalPlayer unwired");
-		Assert.NotNull(palette.hpNormalEnemy, "hpNormalEnemy unwired");
-		Assert.NotNull(palette.hpLow, "hpLow unwired");
-		Assert.NotNull(palette.hpZeroGray, "hpZeroGray unwired");
-		Assert.NotNull(palette.hpBarPlayer, "hpBarPlayer unwired");
-		Assert.NotNull(palette.hpBarEnemy, "hpBarEnemy unwired");
-		Assert.NotNull(palette.hpBarShadow, "hpBarShadow unwired");
+		List<string> misplaced = new List<string>();
+		foreach (FieldInfo field in ColorFields())
+		{
+			ColorSO so = (ColorSO)field.GetValue(palette);
+			if (so != null)
+			{
+				string path = AssetDatabase.GetAssetPath(so);
+				if (!path.StartsWith(ColorsFolder))
+				{
+					misplaced.Add(field.Name + " -> " + path);
+				}
+			}
+		}
+		Assert.IsEmpty(misplaced, "Palette fields must reference ColorSO assets under " + ColorsFolder + ": " + string.Join(", ", misplaced));
 	}
 
-	[Test]
-	public void FloaterFields_AllWired()
-	{
-		GameColorPalette palette = LoadPalette();
-		Assert.NotNull(palette.floaterPlayer, "floaterPlayer unwired");
-		Assert.NotNull(palette.floaterEnemy, "floaterEnemy unwired");
-		Assert.NotNull(palette.floaterShadow, "floaterShadow unwired");
-	}
-
-	[Test]
-	public void OverlayFields_AllWired()
-	{
-		GameColorPalette palette = LoadPalette();
-		Assert.NotNull(palette.tooltipBg, "tooltipBg unwired");
-		Assert.NotNull(palette.tooltipText, "tooltipText unwired");
-		Assert.NotNull(palette.resultPanelBg, "resultPanelBg unwired");
-		Assert.NotNull(palette.resultPanelText, "resultPanelText unwired");
-	}
-
-	[Test]
-	public void CardFields_AllWired()
-	{
-		GameColorPalette palette = LoadPalette();
-		Assert.NotNull(palette.ownerCardColor, "ownerCardColor unwired");
-		Assert.NotNull(palette.opponentCardColor, "opponentCardColor unwired");
-		Assert.NotNull(palette.ownerTextColor, "ownerTextColor unwired");
-		Assert.NotNull(palette.opponentTextColor, "opponentTextColor unwired");
-		Assert.NotNull(palette.startCardColor, "startCardColor unwired");
-		Assert.NotNull(palette.startCardTextColor, "startCardTextColor unwired");
-		Assert.NotNull(palette.infectedTint, "infectedTint unwired");
-		Assert.NotNull(palette.powerTint, "powerTint unwired");
-	}
-
+	// HP numerics/bars may share assets with other groups by design (hpNormalEnemy
+	// shares GreyWhite 2 with hpBarPlayer), so only the fields that must stay
+	// distinct from one another are pinned.
 	[Test]
 	public void HpFields_DistinctAssets()
 	{
 		GameColorPalette palette = LoadPalette();
-		// Intentional shares: the floater fields both point to Navy, and
-		// hpNormalEnemy shares GreyWhite 2 with hpBarPlayer — so only the
-		// remaining fields are pinned distinct.
 		var refs = new[] { palette.hpNormalPlayer, palette.hpNormalEnemy, palette.hpLow, palette.hpZeroGray, palette.hpBarEnemy, palette.hpBarShadow };
 		CollectionAssert.AllItemsAreUnique(refs, "Two HUD color fields share one ColorSO asset; rewire before it changes both HUD elements");
-		Assert.AreNotEqual(palette.hpNormalPlayer, palette.hpNormalEnemy, "Player and enemy numeric colors must differ");
 	}
 
-	// Golden: pins the canonical HUD wiring so a rewiring is a deliberate,
-	// test-visible change (was: hpNormal -> Navy, hpBarEnemy -> Red 2, both
-	// drifted from the scene wiring; unified 2026-08-15).
+	// Value-based on purpose: two distinct assets with an identical value are as
+	// unreadable as one shared asset, so reference checks are not enough here.
 	[Test]
-	public void HpFields_WiredToCanonicalAssets()
+	public void PlayerEnemyPairs_Differ()
 	{
 		GameColorPalette palette = LoadPalette();
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/Navy.asset"), palette.hpNormalPlayer, "hpNormalPlayer must point to Navy.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/GreyWhite 2.asset"), palette.hpNormalEnemy, "hpNormalEnemy must point to GreyWhite 2.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/OpponentCardColor.asset"), palette.hpLow, "hpLow must point to OpponentCardColor.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/HPZeroGray.asset"), palette.hpZeroGray, "hpZeroGray must point to HPZeroGray.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/GreyWhite 2.asset"), palette.hpBarPlayer, "hpBarPlayer must point to GreyWhite 2.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/OpponentCardColor 2.asset"), palette.hpBarEnemy, "hpBarEnemy must point to OpponentCardColor 2.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/Shadow.asset"), palette.hpBarShadow, "hpBarShadow must point to Shadow.asset");
+		Assert.AreNotEqual(palette.hpNormalPlayer.value, palette.hpNormalEnemy.value, "Player and enemy HP numeric colors must differ");
+		Assert.AreNotEqual(palette.hpBarPlayer.value, palette.hpBarEnemy.value, "Player and enemy HP bar colors must differ");
+		Assert.AreNotEqual(palette.floaterPlayer.value, palette.floaterEnemy.value, "Player and enemy damage floater colors must differ");
+		Assert.AreNotEqual(palette.ownerCardColor.value, palette.opponentCardColor.value, "Owner and opponent card colors must differ");
+		Assert.AreNotEqual(palette.ownerTextColor.value, palette.opponentTextColor.value, "Owner and opponent card text colors must differ");
 	}
 
-	// Golden: physical card colors are palette-authoritative since 2026-08-17
-	// (CardPhysObjScript keeps no serialized ColorSO fields and reads these statics).
 	[Test]
-	public void CardFields_WiredToCanonicalAssets()
+	public void StartCard_DistinctFromFactionCards()
 	{
 		GameColorPalette palette = LoadPalette();
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/GreyWhite.asset"), palette.ownerCardColor, "ownerCardColor must point to GreyWhite.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/Red 1.asset"), palette.opponentCardColor, "opponentCardColor must point to Red 1.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/Black.asset"), palette.ownerTextColor, "ownerTextColor must point to Black.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/OpponentTextColor.asset"), palette.opponentTextColor, "opponentTextColor must point to OpponentTextColor.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/StartCardColor.asset"), palette.startCardColor, "startCardColor must point to StartCardColor.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/StartCardTextColor.asset"), palette.startCardTextColor, "startCardTextColor must point to StartCardTextColor.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/InfectedTint.asset"), palette.infectedTint, "infectedTint must point to InfectedTint.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/PowerTint.asset"), palette.powerTint, "powerTint must point to PowerTint.asset");
-	}
-
-	// Golden: floater text is Navy on the player side; enemy side moved to
-	// GreyWhite on 2026-08-17 (user decision; previously both were Navy from
-	// 2026-08-15). Shadow is its own asset.
-	[Test]
-	public void FloaterFields_WiredToCanonicalAssets()
-	{
-		GameColorPalette palette = LoadPalette();
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/Navy.asset"), palette.floaterPlayer, "floaterPlayer must point to Navy.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/GreyWhite.asset"), palette.floaterEnemy, "floaterEnemy must point to GreyWhite.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/FloaterShadow.asset"), palette.floaterShadow, "floaterShadow must point to FloaterShadow.asset");
-	}
-
-	// Golden: overlay panel colors (tag tooltip, result stats panel) — added 2026-08-17.
-	[Test]
-	public void OverlayFields_WiredToCanonicalAssets()
-	{
-		GameColorPalette palette = LoadPalette();
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/TooltipBg.asset"), palette.tooltipBg, "tooltipBg must point to TooltipBg.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/TooltipText.asset"), palette.tooltipText, "tooltipText must point to TooltipText.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/ResultPanelBg.asset"), palette.resultPanelBg, "resultPanelBg must point to ResultPanelBg.asset");
-		Assert.AreEqual(LoadColor("Assets/SORefs/Colors/ResultPanelText.asset"), palette.resultPanelText, "resultPanelText must point to ResultPanelText.asset");
+		Assert.AreNotEqual(palette.startCardColor.value, palette.ownerCardColor.value, "Start card must stand out from owner cards");
+		Assert.AreNotEqual(palette.startCardColor.value, palette.opponentCardColor.value, "Start card must stand out from opponent cards");
 	}
 
 	// Resolved statics follow the wired assets.
