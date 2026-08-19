@@ -115,6 +115,11 @@ public abstract class HeadlessCombatTestFixture
 		GameEventStorage.onFriendlyMinionAdded = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onEnemyCurseCardRevealed = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onEnemyCurseCardGotPower = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onEnemyCurseCardGainedAttack = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onAnyCardGainedAttack = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onMeGainedAttack = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onFriendlyCardGainedAttack = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onEnemyCardGainedAttack = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onThisTagResolverAttached = CreateScriptableObject<GameEvent>();
 		GameEventStorage.curseCardTypeID = CreateScriptableObject<StringSO>();
 

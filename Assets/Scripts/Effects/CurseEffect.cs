@@ -37,19 +37,20 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Enhances curse: if no enemy card with the specified cardTypeID exists in combinedDeckZone,
-		/// spawns one of that type, then applies Power status effect to that enemy card.
+		/// spawns one of that type, then grants permanent attack to that enemy card
+		/// (attack-attribute redesign; formerly Power stacks).
 		/// </summary>
-		/// <param name="powerAmount">Amount of Power stacks to apply.</param>
-		public void EnhanceCurse(int powerAmount)
+		/// <param name="attackAmount">Amount of attack to grant.</param>
+		public void EnhanceCurse(int attackAmount)
 		{
-			// Debug.Log("[CurseEffect] EnhanceCurse START powerAmount=" + powerAmount + " myCard=" + (myCard != null ? myCard.name : "null"));
+			// Debug.Log("[CurseEffect] EnhanceCurse START attackAmount=" + attackAmount + " myCard=" + (myCard != null ? myCard.name : "null"));
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
 			{
 				// Debug.LogWarning("[CurseEffect] cardTypeID is not set!");
 				return;
 			}
 
-			if (powerAmount <= 0)
+			if (attackAmount <= 0)
 			{
 				return;
 			}
@@ -70,10 +71,10 @@ namespace DefaultNamespace.Effects
 				isNewlyCreated = true;
 			}
 
-			// Apply Power status effect to target card
+			// Grant attack to target card
 			if (targetCard != null)
 			{
-				ApplyPowerToCardWithProjectile(targetCard, powerAmount, isNewlyCreated);
+				ApplyAttackToCardWithProjectile(targetCard, attackAmount, isNewlyCreated);
 			}
 			// Debug.Log("[CurseEffect] EnhanceCurse END myCard=" + (myCard != null ? myCard.name : "null"));
 		}
@@ -111,10 +112,10 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Enhances friendly curse: if no friendly card with the specified cardTypeID exists in combinedDeckZone,
-		/// spawns one of that type, then applies Power status effect to that friendly card.
+		/// spawns one of that type, then grants permanent attack to that friendly card.
 		/// </summary>
-		/// <param name="powerAmount">Amount of Power stacks to apply.</param>
-		public void EnhanceFriendlyCurse(int powerAmount)
+		/// <param name="attackAmount">Amount of attack to grant.</param>
+		public void EnhanceFriendlyCurse(int attackAmount)
 		{
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
 			{
@@ -122,7 +123,7 @@ namespace DefaultNamespace.Effects
 				return;
 			}
 
-			if (powerAmount <= 0)
+			if (attackAmount <= 0)
 			{
 				return;
 			}
@@ -143,10 +144,10 @@ namespace DefaultNamespace.Effects
 				isNewlyCreated = true;
 			}
 
-			// Apply Power status effect to target card
+			// Grant attack to target card
 			if (targetCard != null)
 			{
-				ApplyPowerToCardWithProjectile(targetCard, powerAmount, isNewlyCreated);
+				ApplyAttackToCardWithProjectile(targetCard, attackAmount, isNewlyCreated);
 			}
 		}
 
@@ -279,15 +280,16 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// Applies Power status effect to the specified card using a projectile animation.
+		/// Grants permanent attack to the specified card using a projectile animation
+		/// (attack-attribute redesign; formerly Power stacks).
 		/// The actual effect executes after the VFX reaches the target.
 		/// </summary>
-		public void ApplyPowerToCardWithProjectile(CardScript targetCard, int amount, bool isNewlyCreated = false)
+		public void ApplyAttackToCardWithProjectile(CardScript targetCard, int amount, bool isNewlyCreated = false)
 		{
 			if (targetCard == null || amount <= 0) return;
 
 			// Execute logic immediately so AnimationRequest is captured in the current recorder
-			ApplyPowerToCardInternal(targetCard, amount);
+			ApplyAttackToCardInternal(targetCard, amount);
 
 			// Capture projectile animation into AnimationRequest
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
@@ -343,25 +345,23 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// Internal method: actually applies the Power effect (used as projectile animation callback).
+		/// Internal method: actually grants the attack (used as projectile animation callback).
 		/// </summary>
-		private void ApplyPowerToCardInternal(CardScript targetCard, int amount)
+		private void ApplyAttackToCardInternal(CardScript targetCard, int amount)
 		{
-			// Debug.Log("[CurseEffect] ApplyPowerToCardInternal target=" + (targetCard != null ? targetCard.name : "null") + " amount=" + amount + " myCard=" + (myCard != null ? myCard.name : "null"));
-			ApplyStatusEffectCore(
-				targetCard, EnumStorage.StatusEffect.Power, amount,
-				statusEffectResolverPrefab, statusEffectParticlePrefab, particleYOffset, amount);
+			// Debug.Log("[CurseEffect] ApplyAttackToCardInternal target=" + (targetCard != null ? targetCard.name : "null") + " amount=" + amount + " myCard=" + (myCard != null ? myCard.name : "null"));
+			ApplyAttackCore(targetCard, amount, statusEffectParticlePrefab, particleYOffset);
 
-			// Check if curse card gained Power, trigger event
+			// Check if curse card gained attack, trigger event
 			if (targetCard.cardTypeID == GameEventStorage.me?.curseCardTypeID?.value)
 			{
 				if (targetCard.myStatusRef == combatManager.enemyPlayerStatusRef)
 				{
-					GameEventStorage.me?.onEnemyCurseCardGotPower?.RaiseOwner();
+					GameEventStorage.me?.onEnemyCurseCardGainedAttack?.RaiseOwner();
 				}
 				else
 				{
-					GameEventStorage.me?.onEnemyCurseCardGotPower?.RaiseOpponent();
+					GameEventStorage.me?.onEnemyCurseCardGainedAttack?.RaiseOpponent();
 				}
 			}
 		}
@@ -375,10 +375,11 @@ namespace DefaultNamespace.Effects
 		//             toward statusEffectConsumePos with one projectile per consumed layer, status
 		//             text updates after projectiles land, then all targets slot back in together.
 		/// <summary>
-		/// Consumes Power status effect from enemy cards matching cardTypeID.
+		/// Consumes permanent attack from enemy cards matching cardTypeID
+		/// (attack-attribute redesign; formerly Power stacks).
 		/// </summary>
-		/// <param name="amount">Amount of Power stacks to consume.</param>
-		public void ConsumeHostileCursePower(int amount)
+		/// <param name="amount">Amount of attack to consume.</param>
+		public void ConsumeEnemyCurseAttack(int amount)
 		{
 			if (cardTypeID == null || string.IsNullOrEmpty(cardTypeID.value))
 			{
@@ -392,17 +393,17 @@ namespace DefaultNamespace.Effects
 			var targetCards = FindAllEnemyCardsWithTypeID(cardTypeID.value);
 			if (targetCards.Count == 0) return;
 
-			// Calculate total Power stacks on these cards
-			int totalPower = 0;
+			// Calculate total attack on these cards
+			int totalAttack = 0;
 			foreach (var card in targetCards)
 			{
-				totalPower += EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
+				totalAttack += card.GetAttack();
 			}
 
-			// Check if there is enough Power to consume
-			if (totalPower < amount) return;
+			// Check if there is enough attack to consume
+			if (totalAttack < amount) return;
 
-			// Snapshot display state for all affected targets before mutating so card text updates
+			// Snapshot display state for all affected targets before mutating so card face updates
 			// are deferred until the projectile animation completes.
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
@@ -414,7 +415,7 @@ namespace DefaultNamespace.Effects
 				}
 			}
 
-			// Consume Power (remove one layer at a time in round-robin across targets) and record
+			// Consume attack (one point at a time in round-robin across targets) and record
 			// how much was removed from each target so the animation can spawn the correct number
 			// of projectiles.
 			int amountToRemove = amount;
@@ -427,30 +428,22 @@ namespace DefaultNamespace.Effects
 				{
 					if (amountToRemove <= 0) break;
 
-					int cardPowerCount = EnumStorage.GetStatusEffectCount(card.myStatusEffects, EnumStorage.StatusEffect.Power);
-					if (cardPowerCount <= 0) continue;
+					if (card.GetAttack() <= 0) continue;
 
-					// Remove one Power layer from this card
-					for (int i = card.myStatusEffects.Count - 1; i >= 0; i--)
+					// Remove one attack point from this card
+					card.ModifyAttack(-1);
+					amountToRemove--;
+					removedAny = true;
+
+					int existingIndex = affectedTargets.IndexOf(card);
+					if (existingIndex >= 0)
 					{
-						if (card.myStatusEffects[i] == EnumStorage.StatusEffect.Power)
-						{
-							card.myStatusEffects.RemoveAt(i);
-							amountToRemove--;
-							removedAny = true;
-
-							int existingIndex = affectedTargets.IndexOf(card);
-							if (existingIndex >= 0)
-							{
-								removedAmounts[existingIndex]++;
-							}
-							else
-							{
-								affectedTargets.Add(card);
-								removedAmounts.Add(1);
-							}
-							break;
-						}
+						removedAmounts[existingIndex]++;
+					}
+					else
+					{
+						affectedTargets.Add(card);
+						removedAmounts.Add(1);
 					}
 				}
 
@@ -475,7 +468,7 @@ namespace DefaultNamespace.Effects
 			AppendLog(
 				"// " + thisCardOwnerString +
 				"<color=" + thisCardColor + ">" + myCard.name + "</color>]从被诅咒的卡牌中吸收了" +
-				GameColorPalette.Me.highlight.OpenTag + amount + "</color>层[力量]");
+				GameColorPalette.Me.highlight.OpenTag + amount + "</color>点攻击力");
 
 			// Refresh info display
 			CombatInfoDisplayer.me?.RefreshDeckInfo();

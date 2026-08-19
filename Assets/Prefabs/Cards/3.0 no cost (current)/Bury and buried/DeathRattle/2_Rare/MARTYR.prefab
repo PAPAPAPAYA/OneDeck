@@ -54,9 +54,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 9212655993766041603}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.StatusEffectGiverEffect,
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect,
           Assembly-CSharp
-        m_MethodName: GiveAllFriendlyStatusEffect
+        m_MethodName: GiveAllFriendlyAttack
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -75,9 +75,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 270621688628183383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
+  m_Script: {fileID: 11500000, guid: 6ed2d574f8860134d91897187ad70437, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectGiverEffect
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AttackGiverEffect
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 4
@@ -143,7 +143,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: MARTYR
   displayName: "\u6B89\u9053\u8005"
-  cardDesc: "\u88AB\u57CB\u846C:\u6240\u6709\u53CB\u65B9\u83B7\u5F97 <b>1</b> \u529B\u91CF"
+  cardDesc: "\u88ab\u57cb\u846c:\u6240\u6709\u53cb\u65b9\u83b7\u5f97 <b>1</b> \u653b\u51fb\u529b"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

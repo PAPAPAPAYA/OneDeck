@@ -54,9 +54,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2280545656298681491}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.StatusEffectGiverEffect,
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect,
           Assembly-CSharp
-        m_MethodName: GiveStatusEffectToLastXCards
+        m_MethodName: GiveAttackToLastXCards
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -75,9 +75,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 270621688628183383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
+  m_Script: {fileID: 11500000, guid: 6ed2d574f8860134d91897187ad70437, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectGiverEffect
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AttackGiverEffect
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 4
@@ -143,7 +143,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: MAD_SCIENTIST
   displayName: "\u75AF\u72C2\u79D1\u5B66\u5BB6"
-  cardDesc: "\u63ED\u6653\u65F6:\u7ED9\u4E88\u4E0B <b>3</b> \u5361 <b>2</b> \u529B\u91CF"
+  cardDesc: "\u63ed\u6653\u65f6:\u7ed9\u4e88\u4e0b <b>3</b> \u5361 <b>2</b> \u653b\u51fb\u529b"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

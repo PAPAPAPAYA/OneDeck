@@ -139,7 +139,8 @@ public class ValueTrackerManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Update EnemyCursePowerCount: sum of Power status effects on enemy cards with card type id matching curseCardTypeId.
+	/// Update EnemyCursePowerCount: sum of permanent attack on enemy cards with card type id matching curseCardTypeId
+	/// (attack-attribute redesign; formerly Power status effect stacks).
 	/// </summary>
 	private void UpdateEnemyCursePowerCount()
 	{
@@ -154,7 +155,7 @@ public class ValueTrackerManager : MonoBehaviour
 
 		var deck = CombatManager.Me.combinedDeckZone;
 		var enemyStatus = CombatManager.Me.enemyPlayerStatusRef;
-		int totalPower = 0;
+		int totalAttack = 0;
 
 		foreach (var cardObj in deck)
 		{
@@ -167,12 +168,7 @@ public class ValueTrackerManager : MonoBehaviour
 
 			if (isEnemyCard && isMatchingType)
 			{
-				// Count Power status effects on this card
-				int powerCount = EnumStorage.GetStatusEffectCount(
-					cardScript.myStatusEffects, 
-					EnumStorage.StatusEffect.Power
-				);
-				totalPower += powerCount;
+				totalAttack += cardScript.GetAttack();
 			}
 		}
 
@@ -188,20 +184,17 @@ public class ValueTrackerManager : MonoBehaviour
 
 				if (isEnemyCard && isMatchingType)
 				{
-					int powerCount = EnumStorage.GetStatusEffectCount(
-						cardScript.myStatusEffects,
-						EnumStorage.StatusEffect.Power
-					);
-					totalPower += powerCount;
+					totalAttack += cardScript.GetAttack();
 				}
 			}
 		}
 
-		enemyCursePowerCount.value = totalPower;
+		enemyCursePowerCount.value = totalAttack;
 	}
 
 	/// <summary>
-	/// Update OwnerCursePowerCount: sum of Power status effects on owner cards with card type id matching curseCardTypeId.
+	/// Update OwnerCursePowerCount: sum of permanent attack on owner cards with card type id matching curseCardTypeId
+	/// (attack-attribute redesign; formerly Power status effect stacks).
 	/// </summary>
 	private void UpdateOwnerCursePowerCount()
 	{
@@ -216,7 +209,7 @@ public class ValueTrackerManager : MonoBehaviour
 
 		var deck = CombatManager.Me.combinedDeckZone;
 		var ownerStatus = CombatManager.Me.ownerPlayerStatusRef;
-		int totalPower = 0;
+		int totalAttack = 0;
 
 		foreach (var cardObj in deck)
 		{
@@ -229,12 +222,7 @@ public class ValueTrackerManager : MonoBehaviour
 
 			if (isOwnerCard && isMatchingType)
 			{
-				// Count Power status effects on this card
-				int powerCount = EnumStorage.GetStatusEffectCount(
-					cardScript.myStatusEffects,
-					EnumStorage.StatusEffect.Power
-				);
-				totalPower += powerCount;
+				totalAttack += cardScript.GetAttack();
 			}
 		}
 
@@ -250,38 +238,31 @@ public class ValueTrackerManager : MonoBehaviour
 
 				if (isOwnerCard && isMatchingType)
 				{
-					int powerCount = EnumStorage.GetStatusEffectCount(
-						cardScript.myStatusEffects,
-						EnumStorage.StatusEffect.Power
-					);
-					totalPower += powerCount;
+					totalAttack += cardScript.GetAttack();
 				}
 			}
 		}
 
-		ownerCursePowerCount.value = totalPower;
+		ownerCursePowerCount.value = totalAttack;
 	}
 
 	/// <summary>
-	/// Updates TotalPowerCountInDeck: sums up all Power status effects on every card in combinedDeckZone.
+	/// Updates TotalPowerCountInDeck: sums up all permanent attack on every card in combinedDeckZone
+	/// (attack-attribute redesign; formerly Power status effect stacks).
 	/// </summary>
 	private void UpdateTotalPowerCountInDeck()
 	{
 		if (totalPowerCountInDeckRef == null || CombatManager.Me == null) return;
 
 		var deck = CombatManager.Me.combinedDeckZone;
-		int totalPower = 0;
+		int totalAttack = 0;
 
 		foreach (var cardObj in deck)
 		{
 			var cardScript = cardObj.GetComponent<CardScript>();
 			if (cardScript == null) continue;
 
-			int powerCount = EnumStorage.GetStatusEffectCount(
-				cardScript.myStatusEffects,
-				EnumStorage.StatusEffect.Power
-			);
-			totalPower += powerCount;
+			totalAttack += cardScript.GetAttack();
 		}
 
 		// Include revealZone
@@ -291,15 +272,11 @@ public class ValueTrackerManager : MonoBehaviour
 			var cardScript = revealZone.GetComponent<CardScript>();
 			if (cardScript != null)
 			{
-				int powerCount = EnumStorage.GetStatusEffectCount(
-					cardScript.myStatusEffects,
-					EnumStorage.StatusEffect.Power
-				);
-				totalPower += powerCount;
+				totalAttack += cardScript.GetAttack();
 			}
 		}
 
-		totalPowerCountInDeckRef.value = totalPower;
+		totalPowerCountInDeckRef.value = totalAttack;
 	}
 
 	/// <summary>

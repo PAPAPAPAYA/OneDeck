@@ -54,7 +54,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3408854323514059765}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: CheckCost_Power
+        m_MethodName: CheckCost_OwnAttack
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -69,7 +69,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 4684995344891370140}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.ConsumeStatusEffect, Assembly-CSharp
-        m_MethodName: ConsumeOwnStatusEffect
+        m_MethodName: ConsumeOwnAttack
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -199,8 +199,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: DR_MANHATTAN
   displayName: "\u66FC\u54C8\u987F\u535A\u58EB"
-  cardDesc: "\u63ED\u6653\u65F6,\u6D88\u8017 <b>2</b> \u529B\u91CF:\u7F6E\u9876 <b>2</b>
-    \u53CB\u65B9,\u57CB\u846C <b>2</b> \u654C\u65B9"
+  cardDesc: "\u63ed\u6653\u65f6,\u6d88\u8017 <b>2</b> \u653b\u51fb\u529b:\u7f6e\u9876 <b>2</b> \u53cb\u65b9,\u57cb\u846c <b>2</b> \u654c\u65b9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

@@ -96,6 +96,11 @@ public class NullCombatVisuals : ICombatVisuals
 		callLog.Add("PlayStatusEffectParticle: " + (targetCard?.name ?? "null") + " x" + amount);
 	}
 
+	public void RefreshCardAttackDisplay(CardScript targetCard)
+	{
+		callLog.Add("RefreshCardAttackDisplay: " + (targetCard?.name ?? "null"));
+	}
+
 	public void SyncPhysicalCardsWithCombinedDeck()
 	{
 		syncDeckCalls++;

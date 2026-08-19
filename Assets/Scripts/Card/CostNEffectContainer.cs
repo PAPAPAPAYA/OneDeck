@@ -345,6 +345,65 @@ public class CostNEffectContainer : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Check if there is an enemy card matching the cursed card type id with attack >= requiredAttack
+	/// (attack-attribute redesign; formerly CheckCost_EnemyCursedCardHasPower on Power layers).
+	/// Cost is met if there is at least one enemy card matching cursedCardTypeID with attack >= requiredAttack.
+	/// </summary>
+	/// <param name="requiredAttack">Required attack threshold</param>
+	public void CheckCost_EnemyCurseCardHasAttack(int requiredAttack)
+	{
+		// Check if cursedCardTypeID is set
+		if (cursedCardTypeID == null || string.IsNullOrEmpty(cursedCardTypeID.value))
+		{
+			_costNotMetFlag++;
+			_costFailMessages.Add("// [" + _myCardScript.gameObject.name + "]诅咒卡牌类型ID未设置或为空\n");
+			return;
+		}
+
+		foreach (var card in CombatManager.Me.combinedDeckZone)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+
+			// Skip neutral cards and Start Card
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+
+			// Check if it's an enemy card
+			if (cardScript.myStatusRef == _myCardScript.myStatusRef) continue;
+
+			// Check if card type id matches the cursed card type id
+			if (cardScript.cardTypeID != cursedCardTypeID?.value) continue;
+
+			// If attack meets the threshold, cost is met
+			if (cardScript.GetAttack() >= requiredAttack)
+			{
+				return; // cost met
+			}
+		}
+
+		// cost not met - no matching enemy card found with enough attack
+		_costNotMetFlag++;
+		_costFailMessages.Add("// 牌库中没有[" + cursedCardTypeID?.value + "]敌方卡牌拥有超过" + requiredAttack + "点攻击力\n");
+	}
+
+	/// <summary>
+	/// Check if this card's own attack meets the threshold (DR_MANHATTAN "消耗自身 2 攻击力").
+	/// Attack-attribute redesign; formerly CheckCost_Power on own Power layers.
+	/// </summary>
+	public void CheckCost_OwnAttack(int requiredAttack)
+	{
+		if (_myCardScript.GetAttack() >= requiredAttack)
+		{
+			return; // cost met
+		}
+
+		// cost not met
+		_costNotMetFlag++;
+		_costFailMessages.Add("// [" + _myCardScript.gameObject.name + "]攻击力不足" + requiredAttack + "\n");
+	}
+
+	/// <summary>
 	/// Check if there are at least [requiredCount] friendly cards in combined deck zone matching targetCardTypeID.
 	/// Cost is met if the combined deck contains at least the specified number of own cards with matching cardTypeID.
 	/// </summary>

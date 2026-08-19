@@ -3375,6 +3375,19 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// ICombatVisuals: Refresh the attack-attribute print on the physical card face.
+	/// </summary>
+	public void RefreshCardAttackDisplay(CardScript targetCard)
+	{
+		if (targetCard == null) return;
+		BuildCardScriptToPhysicalDictionary();
+		var physicalCard = GetPhysicalCardFromLogicalCard(targetCard);
+		if (physicalCard == null) return;
+		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
+		if (physScript != null) physScript.RefreshAttackDisplay();
+	}
+
+	/// <summary>
 	/// ICombatVisuals: Move logical card to reveal zone.
 	/// </summary>
 	public void MoveCardToRevealZone(GameObject logicalCard, Action onComplete = null)

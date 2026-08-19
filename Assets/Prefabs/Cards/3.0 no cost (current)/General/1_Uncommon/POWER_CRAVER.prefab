@@ -54,8 +54,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 5316563494723346686}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
+        m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
+        m_MethodName: Attack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -74,9 +74,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2635718925342889943}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f01314777625ad4bb0bc22828e9728c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  m_EditorClassIdentifier: Assembly-CSharp::AttackEffect
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
@@ -141,9 +141,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 6768499326345013118}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.StatusEffectAmplifierEffect,
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGainReactionEffect,
           Assembly-CSharp
-        m_MethodName: AmplifyStatusEffectGain
+        m_MethodName: AmplifyAttackGain
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -162,9 +162,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 6383315941877191948}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 283f32d8bf0dc73499e93ee581a2e654, type: 3}
+  m_Script: {fileID: 11500000, guid: ad05c62daec75f44daa23684e98c7f6e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectAmplifierEffect
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AttackGainReactionEffect
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 4
@@ -180,7 +180,7 @@ MonoBehaviour:
   enemyIntSO: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
-  statusEffectMultiplier: 2
+  attackMultiplier: 2
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -232,8 +232,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: POWER_CRAVER
   displayName: "\u529B\u91CF\u6E34\u6C42\u8005"
-  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u83B7\u5F97\u529B\u91CF\u65F6:\u83B7\u5F97
-    <b>2</b> \u500D\u529B\u91CF"
+  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb;\u83b7\u5f97\u653b\u51fb\u529b\u65f6:\u83b7\u5f97 <b>2</b> \u500d\u653b\u51fb\u529b"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -245,6 +244,10 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  printedAttack: 1
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -285,7 +288,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
-  event: {fileID: 11400000, guid: 1ad4399e33473264eada636d43124e08, type: 2}
+  event: {fileID: 11400000, guid: ce262bc70356d0d41b924fee428719d1, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:

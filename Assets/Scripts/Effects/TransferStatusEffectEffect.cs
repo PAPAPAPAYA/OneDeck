@@ -181,6 +181,256 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
+		/// Transfer all permanent attack from friendly/hostile cards to the hostile curse card
+		/// (CROW_CROWD "转移所有友方[攻击者]攻击力(除友方[负面])到敌方[负面]").
+		/// Attack-attribute redesign; formerly TransferAllStatusEffectToHostileCurse on Power layers.
+		/// </summary>
+		public void TransferAllAttackToHostileCurse()
+		{
+			if (curseCardTypeID == null || string.IsNullOrEmpty(curseCardTypeID.value))
+			{
+				return;
+			}
+
+			// Find target curse card
+			CardScript targetCurseCard = FindHostileCurseCard();
+			if (targetCurseCard == null)
+			{
+				return;
+			}
+
+			// Collect source cards with positive attack
+			List<CardScript> sourceCards = FindSourceCardsWithAttack();
+			if (sourceCards.Count == 0)
+			{
+				return;
+			}
+
+			// Calculate total attack to transfer
+			int totalTransferCount = 0;
+			foreach (var card in sourceCards)
+			{
+				totalTransferCount += card.GetAttack();
+			}
+
+			if (totalTransferCount <= 0)
+			{
+				return;
+			}
+
+			// Execute transfer
+			TransferAttacks(sourceCards, targetCurseCard, totalTransferCount);
+		}
+
+		/// <summary>
+		/// Transfer 1 attack from each friendly card to self
+		/// (POWER_SIPHONER "转移所有友方 1 攻击力到自身").
+		/// Attack-attribute redesign; formerly TransferOneStatusEffectToSelf on Power layers.
+		/// </summary>
+		public void TransferOneAttackToSelf()
+		{
+			PlayerStatusSO targetStatusRef = myCardScript.myStatusRef;
+
+			// Collect source cards with positive attack
+			List<CardScript> sourceCards = new List<CardScript>();
+
+			foreach (var card in combatManager.combinedDeckZone)
+			{
+				var cardScript = card.GetComponent<CardScript>();
+				if (cardScript == null) continue;
+				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+				if (cardScript.myStatusRef != targetStatusRef) continue;
+				if (cardScript == myCardScript) continue; // exclude self
+
+				if (cardScript.GetAttack() > 0)
+				{
+					sourceCards.Add(cardScript);
+				}
+			}
+
+			// Check revealZone
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef == targetStatusRef &&
+				    revealCardScript != myCardScript)
+				{
+					if (revealCardScript.GetAttack() > 0 && !sourceCards.Exists(c => c.gameObject == combatManager.revealZone))
+					{
+						sourceCards.Add(revealCardScript);
+					}
+				}
+			}
+
+			int totalTransferCount = sourceCards.Count;
+			if (totalTransferCount <= 0)
+			{
+				return;
+			}
+
+			// Capture animation sequence before executing logic so playback order is:
+			// PopUpBatch(sources) -> PopUp(self) -> Projectile(sources -> self) ->
+			// SlotInBatch(sources) -> SlotIn(self) -> AttackChange(all affected cards)
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			bool hasRecorder = recorder != null && RecorderAnimationPlayer.me != null;
+
+			if (hasRecorder)
+			{
+				var amounts = new List<int>();
+				for (int i = 0; i < sourceCards.Count; i++) amounts.Add(1);
+				CaptureBatchStatusEffectTransferAnimation(sourceCards, myCardScript, EnumStorage.StatusEffect.Power, amounts);
+			}
+
+			// Remove 1 attack from each source card
+			foreach (var card in sourceCards)
+			{
+				card.ModifyAttack(-1);
+			}
+
+			// Grant attack to self (1 point per source card)
+			ApplyAttackCore(myCardScript, totalTransferCount, statusEffectParticlePrefab, particleYOffset, suppressLog: true);
+
+			// Log effect
+			LogTransferAttackToSelfEffect(sourceCards, totalTransferCount);
+
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+		}
+
+		/// <summary>
+		/// Find source cards with positive attack (friendly or hostile by isFromFriendly).
+		/// </summary>
+		private List<CardScript> FindSourceCardsWithAttack()
+		{
+			var result = new List<CardScript>();
+			PlayerStatusSO targetStatusRef = isFromFriendly ? myCardScript.myStatusRef : myCardScript.theirStatusRef;
+
+			foreach (var card in combatManager.combinedDeckZone)
+			{
+				var cardScript = card.GetComponent<CardScript>();
+				if (cardScript == null) continue;
+
+				// Skip neutral cards
+				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+
+				// Check if it's a target side (friendly or hostile) card
+				if (cardScript.myStatusRef != targetStatusRef) continue;
+
+				// When transferring from friendly, exclude the hostile curse card type itself from source
+				if (isFromFriendly &&
+				    curseCardTypeID != null &&
+				    !string.IsNullOrEmpty(curseCardTypeID.value) &&
+				    cardScript.cardTypeID == curseCardTypeID.value)
+				{
+					continue;
+				}
+
+				// Check if it has positive attack
+				if (cardScript.GetAttack() > 0)
+				{
+					result.Add(cardScript);
+				}
+			}
+
+			// Check revealZone
+			if (combatManager.revealZone != null)
+			{
+				var revealCardScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealCardScript != null &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
+				    revealCardScript.myStatusRef == targetStatusRef &&
+				    !(isFromFriendly && curseCardTypeID != null && !string.IsNullOrEmpty(curseCardTypeID.value) && revealCardScript.cardTypeID == curseCardTypeID.value) &&
+				    revealCardScript.GetAttack() > 0 &&
+				    !result.Exists(c => c.gameObject == combatManager.revealZone))
+				{
+					result.Add(revealCardScript);
+				}
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Execute attack transfer.
+		/// </summary>
+		private void TransferAttacks(List<CardScript> sourceCards, CardScript targetCard, int totalCount)
+		{
+			// Pre-calculate how many attack points each source card will lose
+			var amountsPerSource = new List<int>();
+			foreach (var card in sourceCards)
+			{
+				amountsPerSource.Add(card.GetAttack());
+			}
+
+			// Snapshot display state before mutating so card text updates are deferred until animation completes
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			bool hasRecorder = recorder != null && RecorderAnimationPlayer.me != null;
+			if (hasRecorder)
+			{
+				foreach (var card in sourceCards)
+				{
+					card.SnapshotDisplayState();
+				}
+
+				// Capture transfer animation before mutating state
+				CaptureBatchStatusEffectTransferAnimation(sourceCards, targetCard, EnumStorage.StatusEffect.Power, amountsPerSource);
+			}
+
+			// Remove attack from source cards
+			for (int i = 0; i < sourceCards.Count; i++)
+			{
+				var card = sourceCards[i];
+				int removedCount = amountsPerSource[i];
+				if (removedCount > 0)
+				{
+					card.ModifyAttack(-removedCount);
+				}
+			}
+
+			// Grant attack to target card (trigger events and visuals)
+			ApplyAttackCore(targetCard, totalCount, statusEffectParticlePrefab, particleYOffset, suppressLog: true);
+
+			// Output effect info
+			LogTransferAttackEffect(sourceCards, targetCard, totalCount);
+
+			// Refresh info display
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+		}
+
+		private void LogTransferAttackToSelfEffect(List<CardScript> sourceCards, int totalCount)
+		{
+			string thisCardOwnerString = GetMyCardOwnerPrefix();
+			string thisCardColor = GetMyCardOwnerColor();
+
+			AppendLog(
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>]从" +
+				"<color=" + GameColorPalette.Me.friendly.Hex + ">友方</color>卡牌吸收了" +
+				GameColorPalette.Me.highlight.OpenTag + totalCount + "</color>点攻击力");
+		}
+
+		private void LogTransferAttackEffect(List<CardScript> sourceCards, CardScript targetCard, int totalCount)
+		{
+			string sourceOwner = isFromFriendly ?
+				(myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef ? "你的" : "敌方的") :
+				(myCardScript.theirStatusRef == combatManager.ownerPlayerStatusRef ? "你的" : "敌方的");
+
+			string thisCardOwnerString = GetMyCardOwnerPrefix();
+			string thisCardColor = GetMyCardOwnerColor();
+			string targetCardColor = GetCardOwnerColor(targetCard.myStatusRef);
+
+			AppendLog(
+				"// " + thisCardOwnerString +
+				"<color=" + thisCardColor + ">" + myCard.name + "</color>]将" +
+				GameColorPalette.Me.highlight.OpenTag + totalCount + "</color>点攻击力从" +
+				"<color=" + (isFromFriendly ? GameColorPalette.Me.friendly.Hex : GameColorPalette.Me.enemy.Hex) + ">" + (isFromFriendly ? "友方" : "敌方") + "</color>卡牌转移到了" +
+				"<color=" + targetCardColor + ">" + targetCard.name + "</color>]");
+		}
+
+		/// <summary>
 		/// Log transfer effect to self.
 		/// </summary>
 		private string StatusEffectToCN(EnumStorage.StatusEffect effect)

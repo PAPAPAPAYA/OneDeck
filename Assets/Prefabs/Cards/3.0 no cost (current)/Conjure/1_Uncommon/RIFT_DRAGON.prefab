@@ -146,8 +146,8 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 2814069841442407729}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
+        m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
+        m_MethodName: Attack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -166,9 +166,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3458722372583112977}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f01314777625ad4bb0bc22828e9728c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  m_EditorClassIdentifier: Assembly-CSharp::AttackEffect
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
@@ -244,8 +244,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_DRAGON
   displayName: "\u6B21\u5143\u9F99"
-  cardDesc: "\u63ED\u6653\u65F6:\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D],\u9020\u6210
-    <b>4</b> \u4F24\u5BB3;\n\u88AB\u7F6E\u9876:\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]"
+  cardDesc: "\u63ed\u6653\u65f6:\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d],\u653b\u51fb;\n\u88ab\u7f6e\u9876:\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d]"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -257,6 +256,10 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  printedAttack: 4
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

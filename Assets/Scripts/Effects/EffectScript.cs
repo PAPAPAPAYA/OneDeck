@@ -152,6 +152,84 @@ public class EffectScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Apply permanent attack to a target card (attack-attribute redesign; supersedes the
+	/// Power branch of ApplyStatusEffectCore). Modifies the attack attribute, raises the
+	/// attack-gain event family (RaiseOwner/RaiseOpponent by the gaining card's faction),
+	/// records per-card combat stats and captures an AttackChange animation request.
+	/// </summary>
+	protected void ApplyAttackCore(
+		CardScript targetCardScript,
+		int amount,
+		ParticleSystem particlePrefab,
+		float particleYOffset,
+		int? logAmount = null,
+		bool suppressLog = false)
+	{
+		if (targetCardScript == null || amount == 0) return;
+		int actualLogAmount = logAmount ?? amount;
+
+		// Per-card combat stats: attack granted (by this effect's card) and received (by target).
+		CombatPerCardStatsTracker.Me?.RecordAttackGiven(myCardScript, amount);
+		CombatPerCardStatsTracker.Me?.RecordAttackReceived(targetCardScript, amount);
+
+		// Attack-gain event family.
+		combatManager.lastCardGainedAttack = targetCardScript;
+		combatManager.lastAttackGainedAmount = amount;
+		GameEventStorage.me?.onAnyCardGainedAttack?.Raise();
+		GameEventStorage.me?.onMeGainedAttack?.RaiseSpecific(targetCardScript.gameObject);
+		if (targetCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+		{
+			GameEventStorage.me?.onFriendlyCardGainedAttack?.RaiseOwner();
+			GameEventStorage.me?.onEnemyCardGainedAttack?.RaiseOpponent();
+		}
+		else
+		{
+			GameEventStorage.me?.onFriendlyCardGainedAttack?.RaiseOpponent();
+			GameEventStorage.me?.onEnemyCardGainedAttack?.RaiseOwner();
+		}
+
+		// Mutate the attack attribute (single settlement entry point).
+		targetCardScript.ModifyAttack(amount);
+
+		// Capture attack change into AnimationRequest when the recorder system is available.
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder != null)
+		{
+			recorder.animationRequests.Add(new AnimationRequest
+			{
+				type = AnimationRequestType.AttackChange,
+				targetCard = targetCardScript.gameObject,
+				statusEffectAmount = amount,
+				statusEffectParticlePrefab = particlePrefab,
+				statusEffectParticleYOffset = particleYOffset
+			});
+		}
+
+		if (!suppressLog)
+		{
+			LogAttackGiven(targetCardScript, actualLogAmount);
+		}
+	}
+
+	/// <summary>
+	/// Append an attack-gain line to the combat log (attack-attribute redesign).
+	/// </summary>
+	protected void LogAttackGiven(CardScript targetCardScript, int amount)
+	{
+		string targetCardOwnerString = GetCardOwnerPrefix(targetCardScript.myStatusRef);
+		string targetCardColor = GetCardOwnerColor(targetCardScript.myStatusRef);
+		string thisCardOwnerString = GetMyCardOwnerPrefix();
+		string thisCardColor = GetMyCardOwnerColor();
+		AppendLog(
+			"// " + thisCardOwnerString +
+			"<color=" + thisCardColor + ">" + myCard.name + "</color>]给予" +
+			targetCardOwnerString +
+			"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>]" +
+			GameColorPalette.Me.highlight.OpenTag + amount + "</color>点攻击力");
+	}
+
+	/// <summary>
 	/// Append a line to the combat log. Logic layer should use this instead of writing to effectResultString directly.
 	/// </summary>
 	protected void AppendLog(string text)

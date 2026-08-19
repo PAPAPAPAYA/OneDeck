@@ -151,6 +151,13 @@ public interface ICombatVisuals
 	/// </summary>
 	void PlayStatusEffectParticle(CardScript targetCard, ParticleSystem particlePrefab, float particleYOffset, int amount);
 
+	/// <summary>
+	/// Refresh the attack-attribute print on the physical card face (bottom-right).
+	/// Called after an AttackChange animation request plays so the printed attack
+	/// (and attack xN) reflects the new value.
+	/// </summary>
+	void RefreshCardAttackDisplay(CardScript targetCard);
+
 	#endregion
 
 	#region Deck Synchronization

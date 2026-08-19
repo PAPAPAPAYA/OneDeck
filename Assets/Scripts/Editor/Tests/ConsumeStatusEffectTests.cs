@@ -184,17 +184,16 @@ public class ConsumeStatusEffectTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void ConsumeHostileCursePower_RemovesPowerFromEnemyCurseCards()
+	public void ConsumeEnemyCurseAttack_RemovesAttackFromEnemyCurseCards()
 	{
 		const string curseTypeID = "CURSE_DUMMY";
 		var consumer = CreateCard(true, "CurseConsumer");
 		var enemyCurse1 = CreateCard(false, "EnemyCurse1", curseTypeID);
-		enemyCurse1.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
-		enemyCurse1.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		enemyCurse1.GetComponent<CardScript>().ModifyAttack(2);
 		var enemyCurse2 = CreateCard(false, "EnemyCurse2", curseTypeID);
-		enemyCurse2.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		enemyCurse2.GetComponent<CardScript>().ModifyAttack(1);
 		var otherEnemy = CreateCard(false, "OtherEnemy", "OTHER");
-		otherEnemy.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		otherEnemy.GetComponent<CardScript>().ModifyAttack(1);
 
 		CombatManager.combinedDeckZone.Add(enemyCurse1);
 		CombatManager.combinedDeckZone.Add(enemyCurse2);
@@ -205,28 +204,27 @@ public class ConsumeStatusEffectTests : HeadlessCombatTestFixture
 		curse.cardTypeID.value = curseTypeID;
 
 		EffectChainManager.MakeANewEffectRecorder(consumer, curse.gameObject);
-		curse.ConsumeHostileCursePower(2);
+		curse.ConsumeEnemyCurseAttack(2);
 		EffectChainManager.Me.CloseOpenedChain();
 
-		int curse1Power = EnumStorage.GetStatusEffectCount(enemyCurse1.GetComponent<CardScript>().myStatusEffects, EnumStorage.StatusEffect.Power);
-		int curse2Power = EnumStorage.GetStatusEffectCount(enemyCurse2.GetComponent<CardScript>().myStatusEffects, EnumStorage.StatusEffect.Power);
-		int otherPower = EnumStorage.GetStatusEffectCount(otherEnemy.GetComponent<CardScript>().myStatusEffects, EnumStorage.StatusEffect.Power);
+		int curse1Attack = enemyCurse1.GetComponent<CardScript>().GetAttack();
+		int curse2Attack = enemyCurse2.GetComponent<CardScript>().GetAttack();
+		int otherAttack = otherEnemy.GetComponent<CardScript>().GetAttack();
 
-		Assert.AreEqual(1, curse1Power, "EnemyCurse1 should lose 1 Power");
-		Assert.AreEqual(0, curse2Power, "EnemyCurse2 should lose all Power");
-		Assert.AreEqual(1, otherPower, "Other enemy card should retain Power");
+		Assert.AreEqual(1, curse1Attack, "EnemyCurse1 should lose 1 attack");
+		Assert.AreEqual(0, curse2Attack, "EnemyCurse2 should lose all attack");
+		Assert.AreEqual(1, otherAttack, "Other enemy card should retain attack");
 	}
 
 	[Test]
-	public void ConsumeHostileCursePower_CapturesBatchAnimationRequests()
+	public void ConsumeEnemyCurseAttack_CapturesBatchAnimationRequests()
 	{
 		const string curseTypeID = "CURSE_DUMMY";
 		var consumer = CreateCard(true, "CurseConsumer");
 		var enemyCurse1 = CreateCard(false, "EnemyCurse1", curseTypeID);
-		enemyCurse1.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
-		enemyCurse1.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		enemyCurse1.GetComponent<CardScript>().ModifyAttack(2);
 		var enemyCurse2 = CreateCard(false, "EnemyCurse2", curseTypeID);
-		enemyCurse2.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		enemyCurse2.GetComponent<CardScript>().ModifyAttack(1);
 
 		CombatManager.combinedDeckZone.Add(enemyCurse1);
 		CombatManager.combinedDeckZone.Add(enemyCurse2);
@@ -236,7 +234,7 @@ public class ConsumeStatusEffectTests : HeadlessCombatTestFixture
 		curse.cardTypeID.value = curseTypeID;
 
 		EffectChainManager.MakeANewEffectRecorder(consumer, curse.gameObject);
-		curse.ConsumeHostileCursePower(3);
+		curse.ConsumeEnemyCurseAttack(3);
 
 		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
 		Assert.AreEqual(5, recorder.animationRequests.Count, "Should capture 5 animation requests (StatusEffectChange x2 + PopUpBatch + StatusEffectProjectile + SlotInBatch)");
@@ -255,12 +253,12 @@ public class ConsumeStatusEffectTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void ConsumeHostileCursePower_NotEnoughPower_DoesNothing()
+	public void ConsumeEnemyCurseAttack_NotEnoughAttack_DoesNothing()
 	{
 		const string curseTypeID = "CURSE_DUMMY";
 		var consumer = CreateCard(true, "CurseConsumer");
 		var enemyCurse = CreateCard(false, "EnemyCurse", curseTypeID);
-		enemyCurse.GetComponent<CardScript>().myStatusEffects.Add(EnumStorage.StatusEffect.Power);
+		enemyCurse.GetComponent<CardScript>().ModifyAttack(1);
 
 		CombatManager.combinedDeckZone.Add(enemyCurse);
 
@@ -269,10 +267,10 @@ public class ConsumeStatusEffectTests : HeadlessCombatTestFixture
 		curse.cardTypeID.value = curseTypeID;
 
 		EffectChainManager.MakeANewEffectRecorder(consumer, curse.gameObject);
-		curse.ConsumeHostileCursePower(2);
+		curse.ConsumeEnemyCurseAttack(2);
 		EffectChainManager.Me.CloseOpenedChain();
 
-		int powerCount = EnumStorage.GetStatusEffectCount(enemyCurse.GetComponent<CardScript>().myStatusEffects, EnumStorage.StatusEffect.Power);
-		Assert.AreEqual(1, powerCount, "Should not consume when not enough Power stacks");
+		int attackCount = enemyCurse.GetComponent<CardScript>().GetAttack();
+		Assert.AreEqual(1, attackCount, "Should not consume when not enough attack");
 	}
 }

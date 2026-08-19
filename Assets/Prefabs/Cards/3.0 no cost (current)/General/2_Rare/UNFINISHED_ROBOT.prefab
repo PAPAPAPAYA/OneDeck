@@ -57,9 +57,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2370261081127142453}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.StatusEffectGiverEffect,
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect,
           Assembly-CSharp
-        m_MethodName: GiveSelfStatusEffectBasedOnStatusEffectCount
+        m_MethodName: DoubleOwnAttack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -78,9 +78,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2635718925342889943}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
+  m_Script: {fileID: 11500000, guid: 6ed2d574f8860134d91897187ad70437, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.StatusEffectGiverEffect
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AttackGiverEffect
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 4
@@ -151,8 +151,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 515972566327908958}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
+        m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
+        m_MethodName: Attack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -171,9 +171,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8040865505430379121}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f01314777625ad4bb0bc22828e9728c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  m_EditorClassIdentifier: Assembly-CSharp::AttackEffect
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
@@ -230,7 +230,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UNFINISHED_ROBOT
   displayName: "\u672A\u5B8C\u6210\u7684\u673A\u5668\u4EBA"
-  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7FFB\u500D\u81EA\u8EAB\u529B\u91CF"
+  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb,\u7ffb\u500d\u81ea\u8eab\u653b\u51fb\u529b"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -241,6 +241,10 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 04000000
   myTags: 
+  printedAttack: 1
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
   delayCost: 0
   buryCost: 0
   exposeCost: 0

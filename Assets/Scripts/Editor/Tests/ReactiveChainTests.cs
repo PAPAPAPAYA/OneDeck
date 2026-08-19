@@ -57,8 +57,8 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 	[Test]
 	public void NestedReactiveEffects_ThreeLevelRecorderTree()
 	{
-		// Card1 (Curse) gives Power to Card2
-		// Card2 listens to onMeGotPower -> attacks enemy
+		// Card1 (Curse) grants attack to Card2
+		// Card2 listens to onMeGainedAttack -> attacks enemy
 		// Card3 listens to onTheirPlayerTookDmg -> attacks enemy again
 		var card1 = CreateCard(false, "Curser");
 		var card2 = CreateCard(true, "PowerTarget");
@@ -67,13 +67,13 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 		CombatManager.combinedDeckZone.Add(card2);
 		CombatManager.combinedDeckZone.Add(card3);
 
-		// Card1: CurseEffect gives Power to Card2
+		// Card1: CurseEffect grants attack to Card2
 		var curse = CreateEffect<CurseEffect>(card1);
 		curse.cardTypeID = CreateScriptableObject<StringSO>();
 		curse.cardTypeID.value = "power_target_type";
 		card2.GetComponent<CardScript>().cardTypeID = "power_target_type";
 
-		// Card2: HPAlterEffect triggered by onMeGotPower
+		// Card2: HPAlterEffect triggered by onMeGainedAttack
 		var hpa2 = CreateEffect<HPAlterEffect>(card2);
 		hpa2.baseDmg = CreateScriptableObject<IntSO>();
 		hpa2.baseDmg.value = 3;
@@ -81,7 +81,7 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 		var listener2Obj = CreateGameObject("PowerListener");
 		listener2Obj.transform.SetParent(card2.transform);
 		var listener2 = listener2Obj.AddComponent<GameEventListener>();
-		listener2.@event = GameEventStorage.onMeGotPower;
+		listener2.@event = GameEventStorage.onMeGainedAttack;
 		listener2.response.AddListener(() => {
 			EffectChainManager.MakeANewEffectRecorder(card2, hpa2.gameObject);
 			if (EffectChainManager.Me.EffectCanBeInvoked("hpa2_reactive"))
@@ -94,7 +94,7 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 		ls2.myStatusRef = OwnerStatus;
 		ls2.myStatusEffects = new List<EnumStorage.StatusEffect>();
 		ls2.myTags = new List<EnumStorage.Tag>();
-		GameEventStorage.onMeGotPower.RegisterListener(listener2);
+		GameEventStorage.onMeGainedAttack.RegisterListener(listener2);
 
 		// Card3: HPAlterEffect triggered by onTheirPlayerTookDmg (from Card2)
 		var hpa3 = CreateEffect<HPAlterEffect>(card3);
@@ -119,7 +119,7 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 		ls3.myTags = new List<EnumStorage.Tag>();
 		GameEventStorage.onTheirPlayerTookDmg.RegisterListener(listener3);
 
-		// Execute: Card1 gives Power to Card2
+		// Execute: Card1 grants attack to Card2
 		EffectChainManager.MakeANewEffectRecorder(card1, curse.gameObject);
 		curse.EnhanceCurse(1);
 		EffectChainManager.Me.CloseOpenedChain();
@@ -287,7 +287,7 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 		var listenerObj = CreateGameObject("PowerDmgListener");
 		listenerObj.transform.SetParent(reactor.transform);
 		var listener = listenerObj.AddComponent<GameEventListener>();
-		listener.@event = GameEventStorage.onAnyCardGotPower;
+		listener.@event = GameEventStorage.onAnyCardGainedAttack;
 		listener.response.AddListener(() => {
 			EffectChainManager.MakeANewEffectRecorder(reactor, hpa.gameObject);
 			if (EffectChainManager.Me.EffectCanBeInvoked("power_dmg"))
@@ -300,7 +300,7 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 		ls.myStatusRef = OwnerStatus;
 		ls.myStatusEffects = new List<EnumStorage.StatusEffect>();
 		ls.myTags = new List<EnumStorage.Tag>();
-		GameEventStorage.onAnyCardGotPower.RegisterListener(listener);
+		GameEventStorage.onAnyCardGainedAttack.RegisterListener(listener);
 
 		EffectChainManager.MakeANewEffectRecorder(curser, curse.gameObject);
 		curse.EnhanceCurse(2);
@@ -308,12 +308,7 @@ public class ReactiveChainTests : HeadlessCombatTestFixture
 
 		// Curse target gets 2 Power, then reactor deals 7 damage
 		Assert.AreEqual(93, EnemyStatus.hp, "Enemy should take 7 reactive damage");
-		int powerCount = 0;
-		foreach (var effect in curseTarget.GetComponent<CardScript>().myStatusEffects)
-		{
-			if (effect == EnumStorage.StatusEffect.Power) powerCount++;
-		}
-		Assert.AreEqual(2, powerCount, "Curse target should have 2 Power stacks");
+		Assert.AreEqual(2, curseTarget.GetComponent<CardScript>().GetAttack(), "Curse target should have 2 attack");
 	}
 
 	[Test]

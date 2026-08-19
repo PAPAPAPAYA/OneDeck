@@ -133,8 +133,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SCAPEGOAT
   displayName: "\u66FF\u6B7B\u9B3C"
-  cardDesc: "\u88AB\u57CB\u846C:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7F6E\u9876
-    1 \u53CB\u65B9"
+  cardDesc: "\u88ab\u57cb\u846c:\u653b\u51fb,\u7f6e\u9876 1 \u53cb\u65b9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -146,6 +145,10 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 03000000
+  printedAttack: 1
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,8 +243,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 5512404631855342793}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
+        m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
+        m_MethodName: Attack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -260,9 +263,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 6947502767563041322}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f01314777625ad4bb0bc22828e9728c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  m_EditorClassIdentifier: Assembly-CSharp::AttackEffect
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0

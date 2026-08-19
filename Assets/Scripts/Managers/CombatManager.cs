@@ -185,6 +185,12 @@ public class CombatManager : MonoBehaviour
 	[Tooltip("Tracks the last card that received Power status effect for reaction effects")]
 	public CardScript lastCardGotPower;
 
+	[Header("ATTACK ATTRIBUTE EVENT")]
+	[Tooltip("Tracks the last card that gained permanent attack for reaction effects (attack-attribute redesign)")]
+	public CardScript lastCardGainedAttack;
+	[Tooltip("Amount of attack gained by lastCardGainedAttack in the most recent gain (for amplify reactions)")]
+	public int lastAttackGainedAmount;
+
 	[Header("SHUFFLE EVENT TIMING")]
 	[Tooltip("Delay afterShuffle event until the first card is revealed after shuffle")]
 	private bool _raiseAfterShuffleOnNextReveal;

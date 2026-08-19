@@ -47,6 +47,7 @@ public class GameEventStorage : MonoBehaviour
 	public StringSO curseCardTypeID;
 	public GameEvent onEnemyCurseCardRevealed; // Triggered when an enemy curse card is revealed
 	public GameEvent onEnemyCurseCardGotPower; // Triggered when an enemy curse card gains Power
+	public GameEvent onEnemyCurseCardGainedAttack; // Triggered when an enemy curse card gains permanent attack (attack-attribute redesign)
 
 	[Header("status effect related")]
 	public GameEvent onMeGotStatusEffect; // Triggered when this card gains any status effect
@@ -56,4 +57,10 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onMeGotPower; // Triggered when this card gains Power
 	public GameEvent onFriendlyCardGotPower; // Triggered when a friendly card gains Power
 	public GameEvent onEnemyCardGotPower; // Triggered when an enemy card gains Power
+
+	[Header("attack attribute related")]
+	public GameEvent onAnyCardGainedAttack; // Triggered when any card gains permanent attack (attack-attribute redesign)
+	public GameEvent onMeGainedAttack; // Triggered when this card gains permanent attack
+	public GameEvent onFriendlyCardGainedAttack; // Triggered when a friendly card gains permanent attack
+	public GameEvent onEnemyCardGainedAttack; // Triggered when an enemy card gains permanent attack
 }

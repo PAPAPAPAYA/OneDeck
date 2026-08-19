@@ -212,7 +212,8 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 		if (sourceNeedsPopup && recorder.cardObject != null)
 		{
 			bool shouldPopUp = true;
-			if (_heldSourceCards.Contains(recorder.cardObject))
+			bool heldBefore = _heldSourceCards.Contains(recorder.cardObject);
+			if (heldBefore)
 			{
 				var sourcePhys = GetPhysicalCardScript(recorder.cardObject);
 				if (sourcePhys != null && !sourcePhys.isPoppedUp)
@@ -1006,6 +1007,27 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 					targetCardScript.ApplyDisplayDelta(request.statusEffect, request.statusEffectDelta);
 					request.displayDeltaApplied = true;
 				}
+
+				request.onComplete?.Invoke();
+				break;
+			}
+			case AnimationRequestType.AttackChange:
+			{
+				if (request.targetCard == null) break;
+				var targetCardScript = request.targetCard.GetComponent<CardScript>();
+				if (targetCardScript == null) break;
+
+				if (request.statusEffectParticlePrefab != null)
+				{
+					visuals.PlayStatusEffectParticle(
+						targetCardScript,
+						request.statusEffectParticlePrefab,
+						request.statusEffectParticleYOffset,
+						Mathf.Abs(request.statusEffectAmount));
+				}
+
+				// Refresh the attack print so the card face shows the new attack value.
+				visuals.RefreshCardAttackDisplay(targetCardScript);
 
 				request.onComplete?.Invoke();
 				break;

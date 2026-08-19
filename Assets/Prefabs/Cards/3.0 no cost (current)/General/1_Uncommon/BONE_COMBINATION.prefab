@@ -54,7 +54,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1359544507321340075}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
+        m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
         m_MethodName: DecreaseTheirHpTimes_BasedOnOpponentBuriedCount
         m_Mode: 1
         m_Arguments:
@@ -74,9 +74,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 270621688628183383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f01314777625ad4bb0bc22828e9728c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  m_EditorClassIdentifier: Assembly-CSharp::AttackEffect
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
@@ -134,7 +134,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BONE_COMBINATION
   displayName: "\u788E\u9AA8\u805A\u96C6\u4F53"
-  cardDesc: "\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3 x \u672C\u56DE\u5408\u88AB\u57CB\u846C\u7684\u654C\u65B9\u6570\u91CF"
+  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb \xd7\u672c\u56de\u5408\u88ab\u57cb\u846c\u7684\u654c\u65b9\u6570\u91cf"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -146,6 +146,10 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  printedAttack: 1
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

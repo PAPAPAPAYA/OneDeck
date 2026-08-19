@@ -50,6 +50,9 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 	public void PlayStatusEffectParticle(CardScript targetCard, ParticleSystem particlePrefab, float particleYOffset, int amount)
 		=> _nullVisuals.PlayStatusEffectParticle(targetCard, particlePrefab, particleYOffset, amount);
 
+	public void RefreshCardAttackDisplay(CardScript targetCard)
+		=> _nullVisuals.RefreshCardAttackDisplay(targetCard);
+
 	public void SyncPhysicalCardsWithCombinedDeck()
 		=> _nullVisuals.SyncPhysicalCardsWithCombinedDeck();
 

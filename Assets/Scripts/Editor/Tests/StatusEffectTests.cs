@@ -24,12 +24,7 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 		EffectChainManager.Me.CloseOpenedChain();
 
 		var targetScript = target.GetComponent<CardScript>();
-		int powerCount = 0;
-		foreach (var effect in targetScript.myStatusEffects)
-		{
-			if (effect == EnumStorage.StatusEffect.Power) powerCount++;
-		}
-		Assert.AreEqual(2, powerCount, "Should apply 2 Power stacks to enemy card");
+		Assert.AreEqual(2, targetScript.GetAttack(), "Should grant 2 attack to enemy card");
 	}
 
 	[Test]
@@ -82,15 +77,14 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 		bool hasChange = false;
 		foreach (var req in recorder.animationRequests)
 		{
-			if (req.type == AnimationRequestType.StatusEffectChange)
+			if (req.type == AnimationRequestType.AttackChange)
 			{
 				hasChange = true;
 				Assert.AreEqual(target, req.targetCard, "Should target the cursed card");
-				Assert.AreEqual(EnumStorage.StatusEffect.Power, req.statusEffect, "Should be Power status effect");
-				Assert.AreEqual(3, req.statusEffectAmount, "Should apply 3 stacks");
+				Assert.AreEqual(3, req.statusEffectAmount, "Should grant 3 attack");
 			}
 		}
-		Assert.IsTrue(hasChange, "Should capture StatusEffectChange animation request");
+		Assert.IsTrue(hasChange, "Should capture AttackChange animation request");
 
 		EffectChainManager.Me.CloseOpenedChain();
 	}
@@ -116,18 +110,18 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 
 		Assert.Greater(CombatManager.combinedDeckZone.Count, deckCountBefore, "Should spawn a new card into deck");
 
-		// Verify the spawned card has Power
-		bool foundPower = false;
+		// Verify the spawned card gained attack
+		bool foundAttack = false;
 		foreach (var card in CombatManager.combinedDeckZone)
 		{
 			var cs = card.GetComponent<CardScript>();
-			if (cs.cardTypeID == "curse_target" && cs.myStatusEffects.Contains(EnumStorage.StatusEffect.Power))
+			if (cs.cardTypeID == "curse_target" && cs.GetAttack() > 0)
 			{
-				foundPower = true;
+				foundAttack = true;
 				break;
 			}
 		}
-		Assert.IsTrue(foundPower, "Spawned card should have Power status effect");
+		Assert.IsTrue(foundAttack, "Spawned card should have attack");
 	}
 
 	[Test]
@@ -147,12 +141,7 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 		EffectChainManager.Me.CloseOpenedChain();
 
 		var targetScript = target.GetComponent<CardScript>();
-		int powerCount = 0;
-		foreach (var effect in targetScript.myStatusEffects)
-		{
-			if (effect == EnumStorage.StatusEffect.Power) powerCount++;
-		}
-		Assert.AreEqual(2, powerCount, "Should apply 2 Power stacks to friendly card");
+		Assert.AreEqual(2, targetScript.GetAttack(), "Should grant 2 attack to friendly card");
 	}
 
 	[Test]
@@ -168,13 +157,13 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 		curse.cardTypeID.value = "curse_target";
 
 		bool eventRaised = false;
-		RegisterEventCallback(GameEventStorage.onAnyCardGotPower, () => eventRaised = true);
+		RegisterEventCallback(GameEventStorage.onAnyCardGainedAttack, () => eventRaised = true);
 
 		EffectChainManager.MakeANewEffectRecorder(curseCard, curse.gameObject);
 		curse.EnhanceCurse(1);
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.IsTrue(eventRaised, "onAnyCardGotPower should be raised when applying Power");
+		Assert.IsTrue(eventRaised, "onAnyCardGainedAttack should be raised when enhancing a curse");
 	}
 
 	[Test]
@@ -251,12 +240,7 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 		EffectChainManager.Me.CloseOpenedChain();
 
 		var targetScript = target.GetComponent<CardScript>();
-		int powerCount = 0;
-		foreach (var effect in targetScript.myStatusEffects)
-		{
-			if (effect == EnumStorage.StatusEffect.Power) powerCount++;
-		}
-		Assert.AreEqual(2, powerCount, "Enemy EnhanceCurse should apply Power to friendly (player) card");
+		Assert.AreEqual(2, targetScript.GetAttack(), "Enemy EnhanceCurse should grant attack to friendly (player) card");
 	}
 
 	[Test]
@@ -276,12 +260,7 @@ public class StatusEffectTests : HeadlessCombatTestFixture
 		EffectChainManager.Me.CloseOpenedChain();
 
 		var targetScript = target.GetComponent<CardScript>();
-		int powerCount = 0;
-		foreach (var effect in targetScript.myStatusEffects)
-		{
-			if (effect == EnumStorage.StatusEffect.Power) powerCount++;
-		}
-		Assert.AreEqual(2, powerCount, "Enemy EnhanceFriendlyCurse should apply Power to enemy (self) card");
+		Assert.AreEqual(2, targetScript.GetAttack(), "Enemy EnhanceFriendlyCurse should grant attack to enemy (self) card");
 	}
 
 	[Test]

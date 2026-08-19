@@ -66,8 +66,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1359544507321340075}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
+        m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
+        m_MethodName: Attack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -86,9 +86,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 270621688628183383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f01314777625ad4bb0bc22828e9728c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  m_EditorClassIdentifier: Assembly-CSharp::AttackEffect
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
@@ -148,8 +148,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: ETERNAL_GHOST
   displayName: "\u4E0D\u6563\u7684\u6076\u7075"
-  cardDesc: "<tag:Linger>;\n\u5F53\u654C\u4EBA\u53D7\u5230\u4F24\u5BB3\u65F6:\u9020\u6210
-    <b><dmg></b> \u4F24\u5BB3"
+  cardDesc: "<tag:Linger>;\n\u5f53\u654c\u4eba\u53d7\u5230\u4f24\u5bb3\u65f6:\u653b\u51fb"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -161,6 +160,10 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 01000000
+  printedAttack: 1
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

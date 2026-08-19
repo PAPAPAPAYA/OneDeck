@@ -66,8 +66,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 6757882006032749863}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.PowerReactionEffect, Assembly-CSharp
-        m_MethodName: GivePowerToCardThatGotPower
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGainReactionEffect, Assembly-CSharp
+        m_MethodName: GiveAttackToCardThatGainedAttack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -86,9 +86,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 270621688628183383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc6889e6c567d804ab804fe4840a1fb0, type: 3}
+  m_Script: {fileID: 11500000, guid: ad05c62daec75f44daa23684e98c7f6e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.PowerReactionEffect
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AttackGainReactionEffect
   myStatusEffectResolverScript: {fileID: 0}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 0
@@ -104,7 +104,7 @@ MonoBehaviour:
   enemyIntSO: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
-  powerAmount: 1
+  attackAmount: 1
   excludeSelf: 0
 --- !u!1 &8718476725744197808
 GameObject:
@@ -155,8 +155,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: WEAPON_SPIRIT
   displayName: "\u6B66\u5668\u7CBE\u7075"
-  cardDesc: "<tag:Linger>;\u5F53\u53CB\u65B9\u83B7\u5F97\u529B\u91CF\u65F6:\u7ED9\u4E88\u8BE5\u53CB\u65B9
-    <b>1</b> \u529B\u91CF"
+  cardDesc: "<tag:Linger>;\u5f53\u53cb\u65b9\u83b7\u5f97\u653b\u51fb\u529b\u65f6:\u7ed9\u4e88\u8be5\u53cb\u65b9 <b>1</b> \u653b\u51fb\u529b"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -180,7 +179,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  event: {fileID: 11400000, guid: f82fc4ec5b8a0c14eb626a5a0d4336ff, type: 2}
+  event: {fileID: 11400000, guid: 197fbf2543e09b84899ac569a3b85f87, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:

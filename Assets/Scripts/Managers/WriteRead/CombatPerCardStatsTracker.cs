@@ -13,6 +13,10 @@ public enum CombatStatType
 	TriggerCount,
 	PowerGiven,
 	PowerReceived,
+	/// <summary>Permanent attack granted by this card (attack-attribute redesign; supersedes PowerGiven).</summary>
+	AttackGiven,
+	/// <summary>Permanent attack gained by this card (supersedes PowerReceived).</summary>
+	AttackReceived,
 	/// <summary>Cards this card generated mid-combat (via the RegisterGeneratedCard entry point).</summary>
 	CardsGenerated,
 	/// <summary>Friendly cards this card buried (friendly = same owner as the burying card).</summary>
@@ -69,6 +73,8 @@ public class CombatStatDef
 				CombatStatType.DamageDealtToSelf => palette.damage,
 				CombatStatType.PowerGiven => palette.powerTint,
 				CombatStatType.PowerReceived => palette.powerTint,
+				CombatStatType.AttackGiven => palette.powerTint,
+				CombatStatType.AttackReceived => palette.powerTint,
 				_ => null
 			};
 			return so != null ? so.Hex : "#FFFFFF";
@@ -86,8 +92,10 @@ public static class CombatStatRegistry
 		new CombatStatDef { type = CombatStatType.DamageDealtToOpponent, columnHeader = "Dmg>Opp", columnSortPriority = 0, showPercentageOfTotal = true },
 		new CombatStatDef { type = CombatStatType.DamageDealtToSelf, columnHeader = "Dmg>Self", columnSortPriority = 1, showPercentageOfTotal = true, showInResultPanel = false },
 		new CombatStatDef { type = CombatStatType.TriggerCount, columnHeader = "Trig", columnSortPriority = 2 },
-		new CombatStatDef { type = CombatStatType.PowerGiven, columnHeader = "PowGive", columnSortPriority = 3 },
-		new CombatStatDef { type = CombatStatType.PowerReceived, columnHeader = "PowRecv", columnSortPriority = 4 },
+		new CombatStatDef { type = CombatStatType.PowerGiven, columnHeader = "PowGive", columnSortPriority = 3, showInResultPanel = false },
+		new CombatStatDef { type = CombatStatType.PowerReceived, columnHeader = "PowRecv", columnSortPriority = 4, showInResultPanel = false },
+		new CombatStatDef { type = CombatStatType.AttackGiven, columnHeader = "AtkGive", columnSortPriority = 3 },
+		new CombatStatDef { type = CombatStatType.AttackReceived, columnHeader = "AtkRecv", columnSortPriority = 4 },
 		new CombatStatDef { type = CombatStatType.CardsGenerated, columnHeader = "Gen", columnSortPriority = 5 },
 		new CombatStatDef { type = CombatStatType.FriendlyBuried, columnHeader = "Bury>F", columnSortPriority = 6 },
 		new CombatStatDef { type = CombatStatType.EnemyBuried, columnHeader = "Bury>E", columnSortPriority = 7 },
@@ -226,6 +234,23 @@ public class CombatPerCardStatsTracker : MonoBehaviour
 	{
 		if (amount <= 0) return;
 		Add(receiver, CombatStatType.PowerReceived, amount);
+	}
+
+	/// <summary>
+	/// Record permanent attack granted by giver (attack-attribute redesign).
+	/// Hooks live in EffectScript.ApplyAttackCore, so every attack gain (including
+	/// curse enhancement and transfers) is counted with the effect source as giver.
+	/// </summary>
+	public void RecordAttackGiven(CardScript giver, int amount)
+	{
+		if (amount <= 0) return;
+		Add(giver, CombatStatType.AttackGiven, amount);
+	}
+
+	public void RecordAttackReceived(CardScript receiver, int amount)
+	{
+		if (amount <= 0) return;
+		Add(receiver, CombatStatType.AttackReceived, amount);
 	}
 
 	/// <summary>

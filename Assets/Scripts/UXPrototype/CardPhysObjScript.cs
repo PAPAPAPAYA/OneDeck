@@ -217,7 +217,7 @@ public class CardPhysObjScript : MonoBehaviour
 			UpdatePriceDisplay();
 			UpdateRarityDisplay();
 			UpdateTagDisplay();
-			UpdateAttackDisplay();
+			RefreshAttackDisplay();
 		}
 		else
 		{
@@ -302,8 +302,9 @@ public class CardPhysObjScript : MonoBehaviour
 	/// <summary>
 	/// Update the attack attribute display (bottom-right of the card face).
 	/// Hidden for legacy cards with no attack; shows "X" or "X×N" (N = attack times).
+	/// Public so attack gains/losses (AttackChange animations) can refresh it in place.
 	/// </summary>
-	private void UpdateAttackDisplay()
+	public void RefreshAttackDisplay()
 	{
 		if (cardAttackPrint == null || cardImRepresenting == null) return;
 

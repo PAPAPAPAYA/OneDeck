@@ -343,8 +343,8 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 		curse.EnhanceCurse_BasedOnIntSO();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(2, CountStatusEffect(enemyCurse, EnumStorage.StatusEffect.Power),
-			"Owner CURSED_SKELETON should add ownerIntSO=2 Power to enemy curse card");
+		Assert.AreEqual(2, enemyCurse.GetComponent<CardScript>().GetAttack(),
+			"Owner CURSED_SKELETON should add ownerIntSO=2 attack to enemy curse card");
 	}
 
 	[Test]
@@ -365,8 +365,8 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 		curse.EnhanceCurse_BasedOnIntSO();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(5, CountStatusEffect(ownerCurse, EnumStorage.StatusEffect.Power),
-			"Enemy CURSED_SKELETON should add enemyIntSO=5 Power to owner curse card");
+		Assert.AreEqual(5, ownerCurse.GetComponent<CardScript>().GetAttack(),
+			"Enemy CURSED_SKELETON should add enemyIntSO=5 attack to owner curse card");
 	}
 
 	#endregion
@@ -392,8 +392,8 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 		curse.EnhanceCurseWithCoefficient_BasedOnIntSO();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(3, CountStatusEffect(enemyCurse, EnumStorage.StatusEffect.Power),
-			"Owner DETERIORATION should add ownerIntSO=6 / coefficient=2 = 3 Power");
+		Assert.AreEqual(3, enemyCurse.GetComponent<CardScript>().GetAttack(),
+			"Owner DETERIORATION should add ownerIntSO=6 / coefficient=2 = 3 attack");
 	}
 
 	[Test]
@@ -415,8 +415,8 @@ public class IntSOBasedEffectFactionTests : HeadlessCombatTestFixture
 		curse.EnhanceCurseWithCoefficient_BasedOnIntSO();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(4, CountStatusEffect(ownerCurse, EnumStorage.StatusEffect.Power),
-			"Enemy DETERIORATION should add enemyIntSO=9 / coefficient=2 = 4 Power");
+		Assert.AreEqual(4, ownerCurse.GetComponent<CardScript>().GetAttack(),
+			"Enemy DETERIORATION should add enemyIntSO=9 / coefficient=2 = 4 attack");
 	}
 
 	[Test]

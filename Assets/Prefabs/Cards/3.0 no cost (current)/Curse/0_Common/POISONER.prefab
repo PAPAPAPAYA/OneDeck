@@ -50,8 +50,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: POISONER
   displayName: "\u5492\u5E08"
-  cardDesc: "\u63ED\u6653\u65F6:\u589E\u5F3A <b>1</b> \u654C\u65B9[\u8BC5\u5492],\u9020\u6210
-    <b><dmg></b> \u4F24\u5BB3"
+  cardDesc: "\u63ed\u6653\u65f6:\u589e\u5f3a <b>1</b> \u654c\u65b9[\u8bc5\u5492],\u653b\u51fb"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -63,6 +62,10 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  printedAttack: 1
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -157,8 +160,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4108770269165058805}
-        m_TargetAssemblyTypeName: HPAlterEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHp
+        m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
+        m_MethodName: Attack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -177,9 +180,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 6820793160776261272}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f01314777625ad4bb0bc22828e9728c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HPAlterEffect
+  m_EditorClassIdentifier: Assembly-CSharp::AttackEffect
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
