@@ -1,0 +1,548 @@
+[
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\Bury\\0_Common\\GRAVE_PUNCH.prefab",
+  "id": "GRAVE_PUNCH",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u57CB\\u846C <b>1</b> \\u53CB\\u65B9,\\u9020\\u6210 <b><dmg></b>\n    \\u4F24\\u5BB3 x <b>2</b>",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "BuryEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\Bury\\1_Uncommon\\CORPSE_CANON.prefab",
+  "id": "CORPSE_CANON",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u57CB\\u846C 1 \\u53CB\\u65B9;\\n\\u53CB\\u65B9\\u88AB\\u57CB\\u846C:\\u9020\\u6210\n    <b><dmg></b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener.",
+   "BuryEffect."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\Bury\\1_Uncommon\\GRAVE_INVITATION.prefab",
+  "id": "GRAVE_INVITATION",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3,\\u5893\\u5730\\u6BCF\\u6709\n    <b>1</b> \\u53CB\\u65B9:\\u57CB\\u846C <b>1</b> \\u654C\\u65B9",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "BuryEffect.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\Bury\\2_Rare\\BODY_CANON.prefab",
+  "id": "BODY_CANON",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u57CB\\u846C\\u6240\\u6709\\u53CB\\u65B9,\\u5893\\u5730\\u6BCF\\u6709\\u4E00\\u4E2A\\u53CB\\u65B9:\\u9020\\u6210\n    <b>1</b> \\u6B21 <b><dmg></b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "BuryEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\DeathRattle\\0_Common\\SOLDIER_SKELETON.prefab",
+  "id": "SOLDIER_SKELETON",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u88AB\\u57CB\\u846C:\\u7F6E\\u9876\\u81EA\\u8EAB",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StageEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\DeathRattle\\1_Uncommon\\AVENGER.prefab",
+  "id": "AVENGER",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u88AB\\u57CB\\u846C:\\u83B7\\u5F97\n    <b>2</b> \\u529B\\u91CF",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StatusEffectGiverEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\DeathRattle\\1_Uncommon\\CURSED_CORPSE.prefab",
+  "id": "CURSED_CORPSE",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u589E\\u5F3A <b>1</b> \\u654C\\u65B9[\\u8BC5\\u5492];\\u88AB\\u57CB\\u846C:\\u9020\\u6210\n    <b><dmg></b> x <b>3</b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CardScript.",
+   "GameEventListener.",
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CurseEffect."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\DeathRattle\\1_Uncommon\\SCAPEGOAT.prefab",
+  "id": "SCAPEGOAT",
+  "desc": "\\u88AB\\u57CB\\u846C:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3,\\u7F6E\\u9876\n    1 \\u53CB\\u65B9",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "StageEffect.",
+   "CardScript.",
+   "GameEventListener.",
+   "HPAlterEffect."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\DeathRattle\\1_Uncommon\\SPIKE_SKELETON.prefab",
+  "id": "SPIKE_SKELETON",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u88AB\\u57CB\\u846C:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3 x <b>2</b>",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7",
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\DeathRattle\\2_Rare\\GRAVE_KEEPER.prefab",
+  "id": "GRAVE_KEEPER",
+  "desc": "\\u53CB\\u65B9\\u88AB\\u57CB\\u846C\\u65F6:\\u7F6E\\u9876\\u81EA\\u8EAB;\\n\\u63ED\\u6653\\u65F6:\\u9020\\u6210\n    <b><dmg></b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StageEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Bury and buried\\DeathRattle\\2_Rare\\SLIME.prefab",
+  "id": "SLIME",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\n\\u88AB\\u57CB\\u846C:\\u6DFB\\u52A0\\u81EA\\u8EAB\\u5230\\u5361\\u7EC4\\u4E2D",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "AddTempCard.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Conjure\\0_Common\\RIFT_INSECT.prefab",
+  "id": "RIFT_INSECT",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u751F\\u6210 <b>1</b>\n    [\\u6B21\\u5143\\u88C2\\u7F1D]",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "AddTempCard.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Conjure\\1_Uncommon\\RIFT_DRAGON.prefab",
+  "id": "RIFT_DRAGON",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u751F\\u6210 <b>1</b> [\\u6B21\\u5143\\u88C2\\u7F1D],\\u9020\\u6210\n    <b>4</b> \\u4F24\\u5BB3;\\n\\u88AB\\u7F6E\\u9876:\\u751F\\u6210 <b>1</b> [\\u6B21\\u5143\\u88C2\\u7F1D]",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "AddTempCard.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Conjure\\1_Uncommon\\RIFT_MONSTER.prefab",
+  "id": "RIFT_MONSTER",
+  "desc": "\\u63ED\\u6653\\u65F6,\\u53BB\\u9664 <b>1</b> [\\u6B21\\u5143\\u88C2\\u7F1D]:\\u9020\\u6210\n    <b><dmg></b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "ExileEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Conjure\\2_Rare\\RIFT_DEVOURER.prefab",
+  "id": "RIFT_DEVOURER",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u5F53\\u53CB\\u65B9\\u88AB\\u53BB\\u9664\\u65F6:\\u83B7\\u5F97\n    <b>1</b> \\u529B\\u91CF",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StatusEffectGiverEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Curse\\0_Common\\POISONER.prefab",
+  "id": "POISONER",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u589E\\u5F3A <b>1</b> \\u654C\\u65B9[\\u8BC5\\u5492],\\u9020\\u6210\n    <b><dmg></b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CardScript.",
+   "GameEventListener.",
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CurseEffect."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Curse\\1_Uncommon\\CURSE_THIRST_BEAST.prefab",
+  "id": "CURSE_THIRST_BEAST",
+  "desc": "\\u5F53\\u654C\\u65B9[\\u8BC5\\u5492]\\u63ED\\u6653\\u65F6:\\u7F6E\\u9876\\u81EA\\u8EAB;\\n\\u63ED\\u6653\\u65F6:\\u9020\\u6210\n    <b><dmg></b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CardScript.",
+   "GameEventListener.",
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StageEffect."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\Curse\\1_Uncommon\\SMALL_SCALE_DEATH.prefab",
+  "id": "SMALL_SCALE_DEATH",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u57CB\\u846C\\u540E <b>2</b> \\u5361,\\u9020\\u6210 <b><dmg></b>\n    \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "BuryEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\0_Common\\BLACKSMITH.prefab",
+  "id": "BLACKSMITH",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3,\\u7ED9\\u4E88\\u4E00\\u4E2A\\u53CB\\u65B9\n    <b>1</b> \\u529B\\u91CF",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StatusEffectGiverEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\0_Common\\COFFIN_MAKER.prefab",
+  "id": "COFFIN_MAKER",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3,\\u57CB\\u846C\n    <b>1</b> \\u654C\\u65B9",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "BuryEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\0_Common\\THE_FOOL.prefab",
+  "id": "THE_FOOL",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u7F6E\\u9876\\u529B\\u91CF\\u6700\\u591A\\u7684\\u654C\\u65B9,\\u9020\\u6210\n    <b>4</b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StageEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\ALL_FOR_ONE.prefab",
+  "id": "ALL_FOR_ONE",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210\\u6240\\u6709\\u5361\\u7684\\u529B\\u91CF\\u6570\\u91CF\\u7684\\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\BONE_COMBINATION.prefab",
+  "id": "BONE_COMBINATION",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3 x \\u672C\\u56DE\\u5408\\u88AB\\u57CB\\u846C\\u7684\\u654C\\u65B9\\u6570\\u91CF",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\FLESH_COMBINATION.prefab",
+  "id": "FLESH_COMBINATION",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210\\u53CB\\u65B9\\u6570\\u91CF\\u7684\\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\GOBLIN_ASSASSIN_TEAM.prefab",
+  "id": "GOBLIN_ASSASSIN_TEAM",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u88AB\\u7F6E\\u9876:\\u57CB\\u846C\n    <b>1</b> \\u654C\\u65B9",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "BuryEffect.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\GOBLIN_CHARGE_TEAM.prefab",
+  "id": "GOBLIN_CHARGE_TEAM",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\n\\u88AB\\u7F6E\\u9876:\\u9020\\u6210\n    <b><dmg:staged></b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7",
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\POWER_CRAVER.prefab",
+  "id": "POWER_CRAVER",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u83B7\\u5F97\\u529B\\u91CF\\u65F6:\\u83B7\\u5F97\n    <b>2</b> \\u500D\\u529B\\u91CF",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StatusEffectAmplifierEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\POWER_SURGE.prefab",
+  "id": "POWER_SURGE",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\n\\u88AB\\u7F6E\\u9876:\\u7ED9\\u4E88\n    <b>2</b> \\u53CB\\u65B9 <b>1</b> \\u529B\\u91CF",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "StatusEffectGiverEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\SNATCHER.prefab",
+  "id": "SNATCHER",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u88AB\\u7F6E\\u9876:\\u7F6E\\u9876\n    <b>1</b> \\u53CB\\u65B9;\\u88AB\\u57CB\\u846C:\\u57CB\\u846C <b>1</b> \\u654C\\u65B9",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "StageEffect.",
+   "BuryEffect.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\1_Uncommon\\TACTICAL_BREACHER.prefab",
+  "id": "TACTICAL_BREACHER",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3;\\u88AB\\u7F6E\\u9876:\\u83B7\\u5F97\n    <b>1</b> \\u529B\\u91CF",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "StatusEffectGiverEffect.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\2_Rare\\ALMIGHTY.prefab",
+  "id": "ALMIGHTY",
+  "desc": "\\u63ED\\u6653 <b>2<counter></b> \\u6B21:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3,\\u7F6E\\u9876\n    <b>1</b> \\u53CB\\u65B9,\\u57CB\\u846C <b>1</b> \\u654C\\u65B9,\\u7ED9\\u4E88 <b>1</b>\n    \\u53CB\\u65B9\\u529B\\u91CF,\\u751F\\u6210 <b>1</b> [\\u6B21\\u5143\\u88C2\\u7F1D],\\u589E\\u5F3A\n    <b>1</b> \\u654C\\u65B9[\\u8BC5\\u5492]",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "StageEffect.",
+   "BuryEffect.",
+   "AddTempCard.",
+   "CurseEffect.",
+   "ConsumeStatusEffect.",
+   "StatusEffectGiverEffect.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\2_Rare\\ETERNAL_GHOST.prefab",
+  "id": "ETERNAL_GHOST",
+  "desc": "<tag:Linger>;\\n\\u5F53\\u654C\\u4EBA\\u53D7\\u5230\\u4F24\\u5BB3\\u65F6:\\u9020\\u6210\n    <b><dmg></b> \\u4F24\\u5BB3",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\2_Rare\\POWER_SIPHONER.prefab",
+  "id": "POWER_SIPHONER",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u8F6C\\u79FB\\u6240\\u6709\\u53CB\\u65B9\\u7684 <b>1</b>\n    \\u529B\\u91CF\\u5230\\u81EA\\u8EAB,\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3 x <b>2</b>",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "HPAlterEffect.",
+   "TransferStatusEffectEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ },
+ {
+  "file": "Assets/Prefabs/Cards/3.0 no cost (current)\\General\\2_Rare\\UNFINISHED_ROBOT.prefab",
+  "id": "UNFINISHED_ROBOT",
+  "desc": "\\u63ED\\u6653\\u65F6:\\u9020\\u6210 <b><dmg></b> \\u4F24\\u5BB3,\\u7FFB\\u500D\\u81EA\\u8EAB\\u529B\\u91CF",
+  "printedAttack": null,
+  "baseDmgGuids": [
+   "fb52aef52820fa34883c2e79218e4ad7"
+  ],
+  "classes": [
+   "CostNEffectContainer.",
+   "StatusEffectGiverEffect.",
+   "HPAlterEffect.",
+   "CardScript.",
+   "GameEventListener."
+  ]
+ }
+]

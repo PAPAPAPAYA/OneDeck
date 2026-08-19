@@ -1,0 +1,1194 @@
+[
+ {
+  "id": "V5_WEAKNESS_CURSE",
+  "name": "虚弱诅咒",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "负面 攻击者",
+  "effect": "敌方[攻击者](最高攻击力) 本回合 攻击力 -2"
+ },
+ {
+  "id": "ARSENAL",
+  "name": "军火库",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "力量 埋葬 攻击者",
+  "effect": "给予所有友方[攻击者] +2 攻击力;埋葬 1 张友方卡"
+ },
+ {
+  "id": "BLOODLUST",
+  "name": "嗜血",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "攻击次数 攻击者 埋葬",
+  "effect": "给予所有友方[攻击者] 攻击 +1 次;埋葬 1 张友方卡"
+ },
+ {
+  "id": "V5_SILENCE",
+  "name": "寂静术",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "攻击者 负面",
+  "effect": "全体敌方[攻击者] 攻击力 -2;若敌方存在[负面]:额外 -1"
+ },
+ {
+  "id": "V5_WEAKNESS_ANALYZE",
+  "name": "弱点解析",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 易伤",
+  "effect": "萦绕:每回合开始:敌方受到的攻击伤害 +1(易伤)"
+ },
+ {
+  "id": "WAR_HERO",
+  "name": "战争英雄",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "攻击者 伤害",
+  "effect": "攻击力 = 友方[攻击者]总攻击力(常态结算);攻击;若总攻击力 ≥ 8:获得 3 攻击力"
+ },
+ {
+  "id": "V5_WAR_BANNER",
+  "name": "战旗",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 攻击者",
+  "effect": "萦绕:友方[攻击者]攻击时:随机敌方[攻击者] 攻击力 -1"
+ },
+ {
+  "id": "V5_ARMS_SLEEP",
+  "name": "武备沉眠",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "沉睡 攻击者",
+  "effect": "【沉睡】直到友方[攻击者]攻击力总和 ≥ 10;唤醒时:攻击 ×2;给予所有友方[攻击者] +1 攻击力(永久)"
+ },
+ {
+  "id": "ACE",
+  "name": "王牌",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "攻击者 伤害",
+  "effect": "攻击力 = 友方最高攻击力(常态结算);攻击"
+ },
+ {
+  "id": "V5_WAR_HORN",
+  "name": "军号",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 攻击者",
+  "effect": "萦绕:每回合开始:给予 1 张友方[攻击者](最低攻击力) 1 攻击力"
+ },
+ {
+  "id": "WAR_COUNCIL",
+  "name": "军议",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "力量 攻击者",
+  "effect": "给予 1 张友方[攻击者](最低攻击力) 2 攻击力"
+ },
+ {
+  "id": "ASSASSIN",
+  "name": "刺客",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "埋葬 攻击者",
+  "effect": "埋葬 1 张敌方[攻击者]（最高攻击）"
+ },
+ {
+  "id": "MARK_WEAKNESS",
+  "name": "弱点标注",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "易伤",
+  "effect": "敌方受到的攻击伤害 +1（每段,可叠加,永久）"
+ },
+ {
+  "id": "OATH_OF_WAR",
+  "name": "战争之誓",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 力量",
+  "effect": "给予 1 张友方[攻击者] +2 攻击力;攻击"
+ },
+ {
+  "id": "DRILL_MASTER",
+  "name": "战训教官",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "攻击次数 攻击者",
+  "effect": "给予 1 张友方[攻击者] 攻击 +1 次"
+ },
+ {
+  "id": "V5_FEEBLE_AURA",
+  "name": "衰弱光环",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 攻击者",
+  "effect": "萦绕:每当敌方[攻击者]被置顶:其攻击力 -1"
+ },
+ {
+  "id": "RALLY",
+  "name": "集结号",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "力量 攻击者",
+  "effect": "给予所有友方[攻击者] +1 攻击力(永久)"
+ },
+ {
+  "id": "POISONER",
+  "name": "咒师",
+  "rarity": "common",
+  "attack": "1",
+  "tags": "攻击者 [curse] 敌方[curse]加强",
+  "effect": "增强 1 张敌方[诅咒]"
+ },
+ {
+  "id": "CURSE_THIRST_SUMMONER",
+  "name": "咒食的召唤师",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "[curse] 置顶 置顶友方",
+  "effect": "当敌方[诅咒]揭晓时:置顶自身;揭晓时:置顶 1 张友方卡"
+ },
+ {
+  "id": "RIFT_CURSE",
+  "name": "异次元的诅咒",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "[curse] 敌方[curse]加强 conjure 生成[conjure]",
+  "effect": "增强 1 张敌方[诅咒];生成 1 张[次元裂缝]"
+ },
+ {
+  "id": "SACRIFICIAL_CURSE",
+  "name": "献祭诅咒",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "埋葬 埋葬友方 [curse] 敌方[curse]加强",
+  "effect": "埋葬 1 张友方卡;增强 3 敌方[负面]"
+ },
+ {
+  "id": "CROW_CROWD",
+  "name": "乌合之众",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "力量 友方力量 [curse] 敌方[curse]加强",
+  "effect": "转移所有友方[攻击者]攻击力(除友方[负面])到敌方[负面]"
+ },
+ {
+  "id": "CURSE_THIRST_ARCH_SUMMONER",
+  "name": "咒食的大召唤师",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "[curse] 置顶 置顶友方 消耗敌方[curse]力量",
+  "effect": "消耗敌方[负面] 2 攻击力:置顶 1 张友方[攻击者]并给予其 2 攻击力"
+ },
+ {
+  "id": "PROLIFERATING_CURSE",
+  "name": "增殖的厄运",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "[curse] 敌方[curse]加强",
+  "effect": "复制 1 张敌方[负面]给敌方(复制体继承其攻击力,线性,不被再复制)"
+ },
+ {
+  "id": "DETERIORATION",
+  "name": "恶化",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "[curse] 敌方[curse]加强",
+  "effect": "增强 1 张敌方[负面];其每有 4 攻击力:额外增强 1"
+ },
+ {
+  "id": "CURSE_RESONANCE",
+  "name": "诅咒共鸣",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "负面 力量",
+  "effect": "敌方[负面]每有 1 攻击力:获得 1 攻击力"
+ },
+ {
+  "id": "CURSE_ENCHANTMENT",
+  "name": "诅咒附魔",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "linger 敌方[curse]加强 [curse]",
+  "effect": "萦绕:每当敌方受伤:增强 1 敌方[负面]"
+ },
+ {
+  "id": "UNDERTAKER",
+  "name": "送葬人",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "置顶 置顶敌方 负面",
+  "effect": "置顶 1 张敌方[负面](最高攻击力)"
+ },
+ {
+  "id": "V5_CURSE_MIRROR",
+  "name": "镜面诅咒",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "攻击者 负面",
+  "effect": "攻击力 = 敌方[负面]攻击力总和(常态结算);攻击"
+ },
+ {
+  "id": "MOTH_MAN",
+  "name": "飞蛾人",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "消耗敌方[curse]力量 [curse] 置顶 置顶友方",
+  "effect": "每当敌方[负面]攻击力增加:置顶 1 张友方卡"
+ },
+ {
+  "id": "DEATH_KNELT",
+  "name": "丧钟",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "置顶 置顶敌方 负面",
+  "effect": "置顶 1 张敌方[负面]"
+ },
+ {
+  "id": "PURIFYING_FLAME",
+  "name": "净化之火",
+  "rarity": "uncommon",
+  "attack": "4",
+  "tags": "攻击者 负面",
+  "effect": "去除 1 张友方[负面];攻击"
+ },
+ {
+  "id": "CURSE_THIRST_SHAMAN",
+  "name": "咒食的萨满",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "[curse] 消耗敌方[curse]力量 力量 友方力量",
+  "effect": "给予 1 张友方卡 [敌方[负面]攻击力] 点攻击力"
+ },
+ {
+  "id": "CURSE_THIRST_BEAST",
+  "name": "咒食的野兽",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 [curse]",
+  "effect": "当敌方[诅咒]揭晓时:置顶自身"
+ },
+ {
+  "id": "DEVIL_WHISPER",
+  "name": "恶魔低语",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "置顶 负面",
+  "effect": "置顶 1 张敌方[负面];其获得 1 攻击力"
+ },
+ {
+  "id": "PREMATURE",
+  "name": "拔苗助长",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "置顶 消耗敌方[curse]力量 [curse]",
+  "effect": "消耗敌方[负面] 1 攻击力:置顶 1 张敌方[负面]"
+ },
+ {
+  "id": "V5_EVENING_DRUM",
+  "name": "暮鼓",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 负面",
+  "effect": "萦绕:每回合开始:增强 1 敌方[负面]"
+ },
+ {
+  "id": "V5_NIGHTMARE_WHISPER",
+  "name": "梦魇低语",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "沉睡 负面",
+  "effect": "给予 1 张敌方[负面] [沉睡](直到其主人受到 3 次伤害);沉睡期间其每回合 +1 攻击力"
+ },
+ {
+  "id": "CURSED_SKELETON",
+  "name": "被诅咒的骷髅",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "[curse] 敌方[curse]加强 埋葬",
+  "effect": "增强 1 张敌方[负面];墓地每有 1 张友方[亡语]:额外增强 1"
+ },
+ {
+  "id": "THE_FOOL",
+  "name": "愚者",
+  "rarity": "common",
+  "attack": "4",
+  "tags": "攻击者 置顶 置顶敌方 通用",
+  "effect": "置顶攻击力最多的敌方卡"
+ },
+ {
+  "id": "SIDE_EFFECT_PORTAL",
+  "name": "有副作用的传送门",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "置顶 置顶友方 [curse] 友方[curse]加强",
+  "effect": "增强自身[诅咒] 1;置顶 1 张友方卡"
+ },
+ {
+  "id": "COFFIN_MAKER",
+  "name": "棺材制造者",
+  "rarity": "common",
+  "attack": "1",
+  "tags": "攻击者 埋葬 埋葬敌方",
+  "effect": "埋葬 1 张敌方卡"
+ },
+ {
+  "id": "SACRIFICIAL_SWORD",
+  "name": "献祭剑",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "埋葬 埋葬友方 力量 友方力量",
+  "effect": "埋葬 1 张友方卡;给予 1 张友方卡 +2 攻击力"
+ },
+ {
+  "id": "MAD_SCIENTIST",
+  "name": "疯狂科学家",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "力量 通用",
+  "effect": "给予下 3 张友方卡 +2 攻击力"
+ },
+ {
+  "id": "BLACKSMITH",
+  "name": "铁匠",
+  "rarity": "common",
+  "attack": "1",
+  "tags": "通用 攻击者 力量 友方力量",
+  "effect": "给予 1 张友方卡 +1 攻击力(永久)"
+ },
+ {
+  "id": "ETERNAL_GHOST",
+  "name": "不散的恶灵",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "通用 攻击者",
+  "effect": "萦绕:每当敌人受到伤害:攻击"
+ },
+ {
+  "id": "ALMIGHTY",
+  "name": "全能人",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "通用 攻击者 置顶 置顶友方 埋葬 埋葬敌方 力量 友方力量 [curse] 敌方[curse]加强 conjure 生成[conjure]",
+  "effect": "攻击;攻击力 = 墓地友方卡数 + 友方[次元裂缝]数 + 敌方[负面]攻击力总和(常态结算);若攻击力 ≥ 15:攻击 ×2;揭晓时:生成 1 [次元裂缝];增强 1 敌方[负面]"
+ },
+ {
+  "id": "BOOSTER",
+  "name": "推进器",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "埋葬 埋葬友方 置顶 置顶友方",
+  "effect": "萦绕:每当友方[攻击者]被埋葬:置顶 2 张友方[攻击者];揭晓时:埋葬 1 张友方[亡语]"
+ },
+ {
+  "id": "POWER_SIPHONER",
+  "name": "攻击力虹吸人",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 力量 友方力量 通用",
+  "effect": "转移所有友方 1 攻击力到自身;攻击 ×2"
+ },
+ {
+  "id": "UNFINISHED_ROBOT",
+  "name": "未完成的机器人",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 力量 友方力量 通用",
+  "effect": "翻倍自身攻击力"
+ },
+ {
+  "id": "WEAPON_SPIRIT",
+  "name": "武器精灵",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "通用 力量 友方力量 linger",
+  "effect": "萦绕:每当友方获得攻击力:额外 +1"
+ },
+ {
+  "id": "V5_ETERNAL_ENGINE",
+  "name": "永恒引擎",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "萦绕 攻击者",
+  "effect": "萦绕:每回合开始:获得 1 攻击力"
+ },
+ {
+  "id": "ELDER_SORCERER",
+  "name": "远古魔法使用者",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "置顶 力量 友方力量 通用",
+  "effect": "本回合每置顶 1 张友方卡:给予 1 张友方卡 1 攻击力"
+ },
+ {
+  "id": "ALL_FOR_ONE",
+  "name": "人人为我",
+  "rarity": "uncommon",
+  "attack": "0",
+  "tags": "力量 通用",
+  "effect": "攻击力 = 所有友方卡攻击力总和(常态结算)"
+ },
+ {
+  "id": "GOBLIN_CHARGE_TEAM",
+  "name": "哥布林冲锋部队",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 置顶 被置顶 通用",
+  "effect": "被置顶:攻击"
+ },
+ {
+  "id": "GOBLIN_ASSASSIN_TEAM",
+  "name": "哥布林暗杀部队",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 置顶 被置顶 埋葬 埋葬敌方 通用",
+  "effect": "被置顶:埋葬 1 张敌方卡"
+ },
+ {
+  "id": "V5_DETER_AURA",
+  "name": "威慑光环",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 攻击者",
+  "effect": "萦绕:每回合开始:随机敌方[攻击者] 攻击力 -1"
+ },
+ {
+  "id": "V5_SLEEP_GRANT",
+  "name": "安眠",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "沉睡 萦绕",
+  "effect": "给予 1 张友方[萦绕]卡 [沉睡](直到其主人受到 3 次伤害);其被唤醒时:获得 1 攻击力"
+ },
+ {
+  "id": "ANTI_CREATURE_WEAPON",
+  "name": "对生物兵器",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "埋葬 埋葬敌方 通用",
+  "effect": "埋葬下 2 张敌方[攻击者]"
+ },
+ {
+  "id": "SNATCHER",
+  "name": "屠夫",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 埋葬 埋葬敌方 被埋葬 置顶 被置顶 置顶友方 通用",
+  "effect": "被置顶:置顶 1 张友方卡;被埋葬:埋葬 1 张敌方卡"
+ },
+ {
+  "id": "QUICK_RESPONSE_PROTOCOL",
+  "name": "快速响应协议",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "linger 通用 置顶 置顶友方",
+  "effect": "萦绕:每 4 张敌方卡揭晓:置顶 1 张友方卡"
+ },
+ {
+  "id": "V5_SLOW_EROSION",
+  "name": "慢性侵蚀",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕",
+  "effect": "萦绕:每回合开始:敌方受到 1 点伤害"
+ },
+ {
+  "id": "TACTICAL_BREACHER",
+  "name": "战术爆破手",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "通用 攻击者 力量 友方力量 置顶 被置顶",
+  "effect": "被置顶:获得 1 攻击力"
+ },
+ {
+  "id": "POWER_CRAVER",
+  "name": "攻击力渴求者",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "通用 攻击者 力量 友方力量",
+  "effect": "获得攻击力时:获得 2 倍攻击力"
+ },
+ {
+  "id": "POWER_TRANSFER",
+  "name": "攻击力转移",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "通用 力量 友方力量",
+  "effect": "去除 1 张敌方[攻击者](最高攻击力)1 攻击力:给予 1 张友方[攻击者](最低攻击力)1 攻击力"
+ },
+ {
+  "id": "DR_MANHATTAN",
+  "name": "曼哈顿博士",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "通用 力量 置顶 置顶友方 埋葬 埋葬敌方 消耗友方力量",
+  "effect": "消耗自身 2 攻击力:置顶 2 张友方[攻击者];埋葬 2 张敌方[攻击者]"
+ },
+ {
+  "id": "MIMIC",
+  "name": "模仿者",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "力量给予 复制",
+  "effect": "复制 1 张友方[攻击力给予]入己方牌库"
+ },
+ {
+  "id": "POWER_SURGE",
+  "name": "能量迸发",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 通用 力量 友方力量 置顶 被置顶",
+  "effect": "被置顶:给予 2 张友方卡 1 攻击力"
+ },
+ {
+  "id": "FLESH_COMBINATION",
+  "name": "血肉聚集体",
+  "rarity": "uncommon",
+  "attack": "0",
+  "tags": "通用",
+  "effect": "攻击力 = 友方卡牌数量（常态结算）"
+ },
+ {
+  "id": "ADVANCE_PORTAL",
+  "name": "高等传送门",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "置顶 置顶友方 通用",
+  "effect": "每揭晓 2 次:置顶 2 张友方[攻击者]"
+ },
+ {
+  "id": "UNDEAD_CURSER",
+  "name": "不死诅咒者",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "敌方[curse]加强 [curse] 被埋葬 埋葬",
+  "effect": "增强 2 敌方[负面];被埋葬:增强 1 敌方[负面]"
+ },
+ {
+  "id": "GRAVE_PORTAL",
+  "name": "冥界裂缝",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "置顶 置顶友方 埋葬 被埋葬 埋葬敌方",
+  "effect": "埋葬 1 张敌方卡;被埋葬:置顶 1 张友方卡"
+ },
+ {
+  "id": "GRAVE_TOGETHER",
+  "name": "同路人",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "埋葬 埋葬友方 埋葬敌方",
+  "effect": "埋葬 1 张友方卡;埋葬 2 张敌方卡"
+ },
+ {
+  "id": "GRAVE_FEEDER",
+  "name": "喂尸人",
+  "rarity": "common",
+  "attack": "1",
+  "tags": "攻击者 埋葬 亡语",
+  "effect": "埋葬 1 张友方[亡语];攻击"
+ },
+ {
+  "id": "GRAVE_PUNCH",
+  "name": "尸爆",
+  "rarity": "common",
+  "attack": "1",
+  "tags": "攻击者 埋葬 埋葬友方",
+  "effect": "埋葬 1 张友方卡;攻击 ×2"
+ },
+ {
+  "id": "DRAG_UNDER",
+  "name": "深埋",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "埋葬 亡语",
+  "effect": "埋葬 1 张友方[亡语]（最深）"
+ },
+ {
+  "id": "SOLDIER_SKELETON",
+  "name": "骷髅士兵",
+  "rarity": "common",
+  "attack": "1",
+  "tags": "攻击者 埋葬 被埋葬 置顶 置顶友方",
+  "effect": "被埋葬:置顶自身"
+ },
+ {
+  "id": "WISE_BURIAL",
+  "name": "不愚蠢的埋葬",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "埋葬 埋葬友方",
+  "effect": "揭晓时:埋葬 2 张友方[亡语]/[萦绕]"
+ },
+ {
+  "id": "BODY_CANON",
+  "name": "人间大炮",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 埋葬 埋葬友方",
+  "effect": "埋葬所有友方卡;墓地每有 1 张友方卡:攻击"
+ },
+ {
+  "id": "SLIME",
+  "name": "史莱姆",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 埋葬 被埋葬",
+  "effect": "被埋葬:添加自身到卡组中（不受卡位上限限制）"
+ },
+ {
+  "id": "V5_GRAVE_ECHO",
+  "name": "墓园共鸣",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 亡语",
+  "effect": "萦绕:每当友方[亡语]被埋葬:其亡语额外触发 1 次"
+ },
+ {
+  "id": "TOMBSTONE",
+  "name": "墓碑",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 萦绕 亡语",
+  "effect": "萦绕:每当友方[亡语]被埋葬:攻击"
+ },
+ {
+  "id": "LARGE_SCALE_DEATH",
+  "name": "大范围死亡",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "埋葬 埋葬友方 埋葬敌方",
+  "effect": "埋葬下 4 张卡（不分敌我）"
+ },
+ {
+  "id": "GRAVE_KEEPER",
+  "name": "守墓人",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 埋葬 被埋葬 置顶友方 置顶",
+  "effect": "每当友方被埋葬:置顶自身"
+ },
+ {
+  "id": "V5_CORPSE_TIDE",
+  "name": "尸潮",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "沉睡 萦绕 埋葬",
+  "effect": "【沉睡】直到本回合埋葬 3 张卡(不分敌我);唤醒时:埋葬下 5 张卡(不分敌我);萦绕:每当任意卡被埋葬:埋葬下 1 张卡(不分敌我)"
+ },
+ {
+  "id": "MARTYR",
+  "name": "殉道者",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "埋葬 被埋葬 力量 友方力量",
+  "effect": "被埋葬:所有友方卡 +1 攻击力"
+ },
+ {
+  "id": "BONE_FIELD",
+  "name": "白骨地",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 力量",
+  "effect": "萦绕:每当任意卡被埋葬:获得 1 攻击力"
+ },
+ {
+  "id": "BONE_COMBINATION",
+  "name": "碎骨聚集体",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 埋葬 通用",
+  "effect": "攻击 ×本回合被埋葬的敌方数量"
+ },
+ {
+  "id": "CURSED_CORPSE",
+  "name": "被诅咒的尸体",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 [curse] 敌方[curse]加强 被埋葬 埋葬",
+  "effect": "增强 1 张敌方[诅咒];被埋葬:攻击 ×3"
+ },
+ {
+  "id": "REBIRTH",
+  "name": "轮回",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "置顶 力量 亡语",
+  "effect": "置顶 1 张友方[亡语](最深);其获得 2 攻击力"
+ },
+ {
+  "id": "UNSTABLE_PORTAL",
+  "name": "不稳定传送门",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "置顶 置顶友方 埋葬 埋葬友方 通用",
+  "effect": "置顶 1 张友方卡;埋葬 1 张友方卡"
+ },
+ {
+  "id": "MASS_GRAVE",
+  "name": "乱葬坑",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "埋葬 埋葬友方 埋葬敌方",
+  "effect": "埋葬下 3 张卡（不分敌我）"
+ },
+ {
+  "id": "V5_DEATH_GRANT",
+  "name": "修碑人",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 亡语",
+  "effect": "给予 1 张友方[亡语]卡 [萦绕]:每当友方卡被埋葬:其亡语触发 1 次"
+ },
+ {
+  "id": "CORPSE_CANON",
+  "name": "冥界大炮",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 埋葬 埋葬友方",
+  "effect": "埋葬 1 张友方卡;每当友方被埋葬:攻击"
+ },
+ {
+  "id": "GRAVE_INVITATION",
+  "name": "冥界邀请",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 埋葬 埋葬敌方",
+  "effect": "墓地每有 1 张友方卡:埋葬 1 张敌方卡"
+ },
+ {
+  "id": "AVENGER",
+  "name": "复仇者",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 埋葬 被埋葬 友方力量 力量",
+  "effect": "被埋葬:获得 2 攻击力"
+ },
+ {
+  "id": "SMALL_SCALE_DEATH",
+  "name": "小范围死亡",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 埋葬 埋葬友方 埋葬敌方",
+  "effect": "埋葬后 2 卡"
+ },
+ {
+  "id": "V5_CORPSE_SLEEP",
+  "name": "尸眠",
+  "rarity": "uncommon",
+  "attack": "0",
+  "tags": "沉睡 攻击者",
+  "effect": "【沉睡】直到墓地有 3 张友方卡;唤醒时:攻击 ×2;攻击力 = 墓地友方卡数(常态结算)"
+ },
+ {
+  "id": "NECROMANCY",
+  "name": "招魂",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "置顶 萦绕",
+  "effect": "置顶 1 张友方[萦绕]（最深）"
+ },
+ {
+  "id": "V5_SOUL_BANNER",
+  "name": "招魂幡",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 亡语",
+  "effect": "萦绕:每回合开始:置顶 1 张友方[亡语](最深)"
+ },
+ {
+  "id": "V5_DEATH_CALL",
+  "name": "招魂者",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "亡语",
+  "effect": "触发 1 张友方[亡语]卡(最深)的亡语 1 次(不埋葬)"
+ },
+ {
+  "id": "SCAPEGOAT",
+  "name": "替死鬼",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 被埋葬 埋葬 置顶 置顶友方",
+  "effect": "被埋葬:攻击,置顶 1 张友方卡"
+ },
+ {
+  "id": "V5_BURIAL_GRANT",
+  "name": "殉葬师",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "埋葬 亡语",
+  "effect": "给予 1 张友方[埋葬]卡 [亡语]:被埋葬时:攻击"
+ },
+ {
+  "id": "SPIKE_SKELETON",
+  "name": "针刺骷髅",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "攻击者 被埋葬 埋葬",
+  "effect": "被埋葬:攻击 ×2"
+ },
+ {
+  "id": "CONFUSED_PORTALMANCER",
+  "name": "错乱传送术士",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "埋葬 埋葬友方 被埋葬 conjure 生成[conjure]",
+  "effect": "埋葬 1 张友方卡;被埋葬:生成 3 张[次元裂缝]"
+ },
+ {
+  "id": "HERALD",
+  "name": "传令官",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "置顶 攻击者",
+  "effect": "置顶 1 张友方[攻击者]（最高攻击）"
+ },
+ {
+  "id": "GRAVE_DIGGER",
+  "name": "掘墓人",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "埋葬",
+  "effect": "埋葬下 2 张敌方卡"
+ },
+ {
+  "id": "V5_HORN_LONG",
+  "name": "号角长鸣",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 置顶 攻击者",
+  "effect": "萦绕:每回合开始:置顶 1 张友方[攻击者](最高攻击力)"
+ },
+ {
+  "id": "V5_ECHO_GRANT",
+  "name": "回声",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 置顶 攻击者",
+  "effect": "给予 1 张友方[攻击者] [萦绕]:每当其被置顶:额外触发 1 次"
+ },
+ {
+  "id": "V5_THRONE_SCHEDULE",
+  "name": "王座调度",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "置顶 攻击者",
+  "effect": "将 1 张友方[攻击者](最高攻击力)移动到 Start Card 前"
+ },
+ {
+  "id": "POSITION_SWAP",
+  "name": "位置交换",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "交换 攻击者",
+  "effect": "交换 1 张友方[攻击者]与 1 张敌方[攻击者]的位置"
+ },
+ {
+  "id": "V5_ECHO_BACK",
+  "name": "回响者",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 置顶",
+  "effect": "萦绕:每当友方卡被置顶:置顶自身"
+ },
+ {
+  "id": "TIME_WARP",
+  "name": "时光倒流",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "延迟",
+  "effect": "延迟下 2 张敌方卡"
+ },
+ {
+  "id": "SOUL_SWAP",
+  "name": "灵魂交换",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "置顶 置顶友方",
+  "effect": "揭晓时:与下一张友方[亡语]交换位置（该卡置顶,自身移至其原位置）"
+ },
+ {
+  "id": "V5_THRONE_AURA",
+  "name": "王座光环",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "置顶 攻击者",
+  "effect": "Start Card 前 2 张友方[攻击者] +1 攻击力(永久)"
+ },
+ {
+  "id": "FALL_INTO_RIFT",
+  "name": "坠入裂缝",
+  "rarity": "common",
+  "attack": "—",
+  "tags": "conjure 生成[conjure] 埋葬 埋葬敌方",
+  "effect": "生成 1 张[次元裂缝];埋葬 1 张敌方卡"
+ },
+ {
+  "id": "RIFT_INSECT",
+  "name": "次元虫",
+  "rarity": "common",
+  "attack": "1",
+  "tags": "攻击者 conjure 生成[conjure]",
+  "effect": "生成 1 [次元裂缝]"
+ },
+ {
+  "id": "DEATHBED_CURSE",
+  "name": "临终诅咒",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "linger conjure [conjure]被消耗 [curse] 敌方[curse]加强",
+  "effect": "萦绕:每当友方被去除:增强 1 敌方[负面]"
+ },
+ {
+  "id": "RIFT_MONSTER",
+  "name": "次元兽",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 消耗[conjure] conjure",
+  "effect": "去除 1 张[次元裂缝]:攻击"
+ },
+ {
+  "id": "RIFT_DEVOURER",
+  "name": "次元吞噬者",
+  "rarity": "rare",
+  "attack": "1",
+  "tags": "攻击者 conjure [conjure]被消耗 力量 友方力量",
+  "effect": "当友方被去除时:获得 1 力量"
+ },
+ {
+  "id": "RIFT_COFFIN",
+  "name": "次元棺材",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "linger [conjure]被消耗 埋葬敌方 埋葬 conjure",
+  "effect": "萦绕:每当友方被去除:埋葬 1 张敌方卡"
+ },
+ {
+  "id": "SACRIFICE_RITUAL",
+  "name": "献祭仪式",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "埋葬友方 生成[conjure] 埋葬 conjure",
+  "effect": "埋葬 1 张友方卡;生成 2 张[次元裂缝]"
+ },
+ {
+  "id": "V5_RIFT_SCREAM",
+  "name": "裂隙尖啸",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "conjure 攻击者",
+  "effect": "所有友方[次元裂缝]获得「被置顶:随机敌方[攻击者] 攻击力 -1」(在其被去除前结算)"
+ },
+ {
+  "id": "RIFT_GUIDE",
+  "name": "次元引导者",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "conjure 消耗[conjure] 埋葬 埋葬敌方",
+  "effect": "去除 1 张友方[次元裂缝]:埋葬 2 张敌方[攻击者]"
+ },
+ {
+  "id": "RIFT_DRAGON",
+  "name": "次元龙",
+  "rarity": "uncommon",
+  "attack": "4",
+  "tags": "攻击者 消耗[conjure] conjure",
+  "effect": "生成 1 [次元裂缝];被置顶:生成 1 [次元裂缝]"
+ },
+ {
+  "id": "V5_RIFT_GENERATOR",
+  "name": "裂缝发生器",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 conjure",
+  "effect": "萦绕:每回合开始:生成 1 张[次元裂缝]"
+ },
+ {
+  "id": "RIFT_SUMMONER",
+  "name": "裂缝召唤师",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "conjure 置顶 置顶友方 消耗[conjure]",
+  "effect": "去除 1 张友方[次元裂缝]:置顶 2 张友方[攻击者]"
+ },
+ {
+  "id": "V5_RIFT_SLEEP",
+  "name": "裂缝沉眠",
+  "rarity": "uncommon",
+  "attack": "1",
+  "tags": "沉睡 攻击者 conjure",
+  "effect": "【沉睡】直到存在 3 张友方[次元裂缝];唤醒时:攻击;生成 2 张[次元裂缝]"
+ },
+ {
+  "id": "RIFT_THIEF",
+  "name": "裂隙窃贼",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "conjure 消耗[conjure] 生成[conjure]",
+  "effect": "生成 1 张[次元裂缝];萦绕:每当友方[次元裂缝]被去除:生成 1 张[次元裂缝]"
+ },
+ {
+  "id": "ETERNAL_SLEEPER",
+  "name": "亘古沉眠者",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "沉睡 攻击者 力量",
+  "effect": "【沉睡】直到拥有 10 攻击力 且 第 5 回合开始;唤醒时:所有友方[攻击者]获得「攻击 +1 次」(永久);攻击 ×2"
+ },
+ {
+  "id": "ANCIENT_WEAPON",
+  "name": "古代兵器",
+  "rarity": "rare",
+  "attack": "8",
+  "tags": "攻击者 沉睡",
+  "effect": "【沉睡】直到第 3 回合开始;揭晓时:攻击;获得 3 攻击力"
+ },
+ {
+  "id": "V5_CURSE_SLEEP",
+  "name": "咒蚀之眠",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "沉睡 攻击者 负面",
+  "effect": "【沉睡】直到敌方[负面]拥有 3 攻击力;唤醒时:攻击 ×2;攻击力 = 敌方[负面]最高攻击力(常态结算)"
+ },
+ {
+  "id": "GREAT_AWAKENING",
+  "name": "大觉醒",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "唤醒 力量",
+  "effect": "唤醒所有友方[沉睡];各获得 1 攻击力"
+ },
+ {
+  "id": "NIGHT_WATCHER",
+  "name": "守夜人",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 唤醒 力量",
+  "effect": "萦绕:每当友方[沉睡]被唤醒:获得 1 攻击力"
+ },
+ {
+  "id": "V5_LULLABY",
+  "name": "安眠曲",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "沉睡 攻击者",
+  "effect": "全体敌方[攻击者] [沉睡](直到其主人受到 3 次伤害)"
+ },
+ {
+  "id": "RIFT_EMBRYO",
+  "name": "次元胚胎",
+  "rarity": "rare",
+  "attack": "4",
+  "tags": "攻击者 conjure 生成[conjure]",
+  "effect": "【沉睡】直到存在 5 张友方[次元裂缝];揭晓时:生成 2 张[次元裂缝]"
+ },
+ {
+  "id": "SLEEPING_GIANT",
+  "name": "沉睡的巨像",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "沉睡 力量",
+  "effect": "【沉睡】直到拥有 5 攻击力;唤醒时:攻击 ×2;获得 3 攻击力"
+ },
+ {
+  "id": "V5_WAKE_THUNDER",
+  "name": "苏醒之雷",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 唤醒 攻击者",
+  "effect": "萦绕:每当友方[沉睡]被唤醒:其攻击 ×1(攻击力 = 其自身攻击力)"
+ },
+ {
+  "id": "CHARGING",
+  "name": "蓄势待发",
+  "rarity": "rare",
+  "attack": "0",
+  "tags": "沉睡 力量",
+  "effect": "【沉睡】直到第 2 回合开始;攻击力 = 当前回合数;攻击 ×2;获得 1 攻击力"
+ },
+ {
+  "id": "V5_DAWN_GUARD",
+  "name": "黎明守卫",
+  "rarity": "rare",
+  "attack": "—",
+  "tags": "萦绕 唤醒 沉睡",
+  "effect": "萦绕:每回合开始:唤醒 1 张友方[沉睡];若不存在:给予 1 张友方[攻击者] 2 攻击力"
+ },
+ {
+  "id": "WRAITH_COCOON",
+  "name": "亡魂之茧",
+  "rarity": "uncommon",
+  "attack": "6",
+  "tags": "攻击者 沉睡 埋葬",
+  "effect": "【沉睡】直到本回合埋葬 3 张友方卡;揭晓时:攻击"
+ },
+ {
+  "id": "HIBERNATION",
+  "name": "冬眠",
+  "rarity": "uncommon",
+  "attack": "0",
+  "tags": "沉睡 力量",
+  "effect": "【沉睡】直到第 3 回合开始;唤醒时:攻击 ×2;获得 2 攻击力"
+ },
+ {
+  "id": "NIGHTMARE",
+  "name": "噩梦",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "沉睡 攻击者",
+  "effect": "使 1 张敌方[攻击者]（最高攻击）[沉睡]（直到其主人受到 3 次伤害）"
+ },
+ {
+  "id": "SPRING_SLEEP",
+  "name": "春眠",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "沉睡 力量",
+  "effect": "【沉睡】直到第 2 回合开始;揭晓时:给予 1 张友方[攻击者] 2 攻击力"
+ },
+ {
+  "id": "WAKE_BELL",
+  "name": "晨钟",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "唤醒 力量",
+  "effect": "唤醒 1 张友方[沉睡];其获得 1 攻击力;若不存在:给予 1 张友方[攻击者] 1 攻击力"
+ },
+ {
+  "id": "PILLOW_TALK",
+  "name": "枕边低语",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "沉睡 力量",
+  "effect": "给予 1 张友方[沉睡] 2 攻击力;若不存在:给予自身 2 攻击力"
+ },
+ {
+  "id": "V5_SLEEP_TALK",
+  "name": "梦呓",
+  "rarity": "uncommon",
+  "attack": "—",
+  "tags": "萦绕 唤醒 攻击者",
+  "effect": "萦绕:每当友方[沉睡]被唤醒:置顶 1 张友方[攻击者](最高攻击力)"
+ },
+ {
+  "id": "SLEEPWALKER",
+  "name": "梦游者",
+  "rarity": "uncommon",
+  "attack": "2",
+  "tags": "攻击者 沉睡",
+  "effect": "【沉睡】直到本回合敌方受到 3 次伤害;揭晓时:攻击 ×2"
+ },
+ {
+  "id": "LIGHT_SLEEPER",
+  "name": "浅眠者",
+  "rarity": "uncommon",
+  "attack": "2",
+  "tags": "攻击者 沉睡",
+  "effect": "【沉睡】直到拥有 2 攻击力;揭晓时:攻击"
+ }
+]

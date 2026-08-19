@@ -1,0 +1,34 @@
+ALL_FOR_ONE            pool_atk=0    pool_effect=攻击力 = 所有友方卡攻击力总和(常态结算)
+ALMIGHTY               pool_atk=1    pool_effect=攻击;攻击力 = 墓地友方卡数 + 友方[次元裂缝]数 + 敌方[负面]攻击力总和(常态结算);若攻击力 ≥ 15:攻击 ×2;揭晓时:生成 1 [次元裂缝];增强 1 敌方[负面]
+AVENGER                pool_atk=1    pool_effect=被埋葬:获得 2 攻击力
+BLACKSMITH             pool_atk=1    pool_effect=给予 1 张友方卡 +1 攻击力(永久)
+BODY_CANON             pool_atk=1    pool_effect=埋葬所有友方卡;墓地每有 1 张友方卡:攻击
+BONE_COMBINATION       pool_atk=1    pool_effect=攻击 ×本回合被埋葬的敌方数量
+COFFIN_MAKER           pool_atk=1    pool_effect=埋葬 1 张敌方卡
+CORPSE_CANON           pool_atk=1    pool_effect=埋葬 1 张友方卡;每当友方被埋葬:攻击
+CURSED_CORPSE          pool_atk=1    pool_effect=增强 1 张敌方[诅咒];被埋葬:攻击 ×3
+CURSE_THIRST_BEAST     pool_atk=1    pool_effect=当敌方[诅咒]揭晓时:置顶自身
+ETERNAL_GHOST          pool_atk=1    pool_effect=萦绕:每当敌人受到伤害:攻击
+FLESH_COMBINATION      pool_atk=0    pool_effect=攻击力 = 友方卡牌数量（常态结算）
+GOBLIN_ASSASSIN_TEAM   pool_atk=1    pool_effect=被置顶:埋葬 1 张敌方卡
+GOBLIN_CHARGE_TEAM     pool_atk=1    pool_effect=被置顶:攻击
+GRAVE_INVITATION       pool_atk=1    pool_effect=墓地每有 1 张友方卡:埋葬 1 张敌方卡
+GRAVE_KEEPER           pool_atk=1    pool_effect=每当友方被埋葬:置顶自身
+GRAVE_PUNCH            pool_atk=1    pool_effect=埋葬 1 张友方卡;攻击 ×2
+POISONER               pool_atk=1    pool_effect=增强 1 张敌方[诅咒]
+POWER_CRAVER           pool_atk=1    pool_effect=获得攻击力时:获得 2 倍攻击力
+POWER_SIPHONER         pool_atk=1    pool_effect=转移所有友方 1 攻击力到自身;攻击 ×2
+POWER_SURGE            pool_atk=1    pool_effect=被置顶:给予 2 张友方卡 1 攻击力
+RIFT_DEVOURER          pool_atk=1    pool_effect=当友方被去除时:获得 1 力量
+RIFT_DRAGON            pool_atk=4    pool_effect=生成 1 [次元裂缝];被置顶:生成 1 [次元裂缝]
+RIFT_INSECT            pool_atk=1    pool_effect=生成 1 [次元裂缝]
+RIFT_MONSTER           pool_atk=1    pool_effect=去除 1 张[次元裂缝]:攻击
+SCAPEGOAT              pool_atk=1    pool_effect=被埋葬:攻击,置顶 1 张友方卡
+SLIME                  pool_atk=1    pool_effect=被埋葬:添加自身到卡组中（不受卡位上限限制）
+SMALL_SCALE_DEATH      pool_atk=1    pool_effect=埋葬后 2 卡
+SNATCHER               pool_atk=1    pool_effect=被置顶:置顶 1 张友方卡;被埋葬:埋葬 1 张敌方卡
+SOLDIER_SKELETON       pool_atk=1    pool_effect=被埋葬:置顶自身
+SPIKE_SKELETON         pool_atk=1    pool_effect=被埋葬:攻击 ×2
+TACTICAL_BREACHER      pool_atk=1    pool_effect=被置顶:获得 1 攻击力
+THE_FOOL               pool_atk=4    pool_effect=置顶攻击力最多的敌方卡
+UNFINISHED_ROBOT       pool_atk=1    pool_effect=翻倍自身攻击力

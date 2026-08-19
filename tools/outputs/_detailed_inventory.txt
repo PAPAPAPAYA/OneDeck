@@ -1,0 +1,289 @@
+====================================================================================================
+GRAVE_PUNCH | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\Bury\0_Common\GRAVE_PUNCH.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9,\u9020\u6210 <b><dmg></b>
+    \u4F24\u5BB3 x <b>2</b>
+  classes: BuryEffect., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHpTimesX(2)
+  bind: BuryEffect.BuryMyCards(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+CORPSE_CANON | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\Bury\1_Uncommon\CORPSE_CANON.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u57CB\u846C 1 \u53CB\u65B9;\n\u53CB\u65B9\u88AB\u57CB\u846C:\u9020\u6210
+    <b><dmg></b> \u4F24\u5BB3
+  classes: BuryEffect., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: BuryEffect.BuryMyCards(1)
+====================================================================================================
+GRAVE_INVITATION | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\Bury\1_Uncommon\GRAVE_INVITATION.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u5893\u5730\u6BCF\u6709
+    <b>1</b> \u53CB\u65B9:\u57CB\u846C <b>1</b> \u654C\u65B9
+  classes: BuryEffect., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(2)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+BODY_CANON | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\Bury\2_Rare\BODY_CANON.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u57CB\u846C\u6240\u6709\u53CB\u65B9,\u5893\u5730\u6BCF\u6709\u4E00\u4E2A\u53CB\u65B9:\u9020\u6210
+    <b>1</b> \u6B21 <b><dmg></b> \u4F24\u5BB3
+  classes: BuryEffect., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHpTimes_BasedOnIntSO(0)
+  bind: BuryEffect.BuryAllMyCards(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+SOLDIER_SKELETON | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\DeathRattle\0_Common\SOLDIER_SKELETON.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u88AB\u57CB\u846C:\u7F6E\u9876\u81EA\u8EAB
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StageEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: StageEffect.StageSelf(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+AVENGER | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\DeathRattle\1_Uncommon\AVENGER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u88AB\u57CB\u846C:\u83B7\u5F97
+    <b>2</b> \u529B\u91CF
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StatusEffectGiverEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+CURSED_CORPSE | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\DeathRattle\1_Uncommon\CURSED_CORPSE.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u589E\u5F3A <b>1</b> \u654C\u65B9[\u8BC5\u5492];\u88AB\u57CB\u846C:\u9020\u6210
+    <b><dmg></b> x <b>3</b> \u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., CurseEffect., GameEventListener., HPAlterEffect.
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: HPAlterEffect.DecreaseTheirHpTimesX(3)
+  bind: DefaultNamespace.Effects.CurseEffect.EnhanceCurse(1)
+====================================================================================================
+SCAPEGOAT | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\DeathRattle\1_Uncommon\SCAPEGOAT.prefab | printedAttack=None
+  desc: \u88AB\u57CB\u846C:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7F6E\u9876
+    1 \u53CB\u65B9
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StageEffect.
+  bind: StageEffect.StageMyCards(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: HPAlterEffect.DecreaseTheirHp(1)
+====================================================================================================
+SPIKE_SKELETON | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\DeathRattle\1_Uncommon\SPIKE_SKELETON.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u88AB\u57CB\u846C:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3 x <b>2</b>
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: HPAlterEffect.DecreaseTheirHpTimesX(2)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+GRAVE_KEEPER | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\DeathRattle\2_Rare\GRAVE_KEEPER.prefab | printedAttack=None
+  desc: \u53CB\u65B9\u88AB\u57CB\u846C\u65F6:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u9020\u6210
+    <b><dmg></b> \u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StageEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: StageEffect.StageSelf(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+SLIME | Assets/Prefabs/Cards/3.0 no cost (current)\Bury and buried\DeathRattle\2_Rare\SLIME.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\n\u88AB\u57CB\u846C:\u6DFB\u52A0\u81EA\u8EAB\u5230\u5361\u7EC4\u4E2D
+  classes: AddTempCard., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: DefaultNamespace.Effects.AddTempCard.AddSelfToMe(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+RIFT_INSECT | Assets/Prefabs/Cards/3.0 no cost (current)\Conjure\0_Common\RIFT_INSECT.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u751F\u6210 <b>1</b>
+    [\u6B21\u5143\u88C2\u7F1D]
+  classes: AddTempCard., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+RIFT_DRAGON | Assets/Prefabs/Cards/3.0 no cost (current)\Conjure\1_Uncommon\RIFT_DRAGON.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D],\u9020\u6210
+    <b>4</b> \u4F24\u5BB3;\n\u88AB\u7F6E\u9876:\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]
+  classes: AddTempCard., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+RIFT_MONSTER | Assets/Prefabs/Cards/3.0 no cost (current)\Conjure\1_Uncommon\RIFT_MONSTER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6,\u53BB\u9664 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]:\u9020\u6210
+    <b><dmg></b> \u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., ExileEffect., GameEventListener., HPAlterEffect.
+  bind: CostNEffectContainer.CheckCost_HasOwnCardOfType(1)
+  bind: ExileEffect.ExileMyCardsWithTypeID(1)
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+RIFT_DEVOURER | Assets/Prefabs/Cards/3.0 no cost (current)\Conjure\2_Rare\RIFT_DEVOURER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u5F53\u53CB\u65B9\u88AB\u53BB\u9664\u65F6:\u83B7\u5F97
+    <b>1</b> \u529B\u91CF
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StatusEffectGiverEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+POISONER | Assets/Prefabs/Cards/3.0 no cost (current)\Curse\0_Common\POISONER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u589E\u5F3A <b>1</b> \u654C\u65B9[\u8BC5\u5492],\u9020\u6210
+    <b><dmg></b> \u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., CurseEffect., GameEventListener., HPAlterEffect.
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: DefaultNamespace.Effects.CurseEffect.EnhanceCurse(1)
+====================================================================================================
+CURSE_THIRST_BEAST | Assets/Prefabs/Cards/3.0 no cost (current)\Curse\1_Uncommon\CURSE_THIRST_BEAST.prefab | printedAttack=None
+  desc: \u5F53\u654C\u65B9[\u8BC5\u5492]\u63ED\u6653\u65F6:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u9020\u6210
+    <b><dmg></b> \u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StageEffect.
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: StageEffect.StageSelf(1)
+====================================================================================================
+SMALL_SCALE_DEATH | Assets/Prefabs/Cards/3.0 no cost (current)\Curse\1_Uncommon\SMALL_SCALE_DEATH.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u57CB\u846C\u540E <b>2</b> \u5361,\u9020\u6210 <b><dmg></b>
+    \u4F24\u5BB3
+  classes: BuryEffect., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: BuryEffect.BuryNextXCards(2)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+BLACKSMITH | Assets/Prefabs/Cards/3.0 no cost (current)\General\0_Common\BLACKSMITH.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7ED9\u4E88\u4E00\u4E2A\u53CB\u65B9
+    <b>1</b> \u529B\u91CF
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StatusEffectGiverEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+COFFIN_MAKER | Assets/Prefabs/Cards/3.0 no cost (current)\General\0_Common\COFFIN_MAKER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u57CB\u846C
+    <b>1</b> \u654C\u65B9
+  classes: BuryEffect., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: BuryEffect.BuryTheirCards(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+THE_FOOL | Assets/Prefabs/Cards/3.0 no cost (current)\General\0_Common\THE_FOOL.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u7F6E\u9876\u529B\u91CF\u6700\u591A\u7684\u654C\u65B9,\u9020\u6210
+    <b>4</b> \u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StageEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: StageEffect.StageCardWithMostStatusEffect(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+ALL_FOR_ONE | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\ALL_FOR_ONE.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210\u6240\u6709\u5361\u7684\u529B\u91CF\u6570\u91CF\u7684\u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp_BasedOnIntSO(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+BONE_COMBINATION | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\BONE_COMBINATION.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3 x \u672C\u56DE\u5408\u88AB\u57CB\u846C\u7684\u654C\u65B9\u6570\u91CF
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHpTimes_BasedOnOpponentBuriedCount(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+FLESH_COMBINATION | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\FLESH_COMBINATION.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210\u53CB\u65B9\u6570\u91CF\u7684\u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp_BasedOnFriendlyCardCountInDeck(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+GOBLIN_ASSASSIN_TEAM | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\GOBLIN_ASSASSIN_TEAM.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u88AB\u7F6E\u9876:\u57CB\u846C
+    <b>1</b> \u654C\u65B9
+  classes: BuryEffect., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: BuryEffect.BuryTheirCards(1)
+  bind: HPAlterEffect.DecreaseTheirHp(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+GOBLIN_CHARGE_TEAM | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\GOBLIN_CHARGE_TEAM.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\n\u88AB\u7F6E\u9876:\u9020\u6210
+    <b><dmg:staged></b> \u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(2)
+  bind: HPAlterEffect.DecreaseTheirHp(2)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+POWER_CRAVER | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\POWER_CRAVER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u83B7\u5F97\u529B\u91CF\u65F6:\u83B7\u5F97
+    <b>2</b> \u500D\u529B\u91CF
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StatusEffectAmplifierEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+POWER_SURGE | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\POWER_SURGE.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\n\u88AB\u7F6E\u9876:\u7ED9\u4E88
+    <b>2</b> \u53CB\u65B9 <b>1</b> \u529B\u91CF
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StatusEffectGiverEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+SNATCHER | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\SNATCHER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u88AB\u7F6E\u9876:\u7F6E\u9876
+    <b>1</b> \u53CB\u65B9;\u88AB\u57CB\u846C:\u57CB\u846C <b>1</b> \u654C\u65B9
+  classes: BuryEffect., CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StageEffect.
+  bind: StageEffect.StageMyCards(1)
+  bind: BuryEffect.BuryTheirCards(1)
+  bind: HPAlterEffect.DecreaseTheirHp(2)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+TACTICAL_BREACHER | Assets/Prefabs/Cards/3.0 no cost (current)\General\1_Uncommon\TACTICAL_BREACHER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3;\u88AB\u7F6E\u9876:\u83B7\u5F97
+    <b>1</b> \u529B\u91CF
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StatusEffectGiverEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+ALMIGHTY | Assets/Prefabs/Cards/3.0 no cost (current)\General\2_Rare\ALMIGHTY.prefab | printedAttack=None
+  desc: \u63ED\u6653 <b>2<counter></b> \u6B21:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7F6E\u9876
+    <b>1</b> \u53CB\u65B9,\u57CB\u846C <b>1</b> \u654C\u65B9,\u7ED9\u4E88 <b>1</b>
+    \u53CB\u65B9\u529B\u91CF,\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D],\u589E\u5F3A
+    <b>1</b> \u654C\u65B9[\u8BC5\u5492]
+  classes: AddTempCard., BuryEffect., CardScript., ConsumeStatusEffect., CostNEffectContainer., CurseEffect., GameEventListener., HPAlterEffect., StageEffect., StatusEffectGiverEffect.
+  bind: CostNEffectContainer.CheckCost_Counter(2)
+  bind: DefaultNamespace.Effects.ConsumeStatusEffect.ConsumeOwnStatusEffect(2)
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: StageEffect.StageMyCards(1)
+  bind: BuryEffect.BuryTheirCards(1)
+  bind: DefaultNamespace.Effects.CurseEffect.EnhanceCurse(1)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+ETERNAL_GHOST | Assets/Prefabs/Cards/3.0 no cost (current)\General\2_Rare\ETERNAL_GHOST.prefab | printedAttack=None
+  desc: <tag:Linger>;\n\u5F53\u654C\u4EBA\u53D7\u5230\u4F24\u5BB3\u65F6:\u9020\u6210
+    <b><dmg></b> \u4F24\u5BB3
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect.
+  bind: CostNEffectContainer.CheckCost_IndexBeforeStartCard(0)
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+POWER_SIPHONER | Assets/Prefabs/Cards/3.0 no cost (current)\General\2_Rare\POWER_SIPHONER.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u8F6C\u79FB\u6240\u6709\u53CB\u65B9\u7684 <b>1</b>
+    \u529B\u91CF\u5230\u81EA\u8EAB,\u9020\u6210 <b><dmg></b> \u4F24\u5BB3 x <b>2</b>
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., TransferStatusEffectEffect.
+  bind: HPAlterEffect.DecreaseTheirHpTimesX(2)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+====================================================================================================
+UNFINISHED_ROBOT | Assets/Prefabs/Cards/3.0 no cost (current)\General\2_Rare\UNFINISHED_ROBOT.prefab | printedAttack=None
+  desc: \u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3,\u7FFB\u500D\u81EA\u8EAB\u529B\u91CF
+  classes: CardScript., CostNEffectContainer., GameEventListener., HPAlterEffect., StatusEffectGiverEffect.
+  bind: HPAlterEffect.DecreaseTheirHp(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
+  bind: CostNEffectContainer.InvokeEffectEventVoid(0)
