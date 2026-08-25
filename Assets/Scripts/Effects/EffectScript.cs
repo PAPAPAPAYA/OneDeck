@@ -102,6 +102,16 @@ public class EffectScript : MonoBehaviour
 				GameEventStorage.me?.onFriendlyCardGotPower?.RaiseOpponent();
 				GameEventStorage.me?.onEnemyCardGotPower?.RaiseOwner();
 			}
+
+			// Transitional invariant (attack-attribute phases 2/3): a card must never hold
+			// both Power layers and the attack attribute — AttackEffect does not count Power
+			// layers (ComputeTotalDamage bypasses DmgCalculator), so a mixed card silently
+			// loses damage. Flag any violation; the mix-use prefab audit test backs this up.
+			if (targetCardScript.HasAttackDisplay)
+			{
+				TestManager.LogError("[AttackAttribute] Card '" + targetCardScript.gameObject.name +
+					"' gained Power while having the attack attribute (mixed Power + attack); Power layers will not contribute damage.");
+			}
 		}
 
 		// Snapshot display state before mutating so card text updates are deferred until animation completes

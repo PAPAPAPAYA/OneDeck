@@ -55,7 +55,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1359544507321340075}
         m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHpTimes_BasedOnIntSO
+        m_MethodName: AttackTimesBasedOnIntSO
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -81,7 +81,7 @@ MonoBehaviour:
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
-  extraDmg: -1
+  extraDmg: 0
   statusEffectToCheck: 0
   ownerIntSO: {fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}
   enemyIntSO: {fileID: 11400000, guid: 6a71e8c2b741fd84abafa02a92d21951, type: 2}

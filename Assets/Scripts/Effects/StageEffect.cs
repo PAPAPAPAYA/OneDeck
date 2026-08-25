@@ -319,6 +319,42 @@ public class StageEffect : EffectScript
 		StageChosenCards(topCards, 1);
 	}
 
+	/// <summary>
+	/// Stage 1 card with the highest current attack (位置谓词 "(最高攻击力)",
+	/// THE_FOOL "置顶攻击力最多的敌方卡").
+	/// The candidate pool is controlled by <see cref="targetFriendly"/>: when
+	/// <see cref="targetFriendly"/> is true, only friendly cards (cards sharing this
+	/// card's owner) are considered. Ties are broken randomly.
+	/// </summary>
+	public void StageCardWithMaxAttack()
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		var eligibleCards = new List<GameObject>();
+		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, eligibleCards, true);
+
+		// Filter: matching owner per targetFriendly, not at top, not Minion, don't skip effect processing
+		for (int i = eligibleCards.Count - 1; i >= 0; i--)
+		{
+			var card = eligibleCards[i];
+			var cardScript = card.GetComponent<CardScript>();
+			bool isFriendly = cardScript.myStatusRef == myCardScript.myStatusRef;
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    isFriendly != targetFriendly ||
+			    IsCardAtTop(card) ||
+			    cardScript.isMinion ||
+			    (excludeSelf && card == myCard))
+			{
+				eligibleCards.RemoveAt(i);
+			}
+		}
+
+		if (eligibleCards.Count == 0) return;
+
+		var topCard = CardScript.FindCardWithMaxAttack(eligibleCards, null, null);
+		if (topCard == null) return;
+		StageChosenCards(new List<GameObject> { topCard.gameObject }, 1);
+	}
+
 	private void StageChosenCards(List<GameObject> cardsToStage, int amount)
 	{
 		amount = Mathf.Clamp(amount, 0, cardsToStage.Count);

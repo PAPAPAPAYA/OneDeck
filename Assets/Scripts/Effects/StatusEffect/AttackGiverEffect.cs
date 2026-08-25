@@ -101,6 +101,31 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
+		/// Give permanent attack to the friendly card with the lowest attack
+		/// (POWER_TRANSFER "给予 1 张友方[攻击者](最低攻击力)1 攻击力").
+		/// Only friendly cards with positive attack are eligible; ties are broken randomly.
+		/// </summary>
+		public virtual void GiveFriendlyCardWithMinAttack(int amount)
+		{
+			if (amount <= 0) return;
+
+			var target = CardScript.FindCardWithMinAttack(
+				combatManager.combinedDeckZone,
+				combatManager.revealZone,
+				c => !ShouldSkipCard(c) &&
+				     MatchesTargetFilter(c, this.target) &&
+				     PassesDamageFilter(c) &&
+				     c.myStatusRef == myCardScript.myStatusRef &&
+				     c.GetAttack() > 0 &&
+				     (includeSelf || c != myCardScript));
+			if (target == null) return;
+
+			ApplyAttackCore(target, amount, statusEffectParticlePrefab, particleYOffset);
+			CaptureBatchStatusEffectAnimation(new List<CardScript> { target }, amount);
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+		}
+
+		/// <summary>
 		/// Give permanent attack to the last X cards in the combined deck (MAD_SCIENTIST,
 		/// CURSE_THIRST_ARCH_SUMMONER). Reads lastXCardsCount / statusEffectLayerCount.
 		/// </summary>

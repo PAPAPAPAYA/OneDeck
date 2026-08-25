@@ -190,6 +190,8 @@ public class CombatManager : MonoBehaviour
 	public CardScript lastCardGainedAttack;
 	[Tooltip("Amount of attack gained by lastCardGainedAttack in the most recent gain (for amplify reactions)")]
 	public int lastAttackGainedAmount;
+	[Tooltip("Tracks the last card that performed an attack action (set once per action, not per segment; self-attacks included)")]
+	public CardScript lastCardAttacked;
 
 	[Header("SHUFFLE EVENT TIMING")]
 	[Tooltip("Delay afterShuffle event until the first card is revealed after shuffle")]
@@ -477,6 +479,71 @@ public class CombatManager : MonoBehaviour
 		}
 		return null;
 	}
+
+	#region Throne Zone (Start Card 前 N 张)
+
+	/// <summary>
+	/// Index of the Start Card in combinedDeckZone (-1 when absent). The throne zone is the
+	/// N cards directly above it: indices startCardIndex+1 .. startCardIndex+N — the deck
+	/// tail revealed last, the late-game scheduling zone (王座区).
+	/// </summary>
+	public int GetStartCardIndex()
+	{
+		var startCard = FindStartCardInstance();
+		if (startCard == null) return -1;
+		return combinedDeckZone.IndexOf(startCard);
+	}
+
+	/// <summary>
+	/// The N cards in the throne zone (Start Card 前 N 张), in deck order (index ascending).
+	/// Returns fewer than N when the zone is short (start card absent -> empty).
+	/// </summary>
+	public List<GameObject> GetThroneZoneCards(int count)
+	{
+		var result = new List<GameObject>();
+		int startCardIndex = GetStartCardIndex();
+		if (startCardIndex < 0 || count <= 0) return result;
+		for (int i = startCardIndex + 1; i < combinedDeckZone.Count && result.Count < count; i++)
+		{
+			result.Add(combinedDeckZone[i]);
+		}
+		return result;
+	}
+
+	/// <summary>
+	/// Whether a card is currently in the throne zone (Start Card 前 N 张).
+	/// </summary>
+	public bool IsCardInThroneZone(GameObject card, int count)
+	{
+		if (card == null) return false;
+		return GetThroneZoneCards(count).Contains(card);
+	}
+
+	/// <summary>
+	/// Move a card into the throne zone: insert it directly above the Start Card
+	/// (index startCardIndex + 1). No-op when the card is already in place or the
+	/// Start Card is absent. Logical move only — animation is the caller's concern.
+	/// </summary>
+	public void MoveCardToThroneZone(GameObject card)
+	{
+		if (card == null) return;
+		int startCardIndex = GetStartCardIndex();
+		if (startCardIndex < 0) return;
+
+		int insertIndex = startCardIndex + 1;
+		int currentIndex = combinedDeckZone.IndexOf(card);
+		if (currentIndex == insertIndex) return; // already in place
+
+		combinedDeckZone.Remove(card);
+		// Removal shifts the insert position down by 1 when the card sat below it.
+		if (currentIndex >= 0 && currentIndex < insertIndex)
+		{
+			insertIndex--;
+		}
+		combinedDeckZone.Insert(Mathf.Clamp(insertIndex, 0, combinedDeckZone.Count), card);
+	}
+
+	#endregion
 
 	public int GetEffectiveDeckSize()
 	{

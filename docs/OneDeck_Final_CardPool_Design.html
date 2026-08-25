@@ -65,11 +65,11 @@
 <body>
 
 <h1>OneDeck 最终卡池设计总案(含平衡性与可行性分析)</h1>
-<div class="sub">2026-08-17 · 整合 v4(117 张)+ v5 迭代(23 新卡、6 重做、2 合并、稀有度重排)+ 本轮平衡修正(5 项)· 前置文档:docs/CardPoolV4_Design_CoreFormula.html / docs/CardPoolV5_Design.html / docs/StS2_DesignSynthesis_ForOneDeck.html / docs/OneDeck_V4_CardPoolAnalysis.html · 总量 <b>149</b>,稀有度 C/U/R = <b>22 / 69 / 58</b>(14.8% / 46.3% / 38.9%)</div>
+<div class="sub">2026-08-17 · 整合 v4(117 张)+ v5 迭代(23 新卡、6 重做、2 合并、稀有度重排)+ 本轮平衡修正(5 项)· 前置文档:docs/CardPoolV4_Design_CoreFormula.html / docs/CardPoolV5_Design.html / docs/StS2_DesignSynthesis_ForOneDeck.html / docs/OneDeck_V4_CardPoolAnalysis.html · 总量 <b>147</b>,稀有度 C/U/R = <b>22 / 68 / 57</b>(15.0% / 46.3% / 38.8%) · 易伤剔除(弱点标注/弱点解析,149→147)</div>
 
 <div class="kpis">
-	<div class="kpi"><div class="num">149</div><div class="lbl">最终卡池总量(117 − 2 合并 + 34 新增)</div></div>
-	<div class="kpi"><div class="num">22/69/58</div><div class="lbl">稀有度 C / U / R(14.8% / 46.3% / 38.9%)—— R 从 26 增至 58</div></div>
+	<div class="kpi"><div class="num">147</div><div class="lbl">最终卡池总量(117 − 2 合并 + 34 新增 − 2 易伤剔除)</div></div>
+	<div class="kpi"><div class="num">22/68/57</div><div class="lbl">稀有度 C / U / R(15.0% / 46.3% / 38.8%)—— R 从 26 增至 57</div></div>
 	<div class="kpi"><div class="num">5</div><div class="lbl">本轮平衡修正(集结号 / 战训教官 / 战争之誓上移、虚弱诅咒临时化、战旗重做)</div></div>
 	<div class="kpi"><div class="num">1</div><div class="lbl">可行性否决:战旗「攻击全体化」在 1v1 模型下不存在 → 重做</div></div>
 	<div class="kpi"><div class="num">B</div><div class="lbl">本文档 Part B = 平衡性与可行性分析(含档位基准线,供后续加卡使用)</div></div>
@@ -84,7 +84,7 @@
 		<tbody>
 			<tr><td><b>战斗模型</b></td><td>1v1 玩家 HP 对决:双 deck 合并洗牌,一卡一卡揭晓;攻击伤害结算到敌方玩家 HP;<b>卡无生命值</b>(不能被伤害,只能被 埋葬 / 置顶 / 沉睡 / 降攻 / 去除);<b>无多目标</b> —— 「全体敌人受到伤害」语义不存在</td></tr>
 			<tr><td><b>三个动作</b></td><td>揭晓(结算效果)→ 进墓地;置顶(插队提前揭晓,触发「被置顶」事件);埋葬(送进墓地 = 控制 + 计数 + 触发「被埋葬」事件)</td></tr>
-			<tr><td><b>数值经济</b></td><td>唯一数值 = <b>攻击力</b>(卡面基础 + 永久成长);攻击 = 攻击力 × 段数;易伤 = 敌方每段受到的攻击伤害 +1;攻击 +N 次 = 第一乘区授予</td></tr>
+			<tr><td><b>数值经济</b></td><td>唯一数值 = <b>攻击力</b>(卡面基础 + 永久成长);攻击 = 攻击力 × 段数;攻击 +N 次 = 第一乘区授予</td></tr>
 			<tr><td><b>沉睡(离场待机)</b></td><td>沉睡中的卡<b>离开牌库进入【沉睡区】</b>(独立区域:不占用揭晓顺序、不计入墓地、不触发亡语)—— 类似一直被埋葬,<b>不会堆积在 Start Card 前</b>;牌库中的沉睡卡到达揭晓位时自动移入沉睡区,不消耗本次揭晓;唤醒条件满足时(每回合开始检查)回到牌库准备位(下次揭晓结算);[沉睡]tag 定向效果(枕边低语 / 晨钟 / 大觉醒 / 守夜人 / 梦呓 / 安眠)可指定沉睡区卡;因不在牌库,天然免疫置顶与埋葬(王座区 / 乱葬坑不会触及);敌方卡同样可被沉睡(唤醒条件如「主人受到 3 次伤害」)</td></tr>
 			<tr><td><b>王座区</b></td><td>「Start Card 前 N 张」位置谓词 —— 牌库最尾段(最晚揭晓),后期大怪调度区</td></tr>
 			<tr><td><b>结构规则</b></td><td>12 卡位上限(仅商店);combat 生成卡不受限;疲劳(总揭晓数)节流;链系统(同卡同效果一链一次 + 深度 99)防无限;Start Card always bottom</td></tr>
@@ -101,7 +101,6 @@
 			<tr><td class="mono">攻击力 = Y</td><td>结算时攻击力实时取 Y(常态结算;可读敌方侧状态)</td></tr>
 			<tr><td class="mono">+N 攻击力</td><td>卡面攻击力永久 +N(可叠加)—— 原「力量」「攻击力成长」合并</td></tr>
 			<tr><td class="mono">增强</td><td>敌方[负面]/[诅咒] 攻击力 +1(不存在时自动生成 JU_ON)</td></tr>
-			<tr><td class="mono">易伤</td><td>敌方每段受到的攻击伤害 +1(可叠加,永久)</td></tr>
 			<tr><td class="mono">沉睡 / 唤醒</td><td>见 A1 规则</td></tr>
 			<tr><td class="mono">亡语</td><td>被埋葬时触发(可被「直接触发」—— 招魂者)</td></tr>
 			<tr><td class="mono">萦绕</td><td>常驻事件触发器(每当 X:收益)</td></tr>
@@ -110,18 +109,17 @@
 	</table>
 </div>
 
-<h3>A2. 全卡表(149 张)</h3>
+<h3>A2. 全卡表(147 张)</h3>
 <div class="card">
 	<p class="lead">状态徽章:<span class="badge b-gen">库内</span> = Notion 原文案 · <span class="badge b-cyan">转写</span> = 旧文案统一转写 · <span class="badge b-bad">v4新增</span> = v4 新卡 · <span class="badge b-red">v5新增</span> = v5 新卡 · <span class="badge b-warn">v5重做</span> = v5 重做(推进器 / 全能人 / 裂隙窃贼 / 冬眠 / 沉睡的巨像 / 亘古沉眠者)· <span class="badge b-purple">v5修正</span> = 本轮平衡修正(集结号 / 战训教官 / 战争之誓上移 U、虚弱诅咒临时化、战旗重做、裂缝召唤师目标限定)。</p>
 	<table>
 		<thead><tr><th style="width:16%">cardTypeID</th><th style="width:9%">名称</th><th style="width:8%">稀有度</th><th style="width:5%">攻击力</th><th style="width:18%">Tag</th><th>效果</th><th style="width:10%">状态</th></tr></thead>
 		<tbody>
-<tr class="arch-head"><td colspan="7">攻击武备（17 张）</td></tr>
+<tr class="arch-head"><td colspan="7">攻击武备（15 张）</td></tr>
 <tr><td class="mono id">V5_WEAKNESS_CURSE</td><td>虚弱诅咒</td><td><span class="r-tag r-common">common</span></td><td class="mono">—</td><td class="tagcell">负面 攻击者</td><td class="desc">敌方[攻击者](最高攻击力) 本回合 攻击力 -2</td><td><span class="badge b-red">v5新增</span></td></tr>
 <tr><td class="mono id">ARSENAL</td><td>军火库</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">力量 埋葬 攻击者</td><td class="desc">给予所有友方[攻击者] +2 攻击力;埋葬 1 张友方卡</td><td><span class="badge b-bad">v4新增</span></td></tr>
 <tr><td class="mono id">BLOODLUST</td><td>嗜血</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">攻击次数 攻击者 埋葬</td><td class="desc">给予所有友方[攻击者] 攻击 +1 次;埋葬 1 张友方卡</td><td><span class="badge b-bad">v4新增</span></td></tr>
 <tr><td class="mono id">V5_SILENCE</td><td>寂静术</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">攻击者 负面</td><td class="desc">全体敌方[攻击者] 攻击力 -2;若敌方存在[负面]:额外 -1</td><td><span class="badge b-red">v5新增</span></td></tr>
-<tr><td class="mono id">V5_WEAKNESS_ANALYZE</td><td>弱点解析</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">萦绕 易伤</td><td class="desc">萦绕:每回合开始:敌方受到的攻击伤害 +1(易伤)</td><td><span class="badge b-red">v5新增</span></td></tr>
 <tr><td class="mono id">WAR_HERO</td><td>战争英雄</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">0</td><td class="tagcell">攻击者 伤害</td><td class="desc">攻击力 = 友方[攻击者]总攻击力(常态结算);攻击;若总攻击力 ≥ 8:获得 3 攻击力</td><td><span class="badge b-bad">v4新增</span></td></tr>
 <tr><td class="mono id">V5_WAR_BANNER</td><td>战旗</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">—</td><td class="tagcell">萦绕 攻击者</td><td class="desc">萦绕:友方[攻击者]攻击时:随机敌方[攻击者] 攻击力 -1</td><td><span class="badge b-red">v5新增</span></td></tr>
 <tr><td class="mono id">V5_ARMS_SLEEP</td><td>武备沉眠</td><td><span class="r-tag r-rare">rare</span></td><td class="mono">0</td><td class="tagcell">沉睡 攻击者</td><td class="desc">【沉睡】直到友方[攻击者]攻击力总和 ≥ 10;唤醒时:攻击 ×2;给予所有友方[攻击者] +1 攻击力(永久)</td><td><span class="badge b-red">v5新增</span></td></tr>
@@ -129,7 +127,6 @@
 <tr><td class="mono id">V5_WAR_HORN</td><td>军号</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">萦绕 攻击者</td><td class="desc">萦绕:每回合开始:给予 1 张友方[攻击者](最低攻击力) 1 攻击力</td><td><span class="badge b-red">v5新增</span></td></tr>
 <tr><td class="mono id">WAR_COUNCIL</td><td>军议</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">力量 攻击者</td><td class="desc">给予 1 张友方[攻击者](最低攻击力) 2 攻击力</td><td><span class="badge b-bad">v4新增</span></td></tr>
 <tr><td class="mono id">ASSASSIN</td><td>刺客</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">埋葬 攻击者</td><td class="desc">埋葬 1 张敌方[攻击者]（最高攻击）</td><td><span class="badge b-bad">v4新增</span></td></tr>
-<tr><td class="mono id">MARK_WEAKNESS</td><td>弱点标注</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">易伤</td><td class="desc">敌方受到的攻击伤害 +1（每段,可叠加,永久）</td><td><span class="badge b-bad">v4新增</span></td></tr>
 <tr><td class="mono id">OATH_OF_WAR</td><td>战争之誓</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">1</td><td class="tagcell">攻击者 力量</td><td class="desc">给予 1 张友方[攻击者] +2 攻击力;攻击</td><td><span class="badge b-purple">v5修正</span></td></tr>
 <tr><td class="mono id">DRILL_MASTER</td><td>战训教官</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">攻击次数 攻击者</td><td class="desc">给予 1 张友方[攻击者] 攻击 +1 次</td><td><span class="badge b-purple">v5修正</span></td></tr>
 <tr><td class="mono id">V5_FEEBLE_AURA</td><td>衰弱光环</td><td><span class="r-tag r-uncommon">uncommon</span></td><td class="mono">—</td><td class="tagcell">萦绕 攻击者</td><td class="desc">萦绕:每当敌方[攻击者]被置顶:其攻击力 -1</td><td><span class="badge b-red">v5新增</span></td></tr>
@@ -282,14 +279,14 @@
 	<table>
 		<thead><tr><th>稀有度</th><th>数量</th><th>占比</th><th>对照 StS2</th><th>说明</th></tr></thead>
 		<tbody>
-			<tr><td><span class="r-tag r-common">Common</span></td><td>22</td><td>14.8%</td><td>22%</td><td class="warn">偏薄 —— 3 张沉睡教学卡 + 3 张授予卡上移后的结果;入口密度靠「一张卡干两件事」维持</td></tr>
-			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>69</td><td>46.3%</td><td>42%</td><td>组件 / 桥 / 轻引擎主力</td></tr>
-			<tr><td><span class="r-tag r-rare">Rare</span></td><td>58</td><td>38.9%</td><td>30%</td><td class="good">翻倍(26→58):封顶 / 引擎 / 形态升级 / 沉睡大怪 / 群控硬解</td></tr>
+			<tr><td><span class="r-tag r-common">Common</span></td><td>22</td><td>15.0%</td><td>22%</td><td class="warn">偏薄 —— 3 张沉睡教学卡 + 3 张授予卡上移后的结果;入口密度靠「一张卡干两件事」维持</td></tr>
+			<tr><td><span class="r-tag r-uncommon">Uncommon</span></td><td>68</td><td>46.3%</td><td>42%</td><td>组件 / 桥 / 轻引擎主力</td></tr>
+			<tr><td><span class="r-tag r-rare">Rare</span></td><td>57</td><td>38.8%</td><td>30%</td><td class="good">翻倍(26→57):封顶 / 引擎 / 形态升级 / 沉睡大怪 / 群控硬解</td></tr>
 		</tbody>
 	</table>
 </div>
 
-<h3>A4. 自动机批次(新增 10 张,每回合开始触发)</h3>
+<h3>A4. 自动机批次(新增 9 张,每回合开始触发)</h3>
 <div class="card">
 	<p class="lead">补齐 G2 缺口:StS2 每角色 4-6 张回合自动机(Countdown / Furnace / Genesis / Spinner / Noxious Fumes / Sealed Throne),OneDeck 此前为零(事件自动机 24 张,回合型 0 张)。自动机 = 萦绕卡 + 「每回合开始」触发 —— 把条件制造从手动变免费,是构筑中期「引擎感」的来源;与事件自动机(吃频率)互补:回合型吃回合数。</p>
 	<table>
@@ -304,7 +301,6 @@
 			<tr><td><b>黎明守卫</b></td><td>R</td><td>沉睡</td><td>萦绕:每回合开始:唤醒 1 张友方[沉睡];若不存在:给予 1 张友方[攻击者] 2 攻击力</td><td>Sealed Throne(每打 1 牌 1 星)—— 唤醒引擎,带兜底</td></tr>
 			<tr><td><b>永恒引擎</b></td><td>R</td><td>通用</td><td>萦绕:每回合开始:获得 1 攻击力</td><td>Pyre(每回合能量)/ 恶魔形态(每回合力量)—— 无需沉睡的后期大怪</td></tr>
 			<tr><td><b>号角长鸣</b></td><td>R</td><td>位移</td><td>萦绕:每回合开始:置顶 1 张友方[攻击者](最高攻击力)</td><td>—(调度自动机)—— 每回合 1 次免费再触发,最强节奏自动机</td></tr>
-			<tr><td><b>弱点解析</b></td><td>R</td><td>攻击</td><td>萦绕:每回合开始:敌方受到的攻击伤害 +1(易伤)</td><td>—(易伤自动机)—— 每回合叠加的乘区,与次数 × 攻击力相乘</td></tr>
 		</tbody>
 	</table>
 	<div class="note">规则:自动机 = 萦绕卡,从游戏开始即生效(与所有萦绕卡一致,无需揭晓);被埋葬即失效 —— 可用 安眠(给予萦绕卡沉睡,离场保护)规避;「每回合开始」时机已在引擎中存在(沉睡回合条件)。</div>
@@ -411,7 +407,7 @@
 <h3>B5. 开放问题</h3>
 <div class="card">
 	<ul>
-		<li><b>自动机批次(10 张)的强度面</b>:暮鼓 / 号角长鸣 / 弱点解析 都是「每回合稳定积累」,回合数越长越强 —— 与疲劳节流配合;若实测过强,改「每 2 回合开始」或数值减半。</li>
+		<li><b>自动机批次(9 张)的强度面</b>:暮鼓 / 号角长鸣 都是「每回合稳定积累」,回合数越长越强 —— 与疲劳节流配合;若实测过强,改「每 2 回合开始」或数值减半。</li>
 		<li><b>萦绕卡「游戏开始即生效」规则确认</b>:被埋葬即失效(自动机同理),安眠是唯一保护手段 —— 确认这是期望的脆弱面。</li>
 		<li><b>C 档 15.9% 是否过薄</b>:3 张沉睡教学 + 3 张授予卡上移后的结果;若实战发现入口密度不足,可把 深埋 / 掘墓人 类工具留在 C 并新增 1-2 张 C 入口。</li>
 		<li><b>战旗新数值</b>:「每次攻击削 1 攻」的实测;若过强,改「每回合首次攻击」或「攻击 ×2 卡才触发」。</li>

@@ -395,6 +395,7 @@ GameObject:
   - component: {fileID: 3828591620990538636}
   - component: {fileID: 7915703419504864441}
   - component: {fileID: -4728943355192809547}
+  - component: {fileID: 6600112233445566773}
   m_Layer: 0
   m_Name: ALMIGHTY
   m_TagString: Untagged
@@ -434,7 +435,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: ALMIGHTY
   displayName: "\u5168\u80FD\u4EBA"
-  cardDesc: "\u63ed\u6653 <b>2<counter></b> \u6b21:\u653b\u51fb,\u7f6e\u9876 <b>1</b> \u53cb\u65b9,\u57cb\u846c <b>1</b> \u654c\u65b9,\u7ed9\u4e88 <b>1</b> \u53cb\u65b9\u653b\u51fb\u529b,\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d],\u589e\u5f3a <b>1</b> \u654c\u65b9[\u8bc5\u5492]"
+  cardDesc: "\u63ed\u6653 <b>2<counter></b> \u6b21:\u653b\u51fb,\u653b\u51fb\u529b = \u5893\u5730\u53cb\u65b9\u5361\u6570 + \u53cb\u65b9[\u6b21\u5143\u88c2\u7f1d]\u6570 + \u654c\u65b9[\u8d1f\u9762]\u653b\u51fb\u529b\u603b\u548c(\u5e38\u6001\u7ed3\u7b97),\u7f6e\u9876 <b>1</b> \u53cb\u65b9,\u57cb\u846c <b>1</b> \u654c\u65b9,\u7ed9\u4e88 <b>1</b> \u53cb\u65b9\u653b\u51fb\u529b,\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d],\u589e\u5f3a <b>1</b> \u654c\u65b9[\u8bc5\u5492]"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -490,3 +491,23 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &6600112233445566773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8718476725744197808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f0a3c2b9d1e4f5a6b7c8d9e0f1a2b3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terms:
+  - source: 2
+    cardTypeID: 
+  - source: 3
+    cardTypeID: RIFT
+  - source: 4
+    cardTypeID: JU_ON
+

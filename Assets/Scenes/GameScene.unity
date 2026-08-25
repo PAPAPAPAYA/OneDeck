@@ -3501,7 +3501,8 @@ MonoBehaviour:
   onTheirPlayerShieldUpped: {fileID: 11400000, guid: 808138fe6215952418c045862c9f80ad, type: 2}
   afterShuffle: {fileID: 11400000, guid: fe87bc9a909276b4dabe1bf8aa01d8a4, type: 2}
   beforeRoundStart: {fileID: 11400000, guid: cde884b6e17c9e24b90d185b1c96604e, type: 2}
-  onAnyCardAttacked: {fileID: 0}
+  onAnyCardAttacked: {fileID: 11400000, guid: 67599e7e19966ef41a0b66cad3ce7665, type: 2}
+  onAnyFriendlyCardAttacked: {fileID: 11400000, guid: dbf36e9ae6c27ff43a27b1e01d59eda6, type: 2}
   onFriendlyMinionAdded: {fileID: 11400000, guid: 3d27fd3b0bb6feb4e85567151942425d, type: 2}
   onFriendlyCardExiled: {fileID: 11400000, guid: ed71b68fe01376e49ac1d493c529238f, type: 2}
   onFriendlyFlyExiled: {fileID: 11400000, guid: ee1cc5fc8ade8b44c9881c4183ed874f, type: 2}
@@ -6891,6 +6892,7 @@ MonoBehaviour:
   lastCardGotPower: {fileID: 0}
   lastCardGainedAttack: {fileID: 0}
   lastAttackGainedAmount: 0
+  lastCardAttacked: {fileID: 0}
   captureRecorderAutoPlayForTesting: 0
 --- !u!4 &1151980345
 Transform:

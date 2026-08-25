@@ -291,5 +291,39 @@ namespace DefaultNamespace.Effects
 
 			CombatInfoDisplayer.me.RefreshDeckInfo();
 		}
+
+		/// <summary>
+		/// Consume `amount` attack from the enemy card with the highest attack
+		/// (POWER_TRANSFER "去除 1 张敌方[攻击者](最高攻击力)1 攻击力").
+		/// Only enemy cards with positive attack are eligible; ties are broken randomly.
+		/// </summary>
+		public void ConsumeEnemyCardWithMaxAttack(int amount)
+		{
+			if (amount <= 0) return;
+
+			var target = CardScript.FindCardWithMaxAttack(
+				CombatManager.Me.combinedDeckZone,
+				CombatManager.Me.revealZone,
+				c => !CombatManager.ShouldSkipEffectProcessing(c) &&
+				     c.myStatusRef != myCardScript.myStatusRef &&
+				     c.GetAttack() > 0);
+			if (target == null) return;
+
+			// Snapshot display state before mutating so card text updates are deferred until animation completes
+			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+			if (recorder != null && RecorderAnimationPlayer.me != null)
+			{
+				target.SnapshotDisplayState();
+			}
+
+			int amountToRemove = Mathf.Min(amount, target.GetAttack());
+			target.ModifyAttack(-amountToRemove);
+
+			// Capture batched consume animation: StatusEffectChange -> PopUpBatch -> Projectile -> SlotInBatch
+			CaptureBatchStatusEffectConsumeAnimation(myCard, new List<CardScript> { target }, EnumStorage.StatusEffect.Power, amountToRemove);
+
+			CombatInfoDisplayer.me.RefreshDeckInfo();
+		}
 	}
 }

@@ -302,6 +302,8 @@ public class CardPhysObjScript : MonoBehaviour
 	/// <summary>
 	/// Update the attack attribute display (bottom-right of the card face).
 	/// Hidden for legacy cards with no attack; shows "X" or "X×N" (N = attack times).
+	/// Reads GetAttackForDisplay() so the value stays frozen at the display snapshot
+	/// during the logic phase and commits per animation request.
 	/// Public so attack gains/losses (AttackChange animations) can refresh it in place.
 	/// </summary>
 	public void RefreshAttackDisplay()
@@ -316,9 +318,10 @@ public class CardPhysObjScript : MonoBehaviour
 
 		cardAttackPrint.gameObject.SetActive(true);
 		int times = cardImRepresenting.GetAttackTimes();
+		int attack = cardImRepresenting.GetAttackForDisplay();
 		cardAttackPrint.text = times > 1
-			? cardImRepresenting.GetAttack() + "×" + times
-			: cardImRepresenting.GetAttack().ToString();
+			? attack + "×" + times
+			: attack.ToString();
 	}
 
 	/// <summary>

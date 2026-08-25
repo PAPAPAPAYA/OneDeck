@@ -100,6 +100,7 @@ public abstract class HeadlessCombatTestFixture
 		GameEventStorage.afterShuffle = CreateScriptableObject<GameEvent>();
 		GameEventStorage.beforeRoundStart = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onAnyCardAttacked = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onAnyFriendlyCardAttacked = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onAnyCardGotPower = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onFriendlyCardGotPower = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onEnemyCardGotPower = CreateScriptableObject<GameEvent>();

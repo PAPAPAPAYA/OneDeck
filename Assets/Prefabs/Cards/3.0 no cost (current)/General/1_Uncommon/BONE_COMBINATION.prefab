@@ -55,7 +55,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1359544507321340075}
         m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
-        m_MethodName: DecreaseTheirHpTimes_BasedOnOpponentBuriedCount
+        m_MethodName: AttackTimesBasedOnOpponentBuriedCount
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -81,7 +81,7 @@ MonoBehaviour:
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
-  extraDmg: -1
+  extraDmg: 0
   statusEffectToCheck: 0
   dynamicDmgDisplaySource: 3
   dynamicDmgDisplayMultiplyByPower: 1

@@ -1,3 +1,4 @@
+using DefaultNamespace.SOScripts;
 using UnityEngine;
 
 /// <summary>
@@ -39,7 +40,7 @@ public class AttackEffect : HPAlterEffect
 			DecreaseTheirHp();
 		}
 		// Attack-action timepoint: raised once per attack action, not per segment.
-		GameEventStorage.me?.onAnyCardAttacked?.Raise();
+		RaiseAttackEvents(false);
 	}
 
 	/// <summary>
@@ -63,7 +64,82 @@ public class AttackEffect : HPAlterEffect
 		{
 			DecreaseMyHp();
 		}
-		// Attack-action timepoint: raised once per attack action, not per segment.
-		GameEventStorage.me?.onAnyCardAttacked?.Raise();
+		// Self-attacks count as attack actions for onAnyCardAttacked, but never for
+		// onAnyFriendlyCardAttacked (a friendly [attacker] attacking does not include
+		// self-damage, e.g. JU_ON burning itself).
+		RaiseAttackEvents(true);
+	}
+
+	/// <summary>
+	/// Attack with one segment per opponent-buried-count tracker value
+	/// (BONE_COMBINATION "攻击 ×本回合被埋葬的敌方数量"). Each hit deals the card's attack.
+	/// </summary>
+	public void AttackTimesBasedOnOpponentBuriedCount()
+	{
+		int times = 0;
+		if (ValueTrackerManager.me != null)
+		{
+			if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+			{
+				if (ValueTrackerManager.me.enemyCardsBuriedCountRef != null)
+				{
+					times = ValueTrackerManager.me.enemyCardsBuriedCountRef.value;
+				}
+			}
+			else
+			{
+				if (ValueTrackerManager.me.ownerCardsBuriedCountRef != null)
+				{
+					times = ValueTrackerManager.me.ownerCardsBuriedCountRef.value;
+				}
+			}
+		}
+		AttackTimes(times);
+	}
+
+	/// <summary>
+	/// Attack with one segment per ownerIntSO/enemyIntSO value
+	/// (BODY_CANON "墓地每有 1 张友方卡:攻击").
+	/// </summary>
+	public virtual void AttackTimesBasedOnIntSO()
+	{
+		IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
+		if (intSO == null) return;
+		AttackTimes(intSO.value);
+	}
+
+	/// <summary>
+	/// Attack-action timepoint (once per action, not per segment).
+	/// onAnyCardAttacked covers every attack action (self-attacks included);
+	/// onAnyFriendlyCardAttacked covers non-self attack actions only.
+	/// Both are delivered to the attacking card's faction: a friendly attacker raises
+	/// RaiseOwner() (friendly-side listeners hear "a friendly card attacked"), an enemy
+	/// attacker raises RaiseOpponent() — so an enemy card's self-damage never reaches
+	/// friendly listeners (e.g. 战旗 "友方[攻击者]攻击时").
+	/// </summary>
+	private void RaiseAttackEvents(bool isSelf)
+	{
+		if (myCardScript == null || combatManager == null) return;
+		combatManager.lastCardAttacked = myCardScript;
+
+		var storage = GameEventStorage.me;
+		if (storage == null) return;
+
+		if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+		{
+			storage.onAnyCardAttacked?.RaiseOwner();
+			if (!isSelf)
+			{
+				storage.onAnyFriendlyCardAttacked?.RaiseOwner();
+			}
+		}
+		else
+		{
+			storage.onAnyCardAttacked?.RaiseOpponent();
+			if (!isSelf)
+			{
+				storage.onAnyFriendlyCardAttacked?.RaiseOpponent();
+			}
+		}
 	}
 }

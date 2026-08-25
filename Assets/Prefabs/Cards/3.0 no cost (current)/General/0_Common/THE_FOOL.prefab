@@ -142,7 +142,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 633876007519965972}
         m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
-        m_MethodName: StageCardWithMostStatusEffect
+        m_MethodName: StageCardWithMaxAttack
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

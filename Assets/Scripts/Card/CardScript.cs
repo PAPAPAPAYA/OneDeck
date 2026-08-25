@@ -75,6 +75,14 @@ public class CardScript : MonoBehaviour
 	[System.NonSerialized]
 	private Func<int> _attackResolver;
 
+	// Reentrancy guard for dynamic-attack graphs: set while this card's own resolver is on
+	// the stack; a second entry (cycle) resolves to the base attack instead of recursing.
+	[System.NonSerialized]
+	private bool _resolvingAttack;
+
+	[System.NonSerialized]
+	private int? _displayAttack;
+
 	/// <summary>
 	/// Whether this card shows an attack value on its face. Legacy cards (all-zero attack) keep the old face.
 	/// </summary>
@@ -86,8 +94,15 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	public int GetAttack()
 	{
-		if (_attackResolver != null) return _attackResolver();
-		return printedAttack + attackGrowth + attackModThisRound;
+		if (_attackResolver == null) return printedAttack + attackGrowth + attackModThisRound;
+		// Cycle cut: a reentry while this card's own resolver is still on the stack (a resolver
+		// graph reading this card's attack, e.g. two FriendlyCardTotal carriers reading each
+		// other) resolves to the base attack instead of recursing forever. The flag is cleared
+		// even if the resolver throws.
+		if (_resolvingAttack) return printedAttack + attackGrowth + attackModThisRound;
+		_resolvingAttack = true;
+		try { return _attackResolver(); }
+		finally { _resolvingAttack = false; }
 	}
 
 	/// <summary>
@@ -96,6 +111,87 @@ public class CardScript : MonoBehaviour
 	public void SetAttackResolver(Func<int> resolver)
 	{
 		_attackResolver = resolver;
+	}
+
+	/// <summary>
+	/// Attack value for display. Returns the frozen snapshot while a display snapshot is
+	/// active (logic phase / animation playback), otherwise the live GetAttack() — so the
+	/// card face never jumps at logic time (attack changes commit per animation request).
+	/// </summary>
+	public int GetAttackForDisplay()
+	{
+		return _displayAttack ?? GetAttack();
+	}
+
+	/// <summary>
+	/// Apply a signed attack delta to the frozen display value (attack-attribute counterpart
+	/// of ApplyDisplayDelta). Commits happen as AttackChange requests play; the display
+	/// snapshot is cleared by CommitDisplayState so the face falls back to live GetAttack().
+	/// </summary>
+	public void CommitAttackDisplayDelta(int delta)
+	{
+		_displayAttack = (_displayAttack ?? GetAttack()) + delta;
+	}
+
+	/// <summary>
+	/// Find the card with the highest current attack among the deck + reveal zone
+	/// candidates passing the filter (位置谓词 "(最高攻击力)"). Ties are broken randomly.
+	/// Returns null when no candidate matches.
+	/// </summary>
+	public static CardScript FindCardWithMaxAttack(List<GameObject> deck, GameObject revealZone, Predicate<CardScript> filter)
+	{
+		return FindCardWithExtremeAttack(deck, revealZone, filter, preferMax: true);
+	}
+
+	/// <summary>
+	/// Find the card with the lowest current attack among the deck + reveal zone
+	/// candidates passing the filter (位置谓词 "(最低攻击力)"). Ties are broken randomly.
+	/// Returns null when no candidate matches.
+	/// </summary>
+	public static CardScript FindCardWithMinAttack(List<GameObject> deck, GameObject revealZone, Predicate<CardScript> filter)
+	{
+		return FindCardWithExtremeAttack(deck, revealZone, filter, preferMax: false);
+	}
+
+	private static CardScript FindCardWithExtremeAttack(List<GameObject> deck, GameObject revealZone, Predicate<CardScript> filter, bool preferMax)
+	{
+		var candidates = new List<CardScript>();
+		if (deck != null)
+		{
+			foreach (var cardObj in deck)
+			{
+				if (cardObj == null) continue;
+				var cardScript = cardObj.GetComponent<CardScript>();
+				if (cardScript == null || (filter != null && !filter(cardScript))) continue;
+				candidates.Add(cardScript);
+			}
+		}
+		if (revealZone != null)
+		{
+			var revealCardScript = revealZone.GetComponent<CardScript>();
+			if (revealCardScript != null && !candidates.Contains(revealCardScript) &&
+			    (filter == null || filter(revealCardScript)))
+			{
+				candidates.Add(revealCardScript);
+			}
+		}
+		if (candidates.Count == 0) return null;
+
+		int extreme = preferMax ? int.MinValue : int.MaxValue;
+		foreach (var card in candidates)
+		{
+			int attack = card.GetAttack();
+			if (preferMax ? attack > extreme : attack < extreme) extreme = attack;
+		}
+
+		var tied = new List<CardScript>();
+		foreach (var card in candidates)
+		{
+			if (card.GetAttack() == extreme) tied.Add(card);
+		}
+
+		tied = UtilityFuncManagerScript.ShuffleList(tied);
+		return tied.Count > 0 ? tied[0] : null;
 	}
 
 	/// <summary>
@@ -159,6 +255,7 @@ public class CardScript : MonoBehaviour
 		displayMyStatusEffects.Clear();
 		displayMyStatusEffects.AddRange(myStatusEffects);
 		_displayCardDesc = ComputeDynamicCardDesc();
+		_displayAttack = GetAttack();
 		_hasDisplaySnapshot = true;
 
 		TestManager.Log("[DynamicDamageDisplay] SnapshotDisplayState card=" + GetDisplayName() + " hasSnapshot=" + _hasDisplaySnapshot + " desc=[" + (_displayCardDesc ?? cardDesc) + "]");
@@ -179,6 +276,7 @@ public class CardScript : MonoBehaviour
 		displayMyStatusEffects.Clear();
 		displayMyStatusEffects.AddRange(myStatusEffects);
 		_displayCardDesc = null;
+		_displayAttack = null;
 		_hasDisplaySnapshot = false;
 	}
 
@@ -186,8 +284,11 @@ public class CardScript : MonoBehaviour
 	/// Set the display baseline to the provided list and lock the display snapshot.
 	/// Called by RecorderAnimationPlayer before playing animations so that
 	/// GetStatusEffectsForDisplay() returns the state before any pending animations.
+	/// attackBaseline (optional) freezes the attack print at the pre-animation value;
+	/// pass null to keep the existing attack snapshot (e.g. one captured by
+	/// SnapshotDisplayState for consume/transfer paths).
 	/// </summary>
-	public void SetDisplayBaseline(List<EnumStorage.StatusEffect> baseline)
+	public void SetDisplayBaseline(List<EnumStorage.StatusEffect> baseline, int? attackBaseline = null)
 	{
 		if (displayMyStatusEffects == null)
 			displayMyStatusEffects = new List<EnumStorage.StatusEffect>();
@@ -195,6 +296,10 @@ public class CardScript : MonoBehaviour
 		if (baseline != null)
 			displayMyStatusEffects.AddRange(baseline);
 		_displayCardDesc = ComputeDynamicCardDesc(displayMyStatusEffects);
+		if (attackBaseline.HasValue)
+		{
+			_displayAttack = attackBaseline.Value;
+		}
 		_hasDisplaySnapshot = true;
 
 		TestManager.Log("[DynamicDamageDisplay] SetDisplayBaseline card=" + GetDisplayName() + " baselineCount=" + (baseline != null ? baseline.Count : 0) + " _displayCardDesc recomputed=[" + (_displayCardDesc ?? "null") + "]");

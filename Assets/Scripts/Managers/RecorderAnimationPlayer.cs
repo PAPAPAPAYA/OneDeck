@@ -574,16 +574,26 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 
 		foreach (var req in recorder.animationRequests)
 		{
-			if (req == null || req.type != AnimationRequestType.StatusEffectChange) continue;
-			if (!req.applyDisplayDeltaOnProjectileSpawn) continue;
-			if (req.displayDeltaApplied) continue;
-			if (req.targetCard == null) continue;
+			if (req == null || req.targetCard == null) continue;
 			if (!involvedCards.Contains(req.targetCard)) continue;
 
 			var targetCardScript = req.targetCard.GetComponent<CardScript>();
-			if (targetCardScript != null)
+			if (targetCardScript == null) continue;
+
+			if (req.type == AnimationRequestType.StatusEffectChange)
 			{
+				if (!req.applyDisplayDeltaOnProjectileSpawn) continue;
+				if (req.displayDeltaApplied) continue;
+
 				targetCardScript.ApplyDisplayDelta(req.statusEffect, req.statusEffectDelta);
+				req.displayDeltaApplied = true;
+			}
+			else if (req.type == AnimationRequestType.AttackChange)
+			{
+				if (!req.applyDisplayDeltaOnProjectileSpawn) continue;
+				if (req.displayDeltaApplied) continue;
+
+				targetCardScript.CommitAttackDisplayDelta(req.statusEffectAmount);
 				req.displayDeltaApplied = true;
 			}
 		}
@@ -635,35 +645,63 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 		}
 
 		var pendingDeltas = new Dictionary<CardScript, Dictionary<EnumStorage.StatusEffect, int>>();
+		var pendingAttackDeltas = new Dictionary<CardScript, int>();
 		foreach (var recorder in allRecorders)
 		{
 			if (recorder == null || recorder.animationRequests == null) continue;
 			foreach (var req in recorder.animationRequests)
 			{
-				if (req == null || req.type != AnimationRequestType.StatusEffectChange) continue;
-				if (req.targetCard == null) continue;
+				if (req == null || req.targetCard == null) continue;
 				var targetCardScript = req.targetCard.GetComponent<CardScript>();
 				if (targetCardScript == null) continue;
 
-				if (!pendingDeltas.ContainsKey(targetCardScript))
-					pendingDeltas[targetCardScript] = new Dictionary<EnumStorage.StatusEffect, int>();
-				if (!pendingDeltas[targetCardScript].ContainsKey(req.statusEffect))
-					pendingDeltas[targetCardScript][req.statusEffect] = 0;
-				pendingDeltas[targetCardScript][req.statusEffect] += req.statusEffectDelta;
+				if (req.type == AnimationRequestType.StatusEffectChange)
+				{
+					if (!pendingDeltas.ContainsKey(targetCardScript))
+						pendingDeltas[targetCardScript] = new Dictionary<EnumStorage.StatusEffect, int>();
+					if (!pendingDeltas[targetCardScript].ContainsKey(req.statusEffect))
+						pendingDeltas[targetCardScript][req.statusEffect] = 0;
+					pendingDeltas[targetCardScript][req.statusEffect] += req.statusEffectDelta;
 
-				_baselineCards.Add(targetCardScript);
+					_baselineCards.Add(targetCardScript);
+				}
+				else if (req.type == AnimationRequestType.AttackChange)
+				{
+					if (!pendingAttackDeltas.ContainsKey(targetCardScript))
+						pendingAttackDeltas[targetCardScript] = 0;
+					pendingAttackDeltas[targetCardScript] += req.statusEffectAmount;
+
+					_baselineCards.Add(targetCardScript);
+				}
 			}
 		}
 
-		foreach (var cardEntry in pendingDeltas)
+		// Merge status-effect and attack baselines per card: the status baseline is the
+		// current myStatusEffects minus pending statusEffectDeltas; the attack baseline is
+		// the current GetAttack() minus pending AttackChange deltas. SetDisplayBaseline is
+		// called once per card so neither freeze overwrites the other.
+		var baselineCards = new HashSet<CardScript>();
+		foreach (var card in pendingDeltas.Keys) baselineCards.Add(card);
+		foreach (var card in pendingAttackDeltas.Keys) baselineCards.Add(card);
+
+		foreach (var card in baselineCards)
 		{
-			var card = cardEntry.Key;
 			var baseline = new List<EnumStorage.StatusEffect>(card.myStatusEffects);
-			foreach (var effectEntry in cardEntry.Value)
+			if (pendingDeltas.ContainsKey(card))
 			{
-				CardScript.ApplyStatusEffectDeltaToList(baseline, effectEntry.Key, -effectEntry.Value);
+				foreach (var effectEntry in pendingDeltas[card])
+				{
+					CardScript.ApplyStatusEffectDeltaToList(baseline, effectEntry.Key, -effectEntry.Value);
+				}
 			}
-			card.SetDisplayBaseline(baseline);
+
+			int? attackBaseline = null;
+			if (pendingAttackDeltas.ContainsKey(card))
+			{
+				attackBaseline = card.GetAttack() - pendingAttackDeltas[card];
+			}
+
+			card.SetDisplayBaseline(baseline, attackBaseline);
 		}
 	}
 
@@ -1026,7 +1064,15 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 						Mathf.Abs(request.statusEffectAmount));
 				}
 
-				// Refresh the attack print so the card face shows the new attack value.
+				// Commit the display delta (skipped when already applied at projectile spawn)
+				// so the attack print steps through the frozen baseline per request.
+				if (!request.displayDeltaApplied)
+				{
+					targetCardScript.CommitAttackDisplayDelta(request.statusEffectAmount);
+					request.displayDeltaApplied = true;
+				}
+
+				// Refresh the attack print so the card face shows the committed attack value.
 				visuals.RefreshCardAttackDisplay(targetCardScript);
 
 				request.onComplete?.Invoke();
