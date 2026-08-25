@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 阶段转换 Demo — Shop ↔ Combat</title>
+	<!--
+		Phase transition demo (shop <-> combat <-> result overlay).
+
+		World model (per the 2026-08-19 mockup):
+			ONE continuous world, two pages stacked vertically — combat page on
+			top, shop page below. The gray topographic background is the PLAYER
+			HP BAR DISPLAY and spans both pages; the combat page's top red band
+			is the ENEMY HP display. Transition = camera moves up/down between
+			the pages; the world never cuts, so the move reads as seamless.
+			Extra padding (PAD) above combat / below shop lets an overshoot
+			easing peek past the page edge without showing void.
+
+		Shared elements (animate between their two layout homes):
+			player avatar + HP (shop top-left -> combat bottom-left),
+			options button (shop top-right -> combat bottom-right),
+			deck cards (shop deck row -> combat float stack; flip face-down at
+			the arc midpoint, per the never-cover rule).
+			Enemy HUD enters counter-direction (slides DOWN in from above).
+			Shop shelf cards / prices / chips are world content and scroll away.
+
+		Result phase: overlay in camera space (camera stays at combat height);
+		player icon + HP stay visible (new rule vs the old result phase).
+
+		Standards referenced:
+			combat stack look  -> docs/demo/CardStackRevealDemo.html
+			physics / tokens   -> docs/demo/UIKitDemo.html (overshoot default)
+
+		Project standards: CRLF line endings, tab indentation, UTF-8.
+	-->
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+
+		body {
+			font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+			background: #0f1a1f;
+			color: #d5dde2;
+			min-height: 100vh;
+		}
+
+		code {
+			background: #263740;
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-size: 12px;
+			font-family: Consolas, monospace;
+		}
+
+		.intro {
+			padding: 24px 40px 12px;
+			max-width: 1100px;
+			margin: 0 auto;
+		}
+		.intro h1 { font-size: 22px; color: #fff; margin-bottom: 8px; }
+		.intro p { line-height: 1.75; color: #b0c0c8; margin-bottom: 6px; font-size: 13px; }
+		.intro .rule { color: #ffd479; }
+
+		/* ===================== params bar ===================== */
+		.params {
+			position: sticky;
+			top: 0;
+			z-index: 60;
+			background: #141f26;
+			border-top: 1px solid #24343e;
+			border-bottom: 1px solid #24343e;
+			padding: 8px 40px;
+		}
+		.params-inner {
+			max-width: 1100px;
+			margin: 0 auto;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px 20px;
+			align-items: center;
+			font-size: 12px;
+		}
+		.params .p-title { color: #ffd479; font-weight: 700; margin-right: 4px; }
+		.ctl { display: inline-flex; align-items: center; gap: 6px; color: #9fb2bc; }
+		.ctl input[type=range] { width: 90px; accent-color: #9fd3ff; }
+		.ctl select {
+			background: #1e2f39;
+			color: #d5dde2;
+			border: 1px solid #2c3e48;
+			border-radius: 4px;
+			font-size: 12px;
+			padding: 2px 4px;
+		}
+		.ctl .val { font-family: Consolas, monospace; color: #fff; min-width: 44px; }
+		.p-btn {
+			background: #1e2f39;
+			color: #9fd3ff;
+			border: 1px solid #2c3e48;
+			border-radius: 4px;
+			font-size: 12px;
+			padding: 3px 10px;
+			cursor: pointer;
+		}
+		.p-btn:hover { background: #263b47; }
+		#copyStatus { color: #7fdca4; font-size: 12px; }
+
+		/* ===================== camera & world ===================== */
+		.room {
+			display: flex;
+			justify-content: center;
+			padding: 26px 0 60px;
+		}
+		.camera {
+			position: relative;
+			width: 420px;
+			height: 740px;
+			overflow: hidden;
+			border-radius: 14px;
+			box-shadow: 0 18px 50px rgba(0,0,0,.45);
+			touch-action: none;
+			user-select: none;
+			-webkit-user-select: none;
+			background: #b8b5ae;
+		}
+		.world {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 420px;
+			/* height set in JS: 2 pages + PAD above combat + PAD below shop */
+			will-change: transform;
+		}
+		.world.moving { transition: transform var(--td) var(--ease); }
+		#topo { position: absolute; left: 0; top: 0; pointer-events: none; }
+
+		.abs { position: absolute; }
+
+		/* ===================== physical bits (UIKitDemo model) ===================== */
+		.phys {
+			position: absolute;
+			cursor: pointer;
+			-webkit-tap-highlight-color: transparent;
+		}
+		.phys-face {
+			position: relative;
+			overflow: hidden;
+			background: #ecece8;
+			color: #1a3037;
+			box-shadow: 4px 4px 0 0 rgba(10,14,25,.6);
+			transition: transform 120ms var(--ease), box-shadow 120ms var(--ease), background 120ms linear;
+		}
+		.phys.is-hover > .phys-face {
+			transform: translate(-4px, -4px);
+			box-shadow: 8px 8px 0 0 rgba(10,14,25,.6);
+		}
+		.phys.is-pressed > .phys-face {
+			transform: translate(4px, 4px);
+			box-shadow: 0 0 0 0 rgba(10,14,25,.6);
+			transition-duration: 60ms;
+		}
+
+		.big-btn .phys-face {
+			border-radius: 10px;
+			padding: 14px 20px;
+			font-size: 21px;
+			font-weight: 800;
+			text-align: center;
+		}
+		.small-btn .phys-face {
+			border-radius: 8px;
+			padding: 7px 12px;
+			font-size: 13px;
+			font-weight: 700;
+		}
+		.icon-btn .phys-face {
+			width: 30px;
+			height: 30px;
+			border-radius: 7px;
+			font-size: 13px;
+			font-weight: 800;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0;
+		}
+
+		/* ===================== HUD ===================== */
+		.hud {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			will-change: left, top;
+		}
+		.hud .avatar {
+			width: 34px;
+			height: 34px;
+			border-radius: 6px;
+			background: #1a3037;
+			box-shadow: 3px 3px 0 0 rgba(10,14,25,.6);
+			flex: none;
+		}
+		.hud .hp {
+			font-size: 25px;
+			font-weight: 800;
+			color: #1a3037;
+			text-shadow: 0 1px 0 rgba(255,255,255,.25);
+			white-space: nowrap;
+		}
+		.hud .hp small { font-size: 14px; font-weight: 700; }
+		.hud.enemy { flex-direction: row; }
+		.hud.enemy .hp { color: #ecece8; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+		.hud.enemy .avatar { background: #ecece8; }
+
+		/* shop-only chips */
+		.chips { display: flex; align-items: flex-start; gap: 8px; color: #1a3037; }
+		.chips .money { font-size: 22px; font-weight: 800; }
+		.chips .col { display: flex; flex-direction: column; gap: 2px; font-size: 11px; font-weight: 700; }
+		.chips .col span {
+			background: rgba(236,236,232,.65);
+			border-radius: 4px;
+			padding: 1px 6px;
+		}
+
+		.section-label { color: #1a3037; }
+		.section-label b { font-size: 19px; margin-right: 6px; }
+		.section-label span { font-size: 11px; font-weight: 700; opacity: .75; }
+		.section-label .count { float: right; font-size: 20px; font-weight: 800; }
+
+		/* ===================== cards ===================== */
+		.mcard {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			will-change: left, top, transform;
+		}
+		.mcard .face {
+			position: absolute;
+			inset: 0;
+			border-radius: 14px;
+			overflow: hidden;
+			background: #d4d0c8;
+			box-shadow: 0 8px 20px rgba(0,0,0,.25);
+			border: 1px solid rgba(0,0,0,.06);
+		}
+		.mcard .back {
+			display: none;
+			position: absolute;
+			inset: 0;
+			border-radius: 14px;
+			background: #e8e4dc;
+			box-shadow: 0 8px 20px rgba(0,0,0,.25);
+			border: 1px solid rgba(0,0,0,.08);
+		}
+		.mcard.is-back .face { display: none; }
+		.mcard.is-back .back { display: block; }
+		/* card template v2 (mini): art zone / name + atk */
+		.mcard .art {
+			position: absolute;
+			left: 9px;
+			right: 9px;
+			top: 9px;
+			height: 55%;
+			border-radius: 8px;
+			background: #0a0e19;
+		}
+		.mcard .nm {
+			position: absolute;
+			left: 11px;
+			bottom: 8px;
+			font-size: 15px;
+			font-weight: 800;
+			color: #1a3037;
+		}
+		.mcard .atk {
+			position: absolute;
+			right: 11px;
+			bottom: 7px;
+			font-size: 19px;
+			font-weight: 800;
+			color: #1a3037;
+		}
+		.mcard .rty {
+			position: absolute;
+			right: 11px;
+			top: 58%;
+			font-size: 10px;
+			color: #0a0e19;
+			letter-spacing: 1px;
+		}
+
+		.shelf-card {
+			width: 110px;
+			height: 150px;
+			border-radius: 10px;
+			background: #ecece8;
+			box-shadow: 4px 4px 0 0 rgba(10,14,25,.6);
+		}
+		.price {
+			font-size: 14px;
+			font-weight: 800;
+			color: #1a3037;
+			text-align: center;
+		}
+		.slot {
+			width: 110px;
+			height: 150px;
+			border-radius: 10px;
+			background: rgba(26,48,55,.35);
+			box-shadow: inset 3px 3px 0 rgba(0,0,0,.3), inset -2px -2px 0 rgba(255,255,255,.06);
+			display: flex;
+			align-items: flex-end;
+			justify-content: center;
+			padding-bottom: 10px;
+			color: rgba(236,236,232,.6);
+			font-size: 12px;
+			font-weight: 700;
+		}
+
+		/* combat static decor */
+		.stack-card {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			box-shadow: 0 8px 20px rgba(0,0,0,.25);
+			border: 1px solid rgba(0,0,0,.06);
+		}
+		.stack-card.red { background: #b71c2c; }
+		.stack-card.gold { background: #c9981f; overflow: hidden; }
+		.stack-card.gold .art {
+			position: absolute;
+			left: 12px;
+			right: 12px;
+			top: 12px;
+			height: 52%;
+			border-radius: 8px;
+			background: #0a0e19;
+		}
+		.stack-card.gold .nm {
+			position: absolute;
+			left: 14px;
+			bottom: 30px;
+			font-size: 17px;
+			font-weight: 800;
+			color: #1c1e1c;
+		}
+		.stack-card.gold .ds {
+			position: absolute;
+			left: 14px;
+			bottom: 12px;
+			font-size: 11px;
+			font-weight: 700;
+			color: rgba(28,30,28,.7);
+		}
+		.stack-shadow {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			background: #43534d;
+			pointer-events: none;
+		}
+
+		/* ===================== result overlay (camera space) ===================== */
+		#resultOverlay {
+			position: absolute;
+			inset: 0;
+			z-index: 50;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: rgba(15,26,31,.38);
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 200ms linear, visibility 200ms;
+		}
+		#resultOverlay.on { opacity: 1; visibility: visible; }
+		.result-panel {
+			width: 320px;
+			background: #ecece8;
+			color: #1a3037;
+			border-radius: 14px;
+			box-shadow: 8px 8px 0 0 rgba(10,14,25,.6);
+			padding: 20px 22px 16px;
+			transform: scale(.92);
+			transition: transform 240ms var(--ease);
+		}
+		#resultOverlay.on .result-panel { transform: scale(1); }
+		.result-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+		.result-row {
+			display: flex;
+			justify-content: space-between;
+			font-size: 14px;
+			font-weight: 700;
+			padding: 4px 0;
+			border-bottom: 1px dashed rgba(26,48,55,.25);
+		}
+		.result-panel .big-btn {
+			position: relative;
+			margin-top: 14px;
+		}
+		.result-note {
+			margin-top: 8px;
+			font-size: 11px;
+			color: #5a5e58;
+			text-align: center;
+		}
+
+		.phase-tag {
+			position: absolute;
+			left: 10px;
+			top: 8px;
+			z-index: 40;
+			font-size: 11px;
+			font-weight: 700;
+			color: rgba(26,48,55,.55);
+			background: rgba(236,236,232,.55);
+			border-radius: 4px;
+			padding: 2px 8px;
+			pointer-events: none;
+		}
+	</style>
+</head>
+<body>
+
+	<header class="intro">
+		<h1>阶段转换 Demo — 商店 ↔ 战斗 ↔ 结算</h1>
+		<p><b>世界模型：</b>一整张连续世界，战斗页在上、商店页在下；灰色等高线背景 = 玩家 HP bar display（贯穿两页），战斗页顶部红色带 = 敌方 HP display。转换 = <b>镜头上下移动</b>，世界本身无缝。</p>
+		<p class="rule"><b>共享元素：</b>玩家头像+HP（商店左上 → 战斗左下）、选项按钮（商店右上 → 战斗右下）、卡组卡（商店卡组行 → 飞入战斗卡堆，弧线中点翻为背面）。敌方 HUD 反向（自上方滑入）。货架卡/价格/筹码是世界内容，随滚动离开。</p>
+		<p>操作：点【离开，开始新的一天】或在商店页<b>上滑</b> → 战斗页；战斗页点【结束战斗（演示）】→ result 覆层（不再隐藏玩家头像/HP）；点【回到商店】→ 镜头下移返回。战斗页视觉标准 = <code>CardStackRevealDemo.html</code>（悬浮堆叠），物理/色板 = <code>UIKitDemo.html</code>。</p>
+	</header>
+
+	<div class="params">
+		<div class="params-inner" id="paramsInner">
+			<span class="p-title">过场参数</span>
+		</div>
+	</div>
+
+	<div class="room">
+		<div class="camera" id="camera">
+			<div class="world" id="world">
+				<svg id="topo" xmlns="http://www.w3.org/2000/svg"></svg>
+				<div class="abs phase-tag" id="tagCombat">COMBAT（顶红 = 敌方 HP · 底灰 = 玩家 HP）</div>
+				<div class="abs phase-tag" id="tagShop">SHOP（整页背景 = 玩家 HP display）</div>
+
+				<!-- combat decor: float stack (CardStackRevealDemo standard) -->
+				<div class="abs stack-shadow" id="stackShadow"></div>
+				<div class="abs stack-card red" id="stackRed"></div>
+				<div class="abs stack-card gold" id="stackGold">
+					<div class="art"></div>
+					<div class="nm">时空变换</div>
+					<div class="ds">洗牌</div>
+				</div>
+
+				<!-- enemy HUD (combat only; slides in from above) -->
+				<div class="abs hud enemy" id="enemyHud">
+					<div class="hp">HP25<small>/25</small></div>
+					<div class="avatar"></div>
+				</div>
+
+				<!-- shop content (world content, scrolls) -->
+				<div class="phys big-btn" id="btnLeave" style="left:16px; width:388px;">
+					<div class="phys-face">离开，开始新的一天</div>
+				</div>
+				<div class="abs chips" id="shopChips">
+					<span class="money">$20</span>
+					<div class="col">
+						<span>▦ 2/6</span><span>♥ 1/3</span><span>+$12/ROUND</span>
+					</div>
+				</div>
+				<div class="abs section-label" id="lblShop"><b>商店</b><span>长按购买</span></div>
+				<div class="phys small-btn" id="btnReroll" style="width:76px;">
+					<div class="phys-face">重掷 $1</div>
+				</div>
+				<div class="abs shelf-card" id="shelf0"></div>
+				<div class="abs shelf-card" id="shelf1"></div>
+				<div class="abs shelf-card" id="shelf2"></div>
+				<div class="abs price" id="price0">$4</div>
+				<div class="abs price" id="price1">$6</div>
+				<div class="abs price" id="price2">$8</div>
+				<div class="abs section-label" id="lblDeck"><b>卡组</b><span>长按售出</span><span class="count">03/05</span></div>
+				<div class="abs price" id="dprice0">$2</div>
+				<div class="abs price" id="dprice1">$3</div>
+				<div class="abs price" id="dprice2">$4</div>
+				<div class="abs slot" id="slot0">空卡位</div>
+				<div class="abs slot" id="slot1">空卡位</div>
+
+				<!-- shared: player HUD + options button + deck cards (created in JS) -->
+				<div class="abs hud" id="playerHud">
+					<div class="avatar"></div>
+					<div class="hp">HP25<small>/25</small></div>
+				</div>
+				<div class="phys icon-btn" id="btnOpts">
+					<div class="phys-face">❚❚</div>
+				</div>
+			</div>
+
+			<!-- result overlay: camera space, HUD stays visible around the panel -->
+			<div id="resultOverlay">
+				<div class="result-panel">
+					<div class="result-title">战斗结果</div>
+					<div class="result-row"><span>回合数</span><b>6</b></div>
+					<div class="result-row"><span>总伤害</span><b>24</b></div>
+					<div class="result-row"><span>获得金币</span><b>+$12</b></div>
+					<div class="phys big-btn" id="btnHome">
+						<div class="phys-face">回到商店</div>
+					</div>
+					<div class="result-note">按钮文案待迭代 · result 阶段保留玩家头像/HP</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		/* ===================== tunable parameters ===================== */
+		const PARAMS = [
+			{ key: 'transDur',    label: '过场时长',      min: 300, max: 1600, step: 50,  def: 800, unit: 'ms' },
+			{ key: 'ease',        label: '缓动',          type: 'select',
+				options: [['overshoot', 'overshoot 回弹'], ['cubic-bezier(.2,.7,.3,1)', 'smooth'], ['linear', 'linear']],
+				def: 'overshoot' },
+			{ key: 'overshoot',   label: '回弹强度',      min: 1,   max: 3,    step: 0.05, def: 1.7 },
+			{ key: 'cardStagger', label: '飞卡交错',      min: 0,   max: 220,  step: 10,  def: 70,  unit: 'ms' },
+			{ key: 'cardArc',     label: '飞卡弧高',      min: 0,   max: 220,  step: 5,   def: 90,  unit: 'px' },
+			{ key: 'enemySlide',  label: '敌方滑入距离',  min: 0,   max: 320,  step: 10,  def: 140, unit: 'px' },
+		];
+		const state = {};
+		function easeValue() {
+			return state.ease === 'overshoot'
+				? 'cubic-bezier(0.34, ' + state.overshoot + ', 0.64, 1)'
+				: state.ease;
+		}
+		function applyEase() {
+			document.documentElement.style.setProperty('--ease', easeValue());
+			document.documentElement.style.setProperty('--td', state.transDur + 'ms');
+		}
+
+		/* ===================== world geometry ===================== */
+		const PAD = 200;              /* topo padding beyond each page edge (overshoot headroom) */
+		const PAGE_W = 420, PAGE_H = 740;
+		const COMBAT_TOP = PAD;                 /* world y of combat page top */
+		const SHOP_TOP = PAD + PAGE_H;          /* world y of shop page top  */
+		const WORLD_H = PAGE_H * 2 + PAD * 2;
+		const world = document.getElementById('world');
+		const camera = document.getElementById('camera');
+		world.style.height = WORLD_H + 'px';
+
+		/* ===================== topographic background ===================== */
+		/* One continuous SVG: red band = enemy HP display at the combat page top,
+		   gray everywhere else (player HP display, spans combat bottom + shop). */
+		(function buildTopo() {
+			const RED_BOTTOM = COMBAT_TOP + 407; /* red covers ~55% of the combat page */
+			let seed = 20260819;
+			const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+			const NS = 'http://www.w3.org/2000/svg';
+			const svg = document.getElementById('topo');
+			svg.setAttribute('width', PAGE_W);
+			svg.setAttribute('height', WORLD_H);
+			svg.setAttribute('viewBox', '0 0 ' + PAGE_W + ' ' + WORLD_H);
+			const mk = (tag, attrs) => {
+				const el = document.createElementNS(NS, tag);
+				for (const k in attrs) el.setAttribute(k, attrs[k]);
+				svg.appendChild(el);
+			};
+			mk('rect', { x: 0, y: 0, width: PAGE_W, height: RED_BOTTOM, fill: '#a02332' });
+			mk('rect', { x: 0, y: RED_BOTTOM, width: PAGE_W, height: WORLD_H - RED_BOTTOM, fill: '#b8b5ae' });
+			for (let y = -14; y < WORLD_H + 20; y += 44) {
+				let d = 'M -20 ' + y;
+				for (let x = -20; x < PAGE_W + 40; x += 70) {
+					const dy = (rnd() - 0.5) * 30;
+					const dx = 35 + (rnd() - 0.5) * 10;
+					d += ' q ' + dx + ' ' + dy + ' 70 0';
+				}
+				mk('path', {
+					d: d,
+					fill: 'none',
+					stroke: y < RED_BOTTOM ? '#7d1826' : '#a3a29a',
+					'stroke-width': 1.4,
+					opacity: 0.9,
+				});
+			}
+		})();
+
+		/* ===================== layout (page coords -> world coords) ===================== */
+		const CARD_W = 150, CARD_H = 210, SHOP_CARD_SCALE = 0.733;
+		const STACK = { x: 231, y: 400 };       /* combat page coords of the stack anchor */
+		const STEP = 14;                        /* stackStepY (CardStackRevealDemo) */
+		const REVEAL = { x: -17, y: 43, s: 1.18 }; /* slot0 + (-floatX, -upY), revealScale */
+
+		const $ = id => document.getElementById(id);
+		const put = (el, x, y) => { el.style.left = x + 'px'; el.style.top = y + 'px'; };
+		const center = (el, cx, cy) => put(el, cx - CARD_W / 2, cy - CARD_H / 2);
+
+		/* combat static decor */
+		center($('stackShadow'), STACK.x + REVEAL.x, COMBAT_TOP + STACK.y + REVEAL.y + 30);
+		$('stackShadow').style.transform = 'scale(' + REVEAL.s + ')';
+		center($('stackRed'), STACK.x, COMBAT_TOP + STACK.y + STEP);          /* slot i=1 (front-most) */
+		center($('stackGold'), STACK.x + REVEAL.x, COMBAT_TOP + STACK.y + REVEAL.y);
+		$('stackGold').style.transform = 'scale(' + REVEAL.s + ')';
+		put($('enemyHud'), 292, COMBAT_TOP + 26);
+		put($('tagCombat'), 10, COMBAT_TOP + 8);
+		put($('tagShop'), 10, SHOP_TOP + 8);
+
+		/* shop content */
+		put($('btnLeave'), 16, SHOP_TOP + 14);
+		put($('shopChips'), 185, SHOP_TOP + 88);
+		put($('lblShop'), 24, SHOP_TOP + 140); $('lblShop').style.width = '372px';
+		put($('btnReroll'), 320, SHOP_TOP + 136);
+		[0, 1, 2].forEach(i => {
+			put($('shelf' + i), 24 + i * 130, SHOP_TOP + 172);
+			put($('price' + i), 24 + i * 130, SHOP_TOP + 328); $('price' + i).style.width = '110px';
+			put($('dprice' + i), 24 + i * 130, SHOP_TOP + 556); $('dprice' + i).style.width = '110px';
+		});
+		put($('lblDeck'), 24, SHOP_TOP + 358); $('lblDeck').style.width = '372px';
+		put($('slot0'), 24, SHOP_TOP + 582);
+		put($('slot1'), 154, SHOP_TOP + 582);
+
+		/* ===================== shared elements & their two homes ===================== */
+		const deckData = [
+			{ name: '蓝色的鱼', atk: 1, rty: '✦✦✦' },
+			{ name: '铁壳龟',   atk: 2, rty: '✦✦' },
+			{ name: '苔衣小鼠', atk: 1, rty: '✦' },
+		];
+		const deckCards = deckData.map((c, i) => {
+			const el = document.createElement('div');
+			el.className = 'abs mcard';
+			el.innerHTML =
+				'<div class="face"><div class="art"></div>' +
+				'<div class="rty">' + c.rty + '</div>' +
+				'<div class="nm">' + c.name + '</div>' +
+				'<div class="atk">' + c.atk + '</div></div>' +
+				'<div class="back"></div>';
+			el.style.zIndex = 5 + i;
+			world.appendChild(el);
+			return el;
+		});
+
+		/* homes: shop = deck row slots; combat = float stack slots i=2..4 (backs above the red card) */
+		const homes = {
+			playerHud: { shop: { x: 24, y: 84 }, combat: { x: 24, y: 662 } },
+			btnOpts:   { shop: { x: 376, y: 18 }, combat: { x: 376, y: 692 } },
+			cards: deckCards.map((el, i) => ({
+				shop:   { cx: 24 + i * 130 + 55, cy: 479, s: SHOP_CARD_SCALE },
+				combat: { cx: STACK.x, cy: 0, s: 1 }, /* cy set below: stack slots */
+			})),
+		};
+		homes.cards.forEach((h, i) => { h.combat.cy = STACK.y + STEP * (-2 + i); }); /* i=0 -> -2 steps (back), i=2 -> 0 (front) */
+
+		function placeShared(target) {
+			const hud = homes.playerHud[target];
+			put($('playerHud'), hud.x, (target === 'shop' ? SHOP_TOP : COMBAT_TOP) + hud.y);
+			const opt = homes.btnOpts[target];
+			put($('btnOpts'), opt.x, (target === 'shop' ? SHOP_TOP : COMBAT_TOP) + opt.y);
+			homes.cards.forEach((h, i) => {
+				const hh = h[target];
+				const wy = (target === 'shop' ? SHOP_TOP : COMBAT_TOP) + hh.cy;
+				center(deckCards[i], hh.cx, wy);
+				deckCards[i].style.transform = 'scale(' + hh.s + ')';
+				deckCards[i].classList.toggle('is-back', target === 'combat');
+			});
+			$('enemyHud').style.transition = 'none';
+			$('enemyHud').style.transform = 'translateY(' + (target === 'combat' ? 0 : -state.enemySlide) + 'px)';
+		}
+
+		/* ===================== transitions ===================== */
+		let phase = 'shop';   /* shop | moving | combat | result */
+		let camY = -SHOP_TOP; /* world translateY for the shop view */
+		world.style.transform = 'translateY(' + camY + 'px)';
+		/* initial placement happens in buildControls() once state exists */
+
+		function moveCamera(toPage) {
+			camY = -(toPage === 'combat' ? COMBAT_TOP : SHOP_TOP);
+			world.classList.add('moving');
+			world.style.transform = 'translateY(' + camY + 'px)';
+		}
+
+		/* WAAPI flight for one shared element; resolves when landed. */
+		function fly(el, from, to, opts) {
+			opts = opts || {};
+			const mid = opts.arc
+				? [{
+						left: ((from.x + to.x) / 2) + 'px',
+						top: ((from.y + to.y) / 2 - opts.arc) + 'px',
+						transform: 'scale(' + ((from.s + to.s) / 2) + ') rotate(' + (opts.rot || 0) + 'deg)',
+						offset: 0.5,
+					}]
+				: [];
+			const anim = el.animate(
+				[
+					{ left: from.x + 'px', top: from.y + 'px', transform: 'scale(' + from.s + ') rotate(0deg)', offset: 0 },
+					...mid,
+					{ left: to.x + 'px', top: to.y + 'px', transform: 'scale(' + to.s + ') rotate(0deg)', offset: 1 },
+				],
+				{ duration: state.transDur, easing: easeValue(), delay: opts.delay || 0, fill: 'backwards' }
+			);
+			if (opts.flipAtMid) {
+				setTimeout(() => el.classList.toggle('is-back', opts.flipToBack), (opts.delay || 0) + state.transDur / 2);
+			}
+			return anim.finished.catch(() => {}).then(() => {
+				put(el, to.x, to.y);
+				el.style.transform = 'scale(' + to.s + ')';
+			});
+		}
+
+		function flyShared(target) {
+			const jobs = [];
+			const pageTop = target === 'combat' ? COMBAT_TOP : SHOP_TOP;
+			const hudFrom = { ...cur('playerHud'), s: 1 };
+			const hudTo = (() => {
+				const h = homes.playerHud[target];
+				return { x: h.x, y: pageTop + h.y, s: 1 };
+			})();
+			jobs.push(fly($('playerHud'), hudFrom, hudTo));
+			const optFrom = { ...cur('btnOpts'), s: 1 };
+			const optH = homes.btnOpts[target];
+			jobs.push(fly($('btnOpts'), optFrom, { x: optH.x, y: pageTop + optH.y, s: 1 }));
+			homes.cards.forEach((h, i) => {
+				const from = { ...cur(deckCards[i]), s: h[target === 'combat' ? 'shop' : 'combat'].s };
+				const hh = h[target];
+				jobs.push(fly(deckCards[i], from, { x: hh.cx - CARD_W / 2, y: pageTop + hh.cy - CARD_H / 2, s: hh.s }, {
+					arc: state.cardArc,
+					rot: (i - 1) * 5,
+					delay: i * state.cardStagger,
+					flipAtMid: true,
+					flipToBack: target === 'combat',
+				}));
+			});
+			/* enemy HUD counter-direction: slides down in (combat) / up out (shop) */
+			const eh = $('enemyHud');
+			eh.style.transition = 'transform ' + state.transDur + 'ms ' + easeValue();
+			eh.style.transform = 'translateY(' + (target === 'combat' ? 0 : -state.enemySlide) + 'px)';
+			return Promise.all(jobs);
+		}
+		function cur(idOrEl) {
+			const el = typeof idOrEl === 'string' ? $(idOrEl) : idOrEl;
+			return { x: parseFloat(el.style.left) || 0, y: parseFloat(el.style.top) || 0 };
+		}
+
+		function goCombat() {
+			if (phase !== 'shop') return;
+			phase = 'moving';
+			moveCamera('combat');
+			Promise.all([flyShared('combat'), wait(state.transDur + 2 * state.cardStagger)]).then(() => { phase = 'combat'; });
+		}
+		function endCombat() {
+			if (phase !== 'combat') return;
+			phase = 'result';
+			$('resultOverlay').classList.add('on');
+		}
+		function goShop() {
+			if (phase !== 'result') return;
+			$('resultOverlay').classList.remove('on');
+			phase = 'moving';
+			moveCamera('shop');
+			Promise.all([flyShared('shop'), wait(state.transDur)]).then(() => { phase = 'shop'; });
+		}
+		const wait = ms => new Promise(r => setTimeout(r, ms));
+
+		/* end-combat demo button lives on the combat page (world content) */
+		const btnEnd = document.createElement('div');
+		btnEnd.className = 'phys small-btn';
+		btnEnd.innerHTML = '<div class="phys-face">结束战斗（演示）</div>';
+		btnEnd.style.width = '130px';
+		put(btnEnd, 145, COMBAT_TOP + 692);
+		world.appendChild(btnEnd);
+
+		$('btnLeave').addEventListener('click', () => { if (!dragMoved) goCombat(); });
+		btnEnd.addEventListener('click', endCombat);
+		$('btnHome').addEventListener('click', goShop);
+		$('btnReroll').addEventListener('click', () => {});
+		$('btnOpts').addEventListener('click', () => {});
+
+		/* ===================== drag-up gesture (shop -> combat) ===================== */
+		let dragY0 = null, dragMoved = false;
+		camera.addEventListener('pointerdown', e => { dragY0 = e.clientY; dragMoved = false; });
+		camera.addEventListener('pointermove', e => {
+			if (dragY0 === null) return;
+			if (Math.abs(e.clientY - dragY0) > 10) dragMoved = true;
+		});
+		camera.addEventListener('pointerup', e => {
+			if (dragY0 !== null && phase === 'shop' && dragY0 - e.clientY > 60) goCombat();
+			dragY0 = null;
+			setTimeout(() => { dragMoved = false; }, 0);
+		});
+
+		/* ===================== physical state machine (hover/press) ===================== */
+		document.querySelectorAll('.phys').forEach(el => {
+			el.addEventListener('pointerenter', () => el.classList.add('is-hover'));
+			el.addEventListener('pointerleave', () => { el.classList.remove('is-hover'); el.classList.remove('is-pressed'); });
+			el.addEventListener('pointerdown', e => { if (e.button === 0) el.classList.add('is-pressed'); });
+			el.addEventListener('contextmenu', e => e.preventDefault());
+		});
+		window.addEventListener('pointerup', () => {
+			document.querySelectorAll('.phys.is-pressed').forEach(el => el.classList.remove('is-pressed'));
+		});
+
+		/* ===================== params bar ===================== */
+		(function buildControls() {
+			const host = document.getElementById('paramsInner');
+			PARAMS.forEach(p => {
+				state[p.key] = p.def;
+				const wrap = document.createElement('label');
+				wrap.className = 'ctl';
+				const name = document.createElement('span');
+				name.textContent = p.label;
+				wrap.appendChild(name);
+				let input, val;
+				if (p.type === 'select') {
+					input = document.createElement('select');
+					p.options.forEach(([v, l]) => {
+						const o = document.createElement('option');
+						o.value = v; o.textContent = l;
+						input.appendChild(o);
+					});
+					input.value = p.def;
+				} else {
+					input = document.createElement('input');
+					input.type = 'range';
+					input.min = p.min; input.max = p.max; input.step = p.step; input.value = p.def;
+					val = document.createElement('span');
+					val.className = 'val';
+				}
+				input.addEventListener('input', () => {
+					state[p.key] = input.type === 'range' ? Number(input.value) : input.value;
+					applyEase();
+					if (val) val.textContent = input.value + (p.unit || '');
+					if (phase === 'shop') placeShared('shop'); /* enemySlide preview */
+				});
+				wrap.appendChild(input);
+				if (val) { val.textContent = p.def + (p.unit || ''); wrap.appendChild(val); }
+				host.appendChild(wrap);
+			});
+			applyEase();
+			placeShared('shop');
+			const btnCopy = document.createElement('button');
+			btnCopy.className = 'p-btn';
+			btnCopy.textContent = '复制规格 JSON';
+			const btnReset = document.createElement('button');
+			btnReset.className = 'p-btn';
+			btnReset.textContent = '重置';
+			const status = document.createElement('span');
+			status.id = 'copyStatus';
+			host.appendChild(btnCopy);
+			host.appendChild(btnReset);
+			host.appendChild(status);
+			btnCopy.addEventListener('click', () => {
+				navigator.clipboard.writeText(JSON.stringify(state, null, '\t')).then(() => {
+					status.textContent = '已复制';
+					setTimeout(() => status.textContent = '', 1200);
+				});
+			});
+			btnReset.addEventListener('click', () => {
+				host.querySelectorAll('.ctl').forEach((wrap, i) => {
+					const p = PARAMS[i];
+					state[p.key] = p.def;
+					const input = wrap.querySelector('input,select');
+					input.value = p.def;
+					const val = wrap.querySelector('.val');
+					if (val) val.textContent = p.def + (p.unit || '');
+				});
+				applyEase();
+				if (phase === 'shop') placeShared('shop');
+			});
+		})();
+	</script>
+</body>
+</html>
