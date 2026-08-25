@@ -273,8 +273,8 @@ public class AttackResolverSourceTests : HeadlessCombatTestFixture
 
 		ValueTrackerManager.UpdateAllTrackers();
 
-		Assert.AreEqual(5, ValueTrackerManager.totalPowerCountInDeckRef.value,
-			"Every-effect tracker path terminates with a resolver card in the deck (self excluded)");
+		Assert.AreEqual(10, ValueTrackerManager.totalPowerCountInDeckRef.value,
+			"Every-effect tracker path terminates with a resolver card in the deck; aggregate = F1(2) + F2(3) + carrier's resolved dynamic attack (5) = 10");
 	}
 
 	[Test]

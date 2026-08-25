@@ -189,7 +189,10 @@ New cases in `AttackResolverSourceTests` (fixture already supports deck placemen
    carrier; both calls return the same value (flag cleared between calls).
 4. `UpdateAllTrackers_WithResolverCardInDeck_NoOverflow` — wire `totalPowerCountInDeckRef` in
    the fixture, put a resolver carrier in the deck, call `ValueTrackerManager.UpdateAllTrackers()`;
-   assert no exception and the aggregate equals the guard-cut sum. Guards the every-effect path.
+   assert no exception and the aggregate equals the sum of resolved attacks — F1(2) + F2(3) +
+   the carrier's dynamic attack (5) = 10 (the tracker includes resolved dynamic values; the
+   carrier's self-exclusion applies to its own resolution only, not to the aggregate).
+   Guards the every-effect path.
 5. `EnemyNegativeTotal_EnemyCardCarriesResolver_NoRecursion` (optional) — cross-faction cycle
    through the enemy term.
 
