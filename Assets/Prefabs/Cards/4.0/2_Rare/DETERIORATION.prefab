@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6859350244862704699}
   - component: {fileID: 4820303877905451153}
   m_Layer: 0
-  m_Name: for 2 power hostile [curse] power, enhance 1
+  m_Name: for 3 power hostile [curse] power, enhance 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -82,7 +82,7 @@ MonoBehaviour:
   statusEffectResolverPrefab: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
-  powerCoefficient: 2
+  powerCoefficient: 3
   ownerIntSO: {fileID: 11400000, guid: 2262333756286a94aae07ea8ba93e16a, type: 2}
   enemyIntSO: {fileID: 11400000, guid: fe20bd15130544d1b7548a9d96631617, type: 2}
 --- !u!1 &3093881910439127606
@@ -221,7 +221,7 @@ MonoBehaviour:
   cardTypeID: DETERIORATION
   displayName: "\u6076\u5316"
   cardDesc: "\u63ED\u6653\u65F6:\u5F3A\u5316 <b>2</b> \u654C\u65B9[\u8BC5\u5492];\u654C\u65B9[\u8BC5\u5492]\u6BCF\u6709
-    <b>2</b> \u653B\u51FB\u529B:\u5F3A\u5316 <b>1</b>"
+    <b>3</b> \u653B\u51FB\u529B:\u5F3A\u5316 <b>1</b>"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

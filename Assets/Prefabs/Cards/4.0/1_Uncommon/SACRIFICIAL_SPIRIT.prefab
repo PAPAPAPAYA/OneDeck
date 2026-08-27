@@ -60,7 +60,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 5
+          m_IntArgument: 4
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -219,7 +219,7 @@ MonoBehaviour:
   cardTypeID: SACRIFICIAL_SPIRIT
   displayName: SACRIFICIAL_SPIRIT
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u57CB\u846C <b>2</b> \u53CB\u65B9;\u5F3A\u5316
-    <b>5</b> \u654C\u65B9[\u8BC5\u5492]"
+    <b>4</b> \u654C\u65B9[\u8BC5\u5492]"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

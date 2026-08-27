@@ -36,6 +36,9 @@ MonoBehaviour:
   - {fileID: 6547619349240593436, guid: 7e69cb864f0afcf428b736f5000ebab5, type: 3}
   - {fileID: 4399626932432832125, guid: a25ff8cbedd027e4499486cd3509d3bf, type: 3}
   - {fileID: 7857353328620261514, guid: f255e5fa9da06014da6aec648c84f756, type: 3}
+  - {fileID: 4415592718418061644, guid: cd9bf6ed8696ba245baf8f94815a5d4c, type: 3}
+  - {fileID: 3189408098577880931, guid: 0daa69e5df0835f43af8209467ffe614, type: 3}
+  - {fileID: 2419164153547357531, guid: 4f192b614d3e4ff48b9c1d55b82c58b1, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: shop pool
