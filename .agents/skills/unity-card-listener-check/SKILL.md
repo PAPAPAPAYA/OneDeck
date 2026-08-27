@@ -95,11 +95,14 @@ foreach (string guid in guids)
 		UnityEngine.GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(path);
 		if (prefab == null) continue;
 		string desc = "";
+		bool isCreature = false;
 		UnityEngine.Component cardComp = prefab.GetComponent(cardScriptType);
 		if (cardComp != null && cardDescField != null)
 		{
 			object descObj = cardDescField.GetValue(cardComp);
 			if (descObj != null) desc = (string)descObj;
+			System.Reflection.FieldInfo isCreatureField = cardScriptType.GetField("isCreature");
+			if (isCreatureField != null) isCreature = (bool)isCreatureField.GetValue(cardComp);
 		}
 		if (desc == null) desc = "";
 		desc = desc.Replace("\\", "\\\\").Replace("\r", "\\r").Replace("\n", "\\n").Replace("|", "\\|");
@@ -149,7 +152,7 @@ foreach (string guid in guids)
 				bindingCount++;
 			}
 		}
-		sb.Append("CARD|").Append(prefab.name).Append("|").Append(path).Append("|cardDesc=").Append(desc).Append("|bindings=").Append(bindingCount).Append(lb.ToString()).AppendLine();
+		sb.Append("CARD|").Append(prefab.name).Append("|").Append(path).Append("|isCreature=").Append(isCreature ? "1" : "0").Append("|cardDesc=").Append(desc).Append("|bindings=").Append(bindingCount).Append(lb.ToString()).AppendLine();
 		processed++;
 	}
 	catch (System.Exception ex)

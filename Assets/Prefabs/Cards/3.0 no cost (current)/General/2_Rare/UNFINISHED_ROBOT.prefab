@@ -50,15 +50,11 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2370261081127142453}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect,
-          Assembly-CSharp
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect, Assembly-CSharp
         m_MethodName: DoubleOwnAttack
         m_Mode: 1
         m_Arguments:
@@ -88,10 +84,13 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
+  onlyTargetEnemyDamagingCards: 1
   lastXCardsCount: 0
   statusEffectLayerCount: 1
   xFriendlyCount: 0
   yFriendlyLayerCount: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
   particleYOffset: 0
 --- !u!1 &8040865505430379121
@@ -144,9 +143,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -180,6 +176,11 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: -2
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -230,7 +231,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UNFINISHED_ROBOT
   displayName: "\u672A\u5B8C\u6210\u7684\u673A\u5668\u4EBA"
-  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb,\u7ffb\u500d\u81ea\u8eab\u653b\u51fb\u529b"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB,\u7FFB\u500D\u81EA\u8EAB\u653B\u51FB\u529B"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -240,20 +241,15 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 04000000
+  displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
-  exileCostCount: 0
-  exileCostCardTypeID: 
-  exileCostOwner: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

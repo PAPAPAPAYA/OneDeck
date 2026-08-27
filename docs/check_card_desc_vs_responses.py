@@ -30,9 +30,16 @@ def parse_log(path):
             if "|bindings=" not in full:
                 continue
             desc_part, after = full.split("|bindings=", 1)
-            if not desc_part.startswith("cardDesc="):
+            # isCreature token (extraction emits it before cardDesc=): card's explicit 生物 marker.
+            is_creature = None
+            m_creature = re.match(r"isCreature=([01])\|cardDesc=(.*)", desc_part, re.S)
+            if m_creature:
+                is_creature = m_creature.group(1) == "1"
+                desc = m_creature.group(2).replace("\\n", "\n").replace("\\r", "\r").replace("\\|", "|")
+            elif desc_part.startswith("cardDesc="):
+                desc = desc_part[len("cardDesc="):].replace("\\n", "\n").replace("\\r", "\r").replace("\\|", "|")
+            else:
                 continue
-            desc = desc_part[len("cardDesc="):].replace("\\n", "\n").replace("\\r", "\r").replace("\\|", "|")
 
             listeners = []
             # Match each listener binding block; container names may contain ']' so we anchor at the trailing ' costs=...]'.
@@ -55,7 +62,7 @@ def parse_log(path):
                     elif k == "effects":
                         listener["effects"] = parse_calls(v)
                 listeners.append(listener)
-            cards.append({"name": name, "path": asset_path, "desc": desc, "listeners": listeners})
+            cards.append({"name": name, "path": asset_path, "desc": desc, "listeners": listeners, "is_creature": is_creature})
     return cards
 
 
@@ -93,7 +100,27 @@ def method_categories(call):
     m = call["method"]
     cats = []
 
-    if t == "HPAlterEffect":
+    if t == "AttackEffect":
+        if m.startswith("AttackSelf"):
+            cats.append("DAMAGE_SELF")
+        else:
+            cats.append("DAMAGE_OPPONENT")
+    elif t == "AttackGiverEffect":
+        if m == "GiveSelfAttack":
+            cats.append("GIVE_ATTACK_SELF")
+        elif m == "DoubleOwnAttack":
+            cats.append("DOUBLE_ATTACK_SELF")
+        elif m.startswith("Give"):
+            cats.append("GIVE_ATTACK_FRIENDLY")
+    elif t == "AttackGainReactionEffect":
+        # Subclass of AttackGiverEffect; inherits GiveSelfAttack etc.
+        if m == "GiveSelfAttack":
+            cats.append("GIVE_ATTACK_SELF")
+        elif m == "DoubleOwnAttack":
+            cats.append("DOUBLE_ATTACK_SELF")
+        elif m.startswith("Give"):
+            cats.append("GIVE_ATTACK_FRIENDLY")
+    elif t == "HPAlterEffect":
         if m.startswith("DecreaseTheirHp"):
             cats.append("DAMAGE_OPPONENT")
         elif m.startswith("DecreaseMyHp"):
@@ -220,6 +247,15 @@ def extract_trigger_event(segment):
         ("洗牌后", "AfterShuffle"),
         ("被置顶", "OnMeStaged"),
         ("被埋葬", "OnMeBuried"),
+        ("遗言", "OnMeBuried"),
+        ("敌方诅咒被强化", "OnEnemyCurseCardGainedAttack"),
+        ("敌方诅咒获得攻击力时", "OnEnemyCurseCardGainedAttack"),
+        ("友方被强化", "OnFriendlyCardGainedAttack"),
+        ("友方获得攻击力时", "OnFriendlyCardGainedAttack"),
+        ("获得攻击力时", "OnMeGainedAttack"),
+        ("被强化", "OnMeGainedAttack"),
+        # The round-start event SO asset is named BeforeRoundFinished (wired as beforeRoundStart)
+        ("回合开始", "BeforeRoundFinished"),
         ("获得力量时", "OnMeGotStatusEffect"),
         ("揭晓", "OnMeRevealed"),
         ("每", "OnMeRevealed"),
@@ -248,7 +284,7 @@ def extract_expected_categories(segment):
             continue
 
         # Damage
-        if re.search(r"造成\s*\d*\s*伤害|造成\s*\[力量\].*?伤害|伤害\s*x", clause):
+        if re.search(r"造成\s*\d*\s*伤害|造成\s*\[力量\].*?伤害|伤害\s*x|^攻击(?![力])", clause):
             if re.search(r"对自己|自身", clause):
                 cats.append("DAMAGE_SELF")
             else:
@@ -261,8 +297,10 @@ def extract_expected_categories(segment):
             cats.append("BURY_FRIENDLY")
         if re.search(r"埋葬\s*\d*\s*敌方", clause):
             cats.append("BURY_HOSTILE")
-        if re.search(r"埋葬后\s*\d+\s*卡", clause):
+        if re.search(r"埋葬后\s*\d+\s*卡|埋葬卡组顶", clause):
             cats.append("BURY_NEXT")
+        if "埋葬自身" in clause:
+            cats.append("BURY_SELF")
 
         # Stage
         if re.search(r"置顶\s*\d*\s*友方|置顶自身", clause):
@@ -271,7 +309,7 @@ def extract_expected_categories(segment):
             cats.append("STAGE_HOSTILE")
 
         # Curse enhance
-        if re.search(r"增强\s*(?:\d+\s*)?敌方\s*\[诅咒\](?:\s*\d+)?|增强敌方\[诅咒\]", clause):
+        if re.search(r"(?:增强|强化)\s*(?:\d+\s*)?敌方\s*\[诅咒\](?:\s*\d+)?|(?:增强|强化)敌方\[诅咒\]", clause):
             cats.append("ENHANCE_CURSE")
         if re.search(r"增强\s*(?:\d+\s*)?自身诅咒", clause):
             cats.append("ENHANCE_FRIENDLY_CURSE")
@@ -283,12 +321,22 @@ def extract_expected_categories(segment):
             cats.append("CONSUME_CURSE_POWER")
 
         # Give status effect
-        if re.search(r"给予\s*\d*\s*友方\s*\d*\s*力量|给予下\s*\d+\s*卡\s*\d*\s*力量|所有友方获得\s*\d*\s*力量|给予该友方", clause):
+        if re.search(r"给予\s*\d*\s*友方\s*\d*\s*力量|给予下\s*\d+\s*卡\s*\d*\s*力量|所有友方获得\s*\d*\s*力量|给予该友方\s*\d*\s*力量", clause):
             cats.append("GIVE_STATUS_EFFECT")
         if re.search(r"获得\s*\d*\s*力量|获得\s*\d*\s*倍力量|翻倍.*?力量", clause):
             # "[诅咒]获得力量" is handled as curse enhance above
             if not re.search(r"\[诅咒\].*?获得\s*\d*\s*力量", clause):
                 cats.append("GIVE_STATUS_EFFECT")
+
+        # Attack buff (attack-attribute redesign)
+        if re.search(r"强化\s*\d*\s*友方", clause):
+            cats.append("GIVE_ATTACK_FRIENDLY")
+        if re.search(r"给予\s*\d*\s*友方\s*\d*\s*攻击力|给予该友方\s*\d*\s*攻击力", clause):
+            cats.append("GIVE_ATTACK_FRIENDLY")
+        if "强化自身" in clause:
+            cats.append("GIVE_ATTACK_SELF")
+        if "攻击力翻倍" in clause or "翻倍自身攻击力" in clause:
+            cats.append("DOUBLE_ATTACK_SELF")
 
         # Consume status effect
         if re.search(r"去除\s*\d*\s*敌方\s*\d*\s*力量|消耗\s*\d+\s*力量", clause):
@@ -303,11 +351,13 @@ def extract_expected_categories(segment):
             cats.append("ADD_CARD_FRIENDLY")
         if re.search(r"复制敌方\s*\d*\s*\[诅咒\]", clause):
             cats.append("COPY_CURSE")
-        if "添加自身到卡组" in clause:
+        if "添加自身到卡组" in clause or "复制自身" in clause:
             cats.append("ADD_CARD_FRIENDLY")
 
         # Exile
         if re.search(r"放逐\s*\d*\s*友方", clause):
+            cats.append("EXILE_FRIENDLY")
+        if re.search(r"放逐\s*\d*\s*\[", clause):
             cats.append("EXILE_FRIENDLY")
         if re.search(r"放逐\s*\d*\s*敌方", clause):
             cats.append("EXILE_ENEMY")
@@ -344,6 +394,9 @@ COMPATIBLE_CATEGORIES = {
     "TRANSFER_STATUS_EFFECT": {"TRANSFER_STATUS_EFFECT"},
     "ADD_CARD_FRIENDLY": {"ADD_CARD_FRIENDLY"},
     "ADD_CARD_ENEMY": {"ADD_CARD_ENEMY"},
+    "GIVE_ATTACK_FRIENDLY": {"GIVE_ATTACK_FRIENDLY"},
+    "GIVE_ATTACK_SELF": {"GIVE_ATTACK_SELF"},
+    "DOUBLE_ATTACK_SELF": {"DOUBLE_ATTACK_SELF"},
     "COPY_CURSE": {"COPY_CURSE"},
     "EXILE_FRIENDLY": {"EXILE_FRIENDLY", "EXILE_TAG"},
     "EXILE_ENEMY": {"EXILE_ENEMY", "EXILE_TAG"},
@@ -364,9 +417,14 @@ def check_card(card):
     mismatches = []
     desc = card["desc"]
     segments = split_segments(desc)
+    current_trigger = "OnMeRevealed"
 
     for seg in segments:
-        trigger = extract_trigger_event(seg)
+        if ":" in seg:
+            current_trigger = extract_trigger_event(seg)
+        elif re.search(r"卡位增加|生命值上限增加", seg):
+            current_trigger = "OnMeBought"
+        trigger = current_trigger
         expected_cats = extract_expected_categories(seg)
         if not expected_cats:
             # No recognizable effect in this segment (e.g. pure trigger like "萦绕")
@@ -405,15 +463,38 @@ def check_card(card):
 
     # Also detect orphan listeners: event not described by any segment
     described_triggers = set()
+    current_trigger = "OnMeRevealed"
     for seg in segments:
-        described_triggers.add(extract_trigger_event(seg))
+        if ":" in seg:
+            current_trigger = extract_trigger_event(seg)
+        elif re.search(r"卡位增加|生命值上限增加", seg):
+            current_trigger = "OnMeBought"
+        described_triggers.add(current_trigger)
 
     orphan_listeners = []
     for lst in card["listeners"]:
         if lst["event"] not in described_triggers:
             orphan_listeners.append(lst)
 
-    return mismatches, orphan_listeners
+    # Creature-marker consistency: explicit CardScript.isCreature must match the bindings.
+    # A card is inferred as a creature when it binds AttackEffect.Attack* (modern attack
+    # attribute) or HPAlterEffect.DecreaseTheirHp* (legacy direct damage).
+    creature_issues = []
+    if card.get("is_creature") is not None:
+        inferred = False
+        for lst in card["listeners"]:
+            for call in lst["effects"]:
+                if call["type"] == "AttackEffect":
+                    inferred = True
+                elif call["type"] == "HPAlterEffect" and call["method"].startswith("DecreaseTheirHp"):
+                    inferred = True
+        if inferred != card["is_creature"]:
+            creature_issues.append({
+                "is_creature": card["is_creature"],
+                "inferred": inferred,
+            })
+
+    return mismatches, orphan_listeners, creature_issues
 
 
 def listener_summary(lst):
@@ -438,9 +519,9 @@ def build_report(cards):
 
     issue_cards = []
     for card in cards:
-        mismatches, orphans = check_card(card)
-        if mismatches or orphans:
-            issue_cards.append((card, mismatches, orphans))
+        mismatches, orphans, creature_issues = check_card(card)
+        if mismatches or orphans or creature_issues:
+            issue_cards.append((card, mismatches, orphans, creature_issues))
 
     total = len(cards)
     ok = total - len(issue_cards)
@@ -463,7 +544,7 @@ def build_report(cards):
     lines.append("## 疑似不匹配卡片")
     lines.append("")
 
-    for idx, (card, mismatches, orphans) in enumerate(issue_cards, 1):
+    for idx, (card, mismatches, orphans, creature_issues) in enumerate(issue_cards, 1):
         lines.append("### " + str(idx) + ". " + card["name"])
         lines.append("")
         lines.append("**路径**：`" + card["path"] + "`")
@@ -495,6 +576,14 @@ def build_report(cards):
             lines.append("")
             for lst in orphans:
                 lines.append(listener_summary(lst))
+            lines.append("")
+
+        if creature_issues:
+            lines.append("**生物标记与绑定不一致（isCreature）**：")
+            lines.append("")
+            for ci in creature_issues:
+                lines.append("- 显式 `isCreature=" + ("1" if ci["is_creature"] else "0") +
+                             "`，但绑定推导为 " + ("生物（绑定 AttackEffect/DecreaseTheirHp）" if ci["inferred"] else "非生物（无攻击/伤害绑定）"))
             lines.append("")
 
     lines.append("---")

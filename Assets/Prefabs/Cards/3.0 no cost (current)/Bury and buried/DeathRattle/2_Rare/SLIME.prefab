@@ -218,7 +218,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SLIME
   displayName: "\u53F2\u83B1\u59C6"
-  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb;\n\u88ab\u57cb\u846c:\u6dfb\u52a0\u81ea\u8eab\u5230\u5361\u7ec4\u4e2d"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\n\u88AB\u57CB\u846C:\u6DFB\u52A0\u81EA\u8EAB\u5230\u5361\u7EC4\u4E2D"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -230,10 +230,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 03000000
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

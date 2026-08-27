@@ -72,6 +72,13 @@ public class CardScript : MonoBehaviour
 	[HideInInspector]
 	public int extraAttackTimes;
 
+	/// <summary>
+	/// Creature marker (4.0 spec 生物): card with the attack attribute, including attack 0.
+	/// Invariant: 生物 ⟺ ATK column non-empty. Explicit flag — never inferred from components —
+	/// so target predicates (强化N友方, 埋葬N敌方生物, onlyTargetEnemyDamagingCards, ...) stay robust.
+	/// </summary>
+	public bool isCreature = false;
+
 	[System.NonSerialized]
 	private Func<int> _attackResolver;
 

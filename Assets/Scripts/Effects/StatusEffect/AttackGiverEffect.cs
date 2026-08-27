@@ -12,6 +12,18 @@ namespace DefaultNamespace.Effects
 	public class AttackGiverEffect : StatusEffectGiverEffect
 	{
 		/// <summary>
+		/// Attack granting has no status-effect receive restrictions (no stacking limit and no
+		/// statusEffectToGive gate): any card may receive permanent attack. The 强化 target pool
+		/// is shaped by PassesDamageFilter (isCreature) / the target predicate, not by
+		/// CanReceiveStatusEffect — which would otherwise always reject cards when
+		/// statusEffectToGive is None (the field is meaningless for attack granting).
+		/// </summary>
+		protected override bool CanReceiveStatusEffect(CardScript cardScript, EnumStorage.StatusEffect effect)
+		{
+			return true;
+		}
+
+		/// <summary>
 		/// Give permanent attack to this card itself.
 		/// </summary>
 		public virtual void GiveSelfAttack(int amount)

@@ -95,44 +95,6 @@ public static class UtilityFuncManagerScript
 		return false;
 	}
 
-	/// <summary>
-	/// Check whether a card can damage the enemy, i.e. it has any HPAlterEffect method whose
-	/// name starts with "DecreaseTheirHp" bound via persistent UnityEvent calls
-	/// (CostNEffectContainer.effectEvent or GameEventListener.response).
-	/// Only serialized Inspector bindings are visible; runtime AddListener bindings are not.
-	/// </summary>
-	public static bool HasDecreaseTheirHpEffect(GameObject card)
-	{
-		if (card == null) return false;
-		var containers = card.GetComponentsInChildren<CostNEffectContainer>(true);
-		foreach (var container in containers)
-		{
-			if (container != null && EventTargetsDecreaseTheirHp(container.effectEvent)) return true;
-		}
-		var listeners = card.GetComponentsInChildren<DefaultNamespace.GameEventListener>(true);
-		foreach (var listener in listeners)
-		{
-			if (listener != null && EventTargetsDecreaseTheirHp(listener.response)) return true;
-		}
-		return false;
-	}
-
-	private static bool EventTargetsDecreaseTheirHp(UnityEvent unityEvent)
-	{
-		if (unityEvent == null) return false;
-		for (int i = 0; i < unityEvent.GetPersistentEventCount(); i++)
-		{
-			string methodName = unityEvent.GetPersistentMethodName(i);
-			if (unityEvent.GetPersistentTarget(i) is HPAlterEffect &&
-				!string.IsNullOrEmpty(methodName) &&
-				methodName.StartsWith("DecreaseTheirHp"))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	// copy generic type list
 	public static void CopyList<T>(List<T> from, List<T> to, bool clearTargetList)
 	{

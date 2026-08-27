@@ -222,7 +222,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: GRAVE_KEEPER
   displayName: "\u5B88\u5893\u4EBA"
-  cardDesc: "\u53cb\u65b9\u88ab\u57cb\u846c\u65f6:\u7f6e\u9876\u81ea\u8eab;\n\u63ed\u6653\u65f6:\u653b\u51fb"
+  cardDesc: "\u53CB\u65B9\u88AB\u57CB\u846C\u65F6:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u653B\u51FB"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -234,10 +234,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &5681035199836309128
 MonoBehaviour:
   m_ObjectHideFlags: 0

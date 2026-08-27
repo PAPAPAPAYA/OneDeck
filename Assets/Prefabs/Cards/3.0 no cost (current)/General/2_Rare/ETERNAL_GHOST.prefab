@@ -97,6 +97,7 @@ MonoBehaviour:
   statusEffectToCheck: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &8718476725744197808
@@ -148,7 +149,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: ETERNAL_GHOST
   displayName: "\u4E0D\u6563\u7684\u6076\u7075"
-  cardDesc: "<tag:Linger>;\n\u5f53\u654c\u4eba\u53d7\u5230\u4f24\u5bb3\u65f6:\u653b\u51fb"
+  cardDesc: "<tag:Linger>;\n\u5F53\u654C\u4EBA\u53D7\u5230\u4F24\u5BB3\u65F6:\u653B\u51FB"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -160,10 +161,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 01000000
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

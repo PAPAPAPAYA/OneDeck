@@ -177,6 +177,7 @@ MonoBehaviour:
   statusEffectToCheck: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
 --- !u!114 &6865625390785001126
@@ -244,7 +245,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_DRAGON
   displayName: "\u6B21\u5143\u9F99"
-  cardDesc: "\u63ed\u6653\u65f6:\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d],\u653b\u51fb;\n\u88ab\u7f6e\u9876:\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d]"
+  cardDesc: "\u63ED\u6653\u65F6:\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D],\u653B\u51FB;\n\u88AB\u7F6E\u9876:\u751F\u6210
+    <b>1</b> [\u6B21\u5143\u88C2\u7F1D]"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -256,10 +258,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 4
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

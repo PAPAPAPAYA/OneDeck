@@ -83,6 +83,11 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: 0
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &5307262459958874178
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,7 +217,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_INSECT
   displayName: "\u6B21\u5143\u866B"
-  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb;\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d]"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -222,11 +227,15 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

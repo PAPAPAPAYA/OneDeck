@@ -51,7 +51,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: JIJI_THE_KING
   displayName: "\u6025\u6025\u56FD\u738B"
-  cardDesc: "\u6D17\u724C\u540E:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u9020\u6210 <b><dmg></b> \u4F24\u5BB3"
+  cardDesc: "\u6D17\u724C\u540E:\u7F6E\u9876\u81EA\u8EAB;\n\u63ED\u6653\u65F6:\u9020\u6210
+    <b><dmg></b> \u4F24\u5BB3"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -63,6 +64,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
+  printedAttack: 0
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -202,6 +210,11 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: 1
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &6947502767563041322
 GameObject:
   m_ObjectHideFlags: 0
@@ -283,3 +296,5 @@ MonoBehaviour:
   targetFriendly: 0
   statusEffectToCheck: 0
   excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}

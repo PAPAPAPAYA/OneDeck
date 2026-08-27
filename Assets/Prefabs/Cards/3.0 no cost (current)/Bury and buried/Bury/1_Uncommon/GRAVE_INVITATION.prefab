@@ -81,6 +81,7 @@ MonoBehaviour:
   excludeSelf: 1
   ownerIntSO: {fileID: 11400000, guid: 809d1d05286f984409aaabe7bfb9fc17, type: 2}
   enemyIntSO: {fileID: 11400000, guid: 6a71e8c2b741fd84abafa02a92d21951, type: 2}
+  ignoreStartCardBoundary: 0
 --- !u!1 &7538812023556790325
 GameObject:
   m_ObjectHideFlags: 0
@@ -164,6 +165,9 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: 2
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &8718476725744197808
@@ -216,7 +220,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: GRAVE_INVITATION
   displayName: "\u51A5\u754C\u9080\u8BF7"
-  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb,\u5893\u5730\u6bcf\u6709 <b>1</b> \u53cb\u65b9:\u57cb\u846c <b>1</b> \u654c\u65b9"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB,\u5893\u5730\u6BCF\u6709 <b>1</b> \u53CB\u65B9:\u57CB\u846C
+    <b>1</b> \u654C\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -228,10 +233,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

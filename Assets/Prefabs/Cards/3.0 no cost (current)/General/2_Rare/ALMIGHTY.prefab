@@ -121,8 +121,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 8859623698287760490}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect,
-          Assembly-CSharp
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect, Assembly-CSharp
         m_MethodName: GiveAttack
         m_Mode: 3
         m_Arguments:
@@ -344,8 +343,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 6535371549024205037}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect,
-          Assembly-CSharp
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackGiverEffect, Assembly-CSharp
         m_MethodName: GiveSelfAttack
         m_Mode: 3
         m_Arguments:
@@ -435,7 +433,12 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: ALMIGHTY
   displayName: "\u5168\u80FD\u4EBA"
-  cardDesc: "\u63ed\u6653 <b>2<counter></b> \u6b21:\u653b\u51fb,\u653b\u51fb\u529b = \u5893\u5730\u53cb\u65b9\u5361\u6570 + \u53cb\u65b9[\u6b21\u5143\u88c2\u7f1d]\u6570 + \u654c\u65b9[\u8d1f\u9762]\u653b\u51fb\u529b\u603b\u548c(\u5e38\u6001\u7ed3\u7b97),\u7f6e\u9876 <b>1</b> \u53cb\u65b9,\u57cb\u846c <b>1</b> \u654c\u65b9,\u7ed9\u4e88 <b>1</b> \u53cb\u65b9\u653b\u51fb\u529b,\u751f\u6210 <b>1</b> [\u6b21\u5143\u88c2\u7f1d],\u589e\u5f3a <b>1</b> \u654c\u65b9[\u8bc5\u5492]"
+  cardDesc: "\u63ED\u6653 <b>2<counter></b> \u6B21:\u653B\u51FB,\u653B\u51FB\u529B
+    = \u5893\u5730\u53CB\u65B9\u5361\u6570 + \u53CB\u65B9[\u6B21\u5143\u88C2\u7F1D]\u6570
+    + \u654C\u65B9[\u8D1F\u9762]\u653B\u51FB\u529B\u603B\u548C(\u5E38\u6001\u7ED3\u7B97),\u7F6E\u9876
+    <b>1</b> \u53CB\u65B9,\u57CB\u846C <b>1</b> \u654C\u65B9,\u7ED9\u4E88 <b>1</b>
+    \u53CB\u65B9\u653B\u51FB\u529B,\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D],\u589E\u5F3A
+    <b>1</b> \u654C\u65B9[\u8BC5\u5492]"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -447,10 +450,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -510,4 +516,3 @@ MonoBehaviour:
     cardTypeID: RIFT
   - source: 4
     cardTypeID: JU_ON
-

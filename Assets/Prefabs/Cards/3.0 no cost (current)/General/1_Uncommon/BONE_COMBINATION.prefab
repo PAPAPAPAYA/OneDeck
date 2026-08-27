@@ -83,6 +83,9 @@ MonoBehaviour:
   isStatusEffectDamage: 0
   extraDmg: 0
   statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
   dynamicDmgDisplaySource: 3
   dynamicDmgDisplayMultiplyByPower: 1
 --- !u!1 &8718476725744197808
@@ -134,7 +137,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BONE_COMBINATION
   displayName: "\u788E\u9AA8\u805A\u96C6\u4F53"
-  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb \xd7\u672c\u56de\u5408\u88ab\u57cb\u846c\u7684\u654c\u65b9\u6570\u91cf"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB \xD7\u672C\u56DE\u5408\u88AB\u57CB\u846C\u7684\u654C\u65B9\u6570\u91CF"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -146,10 +149,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

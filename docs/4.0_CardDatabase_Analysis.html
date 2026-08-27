@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.0 Card Database 设计分析</title>
+<style>
+	:root {
+		--bg:#14161c; --card:#1d2129; --card2:#232834; --text:#c8ccd4; --dim:#8b93a3;
+		--accent:#7aa2f7; --warn:#e0af68; --good:#9ece6a; --bad:#f7768e; --line:#2e3442;
+		--purple:#bb9af7; --cyan:#7dcfff; --peach:#ff9e64; --teal:#73daca;
+	}
+	* { box-sizing:border-box; margin:0; padding:0; }
+	html { scroll-behavior:smooth; }
+	body {
+		background:var(--bg); color:var(--text);
+		font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+		line-height:1.6; padding:24px; max-width:1380px; margin:0 auto;
+	}
+	h1 { font-size:1.5rem; margin-bottom:4px; color:#e6e9ef; }
+	h2 { font-size:1.12rem; margin:34px 0 12px; color:#e6e9ef; border-left:3px solid var(--accent); padding-left:10px; }
+	h3 { font-size:1rem; margin:0 0 8px; color:#dfe3ea; }
+	.sub { color:var(--dim); font-size:0.85rem; margin:8px 0 6px; line-height:1.7; }
+	.sub a { color:var(--accent); }
+	.meta { color:var(--dim); font-size:0.85rem; margin:2px 0; }
+	.meta-lbl { color:#b6bdca; font-weight:600; }
+	code { font-family:Consolas,monospace; background:#1a1e27; border:1px solid var(--line); border-radius:4px; padding:0 4px; font-size:0.82em; color:#c0caf5; }
+	strong { color:#e6e9ef; }
+	p { margin:8px 0; font-size:0.9rem; }
+	ul, ol { margin:6px 0 6px 22px; font-size:0.88rem; }
+	li { margin:4px 0; }
+	a { color:var(--accent); text-decoration:none; }
+	a:hover { text-decoration:underline; }
+
+	.kpis { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0 6px; }
+	.kpi { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 16px; flex:1 1 170px; min-width:160px; }
+	.kpi .num { font-size:1.3rem; font-weight:700; font-family:Consolas,monospace; color:#e6e9ef; }
+	.kpi .lbl { font-size:0.76rem; color:var(--dim); margin-top:2px; line-height:1.5; }
+
+	.toc { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 4px; }
+	.toc a { font-size:0.78rem; padding:3px 10px; border-radius:14px; border:1px solid var(--line); background:var(--card); color:var(--dim); white-space:nowrap; }
+	.toc a:hover { color:var(--accent); border-color:var(--accent); }
+
+	.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:14px 0; overflow-x:auto; }
+	.tbl { padding:6px 10px; }
+	.dup { border-left:3px solid var(--warn); }
+	.lead-card li { font-size:0.9rem; margin:8px 0; }
+	table { border-collapse:collapse; width:100%; font-size:0.84rem; }
+	th, td { padding:6px 9px; border-bottom:1px solid var(--line); vertical-align:top; text-align:left; }
+	th { color:var(--dim); font-weight:600; background:var(--card2); position:sticky; top:0; white-space:nowrap; z-index:1; }
+	tbody tr:hover td { background:#1a1e27; }
+
+	.cid { font-family:Consolas,monospace; font-size:0.74rem; color:var(--accent); background:#1a1e27; border:1px solid #7aa2f788; border-radius:4px; padding:0 4px; white-space:nowrap; margin:0 1px; }
+	.num { font-family:Consolas,monospace; color:var(--accent); font-weight:700; }
+	.st { font-weight:600; }
+	.st.ok { color:var(--good); }
+	.st.no { color:var(--bad); }
+	.st.warn { color:var(--warn); }
+	.dim { color:var(--dim); }
+	.atk { font-family:Consolas,monospace; font-weight:700; color:var(--peach); }
+	.atk.none { color:var(--dim); font-weight:400; }
+	.chg { color:var(--warn); font-size:0.8rem; }
+	.newbdg { display:inline-block; font-size:0.66rem; font-weight:700; color:#14161c; background:var(--good); border-radius:8px; padding:0 6px; margin-left:4px; }
+
+	.tag { display:inline-block; font-size:0.7rem; padding:1px 7px; border-radius:10px; border:1px solid; margin:0 2px 2px 0; white-space:nowrap; }
+	.t-faith { color:var(--cyan); border-color:#7dcfff88; }
+	.t-curse { color:var(--bad); border-color:#f7768e88; }
+	.t-lastword { color:var(--peach); border-color:#ff9e6488; }
+	.t-bury { color:var(--good); border-color:#9ece6a88; }
+	.t-wake { color:var(--purple); border-color:#bb9af788; }
+	.t-passive { color:var(--accent); border-color:#7aa2f788; }
+	.t-exile { color:var(--dim); border-color:#8b93a388; }
+	.t-enhance { color:var(--warn); border-color:#e0af6888; }
+	.t-benhance { color:var(--teal); border-color:#73daca88; }
+	.t-other { color:#c0caf5; border-color:#c0caf588; }
+
+	.v { display:inline-block; font-size:0.72rem; font-weight:700; padding:1px 8px; border-radius:10px; border:1px solid; white-space:nowrap; }
+	.v-hi { color:var(--bad); border-color:#f7768e88; }
+	.v-mid { color:var(--peach); border-color:#ff9e6488; }
+	.v-ok { color:var(--good); border-color:#9ece6a88; }
+	.v-build { color:var(--purple); border-color:#bb9af788; }
+	.v-double { color:var(--warn); border-color:#e0af6888; }
+
+	.lv { display:inline-block; font-size:0.72rem; font-weight:700; padding:1px 8px; border-radius:10px; border:1px solid; white-space:nowrap; }
+	.lv-0 { color:var(--good); border-color:#9ece6a88; }
+	.lv-1 { color:var(--cyan); border-color:#7dcfff88; }
+	.lv-2 { color:var(--purple); border-color:#bb9af788; }
+	.lv-3 { color:var(--peach); border-color:#ff9e6488; }
+	.lv-4 { color:var(--bad); border-color:#f7768e88; }
+
+	.arch { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin:14px 0; }
+	.arch-title { font-weight:700; font-size:0.95rem; color:#e6e9ef; margin-bottom:8px; padding-left:10px; border-left:3px solid var(--accent); }
+	.a1 .arch-title { border-color:var(--purple); }
+	.a2 .arch-title { border-color:var(--cyan); }
+	.a3 .arch-title { border-color:var(--bad); }
+	.a4 .arch-title { border-color:var(--peach); }
+	.a5 .arch-title { border-color:var(--accent); }
+	.a6 .arch-title { border-color:var(--good); }
+	.a7 .arch-title { border-color:var(--teal); }
+
+	.risk { background:var(--card); border:1px solid var(--line); border-left:4px solid; border-radius:10px; padding:12px 16px; margin:12px 0; }
+	.r-hi { border-left-color:var(--bad); }
+	.r-mid { border-left-color:var(--peach); }
+	.r-low { border-left-color:var(--warn); }
+	.risk-head { margin-bottom:6px; }
+	.r-badge { display:inline-block; font-size:0.7rem; font-weight:700; color:#14161c; background:var(--bad); border-radius:10px; padding:1px 8px; margin-right:8px; }
+	.r-mid .r-badge { background:var(--peach); }
+	.r-low .r-badge { background:var(--warn); }
+	.r-title { font-weight:700; color:#e6e9ef; font-size:0.92rem; }
+	.risk-body { font-size:0.86rem; }
+	.advice { color:var(--good); font-weight:700; }
+
+	.q { background:var(--card); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:10px; padding:12px 16px; margin:12px 0; font-size:0.88rem; }
+	.qn { display:inline-block; font-size:0.7rem; font-weight:700; color:#14161c; background:var(--accent); border-radius:10px; padding:1px 8px; margin-right:8px; }
+	.q.resolved { border-left-color:var(--good); opacity:0.75; }
+	.q.resolved .qn { background:var(--good); }
+
+	.legend { font-size:0.76rem; color:var(--dim); margin:8px 0 4px; }
+	.legend .tag { font-size:0.68rem; }
+	.fbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:10px 0; }
+	.fbar input { background:var(--card2); border:1px solid var(--line); border-radius:8px; color:var(--text); padding:5px 10px; font-size:0.8rem; width:230px; font-family:inherit; }
+	.fbar input:focus { outline:none; border-color:var(--accent); }
+	.fbtn { font-size:0.72rem; padding:3px 10px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--dim); cursor:pointer; font-family:inherit; }
+	.fbtn:hover { border-color:var(--accent); color:var(--accent); }
+	.fbtn.on { border-color:var(--accent); color:var(--accent); background:#1a1e27; font-weight:600; }
+	.fcnt { font-size:0.66rem; color:var(--dim); }
+	.fcount { font-size:0.74rem; color:var(--dim); margin-left:auto; }
+
+	footer { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); }
+	footer h2 { margin-top:0; }
+	footer ol { font-size:0.88rem; }
+	@media print {
+		body { background:#fff; color:#222; }
+		.card, .arch, .risk, .q { border-color:#ccc; background:#fff; }
+		.toc, .fbar { display:none; }
+		th { position:static; background:#eee; color:#333; }
+	}
+</style>
+</head>
+<body>
+<h1>4.0 Card Database 设计分析</h1>
+
+<div class="sub"><div class="meta"><span class="meta-lbl">分析日期:</span> 2026-08-25 (v2 — 按库更新迭代: tag 90/99 已配 · ATK 41/99 已填 · 被动关键词正式化)</div><div class="meta"><span class="meta-lbl">数据源:</span> Notion「4.0 card database」99 行快照 (<a href="https://app.notion.com/p/3c7827b8c3c1807dbb4ac73a5c64ea26">https://app.notion.com/p/3c7827b8c3c1807dbb4ac73a5c64ea26</a>)</div><div class="meta"><span class="meta-lbl">参考:</span> <a href="docs/CardBalanceAudit_ZombieBaseline.md">docs/CardBalanceAudit_ZombieBaseline.md</a> (僵尸基准估值模型) · <a href="docs/CardPoolV4_Design_CoreFormula.html">docs/CardPoolV4_Design_CoreFormula.html</a> (双乘区/关键词) · <a href="docs/CardPoolV5_Design.html">docs/CardPoolV5_Design.html</a> (力量与攻击力统一) · <a href="docs/3.0_no_cost_CardDesign.md">docs/3.0_no_cost_CardDesign.md</a> (现网卡池)</div><div class="meta"><span class="meta-lbl">术语映射 (用户确认):</span> 【强化】= 增强 · 【被动】= 常驻墓地 (start card 后区域)、不洗牌回收、满足条件持续生效 · 【信徒】= 现次元裂缝 (RIFT) · 【苏醒】= 被复活时 · 【复活】= 卡片从墓地置顶到卡组顶 · 【遗言】= 被埋葬时 · 【放逐】= 去除 (当前主要为信徒自放逐) · 【回响X】= X&gt;0 时该卡揭晓后不进入墓地, X-1 并回到 start card 前 · 【生物】= 按是否能攻击区分 · 【墓地】= start card 后的区域 (用户确认)</div><div class="meta"><span class="meta-lbl">编号约定:</span> <span class="cid">C01</span>-<span class="cid">C99</span> 沿用 v1 编号 (已删除行留空: <span class="cid">C09</span> <span class="cid">C67</span> <span class="cid">C78</span>); 新增卡编 <span class="cid">C100</span>-<span class="cid">C102</span>。</div></div>
+
+<div class="kpis">
+	<div class="kpi"><div class="num">99</div><div class="lbl">数据库行 — 删除 3 (重复合并) · 新增 3 (<span class="cid">C100</span>-<span class="cid">C102</span>)</div></div>
+	<div class="kpi"><div class="num">90/99</div><div class="lbl">已配 tag — 未挂 9 张全为复活/延后/交换类 (tag 体系缺「复活」选项的直接后果)</div></div>
+	<div class="kpi"><div class="num">41/99</div><div class="lbl">已填 ATK — 分布 0×8 · 1×8 · 2×21 · 3×3 · 4×1, 均值 ≈1.5, 中位数 2</div></div>
+	<div class="kpi"><div class="num">19</div><div class="lbl">被动正式化 — 文案加「被动:」前缀; 引擎永久化, 定价需全局重估 (§5.3)</div></div>
+	<div class="kpi"><div class="num">33 · 22 · 21</div><div class="lbl">复活 / 诅咒 / 信徒 — 三大支柱; 遗言 14 · 埋葬 24 · 放逐 6</div></div>
+	<div class="kpi"><div class="num">4</div><div class="lbl">重要词条变更 — <span class="cid">C16</span> 移除放逐代价 · <span class="cid">C62</span> 埋敌改磨牌 · <span class="cid">C92</span> 限本回合 · <span class="cid">C98</span> 移除无法攻击</div></div>
+</div>
+
+<nav class="toc">
+	<a href="#s0">0. TL;DR</a><a href="#s1">1. 数据质量</a><a href="#s2">2. 关键词映射</a><a href="#s3">3. 机制分布</a><a href="#s4">4. 流派支柱</a><a href="#s5">5. 强度粗评</a><a href="#s6">6. 循环风险</a><a href="#s7">7. 工作量分级</a><a href="#s8">8. 开放问题</a><a href="#s9">9. 附录 99 卡</a><a href="#next">后续动作</a>
+</nav>
+
+<h2 id="s0">0. TL;DR</h2>
+<div class="card lead-card"><ul class="lead">
+	<li><strong>库已进入词条化阶段</strong>: 99 行中 90 行已配 tag、41 行已填 ATK (均值 ≈1.5); 被动关键词正式化 (19 张, 文案加「被动:」前缀); 3 张重复/冗余已删 (<span class="cid">C09</span> <span class="cid">C67</span> <span class="cid">C78</span>), 新增 3 张 (<span class="cid">C100</span> 交换 / <span class="cid">C101</span> 敌诅咒揭晓复活自身 / <span class="cid">C102</span> 墓地生物光环)。</li>
+	<li><strong>4.0 = 墓地中心化重做</strong>。墓地确认为 <strong>start card 后的区域</strong>: 揭晓后进墓地 (回响除外) → 洗牌回收 (被动除外) → 复活/苏醒构成新资源经济。与现行「揭晓后放回卡组底」是流程级冲突。</li>
+	<li><strong>机制分布</strong>: 复活 33 / 埋葬 24 / 诅咒 22 / 信徒 21 / 被动 19 / 遗言 14。复活是第一大机制 (1/3 卡池) 却不在 9 个 tag 选项里 —— 未挂 tag 的 9 张里 7 张是复活卡, 直接印证缺口。</li>
+	<li><strong>代码现状比预期好</strong>: 攻击力属性重做已落地 (<code>CardScript.printedAttack</code> / <code>attackGrowth</code> / <code>extraAttackTimes</code> / <code>GetAttack()</code> / <code>AttackEffect</code> / <code>AttackResolverSource</code> + <code>onMeGainedAttack</code> 系列事件), 且 <code>AttackResolverSource</code> 已在统计「start card 之后的卡」—— 墓地区域的代码语义部分现成。新增缺口集中在墓地层 (复活/苏醒/被动豁免/回响/回合结束), 见 §7。</li>
+	<li><strong>数值框架已浮现</strong> (从 41 张已填 ATK 归纳): 效果载体 ATK 0-1 · 基准攻击 2 · 多段压缩 ATK 到 1 (<span class="cid">C40</span> x2@1 / <span class="cid">C91</span> x4@1) · 代价补偿 +2 (<span class="cid">C13</span> 埋1友方@4)。v1 的白板多段离群点已被数值兜底。</li>
+	<li><strong>风险重心从白板数值转移到常驻被动引擎</strong>: 19 张被动全部无揭晓位成本、永久 uptime —— 被动池需要独立的「强度税」定价规则 (§5.3)。结构性风险仍是: 苏醒复活链 (<span class="cid">C52</span>+<span class="cid">C33</span>)、被强化自复活 (<span class="cid">C10</span>+<span class="cid">C39</span>)、遗言复制指数 (<span class="cid">C63</span>+<span class="cid">C49</span>)、信徒自增殖 (<span class="cid">C27</span>); 注意 <span class="cid">C33</span>/<span class="cid">C49</span>/<span class="cid">C27</span> 均已被动化, 风险等级上调 (§6)。</li>
+	<li><strong>tag 语义漂移需裁定</strong>: 「被强化」被挂在多张无被强化文案的卡上 (<span class="cid">C40</span> <span class="cid">C48</span> <span class="cid">C60</span> <span class="cid">C91</span> 等 12 张) —— 若新语义 = 「受益于一图流强化的卡」需写明; 另有疑误标 (<span class="cid">C02</span>/<span class="cid">C36</span> 挂信徒、<span class="cid">C56</span> 挂苏醒)。见 §8-Q9。</li>
+</ul></div>
+
+<h2 id="s1">1. 数据质量</h2>
+<div class="card tbl"><table><thead><tr><th>字段</th><th>已填</th><th>说明</th></tr></thead><tbody>
+		<tr><td>CARD_TYPE_ID</td><td><span class="st warn">1/99</span></td><td>仅 SPIKE_SKELETON (<span class="cid">C99</span>)</td></tr>
+		<tr><td>ATK</td><td><span class="st warn">41/99</span></td><td>分布 0×8 / 1×8 / 2×21 / 3×3 / 4×1, 均值 ≈1.5, 中位数 2 (定价规则归纳见 §5.1)</td></tr>
+		<tr><td>tag</td><td><span class="st ok">90/99</span></td><td>未挂 9 张: <span class="cid">C06</span> <span class="cid">C11</span> <span class="cid">C21</span> <span class="cid">C46</span> <span class="cid">C72</span> <span class="cid">C79</span> <span class="cid">C83</span> <span class="cid">C96</span> <span class="cid">C100</span> —— 7 张是复活/延后/交换类, tag 体系缺「复活」选项所致</td></tr>
+		<tr><td>side note</td><td><span class="st warn">1/99</span></td><td>SPIKE_SKELETON 的术语说明</td></tr>
+		<tr><td>稀有度</td><td><span class="dim">无字段</span></td><td>三张卡文案内引用稀有度 (<span class="cid">C72</span> <span class="cid">C79</span> <span class="cid">C96</span>), 但库里没有稀有度列</td></tr>
+	</tbody></table></div>
+<p>变更记录 (v1 → v2):</p>
+<div class="card"><ul>
+	<li><strong>删除 3</strong>: <span class="cid">C09</span> (=<span class="cid">C03</span> 重复) · <span class="cid">C78</span> (=<span class="cid">C18</span> 重复) · <span class="cid">C67</span> (攻击(0);增强敌方诅咒3 —— 与 <span class="cid">C84</span> 定位重叠)</li>
+	<li><strong>新增 3</strong>: <span class="cid">C100</span> 攻击;交换1友方生物和敌方生物 (ATK 3) · <span class="cid">C101</span> 敌方诅咒揭晓时:复活自身;攻击 (ATK 2) · <span class="cid">C102</span> 被动;墓地中的生物攻击力+1</li>
+	<li><strong>被动前缀化 (17)</strong>: <span class="cid">C07</span> <span class="cid">C15</span> <span class="cid">C16</span> <span class="cid">C17</span> <span class="cid">C19</span> <span class="cid">C20</span> <span class="cid">C27</span> <span class="cid">C33</span> <span class="cid">C34</span> <span class="cid">C36</span> <span class="cid">C44</span> <span class="cid">C49</span> <span class="cid">C51</span> <span class="cid">C70</span> <span class="cid">C71</span> <span class="cid">C76</span> <span class="cid">C80</span> <span class="cid">C95</span> 文案加「被动:」</li>
+	<li><strong>效果变更</strong>: <span class="cid">C16</span> 移除「放逐自身」(纯被动化, 大 buff) · <span class="cid">C62</span> 埋葬1敌方→埋葬2卡组顶 · <span class="cid">C92</span> 放逐信徒数→<strong>本回合</strong>放逐 · <span class="cid">C98</span> 移除「无法攻击」→攻击(ATK 0) · <span class="cid">C84</span> 加攻击(ATK 0) · <span class="cid">C21</span>/<span class="cid">C31</span>/<span class="cid">C43</span> 加「攻击;」前缀</li>
+	<li><strong>术语统一进行中</strong>: 增强→强化 (<span class="cid">C10</span> <span class="cid">C17</span> 已改; <span class="cid">C12</span> <span class="cid">C47</span> <span class="cid">C86</span> 仍写「被增强」) · <span class="cid">C99</span> 移除「揭晓:」 · <span class="cid">C37</span> 标点规范化</li>
+</ul></div>
+<p>遗留问题:</p>
+<div class="card dup"><ul>
+	<li><span class="cid">C64</span> 与 <span class="cid">C99</span> 文案完全相同 (攻击;遗言:攻击x2), 现以 ATK 1 vs 2 区分 —— 确认是否刻意保留两张同文案卡</li>
+	<li>文案模糊: <span class="cid">C41</span>「复活1诅咒友方」· <span class="cid">C31</span>「复活1增强友方」(v2 加了攻击但语义仍模糊)</li>
+	<li>标点不统一: <span class="cid">C102</span> 用「被动;」其余 17 张用「被动:」</li>
+	<li>tag 语义漂移: 12 张「被强化」与文案不符 + 零星疑误标 (<span class="cid">C02</span> <span class="cid">C36</span> <span class="cid">C56</span>) —— 详见 §8-Q9</li>
+</ul></div>
+
+<h2 id="s2">2. 关键词体系: 4.0 ↔ 现系统映射</h2>
+<div class="legend"><span class="st ok">✅ 现成支撑</span> · <span class="st warn">⚠️ 部分现成</span> · <span class="st no">❌ 缺口</span> · 缺口集中在墓地层, 见 §7</div>
+<div class="card tbl"><table><thead><tr><th>4.0 关键词</th><th>含义</th><th>现系统状态</th></tr></thead><tbody>
+		<tr><td><strong>揭晓</strong></td><td>卡片被揭晓时</td><td><span class="st ok">✅ <code>onMeRevealed</code></span></td></tr>
+		<tr><td><strong>攻击</strong></td><td>造成 X 伤害, X = 卡面攻击力</td><td><span class="st ok">✅ <code>AttackEffect</code> (每段结算 <code>GetAttack()</code>; ATK≤0 提前返回)</span></td></tr>
+		<tr><td><strong>攻击xN</strong></td><td>N 段攻击</td><td><span class="st ok">✅ <code>GetAttackTimes()</code> = 1 + <code>extraAttackTimes</code></span></td></tr>
+		<tr><td><strong>攻击次数+N</strong></td><td>永久段数 +N (可叠加)</td><td><span class="st ok">✅ <code>ModifyAttackTimes</code> (跨埋葬/置顶保留)</span></td></tr>
+		<tr><td><strong>攻击力=Y</strong></td><td>动态攻击力, 常态结算</td><td><span class="st ok">✅ <code>SetAttackResolver</code> + 重入保护 (<code>AttackResolverSource</code>)</span></td></tr>
+		<tr><td><strong>强化 (增强)</strong></td><td>+1 攻击力 (友方走 <code>attackGrowth</code>; 敌方诅咒走 <code>CurseEffect.EnhanceCurse</code>)</td><td><span class="st ok">✅ <code>ModifyAttack</code> / <code>EnhanceCurse</code> 均已攻击化</span></td></tr>
+		<tr><td><strong>被强化 (被增强)</strong></td><td>获得攻击力时触发</td><td><span class="st ok">✅ <code>onMeGainedAttack</code> 系列事件 (+<code>onEnemyCurseCardGainedAttack</code>)</span></td></tr>
+		<tr><td><strong>每次攻击</strong></td><td>攻击动作事件</td><td><span class="st ok">✅ <code>onAnyCardAttacked</code> / <code>onAnyFriendlyCardAttacked</code> (按动作不按段)</span></td></tr>
+		<tr><td><strong>遗言</strong></td><td>被埋葬时</td><td><span class="st ok">✅ <code>onMeBuried</code> / <code>onAnyCardBuried</code> / <code>onFriendlyCardBuried</code></span></td></tr>
+		<tr><td><strong>放逐</strong></td><td>去除</td><td><span class="st ok">✅ <code>ExileEffect</code></span></td></tr>
+		<tr><td><strong>信徒</strong></td><td>现次元裂缝 (RIFT): 生成/消耗/自放逐</td><td><span class="st ok">✅ <code>AddTempCard</code> + RIFT 现成</span></td></tr>
+		<tr><td><strong>回合开始</strong></td><td>回合开始时</td><td><span class="st ok">✅ <code>beforeRoundStart</code></span></td></tr>
+		<tr><td><strong>延后</strong></td><td>移后揭晓</td><td><span class="st ok">✅ Delay 机制 (向 index 0 移); 最高/最低攻击力谓词 <code>FindCardWithMax/MinAttack</code> 已在</span></td></tr>
+		<tr><td><strong>墓地</strong></td><td>start card 后的区域 (用户确认)</td><td><span class="st warn">⚠️ 区域语义部分现成: <code>AttackResolverSource</code> 已在统计 start card 之后的卡; 但揭晓后落点仍是「回卡组底」, 未路由到专属墓地区</span></td></tr>
+		<tr><td><strong>被动</strong></td><td>常驻墓地, 不洗牌回收, 满足条件持续生效 (v2 已正式化, 19 张)</td><td><span class="st warn">⚠️ 近似机制: 萦绕 (<code>CheckCost_IndexBeforeStartCard</code>) 会被洗牌回收; 需「洗牌豁免标记 + 墓地常驻触发」</span></td></tr>
+		<tr><td><strong>复活</strong></td><td>墓地 → 卡组顶</td><td><span class="st no">❌ 无复活效果函数 (<code>StatusEffect.Revive</code> 仅剩枚举/显示/<code>CheckCost_Revive</code>)</span></td></tr>
+		<tr><td><strong>苏醒</strong></td><td>被复活时</td><td><span class="st no">❌ 无事件</span></td></tr>
+		<tr><td><strong>回响X</strong></td><td>揭晓后不进墓地, X-1 回 start card 前</td><td><span class="st no">❌ 揭晓后路由改造 (<span class="cid">C55</span> 唯一使用)</span></td></tr>
+		<tr><td><strong>回合结束</strong></td><td>回合结束时 (<span class="cid">C37</span> <span class="cid">C70</span>)</td><td><span class="st no">❌ 无 RoundEnd/TurnEnd 事件 (已全库核实)</span></td></tr>
+		<tr><td><strong>生物/非生物</strong></td><td>按是否能攻击区分 (用户确认)</td><td><span class="st warn">⚠️ 无类型字段; v2 已移除「无法攻击」卡 (<span class="cid">C98</span> 改为 ATK 0), 或可派生 = 有攻击动作; 但 ATK 0 攻击卡 (<span class="cid">C84</span> <span class="cid">C85</span> <span class="cid">C98</span>) 存在, 建议显式字段</span></td></tr>
+		<tr><td><strong>稀有度定向</strong></td><td>按 rare/normal/uncommon 选墓地卡</td><td><span class="st no">❌ 效果侧无稀有度过滤 (仅商店侧有 rarity)</span></td></tr>
+		<tr><td><strong>交换 (<span class="cid">C100</span>)</strong></td><td>交换友方生物与敌方生物 (卡组序位置互换?)</td><td><span class="st no">❌ 无位置互换原语 (位移机械 <code>MoveToIndex</code> 现成, 小改)</span></td></tr>
+		<tr><td><strong>相邻 (<span class="cid">C07</span>)</strong></td><td>卡组序相邻</td><td><span class="st no">❌ 无相邻谓词</span></td></tr>
+		<tr><td><strong>替换效果 (<span class="cid">C20</span>)</strong></td><td>攻击不造成伤害改为增强诅咒</td><td><span class="st no">❌ 伤害管线无改写钩子</span></td></tr>
+		<tr><td><strong>让墓地卡攻击 (<span class="cid">C87</span>)</strong></td><td>墓地卡作为伤害源</td><td><span class="st no">❌ <code>AttackEffect</code> 只作用于卡组/揭晓区</span></td></tr>
+		<tr><td><strong>延迟复活 (<span class="cid">C62</span>)</strong></td><td>延迟一拍的复活</td><td><span class="st no">❌ 无延迟效果队列</span></td></tr>
+	</tbody></table></div>
+
+<h2 id="s3">3. 机制分布 <span class="dim">(99 行, 多标签计数, 按内容判定非 DB tag)</span></h2>
+<div class="card tbl"><table><thead><tr><th>机制</th><th>数量</th><th>卡号</th></tr></thead><tbody>
+		<tr><td><strong>复活 (总)</strong></td><td><span class="num">33</span></td><td><span class="cid">C02</span> <span class="cid">C04</span> <span class="cid">C10</span> <span class="cid">C11</span> <span class="cid">C19</span> <span class="cid">C21</span> <span class="cid">C28</span> <span class="cid">C31</span> <span class="cid">C32</span> <span class="cid">C33</span> <span class="cid">C36</span> <span class="cid">C41</span> <span class="cid">C43</span> <span class="cid">C45</span> <span class="cid">C46</span> <span class="cid">C48</span> <span class="cid">C50</span> <span class="cid">C52</span> <span class="cid">C55</span> <span class="cid">C59</span> <span class="cid">C62</span> <span class="cid">C66</span> <span class="cid">C68</span> <span class="cid">C71</span> <span class="cid">C72</span> <span class="cid">C79</span> <span class="cid">C83</span> <span class="cid">C87</span> <span class="cid">C88</span> <span class="cid">C89</span> <span class="cid">C94</span> <span class="cid">C96</span> <span class="cid">C101</span></td></tr>
+		<tr><td><strong>— 复活友方</strong></td><td><span class="num">18</span></td><td><span class="cid">C04</span> <span class="cid">C19</span> <span class="cid">C21</span> <span class="cid">C28</span> <span class="cid">C31</span> <span class="cid">C41</span> <span class="cid">C43</span> <span class="cid">C45</span> <span class="cid">C46</span> <span class="cid">C52</span> <span class="cid">C62</span> <span class="cid">C66</span> <span class="cid">C68</span> <span class="cid">C72</span> <span class="cid">C79</span> <span class="cid">C83</span> <span class="cid">C89</span> <span class="cid">C96</span> (+<span class="cid">C71</span> 授予复活自身)</td></tr>
+		<tr><td><strong>— 复活敌方 (代价/进攻)</strong></td><td><span class="num">8</span></td><td><span class="cid">C11</span> <span class="cid">C32</span> <span class="cid">C45</span> <span class="cid">C48</span> <span class="cid">C55</span> <span class="cid">C59</span> <span class="cid">C88</span> <span class="cid">C94</span></td></tr>
+		<tr><td><strong>— 复活自身</strong></td><td><span class="num">3</span></td><td><span class="cid">C10</span> <span class="cid">C50</span> <span class="cid">C101</span></td></tr>
+		<tr><td><strong>苏醒</strong></td><td><span class="num">6</span></td><td><span class="cid">C01</span> <span class="cid">C22</span> <span class="cid">C28</span> <span class="cid">C33</span> <span class="cid">C52</span> <span class="cid">C54</span></td></tr>
+		<tr><td><strong>遗言</strong></td><td><span class="num">14</span></td><td><span class="cid">C24</span> <span class="cid">C33</span> <span class="cid">C37</span> <span class="cid">C38</span> <span class="cid">C49</span> <span class="cid">C50</span> <span class="cid">C62</span> <span class="cid">C63</span> <span class="cid">C64</span> <span class="cid">C69</span> <span class="cid">C71</span> <span class="cid">C87</span> <span class="cid">C93</span> <span class="cid">C99</span></td></tr>
+		<tr><td><strong>信徒 (总)</strong></td><td><span class="num">21</span></td><td><span class="cid">C01</span> <span class="cid">C03</span> <span class="cid">C04</span> <span class="cid">C07</span> <span class="cid">C08</span> <span class="cid">C15</span> <span class="cid">C25</span> <span class="cid">C26</span> <span class="cid">C27</span> <span class="cid">C28</span> <span class="cid">C30</span> <span class="cid">C44</span> <span class="cid">C56</span> <span class="cid">C60</span> <span class="cid">C68</span> <span class="cid">C73</span> <span class="cid">C76</span> <span class="cid">C77</span> <span class="cid">C88</span> <span class="cid">C92</span> <span class="cid">C97</span></td></tr>
+		<tr><td><strong>— 生产 / 消耗转化</strong></td><td><span class="num">14 / 6</span></td><td>产: <span class="cid">C01</span> <span class="cid">C03</span> <span class="cid">C08</span> <span class="cid">C26</span> <span class="cid">C27</span> <span class="cid">C28</span> <span class="cid">C30</span> <span class="cid">C44</span> <span class="cid">C56</span> <span class="cid">C68</span> <span class="cid">C73</span> <span class="cid">C77</span> <span class="cid">C88</span> <span class="cid">C97</span> · 耗: <span class="cid">C04</span> <span class="cid">C25</span> <span class="cid">C60</span> <span class="cid">C76</span> <span class="cid">C92</span> (+<span class="cid">C07</span> 改写)</td></tr>
+		<tr><td><strong>诅咒</strong></td><td><span class="num">22</span></td><td><span class="cid">C05</span> <span class="cid">C07</span> <span class="cid">C16</span> <span class="cid">C19</span> <span class="cid">C20</span> <span class="cid">C30</span> <span class="cid">C34</span> <span class="cid">C36</span> <span class="cid">C41</span> <span class="cid">C45</span> <span class="cid">C51</span> <span class="cid">C55</span> <span class="cid">C59</span> <span class="cid">C70</span> <span class="cid">C74</span> <span class="cid">C76</span> <span class="cid">C84</span> <span class="cid">C85</span> <span class="cid">C89</span> <span class="cid">C95</span> <span class="cid">C98</span> <span class="cid">C101</span></td></tr>
+		<tr><td><strong>放逐</strong></td><td><span class="num">6</span></td><td><span class="cid">C07</span> <span class="cid">C25</span> <span class="cid">C35</span> <span class="cid">C60</span> <span class="cid">C76</span> <span class="cid">C92</span> (<span class="cid">C16</span> 已移除放逐代价)</td></tr>
+		<tr><td><strong>被动 (正式化)</strong></td><td><span class="num">19</span></td><td><span class="cid">C07</span> <span class="cid">C15</span> <span class="cid">C16</span> <span class="cid">C17</span> <span class="cid">C19</span> <span class="cid">C20</span> <span class="cid">C27</span> <span class="cid">C33</span> <span class="cid">C34</span> <span class="cid">C36</span> <span class="cid">C44</span> <span class="cid">C49</span> <span class="cid">C51</span> <span class="cid">C70</span> <span class="cid">C71</span> <span class="cid">C76</span> <span class="cid">C80</span> <span class="cid">C95</span> <span class="cid">C102</span></td></tr>
+		<tr><td><strong>埋葬 (总)</strong></td><td><span class="num">24</span></td><td>友方代价 12: <span class="cid">C13</span> <span class="cid">C14</span> <span class="cid">C29</span> <span class="cid">C39</span> <span class="cid">C49</span> <span class="cid">C56</span> <span class="cid">C65</span> <span class="cid">C66</span> <span class="cid">C69</span> <span class="cid">C73</span> <span class="cid">C74</span> <span class="cid">C82</span> · 敌方 4: <span class="cid">C34</span> <span class="cid">C46</span> <span class="cid">C54</span> <span class="cid">C65</span> · 磨牌 7: <span class="cid">C15</span> <span class="cid">C29</span> <span class="cid">C42</span> <span class="cid">C53</span> <span class="cid">C57</span> <span class="cid">C62</span> <span class="cid">C80</span> · 触发器: <span class="cid">C44</span> <span class="cid">C50</span> <span class="cid">C87</span></td></tr>
+		<tr><td><strong>强化友方 / 被强化</strong></td><td><span class="num">12 / 4</span></td><td>强化: <span class="cid">C12</span> <span class="cid">C17</span> <span class="cid">C22</span> <span class="cid">C24</span> <span class="cid">C25</span> <span class="cid">C26</span> <span class="cid">C39</span> <span class="cid">C58</span> <span class="cid">C75</span> <span class="cid">C81</span> <span class="cid">C86</span> <span class="cid">C94</span> · 被强化: <span class="cid">C10</span> <span class="cid">C12</span> <span class="cid">C47</span> <span class="cid">C86</span></td></tr>
+		<tr><td><strong>自执行攻击</strong></td><td><span class="num">44</span></td><td>含 <span class="cid">C21</span> <span class="cid">C31</span> <span class="cid">C43</span> <span class="cid">C84</span> <span class="cid">C98</span> (v2 新增攻击动作) 与 <span class="cid">C100</span> <span class="cid">C101</span> (新卡); ATK 0 攻击卡 4 张 (<span class="cid">C75</span> <span class="cid">C84</span> <span class="cid">C85</span> <span class="cid">C98</span>)</td></tr>
+		<tr><td><strong>— 多段 x2 / x3 / x4</strong></td><td><span class="num">8 / 3 / 1</span></td><td>x2: <span class="cid">C03</span> <span class="cid">C14</span> <span class="cid">C38</span> <span class="cid">C40</span> <span class="cid">C61</span> <span class="cid">C64</span> <span class="cid">C86</span> <span class="cid">C99</span> · x3: <span class="cid">C48</span> <span class="cid">C60</span> <span class="cid">C82</span> · x4: <span class="cid">C91</span></td></tr>
+		<tr><td><strong>攻击次数授予</strong></td><td><span class="num">5</span></td><td><span class="cid">C16</span> (敌诅咒) <span class="cid">C23</span> (全体本回合) <span class="cid">C35</span> (每放逐) <span class="cid">C47</span> (被强化) <span class="cid">C90</span> (单体本回合)</td></tr>
+		<tr><td><strong>动态攻击力</strong></td><td><span class="num">7</span></td><td><span class="cid">C02</span> <span class="cid">C11</span> <span class="cid">C18</span> <span class="cid">C61</span> <span class="cid">C85</span> <span class="cid">C92</span> <span class="cid">C95</span> (+<span class="cid">C75</span> 翻倍)</td></tr>
+		<tr><td><strong>回合开始 / 回合结束</strong></td><td><span class="num">2 / 2</span></td><td><span class="cid">C56</span> <span class="cid">C71</span> / <span class="cid">C37</span> <span class="cid">C70</span></td></tr>
+		<tr><td><strong>稀有度定向</strong></td><td><span class="num">3</span></td><td><span class="cid">C72</span> <span class="cid">C79</span> <span class="cid">C96</span></td></tr>
+		<tr><td><strong>生物定向</strong></td><td><span class="num">9</span></td><td><span class="cid">C21</span> <span class="cid">C24</span> <span class="cid">C37</span> <span class="cid">C38</span> <span class="cid">C70</span> <span class="cid">C71</span> <span class="cid">C83</span> <span class="cid">C100</span> <span class="cid">C102</span></td></tr>
+		<tr><td><strong>单发新机制</strong></td><td><span class="num">各 1</span></td><td>回响 <span class="cid">C55</span> · 相邻 <span class="cid">C07</span> · 延后 <span class="cid">C06</span> · 复制自身 <span class="cid">C63</span> · 替换 <span class="cid">C20</span> · 翻倍 <span class="cid">C75</span> · 交换 <span class="cid">C100</span></td></tr>
+	</tbody></table></div>
+
+<h2 id="s4">4. 流派支柱分析</h2>
+<div class="arch a1"><div class="arch-title">4.1 复活/苏醒 —— 4.0 第一支柱 (复活 33 + 苏醒 6)</div>
+<ul><li>复活友方定向族: 信徒 (<span class="cid">C04</span>)、生物 (<span class="cid">C83</span>)、非生物 (<span class="cid">C21</span>)、rare (<span class="cid">C72</span>)、normal x2 (<span class="cid">C79</span>)、uncommon x2 (<span class="cid">C96</span>)、攻击次数最多 (<span class="cid">C43</span>)、强化 (<span class="cid">C31</span>?)、遗言联动 (<span class="cid">C62</span> 延迟复活)。墓地选卡维度极细 (类型/稀有度/段数/状态), 构成 4.0 的「打捞工具箱」。<span class="chg">v2: <span class="cid">C21</span> <span class="cid">C31</span> <span class="cid">C43</span> 补了「攻击;」前缀, 复活卡开始携带基础攻击。</span></li><li>复活敌方族 (8 张): 复活敌方攻击最高 x5 (<span class="cid">C11</span> <span class="cid">C32</span> <span class="cid">C48</span> <span class="cid">C88</span> <span class="cid">C94</span>) = 资敌代价换大收益; 复活敌方诅咒 x3 (<span class="cid">C45</span> <span class="cid">C55</span> <span class="cid">C59</span>) = 进攻行为 —— 诅咒是其拥有者的负债, 塞回敌方卡组顶 = 敌方多自伤一次 + 占敌方揭晓位, 对应 V4 E4 的「诅咒揭晓次数」乘区。</li><li>复活自身 (3 张): <span class="cid">C10</span> (被强化触发) <span class="cid">C50</span> (友方遗言被埋葬触发) <span class="cid">C101</span> (敌方诅咒揭晓触发, 新) —— 三张都是「事件驱动自复活」, 分别挂在强化/遗言/诅咒三条轴上。</li><li>苏醒是被复活时的兑现口: 生成信徒 (<span class="cid">C01</span>)、自强化 (<span class="cid">C22</span>)、再复活 (<span class="cid">C52</span>)、埋葬敌方 (<span class="cid">C54</span>)、触发遗言 (<span class="cid">C33</span> 苏醒-遗言桥, <strong>已被动化</strong> = 常驻生效)。苏醒把「复活」从纯位移升级为触发器, 是复活流的收益乘区。</li><li>数值引擎: <span class="cid">C02</span> 攻击力=本回合复活数 (finisher, ATK 0); <span class="cid">C36</span> 每复活1友方增强诅咒1 (复活-诅咒桥, 已被动化)。</li></ul>
+<div class="arch a2"><div class="arch-title">4.2 信徒 —— 资源货币 (21)</div>
+<ul><li>生产 (14): 攻击挂钩 (<span class="cid">C01</span> <span class="cid">C03</span> <span class="cid">C08</span> <span class="cid">C77</span> <span class="cid">C97</span>)、事件挂钩 (<span class="cid">C27</span> 每次友方攻击 / <span class="cid">C44</span> 每次卡片被埋葬 / <span class="cid">C73</span> 埋葬全友方, 均已被动化)、回合开始 (<span class="cid">C56</span>)、直给 (<span class="cid">C26</span> <span class="cid">C28</span> <span class="cid">C30</span> <span class="cid">C88</span>)。</li><li>消耗/转化 (6+): 放逐1→攻击x3 (<span class="cid">C60</span>)、放逐全部→每1强化1友方 (<span class="cid">C25</span>)、攻击力=本回合放逐信徒数 (<span class="cid">C92</span>, v2 限定本回合 = 削弱)、复活信徒 (<span class="cid">C04</span>)、信徒揭晓磨牌 (<span class="cid">C15</span>)、信徒效果改写 (<span class="cid">C07</span> 相邻诅咒版 / <span class="cid">C76</span> 复活敌诅咒版)。</li><li>与 3.0 次元裂缝相比, 4.0 信徒新增三个维度: 可被复活、揭晓可被监听、效果可被改写 —— 从「弹药」升级为「生物资源」。信徒自身能否攻击仍是全池最关键的未定点 (见 §8-Q1), 直接决定 <span class="cid">C27</span> 是否指数失控 (见 §6-4)。</li></ul>
+<div class="arch a3"><div class="arch-title">4.3 诅咒 (22)</div>
+<ul><li>大小乘区: 直给增强 <span class="cid">C05</span> (条件系数) <span class="cid">C74</span> (+6) <span class="cid">C84</span> (+4, v2 补攻击0) <span class="cid">C89</span> (+2); <span class="cid">C95</span> 敌方诅咒攻击力=墓地友方数 (被动持续刷新, 构建级)。</li><li>次数乘区: <span class="cid">C16</span> 被动:敌方诅咒攻击次数+1 —— <span class="chg">v2 移除「放逐自身」代价, 从一次性工具变成常驻倍率, 诅咒流大幅加强 (见 §5.3)</span>; <span class="cid">C51</span> 每次攻击增强1。</li><li>揭晓次数乘区: 复活敌方诅咒 (<span class="cid">C45</span> <span class="cid">C55</span> <span class="cid">C59</span>) + 信徒改写 (<span class="cid">C76</span>) —— 把诅咒反复塞回敌方卡组顶。</li><li>镜像: <span class="cid">C85</span> 自身攻击力=敌方诅咒攻击力 (ATK 0 占位, 动态接管)。</li><li>新桥: <span class="cid">C101</span> 敌方诅咒揭晓时:复活自身;攻击 —— 诅咒揭晓次数乘区的受益方, 诅咒环境越浓越强 (见 §6-5)。</li><li>替换: <span class="cid">C20</span> 友方攻击不再造成伤害、转为增强等量敌方诅咒 (已被动化) —— 伤害永不落地换诅咒滚雪球, 体验极端化 (见 §6-8)。</li></ul>
+<div class="arch a4"><div class="arch-title">4.4 遗言 (14)</div>
+<ul><li>3.0 的遗言 = 被埋葬触发一次; 4.0 把遗言变成可操纵资源: 触发两次 (<span class="cid">C49</span>, <strong>已被动化 = 常驻双倍</strong>, 见 §6-3)、被苏醒触发 (<span class="cid">C33</span>)、授予他人 (<span class="cid">C71</span> <span class="cid">C93</span>)、复活自身 (<span class="cid">C50</span> <span class="cid">C71</span> 授予版)、复制自身 (<span class="cid">C63</span>)、延迟复活 (<span class="cid">C62</span>)。</li><li>配套定向埋葬工具: 埋葬遗言友方 (<span class="cid">C69</span>)、埋葬最低攻友方并强化 (<span class="cid">C39</span>)、埋葬全友方 (<span class="cid">C73</span>)。</li><li>注意与「埋葬友方代价族」(12 张) 的协同: 代价越重, 遗言收益越大, 自埋流自成一派。</li></ul>
+<div class="arch a5"><div class="arch-title">4.5 被动 —— 从候选到正式关键词 (19)</div>
+<ul><li>v1 的 17 张「被动候选」中 15 张已加「被动:」前缀; <span class="cid">C07</span> <span class="cid">C16</span> <span class="cid">C49</span> 三张新加入 (含效果改写); <span class="cid">C98</span> 移出 (改写为攻击卡), <span class="cid">C50</span> 未标记 (待裁定, 见 §8-Q4)。新增 <span class="cid">C102</span> 墓地生物光环。合计 19 张。</li><li>被动 = 3.0 萦绕的永久化: uptime 从约 0.5 提到约 1.0 且永不占用揭晓位 → 引擎卡强度档整体上移约 2 倍。这不是单卡问题而是<strong>定价框架问题</strong>: 19 张常驻引擎全都需要独立的强度税 (低数值/条件门槛/自代价), 见 §5.3。</li><li>结构性待定: 被动永不揭晓 → 被动卡上的「攻击」动作永不执行; <span class="cid">C50</span> (复活自身;攻击) 未标被动但有持续触发文案 —— 「非被动卡在墓地能否触发」是规则地基问题 (§8-Q4)。</li></ul>
+<div class="arch a6"><div class="arch-title">4.6 次数/多段 + 动态攻击力</div>
+<ul><li>段数卡: x2 八张、x3 三张 (<span class="cid">C48</span> <span class="cid">C60</span> <span class="cid">C82</span>)、x4 一张 (<span class="cid">C91</span>); 次数授予五张 (<span class="cid">C16</span> <span class="cid">C23</span> <span class="cid">C35</span> <span class="cid">C47</span> <span class="cid">C90</span>) —— V4 的第一乘区授予在 4.0 保留且扩展。</li><li>动态攻击力七张: 本回合复活数 (<span class="cid">C02</span>)、敌方最高攻复制 (<span class="cid">C11</span>)、墓地友方数 (<span class="cid">C18</span>)、友方最高攻 (<span class="cid">C61</span>)、敌方诅咒攻 (<span class="cid">C85</span>)、本回合放逐信徒数 (<span class="cid">C92</span>)、敌方诅咒攻=墓地友方数 (<span class="cid">C95</span>); 翻倍一张 (<span class="cid">C75</span>)。</li><li>V4 双乘区 (次数 × 大小) 在 4.0 完整保留, 且大小侧新增「墓地计数」「放逐计数」「敌攻镜像」三个新轴。</li></ul>
+<div class="arch a7"><div class="arch-title">4.7 位移/交换 —— 新机制萌芽 (1)</div>
+<ul><li><span class="cid">C100</span> 攻击;交换1友方生物和敌方生物 (ATK 3): 全池唯一的「交换」卡。若交换 = 卡组序位置互换, 它是打乱敌方节奏的战术位移 (把敌方生物拉前/己方关键卡拉后); 定义待定 (§8-Q10)。若后续扩充成族, 与延后 (<span class="cid">C06</span>)、置顶、埋葬构成完整的「顺序操纵」轴。</li></ul>
+
+<h2 id="s5">5. 强度粗评 <span class="dim">(僵尸基准框架, ATK 已部分回填)</span></h2>
+<p>前提与框架:</p>
+<div class="card"><ul><li>墓地每回合洗牌回收 (被动除外) → 每卡每回合揭晓一次的 q=1 模型仍成立, 3.0 僵尸基准 (zombie = 2.0/round, HP 20, R≈4) 可沿用。</li><li>复活 ≈ 额外一次揭晓 ≈ 旧置顶价值上浮: 1.5 → 1.5~2.5 (附带苏醒触发)。</li><li>锚点校准: SPIKE_SKELETON (<span class="cid">C99</span>, ATK 2) = 攻击 2.0 + 遗言 4×0.3~0.8 = 3.2~5.2, 与 3.0 审计 (4.2, uncommon +) 一致 → A=2 基准与已填 ATK 互相印证。</li><li>信徒估值: 1.0~1.5 (消耗出口 6+ 张)。复活敌方攻击最高 ≈ −1.0~−2.0; 复活敌方诅咒 ≈ +1.5~+2.5。</li><li><strong>被动 = 无揭晓位成本 + 永久 uptime</strong> → 不能再按「旧萦绕 ×2」粗放定价, 需要逐卡定税率 (见 §5.3)。</li></ul></div>
+
+<h3>5.1 ATK 定价规则 (从 41 张已填卡归纳)</h3>
+<div class="card tbl"><table><thead><tr><th>规则</th><th>证据</th><th>读法</th></tr></thead><tbody>
+		<tr><td>效果载体 ATK 0</td><td><span class="cid">C02</span> <span class="cid">C11</span> <span class="cid">C75</span> <span class="cid">C84</span> <span class="cid">C85</span> <span class="cid">C92</span> <span class="cid">C98</span> (+<span class="cid">C18</span> 动态)</td><td>效果即全部价值, 攻击动作为占位 (ATK≤0 时 <code>AttackEffect</code> 提前返回, 无伤害)</td></tr>
+		<tr><td>基准攻击 ATK 2</td><td>21 张 ATK 2 (中位数)</td><td>= zombie 2.0, 攻击卡的默认线</td></tr>
+		<tr><td>多段压缩到 ATK 1</td><td><span class="cid">C40</span> x2@1 · <span class="cid">C60</span> x3@1 · <span class="cid">C91</span> x4@1</td><td>每段 1: x2=2.0 基准 / x4=4.0 顶格 —— v1 的「x4=8.0」离群已数值兜底</td></tr>
+		<tr><td>代价补偿 +2</td><td><span class="cid">C13</span> 埋1友方@4 · <span class="cid">C82</span> 埋6递减@3</td><td>埋葬友方代价 ≈ 1.2 价值 ≈ +1~2 ATK 补偿</td></tr>
+		<tr><td>信徒产作价 ≈ 1 ATK</td><td><span class="cid">C08</span> 攻击+信徒@3 vs <span class="cid">C97</span> 攻击+信徒x2@1</td><td>信徒生成直接折算进 ATK 预算</td></tr>
+		<tr><td>条件卡不减 ATK</td><td><span class="cid">C35</span> <span class="cid">C53</span> <span class="cid">C63</span> <span class="cid">C69</span> 均 @2</td><td>条件收益本身视作 ATK 之外的添头</td></tr>
+	</tbody></table></div>
+
+<h3>5.2 已填卡抽样估值 (zombie = 2.0/round)</h3>
+<div class="card tbl"><table><thead><tr><th>卡</th><th>粗估</th><th>判定</th></tr></thead><tbody>
+		<tr><td><strong><span class="cid">C13</span> 埋1友方;攻击@4</strong></td><td>4.0 − 1.2 = 2.8</td><td><span class="v v-ok">=</span> 合理偏上</td></tr>
+		<tr><td><strong><span class="cid">C14</span> 埋1友方;攻击x2@2</strong></td><td>4.0 − 1.2 = 2.8</td><td><span class="v v-ok">=</span> 合理偏上</td></tr>
+		<tr><td><strong><span class="cid">C40</span> 攻击x2@1</strong></td><td>2.0</td><td><span class="v v-ok">=</span> 基准</td></tr>
+		<tr><td><strong><span class="cid">C91</span> 攻击x4@1</strong></td><td>4.0</td><td><span class="v v-mid">+</span> 无条件顶格, 建议观察</td></tr>
+		<tr><td><strong><span class="cid">C08</span> 攻击;生成1信徒@3</strong></td><td>3.0 + 1.0~1.5 = 4.0~4.5</td><td><span class="v v-mid">+</span> 偏高 (对比 <span class="cid">C97</span> 攻击+信徒x2@1 = 3.0~4.0, 两卡定价不一致)</td></tr>
+		<tr><td><strong><span class="cid">C03</span> 攻击x2;生成1信徒@1</strong></td><td>2.0 + 1.0~1.5 = 3.0~3.5</td><td><span class="v v-ok">=</span> 合理</td></tr>
+		<tr><td><strong><span class="cid">C64</span> 攻击;遗言:攻击x2@1</strong></td><td>1.0 + 2×0.3~0.8 = 1.6~2.6</td><td><span class="v v-ok">=</span> 与 <span class="cid">C99</span>@2 (3.2~5.2) 形成档位差</td></tr>
+		<tr><td><strong><span class="cid">C38</span> 遗言:攻击;置顶非生物@2</strong></td><td>2.0 + (2+1.5)×0.3~0.8 = 3.1~4.8</td><td><span class="v v-mid">+</span> 条件偏强</td></tr>
+		<tr><td><strong><span class="cid">C101</span> 敌诅咒揭晓:复活自身;攻击@2</strong></td><td>2.0 + 复活引擎 (每敌诅咒揭晓 ≈ 2.0+)</td><td><span class="v v-build">构建级</span> 诅咒环境决定强度</td></tr>
+		<tr><td><strong><span class="cid">C100</span> 攻击;交换生物@3</strong></td><td>3.0 + 交换 (战术位移)</td><td><span class="v v-build">视定义</span> 交换规则未定 (§8-Q10)</td></tr>
+	</tbody></table></div>
+
+<h3>5.3 离群点与被动池定价</h3>
+<div class="card tbl"><table><thead><tr><th>卡</th><th>粗估</th><th>判定</th></tr></thead><tbody>
+		<tr><td><strong><span class="cid">C23</span> 本回合友方攻击次数+1</strong></td><td>铺场流输出 ×2</td><td><span class="v v-hi">++</span> 引擎级</td></tr>
+		<tr><td><strong><span class="cid">C27</span> 被动:每次友方攻击生信徒</strong></td><td>常驻, 每回合 ≈ 攻击动作数个信徒</td><td><span class="v v-hi">++</span> 见 §6-4</td></tr>
+		<tr><td><strong><span class="cid">C44</span> 被动:每次埋葬生信徒</strong></td><td>常驻, 覆盖 24 张埋葬卡</td><td><span class="v v-hi">++</span> 引擎</td></tr>
+		<tr><td><strong><span class="cid">C73</span> 埋全友方生信徒</strong></td><td>6 友方 → 6 信徒 ≈ 6~9</td><td><span class="v v-hi">++</span> 组合爆发核心</td></tr>
+		<tr><td><strong><span class="cid">C95</span> 被动:敌诅咒攻=墓地友方数</strong></td><td>常驻每回合敌方自伤 5+</td><td><span class="v v-hi">++</span> 构建级</td></tr>
+		<tr><td><strong><span class="cid">C102</span> 被动:墓地生物攻+1</strong></td><td>常驻群体光环 (生物队每轮 +P)</td><td><span class="v v-mid">+</span> 新卡, 光环类首次出现</td></tr>
+		<tr><td><strong><span class="cid">C16</span> 被动:敌诅咒攻击次数+1</strong></td><td>v2 移除放逐代价 → 常驻倍率</td><td><span class="v v-mid">+</span> 诅咒流永久发动机</td></tr>
+		<tr><td><strong><span class="cid">C52</span> 复活+苏醒复活</strong></td><td>每回合链式 2+ 复活</td><td><span class="v v-mid">+</span> 引擎</td></tr>
+		<tr><td><strong><span class="cid">C55</span> 复活敌诅咒+回响1</strong></td><td>永不进墓地, 每回合锁定敌自伤</td><td><span class="v v-mid">+</span> 永动工具</td></tr>
+		<tr><td><strong><span class="cid">C02</span> 攻=本回合复活数@0</strong></td><td>复活流 finisher</td><td><span class="v v-build">构建级</span></td></tr>
+		<tr><td><strong><span class="cid">C20</span> 被动:攻击转诅咒</strong></td><td>全队输出转诅咒</td><td><span class="v v-double">双刃</span> 极端化</td></tr>
+	</tbody></table></div>
+<p>结论性意见:</p>
+<div class="card"><ul><li>ATK 回填后, v1 的白板多段离群点 (<span class="cid">C40</span> <span class="cid">C91</span>) 已收敛 —— 数值风险从「白板」转移到「常驻被动引擎」。19 张被动全部无揭晓位成本, 建议为被动池设独立定价规则: 被动卡按「每回合预期收益 × 剩余回合数」计税, 税率可来自低基础 (ATK 0)、条件门槛 (如 <span class="cid">C49</span> 需本回合埋5) 或自代价。</li><li>剩余 58 张未填 ATK; 填齐后 + 稀有度列 → 可跑僵尸基准全表审计 (流程同 <code>docs/CardBalanceAudit_ZombieBaseline.md</code>)。</li><li><span class="cid">C64</span>/<span class="cid">C99</span> 同文案不同 ATK (1 vs 2) —— 若刻意则为「同名牌强弱版」, 建议文案区分 (如 <span class="cid">C64</span> 改名)。</li></ul></div>
+
+<h2 id="s6">6. 循环与自洽风险</h2>
+<p>现有防线: 链系统 (同卡同效果实例一链一次 + 深度 99) + 疲劳 (揭晓总数) + V4 已声明 combat 生成不受 12 卡位限制。<strong>v2 关键变化: 多张引擎卡已被动化 = 常驻生效, v1 依赖「萦绕 uptime 0.5」的风险折扣全部取消。</strong>以下按风险排序:</p>
+<div class="risk r-hi"><div class="risk-head"><span class="r-badge">风险 #1</span><span class="r-title">苏醒复活链 (<span class="cid">C52</span> + <span class="cid">C33</span>) — 已被动化, 上调</span></div><div class="risk-body"><span class="cid">C52</span> 复活 A → A 苏醒再复活 B → B 是复活卡则续链。同链不同实例可拉空墓地; <span class="cid">C33</span> (苏醒触发遗言) v2 已被动化 = 常驻桥上, 每环白嫖一次遗言; 配 <span class="cid">C02</span> (攻=复活数) 伤害爆炸。非真无限 (链实例守卫), 但单链深度 = 墓地复活卡数。<span class="advice">建议:</span> 每回合复活计数软上限, 或苏醒触发加链外冷却。</div></div>
+<div class="risk r-hi"><div class="risk-head"><span class="r-badge">风险 #2</span><span class="r-title">被强化自复活滚雪球 (<span class="cid">C10</span> + <span class="cid">C39</span> + <span class="cid">C12</span>/<span class="cid">C86</span>)</span></div><div class="risk-body"><span class="cid">C39</span> 埋葬最低攻友方并强化它 → 若它是 <span class="cid">C10</span>「被强化:复活自身」则回顶 → 揭晓攻击 → 再被埋。每循环 <span class="cid">C10</span> 永久 +1 (若带 <span class="cid">C12</span>/<span class="cid">C86</span> 自强化) + 一次攻击。跨回合无上限成长, 靠疲劳兜底, 需要监控。</div></div>
+<div class="risk r-hi"><div class="risk-head"><span class="r-badge">风险 #3</span><span class="r-title">遗言复制指数化 (<span class="cid">C63</span> + <span class="cid">C49</span>) — 已被动化, 上调</span></div><div class="risk-body"><span class="cid">C63</span> 遗言复制自身; <span class="cid">C49</span> (被动:本回合埋葬5友方:遗言触发两次) 常驻后, 满足条件的每回合遗言都双倍 → 1→2→4 指数 (史莱姆是线性, 这是指数版)。<span class="advice">建议:</span> 沿用增殖的厄运裁定: 复制体不再被复制, 或改线性。</div></div>
+<div class="risk r-mid"><div class="risk-head"><span class="r-badge">风险 #4</span><span class="r-title">信徒自增殖 (<span class="cid">C27</span>, 条件性, 已被动化)</span></div><div class="risk-body">「被动:每次友方攻击, 生成1信徒」常驻。若信徒自身能攻击 → 攻击生信徒、信徒攻击再生信徒, 同链不同实例滚全卡组, combat 生成又无上限。裁定需求: 信徒不能攻击 / 信徒不进揭晓流 / 信徒生成不算攻击事件源。待 §8-Q1。</div></div>
+<div class="risk r-mid"><div class="risk-head"><span class="r-badge">风险 #5</span><span class="r-title">诅咒揭晓自复活锁 (<span class="cid">C101</span> + <span class="cid">C55</span>/<span class="cid">C59</span>/<span class="cid">C76</span>) — 新增</span></div><div class="risk-body">复活敌方诅咒 → 其揭晓 → <span class="cid">C101</span> 复活自身+攻击 → 下回合再复活敌诅咒。每轮一次敌诅咒揭晓 = <span class="cid">C101</span> 每轮白嫖攻击+回顶; <span class="cid">C55</span> 回响1 让工具卡永不消耗。非真无限 (每轮一次), 但零成本自维持。<span class="advice">建议:</span> <span class="cid">C101</span> 加「每回合限一次」或复活后需重新进墓地的条件。</div></div>
+<div class="risk r-low"><div class="risk-head"><span class="r-badge">风险 #6</span><span class="r-title">遗言自复活永动 (<span class="cid">C50</span> + <span class="cid">C49</span>)</span></div><div class="risk-body">友方遗言被埋葬 → <span class="cid">C50</span> 复活自身回顶 → 再揭晓攻击 → 再被埋 → 再回顶。每循环白嫖一次攻击; <span class="cid">C49</span> 常驻双倍。需「同名卡每回合限一次」类裁定。<span class="cid">C50</span> 未标被动, 其触发区域也需裁定 (§8-Q4)。</div></div>
+<div class="risk r-low"><div class="risk-head"><span class="r-badge">风险 #7</span><span class="r-title">资敌复活的定价 (<span class="cid">C11</span> <span class="cid">C32</span> <span class="cid">C48</span> <span class="cid">C88</span> <span class="cid">C94</span>)</span></div><div class="risk-body">复活敌方攻击最高 = 敌方下回合输出回升, 是负价值; 若敌方墓地无卡或全是低攻卡则代价蒸发 → 需要「敌方墓地为空时」的落空文案。</div></div>
+<div class="risk r-low"><div class="risk-head"><span class="r-badge">风险 #8</span><span class="r-title">替换效果极端化 (<span class="cid">C20</span>, 已被动化)</span></div><div class="risk-body">友方攻击全转诅咒增强 → 伤害永不落地, 敌方无诅咒反制则慢性死亡, 有反制则我方输出归零。全或无的卡, 需要上限 (如每回合转换上限)。</div></div>
+
+<h2 id="s7">7. 落地工作量分级</h2>
+<div class="card tbl"><table><thead><tr><th>级别</th><th>机制</th><th>说明</th></tr></thead><tbody>
+		<tr><td><span class="lv lv-0">零成本</span> <span class="dim">现成</span></td><td>攻击/多段/次数授予/动态攻击力/强化/被强化/遗言/放逐/信徒生成/回合开始/延后/最高最低攻谓词/墓地计数 (start card 后区域)</td><td>攻击力属性重做已落地; <code>AttackResolverSource</code> 已在统计 start card 之后的卡 —— 墓地区域语义部分现成</td></tr>
+		<tr><td><span class="lv lv-1">小改</span></td><td>信徒数值定义; 稀有度过滤 (效果侧加 filter); 复活敌方 (现 StageTheir* 变体改源区域); 交换 (<span class="cid">C100</span>, 位移机械现成); 生物标记字段 (或按攻击动作派生)</td><td>配置/参数级</td></tr>
+		<tr><td><span class="lv lv-2">中新系统</span></td><td>揭晓后路由到墓地 + 被动洗牌豁免; 复活效果 + 苏醒事件; 回响路由; 回合结束事件</td><td>墓地层是 4.0 主体工作量; 被动 19 张正式化后此项成为地基</td></tr>
+		<tr><td><span class="lv lv-3">大改</span></td><td>替换效果 (<span class="cid">C20</span>, 伤害管线钩子); 墓地卡作为伤害源 (<span class="cid">C87</span>); 延迟队列 (<span class="cid">C62</span>); 相邻谓词 (<span class="cid">C07</span>)</td><td>各需独立 PRD</td></tr>
+		<tr><td><span class="lv lv-4">流程级冲突</span></td><td>「揭晓后回卡组底」→「揭晓后进墓地」; AGENTS.md「Graveyard Removed」规则将被推翻</td><td>规则/文档/测试全量同步</td></tr>
+	</tbody></table></div>
+
+<h2 id="s8">8. 开放问题</h2>
+<div class="q"><span class="qn">Q1</span><strong>信徒 4.0 定义</strong>: 保持 RIFT 现效果 (揭晓: 置顶1友方 + 放逐自身)? 信徒有攻击力/能攻击吗? —— 决定 <span class="cid">C27</span> 是否指数失控、信徒是否算生物、能否被复活 (<span class="cid">C04</span>)。</div>
+<div class="q"><span class="qn">Q2</span>「复活敌方攻击最高」(<span class="cid">C11</span> <span class="cid">C32</span> <span class="cid">C48</span> <span class="cid">C88</span> <span class="cid">C94</span>) 确认 = 敌方墓地 → 敌方卡组顶的纯代价?</div>
+<div class="q"><span class="qn">Q3</span><strong>强化 = 永久 +1 攻击力</strong> (走 <code>ModifyAttack</code>/<code>attackGrowth</code>)? 卡片被埋葬/复活后强化保留吗? (代码现状: attackGrowth 跨回合保留至 combat 结束)</div>
+<div class="q"><span class="qn">Q4</span><strong>非被动卡在墓地 (start card 后) 期间, 持续触发是否生效?</strong> <span class="cid">C50</span> <span class="cid">C101</span> 未标被动但有持续触发文案 —— 若只有被动卡能在墓地生效, 这两张需补「被动:」; 若非被动卡也能触发, 被动的定义则收窄为「不被洗牌回收」。这是墓地规则的地基问题。</div>
+<div class="q"><span class="qn">Q5</span><strong>回合结束的精确时点</strong>: 卡组掏空即结束? 回合结束触发 (<span class="cid">C37</span> <span class="cid">C70</span>) 在洗牌前还是洗牌后?</div>
+<div class="q"><span class="qn">Q6</span><span class="cid">C31</span>「复活1增强友方」/ <span class="cid">C41</span>「复活1诅咒友方」的意图? (前者疑为「复活1[被强化的]友方」, 后者疑为「复活1带诅咒的友方」或文案笔误)</div>
+<div class="q"><span class="qn">Q7</span>回响与被动冲突时谁优先? (回响说揭晓后不进墓地; 被动说常驻墓地 —— 一张同时带回响和被动的卡如何路由?)</div>
+<div class="q"><span class="qn">Q8</span><strong>复活后卡片状态</strong>: 攻击成长/段数/计数器保留还是重置? (现 extraAttackTimes 设计为跨埋葬/置顶保留, 复活大概率同)</div>
+<div class="q"><span class="qn">Q9</span><strong>tag 语义漂移</strong>: 「被强化」挂在多张无被强化文案的卡上 (<span class="cid">C40</span> <span class="cid">C47</span> <span class="cid">C48</span> <span class="cid">C60</span> <span class="cid">C61</span> <span class="cid">C75</span> <span class="cid">C77</span> <span class="cid">C82</span> <span class="cid">C86</span> <span class="cid">C91</span> <span class="cid">C98</span>) —— 若新语义 = 「受益于一图流强化的卡」请写明, 否则为误标; 同理 <span class="cid">C02</span>/<span class="cid">C36</span> 挂「信徒」、<span class="cid">C56</span> 挂「苏醒」。另: tag 体系缺「复活」选项, 7 张复活卡因此裸奔。</div>
+<div class="q"><span class="qn">Q10</span><strong>交换 (<span class="cid">C100</span>) 定义</strong>: 交换卡组序位置? 所有权不变? 交换对象由谁选 (随机/最低攻/玩家)?</div>
+<div class="q"><span class="qn">Q11</span><strong>术语/标点统一</strong>: 被增强→被强化 (<span class="cid">C12</span> <span class="cid">C47</span> <span class="cid">C86</span> 残留旧写法); 「被动:」vs「被动;」(<span class="cid">C102</span>); <span class="cid">C64</span>/<span class="cid">C99</span> 同文案不同 ATK 是否刻意。</div>
+<div class="q"><span class="qn">Q12</span>被动卡的卡组位/交互: 占不占 12 卡位? 能否被埋葬/放逐/成为效果目标 (如 <span class="cid">C102</span> 会被 <span class="cid">C73</span> 埋掉吗)?</div>
+<div class="q resolved"><span class="qn">✓</span><strong>已解决 (v2)</strong>: 多段白板 ATK 预设 —— x2@1 / x3@1 / x4@1 已填, 见 §5.1 · tag 回填 —— 用户已配 90/99 · 被动关键词 —— 已正式化 (19 张「被动:」前缀)。</div>
+
+<h2 id="s9">9. 附录: 全卡机制标注 <span class="dim">(99 行, 编号沿用 v1, C09/C67/C78 已删除留空)</span></h2>
+<p>tag 列为 DB 实际配置; 「备注」标注 v1→v2 变更与疑误标。筛选器按 DB tag 精确匹配。</p>
+<div class="legend"><span class="tag t-faith">信徒</span><span class="tag t-curse">诅咒</span><span class="tag t-lastword">遗言</span><span class="tag t-bury">埋葬</span><span class="tag t-wake">苏醒</span><span class="tag t-passive">被动</span><span class="tag t-exile">放逐</span><span class="tag t-enhance">强化</span><span class="tag t-benhance">被强化</span> — 9 张未挂 tag: <span class="cid">C06</span> <span class="cid">C11</span> <span class="cid">C21</span> <span class="cid">C46</span> <span class="cid">C72</span> <span class="cid">C79</span> <span class="cid">C83</span> <span class="cid">C96</span> <span class="cid">C100</span></div>
+<div class="fbar"><input id="q" type="text" placeholder="搜索卡号 / 效果文案…" spellcheck="false"><button class="fbtn on" data-tag="all">全部 <span class="fcnt">99</span></button><button class="fbtn" data-tag="信徒">信徒 <span class="fcnt">19</span></button><button class="fbtn" data-tag="诅咒">诅咒 <span class="fcnt">23</span></button><button class="fbtn" data-tag="遗言">遗言 <span class="fcnt">11</span></button><button class="fbtn" data-tag="埋葬">埋葬 <span class="fcnt">25</span></button><button class="fbtn" data-tag="苏醒">苏醒 <span class="fcnt">6</span></button><button class="fbtn" data-tag="被动">被动 <span class="fcnt">19</span></button><button class="fbtn" data-tag="放逐">放逐 <span class="fcnt">3</span></button><button class="fbtn" data-tag="强化">强化 <span class="fcnt">13</span></button><button class="fbtn" data-tag="被强化">被强化 <span class="fcnt">14</span></button><span class="fcount">显示 <span id="shown">99</span> / 99</span></div>
+<div class="card tbl"><table id="appendix"><thead><tr><th>#</th><th>ATK</th><th>card desc (当前文案)</th><th>机制标注</th><th>tag (DB)</th><th>备注</th></tr></thead><tbody>
+	<tr data-tags="信徒"><td class="cnum"><span class="cid">C01</span></td><td class="atk">2</td><td>攻击;生成1信徒;苏醒:生成2信徒</td><td class="mech">攻击 / 信徒产 / 苏醒</td><td class="tagcell"><span class="tag t-faith">信徒</span></td><td class="dim">苏醒部分未挂苏醒 tag</td></tr>
+	<tr data-tags="信徒"><td class="cnum"><span class="cid">C02</span></td><td class="atk">0</td><td>攻击;攻击力=本回合复活数</td><td class="mech">攻击 / 动态攻(复活数)</td><td class="tagcell"><span class="tag t-faith">信徒</span></td><td class="chg">tag 疑误标 (无信徒内容)</td></tr>
+	<tr data-tags="信徒"><td class="cnum"><span class="cid">C03</span></td><td class="atk">1</td><td>攻击x2;生成1信徒</td><td class="mech">攻击 / 多段x2 / 信徒产</td><td class="tagcell"><span class="tag t-faith">信徒</span></td><td class="dim"><span class="cid">C09</span> 已并入本行</td></tr>
+	<tr data-tags="信徒"><td class="cnum"><span class="cid">C04</span></td><td class="atk none">—</td><td>复活1信徒友方</td><td class="mech">复活友 (信徒定向)</td><td class="tagcell"><span class="tag t-faith">信徒</span></td><td class="dim"></td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C05</span></td><td class="atk none">—</td><td>增强敌方诅咒2;敌方诅咒每有2攻击力,额外增强1</td><td class="mech">诅咒增强 (系数)</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C06</span></td><td class="atk">2</td><td>延后敌方攻击最高的卡;攻击</td><td class="mech">延后 (敌最高攻) / 攻击</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">未挂 tag</td></tr>
+	<tr data-tags="信徒,诅咒,被动"><td class="cnum"><span class="cid">C07</span></td><td class="atk none">—</td><td>被动:信徒假如和敌方诅咒相邻,放逐自身,增强2敌方诅咒</td><td class="mech">被动 / 信徒改写 / 相邻 / 放逐 / 诅咒</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 加被动前缀</td></tr>
+	<tr data-tags="信徒"><td class="cnum"><span class="cid">C08</span></td><td class="atk">3</td><td>攻击;生成1信徒</td><td class="mech">攻击 / 信徒产</td><td class="tagcell"><span class="tag t-faith">信徒</span></td><td class="dim">ATK 3 偏高 (§5.2)</td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C10</span></td><td class="atk">2</td><td>攻击;被强化:复活自身</td><td class="mech">攻击 / 被强化 / 复活自身</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="dim">文案 被增强→被强化</td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C11</span></td><td class="atk">0</td><td>复活敌方攻击最高;攻击力=该卡攻击力</td><td class="mech">复活敌 (代价) / 动态攻 (复制其攻)</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">未挂 tag</td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C12</span></td><td class="atk">2</td><td>攻击;被增强:增强自身1</td><td class="mech">攻击 / 被增强 / 自强化</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="chg">文案仍写「被增强」(§8-Q11)</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C13</span></td><td class="atk">4</td><td>埋葬1友方;攻击</td><td class="mech">埋葬友 (代价) / 攻击</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim">代价补偿 ATK 4 (§5.1)</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C14</span></td><td class="atk">2</td><td>埋葬1友方;攻击x2</td><td class="mech">埋葬友 / 多段x2</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim"></td></tr>
+	<tr data-tags="信徒,埋葬,被动"><td class="cnum"><span class="cid">C15</span></td><td class="atk none">—</td><td>被动:信徒揭晓时:埋葬牌堆顶1卡</td><td class="mech">被动 / 信徒揭晓触发 / 磨牌1</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-bury">埋葬</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags="诅咒,被动"><td class="cnum"><span class="cid">C16</span></td><td class="atk none">—</td><td>被动:敌方诅咒攻击次数+1</td><td class="mech">被动 / 诅咒次数+1</td><td class="tagcell"><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="chg">移除「放逐自身」代价 = buff</td></tr>
+	<tr data-tags="强化,被强化,被动"><td class="cnum"><span class="cid">C17</span></td><td class="atk none">—</td><td>被动:友方强化时,强化其1</td><td class="mech">被动 / 强化放大</td><td class="tagcell"><span class="tag t-enhance">强化</span><span class="tag t-benhance">被强化</span><span class="tag t-passive">被动</span></td><td class="dim">增强→强化; v2 被动化</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C18</span></td><td class="atk">0</td><td>攻击力=墓地友方数量;攻击</td><td class="mech">动态攻 (墓地友方数) / 攻击</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim"><span class="cid">C78</span> 已并入本行; tag 松散</td></tr>
+	<tr data-tags="诅咒,被动"><td class="cnum"><span class="cid">C19</span></td><td class="atk none">—</td><td>被动:敌方诅咒揭晓时,复活1友方</td><td class="mech">被动 / 复活友</td><td class="tagcell"><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags="诅咒,被动"><td class="cnum"><span class="cid">C20</span></td><td class="atk none">—</td><td>被动:友方攻击不再造成伤害,而是增强等量敌方诅咒</td><td class="mech">被动 / 替换效果 / 诅咒</td><td class="tagcell"><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C21</span></td><td class="atk">2</td><td>攻击;复活1非生物友方</td><td class="mech">攻击 / 复活友 (非生物定向)</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">v2 加攻击; 未挂 tag</td></tr>
+	<tr data-tags="强化,苏醒"><td class="cnum"><span class="cid">C22</span></td><td class="atk none">—</td><td>攻击;苏醒:增强自身</td><td class="mech">攻击 / 苏醒 / 自强化</td><td class="tagcell"><span class="tag t-enhance">强化</span><span class="tag t-wake">苏醒</span></td><td class="dim">ATK 未填</td></tr>
+	<tr data-tags="强化"><td class="cnum"><span class="cid">C23</span></td><td class="atk none">—</td><td>本回合友方攻击次数+1</td><td class="mech">次数授予 (全体/本回合)</td><td class="tagcell"><span class="tag t-enhance">强化</span></td><td class="dim">tag 松散 (次数授予 ≠ 强化?)</td></tr>
+	<tr data-tags="遗言"><td class="cnum"><span class="cid">C24</span></td><td class="atk none">—</td><td>遗言:增强友方生物</td><td class="mech">遗言 / 强化 (生物定向)</td><td class="tagcell"><span class="tag t-lastword">遗言</span></td><td class="dim">未挂强化</td></tr>
+	<tr data-tags="强化,放逐"><td class="cnum"><span class="cid">C25</span></td><td class="atk">2</td><td>攻击;放逐所有信徒,每放逐1,增强1友方</td><td class="mech">攻击 / 信徒耗 (全放逐) / 强化</td><td class="tagcell"><span class="tag t-enhance">强化</span><span class="tag t-exile">放逐</span></td><td class="dim">未挂信徒</td></tr>
+	<tr data-tags="信徒,强化"><td class="cnum"><span class="cid">C26</span></td><td class="atk none">—</td><td>生成2信徒;增强1友方</td><td class="mech">信徒产2 / 强化</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-enhance">强化</span></td><td class="dim"></td></tr>
+	<tr data-tags="信徒,被动"><td class="cnum"><span class="cid">C27</span></td><td class="atk none">—</td><td>被动:每次友方攻击,生成1信徒</td><td class="mech">被动 / 信徒产 (每攻击)</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化; §6-4</td></tr>
+	<tr data-tags="苏醒"><td class="cnum"><span class="cid">C28</span></td><td class="atk none">—</td><td>生成2信徒;苏醒:复活1友方</td><td class="mech">信徒产2 / 苏醒 / 复活友</td><td class="tagcell"><span class="tag t-wake">苏醒</span></td><td class="dim">未挂信徒</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C29</span></td><td class="atk none">—</td><td>埋葬2友方:埋葬卡组顶5卡</td><td class="mech">埋葬友x2 (代价) / 磨牌5</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim"></td></tr>
+	<tr data-tags="信徒,诅咒"><td class="cnum"><span class="cid">C30</span></td><td class="atk none">—</td><td>生成1信徒;每有1友方信徒,增强1敌方诅咒</td><td class="mech">信徒产 / 诅咒 (每信徒)</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags="强化"><td class="cnum"><span class="cid">C31</span></td><td class="atk">2</td><td>攻击;复活1增强友方</td><td class="mech">攻击 / 复活友 (文案模糊 §8-Q6)</td><td class="tagcell"><span class="tag t-enhance">强化</span></td><td class="chg">v2 加攻击; 语义仍模糊</td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C32</span></td><td class="atk none">—</td><td>复活敌方攻击最高;增强敌方诅咒5</td><td class="mech">复活敌 (代价) / 诅咒+5</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags="遗言,苏醒,被动"><td class="cnum"><span class="cid">C33</span></td><td class="atk none">—</td><td>被动:友方苏醒时,触发其遗言</td><td class="mech">被动 / 苏醒-遗言桥</td><td class="tagcell"><span class="tag t-lastword">遗言</span><span class="tag t-wake">苏醒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化; §6-1</td></tr>
+	<tr data-tags="诅咒,埋葬,被动"><td class="cnum"><span class="cid">C34</span></td><td class="atk none">—</td><td>被动:敌方诅咒揭晓时,埋葬1敌方</td><td class="mech">被动 / 埋葬敌</td><td class="tagcell"><span class="tag t-curse">诅咒</span><span class="tag t-bury">埋葬</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags="放逐"><td class="cnum"><span class="cid">C35</span></td><td class="atk">2</td><td>攻击;本回合每放逐1友方,攻击次数+1</td><td class="mech">攻击 / 次数授予 (每放逐)</td><td class="tagcell"><span class="tag t-exile">放逐</span></td><td class="dim"></td></tr>
+	<tr data-tags="信徒,诅咒,被动"><td class="cnum"><span class="cid">C36</span></td><td class="atk none">—</td><td>被动:每复活1友方,增强1敌方诅咒</td><td class="mech">被动 / 诅咒 (每复活)</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="chg">信徒 tag 疑误标</td></tr>
+	<tr data-tags="遗言"><td class="cnum"><span class="cid">C37</span></td><td class="atk none">—</td><td>遗言:回合结束时,置顶友方攻击力最高生物</td><td class="mech">遗言+回合结束 / 置顶 (最高攻生物)</td><td class="tagcell"><span class="tag t-lastword">遗言</span></td><td class="dim">标点规范化</td></tr>
+	<tr data-tags="遗言"><td class="cnum"><span class="cid">C38</span></td><td class="atk">2</td><td>遗言:攻击;置顶友方非生物</td><td class="mech">遗言攻击 / 置顶 (非生物)</td><td class="tagcell"><span class="tag t-lastword">遗言</span></td><td class="dim"></td></tr>
+	<tr data-tags="埋葬,强化"><td class="cnum"><span class="cid">C39</span></td><td class="atk none">—</td><td>埋葬1攻击力最低友方;增强1该友方</td><td class="mech">埋葬友 (最低攻) / 强化墓中卡</td><td class="tagcell"><span class="tag t-bury">埋葬</span><span class="tag t-enhance">强化</span></td><td class="dim"></td></tr>
+	<tr data-tags="强化"><td class="cnum"><span class="cid">C40</span></td><td class="atk">1</td><td>攻击x2</td><td class="mech">多段x2 白板</td><td class="tagcell"><span class="tag t-enhance">强化</span></td><td class="chg">tag 疑误标 (白板无强化); ATK1 兜底</td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C41</span></td><td class="atk none">—</td><td>复活1诅咒友方</td><td class="mech">复活友 (文案模糊 §8-Q6)</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C42</span></td><td class="atk none">—</td><td>墓地每有1卡,埋葬1卡</td><td class="mech">磨牌 (=墓地数)</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim"></td></tr>
+	<tr data-tags="强化"><td class="cnum"><span class="cid">C43</span></td><td class="atk">2</td><td>攻击;复活1攻击次数最多友方</td><td class="mech">攻击 / 复活友 (最多次数定向)</td><td class="tagcell"><span class="tag t-enhance">强化</span></td><td class="dim">v2 加攻击</td></tr>
+	<tr data-tags="埋葬,信徒,被动"><td class="cnum"><span class="cid">C44</span></td><td class="atk none">—</td><td>被动:每次卡片被埋葬,生成1信徒</td><td class="mech">被动 / 信徒产 (每埋葬)</td><td class="tagcell"><span class="tag t-bury">埋葬</span><span class="tag t-faith">信徒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C45</span></td><td class="atk none">—</td><td>复活1友方;复活敌方诅咒</td><td class="mech">复活友 / 复活敌诅咒 (进攻)</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C46</span></td><td class="atk none">—</td><td>埋葬敌方攻击最高的卡;复活1友方</td><td class="mech">埋葬敌 (最高攻) / 复活友</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">未挂 tag</td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C47</span></td><td class="atk">1</td><td>攻击;被增强:攻击次数+1</td><td class="mech">攻击 / 被增强 / 次数自授予</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="chg">文案仍写「被增强」</td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C48</span></td><td class="atk none">—</td><td>复活敌方攻击最高;攻击x3</td><td class="mech">复活敌 (代价) / 多段x3</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="chg">tag 与内容无关, 疑误标</td></tr>
+	<tr data-tags="遗言,被动"><td class="cnum"><span class="cid">C49</span></td><td class="atk none">—</td><td>被动:本回合埋葬5友方:遗言触发两次</td><td class="mech">被动 / 条件 (埋5) / 遗言翻倍</td><td class="tagcell"><span class="tag t-lastword">遗言</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化; §6-3</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C50</span></td><td class="atk none">—</td><td>友方遗言被埋葬:复活自身;攻击</td><td class="mech">持续触发 / 复活自身 / 攻击</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="chg">未标被动 (待裁定 §8-Q4)</td></tr>
+	<tr data-tags="诅咒,被动"><td class="cnum"><span class="cid">C51</span></td><td class="atk none">—</td><td>被动:每次攻击,增强敌方诅咒1</td><td class="mech">被动 / 诅咒 (每攻击)</td><td class="tagcell"><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags="苏醒"><td class="cnum"><span class="cid">C52</span></td><td class="atk none">—</td><td>复活1友方;苏醒:复活1友方</td><td class="mech">复活友 / 苏醒复活 (链)</td><td class="tagcell"><span class="tag t-wake">苏醒</span></td><td class="dim">§6-1</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C53</span></td><td class="atk">2</td><td>攻击;每有1攻击力,埋葬卡组顶1卡</td><td class="mech">攻击 / 磨牌 (=攻击力)</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim"></td></tr>
+	<tr data-tags="苏醒,埋葬"><td class="cnum"><span class="cid">C54</span></td><td class="atk">2</td><td>攻击;苏醒:埋葬1敌方</td><td class="mech">攻击 / 苏醒 / 埋葬敌</td><td class="tagcell"><span class="tag t-wake">苏醒</span><span class="tag t-bury">埋葬</span></td><td class="dim"></td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C55</span></td><td class="atk none">—</td><td>复活敌方诅咒;回响1</td><td class="mech">复活敌诅咒 / 回响1</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim">回响唯一使用</td></tr>
+	<tr data-tags="信徒,埋葬,苏醒"><td class="cnum"><span class="cid">C56</span></td><td class="atk none">—</td><td>回合开始时埋葬自身;生成3信徒</td><td class="mech">回合开始 / 自埋 / 信徒产3</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-bury">埋葬</span><span class="tag t-wake">苏醒</span></td><td class="chg">苏醒 tag 疑误标 (无苏醒触发)</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C57</span></td><td class="atk none">—</td><td>埋葬牌组顶3卡</td><td class="mech">磨牌3</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim"></td></tr>
+	<tr data-tags="强化"><td class="cnum"><span class="cid">C58</span></td><td class="atk none">—</td><td>增强2友方</td><td class="mech">强化x2</td><td class="tagcell"><span class="tag t-enhance">强化</span></td><td class="dim"></td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C59</span></td><td class="atk none">—</td><td>增强敌方诅咒1;复活敌方诅咒</td><td class="mech">诅咒+1 / 复活敌诅咒</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C60</span></td><td class="atk">1</td><td>放逐1信徒;攻击x3</td><td class="mech">信徒耗 / 多段x3</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="chg">tag 应为信徒/放逐, 疑误标</td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C61</span></td><td class="atk none">—</td><td>攻击力=友方最高攻击力;攻击x2</td><td class="mech">动态攻 (最高友方) / 多段x2</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="dim">tag 松散 (受益于强化?)</td></tr>
+	<tr data-tags="遗言"><td class="cnum"><span class="cid">C62</span></td><td class="atk none">—</td><td>埋葬2卡组顶;遗言:延迟复活1友方</td><td class="mech">磨牌2 / 遗言 / 延迟复活</td><td class="tagcell"><span class="tag t-lastword">遗言</span></td><td class="chg">v2 埋葬1敌方→埋葬2卡组顶</td></tr>
+	<tr data-tags="遗言"><td class="cnum"><span class="cid">C63</span></td><td class="atk">2</td><td>遗言:复制自身;攻击</td><td class="mech">遗言 / 自我复制 / 攻击</td><td class="tagcell"><span class="tag t-lastword">遗言</span></td><td class="dim">§6-3</td></tr>
+	<tr data-tags="遗言,被强化"><td class="cnum"><span class="cid">C64</span></td><td class="atk">1</td><td>攻击;遗言:攻击x2</td><td class="mech">攻击 / 遗言多段x2</td><td class="tagcell"><span class="tag t-lastword">遗言</span><span class="tag t-benhance">被强化</span></td><td class="dim">与 <span class="cid">C99</span> 同文案, ATK 1 vs 2 区分</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C65</span></td><td class="atk none">—</td><td>埋葬1友方;埋葬2敌方</td><td class="mech">埋葬友 / 埋葬敌x2</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim"></td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C66</span></td><td class="atk none">—</td><td>复活2友方;埋葬1友方</td><td class="mech">复活友x2 / 埋葬友</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim"></td></tr>
+	<tr data-tags="信徒"><td class="cnum"><span class="cid">C68</span></td><td class="atk none">—</td><td>复活1友方;生成1信徒</td><td class="mech">复活友 / 信徒产</td><td class="tagcell"><span class="tag t-faith">信徒</span></td><td class="dim"></td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C69</span></td><td class="atk">2</td><td>埋葬1友方遗言;攻击</td><td class="mech">埋葬友 (遗言定向) / 攻击</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim">未挂遗言 (松散)</td></tr>
+	<tr data-tags="埋葬,诅咒,被动"><td class="cnum"><span class="cid">C70</span></td><td class="atk none">—</td><td>被动:回合结束时,本回合每埋葬1生物,增强敌方诅咒1</td><td class="mech">被动 / 回合结束 / 诅咒 (每埋生物)</td><td class="tagcell"><span class="tag t-bury">埋葬</span><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags="遗言,被动"><td class="cnum"><span class="cid">C71</span></td><td class="atk none">—</td><td>被动:每回合开始:给予1友方非生物:「遗言:复活自身」</td><td class="mech">被动 / 回合开始 / 授予遗言</td><td class="tagcell"><span class="tag t-lastword">遗言</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C72</span></td><td class="atk none">—</td><td>复活1rare友方</td><td class="mech">复活友 (稀有度定向)</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">未挂 tag</td></tr>
+	<tr data-tags="埋葬,信徒"><td class="cnum"><span class="cid">C73</span></td><td class="atk none">—</td><td>埋葬所有友方;每埋葬1友方,生成1信徒</td><td class="mech">埋葬全友方 / 信徒产 (每埋)</td><td class="tagcell"><span class="tag t-bury">埋葬</span><span class="tag t-faith">信徒</span></td><td class="dim">§5.3</td></tr>
+	<tr data-tags="埋葬,诅咒"><td class="cnum"><span class="cid">C74</span></td><td class="atk none">—</td><td>埋葬2友方;增强敌方诅咒6</td><td class="mech">埋葬友x2 / 诅咒+6</td><td class="tagcell"><span class="tag t-bury">埋葬</span><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C75</span></td><td class="atk">0</td><td>攻击(0);攻击力翻倍</td><td class="mech">攻击0 / 攻击翻倍</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="dim">tag 松散</td></tr>
+	<tr data-tags="信徒,诅咒,被动"><td class="cnum"><span class="cid">C76</span></td><td class="atk none">—</td><td>被动:信徒效果变为:「复活1敌方诅咒;放逐自身」</td><td class="mech">被动 / 信徒改写 / 复活敌诅咒 / 放逐</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags="信徒,被强化"><td class="cnum"><span class="cid">C77</span></td><td class="atk">2</td><td>攻击;每有1攻击力生成1信徒</td><td class="mech">攻击 / 信徒产 (=攻击力)</td><td class="tagcell"><span class="tag t-faith">信徒</span><span class="tag t-benhance">被强化</span></td><td class="dim">被强化 tag 松散</td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C79</span></td><td class="atk none">—</td><td>复活2normal友方</td><td class="mech">复活友x2 (稀有度定向)</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">未挂 tag</td></tr>
+	<tr data-tags="埋葬,被动"><td class="cnum"><span class="cid">C80</span></td><td class="atk none">—</td><td>被动:友方被埋葬:埋葬1卡组顶</td><td class="mech">被动 / 磨牌1</td><td class="tagcell"><span class="tag t-bury">埋葬</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化</td></tr>
+	<tr data-tags="强化"><td class="cnum"><span class="cid">C81</span></td><td class="atk">2</td><td>攻击;增强1友方</td><td class="mech">攻击 / 强化</td><td class="tagcell"><span class="tag t-enhance">强化</span></td><td class="dim"></td></tr>
+	<tr data-tags="被强化,埋葬"><td class="cnum"><span class="cid">C82</span></td><td class="atk">3</td><td>埋葬6友方,本回合每埋葬过1友方,埋葬数-1;攻击x3</td><td class="mech">埋葬友 (6-已埋) / 多段x3</td><td class="tagcell"><span class="tag t-benhance">被强化</span><span class="tag t-bury">埋葬</span></td><td class="dim">被强化 tag 松散</td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C83</span></td><td class="atk none">—</td><td>复活1生物友方</td><td class="mech">复活友 (生物定向)</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">未挂 tag</td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C84</span></td><td class="atk">0</td><td>攻击;增强敌方诅咒4</td><td class="mech">攻击0 / 诅咒+4</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim">v2 加攻击</td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C85</span></td><td class="atk">0</td><td>攻击;攻击力=敌方诅咒攻击力</td><td class="mech">攻击 / 动态攻 (=敌诅咒攻)</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C86</span></td><td class="atk">1</td><td>攻击x2;被增强:增强自身1</td><td class="mech">多段x2 / 被增强 / 自强化</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="chg">文案仍写「被增强」</td></tr>
+	<tr data-tags="埋葬"><td class="cnum"><span class="cid">C87</span></td><td class="atk none">—</td><td>让墓地1友方攻击;墓地无友方则埋葬1友方亡语</td><td class="mech">墓地攻击 / 埋葬友 (遗言定向)</td><td class="tagcell"><span class="tag t-bury">埋葬</span></td><td class="dim">墓地卡作伤害源 (大改, §7)</td></tr>
+	<tr data-tags="信徒"><td class="cnum"><span class="cid">C88</span></td><td class="atk">2</td><td>复活敌方攻击最高;生成3信徒;攻击</td><td class="mech">复活敌 (代价) / 信徒产3 / 攻击</td><td class="tagcell"><span class="tag t-faith">信徒</span></td><td class="dim"></td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C89</span></td><td class="atk none">—</td><td>复活1友方;增强敌方诅咒2</td><td class="mech">复活友 / 诅咒+2</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim"></td></tr>
+	<tr data-tags="强化"><td class="cnum"><span class="cid">C90</span></td><td class="atk">2</td><td>攻击;本回合1友方攻击次数+1</td><td class="mech">攻击 / 次数授予 (单体/本回合)</td><td class="tagcell"><span class="tag t-enhance">强化</span></td><td class="dim"></td></tr>
+	<tr data-tags="被强化"><td class="cnum"><span class="cid">C91</span></td><td class="atk">1</td><td>攻击x4</td><td class="mech">多段x4 白板</td><td class="tagcell"><span class="tag t-benhance">被强化</span></td><td class="dim">ATK1 → 4.0 顶格 (§5.2)</td></tr>
+	<tr data-tags="放逐"><td class="cnum"><span class="cid">C92</span></td><td class="atk">0</td><td>攻击;攻击力=本回合放逐的信徒数量</td><td class="mech">攻击 / 动态攻 (本回合放逐信徒数)</td><td class="tagcell"><span class="tag t-exile">放逐</span></td><td class="chg">v2 限「本回合」= 削弱; 未挂信徒</td></tr>
+	<tr data-tags="遗言"><td class="cnum"><span class="cid">C93</span></td><td class="atk none">—</td><td>1友方获得:遗言:攻击</td><td class="mech">授予遗言 (攻击)</td><td class="tagcell"><span class="tag t-lastword">遗言</span></td><td class="dim"></td></tr>
+	<tr data-tags="强化"><td class="cnum"><span class="cid">C94</span></td><td class="atk none">—</td><td>复活攻击力最高敌方;增强3友方</td><td class="mech">复活敌 (代价) / 强化x3</td><td class="tagcell"><span class="tag t-enhance">强化</span></td><td class="dim"></td></tr>
+	<tr data-tags="埋葬,诅咒,被动"><td class="cnum"><span class="cid">C95</span></td><td class="atk none">—</td><td>被动:敌方诅咒攻击力=墓地友方卡片</td><td class="mech">被动 / 动态攻 (敌诅咒=墓地友方数)</td><td class="tagcell"><span class="tag t-bury">埋葬</span><span class="tag t-curse">诅咒</span><span class="tag t-passive">被动</span></td><td class="dim">v2 被动化; §5.3</td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C96</span></td><td class="atk none">—</td><td>复活2uncommon友方</td><td class="mech">复活友x2 (稀有度定向)</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">未挂 tag</td></tr>
+	<tr data-tags="信徒"><td class="cnum"><span class="cid">C97</span></td><td class="atk">1</td><td>攻击;生成2信徒</td><td class="mech">攻击 / 信徒产2</td><td class="tagcell"><span class="tag t-faith">信徒</span></td><td class="dim"></td></tr>
+	<tr data-tags="诅咒,被强化"><td class="cnum"><span class="cid">C98</span></td><td class="atk">0</td><td>攻击;每有1攻击力,增强敌方诅咒1</td><td class="mech">攻击0 / 诅咒 (=攻击力)</td><td class="tagcell"><span class="tag t-curse">诅咒</span><span class="tag t-benhance">被强化</span></td><td class="chg">v2 移除「无法攻击」→攻击(ATK 0)</td></tr>
+	<tr data-tags="遗言"><td class="cnum"><span class="cid">C99</span></td><td class="atk">2</td><td>攻击;遗言:攻击x2</td><td class="mech">攻击 / 遗言多段x2</td><td class="tagcell"><span class="tag t-lastword">遗言</span></td><td class="dim">SPIKE_SKELETON; v2 移除「揭晓:」</td></tr>
+	<tr data-tags=""><td class="cnum"><span class="cid">C100</span><span class="newbdg">NEW</span></td><td class="atk">3</td><td>攻击;交换1友方生物和敌方生物</td><td class="mech">攻击 / 交换 (新机制)</td><td class="tagcell"><span class="dim">—</span></td><td class="dim">交换定义待定 (§8-Q10)</td></tr>
+	<tr data-tags="诅咒"><td class="cnum"><span class="cid">C101</span><span class="newbdg">NEW</span></td><td class="atk">2</td><td>敌方诅咒揭晓时:复活自身;攻击</td><td class="mech">持续触发 / 复活自身 / 攻击</td><td class="tagcell"><span class="tag t-curse">诅咒</span></td><td class="dim">未标被动 (待裁定 §8-Q4); §6-5</td></tr>
+	<tr data-tags="埋葬,被动"><td class="cnum"><span class="cid">C102</span><span class="newbdg">NEW</span></td><td class="atk none">—</td><td>被动;墓地中的生物攻击力+1</td><td class="mech">被动 / 墓地生物光环</td><td class="tagcell"><span class="tag t-bury">埋葬</span><span class="tag t-passive">被动</span></td><td class="chg">标点「被动;」待统一 (§8-Q11)</td></tr>
+	</tbody></table></div>
+<footer id="next">
+<h2>后续动作建议 <span class="dim">(按优先级)</span></h2>
+<ol><li>裁定 §8-Q1 / Q4 —— 「非被动卡在墓地能否触发」是墓地规则的地基, 阻塞全部墓地层 PRD</li><li>补齐剩余 58 张 ATK + 新增稀有度列 → 跑僵尸基准全表审计 (流程同 <code>docs/CardBalanceAudit_ZombieBaseline.md</code>)</li><li>术语统一: 「被增强」残留 3 处 (<span class="cid">C12</span> <span class="cid">C47</span> <span class="cid">C86</span>) · 「被动;」标点 1 处 (<span class="cid">C102</span>) · tag 语义裁定 (§8-Q9) · 补「复活」tag 选项并回填 9 张裸奔卡</li><li>墓地层 PRD: 揭晓路由进墓地 / 被动洗牌豁免 / 复活效果+苏醒事件 / 回响路由 / 回合结束事件 (§7 中新系统打包)</li><li>被动池强度税定价规则: 19 张常驻引擎按「每回合预期收益 × 剩余回合数」计税 (§5.3)</li></ol>
+</footer>
+<script>
+	(function () {
+		var q = document.getElementById('q');
+		var btns = Array.prototype.slice.call(document.querySelectorAll('.fbtn'));
+		var cur = 'all';
+		function apply() {
+			var s = q.value.trim().toLowerCase();
+			var rows = document.querySelectorAll('#appendix tbody tr');
+			var shown = 0;
+			for (var i = 0; i < rows.length; i++) {
+				var tr = rows[i];
+				var tags = (tr.getAttribute('data-tags') || '').split(',');
+				var okTag = cur === 'all' || tags.indexOf(cur) !== -1;
+				var okText = !s || tr.textContent.toLowerCase().indexOf(s) !== -1;
+				var show = okTag && okText;
+				tr.style.display = show ? '' : 'none';
+				if (show) shown++;
+			}
+			document.getElementById('shown').textContent = shown;
+		}
+		btns.forEach(function (b) {
+			b.addEventListener('click', function () {
+				cur = b.getAttribute('data-tag');
+				btns.forEach(function (x) { x.classList.toggle('on', x === b); });
+				apply();
+			});
+		});
+		q.addEventListener('input', apply);
+	})();
+</script>
+</body>
+</html>

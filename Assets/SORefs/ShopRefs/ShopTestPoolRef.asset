@@ -13,7 +13,29 @@ MonoBehaviour:
   m_Name: ShopTestPoolRef
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
+  - {fileID: 8473897741869127908, guid: 71f7cb43ffb7d2446b6267f33f8b9639, type: 3}
+  - {fileID: 8336094393380981402, guid: 993a019cdab40f24985808944ad0d1f0, type: 3}
+  - {fileID: 4428231430183656993, guid: f91fee59184221f4cb977aba60aea2d7, type: 3}
+  - {fileID: 6929564165084074937, guid: 921eaa5eedc1b494483748234fa1dac5, type: 3}
+  - {fileID: 7025170819787247921, guid: c64ec61dcc5031b4ca90ee01c3bec40b, type: 3}
+  - {fileID: 6792994502609358193, guid: f4522b4c692c48b4684bce557f698d79, type: 3}
+  - {fileID: 545076465658905641, guid: 1bf8ce51cc8b6154fb37cb084a5b634d, type: 3}
+  - {fileID: 6659149454950991006, guid: 85d61f3d8da180043b9adbd861e2c997, type: 3}
+  - {fileID: 2767757057748111197, guid: 18e719ec71bf0e343901991ff10c7760, type: 3}
+  - {fileID: 7741498165312943511, guid: 2a67355f3b47a0d428f6c94281d86771, type: 3}
+  - {fileID: 7981514837180212169, guid: 794c5ef88e20c8845945bddffc9d59f6, type: 3}
+  - {fileID: 5111684966641013336, guid: de3c03836c033a743a68edf7e45a5303, type: 3}
+  - {fileID: 5173587916797470116, guid: aee82fac04b7a3c47b01b1cc4a4f8969, type: 3}
+  - {fileID: 8549384387025279366, guid: 38f602c1869d47a4c8c60f36ea25f584, type: 3}
+  - {fileID: 2518868686918562005, guid: e700c7edfd6677f469387df94c6bc218, type: 3}
+  - {fileID: 1415065256557851049, guid: 1a55504c7fb55444b8f630d9d3b793b7, type: 3}
+  - {fileID: 6492134197272220212, guid: b35fc497e7987dd4992c0494b428b70b, type: 3}
+  - {fileID: 5246165075108903406, guid: 69c908c08a5da7d40afff65c60822089, type: 3}
+  - {fileID: 6867985052858176463, guid: 05644b681acc9c749b8d11e82d64bdfc, type: 3}
+  - {fileID: 8318710554470851401, guid: 603df23d5791d7147bb6670d008ed1d2, type: 3}
+  - {fileID: 6547619349240593436, guid: 7e69cb864f0afcf428b736f5000ebab5, type: 3}
+  - {fileID: 4399626932432832125, guid: a25ff8cbedd027e4499486cd3509d3bf, type: 3}
+  - {fileID: 7857353328620261514, guid: f255e5fa9da06014da6aec648c84f756, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: shop pool

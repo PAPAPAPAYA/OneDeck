@@ -85,6 +85,7 @@ MonoBehaviour:
   statusEffectToCheck: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &1808145013887896563
@@ -138,7 +139,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: CORPSE_CANON
   displayName: "\u51A5\u754C\u5927\u70AE"
-  cardDesc: "\u63ed\u6653\u65f6:\u57cb\u846c 1 \u53cb\u65b9;\n\u53cb\u65b9\u88ab\u57cb\u846c:\u653b\u51fb"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C 1 \u53CB\u65B9;\n\u53CB\u65B9\u88AB\u57CB\u846C:\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -150,10 +151,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -291,3 +295,4 @@ MonoBehaviour:
   excludeSelf: 1
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
+  ignoreStartCardBoundary: 0

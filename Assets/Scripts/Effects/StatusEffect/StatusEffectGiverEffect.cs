@@ -59,7 +59,7 @@ namespace DefaultNamespace.Effects
 			return true;
 		}
 
-		protected bool CanReceiveStatusEffect(CardScript cardScript, EnumStorage.StatusEffect effect)
+		protected virtual bool CanReceiveStatusEffect(CardScript cardScript, EnumStorage.StatusEffect effect)
 		{
 			if (effect == EnumStorage.StatusEffect.None) return false;
 			if (!canStatusEffectBeStacked && cardScript.myStatusEffects.Contains(effect))
@@ -70,7 +70,7 @@ namespace DefaultNamespace.Effects
 		protected bool PassesDamageFilter(CardScript cardScript)
 		{
 			if (!onlyTargetEnemyDamagingCards) return true;
-			return UtilityFuncManagerScript.HasDecreaseTheirHpEffect(cardScript.gameObject);
+			return cardScript.isCreature;
 		}
 		#endregion
 

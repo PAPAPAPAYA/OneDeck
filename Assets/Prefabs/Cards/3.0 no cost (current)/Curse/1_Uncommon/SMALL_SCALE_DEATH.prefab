@@ -220,7 +220,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SMALL_SCALE_DEATH
   displayName: "\u5C0F\u8303\u56F4\u6B7B\u4EA1"
-  cardDesc: "\u63ed\u6653\u65f6:\u57cb\u846c\u540e <b>2</b> \u5361,\u653b\u51fb"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C\u540E <b>2</b> \u5361,\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -232,10 +232,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0

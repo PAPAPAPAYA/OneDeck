@@ -68,6 +68,7 @@ MonoBehaviour:
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &5441669692125512743
 MonoBehaviour:
   m_ObjectHideFlags: 0

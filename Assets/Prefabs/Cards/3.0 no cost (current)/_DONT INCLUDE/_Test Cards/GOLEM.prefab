@@ -156,6 +156,13 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
+  printedAttack: 0
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
+  isCreature: 1
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0

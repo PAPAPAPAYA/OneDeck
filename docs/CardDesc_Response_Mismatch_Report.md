@@ -12,10 +12,26 @@
 
 | 项目 | 数量 |
 |---|---|
-| 检查卡片总数 | 88 |
-| 无问题 | 88 |
-| 存在疑似不匹配 | 0 |
+| 检查卡片总数 | 90 |
+| 无问题 | 89 |
+| 存在疑似不匹配 | 1 |
 
-## 结果
+## 疑似不匹配卡片
 
-所有卡片的描述与 Listener Response 均匹配，未发现明显不匹配。
+### 1. ZOMBIE
+
+**路径**：`Assets/Prefabs/Cards/3.0 no cost (current)/_DONT INCLUDE/_Default cards/ZOMBIE.prefab`
+
+**描述**：
+```
+
+```
+
+**未在描述中体现的 Listener**：
+
+- `deal dmg (1)` (OnMeRevealed)
+  - AttackEffect->Attack(0)
+
+---
+
+**注意**：本报告基于关键词与方法名的语义匹配，复杂表述、多效果组合或特殊逻辑可能需要人工复核。
