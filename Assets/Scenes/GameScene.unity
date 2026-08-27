@@ -5755,7 +5755,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d395f692b9ee8f04c8266542b1569c21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
-  isTestMode: 0
+  isTestMode: 1
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
@@ -6879,7 +6879,7 @@ MonoBehaviour:
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   cardsRevealedThisRound: 0
   isPlayingEffectAnimations: 0
-  autoReveal: 1
+  autoReveal: 0
   combatAnimationSpeedScale: 1
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   roundsLastCombat: 0
@@ -7012,11 +7012,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbc126ac2175bbf439e7642b6f5fb18d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
-  useCustomOrder: 0
+  useCustomOrder: 1
   customOrderPrefabs:
   - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 8a9871274e7b5ed4ea2b5977f2d53aeb, type: 3}
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
   - {fileID: 8718476725744197808, guid: e188fbf3a7f2b094194d4f6742d17b59, type: 3}
   - {fileID: 8718476725744197808, guid: dc22033fba831004f8dedc7fd80ced9f, type: 3}
   - {fileID: 8718476725744197808, guid: dc22033fba831004f8dedc7fd80ced9f, type: 3}
@@ -7072,6 +7071,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 627706dcccd4ddc4dbf8606179fda21c, type: 3}
   - {fileID: 6659149454950991006, guid: 85d61f3d8da180043b9adbd861e2c997, type: 3}
   - {fileID: 545076465658905641, guid: 1bf8ce51cc8b6154fb37cb084a5b634d, type: 3}
+  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
   - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
 --- !u!1 &1162866020
 GameObject:
@@ -10804,7 +10804,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
   - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  useDebugEnemyDeck: 0
+  useDebugEnemyDeck: 1
   debugEnemyDeck: {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
   defaultEnemyDeckPool:
   - decks:

@@ -81,7 +81,7 @@ MonoBehaviour:
   dmgAmountAlter: 0
   healAmountAlter: 0
   isStatusEffectDamage: 0
-  extraDmg: 1
+  extraDmg: 0
   statusEffectToCheck: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
@@ -172,7 +172,7 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
-  onlyTargetEnemyDamagingCards: 0
+  onlyTargetEnemyDamagingCards: 1
   lastXCardsCount: 0
   statusEffectLayerCount: 0
   xFriendlyCount: 1
@@ -231,7 +231,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BLACKSMITH
   displayName: "\u94C1\u5320"
-  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u5F3A\u5316 <b>1</b> \u53CB\u65B9"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u5F3A\u5316 <b>1</b> \u53CB\u65B9\u751F\u7269"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

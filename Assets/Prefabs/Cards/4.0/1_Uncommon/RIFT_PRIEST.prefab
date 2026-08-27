@@ -51,7 +51,7 @@ MonoBehaviour:
   cardTypeID: RIFT_PRIEST
   displayName: RIFT_PRIEST
   cardDesc: "\u63ED\u6653\u65F6:\u751F\u6210 <b>2</b> [\u6B21\u5143\u88C2\u7F1D];\u5F3A\u5316
-    <b>1</b> \u53CB\u65B9"
+    <b>1</b> \u53CB\u65B9\u751F\u7269"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -273,7 +273,7 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
-  onlyTargetEnemyDamagingCards: 0
+  onlyTargetEnemyDamagingCards: 1
   lastXCardsCount: 0
   statusEffectLayerCount: 1
   xFriendlyCount: 1

@@ -1,0 +1,65 @@
+notion-search :: Search the user's Notion workspace and connected sources (Slack, Google Drive,
+GitHub, Jira, Teams, SharePoint, OneDrive
+notion-fetch :: Retrieves details about a Notion entity (page, database, or data source) by URL or ID.
+
+Provide URL or ID in `id` parame
+notion-create-attachment :: Create an attachment and upload it to Notion.
+
+Provide exactly one source:
+- content for small UTF-8 text artifacts such
+notion-create-file-upload :: Create a short-lived URL for uploading one local file directly to Notion.
+
+After calling this tool, send exactly one mul
+notion-download-attachment :: Download the contents of a small UTF-8 text attachment created by the Notion MCP `create-attachment` tool.
+
+Pass the `fi
+notion-create-pages :: ## Overview
+
+Creates one or more Notion pages, with the specified properties and content.
+
+## Parent
+
+All pages created 
+notion-update-page :: ## Overview
+
+Update a Notion page's properties or content.
+
+## Properties
+
+Notion page properties are a JSON map of prop
+notion-convert-page-to-skill :: Mark a Notion page as an AI skill. The page must be in the current workspace, and the authenticated user must have permi
+notion-move-pages :: Move one or more Notion pages or databases to a new parent.
+notion-duplicate-page :: Duplicate a Notion page. The page must be within the current workspace, and you must have permission to access it. The d
+notion-create-database :: Creates a new Notion database using SQL DDL syntax, or a canonical typed database for tasks, projects, or skills.
+
+Provi
+notion-create-folder :: Creates an empty Notion Folder. Set parent.page_id for a top-level Folder owned by a page, or parent.folder_id to create
+notion-update-folder :: Update an existing Notion Folder with an explicit Folder operation.
+
+- Use add_files with file upload IDs returned by th
+notion-update-data-source :: Update a Notion data source's schema, title, or attributes using SQL DDL statements. Returns Markdown showing updated st
+notion-create-comment :: Add a comment to a page or specific content.
+
+Creates a new comment. Provide `page_id` to identify the page, then choose
+notion-get-comments :: Get comments and discussions from a Notion page.
+
+Returns discussions with full comment content in XML format. By defaul
+notion-get-async-task :: Retrieves the current status of an async task that was started by another tool (for example, "create_pages" called with 
+notion-get-teams :: Retrieves a list of teams (teamspaces) in the current workspace. Shows which teams exist, user membership status, IDs, n
+notion-get-users :: Retrieves a list of users in the current workspace. Shows workspace members and guests with their IDs, names, emails (if
+notion-query-data-sources :: Query data from Notion databases using SQL or by specifying a view. This is the canonical replacement for the deprecated
+notion-query-meeting-notes :: Query the current user's meeting notes data source.
+
+Applies a filter over meeting note properties. Title keyword search
+notion-list-private-pages :: List the current user's top-level pages and databases in their Private sidebar section. Use this to browse private works
+notion-list-shared-pages :: List pages and databases in the current user's Shared sidebar section. Use this to browse content shared directly with t
+notion-list-favorite-pages :: List the current user's favorite pages and databases in sidebar order. Use this when the user refers to a favorite or pi
+notion-list-recent-pages :: List pages and databases the current user recently viewed, ranked by recency and visit frequency. Use this to recover li
+notion-search-agents :: Search agents by name or description, or browse the current user's favorite agents and the workspace's newest agents. Us
+notion-create-view :: Create a new view on a Notion database.
+
+Exactly one of "database_id" or "parent_page_id" must be provided:
+- "database_
+notion-update-view :: Update a view's name, filters, sorts, or display configuration.
+
+Use "fetch" to get view IDs from database responses. On
