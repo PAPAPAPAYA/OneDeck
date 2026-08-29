@@ -5,9 +5,9 @@ using UnityEngine;
 namespace DefaultNamespace.Managers
 {
 	/// <summary>
-	/// Centralized toggle for one-click test mode.
-	/// When enabled, synchronizes debug-related flags across shuffle override,
-	/// enemy deck loader, and inverts combat auto-reveal.
+	/// Central panel of independent test toggles.
+	/// Each toggle pushes its own flag to the target system: shuffle order override,
+	/// debug enemy deck loader, and combat auto-reveal.
 	/// </summary>
 	public class TestManager : MonoBehaviour
 	{
@@ -22,9 +22,15 @@ namespace DefaultNamespace.Managers
 
 		#endregion
 
-		[Header("Test Mode")]
-		[Tooltip("Enable test mode: custom shuffle order, debug enemy deck, and disable combat auto-reveal.")]
-		public bool isTestMode;
+		[Header("Test Toggles (independent)")]
+		[Tooltip("Start-card shuffle uses ShuffleOrderOverride.customOrderPrefabs instead of real shuffle.")]
+		public bool overrideShuffleOrder;
+
+		[Tooltip("Enemy deck always uses DeckSaver.debugEnemyDeck (bypasses JSON save and default pool).")]
+		public bool useTestEnemyDeck;
+
+		[Tooltip("Combat auto-reveal. Uncheck to reveal cards by manual click only.")]
+		public bool autoReveal;
 
 		[Header("Targets")]
 		[Tooltip("Optional ShuffleOrderOverride reference. Auto-resolves from CombatManager if null.")]
@@ -92,14 +98,14 @@ namespace DefaultNamespace.Managers
 		private void Start()
 		{
 			ResolveReferences();
-			ApplyTestMode();
+			ApplyTestToggles();
 		}
 
 		private void OnValidate()
 		{
-			// Sync target flags immediately whenever the toggle changes in the Inspector.
+			// Sync target flags immediately whenever a toggle changes in the Inspector.
 			ResolveReferences();
-			ApplyTestMode();
+			ApplyTestToggles();
 
 #if UNITY_EDITOR
 			if (!Application.isPlaying)
@@ -113,35 +119,28 @@ namespace DefaultNamespace.Managers
 		}
 
 		/// <summary>
-		/// Toggle test mode at runtime.
+		/// Push each independent test toggle to its registered target system.
 		/// </summary>
-		public void SetTestMode(bool enabled)
-		{
-			isTestMode = enabled;
-			ApplyTestMode();
-		}
-
-		/// <summary>
-		/// Apply the current test mode state to all registered target systems.
-		/// </summary>
-		private void ApplyTestMode()
+		private void ApplyTestToggles()
 		{
 			if (shuffleOrderOverride != null)
 			{
-				shuffleOrderOverride.useCustomOrder = isTestMode;
+				shuffleOrderOverride.useCustomOrder = overrideShuffleOrder;
 			}
 
 			if (deckSaver != null)
 			{
-				deckSaver.useDebugEnemyDeck = isTestMode;
+				deckSaver.useDebugEnemyDeck = useTestEnemyDeck;
 			}
 
 			if (combatManager != null)
 			{
-				combatManager.autoReveal = !isTestMode;
+				combatManager.autoReveal = autoReveal;
 			}
 
-			TestManager.Log("[TestManager] Test mode " + (isTestMode ? "ENABLED" : "DISABLED"));
+			TestManager.Log("[TestManager] Toggles - shuffleOverride=" + (overrideShuffleOrder ? "ON" : "OFF")
+				+ " testEnemyDeck=" + (useTestEnemyDeck ? "ON" : "OFF")
+				+ " autoReveal=" + (autoReveal ? "ON" : "OFF"));
 		}
 
 		/// <summary>
