@@ -82,6 +82,10 @@ public abstract class HeadlessCombatTestFixture
 		ValueTrackerManager.enemyCardsBuriedCountRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.stagedOwnerRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.stagedEnemyRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.ownerRevivedCountRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.enemyRevivedCountRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.ownerRevivedCountThisRoundRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.enemyRevivedCountThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.lastAppliedStatusEffectRef = CreateScriptableObject<StatusEffectSO>();
 		ValueTrackerManager.lastAppliedStatusEffectAmountRef = CreateScriptableObject<IntSO>();
 
@@ -111,6 +115,10 @@ public abstract class HeadlessCombatTestFixture
 		GameEventStorage.onMeBuried = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onAnyCardBuried = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onFriendlyCardBuried = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onMeRevived = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onAnyCardRevived = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onFriendlyCardRevived = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onEnemyCardRevived = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onFriendlyCardExiled = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onFriendlyFlyExiled = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onFriendlyMinionAdded = CreateScriptableObject<GameEvent>();

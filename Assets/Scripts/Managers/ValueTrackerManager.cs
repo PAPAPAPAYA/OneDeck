@@ -22,6 +22,11 @@ public class ValueTrackerManager : MonoBehaviour
 	[Header("StagedCard")]
 	public IntSO stagedOwnerRef;
 	public IntSO stagedEnemyRef;
+	[Header("ReviveCount (4.0)")]
+	public IntSO ownerRevivedCountRef; // cumulative across the combat
+	public IntSO enemyRevivedCountRef; // cumulative across the combat
+	public IntSO ownerRevivedCountThisRoundRef; // reset at every round start (HandleNewRoundStart)
+	public IntSO enemyRevivedCountThisRoundRef; // reset at every round start (HandleNewRoundStart)
 
 	[Header("Last Applied Status Effect")]
 	public StatusEffectSO lastAppliedStatusEffectRef;

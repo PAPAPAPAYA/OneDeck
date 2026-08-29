@@ -93,6 +93,7 @@ GameObject:
   - component: {fileID: 7737052786097108153}
   - component: {fileID: 1016807647864156937}
   - component: {fileID: 638178398309144577}
+  - component: {fileID: -2980134115838040666}
   m_Layer: 0
   m_Name: RIFT_HATCHERY
   m_TagString: Untagged
@@ -132,8 +133,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_HATCHERY
   displayName: RIFT_HATCHERY
-  cardDesc: "\u56DE\u5408\u5F00\u59CB:\u57CB\u846C\u81EA\u8EAB;\u751F\u6210 <b>3</b>
-    [\u6B21\u5143\u88C2\u7F1D]"
+  cardDesc: "\u63ED\u6653\u65F6:\u751F\u6210 <b>3</b> [\u6B21\u5143\u88C2\u7F1D];\u56DE\u5408\u5F00\u59CB:\u57CB\u846C\u81EA\u8EAB"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -180,6 +180,22 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &-2980134115838040666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5173587916797470116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
+  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
+  response:
+    m_PersistentCalls:
+      m_Calls:
       - m_Target: {fileID: 1036413335962284195}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid

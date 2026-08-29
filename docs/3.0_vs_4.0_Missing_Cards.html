@@ -47,7 +47,7 @@
 	.tbl { padding:6px 10px; }
 	table { border-collapse:collapse; width:100%; font-size:0.84rem; }
 	th, td { padding:6px 9px; border-bottom:1px solid var(--line); vertical-align:top; text-align:left; }
-	th { color:var(--dim); font-weight:600; background:var(--card2); position:sticky; top:0; white-space:nowrap; z-index:1; }
+	th { color:#8b93a3; font-weight:600; background:var(--card2); position:sticky; top:0; white-space:nowrap; z-index:1; }
 	tbody tr:hover td { background:#1a1e27; }
 
 	.cid { font-family:Consolas,monospace; font-size:0.74rem; color:var(--accent); background:#1a1e27; border:1px solid #7aa2f788; border-radius:4px; padding:0 4px; white-space:nowrap; }
@@ -69,22 +69,22 @@
 <body>
 
 <h1>3.0 → 4.0 缺失卡片对照</h1>
-<div class="sub">3.0 有、而 4.0 没有相似效果的卡片清单。生成日期 2026-08-27 (v2, 含置顶→复活桥接裁定)。</div>
+<div class="sub">3.0 有、而 4.0 没有相似效果的卡片清单。生成日期 2026-08-27 (v3, 含置顶→复活桥接 + 苏醒≈OnMeStaged 裁定)。</div>
 
-<div class="notice"><strong>关键桥接 (2026-08-27 裁定)</strong>: 4.0 中<strong>【置顶】效果被整体替换为【复活】</strong>。本报告按 <code>置顶X友方 ≈ 复活X友方</code> · <code>置顶自身 ≈ 复活自身</code> · <code>被置顶触发 ≈ 苏醒触发</code> 判定相似性。标 <span class="bridge">经桥接</span> 的对应关系依赖此裁定。</div>
+<div class="notice"><strong>关键桥接 (2026-08-27 裁定)</strong>: 4.0 中<strong>【置顶】效果被整体替换为【复活】</strong>。本报告按 <code>置顶X友方 ≈ 复活X友方</code> · <code>置顶自身 ≈ 复活自身</code> · <code>被置顶触发 ≈ 苏醒触发</code> 判定相似性。<strong>苏醒 ≈ 引擎当前已有的 OnMeStaged</strong> (<code>GameEventStorage.onMeStaged</code>, 由 StageEffect 触发), 因此经苏醒的对应计为<strong>已有相似</strong>, 不因苏醒字段未落地而降档。标 <span class="bridge">经桥接</span> 的对应关系依赖此裁定。</div>
 
 <div class="kpis">
 	<div class="kpi"><div class="num">71</div><div class="lbl">3.0 当前卡池 (4 个分类文件夹, 不含 token / 工具卡 / _DONT INCLUDE)</div></div>
 	<div class="kpi miss"><div class="num">11</div><div class="lbl">无相似效果 — 4.0 全库找不到对应 (§2)</div></div>
-	<div class="kpi unct"><div class="num">26</div><div class="lbl">不确定 — 只有部分相似 / 机制近似 (§3)</div></div>
-	<div class="kpi ok"><div class="num">34</div><div class="lbl">已有相似 / 直接对应 (§4, 含 6 张经置顶→复活桥接)</div></div>
+	<div class="kpi unct"><div class="num">25</div><div class="lbl">不确定 — 只有部分相似 / 机制近似 (§3)</div></div>
+	<div class="kpi ok"><div class="num">35</div><div class="lbl">已有相似 / 直接对应 (§4, 含 7 张经置顶→复活/苏醒桥接)</div></div>
 </div>
 
 <div class="toc">
-	<a href="#s1">§1 机制层面整体消失</a>
+	<a href="#s1">§1 机制层面整体变化</a>
 	<a href="#s2">§2 无相似 (11)</a>
-	<a href="#s3">§3 不确定 (26)</a>
-	<a href="#s4">§4 已有相似 (34)</a>
+	<a href="#s3">§3 不确定 (25)</a>
+	<a href="#s4">§4 已有相似 (35)</a>
 	<a href="#s5">§5 对比口径</a>
 </div>
 
@@ -93,7 +93,7 @@
 <thead><tr><th>机制</th><th>受影响的 3.0 卡</th><th>4.0 状态</th></tr></thead>
 <tbody>
 	<tr><td><strong>置顶作为效果</strong></td><td>UNSTABLE_PORTAL · GRAVE_PORTAL · GRAVE_KEEPER · THE_FOOL · ELDER_SORCERER · QUICK_RESPONSE_PROTOCOL · BOOSTER · DR_MANHATTAN 等</td><td class="dim"><strong>整体替换为【复活】</strong> (2026-08-27 裁定): 复活卡 27 张, 多数置顶卡经桥接有对应; 原生置顶仅 C37/C38 与已配置 SOLDIER_SKELETON 残留</td></tr>
-	<tr><td><strong>被置顶触发</strong> (OnMeStaged)</td><td>GOBLIN_CHARGE_TEAM · GOBLIN_ASSASSIN_TEAM · SNATCHER · TACTICAL_BREACHER · POWER_SURGE · WISE_BURIAL</td><td class="dim">4.0 对应词为「苏醒」 (OnMeRevived, 引擎未实现 ❌); 苏醒设计仅 5 张 (C01/C22/C28/C52/C54); 4.0 无被置顶卡</td></tr>
+	<tr><td><strong>被置顶触发</strong> (OnMeStaged)</td><td>GOBLIN_CHARGE_TEAM · GOBLIN_ASSASSIN_TEAM · SNATCHER · TACTICAL_BREACHER · POWER_SURGE · WISE_BURIAL</td><td class="dim">4.0 对应词为「苏醒」 (OnMeRevived); <strong>苏醒 ≈ 引擎已有的 OnMeStaged, 经其对应计为已有相似</strong>; 苏醒设计卡 5 张 (C01 生成信徒 / C22 强化自身 / C28·C52 复活友方 / C54 埋葬敌方)</td></tr>
 	<tr><td><strong>萦绕 (Linger) 区域触发</strong></td><td>DEATHBED_CURSE · RIFT_COFFIN · MOTH_MAN · QUICK_RESPONSE_PROTOCOL · ETERNAL_GHOST</td><td class="dim">4.0 用「被动」(洗牌后固定起始卡后) 替代, 语义不同; 这些具体触发无对应卡</td></tr>
 	<tr><td><strong>受伤触发</strong> (onTheirPlayerTookDmg)</td><td>ETERNAL_GHOST · CURSE_ENCHANTMENT</td><td class="dim">4.0 触发词表无此事件; 仅 C51「每次攻击」近似</td></tr>
 	<tr><td><strong>力量作为资源消耗</strong> (CheckCost_Power)</td><td>DR_MANHATTAN · CURSE_THIRST_ARCH_SUMMONER</td><td class="dim">4.0 代价体系只有埋葬/放逐, 无力量消耗</td></tr>
@@ -123,11 +123,11 @@
 	<tr><td><span class="cname">增殖的厄运</span> <span class="cid">PROLIFERATING_CURSE</span></td><td><span class="tag t-curse">Curse</span></td><td class="eff">揭晓时:复制敌方 1 诅咒</td><td class="dim">复制敌方卡机制无 (4.0 仅 C63 复制自身)</td></tr>
 </tbody></table></div>
 
-<h2 id="s3" class="unct">3. 不确定 <span class="dim">(26 张 — 只有部分相似 / 机制近似, 需人工裁定)</span></h2>
+<h2 id="s3" class="unct">3. 不确定 <span class="dim">(25 张 — 只有部分相似 / 机制近似, 需人工裁定)</span></h2>
 <div class="card tbl"><table>
 <thead><tr><th>3.0 卡片</th><th>分类</th><th>3.0 效果</th><th>4.0 最接近</th><th>差异点</th></tr></thead>
 <tbody>
-	<tr><td><span class="cname">不愚蠢的埋葬</span> <span class="cid">WISE_BURIAL</span></td><td><span class="tag t-bury">Bury</span></td><td class="eff">被置顶:埋葬 1 友方[亡语]/[萦绕]</td><td><span class="c4">C69</span> EULOGIST 埋葬 1 友方遗言卡;攻击 (已配置)</td><td class="dim">亡语定向埋葬一致; 被置顶触发无卡, 苏醒侧也无埋葬 payoff</td></tr>
+	<tr><td><span class="cname">不愚蠢的埋葬</span> <span class="cid">WISE_BURIAL</span></td><td><span class="tag t-bury">Bury</span></td><td class="eff">被置顶:埋葬 1 友方[亡语]/[萦绕]</td><td><span class="c4">C69</span> EULOGIST 埋葬 1 友方遗言卡;攻击 (已配置)</td><td class="dim">亡语定向埋葬一致; 苏醒≈OnMeStaged 计为已有机制, 但 5 张苏醒卡无埋葬 payoff</td></tr>
 	<tr><td><span class="cname">不死诅咒者</span> <span class="cid">UNDEAD_CURSER</span></td><td><span class="tag t-curse">Curse</span></td><td class="eff">揭晓时:增强敌诅咒 1;被埋葬:增强敌诅咒 1</td><td><span class="c4">C84</span> HEXER 攻击;强化诅咒 (已配置)</td><td class="dim">揭晓半一致; 遗言增强诅咒无</td></tr>
 	<tr><td><span class="cname">冥界邀请</span> <span class="cid">GRAVE_INVITATION</span></td><td><span class="tag t-bury">Bury</span></td><td class="eff">揭晓时:造成 4 伤害,墓地每有 1 友方:埋葬 1 敌方</td><td><span class="c4">C42</span> 墓地每有 1 卡:埋葬 1 卡</td><td class="dim">按墓地数缩放一致; 4.0 缩出来的是磨牌而非埋敌方</td></tr>
 	<tr><td><span class="cname">错乱传送术士</span> <span class="cid">CONFUSED_PORTALMANCER</span></td><td><span class="tag t-bury">Bury</span></td><td class="eff">揭晓时:埋葬 1 友方;被埋葬:生成 3 裂缝</td><td><span class="c4">C56</span> RIFT_HATCHERY 回合开始:埋葬自身;生成 3 信徒 (已配置)</td><td class="dim">埋+产 3 token 结构一致; 遗言触发改为回合开始</td></tr>
@@ -147,15 +147,14 @@
 	<tr><td><span class="cname">碎骨聚集体</span> <span class="cid">BONE_COMBINATION</span></td><td><span class="tag t-gen">General</span></td><td class="eff">揭晓时:造成 1 伤害 x 本回合埋葬敌方数量</td><td><span class="c4">C44/C70</span> 每埋葬收益 (信徒/诅咒)</td><td class="dim">按埋葬计数一致; 收益不是伤害</td></tr>
 	<tr><td><span class="cname">血肉聚集体</span> <span class="cid">FLESH_COMBINATION</span></td><td><span class="tag t-gen">General</span></td><td class="eff">揭晓时:造成友方数量的伤害</td><td><span class="c4">C18</span> 攻击力=墓地友方数量</td><td class="dim">计数造伤家族一致; 「在场友方数」口径无</td></tr>
 	<tr><td><span class="cname">高等传送门</span> <span class="cid">ADVANCE_PORTAL</span><span class="bridge">经桥接</span></td><td><span class="tag t-gen">General</span></td><td class="eff">每揭晓 2 次:置顶 2 友方</td><td><span class="c4">C79</span> 复活 2 normal 友方 / <span class="c4">C66</span> 复活 2 友方;埋葬 1 友方</td><td class="dim">桥接后「复活 2 友方」一致; 每 2 次揭晓的计数节奏无</td></tr>
-	<tr><td><span class="cname">哥布林冲锋部队</span> <span class="cid">GOBLIN_CHARGE_TEAM</span><span class="bridge">经桥接</span></td><td><span class="tag t-gen">General</span></td><td class="eff">揭晓时:造成 2 伤害;被置顶:造成 4 伤害</td><td><span class="c4">C22</span> 攻击;苏醒:增强自身 / <span class="c4">C54</span> 苏醒:埋葬 1 敌方</td><td class="dim">苏醒 payoff 家族存在; 「苏醒:攻击/造伤」无</td></tr>
-	<tr><td><span class="cname">屠夫</span> <span class="cid">SNATCHER</span><span class="bridge">经桥接</span></td><td><span class="tag t-gen">General</span></td><td class="eff">揭晓时:造成 3 伤害;被置顶:置顶 1 友方;被埋葬:埋葬 1 敌方</td><td><span class="c4">C28/C52</span> 苏醒:复活 1 友方</td><td class="dim">桥接后苏醒复活一致; 三触发组合与遗言埋敌方无</td></tr>
-	<tr><td><span class="cname">能量迸发</span> <span class="cid">POWER_SURGE</span><span class="newbdg">文档外新卡</span><span class="bridge">经桥接</span></td><td><span class="tag t-gen">General</span></td><td class="eff">揭晓时:攻击;被置顶:给予 2 友方攻击力</td><td><span class="c4">C22</span> 攻击;苏醒:增强自身</td><td class="dim">苏醒强化存在; 授予他人 (非自身) 无</td></tr>
+	<tr><td><span class="cname">哥布林冲锋部队</span> <span class="cid">GOBLIN_CHARGE_TEAM</span><span class="bridge">经桥接</span></td><td><span class="tag t-gen">General</span></td><td class="eff">揭晓时:造成 2 伤害;被置顶:造成 4 伤害</td><td><span class="c4">C22</span> 攻击;苏醒:增强自身 / <span class="c4">C54</span> 苏醒:埋葬 1 敌方</td><td class="dim">苏醒≈OnMeStaged 计为已有机制; 但苏醒 payoff 仅 信徒/自强化/复活/埋敌, 无攻击/造伤</td></tr>
+	<tr><td><span class="cname">屠夫</span> <span class="cid">SNATCHER</span><span class="bridge">经桥接</span></td><td><span class="tag t-gen">General</span></td><td class="eff">揭晓时:造成 3 伤害;被置顶:置顶 1 友方;被埋葬:埋葬 1 敌方</td><td><span class="c4">C28/C52</span> 苏醒:复活 1 友方</td><td class="dim">桥接后苏醒复活一致; 遗言埋敌方与三触发组合无</td></tr>
 	<tr><td><span class="cname">远古魔法使用者</span> <span class="cid">ELDER_SORCERER</span><span class="bridge">经桥接</span></td><td><span class="tag t-gen">General</span></td><td class="eff">揭晓时,本回合每置顶过 1 友方:给予 1 友方 1 力量</td><td><span class="c4">C36</span> 被动:每复活 1 友方,增强 1 敌诅咒</td><td class="dim">桥接后「每复活计数收益」近似; 收益形式不同 (强化 vs 诅咒)</td></tr>
 	<tr><td><span class="cname">拔苗助长</span> <span class="cid">PREMATURE</span><span class="bridge">经桥接</span></td><td><span class="tag t-curse">Curse</span></td><td class="eff">揭晓时,敌方诅咒力量 -1:置顶敌方诅咒</td><td><span class="c4">C55</span> 复活敌方诅咒;回响 1 / <span class="c4">C59</span> 增强 1+复活敌诅咒</td><td class="dim">桥接后「复活敌诅咒」一致; 削弱诅咒作为代价无</td></tr>
-	<tr><td><span class="cname">飞蛾人</span> <span class="cid">MOTH_MAN</span><span class="bridge">经桥接</span></td><td><span class="tag t-curse">Curse</span></td><td class="eff">萦绕;当敌方诅咒获得力量时:置顶 1 友方</td><td><span class="c4">C19</span> 被动:敌方诅咒揭晓时,复活 1 友方</td><td class="dim">复活 payoff 一致; 「敌方诅咒被强化时」触发无卡 (揭晓 ≠ 强化)</td></tr>
+	<tr><td><span class="cname">飞蛾人</span> <span class="cid">MOTH_MAN</span><span class="bridge">经桥接</span></td><td><span class="tag t-curse">Curse</span></td><td class="eff">萦绕;当敌方诅咒获得力量时:置顶 1 友方</td><td><span class="c4">C19</span> 被动:敌方诅咒揭晓时,复活 1 友方</td><td class="dim">桥接后复活 payoff 一致; 「敌方诅咒被强化时」触发无卡 (揭晓 ≠ 强化)</td></tr>
 </tbody></table></div>
 
-<h2 id="s4" class="ok">4. 已有相似 / 直接对应 <span class="dim">(34 张 — 参考用, 不算缺失)</span></h2>
+<h2 id="s4" class="ok">4. 已有相似 / 直接对应 <span class="dim">(35 张 — 参考用, 不算缺失)</span></h2>
 <div class="card tbl"><table>
 <thead><tr><th>3.0 卡片</th><th>3.0 效果摘要</th><th>4.0 对应</th></tr></thead>
 <tbody>
@@ -183,8 +182,9 @@
 	<tr><td><span class="cname">被诅咒的骷髅</span> <span class="cid">CURSED_SKELETON</span></td><td class="eff">墓地每 1 友方:增强 1 敌诅咒</td><td><span class="c4">C70</span> 每埋 1 生物增强诅咒 1 / <span class="c4">C95</span> 敌诅咒攻=墓地友方数</td></tr>
 	<tr><td><span class="cname">诅咒附魔</span> <span class="cid">CURSE_ENCHANTMENT</span></td><td class="eff">萦绕;敌人受伤:增强 1 敌诅咒</td><td><span class="c4">C51</span> 被动:每次攻击,增强敌诅咒 1</td></tr>
 	<tr><td><span class="cname">献祭诅咒</span> <span class="cid">SACRIFICIAL_CURSE</span><span class="newbdg">文档外新卡</span></td><td class="eff">埋葬 1 友方,增强 3 敌诅咒</td><td><span class="c4">C74</span> 埋葬 2 友方;增强诅咒 6 — SACRIFICIAL_SPIRIT 已配置 (埋 2 强 5)</td></tr>
-	<tr><td><span class="cname">哥布林暗杀部队</span> <span class="cid">GOBLIN_ASSASSIN_TEAM</span><span class="bridge">经桥接</span></td><td class="eff">揭晓时:造成 4 伤害;被置顶:埋葬 1 敌方</td><td><span class="c4">C54</span> 攻击;苏醒:埋葬 1 敌方 (被置顶≈苏醒, 近乎逐字)</td></tr>
+	<tr><td><span class="cname">哥布林暗杀部队</span> <span class="cid">GOBLIN_ASSASSIN_TEAM</span><span class="bridge">经桥接</span></td><td class="eff">揭晓时:造成 4 伤害;被置顶:埋葬 1 敌方</td><td><span class="c4">C54</span> 攻击;苏醒:埋葬 1 敌方 (苏醒≈OnMeStaged, 近乎逐字)</td></tr>
 	<tr><td><span class="cname">战术爆破手</span> <span class="cid">TACTICAL_BREACHER</span><span class="bridge">经桥接</span></td><td class="eff">揭晓时:造成 4 伤害;被置顶:获得 1 力量</td><td><span class="c4">C22</span> 攻击;苏醒:增强自身</td></tr>
+	<tr><td><span class="cname">能量迸发</span> <span class="cid">POWER_SURGE</span><span class="newbdg">文档外新卡</span><span class="bridge">经桥接</span></td><td class="eff">揭晓时:攻击;被置顶:给予 2 友方 1 攻击力</td><td><span class="c4">C22</span> 攻击;苏醒:增强自身 (苏醒≈OnMeStaged; 差异仅剩强化目标为他人)</td></tr>
 	<tr><td><span class="cname">愚者</span> <span class="cid">THE_FOOL</span><span class="bridge">经桥接</span></td><td class="eff">揭晓时:置顶力量最多的敌方,造成 4 伤害</td><td><span class="c4">C48</span> 复活敌方攻击最高;攻击x3 / <span class="c4">C11</span> 复活敌最高;攻=其攻</td></tr>
 	<tr><td><span class="cname">力量渴求者</span> <span class="cid">POWER_CRAVER</span></td><td class="eff">造伤;获得力量时:获得 2 倍力量</td><td><span class="c4">C12/C86</span> 被强化:强化自身 1 — SNOWBALL / COMBO_WARRIOR 已配置</td></tr>
 	<tr><td><span class="cname">武器精灵</span> <span class="cid">WEAPON_SPIRIT</span></td><td class="eff">萦绕;友方获得力量时:给予该友方 1 力量</td><td><span class="c4">C17</span> 被动:友方强化时,强化其 1 — 近乎逐字对应</td></tr>
@@ -202,12 +202,13 @@
 	<li><strong>token 复用</strong>: <span class="cid">RIFT</span> (次元裂缝→信徒) 与 <span class="cid">JU_ON</span> (诅咒) 在 4.0 直接复用, 不算缺失。</li>
 	<li><strong>与旧文档的差异</strong>: <code>docs/3.0_no_cost_CardDesign.md</code> (2026-05-10 生成) 已过期。当前 prefab 比文档多 7 张 (以 <span class="newbdg">文档外新卡</span> 标出, 效果取自 prefab <code>cardDesc</code>); 文档中的 BLIND_COMBAT_PRIEST / OVERCHARGED_SUMMONER / SACRIFICIAL_SPIRIT 已从 prefab 移除, 不计入「3.0 有」; SKELETON_SOLDIER→SOLDIER_SKELETON、GOBLIN_ASSASIN_TEAM→GOBLIN_ASSASSIN_TEAM 为改名。</li>
 	<li><strong>4.0 范围</strong>: Notion <code>4.0 card database</code> 99 有效行 (取自 <code>docs/4.0_CardDatabase_Analysis.html</code> §9 附录, 2026-08-26, C 编号) + <code>Assets/Prefabs/Cards/4.0/</code> 已配置 26 张 prefab (24 核心 + AVENGER / SOLDIER_SKELETON)。已配置卡在「4.0 对应」列标注「已配置」。</li>
-	<li><strong>语义桥接</strong> (3.0→4.0 词汇映射): 造成 N 伤害 ≈ 攻击 (ATK 制);力量 ≈ 强化/增强;[次元裂缝] ≈ 信徒;去除 ≈ 放逐;[诅咒] = 敌方诅咒;<strong>置顶 X 友方 ≈ 复活 X 友方 · 置顶自身 ≈ 复活自身 · 被置顶 ≈ 苏醒</strong> (2026-08-27 裁定: 4.0 将【置顶】整体替换为【复活】)。按此映射后仍找不到相似效果的才列入 §2/§3。</li>
-	<li><strong>判定说明</strong>: 「无相似」= 核心效果机制在 4.0 整库不存在;「不确定」= 一半条款有对应、或同家族不同形态, 需人工裁定是否接受替代设计。4.0 新增的交换/回响/回合结束等机制不影响本清单方向 (只查 3.0→4.0 缺失)。「苏醒」引擎尚未实现 (规范标 ❌), 经苏醒桥接的对应均为设计层面对应。</li>
+	<li><strong>语义桥接</strong> (3.0→4.0 词汇映射): 造成 N 伤害 ≈ 攻击 (ATK 制);力量 ≈ 强化/增强;[次元裂缝] ≈ 信徒;去除 ≈ 放逐;[诅咒] = 敌方诅咒;<strong>置顶 X 友方 ≈ 复活 X 友方 · 置顶自身 ≈ 复活自身 · 被置顶 ≈ 苏醒</strong> (2026-08-27 裁定: 4.0 将【置顶】整体替换为【复活】)。</li>
+	<li><strong>苏醒的引擎地位</strong>: 苏醒 (OnMeRevived) 字段虽未落地, 但与引擎当前已有的 <code>OnMeStaged</code> (<code>GameEventStorage.onMeStaged</code>, 由 <code>StageEffect</code> 触发, 已有测试覆盖) 同形; 按裁定经苏醒桥接的对应计为<strong>已有相似</strong>, 不降档。</li>
+	<li><strong>判定说明</strong>: 「无相似」= 核心效果机制在 4.0 整库不存在;「不确定」= 一半条款有对应、或同家族不同形态, 需人工裁定是否接受替代设计。4.0 新增的交换/回响/回合结束等机制不影响本清单方向 (只查 3.0→4.0 缺失)。</li>
 </ul>
 </div>
 
-<footer>Source: prefab cardDesc + docs/3.0_no_cost_CardDesign.md ↔ docs/4.0_CardDatabase_Analysis.html §9 / plans/plan-4.0-core-cards-2026-08-27.md · v2: 置顶→复活桥接 (2026-08-27)</footer>
+<footer>Source: prefab cardDesc + docs/3.0_no_cost_CardDesign.md ↔ docs/4.0_CardDatabase_Analysis.html §9 / plans/plan-4.0-core-cards-2026-08-27.md · v3: 置顶→复活桥接 + 苏醒≈OnMeStaged (2026-08-27)</footer>
 
 </body>
 </html>

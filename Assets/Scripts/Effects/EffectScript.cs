@@ -260,7 +260,6 @@ public class EffectScript : MonoBehaviour
 			EnumStorage.StatusEffect.HeartChanged => "心变",
 			EnumStorage.StatusEffect.Power => "力量",
 			EnumStorage.StatusEffect.Rest => "休息",
-			EnumStorage.StatusEffect.Revive => "复活",
 			EnumStorage.StatusEffect.Counter => "计数",
 			_ => effect.ToString()
 		};

@@ -3509,6 +3509,10 @@ MonoBehaviour:
   onAnyCardBuried: {fileID: 11400000, guid: ed0ebe2b8f3453c4a8c72547faef3d47, type: 2}
   onFriendlyCardBuried: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
   onMeBuried: {fileID: 11400000, guid: dbdfc6da826817e458050a266ddebda9, type: 2}
+  onMeRevived: {fileID: 11400000, guid: 9401afcef4084b978d2be88a0330a6b9, type: 2}
+  onAnyCardRevived: {fileID: 11400000, guid: 0d43dad2a4771174f9cb1704def50e8d, type: 2}
+  onFriendlyCardRevived: {fileID: 11400000, guid: 2f147ac1487e415097597cd11eb4d6bd, type: 2}
+  onEnemyCardRevived: {fileID: 11400000, guid: ff28e0466cfd49298eb521097f6f26cc, type: 2}
   curseCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   onEnemyCurseCardRevealed: {fileID: 11400000, guid: 60c44989abfa91a41bcc3e450ac57bc7, type: 2}
   onEnemyCurseCardGotPower: {fileID: 11400000, guid: 67fa492ab00f0c240b7a21e2e75b1d6a, type: 2}
@@ -5755,7 +5759,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d395f692b9ee8f04c8266542b1569c21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
-  isTestMode: 1
+  overrideShuffleOrder: 0
+  useTestEnemyDeck: 0
+  autoReveal: 0
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
@@ -7012,7 +7018,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbc126ac2175bbf439e7642b6f5fb18d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
-  useCustomOrder: 1
+  useCustomOrder: 0
   customOrderPrefabs:
   - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 8a9871274e7b5ed4ea2b5977f2d53aeb, type: 3}
@@ -7113,6 +7119,10 @@ MonoBehaviour:
   enemyCardsBuriedCountRef: {fileID: 11400000, guid: d465b7f97741da0458b4b5f8ab41d297, type: 2}
   stagedOwnerRef: {fileID: 11400000, guid: f01dfbf2a0fc6e741bcbf554c57a0917, type: 2}
   stagedEnemyRef: {fileID: 11400000, guid: b305049afaba1f54898c4c45a791238f, type: 2}
+  ownerRevivedCountRef: {fileID: 11400000, guid: 49e6cb6c2b464f8ab01f9836315862a3, type: 2}
+  enemyRevivedCountRef: {fileID: 11400000, guid: 5bb242bc9a124e8ab166e1c67f2ec8bb, type: 2}
+  ownerRevivedCountThisRoundRef: {fileID: 11400000, guid: f10383b8c8b549e3a1be40fbbd5d48e3, type: 2}
+  enemyRevivedCountThisRoundRef: {fileID: 11400000, guid: dbb8462cdae94ab3bb250f51cea22453, type: 2}
   lastAppliedStatusEffectRef: {fileID: 11400000, guid: 784ae6b6c3e1c174aa1796b5c77244b5, type: 2}
   lastAppliedStatusEffectAmountRef: {fileID: 11400000, guid: d9129ef7354701a4ab1cb01bf8842cdc, type: 2}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
@@ -7878,6 +7888,7 @@ MonoBehaviour:
   attackModThisRound: 0
   extraAttackTimes: 0
   isCreature: 0
+  isPassive: 0
 --- !u!4 &1301151704
 Transform:
   m_ObjectHideFlags: 0
@@ -10804,7 +10815,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
   - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  useDebugEnemyDeck: 1
+  useDebugEnemyDeck: 0
   debugEnemyDeck: {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
   defaultEnemyDeckPool:
   - decks:

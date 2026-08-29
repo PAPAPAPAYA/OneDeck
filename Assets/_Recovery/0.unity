@@ -5003,7 +5003,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d395f692b9ee8f04c8266542b1569c21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
-  isTestMode: 0
+  overrideShuffleOrder: 0
+  useTestEnemyDeck: 0
+  autoReveal: 1
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}

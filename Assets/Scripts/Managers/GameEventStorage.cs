@@ -43,7 +43,13 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onAnyCardBuried; // Triggered when any card is buried
 	public GameEvent onFriendlyCardBuried; // Triggered when a friendly card is buried
 	public GameEvent onMeBuried; // Triggered when this card is buried
-	
+
+	[Header("revive related (4.0)")]
+	public GameEvent onMeRevived; // Triggered when this card is revived (awaken). Raised ONLY by ReviveEffect — never by Stage or bounce
+	public GameEvent onAnyCardRevived; // Triggered when any card is revived
+	public GameEvent onFriendlyCardRevived; // Triggered when a friendly card is revived
+	public GameEvent onEnemyCardRevived; // Triggered when an enemy card is revived
+
 	[Header("curse related")]
 	public StringSO curseCardTypeID;
 	public GameEvent onEnemyCurseCardRevealed; // Triggered when an enemy curse card is revealed

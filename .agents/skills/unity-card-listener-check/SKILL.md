@@ -77,7 +77,8 @@ System.Action<UnityEngine.Events.UnityEvent, System.Collections.Generic.List<str
 		int arg = 0;
 		if (args != null)
 		{
-			System.Reflection.FieldInfo intArgField = args.GetType().GetField("m_IntArgument");
+			// ArgumentCache fields are non-public: without NonPublic|Instance, GetField returns null and the arg silently prints as 0.
+			System.Reflection.FieldInfo intArgField = args.GetType().GetField("m_IntArgument", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 			if (intArgField != null) arg = (int)intArgField.GetValue(args);
 		}
 		string typeName = target != null ? target.GetType().FullName : "null";

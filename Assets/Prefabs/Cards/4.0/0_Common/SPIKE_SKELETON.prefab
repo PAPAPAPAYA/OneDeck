@@ -52,7 +52,7 @@ MonoBehaviour:
   cardTypeID: SPIKE_SKELETON
   displayName: "\u9488\u523A\u9AB7\u9AC5"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u653B\u51FBx2"
-  rarity: 1
+  rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0

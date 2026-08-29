@@ -50,9 +50,6 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -82,6 +79,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ExileEffect
   tagToCheck: 0
   cardTypeIDSO: {fileID: 0}
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!1 &3082838112725377213
 GameObject:
   m_ObjectHideFlags: 0
@@ -93,6 +92,7 @@ GameObject:
   - component: {fileID: 6127645972332754950}
   - component: {fileID: 4258555524989370297}
   - component: {fileID: 8104819925093118918}
+  - component: {fileID: 3390430887469070700}
   m_Layer: 0
   m_Name: stage friendly
   m_TagString: Untagged
@@ -132,19 +132,16 @@ MonoBehaviour:
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8104819925093118918}
-        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
-        m_MethodName: StageMyCards
+      - m_Target: {fileID: 3390430887469070700}
+        m_TargetAssemblyTypeName: ReviveEffect, Assembly-CSharp
+        m_MethodName: ReviveMyCards
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
@@ -165,6 +162,29 @@ MonoBehaviour:
   tagToCheck: 0
   targetFriendly: 0
   statusEffectToCheck: 0
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+--- !u!114 &3390430887469070700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3082838112725377213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bddc72b2099c374583edd4d0a65f9b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReviveEffect
+  reviveTargetSide: 0
+  creatureFilter: 0
+  typeIDFilter: 
+  sortBy: 0
+  rarityFilter: 0
+  delayedRevive: 0
+  tagsToCheck: 
+  excludeSelf: 1
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -216,7 +236,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT
   displayName: "\u6B21\u5143\u88C2\u7F1D"
-  cardDesc: "\u63ED\u6653\u65F6:\u7F6E\u9876 <b>1</b> \u53CB\u65B9,\u53BB\u9664\u81EA\u8EAB"
+  cardDesc: "\u63ED\u6653\u65F6:\u590D\u6D3B 1 \u53CB\u65B9,\u53BB\u9664\u81EA\u8EAB"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -226,13 +246,16 @@ MonoBehaviour:
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
+  lifeMax: 0
+  currentLife: 0
+  printedAttack: 0
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
+  isCreature: 0
+  isPassive: 0
 --- !u!114 &6790492850431796707
 MonoBehaviour:
   m_ObjectHideFlags: 0

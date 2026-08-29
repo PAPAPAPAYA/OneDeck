@@ -1046,6 +1046,13 @@ public class CombatManager : MonoBehaviour
 			}
 		}
 
+		// 4.0 revive engine: per-round revive counters reset at every round start
+		if (ValueTrackerManager.me != null)
+		{
+			if (ValueTrackerManager.me.ownerRevivedCountThisRoundRef != null) ValueTrackerManager.me.ownerRevivedCountThisRoundRef.value = 0;
+			if (ValueTrackerManager.me.enemyRevivedCountThisRoundRef != null) ValueTrackerManager.me.enemyRevivedCountThisRoundRef.value = 0;
+		}
+
 		// Round start event
 		GameEventStorage.me.beforeRoundStart.Raise();
 	}

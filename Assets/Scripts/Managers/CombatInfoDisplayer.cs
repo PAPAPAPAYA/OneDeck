@@ -242,21 +242,6 @@ public class CombatInfoDisplayer : MonoBehaviour
 	{
 		var lines = new System.Collections.Generic.List<string>();
 
-		// show revive status effect
-		if (statusEffects.Contains(EnumStorage.StatusEffect.Revive))
-		{
-			var amount = 0;
-			foreach (var effect in statusEffects)
-			{
-				if (effect == EnumStorage.StatusEffect.Revive)
-				{
-					amount++;
-				}
-			}
-
-			lines.Add("[" + amount + " Revive]");
-		}
-
 		// show rest status effect
 		if (statusEffects.Contains(EnumStorage.StatusEffect.Rest))
 		{

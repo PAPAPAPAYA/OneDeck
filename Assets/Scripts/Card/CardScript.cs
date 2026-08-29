@@ -79,6 +79,13 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	public bool isCreature = false;
 
+	/// <summary>
+	/// Passive marker (4.0 spec 被动, engine step 3): never revealed, immovable, excluded from
+	/// movement-effect selection pools. Flag ships ahead of the passive engine — movement effects
+	/// (ReviveEffect) check it now; the rest of the passive behavior lands in step 3.
+	/// </summary>
+	public bool isPassive = false;
+
 	[System.NonSerialized]
 	private Func<int> _attackResolver;
 

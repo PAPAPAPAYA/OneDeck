@@ -132,18 +132,6 @@ public class CostNEffectContainer : MonoBehaviour
 
 	#region check cost funcs
 
-	public void CheckCost_Revive(int reviveRequired)
-	{
-		if (EnumStorage.DoesListContainAmountOfStatusEffect(_myCardScript.myStatusEffects, reviveRequired, EnumStorage.StatusEffect.Revive)) return; // if check succeeded, do nothing
-		// if check failed, process
-		_costNotMetFlag++;
-		var cardOwnerInfo = CombatInfoDisplayer.me.ReturnCardOwnerInfo(_myCardScript.myStatusRef);
-		_costFailMessages.Add(
-			"// [复活]不足,无法复活 " +
-			cardOwnerInfo +
-			" [" + _myCardScript.gameObject.name + "]\n");
-	}
-
 	// will check and consume rest
 	public void CheckCost_Rested()
 	{

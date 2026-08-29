@@ -31,6 +31,9 @@ public class EnumStorage : MonoBehaviour
 		HeartChanged,
 		Power,
 		Rest,
+		// Deprecated 2026-08-29 (4.0 revive engine): legacy status-effect slot, no longer granted by any effect.
+		// Keep the member: the enum has implicit values, removing it would shift Counter 7->6 and corrupt
+		// every serialized asset that stores status effects as ints. The 4.0 revive is an effect (ReviveEffect), not a status.
 		Revive,
 		Counter
 	}
