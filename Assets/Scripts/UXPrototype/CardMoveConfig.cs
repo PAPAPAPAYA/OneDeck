@@ -31,6 +31,8 @@ public class CardMoveConfig
 	public Action onComplete;                  // Animation complete callback
 	public Action onStart;                     // Animation start callback
 	public Vector3? targetScaleOverride;       // Optional landing scale override (e.g. cascade scale for ToPosition moves); null = default by moveType
+	public float apexZOffset = 0f;             // Extra z added to the arc apex so batch cards keep a strict z order there (VISUAL-FIX 2026-08-29)
+	public float startDelay = 0f;               // Seconds before the move sequence starts; staggers batch launches (VISUAL-FIX 2026-08-29)
 	
 	// Convenient constructors
 	public static CardMoveConfig ToTop(float duration = 0.5f, bool useArc = true, Action onComplete = null)
@@ -55,15 +57,17 @@ public class CardMoveConfig
 		};
 	}
 	
-	public static CardMoveConfig ToIndex(int index, float duration = 0.5f, bool useArc = true, Action onComplete = null)
+	public static CardMoveConfig ToIndex(int index, float duration = 0.5f, bool useArc = true, Action onComplete = null, float apexZOffset = 0f, float startDelay = 0f)
 	{
-		return new CardMoveConfig 
-		{ 
-			moveType = CardMoveType.ToIndex, 
+		return new CardMoveConfig
+		{
+			moveType = CardMoveType.ToIndex,
 			targetIndex = index,
-			duration = duration, 
+			duration = duration,
 			useArc = useArc,
-			onComplete = onComplete 
+			apexZOffset = apexZOffset,
+			startDelay = startDelay,
+			onComplete = onComplete
 		};
 	}
 	

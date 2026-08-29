@@ -24,8 +24,11 @@ public interface ICombatVisuals
 
 	/// <summary>
 	/// Move logical card to specific deck index with animation.
+	/// apexZOffset: extra z added at the arc apex so batch cards keep a strict z order there
+	/// (VISUAL-FIX 2026-08-29). startDelay: seconds to hold before the flight starts (batch
+	/// launch stagger). Both default to 0 = single-move behavior byte-for-byte.
 	/// </summary>
-	void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null);
+	void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null, float apexZOffset = 0f, float startDelay = 0f);
 
 	#endregion
 

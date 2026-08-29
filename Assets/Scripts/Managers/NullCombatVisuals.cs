@@ -36,7 +36,7 @@ public class NullCombatVisuals : ICombatVisuals
 		onComplete?.Invoke();
 	}
 
-	public void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null)
+	public void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null, float apexZOffset = 0f, float startDelay = 0f)
 	{
 		moveCardToIndexCalls++;
 		callLog.Add("MoveCardToIndex: " + (logicalCard?.name ?? "null") + " -> " + index);

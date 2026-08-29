@@ -208,6 +208,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float popUpYOffset = 1.5f;
 	[Tooltip("Z offset toward camera for Pop Up (negative = closer/frontmost)")]
 	public float popUpZBoost = -1.0f;
+	[Tooltip("Seconds between batch move launches (scaled by CombatAnimationSpeed). Desynchronizes parallel batch flights so z-crossings never coincide on screen (VISUAL-FIX 2026-08-29).")]
+	public float batchMoveStagger = 0.06f;
 	[Tooltip("Scale multiplier at Pop Up peak, relative to the card's current TargetScale (cascade depth scale or reveal size). Default 1.0 = pop up does not rescale, matching the reveal-zone card experience (reveal pop up scale / reveal card scale).")]
 	public float popUpScaleMultiplier = 1f;
 	[Tooltip("Time to reach Pop Up peak position")]
@@ -641,6 +643,25 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Vector3 arcMidpoint = Vector3.zero;
 		bool shouldUseArc = config.useArc && config.moveType != CardMoveType.ToGrave
 			&& TryGetArcMidpointPosition(config.arcMidpoint, physicalCard.transform.position, targetPosition, out arcMidpoint);
+		// VISUAL-FIX(2026-08-29): Batch cards bleed text through each other at the shared arc apex
+		//   Cause:    With useDynamicArcMidpoint off, every arc apex = showPos x/y (shared by all
+		//             cards) + z = (start.z + target.z) / 2. Batch cards launch simultaneously, and
+		//             two cards whose relative deck order reverses compute the SAME midpoint z, so
+		//             they fully overlap at the apex. Card text children sit at local z -0.02..-0.06
+		//             in front of their face, so the back card's text bleeds through the front card's
+		//             face whenever the z gap shrinks below ~0.06 (an exact tie always bleeds).
+		//   Fix:      CardMoveConfig.apexZOffset lets batch callers keep a strict per-card z order
+		//             at the apex (zOffset step per final deck index rank), and
+		//             CardMoveConfig.startDelay staggers batch launches so cards never converge
+		//             on the apex at the same moment.
+		//   Affects:  MoveCardWithAnimation (Bury/Stage/Delay ToIndex moves), RecorderAnimationPlayer batch handlers
+		//   Regress:  Bury/Stage 2+ cards in one batch (e.g. BuryNextXCards); mid-arc the batch
+		//             cards must stay strictly z-ordered with no text bleed-through, still land at
+		//             their correct deck slots, and take off staggered instead of in one clump.
+		if (shouldUseArc)
+		{
+			arcMidpoint.z += config.apexZOffset;
+		}
 
 		// Callback: Animation start
 		config.onStart?.Invoke();
@@ -765,6 +786,14 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			config.onComplete?.Invoke();
 		});
 
+		// Batch launch stagger: hold the card at its current pose for startDelay seconds before
+		// the flight starts. PrependInterval is applied last so it pushes the whole timeline
+		// (move + Joined/Inserted scale tweens stay in sync with each other).
+		if (config.startDelay > 0f)
+		{
+			moveSequence.PrependInterval(config.startDelay);
+		}
+
 		moveSequence.Play();
 	}
 
@@ -787,10 +816,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// <summary>
 	/// Move card to specified index position
 	/// </summary>
-	public void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null)
+	public void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null, float apexZOffset = 0f, float startDelay = 0f)
 	{
 		// Debug.Log("[CombatUXManager] MoveCardToIndex called logical=" + (logicalCard != null ? logicalCard.name : "null") + " requestedIndex=" + index + " deckCount=" + physicalCardsInDeck.Count);
-		MoveCardWithAnimation(logicalCard, CardMoveConfig.ToIndex(index, duration, useArc, onComplete));
+		MoveCardWithAnimation(logicalCard, CardMoveConfig.ToIndex(index, duration, useArc, onComplete, apexZOffset, startDelay));
 	}
 
 	/// <summary>
@@ -955,6 +984,26 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		AnimationStateTracker.me?.RegisterAnimation();
 		BlockInput(this);
 
+		// VISUAL-FIX(2026-08-29): Stage batch cards bleed text through each other at the shared arc apex
+		//   Cause:    All Phase 1 arcs launch together and converge on the shared arc apex
+		//             (showPos x/y, z = (start.z + peak.z) / 2). When two cards' peak z difference
+		//             cancels their start z difference, they hit the apex at the SAME z and fully
+		//             overlap; the back card's text child (local z -0.02..-0.06 in front of its
+		//             face) bleeds through the front card's face.
+		//   Fix:      (1) Apex z keeps a strict per-card order: one zOffset step per finalIndex
+		//             rank (same sign convention as the deck layout z formula); (2) launches are
+		//             staggered by batchMoveStagger so cards pass the apex at different times.
+		//   Affects:  MoveCardToTopPopUpBatch (StageEffect batch stage)
+		//   Regress:  Stage 2+ cards in one batch; mid-arc they must never fully overlap and no
+		//             text may bleed through the front card; every card still reaches its peak,
+		//             and Phase 2 slot-in lands each card at its final deck top index.
+		int minFinalIndex = int.MaxValue;
+		for (int i = 0; i < totalCount; i++)
+		{
+			minFinalIndex = Mathf.Min(minFinalIndex, targetIndices[i]);
+		}
+		float scaledLaunchStagger = CombatAnimationSpeed.ScaleDuration(batchMoveStagger);
+
 		// Phase 1: Arc to pop-up peak (parallel)
 		for (int i = 0; i < totalCount; i++)
 		{
@@ -992,6 +1041,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			{
 				// VISUAL-FIX(2026-06-14): showPos z fixed at -80 caused Stage arc to jump far away.
 				//   Fix: arc midpoint z = midpoint of current card z and peak z.
+				// VISUAL-FIX(2026-08-29): offset the apex z by finalIndex rank so batch cards keep
+				//   a strict z order at the shared apex (higher finalIndex = front = smaller z).
+				arcMidpoint.z -= zOffset * (finalIndex - minFinalIndex);
 				arcSeq.Append(physicalCard.transform.DOMove(arcMidpoint, halfDuration).SetEase(Ease.OutQuad));
 				arcSeq.Append(physicalCard.transform.DOMove(peakPos, halfDuration).SetEase(Ease.InOutQuad));
 			}
@@ -1021,6 +1073,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					StartSlotInPhase();
 				}
 			});
+			// VISUAL-FIX(2026-08-29): launch stagger. PrependInterval is applied after all
+			// Appends/Inserts so it pushes the whole timeline (arc move + scale tweens stay in sync).
+			if (i > 0 && scaledLaunchStagger > 0f)
+			{
+				arcSeq.PrependInterval(i * scaledLaunchStagger);
+			}
 			arcSeq.Play();
 		}
 

@@ -847,13 +847,31 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 				var combatUX = visuals as CombatUXManager;
 				int physCount = combatUX != null ? combatUX.physicalCardsInDeck.Count : 0;
 				// Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch deckCounts combined=" + currentCount + " physical=" + physCount);
+				// VISUAL-FIX(2026-08-29): Batch cards bleed text through each other at the shared arc apex
+				//   Cause:    Every batch card launched MoveCardToIndex at the same moment. With the
+				//             legacy showPos arc (shared x/y, z = (start.z + target.z) / 2), two batch
+				//             cards whose relative deck order reverses reach the apex at the SAME z,
+				//             fully overlap there, and the back card's text bleeds through the front card.
+				//   Fix:      Resolve every target index up front, then launch each card with (1) an
+				//             apex z offset ordered by final deck index (zOffset step per rank) and
+				//             (2) a per-card launch delay (CombatUXManager.batchMoveStagger).
+				//   Affects:  MoveToBottomBatch, MoveToTopBatch, CombatUXManager.MoveCardWithAnimation
+				//   Regress:  Bury 2+ cards in one batch (e.g. BuryNextXCards); mid-arc the batch cards
+				//             must stay strictly z-ordered with no text bleed-through, still land at
+				//             their actualPhysIndex deck slots, and complete exactly once per card.
+				int[] batchCorrectedIndex = new int[totalCount];
+				int[] batchActualPhysIndex = new int[totalCount];
+				int[] batchTargetIndex = new int[totalCount];
+				int minTargetIndex = int.MaxValue;
 				int processedIndex = 0;
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
 					if (card == null)
 					{
-						TestManager.Log("[RecorderAnimationPlayer] MoveToBottomBatch skipping destroyed card at index " + i);
+						batchCorrectedIndex[i] = -1;
+						batchActualPhysIndex[i] = -1;
+						batchTargetIndex[i] = -1;
 						continue;
 					}
 					// Bury (MoveToBottomBatch) sends cards to the absolute bottom of the physical deck.
@@ -870,14 +888,37 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 						var phys = combatUX2.GetPhysicalCard(card);
 						if (phys != null) actualPhysIndex = combatUX2.GetPhysicalCardDeckIndex(phys);
 					}
-					int targetIndex = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
+					batchCorrectedIndex[i] = correctedIndex;
+					batchActualPhysIndex[i] = actualPhysIndex;
+					batchTargetIndex[i] = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
+					minTargetIndex = Mathf.Min(minTargetIndex, batchTargetIndex[i]);
+				}
+				float batchStagger = combatUX != null ? combatUX.batchMoveStagger : 0.06f;
+				float scaledBatchStagger = CombatAnimationSpeed.ScaleDuration(batchStagger);
+				float batchZStep = combatUX != null ? combatUX.zOffset : 0.5f;
+				int launchedCount = 0;
+				for (int i = 0; i < totalCount; i++)
+				{
+					var card = request.targetCards[i];
+					if (card == null)
+					{
+						TestManager.Log("[RecorderAnimationPlayer] MoveToBottomBatch skipping destroyed card at index " + i);
+						continue;
+					}
+					int correctedIndex = batchCorrectedIndex[i];
+					int actualPhysIndex = batchActualPhysIndex[i];
+					int targetIndex = batchTargetIndex[i];
 					string snapshotIdxStr = (hasSnapshot && request.targetIndices != null && i < request.targetIndices.Count) ? request.targetIndices[i].ToString() : "null";
-					TestManager.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount);
+					// Apex z ordered by final deck index: higher targetIndex = deck front = smaller z.
+					float apexZOffset = -batchZStep * (targetIndex - minTargetIndex);
+					float startDelay = launchedCount * scaledBatchStagger;
+					launchedCount++;
+					TestManager.Log("[RecorderAnimationPlayer] MoveToBottomBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount + " apexZOffset=" + apexZOffset + " startDelay=" + startDelay);
 					visuals.MoveCardToIndex(card, targetIndex, request.duration, request.useArc, () =>
 					{
 						completedCount++;
 						if (request.onComplete != null && completedCount >= filteredCount) request.onComplete();
-					});
+					}, apexZOffset, startDelay);
 				}
 				yield return new WaitUntil(() => completedCount >= filteredCount);
 				// Debug.Log("[RecorderAnimationPlayer] MoveToBottomBatch DONE");
@@ -911,13 +952,30 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 				var combatUX = visuals as CombatUXManager;
 				int physCount = combatUX != null ? combatUX.physicalCardsInDeck.Count : 0;
 				// Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch deckCounts combined=" + currentCount + " physical=" + physCount);
+				// VISUAL-FIX(2026-08-29): Batch cards bleed text through each other at the shared arc apex
+				//   Cause:    Same as MoveToBottomBatch: simultaneous launches converge on the shared
+				//             showPos apex with z = (start.z + target.z) / 2; order-reversing pairs
+				//             tie there and the back card's text bleeds through the front card.
+				//   Fix:      Resolve every target index up front, then launch each card with an apex
+				//             z offset ordered by final deck index + a per-card launch delay
+				//             (CombatUXManager.batchMoveStagger).
+				//   Affects:  MoveToTopBatch, CombatUXManager.MoveCardWithAnimation
+				//   Regress:  Stage 2+ cards in one batch; mid-arc the batch cards must stay strictly
+				//             z-ordered with no text bleed-through, still land at their actualPhysIndex
+				//             deck slots, and complete exactly once per card.
+				int[] batchCorrectedIndex = new int[totalCount];
+				int[] batchActualPhysIndex = new int[totalCount];
+				int[] batchTargetIndex = new int[totalCount];
+				int minTargetIndex = int.MaxValue;
 				int processedIndex = 0;
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
 					if (card == null)
 					{
-						TestManager.Log("[RecorderAnimationPlayer] MoveToTopBatch skipping destroyed card at index " + i);
+						batchCorrectedIndex[i] = -1;
+						batchActualPhysIndex[i] = -1;
+						batchTargetIndex[i] = -1;
 						continue;
 					}
 					// Stage (MoveToTopBatch) sends cards to the absolute top of the physical deck.
@@ -934,14 +992,37 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 						var phys = combatUX2.GetPhysicalCard(card);
 						if (phys != null) actualPhysIndex = combatUX2.GetPhysicalCardDeckIndex(phys);
 					}
-					int targetIndex = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
+					batchCorrectedIndex[i] = correctedIndex;
+					batchActualPhysIndex[i] = actualPhysIndex;
+					batchTargetIndex[i] = actualPhysIndex >= 0 ? actualPhysIndex : correctedIndex;
+					minTargetIndex = Mathf.Min(minTargetIndex, batchTargetIndex[i]);
+				}
+				float batchStagger = combatUX != null ? combatUX.batchMoveStagger : 0.06f;
+				float scaledBatchStagger = CombatAnimationSpeed.ScaleDuration(batchStagger);
+				float batchZStep = combatUX != null ? combatUX.zOffset : 0.5f;
+				int launchedCount = 0;
+				for (int i = 0; i < totalCount; i++)
+				{
+					var card = request.targetCards[i];
+					if (card == null)
+					{
+						TestManager.Log("[RecorderAnimationPlayer] MoveToTopBatch skipping destroyed card at index " + i);
+						continue;
+					}
+					int correctedIndex = batchCorrectedIndex[i];
+					int actualPhysIndex = batchActualPhysIndex[i];
+					int targetIndex = batchTargetIndex[i];
 					string snapshotIdxStr = (hasSnapshot && request.targetIndices != null && i < request.targetIndices.Count) ? request.targetIndices[i].ToString() : "null";
-					TestManager.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount);
+					// Apex z ordered by final deck index: higher targetIndex = deck front = smaller z.
+					float apexZOffset = -batchZStep * (targetIndex - minTargetIndex);
+					float startDelay = launchedCount * scaledBatchStagger;
+					launchedCount++;
+					TestManager.Log("[RecorderAnimationPlayer] MoveToTopBatch calling MoveCardToIndex card=" + card.name + " snapshotIndex=" + snapshotIdxStr + " correctedIndex=" + correctedIndex + " actualPhysIndex=" + actualPhysIndex + " targetIndex=" + targetIndex + " currentCount=" + currentCount + " physCount=" + physCount + " apexZOffset=" + apexZOffset + " startDelay=" + startDelay);
 					visuals.MoveCardToIndex(card, targetIndex, request.duration, request.useArc, () =>
 					{
 						completedCount++;
 						if (request.onComplete != null && completedCount >= filteredCount) request.onComplete();
-					});
+					}, apexZOffset, startDelay);
 				}
 				yield return new WaitUntil(() => completedCount >= filteredCount);
 				// Debug.Log("[RecorderAnimationPlayer] MoveToTopBatch DONE");
@@ -1307,6 +1388,11 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 				{
 					if (request.targetCards[i] != null) filteredCount++;
 				}
+				// VISUAL-FIX(2026-08-29): stagger batch launches so parallel flights never cross z
+				//   at the same screen position (shared-arc-apex text bleed-through fix).
+				var combatUX = visuals as CombatUXManager;
+				float scaledBatchStagger = CombatAnimationSpeed.ScaleDuration(combatUX != null ? combatUX.batchMoveStagger : 0.06f);
+				int launchedCount = 0;
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
@@ -1315,6 +1401,11 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 						TestManager.Log("[RecorderAnimationPlayer] PopUpBatch skipping destroyed card at index " + i);
 						continue;
 					}
+					if (launchedCount > 0 && scaledBatchStagger > 0f)
+					{
+						yield return new WaitForSeconds(scaledBatchStagger);
+					}
+					launchedCount++;
 					visuals.PopUpCard(card, () =>
 					{
 						completedCount++;
@@ -1335,6 +1426,11 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 				{
 					if (request.targetCards[i] != null) filteredCount++;
 				}
+				// VISUAL-FIX(2026-08-29): stagger batch launches so parallel flights never cross z
+				//   at the same screen position (shared-arc-apex text bleed-through fix).
+				var combatUX = visuals as CombatUXManager;
+				float scaledBatchStagger = CombatAnimationSpeed.ScaleDuration(combatUX != null ? combatUX.batchMoveStagger : 0.06f);
+				int launchedCount = 0;
 				for (int i = 0; i < totalCount; i++)
 				{
 					var card = request.targetCards[i];
@@ -1343,6 +1439,11 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 						TestManager.Log("[RecorderAnimationPlayer] SlotInBatch skipping destroyed card at index " + i);
 						continue;
 					}
+					if (launchedCount > 0 && scaledBatchStagger > 0f)
+					{
+						yield return new WaitForSeconds(scaledBatchStagger);
+					}
+					launchedCount++;
 					visuals.SlotInCard(card, () =>
 					{
 						completedCount++;

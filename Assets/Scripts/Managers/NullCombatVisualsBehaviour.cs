@@ -29,8 +29,8 @@ public class NullCombatVisualsBehaviour : MonoBehaviour, ICombatVisuals
 	public void MoveCardToBottom(GameObject logicalCard, float duration = 0.5f, bool useArc = true, Action onComplete = null)
 		=> _nullVisuals.MoveCardToBottom(logicalCard, duration, useArc, onComplete);
 
-	public void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null)
-		=> _nullVisuals.MoveCardToIndex(logicalCard, index, duration, useArc, onComplete);
+	public void MoveCardToIndex(GameObject logicalCard, int index, float duration = 0.5f, bool useArc = true, Action onComplete = null, float apexZOffset = 0f, float startDelay = 0f)
+		=> _nullVisuals.MoveCardToIndex(logicalCard, index, duration, useArc, onComplete, apexZOffset, startDelay);
 
 	public void DestroyCardWithAnimation(GameObject logicalCard, Action onComplete = null)
 		=> _nullVisuals.DestroyCardWithAnimation(logicalCard, onComplete);
