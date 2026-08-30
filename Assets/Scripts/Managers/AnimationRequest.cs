@@ -76,6 +76,14 @@ namespace DefaultNamespace
 		public bool applyDisplayDeltaOnProjectileSpawn = false;
 
 		/// <summary>
+		/// For AttackChange requests: the amount is an attack SEGMENT count (attack +N times),
+		/// not an attack value delta. RecorderAnimationPlayer plays the particle and refreshes
+		/// the card face but skips CommitAttackDisplayDelta — the attack print must not shift
+		/// for a times change (4.0 attack-times granting).
+		/// </summary>
+		public bool attackTimesChange = false;
+
+		/// <summary>
 		/// Internal flag used by RecorderAnimationPlayer to ensure a StatusEffectChange's
 		/// display delta is applied exactly once, whether immediately, when its linked
 		/// projectile spawns, or when the projectile lands.

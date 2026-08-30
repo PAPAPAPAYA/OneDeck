@@ -316,6 +316,9 @@ public class ExileEffect : EffectScript
 		}
 
 		// Trigger onFriendlyCardExiled event (check if friendly card was exiled)
+		// Note the semantics: this fires only for SELF-SIDE exile (exiled card belongs to the
+		// exiling side) and is delivered to that side — enemy-caused exile of my cards never
+		// reaches my listeners, so self-exile fuel builds (EXILE_BERSERKER) bind this directly.
 		foreach (var card in exiledCards)
 		{
 			var cardScript = card.GetComponent<CardScript>();

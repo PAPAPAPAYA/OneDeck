@@ -36,7 +36,7 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent onFriendlyMinionAdded; // Triggered when a friendly minion is added to the deck
 	
 	[Header("exile related")]
-	public GameEvent onFriendlyCardExiled; // Triggered when a friendly card is exiled
+	public GameEvent onFriendlyCardExiled; // Triggered when a friendly card is exiled (self-side exile only: raised when the exiled card belongs to the EXILING side, delivered to that side)
 	public GameEvent onFriendlyFlyExiled; // Triggered when a friendly fly is exiled (including being consumed as minion cost)
 	
 	[Header("bury related")]

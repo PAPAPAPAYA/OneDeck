@@ -69,6 +69,9 @@ public class CardScript : MonoBehaviour
 	public int attackModThisRound;
 	[Tooltip("Permanent extra attack segments (attack +N times). Stackable; preserved through bury/stage.")]
 	public int extraAttackTimes;
+	[Tooltip("This-round extra attack segments (attack +N times this round). Cleared at each round start.")]
+	[HideInInspector]
+	public int attackTimesModThisRound;
 
 	/// <summary>
 	/// Creature marker (4.0 spec 生物): card with the attack attribute, including attack 0.
@@ -98,7 +101,7 @@ public class CardScript : MonoBehaviour
 	/// <summary>
 	/// Whether this card shows an attack value on its face. Legacy cards (all-zero attack) keep the old face.
 	/// </summary>
-	public bool HasAttackDisplay => _attackResolver != null || printedAttack != 0 || attackGrowth != 0 || attackModThisRound != 0 || extraAttackTimes != 0;
+	public bool HasAttackDisplay => _attackResolver != null || printedAttack != 0 || attackGrowth != 0 || attackModThisRound != 0 || extraAttackTimes != 0 || attackTimesModThisRound != 0;
 
 	/// <summary>
 	/// Current attack value (single settlement entry point). Dynamic attack (attack = Y, resolved live)
@@ -223,11 +226,32 @@ public class CardScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Number of attack segments per attack action (1 + permanent extra segments).
+	/// Number of attack segments per attack action (1 + permanent + this-round extra segments).
+	/// Creatures add their side's per-round attack-times aura (4.0 E7, BATTLE_HORN): the aura
+	/// is a faction-level modifier, so creatures generated later in the same round are covered too.
 	/// </summary>
 	public int GetAttackTimes()
 	{
-		return 1 + extraAttackTimes;
+		int times = 1 + extraAttackTimes + attackTimesModThisRound;
+		if (isCreature)
+		{
+			times += GetCreatureAttackTimesAura();
+		}
+		return times;
+	}
+
+	/// <summary>
+	/// Faction-relative per-round creature attack-times aura (4.0 E7). 0 when the trackers are
+	/// absent (shop context / headless setups without ValueTrackerManager) or outside combat.
+	/// </summary>
+	private int GetCreatureAttackTimesAura()
+	{
+		var tracker = ValueTrackerManager.me;
+		if (tracker == null || CombatManager.Me == null || myStatusRef == null) return 0;
+		var aura = myStatusRef == CombatManager.Me.ownerPlayerStatusRef
+			? tracker.creatureAttackTimesAuraOwnerThisRoundRef
+			: tracker.creatureAttackTimesAuraEnemyThisRoundRef;
+		return aura != null ? aura.value : 0;
 	}
 
 	/// <summary>
@@ -239,11 +263,22 @@ public class CardScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// This-round attack segment change (attack +N times this round). Cleared at each round start.
+	/// Negative deltas are rejected — segment count never drops below 1.
+	/// </summary>
+	public void ModifyAttackTimesThisRound(int delta)
+	{
+		if (delta <= 0) return;
+		attackTimesModThisRound += delta;
+	}
+
+	/// <summary>
 	/// Clear this-round temporary attack modifiers. Called by CombatManager at each round start.
 	/// </summary>
 	public void ResetRoundAttackModifiers()
 	{
 		attackModThisRound = 0;
+		attackTimesModThisRound = 0;
 	}
 
 	private string _displayCardDesc;

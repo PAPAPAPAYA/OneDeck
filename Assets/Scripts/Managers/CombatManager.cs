@@ -1051,6 +1051,9 @@ public class CombatManager : MonoBehaviour
 		{
 			if (ValueTrackerManager.me.ownerRevivedCountThisRoundRef != null) ValueTrackerManager.me.ownerRevivedCountThisRoundRef.value = 0;
 			if (ValueTrackerManager.me.enemyRevivedCountThisRoundRef != null) ValueTrackerManager.me.enemyRevivedCountThisRoundRef.value = 0;
+			// 4.0 E7: faction creature attack-times aura is a per-round modifier
+			if (ValueTrackerManager.me.creatureAttackTimesAuraOwnerThisRoundRef != null) ValueTrackerManager.me.creatureAttackTimesAuraOwnerThisRoundRef.value = 0;
+			if (ValueTrackerManager.me.creatureAttackTimesAuraEnemyThisRoundRef != null) ValueTrackerManager.me.creatureAttackTimesAuraEnemyThisRoundRef.value = 0;
 		}
 
 		// Round start event

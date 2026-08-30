@@ -86,6 +86,8 @@ public abstract class HeadlessCombatTestFixture
 		ValueTrackerManager.enemyRevivedCountRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.ownerRevivedCountThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.enemyRevivedCountThisRoundRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.creatureAttackTimesAuraOwnerThisRoundRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.creatureAttackTimesAuraEnemyThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.lastAppliedStatusEffectRef = CreateScriptableObject<StatusEffectSO>();
 		ValueTrackerManager.lastAppliedStatusEffectAmountRef = CreateScriptableObject<IntSO>();
 

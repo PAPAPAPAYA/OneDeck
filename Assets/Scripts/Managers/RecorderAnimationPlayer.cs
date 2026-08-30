@@ -1147,7 +1147,9 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 
 				// Commit the display delta (skipped when already applied at projectile spawn)
 				// so the attack print steps through the frozen baseline per request.
-				if (!request.displayDeltaApplied)
+				// Attack-times changes (attack +N times) shift the xN badge, not the attack
+				// print — the frozen value must stay put, so only the face refresh runs.
+				if (!request.attackTimesChange && !request.displayDeltaApplied)
 				{
 					targetCardScript.CommitAttackDisplayDelta(request.statusEffectAmount);
 					request.displayDeltaApplied = true;

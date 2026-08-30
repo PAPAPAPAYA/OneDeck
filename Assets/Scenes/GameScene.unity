@@ -7126,6 +7126,8 @@ MonoBehaviour:
   enemyRevivedCountRef: {fileID: 11400000, guid: 5bb242bc9a124e8ab166e1c67f2ec8bb, type: 2}
   ownerRevivedCountThisRoundRef: {fileID: 11400000, guid: f10383b8c8b549e3a1be40fbbd5d48e3, type: 2}
   enemyRevivedCountThisRoundRef: {fileID: 11400000, guid: dbb8462cdae94ab3bb250f51cea22453, type: 2}
+  creatureAttackTimesAuraOwnerThisRoundRef: {fileID: 11400000, guid: 151799db74f27874480dce2ac71b7929, type: 2}
+  creatureAttackTimesAuraEnemyThisRoundRef: {fileID: 11400000, guid: 219b8e8a850328f4e99d968445112970, type: 2}
   lastAppliedStatusEffectRef: {fileID: 11400000, guid: 784ae6b6c3e1c174aa1796b5c77244b5, type: 2}
   lastAppliedStatusEffectAmountRef: {fileID: 11400000, guid: d9129ef7354701a4ab1cb01bf8842cdc, type: 2}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}

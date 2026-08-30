@@ -28,6 +28,11 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO ownerRevivedCountThisRoundRef; // reset at every round start (HandleNewRoundStart)
 	public IntSO enemyRevivedCountThisRoundRef; // reset at every round start (HandleNewRoundStart)
 
+	[Header("CreatureAttackTimesAura (4.0 E7)")]
+	[Tooltip("Faction-level per-round creature attack-times aura (BATTLE_HORN). Read by CardScript.GetAttackTimes for isCreature cards; reset at every round start.")]
+	public IntSO creatureAttackTimesAuraOwnerThisRoundRef;
+	public IntSO creatureAttackTimesAuraEnemyThisRoundRef;
+
 	[Header("Last Applied Status Effect")]
 	public StatusEffectSO lastAppliedStatusEffectRef;
 	public IntSO lastAppliedStatusEffectAmountRef;

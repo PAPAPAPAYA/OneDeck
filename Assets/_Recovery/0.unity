@@ -1042,6 +1042,9 @@ MonoBehaviour:
   shopItemAmount: 3
   payCheck: {fileID: 11400000, guid: fe5315966a51f1645bb27607137ec573, type: 2}
   RerollPriceRef: {fileID: 11400000, guid: 089c6b4c114df4345af8c9fe57fccb57, type: 2}
+  CommonPriceRef: {fileID: 0}
+  UncommonPriceRef: {fileID: 0}
+  RarePriceRef: {fileID: 0}
   phaseInfo: 'Press <b>[SPACE]</b> to EXIT SHOP
 
     Press <b>[R]</b> to REROLL
@@ -2900,20 +2903,31 @@ MonoBehaviour:
   onTheirPlayerShieldUpped: {fileID: 11400000, guid: 808138fe6215952418c045862c9f80ad, type: 2}
   afterShuffle: {fileID: 11400000, guid: fe87bc9a909276b4dabe1bf8aa01d8a4, type: 2}
   beforeRoundStart: {fileID: 11400000, guid: cde884b6e17c9e24b90d185b1c96604e, type: 2}
+  onAnyCardAttacked: {fileID: 0}
+  onAnyFriendlyCardAttacked: {fileID: 0}
   onFriendlyMinionAdded: {fileID: 11400000, guid: 3d27fd3b0bb6feb4e85567151942425d, type: 2}
   onFriendlyCardExiled: {fileID: 11400000, guid: ed71b68fe01376e49ac1d493c529238f, type: 2}
   onFriendlyFlyExiled: {fileID: 11400000, guid: ee1cc5fc8ade8b44c9881c4183ed874f, type: 2}
   onAnyCardBuried: {fileID: 11400000, guid: ed0ebe2b8f3453c4a8c72547faef3d47, type: 2}
   onFriendlyCardBuried: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
   onMeBuried: {fileID: 11400000, guid: dbdfc6da826817e458050a266ddebda9, type: 2}
+  onMeRevived: {fileID: 0}
+  onAnyCardRevived: {fileID: 0}
+  onFriendlyCardRevived: {fileID: 0}
+  onEnemyCardRevived: {fileID: 0}
   curseCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   onEnemyCurseCardRevealed: {fileID: 11400000, guid: 60c44989abfa91a41bcc3e450ac57bc7, type: 2}
   onEnemyCurseCardGotPower: {fileID: 11400000, guid: 67fa492ab00f0c240b7a21e2e75b1d6a, type: 2}
+  onEnemyCurseCardGainedAttack: {fileID: 0}
   onMeGotStatusEffect: {fileID: 11400000, guid: 1ad4399e33473264eada636d43124e08, type: 2}
   onAnyCardGotPower: {fileID: 11400000, guid: 556ccffbf7822a946ba4884faaf5fd5d, type: 2}
   onMeGotPower: {fileID: 11400000, guid: bf2ef786f27ff3042bc9b3eb02928202, type: 2}
   onFriendlyCardGotPower: {fileID: 11400000, guid: f82fc4ec5b8a0c14eb626a5a0d4336ff, type: 2}
   onEnemyCardGotPower: {fileID: 11400000, guid: 2cd4e276ef482774e9f947861a89e87a, type: 2}
+  onAnyCardGainedAttack: {fileID: 0}
+  onMeGainedAttack: {fileID: 0}
+  onFriendlyCardGainedAttack: {fileID: 0}
+  onEnemyCardGainedAttack: {fileID: 0}
 --- !u!1 &476468880
 GameObject:
   m_ObjectHideFlags: 0
@@ -4046,9 +4060,6 @@ MonoBehaviour:
   digitRoll: 1
   enableLowHpPulse: 0
   enableZeroOut: 0
-  normalColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
-  lowHpColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
-  zeroGrayColor: {fileID: 11400000, guid: e74364fef9c21894bb806162ee62060d, type: 2}
   stepMs: 50
   targetCountMs: 500
   easeOutPoints: 5
@@ -4071,6 +4082,9 @@ MonoBehaviour:
   zeroFlashDuration: 0.42
   stateColorFadeDuration: 0.25
   dividerGlideDuration: 0.24
+  editModePreview: 1
+  previewHp: 12
+  previewHpMax: 20
 --- !u!1 &626968541
 GameObject:
   m_ObjectHideFlags: 0
@@ -5018,6 +5032,8 @@ MonoBehaviour:
   logDynamicDamageDisplay: 0
   logStatusEffectDisplay: 0
   logDamageFloater: 0
+  logShopFlow: 1
+  logUncategorized: 1
 --- !u!4 &898235415
 Transform:
   m_ObjectHideFlags: 0
@@ -5096,9 +5112,6 @@ MonoBehaviour:
   digitRoll: 1
   enableLowHpPulse: 0
   enableZeroOut: 0
-  normalColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
-  lowHpColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
-  zeroGrayColor: {fileID: 11400000, guid: e74364fef9c21894bb806162ee62060d, type: 2}
   stepMs: 50
   targetCountMs: 500
   easeOutPoints: 5
@@ -5121,6 +5134,9 @@ MonoBehaviour:
   zeroFlashDuration: 0.42
   stateColorFadeDuration: 0.25
   dividerGlideDuration: 0.24
+  editModePreview: 1
+  previewHp: 12
+  previewHpMax: 20
 --- !u!1 &933086242
 GameObject:
   m_ObjectHideFlags: 0
@@ -5746,6 +5762,10 @@ MonoBehaviour:
   totalCardsRevealed: 0
   lastCardGotStatusEffect: {fileID: 0}
   lastCardGotPower: {fileID: 0}
+  lastCardGainedAttack: {fileID: 0}
+  lastAttackGainedAmount: 0
+  lastCardAttacked: {fileID: 0}
+  captureRecorderAutoPlayForTesting: 0
 --- !u!4 &1151980345
 Transform:
   m_ObjectHideFlags: 0
@@ -5962,6 +5982,12 @@ MonoBehaviour:
   enemyCardsBuriedCountRef: {fileID: 11400000, guid: d465b7f97741da0458b4b5f8ab41d297, type: 2}
   stagedOwnerRef: {fileID: 11400000, guid: f01dfbf2a0fc6e741bcbf554c57a0917, type: 2}
   stagedEnemyRef: {fileID: 11400000, guid: b305049afaba1f54898c4c45a791238f, type: 2}
+  ownerRevivedCountRef: {fileID: 0}
+  enemyRevivedCountRef: {fileID: 0}
+  ownerRevivedCountThisRoundRef: {fileID: 0}
+  enemyRevivedCountThisRoundRef: {fileID: 0}
+  creatureAttackTimesAuraOwnerThisRoundRef: {fileID: 11400000, guid: 151799db74f27874480dce2ac71b7929, type: 2}
+  creatureAttackTimesAuraEnemyThisRoundRef: {fileID: 11400000, guid: 219b8e8a850328f4e99d968445112970, type: 2}
   lastAppliedStatusEffectRef: {fileID: 11400000, guid: 784ae6b6c3e1c174aa1796b5c77244b5, type: 2}
   lastAppliedStatusEffectAmountRef: {fileID: 11400000, guid: d9129ef7354701a4ab1cb01bf8842cdc, type: 2}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
@@ -7271,7 +7297,6 @@ MonoBehaviour:
   shuffleStaggerMaxDelay: 0.3
   xOffset: 0.15
   yOffset: 0.15
-  enableCascadeDeckLayout: 1
   cascadePxToWorld: 0.021
   cascadeShrinkCount: 4
   cascadeMinScale: 0.45
@@ -7287,6 +7312,30 @@ MonoBehaviour:
   cascadeCoverageTarget: 0.62
   cascadeCoverageCap: 2.5
   revealCardCountsAsDeckFront: 1
+  arcLoopPxToWorld: 0.01
+  arcLoopRadii: {x: 195, y: 155}
+  arcLoopExponent: 2
+  arcLoopTiltDeg: 45
+  arcLoopCurveDensity: 3
+  arcLoopMinScale: 0.7
+  arcLoopScalePower: 1
+  arcLoopMirror: 0
+  arcLoopSamples: 720
+  deckLayoutMode: 1
+  floatStackPxToWorld: 0.01
+  floatStackStepY: 14
+  floatStackRevealScale: 1.07
+  floatStackRevealFloatX: 16
+  floatStackRevealUpY: -14
+  floatStackMaxHeightPx: 250
+  floatStackMinScale: 0.55
+  floatStackBottomLimitPx: 270
+  floatStackCardHalfHeightPx: 105
+  floatStackShadowOffset: {x: 0, y: 30}
+  floatStackShadowOpacity: 0.85
+  floatStackShadowFollowRotation: 1
+  floatStackShadowFollowLiftDir: {x: 1, y: -1}
+  floatStackShadowFollowLiftDistance: 0.3
   useDynamicArcMidpoint: 1
   arcMidpointCurveT: 0.5
   arcMidpointOffset: {x: 1, y: 2}
@@ -7313,6 +7362,7 @@ MonoBehaviour:
   cardDestroyTargetSize: {x: 1, y: 1, z: 1}
   popUpYOffset: 1.8
   popUpZBoost: 0
+  batchMoveStagger: 0.06
   popUpScaleMultiplier: 1
   popUpDuration: 0.16
   popUpHoldDuration: 0.32
@@ -7361,6 +7411,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  hoverPopUpDelay: 0.1
   deckFocusTargetPos: {fileID: 714939180}
   peelSlideDistance: 8
   deckShiftDuration: 0.3
@@ -7480,8 +7531,6 @@ MonoBehaviour:
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   canvas: {fileID: 114813451}
   barShadow: {fileID: 840536120}
-  playerColor: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
-  enemyColor: {fileID: 11400000, guid: fc2f124e26a462642afde0df97fa1354, type: 2}
   shareTweenDuration: 0.25
   ghostHoldDelay: 0.35
   ghostCollapseDuration: 0.43
@@ -7502,7 +7551,9 @@ MonoBehaviour:
   ghostMinDelta: 0.004
   shadowOffset: {x: 20, y: -20}
   shadowPadding: 0
-  shadowColor: {fileID: 11400000, guid: 95b2170f52a207a49ad23f1f4e463db0, type: 2}
+  editModePreview: 1
+  previewPlayerHp: 20
+  previewEnemyHp: 20
 --- !u!1 &1499031966
 GameObject:
   m_ObjectHideFlags: 0
@@ -10819,8 +10870,6 @@ MonoBehaviour:
   gamePhaseRef: {fileID: 11400000, guid: f86e9b513a858df44b0bf6df49578410, type: 2}
   canvas: {fileID: 114813451}
   font: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  playerColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
-  enemyColor: {fileID: 11400000, guid: 598359e5134c39c47b20ec3aec7f6611, type: 2}
   fontSize: 150
   bold: 1
   italic: 0
