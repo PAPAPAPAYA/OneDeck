@@ -63,7 +63,7 @@ namespace DefaultNamespace.Managers
 		[Tooltip("Log combat flow messages from CombatManager and PhaseManager.")]
 		public bool logCombatFlow = true;
 
-		[Tooltip("Log effect chain messages from EffectChainManager, BuryEffect, StageEffect, and ApplyStatusEffectCore.")]
+		[Tooltip("Log effect chain messages from EffectChainManager, BuryEffect, StageEffect, ApplyStatusEffectCore, ReviveEffect, and EffectScript (attack-attribute invariant).")]
 		public bool logEffectChains = true;
 
 		[Tooltip("Log animation playback messages from RecorderAnimationPlayer and AnimationStateTracker.")]
@@ -253,7 +253,8 @@ namespace DefaultNamespace.Managers
 				return LogCategory.ShopFlow;
 			}
 			if (message.Contains("[EffectChainManager]") || message.Contains("[BuryEffect]") ||
-			    message.Contains("[StageEffect]") || message.Contains("[ApplyStatusEffectCore]"))
+			    message.Contains("[StageEffect]") || message.Contains("[ApplyStatusEffectCore]") ||
+			    message.Contains("[ReviveEffect]") || message.Contains("[AttackAttribute]"))
 			{
 				return LogCategory.EffectChains;
 			}
