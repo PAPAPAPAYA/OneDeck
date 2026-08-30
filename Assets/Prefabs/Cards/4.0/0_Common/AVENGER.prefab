@@ -140,7 +140,7 @@ MonoBehaviour:
   cardTypeID: AVENGER
   displayName: "\u590D\u4EC7\u8005"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u5F3A\u5316\u81EA\u8EAB
-    <b>2</b>"
+    <b>1</b>"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -275,7 +275,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
+  m_Name: chain burial test
+  m_EditorClassIdentifier: 
+  deck:
+  - {fileID: 4415592718418061644, guid: cd9bf6ed8696ba245baf8f94815a5d4c, type: 3}
+  - {fileID: 4351262439919075274, guid: 6a0c4305884d93e43bea828342c42a1b, type: 3}
+  - {fileID: 4428231430183656993, guid: 5be8a24d5c35d7b4ebb247147496db5a, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: bury friendly + add curse
