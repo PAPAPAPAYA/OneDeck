@@ -67,7 +67,7 @@ MonoBehaviour:
   printedAttack: 2
   attackGrowth: 0
   attackModThisRound: 0
-  extraAttackTimes: 1
+  extraAttackTimes: 0
   isCreature: 1
   isPassive: 0
 --- !u!114 &5562217776575659349
@@ -269,7 +269,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8933439553359598993}
         m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
-        m_MethodName: Attack
+        m_MethodName: AttackTimes
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
