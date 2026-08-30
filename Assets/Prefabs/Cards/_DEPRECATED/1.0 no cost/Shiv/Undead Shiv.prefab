@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  cursedCardTypeID: {fileID: 0}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -77,7 +78,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 190c5b71c5f9492db489365cb0734f9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   myStatusEffectResolverScript: {fileID: 6584689119450628697, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
   canStatusEffectBeStacked: 1
   statusEffectToGive: 6
@@ -85,6 +85,15 @@ MonoBehaviour:
   spreadEvenly: 0
   target: 0
   includeSelf: 0
+  onlyTargetEnemyDamagingCards: 1
+  lastXCardsCount: 0
+  statusEffectLayerCount: 1
+  xFriendlyCount: 0
+  yFriendlyLayerCount: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  statusEffectParticlePrefab: {fileID: 0}
+  particleYOffset: 0
 --- !u!1 &5686513399728282148
 GameObject:
   m_ObjectHideFlags: 0
@@ -130,7 +139,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
+  cursedCardTypeID: {fileID: 0}
+  targetCardTypeID: {fileID: 0}
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -161,10 +171,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d68556e3bb3ce54bb4153a1a476a087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  effectResultString: {fileID: 11400000, guid: 5a7c1c84ed1d98841916b9d65ac649dd, type: 2}
   baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
   dmgAmountAlter: 0
   healAmountAlter: 0
+  isStatusEffectDamage: 0
+  extraDmg: 0
+  statusEffectToCheck: 0
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -199,7 +216,6 @@ Transform:
   m_Children:
   - {fileID: 8010076199006712412}
   - {fileID: 5663384508396316155}
-  - {fileID: 5822266282674296458}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7915703419504864441
@@ -216,15 +232,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SHIV_UNDEAD
+  displayName: 
   cardDesc: 'deal <color=red>1</color> dmg to <color=orange>enemy</color>;
 
     give
     <color=#87CEEB>self</color> [REVIVE] each round'
+  rarity: 0
+  shopRollWeightMultiplier: 1
   takeUpSpace: 1
+  isStartCard: 0
+  isMinion: 0
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 06000000
+  displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
+  printedAttack: 0
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
+  attackTimesModThisRound: 0
+  isCreature: 0
+  isPassive: 0
 --- !u!114 &1388698888961379426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,65 +312,3 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!1001 &5436801572232316484
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 3828591620990538636}
-    m_Modifications:
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6584689119450628697, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-      propertyPath: m_Name
-      value: Revive Resolver
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
---- !u!4 &5822266282674296458 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1999526145233014990, guid: d6113a37f698b1446ab11eed175bdca5, type: 3}
-  m_PrefabInstance: {fileID: 5436801572232316484}
-  m_PrefabAsset: {fileID: 0}

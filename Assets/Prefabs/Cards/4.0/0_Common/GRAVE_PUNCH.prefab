@@ -233,7 +233,7 @@ MonoBehaviour:
   myTags: 
   lifeMax: 0
   currentLife: 0
-  printedAttack: 1
+  printedAttack: 2
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 1
