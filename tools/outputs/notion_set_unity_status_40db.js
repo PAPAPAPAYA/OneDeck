@@ -12,13 +12,18 @@ const TOKEN_URL = "https://mcp.notion.com/token";
 const MCP_URL = "https://mcp.notion.com/mcp";
 
 const DS_URL = "collection://3c7827b8-c3c1-8002-8b45-000bc02fa836";
-// 23 enabled cards configured as prefabs under Assets/Prefabs/Cards/4.0/
+// 42 enabled cards configured as prefabs under Assets/Prefabs/Cards/4.0/
 const CONFIGURED = [
 	"BLACKSMITH", "GRAVE_DREDGER", "GRAVE_FIST", "RIFT_INSECT", "SOLDIER_SKELETON",
 	"SPIKE_SKELETON", "TWIN_STRIKER", "WAR_TRAINER",
 	"AVENGER", "EULOGIST", "GRAVE_PUNCH", "GRAVE_TOGETHER", "HEXER", "RIFT_HATCHERY",
 	"RIFT_PRIEST", "RIFT_STRIKER", "SACRIFICIAL_SPIRIT", "SNOWBALL",
 	"DETERIORATION", "GRAVE_MILLER", "QUAD_STRIKER", "SLIME", "UNFINISHED_ROBOT",
+	// 2026-08-29 A-group batch (revive/awaken + passive engine)
+	"NECROMANCER", "SOUL_TRADER", "REVIVE_SUMMONER", "RIFT_SHEPHERD", "SPIRIT_CALLER",
+	"BEAST_REVIVER", "FLURRY_REVIVER", "MASS_REVIVER", "DUO_REVIVER", "FUNERAL_WILL",
+	"UNDYING_WARRIOR", "CURSE_THIRST_BEAST", "RIFT_MEDIUM", "DOOM_HERALD",
+	"RELIC_HIVE", "RELIC_CHAIN_BURIAL", "RELIC_ATTACK_HEX", "RELIC_CURSE_GRAVE", "RELIC_CURSE_REVIVAL",
 ];
 // rarity fixes from 4.0_Rarity_Iteration_StS2_2026-08-28.md §5.6
 const RARITY_FIX = { SPIKE_SKELETON: "normal", GRAVE_TOGETHER: "uncommon" };

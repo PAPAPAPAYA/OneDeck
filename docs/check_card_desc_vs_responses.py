@@ -31,11 +31,14 @@ def parse_log(path):
                 continue
             desc_part, after = full.split("|bindings=", 1)
             # isCreature token (extraction emits it before cardDesc=): card's explicit 生物 marker.
+            # isPassive token (4.0 passive engine) is optional between isCreature and cardDesc.
             is_creature = None
-            m_creature = re.match(r"isCreature=([01])\|cardDesc=(.*)", desc_part, re.S)
+            is_passive = None
+            m_creature = re.match(r"isCreature=([01])(?:\|isPassive=([01]))?\|cardDesc=(.*)", desc_part, re.S)
             if m_creature:
                 is_creature = m_creature.group(1) == "1"
-                desc = m_creature.group(2).replace("\\n", "\n").replace("\\r", "\r").replace("\\|", "|")
+                is_passive = m_creature.group(2) == "1" if m_creature.group(2) is not None else None
+                desc = m_creature.group(3).replace("\\n", "\n").replace("\\r", "\r").replace("\\|", "|")
             elif desc_part.startswith("cardDesc="):
                 desc = desc_part[len("cardDesc="):].replace("\\n", "\n").replace("\\r", "\r").replace("\\|", "|")
             else:
@@ -62,7 +65,11 @@ def parse_log(path):
                     elif k == "effects":
                         listener["effects"] = parse_calls(v)
                 listeners.append(listener)
-            cards.append({"name": name, "path": asset_path, "desc": desc, "listeners": listeners, "is_creature": is_creature})
+            cards.append({"name": name, "path": asset_path, "desc": desc, "listeners": listeners, "is_creature": is_creature, "is_passive": is_passive, "mode_err": 0})
+            # modeErr token sits right after bindings= in the raw line (4.0 extraction)
+            m_err = re.match(r"(\d+)\|modeErr=(\d+)\|", after)
+            if m_err:
+                cards[-1]["mode_err"] = int(m_err.group(2))
     return cards
 
 
@@ -140,6 +147,9 @@ def method_categories(call):
             cats.append("BURY_TAG")
         elif m == "BurySelf":
             cats.append("BURY_SELF")
+    elif t == "ReviveEffect":
+        # 4.0 revive engine: any revive method maps to the REVIVE category
+        cats.append("REVIVE")
     elif t == "StageEffect":
         if m in ("StageSelf", "StageMyCards", "StageMyCards_BasedOnIntSO", "StageMyCardsWithTag",
                  "StageMyTokens", "StageAllFriendlyMinion"):
@@ -232,9 +242,23 @@ def extract_trigger_event(segment):
             return "OnMeBought"
         return "OnMeRevealed"  # default
 
+    # 被动-prefixed segments: the inner clause before the first separator carries the
+    # real trigger (e.g. 被动:友方攻击时,生成1信徒 → 友方攻击时).
+    if trig == "被动" or trig == "被动：":
+        rest = segment.split(":", 1)[1] if ":" in segment else ""
+        trig = re.split(r"[,，;；]", rest)[0].strip()
+
     patterns = [
         ("当敌方[诅咒]揭晓", "OnHostileCurseRevealed"),
         ("当敌方[诅咒]获得力量", "OnEnemyCurseCardGotPower"),
+        # 4.0 trigger vocabulary (spec trigger table 2026-08-29)
+        # asset names in DMG/ are lowercase-on-first-letter — match them exactly
+        ("有卡攻击时", "onAnyCardAttacked"),
+        ("友方攻击时", "onAnyFriendlyCardAttacked"),
+        ("敌方诅咒揭晓时", "OnHostileCurseRevealed"),
+        ("敌方[诅咒]揭晓", "OnHostileCurseRevealed"),
+        ("友方苏醒时", "OnFriendlyCardRevived"),
+        ("苏醒", "OnMeRevived"),
         ("当友方被埋葬", "OnFriendlyCardBuried"),
         ("友方被埋葬", "OnFriendlyCardBuried"),
         ("当卡被埋葬", "OnFriendlyCardBuried"),
@@ -301,6 +325,10 @@ def extract_expected_categories(segment):
             cats.append("BURY_NEXT")
         if "埋葬自身" in clause:
             cats.append("BURY_SELF")
+
+        # Revive (4.0)
+        if re.search(r"复活\s*\d*\s*友方|复活自身|复活\s*\d*\s*敌方|复活敌方|延迟复活|复活\s*\d*\s*攻击次数最多", clause):
+            cats.append("REVIVE")
 
         # Stage
         if re.search(r"置顶\s*\d*\s*友方|置顶自身", clause):
@@ -424,6 +452,10 @@ def check_card(card):
             current_trigger = extract_trigger_event(seg)
         elif re.search(r"卡位增加|生命值上限增加", seg):
             current_trigger = "OnMeBought"
+        else:
+            # 揭晓时 is omittable per the 4.0 spec: a no-prefix segment defaults to
+            # OnMeRevealed — it never inherits the previous segment's trigger.
+            current_trigger = "OnMeRevealed"
         trigger = current_trigger
         expected_cats = extract_expected_categories(seg)
         if not expected_cats:
@@ -461,6 +493,18 @@ def check_card(card):
                 })
                 break  # one mismatch per segment is enough
 
+    # 4.0 extraction: modeErr = UnityEvent persistent calls whose mode mismatches the
+    # bound method's signature (Inspector shows <Missing ...>; runtime silently no-ops).
+    mode_err = card.get("mode_err") or 0
+    if mode_err:
+        mismatches.append({
+            "segment": "UnityEvent 调用模式校验",
+            "trigger": "-",
+            "expected": ["MODE_SIGNATURE"],
+            "issue": f"{mode_err} 个持久化调用模式与签名不符（Inspector 显示 Missing，运行时静默失效）",
+            "actual_listeners": [],
+        })
+
     # Also detect orphan listeners: event not described by any segment
     described_triggers = set()
     current_trigger = "OnMeRevealed"
@@ -469,6 +513,9 @@ def check_card(card):
             current_trigger = extract_trigger_event(seg)
         elif re.search(r"卡位增加|生命值上限增加", seg):
             current_trigger = "OnMeBought"
+        else:
+            # Same omittable-揭晓时 default as the mismatch pass above.
+            current_trigger = "OnMeRevealed"
         described_triggers.add(current_trigger)
 
     orphan_listeners = []

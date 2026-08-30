@@ -51,6 +51,33 @@ System.Reflection.FieldInfo responseField = listenerType.GetField("response");
 System.Reflection.FieldInfo effectEventField = containerType.GetField("effectEvent");
 System.Reflection.FieldInfo checkCostEventField = containerType.GetField("checkCostEvent");
 System.Reflection.FieldInfo cardDescField = cardScriptType.GetField("cardDesc");
+System.Reflection.FieldInfo isPassiveField = cardScriptType.GetField("isPassive");
+
+// Mode-signature validation: a persistent call's mode must match the bound method's
+// signature (Void=1, Object=2, Int=3, Float=4, String=5, Bool=6). A mismatch shows as
+// <Missing ...> in the Inspector and silently no-ops at runtime.
+// PersistentListenerMode: EventDefined=0, Void=1, Object=2, Int=3, Float=4, String=5, Bool=6.
+int modeErrors = 0;
+System.Func<UnityEngine.Object, string, int> resolveCallMode = (target, method) =>
+{
+	var mi = target.GetType().GetMethod(method, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, System.Type.EmptyTypes, null);
+	if (mi != null)
+	{
+		var ps = mi.GetParameters();
+		if (ps.Length == 0) return 1;
+		return -1; // parameterized: resolve by first parameter below
+	}
+	var miAny = target.GetType().GetMethod(method, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+	if (miAny == null) return -2; // method gone entirely
+	var p0 = miAny.GetParameters().Length > 0 ? miAny.GetParameters()[0].ParameterType : null;
+	if (p0 == typeof(int)) return 3;
+	if (p0 == typeof(float)) return 4;
+	if (p0 == typeof(string)) return 5;
+	if (p0 == typeof(bool)) return 6;
+	if (typeof(UnityEngine.Object).IsAssignableFrom(p0)) return 2;
+	if (p0 == null) return 1;
+	return -1;
+};
 
 System.Action<UnityEngine.Events.UnityEvent, System.Collections.Generic.List<string>> extractCalls = delegate(UnityEngine.Events.UnityEvent evt, System.Collections.Generic.List<string> list)
 {
@@ -82,6 +109,26 @@ System.Action<UnityEngine.Events.UnityEvent, System.Collections.Generic.List<str
 			if (intArgField != null) arg = (int)intArgField.GetValue(args);
 		}
 		string typeName = target != null ? target.GetType().FullName : "null";
+		// mode-signature validation: stored mode must match the method's actual signature
+		if (target != null)
+		{
+			int want = resolveCallMode(target, method);
+			if (want == -2)
+			{
+				list.Add("MODE-ERROR->" + method + "(method missing)");
+				modeErrors++;
+			}
+			else if (want >= 0)
+			{
+				var modeProp = callType.GetProperty("mode");
+				int storedMode = modeProp != null ? (int)modeProp.GetValue(call) : want;
+				if (storedMode != want)
+				{
+					list.Add("MODE-ERROR->" + method + "(storedMode=" + storedMode + ",expected=" + want + ")");
+					modeErrors++;
+				}
+			}
+		}
 		list.Add(typeName + "->" + method + "(" + arg + ")");
 	}
 };
@@ -96,7 +143,9 @@ foreach (string guid in guids)
 		UnityEngine.GameObject prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.GameObject>(path);
 		if (prefab == null) continue;
 		string desc = "";
+		modeErrors = 0; // per-card mode-signature error counter
 		bool isCreature = false;
+		bool isPassive = false;
 		UnityEngine.Component cardComp = prefab.GetComponent(cardScriptType);
 		if (cardComp != null && cardDescField != null)
 		{
@@ -104,6 +153,7 @@ foreach (string guid in guids)
 			if (descObj != null) desc = (string)descObj;
 			System.Reflection.FieldInfo isCreatureField = cardScriptType.GetField("isCreature");
 			if (isCreatureField != null) isCreature = (bool)isCreatureField.GetValue(cardComp);
+			if (isPassiveField != null) isPassive = (bool)isPassiveField.GetValue(cardComp);
 		}
 		if (desc == null) desc = "";
 		desc = desc.Replace("\\", "\\\\").Replace("\r", "\\r").Replace("\n", "\\n").Replace("|", "\\|");
@@ -153,7 +203,7 @@ foreach (string guid in guids)
 				bindingCount++;
 			}
 		}
-		sb.Append("CARD|").Append(prefab.name).Append("|").Append(path).Append("|isCreature=").Append(isCreature ? "1" : "0").Append("|cardDesc=").Append(desc).Append("|bindings=").Append(bindingCount).Append(lb.ToString()).AppendLine();
+		sb.Append("CARD|").Append(prefab.name).Append("|").Append(path).Append("|isCreature=").Append(isCreature ? "1" : "0").Append("|isPassive=").Append(isPassive ? "1" : "0").Append("|cardDesc=").Append(desc).Append("|bindings=").Append(bindingCount).Append("|modeErr=").Append(modeErrors).Append(lb.ToString()).AppendLine();
 		processed++;
 	}
 	catch (System.Exception ex)
