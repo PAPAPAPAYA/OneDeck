@@ -1,3 +1,6 @@
+// !! NOTICE (2026-08-30): this script's notion-update-page calls print OK but do NOT
+// persist (verified via per-page fetch: GRAVE_GIANT stayed 需小改 after 3 runs). DB
+// writes must go through the MCP tool directly; keep this file as read-side reference.
 // Sync "Unity 配置状态" column of 4.0 card database (2026-08-28 roadmap step 0).
 // Marks the 23 prefab-configured cards as 已配置; verifies rarity of the two
 // rarity-moved cards (SPIKE_SKELETON -> normal, GRAVE_TOGETHER -> uncommon).
@@ -86,7 +89,7 @@ async function main(access) {
 		const parsed = JSON.parse(raw);
 		rows = (parsed.results || []).map(r => ({
 			id: (r.url || "").split("-").pop(),
-			pageId: r.url, ctid: r.ctid, rarity: r.rarity, status: r.status, unity: r.unity,
+			pageId: (r.url.match(/[0-9a-f]{32}/) || [r.url])[0], ctid: r.ctid, rarity: r.rarity, status: r.status, unity: r.unity,
 		}));
 		console.log("rows via SQL: " + rows.length);
 	} catch (e) {

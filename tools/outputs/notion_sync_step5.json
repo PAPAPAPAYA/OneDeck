@@ -1,0 +1,286 @@
+[
+ {
+  "id": "3c7827b8c3c181e4b8b1e546db0c43c4",
+  "ctid": "BEAST_REVIVER"
+ },
+ {
+  "id": "3c7827b8c3c181e3a1d5cc6197fec1d6",
+  "ctid": "BLACKSMITH_4.0"
+ },
+ {
+  "id": "3c7827b8c3c181669bf7d101cd79cf81",
+  "ctid": "ELITE_REVIVER"
+ },
+ {
+  "id": "3c7827b8c3c1819bb1e2e9f0936b850a",
+  "ctid": "GRAVE_DREDGER"
+ },
+ {
+  "id": "3c7827b8c3c1812a8ca3fb3c9062b404",
+  "ctid": "GRAVE_FIST"
+ },
+ {
+  "id": "3c7827b8c3c1812c9d70e4eac3df0648",
+  "ctid": "GRAVE_PUNCH_4.0"
+ },
+ {
+  "id": "3c7827b8c3c18146b887d35025a02cb8",
+  "ctid": "LAST_GIFT"
+ },
+ {
+  "id": "3c7827b8c3c18101a848cb15bd0d3996",
+  "ctid": "RIFT_ACOLYTE"
+ },
+ {
+  "id": "3c7827b8c3c1811db4fbdf5b58514829",
+  "ctid": "RIFT_INSECT_4.0"
+ },
+ {
+  "id": "3c7827b8c3c181099754f92441794ddd",
+  "ctid": "RIFT_SHEPHERD"
+ },
+ {
+  "id": "3c7827b8c3c1814190f1de9842a9a922",
+  "ctid": "SPIRIT_CALLER"
+ },
+ {
+  "id": "3c7827b8c3c18179b934de12143bda43",
+  "ctid": "TWIN_STRIKER"
+ },
+ {
+  "id": "3c7827b8c3c181458052c7371d096196",
+  "ctid": "WAKING_FIGHTER"
+ },
+ {
+  "id": "3c7827b8c3c1819faa2ce51c16ba49ea",
+  "ctid": "WAR_TRAINER"
+ },
+ {
+  "id": "3c8827b8c3c1803eb37bc75984d84bc8",
+  "ctid": "WOKEN_BLADE"
+ },
+ {
+  "id": "3c7827b8c3c18192b063ce3eda376c54",
+  "ctid": "AWAKENED_REAPER"
+ },
+ {
+  "id": "3c7827b8c3c181ef98a7c2a6e4303057",
+  "ctid": "COMBO_GRANTER"
+ },
+ {
+  "id": "3c7827b8c3c1818581a5d5bcb0efcc51",
+  "ctid": "COMBO_STARTER"
+ },
+ {
+  "id": "3c7827b8c3c181e89604fe107e221fa1",
+  "ctid": "CURSE_EATER"
+ },
+ {
+  "id": "3c7827b8c3c181a6ad5bf243cc089170",
+  "ctid": "CURSE_GARDENER"
+ },
+ {
+  "id": "3c7827b8c3c1817fa150ed02333afd7e",
+  "ctid": "CURSE_REVIVER"
+ },
+ {
+  "id": "3c8827b8c3c180e7a3c4c72a1c4e28c5",
+  "ctid": "CURSE_THIRST_BEAST_4.0"
+ },
+ {
+  "id": "3c7827b8c3c18176b159d81ed0512bd4",
+  "ctid": "DEATHBED_PORTER"
+ },
+ {
+  "id": "3c7827b8c3c181c296d5c6409f561249",
+  "ctid": "EULOGIST"
+ },
+ {
+  "id": "3c7827b8c3c18170a11bd13c0c5dc0f8",
+  "ctid": "EXILE_BERSERKER"
+ },
+ {
+  "id": "3c7827b8c3c18174a60ee0b60d103e34",
+  "ctid": "FINAL_ESCORT"
+ },
+ {
+  "id": "3c7827b8c3c18180ac69ee5cc05f9541",
+  "ctid": "FLURRY_REVIVER"
+ },
+ {
+  "id": "3c7827b8c3c181acb929c0c85d759b55",
+  "ctid": "FUNERAL_WILL"
+ },
+ {
+  "id": "3c7827b8c3c181d58db1dddb399d0f50",
+  "ctid": "GRAVE_GIANT"
+ },
+ {
+  "id": "3c7827b8c3c181ef8fcadf8c2c1b0cbf",
+  "ctid": "GRAVE_HEXER"
+ },
+ {
+  "id": "3c7827b8c3c181e68bc6ce08326aa8fb",
+  "ctid": "HEXER"
+ },
+ {
+  "id": "3c7827b8c3c18183a849c534c06ce3da",
+  "ctid": "KINGSLAYER"
+ },
+ {
+  "id": "3c7827b8c3c181d79a8aea51ef9eb0c5",
+  "ctid": "MASS_REVIVER"
+ },
+ {
+  "id": "3c7827b8c3c181aba9affda164e55efc",
+  "ctid": "MIMIC_BLADE"
+ },
+ {
+  "id": "3c7827b8c3c18190b675e75334e9c76b",
+  "ctid": "NECROMANCER"
+ },
+ {
+  "id": "3c7827b8c3c18101bf5ec354a82b78ac",
+  "ctid": "REANIMATOR"
+ },
+ {
+  "id": "3c7827b8c3c181dda723e6c1a635b1af",
+  "ctid": "RELIC_CHAIN_BURIAL"
+ },
+ {
+  "id": "3c7827b8c3c181c5b309d0117af2d0b1",
+  "ctid": "RELIC_TALLY"
+ },
+ {
+  "id": "3c8827b8c3c180ae99feca17bb8fb17c",
+  "ctid": "RELIC_TRAINER"
+ },
+ {
+  "id": "3c7827b8c3c181bda4d8e7f16883afe3",
+  "ctid": "REVIVE_SUMMONER"
+ },
+ {
+  "id": "3c8827b8c3c1806298b0cd67aa7a5d61",
+  "ctid": "RIFT_GUIDE"
+ },
+ {
+  "id": "3c7827b8c3c18157a43efea913404fe9",
+  "ctid": "RIFT_MEDIUM"
+ },
+ {
+  "id": "3c7827b8c3c1814f95a0fbd852ce663a",
+  "ctid": "RIFT_PRIEST"
+ },
+ {
+  "id": "3c8827b8c3c180689f9af89b7ec6f0af",
+  "ctid": "RIFT_REVIVER"
+ },
+ {
+  "id": "3c7827b8c3c18105bfbccc075808ade4",
+  "ctid": "RIFT_STRIKER"
+ },
+ {
+  "id": "3c7827b8c3c18177b363e55d560d46b4",
+  "ctid": "SACRIFICE_WEAKEST"
+ },
+ {
+  "id": "3c7827b8c3c181d29529ed2680ece000",
+  "ctid": "SACRIFICIAL_SPIRIT"
+ },
+ {
+  "id": "3c7827b8c3c181ecbef7f7a49bacd8d6",
+  "ctid": "SNOWBALL"
+ },
+ {
+  "id": "3c7827b8c3c181bab9e6c630793fb632",
+  "ctid": "SOUL_TRADER"
+ },
+ {
+  "id": "3c7827b8c3c181239b1cfe3de5d61b9e",
+  "ctid": "UNDYING_WARRIOR"
+ },
+ {
+  "id": "3c8827b8c3c180399fa1f850ef2f09b2",
+  "ctid": "WEAKENING_FIELD"
+ },
+ {
+  "id": "3c8827b8c3c1800ea216e73d5d14cfe8",
+  "ctid": "WOKEN_HEX"
+ },
+ {
+  "id": "3c7827b8c3c181e3a9aece7d359664cc",
+  "ctid": "DECIMATION"
+ },
+ {
+  "id": "3c7827b8c3c18113bf3fc9902e30a485",
+  "ctid": "DETERIORATION_4.0"
+ },
+ {
+  "id": "3c7827b8c3c1816caa98e8537be64854",
+  "ctid": "DOOM_HERALD"
+ },
+ {
+  "id": "3c7827b8c3c181fc9accc9fe5f15876d",
+  "ctid": "DUO_REVIVER"
+ },
+ {
+  "id": "3c7827b8c3c181628d24cf4cdac4ce38",
+  "ctid": "GRAVE_MILLER"
+ },
+ {
+  "id": "3c7827b8c3c181fdb88fd309a6002b60",
+  "ctid": "HEXBLADE"
+ },
+ {
+  "id": "3c7827b8c3c1819291c4cdf3bea296bf",
+  "ctid": "MILLBLADE"
+ },
+ {
+  "id": "3c7827b8c3c181f3b559cee8cee8e9e0",
+  "ctid": "QUAD_STRIKER"
+ },
+ {
+  "id": "3c7827b8c3c1818da3c8f28a574f3e11",
+  "ctid": "RELIC_ATTACK_HEX"
+ },
+ {
+  "id": "3c7827b8c3c1816e8940ca709dae722c",
+  "ctid": "RELIC_CURSE_GRAVE"
+ },
+ {
+  "id": "3c7827b8c3c18131bef4fe8bcb4bda9d",
+  "ctid": "RELIC_CURSE_HASTE"
+ },
+ {
+  "id": "3c7827b8c3c1813aa0d5c4a2d1ce3ead",
+  "ctid": "RELIC_CURSE_REVIVAL"
+ },
+ {
+  "id": "3c8827b8c3c180f5ba3ce06dcd676562",
+  "ctid": "RELIC_GRAVE_LORD"
+ },
+ {
+  "id": "3c7827b8c3c181549320dfde34029da1",
+  "ctid": "RELIC_HIVE"
+ },
+ {
+  "id": "3c7827b8c3c1814d8ce5f6169bd5447d",
+  "ctid": "RIFT_REAPER"
+ },
+ {
+  "id": "3c7827b8c3c181aea7f0c7536bab1ebf",
+  "ctid": "SLIME_4.0"
+ },
+ {
+  "id": "3c7827b8c3c181658361e16eff77f964",
+  "ctid": "SWARM_CURSER"
+ },
+ {
+  "id": "3c7827b8c3c181d49490c255cfa58d2d",
+  "ctid": "SWARM_QUEEN"
+ },
+ {
+  "id": "3c7827b8c3c181d38157c05cd2c4805f",
+  "ctid": "UNFINISHED_ROBOT_4.0"
+ }
+]
