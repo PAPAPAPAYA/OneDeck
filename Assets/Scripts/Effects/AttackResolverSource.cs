@@ -30,6 +30,8 @@ public class AttackResolverSource : MonoBehaviour
 		EnemyNegativeTotal,
 		/// <summary>Highest attack among enemy cards with the negative/curse cardTypeID (咒蚀之眠).</summary>
 		EnemyNegativeHighest,
+		/// <summary>Highest attack among friendly cards, carrier excluded (MIMIC_BLADE 攻击力=友方最高攻击力).</summary>
+		FriendlyHighest,
 	}
 
 	[System.Serializable]
@@ -110,6 +112,9 @@ public class AttackResolverSource : MonoBehaviour
 					break;
 				case Source.EnemyNegativeHighest:
 					total += HighestAttack(myCardFaction: false, typeID: term.cardTypeID);
+					break;
+				case Source.FriendlyHighest:
+					total += HighestAttack(myCardFaction: true, typeID: null);
 					break;
 			}
 		}
