@@ -91,6 +91,23 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
+		/// Repeats the IntSO value as a COUNT: calls EnhanceCurse(1) once per point, each
+		/// independently finding-or-creating an enemy curse (RELIC_TALLY
+		/// "本回合每埋葬1生物，强化1敌方诅咒" — B burials mean B separate +1 enhancements,
+		/// not one curse +B). Uses ownerIntSO/enemyIntSO like EnhanceCurse_BasedOnIntSO.
+		/// </summary>
+		public virtual void EnhanceCurseTimes_BasedOnIntSO()
+		{
+			IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
+			if (intSO == null) return;
+			int times = intSO.value;
+			for (int i = 0; i < times; i++)
+			{
+				EnhanceCurse(1);
+			}
+		}
+
+		/// <summary>
 		/// Enhances curse (with coefficient) based on ownerIntSO/enemyIntSO.
 		/// Uses ownerIntSO when this card belongs to the owner, otherwise enemyIntSO.
 		/// Calculates enhancement stacks from IntSO value and coefficient,

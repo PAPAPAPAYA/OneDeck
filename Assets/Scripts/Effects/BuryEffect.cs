@@ -359,6 +359,24 @@ public class BuryEffect : EffectScript
 						if (ValueTrackerManager.me.enemyCardsBuriedCountRef != null)
 							ValueTrackerManager.me.enemyCardsBuriedCountRef.value++;
 					}
+
+					// 4.0 E4: causer-based per-round creature-burial counters (RELIC_TALLY).
+					// The victim-side counters above count cards buried OF a side regardless of
+					// burier; these count burials CAUSED by each side — my sacrificed creatures
+					// count for me, enemy-caused burials never do. Neutral sources are skipped.
+					if (targetCardScript.isCreature && myCardScript != null && myCardScript.myStatusRef != null)
+					{
+						if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+						{
+							if (ValueTrackerManager.me.creaturesBuriedByOwnerThisRoundRef != null)
+								ValueTrackerManager.me.creaturesBuriedByOwnerThisRoundRef.value++;
+						}
+						else
+						{
+							if (ValueTrackerManager.me.creaturesBuriedByEnemyThisRoundRef != null)
+								ValueTrackerManager.me.creaturesBuriedByEnemyThisRoundRef.value++;
+						}
+					}
 				}
 
 				// Per-card result stats: source-side friendly/enemy split + victim TimesBuried

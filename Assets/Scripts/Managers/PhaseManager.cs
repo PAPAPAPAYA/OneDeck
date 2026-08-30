@@ -298,6 +298,8 @@ public class PhaseManager : MonoBehaviour
 			ValueTrackerManager.me.lastAppliedStatusEffectAmountRef?.ResetToDefault();
 			ValueTrackerManager.me.creatureAttackTimesAuraOwnerThisRoundRef?.ResetToDefault();
 			ValueTrackerManager.me.creatureAttackTimesAuraEnemyThisRoundRef?.ResetToDefault();
+			ValueTrackerManager.me.creaturesBuriedByOwnerThisRoundRef?.ResetToDefault();
+			ValueTrackerManager.me.creaturesBuriedByEnemyThisRoundRef?.ResetToDefault();
 		}
 
 		// Reset manager flags so starting cards and first-combat rewards can be given again
@@ -418,6 +420,8 @@ public class PhaseManager : MonoBehaviour
 			ValueTrackerManager.me.lastAppliedStatusEffectAmountRef?.ResetToDefault();
 			ValueTrackerManager.me.creatureAttackTimesAuraOwnerThisRoundRef?.ResetToDefault();
 			ValueTrackerManager.me.creatureAttackTimesAuraEnemyThisRoundRef?.ResetToDefault();
+			ValueTrackerManager.me.creaturesBuriedByOwnerThisRoundRef?.ResetToDefault();
+			ValueTrackerManager.me.creaturesBuriedByEnemyThisRoundRef?.ResetToDefault();
 			if (ValueTrackerManager.me.lastAppliedStatusEffectRef != null)
 				ValueTrackerManager.me.lastAppliedStatusEffectRef.value = ValueTrackerManager.me.lastAppliedStatusEffectRef.valueOg;
 		}

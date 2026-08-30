@@ -19,6 +19,8 @@ public class StageEffect : EffectScript
 	[Header("Self Exclusion")]
 	[Tooltip("If true, the source card will not be selected when staging multiple cards")]
 	public bool excludeSelf = true;
+	[Tooltip("If true, StageCardWithMaxAttack only considers creatures (FINAL_ESCORT 置顶1友方攻击力最高生物)")]
+	public bool creatureOnly = false;
 
 	[Header("Based on IntSO")]
 	[Tooltip("IntSO used when this card belongs to the owner/player")]
@@ -327,7 +329,8 @@ public class StageEffect : EffectScript
 	/// THE_FOOL "置顶攻击力最多的敌方卡").
 	/// The candidate pool is controlled by <see cref="targetFriendly"/>: when
 	/// <see cref="targetFriendly"/> is true, only friendly cards (cards sharing this
-	/// card's owner) are considered. Ties are broken randomly.
+	/// card's owner) are considered. <see cref="creatureOnly"/> narrows the pool to
+	/// creatures. Ties are broken randomly.
 	/// </summary>
 	public void StageCardWithMaxAttack()
 	{
@@ -346,6 +349,7 @@ public class StageEffect : EffectScript
 			    isFriendly != targetFriendly ||
 			    IsCardAtTop(card) ||
 			    cardScript.isMinion ||
+			    (creatureOnly && !cardScript.isCreature) ||
 			    (excludeSelf && card == myCard))
 			{
 				eligibleCards.RemoveAt(i);
@@ -357,6 +361,28 @@ public class StageEffect : EffectScript
 		var topCard = CardScript.FindCardWithMaxAttack(eligibleCards, null, null);
 		if (topCard == null) return;
 		StageChosenCards(new List<GameObject> { topCard.gameObject }, 1);
+	}
+
+	/// <summary>
+	/// One-shot round-end stage armed by the deathrattle (FINAL_ESCORT
+	/// "遗言：回合结束：置顶1友方攻击力最高生物", 4.0 E3). The deathrattle only arms the
+	/// flag; the prefab's permanent onRoundEnd listener calls this, which stages once and
+	/// disarms — no dynamic listener registration needed. The card object survives being
+	/// buried, so the flag (and the listener) live as long as the card does.
+	/// </summary>
+	[HideInInspector]
+	public bool roundEndStageArmed;
+
+	public void ArmRoundEndStageMaxAttackCreature()
+	{
+		roundEndStageArmed = true;
+	}
+
+	public void StageMaxAttackCreatureIfArmed()
+	{
+		if (!roundEndStageArmed) return;
+		roundEndStageArmed = false;
+		StageCardWithMaxAttack();
 	}
 
 	private void StageChosenCards(List<GameObject> cardsToStage, int amount)

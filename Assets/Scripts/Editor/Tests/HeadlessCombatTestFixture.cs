@@ -88,6 +88,8 @@ public abstract class HeadlessCombatTestFixture
 		ValueTrackerManager.enemyRevivedCountThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.creatureAttackTimesAuraOwnerThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.creatureAttackTimesAuraEnemyThisRoundRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.creaturesBuriedByOwnerThisRoundRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.creaturesBuriedByEnemyThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.lastAppliedStatusEffectRef = CreateScriptableObject<StatusEffectSO>();
 		ValueTrackerManager.lastAppliedStatusEffectAmountRef = CreateScriptableObject<IntSO>();
 
@@ -105,6 +107,7 @@ public abstract class HeadlessCombatTestFixture
 		GameEventStorage.onHostileCardRevealed = CreateScriptableObject<GameEvent>();
 		GameEventStorage.afterShuffle = CreateScriptableObject<GameEvent>();
 		GameEventStorage.beforeRoundStart = CreateScriptableObject<GameEvent>();
+		GameEventStorage.onRoundEnd = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onAnyCardAttacked = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onAnyFriendlyCardAttacked = CreateScriptableObject<GameEvent>();
 		GameEventStorage.onAnyCardGotPower = CreateScriptableObject<GameEvent>();

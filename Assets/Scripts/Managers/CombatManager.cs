@@ -1027,6 +1027,11 @@ public class CombatManager : MonoBehaviour
 	public void OnStartCardShuffleAnimationComplete()
 	{
 		_infoDisplayer.RefreshDeckInfo();
+		// 4.0 E3: round-end timepoint — raised after the shuffle animation settles and BEFORE
+		// HandleNewRoundStart's per-round resets, so round-end effects read the completed round
+		// (RELIC_TALLY counts this round's burials) and act on the fresh deck order
+		// (FINAL_ESCORT's staged card lands on the top revealed first next round).
+		GameEventStorage.me?.onRoundEnd?.Raise();
 		HandleNewRoundStart();
 	}
 
@@ -1054,6 +1059,9 @@ public class CombatManager : MonoBehaviour
 			// 4.0 E7: faction creature attack-times aura is a per-round modifier
 			if (ValueTrackerManager.me.creatureAttackTimesAuraOwnerThisRoundRef != null) ValueTrackerManager.me.creatureAttackTimesAuraOwnerThisRoundRef.value = 0;
 			if (ValueTrackerManager.me.creatureAttackTimesAuraEnemyThisRoundRef != null) ValueTrackerManager.me.creatureAttackTimesAuraEnemyThisRoundRef.value = 0;
+			// 4.0 E4: causer-based per-round creature-burial counters
+			if (ValueTrackerManager.me.creaturesBuriedByOwnerThisRoundRef != null) ValueTrackerManager.me.creaturesBuriedByOwnerThisRoundRef.value = 0;
+			if (ValueTrackerManager.me.creaturesBuriedByEnemyThisRoundRef != null) ValueTrackerManager.me.creaturesBuriedByEnemyThisRoundRef.value = 0;
 		}
 
 		// Round start event

@@ -2903,6 +2903,7 @@ MonoBehaviour:
   onTheirPlayerShieldUpped: {fileID: 11400000, guid: 808138fe6215952418c045862c9f80ad, type: 2}
   afterShuffle: {fileID: 11400000, guid: fe87bc9a909276b4dabe1bf8aa01d8a4, type: 2}
   beforeRoundStart: {fileID: 11400000, guid: cde884b6e17c9e24b90d185b1c96604e, type: 2}
+  onRoundEnd: {fileID: 11400000, guid: b6cdc91ddb1abf24d9a20cee17bb623b, type: 2}
   onAnyCardAttacked: {fileID: 0}
   onAnyFriendlyCardAttacked: {fileID: 0}
   onFriendlyMinionAdded: {fileID: 11400000, guid: 3d27fd3b0bb6feb4e85567151942425d, type: 2}
@@ -5988,6 +5989,8 @@ MonoBehaviour:
   enemyRevivedCountThisRoundRef: {fileID: 0}
   creatureAttackTimesAuraOwnerThisRoundRef: {fileID: 11400000, guid: 151799db74f27874480dce2ac71b7929, type: 2}
   creatureAttackTimesAuraEnemyThisRoundRef: {fileID: 11400000, guid: 219b8e8a850328f4e99d968445112970, type: 2}
+  creaturesBuriedByOwnerThisRoundRef: {fileID: 11400000, guid: f1e9d9eeaa7034b4a9610e537c309322, type: 2}
+  creaturesBuriedByEnemyThisRoundRef: {fileID: 11400000, guid: 2170fd5facab6324aafa2988b5e07709, type: 2}
   lastAppliedStatusEffectRef: {fileID: 11400000, guid: 784ae6b6c3e1c174aa1796b5c77244b5, type: 2}
   lastAppliedStatusEffectAmountRef: {fileID: 11400000, guid: d9129ef7354701a4ab1cb01bf8842cdc, type: 2}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
