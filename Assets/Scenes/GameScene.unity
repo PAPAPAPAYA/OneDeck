@@ -1216,6 +1216,9 @@ MonoBehaviour:
   shopItemAmount: 3
   payCheck: {fileID: 11400000, guid: fe5315966a51f1645bb27607137ec573, type: 2}
   RerollPriceRef: {fileID: 11400000, guid: 089c6b4c114df4345af8c9fe57fccb57, type: 2}
+  CommonPriceRef: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
+  UncommonPriceRef: {fileID: 11400000, guid: b7cd10ed5ca1ffe4da00c2590ace062e, type: 2}
+  RarePriceRef: {fileID: 11400000, guid: e57676058a6a9344883c99c068362e4f, type: 2}
   phaseInfo: 'Press <b>[SPACE]</b> to EXIT SHOP
 
     Press <b>[R]</b> to REROLL
@@ -5760,8 +5763,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
   overrideShuffleOrder: 0
-  useTestEnemyDeck: 0
-  autoReveal: 0
+  useTestEnemyDeck: 1
+  autoReveal: 1
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
@@ -6885,7 +6888,7 @@ MonoBehaviour:
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   cardsRevealedThisRound: 0
   isPlayingEffectAnimations: 0
-  autoReveal: 0
+  autoReveal: 1
   combatAnimationSpeedScale: 1
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   roundsLastCombat: 0
@@ -7808,103 +7811,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 113.54, y: 256.45}
   m_Pivot: {x: 0.5, y: 1}
---- !u!1 &1301151701
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1301151704}
-  - component: {fileID: 1301151703}
-  - component: {fileID: 1301151702}
-  m_Layer: 0
-  m_Name: EULOGIST
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1301151702
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1301151701}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
-  response:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1604224896}
-        m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
-        m_MethodName: InvokeEffectEventVoid
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &1301151703
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1301151701}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardID: 0
-  cardTypeID: WISE_BURIAL
-  displayName: "\u4E0D\u611A\u8822\u7684\u57CB\u846C"
-  cardDesc: "\u63ED\u6653:\u57CB\u846C <b>2</b> \u53CB\u65B9[<tag:DeathRattle>]/[<tag:Linger>]"
-  rarity: 2
-  shopRollWeightMultiplier: 1
-  takeUpSpace: 1
-  isStartCard: 0
-  isMinion: 0
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
-  myStatusRef: {fileID: 0}
-  theirStatusRef: {fileID: 0}
-  myStatusEffects: 
-  displayMyStatusEffects: 
-  myTags: 
-  lifeMax: 0
-  currentLife: 0
-  printedAttack: 0
-  attackGrowth: 0
-  attackModThisRound: 0
-  extraAttackTimes: 0
-  isCreature: 0
-  isPassive: 0
---- !u!4 &1301151704
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1301151701}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1604224898}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1327892598
 GameObject:
   m_ObjectHideFlags: 0
@@ -9012,11 +8918,11 @@ MonoBehaviour:
     m_RotationOrder: 4
   hoverPopUpDelay: 0.1
   deckFocusTargetPos: {fileID: 714939180}
-  peelSlideDistance: 8
+  peelSlideDistance: 12
   deckShiftDuration: 0.3
   peelCardDuration: 0.18
   peelStaggerDelay: 0.04
-  revealCardExitDistance: 8
+  revealCardExitDistance: 12
   enablePeelDeck: 1
   physicalCardsInDeck: []
   physicalCardInRevealZone: {fileID: 0}
@@ -9612,88 +9518,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 113.54, y: 256.45}
   m_Pivot: {x: 0.5, y: 1}
---- !u!1 &1604224895
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1604224898}
-  - component: {fileID: 1604224896}
-  - component: {fileID: 1604224897}
-  m_Layer: 0
-  m_Name: 'bury 1 friendly [Deathrattle]/[Linger]'
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1604224896
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604224895}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
-  targetCardTypeID: {fileID: 0}
-  checkCostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  effectEvent:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1604224897}
-        m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
-        m_MethodName: BuryMyCardsWithTag
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &1604224897
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604224895}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb08dbd2c6066ac468526e104b9095a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
-  tagsToCheck: 0300000001000000
-  excludeSelf: 1
-  ownerIntSO: {fileID: 0}
-  enemyIntSO: {fileID: 0}
-  ignoreStartCardBoundary: 0
---- !u!4 &1604224898
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604224895}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1301151704}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1644714603
 GameObject:
   m_ObjectHideFlags: 0
@@ -10407,7 +10231,7 @@ Transform:
   m_GameObject: {fileID: 1790783861}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3, y: 6, z: 0}
+  m_LocalPosition: {x: -3, y: -6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10816,7 +10640,7 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: a558d3ef853b1b9489490ad68426f275, type: 3}
   - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  useDebugEnemyDeck: 0
+  useDebugEnemyDeck: 1
   debugEnemyDeck: {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
   defaultEnemyDeckPool:
   - decks:
@@ -13667,4 +13491,3 @@ SceneRoots:
   - {fileID: 1404473909}
   - {fileID: 1332386788}
   - {fileID: 1137038735}
-  - {fileID: 1301151704}
