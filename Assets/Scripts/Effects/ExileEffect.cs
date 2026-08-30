@@ -57,7 +57,7 @@ public class ExileEffect : EffectScript
 		{
 			var card = cardsToExile[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef != myCardScript.myStatusRef)
 			{
 				cardsToExile.RemoveAt(i);
 			}
@@ -78,7 +78,7 @@ public class ExileEffect : EffectScript
 		{
 			var card = cardsToExile[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef)
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef == myCardScript.myStatusRef)
 			{
 				cardsToExile.RemoveAt(i);
 			}
@@ -99,7 +99,7 @@ public class ExileEffect : EffectScript
 		{
 			var card = cardsToExile[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive)
 			{
 				cardsToExile.RemoveAt(i);
 			}
@@ -120,8 +120,9 @@ public class ExileEffect : EffectScript
 		{
 			var card = cardsToExile[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || 
-			    CombatManager.ShouldSkipEffectProcessing(cardScript) || 
+			if (!cardScript.myTags.Contains(tagToCheck) ||
+			    CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    cardScript.isPassive ||
 			    cardScript.myStatusRef != myCardScript.myStatusRef)
 			{
 				cardsToExile.RemoveAt(i);
@@ -143,8 +144,9 @@ public class ExileEffect : EffectScript
 		{
 			var card = cardsToExile[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || 
-			    CombatManager.ShouldSkipEffectProcessing(cardScript) || 
+			if (!cardScript.myTags.Contains(tagToCheck) ||
+			    CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    cardScript.isPassive ||
 			    cardScript.myStatusRef == myCardScript.myStatusRef)
 			{
 				cardsToExile.RemoveAt(i);
@@ -166,7 +168,7 @@ public class ExileEffect : EffectScript
 		{
 			var card = cardsToExile[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript))
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive)
 			{
 				cardsToExile.RemoveAt(i);
 			}

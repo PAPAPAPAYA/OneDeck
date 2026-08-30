@@ -145,6 +145,9 @@ public class EffectChainManager : MonoBehaviour
 
 		bool canInvoke = !(invokedTimes > 0 || openedEffectRecorders.Count == 0) && chainDepth <= 99;
 
+		// Diagnosability: log the gate values so a silently blocked invocation (no exception,
+		// no effect) can be attributed to invokedTimes / openChains / chainDepth.
+		TestManager.Log("[EffectChainManager] EffectCanBeInvoked effectID=[" + effectID + "] invokedTimes=" + invokedTimes + " openChains=" + openedEffectRecorders.Count + " chainDepth=" + chainDepth + " canInvoke=" + canInvoke);
 
 		if (invokedTimes > 0 || openedEffectRecorders.Count == 0) // same card instance + effect already invoked in opened chains
 		{

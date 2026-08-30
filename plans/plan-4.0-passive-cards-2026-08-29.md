@@ -2,7 +2,7 @@
 
 日期：2026-08-29
 上游：`plans/plan-4.0-implementation-roadmap-2026-08-28.md` 第 3 步；`docs/4.0_CardDesc_Spec.md` §Passive Cards（ratified 2026-08-26；per-event firing ratified 2026-08-28）
-状态：**计划待审**。审过后需用户明示「修改代码」才实施。
+状态：**已实施（2026-08-29，用户明示「修改代码」后执行）**。开放问题裁决：#1 自定义顺序不含被动、强制垫底 ✓；#2 被动物理表现交由现有布局，实施后视觉验证待做；#3 TAINT 相邻语义留待第 5 步前拍板。
 
 ## 1. 设计基线（spec 摘录）
 

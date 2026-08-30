@@ -81,7 +81,7 @@ public class StageEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript) || (excludeSelf && card == myCard))
+			if (!cardScript.myTags.Contains(tagToCheck) || IsCardAtTop(card) || cardScript.isMinion || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || (excludeSelf && card == myCard))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -102,7 +102,7 @@ public class StageEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion || (excludeSelf && card == myCard))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -123,7 +123,7 @@ public class StageEffect : EffectScript
 		{
 			var card = myTokens[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || !cardScript.isMinion || (excludeSelf && card == myCard))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || !cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				myTokens.RemoveAt(i);
 			}
@@ -144,7 +144,7 @@ public class StageEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion || (excludeSelf && card == myCard))
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion || (excludeSelf && card == myCard))
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -165,7 +165,7 @@ public class StageEffect : EffectScript
 		{
 			var card = cardsWithTag[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion)
+			if (!cardScript.myTags.Contains(tagToCheck) || CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion)
 			{
 				cardsWithTag.RemoveAt(i);
 			}
@@ -192,10 +192,11 @@ public class StageEffect : EffectScript
 			var cardScript = card.GetComponent<CardScript>();
 			
 			// Exclude non-Minion cards, non-own cards, cards already at top, and cards to skip
-			if (!cardScript.isMinion || 
-			    CombatManager.ShouldSkipEffectProcessing(cardScript) || 
-			    cardScript.myStatusRef != myCardScript.myStatusRef || 
-			    IsCardAtTop(card) || 
+			if (!cardScript.isMinion ||
+			    CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    cardScript.isPassive ||
+			    cardScript.myStatusRef != myCardScript.myStatusRef ||
+			    IsCardAtTop(card) ||
 			    (excludeSelf && card == myCard))
 			{
 				friendlyMinions.RemoveAt(i);
@@ -237,9 +238,10 @@ public class StageEffect : EffectScript
 		{
 			var card = matchingCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || 
-			    cardScript.myStatusRef == myCardScript.myStatusRef || 
-			    IsCardAtTop(card) || 
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    cardScript.isPassive ||
+			    cardScript.myStatusRef == myCardScript.myStatusRef ||
+			    IsCardAtTop(card) ||
 			    cardScript.isMinion ||
 			    cardScript.cardTypeID != targetCardTypeID)
 			{
@@ -279,6 +281,7 @@ public class StageEffect : EffectScript
 			var cardScript = card.GetComponent<CardScript>();
 			bool isFriendly = cardScript.myStatusRef == myCardScript.myStatusRef;
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    cardScript.isPassive ||
 			    isFriendly != targetFriendly ||
 			    IsCardAtTop(card) ||
 			    cardScript.isMinion ||
@@ -339,6 +342,7 @@ public class StageEffect : EffectScript
 			var cardScript = card.GetComponent<CardScript>();
 			bool isFriendly = cardScript.myStatusRef == myCardScript.myStatusRef;
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript) ||
+			    cardScript.isPassive ||
 			    isFriendly != targetFriendly ||
 			    IsCardAtTop(card) ||
 			    cardScript.isMinion ||

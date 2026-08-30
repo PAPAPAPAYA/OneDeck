@@ -59,8 +59,9 @@ public class CardManipulationEffect : EffectScript
 		{
 			var card = _combinedDeck[i];
 			var cardScript = card.GetComponent<CardScript>();
-			// Skip neutral cards and Start Card
+			// Skip neutral cards, Start Card and 4.0 passive cards (immovable)
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+			if (cardScript.isPassive) continue;
 			bool isOwner = cardScript.myStatusRef == myCardScript.myStatusRef;
 			// Only return cards with correct ownership and index > 0 (cards at index 0 cannot be delayed)
 			if (isOwner == isMyCards && i > 0)

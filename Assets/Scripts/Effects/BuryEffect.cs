@@ -244,7 +244,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard) || IsCardBelowStartCard(card))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard) || IsCardBelowStartCard(card))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -264,11 +264,17 @@ public class BuryEffect : EffectScript
 	/// <param name="amount">Number of cards to bury</param>
 	public void BuryNextXCards(int amount)
 	{
+		// Entry log BEFORE the amount guard: an amount<=0 silent return must be visible here.
+		TestManager.Log("[BuryEffect] BuryNextXCards ENTER amount=" + amount + " myCard=" + (myCard != null ? myCard.name : "null"));
 		if (amount <= 0) return;
 		_combinedDeck = combatManager.combinedDeckZone;
 		TestManager.Log("[BuryEffect] BuryNextXCards START amount=" + amount + " myCard=" + myCard.name + " inReveal=" + (combatManager.revealZone != null && combatManager.revealZone == myCard) + " deckCount=" + _combinedDeck.Count);
 		int startIndex;
-		if (combatManager.revealZone != null && combatManager.revealZone == myCard)
+		// 4.0 passive cards live below the Start Card permanently. Their 埋葬卡组顶N卡 targets
+		// the live-zone deck top, so route them through the top-start branch; the below-Start-Card
+		// source guard exists to stop grave cards digging the grave and must not apply to passives
+		// (RELIC_CHAIN_BURIAL regression 2026-08-30).
+		if ((combatManager.revealZone != null && combatManager.revealZone == myCard) || (myCardScript != null && myCardScript.isPassive))
 		{
 			startIndex = _combinedDeck.Count - 1;
 		}
@@ -286,7 +292,11 @@ public class BuryEffect : EffectScript
 			if (currentIndex < 0) return;
 			// If this card is already below the Start Card, it cannot bury anything toward the bottom
 			// TEST-ONLY(2026-07-31): bypassed when ignoreStartCardBoundary is on.
-			if (!ignoreStartCardBoundary && IsCardBelowStartCard(myCard)) return;
+			if (!ignoreStartCardBoundary && IsCardBelowStartCard(myCard))
+			{
+				TestManager.Log("[BuryEffect] BuryNextXCards blocked: source below Start Card");
+				return;
+			}
 			startIndex = currentIndex - 1;
 		}
 		int startCardIndex = GetStartCardIndex();
@@ -301,6 +311,7 @@ public class BuryEffect : EffectScript
 			if (targetCardScript == null) continue;
 			// TEST-ONLY(2026-07-31): ignoreStartCardBoundary lets the neutral Start Card become a valid target.
 			if (!ignoreStartCardBoundary && CombatManager.ShouldSkipEffectProcessing(targetCardScript)) continue;
+			if (targetCardScript.isPassive) continue; // 4.0 passive cards are immovable, even past the Start Card boundary
 			if (targetCardScript.isMinion) continue;
 			if (IsCardAtBottom(targetCard)) continue;
 			cardsToBury.Add(targetCard);

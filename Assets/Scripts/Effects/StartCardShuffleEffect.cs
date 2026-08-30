@@ -86,6 +86,27 @@ public class StartCardShuffleEffect : MonoBehaviour
 			cm.combinedDeckZone = otherCards;
 		}
 
+		// 4.0 passive cards: passives never shuffle into the live queue. After every shuffle
+		// (combat start included) they are re-pinned below the Start Card (index < startCardIndex,
+		// grave side) — the reveal pointer reaches the Start Card first, so a passive can never
+		// be popped. Applies to both the standard and the ShuffleOrderOverride branch: passives
+		// do not participate in custom orders.
+		var passiveCards = new List<GameObject>();
+		foreach (var card in cm.combinedDeckZone)
+		{
+			var cardScript = card != null ? card.GetComponent<CardScript>() : null;
+			if (cardScript != null && cardScript.isPassive)
+				passiveCards.Add(card);
+		}
+		if (passiveCards.Count > 0)
+		{
+			foreach (var passive in passiveCards)
+				cm.combinedDeckZone.Remove(passive);
+			// Insert at index 0 in reverse order so the original relative order is preserved.
+			for (int i = passiveCards.Count - 1; i >= 0; i--)
+				cm.combinedDeckZone.Insert(0, passiveCards[i]);
+		}
+
 		// Logic: set post-shuffle flags (moved from TriggerStartCardEffect callback)
 		cm.SetRaiseAfterShuffleOnNextReveal(true);
 		cm.ResetShuffleTrackersPublic();
