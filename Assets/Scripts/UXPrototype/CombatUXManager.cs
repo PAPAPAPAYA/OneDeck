@@ -544,6 +544,32 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				targetScaleOverride = GetDeckScaleAtIndex(index, effectiveCount),
 				onComplete = wrappedOnComplete
 			};
+			// VISUAL-FIX(2026-08-30): Reveal-to-bottom return flight ignores the in-flight peel-deck restore
+			//   Cause:    ReleaseDeckFocus starts RestoreDeckFocusCoroutine fire-and-forget and input
+			//             unblocks the same frame while the restore tweens (raw transform.DOMove/DOScale)
+			//             still run. The next click's PutRevealedCardToBottom -> MoveRevealedCardToIndex
+			//             then started the return arc immediately: no IsDeckFocused guard (unlike
+			//             PlayRequestCoroutine's deck-move guard) and no pendingRevealZoneMove-style
+			//             deferral (unlike the reveal flight); MoveCardWithAnimation's KillTweens only
+			//             kills physScript-tracked tweens, so the restore's delayed reveal-card DOMove
+			//             fought the arc and dragged the card back toward the reveal position after it
+			//             had landed at the deck bottom.
+			//   Fix:      Bookkeeping (deck insert / reveal-zone clear / cover flip / target snapshot)
+			//             stays immediate; only MoveCardWithAnimation is deferred until _isDeckFocused
+			//             clears (restore finished its tweens and its final UpdateAllPhysicalCardTargets),
+			//             so at flight start no restore tween is left on the card to fight.
+			//   Affects:  CombatUXManager.MoveRevealedCardToIndex (reveal-card return-to-bottom and the
+			//             life-bounce MoveRevealedCardToIndex call)
+			//   Regress:  Deck with an off-reveal attack card (e.g. SPIKE_SKELETON): after the attack
+			//             batch ends, click again within the restore window (~0.2-0.8s). The returned
+			//             card waits face-down at the reveal position until the deck finishes restoring,
+			//             then arcs once to the bottom slot with no bounce back to the reveal position.
+			//             Non-focused reveals unchanged (immediate arc).
+			if (_isDeckFocused)
+			{
+				StartCoroutine(PlayRevealedCardReturnFlightWhenRestoreCompletes(card, physicalCard, config, onComplete));
+				return;
+			}
 			MoveCardWithAnimation(card, config);
 		}
 		else
@@ -560,6 +586,26 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public void MoveRevealedCardToBottom(GameObject card, Action onComplete = null)
 	{
 		MoveRevealedCardToIndex(card, 0, onComplete);
+	}
+
+	/// <summary>
+	/// Deferred reveal-card return flight: waits until the in-flight peel-deck restore
+	/// (RestoreDeckFocusCoroutine) has finished, then starts the snapshotted arc.
+	/// ReleaseDeckFocus always starts the restore before input unblocks, so !_isDeckFocused
+	/// here means the restore tweens completed and its final UpdateAllPhysicalCardTargets ran;
+	/// no restore tween can remain on the card to fight the flight. Only the visual flight
+	/// is deferred — MoveRevealedCardToIndex already applied the bookkeeping and the target
+	/// snapshot at call time, keeping the effectiveCount arithmetic order-dependent-correct.
+	/// </summary>
+	private IEnumerator PlayRevealedCardReturnFlightWhenRestoreCompletes(GameObject card, GameObject physicalCard, CardMoveConfig config, Action onComplete)
+	{
+		yield return new WaitUntil(() => !_isDeckFocused);
+		if (card == null || physicalCard == null)
+		{
+			onComplete?.Invoke();
+			yield break;
+		}
+		MoveCardWithAnimation(card, config);
 	}
 
 	#endregion
