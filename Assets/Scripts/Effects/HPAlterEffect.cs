@@ -24,7 +24,7 @@ public class HPAlterEffect : EffectScript
 	[Tooltip("Mark if damage is caused by status effect (status effect damage doesn't trigger attack animation)")]
 	public bool isStatusEffectDamage = false;
 	
-	[Tooltip("Extra damage value - used for DecreaseMyHp and DecreaseTheirHp")]
+	[Tooltip("DEPRECATED: do not add on new effects/prefabs - 4.0 attack cards use the attack attribute (printedAttack) instead. Legacy addend still applied by DecreaseMyHp/DecreaseTheirHp/AttackEffect on old prefabs.")]
 	public int extraDmg = 0;
 	
 	[Header("Status Effect Count Configuration")]

@@ -68,7 +68,6 @@ public class CardScript : MonoBehaviour
 	[HideInInspector]
 	public int attackModThisRound;
 	[Tooltip("Permanent extra attack segments (attack +N times). Stackable; preserved through bury/stage.")]
-	[HideInInspector]
 	public int extraAttackTimes;
 
 	/// <summary>
