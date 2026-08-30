@@ -54,6 +54,12 @@ public class ShopManager : MonoBehaviour
 	public int shopItemAmount;
 	public IntSO payCheck;
 	public IntSO RerollPriceRef;
+	[Tooltip("Price for Common rarity cards, resolved from CardScript.rarity")]
+	public IntSO CommonPriceRef;
+	[Tooltip("Price for Uncommon rarity cards, resolved from CardScript.rarity")]
+	public IntSO UncommonPriceRef;
+	[Tooltip("Price for Rare rarity cards, resolved from CardScript.rarity")]
+	public IntSO RarePriceRef;
 	[TextArea]
 	[Tooltip("button prompts and other general info")]
 	public string phaseInfo;
@@ -84,6 +90,26 @@ public class ShopManager : MonoBehaviour
 			if (bestMatch != null) return bestMatch;
 		}
 		return rarityWeightRef;
+	}
+
+	/// <summary>
+	/// Resolves a card's shop price from its prefab rarity (Common/Uncommon/Rare price refs).
+	/// Returns 0 with a warning if the matching ref is not wired.
+	/// </summary>
+	public int GetCardPrice(CardScript cardScript)
+	{
+		IntSO priceRef = cardScript.rarity switch
+		{
+			EnumStorage.Rarity.Uncommon => UncommonPriceRef,
+			EnumStorage.Rarity.Rare => RarePriceRef,
+			_ => CommonPriceRef,
+		};
+		if (priceRef == null)
+		{
+			Debug.LogWarning($"[ShopManager] {cardScript.rarity}PriceRef not wired; returning price 0 for card '{cardScript.GetDisplayName()}'", this);
+			return 0;
+		}
+		return priceRef.value;
 	}
 
 	[Header("UI objects")]
@@ -192,8 +218,9 @@ public class ShopManager : MonoBehaviour
 				if (actualSize >= deckSize.value) return; // check if player deck not full
 			}
 		}
-		if (purse.value < cardToBuyScript.price.value) return; // check if affordable
-		purse.value -= cardToBuyScript.price.value; // pay the price
+		int buyPrice = GetCardPrice(cardToBuyScript);
+		if (purse.value < buyPrice) return; // check if affordable
+		purse.value -= buyPrice; // pay the price
 
 		// Add the card to player deck regardless of whether it takes up space
 		playerDeckRef.deck.Add(cardToBuy);
@@ -229,7 +256,7 @@ public class ShopManager : MonoBehaviour
 		var cardToSell = playerDeckRef.deck[cardIndex]; // store card player tyring to sell
 		var cardScript = cardToSell.GetComponent<CardScript>();
 		if (!cardScript.takeUpSpace) return; // non-space cards cannot be sold
-		purse.value += cardScript.price.value / 2; // get the money
+		purse.value += GetCardPrice(cardScript) / 2; // get the money
 		playerDeckRef.deck.Remove(cardToSell); // remove it from player deck
 		
 		// Notify ShopUXManager to handle sell animation
@@ -322,7 +349,7 @@ public class ShopManager : MonoBehaviour
 			_deckInfoStr +=
 				"#" + displayIndex + " <size=+2><b>" + // number
 				card.name + // name
-				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + cardScript.price.value / 2 + "</color>" + // price
+				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + GetCardPrice(cardScript) / 2 + "</color>" + // price
 				"\n" + cardScript.GetCardDescForDisplay() + "\n\n"; // desc
 			displayIndex++;
 		}
@@ -408,7 +435,7 @@ public class ShopManager : MonoBehaviour
 			_shopInfoStr +=
 				"#" + (i + 1) + " <size=+2><b>" + // number
 				card.name + // name
-				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + cardScript.price.value + "</color>" + // price
+				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + GetCardPrice(cardScript) + "</color>" + // price
 				"\n" + cardScript.GetCardDescForDisplay() + "\n\n"; // desc
 		}
 	}

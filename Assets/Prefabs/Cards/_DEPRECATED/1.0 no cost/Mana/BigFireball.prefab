@@ -169,7 +169,6 @@ MonoBehaviour:
   cardTypeID: MANA_BIG_FIREBALL
   cardDesc: 'MANA <color=yellow>2</color>: deal <color=red>5</color> dmg'
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

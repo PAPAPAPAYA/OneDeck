@@ -51,7 +51,6 @@ MonoBehaviour:
   cardTypeID: INFECT_TAINTED_SWORD
   cardDesc: '[INFECTED] deal <color=red>3</color> dmg to <color=orange>enemy</color>'
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 01000000

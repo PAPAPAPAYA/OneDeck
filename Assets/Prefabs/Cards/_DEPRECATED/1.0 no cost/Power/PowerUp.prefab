@@ -132,7 +132,6 @@ MonoBehaviour:
   cardTypeID: POWER_UP
   cardDesc: Give [POWER] to my <color=yellow>1</color> card
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

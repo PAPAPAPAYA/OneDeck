@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: SYSTEM_INCREASE_DECK_SIZE
+  cardTypeID: SYSTEM_INCREASE_DECK_SIZE_LITE
   displayName: "\u5361\u4F4D\u589E\u52A0 <\u5C0F>"
   cardDesc: "\u5361\u4F4D\u589E\u52A0 <b>1</b>"
   rarity: 0
@@ -134,12 +134,19 @@ MonoBehaviour:
   takeUpSpace: 0
   isStartCard: 0
   isMinion: 0
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
+  printedAttack: 0
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
+  isCreature: 0
+  isPassive: 0
 --- !u!114 &7982320352536632933
 MonoBehaviour:
   m_ObjectHideFlags: 0

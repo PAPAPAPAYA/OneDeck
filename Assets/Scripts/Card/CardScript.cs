@@ -41,7 +41,6 @@ public class CardScript : MonoBehaviour
 	
 	[HideInInspector]
 	public bool isMinion = false;
-	public IntSO price;
 	[HideInInspector]
 	public PlayerStatusSO myStatusRef;
 	[HideInInspector]

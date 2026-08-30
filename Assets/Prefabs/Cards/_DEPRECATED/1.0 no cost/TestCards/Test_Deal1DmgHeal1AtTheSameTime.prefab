@@ -142,7 +142,6 @@ MonoBehaviour:
   cardTypeID: TEST_DEAL_HEAL_SIMULTANEOUS
   cardDesc: deal <color=red>1</color> dmg and heal <color=#90EE90>1</color>
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

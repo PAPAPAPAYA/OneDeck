@@ -134,7 +134,6 @@ MonoBehaviour:
   cardTypeID: INFECT_PANDEMIC
   cardDesc: 'give <color=yellow>5</color> cards [INFECTED]'
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

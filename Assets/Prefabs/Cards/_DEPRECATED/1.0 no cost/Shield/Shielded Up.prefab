@@ -128,7 +128,6 @@ MonoBehaviour:
   cardTypeID: SHIELD_UP
   cardDesc: Give <color=#87CEEB>self</color> <color=grey>2</color> shield
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

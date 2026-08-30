@@ -36,6 +36,25 @@ MonoBehaviour:
   - {fileID: 4415592718418061644, guid: cd9bf6ed8696ba245baf8f94815a5d4c, type: 3}
   - {fileID: 3189408098577880931, guid: 0daa69e5df0835f43af8209467ffe614, type: 3}
   - {fileID: 2419164153547357531, guid: 4f192b614d3e4ff48b9c1d55b82c58b1, type: 3}
+  - {fileID: 6426072152774848527, guid: b78f1e5b10b14cb45b484d70fc665660, type: 3}
+  - {fileID: 5921432111190364078, guid: 681169509e6a79a4db4ed814acf5ebcc, type: 3}
+  - {fileID: 6788459959842888888, guid: 654601b6a1032354c860c207baabd80c, type: 3}
+  - {fileID: 8068817894315566442, guid: efe88e437fada064380d0af0a503f1f4, type: 3}
+  - {fileID: 4234701159843460202, guid: 2ff0d605689de9d4596fffff1942ef7a, type: 3}
+  - {fileID: 5490173269118527125, guid: 13da00c066ffd8e4cade1d1f846d8b6a, type: 3}
+  - {fileID: 6255656830937950422, guid: a8cc8cd55a400a346b2ef277940f06b8, type: 3}
+  - {fileID: 6271165812255583210, guid: 6c521106fbf18d44facd3e23be052699, type: 3}
+  - {fileID: 4799648258096951890, guid: 59ffb3892fae58945a1b7d3de7cf048f, type: 3}
+  - {fileID: 4631307286910283563, guid: ee522cd0a5ba02e4aa4d5a4f108ab6b2, type: 3}
+  - {fileID: 5281604472113932247, guid: dca372f0697869c48934952fa420406e, type: 3}
+  - {fileID: 934165746231847622, guid: bc51c8794b606994fae4391bb3342401, type: 3}
+  - {fileID: 1860800737360920155, guid: a9b6de7a8a808a745a392defa668562c, type: 3}
+  - {fileID: 2442007537460743328, guid: 7c8a4109364536644b3b5172c46338d6, type: 3}
+  - {fileID: 493742481629662078, guid: 98c32f0924bf26e4fa31ba05ae19aeaf, type: 3}
+  - {fileID: 4351262439919075274, guid: 6a0c4305884d93e43bea828342c42a1b, type: 3}
+  - {fileID: 352167551154994552, guid: 0381c7e3deae3b5438d863fd27e04ceb, type: 3}
+  - {fileID: 9079975747741187427, guid: e1eea97f3bc461b4fa852f0f0a4e419a, type: 3}
+  - {fileID: 7244662139998542197, guid: 787fafbe4229ffc498e4676027fbc971, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
-  description: shop pool
+  description: shop pool for testing

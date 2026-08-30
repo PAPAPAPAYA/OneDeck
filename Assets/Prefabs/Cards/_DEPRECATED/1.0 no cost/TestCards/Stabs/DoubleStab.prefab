@@ -211,7 +211,6 @@ MonoBehaviour:
   cardTypeID: TEST_DOUBLE_STAB
   cardDesc: deal <color=red>1</color> dmg <color=yellow>2</color> times
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

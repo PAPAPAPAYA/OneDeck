@@ -210,7 +210,6 @@ MonoBehaviour:
   cardDesc: "add a illness; \nDEATH RATTLE: deal <color=red>4</color> dmg\n[Illness:
     [INFECTED]"
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

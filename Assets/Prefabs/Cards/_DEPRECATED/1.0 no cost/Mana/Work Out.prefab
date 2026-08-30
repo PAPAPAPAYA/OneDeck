@@ -175,7 +175,6 @@ MonoBehaviour:
   cardDesc: 'MANA <color=yellow>2</color>: give <color=yellow>3</color> [POWER among
     your cards'
   takeUpSpace: 1
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

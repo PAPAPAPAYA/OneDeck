@@ -62,9 +62,8 @@ public class ShopCardView : MonoBehaviour
 
 		_cardPhysObj.cardPricePrint.gameObject.SetActive(true);
 
-		int displayPrice = _cardPhysObj.shopItemIndex >= 0
-			? _cardPhysObj.cardImRepresenting.price.value
-			: _cardPhysObj.cardImRepresenting.price.value / 2;
+		int basePrice = ShopManager.me != null ? ShopManager.me.GetCardPrice(_cardPhysObj.cardImRepresenting) : 0;
+		int displayPrice = _cardPhysObj.shopItemIndex >= 0 ? basePrice : basePrice / 2;
 		_cardPhysObj.cardPricePrint.text = GameColorPalette.Me.highlight.OpenTag + "$" + displayPrice + "</color>";
 	}
 

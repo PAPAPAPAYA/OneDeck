@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 8104819925093118918}
   - component: {fileID: 3390430887469070700}
   m_Layer: 0
-  m_Name: stage friendly
+  m_Name: revive 1 friendly
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -242,7 +242,6 @@ MonoBehaviour:
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 

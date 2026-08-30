@@ -138,7 +138,6 @@ MonoBehaviour:
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
@@ -151,6 +150,7 @@ MonoBehaviour:
   attackModThisRound: 0
   extraAttackTimes: 0
   isCreature: 1
+  isPassive: 0
 --- !u!114 &1417447142227650579
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,7 +247,7 @@ MonoBehaviour:
       - m_Target: {fileID: 7948694953887890582}
         m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
         m_MethodName: Attack
-        m_Mode: 3
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

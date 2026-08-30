@@ -139,7 +139,6 @@ MonoBehaviour:
   takeUpSpace: 1
   isStartCard: 0
   isMinion: 0
-  price: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
@@ -152,6 +151,7 @@ MonoBehaviour:
   attackModThisRound: 0
   extraAttackTimes: 0
   isCreature: 0
+  isPassive: 0
 --- !u!114 &638178398309144577
 MonoBehaviour:
   m_ObjectHideFlags: 0
