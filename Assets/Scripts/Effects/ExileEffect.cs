@@ -325,6 +325,21 @@ public class ExileEffect : EffectScript
 			bool isMyCard = cardScript.myStatusRef == myCardScript.myStatusRef;
 			if (isMyCard)
 			{
+				// 4.0 step-5: self-side exile count by causer side (RIFT_REAPER "每放逐1友方").
+				if (ValueTrackerManager.me != null)
+				{
+					if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+					{
+						if (ValueTrackerManager.me.friendlyExiledByOwnerThisRoundRef != null)
+							ValueTrackerManager.me.friendlyExiledByOwnerThisRoundRef.value++;
+					}
+					else
+					{
+						if (ValueTrackerManager.me.friendlyExiledByEnemyThisRoundRef != null)
+							ValueTrackerManager.me.friendlyExiledByEnemyThisRoundRef.value++;
+					}
+				}
+
 				if (GameEventStorage.me.onFriendlyCardExiled != null)
 				{
 					if (cardScript.myStatusRef == combatManager.ownerPlayerStatusRef)

@@ -11,6 +11,8 @@ namespace DefaultNamespace.Effects
 		[Header("Curse Config")]
 		[Tooltip("Type ID of the curse target card")]
 		public StringSO cardTypeID;
+		[Tooltip("Friendly card type ID counted by EnhanceCurseTimes_BasedOnTypeIDCount (e.g. RIFT for believers)")]
+		public StringSO countTypeID;
 		
 		[Tooltip("Card prefab to spawn when no target card exists in deck")]
 		public GameObject cardPrefab;
@@ -101,6 +103,57 @@ namespace DefaultNamespace.Effects
 			IntSO intSO = GetIntSOForOwner(ownerIntSO, enemyIntSO);
 			if (intSO == null) return;
 			int times = intSO.value;
+			for (int i = 0; i < times; i++)
+			{
+				EnhanceCurse(1);
+			}
+		}
+
+		/// <summary>
+		/// Repeats EnhanceCurse(1) once per point of this card's current attack
+		/// (HEXBLADE "攻击；每有1攻击力，强化1敌方诅咒").
+		/// </summary>
+		public virtual void EnhanceCurseTimes_BasedOnAttack()
+		{
+			int times = myCardScript != null ? myCardScript.GetAttack() : 0;
+			for (int i = 0; i < times; i++)
+			{
+				EnhanceCurse(1);
+			}
+		}
+
+		/// <summary>
+		/// Repeats EnhanceCurse(1) once per FRIENDLY card of the given cardTypeID (SWARM_CURSER
+		/// "每有1友方信徒，强化1敌方诅咒"). Uses countTypeID (e.g. RIFT for believers).
+		/// </summary>
+		public virtual void EnhanceCurseTimes_BasedOnTypeIDCount()
+		{
+			if (countTypeID == null || string.IsNullOrEmpty(countTypeID.value)) return;
+			int times = 0;
+			var deck = combatManager.combinedDeckZone;
+			if (deck != null)
+			{
+				foreach (var cardObj in deck)
+				{
+					if (cardObj == null) continue;
+					var cardScript = cardObj.GetComponent<CardScript>();
+					if (cardScript == null) continue;
+					if (cardScript.myStatusRef != myCardScript.myStatusRef) continue;
+					if (cardScript.cardTypeID != countTypeID.value) continue;
+					if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+					times++;
+				}
+			}
+			if (combatManager.revealZone != null)
+			{
+				var revealScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealScript != null && revealScript.myStatusRef == myCardScript.myStatusRef &&
+				    revealScript.cardTypeID == countTypeID.value &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealScript))
+				{
+					times++;
+				}
+			}
 			for (int i = 0; i < times; i++)
 			{
 				EnhanceCurse(1);

@@ -27,6 +27,12 @@ public class BuryEffect : EffectScript
 	// Only affects BuryNextXCards. Revisit/remove once the test concludes.
 	public bool ignoreStartCardBoundary = false;
 
+	[Header("Creature Filter (4.0 step-5)")]
+	[Tooltip("Narrow BuryMyCards/BuryTheirCards pools (and the max/min attack pickers) to creatures or non-creatures")]
+	public EffectScript.EffectCreatureFilter creatureFilter = EffectScript.EffectCreatureFilter.Any;
+	[Tooltip("For the max/min attack pickers: true = friendly cards, false = enemy cards")]
+	public bool targetFriendly = true;
+
 	/// <summary>
 	/// Get card owner's color tag (delegates to base palette-aware helper)
 	/// </summary>
@@ -146,7 +152,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard) || IsCardBelowStartCard(card))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || (excludeSelf && card == myCard) || IsCardBelowStartCard(card) || !PassesCreatureFilter(cardScript))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -154,6 +160,80 @@ public class BuryEffect : EffectScript
 
 		myCards = UtilityFuncManagerScript.ShuffleList(myCards);
 		BuryChosenCards(myCards, amount);
+	}
+
+	private bool PassesCreatureFilter(CardScript cardScript)
+	{
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.isCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.isCreature) return false;
+		return true;
+	}
+
+	/// <summary>
+	/// Bury as many top-of-deck cards as this card's current attack (MILLBLADE
+	/// "攻击；每有1攻击力，埋葬卡组顶1卡").
+	/// </summary>
+	public void BuryNextXCards_BasedOnAttack()
+	{
+		BuryNextXCards(myCardScript != null ? myCardScript.GetAttack() : 0);
+	}
+
+	/// <summary>
+	/// Bury the 1 card with the highest current attack on the side given by targetFriendly
+	/// (KINGSLAYER "埋葬1攻击力最高敌方"). Ties are broken randomly.
+	/// </summary>
+	public void BuryCardWithMaxAttack()
+	{
+		var card = CardScript.FindCardWithMaxAttack(combatManager.combinedDeckZone, combatManager.revealZone,
+			c => IsBuryable(c) && CardOnTargetSide(c));
+		if (card == null) return;
+		BuryChosenCards(new List<GameObject> { card.gameObject }, 1);
+	}
+
+	/// <summary>
+	/// Bury the 1 card with the lowest current attack on the side given by targetFriendly
+	/// (SACRIFICE_WEAKEST "埋葬1攻击力最低友方"). Positive-attack cards only, ties random.
+	/// </summary>
+	public void BuryCardWithMinAttack()
+	{
+		var card = CardScript.FindCardWithMinAttack(combatManager.combinedDeckZone, combatManager.revealZone,
+			c => IsBuryable(c) && CardOnTargetSide(c) && c.GetAttack() > 0);
+		if (card == null) return;
+		BuryChosenCards(new List<GameObject> { card.gameObject }, 1);
+	}
+
+	/// <summary>
+	/// Bury N friendly cards where N = baseCount - (this round's friendly burials of MY cards,
+	/// victim-side counter: my sacrificed + enemy-buried both count) (DECIMATION
+	/// "埋葬6友方，本回合每埋葬过1友方，埋葬数-1"). Negative clamps to 0.
+	/// </summary>
+	public void BuryMyCards_CountBasedOnBuried(int baseCount)
+	{
+		int buriedThisRound = 0;
+		if (ValueTrackerManager.me != null && myCardScript != null &&
+		    myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+		{
+			buriedThisRound = ValueTrackerManager.me.ownerCardsBuriedCountRef != null
+				? ValueTrackerManager.me.ownerCardsBuriedCountRef.value : 0;
+		}
+		BuryMyCards(baseCount - buriedThisRound);
+	}
+
+	private bool CardOnTargetSide(CardScript cardScript)
+	{
+		return targetFriendly
+			? cardScript.myStatusRef == myCardScript.myStatusRef
+			: cardScript.myStatusRef != myCardScript.myStatusRef;
+	}
+
+	private bool IsBuryable(CardScript cardScript)
+	{
+		if (cardScript == null || CombatManager.ShouldSkipEffectProcessing(cardScript)) return false;
+		if (cardScript.isMinion || cardScript.isPassive) return false;
+		if (!PassesCreatureFilter(cardScript)) return false;
+		if (excludeSelf && cardScript == myCardScript) return false;
+		if (IsCardAtBottom(cardScript.gameObject) || IsCardBelowStartCard(cardScript.gameObject)) return false;
+		return true;
 	}
 
 	public void BuryMyCardsWithTag(int amount)
@@ -188,7 +268,7 @@ public class BuryEffect : EffectScript
 		{
 			var card = theirCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || IsCardBelowStartCard(card))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.myStatusRef == myCardScript.myStatusRef || IsCardAtBottom(card) || cardScript.isMinion || IsCardBelowStartCard(card) || !PassesCreatureFilter(cardScript))
 			{
 				theirCards.RemoveAt(i);
 			}

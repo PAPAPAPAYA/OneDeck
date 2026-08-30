@@ -1062,6 +1062,11 @@ public class CombatManager : MonoBehaviour
 			// 4.0 E4: causer-based per-round creature-burial counters
 			if (ValueTrackerManager.me.creaturesBuriedByOwnerThisRoundRef != null) ValueTrackerManager.me.creaturesBuriedByOwnerThisRoundRef.value = 0;
 			if (ValueTrackerManager.me.creaturesBuriedByEnemyThisRoundRef != null) ValueTrackerManager.me.creaturesBuriedByEnemyThisRoundRef.value = 0;
+			// 4.0 step-5: per-round grave-creature aura + self-exile counters
+			if (ValueTrackerManager.me.graveCreatureAuraOwnerThisRoundRef != null) ValueTrackerManager.me.graveCreatureAuraOwnerThisRoundRef.value = 0;
+			if (ValueTrackerManager.me.graveCreatureAuraEnemyThisRoundRef != null) ValueTrackerManager.me.graveCreatureAuraEnemyThisRoundRef.value = 0;
+			if (ValueTrackerManager.me.friendlyExiledByOwnerThisRoundRef != null) ValueTrackerManager.me.friendlyExiledByOwnerThisRoundRef.value = 0;
+			if (ValueTrackerManager.me.friendlyExiledByEnemyThisRoundRef != null) ValueTrackerManager.me.friendlyExiledByEnemyThisRoundRef.value = 0;
 		}
 
 		// Round start event

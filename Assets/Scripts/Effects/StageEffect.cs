@@ -21,6 +21,8 @@ public class StageEffect : EffectScript
 	public bool excludeSelf = true;
 	[Tooltip("If true, StageCardWithMaxAttack only considers creatures (FINAL_ESCORT 置顶1友方攻击力最高生物)")]
 	public bool creatureOnly = false;
+	[Tooltip("Narrow the StageMyCards pool to creatures or non-creatures (DEATHBED_PORTER 置顶1友方非生物)")]
+	public EffectScript.EffectCreatureFilter creatureFilter = EffectScript.EffectCreatureFilter.Any;
 
 	[Header("Based on IntSO")]
 	[Tooltip("IntSO used when this card belongs to the owner/player")]
@@ -104,7 +106,7 @@ public class StageEffect : EffectScript
 		{
 			var card = myCards[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion || (excludeSelf && card == myCard))
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript) || cardScript.isPassive || cardScript.myStatusRef != myCardScript.myStatusRef || IsCardAtTop(card) || cardScript.isMinion || (excludeSelf && card == myCard) || !PassesCreatureFilter(cardScript))
 			{
 				myCards.RemoveAt(i);
 			}
@@ -322,6 +324,13 @@ public class StageEffect : EffectScript
 		// Randomly select one and stage it
 		topCards = UtilityFuncManagerScript.ShuffleList(topCards);
 		StageChosenCards(topCards, 1);
+	}
+
+	private bool PassesCreatureFilter(CardScript cardScript)
+	{
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.isCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.isCreature) return false;
+		return true;
 	}
 
 	/// <summary>

@@ -35,6 +35,8 @@ public class ReviveEffect : EffectScript
 	public ReviveRarityFilter rarityFilter = ReviveRarityFilter.Any;
 	[Tooltip("True = land at the Start Card tail (index startCardIndex + 1, R2-bounce slot) instead of the deck top")]
 	public bool delayedRevive = false;
+	[Tooltip("True = only cards with permanent attack growth > 0 (4.0 【被强化】) are eligible (ELITE_REVIVER)")]
+	public bool onlyEnhanced = false;
 
 	[Header("Tag Configuration")]
 	public List<EnumStorage.Tag> tagsToCheck;
@@ -105,6 +107,7 @@ public class ReviveEffect : EffectScript
 	{
 		if (creatureFilter == CreatureFilter.Creature && !cardScript.isCreature) return false;
 		if (creatureFilter == CreatureFilter.NonCreature && cardScript.isCreature) return false;
+		if (onlyEnhanced && cardScript.attackGrowth <= 0) return false;
 		if (!string.IsNullOrEmpty(typeIDFilter) && cardScript.cardTypeID != typeIDFilter) return false;
 		if (rarityFilter != ReviveRarityFilter.Any)
 		{

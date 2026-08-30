@@ -263,8 +263,7 @@ namespace DefaultNamespace.Effects
 		/// Give attack to X random friendly cards based on ValueTrackerManager staged values
 		/// (ELDER_SORCERER — "本回合每置顶 1 张友方卡:给予 1 张友方卡 1 攻击力").
 		/// </summary>
-		public virtual void GiveAttackToXFriendly_BasedOnStaged(int layerCount)
-		{
+		public virtual void GiveAttackToXFriendly_BasedOnStaged(int layerCount)		{
 			if (layerCount <= 0) return;
 			if (ValueTrackerManager.me == null) return;
 
@@ -289,6 +288,42 @@ namespace DefaultNamespace.Effects
 			GiveAttackToXFriendly();
 			xFriendlyCount = originalXFriendlyCount;
 			yFriendlyLayerCount = originalYFriendlyLayerCount;
+		}
+
+		/// <summary>
+		/// Apply a THIS-ROUND attack modifier to every creature on both sides except curse cards
+		/// (WEAKENING_FIELD "除了【诅咒】，所有生物本回合攻击力-1"). Uses CardScript.ModifyAttackThisRound
+		/// — this is not a 强化 grant, so no attack-gain events fire (the round reset clears it).
+		/// </summary>
+		public virtual void ModifyAllCreatureAttackThisRoundExceptCurse(int delta)
+		{
+			if (delta == 0) return;
+			var storage = GameEventStorage.me;
+			string curseType = storage != null && storage.curseCardTypeID != null ? storage.curseCardTypeID.value : null;
+			var deck = combatManager.combinedDeckZone;
+			if (deck != null)
+			{
+				foreach (var cardObj in deck)
+				{
+					if (cardObj == null) continue;
+					var cardScript = cardObj.GetComponent<CardScript>();
+					if (cardScript == null || !cardScript.isCreature) continue;
+					if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+					if (!string.IsNullOrEmpty(curseType) && cardScript.cardTypeID == curseType) continue;
+					cardScript.ModifyAttackThisRound(delta);
+				}
+			}
+			if (combatManager.revealZone != null)
+			{
+				var revealScript = combatManager.revealZone.GetComponent<CardScript>();
+				if (revealScript != null && revealScript.isCreature &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealScript) &&
+				    (string.IsNullOrEmpty(curseType) || revealScript.cardTypeID != curseType))
+				{
+					revealScript.ModifyAttackThisRound(delta);
+				}
+			}
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
 		}
 	}
 }

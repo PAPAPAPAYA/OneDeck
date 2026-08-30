@@ -109,15 +109,45 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	public int GetAttack()
 	{
-		if (_attackResolver == null) return printedAttack + attackGrowth + attackModThisRound;
+		if (_attackResolver == null) return printedAttack + attackGrowth + attackModThisRound + GetGraveCreatureAttackAura();
 		// Cycle cut: a reentry while this card's own resolver is still on the stack (a resolver
 		// graph reading this card's attack, e.g. two FriendlyCardTotal carriers reading each
 		// other) resolves to the base attack instead of recursing forever. The flag is cleared
 		// even if the resolver throws.
 		if (_resolvingAttack) return printedAttack + attackGrowth + attackModThisRound;
 		_resolvingAttack = true;
-		try { return _attackResolver(); }
+		try { return _attackResolver() + GetGraveCreatureAttackAura(); }
 		finally { _resolvingAttack = false; }
+	}
+
+	/// <summary>
+	/// RELIC_GRAVE_LORD (4.0 step-5): friendly creatures resting in the graveyard (index below
+	/// the start card) get +N attack from their side's per-round grave aura. 0 outside combat.
+	/// </summary>
+	private int GetGraveCreatureAttackAura()
+	{
+		if (!isCreature) return 0;
+		var tracker = ValueTrackerManager.me;
+		var cm = CombatManager.Me;
+		if (tracker == null || cm == null || myStatusRef == null) return 0;
+		var deck = cm.combinedDeckZone;
+		if (deck == null) return 0;
+
+		// Grave membership: below the start card index.
+		int myIndex = deck.IndexOf(gameObject);
+		if (myIndex < 0) return 0;
+		int startCardIndex = -1;
+		for (int i = 0; i < deck.Count; i++)
+		{
+			var cardScript = deck[i].GetComponent<CardScript>();
+			if (cardScript != null && cardScript.isStartCard) { startCardIndex = i; break; }
+		}
+		if (startCardIndex < 0 || myIndex >= startCardIndex) return 0;
+
+		var aura = myStatusRef == cm.ownerPlayerStatusRef
+			? tracker.graveCreatureAuraOwnerThisRoundRef
+			: tracker.graveCreatureAuraEnemyThisRoundRef;
+		return aura != null ? aura.value : 0;
 	}
 
 	/// <summary>

@@ -5991,6 +5991,10 @@ MonoBehaviour:
   creatureAttackTimesAuraEnemyThisRoundRef: {fileID: 11400000, guid: 219b8e8a850328f4e99d968445112970, type: 2}
   creaturesBuriedByOwnerThisRoundRef: {fileID: 11400000, guid: f1e9d9eeaa7034b4a9610e537c309322, type: 2}
   creaturesBuriedByEnemyThisRoundRef: {fileID: 11400000, guid: 2170fd5facab6324aafa2988b5e07709, type: 2}
+  graveCreatureAuraOwnerThisRoundRef: {fileID: 11400000, guid: 8dc53c20f8b89394f94bad2d78760a05, type: 2}
+  graveCreatureAuraEnemyThisRoundRef: {fileID: 11400000, guid: 81f7807c86733844d80f25cd7181e8b9, type: 2}
+  friendlyExiledByOwnerThisRoundRef: {fileID: 11400000, guid: 6d4bd851672174f49b4d25b951bb59c9, type: 2}
+  friendlyExiledByEnemyThisRoundRef: {fileID: 11400000, guid: ef9e26934630a07498856a585e9718e7, type: 2}
   lastAppliedStatusEffectRef: {fileID: 11400000, guid: 784ae6b6c3e1c174aa1796b5c77244b5, type: 2}
   lastAppliedStatusEffectAmountRef: {fileID: 11400000, guid: d9129ef7354701a4ab1cb01bf8842cdc, type: 2}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}

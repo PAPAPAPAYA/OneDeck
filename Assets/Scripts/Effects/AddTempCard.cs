@@ -32,6 +32,19 @@ namespace DefaultNamespace.Effects
 			}
 		}
 
+		/// <summary>
+		/// Add one card per point of this card's current attack (SWARM_QUEEN "每有1攻击力，生成1信徒").
+		/// </summary>
+		public void AddCardToMe_BasedOnAttack(GameObject cardToAdd)
+		{
+			int count = myCardScript != null ? myCardScript.GetAttack() : 0;
+			for (int i = 0; i < count; i++)
+			{
+				GameObject newCard = CombatFuncs.me.AddCard_TargetSpecific(cardToAdd, myCardScript.myStatusRef, myCardScript);
+				CapturePopUpSlotInForNewCard(newCard);
+			}
+		}
+
 		public void AddCardToThem(GameObject cardToAdd)
 		{
 			for (int i = 0; i < cardCount; i++)

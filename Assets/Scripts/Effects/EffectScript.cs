@@ -6,6 +6,11 @@ using DefaultNamespace.Managers;
 
 public class EffectScript : MonoBehaviour
 {
+	/// <summary>
+	/// Creature membership filter for movement-effect pools (4.0 step-5): BuryEffect and
+	/// StageEffect use this; ReviveEffect keeps its own nested CreatureFilter enum.
+	/// </summary>
+	public enum EffectCreatureFilter { Any, Creature, NonCreature }
 
 	protected CombatManager combatManager;
 	protected GameObject myCard;

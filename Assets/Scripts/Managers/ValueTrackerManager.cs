@@ -38,6 +38,16 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO creaturesBuriedByOwnerThisRoundRef;
 	public IntSO creaturesBuriedByEnemyThisRoundRef;
 
+	[Header("GraveCreatureAura (4.0 step-5)")]
+	[Tooltip("Per-round attack bonus for friendly creatures resting in the graveyard (RELIC_GRAVE_LORD). Set by the passive carrier on each shuffle; reset at every round start.")]
+	public IntSO graveCreatureAuraOwnerThisRoundRef;
+	public IntSO graveCreatureAuraEnemyThisRoundRef;
+
+	[Header("FriendlyExiledBySide (4.0 step-5)")]
+	[Tooltip("Per-round count of self-side exiles CAUSED by each side (RIFT_REAPER). Reset at every round start.")]
+	public IntSO friendlyExiledByOwnerThisRoundRef;
+	public IntSO friendlyExiledByEnemyThisRoundRef;
+
 	[Header("Last Applied Status Effect")]
 	public StatusEffectSO lastAppliedStatusEffectRef;
 	public IntSO lastAppliedStatusEffectAmountRef;

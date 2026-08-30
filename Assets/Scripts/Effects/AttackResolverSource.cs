@@ -32,6 +32,8 @@ public class AttackResolverSource : MonoBehaviour
 		EnemyNegativeHighest,
 		/// <summary>Highest attack among friendly cards, carrier excluded (MIMIC_BLADE 攻击力=友方最高攻击力).</summary>
 		FriendlyHighest,
+		/// <summary>This round's friendly revives (REANIMATOR 攻击力=本回合复活友方数).</summary>
+		RevivedFriendlyThisRoundCount,
 	}
 
 	[System.Serializable]
@@ -115,6 +117,9 @@ public class AttackResolverSource : MonoBehaviour
 					break;
 				case Source.FriendlyHighest:
 					total += HighestAttack(myCardFaction: true, typeID: null);
+					break;
+				case Source.RevivedFriendlyThisRoundCount:
+					total += RevivedFriendlyCount();
 					break;
 			}
 		}
@@ -235,5 +240,18 @@ public class AttackResolverSource : MonoBehaviour
 			if (attack > highest) highest = attack;
 		}
 		return highest;
+	}
+
+	/// <summary>
+	/// This round's friendly revive count, read from ValueTrackerManager (REANIMATOR).
+	/// </summary>
+	private int RevivedFriendlyCount()
+	{
+		var tracker = ValueTrackerManager.me;
+		if (tracker == null || _cardScript == null || _combatManager == null) return 0;
+		var refValue = _cardScript.myStatusRef == _combatManager.ownerPlayerStatusRef
+			? tracker.ownerRevivedCountThisRoundRef
+			: tracker.enemyRevivedCountThisRoundRef;
+		return refValue != null ? refValue.value : 0;
 	}
 }
