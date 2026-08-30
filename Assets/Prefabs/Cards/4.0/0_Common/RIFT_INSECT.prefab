@@ -215,7 +215,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: RIFT_INSECT
+  cardTypeID: RIFT_INSECT_4.0
   displayName: "\u6B21\u5143\u866B"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]"
   rarity: 0

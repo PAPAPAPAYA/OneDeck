@@ -218,7 +218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: DETERIORATION
+  cardTypeID: DETERIORATION_4.0
   displayName: "\u6076\u5316"
   cardDesc: "\u63ED\u6653\u65F6:\u5F3A\u5316 <b>2</b> \u654C\u65B9[\u8BC5\u5492];\u654C\u65B9[\u8BC5\u5492]\u6BCF\u6709
     <b>3</b> \u653B\u51FB\u529B:\u5F3A\u5316 <b>1</b>"

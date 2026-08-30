@@ -229,7 +229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: BLACKSMITH
+  cardTypeID: BLACKSMITH_4.0
   displayName: "\u94C1\u5320"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u5F3A\u5316 <b>1</b> \u53CB\u65B9\u751F\u7269"
   rarity: 0

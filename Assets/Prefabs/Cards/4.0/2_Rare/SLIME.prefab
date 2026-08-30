@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: SLIME
+  cardTypeID: SLIME_4.0
   displayName: "\u53F2\u83B1\u59C6"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u590D\u5236\u81EA\u8EAB"
   rarity: 2

@@ -229,7 +229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: UNFINISHED_ROBOT
+  cardTypeID: UNFINISHED_ROBOT_4.0
   displayName: "\u672A\u5B8C\u6210\u7684\u673A\u5668\u4EBA"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u653B\u51FB\u529B\u7FFB\u500D"
   rarity: 2

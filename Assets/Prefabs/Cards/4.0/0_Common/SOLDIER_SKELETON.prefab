@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: SOLDIER_SKELETON
+  cardTypeID: SOLDIER_SKELETON_4.0
   displayName: "\u9AB7\u9AC5\u58EB\u5175"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u7F6E\u9876\u81EA\u8EAB"
   rarity: 0

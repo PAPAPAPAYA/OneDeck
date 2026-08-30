@@ -137,7 +137,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: AVENGER
+  cardTypeID: AVENGER_4.0
   displayName: "\u590D\u4EC7\u8005"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u5F3A\u5316\u81EA\u8EAB
     <b>1</b>"
