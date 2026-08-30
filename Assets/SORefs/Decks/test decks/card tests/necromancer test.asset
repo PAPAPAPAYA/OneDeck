@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
-  m_Name: spike skeleton test
+  m_Name: necromancer test
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 7981514837180212169, guid: 794c5ef88e20c8845945bddffc9d59f6, type: 3}
-  - {fileID: 4415592718418061644, guid: cd9bf6ed8696ba245baf8f94815a5d4c, type: 3}
+  - {fileID: 6426072152774848527, guid: b78f1e5b10b14cb45b484d70fc665660, type: 3}
+  - {fileID: 4234701159843460202, guid: 2ff0d605689de9d4596fffff1942ef7a, type: 3}
+  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: bury friendly + add curse
