@@ -79,23 +79,25 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void BuryMyCards_CountBasedOnBuried_ReducesWithRoundBurials()
+	public void BuryMyCards_CountBasedOnAnyBuried_ReducesWithTotalRoundBurials()
 	{
 		var decimation = CreateCard(true, "Decimation");
 		AddCard(true, "F1", "A", 1, true);
 		AddCard(true, "F2", "B", 1, true);
 		AddCard(true, "F3", "C", 1, true);
 		AddCard(true, "F4", "D", 1, true);
-		CombatManager.combinedDeckZone.Add(CreateCard(true, "TopFiller"));
-		ValueTrackerManager.ownerCardsBuriedCountRef.value = 2;
+		CombatManager.combinedDeckZone.Add(CreateCard(false, "EnemyTopFiller")); // enemy: never in the friendly bury pool
+		ValueTrackerManager.ownerCardsBuriedCountRef.value = 2; // my cards buried
+		ValueTrackerManager.enemyCardsBuriedCountRef.value = 1; // enemy cards buried (any burier)
 
 		var bury = CreateEffect<BuryEffect>(decimation);
 		EffectChainManager.MakeANewEffectRecorder(decimation, bury.gameObject);
-		bury.BuryMyCards_CountBasedOnBuried(6);
+		bury.BuryMyCards_CountBasedOnAnyBuried(6);
 		EffectChainManager.Me.CloseOpenedChain();
-		// 6 - 2 = 4 buried; deck has exactly 4 eligible friendly cards
-		var order = CombatManager.combinedDeckZone.Take(4).Select(c => c.GetComponent<CardScript>().cardTypeID).ToArray();
-		Assert.AreEqual(4, order.Distinct().Count(), "4 friendly cards buried this round (6 minus 2 already buried)");
+		// 6 - (2 + 1) = 3 friendly cards buried this call; they land in deck slots 0-2
+		int buriedBottom = CombatManager.combinedDeckZone.Take(3)
+			.Count(c => c.GetComponent<CardScript>().myStatusRef == OwnerStatus);
+		Assert.AreEqual(3, buriedBottom, "6 minus 3 total round burials (incl. enemy cards) = 3 buried");
 	}
 
 	[Test]
@@ -259,5 +261,137 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		Assert.AreEqual(5, curse.GetComponent<CardScript>().GetAttack(), "curse spared");
 		Assert.AreEqual(5, nonCreature.GetComponent<CardScript>().GetAttack(), "non-creature spared");
 		Assert.AreEqual(0, creature.GetComponent<CardScript>().attackGrowth, "this-round modifier, not permanent growth");
+	}
+
+	[Test]
+	public void TriggerAllGraveyardFriendlyDeathrattles_TargetsGraveyardFriendlyOnly()
+	{
+		var lastRites = CreateCard(true, "LastRites");
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		// grave side (below start card): two friendly with deathrattle listeners + one enemy
+		var graveA = CreateCard(true, "GraveA", "A");
+		var graveB = CreateCard(true, "GraveB", "B");
+		var graveEnemy = CreateCard(false, "GraveEnemy", "E");
+		CombatManager.combinedDeckZone.Add(graveA);
+		CombatManager.combinedDeckZone.Add(graveB);
+		CombatManager.combinedDeckZone.Add(graveEnemy);
+		CombatManager.combinedDeckZone.Add(startCard);
+		// living zone: friendly with deathrattle listener + last Rites itself in living zone
+		var liveFriendly = CreateCard(true, "LiveFriendly", "L");
+		CombatManager.combinedDeckZone.Add(liveFriendly);
+		CombatManager.combinedDeckZone.Add(lastRites);
+
+		int aFired = 0, bFired = 0, eFired = 0, lFired = 0;
+		RegisterOnMeBuried(graveA, () => aFired++);
+		RegisterOnMeBuried(graveB, () => bFired++);
+		RegisterOnMeBuried(graveEnemy, () => eFired++);
+		RegisterOnMeBuried(liveFriendly, () => lFired++);
+
+		var trigger = CreateEffect<DeathrattleTriggerEffect>(lastRites);
+		EffectChainManager.MakeANewEffectRecorder(lastRites, trigger.gameObject);
+		trigger.TriggerAllGraveyardFriendlyDeathrattles();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(1, aFired, "graveyard friendly A triggered");
+		Assert.AreEqual(1, bFired, "graveyard friendly B triggered");
+		Assert.AreEqual(0, eFired, "graveyard enemy not triggered");
+		Assert.AreEqual(0, lFired, "living-zone friendly not triggered");
+	}
+
+	[Test]
+	public void TwoLastRites_InGrave_FireOnceEach_NoInfiniteLoop()
+	{
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		// two LAST_RITES machines both in the grave — each triggers the other on deathrattle
+		var ritesA = CreateCard(true, "RitesA", "RA");
+		var ritesB = CreateCard(true, "RitesB", "RB");
+		CombatManager.combinedDeckZone.Add(ritesA);
+		CombatManager.combinedDeckZone.Add(ritesB);
+		CombatManager.combinedDeckZone.Add(startCard);
+
+		var triggerA = CreateEffect<DeathrattleTriggerEffect>(ritesA);
+		var triggerB = CreateEffect<DeathrattleTriggerEffect>(ritesB);
+
+		// Wire like the real LAST_RITES prefab: onMeBuried listener -> container ->
+		// InvokeEffectEventVoid (only THIS path passes the effect-chain loop guard).
+		int aFired = 0, bFired = 0;
+		var containerA = ritesA.AddComponent<CostNEffectContainer>();
+		containerA.effectEvent = new UnityEngine.Events.UnityEvent();
+		containerA.checkCostEvent = new UnityEngine.Events.UnityEvent();
+		// EditMode: OnEnable never runs, so _myCardScript (set via GetComponentInParent) must be injected.
+		var cardField = typeof(CostNEffectContainer).GetField("_myCardScript", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+		cardField.SetValue(containerA, ritesA.GetComponent<CardScript>());
+		containerA.effectEvent.AddListener(() => { aFired++; triggerA.TriggerAllGraveyardFriendlyDeathrattles(); });
+		var containerB = ritesB.AddComponent<CostNEffectContainer>();
+		containerB.effectEvent = new UnityEngine.Events.UnityEvent();
+		containerB.checkCostEvent = new UnityEngine.Events.UnityEvent();
+		cardField.SetValue(containerB, ritesB.GetComponent<CardScript>());
+		containerB.effectEvent.AddListener(() => { bFired++; triggerB.TriggerAllGraveyardFriendlyDeathrattles(); });
+		var listenerA = RegisterOnMeBuried(ritesA, () => containerA.InvokeEffectEventVoid());
+		var listenerB = RegisterOnMeBuried(ritesB, () => containerB.InvokeEffectEventVoid());
+
+		// Simulate the real trigger: BuryEffect raises onMeBuried on A, A's listener runs
+		// the container (the ONLY path that passes the effect-chain loop guard).
+		GameEventStorage.onMeBuried.RaiseSpecific(ritesA);
+
+		Assert.AreEqual(1, aFired, "A fires once (its own re-raise is blocked by the loop guard)");
+		Assert.AreEqual(1, bFired, "B fires once (chain terminates, no overflow)");
+	}
+
+	[Test]
+	public void BuriedCreatureAttackEffect_FriendlyBuriedCreatureStrikesWithItsAttack()
+	{
+		var grant = CreateCard(true, "DeathbedGrant");
+		AddCard(false, "EnemyBottom", "Z", 0, true); // index 0 shield: buryable pool excludes the bottom slot
+		var victim = AddCard(true, "BigCreature", "A", 3, true);
+		CreateEffect<AttackEffect>(victim); // victim's own attack container (attack attribute settlement)
+
+		var bury = CreateEffect<BuryEffect>(grant);
+		EffectChainManager.MakeANewEffectRecorder(grant, bury.gameObject);
+		bury.BuryMyCards(1);
+		EffectChainManager.Me.CloseOpenedChain();
+		Assert.AreEqual(victim.GetComponent<CardScript>(), CombatManager.lastCardBuried, "lastCardBuried context set by BuryEffect");
+
+		// The passive reaction: buried creature strikes with its own attack.
+		var reaction = CreateEffect<BuriedCreatureAttackEffect>(grant);
+		EffectChainManager.MakeANewEffectRecorder(grant, reaction.gameObject);
+		reaction.AttackLastBuriedFriendlyCreature();
+		EffectChainManager.Me.CloseOpenedChain();
+		Assert.AreEqual(97, EnemyStatus.hp, "buried creature strikes with its own attack (3)");
+	}
+
+	[Test]
+	public void BuriedCreatureAttackEffect_SkipsNonCreatureAndEnemyVictims()
+	{
+		var grant = CreateCard(true, "DeathbedGrant");
+		var effect = CreateEffect<BuriedCreatureAttackEffect>(grant);
+
+		// non-creature friendly victim: no attack
+		var nonCreature = AddCard(true, "CurseCard", "J", 5, false);
+		CombatManager.lastCardBuried = nonCreature.GetComponent<CardScript>();
+		EffectChainManager.MakeANewEffectRecorder(grant, effect.gameObject);
+		effect.AttackLastBuriedFriendlyCreature();
+		EffectChainManager.Me.CloseOpenedChain();
+		Assert.AreEqual(100, EnemyStatus.hp, "non-creature buried card does not strike");
+
+		// enemy creature victim: out of faction
+		var enemyCreature = AddCard(false, "EnemyCreature", "E", 9, true);
+		CombatManager.lastCardBuried = enemyCreature.GetComponent<CardScript>();
+		EffectChainManager.MakeANewEffectRecorder(grant, effect.gameObject);
+		effect.AttackLastBuriedFriendlyCreature();
+		EffectChainManager.Me.CloseOpenedChain();
+		Assert.AreEqual(100, EnemyStatus.hp, "enemy buried card never strikes for my side");
+	}
+
+	private DefaultNamespace.GameEventListener RegisterOnMeBuried(GameObject target, System.Action callback)
+	{
+		var listener = target.AddComponent<DefaultNamespace.GameEventListener>();
+		listener.@event = GameEventStorage.onMeBuried;
+		// UnityAction has its own delegate type; wrap the System.Action via lambda.
+		listener.response.AddListener(() => callback());
+		GameEventStorage.onMeBuried.RegisterListener(listener);
+		return listener;
 	}
 }

@@ -203,18 +203,20 @@ public class BuryEffect : EffectScript
 	}
 
 	/// <summary>
-	/// Bury N friendly cards where N = baseCount - (this round's friendly burials of MY cards,
-	/// victim-side counter: my sacrificed + enemy-buried both count) (DECIMATION
-	/// "埋葬6友方，本回合每埋葬过1友方，埋葬数-1"). Negative clamps to 0.
+	/// Bury N friendly cards where N = baseCount - (this round's TOTAL card burials,
+	/// victim-side counters summed: my cards buried + enemy cards buried, regardless of
+	/// burier) (DECIMATION "埋葬6友方，本回合每埋葬过1卡，埋葬数-1" — burials anywhere
+	/// drain the quota, including my own burials of enemy cards). Negative clamps to 0.
 	/// </summary>
-	public void BuryMyCards_CountBasedOnBuried(int baseCount)
+	public void BuryMyCards_CountBasedOnAnyBuried(int baseCount)
 	{
 		int buriedThisRound = 0;
-		if (ValueTrackerManager.me != null && myCardScript != null &&
-		    myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
+		if (ValueTrackerManager.me != null)
 		{
-			buriedThisRound = ValueTrackerManager.me.ownerCardsBuriedCountRef != null
+			buriedThisRound += ValueTrackerManager.me.ownerCardsBuriedCountRef != null
 				? ValueTrackerManager.me.ownerCardsBuriedCountRef.value : 0;
+			buriedThisRound += ValueTrackerManager.me.enemyCardsBuriedCountRef != null
+				? ValueTrackerManager.me.enemyCardsBuriedCountRef.value : 0;
 		}
 		BuryMyCards(baseCount - buriedThisRound);
 	}
@@ -568,6 +570,10 @@ public class BuryEffect : EffectScript
 		// 3. Raise events in logic phase
 		foreach (var buriedCard in buriedCards)
 		{
+			// Last-buried context (DEATHBED_GRANT reaction): must be set BEFORE the raises
+			// so every bury event sees the card it fires for.
+			combatManager.lastCardBuried = buriedCard.GetComponent<CardScript>();
+
 			GameEventStorage.me.onMeBuried.RaiseSpecific(buriedCard);
 			GameEventStorage.me.onAnyCardBuried.Raise();
 			var buriedCardScript = buriedCard.GetComponent<CardScript>();

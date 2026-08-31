@@ -143,7 +143,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2669652832884266389}
         m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
-        m_MethodName: BuryMyCards_CountBasedOnBuried
+        m_MethodName: BuryMyCards_CountBasedOnAnyBuried
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

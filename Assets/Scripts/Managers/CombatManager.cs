@@ -193,6 +193,10 @@ public class CombatManager : MonoBehaviour
 	[Tooltip("Tracks the last card that performed an attack action (set once per action, not per segment; self-attacks included)")]
 	public CardScript lastCardAttacked;
 
+	[Header("BURY EVENT")]
+	[Tooltip("Tracks the last card buried (set per buried card right before the bury events raise; DEATHBED_GRANT reads it for the buried-creature attack reaction)")]
+	public CardScript lastCardBuried;
+
 	[Header("SHUFFLE EVENT TIMING")]
 	[Tooltip("Delay afterShuffle event until the first card is revealed after shuffle")]
 	private bool _raiseAfterShuffleOnNextReveal;
