@@ -385,6 +385,53 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		Assert.AreEqual(100, EnemyStatus.hp, "enemy buried card never strikes for my side");
 	}
 
+	[Test]
+	public void GravePuppeteer_StrikesWithGraveyardCreature_AndLeavesItInGrave()
+	{
+		var puppeteer = CreateCard(true, "Puppeteer");
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		var graveCreature = AddCard(true, "GraveBody", "A", 4, true);
+		CreateEffect<AttackEffect>(graveCreature);
+		CombatManager.combinedDeckZone.Add(startCard);
+		int graveIndex = CombatManager.combinedDeckZone.IndexOf(graveCreature);
+
+		var effect = CreateEffect<GravePuppeteerEffect>(puppeteer);
+		EffectChainManager.MakeANewEffectRecorder(puppeteer, effect.gameObject);
+		effect.RaiseGraveCreatureOrBuryFallback();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(96, EnemyStatus.hp, "graveyard creature strikes with its own attack (4)");
+		Assert.AreEqual(graveIndex, CombatManager.combinedDeckZone.IndexOf(graveCreature),
+			"the creature stays in the grave (slot unchanged)");
+		Assert.Less(CombatManager.combinedDeckZone.IndexOf(graveCreature),
+			CombatManager.combinedDeckZone.IndexOf(startCard), "still below the start card");
+	}
+
+	[Test]
+	public void GravePuppeteer_NoGraveyardCreature_BuriesFriendlyDeathrattleCard()
+	{
+		var puppeteer = CreateCard(true, "Puppeteer");
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		var nonCreature = AddCard(true, "CurseOnly", "J", 0, false); // grave: no creature, so no attack
+		CombatManager.combinedDeckZone.Add(startCard);
+		var deathrattleCard = AddCard(true, "DeathrattleGuy", "D", 0, false); // living zone, carries the 遗言 tag
+		deathrattleCard.GetComponent<CardScript>().myTags.Add(EnumStorage.Tag.DeathRattle);
+
+		var effect = CreateEffect<GravePuppeteerEffect>(puppeteer);
+		var fallback = CreateEffect<BuryEffect>(puppeteer);
+		fallback.tagsToCheck = new System.Collections.Generic.List<EnumStorage.Tag> { EnumStorage.Tag.DeathRattle };
+		effect.fallbackBurier = fallback;
+		EffectChainManager.MakeANewEffectRecorder(puppeteer, effect.gameObject);
+		effect.RaiseGraveCreatureOrBuryFallback();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(100, EnemyStatus.hp, "no creature in grave -> no attack");
+		Assert.AreEqual(deathrattleCard, CombatManager.combinedDeckZone[0],
+			"fallback buries the friendly deathrattle card to the bottom");
+	}
+
 	private DefaultNamespace.GameEventListener RegisterOnMeBuried(GameObject target, System.Action callback)
 	{
 		var listener = target.AddComponent<DefaultNamespace.GameEventListener>();

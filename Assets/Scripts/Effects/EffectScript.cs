@@ -17,8 +17,7 @@ public class EffectScript : MonoBehaviour
 	protected CardScript myCardScript;
 	protected virtual void OnEnable()
 	{
-		combatManager = CombatManager.Me;
-		myCard = transform.parent.gameObject;
+		combatManager = CombatManager.Me;		myCard = transform.parent.gameObject;
 		myCardScript = myCard.GetComponent<CardScript>();
 	}
 
@@ -542,6 +541,29 @@ public class EffectScript : MonoBehaviour
 				deferDisplayCommit = true,
 				applyDisplayDeltaOnProjectileSpawn = true
 			});
+		}
+	}
+
+	/// <summary>
+	/// Run the given card's OWN attack (DEATHBED_GRANT buried-strike / GRAVE_PUPPETEER
+	/// graveyard strike). Uses the card's AttackEffect instance bound to its reveal container,
+	/// so damage events, animation capture and per-card stats attribute to that card. Opens
+	/// a recorder on the attack so the effect-chain loop guard still applies.
+	/// No-op when the card has no AttackEffect (non-attacking cards).
+	/// </summary>
+	protected void PerformAttackAs(CardScript attackerCard)
+	{
+		if (attackerCard == null) return;
+		var attackEffect = attackerCard.GetComponentInChildren<AttackEffect>(true);
+		if (attackEffect == null) return;
+		if (EffectChainManager.Me != null)
+		{
+			EffectChainManager.Me.MakeANewEffectRecorder(attackerCard.gameObject, attackEffect.gameObject);
+		}
+		attackEffect.Attack();
+		if (EffectChainManager.Me != null)
+		{
+			EffectChainManager.Me.PopCurrentRecorder();
 		}
 	}
 

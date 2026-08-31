@@ -25,17 +25,6 @@ public class BuriedCreatureAttackEffect : EffectScript
 		// Neutral victims never belong to a side.
 		if (buriedScript.myStatusRef == null) return;
 
-		var attackEffect = buriedScript.GetComponentInChildren<AttackEffect>(true);
-		if (attackEffect == null) return;
-
-		if (EffectChainManager.Me != null)
-		{
-			EffectChainManager.Me.MakeANewEffectRecorder(buriedScript.gameObject, attackEffect.gameObject);
-		}
-		attackEffect.Attack();
-		if (EffectChainManager.Me != null)
-		{
-			EffectChainManager.Me.PopCurrentRecorder();
-		}
+		PerformAttackAs(buriedScript);
 	}
 }
