@@ -49,4 +49,23 @@ public class DeathrattleTriggerEffect : EffectScript
 			storage.onMeBuried.RaiseSpecific(cardObj);
 		}
 	}
+
+	/// <summary>
+	/// RELIC_DEATH_KNELL: trigger the deathrattle of the FRIENDLY card that most recently
+	/// revived (lastCardRevived — set by ReviveEffect before the awaken events raise, so the
+	/// onFriendlyCardRevived reaction sees exactly the card that woke).
+	/// Zero new components; loop guard applies as in TriggerAllGraveyardFriendlyDeathrattles.
+	/// </summary>
+	public void TriggerDeathrattleOfLastRevivedFriendly()
+	{
+		var cm = combatManager;
+		if (cm == null || cm.lastCardRevived == null) return;
+		var revived = cm.lastCardRevived;
+		if (revived.myStatusRef != myCardScript.myStatusRef) return;
+		if (CombatManager.ShouldSkipEffectProcessing(revived)) return;
+		if (revived == myCardScript) return; // never re-trigger self-recursion
+		var storage = GameEventStorage.me;
+		if (storage == null || storage.onMeBuried == null) return;
+		storage.onMeBuried.RaiseSpecific(revived.gameObject);
+	}
 }

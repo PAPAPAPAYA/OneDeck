@@ -302,6 +302,7 @@ public class ReviveEffect : EffectScript
 		//    Stage / bounce / R2 placement never fire the awaken family.
 		foreach (var card in revivedCards)
 		{
+			combatManager.lastCardRevived = card.GetComponent<CardScript>();
 			GameEventStorage.me.onMeRevived.RaiseSpecific(card);
 			GameEventStorage.me.onAnyCardRevived.Raise();
 			var cardScript = card.GetComponent<CardScript>();

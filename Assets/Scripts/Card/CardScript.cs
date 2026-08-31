@@ -99,6 +99,13 @@ public class CardScript : MonoBehaviour
 	private int? _displayAttack;
 
 	/// <summary>
+	/// Fixed attack value snapshot (GRAVE_ROBBER: permanently becomes the revived enemy's attack).
+	/// -1 = no snapshot. Higher precedence than resolver/base so the card face reads the held value.
+	/// </summary>
+	[HideInInspector]
+	public int attackSnapshotValue = -1;
+
+	/// <summary>
 	/// Whether this card shows an attack value on its face. Legacy cards (all-zero attack) keep the old face.
 	/// </summary>
 	public bool HasAttackDisplay => _attackResolver != null || printedAttack != 0 || attackGrowth != 0 || attackModThisRound != 0 || extraAttackTimes != 0 || attackTimesModThisRound != 0;
@@ -109,6 +116,11 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	public int GetAttack()
 	{
+		if (attackSnapshotValue >= 0) return attackSnapshotValue;
+		// RELIC_GRAVE_CURSE (覆盖式, 2026-08-30 ruling): while the side's override is armed,
+		// the side's ENEMY curse cards report the graveyard friendly count permanently — any
+		// attack granted to the curse is masked (强化不再生效).
+		if (GetCurseAttackOverride() >= 0) return GetCurseAttackOverride();
 		if (_attackResolver == null) return printedAttack + attackGrowth + attackModThisRound + GetGraveCreatureAttackAura();
 		// Cycle cut: a reentry while this card's own resolver is still on the stack (a resolver
 		// graph reading this card's attack, e.g. two FriendlyCardTotal carriers reading each
@@ -118,6 +130,55 @@ public class CardScript : MonoBehaviour
 		_resolvingAttack = true;
 		try { return _attackResolver() + GetGraveCreatureAttackAura(); }
 		finally { _resolvingAttack = false; }
+	}
+
+	/// <summary>
+	/// RELIC_GRAVE_CURSE override: -1 when not applicable, otherwise the graveyard friendly
+	/// card count (index below the start card, all friendly cards — creatures and non-creatures).
+	/// Applies when this card is an ENEMY-side curse card + the OWNER side's override flag is armed.
+	/// </summary>
+	private int GetCurseAttackOverride()
+	{
+		var tracker = ValueTrackerManager.me;
+		var cm = CombatManager.Me;
+		if (tracker == null || cm == null || myStatusRef == null || cm.ownerPlayerStatusRef == null) return -1;
+		var storage = GameEventStorage.me;
+		if (storage == null || storage.curseCardTypeID == null || string.IsNullOrEmpty(storage.curseCardTypeID.value)) return -1;
+		if (cardTypeID != storage.curseCardTypeID.value) return -1;
+		// This card is hostile to the OWNER side (the side whose passive is on the board);
+		// the owner side's flag arms the override for cards owned by the OTHER side.
+		if (myStatusRef == cm.ownerPlayerStatusRef) return -1;
+		var flag = tracker.curseAttackOverrideOwnerThisRoundRef;
+		if (flag == null || flag.value <= 0) return -1;
+		return CountGraveyardCardsOf(cm.ownerPlayerStatusRef);
+	}
+
+	/// <summary>
+	/// Count cards of the given side resting in the graveyard (index below the start card).
+	/// </summary>
+	private int CountGraveyardCardsOf(PlayerStatusSO side)
+	{
+		var cm = CombatManager.Me;
+		if (cm == null || side == null) return 0;
+		var deck = cm.combinedDeckZone;
+		if (deck == null) return 0;
+		int startCardIndex = -1;
+		for (int i = 0; i < deck.Count; i++)
+		{
+			var cardScript = deck[i].GetComponent<CardScript>();
+			if (cardScript != null && cardScript.isStartCard) { startCardIndex = i; break; }
+		}
+		if (startCardIndex < 0) return 0;
+		int count = 0;
+		for (int i = 0; i < startCardIndex; i++)
+		{
+			var cardScript = deck[i].GetComponent<CardScript>();
+			if (cardScript == null) continue;
+			if (cardScript.myStatusRef != side) continue;
+			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+			count++;
+		}
+		return count;
 	}
 
 	/// <summary>

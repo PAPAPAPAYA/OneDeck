@@ -260,6 +260,31 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
+		/// Give permanent attack to the card that most recently gained attack (WEAPON_SPIRIT
+		/// "被动：友方生物被强化时：强化1该生物" — the enhanced creature gets amplified).
+		/// Creatures only; the effect-chain loop guard blocks amplification re-triggers within
+		/// the same chain, so each external enhancement reaction fires exactly once.
+		/// </summary>
+		public virtual void GiveAttackToLastGainedAttack(int amount)
+		{
+			if (amount <= 0) return;
+			var cm = combatManager;
+			if (cm == null || cm.lastCardGainedAttack == null) return;
+			var target = cm.lastCardGainedAttack;
+			if (!target.isCreature) return;
+			if (target.myStatusRef != myCardScript.myStatusRef) return;
+			if (CombatManager.ShouldSkipEffectProcessing(target)) return;
+			GiveAttackToXFriendlyWithTarget(amount, target);
+		}
+
+		private void GiveAttackToXFriendlyWithTarget(int amount, CardScript target)
+		{
+			ApplyAttackCore(target, amount, statusEffectParticlePrefab, particleYOffset);
+			CaptureBatchStatusEffectAnimation(new List<CardScript> { target }, amount);
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+		}
+
+		/// <summary>
 		/// Give attack to X random friendly cards based on ValueTrackerManager staged values
 		/// (ELDER_SORCERER — "本回合每置顶 1 张友方卡:给予 1 张友方卡 1 攻击力").
 		/// </summary>

@@ -197,6 +197,10 @@ public class CombatManager : MonoBehaviour
 	[Tooltip("Tracks the last card buried (set per buried card right before the bury events raise; DEATHBED_GRANT reads it for the buried-creature attack reaction)")]
 	public CardScript lastCardBuried;
 
+	[Header("REVIVE EVENT")]
+	[Tooltip("Tracks the last card revived (set by ReviveEffect right before the awaken events raise; RELIC_DEATH_KNELL and GRAVE_ROBBER read it)")]
+	public CardScript lastCardRevived;
+
 	[Header("SHUFFLE EVENT TIMING")]
 	[Tooltip("Delay afterShuffle event until the first card is revealed after shuffle")]
 	private bool _raiseAfterShuffleOnNextReveal;
@@ -1071,6 +1075,9 @@ public class CombatManager : MonoBehaviour
 			if (ValueTrackerManager.me.graveCreatureAuraEnemyThisRoundRef != null) ValueTrackerManager.me.graveCreatureAuraEnemyThisRoundRef.value = 0;
 			if (ValueTrackerManager.me.friendlyExiledByOwnerThisRoundRef != null) ValueTrackerManager.me.friendlyExiledByOwnerThisRoundRef.value = 0;
 			if (ValueTrackerManager.me.friendlyExiledByEnemyThisRoundRef != null) ValueTrackerManager.me.friendlyExiledByEnemyThisRoundRef.value = 0;
+			// 4.0 step-5: curse-attack override flags are re-armed by RELIC_GRAVE_CURSE after each shuffle
+			if (ValueTrackerManager.me.curseAttackOverrideOwnerThisRoundRef != null) ValueTrackerManager.me.curseAttackOverrideOwnerThisRoundRef.value = 0;
+			if (ValueTrackerManager.me.curseAttackOverrideEnemyThisRoundRef != null) ValueTrackerManager.me.curseAttackOverrideEnemyThisRoundRef.value = 0;
 		}
 
 		// Round start event

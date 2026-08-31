@@ -432,6 +432,97 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 			"fallback buries the friendly deathrattle card to the bottom");
 	}
 
+	[Test]
+	public void WeaponSpirit_AmplifiesLastGainedFriendlyCreatureOnce()
+	{
+		var ws = CreateCard(true, "WeaponSpirit");
+		var creature = AddCard(true, "Enhanced", "A", 1, true);
+		var giver = CreateEffect<DefaultNamespace.Effects.AttackGiverEffect>(ws);
+		CombatManager.lastCardGainedAttack = creature.GetComponent<CardScript>();
+
+		EffectChainManager.MakeANewEffectRecorder(ws, giver.gameObject);
+		giver.GiveAttackToLastGainedAttack(1);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(1, creature.GetComponent<CardScript>().attackGrowth, "enhanced creature gets amplified by 1");
+		// non-creature / enemy targets are refused
+		var nonCreature = AddCard(true, "CurseCard", "J", 1, false);
+		CombatManager.lastCardGainedAttack = nonCreature.GetComponent<CardScript>();
+		EffectChainManager.MakeANewEffectRecorder(ws, giver.gameObject);
+		giver.GiveAttackToLastGainedAttack(1);
+		EffectChainManager.Me.CloseOpenedChain();
+		Assert.AreEqual(0, nonCreature.GetComponent<CardScript>().attackGrowth, "non-creature not amplified");
+	}
+
+	[Test]
+	public void DeathKnell_TriggersDeathrattleOfLastRevivedFriendly()
+	{
+		var knell = CreateCard(true, "DeathKnell");
+		var revived = CreateCard(true, "Revived", "A");
+		CombatManager.lastCardRevived = revived.GetComponent<CardScript>();
+		int fired = 0;
+		RegisterOnMeBuried(revived, () => fired++);
+
+		var trigger = CreateEffect<DeathrattleTriggerEffect>(knell);
+		EffectChainManager.MakeANewEffectRecorder(knell, trigger.gameObject);
+		trigger.TriggerDeathrattleOfLastRevivedFriendly();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(1, fired, "last revived friendly's deathrattle fires");
+	}
+
+	[Test]
+	public void GraveCurse_EnemyCurseReportsGraveyardFriendlyCount_CoveringGrowth()
+	{
+		GameEventStorage.curseCardTypeID.value = "JU_ON";
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		AddCard(true, "G1", "A", 0, false);
+		AddCard(true, "G2", "B", 0, false);
+		CombatManager.combinedDeckZone.Add(startCard);
+		var enemyCurse = CreateCard(false, "Curse", "JU_ON");
+		enemyCurse.GetComponent<CardScript>().attackGrowth = 5; // prior enhancements
+		CombatManager.combinedDeckZone.Add(enemyCurse);
+
+		ValueTrackerManager.curseAttackOverrideOwnerThisRoundRef.value = 1;
+		Assert.AreEqual(2, enemyCurse.GetComponent<CardScript>().GetAttack(),
+			"coverage: 2 graveyard friendly cards overlap any grown attack");
+		// not armed -> base + growth shows again
+		ValueTrackerManager.curseAttackOverrideOwnerThisRoundRef.value = 0;
+		Assert.AreEqual(5 + 0, enemyCurse.GetComponent<CardScript>().GetAttack(), "flag off: growth visible again");
+	}
+
+	[Test]
+	public void GraveRobber_SnapshotsStrongestEnemyAttack()
+	{
+		var robber = CreateCard(true, "GraveRobber");
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		var enemyA = CreateCard(false, "BigEnemy", "A");
+		enemyA.GetComponent<CardScript>().printedAttack = 7;
+		enemyA.GetComponent<CardScript>().isCreature = true;
+		var enemyB = CreateCard(false, "SmallEnemy", "B");
+		enemyB.GetComponent<CardScript>().printedAttack = 3;
+		enemyB.GetComponent<CardScript>().isCreature = true;
+		CombatManager.combinedDeckZone.Add(enemyA);
+		CombatManager.combinedDeckZone.Add(enemyB);
+		CombatManager.combinedDeckZone.Add(startCard);
+
+		var rob = CreateEffect<GraveRobberEffect>(robber);
+		var revive = CreateEffect<ReviveEffect>(robber);
+		revive.sortBy = ReviveEffect.ReviveSortBy.MaxAttack;
+		rob.reviveEngine = revive;
+
+		EffectChainManager.MakeANewEffectRecorder(robber, rob.gameObject);
+		rob.ReviveStrongestEnemyAndSnapshot();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(7, robber.GetComponent<CardScript>().GetAttack(), "snapshot of the strongest revived enemy (7)");
+		enemyA.GetComponent<CardScript>().ModifyAttack(10);
+		Assert.AreEqual(7, robber.GetComponent<CardScript>().GetAttack(),
+			"snapshot: later growth on the resurrected enemy does not ripple back");
+	}
+
 	private DefaultNamespace.GameEventListener RegisterOnMeBuried(GameObject target, System.Action callback)
 	{
 		var listener = target.AddComponent<DefaultNamespace.GameEventListener>();

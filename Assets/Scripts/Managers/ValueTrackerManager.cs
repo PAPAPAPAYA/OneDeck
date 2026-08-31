@@ -48,6 +48,11 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO friendlyExiledByOwnerThisRoundRef;
 	public IntSO friendlyExiledByEnemyThisRoundRef;
 
+	[Header("CurseAttackOverride (4.0 step-5)")]
+	[Tooltip("Armed by RELIC_GRAVE_CURSE each shuffle: while > 0, the side's ENEMY curse cards report 墓地友方卡数量 as their attack (覆盖式 — permanent/given attack on the curse is masked).")]
+	public IntSO curseAttackOverrideOwnerThisRoundRef;
+	public IntSO curseAttackOverrideEnemyThisRoundRef;
+
 	[Header("Last Applied Status Effect")]
 	public StatusEffectSO lastAppliedStatusEffectRef;
 	public IntSO lastAppliedStatusEffectAmountRef;
