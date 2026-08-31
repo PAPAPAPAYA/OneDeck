@@ -58,6 +58,11 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO bloodPactOwnerThisRoundRef;
 	public IntSO bloodPactEnemyThisRoundRef;
 
+	[Header("RiftOverride (4.0 step-5)")]
+	[Tooltip("Armed by RELIC_RIFT_OVERRIDE each shuffle: while > 0, the side's FRIENDLY believer tokens' reveal effect becomes 复活1敌方诅咒；放逐自身 (enemy believers keep the default behavior).")]
+	public IntSO riftOverrideOwnerThisRoundRef;
+	public IntSO riftOverrideEnemyThisRoundRef;
+
 	[Header("Last Applied Status Effect")]
 	public StatusEffectSO lastAppliedStatusEffectRef;
 	public IntSO lastAppliedStatusEffectAmountRef;

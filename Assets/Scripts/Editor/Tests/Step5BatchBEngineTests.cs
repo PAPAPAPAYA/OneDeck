@@ -598,6 +598,41 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		Assert.AreEqual(97, OwnerStatus.hp, "self-damage unaffected by the pact (3 dmg on own player)");
 	}
 
+	[Test]
+	public void RiftOverride_FriendlyBelieverRevivesEnemyCurse_NotEnemyBeliever()
+	{
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		var friendlyRift = CreateCard(true, "FriendlyRift", "RIFT");
+		var enemyCurse = CreateCard(false, "EnemyCurse", "JU_ON");
+		CombatManager.combinedDeckZone.Add(friendlyRift);
+		CombatManager.combinedDeckZone.Add(enemyCurse);
+		CombatManager.combinedDeckZone.Add(startCard);
+		int startIndex = 2; // initial layout only; the revive moves the deck, so compare dynamically below
+
+		ValueTrackerManager.riftOverrideOwnerThisRoundRef.value = 1;
+		var revive = CreateEffect<RiftOverrideAwareReviveEffect>(friendlyRift);
+		EffectChainManager.MakeANewEffectRecorder(friendlyRift, revive.gameObject);
+		revive.FriendRiftRevealOrOverride();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(enemyCurse.GetComponent<CardScript>(), CombatManager.lastCardRevived,
+			"override revives the enemy curse");
+		int startIdx = CombatManager.combinedDeckZone.IndexOf(startCard);
+		Assert.Greater(CombatManager.combinedDeckZone.IndexOf(enemyCurse), startIdx,
+			"curse placed in the living zone (above start card)");
+
+		// flag off: default behavior revives a friendly instead (the rift is in the grave)
+		ValueTrackerManager.riftOverrideOwnerThisRoundRef.value = 0;
+		var enemyCurse2 = CreateCard(false, "EnemyCurse2", "JU_ON");
+		CombatManager.combinedDeckZone.Add(enemyCurse2);
+		EffectChainManager.MakeANewEffectRecorder(friendlyRift, revive.gameObject);
+		revive.FriendRiftRevealOrOverride();
+		EffectChainManager.Me.CloseOpenedChain();
+		Assert.AreNotEqual(enemyCurse2, CombatManager.lastCardRevived,
+			"unarmed override revives a friendly card of the grave, not the curse");
+	}
+
 	private DefaultNamespace.GameEventListener RegisterOnMeBuried(GameObject target, System.Action callback)
 	{
 		var listener = target.AddComponent<DefaultNamespace.GameEventListener>();

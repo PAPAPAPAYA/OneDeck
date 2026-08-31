@@ -137,7 +137,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3390430887469070700}
         m_TargetAssemblyTypeName: ReviveEffect, Assembly-CSharp
-        m_MethodName: ReviveMyCards
+        m_MethodName: FriendRiftRevealOrOverride
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -174,7 +174,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3082838112725377213}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bddc72b2099c374583edd4d0a65f9b5, type: 3}
+  m_Script: {fileID: 11500000, guid: f98795a5e48a8034dbab161af415f61b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ReviveEffect
   reviveTargetSide: 0
