@@ -37,10 +37,43 @@ public class AttackEffect : HPAlterEffect
 		if (myCardScript == null || times <= 0 || myCardScript.GetAttack() <= 0) return;
 		for (int i = 0; i < times; i++)
 		{
+			// RELIC_BLOOD_PACT (ruling 2026-08-31): while armed, friendly attacks on the ENEMY
+			// player deal NO damage and instead enhance the enemy curse by the same amount —
+			// self-damage (AttackSelfTimes -> DecreaseMyHp) is untouched. Attack events still
+			// raise below (the attack action happened, only its resolution changed).
+			if (BloodPactConvertsDamage())
+			{
+				EnhanceCurseForBloodPact();
+				continue;
+			}
 			DecreaseTheirHp();
 		}
 		// Attack-action timepoint: raised once per attack action, not per segment.
 		RaiseAttackEvents(false);
+	}
+
+	/// <summary>
+	/// Curse engine used by the blood-pact conversion (configured on the same child GO).
+	/// </summary>
+	[Tooltip("CurseEffect that receives the blood-pact enhancement (same child GO)")]
+	public DefaultNamespace.Effects.CurseEffect curseEngine;
+
+	private bool BloodPactConvertsDamage()
+	{
+		if (myCardScript == null || combatManager == null || myCardScript.myStatusRef == null) return false;
+		var tracker = ValueTrackerManager.me;
+		if (tracker == null) return false;
+		var flag = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef
+			? tracker.bloodPactOwnerThisRoundRef
+			: tracker.bloodPactEnemyThisRoundRef;
+		return flag != null && flag.value > 0;
+	}
+
+	private void EnhanceCurseForBloodPact()
+	{
+		if (curseEngine == null) return;
+		int amount = myCardScript != null ? myCardScript.GetAttack() : 0;
+		curseEngine.EnhanceCurse(amount);
 	}
 
 	/// <summary>

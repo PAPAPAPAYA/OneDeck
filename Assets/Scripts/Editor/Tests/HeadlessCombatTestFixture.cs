@@ -96,6 +96,8 @@ public abstract class HeadlessCombatTestFixture
 		ValueTrackerManager.friendlyExiledByEnemyThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.curseAttackOverrideOwnerThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.curseAttackOverrideEnemyThisRoundRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.bloodPactOwnerThisRoundRef = CreateScriptableObject<IntSO>();
+		ValueTrackerManager.bloodPactEnemyThisRoundRef = CreateScriptableObject<IntSO>();
 		ValueTrackerManager.lastAppliedStatusEffectRef = CreateScriptableObject<StatusEffectSO>();
 		ValueTrackerManager.lastAppliedStatusEffectAmountRef = CreateScriptableObject<IntSO>();
 

@@ -53,6 +53,11 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO curseAttackOverrideOwnerThisRoundRef;
 	public IntSO curseAttackOverrideEnemyThisRoundRef;
 
+	[Header("BloodPact (4.0 step-5)")]
+	[Tooltip("Armed by RELIC_BLOOD_PACT each shuffle: while > 0, the side's friendly attacks on the ENEMY player deal no damage and instead enhance the enemy curse by the same amount (self-damage unaffected).")]
+	public IntSO bloodPactOwnerThisRoundRef;
+	public IntSO bloodPactEnemyThisRoundRef;
+
 	[Header("Last Applied Status Effect")]
 	public StatusEffectSO lastAppliedStatusEffectRef;
 	public IntSO lastAppliedStatusEffectAmountRef;

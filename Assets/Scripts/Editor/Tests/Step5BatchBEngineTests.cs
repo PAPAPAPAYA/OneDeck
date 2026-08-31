@@ -523,6 +523,81 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 			"snapshot: later growth on the resurrected enemy does not ripple back");
 	}
 
+	[Test]
+	public void MassSacrifice_BuriesAllFriendlyAndSpawnsEqualBelievers()
+	{
+		var sacrificeCard = CreateCard(true, "MassSacrifice");
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		CombatManager.combinedDeckZone.Add(startCard);
+		AddCard(true, "F1", "A", 1, true);
+		AddCard(true, "F2", "B", 1, true);
+		AddCard(false, "Enemy", "E", 1, true); // enemy must not be buried
+
+		var effect = CreateEffect<MassSacrificeEffect>(sacrificeCard);
+		effect.buryEngine = CreateEffect<BuryEffect>(sacrificeCard);
+		effect.addEngine = CreateEffect<DefaultNamespace.Effects.AddTempCard>(sacrificeCard);
+		effect.riftToken = CreateCard(true, "RiftSpy", "RIFT"); // instance stands in for the token prefab
+
+		int riftsBefore = CombatManager.combinedDeckZone.Count(c => c.GetComponent<CardScript>().cardTypeID == "RIFT");
+		EffectChainManager.MakeANewEffectRecorder(sacrificeCard, effect.gameObject);
+		effect.SacrificeAllThenSpawnBelievers();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		int riftsAfter = CombatManager.combinedDeckZone.Count(c => c.GetComponent<CardScript>().cardTypeID == "RIFT");
+		Assert.AreEqual(riftsBefore + 2, riftsAfter, "2 friendly buried -> 2 believers spawned");
+		int startIndex = CombatManager.combinedDeckZone.IndexOf(startCard);
+		Assert.Less(CombatManager.combinedDeckZone.IndexOf(CombatManager.combinedDeckZone.Find(c => c.GetComponent<CardScript>().cardTypeID == "A")), startIndex,
+			"friend A buried (graveyard side)");
+		Assert.Less(CombatManager.combinedDeckZone.IndexOf(CombatManager.combinedDeckZone.Find(c => c.GetComponent<CardScript>().cardTypeID == "B")), startIndex,
+			"friend B buried (graveyard side)");
+		Assert.Greater(CombatManager.combinedDeckZone.IndexOf(CombatManager.combinedDeckZone.Find(c => c.GetComponent<CardScript>().cardTypeID == "E")), startIndex,
+			"enemy card untouched in the living zone");
+	}
+
+	[Test]
+	public void BloodPact_ConvertsEnemyDamage_KeepsAttackEventAndSelfDamage()
+	{
+		GameEventStorage.curseCardTypeID.value = "JU_ON";
+		var attacker = CreateCard(true, "Attacker");
+		attacker.GetComponent<CardScript>().printedAttack = 3;
+		attacker.GetComponent<CardScript>().isCreature = true;
+		var juOn = CreateCard(false, "Curse", "JU_ON");
+		CombatManager.combinedDeckZone.Add(attacker);
+		CombatManager.combinedDeckZone.Add(juOn);
+
+		var atk = CreateEffect<AttackEffect>(attacker);
+		var curse = CreateEffect<DefaultNamespace.Effects.CurseEffect>(attacker);
+		curse.cardTypeID = GameEventStorage.curseCardTypeID;
+		atk.curseEngine = curse;
+
+		int attackEvents = 0;
+		RegisterEventCallback(GameEventStorage.onAnyCardAttacked, () => attackEvents++);
+
+		ValueTrackerManager.bloodPactOwnerThisRoundRef.value = 1;
+		EffectChainManager.MakeANewEffectRecorder(attacker, atk.gameObject);
+		atk.Attack();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(100, EnemyStatus.hp, "no HP loss under blood pact");
+		Assert.AreEqual(3, juOn.GetComponent<CardScript>().attackGrowth, "3 attack -> 3 curse enhancement");
+		Assert.AreEqual(1, attackEvents, "attack action still raises its event");
+
+		// unarmed: normal damage returns
+		ValueTrackerManager.bloodPactOwnerThisRoundRef.value = 0;
+		EffectChainManager.MakeANewEffectRecorder(attacker, atk.gameObject);
+		atk.Attack();
+		EffectChainManager.Me.CloseOpenedChain();
+		Assert.AreEqual(97, EnemyStatus.hp, "without the pact, damage applies");
+
+		// self-damage (AttackSelf) is never converted
+		ValueTrackerManager.bloodPactOwnerThisRoundRef.value = 1;
+		EffectChainManager.MakeANewEffectRecorder(attacker, atk.gameObject);
+		atk.AttackSelf();
+		EffectChainManager.Me.CloseOpenedChain();
+		Assert.AreEqual(97, OwnerStatus.hp, "self-damage unaffected by the pact (3 dmg on own player)");
+	}
+
 	private DefaultNamespace.GameEventListener RegisterOnMeBuried(GameObject target, System.Action callback)
 	{
 		var listener = target.AddComponent<DefaultNamespace.GameEventListener>();

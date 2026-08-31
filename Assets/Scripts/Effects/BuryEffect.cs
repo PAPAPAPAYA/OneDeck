@@ -410,10 +410,13 @@ public class BuryEffect : EffectScript
 		}
 	}
 
+	[HideInInspector]
+	public int lastSuccessfulBuryCount;
+
 	private void BuryChosenCards(List<GameObject> cardsToBury, int amount)
 	{
 		amount = Mathf.Clamp(amount, 0, cardsToBury.Count);
-		if (amount == 0) return;
+		if (amount == 0) { lastSuccessfulBuryCount = 0; return; }
 
 		// 1. First modify logical list, and collect successfully moved cards
 		var buriedCards = new List<GameObject>();
@@ -470,6 +473,7 @@ public class BuryEffect : EffectScript
 					targetCardScript.gameObject.name + "</color>]埋入牌库底端");
 			}
 		}
+		lastSuccessfulBuryCount = buriedCards.Count;
 		
 		// VISUAL-FIX(2026-06-13): Remove logic-phase deck sync in Bury to keep animation indices consistent
 		//   Cause:    SyncPhysicalCardsWithCombinedDeck in logic phase pre-moves physical cards to final

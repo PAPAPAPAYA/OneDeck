@@ -5999,6 +5999,8 @@ MonoBehaviour:
   friendlyExiledByEnemyThisRoundRef: {fileID: 11400000, guid: ef9e26934630a07498856a585e9718e7, type: 2}
   curseAttackOverrideOwnerThisRoundRef: {fileID: 11400000, guid: 02d5df68ea67172439c3918cc3134a3d, type: 2}
   curseAttackOverrideEnemyThisRoundRef: {fileID: 11400000, guid: 9e9cbb4c7116bd2439879fbaad4ff25b, type: 2}
+  bloodPactOwnerThisRoundRef: {fileID: 11400000, guid: 1bf2a5006e6eb3249970b822865241ef, type: 2}
+  bloodPactEnemyThisRoundRef: {fileID: 11400000, guid: bd3cd64763447fb4e96b80ac84327488, type: 2}
   lastAppliedStatusEffectRef: {fileID: 11400000, guid: 784ae6b6c3e1c174aa1796b5c77244b5, type: 2}
   lastAppliedStatusEffectAmountRef: {fileID: 11400000, guid: d9129ef7354701a4ab1cb01bf8842cdc, type: 2}
   curseCardTypeId: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}

@@ -1078,6 +1078,9 @@ public class CombatManager : MonoBehaviour
 			// 4.0 step-5: curse-attack override flags are re-armed by RELIC_GRAVE_CURSE after each shuffle
 			if (ValueTrackerManager.me.curseAttackOverrideOwnerThisRoundRef != null) ValueTrackerManager.me.curseAttackOverrideOwnerThisRoundRef.value = 0;
 			if (ValueTrackerManager.me.curseAttackOverrideEnemyThisRoundRef != null) ValueTrackerManager.me.curseAttackOverrideEnemyThisRoundRef.value = 0;
+			// 4.0 step-5: blood pact flags are re-armed by RELIC_BLOOD_PACT after each shuffle
+			if (ValueTrackerManager.me.bloodPactOwnerThisRoundRef != null) ValueTrackerManager.me.bloodPactOwnerThisRoundRef.value = 0;
+			if (ValueTrackerManager.me.bloodPactEnemyThisRoundRef != null) ValueTrackerManager.me.bloodPactEnemyThisRoundRef.value = 0;
 		}
 
 		// Round start event
