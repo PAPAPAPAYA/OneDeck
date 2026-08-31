@@ -104,3 +104,7 @@ InitTestScene*.unity*
 # ZCode / MCP tool temp dirs (never commit)
 .reasonix/
 .tmp-mcp-scan/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
