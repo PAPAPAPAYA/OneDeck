@@ -1,0 +1,383 @@
+<html><head><meta charset="utf-8"><title>The Bazaar · Karnok 物品池结构拆解</title><style>
+:root {
+--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+--purple: #bb9af7; --cyan: #7dcfff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+background: var(--bg); color: var(--text);
+font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+}
+h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+.mono { font-family: Consolas, monospace; }
+.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+.t-bronze { color: #c98a5e; border-color: #c98a5e88; }
+.t-silver { color: #aeb5c2; border-color: #aeb5c288; }
+.t-gold { color: #e0af68; border-color: #e0af6888; }
+.t-diamond { color: #7dcfff; border-color: #7dcfff88; }
+.b-weap { color: #f7768e; border-color: #f7768e88; }
+.b-tool { color: #e0af68; border-color: #e0af6888; }
+.b-props { color: #bb9af7; border-color: #bb9af788; }
+.b-aqua { color: #7dcfff; border-color: #7dcfff88; }
+.b-friend { color: #9ece6a; border-color: #9ece6a88; }
+.b-veh { color: #ff9e64; border-color: #ff9e6488; }
+.star { color: #e0af68; font-weight: 700; }
+ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+li { margin: 3px 0; }
+.lead { font-size: 0.92rem; margin: 8px 0; }
+.dim { color: var(--dim); }
+.warn { color: var(--warn); }
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+.purple { color: var(--purple); }
+.cyan { color: var(--cyan); }
+.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style></head><body>
+<h1>The Bazaar · Karnok 物品池结构拆解</h1>
+<div class="sub">2026-08-31 · 数据源:<a href="https://mobalytics.gg/the-bazaar/karnok-items">mobalytics.gg</a> TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59,快照 2026-08-31)· 全池 1207 物品中 Karnok 专属 118 件(已过滤 1 件模板占位)· 物品英文为准 · 同系列:Vanessa / Pygmalien / Dooley / Mak / Jules / Stelle / The Dragons / 公共池 / 技能池 / 综合</div>
+<div class="kpis">
+<div class="kpi"><div class="num">118</div><div class="lbl">物品池总数(118 件)</div></div>
+<div class="kpi"><div class="num">45/52/21/0</div><div class="lbl">tier 分布 B/S/G/D(+0 Legendary)</div></div>
+<div class="kpi"><div class="num">68</div><div class="lbl">Rage 相关(58%)—— 身份关键词</div></div>
+<div class="kpi"><div class="num">54</div><div class="lbl">Enrage 相关(46%)—— 狂暴兑现语汇</div></div>
+<div class="kpi"><div class="num">2+3</div><div class="lbl">主轴:Rage→Enrage 双态引擎 / 皮甲 / 野兽随从 + 捕猎控制 / 陷阱 / 最大生命</div></div>
+<div class="kpi"><div class="num">36</div><div class="lbl">无冷却被动件(31%)</div></div>
+</div>
+<h2>0. 英雄骨架</h2>
+<div class="card">
+<div class="lead"><strong>定位</strong>:全游「猎人/狂暴战士」英雄——核心机制为「Rage→Enrage 双态引擎」:物品使用累积 Rage(68 件涉及),达到阈值触发 Enrage(54 件兑现),狂暴期间有强化/冷却缩减,狂暴结束触发「停怒」效果。身份轴:Rage 68 + Enrage 54 + Apparel 26 + Friend 22 + Slow 25。</div>
+<div class="lead"><strong>身份关键词(Top)</strong>:< s p a n   c l a s s = " b a d g e   b - w e a p " > R a g e   6 8 < / s p a n > < s p a n   c l a s s = " b a d g e " > E n r a g e   5 4 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > A p p a r e l   2 6 < / s p a n > < s p a n   c l a s s = " b a d g e   b - f r i e n d " > F r i e n d   2 2 < / s p a n > < s p a n   c l a s s = " b a d g e " > S l o w   2 5 < / s p a n > < s p a n   c l a s s = " b a d g e   b - w e a p " > W e a p o n   4 2 < / s p a n ></div>
+<div class="lead"><strong>资源轴速览</strong>:Rage = 狂暴能量(使用物品/暴击/治疗/慢/烧累积);Enrage = 狂暴状态(达成阈值触发,持续期间强化 + 冷却缩减);停怒 = 狂暴结束触发第二波效果(Firefly Lantern / Frog Hollow / Tent);Apparel = 皮甲(26 件,野兽/猎人主题);Friend = 野兽随从(22 件);Slow = 捕猎控制。Karnok 的语法 =「愤怒循环」——越打越狂,狂完再爆一波。</div>
+</div>
+<h2>1. 池组成总览</h2>
+<div class="card">
+<h3>1.1 tier × size</h3>
+<table>
+<tr><th>Tier</th><th>数量</th><th>占比</th><th>Small</th><th>Medium</th><th>Large</th><th>定位</th></tr>
+<tr><td><span class="badge t-bronze">Bronze</span></td><td class="mono">45</td><td class="mono">38%</td><td class="mono">29</td><td class="mono">16</td><td class="mono">0</td><td>入门密度层——武器/皮甲/随从为主,教学层</td></tr>
+<tr><td><span class="badge t-silver">Silver</span></td><td class="mono">52</td><td class="mono">44%</td><td class="mono">17</td><td class="mono">28</td><td class="mono">7</td><td>主力层——Rage/Enrage 引擎件密集</td></tr>
+<tr><td><span class="badge t-gold">Gold</span></td><td class="mono">21</td><td class="mono">18%</td><td class="mono">6</td><td class="mono">9</td><td class="mono">6</td><td>强度层——狂暴兑现与野兽</td></tr>
+</table></div>
+<div class="card">
+<h3>1.2 类型标签分布(多标签重复计入,基数 118)</h3>
+<table>
+<tr><th>类型</th><th>数量</th><th>占比</th><th>代表件</th></tr>
+<tr><td><span class="badge b-weap">Weapon</span></td><td class="mono">42</td><td class="mono">36%</td><td>Battle Axe / Hunting Rifle / Tree Club</td></tr>
+<tr><td><span class="badge t-silver">Apparel</span></td><td class="mono">26</td><td class="mono">22%</td><td>Bear Mask / Boar Mask / Leather Jacket</td></tr>
+<tr><td><span class="badge b-tool">Tool</span></td><td class="mono">23</td><td class="mono">19%</td><td>Bandoleer / Campfire / Lifting Stones</td></tr>
+<tr><td><span class="badge b-friend">Friend</span></td><td class="mono">22</td><td class="mono">19%</td><td>Wolf / Wild Bear / Honey Badger</td></tr>
+<tr><td><span class="badge t-silver">Relic</span></td><td class="mono">10</td><td class="mono">8%</td><td>Runed Amulet / Ancient Locket / Beast Tooth</td></tr>
+<tr><td><span class="badge b-props">Property</span></td><td class="mono">10</td><td class="mono">8%</td><td>Fairy Circle / Fogshroom</td></tr>
+<tr><td><span class="badge t-silver">Food</span></td><td class="mono">7</td><td class="mono">6%</td><td>Healing Draught / Yarrow Paste</td></tr>
+<tr><td><span class="badge t-silver">Potion</span></td><td class="mono">4</td><td class="mono">3%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Trap</span></td><td class="mono">4</td><td class="mono">3%</td><td>Bear Trap / Log Trap / Trapping Pit</td></tr>
+<tr><td><span class="badge b-veh">Vehicle</span></td><td class="mono">3</td><td class="mono">3%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Aquatic</span></td><td class="mono">2</td><td class="mono">2%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Instrument</span></td><td class="mono">2</td><td class="mono">2%</td><td>—</td></tr>
+</table>
+<div class="note">本表取 tags 严格标签。Weapon 42(36%)+ Apparel 26(22%) 是两大构成块;Friend 22 是「野兽随从」底盘;Trap 4 是捕猎主题小标签。多标签物品重复计入各标签。</div>
+</div>
+<div class="card">
+<h3>1.3 节奏结构(冷却分布,base tier 口径)</h3>
+<table>
+<tr><th>冷却带</th><th>数量</th><th>占比</th><th>说明</th></tr>
+<tr><td>Passive(无冷却/触发式)</td><td class="mono">36</td><td class="mono">31%</td><td>—</td></tr>
+<tr><td>≤3s</td><td class="mono">8</td><td class="mono">7%</td><td>—</td></tr>
+<tr><td>4-6s</td><td class="mono">50</td><td class="mono">42%</td><td>—</td></tr>
+<tr><td>7-9s</td><td class="mono">19</td><td class="mono">16%</td><td>—</td></tr>
+<tr><td>10s+</td><td class="mono">5</td><td class="mono">4%</td><td>—</td></tr>
+<tr><td>多值(升级线,不同 tier 冷却不同)</td><td class="mono">31</td><td class="mono">26%</td><td>随等级渐快——升级即加速</td></tr>
+</table>
+<div class="note">Karnok 节奏主力 4-9s(50+19=69 件)+ 被动 36 件(31%)。Rage/Enrage 引擎的冷却缩减(Enrage 期间减冷却)是节奏加速器——狂暴期间整条链提速,停怒后回弹。31 件多值冷却(升级即加速)比例高。</div>
+</div>
+<h2>2. 术语与分级结构</h2>
+<div class="card">
+<h3>2.1 机制词分布</h3>
+<table><tr><th>机制词</th><th>件数</th><th>性质</th></tr>
+<tr><td class="mono">Rage</td><td class="mono">68</td><td>—</td></tr>
+<tr><td class="mono">Enrage</td><td class="mono">54</td><td>—</td></tr>
+<tr><td class="mono">Apparel</td><td class="mono">26</td><td>—</td></tr>
+<tr><td class="mono">Friend</td><td class="mono">22</td><td>—</td></tr>
+<tr><td class="mono">Weapon</td><td class="mono">42</td><td>—</td></tr>
+<tr><td class="mono">Tool</td><td class="mono">23</td><td>—</td></tr>
+<tr><td class="mono">Slow</td><td class="mono">25</td><td>—</td></tr>
+<tr><td class="mono">Heal</td><td class="mono">33</td><td>—</td></tr>
+<tr><td class="mono">Crit</td><td class="mono">21</td><td>—</td></tr>
+<tr><td class="mono">Haste</td><td class="mono">18</td><td>—</td></tr>
+<tr><td class="mono">Charge</td><td class="mono">18</td><td>—</td></tr>
+<tr><td class="mono">Shield</td><td class="mono">16</td><td>—</td></tr>
+<tr><td class="mono">Max Health</td><td class="mono">13</td><td>—</td></tr>
+<tr><td class="mono">Burn</td><td class="mono">11</td><td>—</td></tr>
+<tr><td class="mono">Multicast</td><td class="mono">9</td><td>—</td></tr>
+<tr><td class="mono">Poison</td><td class="mono">7</td><td>—</td></tr>
+<tr><td class="mono">Freeze</td><td class="mono">5</td><td>—</td></tr>
+<tr><td class="mono">Flying</td><td class="mono">6</td><td>—</td></tr>
+<tr><td class="mono">Trap</td><td class="mono">4</td><td>—</td></tr>
+<tr><td class="mono">Ammo</td><td class="mono">0</td><td>—</td></tr>
+</table>
+<div class="note">词表为 tags + descriptions 关键词匹配(多标签重复计入)。Rage(68)+ Enrage(54)是 Karnok 的引擎语汇——「愤怒双态」贯穿全池,是全系列最高单机制密度(58%)。</div>
+</div>
+<div class="card">
+<h3>2.2 触发句式</h3>
+<table><tr><th>句式</th><th>件数</th><th>代表</th><th>设计含义</th></tr>
+<tr><td>gain Rage</td><td class="mono">3</td><td>—</td><td>—</td></tr>
+<tr><td>When you Enrage</td><td class="mono">36</td><td>—</td><td>—</td></tr>
+<tr><td>While you are Enraged</td><td class="mono">10</td><td>—</td><td>—</td></tr>
+<tr><td>When you stop being Enraged</td><td class="mono">4</td><td>—</td><td>—</td></tr>
+<tr><td>When you use a Friend</td><td class="mono">4</td><td>—</td><td>—</td></tr>
+<tr><td>When you Slow</td><td class="mono">12</td><td>—</td><td>—</td></tr>
+</table></div>
+<h2>3. 构筑轴识别</h2>
+<div class="card">
+<h3>3.1 Rage→Enrage 双态引擎轴(身份轴)</h3>
+<div class="flow">Rage 获取(用武器/暴击/治疗/慢/烧/敌用件 → +Rage) → 触发 Enrage(阈值) → 狂暴兑现(伤害/冷却缩减/最大生命/Multicast) → 停怒第二波(Firefly Lantern / Frog Hollow / Tent)</div>
+<div class="lead"><strong>入口</strong>:Rage 获取件(Eagle Sigil 暴击→Rage、Tranquil Sigil 治疗→Rage、Enervating Sigil 慢→Rage、Vengeful Sigil 敌用→Rage、Bear Mask 首次使用→30 Rage)。<strong>兑现</strong>:Enrage 触发件(Assault Sigil 狂暴→10% 最大生命伤害、Battle Axe 狂暴+60 伤、Great Eagle 狂暴→3 件起飞)。<strong>封顶</strong>:Tree Club(1000 伤,狂暴期间自充)、Outlands Terror(狂暴期间吸生+半冷却+双倍 Rage 获取)、Wild Bear(狂暴+20% 最大生命)。</div>
+<div class="lead"><strong>停怒态</strong>:Firefly Lantern(停怒→使用)、Frog Hollow(停怒→全体 Haste)、Tent(停怒→20% 最大生命盾)——「愤怒循环」的第二波,是 Karnok 独有节奏。</div>
+</div>
+<div class="card">
+<h3>3.2 皮甲/防御轴(身份标签)</h3>
+<div class="flow">Apparel 26 件 → 最大生命(Forest Cloak +20% 最大生命、狂暴期间半伤)→ 防护(Masks 首次使用→Rage + 狂暴 Max Health)</div>
+<div class="lead"><strong>密度</strong>:Apparel 26(22%)——皮甲是 Karnok 的「耐久」标签,几乎都挂 Rage/Enrage 之一(如 Bear Mask 首次使用+30 Rage、狂暴+10% 最大生命)。</div>
+</div>
+<div class="card">
+<h3>3.3 野兽随从轴</h3>
+<div class="flow">Friend 22 件(Wolf / Wild Bear / Honey Badger / Great Eagle / Outlands Terror)→ 狂暴期间友军强化(Wolf 狂暴→Haste 友军 / Karst 用友军→Rage+盾)</div>
+<div class="lead"><strong>特征</strong>:野兽随从与 Rage 深度绑定——友军既是 Rage 来源(Karst)又是狂暴兑现目标(Wolf)。</div>
+</div>
+<div class="card">
+<h3>3.4 捕猎/慢控轴(次轴)</h3>
+<div class="lead"><strong>特征</strong>:Slow 25 + Trap 4 —— 猎人主题的「布陷阱 + 减速猎物」控制(Log Trap 首次敌用→500 伤 + 全慢),Trap 在狂暴后可重复触发。</div>
+</div>
+<div class="card">
+<h3>3.5 轴矩阵总结</h3>
+<table>
+<tr><th>轴</th><th>件数</th><th>tier 分布</th><th>入口/兑现/封顶</th><th>密度评价</th></tr>
+<tr><td>狂暴双态</td><td class="mono">68</td><td>B24/S32/G12/D0+0L</td><td>Rage 获取 → Enrage 兑现 → 停怒二波</td><td class="good">厚,身份轴(58%)</td></tr>
+<tr><td>皮甲</td><td class="mono">26</td><td>B8/S13/G5/D0+0L</td><td>耐久 + 狂暴联动</td><td class="good">厚,身份标签</td></tr>
+<tr><td>野兽</td><td class="mono">22</td><td>B8/S10/G4/D0+0L</td><td>随从 + Rage 来源/兑现</td><td class="warn">中</td></tr>
+<tr><td>慢控</td><td class="mono">25</td><td>B8/S10/G7/D0+0L</td><td>减速 + Rage 获取</td><td class="warn">中</td></tr>
+<tr><td>输出</td><td class="mono">53</td><td>B22/S20/G11/D0+0L</td><td>武器 + 狂暴放大</td><td class="warn">中</td></tr>
+<tr><td>耐久</td><td class="mono">28</td><td>B7/S13/G8/D0+0L</td><td>最大生命/盾乘区</td><td class="warn">中</td></tr>
+<tr><td>陷阱</td><td class="mono">4</td><td>B0/S1/G3/D0+0L</td><td>布陷阱 + 慢</td><td class="bad">小轴</td></tr>
+</table></div>
+<h2>3.6 轴间桥矩阵(2026-08-31 框架迭代)</h2>
+<div class="card">
+<div class="kpis" style="margin:8px 0">
+<div class="kpi"><div class="num">32</div><div class="lbl">单轴件(27%)</div></div>
+<div class="kpi"><div class="num">76</div><div class="lbl">桥(≥2 轴,64%)</div></div>
+<div class="kpi"><div class="num">42</div><div class="lbl">双轴桥</div></div>
+<div class="kpi"><div class="num">34</div><div class="lbl">三轴+桥</div></div>
+<div class="kpi"><div class="num">10</div><div class="lbl">无轴件(谓词未覆盖)</div></div>
+</div>
+<h3>轴定义(谓词,tags + 关键词)</h3>
+<table><tr><th>轴</th><th>覆盖件数</th><th>谓词口径</th></tr>
+<tr><td class="mono">狂暴</td><td class="mono">68</td><td>—</td></tr>
+<tr><td class="mono">皮甲</td><td class="mono">26</td><td>—</td></tr>
+<tr><td class="mono">野兽</td><td class="mono">22</td><td>—</td></tr>
+<tr><td class="mono">慢控</td><td class="mono">25</td><td>—</td></tr>
+<tr><td class="mono">输出</td><td class="mono">53</td><td>—</td></tr>
+<tr><td class="mono">耐久</td><td class="mono">28</td><td>—</td></tr>
+<tr><td class="mono">陷阱</td><td class="mono">4</td><td>—</td></tr>
+</table>
+<h3>桥矩阵(轴×轴交集物品数)</h3>
+<table><tr><th>×</th><th class="mono">狂暴</th><th class="mono">皮甲</th><th class="mono">野兽</th><th class="mono">慢控</th><th class="mono">输出</th><th class="mono">耐久</th><th class="mono">陷阱</th></tr>
+<tr><td class="mono">狂暴</td>
+<td class="mono">·</td>
+<td class="mono" class="good">18</td>
+<td class="mono" class="good">13</td>
+<td class="mono">8</td>
+<td class="mono" class="good">30</td>
+<td class="mono" class="good">18</td>
+<td class="mono">1</td>
+</tr>
+<tr><td class="mono">皮甲</td>
+<td class="mono" class="good">18</td>
+<td class="mono">·</td>
+<td class="mono">0</td>
+<td class="mono">4</td>
+<td class="mono" class="good">11</td>
+<td class="mono" class="good">12</td>
+<td class="mono">0</td>
+</tr>
+<tr><td class="mono">野兽</td>
+<td class="mono" class="good">13</td>
+<td class="mono">0</td>
+<td class="mono">·</td>
+<td class="mono">5</td>
+<td class="mono" class="good">12</td>
+<td class="mono">4</td>
+<td class="mono">1</td>
+</tr>
+<tr><td class="mono">慢控</td>
+<td class="mono">8</td>
+<td class="mono">4</td>
+<td class="mono">5</td>
+<td class="mono">·</td>
+<td class="mono">9</td>
+<td class="mono">5</td>
+<td class="mono">3</td>
+</tr>
+<tr><td class="mono">输出</td>
+<td class="mono" class="good">30</td>
+<td class="mono" class="good">11</td>
+<td class="mono" class="good">12</td>
+<td class="mono">9</td>
+<td class="mono">·</td>
+<td class="mono" class="good">11</td>
+<td class="mono">3</td>
+</tr>
+<tr><td class="mono">耐久</td>
+<td class="mono" class="good">18</td>
+<td class="mono" class="good">12</td>
+<td class="mono">4</td>
+<td class="mono">5</td>
+<td class="mono" class="good">11</td>
+<td class="mono">·</td>
+<td class="mono">0</td>
+</tr>
+<tr><td class="mono">陷阱</td>
+<td class="mono">1</td>
+<td class="mono">0</td>
+<td class="mono">1</td>
+<td class="mono">3</td>
+<td class="mono">3</td>
+<td class="mono">0</td>
+<td class="mono">·</td>
+</tr>
+</table>
+<h3>最密桥(Top 5)</h3><table><tr><th>桥</th><th>件数</th><th>代表物品</th></tr>
+<tr><td class="mono">狂暴 × 输出</td><td class="mono">30</td><td>Battle Axe, Bear Claws, Beast Tooth, Double-Bladed Knife</td></tr>
+<tr><td class="mono">狂暴 × 皮甲</td><td class="mono">18</td><td>Bandoleer, Snowshoes, Warpaint, Wolf Mask</td></tr>
+<tr><td class="mono">狂暴 × 耐久</td><td class="mono">18</td><td>Flame Sigil, Healing Draught, Karst</td></tr>
+<tr><td class="mono">狂暴 × 野兽</td><td class="mono">13</td><td>Black Mamba, Dryad, Firefly Lantern, Snow Wisp</td></tr>
+<tr><td class="mono">皮甲 × 耐久</td><td class="mono">12</td><td>Furs, Hunter's Pack</td></tr>
+</table>
+<h3>桥的形式(标签桥 / 文本桥 / 双重桥)</h3>
+<table><tr><th>形式</th><th>件数</th><th>代表</th></tr>
+<tr><td>标签桥</td><td class="mono">0</td><td></td></tr>
+<tr><td>文本桥</td><td class="mono">76</td><td>Anaconda, Ancient Locket, Assault Sigil, Bandoleer, Bat</td></tr>
+<tr><td>双重桥</td><td class="mono">0</td><td></td></tr>
+</table>
+<h3>桥的 tier 分布</h3><table><tr><th>tier</th><th>桥数</th></tr>
+<tr><td>Bronze</td><td class="mono">25</td></tr>
+<tr><td>Silver</td><td class="mono">33</td></tr>
+<tr><td>Gold</td><td class="mono">18</td></tr>
+</table>
+<h3>空位审计(桥 = 0 的轴对)</h3>
+<ul><li class="bad">皮甲 × 野兽</li><li class="bad">皮甲 × 陷阱</li><li class="bad">耐久 × 陷阱</li></ul>
+<h3>闭环示例(代表构筑链)</h3><div class="flow">Rage 入口(Bear Mask 首次使用+30 Rage) → 狂暴×输出(Assault Sigil 狂暴→10% 最大生命伤害) → 狂暴×皮甲(Bear Mask 狂暴+10% 最大生命) → 狂暴×野兽(Karst 用友军→Rage+盾) → 停怒二波(Firefly Lantern 停怒→再使用):狂暴是绝对中心,皮甲/野兽/慢控/输出全部从狂暴发散——全池最高单轴密度(58%)。</div>
+</div>
+<h2>4. 两段式审计(条件制造 → 兑现)</h2>
+<div class="card">
+<table>
+<tr><th>层</th><th>设计职责</th><th>代表件</th><th>tier 观察</th></tr>
+<tr><td><strong>入口层</strong>(制造条件/供给)</td><td>Rage 获取(用武器/暴击/治疗/慢/烧)</td><td>Eagle Sigil / Tranquil Sigil / Enervating Sigil / Bear Mask</td><td>B/S 为主</td></tr>
+<tr><td><strong>兑现层</strong>(消费条件)</td><td>Enrage 触发(伤害/冷却缩减/最大生命)</td><td>Assault Sigil / Battle Axe / Great Eagle / Wild Bear</td><td>S/G 为主</td></tr>
+<tr><td><strong>封顶层</strong>(条件 → 乘区)</td><td>狂暴期自充/吸生/双倍 Rage、最大生命乘区</td><td>Tree Club / Outlands Terror / Wild Bear / Forest Cloak</td><td>S/G 集中</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:Karnok 的两段式是「循环式」:入口件累积 Rage(条件),兑现件触发 Enrage(消费条件),停怒件再触发第二波——「愤怒循环」是双段式的自持变体。Rage/Enrage 接口词汇是 Karnok 的最小语法单位,其「条件→双态兑现→第二波」结构对 OneDeck 的「条件→兑现→事件链」有直接对照价值(见 §6)。</div>
+</div>
+<h2>5. 强度阶梯(高 tier = 高强度?)</h2>
+<div class="card">
+<h3>5.1 Gold(21)与 Diamond(0)</h3>
+<table>
+<tr><th>件</th><th>tier</th><th>size</th><th>强度认定</th></tr>
+<tr><td>Anaconda</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal damage equal to double the Rage you have gained this fight When you Enrage, this gains +3 Multicast Deal </td></tr>
+<tr><td>Assault Sigil</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use a Weapon, gain 15 Rage When you Enrage, deal Damage equal to 10% of your Max Health When you use </td></tr>
+<tr><td>Fairy Circle</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When you Slow or Freeze one of your items, Charge it 1 second(s) When you or one of your items, it 1second(s)</td></tr>
+<tr><td>Flame Sigil</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you Burn, gain 5 Rage When you Enrage, Burn equal to 3% of your Max Health When you , gain 5 Rage When yo</td></tr>
+<tr><td>Fogshroom</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Slow adjacent items 1 second(s) If you are Enraged, Charge your other items 1 second(s) adjacent items 1 secon</td></tr>
+<tr><td>Great Eagle</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 300 Damage Your Flying items have +50% Damage and Shield When you Enrage, 3 of your items start Flying De</td></tr>
+<tr><td>Healing Draught</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Heal equal to 25% of your Max Health When you Enrage, Reload this equal to 2550% of your Max Health When you E</td></tr>
+<tr><td>Hunter's Boots</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Slow adjacent items 1 second(s) and Charge them 1 second When you Slow one of your items, it gains 10% Crit Ch</td></tr>
+<tr><td>Hunter's Pack</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>You have +2% Max Health for each Type this has Your items have +2% Crit Chance for each Type this has This has</td></tr>
+<tr><td>Leather Jacket</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>You take 30% less damage When you Enrage or the Sandstorm starts, Destroy this You take 3060% less damage When</td></tr>
+<tr><td>Log Trap</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>The first time your enemy uses an item, deal 500 Damage and Slow all their items 1 second(s) When you Enrage, </td></tr>
+<tr><td>Lost Blade</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal Damage equal to 20% of your Max Health If this is your only item with a Cooldown, its Cooldown is reduced</td></tr>
+<tr><td>Night Vision</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Slow adjacent items 2 second(s) When you Slow an adjacent item, Haste an item 1 second(s) adjacent items 21 se</td></tr>
+<tr><td>Runic Claymore</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal Damage equal to 10% of your Max Health When you Crit with this, gain Max Health equal to this item's Dama</td></tr>
+<tr><td>Spiked Collar</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>When you use a Friend, deal 15 Damage When you use a Friend, deal 1530</td></tr>
+<tr><td>Steel Bramble</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>When your enemy uses an item, gain 2 Rage When your enemy uses an item, gain 24 Rage</td></tr>
+<tr><td>Trail Markers</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>All items except your leftmost item have their Cooldown increased by 1 second(s) All items except your leftmos</td></tr>
+<tr><td>Trapping Pit</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>The first time an enemy uses an item of the same or lower tier as this, Destroy that item and deal 400 Damage </td></tr>
+<tr><td>Trapvine</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When an enemy uses an item, Slow it 1 second(s) When you Slow, Poison 8 When an enemy uses an item, it 1 secon</td></tr>
+<tr><td>Tree Club</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 1000 Damage When you use adjacent item, gain 10 Rage This only charges itself while you are Enraged and i</td></tr>
+<tr><td>Wild Bear</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal Damage equal to 10% of your Max Health When you Enrage, gain 20% Max Health Deal equal to 10% of your Max</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Karnok 无 Diamond(0 件),Gold 21 件承载狂暴兑现件(Tree Club / Outlands Terror / Wild Bear / Great Eagle)与陷阱(Log Trap)。tier 表达「获取难度 + 狂暴放大潜力」,Gold 是「愤怒兑现」层。</div>
+</div>
+<h2>6. 与 StS2 / OneDeck 的映射</h2>
+<div class="card">
+<h3>6.1 与 StS2 的结构异同</h3>
+<table><tr><th>维度</th><th>StS2(五角色)</th><th>Bazaar(Karnok)</th><th>差异判定</th></tr>
+<tr><td>入口层</td><td>Common 无能力卡,即打即用</td><td>Bronze Rage 获取件(暴击/治疗/慢→Rage)</td><td>同工:入口=制造条件</td></tr>
+<tr><td>兑现层</td><td>Uncommon 桥层</td><td>Silver Enrage 兑现件密集</td><td>同工:桥在中间 tier</td></tr>
+<tr><td>封顶</td><td>Rare 大数字/引擎</td><td>Gold 狂暴放大(Tree Club 1000 伤 / Outlands Terror 吸生)</td><td>同工:高 tier 承载放大</td></tr>
+<tr><td>资源经济</td><td>垃圾经济学四形态</td><td>Rage 双态循环(累积→兑现→停怒二波)</td><td>同类,「愤怒循环」= StS2 的「力量/易伤」成长循环</td></tr>
+<tr><td>运行</td><td>回合制/能量</td><td>实时秒表/冷却/空间</td><td>差异最大</td></tr>
+</table>
+<h3>6.2 OneDeck 落点(初筛)</h3>
+<table><tr><th>Bazaar 观察</th><th>OneDeck 可借鉴</th><th>不可搬</th></tr>
+<tr><td>Rage→Enrage→停怒 双态循环</td><td><b>OneDeck 的「条件→兑现→事件链」可对照其双态设计</b>——OneDeck 的力量/攻击力成长是单向,「狂暴二波」式的第二兑现是可选扩展</td><td>秒表冷却不映射轮次制</td></tr>
+<tr><td>停怒第二波(Firefly Lantern / Tent)</td><td>OneDeck 的「状态结束触发」句式(如苏醒/诅咒结束)可参考「双段兑现」</td><td>—</td></tr>
+<tr><td>最大生命乘区(Wild Bear / Forest Cloak)</td><td>OneDeck 的 HP 成长类机制(生命系统)可对照「最大生命×伤害」</td><td>—</td></tr>
+<tr><td>皮甲=耐久+狂暴联动(26 件)</td><td>OneDeck 的「防御+条件联动」句式可参考</td><td>—</td></tr>
+</table>
+</div>
+<h2>7. 关键卡清单</h2>
+<div class="card"><table>
+<tr><th>轴</th><th>物品</th><th>tier</th><th>size</th><th>cd/弹药</th><th>effects 摘要</th></tr>
+<tr><td>狂暴</td><td>Bear Mask</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>The first time any item is used, gain 30 Rage When you Enrage, gain 10% Max Health The first time any item is used, gain 30 Rage W</td></tr>
+<tr><td>狂暴</td><td>Eagle Sigil</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">—</td><td>When you Crit, gain 15 Rage When you Enrage, adjacent items gain 30% Crit Chance When you Crit, gain 15 Rage When you Enrage, adja</td></tr>
+<tr><td>狂暴</td><td>Tranquil Sigil</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When you Heal, gain 4 Rage When you Enrage, your items gain 50 Heal When you , gain 468 Rage When you Enrage, your items gain 5010</td></tr>
+<tr><td>狂暴</td><td>Enervating Sigil</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When you Slow, gain 4 Rage When you Enrage, Slow ALL items 3 seconds When you , gain 468 Rage When you Enrage, ALL items 3 seconds</td></tr>
+<tr><td>狂暴</td><td>Vengeful Sigil</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When your enemy uses an item, gain 4 Rage While you are Enraged, your Weapons have Lifesteal When your enemy uses an item, gain 46</td></tr>
+<tr><td>狂暴</td><td>Karst</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Large</td><td class="mono">—</td><td>When you use a Friend or non-Weapon item, gain 6 Rage and Shield 15 Your Enrage lasts half as long When you use a Friend or non- i</td></tr>
+<tr><td>兑现</td><td>Assault Sigil</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When you use a Weapon, gain 15 Rage When you Enrage, deal Damage equal to 10% of your Max Health When you use a , gain 15 Rage Whe</td></tr>
+<tr><td>兑现</td><td>Battle Axe</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Deal 100 Damage When you Enrage, this gains 60 While you are Enraged, this has its Cooldown reduced by 4 seconds Deal 100 When you</td></tr>
+<tr><td>兑现</td><td>Great Eagle</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">8</td><td>Deal 300 Damage Your Flying items have +50% Damage and Shield When you Enrage, 3 of your items start Flying Deal 300600 Your Flyin</td></tr>
+<tr><td>兑现</td><td>Wild Bear</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">5</td><td>Deal Damage equal to 10% of your Max Health When you Enrage, gain 20% Max Health Deal equal to 10% of your Max Health When you Enr</td></tr>
+<tr><td>兑现</td><td>Outlands Terror</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Large</td><td class="mono">8</td><td>Deal 200 Damage While you are Enraged, this has Lifesteal and its Cooldown reduced by half You have double Rage gain Deal 20040080</td></tr>
+<tr><td>兑现</td><td>Tree Club</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">11</td><td>Deal 1000 Damage When you use adjacent item, gain 10 Rage This only charges itself while you are Enraged and its Cooldown is reduc</td></tr>
+<tr><td>停怒</td><td>Firefly Lantern</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">10</td><td>Burn 2 When you stop being Enraged, use this 2468 When you stop being Enraged, use this</td></tr>
+<tr><td>停怒</td><td>Frog Hollow</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When you use a Friend, Heal 20 and Poison 2 When you stop being Enraged, Haste your items 3 seconds When you use a Friend, 204080 </td></tr>
+<tr><td>停怒</td><td>Tent</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When you Slow an adjacent item, gain 5 Rage and Reload it When you stop being Enraged, Shield equal to 20% of your Max Health When</td></tr>
+<tr><td>皮甲</td><td>Forest Cloak</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>You have +20% Max Health While you are Enraged, you take half Damage You have +204060% Max Health While you are Enraged, you take </td></tr>
+<tr><td>皮甲</td><td>Leather Jacket</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">—</td><td>You take 30% less damage When you Enrage or the Sandstorm starts, Destroy this You take 3060% less damage When you Enrage or the S</td></tr>
+<tr><td>皮甲</td><td>Wolf Mask</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>The first time any item is used each fight, gain 30 Rage Adjacent items have +15% Crit Chance When you Enrage, double the Crit Cha</td></tr>
+<tr><td>野兽</td><td>Wolf</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Deal 10 Damage When you Enrage, Haste your Friends 2 seconds When you Haste a Friend, your Friends gain 5 Deal 10 When you Enrage,</td></tr>
+<tr><td>野兽</td><td>Honey Badger</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Deal 10 Damage When you gain Rage, Charge this 1 second(s) When you stop being Enraged, increase this item's Charge and Cooldown b</td></tr>
+<tr><td>陷阱</td><td>Log Trap</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">—</td><td>The first time your enemy uses an item, deal 500 Damage and Slow all their items 1 second(s) When you Enrage, this item can trigge</td></tr>
+<tr><td>陷阱</td><td>Bear Trap</td><td><span class="badge t-bronze">Silver</span></td><td class="mono">Small</td><td class="mono">30 / 1发</td><td>Deal 25 Damage Slow an item 2 seconds When your enemy uses an item, use this Deal 2550100 an item 234 seconds When your enemy uses</td></tr>
+</table></div>
+</table></div>
+<h2>8. 文档元信息</h2>
+<div class="card">
+<table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>数据快照</td><td class="mono">2026-08-31 mobalytics.gg TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59),全池 1207 件提取 Karnok 专属 118</td></tr>
+<tr><td>归属规则</td><td>heroes[] 含 Karnok 且非模板占位(description 含 Template 的 1 件已滤)</td></tr>
+<tr><td>字段说明</td><td>tierStats 为四级数值;cooldown/ammo/critchance/multicast 底层字段化;descriptions 含配色模板标记已清洗</td></tr>
+<tr><td>已知缺口</td><td>附魔(enchantments)已随 Mobalytics 全量收录,综合文档定量</td></tr>
+<tr><td>本系列</td><td>Vanessa / Dooley / Mak / Karnok / Jules / Stelle / The Dragons / 公共池 / 技能池 / 综合(逐个完成即停,step-gate)</td></tr>
+</table>
+<div class="note">计数口径:机制词按 tags + descriptions 关键词匹配,多标签重复计入;tier/size 按 Mobalytics 字段原值。</div>
+</div>
+</body></html>

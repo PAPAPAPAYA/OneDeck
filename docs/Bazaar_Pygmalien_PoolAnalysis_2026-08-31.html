@@ -1,0 +1,372 @@
+<html><head><meta charset="utf-8"><title>The Bazaar · Pygmalien 物品池结构拆解</title><style>
+:root {
+--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+--purple: #bb9af7; --cyan: #7dcfff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+background: var(--bg); color: var(--text);
+font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+}
+h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+.mono { font-family: Consolas, monospace; }
+.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+.t-bronze { color: #c98a5e; border-color: #c98a5e88; }
+.t-silver { color: #aeb5c2; border-color: #aeb5c288; }
+.t-gold { color: #e0af68; border-color: #e0af6888; }
+.t-diamond { color: #7dcfff; border-color: #7dcfff88; }
+.b-weap { color: #f7768e; border-color: #f7768e88; }
+.b-tool { color: #e0af68; border-color: #e0af6888; }
+.b-props { color: #bb9af7; border-color: #bb9af788; }
+.b-aqua { color: #7dcfff; border-color: #7dcfff88; }
+.b-friend { color: #9ece6a; border-color: #9ece6a88; }
+.b-veh { color: #ff9e64; border-color: #ff9e6488; }
+.star { color: #e0af68; font-weight: 700; }
+ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+li { margin: 3px 0; }
+.lead { font-size: 0.92rem; margin: 8px 0; }
+.dim { color: var(--dim); }
+.warn { color: var(--warn); }
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+.purple { color: var(--purple); }
+.cyan { color: var(--cyan); }
+.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style></head><body>
+<h1>The Bazaar · Pygmalien 物品池结构拆解</h1>
+<div class="sub">2026-08-31 · 数据源:<a href="https://mobalytics.gg/the-bazaar/pygmalien-items">mobalytics.gg</a> TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59,快照 2026-08-31)· 全池 1207 物品中 Pygmalien 专属 153 件(已过滤 1 件模板占位)· 物品英文为准 · 同系列:Vanessa / Dooley / Mak / Karnok / Jules / Stelle / The Dragons / 公共池 / 技能池 / 综合</div>
+<div class="kpis">
+<div class="kpi"><div class="num">153</div><div class="lbl">物品池总数(全游最大,153 件)</div></div>
+<div class="kpi"><div class="num">71/52/27/3</div><div class="lbl">tier 分布 B/S/G/D</div></div>
+<div class="kpi"><div class="num">42</div><div class="lbl">Value 相关(27%)—— 身份关键词</div></div>
+<div class="kpi"><div class="num">37/32</div><div class="lbl">Toy 37 / Property 32 —— 两大身份标签</div></div>
+<div class="kpi"><div class="num">2+3</div><div class="lbl">主轴:经济(买卖/价值) / 武器护盾摆动 + 玩具 / 地产 / 遗物</div></div>
+<div class="kpi"><div class="num">32</div><div class="lbl">无冷却被动件(21%)</div></div>
+</div>
+<h2>0. 英雄骨架</h2>
+<div class="card">
+<div class="lead"><strong>定位</strong>:全游「经济资本家」英雄——物品池数量全游最大(153),身份轴为「买卖增值 + 玩具/地产/遗物 + 武器护盾摆动」。核心语法:Value(物品价值)→ Sell Price(卖出价格)→ Spare Change(零钱)/ Gold(金币)/ Income(收入),全部围绕「投资—回报」。</div>
+<div class="lead"><strong>身份关键词(Top)</strong>:< s p a n   c l a s s = " b a d g e   b - p r o p s " > P r o p e r t y   3 2 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > T o y   3 7 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > V a l u e   4 2 < / s p a n > < s p a n   c l a s s = " b a d g e " > S e l l   3 1 < / s p a n > < s p a n   c l a s s = " b a d g e " > R e l i c   1 2 < / s p a n > < s p a n   c l a s s = " b a d g e   b - w e a p " > W e a p o n   3 6 < / s p a n ></div>
+<div class="lead"><strong>资源轴速览</strong>:Value = 物品价值(可被技能/物品放大);Sell Price = 卖价(卖出回收经济);Spare Change / Gold / Income = 硬通货(经济引擎驱动);Weapon ↔ Shield 摆动 = 自循环驱动;Property = 地产经济(被购买/每日收益)。</div>
+</div>
+<h2>1. 池组成总览</h2>
+<div class="card">
+<h3>1.1 tier × size</h3>
+<table>
+<tr><th>Tier</th><th>数量</th><th>占比</th><th>Small</th><th>Medium</th><th>Large</th><th>定位</th></tr>
+<tr><td><span class="badge t-bronze">Bronze</span></td><td class="mono">71</td><td class="mono">46%</td><td class="mono">43</td><td class="mono">25</td><td class="mono">3</td><td>入门密度层——玩具/地产/工具为主,教学层</td></tr>
+<tr><td><span class="badge t-silver">Silver</span></td><td class="mono">52</td><td class="mono">34%</td><td class="mono">11</td><td class="mono">29</td><td class="mono">12</td><td>主力层——经济件与遗物集中</td></tr>
+<tr><td><span class="badge t-gold">Gold</span></td><td class="mono">27</td><td class="mono">18%</td><td class="mono">6</td><td class="mono">10</td><td class="mono">11</td><td>强度层——高价值地产与引擎</td></tr>
+<tr><td><span class="badge t-diamond">Diamond</span></td><td class="mono">3</td><td class="mono">2%</td><td class="mono">0</td><td class="mono">1</td><td class="mono">2</td><td>封顶件层(3 件)</td></tr>
+</table></div>
+<div class="card">
+<h3>1.2 类型标签分布(多标签重复计入,基数 153)</h3>
+<table>
+<tr><th>类型</th><th>数量</th><th>占比</th><th>代表件</th></tr>
+<tr><td><span class="badge t-silver">Toy</span></td><td class="mono">37</td><td class="mono">24%</td><td>Piggy Bank / Abacus / Cash Register</td></tr>
+<tr><td><span class="badge b-props">Property</span></td><td class="mono">32</td><td class="mono">21%</td><td>ATM / Beehive / Billboard</td></tr>
+<tr><td><span class="badge b-weap">Weapon</span></td><td class="mono">36</td><td class="mono">24%</td><td>Briefcase / Golf Clubs / Dog</td></tr>
+<tr><td><span class="badge b-tool">Tool</span></td><td class="mono">21</td><td class="mono">14%</td><td>Ledger / Bushel / Spices</td></tr>
+<tr><td><span class="badge t-silver">Apparel</span></td><td class="mono">17</td><td class="mono">11%</td><td>Apropos Chapeau / Belt / Bag</td></tr>
+<tr><td><span class="badge t-silver">Relic</span></td><td class="mono">12</td><td class="mono">8%</td><td>Atlas Stone / Atlas / Crystal Bonsai</td></tr>
+<tr><td><span class="badge t-silver">Tech</span></td><td class="mono">7</td><td class="mono">5%</td><td>Laser Security System / Robot</td></tr>
+<tr><td><span class="badge b-veh">Vehicle</span></td><td class="mono">6</td><td class="mono">4%</td><td>Ice Cream Truck / Lemonade Stand</td></tr>
+<tr><td><span class="badge b-friend">Friend</span></td><td class="mono">4</td><td class="mono">3%</td><td>Dog / Flying Pig / Pigs</td></tr>
+<tr><td><span class="badge t-silver">Food</span></td><td class="mono">4</td><td class="mono">3%</td><td>Bushel / Lemonade / Spices</td></tr>
+<tr><td><span class="badge t-silver">Trap</span></td><td class="mono">2</td><td class="mono">1%</td><td>Caltrops / Booby Trap</td></tr>
+<tr><td><span class="badge t-silver">Instrument</span></td><td class="mono">2</td><td class="mono">1%</td><td>Ganjo / Gramophone</td></tr>
+</table>
+<div class="note">本表取 tags 严格标签。玩具(玩具店主题)与经济件是最大构成块;Property 是「逛店/地产循环」的底盘。多标签物品重复计入各标签。</div>
+</div>
+<div class="card">
+<h3>1.3 节奏结构(冷却分布,base tier 口径)</h3>
+<table>
+<tr><th>冷却带</th><th>数量</th><th>占比</th><th>说明</th></tr>
+<tr><td>Passive(无冷却/触发式)</td><td class="mono">32</td><td class="mono">21%</td><td>—</td></tr>
+<tr><td>≤3s</td><td class="mono">6</td><td class="mono">4%</td><td>—</td></tr>
+<tr><td>4-6s</td><td class="mono">82</td><td class="mono">54%</td><td>—</td></tr>
+<tr><td>7-9s</td><td class="mono">25</td><td class="mono">16%</td><td>—</td></tr>
+<tr><td>10s+</td><td class="mono">8</td><td class="mono">5%</td><td>—</td></tr>
+<tr><td>多值(升级线,不同 tier 冷却不同)</td><td class="mono">30</td><td class="mono">20%</td><td>随等级渐快——升级即加速</td></tr>
+</table>
+<div class="note">Pygmalien 节奏偏中慢(经济件以被动/低频为主,战斗件 4-9s)。武器护盾摆动件(28 Hour Fitness 类)是内部自循环驱动的最明显例子。</div>
+</div>
+<h2>2. 术语与分级结构</h2>
+<div class="card">
+<h3>2.1 机制词分布</h3>
+<table><tr><th>机制词</th><th>件数</th><th>性质</th></tr>
+<tr><td class="mono">Value</td><td class="mono">42</td><td>—</td></tr>
+<tr><td class="mono">Sell</td><td class="mono">31</td><td>—</td></tr>
+<tr><td class="mono">Price</td><td class="mono">24</td><td>—</td></tr>
+<tr><td class="mono">Gold</td><td class="mono">8</td><td>—</td></tr>
+<tr><td class="mono">Income</td><td class="mono">3</td><td>—</td></tr>
+<tr><td class="mono">Buy</td><td class="mono">6</td><td>—</td></tr>
+<tr><td class="mono">Spare Change</td><td class="mono">7</td><td>—</td></tr>
+<tr><td class="mono">Toy</td><td class="mono">37</td><td>—</td></tr>
+<tr><td class="mono">Property</td><td class="mono">32</td><td>—</td></tr>
+<tr><td class="mono">Weapon</td><td class="mono">36</td><td>—</td></tr>
+<tr><td class="mono">Tool</td><td class="mono">21</td><td>—</td></tr>
+<tr><td class="mono">Relic</td><td class="mono">12</td><td>—</td></tr>
+<tr><td class="mono">Heal</td><td class="mono">50</td><td>—</td></tr>
+<tr><td class="mono">Shield</td><td class="mono">38</td><td>—</td></tr>
+<tr><td class="mono">Burn</td><td class="mono">15</td><td>—</td></tr>
+<tr><td class="mono">Freeze</td><td class="mono">13</td><td>—</td></tr>
+<tr><td class="mono">Haste</td><td class="mono">3</td><td>—</td></tr>
+<tr><td class="mono">Slow</td><td class="mono">5</td><td>—</td></tr>
+<tr><td class="mono">Crit</td><td class="mono">3</td><td>—</td></tr>
+<tr><td class="mono">Multicast</td><td class="mono">17</td><td>—</td></tr>
+</table>
+<div class="note">词表为 tags + descriptions 关键词匹配(多标签重复计入)。Pygmalien 的「Value/Sell/Price/Gold/Income」五件经济关键词密度全游最高——经济轴是其身份正身。</div>
+</div>
+<div class="card">
+<h3>2.2 触发句式</h3>
+<table><tr><th>句式</th><th>件数</th><th>代表</th><th>设计含义</th></tr>
+<tr><td>When you buy</td><td class="mono">5</td><td>—</td><td>—</td></tr>
+<tr><td>When you sell</td><td class="mono">11</td><td>—</td><td>—</td></tr>
+<tr><td>At the start of each day</td><td class="mono">10</td><td>—</td><td>—</td></tr>
+<tr><td>When you visit a Merchant</td><td class="mono">2</td><td>—</td><td>—</td></tr>
+<tr><td>Adjacent items gain</td><td class="mono">9</td><td>—</td><td>—</td></tr>
+<tr><td>When an enemy uses</td><td class="mono">2</td><td>—</td><td>—</td></tr>
+</table></div>
+<h2>3. 构筑轴识别</h2>
+<div class="card">
+<h3>3.1 经济投资轴(身份轴)</h3>
+<div class="flow">Value 累积(Piggy Bank / Business Card) → Sell Price 放大(Abacus) → 卖出回收(Spare Change / Gold) → 收入引擎(ATM / Vending Machine)</div>
+<div class="lead"><strong>入口</strong>:Value 增益件(Sell Price 价值提升)。<strong>兑现</strong>:卖出/回收现金(Spare Change、Gold、Income)。<strong>封顶</strong>:地产生物(值钱地产)+ 每日收益物件(Vending Machine / Beehive)。</div>
+<div class="lead"><strong>桥</strong>:Vending Machine / Business Card / 各类「每日生产」Property。「现金流瀑布」是 Pygmalien 引擎。</div>
+</div>
+<div class="card">
+<h3>3.2 武器护盾摆动轴</h3>
+<div class="flow">28 Hour Fitness(武器→盾 / 盾→武器伤害) → 其它摆动件 → 自循环(使用武器给盾,用盾给伤)</div>
+<div class="lead"><strong>设计特征</strong>:Pygmalien 版「自动机」——武器/盾牌互换产生持续缓冲+输出。</div>
+</div>
+<div class="card">
+<h3>3.3 玩具/地产/遗物密度轴</h3>
+<div class="flow">Piggy Bank(玩具,卖价值) → Abacus(工具,价值传递) → 地产(Property 每日收益) → 遗物(Atlas Stone 等)</div>
+<div class="lead"><strong>密度</strong>:Toy 40 + Property 40 + Relic 13 ——「逛店/租售」主题,配合买卖经济形成闭环。</div>
+</div>
+<div class="card">
+<h3>3.4 战斗辅助轴(次轴)</h3>
+<div class="lead"><strong>特征</strong>:Weapon 36 + Heal 50 + Shield 38 —— Pygmalien 有武器格斗件与大量护盾/治疗,战斗输出偏「耐久滚雪球」。</div>
+</div>
+<div class="card">
+<h3>3.5 轴矩阵总结</h3>
+<table>
+<tr><th>轴</th><th>件数</th><th>tier 分布</th><th>入口/兑现/封顶</th><th>密度评价</th></tr>
+<tr><td>经济投资</td><td class="mono">55</td><td>B22/S24/G9/D0</td><td>Value 累积 → Sell Price → 现金/收入</td><td class="good">厚,身份轴</td></tr>
+<tr><td>武器盾摆</td><td class="mono">4</td><td>B1/S1/G2/D0</td><td>武器→盾→伤自循环</td><td class="warn">中,引擎件</td></tr>
+<tr><td>玩具/地产</td><td class="mono">68</td><td>B33/S21/G12/D2</td><td>玩具/地产 → 每日收益 → 递进</td><td class="good">厚,主题轴</td></tr>
+<tr><td>遗物</td><td class="mono">12</td><td>B4/S7/G1/D0</td><td>被动增益件</td><td class="warn">中</td></tr>
+<tr><td>战斗辅助</td><td class="mono">101</td><td>B48/S36/G15/D2</td><td>武器格斗 + 耐久</td><td class="warn">中</td></tr>
+</table></div>
+<h2>3.6 轴间桥矩阵(2026-08-31 框架迭代)</h2>
+<div class="card">
+<div class="kpis" style="margin:8px 0">
+<div class="kpi"><div class="num">67</div><div class="lbl">单轴件(44%)</div></div>
+<div class="kpi"><div class="num">76</div><div class="lbl">桥(≥2 轴,50%)</div></div>
+<div class="kpi"><div class="num">54</div><div class="lbl">双轴桥</div></div>
+<div class="kpi"><div class="num">22</div><div class="lbl">三轴+桥</div></div>
+<div class="kpi"><div class="num">10</div><div class="lbl">无轴件(谓词未覆盖)</div></div>
+</div>
+<h3>轴定义(谓词,tags + 关键词)</h3>
+<table><tr><th>轴</th><th>覆盖件数</th><th>谓词口径</th></tr>
+<tr><td class="mono">经济</td><td class="mono">55</td><td>—</td></tr>
+<tr><td class="mono">摆动</td><td class="mono">4</td><td>—</td></tr>
+<tr><td class="mono">玩具</td><td class="mono">37</td><td>—</td></tr>
+<tr><td class="mono">地产</td><td class="mono">32</td><td>—</td></tr>
+<tr><td class="mono">遗物</td><td class="mono">12</td><td>—</td></tr>
+<tr><td class="mono">战斗</td><td class="mono">101</td><td>—</td></tr>
+</table>
+<h3>桥矩阵(轴×轴交集物品数)</h3>
+<table><tr><th>×</th><th class="mono">经济</th><th class="mono">摆动</th><th class="mono">玩具</th><th class="mono">地产</th><th class="mono">遗物</th><th class="mono">战斗</th></tr>
+<tr><td class="mono">经济</td>
+<td class="mono">·</td>
+<td class="mono">0</td>
+<td class="mono" class="good">10</td>
+<td class="mono" class="good">12</td>
+<td class="mono">5</td>
+<td class="mono" class="good">35</td>
+</tr>
+<tr><td class="mono">摆动</td>
+<td class="mono">0</td>
+<td class="mono">·</td>
+<td class="mono">0</td>
+<td class="mono">3</td>
+<td class="mono">0</td>
+<td class="mono">4</td>
+</tr>
+<tr><td class="mono">玩具</td>
+<td class="mono" class="good">10</td>
+<td class="mono">0</td>
+<td class="mono">·</td>
+<td class="mono">1</td>
+<td class="mono">0</td>
+<td class="mono" class="good">17</td>
+</tr>
+<tr><td class="mono">地产</td>
+<td class="mono" class="good">12</td>
+<td class="mono">3</td>
+<td class="mono">1</td>
+<td class="mono">·</td>
+<td class="mono">0</td>
+<td class="mono" class="good">23</td>
+</tr>
+<tr><td class="mono">遗物</td>
+<td class="mono">5</td>
+<td class="mono">0</td>
+<td class="mono">0</td>
+<td class="mono">0</td>
+<td class="mono">·</td>
+<td class="mono" class="good">10</td>
+</tr>
+<tr><td class="mono">战斗</td>
+<td class="mono" class="good">35</td>
+<td class="mono">4</td>
+<td class="mono" class="good">17</td>
+<td class="mono" class="good">23</td>
+<td class="mono" class="good">10</td>
+<td class="mono">·</td>
+</tr>
+</table>
+<h3>最密桥(Top 5)</h3><table><tr><th>桥</th><th>件数</th><th>代表物品</th></tr>
+<tr><td class="mono">战斗 × 经济</td><td class="mono">35</td><td>Badblocker, Briefcase, Cash Cannon, Closed Sign</td></tr>
+<tr><td class="mono">地产 × 战斗</td><td class="mono">23</td><td>Aurora Dome, Fort, Fountain, Hogwash</td></tr>
+<tr><td class="mono">战斗 × 玩具</td><td class="mono">17</td><td>Boomerang, Green Piggles A, Green Piggles L, Green Piggles R</td></tr>
+<tr><td class="mono">地产 × 经济</td><td class="mono">12</td><td>Balcony, Stained Glass Window, Vending Machine</td></tr>
+<tr><td class="mono">玩具 × 经济</td><td class="mono">10</td><td>PenFT, Piggy Bank, Premium Orange Piggles, Premium Piggles</td></tr>
+</table>
+<h3>桥的形式(标签桥 / 文本桥 / 双重桥)</h3>
+<table><tr><th>形式</th><th>件数</th><th>代表</th></tr>
+<tr><td>标签桥</td><td class="mono">1</td><td>Snow Globe</td></tr>
+<tr><td>文本桥</td><td class="mono">17</td><td>Apropos Chapeau, Badblocker, Briefcase, Cash Cannon, Closed Sign</td></tr>
+<tr><td>双重桥</td><td class="mono">58</td><td>28 Hour Fitness, ATM, Atlas Stone, Atlatl, Aurora Dome</td></tr>
+</table>
+<h3>桥的 tier 分布</h3><table><tr><th>tier</th><th>桥数</th></tr>
+<tr><td>Bronze</td><td class="mono">29</td></tr>
+<tr><td>Silver</td><td class="mono">34</td></tr>
+<tr><td>Gold</td><td class="mono">12</td></tr>
+<tr><td>Diamond</td><td class="mono">1</td></tr>
+</table>
+<h3>空位审计(桥 = 0 的轴对)</h3>
+<ul><li class="bad">摆动 × 经济</li><li class="bad">摆动 × 玩具</li><li class="bad">摆动 × 遗物</li><li class="bad">玩具 × 遗物</li><li class="bad">地产 × 遗物</li></ul>
+<h3>闭环示例(代表构筑链)</h3><div class="flow">经济入口(Piggy Bank 累积 Value) → 兑现(Abacus 卖价传递 / Cash Register 产零钱) → 经济×地产(Vending Machine 每日产货) → 经济×摆动(28 Hour Fitness 武器盾摆) → 战斗×经济(Briefcase 胜场得零钱):经济轴是绝对中心,几乎所有桥都从经济发散。</div>
+</div>
+<h2>4. 两段式审计(条件制造 → 兑现)</h2>
+<div class="card">
+<table>
+<tr><th>层</th><th>设计职责</th><th>代表件</th><th>tier 观察</th></tr>
+<tr><td><strong>入口层</strong>(制造条件/供给)</td><td>Value 累积、Sell Price 提升、每日收益</td><td>Piggy Bank / Business Card / Vending Machine</td><td>B/S 为主</td></tr>
+<tr><td><strong>兑现层</strong>(消费条件)</td><td>卖出回收、武器盾摆自循环、地产生益</td><td>Abacus / 28 Hour Fitness / Cash Register</td><td>S/G 为主</td></tr>
+<tr><td><strong>封顶层</strong>(条件 → 乘区)</td><td>高价值地产/大件、全局收入引擎</td><td>Fort / Tournament Arena / 大型 Property</td><td>G/D 集中</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:Bazaar 的经济轴是「投资—回报」两段式:入口件投资(Value/收入),兑现件回收(Sell/卖出)。Pygmalien 的语法 =「钱生钱」,其 Value/Sell/Income 接口词汇与 StS2 的「垃圾经济学」不同——Pygmalien 用经济兑现金,而不是卡片数。</div>
+</div>
+<h2>5. 强度阶梯(高 tier = 高强度?)</h2>
+<div class="card">
+<h3>5.1 Gold(27)与 Diamond(3)</h3>
+<table>
+<tr><th>件</th><th>tier</th><th>size</th><th>强度认定</th></tr>
+<tr><td>Caltrops</td><td><span class="badge t-diamond">Diamond</span></td><td>Medium</td><td>When an enemy uses an item, deal 1 Damage When an enemy uses an item, deal 1</td></tr>
+<tr><td>Fort</td><td><span class="badge t-diamond">Diamond</span></td><td>Large</td><td>Shield 100 All item Cooldowns are increased by 1 second Your items with a Cooldown of 8 seconds or greater hav</td></tr>
+<tr><td>Tournament Arena</td><td><span class="badge t-diamond">Diamond</span></td><td>Large</td><td>Your Toys have +1 Multicast Your Toys have +1 Multicast</td></tr>
+<tr><td>28 Hour Fitness</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When you use a Weapon, your items gain 15 Shield When you use a Shield item, your items gain 15 Damage When yo</td></tr>
+<tr><td>Balcony</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>The Property to the left has double value in combat and its Cooldown is reduced by 10% The Property to the lef</td></tr>
+<tr><td>Beast of Burden</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 80 Damage This has the Types of items you have in your Stash This has +1 Multicast for each of its Types </td></tr>
+<tr><td>Beehive</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When an enemy uses a Weapon, Charge your Drones 2 second(s) When you buy this and at the start of each day, ge</td></tr>
+<tr><td>Belt</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>You have +40% Max Health You have +4080% Max Health</td></tr>
+<tr><td>Billboard</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Shield equal to 2 times this item's value When you use an item, it gains +20% value Your lowest value item has</td></tr>
+<tr><td>Bootstraps</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Every 50 you spend, upgrade an item of a lower tier Every 50 you spend, upgrade an item of a lower tier</td></tr>
+<tr><td>Double Whammy</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal Damage equal to 20% of your Max Health Deal equal to 20% of your Max Health</td></tr>
+<tr><td>Gramophone</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>The Cooldown of the item to the left is reduced by 20% The Cooldown of the item to the left is reduced by 2030</td></tr>
+<tr><td>Ice Luge</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Freeze adjacent items 1 second(s) Reduce the Cooldown of adjacent items by 1 second(s) adjacent items 1 second</td></tr>
+<tr><td>Keychain</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Use another Property Use another Property</td></tr>
+<tr><td>Laser Security System</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Deal 50 Damage When you use a Property or Relic, this gains +Damage equal to that item's value Deal 50 When yo</td></tr>
+<tr><td>Lion Cane</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal Damage equal to 10% of your Max Health When you Level Up, gain 100 Max Health Deal equal to 1020% of your</td></tr>
+<tr><td>Loupe</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Your Small items have +1 Sell Price value Your Small items have +12 Sell Price value</td></tr>
+<tr><td>Luxury Tents</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>The first time you would be defeated, Heal for 10% of your Max Health Your Heal items have +1 Multicast The fi</td></tr>
+<tr><td>Open Sign</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use a Property, increase its value by 2 times this item's value When you use a Property, increase its</td></tr>
+<tr><td>PiggleStorm Gaming House</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Your Weapons, Shield, and Heal items gain 15 Damage When you use a Toy or Friend, Charge this 2 seconds Your W</td></tr>
+<tr><td>Piggles Board</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use a Toy, Charge another Toy 1 second(s) When you use a Toy, another Toy 12 second(s)</td></tr>
+<tr><td>Skyscraper</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal Damage equal to 2 times the value of your items This has double value in combat This has +1 Multicast Dea</td></tr>
+<tr><td>Spacescraper</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Shield equal to 2 times the value of your items This has double value during combat equal to 23 times the valu</td></tr>
+<tr><td>Spices</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Your items gain Damage equal to your weakest Weapon's Damage Your items gain equal to your weakest 's</td></tr>
+<tr><td>Stained Glass Window</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you win a fight with this, your Properties permanently gain 5 Sell Price value (including Stash) When you</td></tr>
+<tr><td>Stopwatch</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Freeze both Players' items 1 second(s) both Players' items 1 second(s)</td></tr>
+<tr><td>Subscraper</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Heal equal to 4 times the value of your items Your other Properties have +Value equal to this item's Value dur</td></tr>
+<tr><td>Textiles</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Heal 10 When you Heal, Charge an adjacent non-Heal item 1 second 10 When you , an adjacent non- item 1 second</td></tr>
+<tr><td>Windmill</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>The Sandstorm Begins! Charge your other items 2 seconds When you use another item, Charge this 2 seconds When </td></tr>
+<tr><td>Yetarian Club</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 750 Damage When you Freeze, Charge this 2 second(s) The first time you fall below half Health, Freeze 1 i</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Diamond 3 件(Caltrops / Fort / Tournament Arena)是「全局引擎」而非纯数值;Gold 的高价值地产(Beehive / Billboard)在经济语境下更强。tier 表达「获取难度 + 强度上限潜质」,经济件的高 tier 通常是「日常收益」而非战斗爆发。</div>
+</div>
+<h2>6. 与 StS2 / OneDeck 的映射</h2>
+<div class="card">
+<h3>6.1 与 StS2 的结构异同</h3>
+<table><tr><th>维度</th><th>StS2(五角色)</th><th>Bazaar(Pygmalien)</th><th>差异判定</th></tr>
+<tr><td>入口层</td><td>Common 无能力卡,即打即用</td><td>Bronze 经济件/玩具——「投资」是入口</td><td>同工:入口=制造条件</td></tr>
+<tr><td>兑现层</td><td>Uncommon 桥层</td><td>Silver 回收件(卖出/摆动)为主</td><td>同工:桥在中间 tier</td></tr>
+<tr><td>封顶</td><td>Rare 大数字/引擎</td><td>Gold/Diamond 地产生意/全局引擎</td><td>同工:高 tier 承载乘区</td></tr>
+<tr><td>资源经济</td><td>垃圾经济学四形态</td><td>经济兑现(Value→Sell→Gold)</td><td>同类,Bazaar 更「金融化」</td></tr>
+<tr><td>运行</td><td>回合制/能量</td><td>实时秒表/冷却/空间</td><td>差异最大</td></tr>
+</table>
+<h3>6.2 OneDeck 落点(初筛)</h3>
+<table><tr><th>Bazaar 观察</th><th>OneDeck 可借鉴</th><th>不可搬</th></tr>
+<tr><td>Value→Sell→Gold 经济链</td><td>OneDeck 无经济系统——不适合直接搬,但「投资—回报」句式(条件/条件兑现)可用</td><td>金币/买卖不映射 OneDeck 的轮次制</td></tr>
+<tr><td>武器↔盾摆(28 Hour Fitness)</td><td>OneDeck 已有「伤害↔护盾」互转类(攻防互转),可对照</td><td>—</td></tr>
+<tr><td>Property 每日收益</td><td>OneDeck 的「每日」句式 = 每次战斗开始(若有),可作对照</td><td>—</td></tr>
+<tr><td>玩具/遗物密度</td><td>OneDeck 的「道具/遗物」类机制可参考其「收集价值」感</td><td>—</td></tr>
+</table>
+</div>
+<h2>7. 关键卡清单</h2>
+<div class="card"><table>
+<tr><th>轴</th><th>物品</th><th>tier</th><th>size</th><th>cd/弹药</th><th>effects 摘要</th></tr>
+<tr><td>经济</td><td>Piggy Bank</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">—</td><td>When you sell this, get Spare Change equal to its value At the start of each hour, spend 2 Gold to permanently gain 1 value When y</td></tr>
+<tr><td>经济</td><td>Business Card</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">—</td><td>When you visit a Merchant, this permanently gains 1 Sell Price value For every 5 Merchants you visit, upgrade this When you visit </td></tr>
+<tr><td>经济</td><td>Abacus</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">4</td><td>Adjacent items gain value equal to this item's value This has +10 Sell Price value in combat Adjacent items gain value equal to th</td></tr>
+<tr><td>经济</td><td>ATM</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">3</td><td>Shield equal to 2 times your Income When you buy this, gain 1 Income equal to 2468 times your Income When you buy this, gain 1234 </td></tr>
+<tr><td>经济</td><td>Vending Machine</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>At the start of each day, get a Chocolate Bar, Spare Change and Truffle At the start of each day, get a Chocolate Bar, Spare Chang</td></tr>
+<tr><td>经济</td><td>Cash Register</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">—</td><td>At the start of each day, get 3 Spare Change At the start of each day, get 3 Spare Change</td></tr>
+<tr><td>摆动</td><td>28 Hour Fitness</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">—</td><td>When you use a Weapon, your items gain 15 Shield When you use a Shield item, your items gain 15 Damage When you use a , your items</td></tr>
+<tr><td>摆动</td><td>Apropos Chapeau</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Your items gain 10 Damage, 10 Heal and 10 Shield If you have another Tool, Weapon, Property or Apparel this has +1 Multicast for e</td></tr>
+<tr><td>地产</td><td>Fort</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Large</td><td class="mono">8</td><td>Shield 100 All item Cooldowns are increased by 1 second Your items with a Cooldown of 8 seconds or greater have +1 Multicast 100 A</td></tr>
+<tr><td>地产</td><td>Beehive</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When an enemy uses a Weapon, Charge your Drones 2 second(s) When you buy this and at the start of each day, get a Busy Bee When yo</td></tr>
+<tr><td>地产</td><td>Billboard</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">5</td><td>Shield equal to 2 times this item's value When you use an item, it gains +20% value Your lowest value item has +1 Multicast equal </td></tr>
+<tr><td>武器</td><td>Briefcase</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Deal 30 Damage When you win a fight with this, get 2 Spare Change Deal 3060120240 When you win a fight with this, get 2 Spare Chan</td></tr>
+<tr><td>武器</td><td>Golf Clubs</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Deal 50 Damage When you Heal or Slow, this gains 10 Deal 50 When you or , this gains 10204080</td></tr>
+<tr><td>武器</td><td>Dog</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">9</td><td>Deal 100 Damage Deal 100 🔒 This has +200 . [: Sell 12 Food or Toys] 🔒 This item's Cooldown is reduced by aura.q3 seconds. [: Sell </td></tr>
+<tr><td>遗物</td><td>Atlas Stone</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Double this item's Damage Deal 20 Damage Double this item's Deal 20</td></tr>
+<tr><td>食物</td><td>Bushel</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">5</td><td>Heal 20 When you use an adjacent item, gain 10 Max Health When you Shield, Charge this 1 second 204080160 When you use an adjacent</td></tr>
+<tr><td>食物</td><td>Spices</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Small</td><td class="mono">12 / 1发</td><td>Your items gain Damage equal to your weakest Weapon's Damage Your items gain equal to your weakest 's</td></tr>
+<tr><td>新件</td><td>Tournament Arena</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Large</td><td class="mono">—</td><td>Your Toys have +1 Multicast Your Toys have +1 Multicast</td></tr>
+<tr><td>新件</td><td>Caltrops</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When an enemy uses an item, deal 1 Damage When an enemy uses an item, deal 1</td></tr>
+</table></div>
+<h2>8. 文档元信息</h2>
+<div class="card">
+<table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>数据快照</td><td class="mono">2026-08-31 mobalytics.gg TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59),全池 1207 件提取 Pygmalien 专属 153</td></tr>
+<tr><td>归属规则</td><td>heroes[] 含 Pygmalien 且非模板占位(description 含 Template 的 1 件已滤)</td></tr>
+<tr><td>字段说明</td><td>tierStats 为四级数值;cooldown/ammo/critchance/multicast 底层字段化;descriptions 含配色模板标记已清洗</td></tr>
+<tr><td>已知缺口</td><td>附魔(enchantments)已随 Mobalytics 全量收录,综合文档定量</td></tr>
+<tr><td>本系列</td><td>Vanessa / Dooley / Mak / Karnok / Jules / Stelle / The Dragons / 公共池 / 技能池 / 综合(逐个完成即停,step-gate)</td></tr>
+</table>
+<div class="note">计数口径:机制词按 tags + descriptions 关键词匹配,多标签重复计入;tier/size 按 Mobalytics 字段原值。</div>
+</div>
+</body></html>
