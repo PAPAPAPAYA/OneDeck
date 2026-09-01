@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Generate The Bazaar Karnok pool analysis HTML (StS2-series style) — Mobalytics source."""
 import json, re, os
-from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word
+from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word, render_builds
 
 SNAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'outputs', 'bazaar', 'mobalytics_static_2026-08-31.json')
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs', 'Bazaar_Karnok_PoolAnalysis_2026-08-31.html')
@@ -28,7 +28,7 @@ def desc_of(i, tier_idx=0):
     # strip color/markup templates: {{::X:color.(...)}} and stray > separators
     out = []
     for s in dsc:
-        s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+        s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
         s = re.sub(r'\{\{[^}]*\}\}', '', s)
         s = re.sub(r'\s*>\s*', '', s)
         s = re.sub(r'\s+', ' ', s).strip()
@@ -49,7 +49,7 @@ def clean_num(v):
         return None
     s = str(v)
     # extract digit tokens while preserving / separators; e.g. "{{::2:d,color.(#e4b60e)}} > 4" -> "2 > 4"
-    s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+    s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
     s = re.sub(r'[^0-9./\s>]', '', s)
     s = re.sub(r'\s+', ' ', s).strip()
     s = s.strip('/')
@@ -334,6 +334,23 @@ def main():
     rows.append('''</table>
 <div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Karnok 无 Diamond(0 件),Gold 21 件承载狂暴兑现件(Tree Club / Outlands Terror / Wild Bear / Great Eagle)与陷阱(Log Trap)。tier 表达「获取难度 + 狂暴放大潜力」,Gold 是「愤怒兑现」层。</div>
 </div>''')
+
+    # ===== 5.5 typical builds (2026-09-01 framework, v2 detailed) =====
+    skills = data['skills']
+    karnok_builds = [
+        dict(name='Karst Enrage 狂暴循环流', source='<a href="https://mobalytics.gg/the-bazaar/builds/karst-enrage-karnok-kripp">Mobalytics / Kripp</a>', date='2026-03-16', grade='<span class="badge t-gold">狂暴刷取型</span>',
+             logic='不追求「待在狂暴里」,而是反复进出狂暴——Karst 把狂暴时长减半,从而高频触发全板的「When you Enrage」效果;Firefly Lantern + Warpaint 构成无限循环,Stretch Pants/Honey Badger/Tinderbox 是常见开局线。构筑非常灵活,早期成型一致性高。',
+             items=['Karst', 'Firefly Lantern', 'Warpaint', 'Frog Hollow', 'Stretch Pants', 'Unibou', 'Dryad', 'Tinderbox', 'Torch', 'Snow Wisp'],
+             skills=[],
+             note='Warpaint 为 Karnok 物品(非技能);Stretch Pants(防御)配 Unibou 把 Multicast 转盾增长,Dryad 提供快充;Tinderbox + Firefly Lantern 是对标 Pygmalien Matchbox 线的烧灼开局,起始附魔命中其一即加强。'),
+        dict(name='Rage Haste Friend 野兽速攻', source='<a href="https://bazaar-builds.net/rage-haste-friend-karnok-10-win-build-seanx/">bazaar-builds.net / seanX</a>', date='2026-03-05', grade='<span class="badge t-diamond">10 胜实证</span>',
+             logic='全友军板——野兽互相充能/Haste 叠狂暴增益,以高频使用刷 Rage 与「When you Enrage」全板效果;6 件全 Small/Medium 保证启动速度。',
+             items=['Beast Tooth', 'Honey Badger', 'Hunting Hawk', 'Messenger Sparrow', 'Spear', 'Wolf'],
+             skills=[],
+             note='社区提交的 10 胜实战板(带胜场截图验证);与 §3.3 野兽轴的「友军既是 Rage 来源又是狂暴兑现」判读一致。'),
+    ]
+    rows.append(render_builds('Karnok', pool, data['items'], skills, karnok_axes, karnok_builds,
+        source_note='来源:Mobalytics Builds(Kripparrian)与 bazaar-builds.net(社区 10 胜实证);物品效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59),攻略日期即 meta 快照,跨补丁数值仅作结构参考;轴映射按 §3.6 谓词自动计算。thebazaarzone 暂无 Karnok 攻略页(DLC 新英雄)。'))
 
     rows.append('''<h2>6. 与 StS2 / OneDeck 的映射</h2>
 <div class="card">

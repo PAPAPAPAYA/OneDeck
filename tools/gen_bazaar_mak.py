@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Generate The Bazaar Mak pool analysis HTML (StS2-series style) — Mobalytics source."""
 import json, re, os
-from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word
+from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word, render_builds
 
 SNAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'outputs', 'bazaar', 'mobalytics_static_2026-08-31.json')
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs', 'Bazaar_Mak_PoolAnalysis_2026-08-31.html')
@@ -28,7 +28,7 @@ def desc_of(i, tier_idx=0):
     # strip color/markup templates: {{::X:color.(...)}} and stray > separators
     out = []
     for s in dsc:
-        s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+        s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
         s = re.sub(r'\{\{[^}]*\}\}', '', s)
         s = re.sub(r'\s*>\s*', '', s)
         s = re.sub(r'\s+', ' ', s).strip()
@@ -49,7 +49,7 @@ def clean_num(v):
         return None
     s = str(v)
     # extract digit tokens while preserving / separators; e.g. "{{::2:d,color.(#e4b60e)}} > 4" -> "2 > 4"
-    s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+    s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
     s = re.sub(r'[^0-9./\s>]', '', s)
     s = re.sub(r'\s+', ' ', s).strip()
     s = s.strip('/')
@@ -332,6 +332,18 @@ def main():
     rows.append('''</table>
 <div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Diamond(Atmospheric Sampler 附魔/飞行件互充)是引擎件;Gold 29 件异常多(全池最高 Gold 比例 21%),承载大量转化引擎(Secret Formula / Vat of Acid / Laboratory / Mirror)。tier 表达「获取难度 + 引擎潜力」,Mak 的 Gold 是「炼金设备」层。</div>
 </div>''')
+
+    # ===== 5.5 typical builds (2026-09-01 framework, v2 detailed) =====
+    skills = data['skills']
+    mak_builds = [
+        dict(name='Calcinator 灼烧转化流', source='<a href="https://mobalytics.gg/the-bazaar/builds/calcinator-mak-kripp">Mobalytics / Kripp</a>', date='2026-07-05', grade='<span class="badge t-gold">单核 win 条件(不可 pivot)</span>',
+             logic='快节奏滴答流——Calcinator 按「本局已转化的试剂」数 +3 灼烧且数值不封顶,起手即出大数字;Day 1-2 拿到才值得投入,Day 4-5 还没成型立刻弃。Retort 是同型慢速版(毒),可并列使用。',
+             items=['Calcinator', 'Retort', "Philosopher's Stone", 'Aludel', 'Mortar & Pestle', 'Library', 'Scales', 'Sunlight Spear'],
+             skills=[],
+             note="运营节奏:每件小试剂都买、尽快凑 1-2 个催化剂发生器(Aludel / Mortar & Pestle)、Fungal Spores / Potion Potion 补催化剂;Peacewrought 为经济件(铅锭→金锭稳定后可撤);Philosopher's Stone 早升级则终板可留。攻略板位所列「Regen Stacked」技能未收录进快照,故技能表暂缺。"),
+    ]
+    rows.append(render_builds('Mak', pool, data['items'], skills, mak_axes, mak_builds,
+        source_note='来源:Mobalytics Builds(Kripparrian);物品效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59),攻略日期即 meta 快照,跨补丁数值仅作结构参考;轴映射按 §3.6 谓词自动计算。thebazaarzone 暂无 Mak 攻略页(Mobalytics 单构筑覆盖)。'))
 
     rows.append('''<h2>6. 与 StS2 / OneDeck 的映射</h2>
 <div class="card">

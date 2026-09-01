@@ -130,7 +130,7 @@ li { margin: 3px 0; }
 <tr><td class="mono">Freeze</td><td class="mono">13</td><td>—</td></tr>
 <tr><td class="mono">Haste</td><td class="mono">3</td><td>—</td></tr>
 <tr><td class="mono">Slow</td><td class="mono">5</td><td>—</td></tr>
-<tr><td class="mono">Crit</td><td class="mono">3</td><td>—</td></tr>
+<tr><td class="mono">Crit</td><td class="mono">4</td><td>—</td></tr>
 <tr><td class="mono">Multicast</td><td class="mono">17</td><td>—</td></tr>
 </table>
 <div class="note">词表为 tags + descriptions 关键词匹配(多标签重复计入)。Pygmalien 的「Value/Sell/Price/Gold/Income」五件经济关键词密度全游最高——经济轴是其身份正身。</div>
@@ -142,7 +142,7 @@ li { margin: 3px 0; }
 <tr><td>When you sell</td><td class="mono">11</td><td>—</td><td>—</td></tr>
 <tr><td>At the start of each day</td><td class="mono">10</td><td>—</td><td>—</td></tr>
 <tr><td>When you visit a Merchant</td><td class="mono">2</td><td>—</td><td>—</td></tr>
-<tr><td>Adjacent items gain</td><td class="mono">9</td><td>—</td><td>—</td></tr>
+<tr><td>Adjacent items gain</td><td class="mono">6</td><td>—</td><td>—</td></tr>
 <tr><td>When an enemy uses</td><td class="mono">2</td><td>—</td><td>—</td></tr>
 </table></div>
 <h2>3. 构筑轴识别</h2>
@@ -283,7 +283,7 @@ li { margin: 3px 0; }
 <h3>5.1 Gold(27)与 Diamond(3)</h3>
 <table>
 <tr><th>件</th><th>tier</th><th>size</th><th>强度认定</th></tr>
-<tr><td>Caltrops</td><td><span class="badge t-diamond">Diamond</span></td><td>Medium</td><td>When an enemy uses an item, deal 1 Damage When an enemy uses an item, deal 1</td></tr>
+<tr><td>Caltrops</td><td><span class="badge t-diamond">Diamond</span></td><td>Medium</td><td>When an enemy uses an item, deal 1 Damage When an enemy uses an item, deal 1 Damage</td></tr>
 <tr><td>Fort</td><td><span class="badge t-diamond">Diamond</span></td><td>Large</td><td>Shield 100 All item Cooldowns are increased by 1 second Your items with a Cooldown of 8 seconds or greater hav</td></tr>
 <tr><td>Tournament Arena</td><td><span class="badge t-diamond">Diamond</span></td><td>Large</td><td>Your Toys have +1 Multicast Your Toys have +1 Multicast</td></tr>
 <tr><td>28 Hour Fitness</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When you use a Weapon, your items gain 15 Shield When you use a Shield item, your items gain 15 Damage When yo</td></tr>
@@ -293,29 +293,75 @@ li { margin: 3px 0; }
 <tr><td>Belt</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>You have +40% Max Health You have +4080% Max Health</td></tr>
 <tr><td>Billboard</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Shield equal to 2 times this item's value When you use an item, it gains +20% value Your lowest value item has</td></tr>
 <tr><td>Bootstraps</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Every 50 you spend, upgrade an item of a lower tier Every 50 you spend, upgrade an item of a lower tier</td></tr>
-<tr><td>Double Whammy</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal Damage equal to 20% of your Max Health Deal equal to 20% of your Max Health</td></tr>
+<tr><td>Double Whammy</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal Damage equal to 20% of your Max Health Deal Damage equal to 20% of your Max Health</td></tr>
 <tr><td>Gramophone</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>The Cooldown of the item to the left is reduced by 20% The Cooldown of the item to the left is reduced by 2030</td></tr>
-<tr><td>Ice Luge</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Freeze adjacent items 1 second(s) Reduce the Cooldown of adjacent items by 1 second(s) adjacent items 1 second</td></tr>
+<tr><td>Ice Luge</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Freeze adjacent items 1 second(s) Reduce the Cooldown of adjacent items by 1 second(s) Freeze adjacent items 1</td></tr>
 <tr><td>Keychain</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Use another Property Use another Property</td></tr>
-<tr><td>Laser Security System</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Deal 50 Damage When you use a Property or Relic, this gains +Damage equal to that item's value Deal 50 When yo</td></tr>
-<tr><td>Lion Cane</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal Damage equal to 10% of your Max Health When you Level Up, gain 100 Max Health Deal equal to 1020% of your</td></tr>
+<tr><td>Laser Security System</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Deal 50 Damage When you use a Property or Relic, this gains +Damage equal to that item's value Deal 50 Damage </td></tr>
+<tr><td>Lion Cane</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal Damage equal to 10% of your Max Health When you Level Up, gain 100 Max Health Deal Damage equal to 1020% </td></tr>
 <tr><td>Loupe</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Your Small items have +1 Sell Price value Your Small items have +12 Sell Price value</td></tr>
 <tr><td>Luxury Tents</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>The first time you would be defeated, Heal for 10% of your Max Health Your Heal items have +1 Multicast The fi</td></tr>
 <tr><td>Open Sign</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use a Property, increase its value by 2 times this item's value When you use a Property, increase its</td></tr>
 <tr><td>PiggleStorm Gaming House</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Your Weapons, Shield, and Heal items gain 15 Damage When you use a Toy or Friend, Charge this 2 seconds Your W</td></tr>
-<tr><td>Piggles Board</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use a Toy, Charge another Toy 1 second(s) When you use a Toy, another Toy 12 second(s)</td></tr>
+<tr><td>Piggles Board</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use a Toy, Charge another Toy 1 second(s) When you use a Toy, Charge another Toy 12 second(s)</td></tr>
 <tr><td>Skyscraper</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal Damage equal to 2 times the value of your items This has double value in combat This has +1 Multicast Dea</td></tr>
-<tr><td>Spacescraper</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Shield equal to 2 times the value of your items This has double value during combat equal to 23 times the valu</td></tr>
-<tr><td>Spices</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Your items gain Damage equal to your weakest Weapon's Damage Your items gain equal to your weakest 's</td></tr>
+<tr><td>Spacescraper</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Shield equal to 2 times the value of your items This has double value during combat shield equal to 23 times t</td></tr>
+<tr><td>Spices</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Your items gain Damage equal to your weakest Weapon's Damage Your items gain Damage equal to your weakest Weap</td></tr>
 <tr><td>Stained Glass Window</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you win a fight with this, your Properties permanently gain 5 Sell Price value (including Stash) When you</td></tr>
-<tr><td>Stopwatch</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Freeze both Players' items 1 second(s) both Players' items 1 second(s)</td></tr>
+<tr><td>Stopwatch</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Freeze both Players' items 1 second(s) Freeze both Players' items 1 second(s)</td></tr>
 <tr><td>Subscraper</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Heal equal to 4 times the value of your items Your other Properties have +Value equal to this item's Value dur</td></tr>
-<tr><td>Textiles</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Heal 10 When you Heal, Charge an adjacent non-Heal item 1 second 10 When you , an adjacent non- item 1 second</td></tr>
+<tr><td>Textiles</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Heal 10 When you Heal, Charge an adjacent non-Heal item 1 second Heal 10 When you Heal, Charge an adjacent non</td></tr>
 <tr><td>Windmill</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>The Sandstorm Begins! Charge your other items 2 seconds When you use another item, Charge this 2 seconds When </td></tr>
 <tr><td>Yetarian Club</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 750 Damage When you Freeze, Charge this 2 second(s) The first time you fall below half Health, Freeze 1 i</td></tr>
 </table>
 <div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Diamond 3 件(Caltrops / Fort / Tournament Arena)是「全局引擎」而非纯数值;Gold 的高价值地产(Beehive / Billboard)在经济语境下更强。tier 表达「获取难度 + 强度上限潜质」,经济件的高 tier 通常是「日常收益」而非战斗爆发。</div>
 </div>
+<h2>5.5 典型构筑(社区攻略)</h2>
+<div class="card">
+<h3>Jabalian Drum 摇滚鼓经济流 <span class="dim">· thebazaarzone / Den 2025-05 · <span class="badge t-diamond">A+</span>(预期 7-10 胜)</span></h3>
+<div class="lead">前期 Below Average、后期 Great——晚期滚雪球引擎,Pygmalien 当前最强;攻略将 28 Hour Fitness 视为同类替代核心。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Jabalian Drum</td><td><span class="badge t-silver">Silver</span> / Large</td><td>When you use a Weapon, Haste it 1 second(s) and your items gain 3 Damage</td><td class="mono">遗物</td></tr>
+</table>
+<div class="note">28 Hour Fitness(见 Fit Pyg 行)与 Drum 同级可替——「后期 Great」的双核心。</div>
+</div>
+<div class="card">
+<h3>Freeze 冻结流 <span class="dim">· thebazaarzone / Den 2025-05 · <span class="badge t-gold">A</span>(4-10 胜)</span></h3>
+<div class="lead">前期 Poor、后期 Great;冻结敌方节奏,Frozen Assets 扩展解锁的新兴构筑(「冻结太强刚被削」)。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Fort</td><td><span class="badge t-diamond">Diamond</span> / Large</td><td>Shield 100 All item Cooldowns are increased by 1 second Your items with a Cooldown of 8 seconds or greater have +1 Multicast</td><td class="mono">地产×战斗</td></tr>
+<tr><td>Igloo</td><td><span class="badge t-silver">Silver</span> / Large</td><td>Freeze 2 item(s) 1 second(s) When you Freeze, Shield 50 The first time you fall below half Health, use this</td><td class="mono">地产×战斗</td></tr>
+<tr><td>PenFT</td><td><span class="badge t-silver">Silver</span> / Small</td><td>Your items gain 3 Sell Price value</td><td class="mono">经济×玩具</td></tr>
+</table>
+<div class="note">攻略注明:若全板物品价值已超 10 金,PenFT 可移除。</div>
+</div>
+<div class="card">
+<h3>Fit Pyg 健身流 <span class="dim">· thebazaarzone / Den 2025-05 · <span class="badge t-silver">B</span>(4-10 胜)</span></h3>
+<div class="lead">武器盾摆自循环——用武器得盾、用盾得伤,中期成型的耐久流。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>28 Hour Fitness</td><td><span class="badge t-gold">Gold</span> / Large</td><td>When you use a Weapon, your items gain 15 Shield When you use a Shield item, your items gain 15 Damage</td><td class="mono">摆动×地产×战斗</td></tr>
+</table>
+</div>
+<div class="card">
+<h3>Fixer Upper 翻新流 <span class="dim">· thebazaarzone / Den 2025-03 · <span class="badge t-gold">A</span>(7-10 胜)</span></h3>
+<div class="lead">前期 Below Average、后期 Fantastic——地产翻新滚雪球,3 月版最强构筑。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Fixer Upper</td><td><span class="badge t-bronze">Bronze</span> / Large</td><td>Shield equal to 1 times this item's value At the start of each day, upgrade this</td><td class="mono">经济×地产×战斗</td></tr>
+</table>
+</div>
+<div class="card">
+<h3>Charging Items 充能玩具流 / Scaling Weapon 成长武器 <span class="dim">· thebazaarzone / Den 2025-03 · <span class="badge t-silver">B / B+</span></span></h3>
+<div class="lead">充能流靠 Matchbox/Marbles 起爆,全局 +1s 冷却补丁后启动受挫降至 B;成长武器流靠技能 Lifting 按购入武器数全局 +伤,B+。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Matchbox</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 4 When you use a non-Weapon item, Charge this 1 second(s)</td><td class="mono">—</td></tr>
+<tr><td>Marbles</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Slow an item 1 second(s) When you use an adjacent item, Charge this 1 second(s)</td><td class="mono">玩具</td></tr>
+</table>
+<table><tr><th>技能</th><th>tier</th><th>效果</th><th>轴映射</th></tr>
+<tr><td>Lifting</td><td><span class="badge t-silver">Silver</span></td><td>Your items have +1 Damage for each Weapon you have bought this run</td><td class="mono">—</td></tr>
+</table>
+<div class="note">Lifting 为 Pygmalien 专属技能——「每购入 1 武器全件 +1 伤」,与商店购买行为直接联动,是 Scaling Weapon 构筑的定义技能。攻略另提及 PvE 技能 Trained(被慢时武器 +5 伤)为过渡选项。</div>
+</div>
+<div class="note">来源:thebazaarzone(Den)英雄攻略;物品/技能效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59),攻略日期即 meta 快照,跨补丁数值仅作结构参考;轴映射按 §3.6 谓词自动计算。Mobalytics Builds 索引当前无 Pygmalien 构筑页。</div>
 <h2>6. 与 StS2 / OneDeck 的映射</h2>
 <div class="card">
 <h3>6.1 与 StS2 的结构异同</h3>
@@ -340,22 +386,22 @@ li { margin: 3px 0; }
 <tr><td>经济</td><td>Piggy Bank</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">—</td><td>When you sell this, get Spare Change equal to its value At the start of each hour, spend 2 Gold to permanently gain 1 value When y</td></tr>
 <tr><td>经济</td><td>Business Card</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">—</td><td>When you visit a Merchant, this permanently gains 1 Sell Price value For every 5 Merchants you visit, upgrade this When you visit </td></tr>
 <tr><td>经济</td><td>Abacus</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">4</td><td>Adjacent items gain value equal to this item's value This has +10 Sell Price value in combat Adjacent items gain value equal to th</td></tr>
-<tr><td>经济</td><td>ATM</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">3</td><td>Shield equal to 2 times your Income When you buy this, gain 1 Income equal to 2468 times your Income When you buy this, gain 1234 </td></tr>
+<tr><td>经济</td><td>ATM</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">3</td><td>Shield equal to 2 times your Income When you buy this, gain 1 Income shield equal to 2468 times your Income When you buy this, gai</td></tr>
 <tr><td>经济</td><td>Vending Machine</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>At the start of each day, get a Chocolate Bar, Spare Change and Truffle At the start of each day, get a Chocolate Bar, Spare Chang</td></tr>
 <tr><td>经济</td><td>Cash Register</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">—</td><td>At the start of each day, get 3 Spare Change At the start of each day, get 3 Spare Change</td></tr>
-<tr><td>摆动</td><td>28 Hour Fitness</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">—</td><td>When you use a Weapon, your items gain 15 Shield When you use a Shield item, your items gain 15 Damage When you use a , your items</td></tr>
+<tr><td>摆动</td><td>28 Hour Fitness</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">—</td><td>When you use a Weapon, your items gain 15 Shield When you use a Shield item, your items gain 15 Damage When you use a Weapon, your</td></tr>
 <tr><td>摆动</td><td>Apropos Chapeau</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Your items gain 10 Damage, 10 Heal and 10 Shield If you have another Tool, Weapon, Property or Apparel this has +1 Multicast for e</td></tr>
-<tr><td>地产</td><td>Fort</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Large</td><td class="mono">8</td><td>Shield 100 All item Cooldowns are increased by 1 second Your items with a Cooldown of 8 seconds or greater have +1 Multicast 100 A</td></tr>
+<tr><td>地产</td><td>Fort</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Large</td><td class="mono">8</td><td>Shield 100 All item Cooldowns are increased by 1 second Your items with a Cooldown of 8 seconds or greater have +1 Multicast shiel</td></tr>
 <tr><td>地产</td><td>Beehive</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When an enemy uses a Weapon, Charge your Drones 2 second(s) When you buy this and at the start of each day, get a Busy Bee When yo</td></tr>
-<tr><td>地产</td><td>Billboard</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">5</td><td>Shield equal to 2 times this item's value When you use an item, it gains +20% value Your lowest value item has +1 Multicast equal </td></tr>
-<tr><td>武器</td><td>Briefcase</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Deal 30 Damage When you win a fight with this, get 2 Spare Change Deal 3060120240 When you win a fight with this, get 2 Spare Chan</td></tr>
-<tr><td>武器</td><td>Golf Clubs</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Deal 50 Damage When you Heal or Slow, this gains 10 Deal 50 When you or , this gains 10204080</td></tr>
-<tr><td>武器</td><td>Dog</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">9</td><td>Deal 100 Damage Deal 100 🔒 This has +200 . [: Sell 12 Food or Toys] 🔒 This item's Cooldown is reduced by aura.q3 seconds. [: Sell </td></tr>
-<tr><td>遗物</td><td>Atlas Stone</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Double this item's Damage Deal 20 Damage Double this item's Deal 20</td></tr>
-<tr><td>食物</td><td>Bushel</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">5</td><td>Heal 20 When you use an adjacent item, gain 10 Max Health When you Shield, Charge this 1 second 204080160 When you use an adjacent</td></tr>
-<tr><td>食物</td><td>Spices</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Small</td><td class="mono">12 / 1发</td><td>Your items gain Damage equal to your weakest Weapon's Damage Your items gain equal to your weakest 's</td></tr>
+<tr><td>地产</td><td>Billboard</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">5</td><td>Shield equal to 2 times this item's value When you use an item, it gains +20% value Your lowest value item has +1 Multicast shield</td></tr>
+<tr><td>武器</td><td>Briefcase</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Deal 30 Damage When you win a fight with this, get 2 Spare Change Deal 3060120240 Damage When you win a fight with this, get 2 Spa</td></tr>
+<tr><td>武器</td><td>Golf Clubs</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Deal 50 Damage When you Heal or Slow, this gains 10 Deal 50 Damage When you Heal or Slow, this gains 10204080</td></tr>
+<tr><td>武器</td><td>Dog</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">9</td><td>Deal 100 Damage Deal 100 Damage 🔒 This has +200 Damage. [Quest: Sell 12 Food or Toys] 🔒 This item's Cooldown is reduced by aura.q3</td></tr>
+<tr><td>遗物</td><td>Atlas Stone</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Double this item's Damage Deal 20 Damage Double this item's Damage Deal 20 Damage</td></tr>
+<tr><td>食物</td><td>Bushel</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">5</td><td>Heal 20 When you use an adjacent item, gain 10 Max Health When you Shield, Charge this 1 second Heal 204080160 When you use an adj</td></tr>
+<tr><td>食物</td><td>Spices</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Small</td><td class="mono">12 / 1发</td><td>Your items gain Damage equal to your weakest Weapon's Damage Your items gain Damage equal to your weakest Weapon's Damage</td></tr>
 <tr><td>新件</td><td>Tournament Arena</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Large</td><td class="mono">—</td><td>Your Toys have +1 Multicast Your Toys have +1 Multicast</td></tr>
-<tr><td>新件</td><td>Caltrops</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When an enemy uses an item, deal 1 Damage When an enemy uses an item, deal 1</td></tr>
+<tr><td>新件</td><td>Caltrops</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When an enemy uses an item, deal 1 Damage When an enemy uses an item, deal 1 Damage</td></tr>
 </table></div>
 <h2>8. 文档元信息</h2>
 <div class="card">

@@ -63,7 +63,7 @@ li { margin: 3px 0; }
 <h2>0. 英雄骨架</h2>
 <div class="card">
 <div class="lead"><strong>定位</strong>:全游「炼金术士/转化师」英雄——核心机制为「转化引擎」:试剂(Reagent)→ 药剂(Potion)→ 催化(Catalyst)的每日循环,配合「类型累积」(Cauldron / Vat of Acid 获得你拥有物品的类型)与 Regen 乘区。身份轴:Relic 48 + Potion 21 + Reagent 13 + Poison 46 + Burn 27 + Transform 29。</div>
-<div class="lead"><strong>身份关键词(Top)</strong>:< s p a n   c l a s s = " b a d g e   b - p r o p s " > R e l i c   4 8 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > P o t i o n   2 1 < / s p a n > < s p a n   c l a s s = " b a d g e " > R e a g e n t   1 3 < / s p a n > < s p a n   c l a s s = " b a d g e " > P o i s o n   4 3 < / s p a n > < s p a n   c l a s s = " b a d g e " > B u r n   2 5 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > T o o l   2 4 < / s p a n ></div>
+<div class="lead"><strong>身份关键词(Top)</strong>:< s p a n   c l a s s = " b a d g e   b - p r o p s " > R e l i c   4 8 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > P o t i o n   2 1 < / s p a n > < s p a n   c l a s s = " b a d g e " > R e a g e n t   1 3 < / s p a n > < s p a n   c l a s s = " b a d g e " > P o i s o n   4 6 < / s p a n > < s p a n   c l a s s = " b a d g e " > B u r n   2 7 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > T o o l   2 4 < / s p a n ></div>
 <div class="lead"><strong>资源轴速览</strong>:转化 = 每日生产试剂/催化剂并转化为药剂;Regen = Mak 独有乘区(Secret Formula 把 Regen 转成毒/烧);Relic = 遗物混合件(48 件全游最多);Potion = 一次性药剂(可被装填/再转化);Reagent = 试剂原料;Poison/Burn = 状态输出。Mak 的语法 =「炼金流水线」——输入试剂,输出毒/烧/药。</div>
 </div>
 <h2>1. 池组成总览</h2>
@@ -115,17 +115,17 @@ li { margin: 3px 0; }
 <tr><td class="mono">Relic</td><td class="mono">48</td><td>—</td></tr>
 <tr><td class="mono">Potion</td><td class="mono">21</td><td>—</td></tr>
 <tr><td class="mono">Reagent</td><td class="mono">13</td><td>—</td></tr>
-<tr><td class="mono">Poison</td><td class="mono">43</td><td>—</td></tr>
-<tr><td class="mono">Burn</td><td class="mono">25</td><td>—</td></tr>
+<tr><td class="mono">Poison</td><td class="mono">46</td><td>—</td></tr>
+<tr><td class="mono">Burn</td><td class="mono">27</td><td>—</td></tr>
 <tr><td class="mono">Transform</td><td class="mono">25</td><td>—</td></tr>
-<tr><td class="mono">Regen</td><td class="mono">35</td><td>—</td></tr>
+<tr><td class="mono">Regen</td><td class="mono">36</td><td>—</td></tr>
 <tr><td class="mono">Tool</td><td class="mono">24</td><td>—</td></tr>
 <tr><td class="mono">Weapon</td><td class="mono">34</td><td>—</td></tr>
 <tr><td class="mono">Property</td><td class="mono">9</td><td>—</td></tr>
-<tr><td class="mono">Charge</td><td class="mono">18</td><td>—</td></tr>
+<tr><td class="mono">Charge</td><td class="mono">19</td><td>—</td></tr>
 <tr><td class="mono">Haste</td><td class="mono">10</td><td>—</td></tr>
-<tr><td class="mono">Slow</td><td class="mono">18</td><td>—</td></tr>
-<tr><td class="mono">Freeze</td><td class="mono">12</td><td>—</td></tr>
+<tr><td class="mono">Slow</td><td class="mono">20</td><td>—</td></tr>
+<tr><td class="mono">Freeze</td><td class="mono">15</td><td>—</td></tr>
 <tr><td class="mono">Multicast</td><td class="mono">14</td><td>—</td></tr>
 <tr><td class="mono">Crit</td><td class="mono">13</td><td>—</td></tr>
 <tr><td class="mono">Enchant</td><td class="mono">18</td><td>—</td></tr>
@@ -300,38 +300,55 @@ li { margin: 3px 0; }
 <table>
 <tr><th>件</th><th>tier</th><th>size</th><th>强度认定</th></tr>
 <tr><td>Atmospheric Sampler</td><td><span class="badge t-diamond">Diamond</span></td><td>Medium</td><td>When you use an Enchanted or Flying item, Charge another 2 Enchanted or Flying item(s) 1 second When you use a</td></tr>
-<tr><td>Black Ice</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Freeze 1 item(s) 1 second(s) When you Freeze, Poison 10 12 item(s) 1 second(s) When you , 1020</td></tr>
+<tr><td>Black Ice</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Freeze 1 item(s) 1 second(s) When you Freeze, Poison 10 Freeze 12 item(s) 1 second(s) When you Freeze, Poison </td></tr>
 <tr><td>Boiling Flask</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Reload adjacent Potions Adjacent Potions have +1 Multicast Reload adjacent Potions Adjacent Potions have +1 Mu</td></tr>
-<tr><td>Bottled Explosion</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Double this item's Damage Deal 5 Damage Double this item's Deal 510</td></tr>
+<tr><td>Bottled Explosion</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Double this item's Damage Deal 5 Damage Double this item's Damage Deal 510 Damage</td></tr>
 <tr><td>Distilled Sunlight</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>The Cooldown of the item to the left is reduced by 5% When this is transformed, Enchant it with Shiny if able </td></tr>
-<tr><td>Fire Claw</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Burn 10 This has + Burn equal to 50% of the Burn of your other items 10 This has + equal to 50100% of the of y</td></tr>
-<tr><td>Foul Mushroom</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When any item is used, increase its cooldown by 0.5 second(s) When any item is used, increase its cooldown by1</td></tr>
+<tr><td>Fire Claw</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Burn 10 This has + Burn equal to 50% of the Burn of your other items Burn 10 This has + Burn equal to 50100% o</td></tr>
+<tr><td>Foul Mushroom</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When any item is used, increase its cooldown by 0.5 second(s) When any item is used, increase its cooldown by </td></tr>
 <tr><td>Frozen Horror</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Freeze 2 item(s) 1 second(s) When this runs out of Ammo, Poison both Players 100 When this is transformed, Enc</td></tr>
 <tr><td>Laboratory</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Enchant another non-Enchanted item Charge your other Relics and Enchanted items 1 second(s) Enchant another no</td></tr>
 <tr><td>Library</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Your Weapon Cooldowns are increased by 1 second(s) Your non-Weapon item Cooldowns are decreased by 1 second(s)</td></tr>
-<tr><td>Magnus' Femur</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 300 Damage When you Slow, Charge this 2 second(s) and this gains 35 Deal 300 When you , this 2 second(s) </td></tr>
+<tr><td>Magnus' Femur</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 300 Damage When you Slow, Charge this 2 second(s) and this gains 35 Deal 300 Damage When you Slow, Charge</td></tr>
 <tr><td>Memento Mori</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>The first time you would be defeated, Heal 1 and take no Damage for 1 second(s) The first time you would be de</td></tr>
 <tr><td>Mirror</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Transform into a copy of the Medium item to the left Transform into a copy of the Medium item to the left</td></tr>
 <tr><td>Palanquin</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Your items have +30% Crit Chance When you Crit with an item, reduce its Cooldown by 8% Your items have +3050% </td></tr>
-<tr><td>Pendulum</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use an adjacent item, Charge the other adjacent item 1 second(s) When you use an adjacent item, the o</td></tr>
+<tr><td>Pendulum</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use an adjacent item, Charge the other adjacent item 1 second(s) When you use an adjacent item, Charg</td></tr>
 <tr><td>Plague Glaive</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 100 Damage Your items have +10 Poison For every 20 Poison on an enemy, this has +1 Multicast Deal 100200 </td></tr>
 <tr><td>Poppy Field</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When you use a Weapon, Poison 6 Your items have +Damage equal to 50% of the Poison on your enemy When you use </td></tr>
 <tr><td>Ritual Dagger</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Deal 2 Damage Regen equal to this item's Damage If you are a Cult Member, reduce this item's cooldown by 1 sec</td></tr>
-<tr><td>Runic Blade</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal 20 Damage When you Crit, double this item's Damage Deal 20 When you Crit, double this item's</td></tr>
-<tr><td>Runic Daggers</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal 20 Damage When you Crit with another item, Charge this 1 second(s) Deal 2040 When you Crit with another i</td></tr>
+<tr><td>Runic Blade</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal 20 Damage When you Crit, double this item's Damage Deal 20 Damage When you Crit, double this item's Damag</td></tr>
+<tr><td>Runic Daggers</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal 20 Damage When you Crit with another item, Charge this 1 second(s) Deal 2040 Damage When you Crit with an</td></tr>
 <tr><td>Scales</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Charge adjacent items 1 second(s) If you have the same amount of items on both sides of this, Charge all other</td></tr>
 <tr><td>Secret Formula</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Regen 5 The Burn item to the left gains + Burn equal to your Regen The Poison item to the right gains + Poison</td></tr>
 <tr><td>Skyspirit Ashes</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>At the start of each fight, Enchant 2 other Non-Enchanted items When this is transformed, Enchant it At the st</td></tr>
-<tr><td>Soul Ring</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Poison equal to your Regen You have +10 Regen equal to your You have +10</td></tr>
+<tr><td>Soul Ring</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Poison equal to your Regen You have +10 Regen Poison equal to your Regen You have +10 Regen</td></tr>
 <tr><td>Staff of the Moose</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 200 Damage The first time you fall below half Health, you take no Damage for 1 second(s) and gain 25 Your</td></tr>
 <tr><td>Sunlight Spear</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal Damage equal to the Regen plus the Burn on both Players Burn equal to your Regen You have +10 Regen Deal </td></tr>
 <tr><td>Test Subject Alpha</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 100 Damage When you use an adjacent item, Poison both Players 30 When you Poison, this gains +Damage equa</td></tr>
 <tr><td>Vat of Acid</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Poison 5 for each type this has Burn 5 for each type this has When you sell an item, this gains that item's ty</td></tr>
 <tr><td>Vial Launcher</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you use a Potion, deal 20 Damage When you Transform a Potion, this gains 20 When you Reload a Potion, Cha</td></tr>
-<tr><td>Vitality Potion</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Heal equal to 50% of your Max Health equal to 50100% of your Max Health</td></tr>
+<tr><td>Vitality Potion</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Heal equal to 50% of your Max Health Heal equal to 50100% of your Max Health</td></tr>
 </table>
 <div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Diamond(Atmospheric Sampler 附魔/飞行件互充)是引擎件;Gold 29 件异常多(全池最高 Gold 比例 21%),承载大量转化引擎(Secret Formula / Vat of Acid / Laboratory / Mirror)。tier 表达「获取难度 + 引擎潜力」,Mak 的 Gold 是「炼金设备」层。</div>
 </div>
+<h2>5.5 典型构筑(社区攻略)</h2>
+<div class="card">
+<h3>Calcinator 灼烧转化流 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/calcinator-mak-kripp">Mobalytics / Kripp</a> 2026-07-05 · <span class="badge t-gold">单核 win 条件(不可 pivot)</span></span></h3>
+<div class="lead">快节奏滴答流——Calcinator 按「本局已转化的试剂」数 +3 灼烧且数值不封顶,起手即出大数字;Day 1-2 拿到才值得投入,Day 4-5 还没成型立刻弃。Retort 是同型慢速版(毒),可并列使用。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Calcinator</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Burn 8 This has +3 for each Reagent you have transformed this run At the start of each day, get a Chunk of Lead</td><td class="mono">转化×状态</td></tr>
+<tr><td>Retort</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Poison 8 This has +3 for each Reagent you have transformed this run At the start of each day, get a Chunk of Lead</td><td class="mono">转化×状态</td></tr>
+<tr><td>Philosopher's Stone</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Regen 3 This has +1 for each Reagent you have transformed this run When you buy this, get a Catalyst</td><td class="mono">转化×遗物×Regen</td></tr>
+<tr><td>Aludel</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Poison 4 This has +1 Multicast for each adjacent Potion or Reagent At the start of each day, get a Catalyst</td><td class="mono">转化×状态</td></tr>
+<tr><td>Mortar & Pestle</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Your Lifesteal Weapons gain 10 Damage The Weapon to the right has Lifesteal At the start of each day, get a Catalyst</td><td class="mono">转化×输出</td></tr>
+<tr><td>Library</td><td><span class="badge t-gold">Gold</span> / Large</td><td>Your Weapon Cooldowns are increased by 1 second(s) Your non-Weapon item Cooldowns are decreased by 1 second(s)</td><td class="mono">—</td></tr>
+<tr><td>Scales</td><td><span class="badge t-gold">Gold</span> / Medium</td><td>Charge adjacent items 1 second(s) If you have the same amount of items on both sides of this, Charge all other items instead</td><td class="mono">—</td></tr>
+<tr><td>Sunlight Spear</td><td><span class="badge t-gold">Gold</span> / Medium</td><td>Deal Damage equal to the Regen plus the Burn on both Players Burn equal to your Regen You have +10 Regen</td><td class="mono">遗物×状态×输出×Regen</td></tr>
+</table>
+<div class="note">运营节奏:每件小试剂都买、尽快凑 1-2 个催化剂发生器(Aludel / Mortar & Pestle)、Fungal Spores / Potion Potion 补催化剂;Peacewrought 为经济件(铅锭→金锭稳定后可撤);Philosopher's Stone 早升级则终板可留。攻略板位所列「Regen Stacked」技能未收录进快照,故技能表暂缺。</div>
+</div>
+<div class="note">来源:Mobalytics Builds(Kripparrian);物品效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59),攻略日期即 meta 快照,跨补丁数值仅作结构参考;轴映射按 §3.6 谓词自动计算。thebazaarzone 暂无 Mak 攻略页(Mobalytics 单构筑覆盖)。</div>
 <h2>6. 与 StS2 / OneDeck 的映射</h2>
 <div class="card">
 <h3>6.1 与 StS2 的结构异同</h3>
@@ -353,28 +370,28 @@ li { margin: 3px 0; }
 <h2>7. 关键卡清单</h2>
 <div class="card"><table>
 <tr><th>轴</th><th>物品</th><th>tier</th><th>size</th><th>cd/弹药</th><th>effects 摘要</th></tr>
-<tr><td>转化</td><td>Aludel</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">7</td><td>Poison 4 This has +1 Multicast for each adjacent Potion or Reagent At the start of each day, get a Catalyst 481216 This has +1 Mul</td></tr>
+<tr><td>转化</td><td>Aludel</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">7</td><td>Poison 4 This has +1 Multicast for each adjacent Potion or Reagent At the start of each day, get a Catalyst Poison 481216 This has</td></tr>
 <tr><td>转化</td><td>Alembic</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>At the start of each day, get a Catalyst and transform the Small item to the left into a Potion When you buy this, get a Small Rea</td></tr>
-<tr><td>转化</td><td>Retort</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Poison 8 This has +3 for each Reagent you have transformed this run At the start of each day, get a Chunk of Lead 8 This has +3456</td></tr>
+<tr><td>转化</td><td>Retort</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Poison 8 This has +3 for each Reagent you have transformed this run At the start of each day, get a Chunk of Lead Poison 8 This ha</td></tr>
 <tr><td>转化</td><td>Potion Distillery</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Large</td><td class="mono">—</td><td>Your Potions have +1 Ammo Your Potions' Cooldowns are reduced by 10% When you visit a Merchant, transform the Small item to the le</td></tr>
 <tr><td>转化</td><td>Recycling Bin</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When you use a Potion, transform it into another Potion from any Hero Your Potions' Cooldowns are reduced by 0.5 seconds When you </td></tr>
 <tr><td>转化</td><td>Mirror</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">3</td><td>Transform into a copy of the Medium item to the left Transform into a copy of the Medium item to the left</td></tr>
-<tr><td>类型</td><td>Cauldron</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Burn 2 for each type this has Poison 2 for each type this has This has the Types of items you have 246 for each type this has 246 </td></tr>
-<tr><td>类型</td><td>Vat of Acid</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">6</td><td>Poison 5 for each type this has Burn 5 for each type this has When you sell an item, this gains that item's types 510 for each typ</td></tr>
-<tr><td>类型</td><td>Laboratory</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">4</td><td>Enchant another non-Enchanted item Charge your other Relics and Enchanted items 1 second(s) Enchant another non-Enchanted item you</td></tr>
+<tr><td>类型</td><td>Cauldron</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Burn 2 for each type this has Poison 2 for each type this has This has the Types of items you have Burn 246 for each type this has</td></tr>
+<tr><td>类型</td><td>Vat of Acid</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">6</td><td>Poison 5 for each type this has Burn 5 for each type this has When you sell an item, this gains that item's types Poison 510 for e</td></tr>
+<tr><td>类型</td><td>Laboratory</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">4</td><td>Enchant another non-Enchanted item Charge your other Relics and Enchanted items 1 second(s) Enchant another non-Enchanted item Cha</td></tr>
 <tr><td>Regen</td><td>Secret Formula</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">9</td><td>Regen 5 The Burn item to the left gains + Burn equal to your Regen The Poison item to the right gains + Poison equal to your Regen</td></tr>
-<tr><td>Regen</td><td>Soul Ring</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Small</td><td class="mono">10</td><td>Poison equal to your Regen You have +10 Regen equal to your You have +10</td></tr>
-<tr><td>Regen</td><td>Apothecary</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Large</td><td class="mono">5</td><td>Regen 10 When you Haste, Slow, Freeze, Poison, or Burn, Charge this 1 second(s) At the start of each day, get a Reagent 102030 Whe</td></tr>
-<tr><td>遗物</td><td>Philosopher's Stone</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">5</td><td>Regen 3 This has +1 for each Reagent you have transformed this run When you buy this, get a Catalyst 3 This has +1234 for each Rea</td></tr>
+<tr><td>Regen</td><td>Soul Ring</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Small</td><td class="mono">10</td><td>Poison equal to your Regen You have +10 Regen Poison equal to your Regen You have +10 Regen</td></tr>
+<tr><td>Regen</td><td>Apothecary</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Large</td><td class="mono">5</td><td>Regen 10 When you Haste, Slow, Freeze, Poison, or Burn, Charge this 1 second(s) At the start of each day, get a Reagent Regen 1020</td></tr>
+<tr><td>遗物</td><td>Philosopher's Stone</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">5</td><td>Regen 3 This has +1 for each Reagent you have transformed this run When you buy this, get a Catalyst Regen 3 This has +1234 for ea</td></tr>
 <tr><td>遗物</td><td>Book of Secrets</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">—</td><td>At the start of each day, get a random Skill from any Hero At the start of each day, get a random Skill from any Hero</td></tr>
-<tr><td>遗物</td><td>Memento Mori</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">—</td><td>The first time you would be defeated, Heal 1 and take no Damage for 1 second(s) The first time you would be defeated, 1 and take n</td></tr>
-<tr><td>输出</td><td>Plague Glaive</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">8</td><td>Deal 100 Damage Your items have +10 Poison For every 20 Poison on an enemy, this has +1 Multicast Deal 100200 Your items have +101</td></tr>
-<tr><td>输出</td><td>Runic Blade</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">12</td><td>Deal 20 Damage When you Crit, double this item's Damage Deal 20 When you Crit, double this item's</td></tr>
-<tr><td>输出</td><td>Sunlight Spear</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">11</td><td>Deal Damage equal to the Regen plus the Burn on both Players Burn equal to your Regen You have +10 Regen Deal equal to the plus th</td></tr>
-<tr><td>药剂</td><td>Noxious Potion</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">4 / 1发</td><td>Poison 3 36912</td></tr>
-<tr><td>药剂</td><td>Flying Potion</td><td><span class="badge t-bronze">Silver</span></td><td class="mono">Small</td><td class="mono">3 / 1发</td><td>Haste your other Flying items 1 second(s) 2 items start Flying your other Flying items 1 second(s) 234 items start Flying</td></tr>
+<tr><td>遗物</td><td>Memento Mori</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">—</td><td>The first time you would be defeated, Heal 1 and take no Damage for 1 second(s) The first time you would be defeated, Heal 1 and t</td></tr>
+<tr><td>输出</td><td>Plague Glaive</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">8</td><td>Deal 100 Damage Your items have +10 Poison For every 20 Poison on an enemy, this has +1 Multicast Deal 100200 Damage Your items ha</td></tr>
+<tr><td>输出</td><td>Runic Blade</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">12</td><td>Deal 20 Damage When you Crit, double this item's Damage Deal 20 Damage When you Crit, double this item's Damage</td></tr>
+<tr><td>输出</td><td>Sunlight Spear</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">11</td><td>Deal Damage equal to the Regen plus the Burn on both Players Burn equal to your Regen You have +10 Regen Deal Damage equal to the </td></tr>
+<tr><td>药剂</td><td>Noxious Potion</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">4 / 1发</td><td>Poison 3 Poison 36912</td></tr>
+<tr><td>药剂</td><td>Flying Potion</td><td><span class="badge t-bronze">Silver</span></td><td class="mono">Small</td><td class="mono">3 / 1发</td><td>Haste your other Flying items 1 second(s) 2 items start Flying Haste your other Flying items 1 second(s) 234 items start Flying</td></tr>
 <tr><td>引擎</td><td>Atmospheric Sampler</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When you use an Enchanted or Flying item, Charge another 2 Enchanted or Flying item(s) 1 second When you use an Enchanted or Flyin</td></tr>
-<tr><td>引擎</td><td>Scales</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Charge adjacent items 1 second(s) If you have the same amount of items on both sides of this, Charge all other items instead adjac</td></tr>
+<tr><td>引擎</td><td>Scales</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Charge adjacent items 1 second(s) If you have the same amount of items on both sides of this, Charge all other items instead Charg</td></tr>
 </table></div>
 <h2>8. 文档元信息</h2>
 <div class="card">

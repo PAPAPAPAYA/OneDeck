@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Generate The Bazaar Pygmalien pool analysis HTML (StS2-series style) — Mobalytics source."""
 import json, re, os
-from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word
+from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word, render_builds
 
 SNAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'outputs', 'bazaar', 'mobalytics_static_2026-08-31.json')
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs', 'Bazaar_Pygmalien_PoolAnalysis_2026-08-31.html')
@@ -28,7 +28,7 @@ def desc_of(i, tier_idx=0):
     # strip color/markup templates: {{::X:color.(...)}} and stray > separators
     out = []
     for s in dsc:
-        s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+        s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
         s = re.sub(r'\{\{[^}]*\}\}', '', s)
         s = re.sub(r'\s*>\s*', '', s)
         s = re.sub(r'\s+', ' ', s).strip()
@@ -49,7 +49,7 @@ def clean_num(v):
         return None
     s = str(v)
     # extract digit tokens while preserving / separators; e.g. "{{::2:d,color.(#e4b60e)}} > 4" -> "2 > 4"
-    s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+    s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
     s = re.sub(r'[^0-9./\s>]', '', s)
     s = re.sub(r'\s+', ' ', s).strip()
     s = s.strip('/')
@@ -329,6 +329,31 @@ def main():
     rows.append('''</table>
 <div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Diamond 3 件(Caltrops / Fort / Tournament Arena)是「全局引擎」而非纯数值;Gold 的高价值地产(Beehive / Billboard)在经济语境下更强。tier 表达「获取难度 + 强度上限潜质」,经济件的高 tier 通常是「日常收益」而非战斗爆发。</div>
 </div>''')
+
+    # ===== 5.5 typical builds (2026-09-01 framework, v2 detailed) =====
+    skills = data['skills']
+    pyg_builds = [
+        dict(name='Jabalian Drum 摇滚鼓经济流', source='thebazaarzone / Den', date='2025-05', grade='<span class="badge t-diamond">A+</span>(预期 7-10 胜)',
+             logic='前期 Below Average、后期 Great——晚期滚雪球引擎,Pygmalien 当前最强;攻略将 28 Hour Fitness 视为同类替代核心。',
+             items=['Jabalian Drum'], skills=[],
+             note='28 Hour Fitness(见 Fit Pyg 行)与 Drum 同级可替——「后期 Great」的双核心。'),
+        dict(name='Freeze 冻结流', source='thebazaarzone / Den', date='2025-05', grade='<span class="badge t-gold">A</span>(4-10 胜)',
+             logic='前期 Poor、后期 Great;冻结敌方节奏,Frozen Assets 扩展解锁的新兴构筑(「冻结太强刚被削」)。',
+             items=['Fort', 'Igloo', 'PenFT'], skills=[],
+             note='攻略注明:若全板物品价值已超 10 金,PenFT 可移除。'),
+        dict(name='Fit Pyg 健身流', source='thebazaarzone / Den', date='2025-05', grade='<span class="badge t-silver">B</span>(4-10 胜)',
+             logic='武器盾摆自循环——用武器得盾、用盾得伤,中期成型的耐久流。',
+             items=['28 Hour Fitness'], skills=[], note=None),
+        dict(name='Fixer Upper 翻新流', source='thebazaarzone / Den', date='2025-03', grade='<span class="badge t-gold">A</span>(7-10 胜)',
+             logic='前期 Below Average、后期 Fantastic——地产翻新滚雪球,3 月版最强构筑。',
+             items=['Fixer Upper'], skills=[], note=None),
+        dict(name='Charging Items 充能玩具流 / Scaling Weapon 成长武器', source='thebazaarzone / Den', date='2025-03', grade='<span class="badge t-silver">B / B+</span>',
+             logic='充能流靠 Matchbox/Marbles 起爆,全局 +1s 冷却补丁后启动受挫降至 B;成长武器流靠技能 Lifting 按购入武器数全局 +伤,B+。',
+             items=['Matchbox', 'Marbles'], skills=['Lifting'],
+             note='Lifting 为 Pygmalien 专属技能——「每购入 1 武器全件 +1 伤」,与商店购买行为直接联动,是 Scaling Weapon 构筑的定义技能。攻略另提及 PvE 技能 Trained(被慢时武器 +5 伤)为过渡选项。'),
+    ]
+    rows.append(render_builds('Pygmalien', pool, data['items'], skills, pyg_axes, pyg_builds,
+        source_note='来源:thebazaarzone(Den)英雄攻略;物品/技能效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59),攻略日期即 meta 快照,跨补丁数值仅作结构参考;轴映射按 §3.6 谓词自动计算。Mobalytics Builds 索引当前无 Pygmalien 构筑页。'))
 
     rows.append('''<h2>6. 与 StS2 / OneDeck 的映射</h2>
 <div class="card">

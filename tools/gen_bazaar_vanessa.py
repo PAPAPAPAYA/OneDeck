@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Generate The Bazaar Vanessa pool analysis HTML (StS2-series style) — Mobalytics source."""
 import json, re, os
-from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word
+from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word, render_builds
 
 SNAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'outputs', 'bazaar', 'mobalytics_static_2026-08-31.json')
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs', 'Bazaar_Vanessa_PoolAnalysis_2026-08-31.html')
@@ -28,7 +28,7 @@ def desc_of(i, tier_idx=0):
     # strip color/markup templates: {{::X:color.(...)}} and stray > separators
     out = []
     for s in dsc:
-        s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+        s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
         s = re.sub(r'\{\{[^}]*\}\}', '', s)
         s = re.sub(r'\s*>\s*', '', s)
         s = re.sub(r'\s+', ' ', s).strip()
@@ -49,7 +49,7 @@ def clean_num(v):
         return None
     s = str(v)
     # extract digit tokens while preserving / separators; e.g. "{{::2:d,color.(#e4b60e)}} > 4" -> "2 > 4"
-    s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+    s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
     s = re.sub(r'[^0-9./\s>]', '', s)
     s = re.sub(r'\s+', ' ', s).strip()
     s = s.strip('/')
@@ -360,6 +360,31 @@ def main():
 </div>''')
 
     # 6 mapping
+    # ===== 5.5 typical builds (2026-09-01 framework, v2 detailed) =====
+    skills = data['skills']
+    vanessa_builds = [
+        dict(name='The Boulder 一击流', source='<a href="https://mobalytics.gg/the-bazaar/builds/boulder-vanessa-kripp">Mobalytics / Kripp</a>', date='2026-06-30', grade='<span class="badge t-gold">pivot 构筑</span>',
+             logic='100-0 一击:Boulder 伤害=敌最大生命;全板堆 Haste/Charge/冷却缩减把 20s 冷却压到最快一击,暴击防盾反制。攻略明确将其定位为 pivot 构筑(见机行事,不硬凑)。',
+             items=['The Boulder', "Captain's Wheel", 'Rowboat', 'Seashadow', 'Star Chart', 'Suppressor', 'Gunpowder'],
+             skills=['Juggler', 'Speed'],
+             note='Gunpowder 为 Common 件(多段打击备选);攻略板位的 Juggler/Speed 实为技能而非物品——构筑由物品+技能共同组成。Rowboat 仅 Diamond 级值得用(Gold 级 5s 太慢)。'),
+        dict(name='Aquatic 水生毒控', source='thebazaarzone / Den', date='2025-05', grade='<span class="badge t-diamond">A</span>(预期 4-10 胜)',
+             logic='毒绕过盾——盾/干扰 meta 下唯一稳定输出;前期 Average、后期 Above Average。Lighthouse 是方向件,拿到后 Electric Eels 是第一优先。',
+             items=['Lighthouse', 'Electric Eels', 'Pearl', 'Pufferfish'], skills=[],
+             note='攻略未列固定技能;PvE 战利品可补 Time to Tinker(Boilerroom Brawler)/ Frontal Shielding(Boarrior 护 Pearl)。'),
+        dict(name='Augmented Weaponry 增强武器', source='<a href="https://mobalytics.gg/the-bazaar/builds/augmented-weaponry-vanessa">Mobalytics / Kripp</a>', date='2024-12(0.1.3 补丁,历史参考)', grade='—',
+             logic='铜级技能 Augmented Weaponry 光环全局放大武器(当时);Cutlass 300 伤暴击约 2000 一段。技能带节奏技能(暴击/充能)加速整板。',
+             items=['Knife Set', 'Throwing Knives', 'Double Barrel', 'Trebuchet', 'Cutlass'],
+             skills=['Flashy Reload', 'Stunning Strike', 'Quick Freeze'],
+             note='Knife Set 是 Jules 件——跨英雄混编是该构筑的特征;Augmented Weaponry 现行快照为 Gold 级 Common 技能,数值已随补丁漂移。'),
+        dict(name='武器系其余(Weather Glass / Multi / Mono / Slow Burn)', source='thebazaarzone / Den', date='2025-05', grade='<span class="badge t-silver">B+ / B / B- / B-</span>',
+             logic='武器系在盾+干扰 meta 下普遍被压制,需附魔才能重启;Slow Burn 上限高但太 situational。',
+             items=['Weather Glass', "Crow's Nest"], skills=[],
+             note='Trebuchet 见上行 Augmented Weaponry 构筑。'),
+    ]
+    rows.append(render_builds('Vanessa', pool, data['items'], skills, vanessa_axes, vanessa_builds,
+        source_note='来源:Mobalytics Builds(Kripparrian)与 thebazaarzone(Den)英雄攻略;物品/技能效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59),攻略日期即 meta 快照,跨补丁数值仅作结构参考;轴映射按 §3.6 谓词自动计算。'))
+
     rows.append('''<h2>6. 与 StS2 / OneDeck 的映射</h2>
 <div class="card">
 <h3>6.1 与 StS2 的结构异同</h3>

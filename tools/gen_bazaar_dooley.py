@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Generate The Bazaar Dooley pool analysis HTML (StS2-series style) — Mobalytics source."""
 import json, re, os
-from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word
+from bazaar_bridge import bridge_report, has_tag, has_word, tag_or_word, render_builds
 
 SNAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tools', 'outputs', 'bazaar', 'mobalytics_static_2026-08-31.json')
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs', 'Bazaar_Dooley_PoolAnalysis_2026-08-31.html')
@@ -28,7 +28,7 @@ def desc_of(i, tier_idx=0):
     # strip color/markup templates: {{::X:color.(...)}} and stray > separators
     out = []
     for s in dsc:
-        s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+        s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
         s = re.sub(r'\{\{[^}]*\}\}', '', s)
         s = re.sub(r'\s*>\s*', '', s)
         s = re.sub(r'\s+', ' ', s).strip()
@@ -49,7 +49,7 @@ def clean_num(v):
         return None
     s = str(v)
     # extract digit tokens while preserving / separators; e.g. "{{::2:d,color.(#e4b60e)}} > 4" -> "2 > 4"
-    s = re.sub(r'\{\{::([0-9]+)(:[^}]*)?\}\}', r'\1', s)
+    s = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'\1', s)
     s = re.sub(r'[^0-9./\s>]', '', s)
     s = re.sub(r'\s+', ' ', s).strip()
     s = s.strip('/')
@@ -309,6 +309,8 @@ def main():
     )
     rows.append(bridge_html)
 
+    rows.append('</table></div>')
+
     rows.append('''<h2>4. 两段式审计(条件制造 → 兑现)</h2>
 <div class="card">
 <table>
@@ -330,6 +332,23 @@ def main():
     rows.append('''</table>
 <div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Diamond/Legendary 件(3D Printer 复制 / Robotic Factory 全局 +1 Multicast / Oblivion Core 摧毁引擎 / Dino Saddle 车辆 Multicast)都是「引擎级」而非纯数值;Gold 的战斗核心(Combat Core / C.O.R.A)在链引擎里才最强。tier 表达「获取难度 + 引擎潜力」。</div>
 </div>''')
+
+    # ===== 5.5 typical builds (2026-09-01 framework, v2 detailed) =====
+    skills = data['skills']
+    dooley_builds = [
+        dict(name='Hydraulic Press 叠标签一击流', source='<a href="https://mobalytics.gg/the-bazaar/builds/hydraulic-press-dooley-kripp">Mobalytics / Kripp</a>', date='2026-07-04', grade='<span class="badge t-gold">单核 win 条件</span>',
+             logic='按物品标签数堆伤害的單核构筑——摧毁多标签物品喂给 Press(Dinosawer 起手、尽早吃掉自己的 Core),1-2 次启动即可斩杀;需 Day 2-5 拿到 Press,不适合晚期 pivot。',
+             items=['Hydraulic Press', 'Dinosawer', 'Battery', 'GPU', 'Charging Station', 'Dino Saddle', 'Pylon'],
+             skills=['Machine Learning'],
+             note='Machine Learning 在吃掉 Core 后提供升级路线;经济过渡用 Sat-Comm / Temporal Navigator(至多一件,留 Stash 空间收标签);填充件 First Aiden / Levitation Pad / Plasma Grenade。位置要小心别摧毁错误物品。'),
+        dict(name='Power Drill 充能钻头流', source='thebazaarzone / Snacky', date='2025-04', grade='<span class="badge t-silver">新手推荐构筑</span>',
+             logic='Power Drill 按触发次数叠伤,与 Ignition Core 互充成环;Metronome 放在 Drill 和快件之间循环 Haste 触发,自烧件(Plasma Grenade / Nitro)一次给两次充能触发。商店好找、少量配件即可成型。',
+             items=['Power Drill', 'Ignition Core', 'Metronome', 'Fiber Optics', 'Plasma Grenade', 'Nitro', 'Thrusters', 'Solar Farm', 'Pylon'],
+             skills=['Hot Spot', 'Grease Fire', 'Rigged'],
+             note='技能优先「让 Drill 自充」类(Hot Spot / Grease Fire 全阶段有效);Metronome 附魔 Fiery/Toxic 优于附魔 Drill 本体;核心成型后 Core 本体可以整件撤下。'),
+    ]
+    rows.append(render_builds('Dooley', pool, data['items'], skills, dooley_axes, dooley_builds,
+        source_note='来源:Mobalytics Builds(Kripparrian)与 thebazaarzone(Snacky);物品/技能效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59),攻略日期即 meta 快照,跨补丁数值仅作结构参考;轴映射按 §3.6 谓词自动计算。'))
 
     rows.append('''<h2>6. 与 StS2 / OneDeck 的映射</h2>
 <div class="card">

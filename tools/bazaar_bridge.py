@@ -178,3 +178,97 @@ _TAG_OF = {
     '恐龙': 'Dinosaur', '射线': 'Ray', '核心': 'Core', '地产': 'Property',
     '玩具': 'Toy', '遗物': 'Relic', '食物': 'Food', '技术': 'Tech',
 }
+
+
+def esc(s):
+    return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+
+def clean_descs(obj):
+    """Cleaned description strings for an item/skill (base tier first, then top-level)."""
+    dsc = []
+    ts = obj.get('tierStats') or []
+    if ts:
+        dsc += ts[0].get('descriptions') or []
+    else:
+        dsc += obj.get('descriptions') or []
+    out = []
+    for x in dsc:
+        x = re.sub(r'\{\{::([^:}]+)(:[^}]*)?\}\}', r'', x)
+        x = re.sub(r'\{\{[^}]*\}\}', '', x)
+        x = re.sub(r'\s*>\s*', '', x)
+        x = re.sub(r'\s+', ' ', x).strip()
+        if x:
+            out.append(x)
+    return out
+
+
+def _tier_badge(obj):
+    t = obj.get('baseTier') or 'Unknown'
+    cls = {'Bronze': 't-bronze', 'Silver': 't-silver', 'Gold': 't-gold', 'Diamond': 't-diamond', 'Legendary': 't-gold'}.get(t, 't-silver')
+    return f'<span class="badge {cls}">{t}</span>'
+
+
+def _axes_of(item, axes):
+    return [a for a, f in axes.items() if f(item)]
+
+
+def _lookup(name, *collections):
+    for c in collections:
+        for x in c:
+            if x.get('name') == name:
+                return x
+    return None
+
+
+def render_builds(hero, pool, all_items, all_skills, axes, builds, source_note):
+    """Render the 5.5 typical-builds section.
+
+    builds: list of dicts {name, source, date, grade(html), logic,
+                           items:[names], skills:[names], note(optional)}
+    Items are resolved against the hero pool first, then the global item list
+    (cross-hero picks are annotated with their hero). Skills resolve against
+    the global skill list. Axis mapping is computed from the hero's predicates.
+    """
+    h = []
+    h.append('<h2>5.5 典型构筑(社区攻略)</h2>')
+    for b in builds:
+        h.append('<div class="card">')
+        h.append(f'<h3>{b["name"]} <span class="dim">· {b["source"]} {b["date"]} · {b["grade"]}</span></h3>')
+        h.append(f'<div class="lead">{b["logic"]}</div>')
+        # items table
+        h.append('<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>')
+        for name in b['items']:
+            it = _lookup(name, pool, all_items)
+            if not it:
+                h.append(f'<tr><td>{name}</td><td>—</td><td>(快照未收录)</td><td>—</td></tr>')
+                continue
+            axes_s = '×'.join(_axes_of(it, axes)) or '—'
+            hero_note = ''
+            if hero not in (it.get('heroes') or []):
+                hero_note = f' <span class="dim">[{"、".join(it["heroes"])}]</span>'
+            fx = esc(' '.join(clean_descs(it))[:170])
+            h.append(f'<tr><td>{it["name"]}{hero_note}</td><td>{_tier_badge(it)} / {it.get("size") or "—"}</td><td>{fx}</td><td class="mono">{axes_s}</td></tr>')
+        h.append('</table>')
+        # skills table
+        if b.get('skills'):
+            h.append('<table><tr><th>技能</th><th>tier</th><th>效果</th><th>轴映射</th></tr>')
+            for name in b['skills']:
+                sk = _lookup(name, all_skills)
+                if not sk:
+                    h.append(f'<tr><td>{name}</td><td>—</td><td>(快照未收录)</td><td>—</td></tr>')
+                    continue
+                # skills are not in the item pool; axes computed against a pseudo-item
+                pseudo = {'tags': sk.get('tags') or [], 'tierStats': sk.get('tierStats'), 'descriptions': sk.get('descriptions')}
+                axes_s = '×'.join(_axes_of(pseudo, axes)) or '—'
+                hero_note = ''
+                if hero not in (sk.get('heroes') or []):
+                    hero_note = f' <span class="dim">[{"、".join(sk["heroes"])}]</span>'
+                fx = esc(' '.join(clean_descs(sk))[:170])
+                h.append(f'<tr><td>{sk["name"]}{hero_note}</td><td>{_tier_badge(sk)}</td><td>{fx}</td><td class="mono">{axes_s}</td></tr>')
+            h.append('</table>')
+        if b.get('note'):
+            h.append(f'<div class="note">{b["note"]}</div>')
+        h.append('</div>')
+    h.append(f'<div class="note">{source_note}</div>')
+    return chr(10).join(h)
