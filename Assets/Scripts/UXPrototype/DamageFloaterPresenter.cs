@@ -46,7 +46,13 @@ public class DamageFloaterPresenter : MonoBehaviour
 	public float holdTime = 0.45f;
 	public float fadeTime = 0.36f;
 	public float floatUpDistPx = 62f;
+	[Tooltip("Random spawn jitter applied independently to x and y (±jitterPx/2 demo px), before clamp.")]
 	public float jitterPx = 40f;
+	[Tooltip("Spawn offset from the attack target (demo px, x right / y up), applied before jitter and clamp.")]
+	public Vector2 playerSpawnOffsetPx = Vector2.zero;
+	public Vector2 enemySpawnOffsetPx = Vector2.zero;
+	[Tooltip("Clamp the spawn position (after offset/jitter) into the floater layer rect so floaters stay on screen. The attack targets sit outside the camera frustum (VISUAL-FIX 2026-07-26), so with clamp OFF floaters spawn off-screen — debug/tuning only.")]
+	public bool clampToLayer = true;
 
 	private class ActiveFloater
 	{
@@ -255,30 +261,53 @@ public class DamageFloaterPresenter : MonoBehaviour
 		_active.Clear();
 	}
 
-	private void SpawnFloater(bool playerSide, int amount)
+	// Shared spawn-position resolution for gameplay (SpawnFloater) and the
+	// edit-mode preview: attack-target world position -> layer local, per-side
+	// offset, optional jitter, optional on-screen clamp (clampToLayer).
+	// Edit mode has no AttackAnimationManager.me singleton, so it falls back to
+	// a scene lookup.
+	// Returns false (logging why) when the target transform or camera is missing.
+	public bool TryComputeSpawnLocal(bool playerSide, bool applyJitter, out Vector2 local)
 	{
-		// Base position = the attack target the card charges to (world space).
-		Transform target = AttackAnimationManager.me != null
-			? (playerSide ? AttackAnimationManager.me.playerTargetPos : AttackAnimationManager.me.enemyTargetPos)
+		local = Vector2.zero;
+		AttackAnimationManager mgr = AttackAnimationManager.me != null
+			? AttackAnimationManager.me
+			: FindFirstObjectByType<AttackAnimationManager>();
+		Transform target = mgr != null
+			? (playerSide ? mgr.playerTargetPos : mgr.enemyTargetPos)
 			: null;
 		if (target == null)
 		{
-			TestManager.LogWarning("[DamageFloater] Skipping floater (side=" + (playerSide ? "player" : "enemy")
-				+ ", amount=" + amount + "): AttackAnimationManager.me="
-				+ (AttackAnimationManager.me != null) + ", target transform missing.");
-			return;
+			TestManager.LogWarning("[DamageFloater] Spawn position unresolved (side=" + (playerSide ? "player" : "enemy")
+				+ "): AttackAnimationManager found=" + (mgr != null) + ", target transform missing.");
+			return false;
 		}
 		if (Camera.main == null)
 		{
-			TestManager.LogWarning("[DamageFloater] Skipping floater (side=" + (playerSide ? "player" : "enemy")
-				+ ", amount=" + amount + "): Camera.main is null, cannot convert world position.");
+			TestManager.LogWarning("[DamageFloater] Spawn position unresolved (side=" + (playerSide ? "player" : "enemy")
+				+ "): Camera.main is null, cannot convert world position.");
+			return false;
+		}
+		Vector2 baseLocal = WorldToLayerLocal(target.position);
+		float px = PxToLocal();
+		baseLocal += (playerSide ? playerSpawnOffsetPx : enemySpawnOffsetPx) * px;
+		if (applyJitter)
+		{
+			baseLocal.x += Random.Range(-jitterPx * 0.5f, jitterPx * 0.5f) * px;
+			baseLocal.y += Random.Range(-jitterPx * 0.5f, jitterPx * 0.5f) * px;
+		}
+		local = clampToLayer ? ClampToLayer(baseLocal, px) : baseLocal;
+		return true;
+	}
+
+	private void SpawnFloater(bool playerSide, int amount)
+	{
+		// Base position = the attack target the card charges to (world space),
+		// resolved through the shared path (TryComputeSpawnLocal).
+		if (!TryComputeSpawnLocal(playerSide, true, out Vector2 local))
+		{
 			return;
 		}
-		Vector3 worldPos = target.position;
-		Vector2 local = WorldToLayerLocal(worldPos);
-		float px = PxToLocal();
-		local.x += Random.Range(-jitterPx * 0.5f, jitterPx * 0.5f) * px;
-		local = ClampToLayer(local, px);
 
 		var go = CreateFloaterObject(local, amount, playerSide);
 		var rt = (RectTransform)go.transform;
@@ -286,14 +315,13 @@ public class DamageFloaterPresenter : MonoBehaviour
 		var group = go.GetComponent<CanvasGroup>();
 
 		TestManager.Log("[DamageFloater] Spawned '" + tmp.text + "' side=" + (playerSide ? "player" : "enemy")
-			+ " | target='" + target.name + "' world=" + worldPos
 			+ " | layerLocal=" + local + " (layer rect=" + floaterLayer.rect + ")"
-			+ " | px->local=" + px + " | font=" + (tmp.font != null ? tmp.font.name : "NULL")
+			+ " | px->local=" + PxToLocal() + " | font=" + (tmp.font != null ? tmp.font.name : "NULL")
 			+ " | color=" + tmp.color + " | scale=" + punchScale + " | duration="
 			+ (punchInTime + holdTime + fadeTime) + "s / SpeedScale=" + CombatAnimationSpeed.SpeedScale);
 
 		var entry = new ActiveFloater { go = go };
-		entry.seq = PlayTimeline(rt, group, local.y, px);
+		entry.seq = PlayTimeline(rt, group, local.y, PxToLocal());
 		_active.Add(entry);
 		entry.seq.OnComplete(() =>
 		{

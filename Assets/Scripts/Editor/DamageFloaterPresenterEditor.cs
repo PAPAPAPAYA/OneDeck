@@ -8,9 +8,11 @@ using UnityEngine;
 /// outside Play Mode), so timing/scale/color tweaks can be evaluated without
 /// entering combat. The preview object is named DamageFloater_Preview, marked
 /// HideFlags.DontSave, and destroyed with DestroyImmediate on completion.
-/// Player/enemy buttons only differ in the spawn offset (left/right of the
-/// floater layer center); the real spawn anchor (attack target position) does
-/// not exist in edit mode.
+/// The spawn position resolves through the gameplay path
+/// (DamageFloaterPresenter.TryComputeSpawnLocal: attack-target world position,
+/// per-side offset, jitter, clamp), so the preview matches a real hit's
+/// on-screen position. When the scene lacks the attack-target wiring or a main
+/// camera, it falls back to a left/right-of-center placeholder and logs a warning.
 /// </summary>
 [CustomEditor(typeof(DamageFloaterPresenter))]
 public class DamageFloaterPresenterEditor : Editor
@@ -58,8 +60,16 @@ public class DamageFloaterPresenterEditor : Editor
 			Debug.LogWarning("[DamageFloater] Edit-mode preview is meant for edit mode; in Play Mode floaters spawn from real hits.");
 			return;
 		}
-		Rect rect = presenter.floaterLayer.rect;
-		Vector2 local = rect.center + new Vector2(rect.width * (playerSide ? -0.25f : 0.25f), 0f);
+		// Resolve the real gameplay spawn position (attack target + offset + jitter
+		// + clamp) so the preview matches a real hit's on-screen position; fall back
+		// to the layer-center placeholder with a warning when the scene lacks the
+		// attack-target wiring or a main camera.
+		if (!presenter.TryComputeSpawnLocal(playerSide, true, out Vector2 local))
+		{
+			Debug.LogWarning("[DamageFloater] Preview: real spawn position unavailable (see warning above); falling back to layer-center placeholder.");
+			Rect rect = presenter.floaterLayer.rect;
+			local = rect.center + new Vector2(rect.width * (playerSide ? -0.25f : 0.25f), 0f);
+		}
 		_seq = presenter.SpawnPreviewFloater(local, s_previewAmount, playerSide, out _go);
 		_go.name = PreviewName;
 		_go.hideFlags = HideFlags.DontSave;
