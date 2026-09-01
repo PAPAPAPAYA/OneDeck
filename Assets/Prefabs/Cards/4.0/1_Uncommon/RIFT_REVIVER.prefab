@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RIFT_REVIVER
-  displayName: "\u6495\u4e86\u5c01\u6761\u7684\u5e93\u623f"
+  displayName: "\u6495\u4E86\u5C01\u6761\u7684\u5E93\u623F"
   cardDesc: "\u653E\u90101\u53CB\u65B9\u4FE1\u5F92,\u590D\u6D3B2\u53CB\u65B9\u975E\u751F\u7269"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -61,7 +61,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 070000000b000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -71,6 +71,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &3795030322462533441
 MonoBehaviour:
   m_ObjectHideFlags: 0

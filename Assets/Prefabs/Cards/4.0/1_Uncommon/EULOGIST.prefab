@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &3004267930122596730
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,6 +171,9 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &7741498165312943511
 GameObject:
   m_ObjectHideFlags: 0
@@ -219,7 +223,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: EULOGIST
-  displayName: "\u54ed\u7075\u4eba"
+  displayName: "\u54ED\u7075\u4EBA"
   cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9\u9057\u8A00\u5361;\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -230,14 +234,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 04000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 1
+  isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &2962028660088787565
 MonoBehaviour:
   m_ObjectHideFlags: 0

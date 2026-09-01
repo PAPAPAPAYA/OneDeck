@@ -82,6 +82,9 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &2574205106168791154
 GameObject:
   m_ObjectHideFlags: 0
@@ -165,6 +168,7 @@ MonoBehaviour:
   sortBy: 0
   rarityFilter: 0
   delayedRevive: 1
+  onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
 --- !u!1 &4631307286910283563
@@ -217,7 +221,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: FUNERAL_WILL
-  displayName: "\u8d34\u5728\u95e8\u4e0a\u7684\u4fdd\u9669\u4e66"
+  displayName: "\u8D34\u5728\u95E8\u4E0A\u7684\u4FDD\u9669\u4E66"
   cardDesc: "\u57CB\u846C\u5361\u7EC4\u9876 <b>2</b> \u5361;\u9057\u8A00:\u5EF6\u8FDF\u590D\u6D3B
     <b>1</b> \u53CB\u65B9"
   rarity: 1
@@ -229,15 +233,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 030000000b000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &6447519920523776325
 MonoBehaviour:
   m_ObjectHideFlags: 0

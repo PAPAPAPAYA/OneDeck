@@ -83,6 +83,7 @@ MonoBehaviour:
   sortBy: 0
   rarityFilter: 0
   delayedRevive: 0
+  onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
 --- !u!1 &5490173269118527125
@@ -134,7 +135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: BEAST_REVIVER
-  displayName: "\u7b3c\u91cc\u7684\u4e1c\u897f"
+  displayName: "\u7B3C\u91CC\u7684\u4E1C\u897F"
   cardDesc: "\u653B\u51FB;\u590D\u6D3B <b>1</b> \u751F\u7269\u53CB\u65B9"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -145,15 +146,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0b000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &6699090790420202733
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -282,3 +285,4 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}

@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &7198014757221029248
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,7 +137,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: REANIMATOR
-  displayName: "\u7ad9\u53f0\u5c3d\u5934\u7684\u4e1c\u897f"
+  displayName: "\u7AD9\u53F0\u5C3D\u5934\u7684\u4E1C\u897F"
   cardDesc: "\u653B\u51FB;\u653B\u51FB\u529B=\u672C\u56DE\u5408\u590D\u6D3B\u53CB\u65B9\u6570"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -147,7 +148,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0b000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -157,6 +158,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &6719033470844501519
 MonoBehaviour:
   m_ObjectHideFlags: 0

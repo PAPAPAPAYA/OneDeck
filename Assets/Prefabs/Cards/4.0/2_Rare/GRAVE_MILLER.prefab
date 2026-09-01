@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &2709592001097053617
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,6 +171,9 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &4299303623956490534
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,6 +256,9 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &8318710554470851401
 GameObject:
   m_ObjectHideFlags: 0
@@ -302,7 +309,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_MILLER
-  displayName: "\u592a\u5e73\u95f4\u7684\u4fdd\u6d01"
+  displayName: "\u592A\u5E73\u95F4\u7684\u4FDD\u6D01"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u57CB\u846C <b>2</b> \u53CB\u65B9;\u57CB\u846C\u5361\u7EC4\u9876
     <b>5</b> \u5361"
   rarity: 2
@@ -314,14 +321,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 04000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 1
+  isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &7454616710891810716
 MonoBehaviour:
   m_ObjectHideFlags: 0

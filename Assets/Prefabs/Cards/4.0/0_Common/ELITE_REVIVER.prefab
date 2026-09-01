@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: ELITE_REVIVER
-  displayName: "\u63cf\u8fc7\u91d1\u7684\u724c\u4f4d"
+  displayName: "\u63CF\u8FC7\u91D1\u7684\u724C\u4F4D"
   cardDesc: "\u653B\u51FB;\u590D\u6D3B1\u3010\u88AB\u5F3A\u5316\u3011\u53CB\u65B9\u751F\u7269"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -61,7 +61,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0b000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
@@ -71,6 +71,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &6085616041691690641
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -301,3 +302,4 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}

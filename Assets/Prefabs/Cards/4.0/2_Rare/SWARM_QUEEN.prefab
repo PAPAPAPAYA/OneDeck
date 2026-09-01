@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &5035190584583483569
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,7 +218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: SWARM_QUEEN
-  displayName: "\u4e0d\u4e0b\u53f0\u7684\u6b4c\u5973"
+  displayName: "\u4E0D\u4E0B\u53F0\u7684\u6B4C\u5973"
   cardDesc: "\u653B\u51FB;\u6BCF\u67091\u653B\u51FB\u529B,\u751F\u62101\u4FE1\u5F92"
   rarity: 2
   shopRollWeightMultiplier: 1
@@ -228,7 +229,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 06000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
@@ -238,6 +239,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &4452349236683188154
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_BLOOD_PACT
-  displayName: "\u63a5\u53cd\u7684\u8f93\u6db2\u7ba1"
+  displayName: "\u63A5\u53CD\u7684\u8F93\u6DB2\u7BA1"
   cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u653B\u51FB\u4E0D\u518D\u9020\u6210\u4F24\u5BB3,\u800C\u662F\u5F3A\u5316\u7B49\u91CF\u654C\u65B9\u8BC5\u5492"
   rarity: 2
   shopRollWeightMultiplier: 1
@@ -59,7 +59,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 080000000a000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0

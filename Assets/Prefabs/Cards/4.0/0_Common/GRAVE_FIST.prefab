@@ -82,6 +82,9 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &4428231430183656993
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,7 +134,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_FIST
-  displayName: "\u66ff\u6b7b\u9b3c"
+  displayName: "\u66FF\u6B7B\u9B3C"
   cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9;\u653B\u51FB"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -142,15 +145,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 04000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 3
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &1417447142227650579
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -279,3 +284,4 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}

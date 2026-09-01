@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &3189408098577880931
 GameObject:
   m_ObjectHideFlags: 0
@@ -101,7 +102,7 @@ GameObject:
   - component: {fileID: 8158688859257102251}
   - component: {fileID: 953231154107053367}
   m_Layer: 0
-  m_Name: AVENGER
+  m_Name: AVENGER_4.0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -138,7 +139,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: AVENGER_4.0
-  displayName: "\u957f\u9ad8\u7684\u575f\u5934"
+  displayName: "\u957F\u9AD8\u7684\u575F\u5934"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u5F3A\u5316\u81EA\u8EAB
     <b>1</b>"
   rarity: 0
@@ -150,15 +151,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 03000000
+  myTags: 0300000005000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &8158688859257102251
 MonoBehaviour:
   m_ObjectHideFlags: 0

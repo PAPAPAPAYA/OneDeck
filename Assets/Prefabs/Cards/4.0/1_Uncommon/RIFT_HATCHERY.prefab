@@ -82,6 +82,9 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &5173587916797470116
 GameObject:
   m_ObjectHideFlags: 0
@@ -132,8 +135,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_HATCHERY
-  displayName: "\u9999\u706b\u4e0d\u65ad\u7684\u91ce\u5e99"
-  cardDesc: "\u751f\u6210 <b>3</b> [\u4fe1\u5f92];\u56de\u5408\u5f00\u59cb:\u57cb\u846c\u81ea\u8eab"
+  displayName: "\u9999\u706B\u4E0D\u65AD\u7684\u91CE\u5E99"
+  cardDesc: "\u751F\u6210 <b>3</b> [\u4FE1\u5F92];\u56DE\u5408\u5F00\u59CB:\u57CB\u846C\u81EA\u8EAB"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -143,15 +146,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0600000004000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &638178398309144577
 MonoBehaviour:
   m_ObjectHideFlags: 0

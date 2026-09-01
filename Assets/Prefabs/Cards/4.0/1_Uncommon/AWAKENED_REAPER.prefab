@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &2629729661993109104
 GameObject:
   m_ObjectHideFlags: 0
@@ -138,7 +139,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: AWAKENED_REAPER
-  displayName: "\u6765\u9886\u4eba\u7684\u5bb6\u5c5e"
+  displayName: "\u6765\u9886\u4EBA\u7684\u5BB6\u5C5E"
   cardDesc: "\u653B\u51FB;\u82CF\u9192:\u57CB\u846C1\u654C\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -149,7 +150,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0900000004000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
@@ -159,6 +160,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &4969791871665205237
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -297,3 +299,6 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0

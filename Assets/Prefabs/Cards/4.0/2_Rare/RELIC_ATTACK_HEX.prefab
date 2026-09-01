@@ -59,15 +59,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 080000000a000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 1
+  attackSnapshotValue: -1
 --- !u!114 &136053689610628781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,6 +176,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
   cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  countTypeID: {fileID: 0}
   cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
   statusEffectResolverPrefab: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}

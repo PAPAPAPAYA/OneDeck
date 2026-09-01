@@ -83,6 +83,7 @@ MonoBehaviour:
   sortBy: 0
   rarityFilter: 0
   delayedRevive: 0
+  onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
 --- !u!1 &5438037550125298045
@@ -163,6 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
   cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  countTypeID: {fileID: 0}
   cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
   statusEffectResolverPrefab: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
@@ -220,7 +222,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: GRAVE_HEXER
-  displayName: "\u767d\u4e8b\u5148\u751f"
+  displayName: "\u767D\u4E8B\u5148\u751F"
   cardDesc: "\u590D\u6D3B1\u53CB\u65B9;\u5F3A\u53162\u654C\u65B9\u8BC5\u5492"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -231,7 +233,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 080000000b000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -241,6 +243,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &7946151307686833904
 MonoBehaviour:
   m_ObjectHideFlags: 0

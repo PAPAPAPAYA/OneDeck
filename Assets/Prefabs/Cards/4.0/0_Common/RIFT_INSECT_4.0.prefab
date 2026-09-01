@@ -167,6 +167,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &7025170819787247921
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +180,7 @@ GameObject:
   - component: {fileID: 3438389413623927402}
   - component: {fileID: 1227049065017407936}
   m_Layer: 0
-  m_Name: RIFT_INSECT
+  m_Name: RIFT_INSECT_4.0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -216,8 +217,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_INSECT_4.0
-  displayName: "\u95e8\u53e3\u591a\u51fa\u7684\u978b\u5370"
-  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fb;\u751f\u6210 <b>1</b> [\u4fe1\u5f92]"
+  displayName: "\u95E8\u53E3\u591A\u51FA\u7684\u978B\u5370"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u751F\u6210 <b>1</b> [\u4FE1\u5F92]"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -227,14 +228,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 06000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 3
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 1
+  isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &1227049065017407936
 MonoBehaviour:
   m_ObjectHideFlags: 0

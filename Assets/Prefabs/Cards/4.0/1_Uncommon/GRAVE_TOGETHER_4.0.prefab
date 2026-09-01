@@ -82,6 +82,9 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &6738726073742003043
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,6 +173,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &6929564165084074937
 GameObject:
   m_ObjectHideFlags: 0
@@ -182,7 +186,7 @@ GameObject:
   - component: {fileID: 149643397932001536}
   - component: {fileID: 1620695180883631581}
   m_Layer: 0
-  m_Name: GRAVE_TOGETHER
+  m_Name: GRAVE_TOGETHER_4.0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -220,7 +224,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_TOGETHER_4.0
-  displayName: "\u5e76\u6392\u7684\u4e09\u5ea7\u65b0\u575f"
+  displayName: "\u5E76\u6392\u7684\u4E09\u5EA7\u65B0\u575F"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u57CB\u846C <b>1</b> \u53CB\u65B9;\u57CB\u846C
     <b>2</b> \u654C\u65B9"
   rarity: 1
@@ -232,14 +236,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 04000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 1
+  isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &1620695180883631581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -374,3 +381,6 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0

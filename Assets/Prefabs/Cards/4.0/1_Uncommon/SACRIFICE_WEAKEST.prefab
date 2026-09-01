@@ -84,6 +84,7 @@ MonoBehaviour:
   ignoreStartCardBoundary: 0
   creatureFilter: 0
   targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &3355404150610938602
 GameObject:
   m_ObjectHideFlags: 0
@@ -227,7 +228,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: SACRIFICE_WEAKEST
-  displayName: "\u6298\u51fa\u6765\u7684\u66ff\u8eab"
+  displayName: "\u6298\u51FA\u6765\u7684\u66FF\u8EAB"
   cardDesc: "\u57CB\u846C1\u653B\u51FB\u529B\u6700\u4F4E\u53CB\u65B9;\u5F3A\u53161\u8BE5\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -238,7 +239,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0400000005000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -248,6 +249,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &2131515910441108459
 MonoBehaviour:
   m_ObjectHideFlags: 0

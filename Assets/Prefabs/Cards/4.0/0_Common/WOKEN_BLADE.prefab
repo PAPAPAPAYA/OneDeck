@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &1011192699049376595
 GameObject:
   m_ObjectHideFlags: 0
@@ -176,6 +177,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &1421494200085628712
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,7 +228,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: WOKEN_BLADE
-  displayName: "\u5934\u4e03\u7684\u5200"
+  displayName: "\u5934\u4E03\u7684\u5200"
   cardDesc: "\u653B\u51FB;\u82CF\u9192:\u653B\u51FBx2"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -237,7 +239,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 09000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
@@ -247,6 +249,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &1257980961369391686
 MonoBehaviour:
   m_ObjectHideFlags: 0

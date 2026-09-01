@@ -83,6 +83,7 @@ MonoBehaviour:
   sortBy: 0
   rarityFilter: 0
   delayedRevive: 0
+  onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
 --- !u!1 &6788459959842888888
@@ -134,8 +135,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: REVIVE_SUMMONER
-  displayName: "\u8ddf\u56de\u5bb6\u7684\u4eba\u5f71"
-  cardDesc: "\u590d\u6d3b <b>1</b> \u53cb\u65b9;\u751f\u6210 <b>1</b> [\u4fe1\u5f92]"
+  displayName: "\u8DDF\u56DE\u5BB6\u7684\u4EBA\u5F71"
+  cardDesc: "\u590D\u6D3B <b>1</b> \u53CB\u65B9;\u751F\u6210 <b>1</b> [\u4FE1\u5F92]"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -145,15 +146,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 060000000b000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &3830267112696145553
 MonoBehaviour:
   m_ObjectHideFlags: 0

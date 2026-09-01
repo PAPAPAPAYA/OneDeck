@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: TWIN_STRIKER
-  displayName: "\u4e00\u5bf9\u7eb8\u4eba"
+  displayName: "\u4E00\u5BF9\u7EB8\u4EBA"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx2"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -59,14 +59,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0d000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 1
+  attackTimesModThisRound: 0
   isCreature: 1
+  isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &1933194281148271243
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,3 +186,4 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}

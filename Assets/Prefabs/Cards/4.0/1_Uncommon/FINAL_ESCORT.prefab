@@ -52,7 +52,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: FINAL_ESCORT
-  displayName: "\u5f15\u8def\u7684\u767d\u706f\u7b3c"
+  displayName: "\u5F15\u8DEF\u7684\u767D\u706F\u7B3C"
   cardDesc: "\u653B\u51FB;\u9057\u8A00:\u56DE\u5408\u7ED3\u675F:\u7F6E\u9876 <b>1</b>
     \u53CB\u65B9\u653B\u51FB\u529B\u6700\u9AD8\u751F\u7269"
   rarity: 1
@@ -64,7 +64,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 03000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 1
@@ -74,6 +74,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &2300049792370228860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,6 +241,7 @@ MonoBehaviour:
   statusEffectToCheck: 0
   excludeSelf: 1
   creatureOnly: 0
+  creatureFilter: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   roundEndStageArmed: 0
@@ -325,6 +327,7 @@ MonoBehaviour:
   statusEffectToCheck: 0
   excludeSelf: 1
   creatureOnly: 1
+  creatureFilter: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   roundEndStageArmed: 0
@@ -416,3 +419,4 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}

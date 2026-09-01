@@ -48,8 +48,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_ATTACK_BURIAL
-  displayName: "\u81ea\u5df1\u7ffb\u9875\u7684\u9ec4\u5386"
-  cardDesc: "\u88ab\u52a8:\u53cb\u65b9\u6bcf\u6b21\u653b\u51fb\u65f6,\u57cb\u846c\u5361\u7ec4\u9876 <b>1</b> \u5361"
+  displayName: "\u81EA\u5DF1\u7FFB\u9875\u7684\u9EC4\u5386"
+  cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u6BCF\u6B21\u653B\u51FB\u65F6,\u57CB\u846C\u5361\u7EC4\u9876
+    <b>1</b> \u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -59,15 +60,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 040000000a000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 1
+  attackSnapshotValue: -1
 --- !u!114 &960765534072424449
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,3 +181,6 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0

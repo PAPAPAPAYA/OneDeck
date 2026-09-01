@@ -182,6 +182,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &8720350429079250851
 GameObject:
   m_ObjectHideFlags: 0
@@ -232,7 +233,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: EXILE_BERSERKER
-  displayName: "\u9001\u884c\u9152"
+  displayName: "\u9001\u884C\u9152"
   cardDesc: "\u653B\u51FB;\u672C\u56DE\u5408\u6BCF\u653E\u9010 <b>1</b> \u53CB\u65B9,\u653B\u51FB\u6B21\u6570<b>+1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -243,7 +244,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 07000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
@@ -253,6 +254,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &8482789681572870788
 MonoBehaviour:
   m_ObjectHideFlags: 0

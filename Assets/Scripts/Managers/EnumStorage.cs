@@ -43,7 +43,19 @@ public class EnumStorage : MonoBehaviour
 		None,
 		Linger,
 		ManaX,
-		DeathRattle
+		DeathRattle,
+		// 4.0 keyword tags (Notion "4.0 card database" tag column, synced 2026-09-01).
+		// Append-only: prefabs serialize tags as ints — inserting or reordering corrupts existing assets.
+		Bury,
+		Enhance,
+		Believer,
+		Exile,
+		Curse,
+		Awaken,
+		Passive,
+		Revive,
+		EnhanceReaction,
+		MultiAttack
 	}
 
 	public enum Rarity

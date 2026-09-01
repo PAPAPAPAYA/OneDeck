@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_CURSE_HASTE
-  displayName: "\u8d8a\u6765\u8d8a\u5feb\u7684\u811a\u6b65\u58f0"
+  displayName: "\u8D8A\u6765\u8D8A\u5FEB\u7684\u811A\u6B65\u58F0"
   cardDesc: "\u88AB\u52A8:\u654C\u65B9\u8BC5\u5492\u653B\u51FB\u6B21\u6570<b>+1</b>"
   rarity: 2
   shopRollWeightMultiplier: 1
@@ -59,7 +59,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 080000000a000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -69,6 +69,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 1
+  attackSnapshotValue: -1
 --- !u!114 &2778987001683185144
 MonoBehaviour:
   m_ObjectHideFlags: 0

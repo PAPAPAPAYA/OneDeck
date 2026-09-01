@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: KINGSLAYER
-  displayName: "\u8fc1\u575f\u961f"
+  displayName: "\u8FC1\u575F\u961F"
   cardDesc: "\u57CB\u846C1\u653B\u51FB\u529B\u6700\u9AD8\u654C\u65B9;\u590D\u6D3B1\u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -61,7 +61,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 040000000b000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -71,6 +71,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &7302039020970280828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -297,3 +298,4 @@ MonoBehaviour:
   ignoreStartCardBoundary: 0
   creatureFilter: 0
   targetFriendly: 0
+  lastSuccessfulBuryCount: 0

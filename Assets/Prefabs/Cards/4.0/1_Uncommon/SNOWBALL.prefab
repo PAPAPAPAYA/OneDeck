@@ -185,6 +185,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &5246165075108903406
 GameObject:
   m_ObjectHideFlags: 0
@@ -235,8 +236,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SNOWBALL
-  displayName: "\u6570\u4e0d\u5b8c\u7684\u7eb8\u94b1"
-  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fbx2;\u5f3a\u5316\u53cd\u5e94:\u5f3a\u5316\u81ea\u8eab\n    <b>1</b>"
+  displayName: "\u6570\u4E0D\u5B8C\u7684\u7EB8\u94B1"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx2;\u5F3A\u5316\u53CD\u5E94:\u5F3A\u5316\u81EA\u8EAB\n   
+    <b>1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -246,14 +248,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0d0000000c00000005000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 1
+  attackTimesModThisRound: 0
   isCreature: 1
+  isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &6623007537848238896
 MonoBehaviour:
   m_ObjectHideFlags: 0

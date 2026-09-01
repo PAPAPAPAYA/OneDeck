@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_GRAVE_LORD
-  displayName: "\u5730\u4e0b\u4f20\u6765\u7684\u53e9\u51fb"
+  displayName: "\u5730\u4E0B\u4F20\u6765\u7684\u53E9\u51FB"
   cardDesc: "\u88AB\u52A8:\u5893\u5730\u4E2D\u7684\u53CB\u65B9\u751F\u7269\u653B\u51FB\u529B+1"
   rarity: 2
   shopRollWeightMultiplier: 1
@@ -59,7 +59,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0a000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -69,6 +69,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 1
+  attackSnapshotValue: -1
 --- !u!114 &4356073828150292835
 MonoBehaviour:
   m_ObjectHideFlags: 0

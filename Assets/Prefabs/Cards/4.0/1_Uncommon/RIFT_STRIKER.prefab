@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &1415065256557851049
 GameObject:
   m_ObjectHideFlags: 0
@@ -137,8 +138,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_STRIKER
-  displayName: "\u51fa\u8fc7\u4e8b\u7684\u90a3\u6761\u8857"
-  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fbx2;\u751f\u6210 <b>1</b> [\u4fe1\u5f92]"
+  displayName: "\u51FA\u8FC7\u4E8B\u7684\u90A3\u6761\u8857"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx2;\u751F\u6210 <b>1</b> [\u4FE1\u5F92]"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -148,14 +149,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 060000000d000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 1
+  attackTimesModThisRound: 0
   isCreature: 1
+  isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &3821332137548120541
 MonoBehaviour:
   m_ObjectHideFlags: 0

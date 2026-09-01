@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_CHAIN_BURIAL
-  displayName: "\u62d6\u4eba\u4e0b\u6c34\u7684\u6c34\u9b3c"
+  displayName: "\u62D6\u4EBA\u4E0B\u6C34\u7684\u6C34\u9B3C"
   cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u88AB\u57CB\u846C\u65F6,\u57CB\u846C\u5361\u7EC4\u9876
     <b>1</b> \u5361"
   rarity: 1
@@ -60,15 +60,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 040000000a000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 1
+  attackSnapshotValue: -1
 --- !u!114 &960765534072424449
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,3 +181,6 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0

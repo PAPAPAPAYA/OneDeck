@@ -78,6 +78,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
   cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  countTypeID: {fileID: 0}
   cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
   statusEffectResolverPrefab: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}
@@ -135,7 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: WOKEN_HEX
-  displayName: "\u4e09\u66f4\u5f00\u7740\u7684\u7a97"
+  displayName: "\u4E09\u66F4\u5F00\u7740\u7684\u7A97"
   cardDesc: "\u5F3A\u53161\u654C\u65B9\u8BC5\u5492;\u82CF\u9192:\u5F3A\u53162\u654C\u65B9\u8BC5\u5492"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -146,7 +147,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 0900000008000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -156,6 +157,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &196297963085753406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -290,6 +292,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
   cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
+  countTypeID: {fileID: 0}
   cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
   statusEffectResolverPrefab: {fileID: 0}
   statusEffectParticlePrefab: {fileID: 0}

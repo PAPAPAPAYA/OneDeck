@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_TRAINER
-  displayName: "\u534a\u591c\u5582\u5976\u7684\u9ed1\u5f71"
+  displayName: "\u534A\u591C\u5582\u5976\u7684\u9ED1\u5F71"
   cardDesc: "\u88AB\u52A8:\u56DE\u5408\u5F00\u59CB:\u5F3A\u53161\u653B\u51FB\u529B\u6700\u4F4E\u53CB\u65B9\u751F\u7269"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -59,7 +59,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 050000000a000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -69,6 +69,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 1
+  attackSnapshotValue: -1
 --- !u!114 &2326775684717639612
 MonoBehaviour:
   m_ObjectHideFlags: 0

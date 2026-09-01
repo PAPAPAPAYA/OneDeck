@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_DEATH_KNELL
-  displayName: "\u591a\u6572\u4e86\u4e00\u4e0b\u7684\u949f"
+  displayName: "\u591A\u6572\u4E86\u4E00\u4E0B\u7684\u949F"
   cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u82CF\u9192\u65F6:\u89E6\u53D1\u5176\u9057\u8A00"
   rarity: 2
   shopRollWeightMultiplier: 1
@@ -59,7 +59,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 03000000090000000a000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0

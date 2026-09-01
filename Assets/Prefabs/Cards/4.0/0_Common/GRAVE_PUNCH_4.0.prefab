@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &5054249598775448965
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,6 +171,9 @@ MonoBehaviour:
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
   ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!1 &7981514837180212169
 GameObject:
   m_ObjectHideFlags: 0
@@ -182,7 +186,7 @@ GameObject:
   - component: {fileID: 3898901045617605750}
   - component: {fileID: 102543745118513230}
   m_Layer: 0
-  m_Name: GRAVE_PUNCH
+  m_Name: GRAVE_PUNCH_4.0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -219,7 +223,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_PUNCH_4.0
-  displayName: "\u6ca1\u6709\u6307\u7eb9\u7684\u51f6\u5668"
+  displayName: "\u6CA1\u6709\u6307\u7EB9\u7684\u51F6\u5668"
   cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9;\u653B\u51FBx2"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -230,15 +234,17 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 
+  myTags: 040000000d000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 2
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 1
+  attackTimesModThisRound: 0
   isCreature: 1
   isPassive: 0
+  attackSnapshotValue: -1
 --- !u!114 &102543745118513230
 MonoBehaviour:
   m_ObjectHideFlags: 0
