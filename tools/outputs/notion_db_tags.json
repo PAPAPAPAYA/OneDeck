@@ -1,0 +1,738 @@
+{
+	"SPIKE_SKELETON_4.0": {
+		"url": "https://app.notion.com/3c7827b8c3c180f9a16fddf6046eb9e9",
+		"status": null,
+		"cnName": "医学院的标本",
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RIFT_ACOLYTE": {
+		"url": "https://app.notion.com/3c7827b8c3c18101a848cb15bd0d3996",
+		"status": null,
+		"cnName": "自己签满的签到表",
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"REANIMATOR": {
+		"url": "https://app.notion.com/3c7827b8c3c18101bf5ec354a82b78ac",
+		"status": null,
+		"cnName": "站台尽头的东西",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RIFT_STRIKER": {
+		"url": "https://app.notion.com/3c7827b8c3c18105bfbccc075808ade4",
+		"status": null,
+		"cnName": "出过事的那条街",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RIFT_SHEPHERD": {
+		"url": "https://app.notion.com/3c7827b8c3c181099754f92441794ddd",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"DETERIORATION_4.0": {
+		"url": "https://app.notion.com/3c7827b8c3c18113bf3fc9902e30a485",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"DELAYER": {
+		"url": "https://app.notion.com/3c7827b8c3c1811bb20edf8fe4db7fea",
+		"status": "备用",
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RELIC_TAINT": {
+		"url": "https://app.notion.com/3c7827b8c3c1811bb259eae2391a9999",
+		"status": "备用",
+		"cnName": "供桌上少掉的苹果",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RIFT_INSECT_4.0": {
+		"url": "https://app.notion.com/3c7827b8c3c1811db4fbdf5b58514829",
+		"status": null,
+		"cnName": "门口多出的鞋印",
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"UNDYING_WARRIOR": {
+		"url": "https://app.notion.com/3c7827b8c3c181239b1cfe3de5d61b9e",
+		"status": null,
+		"cnName": "没拉平的心电图",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"GRAVE_ROBBER": {
+		"url": "https://app.notion.com/3c7827b8c3c18125bb28c5c33618eeef",
+		"status": null,
+		"cnName": "收尸人",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"GRAVE_FIST": {
+		"url": "https://app.notion.com/3c7827b8c3c1812a8ca3fb3c9062b404",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"GRAVE_PUNCH_4.0": {
+		"url": "https://app.notion.com/3c7827b8c3c1812c9d70e4eac3df0648",
+		"status": null,
+		"cnName": "没有指纹的凶器",
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RELIC_CURSE_HASTE": {
+		"url": "https://app.notion.com/3c7827b8c3c18131bef4fe8bcb4bda9d",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"WEAPON_SPIRIT": {
+		"url": "https://app.notion.com/3c7827b8c3c1813488fbd9f0368ff542",
+		"status": null,
+		"cnName": "要喂血的刀",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RELIC_CURSE_REVIVAL": {
+		"url": "https://app.notion.com/3c7827b8c3c1813aa0d5c4a2d1ce3ead",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RELIC_BLOOD_PACT": {
+		"url": "https://app.notion.com/3c7827b8c3c1813b8ba2fdd80cdfda5e",
+		"status": null,
+		"cnName": "接反的输液管",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"SPIRIT_CALLER": {
+		"url": "https://app.notion.com/3c7827b8c3c1814190f1de9842a9a922",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"WAKING_FIGHTER": {
+		"url": "https://app.notion.com/3c7827b8c3c181458052c7371d096196",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"BATTLE_HORN": {
+		"url": "https://app.notion.com/3c7827b8c3c181468ffee12f7463681d",
+		"status": null,
+		"cnName": "最后一节课的铃",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"LAST_GIFT": {
+		"url": "https://app.notion.com/3c7827b8c3c18146b887d35025a02cb8",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RIFT_REAPER": {
+		"url": "https://app.notion.com/3c7827b8c3c1814d8ce5f6169bd5447d",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RIFT_PRIEST": {
+		"url": "https://app.notion.com/3c7827b8c3c1814f95a0fbd852ce663a",
+		"status": null,
+		"cnName": "点传师",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RELIC_HIVE": {
+		"url": "https://app.notion.com/3c7827b8c3c181549320dfde34029da1",
+		"status": null,
+		"cnName": "看热闹的影子",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RIFT_MEDIUM": {
+		"url": "https://app.notion.com/3c7827b8c3c18157a43efea913404fe9",
+		"status": null,
+		"cnName": "自己动的笔",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"GRAVE_MILLER": {
+		"url": "https://app.notion.com/3c7827b8c3c181628d24cf4cdac4ce38",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"SWARM_CURSER": {
+		"url": "https://app.notion.com/3c7827b8c3c181658361e16eff77f964",
+		"status": null,
+		"cnName": "旺得反常的香炉",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"ELITE_REVIVER": {
+		"url": "https://app.notion.com/3c7827b8c3c181669bf7d101cd79cf81",
+		"status": null,
+		"cnName": "描过金的牌位",
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"DOOM_HERALD": {
+		"url": "https://app.notion.com/3c7827b8c3c1816caa98e8537be64854",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RELIC_DEATH_KNELL": {
+		"url": "https://app.notion.com/3c7827b8c3c1816cb736eee7eff83f0e",
+		"status": null,
+		"cnName": "多敲了一下的钟",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RELIC_CURSE_GRAVE": {
+		"url": "https://app.notion.com/3c7827b8c3c1816e8940ca709dae722c",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"EXILE_BERSERKER": {
+		"url": "https://app.notion.com/3c7827b8c3c18170a11bd13c0c5dc0f8",
+		"status": null,
+		"cnName": "送行酒",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"FINAL_ESCORT": {
+		"url": "https://app.notion.com/3c7827b8c3c18174a60ee0b60d103e34",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"DEATHBED_PORTER": {
+		"url": "https://app.notion.com/3c7827b8c3c18176b159d81ed0512bd4",
+		"status": null,
+		"cnName": "抬上楼的纸别墅",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"SACRIFICE_WEAKEST": {
+		"url": "https://app.notion.com/3c7827b8c3c18177b363e55d560d46b4",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"TWIN_STRIKER": {
+		"url": "https://app.notion.com/3c7827b8c3c18179b934de12143bda43",
+		"status": null,
+		"cnName": "一对纸人",
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"CURSE_REVIVER": {
+		"url": "https://app.notion.com/3c7827b8c3c1817fa150ed02333afd7e",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"FLURRY_REVIVER": {
+		"url": "https://app.notion.com/3c7827b8c3c18180ac69ee5cc05f9541",
+		"status": null,
+		"cnName": "棺材里的敲门声",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"KINGSLAYER": {
+		"url": "https://app.notion.com/3c7827b8c3c18183a849c534c06ce3da",
+		"status": null,
+		"cnName": "迁坟队",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"COMBO_STARTER": {
+		"url": "https://app.notion.com/3c7827b8c3c1818581a5d5bcb0efcc51",
+		"status": null,
+		"cnName": "添灯油的长明灯",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RELIC_ATTACK_HEX": {
+		"url": "https://app.notion.com/3c7827b8c3c1818da3c8f28a574f3e11",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"NECROMANCER": {
+		"url": "https://app.notion.com/3c7827b8c3c18190b675e75334e9c76b",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"MILLBLADE": {
+		"url": "https://app.notion.com/3c7827b8c3c1819291c4cdf3bea296bf",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"AWAKENED_REAPER": {
+		"url": "https://app.notion.com/3c7827b8c3c18192b063ce3eda376c54",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"CURSE_ECHO": {
+		"url": "https://app.notion.com/3c7827b8c3c18198b4b6ccbd6548cf53",
+		"status": "备用",
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RIFT_HATCHERY": {
+		"url": "https://app.notion.com/3c7827b8c3c1819b81b6f272b492b8b6",
+		"status": null,
+		"cnName": "香火不断的野庙",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"GRAVE_DREDGER": {
+		"url": "https://app.notion.com/3c7827b8c3c1819bb1e2e9f0936b850a",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"WAR_TRAINER": {
+		"url": "https://app.notion.com/3c7827b8c3c1819faa2ce51c16ba49ea",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"CURSE_GARDENER": {
+		"url": "https://app.notion.com/3c7827b8c3c181a6ad5bf243cc089170",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"MIMIC_BLADE": {
+		"url": "https://app.notion.com/3c7827b8c3c181aba9affda164e55efc",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"FUNERAL_WILL": {
+		"url": "https://app.notion.com/3c7827b8c3c181acb929c0c85d759b55",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"SLIME_4.0": {
+		"url": "https://app.notion.com/3c7827b8c3c181aea7f0c7536bab1ebf",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"GRAVE_TOGETHER_4.0": {
+		"url": "https://app.notion.com/3c7827b8c3c181b4af44eb5aaafc2941",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"SOUL_TRADER": {
+		"url": "https://app.notion.com/3c7827b8c3c181bab9e6c630793fb632",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"REVIVE_SUMMONER": {
+		"url": "https://app.notion.com/3c7827b8c3c181bda4d8e7f16883afe3",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"EULOGIST": {
+		"url": "https://app.notion.com/3c7827b8c3c181c296d5c6409f561249",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RELIC_TALLY": {
+		"url": "https://app.notion.com/3c7827b8c3c181c5b309d0117af2d0b1",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"MASS_SACRIFICE": {
+		"url": "https://app.notion.com/3c7827b8c3c181d29506e1ee12db3613",
+		"status": null,
+		"cnName": "多出来的第十三张床",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"SACRIFICIAL_SPIRIT": {
+		"url": "https://app.notion.com/3c7827b8c3c181d29529ed2680ece000",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"UNFINISHED_ROBOT_4.0": {
+		"url": "https://app.notion.com/3c7827b8c3c181d38157c05cd2c4805f",
+		"status": null,
+		"cnName": "还在长的人偶",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RELIC_RIFT_OVERRIDE": {
+		"url": "https://app.notion.com/3c7827b8c3c181d4872ee2a3a22a3ee9",
+		"status": null,
+		"cnName": "半夜换告示的手",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"SWARM_QUEEN": {
+		"url": "https://app.notion.com/3c7827b8c3c181d49490c255cfa58d2d",
+		"status": null,
+		"cnName": "不下台的歌女",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"GRAVE_GIANT": {
+		"url": "https://app.notion.com/3c7827b8c3c181d58db1dddb399d0f50",
+		"status": null,
+		"cnName": "不停滴水的行李袋",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"MASS_REVIVER": {
+		"url": "https://app.notion.com/3c7827b8c3c181d79a8aea51ef9eb0c5",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RELIC_CHAIN_BURIAL": {
+		"url": "https://app.notion.com/3c7827b8c3c181dda723e6c1a635b1af",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"BLACKSMITH_4.0": {
+		"url": "https://app.notion.com/3c7827b8c3c181e3a1d5cc6197fec1d6",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"DECIMATION": {
+		"url": "https://app.notion.com/3c7827b8c3c181e3a9aece7d359664cc",
+		"status": null,
+		"cnName": "还留着体温的空床",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"BEAST_REVIVER": {
+		"url": "https://app.notion.com/3c7827b8c3c181e4b8b1e546db0c43c4",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"HEXER": {
+		"url": "https://app.notion.com/3c7827b8c3c181e68bc6ce08326aa8fb",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"CURSE_EATER": {
+		"url": "https://app.notion.com/3c7827b8c3c181e89604fe107e221fa1",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"SNOWBALL": {
+		"url": "https://app.notion.com/3c7827b8c3c181ecbef7f7a49bacd8d6",
+		"status": null,
+		"cnName": "数不完的纸钱",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"GRAVE_PUPPETEER": {
+		"url": "https://app.notion.com/3c7827b8c3c181ecbf01d78f6bd989aa",
+		"status": null,
+		"cnName": "监控里的人",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"GRAVE_HEXER": {
+		"url": "https://app.notion.com/3c7827b8c3c181ef8fcadf8c2c1b0cbf",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"COMBO_GRANTER": {
+		"url": "https://app.notion.com/3c7827b8c3c181ef98a7c2a6e4303057",
+		"status": null,
+		"cnName": "多摆的一副碗筷",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"QUAD_STRIKER": {
+		"url": "https://app.notion.com/3c7827b8c3c181f3b559cee8cee8e9e0",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"DEATHBED_GRANT": {
+		"url": "https://app.notion.com/3c7827b8c3c181f59509c35dd106944d",
+		"status": null,
+		"cnName": "入殓师",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RELIC_GRAVE_CURSE": {
+		"url": "https://app.notion.com/3c7827b8c3c181f9a664eae9c9f88a44",
+		"status": null,
+		"cnName": "堆满楼道的花圈",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"DUO_REVIVER": {
+		"url": "https://app.notion.com/3c7827b8c3c181fc9accc9fe5f15876d",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"HEXBLADE": {
+		"url": "https://app.notion.com/3c7827b8c3c181fdb88fd309a6002b60",
+		"status": null,
+		"cnName": null,
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"WOKEN_HEX": {
+		"url": "https://app.notion.com/3c8827b8c3c1800ea216e73d5d14cfe8",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"WEAKENING_FIELD": {
+		"url": "https://app.notion.com/3c8827b8c3c180399fa1f850ef2f09b2",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"WOKEN_BLADE": {
+		"url": "https://app.notion.com/3c8827b8c3c1803eb37bc75984d84bc8",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"SOUL_SWAPPER": {
+		"url": "https://app.notion.com/3c8827b8c3c18052860ac523f2f5492a",
+		"status": "备用",
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RIFT_GUIDE": {
+		"url": "https://app.notion.com/3c8827b8c3c1806298b0cd67aa7a5d61",
+		"status": null,
+		"cnName": "画了押的字据",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RIFT_REVIVER": {
+		"url": "https://app.notion.com/3c8827b8c3c180689f9af89b7ec6f0af",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"LAST_RITES": {
+		"url": "https://app.notion.com/3c8827b8c3c18098b58ed6de88dbfd3a",
+		"status": null,
+		"cnName": "讣告",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RELIC_TRAINER": {
+		"url": "https://app.notion.com/3c8827b8c3c180ae99feca17bb8fb17c",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"CURSE_THIRST_BEAST_4.0": {
+		"url": "https://app.notion.com/3c8827b8c3c180e7a3c4c72a1c4e28c5",
+		"status": null,
+		"cnName": null,
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"RELIC_GRAVE_LORD": {
+		"url": "https://app.notion.com/3c8827b8c3c180f5ba3ce06dcd676562",
+		"status": null,
+		"cnName": "地下传来的叩击",
+		"rarity": "rare",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"RELIC_ATTACK_BURIAL": {
+		"url": "https://app.notion.com/3ca827b8c3c18040a819e089b2829dcc",
+		"status": null,
+		"cnName": "自己翻页的黄历",
+		"rarity": "uncommon",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"CARD_\"... is not valid JSON"
+	},
+	"SOLDIER_SKELETON_4.0": {
+		"url": "https://app.notion.com/3cb827b8c3c181919c2cce20cdd7e49c",
+		"status": null,
+		"cnName": null,
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	},
+	"AVENGER_4.0": {
+		"url": "https://app.notion.com/3cb827b8c3c181e58b80c8e7015b84b5",
+		"status": null,
+		"cnName": "长高的坟头",
+		"rarity": "normal",
+		"tags": [],
+		"error": "Unexpected token '\\', \"\\n{\\\"ATK\\\"\"... is not valid JSON"
+	}
+}
