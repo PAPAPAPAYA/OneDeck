@@ -87,23 +87,23 @@ Bazaar 没有 C/U/R 稀有度、没有费用/能量、没有回合制手牌—�
 
 `items.type` 在 Cargo 中混入了机制词(DamageReference/Shield 等)与真实物品类型(Weapon/Tool/Property…)。清洗规则:类型标签仅取「物品类型」白名单(Weapon/Tool/Property/Aquatic/Friend/Vehicle/Core/Food/Merchant/Unsellable/NonWeapon/Apparel/Toy/Potion),机制词全部进 §2.1 机制词表。
 
-## 3. 交付清单与执行顺序(2026-08-31 更新,按 Mobalytics 全量重排)
+## 3. 交付清单与执行顺序(2026-09-01 全部完成 ✅)
 
-| # | 文档 | 样本 | 文件 |
+| # | 文档 | 样本 | 状态 |
 |---|------|------|------|
-| 1 | Vanessa | 139 | `docs/Bazaar_Vanessa_PoolAnalysis_2026-08-30.html`(已产出,2026-08-30 wiki 口径撰写;后续按需复核) |
-| 2 | Pygmalien | 154 | `docs/Bazaar_Pygmalien_PoolAnalysis_2026-08-31.html` |
-| 3 | Dooley | 144 | `docs/Bazaar_Dooley_PoolAnalysis_2026-08-31.html` |
-| 4 | Mak | 141 | `docs/Bazaar_Mak_PoolAnalysis_2026-08-31.html` |
-| 5 | Karnok | 118 | `docs/Bazaar_Karnok_PoolAnalysis_2026-08-31.html` |
-| 6 | Jules | 121 | `docs/Bazaar_Jules_PoolAnalysis_2026-08-31.html` |
-| 7 | Stelle | 122 | `docs/Bazaar_Stelle_PoolAnalysis_2026-08-31.html` |
-| 8 | The Dragons | 107 | `docs/Bazaar_TheDragons_PoolAnalysis_2026-08-31.html` |
-| 9 | 公共池(Common/Monster) | 166 | `docs/Bazaar_CommonPool_PoolAnalysis_2026-08-31.html` |
-| 10 | 技能池 | 522 | `docs/Bazaar_Skills_PoolAnalysis_2026-08-31.html` |
-| 11 | 综合总结 → OneDeck 落点建议 | 汇总 | `docs/Bazaar_DesignSynthesis_ForOneDeck_2026-08-31.html` |
+| 1 | Vanessa | 138 | ✅ `docs/Bazaar_Vanessa_PoolAnalysis_2026-08-31.html` |
+| 2 | Pygmalien | 153 | ✅ `docs/Bazaar_Pygmalien_PoolAnalysis_2026-08-31.html` |
+| 3 | Dooley | 143 | ✅ `docs/Bazaar_Dooley_PoolAnalysis_2026-08-31.html` |
+| 4 | Mak | 140 | ✅ `docs/Bazaar_Mak_PoolAnalysis_2026-08-31.html` |
+| 5 | Karnok | 118 | ✅ `docs/Bazaar_Karnok_PoolAnalysis_2026-08-31.html` |
+| 6 | Jules | 120 | ✅ `docs/Bazaar_Jules_PoolAnalysis_2026-08-31.html` |
+| 7 | Stelle | 121 | ✅ `docs/Bazaar_Stelle_PoolAnalysis_2026-08-31.html` |
+| 8 | The Dragons | 107 | ✅ `docs/Bazaar_TheDragons_PoolAnalysis_2026-08-31.html` |
+| 9 | 公共池(Common) | 166 | ✅ `docs/Bazaar_CommonPool_PoolAnalysis_2026-08-31.html` |
+| 10 | 技能池 | 522 | ✅ `docs/Bazaar_Skills_PoolAnalysis_2026-08-31.html` |
+| 11 | 综合总结 → OneDeck 落点建议 | 汇总 | ✅ `docs/Bazaar_DesignSynthesis_ForOneDeck_2026-08-31.html` |
 
-执行顺序按池大小先大后小(Pygmalien → Dooley → Mak → Karnok → Jules → Stelle → The Dragons → 公共 → 技能 → 综合),每份完成即停。样本数字以 Mobalytics `heroes[]` 归属为准(全池 1207,与 wiki Cargo 口径不同——wiki 只记 6 英雄且新英雄滞后)。
+框架迭代记录:§3.6 桥矩阵(2026-08-31,谓词自动计算)、§5.5 典型构筑(2026-09-01,逐物品效果+技能表+轴映射,v2)。九英雄共 20+ 篇社区构筑入表(Mobalytics Kripp 为主)。
 
 ## 4. 每份分析文档的统一模板(与 StS2 单角色系列对齐,按 Bazaar 改写)
 
@@ -157,6 +157,15 @@ Bazaar 没有 C/U/R 稀有度、没有费用/能量、没有回合制手牌—�
 
 - Diamond/Legendary 封顶件清单;验证「高 tier ≠ 必强」误判(社区共识强度 vs 资料卡强度)。
 - 升级体系对该英雄的特殊打法(特定核心件是否值得 3 级投资)。
+
+#### 5.5 典型构筑(2026-09-01 新增,社区攻略)
+
+> 从攻略站(Mobalytics Builds / thebazaarzone / unduel)抓取该英雄的实际构筑,验证 §3 轴识别与 §5 强度阶梯是否符合真实玩法。攻略日期即 meta 快照,跨补丁仅作结构参考。
+
+- 表格:构筑名 | 来源/日期 | 分级(A/B/胜数预期) | 核心物品 | 运转逻辑 | 轴映射(回链 §3)。
+- 附 meta 洞见一条(哪个构筑当前最强、为什么)。
+- 首选近期构筑(6 个月内);旧构筑标注「历史参考」。
+- 无攻略覆盖的英雄(如新英雄)标注「社区构筑资料不足」。
 
 #### 6. 与 StS2 / OneDeck 的映射
 
