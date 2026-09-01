@@ -27,7 +27,7 @@
 - `DeckSizeIncreaseEffect`：deckSize += X 后 clamp [1, maxDeckSize] + SpawnAdditionalEmptySpaces；`HPMaxAlterEffect`：hpMax += X 且 hp = hpMax。
 - 被动引擎已落地（84058b8）：`CardScript.isPassive`；每次洗牌后钉在 Start Card 之下墓侧（StartCardShuffleEffect.cs:89-108），永不被揭示；埋/置顶/延后/放逐/复活选取池全排除；全局监听常驻触发；**计入墓地计数**（PassiveCardTests）。
 - 经济：EnterShop payday `purse += payCheck`（ShopManager.cs:288，固定值，无修正钩子）；reroll 仅付费档（Reroll():466-488，无免费计数）；出货量 = 固定 int `shopItemAmount`（:54），ShopUXManager 实物卡按 `_spawnedCards` 数量动态生成（选项+N 布局无忧）；权重 = sessionRarityWeights（按 sessionNum 会话表）× shopRollWeightMultiplier（:370-372），无全局权重修正钩子；卖出退款 = 价格/2 硬编码（:259）；满编检查 CountCardsTakingUpSpace（:217-218）。
-- `Tag` enum = { None, Linger, ManaX, DeathRattle }，无复活 tag——必出复活卡需隐式追加枚举值（照 StatusEffect.Revive 槽位保留先例，不重编号）。
+- `Tag` enum 已于 2026-09-01 随 Notion tag 列同步刷新（追加式 +10：Bury/Enhance/Believer/Exile/Curse/Awaken/Passive/Revive/EnhanceReaction/MultiAttack），4.0 prefab myTags 已全量打标（实测 89 prefab：Revive 24 / Bury 22 / Curse 21 / Passive 16 / Enhance 12 / Believer 13 / Awaken 8 / DeathRattle 10 / Exile 5 / MultiAttack 6 / EnhanceReaction 4）。必出复活槽的过滤谓词直接用 `Tag.Revive`，无需新增枚举与打标。
 - ShopUXManager.OnCardPurchased 对 takeUpSpace=false 有"直接移除"分支（:484）——自我放逐卡需新增第三分支。
 - 结果面板：ResultStatsPanel 行由 RegisterDeckComposition 预创建，utility 被动会出现全 0 行，需过滤。
 
@@ -77,7 +77,7 @@
 
 ## 4. 分步实施（gate 制）
 
-- **Step 1 元数据**：CardScript 增 UtilityKind/utilityValue/utilityValue2；Tag 隐式追加 Revive；4.0 复活系 prefab 批量打 tag（名单从 Notion 4.0 DB 复活轴取）。*gate*
+- **Step 1 元数据**：CardScript 增 UtilityKind/utilityValue/utilityValue2 + utilityRarityWeightMults。（原「追加 Tag.Revive + 复活系打标」子任务已由 2026-09-01 tag 同步覆盖——实测 24 张 Revive 卡已在 prefab 上，子任务删除。）*gate*
 - **Step 2 重算层**：UtilityShopBonus 纯静态 + payday/收入 + hpMax 重算钳制 + 免费reroll 计数 + reroll 单计数器与打折结算 + 已持有去重。EditMode 纯静态测试先行。*gate*
 - **Step 3 出货管线**：GenerateShopItems 重构为 板规划(静态) + roll 执行；保底槽/过滤器/权重层接入；Reroll 重跑管线。EditMode 覆盖冲突规则（多保底共存、去重、20% 判定、R 节奏）。*gate*
 - **Step 4 现存两卡重做**：卡位卡 = takeUpSpace=true + onMeBought(+deckSize&maxDeckSize + 自我从 deck 移除) + 满编豁免 + OnCardPurchased 第三分支；maxHP 卡 = 常驻被动化（prefab 原地改，cardTypeID 不变保统计断档）。*gate*
