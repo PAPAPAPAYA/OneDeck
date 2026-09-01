@@ -1,0 +1,129 @@
+<html><head><meta charset="utf-8"><title>The Bazaar 设计总结 → OneDeck 建议</title><style>
+:root {
+--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+--purple: #bb9af7; --cyan: #7dcfff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+.mono { font-family: Consolas, monospace; }
+.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+.t-bronze { color: #c98a5e; border-color: #c98a5e88; }
+.t-silver { color: #aeb5c2; border-color: #aeb5c288; }
+.t-gold { color: #e0af68; border-color: #e0af6888; }
+.t-diamond { color: #7dcfff; border-color: #7dcfff88; }
+.t-legendary { color: #e06c9f; border-color: #e06c9f88; }
+ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+li { margin: 3px 0; }
+.lead { font-size: 0.92rem; margin: 8px 0; }
+.dim { color: var(--dim); } .warn { color: var(--warn); } .good { color: var(--good); } .bad { color: var(--bad); }
+.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style></head><body><h1>The Bazaar 卡池设计总结 → OneDeck 卡池调整建议</h1>
+<div class="sub">2026-09-01 · 基于 数据源:<a href="https://mobalytics.gg/the-bazaar/database/items-and-enchantments">mobalytics.gg</a> TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59,快照 2026-08-31)· 物品英文为准(1207 物品 + 522 技能 + 附魔全域)· 九英雄拆解 + 公共池 + 技能池的汇总 · 对齐 StS2 综合总结(2026-08-17)体例 · 目标:为 OneDeck 4.0 后续卡池设计提供第二个外部参照系</div>
+<div class="kpis">
+<div class="kpi"><div class="num">9+2</div><div class="lbl">覆盖:九英雄 + 公共池 + 技能池</div></div>
+<div class="kpi"><div class="num">1729</div><div class="lbl">物品+技能总样本</div></div>
+<div class="kpi"><div class="num">13</div><div class="lbl">全域附魔系统(每系约 1187 件)</div></div>
+<div class="kpi"><div class="num">4</div><div class="lbl">双态/资源引擎家族(Heated/Flying/Rage/Tempo)</div></div>
+<div class="kpi"><div class="num">43-82%</div><div class="lbl">桥比例区间(OneDeck/StS2 约 10-20%)</div></div>
+</div>
+<h2>0. 核心结论(TL;DR)</h2>
+<div class="card">
+<div class="lead"><strong>OneDeck 已经做对的(不必动)</strong>:两段式条件/兑现、多乘区(次数×力量)、轴身份清晰(桥少是特征不是缺陷)、无上限自限(疲劳/链深)。</div>
+<div class="lead"><strong>Bazaar 相对 StS2 的增量语法</strong>(本系列九份拆解的证据):① 双态/资源引擎四兄弟——Jules Heated/Chilled(窗口式)、Stelle start/stop Flying(往复式)、Karnok Rage→Enrage(循环式)、The Dragons Tempo(存取式);② 接口词汇统一(每个英雄一个最小语法单位:Ammo/Charge/Transform/Rage/Tempo…);③ 桥密度 43-82%(物品实体天然多标签);④ 附魔全域 13 系(数值重掷层);⑤ pivot 文化(攻略语境里 pivot 构筑是正式分类);⑥ token 中性池跨英雄兑现。</div>
+<div class="lead"><strong>不需要做的</strong>:实时冷却/秒表、板面位形(Stove/Cooler/Notes/相邻)、尺寸经济、技能购买层、附魔商店——OneDeck 的轮次制与 12 卡位没有这些载体,搬过来只会变成伪回合制。</div>
+</div>
+<h2>1. 九英雄机制对照总表</h2>
+<div class="card">
+<table><tr><th>英雄</th><th>件数</th><th>身份机制(最小语法单位)</th><th>独有标签</th><th>桥比例</th><th>双态家族</th></tr>
+<tr><td>Vanessa</td><td class="mono">138</td><td>弹药供给—消费(Ammo)</td><td>Aquatic</td><td class="mono">51%</td><td>—</td></tr>
+<tr><td>Pygmalien</td><td class="mono">153</td><td>价值投资—回收(Value/Sell)</td><td>Toy/Property</td><td class="mono">50%</td><td>—</td></tr>
+<tr><td>Dooley</td><td class="mono">143</td><td>核心→链充能(Charge)</td><td>Core/Ray</td><td class="mono">43%</td><td>—</td></tr>
+<tr><td>Mak</td><td class="mono">140</td><td>试剂→药剂转化(Transform)</td><td>Reagent/Potion</td><td class="mono">72%</td><td>—</td></tr>
+<tr><td>Karnok</td><td class="mono">118</td><td>Rage→Enrage 循环(Rage)</td><td>Apparel(皮甲)</td><td class="mono">64%</td><td>循环式</td></tr>
+<tr><td>Jules</td><td class="mono">120</td><td>加热/冷冻窗口(Heated)</td><td>Food</td><td class="mono">82%</td><td>窗口式</td></tr>
+<tr><td>Stelle</td><td class="mono">121</td><td>起降往复(Flying)</td><td>Drone</td><td class="mono">55%</td><td>往复式</td></tr>
+<tr><td>The Dragons</td><td class="mono">107</td><td>Tempo 存取(Tempo)</td><td>Instrument</td><td class="mono">—</td><td>存取式</td></tr>
+<tr><td>公共池</td><td class="mono">166</td><td>token 中性接口(Loot)</td><td>—</td><td>—</td><td>—</td></tr>
+</table>
+<div class="note">桥比例谓词口径见各英雄文档 §3.6;The Dragons 桥值见其文档。双态家族:Jules/Karnok/Stelle/Dragons 各自实现了「状态获得→兑现」的不同频率形态。</div>
+</div>
+<h2>2. Bazaar 设计语法(九份拆解的证据汇总)</h2>
+<div class="card">
+<table><tr><th>#</th><th>语法</th><th>证据</th><th>OneDeck 对应物</th></tr>
+<tr><td>1</td><td><b>双态/资源引擎家族</b></td><td>Heated 36(窗口 4s)/ Flying 66(双向触发)/ Rage 68+Enrage 54(阈值循环)/ Tempo 26(可消费)</td><td>状态系统(Infected/Rest)可扩展为「窗口内第二效果」</td></tr>
+<tr><td>2</td><td><b>每英雄一个接口词汇</b></td><td>Ammo/Value/Charge/Transform/Rage/Tempo…构筑深度=该词汇的链长</td><td>OneDeck 的「埋葬/置顶/揭晓」三动作+轴 tag 已是同类</td></tr>
+<tr><td>3</td><td><b>桥密度 43-82%</b></td><td>物品实体多标签(Weapon+Friend+Vehicle);三轴桥 9-37 件/英雄</td><td>OneDeck 桥少是轴身份清晰的表现——不建议提升到 Bazaar 水平</td></tr>
+<tr><td>4</td><td><b>升级=节奏化</b></td><td>多值冷却 31-44 件/英雄(7/6/5/4s)</td><td>OneDeck 无等级——「升级」可对照为稀有度提升的节奏收益</td></tr>
+<tr><td>5</td><td><b>单核 win 条件与 pivot 文化</b></td><td>The Boulder/Calcinator/Hydraulic Press/Lightning Rod;攻略正式分类 pivot 构筑</td><td>OneDeck 的「build-around 骨架卡」需保留+保护( Rare 层封顶体验)</td></tr>
+<tr><td>6</td><td><b>任务件</b></td><td>Giant Lollipop(用 100 食物+慢 80)/ Trail Mix / Cooking Mallet</td><td>跨回合累计条件——OneDeck 可做「全场累计」句式</td></tr>
+<tr><td>7</td><td><b>附魔全域 13 系</b></td><td>每系约 1187 件覆盖(Heavy/Icy/Turbo/Shielded/Toxic/Fiery/Mossy/Restorative/Obsidian/Deadly/Shiny/Golden/Radiant)</td><td>OneDeck 的「增强诅咒」是敌方侧——全域附魔不建议搬(经济系统不同)</td></tr>
+<tr><td>8</td><td><b>位置敏感槽位</b></td><td>Jules Stove/Cooler、Dragons Notes、相邻语法 21+ 件</td><td>不搬——OneDeck 无板面位置,事件模型冲突</td></tr>
+<tr><td>9</td><td><b>token 中性池</b></td><td>Loot 25 件跨英雄兑现(Chunk of Gold/Pelt/Gunpowder)</td><td>OneDeck 生成卡可考虑「中性 token」扩大混编</td></tr>
+<tr><td>10</td><td><b>小件化快节奏</b></td><td>The Dragons Small 64%;公共池 Small 59%</td><td>OneDeck 12 卡位已限空间,无尺寸轴</td></tr>
+<tr><td>11</td><td><b>技能=方向修正器</b></td><td>522 条;开局选金技能定构筑;机制技能化分界(Heated 5 vs Rage 29)</td><td>若引入被动层,守「不占卡位」边界;槽位机制不进技能层</td></tr>
+<tr><td>12</td><td><b>停怒/降落第二波</b></td><td>Karnok 停怒件(Firefly Lantern 等)、Stelle 降落触发</td><td>OneDeck 的「状态结束触发」是可选扩展方向</td></tr>
+</table>
+</div>
+<h2>3. 正式建议(P0 / P1 / P2)</h2>
+<div class="card">
+<h3>3.1 P0(建议 4.1 优先评估)</h3>
+<ol>
+<li><b>「窗口式状态第二效果」句式</b>(源:Jules Heated / Stelle While Flying):为既有状态(Infected/Mana/Rest/Revive)增加「处于状态时的第二效果」,以「N 次揭晓内」替代秒表窗口。证据:四英雄双态家族全是各自池的最厚轴;OneDeck 状态系统已有载体。</li>
+<li><b>可消费资源条扩展 Mana</b>(源:Dragons Tempo / Fingerless Gloves):Mana 状态目前只有静态出口;增加「每点 Mana 可兑换 X」的消费句式,让攒mana型构筑有主动决策。证据:Tempo 存取式是全游唯一可消费资源条,其构筑(Chibi 邻位攒/花 Tempo 减冷却)是完整闭环。</li>
+<li><b>「供给件→消费件」接口词汇规范化</b>(源:Vanessa Ammo 链 / Mak Transform 链):OneDeck 4.0 已有「复活/信徒/诅咒」三链——建议为每条链显式定义接口词汇(如信徒=信 token,供给=生成,兑现=按信徒数),新卡文案强制使用,降低理解成本。证据:Bazaar 每英雄一词的纪律是其构筑可学性的核心。</li>
+</ol>
+<h3>3.2 P1(4.x 中期可选)</h3>
+<ol>
+<li><b>状态结束触发(第二波)</b>(源:Karnok 停怒 / Stelle 降落):Rest 消失时、Revive 触发后的一次性奖励——「双段兑现」扩展单段体验。</li>
+<li><b>全场累计任务件</b>(源:Giant Lollipop):「本局累计埋葬 X 张→变形/质变」的任务句式,喂给 Rare 层做封顶体验(R 层形态升级空位是 StS2 审计③的延续)。</li>
+<li><b>构筑原型学自检</b>(源:九英雄构筑表):卡池同时提供「单核 win 条件 / 引擎滚雪球 / 任务型 / pivot 转换件」四类原型各 ≥1——OneDeck 4.0 R 层可按此清单补位。</li>
+</ol>
+<h3>3.3 P2(明确不搬)</h3>
+<ol>
+<li>实时冷却/秒表与所有「每秒」句式(Regen/Charge 窗口)——无轮次载体。</li>
+<li>板面位形(相邻/右侧/Stove 槽位/Notes)——事件模型冲突,强行引入会破坏 OneDeck 的「无位置、只有序」特性。</li>
+<li>尺寸经济(Small/Medium/Large)与技能购买层——12 卡位与商店结构已承担同等约束。</li>
+<li>全域附魔商店——数值重掷层与 OneDeck 的「卡即全部」哲学冲突;增强诅咒已覆盖敌方侧需求。</li>
+</ol>
+</div>
+<h2>4. 附魔定量小节</h2>
+<div class="card">
+<div class="lead">全域 15315 条附魔实例、13 系命名(Heavy 物理加深 / Icy 冻结 / Turbo 加速 / Shielded 盾 / Toxic 毒 / Fiery 烧 / Mossy 再生 / Restorative 奶 / Obsidian 直伤 / Deadly 暴击 / Shiny 多段 / Golden 价值 / Radiant 免疫),每系覆盖约 1133-1187 件物品——<b>几乎每件物品都有全部 13 种改造可能</b>。这是「同一卡池的二次深度」:物品数值设计只需保证 13 系下都有意义。OneDeck 不搬系统,但「设计时校验卡在多语法下的表现」的思路可借鉴(如:这张卡被增强诅咒/被洗成敌方时是否仍成立——OneDeck 已有 curse copy 继承力量的同类校验)。</div>
+<table><tr><th>附魔</th><th>覆盖物品数</th></tr>
+<tr><td class="mono">Heavy</td><td class="mono">1187</td></tr>
+<tr><td class="mono">Icy</td><td class="mono">1187</td></tr>
+<tr><td class="mono">Turbo</td><td class="mono">1187</td></tr>
+<tr><td class="mono">Shielded</td><td class="mono">1187</td></tr>
+<tr><td class="mono">Toxic</td><td class="mono">1187</td></tr>
+<tr><td class="mono">Fiery</td><td class="mono">1187</td></tr>
+<tr><td class="mono">Mossy</td><td class="mono">1187</td></tr>
+<tr><td class="mono">Restorative</td><td class="mono">1186</td></tr>
+<tr><td class="mono">Obsidian</td><td class="mono">1186</td></tr>
+<tr><td class="mono">Deadly</td><td class="mono">1184</td></tr>
+<tr><td class="mono">Shiny</td><td class="mono">1169</td></tr>
+<tr><td class="mono">Golden</td><td class="mono">1148</td></tr>
+<tr><td class="mono">Radiant</td><td class="mono">1133</td></tr>
+</table></div>
+<h2>5. 方法论与数据源注记</h2><div class="card"><table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>主数据源</td><td class="mono">mobalytics.gg TheBazaarStaticDataQuery(persistedQuery hash 60a432cd…,v1.0.59,快照 2026-08-31)——1207 物品 + 522 技能 + 附魔;Playwright 浏览器态 fetch(curl 直连 403)</td></tr>
+<tr><td>交叉源</td><td class="mono">thebazaar.wiki.gg Cargo(6 英雄滞后口径,仅对照);thebazaarzone / Mobalytics Builds / bazaar-builds.net(构筑,共 20+ 篇)</td></tr>
+<tr><td>已知缺口</td><td>wiki 无 Karnok/Dragons(以 Mobalytics 为准);「Regen Stacked」等个别攻略技能未收录进快照;构筑 meta 随补丁漂移(日期已逐篇标注)</td></tr>
+<tr><td>系列产出</td><td>九英雄拆解 + 公共池 + 技能池 + 本总结,共 11 份;执行记录见 plans/plan-the-bazaar-pool-analysis-2026-08-30.md(step-gate 全程)</td></tr>
+</table></div></body></html>

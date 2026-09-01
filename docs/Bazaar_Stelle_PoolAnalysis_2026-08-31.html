@@ -1,0 +1,468 @@
+<html><head><meta charset="utf-8"><title>The Bazaar · Stelle 物品池结构拆解</title><style>
+:root {
+--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+--purple: #bb9af7; --cyan: #7dcfff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+background: var(--bg); color: var(--text);
+font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+}
+h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+.mono { font-family: Consolas, monospace; }
+.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+.t-bronze { color: #c98a5e; border-color: #c98a5e88; }
+.t-silver { color: #aeb5c2; border-color: #aeb5c288; }
+.t-gold { color: #e0af68; border-color: #e0af6888; }
+.t-diamond { color: #7dcfff; border-color: #7dcfff88; }
+.b-weap { color: #f7768e; border-color: #f7768e88; }
+.b-tool { color: #e0af68; border-color: #e0af6888; }
+.b-props { color: #bb9af7; border-color: #bb9af788; }
+.b-aqua { color: #7dcfff; border-color: #7dcfff88; }
+.b-friend { color: #9ece6a; border-color: #9ece6a88; }
+.b-veh { color: #ff9e64; border-color: #ff9e6488; }
+.star { color: #e0af68; font-weight: 700; }
+ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+li { margin: 3px 0; }
+.lead { font-size: 0.92rem; margin: 8px 0; }
+.dim { color: var(--dim); }
+.warn { color: var(--warn); }
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+.purple { color: var(--purple); }
+.cyan { color: var(--cyan); }
+.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style></head><body>
+<h1>The Bazaar · Stelle 物品池结构拆解</h1>
+<div class="sub">2026-08-31 · 数据源:<a href="https://mobalytics.gg/the-bazaar/stelle-items">mobalytics.gg</a> TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59,快照 2026-08-31)· 全池 1207 物品中 Stelle 专属 121 件(已过滤 1 件模板占位)· 物品英文为准 · 同系列:Vanessa / Pygmalien / Dooley / Mak / Karnok / Jules / The Dragons / 公共池 / 技能池 / 综合</div>
+<div class="kpis">
+<div class="kpi"><div class="num">121</div><div class="lbl">物品池总数(121 件)</div></div>
+<div class="kpi"><div class="num">41/53/27/0</div><div class="lbl">tier 分布 B/S/G/D(无 Diamond)</div></div>
+<div class="kpi"><div class="num">66</div><div class="lbl">Flying 相关(55%)—— 身份关键词</div></div>
+<div class="kpi"><div class="num">28/15</div><div class="lbl">Vehicle 28 / Drone 15 —— 载具/无人机标签</div></div>
+<div class="kpi"><div class="num">2+3</div><div class="lbl">主轴:起降循环 / 自毁爆发 + 载具无人机 / 灼烧 / 慢控</div></div>
+<div class="kpi"><div class="num">15</div><div class="lbl">无冷却被动件(12%)</div></div>
+</div>
+<h2>0. 英雄骨架</h2>
+<div class="card">
+<div class="lead"><strong>定位</strong>:全游「飞行技师」英雄——核心机制为「起降循环」:物品反复 start/stop Flying,两个转换方向各有触发(起飞 +伤/灼烧,降落 装填/自爆);Flying 66 件(55%)是全系列最高标签密度。身份轴:Flying 66 + Vehicle 28 + Drone 15 + Haste 38 + Burn 25。</div>
+<div class="lead"><strong>身份关键词(Top)</strong>:< s p a n   c l a s s = " b a d g e   b - a q u a " > F l y i n g   6 6 < / s p a n > < s p a n   c l a s s = " b a d g e   b - v e h " > V e h i c l e   2 8 < / s p a n > < s p a n   c l a s s = " b a d g e   b - f r i e n d " > D r o n e   1 5 < / s p a n > < s p a n   c l a s s = " b a d g e " > H a s t e   1 9 < / s p a n > < s p a n   c l a s s = " b a d g e " > B u r n   2 5 < / s p a n > < s p a n   c l a s s = " b a d g e " > D e s t r o y   2 2 < / s p a n ></div>
+<div class="lead"><strong>资源轴速览</strong>:Flying = 双态开关(与 Jules Heated/Chilled 同构但频率更高);起 = Air-Pressure Rifle +25 伤 / Balloon Engine 灼烧;降 = 装填(Bomb Voyage / Buster 自爆 = 自毁轴核心);While Flying = Aerial Turret +1 Multicast。Vehicle/Drone = 载具无人机标签(28/15)。Stelle 的语法 =「起飞—降落—再起飞」的高频循环。</div>
+</div>
+<h2>1. 池组成总览</h2>
+<div class="card">
+<h3>1.1 tier × size</h3>
+<table>
+<tr><th>Tier</th><th>数量</th><th>占比</th><th>Small</th><th>Medium</th><th>Large</th><th>定位</th></tr>
+<tr><td><span class="badge t-bronze">Bronze</span></td><td class="mono">41</td><td class="mono">34%</td><td class="mono">27</td><td class="mono">14</td><td class="mono">0</td><td>入门密度层——飞行小件/无人机为主,教学层</td></tr>
+<tr><td><span class="badge t-silver">Silver</span></td><td class="mono">53</td><td class="mono">44%</td><td class="mono">16</td><td class="mono">27</td><td class="mono">10</td><td>主力层——起降引擎件密集</td></tr>
+<tr><td><span class="badge t-gold">Gold</span></td><td class="mono">27</td><td class="mono">22%</td><td class="mono">5</td><td class="mono">11</td><td class="mono">11</td><td>强度层——自毁爆发与慢控引擎(27 件)</td></tr>
+</table></div>
+<div class="card">
+<h3>1.2 类型标签分布(多标签重复计入,基数 121)</h3>
+<table>
+<tr><th>类型</th><th>数量</th><th>占比</th><th>代表件</th></tr>
+<tr><td><span class="badge b-tool">Tool</span></td><td class="mono">39</td><td class="mono">32%</td><td>Freefall Simulator / Altimeter / Binoculars</td></tr>
+<tr><td><span class="badge b-weap">Weapon</span></td><td class="mono">36</td><td class="mono">30%</td><td>Aerial Turret / Bomb Voyage / Boosted Saucer</td></tr>
+<tr><td><span class="badge b-veh">Vehicle</span></td><td class="mono">28</td><td class="mono">23%</td><td>Balloon Engine / Hang Glider / Pillbuggy</td></tr>
+<tr><td><span class="badge t-silver">Tech</span></td><td class="mono">30</td><td class="mono">25%</td><td>Headset / Radar Dome / Flashbang</td></tr>
+<tr><td><span class="badge t-silver">Drone</span></td><td class="mono">15</td><td class="mono">12%</td><td>Flame Jet Drone / Repair Drone / Relay Drone</td></tr>
+<tr><td><span class="badge b-props">Property</span></td><td class="mono">9</td><td class="mono">7%</td><td>Stelle's Workshop / Radar Dome</td></tr>
+<tr><td><span class="badge t-silver">Apparel</span></td><td class="mono">8</td><td class="mono">7%</td><td>Rocket Boots / Tethers</td></tr>
+<tr><td><span class="badge t-silver">Toy</span></td><td class="mono">7</td><td class="mono">6%</td><td>Clockwork Disc / Paper Airplane / Kite</td></tr>
+<tr><td><span class="badge t-silver">Food</span></td><td class="mono">2</td><td class="mono">2%</td><td>—</td></tr>
+<tr><td><span class="badge b-friend">Friend</span></td><td class="mono">1</td><td class="mono">1%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Ray</span></td><td class="mono">1</td><td class="mono">1%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Trap</span></td><td class="mono">0</td><td class="mono">0%</td><td>—</td></tr>
+</table>
+<div class="note">本表取 tags 严格标签。Tool 39 + Weapon 36 是两大构成块;Vehicle 28 + Drone 15 是天空体系标签(Drone 为 Stelle 独有主力标签)。多标签物品重复计入各标签。</div>
+<div class="card">
+<h3>1.3 节奏结构(冷却分布,base tier 口径)</h3>
+<table>
+<tr><th>冷却带</th><th>数量</th><th>占比</th><th>说明</th></tr>
+<tr><td>Passive(无冷却/触发式)</td><td class="mono">15</td><td class="mono">12%</td><td>—</td></tr>
+<tr><td>≤3s</td><td class="mono">5</td><td class="mono">4%</td><td>—</td></tr>
+<tr><td>4-6s</td><td class="mono">69</td><td class="mono">57%</td><td>—</td></tr>
+<tr><td>7-9s</td><td class="mono">21</td><td class="mono">17%</td><td>—</td></tr>
+<tr><td>10s+</td><td class="mono">11</td><td class="mono">9%</td><td>—</td></tr>
+<tr><td>多值(升级线,不同 tier 冷却不同)</td><td class="mono">29</td><td class="mono">24%</td><td>随等级渐快——升级即加速</td></tr>
+</table>
+<div class="note">Stelle 节奏由「起飞→触发→降落→触发」的高频循环驱动——双转换方向都有收益(起飞 +伤/灼烧,降落 装填/自爆),Freefall Simulator 等件负责快速起降。27 件 Gold(22%)承载自毁爆发线。</div>
+</div>
+<h2>2. 术语与分级结构</h2>
+<div class="card">
+<h3>2.1 机制词分布</h3>
+<table><tr><th>机制词</th><th>件数</th><th>性质</th></tr>
+<tr><td class="mono">Flying</td><td class="mono">66</td><td>—</td></tr>
+<tr><td class="mono">Tool</td><td class="mono">39</td><td>—</td></tr>
+<tr><td class="mono">Vehicle</td><td class="mono">28</td><td>—</td></tr>
+<tr><td class="mono">Weapon</td><td class="mono">36</td><td>—</td></tr>
+<tr><td class="mono">Haste</td><td class="mono">19</td><td>—</td></tr>
+<tr><td class="mono">Burn</td><td class="mono">25</td><td>—</td></tr>
+<tr><td class="mono">Charge</td><td class="mono">33</td><td>—</td></tr>
+<tr><td class="mono">Shield</td><td class="mono">26</td><td>—</td></tr>
+<tr><td class="mono">Slow</td><td class="mono">13</td><td>—</td></tr>
+<tr><td class="mono">Destroy</td><td class="mono">22</td><td>—</td></tr>
+<tr><td class="mono">Repair</td><td class="mono">6</td><td>—</td></tr>
+<tr><td class="mono">Multicast</td><td class="mono">6</td><td>—</td></tr>
+<tr><td class="mono">Crit</td><td class="mono">6</td><td>—</td></tr>
+<tr><td class="mono">Heal</td><td class="mono">7</td><td>—</td></tr>
+<tr><td class="mono">Freeze</td><td class="mono">3</td><td>—</td></tr>
+<tr><td class="mono">Regen</td><td class="mono">3</td><td>—</td></tr>
+<tr><td class="mono">Poison</td><td class="mono">0</td><td>—</td></tr>
+<tr><td class="mono">Quest</td><td class="mono">5</td><td>—</td></tr>
+<tr><td class="mono">Flying 增益</td><td class="mono">0</td><td>—</td></tr>
+<tr><td class="mono">Drone</td><td class="mono">15</td><td>—</td></tr>
+</table>
+<div class="note">词表为 tags + descriptions 关键词匹配(多标签重复计入)。Flying(66)是全系列最高单标签密度——「起降」双态贯穿全池;Destroy(自毁)+ Repair(修复)是自毁轴的成对语汇。</div>
+<div class="card">
+<h3>2.2 触发句式</h3>
+<table><tr><th>句式</th><th>件数</th><th>代表</th><th>设计含义</th></tr>
+<tr><td>start Flying</td><td class="mono">16</td><td>—</td><td>—</td></tr>
+<tr><td>stop Flying</td><td class="mono">12</td><td>—</td><td>—</td></tr>
+<tr><td>While this is Flying</td><td class="mono">4</td><td>—</td><td>—</td></tr>
+<tr><td>When this is destroyed</td><td class="mono">7</td><td>—</td><td>—</td></tr>
+<tr><td>When you Burn</td><td class="mono">4</td><td>—</td><td>—</td></tr>
+<tr><td>When you Slow</td><td class="mono">4</td><td>—</td><td>—</td></tr>
+</table></div>
+<h2>3. 构筑轴识别</h2>
+<div class="card">
+<h3>3.1 起降循环轴(身份轴)</h3>
+<div class="flow">起飞触发(Balloon Engine 灼烧 / Air-Pressure Rifle +25 伤) → 状态期(Aerial Turret While Flying +1 Multicast) → 降落触发(装填 / Bird Cage +75 盾 / 自爆件引爆) → Freefall Simulator / Clockwork Disc 循环驱动</div>
+<div class="lead"><strong>入口</strong>:起降驱动件(Freefall Simulator 是 Kripp 五篇构筑的公共核心;Clockwork Disc 单槽自循环)。<strong>兑现</strong>:双转换触发。<strong>封顶</strong>:Daggerwing / Stellar Swallowtail(Gold 大件)。</div>
+<div class="lead"><strong>结构注</strong>:起降循环与 Jules 的 Heated/Chilled 同构(双态开关),但频率更高、方向更对称——起飞与降落都有收益,这让 Stelle 的引擎「永动机化」。</div>
+</div>
+<div class="card">
+<h3>3.2 自毁爆发轴</h3>
+<div class="flow">自爆件(Boom Boom Bot 爆 80 伤 / Bomb Voyage 停飞自毁 ×10 伤 / Buster)→ Destroy 触发充能(Boosted Saucer)→ Repair 循环(Recycler Bot)→ 反复引爆</div>
+<div class="lead"><strong>特征</strong>:Destroy 25 + Repair——「引爆→修复→再引爆」的循环;Kripp Self-Destroy 构筑定位 mid-late pivot。</div>
+</div>
+<div class="card">
+<h3>3.3 载具/无人机轴(标签体系)</h3>
+<div class="flow">Vehicle 28(Balloon Engine / Hang Glider / Pillbuggy)+ Drone 15(Flame Jet / Repair / Relay Drone)→ 载具起飞联动(Buster:载具/无人机起飞则自己起飞)</div>
+<div class="lead"><strong>特征</strong>:Drone 是 Stelle 独有的主力标签——无人机兼具武器/工具功能,与起降轴天然互锁。</div>
+</div>
+<div class="card">
+<h3>3.4 灼烧/慢控副轴</h3>
+<div class="lead"><strong>特征</strong>:Burn 25(炽热起飞系)+ Slow 13(Lightning Rod 慢控转伤,攻略类比 Dooley 的 Proboscis)——两个副轴都从起降循环发散。</div>
+</div>
+<div class="card">
+<h3>3.5 轴矩阵总结</h3>
+<table>
+<tr><th>轴</th><th>件数</th><th>tier 分布</th><th>入口/兑现/封顶</th><th>密度评价</th></tr>
+<tr><td>起降循环</td><td class="mono">66</td><td>B28/S27/G11/D0+0L</td><td>起飞/降落双触发 → 引擎循环</td><td class="good">厚,身份轴(55%)</td></tr>
+<tr><td>载具</td><td class="mono">28</td><td>B9/S13/G6/D0+0L</td><td>天空载具标签</td><td class="good">厚,标签体系</td></tr>
+<tr><td>无人机</td><td class="mono">15</td><td>B9/S3/G3/D0+0L</td><td>独有标签,与起降互锁</td><td class="warn">中</td></tr>
+<tr><td>自毁</td><td class="mono">22</td><td>B3/S8/G11/D0+0L</td><td>引爆 → Repair 循环</td><td class="warn">中,爆发线</td></tr>
+<tr><td>灼烧</td><td class="mono">25</td><td>B10/S10/G5/D0+0L</td><td>起飞灼烧副轴</td><td class="warn">中</td></tr>
+<tr><td>慢控</td><td class="mono">13</td><td>B1/S11/G1/D0+0L</td><td>Lightning Rod 转伤</td><td class="bad">小轴</td></tr>
+<tr><td>输出</td><td class="mono">42</td><td>B14/S14/G14/D0+0L</td><td>武器输出</td><td class="warn">中</td></tr>
+</table></div>
+<h2>3.6 轴间桥矩阵(2026-08-31 框架迭代)</h2>
+<div class="card">
+<div class="kpis" style="margin:8px 0">
+<div class="kpi"><div class="num">41</div><div class="lbl">单轴件(34%)</div></div>
+<div class="kpi"><div class="num">67</div><div class="lbl">桥(≥2 轴,55%)</div></div>
+<div class="kpi"><div class="num">39</div><div class="lbl">双轴桥</div></div>
+<div class="kpi"><div class="num">28</div><div class="lbl">三轴+桥</div></div>
+<div class="kpi"><div class="num">13</div><div class="lbl">无轴件(谓词未覆盖)</div></div>
+</div>
+<h3>轴定义(谓词,tags + 关键词)</h3>
+<table><tr><th>轴</th><th>覆盖件数</th><th>谓词口径</th></tr>
+<tr><td class="mono">飞行</td><td class="mono">66</td><td>—</td></tr>
+<tr><td class="mono">载具</td><td class="mono">28</td><td>—</td></tr>
+<tr><td class="mono">无人机</td><td class="mono">15</td><td>—</td></tr>
+<tr><td class="mono">自毁</td><td class="mono">22</td><td>—</td></tr>
+<tr><td class="mono">灼烧</td><td class="mono">25</td><td>—</td></tr>
+<tr><td class="mono">慢控</td><td class="mono">13</td><td>—</td></tr>
+<tr><td class="mono">输出</td><td class="mono">42</td><td>—</td></tr>
+</table>
+<h3>桥矩阵(轴×轴交集物品数)</h3>
+<table><tr><th>×</th><th class="mono">飞行</th><th class="mono">载具</th><th class="mono">无人机</th><th class="mono">自毁</th><th class="mono">灼烧</th><th class="mono">慢控</th><th class="mono">输出</th></tr>
+<tr><td class="mono">飞行</td>
+<td class="mono">·</td>
+<td class="mono" class="good">20</td>
+<td class="mono">9</td>
+<td class="mono">5</td>
+<td class="mono" class="good">11</td>
+<td class="mono">4</td>
+<td class="mono" class="good">28</td>
+</tr>
+<tr><td class="mono">载具</td>
+<td class="mono" class="good">20</td>
+<td class="mono">·</td>
+<td class="mono">1</td>
+<td class="mono">4</td>
+<td class="mono">9</td>
+<td class="mono">3</td>
+<td class="mono" class="good">11</td>
+</tr>
+<tr><td class="mono">无人机</td>
+<td class="mono">9</td>
+<td class="mono">1</td>
+<td class="mono">·</td>
+<td class="mono">3</td>
+<td class="mono">4</td>
+<td class="mono">1</td>
+<td class="mono">6</td>
+</tr>
+<tr><td class="mono">自毁</td>
+<td class="mono">5</td>
+<td class="mono">4</td>
+<td class="mono">3</td>
+<td class="mono">·</td>
+<td class="mono">7</td>
+<td class="mono">2</td>
+<td class="mono">9</td>
+</tr>
+<tr><td class="mono">灼烧</td>
+<td class="mono" class="good">11</td>
+<td class="mono">9</td>
+<td class="mono">4</td>
+<td class="mono">7</td>
+<td class="mono">·</td>
+<td class="mono">4</td>
+<td class="mono">6</td>
+</tr>
+<tr><td class="mono">慢控</td>
+<td class="mono">4</td>
+<td class="mono">3</td>
+<td class="mono">1</td>
+<td class="mono">2</td>
+<td class="mono">4</td>
+<td class="mono">·</td>
+<td class="mono">2</td>
+</tr>
+<tr><td class="mono">输出</td>
+<td class="mono" class="good">28</td>
+<td class="mono" class="good">11</td>
+<td class="mono">6</td>
+<td class="mono">9</td>
+<td class="mono">6</td>
+<td class="mono">2</td>
+<td class="mono">·</td>
+</tr>
+</table>
+<h3>最密桥(Top 5)</h3><table><tr><th>桥</th><th>件数</th><th>代表物品</th></tr>
+<tr><td class="mono">输出 × 飞行</td><td class="mono">28</td><td>Aerial Turret, Air-Pressure Rifle, Airplane Glue, Chicken Cannon</td></tr>
+<tr><td class="mono">载具 × 飞行</td><td class="mono">20</td><td>Flycycle, Jetpack, Ornithopter, Paper Airplane</td></tr>
+<tr><td class="mono">载具 × 输出</td><td class="mono">11</td><td>Pillbuggy</td></tr>
+<tr><td class="mono">灼烧 × 飞行</td><td class="mono">11</td><td>Flare Gun, Radar Dome</td></tr>
+<tr><td class="mono">无人机 × 飞行</td><td class="mono">9</td><td>Delivery Drone, Security Drone</td></tr>
+</table>
+<h3>桥的形式(标签桥 / 文本桥 / 双重桥)</h3>
+<table><tr><th>形式</th><th>件数</th><th>代表</th></tr>
+<tr><td>标签桥</td><td class="mono">0</td><td></td></tr>
+<tr><td>文本桥</td><td class="mono">67</td><td>Aerial Turret, Air-Pressure Rifle, Airplane Glue, Angle Grinder Drone, Aviators</td></tr>
+<tr><td>双重桥</td><td class="mono">0</td><td></td></tr>
+</table>
+<h3>桥的 tier 分布</h3><table><tr><th>tier</th><th>桥数</th></tr>
+<tr><td>Bronze</td><td class="mono">26</td></tr>
+<tr><td>Silver</td><td class="mono">25</td></tr>
+<tr><td>Gold</td><td class="mono">16</td></tr>
+</table>
+<h3>空位审计(桥 = 0 的轴对)</h3>
+<div class="good">无空位——所有轴对都有桥。</div>
+<h3>闭环示例(代表构筑链)</h3><div class="flow">起降驱动(Freefall Simulator 起飞+降落双向触发) → 飞行×灼烧(Balloon Engine 起飞→灼烧) → 自毁×输出(Boosted Saucer 吃 Destroy 触发充能) → 载具×无人机×飞行(Buster 载具起飞则自机起飞) → 慢控×输出(Lightning Rod 慢转伤):起降循环是物理引擎,所有轴都挂在 start/stop 两个转换点上。</div>
+</div>
+<h2>4. 两段式审计(条件制造 → 兑现)</h2>
+<div class="card">
+<table>
+<tr><th>层</th><th>设计职责</th><th>代表件</th><th>tier 观察</th></tr>
+<tr><td><strong>入口层</strong>(制造条件/供给)</td><td>起降驱动、Haste 支撑</td><td>Freefall Simulator / Clockwork Disc / Headset / Ornithopter</td><td>B/S 为主</td></tr>
+<tr><td><strong>兑现层</strong>(消费条件)</td><td>起飞/降落触发、自爆引爆</td><td>Balloon Engine / Air-Pressure Rifle / Boom Boom Bot / Bomb Voyage</td><td>B/S 为主</td></tr>
+<tr><td><strong>封顶层</strong>(条件 → 乘区)</td><td>自毁×N 转伤害、慢控转伤、While Flying 乘区</td><td>LavaRoller / Lightning Rod / Buster / Daggerwing</td><td>G 集中(无 Diamond)</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:Stelle 的两段式是「往复式」:起/降各是独立条件与兑现(双段对称),自毁轴再叠加「引爆→修复」的第二循环——高频双态让引擎接近自持。Flying 接口词汇是 Stelle 的最小语法单位,与 Karnok(Rage 双态)构成「双态引擎」的两种频率形态(见 §6)。</div>
+</div>
+<h2>5. 强度阶梯(高 tier = 高强度?)</h2>
+<div class="card">
+<h3>5.1 Gold(27)与 Diamond(0)</h3>
+<table>
+<tr><th>件</th><th>tier</th><th>size</th><th>强度认定</th></tr>
+<tr><td>Bomb Voyage</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal 50 Damage Burn 5 When this stops Flying, destroy it When this is destroyed, deal 10 times this item's Dam</td></tr>
+<tr><td>Buster</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When your Vehicles or Drones start Flying, this starts Flying When this stops Flying, destroy this and deal Da</td></tr>
+<tr><td>Daggerwing</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 100 Damage When your items start or stop Flying, this gains 125 Deal 100 Damage When your items start or </td></tr>
+<tr><td>Experimental Garage</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>At the start of each fight, enchant all enemy items and your non-Enchanted items Your items have their cooldow</td></tr>
+<tr><td>Grabinator</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Destroy the leftmost enemy Medium item and transform this into it Destroy the leftmost enemy Medium item and t</td></tr>
+<tr><td>Hammer</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Deal 80 Damage Deal 80160 Damage 🔒 When you sell this, Upgrade your leftmost item. [Quest: Buy 10 Tools]</td></tr>
+<tr><td>Hydrogen Tank</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Haste adjacent items 2 second(s) If you have a Vehicle, use this at the start of each fight When this is destr</td></tr>
+<tr><td>Ice Bomb</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Freeze 1 item(s) 1 second(s) Destroy this Freeze 12 item(s) 1 second(s) Destroy this</td></tr>
+<tr><td>LavaRoller</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Destroy an adjacent item Burn 50 When you destroy an item, this gains 50 Destroy an adjacent item Burn 50100 W</td></tr>
+<tr><td>Lightning Rod</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When you Freeze or Slow, deal 25 Damage When an enemy Freezes or Slows your items, this is targeted instead Wh</td></tr>
+<tr><td>MagShield</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Your other items start or stop Flying When your items start Flying, Shield 100 Your other items start or stop </td></tr>
+<tr><td>Oblivion Cannon</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Destroy the smallest enemy item Deal 200 Damage When an item is destroyed, this gains 200 Destroy the smallest</td></tr>
+<tr><td>Oblivion Vortex</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Destroy your leftmost item Charge your other items equal to half that item's cooldown Destroy your leftmost it</td></tr>
+<tr><td>Parts Picker</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Destroy your leftmost item When this destroys an item, reduce the cooldowns of your other items by 1 Charge se</td></tr>
+<tr><td>Portable Shield Generator</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Charge adjacent Shield items 1 second(s) When you Shield, your items gain 10 Charge adjacent shield items 12 s</td></tr>
+<tr><td>Radar Dome</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>1 item starts Flying 1 item starts Flying 🔒 Your Flying Weapons have +1 Multicast. [Quest: Make your Weapons F</td></tr>
+<tr><td>Relay Drone</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Charge 2 other item(s) 2 seconds Charge 23 other item(s) 2 seconds</td></tr>
+<tr><td>Repair Drone</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Repair 1 item(s) Repair 12 item(s)</td></tr>
+<tr><td>Skyliner</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 150 Damage Burn 25 This has +1 Multicast for each Flying item you have Deal 150300 Damage Burn 2550 This </td></tr>
+<tr><td>Space Laser</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 9999 Damage When you use a Flying item, Charge this 1 second(s) Deal 9999 Damage When you use a Flying it</td></tr>
+<tr><td>Spotlight</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Double the Damage of the item the left Double the Shield of the item to the left Double the Damage of the item</td></tr>
+<tr><td>Stellar Swallowtail</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 120 Damage Shield 120 When you Haste another item, Charge this 1 second When you use a Flying item, Haste</td></tr>
+<tr><td>Stelle's Workshop</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Your Tools' Cooldowns are reduced by 1 second(s) When you use a Tool, Charge 1 Vehicle(s) or Drone(s) 1 second</td></tr>
+<tr><td>The Big One</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Destroy this When this is destroyed, deal Damage equal to 25% of your enemy's Max Health Destroy this When thi</td></tr>
+<tr><td>Vortex Cannon</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 50 Damage ALL items start Flying When ANY Player uses a Flying item, this gains 30 Deal 50 Damage ALL ite</td></tr>
+<tr><td>Wrecking Ball</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Deal Damage equal to 20% of an enemy's Max Health Destroy an enemy item When this starts Flying, Charge this 5</td></tr>
+<tr><td>Wrench</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Deal 10 Damage At the start of each day, upgrade a Tool of a lower tier While this is Flying, this has double </td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Stelle 无 Diamond,Gold 27 件(22%)承载自毁爆发(Bomb Voyage / Buster / The Big One)与慢控引擎(Lightning Rod)。Kripp 对 LavaRoller 的判读:「Gold 起步 → pivot 构筑」,与 Karnok 相同的「无 Diamond = 后期依赖 pivot」结构。</div>
+</div>
+<h2>5.5 典型构筑(社区攻略)</h2>
+<div class="card">
+<h3>Balloon Engine 起飞灼烧 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/balloon-engine-stelle-kripp">Mobalytics / Kripp</a> 2025-12-08 · <span class="badge t-gold">Day 1 成型</span></span></h3>
+<div class="lead"> explosively-fast 灼烧——Balloon Engine + Freefall Simulator 双件核即可运转,最大化 start/stop Flying 触发;Day 1 可组装,但 Day 12 后开始乏力。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Balloon Engine</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>An item starts Flying When your items start Flying, Burn 3</td><td class="mono">飞行×载具×灼烧</td></tr>
+<tr><td>Freefall Simulator</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Adjacent items start or stop Flying</td><td class="mono">飞行</td></tr>
+<tr><td>Flame Jet Drone</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 4 When this starts Flying, this gains 4</td><td class="mono">飞行×无人机×灼烧</td></tr>
+<tr><td>Clockwork Disc</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>This starts or stops Flying Deal 10 Damage</td><td class="mono">飞行×输出</td></tr>
+<tr><td>Fire Bomb</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 6 Destroy this</td><td class="mono">自毁×灼烧</td></tr>
+<tr><td>Headset</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>When your items start Flying, Haste it 1 second(s)</td><td class="mono">飞行</td></tr>
+<tr><td>Tethers</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>1 of your items stop Flying When you use a Flying item, Charge this 1 second When your items stop Flying, Shield 30</td><td class="mono">飞行</td></tr>
+</table>
+<table><tr><th>技能</th><th>tier</th><th>效果</th><th>轴映射</th></tr>
+<tr><td>Final Flame</td><td><span class="badge t-bronze">Bronze</span></td><td>Your rightmost Burn item has +2</td><td class="mono">灼烧</td></tr>
+</table>
+<div class="note">2 级重摇找位置型灼烧技能;Curio 店找 Salamander Pup;Rocket Boots 为后续选择。</div>
+</div>
+<div class="card">
+<h3>Start-Stop Flying 起降循环 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/start-stop-flying-stelle-kripp">Mobalytics / Kripp</a> 2026-02-28 · <span class="badge t-diamond">身份构筑</span></span></h3>
+<div class="lead">「Stelle 身份的核心部分」(Kripp 原文)——把 start/stop 触发效率推到极限的万金油引擎;Freefall Simulator 升级优先,Clockwork Disc 单槽自循环配 Gyro Gunsight + Headset 打前期。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Freefall Simulator</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Adjacent items start or stop Flying</td><td class="mono">飞行</td></tr>
+<tr><td>Clockwork Disc</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>This starts or stops Flying Deal 10 Damage</td><td class="mono">飞行×输出</td></tr>
+<tr><td>Paper Airplane</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>This starts or stops Flying</td><td class="mono">飞行×载具</td></tr>
+<tr><td>Ornithopter</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>An adjacent item starts Flying</td><td class="mono">飞行×载具</td></tr>
+<tr><td>Tethers</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>1 of your items stop Flying When you use a Flying item, Charge this 1 second When your items stop Flying, Shield 30</td><td class="mono">飞行</td></tr>
+<tr><td>Gyro Gunsight</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>When one of your Weapons starts Flying, it gains 12 Damage</td><td class="mono">飞行×输出</td></tr>
+<tr><td>Daggerwing</td><td><span class="badge t-gold">Gold</span> / Large</td><td>Deal 100 Damage When your items start or stop Flying, this gains 125</td><td class="mono">飞行×载具×输出</td></tr>
+<tr><td>Hang Glider</td><td><span class="badge t-silver">Silver</span> / Large</td><td>Your other items start Flying Your items gain 20 When your items stop Flying, deal 40 Damage</td><td class="mono">飞行×载具×输出</td></tr>
+<tr><td>Pillbuggy</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Shield 40 Deal Damage equal to your Shield When you Haste this, it gains 40</td><td class="mono">载具×输出</td></tr>
+</table>
+<div class="note">填充件 Angle Grinder Drone / Flycycle / Kite / Pinwheel;规划 Orbital Polisher 时不要过早把物品升过 Silver;Toolbox 为经济件。</div>
+</div>
+<div class="card">
+<h3>Self-Destroy 自毁爆发 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/self-destroy-stelle-kripp">Mobalytics / Kripp</a> 2026-02-16 · <span class="badge t-gold">中后期 pivot</span></span></h3>
+<div class="lead">「加速机器直到爆炸,修复后再来」——Boosted Saucer 吃 Destroy 触发充能,Fire Bomb / Boom Boom Bot(Bronze)提供引爆,Recycler Bot 修复循环;Ornithopter / Flycycle 的定向飞行可控引爆 Boom Boom Bot。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Boosted Saucer</td><td><span class="badge t-silver">Silver</span> / Large</td><td>Deal 150 Damage Repair an item When you Repair or Transform in combat, this gains 150 When you Destroy an item, Charge this 4 second(s)</td><td class="mono">载具×自毁×输出</td></tr>
+<tr><td>Fire Bomb</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 6 Destroy this</td><td class="mono">自毁×灼烧</td></tr>
+<tr><td>Boom Boom Bot</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>If this is Flying, destroy this When this is destroyed, deal 80 damage When you Burn, this gains 20</td><td class="mono">飞行×无人机×自毁×灼烧×输出</td></tr>
+<tr><td>Recycler Bot</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Shield 20 Repair 1 Small items</td><td class="mono">—</td></tr>
+<tr><td>Precision Calipers</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Repair a Small item Haste all your other Small items 1 seconds</td><td class="mono">—</td></tr>
+<tr><td>Ornithopter</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>An adjacent item starts Flying</td><td class="mono">飞行×载具</td></tr>
+<tr><td>Flycycle</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Your leftmost item non-Flying starts Flying Your items have +5 Shield If they are Flying, double this bonus</td><td class="mono">飞行×载具</td></tr>
+</table>
+<div class="note">组件与其他构筑兼容性差,基本是独立 pivot 线;早期 Boosted Saucer 可直接构筑,否则先玩 Balloon Engine。</div>
+</div>
+<div class="card">
+<h3>Lightning Rod 慢控转伤 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/lightning-rod-stelle-kripp">Mobalytics / Kripp</a> 2026-01-27 · <span class="badge t-silver">pivot 构筑</span></span></h3>
+<div class="lead">Stelle 版 Proboscis(Kripp 类比)——把 Weather Machine / Fire Hose / Flashbang 的海量 Slow 触发转成伤害;Slow and Steady 技能是理想成长件。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Lightning Rod</td><td><span class="badge t-gold">Gold</span> / Large</td><td>When you Freeze or Slow, deal 25 Damage When an enemy Freezes or Slows your items, this is targeted instead</td><td class="mono">慢控×输出</td></tr>
+<tr><td>Weather Machine</td><td><span class="badge t-silver">Silver</span> / Large</td><td>2 items start Flying Freeze an item on each Player's board 1 second(s) Slow all items 1 second(s)</td><td class="mono">飞行×载具×慢控</td></tr>
+<tr><td>Fire Hose</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Slow all items 1 second(s) Cleanse half your Burn</td><td class="mono">灼烧×慢控</td></tr>
+<tr><td>Flashbang</td><td><span class="badge t-silver">Silver</span> / Small</td><td>Slow all enemy items 1 second(s) Destroy this</td><td class="mono">自毁×慢控</td></tr>
+<tr><td>Cloud Tanker</td><td><span class="badge t-silver">Silver</span> / Large</td><td>Adjacent items gain 20 Damage and 3 Burn When a Flying Vehicle or Drone gains Damage or Burn during combat, Haste it 1 second(s)</td><td class="mono">飞行×载具×灼烧×输出</td></tr>
+</table>
+<table><tr><th>技能</th><th>tier</th><th>效果</th><th>轴映射</th></tr>
+<tr><td>Slow and Steady</td><td><span class="badge t-silver">Silver</span></td><td>When you Slow, your items gain 2 Damage</td><td class="mono">慢控×输出</td></tr>
+</table>
+<div class="note">双核心 Lightning Rod + Weather Machine 分开找、可 Stash;Caracara + Aerial Turret 常规线是最常见过渡。</div>
+</div>
+<div class="card">
+<h3>LavaRoller 熔岩滚轮 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/lavaroller-stelle-kripp">Mobalytics / Kripp</a> 2026-03-21 · <span class="badge t-gold">全游最狂灼烧</span></span></h3>
+<div class="lead">自翻倍机制让数值失控——「全 Bazaar 最疯狂的灼烧原型」;Gold 起步 + 复杂自毁性,从 Balloon Engine 壳过渡最顺;灼烧技能保留可用。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>LavaRoller</td><td><span class="badge t-gold">Gold</span> / Medium</td><td>Destroy an adjacent item Burn 50 When you destroy an item, this gains 50</td><td class="mono">载具×自毁×灼烧</td></tr>
+<tr><td>Balloon Engine</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>An item starts Flying When your items start Flying, Burn 3</td><td class="mono">飞行×载具×灼烧</td></tr>
+<tr><td>Freefall Simulator</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Adjacent items start or stop Flying</td><td class="mono">飞行</td></tr>
+<tr><td>Flame Jet Drone</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 4 When this starts Flying, this gains 4</td><td class="mono">飞行×无人机×灼烧</td></tr>
+<tr><td>Marshalling Lights</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>1 item(s) stop Flying</td><td class="mono">飞行</td></tr>
+<tr><td>Headset</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>When your items start Flying, Haste it 1 second(s)</td><td class="mono">飞行</td></tr>
+<tr><td>Tethers</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>1 of your items stop Flying When you use a Flying item, Charge this 1 second When your items stop Flying, Shield 30</td><td class="mono">飞行</td></tr>
+<tr><td>Clockwork Disc</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>This starts or stops Flying Deal 10 Damage</td><td class="mono">飞行×输出</td></tr>
+<tr><td>Molten Ball Blaster</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Deal 50 Damage Burn 10 When you use another Tool, Charge this 2 seconds</td><td class="mono">灼烧×输出</td></tr>
+</table>
+<div class="note">Marshalling Lights 让 Freefall Simulator 多起飞少降落(偏置件);从 Molten Ball Blaster 也可过渡。</div>
+</div>
+<div class="note">来源:Mobalytics Builds(Kripparrian,Stelle 五原型全覆盖);物品/技能效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59);轴映射按 §3.6 谓词自动计算。</div>
+<h2>6. 与 StS2 / OneDeck 的映射</h2>
+<div class="card">
+<h3>6.1 与 StS2 的结构异同</h3>
+<table><tr><th>维度</th><th>StS2(五角色)</th><th>Bazaar(Stelle)</th><th>差异判定</th></tr>
+<tr><td>入口层</td><td>Common 无能力卡,即打即用</td><td>Bronze 飞行小件/无人机</td><td>同工:入口=制造条件</td></tr>
+<tr><td>兑现层</td><td>Uncommon 桥层</td><td>Silver 起降引擎件密集</td><td>同工:桥在中间 tier</td></tr>
+<tr><td>封顶</td><td>Rare 大数字/引擎</td><td>Gold 自毁爆发/慢控引擎(无 Diamond)</td><td>同工:高 tier 承载放大</td></tr>
+<tr><td>资源经济</td><td>垃圾经济学四形态</td><td>起降往复 + 自毁修复循环</td><td>同类,「自毁=Expire 类收益」与 StS2 消耗同构</td></tr>
+<tr><td>运行</td><td>回合制/能量</td><td>实时秒表/冷却/空间</td><td>差异最大</td></tr>
+</table>
+<h3>6.2 OneDeck 落点(初筛)</h3>
+<table><tr><th>Bazaar 观察</th><th>OneDeck 可借鉴</th><th>不可搬</th></tr>
+<tr><td>start/stop Flying 双向触发</td><td><b>与 OneDeck 的「被强化/被埋葬」双向事件同构</b>——状态获得/失去各挂触发的句式可直接映射到 Rest/Revive 状态</td><td>秒表状态窗口不映射轮次制</td></tr>
+<tr><td>自毁+Repair 循环</td><td>OneDeck 的「放逐自身+回收」句式已是同类——「引爆→修复→再引爆」可对照复活系循环</td><td>—</td></tr>
+<tr><td>While Flying 持续乘区</td><td>OneDeck 的状态期间增益(如 Rest 跳过)可对照扩展</td><td>—</td></tr>
+<tr><td>Drone 独有标签</td><td>OneDeck 的信徒(次元裂缝)标签已是同类——独占标签作为构筑身份锚点</td><td>—</td></tr>
+</table>
+</div>
+<h2>7. 关键卡清单</h2>
+<div class="card"><table>
+<tr><th>轴</th><th>物品</th><th>tier</th><th>size</th><th>cd/弹药</th><th>effects 摘要</th></tr>
+<tr><td>起降</td><td>Freefall Simulator</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Medium</td><td class="mono">5</td><td>Adjacent items start or stop Flying Adjacent items start or stop Flying</td></tr>
+<tr><td>起降</td><td>Clockwork Disc</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">4</td><td>This starts or stops Flying Deal 10 Damage This starts or stops Flying Deal 10204080 Damage</td></tr>
+<tr><td>起降</td><td>Ornithopter</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Small</td><td class="mono">5</td><td>An adjacent item starts Flying An adjacent item starts Flying</td></tr>
+<tr><td>起降</td><td>Paper Airplane</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">5</td><td>This starts or stops Flying This starts or stops Flying</td></tr>
+<tr><td>起降</td><td>Air-Pressure Rifle</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">7 / 1发</td><td>Deal 50 Damage When your items start Flying, this gains 25 When your items stop Flying, reload this Deal 50 Damage When your items</td></tr>
+<tr><td>起降</td><td>Anemometer</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">5</td><td>An adjacent item starts Flying When one of your items starts or stops Flying, Haste it 2 seconds An adjacent item starts Flying Wh</td></tr>
+<tr><td>飞行乘区</td><td>Aerial Turret</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">7</td><td>Deal 15 Damage Reduce this item's Cooldown by 1 second While this is Flying, this has +1 Multicast Deal 153060120 Damage Reduce th</td></tr>
+<tr><td>飞行乘区</td><td>Caracara</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">5</td><td>This and an adjacent item starts Flying Deal 5 Damage Your Flying items have +15 This and an adjacent item starts Flying Deal 5 Da</td></tr>
+<tr><td>飞行乘区</td><td>Altimeter</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">8</td><td>Charge adjacent items 1 second(s) For each adjacent Flying item, this item's Cooldown is reduced by 2 seconds Charge adjacent item</td></tr>
+<tr><td>自毁</td><td>Boosted Saucer</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Large</td><td class="mono">14</td><td>Deal 150 Damage Repair an item When you Repair or Transform in combat, this gains 150 When you Destroy an item, Charge this 4 seco</td></tr>
+<tr><td>自毁</td><td>Boom Boom Bot</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">7</td><td>If this is Flying, destroy this When this is destroyed, deal 80 damage When you Burn, this gains 20 If this is Flying, destroy thi</td></tr>
+<tr><td>自毁</td><td>Bomb Voyage</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Deal 50 Damage Burn 5 When this stops Flying, destroy it When this is destroyed, deal 10 times this item's Damage and Burn Deal 50</td></tr>
+<tr><td>自毁</td><td>Buster</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">—</td><td>When your Vehicles or Drones start Flying, this starts Flying When this stops Flying, destroy this and deal Damage equal to 20% of</td></tr>
+<tr><td>自毁</td><td>Recycler Bot</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Small</td><td class="mono">5</td><td>Shield 20 Repair 1 Small items shield 20 Repair 1234 Small items</td></tr>
+<tr><td>灼烧</td><td>Balloon Engine</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">5</td><td>An item starts Flying When your items start Flying, Burn 3 An item starts Flying When your items start Flying, Burn 36912</td></tr>
+<tr><td>灼烧</td><td>LavaRoller</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Destroy an adjacent item Burn 50 When you destroy an item, this gains 50 Destroy an adjacent item Burn 50100 When you destroy an i</td></tr>
+<tr><td>灼烧</td><td>Flame Jet Drone</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">5</td><td>Burn 4 When this starts Flying, this gains 4 Burn 4 When this starts Flying, this gains 481216</td></tr>
+<tr><td>慢控</td><td>Lightning Rod</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">—</td><td>When you Freeze or Slow, deal 25 Damage When an enemy Freezes or Slows your items, this is targeted instead When you Freeze or Slo</td></tr>
+<tr><td>慢控</td><td>Weather Machine</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Large</td><td class="mono">5</td><td>2 items start Flying Freeze an item on each Player's board 1 second(s) Slow all items 1 second(s) 234 items start Flying Freeze an</td></tr>
+<tr><td>无人机</td><td>Repair Drone</td><td><span class="badge t-silver">Gold</span></td><td class="mono">Small</td><td class="mono">4</td><td>Repair 1 item(s) Repair 12 item(s)</td></tr>
+<tr><td>无人机</td><td>Relay Drone</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">5</td><td>Charge 2 other item(s) 2 seconds Charge 23 other item(s) 2 seconds</td></tr>
+</table></div>
+</table></div>
+</table></div>
+</table></div>
+<h2>8. 文档元信息</h2>
+<div class="card">
+<table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>数据快照</td><td class="mono">2026-08-31 mobalytics.gg TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59),全池 1207 件提取 Stelle 专属 121</td></tr>
+<tr><td>归属规则</td><td>heroes[] 含 Stelle 且非模板占位(description 含 Template 的 1 件已滤)</td></tr>
+<tr><td>字段说明</td><td>tierStats 为四级数值;cooldown/ammo/critchance/multicast 底层字段化;descriptions 含配色模板标记已清洗</td></tr>
+<tr><td>已知缺口</td><td>附魔(enchantments)已随 Mobalytics 全量收录,综合文档定量</td></tr>
+<tr><td>本系列</td><td>Vanessa / Dooley / Mak / Karnok / Jules / Stelle / The Dragons / 公共池 / 技能池 / 综合(逐个完成即停,step-gate)</td></tr>
+</table>
+<div class="note">计数口径:机制词按 tags + descriptions 关键词匹配,多标签重复计入;tier/size 按 Mobalytics 字段原值。</div>
+</div>
+</body></html>

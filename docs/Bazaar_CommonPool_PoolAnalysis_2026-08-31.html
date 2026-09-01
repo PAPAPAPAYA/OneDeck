@@ -1,0 +1,103 @@
+<html><head><meta charset="utf-8"><title>The Bazaar · 公共池结构拆解</title><style>
+:root {
+--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+--purple: #bb9af7; --cyan: #7dcfff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+.mono { font-family: Consolas, monospace; }
+.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+.t-bronze { color: #c98a5e; border-color: #c98a5e88; }
+.t-silver { color: #aeb5c2; border-color: #aeb5c288; }
+.t-gold { color: #e0af68; border-color: #e0af6888; }
+.t-diamond { color: #7dcfff; border-color: #7dcfff88; }
+.t-legendary { color: #e06c9f; border-color: #e06c9f88; }
+ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+li { margin: 3px 0; }
+.lead { font-size: 0.92rem; margin: 8px 0; }
+.dim { color: var(--dim); } .warn { color: var(--warn); } .good { color: var(--good); } .bad { color: var(--bad); }
+.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style></head><body><h1>The Bazaar · 公共池(Common)结构拆解</h1>
+<div class="sub">2026-09-01 · 数据源:<a href="https://mobalytics.gg/the-bazaar/database/items-and-enchantments">mobalytics.gg</a> TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59,快照 2026-08-31)· 物品英文为准 · 全池 1207 件中 Common 归属 166 件 · 同系列:九英雄拆解 / 技能池 / 综合总结</div>
+<div class="kpis">
+<div class="kpi"><div class="num">166</div><div class="lbl">公共池总数</div></div>
+<div class="kpi"><div class="num">26</div><div class="lbl">Legendary 件(16%)—— 全游最高浓度(PvE 奖励)</div></div>
+<div class="kpi"><div class="num">25</div><div class="lbl">Loot token(战利品/资源 token)</div></div>
+<div class="kpi"><div class="num">59%</div><div class="lbl">Small 件占比(98 件)—— 轻量接口件</div></div>
+</div>
+<h2>0. 池定位</h2>
+<div class="card">
+<div class="lead">公共池不是「第十个英雄」,而是<b>跨英雄接口层</b>:① Loot token(25 件)——由英雄物品/技能生成的资源 token(Chunk of Lead / Spare Change / Pelt / Gunpowder);② 传说奖励(26 件 Legendary)——PvE 事件/掉的终局件(Dragon Heart / Necronomicon / 各 Warden);③ 通用支援件(约 115 件)——Curio 商店/商人的跨英雄小件(九英雄构筑的「off-Hero items」都出自这里,如 Vanessa Boulder 构筑的 Gunpowder、Stelle 构筑的 Rocket Boots)。</div>
+<div class="lead">设计意义:公共池把「英雄间不相通的物品池」重新连接——它是 Bazaar 的「中性词表」,让 pivot 与混编有落点。</div>
+</div>
+<h2>1. 组成结构</h2>
+<div class="card">
+<h3>1.1 tier 分布(异常结构)</h3>
+<table><tr><th>tier</th><th>数量</th><th>占比</th><th>说明</th></tr>
+<tr><td><span class="badge t-bronze">Bronze</span></td><td class="mono">68</td><td class="mono">41%</td><td>token 与轻量接口件</td></tr>
+<tr><td><span class="badge t-silver">Silver</span></td><td class="mono">37</td><td class="mono">22%</td><td>通用支援件主力</td></tr>
+<tr><td><span class="badge t-gold">Gold</span></td><td class="mono">15</td><td class="mono">9%</td><td>少量</td></tr>
+<tr><td><span class="badge t-diamond">Diamond</span></td><td class="mono">20</td><td class="mono">12%</td><td>高价值支援</td></tr>
+<tr><td><span class="badge t-legendary">Legendary</span></td><td class="mono">26</td><td class="mono">16%</td><td><b>全游最高 Legendary 浓度</b>——PvE 事件奖励/终局件</td></tr>
+</table></div>
+<div class="card"><h3>1.2 类型标签</h3><table><tr><th>标签</th><th>数量</th><th>占比</th><th>代表</th></tr>
+<tr><td class="mono">Weapon</td><td class="mono">47</td><td class="mono">28%</td><td>Claws / Clockwork Blades / Scythe</td></tr>
+<tr><td class="mono">Relic</td><td class="mono">34</td><td class="mono">20%</td><td>Ancient Specimen / Cosmic Amulet / Teddy</td></tr>
+<tr><td class="mono">Loot</td><td class="mono">25</td><td class="mono">15%</td><td>Chunk of Gold / Spare Change 类 token</td></tr>
+<tr><td class="mono">Friend</td><td class="mono">17</td><td class="mono">10%</td><td>Busy Bee / Octopus / Salamander Pup</td></tr>
+<tr><td class="mono">Apparel</td><td class="mono">17</td><td class="mono">10%</td><td>Agility Boots / Championship Belt</td></tr>
+<tr><td class="mono">Food</td><td class="mono">15</td><td class="mono">9%</td><td>Chocolate Bar / Coconut / Citrus</td></tr>
+<tr><td class="mono">Tech</td><td class="mono">12</td><td class="mono">7%</td><td>Cinders / Echo Crystal</td></tr>
+<tr><td class="mono">Tool</td><td class="mono">8</td><td class="mono">5%</td><td>Sharpening Stone / Bar of Soap</td></tr>
+<tr><td class="mono">Aquatic</td><td class="mono">6</td><td class="mono">4%</td><td></td></tr>
+<tr><td class="mono">Property</td><td class="mono">4</td><td class="mono">2%</td><td></td></tr>
+</table></div>
+<h2>2. Loot token 经济(跨英雄接口)</h2>
+<div class="card">
+<h3>2.1 token 清单(25 件)</h3>
+<div class="flow">Bag of Jewels · Cinders · Coupon · Crimson Orchid · Eagle Talisman · Echo Crystal · Extract · Feather · Gland · Gunpowder · Insect Wing · Learning Crystal · Med Kit · Moon Lily · Mysterious Crystal · Pelt · Raffle Ticket · Reroll Token · Resonance Crystal · Scrap · Sharpening Stone · Skill Voucher · Snowflake · Translation Crystal · Vial of Blood</div>
+<h3>2.2 生成关系(快照可验证样例)</h3>
+<table><tr><th>token</th><th>生成者(英雄物品)</th></tr>
+<tr><td class="mono">Pelt</td><td>Hunting Knife(Karnok:胜怪掉皮)</td></tr>
+<tr><td class="mono">Scrap</td><td>Salvage Yard</td></tr>
+<tr><td class="mono">Bag of Jewels</td><td>Safe</td></tr>
+<tr><td class="mono">Gunpowder</td><td>多源(Port 发放的 off-Hero 弹药物等)——Vanessa Boulder 构筑的备选件</td></tr>
+<tr><td class="mono">Chunk of Lead / Chunk of Gold</td><td>Mak 转化线(Retort 每日产铅→炼金成金)</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:Loot token 是「英雄池→中性池」的单向阀——英雄物品生成中性 token,token 再被任意英雄的消费件兑现。这让「经济/资源」类构筑跨英雄通用,Mak 的铅→金甚至成为公共经济件。OneDeck 对照:次元裂缝 token 的「生成→兑现」结构与此同构,但 Bazaar 的 token 池是全英雄共享的。</div>
+</div>
+<h2>3. Legendary 奖励层(26 件)</h2>
+<div class="card">
+<div class="flow">Admiral's Badge · Artificial Heart · Barbspike Warden · Blazehowl Warden · Championship Belt · Crash Site Ticket · Darkstone Engine · Darkstone Focuser · Dragon Heart · Eye of the Colossus · Flamecoil Gem · Icewatch Warden · Infernal Greatsword · Maitoan Altar · Necronomicon · Nullfrost Altar · Octopus · Scythe · Singularity · Soul of the District · Spirit Diffuser · Sword of Swords · Tantius Carrier · Teddy · Temple Expedition Ticket · The Eclipse</div>
+<div class="lead">Warden 系列(Barbspike / Blazehowl / Icewatch)与 Ticket 系列(Crash Site / Temple Expedition)是 PvE 事件奖励;Dragon Heart 出现在 The Dragons 灼烧构筑的 10 胜板(Imu + Dragon Heart 组合)——公共池 Legendary 是英雄构筑的合法延伸件,而非独立体系。</div>
+</div>
+<h2>4. 与 OneDeck 的映射</h2>
+<div class="card">
+<table><tr><th>观察</th><th>可借鉴</th><th>不可搬</th></tr>
+<tr><td>Loot token 中性池(25 件,跨英雄兑现)</td><td>OneDeck 的生成卡(裂缝/诅咒)是阵营绑定的——「中性 token 池」可让生成物跨阵营兑现,扩大混编空间</td><td>商店购买语境</td></tr>
+<tr><td>Legendary PvE 奖励(26 件)</td><td>OneDeck 无 PvE 事件层——「战斗外成长奖励」可对照结果屏/连败补偿设计</td><td>PvE 层本身</td></tr>
+<tr><td>off-Hero 支援件(构筑混编落点)</td><td>OneDeck 双 deck 天然混编,无需此层</td><td>—</td></tr>
+</table>
+</div>
+<h2>5. 文档元信息</h2><div class="card"><table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>数据快照</td><td class="mono">2026-08-31 mobalytics.gg 全池 1207 件中 Common 归属 166(过滤 1 件模板占位)</td></tr>
+<tr><td>口径</td><td>heroes==['Common'];多英雄共享件(Augment Reagents 等)计入各英雄文档</td></tr>
+<tr><td>系列</td><td>九英雄拆解(Vanessa/Pygmalien/Dooley/Mak/Karnok/Jules/Stelle/The Dragons)已全部产出;技能池与综合总结随后</td></tr>
+</table></div></body></html>

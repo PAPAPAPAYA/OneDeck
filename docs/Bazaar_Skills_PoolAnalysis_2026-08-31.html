@@ -1,0 +1,99 @@
+<html><head><meta charset="utf-8"><title>The Bazaar · 技能池结构拆解</title><style>
+:root {
+--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+--purple: #bb9af7; --cyan: #7dcfff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+.mono { font-family: Consolas, monospace; }
+.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+.t-bronze { color: #c98a5e; border-color: #c98a5e88; }
+.t-silver { color: #aeb5c2; border-color: #aeb5c288; }
+.t-gold { color: #e0af68; border-color: #e0af6888; }
+.t-diamond { color: #7dcfff; border-color: #7dcfff88; }
+.t-legendary { color: #e06c9f; border-color: #e06c9f88; }
+ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+li { margin: 3px 0; }
+.lead { font-size: 0.92rem; margin: 8px 0; }
+.dim { color: var(--dim); } .warn { color: var(--warn); } .good { color: var(--good); } .bad { color: var(--bad); }
+.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style></head><body><h1>The Bazaar · 技能池(Skills)结构拆解</h1>
+<div class="sub">2026-09-01 · 数据源:<a href="https://mobalytics.gg/the-bazaar/database/items-and-enchantments">mobalytics.gg</a> TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59,快照 2026-08-31)· 物品英文为准 · 技能全量 522 条 · 同系列:九英雄拆解 / 公共池 / 综合总结</div>
+<div class="kpis">
+<div class="kpi"><div class="num">522</div><div class="lbl">技能总数</div></div>
+<div class="kpi"><div class="num">90/183/149/95</div><div class="lbl">tier 分布 B/S/G/D(+5 Legendary)</div></div>
+<div class="kpi"><div class="num">133</div><div class="lbl">全英雄通用技能(Common)—— 构筑胶水</div></div>
+<div class="kpi"><div class="num">82</div><div class="lbl">Heal 相关(最高频机制词)</div></div>
+</div>
+<h2>0. 技能层定位</h2>
+<div class="card">
+<div class="lead">技能 = Bazaar 的<b>被动层</b>:不占 10/12 格板位,以「构筑方向修正器」存在(社区共识:Vanessa/Pygmalien 开局三选一里黄金技能常是最优解——技能定方向,物品填 body)。各英雄 §5.5 构筑表中的技能(Augmented Weaponry / Juggler / Lifting / Machine Learning / Slow and Steady…)都是本池成员。</div>
+</div>
+<div class="card"><h3>1. 英雄 × 数量</h3><table><tr><th>归属</th><th>技能数</th><th>备注</th></tr>
+<tr><td class="mono">Vanessa</td><td class="mono">162</td><td></td></tr>
+<tr><td class="mono">Pygmalien</td><td class="mono">140</td><td></td></tr>
+<tr><td class="mono">Dooley</td><td class="mono">159</td><td></td></tr>
+<tr><td class="mono">Mak</td><td class="mono">149</td><td></td></tr>
+<tr><td class="mono">Karnok</td><td class="mono">149</td><td></td></tr>
+<tr><td class="mono">Jules</td><td class="mono">143</td><td></td></tr>
+<tr><td class="mono">Stelle</td><td class="mono">133</td><td></td></tr>
+<tr><td class="mono">The Dragons</td><td class="mono">137</td><td>新英雄技能池最厚之一(含乐队 Tempo 技能)</td></tr>
+<tr><td class="mono">Common</td><td class="mono">133</td><td>全英雄通用——构筑胶水层</td></tr>
+</table><div class="note">多英雄共享技能在各归属重复计入;Common 133 条任意英雄可出。</div></div>
+<div class="card"><h3>2. 机制词分布</h3><table><tr><th>机制词</th><th>技能数</th><th>设计含义</th></tr>
+<tr><td class="mono">Heal</td><td class="mono">82</td><td>防御回复类最厚——技能是「补防」的主要来源</td></tr>
+<tr><td class="mono">Damage</td><td class="mono">73</td><td>直伤/增益类</td></tr>
+<tr><td class="mono">Burn</td><td class="mono">63</td><td>状态类技能(灼烧构筑的技能轴)</td></tr>
+<tr><td class="mono">Crit</td><td class="mono">59</td><td>暴击修正(远程构建向)</td></tr>
+<tr><td class="mono">Shield</td><td class="mono">56</td><td>护盾类</td></tr>
+<tr><td class="mono">Charge</td><td class="mono">52</td><td>充能加速(Dooley/Stelle 技能轴)</td></tr>
+<tr><td class="mono">Haste</td><td class="mono">46</td><td>加速</td></tr>
+<tr><td class="mono">Poison</td><td class="mono">45</td><td>毒系</td></tr>
+<tr><td class="mono">Slow</td><td class="mono">40</td><td>慢控</td></tr>
+<tr><td class="mono">Regen</td><td class="mono">36</td><td>持续回复</td></tr>
+<tr><td class="mono">Freeze</td><td class="mono">29</td><td>冻结(少量高价值)</td></tr>
+<tr><td class="mono">Rage</td><td class="mono">29</td><td>Karnok 专属机制泄漏</td></tr>
+<tr><td class="mono">Flying</td><td class="mono">20</td><td>Stelle 专属机制泄漏</td></tr>
+<tr><td class="mono">Ammo</td><td class="mono">19</td><td></td></tr>
+<tr><td class="mono">Tempo</td><td class="mono">16</td><td>The Dragons 专属机制泄漏</td></tr>
+<tr><td class="mono">Multicast</td><td class="mono">10</td><td></td></tr>
+<tr><td class="mono">Gold</td><td class="mono">10</td><td></td></tr>
+<tr><td class="mono">Value</td><td class="mono">8</td><td></td></tr>
+<tr><td class="mono">Destroy</td><td class="mono">8</td><td></td></tr>
+<tr><td class="mono">Reload</td><td class="mono">5</td><td></td></tr>
+<tr><td class="mono">Heated</td><td class="mono">5</td><td>Jules 专属机制泄漏(仅 5 条——英雄机制尽量不进技能层)</td></tr>
+<tr><td class="mono">Enchant</td><td class="mono">4</td><td></td></tr>
+</table><div class="note">Rage 29 / Tempo 16 / Flying 20 vs Heated 5——新英雄(Rage/Tempo/Flying)的机制大量泄漏进技能层,而 Jules 的 Heated 几乎不进技能(槽位机制与技能层天然冲突)。这是「机制是否技能化」的设计分界样本。</div></div>
+<h2>3. 通用技能的胶水作用</h2>
+<div class="card">
+<div class="lead">Common 133 条中的关键子集在各英雄构筑反复出现:<span class="mono">Rigged</span>(首次使用→全体 Haste,Dooley Power Drill / 通用开局)、<span class="mono">Juggler</span>(小件用→大件充能,The Boulder 构筑)、<span class="mono">Lefty Loosey / Captain's Charge</span>(位置触发)、<span class="mono">Final Flame / Immolating Spark</span>(灼烧位置技能,Burn 构筑通用)。通用技能是「跨构筑可迁移的成长投资」——攻略共识「拿金技能优于升级物品」即源于此。</div>
+</div>
+<h2>4. 与 OneDeck 的映射</h2>
+<div class="card">
+<table><tr><th>观察</th><th>可借鉴</th><th>不可搬</th></tr>
+<tr><td>技能 = 不占板位的被动层</td><td>OneDeck 无场外被动位;「战斗开始时生效的 tag/被动卡」是最接近形态——若引入需守「不占 12 卡位」边界</td><td>技能购买经济</td></tr>
+<tr><td>机制技能化分界(Heated 5 vs Rage 29)</td><td>OneDeck 的新机制是否进入「通用事件池」可参照:位置/槽位机制不进,资源/计数机制可进</td><td>—</td></tr>
+<tr><td>通用技能胶水(133 条 Common)</td><td>OneDeck 的通用轴(力量/通用埋葬)已是同类——「跨构筑迁移投资」的定位值得保持</td><td>—</td></tr>
+</table>
+</div>
+<h2>5. 文档元信息</h2><div class="card"><table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>数据快照</td><td class="mono">2026-08-31 mobalytics.gg 技能全量 522 条(theBazaarSkills)</td></tr>
+<tr><td>口径</td><td>机制词按 descriptions 关键词匹配;tier 按 baseTier</td></tr>
+</table></div></body></html>

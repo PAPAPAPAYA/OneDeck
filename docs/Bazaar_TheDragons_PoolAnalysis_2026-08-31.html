@@ -1,0 +1,408 @@
+<html><head><meta charset="utf-8"><title>The Bazaar · The Dragons 物品池结构拆解</title><style>
+:root {
+--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+--purple: #bb9af7; --cyan: #7dcfff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+background: var(--bg); color: var(--text);
+font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+}
+h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+.mono { font-family: Consolas, monospace; }
+.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+.t-bronze { color: #c98a5e; border-color: #c98a5e88; }
+.t-silver { color: #aeb5c2; border-color: #aeb5c288; }
+.t-gold { color: #e0af68; border-color: #e0af6888; }
+.t-diamond { color: #7dcfff; border-color: #7dcfff88; }
+.b-weap { color: #f7768e; border-color: #f7768e88; }
+.b-tool { color: #e0af68; border-color: #e0af6888; }
+.b-props { color: #bb9af7; border-color: #bb9af788; }
+.b-aqua { color: #7dcfff; border-color: #7dcfff88; }
+.b-friend { color: #9ece6a; border-color: #9ece6a88; }
+.b-veh { color: #ff9e64; border-color: #ff9e6488; }
+.star { color: #e0af68; font-weight: 700; }
+ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+li { margin: 3px 0; }
+.lead { font-size: 0.92rem; margin: 8px 0; }
+.dim { color: var(--dim); }
+.warn { color: var(--warn); }
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+.purple { color: var(--purple); }
+.cyan { color: var(--cyan); }
+.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style></head><body>
+<h1>The Bazaar · The Dragons 物品池结构拆解</h1>
+<div class="sub">2026-08-31 · 数据源:<a href="https://mobalytics.gg/the-bazaar/the-dragons-items">mobalytics.gg</a> TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59,快照 2026-08-31)· 全池 1207 物品中 The Dragons 专属 107 件(已过滤 1 件模板占位)· 物品英文为准 · 同系列:Vanessa / Pygmalien / Dooley / Mak / Karnok / Jules / Stelle / 公共池 / 技能池 / 综合</div>
+<div class="kpis">
+<div class="kpi"><div class="num">107</div><div class="lbl">物品池总数(107 件,全游最小主力池)</div></div>
+<div class="kpi"><div class="num">49/39/19/0</div><div class="lbl">tier 分布 B/S/G/D(无 Diamond)</div></div>
+<div class="kpi"><div class="num">26</div><div class="lbl">Tempo 相关(24%)—— 独有资源机制</div></div>
+<div class="kpi"><div class="num">23/18</div><div class="lbl">Dragon 23 / Instrument 18 —— 乐队标签</div></div>
+<div class="kpi"><div class="num">2+3</div><div class="lbl">主轴:Tempo 乐队引擎 / 龙族联动 + 灼烧 / 玩具应援 / 附魔</div></div>
+<div class="kpi"><div class="num">16</div><div class="lbl">无冷却被动件(15%)</div></div>
+</div>
+<h2>0. 英雄骨架</h2>
+<div class="card">
+<div class="lead"><strong>定位</strong>:全游「摇滚乐队」英雄(Roughtown Rockstars)——核心机制为「Tempo 资源」:可累积可消费的战斗资源(26 件涉及),配合 Dragon(龙族成员)/ Instrument(乐器)/ Chibi 应援团标签。Small 69 件(64%)全系列最小件化——「乐队全员小件快节奏」。身份轴:Tempo 26 + Dragon 20 + Instrument 18 + Friend 19 + Tech 25。</div>
+<div class="lead"><strong>身份关键词(Top)</strong>:< s p a n   c l a s s = " b a d g e " > T e m p o   2 6 < / s p a n > < s p a n   c l a s s = " b a d g e   b - w e a p " > D r a g o n   2 3 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > I n s t r u m e n t   1 8 < / s p a n > < s p a n   c l a s s = " b a d g e   b - f r i e n d " > F r i e n d   1 9 < / s p a n > < s p a n   c l a s s = " b a d g e " > B u r n   2 1 < / s p a n > < s p a n   c l a s s = " b a d g e " > E n c h a n t   1 6 < / s p a n ></div>
+<div class="lead"><strong>资源轴速览</strong>:Tempo = 可累积可消费资源(获得:Black Lipstick 开局 +4 / 每 10 Tempo +1 Multicast;消费:Fingerless Gloves 花 Tempo 减冷却)——与 Karnok Rage 同为「资源条」但可主动花费;Dragon = 龙族联动(快速触发核心);Instrument = 乐器(Tuba / Guzheng);Chibi = 玩具应援团(邻位 Toy 触发);Notes = 英雄技能半随机放置位(构筑位置敏感,同 Jules)。The Dragons 的语法 =「演出」——攒 Tempo,奏乐器,全团联动。</div>
+</div>
+<h2>1. 池组成总览</h2>
+<div class="card">
+<h3>1.1 tier × size</h3>
+<table>
+<tr><th>Tier</th><th>数量</th><th>占比</th><th>Small</th><th>Medium</th><th>Large</th><th>定位</th></tr>
+<tr><td><span class="badge t-bronze">Bronze</span></td><td class="mono">49</td><td class="mono">46%</td><td class="mono">40</td><td class="mono">9</td><td class="mono">0</td><td>入门密度层——小件乐队成员/玩具为主(教学层)</td></tr>
+<tr><td><span class="badge t-silver">Silver</span></td><td class="mono">39</td><td class="mono">36%</td><td class="mono">21</td><td class="mono">16</td><td class="mono">2</td><td>主力层——龙族与 Tempo 件密集</td></tr>
+<tr><td><span class="badge t-gold">Gold</span></td><td class="mono">19</td><td class="mono">18%</td><td class="mono">8</td><td class="mono">7</td><td class="mono">4</td><td>强度层——乐器大件与引擎(19 件)</td></tr>
+</table></div>
+<div class="card">
+<h3>1.2 类型标签分布(多标签重复计入,基数 107)</h3>
+<table>
+<tr><th>类型</th><th>数量</th><th>占比</th><th>代表件</th></tr>
+<tr><td><span class="badge t-silver">Tech</span></td><td class="mono">25</td><td class="mono">23%</td><td>Arcade Machine / Event Poster / Jammer</td></tr>
+<tr><td><span class="badge b-weap">Weapon</span></td><td class="mono">23</td><td class="mono">21%</td><td>Guzheng / Razor Bow / Whistling Glaive</td></tr>
+<tr><td><span class="badge t-silver">Apparel</span></td><td class="mono">22</td><td class="mono">21%</td><td>Bandana / Flame Skirt / Hot Pants</td></tr>
+<tr><td><span class="badge t-silver">Dragon</span></td><td class="mono">23</td><td class="mono">21%</td><td>Dragon Statue / Superfan / Visor</td></tr>
+<tr><td><span class="badge b-friend">Friend</span></td><td class="mono">19</td><td class="mono">18%</td><td>Backup Dancer / Chibi 应援团</td></tr>
+<tr><td><span class="badge t-silver">Instrument</span></td><td class="mono">18</td><td class="mono">17%</td><td>Tuba / Amp / Death Metal Drum Kit</td></tr>
+<tr><td><span class="badge t-silver">Toy</span></td><td class="mono">14</td><td class="mono">13%</td><td>Lightstick / Chronos Chibi / Confetti Cannon</td></tr>
+<tr><td><span class="badge b-tool">Tool</span></td><td class="mono">14</td><td class="mono">13%</td><td>Boom Mic / Equipment Van 相关</td></tr>
+<tr><td><span class="badge t-silver">Drone</span></td><td class="mono">5</td><td class="mono">5%</td><td>—</td></tr>
+<tr><td><span class="badge b-props">Property</span></td><td class="mono">4</td><td class="mono">4%</td><td>Green Screen / Arcade Machine</td></tr>
+<tr><td><span class="badge b-veh">Vehicle</span></td><td class="mono">4</td><td class="mono">4%</td><td>Equipment Van</td></tr>
+<tr><td><span class="badge t-silver">Food</span></td><td class="mono">3</td><td class="mono">3%</td><td>Bubble Gum</td></tr>
+</table>
+<div class="note">本表取 tags 严格标签。Small 69(64%)全系列最小件化;Dragon 20 + Instrument 18 + Friend 19 是「乐队阵容」三标签;Chibi 应援团(Toy+Friend)是独有的邻位触发族。多标签物品重复计入各标签。</div>
+<div class="card">
+<h3>1.3 节奏结构(冷却分布,base tier 口径)</h3>
+<table>
+<tr><th>冷却带</th><th>数量</th><th>占比</th><th>说明</th></tr>
+<tr><td>Passive(无冷却/触发式)</td><td class="mono">16</td><td class="mono">15%</td><td>—</td></tr>
+<tr><td>≤3s</td><td class="mono">12</td><td class="mono">11%</td><td>—</td></tr>
+<tr><td>4-6s</td><td class="mono">73</td><td class="mono">68%</td><td>—</td></tr>
+<tr><td>7-9s</td><td class="mono">5</td><td class="mono">5%</td><td>—</td></tr>
+<tr><td>10s+</td><td class="mono">1</td><td class="mono">1%</td><td>—</td></tr>
+<tr><td>多值(升级线,不同 tier 冷却不同)</td><td class="mono">10</td><td class="mono">9%</td><td>随等级渐快——升级即加速</td></tr>
+</table>
+<div class="note">The Dragons 节奏 = 「攒 Tempo → 消费爆发」的乐句循环:Black Lipstick 开局 +4、玩具/暴击持续攒,消费端(Fingerless Gloves 花 Tempo 减冷却)决定爆发窗口。小件 64% 使整板冷却天然偏快。</div>
+</div>
+<h2>2. 术语与分级结构</h2>
+<div class="card">
+<h3>2.1 机制词分布</h3>
+<table><tr><th>机制词</th><th>件数</th><th>性质</th></tr>
+<tr><td class="mono">Tempo</td><td class="mono">26</td><td>—</td></tr>
+<tr><td class="mono">Dragon</td><td class="mono">23</td><td>—</td></tr>
+<tr><td class="mono">Instrument</td><td class="mono">18</td><td>—</td></tr>
+<tr><td class="mono">Tech</td><td class="mono">25</td><td>—</td></tr>
+<tr><td class="mono">Weapon</td><td class="mono">23</td><td>—</td></tr>
+<tr><td class="mono">Apparel</td><td class="mono">22</td><td>—</td></tr>
+<tr><td class="mono">Friend</td><td class="mono">19</td><td>—</td></tr>
+<tr><td class="mono">Burn</td><td class="mono">21</td><td>—</td></tr>
+<tr><td class="mono">Haste</td><td class="mono">19</td><td>—</td></tr>
+<tr><td class="mono">Charge</td><td class="mono">19</td><td>—</td></tr>
+<tr><td class="mono">Slow</td><td class="mono">18</td><td>—</td></tr>
+<tr><td class="mono">Crit</td><td class="mono">15</td><td>—</td></tr>
+<tr><td class="mono">Shield</td><td class="mono">27</td><td>—</td></tr>
+<tr><td class="mono">Heal</td><td class="mono">14</td><td>—</td></tr>
+<tr><td class="mono">Multicast</td><td class="mono">6</td><td>—</td></tr>
+<tr><td class="mono">Enchant</td><td class="mono">16</td><td>—</td></tr>
+<tr><td class="mono">Flying</td><td class="mono">6</td><td>—</td></tr>
+<tr><td class="mono">Toy</td><td class="mono">14</td><td>—</td></tr>
+<tr><td class="mono">Regen</td><td class="mono">1</td><td>—</td></tr>
+<tr><td class="mono">Freeze</td><td class="mono">1</td><td>—</td></tr>
+</table>
+<div class="note">词表为 tags + descriptions 关键词匹配(多标签重复计入)。Tempo(26)是 The Dragons 的引擎语汇——全游唯一「可主动消费的战斗资源」;Enchant(附魔)密度全系列最高(Lightstick 花 Tempo 附魔)。</div>
+<div class="card">
+<h3>2.2 触发句式</h3>
+<table><tr><th>句式</th><th>件数</th><th>代表</th><th>设计含义</th></tr>
+<tr><td>gain Tempo</td><td class="mono">0</td><td>—</td><td>—</td></tr>
+<tr><td>spend Tempo</td><td class="mono">2</td><td>—</td><td>—</td></tr>
+<tr><td>for each Tempo</td><td class="mono">3</td><td>—</td><td>—</td></tr>
+<tr><td>When you use an adjacent Toy</td><td class="mono">4</td><td>—</td><td>—</td></tr>
+<tr><td>Dragon</td><td class="mono">10</td><td>—</td><td>—</td></tr>
+<tr><td>When your items Crit</td><td class="mono">1</td><td>—</td><td>—</td></tr>
+</table></div>
+<h2>3. 构筑轴识别</h2>
+<div class="card">
+<h3>3.1 Tempo 乐队引擎轴(身份轴)</h3>
+<div class="flow">Tempo 获得(Black Lipstick 开局 +4 / Confetti Cannon 玩具计数 / Guzheng 暴击 +3) → 累积乘区(Arcade Machine 每 10 Tempo +1 Multicast / Backup Dancer 按 Tempo 回复盾) → 消费(Fingerless Gloves 花 Tempo 减邻件冷却)</div>
+<div class="lead"><strong>入口</strong>:Tempo 获得件。<strong>兑现</strong>:按 Tempo 数值的累积件。<strong>封顶</strong>:Guzheng(每 Tempo 15 伤+15 盾)。Tempo 与 Karnok 的 Rage 同为「资源条」,但 Tempo 可主动消费——全游唯一。</div>
+</div>
+<div class="card">
+<h3>3.2 龙族联动轴</h3>
+<div class="flow">Dragon 触发(Visor 刷龙触发 / Event Poster 充能开门) → 龙族件(Dragon Statue 近无限回复 / Superfan 主 win 条件) → Patch 暴击解全板</div>
+<div class="lead"><strong>特征</strong>:攻略判读——龙族构筑「利用快触发把数值滚到荒谬高度」,Multicast + 技能 + 邻位触发三线并进。</div>
+</div>
+<div class="card">
+<h3>3.3 Chibi 应援团轴(独有邻位族)</h3>
+<div class="lead"><strong>特征</strong>:Chronos / Cobweb / Quixel Chibi(Toy+Friend 双标签)——邻位 Toy 使用 → +1 Tempo / 充能 / 慢,三兄弟是全系列最整齐的「邻位互触发」家族。</div>
+</div>
+<div class="card">
+<h3>3.4 灼烧/附魔副轴</h3>
+<div class="lead"><strong>特征</strong>:Burn 21(Flame Skirt 慢转灼烧)+ Enchant 全系列最高密度(Lightstick 花 Tempo 附魔、G Note 附魔小件)——附魔是 The Dragons 的第三资源面。</div>
+</div>
+<div class="card">
+<h3>3.5 轴矩阵总结</h3>
+<table>
+<tr><th>轴</th><th>件数</th><th>tier 分布</th><th>入口/兑现/封顶</th><th>密度评价</th></tr>
+<tr><td>Tempo 乐队</td><td class="mono">26</td><td>B11/S9/G6/D0+0L</td><td>攒 Tempo → 累积乘区 → 消费</td><td class="good">厚,身份轴</td></tr>
+<tr><td>龙族</td><td class="mono">23</td><td>B9/S10/G4/D0+0L</td><td>快触发滚雪球</td><td class="good">厚,身份轴 B</td></tr>
+<tr><td>乐器</td><td class="mono">18</td><td>B11/S4/G3/D0+0L</td><td>大件乐器输出</td><td class="warn">中</td></tr>
+<tr><td>玩具应援</td><td class="mono">14</td><td>B9/S4/G1/D0+0L</td><td>邻位 Chibi 触发</td><td class="warn">中</td></tr>
+<tr><td>灼烧</td><td class="mono">21</td><td>B10/S7/G4/D0+0L</td><td>Flame Skirt 慢转灼烧</td><td class="warn">中</td></tr>
+<tr><td>附魔</td><td class="mono">16</td><td>B3/S9/G4/D0+0L</td><td>全系列最高密度</td><td class="warn">中,资源面</td></tr>
+<tr><td>输出</td><td class="mono">30</td><td>B17/S7/G6/D0+0L</td><td>武器输出</td><td class="warn">中</td></tr>
+</table></div>
+<h2>3.6 轴间桥矩阵(2026-08-31 框架迭代)</h2>
+<div class="card">
+<div class="kpis" style="margin:8px 0">
+<div class="kpi"><div class="num">49</div><div class="lbl">单轴件(46%)</div></div>
+<div class="kpi"><div class="num">44</div><div class="lbl">桥(≥2 轴,41%)</div></div>
+<div class="kpi"><div class="num">34</div><div class="lbl">双轴桥</div></div>
+<div class="kpi"><div class="num">10</div><div class="lbl">三轴+桥</div></div>
+<div class="kpi"><div class="num">14</div><div class="lbl">无轴件(谓词未覆盖)</div></div>
+</div>
+<h3>轴定义(谓词,tags + 关键词)</h3>
+<table><tr><th>轴</th><th>覆盖件数</th><th>谓词口径</th></tr>
+<tr><td class="mono">Tempo</td><td class="mono">26</td><td>—</td></tr>
+<tr><td class="mono">龙族</td><td class="mono">23</td><td>—</td></tr>
+<tr><td class="mono">乐器</td><td class="mono">18</td><td>—</td></tr>
+<tr><td class="mono">灼烧</td><td class="mono">21</td><td>—</td></tr>
+<tr><td class="mono">玩具应援</td><td class="mono">14</td><td>—</td></tr>
+<tr><td class="mono">附魔</td><td class="mono">16</td><td>—</td></tr>
+<tr><td class="mono">输出</td><td class="mono">30</td><td>—</td></tr>
+</table>
+<h3>桥矩阵(轴×轴交集物品数)</h3>
+<table><tr><th>×</th><th class="mono">Tempo</th><th class="mono">龙族</th><th class="mono">乐器</th><th class="mono">灼烧</th><th class="mono">玩具应援</th><th class="mono">附魔</th><th class="mono">输出</th></tr>
+<tr><td class="mono">Tempo</td>
+<td class="mono">·</td>
+<td class="mono">2</td>
+<td class="mono">4</td>
+<td class="mono">2</td>
+<td class="mono">8</td>
+<td class="mono">2</td>
+<td class="mono">7</td>
+</tr>
+<tr><td class="mono">龙族</td>
+<td class="mono">2</td>
+<td class="mono">·</td>
+<td class="mono">2</td>
+<td class="mono">9</td>
+<td class="mono">2</td>
+<td class="mono">0</td>
+<td class="mono">4</td>
+</tr>
+<tr><td class="mono">乐器</td>
+<td class="mono">4</td>
+<td class="mono">2</td>
+<td class="mono">·</td>
+<td class="mono">2</td>
+<td class="mono">0</td>
+<td class="mono">0</td>
+<td class="mono" class="good">13</td>
+</tr>
+<tr><td class="mono">灼烧</td>
+<td class="mono">2</td>
+<td class="mono">9</td>
+<td class="mono">2</td>
+<td class="mono">·</td>
+<td class="mono">3</td>
+<td class="mono">1</td>
+<td class="mono">1</td>
+</tr>
+<tr><td class="mono">玩具应援</td>
+<td class="mono">8</td>
+<td class="mono">2</td>
+<td class="mono">0</td>
+<td class="mono">3</td>
+<td class="mono">·</td>
+<td class="mono">1</td>
+<td class="mono">3</td>
+</tr>
+<tr><td class="mono">附魔</td>
+<td class="mono">2</td>
+<td class="mono">0</td>
+<td class="mono">0</td>
+<td class="mono">1</td>
+<td class="mono">1</td>
+<td class="mono">·</td>
+<td class="mono">1</td>
+</tr>
+<tr><td class="mono">输出</td>
+<td class="mono">7</td>
+<td class="mono">4</td>
+<td class="mono" class="good">13</td>
+<td class="mono">1</td>
+<td class="mono">3</td>
+<td class="mono">1</td>
+<td class="mono">·</td>
+</tr>
+</table>
+<h3>最密桥(Top 5)</h3><table><tr><th>桥</th><th>件数</th><th>代表物品</th></tr>
+<tr><td class="mono">乐器 × 输出</td><td class="mono">13</td><td>Bass, Bongos, Cymbal, Flute</td></tr>
+<tr><td class="mono">灼烧 × 龙族</td><td class="mono">9</td><td>Dragon Lighter, Dragon's Breath Mints, Dragonheart Pendant, Scaled Jacket</td></tr>
+<tr><td class="mono">Tempo × 玩具应援</td><td class="mono">8</td><td>Chronos Chibi, Cobweb Chibi, Quixel Chibi, Shelby Chibi</td></tr>
+<tr><td class="mono">Tempo × 输出</td><td class="mono">7</td><td>Boom Mic, Straight Edge</td></tr>
+<tr><td class="mono">Tempo × 乐器</td><td class="mono">4</td><td></td></tr>
+</table>
+<h3>桥的形式(标签桥 / 文本桥 / 双重桥)</h3>
+<table><tr><th>形式</th><th>件数</th><th>代表</th></tr>
+<tr><td>标签桥</td><td class="mono">0</td><td></td></tr>
+<tr><td>文本桥</td><td class="mono">44</td><td>Aila Chibi, Arcade Machine, B Note, Bass, Bongos</td></tr>
+<tr><td>双重桥</td><td class="mono">0</td><td></td></tr>
+</table>
+<h3>桥的 tier 分布</h3><table><tr><th>tier</th><th>桥数</th></tr>
+<tr><td>Bronze</td><td class="mono">24</td></tr>
+<tr><td>Silver</td><td class="mono">14</td></tr>
+<tr><td>Gold</td><td class="mono">6</td></tr>
+</table>
+<h3>空位审计(桥 = 0 的轴对)</h3>
+<ul><li class="bad">乐器 × 玩具应援</li><li class="bad">乐器 × 附魔</li><li class="bad">附魔 × 龙族</li></ul>
+<h3>闭环示例(代表构筑链)</h3><div class="flow">Tempo 获得(Black Lipstick 开局 +4) → Tempo×输出(Guzheng 每 Tempo 伤+盾) → 龙族×暴击(Visor 刷龙触发 / Patch 暴击解全板) → 玩具×Tempo(Chibi 邻位 Toy +1 Tempo) → 附魔×Tempo(Lightstick 花 Tempo 附魔):Tempo 是资金流,乐队全员(Dragon/Instrument/Chibi)各自向它存取。</div>
+</div>
+<h2>4. 两段式审计(条件制造 → 兑现)</h2>
+<div class="card">
+<table>
+<tr><th>层</th><th>设计职责</th><th>代表件</th><th>tier 观察</th></tr>
+<tr><td><strong>入口层</strong>(制造条件/供给)</td><td>Tempo 获得、龙族/玩具触发</td><td>Black Lipstick / Confetti Cannon / Chibi 三兄弟</td><td>B/S 为主</td></tr>
+<tr><td><strong>兑现层</strong>(消费条件)</td><td>按 Tempo 累积、龙族滚雪球、附魔</td><td>Backup Dancer / Arcade Machine / Dragon Statue / Superfan</td><td>B/S 为主</td></tr>
+<tr><td><strong>封顶层</strong>(条件 → 乘区)</td><td>Tempo 大乘区(Guzheng)、附魔引擎(Lightstick)</td><td>Guzheng / Lightstick / Fingerless Gloves</td><td>G 集中(无 Diamond)</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:The Dragons 的两段式是「存取式」:Tempo 获得件存款,累积/消费件取款并放大——全游唯一「可主动消费的资源条」让节奏自主(对比 Karnok Rage 的自动触发)。Tempo 是 The Dragons 的最小语法单位,Small 64% 的小件化支持「高频存取」(见 §6)。</div>
+</div>
+<h2>5. 强度阶梯(高 tier = 高强度?)</h2>
+<div class="card">
+<h3>5.1 Gold(19)与 Diamond(0)</h3>
+<table>
+<tr><th>件</th><th>tier</th><th>size</th><th>强度认定</th></tr>
+<tr><td>Amp</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Haste adjacent items 3 second(s) ♫ 4 : Double the damage of the item to the right Haste adjacent items 3 secon</td></tr>
+<tr><td>Blades</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>♫ 1 : Haste 2 item(s) 1 second(s) When you Haste, deal 25 Damage ♫ 1 : Haste 2 item(s) 12 second(s) When you H</td></tr>
+<tr><td>Bomber Jacket</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Shield 100 Adjacent Dragons have +1 Multicast shield 100200 Adjacent Dragons have +1 Multicast</td></tr>
+<tr><td>Death Metal Drum Kit</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 100 Damage Burn equal to 10% of this item's Damage When you use this, spend ♫ 4 to use it again Deal 1001</td></tr>
+<tr><td>Equipment Van</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Burn 5 and Shield 25 for each type this has This has the Types of items you have in your stash At the start of</td></tr>
+<tr><td>Fingerless Gloves</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>When you spend Tempo, reduce the cooldowns of adjacent items by 1% When you spend Tempo, reduce the cooldowns </td></tr>
+<tr><td>Green Screen</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Transform into an Enchanted copy of the Medium item to the left Transform into an Enchanted copy of the Medium</td></tr>
+<tr><td>Guzheng</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal 15 Damage and Shield 15 for each Tempo you have When your items Crit, gain 3 Tempo Deal 1530 Damage and s</td></tr>
+<tr><td>Hover Pad</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>2 item(s) start Flying ♫ 3 : Charge your other Flying items 1 second(s) 23 item(s) start Flying ♫ 3 : Charge y</td></tr>
+<tr><td>Jammer</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Slow the fastest enemy item 2 second(s) At the start of each fight, reduce an enemy item's Charge effects by 0</td></tr>
+<tr><td>Lightstick</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Enchant a non-Enchanted item Gain 1 Tempo for each Enchanted item you have Enchant a non-Enchanted item Gain 1</td></tr>
+<tr><td>Multimeter</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Adjacent items have +15% Crit Chance When you Crit with an adjacent item, Charge your other Tech and Instrumen</td></tr>
+<tr><td>Razor Bow</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>The item to the left gains +10% Crit Chance When you Crit, Deal 40 Damage The item to the left gains +1020% Cr</td></tr>
+<tr><td>Rings</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Gain 1 Tempo If you have another item with Burn, Slow, Shield, or Haste, this has +1 Multicast for each Gain 1</td></tr>
+<tr><td>Scaled Jacket</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Shield 100 When you use an adjacent Flying or Dragon item, Burn equal to 20% of this item's Shield shield 1002</td></tr>
+<tr><td>Spray Can</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Enchant the item to the right When you buy this, Enchant it Enchant the item to the right When you buy this, E</td></tr>
+<tr><td>Strobe Grenade</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Haste ALL items 1 second(s) When you Haste an item with this, gain 1 Tempo Haste ALL items 1 second(s) When yo</td></tr>
+<tr><td>Whistling Glaive</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Spend All Tempo: Deal 100 Damage for each Tempo spent When this becomes Frozen or Slowed, spend 1 Tempo and re</td></tr>
+<tr><td>Wig Closet</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you buy this, this gains 3 random Types Charge your other Enchanted items or items from other heroes 1 se</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——The Dragons 无 Diamond,Gold 19 件全是「乐队大件」(Death Metal Drum Kit / Amp / Equipment Van / Guzheng / Lightstick)。三层 B/S/G 结构 + Small 64% 让后期成长依赖「升级与附魔」而非大件——与 Karnok/Stelle 的「无 Diamond pivot 型」同构但更极端。</div>
+</div>
+<h2>5.5 典型构筑(社区攻略)</h2>
+<div class="card">
+<h3>Burn / Flame Skirt 慢转灼烧 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/the-dragons-burn">Mobalytics</a> 2026-08-14 · <span class="badge t-diamond">最新构筑</span></span></h3>
+<div class="lead">把海量 Slow 触发转成灼烧——Flame Skirt 是核心输出转化器;ISO-Belle 低冷却多目标慢,Tuba 中件大范围慢(需解决 Tempo 供给),Black Lipstick 开局 +4 Tempo 启动。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>ISO-Belle</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>At the start of each fight, this starts Flying Slow 1 item(s) 1 second(s)</td><td class="mono">—</td></tr>
+<tr><td>Flame Skirt</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Haste adjacent items 1 second(s) When an adjacent item Slows, Burn 5</td><td class="mono">灼烧</td></tr>
+<tr><td>Tuba</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Slow 2 item(s) 2 second(s)  2 : Slow 2 items 2 second(s)  4 : Slow 2 items 2 second(s)</td><td class="mono">乐器</td></tr>
+<tr><td>Wings</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Haste your other Flying items 1 second(s) Adjacent items start Flying When you use a Flying item, Heal 20</td><td class="mono">龙族</td></tr>
+<tr><td>Hot Pants</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Shield 30 When you Crit, Burn equal to 25% of this item's Shield When you Haste this, your items gain 3</td><td class="mono">灼烧</td></tr>
+<tr><td>Black Lipstick</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>At the start of each fight, gain 4 Tempo.</td><td class="mono">Tempo</td></tr>
+<tr><td>Cobweb Chibi</td><td><span class="badge t-silver">Silver</span> / Small</td><td>Slow 1 item(s) 2 second(s) When you use an adjacent Toy, gain 1 Tempo</td><td class="mono">Tempo×玩具应援</td></tr>
+</table>
+<div class="note">不需要特定技能——适配性最高;Notes(英雄技能位)半随机放置,位置依旧敏感;优先升级 ISO-Belle 增加慢目标数。</div>
+</div>
+<div class="card">
+<h3>Dragon / Superfan 龙族滚雪球 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/the-dragons-dragon">Mobalytics</a> 2026-08-14 · <span class="badge t-gold">快触发成长型</span></span></h3>
+<div class="lead">利用快触发把数值滚到荒谬高度——Visor 刷龙触发、Event Poster 充能开门(解锁非龙件)、Dragon Statue 近无限回复、Superfan 是数值解决后的主 win 条件、Patch 借 Statue 触发解全板暴击。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Bandana</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Shield 20 When you Crit, reduce this item's cooldown by 1 second</td><td class="mono">—</td></tr>
+<tr><td>Event Poster</td><td><span class="badge t-silver">Silver</span> / Small</td><td>Charge 1 other Dragon(s) 1 second Adjacent items are Dragons</td><td class="mono">龙族</td></tr>
+<tr><td>Visor</td><td><span class="badge t-silver">Silver</span> / Small</td><td>Gain 1 Tempo When you Shield or Heal, Charge this 1 second</td><td class="mono">Tempo</td></tr>
+<tr><td>Dragon Statue</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>When you use an adjacent item, Heal 10 When an enemy would destroy your items, this is destroyed instead</td><td class="mono">龙族</td></tr>
+<tr><td>Superfan</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Deal 10 Damage Shield 10 This has +1 Multicast for each Dragon item you have</td><td class="mono">龙族×输出</td></tr>
+<tr><td>Maracas</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Charge the item to the left 1 second When you use the item to the left, deal 5 damage</td><td class="mono">乐器×输出</td></tr>
+<tr><td>Patch</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Heal 30 When you Heal or Slow, an item gains 3% Crit Chance</td><td class="mono">龙族</td></tr>
+</table>
+<div class="note">Bandana 只有配 Event Poster 才值得用;Maracas 是副输出兼 Superfan 充能源。</div>
+</div>
+<div class="note">来源:Mobalytics(2026-08-14,最新);物品效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59);轴映射按 §3.6 谓词自动计算。Notes 英雄技能位半随机放置,构筑位置敏感。</div>
+<h2>6. 与 StS2 / OneDeck 的映射</h2>
+<div class="card">
+<h3>6.1 与 StS2 的结构异同</h3>
+<table><tr><th>维度</th><th>StS2(五角色)</th><th>Bazaar(The Dragons)</th><th>差异判定</th></tr>
+<tr><td>入口层</td><td>Common 无能力卡,即打即用</td><td>Bronze 小件乐队成员</td><td>同工:入口=制造条件</td></tr>
+<tr><td>兑现层</td><td>Uncommon 桥层</td><td>Silver 龙族/Tempo 件密集</td><td>同工:桥在中间 tier</td></tr>
+<tr><td>封顶</td><td>Rare 大数字/引擎</td><td>Gold 乐队大件(乐器/引擎)</td><td>同工:高 tier 承载引擎</td></tr>
+<tr><td>资源经济</td><td>垃圾经济学四形态</td><td>Tempo 存取式资源(可主动消费)</td><td>同类且独有——「可消费资源条」是全游唯一</td></tr>
+<tr><td>运行</td><td>回合制/能量</td><td>实时秒表/冷却/空间</td><td>差异最大</td></tr>
+</table>
+<h3>6.2 OneDeck 落点(初筛)</h3>
+<table><tr><th>Bazaar 观察</th><th>OneDeck 可借鉴</th><th>不可搬</th></tr>
+<tr><td>Tempo 可消费资源条</td><td><b>OneDeck 的 Mana 状态已是「可消费资源」雏形</b>——Tempo 的「累积乘区 + 消费减冷却」双出口设计可对照 Mana 的扩展方向</td><td>秒表冷却消费不映射轮次制</td></tr>
+<tr><td>Chibi 邻位互触发族</td><td>OneDeck 无相邻概念——同型「家族卡」可用「同 tag 计数」表达</td><td>位形语法不搬</td></tr>
+<tr><td>附魔系统(全系列最高密度)</td><td>OneDeck 的「增强诅咒」是敌方侧附魔雏形——可对照附魔的「物品改造」广度</td><td>附魔作为商店系统不搬</td></tr>
+<tr><td>Small 64% 小件化</td><td>OneDeck 卡无尺寸概念(12 卡位已限空间)——对照意义有限</td><td>尺寸经济不搬</td></tr>
+</table>
+</div>
+<h2>7. 关键卡清单</h2>
+<div class="card"><table>
+<tr><th>轴</th><th>物品</th><th>tier</th><th>size</th><th>cd/弹药</th><th>effects 摘要</th></tr>
+<tr><td>Tempo</td><td>Black Lipstick</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">—</td><td>At the start of each fight, gain 4 Tempo. At the start of each fight, gain 46810 Tempo.</td></tr>
+<tr><td>Tempo</td><td>Confetti Cannon</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">5 / 1发</td><td>Burn 5 Gain 1 Tempo for each Toy or Burn item you have Burn 5101520 Gain 1 Tempo for each Toy or Burn item you have</td></tr>
+<tr><td>Tempo</td><td>Backup Dancer</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">3</td><td>Heal 5 for each Tempo you have Shield 5 for each Tempo you have Heal 51015 for each Tempo you have shield 51015 for each Tempo you</td></tr>
+<tr><td>Tempo</td><td>Arcade Machine</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">5</td><td>Deal 25 Damage For each 10 Tempo you gain, this has +1 Multicast Deal 2550100200 Damage For each 10 Tempo you gain, this has +1 Mu</td></tr>
+<tr><td>Tempo</td><td>Fingerless Gloves</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Small</td><td class="mono">—</td><td>When you spend Tempo, reduce the cooldowns of adjacent items by 1% When you spend Tempo, reduce the cooldowns of adjacent items by</td></tr>
+<tr><td>Tempo</td><td>Guzheng</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">4</td><td>Deal 15 Damage and Shield 15 for each Tempo you have When your items Crit, gain 3 Tempo Deal 1530 Damage and shield 1530 for each </td></tr>
+<tr><td>龙族</td><td>Dragon Statue</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Small</td><td class="mono">—</td><td>When you use an adjacent item, Heal 10 When an enemy would destroy your items, this is destroyed instead When you use an adjacent </td></tr>
+<tr><td>龙族</td><td>Superfan</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Deal 10 Damage Shield 10 This has +1 Multicast for each Dragon item you have Deal 102040 Damage shield 102040 This has +1 Multicas</td></tr>
+<tr><td>龙族</td><td>Visor</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">4</td><td>Gain 1 Tempo When you Shield or Heal, Charge this 1 second Gain 123 Tempo When you shield or Heal, Charge this 1 second</td></tr>
+<tr><td>龙族</td><td>Event Poster</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">4</td><td>Charge 1 other Dragon(s) 1 second Adjacent items are Dragons Charge 123 other Dragon(s) 1 second Adjacent items are Dragons</td></tr>
+<tr><td>龙族</td><td>Patch</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Small</td><td class="mono">5</td><td>Heal 30 When you Heal or Slow, an item gains 3% Crit Chance Heal 3060120240 When you Heal or Slow, an item gains 36912% Crit Chanc</td></tr>
+<tr><td>应援</td><td>Chronos Chibi</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">4</td><td>Haste 1 item(s) 2 second(s) When you use an adjacent Toy, gain 1 Tempo Haste 123 item(s) 2 second(s) When you use an adjacent Toy,</td></tr>
+<tr><td>应援</td><td>Cobweb Chibi</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">4</td><td>Slow 1 item(s) 2 second(s) When you use an adjacent Toy, gain 1 Tempo Slow 123 item(s) 2 second(s) When you use an adjacent Toy, g</td></tr>
+<tr><td>应援</td><td>Quixel Chibi</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">4</td><td>Charge another Small item 1 second(s) When you use an adjacent Toy, gain 1 Tempo Charge another Small item 123 second(s) When you </td></tr>
+<tr><td>灼烧</td><td>Flame Skirt</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">5</td><td>Haste adjacent items 1 second(s) When an adjacent item Slows, Burn 5 Haste adjacent items 123 second(s) When an adjacent item Slow</td></tr>
+<tr><td>灼烧</td><td>ISO-Belle</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Small</td><td class="mono">4</td><td>At the start of each fight, this starts Flying Slow 1 item(s) 1 second(s) At the start of each fight, this starts Flying Slow 1234</td></tr>
+<tr><td>附魔</td><td>Lightstick</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Small</td><td class="mono">3 / 2发</td><td>Enchant a non-Enchanted item Gain 1 Tempo for each Enchanted item you have Enchant a non-Enchanted item Gain 12 Tempo for each Enc</td></tr>
+<tr><td>附魔</td><td>G Note</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">—</td><td>When you sell this, get a G Note if able Then get an Enchanted small Tempo item from any Hero When you sell this, get a G Note if </td></tr>
+<tr><td>乐器</td><td>Tuba</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Slow 2 item(s) 2 second(s) ♫ 2 : Slow 2 items 2 second(s) ♫ 4 : Slow 2 items 2 second(s) Slow 2 item(s) 2 second(s) ♫ 2 : Slow 2 i</td></tr>
+<tr><td>乐器</td><td>Amp</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Haste adjacent items 3 second(s) ♫ 4 : Double the damage of the item to the right Haste adjacent items 3 second(s) ♫ 4 : Double th</td></tr>
+</table></div>
+</table></div>
+</table></div>
+</table></div>
+</table></div>
+<h2>8. 文档元信息</h2>
+<div class="card">
+<table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>数据快照</td><td class="mono">2026-08-31 mobalytics.gg TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59),全池 1207 件提取 The Dragons 专属 107</td></tr>
+<tr><td>归属规则</td><td>heroes[] 含 The Dragons 且非模板占位(description 含 Template 的 1 件已滤)</td></tr>
+<tr><td>字段说明</td><td>tierStats 为四级数值;cooldown/ammo/critchance/multicast 底层字段化;descriptions 含配色模板标记已清洗</td></tr>
+<tr><td>已知缺口</td><td>附魔(enchantments)已随 Mobalytics 全量收录,综合文档定量</td></tr>
+<tr><td>本系列</td><td>Vanessa / Dooley / Mak / Karnok / Jules / Stelle / The Dragons / 公共池 / 技能池 / 综合(逐个完成即停,step-gate)</td></tr>
+</table>
+<div class="note">计数口径:机制词按 tags + descriptions 关键词匹配,多标签重复计入;tier/size 按 Mobalytics 字段原值。</div>
+</div>
+</body></html>

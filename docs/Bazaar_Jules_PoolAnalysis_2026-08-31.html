@@ -1,0 +1,481 @@
+<html><head><meta charset="utf-8"><title>The Bazaar · Jules 物品池结构拆解</title><style>
+:root {
+--bg: #14161c; --card: #1d2129; --card2: #232834; --text: #c8ccd4; --dim: #8b93a3;
+--accent: #7aa2f7; --warn: #e0af68; --good: #9ece6a; --bad: #f7768e; --line: #2e3442;
+--purple: #bb9af7; --cyan: #7dcfff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+background: var(--bg); color: var(--text);
+font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+line-height: 1.6; padding: 24px; max-width: 1380px; margin: 0 auto;
+}
+h1 { font-size: 1.5rem; margin-bottom: 4px; color: #e6e9ef; }
+h2 { font-size: 1.12rem; margin: 30px 0 12px; color: #e6e9ef; border-left: 3px solid var(--accent); padding-left: 10px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; color: #dfe3ea; }
+h4 { font-size: 0.92rem; margin: 14px 0 6px; color: #dfe3ea; }
+.sub { color: var(--dim); font-size: 0.85rem; margin-bottom: 20px; }
+.kpis { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; flex: 1 1 170px; }
+.kpi .num { font-size: 1.5rem; font-weight: 700; font-family: Consolas, monospace; color: #e6e9ef; }
+.kpi .lbl { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; background: var(--card2); position: sticky; top: 0; text-align: left; white-space: nowrap; }
+.mono { font-family: Consolas, monospace; }
+.note { font-size: 0.8rem; color: var(--dim); margin-top: 10px; }
+.badge { display: inline-block; font-size: 0.7rem; padding: 1px 8px; border-radius: 10px; border: 1px solid; margin: 0 2px 2px 0; white-space: nowrap; }
+.t-bronze { color: #c98a5e; border-color: #c98a5e88; }
+.t-silver { color: #aeb5c2; border-color: #aeb5c288; }
+.t-gold { color: #e0af68; border-color: #e0af6888; }
+.t-diamond { color: #7dcfff; border-color: #7dcfff88; }
+.b-weap { color: #f7768e; border-color: #f7768e88; }
+.b-tool { color: #e0af68; border-color: #e0af6888; }
+.b-props { color: #bb9af7; border-color: #bb9af788; }
+.b-aqua { color: #7dcfff; border-color: #7dcfff88; }
+.b-friend { color: #9ece6a; border-color: #9ece6a88; }
+.b-veh { color: #ff9e64; border-color: #ff9e6488; }
+.star { color: #e0af68; font-weight: 700; }
+ul, ol { margin: 6px 0 6px 22px; font-size: 0.88rem; }
+li { margin: 3px 0; }
+.lead { font-size: 0.92rem; margin: 8px 0; }
+.dim { color: var(--dim); }
+.warn { color: var(--warn); }
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+.purple { color: var(--purple); }
+.cyan { color: var(--cyan); }
+.verdict { border-left: 3px solid var(--warn); padding: 10px 14px; margin: 10px 0; background: #1a1e27; font-size: 0.88rem; }
+.flow { background: #1a1e27; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.88rem; color: #dfe3ea; }
+@media print { body { background: #fff; color: #222; } .card { border-color: #ccc; } }
+</style></head><body>
+<h1>The Bazaar · Jules 物品池结构拆解</h1>
+<div class="sub">2026-08-31 · 数据源:<a href="https://mobalytics.gg/the-bazaar/jules-items">mobalytics.gg</a> TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59,快照 2026-08-31)· 全池 1207 物品中 Jules 专属 120 件(已过滤 1 件模板占位)· 物品英文为准 · 同系列:Vanessa / Pygmalien / Dooley / Mak / Karnok / Stelle / The Dragons / 公共池 / 技能池 / 综合</div>
+<div class="kpis">
+<div class="kpi"><div class="num">120</div><div class="lbl">物品池总数(120 件)</div></div>
+<div class="kpi"><div class="num">49/44/25/2</div><div class="lbl">tier 分布 B/S/G/D(+0 Legendary)</div></div>
+<div class="kpi"><div class="num">58</div><div class="lbl">Food 相关(48%)—— 身份关键词</div></div>
+<div class="kpi"><div class="num">36/21</div><div class="lbl">Heated 36 / Chilled 21 —— 双态语汇</div></div>
+<div class="kpi"><div class="num">2+3</div><div class="lbl">主轴:食材×厨具 双态厨房引擎 + 灼烧 / 回复 / 冻结</div></div>
+<div class="kpi"><div class="num">13</div><div class="lbl">无冷却被动件(11%)</div></div>
+</div>
+<h2>0. 英雄骨架</h2>
+<div class="card">
+<div class="lead"><strong>定位</strong>:全游「厨师」英雄——核心机制为「Stove/Cooler 双态厨房引擎」:英雄技能提供 Stove(加热槽)与 Cooler(冷冻槽)位,槽内物品获得 Heated/Chilled 状态并解锁第二效果;食材(Food 58,48%)与厨具(Tool 55)构成「备料→烹饪→出餐」体系。身份轴:Food 88 + Heated 36 + Chilled 21 + Tool 63 + Regen 31 + Shield 34 + Burn 32。</div>
+<div class="lead"><strong>身份关键词(Top)</strong>:< s p a n   c l a s s = " b a d g e   b - t o o l " > F o o d   5 8 < / s p a n > < s p a n   c l a s s = " b a d g e " > H e a t e d   3 6 < / s p a n > < s p a n   c l a s s = " b a d g e   b - a q u a " > C h i l l e d   2 1 < / s p a n > < s p a n   c l a s s = " b a d g e   b - t o o l " > T o o l   5 5 < / s p a n > < s p a n   c l a s s = " b a d g e " > R e g e n   3 1 < / s p a n > < s p a n   c l a s s = " b a d g e " > B u r n   3 2 < / s p a n ></div>
+<div class="lead"><strong>资源轴速览</strong>:Heated/Chilled = 双态条件(攻略确认槽位随机布置,「positioning extremely contextual」);Stove/Cooler = 英雄技能槽位;Grill / Oven / Dishwasher / Freezer = 加热/冷冻源;Regen + Shield = 食物的防御回复底盘;Burn = 灼烧副轴(Rice / Scorchpepper / Hot Sauce);Quest(巨型棒棒糖等)= 长线任务件。Jules 的语法 =「烹饪」——食材进槽,加热出效果。</div>
+</div>
+<h2>1. 池组成总览</h2>
+<div class="card">
+<h3>1.1 tier × size</h3>
+<table>
+<tr><th>Tier</th><th>数量</th><th>占比</th><th>Small</th><th>Medium</th><th>Large</th><th>定位</th></tr>
+<tr><td><span class="badge t-bronze">Bronze</span></td><td class="mono">49</td><td class="mono">41%</td><td class="mono">29</td><td class="mono">20</td><td class="mono">0</td><td>入门密度层——食材/厨具为主,教学层</td></tr>
+<tr><td><span class="badge t-silver">Silver</span></td><td class="mono">44</td><td class="mono">37%</td><td class="mono">17</td><td class="mono">21</td><td class="mono">6</td><td>主力层——厨具链与双态件密集</td></tr>
+<tr><td><span class="badge t-gold">Gold</span></td><td class="mono">25</td><td class="mono">21%</td><td class="mono">6</td><td class="mono">7</td><td class="mono">12</td><td>强度层——厨房引擎与 win 条件</td></tr>
+<tr><td><span class="badge t-diamond">Diamond</span></td><td class="mono">2</td><td class="mono">2%</td><td class="mono">0</td><td class="mono">0</td><td class="mono">2</td><td>封顶件层(Oven / Pantry)</td></tr>
+</table></div>
+<div class="card">
+<h3>1.2 类型标签分布(多标签重复计入,基数 120)</h3>
+<table>
+<tr><th>类型</th><th>数量</th><th>占比</th><th>代表件</th></tr>
+<tr><td><span class="badge t-silver">Food</span></td><td class="mono">58</td><td class="mono">48%</td><td>Rice / Scorchpepper / Gingerbread House</td></tr>
+<tr><td><span class="badge b-tool">Tool</span></td><td class="mono">55</td><td class="mono">46%</td><td>Grill / Oven / Dishwasher / Freezer</td></tr>
+<tr><td><span class="badge b-weap">Weapon</span></td><td class="mono">27</td><td class="mono">22%</td><td>Cleaver / Chopsticks / Pizza Cutter</td></tr>
+<tr><td><span class="badge b-props">Property</span></td><td class="mono">8</td><td class="mono">7%</td><td>Farmer's Market / Pantry / Veggie Garden</td></tr>
+<tr><td><span class="badge t-silver">Apparel</span></td><td class="mono">3</td><td class="mono">2%</td><td>Oven Mitts / Apron</td></tr>
+<tr><td><span class="badge b-veh">Vehicle</span></td><td class="mono">3</td><td class="mono">2%</td><td>Froyo Cart</td></tr>
+<tr><td><span class="badge b-friend">Friend</span></td><td class="mono">1</td><td class="mono">1%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Relic</span></td><td class="mono">0</td><td class="mono">0%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Aquatic</span></td><td class="mono">2</td><td class="mono">2%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Dragon</span></td><td class="mono">0</td><td class="mono">0%</td><td>Dragon Steak / Dragonmelon</td></tr>
+<tr><td><span class="badge t-silver">Trap</span></td><td class="mono">1</td><td class="mono">1%</td><td>—</td></tr>
+<tr><td><span class="badge t-silver">Toy</span></td><td class="mono">2</td><td class="mono">2%</td><td>—</td></tr>
+</table>
+<div class="note">本表取 tags 严格标签。Food 58(48%)+ Tool 55(46%) 是两大构成块——食材与厨具各占半壁;Weapon 27 是「厨刀」输出件;Dragon 标签是龙食材彩蛋。多标签物品重复计入各标签。</div>
+</div>
+<div class="card">
+<h3>1.3 节奏结构(冷却分布,base tier 口径)</h3>
+<table>
+<tr><th>冷却带</th><th>数量</th><th>占比</th><th>说明</th></tr>
+<tr><td>Passive(无冷却/触发式)</td><td class="mono">13</td><td class="mono">11%</td><td>—</td></tr>
+<tr><td>≤3s</td><td class="mono">10</td><td class="mono">8%</td><td>—</td></tr>
+<tr><td>4-6s</td><td class="mono">72</td><td class="mono">60%</td><td>—</td></tr>
+<tr><td>7-9s</td><td class="mono">23</td><td class="mono">19%</td><td>—</td></tr>
+<tr><td>10s+</td><td class="mono">2</td><td class="mono">2%</td><td>—</td></tr>
+<tr><td>多值(升级线,不同 tier 冷却不同)</td><td class="mono">28</td><td class="mono">23%</td><td>随等级渐快——升级即加速</td></tr>
+</table>
+<div class="note">Jules 节奏由「槽位→状态→触发」驱动:Heated 4 秒等窗口期使食物第二效果生效,厨具(Microwave / Egg Timer / Rice Cooker)负责充能与加速。双态引擎的节奏感接近「烹饪计时」——窗口内打完伤害。</div>
+</div>
+<h2>2. 术语与分级结构</h2>
+<div class="card">
+<h3>2.1 机制词分布</h3>
+<table><tr><th>机制词</th><th>件数</th><th>性质</th></tr>
+<tr><td class="mono">Food</td><td class="mono">58</td><td>—</td></tr>
+<tr><td class="mono">Tool</td><td class="mono">55</td><td>—</td></tr>
+<tr><td class="mono">Heated</td><td class="mono">36</td><td>—</td></tr>
+<tr><td class="mono">Chilled</td><td class="mono">21</td><td>—</td></tr>
+<tr><td class="mono">Regen</td><td class="mono">31</td><td>—</td></tr>
+<tr><td class="mono">Shield</td><td class="mono">34</td><td>—</td></tr>
+<tr><td class="mono">Burn</td><td class="mono">32</td><td>—</td></tr>
+<tr><td class="mono">Weapon</td><td class="mono">27</td><td>—</td></tr>
+<tr><td class="mono">Charge</td><td class="mono">31</td><td>—</td></tr>
+<tr><td class="mono">Haste</td><td class="mono">20</td><td>—</td></tr>
+<tr><td class="mono">Freeze</td><td class="mono">11</td><td>—</td></tr>
+<tr><td class="mono">Crit</td><td class="mono">20</td><td>—</td></tr>
+<tr><td class="mono">Slow</td><td class="mono">12</td><td>—</td></tr>
+<tr><td class="mono">Multicast</td><td class="mono">14</td><td>—</td></tr>
+<tr><td class="mono">Quest</td><td class="mono">5</td><td>—</td></tr>
+<tr><td class="mono">Destroy</td><td class="mono">2</td><td>—</td></tr>
+<tr><td class="mono">Heal</td><td class="mono">8</td><td>—</td></tr>
+<tr><td class="mono">Property</td><td class="mono">8</td><td>—</td></tr>
+<tr><td class="mono">Poison</td><td class="mono">0</td><td>—</td></tr>
+<tr><td class="mono">Apparel</td><td class="mono">3</td><td>—</td></tr>
+</table>
+<div class="note">词表为 tags + descriptions 关键词匹配(多标签重复计入)。Heated(36)+ Chilled(21)是 Jules 的引擎语汇——「双态」贯穿全池;Regen 31 全系列最高密度,是食物体系的防御底盘。</div>
+</div>
+<div class="card">
+<h3>2.2 触发句式</h3>
+<table><tr><th>句式</th><th>件数</th><th>代表</th><th>设计含义</th></tr>
+<tr><td>When you use a Food</td><td class="mono">7</td><td>—</td><td>—</td></tr>
+<tr><td>Heated</td><td class="mono">36</td><td>—</td><td>—</td></tr>
+<tr><td>When you use another Tool</td><td class="mono">1</td><td>—</td><td>—</td></tr>
+<tr><td>When you use an adjacent</td><td class="mono">10</td><td>—</td><td>—</td></tr>
+<tr><td>At the start of each fight</td><td class="mono">0</td><td>—</td><td>—</td></tr>
+<tr><td>When you Slow</td><td class="mono">6</td><td>—</td><td>—</td></tr>
+</table></div>
+<h2>3. 构筑轴识别</h2>
+<div class="card">
+<h3>3.1 食材×厨具双态引擎轴(身份轴)</h3>
+<div class="flow">食材(Food 58)进 Stove/Cooler 槽 → Heated/Chilled 双态解锁第二效果 → 厨具链(Grill 加热+灼烧 / Oven 全体加热 / Microwave 全体 Haste / Egg Timer 充能) → 出餐(Rice 灼烧回复 / Cheese Wheel 巨盾)</div>
+<div class="lead"><strong>入口</strong>:食材本身(Banu Leaves 用食物自充 / Scorchpepper 加热左件)。<strong>兑现</strong>:双态效果(Blueberry Pie 加热后灼烧、Burrito 加热 +20% 暴击)。<strong>封顶</strong>:Oven(Diamond,全体食物 Heated 4 秒 + Heated 件 +1 Multicast)、Dishwasher(Gold,Heat 工具武器 + Heated 件 +50% 伤)。</div>
+<div class="lead"><strong>攻略注</strong>:Stove/Cooler 槽位随机布置——positioning extremely contextual,构筑的位置敏感度全系列最高。</div>
+</div>
+<div class="card">
+<h3>3.2 回复/护盾轴(食物底盘)</h3>
+<div class="flow">Regen 31 + Shield 34 → Basket(护盾转回复,核心件)→ Trail Mix(任务件)/ Cheese Wheel / Gingerbread House → Farmer's Market(地产,Regen 按最大生命加成)</div>
+<div class="lead"><strong>特征</strong>:Regen 密度全系列最高——食物天然带回复,「防守反打」是 Jules 的默认节奏;Kripp Regen 构筑以 Basket 为 heart and soul。</div>
+</div>
+<div class="card">
+<h3>3.3 灼烧副轴</h3>
+<div class="flow">Rice(灼烧+回复双成长)→ Scorchpepper(加热触发)/ Hot Sauce / Black Pepper → Grill(用食物→灼烧,Heated 食物永久 +2)→ Skillet</div>
+<div class="lead"><strong>特征</strong>:灼烧与双态深度绑定——加热源(Grill)既是状态引擎又是灼烧引擎,Kripp Burn 构筑是 Jules 最 consistent 的原型。</div>
+</div>
+<div class="card">
+<h3>3.4 冻结/控制轴(小轴)</h3>
+<div class="lead"><strong>特征</strong>:Chilled 21 + Freeze 11 —— Freezer(冷冻转伤 win 条件)/ Blender / Snowstorm(技能);Kripp Freeze 构筑定位为 pivot 选项而非从头构筑。</div>
+</div>
+<div class="card">
+<h3>3.5 轴矩阵总结</h3>
+<table>
+<tr><th>轴</th><th>件数</th><th>tier 分布</th><th>入口/兑现/封顶</th><th>密度评价</th></tr>
+<tr><td>食材×厨具</td><td class="mono">113</td><td>B50/S40/G22/D1+0L</td><td>食材进槽 → 双态效果 → 厨具放大</td><td class="good">厚,身份轴</td></tr>
+<tr><td>加热态</td><td class="mono">36</td><td>B13/S13/G9/D1+0L</td><td>Heated 第二效果</td><td class="good">厚,引擎语汇</td></tr>
+<tr><td>冷冻态</td><td class="mono">22</td><td>B7/S7/G8/D0+0L</td><td>Chilled/冻结控制</td><td class="warn">中</td></tr>
+<tr><td>回复</td><td class="mono">56</td><td>B28/S17/G11/D0+0L</td><td>Regen/盾底盘</td><td class="good">厚,全系列最高 Regen 密度</td></tr>
+<tr><td>灼烧</td><td class="mono">32</td><td>B14/S11/G7/D0+0L</td><td>状态副轴</td><td class="warn">中</td></tr>
+<tr><td>输出</td><td class="mono">32</td><td>B13/S13/G6/D0+0L</td><td>厨刀武器</td><td class="warn">中</td></tr>
+</table></div>
+<h2>3.6 轴间桥矩阵(2026-08-31 框架迭代)</h2>
+<div class="card">
+<div class="kpis" style="margin:8px 0">
+<div class="kpi"><div class="num">18</div><div class="lbl">单轴件(15%)</div></div>
+<div class="kpi"><div class="num">99</div><div class="lbl">桥(≥2 轴,82%)</div></div>
+<div class="kpi"><div class="num">48</div><div class="lbl">双轴桥</div></div>
+<div class="kpi"><div class="num">51</div><div class="lbl">三轴+桥</div></div>
+<div class="kpi"><div class="num">3</div><div class="lbl">无轴件(谓词未覆盖)</div></div>
+</div>
+<h3>轴定义(谓词,tags + 关键词)</h3>
+<table><tr><th>轴</th><th>覆盖件数</th><th>谓词口径</th></tr>
+<tr><td class="mono">食物</td><td class="mono">58</td><td>—</td></tr>
+<tr><td class="mono">厨具</td><td class="mono">55</td><td>—</td></tr>
+<tr><td class="mono">加热</td><td class="mono">36</td><td>—</td></tr>
+<tr><td class="mono">冷冻</td><td class="mono">22</td><td>—</td></tr>
+<tr><td class="mono">回复</td><td class="mono">56</td><td>—</td></tr>
+<tr><td class="mono">灼烧</td><td class="mono">32</td><td>—</td></tr>
+<tr><td class="mono">输出</td><td class="mono">32</td><td>—</td></tr>
+</table>
+<h3>桥矩阵(轴×轴交集物品数)</h3>
+<table><tr><th>×</th><th class="mono">食物</th><th class="mono">厨具</th><th class="mono">加热</th><th class="mono">冷冻</th><th class="mono">回复</th><th class="mono">灼烧</th><th class="mono">输出</th></tr>
+<tr><td class="mono">食物</td>
+<td class="mono">·</td>
+<td class="mono">4</td>
+<td class="mono" class="good">24</td>
+<td class="mono" class="good">12</td>
+<td class="mono" class="good">40</td>
+<td class="mono" class="good">24</td>
+<td class="mono">4</td>
+</tr>
+<tr><td class="mono">厨具</td>
+<td class="mono">4</td>
+<td class="mono">·</td>
+<td class="mono" class="good">13</td>
+<td class="mono">8</td>
+<td class="mono" class="good">13</td>
+<td class="mono" class="good">10</td>
+<td class="mono" class="good">28</td>
+</tr>
+<tr><td class="mono">加热</td>
+<td class="mono" class="good">24</td>
+<td class="mono" class="good">13</td>
+<td class="mono">·</td>
+<td class="mono">6</td>
+<td class="mono" class="good">22</td>
+<td class="mono" class="good">20</td>
+<td class="mono">7</td>
+</tr>
+<tr><td class="mono">冷冻</td>
+<td class="mono" class="good">12</td>
+<td class="mono">8</td>
+<td class="mono">6</td>
+<td class="mono">·</td>
+<td class="mono" class="good">13</td>
+<td class="mono">3</td>
+<td class="mono">3</td>
+</tr>
+<tr><td class="mono">回复</td>
+<td class="mono" class="good">40</td>
+<td class="mono" class="good">13</td>
+<td class="mono" class="good">22</td>
+<td class="mono" class="good">13</td>
+<td class="mono">·</td>
+<td class="mono" class="good">15</td>
+<td class="mono">8</td>
+</tr>
+<tr><td class="mono">灼烧</td>
+<td class="mono" class="good">24</td>
+<td class="mono" class="good">10</td>
+<td class="mono" class="good">20</td>
+<td class="mono">3</td>
+<td class="mono" class="good">15</td>
+<td class="mono">·</td>
+<td class="mono">2</td>
+</tr>
+<tr><td class="mono">输出</td>
+<td class="mono">4</td>
+<td class="mono" class="good">28</td>
+<td class="mono">7</td>
+<td class="mono">3</td>
+<td class="mono">8</td>
+<td class="mono">2</td>
+<td class="mono">·</td>
+</tr>
+</table>
+<h3>最密桥(Top 5)</h3><table><tr><th>桥</th><th>件数</th><th>代表物品</th></tr>
+<tr><td class="mono">回复 × 食物</td><td class="mono">40</td><td>Banu Leaves, Basket, Birthday Cake, Bread</td></tr>
+<tr><td class="mono">厨具 × 输出</td><td class="mono">28</td><td>Carving Fork, Chopsticks, Cleaver, Cookie Cutters</td></tr>
+<tr><td class="mono">加热 × 食物</td><td class="mono">24</td><td></td></tr>
+<tr><td class="mono">灼烧 × 食物</td><td class="mono">24</td><td>Black Pepper, Curry, Hot Sauce, Pickled Peppers</td></tr>
+<tr><td class="mono">加热 × 回复</td><td class="mono">22</td><td>Sushi Boat</td></tr>
+</table>
+<h3>桥的形式(标签桥 / 文本桥 / 双重桥)</h3>
+<table><tr><th>形式</th><th>件数</th><th>代表</th></tr>
+<tr><td>标签桥</td><td class="mono">0</td><td></td></tr>
+<tr><td>文本桥</td><td class="mono">47</td><td>Apron, Attachment Set, Beach Umbrella, Blender, Bread Knife</td></tr>
+<tr><td>双重桥</td><td class="mono">52</td><td>Azakan Stew, Baked Potato, Banu Leaves, Basket, Birthday Cake</td></tr>
+</table>
+<h3>桥的 tier 分布</h3><table><tr><th>tier</th><th>桥数</th></tr>
+<tr><td>Bronze</td><td class="mono">45</td></tr>
+<tr><td>Silver</td><td class="mono">34</td></tr>
+<tr><td>Gold</td><td class="mono">19</td></tr>
+<tr><td>Diamond</td><td class="mono">1</td></tr>
+</table>
+<h3>空位审计(桥 = 0 的轴对)</h3>
+<div class="good">无空位——所有轴对都有桥。</div>
+<h3>闭环示例(代表构筑链)</h3><div class="flow">食材入口(Scorchpepper 加热左件) → 双态×回复(Blueberry Pie 加热后灼烧 / Cheese Wheel 巨盾) → 厨具×加热(Grill 用食物→灼烧 + 永久叠伤) → 回复×地产(Farmer's Market Regen 按最大生命) → 输出×厨具(Cleaver 一击线):Stove/Cooler 槽位是全部轴的物理交汇点——食物、厨具、双态在同一格上相遇。</div>
+</div>
+<h2>4. 两段式审计(条件制造 → 兑现)</h2>
+<div class="card">
+<table>
+<tr><th>层</th><th>设计职责</th><th>代表件</th><th>tier 观察</th></tr>
+<tr><td><strong>入口层</strong>(制造条件/供给)</td><td>食材进槽、加热/冷冻源、充能厨具</td><td>Scorchpepper / Grill / Microwave / Egg Timer</td><td>B/S 为主</td></tr>
+<tr><td><strong>兑现层</strong>(消费条件)</td><td>双态第二效果、食物状态引擎</td><td>Blueberry Pie / Burrito / Rice / Cheese Wheel</td><td>B/S 为主</td></tr>
+<tr><td><strong>封顶层</strong>(条件 → 乘区)</td><td>全体双态化、Multicast 加成、冷冻转伤</td><td>Oven(D) / Dishwasher / Freezer / Pantry(D)</td><td>G/D 集中</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:Jules 的两段式是「窗口式」:加热/冷冻源开启状态窗口(条件),窗口内的第二效果(兑现)结算——「Heated 4 秒」是全系列最典型的「限时状态」语法。Stove/Cooler 槽位把入口件物理地约束在特定格上,这是 Bazaar 独有的「位形条件」(见 §6)。</div>
+</div>
+<h2>5. 强度阶梯(高 tier = 高强度?)</h2>
+<div class="card">
+<h3>5.1 Gold(25)与 Diamond(2)</h3>
+<table>
+<tr><th>件</th><th>tier</th><th>size</th><th>强度认定</th></tr>
+<tr><td>Oven</td><td><span class="badge t-diamond">Diamond</span></td><td>Large</td><td>Your Food gain Heated for 4 seconds Your other Heated items have +1 Multicast Your Food gain Heated for 4 seco</td></tr>
+<tr><td>Pantry</td><td><span class="badge t-diamond">Diamond</span></td><td>Large</td><td>When you use a Food, charge another Food 2 seconds At the start of each day, get a Small or Medium Food from a</td></tr>
+<tr><td>Beach Umbrella</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Shield +40 Chilled: Regen equal to 20% of your Shield shield +40 Chilled: Regen equal to 20% of your shield</td></tr>
+<tr><td>Bubblegum Floor</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When you Slow, Shield 50 Heated: When you use a Food, Slow an item 1 second(s) When you Slow, shield 50100 Hea</td></tr>
+<tr><td>Corkscrew</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Deal 25 damage The first time you use this, use the Medium Food to the left Deal 2550 damage The first time yo</td></tr>
+<tr><td>Cornucopia</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Heated: Charge your other Chilled items 1 second(s) Chilled: Charge your other Heated items 1 second(s) Heated</td></tr>
+<tr><td>Dishwasher</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Heat your other Tools and Weapons for 3 seconds Haste your other Tools and Weapons 3 seconds Your Heated items</td></tr>
+<tr><td>Dragon Steak</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Burn equal to this item's Crit Chance Heated: Your other items have +25% Crit Chance Burn equal to this item's</td></tr>
+<tr><td>Dragonmelon</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Shield equal to 15% of your Max Health Chilled: You have +25% Max Health shield equal to 1520% of your Max Hea</td></tr>
+<tr><td>Egg Timer</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Charge all your Food 1 second Charge all your Food 1 second</td></tr>
+<tr><td>Farmer's Market</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Adjacent Regen items have +Regen equal to 1% of your Max Health Your Food have +1 Sell Price sell value Adjace</td></tr>
+<tr><td>Feast</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Heated: Burn 10 Chilled: Regen 10 When you use a Food, this gains 5 and Regen Heated: Burn 1020 Chilled: Regen</td></tr>
+<tr><td>Freezer</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When you use an adjacent Food, Freeze an item 0.5 second(s) Chilled: When you Freeze, deal 100 Damage When you</td></tr>
+<tr><td>Froyo Cart</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Adjacent items are Chilled When you use a Chilled item, Freeze an item 0.5 second(s) When you buy this, get a </td></tr>
+<tr><td>Giant Sub</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Shield equal to your highest Shield Food Regen equal to your highest Regen Food Heated: Burn equal to this ite</td></tr>
+<tr><td>Gingerbread House</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Heated: Burn equal to 10% of your Shield At the start of each day, get a Gingerbread Man When you use a Food o</td></tr>
+<tr><td>Grill</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>When you use a Food, Burn 6 When you use a Heated Food, this gains +2 Burn for the fight The item to the left </td></tr>
+<tr><td>Ice Swan</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Freeze your Chilled items 2 second(s) Chilled: Your Small Chilled items have +1 Multicast and adjacent items a</td></tr>
+<tr><td>Jumbo Wok</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Charge your other Heated items 1 second(s) Heated: When you Shield or Regen with another Food, Burn 6 Charge y</td></tr>
+<tr><td>Laurel's Bouncy Ball</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Haste 2 other item(s) 1 second(s) When this Hastes an adjacent item, charge this 1 second Haste 2 other item(s</td></tr>
+<tr><td>Massive Cleaver</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Deal Damage equal to 15% of your Max Health When you Crit, charge this 2 second Deal Damage equal to 15% of yo</td></tr>
+<tr><td>Meat Tenderizer</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Deal 10 Damage Reduce the Cooldown of adjacent Food by 10% Deal 1020 Damage Reduce the Cooldown of adjacent Fo</td></tr>
+<tr><td>Mini Fridge</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>Freeze 2 item(s) 1 second(s) Chilled: When you use an adjacent Food, Charge this 2 seconds Freeze 23 item(s) 1</td></tr>
+<tr><td>Saffron</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Shield 25 Adjacent items gain Shield equal to this item's Shield shield 2550 Adjacent items gain shield equal </td></tr>
+<tr><td>Salt</td><td><span class="badge t-gold">Gold</span></td><td>Small</td><td>Adjacent items gain 10% Crit Chance When you Crit, Burn 3 Adjacent items gain 1020% Crit Chance When you Crit,</td></tr>
+<tr><td>Serving Platter</td><td><span class="badge t-gold">Gold</span></td><td>Medium</td><td>When you Crit with a Food, Charge 1 other Food 1 second When you Crit with a Food, Charge 12 other Food 1 seco</td></tr>
+<tr><td>Veggie Garden</td><td><span class="badge t-gold">Gold</span></td><td>Large</td><td>Adjacent Tools have +Damage equal to 5% of your Max Health You have +Max Health equal to 3 times your Regen Ad</td></tr>
+</table>
+<div class="verdict"><strong>结论</strong>:高 tier ≠ 必然强——Diamond 双件(Oven 全体加热引擎 / Pantry 地产)是「厨房系统件」;Gold 25 件承载 win 条件(Freezer 冷冻转伤 / Grill 灼烧引擎 / Giant Lollipop 任务件)。tier 表达「获取难度 + 厨房系统位」。</div>
+</div>
+<h2>5.5 典型构筑(社区攻略)</h2>
+<div class="card">
+<h3>Burn 灼烧厨房 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/burn-jules-kripp">Mobalytics / Kripp</a> 2026-06-29 · <span class="badge t-diamond">最稳定原型</span></span></h3>
+<div class="lead">灼烧与双态天然一体——Rice 灼烧/回复双成长、Grill 用食物灼烧且 Heated 食物永久 +2;Bronze 级就有高效件,从头到尾路线平滑,是 Jules 最 consistent 的原型。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Microwave</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Haste your Food 2 seconds Heated: This item's cooldown is reduced by 2 seconds</td><td class="mono">厨具×加热</td></tr>
+<tr><td>Rice</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Regen 2 Heated: Burn equal to this item's Regen When you Haste this, it gains 2</td><td class="mono">食物×加热×回复×灼烧</td></tr>
+<tr><td>Scorchpepper</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 2 The item to the left is Heated</td><td class="mono">食物×加热×灼烧</td></tr>
+<tr><td>Coffee</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Haste the item to the left 1 second(s)</td><td class="mono">食物</td></tr>
+<tr><td>Hot Sauce</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 2 For each adjacent Food or Tool, this has +1 Multicast</td><td class="mono">食物×灼烧</td></tr>
+<tr><td>Black Pepper</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 4 Charge adjacent items 1 second(s)</td><td class="mono">食物×灼烧</td></tr>
+<tr><td>Butter</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Haste an item 1 second(s) For each adjacent Tool or Food, this gains +1 Multicast</td><td class="mono">食物</td></tr>
+<tr><td>Grill</td><td><span class="badge t-gold">Gold</span> / Large</td><td>When you use a Food, Burn 6 When you use a Heated Food, this gains +2 Burn for the fight The item to the left is Heated</td><td class="mono">厨具×加热×灼烧</td></tr>
+<tr><td>Gingerbread House</td><td><span class="badge t-gold">Gold</span> / Large</td><td>Heated: Burn equal to 10% of your Shield At the start of each day, get a Gingerbread Man When you use a Food or Tool, gain 40</td><td class="mono">食物×加热×回复×灼烧</td></tr>
+<tr><td>Cheese Wheel</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Double this item's Shield Shield 20</td><td class="mono">食物×回复</td></tr>
+</table>
+<table><tr><th>技能</th><th>tier</th><th>效果</th><th>轴映射</th></tr>
+<tr><td>Immolating Spark</td><td><span class="badge t-bronze">Bronze</span></td><td>Your leftmost Burn item has +2</td><td class="mono">灼烧</td></tr>
+<tr><td>Final Flame</td><td><span class="badge t-bronze">Bronze</span></td><td>Your rightmost Burn item has +2</td><td class="mono">灼烧</td></tr>
+</table>
+<div class="note">Microwave 是食物构筑的 Haste 首选(低冷却全板效果,占第一个 Stove);Imu(英雄技能 2)可替换 Stove 与多种核心组合(Hotbox / Oven / Spice Rack);攻略板位备注 Zarlic 应换成 Sleeping Potion 以充能 Honeycomb。</div>
+</div>
+<div class="card">
+<h3>Freeze 冻结控制 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/freeze-jules-kripp">Mobalytics / Kripp</a> 2026-06-14 · <span class="badge t-gold">pivot 型 win 条件</span></span></h3>
+<div class="lead">少数「克制主流」的原型——Walk-In Freezer(快照名 Freezer)把冻结转成伤害,既是硬控又是 win 条件;Day 6+ 金件到位才真正成型,定位为机会主义 pivot。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Freezer</td><td><span class="badge t-gold">Gold</span> / Large</td><td>When you use an adjacent Food, Freeze an item 0.5 second(s) Chilled: When you Freeze, deal 100 Damage</td><td class="mono">厨具×冷冻×输出</td></tr>
+<tr><td>Blender</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Transform an adjacent non-Legendary Small item into a Slushee When you Freeze, Haste an item 1 second(s) Chilled: Your Slushees are Chilled</td><td class="mono">厨具×冷冻</td></tr>
+<tr><td>Pizza</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Regen 2 Heated: Burn 2</td><td class="mono">食物×加热×回复×灼烧</td></tr>
+<tr><td>Banu Leaves</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Shield 15 When you use another Food, Charge this 1 second(s)</td><td class="mono">食物×回复</td></tr>
+<tr><td>Sorbet</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Shield 15 Freeze an item 1 second(s) Chilled: When you Crit with another item, Charge this 1 second</td><td class="mono">食物×冷冻×回复</td></tr>
+<tr><td>Instant Noodles</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Burn 2 Regen 2 When you use an adjacent Tool, Charge this 1 second</td><td class="mono">食物×回复×灼烧</td></tr>
+</table>
+<table><tr><th>技能</th><th>tier</th><th>效果</th><th>轴映射</th></tr>
+<tr><td>Snowstorm <span class="dim">[Common]</span></td><td><span class="badge t-bronze">Bronze</span></td><td>When you Freeze, a Weapon gains 10 Damage</td><td class="mono">冷冻×输出</td></tr>
+</table>
+<div class="note">配低冷却/多段食物最大化冻结触发;早期槽位件(Butter / Strawberries)可平滑过渡。</div>
+</div>
+<div class="card">
+<h3>Regen 回复反打 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/regen-jules-kripp">Mobalytics / Kripp</a> 2026-05-09 · <span class="badge t-silver">防守成长型</span></span></h3>
+<div class="lead">Basket 是「heart and soul」——护盾快速转回复;Trail Mix 双任务完成后质变;Rice / Prep Station 提供进攻 win 条件,避免纯被动拖后期。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Basket</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Shield 40 Regen equal to 10% of this item's Shield</td><td class="mono">食物×回复</td></tr>
+<tr><td>Trail Mix</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Regen 5</td><td class="mono">食物×回复</td></tr>
+<tr><td>Microwave</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Haste your Food 2 seconds Heated: This item's cooldown is reduced by 2 seconds</td><td class="mono">厨具×加热</td></tr>
+<tr><td>Rice</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Regen 2 Heated: Burn equal to this item's Regen When you Haste this, it gains 2</td><td class="mono">食物×加热×回复×灼烧</td></tr>
+<tr><td>Prep Station</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Your Food gain 5 Shield, 1 Burn and 1 Regen When you use an adjacent Tool, Charge this 2 seconds</td><td class="mono">厨具×回复×灼烧</td></tr>
+<tr><td>Farmer's Market</td><td><span class="badge t-gold">Gold</span> / Large</td><td>Adjacent Regen items have +Regen equal to 1% of your Max Health Your Food have +1 Sell Price sell value</td><td class="mono">回复</td></tr>
+</table>
+<div class="note">Farmer's Market 无限连携是攻略 10 胜板核心;Microwave + Rice 组合需要 Scorchpepper 启用,否则用 Coffee 替代 Microwave。</div>
+</div>
+<div class="card">
+<h3>Weapon 厨刀速攻 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/weapon-jules-kripp">Mobalytics / Kripp</a> 2026-04-15 · <span class="badge t-silver">节奏压制型</span></span></h3>
+<div class="lead">前中期压制——Cleaver 是最强早期兑现(长战可一击),Carving Fork / Knife Set 全板 +伤,Chopsticks 以 Multicast 变现所有加成;Dishwasher 与跨英雄武器让它能撑到后期。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Cleaver</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Deal 10 Damage When you use a Tool, this gains 5</td><td class="mono">厨具×输出</td></tr>
+<tr><td>Carving Fork</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Deal 3 Damage Your items gain 3</td><td class="mono">厨具×输出</td></tr>
+<tr><td>Knife Sharpener</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Haste another Tool 2 second(s) When you use an adjacent Weapon, it gains 4 Damage</td><td class="mono">厨具×输出</td></tr>
+<tr><td>Chopsticks</td><td><span class="badge t-silver">Silver</span> / Small</td><td>Deal 10 Damage</td><td class="mono">厨具×输出</td></tr>
+<tr><td>Cooking Mallet</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Deal 10 Damage Heated: Burn 3</td><td class="mono">厨具×加热×灼烧×输出</td></tr>
+<tr><td>Dishwasher</td><td><span class="badge t-gold">Gold</span> / Large</td><td>Heat your other Tools and Weapons for 3 seconds Haste your other Tools and Weapons 3 seconds Your Heated items have +50% Damage</td><td class="mono">厨具×加热×输出</td></tr>
+<tr><td>Meat Grinder</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Charge adjacent Food 2 seconds When you use an adjacent Food, deal 20 Damage</td><td class="mono">厨具×输出</td></tr>
+<tr><td>Veggie Garden</td><td><span class="badge t-gold">Gold</span> / Large</td><td>Adjacent Tools have +Damage equal to 5% of your Max Health You have +Max Health equal to 3 times your Regen</td><td class="mono">食物×回复×输出</td></tr>
+</table>
+<table><tr><th>技能</th><th>tier</th><th>效果</th><th>轴映射</th></tr>
+<tr><td>Left-Handed</td><td><span class="badge t-bronze">Bronze</span></td><td>Your leftmost Weapon has +10 Damage</td><td class="mono">输出</td></tr>
+<tr><td>Right-Handed</td><td><span class="badge t-bronze">Bronze</span></td><td>Your rightmost Weapon has +10 Damage</td><td class="mono">输出</td></tr>
+<tr><td>Strength</td><td><span class="badge t-bronze">Bronze</span></td><td>Your items have +5 Damage</td><td class="mono">输出</td></tr>
+</table>
+<div class="note">优先早期伤害技能;2 级奖励建议拿铜技能而非附魔物品;Cooking Mallet 需要任务,可在 PvE 回合换食物进场启用。</div>
+</div>
+<div class="card">
+<h3>Giant Lollipop 巨型棒棒糖 <span class="dim">· <a href="https://mobalytics.gg/the-bazaar/builds/giant-lollipop-jules-kripp">Mobalytics / Kripp</a> 2026-04-12 · <span class="badge t-gold">任务型 beatdown</span></span></h3>
+<div class="lead">双任务(用 100 食物 + 慢 80 次)完成后质变的重型件;通常先玩灼烧再转,Excellent Vintage 加速任务;必须占一个 Cooler 槽。</div>
+<table><tr><th>物品</th><th>tier / size</th><th>效果(快照 base tier)</th><th>轴映射</th></tr>
+<tr><td>Giant Lollipop</td><td><span class="badge t-silver">Silver</span> / Large</td><td>Deal 50 damage Heated: Slow 1 item(s) 1 second(s)</td><td class="mono">食物×加热×回复×输出</td></tr>
+<tr><td>Excellent Vintage</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Shield 30 Slow 2 items 2 second(s) Chilled: This has +1 Multicast</td><td class="mono">食物×冷冻×回复</td></tr>
+<tr><td>Honeycomb</td><td><span class="badge t-bronze">Bronze</span> / Small</td><td>Slow 1 item(s) 1 second(s) Regen 1</td><td class="mono">食物×回复</td></tr>
+<tr><td>Dishwasher</td><td><span class="badge t-gold">Gold</span> / Large</td><td>Heat your other Tools and Weapons for 3 seconds Haste your other Tools and Weapons 3 seconds Your Heated items have +50% Damage</td><td class="mono">厨具×加热×输出</td></tr>
+<tr><td>Serving Platter</td><td><span class="badge t-gold">Gold</span> / Medium</td><td>When you Crit with a Food, Charge 1 other Food 1 second</td><td class="mono">厨具</td></tr>
+<tr><td>Cookbook</td><td><span class="badge t-silver">Silver</span> / Medium</td><td>Charge a Food 2 seconds At the start of each day, upgrade a Food of a lower tier</td><td class="mono">厨具</td></tr>
+<tr><td>Dragonmelon</td><td><span class="badge t-gold">Gold</span> / Medium</td><td>Shield equal to 15% of your Max Health Chilled: You have +25% Max Health</td><td class="mono">食物×冷冻×回复</td></tr>
+<tr><td>Rice</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Regen 2 Heated: Burn equal to this item's Regen When you Haste this, it gains 2</td><td class="mono">食物×加热×回复×灼烧</td></tr>
+<tr><td>Skillet</td><td><span class="badge t-bronze">Bronze</span> / Medium</td><td>Burn 3 For each adjacent Food, this has +1 Multicast</td><td class="mono">食物×厨具×灼烧</td></tr>
+</table>
+<div class="note">Jules 唯一的 Quest 型构筑——任务件设计与 OneDeck 的「累计条件」句式可对照。</div>
+</div>
+<div class="note">来源:Mobalytics Builds(Kripparrian,Jules 五原型全覆盖);物品/技能效果取自 Mobalytics 快照(2026-08-31,cloudflareCacheVersion v1.0.59);轴映射按 §3.6 谓词自动计算。攻略反复强调 Stove/Cooler 槽位随机布置导致位置敏感——构筑稳定性以 Burn 最高、Freeze/Lollipop 最低。</div>
+<h2>6. 与 StS2 / OneDeck 的映射</h2>
+<div class="card">
+<h3>6.1 与 StS2 的结构异同</h3>
+<table><tr><th>维度</th><th>StS2(五角色)</th><th>Bazaar(Jules)</th><th>差异判定</th></tr>
+<tr><td>入口层</td><td>Common 无能力卡,即打即用</td><td>Bronze 食材/小厨具</td><td>同工:入口=制造条件</td></tr>
+<tr><td>兑现层</td><td>Uncommon 桥层</td><td>Silver 双态件与厨具链</td><td>同工:桥在中间 tier</td></tr>
+<tr><td>封顶</td><td>Rare 大数字/引擎</td><td>Diamond 厨房系统件(Oven/Pantry)</td><td>同工:高 tier 承载系统化引擎</td></tr>
+<tr><td>资源经济</td><td>垃圾经济学四形态</td><td>食材→双态→出餐 窗口经济</td><td>同类,Jules 的「状态窗口」= StS2 的「回合内爆发」</td></tr>
+<tr><td>运行</td><td>回合制/能量</td><td>实时秒表/冷却/空间</td><td>差异最大</td></tr>
+</table>
+<h3>6.2 OneDeck 落点(初筛)</h3>
+<table><tr><th>Bazaar 观察</th><th>OneDeck 可借鉴</th><th>不可搬</th></tr>
+<tr><td>Heated/Chilled 双态窗口(限时状态第二效果)</td><td><b>OneDeck 的「状态期间」句式(如 Rest 跳过)可对照「窗口内增益」</b>——限时第二效果是状态系统(Infected/Mana/Rest)的扩展方向</td><td>秒表窗口不能直接映射轮次制;可改为「N 次揭晓内」</td></tr>
+<tr><td>Stove/Cooler 物理槽位</td><td>OneDeck 无板面位置概念——不建议引入</td><td>位形条件与 OneDeck 的事件模型冲突</td></tr>
+<tr><td>Quest 任务件(Giant Lollipop:用 100 食物)</td><td>OneDeck 的累计计数句式(墓地计数/信徒计数)已是同类——「跨回合任务」是可选扩展</td><td>—</td></tr>
+<tr><td>Regen 密度全系列最高</td><td>OneDeck 无每秒回复概念——对照「回合开始回复」句式</td><td>—</td></tr>
+</table>
+</div>
+<h2>7. 关键卡清单</h2>
+<div class="card"><table>
+<tr><th>轴</th><th>物品</th><th>tier</th><th>size</th><th>cd/弹药</th><th>effects 摘要</th></tr>
+<tr><td>食材</td><td>Rice</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">6</td><td>Regen 2 Heated: Burn equal to this item's Regen When you Haste this, it gains 2 Regen 2468 Heated: Burn equal to this item's Regen</td></tr>
+<tr><td>食材</td><td>Scorchpepper</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">5</td><td>Burn 2 The item to the left is Heated Burn 2468 The item to the left is Heated</td></tr>
+<tr><td>食材</td><td>Banu Leaves</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Small</td><td class="mono">6</td><td>Shield 15 When you use another Food, Charge this 1 second(s) shield 153060120 When you use another Food, Charge this 1 second(s)</td></tr>
+<tr><td>食材</td><td>Blueberry Pie</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Shield 25 Heated: Burn equal to 20% of this item's Shield shield 2550100200 Heated: Burn equal to 20% of this item's shield</td></tr>
+<tr><td>食材</td><td>Burrito</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">3</td><td>Shield 20 Burn 3 Regen 3 Heated: This has +20 Crit Chance shield 204060 Burn 369 Regen 369 Heated: This has +203550 Crit Chance</td></tr>
+<tr><td>食材</td><td>Cheese Wheel</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Medium</td><td class="mono">7</td><td>Double this item's Shield Shield 20 Double this item's shield shield 20</td></tr>
+<tr><td>食材</td><td>Gingerbread House</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">7</td><td>Heated: Burn equal to 10% of your Shield At the start of each day, get a Gingerbread Man When you use a Food or Tool, gain 40 Heat</td></tr>
+<tr><td>食材</td><td>Dragonmelon</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Shield equal to 15% of your Max Health Chilled: You have +25% Max Health shield equal to 1520% of your Max Health Chilled: You hav</td></tr>
+<tr><td>厨具</td><td>Grill</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">—</td><td>When you use a Food, Burn 6 When you use a Heated Food, this gains +2 Burn for the fight The item to the left is Heated When you u</td></tr>
+<tr><td>厨具</td><td>Microwave</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Haste your Food 2 seconds Heated: This item's cooldown is reduced by 2 seconds Haste your Food 2 seconds Heated: This item's coold</td></tr>
+<tr><td>厨具</td><td>Egg Timer</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Small</td><td class="mono">12</td><td>Charge all your Food 1 second Charge all your Food 1 second</td></tr>
+<tr><td>厨具</td><td>Rice Cooker</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">4</td><td>Haste your Heated items 1 second(s) Haste your Heated items 1234 second(s)</td></tr>
+<tr><td>厨具</td><td>Pizza Cutter</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">5</td><td>Deal 10 Damage Charge the Food to the right 1 second, if that Food is Heated instead charge it 2 seconds Deal 10 Damage Charge the</td></tr>
+<tr><td>厨具</td><td>Dishwasher</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">7</td><td>Heat your other Tools and Weapons for 3 seconds Haste your other Tools and Weapons 3 seconds Your Heated items have +50% Damage He</td></tr>
+<tr><td>封顶</td><td>Oven</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Large</td><td class="mono">6</td><td>Your Food gain Heated for 4 seconds Your other Heated items have +1 Multicast Your Food gain Heated for 4 seconds Your other Heate</td></tr>
+<tr><td>封顶</td><td>Pantry</td><td><span class="badge t-diamond">Diamond</span></td><td class="mono">Large</td><td class="mono">—</td><td>When you use a Food, charge another Food 2 seconds At the start of each day, get a Small or Medium Food from any Hero When you use</td></tr>
+<tr><td>封顶</td><td>Freezer</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">—</td><td>When you use an adjacent Food, Freeze an item 0.5 second(s) Chilled: When you Freeze, deal 100 Damage When you use an adjacent Foo</td></tr>
+<tr><td>回复</td><td>Basket</td><td><span class="badge t-bronze">Bronze</span></td><td class="mono">Medium</td><td class="mono">8</td><td>Shield 40 Regen equal to 10% of this item's Shield shield 40 Regen equal to 10% of this item's shield 🔒 This has +50% Crit Chance.</td></tr>
+<tr><td>回复</td><td>Trail Mix</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Small</td><td class="mono">8</td><td>Regen 5 Regen 5 🔒 This item's Cooldown is reduced by 2 seconds. [Quest: Sell 10 Food] 🔒 This has +1 Multicast. [Quest: Sell 20 Foo</td></tr>
+<tr><td>回复</td><td>Farmer's Market</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">—</td><td>Adjacent Regen items have +Regen equal to 1% of your Max Health Your Food have +1 Sell Price sell value Adjacent Regen items have </td></tr>
+<tr><td>输出</td><td>Cleaver</td><td><span class="badge t-silver">Bronze</span></td><td class="mono">Small</td><td class="mono">6</td><td>Deal 10 Damage When you use a Tool, this gains 5 Deal 10 Damage When you use a Tool, this gains 5101520</td></tr>
+<tr><td>输出</td><td>Chopsticks</td><td><span class="badge t-silver">Silver</span></td><td class="mono">Small</td><td class="mono">6</td><td>Deal 10 Damage Deal 10 Damage</td></tr>
+<tr><td>任务</td><td>Giant Lollipop</td><td><span class="badge t-gold">Silver</span></td><td class="mono">Large</td><td class="mono">6</td><td>Deal 50 damage Heated: Slow 1 item(s) 1 second(s) Deal 50100200 damage Heated: Slow 123 item(s) 1 second(s) 🔒 This has +Damage equ</td></tr>
+<tr><td>地产</td><td>Farmer's Market</td><td><span class="badge t-gold">Gold</span></td><td class="mono">Large</td><td class="mono">—</td><td>Adjacent Regen items have +Regen equal to 1% of your Max Health Your Food have +1 Sell Price sell value Adjacent Regen items have </td></tr>
+</table></div>
+</table></div>
+</table></div>
+<h2>8. 文档元信息</h2>
+<div class="card">
+<table>
+<tr><th>项</th><th>值</th></tr>
+<tr><td>数据快照</td><td class="mono">2026-08-31 mobalytics.gg TheBazaarStaticDataQuery(persistedQuery, cloudflareCacheVersion v1.0.59),全池 1207 件提取 Jules 专属 120</td></tr>
+<tr><td>归属规则</td><td>heroes[] 含 Jules 且非模板占位(description 含 Template 的 1 件已滤)</td></tr>
+<tr><td>字段说明</td><td>tierStats 为四级数值;cooldown/ammo/critchance/multicast 底层字段化;descriptions 含配色模板标记已清洗</td></tr>
+<tr><td>已知缺口</td><td>附魔(enchantments)已随 Mobalytics 全量收录,综合文档定量</td></tr>
+<tr><td>本系列</td><td>Vanessa / Dooley / Mak / Karnok / Jules / Stelle / The Dragons / 公共池 / 技能池 / 综合(逐个完成即停,step-gate)</td></tr>
+</table>
+<div class="note">计数口径:机制词按 tags + descriptions 关键词匹配,多标签重复计入;tier/size 按 Mobalytics 字段原值。</div>
+</div>
+</body></html>
