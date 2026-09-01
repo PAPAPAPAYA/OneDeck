@@ -133,7 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_TALLY
-  displayName: 
+  displayName: "\u8def\u53e3\u7684\u7eb8\u7070\u5708"
   cardDesc: "\u88AB\u52A8:\u56DE\u5408\u7ED3\u675F:\u672C\u56DE\u5408\u6BCF\u57CB\u846C
     <b>1</b> \u751F\u7269,\u5F3A\u5316 <b>1</b> \u654C\u65B9[\u8BC5\u5492]"
   rarity: 1

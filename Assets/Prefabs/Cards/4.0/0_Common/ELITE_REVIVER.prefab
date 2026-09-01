@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: ELITE_REVIVER
-  displayName: 
+  displayName: "\u63cf\u8fc7\u91d1\u7684\u724c\u4f4d"
   cardDesc: "\u653B\u51FB;\u590D\u6D3B1\u3010\u88AB\u5F3A\u5316\u3011\u53CB\u65B9\u751F\u7269"
   rarity: 0
   shopRollWeightMultiplier: 1

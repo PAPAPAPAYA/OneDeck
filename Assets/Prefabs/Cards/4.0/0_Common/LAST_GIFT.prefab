@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: LAST_GIFT
-  displayName: 
+  displayName: "\u9057\u7269\u6574\u7406\u5e08"
   cardDesc: "\u653B\u51FB;\u9057\u8A00:\u5F3A\u53161\u53CB\u65B9\u751F\u7269"
   rarity: 0
   shopRollWeightMultiplier: 1

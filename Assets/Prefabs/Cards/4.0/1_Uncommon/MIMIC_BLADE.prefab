@@ -49,7 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: MIMIC_BLADE
-  displayName: 
+  displayName: "\u6325\u5200\u7684\u5f71\u5b50"
   cardDesc: "\u653B\u51FB\u529B=\u53CB\u65B9\u6700\u9AD8\u653B\u51FB\u529B;\u653B\u51FBx2"
   rarity: 1
   shopRollWeightMultiplier: 1

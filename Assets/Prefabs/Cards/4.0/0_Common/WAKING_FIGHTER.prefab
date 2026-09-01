@@ -143,7 +143,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: WAKING_FIGHTER
-  displayName: 
+  displayName: "\u68a6\u6e38\u7684\u62f3\u624b"
   cardDesc: "\u653B\u51FB;\u82CF\u9192:\u5F3A\u5316\u81EA\u8EAB1"
   rarity: 0
   shopRollWeightMultiplier: 1

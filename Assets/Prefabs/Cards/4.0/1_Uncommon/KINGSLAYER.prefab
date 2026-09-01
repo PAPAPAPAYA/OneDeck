@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: KINGSLAYER
-  displayName: 
+  displayName: "\u8fc1\u575f\u961f"
   cardDesc: "\u57CB\u846C1\u653B\u51FB\u529B\u6700\u9AD8\u654C\u65B9;\u590D\u6D3B1\u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1

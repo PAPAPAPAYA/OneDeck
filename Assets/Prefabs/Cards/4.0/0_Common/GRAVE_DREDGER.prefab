@@ -219,7 +219,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_DREDGER
-  displayName: GRAVE_DREDGER
+  displayName: "\u8fd8\u6ca1\u505c\u7684\u6316\u6398\u673a"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u57CB\u846C\u5361\u7EC4\u9876 <b>3</b>
     \u5361"
   rarity: 0

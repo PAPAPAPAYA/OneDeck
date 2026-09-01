@@ -224,7 +224,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RIFT_REAPER
-  displayName: 
+  displayName: "\u6328\u4e2a\u7184\u706d\u7684\u706f"
   cardDesc: "\u653E\u9010\u6240\u6709\u4FE1\u5F92,\u6BCF\u653E\u90101,\u5F3A\u53161\u53CB\u65B9\u751F\u7269"
   rarity: 2
   shopRollWeightMultiplier: 1

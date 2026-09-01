@@ -302,7 +302,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_MILLER
-  displayName: GRAVE_MILLER
+  displayName: "\u592a\u5e73\u95f4\u7684\u4fdd\u6d01"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u57CB\u846C <b>2</b> \u53CB\u65B9;\u57CB\u846C\u5361\u7EC4\u9876
     <b>5</b> \u5361"
   rarity: 2

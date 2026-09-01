@@ -220,7 +220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: NECROMANCER
-  displayName: 
+  displayName: "\u697c\u4e0b\u7684\u53eb\u9b42\u58f0"
   cardDesc: "\u590D\u6D3B <b>1</b> \u53CB\u65B9;\u82CF\u9192:\u590D\u6D3B <b>1</b>
     \u53CB\u65B9"
   rarity: 1

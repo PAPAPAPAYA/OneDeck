@@ -136,7 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: REANIMATOR
-  displayName: 
+  displayName: "\u7ad9\u53f0\u5c3d\u5934\u7684\u4e1c\u897f"
   cardDesc: "\u653B\u51FB;\u653B\u51FB\u529B=\u672C\u56DE\u5408\u590D\u6D3B\u53CB\u65B9\u6570"
   rarity: 1
   shopRollWeightMultiplier: 1

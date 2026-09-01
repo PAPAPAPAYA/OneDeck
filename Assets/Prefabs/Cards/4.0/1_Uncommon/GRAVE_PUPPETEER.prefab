@@ -146,7 +146,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: GRAVE_PUPPETEER
-  displayName: 
+  displayName: "\u76d1\u63a7\u91cc\u7684\u4eba"
   cardDesc: "\u8BA9\u5893\u57301\u53CB\u65B9\u751F\u7269\u653B\u51FB;\u5893\u5730\u65E0\u53CB\u65B9\u5219\u57CB\u846C1\u53CB\u65B9\u9057\u8A00\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1

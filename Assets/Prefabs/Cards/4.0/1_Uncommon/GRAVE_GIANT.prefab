@@ -137,7 +137,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: GRAVE_GIANT
-  displayName: 
+  displayName: "\u4e0d\u505c\u6ef4\u6c34\u7684\u884c\u674e\u888b"
   cardDesc: "\u653B\u51FB\u529B=\u5893\u5730\u53CB\u65B9\u6570\u91CF;\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1

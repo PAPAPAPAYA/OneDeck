@@ -126,7 +126,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: LAST_RITES
-  displayName: 
+  displayName: "\u8ba3\u544a"
   cardDesc: "\u9057\u8A00:\u89E6\u53D1\u6240\u6709\u5728\u5893\u5730\u53CB\u65B9\u7684\u9057\u8A00"
   rarity: 2
   shopRollWeightMultiplier: 1

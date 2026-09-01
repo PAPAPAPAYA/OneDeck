@@ -131,7 +131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_FIST
-  displayName: GRAVE_FIST
+  displayName: "\u66ff\u6b7b\u9b3c"
   cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9;\u653B\u51FB"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -145,7 +145,7 @@ MonoBehaviour:
   myTags: 
   lifeMax: 0
   currentLife: 0
-  printedAttack: 4
+  printedAttack: 3
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0

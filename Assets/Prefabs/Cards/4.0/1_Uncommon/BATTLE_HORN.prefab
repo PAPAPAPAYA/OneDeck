@@ -142,7 +142,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: BATTLE_HORN
-  displayName: 
+  displayName: "\u6700\u540e\u4e00\u8282\u8bfe\u7684\u94c3"
   cardDesc: "\u672C\u56DE\u5408\u53CB\u65B9\u751F\u7269\u653B\u51FB\u6B21\u6570<b>+1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1

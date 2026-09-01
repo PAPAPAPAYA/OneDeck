@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_CHAIN_BURIAL
-  displayName: 
+  displayName: "\u62d6\u4eba\u4e0b\u6c34\u7684\u6c34\u9b3c"
   cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u88AB\u57CB\u846C\u65F6,\u57CB\u846C\u5361\u7EC4\u9876
     <b>1</b> \u5361"
   rarity: 1

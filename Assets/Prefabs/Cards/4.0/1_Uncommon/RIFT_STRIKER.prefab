@@ -137,8 +137,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_STRIKER
-  displayName: RIFT_STRIKER
-  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx2;\u751F\u6210 <b>1</b> [\u6B21\u5143\u88C2\u7F1D]"
+  displayName: "\u51fa\u8fc7\u4e8b\u7684\u90a3\u6761\u8857"
+  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fbx2;\u751f\u6210 <b>1</b> [\u4fe1\u5f92]"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

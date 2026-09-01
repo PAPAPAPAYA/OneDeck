@@ -136,7 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: QUAD_STRIKER
-  displayName: QUAD_STRIKER
+  displayName: "\u62ac\u7740\u7a7a\u8f7f\u7684\u7eb8\u4eba"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx4"
   rarity: 2
   shopRollWeightMultiplier: 1

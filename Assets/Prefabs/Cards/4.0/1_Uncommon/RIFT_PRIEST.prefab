@@ -49,9 +49,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_PRIEST
-  displayName: RIFT_PRIEST
-  cardDesc: "\u63ED\u6653\u65F6:\u751F\u6210 <b>2</b> [\u6B21\u5143\u88C2\u7F1D];\u5F3A\u5316
-    <b>1</b> \u53CB\u65B9\u751F\u7269"
+  displayName: "\u70b9\u4f20\u5e08"
+  cardDesc: "\u63ed\u6653\u65f6:\u751f\u6210 <b>2</b> [\u4fe1\u5f92];\u5f3a\u5316\n    <b>1</b> \u53cb\u65b9\u751f\u7269"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

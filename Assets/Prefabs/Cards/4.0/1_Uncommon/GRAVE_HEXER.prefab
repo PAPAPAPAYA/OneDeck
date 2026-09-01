@@ -220,7 +220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: GRAVE_HEXER
-  displayName: 
+  displayName: "\u767d\u4e8b\u5148\u751f"
   cardDesc: "\u590D\u6D3B1\u53CB\u65B9;\u5F3A\u53162\u654C\u65B9\u8BC5\u5492"
   rarity: 1
   shopRollWeightMultiplier: 1

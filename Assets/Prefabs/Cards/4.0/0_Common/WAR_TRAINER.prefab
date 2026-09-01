@@ -141,7 +141,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: WAR_TRAINER
-  displayName: WAR_TRAINER
+  displayName: "\u70b9\u773c\u7684\u624e\u7eb8\u5320"
   cardDesc: "\u63ED\u6653\u65F6:\u5F3A\u5316 <b>2</b> \u53CB\u65B9\u751F\u7269"
   rarity: 0
   shopRollWeightMultiplier: 1

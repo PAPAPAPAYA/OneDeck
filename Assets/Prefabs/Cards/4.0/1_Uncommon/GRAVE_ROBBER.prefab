@@ -148,7 +148,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: GRAVE_ROBBER
-  displayName: 
+  displayName: "\u6536\u5c38\u4eba"
   cardDesc: "\u590D\u6D3B1\u653B\u51FB\u529B\u6700\u9AD8\u654C\u65B9;\u653B\u51FB\u529B\u53D8\u4E3A\u8BE5\u5361\u653B\u51FB\u529B"
   rarity: 1
   shopRollWeightMultiplier: 1

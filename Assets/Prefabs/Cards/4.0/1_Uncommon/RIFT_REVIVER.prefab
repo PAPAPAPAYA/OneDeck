@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RIFT_REVIVER
-  displayName: 
+  displayName: "\u6495\u4e86\u5c01\u6761\u7684\u5e93\u623f"
   cardDesc: "\u653E\u90101\u53CB\u65B9\u4FE1\u5F92,\u590D\u6D3B2\u53CB\u65B9\u975E\u751F\u7269"
   rarity: 1
   shopRollWeightMultiplier: 1

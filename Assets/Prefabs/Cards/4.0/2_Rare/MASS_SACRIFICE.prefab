@@ -164,7 +164,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: MASS_SACRIFICE
-  displayName: 
+  displayName: "\u591a\u51fa\u6765\u7684\u7b2c\u5341\u4e09\u5f20\u5e8a"
   cardDesc: "\u57CB\u846C\u6240\u6709\u53CB\u65B9;\u6BCF\u57CB\u846C1\u53CB\u65B9,\u751F\u62101\u4FE1\u5F92"
   rarity: 2
   shopRollWeightMultiplier: 1

@@ -135,8 +135,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: UNDYING_WARRIOR
-  displayName: 
-  cardDesc: "\u653B\u51FB;\u88AB\u5F3A\u5316:\u590D\u6D3B\u81EA\u8EAB"
+  displayName: "\u6ca1\u62c9\u5e73\u7684\u5fc3\u7535\u56fe"
+  cardDesc: "\u653b\u51fb;\u5f3a\u5316\u53cd\u5e94:\u590d\u6d3b\u81ea\u8eab"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

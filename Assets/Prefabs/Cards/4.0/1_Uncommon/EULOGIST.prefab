@@ -219,7 +219,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: EULOGIST
-  displayName: EULOGIST
+  displayName: "\u54ed\u7075\u4eba"
   cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9\u9057\u8A00\u5361;\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1

@@ -298,7 +298,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RIFT_ACOLYTE
-  displayName: 
+  displayName: "\u81ea\u5df1\u7b7e\u6ee1\u7684\u7b7e\u5230\u8868"
   cardDesc: "\u653B\u51FB;\u751F\u62101\u4FE1\u5F92;\u82CF\u9192:\u751F\u62102\u4FE1\u5F92"
   rarity: 0
   shopRollWeightMultiplier: 1

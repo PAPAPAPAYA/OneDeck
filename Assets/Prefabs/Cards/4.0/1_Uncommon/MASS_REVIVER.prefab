@@ -133,7 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: MASS_REVIVER
-  displayName: 
+  displayName: "\u56de\u9b42\u591c"
   cardDesc: "\u590D\u6D3B <b>3</b> \u53CB\u65B9normal\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1

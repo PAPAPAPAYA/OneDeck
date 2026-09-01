@@ -232,7 +232,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: COMBO_GRANTER
-  displayName: 
+  displayName: "\u591a\u6446\u7684\u4e00\u526f\u7897\u7b77"
   cardDesc: "\u653B\u51FB;\u672C\u56DE\u5408 <b>1</b> \u53CB\u65B9\u751F\u7269\u653B\u51FB\u6B21\u6570<b>+1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1

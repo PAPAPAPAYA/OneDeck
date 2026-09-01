@@ -138,7 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: AWAKENED_REAPER
-  displayName: 
+  displayName: "\u6765\u9886\u4eba\u7684\u5bb6\u5c5e"
   cardDesc: "\u653B\u51FB;\u82CF\u9192:\u57CB\u846C1\u654C\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1

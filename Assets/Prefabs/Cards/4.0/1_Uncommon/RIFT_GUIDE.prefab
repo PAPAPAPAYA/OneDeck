@@ -215,7 +215,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RIFT_GUIDE
-  displayName: 
+  displayName: "\u753b\u4e86\u62bc\u7684\u5b57\u636e"
   cardDesc: "\u653E\u90101\u53CB\u65B9\u4FE1\u5F92,\u57CB\u846C2\u654C\u65B9\u975E\u751F\u7269"
   rarity: 1
   shopRollWeightMultiplier: 1

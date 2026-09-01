@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: DUO_REVIVER
-  displayName: 
+  displayName: "\u4e00\u95e8\u9634\u5a5a"
   cardDesc: "\u590D\u6D3B <b>2</b> \u53CB\u65B9uncommon\u5361"
   rarity: 2
   shopRollWeightMultiplier: 1

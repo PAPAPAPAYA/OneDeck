@@ -235,9 +235,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SNOWBALL
-  displayName: SNOWBALL
-  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx2;\u88AB\u5F3A\u5316:\u5F3A\u5316\u81EA\u8EAB
-    <b>1</b>"
+  displayName: "\u6570\u4e0d\u5b8c\u7684\u7eb8\u94b1"
+  cardDesc: "\u63ed\u6653\u65f6:\u653b\u51fbx2;\u5f3a\u5316\u53cd\u5e94:\u5f3a\u5316\u81ea\u8eab\n    <b>1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -250,7 +249,7 @@ MonoBehaviour:
   myTags: 
   lifeMax: 0
   currentLife: 0
-  printedAttack: 2
+  printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 1

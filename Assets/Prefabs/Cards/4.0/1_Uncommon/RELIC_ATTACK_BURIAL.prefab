@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3591665617141263396
+--- !u!1 &4351262439919075274
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,48 +8,48 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6665034376630176879}
-  - component: {fileID: 1342475178874958131}
-  - component: {fileID: 6296127654405248073}
+  - component: {fileID: 5790501117404134193}
+  - component: {fileID: 1511473367452071487}
+  - component: {fileID: 960765534072424449}
   m_Layer: 0
-  m_Name: DEATHBED_GRANT
+  m_Name: RELIC_ATTACK_BURIAL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &6665034376630176879
+--- !u!4 &5790501117404134193
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3591665617141263396}
+  m_GameObject: {fileID: 4351262439919075274}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 757263187888271134}
+  - {fileID: 4646793465114878279}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1342475178874958131
+--- !u!114 &1511473367452071487
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3591665617141263396}
+  m_GameObject: {fileID: 4351262439919075274}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
-  cardTypeID: DEATHBED_GRANT
-  displayName: "\u5165\u6b93\u5e08"
-  cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u751F\u7269\u88AB\u57CB\u846C\u65F6:\u8BE5\u53CB\u65B9\u751F\u7269\u653B\u51FB"
+  cardTypeID: RELIC_ATTACK_BURIAL
+  displayName: "\u81ea\u5df1\u7ffb\u9875\u7684\u9ec4\u5386"
+  cardDesc: "\u88ab\u52a8:\u53cb\u65b9\u6bcf\u6b21\u653b\u51fb\u65f6,\u57cb\u846c\u5361\u7ec4\u9876 <b>1</b> \u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -66,26 +66,25 @@ MonoBehaviour:
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
-  attackTimesModThisRound: 0
   isCreature: 0
   isPassive: 1
---- !u!114 &6296127654405248073
+--- !u!114 &960765534072424449
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3591665617141263396}
+  m_GameObject: {fileID: 4351262439919075274}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
-  event: {fileID: 11400000, guid: 93242982157fc464c8e3ea5e9aa64154, type: 2}
+  event: {fileID: 11400000, guid: dbf36e9ae6c27ff43a27b1e01d59eda6, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6152095347630800182}
+      - m_Target: {fileID: 5162755845815038722}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid
         m_Mode: 1
@@ -97,7 +96,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!1 &6097410976896921139
+--- !u!1 &7555055158545572297
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -105,38 +104,38 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 757263187888271134}
-  - component: {fileID: 6152095347630800182}
-  - component: {fileID: 248071916731907319}
+  - component: {fileID: 4646793465114878279}
+  - component: {fileID: 5162755845815038722}
+  - component: {fileID: 4533223242713247046}
   m_Layer: 0
-  m_Name: buried creature strikes
+  m_Name: friendly attack bury top 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &757263187888271134
+--- !u!4 &4646793465114878279
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6097410976896921139}
+  m_GameObject: {fileID: 7555055158545572297}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6665034376630176879}
+  m_Father: {fileID: 5790501117404134193}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6152095347630800182
+--- !u!114 &5162755845815038722
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6097410976896921139}
+  m_GameObject: {fileID: 7555055158545572297}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
@@ -150,27 +149,32 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 248071916731907319}
-        m_TargetAssemblyTypeName: BuriedCreatureAttackEffect, Assembly-CSharp
-        m_MethodName: AttackLastBuriedFriendlyCreature
-        m_Mode: 1
+      - m_Target: {fileID: 4533223242713247046}
+        m_TargetAssemblyTypeName: BuryEffect, Assembly-CSharp
+        m_MethodName: BuryNextXCards
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &248071916731907319
+--- !u!114 &4533223242713247046
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6097410976896921139}
+  m_GameObject: {fileID: 7555055158545572297}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4e3c10dac162bd48a924387df3c6581, type: 3}
+  m_Script: {fileID: 11500000, guid: bb08dbd2c6066ac468526e104b9095a5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuriedCreatureAttackEffect
+  m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
+  tagsToCheck: 
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  ignoreStartCardBoundary: 0

@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RELIC_GRAVE_CURSE
-  displayName: 
+  displayName: "\u5806\u6ee1\u697c\u9053\u7684\u82b1\u5708"
   cardDesc: "\u88AB\u52A8:\u654C\u65B9\u8BC5\u5492\u653B\u51FB\u529B=\u5893\u5730\u53CB\u65B9\u5361\u6570\u91CF"
   rarity: 2
   shopRollWeightMultiplier: 1

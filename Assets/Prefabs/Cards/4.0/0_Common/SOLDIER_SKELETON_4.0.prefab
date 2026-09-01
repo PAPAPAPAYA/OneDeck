@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SOLDIER_SKELETON_4.0
-  displayName: "\u9AB7\u9AC5\u58EB\u5175"
+  displayName: "\u6362\u5c97\u7684\u54e8\u5175"
   cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u7F6E\u9876\u81EA\u8EAB"
   rarity: 0
   shopRollWeightMultiplier: 1
@@ -64,7 +64,7 @@ MonoBehaviour:
   myTags: 03000000
   lifeMax: 0
   currentLife: 0
-  printedAttack: 2
+  printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
