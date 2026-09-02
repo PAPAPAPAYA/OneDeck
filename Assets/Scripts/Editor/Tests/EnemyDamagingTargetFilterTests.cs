@@ -4,9 +4,9 @@ using NUnit.Framework;
 using UnityEngine;
 
 /// <summary>
-/// Tests for StatusEffectGiverEffect.onlyTargetEnemyDamagingCards — the creature filter
-/// now reads CardScript.isCreature (explicit marker, 4.0 spec 生物) instead of the legacy
-/// DecreaseTheirHp method-name scan — and the AttackGiverEffect receive gate regression.
+/// Tests for StatusEffectGiverEffect.onlyTargetEnemyDamagingCards — the damaging filter reads
+/// damage capability (IsCreature || HasAttackAttribute, 2026-09-02 card-type split) instead of
+/// the legacy DecreaseTheirHp method-name scan — and the AttackGiverEffect receive gate regression.
 /// </summary>
 public class EnemyDamagingTargetFilterTests : HeadlessCombatTestFixture
 {
@@ -20,7 +20,7 @@ public class EnemyDamagingTargetFilterTests : HeadlessCombatTestFixture
 		return count;
 	}
 
-	#region onlyTargetEnemyDamagingCards Filter (isCreature)
+	#region onlyTargetEnemyDamagingCards Filter (damaging = creature or holds attack)
 
 	[Test]
 	public void GiveStatusEffectToLastXCards_FilterOn_OnlyCreaturesReceivePower()
@@ -28,7 +28,7 @@ public class EnemyDamagingTargetFilterTests : HeadlessCombatTestFixture
 		var giverCard = CreateCard(true, "Giver");
 		var nonCreature = CreateCard(true, "NonCreature");
 		var creature = CreateCard(true, "Creature");
-		creature.GetComponent<CardScript>().isCreature = true;
+		creature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		CombatManager.combinedDeckZone.Add(nonCreature);
 		CombatManager.combinedDeckZone.Add(creature);
 		CombatManager.combinedDeckZone.Add(giverCard);
@@ -44,7 +44,7 @@ public class EnemyDamagingTargetFilterTests : HeadlessCombatTestFixture
 		EffectChainManager.Me.CloseOpenedChain();
 
 		Assert.AreEqual(1, CountStatusEffect(creature, EnumStorage.StatusEffect.Power),
-			"Creature (isCreature) should receive Power");
+			"Creature-type card should receive Power");
 		Assert.AreEqual(0, CountStatusEffect(nonCreature, EnumStorage.StatusEffect.Power),
 			"Non-creature should be skipped when the filter is on");
 	}
@@ -55,7 +55,7 @@ public class EnemyDamagingTargetFilterTests : HeadlessCombatTestFixture
 		var giverCard = CreateCard(true, "Giver");
 		var nonCreature = CreateCard(true, "NonCreature");
 		var creature = CreateCard(true, "Creature");
-		creature.GetComponent<CardScript>().isCreature = true;
+		creature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		CombatManager.combinedDeckZone.Add(nonCreature);
 		CombatManager.combinedDeckZone.Add(creature);
 		CombatManager.combinedDeckZone.Add(giverCard);

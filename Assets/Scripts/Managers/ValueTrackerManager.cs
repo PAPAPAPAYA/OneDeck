@@ -29,7 +29,7 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO enemyRevivedCountThisRoundRef; // reset at every round start (HandleNewRoundStart)
 
 	[Header("CreatureAttackTimesAura (4.0 E7)")]
-	[Tooltip("Faction-level per-round creature attack-times aura (BATTLE_HORN). Read by CardScript.GetAttackTimes for isCreature cards; reset at every round start.")]
+	[Tooltip("Faction-level per-round creature attack-times aura (BATTLE_HORN). Read by CardScript.GetAttackTimes for Creature-type cards; reset at every round start.")]
 	public IntSO creatureAttackTimesAuraOwnerThisRoundRef;
 	public IntSO creatureAttackTimesAuraEnemyThisRoundRef;
 

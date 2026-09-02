@@ -22,7 +22,7 @@ public class Batch3ResolverTermTests : HeadlessCombatTestFixture
 		var card = CreateCard(isOwner, name, cardTypeID);
 		var cs = card.GetComponent<CardScript>();
 		cs.printedAttack = printedAttack;
-		cs.isCreature = isCreature;
+		cs.cardType = isCreature ? EnumStorage.CardType.Creature : EnumStorage.CardType.None;
 		CombatManager.combinedDeckZone.Add(card);
 		return card;
 	}

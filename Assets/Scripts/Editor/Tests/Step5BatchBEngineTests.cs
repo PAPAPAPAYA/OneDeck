@@ -16,7 +16,7 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		var card = CreateCard(isOwner, name, cardTypeID);
 		var cs = card.GetComponent<CardScript>();
 		cs.printedAttack = printedAttack;
-		cs.isCreature = isCreature;
+		cs.cardType = isCreature ? EnumStorage.CardType.Creature : EnumStorage.CardType.None;
 		CombatManager.combinedDeckZone.Add(card);
 		return card;
 	}
@@ -248,7 +248,10 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		GameEventStorage.curseCardTypeID.value = "JU_ON";
 		var field = CreateCard(true, "WeakeningField");
 		var creature = AddCard(true, "Creature", "A", 5, true);
-		var curse = AddCard(true, "Curse", "JU_ON", 5, true);
+		// Curse spared comes from the STATUS card type now (the typeID exclusion was removed with
+		// the 2026-09-02 card-type split), not from the JU_ON typeID.
+		var curse = AddCard(true, "Curse", "JU_ON", 5, false);
+		curse.GetComponent<CardScript>().cardType = EnumStorage.CardType.Status;
 		var nonCreature = AddCard(true, "NonCreature", "B", 5, false);
 		CombatManager.combinedDeckZone.Add(field);
 
@@ -500,10 +503,10 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		startCard.GetComponent<CardScript>().isStartCard = true;
 		var enemyA = CreateCard(false, "BigEnemy", "A");
 		enemyA.GetComponent<CardScript>().printedAttack = 7;
-		enemyA.GetComponent<CardScript>().isCreature = true;
+		enemyA.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		var enemyB = CreateCard(false, "SmallEnemy", "B");
 		enemyB.GetComponent<CardScript>().printedAttack = 3;
-		enemyB.GetComponent<CardScript>().isCreature = true;
+		enemyB.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		CombatManager.combinedDeckZone.Add(enemyA);
 		CombatManager.combinedDeckZone.Add(enemyB);
 		CombatManager.combinedDeckZone.Add(startCard);
@@ -561,7 +564,7 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		GameEventStorage.curseCardTypeID.value = "JU_ON";
 		var attacker = CreateCard(true, "Attacker");
 		attacker.GetComponent<CardScript>().printedAttack = 3;
-		attacker.GetComponent<CardScript>().isCreature = true;
+		attacker.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		var juOn = CreateCard(false, "Curse", "JU_ON");
 		CombatManager.combinedDeckZone.Add(attacker);
 		CombatManager.combinedDeckZone.Add(juOn);

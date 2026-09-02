@@ -328,8 +328,9 @@ public class StageEffect : EffectScript
 
 	private bool PassesCreatureFilter(CardScript cardScript)
 	{
-		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.isCreature) return false;
-		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.isCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.IsCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.IsCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Status && cardScript.cardType != EnumStorage.CardType.Status) return false;
 		return true;
 	}
 
@@ -358,7 +359,7 @@ public class StageEffect : EffectScript
 			    isFriendly != targetFriendly ||
 			    IsCardAtTop(card) ||
 			    cardScript.isMinion ||
-			    (creatureOnly && !cardScript.isCreature) ||
+			    (creatureOnly && !cardScript.IsCreature) ||
 			    (excludeSelf && card == myCard))
 			{
 				eligibleCards.RemoveAt(i);

@@ -69,7 +69,7 @@ Assets/
 - **Delay** moves a card toward `index 0` by 1 slot (later reveal).
 
 ### Physical Deck Layout (Cascade / Arc Loop / Float Stack)
-- Selector: `deckLayoutMode` enum {Linear, Cascade, ArcLoop, FloatStack} — single source of truth (legacy layout toggles removed 2026-08-15).
+- Selector: `deckLayoutMode` enum {Linear, Cascade, ArcLoop, FloatStack} — single source of truth.
 - Cascade: front card (deck top) largest at the `physicalCardDeckPos` anchor; front sweeps up-left shrinking; tail hooks back tight. Shop unaffected. Legacy `xOffset/yOffset/zOffset` fields only serve the Linear fallback.
 - `revealCardCountsAsDeckFront` (default `true`, cascade/arc only): the reveal-zone card holds the layout front slot, so revealing does not re-layout the deck; it slides one step on return. Source of truth: `GetCascadeDeckCount()`.
 - All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(...)`; every caller (layout, popup, slot-in, reveal, peel focus) inherits the active layout.
@@ -81,8 +81,8 @@ Assets/
 - EditMode coverage: `DeckCascadeLayoutTests.cs` / `DeckArcLoopLayoutTests.cs` / `DeckFloatStackLayoutTests.cs` (demo goldens).
 - **Dynamic arc midpoint (replaces `showPos`)**: `useDynamicArcMidpoint` (default on) — deck-bound arcs take their midpoint from the layout walk at `arcMidpointCurveT` + `arcMidpointOffset` (`TryGetArcMidpointPosition`). Fallback: explicit `CardMoveConfig.arcMidpoint` > dynamic > `showPos`.
 - **Arc Loop mode**: superellipse loop; slots by curvature-weighted arc length (w=0 = uniform); deck top = tilted loop's visual lowest point, deck bottom adjacent up the right; scale by screen height, z by depth rank; cards upright. PRD: `plans/plan-arc-loop-deck-layout-2026-08-12.md`.
-- **Float Stack mode**: centered stack (anchor = stack center); index j → anchor + (0, step·(count−2j−1)/2 + lift)·px; count = raw physical count. Scale/lift: `DeckFloatStackLayout.ComputeFrame`; reveal & shadow derive from slot 0 (1 step below the lowest slot): reveal = slot0 + (−floatX, +upY)·px, ×revealScale×globalScale; other big shadows off. PRD: `plans/plan-float-stack-center-scale-2026-08-15.md`; demo: `docs/demo/CardStackRevealDemo.html`.
-- **Float Stack big shadow is follow-driven**: `BigShadowFollower` tracks the reveal card per frame (`card pos + restOffset·scaleK`, x ×squashX pivot-corrected; z pinned front-gap; scale ⊙ baked; rotation follow toggle). Lift (anti-light offset): `AttackAnimationManager` (wind-up/return) and `RecorderAnimationPlayer` (emphasize pulse) ramp `liftK` via `SetBigShadowLift`. Enable/disable only (never destroy+re-add); self-destructs the shadow GO if the card dies mid-drive. Math/tunables: `plans/plan-float-stack-shadow-follow-2026-08-16.md`.
+- **Float Stack mode**: centered stack; slot 0 (lowest) drives reveal & big-shadow offsets. Math: `DeckFloatStackLayout.ComputeFrame`. PRD: `plans/plan-float-stack-center-scale-2026-08-15.md`; demo: `docs/demo/CardStackRevealDemo.html`.
+- **Float Stack big shadow is follow-driven**: `BigShadowFollower` tracks the reveal card per frame; anti-light lift via `SetBigShadowLift` (ramped by `AttackAnimationManager` / `RecorderAnimationPlayer`). Enable/disable only (never destroy+re-add); self-destructs the shadow GO if the card dies mid-drive. Tunables: `plans/plan-float-stack-shadow-follow-2026-08-16.md`.
 
 ### Controls
 - First click: Reveal next card.
@@ -137,7 +137,7 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 - `TagTooltipDatabaseSO` (`Assets/Resources/TagTooltipDatabase.asset`, lazy singleton `Me`) maps each tag to a `displayName` StringSO (`Assets/SORefs/Strings/TagNames/`) and a tooltip `description` StringSO (`Assets/SORefs/Strings/TagTooltips/`). All StringSO assets must have `reset = false`.
 - **Single source of truth**: every user-visible tag text resolves through `TagTooltipDatabaseSO.GetTagDisplayName(tag)` (falls back to the enum name when unconfigured) — in-card tag print, hover tooltip title (`CardTagTooltip`), and cardDesc `<tag:EnumName>` placeholders. To rename a tag, edit only the `TagName_*.asset` value.
 - **cardDesc placeholder**: `<tag:EnumName>` renders as the display name (no brackets added — authors write `[<tag:X>]` for the bracketed style), resolved inside `CardScript.ComputeDynamicCardDesc`. Never hand-write tag names in cardDesc.
-- Hover tooltip: `CardTagTooltip` (self-built canvas), triggered from `CardPhysObjScript` hover (`hoverDelay`). Hover pop-up delay: `CombatUXManager.hoverPopUpDelay` (default 0.1s) gates `PopUpCard` after hover; 0 = next frame.
+- Hover tooltip: `CardTagTooltip` (self-built canvas) from `CardPhysObjScript` hover; `CombatUXManager.hoverPopUpDelay` (default 0.1s) gates `PopUpCard` after hover; 0 = next frame.
 
 ## Events
 
@@ -155,15 +155,15 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 
 ## Key Files
 
-All under `Assets/Scripts/` in the folder matching their role: `Managers/CombatManager`, `Managers/CombatFuncs`, `Managers/GameEventStorage`, `Managers/ValueTrackerManager`, `Managers/EnumStorage`, `Managers/AnimationStateTracker`, `Managers/RecorderAnimationPlayer`, `Managers/CardFactory`, `Managers/ICombatVisuals`, `Managers/CombatLog`, `Managers/WriteRead/CombatPerCardStatsTracker`, `Effects/HPAlterEffect`, `Effects/StatusEffect/StatusEffectGiverEffect`, `Effects/StartCardShuffleEffect`, `Card/CardScript`, `Card/CostNEffectContainer`, `UXPrototype/CombatUXManager`, `UXPrototype/CombatHPBarPresenter`, `UXPrototype/DeckCascadeLayout`, `UXPrototype/DeckArcLoopLayout`, `UXPrototype/DeckFloatStackLayout`, `UXPrototype/DeckPositionCalculator`, `UXPrototype/BigShadowFollower`, `UXPrototype/ResultStatsPanel`. Game rules: `docs/GameRules.md`.
+All under `Assets/Scripts/` in the folder matching their role: `Managers/` CombatManager, CombatFuncs, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, RecorderAnimationPlayer, CardFactory, ICombatVisuals, CombatLog, WriteRead/CombatPerCardStatsTracker; `Effects/` HPAlterEffect, StatusEffect/StatusEffectGiverEffect, StartCardShuffleEffect; `Card/` CardScript, CostNEffectContainer; `UXPrototype/` CombatUXManager, CombatHPBarPresenter, DeckCascadeLayout, DeckArcLoopLayout, DeckFloatStackLayout, DeckPositionCalculator, BigShadowFollower, ResultStatsPanel. Game rules: `docs/GameRules.md`.
 
 ## Result Screen Per-Card Stats
 
 Split two-half panel (top = player-created cards, bottom = enemy-created cards) of the combat that just finished (plan: `plans/plan-result-per-card-stats-2026-07-23.md`).
 
 - **Store**: `CombatPerCardStatsTracker.Me` (singleton, auto-created by `CombatManager.Awake()`). Session-scoped, no persistence: `BeginSession()` wipes the store (records, deck-count snapshot, creator-side registry) in `CombatManager.GatherDecks()`.
-- **Rows keyed by `(cardTypeID, creatorSide)`** — the faction that CREATED the card, not its current owner: initial-deck cards via `RegisterDeckComposition(combinedDeckZone)`; mid-combat cards via `RegisterGeneratedCard` (funneled through `CombatFuncs.AddCard_TargetSpecific(..., creatorCard)`; all call sites pass `myCardScript`). Fallback = owner faction. Neutral/start cards excluded by the `IsNeutralCard` guard in `EnsureRecord()` — the single exclusion point. Both register paths **pre-create an all-zero row**, so every deck/generated card shows even if it never triggered.
-- **Damage attribution is creator-relative**: `RecordDamage(source, amount, victimSide)` counts `DamageDealtToOpponent` when the victim opposes the CREATOR, else `DamageDealtToSelf` (recorded but hidden via `CombatStatDef.showInResultPanel = false`). Recorded damage is the **actual HP lost** (`ProcessDamage` hp delta — shield-soaked/overkill excluded). Other stats: `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains), `PowerGiven`/`PowerReceived` (stack amounts; transfers count), `CardsGenerated` (per `RegisterGeneratedCard`, on the creator), `RecordBury`/`RecordStage` — source-side split by victim owner relative to the SOURCE's owner (`FriendlyBuried`/`EnemyBuried`; stage friendly-only), victim-side `TimesBuried`/`TimesStaged` always count, neutral victims count neither side.
+- **Rows keyed by `(cardTypeID, creatorSide)`** — the faction that CREATED the card, not its current owner. Initial-deck cards via `RegisterDeckComposition(combinedDeckZone)`; mid-combat via `RegisterGeneratedCard` (funneled through `CombatFuncs.AddCard_TargetSpecific(..., creatorCard)`). Fallback = owner faction; neutral/start cards excluded in `EnsureRecord()` (`IsNeutralCard` guard — the single exclusion point). Both paths **pre-create an all-zero row**, so every card shows even if it never triggered.
+- **Damage attribution is creator-relative**: `RecordDamage(source, amount, victimSide)` counts `DamageDealtToOpponent` when the victim opposes the CREATOR, else `DamageDealtToSelf` (recorded, hidden via `CombatStatDef.showInResultPanel = false`). Recorded damage = **actual HP lost** (`ProcessDamage` delta; shield-soaked/overkill excluded). Other stats: `TriggerCount` (per `CostNEffectContainer` invocation, incl. reactive chains), `PowerGiven`/`PowerReceived` (stack amounts; transfers count), `CardsGenerated` (on the creator), `RecordBury`/`RecordStage` split by SOURCE's owner; victim-side `TimesBuried`/`TimesStaged` always count, neutral victims count neither side.
 - **Hooks**: `CostNEffectContainer.InvokeEffectEvent()` (inside the `EffectCanBeInvoked` true branch), `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self` (each computes `victimSide` from owner/their status refs), `EffectScript.ApplyStatusEffectCore` Power branch, `BuryEffect.BuryChosenCards` / `StageEffect.StageChosenCards` (in the moved-cards loop).
 - **Row display**: name + copy-count suffix `" (X)"` (initial-deck copies from the `_deckCounts` snapshot; shown only when X ≥ 2; mid-combat cards default to 1). Row sort in `GetSessionRows()` (by `DamageDealtToOpponent` desc then faction).
 - **UI**: `ResultStatsPanel` builds two stacked halves fully at runtime (no prefab/scene wiring) with its own Canvas + CanvasScaler. Each half = faction-colored title (`YOU`/`ENEMY`) + header + scrollable rows with all registry columns; `showPercentageOfTotal` columns render `"12 (34%)"` — share of THAT HALF's column total. `PhaseManager.EnteringResultPhase()` builds it once; `ExitingResultPhase()` clears it. Total rounds are shown via a `Rounds: N` line in `PhaseManager.ShowResult()`, reading `CombatManager.roundsLastCombat` (captured in `ExitCombat()` before `roundNumRef` resets) minus 1 — the start card's opening shuffle is not a real round.
@@ -173,9 +173,9 @@ Split two-half panel (top = player-created cards, bottom = enemy-created cards) 
 
 ## Duplicate Slot Rule
 
-`ShopManager.duplicateCopiesShareSlotRef` (BoolSO in `Assets/SORefs/ShopRefs/`, default OFF). ON: copies sharing a `cardTypeID` take 1 deck slot (first copy only) when buying, and the shop display stacks duplicates upper-left (`ShopUXManager.duplicateStackOffset` / `duplicateStackMaxOffsetCount`). Count via `UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, duplicatesShareSlot)`; empty `cardTypeID` never deduped. Only the base card of a stack shows price (`ShopCardView.suppressPriceDisplay`). `CombatStartCardGiver` and enemy deck unaffected. Plan: `plans/plan-duplicate-cards-share-deck-slot-2026-07-31.md`.
+`ShopManager.duplicateCopiesShareSlotRef` (BoolSO in `Assets/SORefs/ShopRefs/`, default OFF). ON: copies sharing a `cardTypeID` take 1 deck slot (first copy only); shop display stacks duplicates upper-left (`duplicateStackOffset` / `duplicateStackMaxOffsetCount`); count via `UtilityFuncManagerScript.CountCardsTakingUpSpace`; empty `cardTypeID` never deduped; only the stack base shows price (`ShopCardView.suppressPriceDisplay`); `CombatStartCardGiver` and enemy deck unaffected. Plan: `plans/plan-duplicate-cards-share-deck-slot-2026-07-31.md`.
 
-**Shop Empty Slots**: persistent background objects (`ShopUXManager._spawnedEmptySlots`, one per deckSize grid slot, at `emptySlotZOffset` behind cards) — never consumed/respawned by buy/sell; spawned only on shop entry and deckSize increase via `SpawnEmptySlots` with an in-place overshoot pop (`CardPhysObjScript.SetTargetScale(target, Ease.OutBack, duration, delay)`, stagger `emptySlotSpawnStagger`). `_spawnedPlayerCards` holds real cards only; buy/sell just add/remove + `RelayoutPlayerDeckCards()` (sold cards compact left).
+**Shop Empty Slots**: persistent background objects (`ShopUXManager._spawnedEmptySlots`, one per deckSize grid slot, behind cards) — never consumed/respawned by buy/sell; spawned on shop entry and deckSize increase via `SpawnEmptySlots` (in-place overshoot pop `SetTargetScale(Ease.OutBack)`, stagger `emptySlotSpawnStagger`). `_spawnedPlayerCards` holds real cards only; buy/sell just add/remove + `RelayoutPlayerDeckCards()` (sold cards compact left).
 
 ## Animation System
 
@@ -263,9 +263,7 @@ Deck cards are face-down by default; state lives on `CardPhysObjScript` (`isFace
 
 ### Card Movement (`ICombatVisuals` / `CombatUXManager`)
 - `MoveCardToRevealZone(card, onComplete)` — Move from deck to reveal zone; callback fires when movement finishes.
-- `MoveCardToBottom(card, duration, useArc, onComplete)`
-- `MoveCardToTop(card, duration, useArc, onComplete)`
-- `MoveCardToIndex(card, index, duration, useArc, onComplete)`
+- `MoveCardToBottom/Top/Index(card, duration, useArc, onComplete)`
 - `DestroyCardWithAnimation(card, onComplete)`
 - `AddCardToDeckVisual(card)`
 - `SyncPhysicalCardsWithCombinedDeck()`
@@ -280,6 +278,7 @@ Deck cards are face-down by default; state lives on `CardPhysObjScript` (`isFace
 ## Critical Rules
 
 - **HPAlterEffect**: Automatically adds `baseDmg.value`; set `baseDmg` to 0 when passing a specific value.
+- **CardType**: `CardScript.cardType` (`EnumStorage.CardType` {None, Creature, Status}, append-only) replaced the `isCreature` bool (2026-09-02). Creature = attack-bearing 生物 (ATK column non-empty); Status = curse-type tokens (e.g. JU_ON) — outside every creature predicate and creature-only aura (BATTLE_HORN, RELIC_GRAVE_LORD), no special-cases anywhere. "Damaging card" predicates = `IsCreature || HasAttackAttribute` (damage capability, not type). Plan: `plans/plan-card-type-status-2026-09-02.md`.
 - **cardTypeID**: Used for saving / statistics / card-type filtering (not instance ID).
 - **Anti-loop**: Do not attach multiple looping effect instances to the same card.
 - **GameEvent.Raise**: Use `Raise()` only for non-faction-specific events. For owner/opponent events, use `RaiseOwner()` / `RaiseOpponent()` based on the trigger object's faction. Direct `Raise()` on faction events is prohibited.

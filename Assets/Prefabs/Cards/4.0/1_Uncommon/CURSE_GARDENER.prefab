@@ -69,8 +69,13 @@ MonoBehaviour:
   attackModThisRound: 0
   extraAttackTimes: 0
   attackTimesModThisRound: 0
-  isCreature: 0
+  cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &9118459330404902482
 MonoBehaviour:

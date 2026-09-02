@@ -70,7 +70,10 @@ namespace DefaultNamespace.Effects
 		protected bool PassesDamageFilter(CardScript cardScript)
 		{
 			if (!onlyTargetEnemyDamagingCards) return true;
-			return cardScript.isCreature;
+			// "Damaging" = damage capability, not card type (2026-09-02 type split): creatures
+			// always qualify; Status-type curse tokens qualify once they actually hold attack
+			// (EnhanceCurse growth) — a freshly spawned 0-attack curse deals no damage yet.
+			return cardScript.IsCreature || cardScript.HasAttackAttribute;
 		}
 		#endregion
 

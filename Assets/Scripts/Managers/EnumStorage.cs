@@ -58,11 +58,41 @@ public class EnumStorage : MonoBehaviour
 		MultiAttack
 	}
 
+	// Card type taxonomy (2026-09-02, plans/plan-card-type-status-2026-09-02.md).
+	// Creature = attack-bearing creature (4.0 生物, ATK column non-empty).
+	// Status = curse-type tokens (诅咒, e.g. JU_ON) that grow attack via EnhanceCurse but are not creatures.
+	// Append-only: prefabs serialize this as ints - inserting or reordering corrupts existing assets.
+	public enum CardType
+	{
+		None,
+		Creature,
+		Status
+	}
+
 	public enum Rarity
 	{
 		Common,
 		Uncommon,
 		Rare
+	}
+
+	// Utility card classification (shop utility passives, plans/plan-utility-passive-shop-pipeline-2026-08-31).
+	// Append-only: prefabs serialize this as ints - inserting or reordering corrupts existing assets.
+	public enum UtilityKind
+	{
+		None,
+		HpMax,
+		Income,
+		ShopOption,
+		FreeReroll,
+		RaritySlotU,
+		RaritySlotR,
+		RarityWeight,
+		RerollDiscount,
+		OddsUtility,
+		ReservedTag,
+		RerollCreatureWave,
+		RerollSpellWave
 	}
 
 	public static bool DoesListContainAmountOfStatusEffect(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)

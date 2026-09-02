@@ -156,7 +156,7 @@ MonoBehaviour:
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
-  isCreature: 1
+  cardType: 1
 --- !u!114 &6233935548096134504
 MonoBehaviour:
   m_ObjectHideFlags: 0

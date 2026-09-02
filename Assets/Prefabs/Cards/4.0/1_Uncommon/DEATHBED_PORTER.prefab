@@ -335,7 +335,7 @@ MonoBehaviour:
   attackModThisRound: 0
   extraAttackTimes: 0
   attackTimesModThisRound: 0
-  isCreature: 1
+  cardType: 1
   isPassive: 0
   attackSnapshotValue: -1
 --- !u!114 &7024253999828245242

@@ -48,7 +48,7 @@ namespace DefaultNamespace.Effects
 		/// <summary>
 		/// Bump the faction's per-round creature attack-times aura (BATTLE_HORN
 		/// "本回合友方生物攻击次数+1", 4.0 E7). Aura lives on ValueTrackerManager, is reset at
-		/// every round start, and is read by CardScript.GetAttackTimes for isCreature cards —
+		/// every round start, and is read by CardScript.GetAttackTimes for Creature-type cards —
 		/// creatures generated later in the same round are covered automatically. The batch
 		/// animation runs over the creatures present at grant time (current beneficiaries).
 		/// </summary>
@@ -102,7 +102,7 @@ namespace DefaultNamespace.Effects
 			// CollectFriendlyCards applies ShouldSkipCard + faction + PassesDamageFilter and
 			// covers deck + reveal zone; narrow to creatures here.
 			var cards = CollectFriendlyCards(filterCanReceive: false, includeSelf: true);
-			cards.RemoveAll(c => c == null || !c.isCreature);
+			cards.RemoveAll(c => c == null || !c.IsCreature);
 			return cards;
 		}
 

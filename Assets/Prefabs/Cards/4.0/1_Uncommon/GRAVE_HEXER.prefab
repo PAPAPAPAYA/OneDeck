@@ -79,7 +79,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ReviveEffect
   reviveTargetSide: 0
   creatureFilter: 0
-  typeIDFilter: JU_ON
+  typeIDFilter: 
   sortBy: 0
   rarityFilter: 0
   delayedRevive: 0
@@ -241,8 +241,13 @@ MonoBehaviour:
   attackModThisRound: 0
   extraAttackTimes: 0
   attackTimesModThisRound: 0
-  isCreature: 0
+  cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &7946151307686833904
 MonoBehaviour:

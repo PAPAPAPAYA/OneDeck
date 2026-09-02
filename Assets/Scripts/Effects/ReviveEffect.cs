@@ -16,7 +16,9 @@ using UnityEngine;
 public class ReviveEffect : EffectScript
 {
 	public enum ReviveTargetSide { MyCards, TheirCards }
-	public enum CreatureFilter { Any, Creature, NonCreature }
+	// Append-only: prefabs serialize this as ints - inserting or reordering corrupts existing assets.
+	// Status (2026-09-02): selects CardType.Status cards (curse-type tokens), never creatures.
+	public enum CreatureFilter { Any, Creature, NonCreature, Status }
 	public enum ReviveSortBy { None, MaxAttack, MaxExtraAttackTimes }
 	public enum ReviveRarityFilter { Any, Common, Uncommon, Rare }
 
@@ -105,8 +107,9 @@ public class ReviveEffect : EffectScript
 	/// </summary>
 	private bool PassesPredicateFilters(CardScript cardScript)
 	{
-		if (creatureFilter == CreatureFilter.Creature && !cardScript.isCreature) return false;
-		if (creatureFilter == CreatureFilter.NonCreature && cardScript.isCreature) return false;
+		if (creatureFilter == CreatureFilter.Creature && !cardScript.IsCreature) return false;
+		if (creatureFilter == CreatureFilter.NonCreature && cardScript.IsCreature) return false;
+		if (creatureFilter == CreatureFilter.Status && cardScript.cardType != EnumStorage.CardType.Status) return false;
 		if (onlyEnhanced && cardScript.attackGrowth <= 0) return false;
 		if (!string.IsNullOrEmpty(typeIDFilter) && cardScript.cardTypeID != typeIDFilter) return false;
 		if (rarityFilter != ReviveRarityFilter.Any)

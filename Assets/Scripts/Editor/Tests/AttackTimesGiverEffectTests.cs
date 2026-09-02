@@ -44,7 +44,7 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 	{
 		var aura = ValueTrackerManager.creatureAttackTimesAuraOwnerThisRoundRef;
 		var creature1 = CreateCard(true, "Creature1");
-		creature1.GetComponent<CardScript>().isCreature = true;
+		creature1.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		Assert.AreEqual(1, creature1.GetComponent<CardScript>().GetAttackTimes());
 
 		aura.value = 1; // BATTLE_HORN bump
@@ -52,7 +52,7 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 
 		// Retroactive coverage: a creature created after the bump reads the same aura.
 		var creature2 = CreateCard(true, "Creature2");
-		creature2.GetComponent<CardScript>().isCreature = true;
+		creature2.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		Assert.AreEqual(2, creature2.GetComponent<CardScript>().GetAttackTimes());
 
 		// Non-creatures ignore the aura.
@@ -61,7 +61,7 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 
 		// Enemy creatures read the enemy aura only (still 0 here).
 		var enemyCreature = CreateCard(false, "EnemyCreature");
-		enemyCreature.GetComponent<CardScript>().isCreature = true;
+		enemyCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		Assert.AreEqual(1, enemyCreature.GetComponent<CardScript>().GetAttackTimes());
 	}
 
@@ -69,7 +69,7 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 	public void BumpFriendlyCreatureAttackTimesAura_BumpsFactionAuraNotPerCard()
 	{
 		var creature = CreateCard(true, "Creature");
-		creature.GetComponent<CardScript>().isCreature = true;
+		creature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		var giver = CreateEffect<DefaultNamespace.Effects.AttackTimesGiverEffect>(creature);
 
 		giver.BumpFriendlyCreatureAttackTimesAura(1);
@@ -83,7 +83,7 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 	public void GiveSelfAttackTimes_GrantsThisRound_AndCapturesFlaggedAttackChange()
 	{
 		var card = CreateCard(true, "ComboStarter");
-		card.GetComponent<CardScript>().isCreature = true;
+		card.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		card.GetComponent<CardScript>().printedAttack = 2;
 		var giver = CreateEffect<DefaultNamespace.Effects.AttackTimesGiverEffect>(card);
 
@@ -105,11 +105,11 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 	public void GiveRandomFriendlyCreatureAttackTimes_GrantsToExactlyOneCreature()
 	{
 		var granter = CreateCard(true, "Granter");
-		granter.GetComponent<CardScript>().isCreature = true;
+		granter.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		var a = CreateCard(true, "A");
-		a.GetComponent<CardScript>().isCreature = true;
+		a.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		var b = CreateCard(true, "B");
-		b.GetComponent<CardScript>().isCreature = true;
+		b.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		CombatManager.combinedDeckZone.Add(a);
 		CombatManager.combinedDeckZone.Add(b);
 

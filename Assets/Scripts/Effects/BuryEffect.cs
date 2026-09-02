@@ -164,8 +164,9 @@ public class BuryEffect : EffectScript
 
 	private bool PassesCreatureFilter(CardScript cardScript)
 	{
-		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.isCreature) return false;
-		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.isCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.IsCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.IsCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Status && cardScript.cardType != EnumStorage.CardType.Status) return false;
 		return true;
 	}
 
@@ -449,7 +450,9 @@ public class BuryEffect : EffectScript
 					// The victim-side counters above count cards buried OF a side regardless of
 					// burier; these count burials CAUSED by each side — my sacrificed creatures
 					// count for me, enemy-caused burials never do. Neutral sources are skipped.
-					if (targetCardScript.isCreature && myCardScript != null && myCardScript.myStatusRef != null)
+					// Status-type curse cards do NOT count (2026-09-02 type split, accepted: burying
+					// a curse no longer feeds the burial counter).
+					if (targetCardScript.IsCreature && myCardScript != null && myCardScript.myStatusRef != null)
 					{
 						if (myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef)
 						{

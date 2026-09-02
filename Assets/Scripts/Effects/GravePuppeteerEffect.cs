@@ -40,7 +40,7 @@ public class GravePuppeteerEffect : EffectScript
 			if (cardScript == null) continue;
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 			if (cardScript.isPassive) continue;
-			if (!cardScript.isCreature) continue;
+			if (!cardScript.IsCreature) continue;
 			if (cardScript.myStatusRef != myCardScript.myStatusRef) continue;
 			if (cardScript.myStatusRef == null) continue;
 			candidates.Add(cardScript);

@@ -141,7 +141,7 @@ MonoBehaviour:
   cardTypeID: CURSE_REVIVER
   displayName: "\u6D17\u4E0D\u6389\u7684\u5370\u5B50"
   cardDesc: "\u653B\u51FB;\u590D\u6D3B1\u654C\u65B9\u8BC5\u5492"
-  rarity: 1
+  rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
@@ -158,8 +158,13 @@ MonoBehaviour:
   attackModThisRound: 0
   extraAttackTimes: 0
   attackTimesModThisRound: 0
-  isCreature: 1
+  cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &1986566641677310245
 MonoBehaviour:

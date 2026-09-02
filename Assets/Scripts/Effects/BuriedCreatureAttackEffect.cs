@@ -20,7 +20,7 @@ public class BuriedCreatureAttackEffect : EffectScript
 		// Friendly creature only (defensive: onFriendlyCardBuried is already victim-faction
 		// delivered, but the context field is shared across events).
 		if (buriedScript.myStatusRef != myCardScript.myStatusRef) return;
-		if (!buriedScript.isCreature) return;
+		if (!buriedScript.IsCreature) return;
 		if (CombatManager.ShouldSkipEffectProcessing(buriedScript)) return;
 		// Neutral victims never belong to a side.
 		if (buriedScript.myStatusRef == null) return;

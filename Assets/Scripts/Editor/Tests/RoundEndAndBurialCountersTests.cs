@@ -15,7 +15,7 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 	{
 		var buryCard = CreateCard(true, "Burier");
 		var enemyCreature = CreateCard(false, "EnemyCreature");
-		enemyCreature.GetComponent<CardScript>().isCreature = true;
+		enemyCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		CombatManager.combinedDeckZone.Add(buryCard);
 		CombatManager.combinedDeckZone.Add(enemyCreature);
 
@@ -34,7 +34,7 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 	{
 		var enemyBurier = CreateCard(false, "EnemyBurier");
 		var myCreature = CreateCard(true, "MyCreature");
-		myCreature.GetComponent<CardScript>().isCreature = true;
+		myCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		CombatManager.combinedDeckZone.Add(enemyBurier);
 		CombatManager.combinedDeckZone.Add(myCreature);
 
@@ -52,7 +52,7 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 	{
 		var buryCard = CreateCard(true, "Sacrificer");
 		var myCreature = CreateCard(true, "MyCreature");
-		myCreature.GetComponent<CardScript>().isCreature = true;
+		myCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		CombatManager.combinedDeckZone.Add(buryCard);
 		CombatManager.combinedDeckZone.Add(myCreature);
 
@@ -107,7 +107,7 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 	{
 		var stager = CreateCard(true, "EscortHolder");
 		var creature = CreateCard(true, "BigCreature");
-		creature.GetComponent<CardScript>().isCreature = true;
+		creature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		creature.GetComponent<CardScript>().printedAttack = 5;
 		var nonCreature = CreateCard(true, "BiggerNonCreature");
 		nonCreature.GetComponent<CardScript>().printedAttack = 9;
@@ -136,7 +136,7 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 	{
 		var escort = CreateCard(true, "Escort");
 		var bigCreature = CreateCard(true, "BigCreature");
-		bigCreature.GetComponent<CardScript>().isCreature = true;
+		bigCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		bigCreature.GetComponent<CardScript>().printedAttack = 5;
 		CombatManager.combinedDeckZone.Add(escort);
 		CombatManager.combinedDeckZone.Add(bigCreature);

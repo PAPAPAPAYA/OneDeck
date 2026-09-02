@@ -14,7 +14,7 @@ namespace DefaultNamespace.Effects
 		/// <summary>
 		/// Attack granting has no status-effect receive restrictions (no stacking limit and no
 		/// statusEffectToGive gate): any card may receive permanent attack. The 强化 target pool
-		/// is shaped by PassesDamageFilter (isCreature) / the target predicate, not by
+		/// is shaped by PassesDamageFilter (IsCreature || HasAttackAttribute) / the target predicate, not by
 		/// CanReceiveStatusEffect — which would otherwise always reject cards when
 		/// statusEffectToGive is None (the field is meaningless for attack granting).
 		/// </summary>
@@ -271,7 +271,7 @@ namespace DefaultNamespace.Effects
 			var cm = combatManager;
 			if (cm == null || cm.lastCardGainedAttack == null) return;
 			var target = cm.lastCardGainedAttack;
-			if (!target.isCreature) return;
+			if (!target.IsCreature) return;
 			if (target.myStatusRef != myCardScript.myStatusRef) return;
 			if (CombatManager.ShouldSkipEffectProcessing(target)) return;
 			GiveAttackToXFriendlyWithTarget(amount, target);
@@ -316,15 +316,16 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// Apply a THIS-ROUND attack modifier to every creature on both sides except curse cards
-		/// (WEAKENING_FIELD "除了【诅咒】，所有生物本回合攻击力-1"). Uses CardScript.ModifyAttackThisRound
-		/// — this is not a 强化 grant, so no attack-gain events fire (the round reset clears it).
+		/// Apply a THIS-ROUND attack modifier to every creature on both sides (WEAKENING_FIELD
+		/// "所有生物本回合攻击力-1"). Status-type curse cards are skipped naturally — they are not
+		/// creatures (2026-09-02 type split replaced the former curse-typeID exclusion). Uses
+		/// CardScript.ModifyAttackThisRound — this is not a 强化 grant, so no attack-gain events
+		/// fire (the round reset clears it). Method name kept: WEAKENING_FIELD.prefab binds it by
+		/// name via a serialized UnityEvent call.
 		/// </summary>
 		public virtual void ModifyAllCreatureAttackThisRoundExceptCurse(int delta)
 		{
 			if (delta == 0) return;
-			var storage = GameEventStorage.me;
-			string curseType = storage != null && storage.curseCardTypeID != null ? storage.curseCardTypeID.value : null;
 			var deck = combatManager.combinedDeckZone;
 			if (deck != null)
 			{
@@ -332,18 +333,16 @@ namespace DefaultNamespace.Effects
 				{
 					if (cardObj == null) continue;
 					var cardScript = cardObj.GetComponent<CardScript>();
-					if (cardScript == null || !cardScript.isCreature) continue;
+					if (cardScript == null || !cardScript.IsCreature) continue;
 					if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
-					if (!string.IsNullOrEmpty(curseType) && cardScript.cardTypeID == curseType) continue;
 					cardScript.ModifyAttackThisRound(delta);
 				}
 			}
 			if (combatManager.revealZone != null)
 			{
 				var revealScript = combatManager.revealZone.GetComponent<CardScript>();
-				if (revealScript != null && revealScript.isCreature &&
-				    !CombatManager.ShouldSkipEffectProcessing(revealScript) &&
-				    (string.IsNullOrEmpty(curseType) || revealScript.cardTypeID != curseType))
+				if (revealScript != null && revealScript.IsCreature &&
+				    !CombatManager.ShouldSkipEffectProcessing(revealScript))
 				{
 					revealScript.ModifyAttackThisRound(delta);
 				}

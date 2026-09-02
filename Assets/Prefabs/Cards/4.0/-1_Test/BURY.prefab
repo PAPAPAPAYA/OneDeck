@@ -148,7 +148,7 @@ MonoBehaviour:
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
-  isCreature: 1
+  cardType: 1
   isPassive: 0
 --- !u!114 &1417447142227650579
 MonoBehaviour:

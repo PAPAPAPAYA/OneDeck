@@ -74,11 +74,19 @@ public class CardScript : MonoBehaviour
 	public int attackTimesModThisRound;
 
 	/// <summary>
-	/// Creature marker (4.0 spec 生物): card with the attack attribute, including attack 0.
-	/// Invariant: 生物 ⟺ ATK column non-empty. Explicit flag — never inferred from components —
-	/// so target predicates (强化N友方, 埋葬N敌方生物, onlyTargetEnemyDamagingCards, ...) stay robust.
+	/// Card type (plans/plan-card-type-status-2026-09-02.md): Creature = attack-bearing creature
+	/// (4.0 spec 生物, invariant 生物 ⟺ ATK column non-empty); Status = curse-type tokens
+	/// (诅咒, e.g. JU_ON) that grow attack via EnhanceCurse but are NOT creatures — they drop out
+	/// of every creature predicate (埋葬N生物, BATTLE_HORN aura, RELIC_TALLY burial counter, ...).
+	/// Explicit field — never inferred from components.
 	/// </summary>
-	public bool isCreature = false;
+	public EnumStorage.CardType cardType = EnumStorage.CardType.None;
+
+	/// <summary>
+	/// Creature-type check. Creature-only auras (BATTLE_HORN attack times, RELIC_GRAVE_LORD grave
+	/// attack) and every creature predicate read this; there are no curse special-cases anywhere.
+	/// </summary>
+	public bool IsCreature => cardType == EnumStorage.CardType.Creature;
 
 	/// <summary>
 	/// Passive marker (4.0 spec 被动, engine step 3): never revealed, immovable, excluded from
@@ -86,6 +94,28 @@ public class CardScript : MonoBehaviour
 	/// (ReviveEffect) check it now; the rest of the passive behavior lands in step 3.
 	/// </summary>
 	public bool isPassive = false;
+
+	/// <summary>
+	/// Utility card classification (shop utility passives, plans/plan-utility-passive-shop-pipeline-2026-08-31).
+	/// None = normal card, zero cost. Enum is append-only (EnumStorage.UtilityKind).
+	/// </summary>
+	[Header("Utility Passive")]
+	public EnumStorage.UtilityKind utilityKind = EnumStorage.UtilityKind.None;
+	[Tooltip("Generic param slot 1, meaning depends on utilityKind: Income = payday bonus, RerollDiscount = gold off, OddsUtility = board chance percent, ...")]
+	public int utilityValue;
+	[Tooltip("Generic param slot 2, meaning depends on utilityKind: RaritySlotR/ReservedTag = guaranteed once per N boards, RerollDiscount = once per N rerolls, ...")]
+	public int utilityValue2;
+	[Tooltip("RarityWeight only: per-rarity weight multiplier applied on top of the session table. Missing rarity = unchanged. Multiple weight cards multiply per rarity.")]
+	public List<UtilityRarityWeightMult> utilityRarityWeightMults = new List<UtilityRarityWeightMult>();
+	[Tooltip("ReservedTag only: the tag this card's guaranteed slot rolls for.")]
+	public EnumStorage.Tag reservedTag = EnumStorage.Tag.None;
+
+	[Serializable]
+	public class UtilityRarityWeightMult
+	{
+		public EnumStorage.Rarity rarity;
+		public float mult = 1f;
+	}
 
 	[System.NonSerialized]
 	private Func<int> _attackResolver;
@@ -106,9 +136,17 @@ public class CardScript : MonoBehaviour
 	public int attackSnapshotValue = -1;
 
 	/// <summary>
-	/// Whether this card shows an attack value on its face. Legacy cards (all-zero attack) keep the old face.
+	/// Whether this card holds the attack attribute (attack participates in damage settlement).
+	/// Drives the mixed Power+attack invariant check; independent of face display.
 	/// </summary>
-	public bool HasAttackDisplay => _attackResolver != null || printedAttack != 0 || attackGrowth != 0 || attackModThisRound != 0 || extraAttackTimes != 0 || attackTimesModThisRound != 0;
+	public bool HasAttackAttribute => _attackResolver != null || printedAttack != 0 || attackGrowth != 0 || attackModThisRound != 0 || extraAttackTimes != 0 || attackTimesModThisRound != 0;
+
+	/// <summary>
+	/// Whether this card shows an attack value on its face. Creature and Status cards always show
+	/// it, even at 0 (e.g. the JU_ON curse token — 2026-09-02 ruling); None-type cards only when
+	/// they actually hold attack (EnhanceCurse growth, RELIC_GRAVE_CURSE override, dynamic resolver).
+	/// </summary>
+	public bool HasAttackDisplay => cardType != EnumStorage.CardType.None || HasAttackAttribute;
 
 	/// <summary>
 	/// Current attack value (single settlement entry point). Dynamic attack (attack = Y, resolved live)
@@ -187,7 +225,7 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	private int GetGraveCreatureAttackAura()
 	{
-		if (!isCreature) return 0;
+		if (!IsCreature) return 0;
 		var tracker = ValueTrackerManager.me;
 		var cm = CombatManager.Me;
 		if (tracker == null || cm == null || myStatusRef == null) return 0;
@@ -324,7 +362,7 @@ public class CardScript : MonoBehaviour
 	public int GetAttackTimes()
 	{
 		int times = 1 + extraAttackTimes + attackTimesModThisRound;
-		if (isCreature)
+		if (IsCreature)
 		{
 			times += GetCreatureAttackTimesAura();
 		}

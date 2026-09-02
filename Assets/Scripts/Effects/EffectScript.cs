@@ -9,8 +9,10 @@ public class EffectScript : MonoBehaviour
 	/// <summary>
 	/// Creature membership filter for movement-effect pools (4.0 step-5): BuryEffect and
 	/// StageEffect use this; ReviveEffect keeps its own nested CreatureFilter enum.
+	/// Append-only: effects serialize this as ints - inserting or reordering corrupts existing assets.
+	/// Status (2026-09-02): selects CardType.Status cards (curse-type tokens), never creatures.
 	/// </summary>
-	public enum EffectCreatureFilter { Any, Creature, NonCreature }
+	public enum EffectCreatureFilter { Any, Creature, NonCreature, Status }
 
 	protected CombatManager combatManager;
 	protected GameObject myCard;
@@ -111,7 +113,7 @@ public class EffectScript : MonoBehaviour
 			// both Power layers and the attack attribute — AttackEffect does not count Power
 			// layers (ComputeTotalDamage bypasses DmgCalculator), so a mixed card silently
 			// loses damage. Flag any violation; the mix-use prefab audit test backs this up.
-			if (targetCardScript.HasAttackDisplay)
+			if (targetCardScript.HasAttackAttribute)
 			{
 				TestManager.LogError("[AttackAttribute] Card '" + targetCardScript.gameObject.name +
 					"' gained Power while having the attack attribute (mixed Power + attack); Power layers will not contribute damage.");
