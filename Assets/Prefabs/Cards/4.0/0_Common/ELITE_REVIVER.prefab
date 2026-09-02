@@ -51,7 +51,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: ELITE_REVIVER
   displayName: "\u63CF\u8FC7\u91D1\u7684\u724C\u4F4D"
-  cardDesc: "\u653B\u51FB;\u590D\u6D3B1\u3010\u88AB\u5F3A\u5316\u3011\u53CB\u65B9\u751F\u7269"
+  cardDesc: "\u653B\u51FB;\u590D\u6D3B1\u88AB\u5F3A\u5316\u53CB\u65B9\u751F\u7269"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -71,6 +71,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &6085616041691690641
 MonoBehaviour:

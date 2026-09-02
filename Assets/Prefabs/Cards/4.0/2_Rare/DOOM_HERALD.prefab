@@ -138,7 +138,7 @@ MonoBehaviour:
   cardTypeID: DOOM_HERALD
   displayName: "\u9012\u8BF7\u67EC\u7684\u4EBA"
   cardDesc: "\u653B\u51FB;\u590D\u6D3B <b>1</b> \u653B\u51FB\u529B\u6700\u9AD8\u654C\u65B9;\u5F3A\u5316
-    <b>4</b> \u654C\u65B9[\u8BC5\u5492]"
+    <b>4</b> \u654C\u65B9\u8BC5\u5492"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -158,6 +158,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &3315359230326666000
 MonoBehaviour:

@@ -136,8 +136,8 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 #### Tag Display Name & Tooltip
 - `TagTooltipDatabaseSO` (`Assets/Resources/TagTooltipDatabase.asset`, lazy singleton `Me`) maps each tag to a `displayName` StringSO (`Assets/SORefs/Strings/TagNames/`) and a tooltip `description` StringSO (`Assets/SORefs/Strings/TagTooltips/`). All StringSO assets must have `reset = false`.
 - **Single source of truth**: every user-visible tag text resolves through `TagTooltipDatabaseSO.GetTagDisplayName(tag)` (falls back to the enum name when unconfigured) — in-card tag print, hover tooltip title (`CardTagTooltip`), and cardDesc `<tag:EnumName>` placeholders. To rename a tag, edit only the `TagName_*.asset` value.
-- **cardDesc placeholder**: `<tag:EnumName>` renders as the display name (no brackets added — authors write `[<tag:X>]` for the bracketed style), resolved inside `CardScript.ComputeDynamicCardDesc`. Never hand-write tag names in cardDesc.
-- Hover tooltip: `CardTagTooltip` (self-built canvas) from `CardPhysObjScript` hover; `CombatUXManager.hoverPopUpDelay` (default 0.1s) gates `PopUpCard` after hover; 0 = next frame.
+- **cardDesc tag-reference v2**: `<tag:X>` renders display names via `ComputeDynamicCardDesc`; tag refs = `tag为【<tag:X>】的…卡`; 【】 reserved for tag phrases, card refs bare (信徒/诅咒 = tokens). Docs: `docs/CardDesc_TagReference_Convention_v2.md`.
+- Hover tooltip: `CardTagTooltip` from `CardPhysObjScript` hover; `CombatUXManager.hoverPopUpDelay` (default 0.1s) gates `PopUpCard` (0 = next frame).
 
 ## Events
 

@@ -225,7 +225,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_SHEPHERD
   displayName: "\u6765\u63A5\u4EBA\u7684\u9ED1\u8F66"
-  cardDesc: "\u653B\u51FB;\u590D\u6D3B <b>1</b> \u53CB\u65B9[<tag:Believer>]"
+  cardDesc: "\u653B\u51FB;\u590D\u6D3B <b>1</b> \u5F20tag\u4E3A\u3010<tag:Believer>\u3011\u7684\u53CB\u65B9\u5361"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -245,6 +245,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &2151325135062001027
 MonoBehaviour:

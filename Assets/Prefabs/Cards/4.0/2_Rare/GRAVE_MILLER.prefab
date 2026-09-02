@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb08dbd2c6066ac468526e104b9095a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
-  tagsToCheck: 00000000
+  tagsToCheck: 
   excludeSelf: 1
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
@@ -251,7 +251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb08dbd2c6066ac468526e104b9095a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
-  tagsToCheck: 00000000
+  tagsToCheck: 
   excludeSelf: 1
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
@@ -331,6 +331,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &7454616710891810716
 MonoBehaviour:

@@ -139,7 +139,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_STRIKER
   displayName: "\u51FA\u8FC7\u4E8B\u7684\u90A3\u6761\u8857"
-  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx2;\u751F\u6210 <b>1</b> [\u4FE1\u5F92]"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx2;\u751F\u6210 <b>1</b> \u4FE1\u5F92"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -159,6 +159,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &3821332137548120541
 MonoBehaviour:

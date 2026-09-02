@@ -136,7 +136,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_HATCHERY
   displayName: "\u9999\u706B\u4E0D\u65AD\u7684\u91CE\u5E99"
-  cardDesc: "\u751F\u6210 <b>3</b> [\u4FE1\u5F92];\u56DE\u5408\u5F00\u59CB:\u57CB\u846C\u81EA\u8EAB"
+  cardDesc: "\u751F\u6210 <b>3</b> \u4FE1\u5F92;\u56DE\u5408\u5F00\u59CB:\u57CB\u846C\u81EA\u8EAB"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -156,6 +156,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &638178398309144577
 MonoBehaviour:

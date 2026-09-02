@@ -218,7 +218,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RIFT_INSECT_4.0
   displayName: "\u95E8\u53E3\u591A\u51FA\u7684\u978B\u5370"
-  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u751F\u6210 <b>1</b> [\u4FE1\u5F92]"
+  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u751F\u6210 <b>1</b> \u4FE1\u5F92"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -238,6 +238,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &1227049065017407936
 MonoBehaviour:
