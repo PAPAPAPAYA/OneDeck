@@ -63,8 +63,20 @@ public class ShopCardView : MonoBehaviour
 		_cardPhysObj.cardPricePrint.gameObject.SetActive(true);
 
 		int basePrice = ShopManager.me != null ? ShopManager.me.GetCardPrice(_cardPhysObj.cardImRepresenting) : 0;
-		int displayPrice = _cardPhysObj.shopItemIndex >= 0 ? basePrice : basePrice / 2;
-		_cardPhysObj.cardPricePrint.text = GameColorPalette.Me.highlight.OpenTag + "$" + displayPrice + "</color>";
+		bool isShopItem = _cardPhysObj.shopItemIndex >= 0;
+		int discountOff = isShopItem && ShopManager.me != null ? ShopManager.me.GetBoardDiscount(_cardPhysObj.cardImRepresenting) : 0;
+		int displayPrice = isShopItem ? Mathf.Max(0, basePrice - discountOff) : basePrice / 2;
+		if (discountOff > 0)
+		{
+			// Plan step 5: discounted board offer shows the struck-through base price + the reduced one.
+			_cardPhysObj.cardPricePrint.text =
+				"<s>" + GameColorPalette.Me.highlight.OpenTag + "$" + basePrice + "</color></s> " +
+				GameColorPalette.Me.heal.OpenTag + "$" + displayPrice + "</color>";
+		}
+		else
+		{
+			_cardPhysObj.cardPricePrint.text = GameColorPalette.Me.highlight.OpenTag + "$" + displayPrice + "</color>";
+		}
 	}
 
 	#endregion

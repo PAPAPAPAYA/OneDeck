@@ -79,7 +79,6 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 1c59f879b91f1e240b4c60911397cf9a, type: 3}
   - {fileID: 8718476725744197808, guid: 5f1781f6b0db2024cbd5bda35e63d834, type: 3}
   - {fileID: 8718476725744197808, guid: ad8079f6ef9e09e4588f671cc8202250, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   - {fileID: 8718476725744197808, guid: 036c22b55cab33c44a3b319fdf0827a1, type: 3}
   - {fileID: 1808145013887896563, guid: f38a675234c3fdc4088b8e4d189a74de, type: 3}
@@ -87,6 +86,22 @@ MonoBehaviour:
   - {fileID: 1808145013887896563, guid: 276b53576e814444e84a0b3ffd345aca, type: 3}
   - {fileID: 1808145013887896563, guid: 1bafbaef2fb0d6b4d98d65925847096d, type: 3}
   - {fileID: 8718476725744197808, guid: 3efb5a32b6315bf4d9f8f3d934e96dcc, type: 3}
+  - {fileID: 5604192511367363100, guid: d2c622cad739c6448a2948f447d5c751, type: 3}
+  - {fileID: 2908188450075608291, guid: 6e8e27157e4a3fd4a8f188c860cdba5b, type: 3}
+  - {fileID: 2505954308661705763, guid: 898847ac0794e17459cdeaf96e765153, type: 3}
+  - {fileID: 3086996215266703862, guid: 61d0b6bdaed69004bbb62a9745892de0, type: 3}
+  - {fileID: 6006308298530791616, guid: 1995e3ea657f5784d8f9f20bcee2e398, type: 3}
+  - {fileID: 6004700194975099009, guid: 0dae411ae03eb904bbc72aed6cacdd5c, type: 3}
+  - {fileID: 1992344847984743310, guid: 07a3ce9dcf23d3c44a1ab48f1abe2f5b, type: 3}
+  - {fileID: 1850663286599175313, guid: 1787f3125324b774ea57b727df5951d8, type: 3}
+  - {fileID: 3697752902067459713, guid: cadc6bcadc4a692498a2584489383caa, type: 3}
+  - {fileID: 8780781107039114643, guid: 0e50726086786df4190827bbc14ab8d3, type: 3}
+  - {fileID: 5175222997515921655, guid: ab4dac145ba1e9e40b610551784e02fa, type: 3}
+  - {fileID: 1001426669233903496, guid: 31c32d1fe231a3847be1813754dce636, type: 3}
+  - {fileID: 4165946271094162243, guid: 01fd31073fb3d1946bfa1a6a1557e7cd, type: 3}
+  - {fileID: 2110593888578812912, guid: 0d0a1c17d42ccb240a2ecb312400b7a9, type: 3}
+  - {fileID: 1470516278037802472, guid: f4efdf8e426a92e479aa0f36e5fca13c, type: 3}
+  - {fileID: 8792530838676176546, guid: 07770769b7bc0bf4b9bfe0da5eea3c01, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: shop pool

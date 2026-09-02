@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8718476725744197808
+--- !u!1 &6004700194975099009
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3828591620990538636}
-  - component: {fileID: 7915703419504864441}
+  - component: {fileID: 5977496396422772042}
+  - component: {fileID: 2165272599037756692}
   m_Layer: 0
-  m_Name: IncreaseHpMax
+  m_Name: UTILITY_ODDS_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3828591620990538636
+--- !u!4 &5977496396422772042
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
+  m_GameObject: {fileID: 6004700194975099009}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -32,22 +32,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7915703419504864441
+--- !u!114 &2165272599037756692
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8718476725744197808}
+  m_GameObject: {fileID: 6004700194975099009}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: SYSTEM_INCREASE_HP_MAX
-  displayName: "\u65E9\u7761\u65E9\u8D77"
-  cardDesc: "\u751F\u547D\u503C\u4E0A\u9650 <b>+4</b>(\u5E38\u9A7B:\u5728\u5361\u7EC4\u5373\u751F\u6548,\u5356\u51FA\u5373\u5931\u6548)"
+  cardTypeID: UTILITY_ODDS_1
+  displayName: "\u5E37\u5E55\u4E4B\u540E"
+  cardDesc: "\u6BCF\u5BB6\u5546\u5E97\u7684\u9996\u4E2A\u8D27\u67B6\u5FC5\u4E3A<b>\u5947\u7269\u67B6</b>"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -67,9 +67,9 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 1
-  utilityKind: 1
-  utilityValue: 4
-  utilityValue2: 0
+  utilityKind: 9
+  utilityValue: 100
+  utilityValue2: 1
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1

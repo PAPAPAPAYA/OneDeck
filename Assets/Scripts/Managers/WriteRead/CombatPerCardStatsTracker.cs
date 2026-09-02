@@ -176,7 +176,9 @@ public class CombatPerCardStatsTracker : MonoBehaviour
 		{
 			if (cardGo == null) continue;
 			var card = cardGo.GetComponent<CardScript>();
-			if (card == null || card.IsNeutralCard) continue;
+			// Utility passives would only ever be all-zero rows (no combat effect chain): skip
+			// both the row pre-create and the deck-count snapshot (plan step 6).
+			if (card == null || card.IsNeutralCard || card.IsUtilityPassive) continue;
 
 			var faction = ResolveFaction(card);
 			_creatorSides[card] = faction;
@@ -305,6 +307,7 @@ public class CombatPerCardStatsTracker : MonoBehaviour
 	{
 		if (card == null) return null;
 		if (card.IsNeutralCard) return null;
+		if (card.IsUtilityPassive) return null; // no combat effect chain: would be an all-zero row
 
 		var faction = ResolveCreatorSide(card);
 		string typeID = ResolveTypeID(card);

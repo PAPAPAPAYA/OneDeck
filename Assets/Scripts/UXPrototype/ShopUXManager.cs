@@ -839,4 +839,26 @@ public class ShopUXManager : MonoBehaviour
 		if (physObjScript == null || physObjScript.cardDescPrint == null || cardScript == null) return;
 		physObjScript.cardDescPrint.text = cardScript.GetCardDescForDisplay();
 	}
+
+	/// <summary>
+	/// Plan step 5: emphasize pulse (combat-style 1.2x OutBack) on the player-deck physical
+	/// instance of a card, fired when a utility passive's effect (re)applies via the shop
+	/// recompute (buy). Payday-time application happens before deck instances exist, so there
+	/// is intentionally no pulse on shop entry.
+	/// </summary>
+	public void PulsePlayerCard(CardScript cardScript)
+	{
+		if (cardScript == null) return;
+		foreach (var card in _spawnedPlayerCards)
+		{
+			if (card == null) continue;
+			var phys = card.GetComponent<CardPhysObjScript>();
+			if (phys == null || phys.cardImRepresenting != cardScript) continue;
+
+			Vector3 baseScale = phys.TargetScale;
+			phys.SetTargetScale(baseScale * 1.2f, DG.Tweening.Ease.OutBack, 0.12f);
+			phys.SetTargetScale(baseScale, DG.Tweening.Ease.OutQuad, 0.13f, 0.13f);
+			return;
+		}
+	}
 }

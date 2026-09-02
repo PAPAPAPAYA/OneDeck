@@ -1228,6 +1228,20 @@ MonoBehaviour:
 
     Press <b>[S]</b> to TOGGLE buying/selling'
   sellMode: 0
+  incomePerSession: 2
+  hpMaxPerSession: 2
+  deckSizePerSession: 1
+  deckSlotBasePrice: 4
+  deckSlotPriceStep: 2
+  deckSlotPurchasesRef: {fileID: 11400000, guid: f7108533cd29ce143a91c62f18e07716, type: 2}
+  sessionUtilityBoardChances:
+  - startSession: 1
+    utilityBoardChancePercent: 10
+  - startSession: 3
+    utilityBoardChancePercent: 15
+  - startSession: 5
+    utilityBoardChancePercent: 20
+  utilityBoardSlotCount: 3
   phaseInfoDisplay: {fileID: 439035967}
   deckInfoDisplay: {fileID: 1348363272}
   shopInfoDisplay: {fileID: 2017417370}
@@ -12759,6 +12773,7 @@ MonoBehaviour:
   playerDeckRef: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   purseRef: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}
   playerDeckSizeRef: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
+  deckSlotPurchasesRef: {fileID: 11400000, guid: f7108533cd29ce143a91c62f18e07716, type: 2}
   onEnterCombatPhase:
     m_PersistentCalls:
       m_Calls:

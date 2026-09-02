@@ -79,6 +79,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   myDeckSize: {fileID: 11400000, guid: 5d8206d31569a6444abf0be2c2b14e7a, type: 2}
   maxDeckSize: {fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}
+  deckSlotPurchasesRef: {fileID: 11400000, guid: f7108533cd29ce143a91c62f18e07716, type: 2}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -127,8 +128,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_DECK_SIZE_LITE
-  displayName: "\u5361\u4F4D\u589E\u52A0 <\u5C0F>"
-  cardDesc: "\u5361\u4F4D\u589E\u52A0 <b>1</b>"
+  displayName: "\u5361\u4F4D\u6269\u5F20"
+  cardDesc: "\u8D2D\u4E70\u540E\u5361\u4F4D\u4E0A\u9650 <b>+1</b>,\u672C\u5361\u5373\u523B\u81EA\u6211\u6D88\u8017(\u4E0D\u5165\u5361\u7EC4);\u4EF7\u683C\u968F\u672C\u6B21\u5192\u9669\u7684\u5DF2\u8D2D\u6B21\u6570\u9012\u589E,\u8FBE\u4E0A\u9650\u540E\u505C\u552E"
   rarity: 0
   shopRollWeightMultiplier: 1.5
   takeUpSpace: 0
@@ -145,8 +146,15 @@ MonoBehaviour:
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
+  attackSnapshotValue: -1
 --- !u!114 &7982320352536632933
 MonoBehaviour:
   m_ObjectHideFlags: 0

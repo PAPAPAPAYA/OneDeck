@@ -25,6 +25,8 @@ public class PhaseManager : MonoBehaviour
 	public DeckSO playerDeckRef;
 	public IntSO purseRef;
 	public IntSO playerDeckSizeRef;
+	[Tooltip("v2 meter: run-persistent deck-slot purchase counter (slot card escalation + deckSize formula input).")]
+	public IntSO deckSlotPurchasesRef;
 
 	// Run-ending state
 	private bool _isRunEnded;
@@ -256,6 +258,7 @@ public class PhaseManager : MonoBehaviour
 		sessionNum?.ResetToDefault();
 		purseRef?.ResetToDefault();
 		playerDeckSizeRef?.ResetToDefault();
+		deckSlotPurchasesRef?.ResetToDefault();
 		combatFinished?.ResetToDefault();
 
 		// Reset player deck back to its default deck

@@ -149,6 +149,13 @@ public class CardScript : MonoBehaviour
 	public bool HasAttackDisplay => cardType != EnumStorage.CardType.None || HasAttackAttribute;
 
 	/// <summary>
+	/// Deck-resident shop utility passive (plan v2): occupies a deck slot but has no combat-time
+	/// effect chain - excluded from result-screen per-card stats (they would only ever be
+	/// all-zero rows). Deck-slot purchase cards never enter the deck, so they need no flag.
+	/// </summary>
+	public bool IsUtilityPassive => isPassive && utilityKind != EnumStorage.UtilityKind.None;
+
+	/// <summary>
 	/// Current attack value (single settlement entry point). Dynamic attack (attack = Y, resolved live)
 	/// overrides base + growth + this-round modifier.
 	/// </summary>
@@ -193,6 +200,10 @@ public class CardScript : MonoBehaviour
 
 	/// <summary>
 	/// Count cards of the given side resting in the graveyard (index below the start card).
+	/// Utility passives are excluded (plan step 6 audit): they rest on the grave side but never
+	/// fight - counting them would silently feed the enemy RELIC_GRAVE_CURSE override per
+	/// purchased utility card. NOTE: ValueTrackerManager's inGrave counters and the deck-population
+	/// axis (ownerCardCountInDeck) still count passives by design ("occupies a slot = population").
 	/// </summary>
 	private int CountGraveyardCardsOf(PlayerStatusSO side)
 	{
@@ -214,6 +225,7 @@ public class CardScript : MonoBehaviour
 			if (cardScript == null) continue;
 			if (cardScript.myStatusRef != side) continue;
 			if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
+			if (cardScript.IsUtilityPassive) continue;
 			count++;
 		}
 		return count;
