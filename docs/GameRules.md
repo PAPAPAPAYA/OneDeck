@@ -18,6 +18,7 @@
 - [Cost Types](#cost-types)
 - [Status Effects](#status-effects)
 - [Event Triggers](#event-triggers)
+- [Shop Economy (v2 Utility Pipeline)](#shop-economy-v2-utility-pipeline)
 - [Faction / Archetype Mechanics](#faction--archetype-mechanics)
 - [Card Categories Summary](#card-categories-summary)
 - [Anti-Loop and Chain Rules](#anti-loop-and-chain-rules)
@@ -298,6 +299,40 @@ enum StatusEffect { None, Infected, Mana, HeartChanged, Power, Rest, Revive, Cou
 | `onEnemyCardGotPower` | Enemy card got Power. | `RaiseOwner()` / `RaiseOpponent()` |
 
 > **Important**: For faction-specific events, always use `RaiseOwner()` or `RaiseOpponent()`. Direct `Raise()` is strictly prohibited for these events.
+
+---
+
+## Shop Economy (v2 Utility Pipeline)
+
+The shop runs a full board-generation pipeline every time a board is produced (initial board and every reroll). All numbers are tunable placeholders.
+
+### Money Flow
+
+- Combat victory pays `payday` = payCheck (12) + 2 × session number + Σ Income utility cards.
+- Reroll costs $2; each shop visit grants free rerolls = Σ FreeReroll utility cards (free rerolls still count toward discount / guarantee cadence).
+- Sell price = half the card's rarity price (C/U/R = 4/8/12).
+- Discount utility: every N rerolls, one random offer on the current board is discounted (base price struck through, buy price reduced; never accumulates across boards).
+
+### Board Types (分板)
+
+- Every generated board rolls its type: utility ("奇物架") chance starts at 10% (session 1), 15% (session 3), 20% (session 5), plus OddsUtility card bonuses. ODDS_1 forces the visit's FIRST board to be a utility board.
+- Combat boards offer only combat cards; utility boards offer only utility cards (board purity). If every utility passive is owned and deck-size cards are ceiling-blocked, the utility pool runs dry and the roll falls through to combat (never a blank utility board).
+
+### Guaranteed Slots (保底槽)
+
+- Rarity ladder: Common tier = the visit's first board guarantees 1 Uncommon; Uncommon tier = every board guarantees 1 Uncommon; Rare tier = every 3rd board guarantees 1 Rare.
+- ReservedTag utilities guarantee 1 card with the given tag every 3 boards.
+- Guarantees fire on the cadence boards even after rerolls (board index counts all generated boards). Candidates come from the board's own pool; if a utility board has no card matching the guarantee rarity, it falls back to any-rarity weighted roll (still utility-only).
+
+### Utility Passives (被动 utility 卡)
+
+- A utility passive occupies a deck slot while held (`takeUpSpace`), never reveals in combat, and its shop effect applies the whole time it is in the deck; selling removes the effect. Owning a copy removes it from utility-board offers (one copy per kind).
+- Baseline growth (independent of utility cards): deckSize = 3 + 1 × session + slot purchases (ceiling 16); hpMax = base + 2 × session + Σ HP cards; payday see above.
+- Deck-slot meter card (卡位扩张): +1 deck size per purchase, consumed on purchase, price escalates (4 + 2 × purchases this run), stops being offered at the ceiling.
+
+### Waves (潮汐)
+
+- Creature/Spell wave utilities: each board generation has a chance (20%) that a combat board's generic offers become all-creatures / all-non-creatures. Guaranteed slots are unaffected.
 
 ---
 
