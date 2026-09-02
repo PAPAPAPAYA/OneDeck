@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: RecordedDeck_Session0_20260620_214223
   m_EditorClassIdentifier: Assembly-CSharp::DeckSO
   deck:
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 1808145013887896563, guid: a750f6e9b6b291443b9334fa13fdca99, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0

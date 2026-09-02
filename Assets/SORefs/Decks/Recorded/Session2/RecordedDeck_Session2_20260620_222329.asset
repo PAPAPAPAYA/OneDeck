@@ -15,10 +15,8 @@ MonoBehaviour:
   deck:
   - {fileID: 8718476725744197808, guid: 122c0d5cc83624e43961eb8a973d9bda, type: 3}
   - {fileID: 8718476725744197808, guid: ff9e6eb1d4d161346b81ed43cd599775, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 1808145013887896563, guid: b0a3424a1b85ab9448efcdcd31b59c91, type: 3}
   - {fileID: 8718476725744197808, guid: 4fab5dcf4bb8f884fa0183640cccb494, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: 75c115a5d087ea94db41f1a65072eb8f, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0

@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: RecordedDeck_Session1_20260803_095021
   m_EditorClassIdentifier: Assembly-CSharp::DeckSO
   deck:
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: 7c1c37bc4ca0aea409f012633149fc0c, type: 3}
   - {fileID: 8718476725744197808, guid: 8d21a7ae3c405334795dc24297efcb02, type: 3}
   - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}

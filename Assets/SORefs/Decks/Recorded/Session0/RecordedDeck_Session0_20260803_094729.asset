@@ -14,7 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeckSO
   deck:
   - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}
   - {fileID: 1808145013887896563, guid: a750f6e9b6b291443b9334fa13fdca99, type: 3}
   - {fileID: 1808145013887896563, guid: 2b8c8c59f8c51e443a089e11fc07cc14, type: 3}

@@ -16,7 +16,6 @@ MonoBehaviour:
   - {fileID: 8718476725744197808, guid: 12739058a16215d4abc7fa7f5e4fcff2, type: 3}
   - {fileID: 1808145013887896563, guid: 09ca9c241e293ae41a470a35aee70408, type: 3}
   - {fileID: 8718476725744197808, guid: 123bd6e2e91a92144aa25a515048a2dd, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 1808145013887896563, guid: a88586814572f2448af3c1379282946c, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0

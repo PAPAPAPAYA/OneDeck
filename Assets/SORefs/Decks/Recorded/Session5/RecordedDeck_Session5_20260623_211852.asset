@@ -15,15 +15,11 @@ MonoBehaviour:
   deck:
   - {fileID: 8718476725744197808, guid: 32c7492795cdf5d418e164a404fab845, type: 3}
   - {fileID: 8718476725744197808, guid: 8f4c64d4b391fdb4d85ac189d11f9389, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: 3017def2786b9ab45a6956e34cd034ab, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: ad8079f6ef9e09e4588f671cc8202250, type: 3}
   - {fileID: 1808145013887896563, guid: a750f6e9b6b291443b9334fa13fdca99, type: 3}
   - {fileID: 8718476725744197808, guid: 06861dbad3911804dbb077d430aebd73, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: 8a9871274e7b5ed4ea2b5977f2d53aeb, type: 3}
-  - {fileID: 8718476725744197808, guid: 4e46bee9ca9fc6a4aa8b46c352e133a6, type: 3}
   - {fileID: 8718476725744197808, guid: 32c7492795cdf5d418e164a404fab845, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0

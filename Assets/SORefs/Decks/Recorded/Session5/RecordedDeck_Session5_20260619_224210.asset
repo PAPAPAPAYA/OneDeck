@@ -18,9 +18,6 @@ MonoBehaviour:
   - {fileID: 1808145013887896563, guid: 6050fd316b927014d90d8dc9bca4249f, type: 3}
   - {fileID: 8718476725744197808, guid: 34cb2689cd769a848953305e9f110e46, type: 3}
   - {fileID: 8718476725744197808, guid: ad8079f6ef9e09e4588f671cc8202250, type: 3}
-  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
-  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
-  - {fileID: 8718476725744197808, guid: e4b44fbc53cccdc429b7e122bfaf38f5, type: 3}
   defaultDeck: {fileID: 0}
   resetOnStart: 0
   description: 'Auto-recorded player deck.
