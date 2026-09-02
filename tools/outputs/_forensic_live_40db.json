@@ -1,0 +1,861 @@
+{
+  "sqlCount": 92,
+  "sqlRows": [
+    {
+      "url": "https://app.notion.com/3c7827b8c3c180f9a16fddf6046eb9e9",
+      "CARD_TYPE_ID": "SPIKE_SKELETON_4.0",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；遗言：攻击x2"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18101a848cb15bd0d3996",
+      "CARD_TYPE_ID": "RIFT_ACOLYTE",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；生成1信徒；苏醒：生成2信徒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18101bf5ec354a82b78ac",
+      "CARD_TYPE_ID": "REANIMATOR",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；攻击力=本回合复活友方数"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18105bfbccc075808ade4",
+      "CARD_TYPE_ID": "RIFT_STRIKER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击x2；生成1信徒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181099754f92441794ddd",
+      "CARD_TYPE_ID": "RIFT_SHEPHERD",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；复活1友方【信徒】"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18113bf3fc9902e30a485",
+      "CARD_TYPE_ID": "DETERIORATION_4.0",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "强化2敌方诅咒；敌方诅咒每有3攻击力，额外强化1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1811bb20edf8fe4db7fea",
+      "CARD_TYPE_ID": "DELAYER",
+      "状态": "备用",
+      "rarity": "uncommon",
+      "card desc": "延后1攻击力最高敌方；攻击"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1811bb259eae2391a9999",
+      "CARD_TYPE_ID": "RELIC_TAINT",
+      "状态": "备用",
+      "rarity": "rare",
+      "card desc": "被动：友方信徒与敌方诅咒相邻时：放逐该信徒，强化2敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1811db4fbdf5b58514829",
+      "CARD_TYPE_ID": "RIFT_INSECT_4.0",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；生成1信徒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181239b1cfe3de5d61b9e",
+      "CARD_TYPE_ID": "UNDYING_WARRIOR",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；强化反应：复活自身"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18125bb28c5c33618eeef",
+      "CARD_TYPE_ID": "GRAVE_ROBBER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "复活1攻击力最高敌方；攻击力变为该卡攻击力"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1812a8ca3fb3c9062b404",
+      "CARD_TYPE_ID": "GRAVE_FIST",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "埋葬1友方；攻击"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1812c9d70e4eac3df0648",
+      "CARD_TYPE_ID": "GRAVE_PUNCH_4.0",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "埋葬1友方；攻击x2"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18131bef4fe8bcb4bda9d",
+      "CARD_TYPE_ID": "RELIC_CURSE_HASTE",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：敌方诅咒攻击次数+1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1813488fbd9f0368ff542",
+      "CARD_TYPE_ID": "WEAPON_SPIRIT",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：友方生物触发【强化反应】时：强化1该生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1813aa0d5c4a2d1ce3ead",
+      "CARD_TYPE_ID": "RELIC_CURSE_REVIVAL",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：敌方诅咒揭晓时：复活1友方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1813b8ba2fdd80cdfda5e",
+      "CARD_TYPE_ID": "RELIC_BLOOD_PACT",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：友方攻击不再造成伤害，而是强化等量敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1814190f1de9842a9a922",
+      "CARD_TYPE_ID": "SPIRIT_CALLER",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；复活1友方非生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181458052c7371d096196",
+      "CARD_TYPE_ID": "WAKING_FIGHTER",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；苏醒：强化自身1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181468ffee12f7463681d",
+      "CARD_TYPE_ID": "BATTLE_HORN",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "本回合友方生物攻击次数+1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18146b887d35025a02cb8",
+      "CARD_TYPE_ID": "LAST_GIFT",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；遗言：强化1友方生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1814d8ce5f6169bd5447d",
+      "CARD_TYPE_ID": "RIFT_REAPER",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "放逐所有信徒，每放逐1，强化1友方生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1814f95a0fbd852ce663a",
+      "CARD_TYPE_ID": "RIFT_PRIEST",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "生成2信徒；强化1友方生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181549320dfde34029da1",
+      "CARD_TYPE_ID": "RELIC_HIVE",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：友方攻击时：生成1信徒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18157a43efea913404fe9",
+      "CARD_TYPE_ID": "RIFT_MEDIUM",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "生成2信徒；苏醒：复活1友方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181628d24cf4cdac4ce38",
+      "CARD_TYPE_ID": "GRAVE_MILLER",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "攻击；埋葬2友方，埋葬卡组顶5卡"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181658361e16eff77f964",
+      "CARD_TYPE_ID": "SWARM_CURSER",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "生成1信徒；每有1友方信徒，强化1敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181669bf7d101cd79cf81",
+      "CARD_TYPE_ID": "ELITE_REVIVER",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；复活1被强化过的友方生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1816caa98e8537be64854",
+      "CARD_TYPE_ID": "DOOM_HERALD",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "攻击；复活1攻击力最高敌方；强化4敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1816cb736eee7eff83f0e",
+      "CARD_TYPE_ID": "RELIC_DEATH_KNELL",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：友方苏醒时：触发其遗言"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1816e8940ca709dae722c",
+      "CARD_TYPE_ID": "RELIC_CURSE_GRAVE",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：敌方诅咒揭晓时：埋葬1敌方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18170a11bd13c0c5dc0f8",
+      "CARD_TYPE_ID": "EXILE_BERSERKER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；本回合每放逐1友方，攻击次数+1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18174a60ee0b60d103e34",
+      "CARD_TYPE_ID": "FINAL_ESCORT",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；遗言：回合结束：置顶1友方攻击力最高生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18176b159d81ed0512bd4",
+      "CARD_TYPE_ID": "DEATHBED_PORTER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；遗言：攻击；置顶1友方非生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18177b363e55d560d46b4",
+      "CARD_TYPE_ID": "SACRIFICE_WEAKEST",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "埋葬1攻击力最低友方；强化1该卡"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18179b934de12143bda43",
+      "CARD_TYPE_ID": "TWIN_STRIKER",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击x2"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1817fa150ed02333afd7e",
+      "CARD_TYPE_ID": "CURSE_REVIVER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；复活1敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18180ac69ee5cc05f9541",
+      "CARD_TYPE_ID": "FLURRY_REVIVER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "复活1攻击次数最多友方生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18183a849c534c06ce3da",
+      "CARD_TYPE_ID": "KINGSLAYER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "埋葬1攻击力最高敌方；复活1友方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1818581a5d5bcb0efcc51",
+      "CARD_TYPE_ID": "COMBO_STARTER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；强化反应：攻击次数+1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1818da3c8f28a574f3e11",
+      "CARD_TYPE_ID": "RELIC_ATTACK_HEX",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：有卡攻击时：强化1敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18190b675e75334e9c76b",
+      "CARD_TYPE_ID": "NECROMANCER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "复活1友方；苏醒：复活1友方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1819291c4cdf3bea296bf",
+      "CARD_TYPE_ID": "MILLBLADE",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "攻击；每有1攻击力，埋葬卡组顶1卡"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18192b063ce3eda376c54",
+      "CARD_TYPE_ID": "AWAKENED_REAPER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；苏醒：埋葬1敌方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c18198b4b6ccbd6548cf53",
+      "CARD_TYPE_ID": "CURSE_ECHO",
+      "状态": "备用",
+      "rarity": "uncommon",
+      "card desc": "复活敌方诅咒；回响1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1819b81b6f272b492b8b6",
+      "CARD_TYPE_ID": "RIFT_HATCHERY",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "生成3信徒；回合开始：埋葬自身"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1819bb1e2e9f0936b850a",
+      "CARD_TYPE_ID": "GRAVE_DREDGER",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；埋葬卡组顶3卡"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c1819faa2ce51c16ba49ea",
+      "CARD_TYPE_ID": "WAR_TRAINER",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "强化2友方生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181a6ad5bf243cc089170",
+      "CARD_TYPE_ID": "CURSE_GARDENER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "强化1敌方诅咒；复活1敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181aba9affda164e55efc",
+      "CARD_TYPE_ID": "MIMIC_BLADE",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击力=友方最高攻击力；攻击x2"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181acb929c0c85d759b55",
+      "CARD_TYPE_ID": "FUNERAL_WILL",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "埋葬2卡组顶；遗言：延迟复活1友方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181aea7f0c7536bab1ebf",
+      "CARD_TYPE_ID": "SLIME_4.0",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "遗言：复制自身；攻击"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181b4af44eb5aaafc2941",
+      "CARD_TYPE_ID": "GRAVE_TOGETHER_4.0",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；埋葬1友方；埋葬2敌方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181bab9e6c630793fb632",
+      "CARD_TYPE_ID": "SOUL_TRADER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "复活2友方；埋葬1友方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181bda4d8e7f16883afe3",
+      "CARD_TYPE_ID": "REVIVE_SUMMONER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "复活1友方；生成1信徒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181c296d5c6409f561249",
+      "CARD_TYPE_ID": "EULOGIST",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "埋葬1友方遗言卡；攻击"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181c5b309d0117af2d0b1",
+      "CARD_TYPE_ID": "RELIC_TALLY",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "被动：回合结束：本回合每埋葬1生物，强化1敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181d29506e1ee12db3613",
+      "CARD_TYPE_ID": "MASS_SACRIFICE",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "埋葬所有友方；每埋葬1友方，生成1信徒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181d29529ed2680ece000",
+      "CARD_TYPE_ID": "SACRIFICIAL_SPIRIT",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；埋葬1友方；强化5敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181d38157c05cd2c4805f",
+      "CARD_TYPE_ID": "UNFINISHED_ROBOT_4.0",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "攻击；攻击力翻倍"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181d4872ee2a3a22a3ee9",
+      "CARD_TYPE_ID": "RELIC_RIFT_OVERRIDE",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：友方[信徒]效果变为：\"复活1敌方[诅咒]；放逐自身\""
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181d49490c255cfa58d2d",
+      "CARD_TYPE_ID": "SWARM_QUEEN",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "攻击；每有1攻击力，生成1信徒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181d58db1dddb399d0f50",
+      "CARD_TYPE_ID": "GRAVE_GIANT",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击力=墓地友方数量；攻击"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181d79a8aea51ef9eb0c5",
+      "CARD_TYPE_ID": "MASS_REVIVER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "复活3友方normal卡"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181dda723e6c1a635b1af",
+      "CARD_TYPE_ID": "RELIC_CHAIN_BURIAL",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "被动：友方被埋葬时：埋葬1卡组顶卡"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181e3a1d5cc6197fec1d6",
+      "CARD_TYPE_ID": "BLACKSMITH_4.0",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；强化1友方生物"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181e3a9aece7d359664cc",
+      "CARD_TYPE_ID": "DECIMATION",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "埋葬6友方，本回合每埋葬过1友方，埋葬数-1；攻击x3"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181e4b8b1e546db0c43c4",
+      "CARD_TYPE_ID": "BEAST_REVIVER",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；复活1生物友方"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181e68bc6ce08326aa8fb",
+      "CARD_TYPE_ID": "HEXER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；强化3敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181e89604fe107e221fa1",
+      "CARD_TYPE_ID": "CURSE_EATER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；攻击力=敌方诅咒攻击力"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181ecbef7f7a49bacd8d6",
+      "CARD_TYPE_ID": "SNOWBALL",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击x2；强化反应：强化自身1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181ecbf01d78f6bd989aa",
+      "CARD_TYPE_ID": "GRAVE_PUPPETEER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "让墓地1友方生物攻击；墓地无友方则埋葬1友方遗言卡"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181ef8fcadf8c2c1b0cbf",
+      "CARD_TYPE_ID": "GRAVE_HEXER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "复活1友方；强化2敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181ef98a7c2a6e4303057",
+      "CARD_TYPE_ID": "COMBO_GRANTER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "攻击；本回合1友方生物攻击次数+1"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181f3b559cee8cee8e9e0",
+      "CARD_TYPE_ID": "QUAD_STRIKER",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "攻击x4"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181f59509c35dd106944d",
+      "CARD_TYPE_ID": "DEATHBED_GRANT",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "被动：友方生物被埋葬时：该友方生物攻击"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181f9a664eae9c9f88a44",
+      "CARD_TYPE_ID": "RELIC_GRAVE_CURSE",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：敌方诅咒攻击力=墓地友方卡数量"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181fc9accc9fe5f15876d",
+      "CARD_TYPE_ID": "DUO_REVIVER",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "复活2友方uncommon卡"
+    },
+    {
+      "url": "https://app.notion.com/3c7827b8c3c181fdb88fd309a6002b60",
+      "CARD_TYPE_ID": "HEXBLADE",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "攻击；每有1攻击力，强化1敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c1800ea216e73d5d14cfe8",
+      "CARD_TYPE_ID": "WOKEN_HEX",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "强化1敌方诅咒；苏醒：强化2敌方诅咒"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c180399fa1f850ef2f09b2",
+      "CARD_TYPE_ID": "WEAKENING_FIELD",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "除了【诅咒】，所有生物本回合攻击力-1"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c1803eb37bc75984d84bc8",
+      "CARD_TYPE_ID": "WOKEN_BLADE",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；苏醒：攻击x2"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c18052860ac523f2f5492a",
+      "CARD_TYPE_ID": "SOUL_SWAPPER",
+      "状态": "备用",
+      "rarity": "uncommon",
+      "card desc": "攻击；复活1友方；埋葬1敌方"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c1806298b0cd67aa7a5d61",
+      "CARD_TYPE_ID": "RIFT_GUIDE",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "放逐1友方信徒，埋葬2敌方非生物"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c180689f9af89b7ec6f0af",
+      "CARD_TYPE_ID": "RIFT_REVIVER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "放逐1友方信徒，复活2友方非生物"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c18098b58ed6de88dbfd3a",
+      "CARD_TYPE_ID": "LAST_RITES",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "遗言：触发所有在墓地友方的遗言"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c180ae99feca17bb8fb17c",
+      "CARD_TYPE_ID": "RELIC_TRAINER",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "被动：回合开始：强化1攻击力最低友方生物"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c180e7a3c4c72a1c4e28c5",
+      "CARD_TYPE_ID": "CURSE_THIRST_BEAST_4.0",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "敌方诅咒揭晓时：复活自身；攻击"
+    },
+    {
+      "url": "https://app.notion.com/3c8827b8c3c180f5ba3ce06dcd676562",
+      "CARD_TYPE_ID": "RELIC_GRAVE_LORD",
+      "状态": null,
+      "rarity": "rare",
+      "card desc": "被动：墓地中的友方生物攻击力+1"
+    },
+    {
+      "url": "https://app.notion.com/3ca827b8c3c18040a819e089b2829dcc",
+      "CARD_TYPE_ID": "RELIC_ATTACK_BURIAL",
+      "状态": null,
+      "rarity": "uncommon",
+      "card desc": "被动：友方每次攻击：埋葬卡组顶1卡"
+    },
+    {
+      "url": "https://app.notion.com/3cb827b8c3c181919c2cce20cdd7e49c",
+      "CARD_TYPE_ID": "SOLDIER_SKELETON_4.0",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；遗言：置顶自身"
+    },
+    {
+      "url": "https://app.notion.com/3cb827b8c3c181e58b80c8e7015b84b5",
+      "CARD_TYPE_ID": "AVENGER_4.0",
+      "状态": null,
+      "rarity": "normal",
+      "card desc": "攻击；遗言：强化自身1"
+    }
+  ],
+  "probeOut": {
+    "3c7827b8c3c18113bf3fc9902e30a485": {
+      "ctid": "DETERIORATION",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c1811bb259eae2391a9999": {
+      "ctid": "RELIC_TAINT",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c18131bef4fe8bcb4bda9d": {
+      "ctid": "RELIC_CURSE_HASTE",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c1813aa0d5c4a2d1ce3ead": {
+      "ctid": "RELIC_CURSE_REVIVAL",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c1813b8ba2fdd80cdfda5e": {
+      "ctid": "RELIC_BLOOD_PACT",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181658361e16eff77f964": {
+      "ctid": "SWARM_CURSER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181669bf7d101cd79cf81": {
+      "ctid": "ELITE_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c1816caa98e8537be64854": {
+      "ctid": "DOOM_HERALD",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c1816e8940ca709dae722c": {
+      "ctid": "RELIC_CURSE_GRAVE",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c18172ab66fe64d95d2e06": {
+      "ctid": "RELIC_SOUL_TAX",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c1817fa150ed02333afd7e": {
+      "ctid": "CURSE_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c18180ac69ee5cc05f9541": {
+      "ctid": "FLURRY_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181839d4ade4253fc7c79": {
+      "ctid": "DUAL_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c1818da3c8f28a574f3e11": {
+      "ctid": "RELIC_ATTACK_HEX",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c18198b4b6ccbd6548cf53": {
+      "ctid": "CURSE_ECHO",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181a6ad5bf243cc089170": {
+      "ctid": "CURSE_GARDENER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181bda4d8e7f16883afe3": {
+      "ctid": "REVIVE_SUMMONER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181c5b309d0117af2d0b1": {
+      "ctid": "RELIC_TALLY",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181d1a443eee0ec57c0dd": {
+      "ctid": "TREASURE_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181d29529ed2680ece000": {
+      "ctid": "SACRIFICIAL_SPIRIT",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181d4872ee2a3a22a3ee9": {
+      "ctid": "RELIC_RIFT_OVERRIDE",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181d79a8aea51ef9eb0c5": {
+      "ctid": "MASS_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181e4b8b1e546db0c43c4": {
+      "ctid": "BEAST_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181e68bc6ce08326aa8fb": {
+      "ctid": "HEXER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181e89604fe107e221fa1": {
+      "ctid": "CURSE_EATER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181ef8fcadf8c2c1b0cbf": {
+      "ctid": "GRAVE_HEXER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181f8b215efdf602bf450": {
+      "ctid": "GRAND_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181f9a664eae9c9f88a44": {
+      "ctid": "RELIC_GRAVE_CURSE",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181fc9accc9fe5f15876d": {
+      "ctid": "DUO_REVIVER",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181fdb88fd309a6002b60": {
+      "ctid": "HEXBLADE",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c8827b8c3c1800ea216e73d5d14cfe8": {
+      "ctid": "WOKEN_HEX",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c8827b8c3c18088b3e1fe19e7297bc7": {
+      "ctid": "(08-28 script only)",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c8827b8c3c180a6b644e7eb58178a6e": {
+      "ctid": "(08-28 script only)",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181879aafffd6b12de80b": {
+      "ctid": "(08-28 script only)",
+      "exists": true,
+      "status": null,
+      "tag": null
+    },
+    "3c7827b8c3c181ee909ef789a0f746e7": {
+      "ctid": "(08-28 script only)",
+      "exists": true,
+      "status": null,
+      "tag": null
+    }
+  }
+}

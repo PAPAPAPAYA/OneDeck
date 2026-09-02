@@ -1,0 +1,194 @@
+{
+  "CURSE_REVIVER": {
+    "status": null,
+    "rarity": "uncommon",
+    "tag": [
+      "诅咒",
+      "复活"
+    ],
+    "desc": "攻击；复活1敌方诅咒",
+    "lastEdited": "2026-08-31T15:23:05.985Z"
+  },
+  "CURSE_GARDENER": {
+    "status": null,
+    "rarity": "uncommon",
+    "tag": [
+      "诅咒",
+      "复活"
+    ],
+    "desc": "强化1敌方诅咒；复活1敌方诅咒",
+    "lastEdited": "2026-08-31T15:23:30.204Z"
+  },
+  "RELIC_RIFT_OVERRIDE": {
+    "status": null,
+    "rarity": "rare",
+    "tag": [
+      "信徒",
+      "诅咒",
+      "被动",
+      "复活",
+      "放逐"
+    ],
+    "desc": "被动：友方\\[信徒\\]效果变为：\"复活1敌方\\[诅咒\\]；放逐自身\"",
+    "lastEdited": "2026-09-01T12:20:46.163Z"
+  },
+  "DOOM_HERALD": {
+    "status": null,
+    "rarity": "rare",
+    "tag": [
+      "诅咒",
+      "复活"
+    ],
+    "desc": "攻击；复活1攻击力最高敌方；强化4敌方诅咒",
+    "lastEdited": "2026-08-31T15:23:11.691Z"
+  },
+  "GRAVE_HEXER": {
+    "status": null,
+    "rarity": "uncommon",
+    "tag": [
+      "诅咒",
+      "复活"
+    ],
+    "desc": "复活1友方；强化2敌方诅咒",
+    "lastEdited": "2026-08-31T15:23:06.645Z"
+  },
+  "RELIC_CURSE_REVIVAL": {
+    "status": null,
+    "rarity": "rare",
+    "tag": [
+      "诅咒",
+      "被动",
+      "复活"
+    ],
+    "desc": "被动：敌方诅咒揭晓时：复活1友方",
+    "lastEdited": "2026-08-31T15:23:11.047Z"
+  },
+  "CURSE_THIRST_BEAST_4.0": {
+    "status": null,
+    "rarity": "uncommon",
+    "tag": [
+      "诅咒",
+      "复活"
+    ],
+    "desc": "敌方诅咒揭晓时：复活自身；攻击",
+    "lastEdited": "2026-08-31T15:23:31.507Z"
+  },
+  "CURSE_ECHO": {
+    "status": "备用",
+    "rarity": "uncommon",
+    "tag": [
+      "诅咒",
+      "复活"
+    ],
+    "desc": "复活敌方诅咒；回响1",
+    "lastEdited": "2026-08-31T15:24:09.491Z"
+  },
+  "DUAL_REVIVER": {
+    "status": "已删",
+    "rarity": "uncommon",
+    "tag": [
+      "诅咒",
+      "复活"
+    ],
+    "desc": "复活1友方；复活1敌方诅咒",
+    "lastEdited": "2026-08-28T13:59:15.192Z"
+  },
+  "ELITE_REVIVER": {
+    "status": null,
+    "rarity": "normal",
+    "tag": [
+      "复活"
+    ],
+    "desc": "攻击；复活1被强化过的友方生物",
+    "lastEdited": "2026-09-01T04:44:42.654Z"
+  },
+  "FLURRY_REVIVER": {
+    "status": null,
+    "rarity": "uncommon",
+    "tag": [
+      "复活"
+    ],
+    "desc": "复活1攻击次数最多友方生物",
+    "lastEdited": "2026-09-01T04:44:41.011Z"
+  },
+  "REVIVE_SUMMONER": {
+    "status": null,
+    "rarity": "uncommon",
+    "tag": [
+      "信徒",
+      "复活"
+    ],
+    "desc": "复活1友方；生成1信徒",
+    "lastEdited": "2026-08-31T15:23:10.065Z"
+  },
+  "TREASURE_REVIVER": {
+    "status": "已删",
+    "rarity": "uncommon",
+    "tag": [
+      "复活"
+    ],
+    "desc": "复活1友方rare卡，放逐自身",
+    "lastEdited": "2026-08-28T13:59:15.192Z"
+  },
+  "MASS_REVIVER": {
+    "status": null,
+    "rarity": "uncommon",
+    "tag": [
+      "复活"
+    ],
+    "desc": "复活3友方normal卡",
+    "lastEdited": "2026-08-31T15:23:02.005Z"
+  },
+  "BEAST_REVIVER": {
+    "status": null,
+    "rarity": "normal",
+    "tag": [
+      "复活"
+    ],
+    "desc": "攻击；复活1生物友方",
+    "lastEdited": "2026-08-31T15:23:03.736Z"
+  },
+  "GRAND_REVIVER": {
+    "status": "已删",
+    "rarity": "rare",
+    "tag": [
+      "强化",
+      "复活"
+    ],
+    "desc": "复活攻击力最高敌方；强化3友方生物",
+    "lastEdited": "2026-08-28T13:59:15.192Z"
+  },
+  "DUO_REVIVER": {
+    "status": null,
+    "rarity": "rare",
+    "tag": [
+      "复活"
+    ],
+    "desc": "复活2友方uncommon卡",
+    "lastEdited": "2026-08-31T15:23:05.079Z"
+  },
+  "RELIC_SOUL_TAX": {
+    "status": "已删",
+    "rarity": "rare",
+    "tag": [
+      "信徒",
+      "诅咒",
+      "被动",
+      "复活"
+    ],
+    "desc": "被动：每复活1友方，强化1敌方诅咒",
+    "lastEdited": "2026-08-28T13:59:15.192Z"
+  },
+  "RELIC_TAINT": {
+    "status": "备用",
+    "rarity": "rare",
+    "tag": [
+      "信徒",
+      "诅咒",
+      "被动",
+      "放逐"
+    ],
+    "desc": "被动：友方信徒与敌方诅咒相邻时：放逐该信徒，强化2敌方诅咒",
+    "lastEdited": "2026-09-01T04:44:28.843Z"
+  }
+}
