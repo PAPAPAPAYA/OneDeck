@@ -35,6 +35,7 @@ Assets/
 │   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript, CombatCardView, ShopCardView, CombatHPBarPresenter, CombatIconPresenter, HPNumericDisplay, HPNumericCounter, ResultStatsPanel, DamageFloaterPresenter, DamageFloaterTimeline
 ├── Prefabs/Cards/      # 3.0 no cost (current), System/, StatusEffectResolvers/
 └── docs/
+server/onedeck-api/     # Async-PvP backend (Express + better-sqlite3, single file). Runs on ECS, not Unity. See its README.md
 ```
 
 ## External References
