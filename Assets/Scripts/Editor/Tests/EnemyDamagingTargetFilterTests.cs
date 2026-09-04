@@ -85,6 +85,7 @@ public class EnemyDamagingTargetFilterTests : HeadlessCombatTestFixture
 	{
 		var giverCard = CreateCard(true, "Giver");
 		var target = CreateCard(true, "Target");
+		target.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
 		CombatManager.combinedDeckZone.Add(target);
 		CombatManager.combinedDeckZone.Add(giverCard);
 
@@ -100,6 +101,39 @@ public class EnemyDamagingTargetFilterTests : HeadlessCombatTestFixture
 
 		Assert.AreEqual(1, target.GetComponent<CardScript>().GetAttack(),
 			"Friendly target should gain attack even when statusEffectToGive is None");
+	}
+
+	[Test]
+	public void AttackGiver_GiveAttackToXFriendly_ExcludesAttackHoldingStatusCurse()
+	{
+		// WAR_TRAINER regression (2026-09-04): a friendly Status-type curse grown by the
+		// enemy's EnhanceCurse passes PassesDamageFilter (HasAttackAttribute) but is not a
+		// 生物 — the 强化 pool must stay creature-only.
+		var giverCard = CreateCard(true, "Giver");
+		var curse = CreateCard(true, "Curse");
+		var curseScript = curse.GetComponent<CardScript>();
+		curseScript.cardType = EnumStorage.CardType.Status;
+		curseScript.ModifyAttack(2);
+		var creature = CreateCard(true, "Creature");
+		creature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
+		CombatManager.combinedDeckZone.Add(curse);
+		CombatManager.combinedDeckZone.Add(creature);
+		CombatManager.combinedDeckZone.Add(giverCard);
+
+		var giver = CreateEffect<AttackGiverEffect>(giverCard);
+		giver.statusEffectToGive = EnumStorage.StatusEffect.None;
+		giver.onlyTargetEnemyDamagingCards = true;
+		giver.xFriendlyCount = 1;
+		giver.yFriendlyLayerCount = 1;
+
+		EffectChainManager.MakeANewEffectRecorder(giverCard, giver.gameObject);
+		giver.GiveAttackToXFriendly();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(2, curseScript.GetAttack(),
+			"Status-type curse must never enter the enhance pool even when it holds attack");
+		Assert.AreEqual(1, creature.GetComponent<CardScript>().GetAttack(),
+			"Creature-type friendly card should gain attack");
 	}
 
 	#endregion

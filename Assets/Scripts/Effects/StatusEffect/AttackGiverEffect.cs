@@ -187,14 +187,20 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
-		/// Give permanent attack to X random friendly cards (BLACKSMITH, POWER_SURGE,
-		/// SACRIFICIAL_SWORD). Reads xFriendlyCount / yFriendlyLayerCount.
+		/// Give permanent attack to X random friendly CREATURES (WAR_TRAINER, BLACKSMITH,
+		/// POWER_SURGE, SACRIFICIAL_SWORD — printed 强化N友方生物). Reads xFriendlyCount /
+		/// yFriendlyLayerCount. Creature-only: attack-holding Status curses are excluded
+		/// (2026-09-04 ruling).
 		/// </summary>
 		public virtual void GiveAttackToXFriendly()
 		{
 			if (xFriendlyCount <= 0 || yFriendlyLayerCount <= 0) return;
 
 			var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
+			// Printed text is 强化N友方生物: a Status-type curse that already holds attack passes
+			// PassesDamageFilter's HasAttackAttribute branch but is not a 生物 (2026-09-02 type
+			// split) — the enhance pool must judge pure IsCreature (2026-09-04 ruling).
+			friendlyCards.RemoveAll(c => c == null || !c.IsCreature);
 			if (friendlyCards.Count <= 0) return;
 
 			friendlyCards = UtilityFuncManagerScript.ShuffleList(friendlyCards);
@@ -214,7 +220,8 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Based on ownerIntSO/enemyIntSO, repeat N times: give 1 attack to one random
-		/// friendly card (CURSE_THIRST_SHAMAN — reads the enemy curse attack aggregate).
+		/// friendly creature (RIFT_REAPER 友方生物, CURSE_THIRST_SHAMAN) — reads the enemy
+		/// curse attack aggregate. Creature-only pool, same as GiveAttackToXFriendly.
 		/// </summary>
 		public virtual void GiveAttackToXFriendly_BasedOnIntSO()
 		{
@@ -227,6 +234,8 @@ namespace DefaultNamespace.Effects
 			for (int i = 0; i < intSO.value; i++)
 			{
 				var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
+				// Same creature-only enhance pool as GiveAttackToXFriendly (RIFT_REAPER 友方生物).
+				friendlyCards.RemoveAll(c => c == null || !c.IsCreature);
 				if (friendlyCards.Count <= 0) break;
 
 				int randomIndex = Random.Range(0, friendlyCards.Count);
