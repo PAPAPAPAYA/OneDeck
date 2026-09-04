@@ -4,7 +4,6 @@
 上游：服务器端已上线（`server/onedeck-api/`，ECS `8.153.150.197`，Express + better-sqlite3，pm2 托管 + Nginx 反代，端到端验证通过）；本文件只做 Unity 客户端
 状态：**待实施**
 审核：2026-09-04 补数据模型增补（新增 §0.1，§2.5-2.8 相应扩充，批次表加 S0）、勘误 §5 的 .gitignore 声明、扩写 §3 开关面板（本地/云端环境 + 分项上传开关）
-
 ## 0. 服务器端既成事实
 
 - Base URL：`http://8.153.150.197`（HTTP+IP 起步；将来买域名备案后切 HTTPS，只改一处配置）。
@@ -178,3 +177,11 @@ DATA_DIR=data node server.js        # Git Bash；PowerShell: $env:DATA_DIR="data
 - admin token、玩家 playerId 不进仓库；`server/onedeck-api/data/` **尚未**加入 .gitignore（2026-09-04 勘误：原稿声称已在，实际没有）——批 S0 先补 `/server/onedeck-api/data/` 再在本地起服测试。
 - 服务器已知低危（不阻塞客户端，批 F 一并处理）：matches/report 的防御战绩自增未与 insertReport 包同一事务（中间崩溃可漂移）；`trust proxy=true` 依赖 HOST 绑 127.0.0.1，3000 端口不得直接暴露公网（补进 README Ops notes）。
 - HTTP 明文的篡改风险由"未知卡整副弃用 + 回退链 + JSON 校验"吸收（已知并接受）。
+
+## 6. 执行状态
+
+| 批 | 状态 | 备注 |
+|----|------|------|
+| S0 | ✅ 完成（2026-09-04，commit 76932fe） | 本地冒烟全过：迁移路径（预置旧 schema 库加列 + legacy 行保留）、新/旧 perCard 字段、enemySource 非清零语义、run 去重、防御战绩、admin 新展示列。**踩坑**：本地跑必须 `DATA_DIR=data`（默认值是 ECS 布局专用）；stats_meta 新列必须可空（INSERT 分支的 NULL 会撞 NOT NULL） |
+| A | ✅ 代码完成（2026-09-04，待 Unity 编辑器编译 + EditMode 验证） | `Assets/Scripts/Net/`：ServerConfig（§3.1 全字段 + OnValidate 清箱）、NetDtos、DeckNetworkClient（10s 超时、1s/3s 重试、4xx 不重试）、UploadOutbox（100 上限丢最旧、tmp+Replace 原子写、ResetCacheForTests 缝隙）、PlayerIdentity（markAsTest 前缀、409 → username_taken）；测试 `Editor/Tests/NetClientBatchATests.cs`。**待办**：编辑器里创建 `Resources/ServerConfig.asset`（Create → OneDeck → ServerConfig），跑 EditMode 测试 |
+| B–F | ⬜ 未开始 | 按批次表顺序 |
