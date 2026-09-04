@@ -3,6 +3,7 @@
 日期：2026-09-03
 上游：服务器端已上线（`server/onedeck-api/`，ECS `8.153.150.197`，Express + better-sqlite3，pm2 托管 + Nginx 反代，端到端验证通过）；本文件只做 Unity 客户端
 状态：**待实施**
+审核：2026-09-04 补数据模型增补（新增 §0.1，§2.5-2.8 相应扩充，批次表加 S0）、勘误 §5 的 .gitignore 声明、扩写 §3 开关面板（本地/云端环境 + 分项上传开关）
 
 ## 0. 服务器端既成事实
 
@@ -23,12 +24,25 @@
 - 身份模型：注册后服务器下发 `playerId`（GUID），即全部接口的凭证；无密码。
 - 管理后台：`/admin?token=...`（token 存服务器 `data/admin_token.txt`）。
 
+### 0.1 服务器 schema 增补（2026-09-04 评审新增，先于客户端批 A 部署）
+
+服务器已上线但尚无真实数据，现在加列成本最低。全部为加列/加字段，不破坏既有幂等语义；better-sqlite3 启动时判重后 `ALTER TABLE ADD COLUMN`，admin 页同步加展示列。
+
+| 位置 | 增补 | 用途 |
+|------|------|------|
+| `run_combats` | 加 `rounds` INTEGER | 战斗轮次（战斗内节奏）；口径与 Result 屏一致 = `roundsLastCombat - 1` |
+| `run_combats` | 加 `opponent_deck_id` INTEGER NULL | 该场对手幽灵 deckId（本地兜底时为空）→ 与 match_reports 对账，算「打 session N 幽灵的胜率曲线」 |
+| `run_combats.per_card` | 单一 `damageDealt` 拆为 `damageToOpponent` / `damageToSelf` | Tracker 本就区分两者，客户端零成本；自伤型卡牌代价侧可见 |
+| `stats_meta` | 加 `enemy_source_server` / `enemy_source_local` / `enemy_source_pool` 计数列 | 回退遥测：判断 ghost 池真实覆盖率（冷启动期关键样本代表性） |
+
+per_card 的 heal/shield 计数不在本期：Tracker 无现成 hook，需改 HPAlterEffect 治疗分支，列为二期可选。辅助型卡牌在 perCard 侧仍不可度量（只能靠胜率关联），已知限制。
+
 ## 1. 客户端总体结构
 
 新增目录 `Assets/Scripts/Net/`（纯新增，不动既有架构）：
 
 ```
-ServerConfig        ScriptableObject（Resources/ServerConfig.asset）：baseUrl、enabled、gameVersion 覆盖
+ServerConfig        ScriptableObject（Resources/ServerConfig.asset）：环境/分项开关面板，字段详设见 §3.1
 PlayerIdentity      常驻单例：用户名注册流程，identity.json 持久化
 DeckNetworkClient   UnityWebRequest 封装：GET/POST JSON、超时、指数退避重试、UTF-8
 UploadOutbox        发件箱：outbox.json，失败请求积压重试，上限 100 条丢最旧
@@ -75,6 +89,7 @@ RunRecorder         对局记录：runId、current_run.jsonl 增量落盘、结�
 ### 2.5 战斗注入与战绩上报
 
 - `PopulateEnemyDeckBySessionNumber` 服务器分支：把候选写入 `enemyDeckToPopulate.deck`，`enemyStatusRef.hpMax = entry.hpMax`（沿用 JSON 分支同款逻辑），并暂存 `deckId/username` 供 UI 与上报。
+- 注入时（含回退到本地 JSON / 默认池时）累计敌方来源计数器（server/local/default），随 §2.7 快照全量上传；服务器分支另暂存 `deckId` 供 combat_end 写入 `run_combats.opponent_deck_id`（§0.1）。
 - 战斗结束（结果已知时）上报 `POST /api/matches/report`：`reportId=Guid.NewGuid()`、`opponentDeckId`、`won`、`sessionNum`；入发件箱。
 - **时序注意**：`CombatPerCardStatsTracker.BeginSession()` 在 `GatherDecks()` 清数据，战斗统计必须在结果阶段、下一场 `GatherDecks` 之前收割。
 
@@ -85,7 +100,7 @@ RunRecorder         对局记录：runId、current_run.jsonl 增量落盘、结�
   - `offered`/`utilityOffered`：本轮刷出卡（商店生成点埋点）；`bought[]`：本阶段购买（可多张可重复可为空）
   - `rerollCount`：本阶段刷新次数；`goldEnter`（payday 前）、`goldAfterPayday`（消费前购买力）、`goldExit`（离场，含刷新花费）
   - `seenPoolPct`：本局已见过卡种数 / 商店卡池 distinct cardTypeID 数（分母含功能板卡；口径如需调整再议）
-- `combat_end`：sessionNum、输赢、剩心、每卡触发次数/伤害（取自 CombatPerCardStatsTracker）。
+- `combat_end`：sessionNum、输赢、剩心、`rounds`（= roundsLastCombat - 1）、`opponentDeckId`（可空）、每卡触发次数 / `damageToOpponent` / `damageToSelf`（取自 CombatPerCardStatsTracker，不再合并伤害；schema 见 §0.1）。
 - `run_end`：result(victory/defeat/abandoned)、finalSession、heartsLeft、finalDeck、最终 seenPoolPct → 整包 `POST /api/runs`（发件箱兜底）。
 - 增量落盘 `current_run.jsonl` 防崩溃；下次启动发现未完结记录 → 补 `abandoned` 后上传。
 
@@ -93,15 +108,51 @@ RunRecorder         对局记录：runId、current_run.jsonl 增量落盘、结�
 
 - 两个追踪器加 session 分桶后，上传载荷 = 两个追踪器全量分桶 + meta(totalShopVisits/totalRerolls) + gameVersion。
 - 时机：离开商店时若脏则传；服务器 upsert 保证重传安全。
+- meta 除 `totalShopVisits`/`totalRerolls` 外，附敌方来源计数（server/local/default，§0.1），随快照全量覆盖。
 
 ### 2.8 卡牌目录上传
 
 - 启动时（注册成功后）若本地记录的 catalogVersion != 当前版本：遍历 `shopPoolRef.deck` + `additionalCardPrefabs`，读 CardScript 的 cardTypeID/displayName/tag 等可得字段，POST `/api/cards/catalog`。
-- CardScript 费用字段已在 3.0 移除，cost 字段实现时从定价来源取或留 0；稀有度取卡面配置（实现时确认字段名）。
+- CardScript 费用字段已在 3.0 移除；cost 取商店基础售价（`GetCardPrice` 的非递增基础价，不含 DeckSlot 递增部分），rarity 取卡面稀有度字段（实现时确认）。**两者必须填真值**：留 0/空则金币曲线分析（钱花在哪类卡）与「实际出现率 vs 设计权重」对账全部失效。
 
 ## 3. 配置与开关
 
-- `ServerConfig.enabled` 总开关：关掉 = 纯单机（现状行为不变）。
+### 3.1 ServerConfig.asset（Inspector 勾选面板）
+
+| 字段 | 类型 / 默认 | 作用 |
+|------|------------|------|
+| `enabled` | bool，默认 false | 总开关：关 = 纯单机，现状行为零变化 |
+| `environment` | enum {Local, Production}，默认 Local | 选 baseUrl：Local 用 `localBaseUrl`，Production 用 `productionBaseUrl`（二选一，杜绝手抄 URL） |
+| `localBaseUrl` | string，默认 `http://127.0.0.1:3000` | 本地起服地址；数据落仓库内 `server/onedeck-api/data/`（S0 批已 gitignore），可随时删库重来 |
+| `productionBaseUrl` | string，默认 `http://8.153.150.197` | ECS 生产 |
+| `uploadDeckSnapshots` | bool，默认 true | 卡组快照上传（§2.5 前半） |
+| `uploadMatchReports` | bool，默认 true | 战绩上报（§2.5 后半） |
+| `uploadStatsSnapshots` | bool，默认 true | 累计统计快照（§2.7，含来源计数 meta） |
+| `uploadRunRecords` | bool，默认 true | 整局记录（§2.6） |
+| `uploadCardCatalog` | bool，默认 true | 卡牌目录（§2.8） |
+| `fetchOpponentDecks` | bool，默认 true | 拉取幽灵对手（§2.4）；关 = 注入永远走本地回退链，来源计数 local/default 照记 |
+| `markAsTest` | bool，默认 false | 注册用户名自动加 `test_` 前缀，生产库按名清理；仅在 Production 联调时勾 |
+
+规则：
+
+- 分项开关在**采集/入队口**生效（关 = 根本不记录、不进发件箱）；发件箱冲刷只看 `enabled` + 当前 `environment`。
+- Inspector 里改 `environment` 或 `enabled` 时（OnValidate）**清空发件箱**——本地采的 payload 绝不发给云，反之亦然。
+- 注册不受分项开关影响（identity 是一切上传的前提）；分项全关时各模块静默空转、不弹错。
+- 预设组合：日常开发 = `Local + 全开`；生产联调 = `Production + markAsTest=true`；正式发布 = `Production + 全开 + markAsTest=false`。Play Mode 与打包共用同一 `persistentDataPath`，身份互通，故 Production 联调务必勾 `markAsTest`。
+
+### 3.2 本地起服流程
+
+```
+cd server/onedeck-api
+npm install
+node server.js        # HOST=127.0.0.1, PORT=3000
+```
+
+- admin 看板：`http://127.0.0.1:3000/admin?token=<data/admin_token.txt 内容>`；清库 = 停服删 `data/onedeck.db*` 再重启（WAL 有 -wal/-shm 伴生文件）。
+- 生产库只做两件事：S0 部署验证、发版前最终冒烟（`markAsTest=true`）。其余一切联调数据只落本地。
+
+### 3.3 其他
+
 - 场景联调前置：`DeckSaver` 的 `useDebugEnemyDeck` 置 0（当前为 1，会绕过一切敌方卡组来源）；`resetOnStart` 视测试需要。
 - gameVersion 来源：`Application.version`（实现时核对 ProjectSettings 里的值），全链路匹配键。
 
@@ -109,7 +160,8 @@ RunRecorder         对局记录：runId、current_run.jsonl 增量落盘、结�
 
 | 批 | 内容 | 验证 |
 |----|------|------|
-| A | ServerConfig + PlayerIdentity + DeckNetworkClient + UploadOutbox | EditMode：DTO 序列化往返、发件箱入队/冲刷/上限 |
+| S0 | 服务器 §0.1 schema 增补（rounds / opponentDeckId / perCard 拆分 / 来源计数列）+ admin 展示列 + .gitignore 补 `/server/onedeck-api/data/` | 本地起服冒烟：新列可写、旧字段 payload 兼容；部署 ECS 后 `/api/health` |
+| A | ServerConfig（§3.1 开关面板 + OnValidate 清箱）+ PlayerIdentity + DeckNetworkClient + UploadOutbox | EditMode：DTO 序列化往返、发件箱入队/冲刷/上限/清箱、开关矩阵（分项关 = 不入队） |
 | B | 卡组上传 + OpponentDeckCache + 注入 + VS 显示 + 战绩上报 | EditMode：候选校验/弃用逻辑；Play Mode：双端互见卡组 |
 | C | 两个追踪器加 session 维度 + 快照上传 | EditMode：分桶累计；admin 看板核对 |
 | D | RunRecorder + 埋点 + seenPoolPct | Play Mode 打一局，admin 单局详情页核对 |
@@ -122,5 +174,6 @@ RunRecorder         对局记录：runId、current_run.jsonl 增量落盘、结�
 
 - 纯增量设计：ServerConfig.enabled=false 时零行为变化，可随时回滚。
 - 所有网络代码不得阻塞主流程：战斗入口只用缓存，绝不现等网络。
-- admin token、玩家 playerId 不进仓库；`server/onedeck-api/data/` 已在 .gitignore。
+- admin token、玩家 playerId 不进仓库；`server/onedeck-api/data/` **尚未**加入 .gitignore（2026-09-04 勘误：原稿声称已在，实际没有）——批 S0 先补 `/server/onedeck-api/data/` 再在本地起服测试。
+- 服务器已知低危（不阻塞客户端，批 F 一并处理）：matches/report 的防御战绩自增未与 insertReport 包同一事务（中间崩溃可漂移）；`trust proxy=true` 依赖 HOST 绑 127.0.0.1，3000 端口不得直接暴露公网（补进 README Ops notes）。
 - HTTP 明文的篡改风险由"未知卡整副弃用 + 回退链 + JSON 校验"吸收（已知并接受）。
