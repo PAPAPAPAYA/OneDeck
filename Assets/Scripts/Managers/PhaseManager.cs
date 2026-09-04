@@ -522,6 +522,8 @@ public class PhaseManager : MonoBehaviour
 		TestManager.Log("[ShopButton] PhaseManager.ExitingShopPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
 		// Async-PvP: stats snapshot upload trigger - send latest full state when dirty (plan §2.7)
 		StatsSnapshotUploader.UploadIfDirty();
+		// Async-PvP: shop exit is an outbox flush trigger (plan §2.3) - deck snapshots leave here
+		UploadOutbox.Flush();
 		// Async-PvP: close this visit's run-journal shop_visit record (plan §2.6)
 		RunRecorder.CloseShopVisit(purseRef != null ? purseRef.value : 0, sessionNum.value);
 		InvokeExitShopPhaseEvent();
