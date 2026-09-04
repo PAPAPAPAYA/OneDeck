@@ -29,7 +29,7 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 Assets/
 ├── Scripts/
 │   ├── Managers/       # CombatManager, ShopManager, PhaseManager, CombatFuncs, EffectChainManager, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, AttackAnimationManager, CardFactory, CardIDRetriever, CombatInfoDisplayer, CombatLog, CombatStartCardGiver, CombatStatsLogger, CostResultPresenter, DeckTester, EffectRecorder, RecorderAnimationPlayer, GameEventListener, ICombatVisuals + Null*, ShopStatsManager, StartingCardManager, UtilityFuncManagerScript, WriteRead/ (CardWinRateTracker, CombatPerCardStatsTracker, DeckSaver, EnemyDeckRecorder)
-│   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, AddTextEffect, CardManipulationEffect, ChangeCardTarget, ChangeHpAlterAmountEffect, HPMaxAlterEffect, PrintEffect, TransferStatusEffectEffect, StartCardShuffleEffect, shop/DeckSizeIncreaseEffect, StatusEffect/
+│   ├── Effects/        # EffectScript, HPAlterEffect, ShieldAlterEffect, StageEffect, BuryEffect, ExileEffect, CurseEffect, AddTempCard, AddTextEffect, CardManipulationEffect, ChangeCardTarget, ChangeHpAlterAmountEffect, PrintEffect, TransferStatusEffectEffect, StartCardShuffleEffect, shop/DeckSizeIncreaseEffect, StatusEffect/
 │   ├── Card/           # CardScript, CostNEffectContainer, CardEventTrigger
 │   ├── SOScripts/      # GameEvent, PlayerStatusSO, StatusEffectSO, DeckSO, BoolSO, CostCheckResult, GamePhaseSO, IntSO, ShopRarityWeightSO, StringSO
 │   └── UXPrototype/    # CombatUXManager, ShopUXManager, CardPhysObjScript, CombatCardView, ShopCardView, CombatHPBarPresenter, CombatIconPresenter, HPNumericDisplay, HPNumericCounter, ResultStatsPanel, DamageFloaterPresenter, DamageFloaterTimeline
@@ -91,10 +91,8 @@ server/onedeck-api/     # Async-PvP backend (Express + better-sqlite3, single fi
 
 ### Auto Reveal
 `CombatManager.autoReveal` (bool) skips all player confirmations inside the combat phase when set to `true`:
-- Revealing the next card.
-- Triggering the current card's effect.
-- Continuing after combat finishes.
-It does **not** affect shop/result phase transitions. `DeckTester.autoSpace` still acts as a global auto-confirm across all phases.
+- Revealing the next card, triggering its effect, continuing after combat finishes.
+It does **not** affect shop/result phase transitions. `DeckTester.autoSpace` is a global auto-confirm across all phases.
 
 ### Input Blocking
 `CombatManager.IsInputBlocked` uses reference counting via `BlockInput(requester)` / `UnblockInput(requester)`.
@@ -137,7 +135,7 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 #### Tag Display Name & Tooltip
 - `TagTooltipDatabaseSO` (`Assets/Resources/TagTooltipDatabase.asset`, lazy singleton `Me`) maps each tag to a `displayName` StringSO (`Assets/SORefs/Strings/TagNames/`) and a tooltip `description` StringSO (`Assets/SORefs/Strings/TagTooltips/`). All StringSO assets must have `reset = false`.
 - **Single source of truth**: every user-visible tag text resolves through `TagTooltipDatabaseSO.GetTagDisplayName(tag)` (falls back to the enum name when unconfigured) — in-card tag print, hover tooltip title (`CardTagTooltip`), and cardDesc `<tag:EnumName>` placeholders. To rename a tag, edit only the `TagName_*.asset` value.
-- **cardDesc tag-reference v2**: `<tag:X>` renders display names via `ComputeDynamicCardDesc`; tag refs = `tag为【<tag:X>】的…卡`; 【】 reserved for tag phrases, card refs bare (信徒/诅咒 = tokens). Docs: `docs/CardDesc_TagReference_Convention_v2.md`.
+- **cardDesc tag-reference v2**: `<tag:X>` renders display names via `ComputeDynamicCardDesc`; tag refs = `tag为[<tag:X>]的…卡`; `[ ]` reserved for tag phrases, card refs bare (信徒/诅咒 = tokens); 【】 deprecated 2026-09-04 — font lacks glyphs (search prefabs for `u3010` escapes). Docs: `docs/CardDesc_TagReference_Convention_v2.md`.
 - Hover tooltip: `CardTagTooltip` from `CardPhysObjScript` hover; `CombatUXManager.hoverPopUpDelay` (default 0.1s) gates `PopUpCard` (0 = next frame).
 
 ## Events
@@ -178,10 +176,11 @@ Two-half panel (player-created top / enemy-created bottom) for the combat that j
 
 Plan & execution state: `plans/plan-utility-passive-shop-pipeline-2026-08-31.md` (§6).
 
-- Metadata: `CardScript.utilityKind` (+ `utilityValue`/`utilityValue2`/`utilityRarityWeightMults`/`reservedTag`); `IsUtilityPassive` = isPassive && kind != None. Passive utility = deck-resident, occupies a slot, sellable (selling removes the effect); all shop bonuses are RECOMPUTED from the deck — no accumulating listeners.
-- `UtilityShopBonus` (pure static) derives everything from `playerDeckRef`: baseline growth (payday/hpMax/deckSize per session), per-kind effects, owned dedup. Only stateful exception: deck-slot meter card — `DeckSizeIncreaseEffect` bumps run counter `DeckSlotPurchasesRef` (reset in `PhaseManager.ResetRun`), self-exiles on buy (BuyFunc skips the deck add), escalating price via `GetCardPrice`, stops at the static `maxDeckSize` ceiling (16).
-- `ShopBoardPipeline.GenerateBoard` (pure static, injected System.Random): board-type roll (`sessionUtilityBoardChances` + OddsUtility; ODDS_1 `firstBoardUtilityForce` forces the visit's first board; empty utility pool → combat board) → reserved guarantee slots (boardIndex from 0, fires when `boardIndex % every == every - 1`; candidates from the CLASSIFIED board pool only — combat boards never offer utility; utility drought → any-rarity weighted fallback; combat drought → skip) → wave filters (combat generic slots only, creature first) → weighted rolls (session table × shopRollWeightMultiplier × RarityWeight mults). `CurrentBoardIsUtility` drives the shop UX marker.
-- Stats: result rows and `CountGraveyardCardsOf` exclude `IsUtilityPassive` (the latter: no enemy GRAVE_CURSE feed); deck-population axis still counts passives; ShopStatsManager logs utility-board appear/buy share.
+- Metadata: `CardScript.utilityKind` (+ `utilityValue`/`utilityValue2`/`utilityRarityWeightMults`/`reservedTag`); `IsUtilityPassive` = isPassive && kind != None. Passive utility = deck-resident, occupies a slot, sellable (sell removes it); all bonuses are RECOMPUTED from the deck — no accumulating listeners.
+- `UtilityShopBonus` (pure static) derives all from `playerDeckRef`: baseline growth (payday/hpMax/deckSize per session), per-kind effects, owned dedup. Sole stateful exception: deck-slot meter card — `DeckSizeIncreaseEffect` bumps run counter `DeckSlotPurchasesRef` (reset in `PhaseManager.ResetRun`), self-exiles on buy (BuyFunc skips deck add), escalating price, capped by static `maxDeckSize` (16).
+- Shop HP invariant: `ApplyHpMaxFromDeck` (entry/buy/sell) sets `hp = hpMax`; shop phase is always full HP, so combat starts full (`HPMaxAlterEffect` removed 2026-09-04).
+- `ShopBoardPipeline.GenerateBoard` (pure static, injected System.Random): board-type roll (`sessionUtilityBoardChances` + OddsUtility; ODDS_1 forces the visit's first board; empty utility pool → combat board) → reserved slots (boardIndex from 0, fires when `boardIndex % every == every - 1`; candidates from the CLASSIFIED pool only — combat boards never offer utility; utility drought → any-rarity fallback; combat drought → skip) → wave filters (combat generic slots, creature first) → weighted rolls (session table × shopRollWeightMultiplier × RarityWeight mults). `CurrentBoardIsUtility` drives the shop UX marker.
+- Stats: result rows and `CountGraveyardCardsOf` exclude `IsUtilityPassive` (latter: no enemy GRAVE_CURSE feed); deck-population axis still counts passives; ShopStatsManager logs utility appear/buy share.
 
 ## Animation System
 

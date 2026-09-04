@@ -660,15 +660,16 @@ public class ShopManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// hpMax = hpMaxOg + per-session baseline + sum(HP utility cards); hp clamps down if above
-	/// max. Never lethal: hpMaxOg >= 1 and bonuses are >= 0.
+	/// hpMax = hpMaxOg + per-session baseline + sum(HP utility cards). Shop invariant:
+	/// the player is always at full HP during the shop phase, so hp is set to the new
+	/// max on every recompute (shop entry / buy / sell). Never lethal: hpMaxOg >= 1, bonuses >= 0.
 	/// </summary>
 	private void ApplyHpMaxFromDeck()
 	{
 		var status = CombatManager.Me != null ? CombatManager.Me.ownerPlayerStatusRef : null;
 		if (status == null) return;
 		status.hpMax = UtilityShopBonus.ComputeHpMax(status.hpMaxOg, GetSessionNum(), hpMaxPerSession, _utilityBonus);
-		status.hp = Mathf.Min(status.hp, status.hpMax);
+		status.hp = status.hpMax;
 	}
 
 	private void ResetVisitCounters()
