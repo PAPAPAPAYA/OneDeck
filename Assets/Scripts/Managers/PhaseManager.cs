@@ -182,32 +182,39 @@ public class PhaseManager : MonoBehaviour
 					// Record player card win
 					TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: true, sessionNum: sessionNum.value);
 			}
-			// Async-PvP: report the combat result against the ghost deck (plan §2.5)
-			ReportMatchResult(enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0);
-			// Async-PvP: run journal combat_end (plan §2.6); rounds use the Result-screen caliber
-			RunRecorder.RecordCombatEnd(
-				sessionNum: sessionNum.value,
-				won: enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0,
-				heartsLeft: hearts.value,
-				rounds: CombatManager.Me != null ? Mathf.Max(0, CombatManager.Me.roundsLastCombat - 1) : 0,
-				opponentDeckId: OpponentDeckCache.Current != null ? OpponentDeckCache.Current.deckId : 0);
 			// Check run-ending conditions after this combat's result is applied
 			if (hearts.value <= 0)
 			{
 				_isRunEnded = true;
 				_endMessage = "GAME OVER";
-				// Async-PvP: run_end - upload the finished run (plan §2.6)
-				RunRecorder.CloseRun(RunRecorder.ResultDefeat, sessionNum.value, hearts.value, CollectPlayerDeckTypeIDs());
 			}
 			else if (wins.value >= winCon.value)
 			{
 				_isRunEnded = true;
 				_endMessage = "CONGRATS";
-				// Async-PvP: run_end - upload the finished run (plan §2.6)
-				RunRecorder.CloseRun(RunRecorder.ResultVictory, sessionNum.value, hearts.value, CollectPlayerDeckTypeIDs());
 			}
 
 			ExitingCombatPhase();
+
+			// Async-PvP hooks (plan §2.5/§2.6) - AFTER ExitingCombatPhase so
+			// roundsLastCombat already holds the finished combat's count, and BEFORE
+			// the result phase so hp/hearts are still the combat's values.
+			bool playerWon = enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0;
+			ReportMatchResult(playerWon);
+			RunRecorder.RecordCombatEnd(
+				sessionNum: sessionNum.value,
+				won: playerWon,
+				heartsLeft: hearts.value,
+				rounds: CombatManager.Me != null ? Mathf.Max(0, CombatManager.Me.roundsLastCombat - 1) : 0,
+				opponentDeckId: OpponentDeckCache.Current != null ? OpponentDeckCache.Current.deckId : 0);
+			if (_isRunEnded)
+			{
+				// Async-PvP: run_end - upload the finished run (plan §2.6)
+				RunRecorder.CloseRun(
+					hearts.value <= 0 ? RunRecorder.ResultDefeat : RunRecorder.ResultVictory,
+					sessionNum.value, hearts.value, CollectPlayerDeckTypeIDs());
+			}
+
 			EnteringResultPhase();
 		}
 		else if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Result) // if in result phase

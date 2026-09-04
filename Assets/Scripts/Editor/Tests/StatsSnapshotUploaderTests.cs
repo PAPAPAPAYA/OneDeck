@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using DefaultNamespace.Managers;
 using NUnit.Framework;
 using TestWriteRead;
@@ -12,6 +13,7 @@ using UnityEngine;
 public class StatsSnapshotUploaderTests
 {
 	private ServerConfig config;
+	private string tempDir;
 
 	[SetUp]
 	public void SetUp()
@@ -21,14 +23,24 @@ public class StatsSnapshotUploaderTests
 		config.uploadStatsSnapshots = true;
 		ServerConfig.Active = config;
 		StatsSnapshotUploader.Dirty = false;
+
+		// Hermetic identity: an empty override dir means HasIdentity is false no matter
+		// what exists in the real persistentDataPath of this machine.
+		tempDir = Path.Combine(Path.GetTempPath(), "onedeck_stats_up_test_" + System.Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(tempDir);
+		PlayerIdentity.OverrideDirectoryForTests = tempDir;
+		PlayerIdentity.ResetForTests();
 	}
 
 	[TearDown]
 	public void TearDown()
 	{
 		StatsSnapshotUploader.Dirty = false;
+		PlayerIdentity.OverrideDirectoryForTests = null;
+		PlayerIdentity.ResetForTests();
 		ServerConfig.Active = null;
 		if (config != null) UnityEngine.Object.DestroyImmediate(config);
+		if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
 	}
 
 	[Test]
