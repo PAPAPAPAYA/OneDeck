@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using DefaultNamespace.Managers;
 using TMPro;
@@ -93,6 +94,10 @@ public class PhaseManager : MonoBehaviour
 		// Async-PvP: scene start counts as run start - per-run ghost dedup resets + prefetch (plan §2.4)
 		OpponentDeckCache.OnRunStarted();
 		UploadOutbox.Flush();
+		// Async-PvP: open the run journal (recovers any unfinished previous run, plan §2.6)
+		RunRecorder.StartRun();
+		// Async-PvP: card catalog upload once per game version (plan §2.8)
+		CardCatalogUploader.MaybeUpload();
 		if (TutorialManager.IsTutorialActive)
 		{
 			// First launch: run the scripted tutorial combat instead of the shop.
@@ -179,16 +184,27 @@ public class PhaseManager : MonoBehaviour
 			}
 			// Async-PvP: report the combat result against the ghost deck (plan §2.5)
 			ReportMatchResult(enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0);
+			// Async-PvP: run journal combat_end (plan §2.6); rounds use the Result-screen caliber
+			RunRecorder.RecordCombatEnd(
+				sessionNum: sessionNum.value,
+				won: enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0,
+				heartsLeft: hearts.value,
+				rounds: CombatManager.Me != null ? Mathf.Max(0, CombatManager.Me.roundsLastCombat - 1) : 0,
+				opponentDeckId: OpponentDeckCache.Current != null ? OpponentDeckCache.Current.deckId : 0);
 			// Check run-ending conditions after this combat's result is applied
 			if (hearts.value <= 0)
 			{
 				_isRunEnded = true;
 				_endMessage = "GAME OVER";
+				// Async-PvP: run_end - upload the finished run (plan §2.6)
+				RunRecorder.CloseRun(RunRecorder.ResultDefeat, sessionNum.value, hearts.value, CollectPlayerDeckTypeIDs());
 			}
 			else if (wins.value >= winCon.value)
 			{
 				_isRunEnded = true;
 				_endMessage = "CONGRATS";
+				// Async-PvP: run_end - upload the finished run (plan §2.6)
+				RunRecorder.CloseRun(RunRecorder.ResultVictory, sessionNum.value, hearts.value, CollectPlayerDeckTypeIDs());
 			}
 
 			ExitingCombatPhase();
@@ -330,6 +346,24 @@ public class PhaseManager : MonoBehaviour
 		// run end is also an outbox flush trigger (plan §2.3).
 		OpponentDeckCache.OnRunStarted();
 		UploadOutbox.Flush();
+		// Async-PvP: open a new run journal (recovers + uploads any unfinished one, plan §2.6)
+		RunRecorder.StartRun();
+	}
+
+	/// <summary>Player deck cardTypeIDs for the run_end final deck snapshot (plan §2.6).</summary>
+	private List<string> CollectPlayerDeckTypeIDs()
+	{
+		var ids = new List<string>();
+		if (playerDeckRef == null) return ids;
+		foreach (var cardPrefab in playerDeckRef.deck)
+		{
+			if (cardPrefab == null) continue;
+			var cardScript = cardPrefab.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+			string typeID = !string.IsNullOrEmpty(cardScript.cardTypeID) ? cardScript.cardTypeID : cardScript.name;
+			if (!string.IsNullOrEmpty(typeID)) ids.Add(typeID);
+		}
+		return ids;
 	}
 
 	/// <summary>
@@ -488,6 +522,8 @@ public class PhaseManager : MonoBehaviour
 		TestManager.Log("[ShopButton] PhaseManager.ExitingShopPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
 		// Async-PvP: stats snapshot upload trigger - send latest full state when dirty (plan §2.7)
 		StatsSnapshotUploader.UploadIfDirty();
+		// Async-PvP: close this visit's run-journal shop_visit record (plan §2.6)
+		RunRecorder.CloseShopVisit(purseRef != null ? purseRef.value : 0, sessionNum.value);
 		InvokeExitShopPhaseEvent();
 	}
 	#endregion

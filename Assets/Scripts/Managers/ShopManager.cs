@@ -333,6 +333,7 @@ public class ShopManager : MonoBehaviour
 			if (!string.IsNullOrEmpty(cardTypeID))
 			{
 				ShopStatsManager.Me.RecordCardBought(cardTypeID, cardScript.GetDisplayName(), _currentBoardIsUtility);
+				RunRecorder.OnCardBought(cardTypeID); // Async-PvP run journal (plan §2.6)
 			}
 		}
 		GatherPlayerDeckInfo();
@@ -386,10 +387,12 @@ public class ShopManager : MonoBehaviour
 		}
 		
 		// payday + baseline growth (utility recompute first: deckSize, hpMax, then payday)
+		RunRecorder.OnShopEnter(purse.value); // Async-PvP: goldEnter snapshot before payday (plan §2.6)
 		ResetVisitCounters();
 		RefreshUtilityBonus();
 		ApplyBaselineGrowth();
 		purse.value += UtilityShopBonus.ComputePayday(payCheck.value, GetSessionNum(), incomePerSession, _utilityBonus);
+		RunRecorder.OnPayday(purse.value); // Async-PvP: goldAfterPayday snapshot before spending (plan §2.6)
 		// process shop items and display
 		GenerateShopItems();
 		UpdateShopItemInfo();
@@ -509,6 +512,7 @@ public class ShopManager : MonoBehaviour
 				if (!string.IsNullOrEmpty(cardTypeID))
 				{
 					ShopStatsManager.Me.RecordCardAppeared(cardTypeID, cardScript.GetDisplayName(), _currentBoardIsUtility);
+					RunRecorder.OnCardOffered(cardTypeID, _currentBoardIsUtility); // Async-PvP run journal (plan §2.6)
 				}
 			}
 		}
@@ -618,6 +622,7 @@ public class ShopManager : MonoBehaviour
 		{
 			ShopStatsManager.Me.RecordReroll();
 		}
+		RunRecorder.OnReroll(); // Async-PvP run journal (plan §2.6)
 		TestManager.Log("[ShopButton] Reroll() succeeded (free=" + isFree + "). shopItems=" + (currentShopItemDeckRef != null ? currentShopItemDeckRef.deck.Count : -1) + " ShopUXManager.Instance=" + (ShopUXManager.Instance != null ? "exists" : "NULL"));
 
 		// Notify ShopUXManager to handle reroll animation and regenerate physical cards

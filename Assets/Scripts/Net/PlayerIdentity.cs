@@ -24,9 +24,18 @@ public static class PlayerIdentity
 	private const string FileName = "player_identity.json";
 	private static IdentityFile cached;
 
+	/// <summary>Test seam: when set, overrides the persistentDataPath directory.</summary>
+	public static string OverrideDirectoryForTests;
+
 	private static string FilePath
 	{
-		get { return Path.Combine(Application.persistentDataPath, FileName); }
+		get { return Path.Combine(OverrideDirectoryForTests ?? Application.persistentDataPath, FileName); }
+	}
+
+	/// <summary>Test seam: drops the cached identity so the next read reloads from disk.</summary>
+	public static void ResetForTests()
+	{
+		cached = null;
 	}
 
 	public static bool HasIdentity { get { return Load().playerId != null; } }
