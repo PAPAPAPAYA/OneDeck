@@ -346,8 +346,14 @@ public class CombatInfoDisplayer : MonoBehaviour
 		
 		playerStatusDisplay.text =
 			"Your HP: " + GameColorPalette.Me.heal.OpenTag + playerHp + "</color>\n";
+		// Async-PvP: show the ghost owner when a server deck supplied the enemy side (plan §2.5)
+		string vsLine = "";
+		if (OpponentDeckCache.Current != null)
+		{
+			vsLine = "VS " + OpponentDeckCache.Current.username;
+		}
 		enemyStatusDisplay.text =
-			"Their HP: " + GameColorPalette.Me.heal.OpenTag + enemyHp + "</color>\n";
+			"Their HP: " + GameColorPalette.Me.heal.OpenTag + enemyHp + "</color>\n" + vsLine;
 	}
 
 	public void RefreshDeckInfo()

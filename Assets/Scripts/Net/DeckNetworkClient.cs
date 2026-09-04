@@ -47,6 +47,12 @@ public class DeckNetworkClient : MonoBehaviour
 		if (me == this) me = null;
 	}
 
+	/// <summary>Game version used as the match key on every endpoint (plan §3.3).</summary>
+	public static string GameVersion
+	{
+		get { return Application.version; }
+	}
+
 	/// <summary>POST jsonPayload to path; onOk receives the raw response body.</summary>
 	public void PostJson(string path, string jsonPayload, Action<string> onOk, Action<string, long> onFail)
 	{

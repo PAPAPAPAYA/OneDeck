@@ -184,4 +184,5 @@ DATA_DIR=data node server.js        # Git Bash；PowerShell: $env:DATA_DIR="data
 |----|------|------|
 | S0 | ✅ 完成（2026-09-04，commit 76932fe） | 本地冒烟全过：迁移路径（预置旧 schema 库加列 + legacy 行保留）、新/旧 perCard 字段、enemySource 非清零语义、run 去重、防御战绩、admin 新展示列。**踩坑**：本地跑必须 `DATA_DIR=data`（默认值是 ECS 布局专用）；stats_meta 新列必须可空（INSERT 分支的 NULL 会撞 NOT NULL） |
 | A | ✅ 完成并验证（2026-09-04，commit 67aea02 + 编译修复） | `Assets/Scripts/Net/`：ServerConfig（§3.1 全字段 + OnValidate 清箱）、NetDtos、DeckNetworkClient（10s 超时、1s/3s 重试、4xx 不重试）、UploadOutbox（100 上限丢最旧、tmp+Replace 原子写）、PlayerIdentity（markAsTest 前缀、409 → username_taken）。`Resources/ServerConfig.asset` 已创建。EditMode：专项 12/12 过；全量回归 447 中 446 过 / 1 既有跳过。**踩坑**：onOk 是 `Action<string>`，lambda 不能写成无参 |
-| B–F | ⬜ 未开始 | 按批次表顺序 |
+| B | ✅ 代码完成 + EditMode 验证（2026-09-04；Play Mode 双端互见待人工跑） | `OpponentDeckCache`（磁盘缓存 + 本局去重 + 来源计数遥测 + `Current` 对手暂存）+ `DeckSaver` 服务器注入分支（debug → server → JSON → 默认池，未知卡整副弃用）+ `SavePlayerDeckToJson` 快照入发件箱 + `PhaseManager` 四挂钩（OnEnable/ResetRun 预取、进店补仓、战斗结束上报 + 冲刷）+ `CombatInfoDisplayer` VS 行。`DeckSaver.cs` 已按仓库标准转为 Tab 缩进。EditMode：`OpponentDeckCacheTests` 8/8；全量 455 中 454 过 / 1 既有跳过。**踩坑**：嵌套类与同名属性共存 = CS0102，属性改名 `Current` |
+| C–F | ⬜ 未开始 | C：追踪器 session 分桶 + 快照上传（含来源计数）；D：RunRecorder + 埋点；E：卡牌目录；F：联调收尾 |

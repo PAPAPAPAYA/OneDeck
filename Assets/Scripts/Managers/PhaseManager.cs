@@ -90,6 +90,9 @@ public class PhaseManager : MonoBehaviour
 		_isRunEnded = false;
 		_endMessage = "";
 		InvokeOnGameStartEvent();
+		// Async-PvP: scene start counts as run start - per-run ghost dedup resets + prefetch (plan §2.4)
+		OpponentDeckCache.OnRunStarted();
+		UploadOutbox.Flush();
 		if (TutorialManager.IsTutorialActive)
 		{
 			// First launch: run the scripted tutorial combat instead of the shop.
@@ -174,6 +177,8 @@ public class PhaseManager : MonoBehaviour
 				// Record player card win
 				TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: true);
 			}
+			// Async-PvP: report the combat result against the ghost deck (plan §2.5)
+			ReportMatchResult(enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0);
 			// Check run-ending conditions after this combat's result is applied
 			if (hearts.value <= 0)
 			{
@@ -320,6 +325,34 @@ public class PhaseManager : MonoBehaviour
 
 		_isRunEnded = false;
 		_endMessage = "";
+
+		// Async-PvP: fresh run - per-run ghost dedup resets + prefetch (plan §2.4);
+		// run end is also an outbox flush trigger (plan §2.3).
+		OpponentDeckCache.OnRunStarted();
+		UploadOutbox.Flush();
+	}
+
+	/// <summary>
+	/// Async-PvP: report the combat result against the ghost deck that supplied the
+	/// enemy side (plan §2.5). No-op outside ghost matches; the outbox absorbs failures.
+	/// Draws report won=false (the ghost survived).
+	/// </summary>
+	private void ReportMatchResult(bool playerWon)
+	{
+		var opponent = OpponentDeckCache.Current;
+		if (opponent == null) return;
+		if (!PlayerIdentity.HasIdentity) return;
+
+		UploadOutbox.Enqueue(NetUploadKind.MatchReport, new MatchReportRequest
+		{
+			playerId = PlayerIdentity.PlayerId,
+			reportId = Guid.NewGuid().ToString("N"),
+			opponentDeckId = opponent.deckId,
+			won = playerWon,
+			sessionNum = sessionNum.value,
+			gameVersion = DeckNetworkClient.GameVersion
+		});
+		UploadOutbox.Flush();
 	}
 
 	#region entering and exiting funcs
@@ -442,6 +475,8 @@ public class PhaseManager : MonoBehaviour
 		}
 
 		InvokeEnterShopPhaseEvent();
+		// Async-PvP: top up ghost candidates for the upcoming combat session and the one after (plan §2.4)
+		OpponentDeckCache.EnsureStockForSession(sessionNum.value);
 		
 		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Shop;
