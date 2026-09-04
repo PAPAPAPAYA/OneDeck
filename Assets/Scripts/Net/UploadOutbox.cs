@@ -110,7 +110,7 @@ public static class UploadOutbox
 				bool done = false;
 				bool ok = false;
 				DeckNetworkClient.Me.PostJson(head.path, head.jsonPayload,
-					() => { ok = true; done = true; },
+					(body) => { ok = true; done = true; },
 					(error, statusCode) => { done = true; });
 				while (!done) yield return null;
 				if (!ok) yield break;

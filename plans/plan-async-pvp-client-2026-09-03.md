@@ -183,5 +183,5 @@ DATA_DIR=data node server.js        # Git Bash；PowerShell: $env:DATA_DIR="data
 | 批 | 状态 | 备注 |
 |----|------|------|
 | S0 | ✅ 完成（2026-09-04，commit 76932fe） | 本地冒烟全过：迁移路径（预置旧 schema 库加列 + legacy 行保留）、新/旧 perCard 字段、enemySource 非清零语义、run 去重、防御战绩、admin 新展示列。**踩坑**：本地跑必须 `DATA_DIR=data`（默认值是 ECS 布局专用）；stats_meta 新列必须可空（INSERT 分支的 NULL 会撞 NOT NULL） |
-| A | ✅ 代码完成（2026-09-04，待 Unity 编辑器编译 + EditMode 验证） | `Assets/Scripts/Net/`：ServerConfig（§3.1 全字段 + OnValidate 清箱）、NetDtos、DeckNetworkClient（10s 超时、1s/3s 重试、4xx 不重试）、UploadOutbox（100 上限丢最旧、tmp+Replace 原子写、ResetCacheForTests 缝隙）、PlayerIdentity（markAsTest 前缀、409 → username_taken）；测试 `Editor/Tests/NetClientBatchATests.cs`。**待办**：编辑器里创建 `Resources/ServerConfig.asset`（Create → OneDeck → ServerConfig），跑 EditMode 测试 |
+| A | ✅ 完成并验证（2026-09-04，commit 67aea02 + 编译修复） | `Assets/Scripts/Net/`：ServerConfig（§3.1 全字段 + OnValidate 清箱）、NetDtos、DeckNetworkClient（10s 超时、1s/3s 重试、4xx 不重试）、UploadOutbox（100 上限丢最旧、tmp+Replace 原子写）、PlayerIdentity（markAsTest 前缀、409 → username_taken）。`Resources/ServerConfig.asset` 已创建。EditMode：专项 12/12 过；全量回归 447 中 446 过 / 1 既有跳过。**踩坑**：onOk 是 `Action<string>`，lambda 不能写成无参 |
 | B–F | ⬜ 未开始 | 按批次表顺序 |
