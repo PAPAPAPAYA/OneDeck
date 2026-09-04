@@ -32,16 +32,32 @@ namespace DefaultNamespace.Managers
 	}
 
 	/// <summary>
+	/// Per-(card, session) shop bucket used for the stats snapshot upload (plan §2.7).
+	/// The flat cardStats totals stay the display/CSV source of truth.
+	/// </summary>
+	[Serializable]
+	public class ShopSessionStats
+	{
+		public string cardTypeID;
+		public int sessionNum;
+		public int appear;
+		public int bought;
+		public int utilAppear;
+		public int utilBought;
+	}
+
+	/// <summary>
 	/// Shop stats data container (for JSON serialization)
 	/// </summary>
 	[Serializable]
 	public class ShopStatsData
 	{
 		public List<CardShopStats> cardStats = new List<CardShopStats>();
+		public List<ShopSessionStats> sessionCardStats = new List<ShopSessionStats>();
 		public int totalShopVisits;
 		public int totalRerolls;
 		public string lastUpdated;
-		
+
 		public ShopStatsData()
 		{
 			lastUpdated = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -105,6 +121,7 @@ namespace DefaultNamespace.Managers
 			var stat = GetOrCreateCardStat(cardTypeID, cardName);
 			stat.appearCount++;
 			if (onUtilityBoard) stat.utilityBoardAppearCount++;
+			RecordSessionStat(cardTypeID, onUtilityBoard, bought: false);
 			_pendingSave = true;
 		}
 
@@ -118,6 +135,7 @@ namespace DefaultNamespace.Managers
 			var stat = GetOrCreateCardStat(cardTypeID, cardName);
 			stat.boughtCount++;
 			if (onUtilityBoard) stat.utilityBoardBoughtCount++;
+			RecordSessionStat(cardTypeID, onUtilityBoard, bought: true);
 			_pendingSave = true;
 		}
 
@@ -129,6 +147,7 @@ namespace DefaultNamespace.Managers
 			if (!enableStats) return;
 
 			_statsData.totalShopVisits++;
+			StatsSnapshotUploader.MarkDirty();
 			_pendingSave = true;
 		}
 
@@ -140,7 +159,39 @@ namespace DefaultNamespace.Managers
 			if (!enableStats) return;
 
 			_statsData.totalRerolls++;
+			StatsSnapshotUploader.MarkDirty();
 			_pendingSave = true;
+		}
+
+		/// <summary>
+		/// Update the per-(card, session) bucket used by the stats snapshot upload (plan §2.7).
+		/// Session is read from the shared sessionNumber IntSO via StatsSnapshotUploader.
+		/// </summary>
+		private void RecordSessionStat(string cardTypeID, bool onUtilityBoard, bool bought)
+		{
+			int sessionNum = StatsSnapshotUploader.CurrentSessionNum();
+			var stat = _statsData.sessionCardStats.Find(s => s.cardTypeID == cardTypeID && s.sessionNum == sessionNum);
+			if (stat == null)
+			{
+				stat = new ShopSessionStats
+				{
+					cardTypeID = cardTypeID,
+					sessionNum = sessionNum,
+					appear = 0,
+					bought = 0,
+					utilAppear = 0,
+					utilBought = 0
+				};
+				_statsData.sessionCardStats.Add(stat);
+			}
+			if (bought) stat.bought++;
+			else stat.appear++;
+			if (onUtilityBoard)
+			{
+				if (bought) stat.utilBought++;
+				else stat.utilAppear++;
+			}
+			StatsSnapshotUploader.MarkDirty();
 		}
 
 		/// <summary>
@@ -186,6 +237,27 @@ namespace DefaultNamespace.Managers
 		public CardShopStats GetCardStats(string cardTypeID)
 		{
 			return _statsData.cardStats.Find(s => s.cardTypeID == cardTypeID);
+		}
+
+		/// <summary>
+		/// Per-session buckets for the stats snapshot upload (plan §2.7).
+		/// </summary>
+		public List<ShopSessionStats> GetSessionStatsForUpload()
+		{
+			return _statsData.sessionCardStats;
+		}
+
+		/// <summary>
+		/// Lifetime meta counters for the stats snapshot upload (plan §2.7).
+		/// </summary>
+		public int GetTotalShopVisitsForUpload()
+		{
+			return _statsData.totalShopVisits;
+		}
+
+		public int GetTotalRerollsForUpload()
+		{
+			return _statsData.totalRerolls;
 		}
 
 		/// <summary>

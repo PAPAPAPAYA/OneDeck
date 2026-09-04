@@ -161,7 +161,7 @@ public class PhaseManager : MonoBehaviour
 					DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
 					DeckTester.me.CalculateSessionAveDmg();
 					// Record player card loss
-					TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: false);
+					TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: false, sessionNum: sessionNum.value);
 				}
 			}
 			else if (enemyStatusRef.hp <= 0)
@@ -174,8 +174,8 @@ public class PhaseManager : MonoBehaviour
 				DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
 				DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
 				DeckTester.me.CalculateSessionAveDmg();
-				// Record player card win
-				TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: true);
+					// Record player card win
+					TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: true, sessionNum: sessionNum.value);
 			}
 			// Async-PvP: report the combat result against the ghost deck (plan §2.5)
 			ReportMatchResult(enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0);
@@ -486,6 +486,8 @@ public class PhaseManager : MonoBehaviour
 	{
 		// DIAG-LOG(2026-08-08): tracing why the shop Exit button may appear dead
 		TestManager.Log("[ShopButton] PhaseManager.ExitingShopPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
+		// Async-PvP: stats snapshot upload trigger - send latest full state when dirty (plan §2.7)
+		StatsSnapshotUploader.UploadIfDirty();
 		InvokeExitShopPhaseEvent();
 	}
 	#endregion

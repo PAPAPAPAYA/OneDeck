@@ -53,6 +53,12 @@ public class DeckNetworkClient : MonoBehaviour
 		get { return Application.version; }
 	}
 
+	/// <summary>True when the hidden host object already exists (no lazy creation).</summary>
+	public static bool HasInstance
+	{
+		get { return me != null; }
+	}
+
 	/// <summary>POST jsonPayload to path; onOk receives the raw response body.</summary>
 	public void PostJson(string path, string jsonPayload, Action<string> onOk, Action<string, long> onFail)
 	{
