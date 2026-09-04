@@ -145,9 +145,10 @@ RunRecorder         对局记录：runId、current_run.jsonl 增量落盘、结�
 ```
 cd server/onedeck-api
 npm install
-node server.js        # HOST=127.0.0.1, PORT=3000
+DATA_DIR=data node server.js        # Git Bash；PowerShell: $env:DATA_DIR="data"; node server.js
 ```
 
+- DATA_DIR 必须显式传：服务端默认值是 `__dirname/../data`（ECS 布局专用，pm2 日志也在那里），本地不传会落到 `server/data/`。
 - admin 看板：`http://127.0.0.1:3000/admin?token=<data/admin_token.txt 内容>`；清库 = 停服删 `data/onedeck.db*` 再重启（WAL 有 -wal/-shm 伴生文件）。
 - 生产库只做两件事：S0 部署验证、发版前最终冒烟（`markAsTest=true`）。其余一切联调数据只落本地。
 

@@ -118,6 +118,9 @@ CREATE TABLE IF NOT EXISTS stats_meta (
 	game_version TEXT NOT NULL,
 	total_shop_visits INTEGER NOT NULL DEFAULT 0,
 	total_rerolls INTEGER NOT NULL DEFAULT 0,
+	enemy_source_server INTEGER DEFAULT 0,
+	enemy_source_local INTEGER DEFAULT 0,
+	enemy_source_pool INTEGER DEFAULT 0,
 	updated_at TEXT NOT NULL,
 	PRIMARY KEY (player_id, game_version)
 );
@@ -166,6 +169,8 @@ CREATE TABLE IF NOT EXISTS run_combats (
 	session_num INTEGER NOT NULL,
 	won INTEGER NOT NULL,
 	hearts_left INTEGER NOT NULL DEFAULT 0,
+	rounds INTEGER NOT NULL DEFAULT 0,
+	opponent_deck_id INTEGER,
 	per_card TEXT NOT NULL DEFAULT '[]',
 	ts TEXT
 );
@@ -182,6 +187,22 @@ CREATE TABLE IF NOT EXISTS card_catalog (
 	PRIMARY KEY (game_version, card_type_id)
 );
 `);
+
+// S0 (2026-09-04): migrate dbs created before the new columns (e.g. the live ECS db).
+// Fresh dbs already get the columns from CREATE TABLE above; this is a no-op there.
+function ensureColumn(table, columnDdl)
+{
+	const cols = db.prepare('PRAGMA table_info(' + table + ')').all().map((c) => c.name);
+	const name = columnDdl.split(/\s+/)[0];
+	if (!cols.includes(name)) db.exec('ALTER TABLE ' + table + ' ADD COLUMN ' + columnDdl);
+}
+ensureColumn('run_combats', 'rounds INTEGER NOT NULL DEFAULT 0');
+ensureColumn('run_combats', 'opponent_deck_id INTEGER');
+// Nullable-with-default: the upsert INSERTs NULL when a legacy client omits enemySource,
+// so these must accept NULL (COALESCE in DO UPDATE keeps the stored value then).
+ensureColumn('stats_meta', 'enemy_source_server INTEGER DEFAULT 0');
+ensureColumn('stats_meta', 'enemy_source_local INTEGER DEFAULT 0');
+ensureColumn('stats_meta', 'enemy_source_pool INTEGER DEFAULT 0');
 
 const stmts = {
 	playerById: db.prepare('SELECT * FROM players WHERE player_id = ?'),
@@ -212,11 +233,16 @@ const stmts = {
 			util_appear = excluded.util_appear, util_bought = excluded.util_bought,
 			combats = excluded.combats, wins = excluded.wins, losses = excluded.losses,
 			updated_at = excluded.updated_at`),
-	upsertMeta: db.prepare(`INSERT INTO stats_meta (player_id, game_version, total_shop_visits, total_rerolls, updated_at)
-		VALUES (?, ?, ?, ?, ?)
+	upsertMeta: db.prepare(`INSERT INTO stats_meta (player_id, game_version, total_shop_visits, total_rerolls,
+		enemy_source_server, enemy_source_local, enemy_source_pool, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (player_id, game_version)
 		DO UPDATE SET total_shop_visits = excluded.total_shop_visits,
-			total_rerolls = excluded.total_rerolls, updated_at = excluded.updated_at`),
+			total_rerolls = excluded.total_rerolls,
+			enemy_source_server = COALESCE(excluded.enemy_source_server, stats_meta.enemy_source_server),
+			enemy_source_local = COALESCE(excluded.enemy_source_local, stats_meta.enemy_source_local),
+			enemy_source_pool = COALESCE(excluded.enemy_source_pool, stats_meta.enemy_source_pool),
+			updated_at = excluded.updated_at`),
 	insertBatch: db.prepare('INSERT INTO snapshot_batches (player_id, game_version, uploaded_at, payload) VALUES (?, ?, ?, ?)'),
 
 	insertRun: db.prepare(`INSERT OR IGNORE INTO runs
@@ -228,8 +254,8 @@ const stmts = {
 		 seen_pool_pct, gold_enter, gold_after_payday, gold_exit, ts)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
 	insertCombat: db.prepare(`INSERT INTO run_combats
-		(run_id, session_num, won, hearts_left, per_card, ts)
-		VALUES (?, ?, ?, ?, ?, ?)`),
+		(run_id, session_num, won, hearts_left, rounds, opponent_deck_id, per_card, ts)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`),
 
 	upsertCatalog: db.prepare(`INSERT INTO card_catalog
 		(game_version, card_type_id, name, tags, rarity, cost, updated_at)
@@ -481,9 +507,14 @@ app.post('/api/stats/snapshot', (req, res) =>
 		}
 		if (req.body.meta && typeof req.body.meta === 'object')
 		{
+			// enemySource absent (older clients) -> null -> COALESCE keeps existing counters.
+			const src = (typeof req.body.meta.enemySource === 'object' && req.body.meta.enemySource) || null;
 			stmts.upsertMeta.run(player.player_id, gameVersion,
 				toInt(req.body.meta.totalShopVisits, 0, 1e9, 0),
-				toInt(req.body.meta.totalRerolls, 0, 1e9, 0), nowIso());
+				toInt(req.body.meta.totalRerolls, 0, 1e9, 0),
+				src ? toInt(src.server, 0, 1e9, 0) : null,
+				src ? toInt(src.local, 0, 1e9, 0) : null,
+				src ? toInt(src.pool, 0, 1e9, 0) : null, nowIso());
 		}
 		const raw = JSON.stringify(req.body);
 		stmts.insertBatch.run(player.player_id, gameVersion, nowIso(), raw.slice(0, 200 * 1024));
@@ -539,16 +570,30 @@ app.post('/api/runs', (req, res) =>
 		for (const p of perCard)
 		{
 			if (!p || !isStr(p.cardTypeID, 1, 64)) return badRequest(res, 'invalid_combat');
+			// S0 splits damage by side; legacy payloads with only damageDealt map onto damageToOpponent.
+			let dmgOpp;
+			if (p.damageToOpponent === undefined && p.damageToSelf === undefined && p.damageDealt !== undefined)
+			{
+				dmgOpp = toInt(p.damageDealt, 0, 1e9, 0);
+			}
+			else
+			{
+				dmgOpp = toInt(p.damageToOpponent, 0, 1e9, 0);
+			}
 			perCardClean.push({
 				cardTypeID: p.cardTypeID,
 				triggers: toInt(p.triggers, 0, 1e6, 0),
-				damageDealt: toInt(p.damageDealt, 0, 1e9, 0),
+				damageToOpponent: dmgOpp,
+				damageToSelf: toInt(p.damageToSelf, 0, 1e9, 0),
 			});
 		}
+		const opponentDeckId = toInt(c.opponentDeckId, 1, Number.MAX_SAFE_INTEGER, 0);
 		combatsClean.push({
 			sessionNum: toInt(c.sessionNum, 0, 99, 0),
 			won: c.won === true ? 1 : 0,
 			heartsLeft: toInt(c.heartsLeft, 0, 99, 0),
+			rounds: toInt(c.rounds, 0, 999, 0),
+			opponentDeckId: opponentDeckId > 0 ? opponentDeckId : null,
 			perCard: perCardClean,
 			ts: isStr(c.ts, 1, 40) ? c.ts : null,
 		});
@@ -573,8 +618,8 @@ app.post('/api/runs', (req, res) =>
 		}
 		for (const c of combatsClean)
 		{
-			stmts.insertCombat.run(req.body.runId, c.sessionNum, c.won, c.heartsLeft,
-				JSON.stringify(c.perCard), c.ts);
+			stmts.insertCombat.run(req.body.runId, c.sessionNum, c.won, c.heartsLeft, c.rounds,
+				c.opponentDeckId, JSON.stringify(c.perCard), c.ts);
 		}
 		return true;
 	});
@@ -675,6 +720,12 @@ function cardName(catalog, id)
 	return c ? c.name : id;
 }
 
+// Legacy per-card rows merged damage into damageDealt; S0+ rows carry the split fields.
+function dmgOpp(p)
+{
+	return typeof p.damageToOpponent === 'number' ? p.damageToOpponent : (p.damageDealt || 0);
+}
+
 app.get('/admin', requireAdmin, (req, res) =>
 {
 	const token = req.query.token;
@@ -762,6 +813,22 @@ app.get('/admin', requireAdmin, (req, res) =>
 		deckHtml += '</table>';
 	}
 
+	// Enemy deck source coverage (S0 telemetry): server ghosts vs local-json fallback vs default pool.
+	let srcHtml = '<h2>Enemy deck sources (lifetime per-player counters)</h2>';
+	const src = db.prepare(`SELECT COALESCE(SUM(enemy_source_server), 0) AS srv,
+		COALESCE(SUM(enemy_source_local), 0) AS loc, COALESCE(SUM(enemy_source_pool), 0) AS pool
+		FROM stats_meta`).get();
+	if (src.srv + src.loc + src.pool === 0)
+	{
+		srcHtml += '<p class="muted">no data yet</p>';
+	}
+	else
+	{
+		srcHtml += '<table><tr><th>server ghosts</th><th>local json fallback</th><th>default pool</th></tr>'
+			+ '<tr><td class="num">' + src.srv + '</td><td class="num">' + src.loc + '</td><td class="num">'
+			+ src.pool + '</td></tr></table>';
+	}
+
 	// Recent runs with archetype derived from final deck tags
 	let runHtml = '<h2>Recent runs</h2>';
 	const runRows = db.prepare(`SELECT r.*, p.username FROM runs r LEFT JOIN players p ON p.player_id = r.player_id
@@ -822,7 +889,7 @@ app.get('/admin', requireAdmin, (req, res) =>
 		archHtml += '</table>';
 	}
 
-	res.send(adminPage('OneDeck Admin', token, overview + archHtml + shopHtml + winHtml + deckHtml + runHtml));
+	res.send(adminPage('OneDeck Admin', token, overview + archHtml + shopHtml + winHtml + deckHtml + srcHtml + runHtml));
 });
 
 app.get('/admin/run/:id', requireAdmin, (req, res) =>
@@ -878,16 +945,18 @@ app.get('/admin/run/:id', requireAdmin, (req, res) =>
 	}
 	else
 	{
-		html += '<table><tr><th>session</th><th>result</th><th>hearts left</th><th>top damage cards</th></tr>';
+		html += '<table><tr><th>session</th><th>result</th><th>hearts left</th><th>rounds</th><th>vs deck</th><th>top damage cards</th></tr>';
 		for (const c of combats)
 		{
 			let perCard = [];
 			try { perCard = JSON.parse(c.per_card); } catch { /* keep empty */ }
-			perCard.sort((a, b) => b.damageDealt - a.damageDealt);
+			perCard.sort((a, b) => dmgOpp(b) - dmgOpp(a));
 			const top = perCard.slice(0, 5)
-				.map((p) => cardName(catalog, p.cardTypeID) + ' (' + p.damageDealt + ')').join(', ');
+				.map((p) => cardName(catalog, p.cardTypeID) + ' (' + dmgOpp(p) + ')').join(', ');
 			html += '<tr><td class="num">' + c.session_num + '</td><td>' + (c.won ? 'won' : 'lost')
-				+ '</td><td class="num">' + c.hearts_left + '</td><td>' + esc(top || '-') + '</td></tr>';
+				+ '</td><td class="num">' + c.hearts_left + '</td><td class="num">' + (c.rounds || '-')
+				+ '</td><td class="num">' + (c.opponent_deck_id || '-')
+				+ '</td><td>' + esc(top || '-') + '</td></tr>';
 		}
 		html += '</table>';
 	}

@@ -108,3 +108,8 @@ InitTestScene*.unity*
 # Python bytecode cache
 __pycache__/
 *.pyc
+
+# OneDeck local API server (S0): runtime db + admin token + npm deps
+/server/onedeck-api/data/
+/server/onedeck-api/node_modules/
+/server/data/

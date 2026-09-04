@@ -47,3 +47,9 @@ sudo nginx -t && sudo systemctl reload nginx
 - Idempotency: decks/cards append freely; match reports dedupe by `reportId`;
   runs dedupe by `runId`; stats snapshots upsert by
   `(playerId, kind, gameVersion, cardTypeID, sessionNum)` so retries never double-count.
+- `trust proxy = true`: the app trusts X-Forwarded-For for rate-limit keys. This is
+  safe only because it binds 127.0.0.1 behind nginx — never expose port 3000 directly.
+- Local run: `npm install --omit=dev`, then `DATA_DIR=data node server.js`
+  (PowerShell: `$env:DATA_DIR="data"; node server.js`) — binds 127.0.0.1:3000, db in
+  `server/onedeck-api/data/` (gitignored). The default DATA_DIR resolves one level up
+  and is meant for the ECS layout only.
