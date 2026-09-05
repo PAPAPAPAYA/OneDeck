@@ -16,8 +16,7 @@
 			1. Copy a <section data-title="..."> block as the template.
 			2. Any element with class="phys" + data-interactive gets the full
 			   hover/press/cancel state machine automatically — no new JS.
-			   Add data-longpress + data-lp-action="BUY" for long-press behavior,
-			   or data-tips='[["tag","text"], ...]' on any element for tooltip(s).
+			   Add data-tips='[["tag","text"], ...]' on any element for tooltip(s).
 		   data-hover-text="..." on a .phys swaps the face text while hovered.
 			3. New global parameter = one entry in the PARAMS array; the control
 			   panel, state object and spec JSON are generated from it.
@@ -235,21 +234,10 @@
 		   Plays once per pointer enter via the .deny class. */
 		.phys-face.deny { animation: deny-shake var(--denyDur) var(--ease); }
 
-		/* long-press progress fill (inside the face, bottom-up) */
-		.lp-fill {
-			position: absolute;
-			left: 0;
-			bottom: 0;
-			width: 100%;
-			height: 0%;
-			background: var(--ink);
-			opacity: .3;
-			pointer-events: none;
-		}
-		.phys-face > *:not(.lp-fill) { position: relative; }
-		/* No invert/flash on trigger, by design: in the real shop the confirmation
-		   IS the consequence motion (bought card flies to a deck slot, sold card
-		   flies out). A color blink before that flight breaks object permanence. */
+		/* No invert/flash on transaction trigger, by design: in the real shop the
+		   confirmation IS the consequence motion (bought card flies to a deck slot,
+		   sold card flies out). A color blink before that flight breaks object
+		   permanence. See section 04. */
 
 		/* ===================== components ===================== */
 		.btn {
@@ -393,6 +381,63 @@
 			font-size: 13px;
 			cursor: default;
 		}
+
+		/* price button (buy/sell): the transaction trigger, sits under the card */
+		.btn-price {
+			padding: 4px 14px;
+			font-size: 15px;
+			border-radius: 7px;
+		}
+
+		/* ===================== shop page (section 08) ===================== */
+		/* Layout per the 2026-09-05 mockup. Topo gray background = the player HP
+		   display base (same family as PhaseTransitionDemo); panels are dark
+		   translucent overlays. All interaction reuses the global params bar. */
+		.shop-wrap { display: flex; justify-content: center; }
+		.shop-page {
+			position: relative;
+			width: 480px;
+			border-radius: 12px;
+			overflow: hidden;
+			background: #b8b5ae;
+			padding: 14px 16px 18px;
+			color: var(--ink);
+		}
+		.shop-page .topo-bg {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+		}
+		.shop-page > :not(.topo-bg) { position: relative; z-index: 1; }
+		.shop-topbar { display: flex; align-items: flex-start; gap: 12px; }
+		.btn-leave { font-size: 20px; padding: 10px 18px; }
+		.topbar-hud { display: flex; flex-direction: column; gap: 6px; }
+		.hud-line { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+		.chip-lg { font-size: 19px; padding: 6px 12px; }
+		.chip-lg small { font-size: 12px; font-weight: 700; }
+		.chip-sm { font-size: 12px; padding: 3px 8px; }
+		.phys-opts { margin-left: auto; }
+		.shop-panel {
+			margin-top: 14px;
+			background: rgba(63, 68, 65, .55);
+			border-radius: 10px;
+			padding: 10px 12px 14px;
+		}
+		.shop-panel-head {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 10px;
+			color: #fff;
+		}
+		.shop-panel-head > b { font-size: 17px; }
+		.slot-count { font-size: 20px; font-weight: 800; color: #fff; }
+		.slot-count small { font-size: 12px; font-weight: 700; }
+		.card-row { display: flex; gap: 14px; flex-wrap: wrap; }
+		.buy-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
 		/* tooltip: an attachment of an interactive host (e.g. a card), never a
 		   standalone element. Flat, non-physical, pointer-events: none.
@@ -635,21 +680,20 @@
 		<div class="log"></div>
 	</section>
 
-	<!-- ===================== 04 long-press card ===================== -->
-	<section id="longpress" data-title="04 长按卡片 Long-Press Card">
-		<div class="spec-head"><h2>04 长按卡片 Long-Press Card</h2><span class="tag-status">v0.1 草案</span></div>
+	<!-- ===================== 04 price button buy/sell ===================== -->
+	<section id="pricebtn" data-title="04 价格按钮买/卖 Price Button">
+		<div class="spec-head"><h2>04 价格按钮买/卖 Price Button</h2><span class="tag-status">v1.0 · 2026-09-05</span></div>
 		<ul class="notes">
-			<li>购买 / 售出是<b>长按</b>操作：按下后进度填充从底部升起，到达阈值<b>立即触发</b>（不等松开）。</li>
-			<li>未到阈值松开 = 取消；按住移出 = 取消。取消无任何副作用。</li>
-			<li>卡片的悬停/按下物理与按钮完全相同（同一套 <code>.phys</code> 状态机）。</li>
-			<li>价格是卡片的只读附属标签，不单独响应交互。</li>
-			<li><b>触发确认 = 后果动效本身</b>：触发瞬间不加闪黑/变色等额外效果——购买卡飞入卡组空位、售出卡飞出，位移就是确认。本页暂以"填充走满后短暂停留再消退 + 日志"代替；飞卡与商店↔战斗过场动效见同目录 <code>PhaseTransitionDemo.html</code>。</li>
+			<li>购买 / 售出 = <b>单击价格按钮</b>，松开成交（激活时机遵循 R7）。<b>长按方案 2026-09-05 弃用</b>：长按在全 UI 仅此一处，交互语言不一致。</li>
+			<li>价格从卡面下方的附属标签升级为<b>按钮</b>（完整 <code>.phys</code> 状态机：浮起 / 按下 / 移出取消 / 禁用拒绝）；<b>hover 换文案</b>是成交前唯一提示：<code>$4 → 买入</code>、<code>$2 → 售出</code>（沿用 02 节 <code>data-hover-text</code>，即时切换，无淡入淡出）。</li>
+			<li>卡片本体保持可交互（点按 = 放大预览），与价格按钮互不干扰；价格按钮只承载成交。</li>
+			<li><b>触发确认 = 后果动效本身</b>：成交瞬间不加闪黑/变色——购买卡飞入卡组空位、售出卡飞出，位移就是确认。飞卡与商店↔战斗过场见 <code>PhaseTransitionDemo.html</code>。</li>
+			<li>售价 = 基础价半价（现行规则）；余额不足时卡面与价格按钮同为暗面禁用态，mouseenter 播一次拒绝动效。</li>
 		</ul>
 		<div class="stage tall">
 			<div class="demo-block">
-				<div class="phys" data-interactive data-longpress data-lp-action="BUY" data-name="蓝色的鱼">
+				<div class="phys" data-interactive data-name="蓝色的鱼(预览)">
 					<div class="phys-face card-face">
-						<div class="lp-fill"></div>
 						<div class="card-art"></div>
 						<div class="card-rarity">✦✦✦</div>
 						<div class="card-effect">增强 1 友方</div>
@@ -660,13 +704,14 @@
 						</div>
 					</div>
 				</div>
-				<span class="card-price">$3</span>
-				<span class="demo-caption">商店卡 · 长按购买</span>
+				<div class="phys" data-interactive data-name="买入·蓝色的鱼 $4" data-hover-text="买入">
+					<button class="phys-face btn btn-price">$4</button>
+				</div>
+				<span class="demo-caption">商店卡 · 点价格按钮买入</span>
 			</div>
 			<div class="demo-block">
-				<div class="phys" data-interactive data-longpress data-lp-action="SELL" data-name="卡组卡">
+				<div class="phys" data-interactive data-name="卡组卡(预览)">
 					<div class="phys-face card-face">
-						<div class="lp-fill"></div>
 						<div class="card-art">▦</div>
 						<div class="card-rarity">✦✦</div>
 						<div class="card-effect">抽一张卡</div>
@@ -677,13 +722,14 @@
 						</div>
 					</div>
 				</div>
-				<span class="card-price">$2</span>
-				<span class="demo-caption">卡组卡 · 长按售出</span>
+				<div class="phys" data-interactive data-name="售出·卡组卡 $2" data-hover-text="售出">
+					<button class="phys-face btn btn-price">$2</button>
+				</div>
+				<span class="demo-caption">卡组卡 · 点价格按钮售出（半价）</span>
 			</div>
 			<div class="demo-block is-dim">
 				<div class="phys is-disabled" data-name="贵的鱼">
 					<div class="phys-face card-face">
-						<div class="lp-fill"></div>
 						<div class="card-art"></div>
 						<div class="card-rarity">✦✦✦</div>
 						<div class="card-effect">增强 2 友方</div>
@@ -694,8 +740,10 @@
 						</div>
 					</div>
 				</div>
-				<span class="card-price">$8</span>
-				<span class="demo-caption">禁用（余额不足）</span>
+				<div class="phys is-disabled" data-name="买入·贵的鱼 $8">
+					<button class="phys-face btn btn-price">$8</button>
+				</div>
+				<span class="demo-caption">禁用（余额不足）· 悬停价格按钮试试</span>
 			</div>
 		</div>
 		<div class="log"></div>
@@ -784,27 +832,189 @@
 			<li><b>R5 按下</b>：面在 <code data-show="pressDur"></code> 内落到阴影位置（落点可用参数切到"回原位"对比手感），阴影归零。按压要脆，时长必须短于悬停。</li>
 			<li><b>R6 保持与取消</b>：按住不松 = 保持按下态；按住移出 = 取消（松开不触发）；按住移回 = 重新按下。</li>
 			<li><b>R7 激活时机</b>：点击在松开时触发，不在按下时。</li>
-			<li><b>R8 长按</b>：阈值 <code data-show="lpThreshold"></code>，进度填充从底部升起，到阈值立即触发，提前松开取消。</li>
+			<li><b>R8 价格按钮</b>：买/卖 = 价格按钮单击，松开成交（遵循 R7）；hover 换文案（价格 → 动作）是成交前唯一提示；卡片本体点按 = 预览，与价格按钮互不干扰。</li>
 			<li><b>R9 Tooltip</b>：可交互元素的附属属性（宿主保持自身 hover 物理），悬停 <code data-show="tipDelay"></code> 后浮现；位置 = 宿主左侧垂直居中，左侧间隙小于 <code data-show="tipMargin"></code> 翻转右侧，视口 8px 硬收拢；宿主移动时跟随重排；单元素可挂多条纵向堆叠。</li>
 		</ul>
 		<table class="matrix">
 			<tr><th>状态</th><th>面的位置</th><th>阴影</th><th>光标</th><th>响应</th></tr>
 			<tr><td>静止 rest</td><td>原位</td><td>rs</td><td>pointer</td><td>—</td></tr>
 			<tr><td>悬停 hover</td><td>左上 −hl</td><td>rs+hl</td><td>pointer</td><td>—</td></tr>
-			<tr><td>按下 pressed</td><td>+rs（落点参数）</td><td>0</td><td>pointer</td><td>长按计时开始</td></tr>
+			<tr><td>按下 pressed</td><td>+rs（落点参数）</td><td>0</td><td>pointer</td><td>—</td></tr>
 			<tr><td>按住移出 held-out</td><td>回到悬停/静止</td><td>恢复</td><td>pointer</td><td>取消，松开不触发</td></tr>
 			<tr><td>禁用 disabled</td><td>原位（enter 播拒绝动效）</td><td>0（暗面）</td><td>not-allowed</td><td>仅拒绝反馈</td></tr>
 			<tr><td>只读 read-only</td><td>原位</td><td>0（平面）</td><td>default</td><td>无</td></tr>
 		</table>
 	</section>
 
+	<!-- ===================== 08 shop page ===================== -->
+	<section id="shoppage" data-title="08 商店页 Shop Page">
+		<div class="spec-head"><h2>08 商店页 Shop Page</h2><span class="tag-status">v1.0 · 2026-09-05 参考稿</span></div>
+		<ul class="notes">
+			<li>整页布局按 2026-09-05 参考稿：顶栏 HUD（<b>离开商店</b> / 头像+用户名 / HP / 金钱 / 稀有度概率 / 卡位·心数 / 收入 / <b>选项</b>）＋ <b>商店</b> 面板（重掷 + 货架卡）＋ <b>卡组</b> 面板（卡位计数 + 持有卡 + 空卡位）。</li>
+			<li>灰色等高线背景 = 玩家 HP display 的视觉基底（整页无缝世界概念见 <code>PhaseTransitionDemo.html</code>）；商店 / 卡组面板为半透明深色浮层。</li>
+			<li><b>交互参数全部引用全局参数条</b>（rs / hl / hoverDur / pressDur / 缓动 / 拒绝动效），本节不新增参数。可交互 = 离开商店、选项、重掷、价格按钮（规范见 04 节）；HP / 金钱 / 稀有度概率 / 卡位计数 / 心数 / 收入一律只读平面（R2 逆命题）。</li>
+			<li>本节为布局与状态规范：点击只记日志，不搬动数据；空卡位 = 凹槽（06 节）；售价 = 半价（现行规则）。</li>
+		</ul>
+		<div class="shop-wrap">
+			<div class="shop-page">
+				<svg class="topo-bg" id="shopTopo" viewBox="0 0 480 720" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"></svg>
+				<div class="shop-topbar">
+					<div class="phys" data-interactive data-name="离开商店">
+						<button class="phys-face btn btn-leave">离开商店</button>
+					</div>
+					<div class="topbar-hud">
+						<div class="hud-line">
+							<span class="chip"><span class="sq"></span>用户名</span>
+							<span class="chip chip-lg">HP <b>15</b><small>/20</small></span>
+							<span class="chip chip-lg">$20</span>
+						</div>
+						<div class="hud-line">
+							<span class="chip dark chip-sm">✦ 50%</span>
+							<span class="chip dark chip-sm">✦✦ 40%</span>
+							<span class="chip dark chip-sm">✦✦✦ 10%</span>
+						</div>
+						<div class="hud-line">
+							<span class="chip dark chip-sm">▦ 2/6</span>
+							<span class="chip dark chip-sm">♥ 1/3</span>
+							<span class="chip dark chip-sm">+$12/ROUND</span>
+						</div>
+					</div>
+					<div class="phys phys-opts" data-interactive data-name="选项">
+						<button class="phys-face btn btn-icon">❚❚</button>
+					</div>
+				</div>
+				<div class="shop-panel">
+					<div class="shop-panel-head"><b>商店</b>
+						<div class="phys" data-interactive data-name="重掷 $1">
+							<button class="phys-face btn btn-price">重掷 $1</button>
+						</div>
+					</div>
+					<div class="card-row">
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="苔衣小鼠(预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦</div>
+									<div class="card-effect">治疗 1 点生命</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">苔衣小鼠</span>
+										<span class="card-atk">1</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="买入·苔衣小鼠 $4" data-hover-text="买入">
+								<button class="phys-face btn btn-price">$4</button>
+							</div>
+						</div>
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="铁壳龟(预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦✦</div>
+									<div class="card-effect">获得 2 点护盾</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">铁壳龟</span>
+										<span class="card-atk">2</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="买入·铁壳龟 $4" data-hover-text="买入">
+								<button class="phys-face btn btn-price">$4</button>
+							</div>
+						</div>
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="深海灯笼鱼(预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦✦</div>
+									<div class="card-effect">被埋葬时：随机将两张友方卡洗回卡组顶部</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">名字很长的深海灯笼鱼</span>
+										<span class="card-atk">12</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="买入·深海灯笼鱼 $4" data-hover-text="买入">
+								<button class="phys-face btn btn-price">$4</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="shop-panel">
+					<div class="shop-panel-head"><b>卡组</b><span class="slot-count">03<small>/05</small></span></div>
+					<div class="card-row">
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="蓝色的鱼(预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦✦✦</div>
+									<div class="card-effect">增强 1 友方</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">蓝色的鱼</span>
+										<span class="card-atk">1</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="售出·蓝色的鱼 $2" data-hover-text="售出">
+								<button class="phys-face btn btn-price">$2</button>
+							</div>
+						</div>
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="小石子(预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">小石子</span>
+										<span class="card-atk">1</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="售出·小石子 $1" data-hover-text="售出">
+								<button class="phys-face btn btn-price">$1</button>
+							</div>
+						</div>
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="铁壳龟(卡组·预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦✦</div>
+									<div class="card-effect">获得 2 点护盾</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">铁壳龟</span>
+										<span class="card-atk">2</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="售出·铁壳龟 $2" data-hover-text="售出">
+								<button class="phys-face btn btn-price">$2</button>
+							</div>
+						</div>
+					</div>
+					<div class="card-row" style="margin-top:14px;">
+						<div class="slot">空卡位</div>
+						<div class="slot">空卡位</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="log"></div>
+	</section>
+
 	<footer>
 		<h3>如何新增组件（保持本页可延展）</h3>
 		1) 复制任意 <code>&lt;section data-title&gt;</code> 作为模板（目录会自动收录）。
-		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；长按加 <code>data-longpress data-lp-action="..."</code>；提示加 <code>data-tips='[["标签","描述"]]'</code>（可多条）；悬停换文案加 <code>data-hover-text="..."</code>。无需写新 JS。
+		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；提示加 <code>data-tips='[["标签","描述"]]'</code>（可多条）；悬停换文案加 <code>data-hover-text="..."</code>。无需写新 JS。
 		3) 新全局参数 = 在 <code>PARAMS</code> 数组加一项，参数条、状态对象、规格 JSON 自动生成。
 		4) 手感确认后，把数值同步进 <code>docs/UIUX_Guidelines.md</code> 与 Unity 实现。<br>
-		版本：v0.5 · 2026-08-19 · 飞卡/过场动效拆出为独立原型 <code>PhaseTransitionDemo.html</code>（商店↔战斗镜头转换 + 共享元素飞行 + result 覆层）<br>
+		版本：v0.6 · 2026-09-05 · 买/卖弃用长按改为价格按钮单击成交（04 节重写，移除 lpThreshold 参数与 lp-fill）；新增 08 商店页栏目（2026-09-05 参考稿布局，交互参数全部引用全局参数条）<br>
+	版本：v0.5 · 2026-08-19 · 飞卡/过场动效拆出为独立原型 <code>PhaseTransitionDemo.html</code>（商店↔战斗镜头转换 + 共享元素飞行 + result 覆层）<br>
 	版本：v0.4 · 2026-08-18 · 01 节色板标注 GameColorPalette 映射（文档色 = 演示站位，生产以 palette 为准）<br>
 	版本：v0.3 · 2026-08-18 · 效果文本贴分隔线、从下往上排；无效果卡省略效果行；缓动默认 overshoot；摇头次数默认 1 次<br>
 	版本：v0.2 · 2026-08-18 · 新增 03 卡牌模板（卡图区 / 稀有度✦1~3 / 效果描述 / 卡名＋攻击力底行）；04、05 节卡片迁移到新模板<br>
@@ -829,7 +1039,6 @@
 			{ key: 'pressTarget', label: '按压落点',          type: 'select',
 				options: [['ground', '落到阴影上'], ['rest', '回到原位']],
 				def: 'ground' },
-			{ key: 'lpThreshold', label: '长按阈值',          min: 200, max: 1200, step: 50,  def: 500, unit: 'ms' },
 			{ key: 'tipDelay',    label: 'Tooltip 延迟',      min: 0,   max: 800,  step: 50,  def: 250, unit: 'ms' },
 			{ key: 'tipMargin',   label: 'Tooltip 边距',      min: 8,   max: 64,   step: 2,   def: 24,  unit: 'px' },
 			{ key: 'denyShift',   label: '拒绝位移 deny',     min: 2,   max: 16,   step: 1,   def: 6,   unit: 'px', css: '--deny' },
@@ -1010,8 +1219,7 @@
 		/* ===================== physical state machine =====================
 		   Auto-wired to every .phys[data-interactive]. States:
 		   rest -> hover (pointerenter) -> pressed (pointerdown) -> activate on
-		   pointerup; leave while pressed cancels; re-enter while held re-presses.
-		   Elements with data-longpress fire at state.lpThreshold instead. */
+		   pointerup; leave while pressed cancels; re-enter while held re-presses. */
 		let activeEl = null;
 
 		function isDisabled(el) { return el.classList.contains('is-disabled'); }
@@ -1027,41 +1235,6 @@
 			el.addEventListener('animationend', () => face.classList.remove('deny'));
 		});
 
-		function lpResetFill(el, ms) {
-			const fill = el.querySelector('.lp-fill');
-			if (!fill) return;
-			fill.style.transition = 'height ' + ms + 'ms linear';
-			fill.style.height = '0%';
-		}
-		function lpStart(el) {
-			const fill = el.querySelector('.lp-fill');
-			const t = state.lpThreshold;
-			el._lpPending = true;
-			el._lpFired = false;
-			if (fill) {
-				fill.style.transition = 'none';
-				fill.style.height = '0%';
-				void fill.offsetWidth; /* reflow: restart the animation */
-				fill.style.transition = 'height ' + t + 'ms linear';
-				fill.style.height = '100%';
-			}
-			el._lpTimer = setTimeout(() => {
-				el._lpPending = false;
-				el._lpFired = true;
-				log(el, (el.dataset.lpAction || 'LP') + ' 「' + (el.dataset.name || '?') + '」长按触发 @' + t + 'ms');
-				/* no flash on fire — the completed fill holds briefly, then drains;
-				   the real confirmation is the consequence motion (shop flight) */
-				setTimeout(() => lpResetFill(el, 200), 180);
-			}, t);
-		}
-		function lpCancel(el, reason) {
-			if (!el._lpPending) return;
-			el._lpPending = false;
-			clearTimeout(el._lpTimer);
-			lpResetFill(el, 150);
-			log(el, '「' + (el.dataset.name || '?') + '」长按取消（' + reason + '）');
-		}
-
 		document.querySelectorAll('.phys[data-interactive]').forEach(el => {
 			el.addEventListener('pointerenter', () => {
 				if (isDisabled(el)) return;
@@ -1076,7 +1249,6 @@
 				if (activeEl === el) {
 					el._cancelled = true;
 					el.classList.remove('is-pressed');
-					if (el.hasAttribute('data-longpress')) lpCancel(el, '移出');
 				}
 			});
 			el.addEventListener('pointerdown', e => {
@@ -1084,7 +1256,6 @@
 				activeEl = el;
 				el._cancelled = false;
 				el.classList.add('is-pressed');
-				if (el.hasAttribute('data-longpress')) lpStart(el);
 			});
 			el.addEventListener('contextmenu', e => e.preventDefault());
 		});
@@ -1095,11 +1266,6 @@
 			activeEl = null;
 			el.classList.remove('is-pressed');
 			if (el._cancelled) { el._cancelled = false; return; }
-			if (el.hasAttribute('data-longpress')) {
-				if (el._lpFired) { el._lpFired = false; return; } /* fired at threshold already */
-				lpCancel(el, '未达阈值松开');
-				return;
-			}
 			log(el, '「' + (el.dataset.name || '?') + '」CLICK（松开激活）');
 		});
 		window.addEventListener('pointercancel', () => {
@@ -1107,7 +1273,6 @@
 			const el = activeEl;
 			activeEl = null;
 			el.classList.remove('is-pressed');
-			if (el.hasAttribute('data-longpress')) lpCancel(el, 'pointercancel');
 			el._cancelled = false;
 		});
 
@@ -1207,6 +1372,32 @@
 				}
 				host.appendChild(d);
 			});
+		})();
+
+		/* ===================== shop page topo background =====================
+		   Gray contour pattern (player HP display base), same family as
+		   PhaseTransitionDemo's topo; seeded LCG so the pattern is stable. */
+		(function buildShopTopo() {
+			const svg = document.getElementById('shopTopo');
+			if (!svg) return;
+			let seed = 20260905;
+			const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+			const NS = 'http://www.w3.org/2000/svg';
+			for (let y = -14; y < 740; y += 44) {
+				let d = 'M -20 ' + y;
+				for (let x = -20; x < 520; x += 70) {
+					const dy = (rnd() - 0.5) * 30;
+					const dx = 35 + (rnd() - 0.5) * 10;
+					d += ' q ' + dx + ' ' + dy + ' 70 0';
+				}
+				const p = document.createElementNS(NS, 'path');
+				p.setAttribute('d', d);
+				p.setAttribute('fill', 'none');
+				p.setAttribute('stroke', '#a3a29a');
+				p.setAttribute('stroke-width', '1.4');
+				p.setAttribute('opacity', '0.9');
+				svg.appendChild(p);
+			}
 		})();
 	</script>
 </body>

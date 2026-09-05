@@ -154,7 +154,7 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 
 ## Key Files
 
-All under `Assets/Scripts/` in the folder matching their role: `Managers/` CombatManager, CombatFuncs, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, RecorderAnimationPlayer, CardFactory, ICombatVisuals, CombatLog, WriteRead/CombatPerCardStatsTracker; `Effects/` HPAlterEffect, StatusEffect/StatusEffectGiverEffect, StartCardShuffleEffect; `Card/` CardScript, CostNEffectContainer; `UXPrototype/` CombatUXManager, CombatHPBarPresenter, DeckCascadeLayout, DeckArcLoopLayout, DeckFloatStackLayout, DeckPositionCalculator, BigShadowFollower, ResultStatsPanel. Game rules: `docs/GameRules.md`.
+Under `Assets/Scripts/` by role: `Managers/` CombatManager, CombatFuncs, GameEventStorage, ValueTrackerManager, EnumStorage, AnimationStateTracker, RecorderAnimationPlayer, CardFactory, ICombatVisuals, CombatLog, WriteRead/CombatPerCardStatsTracker; `Effects/` HPAlterEffect, StatusEffect/StatusEffectGiverEffect, StartCardShuffleEffect; `Card/` CardScript, CostNEffectContainer; `UXPrototype/` CombatUXManager, CombatHPBarPresenter, DeckCascadeLayout, DeckArcLoopLayout, DeckFloatStackLayout, DeckPositionCalculator, BigShadowFollower, ResultStatsPanel. Rules: `docs/GameRules.md`; UI/UX: `docs/UIUX_Guidelines.md`.
 
 ## Result Screen Per-Card Stats
 
