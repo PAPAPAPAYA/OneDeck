@@ -35,9 +35,12 @@ public class AttackEffectTests : HeadlessCombatTestFixture
 		EffectChainManager.MakeANewEffectRecorder(card, atk.gameObject);
 		atk.Attack();
 
-		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
-		Assert.AreEqual(1, recorder.animationRequests.Count, "1 segment -> 1 request");
-		Assert.AreEqual(AnimationRequestType.Attack, recorder.animationRequests[0].type, "Should be Attack type");
+		// The Attack capture lives in the per-segment recorder (scope-closed by
+		// EndAttackSegmentScope), not in the attacker's own invocation recorder.
+		Assert.AreEqual(1, EffectChainManager.closedEffectRecorders.Count, "1 segment -> 1 scope-closed segment recorder");
+		var segmentRecorder = EffectChainManager.closedEffectRecorders[0].GetComponent<EffectRecorder>();
+		Assert.AreEqual(1, segmentRecorder.animationRequests.Count, "1 segment -> 1 request");
+		Assert.AreEqual(AnimationRequestType.Attack, segmentRecorder.animationRequests[0].type, "Should be Attack type");
 		EffectChainManager.Me.CloseOpenedChain();
 	}
 
@@ -132,7 +135,7 @@ public class AttackEffectTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void Attack_RaisesOnAnyCardAttackedOncePerAction()
+	public void Attack_RaisesOnAnyCardAttackedOncePerSegment()
 	{
 		var card = CreateCard(true, "Attacker");
 		var cs = card.GetComponent<CardScript>();
@@ -147,7 +150,7 @@ public class AttackEffectTests : HeadlessCombatTestFixture
 		atk.Attack();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(1, attackCount, "One attack action, even with 2 segments");
+		Assert.AreEqual(2, attackCount, "Per-segment redesign 2026-09-05: 2 segments -> 2 attack events");
 	}
 
 	[Test]
@@ -196,7 +199,7 @@ public class AttackEffectTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void Attack_RaisesOnAnyFriendlyCardAttackedOncePerAction()
+	public void Attack_RaisesOnAnyFriendlyCardAttackedOncePerSegment()
 	{
 		var card = CreateCard(true, "Attacker");
 		var cs = card.GetComponent<CardScript>();
@@ -211,7 +214,37 @@ public class AttackEffectTests : HeadlessCombatTestFixture
 		atk.Attack();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(1, attackCount, "One non-self attack action raises onAnyFriendlyCardAttacked once, even with 2 segments");
+		Assert.AreEqual(2, attackCount, "Per-segment redesign 2026-09-05: 2 segments -> 2 non-self attack events");
+	}
+
+	[Test]
+	public void Attack_FiresSameReactorOncePerSegment()
+	{
+		// RELIC_HIVE-style regression: a card reacting to the attack event through a REAL
+		// CostNEffectContainer invocation must fire once PER SEGMENT — EndAttackSegmentScope
+		// scope-closes its recorder so the chain pair guard does not block segment 2+.
+		var attacker = CreateCard(true, "Attacker");
+		var cs = attacker.GetComponent<CardScript>();
+		cs.printedAttack = 2;
+		cs.extraAttackTimes = 1; // 2 segments
+		var atk = CreateEffect<AttackEffect>(attacker);
+
+		var reactor = CreateCard(true, "Reactor");
+		// CreateCostContainer initializes the UnityEvents (null at runtime after AddComponent)
+		// and injects _myCardScript — the raw AddComponent path would NRE on effectEvent.
+		var container = CreateCostContainer(reactor);
+		var listener = reactor.AddComponent<GameEventListener>();
+		listener.@event = GameEventStorage.onAnyFriendlyCardAttacked;
+		listener.response.AddListener(container.InvokeEffectEventVoid);
+		GameEventStorage.onAnyFriendlyCardAttacked.RegisterListener(listener);
+		int reactionCount = 0;
+		container.effectEvent.AddListener(() => reactionCount++);
+
+		EffectChainManager.MakeANewEffectRecorder(attacker, atk.gameObject);
+		atk.Attack();
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(2, reactionCount, "2 segments -> the same reactor container fires once per segment");
 	}
 
 	[Test]
@@ -231,7 +264,7 @@ public class AttackEffectTests : HeadlessCombatTestFixture
 		atk.AttackSelf();
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(1, anyCount, "Self-attack counts as an attack action for onAnyCardAttacked");
+		Assert.AreEqual(1, anyCount, "Self-attack counts as an attack action for onAnyCardAttacked (1 segment -> 1 event)");
 		Assert.AreEqual(0, friendlyCount, "Self-attack never raises onAnyFriendlyCardAttacked (战旗 must not trigger on self-damage)");
 	}
 
@@ -299,7 +332,7 @@ public class AttackEffectTests : HeadlessCombatTestFixture
 		EffectChainManager.Me.CloseOpenedChain();
 
 		Assert.AreEqual(94, EnemyStatus.hp, "3 segments x 2 attack = 6 damage");
-		Assert.AreEqual(1, attackCount, "One attack action regardless of segment count");
+		Assert.AreEqual(3, attackCount, "Dynamic segment count still fires the attack event once per segment");
 	}
 
 	[Test]

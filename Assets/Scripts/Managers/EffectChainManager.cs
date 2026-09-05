@@ -80,7 +80,9 @@ public class EffectChainManager : MonoBehaviour
 
 	public void MakeANewEffectRecorder(GameObject myCard, GameObject myEffectInst)
 	{
-		chainDepth = 0;
+		// chainDepth must NOT reset here: it accumulates across nested invocations within one
+		// chain generation so the >99 fuse in EffectCanBeInvoked can actually fire (it was dead
+		// code while being reset per recorder). Per-chain-generation reset happens in CloseOpenedChain.
 		chainNumber++;
 		var newEffectChain = Instantiate(effectRecorderPrefab, transform);
 		var newChainScript = newEffectChain.GetComponent<EffectRecorder>();
@@ -218,4 +220,60 @@ public class EffectChainManager : MonoBehaviour
 		currentEffectRecorderParent = null;
 
 	}
+
+	#region Attack Segment Scope
+
+	// LIFO stack of the container GO owning each open segment scope (per-segment attack events,
+	// plans/plan-per-segment-attack-events-2026-09-05.md). Nested attacks (a reaction that itself
+	// attacks) push their own entry so each scope end restores its own owner to lastEffectObject.
+	private readonly List<GameObject> _segmentScopeOwnerEffects = new List<GameObject>();
+
+	/// <summary>
+	/// Begin an attack-segment scope: pushes a segment recorder as a child of the current
+	/// in-progress recorder (or as a root when no chain is open). This segment's Attack capture
+	/// and event reactions attach under it. Pair with EndAttackSegmentScope after the segment's
+	/// event dispatch completes.
+	/// </summary>
+	public void BeginAttackSegmentScope(GameObject attackerCard, GameObject attackEffectObj)
+	{
+		_segmentScopeOwnerEffects.Add(currentEffectRecorder != null
+			? currentEffectRecorder.GetComponent<EffectRecorder>()?.effectObject
+			: null);
+		MakeANewEffectRecorder(attackerCard, attackEffectObj);
+	}
+
+	/// <summary>
+	/// End the attack-segment scope: pops the segment recorder, then moves every recorder opened
+	/// during this segment that is not an in-progress invocation into closedEffectRecorders, so
+	/// the same reactor can fire again on the next segment (the pair guard only scans OPENED
+	/// chains). Transform parents are preserved — the animation tree still plays
+	/// segment-by-segment under the attacker's recorder. lastEffectObject is restored to the
+	/// attacking container so a card reacting to its own attack event via the same container
+	/// stays blocked on every segment.
+	/// </summary>
+	public void EndAttackSegmentScope()
+	{
+		PopCurrentRecorder();
+		for (int i = 0; i < openedEffectRecorders.Count; )
+		{
+			var rec = openedEffectRecorders[i];
+			if (rec != null && !recorderStack.Contains(rec))
+			{
+				openedEffectRecorders.RemoveAt(i);
+				closedEffectRecorders.Add(rec);
+			}
+			else
+			{
+				i++;
+			}
+		}
+		if (_segmentScopeOwnerEffects.Count > 0)
+		{
+			int last = _segmentScopeOwnerEffects.Count - 1;
+			lastEffectObject = _segmentScopeOwnerEffects[last];
+			_segmentScopeOwnerEffects.RemoveAt(last);
+		}
+	}
+
+	#endregion
 }

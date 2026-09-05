@@ -30,8 +30,8 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent afterShuffle; // used for effects that put cards on top or bottom
 	public GameEvent beforeRoundStart; // used for effects that activate once in a round
 	public GameEvent onRoundEnd; // 4.0 E3: raised at the round boundary (shuffle animation complete, BEFORE per-round resets) so round-end effects read the completed round
-	public GameEvent onAnyCardAttacked; // raised when any card performs an attack action (once per action, not per segment); self-attacks included
-	public GameEvent onAnyFriendlyCardAttacked; // raised when any card performs a non-self attack action; delivered to the attacking card's faction (friendly attacker -> RaiseOwner, enemy attacker -> RaiseOpponent)
+	public GameEvent onAnyCardAttacked; // raised once per attack SEGMENT (2026-09-05 per-segment redesign, plans/plan-per-segment-attack-events-2026-09-05.md); self-attacks included
+	public GameEvent onAnyFriendlyCardAttacked; // raised once per non-self attack segment; delivered to the attacking card's faction (friendly attacker -> RaiseOwner, enemy attacker -> RaiseOpponent)
 	
 	[Header("minion related")]
 	public GameEvent onFriendlyMinionAdded; // Triggered when a friendly minion is added to the deck

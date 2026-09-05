@@ -7,6 +7,8 @@ using UnityEngine;
 /// this-round modifiers and dynamic resolvers) and deals it per segment (GetAttackTimes()).
 /// Each segment reuses the HPAlterEffect damage pipeline (immediate HP loss + Attack animation
 /// + damage events + per-card stats), preserving the xN multi-hit rules.
+/// Every segment raises the attack-action events (onAnyCardAttacked / onAnyFriendlyCardAttacked)
+/// inside its own chain scope — per-segment attack events, see RaiseAttackEvents.
 /// </summary>
 public class AttackEffect : HPAlterEffect
 {
@@ -31,12 +33,23 @@ public class AttackEffect : HPAlterEffect
 	/// <summary>
 	/// Attack with an explicit segment count (e.g. a woken card attacking once with its own attack).
 	/// No-ops when the card has no attack to resolve (0 or negative).
+	/// Per-segment attack events (plans/plan-per-segment-attack-events-2026-09-05.md): every
+	/// segment opens its own chain scope, so attack-event reactions (RELIC_HIVE, RELIC_ATTACK_HEX,
+	/// RELIC_ATTACK_BURIAL) fire once PER SEGMENT instead of once per attack action. The segment
+	/// count is captured once here and never re-read mid-action — a reaction granting attack
+	/// times must not grow the current action's segment count (anti-loop).
 	/// </summary>
 	public void AttackTimes(int times)
 	{
 		if (myCardScript == null || times <= 0 || myCardScript.GetAttack() <= 0) return;
+		var chainManager = EffectChainManager.Me;
 		for (int i = 0; i < times; i++)
 		{
+			bool scopeActive = chainManager != null;
+			if (scopeActive)
+			{
+				chainManager.BeginAttackSegmentScope(myCardScript.gameObject, gameObject);
+			}
 			// RELIC_BLOOD_PACT (ruling 2026-08-31): while armed, friendly attacks on the ENEMY
 			// player deal NO damage and instead enhance the enemy curse by the same amount —
 			// self-damage (AttackSelfTimes -> DecreaseMyHp) is untouched. Attack events still
@@ -44,12 +57,18 @@ public class AttackEffect : HPAlterEffect
 			if (BloodPactConvertsDamage())
 			{
 				EnhanceCurseForBloodPact();
-				continue;
 			}
-			DecreaseTheirHp();
+			else
+			{
+				DecreaseTheirHp();
+			}
+			// Attack-action timepoint, raised once PER SEGMENT.
+			RaiseAttackEvents(false);
+			if (scopeActive)
+			{
+				chainManager.EndAttackSegmentScope();
+			}
 		}
-		// Attack-action timepoint: raised once per attack action, not per segment.
-		RaiseAttackEvents(false);
 	}
 
 	/// <summary>
@@ -89,18 +108,29 @@ public class AttackEffect : HPAlterEffect
 	/// <summary>
 	/// Self-attack with an explicit segment count (e.g. a woken card attacking itself once).
 	/// No-ops when the card has no attack to resolve (0 or negative).
+	/// Same per-segment scope rules as AttackTimes: the attack event fires once per segment.
 	/// </summary>
 	public void AttackSelfTimes(int times)
 	{
 		if (myCardScript == null || times <= 0 || myCardScript.GetAttack() <= 0) return;
+		var chainManager = EffectChainManager.Me;
 		for (int i = 0; i < times; i++)
 		{
+			bool scopeActive = chainManager != null;
+			if (scopeActive)
+			{
+				chainManager.BeginAttackSegmentScope(myCardScript.gameObject, gameObject);
+			}
 			DecreaseMyHp();
+			// Self-attacks count as attack actions for onAnyCardAttacked, but never for
+			// onAnyFriendlyCardAttacked (a friendly [attacker] attacking does not include
+			// self-damage, e.g. JU_ON burning itself).
+			RaiseAttackEvents(true);
+			if (scopeActive)
+			{
+				chainManager.EndAttackSegmentScope();
+			}
 		}
-		// Self-attacks count as attack actions for onAnyCardAttacked, but never for
-		// onAnyFriendlyCardAttacked (a friendly [attacker] attacking does not include
-		// self-damage, e.g. JU_ON burning itself).
-		RaiseAttackEvents(true);
 	}
 
 	/// <summary>
@@ -142,7 +172,9 @@ public class AttackEffect : HPAlterEffect
 	}
 
 	/// <summary>
-	/// Attack-action timepoint (once per action, not per segment).
+	/// Attack-action timepoint (once per SEGMENT, 2026-09-05 per-segment redesign — the caller
+	/// wraps each segment in its own chain scope via BeginAttackSegmentScope/EndAttackSegmentScope,
+	/// so a same-card reactor fires on every segment instead of being blocked by the chain pair guard).
 	/// onAnyCardAttacked covers every attack action (self-attacks included);
 	/// onAnyFriendlyCardAttacked covers non-self attack actions only.
 	/// Both are delivered to the attacking card's faction: a friendly attacker raises
