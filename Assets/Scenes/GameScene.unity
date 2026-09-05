@@ -10674,18 +10674,26 @@ MonoBehaviour:
   useDebugEnemyDeck: 0
   debugEnemyDeck: {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
   defaultEnemyDeckPool:
-  - decks: []
-  - decks: []
-  - decks: []
-  - decks: []
-  - decks: []
-  - decks: []
-  - decks: []
-  - decks: []
   - decks:
-    - {fileID: 11400000, guid: 80d03d9c92644d97ab5b6e11e3ab4908, type: 2}
+    - {fileID: 11400000, guid: f1a54b2ad6e85dc4e9a8472fb1acb4df, type: 2}
   - decks:
-    - {fileID: 11400000, guid: 7833fb4bf72a428c8d84e6bf933b4853, type: 2}
+    - {fileID: 11400000, guid: a9ee6f1e763a474c816e99c233349c16, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: c96c5579053fd564c8bb2c64aee0ae99, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 3e6071f4d67de984c8b8258d022de5c4, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: d6ce3caf2319bde49b4d9adceb415acb, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 7b68e5710811d544687220c9c198cf8b, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 4a71ea9e100017d4480aaf6a86663e36, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 9b03a6dd05ead9147afb772d87f915d1, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 6c83ba1b6963d38409d13727d3996bd7, type: 2}
+  - decks:
+    - {fileID: 11400000, guid: 2043155c682dd8045bc815b66edcb92b, type: 2}
   enemyDeckHpBonuses:
   - cardTypeID: SYSTEM_INCREASE_HP_MAX
     hpBonusPerCard: 3
