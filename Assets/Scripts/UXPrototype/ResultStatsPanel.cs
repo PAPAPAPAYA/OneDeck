@@ -16,7 +16,7 @@ public class ResultStatsPanelLayout
 	[Header("Panel Rect (fractions of the screen)")]
 	[Tooltip("Bottom-left corner of the panel as a screen fraction (0..1)")]
 	public Vector2 anchorMin = new Vector2(0.05f, 0.03f);
-	[Tooltip("Top-right corner of the panel as a screen fraction (0..1)")]
+	[Tooltip("Top-right corner of the panel as a screen fraction (0..1). The panel auto-shrinks vertically to fit its rows, so anchorMax.y acts as the upper cap.")]
 	public Vector2 anchorMax = new Vector2(0.95f, 0.32f);
 
 	[Header("Own Canvas")]
@@ -61,13 +61,18 @@ public class ResultStatsPanelLayout
 /// created by the Enemy (a player-generated enemy-owned curse counts as player-created). Each half
 /// shows one row per card type: display name with a copy-count suffix " (X)" (initial-deck copies,
 /// shown only when X >= 2) plus all registry stat columns; percentage columns show the row's
-/// share of that half's column total.
+/// share of that half's column total. Rows beyond the visible area scroll (mouse wheel / drag),
+/// and the panel height auto-shrinks toward its rows with the configured anchorMax.y as the cap.
 ///
 /// The panel root is its own Canvas + CanvasScaler, so font sizes and row heights use the
 /// configured reference resolution and stay readable regardless of the game canvas scaling.
 /// </summary>
 public class ResultStatsPanel : MonoBehaviour
 {
+	// Halves container geometry, shared by Build() and the adaptive-height math
+	private const float HalvesInset = 8f;   // Inset of the Halves rect from the body edges
+	private const float HalvesSpacing = 8f; // Vertical gap between the player and enemy halves
+
 	private RectTransform _root;
 	private Canvas _parentCanvas;
 	private List<PerCardStatRecord> _rows;
@@ -101,15 +106,28 @@ public class ResultStatsPanel : MonoBehaviour
 		var scaler = rootGo.AddComponent<CanvasScaler>();
 		scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 		scaler.referenceResolution = _layout.referenceResolution;
-		scaler.matchWidthOrHeight = 0f; // portrait game: match width
+		// VISUAL-FIX(2026-09-04): Landscape Game window showed only ~1 row per half of the panel
+		//   Cause:    The scaler matched width (matchWidthOrHeight = 0, ref 1080x1920), so on a
+		//             landscape window the scale factor (~1.78) shrank the fraction-sized body
+		//             rect far below its reference-pixel budget: 0.61 screen height became only
+		//             ~370 reference px, and after title + header each half fit less than one
+		//             rowHeight row. The body rect is sized by screen fractions while typography
+		//             and row heights are reference pixels, so both sides must share one axis.
+		//   Affects:  ResultStatsPanel Build (own CanvasScaler), AdaptiveAnchorMax
+		//   Regress:  Open the Result panel in a landscape (e.g. 1920x1080) Game view — each half
+		//             must still show ~7 rows (scroll for the rest); portrait unchanged.
+		// Match height: screen height in reference pixels is then exactly referenceResolution.y,
+		// which is the axis both the body fractions and the pixel budgets are derived from.
+		scaler.matchWidthOrHeight = 1f;
 		rootGo.AddComponent<GraphicRaycaster>();
 
-		// Panel body: screen-fraction rect inside the root canvas
+		// Panel body: screen-fraction rect inside the root canvas. Height auto-shrinks to fit
+		// the rows (VISUAL-FIX(2026-09-04), see AdaptiveAnchorMax); anchorMax.y is the cap.
 		var bodyGo = new GameObject("Body", typeof(RectTransform));
 		bodyGo.transform.SetParent(_root, false);
 		var bodyRect = (RectTransform)bodyGo.transform;
 		bodyRect.anchorMin = _layout.anchorMin;
-		bodyRect.anchorMax = _layout.anchorMax;
+		bodyRect.anchorMax = AdaptiveAnchorMax(rows);
 		bodyRect.offsetMin = Vector2.zero;
 		bodyRect.offsetMax = Vector2.zero;
 
@@ -124,14 +142,14 @@ public class ResultStatsPanel : MonoBehaviour
 		var halvesRect = (RectTransform)halvesGo.transform;
 		halvesRect.anchorMin = Vector2.zero;
 		halvesRect.anchorMax = Vector2.one;
-		halvesRect.offsetMin = new Vector2(8f, 8f);
-		halvesRect.offsetMax = new Vector2(-8f, -8f);
+		halvesRect.offsetMin = new Vector2(HalvesInset, HalvesInset);
+		halvesRect.offsetMax = new Vector2(-HalvesInset, -HalvesInset);
 		var halvesLayout = halvesGo.AddComponent<VerticalLayoutGroup>();
 		halvesLayout.childControlWidth = true;
 		halvesLayout.childForceExpandWidth = true;
 		halvesLayout.childControlHeight = true;
 		halvesLayout.childForceExpandHeight = true;
-		halvesLayout.spacing = 8f;
+		halvesLayout.spacing = HalvesSpacing;
 
 		BuildHalf(halvesGo.transform, CardFaction.Player, rows);
 		BuildHalf(halvesGo.transform, CardFaction.Enemy, rows);
@@ -159,6 +177,36 @@ public class ResultStatsPanel : MonoBehaviour
 			}
 			_root = null;
 		}
+	}
+
+	/// <summary>
+	/// VISUAL-FIX(2026-09-04): Result panel showed only a few stat rows with no way to see the rest
+	///   Cause:    The body rect used the configured anchorMax.y (scene: 0.64) as a fixed height
+	///             regardless of row count — small data sets wasted screen space, and large ones
+	///             relied on the ScrollView, which could not scroll (see the scroll hit-area fix
+	///             in BuildHalf).
+	///   Affects:  ResultStatsPanel Build (Body rect)
+	///   Regress:  Enter Result after a 1-2 distinct-card combat — the panel hugs its content;
+	///             after a full-deck combat — the panel grows to the configured anchorMax.y cap
+	///             and the overflow rows scroll (needs the scroll hit-area fix).
+	/// Height-capped anchorMax: shrink the panel from the configured anchorMax.y to just fit the
+	/// taller half (title + header + rows, plus the Halves container inset and gap). The
+	/// configured value stays the cap; the ScrollView remains the fallback beyond it. Valid
+	/// because the scaler matches height, so screen height in reference pixels is exactly
+	/// referenceResolution.y.
+	/// </summary>
+	private Vector2 AdaptiveAnchorMax(List<PerCardStatRecord> rows)
+	{
+		int playerRows = rows != null ? rows.Count(r => r.faction == CardFaction.Player) : 0;
+		int enemyRows = rows != null ? rows.Count(r => r.faction == CardFaction.Enemy) : 0;
+		// Empty halves still render one "No damage recorded." row
+		int maxHalfRows = Mathf.Max(1, Mathf.Max(playerRows, enemyRows));
+		// Half = title + header (each headerRowHeight) + 2 rowSpacing gaps + N rows (content row spacing is 0)
+		float halfNeeded = 2f * _layout.headerRowHeight + 2f * _layout.rowSpacing + maxHalfRows * _layout.rowHeight;
+		float neededFraction = (2f * halfNeeded + HalvesSpacing + 2f * HalvesInset) / _layout.referenceResolution.y;
+		var anchorMax = _layout.anchorMax;
+		anchorMax.y = Mathf.Min(anchorMax.y, _layout.anchorMin.y + neededFraction);
+		return anchorMax;
 	}
 
 	/// <summary>
@@ -225,6 +273,21 @@ public class ResultStatsPanel : MonoBehaviour
 		var scroll = scrollGo.AddComponent<ScrollRect>();
 		scroll.horizontal = false;
 		scroll.scrollSensitivity = _layout.rowHeight;
+
+		// VISUAL-FIX(2026-09-04): Overflow stat rows could never be scrolled into view
+		//   Cause:    The only raycastable graphic in the panel was the Body background Image,
+		//             whose parent chain does not contain the ScrollRect (row texts are
+		//             raycastTarget = false, the Viewport has no Graphic). EventSystem walks up
+		//             from the hit object to find IScrollHandler/IDragHandler, so wheel and drag
+		//             events never reached the ScrollView and the content stayed clamped.
+		//   Affects:  ResultStatsPanel BuildHalf (ScrollView input path)
+		//   Regress:  Enter Result with more rows than fit a half; mouse-wheel and drag over the
+		//             rows — the content must scroll within the half and clamp at both ends.
+		// Invisible raycast target under the ScrollRect so wheel/drag hits resolve to it
+		// (alpha 0 still raycasts; only raycastTarget matters).
+		var scrollHitArea = scrollGo.AddComponent<Image>();
+		scrollHitArea.color = new Color(0f, 0f, 0f, 0f);
+		scrollHitArea.raycastTarget = true;
 
 		var viewportGo = new GameObject("Viewport", typeof(RectTransform));
 		viewportGo.transform.SetParent(scrollGo.transform, false);
