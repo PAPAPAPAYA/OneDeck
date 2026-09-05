@@ -631,7 +631,7 @@ MonoBehaviour:
   rotationEase: 6
   useLocalRotation: 1
   bigShadowRenderer: {fileID: 0}
-  hoverDelay: 0.2
+  hoverDelay: 0.1
 --- !u!61 &6834931916158603786
 BoxCollider2D:
   m_ObjectHideFlags: 0

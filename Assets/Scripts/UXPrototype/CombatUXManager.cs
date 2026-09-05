@@ -206,6 +206,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	[Header("POP UP / SLOT IN")]
 	[Tooltip("Vertical lift distance for Pop Up animation (world units)")]
 	public float popUpYOffset = 1.5f;
+	[Tooltip("Horizontal offset added to the Pop Up peak (world units, positive = right)")]
+	public float popUpXOffset = 0f;
 	[Tooltip("Z offset toward camera for Pop Up (negative = closer/frontmost)")]
 	public float popUpZBoost = -1.0f;
 	[Tooltip("Seconds between batch move launches (scaled by CombatAnimationSpeed). Desynchronizes parallel batch flights so z-crossings never coincide on screen (VISUAL-FIX 2026-08-29).")]
@@ -1074,6 +1076,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			// Compute peak from FINAL deck position
 			Vector3 deckPos = CalculateAnimationPositionAtIndex(finalIndex);
 			Vector3 peakPos = deckPos + Vector3.up * popUpYOffset;
+			peakPos.x += popUpXOffset;
 			peakPos.z += popUpZBoost;
 			Vector3 peakScale = GetPopUpPeakScale(physScript);
 
@@ -3656,6 +3659,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			? GetFinalDeckPositionForCard(physScript, popupDeckIndex)
 			: physicalCard.transform.position;
 		Vector3 peakPos = popupBasePos + Vector3.up * popUpYOffset;
+		peakPos.x += popUpXOffset;
 		peakPos.z += popUpZBoost;
 
 		Vector3 peakScale = GetPopUpPeakScale(physScript);
@@ -3878,6 +3882,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		Vector3 deckPos = CalculatePositionForPendingCard(deckIndex);
 		Vector3 peakPos = deckPos + Vector3.up * popUpYOffset;
+		peakPos.x += popUpXOffset;
 		peakPos.z += popUpZBoost;
 		Vector3 peakScale = GetPopUpPeakScale(physScript);
 
