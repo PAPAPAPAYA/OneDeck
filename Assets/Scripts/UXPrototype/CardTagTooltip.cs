@@ -229,7 +229,7 @@ public class CardTagTooltip : MonoBehaviour
 			? Screen.height * 0.5f
 			: Mathf.Clamp(center.y, halfHeight, Screen.height - halfHeight);
 
-		_panel.position = new Vector2(x, y);
+		SetPanelScreenPosition(new Vector2(x, y));
 	}
 
 	/// <summary>
@@ -245,6 +245,32 @@ public class CardTagTooltip : MonoBehaviour
 		_panel.pivot = new Vector2(pivotX, pivotY);
 		float offsetX = pivotX == 0f ? ScreenMargin : -ScreenMargin;
 		float offsetY = pivotY == 1f ? -ScreenMargin : ScreenMargin;
-		_panel.position = new Vector2(mousePos.x + offsetX, mousePos.y + offsetY);
+		SetPanelScreenPosition(new Vector2(mousePos.x + offsetX, mousePos.y + offsetY));
+	}
+
+	// VISUAL-FIX(2026-09-05): Hover tag tooltip never appeared on screen after the pixelation
+	//   commit (78adfc8) migrated the runtime-built canvas from Screen Space Overlay to
+	//   Screen Space Camera: UpdatePosition/UpdatePositionAtMouse still assigned raw
+	//   screen-pixel coordinates to RectTransform.position, an Overlay-canvas idiom.
+	//   Cause:    Under Screen Space - Camera, RectTransform.position is WORLD space; with the
+	//             camera at z=-100 / fov 7, the visible world at the canvas plane is only
+	//             ~12x22 units, so pixel-valued coords landed hundreds of units outside the
+	//             frustum — the panel activated (ShowFor fired, text set) but rendered
+	//             completely off-screen.
+	//   Affects:  CardTagTooltip (UpdatePosition, UpdatePositionAtMouse)
+	//   Regress:  In Shop or Combat, hover a face-up card with a tag (诅咒/被动/复活 etc.):
+	//             the tooltip panel appears anchored to the card (right side, left on overflow,
+	//             clamped into the screen) within ~0.1s and hides when the cursor leaves; in a
+	//             narrow Game window it flips/clamps instead of vanishing off-screen.
+	private void SetPanelScreenPosition(Vector2 screenPos)
+	{
+		// Screen point -> canvas world point for the active render mode; an Overlay fallback
+		// canvas (null worldCamera) is handled by the utility as well.
+		var canvasRect = _canvas.transform as RectTransform;
+		if (canvasRect != null
+			&& RectTransformUtility.ScreenPointToWorldPointInRectangle(canvasRect, screenPos, _canvas.worldCamera, out Vector3 worldPos))
+		{
+			_panel.position = worldPos;
+		}
 	}
 }
