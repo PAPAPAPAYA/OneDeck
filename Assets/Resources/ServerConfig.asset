@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b5d6fafc98379844abcdfbdc2f4fe87, type: 3}
   m_Name: ServerConfig
   m_EditorClassIdentifier: Assembly-CSharp::ServerConfig
-  enabled: 0
+  enabled: 1
   environment: 0
   localBaseUrl: http://127.0.0.1:3000
   productionBaseUrl: http://8.153.150.197
@@ -20,6 +20,7 @@ MonoBehaviour:
   uploadMatchReports: 1
   uploadStatsSnapshots: 1
   uploadRunRecords: 1
+  includeCombatSeries: 1
   uploadCardCatalog: 1
   fetchOpponentDecks: 1
   markAsTest: 0

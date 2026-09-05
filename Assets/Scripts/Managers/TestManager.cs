@@ -7,7 +7,7 @@ namespace DefaultNamespace.Managers
 	/// <summary>
 	/// Central panel of independent test toggles.
 	/// Each toggle pushes its own flag to the target system: shuffle order override,
-	/// debug enemy deck loader, and combat auto-reveal.
+	/// debug enemy deck loader, combat auto-reveal, and the data recording/upload masters.
 	/// </summary>
 	public class TestManager : MonoBehaviour
 	{
@@ -26,11 +26,25 @@ namespace DefaultNamespace.Managers
 		[Tooltip("Start-card shuffle uses ShuffleOrderOverride.customOrderPrefabs instead of real shuffle.")]
 		public bool overrideShuffleOrder;
 
-		[Tooltip("Enemy deck always uses DeckSaver.debugEnemyDeck (bypasses JSON save and default pool).")]
+		[Tooltip("Enemy deck always uses DeckSaver.debugEnemyDeck (bypasses ghost fetch and default pool).")]
 		public bool useTestEnemyDeck;
 
 		[Tooltip("Combat auto-reveal. Uncheck to reveal cards by manual click only.")]
 		public bool autoReveal;
+
+		[Header("Data Recording (local files)")]
+		[Tooltip("Shop stats recording (shop_stats.json/CSV). Pushed to ShopStatsManager.enableStats.")]
+		public bool recordShopStats = true;
+
+		[Tooltip("Card win rate tracking (card_winrate.json/CSV). Pushed to CardWinRateTracker.switchOnTracking.")]
+		public bool recordWinRate = true;
+
+		[Tooltip("Per-combat HP/deck curve CSV export (CombatLogs/). Pushed to CombatStatsLogger.exportToCSV; per-combat one-shot, not cumulative.")]
+		public bool recordCombatCSV = true;
+
+		[Header("Data Upload (server)")]
+		[Tooltip("Master upload switch. Pushed to ServerConfig.enabled; OFF = fully offline (no uploads, no opponent ghost fetch, no registration prompt). Fine-grained per-kind switches stay on ServerConfig.asset.")]
+		public bool uploadServerData = true;
 
 		[Header("Targets")]
 		[Tooltip("Optional ShuffleOrderOverride reference. Auto-resolves from CombatManager if null.")]
@@ -41,6 +55,15 @@ namespace DefaultNamespace.Managers
 
 		[Tooltip("Optional CombatManager reference. Auto-resolves from CombatManager.Me if null.")]
 		[SerializeField] private CombatManager combatManager;
+
+		[Tooltip("Optional ShopStatsManager reference. Auto-resolves from ShopStatsManager.Me if null.")]
+		[SerializeField] private ShopStatsManager shopStatsManager;
+
+		[Tooltip("Optional CardWinRateTracker reference. Auto-resolves from CardWinRateTracker.Me if null.")]
+		[SerializeField] private CardWinRateTracker cardWinRateTracker;
+
+		[Tooltip("Optional CombatStatsLogger reference. Auto-resolves via FindFirstObjectByType if null (no singleton).")]
+		[SerializeField] private CombatStatsLogger combatStatsLogger;
 
 		#region Log Switches
 
@@ -114,6 +137,13 @@ namespace DefaultNamespace.Managers
 				if (shuffleOrderOverride != null) UnityEditor.EditorUtility.SetDirty(shuffleOrderOverride);
 				if (deckSaver != null) UnityEditor.EditorUtility.SetDirty(deckSaver);
 				if (combatManager != null) UnityEditor.EditorUtility.SetDirty(combatManager);
+				if (shopStatsManager != null) UnityEditor.EditorUtility.SetDirty(shopStatsManager);
+				if (cardWinRateTracker != null) UnityEditor.EditorUtility.SetDirty(cardWinRateTracker);
+				if (combatStatsLogger != null) UnityEditor.EditorUtility.SetDirty(combatStatsLogger);
+				// Only mark the asset dirty when Active is the loaded Resources asset;
+				// the in-memory fallback instance (no asset present) has nothing to persist.
+				ServerConfig config = ServerConfig.Active;
+				if (config != null && UnityEditor.EditorUtility.IsPersistent(config)) UnityEditor.EditorUtility.SetDirty(config);
 			}
 #endif
 		}
@@ -138,9 +168,34 @@ namespace DefaultNamespace.Managers
 				combatManager.autoReveal = autoReveal;
 			}
 
+			if (shopStatsManager != null)
+			{
+				shopStatsManager.enableStats = recordShopStats;
+			}
+
+			if (cardWinRateTracker != null)
+			{
+				cardWinRateTracker.switchOnTracking = recordWinRate;
+			}
+
+			if (combatStatsLogger != null)
+			{
+				combatStatsLogger.exportToCSV = recordCombatCSV;
+			}
+
+			ServerConfig serverConfig = ServerConfig.Active;
+			if (serverConfig != null)
+			{
+				serverConfig.enabled = uploadServerData;
+			}
+
 			TestManager.Log("[TestManager] Toggles - shuffleOverride=" + (overrideShuffleOrder ? "ON" : "OFF")
 				+ " testEnemyDeck=" + (useTestEnemyDeck ? "ON" : "OFF")
-				+ " autoReveal=" + (autoReveal ? "ON" : "OFF"));
+				+ " autoReveal=" + (autoReveal ? "ON" : "OFF")
+				+ " recordData=[shop=" + (recordShopStats ? "ON" : "OFF")
+				+ " winRate=" + (recordWinRate ? "ON" : "OFF")
+				+ " combatCSV=" + (recordCombatCSV ? "ON" : "OFF") + "]"
+				+ " uploadServerData=" + (uploadServerData ? "ON" : "OFF"));
 		}
 
 		/// <summary>
@@ -161,6 +216,21 @@ namespace DefaultNamespace.Managers
 			if (combatManager == null)
 			{
 				combatManager = CombatManager.Me;
+			}
+
+			if (shopStatsManager == null)
+			{
+				shopStatsManager = ShopStatsManager.Me;
+			}
+
+			if (cardWinRateTracker == null)
+			{
+				cardWinRateTracker = CardWinRateTracker.Me;
+			}
+
+			if (combatStatsLogger == null)
+			{
+				combatStatsLogger = Object.FindFirstObjectByType<CombatStatsLogger>();
 			}
 		}
 

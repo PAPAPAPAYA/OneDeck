@@ -5780,13 +5780,20 @@ MonoBehaviour:
   overrideShuffleOrder: 0
   useTestEnemyDeck: 0
   autoReveal: 1
+  recordShopStats: 1
+  recordWinRate: 1
+  recordCombatCSV: 1
+  uploadServerData: 1
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
+  shopStatsManager: {fileID: 1457153433}
+  cardWinRateTracker: {fileID: 2103892656}
+  combatStatsLogger: {fileID: 1151980348}
   logCombatFlow: 0
   logEffectChains: 0
   logAnimationPlayback: 0
-  logVisualSync: 0
+  logVisualSync: 1
   logEditorTools: 0
   logTestManager: 0
   logDynamicDamageDisplay: 0
@@ -6985,7 +6992,7 @@ MonoBehaviour:
   onAnyCardRevealed: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   records: []
-  exportToCSV: 0
+  exportToCSV: 1
   outputDirectory: CombatLogs
   printToConsole: 0
 --- !u!114 &1151980349
@@ -8995,8 +9002,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dd6cf277ef043d7adc973cb91e8e02d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableStats: 0
-  resetOnStart: 1
+  enableStats: 1
+  resetOnStart: 0
   printOnSave: 0
 --- !u!4 &1457153434
 Transform:
@@ -13074,8 +13081,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d687fc62e6070d4d84e72e916f682f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  switchOnTracking: 0
-  resetOnStart: 1
+  switchOnTracking: 1
+  resetOnStart: 0
   printOnSave: 0
 --- !u!4 &2103892657
 Transform:
