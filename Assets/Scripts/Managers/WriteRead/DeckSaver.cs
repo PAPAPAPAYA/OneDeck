@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using DefaultNamespace.Managers;
 using UnityEngine;
 
-// script responsible for: 
-// 1. save current player deck to json (using cardTypeID for stability)
-// 2. load matching round number deck randomly to enemy deck
-// 3. wipe saved decks
-// 4. enable/disable save/load
+// script responsible for:
+// 1. snapshot the current player deck to the async-PvP server (cardTypeID-based)
+// 2. populate the enemy deck: debug > server ghost > default pool
 namespace TestWriteRead
 {
 	/// <summary>
@@ -51,13 +47,8 @@ namespace TestWriteRead
 		private void Awake()
 		{
 			Me = this;
-			_savePath = Application.persistentDataPath + "/deckdata.json";
 		}
 		#endregion
-
-		[Header("System Switch")]
-		public bool switchOnSaveLoad = false;
-		public bool resetOnStart = false;
 
 		[Header("Deck Info Refs")]
 		public DeckSO playerDeck; // Player deck reference
@@ -78,14 +69,14 @@ namespace TestWriteRead
 		public List<GameObject> additionalCardPrefabs; // Additional cards (optional)
 
 		[Header("Debug Enemy Deck")]
-		[Tooltip("When enabled, enemy deck always uses Debug Enemy Deck, bypassing JSON save and default pool")]
+		[Tooltip("When enabled, enemy deck always uses Debug Enemy Deck, bypassing ghost fetch and default pool")]
 		public bool useDebugEnemyDeck = false;
 
 		[Tooltip("Fixed enemy deck used when Use Debug Enemy Deck is enabled")]
 		public DeckSO debugEnemyDeck;
 
 		[Header("Default Enemy Deck Pools")]
-		[Tooltip("Each entry corresponds to a session. When no deck for the session exists in JSON, randomly select one DeckSO from that session's pool")]
+		[Tooltip("Each entry corresponds to a session; one DeckSO is randomly selected from that session's pool")]
 		public List<EnemyDeckPoolEntry> defaultEnemyDeckPool = new List<EnemyDeckPoolEntry>(); // Default enemy deck pool configuration
 
 		[Header("Enemy Deck HP Bonus")]
@@ -95,24 +86,12 @@ namespace TestWriteRead
 		[Header("Debug")]
 		[SerializeField] private bool printOnSave = true;
 
-		// Local data
-		private DeckData _currentData;
-		private string _savePath;
-
 		// Card type ID to prefab mapping cache
 		private Dictionary<string, GameObject> _cardTypeToPrefabCache;
 
 		private void Start()
 		{
 			BuildCardDatabaseCache();
-
-
-			if (resetOnStart)
-			{
-				WipeDeckSaves();
-			}
-
-			LoadData();
 		}
 
 		/// <summary>
@@ -275,107 +254,18 @@ namespace TestWriteRead
 			// Debug.Log($"[DeckSaver] Enemy deck bonus applied: +{bonus} HP/HPMax");
 		}
 
-		#region Data Persistence
-
-		/// <summary>
-		/// Load saved data
-		/// </summary>
-		private void LoadData()
-		{
-			if (!File.Exists(_savePath))
-			{
-				_currentData = new DeckData();
-				return;
-			}
-
-			try
-			{
-				var json = File.ReadAllText(_savePath);
-				_currentData = JsonUtility.FromJson<DeckData>(json);
-
-				if (_currentData == null)
-				{
-					_currentData = new DeckData();
-				}
-				else
-				{
-					// Ensure list is not null
-					if (_currentData.savedDecks == null)
-						_currentData.savedDecks = new List<DeckSaveEntry>();
-
-					// Version migration: migrate old format data to new format
-					MigrateOldData();
-				}
-
-				if (printOnSave)
-				{
-					// Debug.Log($"[DeckSaver] Loaded {_currentData.savedDecks.Count} saved decks");
-				}
-			}
-			catch (Exception e)
-			{
-				// Debug.LogError($"[DeckSaver] Failed to read data: {e.Message}");
-				_currentData = new DeckData();
-			}
-		}
-
-		/// <summary>
-		/// Migrate old format data (using GameObject lists) to new format (using cardTypeID lists)
-		/// </summary>
-		private void MigrateOldData()
-		{
-			// Keep compatibility here, if old data needs migration it can be handled here
-			// Currently new data structure is independent from GameObject
-		}
-
-		/// <summary>
-		/// Save data to JSON
-		/// </summary>
-		private void SaveData()
-		{
-			if (!switchOnSaveLoad) return;
-
-			_currentData.lastUpdated = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-			try
-			{
-				var json = JsonUtility.ToJson(_currentData, true);
-				File.WriteAllText(_savePath, json);
-
-				if (printOnSave)
-				{
-					// Debug.Log($"[DeckSaver] Deck saved: {_savePath}");
-				}
-			}
-			catch (Exception e)
-			{
-				// Debug.LogError($"[DeckSaver] Save data failed: {e.Message}");
-			}
-		}
-
-		#endregion
-
 		#region Deck Operations
 
 		/// <summary>
-		/// Save current player deck to JSON
+		/// Snapshot the current player deck to the async-PvP server (plan §2.5)
 		/// </summary>
-		public void SavePlayerDeckToJson()
+		public void SavePlayerDeckSnapshot()
 		{
-			if (!switchOnSaveLoad) return;
 			// Tutorial combat: never persist the tutorial deck as the player deck.
 			if (TutorialManager.IsTutorialActive) return;
 
-			// Create deck entry
-			var deckEntry = CreateDeckSaveEntry();
-			_currentData.savedDecks.Add(deckEntry);
-
-			SaveData();
-
 			// Async-PvP: ghost-deck snapshot for other players (plan §2.5); outbox-backed.
-			UploadDeckSnapshot(deckEntry);
-
-			// Debug.Log($"[DeckSaver] Saved session {sessionNumber.value} deck, total {deckEntry.cardTypeIDs.Count} cards");
+			UploadDeckSnapshot(CreateDeckSaveEntry());
 		}
 
 		/// <summary>
@@ -432,7 +322,7 @@ namespace TestWriteRead
 
 		/// <summary>
 		/// Populate enemy deck by current session number.
-		/// Priority: debug > server ghost > local JSON > default pool (plan §2.5).
+		/// Priority: debug > server ghost > default pool (plan §2.5).
 		/// </summary>
 		public void PopulateEnemyDeckBySessionNumber()
 		{
@@ -457,14 +347,7 @@ namespace TestWriteRead
 				return;
 			}
 
-			// Try loading from JSON first
-			if (TryLoadFromJson())
-			{
-				OpponentDeckCache.RecordEnemySource(OpponentDeckCache.SourceLocal);
-				return;
-			}
-
-			// When no JSON match, select from default list
+			// No ghost available: select from the default pool
 			PopulateFromDefaultDecks();
 			OpponentDeckCache.RecordEnemySource(OpponentDeckCache.SourcePool);
 		}
@@ -525,56 +408,6 @@ namespace TestWriteRead
 		}
 
 		/// <summary>
-		/// Try to load deck matching current session number from JSON file
-		/// </summary>
-		/// <returns>Whether loading succeeded</returns>
-		private bool TryLoadFromJson()
-		{
-			if (!switchOnSaveLoad) return false;
-
-			// Filter matching decks
-			var matchingDecks = _currentData.savedDecks
-				.Where(d => d.sessionNum == sessionNumber.value)
-				.ToList();
-
-			if (matchingDecks.Count == 0) return false;
-
-			// Randomly select a matching deck
-			var randomDeck = matchingDecks[UnityEngine.Random.Range(0, matchingDecks.Count)];
-
-			// Convert cardTypeID list to GameObject list
-			var cardPrefabs = new List<GameObject>();
-			foreach (var typeID in randomDeck.cardTypeIDs)
-			{
-				var prefab = FindCardPrefabByTypeID(typeID);
-				if (prefab != null)
-				{
-					cardPrefabs.Add(prefab);
-				}
-			}
-
-			// Populate enemy deck
-			enemyDeckToPopulate.deck.Clear();
-			enemyDeckToPopulate.deck.AddRange(cardPrefabs);
-
-			// Apply saved hpMax to enemy
-			if (enemyStatusRef != null)
-			{
-				enemyStatusRef.hpMax = randomDeck.hpMax > 0 ? randomDeck.hpMax : 20;
-				// Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards, enemy hpMax set to {enemyStatusRef.hpMax}");
-			}
-			else
-			{
-				// Debug.Log($"[DeckSaver] Loaded enemy deck for session {sessionNumber.value} from JSON, total {cardPrefabs.Count} cards (enemy StatusRef not set, cannot apply hpMax)");
-			}
-
-			// Apply HP bonus for specific cardTypeIDs in the loaded deck
-			ApplyEnemyHpBonus(CalculateHpBonus(randomDeck.cardTypeIDs));
-
-			return true;
-		}
-
-		/// <summary>
 		/// Select corresponding deck pool from default enemy deck pools by current session number,
 		/// then randomly pick one DeckSO from that pool to populate the enemy deck.
 		/// session 0 -> pool[0], session 1 -> pool[1], and so on.
@@ -614,76 +447,12 @@ namespace TestWriteRead
 			ApplyEnemyHpBonus(CalculateHpBonus(enemyDeckToPopulate.deck));
 		}
 
-		/// <summary>
-		/// Delete all saved deck data
-		/// </summary>
-		public void WipeDeckSaves()
-		{
-			_currentData = new DeckData();
-
-			if (File.Exists(_savePath))
-			{
-				try
-				{
-					File.Delete(_savePath);
-					// Debug.Log($"[DeckSaver] Deleted save file: {_savePath}");
-				}
-				catch (Exception e)
-				{
-					// Debug.LogError($"[DeckSaver] Failed to delete save file: {e.Message}");
-				}
-			}
-		}
-
-		#endregion
-
-		#region Query Interface
-
-		/// <summary>
-		/// Get all saved deck statistics
-		/// </summary>
-		public void PrintSavedDecksInfo()
-		{
-			if (_currentData.savedDecks.Count == 0)
-			{
-				// Debug.Log("[DeckSaver] No saved decks");
-				return;
-			}
-
-			// Debug.Log("========== SAVED DECK STATISTICS ==========");
-
-			var groupedBySession = _currentData.savedDecks
-				.GroupBy(d => d.sessionNum)
-				.OrderBy(g => g.Key);
-
-			foreach (var group in groupedBySession)
-			{
-				// Debug.Log($"Session {group.Key}: {group.Count()} decks");
-			}
-
-			// Debug.Log($"Total {_currentData.savedDecks.Count} decks, last updated: {_currentData.lastUpdated}");
-			// Debug.Log("====================================");
-		}
-
-		#endregion
-
-		#region Backward Compatibility
-
-		// Keep old method but call new one for backward compatibility
-		[Obsolete("Use PopulateEnemyDeckBySessionNumber instead")]
-		public void LoadJsonToEnemyDeckSo()
-		{
-			PopulateEnemyDeckBySessionNumber();
-		}
-
 		#endregion
 
 		#region Debug Hotkeys
 		// Hotkey instructions (must be active in Game view):
-		// Ctrl + S: Save current player deck to JSON
+		// Ctrl + S: Snapshot current player deck to the server
 		// Ctrl + L: Load deck to enemy deck
-		// Ctrl + W: Clear all saved decks
-		// Ctrl + D: Print saved deck statistics
 
 		private void Update()
 		{
@@ -692,25 +461,13 @@ namespace TestWriteRead
 			// Ctrl + S: Save
 			if (Input.GetKeyDown(KeyCode.S) && !Input.GetKey(KeyCode.LeftShift))
 			{
-				SavePlayerDeckToJson();
+				SavePlayerDeckSnapshot();
 			}
 
 			// Ctrl + L: Load
 			if (Input.GetKeyDown(KeyCode.L))
 			{
 				PopulateEnemyDeckBySessionNumber();
-			}
-
-			// Ctrl + W: Clear
-			if (Input.GetKeyDown(KeyCode.W))
-			{
-				WipeDeckSaves();
-			}
-
-			// Ctrl + D: Print statistics
-			if (Input.GetKeyDown(KeyCode.D))
-			{
-				PrintSavedDecksInfo();
 			}
 		}
 

@@ -10655,8 +10655,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c309896258a493caad265bdb907438f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  switchOnSaveLoad: 1
-  resetOnStart: 1
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
   winAmount: {fileID: 11400000, guid: 0c5b8ad6fd36260419f71a0b293f11ba, type: 2}
   heartLeft: {fileID: 11400000, guid: c8abd570c29ca4c44b7fa180cba00216, type: 2}
@@ -12745,7 +12743,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 1855501821}
         m_TargetAssemblyTypeName: TestWriteRead.DeckSaver, Assembly-CSharp
-        m_MethodName: LoadJsonToEnemyDeckSo
+        m_MethodName: PopulateEnemyDeckBySessionNumber
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -12757,7 +12755,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 1855501821}
         m_TargetAssemblyTypeName: TestWriteRead.DeckSaver, Assembly-CSharp
-        m_MethodName: SavePlayerDeckToJson
+        m_MethodName: SavePlayerDeckSnapshot
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
