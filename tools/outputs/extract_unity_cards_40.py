@@ -1,13 +1,13 @@
 """Extract card configs from OneDeck 4.0 card prefabs into JSON.
 
-Reads every .prefab under Assets/Prefabs/Cards/4.0 (excluding -1_Test),
-and dumps file name, cardTypeID, displayName, rarity, cardDesc,
-printedAttack, cardType and folder for each card.
+Variant of unity-notion-card-sync/extract_unity_cards.py pointed at the
+4.0 pool folder (excluding -1_Test). Writes file name, displayName,
+rarity, cardDesc and folder for each card.
 
 Usage:
-	python extract_unity_cards.py [project_root] [--out PATH]
+	python extract_unity_cards_40.py [project_root] [--out PATH]
 
-Defaults: project_root = cwd, --out = tools/outputs/unity_cards_current.json
+Defaults: project_root = cwd, --out = tools/outputs/unity_cards_40_current.json
 """
 import re
 import os
@@ -16,23 +16,12 @@ import json
 
 CARD_ROOT = os.path.join("Assets", "Prefabs", "Cards", "4.0")
 EXCLUDE_MARKERS = ("-1_Test",)
-RARITY_NAMES = {"0": "normal", "1": "uncommon", "2": "rare"}
+RARITY_NAMES = {"0": "common", "1": "uncommon", "2": "rare"}
 
 
 def grab(text, field):
-	# cardDesc etc. are multi-line YAML scalars: capture to the next 2-space
-	# field boundary. CardScript serializes last, so the last match wins over
-	# any earlier component that reuses the same field name.
-	matches = re.findall(r"^  " + field + r": (.*?)(?=^  \w|^--- )", text, re.M | re.S)
-	return matches[-1].strip() if matches else ""
-
-
-def grab_last_literal(text, field):
-	# Some prefabs carry an earlier shop-view component whose cardTypeID is a
-	# StringSO reference ({fileID: ..., guid: ...}); only the literal form
-	# matches this pattern, and CardScript's value comes last.
-	vals = re.findall(r"^  " + field + r": ([A-Za-z0-9_]+)\s*$", text, re.M)
-	return vals[-1] if vals else ""
+	m = re.search(r"^  " + field + r": (.*?)(?=^  \w|^--- )", text, re.M | re.S)
+	return m.group(1).strip() if m else ""
 
 
 def dec(s):
@@ -40,13 +29,12 @@ def dec(s):
 	if s.startswith('"') and s.endswith('"'):
 		s = s[1:-1]
 	s = re.sub(r"\\u([0-9A-Fa-f]{4})", lambda m: chr(int(m.group(1), 16)), s)
-	s = re.sub(r"\\x([0-9A-Fa-f]{2})", lambda m: chr(int(m.group(1), 16)), s)
 	return s
 
 
 def main():
 	root = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("--") else "."
-	out_path = "tools/outputs/unity_cards_current.json"
+	out_path = "tools/outputs/unity_cards_40_current.json"
 	if "--out" in sys.argv:
 		out_path = sys.argv[sys.argv.index("--out") + 1]
 
@@ -61,17 +49,18 @@ def main():
 			text = open(os.path.join(dirpath, f), encoding="utf-8").read()
 			rarity_raw = grab(text, "rarity").split()[0] if grab(text, "rarity") else ""
 			out.append({
-				# Prefab file name without extension.
+				# Prefab file name without extension; this is the canonical "file name".
 				"file": f.replace(".prefab", ""),
-				# Falls back to the file name only if no literal cardTypeID exists.
-				"cardTypeID": grab_last_literal(text, "cardTypeID") or f.replace(".prefab", ""),
+				"cardTypeID": dec(grab(text, "cardTypeID")),
 				"displayName": dec(grab(text, "displayName")),
-				# Missing field means Unity deserializes rarity to 0 = normal.
+				# Missing field means Unity deserializes rarity to 0 = common.
 				"rarity": rarity_raw,
-				"rarityName": RARITY_NAMES.get(rarity_raw, "normal"),
+				"rarityName": RARITY_NAMES.get(rarity_raw, "common"),
 				"cardDesc": dec(grab(text, "cardDesc")),
-				"printedAttack": grab(text, "printedAttack"),
-				"cardType": grab(text, "cardType"),
+				"printedAttack": grab(text, "printedAttack").replace("value: ", "").split()[0]
+					if grab(text, "printedAttack") else "",
+				"utilityKind": grab(text, "utilityKind").replace(": ", "").strip()
+					if grab(text, "utilityKind") else "",
 				"folder": os.path.relpath(dirpath, card_root).replace("\\", "/"),
 			})
 

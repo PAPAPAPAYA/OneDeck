@@ -1,4 +1,8 @@
 # Card Desc Tag-Reference Convention v2 (2026-09-02)
+> **2026-09-04 update:** tag-phrase brackets switched from full-width 【】 to ASCII `[ ]` —
+> RobotoCondensed-Regular SDF lacks the 【】 glyphs (TMP renders them as spaces); all 6 affected
+> prefabs migrated. Agent tip: prefab YAML stores these as `u3010`/`u3011` escapes — grep for
+> `u3010`, not the literal character.
 
 Distinguishes **card-type references** (a specific card, keyed by `cardTypeID`) from
 **tag references** (any card carrying a `Tag`). Notation rule:
@@ -6,8 +10,9 @@ Distinguishes **card-type references** (a specific card, keyed by `cardTypeID`) 
 - **Card-type reference → bare card name.** 信徒 = the RIFT token (`cardTypeID: RIFT`),
   诅咒 = the JU_ON token (`cardTypeID: JU_ON`). Examples: `复活1敌方诅咒` (ReviveEffect
   `typeIDFilter: JU_ON`), `生成1信徒` (spawns the RIFT token prefab).
-- **Tag reference → mandatory carrier phrase.** `N张tag为【X】的[主人]卡`. The 【】
-  brackets are reserved exclusively for tag phrases — never for card names, emphasis, or states.
+- **Tag reference → mandatory carrier phrase.** `N张tag为[X]的[主人]卡` (`[主人]` = owner-slot
+  placeholder, not literal). The `[ ]` brackets are reserved exclusively for tag phrases — never
+  for card names, emphasis, or states.
 - **Clause-head trigger keywords stay bare** (self-referential grammar, not target refs):
   `遗言：` `苏醒：` `回响：` `被动：` `强化反应：`.
 - **State/numeric conditions stay bare, no brackets**: 被强化 (= `attackGrowth > 0`),
@@ -17,11 +22,11 @@ Distinguishes **card-type references** (a specific card, keyed by `cardTypeID`) 
 
 | Scenario | Template | Example |
 |---|---|---|
-| Target selection | `动词 N 张tag为【X】的[主人]卡` | 复活1张tag为【信徒】的友方卡 |
-| All | `动词 所有tag为【X】的[主人]卡` | 埋葬所有tag为【诅咒】的敌方卡 |
-| Trigger | `tag为【X】的[主人]卡[动作]时：` | tag为【诅咒】的敌方卡揭晓时：复活1友方 |
-| Count | `每有1张tag为【X】的[主人]卡，…` | 每有1张tag为【信徒】的友方卡，强化1敌方诅咒 |
-| Existence | `若无tag为【X】的[主人]卡，…` | 若无tag为【诅咒】的敌方卡，生成1敌方诅咒 |
+| Target selection | `动词 N 张tag为[X]的[主人]卡` | 复活1张tag为[信徒]的友方卡 |
+| All | `动词 所有tag为[X]的[主人]卡` | 埋葬所有tag为[诅咒]的敌方卡 |
+| Trigger | `tag为[X]的[主人]卡[动作]时：` | tag为[诅咒]的敌方卡揭晓时：复活1友方 |
+| Count | `每有1张tag为[X]的[主人]卡，…` | 每有1张tag为[信徒]的友方卡，强化1敌方诅咒 |
+| Existence | `若无tag为[X]的[主人]卡，…` | 若无tag为[诅咒]的敌方卡，生成1敌方诅咒 |
 
 ## Unity rendering mapping (no code change)
 
@@ -30,9 +35,9 @@ name from `TagTooltipDatabaseSO`, so the prefab writes the carrier phrase with t
 placeholder inside literal brackets:
 
 ```
-DB text:   攻击；复活1张tag为【信徒】的友方卡
-prefab:    攻击;复活 <b>1</b> 张tag为【<tag:Believer>】的友方卡
-rendered:  攻击;复活 1 张tag为【信徒】的友方卡
+DB text:   攻击；复活1张tag为[信徒]的友方卡
+prefab:    攻击;复活 <b>1</b> 张tag为[<tag:Believer>]的友方卡
+rendered:  攻击;复活 1 张tag为[信徒]的友方卡
 ```
 
 `<tag:Believer>` → 信徒, `<tag:DeathRattle>` → 遗言 (`Assets/SORefs/Strings/TagNames/`).
@@ -69,9 +74,8 @@ GRAVE_FIST, GRAVE_TOGETHER_4.0, GRAVE_MILLER, SACRIFICIAL_SPIRIT (behavior-neutr
 `Tag.None` never matches; these prefabs bind no `*WithTag` methods). Test card
 `4.0/-1_Test/BURY` left untouched.
 
-## Open item
+## Resolved items
 
-WEAKENING_FIELD desc still reads `除了【诅咒】,所有生物本回合攻击力-1`, but
-`ModifyAllCreatureAttackThisRoundExceptCurse` no longer excludes curses (2026-09-02 type
-split: creature filter only, creature curses like JU_ON are hit). Desc wording needs a
-ruling: either drop `除了诅咒` or restore the exclusion.
+WEAKENING_FIELD — resolved 2026-09-04: the `除了诅咒` exclusion was dropped; desc now reads
+`所有生物本回合攻击力-1`, matching `ModifyAllCreatureAttackThisRoundExceptCurse` (2026-09-02
+type split: creature filter only, creature curses like JU_ON are hit).

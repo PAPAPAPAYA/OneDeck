@@ -1,6 +1,6 @@
 ---
 name: unity-card-listener-check
-last_reviewed: never
+last_reviewed: 2026-09-05
 description: Verify that OneDeck card descriptions (cardDesc) match the actual GameEventListener -> CostNEffectContainer -> Effect method bindings. Use when asked to check card descriptions against listeners, validate card response mappings, audit GameEventListener configurations, or re-run the card-desc-vs-response check.
 ---
 
@@ -32,10 +32,10 @@ The check flags:
 
 ### Step 1: Extract Listener Bindings from Unity
 
-Run the C# snippet below via Unity MCP `execute_code` (`compiler: "auto"`, the default, resolves to Roslyn / C# 12+). It scans all prefabs under `Assets/Prefabs/Cards/3.0 no cost (current)`, reads every `GameEventListener`, follows its `Response` to each `CostNEffectContainer`, and dumps the bound effect/cost methods to `docs/CardDesc_Response_Check.txt`.
+Run the C# snippet below via Unity MCP `execute_code` (`compiler: "auto"`, the default, resolves to Roslyn / C# 12+). It scans all prefabs under `Assets/Prefabs/Cards/4.0` (the live shop pool; `FindAssets` also picks up `-1_Test/` — filter there if you need to exclude it), reads every `GameEventListener`, follows its `Response` to each `CostNEffectContainer`, and dumps the bound effect/cost methods to `docs/CardDesc_Response_Check.txt`.
 
 ```csharp
-string root = "Assets/Prefabs/Cards/3.0 no cost (current)";
+string root = "Assets/Prefabs/Cards/4.0";
 string outputPath = "docs/CardDesc_Response_Check.txt";
 string[] guids = UnityEditor.AssetDatabase.FindAssets("t:GameObject", new string[] { root });
 System.Array.Sort(guids);
@@ -151,8 +151,14 @@ foreach (string guid in guids)
 		{
 			object descObj = cardDescField.GetValue(cardComp);
 			if (descObj != null) desc = (string)descObj;
-			System.Reflection.FieldInfo isCreatureField = cardScriptType.GetField("isCreature");
-			if (isCreatureField != null) isCreature = (bool)isCreatureField.GetValue(cardComp);
+			// The matcher's line regex hard-requires an isCreature= token, but CardScript.isCreature
+			// was removed 2026-09-02 (cardType enum). Emit it from cardType == Creature(1).
+			System.Reflection.FieldInfo cardTypeField = cardScriptType.GetField("cardType");
+			if (cardTypeField != null)
+			{
+				object ct = cardTypeField.GetValue(cardComp);
+				isCreature = ct != null && (int)ct == 1;
+			}
 			if (isPassiveField != null) isPassive = (bool)isPassiveField.GetValue(cardComp);
 		}
 		if (desc == null) desc = "";
@@ -240,3 +246,6 @@ Open `docs/CardDesc_Response_Mismatch_Report.md`.
 - Container names may contain `]` (e.g. `[Deathrattle]/[Linger]`); the extractor anchors on `costs=` to avoid truncation.
 - Shop-only utility effects (`卡位增加`, `生命值上限增加`) default to `OnMeBought` when no trigger phrase is present.
 - The matcher ignores pure tag segments such as `萦绕` because they carry no effect semantics.
+- **Round-boundary flow events (GAME FLOW) accept the whole family** (`round_boundary_events`): 「回合开始」 → {`BeforeRoundFinished`, `OnRoundEnd`}; 「回合结束」 and 「洗牌后」 also accept `OnRoundEnd`. The asset names lie — `BeforeRoundFinished.asset` is wired to `GameEventStorage.beforeRoundStart` and fires at combat start (GatherDecks, BEFORE the opening shuffle) AND at every round boundary right after `HandleNewRoundStart`'s per-round resets; `OnRoundEnd` fires after every start-card shuffle animation settles, BEFORE the resets (round-end effects read the completed round; staged cards land on top and reveal first next round); `AfterShuffle` fires after the shuffle completes and the round's first card has reached the reveal zone. Position-sensitive effects (置顶/埋葬卡组顶) must NOT bind `beforeRoundStart`: its combat-start fire happens pre-shuffle and the staged position is lost — use `OnRoundEnd` (RELIC_WHITE_BANNER, FINAL_ESCORT).
+- **Engine-side passive auras** (`RELIC_GRAVE_LORD`, `RELIC_GRAVE_CURSE`, `RELIC_RIFT_OVERRIDE`, `RELIC_BLOOD_PACT`): the prefab only re-arms a per-round override flag via `AfterShuffle -> ValueSetterEffect.SetIntSO` (reset each round in `HandleNewRoundStart`); the real behavior lives in `ValueTrackerManager`/`CombatManager`. The matcher skips these listeners as orphans, but the desc segments still cannot be auto-verified — expect a remaining 疑似 entry that needs human review.
+- The matcher's line regex hard-requires the `isCreature=` token before `cardDesc=`; the extractor emits it from `cardType == Creature(1)` (the `isCreature` field was removed 2026-09-02).

@@ -8,7 +8,8 @@ import os, re, sys, io
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
-ROOT = "Assets/Prefabs/Cards/3.0 no cost (current)"
+ROOT = "Assets/Prefabs/Cards/4.0"
+EXCLUDE_DIRS = ("-1_Test",)
 
 # 1. guid -> script class name map
 guid2class = {}
@@ -37,13 +38,37 @@ for dirpath, _, files in os.walk("Assets/SORefs/GameEvents"):
             if gm and nm:
                 guid2event[gm.group(1)] = nm.group(1).strip()
 
+# 1c. SO asset guid -> (m_Name, value) map (IntSO/BoolSO/StringSO under Assets/SORefs)
+guid2so = {}
+for dirpath, _, files in os.walk("Assets/SORefs"):
+    for fn in files:
+        if not fn.endswith(".asset"):
+            continue
+        p = os.path.join(dirpath, fn)
+        mp = p + ".meta"
+        if not os.path.exists(mp):
+            continue
+        with open(mp, encoding="utf-8", errors="replace") as f:
+            gm = re.search(r"guid: ([0-9a-f]{32})", f.read())
+        with open(p, encoding="utf-8", errors="replace") as f:
+            t = f.read()
+        nm = re.search(r"^  m_Name: (.*)$", t, re.M)
+        val = re.search(r"^  value: (-?\d+)$", t, re.M)
+        if gm:
+            guid2so[gm.group(1)] = (nm.group(1).strip() if nm else fn[:-6],
+                                    val.group(1) if val else None)
+
 # fields we care about per component
 FIELD_PAT = re.compile(
     r"^  (cardTypeID|displayName|cardDesc|isMinion|isStartCard|extraDmg|cardCount|powerCoefficient|"
     r"lastXCardsCount|xFriendlyCount|statusEffectLayerCount|yFriendlyLayerCount|layerCount|"
     r"statusEffectToGive|statusEffectToCheck|statusEffectToConsume|amount|powerAmount|multiplier|"
     r"statusEffectMultiplier|excludeSelf|isFromFriendly|fromFriendly|give|targetCardTypeID|"
-    r"curseCardTypeID|shopRollWeightMultiplier|takeUpSpace): ?(.*)$", re.M)
+    r"curseCardTypeID|shopRollWeightMultiplier|takeUpSpace|myTags|yFriendlyLayerCount|"
+    r"baseDmg|dmgAmountAlter|healAmountAlter|creatureFilter|tagsToCheck|typeIDFilter|"
+    r"rarityFilter|sortBy|reviveTargetSide|delayedRevive|targetFriendly|curseEngine|"
+    r"ownerIntSO|enemyIntSO|cardType|isPassive|printedAttack|attackTimes|extraAttackTimes|attackGrowth|consumeHostileCurse|"
+    r"statusEffectToCount|countSourceSide|transferAmount|graveFilter): ?(.*)$", re.M)
 
 DOC_RE = re.compile(r"^--- !u!(\d+) &(\d+)", re.M)
 
@@ -68,6 +93,16 @@ def parse_prefab(path):
         fields = {}
         for fm in FIELD_PAT.finditer(body):
             fields[fm.group(1)] = unesc(fm.group(2).strip().strip('"'))
+        # resolve SO / GameEvent references to readable names (and IntSO values)
+        for k, v in list(fields.items()):
+            rm = re.search(r"guid: ([0-9a-f]{32})", v)
+            if rm:
+                g = rm.group(1)
+                if g in guid2event:
+                    fields[k] = "EVENT:" + guid2event[g]
+                elif g in guid2so:
+                    nm2, val2 = guid2so[g]
+                    fields[k] = "SO:%s=%s" % (nm2, val2 if val2 is not None else "?")
         # unityevent calls: track current 2-space field name
         calls = []  # (eventField, targetFileID, method, intArg)
         cur_field = None
@@ -111,6 +146,9 @@ def card_summary(path, rel):
     rfid, rc = root
     out = []
     out.append(f"CARD|{rel}|display={rc['fields'].get('displayName','')}|type={rc['fields'].get('cardTypeID','')}"
+               f"|atk={rc['fields'].get('printedAttack','')}|ctype={rc['fields'].get('cardType','')}"
+               f"|extraTimes={rc['fields'].get('extraAttackTimes','')}|growth={rc['fields'].get('attackGrowth','')}"
+               f"|passive={rc['fields'].get('isPassive','')}"
                f"|minion={rc['fields'].get('isMinion','')}|tags={rc['fields'].get('myTags','')}"
                f"|desc={rc['fields'].get('cardDesc','')}")
     # find trigger bindings: any component holding a GameEvent `event` ref + response calls
@@ -133,10 +171,17 @@ def card_summary(path, rel):
                     extra = ""
                     if tgt:
                         keyfields = []
-                        for k in ("extraDmg", "cardCount", "powerCoefficient", "lastXCardsCount",
-                                  "xFriendlyCount", "statusEffectLayerCount", "yFriendlyLayerCount",
-                                  "statusEffectToGive", "statusEffectToCheck", "statusEffectToConsume",
-                                  "statusEffectMultiplier", "powerAmount"):
+                        for k in ("extraDmg", "baseDmg", "dmgAmountAlter", "cardCount", "powerCoefficient",
+                                  "lastXCardsCount", "xFriendlyCount", "statusEffectLayerCount",
+                                  "yFriendlyCount", "statusEffectToGive", "statusEffectToCheck",
+                                  "statusEffectToConsume", "statusEffectMultiplier", "powerAmount",
+                                  "creatureFilter", "tagsToCheck", "typeIDFilter", "rarityFilter",
+                                  "sortBy", "reviveTargetSide", "delayedRevive", "targetFriendly",
+                                  "curseEngine", "ownerIntSO", "enemyIntSO", "amount", "attackTimes",
+                                  "consumeHostileCurse", "statusEffectToCount", "countSourceSide",
+                                  "transferAmount", "graveFilter", "excludeSelf", "isFromFriendly",
+                                  "fromFriendly", "give", "targetCardTypeID", "curseCardTypeID",
+                                  "multiplier", "yFriendlyLayerCount"):
                             if k in tgt["fields"]:
                                 keyfields.append(f"{k}={tgt['fields'][k]}")
                         if keyfields:
@@ -147,6 +192,8 @@ def card_summary(path, rel):
 
 results = []
 for dirpath, _, files in os.walk(ROOT):
+    if any(x in dirpath for x in EXCLUDE_DIRS):
+        continue
     for fn in sorted(files):
         if fn.endswith(".prefab"):
             p = os.path.join(dirpath, fn)

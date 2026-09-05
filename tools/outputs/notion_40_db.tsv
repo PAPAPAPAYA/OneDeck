@@ -1,0 +1,93 @@
+1	SPIKE_SKELETON_4.0	normal	2	医学院的标本	攻击；遗言：攻击x2	
+6	RIFT_ACOLYTE	normal	2	自己签满的签到表	攻击；生成1信徒；苏醒：生成2信徒	
+7	REANIMATOR	uncommon	0	站台尽头的东西	攻击；攻击力=本回合复活友方数	
+8	RIFT_STRIKER	uncommon	1	出过事的那条街	攻击x2；生成1信徒	
+9	RIFT_INSECT_4.0	normal	3	门口多出的鞋印	攻击；生成1信徒	
+10	GRAVE_FIST	normal	3		埋葬1友方；攻击	
+12	WAKING_FIGHTER	normal	2		攻击；苏醒：强化自身1	
+13	LAST_GIFT	normal	2		攻击；遗言：强化1友方生物	
+14	RIFT_REAPER	rare		放逐所有信徒，每放逐1，强化1友方生物	
+15	RELIC_HIVE	rare		看热闹的影子	被动：友方攻击时：生成1信徒	
+16	RIFT_MEDIUM	uncommon		自己动的笔	生成2信徒；苏醒：复活1友方	
+17	GRAVE_MILLER	rare	2		攻击；埋葬2友方，埋葬卡组顶5卡	
+18	SWARM_CURSER	rare		旺得反常的香炉	生成1信徒；每有1友方信徒，强化1敌方诅咒	
+19	RELIC_DEATH_KNELL	rare		多敲了一下的钟	被动：友方苏醒时：触发其遗言	
+21	FINAL_ESCORT	uncommon	1		攻击；遗言：回合结束：置顶1友方攻击力最高生物	
+22	DEATHBED_PORTER	uncommon	2	抬上楼的纸别墅	攻击；遗言：攻击；置顶1友方非生物	
+27	NECROMANCER	uncommon		复活1友方；苏醒：复活1友方	
+28	AWAKENED_REAPER	uncommon	2		攻击；苏醒：埋葬1敌方	
+29	RIFT_HATCHERY	uncommon		香火不断的野庙	生成3信徒；回合开始：埋葬自身	
+30	GRAVE_DREDGER	normal	2		攻击；埋葬卡组顶3卡	
+32	FUNERAL_WILL	uncommon		埋葬2卡组顶；遗言：延迟复活1友方	
+33	SLIME_4.0	rare	2		遗言：复制自身；攻击	
+34	GRAVE_TOGETHER_4.0	uncommon	1		攻击；埋葬1友方；埋葬2敌方	
+35	SOUL_TRADER	uncommon		复活2友方；埋葬1友方	
+36	REVIVE_SUMMONER	uncommon		复活1友方；生成1信徒	
+37	EULOGIST	uncommon	2	哭灵人	埋葬1张tag为【遗言】的友方卡；攻击	
+38	RELIC_TALLY	uncommon		被动：回合结束：本回合每埋葬1生物，强化1敌方诅咒	
+40	MASS_SACRIFICE	rare		多出来的第十三张床	埋葬所有友方；每埋葬1友方，生成1信徒	
+41	SWARM_QUEEN	rare	2	不下台的歌女	攻击；每有1攻击力，生成1信徒	
+42	GRAVE_GIANT	uncommon	0	不停滴水的行李袋	攻击力=墓地友方数量；攻击	
+43	RELIC_CHAIN_BURIAL	uncommon		被动：友方被埋葬时：埋葬1卡组顶卡	
+44	GRAVE_PUPPETEER	uncommon		监控里的人	让墓地1友方生物攻击；墓地无友方则埋葬1张tag为【遗言】的友方卡	
+46	DEATHBED_GRANT	uncommon		入殓师	被动：友方生物被埋葬时：该友方生物攻击	
+49	RIFT_SHEPHERD	normal	2	来接人的黑车	攻击；复活1张tag为【信徒】的友方卡	
+50	DETERIORATION_4.0	rare		强化2敌方诅咒；敌方诅咒每有3攻击力，额外强化1	
+51	DELAYER	uncommon	2		延后1攻击力最高敌方；攻击	备用
+52	RELIC_TAINT	rare		供桌上少掉的苹果	被动：友方信徒与敌方诅咒相邻时：放逐该信徒，强化2敌方诅咒	备用
+53	UNDYING_WARRIOR	uncommon	2	没拉平的心电图	攻击；强化反应：复活自身	
+54	GRAVE_ROBBER	uncommon	0	收尸人	复活1攻击力最高敌方；攻击力变为该卡攻击力	
+56	GRAVE_PUNCH_4.0	normal	2	没有指纹的凶器	埋葬1友方；攻击x2	
+57	RELIC_CURSE_HASTE	rare		被动：敌方诅咒攻击次数+1	
+58	WEAPON_SPIRIT	rare		要喂血的刀	被动：友方生物触发【强化反应】时：强化1该生物	
+59	RELIC_CURSE_REVIVAL	rare		被动：敌方诅咒揭晓时：复活1友方	
+60	RELIC_BLOOD_PACT	rare		接反的输液管	被动：友方攻击不再造成伤害，而是强化等量敌方诅咒	
+61	SPIRIT_CALLER	normal	2		攻击；复活1友方非生物	
+62	BATTLE_HORN	uncommon		最后一节课的铃	本回合友方生物攻击次数+1	
+63	RIFT_PRIEST	uncommon		点传师	生成2信徒；强化1友方生物	
+64	ELITE_REVIVER	normal	2	描过金的牌位	攻击；复活1被强化过的友方生物	
+65	DOOM_HERALD	rare	0		攻击；复活1攻击力最高敌方；强化4敌方诅咒	
+66	RELIC_CURSE_GRAVE	rare		被动：敌方诅咒揭晓时：埋葬1敌方	
+67	EXILE_BERSERKER	uncommon	2	送行酒	攻击；本回合每放逐1友方，攻击次数+1	
+68	SACRIFICE_WEAKEST	uncommon		埋葬1攻击力最低友方；强化1该卡	
+69	TWIN_STRIKER	normal	1	一对纸人	攻击x2	
+70	CURSE_REVIVER	normal	0	洗不掉的印子	攻击；复活1敌方诅咒	
+71	FLURRY_REVIVER	uncommon		棺材里的敲门声	复活1攻击次数最多友方生物	
+73	KINGSLAYER	uncommon		迁坟队	埋葬1攻击力最高敌方；复活1友方	
+74	COMBO_STARTER	uncommon	1	添灯油的长明灯	攻击；强化反应：攻击次数+1	
+76	RELIC_ATTACK_HEX	rare		被动：有卡攻击时：强化1敌方诅咒	
+77	MILLBLADE	rare	2		攻击；每有1攻击力，埋葬卡组顶1卡	
+78	CURSE_ECHO	uncommon		复活敌方诅咒；回响1	备用
+79	WAR_TRAINER	normal		强化2友方生物	
+80	CURSE_GARDENER	uncommon		疯长的绿萝	强化1敌方诅咒；复活1敌方诅咒	
+81	MIMIC_BLADE	uncommon	0		攻击力=友方最高攻击力；攻击x2	
+83	SACRIFICIAL_SPIRIT	uncommon	0	陪葬的活物	攻击；埋葬1友方；强化5敌方诅咒	
+84	UNFINISHED_ROBOT_4.0	rare	0	还在长的人偶	攻击；攻击力翻倍	
+85	RELIC_RIFT_OVERRIDE	rare		半夜换告示的手	被动：友方信徒效果变为："复活1敌方诅咒；放逐自身"	
+86	MASS_REVIVER	uncommon		复活3友方normal卡	
+87	BLACKSMITH_4.0	normal	2		攻击；强化1友方生物	
+88	DECIMATION	rare	3	还留着体温的空床	埋葬6友方，本回合每埋葬过1友方，埋葬数-1；攻击x3	
+89	BEAST_REVIVER	normal	2		攻击；复活1生物友方	
+90	HEXER	uncommon	0		攻击；强化3敌方诅咒	
+91	CURSE_EATER	uncommon	0		攻击；攻击力=敌方诅咒攻击力	
+92	SNOWBALL	uncommon	1	数不完的纸钱	攻击x2；强化反应：强化自身1	
+94	GRAVE_HEXER	uncommon		复活1友方；强化2敌方诅咒	
+95	COMBO_GRANTER	uncommon	1	多摆的一副碗筷	攻击；本回合1友方生物攻击次数+1	
+96	QUAD_STRIKER	rare	1		攻击x4	
+98	RELIC_GRAVE_CURSE	rare		堆满楼道的花圈	被动：敌方诅咒攻击力=墓地友方卡数量	
+99	DUO_REVIVER	rare		复活2友方uncommon卡	
+100	HEXBLADE	rare	0		攻击；每有1攻击力，强化1敌方诅咒	
+101	CURSE_THIRST_BEAST_4.0	uncommon	2		敌方诅咒揭晓时：复活自身；攻击	
+102	SOUL_SWAPPER	uncommon	2		攻击；复活1友方；埋葬1敌方	备用
+103	RELIC_GRAVE_LORD	rare		地下传来的叩击	被动：墓地中的友方生物攻击力+1	
+104	WEAKENING_FIELD	uncommon		停电	所有生物本回合攻击力-1	
+105	RELIC_TRAINER	uncommon		被动：回合开始：强化1攻击力最低友方生物	
+107	LAST_RITES	rare		讣告	遗言：触发所有在墓地友方的遗言	
+108	RIFT_GUIDE	uncommon		画了押的字据	放逐1友方信徒，埋葬2敌方非生物	
+109	RIFT_REVIVER	uncommon		放逐1友方信徒，复活2友方非生物	
+112	WOKEN_BLADE	normal	2		攻击；苏醒：攻击x2	
+113	WOKEN_HEX	uncommon		强化1敌方诅咒；苏醒：强化2敌方诅咒	
+114	RELIC_ATTACK_BURIAL	uncommon		自己翻页的黄历	被动：友方每次攻击：埋葬卡组顶1卡	
+115	SOLDIER_SKELETON_4.0	normal	2	换岗的哨兵	攻击；遗言：置顶自身	
+116	AVENGER_4.0	normal	1	长高的坟头	攻击；遗言：强化自身1	
+117	CURSE_SUMMONER	uncommon		替人叫魂的喇叭	复活1友方；复活1敌方诅咒	
