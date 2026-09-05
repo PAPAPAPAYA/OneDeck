@@ -81,19 +81,6 @@ namespace DefaultNamespace.Managers
 	{
 		#region Singleton
 		public static ShopStatsManager Me;
-
-		private void Awake()
-		{
-			Me = this;
-			_jsonPath = Path.Combine(Application.persistentDataPath, "shop_stats.json");
-			_csvPath = Path.Combine(Application.persistentDataPath, "shop_stats.csv");
-			LoadStats();
-			
-			if (resetOnStart)
-			{
-				ResetStats();
-			}
-		}
 		#endregion
 
 		[Header("System Switch")]
@@ -111,86 +98,150 @@ namespace DefaultNamespace.Managers
 		// Pending save flag
 		private bool _pendingSave = false;
 
+		/// <summary>Test seam: when set, overrides the persistentDataPath directory for the stats JSON/CSV files.</summary>
+		public static string OverrideDirectoryForTests;
+
+		// Per-visit staging buffer (2026-09-05): shop stats only reach the lifetime counters
+		// via CommitStagedVisit(), which PhaseManager calls on shop exit - the only path into
+		// combat. A run that never enters combat (quit mid-shop) therefore contributes nothing
+		// to shop_stats.json or the stats snapshot upload.
+		[Serializable]
+		private class StagedCardStats
+		{
+			public string cardTypeID;
+			public string cardName;
+			public int appear;
+			public int bought;
+			public int utilAppear;
+			public int utilBought;
+		}
+		private readonly List<StagedCardStats> _stagedCards = new List<StagedCardStats>();
+		private int _stagedRerolls;
+		private bool _stagedVisit;
+
+		private void Awake()
+		{
+			Me = this;
+			EnsureInitialized();
+
+			if (resetOnStart)
+			{
+				ResetStats();
+			}
+		}
+
+		// Lazy init: Awake does not run for AddComponent in EditMode tests, so every public
+		// entry point initializes on demand; idempotent in play mode where Awake pre-inits.
+		private bool _initialized;
+
+		private void EnsureInitialized()
+		{
+			if (_initialized) return;
+			string dataDir = OverrideDirectoryForTests ?? Application.persistentDataPath;
+			_jsonPath = Path.Combine(dataDir, "shop_stats.json");
+			_csvPath = Path.Combine(dataDir, "shop_stats.csv");
+			LoadStats();
+			_initialized = true;
+		}
+
 		/// <summary>
-		/// Record card appeared in shop
+		/// Record card appeared in shop (staged; committed on shop exit)
 		/// </summary>
 		public void RecordCardAppeared(string cardTypeID, string cardName = "", bool onUtilityBoard = false)
 		{
 			if (!enableStats) return;
+			EnsureInitialized();
 
-			var stat = GetOrCreateCardStat(cardTypeID, cardName);
-			stat.appearCount++;
-			if (onUtilityBoard) stat.utilityBoardAppearCount++;
-			RecordSessionStat(cardTypeID, onUtilityBoard, bought: false);
-			_pendingSave = true;
+			var stat = GetOrCreateStagedStat(cardTypeID, cardName);
+			stat.appear++;
+			if (onUtilityBoard) stat.utilAppear++;
 		}
 
 		/// <summary>
-		/// Record card bought
+		/// Record card bought (staged; committed on shop exit)
 		/// </summary>
 		public void RecordCardBought(string cardTypeID, string cardName = "", bool onUtilityBoard = false)
 		{
 			if (!enableStats) return;
+			EnsureInitialized();
 
-			var stat = GetOrCreateCardStat(cardTypeID, cardName);
-			stat.boughtCount++;
-			if (onUtilityBoard) stat.utilityBoardBoughtCount++;
-			RecordSessionStat(cardTypeID, onUtilityBoard, bought: true);
-			_pendingSave = true;
+			var stat = GetOrCreateStagedStat(cardTypeID, cardName);
+			stat.bought++;
+			if (onUtilityBoard) stat.utilBought++;
 		}
 
 		/// <summary>
-		/// Record shop visit count
+		/// Record shop visit count (staged; committed on shop exit)
 		/// </summary>
 		public void RecordShopVisit()
 		{
 			if (!enableStats) return;
+			EnsureInitialized();
 
-			_statsData.totalShopVisits++;
-			StatsSnapshotUploader.MarkDirty();
-			_pendingSave = true;
+			_stagedVisit = true;
 		}
 
 		/// <summary>
-		/// Record reroll count
+		/// Record reroll count (staged; committed on shop exit)
 		/// </summary>
 		public void RecordReroll()
 		{
 			if (!enableStats) return;
+			EnsureInitialized();
 
-			_statsData.totalRerolls++;
-			StatsSnapshotUploader.MarkDirty();
-			_pendingSave = true;
+			_stagedRerolls++;
 		}
 
 		/// <summary>
-		/// Update the per-(card, session) bucket used by the stats snapshot upload (plan §2.7).
-		/// Session is read from the shared sessionNumber IntSO via StatsSnapshotUploader.
+		/// Merge the staged visit into the lifetime counters. Called by PhaseManager on
+		/// shop exit, which only fires on the path into combat, so every committed visit
+		/// is followed by a fight and a run that never enters combat contributes nothing.
 		/// </summary>
-		private void RecordSessionStat(string cardTypeID, bool onUtilityBoard, bool bought)
+		public void CommitStagedVisit()
 		{
+			EnsureInitialized();
+			if (_statsData == null) return;
+			if (_stagedCards.Count == 0 && _stagedRerolls == 0 && !_stagedVisit) return;
+
 			int sessionNum = StatsSnapshotUploader.CurrentSessionNum();
-			var stat = _statsData.sessionCardStats.Find(s => s.cardTypeID == cardTypeID && s.sessionNum == sessionNum);
-			if (stat == null)
+			foreach (StagedCardStats staged in _stagedCards)
 			{
-				stat = new ShopSessionStats
+				// flat card totals (display / CSV source of truth)
+				CardShopStats stat = GetOrCreateCardStat(staged.cardTypeID, staged.cardName);
+				stat.appearCount += staged.appear;
+				stat.boughtCount += staged.bought;
+				stat.utilityBoardAppearCount += staged.utilAppear;
+				stat.utilityBoardBoughtCount += staged.utilBought;
+
+				// per-(card, session) bucket for the stats snapshot upload (plan §2.7)
+				ShopSessionStats bucket = _statsData.sessionCardStats.Find(
+					s => s.cardTypeID == staged.cardTypeID && s.sessionNum == sessionNum);
+				if (bucket == null)
 				{
-					cardTypeID = cardTypeID,
-					sessionNum = sessionNum,
-					appear = 0,
-					bought = 0,
-					utilAppear = 0,
-					utilBought = 0
-				};
-				_statsData.sessionCardStats.Add(stat);
+					bucket = new ShopSessionStats
+					{
+						cardTypeID = staged.cardTypeID,
+						sessionNum = sessionNum,
+						appear = 0,
+						bought = 0,
+						utilAppear = 0,
+						utilBought = 0
+					};
+					_statsData.sessionCardStats.Add(bucket);
+				}
+				bucket.appear += staged.appear;
+				bucket.bought += staged.bought;
+				bucket.utilAppear += staged.utilAppear;
+				bucket.utilBought += staged.utilBought;
 			}
-			if (bought) stat.bought++;
-			else stat.appear++;
-			if (onUtilityBoard)
-			{
-				if (bought) stat.utilBought++;
-				else stat.utilAppear++;
-			}
+			if (_stagedVisit) _statsData.totalShopVisits++;
+			_statsData.totalRerolls += _stagedRerolls;
+
+			_stagedCards.Clear();
+			_stagedRerolls = 0;
+			_stagedVisit = false;
+
+			_pendingSave = true;
 			StatsSnapshotUploader.MarkDirty();
 		}
 
@@ -199,6 +250,7 @@ namespace DefaultNamespace.Managers
 		/// </summary>
 		public void Flush()
 		{
+			EnsureInitialized();
 			if (_pendingSave)
 			{
 				SaveStats();
@@ -232,10 +284,33 @@ namespace DefaultNamespace.Managers
 		}
 
 		/// <summary>
+		/// Get or create a card entry in the per-visit staging buffer.
+		/// </summary>
+		private StagedCardStats GetOrCreateStagedStat(string cardTypeID, string cardName = "")
+		{
+			var stat = _stagedCards.Find(s => s.cardTypeID == cardTypeID);
+			if (stat == null)
+			{
+				stat = new StagedCardStats
+				{
+					cardTypeID = cardTypeID,
+					cardName = cardName
+				};
+				_stagedCards.Add(stat);
+			}
+			else if (string.IsNullOrEmpty(stat.cardName) && !string.IsNullOrEmpty(cardName))
+			{
+				stat.cardName = cardName;
+			}
+			return stat;
+		}
+
+		/// <summary>
 		/// Get stats for specified card
 		/// </summary>
 		public CardShopStats GetCardStats(string cardTypeID)
 		{
+			EnsureInitialized();
 			return _statsData.cardStats.Find(s => s.cardTypeID == cardTypeID);
 		}
 
@@ -244,6 +319,7 @@ namespace DefaultNamespace.Managers
 		/// </summary>
 		public List<ShopSessionStats> GetSessionStatsForUpload()
 		{
+			EnsureInitialized();
 			return _statsData.sessionCardStats;
 		}
 
@@ -252,11 +328,13 @@ namespace DefaultNamespace.Managers
 		/// </summary>
 		public int GetTotalShopVisitsForUpload()
 		{
+			EnsureInitialized();
 			return _statsData.totalShopVisits;
 		}
 
 		public int GetTotalRerollsForUpload()
 		{
+			EnsureInitialized();
 			return _statsData.totalRerolls;
 		}
 
@@ -265,6 +343,7 @@ namespace DefaultNamespace.Managers
 		/// </summary>
 		public float GetPurchaseRate(string cardTypeID)
 		{
+			EnsureInitialized();
 			var stat = GetCardStats(cardTypeID);
 			if (stat == null || stat.appearCount == 0) return 0f;
 			return stat.PurchaseRate;
@@ -278,6 +357,7 @@ namespace DefaultNamespace.Managers
 		public void SaveStats()
 		{
 			if (!enableStats) return;
+			EnsureInitialized();
 			if (_statsData == null) return;
 
 			_statsData.lastUpdated = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -316,9 +396,11 @@ namespace DefaultNamespace.Managers
 					}
 					else
 					{
-						// Ensure list is not null
+						// Ensure lists are not null (legacy JSON may predate the session buckets)
 						if (_statsData.cardStats == null)
 							_statsData.cardStats = new List<CardShopStats>();
+						if (_statsData.sessionCardStats == null)
+							_statsData.sessionCardStats = new List<ShopSessionStats>();
 					}
 				}
 				catch (Exception e)
@@ -342,6 +424,7 @@ namespace DefaultNamespace.Managers
 		/// </summary>
 		public void ExportToCSV()
 		{
+			EnsureInitialized();
 			if (_statsData.cardStats.Count == 0)
 			{
 				// Debug.LogWarning("[ShopStatsManager] No data to export");
@@ -384,6 +467,7 @@ namespace DefaultNamespace.Managers
 		/// </summary>
 		public void PrintReport()
 		{
+			EnsureInitialized();
 			if (_statsData.cardStats.Count == 0)
 			{
 				// Debug.Log("[ShopStatsManager] No data yet");
@@ -415,8 +499,12 @@ namespace DefaultNamespace.Managers
 		/// </summary>
 		public void ResetStats()
 		{
+			EnsureInitialized();
 			_statsData = new ShopStatsData();
 			_pendingSave = false;
+			_stagedCards.Clear();
+			_stagedRerolls = 0;
+			_stagedVisit = false;
 			
 			if (File.Exists(_jsonPath))
 			{

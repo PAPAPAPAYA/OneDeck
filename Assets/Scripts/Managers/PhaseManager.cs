@@ -529,6 +529,10 @@ public class PhaseManager : MonoBehaviour
 	{
 		// DIAG-LOG(2026-08-08): tracing why the shop Exit button may appear dead
 		TestManager.Log("[ShopButton] PhaseManager.ExitingShopPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
+		// Shop stats are staged per visit and only merge into the lifetime counters here:
+		// exiting the shop is the only path into combat, so runs that never fight
+		// contribute nothing to shop stats (2026-09-05 no-combat-run exclusion).
+		if (ShopStatsManager.Me != null) ShopStatsManager.Me.CommitStagedVisit();
 		// Async-PvP: stats snapshot upload trigger - send latest full state when dirty (plan §2.7)
 		StatsSnapshotUploader.UploadIfDirty();
 		// Async-PvP: shop exit is an outbox flush trigger (plan §2.3) - deck snapshots leave here

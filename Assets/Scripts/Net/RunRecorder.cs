@@ -11,6 +11,7 @@ using UnityEngine;
 /// snapshot per line, newest last) so a crash only ever loses the current state;
 /// an unfinished record found at next start is re-uploaded as "abandoned".
 /// The finished run goes out through the outbox (RunRecord, idempotent by runId).
+/// Runs with zero completed combats (quit before the first fight) are never uploaded.
 /// </summary>
 public static class RunRecorder
 {
@@ -367,6 +368,9 @@ public static class RunRecorder
 		if (string.IsNullOrEmpty(last.playerId) && PlayerIdentity.HasIdentity) last.playerId = PlayerIdentity.PlayerId;
 		if (string.IsNullOrEmpty(last.playerId)) return;  // no identity yet - nothing to attach it to
 		if (string.IsNullOrEmpty(last.gameVersion)) last.gameVersion = DeckNetworkClient.GameVersion;
+		// Zero-combat runs (quit before the first completed combat) carry no per-card
+		// data - never upload them. The journal file is already gone at this point.
+		if (last.combats == null || last.combats.Count == 0) return;
 
 		UploadOutbox.Enqueue(NetUploadKind.RunRecord, last);
 		UploadOutbox.Flush();
@@ -379,6 +383,9 @@ public static class RunRecorder
 			current.playerId = PlayerIdentity.PlayerId;
 		}
 		if (string.IsNullOrEmpty(current.playerId)) return;  // keep journal; recovery uploads later
+		// Defensive: CloseRun only fires after a completed combat decided the run, but a
+		// zero-combat record must never reach the server even if a future caller changes that.
+		if (current.combats == null || current.combats.Count == 0) return;
 
 		UploadOutbox.Enqueue(NetUploadKind.RunRecord, current);
 		UploadOutbox.Flush();

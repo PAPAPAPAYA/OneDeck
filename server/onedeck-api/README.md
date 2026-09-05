@@ -20,7 +20,7 @@ Single-file server (`server.js`), same deployment model as pkidle.
 | GET | `/api/decks/opponents?playerId&gameVersion&maxSession&perSession` | batch opponent decks |
 | POST | `/api/matches/report` | battle result, idempotent by `reportId` |
 | POST | `/api/stats/snapshot` | lifetime cumulative shop/winrate stats (upsert, retry-safe) |
-| POST | `/api/runs` | one full run record with shop visits + combats, idempotent by `runId` |
+| POST | `/api/runs` | one full run record with shop visits + combats, idempotent by `runId`; zero-combat runs are skipped (responds ok, stores nothing) |
 | POST | `/api/cards/catalog` | card metadata per game version (upsert) |
 | GET | `/api/health` | liveness |
 | GET | `/admin?token=...` | HTML dashboard |

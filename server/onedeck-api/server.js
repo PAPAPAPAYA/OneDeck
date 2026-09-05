@@ -621,6 +621,14 @@ app.post('/api/runs', (req, res) =>
 		});
 	}
 
+	if (combatsClean.length === 0)
+	{
+		// Zero-combat runs (quit before the first fight) are never stored. Respond ok
+		// (not 4xx) so the client outbox drops the item instead of retrying forever.
+		console.log('[onedeck-api] run skipped (no combats): ' + req.body.runId);
+		return res.json({ ok: true, skipped: true });
+	}
+
 	const tx = db.transaction(() =>
 	{
 		const info = stmts.insertRun.run(

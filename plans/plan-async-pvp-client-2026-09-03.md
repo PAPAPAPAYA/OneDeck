@@ -102,12 +102,14 @@ RunRecorder         对局记录：runId、current_run.jsonl 增量落盘、结�
 - `combat_end`：sessionNum、输赢、剩心、`rounds`（= roundsLastCombat - 1）、`opponentDeckId`（可空）、每卡触发次数 / `damageToOpponent` / `damageToSelf`（取自 CombatPerCardStatsTracker，不再合并伤害；schema 见 §0.1）。
 - `run_end`：result(victory/defeat/abandoned)、finalSession、heartsLeft、finalDeck、最终 seenPoolPct → 整包 `POST /api/runs`（发件箱兜底）。
 - 增量落盘 `current_run.jsonl` 防崩溃；下次启动发现未完结记录 → 补 `abandoned` 后上传。
+- **零战斗剔除（2026-09-05）**：`combats` 为空的 run（第一场战斗完成前退出，含战斗中途退出）永不上传——恢复路径与 `CloseRun` 兜底双重门禁，服务器 `/api/runs` 同口径跳过入库（返回 ok 让 outbox 丢弃）。
 
 ### 2.7 统计快照上传
 
 - 两个追踪器加 session 分桶后，上传载荷 = 两个追踪器全量分桶 + meta(totalShopVisits/totalRerolls) + gameVersion。
 - 时机：离开商店时若脏则传；服务器 upsert 保证重传安全。
 - meta 除 `totalShopVisits`/`totalRerolls` 外，附敌方来源计数（server/local/default，§0.1），随快照全量覆盖。
+- **零战斗剔除（2026-09-05）**：商店统计改为 per-visit 暂存，`PhaseManager.ExitingShopPhase`（离店 = 进入战斗的唯一路径）先 `CommitStagedVisit()` 再 `UploadIfDirty()`；商店内直接退出/崩溃的 visit 不计入累计值。代价：商店内退出会丢该次 visit 的商店数据。
 
 ### 2.8 卡牌目录上传
 
@@ -188,4 +190,5 @@ DATA_DIR=data node server.js        # Git Bash；PowerShell: $env:DATA_DIR="data
 | C | ✅ 完成并验证（2026-09-04） | `SessionCardStats`/`ShopSessionStats` 平铺桶（保留扁平总量供显示/CSV）；记录方法内部经 `StatsSnapshotUploader.CurrentSessionNum()`（DeckSaver 共享 IntSO）取 session，ShopManager 调用点零改动；`StatsSnapshotUploader` 纯函数映射 + 脏标记 + 离店直发（不进发件箱，失败仅回脏标记）；`PhaseManager` 离店触发 + 两处 RecordCombatResult 传 sessionNum。`CardWinRateTracker.cs`/`CardWinRateData.cs` 已转 Tab。EditMode：`StatsSnapshotUploaderTests` 4/4 |
 | D | ✅ 完成并验证（2026-09-04） | `RunRecorder`：run_start（ResetRun/场景启动，先恢复未完结 journal）/ shop_visit（ShopManager 四埋点：OnShopEnter/OnPayday 金币两时点、OnCardOffered 区分功能板、OnCardBought、OnReroll；PhaseManager 离店时 CloseShopVisit 收 goldExit）/ combat_end（rounds 用 Result 屏口径，perCard 取 CombatPerCardStatsTracker 的 Player 侧行）/ run_end（defeat/victory 判定即 CloseRun，finalDeck 取 playerDeckRef）。`current_run.jsonl` 逐快照追加，恢复时坏尾行跳过、未完结补 abandoned 上传。EditMode：`RunRecorderTests` 4/4 |
 | E | ✅ 完成并验证（2026-09-04） | `CardCatalogUploader`：场景启动检查版本漂移 → 遍历 shopPoolRef + additionalCardPrefabs（cardTypeID 去重），name=GetDisplayName、tags=myTags∪reservedTag、rarity=枚举名、cost=GetCardPrice（开局即基价）→ 入发件箱，成功入队后记录版本文件。PhaseManager.OnEnable 触发 |
+| G（零战斗剔除） | ✅ 完成并验证（2026-09-05） | **A. run 记录门禁**：`RunRecorder.RecoverUnfinishedRun`/`UploadCurrent` 在 `combats` 为空时不上传（journal 照常落盘/清理，恢复语义不变）；`/api/runs` 零战斗跳过入库、返回 ok 让 outbox 丢弃。**B. 商店统计门禁**：`ShopStatsManager` 改 per-visit 暂存（Record* 只写暂存），`PhaseManager.ExitingShopPhase` 先 `CommitStagedVisit()` 再 `UploadIfDirty()`；`totalShopVisits`/`totalRerolls`/session 桶全部随提交生效。新增 `ShopStatsManager.OverrideDirectoryForTests` + 惰性初始化（**踩坑**：EditMode `AddComponent` 不触发 Awake，Awake 只留 `Me` 赋值 + 预初始化）。存量库清理 SQL（可选）：先删 `run_shop_visits` 再删 `runs` 中 `NOT EXISTS run_combats` 的行。EditMode：`RunRecorderTests` 6/6 + `ShopStatsManagerTests` 4/4；全量回归 473 中 472 过 / 1 既有跳过 |
 | F | ⬜ 未开始（需人工联调） | 全部代码批已完成。剩余：Play Mode 双端互见验证、本地起服全流程联调（方案 §3.2）、测试数据清理、部署 S0 到 ECS、AGENTS.md 收尾更新 |

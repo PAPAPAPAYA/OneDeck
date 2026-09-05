@@ -151,6 +151,29 @@ public class RunRecorderTests
 		StringAssert.Contains("\"result\":\"defeat\"", ReadHeadPayload());
 	}
 
+	// ---------------------------------------------------------------- no-combat-run exclusion
+
+	[Test]
+	public void Recovery_ZeroCombatRun_IsNotUploaded()
+	{
+		string oldRun = "{\"runId\":\"run-empty\",\"playerId\":\"pid-test\",\"gameVersion\":\"0.1.0\",\"result\":\"\",\"startedAt\":\"t\",\"shopVisits\":[{\"sessionNum\":0,\"offered\":[\"wolf\"],\"utilityOffered\":[],\"bought\":[],\"rerollCount\":0,\"seenPoolPct\":0.1,\"goldEnter\":10,\"goldAfterPayday\":15,\"goldExit\":5,\"ts\":\"t\"}]}";
+		File.WriteAllText(JournalPath, oldRun + "\n", new UTF8Encoding(false));
+
+		RunRecorder.StartRun();
+
+		Assert.AreEqual(0, UploadOutbox.PendingCount, "a run with zero completed combats must never be uploaded");
+	}
+
+	[Test]
+	public void CloseRun_ZeroCombats_IsNotUploaded()
+	{
+		RunRecorder.StartRun();
+		RunRecorder.CloseShopVisit(0, 0);
+		RunRecorder.CloseRun(RunRecorder.ResultVictory, 0, 3, new List<string> { "wolf" });
+
+		Assert.AreEqual(0, UploadOutbox.PendingCount, "defensive: a zero-combat finished run must not enqueue");
+	}
+
 	// ---------------------------------------------------------------- combat series
 
 	/// <summary>SaveSnapshot appends full-run lines, so assertions must target the newest one.</summary>
