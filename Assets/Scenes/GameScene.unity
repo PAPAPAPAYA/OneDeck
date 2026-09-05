@@ -1203,7 +1203,7 @@ MonoBehaviour:
   maxDeckSize: {fileID: 11400000, guid: 1b23377a77881764ca4c963cab7b2c33, type: 2}
   duplicateCopiesShareSlotRef: {fileID: 11400000, guid: fd87b57f64db6b41a89afa46f9fa7a96, type: 2}
   purse: {fileID: 11400000, guid: 52ca7026713351c4c982e92b782cc73a, type: 2}
-  shopPoolRef: {fileID: 11400000, guid: 1a1a5ea2598ea1e46b68bad1eacdeb23, type: 2}
+  shopPoolRef: {fileID: 11400000, guid: 0cb2bc0abe483a14da7767b5abd09fb1, type: 2}
   currentShopItemDeckRef: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
   rarityWeightRef: {fileID: 11400000, guid: a443338ae5fa3a844ae1dcfec0166515, type: 2}
   sessionRarityWeights:
@@ -1235,7 +1235,7 @@ MonoBehaviour:
   deckSlotPriceStep: 2
   deckSlotPurchasesRef: {fileID: 11400000, guid: f7108533cd29ce143a91c62f18e07716, type: 2}
   sessionUtilityBoardChances:
-  - startSession: 1
+  - startSession: 0
     utilityBoardChancePercent: 10
   - startSession: 3
     utilityBoardChancePercent: 15

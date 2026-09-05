@@ -224,7 +224,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: EULOGIST
   displayName: "\u54ED\u7075\u4EBA"
-  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u5F20tag\u4E3A\u3010<tag:DeathRattle>\u3011\u7684\u53CB\u65B9\u5361;\u653B\u51FB"
+  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u5F20tag\u4E3A[<tag:DeathRattle>]\u7684\u53CB\u65B9\u5361;\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

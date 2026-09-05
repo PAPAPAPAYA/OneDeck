@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Check whether ShopPoolRef contains all 3.0 card prefabs
-# (excluding the _DONT INCLUDE folder and its subfolders).
+# Check whether ShopPoolRef contains all 4.0 card prefabs
+# (excluding the -1_Test folder and its subfolders).
+# IncreaseHpMax / IncreaseDeckSizeLite moved into 4.0/0_Common on 2026-09-04,
+# so they are covered by the normal 4.0 scan. The only card still under
+# 3.0 _UTILITY is IncreaseDeckSize, which is intentionally out of the pool.
+# Rebuilt pool layout: 2026-09-04.
 # Usage: ./check-shop-pool.sh [project-root]
 
 set -euo pipefail
@@ -9,7 +13,7 @@ PROJECT_ROOT="${1:-.}"
 cd "$PROJECT_ROOT"
 
 SHOP_POOL="Assets/SORefs/ShopRefs/ShopPoolRef.asset"
-CARD_FOLDER=$(find Assets/Prefabs/Cards -maxdepth 1 -type d -name '3.0*' | head -n 1)
+CARD_FOLDER=$(find Assets/Prefabs/Cards -maxdepth 1 -type d -name '4.0*' | head -n 1)
 
 if [ ! -f "$SHOP_POOL" ]; then
 	echo "Error: ShopPoolRef not found at $SHOP_POOL" >&2
@@ -17,7 +21,7 @@ if [ ! -f "$SHOP_POOL" ]; then
 fi
 
 if [ -z "$CARD_FOLDER" ]; then
-	echo "Error: No 3.0 card folder found under Assets/Prefabs/Cards" >&2
+	echo "Error: No 4.0 card folder found under Assets/Prefabs/Cards" >&2
 	exit 1
 fi
 
@@ -27,9 +31,9 @@ awk '/^  deck:/{flag=1; next} /^  defaultDeck:/{flag=0} flag' "$SHOP_POOL" \
 	| grep -oE '[0-9a-f]{32}' \
 	| sort -u > "$deck_guids_file"
 
-# Extract GUIDs from all non-excluded prefab .meta files.
+# Extract GUIDs from all non-excluded prefab .meta files in the 4.0 folder.
 prefab_guids_file=$(mktemp)
-find "$CARD_FOLDER" -type f -name "*.prefab" ! -path "*_DONT INCLUDE*" -print0 \
+find "$CARD_FOLDER" -type f -name "*.prefab" ! -path "*-1_Test*" ! -path "*_DONT INCLUDE*" -print0 \
 	| while IFS= read -r -d '' prefab; do
 		meta="${prefab}.meta"
 		if [ -f "$meta" ]; then
@@ -38,12 +42,19 @@ find "$CARD_FOLDER" -type f -name "*.prefab" ! -path "*_DONT INCLUDE*" -print0 \
 	done \
 	| sort -u > "$prefab_guids_file"
 
+# GUID -> prefab path map (one line each) for resolving names in reports.
+guid_map_file=$(mktemp)
+find Assets/Prefabs/Cards -type f -name "*.prefab.meta" -print0 \
+	| while IFS= read -r -d '' meta; do
+		grep -m1 "^guid:" "$meta" | awk -v m="$meta" '{print $2 "|" m}'
+	done > "$guid_map_file"
+
 prefab_count=$(wc -l < "$prefab_guids_file" | tr -d ' ')
 deck_count=$(wc -l < "$deck_guids_file" | tr -d ' ')
 
 echo "=== Summary ==="
 echo "Card folder: $CARD_FOLDER"
-echo "Prefabs in 3.0 folder (excluding _DONT INCLUDE): $prefab_count"
+echo "Prefabs in 4.0 folder (excluding -1_Test): $prefab_count"
 echo "Entries in ShopPoolRef deck: $deck_count"
 
 echo ""
@@ -54,12 +65,7 @@ if [ ! -s "$missing_guids_file" ]; then
 	echo "None"
 else
 	while IFS= read -r guid; do
-		meta_path=$(find "$CARD_FOLDER" -type f -name "*.prefab.meta" ! -path "*_DONT INCLUDE*" -print0 | while IFS= read -r -d '' meta; do
-			if grep -q "^guid: $guid$" "$meta"; then
-				echo "$meta"
-				break
-			fi
-		done)
+		meta_path=$(awk -F'|' -v g="$guid" '$1 == g {print $2; exit}' "$guid_map_file")
 		if [ -n "$meta_path" ]; then
 			echo "$guid -> ${meta_path%.meta}"
 		else
@@ -69,13 +75,20 @@ else
 fi
 
 echo ""
-echo "=== ShopPoolRef entries NOT found in 3.0 prefabs (orphaned/removed) ==="
+echo "=== ShopPoolRef entries NOT in the 4.0 folder (orphaned/removed) ==="
 orphaned_guids_file=$(mktemp)
 comm -13 "$prefab_guids_file" "$deck_guids_file" > "$orphaned_guids_file"
 if [ ! -s "$orphaned_guids_file" ]; then
 	echo "None"
 else
-	cat "$orphaned_guids_file"
+	while IFS= read -r guid; do
+		meta_path=$(awk -F'|' -v g="$guid" '$1 == g {print $2; exit}' "$guid_map_file")
+		if [ -n "$meta_path" ]; then
+			echo "$guid -> ${meta_path%.meta}"
+		else
+			echo "$guid"
+		fi
+	done < "$orphaned_guids_file"
 fi
 
-rm -f "$deck_guids_file" "$prefab_guids_file" "$missing_guids_file" "$orphaned_guids_file"
+rm -f "$deck_guids_file" "$prefab_guids_file" "$missing_guids_file" "$orphaned_guids_file" "$guid_map_file"

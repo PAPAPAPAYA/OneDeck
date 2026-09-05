@@ -136,13 +136,13 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 3390430887469070700}
-        m_TargetAssemblyTypeName: ReviveEffect, Assembly-CSharp
+        m_TargetAssemblyTypeName: RiftOverrideAwareReviveEffect, Assembly-CSharp
         m_MethodName: FriendRiftRevealOrOverride
-        m_Mode: 3
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 1
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -163,8 +163,11 @@ MonoBehaviour:
   targetFriendly: 0
   statusEffectToCheck: 0
   excludeSelf: 1
+  creatureOnly: 0
+  creatureFilter: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
+  roundEndStageArmed: 0
 --- !u!114 &3390430887469070700
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,6 +186,7 @@ MonoBehaviour:
   sortBy: 0
   rarityFilter: 0
   delayedRevive: 0
+  onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
 --- !u!1 &8718476725744197808
@@ -253,8 +257,15 @@ MonoBehaviour:
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
+  attackSnapshotValue: -1
 --- !u!114 &6790492850431796707
 MonoBehaviour:
   m_ObjectHideFlags: 0
