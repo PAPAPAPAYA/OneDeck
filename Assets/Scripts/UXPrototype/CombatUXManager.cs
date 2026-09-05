@@ -392,6 +392,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					// UpdateAllPhysicalCardTargets skips this tween while it plays. The tween is
 					// finished here, so restarting the position tween inside the re-clamp is safe.
 					ReClampRevealZoneTargetZ();
+					// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
+					LogRevealZoneZViolation("RevealEntryLanded");
 					if (!wasAlreadyLocked && combatManager != null)
 					{
 						UnblockInput(this);
@@ -1997,14 +1999,82 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	{
 		if (physicalCardInRevealZone == null) return;
 		var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
-		if (revealPhys == null || revealPhys.isPlayingSpecialAnimation) return;
+		if (revealPhys == null) return;
+		if (revealPhys.isPlayingSpecialAnimation)
+		{
+			// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
+			TestManager.Log("[CombatUXManager][RevealZDiag] ReClamp SKIP specialAnimation card=" + physicalCardInRevealZone.name + " revealTargetZ=" + revealPhys.TargetPosition.z);
+			return;
+		}
 		float clampedZ = GetRevealZonePosition().z;
 		Vector3 revealTarget = revealPhys.TargetPosition;
-		if (clampedZ < revealTarget.z - 0.0001f)
+		bool clamped = clampedZ < revealTarget.z - 0.0001f;
+		// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
+		TestManager.Log("[CombatUXManager][RevealZDiag] ReClamp deckCount=" + physicalCardsInDeck.Count + " clampedZ=" + clampedZ + " revealTargetZ(before)=" + revealTarget.z + " applied=" + clamped);
+		if (clamped)
 		{
 			revealTarget.z = clampedZ;
 			revealPhys.SetTargetPosition(revealTarget);
 		}
+	}
+
+	// [RevealZDiag] Temporary reproduction instrumentation for the reported bug: a deck card's
+	// text renders in front of the revealed card when the deck grows (suspected stale reveal z).
+	// Read-only detector, no state changes. Compares the reveal-zone card against every deck card
+	// on two levels:
+	//   TARGET level — a deck card whose rest TargetPosition.z is in front of the reveal card's
+	//     target means some re-clamp path was skipped or used a stale deck count.
+	//   ACTUAL level — same comparison on live transform positions while neither card is
+	//     tweening/animating means the card never reached its (correct) target.
+	// Offenders with isPlayingSpecialAnimation are excluded (pop-up peaks legitimately sit in
+	// front of the reveal card); the actual-level check also excludes in-flight tweens.
+	// Call sites: UpdateAllPhysicalCardTargets, AddPhysicalCardToDeck, reveal-entry landing.
+	private void LogRevealZoneZViolation(string context)
+	{
+		if (physicalCardInRevealZone == null) return;
+		if (_isDeckFocused) return;
+		var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+		if (revealPhys == null) return;
+		if (revealPhys.isPlayingSpecialAnimation || revealPhys.IsPositionTweenPlaying) return;
+
+		float revealTargetZ = revealPhys.TargetPosition.z;
+		float revealActualZ = physicalCardInRevealZone.transform.position.z;
+		GameObject targetOffender = null;
+		GameObject actualOffender = null;
+		float targetOffenderZ = float.MaxValue;
+		float actualOffenderZ = float.MaxValue;
+		// Smaller z = closer to camera = renders in front; deck card in front of reveal = violation.
+		for (int i = 0; i < physicalCardsInDeck.Count; i++)
+		{
+			var card = physicalCardsInDeck[i];
+			if (card == null) continue;
+			var phys = card.GetComponent<CardPhysObjScript>();
+			if (phys == null || phys.isPlayingSpecialAnimation) continue;
+			if (phys.TargetPosition.z < revealTargetZ - 0.0001f && phys.TargetPosition.z < targetOffenderZ)
+			{
+				targetOffenderZ = phys.TargetPosition.z;
+				targetOffender = card;
+			}
+			if (phys.IsPositionTweenPlaying) continue;
+			if (card.transform.position.z < revealActualZ - 0.0001f && card.transform.position.z < actualOffenderZ)
+			{
+				actualOffenderZ = card.transform.position.z;
+				actualOffender = card;
+			}
+		}
+		if (targetOffender == null && actualOffender == null) return;
+		string offenderDesc = "";
+		if (targetOffender != null)
+			offenderDesc += " | TARGET offender=" + targetOffender.name + " targetZ=" + targetOffenderZ;
+		if (actualOffender != null)
+			offenderDesc += " | ACTUAL offender=" + actualOffender.name + " actualZ=" + actualOffenderZ;
+		TestManager.LogWarning("[CombatUXManager][RevealZDiag] REVEAL-Z VIOLATION context=" + context
+			+ " deckCount=" + physicalCardsInDeck.Count
+			+ " revealCard=" + physicalCardInRevealZone.name
+			+ " revealTargetZ=" + revealTargetZ
+			+ " revealActualZ=" + revealActualZ
+			+ " idealRevealZ=" + GetRevealZonePosition().z
+			+ offenderDesc);
 	}
 
 	/// <summary>
@@ -2021,6 +2091,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (revealPhys != null && !revealPhys.IsPositionTweenPlaying)
 		{
 			ReClampRevealZoneTargetZ();
+		}
+		else if (revealPhys != null)
+		{
+			// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
+			TestManager.Log("[CombatUXManager][RevealZDiag] TryReClamp SKIP positionTweenPlaying card=" + physicalCardInRevealZone.name + " revealTargetZ=" + revealPhys.TargetPosition.z);
 		}
 	}
 
@@ -2064,6 +2139,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// completion callback (the reveal-entry tween carries the input unblock). The entry
 		// tween re-clamps itself on landing via wrappedOnComplete.
 		TryReClampRevealZoneTargetZ();
+		// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
+		LogRevealZoneZViolation("UpdateAllPhysicalCardTargets");
 		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");
 	}
 
@@ -2926,6 +3003,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		startPos.z = backMostZ + zBump * 2f;
 
 		physScript.SetPositionImmediate(startPos);
+		// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
+		TestManager.Log("[CombatUXManager][RevealZDiag] AddPhysicalCardToDeck newCard=" + newPhysicalCard.name
+			+ " spawnZ=" + startPos.z
+			+ " deckCount(afterInsert)=" + physicalCardsInDeck.Count
+			+ " revealCard=" + (physicalCardInRevealZone != null ? physicalCardInRevealZone.name : "null"));
 		// set initial size
 		Vector3 startSize = physicalCardNewTempCardSize;
 		physScript.SetScaleImmediate(startSize);
@@ -2996,6 +3078,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		//             front of the deck front card during the PopUp/SlotIn animation, not only
 		//             after it.
 		TryReClampRevealZoneTargetZ();
+		// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
+		LogRevealZoneZViolation("AddPhysicalCardToDeck");
 	}
 
 	#region Initialization

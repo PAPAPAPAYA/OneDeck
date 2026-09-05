@@ -198,6 +198,16 @@ public class CardPhysObjScript : MonoBehaviour
 		// Handle pending reveal zone move when special animation ends
 		if (!isPlayingSpecialAnimation && pendingRevealZoneMove)
 		{
+			// [RevealZDiag] temporary reproduction instrumentation (see CombatUXManager.LogRevealZoneZViolation):
+			// pendingRevealPosition was snapshotted when this card started moving to the reveal zone.
+			// If the deck grew since then, the snapshot z is stale (too far back) — flag it.
+			if (_combatUXManager != null)
+			{
+				float idealZ = _combatUXManager.GetRevealZonePosition().z;
+				if (idealZ < pendingRevealPosition.z - 0.0001f)
+					TestManager.LogWarning("[CardPhysObjScript][RevealZDiag] STALE pendingRevealPosition card=" + name
+						+ " appliedZ=" + pendingRevealPosition.z + " idealZ=" + idealZ);
+			}
 
 			SetTargetPosition(pendingRevealPosition);
 			SetTargetScale(pendingRevealScale);
