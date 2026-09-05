@@ -50,6 +50,18 @@ public static class PlayerIdentity
 		return "玩家#" + UnityEngine.Random.Range(1000, 10000);
 	}
 
+	/// <summary>
+	/// Raises RegistrationInputNeeded when online features are enabled but no identity was
+	/// chosen yet; no-op otherwise. Callers: UsernameRegistrationPanel wiring in PhaseManager.
+	/// </summary>
+	public static void RaiseRegistrationInputNeededIfNeeded()
+	{
+		ServerConfig config = ServerConfig.Active;
+		if (config == null || !config.enabled) return;
+		if (HasIdentity) return;
+		RegistrationInputNeeded?.Invoke();
+	}
+
 	/// <summary>Applies the markAsTest prefix; public for tests, Register applies it automatically.</summary>
 	public static string ApplyTestPrefix(string username)
 	{

@@ -98,6 +98,9 @@ public class PhaseManager : MonoBehaviour
 		RunRecorder.StartRun();
 		// Async-PvP: card catalog upload once per game version (plan §2.8)
 		CardCatalogUploader.MaybeUpload();
+		// Async-PvP: first-launch username dialog (plan: plans/plan-username-registration-panel-2026-09-04.md)
+		UsernameRegistrationPanel.EnsureCreated();
+		UsernameRegistrationPanel.RaiseIfNeeded();
 		if (TutorialManager.IsTutorialActive)
 		{
 			// First launch: run the scripted tutorial combat instead of the shop.
@@ -520,6 +523,8 @@ public class PhaseManager : MonoBehaviour
 		InvokeEnterShopPhaseEvent();
 		// Async-PvP: top up ghost candidates for the upcoming combat session and the one after (plan §2.4)
 		OpponentDeckCache.EnsureStockForSession(sessionNum.value);
+		// Async-PvP: retry username registration if the player deferred the first prompt (plan: plans/plan-username-registration-panel-2026-09-04.md)
+		UsernameRegistrationPanel.RaiseIfNeeded();
 		
 		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Shop;
