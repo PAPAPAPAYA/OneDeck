@@ -52,6 +52,9 @@ public class ServerConfig : ScriptableObject
 
 	public bool uploadRunRecords = true;
 
+	[Tooltip("Sub-switch of RunRecord: per-reveal HP/shield/deck-size series stored inside run_combats.")]
+	public bool includeCombatSeries = true;
+
 	public bool uploadCardCatalog = true;
 
 	[Header("Opponent ghosts")]

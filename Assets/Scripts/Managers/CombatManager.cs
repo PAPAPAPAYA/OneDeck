@@ -936,6 +936,7 @@ public class CombatManager : MonoBehaviour
 
 		// Record combat stats
 		GetComponent<CombatStatsLogger>()?.OnCardRevealed(cardRevealed);
+		RunRecorder.OnCombatCardRevealed(cardRevealed);
 
 		// afterShuffle raising removed from here — moved to RevealCards Phase 1
 		// if (_raiseAfterShuffleOnNextReveal)

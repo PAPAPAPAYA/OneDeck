@@ -198,6 +198,7 @@ function ensureColumn(table, columnDdl)
 }
 ensureColumn('run_combats', 'rounds INTEGER NOT NULL DEFAULT 0');
 ensureColumn('run_combats', 'opponent_deck_id INTEGER');
+ensureColumn('run_combats', "series TEXT NOT NULL DEFAULT '[]'");
 // Nullable-with-default: the upsert INSERTs NULL when a legacy client omits enemySource,
 // so these must accept NULL (COALESCE in DO UPDATE keeps the stored value then).
 ensureColumn('stats_meta', 'enemy_source_server INTEGER DEFAULT 0');
@@ -254,8 +255,8 @@ const stmts = {
 		 seen_pool_pct, gold_enter, gold_after_payday, gold_exit, ts)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
 	insertCombat: db.prepare(`INSERT INTO run_combats
-		(run_id, session_num, won, hearts_left, rounds, opponent_deck_id, per_card, ts)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`),
+		(run_id, session_num, won, hearts_left, rounds, opponent_deck_id, per_card, series, ts)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`),
 
 	upsertCatalog: db.prepare(`INSERT INTO card_catalog
 		(game_version, card_type_id, name, tags, rarity, cost, updated_at)
@@ -588,6 +589,26 @@ app.post('/api/runs', (req, res) =>
 			});
 		}
 		const opponentDeckId = toInt(c.opponentDeckId, 1, Number.MAX_SAFE_INTEGER, 0);
+		// Per-reveal combat series (HP/shield/deck curves + reveal sequence). Legacy
+		// clients omit the field entirely; cap samples at 500 per combat.
+		const series = Array.isArray(c.series) ? c.series.slice(0, 500) : [];
+		const seriesClean = [];
+		for (const s of series)
+		{
+			if (!s || typeof s !== 'object') return badRequest(res, 'invalid_combat');
+			seriesClean.push({
+				revealIndex: toInt(s.revealIndex, 0, 1e6, 0),
+				roundNum: toInt(s.roundNum, 0, 999, 0),
+				ownerHP: toInt(s.ownerHP, 0, 1e9, 0),
+				enemyHP: toInt(s.enemyHP, 0, 1e9, 0),
+				ownerShield: toInt(s.ownerShield, 0, 1e9, 0),
+				enemyShield: toInt(s.enemyShield, 0, 1e9, 0),
+				ownerDeckSize: toInt(s.ownerDeckSize, 0, 999, 0),
+				enemyDeckSize: toInt(s.enemyDeckSize, 0, 999, 0),
+				side: toInt(s.side, 0, 2, 0),
+				cardTypeID: isStr(s.cardTypeID, 0, 64) ? s.cardTypeID : '',
+			});
+		}
 		combatsClean.push({
 			sessionNum: toInt(c.sessionNum, 0, 99, 0),
 			won: c.won === true ? 1 : 0,
@@ -595,6 +616,7 @@ app.post('/api/runs', (req, res) =>
 			rounds: toInt(c.rounds, 0, 999, 0),
 			opponentDeckId: opponentDeckId > 0 ? opponentDeckId : null,
 			perCard: perCardClean,
+			series: seriesClean,
 			ts: isStr(c.ts, 1, 40) ? c.ts : null,
 		});
 	}
@@ -619,7 +641,7 @@ app.post('/api/runs', (req, res) =>
 		for (const c of combatsClean)
 		{
 			stmts.insertCombat.run(req.body.runId, c.sessionNum, c.won, c.heartsLeft, c.rounds,
-				c.opponentDeckId, JSON.stringify(c.perCard), c.ts);
+				c.opponentDeckId, JSON.stringify(c.perCard), JSON.stringify(c.series), c.ts);
 		}
 		return true;
 	});
@@ -724,6 +746,32 @@ function cardName(catalog, id)
 function dmgOpp(p)
 {
 	return typeof p.damageToOpponent === 'number' ? p.damageToOpponent : (p.damageDealt || 0);
+}
+
+// Owner HP (red) vs enemy HP (orange, shield-inclusive) sparkline across the reveal series.
+function hpCurveSvg(series)
+{
+	if (!Array.isArray(series) || series.length < 2) return '<span class="muted">-</span>';
+	const w = 160, h = 40, pad = 2;
+	let maxVal = 1;
+	for (const s of series)
+	{
+		maxVal = Math.max(maxVal, s.ownerHP + (s.ownerShield || 0), s.enemyHP + (s.enemyShield || 0));
+	}
+	const firstIdx = series[0].revealIndex || 0;
+	const span = Math.max(1, (series[series.length - 1].revealIndex || firstIdx) - firstIdx);
+	const point = (s, hp, shield) =>
+	{
+		const x = pad + (w - 2 * pad) * (((s.revealIndex || firstIdx) - firstIdx) / span);
+		const y = h - pad - (h - 2 * pad) * ((hp + shield) / maxVal);
+		return x.toFixed(1) + ',' + y.toFixed(1);
+	};
+	const ownerLine = series.map((s) => point(s, s.ownerHP || 0, s.ownerShield || 0)).join(' ');
+	const enemyLine = series.map((s) => point(s, s.enemyHP || 0, s.enemyShield || 0)).join(' ');
+	return '<svg width="' + w + '" height="' + h + '" style="vertical-align:middle">'
+		+ '<polyline fill="none" stroke="#e74c3c" stroke-width="1.5" points="' + ownerLine + '"/>'
+		+ '<polyline fill="none" stroke="#f39c12" stroke-width="1.5" points="' + enemyLine + '"/>'
+		+ '</svg>';
 }
 
 app.get('/admin', requireAdmin, (req, res) =>
@@ -945,7 +993,7 @@ app.get('/admin/run/:id', requireAdmin, (req, res) =>
 	}
 	else
 	{
-		html += '<table><tr><th>session</th><th>result</th><th>hearts left</th><th>rounds</th><th>vs deck</th><th>top damage cards</th></tr>';
+		html += '<table><tr><th>session</th><th>result</th><th>hearts left</th><th>rounds</th><th>vs deck</th><th>HP curve</th><th>top damage cards</th></tr>';
 		for (const c of combats)
 		{
 			let perCard = [];
@@ -953,9 +1001,12 @@ app.get('/admin/run/:id', requireAdmin, (req, res) =>
 			perCard.sort((a, b) => dmgOpp(b) - dmgOpp(a));
 			const top = perCard.slice(0, 5)
 				.map((p) => cardName(catalog, p.cardTypeID) + ' (' + dmgOpp(p) + ')').join(', ');
+			let series = [];
+			try { series = JSON.parse(c.series || '[]'); } catch { /* keep empty */ }
 			html += '<tr><td class="num">' + c.session_num + '</td><td>' + (c.won ? 'won' : 'lost')
 				+ '</td><td class="num">' + c.hearts_left + '</td><td class="num">' + (c.rounds || '-')
 				+ '</td><td class="num">' + (c.opponent_deck_id || '-')
+				+ '</td><td>' + hpCurveSvg(series)
 				+ '</td><td>' + esc(top || '-') + '</td></tr>';
 		}
 		html += '</table>';

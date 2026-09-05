@@ -402,6 +402,8 @@ public class PhaseManager : MonoBehaviour
 	{
 		// DIAG-LOG(2026-08-08): tracing why the shop Exit button may appear dead
 		TestManager.Log("[ShopButton] PhaseManager.EnteringCombatPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
+		// Async-PvP: fresh per-combat series boundary (RunRecorder)
+		RunRecorder.OnCombatStart();
 		InvokeEnterCombatPhaseEvent();
 		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;

@@ -34,6 +34,9 @@ public static class RunRecorder
 	private static List<string> visitUtilityOffered = new List<string>();
 	private static List<string> visitBought = new List<string>();
 
+	// per-combat reveal series (RunCombatEntry.series); captured live, attached at combat end
+	private static List<RunCombatSample> combatSeries = new List<RunCombatSample>();
+
 	// run-level seen pool (plan §2.6 seenPoolPct numerator)
 	private static HashSet<string> seenCardTypeIDs = new HashSet<string>();
 
@@ -63,6 +66,7 @@ public static class RunRecorder
 		};
 		ended = false;
 		seenCardTypeIDs.Clear();
+		combatSeries.Clear();
 		ResetVisit();
 		SaveSnapshot();
 	}
@@ -142,6 +146,39 @@ public static class RunRecorder
 		ResetVisit();
 	}
 
+	// ---------------------------------------------------------------- combat series hooks (CombatManager / PhaseManager)
+
+	/// <summary>
+	/// PhaseManager.EnteringCombatPhase trigger: fresh series boundary per combat.
+	/// Combats that never close an entry (tutorial skips RecordCombatEnd) must not
+	/// leak their samples into the next real combat.
+	/// </summary>
+	public static void OnCombatStart()
+	{
+		combatSeries.Clear();
+	}
+
+	/// <summary>
+	/// Live capture: one sample per reveal, called from CombatManager.RevealNextCard.
+	/// Skipped when ServerConfig.includeCombatSeries is off - no capture, no per-reveal deck scans.
+	/// </summary>
+	public static void OnCombatCardRevealed(CardScript cardRevealed)
+	{
+		if (current == null || ended) return;
+		ServerConfig config = ServerConfig.Active;
+		if (config == null || !config.includeCombatSeries) return;
+		CombatManager cm = CombatManager.Me;
+		if (cm == null) return;
+		combatSeries.Add(BuildSample(cm, cardRevealed));
+	}
+
+	/// <summary>Test seam: capture one prebuilt sample (live path derives it from CombatManager).</summary>
+	public static void RecordCombatSample(RunCombatSample sample)
+	{
+		if (current == null || ended || sample == null) return;
+		combatSeries.Add(sample);
+	}
+
 	// ------------------------------------------------------------------ combat hook (PhaseManager)
 
 	public static void RecordCombatEnd(int sessionNum, bool won, int heartsLeft, int rounds, int opponentDeckId)
@@ -156,9 +193,68 @@ public static class RunRecorder
 			rounds = rounds,
 			opponentDeckId = opponentDeckId,
 			perCard = HarvestPerCard(),
+			series = BuildSeriesSnapshot(),
 			ts = DateTime.UtcNow.ToString("o")
 		});
+		combatSeries.Clear();
 		SaveSnapshot();
+	}
+
+	// ---------------------------------------------------------------- series internals
+
+	private static RunCombatSample BuildSample(CombatManager cm, CardScript card)
+	{
+		RunCombatSample sample = new RunCombatSample
+		{
+			revealIndex = combatSeries.Count + 1,
+			roundNum = cm.roundNumRef != null ? cm.roundNumRef.value : 0,
+			ownerHP = cm.ownerPlayerStatusRef != null ? cm.ownerPlayerStatusRef.hp : 0,
+			enemyHP = cm.enemyPlayerStatusRef != null ? cm.enemyPlayerStatusRef.hp : 0,
+			ownerShield = cm.ownerPlayerStatusRef != null ? cm.ownerPlayerStatusRef.shield : 0,
+			enemyShield = cm.enemyPlayerStatusRef != null ? cm.enemyPlayerStatusRef.shield : 0,
+			ownerDeckSize = CountEffectiveDeckCards(cm, cm.ownerPlayerStatusRef),
+			enemyDeckSize = CountEffectiveDeckCards(cm, cm.enemyPlayerStatusRef),
+			side = RunCombatSample.SideNeutral,
+			cardTypeID = card != null && !string.IsNullOrEmpty(card.cardTypeID) ? card.cardTypeID : string.Empty
+		};
+		if (card != null && !CombatManager.ShouldSkipEffectProcessing(card))
+		{
+			if (cm.ownerPlayerStatusRef != null && card.myStatusRef == cm.ownerPlayerStatusRef)
+			{
+				sample.side = RunCombatSample.SideOwner;
+			}
+			else if (cm.enemyPlayerStatusRef != null && card.myStatusRef == cm.enemyPlayerStatusRef)
+			{
+				sample.side = RunCombatSample.SideEnemy;
+			}
+		}
+		return sample;
+	}
+
+	/// <summary>Deck cards of one side that actually participate in effects (neutral/Start Cards excluded).</summary>
+	private static int CountEffectiveDeckCards(CombatManager cm, PlayerStatusSO sideRef)
+	{
+		if (cm == null || cm.combinedDeckZone == null || sideRef == null) return 0;
+		int count = 0;
+		foreach (GameObject card in cm.combinedDeckZone)
+		{
+			if (card == null) continue;
+			CardScript cardScript = card.GetComponent<CardScript>();
+			if (cardScript == null) continue;
+			if (!CombatManager.ShouldSkipEffectProcessing(cardScript) && cardScript.myStatusRef == sideRef)
+			{
+				count++;
+			}
+		}
+		return count;
+	}
+
+	/// <summary>Null when the capture switch is off or nothing was captured - JsonUtility omits the field.</summary>
+	private static List<RunCombatSample> BuildSeriesSnapshot()
+	{
+		ServerConfig config = ServerConfig.Active;
+		if (config == null || !config.includeCombatSeries || combatSeries.Count == 0) return null;
+		return new List<RunCombatSample>(combatSeries);
 	}
 
 	// ------------------------------------------------------------------ internals
@@ -296,6 +392,7 @@ public static class RunRecorder
 		current = null;
 		ended = false;
 		ResetVisit();
+		combatSeries.Clear();
 		seenCardTypeIDs.Clear();
 	}
 }

@@ -111,7 +111,7 @@ public class RunRecorderTests
 		PlayerIdentity.ResetForTests();
 
 		RunRecorder.StartRun();
-		RunRecorder.CloseShopVisit(0, 0);
+		RunRecorder.RecordCombatEnd(0, true, 3, 4, 0);
 		RunRecorder.CloseRun(RunRecorder.ResultVictory, 0, 3, new List<string> { "wolf" });
 
 		Assert.AreEqual(0, UploadOutbox.PendingCount, "no identity: nothing to attach the run to");
@@ -122,7 +122,7 @@ public class RunRecorderTests
 	[Test]
 	public void Recovery_UnfinishedRun_ReuploadsAsAbandoned()
 	{
-		string oldRun = "{\"runId\":\"run-old\",\"playerId\":\"\",\"gameVersion\":\"0.1.0\",\"result\":\"\",\"startedAt\":\"t\",\"finalSession\":4}";
+		string oldRun = "{\"runId\":\"run-old\",\"playerId\":\"\",\"gameVersion\":\"0.1.0\",\"result\":\"\",\"startedAt\":\"t\",\"finalSession\":4,\"combats\":[{\"sessionNum\":0,\"won\":true,\"heartsLeft\":3,\"rounds\":5,\"opponentDeckId\":0,\"ts\":\"t\"}]}";
 		File.WriteAllText(JournalPath, oldRun + "\n", new UTF8Encoding(false));
 
 		RunRecorder.StartRun();
@@ -141,7 +141,7 @@ public class RunRecorderTests
 	[Test]
 	public void Recovery_TornTailLine_IsSkipped()
 	{
-		string good = "{\"runId\":\"run-good\",\"playerId\":\"pid-test\",\"gameVersion\":\"0.1.0\",\"result\":\"defeat\",\"startedAt\":\"t\"}";
+		string good = "{\"runId\":\"run-good\",\"playerId\":\"pid-test\",\"gameVersion\":\"0.1.0\",\"result\":\"defeat\",\"startedAt\":\"t\",\"combats\":[{\"sessionNum\":0,\"won\":false,\"heartsLeft\":1,\"rounds\":2,\"opponentDeckId\":0,\"ts\":\"t\"}]}";
 		File.WriteAllText(JournalPath, good + "\n{\"runId\":\"run-torn\",\"resu", new UTF8Encoding(false));
 
 		RunRecorder.StartRun();
@@ -149,5 +149,101 @@ public class RunRecorderTests
 		Assert.AreEqual(1, UploadOutbox.PendingCount);
 		StringAssert.Contains("\"runId\":\"run-good\"", ReadHeadPayload());
 		StringAssert.Contains("\"result\":\"defeat\"", ReadHeadPayload());
+	}
+
+	// ---------------------------------------------------------------- combat series
+
+	/// <summary>SaveSnapshot appends full-run lines, so assertions must target the newest one.</summary>
+	private string LastJournalSnapshot()
+	{
+		string[] lines = File.ReadAllLines(JournalPath);
+		for (int i = lines.Length - 1; i >= 0; i--)
+		{
+			if (!string.IsNullOrWhiteSpace(lines[i])) return lines[i];
+		}
+		return string.Empty;
+	}
+
+	private static int CountOccurrences(string text, string needle)
+	{
+		if (text == null) return 0;
+		int count = 0;
+		int idx = 0;
+		while ((idx = text.IndexOf(needle, idx, StringComparison.Ordinal)) >= 0)
+		{
+			count++;
+			idx += needle.Length;
+		}
+		return count;
+	}
+
+	[Test]
+	public void CombatSeries_CapturedPerCombat_AndClearedBetweenCombats()
+	{
+		RunRecorder.StartRun();
+		RunRecorder.RecordCombatSample(new RunCombatSample
+		{
+			revealIndex = 1, roundNum = 1, ownerHP = 20, enemyHP = 15, ownerShield = 2, enemyShield = 0,
+			ownerDeckSize = 10, enemyDeckSize = 10, side = RunCombatSample.SideOwner, cardTypeID = "wolf"
+		});
+		RunRecorder.RecordCombatSample(new RunCombatSample
+		{
+			revealIndex = 2, roundNum = 1, ownerHP = 18, enemyHP = 15, ownerShield = 2, enemyShield = 0,
+			ownerDeckSize = 10, enemyDeckSize = 9, side = RunCombatSample.SideEnemy, cardTypeID = "shrine"
+		});
+		RunRecorder.RecordCombatEnd(1, true, 4, 6, 12);
+
+		string snapshot = LastJournalSnapshot();
+		StringAssert.Contains("\"series\":[{\"revealIndex\":1,\"roundNum\":1,\"ownerHP\":20,\"enemyHP\":15,\"ownerShield\":2,\"enemyShield\":0,\"ownerDeckSize\":10,\"enemyDeckSize\":10,\"side\":0,\"cardTypeID\":\"wolf\"}", snapshot);
+		Assert.AreEqual(1, CountOccurrences(snapshot, "\"revealIndex\":2"), "combat 1 must carry exactly 2 samples");
+
+		// The second combat must not inherit the first combat's samples.
+		RunRecorder.RecordCombatSample(new RunCombatSample
+		{
+			revealIndex = 1, roundNum = 2, ownerHP = 18, enemyHP = 10, ownerShield = 0, enemyShield = 0,
+			ownerDeckSize = 9, enemyDeckSize = 8, side = RunCombatSample.SideOwner, cardTypeID = "wolf"
+		});
+		RunRecorder.RecordCombatEnd(2, false, 2, 3, 12);
+
+		snapshot = LastJournalSnapshot();
+		Assert.AreEqual(2, CountOccurrences(snapshot, "\"revealIndex\":1"), "each combat's series restarts at revealIndex 1");
+		Assert.AreEqual(1, CountOccurrences(snapshot, "\"revealIndex\":2"), "combat 2 must carry exactly 1 sample");
+		Assert.AreEqual(1, CountOccurrences(snapshot, "\"cardTypeID\":\"shrine\""), "combat 1 series must survive the second RecordCombatEnd");
+	}
+
+	[Test]
+	public void CombatSeries_OnCombatStart_ClearsUnclosedSamples()
+	{
+		RunRecorder.StartRun();
+		// A tutorial-style combat that never reaches RecordCombatEnd must not leak samples.
+		RunRecorder.RecordCombatSample(new RunCombatSample
+		{
+			revealIndex = 1, roundNum = 1, ownerHP = 20, enemyHP = 20, side = RunCombatSample.SideNeutral, cardTypeID = "START"
+		});
+		RunRecorder.OnCombatStart();
+		RunRecorder.RecordCombatSample(new RunCombatSample
+		{
+			revealIndex = 1, roundNum = 1, ownerHP = 20, enemyHP = 18, side = RunCombatSample.SideOwner, cardTypeID = "wolf"
+		});
+		RunRecorder.RecordCombatEnd(1, true, 4, 6, 12);
+
+		string snapshot = LastJournalSnapshot();
+		StringAssert.Contains("\"series\":[{\"revealIndex\":1,\"roundNum\":1,\"ownerHP\":20,\"enemyHP\":18", snapshot);
+		StringAssert.DoesNotContain("\"cardTypeID\":\"START\"", snapshot, "unclosed combat samples must be dropped at the next combat start");
+	}
+
+	[Test]
+	public void CombatSeries_ConfigOff_IsNotCaptured()
+	{
+		config.includeCombatSeries = false;
+		RunRecorder.StartRun();
+		RunRecorder.RecordCombatSample(new RunCombatSample
+		{
+			revealIndex = 1, roundNum = 1, ownerHP = 20, enemyHP = 15, side = RunCombatSample.SideOwner, cardTypeID = "wolf"
+		});
+		RunRecorder.RecordCombatEnd(1, true, 4, 6, 12);
+
+		// JsonUtility normalizes a null list to "series":[]; assert no sample objects leak.
+		Assert.IsFalse(LastJournalSnapshot().Contains("\"series\":[{"), "series off: no sample objects may be captured");
 	}
 }

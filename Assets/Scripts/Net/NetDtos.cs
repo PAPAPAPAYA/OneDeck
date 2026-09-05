@@ -139,6 +139,30 @@ public class RunCombatPerCard
 	public int damageToSelf;
 }
 
+/// <summary>
+/// One per-reveal combat sample: the HP/shield/deck-size curves plus the reveal
+/// sequence, all aligned on revealIndex (1-based, combat-scoped).
+/// </summary>
+[Serializable]
+public class RunCombatSample
+{
+	public const int SideOwner = 0;
+	public const int SideEnemy = 1;
+	public const int SideNeutral = 2;
+
+	public int revealIndex;
+	public int roundNum;
+	public int ownerHP;
+	public int enemyHP;
+	public int ownerShield;
+	public int enemyShield;
+	public int ownerDeckSize;
+	public int enemyDeckSize;
+	/// <summary>SideOwner / SideEnemy / SideNeutral.</summary>
+	public int side;
+	public string cardTypeID;
+}
+
 [Serializable]
 public class RunCombatEntry
 {
@@ -150,6 +174,8 @@ public class RunCombatEntry
 	public int opponentDeckId;
 	public string ts;
 	public List<RunCombatPerCard> perCard;
+	/// <summary>Per-reveal samples (ServerConfig.includeCombatSeries). Null = off/empty, server stores [].</summary>
+	public List<RunCombatSample> series;
 }
 
 [Serializable]
