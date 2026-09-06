@@ -1,0 +1,1900 @@
+[
+ {
+  "CARD_TYPE_ID": "AVENGER_4.0",
+  "中文名": "长高的坟头",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "给力量自身",
+    "n": 1,
+    "layer": "遗言"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.2,
+  "desc": "揭晓时:攻击;遗言:强化自身"
+ },
+ {
+  "CARD_TYPE_ID": "BEAST_REVIVER",
+  "中文名": "笼里的东西",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.0,
+  "desc": "攻击;复活 <b>1</b> 生物友方"
+ },
+ {
+  "CARD_TYPE_ID": "BLACKSMITH_4.0",
+  "中文名": "巷口的磨刀人",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "给力量友方",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.8,
+  "desc": "揭晓时:攻击;强化 <b>1</b> 友方生物"
+ },
+ {
+  "CARD_TYPE_ID": "ELITE_REVIVER",
+  "中文名": "描过金的牌位",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "复活目标=被强化过的",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.0,
+  "desc": "攻击;复活1被强化友方生物"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_DREDGER",
+  "中文名": "还没停的挖掘机",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "磨牌",
+    "n": 3,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": -0.4,
+  "desc": "揭晓时:攻击;埋葬卡组顶 <b>3</b>"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_FIST",
+  "中文名": "替死鬼",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "埋友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击",
+    "n": 4,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.8,
+  "desc": "揭晓时:埋葬 <b>1</b> 友方;攻击"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_PUNCH_4.0",
+  "中文名": "没有指纹的凶器",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "埋友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击",
+    "n": 4,
+    "layer": "直发"
+   }
+  ],
+  "note": "攻x2: ATK2x2=4",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.8,
+  "desc": "揭晓时:埋葬 <b>1</b> 友方;攻击x2"
+ },
+ {
+  "CARD_TYPE_ID": "LAST_GIFT",
+  "中文名": "遗物整理师",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "给力量友方",
+    "n": 1,
+    "layer": "遗言"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.64,
+  "desc": "攻击;遗言:强化1友方生物"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_ACOLYTE",
+  "中文名": "自己签满的签到表",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "生成信徒",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "生成信徒",
+    "n": 2,
+    "layer": "苏醒"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.0,
+  "desc": "攻击;生成1信徒;苏醒:生成2信徒"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_INSECT_4.0",
+  "中文名": "门口多出的鞋印",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 3,
+    "layer": "直发"
+   },
+   {
+    "type": "生成信徒",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.0,
+  "desc": "揭晓时:攻击;生成 <b>1</b> 信徒"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_SHEPHERD",
+  "中文名": "来接人的黑车",
+  "rarity": "normal",
+  "mode": "人工覆盖",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 2.2,
+  "reason": "攻2+复活[信徒]; 信徒=空白体≈0.2, 仅转化器存在时有值",
+  "value_preview": 2.2,
+  "desc": "攻击;复活 <b>1</b> 张tag为[<tag:Believer>]的友方卡"
+ },
+ {
+  "CARD_TYPE_ID": "SOLDIER_SKELETON_4.0",
+  "中文名": "换岗的哨兵",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "置顶友方",
+    "n": 1,
+    "layer": "遗言"
+   }
+  ],
+  "note": "置顶自身",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.2,
+  "desc": "揭晓时:攻击;遗言:置顶自身"
+ },
+ {
+  "CARD_TYPE_ID": "SPIKE_SKELETON_4.0",
+  "中文名": "医学院的标本",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击",
+    "n": 4,
+    "layer": "遗言"
+   }
+  ],
+  "note": "遗言攻x2",
+  "override": "",
+  "reason": "",
+  "value_preview": 5.2,
+  "desc": "揭晓时:攻击;遗言:攻击x2"
+ },
+ {
+  "CARD_TYPE_ID": "SPIRIT_CALLER",
+  "中文名": "深夜来电",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 0.8,
+    "layer": "直发"
+   }
+  ],
+  "note": "复活非生物, 质量折减0.8",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.6,
+  "desc": "攻击;复活 <b>1</b> 友方非生物"
+ },
+ {
+  "CARD_TYPE_ID": "TWIN_STRIKER",
+  "中文名": "一对纸人",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   }
+  ],
+  "note": "1x2",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.0,
+  "desc": "揭晓时:攻击x2"
+ },
+ {
+  "CARD_TYPE_ID": "WAKING_FIGHTER",
+  "中文名": "梦游的拳手",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "给力量自身",
+    "n": 1,
+    "layer": "苏醒"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.2,
+  "desc": "攻击;苏醒:强化自身1"
+ },
+ {
+  "CARD_TYPE_ID": "WAR_TRAINER",
+  "中文名": "点眼的扎纸匠",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "给力量友方",
+    "n": 2,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 1.6,
+  "desc": "揭晓时:强化 <b>2</b> 友方生物"
+ },
+ {
+  "CARD_TYPE_ID": "WOKEN_BLADE",
+  "中文名": "头七的刀",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击",
+    "n": 4,
+    "layer": "苏醒"
+   }
+  ],
+  "note": "苏醒攻x2",
+  "override": "",
+  "reason": "",
+  "value_preview": 5.2,
+  "desc": "攻击;苏醒:攻击x2"
+ },
+ {
+  "CARD_TYPE_ID": "AWAKENED_REAPER",
+  "中文名": "来领人的家属",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "埋敌方",
+    "n": 1,
+    "layer": "苏醒"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.6,
+  "desc": "攻击;苏醒:埋葬1敌方"
+ },
+ {
+  "CARD_TYPE_ID": "BATTLE_HORN",
+  "中文名": "最后一节课的铃",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击次数全体+1",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.0,
+  "desc": "本回合友方生物攻击次数<b>+1</b>"
+ },
+ {
+  "CARD_TYPE_ID": "COMBO_GRANTER",
+  "中文名": "多摆的一副碗筷",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击次数单体+1",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.5,
+  "desc": "攻击;本回合 <b>1</b> 友方生物攻击次数<b>+1</b>"
+ },
+ {
+  "CARD_TYPE_ID": "COMBO_STARTER",
+  "中文名": "添灯油的长明灯",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击次数单体+1",
+    "n": 1,
+    "layer": "强化反应"
+   }
+  ],
+  "note": "目标=自身",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.2,
+  "desc": "攻击;强化反应:攻击次数<b>+1</b>"
+ },
+ {
+  "CARD_TYPE_ID": "CURSE_EATER",
+  "中文名": "吞玻璃的人",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 3,
+    "layer": "直发"
+   }
+  ],
+  "note": "攻=敌方诅咒攻击力(参考3), 无诅咒时0",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.0,
+  "desc": "攻击;攻击力=敌方诅咒攻击力"
+ },
+ {
+  "CARD_TYPE_ID": "CURSE_GARDENER",
+  "中文名": "疯长的绿萝",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "强化敌方诅咒",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "复活敌方诅咒",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.2,
+  "desc": "强化1敌方诅咒;复活1敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "CURSE_REVIVER",
+  "中文名": "洗不掉的印子",
+  "rarity": "normal",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 0,
+    "layer": "直发"
+   },
+   {
+    "type": "复活敌方诅咒",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.0,
+  "desc": "攻击;复活1敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "CURSE_SUMMONER",
+  "中文名": "替人叫魂的喇叭",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "复活敌方诅咒",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.0,
+  "desc": "复活1友方;复活1敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "CURSE_THIRST_BEAST_4.0",
+  "中文名": "偷吃供品的黄皮子",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "条件"
+   }
+  ],
+  "note": "敌方诅咒揭晓时复活自身, 条件层x0.8",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.6,
+  "desc": "敌方诅咒揭晓时:复活自身;攻击"
+ },
+ {
+  "CARD_TYPE_ID": "DEATHBED_GRANT",
+  "中文名": "入殓师",
+  "rarity": "uncommon",
+  "mode": "引擎",
+  "freq": 1.5,
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "全局C"
+   }
+  ],
+  "note": "被埋友方生物攻击, 友方埋葬≈1.5/轮",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.0,
+  "desc": "被动:友方生物被埋葬时:该友方生物攻击"
+ },
+ {
+  "CARD_TYPE_ID": "DEATHBED_PORTER",
+  "中文名": "抬上楼的纸别墅",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "遗言"
+   },
+   {
+    "type": "置顶友方",
+    "n": 1,
+    "layer": "遗言"
+   }
+  ],
+  "note": "置顶非生物",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.8,
+  "desc": "攻击;遗言:攻击;置顶1友方非生物"
+ },
+ {
+  "CARD_TYPE_ID": "EULOGIST",
+  "中文名": "哭灵人",
+  "rarity": "uncommon",
+  "mode": "人工覆盖",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 2.5,
+  "reason": "埋[遗言]友方=主动点火(−2.0+DR期望2.5)+攻2; 公式只能得0.8",
+  "value_preview": 2.5,
+  "desc": "揭晓时:埋葬 <b>1</b> 张tag为[<tag:DeathRattle>]的友方卡;攻击"
+ },
+ {
+  "CARD_TYPE_ID": "EXILE_BERSERKER",
+  "中文名": "送行酒",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击次数单体+1",
+    "n": 1,
+    "layer": "条件"
+   }
+  ],
+  "note": "每放逐1友方攻击次数+1; 放逐源仅3张",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.2,
+  "desc": "攻击;本回合每放逐 <b>1</b> 友方,攻击次数<b>+1</b>"
+ },
+ {
+  "CARD_TYPE_ID": "FINAL_ESCORT",
+  "中文名": "引路的白灯笼",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "置顶友方",
+    "n": 1,
+    "layer": "遗言"
+   }
+  ],
+  "note": "回合末置顶最高攻",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.2,
+  "desc": "攻击;遗言:回合结束:置顶 <b>1</b>"
+ },
+ {
+  "CARD_TYPE_ID": "FLURRY_REVIVER",
+  "中文名": "棺材里的敲门声",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "复活友方",
+    "n": 1.25,
+    "layer": "直发"
+   }
+  ],
+  "note": "目标=攻击次数最多, 质量修正1.25",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.5,
+  "desc": "复活 <b>1</b> 攻击次数最多友方生物"
+ },
+ {
+  "CARD_TYPE_ID": "FUNERAL_WILL",
+  "中文名": "贴在门上的保险书",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "磨牌",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "延迟复活",
+    "n": 1,
+    "layer": "遗言"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": -0.48,
+  "desc": "埋葬卡组顶 <b>2</b> 卡;遗言:延迟复活"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_GIANT",
+  "中文名": "不停滴水的行李袋",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 3,
+    "layer": "直发"
+   }
+  ],
+  "note": "攻=墓地友方数(参考3), 随自磨成长",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.0,
+  "desc": "攻击力=墓地友方数量;攻击"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_HEXER",
+  "中文名": "白事先生",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "强化敌方诅咒",
+    "n": 2,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.4,
+  "desc": "复活1友方;强化2敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_PUPPETEER",
+  "中文名": "监控里的人",
+  "rarity": "uncommon",
+  "mode": "人工覆盖",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 2.0,
+  "reason": "墓地生物攻击2.0+无友方时埋[遗言]fallback",
+  "value_preview": 2.0,
+  "desc": "让墓地1友方生物攻击;墓地无友方则埋葬1张tag为[<tag:DeathRattle>]的友方卡"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_ROBBER",
+  "中文名": "收尸人",
+  "rarity": "uncommon",
+  "mode": "人工覆盖",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 3.0,
+  "reason": "复活最强敌方并夺取攻击力, 复合特殊效果",
+  "value_preview": 3.0,
+  "desc": "复活1攻击力最高敌方;攻击力变为该卡攻击力"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_TOGETHER_4.0",
+  "中文名": "并排的三座新坟",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "埋友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "埋敌方",
+    "n": 2,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.8,
+  "desc": "揭晓时:攻击;埋葬 <b>1</b> 友方;埋葬"
+ },
+ {
+  "CARD_TYPE_ID": "HEXER",
+  "中文名": "对面楼的那场火",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 0,
+    "layer": "直发"
+   },
+   {
+    "type": "强化敌方诅咒",
+    "n": 3,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.6,
+  "desc": "揭晓时:攻击;强化 <b>3</b> 敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "KINGSLAYER",
+  "中文名": "迁坟队",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "埋敌方",
+    "n": 1.25,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "埋最强敌方, 质量修正1.25",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.5,
+  "desc": "埋葬1攻击力最高敌方;复活1友方"
+ },
+ {
+  "CARD_TYPE_ID": "MASS_REVIVER",
+  "中文名": "回魂夜",
+  "rarity": "uncommon",
+  "mode": "人工覆盖",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 4.0,
+  "reason": "复活3张normal卡, 质量折减(2.0x3x0.8=4.8→4.0)",
+  "value_preview": 4.0,
+  "desc": "复活 <b>3</b> 友方normal卡"
+ },
+ {
+  "CARD_TYPE_ID": "MIMIC_BLADE",
+  "中文名": "挥刀的影子",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 6,
+    "layer": "直发"
+   }
+  ],
+  "note": "攻=最高友方攻(参考3)x2段",
+  "override": "",
+  "reason": "",
+  "value_preview": 6.0,
+  "desc": "攻击力=友方最高攻击力;攻击x2"
+ },
+ {
+  "CARD_TYPE_ID": "NECROMANCER",
+  "中文名": "楼下的叫魂声",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "苏醒"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.6,
+  "desc": "复活 <b>1</b> 友方;苏醒:复活 <b>1</b>"
+ },
+ {
+  "CARD_TYPE_ID": "REANIMATOR",
+  "中文名": "站台尽头的东西",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2.5,
+    "layer": "直发"
+   }
+  ],
+  "note": "攻=本回合复活友方数(参考2.5)",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.5,
+  "desc": "攻击;攻击力=本回合复活友方数"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_ATTACK_BURIAL",
+  "中文名": "自己翻页的黄历",
+  "rarity": "uncommon",
+  "mode": "引擎",
+  "freq": 3.0,
+  "eff": [
+   {
+    "type": "磨牌",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "友方每次攻击磨1, 友方攻击≈3段/轮",
+  "override": "",
+  "reason": "",
+  "value_preview": -2.4,
+  "desc": "被动:友方每次攻击时,埋葬卡组顶"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_CHAIN_BURIAL",
+  "中文名": "拖人下水的水鬼",
+  "rarity": "uncommon",
+  "mode": "引擎",
+  "freq": 1.2,
+  "eff": [
+   {
+    "type": "磨牌",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "友方被埋葬≈1.2次/轮",
+  "override": "",
+  "reason": "",
+  "value_preview": -0.96,
+  "desc": "被动:友方被埋葬时,埋葬卡组顶"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_TALLY",
+  "中文名": "路口的纸灰圈",
+  "rarity": "uncommon",
+  "mode": "引擎",
+  "freq": 2.0,
+  "eff": [
+   {
+    "type": "强化敌方诅咒",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "回合末按本回合埋葬数强化, 埋葬≈2/轮",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.4,
+  "desc": "被动:回合结束:本回合每埋葬"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_TRAINER",
+  "中文名": "半夜喂奶的黑影",
+  "rarity": "uncommon",
+  "mode": "引擎",
+  "freq": 1.5,
+  "eff": [
+   {
+    "type": "给力量友方",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "回合开始强化最低攻, 利用率折算1.5",
+  "override": "",
+  "reason": "",
+  "value_preview": 1.2,
+  "desc": "被动:回合开始:强化1攻击力最低友方生物"
+ },
+ {
+  "CARD_TYPE_ID": "REVIVE_SUMMONER",
+  "中文名": "跟回家的人影",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "生成信徒",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.0,
+  "desc": "复活 <b>1</b> 友方;生成 <b>1</b> 信徒"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_GUIDE",
+  "中文名": "画了押的字据",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "放逐友方信徒",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "埋敌方",
+    "n": 2,
+    "layer": "直发"
+   }
+  ],
+  "note": "埋敌方非生物",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.0,
+  "desc": "放逐1友方信徒,埋葬2敌方非生物"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_HATCHERY",
+  "中文名": "香火不断的野庙",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "生成信徒",
+    "n": 3,
+    "layer": "直发"
+   },
+   {
+    "type": "埋友方",
+    "n": 1,
+    "layer": "条件"
+   }
+  ],
+  "note": "回合开始埋自身按条件层计",
+  "override": "",
+  "reason": "",
+  "value_preview": -0.96,
+  "desc": "生成 <b>3</b> 信徒;回合开始:埋葬自身"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_MEDIUM",
+  "中文名": "自己动的笔",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "生成信徒",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "苏醒"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 1.6,
+  "desc": "生成 <b>2</b> 信徒;苏醒:复活\\n    <b>1</b>"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_PRIEST",
+  "中文名": "点传师",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "生成信徒",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "给力量友方",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 0.8,
+  "desc": "揭晓时:生成 <b>2</b> 信徒;强化\\n"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_REVIVER",
+  "中文名": "撕了封条的库房",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "放逐友方信徒",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 2,
+    "layer": "直发"
+   }
+  ],
+  "note": "复活非生物",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.2,
+  "desc": "放逐1友方信徒,复活2友方非生物"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_STRIKER",
+  "中文名": "出过事的那条街",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "生成信徒",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "1x2",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.0,
+  "desc": "揭晓时:攻击x2;生成 <b>1</b> 信徒"
+ },
+ {
+  "CARD_TYPE_ID": "SACRIFICE_WEAKEST",
+  "中文名": "折出来的替身",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "埋友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "给力量友方",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "强化的是被埋的该卡",
+  "override": "",
+  "reason": "",
+  "value_preview": -0.4,
+  "desc": "埋葬1攻击力最低友方;强化1该卡"
+ },
+ {
+  "CARD_TYPE_ID": "SACRIFICIAL_SPIRIT",
+  "中文名": "陪葬的活物",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 0,
+    "layer": "直发"
+   },
+   {
+    "type": "埋友方",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "强化敌方诅咒",
+    "n": 5,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.8,
+  "desc": "揭晓时:攻击;埋葬 <b>1</b> 友方;强化"
+ },
+ {
+  "CARD_TYPE_ID": "SNOWBALL",
+  "中文名": "数不完的纸钱",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "给力量自身",
+    "n": 1,
+    "layer": "强化反应"
+   }
+  ],
+  "note": "1x2",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.2,
+  "desc": "揭晓时:攻击x2;强化反应:强化自身\\n"
+ },
+ {
+  "CARD_TYPE_ID": "SOUL_TRADER",
+  "中文名": "验尸官",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "复活友方",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "埋友方",
+    "n": 1,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.0,
+  "desc": "复活 <b>2</b> 友方;埋葬 <b>1</b> 友方"
+ },
+ {
+  "CARD_TYPE_ID": "UNDYING_WARRIOR",
+  "中文名": "没拉平的心电图",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "强化反应"
+   }
+  ],
+  "note": "复活自身",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.6,
+  "desc": "攻击;强化反应:复活自身"
+ },
+ {
+  "CARD_TYPE_ID": "WEAKENING_FIELD",
+  "中文名": "停电",
+  "rarity": "uncommon",
+  "mode": "构建核心",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 0.0,
+  "reason": "所有生物−1攻敌我不分; 配诅咒/动态攻击引擎才强",
+  "value_preview": 0.0,
+  "desc": "所有生物本回合攻击力-1"
+ },
+ {
+  "CARD_TYPE_ID": "WOKEN_HEX",
+  "中文名": "三更开着的窗",
+  "rarity": "uncommon",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "强化敌方诅咒",
+    "n": 1,
+    "layer": "直发"
+   },
+   {
+    "type": "强化敌方诅咒",
+    "n": 2,
+    "layer": "苏醒"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.12,
+  "desc": "强化1敌方诅咒;苏醒:强化2敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "DECIMATION",
+  "中文名": "还留着体温的空床",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "埋友方",
+    "n": 4,
+    "layer": "直发"
+   },
+   {
+    "type": "攻击",
+    "n": 9,
+    "layer": "直发"
+   }
+  ],
+  "note": "埋6递减按平均4张; 攻x3=3x3",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.2,
+  "desc": "埋葬6友方,本回合每埋葬过1友方,埋葬数-1;攻击x3"
+ },
+ {
+  "CARD_TYPE_ID": "DETERIORATION_4.0",
+  "中文名": "洇开的污渍",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "强化敌方诅咒",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "强化敌方诅咒",
+    "n": 0.8,
+    "layer": "直发"
+   }
+  ],
+  "note": "每3攻额外+1按中期诅咒攻折算0.8层",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.36,
+  "desc": "揭晓时:强化 <b>2</b> 敌方诅咒;敌方诅咒每有"
+ },
+ {
+  "CARD_TYPE_ID": "DOOM_HERALD",
+  "中文名": "递请柬的人",
+  "rarity": "rare",
+  "mode": "人工覆盖",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 4.3,
+  "reason": "攻0+复活最强敌方(含陷阱折减)+强化4; 期望4.3±3",
+  "value_preview": 4.3,
+  "desc": "攻击;复活 <b>1</b> 攻击力最高敌方;强化"
+ },
+ {
+  "CARD_TYPE_ID": "DUO_REVIVER",
+  "中文名": "一门阴婚",
+  "rarity": "rare",
+  "mode": "人工覆盖",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 4.0,
+  "reason": "复活2张uncommon, 质量修正",
+  "value_preview": 4.0,
+  "desc": "复活 <b>2</b> 友方uncommon卡"
+ },
+ {
+  "CARD_TYPE_ID": "GRAVE_MILLER",
+  "中文名": "太平间的保洁",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "埋友方",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "磨牌",
+    "n": 5,
+    "layer": "直发"
+   }
+  ],
+  "note": "",
+  "override": "",
+  "reason": "",
+  "value_preview": -4.4,
+  "desc": "揭晓时:攻击;埋葬 <b>2</b> 友方;埋葬卡组顶"
+ },
+ {
+  "CARD_TYPE_ID": "HEXBLADE",
+  "中文名": "越擦越脏的玻璃",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 0,
+    "layer": "直发"
+   },
+   {
+    "type": "强化敌方诅咒",
+    "n": 0,
+    "layer": "直发"
+   }
+  ],
+  "note": "每有1攻击力强化1; 无自成长源, 真空0",
+  "override": "",
+  "reason": "",
+  "value_preview": 0.0,
+  "desc": "攻击;每有1攻击力,强化1敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "LAST_RITES",
+  "中文名": "讣告",
+  "rarity": "rare",
+  "mode": "人工覆盖",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 6.0,
+  "reason": "遗言:触发所有墓地遗言 0.8x(3~6DRx2.5)",
+  "value_preview": 6.0,
+  "desc": "遗言:触发所有在墓地友方的遗言"
+ },
+ {
+  "CARD_TYPE_ID": "MASS_SACRIFICE",
+  "中文名": "多出来的第十三张床",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "埋友方",
+    "n": 5,
+    "layer": "直发"
+   },
+   {
+    "type": "生成信徒",
+    "n": 5,
+    "layer": "直发"
+   }
+  ],
+  "note": "埋所有友方(参考5)+等量信徒; 遗言全点火另计",
+  "override": "",
+  "reason": "",
+  "value_preview": -6.0,
+  "desc": "埋葬所有友方;每埋葬1友方,生成1信徒"
+ },
+ {
+  "CARD_TYPE_ID": "MILLBLADE",
+  "中文名": "少了一页的住户名单",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "磨牌",
+    "n": 2,
+    "layer": "直发"
+   }
+  ],
+  "note": "每有1攻击力磨1, 按ATK2计",
+  "override": "",
+  "reason": "",
+  "value_preview": 0.4,
+  "desc": "攻击;每有1攻击力,埋葬卡组顶1卡"
+ },
+ {
+  "CARD_TYPE_ID": "QUAD_STRIKER",
+  "中文名": "抬着空轿的纸人",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 4,
+    "layer": "直发"
+   }
+  ],
+  "note": "1x4",
+  "override": "",
+  "reason": "",
+  "value_preview": 4.0,
+  "desc": "揭晓时:攻击x4"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_ATTACK_HEX",
+  "中文名": "隔墙有耳",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 5.0,
+  "eff": [
+   {
+    "type": "强化敌方诅咒",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "有卡攻击即触发(双方), ≈5段/轮",
+  "override": "",
+  "reason": "",
+  "value_preview": 6.0,
+  "desc": "被动:有卡攻击时,强化 <b>1</b> 敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_BLOOD_PACT",
+  "中文名": "接反的输液管",
+  "rarity": "rare",
+  "mode": "构建核心",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 0.0,
+  "reason": "友方攻击转强化等量敌方诅咒; 真空≈0, 成型后极高",
+  "value_preview": 0.0,
+  "desc": "被动:友方攻击不再造成伤害,而是强化等量敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_CURSE_GRAVE",
+  "中文名": "准时来的清运车",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 1.5,
+  "eff": [
+   {
+    "type": "埋敌方",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "敌方诅咒揭晓≈1.5次/轮(诅咒架); 无诅咒死卡",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.0,
+  "desc": "被动:敌方诅咒揭晓时,埋葬"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_CURSE_HASTE",
+  "中文名": "越来越快的脚步声",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 1.5,
+  "eff": [
+   {
+    "type": "敌方诅咒攻击次数+1",
+    "n": 1.3,
+    "layer": "全局C"
+   }
+  ],
+  "note": "诅咒揭晓≈1.5次/轮x平均诅咒攻1.3折算",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.9,
+  "desc": "被动:敌方诅咒攻击次数<b>+1</b>"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_CURSE_REVIVAL",
+  "中文名": "广播里在找人",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 1.5,
+  "eff": [
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "敌方诅咒揭晓≈1.5次/轮",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.0,
+  "desc": "被动:敌方诅咒揭晓时,复活"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_DEATH_KNELL",
+  "中文名": "多敲了一下的钟",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 1.0,
+  "eff": [
+   {
+    "type": "苏醒转遗言",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "友方苏醒≈1次/轮",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.0,
+  "desc": "被动:友方苏醒时:触发其遗言"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_GRAVE_CURSE",
+  "中文名": "堆满楼道的花圈",
+  "rarity": "rare",
+  "mode": "构建核心",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 2.5,
+  "reason": "敌方诅咒攻击力=墓地友方数; 墓地不自动增长, build-around",
+  "value_preview": 2.5,
+  "desc": "被动:敌方诅咒攻击力=墓地友方卡数量"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_GRAVE_LORD",
+  "中文名": "地下传来的叩击",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 3.75,
+  "eff": [
+   {
+    "type": "给力量友方",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "墓地生物+1攻, 经复活/遗言攻击兑现≈3.75单位/轮",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.0,
+  "desc": "被动:墓地中的友方生物攻击力+1"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_HIVE",
+  "中文名": "看热闹的影子",
+  "rarity": "rare",
+  "mode": "构建核心",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 0.0,
+  "reason": "友方攻击时生成1信徒(按段); 信徒=0, 燃料引擎",
+  "value_preview": 0.0,
+  "desc": "被动:友方攻击时,生成 <b>1</b> 信徒"
+ },
+ {
+  "CARD_TYPE_ID": "RELIC_RIFT_OVERRIDE",
+  "中文名": "半夜换告示的手",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 1.2,
+  "eff": [
+   {
+    "type": "复活敌方诅咒",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "信徒揭晓≈1.2次/轮, 每次复活敌方诅咒+自逐",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.4,
+  "desc": "被动:友方信徒效果变为:复活1敌方诅咒;放逐自身"
+ },
+ {
+  "CARD_TYPE_ID": "RIFT_REAPER",
+  "中文名": "挨个熄灭的灯",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "给力量友方",
+    "n": 4,
+    "layer": "直发"
+   }
+  ],
+  "note": "放逐所有信徒(参考4张), 每张强化1友方生物; 放逐即转化本身, 不另计信徒费用",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.2,
+  "desc": "放逐所有信徒,每放逐1,强化1友方生物"
+ },
+ {
+  "CARD_TYPE_ID": "SLIME_4.0",
+  "中文名": "管道里的活物",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "复活友方",
+    "n": 1,
+    "layer": "遗言"
+   }
+  ],
+  "note": "复制自身=新卡入组",
+  "override": "",
+  "reason": "",
+  "value_preview": 3.6,
+  "desc": "揭晓时:攻击;遗言:复制自身"
+ },
+ {
+  "CARD_TYPE_ID": "SWARM_CURSER",
+  "中文名": "旺得反常的香炉",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 2.4,
+  "eff": [
+   {
+    "type": "强化敌方诅咒",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "每有1友方信徒强化1(信徒≈2.4), 生成1信徒另计0",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.88,
+  "desc": "生成1信徒;每有1友方信徒,强化1敌方诅咒"
+ },
+ {
+  "CARD_TYPE_ID": "SWARM_QUEEN",
+  "中文名": "不下台的歌女",
+  "rarity": "rare",
+  "mode": "标准",
+  "freq": "",
+  "eff": [
+   {
+    "type": "攻击",
+    "n": 2,
+    "layer": "直发"
+   },
+   {
+    "type": "生成信徒",
+    "n": 2,
+    "layer": "直发"
+   }
+  ],
+  "note": "每有1攻击力生成1信徒, 按ATK2计",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.0,
+  "desc": "攻击;每有1攻击力,生成1信徒"
+ },
+ {
+  "CARD_TYPE_ID": "UNFINISHED_ROBOT_4.0",
+  "中文名": "还在长的人偶",
+  "rarity": "rare",
+  "mode": "构建核心",
+  "freq": "",
+  "eff": [],
+  "note": "",
+  "override": 0.0,
+  "reason": "攻0+攻击力翻倍; 需外部强化启动",
+  "value_preview": 0.0,
+  "desc": "揭晓时:攻击;攻击力翻倍"
+ },
+ {
+  "CARD_TYPE_ID": "WEAPON_SPIRIT",
+  "中文名": "要喂血的刀",
+  "rarity": "rare",
+  "mode": "引擎",
+  "freq": 3.1,
+  "eff": [
+   {
+    "type": "给力量友方",
+    "n": 1,
+    "layer": "全局C"
+   }
+  ],
+  "note": "强化反应≈3次/轮(仅4张反应卡)",
+  "override": "",
+  "reason": "",
+  "value_preview": 2.48,
+  "desc": "被动:友方生物触发强化反应时:强化1该生物"
+ }
+]

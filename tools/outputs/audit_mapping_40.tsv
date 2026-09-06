@@ -1,0 +1,90 @@
+CARD_TYPE_ID	中文名	rarity	口径	频率/轮	效果拆解	值预览	备注
+AVENGER_4.0	长高的坟头	normal	标准		攻击1[直发] + 给力量自身1[遗言]	2.2	
+BEAST_REVIVER	笼里的东西	normal	标准		攻击2[直发] + 复活友方1[直发]	4.0	
+BLACKSMITH_4.0	巷口的磨刀人	normal	标准		攻击2[直发] + 给力量友方1[直发]	2.8	
+ELITE_REVIVER	描过金的牌位	normal	标准		攻击2[直发] + 复活友方1[直发]	4.0	复活目标=被强化过的
+GRAVE_DREDGER	还没停的挖掘机	normal	标准		攻击2[直发] + 磨牌3[直发]	-0.4	
+GRAVE_FIST	替死鬼	normal	标准		埋友方1[直发] + 攻击4[直发]	2.8	
+GRAVE_PUNCH_4.0	没有指纹的凶器	normal	标准		埋友方1[直发] + 攻击4[直发]	2.8	攻x2: ATK2x2=4
+LAST_GIFT	遗物整理师	normal	标准		攻击2[直发] + 给力量友方1[遗言]	2.64	
+RIFT_ACOLYTE	自己签满的签到表	normal	标准		攻击2[直发] + 生成信徒1[直发] + 生成信徒2[苏醒]	2.0	
+RIFT_INSECT_4.0	门口多出的鞋印	normal	标准		攻击3[直发] + 生成信徒1[直发]	3.0	
+RIFT_SHEPHERD	来接人的黑车	normal	人工覆盖			2.2	攻2+复活[信徒]; 信徒=空白体≈0.2, 仅转化器存在时有值
+SOLDIER_SKELETON_4.0	换岗的哨兵	normal	标准		攻击2[直发] + 置顶友方1[遗言]	3.2	置顶自身
+SPIKE_SKELETON_4.0	医学院的标本	normal	标准		攻击2[直发] + 攻击4[遗言]	5.2	遗言攻x2
+SPIRIT_CALLER	深夜来电	normal	标准		攻击2[直发] + 复活友方0.8[直发]	3.6	复活非生物, 质量折减0.8
+TWIN_STRIKER	一对纸人	normal	标准		攻击2[直发]	2.0	1x2
+WAKING_FIGHTER	梦游的拳手	normal	标准		攻击2[直发] + 给力量自身1[苏醒]	3.2	
+WAR_TRAINER	点眼的扎纸匠	normal	标准		给力量友方2[直发]	1.6	
+WOKEN_BLADE	头七的刀	normal	标准		攻击2[直发] + 攻击4[苏醒]	5.2	苏醒攻x2
+AWAKENED_REAPER	来领人的家属	uncommon	标准		攻击2[直发] + 埋敌方1[苏醒]	3.6	
+BATTLE_HORN	最后一节课的铃	uncommon	标准		攻击次数全体+11[直发]	4.0	
+COMBO_GRANTER	多摆的一副碗筷	uncommon	标准		攻击1[直发] + 攻击次数单体+11[直发]	2.5	
+COMBO_STARTER	添灯油的长明灯	uncommon	标准		攻击1[直发] + 攻击次数单体+11[强化反应]	2.2	目标=自身
+CURSE_EATER	吞玻璃的人	uncommon	标准		攻击3[直发]	3.0	攻=敌方诅咒攻击力(参考3), 无诅咒时0
+CURSE_GARDENER	疯长的绿萝	uncommon	标准		强化敌方诅咒1[直发] + 复活敌方诅咒1[直发]	3.2	
+CURSE_REVIVER	洗不掉的印子	normal	标准		攻击0[直发] + 复活敌方诅咒1[直发]	2.0	
+CURSE_SUMMONER	替人叫魂的喇叭	uncommon	标准		复活友方1[直发] + 复活敌方诅咒1[直发]	4.0	
+CURSE_THIRST_BEAST_4.0	偷吃供品的黄皮子	uncommon	标准		攻击2[直发] + 复活友方1[条件]	3.6	敌方诅咒揭晓时复活自身, 条件层x0.8
+DEATHBED_GRANT	入殓师	uncommon	引擎	1.5	攻击2[全局C]	3.0	被埋友方生物攻击, 友方埋葬≈1.5/轮
+DEATHBED_PORTER	抬上楼的纸别墅	uncommon	标准		攻击2[直发] + 攻击2[遗言] + 置顶友方1[遗言]	4.8	置顶非生物
+EULOGIST	哭灵人	uncommon	人工覆盖			2.5	埋[遗言]友方=主动点火(−2.0+DR期望2.5)+攻2; 公式只能得0.8
+EXILE_BERSERKER	送行酒	uncommon	标准		攻击2[直发] + 攻击次数单体+11[条件]	3.2	每放逐1友方攻击次数+1; 放逐源仅3张
+FINAL_ESCORT	引路的白灯笼	uncommon	标准		攻击1[直发] + 置顶友方1[遗言]	2.2	回合末置顶最高攻
+FLURRY_REVIVER	棺材里的敲门声	uncommon	标准		复活友方1.25[直发]	2.5	目标=攻击次数最多, 质量修正1.25
+FUNERAL_WILL	贴在门上的保险书	uncommon	标准		磨牌2[直发] + 延迟复活1[遗言]	-0.48	
+GRAVE_GIANT	不停滴水的行李袋	uncommon	标准		攻击3[直发]	3.0	攻=墓地友方数(参考3), 随自磨成长
+GRAVE_HEXER	白事先生	uncommon	标准		复活友方1[直发] + 强化敌方诅咒2[直发]	4.4	
+GRAVE_PUPPETEER	监控里的人	uncommon	人工覆盖			2.0	墓地生物攻击2.0+无友方时埋[遗言]fallback
+GRAVE_ROBBER	收尸人	uncommon	人工覆盖			3.0	复活最强敌方并夺取攻击力, 复合特殊效果
+GRAVE_TOGETHER_4.0	并排的三座新坟	uncommon	标准		攻击1[直发] + 埋友方1[直发] + 埋敌方2[直发]	3.8	
+HEXER	对面楼的那场火	uncommon	标准		攻击0[直发] + 强化敌方诅咒3[直发]	3.6	
+KINGSLAYER	迁坟队	uncommon	标准		埋敌方1.25[直发] + 复活友方1[直发]	4.5	埋最强敌方, 质量修正1.25
+MASS_REVIVER	回魂夜	uncommon	人工覆盖			4.0	复活3张normal卡, 质量折减(2.0x3x0.8=4.8→4.0)
+MIMIC_BLADE	挥刀的影子	uncommon	标准		攻击6[直发]	6.0	攻=最高友方攻(参考3)x2段
+NECROMANCER	楼下的叫魂声	uncommon	标准		复活友方1[直发] + 复活友方1[苏醒]	3.6	
+REANIMATOR	站台尽头的东西	uncommon	标准		攻击2.5[直发]	2.5	攻=本回合复活友方数(参考2.5)
+RELIC_ATTACK_BURIAL	自己翻页的黄历	uncommon	引擎	3.0	磨牌1[全局C]	-2.4	友方每次攻击磨1, 友方攻击≈3段/轮
+RELIC_CHAIN_BURIAL	拖人下水的水鬼	uncommon	引擎	1.2	磨牌1[全局C]	-0.96	友方被埋葬≈1.2次/轮
+RELIC_TALLY	路口的纸灰圈	uncommon	引擎	2.0	强化敌方诅咒1[全局C]	2.4	回合末按本回合埋葬数强化, 埋葬≈2/轮
+RELIC_TRAINER	半夜喂奶的黑影	uncommon	引擎	1.5	给力量友方1[全局C]	1.2	回合开始强化最低攻, 利用率折算1.5
+REVIVE_SUMMONER	跟回家的人影	uncommon	标准		复活友方1[直发] + 生成信徒1[直发]	2.0	
+RIFT_GUIDE	画了押的字据	uncommon	标准		放逐友方信徒1[直发] + 埋敌方2[直发]	3.0	埋敌方非生物
+RIFT_HATCHERY	香火不断的野庙	uncommon	标准		生成信徒3[直发] + 埋友方1[条件]	-0.96	回合开始埋自身按条件层计
+RIFT_MEDIUM	自己动的笔	uncommon	标准		生成信徒2[直发] + 复活友方1[苏醒]	1.6	
+RIFT_PRIEST	点传师	uncommon	标准		生成信徒2[直发] + 给力量友方1[直发]	0.8	
+RIFT_REVIVER	撕了封条的库房	uncommon	标准		放逐友方信徒1[直发] + 复活友方2[直发]	2.2	复活非生物
+RIFT_STRIKER	出过事的那条街	uncommon	标准		攻击2[直发] + 生成信徒1[直发]	2.0	1x2
+SACRIFICE_WEAKEST	折出来的替身	uncommon	标准		埋友方1[直发] + 给力量友方1[直发]	-0.4	强化的是被埋的该卡
+SACRIFICIAL_SPIRIT	陪葬的活物	uncommon	标准		攻击0[直发] + 埋友方1[直发] + 强化敌方诅咒5[直发]	4.8	
+SNOWBALL	数不完的纸钱	uncommon	标准		攻击2[直发] + 给力量自身1[强化反应]	3.2	1x2
+SOUL_TRADER	验尸官	uncommon	标准		复活友方2[直发] + 埋友方1[直发]	2.0	
+UNDYING_WARRIOR	没拉平的心电图	uncommon	标准		攻击2[直发] + 复活友方1[强化反应]	3.6	复活自身
+WEAKENING_FIELD	停电	uncommon	构建核心			0.0	所有生物−1攻敌我不分; 配诅咒/动态攻击引擎才强
+WOKEN_HEX	三更开着的窗	uncommon	标准		强化敌方诅咒1[直发] + 强化敌方诅咒2[苏醒]	3.12	
+DECIMATION	还留着体温的空床	rare	标准		埋友方4[直发] + 攻击9[直发]	4.2	埋6递减按平均4张; 攻x3=3x3
+DETERIORATION_4.0	洇开的污渍	rare	标准		强化敌方诅咒2[直发] + 强化敌方诅咒0.8[直发]	3.36	每3攻额外+1按中期诅咒攻折算0.8层
+DOOM_HERALD	递请柬的人	rare	人工覆盖			4.3	攻0+复活最强敌方(含陷阱折减)+强化4; 期望4.3±3
+DUO_REVIVER	一门阴婚	rare	人工覆盖			4.0	复活2张uncommon, 质量修正
+GRAVE_MILLER	太平间的保洁	rare	标准		攻击2[直发] + 埋友方2[直发] + 磨牌5[直发]	-4.4	
+HEXBLADE	越擦越脏的玻璃	rare	标准		攻击0[直发] + 强化敌方诅咒0[直发]	0.0	每有1攻击力强化1; 无自成长源, 真空0
+LAST_RITES	讣告	rare	人工覆盖			6.0	遗言:触发所有墓地遗言 0.8x(3~6DRx2.5)
+MASS_SACRIFICE	多出来的第十三张床	rare	标准		埋友方5[直发] + 生成信徒5[直发]	-6.0	埋所有友方(参考5)+等量信徒; 遗言全点火另计
+MILLBLADE	少了一页的住户名单	rare	标准		攻击2[直发] + 磨牌2[直发]	0.4	每有1攻击力磨1, 按ATK2计
+QUAD_STRIKER	抬着空轿的纸人	rare	标准		攻击4[直发]	4.0	1x4
+RELIC_ATTACK_HEX	隔墙有耳	rare	引擎	5.0	强化敌方诅咒1[全局C]	6.0	有卡攻击即触发(双方), ≈5段/轮
+RELIC_BLOOD_PACT	接反的输液管	rare	构建核心			0.0	友方攻击转强化等量敌方诅咒; 真空≈0, 成型后极高
+RELIC_CURSE_GRAVE	准时来的清运车	rare	引擎	1.5	埋敌方1[全局C]	3.0	敌方诅咒揭晓≈1.5次/轮(诅咒架); 无诅咒死卡
+RELIC_CURSE_HASTE	越来越快的脚步声	rare	引擎	1.5	敌方诅咒攻击次数+11.3[全局C]	3.9	诅咒揭晓≈1.5次/轮x平均诅咒攻1.3折算
+RELIC_CURSE_REVIVAL	广播里在找人	rare	引擎	1.5	复活友方1[全局C]	3.0	敌方诅咒揭晓≈1.5次/轮
+RELIC_DEATH_KNELL	多敲了一下的钟	rare	引擎	1.0	苏醒转遗言1[全局C]	2.0	友方苏醒≈1次/轮
+RELIC_GRAVE_CURSE	堆满楼道的花圈	rare	构建核心			2.5	敌方诅咒攻击力=墓地友方数; 墓地不自动增长, build-around
+RELIC_GRAVE_LORD	地下传来的叩击	rare	引擎	3.75	给力量友方1[全局C]	3.0	墓地生物+1攻, 经复活/遗言攻击兑现≈3.75单位/轮
+RELIC_HIVE	看热闹的影子	rare	构建核心			0.0	友方攻击时生成1信徒(按段); 信徒=0, 燃料引擎
+RELIC_RIFT_OVERRIDE	半夜换告示的手	rare	引擎	1.2	复活敌方诅咒1[全局C]	2.4	信徒揭晓≈1.2次/轮, 每次复活敌方诅咒+自逐
+RIFT_REAPER	挨个熄灭的灯	rare	标准		给力量友方4[直发]	3.2	放逐所有信徒(参考4张), 每张强化1友方生物; 放逐即转化本身, 不另计信徒费用
+SLIME_4.0	管道里的活物	rare	标准		攻击2[直发] + 复活友方1[遗言]	3.6	复制自身=新卡入组
+SWARM_CURSER	旺得反常的香炉	rare	引擎	2.4	强化敌方诅咒1[全局C]	2.88	每有1友方信徒强化1(信徒≈2.4), 生成1信徒另计0
+SWARM_QUEEN	不下台的歌女	rare	标准		攻击2[直发] + 生成信徒2[直发]	2.0	每有1攻击力生成1信徒, 按ATK2计
+UNFINISHED_ROBOT_4.0	还在长的人偶	rare	构建核心			0.0	攻0+攻击力翻倍; 需外部强化启动
+WEAPON_SPIRIT	要喂血的刀	rare	引擎	3.1	给力量友方1[全局C]	2.48	强化反应≈3次/轮(仅4张反应卡)

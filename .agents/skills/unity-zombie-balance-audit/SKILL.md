@@ -15,6 +15,8 @@ Recompute every combat card's expected per-activation value against the ZOMBIE b
 | Extract script | `tools/scripts/extract_card_prefabs.py` (offline YAML parser, no Unity needed; ROOT = `Assets/Prefabs/Cards/4.0`, excludes `-1_Test`; resolves IntSO/GameEvent refs to names) |
 | Extract output | `tools/outputs/card_prefab_extract.txt` |
 | Audit report | `docs/CardBalanceAudit_ZombieBaseline.html` — single self-contained page (inline CSS/JS, file:// openable); overwrite in place, no versioned copies. Replaced the retired `.md` artifact on 2026-09-05. |
+| Audit DB | Notion `4.0 审计` data source `collection://3d2827b8-c3c1-8078-8aef-000b15d633ec` (under OD) — 89 combat rows with structured effects (eff1..3 type/n/layer, 计分口径 标准/引擎/构建核心/人工覆盖, 每轮触发次数, 覆盖值/理由) + relation to the card DB. Formulas `eff*_val`/`eff*_mult`/`价值`/`判定` compute scores dynamically — **the eff*_val formulas encode the ratified base values; changing one is a convention change and needs 拍板**. Notion MCP SQL cannot read formula columns (notAvailableInQuerySql) — read computed values in the Notion UI. |
+| Row-mapping script | `tools/scripts/extract_audit_rows.py` + `tools/outputs/audit_rows_40.json` (machine rows) / `audit_mapping_40.tsv` (human review table) — maps prefab CONT effects to the DB's structured vocabulary |
 | Card prefab root | `Assets/Prefabs/Cards/4.0/` (`0_Common` / `1_Uncommon` / `2_Rare`) |
 | Notion card DB | `4.0 card database`, data source `collection://3c7827b8-c3c1-8002-8b45-000bc02fa836` (title = `CARD_TYPE_ID`; 中文名 / rarity / ATK / card desc / 状态) |
 | Notion mirror page | `僵尸基准全卡审计` id `3b0827b8-c3c1-814a-9474-d35df8d4e85b` (under OD page; only refresh on explicit request) |
@@ -29,7 +31,7 @@ Recompute every combat card's expected per-activation value against the ZOMBIE b
 
 2. **Fetch rarity/中文名 from Notion** (SQL over the 4.0 data source; join key `CARD_TYPE_ID` ↔ prefab `cardTypeID`, NOT file name). Fallback when Notion is unreachable: rarity from prefab folder. `状态=备用` rows have no prefab — list them, never score or "fix" them.
 
-3. **Join + recompute** each card's value using the conventions in the report's collapsed §1 (canonical, user-ratified 2026-09-05). **Do NOT silently change ratified values** — propose adjustments and get the user's 拍板 first; then update §1 together with the scores.
+3. **Score via the audit DB** (dynamic, since 2026-09-05): write each card's structured row into `4.0 审计` (create-pages batch / update-page per row) — effect slots type/n/layer, 口径 (标准/引擎/构建核心/人工覆盖), 引擎 rows carry 每轮触发次数, manual rows carry 覆盖值+必填覆盖理由. The DB formulas compute 价值/判定; regenerate `audit_rows_40.json` with the mapping script first and eyeball the TSV. Fractional n = 数量×质量系数 (multi-revive discount applies at n ≥ 2). Changing any base value in the formulas or any 频率 assumption = convention change → 拍板 first.
 
 4. **Rewrite `docs/CardBalanceAudit_ZombieBaseline.html`** in place, then convert to CRLF:
    `python -c "s=open('docs/CardBalanceAudit_ZombieBaseline.html',encoding='utf-8').read(); open('docs/CardBalanceAudit_ZombieBaseline.html','wb').write(s.replace('\r\n','\n').replace('\n','\r\n').encode('utf-8'))"`
@@ -37,7 +39,7 @@ Recompute every combat card's expected per-activation value against the ZOMBIE b
    Required sections & features (keep parity with the existing report):
    - Header meta (generation date, data sources, baseline) + verdict legend with colored badges.
    - Summary cards: pool snapshot / per-rarity vacuum means / problem-card counts / top findings.
-   - Combat tables grouped by rarity — one row per card: 中文名 / CARD_TYPE_ID / effect from the prefab / 估值式 / value / verdict badge / note. Every row carries `data-r` (rarity) and `data-v` (verdict class: `over` / `in` / `under` / `bang` / `build`) attributes.
+   - Combat tables grouped by rarity — one row per card: 中文名 / CARD_TYPE_ID / effect from the prefab / 估值式 / value / verdict badge / note. **Value and verdict come from the audit DB's computed formula columns** (read them in the Notion UI — MCP SQL cannot see formula columns); the 估值式 text mirrors the row's effect slots. Every table row carries `data-r` (rarity) and `data-v` (verdict class: `over` / `in` / `under` / `bang` / `build`) attributes.
    - Toolbar JS: rarity filter buttons + verdict `<select>` + text search + shown-count. No external dependencies.
    - Findings sections: over-band outliers; anti-value / vacuum-zero engines (with their conversion paths); predicate traps; and the two user-requested variance lists — **A. rare-but-not-build-around**, **B. non-rare-but-high-variance**.
    - Shop utility/system cards (currently 18) get their own section, listed but NEVER scored (2026-09-05 user decision).
