@@ -113,3 +113,6 @@ __pycache__/
 /server/onedeck-api/data/
 /server/onedeck-api/node_modules/
 /server/data/
+
+# Unity crash-recovery scenes (Assets/_Recovery/0.unity was tracked before; new auto-recoveries stay untracked)
+/Assets/_Recovery/
