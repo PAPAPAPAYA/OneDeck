@@ -104,6 +104,7 @@ Layout rules:
 - Card interaction physics are identical to buttons (same state machine).
 - Price and other shop attachments hang **outside** the card face, never inside it.
 - Open question: rarity-star readability once real illustrations land.
+- Unity port (2026-09-05, `plans/plan-card-template-v1.1-port-2026-09-05.md`): implemented on `PhysicalCardParent.prefab`. Adaptations: rarity sits under the actual art-image bottom (the image is kept larger than the demo's 56% zone); `✦`/`…` glyphs come from a bundled Noto Sans Symbols 2 fallback font; cardDesc text must use halfwidth punctuation only (no fullwidth glyph coverage).
 
 ### 3.3 Price-Button Buy/Sell
 

@@ -37,6 +37,8 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardTagPrint;
 	public TextMeshPro cardStatusEffectPrint;
 	public TextMeshPro cardAttackPrint;
+	[Tooltip("Thin divider line above the bottom row (card template v1.1); colored with the faction text color")]
+	public SpriteRenderer cardDivider;
 
 	[Header("CARD ART")]
 	[Tooltip("Card face sprite used when this card is owned by the player")]
@@ -261,21 +263,14 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Update Tag display, tags wrapped in brackets separated by spaces
+	/// Update Tag display — card template v1.1 (2026-09-05): the standalone tag row is hidden;
+	/// tags render inline via cardDesc &lt;tag:X&gt; placeholders and the hover tooltip
+	/// (CardTagTooltip). GetTagText() remains the shared source of truth.
 	/// </summary>
 	private void UpdateTagDisplay()
 	{
 		if (cardTagPrint == null || cardImRepresenting == null) return;
-
-		string tagText = GetTagText();
-		if (string.IsNullOrEmpty(tagText))
-		{
-			cardTagPrint.gameObject.SetActive(false);
-			return;
-		}
-
-		cardTagPrint.gameObject.SetActive(true);
-		cardTagPrint.text = tagText;
+		if (cardTagPrint.gameObject.activeSelf) cardTagPrint.gameObject.SetActive(false);
 	}
 
 	/// <summary>
@@ -358,7 +353,9 @@ public class CardPhysObjScript : MonoBehaviour
 				break;
 		}
 
-		cardRarityPrint.text = new string('*', starCount);
+		// Card template v1.1 (2026-09-05): four-pointed stars; glyph provided by the
+		// NotoSansSymbols2 fallback font asset wired on the RobotoCondensed SDFs.
+		cardRarityPrint.text = new string('✦', starCount);
 	}
 
 	private void UpdateStatusEffectDisplay()
@@ -378,17 +375,11 @@ public class CardPhysObjScript : MonoBehaviour
 			statusEffectText = string.IsNullOrEmpty(statusEffectText) ? lifeText : statusEffectText + "\n" + lifeText;
 		}
 
-		if (cardStatusEffectPrint != null)
+		// Card template v1.1 (2026-09-05): status/life print is not displayed for now (no zone
+		// in the new layout); the text is still computed for logging and future re-enable.
+		if (cardStatusEffectPrint != null && cardStatusEffectPrint.gameObject.activeSelf)
 		{
-			if (!string.IsNullOrEmpty(statusEffectText))
-			{
-				cardStatusEffectPrint.gameObject.SetActive(true);
-				cardStatusEffectPrint.text = statusEffectText;
-			}
-			else
-			{
-				cardStatusEffectPrint.gameObject.SetActive(false);
-			}
+			cardStatusEffectPrint.gameObject.SetActive(false);
 		}
 
 		if (cardNamePrint == null) return;
@@ -431,9 +422,17 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardDescPrint == null || cardImRepresenting == null) return;
 
 		string displayDesc = cardImRepresenting.GetCardDescForDisplay();
-		cardDescPrint.text = displayDesc;
+		// Card template v1.1 (2026-09-05): auto "> " prefix; cards with no effect hide the
+		// row entirely so no dangling ">" remains (UIKitDemo section 03).
+		if (string.IsNullOrEmpty(displayDesc))
+		{
+			if (cardDescPrint.gameObject.activeSelf) cardDescPrint.gameObject.SetActive(false);
+			return;
+		}
+		if (!cardDescPrint.gameObject.activeSelf) cardDescPrint.gameObject.SetActive(true);
+		cardDescPrint.text = "> " + displayDesc;
 
-		if (displayDesc != null && CardScript.ContainsAnyDamagePlaceholder(displayDesc) && cardImRepresenting.HasDisplaySnapshot)
+		if (CardScript.ContainsAnyDamagePlaceholder(displayDesc) && cardImRepresenting.HasDisplaySnapshot)
 		{
 			TestManager.LogWarning("[DynamicDamageDisplay] UpdateCardDescription showing raw <dmg> during snapshot card=" + cardImRepresenting.GetDisplayName() + " cardDesc=[" + cardImRepresenting.cardDesc + "]");
 		}
@@ -694,6 +693,7 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardTagPrint != null) faces.Add(cardTagPrint.transform);
 		if (cardStatusEffectPrint != null) faces.Add(cardStatusEffectPrint.transform);
 		if (cardAttackPrint != null) faces.Add(cardAttackPrint.transform);
+		if (cardDivider != null) faces.Add(cardDivider.transform);
 
 		var flipRootGo = new GameObject("FlipRoot");
 		_flipRoot = flipRootGo.transform;
@@ -1162,6 +1162,8 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardRarityPrint != null) cardRarityPrint.color = textColor;
 		if (cardStatusEffectPrint != null) cardStatusEffectPrint.color = textColor;
 		if (cardAttackPrint != null) cardAttackPrint.color = textColor;
+		// Divider follows the text color at 65% opacity (card template v1.1, demo .card-divider)
+		if (cardDivider != null) { Color dc = textColor; dc.a = 0.65f; cardDivider.color = dc; }
 	}
 
 	/// <summary>
