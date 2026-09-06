@@ -360,7 +360,13 @@ public class CardPhysObjScript : MonoBehaviour
 
 	private void UpdateStatusEffectDisplay()
 	{
-		if (cardImRepresenting == null) return;
+		// Unbound instances (null cardImRepresenting) still squash their placeholder
+		// name text so it is never ellipsized (plan-card-name-horizontal-squash).
+		if (cardImRepresenting == null)
+		{
+			FitCardNamePrint();
+			return;
+		}
 
 		var statusEffectsForDisplay = cardImRepresenting.GetStatusEffectsForDisplay();
 		var statusEffectText = CombatInfoDisplayer.me?.ProcessStatusEffectInfo(statusEffectsForDisplay);
@@ -401,6 +407,8 @@ public class CardPhysObjScript : MonoBehaviour
 			}
 		}
 
+		FitCardNamePrint();
+
 		// Log only when status effect text actually changes to avoid Update() spam.
 		if (statusEffectText != _lastLoggedStatusEffectText)
 		{
@@ -411,6 +419,23 @@ public class CardPhysObjScript : MonoBehaviour
 				" new=[" + (statusEffectText ?? "null") + "]");
 			_lastLoggedStatusEffectText = statusEffectText;
 		}
+	}
+
+	/// <summary>
+	/// Card names are never ellipsized: squash glyphs horizontally until the name fits
+	/// its box (no lower clamp — user decision 2026-09-06, plan-card-name-horizontal-squash).
+	/// characterHorizontalScale scales both glyph vertices and advance widths inside TMP
+	/// layout, so left alignment and the attack print are unaffected.
+	/// </summary>
+	private void FitCardNamePrint()
+	{
+		if (cardNamePrint == null) return;
+		cardNamePrint.characterHorizontalScale = 1f;
+		cardNamePrint.ForceMeshUpdate();
+		float boxWidth = cardNamePrint.rectTransform.rect.width;
+		float textWidth = cardNamePrint.preferredWidth;
+		if (boxWidth <= 0f || textWidth <= boxWidth) return;
+		cardNamePrint.characterHorizontalScale = boxWidth / textWidth;
 	}
 
 	/// <summary>

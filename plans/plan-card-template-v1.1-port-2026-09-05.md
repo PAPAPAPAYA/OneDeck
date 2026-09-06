@@ -68,3 +68,7 @@ Card-local space: face spans x∈[-1.6, 1.6], y∈[-2.3, 2.3]; prints use RectTr
 - ShopCardView buy/sell is still long-press (`holdTimeRequired 0.5s`); the price print is still a card-below label, not the v0.6 price button. Needs its own change (user must explicitly request code modification).
 - `CardStatusEffect` content (status icons, ❤ life) has no zone in v1.1 — decide a home before re-enabling.
 - Art-zone dark box may still be wanted once real illustrations land (demo §03 open question: star readability on art).
+
+## Follow-ups
+
+- 2026-09-06 · Card-name overflow switched from Ellipsis to unlimited horizontal squash (`TMP_Text.characterHorizontalScale` via `CardPhysObjScript.FitCardNamePrint`; inert `m_charWidthMaxAdj` override removed). UIKitDemo v0.7 / UIUX_Guidelines v0.7 synced. Plan: `plans/plan-card-name-horizontal-squash-2026-09-06.md`. The desc print's 2-line `…` clamp is unchanged.

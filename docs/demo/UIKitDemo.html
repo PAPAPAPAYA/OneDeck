@@ -260,7 +260,8 @@
 		   art (dark rounded box, illustration placeholder) -> rarity (✦x1-3,
 		   right-aligned just under the art's bottom-right) -> effect (auto
 		   "> " prefix, clamps to 2 lines) -> divider -> bottom row: name
-		   (left, bold, ellipsis) + attack (right, same baseline, larger).
+		   (left, bold, squashed horizontally to fit — never ellipsized)
+		   + attack (right, same baseline, larger).
 		   The rarity row flex-grows to absorb the free space, so the effect
 		   hugs the divider and a second line grows UPWARD; cards with no
 		   effect omit .card-effect entirely (:empty guard hides any dangling
@@ -323,8 +324,8 @@
 			font-size: 1em;
 			font-weight: 800;
 			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
+			transform-origin: left center;
+			/* overlong names are squashed horizontally (JS scaleX) — never ellipsized */
 		}
 		.card-atk { flex: none; padding-left: 4px; font-size: 1.3em; font-weight: 800; line-height: 1; }
 		.card-face.zoom {
@@ -660,7 +661,7 @@
 						</div>
 					</div>
 				</div>
-				<span class="demo-caption">压力样 · 长名省略 / 效果两行截断</span>
+				<span class="demo-caption">压力样 · 长名压扁 / 效果两行截断</span>
 			</div>
 			<div class="demo-block">
 				<div class="phys" data-interactive data-name="小石子">
@@ -1013,6 +1014,7 @@
 		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；提示加 <code>data-tips='[["标签","描述"]]'</code>（可多条）；悬停换文案加 <code>data-hover-text="..."</code>。无需写新 JS。
 		3) 新全局参数 = 在 <code>PARAMS</code> 数组加一项，参数条、状态对象、规格 JSON 自动生成。
 		4) 手感确认后，把数值同步进 <code>docs/UIUX_Guidelines.md</code> 与 Unity 实现。<br>
+		版本：v0.7 · 2026-09-06 · 卡名溢出不再省略号，改为水平压扁适配（JS scaleX，无下限）；Unity 侧对应 CardPhysObjScript.FitCardNamePrint（TMP characterHorizontalScale）<br>
 		版本：v0.6 · 2026-09-05 · 买/卖弃用长按改为价格按钮单击成交（04 节重写，移除 lpThreshold 参数与 lp-fill）；新增 08 商店页栏目（2026-09-05 参考稿布局，交互参数全部引用全局参数条）<br>
 	版本：v0.5 · 2026-08-19 · 飞卡/过场动效拆出为独立原型 <code>PhaseTransitionDemo.html</code>（商店↔战斗镜头转换 + 共享元素飞行 + result 覆层）<br>
 	版本：v0.4 · 2026-08-18 · 01 节色板标注 GameColorPalette 映射（文档色 = 演示站位，生产以 palette 为准）<br>
@@ -1399,6 +1401,21 @@
 				svg.appendChild(p);
 			}
 		})();
+
+		/* ===================== card name squash =====================
+		   Overlong names are squashed horizontally to fit their box — never
+		   ellipsized (2026-09-06 decision, no squash floor). Unity counterpart:
+		   CardPhysObjScript.FitCardNamePrint via TMP characterHorizontalScale. */
+		function fitCardNames() {
+			document.querySelectorAll('.card-name').forEach(el => {
+				el.style.transform = '';
+				if (el.clientWidth > 0 && el.scrollWidth > el.clientWidth) {
+					el.style.transform = 'scaleX(' + (el.clientWidth / el.scrollWidth) + ')';
+				}
+			});
+		}
+		fitCardNames();
+		window.addEventListener('resize', fitCardNames);
 	</script>
 </body>
 </html>

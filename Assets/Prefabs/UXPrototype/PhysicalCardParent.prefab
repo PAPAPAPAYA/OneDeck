@@ -1231,10 +1231,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: -5703313505547693256, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
     - target: {fileID: 5323925544510727272, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
-      propertyPath: m_charWidthMaxAdj
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 5323925544510727272, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_TextWrappingMode
       value: 0
       objectReference: {fileID: 0}

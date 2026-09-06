@@ -1,6 +1,6 @@
 # OneDeck UI/UX Guidelines
 
-Frozen decision record for OneDeck UI interaction feel, distilled from the executable spec `docs/demo/UIKitDemo.html` (v0.6, 2026-09-05). The demo remains the interactive tuning surface — tune there, then sync the numbers here and into the Unity implementation. Card-flight and shop↔combat phase-transition motion are specced separately in `docs/demo/PhaseTransitionDemo.html` (no Unity port plan yet) and are out of scope here.
+Frozen decision record for OneDeck UI interaction feel, distilled from the executable spec `docs/demo/UIKitDemo.html` (v0.7, 2026-09-06). The demo remains the interactive tuning surface — tune there, then sync the numbers here and into the Unity implementation. Card-flight and shop↔combat phase-transition motion are specced separately in `docs/demo/PhaseTransitionDemo.html` (no Unity port plan yet) and are out of scope here.
 
 ## R0. Light Source (inviolable)
 
@@ -96,7 +96,7 @@ Zones, top to bottom:
 2. **Rarity** — ✦×1–3, right-aligned just under the art's bottom-right.
 3. **Effect text** — automatic `> ` prefix (authored marker, not part of `cardDesc`), clamps to 2 lines. The rarity row flex-grows to absorb free space, so the effect **hugs the divider and a second line grows upward**. Cards with no effect **omit the effect row entirely** (no dangling `>`).
 4. **Divider**.
-5. **Bottom row** — name (left, bold, ellipsis on overflow) + attack (right, same baseline, larger font).
+5. **Bottom row** — name (left, bold, squashed horizontally to fit on overflow — never ellipsized, no squash floor) + attack (right, same baseline, larger font).
 
 Layout rules:
 
@@ -143,6 +143,8 @@ Layout rules:
 - Input-side rules (activation on release, drag-out cancel, price-button transactions) belong to the component event layer, not the animation layer.
 
 ## Version History
+
+- v0.7 · 2026-09-06 · Card-name overflow: ellipsis replaced by unlimited horizontal squash (demo `scaleX`; Unity `TMP_Text.characterHorizontalScale` in `CardPhysObjScript.FitCardNamePrint`, plan `plans/plan-card-name-horizontal-squash-2026-09-06.md`). Desc 2-line clamp keeps its `…`.
 
 - v0.6 · 2026-09-05 · Buy/sell dropped long-press for price-button single click (section 04 rewritten; `lpThreshold` param and `lp-fill` removed); added section 08 shop page (2026-09-05 mockup layout; all interaction params referenced from the global bar).
 
