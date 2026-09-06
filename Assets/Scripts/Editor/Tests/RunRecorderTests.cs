@@ -70,7 +70,7 @@ public class RunRecorderTests
 		RunRecorder.OnCardOffered("shrine", true);
 		RunRecorder.OnCardBought("wolf");
 		RunRecorder.OnReroll();
-		RunRecorder.CloseShopVisit(5, 1);
+		RunRecorder.CloseShopVisit(5, 1, 30);
 		RunRecorder.RecordCombatEnd(1, true, 4, 6, 12);
 		RunRecorder.CloseRun(RunRecorder.ResultVictory, 1, 4, new List<string> { "wolf", "shrine" });
 
@@ -83,6 +83,7 @@ public class RunRecorderTests
 		StringAssert.Contains("\"goldEnter\":10", payload);
 		StringAssert.Contains("\"goldAfterPayday\":15", payload);
 		StringAssert.Contains("\"goldExit\":5", payload);
+		StringAssert.Contains("\"hpMax\":30", payload);
 		StringAssert.Contains("\"rerollCount\":1", payload);
 		StringAssert.Contains("\"bought\":[\"wolf\"]", payload);
 		StringAssert.Contains("\"utilityOffered\":[\"shrine\"]", payload);
@@ -168,7 +169,7 @@ public class RunRecorderTests
 	public void CloseRun_ZeroCombats_IsNotUploaded()
 	{
 		RunRecorder.StartRun();
-		RunRecorder.CloseShopVisit(0, 0);
+		RunRecorder.CloseShopVisit(0, 0, 0);
 		RunRecorder.CloseRun(RunRecorder.ResultVictory, 0, 3, new List<string> { "wolf" });
 
 		Assert.AreEqual(0, UploadOutbox.PendingCount, "defensive: a zero-combat finished run must not enqueue");

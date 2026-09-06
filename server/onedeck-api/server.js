@@ -156,6 +156,7 @@ CREATE TABLE IF NOT EXISTS run_shop_visits (
 	bought TEXT NOT NULL DEFAULT '[]',
 	reroll_count INTEGER NOT NULL DEFAULT 0,
 	seen_pool_pct REAL NOT NULL DEFAULT 0,
+	hp_max INTEGER NOT NULL DEFAULT 0,
 	gold_enter INTEGER NOT NULL DEFAULT 0,
 	gold_after_payday INTEGER NOT NULL DEFAULT 0,
 	gold_exit INTEGER NOT NULL DEFAULT 0,
@@ -204,6 +205,7 @@ ensureColumn('run_combats', "series TEXT NOT NULL DEFAULT '[]'");
 ensureColumn('stats_meta', 'enemy_source_server INTEGER DEFAULT 0');
 ensureColumn('stats_meta', 'enemy_source_local INTEGER DEFAULT 0');
 ensureColumn('stats_meta', 'enemy_source_pool INTEGER DEFAULT 0');
+ensureColumn('run_shop_visits', 'hp_max INTEGER NOT NULL DEFAULT 0');
 
 const stmts = {
 	playerById: db.prepare('SELECT * FROM players WHERE player_id = ?'),
@@ -252,8 +254,8 @@ const stmts = {
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
 	insertVisit: db.prepare(`INSERT INTO run_shop_visits
 		(run_id, session_num, offered, utility_offered, bought, reroll_count,
-		 seen_pool_pct, gold_enter, gold_after_payday, gold_exit, ts)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
+		 seen_pool_pct, hp_max, gold_enter, gold_after_payday, gold_exit, ts)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
 	insertCombat: db.prepare(`INSERT INTO run_combats
 		(run_id, session_num, won, hearts_left, rounds, opponent_deck_id, per_card, series, ts)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`),
@@ -555,6 +557,7 @@ app.post('/api/runs', (req, res) =>
 			offered, utilityOffered, bought,
 			rerollCount: toInt(v.rerollCount, 0, 99, 0),
 			seenPoolPct: toFrac(v.seenPoolPct),
+			hpMax: toInt(v.hpMax, 0, 9999, 0),
 			goldEnter: toInt(v.goldEnter, 0, 999999, 0),
 			goldAfterPayday: toInt(v.goldAfterPayday, 0, 999999, 0),
 			goldExit: toInt(v.goldExit, 0, 999999, 0),
@@ -644,7 +647,7 @@ app.post('/api/runs', (req, res) =>
 		{
 			stmts.insertVisit.run(req.body.runId, v.sessionNum,
 				JSON.stringify(v.offered), JSON.stringify(v.utilityOffered), JSON.stringify(v.bought),
-				v.rerollCount, v.seenPoolPct, v.goldEnter, v.goldAfterPayday, v.goldExit, v.ts);
+				v.rerollCount, v.seenPoolPct, v.hpMax, v.goldEnter, v.goldAfterPayday, v.goldExit, v.ts);
 		}
 		for (const c of combatsClean)
 		{
@@ -976,7 +979,7 @@ app.get('/admin/run/:id', requireAdmin, (req, res) =>
 	}
 	else
 	{
-		html += '<table><tr><th>session</th><th>offered</th><th>bought</th><th>rerolls</th><th>pool seen</th><th>gold in</th><th>after payday</th><th>gold out</th></tr>';
+		html += '<table><tr><th>session</th><th>offered</th><th>bought</th><th>rerolls</th><th>pool seen</th><th>hp max</th><th>gold in</th><th>after payday</th><th>gold out</th></tr>';
 		for (const v of visits)
 		{
 			let offered = [];
@@ -987,6 +990,7 @@ app.get('/admin/run/:id', requireAdmin, (req, res) =>
 				+ esc(offered.map((id) => cardName(catalog, id)).join(', ')) + '</td><td>'
 				+ esc(bought.map((id) => cardName(catalog, id)).join(', ') || '-') + '</td><td class="num">'
 				+ v.reroll_count + '</td><td class="num">' + (100 * v.seen_pool_pct).toFixed(0) + '%</td><td class="num">'
+				+ (v.hp_max > 0 ? v.hp_max : '-') + '</td><td class="num">'
 				+ v.gold_enter + '</td><td class="num">' + v.gold_after_payday + '</td><td class="num">'
 				+ v.gold_exit + '</td></tr>';
 		}

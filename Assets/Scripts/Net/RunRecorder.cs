@@ -126,7 +126,7 @@ public static class RunRecorder
 	}
 
 	/// <summary>PhaseManager shop-exit trigger: closes and persists one shop_visit.</summary>
-	public static void CloseShopVisit(int goldExitPurse, int sessionNum)
+	public static void CloseShopVisit(int goldExitPurse, int sessionNum, int hpMax)
 	{
 		if (current == null || ended) return;
 
@@ -138,6 +138,7 @@ public static class RunRecorder
 			bought = new List<string>(visitBought),
 			rerollCount = visitRerolls,
 			seenPoolPct = ComputeSeenPoolPct(),
+			hpMax = hpMax,
 			goldEnter = goldEnter,
 			goldAfterPayday = goldAfterPayday,
 			goldExit = goldExitPurse,

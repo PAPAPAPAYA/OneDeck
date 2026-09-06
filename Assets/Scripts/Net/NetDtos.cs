@@ -187,6 +187,8 @@ public class RunShopVisitEntry
 	public List<string> bought;
 	public int rerollCount;
 	public float seenPoolPct;
+	/// <summary>Owner hpMax at shop exit (post baseline/utility recompute). 0 = legacy record.</summary>
+	public int hpMax;
 	public int goldEnter;
 	public int goldAfterPayday;
 	public int goldExit;

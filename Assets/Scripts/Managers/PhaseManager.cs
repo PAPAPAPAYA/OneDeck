@@ -543,7 +543,9 @@ public class PhaseManager : MonoBehaviour
 		// Async-PvP: shop exit is an outbox flush trigger (plan §2.3) - deck snapshots leave here
 		UploadOutbox.Flush();
 		// Async-PvP: close this visit's run-journal shop_visit record (plan §2.6)
-		RunRecorder.CloseShopVisit(purseRef != null ? purseRef.value : 0, sessionNum.value);
+		// hpMax is read at exit so it includes this visit's baseline/utility recompute.
+		RunRecorder.CloseShopVisit(purseRef != null ? purseRef.value : 0, sessionNum.value,
+			playerStatusRef != null ? playerStatusRef.hpMax : 0);
 		InvokeExitShopPhaseEvent();
 	}
 	#endregion
