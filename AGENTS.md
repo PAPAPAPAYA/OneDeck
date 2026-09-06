@@ -70,20 +70,10 @@ server/onedeck-api/     # Async-PvP backend (Express + better-sqlite3, single fi
 - **Delay** moves a card toward `index 0` by 1 slot (later reveal).
 
 ### Physical Deck Layout (Cascade / Arc Loop / Float Stack)
-- Selector: `deckLayoutMode` enum {Linear, Cascade, ArcLoop, FloatStack} — single source of truth.
-- Cascade: front card (deck top) largest at the `physicalCardDeckPos` anchor; front sweeps up-left shrinking; tail hooks back tight. Shop unaffected. Legacy `xOffset/yOffset/zOffset` fields only serve the Linear fallback.
-- `revealCardCountsAsDeckFront` (default `true`, cascade/arc only): the reveal-zone card holds the layout front slot, so revealing does not re-layout the deck; it slides one step on return. Source of truth: `GetCascadeDeckCount()`.
-- All position math funnels through one seam: `DeckPositionCalculator.CalculatePositionAtIndex(...)`; every caller (layout, popup, slot-in, reveal, peel focus) inherits the active layout.
-- **Peel deck focus**: `_focusSegmentCount` (focus index + 1) drives the layout seams via `GetLayoutDeckCount()` — focus card on the front slot at the anchor (max scale); peeled cards slide off-screen; restore = full re-layout. `deckFocusTargetPos` deprecated.
-- `DeckCascadeLayout` (pure static, unit-testable): Bezier + arc-length math ported 1:1 from `docs/demo/CardArrangementDemo.html`; cached per `(deckCount, pxToWorld, Params)`.
-- Cascade index mapping: `cascadeIndex = deckCount - 1 - unityIndex` (0 = front card = deck top). Z: `basePos.z - zOffset * index`.
-- Per-index scale: `GetDeckScaleAtIndex(i)` = `physicalCardDeckSize` × layout scale; `cascadeScaleJitterWithCard` multiplies position jitter by the same scale.
-- **Coverage normalization**: one stretch-only factor (cap `cascadeCoverageCap`) lets small decks reach the curve's hook region; large decks unaffected.
-- EditMode coverage: `DeckCascadeLayoutTests.cs` / `DeckArcLoopLayoutTests.cs` / `DeckFloatStackLayoutTests.cs` (demo goldens).
-- **Dynamic arc midpoint (replaces `showPos`)**: `useDynamicArcMidpoint` (default on) — deck-bound arcs take their midpoint from the layout walk at `arcMidpointCurveT` + `arcMidpointOffset` (`TryGetArcMidpointPosition`). Fallback: explicit `CardMoveConfig.arcMidpoint` > dynamic > `showPos`.
-- **Arc Loop mode**: superellipse loop; slots by curvature-weighted arc length (w=0 = uniform); deck top = tilted loop's visual lowest point, deck bottom adjacent up the right; scale by screen height, z by depth rank; cards upright. PRD: `plans/plan-arc-loop-deck-layout-2026-08-12.md`.
-- **Float Stack mode**: centered stack; slot 0 (lowest) drives reveal & big-shadow offsets. Math: `DeckFloatStackLayout.ComputeFrame`. PRD: `plans/plan-float-stack-center-scale-2026-08-15.md`; demo: `docs/demo/CardStackRevealDemo.html`.
-- **Float Stack big shadow is follow-driven**: `BigShadowFollower` tracks the reveal card per frame; anti-light lift via `SetBigShadowLift` (ramped by `AttackAnimationManager` / `RecorderAnimationPlayer`). Enable/disable only (never destroy+re-add); self-destructs the shadow GO if the card dies mid-drive. Tunables: `plans/plan-float-stack-shadow-follow-2026-08-16.md`.
+- Selector: `deckLayoutMode` enum {Linear, Cascade, ArcLoop, FloatStack} — single source of truth. All position math funnels through `DeckPositionCalculator.CalculatePositionAtIndex(...)`; per-index scale via `GetDeckScaleAtIndex`. EditMode: `DeckCascadeLayoutTests` / `DeckArcLoopLayoutTests` / `DeckFloatStackLayoutTests` (demo goldens).
+- Cascade math ported 1:1 from `docs/demo/CardArrangementDemo.html` (`DeckCascadeLayout`, pure static, cached); `revealCardCountsAsDeckFront` (default `true`) keeps the reveal-zone card on the layout front slot.
+- Peel deck focus: `_focusSegmentCount` drives the layout seams via `GetLayoutDeckCount()`; `deckFocusTargetPos` deprecated. Dynamic arc midpoint (`useDynamicArcMidpoint`, default on) replaces `showPos`. Float Stack big shadow is follow-driven (`BigShadowFollower`, enable/disable only).
+- Full mode details (Arc Loop / Float Stack / shadow follow / coverage normalization): `docs/DeckLayouts.md`.
 
 ### Controls
 - First click: Reveal next card.
@@ -158,127 +148,24 @@ Under `Assets/Scripts/` by role: `Managers/` CombatManager, CombatFuncs, GameEve
 
 ## Result Screen Per-Card Stats
 
-Two-half panel (player-created top / enemy-created bottom) for the combat that just finished (plan: `plans/plan-result-per-card-stats-2026-07-23.md`).
+Two-half panel for the just-finished combat; store `CombatPerCardStatsTracker.Me` (session-scoped, rows keyed `(cardTypeID, creatorSide)` = the card's CREATOR); neutral/start cards and utility passives excluded (`EnsureRecord`). Damage = actual HP lost, creator-relative. Details: `docs/ResultPerCardStats.md`; plan `plans/plan-result-per-card-stats-2026-07-23.md`; EditMode tests `CombatPerCardStatsTrackerTests.cs`.
 
-- **Store**: `CombatPerCardStatsTracker.Me` (auto-created by `CombatManager.Awake()`), session-scoped: `BeginSession()` wipes all state in `GatherDecks()`. Rows keyed `(cardTypeID, creatorSide)` — the faction that CREATED the card; initial deck via `RegisterDeckComposition(combinedDeckZone)`, mid-combat via `RegisterGeneratedCard` (funneled through `CombatFuncs.AddCard_TargetSpecific`); both paths pre-create all-zero rows.
-- **Exclusions** (`EnsureRecord` — the single exclusion point): neutral/start cards (`IsNeutralCard`) and `IsUtilityPassive` (passives have no combat effect chain — would only ever be all-zero rows).
-- **Damage** = actual HP lost (ProcessDamage delta), creator-relative: `DamageDealtToOpponent` when the victim opposes the creator, else `DamageDealtToSelf`. Bury/Stage split by SOURCE's owner; neutral victims count neither side.
-- **Hooks**: `CostNEffectContainer.InvokeEffectEvent()`, `HPAlterEffect.CheckDmgTargets_DealingDmgToOpponent/Self`, `EffectScript.ApplyStatusEffectCore` Power branch, `BuryEffect`/`StageEffect` moved-cards loops.
-- **UI**: `ResultStatsPanel` builds itself fully at runtime (no prefab/scene wiring); `PhaseManager.resultStatsPanelLayout` tunes it (Play Mode Inspector edits rebuild via OnValidate). `Rounds: N` = `roundsLastCombat - 1` — the start card's opening shuffle is not a round.
-- **Pitfall**: after setting stretch anchors on a fresh RectTransform, always zero `offsetMin/offsetMax` — the default 100×100 sizeDelta otherwise leaks into the final rect.
-- EditMode tests: `Assets/Scripts/Editor/Tests/CombatPerCardStatsTrackerTests.cs`.
+## Shop Systems
 
-## Duplicate Slot Rule
-
-`ShopManager.duplicateCopiesShareSlotRef` (BoolSO in `Assets/SORefs/ShopRefs/`, default OFF). ON: copies sharing a `cardTypeID` take 1 deck slot (first copy only), stack upper-left in the shop display, and only the stack base shows price (`ShopCardView.suppressPriceDisplay`); count via `UtilityFuncManagerScript.CountCardsTakingUpSpace`; empty `cardTypeID` never deduped; `CombatStartCardGiver` and enemy deck unaffected. Shop empty slots are persistent background objects (`ShopUXManager._spawnedEmptySlots`, one per deckSize grid slot) — never consumed/respawned by buy/sell; `_spawnedPlayerCards` holds real cards only; buy/sell just add/remove + `RelayoutPlayerDeckCards()`. Plan: `plans/plan-duplicate-cards-share-deck-slot-2026-07-31.md`.
-
-## Shop Utility Passives & Board Pipeline
-
-Plan & execution state: `plans/plan-utility-passive-shop-pipeline-2026-08-31.md` (§6).
-
-- Metadata: `CardScript.utilityKind` (+ `utilityValue`/`utilityValue2`/`utilityRarityWeightMults`/`reservedTag`); `IsUtilityPassive` = isPassive && kind != None. Passive utility = deck-resident, occupies a slot, sellable (sell removes it); all bonuses are RECOMPUTED from the deck — no accumulating listeners.
-- `UtilityShopBonus` (pure static) derives all from `playerDeckRef`: baseline growth (payday/hpMax/deckSize per session), per-kind effects, owned dedup. Sole stateful exception: deck-slot meter card — `DeckSizeIncreaseEffect` bumps run counter `DeckSlotPurchasesRef` (reset in `PhaseManager.ResetRun`), self-exiles on buy (BuyFunc skips deck add), escalating price, capped by static `maxDeckSize` (16).
-- Shop HP invariant: `ApplyHpMaxFromDeck` (entry/buy/sell) sets `hp = hpMax`; shop phase is always full HP, so combat starts full (`HPMaxAlterEffect` removed 2026-09-04).
-- `ShopBoardPipeline.GenerateBoard` (pure static, injected System.Random): board-type roll (`sessionUtilityBoardChances` + OddsUtility; ODDS_1 forces the visit's first board; empty utility pool → combat board) → reserved slots (boardIndex from 0, fires when `boardIndex % every == every - 1`; candidates from the CLASSIFIED pool only — combat boards never offer utility; utility drought → any-rarity fallback; combat drought → skip) → wave filters (combat generic slots, creature first) → weighted rolls (session table × shopRollWeightMultiplier × RarityWeight mults). `CurrentBoardIsUtility` drives the shop UX marker.
-- Stats: result rows and `CountGraveyardCardsOf` exclude `IsUtilityPassive` (latter: no enemy GRAVE_CURSE feed); deck-population axis still counts passives; ShopStatsManager logs utility appear/buy share.
+- **Duplicate slot rule**: `ShopManager.duplicateCopiesShareSlotRef` (BoolSO, default OFF) — same-`cardTypeID` copies share 1 deck slot, stacked; only the stack base shows price. Empty slots are persistent background objects, never consumed by buy/sell.
+- **Utility passives & board pipeline**: `CardScript.utilityKind` + `IsUtilityPassive`; bonuses recomputed from the deck by `UtilityShopBonus` (no accumulating listeners); board generation in `ShopBoardPipeline.GenerateBoard` (pure static, injected Random); deck-slot meter card via `DeckSizeIncreaseEffect` (cap 16). Shop HP invariant: shop phase always full HP.
+- Details: `docs/ShopSystems.md`; plans `plans/plan-duplicate-cards-share-deck-slot-2026-07-31.md`, `plans/plan-utility-passive-shop-pipeline-2026-08-31.md`.
 
 ## Animation System
 
-### Two-Phase Execution Model
-1. **Logic Phase** — All effect logic executes synchronously. Effects capture `AnimationRequest`s into the current `EffectRecorder` instead of playing visuals immediately. Deck state, HP, and shields resolve immediately.
-2. **Animation Phase** — After the chain closes, `CombatManager.PlayRecorderAnimationsAndWait()` collects root recorders and yields to `RecorderAnimationPlayer.PlayRecordersCoroutine()` for sequential playback.
+**Two-phase**: logic phase executes effects synchronously and captures `AnimationRequest`s into `EffectRecorder`s (tree under `EffectChainManager`; traversal = effect-instance-boundary interleave); after the chain closes, `CombatManager.PlayRecorderAnimationsAndWait()` plays them via `RecorderAnimationPlayer` (singleton, auto-created in `CombatManager.Awake()`). Per-effect capture table, `AnimationRequestType` semantics, projectile/delta-commit details: `docs/AnimationSystem.md`.
 
-### EffectRecorder Tree
-- `EffectRecorder` MonoBehaviour carries `animationRequests` (captured intents) and `animationPlayed` flag.
-- Tree navigation uses existing Transform parent-child hierarchy under `EffectChainManager`.
-- Traversal order is **effect-instance-boundary interleave**: play all requests in current recorder, then recurse into unplayed direct children by sibling order.
-
-### AnimationRequest Types
-```csharp
-enum AnimationRequestType { Attack, MoveToBottom, MoveToBottomBatch, MoveToTop, MoveToTopBatch, MoveToIndex, Destroy, StatusEffectChange, StatusEffectProjectile, PopUp, SlotIn, MoveToPopUpPosition, PopUpBatch, SlotInBatch, MoveToTopPopUpBatch, Shuffle, Shake }
-```
-- `HPAlterEffect` captures `Attack` requests (damage already resolved in logic phase; `onHit` is null).
-- `BuryEffect` captures `PopUpBatch` then `MoveToBottomBatch`.
-- `StageEffect` captures `MoveToTopPopUpBatch` (arc to pop-up peak, then slot in to deck top).
-- `StartCardShuffleEffect` captures `Shuffle` (sourceCard = startCard, targetCards = shuffled deck). `RecorderAnimationPlayer` handles it via `PlayShuffleAnimation`; `onComplete` calls `CombatManager.OnStartCardShuffleAnimationComplete()`.
-- `ExileEffect` captures `Destroy` (preceded by `PopUp` so the player sees the card being exiled).
-- `ApplyStatusEffectCore` and `ManaAlterEffect` capture `StatusEffectChange` requests (status effect visuals are deferred to the animation phase; resolver instantiation stays in the logic phase).
-- `StatusEffectGiverEffect` — `GiveSelfStatusEffect` runs `ApplyStatusEffectCore` (auto-captures `StatusEffectChange` only). The other `Give*` methods (`GiveStatusEffect`, `GiveAllFriendlyStatusEffect`, `GiveStatusEffectToLastXCards`, `GiveStatusEffectToXFriendly`) run it synchronously then capture `PopUpBatch` + `StatusEffectProjectile` + `SlotInBatch` via `CaptureBatchStatusEffectAnimation`.
-- `AddTempCard` captures `MoveToPopUpPosition` + `SlotIn` for each newly created card so it visibly enters the deck.
-- `CurseEffect` captures `PopUp` + `StatusEffectProjectile` + `SlotIn` (single-target). `ConsumeHostileCursePower` captures batch `StatusEffectChange` + `PopUpBatch` + `StatusEffectProjectile` (toward `statusEffectConsumePos`, per-layer projectiles) + `SlotInBatch`.
-- `ConsumeStatusEffect` — `ConsumeOwnStatusEffect` captures `PopUp` + `StatusEffectProjectile` (`customProjectileEndPosition`) + `StatusEffectChange` + `SlotIn`. `ConsumeRandomEnemyCardsStatusEffect` captures batch `StatusEffectChange` + `PopUpBatch` + `StatusEffectProjectile` (`reverseProjectile=true`) + `SlotInBatch` via `CaptureBatchStatusEffectConsumeAnimation`.
-- Batch types run all card movements in parallel and yield until the last completes.
-
-**`StatusEffectProjectile` semantics:**
-- `targetCard` populated, `targetCards` null/empty → single-target projectile (back-compat).
-- `targetCard` null, `targetCards` populated → multi-target projectile; all targets fly in parallel with stagger.
-- Do not populate both simultaneously.
-
-### Per-Projectile Status Effect Display Commit
-
-- `AnimationRequest.statusEffectDelta` carries the signed display delta for every `StatusEffectChange` request.
-- `RecorderAnimationPlayer` computes a per-card display baseline (`myStatusEffects - sum of all pending deltas`) across the recorder tree before playback.
-- Deltas apply incrementally: non-deferred requests when played; deferred ones (targets with a matching `StatusEffectProjectile` in the same recorder) when the projectile completes — so nested same-target giving (e.g. `PowerReactionEffect`) updates card text per projectile instead of committing full state on the first landing.
-
-### Snapshot Target Indices
-`AnimationRequest` carries an optional `List<int> targetIndices` (parallel to `targetCards`). Effects that move cards within the deck must **snapshot** each target card's logical index at capture time **before** raising reactive events (e.g. `onMeBuried` → `StageSelf`), because reactive effects may modify deck order and pollute the index.
-
-### ApplyAnimationResult
-`ICombatVisuals` exposes `ApplyAnimationResult(AnimationRequest request)`. `RecorderAnimationPlayer` calls it **before** each deck-move request (alongside `UpdateAllPhysicalCardTargets`) so that:
-1. `physicalCardsInDeck` order is advanced to the post-animation state **before** the tween starts.
-2. All cards tween to new positions in parallel (the moved card plays its arc; others slide smoothly).
-3. Reactive chains (e.g. bury → stage) display correctly: the first animation's result is preserved instead of overwritten by the final deck state.
-
-### RecorderAnimationPlayer
-- Singleton. Owns the animation-phase coroutine; falls back to old visual path when `RecorderAnimationPlayer.me == null`.
-- Wraps playback in `AttackAnimationManager.HoldDeckFocus()` / `ReleaseDeckFocus()`.
-
-### Emphasize Animation
-Before playing an effect recorder's requests, the source card (`recorder.cardObject`) plays a brief scale pulse (1.2x over 0.25s, then back) to visually signal which card triggered the effect. Skipped if the recorder has no requests or no card object.
-
-### Source-Card PopUp / SlotIn
-- Off-reveal source cards (`recorder.sourceWasInRevealZone == false`) are automatically **popped up** before the first recorder's emphasize/shake and **slotted in** once after the last recorder that shares the same source card finishes.
-- Pop-up/slot-in is scoped **per card**, not per recorder: the same source card across multiple recorders stays at the popup peak and returns to the deck only once.
-- Built-in `PopUp`/`PopUpBatch`/`SlotIn`/`SlotInBatch` requests targeting the source card are skipped as duplicates; target cards still use those requests normally.
-- `MoveToTopPopUpBatch` is kept unchanged: a staged source card moves from its current popup peak to the top peak and slots in; later recorders for the same source pop it up again.
-- Off-reveal **Attack** recorders skip popup and keep the peel-deck focus path; if the source is already held at peak, the attack recorder reuses that popup.
-- Automatic slot-in is skipped if the source card is destroyed, exiled, or moved to the reveal zone first.
-
-### AnimationStateTracker (Legacy Safety Net)
-Still active as a secondary guard. `PlayRecorderAnimationsAndWait` yields until `HasActiveBatch == false` before closing the chain, ensuring any legacy-queued events flush naturally.
-
-### Important Animation Implementation Details
-- `EffectRecorder` fields: `sessionID`, `chainID`, `processedEffectID`, `cardObject`, `effectObject`, `animationRequests`, `animationPlayed`.
-- `EffectChainManager.recorderStack` tracks nested recorder creation; reactive effects attach as children of the **recorder that triggered them**.
-- `CurseEffect.ApplyPowerToCardWithProjectile()` captures `StatusEffectProjectile`.
-- `CombatManager.isPlayingEffectAnimations` blocks reveal/effect input during playback; reset **after** `UpdateAllPhysicalCardTargets()`.
-- `PlayRecorderAnimationsAndWait`: wait `HasActiveBatch` → `CloseOpenedChain()` → play roots → `finally` `ResetInputBlock()` → `UpdateAllPhysicalCardTargets()` → `isPlayingEffectAnimations = false`.
-- **Deck Focus Restoration**: `RecorderAnimationPlayer` restores normal deck layout before any deck-move request if `CombatUXManager.IsDeckFocused` is true.
-- Batch moves use `correctedIndex` absolute positions, ignoring `snapshotDeckSize` offsets.
-- `HPAlterEffect.isStatusEffectDamage = true` skips `Attack` animation capture.
-- **Recorder path**: `BuryEffect`/`StageEffect`/`ExileEffect` no longer call `SyncPhysicalCardsWithCombinedDeck` in the logic phase; `RecorderAnimationPlayer.ApplyAnimationResult` applies reordering/destruction during playback.
-- `ExileEffect` sets `revealZone = null` when exiling the revealed card, and chains `Destroy` requests with `onComplete` on the last card.
-- `CombatManager.Awake()` auto-creates `RecorderAnimationPlayer` if missing.
-- **afterShuffle timing**: Raised after shuffle animation completes, next card reaches reveal zone, and `PlayRecorderAnimationsAndWait()` finishes. Round Start path waits for the `MoveCardToRevealZone` callback before raising.
-- **Global Combat Animation Speed**: `CombatAnimationSpeed.SpeedScale` (init from `CombatManager.combatAnimationSpeedScale`) scales all Combat-phase card animation durations; `CardPhysObjScript` applies it only in the Combat phase, so Shop animations stay at normal speed.
-
-### Face-Down / Flip System
-
-Deck cards are face-down by default; state lives on `CardPhysObjScript` (`isFaceUp` / `everRevealed` / `SetFaceUp`), flips are triggered from `CombatUXManager`. Hardcoded **never-cover rule**: a card once shown stays face-up until exiled or shuffled (shuffle force-covers at the arc midpoint). Full details: `docs/FaceDownFlipSystem.md`.
-
-### Card Movement (`ICombatVisuals` / `CombatUXManager`)
-- `MoveCardToRevealZone(card, onComplete)` — Move from deck to reveal zone; callback fires when movement finishes.
-- `MoveCardToBottom/Top/Index(card, duration, useArc, onComplete)`
-- `DestroyCardWithAnimation(card, onComplete)`
-- `AddCardToDeckVisual(card)`
-- `SyncPhysicalCardsWithCombinedDeck()`
-- `ApplyAnimationResult(request)` — Updates `physicalCardsInDeck` order to reflect a completed animation request.
-- `PlayShuffleAnimation(startCard, shuffledCards, onComplete)`
-- `PlayStatusEffectProjectileToPosition(giverCard, endPosition, onComplete, ...)` — Single/projectile flight to a world position (e.g. `statusEffectConsumePos`), used by self-consume effects.
-
-**Note:** `MoveCardWithAnimation` skips `UpdateAllPhysicalCardTargets()` in its `OnComplete` when `RecorderAnimationPlayer.me != null`, because `RecorderAnimationPlayer` handles deck sync per-request via `ApplyAnimationResult`.
-
-**Deck Layout:** All deck position targets come from the cascade curve via `DeckPositionCalculator.CalculatePositionAtIndex` (see Combat System → Physical Deck Layout). `UpdateAllPhysicalCardTargets` sets per-index cascade scales via `GetDeckScaleAtIndex`.
+Critical points:
+- Effects moving cards within the deck **snapshot** `targetIndices` at capture time, before raising reactive events (e.g. `onMeBuried` → `StageSelf`).
+- `RecorderAnimationPlayer.ApplyAnimationResult` advances `physicalCardsInDeck` **before** each deck-move request so reactive chains (bury → stage) display correctly.
+- Source-card auto popup/slot-in is scoped **per card**, not per recorder; skipped if the source is destroyed/exiled/revealed first.
+- `CombatManager.isPlayingEffectAnimations` blocks input during playback; `CombatAnimationSpeed.SpeedScale` scales Combat-phase durations only (shop stays normal speed).
+- Face-down/flip: state on `CardPhysObjScript` (`isFaceUp`/`everRevealed`/`SetFaceUp`); never-cover rule — a card once shown stays face-up until exiled or shuffled. Details: `docs/FaceDownFlipSystem.md`.
 
 ## Critical Rules
 
@@ -290,6 +177,7 @@ Deck cards are face-down by default; state lives on `CardPhysObjScript` (`isFace
 - **Neutral Cards**: `isStartCard == true` cards are neutral and skipped by `ShouldSkipEffectProcessing()`.
 - **CardScript Cost Fields**: removed in the 3.0 no-cost redesign (no `buryCost`/`delayCost`/`exposeCost`/`minionCost*` fields).
 - **CardScript Properties**: `displayName` (falls back to GameObject name via `GetDisplayName()`), `shopRollWeightMultiplier`, `IsNeutralCard`, `CanBeAffectedByEffects`, `takeUpSpace` (`false` cards stay in DeckSO but are not instantiated in shop/combat and cannot be sold).
+- **Card Face Template v1.1 (2026-09-05)**: zones = art (unchanged) → rarity `✦` right-aligned under the art's bottom-right → `> `-prefixed desc (2-line clamp + `…`, bottom-anchored above divider) → `cardDivider` line → bottom row (name left, attack right & larger, shared baseline). Standalone tag row and status/life print are hidden (tags live in desc `<tag:X>` + hover tooltip). Glyphs `✦`/`…` come from `Assets/Fonts/NotoSansSymbols2 SDF.asset` (static atlas, self-typeface; fallback on both RobotoCondensed SDFs) — no other font has them; fullwidth punctuation (`：`、`，`) has no glyph anywhere — cardDesc must use halfwidth punctuation. Port details & TMP pitfalls: `plans/plan-card-template-v1.1-port-2026-09-05.md`.
 - **Graveyard Removed**: Graveyard deprecated; legacy `CardManipulationEffect.Revive*` removed. Revive engine = `Effects/ReviveEffect` (plan in `plans/`); `StatusEffect.Revive` enum slot kept deprecated (implicit values, never renumber).
 - **Input Block Reference Counting**: `BlockInput`/`UnblockInput` use reference counting; always pair them.
 - **Visual Bug Comments**: When fixing a visual/presentation bug in `Effects/`, `UXPrototype/`, or `Managers/Animation*.cs`, use the `VISUAL-FIX(YYYY-MM-DD):` block format defined in `docs/VisualBugPrevention_Guide.md`. Search existing `VISUAL-FIX` comments before editing.
@@ -299,7 +187,7 @@ Deck cards are face-down by default; state lives on `CardPhysObjScript` (`isFace
 
 Damage `<color=red>`, Heal `<color=#90EE90>`, Shield `<color=grey>`, Friendly `<color=#87CEEB>`, Enemy `<color=orange>`
 
-**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette`. Log/rich-text: `GameColorPalette.Me.<name>.OpenTag`/`.Hex` — never hardcode hex. Components (`CardPhysObjScript`) use serialized `ColorSO` fields; HUD components read `GameColorPalette.<Name>Color` statics — HUD colors live in the palette's "HP Bar / Numeric"/"Damage Floater" groups, Edit Mode previews live-update.
+**Single source of truth**: all colors live in `ColorSO` assets under `Assets/SORefs/Colors/`, aggregated by `GameColorPalette`. Log/rich-text: `GameColorPalette.Me.<name>.OpenTag`/`.Hex` — never hardcode hex. `CardPhysObjScript` reads palette statics at runtime (serialized ColorSO fields removed 2026-08-17); HUD components read `GameColorPalette.<Name>Color` statics — HUD colors live in the palette's "HP Bar / Numeric"/"Damage Floater" groups, Edit Mode previews live-update.
 
 ---
 
