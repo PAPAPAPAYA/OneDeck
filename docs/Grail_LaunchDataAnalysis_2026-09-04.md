@@ -150,6 +150,7 @@ Interpretation:
 
 - **2026-09-11**: if Grail's total reviews land near ~235, the week-1 extrapolation holds.
 	- *Status 2026-09-05*: day-4 intake held at 43 (vs 39 on day 3) instead of decaying; 235 will be crossed around Sep 8, week-1 tracking to **~270–290 reviews** (≈ 8,000–11,000 units). See §9.
+	- *Status 2026-09-06*: 235 crossing on Sep 6 (2 days ahead of the revised estimate); day-5 intake 35 confirms the decay curve; week-1 tracking ~270–275 reviews, inside the revised band. See §10.
 - **2026-09-18**: if the daily rate has dropped below ~15/day, month-1 settles toward the lower band (~450 reviews).
 
 ## 9. Recheck — 2026-09-05 (day 4–5)
@@ -170,6 +171,26 @@ Per-day intake now: 48 → 55 → 39 → 43 → (day 5 in progress).
 2. **Language mix shifting east**: of the 48 reviews since Sep 4 00:00 UTC — english 32 (67%, down from 75%), schinese 7 (15%, up from 9%), plus first tchinese and koreana entries. East-Asian reviewers remain almost entirely positive.
 3. **Positive rate of the new cohort dropped to 85%** (41/48). Negative-review themes on days 4–5: QoL complaints (a "tutorial replays every match" bug), archetype balance ("sword archetype loses to everything, poison clears at full HP"), flat upgrade bonuses / shallow synergy, and one fundamental "autobattling cards isn't fun". The v1.0.2 patch fixed the top launch complaint (unlock grind), but the complaint mix is rotating toward QoL details and build depth — an early-warning indicator for the score. Watch whether the 90.3% holds over the next few days.
 4. **Cohort advantage widening**: Montabi needed 29 days to reach 149 reviews; Grail passed 186 by day 4.5 — the ≈2.5–3× launch-advantage coefficient from §5 holds and may be understated.
+
+## 10. Recheck — 2026-09-06 (day 5–6)
+
+Snapshot at 07:00 UTC 2026-09-06:
+
+| Metric | Value | vs 2026-09-05 |
+|--------|-------|---------------|
+| Total reviews | **230** (207 pos / 23 neg, 90.0%, "Very Positive") | +44 in 24 h; cumulative rate pinned at 90% |
+| Day-5 intake (Sep 5, full UTC day) | **35** (30 pos) | day 4 was 42 — **decay resumed (-17%)** |
+| CCU | **556** | 634 → 556 (**first real dip, -12%**) |
+
+Per-day intake: 48 → 55 → 39 → 42 → 35 → (day 6 in progress).
+
+### Findings
+
+1. **Back on the revised curve**: the days-4 plateau was transient; day-5 intake matches the corrected model (~30/day for days 6–7). Week-1 forecast holds at **~270–275 reviews ≈ 8,000–11,000 units**; the §8 checkpoint (235) is crossed on Sep 6, two days ahead of the revised estimate.
+2. **East-Asia share keeps climbing**: of 46 reviews since Sep 5 00:00 UTC — english 28 (61%), schinese 9 (20%), japanese + koreana 6 (14%). CJK ≈ one third of the new cohort; still near-zero negative there except one zh-CN "content unfinished" complaint.
+3. **Marginal positive rate stuck at 85% for a second consecutive window** (39/46). Cumulative 90% is carried by launch-window stock; the score floor depends on whether the new complaint mix keeps rotating.
+4. **Complaints moved from ops → QoL → design**: the new dominant negative is *irreversible branching under RNG*. A Korean negative explicitly benchmarks the direct competitor: don't expect Backpack Battles — there is no way to re-route a bad branch, so a lucky opponent just wins. First direct-comp comparison in the review base; plus "content not finished" (zh-CN), UI/settings polish, RNG dependence.
+5. **OneDeck takeaway**: snapshot-async PvP amplifies RNG blame. Backpack Battles ships reroute/mitigation sinks; a game without them (Grail's branching) gets design-level negatives that ops patches cannot fix. Post-defeat mitigation options may set the review-score floor for this genre — worth reflecting in OneDeck combat/reroll design.
 
 ## Appendix: Data Provenance
 
