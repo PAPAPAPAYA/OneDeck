@@ -87,7 +87,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
-  event: {fileID: 11400000, guid: b6cdc91ddb1abf24d9a20cee17bb623b, type: 2}
+  event: {fileID: 11400000, guid: cde884b6e17c9e24b90d185b1c96604e, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:

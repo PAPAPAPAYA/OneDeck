@@ -918,6 +918,36 @@ public class CombatManager : MonoBehaviour
 
 	private void RevealNextCard(Action onMoveToRevealZoneComplete = null)
 	{
+		// Round-end pre-shuffle boundary: when the start card is the next reveal, fire
+		// beforeStartCardReveal first so armed effects (FINAL_ESCORT grave revive) can land
+		// cards on the deck top; flush their animations, then reveal whatever is on top now
+		// (the revived creature, or the start card when nothing came up).
+		if (IsStartCardOnDeckTop())
+		{
+			StartCoroutine(RevealAfterBeforeStartCardRevealRoutine(onMoveToRevealZoneComplete));
+			return;
+		}
+		RevealNextCardCore(onMoveToRevealZoneComplete);
+	}
+
+	private bool IsStartCardOnDeckTop()
+	{
+		if (combinedDeckZone == null || combinedDeckZone.Count == 0) return false;
+		var topScript = combinedDeckZone[^1].GetComponent<CardScript>();
+		return topScript != null && topScript.isStartCard;
+	}
+
+	private System.Collections.IEnumerator RevealAfterBeforeStartCardRevealRoutine(Action onMoveToRevealZoneComplete)
+	{
+		GameEventStorage.me?.beforeStartCardReveal?.Raise();
+		// The raise ran the logic phase (AnimationRequests captured); flush the recorder
+		// animations before continuing so the revived creature is settled on the deck top.
+		yield return PlayRecorderAnimationsAndWait();
+		RevealNextCardCore(onMoveToRevealZoneComplete);
+	}
+
+	private void RevealNextCardCore(Action onMoveToRevealZoneComplete = null)
+	{
 		var cardRevealed = combinedDeckZone[^1].GetComponent<CardScript>();
 		revealZone = combinedDeckZone[^1];
 		combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);

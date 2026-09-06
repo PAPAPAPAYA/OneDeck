@@ -30,6 +30,7 @@ public class GameEventStorage : MonoBehaviour
 	public GameEvent afterShuffle; // used for effects that put cards on top or bottom
 	public GameEvent beforeRoundStart; // used for effects that activate once in a round
 	public GameEvent onRoundEnd; // 4.0 E3: raised at the round boundary (shuffle animation complete, BEFORE per-round resets) so round-end effects read the completed round
+	public GameEvent beforeStartCardReveal; // 4.0: raised in RevealNextCard when the start card is the next reveal and BEFORE its shuffle — the true pre-shuffle round-end boundary; armed effects (FINAL_ESCORT grave revive) land cards on the deck top so they reveal before the start card
 	public GameEvent onAnyCardAttacked; // raised once per attack SEGMENT (2026-09-05 per-segment redesign, plans/plan-per-segment-attack-events-2026-09-05.md); self-attacks included
 	public GameEvent onAnyFriendlyCardAttacked; // raised once per non-self attack segment; delivered to the attacking card's faction (friendly attacker -> RaiseOwner, enemy attacker -> RaiseOpponent)
 	

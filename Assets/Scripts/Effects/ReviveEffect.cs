@@ -198,6 +198,32 @@ public class ReviveEffect : EffectScript
 		ReviveChosenCards(SortOrShufflePool(BuildRevivePool(false, true)), amount);
 	}
 
+	[Header("Round-End Arm Gate")]
+	[Tooltip("4.0 round-end pattern (FINAL_ESCORT): armed by the deathrattle via ArmRoundEndRevive, consumed once per pre-shuffle round-end boundary by ReviveMyCardsIfArmed")]
+	[HideInInspector]
+	public bool roundEndReviveArmed;
+
+	/// <summary>
+	/// Deathrattle-side arm: the buried card sets the flag; the actual revive waits for the
+	/// pre-shuffle round-end boundary (BeforeStartCardReveal) so the revived creature reveals
+	/// before the start card and attacks once more this round.
+	/// </summary>
+	public void ArmRoundEndRevive()
+	{
+		roundEndReviveArmed = true;
+	}
+
+	/// <summary>
+	/// Executor-side consume, fired from the BeforeStartCardReveal listener. No-op unless the
+	/// deathrattle armed it. Uses this component's selection config (sortBy / creatureFilter).
+	/// </summary>
+	public void ReviveMyCardsIfArmed()
+	{
+		if (!roundEndReviveArmed) return;
+		roundEndReviveArmed = false;
+		ReviveMyCards(1);
+	}
+
 	private void ReviveChosenCards(List<GameObject> cardsToRevive, int amount)
 	{
 		_combinedDeck = combatManager.combinedDeckZone;

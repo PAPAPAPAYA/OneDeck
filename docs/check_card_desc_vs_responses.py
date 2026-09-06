@@ -313,10 +313,14 @@ def extract_trigger_event(segment):
 # 「回合开始」 while deliberately wiring the post-shuffle OnRoundEnd (RELIC_WHITE_BANNER).
 def round_boundary_events(text):
 	evs = set()
+	if "回合结束前" in text:
+		# pre-shuffle round end: the start card is still on the deck top, its shuffle has
+		# not run yet (FINAL_ESCORT "遗言：回合结束前：复活墓地的最高攻击力友方生物").
+		evs.add("BeforeStartCardReveal")
+	elif "回合结束" in text:
+		evs.add("OnRoundEnd")
 	if "回合开始" in text:
 		evs.update(("BeforeRoundFinished", "OnRoundEnd"))
-	if "回合结束" in text:
-		evs.add("OnRoundEnd")
 	if "洗牌后" in text:
 		evs.update(("AfterShuffle", "OnRoundEnd"))
 	return evs
@@ -366,7 +370,7 @@ def extract_expected_categories(segment):
 			cats.append("BURY_SELF")
 
 		# Revive (4.0)
-		if re.search(r"复活\s*\d*\s*友方|复活自身|复活\s*\d*\s*敌方|复活敌方|延迟复活|复活\s*\d*\s*攻击次数最多", clause):
+		if re.search(r"复活\s*\d*\s*友方|复活自身|复活\s*\d*\s*敌方|复活敌方|延迟复活|复活\s*\d*\s*攻击次数最多|复活\s*\d*\s*墓地", clause):
 			cats.append("REVIVE")
 
 		# Stage
