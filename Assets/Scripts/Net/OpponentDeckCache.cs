@@ -169,6 +169,26 @@ public static class OpponentDeckCache
 
 	// ------------------------------------------------------------------ enemy source telemetry
 
+	// Staged source for the combat being entered (upload gate): DeckSaver stages at
+	// populate time and the PhaseManager settlement point commits, so a combat
+	// abandoned mid-fight never reaches the lifetime counters. Memory-only.
+	private static string stagedSource;
+
+	/// <summary>Stage the enemy deck source at populate time; committed on combat settlement.</summary>
+	public static void StageEnemySource(string source)
+	{
+		stagedSource = source;
+	}
+
+	/// <summary>Settlement trigger: counts the staged source (if any) and consumes it.</summary>
+	public static void CommitStagedEnemySource()
+	{
+		if (string.IsNullOrEmpty(stagedSource)) return;
+		string source = stagedSource;
+		stagedSource = null;
+		RecordEnemySource(source);
+	}
+
 	public static EnemySourceCounters SourceCounters
 	{
 		get { LoadCounters(); return counters; }
@@ -274,6 +294,7 @@ public static class OpponentDeckCache
 		cache = null;
 		opponent = null;
 		counters = null;
+		stagedSource = null;
 	}
 
 	/// <summary>Test seam: injects a deck straight into the cache (no network).</summary>

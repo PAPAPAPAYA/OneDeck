@@ -41,6 +41,9 @@ public static class StatsSnapshotUploader
 		if (config == null || !config.enabled || !config.uploadStatsSnapshots) return;
 		if (!PlayerIdentity.HasIdentity) return;
 		if (!DeckNetworkClient.HasInstance) return;
+		// Upload gate: before the first completed combat the dirty flag stays armed so a
+		// later trigger uploads the same data once the gate opens.
+		if (!CombatCompletionGate.HasCompletedCombat) return;
 
 		Dirty = false;
 		string json = JsonUtility.ToJson(BuildRequest(

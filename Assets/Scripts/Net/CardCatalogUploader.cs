@@ -29,6 +29,9 @@ public static class CardCatalogUploader
 		ServerConfig config = ServerConfig.Active;
 		if (config == null || !config.enabled || !config.uploadCardCatalog) return;
 		if (!PlayerIdentity.HasIdentity) return;
+		// Upload gate: catalog metadata only starts flowing after the first completed
+		// combat; CombatCompletionGate.MarkCompleted backfills right after arming.
+		if (!CombatCompletionGate.HasCompletedCombat) return;
 
 		DeckSaver saver = DeckSaver.Me;
 		if (saver == null) return;

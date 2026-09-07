@@ -121,6 +121,24 @@ public class OpponentDeckCacheTests
 	}
 
 	[Test]
+	public void StagedEnemySource_CountsOnlyAfterCommit()
+	{
+		// Staging is memory-only: a reload (e.g. a new run's cache read) drops it.
+		OpponentDeckCache.StageEnemySource(OpponentDeckCache.SourceServer);
+		OpponentDeckCache.ResetCacheForTests();
+		Assert.AreEqual(0, OpponentDeckCache.SourceCounters.server);
+
+		// Only the settlement commit reaches the lifetime counters.
+		OpponentDeckCache.StageEnemySource(OpponentDeckCache.SourceServer);
+		OpponentDeckCache.CommitStagedEnemySource();
+		Assert.AreEqual(1, OpponentDeckCache.SourceCounters.server);
+
+		// Commit consumes the staged source; a second settlement never double-counts.
+		OpponentDeckCache.CommitStagedEnemySource();
+		Assert.AreEqual(1, OpponentDeckCache.SourceCounters.server);
+	}
+
+	[Test]
 	public void FetchEnabled_FollowsMasterAndPerKindSwitch()
 	{
 		Assert.IsTrue(OpponentDeckCache.FetchEnabled);

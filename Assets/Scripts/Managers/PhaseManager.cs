@@ -96,8 +96,6 @@ public class PhaseManager : MonoBehaviour
 		UploadOutbox.Flush();
 		// Async-PvP: open the run journal (recovers any unfinished previous run, plan §2.6)
 		RunRecorder.StartRun();
-		// Async-PvP: card catalog upload once per game version (plan §2.8)
-		CardCatalogUploader.MaybeUpload();
 		// Async-PvP: first-launch username dialog (plan: plans/plan-username-registration-panel-2026-09-04.md)
 		UsernameRegistrationPanel.EnsureCreated();
 		UsernameRegistrationPanel.RaiseIfNeeded();
@@ -204,6 +202,12 @@ public class PhaseManager : MonoBehaviour
 			// the result phase so hp/hearts are still the combat's values.
 			bool playerWon = enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0;
 			ReportMatchResult(playerWon);
+			// Upload gate (plans/plan-combat-completion-upload-gate-2026-09-06.md): the one
+			// settlement point every real combat reaches (draws included; the tutorial branch
+			// returns above). Arm the lifetime sentinel and commit this combat's staged
+			// enemy source before the run bookkeeping below.
+			CombatCompletionGate.MarkCompleted();
+			OpponentDeckCache.CommitStagedEnemySource();
 			RunRecorder.RecordCombatEnd(
 				sessionNum: sessionNum.value,
 				won: playerWon,
@@ -217,6 +221,15 @@ public class PhaseManager : MonoBehaviour
 					hearts.value <= 0 ? RunRecorder.ResultDefeat : RunRecorder.ResultVictory,
 					sessionNum.value, hearts.value, CollectPlayerDeckTypeIDs());
 			}
+
+			// Shop stats commit moved here from ExitingShopPhase (upload gate): a visit
+			// only reaches the lifetime counters and the snapshot upload once its combat
+			// actually finished. sessionNum has not incremented yet (that happens on the
+			// Result->Shop transition), so bucket ownership is unchanged.
+			if (ShopStatsManager.Me != null) ShopStatsManager.Me.CommitStagedVisit();
+			// Async-PvP: primary stats snapshot upload - fires right after the legal
+			// commit; shop exit keeps the same call as a retry trigger (plan §2.7)
+			StatsSnapshotUploader.UploadIfDirty();
 
 			EnteringResultPhase();
 		}
@@ -534,11 +547,9 @@ public class PhaseManager : MonoBehaviour
 	{
 		// DIAG-LOG(2026-08-08): tracing why the shop Exit button may appear dead
 		TestManager.Log("[ShopButton] PhaseManager.ExitingShopPhase() invoked. phase=" + (currentGamePhaseRef != null ? currentGamePhaseRef.Value().ToString() : "null"));
-		// Shop stats are staged per visit and only merge into the lifetime counters here:
-		// exiting the shop is the only path into combat, so runs that never fight
-		// contribute nothing to shop stats (2026-09-05 no-combat-run exclusion).
-		if (ShopStatsManager.Me != null) ShopStatsManager.Me.CommitStagedVisit();
-		// Async-PvP: stats snapshot upload trigger - send latest full state when dirty (plan §2.7)
+		// Async-PvP: stats snapshot upload retry trigger - the primary upload and the
+		// staged-visit commit both fire at the combat settlement point now, so a visit
+		// whose combat never finishes contributes nothing (upload gate plan)
 		StatsSnapshotUploader.UploadIfDirty();
 		// Async-PvP: shop exit is an outbox flush trigger (plan §2.3) - deck snapshots leave here
 		UploadOutbox.Flush();

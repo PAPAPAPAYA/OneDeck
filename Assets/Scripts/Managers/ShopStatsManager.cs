@@ -102,9 +102,9 @@ namespace DefaultNamespace.Managers
 		public static string OverrideDirectoryForTests;
 
 		// Per-visit staging buffer (2026-09-05): shop stats only reach the lifetime counters
-		// via CommitStagedVisit(), which PhaseManager calls on shop exit - the only path into
-		// combat. A run that never enters combat (quit mid-shop) therefore contributes nothing
-		// to shop_stats.json or the stats snapshot upload.
+		// via CommitStagedVisit(), which PhaseManager calls at the combat settlement point -
+		// a visit whose combat never finishes contributes nothing to shop_stats.json or the
+		// stats snapshot upload (plans/plan-combat-completion-upload-gate-2026-09-06.md).
 		[Serializable]
 		private class StagedCardStats
 		{
@@ -193,9 +193,9 @@ namespace DefaultNamespace.Managers
 		}
 
 		/// <summary>
-		/// Merge the staged visit into the lifetime counters. Called by PhaseManager on
-		/// shop exit, which only fires on the path into combat, so every committed visit
-		/// is followed by a fight and a run that never enters combat contributes nothing.
+		/// Merge the staged visit into the lifetime counters. Called by PhaseManager at
+		/// the combat settlement point, so every committed visit's combat actually
+		/// finished and a run that abandons its fights contributes nothing.
 		/// </summary>
 		public void CommitStagedVisit()
 		{

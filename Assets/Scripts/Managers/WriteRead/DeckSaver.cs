@@ -275,6 +275,8 @@ namespace TestWriteRead
 		private void UploadDeckSnapshot(DeckSaveEntry deckEntry)
 		{
 			if (!PlayerIdentity.HasIdentity) return;
+			// Upload gate: decks of players who never finished a combat never become ghosts.
+			if (!CombatCompletionGate.HasCompletedCombat) return;
 
 			var request = new DeckUploadRequest
 			{
@@ -340,16 +342,18 @@ namespace TestWriteRead
 				return;
 			}
 
-			// Server ghost decks first: validated candidates only (plan §2.4)
+			// Server ghost decks first: validated candidates only (plan §2.4).
+			// The source is only staged here; the PhaseManager settlement point commits it,
+			// so a combat abandoned mid-fight never counts (upload gate plan).
 			if (TryLoadFromOpponentCache())
 			{
-				OpponentDeckCache.RecordEnemySource(OpponentDeckCache.SourceServer);
+				OpponentDeckCache.StageEnemySource(OpponentDeckCache.SourceServer);
 				return;
 			}
 
 			// No ghost available: select from the default pool
 			PopulateFromDefaultDecks();
-			OpponentDeckCache.RecordEnemySource(OpponentDeckCache.SourcePool);
+			OpponentDeckCache.StageEnemySource(OpponentDeckCache.SourcePool);
 		}
 
 		/// <summary>

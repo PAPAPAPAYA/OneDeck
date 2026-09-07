@@ -166,8 +166,9 @@ public class UsernameRegistrationPanel : MonoBehaviour
 		{
 			Debug.Log("[UsernameRegistrationPanel] registered as " + PlayerIdentity.Username);
 			Destroy(gameObject);
-			// Scene start skipped these for lack of identity - backfill right away.
-			CardCatalogUploader.MaybeUpload();
+			// Scene start skipped the outbox for lack of identity - flush the backlog now.
+			// (The card catalog backfill moved to CombatCompletionGate.MarkCompleted,
+			// which fires at the first completed combat - the upload gate plan.)
 			UploadOutbox.Flush();
 			return;
 		}

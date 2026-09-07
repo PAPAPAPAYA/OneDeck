@@ -30,6 +30,12 @@ public class StatsSnapshotUploaderTests
 		Directory.CreateDirectory(tempDir);
 		PlayerIdentity.OverrideDirectoryForTests = tempDir;
 		PlayerIdentity.ResetForTests();
+
+		// The upload gate defaults to open here: existing cases cover the dirty-flag
+		// plumbing, not the lifetime gate (the closed-gate case is covered below).
+		CombatCompletionGate.OverrideDirectoryForTests = tempDir;
+		CombatCompletionGate.ResetForTests();
+		CombatCompletionGate.MarkCompleted();
 	}
 
 	[TearDown]
@@ -38,6 +44,8 @@ public class StatsSnapshotUploaderTests
 		StatsSnapshotUploader.Dirty = false;
 		PlayerIdentity.OverrideDirectoryForTests = null;
 		PlayerIdentity.ResetForTests();
+		CombatCompletionGate.ResetForTests();
+		CombatCompletionGate.OverrideDirectoryForTests = null;
 		ServerConfig.Active = null;
 		if (config != null) UnityEngine.Object.DestroyImmediate(config);
 		if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
@@ -130,6 +138,20 @@ public class StatsSnapshotUploaderTests
 		// Everything on, but no DeckNetworkClient host exists in EditMode: still dirty.
 		config.uploadStatsSnapshots = true;
 		StatsSnapshotUploader.UploadIfDirty();
+		Assert.IsTrue(StatsSnapshotUploader.Dirty);
+	}
+
+	[Test]
+	public void DirtyFlag_GateClosedKeepsDirtyForRetry()
+	{
+		// Upload gate closed (no flag in the override dir): the armed dirty flag must
+		// survive UploadIfDirty so the data retries after the first completed combat.
+		CombatCompletionGate.ResetForTests();
+		File.Delete(Path.Combine(tempDir, "has_completed_combat.flag"));
+		StatsSnapshotUploader.MarkDirty();
+
+		StatsSnapshotUploader.UploadIfDirty();
+
 		Assert.IsTrue(StatsSnapshotUploader.Dirty);
 	}
 }
