@@ -113,3 +113,14 @@
 - 测试：新增 `CombatCompletionGateTests`（6 用例，含卡目录回传端到端：手写 identity 文件 + DeckSaver/DeckSO 脚手架 + outbox 文件断言，全程无网络）；`StatsSnapshotUploaderTests` SetUp 置位哨兵 + 新增关门禁保留 Dirty 用例；`OpponentDeckCacheTests` 新增 staging→commit 用例。
 - 回归：门禁相关 6 个测试类 45/45 绿；全量 EditMode 485 中 483 过，2 个失败为 `AfterShuffleTimingTests` 存量问题（stash 掉本次全部改动后依然失败，已验证与门禁无关）。
 - §2.7 服务器端加固：未做（按计划列为后续可选）。
+
+## 6. 规则迭代（2026-09-07 用户拍板）：终身哨兵 → 每局哨兵
+
+口径从"玩家生涯完成过至少一次战斗"改为"**当前局**完成过至少一场战斗"：每局开局哨兵复位，只有本局打完过战斗才允许上传。直接行为差异是 DeckSnapshot——每局第一场战斗入场时的开局牌库快照一律被拦（旧口径下老玩家的开局牌库会进 ghost 池），完成一场战斗后的牌库状态才上传。云端数据已同步清空（2026-09-07，保留 players/card_catalog，备份 `onedeck.db.bak-2026-09-07`）。
+
+实施差异（相对 §2.1）：
+
+- `CombatCompletionGate` 改纯内存态（`completedThisRun` bool），**删除 flag 文件机制**（`has_completed_combat.flag` 不再读写，旧文件成惰性残留可手删）；属性改名 `HasCompletedCombatThisRun`；新增 `OnRunStarted()`（PhaseManager.OnEnable 与 ResetRun 两个开局点调用，紧邻 `RunRecorder.StartRun()`）。
+- 各门禁点逻辑不变，只换属性与口径：`UploadIfDirty`（本局未完成战斗不清 Dirty）、`CardCatalogUploader.MaybeUpload`（本局首次结算触发，版本幂等不变）、`UploadDeckSnapshot`（本局开局牌库被拦）。
+- 教程不算、平局算完成、ShopStats 提交后移与敌方来源 staging：与 §2.2/§2.3/§2.6 一致，不变。
+- 测试：`CombatCompletionGateTests` 重写为每局语义（开局关/结算开/新局再关/卡目录回传/DeckSnapshot 每局先拦后放）；其余套件仅 SetUp 微调。回归：门禁相关 45/45，全量 485 = 484 过 + 1 存量 Ignore，零失败。

@@ -275,8 +275,9 @@ namespace TestWriteRead
 		private void UploadDeckSnapshot(DeckSaveEntry deckEntry)
 		{
 			if (!PlayerIdentity.HasIdentity) return;
-			// Upload gate: decks of players who never finished a combat never become ghosts.
-			if (!CombatCompletionGate.HasCompletedCombat) return;
+			// Upload gate (per-run): a run's opening deck never becomes a ghost - only
+			// deck states after a completed combat do.
+			if (!CombatCompletionGate.HasCompletedCombatThisRun) return;
 
 			var request = new DeckUploadRequest
 			{

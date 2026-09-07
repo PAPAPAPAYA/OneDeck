@@ -96,6 +96,8 @@ public class PhaseManager : MonoBehaviour
 		UploadOutbox.Flush();
 		// Async-PvP: open the run journal (recovers any unfinished previous run, plan §2.6)
 		RunRecorder.StartRun();
+		// Upload gate: every run starts with the gate closed (per-run rule, plan §6)
+		CombatCompletionGate.OnRunStarted();
 		// Async-PvP: first-launch username dialog (plan: plans/plan-username-registration-panel-2026-09-04.md)
 		UsernameRegistrationPanel.EnsureCreated();
 		UsernameRegistrationPanel.RaiseIfNeeded();
@@ -204,8 +206,8 @@ public class PhaseManager : MonoBehaviour
 			ReportMatchResult(playerWon);
 			// Upload gate (plans/plan-combat-completion-upload-gate-2026-09-06.md): the one
 			// settlement point every real combat reaches (draws included; the tutorial branch
-			// returns above). Arm the lifetime sentinel and commit this combat's staged
-			// enemy source before the run bookkeeping below.
+			// returns above). Open this run's gate and commit this combat's staged enemy
+			// source before the run bookkeeping below.
 			CombatCompletionGate.MarkCompleted();
 			OpponentDeckCache.CommitStagedEnemySource();
 			RunRecorder.RecordCombatEnd(
@@ -371,6 +373,8 @@ public class PhaseManager : MonoBehaviour
 		UploadOutbox.Flush();
 		// Async-PvP: open a new run journal (recovers + uploads any unfinished one, plan §2.6)
 		RunRecorder.StartRun();
+		// Upload gate: the new run starts with the gate closed (per-run rule, plan §6)
+		CombatCompletionGate.OnRunStarted();
 	}
 
 	/// <summary>Player deck cardTypeIDs for the run_end final deck snapshot (plan §2.6).</summary>

@@ -1,68 +1,44 @@
-using System;
-using System.IO;
-using System.Text;
 using UnityEngine;
 
 /// <summary>
-/// Lifetime upload gate (plans/plan-combat-completion-upload-gate-2026-09-06.md):
-/// true once the player has completed at least one real combat. The scripted tutorial
-/// exits before the PhaseManager settlement point and never counts. Upload/record
-/// paths that must only carry data from players who finished a fight check
-/// HasCompletedCombat. The flag is a one-way fact orthogonal to the stats reset
-/// switches; a deleted file self-heals by re-arming at the next completed combat.
+/// Per-run upload gate (plans/plan-combat-completion-upload-gate-2026-09-06.md §6):
+/// uploads only flow once the CURRENT run has completed at least one real combat.
+/// The scripted tutorial exits before the PhaseManager settlement point and never
+/// counts. OnRunStarted re-closes the gate at every run start (scene start /
+/// ResetRun), so a run's opening deck never becomes a ghost snapshot - only deck
+/// states observed after a completed combat do. Pure in-memory state; draws count.
 /// </summary>
 public static class CombatCompletionGate
 {
-	/// <summary>Test seam: when set, overrides the persistentDataPath directory.</summary>
-	public static string OverrideDirectoryForTests;
+	private static bool completedThisRun;
 
-	private const string FlagFileName = "has_completed_combat.flag";
-
-	private static bool? hasCompleted;
-
-	private static string FlagFilePath
+	/// <summary>Run-start trigger (scene start / ResetRun): the gate closes again.</summary>
+	public static void OnRunStarted()
 	{
-		get { return Path.Combine(OverrideDirectoryForTests ?? Application.persistentDataPath, FlagFileName); }
+		completedThisRun = false;
 	}
 
-	public static bool HasCompletedCombat
+	/// <summary>True once the current run has seen a completed combat settlement.</summary>
+	public static bool HasCompletedCombatThisRun
 	{
-		get
-		{
-			if (hasCompleted.HasValue) return hasCompleted.Value;
-			hasCompleted = File.Exists(FlagFilePath);
-			return hasCompleted.Value;
-		}
+		get { return completedThisRun; }
 	}
 
 	/// <summary>
 	/// Combat-settlement trigger (PhaseManager calls this for every completed combat,
-	/// draws included): arms the flag once, then lets the deferred card-catalog upload
-	/// run - idempotent per game version, so the first combat after an update also
-	/// refreshes the catalog for that version.
+	/// draws included): opens the gate for the rest of the run, then lets the deferred
+	/// card-catalog upload run - idempotent per game version, so the first settlement
+	/// of a run also refreshes the catalog after an update.
 	/// </summary>
 	public static void MarkCompleted()
 	{
-		if (!HasCompletedCombat)
-		{
-			hasCompleted = true;
-			try
-			{
-				File.WriteAllText(FlagFilePath, DateTime.UtcNow.ToString("o"), new UTF8Encoding(false));
-			}
-			catch (IOException e)
-			{
-				// The in-memory flag is already armed; a failed write just re-arms on the
-				// next completed combat once the filesystem cooperates.
-				Debug.LogWarning("[CombatCompletionGate] flag write failed: " + e.Message);
-			}
-		}
+		completedThisRun = true;
 		CardCatalogUploader.MaybeUpload();
 	}
 
-	/// <summary>Test seam: drops in-memory state so the next read reloads from disk.</summary>
+	/// <summary>Test seam: closes the gate again (equivalent to a fresh run).</summary>
 	public static void ResetForTests()
 	{
-		hasCompleted = null;
+		completedThisRun = false;
 	}
 }
