@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发总结 - 2026-07-21 ~ 09-07</title>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body {
+			font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+			background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+			min-height: 100vh;
+			color: #e0e0e0;
+			padding: 40px 20px;
+		}
+		.container { max-width: 960px; margin: 0 auto; }
+		.header {
+			text-align: center;
+			margin-bottom: 40px;
+			padding: 30px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 20px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+		}
+		.header h1 {
+			font-size: 2.5em;
+			margin-bottom: 10px;
+			background: linear-gradient(90deg, #e94560, #ff6b6b);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+		.header .subtitle { color: #888; font-size: 1.05em; line-height: 1.7; }
+		.header .stats {
+			display: flex;
+			justify-content: center;
+			gap: 40px;
+			margin-top: 25px;
+			flex-wrap: wrap;
+		}
+		.stat-box { text-align: center; }
+		.stat-box .number { font-size: 2em; font-weight: bold; color: #e94560; }
+		.stat-box .label { font-size: 0.9em; color: #aaa; margin-top: 5px; }
+		.theme-banner {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 15px;
+			margin-bottom: 40px;
+		}
+		.theme-card {
+			background: linear-gradient(160deg, rgba(233, 69, 96, 0.12), rgba(83, 52, 131, 0.12));
+			border: 1px solid rgba(233, 69, 96, 0.25);
+			border-radius: 14px;
+			padding: 18px;
+			text-align: center;
+		}
+		.theme-card .icon { font-size: 1.8em; margin-bottom: 8px; }
+		.theme-card .name { font-weight: 600; color: #fff; margin-bottom: 4px; }
+		.theme-card .desc { font-size: 0.85em; color: #999; }
+		.section-title {
+			font-size: 1.5em;
+			margin: 40px 0 20px 0;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.section-title::before {
+			content: '';
+			width: 5px; height: 25px;
+			background: #e94560;
+			border-radius: 3px;
+		}
+		.section-title .period { font-size: 0.62em; color: #999; font-weight: 400; }
+		.work-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 15px;
+			margin-bottom: 10px;
+		}
+		.work-card {
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 16px;
+			padding: 20px 22px;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			backdrop-filter: blur(10px);
+			transition: transform 0.3s, box-shadow 0.3s;
+		}
+		.work-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(233, 69, 96, 0.15); }
+		.work-card h4 {
+			color: #fff;
+			font-size: 1.05em;
+			margin-bottom: 4px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+		.work-card .date { color: #e94560; font-size: 0.8em; font-weight: 500; }
+		.work-card ul { list-style: none; margin-top: 10px; }
+		.work-card li {
+			padding: 5px 0 5px 18px;
+			position: relative;
+			color: #ccc;
+			line-height: 1.65;
+			font-size: 0.92em;
+		}
+		.work-card li::before { content: '▸'; position: absolute; left: 0; color: #e94560; }
+		.work-card.wide { grid-column: 1 / -1; }
+		.file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+		.file-tag {
+			background: rgba(83, 52, 131, 0.3);
+			color: #b8a9d9;
+			padding: 3px 10px;
+			border-radius: 8px;
+			font-size: 0.75em;
+			font-family: 'Consolas', monospace;
+		}
+		.file-tag.added { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
+		.file-tag.modified { background: rgba(241, 196, 15, 0.15); color: #f1c40f; }
+		.tag {
+			display: inline-block;
+			padding: 2px 10px;
+			border-radius: 6px;
+			font-size: 0.75em;
+			font-weight: 600;
+			margin-left: 4px;
+		}
+		.tag.bugfix { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+		.tag.feature { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+		.tag.test { background: rgba(52, 152, 219, 0.2); color: #3498db; }
+		.tag.docs { background: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+		.tag.refactor { background: rgba(241, 196, 15, 0.2); color: #f1c40f; }
+		.tag.engine { background: rgba(52, 152, 219, 0.2); color: #3498db; }
+		.highlight-box {
+			background: linear-gradient(135deg, rgba(233, 69, 96, 0.1), rgba(83, 52, 131, 0.1));
+			border: 1px solid rgba(233, 69, 96, 0.3);
+			border-radius: 16px;
+			padding: 25px;
+			margin-top: 30px;
+		}
+		.highlight-box h3 { color: #e94560; margin-bottom: 15px; font-size: 1.2em; }
+		.highlight-box ul { list-style: none; padding: 0; }
+		.highlight-box li {
+			padding: 8px 0 8px 25px;
+			position: relative;
+			color: #ddd;
+			line-height: 1.7;
+		}
+		.highlight-box li::before { content: '▸'; position: absolute; left: 0; color: #e94560; }
+		.footer { text-align: center; margin-top: 50px; padding: 20px; color: #666; font-size: 0.9em; }
+		code {
+			background: rgba(255, 255, 255, 0.08);
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-family: 'Consolas', monospace;
+			font-size: 0.9em;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>OneDeck 开发总结</h1>
+			<div class="subtitle">2026年7月21日 ~ 9月7日 · 4.0 卡池全量落地、async-PvP 联网闭环、战斗反馈与视觉体系再升级</div>
+			<div class="stats">
+				<div class="stat-box">
+					<div class="number">180</div>
+					<div class="label">Git 提交</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">30</div>
+					<div class="label">活跃开发日</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">+23,747</div>
+					<div class="label">C# 脚本新增行</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">484 / 485</div>
+					<div class="label">EditMode 测试绿（1 存量 Ignore）</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="theme-banner">
+			<div class="theme-card">
+				<div class="icon">🎴</div>
+				<div class="name">4.0 卡池落地</div>
+				<div class="desc">攻击力 / 复活苏醒 / 被动 / 攻次四引擎 + 五步批量实施</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🌐</div>
+				<div class="name">async-PvP 联网</div>
+				<div class="desc">Express 后端 A~E 批次 + 首战门禁 + 数据闭环</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">💥</div>
+				<div class="name">战斗反馈</div>
+				<div class="desc">伤害跳字、tag 悬停、结果面板按归属分栏</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🖌️</div>
+				<div class="name">视觉体系</div>
+				<div class="desc">卡面模板 v1.1、三种牌组布局、字体配色单一来源</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">📊</div>
+				<div class="name">数据与审计</div>
+				<div class="desc">zombie 基线评分迁移、Bazaar 11 池、上线数据复盘</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🛠️</div>
+				<div class="name">工具链</div>
+				<div class="desc">AGENTS.md 拆解瘦身、skills 词表更新、EditMode 体系</div>
+			</div>
+		</div>
+
+		<!-- ============ 1. 战斗机制与反馈 ============ -->
+		<div class="section-title">
+			战斗：机制与反馈 UI
+			<span class="period">07-21 ~ 08-08</span>
+		</div>
+		<div class="work-grid">
+			<div class="work-card">
+				<h4>伤害跳字与 HP 数字化闭环 <span class="tag feature">Feature</span></h4>
+				<div class="date">07-26 ~ 08-04</div>
+				<ul>
+					<li>HP 损失时浮动伤害数字（damage floater），屏幕边缘钳制，日志统一走 TestManager 分类</li>
+					<li>多段伤害逐段归属 + HP 显示时机修正（先预览后结算）</li>
+					<li>水平方向 HP 数字显示（<code>HPNumericDisplayHorizontal</code>），Edit Mode 实时预览数字与对比条</li>
+					<li>伤害飘字生成位置调整 + 真实位置编辑预览（09-01）</li>
+				</ul>
+				<div class="file-list">
+					<span class="file-tag added">DamageFloaterPresenter.cs</span>
+					<span class="file-tag modified">CombatUXManager.cs</span>
+				</div>
+			</div>
+			<div class="work-card">
+				<h4>结果面板 per-card 统计 <span class="tag feature">Feature</span></h4>
+				<div class="date">07-24 ~ 07-31</div>
+				<ul>
+					<li>结算屏按卡牌 creator 分侧统计，含复制数、回合行、实际 HP 伤害</li>
+					<li>每列伤害占列总量比例展示；面板自适应高度 + 横屏缩放修复（09-05）</li>
+				</ul>
+				<div class="file-list">
+					<span class="file-tag added">ResultStatsPanel.cs</span>
+					<span class="file-tag added">CombatPerCardStatsTracker.cs</span>
+				</div>
+			</div>
+			<div class="work-card">
+				<h4>卡片生命系统 <span class="tag engine">Mechanic</span></h4>
+				<div class="date">08-08</div>
+				<ul>
+					<li>每回合揭晓配额随轮次成长（R1-R13），埋葬时弹回队列尾（bounce）</li>
+					<li>疲劳/加时配套：Ctrl+Shift+O 快速触发加时疲劳调试（07-30）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>悬停与提示体系 <span class="tag feature">Feature</span></h4>
+				<div class="date">07-23 ~ 08-06</div>
+				<ul>
+					<li>tag 悬停气泡逐 tag 解释、锚定卡牌；悬停弹卡延迟可配（<code>hoverPopUpDelay</code>）</li>
+					<li>弹起峰值缩放跟随卡牌当前缩放；即时并行弹起 + 归位锚定牌堆槽</li>
+					<li>tag 显示名单一来源（StringSO）+ cardDesc <code>&lt;tag:&gt;</code> 占位符（07-26）</li>
+					<li>开局教学战斗（首购前脚本化引导，07-28）；非战斗隐藏阵营图标（07-22）</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- ============ 2. 商店与经济 ============ -->
+		<div class="section-title">
+			商店与经济系统
+			<span class="period">08-02 ~ 09-04</span>
+		</div>
+		<div class="work-grid">
+			<div class="work-card">
+				<h4>重复卡共享卡位 <span class="tag feature">Feature</span></h4>
+				<div class="date">08-02</div>
+				<ul>
+					<li>同名卡复制共享同一卡位堆叠显示，仅堆底显示价格；空卡位为常驻背景对象</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>稀有度定价 <span class="tag feature">Feature</span></h4>
+				<div class="date">08-30</div>
+				<ul>
+					<li>按稀有度价格引用定价，剥离 <code>CardScript.price</code> 字段并重序列化全部卡 prefab</li>
+					<li>卡牌按稀有度目录重新归档（0_Common / 1_Uncommon / …）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>Utility 被动管线 v2 <span class="tag feature">Feature</span></h4>
+				<div class="date">09-01 ~ 09-02</div>
+				<ul>
+					<li>常住牌组的 utility 卡（不进商店格），加成由 <code>UtilityShopBonus</code> 从牌组重算（无累积监听）</li>
+					<li><code>ShopBoardPipeline.GenerateBoard</code> 纯静态 + 注入随机；商店阶段满 HP 不变量；<code>DeckSizeIncreaseEffect</code> 计量条（上限 16）</li>
+					<li>记录敌方牌组清洗 utility 被动，避免脏数据</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- ============ 3. 视觉 ============ -->
+		<div class="section-title">
+			视觉：特效 · 牌组布局 · 字体配色
+			<span class="period">07-24 ~ 09-06</span>
+		</div>
+		<div class="work-grid">
+			<div class="work-card">
+				<h4>背景与全屏特效 <span class="tag feature">VFX</span></h4>
+				<div class="date">08-04 ~ 08-30</div>
+				<ul>
+					<li>等高线背景 <code>BackGroundMotion3D</code>（3D-slice noise + fbm octaves），铺底全屏排在卡/UI 之后；alpha 直通修复（08-14）</li>
+					<li>全屏像素化 + chunky sprite shader + <code>PixelationEffectController</code>；战斗/商店画布迁至 Screen-Space-Camera</li>
+					<li>粒子渲染队列守卫：wisp/trail 材质 <code>_QueueOffset</code> 自愈 + Editor 重钉漂移（08-30）</li>
+				</ul>
+				<div class="file-list">
+					<span class="file-tag added">BackGroundMotion3D.shadergraph</span>
+					<span class="file-tag added">PixelationEffectController.cs</span>
+				</div>
+			</div>
+			<div class="work-card">
+				<h4>牌组布局模式 <span class="tag feature">Feature</span></h4>
+				<div class="date">07-28 ~ 08-17</div>
+				<ul>
+					<li><code>deckLayoutMode</code> 成为唯一布局选择器，legacy 开关移除（08-15）</li>
+					<li>新增 Arc Loop 弧形巡回与 Float Stack 浮动堆叠；<code>BigShadowFollower</code> 驱动大阴影跟随（08-17）</li>
+					<li>动态弧线中点替代固定 <code>showPos</code>；飞行动画按最终牌组索引排序分批发射（08-29）</li>
+					<li>修复：回底飞行动画等 peel 归位完成后才执行（08-30）；洗牌飞行途中翻盖、弹起遮挡（07-24）</li>
+				</ul>
+				<div class="file-list">
+					<span class="file-tag added">DeckArcLoopLayout.cs</span>
+					<span class="file-tag added">DeckFloatStackLayout.cs</span>
+					<span class="file-tag added">DeckPositionCalculator.cs</span>
+				</div>
+			</div>
+			<div class="work-card">
+				<h4>卡面模板 v1.1 <span class="tag feature">Feature</span></h4>
+				<div class="date">09-05 ~ 09-06</div>
+				<ul>
+					<li>分区 = 美术 → 稀有度 ✦（右下）→ <code>&gt; </code>描述（2 行截断 + …）→ 分隔线 → 底行名称/攻击</li>
+					<li>独立 tag 行与状态/生命打印移除；符号字形走 <code>NotoSansSymbols2</code>；描述只用半角标点</li>
+					<li>超长卡名横向压缩不省略号（09-06）；RevealZDiag 复现探针 + 弹起 X 偏移调校（09-05）</li>
+				</ul>
+				<div class="file-list">
+					<span class="file-tag added">NotoSansSymbols2 SDF.asset</span>
+					<span class="file-tag modified">CardPhysObjScript.cs</span>
+				</div>
+			</div>
+			<div class="work-card">
+				<h4>字体与配色单一来源 <span class="tag refactor">Refactor</span></h4>
+				<div class="date">08-14 ~ 08-19</div>
+				<ul>
+					<li>Roboto Condensed 全场景字体替换 + true bold 字链（08-15）</li>
+					<li>GameColorPalette 收口卡面/覆盖色与 HUD 色，Edit Mode 实时预览（08-15/17）</li>
+				</ul>
+				<div class="file-list">
+					<span class="file-tag added">GameColorPalette.cs</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- ============ 4. 4.0 卡池 ============ -->
+		<div class="section-title">
+			4.0 卡池：设计 → 引擎 → 全量落地
+			<span class="period">08-17 ~ 09-07（主线）</span>
+		</div>
+		<div class="work-grid">
+			<div class="work-card wide">
+				<h4>设计文档与命名 <span class="tag docs">Design</span></h4>
+				<div class="date">08-17 ~ 09-02</div>
+				<ul>
+					<li>卡池设计 v2~v5 归档（100 卡体验池 / 核心体验 / 核心公式 次数×大小 / 最终 139 卡总案含平衡与可行性分析）；StS2 五职业池分析（08-17）</li>
+					<li>收尾技设计调研：Yu-Gi-Oh / Hearthstone / MtG（08-25）</li>
+					<li>世界观命名 v1（新怪谈/邪教，08-19）→ v2 中文名五轮打磨，92 张中文名列写入 Notion（08-31 ~ 09-01）</li>
+					<li>tag 严格化迭代：响应/计数/谓词关键词同步、强化标增强、复活豁免解除（09-01）</li>
+					<li>desc 记法约定 v2：<code>&lt;tag:X&gt;</code> 显示名解析、tag 短语 vs 裸卡引用（09-02）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>攻击力引擎（3 期）<span class="tag engine">Engine</span></h4>
+				<div class="date">08-19 ~ 08-25</div>
+				<ul>
+					<li>Phase 1-2：<code>ApplyAttackCore</code> + GainedAttack 事件族 + 增益/消耗/转移全攻击力化，38 张攻击卡 + 13 张 Power 卡迁移</li>
+					<li>Phase 3：AttackResolverSource 多 term 解析器、攻击谓词、王座区引擎、递归修复（重入守卫）</li>
+					<li>xN 多段攻击逐段触发事件（09-05）；<code>extraAttackTimes</code> 暴露到 Inspector、extraDmg 弃用（08-30）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>复活苏醒引擎 <span class="tag engine">Engine</span></h4>
+				<div class="date">08-29 ~ 09-02</div>
+				<ul>
+					<li>步骤 0-2（08-29）：池对齐、静态检查、复活/苏醒引擎 + 测试</li>
+					<li>ReviveEffect 选区/苏醒边界/计数；复活不重置生命；StatusEffect.Revive 槽位保留（不重编号）</li>
+					<li>RIFT_SHEPHERD 复活选友方信徒 tag 卡（09-01）；CURSE_SUMMONER 复辟敌方 JU_ON 诅咒（typeID 精确过滤，09-02）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>被动引擎 + 攻击次数 <span class="tag engine">Engine</span></h4>
+				<div class="date">08-30</div>
+				<ul>
+					<li>步骤 3：<code>isPassive</code> 被动引擎（无监听被动垫底推导）+ A 组被动/复活卡</li>
+					<li>步骤 4：攻击次数引擎（+5 卡）、回合结束事件 + 因果埋葬计数（+2 卡）、FriendlyHighest term（+3 resolver 卡）</li>
+					<li>步骤 5：10 张零引擎卡（苏醒/诅咒复活/增强）+ 15 张谓词/循环引擎卡</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>规则裁定与补全 <span class="tag feature">Cards</span></h4>
+				<div class="date">08-30 ~ 09-02</div>
+				<ul>
+					<li>C 类逐张裁定：GRAVE_PUPPETEER（墓地打击 A 裁定：仅生物/随机/留墓）、WEAPON_SPIRIT 强化、DEATH_KNELL 苏醒链、GRAVE_CURSE 覆盖、DECIMATION 总量配额、LAST_RITES 墓地链等</li>
+					<li>MASS_SACRIFICE 去延迟 + RELIC_BLOOD_PACT 敌伤转换；RELIC_RIFT_OVERRIDE 友方信徒改写（被动旗标 + token 分支）</li>
+					<li>SPIKE_SKELETON 卡面显示揭晓攻击而非亡语 x2（08-30）</li>
+					<li>CardType 枚举取代 <code>isCreature</code>（09-02）：131 prefab + 17 脚本全量替换；诅咒 token 重定型为 Status</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>池同步与漂移清零 <span class="tag docs">Sync</span></h4>
+				<div class="date">08-30 ~ 09-05</div>
+				<ul>
+					<li>与 3.0 退役池撞 ID 的卡追加 <code>_4.0</code> 后缀（11 张，Unity + Notion DB 同步）</li>
+					<li>漂移同步批次：新建 RELIC_ATTACK_BURIAL、ATK/稀有度/desc/词表修正、displayName 批量同步</li>
+					<li>Tag 枚举 +10 新值、tooltip StringSO、81+ prefab myTags 全量（09-01）；四轮 listener-check 复跑（08-30 ~ 09-01）</li>
+					<li>4.0 商店池重建 + CURSE_THIRST_SHAMAN_4.0 / RELIC_WHITE_BANNER 补录（09-05）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>收尾平衡微调 <span class="tag docs">Balance</span></h4>
+				<div class="date">09-06 ~ 09-07</div>
+				<ul>
+					<li>AVENGER 亡语自我增强 1→2、RIFT_ACOLYTE 唤醒信徒 2→1（09-07）</li>
+					<li>CURSE_REVIVER 降稀有度 Uncommon→Common（09-06）</li>
+					<li>BeforeStartCardReveal 洗牌前回合边界：FINAL_ESCORT 墓地复活、RELIC_TALLY / RELIC_WHITE_BANNER 改绑（09-06）</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- ============ 5. 数据审计 ============ -->
+		<div class="section-title">
+			数据 · 审计 · 参考分析
+			<span class="period">08-14 ~ 09-07</span>
+		</div>
+		<div class="work-grid">
+			<div class="work-card">
+				<h4>zombie 基线平衡审计 <span class="tag docs">Audit</span></h4>
+				<div class="date">08-04 ~ 09-07</div>
+				<ul>
+					<li>审计 HTML 报告 + 抽取行脚本；09-07 评分迁移至 <code>gen_balance_audit_report.py</code>（PATCHES + 常量），Notion 审计库弃用，报告重新生成</li>
+					<li>强化三类 1.0/层、信徒 +1.0 全池等轮次估值迭代（09-06）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>记录对局数据分析 <span class="tag docs">Analysis</span></h4>
+				<div class="date">08-14</div>
+				<ul>
+					<li>NeverSelectedCards 交互报告：69 局记录中 23/71 池卡从未被选</li>
+					<li>DeckDivergenceReport v2：记录牌组与随机商店抽取统计不可区分（均值 0.9427 ≈ 0.9424）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>Bazaar 参考池分析 <span class="tag docs">Analysis</span></h4>
+				<div class="date">08-31 ~ 09-01</div>
+				<ul>
+					<li>11 位英雄全池分析完成（含桥接矩阵与典型构筑章节）+ OneDeck 设计综合（桥比例 43-72% 远超参考系）</li>
+					<li>抓取管线 + 分英雄生成器 + HTML 报告（Mobalytics 数据源经浏览器会话 fetch 全量）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>上线数据复盘 <span class="tag docs">Ops</span></h4>
+				<div class="date">09-05 ~ 09-06</div>
+				<ul>
+					<li>Grail 上线数据：day 1-2 分析（09-05）与 day 5-6 复核（09-06）</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- ============ 6. async-PvP 联网 ============ -->
+		<div class="section-title">
+			async-PvP 联网闭环
+			<span class="period">09-03 ~ 09-07</span>
+		</div>
+		<div class="work-grid">
+			<div class="work-card wide">
+				<h4>后端 onedeck-api <span class="tag feature">Server</span></h4>
+				<div class="date">09-03 ~ 09-04</div>
+				<ul>
+					<li>Express + better-sqlite3 单文件后端（<code>server/onedeck-api</code>），ECS 部署，无公网 IP 运维走 workbench-cli skill</li>
+					<li>S0 schema：回合战报/敌方牌组 ID、逐卡伤害拆分、敌方来源遥测；管理页 + 胜率/商店统计接口</li>
+				</ul>
+				<div class="file-list">
+					<span class="file-tag added">server/onedeck-api/</span>
+				</div>
+			</div>
+			<div class="work-card wide">
+				<h4>Unity 客户端批次 A~E <span class="tag feature">Client</span></h4>
+				<div class="date">09-04 ~ 09-05</div>
+				<ul>
+					<li>批次 A：ServerConfig / PlayerIdentity / DeckNetworkClient / UploadOutbox + EditMode 测试</li>
+					<li>批次 B：ghost 牌组注入、对手缓存、VS 展示、对局上报；C：会话统计桶 + 累计快照；D：run journal + 卡目录上传；E：回合序列记录</li>
+					<li>出箱刷新时机修正（商店退出即 flush）；战斗结束钩子移到退出战斗阶段之后；零战斗对局永不记录</li>
+					<li>首次启动用户名注册面板（09-05）；TestManager 主开关（录制/上传）；数据隔离构建 + 身份互换工具做双端测试（09-05）</li>
+					<li>敌方牌组链 debug &gt; ghost &gt; pool；v1 记录池归档，v2 牌组 #1-#10 重建默认敌方池（09-05）</li>
+				</ul>
+			</div>
+			<div class="work-card wide">
+				<h4>上传门禁收尾 <span class="tag feature">Gate</span></h4>
+				<div class="date">09-06 ~ 09-07</div>
+				<ul>
+					<li><code>CombatCompletionGate</code> 哨兵 + 四处门禁：数据仅在首个完成的战斗之后上传/记录（45/45 测试绿）</li>
+					<li>ServerConfig 默认 Production（markAsTest 开）+ 允许不安全 HTTP（本机联调）</li>
+					<li>商店访问在退出时记录 hpMax（客户端 + 服务端 + 管理页）</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- ============ 7. 工具链 ============ -->
+		<div class="section-title">
+			工具链 · 文档 · 测试基建
+			<span class="period">07-31 ~ 09-07</span>
+		</div>
+		<div class="work-grid">
+			<div class="work-card">
+				<h4>AGENTS.md 与文档 <span class="tag docs">Docs</span></h4>
+				<div class="date">07-31 / 09-06</div>
+				<ul>
+					<li>两轮瘦身（07-31 压到 32 KB 线内并强制尺寸检查；09-06 细则拆分进 AnimationSystem / DeckLayouts / ResultPerCardStats / ShopSystems）</li>
+					<li>UI/UX 指南 + UIKit demo 页（09-05）；卡面模板 v1.1 移植计划（09-06）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>Skills 与脚本 <span class="tag test">Tools</span></h4>
+				<div class="date">08-04 ~ 09-06</div>
+				<ul>
+					<li>新 skill：unity-zombie-balance-audit、unity-notion-card-sync、aliyun workbench-cli、listener-check 4.0 词表</li>
+					<li>Notion forensic/verify 脚本、卡数据提取工具、python sim 4.0 升级计划（轴条件采样 + 牌组共演化）</li>
+					<li>移除废弃 CardMaker 编辑器窗口（08-01）；忽略 Unity 崩溃恢复场景与 pycache（09-05/06）</li>
+				</ul>
+			</div>
+			<div class="work-card">
+				<h4>EditMode 测试体系 <span class="tag test">Tests</span></h4>
+				<div class="date">07-31 ~ 09-07</div>
+				<ul>
+					<li>HeadlessCombatTestFixture 体系随引擎同步扩展：攻次/回合边界/门禁均带 EditMode 测试，全量 484/485 绿（1 存量 Ignore）</li>
+					<li>AfterShuffle 协程测试改为泵无关（08-05）；Start Card 揭晓边界协程捕获供 EditMode 驱动（09-07）</li>
+					<li>TestManager 三开关拆分（shuffle-order / enemy-deck / isTestMode，08-29）+ 录制/上传总开关（09-05）</li>
+					<li>测试用敌方牌组改为 4.0 卡并新增死灵法师测试牌组（08-30）</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="highlight-box">
+			<h3>阶段重点工作总结</h3>
+			<ul>
+				<li><strong>4.0 卡池从设计到全量落地</strong> — 攻击力三期引擎 + 复活苏醒 + 被动 + 攻次四套引擎与五步批量实施、C 类裁定逐张拍板；131 prefab 的 CardType 拆分与 80+ prefab tag 同步为后续平衡迭代铺平了路</li>
+				<li><strong>async-PvP 打通数据闭环</strong> — Express 后端上线 ECS，Unity 客户端 A~E 批次全部落地，上传门禁保证数据质量（首战完成前零上传），双端身份互换工具可自测</li>
+				<li><strong>战斗反馈完整闭环</strong> — 伤害跳字 → tag 悬停 → 结果面板按归属分栏，配合卡片生命系统让"伤害从哪来、结果怎么算"全程可读</li>
+				<li><strong>视觉再升一档</strong> — 卡面模板 v1.1（稀有度/描述截断/专用符号字体）、三种牌组布局与单一选择器、字体配色全局单一来源，UI 从原型逼近展示品质</li>
+				<li><strong>数据驱动开发成型</strong> — 审计评分迁 Python（弃 Notion 库）、Bazaar/StS2 外部参考分析、Grail 上线数据复盘，平衡调整开始有基线依据</li>
+				<li><strong>质量闸门前移</strong> — EditMode 测试 484/485 绿常驻，重大重构（CardType、门禁、模板 v1.1）全部有测试伴飞</li>
+			</ul>
+		</div>
+
+		<div class="highlight-box" style="border-color: rgba(46, 204, 113, 0.4); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(52, 152, 219, 0.08));">
+			<h3 style="color: #2ecc71;">遗留事项与下期建议</h3>
+			<p style="color: #bbb; margin-bottom: 15px; font-size: 0.9em;">来自上期会话备忘与提交记录中仍未闭合的条目：</p>
+			<ul>
+				<li><strong style="color: #2ecc71;">联网正式化（高优先级）</strong><br>
+				async-PvP 后端目前允许不安全 HTTP 且 markAsTest 默认开——上正式服前需切 HTTPS + 关测试标记；真机/双端实测跑通一场完整异步对局</li>
+				<li><strong style="color: #2ecc71;">胜率观察积累（高优先级）</strong><br>
+				门禁已保证数据质量，接下来需要跑局授权以积累 4.0 卡池胜率样本（16 张 utility 相关中文名圈改与摘「中」卡追认也在备忘中待办）</li>
+				<li><strong style="color: #2ecc71;">审计口径收尾（中优先级）</strong><br>
+				zombie 评分已迁 Python，可跑一轮全量并按新口径复核强化/信徒估值是否仍成立；全池 extraDmg≠0 遗留卡逐张核对角标口径</li>
+				<li><strong style="color: #2ecc71;">参考系落地（中优先级）</strong><br>
+				Bazaar 综合与 StS2 分析的桥接/槽位结论尚在设计层，可挑 1-2 条进入卡池修订</li>
+			</ul>
+		</div>
+
+		<div class="footer">
+			OneDeck Unity Roguelike Card Game | 开发者: PAPAYA<br>
+			数据来源: git log（2026-07-21 ~ 09-07，180 commits）+ 会话记忆备忘 | 生成时间: 2026-09-07
+		</div>
+	</div>
+</body>
+</html>
