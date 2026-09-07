@@ -168,7 +168,7 @@ public class ShopManager : MonoBehaviour
 	/// </summary>
 	public int GetCardPrice(CardScript cardScript)
 	{
-		if (cardScript != null && cardScript.GetComponent<DeckSizeIncreaseEffect>() != null)
+		if (cardScript != null && cardScript.GetComponentInChildren<DeckSizeIncreaseEffect>(true) != null)
 		{
 			int purchases = deckSlotPurchasesRef != null ? deckSlotPurchasesRef.value : 0;
 			return UtilityShopBonus.GetDeckSlotPrice(deckSlotBasePrice, deckSlotPriceStep, purchases);
@@ -284,7 +284,7 @@ public class ShopManager : MonoBehaviour
 
 		// Deck-slot meter card (v2): ceiling reached = stop selling (pipeline stops offering too;
 		// this guards copies already sitting on the current board).
-		bool isDeckSlotCard = cardToBuyScript.GetComponent<DeckSizeIncreaseEffect>() != null;
+		bool isDeckSlotCard = cardToBuyScript.GetComponentInChildren<DeckSizeIncreaseEffect>(true) != null;
 		if (isDeckSlotCard && deckSize != null && maxDeckSize != null && deckSize.value >= maxDeckSize.value)
 		{
 			return;

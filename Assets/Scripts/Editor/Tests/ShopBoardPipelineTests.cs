@@ -319,6 +319,38 @@ public class ShopBoardPipelineTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
+	public void DeckSizeEffect_OnChildGameObject_StillClassifiedUtilityOnly()
+	{
+		// IncreaseDeckSizeLite keeps its DeckSizeIncreaseEffect on a child object ("Increase 1 deck
+		// size"), not the prefab root - classification must still see it (root-only GetComponent
+		// miss fixed 2026-09-07: the card used to be offered on combat boards).
+		var slotScript = MakeCard(typeId: "SLOT_CHILD");
+		var effectHost = new GameObject("board_effect_child");
+		effectHost.transform.SetParent(slotScript.transform);
+		effectHost.AddComponent<DeckSizeIncreaseEffect>();
+		var plain = MakeCard(typeId: "PLAIN");
+
+		// Combat board: the child-effect deck-size card must never be offered.
+		var combat = ShopBoardPipeline.GenerateBoard(_created, s => 1f, null, 0, 0f, 1, 1, false, NewRng());
+		Assert.IsFalse(combat.isUtilityBoard);
+		Assert.AreEqual(1, combat.cards.Count);
+		Assert.IsTrue(combat.cards.Contains(plain.gameObject));
+
+		// Utility board: it is the utility pool's occupant.
+		var utility = ShopBoardPipeline.GenerateBoard(_created, s => 1f, null, 0, 100f, 1, 1, false, NewRng());
+		Assert.IsTrue(utility.isUtilityBoard);
+		Assert.AreEqual(1, utility.cards.Count);
+		Assert.IsTrue(utility.cards.Contains(slotScript.gameObject));
+
+		// At deck-size ceiling: excluded everywhere - the utility pool runs dry and the
+		// board-type roll falls through to combat (empty-pool rule), leaving only PLAIN.
+		var atCeiling = ShopBoardPipeline.GenerateBoard(_created, s => 1f, null, 0, 100f, 1, 1, true, NewRng());
+		Assert.IsFalse(atCeiling.isUtilityBoard);
+		Assert.AreEqual(1, atCeiling.cards.Count);
+		Assert.IsTrue(atCeiling.cards.Contains(plain.gameObject));
+	}
+
+	[Test]
 	public void Wave_Creature100_CombatGenericSlotsAllCreatures()
 	{
 		var creature = MakeCard(isCreature: true, typeId: "CREATURE");

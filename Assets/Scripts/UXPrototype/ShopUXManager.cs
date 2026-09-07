@@ -150,6 +150,25 @@ public class ShopUXManager : MonoBehaviour
 			// Record instantiated card
 			_spawnedShopCards.Add(physicalCard);
 		}
+
+		// DIAG-LOG(2026-09-06): physical shelf contents (pairs with [ShopBoard] board list)
+		LogSpawnedShopCardIds();
+	}
+
+	/// <summary>
+	/// DIAG-LOG(2026-09-06): logs the typeIDs of the cards physically on the shop shelf,
+	/// so console output pairs 1:1 with the [ShopBoard] board-generation list.
+	/// </summary>
+	private void LogSpawnedShopCardIds()
+	{
+		var ids = new List<string>();
+		foreach (var card in _spawnedShopCards)
+		{
+			var phys = card != null ? card.GetComponent<CardPhysObjScript>() : null;
+			var represented = phys != null ? phys.cardImRepresenting : null;
+			ids.Add(represented != null ? represented.cardTypeID : "null");
+		}
+		TestManager.Log("[ShopBoard] physical shelf=[" + string.Join(", ", ids) + "]");
 	}
 	
 	/// <summary>
@@ -827,6 +846,8 @@ public class ShopUXManager : MonoBehaviour
 			_spawnedShopCards.Add(physicalCard);
 		}
 		
+		// DIAG-LOG(2026-09-06): physical shelf contents after reroll respawn (pairs with [ShopBoard] board list)
+		LogSpawnedShopCardIds();
 		// Debug.Log($"[ShopUXManager] Reroll complete, spawned {_spawnedShopCards.Count} new shop cards.");
 	}
 

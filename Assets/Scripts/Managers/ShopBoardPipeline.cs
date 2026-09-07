@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DefaultNamespace.Managers;
 using UnityEngine;
 
 	/// <summary>
@@ -97,6 +98,35 @@ public static class ShopBoardPipeline
 				if (candidate != null) result.cards.Add(candidate);
 			}
 		}
+
+		// DIAG-LOG(2026-09-06): board-type roll + pool classification trace
+		// (report: deck-size card allegedly offered on a combat board).
+		string combatAnomalies = "";
+		foreach (var card in combatPool)
+		{
+			var script = card.GetComponent<CardScript>();
+			if (script != null && ((script.utilityKind != EnumStorage.UtilityKind.None && script.utilityKind != EnumStorage.UtilityKind.OddsUtility) || card.GetComponentInChildren<DeckSizeIncreaseEffect>(true) != null))
+			{
+				combatAnomalies += script.cardTypeID + " ";
+			}
+		}
+		var boardIdList = new List<string>();
+		foreach (var card in result.cards)
+		{
+			var boardScript = card != null ? card.GetComponent<CardScript>() : null;
+			boardIdList.Add(boardScript != null ? boardScript.cardTypeID : "null");
+		}
+		int fullPoolCount = (fullPool as System.Collections.ICollection)?.Count ?? -1;
+		TestManager.Log("[ShopBoard] board#" + boardIndex
+			+ " type=" + (result.isUtilityBoard ? "UTILITY" : "COMBAT")
+			+ " utilityChance=" + chance.ToString("F0") + "%"
+			+ (forcedUtility ? " FORCED_FIRST_BOARD" : "")
+			+ " fullPool=" + fullPoolCount
+			+ " combatPool=" + combatPool.Count + " utilityPool=" + utilityPool.Count
+			+ " genericPool=" + genericPool.Count
+			+ (combatAnomalies.Length > 0 ? " ANOMALY_IN_COMBAT_POOL=[" + combatAnomalies.TrimEnd() + "]" : " combatPoolClean")
+			+ " board=[" + string.Join(", ", boardIdList) + "]");
+
 		return result;
 	}
 
@@ -114,7 +144,9 @@ public static class ShopBoardPipeline
 			if (card == null) continue;
 			var script = card.GetComponent<CardScript>();
 			if (script == null) continue;
-			bool isDeckSlotCard = script.GetComponent<DeckSizeIncreaseEffect>() != null;
+			// The deck-size effect may live on a child GameObject (IncreaseDeckSizeLite prefab):
+			// a root-only GetComponent misses it and misclassifies the card into the combat pool.
+			bool isDeckSlotCard = script.GetComponentInChildren<DeckSizeIncreaseEffect>(true) != null;
 			if (deckSizeAtCeiling && isDeckSlotCard) continue;
 			if (bonus != null && bonus.ownedUtilityTypeIds != null && bonus.ownedUtilityTypeIds.Contains(script.cardTypeID)) continue;
 
