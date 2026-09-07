@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ServerConfig
   m_EditorClassIdentifier: Assembly-CSharp::ServerConfig
   enabled: 1
-  environment: 0
+  environment: 1
   localBaseUrl: http://127.0.0.1:3000
   productionBaseUrl: http://8.153.150.197
   uploadDeckSnapshots: 1
@@ -23,4 +23,4 @@ MonoBehaviour:
   includeCombatSeries: 1
   uploadCardCatalog: 1
   fetchOpponentDecks: 1
-  markAsTest: 0
+  markAsTest: 1
