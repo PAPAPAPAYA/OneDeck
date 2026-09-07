@@ -151,6 +151,7 @@ Interpretation:
 - **2026-09-11**: if Grail's total reviews land near ~235, the week-1 extrapolation holds.
 	- *Status 2026-09-05*: day-4 intake held at 43 (vs 39 on day 3) instead of decaying; 235 will be crossed around Sep 8, week-1 tracking to **~270–290 reviews** (≈ 8,000–11,000 units). See §9.
 	- *Status 2026-09-06*: 235 crossing on Sep 6 (2 days ahead of the revised estimate); day-5 intake 35 confirms the decay curve; week-1 tracking ~270–275 reviews, inside the revised band. See §10.
+	- *Status 2026-09-07*: 249 total by day 7 03:10 UTC; day-6 intake ~26 confirms the decay curve; week-1 ≈ 275 on track. See §11.
 - **2026-09-18**: if the daily rate has dropped below ~15/day, month-1 settles toward the lower band (~450 reviews).
 
 ## 9. Recheck — 2026-09-05 (day 4–5)
@@ -191,6 +192,28 @@ Per-day intake: 48 → 55 → 39 → 42 → 35 → (day 6 in progress).
 3. **Marginal positive rate stuck at 85% for a second consecutive window** (39/46). Cumulative 90% is carried by launch-window stock; the score floor depends on whether the new complaint mix keeps rotating.
 4. **Complaints moved from ops → QoL → design**: the new dominant negative is *irreversible branching under RNG*. A Korean negative explicitly benchmarks the direct competitor: don't expect Backpack Battles — there is no way to re-route a bad branch, so a lucky opponent just wins. First direct-comp comparison in the review base; plus "content not finished" (zh-CN), UI/settings polish, RNG dependence.
 5. **OneDeck takeaway**: snapshot-async PvP amplifies RNG blame. Backpack Battles ships reroute/mitigation sinks; a game without them (Grail's branching) gets design-level negatives that ops patches cannot fix. Post-defeat mitigation options may set the review-score floor for this genre — worth reflecting in OneDeck combat/reroll design.
+
+## 11. Recheck — 2026-09-07 (day 6–7)
+
+Snapshot at 03:10 UTC 2026-09-07:
+
+| Metric | Value | vs 2026-09-06 |
+|--------|-------|---------------|
+| Total reviews | **249** (226 pos / 23 neg, 90.8%, "Very Positive") | +19 in 20 h; cumulative rate 90.0% → 90.8% |
+| Day-6 intake (Sep 6, full UTC day) | **~26** (≈25 pos) | day 5 was 35 — corrected-model decay (−26%) |
+| CCU | **593** | 556 → 593 (+7%, recovered) |
+| USD/CNY | 6.7194 | 6.736 on Sep 4 |
+
+Per-day intake: 48 → 55 → 39 → 42 → 35 → ~26 → (day 7 running ~30/day pace in the 00:00–03:10 UTC block).
+
+### Findings
+
+1. **Week-1 forecast locked in**: day-6 intake landed on the corrected model (~30/day for days 6–7). Week-1 total tracking ≈ **275 reviews ≈ 8,000–11,000 units**, inside the §10 revised band; no model change needed. Next checkpoint (2026-09-18, <15/day → month-1 low band): day 6 at ~26/day is still above the trigger.
+2. **Negative-pressure relief**: zero new negatives in the 20 h window (23 → 23). The only Sep-6 negative is a QoL/polish complaint (EN, 9.6 h: "interesting but needs polish; UI choices frustrating; video settings don't work correctly") — ops-level, not design-level. Marginal positive rate rebounded to ~96–100% (vs 85% in the two prior windows) and the cumulative rate ticked up to 90.8%; the §9/§10 early warning did not escalate.
+3. **Language mix**: fresh 25-review window (Sep 6 04:03 → Sep 7 03:10) — english 18 (72%), japanese 3, koreana 2, italian 1 (first), brazilian 1, **schinese 0** — first window without zh-CN reviews since launch week; East-Asian share cooled to 20% (from ~33%), read as window volatility rather than trend. zh-CN lifetime negative count remains 0.
+4. **Intake is now region-cyclical**: the day-7 early block (00:00–03:10 UTC = US prime time) delivered 4+ reviews while Sep-6 EU hours were slow — daily totals sampled in EU-morning hours will understate the pace; prefer 24 h+ windows.
+5. **Sales implication**: day-6 ~26 reviews × 30–40× → ~800–1,000 units/day; cumulative week-1 ≈ 8,000–11,000 units unchanged; month-1 bands unchanged.
+6. Data-quality note: Steam's `appreviews` edge cache served stale lists intermittently this session (one "recent" page dated ~2 days back while totals were fresh); totals were cross-checked on two independent fetches and the day-6 count reconciled against the cumulative chain (219 + 5 + 21 + 4 = 249, ±2).
 
 ## Appendix: Data Provenance
 
