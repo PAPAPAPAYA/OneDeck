@@ -1,12 +1,15 @@
 CARD|0_Common/AVENGER_4.0.prefab|display=长高的坟头|type=AVENGER_4.0|atk=1|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=0300000005000000|desc=揭晓时:攻击;遗言:强化自身
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
-  CONT| TRIGGER=OnMeBuried | name= | effectEvent:AttackGiverEffect->GiveSelfAttack(1)[lastXCardsCount=0,xFriendlyCount=0,statusEffectLayerCount=1,statusEffectToGive=4,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},statusEffectToCount=0,yFriendlyLayerCount=1]
+  CONT| TRIGGER=OnMeBuried | name= | effectEvent:AttackGiverEffect->GiveSelfAttack(2)[lastXCardsCount=0,xFriendlyCount=0,statusEffectLayerCount=1,statusEffectToGive=4,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},statusEffectToCount=0,yFriendlyLayerCount=1]
 CARD|0_Common/BEAST_REVIVER.prefab|display=笼里的东西|type=BEAST_REVIVER|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=0b000000|desc=攻击;复活 <b>1</b> 生物友方
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->AttackTimes(1)[extraDmg=0,baseDmg={fileID: 0},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveMyCards(1)[creatureFilter=1,tagsToCheck=,typeIDFilter=,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
 CARD|0_Common/BLACKSMITH_4.0.prefab|display=巷口的磨刀人|type=BLACKSMITH_4.0|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=05000000|desc=揭晓时:攻击;强化 <b>1</b> 友方生物
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackGiverEffect->GiveAttackToXFriendly(2)[lastXCardsCount=0,xFriendlyCount=1,statusEffectLayerCount=0,statusEffectToGive=4,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},statusEffectToCount=0,yFriendlyLayerCount=1]
+CARD|0_Common/CURSE_REVIVER.prefab|display=洗不掉的印子|type=CURSE_REVIVER|atk=0|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=080000000b000000|desc=攻击;复活1敌方诅咒
+  CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
+  CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveTheirCards(1)[creatureFilter=0,tagsToCheck=,typeIDFilter=JU_ON,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
 CARD|0_Common/ELITE_REVIVER.prefab|display=描过金的牌位|type=ELITE_REVIVER|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=0b000000|desc=攻击;复活1被强化友方生物
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveMyCards(1)[creatureFilter=1,tagsToCheck=,typeIDFilter=,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
@@ -25,10 +28,10 @@ CARD|0_Common/IncreaseHpMax.prefab|display=早睡早起|type=SYSTEM_INCREASE_HP_
 CARD|0_Common/LAST_GIFT.prefab|display=遗物整理师|type=LAST_GIFT|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=0300000005000000|desc=攻击;遗言:强化1友方生物
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
   CONT| TRIGGER=OnMeBuried | name= | effectEvent:AttackGiverEffect->GiveAttackToXFriendly[lastXCardsCount=0,xFriendlyCount=1,statusEffectLayerCount=1,statusEffectToGive=0,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},statusEffectToCount=0,yFriendlyLayerCount=1]
-CARD|0_Common/RIFT_ACOLYTE.prefab|display=自己签满的签到表|type=RIFT_ACOLYTE|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=0600000009000000|desc=攻击;生成1信徒;苏醒:生成2信徒
+CARD|0_Common/RIFT_ACOLYTE.prefab|display=自己签满的签到表|type=RIFT_ACOLYTE|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=0600000009000000|desc=攻击;生成1信徒;苏醒:生成1信徒
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AddTempCard->AddCardToMe[cardCount=1,curseCardTypeID=SO:CurseCardTypeID=?]
-  CONT| TRIGGER=OnMeRevived | name= | effectEvent:AddTempCard->AddCardToMe[cardCount=2,curseCardTypeID=SO:CurseCardTypeID=?]
+  CONT| TRIGGER=OnMeRevived | name= | effectEvent:AddTempCard->AddCardToMe[cardCount=1,curseCardTypeID=SO:CurseCardTypeID=?]
 CARD|0_Common/RIFT_INSECT_4.0.prefab|display=门口多出的鞋印|type=RIFT_INSECT_4.0|atk=3|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=06000000|desc=揭晓时:攻击;生成 <b>1</b> 信徒
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AddTempCard->AddCardToMe[cardCount=1,curseCardTypeID={fileID: 0}]
@@ -76,15 +79,14 @@ CARD|1_Uncommon/CURSE_EATER.prefab|display=吞玻璃的人|type=CURSE_EATER|atk=
 CARD|1_Uncommon/CURSE_GARDENER.prefab|display=疯长的绿萝|type=CURSE_GARDENER|atk=0|ctype=0|extraTimes=0|growth=0|passive=0|minion=0|tags=080000000b000000|desc=强化1敌方诅咒;复活1敌方诅咒
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:CurseEffect->EnhanceCurse(1)[powerCoefficient=1,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveTheirCards(1)[creatureFilter=0,tagsToCheck=,typeIDFilter=JU_ON,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
-CARD|1_Uncommon/CURSE_REVIVER.prefab|display=洗不掉的印子|type=CURSE_REVIVER|atk=0|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=080000000b000000|desc=攻击;复活1敌方诅咒
-  CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
-  CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveTheirCards(1)[creatureFilter=0,tagsToCheck=,typeIDFilter=JU_ON,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
 CARD|1_Uncommon/CURSE_SUMMONER.prefab|display=替人叫魂的喇叭|type=CURSE_SUMMONER|atk=0|ctype=0|extraTimes=0|growth=0|passive=0|minion=0|tags=080000000b000000|desc=复活1友方;复活1敌方诅咒
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveMyCards(1)[creatureFilter=0,tagsToCheck=,typeIDFilter=,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveTheirCards(1)[creatureFilter=0,tagsToCheck=,typeIDFilter=JU_ON,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
 CARD|1_Uncommon/CURSE_THIRST_BEAST_4.0.prefab|display=偷吃供品的黄皮子|type=CURSE_THIRST_BEAST_4.0|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=080000000b000000|desc=敌方诅咒揭晓时:复活自身;攻击
   CONT| TRIGGER=OnHostileCurseRevealed | name= | effectEvent:ReviveEffect->ReviveSelf[creatureFilter=0,tagsToCheck=,typeIDFilter=,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->AttackTimes(1)[extraDmg=0,baseDmg={fileID: 0},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
+CARD|1_Uncommon/CURSE_THIRST_SHAMAN_4.0.prefab|display=咒食的萨满|type=CURSE_THIRST_SHAMAN_4.0|atk=0|ctype=0|extraTimes=0|growth=0|passive=0|minion=0|tags=0800000005000000|desc=揭晓时:敌方诅咒每有 <b>1</b> 攻击力:强化
+  CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackGiverEffect->GiveAttackToXFriendly_BasedOnIntSO[lastXCardsCount=0,xFriendlyCount=0,statusEffectLayerCount=1,statusEffectToGive=4,ownerIntSO=SO:EnemyCursePowerCount=0,enemyIntSO=SO:OwnerCursePowerCount=0,statusEffectToCount=0,yFriendlyLayerCount=1]
 CARD|1_Uncommon/DEATHBED_GRANT.prefab|display=入殓师|type=DEATHBED_GRANT|atk=0|ctype=0|extraTimes=0|growth=0|passive=1|minion=0|tags=040000000a000000|desc=被动:友方生物被埋葬时:该友方生物攻击
   CONT| TRIGGER=OnFriendlyCardBuried | name= | effectEvent:BuriedCreatureAttackEffect->AttackLastBuriedFriendlyCreature
 CARD|1_Uncommon/DEATHBED_PORTER.prefab|display=抬上楼的纸别墅|type=DEATHBED_PORTER|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=03000000|desc=攻击;遗言:攻击;置顶1友方非生物
@@ -97,10 +99,10 @@ CARD|1_Uncommon/EULOGIST.prefab|display=哭灵人|type=EULOGIST|atk=2|ctype=1|ex
 CARD|1_Uncommon/EXILE_BERSERKER.prefab|display=送行酒|type=EXILE_BERSERKER|atk=2|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=07000000|desc=攻击;本回合每放逐 <b>1</b> 友方,攻击次数<b>+1</b>
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
   CONT| TRIGGER=OnFriendlyCardExiled | name= | effectEvent:AttackTimesGiverEffect->GiveSelfAttackTimes(1)[lastXCardsCount=0,xFriendlyCount=0,statusEffectLayerCount=1,statusEffectToGive=0,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},statusEffectToCount=0,yFriendlyLayerCount=1]
-CARD|1_Uncommon/FINAL_ESCORT.prefab|display=引路的白灯笼|type=FINAL_ESCORT|atk=1|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=03000000|desc=攻击;遗言:回合结束:置顶 <b>1</b>
+CARD|1_Uncommon/FINAL_ESCORT.prefab|display=引路的白灯笼|type=FINAL_ESCORT|atk=1|ctype=1|extraTimes=0|growth=0|passive=0|minion=0|tags=030000000b000000|desc=攻击;遗言:回合结束前:复活
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AttackEffect->Attack[extraDmg=0,baseDmg={fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2},dmgAmountAlter=0,statusEffectToCheck=0,curseEngine={fileID: 0},ownerIntSO={fileID: 0},enemyIntSO={fileID: 0}]
-  CONT| TRIGGER=OnMeBuried | name= | effectEvent:StageEffect->ArmRoundEndStageMaxAttackCreature[statusEffectToCheck=0,creatureFilter=0,targetFriendly=0,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},excludeSelf=1]
-  CONT| TRIGGER=OnRoundEnd | name= | effectEvent:StageEffect->StageMaxAttackCreatureIfArmed[statusEffectToCheck=0,creatureFilter=0,targetFriendly=1,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},excludeSelf=1]
+  CONT| TRIGGER=OnMeBuried | name= | effectEvent:ReviveEffect->ArmRoundEndRevive[creatureFilter=1,tagsToCheck=,typeIDFilter=,rarityFilter=0,sortBy=1,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
+  CONT| TRIGGER=BeforeStartCardReveal | name= | effectEvent:ReviveEffect->ReviveMyCardsIfArmed[creatureFilter=1,tagsToCheck=,typeIDFilter=,rarityFilter=0,sortBy=1,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
 CARD|1_Uncommon/FLURRY_REVIVER.prefab|display=棺材里的敲门声|type=FLURRY_REVIVER|atk=0|ctype=0|extraTimes=0|growth=0|passive=0|minion=0|tags=0b000000|desc=复活 <b>1</b> 攻击次数最多友方生物
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveMyCards(1)[creatureFilter=1,tagsToCheck=,typeIDFilter=,rarityFilter=0,sortBy=2,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
 CARD|1_Uncommon/FUNERAL_WILL.prefab|display=贴在门上的保险书|type=FUNERAL_WILL|atk=0|ctype=0|extraTimes=0|growth=0|passive=0|minion=0|tags=030000000b000000|desc=埋葬卡组顶 <b>2</b> 卡;遗言:延迟复活
@@ -138,10 +140,12 @@ CARD|1_Uncommon/RELIC_ATTACK_BURIAL.prefab|display=自己翻页的黄历|type=RE
   CONT| TRIGGER=onAnyFriendlyCardAttacked | name= | effectEvent:BuryEffect->BuryNextXCards(1)[creatureFilter=0,tagsToCheck=,targetFriendly=1,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},excludeSelf=1]
 CARD|1_Uncommon/RELIC_CHAIN_BURIAL.prefab|display=拖人下水的水鬼|type=RELIC_CHAIN_BURIAL|atk=0|ctype=0|extraTimes=0|growth=0|passive=1|minion=0|tags=040000000a000000|desc=被动:友方被埋葬时,埋葬卡组顶
   CONT| TRIGGER=OnFriendlyCardBuried | name= | effectEvent:BuryEffect->BuryNextXCards(1)[creatureFilter=0,tagsToCheck=,targetFriendly=1,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},excludeSelf=1]
-CARD|1_Uncommon/RELIC_TALLY.prefab|display=路口的纸灰圈|type=RELIC_TALLY|atk=0|ctype=0|extraTimes=0|growth=0|passive=1|minion=0|tags=04000000080000000a000000|desc=被动:回合结束:本回合每埋葬
-  CONT| TRIGGER=OnRoundEnd | name= | effectEvent:CurseEffect->EnhanceCurseTimes_BasedOnIntSO[powerCoefficient=1,ownerIntSO=SO:CreaturesBuriedByOwnerThisRoundRef=0,enemyIntSO=SO:CreaturesBuriedByEnemyThisRoundRef=0]
+CARD|1_Uncommon/RELIC_TALLY.prefab|display=路口的纸灰圈|type=RELIC_TALLY|atk=0|ctype=0|extraTimes=0|growth=0|passive=1|minion=0|tags=04000000080000000a000000|desc=被动:回合结束前:本回合每埋葬
+  CONT| TRIGGER=BeforeStartCardReveal | name= | effectEvent:CurseEffect->EnhanceCurseTimes_BasedOnIntSO[powerCoefficient=1,ownerIntSO=SO:CreaturesBuriedByOwnerThisRoundRef=0,enemyIntSO=SO:CreaturesBuriedByEnemyThisRoundRef=0]
 CARD|1_Uncommon/RELIC_TRAINER.prefab|display=半夜喂奶的黑影|type=RELIC_TRAINER|atk=0|ctype=0|extraTimes=0|growth=0|passive=1|minion=0|tags=050000000a000000|desc=被动:回合开始:强化1攻击力最低友方生物
   CONT| TRIGGER=BeforeRoundFinished | name= | effectEvent:AttackGiverEffect->GiveFriendlyCardWithMinAttack(1)[lastXCardsCount=0,xFriendlyCount=0,statusEffectLayerCount=1,statusEffectToGive=0,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},statusEffectToCount=0,yFriendlyLayerCount=1]
+CARD|1_Uncommon/RELIC_WHITE_BANNER.prefab|display=开道的白幡|type=RELIC_WHITE_BANNER|atk=0|ctype=0|extraTimes=0|growth=0|passive=1|minion=0|tags=0a000000|desc=被动:回合开始:置顶 <b>1</b> 友方攻击力最高生物
+  CONT| TRIGGER=BeforeRoundFinished | name= | effectEvent:StageEffect->StageCardWithMaxAttack[statusEffectToCheck=0,creatureFilter=0,targetFriendly=1,ownerIntSO={fileID: 0},enemyIntSO={fileID: 0},excludeSelf=1]
 CARD|1_Uncommon/REVIVE_SUMMONER.prefab|display=跟回家的人影|type=REVIVE_SUMMONER|atk=0|ctype=0|extraTimes=0|growth=0|passive=0|minion=0|tags=060000000b000000|desc=复活 <b>1</b> 友方;生成 <b>1</b> 信徒
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:ReviveEffect->ReviveMyCards(1)[creatureFilter=0,tagsToCheck=,typeIDFilter=,rarityFilter=0,sortBy=0,reviveTargetSide=0,delayedRevive=0,excludeSelf=1]
   CONT| TRIGGER=OnMeRevealed | name= | effectEvent:AddTempCard->AddCardToMe[cardCount=1,curseCardTypeID=SO:CurseCardTypeID=?]

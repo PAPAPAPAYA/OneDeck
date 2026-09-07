@@ -55,9 +55,9 @@
 
 <header>
 	<h1>Zombie 基准卡牌平衡审计 — 4.0 卡池</h1>
-	<div class="subtitle">生成 2026-09-05 · 基线 ZOMBIE = 2.0 伤害/轮 · HP 20 · 战斗窗口 R≈4 · 全循环模型 (Start Card 固定卡组底, q=1) · 数据源: Notion「4.0 card database」+ <code>tools/scripts/extract_card_prefabs.py</code> 实抽 prefab · 估值约定 2026-09-05 用户拍板</div>
+	<div class="subtitle">生成 2026-09-06 (第2轮·全池统一口径) · 基线 ZOMBIE = 2.0 伤害/轮 · HP 20 · 战斗窗口 R≈4 · 全循环模型 (Start Card 固定卡组底, q=1) · 数据源: Notion「4.0 card database」(09-06 normal 卡数值已更新) + <code>tools/outputs/audit_rows_40.json</code> (prefab 抽取) + 改动补丁 (<code>tools/scripts/gen_balance_audit_report.py</code>) · <b style="color:var(--bang)">2026-09-06: 审计 DB 弃用, 评分由本报告按 §约定 自算</b>; 强化三类统一 1.0/层; 条件层减分 (遗言 0.3 / 苏醒·强化反应·条件 0.5) 全池生效; 生成1信徒 +1.0 全池生效</div>
 	<div class="legend">
-		<span class="badge b-over2">++</span><span class="note">严重超带</span>
+		<span class="badge b-over2">++</span><span class="note">严重超带 (超带宽1倍)</span>
 		<span class="badge b-over">+</span><span class="note">超带</span>
 		<span class="badge b-in">=</span><span class="note">带内</span>
 		<span class="badge b-under">−</span><span class="note">低于带</span>
@@ -71,25 +71,26 @@
 	<div class="card"><h2>池子快照</h2>
 		<div class="metric"><span>战斗卡 (启用)</span><span class="value">89</span></div>
 		<div class="metric"><span>商店 utility/system</span><span class="value">18</span></div>
-		<div class="metric"><span>备用设计行 (无 prefab)</span><span class="value">4</span></div>
-		<div class="metric"><span>稀有度 C / U / R</span><span class="value">18 / 45 / 26</span></div>
+		<div class="metric"><span>稀有度 C / U / R</span><span class="value">19 / 44 / 26</span></div>
+		<div class="metric"><span>token (RIFT/JU_ON, 不评分)</span><span class="value">2</span></div>
 	</div>
 	<div class="card"><h2>段位真空均值</h2>
-		<div class="metric"><span>Common (带 1.6–2.4)</span><span class="value">≈2.7</span></div>
-		<div class="metric"><span>Uncommon (带 2.4–4.0)</span><span class="value">≈2.4</span></div>
-		<div class="metric"><span>Rare (带 4.0–8.0)</span><span class="value">≈2.6 (真空)</span></div>
-		<div class="metric"><span>结论</span><span class="value" style="color:var(--bang)">R 档严重依赖 build-around</span></div>
+		<div class="metric"><span>Common (带 1.6–2.4)</span><span class="value">≈2.61</span></div>
+		<div class="metric"><span>Uncommon (带 2.4–4.0)</span><span class="value">≈2.5</span></div>
+		<div class="metric"><span>Rare (带 4.0–8.0)</span><span class="value">≈2.41</span></div>
+		<div class="metric"><span>结论</span><span class="value" style="color:var(--bang)">信徒+1.0 后生成器回归带内; R 档仍偏低</span></div>
 	</div>
-	<div class="card"><h2>问题卡计数</h2>
-		<div class="metric"><span>超带 (++ / +出带)</span><span class="value" style="color:var(--over)">10</span></div>
-		<div class="metric"><span>真空反值 (!)</span><span class="value" style="color:var(--bang)">9</span></div>
-		<div class="metric"><span>低于带 (−)</span><span class="value" style="color:var(--under)">17</span></div>
-		<div class="metric"><span>R 方差错位 / 非 R 高方差</span><span class="value">10 / 12</span></div>
+	<div class="card"><h2>问题卡计数 (机械判定)</h2>
+		<div class="metric"><span>超带 (+ / ++)</span><span class="value" style="color:var(--over)">12 / 4</span></div>
+		<div class="metric"><span>带内 (=)</span><span class="value" style="color:var(--in)">39</span></div>
+		<div class="metric"><span>低于带 (−)</span><span class="value" style="color:var(--under)">21</span></div>
+		<div class="metric"><span>反值 (!) / build (B)</span><span class="value" style="color:var(--bang)">9 / 4</span></div>
 	</div>
-	<div class="card"><h2>三大核心发现</h2>
-		<div class="metric" style="display:block"><span>① 遗言/苏醒双_payload common (SPIKE、WOKEN_BLADE) 5.2 远超带</span></div>
-		<div class="metric" style="display:block"><span>② 信徒轴生成器真空 0.8–2.2, 转化器也低于 R 带</span></div>
-		<div class="metric" style="display:block"><span>③ DOOM_HERALD「复活最强敌方」存在谓词陷阱</span></div>
+	<div class="card"><h2>本轮口径影响</h2>
+		<div class="metric" style="display:block"><span>① 用户 8 张 normal 卡数值改动已入库重算: Common 均值 2.8→2.61 (带内 4/19, 超带 14/19)</span></div>
+		<div class="metric" style="display:block"><span>② 强化 1.0/层: RIFT_REAPER 3.2→4.0 回带底; RELIC_TALLY 2.4→2.0/轮 落带下; DOOM_HERALD 4.3→3.5</span></div>
+		<div class="metric" style="display:block"><span>③ 生成信徒 +1.0: 野庙/点传师/歌女 3 张反值卡 + 笔/那条街/人影 3 张低于带卡回归带内; RELIC_HIVE 转引擎 3/轮</span></div>
+		<div class="metric" style="display:block"><span>④ 条件层 0.5/0.3 全池: DEATHBED_PORTER 4.8→3.05, CURSE_THIRST 3.6→3.0, LAST_RITES 6.0→3.4</span></div>
 	</div>
 </div>
 
@@ -97,12 +98,12 @@
 	<h2 id="audit">战斗卡评分表 (89)</h2>
 	<div class="toolbar">
 		<button class="rfilter active" data-r="all">全部</button>
-		<button class="rfilter" data-r="common">Common (18)</button>
-		<button class="rfilter" data-r="uncommon">Uncommon (45)</button>
+		<button class="rfilter" data-r="normal">Common (19)</button>
+		<button class="rfilter" data-r="uncommon">Uncommon (44)</button>
 		<button class="rfilter" data-r="rare">Rare (26)</button>
 		<select id="vfilter">
 			<option value="all">全部判定</option>
-			<option value="over">超带 (++/+/出带)</option>
+			<option value="over">超带 (++/+)</option>
 			<option value="in">带内 (=)</option>
 			<option value="under">低于带 (−)</option>
 			<option value="bang">反值 (!)</option>
@@ -112,186 +113,198 @@
 		<span class="count" id="rcount"></span>
 	</div>
 
-	<h3>Common (18) — 均值 ≈ 2.7</h3>
+	<h3>Common (19) — 均值 ≈ 2.61 (带 1.6–2.4, 09-06 全口径)</h3>
 	<table>
-	<thead><tr><th>卡</th><th>ID</th><th>效果 (当前 prefab 实现)</th><th>估值式</th><th>值</th><th>判定</th></tr></thead>
+	<thead><tr><th>卡</th><th>ID</th><th>效果</th><th>估值式</th><th>值</th><th>判定</th></tr></thead>
 	<tbody>
-	<tr data-r="common" data-v="in"><td>长高的坟头</td><td class="cid">AVENGER_4.0</td><td>攻1; 遗言:强化自身1</td><td>1.0+1.2</td><td class="num">2.2</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="common" data-v="over"><td>笼里的东西</td><td class="cid">BEAST_REVIVER</td><td>攻2; 复活1生物友方</td><td>2.0+2.0</td><td class="num">4.0</td><td><span class="badge b-over2">++</span> <span class="note">复活对 common 定价偏宽</span></td></tr>
-	<tr data-r="common" data-v="over"><td>巷口的磨刀人</td><td class="cid">BLACKSMITH_4.0</td><td>攻2; 强化1友方生物</td><td>2.0+0.8</td><td class="num">2.8</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="common" data-v="over"><td>描过金的牌位</td><td class="cid">ELITE_REVIVER</td><td>攻2; 复活1被强化友方生物</td><td>2.0+2.0</td><td class="num">4.0</td><td><span class="badge b-over2">++</span> <span class="note">与折出来的替身成combo</span></td></tr>
-	<tr data-r="common" data-v="bang"><td>还没停的挖掘机</td><td class="cid">GRAVE_DREDGER</td><td>攻2; 磨3</td><td>2.0−2.4</td><td class="num">−0.4</td><td><span class="badge b-bang">!</span> <span class="note">真空反值, 仅遗言燃料</span></td></tr>
-	<tr data-r="common" data-v="over"><td>替死鬼</td><td class="cid">GRAVE_FIST</td><td>埋1友方; 攻4</td><td>4.0−1.2</td><td class="num">2.8</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="common" data-v="over"><td>没有指纹的凶器</td><td class="cid">GRAVE_PUNCH_4.0</td><td>埋1友方; 攻x2</td><td>4.0−1.2</td><td class="num">2.8</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="common" data-v="in"><td>遗物整理师</td><td class="cid">LAST_GIFT</td><td>攻2; 遗言:强化1友方生物</td><td>2.0+0.64</td><td class="num">2.6</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="common" data-v="in"><td>自己签满的签到表</td><td class="cid">RIFT_ACOLYTE</td><td>攻2; 生成1信徒; 苏醒:生成2信徒</td><td>2.0+0+0</td><td class="num">2.0</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="common" data-v="over"><td>门口多出的鞋印</td><td class="cid">RIFT_INSECT_4.0</td><td>攻3; 生成1信徒</td><td>3.0+0</td><td class="num">3.0</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="common" data-v="in"><td>来接人的黑车</td><td class="cid">RIFT_SHEPHERD</td><td>攻2; 复活1[信徒]友方</td><td>2.0+0.2</td><td class="num">2.2</td><td><span class="badge b-in">=</span> <span class="note">复活信徒真空≈0, 依赖转化器</span></td></tr>
-	<tr data-r="common" data-v="over"><td>换岗的哨兵</td><td class="cid">SOLDIER_SKELETON_4.0</td><td>攻2; 遗言:置顶自身</td><td>2.0+1.2</td><td class="num">3.2</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="common" data-v="over"><td>医学院的标本</td><td class="cid">SPIKE_SKELETON_4.0</td><td>攻2; 遗言:攻击x2</td><td>2.0+3.2</td><td class="num">5.2</td><td><span class="badge b-over2">++</span> <span class="note">远超 common 带</span></td></tr>
-	<tr data-r="common" data-v="over"><td>深夜来电</td><td class="cid">SPIRIT_CALLER</td><td>攻2; 复活1友方非生物</td><td>2.0+1.6</td><td class="num">3.6</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="common" data-v="in"><td>一对纸人</td><td class="cid">TWIN_STRIKER</td><td>攻x2 (1×2)</td><td>2.0</td><td class="num">2.0</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="common" data-v="over"><td>梦游的拳手</td><td class="cid">WAKING_FIGHTER</td><td>攻2; 苏醒:强化自身1</td><td>2.0+1.2</td><td class="num">3.2</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="common" data-v="under"><td>点眼的扎纸匠</td><td class="cid">WAR_TRAINER</td><td>强化2友方生物</td><td>2×0.8</td><td class="num">1.6</td><td><span class="badge b-under">−</span> <span class="note">带底</span></td></tr>
-	<tr data-r="common" data-v="over"><td>头七的刀</td><td class="cid">WOKEN_BLADE</td><td>攻2; 苏醒:攻击x2</td><td>2.0+3.2</td><td class="num">5.2</td><td><span class="badge b-over2">++</span> <span class="note">远超 common 带</span></td></tr>
+<tr data-r="normal" data-v="in"><td>长高的坟头</td><td class="cid">AVENGER_4.0</td><td>攻2；遗言:强化自身1</td><td>2+1×0.3</td><td class="num">2.3</td><td><span class="badge b-in">=</span> 09-06 DB改动: 攻1→攻击x2(ATK1)</td></tr>
+<tr data-r="normal" data-v="over"><td>笼里的东西</td><td class="cid">BEAST_REVIVER</td><td>攻1；复活1友方</td><td>1+2</td><td class="num">3</td><td><span class="badge b-over">+</span> 09-06 DB改动: ATK 2→1</td></tr>
+<tr data-r="normal" data-v="over"><td>巷口的磨刀人</td><td class="cid">BLACKSMITH_4.0</td><td>攻2；强化1友方</td><td>2+1</td><td class="num">3</td><td><span class="badge b-over">+</span> </td></tr>
+<tr data-r="normal" data-v="in"><td>洗不掉的印子</td><td class="cid">CURSE_REVIVER</td><td>攻0；复活1敌方诅咒</td><td>0+2</td><td class="num">2</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="normal" data-v="over"><td>描过金的牌位</td><td class="cid">ELITE_REVIVER</td><td>攻1；复活1友方</td><td>1+2</td><td class="num">3</td><td><span class="badge b-over">+</span> 09-06 DB改动: ATK 2→1; 复活目标=被强化过的, 与折出来的替身成combo</td></tr>
+<tr data-r="normal" data-v="bang"><td>还没停的挖掘机</td><td class="cid">GRAVE_DREDGER</td><td>攻2；磨3</td><td>2−0.8×3</td><td class="num">-0.4</td><td><span class="badge b-bang">!</span> </td></tr>
+<tr data-r="normal" data-v="over"><td>替死鬼</td><td class="cid">GRAVE_FIST</td><td>埋1友方；攻4</td><td>−1.2+4</td><td class="num">2.8</td><td><span class="badge b-over">+</span> </td></tr>
+<tr data-r="normal" data-v="over"><td>没有指纹的凶器</td><td class="cid">GRAVE_PUNCH_4.0</td><td>埋1友方；攻4</td><td>−1.2+4</td><td class="num">2.8</td><td><span class="badge b-over">+</span> 攻x2: ATK2x2=4</td></tr>
+<tr data-r="normal" data-v="over"><td>遗物整理师</td><td class="cid">LAST_GIFT</td><td>攻2；遗言:强化2友方</td><td>2+1×2×0.3</td><td class="num">2.6</td><td><span class="badge b-over">+</span> 09-06 DB改动: 遗言强化1→2友方生物</td></tr>
+<tr data-r="normal" data-v="over"><td>自己签满的签到表</td><td class="cid">RIFT_ACOLYTE</td><td>攻1；生成1信徒；苏醒:生成1信徒</td><td>1+1+1×0.5</td><td class="num">2.5</td><td><span class="badge b-over">+</span> 09-06 DB改动: ATK 2→1; 苏醒payload勘误=1(④)</td></tr>
+<tr data-r="normal" data-v="over"><td>门口多出的鞋印</td><td class="cid">RIFT_INSECT_4.0</td><td>攻2；生成1信徒</td><td>2+1</td><td class="num">3</td><td><span class="badge b-over">+</span> 09-06 DB改动: ATK 3→2</td></tr>
+<tr data-r="normal" data-v="over"><td>来接人的黑车</td><td class="cid">RIFT_SHEPHERD</td><td>攻1；复活1友方</td><td>1+2</td><td class="num">3</td><td><span class="badge b-over">+</span> 09-06 DB改动: ATK 2→1; tag定向复活[信徒]全额+2.0(⑥), 池=信徒tag卡13张(含自身); 原0.2空白体口径作废</td></tr>
+<tr data-r="normal" data-v="over"><td>换岗的哨兵</td><td class="cid">SOLDIER_SKELETON_4.0</td><td>攻2；遗言:复活1友方</td><td>2+2×0.3</td><td class="num">2.6</td><td><span class="badge b-over">+</span> 09-06 DB改动: 遗言置顶自身→复活自身(墓地置顶=复活引擎同价)</td></tr>
+<tr data-r="normal" data-v="over"><td>医学院的标本</td><td class="cid">SPIKE_SKELETON_4.0</td><td>攻2；遗言:攻4</td><td>2+4×0.3</td><td class="num">3.2</td><td><span class="badge b-over">++</span> 遗言攻x2</td></tr>
+<tr data-r="normal" data-v="over"><td>深夜来电</td><td class="cid">SPIRIT_CALLER</td><td>攻2；复活0.8友方</td><td>2+2×0.8</td><td class="num">3.6</td><td><span class="badge b-over">++</span> 复活非生物, 质量折减0.8</td></tr>
+<tr data-r="normal" data-v="in"><td>一对纸人</td><td class="cid">TWIN_STRIKER</td><td>攻2</td><td>2</td><td class="num">2</td><td><span class="badge b-in">=</span> 1x2</td></tr>
+<tr data-r="normal" data-v="over"><td>梦游的拳手</td><td class="cid">WAKING_FIGHTER</td><td>攻2；苏醒:强化自身1</td><td>2+1×0.5</td><td class="num">2.5</td><td><span class="badge b-over">+</span> </td></tr>
+<tr data-r="normal" data-v="in"><td>点眼的扎纸匠</td><td class="cid">WAR_TRAINER</td><td>强化2友方</td><td>1×2</td><td class="num">2</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="normal" data-v="over"><td>头七的刀</td><td class="cid">WOKEN_BLADE</td><td>攻2；苏醒:攻4</td><td>2+4×0.5</td><td class="num">4</td><td><span class="badge b-over">++</span> 苏醒攻x2</td></tr>
 	</tbody>
 	</table>
 
-	<h3>Uncommon (45) — 均值 ≈ 2.4 (RIFT 引擎族真空偏弱)</h3>
+	<h3>Uncommon (44) — 均值 ≈ 2.5 (带 2.4–4, 09-06 全口径)</h3>
 	<table>
-	<thead><tr><th>卡</th><th>ID</th><th>效果 (当前 prefab 实现)</th><th>估值式</th><th>值</th><th>判定</th></tr></thead>
+	<thead><tr><th>卡</th><th>ID</th><th>效果</th><th>估值式</th><th>值</th><th>判定</th></tr></thead>
 	<tbody>
-	<tr data-r="uncommon" data-v="over"><td>来领人的家属</td><td class="cid">AWAKENED_REAPER</td><td>攻2; 苏醒:埋葬1敌方</td><td>2.0+1.6</td><td class="num">3.6</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>最后一节课的铃</td><td class="cid">BATTLE_HORN</td><td>本回合全体友方生物攻击次数+1 (每轮触发)</td><td>4.0</td><td class="num">4.0</td><td><span class="badge b-over">+</span> <span class="badge b-eng">C</span> <span class="note"> rare 带强度的引擎</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>多摆的一副碗筷</td><td class="cid">COMBO_GRANTER</td><td>攻1; 随机1友方生物攻击次数+1</td><td>1.0+1.5</td><td class="num">2.5</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>添灯油的长明灯</td><td class="cid">COMBO_STARTER</td><td>攻1; 强化反应:攻击次数+1</td><td>1.0+1.2</td><td class="num">2.2</td><td><span class="badge b-under">−</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>吞玻璃的人</td><td class="cid">CURSE_EATER</td><td>攻=敌方诅咒攻击力</td><td>≈</td><td class="num">3.0</td><td><span class="badge b-in">=</span> <span class="note">无敌方诅咒时为0, 方差大</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>疯长的绿萝</td><td class="cid">CURSE_GARDENER</td><td>强化1敌方诅咒; 复活1敌方诅咒</td><td>1.2+2.0</td><td class="num">3.2</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>洗不掉的印子</td><td class="cid">CURSE_REVIVER</td><td>攻0; 复活1敌方诅咒</td><td>0+2.0</td><td class="num">2.0</td><td><span class="badge b-under">−</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>替人叫魂的喇叭</td><td class="cid">CURSE_SUMMONER</td><td>复活1友方; 复活1敌方诅咒</td><td>2.0+2.0</td><td class="num">4.0</td><td><span class="badge b-over">+</span> <span class="note">带顶</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>偷吃供品的黄皮子</td><td class="cid">CURSE_THIRST_BEAST_4.0</td><td>攻2; 敌方诅咒揭晓:复活自身 (全局, C)</td><td>2.0+1.6</td><td class="num">3.6</td><td><span class="badge b-over">+</span> <span class="badge b-eng">C</span> <span class="note">自循环</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>入殓师</td><td class="cid">DEATHBED_GRANT</td><td>被动:友方生物被埋葬时该生物攻击 (C)</td><td>≈</td><td class="num">3.0/轮</td><td><span class="badge b-over">+</span> <span class="badge b-eng">C</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>抬上楼的纸别墅</td><td class="cid">DEATHBED_PORTER</td><td>攻2; 遗言:攻2; 遗言:置顶1友方非生物</td><td>2.0+1.6+1.2</td><td class="num">4.8</td><td><span class="badge b-over2">++</span> <span class="note">超 U 带</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>哭灵人</td><td class="cid">EULOGIST</td><td>埋1张[遗言]友方 (主动点火); 攻2</td><td>2.0−2.0+2.5</td><td class="num">2.5</td><td><span class="badge b-in">=</span> <span class="note">遗言链点火器</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>送行酒</td><td class="cid">EXILE_BERSERKER</td><td>攻2; 每放逐1友方攻击次数+1</td><td>2.0+0.5/1.3</td><td class="num">2.5/3.3</td><td><span class="badge b-in">=</span> <span class="note">放逐源仅3张, 方差大</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>引路的白灯笼</td><td class="cid">FINAL_ESCORT</td><td>攻1; 遗言:回合结束置顶最高攻友方生物</td><td>1.0+1.2</td><td class="num">2.2</td><td><span class="badge b-under">−</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>棺材里的敲门声</td><td class="cid">FLURRY_REVIVER</td><td>复活1攻击次数最多友方生物</td><td>≈</td><td class="num">2.5</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="uncommon" data-v="bang"><td>贴在门上的保险书</td><td class="cid">FUNERAL_WILL</td><td>磨2; 遗言:延迟复活1友方</td><td>−1.6+1.1</td><td class="num">−0.5</td><td><span class="badge b-bang">!</span> <span class="note">真空反值, DR燃料</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>不停滴水的行李袋</td><td class="cid">GRAVE_GIANT</td><td>攻=墓地友方数量</td><td>≈</td><td class="num">3.0</td><td><span class="badge b-in">=</span> <span class="note">随自磨成长, 方差大</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>白事先生</td><td class="cid">GRAVE_HEXER</td><td>复活1友方; 强化2敌方诅咒</td><td>2.0+2.4</td><td class="num">4.4</td><td><span class="badge b-over2">++</span> <span class="note">超 U 带</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>监控里的人</td><td class="cid">GRAVE_PUPPETEER</td><td>墓地1友方生物攻击; 无则埋1张[遗言]友方</td><td>2.0</td><td class="num">2.0+</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>收尸人</td><td class="cid">GRAVE_ROBBER</td><td>复活1攻击力最高敌方; 攻=该卡攻击力</td><td>3.0</td><td class="num">3.0</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>并排的三座新坟</td><td class="cid">GRAVE_TOGETHER_4.0</td><td>攻1; 埋1友方; 埋2敌方</td><td>1.0−1.2+4.0</td><td class="num">3.8</td><td><span class="badge b-in">=</span> <span class="note">带顶</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>对面楼的那场火</td><td class="cid">HEXER</td><td>攻0; 强化3敌方诅咒</td><td>0+3.6</td><td class="num">3.6</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>迁坟队</td><td class="cid">KINGSLAYER</td><td>埋1攻击力最高敌方; 复活1友方</td><td>2.5+2.0</td><td class="num">4.5</td><td><span class="badge b-over2">++</span> <span class="note">超 U 带</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>回魂夜</td><td class="cid">MASS_REVIVER</td><td>复活3友方normal卡</td><td>2.0×3×0.8</td><td class="num">4.0–4.8</td><td><span class="badge b-over2">++</span> <span class="note">上U, 质量修正后≈4.0</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>挥刀的影子</td><td class="cid">MIMIC_BLADE</td><td>攻=友方最高攻击力; 攻x2</td><td>≈3×2</td><td class="num">6.0</td><td><span class="badge b-over2">++</span> <span class="note">uncommon 上的 rare 强度缩放器</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>楼下的叫魂声</td><td class="cid">NECROMANCER</td><td>复活1友方; 苏醒:复活1友方</td><td>2.0+1.6</td><td class="num">3.6</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>站台尽头的东西</td><td class="cid">REANIMATOR</td><td>攻=本回合复活友方数</td><td>≈</td><td class="num">2.5</td><td><span class="badge b-under">−</span> <span class="note">需同轮复活铺垫</span></td></tr>
-	<tr data-r="uncommon" data-v="bang"><td>自己翻页的黄历</td><td class="cid">RELIC_ATTACK_BURIAL</td><td>被动:友方每次攻击磨1卡 (C)</td><td>≈</td><td class="num">−2.4/轮</td><td><span class="badge b-bang">!</span> <span class="note">真空反值; DR燃料+行李袋成长</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>拖人下水的水鬼</td><td class="cid">RELIC_CHAIN_BURIAL</td><td>被动:友方被埋葬时磨1卡 (C)</td><td>≈</td><td class="num">−1.0/轮</td><td><span class="badge b-under">−</span> <span class="note">DR燃料向</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>路口的纸灰圈</td><td class="cid">RELIC_TALLY</td><td>被动:回合结束按本回合埋葬数强化敌方诅咒 (C)</td><td>≈</td><td class="num">2.4/轮</td><td><span class="badge b-over">+</span> <span class="badge b-eng">C</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>半夜喂奶的黑影</td><td class="cid">RELIC_TRAINER</td><td>被动:回合开始强化1最低攻友方生物 (C)</td><td>≈</td><td class="num">1.2/轮</td><td><span class="badge b-under">−</span> <span class="note">慢引擎</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>跟回家的人影</td><td class="cid">REVIVE_SUMMONER</td><td>复活1友方; 生成1信徒</td><td>2.0+0</td><td class="num">2.0</td><td><span class="badge b-under">−</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>画了押的字据</td><td class="cid">RIFT_GUIDE</td><td>放逐1友方信徒; 埋2敌方非生物</td><td>−1.0+4.0</td><td class="num">3.0</td><td><span class="badge b-in">=</span></td></tr>
-	<tr data-r="uncommon" data-v="bang"><td>香火不断的野庙</td><td class="cid">RIFT_HATCHERY</td><td>生成3信徒; 回合开始:埋葬自身</td><td>0−1.0</td><td class="num">−1.0</td><td><span class="badge b-bang">!</span> <span class="note">真空反值; 信徒/复活燃料</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>自己动的笔</td><td class="cid">RIFT_MEDIUM</td><td>生成2信徒; 苏醒:复活1友方</td><td>0+1.6</td><td class="num">1.6</td><td><span class="badge b-under">−</span></td></tr>
-	<tr data-r="uncommon" data-v="bang"><td>点传师</td><td class="cid">RIFT_PRIEST</td><td>生成2信徒; 强化1友方生物</td><td>0+0.8</td><td class="num">0.8</td><td><span class="badge b-bang">!</span> <span class="note">全池最弱</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>撕了封条的库房</td><td class="cid">RIFT_REVIVER</td><td>放逐1友方信徒; 复活2友方非生物</td><td>−1.0+3.2</td><td class="num">2.2</td><td><span class="badge b-under">−</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>出过事的那条街</td><td class="cid">RIFT_STRIKER</td><td>攻x2; 生成1信徒</td><td>2.0+0</td><td class="num">2.0</td><td><span class="badge b-under">−</span></td></tr>
-	<tr data-r="uncommon" data-v="bang"><td>折出来的替身</td><td class="cid">SACRIFICE_WEAKEST</td><td>埋1最低攻友方; 强化1该卡(在墓地)</td><td>−1.2+0.6</td><td class="num">−0.4</td><td><span class="badge b-bang">!</span> <span class="note">描过金的牌位 combo 使能器</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>陪葬的活物</td><td class="cid">SACRIFICIAL_SPIRIT</td><td>攻0; 埋1友方; 强化5敌方诅咒</td><td>0−1.2+6.0</td><td class="num">4.8</td><td><span class="badge b-over2">++</span> <span class="note">rare 带值的强化量</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>数不完的纸钱</td><td class="cid">SNOWBALL</td><td>攻x2; 强化反应:强化自身1</td><td>2.0+1.2</td><td class="num">3.2</td><td><span class="badge b-over">+</span></td></tr>
-	<tr data-r="uncommon" data-v="under"><td>验尸官</td><td class="cid">SOUL_TRADER</td><td>复活2友方; 埋1友方</td><td>3.2−1.2</td><td class="num">2.0</td><td><span class="badge b-under">−</span></td></tr>
-	<tr data-r="uncommon" data-v="over"><td>没拉平的心电图</td><td class="cid">UNDYING_WARRIOR</td><td>攻2; 强化反应:复活自身</td><td>2.0+1.6</td><td class="num">3.6</td><td><span class="badge b-over">+</span> <span class="note">韧性引擎</span></td></tr>
-	<tr data-r="uncommon" data-v="build"><td>停电</td><td class="cid">WEAKENING_FIELD</td><td>所有生物本回合−1攻 (诅咒除外)</td><td>≈0</td><td class="num">0</td><td><span class="badge b-build">B</span> <span class="note">真空≈0; 配诅咒/动态攻击引擎强</span></td></tr>
-	<tr data-r="uncommon" data-v="in"><td>三更开着的窗</td><td class="cid">WOKEN_HEX</td><td>强化1敌方诅咒; 苏醒:强化2敌方诅咒</td><td>1.2+1.9</td><td class="num">3.1</td><td><span class="badge b-in">=</span></td></tr>
+<tr data-r="uncommon" data-v="in"><td>来领人的家属</td><td class="cid">AWAKENED_REAPER</td><td>攻2；苏醒:埋1敌方</td><td>2+2×0.5</td><td class="num">3</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>最后一节课的铃</td><td class="cid">BATTLE_HORN</td><td>全体友方生物攻次+1</td><td>4</td><td class="num">4</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>多摆的一副碗筷</td><td class="cid">COMBO_GRANTER</td><td>攻1；1友方生物攻次+1</td><td>1+1.5</td><td class="num">2.5</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="under"><td>添灯油的长明灯</td><td class="cid">COMBO_STARTER</td><td>攻1；强化反应:1友方生物攻次+1</td><td>1+1.5×0.5</td><td class="num">1.75</td><td><span class="badge b-under">−</span> 目标=自身</td></tr>
+<tr data-r="uncommon" data-v="in"><td>吞玻璃的人</td><td class="cid">CURSE_EATER</td><td>攻3</td><td>3</td><td class="num">3</td><td><span class="badge b-in">=</span> 攻=敌方诅咒攻击力(参考3), 无诅咒时0</td></tr>
+<tr data-r="uncommon" data-v="in"><td>疯长的绿萝</td><td class="cid">CURSE_GARDENER</td><td>强化1敌方诅咒；复活1敌方诅咒</td><td>1+2</td><td class="num">3</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>替人叫魂的喇叭</td><td class="cid">CURSE_SUMMONER</td><td>复活1友方；复活1敌方诅咒</td><td>2+2</td><td class="num">4</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>偷吃供品的黄皮子</td><td class="cid">CURSE_THIRST_BEAST_4.0</td><td>攻2；条件:复活1友方</td><td>2+2×0.5</td><td class="num">3</td><td><span class="badge b-in">=</span> 敌方诅咒揭晓时复活自身, 条件层x0.8</td></tr>
+<tr data-r="uncommon" data-v="in"><td>入殓师</td><td class="cid">DEATHBED_GRANT</td><td>被动(C):攻2</td><td>2×1.5/轮</td><td class="num">3/轮</td><td><span class="badge b-in">=</span>  <span class="badge b-eng">C</span>被埋友方生物攻击, 友方埋葬≈1.5/轮</td></tr>
+<tr data-r="uncommon" data-v="in"><td>抬上楼的纸别墅</td><td class="cid">DEATHBED_PORTER</td><td>攻2；遗言:攻2；遗言:置顶1友方</td><td>2+2×0.3+1.5×0.3</td><td class="num">3.05</td><td><span class="badge b-in">=</span> 置顶非生物</td></tr>
+<tr data-r="uncommon" data-v="in"><td>哭灵人</td><td class="cid">EULOGIST</td><td>揭晓时:埋葬 1 张tag为[&lt;tag:DeathRattle&gt;]的友方卡;攻击</td><td>埋[遗言]友方=主动点火(−2.0+DR期望2.5)+攻2; 公式只能得0.8</td><td class="num">2.5</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>送行酒</td><td class="cid">EXILE_BERSERKER</td><td>攻2；条件:1友方生物攻次+1</td><td>2+1.5×0.5</td><td class="num">2.75</td><td><span class="badge b-in">=</span> 每放逐1友方攻击次数+1; 放逐源仅3张</td></tr>
+<tr data-r="uncommon" data-v="under"><td>引路的白灯笼</td><td class="cid">FINAL_ESCORT</td><td>攻1；遗言:置顶1友方</td><td>1+1.5×0.3</td><td class="num">1.45</td><td><span class="badge b-under">−</span> 回合末置顶最高攻</td></tr>
+<tr data-r="uncommon" data-v="in"><td>棺材里的敲门声</td><td class="cid">FLURRY_REVIVER</td><td>复活1.25友方</td><td>2×1.25</td><td class="num">2.5</td><td><span class="badge b-in">=</span> 目标=攻击次数最多, 质量修正1.25</td></tr>
+<tr data-r="uncommon" data-v="bang"><td>贴在门上的保险书</td><td class="cid">FUNERAL_WILL</td><td>磨2；遗言:延迟复活1友方</td><td>−0.8×2+1.4×0.3</td><td class="num">-1.18</td><td><span class="badge b-bang">!</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>不停滴水的行李袋</td><td class="cid">GRAVE_GIANT</td><td>攻3</td><td>3</td><td class="num">3</td><td><span class="badge b-in">=</span> 攻=墓地友方数(参考3), 随自磨成长</td></tr>
+<tr data-r="uncommon" data-v="in"><td>白事先生</td><td class="cid">GRAVE_HEXER</td><td>复活1友方；强化2敌方诅咒</td><td>2+1×2</td><td class="num">4</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="under"><td>监控里的人</td><td class="cid">GRAVE_PUPPETEER</td><td>让墓地1友方生物攻击;墓地无友方则埋葬1张tag为[&lt;tag:DeathRattle&gt;]的友方卡</td><td>墓地生物攻击2.0+无友方时埋[遗言]fallback</td><td class="num">2</td><td><span class="badge b-under">−</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>收尸人</td><td class="cid">GRAVE_ROBBER</td><td>复活1攻击力最高敌方;攻击力变为该卡攻击力</td><td>复活最强敌方并夺取攻击力, 复合特殊效果</td><td class="num">3</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>并排的三座新坟</td><td class="cid">GRAVE_TOGETHER_4.0</td><td>攻1；埋1友方；埋2敌方</td><td>1−1.2+2×2</td><td class="num">3.8</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>对面楼的那场火</td><td class="cid">HEXER</td><td>攻0；强化3敌方诅咒</td><td>0+1×3</td><td class="num">3</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="over"><td>迁坟队</td><td class="cid">KINGSLAYER</td><td>埋1.25敌方；复活1友方</td><td>2×1.25+2</td><td class="num">4.5</td><td><span class="badge b-over">+</span> 埋最强敌方, 质量修正1.25</td></tr>
+<tr data-r="uncommon" data-v="in"><td>回魂夜</td><td class="cid">MASS_REVIVER</td><td>复活 3 友方normal卡</td><td>复活3张normal卡, 质量折减(2.0x3x0.8=4.8→4.0)</td><td class="num">4</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="over"><td>挥刀的影子</td><td class="cid">MIMIC_BLADE</td><td>攻6</td><td>6</td><td class="num">6</td><td><span class="badge b-over">++</span> 攻=最高友方攻(参考3)x2段</td></tr>
+<tr data-r="uncommon" data-v="in"><td>楼下的叫魂声</td><td class="cid">NECROMANCER</td><td>复活1友方；苏醒:复活1友方</td><td>2+2×0.5</td><td class="num">3</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>站台尽头的东西</td><td class="cid">REANIMATOR</td><td>攻2.5</td><td>2.5</td><td class="num">2.5</td><td><span class="badge b-in">=</span> 攻=本回合复活友方数(参考2.5)</td></tr>
+<tr data-r="uncommon" data-v="bang"><td>自己翻页的黄历</td><td class="cid">RELIC_ATTACK_BURIAL</td><td>被动(C):磨1</td><td>-0.8×3/轮</td><td class="num">-2.4/轮</td><td><span class="badge b-bang">!</span>  <span class="badge b-eng">C</span>友方每次攻击磨1, 友方攻击≈3段/轮</td></tr>
+<tr data-r="uncommon" data-v="bang"><td>拖人下水的水鬼</td><td class="cid">RELIC_CHAIN_BURIAL</td><td>被动(C):磨1</td><td>-0.8×1.2/轮</td><td class="num">-0.96/轮</td><td><span class="badge b-bang">!</span>  <span class="badge b-eng">C</span>友方被埋葬≈1.2次/轮</td></tr>
+<tr data-r="uncommon" data-v="under"><td>路口的纸灰圈</td><td class="cid">RELIC_TALLY</td><td>被动(C):强化1敌方诅咒</td><td>1×2/轮</td><td class="num">2/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>回合末按本回合埋葬数强化, 埋葬≈2/轮</td></tr>
+<tr data-r="uncommon" data-v="under"><td>半夜喂奶的黑影</td><td class="cid">RELIC_TRAINER</td><td>被动(C):强化1友方</td><td>1×1.5/轮</td><td class="num">1.5/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>回合开始强化最低攻, 利用率折算1.5</td></tr>
+<tr data-r="uncommon" data-v="in"><td>跟回家的人影</td><td class="cid">REVIVE_SUMMONER</td><td>复活1友方；生成1信徒</td><td>2+1</td><td class="num">3</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>画了押的字据</td><td class="cid">RIFT_GUIDE</td><td>放逐1友方信徒；埋2敌方</td><td>−1+2×2</td><td class="num">3</td><td><span class="badge b-in">=</span> 埋敌方非生物</td></tr>
+<tr data-r="uncommon" data-v="in"><td>香火不断的野庙</td><td class="cid">RIFT_HATCHERY</td><td>生成3信徒；条件:埋1友方</td><td>1×3−1.2×0.5</td><td class="num">2.4</td><td><span class="badge b-in">=</span> 回合开始埋自身按条件层计</td></tr>
+<tr data-r="uncommon" data-v="in"><td>自己动的笔</td><td class="cid">RIFT_MEDIUM</td><td>生成2信徒；苏醒:复活1友方</td><td>1×2+2×0.5</td><td class="num">3</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>点传师</td><td class="cid">RIFT_PRIEST</td><td>生成2信徒；强化1友方</td><td>1×2+1</td><td class="num">3</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="under"><td>撕了封条的库房</td><td class="cid">RIFT_REVIVER</td><td>放逐1友方信徒；复活2友方</td><td>−1+2.0×2×0.8</td><td class="num">2.2</td><td><span class="badge b-under">−</span> 复活非生物</td></tr>
+<tr data-r="uncommon" data-v="in"><td>出过事的那条街</td><td class="cid">RIFT_STRIKER</td><td>攻2；生成1信徒</td><td>2+1</td><td class="num">3</td><td><span class="badge b-in">=</span> 1x2</td></tr>
+<tr data-r="uncommon" data-v="bang"><td>折出来的替身</td><td class="cid">SACRIFICE_WEAKEST</td><td>埋1友方；强化1友方</td><td>−1.2+1</td><td class="num">-0.2</td><td><span class="badge b-bang">!</span> 强化的是被埋的该卡</td></tr>
+<tr data-r="uncommon" data-v="in"><td>陪葬的活物</td><td class="cid">SACRIFICIAL_SPIRIT</td><td>攻0；埋1友方；强化5敌方诅咒</td><td>0−1.2+1×5</td><td class="num">3.8</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>数不完的纸钱</td><td class="cid">SNOWBALL</td><td>攻2；强化反应:强化自身1</td><td>2+1×0.5</td><td class="num">2.5</td><td><span class="badge b-in">=</span> 1x2</td></tr>
+<tr data-r="uncommon" data-v="under"><td>验尸官</td><td class="cid">SOUL_TRADER</td><td>复活2友方；埋1友方</td><td>2.0×2×0.8−1.2</td><td class="num">2</td><td><span class="badge b-under">−</span> </td></tr>
+<tr data-r="uncommon" data-v="in"><td>没拉平的心电图</td><td class="cid">UNDYING_WARRIOR</td><td>攻2；强化反应:复活1友方</td><td>2+2×0.5</td><td class="num">3</td><td><span class="badge b-in">=</span> 复活自身</td></tr>
+<tr data-r="uncommon" data-v="build"><td>停电</td><td class="cid">WEAKENING_FIELD</td><td>所有生物本回合攻击力-1</td><td>所有生物−1攻敌我不分; 配诅咒/动态攻击引擎才强</td><td class="num">0</td><td><span class="badge b-build">B</span> </td></tr>
+<tr data-r="uncommon" data-v="under"><td>三更开着的窗</td><td class="cid">WOKEN_HEX</td><td>强化1敌方诅咒；苏醒:强化2敌方诅咒</td><td>1+1×2×0.5</td><td class="num">2</td><td><span class="badge b-under">−</span> </td></tr>
 	</tbody>
 	</table>
 
-	<h3>Rare (26) — 真空均值 ≈ 2.6 (重度 build-around 倾斜)</h3>
+	<h3>Rare (26) — 均值 ≈ 2.41 (带 4–8, 09-06 全口径)</h3>
 	<table>
-	<thead><tr><th>卡</th><th>ID</th><th>效果 (当前 prefab 实现)</th><th>估值式</th><th>值</th><th>判定</th></tr></thead>
+	<thead><tr><th>卡</th><th>ID</th><th>效果</th><th>估值式</th><th>值</th><th>判定</th></tr></thead>
 	<tbody>
-	<tr data-r="rare" data-v="in"><td>还留着体温的空床</td><td class="cid">DECIMATION</td><td>埋6友方(每已埋−1递减); 攻x3 (ATK3)</td><td>9.0−4.8</td><td class="num">4.2</td><td><span class="badge b-in">=</span> <span class="note">带底</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>洇开的污渍</td><td class="cid">DETERIORATION_4.0</td><td>强化2敌方诅咒; 每3点诅咒攻额外强化1</td><td>2.4+1.0</td><td class="num">3.4</td><td><span class="badge b-under">−</span> <span class="note">R=4 内爬升太慢</span></td></tr>
-	<tr data-r="rare" data-v="over"><td>递请柬的人</td><td class="cid">DOOM_HERALD</td><td>攻0; 复活1攻击力最高敌方; 强化4敌方诅咒</td><td>4.3±3</td><td class="num">4.3</td><td><span class="badge b-over">+</span> <span class="note">谓词陷阱: 非诅咒目标→−2.5 摆动</span></td></tr>
-	<tr data-r="rare" data-v="in"><td>一门阴婚</td><td class="cid">DUO_REVIVER</td><td>复活2友方uncommon卡</td><td>2.0×2×0.8</td><td class="num">≈4.0</td><td><span class="badge b-in">=</span> <span class="note">带底</span></td></tr>
-	<tr data-r="rare" data-v="bang"><td>太平间的保洁</td><td class="cid">GRAVE_MILLER</td><td>攻2; 埋2友方; 磨5</td><td>2.0−2.4−4.0</td><td class="num">−4.4</td><td><span class="badge b-bang">!!</span> <span class="note">全池最强反值真空; DR燃料</span></td></tr>
-	<tr data-r="rare" data-v="bang"><td>越擦越脏的玻璃</td><td class="cid">HEXBLADE</td><td>攻0(无自成长源); 每有1攻击力强化1敌方诅咒</td><td>≈0</td><td class="num">0</td><td><span class="badge b-bang">!</span> <span class="note">只能转化外部强化, 疑设计缺口</span></td></tr>
-	<tr data-r="rare" data-v="over"><td>讣告</td><td class="cid">LAST_RITES</td><td>遗言:触发所有墓地友方遗言</td><td>0.8×(3~6×2.5)</td><td class="num">≈6.0</td><td><span class="badge b-over">+</span> <span class="note">随墓地遗言密度放大</span></td></tr>
-	<tr data-r="rare" data-v="bang"><td>多出来的第十三张床</td><td class="cid">MASS_SACRIFICE</td><td>埋葬所有友方; 每埋1友方生成1信徒</td><td>≈−6 (N=5)</td><td class="num">−6</td><td><span class="badge b-bang">!</span> <span class="note">build-around: 全场遗言点火</span></td></tr>
-	<tr data-r="rare" data-v="bang"><td>少了一页的住户名单</td><td class="cid">MILLBLADE</td><td>攻2; 每有1攻击力磨1卡</td><td>2.0−1.6</td><td class="num">0.4</td><td><span class="badge b-bang">!</span> <span class="note">真空反值; DR燃料</span></td></tr>
-	<tr data-r="rare" data-v="in"><td>抬着空轿的纸人</td><td class="cid">QUAD_STRIKER</td><td>攻x4 (1×4)</td><td>4.0</td><td class="num">4.0</td><td><span class="badge b-in">=</span> <span class="note">带底</span></td></tr>
-	<tr data-r="rare" data-v="over"><td>隔墙有耳</td><td class="cid">RELIC_ATTACK_HEX</td><td>被动:有卡攻击时强化1敌方诅咒 (C, 双方攻击都算, 按段触发)</td><td>≈</td><td class="num">6.0/轮</td><td><span class="badge b-over">+</span> <span class="badge b-eng">C</span> <span class="note">最强被动引擎</span></td></tr>
-	<tr data-r="rare" data-v="build"><td>接反的输液管</td><td class="cid">RELIC_BLOOD_PACT</td><td>被动:友方攻击转为强化等量敌方诅咒 (C)</td><td>≈0真空</td><td class="num">0→极高</td><td><span class="badge b-build">B</span> <span class="note">成型后极强, 直接伤害归零</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>准时来的清运车</td><td class="cid">RELIC_CURSE_GRAVE</td><td>被动:敌方诅咒揭晓时埋1敌方 (C)</td><td>≈</td><td class="num">3.0</td><td><span class="badge b-under">−</span> <span class="note">敌方无诅咒时死卡</span></td></tr>
-	<tr data-r="rare" data-v="over"><td>越来越快的脚步声</td><td class="cid">RELIC_CURSE_HASTE</td><td>被动:敌方诅咒攻击次数+1 (C)</td><td>≈</td><td class="num">4.0</td><td><span class="badge b-over">+</span> <span class="badge b-eng">C</span> <span class="note">随诅咒攻击力放大</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>广播里在找人</td><td class="cid">RELIC_CURSE_REVIVAL</td><td>被动:敌方诅咒揭晓时复活1友方 (C)</td><td>≈</td><td class="num">3.0</td><td><span class="badge b-under">−</span> <span class="note">同诅咒架条件</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>多敲了一下的钟</td><td class="cid">RELIC_DEATH_KNELL</td><td>被动:友方苏醒时触发其遗言 (C)</td><td>2.0</td><td class="num">2.0</td><td><span class="badge b-under">−</span> <span class="note">苏醒层最薄</span></td></tr>
-	<tr data-r="rare" data-v="build"><td>堆满楼道的花圈</td><td class="cid">RELIC_GRAVE_CURSE</td><td>被动:敌方诅咒攻击力=墓地友方卡数 (C)</td><td>base 2.5</td><td class="num">2.5→增长</td><td><span class="badge b-build">B</span> <span class="note">墓地不自动增长, 依赖磨/埋/信徒引擎</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>地下传来的叩击</td><td class="cid">RELIC_GRAVE_LORD</td><td>被动:墓地友方生物攻击力+1 (C)</td><td>3.0</td><td class="num">3.0</td><td><span class="badge b-under">−</span> <span class="note">略低于 R 带</span></td></tr>
-	<tr data-r="rare" data-v="build"><td>看热闹的影子</td><td class="cid">RELIC_HIVE</td><td>被动:友方攻击时生成1信徒 (C, 按段触发)</td><td>0真空</td><td class="num">0</td><td><span class="badge b-build">B</span> <span class="note">信徒燃料引擎</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>半夜换告示的手</td><td class="cid">RELIC_RIFT_OVERRIDE</td><td>被动:友方信徒效果变为复活1敌方诅咒+放逐自身 (C)</td><td>+2.0/信徒</td><td class="num">2.0–3.0</td><td><span class="badge b-under">−</span> <span class="note">需信徒包</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>挨个熄灭的灯</td><td class="cid">RIFT_REAPER</td><td>放逐所有信徒; 每放逐1强化1友方生物</td><td>≈</td><td class="num">3.2</td><td><span class="badge b-under">−</span> <span class="note">需信徒密度</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>管道里的活物</td><td class="cid">SLIME_4.0</td><td>攻2; 遗言:复制自身 (新卡入组)</td><td>2.0+1.6</td><td class="num">3.6</td><td><span class="badge b-under">−</span> <span class="note">低于 R 带</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>旺得反常的香炉</td><td class="cid">SWARM_CURSER</td><td>生成1信徒; 每有1友方信徒强化1敌方诅咒 (C)</td><td>≈</td><td class="num">2.9</td><td><span class="badge b-under">−</span> <span class="note">随信徒数缩放</span></td></tr>
-	<tr data-r="rare" data-v="bang"><td>不下台的歌女</td><td class="cid">SWARM_QUEEN</td><td>攻2; 每有1攻击力生成1信徒</td><td>2.0+0</td><td class="num">2.0</td><td><span class="badge b-bang">!</span> <span class="note">真空反值; 信徒燃料发生器</span></td></tr>
-	<tr data-r="rare" data-v="bang"><td>还在长的人偶</td><td class="cid">UNFINISHED_ROBOT_4.0</td><td>攻0; 攻击力翻倍</td><td>≈0真空</td><td class="num">0</td><td><span class="badge b-bang">!</span> <span class="note">需外部强化启动 (+2→4→8)</span></td></tr>
-	<tr data-r="rare" data-v="under"><td>要喂血的刀</td><td class="cid">WEAPON_SPIRIT</td><td>被动:友方生物触发强化反应时强化1该生物 (C)</td><td>≈</td><td class="num">2.5</td><td><span class="badge b-under">−</span> <span class="note">强化反应层仅4张</span></td></tr>
+<tr data-r="rare" data-v="in"><td>还留着体温的空床</td><td class="cid">DECIMATION</td><td>埋4友方；攻9</td><td>−1.2×4+9</td><td class="num">4.2</td><td><span class="badge b-in">=</span> 埋6递减按平均4张; 攻x3=3x3</td></tr>
+<tr data-r="rare" data-v="under"><td>洇开的污渍</td><td class="cid">DETERIORATION_4.0</td><td>强化2敌方诅咒；强化0.8敌方诅咒</td><td>1×2+1×0.8</td><td class="num">2.8</td><td><span class="badge b-under">−</span> 每3攻额外+1按中期诅咒攻折算0.8层</td></tr>
+<tr data-r="rare" data-v="under"><td>递请柬的人</td><td class="cid">DOOM_HERALD</td><td>攻击;复活 1 攻击力最高敌方;强化</td><td>攻0+复活最强敌方(陷阱折减≈-0.5)+强化4x1.0; 期望3.5±3 (强化新规后自4.3下调)</td><td class="num">3.5</td><td><span class="badge b-under">−</span> </td></tr>
+<tr data-r="rare" data-v="in"><td>一门阴婚</td><td class="cid">DUO_REVIVER</td><td>复活 2 友方uncommon卡</td><td>复活2张uncommon, 质量修正</td><td class="num">4</td><td><span class="badge b-in">=</span> </td></tr>
+<tr data-r="rare" data-v="bang"><td>太平间的保洁</td><td class="cid">GRAVE_MILLER</td><td>攻2；埋2友方；磨5</td><td>2−1.2×2−0.8×5</td><td class="num">-4.4</td><td><span class="badge b-bang">!</span> </td></tr>
+<tr data-r="rare" data-v="bang"><td>越擦越脏的玻璃</td><td class="cid">HEXBLADE</td><td>攻0；强化0敌方诅咒</td><td>0+1×0</td><td class="num">0</td><td><span class="badge b-bang">!</span> 每有1攻击力强化1; 无自成长源, 真空0</td></tr>
+<tr data-r="rare" data-v="under"><td>讣告</td><td class="cid">LAST_RITES</td><td>遗言:触发所有在墓地友方的遗言</td><td>遗言:触发所有墓地遗言 0.3x(3~6DRx2.5)≈3.4 (条件层系数0.8→0.3)</td><td class="num">3.4</td><td><span class="badge b-under">−</span> </td></tr>
+<tr data-r="rare" data-v="bang"><td>多出来的第十三张床</td><td class="cid">MASS_SACRIFICE</td><td>埋5友方；生成5信徒</td><td>−1.2×5+1×5</td><td class="num">-1</td><td><span class="badge b-bang">!</span> 埋所有友方(参考5)+等量信徒; 遗言全点火另计</td></tr>
+<tr data-r="rare" data-v="bang"><td>少了一页的住户名单</td><td class="cid">MILLBLADE</td><td>攻2；磨2</td><td>2−0.8×2</td><td class="num">0.4</td><td><span class="badge b-bang">!</span> 每有1攻击力磨1, 按ATK2计</td></tr>
+<tr data-r="rare" data-v="in"><td>抬着空轿的纸人</td><td class="cid">QUAD_STRIKER</td><td>攻4</td><td>4</td><td class="num">4</td><td><span class="badge b-in">=</span> 1x4</td></tr>
+<tr data-r="rare" data-v="in"><td>隔墙有耳</td><td class="cid">RELIC_ATTACK_HEX</td><td>被动(C):强化1敌方诅咒</td><td>1×5/轮</td><td class="num">5/轮</td><td><span class="badge b-in">=</span>  <span class="badge b-eng">C</span>有卡攻击即触发(双方), ≈5段/轮</td></tr>
+<tr data-r="rare" data-v="build"><td>接反的输液管</td><td class="cid">RELIC_BLOOD_PACT</td><td>被动:友方攻击不再造成伤害,而是强化等量敌方诅咒</td><td>友方攻击转强化等量敌方诅咒; 真空≈0, 成型后极高</td><td class="num">0</td><td><span class="badge b-build">B</span> </td></tr>
+<tr data-r="rare" data-v="under"><td>准时来的清运车</td><td class="cid">RELIC_CURSE_GRAVE</td><td>被动(C):埋1敌方</td><td>2×1.5/轮</td><td class="num">3/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>敌方诅咒揭晓≈1.5次/轮(诅咒架); 无诅咒死卡</td></tr>
+<tr data-r="rare" data-v="under"><td>越来越快的脚步声</td><td class="cid">RELIC_CURSE_HASTE</td><td>被动(C):敌方诅咒攻次+1.3</td><td>2×1.3×1.5/轮</td><td class="num">3.9/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>诅咒揭晓≈1.5次/轮x平均诅咒攻1.3折算</td></tr>
+<tr data-r="rare" data-v="under"><td>广播里在找人</td><td class="cid">RELIC_CURSE_REVIVAL</td><td>被动(C):复活1友方</td><td>2×1.5/轮</td><td class="num">3/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>敌方诅咒揭晓≈1.5次/轮</td></tr>
+<tr data-r="rare" data-v="under"><td>多敲了一下的钟</td><td class="cid">RELIC_DEATH_KNELL</td><td>被动(C):苏醒→触发其遗言</td><td>2×1/轮</td><td class="num">2/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>友方苏醒≈1次/轮</td></tr>
+<tr data-r="rare" data-v="build"><td>堆满楼道的花圈</td><td class="cid">RELIC_GRAVE_CURSE</td><td>被动:敌方诅咒攻击力=墓地友方卡数量</td><td>敌方诅咒攻击力=墓地友方数; 墓地不自动增长, build-around</td><td class="num">2.5</td><td><span class="badge b-build">B</span> </td></tr>
+<tr data-r="rare" data-v="under"><td>地下传来的叩击</td><td class="cid">RELIC_GRAVE_LORD</td><td>被动(C):强化1友方</td><td>1×3.75/轮</td><td class="num">3.75/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>墓地生物+1攻, 经复活/遗言攻击兑现≈3.75单位/轮</td></tr>
+<tr data-r="rare" data-v="under"><td>看热闹的影子</td><td class="cid">RELIC_HIVE</td><td>被动(C):生成1信徒</td><td>1×3/轮</td><td class="num">3/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>信徒=+1.0后转引擎口径: 友方攻击≈3段/轮x1.0; 原『信徒=0』口径作废</td></tr>
+<tr data-r="rare" data-v="under"><td>半夜换告示的手</td><td class="cid">RELIC_RIFT_OVERRIDE</td><td>被动(C):复活1敌方诅咒</td><td>2×1.2/轮</td><td class="num">2.4/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>信徒揭晓≈1.2次/轮, 每次复活敌方诅咒+自逐</td></tr>
+<tr data-r="rare" data-v="in"><td>挨个熄灭的灯</td><td class="cid">RIFT_REAPER</td><td>强化4友方</td><td>1×4</td><td class="num">4</td><td><span class="badge b-in">=</span> 放逐所有信徒(参考4张), 每张强化1友方生物; 放逐即转化本身, 不另计信徒费用</td></tr>
+<tr data-r="rare" data-v="under"><td>管道里的活物</td><td class="cid">SLIME_4.0</td><td>攻2；遗言:复活1友方</td><td>2+2×0.3</td><td class="num">2.6</td><td><span class="badge b-under">−</span> 复制自身=新卡入组</td></tr>
+<tr data-r="rare" data-v="under"><td>旺得反常的香炉</td><td class="cid">SWARM_CURSER</td><td>被动(C):强化1敌方诅咒</td><td>1×2.4/轮+生成1信徒1</td><td class="num">3.4/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>生成1信徒(+1.0, 09-06拍板)另加; 每有1友方信徒强化1(信徒≈2.4/轮)</td></tr>
+<tr data-r="rare" data-v="in"><td>不下台的歌女</td><td class="cid">SWARM_QUEEN</td><td>攻2；生成2信徒</td><td>2+1×2</td><td class="num">4</td><td><span class="badge b-in">=</span> 每有1攻击力生成1信徒, 按ATK2计</td></tr>
+<tr data-r="rare" data-v="build"><td>还在长的人偶</td><td class="cid">UNFINISHED_ROBOT_4.0</td><td>揭晓时:攻击;攻击力翻倍</td><td>攻0+攻击力翻倍; 需外部强化启动</td><td class="num">0</td><td><span class="badge b-build">B</span> </td></tr>
+<tr data-r="rare" data-v="under"><td>要喂血的刀</td><td class="cid">WEAPON_SPIRIT</td><td>被动(C):强化1友方</td><td>1×3.1/轮</td><td class="num">3.1/轮</td><td><span class="badge b-under">−</span>  <span class="badge b-eng">C</span>强化反应≈3次/轮(仅4张反应卡)</td></tr>
 	</tbody>
 	</table>
+
+
 </div>
 
 <div class="section">
 	<h2>核心发现</h2>
-	<h3>① 超带卡 (强度离群)</h3>
+	<h3>① 超带卡 (强度离群, 前12)</h3>
 	<table class="list-tbl">
 	<thead><tr><th>卡</th><th>稀有度</th><th>值</th><th>备注</th></tr></thead>
 	<tbody>
-	<tr><td>医学院的标本 SPIKE_SKELETON_4.0</td><td>C</td><td>5.2</td><td>遗言攻击x2 按有支持口径 — common 上的 rare 伤害</td></tr>
-	<tr><td>头七的刀 WOKEN_BLADE</td><td>C</td><td>5.2</td><td>同构 (苏醒路径)</td></tr>
-	<tr><td>笼里的东西 / 描过金的牌位</td><td>C</td><td>4.0</td><td>攻2+复活2.0 — 复活对 common 定价偏宽</td></tr>
-	<tr><td>挥刀的影子 MIMIC_BLADE</td><td>U</td><td>≈6.0</td><td>缩放器, 无方差成本</td></tr>
-	<tr><td>抬上楼的纸别墅 / 陪葬的活物</td><td>U</td><td>4.8</td><td>双遗言载荷 / rare 带强化量</td></tr>
-	<tr><td>迁坟队 / 白事先生</td><td>U</td><td>4.5 / 4.4</td><td>直值, 无代价</td></tr>
-	<tr><td>最后一节课的铃 BATTLE_HORN</td><td>U</td><td>4.0</td><td>每轮引擎坐在 rare 带</td></tr>
-	<tr><td>隔墙有耳 RELIC_ATTACK_HEX</td><td>R</td><td>≈6.0/轮</td><td>双方攻击都算+按段触发 — 最强被动引擎</td></tr>
+<tr><td>挥刀的影子 MIMIC_BLADE</td><td>U</td><td>6</td><td>攻=最高友方攻(参考3)x2段</td></tr>
+<tr><td>迁坟队 KINGSLAYER</td><td>U</td><td>4.5</td><td>埋最强敌方, 质量修正1.25</td></tr>
+<tr><td>头七的刀 WOKEN_BLADE</td><td>C</td><td>4</td><td>苏醒攻x2</td></tr>
+<tr><td>深夜来电 SPIRIT_CALLER</td><td>C</td><td>3.6</td><td>复活非生物, 质量折减0.8</td></tr>
+<tr><td>医学院的标本 SPIKE_SKELETON_4.0</td><td>C</td><td>3.2</td><td>遗言攻x2</td></tr>
+<tr><td>笼里的东西 BEAST_REVIVER</td><td>C</td><td>3</td><td>09-06 DB改动: ATK 2→1</td></tr>
+<tr><td>巷口的磨刀人 BLACKSMITH_4.0</td><td>C</td><td>3</td><td></td></tr>
+<tr><td>描过金的牌位 ELITE_REVIVER</td><td>C</td><td>3</td><td>09-06 DB改动: ATK 2→1; 复活目标=被强化过的, 与折出来的替身成combo</td></tr>
+<tr><td>门口多出的鞋印 RIFT_INSECT_4.0</td><td>C</td><td>3</td><td>09-06 DB改动: ATK 3→2</td></tr>
+<tr><td>来接人的黑车 RIFT_SHEPHERD</td><td>C</td><td>3</td><td>09-06 DB改动: ATK 2→1; tag定向复活[信徒]全额+2.0(⑥), 池=信徒tag卡13张(含自身); 原0.2空白体口径作废</td></tr>
+<tr><td>替死鬼 GRAVE_FIST</td><td>C</td><td>2.8</td><td></td></tr>
+<tr><td>没有指纹的凶器 GRAVE_PUNCH_4.0</td><td>C</td><td>2.8</td><td>攻x2: ATK2x2=4</td></tr>
 	</tbody>
 	</table>
 
 	<h3>② 真空反值 / 零值引擎 (需确认设计意图)</h3>
 	<table class="list-tbl">
-	<thead><tr><th>卡</th><th>稀有度</th><th>真空值</th><th>转化路径</th></tr></thead>
+	<thead><tr><th>卡</th><th>稀有度</th><th>真空值</th><th>备注</th></tr></thead>
 	<tbody>
-	<tr><td>太平间的保洁 GRAVE_MILLER</td><td>R</td><td>−4.4</td><td>一次点火 7 张遗言 — 需审计其支持上限是否够 rare 带</td></tr>
-	<tr><td>多出来的第十三张床 MASS_SACRIFICE</td><td>R</td><td>≈−6</td><td>全场遗言点火 + 信徒生成</td></tr>
-	<tr><td>自己翻页的黄历 RELIC_ATTACK_BURIAL</td><td>U</td><td>≈−2.4/轮</td><td>DR燃料 + 行李袋成长</td></tr>
-	<tr><td>还在长的人偶 UNFINISHED_ROBOT_4.0</td><td>R</td><td>≈0</td><td>需外部强化才造成伤害</td></tr>
-	<tr><td>越擦越脏的玻璃 HEXBLADE</td><td>R</td><td>≈0</td><td>无自成长源, 只能转化外部强化 — 疑设计缺口</td></tr>
-	<tr><td>不下台的歌女 SWARM_QUEEN / 看热闹的影子 RELIC_HIVE</td><td>R</td><td>2.0 / 0</td><td>信徒燃料 (RIFT_REAPER / 半夜换告示的手 转化)</td></tr>
-	<tr><td>少了一页的住户名单 MILLBLADE / 贴在门上的保险书 / 香火不断的野庙 / 折出来的替身 / 还没停的挖掘机 / 点传师</td><td>R/U/C</td><td>0.4 ~ −1.0</td><td>DR燃料 / combo 使能器 / 全池最弱</td></tr>
+<tr><td>太平间的保洁 GRAVE_MILLER</td><td>R</td><td>-4.4</td><td></td></tr>
+<tr><td>自己翻页的黄历 RELIC_ATTACK_BURIAL</td><td>U</td><td>-2.4/轮</td><td>友方每次攻击磨1, 友方攻击≈3段/轮</td></tr>
+<tr><td>贴在门上的保险书 FUNERAL_WILL</td><td>U</td><td>-1.18</td><td></td></tr>
+<tr><td>多出来的第十三张床 MASS_SACRIFICE</td><td>R</td><td>-1</td><td>埋所有友方(参考5)+等量信徒; 遗言全点火另计</td></tr>
+<tr><td>拖人下水的水鬼 RELIC_CHAIN_BURIAL</td><td>U</td><td>-0.96/轮</td><td>友方被埋葬≈1.2次/轮</td></tr>
+<tr><td>还没停的挖掘机 GRAVE_DREDGER</td><td>C</td><td>-0.4</td><td></td></tr>
+<tr><td>折出来的替身 SACRIFICE_WEAKEST</td><td>U</td><td>-0.2</td><td>强化的是被埋的该卡</td></tr>
+<tr><td>越擦越脏的玻璃 HEXBLADE</td><td>R</td><td>0</td><td>每有1攻击力强化1; 无自成长源, 真空0</td></tr>
+<tr><td>少了一页的住户名单 MILLBLADE</td><td>R</td><td>0.4</td><td>每有1攻击力磨1, 按ATK2计</td></tr>
 	</tbody>
 	</table>
-	<p class="note"><b>信徒轴结构性偏弱</b>: 生成器家族 (野庙/笔/点传师/库房/那条街/黑车/跟回家的人影) 真空 0.8–2.2, 而转化器 RIFT_REAPER (3.2) 与半夜换告示的手 (2.0) 自身也低于 rare 带 — 成本端和收益端都不够强。</p>
+	<p class="note"><b>信徒轴 09-06 复盘</b>: 生成1信徒 +1.0 后生成器家族 (野庙/笔/库房/那条街/签到表/鞋印) 全部回归带内或贴近带底; 转化器 RIFT_REAPER 4.0 回带底。原「信徒轴结构性偏弱」结论作废。</p>
 
 	<h3>③ 谓词陷阱</h3>
-	<p class="note"><b>递请柬的人 DOOM_HERALD</b>「复活1攻击力最高敌方」: 当敌方诅咒不是最高攻卡时 (前期/无诅咒对局), 会复活对面的最强生物 (≈−2.5 摆动)。建议改为只复活敌方诅咒, 或加保底。</p>
+	<p class="note"><b>递请柬的人 DOOM_HERALD</b>「复活1攻击力最高敌方」: 当敌方诅咒不是最高攻卡时 (前期/无诅咒对局), 会复活对面的最强生物 (≈−2.5 摆动)。强化新规后期望 4.3→3.5±3, 仍建议改为只复活敌方诅咒或加保底。</p>
 </div>
 
 <div class="section">
 	<h2>稀有度 × 方差错位 (评审重点)</h2>
-	<h3>A. Rare 但方差不足以视为 build-around (真空低于 rare 带 4.0)</h3>
-	<table class="list-tbl">
-	<thead><tr><th>卡</th><th>真空值</th><th>备注</th></tr></thead>
-	<tbody>
-	<tr><td>洇开的污渍 DETERIORATION_4.0</td><td>3.4</td><td>R=4 内爬升太慢</td></tr>
-	<tr><td>管道里的活物 SLIME_4.0</td><td>3.6</td><td>单卡递归</td></tr>
-	<tr><td>挨个熄灭的灯 RIFT_REAPER</td><td>3.2</td><td>需信徒密度</td></tr>
-	<tr><td>准时来的清运车 / 广播里在找人</td><td>≈3.0</td><td>敌方不跑诅咒时死卡</td></tr>
-	<tr><td>地下传来的叩击 RELIC_GRAVE_LORD</td><td>3.0</td><td>只喂复活/遗言攻击引擎</td></tr>
-	<tr><td>要喂血的刀 WEAPON_SPIRIT</td><td>2.5</td><td>强化反应层仅4张</td></tr>
-	<tr><td>旺得反常的香炉 SWARM_CURSER</td><td>≈2.9</td><td>信徒数缩放</td></tr>
-	<tr><td>半夜换告示的手 RELIC_RIFT_OVERRIDE</td><td>2.0–3.0</td><td>需信徒包</td></tr>
-	<tr><td>多敲了一下的钟 RELIC_DEATH_KNELL</td><td>2.0</td><td>最薄触发层</td></tr>
-	</tbody>
-	</table>
-	<h3>B. 非 Rare 但高方差 / build-around (真空已到带值或以上)</h3>
+	<h3>A. Rare 但真空不足 4.0 (非 build-around)</h3>
 	<table class="list-tbl">
 	<thead><tr><th>卡</th><th>稀有度</th><th>值</th><th>备注</th></tr></thead>
 	<tbody>
-	<tr><td>挥刀的影子 MIMIC_BLADE</td><td>U</td><td>≈6.0</td><td>缩放器, 无方差成本</td></tr>
-	<tr><td>陪葬的活物 / 抬上楼的纸别墅</td><td>U</td><td>4.8</td><td>直值双载荷</td></tr>
-	<tr><td>迁坟队 / 白事先生</td><td>U</td><td>4.5 / 4.4</td><td>直值</td></tr>
-	<tr><td>最后一节课的铃 BATTLE_HORN</td><td>U</td><td>4.0</td><td>每轮引擎</td></tr>
-	<tr><td>医学院的标本 / 头七的刀</td><td>C</td><td>5.2</td><td>common 上的 rare 伤害</td></tr>
-	<tr><td>笼里的东西 / 描过金的牌位</td><td>C</td><td>4.0</td><td>common 复活</td></tr>
-	<tr><td>回魂夜 MASS_REVIVER</td><td>U</td><td>4.0–4.8</td><td>三卡复活</td></tr>
-	<tr><td>偷吃供品的黄皮子 / 入殓师 / 路口的纸灰圈</td><td>U</td><td>C 引擎</td><td>每轮 uptime</td></tr>
-	<tr><td>太平间的保洁 / 多出来的第十三张床 / 自己翻页的黄历 / 贴在门上的保险书 / 香火不断的野庙</td><td>R/U</td><td>负真空</td><td>DR 引擎 — 作为 build-around 可接受, 但支持上限需对照 rare 带收益</td></tr>
+<tr><td>越来越快的脚步声 RELIC_CURSE_HASTE</td><td>R</td><td>3.9/轮</td><td>诅咒揭晓≈1.5次/轮x平均诅咒攻1.3折算</td></tr>
+<tr><td>地下传来的叩击 RELIC_GRAVE_LORD</td><td>R</td><td>3.75/轮</td><td>墓地生物+1攻, 经复活/遗言攻击兑现≈3.75单位/轮</td></tr>
+<tr><td>递请柬的人 DOOM_HERALD</td><td>R</td><td>3.5</td><td></td></tr>
+<tr><td>讣告 LAST_RITES</td><td>R</td><td>3.4</td><td></td></tr>
+<tr><td>旺得反常的香炉 SWARM_CURSER</td><td>R</td><td>3.4/轮</td><td>生成1信徒(+1.0, 09-06拍板)另加; 每有1友方信徒强化1(信徒≈2.4/轮)</td></tr>
+<tr><td>要喂血的刀 WEAPON_SPIRIT</td><td>R</td><td>3.1/轮</td><td>强化反应≈3次/轮(仅4张反应卡)</td></tr>
+<tr><td>准时来的清运车 RELIC_CURSE_GRAVE</td><td>R</td><td>3/轮</td><td>敌方诅咒揭晓≈1.5次/轮(诅咒架); 无诅咒死卡</td></tr>
+<tr><td>广播里在找人 RELIC_CURSE_REVIVAL</td><td>R</td><td>3/轮</td><td>敌方诅咒揭晓≈1.5次/轮</td></tr>
+<tr><td>看热闹的影子 RELIC_HIVE</td><td>R</td><td>3/轮</td><td>信徒=+1.0后转引擎口径: 友方攻击≈3段/轮x1.0; 原『信徒=0』口径作废</td></tr>
+<tr><td>洇开的污渍 DETERIORATION_4.0</td><td>R</td><td>2.8</td><td>每3攻额外+1按中期诅咒攻折算0.8层</td></tr>
+<tr><td>管道里的活物 SLIME_4.0</td><td>R</td><td>2.6</td><td>复制自身=新卡入组</td></tr>
+<tr><td>半夜换告示的手 RELIC_RIFT_OVERRIDE</td><td>R</td><td>2.4/轮</td><td>信徒揭晓≈1.2次/轮, 每次复活敌方诅咒+自逐</td></tr>
+<tr><td>多敲了一下的钟 RELIC_DEATH_KNELL</td><td>R</td><td>2/轮</td><td>友方苏醒≈1次/轮</td></tr>
 	</tbody>
 	</table>
-	<p class="note">稀有度分布: 战斗卡 C 20% / U 51% / R 29% (U/R 在 StS2 目标带内); 计入 18 张 utility 后 C 22% — common 位被 utility 抬高。</p>
+	<h3>B. 非 Rare 但真空已达 rare 带值 (≥4.0) 或高频引擎 (≥2.4/轮)</h3>
+	<table class="list-tbl">
+	<thead><tr><th>卡</th><th>稀有度</th><th>值</th><th>备注</th></tr></thead>
+	<tbody>
+<tr><td>挥刀的影子 MIMIC_BLADE</td><td>U</td><td>6</td><td>攻=最高友方攻(参考3)x2段</td></tr>
+<tr><td>迁坟队 KINGSLAYER</td><td>U</td><td>4.5</td><td>埋最强敌方, 质量修正1.25</td></tr>
+<tr><td>头七的刀 WOKEN_BLADE</td><td>C</td><td>4</td><td>苏醒攻x2</td></tr>
+<tr><td>最后一节课的铃 BATTLE_HORN</td><td>U</td><td>4</td><td></td></tr>
+<tr><td>替人叫魂的喇叭 CURSE_SUMMONER</td><td>U</td><td>4</td><td></td></tr>
+<tr><td>白事先生 GRAVE_HEXER</td><td>U</td><td>4</td><td></td></tr>
+<tr><td>回魂夜 MASS_REVIVER</td><td>U</td><td>4</td><td></td></tr>
+<tr><td>入殓师 DEATHBED_GRANT</td><td>U</td><td>3/轮</td><td>被埋友方生物攻击, 友方埋葬≈1.5/轮</td></tr>
+<tr><td>停电 WEAKENING_FIELD</td><td>U</td><td>0</td><td></td></tr>
+	</tbody>
+	</table>
+	<p class="note">判定规则 (机械): 带 C 1.6–2.4 / U 2.4–4.0 / R 4.0–8.0; &gt;带顶=+, ≥带顶+带宽=++, &lt;带底=−, ≤0 或 &lt;1.0=!, 构建核心=B, 全局C 行另挂 C 徽章。边界值含带顶 (=)。</p>
 </div>
 
 <div class="section">
@@ -323,20 +336,24 @@
 </div>
 
 <div class="section">
-	<h2>估值约定 (2026-09-05 拍板)</h2>
+	<h2>估值约定 (2026-09-06 全口径)</h2>
 	<details>
-	<summary>展开: 沿用 3.0 的约定 / 4.0 引擎语义 / 新机制估值</summary>
+	<summary>展开: 09-06 两轮修订 / 沿用 3.0 的约定 / 4.0 引擎语义 / 判定规则</summary>
+	<h3>2026-09-06 第二轮 (本轮拍板)</h3>
+	<p class="note">⑦ <b>强化三类统一 1.0/层</b>: 给力量友方 0.8 / 给力量自身 1.5 / 强化敌方诅咒 1.2 → 全部改为「强化 N 层 = +N 分」(09-06 拍板)。攻击次数类 (+1/全体+1) 不属于强化, 维持原值。⑧ <b>Notion 4.0 审计 DB 弃用</b> (09-06): 评分改由 <code>tools/scripts/gen_balance_audit_report.py</code> 按本节约定自算; 数据链 = prefab 抽取 (<code>audit_rows_40.json</code>) + card DB 当前值改动补丁 (脚本内 PATCHES)。DB 行与公式不再维护。⑨ 用户 normal 卡数值改动 8 张 (AVENGER 攻x2 / BEAST·ELITE·RIFT_ACOLYTE·RIFT_SHEPHERD ATK↓ / LAST_GIFT 强化2 / RIFT_INSECT ATK2 / SOLDIER 遗言复活自身) 已入库重算。⑩ 条件层「条件」选项系数 0.8→0.5 (并入 09-06 第一轮的条件层减分体系)。</p>
+	<h3>2026-09-06 第一轮 (已拍板)</h3>
+	<p class="note">① 条件层一律减分: 苏醒(OnMeRevived) <b>×0.5</b> / 强化反应 <b>×0.5</b> — 触发后卡回卡组顶继续揭晓; 遗言(OnMeBuried) <b>×0.3</b> — 触发后卡入墓地不再揭晓。② 生成1信徒 <b>+1.0</b> (信徒揭晓=复活1友方+放逐自身, 2.0−1.0)。③ 信徒=RIFT token (11 张生成器经 AddCardToMe 绑 RIFT.prefab 生成), 诅咒=JU_ON token (揭晓对持有方玩家造成[攻击力]伤害, 0攻 no-op)。两 token rarity 不挂、不进评分池。④ tag定向复活/选取 (「复活1张tag为[X]的友方卡」) 按 复活1友方 +2.0 全额计; tag选区不适用 token (token 无 tag) — RIFT_SHEPHERD = ReviveMyCardsWithTag[信徒], 池=信徒tag卡13张 (C3/U5/R5)。⑤ RIFT_ACOLYTE 苏醒 payload = 生成1信徒 (prefab 勘误)。</p>
 	<h3>沿用 3.0</h3>
-	<p class="note">直接伤害 X = X｜埋葬1敌方 +2.0｜埋葬1友方 −1.2｜置顶1友方 +1.5｜给1力量 随机友方+0.8 / 自身+1.5｜敌我不分 ≈0｜强化1敌方诅咒 +1.2｜放逐友方(非信徒) −2.0｜条件层(遗言/苏醒/强化反应) ×0.3 无支持 / ×0.8 有支持｜全局监听无区域检查 ×1.0 (C类)｜Linger ×0.5。判定带: C 1.6–2.4 / U 2.4–4.0 / R 4.0–8.0 或 build-around。</p>
+	<p class="note">直接伤害 X = X｜埋葬1敌方 +2.0｜埋葬1友方 −1.2｜置顶1友方 +1.5｜敌我不分 ≈0｜放逐友方(非信徒) −2.0｜放逐友方信徒 −1.0｜全局监听无区域检查 ×1.0 (C类, 按每轮触发次数计)｜Linger ×0.5。</p>
 	<h3>4.0 引擎语义 (代码验证)</h3>
-	<p class="note">攻击伤害 = 卡攻击属性 × 段数 (<code>Attack()</code>=1+extraAttackTimes, <code>AttackTimes(N)</code>=N段; baseDmg SO 对攻击卡已废弃), 每段独立触发攻击事件。诅咒 JU_ON 揭晓时对持有方自伤 (printedAttack=0, 靠强化成长) → 自己 deck 里的信徒是 0 攻空白揭晓。复活=墓地→卡组顶 (触发苏醒); 遗言=OnMeBuried; 强化反应=OnMeGainedAttack; 磨牌会触发被磨卡遗言。UnityEvent 的 m_IntArgument 在 m_Mode:1 下被忽略 — 强化量看 xFriendlyCount(目标数)/yFriendlyLayerCount(每目标层数)。</p>
-	<h3>新机制估值 (用户拍板)</h3>
-	<p class="note">磨牌1卡 <b>−0.8</b> (默认遗言配合)｜生成1信徒 <b>0</b> (中性资源)｜放逐1友方信徒(费用) −1.0｜复活1友方 <b>+2.0</b> (±0.5/攻)｜复活N张 ×0.8｜复活1敌方诅咒 +2.0｜延迟复活 ×0.7｜全体友方生物攻击次数+1 <b>+4.0</b>｜随机1友方+1 +1.5｜敌方诅咒攻击次数+1 +2.0｜苏醒→遗言转换 +2.0｜敌方诅咒攻击力=墓地友方数 build-around (base 2.5)｜墓地友方生物+1攻 +2.0｜信徒→复活敌方诅咒+自逐 +2.0｜友方攻击→强化诅咒 build-around｜所有生物−1攻 build-around 高方差 (真空≈0)｜攻击力翻倍 build-around 高方差｜墓地生物攻击 +2.0 / 复活最强敌方夺攻 +3.0。</p>
+	<p class="note">攻击伤害 = 卡攻击属性 × 段数 (<code>Attack()</code>=1+extraAttackTimes, <code>AttackTimes(N)</code>=N段), 每段独立触发攻击事件。复活=墓地→卡组顶 (触发苏醒); 遗言=OnMeBuried; 强化反应=OnMeGainedAttack; 磨牌会触发被磨卡遗言。复活N张 (整数N≥2) ×0.8 多复质量折减; 分数 n = 数量×质量系数 (不再折减)。</p>
+	<h3>新机制估值 (拍板值)</h3>
+	<p class="note">磨牌1卡 <b>−0.8</b> (默认遗言配合)｜生成1信徒 <b>+1.0</b>｜复活1友方 <b>+2.0</b> (±0.5/攻, N张×0.8)｜复活1敌方诅咒 +2.0｜延迟复活 ×0.7｜全体友方生物攻击次数+1 <b>+4.0</b>｜1友方攻次+1 +1.5｜敌方诅咒攻次+1 +2.0｜苏醒→遗言转换 +2.0｜墓地生物攻击 +2.0｜复活最强敌方夺攻 +3.0｜敌方诅咒攻击力=墓地友方数 build-around (base 2.5)｜友方攻击→强化诅咒 build-around｜所有生物−1攻 build-around (真空≈0)｜攻击力翻倍 build-around (真空0)。</p>
 	</details>
 </div>
 
 <div class="footer">
-	重新生成: <code>python tools/scripts/extract_card_prefabs.py &gt; tools/outputs/card_prefab_extract.txt</code> → 按 §约定 重新评分 → 原地覆盖本文件 (不设版本副本) · Notion 镜像页 / 桌面副本仅在明确要求时生成 · 技能: <code>.agents/skills/unity-zombie-balance-audit</code>
+	重新生成: <code>python tools/scripts/gen_balance_audit_report.py</code> (读 <code>tools/outputs/audit_rows_40.json</code> + 脚本内改动补丁 → 原地覆盖本文件) · 改卡数值后: 改 card DB → 更新脚本 PATCHES → 重跑 · Notion 镜像页仅明确要求时生成 · 审计 DB (Notion「4.0 审计」) 已弃用 · 技能: <code>.agents/skills/unity-zombie-balance-audit</code>
 </div>
 
 </div>
