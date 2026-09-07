@@ -717,6 +717,14 @@ public class CombatManager : MonoBehaviour
 	public bool captureRecorderAutoPlayForTesting;
 	public System.Collections.IEnumerator pendingRecorderAutoPlay;
 
+	/// <summary>
+	/// Test seam: when set, the Start Card pre-shuffle reveal boundary enumerator is captured in
+	/// <see cref="pendingStartCardRevealRoutine"/> instead of being started as a coroutine, so EditMode
+	/// tests can drive it themselves (StartCoroutine is not pumped reliably in headless EditMode runs).
+	/// </summary>
+	public bool captureStartCardRevealRoutineForTesting;
+	public System.Collections.IEnumerator pendingStartCardRevealRoutine;
+
 	private void StartRecorderAutoPlay()
 	{
 		var e = PlayRecorderAnimationsAndWait();
@@ -924,7 +932,16 @@ public class CombatManager : MonoBehaviour
 		// (the revived creature, or the start card when nothing came up).
 		if (IsStartCardOnDeckTop())
 		{
-			StartCoroutine(RevealAfterBeforeStartCardRevealRoutine(onMoveToRevealZoneComplete));
+			var routine = RevealAfterBeforeStartCardRevealRoutine(onMoveToRevealZoneComplete);
+			if (captureStartCardRevealRoutineForTesting)
+			{
+				routine.MoveNext(); // run synchronously up to the first yield, same as StartCoroutine
+				pendingStartCardRevealRoutine = routine;
+			}
+			else
+			{
+				StartCoroutine(routine);
+			}
 			return;
 		}
 		RevealNextCardCore(onMoveToRevealZoneComplete);

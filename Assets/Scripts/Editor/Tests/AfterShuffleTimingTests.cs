@@ -24,11 +24,13 @@ public class AfterShuffleTimingTests : HeadlessCombatTestFixture
 	[TearDown]
 	public override void TearDown()
 	{
-		// Reset the auto-play capture seam if a test left it on
+		// Reset the auto-play capture seams if a test left them on
 		if (CombatManager != null)
 		{
 			CombatManager.captureRecorderAutoPlayForTesting = false;
 			CombatManager.pendingRecorderAutoPlay = null;
+			CombatManager.captureStartCardRevealRoutineForTesting = false;
+			CombatManager.pendingStartCardRevealRoutine = null;
 		}
 		// Ensure no stale singletons from created recorders
 		if (RecorderAnimationPlayer.me != null)
@@ -58,8 +60,8 @@ public class AfterShuffleTimingTests : HeadlessCombatTestFixture
 
 	#region afterShuffle Event Timing
 
-	[Test]
-	public void AfterShuffle_RaisedAfterRevealZoneMovementCompletes()
+	[UnityTest]
+	public IEnumerator AfterShuffle_RaisedAfterRevealZoneMovementCompletes()
 	{
 		var playerCard = CreateCard(true, "PlayerCard");
 		var enemyCard = CreateCard(false, "EnemyCard");
@@ -73,11 +75,16 @@ public class AfterShuffleTimingTests : HeadlessCombatTestFixture
 		// Simulate Start Card shuffle completion
 		SetupPostShuffleState();
 		CombatManager.SetRaiseAfterShuffleOnNextReveal(true);
+		CombatManager.captureStartCardRevealRoutineForTesting = true;
 
 		// Register afterShuffle listener
 		RegisterEventCallback(GameEventStorage.afterShuffle, () => _afterShuffleRaised = true);
 
 		InvokeRevealCards();
+
+		// Round Start routes the Start Card reveal through the pre-shuffle boundary coroutine;
+		// drive it so its onComplete callback (afterShuffle.Raise) actually runs.
+		yield return CombatManager.pendingStartCardRevealRoutine;
 
 		Assert.IsTrue(_afterShuffleRaised, "afterShuffle should be raised in Round Start path");
 		Assert.IsNotNull(CombatManager.revealZone, "Next card should be revealed after Start Card");
@@ -111,13 +118,19 @@ public class AfterShuffleTimingTests : HeadlessCombatTestFixture
 		// Capture the auto-play coroutine so this test can drive it frame-by-frame
 		// (StartCoroutine is not pumped reliably in headless EditMode runs)
 		CombatManager.captureRecorderAutoPlayForTesting = true;
+		CombatManager.captureStartCardRevealRoutineForTesting = true;
 
 		InvokeRevealCards();
 
 		// Immediately after RevealCards returns, Round Start path has set the flag to true
-		// and started PlayRecorderAnimationsAndWait.
-		Assert.IsTrue(CombatManager.isPlayingEffectAnimations, "Flag should be true after Round Start auto-plays afterShuffle animations");
-		Assert.IsTrue(_afterShuffleRaised, "afterShuffle should have been raised before coroutine completes");
+		// and captured the Start Card reveal boundary routine.
+		Assert.IsTrue(CombatManager.isPlayingEffectAnimations, "Flag should be true after Round Start starts the reveal routine");
+
+		// Drive the Start Card reveal boundary first: its onComplete raises afterShuffle
+		// and captures the auto-play enumerator through the test seam.
+		yield return CombatManager.pendingStartCardRevealRoutine;
+
+		Assert.IsTrue(_afterShuffleRaised, "afterShuffle should have been raised once the reveal boundary completes");
 		Assert.IsNotNull(CombatManager.pendingRecorderAutoPlay, "Auto-play enumerator should have been captured");
 
 		// Drive the captured coroutine to completion via the test runner
