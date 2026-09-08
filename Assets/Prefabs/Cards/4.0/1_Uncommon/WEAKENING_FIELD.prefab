@@ -48,8 +48,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: WEAKENING_FIELD
-  displayName: "\u505C\u7535"
-  cardDesc: "\u6240\u6709\u751F\u7269\u672C\u56DE\u5408\u653B\u51FB\u529B-1"
+  displayName: "\u7634\u6C14"
+  cardDesc: "\u6240\u6709\u751F\u7269\u672C\u56DE\u5408\u653B\u51FB\u529B <b>-1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

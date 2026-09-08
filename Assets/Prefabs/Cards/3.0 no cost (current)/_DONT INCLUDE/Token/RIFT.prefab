@@ -189,6 +189,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -239,7 +240,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT
-  displayName: "\u6B21\u5143\u88C2\u7F1D"
+  displayName: "\u4FE1\u5F92"
   cardDesc: "\u590D\u6D3B 1 \u53CB\u65B9,\u53BB\u9664\u81EA\u8EAB"
   rarity: 0
   shopRollWeightMultiplier: 1

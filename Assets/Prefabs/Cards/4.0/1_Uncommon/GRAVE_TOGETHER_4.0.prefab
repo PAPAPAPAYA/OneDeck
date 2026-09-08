@@ -224,9 +224,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_TOGETHER_4.0
-  displayName: "\u5E76\u6392\u7684\u4E09\u5EA7\u65B0\u575F"
-  cardDesc: "\u653B\u51FB;\u57CB\u846C <b>1</b> \u53CB\u65B9;\u57CB\u846C
-    <b>2</b> \u654C\u65B9"
+  displayName: "\u540C\u846C"
+  cardDesc: "\u653B\u51FB;\u57CB\u846C <b>1</b> \u53CB\u65B9;\u57CB\u846C <b>2</b>
+    \u654C\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

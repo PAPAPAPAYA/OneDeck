@@ -164,8 +164,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: MASS_SACRIFICE
-  displayName: "\u591A\u51FA\u6765\u7684\u7B2C\u5341\u4E09\u5F20\u5E8A"
-  cardDesc: "\u57CB\u846C\u6240\u6709\u53CB\u65B9;\u6BCF\u57CB\u846C1\u53CB\u65B9,\u751F\u62101\u4FE1\u5F92"
+  displayName: "\u96C6\u4F53\u81EA\u711A"
+  cardDesc: "\u57CB\u846C\u6240\u6709\u53CB\u65B9;\u6BCF\u57CB\u846C <b>1</b> \u53CB\u65B9,\u751F\u6210
+    <b>1</b> \u4FE1\u5F92"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -185,6 +186,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &9168099999965286110
 MonoBehaviour:

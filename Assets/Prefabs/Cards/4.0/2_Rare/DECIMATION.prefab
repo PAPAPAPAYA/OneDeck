@@ -224,8 +224,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: DECIMATION
-  displayName: "\u8FD8\u7559\u7740\u4F53\u6E29\u7684\u7A7A\u5E8A"
-  cardDesc: "\u57CB\u846C6\u53CB\u65B9,\u672C\u56DE\u5408\u6BCF\u57CB\u846C\u8FC71\u53CB\u65B9,\u57CB\u846C\u6570-1;\u653B\u51FBx3"
+  displayName: "\u4EC0\u4E00\u62BD\u6740"
+  cardDesc: "\u57CB\u846C <b>6</b> \u53CB\u65B9,\u672C\u56DE\u5408\u6BCF\u57CB\u846C\u8FC7
+    <b>1</b> \u53CB\u65B9,\u57CB\u846C\u6570 <b>-1</b>;\u653B\u51FBx3"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -245,6 +246,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &2959890052574428842
 MonoBehaviour:

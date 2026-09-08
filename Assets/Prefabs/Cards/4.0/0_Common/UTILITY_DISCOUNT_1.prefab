@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: UTILITY_DISCOUNT_1
-  displayName: "\u9ED1\u5E02\u4EA4\u60C5"
+  displayName: "\u9B47\u5E02\u8D4A\u8D26"
   cardDesc: "\u88AB\u52A8: \u6BCF\u91CD\u63B7 <b>4</b> \u6B21,\u968F\u673A\u5546\u54C1\u964D\u4EF7
     <b>2</b>"
   rarity: 0

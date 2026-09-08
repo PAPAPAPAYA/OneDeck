@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: CURSE_THIRST_BEAST_4.0
-  displayName: "\u5077\u5403\u4F9B\u54C1\u7684\u9EC4\u76AE\u5B50"
+  displayName: "\u566C\u5492\u517D"
   cardDesc: "\u654C\u65B9\u8BC5\u5492\u63ED\u6653\u65F6:\u590D\u6D3B\u81EA\u8EAB;\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -219,6 +219,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &6056334475552482986
 GameObject:
   m_ObjectHideFlags: 0

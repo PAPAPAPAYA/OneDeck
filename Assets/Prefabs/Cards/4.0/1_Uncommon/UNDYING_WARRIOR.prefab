@@ -86,6 +86,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &5281604472113932247
 GameObject:
   m_ObjectHideFlags: 0
@@ -136,7 +137,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: UNDYING_WARRIOR
-  displayName: "\u6CA1\u62C9\u5E73\u7684\u5FC3\u7535\u56FE"
+  displayName: "\u9489\u4E0D\u6B7B\u7684\u4EBA"
   cardDesc: "\u653B\u51FB;\u5F3A\u5316\u53CD\u5E94:\u590D\u6D3B\u81EA\u8EAB"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -157,6 +158,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &8047978162977637081
 MonoBehaviour:

@@ -86,6 +86,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &6306561475373825229
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,6 +173,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &6426072152774848527
 GameObject:
   m_ObjectHideFlags: 0
@@ -222,7 +224,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: NECROMANCER
-  displayName: "\u697C\u4E0B\u7684\u53EB\u9B42\u58F0"
+  displayName: "\u62DB\u9B42\u6267\u4E8B"
   cardDesc: "\u590D\u6D3B <b>1</b> \u53CB\u65B9;\u82CF\u9192:\u590D\u6D3B <b>1</b>
     \u53CB\u65B9"
   rarity: 1
@@ -244,6 +246,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &5936948446149382274
 MonoBehaviour:

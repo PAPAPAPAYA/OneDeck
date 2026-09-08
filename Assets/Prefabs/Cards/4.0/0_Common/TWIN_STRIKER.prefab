@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: TWIN_STRIKER
-  displayName: "\u4E00\u5BF9\u7EB8\u4EBA"
+  displayName: "\u8FDE\u4F53\u4EBA"
   cardDesc: "\u653B\u51FBx2"
   rarity: 0
   shopRollWeightMultiplier: 1

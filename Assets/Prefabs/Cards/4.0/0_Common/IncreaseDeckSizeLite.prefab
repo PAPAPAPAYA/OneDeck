@@ -128,7 +128,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_DECK_SIZE_LITE
-  displayName: "\u5361\u4F4D\u6269\u5F20"
+  displayName: "\u957F\u591C"
   cardDesc: "\u5361\u4F4D <b>+1</b>, \u653E\u9010\u81EA\u8EAB"
   rarity: 0
   shopRollWeightMultiplier: 1.5

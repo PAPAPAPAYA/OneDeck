@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: DEATHBED_GRANT
-  displayName: "\u5165\u6B93\u5E08"
+  displayName: "\u5782\u6B7B\u53CD\u6251"
   cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u751F\u7269\u88AB\u57CB\u846C\u65F6:\u8BE5\u53CB\u65B9\u751F\u7269\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -69,6 +69,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 1
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &6296127654405248073
 MonoBehaviour:

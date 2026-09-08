@@ -139,7 +139,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: AVENGER_4.0
-  displayName: "\u957F\u9AD8\u7684\u575F\u5934"
+  displayName: "\u5389\u9B3C"
   cardDesc: "\u653B\u51FBx2;\u9057\u8A00:\u5F3A\u5316\u81EA\u8EAB <b>1</b>"
   rarity: 0
   shopRollWeightMultiplier: 1

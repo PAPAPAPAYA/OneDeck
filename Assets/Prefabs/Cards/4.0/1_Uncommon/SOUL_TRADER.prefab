@@ -86,6 +86,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &1749464224469374942
 GameObject:
   m_ObjectHideFlags: 0
@@ -220,7 +221,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: SOUL_TRADER
-  displayName: "\u9A8C\u5C38\u5B98"
+  displayName: "\u4EE5\u547D\u6362\u547D"
   cardDesc: "\u590D\u6D3B <b>2</b> \u53CB\u65B9;\u57CB\u846C <b>1</b> \u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -241,6 +242,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &4927578150704220137
 MonoBehaviour:

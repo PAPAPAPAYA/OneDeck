@@ -142,8 +142,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: BATTLE_HORN
-  displayName: "\u6700\u540e\u4e00\u8282\u8bfe\u7684\u94c3"
-  cardDesc: "\u672C\u56DE\u5408\u53CB\u65B9\u751F\u7269\u653B\u51FB\u6B21\u6570<b>+1</b>"
+  displayName: "\u80A1\u9AA8\u53F7\u89D2"
+  cardDesc: "\u672C\u56DE\u5408\u53CB\u65B9\u751F\u7269\u653B\u51FB\u6B21\u6570 <b>+1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -163,6 +163,12 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
+  attackSnapshotValue: -1
 --- !u!114 &8195836948641462119
 MonoBehaviour:
   m_ObjectHideFlags: 0

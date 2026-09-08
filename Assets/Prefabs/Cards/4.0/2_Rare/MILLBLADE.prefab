@@ -50,8 +50,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: MILLBLADE
-  displayName: "\u5C11\u4E86\u4E00\u9875\u7684\u4F4F\u6237\u540D\u5355"
-  cardDesc: "\u653B\u51FB;\u6BCF\u67091\u653B\u51FB\u529B,\u57CB\u846C\u5361\u7EC4\u98761\u5361"
+  displayName: "\u51CC\u8FDF"
+  cardDesc: "\u653B\u51FB;\u6BCF\u6709 <b>1</b> \u653B\u51FB\u529B,\u57CB\u846C\u5361\u7EC4\u9876
+    <b>1</b> \u5361"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -71,6 +72,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &5365790936387019895
 MonoBehaviour:

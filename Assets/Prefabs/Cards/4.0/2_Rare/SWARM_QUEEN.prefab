@@ -218,8 +218,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: SWARM_QUEEN
-  displayName: "\u4E0D\u4E0B\u53F0\u7684\u6B4C\u5973"
-  cardDesc: "\u653B\u51FB;\u6BCF\u67091\u653B\u51FB\u529B,\u751F\u62101\u4FE1\u5F92"
+  displayName: "\u9ED1\u5723\u6BCD"
+  cardDesc: "\u653B\u51FB;\u6BCF\u6709 <b>1</b> \u653B\u51FB\u529B,\u751F\u6210 <b>1</b>
+    \u4FE1\u5F92"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -239,6 +240,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &4452349236683188154
 MonoBehaviour:

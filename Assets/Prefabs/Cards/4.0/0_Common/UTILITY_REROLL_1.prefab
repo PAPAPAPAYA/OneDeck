@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: UTILITY_REROLL_1
-  displayName: "\u91CD\u63B7\u8BB8\u53EF"
+  displayName: "\u5669\u68A6\u91CD\u64AD"
   cardDesc: "\u88AB\u52A8: \u514D\u8D39\u91CD\u63B7\u6B21\u6570 <b>+1</b>"
   rarity: 0
   shopRollWeightMultiplier: 1

@@ -228,8 +228,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: SACRIFICE_WEAKEST
-  displayName: "\u6298\u51FA\u6765\u7684\u66FF\u8EAB"
-  cardDesc: "\u57CB\u846C1\u653B\u51FB\u529B\u6700\u4F4E\u53CB\u65B9;\u5F3A\u53161\u8BE5\u5361"
+  displayName: "\u66FF\u7F6A\u7F94\u7F8A"
+  cardDesc: "\u57CB\u846C <b>1</b> \u653B\u51FB\u529B\u6700\u4F4E\u53CB\u65B9;\u5F3A\u5316
+    <b>1</b> \u8BE5\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -249,6 +250,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &2131515910441108459
 MonoBehaviour:

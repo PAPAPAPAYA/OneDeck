@@ -134,7 +134,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_FIST
-  displayName: "\u66FF\u6B7B\u9B3C"
+  displayName: "\u8840\u796D"
   cardDesc: "\u57CB\u846C <b>1</b> \u53CB\u65B9;\u653B\u51FB"
   rarity: 0
   shopRollWeightMultiplier: 1

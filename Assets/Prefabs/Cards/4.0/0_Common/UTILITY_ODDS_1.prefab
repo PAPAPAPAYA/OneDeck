@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: UTILITY_ODDS_1
-  displayName: "\u5E37\u5E55\u4E4B\u540E"
+  displayName: "\u9B47\u5E02\u6DF1\u5904"
   cardDesc: "\u88AB\u52A8: \u9996\u4E2A\u8D27\u67B6\u5FC5\u4E3A<b>\u5947\u7269\u67B6</b>"
   rarity: 0
   shopRollWeightMultiplier: 1

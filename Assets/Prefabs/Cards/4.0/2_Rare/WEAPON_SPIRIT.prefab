@@ -48,8 +48,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: WEAPON_SPIRIT
-  displayName: "\u8981\u5582\u8840\u7684\u5200"
-  cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u751F\u7269\u89E6\u53D1\u5F3A\u5316\u53CD\u5E94\u65F6:\u5F3A\u53161\u8BE5\u751F\u7269"
+  displayName: "\u5996\u5200"
+  cardDesc: "\u88AB\u52A8:\u53CB\u65B9\u751F\u7269\u89E6\u53D1\u5F3A\u5316\u53CD\u5E94\u65F6:\u5F3A\u5316
+    <b>1</b> \u8BE5\u751F\u7269"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -69,6 +70,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 1
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &3089107484876557577
 MonoBehaviour:

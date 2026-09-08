@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1051894503065583674
+--- !u!1 &4582993435257664593
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,52 +8,51 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4199592108718759052}
-  - component: {fileID: 525788678675448327}
-  - component: {fileID: 9118459330404902482}
-  - component: {fileID: 6873099381406177769}
+  - component: {fileID: 7390303061270957702}
+  - component: {fileID: 7132977095522047122}
+  - component: {fileID: 5370872044251869634}
+  - component: {fileID: 154958816125120682}
   m_Layer: 0
-  m_Name: CURSE_GARDENER
+  m_Name: REVIVING_STRIKER
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4199592108718759052
+--- !u!4 &7390303061270957702
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1051894503065583674}
+  m_GameObject: {fileID: 4582993435257664593}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4087225813968460694}
-  - {fileID: 5094680207967849013}
+  - {fileID: 8078987151432391691}
+  - {fileID: 2706366807702259305}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &525788678675448327
+--- !u!114 &7132977095522047122
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1051894503065583674}
+  m_GameObject: {fileID: 4582993435257664593}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f47b4b127fc943869d9dbca8f00704e8, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CardScript
+  m_EditorClassIdentifier: 
   cardID: 0
-  cardTypeID: CURSE_GARDENER
-  displayName: "\u517B\u86CA\u4EBA"
-  cardDesc: "\u5F3A\u5316 <b>1</b> \u654C\u65B9\u8BC5\u5492;\u590D\u6D3B <b>1</b>
-    \u654C\u65B9\u8BC5\u5492"
-  rarity: 1
+  cardTypeID: REVIVING_STRIKER
+  displayName: "\u65E0\u5934\u6B66\u751F"
+  cardDesc: "\u653B\u51FB;\u9057\u8A00:\u653B\u51FB\u6B21\u6570 <b>+1</b>,\u590D\u6D3B\u81EA\u8EAB"
+  rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0
@@ -62,15 +61,15 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 080000000b000000
+  myTags: 03000000
   lifeMax: 0
   currentLife: 0
-  printedAttack: 0
+  printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
   attackTimesModThisRound: 0
-  cardType: 0
+  cardType: 1
   isPassive: 0
   utilityKind: 0
   utilityValue: 0
@@ -78,63 +77,63 @@ MonoBehaviour:
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
---- !u!114 &9118459330404902482
+--- !u!114 &5370872044251869634
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1051894503065583674}
+  m_GameObject: {fileID: 4582993435257664593}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
+  m_EditorClassIdentifier: 
   event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 9153675265843050035}
+      - m_Target: {fileID: 5669007937377423877}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &6873099381406177769
+--- !u!114 &154958816125120682
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1051894503065583674}
+  m_GameObject: {fileID: 4582993435257664593}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3cc6290dc6e64dadb7d801d93a3ba7a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.GameEventListener
-  event: {fileID: 11400000, guid: b9291c6dab76d934a8dfea097c0df6b4, type: 2}
+  event: {fileID: 11400000, guid: dbdfc6da826817e458050a266ddebda9, type: 2}
   response:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1170345531247958671}
+      - m_Target: {fileID: 2462521406845796423}
         m_TargetAssemblyTypeName: CostNEffectContainer, Assembly-CSharp
         m_MethodName: InvokeEffectEventVoid
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!1 &1896097720706210947
+--- !u!1 &4680901218994177210
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -142,43 +141,44 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5094680207967849013}
-  - component: {fileID: 1170345531247958671}
-  - component: {fileID: 1112272867339097917}
+  - component: {fileID: 2706366807702259305}
+  - component: {fileID: 2462521406845796423}
+  - component: {fileID: 8653670541810737638}
+  - component: {fileID: 8115162125025344088}
   m_Layer: 0
-  m_Name: revive enemy curse
+  m_Name: revive self
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5094680207967849013
+--- !u!4 &2706366807702259305
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1896097720706210947}
+  m_GameObject: {fileID: 4680901218994177210}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4199592108718759052}
+  m_Father: {fileID: 7390303061270957702}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1170345531247958671
+--- !u!114 &2462521406845796423
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1896097720706210947}
+  m_GameObject: {fileID: 4680901218994177210}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
+  m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
   checkCostEvent:
@@ -187,9 +187,10 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1112272867339097917}
-        m_TargetAssemblyTypeName: ReviveEffect, Assembly-CSharp
-        m_MethodName: ReviveTheirCards
+      - m_Target: {fileID: 8115162125025344088}
+        m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackTimesGiverEffect,
+          Assembly-CSharp
+        m_MethodName: GiveSelfAttackTimes
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -199,13 +200,25 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &1112272867339097917
+      - m_Target: {fileID: 8653670541810737638}
+        m_TargetAssemblyTypeName: ReviveEffect, Assembly-CSharp
+        m_MethodName: ReviveSelf
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &8653670541810737638
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1896097720706210947}
+  m_GameObject: {fileID: 4680901218994177210}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5bddc72b2099c374583edd4d0a65f9b5, type: 3}
@@ -213,7 +226,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ReviveEffect
   reviveTargetSide: 0
   creatureFilter: 0
-  typeIDFilter: JU_ON
+  typeIDFilter: 
   sortBy: 0
   rarityFilter: 0
   delayedRevive: 0
@@ -221,7 +234,35 @@ MonoBehaviour:
   tagsToCheck: 
   excludeSelf: 1
   roundEndReviveArmed: 0
---- !u!1 &8804647849581026931
+--- !u!114 &8115162125025344088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4680901218994177210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13cc2ad2dfe135946a0136baeb0a6006, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.AttackTimesGiverEffect
+  myStatusEffectResolverScript: {fileID: 0}
+  canStatusEffectBeStacked: 1
+  statusEffectToGive: 0
+  statusEffectToCount: 0
+  spreadEvenly: 0
+  target: 0
+  includeSelf: 0
+  onlyTargetEnemyDamagingCards: 1
+  lastXCardsCount: 0
+  statusEffectLayerCount: 1
+  xFriendlyCount: 0
+  yFriendlyLayerCount: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  statusEffectParticlePrefab: {fileID: 385316958995927269, guid: a30705ee64466f44f8e3cada1fe3d8fa, type: 3}
+  particleYOffset: 0
+--- !u!1 &7396119830920633787
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -229,43 +270,43 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4087225813968460694}
-  - component: {fileID: 9153675265843050035}
-  - component: {fileID: 931848506903958631}
+  - component: {fileID: 8078987151432391691}
+  - component: {fileID: 5669007937377423877}
+  - component: {fileID: 8285697851654184667}
   m_Layer: 0
-  m_Name: hex 1
+  m_Name: deal dmg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4087225813968460694
+--- !u!4 &8078987151432391691
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8804647849581026931}
+  m_GameObject: {fileID: 7396119830920633787}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4199592108718759052}
+  m_Father: {fileID: 7390303061270957702}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9153675265843050035
+--- !u!114 &5669007937377423877
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8804647849581026931}
+  m_GameObject: {fileID: 7396119830920633787}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a21da06ba55646f29c59d9dbf90834b3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
+  m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
   checkCostEvent:
@@ -274,36 +315,39 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 931848506903958631}
-        m_TargetAssemblyTypeName: DefaultNamespace.Effects.CurseEffect, Assembly-CSharp
-        m_MethodName: EnhanceCurse
-        m_Mode: 3
+      - m_Target: {fileID: 8285697851654184667}
+        m_TargetAssemblyTypeName: AttackEffect, Assembly-CSharp
+        m_MethodName: Attack
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 1
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &931848506903958631
+--- !u!114 &8285697851654184667
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8804647849581026931}
+  m_GameObject: {fileID: 7396119830920633787}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f31b527b368e7342ba80945e347d10a, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f01314777625ad4bb0bc22828e9728c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Effects.CurseEffect
-  cardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
-  countTypeID: {fileID: 0}
-  cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
-  statusEffectResolverPrefab: {fileID: 0}
-  statusEffectParticlePrefab: {fileID: 0}
-  particleYOffset: 0
-  powerCoefficient: 1
+  m_EditorClassIdentifier: Assembly-CSharp::AttackEffect
+  baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
+  dmgAmountAlter: 0
+  healAmountAlter: 0
+  isStatusEffectDamage: 0
+  extraDmg: 0
+  statusEffectToCheck: 0
   ownerIntSO: {fileID: 0}
   enemyIntSO: {fileID: 0}
+  damageDisplayKey: 
+  dynamicDmgDisplaySource: 0
+  dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}

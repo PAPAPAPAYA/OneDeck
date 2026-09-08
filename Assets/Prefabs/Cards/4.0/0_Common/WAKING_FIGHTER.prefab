@@ -143,8 +143,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: WAKING_FIGHTER
-  displayName: "\u68A6\u6E38\u7684\u62F3\u624B"
-  cardDesc: "\u653B\u51FB;\u82CF\u9192:\u5F3A\u5316\u81EA\u8EAB1"
+  displayName: "\u56DE\u9B42\u5C38"
+  cardDesc: "\u653B\u51FB;\u82CF\u9192:\u5F3A\u5316\u81EA\u8EAB <b>1</b>"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -164,6 +164,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &1464549851328018965
 MonoBehaviour:

@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: UTILITY_WEIGHT_R
-  displayName: "\u6B89\u9053\u8005\u7684\u8D5E\u6B4C"
+  displayName: "\u68A6\u9B47\u7F20\u8EAB"
   cardDesc: "\u2726\u2726\u2726\u5361\u7684\u51FA\u8D27\u6743\u91CD <b>\xD72</b>"
   rarity: 2
   shopRollWeightMultiplier: 1

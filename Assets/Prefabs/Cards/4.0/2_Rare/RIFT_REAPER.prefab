@@ -224,8 +224,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: RIFT_REAPER
-  displayName: "\u6328\u4E2A\u7184\u706D\u7684\u706F"
-  cardDesc: "\u653E\u9010\u6240\u6709\u4FE1\u5F92,\u6BCF\u653E\u90101,\u5F3A\u53161\u53CB\u65B9\u751F\u7269"
+  displayName: "\u8840\u98E8"
+  cardDesc: "\u653E\u9010\u6240\u6709\u4FE1\u5F92,\u6BCF\u653E\u9010 <b>1</b>,\u5F3A\u5316
+    <b>1</b> \u53CB\u65B9\u751F\u7269"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -245,6 +246,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &44858219149948961
 MonoBehaviour:

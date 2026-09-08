@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_HP_MAX
-  displayName: "\u65E9\u7761\u65E9\u8D77"
+  displayName: "\u6C89\u9B47"
   cardDesc: "\u88AB\u52A8: \u751F\u547D\u503C\u4E0A\u9650 <b>+4</b>"
   rarity: 0
   shopRollWeightMultiplier: 1

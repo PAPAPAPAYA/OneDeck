@@ -217,7 +217,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: RIFT_INSECT_4.0
-  displayName: "\u95E8\u53E3\u591A\u51FA\u7684\u978B\u5370"
+  displayName: "\u65B0\u7688\u4F9D\u8005"
   cardDesc: "\u653B\u51FB;\u751F\u6210 <b>1</b> \u4FE1\u5F92"
   rarity: 0
   shopRollWeightMultiplier: 1
