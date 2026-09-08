@@ -12,6 +12,7 @@ Assumptions (per user request):
 """
 
 import argparse
+import json
 import os
 import random
 import re
@@ -98,6 +99,134 @@ def card_display(cid):
 def card_rarity(cid):
 	r = CARD_INFO.get(cid, {}).get('rarity')
 	return RARITY_LABELS.get(r, 'Unknown')
+
+
+# ---------------------------------------------------------------------------
+# 4.0 card pool data layer (Step 1 of plan-python-sim-4.0-upgrade-2026-08-31)
+# Trial scope: Common only. Extend TRIAL_RARITY_DIRS for later batches
+# ('1_Uncommon', '2_Rare').
+# ---------------------------------------------------------------------------
+TRIAL_RARITY_DIRS = ('0_Common',)
+
+# EnumStorage.CardType: None=0, Creature=1, Status=2
+CARD_TYPE_CREATURE = 1
+
+_PREFAB_BLOCK_SPLIT = re.compile(r'^--- !u!\d+ &\d+\s*$', re.M)
+# NOTE: cardTypeID may contain a dot (e.g. AVENGER_4.0). The 3.0 loader's
+# [A-Za-z0-9_]+ class silently truncates such IDs; never reuse that class here.
+_CID_RE = re.compile(r'^\s+cardTypeID: ([A-Za-z0-9_.]+)\s*$', re.M)
+_DISPLAY_RE = re.compile(r'^\s+displayName:\s*"(.*)"\s*$', re.M)
+
+
+def _int_field(block, name):
+	m = re.search(r'^\s+%s: (-?\d+)\s*$' % name, block, re.M)
+	return int(m.group(1)) if m else None
+
+
+def _load_card_pool_40():
+	"""Block-scoped prefab parse for the 4.0 card pool.
+
+	Each prefab has exactly one CardScript block; it is identified by holding
+	an inline (non-SO-reference) cardTypeID together with a displayName. Other
+	components (e.g. CurseEffect) also carry a cardTypeID field but as a
+	{fileID/guid} reference, which the inline regex skips.
+	"""
+	script_dir = os.path.dirname(os.path.abspath(__file__))
+	pool = {}
+	for rarity_dir in TRIAL_RARITY_DIRS:
+		full_dir = os.path.join(script_dir, '..', '..', 'Assets', 'Prefabs',
+								'Cards', '4.0', rarity_dir)
+		if not os.path.isdir(full_dir):
+			print(f'[sim4] WARNING: rarity dir not found: {full_dir}')
+			continue
+		for fname in sorted(os.listdir(full_dir)):
+			if not fname.endswith('.prefab'):
+				continue
+			with open(os.path.join(full_dir, fname), 'r', encoding='utf-8',
+					  errors='ignore') as f:
+				text = f.read()
+			blocks = [b for b in _PREFAB_BLOCK_SPLIT.split(text)
+					  if _CID_RE.search(b) and _DISPLAY_RE.search(b)]
+			if len(blocks) != 1:
+				print(f'[sim4] WARNING: {fname}: {len(blocks)} CardScript-like '
+					  f'blocks found, skipped')
+				continue
+			block = blocks[0]
+			cid = _CID_RE.search(block).group(1)
+			m = _DISPLAY_RE.search(block)
+			raw = m.group(1).strip() if m else cid
+			try:
+				display = codecs.decode(raw, 'unicode_escape')
+			except Exception:
+				display = raw
+			card_type = _int_field(block, 'cardType')
+			is_passive = _int_field(block, 'isPassive')
+			utility_kind = _int_field(block, 'utilityKind')
+			pool[cid] = {
+				'cid': cid,
+				'display_name': display or cid,
+				# Rarity by directory is the source of truth; rarity_field is
+				# the CardScript rarity int kept for cross-checking.
+				'rarity': rarity_dir,
+				'rarity_field': _int_field(block, 'rarity'),
+				'printed_attack': _int_field(block, 'printedAttack'),
+				'attack_growth': _int_field(block, 'attackGrowth'),
+				'extra_attack_times': _int_field(block, 'extraAttackTimes'),
+				'card_type': card_type,
+				'is_creature': card_type == CARD_TYPE_CREATURE,
+				'is_passive': bool(is_passive),
+				'utility_kind': utility_kind,
+				# Mirrors CardScript.IsUtilityPassive:
+				# isPassive && utilityKind != UtilityKind.None
+				'is_utility_passive': bool(is_passive)
+					and utility_kind not in (None, 0),
+				'take_up_space': bool(_int_field(block, 'takeUpSpace')),
+				'is_start_card': bool(_int_field(block, 'isStartCard')),
+				'source_file': fname,
+			}
+	return pool
+
+
+CARD_POOL_40 = _load_card_pool_40()
+
+
+def dump_card_pool_40(out_path):
+	"""Write the trial card table as JSON and print a load summary.
+
+	Prints the review lists required by plan Step 1: rarity dir-vs-field
+	mismatch, creatures with missing/zero printed ATK, non-creatures, utility
+	passives, and non-instantiable cards (takeUpSpace=false).
+	"""
+	os.makedirs(os.path.dirname(out_path), exist_ok=True)
+	with open(out_path, 'w', encoding='utf-8') as f:
+		json.dump(sorted(CARD_POOL_40.values(), key=lambda c: c['cid']),
+				  f, ensure_ascii=False, indent='\t')
+		f.write('\n')
+
+	entries = list(CARD_POOL_40.values())
+	print(f'[sim4] trial scope dirs: {", ".join(TRIAL_RARITY_DIRS)}')
+	print(f'[sim4] card table size: {len(entries)}')
+	creatures = [c for c in entries if c['is_creature']]
+	print(f"[sim4] creatures: {len(creatures)}, "
+		  f"non-creatures: {len(entries) - len(creatures)}")
+
+	def _names(items):
+		return ', '.join(f"{c['cid']}({c['display_name']})" for c in items) or '(none)'
+
+	rarity_mismatch = [c for c in entries
+					   if c['rarity_field'] is not None
+					   and not c['rarity'].startswith(str(c['rarity_field']) + '_')]
+	print(f'[sim4] rarity dir-vs-field mismatch: {_names(rarity_mismatch)}')
+	atk_missing = [c for c in creatures if c['printed_attack'] is None]
+	print(f'[sim4] creatures with printedAttack missing: {_names(atk_missing)}')
+	atk_zero = [c for c in creatures if c['printed_attack'] == 0]
+	print(f'[sim4] creatures with printedAttack == 0 (review): {_names(atk_zero)}')
+	passives = [c for c in entries if c['is_utility_passive']]
+	print(f'[sim4] utility passives: {_names(passives)}')
+	non_instantiable = [c for c in entries if not c['take_up_space']]
+	print(f'[sim4] non-instantiable (takeUpSpace=0): {_names(non_instantiable)}')
+	print(f'[sim4] card table written: {out_path}')
+	return entries
 
 
 class Card:
@@ -1552,7 +1681,16 @@ if __name__ == '__main__':
 						help='Formatted report path (auto-named if omitted)')
 	parser.add_argument('--preset', choices=['all', 'none'], default='none',
 						help='Run all preset configs (6/10 with and without 25 HP)')
+	parser.add_argument('--dump-pool', choices=['common40'], default=None,
+						help='Write the 4.0 trial card table to JSON and exit '
+							 '(no simulation)')
 	args = parser.parse_args()
+
+	if args.dump_pool:
+		out_path = os.path.join(base_dir, '..', 'outputs', 'sim4',
+								'prefab_card_table_common.json')
+		dump_card_pool_40(out_path)
+		sys.exit(0)
 
 	if args.preset == 'all':
 		# Run all preset configs

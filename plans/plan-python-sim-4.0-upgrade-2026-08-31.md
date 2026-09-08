@@ -1,7 +1,8 @@
 # Python Sim 升级到 4.0 口径 — 实施计划
 
 日期:2026-08-31
-状态:待确认(按 step-gate 协议,每步完成后停下汇报,等确认再继续)
+状态:执行中(按 step-gate 协议,每步完成后停下汇报,等确认再继续)
+试样范围调整(2026-09-08):先以仅 Common 卡小范围走通 Step 1-6 全链,验证后再扩 U/R(`TRIAL_RARITY_DIRS` 单点控制)。注意池子已较本计划写作时扩容,数量以当时 prefab/Notion 实测为准
 目标文件:`tools/scripts/one_deck_damage_sim.py`(现有 3.0 口径,1590 行)
 
 ## 1. 背景与目标
@@ -50,6 +51,8 @@
 - 产出一张 4.0 卡表(脚本内 dict),并与 Notion DB 的 87 张对数,缺失/多余显式报出
 - 已知数据风险:`GRAVE_PUNCH` printedAttack=2 存在用户本地未定改动,建模时单独标注
 - 验收:卡表数量与池子一致,ATK 缺失卡清单人工过目
+
+**执行结果(2026-09-08,仅 Common 试样)**:完成。块作用域解析器按「内联 cardTypeID + displayName」定位 CardScript 组件(30/30 唯一;CurseEffect 的同名字段是 SO 引用会被内联正则跳过);cardTypeID 字符类须含点号(`AVENGER_4.0` 等 6 张,旧 3.0 加载器会静默截断成 `AVENGER_4`——遗留 bug,3.0 路径暂未修)。产出:`--dump-pool common40` → `tools/outputs/sim4/prefab_card_table_common.json`(30 张=20 生物/10 非生物,rarity 目录↔字段零漂移);对数 `sim4_reconcile_pool.py` vs Notion 快照 `notion_common_snapshot_2026-09-08.json` 全绿(缺失/多余/ATK/生物 flag 零漂移;中文名尾 `*` 为用户圈改标记已剥离)。风险闭环:GRAVE_PUNCH prefab=2=DB=2,已对齐。打印清单供人工过目:ATK=0 生物 3 张(CURSE_REVIVER/HEXER/SACRIFICIAL_SPIRIT,与 DB 一致)、utility 被动 7 张、takeUpSpace=0 1 张(卡位扩张)。
 
 ### Step 2 — 状态与区域引擎升级
 
