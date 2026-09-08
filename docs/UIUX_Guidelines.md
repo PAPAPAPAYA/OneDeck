@@ -1,6 +1,6 @@
 # OneDeck UI/UX Guidelines
 
-Frozen decision record for OneDeck UI interaction feel, distilled from the executable spec `docs/demo/UIKitDemo.html` (v0.7, 2026-09-06). The demo remains the interactive tuning surface — tune there, then sync the numbers here and into the Unity implementation. Card-flight and shop↔combat phase-transition motion are specced separately in `docs/demo/PhaseTransitionDemo.html` (no Unity port plan yet) and are out of scope here.
+Frozen decision record for OneDeck UI interaction feel, distilled from the executable spec `docs/demo/UIKitDemo.html` (v0.8, 2026-09-08). The demo remains the interactive tuning surface — tune there, then sync the numbers here and into the Unity implementation. Card-flight and shop↔combat phase-transition motion are specced separately in `docs/demo/PhaseTransitionDemo.html` (no Unity port plan yet) and are out of scope here.
 
 ## R0. Light Source (inviolable)
 
@@ -94,7 +94,7 @@ Zones, top to bottom:
 
 1. **Art zone** — dark rounded box (illustration placeholder), 56% of card height.
 2. **Rarity** — ✦×1–3, right-aligned just under the art's bottom-right.
-3. **Effect text** — automatic `> ` prefix (authored marker, not part of `cardDesc`), clamps to 2 lines. The rarity row flex-grows to absorb free space, so the effect **hugs the divider and a second line grows upward**. Cards with no effect **omit the effect row entirely** (no dangling `>`).
+3. **Effect text** — automatic `> ` prefix (authored marker, not part of `cardDesc`), wraps to full text — **never truncated**. The rarity row flex-grows to absorb free space (and shrinks first when the effect needs more lines), so the effect **hugs the divider and extra lines grow upward**. Cards with no effect **omit the effect row entirely** (no dangling `>`).
 4. **Divider**.
 5. **Bottom row** — name (left, bold, squashed horizontally to fit on overflow — never ellipsized, no squash floor) + attack (right, same baseline, larger font).
 
@@ -104,7 +104,7 @@ Layout rules:
 - Card interaction physics are identical to buttons (same state machine).
 - Price and other shop attachments hang **outside** the card face, never inside it.
 - Open question: rarity-star readability once real illustrations land.
-- Unity port (2026-09-05, `plans/plan-card-template-v1.1-port-2026-09-05.md`): implemented on `PhysicalCardParent.prefab`. Adaptations: rarity sits under the actual art-image bottom (the image is kept larger than the demo's 56% zone); `✦`/`…` glyphs come from a bundled Noto Sans Symbols 2 fallback font; cardDesc text must use halfwidth punctuation only (no fullwidth glyph coverage).
+- Unity port (2026-09-05, `plans/plan-card-template-v1.1-port-2026-09-05.md`): implemented on `PhysicalCardParent.prefab`. Adaptations: rarity sits under the actual art-image bottom (the image is kept larger than the demo's 56% zone); `✦` glyph comes from a bundled Noto Sans Symbols 2 fallback font; cardDesc text must use halfwidth punctuation only (no fullwidth glyph coverage).
 
 ### 3.3 Price-Button Buy/Sell
 
@@ -144,7 +144,9 @@ Layout rules:
 
 ## Version History
 
-- v0.7 · 2026-09-06 · Card-name overflow: ellipsis replaced by unlimited horizontal squash (demo `scaleX`; Unity `TMP_Text.characterHorizontalScale` in `CardPhysObjScript.FitCardNamePrint`, plan `plans/plan-card-name-horizontal-squash-2026-09-06.md`). Desc 2-line clamp keeps its `…`.
+- v0.8 · 2026-09-08 · Card effect text: 2-line `…` clamp removed — desc wraps to full text, never truncated (Unity: desc TMP overflow Ellipsis→Overflow via `PhysicalCardParent.prefab` override; demo `.card-effect` line-clamp removed, rarity row shrinks first). See 3.2.
+
+- v0.7 · 2026-09-06 · Card-name overflow: ellipsis replaced by unlimited horizontal squash (demo `scaleX`; Unity `TMP_Text.characterHorizontalScale` in `CardPhysObjScript.FitCardNamePrint`, plan `plans/plan-card-name-horizontal-squash-2026-09-06.md`). Desc 2-line clamp keeps its `…` (removed in v0.8).
 
 - v0.6 · 2026-09-05 · Buy/sell dropped long-press for price-button single click (section 04 rewritten; `lpThreshold` param and `lp-fill` removed); added section 08 shop page (2026-09-05 mockup layout; all interaction params referenced from the global bar).
 

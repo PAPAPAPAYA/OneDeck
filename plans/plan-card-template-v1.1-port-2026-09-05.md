@@ -72,3 +72,4 @@ Card-local space: face spans x∈[-1.6, 1.6], y∈[-2.3, 2.3]; prints use RectTr
 ## Follow-ups
 
 - 2026-09-06 · Card-name overflow switched from Ellipsis to unlimited horizontal squash (`TMP_Text.characterHorizontalScale` via `CardPhysObjScript.FitCardNamePrint`; inert `m_charWidthMaxAdj` override removed). UIKitDemo v0.7 / UIUX_Guidelines v0.7 synced. Plan: `plans/plan-card-name-horizontal-squash-2026-09-06.md`. The desc print's 2-line `…` clamp is unchanged.
+- 2026-09-08 · Desc multi-line: the desc print's 2-line `…` clamp removed (desc TMP overflow Ellipsis->Overflow via the `PhysicalCardParent.prefab` instance override; name override untouched). UIKitDemo v0.8 / UIUX_Guidelines v0.8 synced.

@@ -1732,15 +1732,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 0.24
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0
+      value: -4.12
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.25
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1776,12 +1776,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 2424560831447566516, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 1590914822883340471, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 8652292240949848764, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1 &297125757
 GameObject:
@@ -5847,10 +5862,10 @@ MonoBehaviour:
   overrideShuffleOrder: 0
   useTestEnemyDeck: 0
   autoReveal: 1
-  recordShopStats: 0
-  recordWinRate: 0
-  recordCombatCSV: 0
-  uploadServerData: 0
+  recordShopStats: 1
+  recordWinRate: 1
+  recordCombatCSV: 1
+  uploadServerData: 1
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
@@ -6999,7 +7014,7 @@ MonoBehaviour:
   onAnyCardRevealed: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   records: []
-  exportToCSV: 0
+  exportToCSV: 1
   outputDirectory: CombatLogs
   printToConsole: 0
 --- !u!114 &1151980349
@@ -8910,8 +8925,8 @@ MonoBehaviour:
   gravePosition: {fileID: 490140365}
   cardDestroyAnimDuration: 0.3
   cardDestroyTargetSize: {x: 1, y: 1, z: 1}
-  popUpYOffset: 1.8
-  popUpXOffset: 1.8
+  popUpYOffset: 0
+  popUpXOffset: 3
   popUpZBoost: 0
   batchMoveStagger: 0.06
   popUpScaleMultiplier: 1.1
@@ -9010,7 +9025,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dd6cf277ef043d7adc973cb91e8e02d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableStats: 0
+  enableStats: 1
   resetOnStart: 0
   printOnSave: 0
 --- !u!4 &1457153434
@@ -13088,7 +13103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d687fc62e6070d4d84e72e916f682f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  switchOnTracking: 0
+  switchOnTracking: 1
   resetOnStart: 0
   printOnSave: 0
 --- !u!4 &2103892657
