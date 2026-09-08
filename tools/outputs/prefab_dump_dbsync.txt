@@ -1,0 +1,429 @@
+=== AVENGER_4.0 ===
+[AVENGER_4.0]
+  <CardScript>
+    cardID = 0
+    cardTypeID = "AVENGER_4.0"
+    displayName = "长高的坟头"
+    cardDesc = "揭晓时:攻击;遗言:强化自身 <b>2</b>"
+    rarity = Common/0
+    shopRollWeightMultiplier = 1
+    takeUpSpace = True
+    isStartCard = False
+    isMinion = False
+    myStatusRef = null
+    theirStatusRef = null
+    myStatusEffects = {}
+    displayMyStatusEffects = {}
+    myTags = {}
+    lifeMax = 0
+    currentLife = 0
+    printedAttack = 1
+    attackGrowth = 0
+    attackModThisRound = 0
+    extraAttackTimes = 0
+    attackTimesModThisRound = 0
+    cardType = Creature/1
+    isPassive = False
+    utilityKind = None/0
+    utilityValue = 0
+    utilityValue2 = 0
+    utilityRarityWeightMults = {}
+    reservedTag = None/0
+    attackSnapshotValue = -1
+  <GameEventListener>
+    event = OnMeRevealed(GameEvent)
+    response = {}
+  <GameEventListener>
+    event = OnMeBuried(GameEvent)
+    response = {}
+  [deal dmg]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> AttackEffect, Assembly-CSharp.Attack
+    <AttackEffect>
+      baseDmg = BaseDmgRef(IntSO)
+      dmgAmountAlter = 0
+      healAmountAlter = 0
+      isStatusEffectDamage = False
+      extraDmg = 0
+      statusEffectToCheck = None/0
+      ownerIntSO = null
+      enemyIntSO = null
+      damageDisplayKey = ""
+      dynamicDmgDisplaySource = None/0
+      dynamicDmgDisplayMultiplyByPower = False
+      curseEngine = null
+  [gain power]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> DefaultNamespace.Effects.AttackGiverEffect, Assembly-CSharp.GiveSelfAttack
+    <AttackGiverEffect>
+      myStatusEffectResolverScript = null
+      canStatusEffectBeStacked = True
+      statusEffectToGive = Power/4
+      statusEffectToCount = None/0
+      spreadEvenly = False
+      target = Me/0
+      includeSelf = False
+      onlyTargetEnemyDamagingCards = False
+      lastXCardsCount = 0
+      statusEffectLayerCount = 1
+      xFriendlyCount = 0
+      yFriendlyLayerCount = 1
+      ownerIntSO = null
+      enemyIntSO = null
+      statusEffectParticlePrefab = PS_PowerWispWIP(ParticleSystem)
+      particleYOffset = 0
+=== SOLDIER_SKELETON_4.0 ===
+[SOLDIER_SKELETON_4.0]
+  <CardScript>
+    cardID = 0
+    cardTypeID = "SOLDIER_SKELETON_4.0"
+    displayName = "换岗的哨兵"
+    cardDesc = "揭晓时:攻击;遗言:置顶自身"
+    rarity = Common/0
+    shopRollWeightMultiplier = 1
+    takeUpSpace = True
+    isStartCard = False
+    isMinion = False
+    myStatusRef = null
+    theirStatusRef = null
+    myStatusEffects = {}
+    displayMyStatusEffects = {}
+    myTags = {}
+    lifeMax = 0
+    currentLife = 0
+    printedAttack = 2
+    attackGrowth = 0
+    attackModThisRound = 0
+    extraAttackTimes = 0
+    attackTimesModThisRound = 0
+    cardType = Creature/1
+    isPassive = False
+    utilityKind = None/0
+    utilityValue = 0
+    utilityValue2 = 0
+    utilityRarityWeightMults = {}
+    reservedTag = None/0
+    attackSnapshotValue = -1
+  <GameEventListener>
+    event = OnMeRevealed(GameEvent)
+    response = {}
+  <GameEventListener>
+    event = OnMeBuried(GameEvent)
+    response = {}
+  [deal dmg]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> AttackEffect, Assembly-CSharp.Attack
+    <AttackEffect>
+      baseDmg = BaseDmgRef(IntSO)
+      dmgAmountAlter = 0
+      healAmountAlter = 0
+      isStatusEffectDamage = False
+      extraDmg = 0
+      statusEffectToCheck = None/0
+      ownerIntSO = null
+      enemyIntSO = null
+      damageDisplayKey = ""
+      dynamicDmgDisplaySource = None/0
+      dynamicDmgDisplayMultiplyByPower = False
+      curseEngine = null
+  [stage self]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> StageEffect, Assembly-CSharp.StageSelf
+    <StageEffect>
+      tagToCheck = None/0
+      targetFriendly = False
+      statusEffectToCheck = None/0
+      excludeSelf = True
+      creatureOnly = False
+      creatureFilter = Any/0
+      ownerIntSO = null
+      enemyIntSO = null
+      roundEndStageArmed = False
+=== LAST_GIFT ===
+[LAST_GIFT]
+  <CardScript>
+    cardID = 0
+    cardTypeID = "LAST_GIFT"
+    displayName = "遗物整理师"
+    cardDesc = "攻击;遗言:强化1友方生物"
+    rarity = Common/0
+    shopRollWeightMultiplier = 1
+    takeUpSpace = True
+    isStartCard = False
+    isMinion = False
+    myStatusRef = null
+    theirStatusRef = null
+    myStatusEffects = {}
+    displayMyStatusEffects = {}
+    myTags = {}
+    lifeMax = 0
+    currentLife = 0
+    printedAttack = 2
+    attackGrowth = 0
+    attackModThisRound = 0
+    extraAttackTimes = 0
+    attackTimesModThisRound = 0
+    cardType = Creature/1
+    isPassive = False
+    utilityKind = None/0
+    utilityValue = 0
+    utilityValue2 = 0
+    utilityRarityWeightMults = {}
+    reservedTag = None/0
+    attackSnapshotValue = -1
+  <GameEventListener>
+    event = OnMeRevealed(GameEvent)
+    response = {}
+  <GameEventListener>
+    event = OnMeBuried(GameEvent)
+    response = {}
+  [attack]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> AttackEffect, Assembly-CSharp.Attack
+    <AttackEffect>
+      baseDmg = BaseDmgRef(IntSO)
+      dmgAmountAlter = 0
+      healAmountAlter = 0
+      isStatusEffectDamage = False
+      extraDmg = 0
+      statusEffectToCheck = None/0
+      ownerIntSO = null
+      enemyIntSO = null
+      damageDisplayKey = ""
+      dynamicDmgDisplaySource = None/0
+      dynamicDmgDisplayMultiplyByPower = False
+      curseEngine = null
+  [gift boost 1 creature]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> DefaultNamespace.Effects.AttackGiverEffect, Assembly-CSharp.GiveAttackToXFriendly
+    <AttackGiverEffect>
+      myStatusEffectResolverScript = null
+      canStatusEffectBeStacked = True
+      statusEffectToGive = None/0
+      statusEffectToCount = None/0
+      spreadEvenly = False
+      target = Me/0
+      includeSelf = False
+      onlyTargetEnemyDamagingCards = True
+      lastXCardsCount = 0
+      statusEffectLayerCount = 1
+      xFriendlyCount = 1
+      yFriendlyLayerCount = 1
+      ownerIntSO = null
+      enemyIntSO = null
+      statusEffectParticlePrefab = PS_PowerWispWIP(ParticleSystem)
+      particleYOffset = 0
+=== TWIN_STRIKER ===
+[TWIN_STRIKER]
+  <CardScript>
+    cardID = 0
+    cardTypeID = "TWIN_STRIKER"
+    displayName = "一对纸人"
+    cardDesc = "揭晓时:攻击x2"
+    rarity = Common/0
+    shopRollWeightMultiplier = 1
+    takeUpSpace = True
+    isStartCard = False
+    isMinion = False
+    myStatusRef = null
+    theirStatusRef = null
+    myStatusEffects = {}
+    displayMyStatusEffects = {}
+    myTags = {}
+    lifeMax = 0
+    currentLife = 0
+    printedAttack = 1
+    attackGrowth = 0
+    attackModThisRound = 0
+    extraAttackTimes = 1
+    attackTimesModThisRound = 0
+    cardType = Creature/1
+    isPassive = False
+    utilityKind = None/0
+    utilityValue = 0
+    utilityValue2 = 0
+    utilityRarityWeightMults = {}
+    reservedTag = None/0
+    attackSnapshotValue = -1
+  <GameEventListener>
+    event = OnMeRevealed(GameEvent)
+    response = {}
+  [attack]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> AttackEffect, Assembly-CSharp.Attack
+    <AttackEffect>
+      baseDmg = BaseDmgRef(IntSO)
+      dmgAmountAlter = 0
+      healAmountAlter = 0
+      isStatusEffectDamage = False
+      extraDmg = 0
+      statusEffectToCheck = None/0
+      ownerIntSO = null
+      enemyIntSO = null
+      damageDisplayKey = ""
+      dynamicDmgDisplaySource = None/0
+      dynamicDmgDisplayMultiplyByPower = False
+      curseEngine = null
+=== WAR_TRAINER ===
+[WAR_TRAINER]
+  <CardScript>
+    cardID = 0
+    cardTypeID = "WAR_TRAINER"
+    displayName = "点眼的扎纸匠"
+    cardDesc = "强化 <b>2</b> 友方生物"
+    rarity = Common/0
+    shopRollWeightMultiplier = 1
+    takeUpSpace = True
+    isStartCard = False
+    isMinion = False
+    myStatusRef = null
+    theirStatusRef = null
+    myStatusEffects = {}
+    displayMyStatusEffects = {}
+    myTags = {}
+    lifeMax = 0
+    currentLife = 0
+    printedAttack = 0
+    attackGrowth = 0
+    attackModThisRound = 0
+    extraAttackTimes = 0
+    attackTimesModThisRound = 0
+    cardType = None/0
+    isPassive = False
+    utilityKind = None/0
+    utilityValue = 0
+    utilityValue2 = 0
+    utilityRarityWeightMults = {}
+    reservedTag = None/0
+    attackSnapshotValue = -1
+  <GameEventListener>
+    event = OnMeRevealed(GameEvent)
+    response = {}
+  [apply power to friendly]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> DefaultNamespace.Effects.AttackGiverEffect, Assembly-CSharp.GiveAttackToXFriendly
+    <AttackGiverEffect>
+      myStatusEffectResolverScript = null
+      canStatusEffectBeStacked = True
+      statusEffectToGive = Power/4
+      statusEffectToCount = None/0
+      spreadEvenly = False
+      target = Me/0
+      includeSelf = False
+      onlyTargetEnemyDamagingCards = True
+      lastXCardsCount = 0
+      statusEffectLayerCount = 0
+      xFriendlyCount = 2
+      yFriendlyLayerCount = 1
+      ownerIntSO = null
+      enemyIntSO = null
+      statusEffectParticlePrefab = null
+      particleYOffset = 0
+=== UNDYING_WARRIOR ===
+[UNDYING_WARRIOR]
+  <CardScript>
+    cardID = 0
+    cardTypeID = "UNDYING_WARRIOR"
+    displayName = "没拉平的心电图"
+    cardDesc = "攻击;强化反应:复活自身"
+    rarity = Uncommon/1
+    shopRollWeightMultiplier = 1
+    takeUpSpace = True
+    isStartCard = False
+    isMinion = False
+    myStatusRef = null
+    theirStatusRef = null
+    myStatusEffects = {}
+    displayMyStatusEffects = {}
+    myTags = {}
+    lifeMax = 0
+    currentLife = 0
+    printedAttack = 2
+    attackGrowth = 0
+    attackModThisRound = 0
+    extraAttackTimes = 0
+    attackTimesModThisRound = 0
+    cardType = Creature/1
+    isPassive = False
+    utilityKind = None/0
+    utilityValue = 0
+    utilityValue2 = 0
+    utilityRarityWeightMults = {}
+    reservedTag = None/0
+    attackSnapshotValue = -1
+  <GameEventListener>
+    event = OnMeRevealed(GameEvent)
+    response = {}
+  <GameEventListener>
+    event = OnMeGainedAttack(GameEvent)
+    response = {}
+  [attack]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> AttackEffect, Assembly-CSharp.AttackTimes
+    <AttackEffect>
+      baseDmg = null
+      dmgAmountAlter = 0
+      healAmountAlter = 0
+      isStatusEffectDamage = False
+      extraDmg = 0
+      statusEffectToCheck = None/0
+      ownerIntSO = null
+      enemyIntSO = null
+      damageDisplayKey = ""
+      dynamicDmgDisplaySource = None/0
+      dynamicDmgDisplayMultiplyByPower = False
+      curseEngine = null
+  [gained attack revive self]
+    <CostNEffectContainer>
+      cursedCardTypeID = CurseCardTypeID(StringSO)
+      targetCardTypeID = null
+      checkCostEvent = {}
+      effectEvent = {}
+      CALL -> ReviveEffect, Assembly-CSharp.ReviveSelf
+    <ReviveEffect>
+      reviveTargetSide = MyCards/0
+      creatureFilter = Any/0
+      typeIDFilter = ""
+      sortBy = None/0
+      rarityFilter = Any/0
+      delayedRevive = False
+      onlyEnhanced = False
+      tagsToCheck = {}
+      excludeSelf = True
+      roundEndReviveArmed = False

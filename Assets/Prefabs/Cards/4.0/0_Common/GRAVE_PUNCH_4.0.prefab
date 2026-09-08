@@ -224,7 +224,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: GRAVE_PUNCH_4.0
   displayName: "\u6CA1\u6709\u6307\u7EB9\u7684\u51F6\u5668"
-  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9;\u653B\u51FBx2"
+  cardDesc: "\u57CB\u846C <b>1</b> \u53CB\u65B9;\u653B\u51FBx2"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

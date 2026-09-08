@@ -51,7 +51,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SOLDIER_SKELETON_4.0
   displayName: "\u6362\u5C97\u7684\u54E8\u5175"
-  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u7F6E\u9876\u81EA\u8EAB"
+  cardDesc: "\u653B\u51FB;\u9057\u8A00:\u590D\u6D3B\u81EA\u8EAB"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -71,6 +71,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &8431927357915259560
 MonoBehaviour:
@@ -138,7 +143,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4894302701637556277}
   - component: {fileID: 6746105684176024460}
-  - component: {fileID: 4121551992451285072}
+  - component: {fileID: 2857830949811547081}
   m_Layer: 0
   m_Name: stage self
   m_TagString: Untagged
@@ -181,19 +186,19 @@ MonoBehaviour:
   effectEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4121551992451285072}
-        m_TargetAssemblyTypeName: StageEffect, Assembly-CSharp
-        m_MethodName: StageSelf
+      - m_Target: {fileID: 2857830949811547081}
+        m_TargetAssemblyTypeName: ReviveEffect, Assembly-CSharp
+        m_MethodName: ReviveSelf
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &4121551992451285072
+--- !u!114 &2857830949811547081
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -202,18 +207,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 5780913155076087003}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3a0740a9b73dd443a6fbc9622737ccb, type: 3}
+  m_Script: {fileID: 11500000, guid: 5bddc72b2099c374583edd4d0a65f9b5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StageEffect
-  tagToCheck: 0
-  targetFriendly: 0
-  statusEffectToCheck: 0
-  excludeSelf: 1
-  creatureOnly: 0
+  m_EditorClassIdentifier: Assembly-CSharp::ReviveEffect
+  reviveTargetSide: 0
   creatureFilter: 0
-  ownerIntSO: {fileID: 0}
-  enemyIntSO: {fileID: 0}
-  roundEndStageArmed: 0
+  typeIDFilter: 
+  sortBy: 0
+  rarityFilter: 0
+  delayedRevive: 0
+  onlyEnhanced: 0
+  tagsToCheck: 
+  excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &6104817254870906991
 GameObject:
   m_ObjectHideFlags: 0

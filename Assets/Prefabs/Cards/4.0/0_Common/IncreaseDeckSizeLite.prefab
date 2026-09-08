@@ -129,7 +129,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_DECK_SIZE_LITE
   displayName: "\u5361\u4F4D\u6269\u5F20"
-  cardDesc: "\u8D2D\u4E70\u540E\u5361\u4F4D\u4E0A\u9650 <b>+1</b>,\u672C\u5361\u5373\u523B\u81EA\u6211\u6D88\u8017(\u4E0D\u5165\u5361\u7EC4);\u4EF7\u683C\u968F\u672C\u6B21\u5192\u9669\u7684\u5DF2\u8D2D\u6B21\u6570\u9012\u589E,\u8FBE\u4E0A\u9650\u540E\u505C\u552E"
+  cardDesc: "\u5361\u4F4D <b>+1</b>, \u653E\u9010\u81EA\u8EAB"
   rarity: 0
   shopRollWeightMultiplier: 1.5
   takeUpSpace: 0

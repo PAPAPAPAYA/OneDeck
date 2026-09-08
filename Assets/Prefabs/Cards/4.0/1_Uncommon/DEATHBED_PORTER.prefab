@@ -316,7 +316,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: DEATHBED_PORTER
-  displayName: "\u62AC\u4E0A\u697C\u7684\u7EB8\u522B\u5885"
+  displayName: "\u7EB8\u522B\u5885"
   cardDesc: "\u653B\u51FB;\u9057\u8A00:\u653B\u51FB;\u7F6E\u98761\u53CB\u65B9\u975E\u751F\u7269"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -337,6 +337,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &7024253999828245242
 MonoBehaviour:

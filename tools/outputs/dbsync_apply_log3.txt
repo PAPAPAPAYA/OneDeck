@@ -1,0 +1,10 @@
+LAST_GIFT xFriendlyCount 1 -> 2
+effectEvent field type: UnityEvent
+ReviveSelf found=True params=0
+SOLDIER effectEvent -> ReviveSelf
+SOLDIER StageEffect removed
+MOVED HEXER -> 0_Common
+MOVED GRAVE_HEXER -> 0_Common
+MOVED SACRIFICIAL_SPIRIT -> 0_Common
+ALL SECTIONS DONE
+SaveAssets done

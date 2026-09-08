@@ -47,8 +47,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UTILITY_DISCOUNT_1
   displayName: "\u9ED1\u5E02\u4EA4\u60C5"
-  cardDesc: "\u6BCF\u91CD\u63B7 <b>4</b> \u6B21,\u968F\u673A\u4E00\u4EF6\u5546\u54C1\u964D\u4EF7
-    <b>1</b>(\u4EC5\u5F53\u524D\u8D27\u67B6)"
+  cardDesc: "\u88AB\u52A8: \u6BCF\u91CD\u63B7 <b>4</b> \u6B21,\u968F\u673A\u5546\u54C1\u964D\u4EF7
+    <b>2</b>"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -69,7 +69,7 @@ MonoBehaviour:
   cardType: 0
   isPassive: 1
   utilityKind: 8
-  utilityValue: 1
+  utilityValue: 2
   utilityValue2: 4
   utilityRarityWeightMults: []
   reservedTag: 0

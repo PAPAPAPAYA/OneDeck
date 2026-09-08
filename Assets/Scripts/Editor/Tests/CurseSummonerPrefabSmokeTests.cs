@@ -14,7 +14,7 @@ using UnityEngine;
 public class CurseSummonerPrefabSmokeTests : HeadlessCombatTestFixture
 {
 	private const string SummonerPath = "Assets/Prefabs/Cards/4.0/1_Uncommon/CURSE_SUMMONER.prefab";
-	private const string HexerPath = "Assets/Prefabs/Cards/4.0/1_Uncommon/GRAVE_HEXER.prefab";
+	private const string HexerPath = "Assets/Prefabs/Cards/4.0/0_Common/GRAVE_HEXER.prefab";
 
 	private readonly List<GameObject> _instantiated = new List<GameObject>();
 

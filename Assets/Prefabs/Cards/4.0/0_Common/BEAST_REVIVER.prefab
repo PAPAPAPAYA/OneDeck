@@ -86,6 +86,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &5490173269118527125
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,13 +150,18 @@ MonoBehaviour:
   myTags: 0b000000
   lifeMax: 0
   currentLife: 0
-  printedAttack: 2
+  printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &6699090790420202733
 MonoBehaviour:

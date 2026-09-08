@@ -64,7 +64,7 @@ MonoBehaviour:
   myTags: 0b000000
   lifeMax: 0
   currentLife: 0
-  printedAttack: 2
+  printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
@@ -219,6 +219,7 @@ MonoBehaviour:
   onlyEnhanced: 1
   tagsToCheck: 
   excludeSelf: 1
+  roundEndReviveArmed: 0
 --- !u!1 &8395126044211781015
 GameObject:
   m_ObjectHideFlags: 0

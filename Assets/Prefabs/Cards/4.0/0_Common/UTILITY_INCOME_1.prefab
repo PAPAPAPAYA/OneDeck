@@ -47,7 +47,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UTILITY_INCOME_1
   displayName: "\u6559\u56E2\u6D25\u8D34"
-  cardDesc: "\u6BCF\u573A\u6218\u6597\u540E\u7684\u6536\u5165 <b>+2</b>(\u5728\u5361\u7EC4\u5373\u751F\u6548,\u5356\u51FA\u5373\u5931\u6548)"
+  cardDesc: "\u88AB\u52A8: \u6536\u5165 <b>+2</b>"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

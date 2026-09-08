@@ -88,6 +88,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &3434151309016699902
 GameObject:
   m_ObjectHideFlags: 0
@@ -137,7 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: GRAVE_GIANT
-  displayName: "\u4e0d\u505c\u6ef4\u6c34\u7684\u884c\u674e\u888b"
+  displayName: "\u6EF4\u8840\u7684\u884C\u674E\u888B"
   cardDesc: "\u653B\u51FB\u529B=\u5893\u5730\u53CB\u65B9\u6570\u91CF;\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -158,6 +159,12 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
+  attackSnapshotValue: -1
 --- !u!114 &7382360654368567074
 MonoBehaviour:
   m_ObjectHideFlags: 0

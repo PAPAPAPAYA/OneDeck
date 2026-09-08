@@ -1,0 +1,7 @@
+OK DEATHBED_PORTER.displayName = 纸别墅
+OK GRAVE_GIANT.displayName = 滴血的行李袋
+OK UNFINISHED_ROBOT_4.0.displayName = 生长人偶
+OK DUO_REVIVER.displayName = 阴婚
+LAST_GIFT children: [attack] len=6; [gift boost 1 creature] len=21; 
+EXCEPTION: NullReferenceException: Object reference not set to an instance of an object
+  at MCPDynamicCode.Execute () [0x002b8] in <745776d2857c4431922e4433e1b87484>:0 

@@ -47,7 +47,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UTILITY_SLOT_U_2
   displayName: "\u84DD\u5B57\u62C5\u4FDD"
-  cardDesc: "\u6BCF\u4E2A\u8D27\u67B6\u5FC5\u51FA <b>1</b> \u5F20\u7F55\u89C1(\u84DD)\u5361"
+  cardDesc: "\u6BCF\u4E2A\u8D27\u67B6\u5FC5\u51FA <b>1</b> \u5F20\u2726\u2726\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

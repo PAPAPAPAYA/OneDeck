@@ -142,7 +142,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: WAR_TRAINER
   displayName: "\u70B9\u773C\u7684\u624E\u7EB8\u5320"
-  cardDesc: "\u63ED\u6653\u65F6:\u5F3A\u5316 <b>2</b> \u53CB\u65B9\u751F\u7269"
+  cardDesc: "\u5F3A\u5316 <b>2</b> \u53CB\u65B9\u751F\u7269"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -162,6 +162,11 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
   attackSnapshotValue: -1
 --- !u!114 &6026805604787592377
 MonoBehaviour:

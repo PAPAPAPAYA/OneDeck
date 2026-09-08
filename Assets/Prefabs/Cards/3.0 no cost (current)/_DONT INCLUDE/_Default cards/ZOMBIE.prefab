@@ -50,7 +50,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: ZOMBIE
   displayName: "\u884C\u5C38\u8D70\u8089"
-  cardDesc: 
+  cardDesc: "\u653B\u51FB"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -67,7 +67,15 @@ MonoBehaviour:
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   cardType: 1
+  isPassive: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
+  attackSnapshotValue: -1
 --- !u!114 &5441669692125512743
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -184,6 +192,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &8781300649866145474
 GameObject:
   m_ObjectHideFlags: 0

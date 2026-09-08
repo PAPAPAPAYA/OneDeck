@@ -1,0 +1,10 @@
+SOLDIER desc=揭晓时:攻击;遗言:复活自身
+StageEffect present=False
+ReviveEffect present=True
+excludeSelf=True reviveTargetSide=0 delayedRevive=False onlyEnhanced=False
+container[deal dmg] calls=1
+  -> AttackEffect.Attack
+container[stage self] calls=1
+  -> ReviveEffect.ReviveSelf
+LAST_GIFT xFriendlyCount=2 desc=攻击;遗言:强化2友方生物
+AVENGER extraAttackTimes=1 printedAttack=1 desc=揭晓时:攻击x2;遗言:强化自身 <b>1</b>

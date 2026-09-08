@@ -1,0 +1,21 @@
+CardScript type: CardScript @ Assembly-CSharp
+OK RIFT_ACOLYTE.printedAttack = 1 (ATK 2->1)
+OK ELITE_REVIVER.printedAttack = 1 (ATK 2->1)
+OK BEAST_REVIVER.printedAttack = 1 (ATK 2->1)
+OK RIFT_SHEPHERD.printedAttack = 1 (ATK 2->1)
+OK RIFT_INSECT_4.0.printedAttack = 2 (ATK 3->2)
+FAIL load Assets/Prefabs/Cards/4.0/0_Common/DEATHBED_PORTER.prefab
+FAIL load Assets/Prefabs/Cards/4.0/0_Common/GRAVE_GIANT.prefab
+OK RELIC_CHAIN_BURIAL.displayName = 水鬼 (name)
+FAIL load Assets/Prefabs/Cards/4.0/1_Uncommon/UNFINISHED_ROBOT_4.0.prefab
+FAIL load Assets/Prefabs/Cards/4.0/0_Common/DUO_REVIVER.prefab
+OK HEXER.rarity = 0 (rarity 1->0)
+OK GRAVE_HEXER.rarity = 0 (rarity 1->0)
+OK SACRIFICIAL_SPIRIT.rarity = 0 (rarity 1->0)
+OK AVENGER_4.0.extraAttackTimes = 1 (attackTimes 0->1)
+OK AVENGER_4.0.cardDesc = 揭晓时:攻击x2;遗言:强化自身 <b>1</b> (desc)
+OK LAST_GIFT.cardDesc = 攻击;遗言:强化2友方生物 (desc)
+OK SOLDIER_SKELETON_4.0.cardDesc = 揭晓时:攻击;遗言:复活自身 (desc)
+FAIL LAST_GIFT child not found
+EXCEPTION: NullReferenceException: Object reference not set to an instance of an object
+  at MCPDynamicCode.Execute () [0x005af] in <22c709f1a9f74591ab31c0ff4e269bad>:0 

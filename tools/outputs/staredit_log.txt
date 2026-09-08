@@ -1,0 +1,6 @@
+OK UTILITY_SLOT_R desc = 每 <b>3</b> 个货架必出 <b>1</b> 张✦✦✦卡
+OK UTILITY_WEIGHT_R desc = ✦✦✦卡的出货权重 <b>×2</b>
+OK UTILITY_WEIGHT_U desc = ✦✦卡的出货权重 <b>×2</b>
+OK UTILITY_SLOT_U_2 desc = 每个货架必出 <b>1</b> 张✦✦卡
+FAIL load Assets/Prefabs/Cards/4.0/1_Uncommon/UTILITY_SLOT_U_1.prefab
+SaveAssets done

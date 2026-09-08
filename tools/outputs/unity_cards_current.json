@@ -5,7 +5,7 @@
   "displayName": "长高的坟头",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:攻击;遗言:强化自身    <b>1</b>",
+  "cardDesc": "攻击x2;遗言:强化自身 <b>1</b>",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
@@ -17,7 +17,7 @@
   "rarity": "0",
   "rarityName": "normal",
   "cardDesc": "攻击;复活 <b>1</b> 生物友方",
-  "printedAttack": "2",
+  "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
  },
@@ -27,8 +27,19 @@
   "displayName": "巷口的磨刀人",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:攻击;强化 <b>1</b> 友方生物",
+  "cardDesc": "攻击;强化 <b>1</b> 友方生物",
   "printedAttack": "2",
+  "cardType": "1",
+  "folder": "0_Common"
+ },
+ {
+  "file": "CURSE_REVIVER",
+  "cardTypeID": "CURSE_REVIVER",
+  "displayName": "洗不掉的印子",
+  "rarity": "0",
+  "rarityName": "normal",
+  "cardDesc": "攻击;复活1敌方诅咒",
+  "printedAttack": "0",
   "cardType": "1",
   "folder": "0_Common"
  },
@@ -39,7 +50,7 @@
   "rarity": "0",
   "rarityName": "normal",
   "cardDesc": "攻击;复活1被强化友方生物",
-  "printedAttack": "2",
+  "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
  },
@@ -49,7 +60,7 @@
   "displayName": "还没停的挖掘机",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:攻击;埋葬卡组顶 <b>3</b>    卡",
+  "cardDesc": "攻击;埋葬卡组顶 <b>3</b> 卡",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "0_Common"
@@ -60,9 +71,20 @@
   "displayName": "替死鬼",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方;攻击",
+  "cardDesc": "埋葬 <b>1</b> 友方;攻击",
   "printedAttack": "4",
   "cardType": "1",
+  "folder": "0_Common"
+ },
+ {
+  "file": "GRAVE_HEXER",
+  "cardTypeID": "GRAVE_HEXER",
+  "displayName": "白事先生",
+  "rarity": "0",
+  "rarityName": "normal",
+  "cardDesc": "复活1友方;强化2敌方诅咒",
+  "printedAttack": "0",
+  "cardType": "0",
   "folder": "0_Common"
  },
  {
@@ -71,8 +93,19 @@
   "displayName": "没有指纹的凶器",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方;攻击x2",
+  "cardDesc": "埋葬 <b>1</b> 友方;攻击x2",
   "printedAttack": "2",
+  "cardType": "1",
+  "folder": "0_Common"
+ },
+ {
+  "file": "HEXER",
+  "cardTypeID": "HEXER",
+  "displayName": "对面楼的那场火",
+  "rarity": "0",
+  "rarityName": "normal",
+  "cardDesc": "攻击;强化 <b>3</b> 敌方诅咒",
+  "printedAttack": "0",
   "cardType": "1",
   "folder": "0_Common"
  },
@@ -82,7 +115,7 @@
   "displayName": "卡位扩张",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "购买后卡位上限 <b>+1</b>,本卡即刻自我消耗(不入卡组);价格随本次冒险的已购次数递增,达上限后停售",
+  "cardDesc": "卡位 <b>+1</b>, 放逐自身",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -93,7 +126,7 @@
   "displayName": "早睡早起",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "生命值上限 <b>+4</b>(常驻:在卡组即生效,卖出即失效)",
+  "cardDesc": "被动: 生命值上限 <b>+4</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -104,7 +137,7 @@
   "displayName": "遗物整理师",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击;遗言:强化1友方生物",
+  "cardDesc": "攻击;遗言:强化2友方生物",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "0_Common"
@@ -115,8 +148,8 @@
   "displayName": "自己签满的签到表",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击;生成1信徒;苏醒:生成2信徒",
-  "printedAttack": "2",
+  "cardDesc": "攻击;生成1信徒;苏醒:生成1信徒",
+  "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
  },
@@ -126,8 +159,8 @@
   "displayName": "门口多出的鞋印",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:攻击;生成 <b>1</b> 信徒",
-  "printedAttack": "3",
+  "cardDesc": "攻击;生成 <b>1</b> 信徒",
+  "printedAttack": "2",
   "cardType": "1",
   "folder": "0_Common"
  },
@@ -138,7 +171,18 @@
   "rarity": "0",
   "rarityName": "normal",
   "cardDesc": "攻击;复活 <b>1</b> 张tag为[<tag:Believer>]的友方卡",
-  "printedAttack": "2",
+  "printedAttack": "1",
+  "cardType": "1",
+  "folder": "0_Common"
+ },
+ {
+  "file": "SACRIFICIAL_SPIRIT",
+  "cardTypeID": "SACRIFICIAL_SPIRIT",
+  "displayName": "陪葬的活物",
+  "rarity": "0",
+  "rarityName": "normal",
+  "cardDesc": "攻击;埋葬 <b>1</b> 友方;强化 <b>5</b>    敌方诅咒",
+  "printedAttack": "0",
   "cardType": "1",
   "folder": "0_Common"
  },
@@ -148,7 +192,7 @@
   "displayName": "换岗的哨兵",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:攻击;遗言:置顶自身",
+  "cardDesc": "攻击;遗言:复活自身",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "0_Common"
@@ -159,7 +203,7 @@
   "displayName": "医学院的标本",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:攻击;遗言:攻击x2",
+  "cardDesc": "攻击;遗言:攻击x2",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "0_Common"
@@ -181,7 +225,7 @@
   "displayName": "一对纸人",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:攻击x2",
+  "cardDesc": "攻击x2",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
@@ -192,7 +236,7 @@
   "displayName": "黑市交情",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "每重掷 <b>4</b> 次,随机一件商品降价    <b>1</b>(仅当前货架)",
+  "cardDesc": "被动: 每重掷 <b>4</b> 次,随机商品降价    <b>2</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -203,7 +247,7 @@
   "displayName": "教团津贴",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "每场战斗后的收入 <b>+2</b>(在卡组即生效,卖出即失效)",
+  "cardDesc": "被动: 收入 <b>+2</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -214,7 +258,7 @@
   "displayName": "帷幕之后",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "每家商店的首个货架必为<b>奇物架</b>",
+  "cardDesc": "被动: 首个货架必为<b>奇物架</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -225,7 +269,7 @@
   "displayName": "摊位契约",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "商店货架的通用槽位 <b>+1</b>",
+  "cardDesc": "被动: 商店货架 <b>+1</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -236,7 +280,7 @@
   "displayName": "重掷许可",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "每家商店的免费重掷次数 <b>+1</b>",
+  "cardDesc": "被动: 免费重掷次数 <b>+1</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -247,7 +291,7 @@
   "displayName": "低语引荐",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "每家商店的首个货架必出 <b>1</b>    张罕见(蓝)卡",
+  "cardDesc": "被动: 首个货架必出 <b>1</b> 张✦✦卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -269,7 +313,7 @@
   "displayName": "点眼的扎纸匠",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "揭晓时:强化 <b>2</b> 友方生物",
+  "cardDesc": "强化 <b>2</b> 友方生物",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -352,17 +396,6 @@
   "folder": "1_Uncommon"
  },
  {
-  "file": "CURSE_REVIVER",
-  "cardTypeID": "CURSE_REVIVER",
-  "displayName": "洗不掉的印子",
-  "rarity": "0",
-  "rarityName": "normal",
-  "cardDesc": "攻击;复活1敌方诅咒",
-  "printedAttack": "0",
-  "cardType": "1",
-  "folder": "1_Uncommon"
- },
- {
   "file": "CURSE_SUMMONER",
   "cardTypeID": "CURSE_SUMMONER",
   "displayName": "替人叫魂的喇叭",
@@ -385,6 +418,17 @@
   "folder": "1_Uncommon"
  },
  {
+  "file": "CURSE_THIRST_SHAMAN_4.0",
+  "cardTypeID": "CURSE_THIRST_SHAMAN_4.0",
+  "displayName": "咒食的萨满",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "敌方诅咒每有 <b>1</b> 攻击力:强化    <b>1</b> 友方生物",
+  "printedAttack": "0",
+  "cardType": "0",
+  "folder": "1_Uncommon"
+ },
+ {
   "file": "DEATHBED_GRANT",
   "cardTypeID": "DEATHBED_GRANT",
   "displayName": "入殓师",
@@ -398,7 +442,7 @@
  {
   "file": "DEATHBED_PORTER",
   "cardTypeID": "DEATHBED_PORTER",
-  "displayName": "抬上楼的纸别墅",
+  "displayName": "纸别墅",
   "rarity": "1",
   "rarityName": "uncommon",
   "cardDesc": "攻击;遗言:攻击;置顶1友方非生物",
@@ -412,7 +456,7 @@
   "displayName": "哭灵人",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "揭晓时:埋葬 <b>1</b> 张tag为[<tag:DeathRattle>]的友方卡;攻击",
+  "cardDesc": "埋葬 <b>1</b> 张tag为[<tag:DeathRattle>]的友方卡;攻击",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -434,7 +478,7 @@
   "displayName": "引路的白灯笼",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击;遗言:回合结束:置顶 <b>1</b>    友方攻击力最高生物",
+  "cardDesc": "攻击;遗言:回合结束前:复活    <b>1</b> 墓地的最高攻击力友方生物",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -464,23 +508,12 @@
  {
   "file": "GRAVE_GIANT",
   "cardTypeID": "GRAVE_GIANT",
-  "displayName": "不停滴水的行李袋",
+  "displayName": "滴血的行李袋",
   "rarity": "1",
   "rarityName": "uncommon",
   "cardDesc": "攻击力=墓地友方数量;攻击",
   "printedAttack": "0",
   "cardType": "1",
-  "folder": "1_Uncommon"
- },
- {
-  "file": "GRAVE_HEXER",
-  "cardTypeID": "GRAVE_HEXER",
-  "displayName": "白事先生",
-  "rarity": "1",
-  "rarityName": "uncommon",
-  "cardDesc": "复活1友方;强化2敌方诅咒",
-  "printedAttack": "0",
-  "cardType": "0",
   "folder": "1_Uncommon"
  },
  {
@@ -511,19 +544,8 @@
   "displayName": "并排的三座新坟",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "揭晓时:攻击;埋葬 <b>1</b> 友方;埋葬    <b>2</b> 敌方",
+  "cardDesc": "攻击;埋葬 <b>1</b> 友方;埋葬    <b>2</b> 敌方",
   "printedAttack": "1",
-  "cardType": "1",
-  "folder": "1_Uncommon"
- },
- {
-  "file": "HEXER",
-  "cardTypeID": "HEXER",
-  "displayName": "对面楼的那场火",
-  "rarity": "1",
-  "rarityName": "uncommon",
-  "cardDesc": "揭晓时:攻击;强化 <b>3</b> 敌方诅咒",
-  "printedAttack": "0",
   "cardType": "1",
   "folder": "1_Uncommon"
  },
@@ -544,7 +566,7 @@
   "displayName": "回魂夜",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "复活 <b>3</b> 友方normal卡",
+  "cardDesc": "复活 <b>3</b> 友方✦卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -596,7 +618,7 @@
  {
   "file": "RELIC_CHAIN_BURIAL",
   "cardTypeID": "RELIC_CHAIN_BURIAL",
-  "displayName": "拖人下水的水鬼",
+  "displayName": "水鬼",
   "rarity": "1",
   "rarityName": "uncommon",
   "cardDesc": "被动:友方被埋葬时,埋葬卡组顶    <b>1</b> 卡",
@@ -610,7 +632,7 @@
   "displayName": "路口的纸灰圈",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动:回合结束:本回合每埋葬    <b>1</b> 生物,强化 <b>1</b> 敌方诅咒",
+  "cardDesc": "被动:回合结束前:本回合每埋葬    <b>1</b> 生物,强化 <b>1</b> 敌方诅咒",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -622,6 +644,17 @@
   "rarity": "1",
   "rarityName": "uncommon",
   "cardDesc": "被动:回合开始:强化1攻击力最低友方生物",
+  "printedAttack": "0",
+  "cardType": "0",
+  "folder": "1_Uncommon"
+ },
+ {
+  "file": "RELIC_WHITE_BANNER",
+  "cardTypeID": "RELIC_WHITE_BANNER",
+  "displayName": "开道的白幡",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "被动:回合开始:置顶 <b>1</b> 友方攻击力最高生物",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -676,7 +709,7 @@
   "displayName": "点传师",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "揭晓时:生成 <b>2</b> 信徒;强化\\n       <b>1</b> 友方生物",
+  "cardDesc": "生成 <b>2</b> 信徒;强化\\n       <b>1</b> 友方生物",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -698,7 +731,7 @@
   "displayName": "出过事的那条街",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "揭晓时:攻击x2;生成 <b>1</b> 信徒",
+  "cardDesc": "攻击x2;生成 <b>1</b> 信徒",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -715,23 +748,12 @@
   "folder": "1_Uncommon"
  },
  {
-  "file": "SACRIFICIAL_SPIRIT",
-  "cardTypeID": "SACRIFICIAL_SPIRIT",
-  "displayName": "陪葬的活物",
-  "rarity": "1",
-  "rarityName": "uncommon",
-  "cardDesc": "揭晓时:攻击;埋葬 <b>1</b> 友方;强化    <b>5</b> 敌方诅咒",
-  "printedAttack": "0",
-  "cardType": "1",
-  "folder": "1_Uncommon"
- },
- {
   "file": "SNOWBALL",
   "cardTypeID": "SNOWBALL",
   "displayName": "数不完的纸钱",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "揭晓时:攻击x2;强化反应:强化自身\\n       <b>1</b>",
+  "cardDesc": "攻击x2;强化反应:强化自身\\n       <b>1</b>",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -786,7 +808,7 @@
   "displayName": "蓝字担保",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "每个货架必出 <b>1</b> 张罕见(蓝)卡",
+  "cardDesc": "每个货架必出 <b>1</b> 张✦✦卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -808,7 +830,7 @@
   "displayName": "传播者的赞歌",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "罕见(蓝)卡的出货权重 <b>×2</b>",
+  "cardDesc": "✦✦卡的出货权重 <b>×2</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -852,7 +874,7 @@
   "displayName": "洇开的污渍",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "揭晓时:强化 <b>2</b> 敌方诅咒;敌方诅咒每有    <b>3</b> 攻击力:强化 <b>1</b>",
+  "cardDesc": "强化 <b>2</b> 敌方诅咒;敌方诅咒每有    <b>3</b> 攻击力:强化 <b>1</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"
@@ -871,10 +893,10 @@
  {
   "file": "DUO_REVIVER",
   "cardTypeID": "DUO_REVIVER",
-  "displayName": "一门阴婚",
+  "displayName": "阴婚",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "复活 <b>2</b> 友方uncommon卡",
+  "cardDesc": "复活 <b>2</b> 友方✦✦卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"
@@ -885,7 +907,7 @@
   "displayName": "太平间的保洁",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "揭晓时:攻击;埋葬 <b>2</b> 友方;埋葬卡组顶    <b>5</b> 卡",
+  "cardDesc": "攻击;埋葬 <b>2</b> 友方;埋葬卡组顶    <b>5</b> 卡",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "2_Rare"
@@ -940,7 +962,7 @@
   "displayName": "抬着空轿的纸人",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "揭晓时:攻击x4",
+  "cardDesc": "攻击x4",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "2_Rare"
@@ -1072,7 +1094,7 @@
   "displayName": "管道里的活物",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "揭晓时:攻击;遗言:复制自身",
+  "cardDesc": "攻击;遗言:复制自身",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "2_Rare"
@@ -1102,10 +1124,10 @@
  {
   "file": "UNFINISHED_ROBOT_4.0",
   "cardTypeID": "UNFINISHED_ROBOT_4.0",
-  "displayName": "还在长的人偶",
+  "displayName": "生长人偶",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "揭晓时:攻击;攻击力翻倍",
+  "cardDesc": "攻击;攻击力翻倍",
   "printedAttack": "0",
   "cardType": "1",
   "folder": "2_Rare"
@@ -1116,7 +1138,7 @@
   "displayName": "红字担保",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "每 <b>3</b> 个货架必出 <b>1</b> 张史诗(红)卡",
+  "cardDesc": "每 <b>3</b> 个货架必出 <b>1</b> 张✦✦✦卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"
@@ -1160,7 +1182,7 @@
   "displayName": "殉道者的赞歌",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "史诗(红)卡的出货权重 <b>×2</b>",
+  "cardDesc": "✦✦✦卡的出货权重 <b>×2</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"
