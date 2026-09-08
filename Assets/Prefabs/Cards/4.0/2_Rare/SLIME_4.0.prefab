@@ -218,7 +218,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SLIME_4.0
   displayName: "\u7ba1\u9053\u91cc\u7684\u6d3b\u7269"
-  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FB;\u9057\u8A00:\u590D\u5236\u81EA\u8EAB"
+  cardDesc: "\u653B\u51FB;\u9057\u8A00:\u590D\u5236\u81EA\u8EAB"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

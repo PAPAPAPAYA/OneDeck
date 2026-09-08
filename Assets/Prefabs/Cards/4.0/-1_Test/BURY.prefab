@@ -131,7 +131,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BURY
   displayName: BURY
-  cardDesc: "\u63ED\u6653\u65F6:\u57CB\u846C <b>1</b> \u53CB\u65B9"
+  cardDesc: "\u57CB\u846C <b>1</b> \u53CB\u65B9"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

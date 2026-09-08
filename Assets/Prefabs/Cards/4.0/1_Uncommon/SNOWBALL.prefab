@@ -237,7 +237,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SNOWBALL
   displayName: "\u6570\u4E0D\u5B8C\u7684\u7EB8\u94B1"
-  cardDesc: "\u63ED\u6653\u65F6:\u653B\u51FBx2;\u5F3A\u5316\u53CD\u5E94:\u5F3A\u5316\u81EA\u8EAB\n   
+  cardDesc: "\u653B\u51FBx2;\u5F3A\u5316\u53CD\u5E94:\u5F3A\u5316\u81EA\u8EAB\n   
     <b>1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
