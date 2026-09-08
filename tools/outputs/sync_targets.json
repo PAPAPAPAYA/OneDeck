@@ -1,0 +1,587 @@
+{
+ "generated": "2026-09-08T13:59:48.703Z",
+ "targets": [
+  {
+   "tid": "AVENGER_4.0",
+   "pageId": "3cb827b8-c3c1-81e5-8b80-c8e7015b84b5",
+   "dbDesc": "攻击x2；遗言：强化自身1",
+   "want": "攻击x2;遗言:强化自身 <b>1</b>"
+  },
+  {
+   "tid": "BEAST_REVIVER",
+   "pageId": "3c7827b8-c3c1-81e4-b8b1-e546db0c43c4",
+   "dbDesc": "攻击；复活1生物友方",
+   "want": "攻击;复活 <b>1</b> 生物友方"
+  },
+  {
+   "tid": "BLACKSMITH_4.0",
+   "pageId": "3c7827b8-c3c1-81e3-a1d5-cc6197fec1d6",
+   "dbDesc": "攻击；强化1友方生物",
+   "want": "攻击;强化 <b>1</b> 友方生物"
+  },
+  {
+   "tid": "CURSE_REVIVER",
+   "pageId": "3c7827b8-c3c1-817f-a150-ed02333afd7e",
+   "dbDesc": "攻击；复活1敌方诅咒",
+   "want": "攻击;复活 <b>1</b> 敌方诅咒"
+  },
+  {
+   "tid": "ELITE_REVIVER",
+   "pageId": "3c7827b8-c3c1-8166-9bf7-d101cd79cf81",
+   "dbDesc": "攻击；复活1被强化过的友方生物",
+   "want": "攻击;复活 <b>1</b> 被强化过的友方生物"
+  },
+  {
+   "tid": "GRAVE_DREDGER",
+   "pageId": "3c7827b8-c3c1-819b-b1e2-e9f0936b850a",
+   "dbDesc": "攻击；埋葬卡组顶3卡",
+   "want": "攻击;埋葬卡组顶 <b>3</b> 卡"
+  },
+  {
+   "tid": "GRAVE_FIST",
+   "pageId": "3c7827b8-c3c1-812a-8ca3-fb3c9062b404",
+   "dbDesc": "埋葬1友方；攻击",
+   "want": "埋葬 <b>1</b> 友方;攻击"
+  },
+  {
+   "tid": "GRAVE_HEXER",
+   "pageId": "3c7827b8-c3c1-81ef-8fca-df8c2c1b0cbf",
+   "dbDesc": "复活1友方；强化1敌方诅咒",
+   "want": "复活 <b>1</b> 友方;强化 <b>1</b> 敌方诅咒"
+  },
+  {
+   "tid": "GRAVE_PUNCH_4.0",
+   "pageId": "3c7827b8-c3c1-812c-9d70-e4eac3df0648",
+   "dbDesc": "埋葬1友方；攻击x2",
+   "want": "埋葬 <b>1</b> 友方;攻击x2"
+  },
+  {
+   "tid": "HEXER",
+   "pageId": "3c7827b8-c3c1-81e6-8bc6-ce08326aa8fb",
+   "dbDesc": "攻击；强化2敌方诅咒",
+   "want": "攻击;强化 <b>2</b> 敌方诅咒"
+  },
+  {
+   "tid": "SYSTEM_INCREASE_DECK_SIZE_LITE",
+   "pageId": "3d2827b8-c3c1-8168-b265-e9e38319367d",
+   "dbDesc": "卡位+1，放逐自身",
+   "want": "卡位 <b>+1</b>, 放逐自身"
+  },
+  {
+   "tid": "LAST_GIFT",
+   "pageId": "3c7827b8-c3c1-8146-b887-d35025a02cb8",
+   "dbDesc": "攻击；遗言：强化2友方生物",
+   "want": "攻击;遗言:强化 <b>2</b> 友方生物"
+  },
+  {
+   "tid": "RIFT_ACOLYTE",
+   "pageId": "3c7827b8-c3c1-8101-a848-cb15bd0d3996",
+   "dbDesc": "攻击；生成1信徒；苏醒：生成1信徒",
+   "want": "攻击;生成 <b>1</b> 信徒;苏醒:生成 <b>1</b> 信徒"
+  },
+  {
+   "tid": "RIFT_INSECT_4.0",
+   "pageId": "3c7827b8-c3c1-811d-b4fb-df5b58514829",
+   "dbDesc": "攻击；生成1信徒",
+   "want": "攻击;生成 <b>1</b> 信徒"
+  },
+  {
+   "tid": "RIFT_SHEPHERD",
+   "pageId": "3c7827b8-c3c1-8109-9754-f92441794ddd",
+   "dbDesc": "攻击；复活1张tag为\\\\[信徒\\\\]的友方卡",
+   "want": "攻击;复活 <b>1</b> 张tag为[信徒]的友方卡"
+  },
+  {
+   "tid": "SACRIFICIAL_SPIRIT",
+   "pageId": "3c7827b8-c3c1-81d2-9529-ed2680ece000",
+   "dbDesc": "埋葬1友方；强化4敌方诅咒",
+   "want": "埋葬 <b>1</b> 友方;强化 <b>4</b> 敌方诅咒"
+  },
+  {
+   "tid": "SOLDIER_SKELETON_4.0",
+   "pageId": "3cb827b8-c3c1-8191-9c2c-ce20cdd7e49c",
+   "dbDesc": "攻击；遗言：复活自身",
+   "want": "攻击;遗言:复活自身"
+  },
+  {
+   "tid": "SPIRIT_CALLER",
+   "pageId": "3c7827b8-c3c1-8141-90f1-de9842a9a922",
+   "dbDesc": "攻击；复活1友方非生物",
+   "want": "攻击;复活 <b>1</b> 友方非生物"
+  },
+  {
+   "tid": "UTILITY_OPTION_1",
+   "pageId": "3d2827b8-c3c1-8156-8ad7-cc90b770f41f",
+   "dbDesc": "被动：商店货架+1",
+   "want": "被动: 商店货架 <b>+1</b>"
+  },
+  {
+   "tid": "UTILITY_SLOT_U_1",
+   "pageId": "3d2827b8-c3c1-8178-b5b7-dd32b0feb85e",
+   "dbDesc": "被动：首个货架必出1张✦✦卡",
+   "want": "被动: 首个货架必出 <b>1</b> 张✦✦卡"
+  },
+  {
+   "tid": "WAKING_FIGHTER",
+   "pageId": "3c7827b8-c3c1-8145-8052-c7371d096196",
+   "dbDesc": "攻击；苏醒：强化自身1",
+   "want": "攻击;苏醒:强化自身 <b>1</b>"
+  },
+  {
+   "tid": "WAR_TRAINER",
+   "pageId": "3c7827b8-c3c1-819f-aa2c-e51c16ba49ea",
+   "dbDesc": "强化2友方生物",
+   "want": "强化 <b>2</b> 友方生物"
+  },
+  {
+   "tid": "WOKEN_BLADE",
+   "pageId": "3c8827b8-c3c1-803e-b37b-c75984d84bc8",
+   "dbDesc": "攻击；苏醒：攻击x2",
+   "want": "攻击;苏醒:攻击x2"
+  },
+  {
+   "tid": "AWAKENED_REAPER",
+   "pageId": "3c7827b8-c3c1-8192-b063-ce3eda376c54",
+   "dbDesc": "攻击；苏醒：埋葬1敌方",
+   "want": "攻击;苏醒:埋葬 <b>1</b> 敌方"
+  },
+  {
+   "tid": "BATTLE_HORN",
+   "pageId": "3c7827b8-c3c1-8146-8ffe-e12f7463681d",
+   "dbDesc": "本回合友方生物攻击次数+1",
+   "want": "本回合友方生物攻击次数 <b>+1</b>"
+  },
+  {
+   "tid": "COMBO_GRANTER",
+   "pageId": "3c7827b8-c3c1-81ef-98a7-c2a6e4303057",
+   "dbDesc": "攻击；本回合1友方生物攻击次数+1",
+   "want": "攻击;本回合 <b>1</b> 友方生物攻击次数 <b>+1</b>"
+  },
+  {
+   "tid": "COMBO_STARTER",
+   "pageId": "3c7827b8-c3c1-8185-81a5-d5bcb0efcc51",
+   "dbDesc": "攻击；强化反应：攻击次数+1",
+   "want": "攻击;强化反应:攻击次数 <b>+1</b>"
+  },
+  {
+   "tid": "CURSE_EATER",
+   "pageId": "3c7827b8-c3c1-81e8-9604-fe107e221fa1",
+   "dbDesc": "攻击；攻击力=敌方诅咒攻击力",
+   "want": "攻击;攻击力=敌方诅咒攻击力"
+  },
+  {
+   "tid": "CURSE_GARDENER",
+   "pageId": "3c7827b8-c3c1-81a6-ad5b-f243cc089170",
+   "dbDesc": "强化1敌方诅咒；复活1敌方诅咒",
+   "want": "强化 <b>1</b> 敌方诅咒;复活 <b>1</b> 敌方诅咒"
+  },
+  {
+   "tid": "CURSE_SUMMONER",
+   "pageId": "3cf827b8-c3c1-8060-a783-e1b0120b8eaf",
+   "dbDesc": "复活1友方；复活1敌方诅咒",
+   "want": "复活 <b>1</b> 友方;复活 <b>1</b> 敌方诅咒"
+  },
+  {
+   "tid": "CURSE_THIRST_BEAST_4.0",
+   "pageId": "3c8827b8-c3c1-80e7-a3c4-c72a1c4e28c5",
+   "dbDesc": "敌方诅咒揭晓时：复活自身；攻击",
+   "want": "敌方诅咒揭晓时:复活自身;攻击"
+  },
+  {
+   "tid": "DEATHBED_GRANT",
+   "pageId": "3c7827b8-c3c1-81f5-9509-c35dd106944d",
+   "dbDesc": "被动：友方生物被埋葬时：该友方生物攻击",
+   "want": "被动:友方生物被埋葬时:该友方生物攻击"
+  },
+  {
+   "tid": "DEATHBED_PORTER",
+   "pageId": "3c7827b8-c3c1-8176-b159-d81ed0512bd4",
+   "dbDesc": "攻击；遗言：攻击；置顶1友方非生物",
+   "want": "攻击;遗言:攻击;置顶 <b>1</b> 友方非生物"
+  },
+  {
+   "tid": "EULOGIST",
+   "pageId": "3c7827b8-c3c1-81c2-96d5-c6409f561249",
+   "dbDesc": "埋葬1张tag为\\\\[遗言\\\\]的友方卡；攻击",
+   "want": "埋葬 <b>1</b> 张tag为[遗言]的友方卡;攻击"
+  },
+  {
+   "tid": "EXILE_BERSERKER",
+   "pageId": "3c7827b8-c3c1-8170-a11b-d13c0c5dc0f8",
+   "dbDesc": "攻击；本回合每放逐1友方，攻击次数+1",
+   "want": "攻击;本回合每放逐 <b>1</b> 友方,攻击次数 <b>+1</b>"
+  },
+  {
+   "tid": "FINAL_ESCORT",
+   "pageId": "3c7827b8-c3c1-8174-a60e-e0b60d103e34",
+   "dbDesc": "攻击；遗言：回合结束前：复活1墓地的最高攻击力友方生物",
+   "want": "攻击;遗言:回合结束前:复活 <b>1</b> 墓地的最高攻击力友方生物"
+  },
+  {
+   "tid": "FLURRY_REVIVER",
+   "pageId": "3c7827b8-c3c1-8180-ac69-ee5cc05f9541",
+   "dbDesc": "复活1攻击次数最多友方生物",
+   "want": "复活 <b>1</b> 攻击次数最多友方生物"
+  },
+  {
+   "tid": "FUNERAL_WILL",
+   "pageId": "3c7827b8-c3c1-81ac-b929-c0c85d759b55",
+   "dbDesc": "埋葬2卡组顶；遗言：延迟复活1友方",
+   "want": "埋葬卡组顶 <b>2</b> 卡;遗言:延迟复活 <b>1</b> 友方"
+  },
+  {
+   "tid": "GRAVE_GIANT",
+   "pageId": "3c7827b8-c3c1-81d5-8db1-dddb399d0f50",
+   "dbDesc": "攻击力=墓地友方数量；攻击",
+   "want": "攻击力=墓地友方数量;攻击"
+  },
+  {
+   "tid": "GRAVE_PUPPETEER",
+   "pageId": "3c7827b8-c3c1-81ec-bf01-d78f6bd989aa",
+   "dbDesc": "让墓地1友方生物攻击；墓地无友方则埋葬1张tag为\\\\[遗言\\\\]的友方卡",
+   "want": "让墓地 <b>1</b> 友方生物攻击;墓地无友方则埋葬 <b>1</b> 张tag为[遗言]的友方卡"
+  },
+  {
+   "tid": "GRAVE_ROBBER",
+   "pageId": "3c7827b8-c3c1-8125-bb28-c5c33618eeef",
+   "dbDesc": "复活1攻击力最高敌方；攻击力变为该卡攻击力",
+   "want": "复活 <b>1</b> 攻击力最高敌方;攻击力变为该卡攻击力"
+  },
+  {
+   "tid": "GRAVE_TOGETHER_4.0",
+   "pageId": "3c7827b8-c3c1-81b4-af44-eb5aaafc2941",
+   "dbDesc": "攻击；埋葬1友方；埋葬2敌方",
+   "want": "攻击;埋葬 <b>1</b> 友方;埋葬 <b>2</b> 敌方"
+  },
+  {
+   "tid": "KINGSLAYER",
+   "pageId": "3c7827b8-c3c1-8183-a849-c534c06ce3da",
+   "dbDesc": "埋葬1攻击力最高敌方；复活1友方",
+   "want": "埋葬 <b>1</b> 攻击力最高敌方;复活 <b>1</b> 友方"
+  },
+  {
+   "tid": "MASS_REVIVER",
+   "pageId": "3c7827b8-c3c1-81d7-9a8a-ea51ef9eb0c5",
+   "dbDesc": "复活3友方✦卡",
+   "want": "复活 <b>3</b> 友方✦卡"
+  },
+  {
+   "tid": "MIMIC_BLADE",
+   "pageId": "3c7827b8-c3c1-81ab-a9af-fda164e55efc",
+   "dbDesc": "攻击力=友方最高攻击力；攻击x2",
+   "want": "攻击力=友方最高攻击力;攻击x2"
+  },
+  {
+   "tid": "NECROMANCER",
+   "pageId": "3c7827b8-c3c1-8190-b675-e75334e9c76b",
+   "dbDesc": "复活1友方；苏醒：复活1友方",
+   "want": "复活 <b>1</b> 友方;苏醒:复活 <b>1</b> 友方"
+  },
+  {
+   "tid": "REANIMATOR",
+   "pageId": "3c7827b8-c3c1-8101-bf5e-c354a82b78ac",
+   "dbDesc": "攻击；攻击力=本回合复活友方数",
+   "want": "攻击;攻击力=本回合复活友方数"
+  },
+  {
+   "tid": "RELIC_ATTACK_BURIAL",
+   "pageId": "3ca827b8-c3c1-8040-a819-e089b2829dcc",
+   "dbDesc": "被动：友方每次攻击：埋葬卡组顶1卡",
+   "want": "被动:友方每次攻击时,埋葬卡组顶 <b>1</b> 卡"
+  },
+  {
+   "tid": "RELIC_CHAIN_BURIAL",
+   "pageId": "3c7827b8-c3c1-81dd-a723-e6c1a635b1af",
+   "dbDesc": "被动：友方被埋葬时：埋葬1卡组顶卡",
+   "want": "被动:友方被埋葬时,埋葬卡组顶 <b>1</b> 卡"
+  },
+  {
+   "tid": "RELIC_TALLY",
+   "pageId": "3c7827b8-c3c1-81c5-b309-d0117af2d0b1",
+   "dbDesc": "被动：回合结束前：本回合每埋葬1生物，强化1敌方诅咒",
+   "want": "被动:回合结束前:本回合每埋葬 <b>1</b> 生物,强化 <b>1</b> 敌方诅咒"
+  },
+  {
+   "tid": "RELIC_TRAINER",
+   "pageId": "3c8827b8-c3c1-80ae-99fe-ca17bb8fb17c",
+   "dbDesc": "被动：回合开始：强化1攻击力最低友方生物",
+   "want": "被动:回合开始:强化 <b>1</b> 攻击力最低友方生物"
+  },
+  {
+   "tid": "REVIVE_SUMMONER",
+   "pageId": "3c7827b8-c3c1-81bd-a4d8-e7f16883afe3",
+   "dbDesc": "复活1友方；生成1信徒",
+   "want": "复活 <b>1</b> 友方;生成 <b>1</b> 信徒"
+  },
+  {
+   "tid": "RIFT_GUIDE",
+   "pageId": "3c8827b8-c3c1-8062-98b0-cd67aa7a5d61",
+   "dbDesc": "放逐1友方信徒，埋葬2敌方非生物",
+   "want": "放逐 <b>1</b> 友方信徒,埋葬 <b>2</b> 敌方非生物"
+  },
+  {
+   "tid": "RIFT_HATCHERY",
+   "pageId": "3c7827b8-c3c1-819b-81b6-f272b492b8b6",
+   "dbDesc": "生成3信徒；回合开始：埋葬自身",
+   "want": "生成 <b>3</b> 信徒;回合开始:埋葬自身"
+  },
+  {
+   "tid": "RIFT_MEDIUM",
+   "pageId": "3c7827b8-c3c1-8157-a43e-fea913404fe9",
+   "dbDesc": "生成2信徒；苏醒：复活1友方",
+   "want": "生成 <b>2</b> 信徒;苏醒:复活 <b>1</b> 友方"
+  },
+  {
+   "tid": "RIFT_PRIEST",
+   "pageId": "3c7827b8-c3c1-814f-95a0-fbd852ce663a",
+   "dbDesc": "生成2信徒；强化1友方生物",
+   "want": "生成 <b>2</b> 信徒;强化 <b>1</b> 友方生物"
+  },
+  {
+   "tid": "RIFT_REVIVER",
+   "pageId": "3c8827b8-c3c1-8068-9f9a-f89b7ec6f0af",
+   "dbDesc": "放逐1友方信徒，复活2友方非生物",
+   "want": "放逐 <b>1</b> 友方信徒,复活 <b>2</b> 友方非生物"
+  },
+  {
+   "tid": "RIFT_STRIKER",
+   "pageId": "3c7827b8-c3c1-8105-bfbc-cc075808ade4",
+   "dbDesc": "攻击x2；生成1信徒",
+   "want": "攻击x2;生成 <b>1</b> 信徒"
+  },
+  {
+   "tid": "SACRIFICE_WEAKEST",
+   "pageId": "3c7827b8-c3c1-8177-b363-e55d560d46b4",
+   "dbDesc": "埋葬1攻击力最低友方；强化1该卡",
+   "want": "埋葬 <b>1</b> 攻击力最低友方;强化 <b>1</b> 该卡"
+  },
+  {
+   "tid": "SNOWBALL",
+   "pageId": "3c7827b8-c3c1-81ec-bef7-f7a49bacd8d6",
+   "dbDesc": "攻击x2；强化反应：强化自身1",
+   "want": "攻击x2;强化反应:强化自身 <b>1</b>"
+  },
+  {
+   "tid": "SOUL_TRADER",
+   "pageId": "3c7827b8-c3c1-81ba-b9e6-c630793fb632",
+   "dbDesc": "复活2友方；埋葬1友方",
+   "want": "复活 <b>2</b> 友方;埋葬 <b>1</b> 友方"
+  },
+  {
+   "tid": "UNDYING_WARRIOR",
+   "pageId": "3c7827b8-c3c1-8123-9b1c-fe3de5d61b9e",
+   "dbDesc": "攻击；强化反应：复活自身",
+   "want": "攻击;强化反应:复活自身"
+  },
+  {
+   "tid": "UTILITY_CREATURES_1",
+   "pageId": "3d2827b8-c3c1-814a-a8b7-d4a39cfd5dec",
+   "dbDesc": "每次生成货架有20%概率：战斗架的全部商品变为生物卡",
+   "want": "每次生成货架有 <b>20%</b> 概率:战斗架的全部商品变为生物卡"
+  },
+  {
+   "tid": "UTILITY_SLOT_U_2",
+   "pageId": "3d2827b8-c3c1-816f-8eaa-d9c6ba70437e",
+   "dbDesc": "每个货架必出1张✦✦卡",
+   "want": "每个货架必出 <b>1</b> 张✦✦卡"
+  },
+  {
+   "tid": "UTILITY_SPELLS_1",
+   "pageId": "3d2827b8-c3c1-8141-a8ac-f2fa54579412",
+   "dbDesc": "每次生成货架有20%概率：战斗架的全部商品变为非生物卡",
+   "want": "每次生成货架有 <b>20%</b> 概率:战斗架的全部商品变为非生物卡"
+  },
+  {
+   "tid": "UTILITY_WEIGHT_U",
+   "pageId": "3d2827b8-c3c1-816d-a5b2-de277a131cbc",
+   "dbDesc": "✦✦卡的出货权重×2",
+   "want": "✦✦卡的出货权重 <b>×2</b>"
+  },
+  {
+   "tid": "WEAKENING_FIELD",
+   "pageId": "3c8827b8-c3c1-8039-9fa1-f850ef2f09b2",
+   "dbDesc": "所有生物本回合攻击力-1",
+   "want": "所有生物本回合攻击力 <b>-1</b>"
+  },
+  {
+   "tid": "WOKEN_HEX",
+   "pageId": "3c8827b8-c3c1-800e-a216-e73d5d14cfe8",
+   "dbDesc": "强化1敌方诅咒；苏醒：强化2敌方诅咒",
+   "want": "强化 <b>1</b> 敌方诅咒;苏醒:强化 <b>2</b> 敌方诅咒"
+  },
+  {
+   "tid": "DECIMATION",
+   "pageId": "3c7827b8-c3c1-81e3-a9ae-ce7d359664cc",
+   "dbDesc": "埋葬6友方，本回合每埋葬过1友方，埋葬数-1；攻击x3",
+   "want": "埋葬 <b>6</b> 友方,本回合每埋葬过 <b>1</b> 友方,埋葬数 <b>-1</b>;攻击x3"
+  },
+  {
+   "tid": "DETERIORATION_4.0",
+   "pageId": "3c7827b8-c3c1-8113-bf3f-c9902e30a485",
+   "dbDesc": "强化2敌方诅咒；敌方诅咒每有3攻击力，额外强化1",
+   "want": "强化 <b>2</b> 敌方诅咒;敌方诅咒每有 <b>3</b> 攻击力:强化 <b>1</b>"
+  },
+  {
+   "tid": "DOOM_HERALD",
+   "pageId": "3c7827b8-c3c1-816c-aa98-e8537be64854",
+   "dbDesc": "攻击；复活1攻击力最高敌方；强化4敌方诅咒",
+   "want": "攻击;复活 <b>1</b> 攻击力最高敌方;强化 <b>4</b> 敌方诅咒"
+  },
+  {
+   "tid": "DUO_REVIVER",
+   "pageId": "3c7827b8-c3c1-81fc-9acc-c9fe5f15876d",
+   "dbDesc": "复活2友方✦✦卡",
+   "want": "复活 <b>2</b> 友方✦✦卡"
+  },
+  {
+   "tid": "GRAVE_MILLER",
+   "pageId": "3c7827b8-c3c1-8162-8d24-cf4cdac4ce38",
+   "dbDesc": "攻击；埋葬2友方，埋葬卡组顶5卡",
+   "want": "攻击;埋葬 <b>2</b> 友方;埋葬卡组顶 <b>5</b> 卡"
+  },
+  {
+   "tid": "HEXBLADE",
+   "pageId": "3c7827b8-c3c1-81fd-b88f-d309a6002b60",
+   "dbDesc": "攻击；每有1攻击力，强化1敌方诅咒",
+   "want": "攻击;每有 <b>1</b> 攻击力,强化 <b>1</b> 敌方诅咒"
+  },
+  {
+   "tid": "LAST_RITES",
+   "pageId": "3c8827b8-c3c1-8098-b58e-d6de88dbfd3a",
+   "dbDesc": "遗言：触发所有在墓地友方的遗言",
+   "want": "遗言:触发所有在墓地友方的遗言"
+  },
+  {
+   "tid": "MASS_SACRIFICE",
+   "pageId": "3c7827b8-c3c1-81d2-9506-e1ee12db3613",
+   "dbDesc": "埋葬所有友方；每埋葬1友方，生成1信徒",
+   "want": "埋葬所有友方;每埋葬 <b>1</b> 友方,生成 <b>1</b> 信徒"
+  },
+  {
+   "tid": "MILLBLADE",
+   "pageId": "3c7827b8-c3c1-8192-91c4-cdf3bea296bf",
+   "dbDesc": "攻击；每有1攻击力，埋葬卡组顶1卡",
+   "want": "攻击;每有 <b>1</b> 攻击力,埋葬卡组顶 <b>1</b> 卡"
+  },
+  {
+   "tid": "RELIC_ATTACK_HEX",
+   "pageId": "3c7827b8-c3c1-818d-a3c8-f28a574f3e11",
+   "dbDesc": "被动：有卡攻击时：强化1敌方诅咒",
+   "want": "被动:有卡攻击时,强化 <b>1</b> 敌方诅咒"
+  },
+  {
+   "tid": "RELIC_BLOOD_PACT",
+   "pageId": "3c7827b8-c3c1-813b-8ba2-fdd80cdfda5e",
+   "dbDesc": "被动：友方攻击不再造成伤害，而是强化等量敌方诅咒",
+   "want": "被动:友方攻击不再造成伤害,而是强化等量敌方诅咒"
+  },
+  {
+   "tid": "RELIC_CURSE_GRAVE",
+   "pageId": "3c7827b8-c3c1-816e-8940-ca709dae722c",
+   "dbDesc": "被动：敌方诅咒揭晓时：埋葬1敌方",
+   "want": "被动:敌方诅咒揭晓时,埋葬 <b>1</b> 敌方"
+  },
+  {
+   "tid": "RELIC_CURSE_HASTE",
+   "pageId": "3c7827b8-c3c1-8131-bef4-fe8bcb4bda9d",
+   "dbDesc": "被动：敌方诅咒攻击次数+1",
+   "want": "被动:敌方诅咒攻击次数 <b>+1</b>"
+  },
+  {
+   "tid": "RELIC_CURSE_REVIVAL",
+   "pageId": "3c7827b8-c3c1-813a-a0d5-c4a2d1ce3ead",
+   "dbDesc": "被动：敌方诅咒揭晓时：复活1友方",
+   "want": "被动:敌方诅咒揭晓时,复活 <b>1</b> 友方"
+  },
+  {
+   "tid": "RELIC_DEATH_KNELL",
+   "pageId": "3c7827b8-c3c1-816c-b736-eee7eff83f0e",
+   "dbDesc": "被动：友方苏醒时：触发其遗言",
+   "want": "被动:友方苏醒时:触发其遗言"
+  },
+  {
+   "tid": "RELIC_GRAVE_CURSE",
+   "pageId": "3c7827b8-c3c1-81f9-a664-eae9c9f88a44",
+   "dbDesc": "被动：敌方诅咒攻击力=墓地友方卡数量",
+   "want": "被动:敌方诅咒攻击力=墓地友方卡数量"
+  },
+  {
+   "tid": "RELIC_GRAVE_LORD",
+   "pageId": "3c8827b8-c3c1-80f5-ba3c-e06dcd676562",
+   "dbDesc": "被动：墓地中的友方生物攻击力+1",
+   "want": "被动:墓地中的友方生物攻击力 <b>+1</b>"
+  },
+  {
+   "tid": "RELIC_HIVE",
+   "pageId": "3c7827b8-c3c1-8154-9320-dfde34029da1",
+   "dbDesc": "被动：友方攻击时：生成1信徒",
+   "want": "被动:友方攻击时,生成 <b>1</b> 信徒"
+  },
+  {
+   "tid": "RELIC_RIFT_OVERRIDE",
+   "pageId": "3c7827b8-c3c1-81d4-872e-e2a3a22a3ee9",
+   "dbDesc": "被动：友方信徒效果变为：\\",
+   "want": "被动:友方信徒效果变为:复活 <b>1</b> 敌方诅咒;放逐自身"
+  },
+  {
+   "tid": "RIFT_REAPER",
+   "pageId": "3c7827b8-c3c1-814d-8ce5-f6169bd5447d",
+   "dbDesc": "放逐所有信徒，每放逐1，强化1友方生物",
+   "want": "放逐所有信徒,每放逐 <b>1</b>,强化 <b>1</b> 友方生物"
+  },
+  {
+   "tid": "SLIME_4.0",
+   "pageId": "3c7827b8-c3c1-81ae-a7f0-c7536bab1ebf",
+   "dbDesc": "遗言：复制自身；攻击",
+   "want": "攻击;遗言:复制自身"
+  },
+  {
+   "tid": "SWARM_CURSER",
+   "pageId": "3c7827b8-c3c1-8165-8361-e16eff77f964",
+   "dbDesc": "生成1信徒；每有1友方信徒，强化1敌方诅咒",
+   "want": "生成 <b>1</b> 信徒;每有 <b>1</b> 友方信徒,强化 <b>1</b> 敌方诅咒"
+  },
+  {
+   "tid": "SWARM_QUEEN",
+   "pageId": "3c7827b8-c3c1-81d4-9490-c255cfa58d2d",
+   "dbDesc": "攻击；每有1攻击力，生成1信徒",
+   "want": "攻击;每有 <b>1</b> 攻击力,生成 <b>1</b> 信徒"
+  },
+  {
+   "tid": "UNFINISHED_ROBOT_4.0",
+   "pageId": "3c7827b8-c3c1-81d3-8157-c05cd2c4805f",
+   "dbDesc": "攻击；攻击力翻倍",
+   "want": "攻击;攻击力翻倍"
+  },
+  {
+   "tid": "UTILITY_SLOT_R",
+   "pageId": "3d2827b8-c3c1-8114-aeba-ce85899e8346",
+   "dbDesc": "每3个货架必出1张✦✦✦卡",
+   "want": "每 <b>3</b> 个货架必出 <b>1</b> 张✦✦✦卡"
+  },
+  {
+   "tid": "UTILITY_TAG_AWAKEN",
+   "pageId": "3d2827b8-c3c1-815b-8099-c80a77fd6947",
+   "dbDesc": "每3个货架必出1张带\\\\[苏醒\\\\]的卡",
+   "want": "每 <b>3</b> 个货架必出 <b>1</b> 张带[苏醒]的卡"
+  },
+  {
+   "tid": "UTILITY_TAG_CURSE",
+   "pageId": "3d2827b8-c3c1-8188-b271-cbf0c3c3c1ed",
+   "dbDesc": "每3个货架必出1张带\\\\[诅咒\\\\]的卡",
+   "want": "每 <b>3</b> 个货架必出 <b>1</b> 张带[诅咒]的卡"
+  },
+  {
+   "tid": "UTILITY_TAG_REVIVE",
+   "pageId": "3d2827b8-c3c1-8199-b64d-d10c41e875f9",
+   "dbDesc": "每3个货架必出1张带\\\\[复活\\\\]的卡",
+   "want": "每 <b>3</b> 个货架必出 <b>1</b> 张带[复活]的卡"
+  },
+  {
+   "tid": "WEAPON_SPIRIT",
+   "pageId": "3c7827b8-c3c1-8134-88fb-d9f0368ff542",
+   "dbDesc": "被动：友方生物触发强化反应时：强化1该生物",
+   "want": "被动:友方生物触发强化反应时:强化 <b>1</b> 该生物"
+  }
+ ]
+}
