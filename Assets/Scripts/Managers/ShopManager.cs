@@ -457,7 +457,7 @@ public class ShopManager : MonoBehaviour
 			_deckInfoStr +=
 				"#" + displayIndex + " <size=+2><b>" + // number
 				card.name + // name
-				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + GetCardPrice(cardScript) / 2 + "</color>" + // price
+				"</b></size>: " + "$" + GetCardPrice(cardScript) / 2 + // price
 				"\n" + cardScript.GetCardDescForDisplay() + "\n\n"; // desc
 			displayIndex++;
 		}
@@ -525,7 +525,7 @@ public class ShopManager : MonoBehaviour
 		string header = "Shop:\n\n";
 		if (_currentBoardIsUtility)
 		{
-			header += GameColorPalette.Me.heal.OpenTag + "◆ 奇物架 — 本架只陈列奇物</color>\n\n";
+			header += "◆ 奇物架 — 本架只陈列奇物\n\n";
 		}
 		var weightRef = GetActiveRarityWeightRef();
 		if (weightRef != null && weightRef.entries != null && weightRef.entries.Count > 0)
@@ -545,7 +545,7 @@ public class ShopManager : MonoBehaviour
 			_shopInfoStr +=
 				"#" + (i + 1) + " <size=+2><b>" + // number
 				card.name + // name
-				"</b></size>: " + GameColorPalette.Me.highlight.OpenTag + "$" + GetCardPrice(cardScript) + "</color>" + // price
+				"</b></size>: " + "$" + GetCardPrice(cardScript) + // price
 				"\n" + cardScript.GetCardDescForDisplay() + "\n\n"; // desc
 		}
 	}
@@ -562,7 +562,7 @@ public class ShopManager : MonoBehaviour
 
 	private void ShowShopTips()
 	{
-		string currentMode = sellMode ? GameColorPalette.Me.highlight.OpenTag + "Selling</color>" : GameColorPalette.Me.highlight.OpenTag + "Buying</color>";
+		string currentMode = sellMode ? "Selling" : "Buying";
 		phaseInfoDisplay.text = phaseInfo + " Current: " + currentMode;
 								
 	}
@@ -570,9 +570,9 @@ public class ShopManager : MonoBehaviour
 	{
 		int freeLeft = (_utilityBonus != null ? _utilityBonus.freeRerolls : 0) - _freeRerollsUsedThisVisit;
 		playerStatsDisplay.text =
-			"HP Max: " + GameColorPalette.Me.heal.OpenTag + CombatManager.Me.ownerPlayerStatusRef.hpMax + "</color>" +
-			"\nYou have: " + GameColorPalette.Me.highlight.OpenTag + "$" + purse.value + "</color> (+$12/combat)" +
-			(freeLeft > 0 ? "\nFree Rerolls: " + GameColorPalette.Me.heal.OpenTag + freeLeft + "</color>" : "");
+			"HP Max: " + CombatManager.Me.ownerPlayerStatusRef.hpMax +
+			"\nYou have: $" + purse.value + " (+$12/combat)" +
+			(freeLeft > 0 ? "\nFree Rerolls: " + freeLeft : "");
 	}
 
 	/// <summary>

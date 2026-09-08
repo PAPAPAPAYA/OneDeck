@@ -70,12 +70,11 @@ public class ShopCardView : MonoBehaviour
 		{
 			// Plan step 5: discounted board offer shows the struck-through base price + the reduced one.
 			_cardPhysObj.cardPricePrint.text =
-				"<s>" + GameColorPalette.Me.highlight.OpenTag + "$" + basePrice + "</color></s> " +
-				GameColorPalette.Me.heal.OpenTag + "$" + displayPrice + "</color>";
+				"<s>$" + basePrice + "</s> $" + displayPrice;
 		}
 		else
 		{
-			_cardPhysObj.cardPricePrint.text = GameColorPalette.Me.highlight.OpenTag + "$" + displayPrice + "</color>";
+			_cardPhysObj.cardPricePrint.text = "$" + displayPrice;
 		}
 	}
 
@@ -206,6 +205,15 @@ public class ShopCardView : MonoBehaviour
 	#endregion
 
 	#region Card Enlarge
+
+	/// <summary>
+	/// True while this card is hover-enlarged; its target position is owned by the enlarge state
+	/// (relayout must not move it, or RestoreCard would send it to a stale position).
+	/// </summary>
+	public bool IsEnlarged
+	{
+		get { return _isEnlarged; }
+	}
 
 	/// <summary>
 	/// Enlarge card.

@@ -62,6 +62,10 @@ public class ShopUXManager : MonoBehaviour
 	public float cameraMinY = -5f;
 	[Tooltip("Camera maximum Y position (upward scroll limit)")]
 	public float cameraMaxY = 5f;
+	[Tooltip("Derive the downward scroll limit from the actual deck row count instead of the fixed cameraMinY")]
+	public bool useDynamicScrollBounds = true;
+	[Tooltip("World-space gap kept below the bottom deck row when the dynamic bound is computed")]
+	public float scrollBottomPadding = 1f;
 	
 	// Store instantiated physical cards for cleanup
 	private List<GameObject> _spawnedShopCards = new List<GameObject>();
@@ -72,6 +76,9 @@ public class ShopUXManager : MonoBehaviour
 	
 	private Camera _mainCamera;
 	private float _cameraInitialY;
+	// Scroll writes go on the camera's parent rig: the camera's localPosition is owned
+	// per-frame by MilkShake Shaker, which would clobber any offset written directly.
+	private Transform _scrollTarget;
 
 	/// <summary>
 	/// Called when PhaseManager enters Shop Phase
@@ -114,8 +121,7 @@ public class ShopUXManager : MonoBehaviour
 				continue;
 			}
 			
-			// Calculate position (start from shopItemPos - xOffset, use xOffset for horizontal arrangement)
-			Vector3 spawnPosition = shopItemPos + new Vector3((i - 1) * xOffset, 0f, 0f);
+			Vector3 spawnPosition = GetShopItemSlotPosition(i);
 			
 			// Instantiate physical card (from start position, trigger DOTween entry animation)
 			Vector3 initialPosition = shopItemStartPos.position;
@@ -237,6 +243,14 @@ public class ShopUXManager : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Shelf position for a shop item index (single source for the shelf layout formula).
+	/// </summary>
+	private Vector3 GetShopItemSlotPosition(int shopIndex)
+	{
+		return shopItemPos + new Vector3((shopIndex - 1) * xOffset, 0f, 0f);
+	}
+
+	/// <summary>
 	/// Assigns player-deck grid slots. With DuplicateStackingEnabled, the first card of each
 	/// cardTypeID takes the next slot and further copies stack toward the upper-left of that slot.
 	/// </summary>
@@ -290,6 +304,44 @@ public class ShopUXManager : MonoBehaviour
 			physObj.SetTargetPosition(assigner.Assign(physObj.cardImRepresenting.cardTypeID, out bool isStackedCopy));
 			SetPriceSuppressed(card, isStackedCopy);
 		}
+	}
+
+	/// <summary>
+	/// Live Inspector tuning: recompute every position driven by xOffset / yOffset / shopItemPos /
+	/// playerDeckPos — shop shelf cards, persistent empty slots and player-deck cards.
+	/// Applied immediately (tweens killed) so Inspector edits track in real time; hover-enlarged
+	/// shop cards are skipped so the enlarge state is not fought (RestoreCard owns their position).
+	/// </summary>
+	public void RelayoutAll()
+	{
+		foreach (var card in _spawnedShopCards)
+		{
+			if (card == null) continue;
+			var physObj = card.GetComponent<CardPhysObjScript>();
+			if (physObj == null || physObj.shopItemIndex < 0) continue;
+			var view = card.GetComponent<ShopCardView>();
+			if (view != null && view.IsEnlarged) continue;
+			physObj.SetPositionImmediate(GetShopItemSlotPosition(physObj.shopItemIndex));
+		}
+
+		// List order equals slot index (slots are appended sequentially by SpawnEmptySlots).
+		for (int i = 0; i < _spawnedEmptySlots.Count; i++)
+		{
+			GameObject slot = _spawnedEmptySlots[i];
+			if (slot == null) continue;
+			Vector3 slotPosition = GetPlayerDeckSlotPosition(i) + new Vector3(0f, 0f, emptySlotZOffset);
+			var physObj = slot.GetComponent<CardPhysObjScript>();
+			if (physObj != null)
+			{
+				physObj.SetPositionImmediate(slotPosition);
+			}
+			else
+			{
+				slot.transform.position = slotPosition;
+			}
+		}
+
+		RelayoutPlayerDeckCards();
 	}
 
 	/// <summary>
@@ -434,23 +486,71 @@ public class ShopUXManager : MonoBehaviour
 	private void Start()
 	{
 		_mainCamera = Camera.main;
-		if (_mainCamera != null)
-		{
-			_cameraInitialY = _mainCamera.transform.position.y;
-		}
+		if (_mainCamera == null) return;
+
+		// VISUAL-FIX(2026-09-08): Camera scroll snapped back instantly after each wheel tick
+		//   Cause:    MilkShake Shaker sits on Main Camera and overwrites its localPosition every
+		//             Update (Shaker.cs Update), clobbering the scroll offset written on the camera.
+		//   Affects:  ShopUXManager (scroll target is now the camera's parent rig, "Camera Man")
+		//   Regress:  Enter Shop, wheel-scroll down: camera holds position while scrolling;
+		//             combat hit shakes still work (Shaker keeps owning camera localPosition)
+		//   Related:  Assets/MilkShake/Scripts/Shaker.cs Update(), dynamic scroll bounds (ComputeDynamicMinY)
+		_scrollTarget = _mainCamera.transform.parent != null ? _mainCamera.transform.parent : _mainCamera.transform;
+		_cameraInitialY = _scrollTarget.position.y;
 	}
 	
+	// Live Inspector tuning: OnValidate (editor-only) flags a relayout and Update applies it on
+	// the next frame, so Inspector edits to xOffset / yOffset / shopItemPos / playerDeckPos take
+	// effect at once instead of waiting for the next buy / sell / reroll.
+	private bool _layoutDirty = false;
+
 	private void Update()
 	{
+		if (_layoutDirty)
+		{
+			_layoutDirty = false;
+			RelayoutAll();
+		}
 		HandleCameraScroll();
 	}
+
+	private void OnValidate()
+	{
+		_layoutDirty = true;
+	}
 	
+	/// <summary>
+	/// Dynamic downward scroll limit: derived from the bottom-most player-deck row so the
+	/// camera can always reach the last row regardless of deck size. Slot count drives the
+	/// row count (empty slots are persistent visible content); falls back to the fixed
+	/// cameraMinY when the layout is not resolvable.
+	/// </summary>
+	private float ComputeDynamicMinY()
+	{
+		int slotCount = _spawnedEmptySlots.Count;
+		if (slotCount <= 0 && ShopManager.me != null && ShopManager.me.deckSize != null)
+		{
+			slotCount = ShopManager.me.deckSize.value;
+		}
+		if (slotCount <= 0 || objPerRow <= 0 || _mainCamera == null)
+		{
+			return cameraMinY;
+		}
+
+		int rows = (slotCount + objPerRow - 1) / objPerRow;
+		float bottomRowY = playerDeckPos.y - (rows - 1) * yOffset;
+		float viewHalfHeight = _mainCamera.orthographic
+			? _mainCamera.orthographicSize
+			: Mathf.Tan(_mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) * Mathf.Abs(_mainCamera.transform.position.z);
+		return (bottomRowY - viewHalfHeight + scrollBottomPadding) - _cameraInitialY;
+	}
+
 	/// <summary>
 	/// Handle mouse wheel control of camera up/down movement
 	/// </summary>
 	private void HandleCameraScroll()
 	{
-		if (!enableCameraScroll || _mainCamera == null)
+		if (!enableCameraScroll || _mainCamera == null || _scrollTarget == null)
 			return;
 		
 		float scrollInput = Input.GetAxis("Mouse ScrollWheel");
@@ -458,11 +558,13 @@ public class ShopUXManager : MonoBehaviour
 			return;
 		
 		// Calculate new Y position
-		Vector3 cameraPos = _mainCamera.transform.position;
-		cameraPos.y -= scrollInput * cameraScrollSpeed;
-		cameraPos.y = Mathf.Clamp(cameraPos.y, _cameraInitialY + cameraMinY, _cameraInitialY + cameraMaxY);
+		float minYOffset = useDynamicScrollBounds ? ComputeDynamicMinY() : cameraMinY;
+		Vector3 cameraPos = _scrollTarget.position;
+		// Wheel up (positive input) moves the camera up toward the shop row; wheel down dives into the deck
+		cameraPos.y += scrollInput * cameraScrollSpeed;
+		cameraPos.y = Mathf.Clamp(cameraPos.y, _cameraInitialY + minYOffset, _cameraInitialY + cameraMaxY);
 		
-		_mainCamera.transform.position = cameraPos;
+		_scrollTarget.position = cameraPos;
 	}
 	
 	/// <summary>
@@ -470,11 +572,11 @@ public class ShopUXManager : MonoBehaviour
 	/// </summary>
 	public void ResetCameraPosition()
 	{
-		if (_mainCamera == null) return;
-		
-		Vector3 cameraPos = _mainCamera.transform.position;
+		if (_scrollTarget == null) return;
+
+		Vector3 cameraPos = _scrollTarget.position;
 		cameraPos.y = _cameraInitialY;
-		_mainCamera.transform.position = cameraPos;
+		_scrollTarget.position = cameraPos;
 	}
 	
 	/// <summary>
@@ -809,8 +911,7 @@ public class ShopUXManager : MonoBehaviour
 				continue;
 			}
 			
-			// Calculate position
-			Vector3 spawnPosition = shopItemPos + new Vector3((i - 1) * xOffset, 0f, 0f);
+			Vector3 spawnPosition = GetShopItemSlotPosition(i);
 			
 			// Instantiate physical card (from shop start position, trigger DOTween entry animation)
 			Vector3 initialPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;

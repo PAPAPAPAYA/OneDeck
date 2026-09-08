@@ -1123,9 +1123,33 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_text
+      value: $77
+      objectReference: {fileID: 0}
+    - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_fontStyle
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_fontColor.b
+      value: 0.21568628
+      objectReference: {fileID: 0}
+    - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_fontColor.g
+      value: 0.1882353
+      objectReference: {fileID: 0}
+    - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_fontColor.r
+      value: 0.101960786
+      objectReference: {fileID: 0}
+    - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: -5703313505547693256, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
+    - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4281806874
+      objectReference: {fileID: 0}
     - target: {fileID: 3672225787955730436, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_text
       value: "> \u4F60 \u53D7\u5230 2 \u4F24\u5BB3"
