@@ -1228,9 +1228,12 @@ MonoBehaviour:
 
     Press <b>[S]</b> to TOGGLE buying/selling'
   sellMode: 0
-  incomePerSession: 2
-  hpMaxPerSession: 2
-  deckSizePerSession: 1
+  incomeGrowthPerStep: 2
+  sessionsPerIncomeStep: 1
+  hpMaxGrowthPerStep: 2
+  sessionsPerHpMaxStep: 1
+  deckSizeGrowthPerStep: 1
+  sessionsPerDeckSizeStep: 1
   deckSlotBasePrice: 4
   deckSlotPriceStep: 2
   deckSlotPurchasesRef: {fileID: 11400000, guid: f7108533cd29ce143a91c62f18e07716, type: 2}
@@ -1778,22 +1781,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 2424560831447566516, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 1590914822883340471, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 8652292240949848764, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1 &297125757
 GameObject:

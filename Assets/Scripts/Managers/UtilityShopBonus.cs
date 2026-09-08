@@ -9,18 +9,24 @@ using UnityEngine;
 /// demand - no accumulated state, so selling a utility card automatically
 /// removes its bonus. The deck-size meter is the single documented exception:
 /// it uses a run-persistent purchase counter owned by ShopManager.
-/// Baseline growth formulas: payday = payCheck + incomePerSession * session;
-/// hpMax = hpMaxOg + hpMaxPerSession * session + sum(HP cards);
-/// deckSize = deckSizeOg + deckSizePerSession * session + slotPurchases, clamped [1, ceiling].
+/// Baseline growth formulas (step growth: a step lands at session N, 2N, ...;
+/// sessionsPerStep = 1 degenerates to the legacy every-session slope):
+/// payday = payCheck + incomeGrowthPerStep * (session / sessionsPerIncomeStep);
+/// hpMax = hpMaxOg + hpMaxGrowthPerStep * (session / sessionsPerHpMaxStep) + sum(HP cards);
+/// deckSize = deckSizeOg + deckSizeGrowthPerStep * (session / sessionsPerDeckSizeStep) + slotPurchases, clamped [1, ceiling].
 /// </summary>
 public static class UtilityShopBonus
 {
-	// Baseline growth fallbacks; ShopManager serializes its own tunables and passes them in.
-	public const int DefaultIncomePerSession = 2;
-	public const int DefaultHpMaxPerSession = 2;
-	public const int DefaultDeckSizePerSession = 1;
-	public const int DefaultDeckSlotBasePrice = 4;
-	public const int DefaultDeckSlotPriceStep = 2;
+	/// <summary>
+	/// Step growth: growthPerStep applied every sessionsPerGrowth sessions (integer floor).
+	/// session 0..N-1 = 0 steps, N..2N-1 = 1 step, etc. Non-positive growth = 0;
+	/// non-positive interval clamps to 1 (every-session slope).
+	/// </summary>
+	public static int StepGrowth(int session, int growthPerStep, int sessionsPerGrowth)
+	{
+		if (growthPerStep <= 0) return 0;
+		return growthPerStep * (Mathf.Max(0, session) / Mathf.Max(1, sessionsPerGrowth));
+	}
 
 	/// <summary>Aggregated utility contribution of a deck. Recompute on every deck change.</summary>
 	public class Bonus
@@ -169,19 +175,19 @@ public static class UtilityShopBonus
 		}
 	}
 
-	public static int ComputePayday(int payCheckBase, int sessionNum, int incomePerSession, Bonus bonus)
+	public static int ComputePayday(int payCheckBase, int sessionNum, int incomeGrowthPerStep, int sessionsPerIncomeStep, Bonus bonus)
 	{
-		return payCheckBase + Mathf.Max(0, incomePerSession) * Mathf.Max(0, sessionNum) + (bonus != null ? bonus.paydayBonus : 0);
+		return payCheckBase + StepGrowth(sessionNum, incomeGrowthPerStep, sessionsPerIncomeStep) + (bonus != null ? bonus.paydayBonus : 0);
 	}
 
-	public static int ComputeHpMax(int hpMaxOg, int sessionNum, int hpMaxPerSession, Bonus bonus)
+	public static int ComputeHpMax(int hpMaxOg, int sessionNum, int hpMaxGrowthPerStep, int sessionsPerHpMaxStep, Bonus bonus)
 	{
-		return hpMaxOg + Mathf.Max(0, hpMaxPerSession) * Mathf.Max(0, sessionNum) + (bonus != null ? bonus.hpMaxBonus : 0);
+		return hpMaxOg + StepGrowth(sessionNum, hpMaxGrowthPerStep, sessionsPerHpMaxStep) + (bonus != null ? bonus.hpMaxBonus : 0);
 	}
 
-	public static int ComputeDeckSize(int deckSizeOg, int sessionNum, int deckSizePerSession, int slotPurchases, int ceiling)
+	public static int ComputeDeckSize(int deckSizeOg, int sessionNum, int deckSizeGrowthPerStep, int sessionsPerDeckSizeStep, int slotPurchases, int ceiling)
 	{
-		int value = deckSizeOg + Mathf.Max(0, deckSizePerSession) * Mathf.Max(0, sessionNum) + Mathf.Max(0, slotPurchases);
+		int value = deckSizeOg + StepGrowth(sessionNum, deckSizeGrowthPerStep, sessionsPerDeckSizeStep) + Mathf.Max(0, slotPurchases);
 		return Mathf.Clamp(value, 1, Mathf.Max(1, ceiling));
 	}
 

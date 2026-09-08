@@ -75,12 +75,21 @@ public class ShopManager : MonoBehaviour
 	public bool sellMode = false; // if it's not sell mode then its buy mode
 
 	[Header("Utility Baseline Growth (plan v2)")]
-	[Tooltip("Payday bonus added per session number.")]
-	public int incomePerSession = 2;
-	[Tooltip("hpMax added per session number, applied on top of hpMaxOg at shop entry.")]
-	public int hpMaxPerSession = 2;
-	[Tooltip("Deck size added per session number, applied on top of deckSizeOg at shop entry.")]
-	public int deckSizePerSession = 1;
+	[Tooltip("Payday growth added per completed growth step.")]
+	public int incomeGrowthPerStep = 2;
+	[Min(1)]
+	[Tooltip("Sessions per payday growth step. 1 = grow every session (legacy). A step lands at session N, 2N, ...")]
+	public int sessionsPerIncomeStep = 1;
+	[Tooltip("hpMax growth added per completed growth step, applied on top of hpMaxOg at shop entry.")]
+	public int hpMaxGrowthPerStep = 2;
+	[Min(1)]
+	[Tooltip("Sessions per hpMax growth step.")]
+	public int sessionsPerHpMaxStep = 1;
+	[Tooltip("Deck size growth added per completed growth step, applied on top of deckSizeOg at shop entry.")]
+	public int deckSizeGrowthPerStep = 1;
+	[Min(1)]
+	[Tooltip("Sessions per deck-size growth step.")]
+	public int sessionsPerDeckSizeStep = 1;
 	[Tooltip("Price of the first deck-slot purchase of a run; each prior purchase adds deckSlotPriceStep.")]
 	public int deckSlotBasePrice = 4;
 	[Tooltip("Price increase per already-made deck-slot purchase this run.")]
@@ -391,7 +400,7 @@ public class ShopManager : MonoBehaviour
 		ResetVisitCounters();
 		RefreshUtilityBonus();
 		ApplyBaselineGrowth();
-		purse.value += UtilityShopBonus.ComputePayday(payCheck.value, GetSessionNum(), incomePerSession, _utilityBonus);
+		purse.value += UtilityShopBonus.ComputePayday(payCheck.value, GetSessionNum(), incomeGrowthPerStep, sessionsPerIncomeStep, _utilityBonus);
 		RunRecorder.OnPayday(purse.value); // Async-PvP: goldAfterPayday snapshot before spending (plan §2.6)
 		// process shop items and display
 		GenerateShopItems();
@@ -653,7 +662,7 @@ public class ShopManager : MonoBehaviour
 		{
 			int purchases = deckSlotPurchasesRef != null ? deckSlotPurchasesRef.value : 0;
 			int ceiling = maxDeckSize != null ? maxDeckSize.value : 16;
-			deckSize.value = UtilityShopBonus.ComputeDeckSize(deckSize.valueOg, session, deckSizePerSession, purchases, ceiling);
+			deckSize.value = UtilityShopBonus.ComputeDeckSize(deckSize.valueOg, session, deckSizeGrowthPerStep, sessionsPerDeckSizeStep, purchases, ceiling);
 			ShopUXManager.Instance?.SpawnAdditionalEmptySpaces();
 		}
 		ApplyHpMaxFromDeck();
@@ -668,7 +677,7 @@ public class ShopManager : MonoBehaviour
 	{
 		var status = CombatManager.Me != null ? CombatManager.Me.ownerPlayerStatusRef : null;
 		if (status == null) return;
-		status.hpMax = UtilityShopBonus.ComputeHpMax(status.hpMaxOg, GetSessionNum(), hpMaxPerSession, _utilityBonus);
+		status.hpMax = UtilityShopBonus.ComputeHpMax(status.hpMaxOg, GetSessionNum(), hpMaxGrowthPerStep, sessionsPerHpMaxStep, _utilityBonus);
 		status.hp = status.hpMax;
 	}
 

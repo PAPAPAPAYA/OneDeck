@@ -192,7 +192,15 @@ public class UtilityShopBonusTests : HeadlessCombatTestFixture
 	{
 		MakeCard(EnumStorage.UtilityKind.Income, 5, 0, typeId: "INC_F");
 		var bonus = UtilityShopBonus.Compute(_created);
-		Assert.AreEqual(12 + 2 * 3 + 5, UtilityShopBonus.ComputePayday(12, 3, 2, bonus));
+		Assert.AreEqual(12 + 2 * 3 + 5, UtilityShopBonus.ComputePayday(12, 3, 2, 1, bonus));
+	}
+
+	[Test]
+	public void PaydayFormula_IntervalSpacing()
+	{
+		// growth 2 / interval 2: session 3 = 1 step, session 4 = 2 steps
+		Assert.AreEqual(12 + 2 * 1, UtilityShopBonus.ComputePayday(12, 3, 2, 2, null));
+		Assert.AreEqual(12 + 2 * 2, UtilityShopBonus.ComputePayday(12, 4, 2, 2, null));
 	}
 
 	[Test]
@@ -200,18 +208,55 @@ public class UtilityShopBonusTests : HeadlessCombatTestFixture
 	{
 		MakeCard(EnumStorage.UtilityKind.HpMax, 4, 0, typeId: "HP_F");
 		var bonus = UtilityShopBonus.Compute(_created);
-		Assert.AreEqual(30 + 2 * 2 + 4, UtilityShopBonus.ComputeHpMax(30, 2, 2, bonus));
+		Assert.AreEqual(30 + 2 * 2 + 4, UtilityShopBonus.ComputeHpMax(30, 2, 2, 1, bonus));
 	}
 
 	[Test]
 	public void DeckSize_ClampsToCeilingAndFloor()
 	{
 		// 3 + 1*2 + 14 = 19 -> ceiling 16
-		Assert.AreEqual(16, UtilityShopBonus.ComputeDeckSize(3, 2, 1, 14, 16));
+		Assert.AreEqual(16, UtilityShopBonus.ComputeDeckSize(3, 2, 1, 1, 14, 16));
 		// negative purchases are defensively treated as 0, not as shrinkage
-		Assert.AreEqual(3, UtilityShopBonus.ComputeDeckSize(3, 0, 0, -50, 16));
+		Assert.AreEqual(3, UtilityShopBonus.ComputeDeckSize(3, 0, 0, 1, -50, 16));
 		// floor: og below 1 clamps up to 1
-		Assert.AreEqual(1, UtilityShopBonus.ComputeDeckSize(0, 0, 0, 0, 16));
+		Assert.AreEqual(1, UtilityShopBonus.ComputeDeckSize(0, 0, 0, 1, 0, 16));
+	}
+
+	[Test]
+	public void DeckSize_IntervalGrowthStillClamped()
+	{
+		// growth 1 / interval 2: session 4 = 2 steps -> 3 + 2 = 5
+		Assert.AreEqual(5, UtilityShopBonus.ComputeDeckSize(3, 4, 1, 2, 0, 16));
+		// interval growth still respects the ceiling: 3 + 2 + 14 -> 16
+		Assert.AreEqual(16, UtilityShopBonus.ComputeDeckSize(3, 4, 1, 2, 14, 16));
+	}
+
+	[Test]
+	public void StepGrowth_IntervalFloorSemantics()
+	{
+		// growth 1 / interval 2: growth lands at sessions 2, 4, 6...
+		Assert.AreEqual(0, UtilityShopBonus.StepGrowth(0, 1, 2));
+		Assert.AreEqual(0, UtilityShopBonus.StepGrowth(1, 1, 2));
+		Assert.AreEqual(1, UtilityShopBonus.StepGrowth(2, 1, 2));
+		Assert.AreEqual(1, UtilityShopBonus.StepGrowth(3, 1, 2));
+		Assert.AreEqual(2, UtilityShopBonus.StepGrowth(4, 1, 2));
+		// growth 2 / interval 3: sessions 1-2 flat, 3-5 +2 each... lands at 3 (one step)
+		Assert.AreEqual(0, UtilityShopBonus.StepGrowth(2, 2, 3));
+		Assert.AreEqual(2, UtilityShopBonus.StepGrowth(3, 2, 3));
+		Assert.AreEqual(4, UtilityShopBonus.StepGrowth(6, 2, 3));
+	}
+
+	[Test]
+	public void StepGrowth_DefensiveInputs()
+	{
+		// non-positive growth = no growth regardless of interval
+		Assert.AreEqual(0, UtilityShopBonus.StepGrowth(10, 0, 2));
+		Assert.AreEqual(0, UtilityShopBonus.StepGrowth(10, -1, 2));
+		// non-positive interval clamps to 1 -> legacy every-session slope
+		Assert.AreEqual(10, UtilityShopBonus.StepGrowth(10, 1, 0));
+		Assert.AreEqual(10, UtilityShopBonus.StepGrowth(10, 1, -3));
+		// negative session clamps to 0 growth
+		Assert.AreEqual(0, UtilityShopBonus.StepGrowth(-5, 1, 1));
 	}
 
 	[Test]
