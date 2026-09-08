@@ -152,7 +152,9 @@ Interpretation:
 	- *Status 2026-09-05*: day-4 intake held at 43 (vs 39 on day 3) instead of decaying; 235 will be crossed around Sep 8, week-1 tracking to **~270–290 reviews** (≈ 8,000–11,000 units). See §9.
 	- *Status 2026-09-06*: 235 crossing on Sep 6 (2 days ahead of the revised estimate); day-5 intake 35 confirms the decay curve; week-1 tracking ~270–275 reviews, inside the revised band. See §10.
 	- *Status 2026-09-07*: 249 total by day 7 03:10 UTC; day-6 intake ~26 confirms the decay curve; week-1 ≈ 275 on track. See §11.
+	- *Status 2026-09-08*: week 1 closed at **267 reviews** (48/55/39/42/35/26/22) — ~1% under the revised 270–275 band; the week-1 → units call (≈8,000–11,000 at 30–40×) stands.
 - **2026-09-18**: if the daily rate has dropped below ~15/day, month-1 settles toward the lower band (~450 reviews).
+	- *Status 2026-09-08 (interim)*: day-7 intake 22, day-8 tracking ~23/day (12 reviews by 12:15 UTC) — still above the 15/day trigger; month-1 mid-band currently favored.
 
 ## 9. Recheck — 2026-09-05 (day 4–5)
 
@@ -210,7 +212,7 @@ Per-day intake: 48 → 55 → 39 → 42 → 35 → ~26 → (day 7 running ~30/da
 
 1. **Week-1 forecast locked in**: day-6 intake landed on the corrected model (~30/day for days 6–7). Week-1 total tracking ≈ **275 reviews ≈ 8,000–11,000 units**, inside the §10 revised band; no model change needed. Next checkpoint (2026-09-18, <15/day → month-1 low band): day 6 at ~26/day is still above the trigger.
 2. **Negative-pressure relief**: zero new negatives in the 20 h window (23 → 23). The only Sep-6 negative is a QoL/polish complaint (EN, 9.6 h: "interesting but needs polish; UI choices frustrating; video settings don't work correctly") — ops-level, not design-level. Marginal positive rate rebounded to ~96–100% (vs 85% in the two prior windows) and the cumulative rate ticked up to 90.8%; the §9/§10 early warning did not escalate.
-3. **Language mix**: fresh 25-review window (Sep 6 04:03 → Sep 7 03:10) — english 18 (72%), japanese 3, koreana 2, italian 1 (first), brazilian 1, **schinese 0** — first window without zh-CN reviews since launch week; East-Asian share cooled to 20% (from ~33%), read as window volatility rather than trend. zh-CN lifetime negative count remains 0.
+3. **Language mix**: fresh 25-review window (Sep 6 04:03 → Sep 7 03:10) — english 18 (72%), japanese 3, koreana 2, italian 1 (first), brazilian 1, **schinese 0** — first window without zh-CN reviews since launch week; East-Asian share cooled to 20% (from ~33%), read as window volatility rather than trend. *(Corrected 2026-09-08: the closing claim "zh-CN lifetime negative count remains 0" was wrong and contradicted §10 — zh-CN negatives stood at 3 lifetime as of Sep 8: Sep 4 archetype-balance, Sep 5 "content unfinished", Sep 7 a 200-h Backpack Battles veteran's balance critique; zh-CN totals 33 = 30 pos / 3 neg, 91% positive.)*
 4. **Intake is now region-cyclical**: the day-7 early block (00:00–03:10 UTC = US prime time) delivered 4+ reviews while Sep-6 EU hours were slow — daily totals sampled in EU-morning hours will understate the pace; prefer 24 h+ windows.
 5. **Sales implication**: day-6 ~26 reviews × 30–40× → ~800–1,000 units/day; cumulative week-1 ≈ 8,000–11,000 units unchanged; month-1 bands unchanged.
 6. Data-quality note: Steam's `appreviews` edge cache served stale lists intermittently this session (one "recent" page dated ~2 days back while totals were fresh); totals were cross-checked on two independent fetches and the day-6 count reconciled against the cumulative chain (219 + 5 + 21 + 4 = 249, ±2).

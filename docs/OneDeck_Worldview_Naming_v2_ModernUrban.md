@@ -1,5 +1,6 @@
 # OneDeck 世界观迭代 v2 —— 现代都市怪谈(卡名全案)
 
+> **已于 2026-09-08 被 `docs/OneDeck_Worldview_Naming_v3_CultPulp.md`(v3,古典邪教 × 低俗恐怖)取代,本档仅作历史留存,不再作为命名依据。**
 > 2026-08-31 · 前置:`docs/OneDeck_Worldview_Naming_v1_NewWeirdCult.md`(v1,机制词方案已被 4.0 desc 架空)· 数据源:Notion「4.0 card database」(90 行)
 > 状态:**命名方案,待圈改(五轮微调:2026-08-31 宗教系人物退场,死亡意象 9→12)** · 讨论结论:机制词(埋葬/复活/强化/诅咒/苏醒/揭晓/生成/放逐/置顶/延后)全部保留白话,不包装;世界观只承载在卡名。
 > 本案范围:仅 `CardScript.displayName`。不动 `cardTypeID`(存档/统计/预制的唯一标识),不动 `cardDesc` 机制文本。
