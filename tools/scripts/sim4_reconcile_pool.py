@@ -16,15 +16,57 @@ Checks:
 	FAIL: cid present on one side only (missing / extra card)
 	FAIL: creature card ATK mismatch (prefab printedAttack vs Notion ATK)
 	FAIL: creature flag mismatch (prefab cardType vs Notion 生物)
+	FAIL: desc content mismatch (markup-stripped, punctuation-width normalized)
 	INFO: display-name drift (trailing '*' in Notion 中文名 is a user marker
 	      and is stripped before comparison)
 Exit code 0 when no FAIL items, 1 otherwise.
 """
 
 import json
+import re
 import sys
 
 EXCLUDED_STATUS = ('备用', '已删')
+
+
+TAG_CN_TO_ENUM = {
+	'埋葬': 'Bury', '遗言': 'DeathRattle', '强化': 'Enhance',
+	'信徒': 'Believer', '放逐': 'Exile', '诅咒': 'Curse',
+	'苏醒': 'Awaken', '被动': 'Passive', '复活': 'Revive',
+	'强化反应': 'EnhanceReaction', '多次攻击': 'MultiAttack',
+}
+TAG_ENUM_TO_CN = {v: k for k, v in TAG_CN_TO_ENUM.items()}
+
+
+def strip_markup(s):
+	# <tag:X> renders the tag's display name; the DB writes the display form
+	# directly as [信徒]. Normalize both to the same bracketed display form.
+	s = re.sub(r'<tag:(\w+)>', lambda m: '[%s]' % TAG_ENUM_TO_CN.get(
+		m.group(1), m.group(1)), s)
+	s = re.sub(r'<b>|</b>', '', s)
+	# Prefab tag references serialize as [<tag:X>] while the DB writes the
+	# display form [信徒]; brackets carry no content, drop them on both sides.
+	s = s.replace('[', '').replace(']', '')
+	return s.replace('\\n', ' ')
+
+
+def norm_desc(s):
+	"""Content-level desc normalization.
+
+	Based on tools/outputs/compare_db_to_unity_20260907.py `norm`, with the
+	fullwidth semicolon and ASCII colon mapped too. Prefab descs are
+	halfwidth-punctuation (Card Face Template v1.1: the font has no fullwidth
+	glyphs) while the DB keeps the fullwidth readable variant, so punctuation
+	width must not count as drift.
+	"""
+	if s is None:
+		return ''
+	s = strip_markup(s)
+	s = s.replace('揭晓时:', '').replace('揭晓时：', '')
+	for ch in ('：', '；', '，', '、', '。', ',', ';', ':'):
+		s = s.replace(ch, ';')
+	s = s.replace('×', 'x').replace(' ', '')
+	return s.lower()
 
 
 def load_rows(prefab_path, notion_path):
@@ -63,6 +105,27 @@ def main():
 		elif n.get('生物') != '非生物':
 			fails.append(f'creature flag mismatch: {cid} prefab=non-creature '
 						 f'notion={n.get("生物")}')
+		if norm_desc(p['card_desc']) != norm_desc(n.get('card desc')):
+			fails.append(f'desc mismatch: {cid}\n'
+						 f'    prefab: {p["card_desc"]}\n'
+						 f'    notion: {n.get("card desc")}')
+		# DB tag column may arrive as a JSON-encoded string or an array.
+		raw_tag = n.get('tag') or '[]'
+		if isinstance(raw_tag, str):
+			try:
+				notion_tags = json.loads(raw_tag)
+			except json.JSONDecodeError:
+				notion_tags = []
+		else:
+			notion_tags = raw_tag
+		notion_tag_set = {TAG_CN_TO_ENUM.get(t, t) for t in notion_tags}
+		# Linger/ManaX are 3.0-legacy prefab tags with no DB counterpart;
+		# Passive IS a real DB tag (glossary: 被动 prefix and tag must be
+		# paired), so it is compared like any other tag.
+		prefab_tag_set = set(p.get('tags') or []) - {'Linger', 'ManaX'}
+		if notion_tag_set != prefab_tag_set:
+			fails.append(f'tag mismatch: {cid} prefab={sorted(prefab_tag_set)} '
+						 f'notion={sorted(notion_tag_set)}')
 		pn = (n.get('中文名') or '').rstrip('*')
 		if pn and pn != p['display_name']:
 			infos.append(f'display drift: {cid} prefab={p["display_name"]} '
