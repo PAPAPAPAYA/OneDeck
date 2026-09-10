@@ -79,7 +79,9 @@ public class ResultStatsPanel : MonoBehaviour
 	private ResultStatsPanelLayout _layout;
 
 	/// <summary>
-	/// Build the panel under the given canvas with the given session rows. Call once per Result phase entry.
+	/// Build the panel as a screen-filling ROOT canvas modeled on the given canvas (render mode and
+	/// camera copied from it, so the rendering path stays the game canvas'), with the given session
+	/// rows. Call once per Result phase entry.
 	/// Layout defaults to ResultStatsPanelLayout defaults when null.
 	/// </summary>
 	public void Build(Canvas canvas, List<PerCardStatRecord> rows, ResultStatsPanelLayout layout = null)
@@ -91,9 +93,28 @@ public class ResultStatsPanel : MonoBehaviour
 		_rows = rows;
 		_layout = layout ?? new ResultStatsPanelLayout();
 
-		// Root: own Canvas + CanvasScaler so internal pixels are predictable regardless of the game canvas
+		// VISUAL-FIX(2026-09-09): Square Game window (1080x1080) showed only ~1 stat row per half again
+		//   Cause:    The panel root was a canvas NESTED under the Result Canvas. Unity renders a
+		//             nested canvas with its parent ROOT canvas' scale and ignores the nested
+		//             canvas' own CanvasScaler — so the 2026-09-04 matchWidthOrHeight=1 choice below
+		//             never took effect. Panel units were parent-canvas units, and the match-width
+		//             parent only made those equal reference pixels in a 1080x1920 window. In a
+		//             1080x1080 window the screen was 1080 units tall instead of 1920:
+		//             AdaptiveAnchorMax reserved 628/1920 of it for content needing 628 units, each
+		//             half's ScrollView viewport got 42.63 units < one 60-unit row, and RectMask2D
+		//             clipped every row after the first (tracker rows were all present — the data
+		//             layer was never at fault).
+		//   Affects:  ResultStatsPanel Build (root canvas creation)
+		//   Regress:  Enter Result at 1080x1920 (portrait, layout unchanged), 1080x1080 (every row
+		//             fully visible), 1920x1080 (~7 rows + wheel scroll); resize the Game window
+		//             freely during the Result phase — the CanvasScaler re-derives the scale with no
+		//             rebuild. Panel must also render under camera post-processing like before.
+		// Root canvas: NOT parented under the game canvas anymore, so the panel's own CanvasScaler
+		// (match height, below) actually drives the scale: one panel unit is always 1/1920 of the
+		// screen height, at any window size and aspect. Render mode + camera + plane distance mirror
+		// the donor canvas so the Screen Space Camera rendering path (pixelation, sorting) is
+		// unchanged from the nested days.
 		var rootGo = new GameObject("ResultStatsPanelRoot", typeof(RectTransform));
-		rootGo.transform.SetParent(canvas.transform, false);
 		_root = (RectTransform)rootGo.transform;
 		_root.anchorMin = Vector2.zero;
 		_root.anchorMax = Vector2.one;
@@ -101,7 +122,9 @@ public class ResultStatsPanel : MonoBehaviour
 		_root.offsetMax = Vector2.zero;
 
 		var ownCanvas = rootGo.AddComponent<Canvas>();
-		ownCanvas.overrideSorting = true;
+		ownCanvas.renderMode = canvas.renderMode;
+		ownCanvas.worldCamera = canvas.worldCamera;
+		ownCanvas.planeDistance = canvas.planeDistance;
 		ownCanvas.sortingOrder = _layout.sortingOrder;
 		var scaler = rootGo.AddComponent<CanvasScaler>();
 		scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;

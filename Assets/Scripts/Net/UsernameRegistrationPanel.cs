@@ -79,8 +79,8 @@ public class UsernameRegistrationPanel : MonoBehaviour
 		rootGo.AddComponent<Canvas>();
 		Canvas canvas = rootGo.GetComponent<Canvas>();
 		// A runtime Canvas on a ROOT object defaults to WorldSpace (a 780x720 plane at the world
-		// origin); ResultStatsPanel only escapes this because it nests under the scene canvas.
-		// Overlay is what lets the CanvasScaler drive the on-screen pixel size.
+		// origin); Overlay is what lets the CanvasScaler drive the on-screen pixel size.
+		// (ResultStatsPanel is also a root canvas and pins its mode by copying the game canvas'.)
 		canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 		canvas.overrideSorting = true;
 		canvas.sortingOrder = SortingOrder;

@@ -378,20 +378,29 @@ public class ResultStatsPanelTests : HeadlessCombatTestFixture
 
 		panel.Build(canvas, rows);
 
-		var playerContent = canvas.transform.Find("ResultStatsPanelRoot/Body/Halves/Half_Player/ScrollView/Viewport/Content");
-		var enemyContent = canvas.transform.Find("ResultStatsPanelRoot/Body/Halves/Half_Enemy/ScrollView/Viewport/Content");
+		// Root canvas contract: the panel is a scene-root canvas (not nested under the donor
+		// canvas) so its own CanvasScaler is authoritative, mirroring the donor's render path.
+		var root = GameObject.Find("ResultStatsPanelRoot");
+		Assert.IsNotNull(root, "Panel root must exist as a scene-root object");
+		var rootCanvas = root.GetComponent<Canvas>();
+		Assert.IsTrue(rootCanvas.isRootCanvas, "Panel must be a root canvas so its own CanvasScaler drives the scale");
+		Assert.AreEqual(canvas.renderMode, rootCanvas.renderMode, "Render mode must mirror the donor canvas (same rendering path)");
+		Assert.AreEqual(canvas.worldCamera, rootCanvas.worldCamera, "World camera must mirror the donor canvas");
+
+		var playerContent = root.transform.Find("Body/Halves/Half_Player/ScrollView/Viewport/Content");
+		var enemyContent = root.transform.Find("Body/Halves/Half_Enemy/ScrollView/Viewport/Content");
 		Assert.IsNotNull(playerContent, "Player half content should exist");
 		Assert.IsNotNull(enemyContent, "Enemy half content should exist");
 		Assert.AreEqual(1, playerContent.childCount, "Player half holds the player-created row");
 		Assert.AreEqual(1, enemyContent.childCount, "Enemy half holds the enemy-created row");
 
 		// Header: Card + one cell per registry column
-		var header = canvas.transform.Find("ResultStatsPanelRoot/Body/Halves/Half_Player/Header");
+		var header = root.transform.Find("Body/Halves/Half_Player/Header");
 		Assert.IsNotNull(header);
 		Assert.AreEqual(1 + CombatStatRegistry.GetColumnsSorted().Count, header.childCount);
 
 		panel.Clear();
-		Assert.IsNull(canvas.transform.Find("ResultStatsPanelRoot"), "Clear must destroy the panel root");
+		Assert.IsNull(GameObject.Find("ResultStatsPanelRoot"), "Clear must destroy the panel root");
 	}
 
 	[Test]
@@ -405,8 +414,8 @@ public class ResultStatsPanelTests : HeadlessCombatTestFixture
 
 		panel.Build(canvas, new List<PerCardStatRecord>());
 
-		var playerContent = canvas.transform.Find("ResultStatsPanelRoot/Body/Halves/Half_Player/ScrollView/Viewport/Content");
-		var enemyContent = canvas.transform.Find("ResultStatsPanelRoot/Body/Halves/Half_Enemy/ScrollView/Viewport/Content");
+		var playerContent = FindPanelContent("Half_Player");
+		var enemyContent = FindPanelContent("Half_Enemy");
 		Assert.IsNotNull(playerContent);
 		Assert.IsNotNull(enemyContent);
 		Assert.AreEqual(1, playerContent.childCount, "Empty player half shows a single placeholder row");
@@ -432,7 +441,7 @@ public class ResultStatsPanelTests : HeadlessCombatTestFixture
 
 		panel.Build(canvas, rows);
 
-		var playerContent = canvas.transform.Find("ResultStatsPanelRoot/Body/Halves/Half_Player/ScrollView/Viewport/Content");
+		var playerContent = FindPanelContent("Half_Player");
 		Assert.IsNotNull(playerContent);
 
 		// Cell order per row: 0=Card, 1=damage column
@@ -447,6 +456,16 @@ public class ResultStatsPanelTests : HeadlessCombatTestFixture
 		Assert.AreEqual("4 (25%)", smallDmgCell.text);
 
 		panel.Clear();
+	}
+
+	/// <summary>
+	/// The panel root is a scene-root canvas (not under the donor canvas, since the 2026-09-09
+	/// root-canvas fix) — locate its half content globally.
+	/// </summary>
+	private static Transform FindPanelContent(string halfName)
+	{
+		var root = GameObject.Find("ResultStatsPanelRoot");
+		return root != null ? root.transform.Find("Body/Halves/" + halfName + "/ScrollView/Viewport/Content") : null;
 	}
 
 	private static PerCardStatRecord MakeRow(string id, string name, CardFaction faction, float damageToOpponent, int instanceCount = 1)
