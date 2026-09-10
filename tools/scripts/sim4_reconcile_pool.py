@@ -27,6 +27,12 @@ import re
 import sys
 
 EXCLUDED_STATUS = ('备用', '已删')
+# Tokens: DB rows exist but engine-side they are generated, never prefabs
+# under the 4.0 folders; exclude from the missing-prefab direction.
+TOKEN_CIDS = ('JU_ON', 'RIFT')
+# Reconcile scope = current TRIAL_RARITY_DIRS; other rarities are deferred
+# batches and counted, not failed.
+RARITY_IN_SCOPE = ('normal', 'uncommon')
 
 
 TAG_CN_TO_ENUM = {
@@ -75,7 +81,8 @@ def load_rows(prefab_path, notion_path):
 	with open(notion_path, 'r', encoding='utf-8') as f:
 		rows = json.load(f)
 	notion = {r['CARD_TYPE_ID']: r for r in rows
-			  if r.get('状态') not in EXCLUDED_STATUS}
+			  if r.get('状态') not in EXCLUDED_STATUS
+			  and r.get('rarity') in RARITY_IN_SCOPE}
 	return prefab, notion
 
 
@@ -91,6 +98,8 @@ def main():
 	for cid in sorted(prefab.keys() - notion.keys()):
 		fails.append(f'prefab-only (missing in Notion): {cid}')
 	for cid in sorted(notion.keys() - prefab.keys()):
+		if cid in TOKEN_CIDS:
+			continue
 		fails.append(f'Notion-only (missing prefab): {cid}')
 
 	for cid in sorted(prefab.keys() & notion.keys()):
@@ -132,7 +141,8 @@ def main():
 						 f'notion={pn}')
 
 	print(f'[reconcile] prefab cards: {len(prefab)}, '
-		  f'active Notion cards: {len(notion)}')
+		  f'active in-scope Notion cards: {len(notion)} '
+		  f'(scope: {"+".join(RARITY_IN_SCOPE)})')
 	for line in infos:
 		print(f'[reconcile] INFO  {line}')
 	for line in fails:

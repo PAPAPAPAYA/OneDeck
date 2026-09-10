@@ -106,7 +106,9 @@ def card_rarity(cid):
 # Trial scope: Common only. Extend TRIAL_RARITY_DIRS for later batches
 # ('1_Uncommon', '2_Rare').
 # ---------------------------------------------------------------------------
-TRIAL_RARITY_DIRS = ('0_Common',)
+TRIAL_RARITY_DIRS = ('0_Common', '1_Uncommon')
+RARITY_DIR_TO_NAME = {'0_Common': 'normal', '1_Uncommon': 'uncommon',
+					  '2_Rare': 'rare'}
 
 # EnumStorage.CardType: None=0, Creature=1, Status=2
 CARD_TYPE_CREATURE = 1
@@ -383,23 +385,28 @@ class EventBus40:
 
 
 class Card40:
-	__slots__ = ('id', 'cid', 'owner', 'atk', 'attack_times', 'enhance_total',
+	__slots__ = ('id', 'cid', 'owner', 'printed_atk', 'enhance_total',
+				 'atk_mod_round', 'attack_times_base', 'attack_times_mod_round',
 				 'card_type', 'is_believer', 'is_passive', 'echo_bounce',
-				 'echo_counter', 'exiled', 'reveal_count', 'is_start', 'tags')
+				 'echo_counter', 'exiled', 'reveal_count', 'is_start', 'tags',
+				 'rarity')
 	_id_counter = 0
 
 	def __init__(self, cid, owner, atk=0, attack_times=1, card_type=0,
 				 is_believer=False, is_passive=False, is_start=False,
-				 tags=None):
+				 tags=None, rarity='normal'):
 		Card40._id_counter += 1
 		self.id = Card40._id_counter
 		self.cid = cid
 		self.owner = owner
-		# atk replaces the 3.0 `power` semantics: current attack value
-		# (printed attack + enhancements, 4.0 强化N).
-		self.atk = atk
-		self.attack_times = attack_times
+		# Attack ledger mirrors Unity CardScript: printedAttack +
+		# attackGrowth(=enhance_total, permanent, signed) +
+		# attackModThisRound(=atk_mod_round, cleared each round start).
+		self.printed_atk = atk
 		self.enhance_total = 0
+		self.atk_mod_round = 0
+		self.attack_times_base = attack_times
+		self.attack_times_mod_round = 0
 		self.card_type = card_type
 		self.is_believer = is_believer
 		self.is_passive = is_passive
@@ -409,10 +416,24 @@ class Card40:
 		self.reveal_count = 0
 		self.is_start = is_start
 		self.tags = list(tags or [])
+		self.rarity = rarity
+
+	@property
+	def atk(self):
+		return self.printed_atk + self.enhance_total + self.atk_mod_round
+
+	@property
+	def attack_times(self):
+		return self.attack_times_base + self.attack_times_mod_round
+
+	@property
+	def is_creature(self):
+		return self.card_type == CARD_TYPE_CREATURE
 
 	@property
 	def is_enhanced(self):
-		# 【被强化】 predicate: has received at least one enhance.
+		# 【被强化】 predicate: signed enhance_total > 0 (weaken can drive it
+		# negative through the same ledger — Unity attackGrowth semantics).
 		return self.enhance_total > 0
 
 	def __repr__(self):
@@ -434,7 +455,8 @@ def build_card40(cid, owner):
 				  attack_times=1 + (info['extra_attack_times'] or 0),
 				  card_type=info['card_type'] or 0,
 				  is_passive=info['is_passive'],
-				  tags=info['tags'])
+				  tags=info['tags'],
+				  rarity=RARITY_DIR_TO_NAME.get(info['rarity'], 'normal'))
 
 
 class GameState40:
@@ -451,6 +473,17 @@ class GameState40:
 		# "Every card triggers once per round" (Start Card AlwaysBottom):
 		# keys (card.id, timing) consumed for the current round.
 		self.round_triggered = set()
+		# Damage ledger for conservation checks (Step 6): per-target-side
+		# accumulated attack damage; must equal initial HP - current HP.
+		self.damage_dealt = {'A': 0, 'B': 0}
+		self.hp_initial = None  # snapshot taken at combat setup
+		# Per-round counters (reset each shuffle) for 本回合-limited effects.
+		self.exiled_friendly_this_round = {'A': 0, 'B': 0}
+		self.buried_creatures_this_round = {'A': 0, 'B': 0}
+		self.revived_friendly_this_round = {'A': 0, 'B': 0}
+		# Static-aura / rule-modifying passive presence (owner -> count/bool);
+		# computed once at combat setup (passives are immovable).
+		self.passive_flags = {}
 
 	def _trip(self, reason):
 		if self.divergence is None:
@@ -507,6 +540,8 @@ def bury_card_40(state, card):
 		_remove_from_deck(state, card)
 	state.deck.insert(0, card)
 	state.start_card_index += 1
+	if card.is_creature:
+		state.buried_creatures_this_round[card.owner] += 1
 	state.bus.fire('any_buried', {'card': card})
 	return card
 
@@ -523,7 +558,7 @@ def reveal_top_40(state):
 	return card
 
 
-def revive_card_40(state, card):
+def revive_card_40(state, card, source=None):
 	"""Graveyard -> deck top; fires 'awaken'. Passive/echo cards excluded."""
 	if card.is_passive or card.echo_bounce:
 		state._trip(f'revive on passive/echo card {card.cid}')
@@ -532,12 +567,14 @@ def revive_card_40(state, card):
 		return card
 	_remove_from_deck(state, card)
 	state.deck.append(card)
-	state.bus.fire('awaken', {'card': card})
+	state.bus.fire('awaken', {'card': card,
+							  'source_cid': source.cid if source else None})
 	return card
 
 
-def delayed_revive_card_40(state, card):
-	"""Revive variant landing at 起始卡前一格 (one above the start card)."""
+def delayed_revive_card_40(state, card, source=None):
+	"""Revive variant landing at 起始卡前一格 (one above the start card);
+	fires awaken (user ruling: revive variant)."""
 	if card.is_passive or card.echo_bounce:
 		state._trip(f'delayed revive on passive/echo card {card.cid}')
 		return card
@@ -545,7 +582,8 @@ def delayed_revive_card_40(state, card):
 		return card
 	_remove_from_deck(state, card)
 	state.deck.insert(state.start_card_index + 1, card)
-	state.bus.fire('awaken', {'card': card})
+	state.bus.fire('awaken', {'card': card,
+							  'source_cid': source.cid if source else None})
 	return card
 
 
@@ -583,17 +621,21 @@ def add_alive_40(state, card, position='bottom'):
 
 
 def exile_card_40(state, card):
-	_remove_from_deck(state, card)
+	# The card may sit in the reveal zone (outside the deck), e.g. a
+	# believer exiling itself right after its reveal effect.
+	if card in state.deck:
+		_remove_from_deck(state, card)
 	card.exiled = True
+	state.exiled_friendly_this_round[card.owner] += 1
 	state.bus.fire('any_exiled', {'card': card})
 	return card
 
 
 def give_enhance_40(state, card, amount, source=None):
-	"""强化N: atk +N (permanent), tracks the 【被强化】 predicate."""
+	"""强化N: permanent +N via the enhance ledger (Unity attackGrowth);
+	tracks the 【被强化】 predicate."""
 	if amount <= 0:
 		return card
-	card.atk += amount
 	card.enhance_total += amount
 	state.bus.fire('enhanced', {'card': card, 'amount': amount,
 								'source': source})
@@ -630,6 +672,13 @@ def shuffle_round_40(state, rng):
 	place_passives_40(state)
 	state.round_num += 1
 	state.round_triggered.clear()
+	for card in state.deck:
+		card.atk_mod_round = 0
+		card.attack_times_mod_round = 0
+	for side in ('A', 'B'):
+		state.exiled_friendly_this_round[side] = 0
+		state.buried_creatures_this_round[side] = 0
+		state.revived_friendly_this_round[side] = 0
 	state.bus.fire('round_start', {'round': state.round_num})
 
 
@@ -646,12 +695,31 @@ def resolve_attack_40(state, attacker, target_state_owner=None, terms=None,
 		return 0
 	if times is None:
 		times = attacker.attack_times
+		if attacker.cid == CURSE_TOKEN_CID:
+			# RELIC_CURSE_HASTE (R): enemy curse attack times +1 aura.
+			times += state.passive_flags.get('curse_haste', {}).get(
+				opp(attacker.owner), 0)
 	if terms is None:
 		terms = [('self_atk',)]
 	total_per_hit = 0
 	for term in terms:
 		if term[0] == 'self_atk':
-			total_per_hit += attacker.atk
+			atk = attacker.atk
+			if attacker.is_creature and attacker in state.deck and \
+					is_in_graveyard_40(state, attacker):
+				# RELIC_GRAVE_LORD (R): graveyard creatures atk +1 aura.
+				atk += state.passive_flags.get('grave_lord', {}).get(
+					attacker.owner, 0)
+			if attacker.cid == CURSE_TOKEN_CID:
+				# RELIC_GRAVE_CURSE (R): enemy curse atk = passive owner's
+				# graveyard card count (set-override).
+				for side in ('A', 'B'):
+					if side != attacker.owner and \
+							state.passive_flags.get('grave_curse', {}).get(side):
+						atk = sum(1 for c in graveyard_cards(state)
+								  if c.owner == side)
+						break
+			total_per_hit += atk
 		elif term[0] == 'fixed':
 			total_per_hit += term[1]
 		else:
@@ -659,9 +727,17 @@ def resolve_attack_40(state, attacker, target_state_owner=None, terms=None,
 			return 0
 	total = 0
 	target = target_state_owner or opp(attacker.owner)
+	blood_pact = state.passive_flags.get('blood_pact', {}).get(
+		attacker.owner, 0)
 	for segment in range(times):
-		if state.hp.get(target) is not None:
-			state.hp[target] -= total_per_hit
+		if blood_pact:
+			# RELIC_BLOOD_PACT (R): attacks deal no damage; each segment
+			# enhances the attacker's enemy curse by the same amount.
+			verb_enhance_enemy_curse(state, attacker, total_per_hit)
+		else:
+			if state.hp.get(target) is not None:
+				state.hp[target] -= total_per_hit
+			state.damage_dealt[target] += total_per_hit
 		total += total_per_hit
 		# 2026-09-05 ruling: attack events fire PER SEGMENT (攻击xN -> N
 		# reaction windows), not once per resolution.
@@ -740,7 +816,7 @@ def selftest_40():
 	state.bus.subscribe('enhanced', lambda p: enhanced_log.append(p['card'].cid))
 	give_enhance_40(state, woken, 1)
 	assert woken.atk == 3 and woken.is_enhanced and enhanced_log == ['WOKEN_BLADE']
-	woken.attack_times = 2
+	woken.attack_times_mod_round = 1  # 本回合 attack times +1
 	dmg = resolve_attack_40(state, woken, terms=[('self_atk',), ('fixed', 1)])
 	assert dmg == 2 * (3 + 1), f'multi-term damage {dmg}'
 
@@ -845,9 +921,13 @@ def verb_bury_targets(state, source, predicate, rng, faction=None, count=1):
 
 
 def verb_bury_deck_top(state, source, count):
-	"""埋葬卡组顶N卡: bury the top N UNREVEALED cards (no reveal triggers)."""
+	"""埋葬卡组顶N卡: bury the top N UNREVEALED cards (no reveal triggers).
+	Re-check the alive zone each iteration: every bury shifts the
+	start-card boundary up, so a one-shot range can over-pop into it."""
 	buried = []
-	for _ in range(min(count, len(alive_cards(state)))):
+	for _ in range(count):
+		if not alive_cards(state):
+			break
 		card = state.deck.pop()
 		bury_card_40(state, card)
 		buried.append(card)
@@ -861,16 +941,29 @@ def verb_revive(state, source, predicate, rng, faction=None, count=1):
 	pool = faction_filter(pool, faction)
 	targets = select_targets_40(state, pool, predicate, rng, count=count)
 	for t in targets:
-		revive_card_40(state, t)
+		revive_card_40(state, t, source=source)
+		if t.owner == source.owner:
+			state.revived_friendly_this_round[source.owner] += 1
 	return targets
 
 
+def spawn_to_graveyard_40(state, card):
+	"""Generated cards (believers, curses) enter at the deck BOTTOM
+	(graveyard side) — Unity CurseEffect reads the new card back from
+	combinedDeckZone[0]. They wait for the next shuffle (never revealed
+	this round). No burial event fires: generation is not 埋葬."""
+	state.deck.insert(0, card)
+	state.start_card_index += 1
+	state.bus.fire('card_generated', {'card': card})
+	return card
+
+
 def verb_spawn_believer(state, owner, count):
-	"""生成N信徒: N RIFT tokens join the alive zone (revealed last)."""
+	"""生成N信徒: N RIFT tokens, graveyard-side entry (spawn_to_graveyard)."""
 	spawned = []
 	for _ in range(count):
 		token = build_card40(BELIEVER_TOKEN_CID, owner)
-		add_alive_40(state, token, position='bottom')
+		spawn_to_graveyard_40(state, token)
 		spawned.append(token)
 	return spawned
 
@@ -879,9 +972,9 @@ def verb_enhance_enemy_curse(state, source, amount):
 	"""强化敌方诅咒 (curse-axis entry point, user ruling 2026-09-09).
 
 	The enemy deck holds AT MOST ONE JU_ON, and a curse exists only because
-	a curse-enhancing card created it: if absent, spawn one into the enemy's
-	alive zone; then enhance it (+amount) wherever it sits (graveyard
-	included). Exiled curses count as gone — a new one may be created.
+	a curse-enhancing card created it: if absent, spawn one (graveyard-side
+	entry); then enhance it (+amount) wherever it sits (graveyard included).
+	Exiled curses count as gone — a new one may be created.
 	"""
 	enemy = opp(source.owner)
 	curses = [c for c in state.deck
@@ -890,7 +983,7 @@ def verb_enhance_enemy_curse(state, source, amount):
 		target = curses[0]
 	else:
 		target = build_card40(CURSE_TOKEN_CID, enemy)
-		add_alive_40(state, target, position='bottom')
+		spawn_to_graveyard_40(state, target)
 	give_enhance_40(state, target, amount, source=source)
 	return target
 
@@ -899,6 +992,82 @@ def verb_exile(state, source, card):
 	"""放逐: remove from the game; loses all granted effects (modeled as
 	exiled flag; revival pool never sees exiled cards)."""
 	return exile_card_40(state, card)
+
+
+def verb_set_attack(state, card, value):
+	"""攻击力=X: adjust the permanent ledger so computed ATK == value
+	(mirrors Unity: attackGrowth absorbs the delta; the 本回合 slot is
+	untouched)."""
+	card.enhance_total = value - card.printed_atk - card.atk_mod_round
+	return card
+
+
+def verb_double_attack(state, card):
+	"""攻击力翻倍: permanent; counts as enhancement (被强化)."""
+	return give_enhance_40(state, card, card.atk, source=card)
+
+
+def verb_add_attack_times(state, card, n, permanent=True):
+	"""攻击次数+N: 带「本回合」→ round slot; 无限定 → permanent base."""
+	if permanent:
+		card.attack_times_base += n
+	else:
+		card.attack_times_mod_round += n
+	return card
+
+
+def verb_weaken_all_creatures(state, n=1):
+	"""所有生物本回合攻击力-N: round slot (本回合限定), both sides."""
+	for c in state.deck:
+		if c.is_creature:
+			c.atk_mod_round -= n
+
+
+def verb_copy_self(state, card):
+	"""复制自身: a fresh-base copy of this card, graveyard-side entry
+	(generation rule, user ruling 2026-09-09)."""
+	copy = build_card40(card.cid, card.owner)
+	spawn_to_graveyard_40(state, copy)
+	return copy
+
+
+def verb_trigger_deathrattle(state, target):
+	"""触发X的遗言: target stays in its graveyard, no burial event fires;
+	respects the once-per-round gate (consumes it)."""
+	if target.is_passive or target.exiled:
+		return False
+	h = HANDLERS_40.get(target.cid, {})
+	f = h.get('on_buried')
+	if not f:
+		return False
+	key = (target.id, 'buried')
+	if key in state.round_triggered:
+		return False
+	state.round_triggered.add(key)
+	f(state, target)
+	return True
+
+
+def verb_grave_attack(state, target):
+	"""让墓地X攻击: the card stays in the graveyard and resolves one attack
+	(attack events fire as usual)."""
+	return resolve_attack_40(state, target)
+
+
+def pred_deathrattle_tag(c):
+	return 'DeathRattle' in c.tags
+
+
+def select_extreme_40(pool, key, rng, highest=True):
+	"""攻击力最高/最低/攻击次数最多 selectors; random among ties
+	(no player choice points in combat)."""
+	candidates = list(pool)
+	if not candidates:
+		return None
+	rng.shuffle(candidates)
+	best = (max if highest else min)(candidates, key=key)
+	ties = [c for c in candidates if key(c) == key(best)]
+	return rng.choice(ties)
 
 
 def selftest_verbs_40():
@@ -970,11 +1139,10 @@ def selftest_verbs_40():
 	spawned = verb_spawn_believer(state, 'A', 2)
 	assert len(spawned) == 2
 	assert all(c.is_believer and c.cid == 'RIFT' for c in spawned)
-	assert all(c in alive_cards(state) for c in spawned)
+	assert all(c in graveyard_cards(state) for c in spawned)
 	# tag为[信徒] revival pool matches tokens by identity.
-	bury_card_40(state, spawned[0])
 	got = verb_revive(state, blacksmith, pred_believer_tag, rng, faction='A')
-	assert len(got) == 1 and got[0] is spawned[0]
+	assert len(got) == 1 and got[0] in spawned
 
 	# 放逐: exiled card leaves the deck for good.
 	victim = verb_bury_targets(state, blacksmith, lambda c: c.owner == 'B',
@@ -989,6 +1157,35 @@ def selftest_verbs_40():
 	assert punch.attack_times == 2
 	dmg = verb_attack(state, punch)
 	assert dmg == 4 and state.hp['B'] == 25 - 4, f'attack xN {dmg}'
+
+	# U verbs: set_attack (signed ledger), weaken round-clear, copy-self,
+	# attack_times permanent vs 本回合.
+	r2 = random.Random(999)
+	state2 = GameState40(hp_max=None)
+	setup_start_card_40(state2, Card40('START', 'N', is_start=True))
+	mimic = build_card40('MIMIC_BLADE', 'A')  # printed 0
+	add_alive_40(state2, mimic, position='top')
+	verb_set_attack(state2, mimic, 5)
+	assert mimic.atk == 5 and mimic.is_enhanced and mimic.enhance_total == 5
+	verb_set_attack(state2, mimic, 0)
+	assert mimic.atk == 0 and not mimic.is_enhanced, 'signed ledger'
+	verb_weaken_all_creatures(state2, 1)
+	assert mimic.atk == -1 and not mimic.is_enhanced, 'weaken hits round slot'
+	shuffle_round_40(state2, r2)
+	assert mimic.atk == 0 and mimic.atk_mod_round == 0, '本回合 cleared'
+	robot = build_card40('EXILE_BERSERKER', 'A')  # creature, printed 2
+	add_alive_40(state2, robot, position='top')
+	verb_double_attack(state2, robot)
+	assert robot.atk == 4 and robot.enhance_total == 2, '翻倍 as enhancement'
+	verb_add_attack_times(state2, robot, 1, permanent=True)
+	verb_add_attack_times(state2, robot, 2, permanent=False)
+	assert robot.attack_times == 4
+	shuffle_round_40(state2, r2)
+	assert robot.attack_times == 2 and robot.attack_times_base == 2
+	copied = verb_copy_self(state2, robot)
+	assert copied.cid == robot.cid and copied in graveyard_cards(state2)
+	assert copied.atk == 2 and copied.enhance_total == 0, 'copy is fresh-base'
+	assert copied.id != robot.id
 
 	assert len(check_invariants_40(state)) == 0, check_invariants_40(state)
 	print('[sim4] selftest verbs 40 PASS: attack/enhance/bury/revive/'
@@ -1117,6 +1314,10 @@ LEDGERED_40 = {
 	# passives (graveyard side), diluting the pool — modeled by placement.
 	'UTILITY_INCOME_1', 'UTILITY_DISCOUNT_1', 'UTILITY_ODDS_1',
 	'UTILITY_OPTION_1', 'UTILITY_REROLL_1', 'UTILITY_SLOT_U_1',
+	# Uncommon shop passives: no combat effect; occupy deck slots as
+	# never-revealed passives (graveyard side), diluting the pool.
+	'UTILITY_CREATURES_1', 'UTILITY_ODDS_2', 'UTILITY_SLOT_U_2',
+	'UTILITY_SPELLS_1', 'UTILITY_WEIGHT_U',
 }
 
 
@@ -1367,6 +1568,551 @@ def _ju_on_reveal(state, card):
 _handler40('JU_ON', on_revealed=_ju_on_reveal)
 
 
+# ---------------------------------------------------------------------------
+# Uncommon batch (U, ~40 cards)
+# ---------------------------------------------------------------------------
+def _believer_pool(state, owner):
+	return [c for c in deck_pool_40(state) if c.is_believer
+			and c.owner == owner and not c.exiled]
+
+
+# RIFT 信徒 token: 复活1友方,去除自身 (去除 modeled as exile: leaves play,
+# no deathrattle). RELIC_RIFT_OVERRIDE (R) rewrites the effect to
+# 复活1敌方诅咒;放逐自身 via the rift_override presence flag.
+def _rift_reveal(state, card):
+	if state.passive_flags.get('rift_override', {}).get(card.owner):
+		verb_revive(state, card, pred_curse, state.rng,
+					faction=opp(card.owner))
+	else:
+		verb_revive(state, card, lambda c: True, state.rng,
+					faction=card.owner)
+	verb_exile(state, card, card)
+
+
+_handler40('RIFT', on_revealed=_rift_reveal)
+
+
+# REANIMATOR 百鬼夜行: 攻击;攻击力=本回合复活友方数
+def _reanimator_reveal(state, card):
+	verb_attack(state, card)
+	verb_set_attack(state, card, state.revived_friendly_this_round[card.owner])
+
+
+_handler40('REANIMATOR', on_revealed=_reanimator_reveal)
+
+
+# RIFT_STRIKER 鞭笞者: 攻击x2;生成1信徒
+def _rift_striker_reveal(state, card):
+	verb_attack(state, card)  # attack_times = 2 from prefab
+	verb_spawn_believer(state, card.owner, 1)
+
+
+_handler40('RIFT_STRIKER', on_revealed=_rift_striker_reveal)
+
+
+# RIFT_MEDIUM 扶乩 (非生物): 生成2信徒;苏醒:复活1友方
+def _rift_medium_reveal(state, card):
+	verb_spawn_believer(state, card.owner, 2)
+
+
+def _rift_medium_awaken(state, card):
+	verb_revive(state, card, lambda c: True, state.rng, faction=card.owner)
+
+
+_handler40('RIFT_MEDIUM', on_revealed=_rift_medium_reveal,
+		   on_awaken=_rift_medium_awaken)
+
+
+# FINAL_ESCORT 扶灵人: 攻击;遗言:回合结束前:复活1墓地的最高攻击力友方生物
+def _final_escort_reveal(state, card):
+	verb_attack(state, card)
+
+
+def _final_escort_buried(state, card):
+	# Nested trigger: arm a one-shot round_end listener.
+	def do(_payload):
+		pool = [c for c in graveyard_cards(state)
+				if c.owner == card.owner and c.is_creature]
+		t = select_extreme_40(pool, lambda c: c.atk, state.rng)
+		if t:
+			revive_card_40(state, t, source=card)
+	state.bus.subscribe_trigger('round_end', card, do, once=True)
+
+
+_handler40('FINAL_ESCORT', on_revealed=_final_escort_reveal,
+		   on_buried=_final_escort_buried)
+
+
+# DEATHBED_PORTER 抬棺人: 攻击;遗言:攻击;置顶1友方非生物
+def _deathbed_porter_reveal(state, card):
+	verb_attack(state, card)
+
+
+def _deathbed_porter_buried(state, card):
+	verb_attack(state, card)
+	pool = [c for c in alive_cards(state)
+			if c.owner == card.owner and pred_non_creature(c)
+			and not c.is_passive]
+	t = select_targets_40(state, pool, lambda c: True, state.rng, 1)
+	if t:
+		stage_to_top_40(state, t[0])
+
+
+_handler40('DEATHBED_PORTER', on_revealed=_deathbed_porter_reveal,
+		   on_buried=_deathbed_porter_buried)
+
+
+# NECROMANCER 招魂执事 (非生物): 复活1友方;苏醒:复活1友方
+def _necromancer_reveal(state, card):
+	verb_revive(state, card, lambda c: True, state.rng, faction=card.owner)
+
+
+_handler40('NECROMANCER', on_revealed=_necromancer_reveal,
+		   on_awaken=_necromancer_reveal)
+
+
+# AWAKENED_REAPER 勾魂人: 攻击;苏醒:埋葬1敌方
+def _awakened_reaper_reveal(state, card):
+	verb_attack(state, card)
+
+
+def _awakened_reaper_awaken(state, card):
+	verb_bury_targets(state, card, lambda c: True, state.rng,
+					  faction=opp(card.owner))
+
+
+_handler40('AWAKENED_REAPER', on_revealed=_awakened_reaper_reveal,
+		   on_awaken=_awakened_reaper_awaken)
+
+
+# RIFT_HATCHERY 黑弥撒 (非生物): 生成3信徒;回合开始:埋葬自身
+def _rift_hatchery_reveal(state, card):
+	verb_spawn_believer(state, card.owner, 3)
+
+
+def _rift_hatchery_round_start(state, card):
+	bury_card_40(state, card)
+
+
+_handler40('RIFT_HATCHERY', on_revealed=_rift_hatchery_reveal,
+		   on_round_start=_rift_hatchery_round_start)
+
+
+# FUNERAL_WILL 冥约 (非生物): 埋葬卡组顶2卡;遗言:延迟复活1友方
+def _funeral_will_reveal(state, card):
+	verb_bury_deck_top(state, card, 2)
+
+
+def _funeral_will_buried(state, card):
+	pool = [c for c in graveyard_cards(state)
+			if c.owner == card.owner and not c.is_passive]
+	t = select_targets_40(state, pool, lambda c: True, state.rng, 1)
+	if t:
+		delayed_revive_card_40(state, t[0], source=card)
+
+
+_handler40('FUNERAL_WILL', on_revealed=_funeral_will_reveal,
+		   on_buried=_funeral_will_buried)
+
+
+# GRAVE_TOGETHER_4.0 同葬: 攻击;埋葬1友方;埋葬2敌方
+def _grave_together_reveal(state, card):
+	verb_attack(state, card)
+	verb_bury_targets(state, card, lambda c: True, state.rng,
+					  faction=card.owner)
+	verb_bury_targets(state, card, lambda c: True, state.rng,
+					  faction=opp(card.owner))
+
+
+_handler40('GRAVE_TOGETHER_4.0', on_revealed=_grave_together_reveal)
+
+
+# SOUL_TRADER 以命换命 (非生物): 复活2友方;埋葬1友方
+def _soul_trader_reveal(state, card):
+	verb_revive(state, card, lambda c: True, state.rng, faction=card.owner,
+				count=2)
+	verb_bury_targets(state, card, lambda c: True, state.rng,
+					  faction=card.owner)
+
+
+_handler40('SOUL_TRADER', on_revealed=_soul_trader_reveal)
+
+
+# REVIVE_SUMMONER 复活见证人 (非生物): 复活1友方;生成1信徒
+def _revive_summoner_reveal(state, card):
+	verb_revive(state, card, lambda c: True, state.rng, faction=card.owner)
+	verb_spawn_believer(state, card.owner, 1)
+
+
+_handler40('REVIVE_SUMMONER', on_revealed=_revive_summoner_reveal)
+
+
+# EULOGIST 司悼人: 埋葬1张tag为[遗言]的友方卡;攻击
+def _eulogist_reveal(state, card):
+	verb_bury_targets(state, card, pred_deathrattle_tag, state.rng,
+					  faction=card.owner)
+	verb_attack(state, card)
+
+
+_handler40('EULOGIST', on_revealed=_eulogist_reveal)
+
+
+# RELIC_TALLY 血账 被动: 回合结束前:本回合每埋葬1生物,强化1敌方诅咒
+def _relic_tally_round_end(state, card, _payload):
+	n = state.buried_creatures_this_round[card.owner]
+	if n:
+		verb_enhance_enemy_curse(state, card, n)
+
+
+_handler40('RELIC_TALLY',
+		   passive_events=[('round_end', None, _relic_tally_round_end)])
+
+
+# GRAVE_GIANT 骸骨巨人: 攻击力=墓地友方数量;攻击
+def _grave_giant_reveal(state, card):
+	verb_set_attack(state, card,
+					sum(1 for c in graveyard_cards(state)
+						if c.owner == card.owner))
+	verb_attack(state, card)
+
+
+_handler40('GRAVE_GIANT', on_revealed=_grave_giant_reveal)
+
+
+# RELIC_CHAIN_BURIAL 连坐 被动: 友方被埋葬时,埋葬卡组顶1卡
+def _relic_chain_burial_event(state, card, payload):
+	if payload['card'].owner == card.owner:
+		verb_bury_deck_top(state, card, 1)
+
+
+_handler40('RELIC_CHAIN_BURIAL',
+		   passive_events=[('any_buried', None, _relic_chain_burial_event)])
+
+
+# GRAVE_PUPPETEER 操尸人 (非生物):
+# 让墓地1友方生物攻击;墓地无友方则埋葬1张tag为[遗言]的友方卡
+def _grave_puppeteer_reveal(state, card):
+	pool = [c for c in graveyard_cards(state)
+			if c.owner == card.owner and c.is_creature]
+	target = select_targets_40(state, pool, lambda c: True, state.rng, 1)
+	if target:
+		verb_grave_attack(state, target[0])
+	else:
+		verb_bury_targets(state, card, pred_deathrattle_tag, state.rng,
+						  faction=card.owner)
+
+
+_handler40('GRAVE_PUPPETEER', on_revealed=_grave_puppeteer_reveal)
+
+
+# DEATHBED_GRANT 垂死反扑 被动: 友方生物被埋葬时:该友方生物攻击
+def _deathbed_grant_event(state, card, payload):
+	if payload['card'].owner == card.owner and payload['card'].is_creature:
+		resolve_attack_40(state, payload['card'])
+
+
+_handler40('DEATHBED_GRANT',
+		   passive_events=[('any_buried', None, _deathbed_grant_event)])
+
+
+# UNDYING_WARRIOR 钉不死的人: 攻击;强化反应:复活自身
+def _undying_warrior_reveal(state, card):
+	verb_attack(state, card)
+
+
+def _undying_warrior_enhanced(state, card):
+	revive_card_40(state, card, source=card)
+
+
+_handler40('UNDYING_WARRIOR', on_revealed=_undying_warrior_reveal,
+		   on_enhanced=_undying_warrior_enhanced)
+
+
+# GRAVE_ROBBER 食尸鬼: 复活1攻击力最高敌方;攻击力变为该卡攻击力
+def _grave_robber_reveal(state, card):
+	pool = [c for c in graveyard_cards(state)
+			if c.owner == opp(card.owner) and not c.is_passive]
+	target = select_extreme_40(pool, lambda c: c.atk, state.rng)
+	if target:
+		revive_card_40(state, target, source=card)
+		verb_set_attack(state, card, target.atk)
+
+
+_handler40('GRAVE_ROBBER', on_revealed=_grave_robber_reveal)
+
+
+# EXILE_BERSERKER 狂信徒: 攻击;本回合每放逐1友方,本回合攻击次数+1
+def _exile_berserker_reveal(state, card):
+	extra = state.exiled_friendly_this_round[card.owner]
+	verb_attack(state, card, times=1 + extra)
+
+
+_handler40('EXILE_BERSERKER', on_revealed=_exile_berserker_reveal)
+
+
+# SACRIFICE_WEAKEST 替罪羔羊 (非生物): 埋葬1攻击力最低友方;强化1该卡
+def _sacrifice_weakest_reveal(state, card):
+	pool = faction_filter(deck_pool_40(state, card), card.owner)
+	pool = [c for c in pool if not c.is_passive]
+	target = select_extreme_40(pool, lambda c: c.atk, state.rng, highest=False)
+	if target:
+		bury_card_40(state, target)
+		give_enhance_40(state, target, 1, source=card)
+
+
+_handler40('SACRIFICE_WEAKEST', on_revealed=_sacrifice_weakest_reveal)
+
+
+# FLURRY_REVIVER 死不瞑目 (非生物): 复活1攻击次数最多友方生物
+def _flurry_reviver_reveal(state, card):
+	pool = [c for c in graveyard_cards(state)
+			if c.owner == card.owner and c.is_creature]
+	target = select_extreme_40(pool, lambda c: c.attack_times, state.rng)
+	if target:
+		revive_card_40(state, target, source=card)
+
+
+_handler40('FLURRY_REVIVER', on_revealed=_flurry_reviver_reveal)
+
+
+# KINGSLAYER 火刑柱 (非生物): 埋葬1攻击力最高敌方;复活1友方
+def _kingslayer_reveal(state, card):
+	pool = [c for c in deck_pool_40(state, card)
+			if c.owner == opp(card.owner) and not c.is_passive]
+	target = select_extreme_40(pool, lambda c: c.atk, state.rng)
+	if target:
+		bury_card_40(state, target)
+	verb_revive(state, card, lambda c: True, state.rng, faction=card.owner)
+
+
+_handler40('KINGSLAYER', on_revealed=_kingslayer_reveal)
+
+
+# CURSE_GARDENER 养蛊人 (非生物): 强化1敌方诅咒;复活1敌方诅咒
+def _curse_gardener_reveal(state, card):
+	verb_enhance_enemy_curse(state, card, 1)
+	verb_revive(state, card, pred_curse, state.rng, faction=opp(card.owner))
+
+
+_handler40('CURSE_GARDENER', on_revealed=_curse_gardener_reveal)
+
+
+# MIMIC_BLADE 模仿犯: 攻击力=友方最高攻击力;攻击x2
+def _mimic_blade_reveal(state, card):
+	pool = faction_filter(deck_pool_40(state, card), card.owner)
+	best = select_extreme_40(pool, lambda c: c.atk, state.rng)
+	if best:
+		verb_set_attack(state, card, best.atk)
+	verb_attack(state, card)  # attack_times = 2 from prefab
+
+
+_handler40('MIMIC_BLADE', on_revealed=_mimic_blade_reveal)
+
+
+# BATTLE_HORN 股骨号角 (非生物): 本回合友方生物攻击次数+1
+def _battle_horn_reveal(state, card):
+	for c in state.deck:
+		if c.owner == card.owner and c.is_creature:
+			c.attack_times_mod_round += 1
+
+
+_handler40('BATTLE_HORN', on_revealed=_battle_horn_reveal)
+
+
+# RIFT_PRIEST 施洗者 (非生物): 生成2信徒;强化1友方生物
+def _rift_priest_reveal(state, card):
+	verb_spawn_believer(state, card.owner, 2)
+	verb_enhance(state, card, 1, pred_creature, state.rng, faction=card.owner)
+
+
+_handler40('RIFT_PRIEST', on_revealed=_rift_priest_reveal)
+
+
+# CURSE_EATER 吞蛊人: 攻击;攻击力=敌方诅咒攻击力
+def _curse_eater_reveal(state, card):
+	verb_attack(state, card)
+	curses = [c for c in state.deck
+			  if c.cid == CURSE_TOKEN_CID and c.owner == opp(card.owner)]
+	verb_set_attack(state, card, curses[0].atk if curses else 0)
+
+
+_handler40('CURSE_EATER', on_revealed=_curse_eater_reveal)
+
+
+# SNOWBALL 蛊王: 攻击x2;强化反应:强化自身1
+def _snowball_reveal(state, card):
+	verb_attack(state, card)  # attack_times = 2 from prefab
+
+
+def _snowball_enhanced(state, card):
+	give_enhance_40(state, card, 1, source=card)
+
+
+_handler40('SNOWBALL', on_revealed=_snowball_reveal,
+		   on_enhanced=_snowball_enhanced)
+
+
+# COMBO_GRANTER 执鞭人: 攻击;本回合1友方生物攻击次数+1
+def _combo_granter_reveal(state, card):
+	verb_attack(state, card)
+	pool = [c for c in alive_cards(state)
+			if c.owner == card.owner and c.is_creature]
+	target = select_targets_40(state, pool, lambda c: True, state.rng, 1)
+	if target:
+		target[0].attack_times_mod_round += 1
+
+
+_handler40('COMBO_GRANTER', on_revealed=_combo_granter_reveal)
+
+
+# WEAKENING_FIELD 瘴气 (非生物): 所有生物本回合攻击力-1
+def _weakening_field_reveal(state, card):
+	verb_weaken_all_creatures(state, 1)
+
+
+_handler40('WEAKENING_FIELD', on_revealed=_weakening_field_reveal)
+
+
+# RELIC_TRAINER 邪印 被动: 回合开始:强化1攻击力最低友方生物
+def _relic_trainer_round_start(state, card, _payload):
+	pool = [c for c in alive_cards(state)
+			if c.owner == card.owner and c.is_creature]
+	target = select_extreme_40(pool, lambda c: c.atk, state.rng,
+							   highest=False)
+	if target:
+		give_enhance_40(state, target, 1, source=card)
+
+
+_handler40('RELIC_TRAINER',
+		   passive_events=[('round_start', None, _relic_trainer_round_start)])
+
+
+# RIFT_GUIDE 献祭司事 (非生物): 放逐1友方信徒,埋葬2敌方非生物
+def _rift_guide_reveal(state, card):
+	believer = select_targets_40(state, _believer_pool(state, card.owner),
+								 lambda c: True, state.rng, 1)
+	if believer:
+		verb_exile(state, card, believer[0])
+	verb_bury_targets(state, card, pred_non_creature, state.rng,
+					  faction=opp(card.owner), count=2)
+
+
+_handler40('RIFT_GUIDE', on_revealed=_rift_guide_reveal)
+
+
+# RIFT_REVIVER 以人易物 (非生物): 放逐1友方信徒,复活2友方非生物
+def _rift_reviver_reveal(state, card):
+	believer = select_targets_40(state, _believer_pool(state, card.owner),
+								 lambda c: True, state.rng, 1)
+	if believer:
+		verb_exile(state, card, believer[0])
+	verb_revive(state, card, pred_non_creature, state.rng,
+				faction=card.owner, count=2)
+
+
+_handler40('RIFT_REVIVER', on_revealed=_rift_reviver_reveal)
+
+
+# WOKEN_HEX 咒茧 (非生物): 强化1敌方诅咒;苏醒:强化2敌方诅咒
+def _woken_hex_reveal(state, card):
+	verb_enhance_enemy_curse(state, card, 1)
+
+
+def _woken_hex_awaken(state, card):
+	verb_enhance_enemy_curse(state, card, 2)
+
+
+_handler40('WOKEN_HEX', on_revealed=_woken_hex_reveal,
+		   on_awaken=_woken_hex_awaken)
+
+
+# RELIC_ATTACK_BURIAL 埋骨地 被动: 友方每次攻击时,埋葬卡组顶1卡
+def _relic_attack_burial_event(state, card, payload):
+	if payload['attacker'].owner == card.owner:
+		verb_bury_deck_top(state, card, 1)
+
+
+_handler40('RELIC_ATTACK_BURIAL',
+		   passive_events=[('attack', None, _relic_attack_burial_event)])
+
+
+# CURSE_SUMMONER 走阴人 (非生物): 复活1友方;复活1敌方诅咒
+def _curse_summoner_reveal(state, card):
+	verb_revive(state, card, lambda c: True, state.rng, faction=card.owner)
+	verb_revive(state, card, pred_curse, state.rng, faction=opp(card.owner))
+
+
+_handler40('CURSE_SUMMONER', on_revealed=_curse_summoner_reveal)
+
+
+# CURSE_THIRST_SHAMAN_4.0 噬咒萨满 (非生物):
+# 敌方诅咒每有1攻击力:强化1友方生物
+def _curse_thirst_shaman_reveal(state, card):
+	curses = [c for c in state.deck
+			  if c.cid == CURSE_TOKEN_CID and c.owner == opp(card.owner)]
+	n = curses[0].atk if curses else 0
+	for _ in range(max(n, 0)):
+		verb_enhance(state, card, 1, pred_creature, state.rng,
+					 faction=card.owner)
+
+
+_handler40('CURSE_THIRST_SHAMAN_4.0',
+		   on_revealed=_curse_thirst_shaman_reveal)
+
+
+# COMBO_STARTER 渴血者: 攻击;强化反应:攻击次数+1 (无限定 = 永续)
+def _combo_starter_reveal(state, card):
+	verb_attack(state, card)
+
+
+def _combo_starter_enhanced(state, card):
+	verb_add_attack_times(state, card, 1, permanent=True)
+
+
+_handler40('COMBO_STARTER', on_revealed=_combo_starter_reveal,
+		   on_enhanced=_combo_starter_enhanced)
+
+
+# MASS_REVIVER 墓园空了 (非生物): 复活3友方✦卡
+def _mass_reviver_reveal(state, card):
+	verb_revive(state, card, lambda c: c.rarity == 'normal', state.rng,
+				faction=card.owner, count=3)
+
+
+_handler40('MASS_REVIVER', on_revealed=_mass_reviver_reveal)
+
+
+# CURSE_THIRST_BEAST_4.0 噬咒兽: 敌方诅咒揭晓时:复活自身;攻击
+def _curse_thirst_beast_reveal(state, card):
+	verb_attack(state, card)
+
+
+def _curse_thirst_beast_on_curse(state, card, _payload):
+	revive_card_40(state, card, source=card)
+
+
+_handler40('CURSE_THIRST_BEAST_4.0',
+		   on_revealed=_curse_thirst_beast_reveal,
+		   on_events=[('revealed',
+					   lambda p, c: p['card'].cid == CURSE_TOKEN_CID
+					   and p['card'].owner == opp(c.owner),
+					   _curse_thirst_beast_on_curse)])
+
+
+# RELIC_WHITE_BANNER 引魂幡 被动: 回合开始:置顶1友方攻击力最高生物
+def _relic_white_banner_round_start(state, card, _payload):
+	pool = [c for c in alive_cards(state)
+			if c.owner == card.owner and c.is_creature]
+	target = select_extreme_40(pool, lambda c: c.atk, state.rng)
+	if target:
+		stage_to_top_40(state, target)
+
+
+_handler40('RELIC_WHITE_BANNER',
+		   passive_events=[('round_start', None,
+							_relic_white_banner_round_start)])
+
+
 def register_card_triggers_40(state, card):
 	"""Attach the card's reveal/burial/awaken handlers to the registry.
 	Returns False for handler-less cards (tokens / ledgered passives).
@@ -1403,6 +2149,39 @@ def register_card_triggers_40(state, card):
 			'awaken', card,
 			gated('awaken', h['on_awaken']),
 			pred=lambda p, c=card: p['card'] is c)
+	if h.get('on_enhanced'):
+		# 强化反应: fires when THIS card gets enhanced.
+		state.bus.subscribe_trigger(
+			'enhanced', card,
+			gated('enhanced', h['on_enhanced']),
+			pred=lambda p, c=card: p['card'] is c)
+	if h.get('on_round_start'):
+		state.bus.subscribe_trigger(
+			'round_start', card,
+			gated('round_start', h['on_round_start']))
+	if h.get('on_events'):
+		# Card-scoped triggers on non-self timings (e.g. 敌方诅咒揭晓时);
+		# round-gated like the other card triggers. pred signature:
+		# (payload, card); handler signature: (state, card, payload).
+		for timing, pred, f in h['on_events']:
+			def gated_event(payload, _c=card, _st=state, _f=f, _t=timing):
+				key = (_c.id, _t)
+				if key in _st.round_triggered:
+					return
+				_st.round_triggered.add(key)
+				_f(_st, _c, payload)
+			state.bus.subscribe_trigger(
+				timing, card,
+				gated_event,
+				pred=(lambda p, c=card, pr=pred: pr(p, c)) if pred else None)
+	if h.get('passive_events'):
+		# 被动: every matching event fires, NO per-round cap (2026-08-28
+		# ruling); only the chain guard bounds a single open chain.
+		for timing, pred, f in h['passive_events']:
+			state.bus.subscribe_trigger(
+				timing, card,
+				lambda p, c=card, f=f: f(state, c, p),
+				pred=pred)
 	return True
 
 
@@ -1410,7 +2189,7 @@ def coverage_report_40():
 	"""Zero-silent-skip check: every trial card is handled or ledgered."""
 	missing = sorted(set(CARD_POOL_40) - set(HANDLERS_40) - LEDGERED_40)
 	extra = sorted((set(HANDLERS_40) | LEDGERED_40) - set(CARD_POOL_40)
-				   - {'JU_ON'})
+				   - {'JU_ON', 'RIFT'})
 	return missing, extra
 
 
@@ -1420,8 +2199,31 @@ def setup_combat_40(deck_a, deck_b, hp_max=None):
 	for card in list(deck_a) + list(deck_b):
 		add_alive_40(state, card, position='top')
 		register_card_triggers_40(state, card)
+	_apply_passive_flags_40(state)
 	apply_static_passives_40(state)
+	state.hp_initial = dict(state.hp)
 	return state
+
+
+def _apply_passive_flags_40(state):
+	"""Static-aura / rule-modifying passive presence. Passives are immovable,
+	so a setup-time scan is exact for the whole combat."""
+	flags = {}
+	for key, cids in PASSIVE_PRESENCE_DEF_40.items():
+		flags[key] = {side: sum(1 for c in state.deck
+								if c.cid in cids and c.owner == side)
+					  for side in ('A', 'B')}
+	state.passive_flags = flags
+
+
+PASSIVE_PRESENCE_DEF_40 = {
+	# R-batch passives; defined here so resolve_attack_40 hooks are ready.
+	'curse_haste': ('RELIC_CURSE_HASTE',),
+	'blood_pact': ('RELIC_BLOOD_PACT',),
+	'rift_override': ('RELIC_RIFT_OVERRIDE',),
+	'grave_lord': ('RELIC_GRAVE_LORD',),
+	'grave_curse': ('RELIC_GRAVE_CURSE',),
+}
 
 
 def apply_static_passives_40(state):
@@ -1512,6 +2314,324 @@ def selftest_combat_40():
 		assert len(check_invariants_40(s)) == 0, (seed, check_invariants_40(s))
 	print('[sim5] selftest combat 40 PASS: 21 handlers + 9 ledgered, '
 		  'combats healthy, coverage complete')
+
+
+# ---------------------------------------------------------------------------
+# Step 6: calibration, stats & reporting (Common trial)
+# ---------------------------------------------------------------------------
+COMBAT_POOL_40 = [cid for cid, info in CARD_POOL_40.items()
+				  if info['take_up_space']]
+AXIS_TAG_40 = {
+	'revive': 'Revive', 'deathrattle': 'DeathRattle', 'believer': 'Believer',
+	'bury': 'Bury', 'curse': 'Curse', 'enhance': 'Enhance', 'awaken': 'Awaken',
+}
+
+
+class CombatStats:
+	"""Per-combat stats collected from bus events (no engine coupling)."""
+
+	def __init__(self, state):
+		self.reveals = Counter()
+		self.dmg = Counter()
+		self.awakens = Counter()
+		self.burials = Counter()
+		self.generated = Counter()   # (cid, owner) -> count
+		self.curse_enh = Counter()   # source cid -> amount
+		self.attack_events = 0
+		bus = state.bus
+		bus.subscribe('revealed', lambda p: self.reveals.__setitem__(
+			p['card'].cid, self.reveals[p['card'].cid] + 1))
+		bus.subscribe('attack', self._on_attack)
+		bus.subscribe('awaken', lambda p: self.awakens.__setitem__(
+			p['card'].cid, self.awakens[p['card'].cid] + 1))
+		bus.subscribe('any_buried', lambda p: self.burials.__setitem__(
+			p['card'].cid, self.burials[p['card'].cid] + 1))
+		bus.subscribe('card_generated', lambda p: self.generated.__setitem__(
+			(p['card'].cid, p['card'].owner),
+			self.generated[(p['card'].cid, p['card'].owner)] + 1))
+		bus.subscribe('enhanced', self._on_enhanced)
+
+	def _on_attack(self, p):
+		self.attack_events += 1
+		cid = p['attacker'].cid
+		self.dmg[cid] = self.dmg[cid] + p['total']
+
+	def _on_enhanced(self, p):
+		if p['card'].cid == CURSE_TOKEN_CID and p.get('source'):
+			self.curse_enh[p['source'].cid] += p['amount']
+
+
+def conservation_ok_40(state):
+	"""HP flow check: ledgered attack damage == actual HP loss per side."""
+	if state.hp_initial is None:
+		return True
+	for owner in ('A', 'B'):
+		if state.hp_initial[owner] is None:
+			continue
+		loss = state.hp_initial[owner] - state.hp[owner]
+		if loss != state.damage_dealt[owner]:
+			return False
+	return True
+
+
+def build_deck_40(owner, size, rng, axis=None):
+	"""Random deck with replacement; axis-conditioned when given (axis cards
+	fill at least half the slots, rest drawn from the full combat pool)."""
+	deck = []
+	if axis:
+		axis_cids = [cid for cid in COMBAT_POOL_40
+					 if AXIS_TAG_40[axis] in (CARD_POOL_40[cid]['tags'] or [])]
+		deck += [rng.choice(axis_cids) for _ in range(size - size // 2)]
+	while len(deck) < size:
+		deck.append(rng.choice(COMBAT_POOL_40))
+	rng.shuffle(deck)
+	return [build_card40(cid, owner) for cid in deck]
+
+
+def winner_of_40(state):
+	"""Battle outcome: A / B / None(draw or undecided under no-HP)."""
+	a, b = state.hp['A'], state.hp['B']
+	if a is not None and a <= 0 and b is not None and b <= 0:
+		return None
+	if a is not None and a <= 0:
+		return 'B'
+	if b is not None and b <= 0:
+		return 'A'
+	if a is not None and b is not None:
+		if a > b:
+			return 'A'
+		if b > a:
+			return 'B'
+	return None
+
+
+def run_batch_40(sessions, size, hp_max, axis=None, rng=None):
+	"""Run a batch of combats; aggregate per-cid stats over healthy runs.
+
+	Returns (agg, diverged): agg holds round totals and per-cid Counters
+	(reveals/dmg/awakens/burials/curse_enh keyed by cid, believers keyed by
+	(cid, owner), wins/presence keyed by cid); diverged counts runs dropped
+	for engine divergence or conservation failure.
+	"""
+	rng = rng or random.Random()
+	agg = {'rounds': 0, 'reveals': Counter(), 'dmg': Counter(),
+		   'awakens': Counter(), 'burials': Counter(),
+		   'curse_enh': Counter(), 'believers': Counter(),
+		   'wins': Counter(), 'presence': Counter(), 'combats': 0}
+	diverged = 0
+	for _ in range(sessions):
+		deck_a = build_deck_40('A', size, rng, axis)
+		deck_b = build_deck_40('B', size, rng, axis)
+		state = setup_combat_40(deck_a, deck_b, hp_max=hp_max)
+		stats = CombatStats(state)
+		run_combat_40(state, rng)
+		if state.divergence or not conservation_ok_40(state):
+			diverged += 1
+			continue
+		agg['combats'] += 1
+		agg['rounds'] += state.round_num
+		agg['reveals'] += stats.reveals
+		agg['dmg'] += stats.dmg
+		agg['awakens'] += stats.awakens
+		agg['burials'] += stats.burials
+		agg['curse_enh'] += stats.curse_enh
+		agg['believers'] += stats.generated
+		winner = winner_of_40(state)
+		for cid in (c.cid for c in deck_a):
+			agg['presence'][cid] += 1
+			if winner == 'A':
+				agg['wins'][cid] += 1
+		for cid in (c.cid for c in deck_b):
+			agg['presence'][cid] += 1
+			if winner == 'B':
+				agg['wins'][cid] += 1
+	return agg, diverged
+
+
+def selftest_sanity_40():
+	"""Step 6 sanity checklist: HP conservation, empty-deck basis, 12xX
+	pressure decks, loop truncation under the once-per-round gate."""
+	rng = random.Random(600)
+
+	# 1) Conservation: ledgered damage == HP loss on every capped combat.
+	for i in range(30):
+		state = setup_combat_40(build_deck_40('A', 6, rng),
+								build_deck_40('B', 6, rng), hp_max=25)
+		run_combat_40(state, rng, max_rounds=10)
+		assert state.divergence is None, (i, state.divergence)
+		assert conservation_ok_40(state), f'conservation broken at combat {i}'
+	print('[sim6] sanity conservation: 30/30 combats balanced')
+
+	# 2) Empty basis: start card only -> no attacks, no HP change.
+	state = setup_combat_40([], [], hp_max=25)
+	run_combat_40(state, rng, max_rounds=3)
+	assert state.divergence is None
+	assert state.bus.fired['attack'] == 0
+	assert state.hp == {'A': 25, 'B': 25}
+	print('[sim6] sanity empty basis: no-card combat is inert')
+
+	# 3) 12xX pressure decks: every handler cid must stay bounded.
+	for cid in sorted(HANDLERS_40):
+		deck_a = [build_card40(cid, 'A') for _ in range(12)]
+		deck_b = [build_card40(cid, 'B') for _ in range(12)]
+		state = setup_combat_40(deck_a, deck_b, hp_max=25)
+		run_combat_40(state, rng, max_rounds=6)
+		assert state.divergence is None, f'{cid}: {state.divergence}'
+		assert len(check_invariants_40(state)) == 0, cid
+	assert True
+	print('[sim6] sanity pressure: 12xX decks stable for all '
+		  f'{len(HANDLERS_40)} handler cids')
+
+	# 4) Loop truncation: self-revive flood must keep rounds advancing with
+	# bounded reveals (once-per-round gate). High HP keeps it alive 6 rounds.
+	deck_a = [build_card40('SOLDIER_SKELETON_4.0', 'A') for _ in range(12)]
+	deck_b = [build_card40('SOLDIER_SKELETON_4.0', 'B') for _ in range(12)]
+	state = setup_combat_40(deck_a, deck_b, hp_max=999)
+	run_combat_40(state, rng, max_rounds=6)
+	assert state.divergence is None and state.round_num == 6
+	assert state.bus.fired['revealed'] <= 12 * 2 * 6 * 3, 'reveal flood'
+	print('[sim6] sanity loop truncation: self-revive flood bounded '
+		  f"({state.bus.fired['revealed']} reveals / 6 rounds)")
+
+
+def _per_round(counter, rounds):
+	r = max(rounds, 1)
+	return {k: v / r for k, v in counter.items()}
+
+
+def _batch_table(agg, title):
+	"""Markdown table: per-cid 4.0 metrics for one batch."""
+	rounds = max(agg['rounds'], 1)
+	lines = [
+		f'### {title}',
+		'',
+		'| Card | 中文名 | Dmg/Round | Reveals/Round | Awakens/Round | '
+		'Burials/Round | Presence | Win% |',
+		'|---|---|---|---|---|---|---|---|',
+	]
+	order = sorted(set(agg['presence']) | set(agg['dmg']) | set(agg['reveals']),
+				   key=lambda c: -agg['dmg'].get(c, 0))
+	for cid in order:
+		info = CARD_POOL_40.get(cid)
+		name = info['display_name'] if info else cid
+		pres = agg['presence'].get(cid, 0)
+		win = agg['wins'].get(cid, 0) / pres * 100 if pres else 0.0
+		lines.append(
+			f"| {cid} | {name} | {agg['dmg'].get(cid, 0) / rounds:.2f} | "
+			f"{agg['reveals'].get(cid, 0) / rounds:.2f} | "
+			f"{agg['awakens'].get(cid, 0) / rounds:.2f} | "
+			f"{agg['burials'].get(cid, 0) / rounds:.2f} | "
+			f"{pres} | {win:.0f}% |")
+	lines.append('')
+	return lines
+
+
+def _dual_axis_tables(batches):
+	"""Per-axis dual-column tables: naked (uniform) vs in-axis strength."""
+	naked_agg = batches['uniform'][0]
+	naked = _per_round(naked_agg['dmg'], naked_agg['rounds'])
+	naked_win = {c: (naked_agg['wins'].get(c, 0) /
+					 max(naked_agg['presence'].get(c, 1), 1) * 100)
+				 for c in set(naked_agg['presence'])}
+	lines = []
+	for axis in AXIS_TAG_40:
+		agg, dropped = batches[axis]
+		per_round = _per_round(agg['dmg'], agg['rounds'])
+		awaken_r = _per_round(agg['awakens'], agg['rounds'])
+		members = sorted(cid for cid in COMBAT_POOL_40
+						 if AXIS_TAG_40[axis] in (CARD_POOL_40[cid]['tags']
+												  or []))
+		lines += [f'### 轴: {axis}({len(members)} 卡)',
+				  '',
+				  f'dropped(divergence/守恒失败): {dropped}',
+				  '',
+				  '| Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | '
+				  '轴内 Win% | 轴内 Awakens/R |',
+				  '|---|---|---|---|---|---|---|']
+		for cid in sorted(members, key=lambda c: -per_round.get(c, 0)):
+			info = CARD_POOL_40[cid]
+			pres = agg['presence'].get(cid, 0)
+			win = agg['wins'].get(cid, 0) / pres * 100 if pres else 0.0
+			lines.append(
+				f"| {cid} | {info['display_name']} | "
+				f"{naked.get(cid, 0):.2f} | {per_round.get(cid, 0):.2f} | "
+				f"{naked_win.get(cid, 0):.0f}% | {win:.0f}% | "
+				f"{awaken_r.get(cid, 0):.2f} |")
+		lines.append('')
+	return lines
+
+
+def _token_lines(batches):
+	"""Believer / curse-enhance economy across all batches."""
+	lines = ['### 信徒 / 诅咒经济(各批次)', '',
+			 '| 批次 | RIFT 生成/战(A+B) | 诅咒强化来源 → 总量/战 |', '|---|---|---|']
+	for axis, (agg, _) in batches.items():
+		combats = max(agg['combats'], 1)
+		believers = sum(agg['believers'].get(k, 0)
+						for k in agg['believers']) / combats
+		srcs = ', '.join(f'{cid} {v / combats:.1f}'
+						 for cid, v in agg['curse_enh'].most_common()) or '-'
+		lines.append(f'| {axis} | {believers:.2f} | {srcs} |')
+	lines.append('')
+	return lines
+
+
+def _compare_30_40(agg):
+	"""Directional guardrail vs the 3.0 sim (suffix-stripped counterparts).
+	The 3.0 pool is the old power-inflated design, so only order-of-magnitude
+	divergence is a modeling-bug signal."""
+	src = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+					   'sim_results_6v6.md')
+	if not os.path.isfile(src):
+		return ['### 3.0 对照', '', 'sim_results_6v6.md 不存在,跳过', '']
+	pairs = {}
+	with open(src, encoding='utf-8') as f:
+		for line in f:
+			m = re.match(r'^\| (\S+) \| .+? \| \S+ \| ([\d.]+) \|', line)
+			if m:
+				pairs[m.group(1)] = float(m.group(2))
+	rounds = max(agg['rounds'], 1)
+	lines = ['### 3.0 方向性对照(同前身卡,仅数量级哨兵;3.0 为旧力量膨胀池)',
+			 '',
+			 '| 4.0 卡 | 3.0 前身 | 4.0 Dmg/R | 3.0 Dmg/R |', '|---|---|---|---|']
+	for cid in sorted(COMBAT_POOL_40):
+		if not cid.endswith('_4.0'):
+			continue
+		base = cid[:-4]
+		if base in pairs:
+			lines.append(f'| {cid} | {base} | {agg["dmg"].get(cid, 0) / rounds:.2f} '
+						 f'| {pairs[base]:.2f} |')
+	lines.append('')
+	return lines
+
+
+def generate_report_40(out_dir, sessions=200):
+	"""Full-pool trial run: 4 configs x (uniform + 7 axis batches); writes
+	per-config markdown reports with dual-column metrics."""
+	os.makedirs(out_dir, exist_ok=True)
+	configs = [(6, 25, 'report_6v6'), (6, None, 'report_6v6_nohp'),
+			   (10, 25, 'report_10v10_hp25'), (10, None, 'report_10v10_nohp')]
+	for size, hp, name in configs:
+		batches = {}
+		for axis in ['uniform'] + list(AXIS_TAG_40):
+			batch_rng = random.Random(f'sim4|{size}|{hp}|{axis}')
+			batches[axis] = run_batch_40(sessions, size, hp,
+										 axis=None if axis == 'uniform'
+										 else axis, rng=batch_rng)
+		agg = batches['uniform'][0]
+		lines = [f'# Sim4 Common 试样报告 — {size}v{size}, '
+				 f'HP={"25" if hp is not None else "无上限"}', '',
+				 f'sessions/批次: {sessions}; uniform combats: '
+				 f'{agg["combats"]}; diverged: {batches["uniform"][1]}', '']
+		lines += _batch_table(agg, '裸强度(均匀随机环境)')
+		lines += _dual_axis_tables(batches)
+		lines += _token_lines(batches)
+		if (size, hp) == (6, None):
+			lines += _compare_30_40(agg)
+		path = os.path.join(out_dir, f'{name}.md')
+		with open(path, 'w', encoding='utf-8') as f:
+			f.write('\n'.join(lines))
+		print(f'[sim6] report written: {path}')
 
 
 class Card:
@@ -2966,23 +4086,32 @@ if __name__ == '__main__':
 						help='Formatted report path (auto-named if omitted)')
 	parser.add_argument('--preset', choices=['all', 'none'], default='none',
 						help='Run all preset configs (6/10 with and without 25 HP)')
-	parser.add_argument('--dump-pool', choices=['common40'], default=None,
+	parser.add_argument('--dump-pool', choices=['common40', 'trial40'], default=None,
 						help='Write the 4.0 trial card table to JSON and exit '
 							 '(no simulation)')
 	parser.add_argument('--selftest-40', action='store_true',
 						help='Run the 4.0 engine self-test (zones, invariants, '
 							 'attack entry) and exit (no simulation)')
+	parser.add_argument('--report-40', action='store_true',
+						help='Generate the 4.0 Common trial reports '
+							 '(4 configs x axis batches) and exit')
 	args = parser.parse_args()
 
+	if args.report_40:
+		generate_report_40(os.path.join(base_dir, '..', 'outputs', 'sim4'),
+						   sessions=max(args.sessions, 1))
+		sys.exit(0)
 	if args.selftest_40:
 		selftest_40()
 		selftest_verbs_40()
 		selftest_triggers_40()
 		selftest_combat_40()
+		selftest_sanity_40()
 		sys.exit(0)
 	if args.dump_pool:
-		out_path = os.path.join(base_dir, '..', 'outputs', 'sim4',
-								'prefab_card_table_common.json')
+		name = ('prefab_card_table_common.json' if args.dump_pool == 'common40'
+				else 'prefab_card_table_trial.json')
+		out_path = os.path.join(base_dir, '..', 'outputs', 'sim4', name)
 		dump_card_pool_40(out_path)
 		sys.exit(0)
 
