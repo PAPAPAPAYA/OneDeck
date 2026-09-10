@@ -116,3 +116,4 @@ __pycache__/
 
 # Unity crash-recovery scenes (Assets/_Recovery/0.unity was tracked before; new auto-recoveries stay untracked)
 /Assets/_Recovery/
+/CombatLogs/
