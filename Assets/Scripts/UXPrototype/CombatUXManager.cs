@@ -1505,12 +1505,22 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		if (physScript == null) return Quaternion.identity;
 		return _deckOffsetProvider.GetRotationOffset(physScript);
 	}
+	// VISUAL-FIX(2026-09-10): Pending-card popup peak fell back to the legacy linear fan in
+	//   Arc Loop / Float Stack layouts
+	//   Cause:    Only BuildCascadeConfig() was passed, so the arc/float branches in
+	//             DeckPositionCalculator were skipped; the peak also used GetCascadeDeckCount()
+	//             (reveal +1) while Float Stack layouts use the raw physical count.
+	//   Affects:  CalculatePositionForPendingCard, MoveCardToPopUpPosition (AddTempCard new-card peak)
+	//   Regress:  Float Stack mode: play a card that adds temp cards (e.g. RIFT_INSECT) with a
+	//             card in the reveal zone; the new card's peak x must match its slot-in x base.
+	//   Related:  CalculateAnimationPositionAtIndex, GetLayoutDeckCount
 	private Vector3 CalculatePositionForPendingCard(int index)
 	{
-		int fullCount = GetCascadeDeckCount();
+		// Float Stack: raw physical count (see GetLayoutDeckCount).
+		int fullCount = IsFloatStackLayoutActive ? physicalCardsInDeck.Count : GetCascadeDeckCount();
 		var basePos = physicalCardDeckPos.position;
 		Vector3 result = DeckPositionCalculator.CalculatePositionAtIndex(
-			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig());
+			index, fullCount, basePos, xOffset, yOffset, zOffset, BuildCascadeConfig(), BuildArcLoopConfig(), BuildFloatStackConfig());
 		TestManager.Log("[CombatUXManager] CalculatePositionForPendingCard index=" + index + " fullCount=" + fullCount + " result=" + result);
 		return result;
 	}
