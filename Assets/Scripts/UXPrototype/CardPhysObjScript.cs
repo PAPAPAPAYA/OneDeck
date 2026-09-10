@@ -1432,17 +1432,22 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 
 		// Z arbitration: ownership transfers only to a strictly closer card;
-		// equal or deeper cards under the cursor do nothing.
+		// equal or deeper cards under the cursor do nothing. Slot z (HoverArbitrationZ), not
+		// live z — popUpZBoost must not decide who owns the hover (VISUAL-FIX 2026-09-09).
 		if (_currentHoverOwner != null && _currentHoverOwner != this)
 		{
-			if (transform.position.z >= _currentHoverOwner.transform.position.z)
+			if (HoverArbitrationZ() >= _currentHoverOwner.HoverArbitrationZ())
 			{
-				TestManager.Log("[Hover] OnMouseEnter PENDING card=" + name + " reason=not owner (myZ=" + transform.position.z + " ownerZ=" + _currentHoverOwner.transform.position.z + " owner=" + _currentHoverOwner.name + ")");
+				TestManager.Log("[Hover] OnMouseEnter PENDING card=" + name + " reason=not owner (myZ=" + HoverArbitrationZ() + " ownerZ=" + _currentHoverOwner.HoverArbitrationZ() + " owner=" + _currentHoverOwner.name + ")");
 				_hoverPending = true;
 				return;
 			}
 			TestManager.Log("[Hover] ownership transfer " + _currentHoverOwner.name + " -> " + name);
-			_currentHoverOwner.EndHover("ownership lost to " + name);
+			var loser = _currentHoverOwner;
+			loser.EndHover("ownership lost to " + name);
+			// The loser may still be slot-wise under the cursor (overlap band): arm a reclaim
+			// pending so it re-acquires the moment the new owner's slot rect stops covering it.
+			if (loser.IsCursorOverCard()) loser._hoverPending = true;
 		}
 		_currentHoverOwner = this;
 		BeginHover();
@@ -1473,7 +1478,45 @@ public class CardPhysObjScript : MonoBehaviour
 		Vector3 screenPos = Input.mousePosition;
 		screenPos.z = _hoverCamera.WorldToScreenPoint(transform.position).z;
 		Vector3 worldPos = _hoverCamera.ScreenToWorldPoint(screenPos);
+		// VISUAL-FIX(2026-09-09): hover pop-up oscillated between neighbouring deck cards
+		//   Cause:    The cursor-left poll tested the LIVE collider. With popUpXOffset the pop-up
+		//             card flew out from under a stationary cursor, the poll read "cursor left",
+		//             EndHover slotted it back, the behind card's pending hover then popped and
+		//             vacated the same spot, and the first card's collider swept back under the
+		//             cursor — A/B ping-pong (or a single-card self loop) forever.
+		//   Affects:  CardPhysObjScript.IsCursorOverCard (UpdateHover cursor-left poll, pending
+		//             gate), CardPhysObjScript.OnMouseEnter/UpdatePendingHover arbitration
+		//             (HoverArbitrationZ: slot z instead of popUpZBoost-polluted live z),
+		//             CombatUXManager.TryGetDeckSlotPosition (new slot anchor)
+		//   Regress:  In Combat with popUpXOffset > 0, park the cursor mid-card on any face-up
+		//             deck card: it pops up once and stays popped while parked; moving the cursor
+		//             down into the next card's slot band hands hover over exactly once, no A/B
+		//             flicker, no self re-pop; hover the Start Card (deck bottom) the same way.
+		//             Cursor over an overlap band of two slot rects: frontmost card owns, moving
+		//             between the bands hands over seamlessly (loser reclaim pending, no dead band).
+		//   Related:  VISUAL-FIX(2026-07-31) fast hover A->B, VISUAL-FIX(2026-08-16) shuffle window
+		if (CombatUXManager.me != null && CombatUXManager.me.TryGetDeckSlotPosition(this, out Vector3 slotPos))
+		{
+			// Test the cursor against the collider as if it sat at its deck slot: translate the
+			// world cursor by the card's displacement from its slot before the overlap test, so
+			// pop-up displacement (x/y/z offset) never reads as "cursor left the card".
+			worldPos += slotPos - transform.position;
+		}
 		return _hoverCollider.OverlapPoint(worldPos);
+	}
+
+	/// <summary>
+	/// Z used for hover ownership arbitration: the deck SLOT z (layout front-to-back order) while
+	/// the card is in physicalCardsInDeck, else the live position z (reveal zone / minions / shop).
+	/// Slot z is immune to popUpZBoost, so an airborne pop-up wins or loses arbitration by its deck
+	/// position, not by how far it flew (VISUAL-FIX 2026-09-09); with the old live-z compare, a
+	/// popUpZBoost smaller than the deck's depth span let front cards steal a deep card's pop-up.
+	/// </summary>
+	private float HoverArbitrationZ()
+	{
+		if (CombatUXManager.me != null && CombatUXManager.me.TryGetDeckSlotPosition(this, out Vector3 slotPos))
+			return slotPos.z;
+		return transform.position.z;
 	}
 
 	private bool IsRevealZoneCard()
@@ -1596,12 +1639,16 @@ public class CardPhysObjScript : MonoBehaviour
 			return;
 		}
 		if (IsHoverBlockedByCombatState()) return;
-		if (_currentHoverOwner != null && _currentHoverOwner != this && transform.position.z >= _currentHoverOwner.transform.position.z) return;
+		// Slot z, not live z — popUpZBoost must not decide ownership (VISUAL-FIX 2026-09-09).
+		if (_currentHoverOwner != null && _currentHoverOwner != this && HoverArbitrationZ() >= _currentHoverOwner.HoverArbitrationZ()) return;
 
 		if (_currentHoverOwner != null && _currentHoverOwner != this)
 		{
 			TestManager.Log("[Hover] pending ownership transfer " + _currentHoverOwner.name + " -> " + name);
-			_currentHoverOwner.EndHover("ownership lost to " + name + " (pending)");
+			var loser = _currentHoverOwner;
+			loser.EndHover("ownership lost to " + name + " (pending)");
+			// Loser may still be slot-wise under the cursor (overlap band): arm a reclaim pending.
+			if (loser.IsCursorOverCard()) loser._hoverPending = true;
 		}
 		TestManager.Log("[Hover] pending resume card=" + name);
 		_currentHoverOwner = this;

@@ -1440,12 +1440,30 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// <summary>
 	/// Get the final deck position for a specific card, including its layout offset.
 	/// Cascade mode scales the position jitter by the card's cascade scale (cascadeScaleJitterWithCard).
+	/// Public since VISUAL-FIX(2026-09-09): also the stable hover hit-test anchor (TryGetDeckSlotPosition).
 	/// </summary>
-	private Vector3 GetFinalDeckPositionForCard(CardPhysObjScript physScript, int index)
+	public Vector3 GetFinalDeckPositionForCard(CardPhysObjScript physScript, int index)
 	{
 		Vector3 basePos = CalculatePositionAtIndex(index);
 		if (physScript == null) return basePos;
 		return basePos + _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, GetLayoutDeckCount());
+	}
+
+	/// <summary>
+	/// VISUAL-FIX(2026-09-09): stable hover hit-test anchor. Returns the card's deck slot position
+	/// (layout + per-card jitter, identical formula to PopUpCard's peak base) while the card is in
+	/// physicalCardsInDeck. Pop-up/slot-in displacement must not change what the cursor "hits", so
+	/// hover tests deck cards against this anchor instead of the live transform. Returns false for
+	/// cards outside the deck (reveal zone, minions, shop) — those keep live-collider testing.
+	/// </summary>
+	public bool TryGetDeckSlotPosition(CardPhysObjScript physScript, out Vector3 slotPos)
+	{
+		slotPos = Vector3.zero;
+		if (physScript == null || physicalCardsInDeck == null) return false;
+		int index = physicalCardsInDeck.IndexOf(physScript.gameObject);
+		if (index < 0) return false;
+		slotPos = GetFinalDeckPositionForCard(physScript, index);
+		return true;
 	}
 
 

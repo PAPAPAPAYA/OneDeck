@@ -8926,7 +8926,7 @@ MonoBehaviour:
   cardDestroyAnimDuration: 0.3
   cardDestroyTargetSize: {x: 1, y: 1, z: 1}
   popUpYOffset: 0
-  popUpXOffset: 3
+  popUpXOffset: 4
   popUpZBoost: 0
   batchMoveStagger: 0.06
   popUpScaleMultiplier: 1.1
