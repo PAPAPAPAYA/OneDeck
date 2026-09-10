@@ -1235,15 +1235,15 @@ MonoBehaviour:
   deckSizeGrowthPerStep: 1
   sessionsPerDeckSizeStep: 1
   deckSlotBasePrice: 4
-  deckSlotPriceStep: 2
+  deckSlotPriceStep: 4
   deckSlotPurchasesRef: {fileID: 11400000, guid: f7108533cd29ce143a91c62f18e07716, type: 2}
   sessionUtilityBoardChances:
   - startSession: 0
-    utilityBoardChancePercent: 10
+    utilityBoardChancePercent: 20
   - startSession: 3
     utilityBoardChancePercent: 15
   - startSession: 5
-    utilityBoardChancePercent: 20
+    utilityBoardChancePercent: 10
   utilityBoardSlotCount: 3
   phaseInfoDisplay: {fileID: 439035967}
   deckInfoDisplay: {fileID: 1348363272}

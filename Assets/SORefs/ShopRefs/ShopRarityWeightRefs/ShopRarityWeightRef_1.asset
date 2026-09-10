@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1722aa02087663348ab203478c8e6f20, type: 3}
-  m_Name: ShopRarityWeightRef_late
+  m_Name: ShopRarityWeightRef_1
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShopRarityWeightSO
   entries:
   - rarity: 0
-    weight: 60
+    weight: 75
   - rarity: 1
-    weight: 30
+    weight: 22
   - rarity: 2
-    weight: 10
+    weight: 3
