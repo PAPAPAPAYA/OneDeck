@@ -38,6 +38,34 @@ Per-day (UTC, from full 144-review dump at 01:42 UTC):
 - Current tail: ~1–3 reviews/hour ≈ 35–40/day.
 - CCU (ISteamUserStats GetNumberOfCurrentPlayers): 658 at 01:40 UTC, then 639 / 626 — a third-party crawl reported "all-time peak 485 on Sep 1", so the real peak is ≥ 658; concurrent players were still rising on day 4.
 
+### Snapshot anchoring & normalization (added 2026-09-08)
+
+Recheck snapshot times drifted (02:15 → 02:06 → 07:00 → 03:10 → 12:15 UTC), which makes naive "+N in 24 h" comparisons and CCU trends misleading. Conventions from this point on:
+
+1. **Cumulative totals / deltas**: anchored to UTC midnight whenever feasible, so cumulative counts share boundaries with the per-day intake chain. Point-in-time totals as actually observed stay in the recheck sections as raw readings; the series below is the reference.
+2. **Per-day intake**: full UTC calendar days (unchanged). "Day N" = Nth UTC calendar day since launch day (launch 2026-09-01 13:00 UTC).
+3. **CCU**: only same-clock-hour samples are comparable (≈02:00 UTC = US prime). Cross-hour comparisons (e.g. §10's 07:00-trough vs 02:06-peak "−12%") mix intraday cycle into the trend.
+4. Delta windows must state their exact length; never label a drifting window "24 h".
+
+Normalized cumulative series (UTC-midnight anchored, from the intake chain):
+
+| UTC date (00:00) | Cumulative reviews |
+|------------------|--------------------|
+| Sep 2 | 48 |
+| Sep 3 | 103 |
+| Sep 4 | 142 |
+| Sep 5 | 184* |
+| Sep 6 | 219* |
+| Sep 7 | 245* |
+| Sep 8 | 267 |
+| Sep 9 | 286† |
+
+\* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15 · 287 @ Sep 9 03:32.
+
+† Sep 9 anchor = 267 + day-8 intake 19 (final, from full-day timestamps), cross-checked against the 287 raw reading; ±1 for Steam edge-cache lag (~2 h). Note: a 9/8 partial-day extrapolation (~23/day by midday) overshot the actual 19 — partial-day rates are recorded as observations only, never chained forward.
+
+Like-for-like CCU (≈02:00–03:10 UTC samples only): 658 (d4) → 634 (d5) → 593 (d7) ≈ −5%/day in the US-prime window. Off-peak readings (556 @ Sep 6 07:00, 464 @ Sep 8 11:57) are not comparable and are excluded from trend claims.
+
 ## 3. Review Language Distribution
 
 Full-dump counts (n = 144) matched per-language `query_summary` totals exactly (sum = 144), so this is complete, not sampled:
@@ -155,6 +183,7 @@ Interpretation:
 	- *Status 2026-09-08*: week 1 closed at **267 reviews** (48/55/39/42/35/26/22) — ~1% under the revised 270–275 band; the week-1 → units call (≈8,000–11,000 at 30–40×) stands.
 - **2026-09-18**: if the daily rate has dropped below ~15/day, month-1 settles toward the lower band (~450 reviews).
 	- *Status 2026-09-08 (interim)*: day-7 intake 22, day-8 tracking ~23/day (12 reviews by 12:15 UTC) — still above the 15/day trigger; month-1 mid-band currently favored.
+	- *Status 2026-09-09 (interim, 03:32 UTC)*: day-8 closed at **19** — the 9/8 partial-day extrapolation (~23) overshot; decay to the 15/day trigger now projected around Sep 10–11. Like-for-like CCU (03:10–03:32 UTC): 593 (d7) → 468 (d9) ≈ −11%/day, softening faster than reviews. Negatives flat at 26 (zero new in 15 h). Month-1 increasingly points to the low band (~450–500 reviews); final call at this checkpoint.
 
 ## 9. Recheck — 2026-09-05 (day 4–5)
 
@@ -181,7 +210,7 @@ Snapshot at 07:00 UTC 2026-09-06:
 
 | Metric | Value | vs 2026-09-05 |
 |--------|-------|---------------|
-| Total reviews | **230** (207 pos / 23 neg, 90.0%, "Very Positive") | +44 in 24 h; cumulative rate pinned at 90% |
+| Total reviews | **230** (207 pos / 23 neg, 90.0%, "Very Positive") | +44 in 28.9 h (02:06→07:00 UTC, see §2 normalization); cumulative rate pinned at 90% |
 | Day-5 intake (Sep 5, full UTC day) | **35** (30 pos) | day 4 was 42 — **decay resumed (-17%)** |
 | CCU | **556** | 634 → 556 (**first real dip, -12%**) |
 
