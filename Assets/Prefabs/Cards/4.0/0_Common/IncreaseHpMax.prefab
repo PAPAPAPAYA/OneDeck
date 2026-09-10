@@ -47,17 +47,17 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SYSTEM_INCREASE_HP_MAX
   displayName: "\u6C89\u9B47"
-  cardDesc: "\u88AB\u52A8: \u751F\u547D\u503C\u4E0A\u9650 <b>+4</b>"
+  cardDesc: "\u8D2D\u4E70: \u751F\u547D\u503C\u4E0A\u9650 <b>+8</b>, \u653E\u9010\u81EA\u8EAB"
   rarity: 0
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  takeUpSpace: 0
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 0a000000
+  myTags: 00000000
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
@@ -68,7 +68,7 @@ MonoBehaviour:
   cardType: 0
   isPassive: 1
   utilityKind: 1
-  utilityValue: 4
+  utilityValue: 8
   utilityValue2: 0
   utilityRarityWeightMults: []
   reservedTag: 0

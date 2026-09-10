@@ -47,7 +47,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UTILITY_ODDS_2
   displayName: "\u7AA5\u9B47\u955C"
-  cardDesc: "<b>\u5947\u7269\u67B6</b>\u7684\u51FA\u73B0\u6982\u7387 <b>+15%</b>"
+  cardDesc: "\u88AB\u52A8: <b>\u5947\u7269\u67B6</b>\u7684\u51FA\u73B0\u6982\u7387
+    <b>+15%</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
