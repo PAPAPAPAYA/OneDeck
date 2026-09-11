@@ -323,6 +323,7 @@ public class ShopManager : MonoBehaviour
 			playerDeckRef.deck.Add(cardToBuy);
 			RefreshUtilityBonus();
 			ApplyHpMaxFromDeck();
+			UpdateRerollButtonLabel(); // free/paid reroll can flip mid-visit when FreeReroll cards are bought
 		}
 
 		currentShopItemDeckRef.deck.Remove(cardToBuy); // remove it from current shop item list
@@ -369,6 +370,7 @@ public class ShopManager : MonoBehaviour
 		playerDeckRef.deck.Remove(cardToSell); // remove it from player deck
 		RefreshUtilityBonus();
 		ApplyHpMaxFromDeck();
+		UpdateRerollButtonLabel(); // free/paid reroll can flip mid-visit when FreeReroll cards are sold
 		
 		// Notify ShopUXManager to handle sell animation
 		if (physicalCardInstance != null)
@@ -400,7 +402,7 @@ public class ShopManager : MonoBehaviour
 		ResetVisitCounters();
 		RefreshUtilityBonus();
 		ApplyBaselineGrowth();
-		purse.value += UtilityShopBonus.ComputePayday(payCheck.value, GetSessionNum(), incomeGrowthPerStep, sessionsPerIncomeStep, _utilityBonus);
+		purse.value += GetCurrentPayday();
 		RunRecorder.OnPayday(purse.value); // Async-PvP: goldAfterPayday snapshot before spending (plan §2.6)
 		// process shop items and display
 		GenerateShopItems();
@@ -580,7 +582,7 @@ public class ShopManager : MonoBehaviour
 		int freeLeft = (_utilityBonus != null ? _utilityBonus.freeRerolls : 0) - _freeRerollsUsedThisVisit;
 		playerStatsDisplay.text =
 			"HP Max: " + CombatManager.Me.ownerPlayerStatusRef.hpMax +
-			"\nYou have: $" + purse.value + " (+$12/combat)" +
+			"\nYou have: $" + purse.value + " (+$" + GetCurrentPayday() + "/combat)" +
 			(freeLeft > 0 ? "\nFree Rerolls: " + freeLeft : "");
 	}
 
@@ -594,7 +596,7 @@ public class ShopManager : MonoBehaviour
 		if (label == null) return;
 		int freeLeft = (_utilityBonus != null ? _utilityBonus.freeRerolls : 0) - _freeRerollsUsedThisVisit;
 		label.text = freeLeft > 0
-			? "Reroll: 免费 x" + freeLeft
+			? "Reroll: $0"
 			: "Reroll: $" + (RerollPriceRef != null ? RerollPriceRef.value : 0);
 	}
 
@@ -649,6 +651,15 @@ public class ShopManager : MonoBehaviour
 	private int GetSessionNum()
 	{
 		return sessionNum != null ? sessionNum.value : 0;
+	}
+
+	/// <summary>
+	/// Paycheck the shop pays on entry: base payCheck + baseline growth + Income utility.
+	/// Same formula as the EnterShop payday; shared by the payday and the live income display.
+	/// </summary>
+	private int GetCurrentPayday()
+	{
+		return UtilityShopBonus.ComputePayday(payCheck.value, GetSessionNum(), incomeGrowthPerStep, sessionsPerIncomeStep, _utilityBonus);
 	}
 
 	/// <summary>
