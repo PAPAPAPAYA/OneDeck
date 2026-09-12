@@ -265,21 +265,6 @@ public class PhaseManager : MonoBehaviour
 			sb.AppendLine("");
 			sb.AppendLine("===== " + _endMessage + " =====");
 			sb.AppendLine("");
-
-			var winRateReport = TestWriteRead.CardWinRateTracker.Me?.GetAllStatsReportString();
-			if (!string.IsNullOrEmpty(winRateReport))
-			{
-				sb.AppendLine(winRateReport);
-				sb.AppendLine("");
-			}
-
-			var shopReport = ShopStatsManager.Me?.GetAllStatsReportString();
-			if (!string.IsNullOrEmpty(shopReport))
-			{
-				sb.AppendLine(shopReport);
-				sb.AppendLine("");
-			}
-
 			sb.AppendLine("TAP / SPACE to start a new run");
 		}
 		else
