@@ -144,15 +144,17 @@ MonoBehaviour:
   holdTimeRequired: 0.5
   cardShaker: {fileID: 0}
   cardShakePreset: {fileID: 0}
-  cardFace: {fileID: 3473898615914785401}
+  cardFace: {fileID: 264696835367644459}
   cardImg: {fileID: 0}
   cardCostPrint: {fileID: 0}
-  cardNamePrint: {fileID: 4862150238569319107}
-  cardDescPrint: {fileID: 3311838246655014247}
+  cardNamePrint: {fileID: 8133628322749943185}
+  cardDescPrint: {fileID: 2193151221689020981}
   cardPricePrint: {fileID: 0}
   cardRarityPrint: {fileID: 0}
   cardTagPrint: {fileID: 0}
   cardStatusEffectPrint: {fileID: 0}
+  cardAttackPrint: {fileID: 0}
+  cardDivider: {fileID: 0}
   ownerCardFaceSprite: {fileID: 0}
   opponentCardFaceSprite: {fileID: 0}
   infectedTintIntensity: 0.5
@@ -164,6 +166,8 @@ MonoBehaviour:
   isPlayingSpecialAnimation: 0
   isPendingSlotIn: 0
   isPoppedUp: 0
+  specialAnimationDrivesPosition: 1
+  lastSpecialAnimationTag: 
   flipDuration: 0.3
   popUpOriginalPosition: {x: 0, y: 0, z: 0}
   popUpOriginalScale: {x: 0, y: 0, z: 0}
@@ -645,7 +649,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f11b62ecd6e39fa43aaef519fdd6f55b, type: 2}
+  - {fileID: 2100000, guid: 089164b48bbda5d40aaee10b7bb48493, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1055,19 +1059,19 @@ PrefabInstance:
       addedObject: {fileID: 1974870893423873170}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
+--- !u!212 &264696835367644459 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
+  m_PrefabInstance: {fileID: 3718179147836573522}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1853830132789024798 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3036411943647600460, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
   m_PrefabInstance: {fileID: 3718179147836573522}
   m_PrefabAsset: {fileID: 0}
---- !u!212 &3473898615914785401 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
-  m_PrefabInstance: {fileID: 3718179147836573522}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &4862150238569319107 stripped
+--- !u!114 &2193151221689020981 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4862150238569319107, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
+  m_CorrespondingSourceObject: {fileID: 3311838246655014247, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
   m_PrefabInstance: {fileID: 3718179147836573522}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
@@ -1076,9 +1080,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &3311838246655014247 stripped
+--- !u!114 &8133628322749943185 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3311838246655014247, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
+  m_CorrespondingSourceObject: {fileID: 4862150238569319107, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
   m_PrefabInstance: {fileID: 3718179147836573522}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}

@@ -425,7 +425,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f11b62ecd6e39fa43aaef519fdd6f55b, type: 2}
+  - {fileID: 2100000, guid: 089164b48bbda5d40aaee10b7bb48493, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1124,7 +1124,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_text
-      value: $77
+      value: <s>$77</s>
       objectReference: {fileID: 0}
     - target: {fileID: 3399796476660888328, guid: 142b009c26a44d04da7b5008b14b9b94, type: 3}
       propertyPath: m_fontStyle
