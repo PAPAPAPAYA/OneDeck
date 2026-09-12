@@ -279,7 +279,9 @@ public void ReleaseDeckFocus()
 		bool wasPoppedUp = physScript.isPoppedUp;
 
 		// Mark that special animation is playing to prevent CardPhysObjScript from overriding DOTween
-		physScript.isPlayingSpecialAnimation = true;
+		// VISUAL-FIX(2026-09-12): the attack drives transform.position for its whole flight, so it
+		// declares position ownership (see CardPhysObjScript.SpecialAnimationPinsPosition).
+		physScript.BeginSpecialAnimation(true);
 
 		try
 		{

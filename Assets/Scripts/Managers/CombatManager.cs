@@ -1097,6 +1097,7 @@ public class CombatManager : MonoBehaviour
 		// and will be revealed again this round.
 		var cardScript = cardToBottom.GetComponent<CardScript>();
 		int destIndex = cardScript != null ? ResolveGravePlacement(cardScript) : 0;
+		TestManager.Log("[CombatManager][ReturnYDiag] PutRevealedCardToBottom card=" + cardToBottom.name + " destIndex=" + destIndex + " currentLife=" + (cardScript != null ? cardScript.currentLife : -1) + " deckCount=" + combinedDeckZone.Count);
 		if (destIndex > 0)
 		{
 			combinedDeckZone.Insert(destIndex, cardToBottom);

@@ -314,6 +314,15 @@ namespace DefaultNamespace.Managers
 
 		private static LogCategory InferCategory(string message)
 		{
+			// [RevealZDiag] temporary reproduction instrumentation (docs/RevealZCover_Handoff.md §6).
+			// Checked FIRST so every probe routes to one switch regardless of its source prefix:
+			// previously the [RecorderAnimationPlayer]-prefixed probes (ZTRACE, emphasize) landed in
+			// AnimationPlayback, which the scene ships OFF, so that instrumentation produced zero
+			// visible lines and the emphasize path was reported as unidentified.
+			if (message.Contains("[RevealZDiag]"))
+			{
+				return LogCategory.VisualSync;
+			}
 			if (message.Contains("[CombatManager]") || message.Contains("[PhaseManager]"))
 			{
 				return LogCategory.CombatFlow;

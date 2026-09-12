@@ -83,6 +83,30 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	public bool IsPositionTweenPlaying => _positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying();
 
+	/// <summary>
+	/// True while the live position tween (see <see cref="IsPositionTweenPlaying"/>) was started
+	/// with a completion callback. Only callback-carrying tweens need restart protection — a
+	/// restart kills the in-flight tween and its callback would never fire — so the reveal-z
+	/// re-clamp defers to these only, and may restart callback-less tweens immediately
+	/// (VISUAL-FIX 2026-09-11). Meaningful only while IsPositionTweenPlaying is true.
+	/// </summary>
+	public bool PositionTweenHasCompletionCallback => _positionTweenHasCompletionCallback;
+
+	/// <summary>
+	/// Take the live tween's completion callback out (clearing it from this card) so a caller
+	/// that must restart the tween can re-attach it via SetTargetPosition. Used by the reveal-z
+	/// re-clamp: the entry tween carries the input unblock, and restarting it onto the latest
+	/// reveal z (instead of deferring) keeps the flight synchronized with deck shifts
+	/// (VISUAL-FIX 2026-09-11, see CombatUXManager.TryReClampRevealZoneTargetZ).
+	/// </summary>
+	public Action RetakePositionTweenCompletionCallback()
+	{
+		var cb = _positionTweenCompletionCallback;
+		_positionTweenCompletionCallback = null;
+		_positionTweenHasCompletionCallback = false;
+		return cb;
+	}
+
 	// ========== Shake related ==========
 	private ShakeInstance _currentShakeInstance;
 	private bool _isShaking = false;
@@ -102,6 +126,44 @@ public class CardPhysObjScript : MonoBehaviour
 	public bool isPendingSlotIn = false;
 	[Tooltip("Is currently popped up to peak position (PopUpCard/MoveCardToPopUpPosition). Cleared by SlotInCard or any deck-move animation that ends at a deck position.")]
 	public bool isPoppedUp = false;
+
+	/// <summary>
+	/// VISUAL-FIX(2026-09-12): whether the active special animation drives transform.position
+	/// itself. True for every position-driving special animation (pop-up peak, Stage arc, attack
+	/// flight, peel exit, shuffle) — the card must not run its own position tween then, or the two
+	/// would fight. False for a SCALE-ONLY special animation (RecorderAnimationPlayer's emphasize
+	/// pulse): the position stays free, so the reveal-z re-clamp keeps updating TargetPosition and
+	/// the card keeps gliding forward WITH the deck instead of being pinned while the deck shifts
+	/// past it (root cause of the reveal-zone cover: the deck front card crossed the frozen card,
+	/// measured gap up to -0.378 in a RIFT_PRIEST batch-generation repro).
+	/// Set exclusively through <see cref="BeginSpecialAnimation"/>; the value is meaningless while
+	/// isPlayingSpecialAnimation is false.
+	/// </summary>
+	public bool specialAnimationDrivesPosition = true;
+
+	/// <summary>Caller name of the special animation currently holding this card (diagnostics only).</summary>
+	public string lastSpecialAnimationTag = string.Empty;
+
+	/// <summary>
+	/// True while the active special animation owns this card's POSITION — position tweens must be
+	/// killed and target tracking must not start new ones. Gated on isPlayingSpecialAnimation, so a
+	/// stale drivesPosition value left behind by a finished animation has no effect. isPoppedUp is
+	/// included so a card parked at a pop-up peak can never be moved by target tracking even if a
+	/// future caller forgets to pass drivesPosition=true.
+	/// </summary>
+	public bool SpecialAnimationPinsPosition =>
+		isPlayingSpecialAnimation && (specialAnimationDrivesPosition || isPoppedUp);
+
+	/// <summary>
+	/// Start a special animation and declare whether it drives transform.position (VISUAL-FIX
+	/// 2026-09-12). CallerMemberName is captured for the diagnostic tag only.
+	/// </summary>
+	public void BeginSpecialAnimation(bool drivesPosition, [System.Runtime.CompilerServices.CallerMemberName] string caller = null)
+	{
+		isPlayingSpecialAnimation = true;
+		specialAnimationDrivesPosition = drivesPosition;
+		lastSpecialAnimationTag = caller ?? string.Empty;
+	}
 
 	// ========== Face Down / Flip ==========
 	[Header("FLIP")]
@@ -151,6 +213,12 @@ public class CardPhysObjScript : MonoBehaviour
 	public bool useLocalRotation = true;
 
 	private Tweener _positionTween;
+	// VISUAL-FIX(2026-09-11): mirrors whether the live _positionTween was started with a
+	// completion callback; see PositionTweenHasCompletionCallback.
+	private bool _positionTweenHasCompletionCallback;
+	// The completion callback of the live tween, stashed so a guard that must restart the tween
+	// (reveal-z re-clamp during the entry flight) can re-attach it to the replacement tween.
+	private Action _positionTweenCompletionCallback;
 	private Tweener _scaleTween;
 	private Tweener _rotationTween;
 
@@ -190,9 +258,22 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 
+	// [RevealZDiag] temporary: registry for the per-frame cover monitor
+	// (CombatUXManager.LateUpdate -> MonitorRevealZoneCover). A static list keeps the monitor
+	// allocation-free; FindObjectsOfType every frame would add GC churn to the very frames the
+	// bug is timing-sensitive in. Remove with the rest of the [RevealZDiag] tooling.
+	internal static readonly System.Collections.Generic.List<CardPhysObjScript> AllPhysicalCards =
+		new System.Collections.Generic.List<CardPhysObjScript>();
+
 	void OnEnable()
 	{
 		_combatUXManager = CombatUXManager.me;
+		if (!AllPhysicalCards.Contains(this)) AllPhysicalCards.Add(this);
+	}
+
+	void OnDisable()
+	{
+		AllPhysicalCards.Remove(this);
 	}
 
 	void Update()
@@ -471,8 +552,10 @@ public class CardPhysObjScript : MonoBehaviour
 		TestManager.Log("[CardPhysObjScript] SetTargetPosition card=" + name + " currentPos=" + transform.position + " newTarget=" + target + " isPlayingSpecial=" + isPlayingSpecialAnimation);
 		TargetPosition = target;
 
-		// If special animation is playing, do not start DOTween
-		if (isPlayingSpecialAnimation)
+		// If a special animation owns the position, do not start DOTween (it would fight the
+		// caller's own transform drive). VISUAL-FIX(2026-09-12): a scale-only pulse does NOT own
+		// the position, so tracking keeps working through it — see SpecialAnimationPinsPosition.
+		if (SpecialAnimationPinsPosition)
 		{
 			onComplete?.Invoke();
 			return;
@@ -574,14 +657,40 @@ public class CardPhysObjScript : MonoBehaviour
 
 		TestManager.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + moveDuration);
 		float scaledDuration = GetCombatScaledDuration(moveDuration);
+		// VISUAL-FIX(2026-09-11): record callback presence on the live tween and sample the
+		//   reveal-z probe on landing. The re-clamp guard (CombatUXManager
+		//   .TryReClampRevealZoneTargetZ) now defers only to callback-carrying tweens, so
+		//   batch inserts keep the reveal card's z flight in the same frame/duration/ease
+		//   batch as the deck shift instead of a full duration behind it; the landed probe
+		//   sample closes the instrumentation blind spot. Full block at TryReClampRevealZoneTargetZ.
+		_positionTweenHasCompletionCallback = onComplete != null;
+		_positionTweenCompletionCallback = onComplete;
 		var tween = transform.DOMove(TargetPosition, scaledDuration)
 			.SetEase(moveEase)
-			.SetUpdate(UpdateType.Normal, true);
-		if (onComplete != null)
-		{
-			tween.OnComplete(() => onComplete.Invoke());
-		}
+			.SetUpdate(UpdateType.Normal, true)
+			.OnComplete(() =>
+			{
+				_positionTweenHasCompletionCallback = false;
+				_positionTweenCompletionCallback = null;
+				NotifyRevealCardTweenLandedToCombatUX();
+				onComplete?.Invoke();
+			});
 		_positionTween = tween;
+	}
+
+	/// <summary>
+	/// Called when this card's position tween completes. If this is the reveal-zone card, ask
+	/// CombatUXManager to sample the reveal-z violation probe: every static probe call site runs
+	/// while the reveal tween may still be playing (a state the probe skips), so inversions that
+	/// only existed at landed/rest states were never logged. Completion time passes the probe's
+	/// IsPositionTweenPlaying guard (VISUAL-FIX 2026-09-11).
+	/// </summary>
+	private void NotifyRevealCardTweenLandedToCombatUX()
+	{
+		if (_combatUXManager != null && _combatUXManager.physicalCardInRevealZone == gameObject)
+		{
+			_combatUXManager.NotifyRevealCardPositionTweenLanded();
+		}
 	}
 
 	/// <summary>
@@ -1078,8 +1187,13 @@ public class CardPhysObjScript : MonoBehaviour
 	{
 		if (isPlayingSpecialAnimation)
 		{
+			TestManager.Log("[CardPhysObjScript][ReturnYDiag] StopSpecialAnimation card=" + name + " pos=" + transform.position + " target=" + TargetPosition);
 			isPlayingSpecialAnimation = false;
 		}
+		// VISUAL-FIX(2026-09-12): no special animation is playing any more, so nothing owns the
+		// position — restore the default so the next isPlayingSpecialAnimation=true site starts
+		// from a defined state.
+		specialAnimationDrivesPosition = true;
 		isPendingSlotIn = false;
 	}
 
@@ -1097,6 +1211,59 @@ public class CardPhysObjScript : MonoBehaviour
 		_positionTween = null;
 		_scaleTween = null;
 		_rotationTween = null;
+		_positionTweenHasCompletionCallback = false;
+		_positionTweenCompletionCallback = null;
+	}
+
+	/// <summary>
+	/// VISUAL-FIX(2026-09-12): the scale/rotation half of <see cref="KillTweens"/>, for a
+	/// scale-only special animation (the emphasize pulse). The pulse drives transform.localScale
+	/// itself, so a live _scaleTween must die, but the card's POSITION stays free: killing the
+	/// position tween every frame pinned the reveal card in place while the deck cards shifted
+	/// forward, and the deck front card crossed in front of it (the reported transient cover).
+	/// </summary>
+	public void KillScaleAndRotationTweens()
+	{
+		_scaleTween?.Kill();
+		_rotationTween?.Kill();
+		_scaleTween = null;
+		_rotationTween = null;
+	}
+
+	/// <summary>
+	/// Re-drive the transform toward TargetPosition after a special animation's direct drive
+	/// ended. CombatCardView calls KillTweens() every frame while isPlayingSpecialAnimation is
+	/// true, which abandons any in-flight position tween midway — a reveal-zone card interrupted
+	/// during its re-clamp flight froze permanently between deck slots (correct TargetPosition,
+	/// dead tween, z behind the deck front card). The special-animation falling edge calls this
+	/// so the card glides home to the authoritative target instead of resting wherever the
+	/// interruption caught it (VISUAL-FIX 2026-09-11, see CombatCardView.UpdateMotion).
+	/// </summary>
+	public void ReconvergeToTargetPosition()
+	{
+		if (IsPositionTweenPlaying) return;
+		if ((transform.position - TargetPosition).sqrMagnitude < 0.0001f) return;
+		// [ReturnYDiag] logs who re-drove the card and from where (falling edge after a kill)
+		TestManager.Log("[CardPhysObjScript][ReturnYDiag] Reconverge card=" + name + " pos=" + transform.position + " -> target=" + TargetPosition);
+		StartPositionTween();
+	}
+
+	/// <summary>
+	/// Fast-forward an in-flight callback-less position tween to its target (callbacks skipped).
+	/// Special-animation starters capture the transform as their pop-up base and restore point;
+	/// capturing a mid-flight pose (e.g. a reveal-zone card interrupted during its re-clamp
+	/// chase) parked the card BEHIND the deck front card for the whole pop-up + slot-in — the
+	/// transient cover left after the permanent-freeze fix. Callback-carrying tweens (reveal
+	/// entry) are left alone: completing them early would move their input unblock ahead of
+	/// schedule (VISUAL-FIX 2026-09-11, see CombatCardView.UpdateMotion).
+	/// </summary>
+	public void CompleteInFlightPositionTween()
+	{
+		if (!IsPositionTweenPlaying) return;
+		if (PositionTweenHasCompletionCallback) return;
+		_positionTween.Complete(false);
+		_positionTween = null;
+		_positionTweenHasCompletionCallback = false;
 	}
 
 	private void ApplyColor()
@@ -1455,8 +1622,8 @@ public class CardPhysObjScript : MonoBehaviour
 
 	// NOTE: OnMouseExit is intentionally NOT used to end the hover. PopUpCard moves the
 	// card out from under the cursor, which would fire OnMouseExit immediately and undo
-	// the pop-up / cancel the pending tooltip. UpdateHover() polls the cursor position
-	// against the collider every frame instead.
+	// the pop-up / cancel the pending tooltip. UpdateHover() polls the cursor against the
+	// card's slot Y band (deck cards) or the collider every frame instead.
 
 	private Collider2D _hoverCollider;
 	private Camera _hoverCamera;
@@ -1475,32 +1642,48 @@ public class CardPhysObjScript : MonoBehaviour
 			_hoverCamera = Camera.main;
 			if (_hoverCamera == null) return true; // no camera: cannot test, stay hovered
 		}
+		var uxMgr = CombatUXManager.me;
+		// Out vars must be declared (not inline) so definite-assignment analysis sees them as
+		// assigned on every path after the && guard.
+		Vector3 slotPos = Vector3.zero;
+		int deckIndex = -1;
+		bool inDeck = uxMgr != null && uxMgr.TryGetDeckSlotPosition(this, out slotPos, out deckIndex);
+		// Project the cursor on the plane of the SLOT (deck cards) or the card itself, so the
+		// test is stable under pop-up displacement on perspective setups too.
 		Vector3 screenPos = Input.mousePosition;
-		screenPos.z = _hoverCamera.WorldToScreenPoint(transform.position).z;
+		screenPos.z = _hoverCamera.WorldToScreenPoint(inDeck ? slotPos : transform.position).z;
 		Vector3 worldPos = _hoverCamera.ScreenToWorldPoint(screenPos);
 		// VISUAL-FIX(2026-09-09): hover pop-up oscillated between neighbouring deck cards
-		//   Cause:    The cursor-left poll tested the LIVE collider. With popUpXOffset the pop-up
-		//             card flew out from under a stationary cursor, the poll read "cursor left",
-		//             EndHover slotted it back, the behind card's pending hover then popped and
-		//             vacated the same spot, and the first card's collider swept back under the
-		//             cursor — A/B ping-pong (or a single-card self loop) forever.
+		//   Cause:    The cursor-left poll tested the LIVE collider. With popUpXOffset=4 (pure
+		//             horizontal slide-out) the pop-up card vacated the cursor in X, the poll read
+		//             "cursor left", EndHover slotted it back, the behind card's pending hover
+		//             then popped and vacated the same spot, and the first card's collider swept
+		//             back under the cursor — A/B ping-pong (or a single-card self loop) forever.
+		//             A first fix (slot-anchored card rect) kept the card's own X extent, so any
+		//             horizontal drift toward the popped card still read as "left" and the card
+		//             snapped back mid-inspection.
 		//   Affects:  CardPhysObjScript.IsCursorOverCard (UpdateHover cursor-left poll, pending
 		//             gate), CardPhysObjScript.OnMouseEnter/UpdatePendingHover arbitration
 		//             (HoverArbitrationZ: slot z instead of popUpZBoost-polluted live z),
 		//             CombatUXManager.TryGetDeckSlotPosition (new slot anchor)
-		//   Regress:  In Combat with popUpXOffset > 0, park the cursor mid-card on any face-up
-		//             deck card: it pops up once and stays popped while parked; moving the cursor
-		//             down into the next card's slot band hands hover over exactly once, no A/B
-		//             flicker, no self re-pop; hover the Start Card (deck bottom) the same way.
-		//             Cursor over an overlap band of two slot rects: frontmost card owns, moving
-		//             between the bands hands over seamlessly (loser reclaim pending, no dead band).
+		//   Regress:  In Combat, park the cursor on any face-up deck card: it pops up once and
+		//             stays popped while the cursor stays in its Y row, even when moving far to
+		//             the left/right (toward the popped card); moving the cursor down past the
+		//             band bottom hands hover over to the next card exactly once, no A/B flicker,
+		//             no self re-pop; hover the Start Card (deck bottom) the same way.
 		//   Related:  VISUAL-FIX(2026-07-31) fast hover A->B, VISUAL-FIX(2026-08-16) shuffle window
-		if (CombatUXManager.me != null && CombatUXManager.me.TryGetDeckSlotPosition(this, out Vector3 slotPos))
+		if (inDeck)
 		{
-			// Test the cursor against the collider as if it sat at its deck slot: translate the
-			// world cursor by the card's displacement from its slot before the overlap test, so
-			// pop-up displacement (x/y/z offset) never reads as "cursor left the card".
-			worldPos += slotPos - transform.position;
+			// Pure-Y band test: X intentionally ignored (the pop-up slides out horizontally, so
+			// any X-sensitive region would re-create "cursor left" in the X axis). The band is
+			// anchored to the SLOT y and the slot's resting scale, so neither the pop-up
+			// displacement nor the in-flight scale tween changes what the cursor "hits".
+			float localHalfH = _hoverCollider is BoxCollider2D box
+				? box.size.y * 0.5f
+				: _hoverCollider.bounds.extents.y / Mathf.Max(transform.lossyScale.y, 0.0001f);
+			float slotScaleY = Mathf.Max(uxMgr.GetDeckScaleAtIndex(deckIndex).y, 0.0001f);
+			float halfH = localHalfH * slotScaleY;
+			return worldPos.y >= slotPos.y - halfH && worldPos.y <= slotPos.y + halfH;
 		}
 		return _hoverCollider.OverlapPoint(worldPos);
 	}
@@ -1514,7 +1697,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// </summary>
 	private float HoverArbitrationZ()
 	{
-		if (CombatUXManager.me != null && CombatUXManager.me.TryGetDeckSlotPosition(this, out Vector3 slotPos))
+		if (CombatUXManager.me != null && CombatUXManager.me.TryGetDeckSlotPosition(this, out Vector3 slotPos, out _))
 			return slotPos.z;
 		return transform.position.z;
 	}

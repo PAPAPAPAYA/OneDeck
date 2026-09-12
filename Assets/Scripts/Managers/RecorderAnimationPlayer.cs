@@ -406,8 +406,7 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 	/// Play emphasize animation (scale up then back to original) on the card that triggered the effect.
 	/// </summary>
 	private IEnumerator PlayEmphasizeAnimation(GameObject logicalCard)
-	{
-		if (logicalCard == null) yield break;
+	{		if (logicalCard == null) yield break;
 		if (CombatManager.Me == null) yield break;
 		var visuals = CombatManager.Me.visuals;
 		if (visuals == null) yield break;
@@ -421,7 +420,23 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 		if (physScript == null) yield break;
 
 		AnimationStateTracker.me?.RegisterAnimation();
-		physScript.isPlayingSpecialAnimation = true;
+		// VISUAL-FIX(2026-09-12): the pulse drives SCALE only — declare that it does not own the
+		//   card's position so position tracking (the reveal-z re-clamp) keeps running through it.
+		//   Before: isPlayingSpecialAnimation=true made CombatCardView kill the position tween every
+		//   frame and CombatUXManager skip the reveal-z re-clamp, so a reveal-zone source card was
+		//   pinned at its pre-shift z while the deck cards glided forward 0.5 per generated card
+		//   (RIFT_PRIEST batch) — the deck front card crossed in front of it and covered it for the
+		//   whole pulse, which is the reported transient. Pop-up peaks are unaffected:
+		//   SpecialAnimationPinsPosition also pins while isPoppedUp.
+		physScript.BeginSpecialAnimation(false);
+		// [RevealZDiag] temporary reproduction instrumentation (see CombatUXManager.LogRevealZoneZViolation)
+		TestManager.Log("[RecorderAnimationPlayer][RevealZDiag] EMPHASIZE-START card=" + physicalCard.name
+			+ " t=" + Time.time.ToString("F2")
+			+ " z=" + physicalCard.transform.position.z.ToString("F3")
+			+ " targetZ=" + physScript.TargetPosition.z.ToString("F3")
+			+ " revealCard=" + (CombatUXManager.me != null && CombatUXManager.me.physicalCardInRevealZone != null ? CombatUXManager.me.physicalCardInRevealZone.name : "null"));
+		// [RevealZDiag] temporary reproduction instrumentation (see CombatUXManager.LogRevealZoneZViolation)
+		StartCoroutine(TraceRevealZDuringEmphasize(physicalCard));
 
 		bool done = false;
 		Vector3 originalScale = physicalCard.transform.localScale;
@@ -448,6 +463,35 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 		});
 
 		yield return new WaitUntil(() => done);
+	}
+
+	/// <summary>
+	/// [RevealZDiag] temporary: 10 Hz z-trace of every physical card while the emphasize plays
+	/// plus tail — the transient cover frame lives between SETTLED snapshots. "!"/"~" mark
+	/// special-animating / tweening cards. Logs only.
+	/// </summary>
+	private IEnumerator TraceRevealZDuringEmphasize(GameObject emphasizedCard)
+	{
+		for (float t = 0f; t < 2.5f; t += 0.1f)
+		{
+			var sb = new System.Text.StringBuilder("[RecorderAnimationPlayer][RevealZDiag] ZTRACE t=" + t.ToString("F1") + " emph=" + (emphasizedCard != null ? emphasizedCard.name : "null"));
+			// Registry instead of FindObjectsOfType: allocation-free per frame (this probe runs
+			// through the timing-sensitive window it exists to measure).
+			var all = CardPhysObjScript.AllPhysicalCards;
+			for (int i = 0; i < all.Count; i++)
+			{
+				var p = all[i];
+				if (p == null) continue;
+				sb.Append(" | " + p.gameObject.name.Replace("'s physical card", "")
+					+ " z=" + p.transform.position.z.ToString("F2")
+					+ " tz=" + p.TargetPosition.z.ToString("F2")
+					+ (p.isPlayingSpecialAnimation ? "!" : "")
+					+ (p.SpecialAnimationPinsPosition ? "P" : "")
+					+ (p.IsPositionTweenPlaying ? "~" : ""));
+			}
+			TestManager.Log(sb.ToString());
+			yield return new WaitForSeconds(0.1f);
+		}
 	}
 
 	/// <summary>

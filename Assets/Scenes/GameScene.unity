@@ -8881,7 +8881,7 @@ MonoBehaviour:
   floatStackRevealUpY: -14
   floatStackMaxHeightPx: 250
   floatStackMinScale: 0.55
-  floatStackBottomLimitPx: 270
+  floatStackBottomLimitPx: 200
   floatStackCardHalfHeightPx: 105
   floatStackShadowOffset: {x: 0, y: 30}
   floatStackShadowOpacity: 0.85

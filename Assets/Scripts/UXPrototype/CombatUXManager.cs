@@ -212,7 +212,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	public float popUpZBoost = -1.0f;
 	[Tooltip("Seconds between batch move launches (scaled by CombatAnimationSpeed). Desynchronizes parallel batch flights so z-crossings never coincide on screen (VISUAL-FIX 2026-08-29).")]
 	public float batchMoveStagger = 0.06f;
-	[Tooltip("Scale multiplier at Pop Up peak, relative to the card's current TargetScale (cascade depth scale or reveal size). Default 1.0 = pop up does not rescale, matching the reveal-zone card experience (reveal pop up scale / reveal card scale).")]
+	[Tooltip("Scale multiplier at Pop Up peak, relative to the card's resting scale (deck depth scale or reveal size, never the previous peak). Default 1.0 = pop up does not rescale, matching the reveal-zone card experience (reveal pop up scale / reveal card scale).")]
 	public float popUpScaleMultiplier = 1f;
 	[Tooltip("Time to reach Pop Up peak position")]
 	public float popUpDuration = 0.25f;
@@ -527,8 +527,33 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if ((deckLayoutMode == DeckLayoutMode.Cascade || deckLayoutMode == DeckLayoutMode.ArcLoop) && revealCardCountsAsDeckFront)
 				effectiveCount = physicalCardsInDeck.Count;
 			// Float Stack: the returned card lands at the stack back slot (count = post-insert).
+			// VISUAL-FIX(2026-09-12): FloatStack return-to-bottom landed one stack step too high
+			//   Cause:    This branch used the raw post-insert count, but at this instant the NEXT
+			//             card (revealed by the same click, right after PutRevealedCardToBottom) is
+			//             still in physicalCardsInDeck and leaves it in MoveCardToRevealZone, while
+			//             the FloatStack layout count never includes the reveal-zone card. The
+			//             snapshot therefore predicted one slot deeper than the steady-state seam
+			//             (repro: snapshot y=2.53 at count 14 vs seam y=2.23 at count 13): the return
+			//             arc landed ~one stack step too high, and MoveCardWithAnimation's OnComplete
+			//             SetTargetPosition re-pinned the stale value over the correct target the
+			//             reveal flight's UpdateAllPhysicalCardTargets had already recorded, until
+			//             the next full relayout (end of the next card's effect playback) corrected
+			//             it. The Cascade branch's -1/+1 cancel above is only valid for
+			//             Cascade/ArcLoop, whose layout count includes the reveal card as the front
+			//             slot; FloatStack's does not.
+			//   Fix:      Subtract the about-to-be-revealed card whenever a next reveal will
+			//             actually pop one (combinedDeckZone.Count > 1 after the insert); a
+			//             single-card deck keeps the raw count (no card leaves for the reveal).
+			//   Affects:  CombatUXManager.MoveRevealedCardToIndex (FloatStack branch: arc target
+			//             position, landing scale and jitter scale all derive from effectiveCount).
+			//   Regress:  FloatStack deck: reveal a card, click again — the returned card must land
+			//             exactly on the slot the next full relayout computes for its index (no
+			//             visible downward correction when the next card's effect finishes).
+			//             Cascade / ArcLoop / Linear unchanged. Single-card-deck edge keeps raw count.
 			if (IsFloatStackLayoutActive)
-				effectiveCount = physicalCardsInDeck.Count;
+				effectiveCount = combatManager != null && combatManager.combinedDeckZone != null && combatManager.combinedDeckZone.Count > 1
+					? physicalCardsInDeck.Count - 1
+					: physicalCardsInDeck.Count;
 			
 			// VISUAL-FIX(2026-07-17): Reveal-to-bottom must land on the cascade curve, not the raw linear fan.
 			//   Cause:    This site duplicated the linear formula inline (xOffset*(effectiveCount-1)),
@@ -549,7 +574,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				}
 				targetPos += _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, effectiveCount);
 			}
-			// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom targetPos=" + targetPos + " effectiveCount=" + effectiveCount);
+			// [ReturnYDiag] compare against the UpdateAllPhysicalCardTargets seam at the same deck state
+			TestManager.Log("[CombatUXManager][ReturnYDiag] snapshot card=" + physicalCard.name + " index=" + index + " count=" + physicalCardsInDeck.Count + " effectiveCount=" + effectiveCount + " layoutCount=" + GetLayoutDeckCount() + " curPos=" + physicalCard.transform.position + " targetPos=" + targetPos);
 
 			Action wrappedOnComplete = () =>
 			{
@@ -595,6 +621,8 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			//             Non-focused reveals unchanged (immediate arc).
 			if (_isDeckFocused)
 			{
+				// [ReturnYDiag] proves/disproves the deferred-flight window is involved
+				TestManager.Log("[CombatUXManager][ReturnYDiag] return flight DEFERRED (deck focused) card=" + physicalCard.name + " curPos=" + physicalCard.transform.position);
 				StartCoroutine(PlayRevealedCardReturnFlightWhenRestoreCompletes(card, physicalCard, config, onComplete));
 				return;
 			}
@@ -741,7 +769,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		config.onStart?.Invoke();
 
 		// Mark that special animation is playing
-		physScript.isPlayingSpecialAnimation = true;
+		physScript.BeginSpecialAnimation(true);
 
 		// Block input during effect animation
 		BlockInput(this);
@@ -822,9 +850,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		}
 
 		// Animation complete callback
+		// [ReturnYDiag] seqCompleted lets the OnKill probe distinguish natural completion from a mid-flight kill.
+		bool seqCompleted = false;
 		moveSequence.OnComplete(() =>
 		{
-			// Debug.Log("[CombatUXManager] MoveCardWithAnimation COMPLETE logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " finalPos=" + physicalCard.transform.position + " finalTargetPos=" + targetPosition);
+			seqCompleted = true;
+			TestManager.Log("[CombatUXManager][ReturnYDiag] moveSequence COMPLETE logical=" + logicalCard.name + " moveType=" + config.moveType + " targetIndex=" + config.targetIndex + " finalPos=" + physicalCard.transform.position + " finalTargetPos=" + targetPosition);
 			AnimationStateTracker.me?.CompleteAnimation();
 			UnblockInput(this);
 
@@ -858,6 +889,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			}
 
 			config.onComplete?.Invoke();
+		});
+		// [ReturnYDiag] fires only when the sequence was killed before completing naturally.
+		moveSequence.OnKill(() =>
+		{
+			if (!seqCompleted)
+				TestManager.LogWarning("[CombatUXManager][ReturnYDiag] moveSequence KILLED MID-FLIGHT logical=" + logicalCard.name + " moveType=" + config.moveType + " pos=" + physicalCard.transform.position + " target=" + targetPosition);
 		});
 
 		// Batch launch stagger: hold the card at its current pose for startDelay seconds before
@@ -1095,7 +1132,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (physScript == null) { phase1Done++; phase2Done++; continue; }
 
 			physScript.KillTweens();
-			physScript.isPlayingSpecialAnimation = true;
+			physScript.BeginSpecialAnimation(true);
 			// Face-down rule: staged cards flip face-up during the arc and stay up on deck top
 			physScript.SetFaceUp(true, true);
 
@@ -1373,13 +1410,38 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
-	/// Pop Up peak scale: the card's current TargetScale (cascade depth scale or reveal size)
-	/// multiplied by popUpScaleMultiplier. Falls back to physicalCardDeckSize when TargetScale
-	/// was never initialized (Vector3.zero).
+	/// Pop Up peak scale: popUpScaleMultiplier over the card's RESTING scale — the layout scale at
+	/// its current deck index for deck cards, or the saved popUpOriginalScale for non-deck cards
+	/// (reveal zone etc.), falling back to physicalCardDeckSize. Deliberately NOT TargetScale:
+	/// PopUpCard stores the peak back into TargetScale and interrupted slot-ins never restore it,
+	/// so a peak derived from TargetScale multiplied popUpScaleMultiplier on every interrupted
+	/// re-popup (VISUAL-FIX 2026-09-09, mirrors the 2026-07-31 position fix).
 	/// </summary>
+	// VISUAL-FIX(2026-09-09): Pop-up scale grew on every interrupted re-popup (1.1x -> 1.21x -> ...)
+	//   Cause:    GetPopUpPeakScale derived the peak from physScript.TargetScale, but PopUpCard
+	//             itself stores the peak back into TargetScale (SetTargetScale(peakScale)). A normal
+	//             slot-in restores the resting scale on completion, but an INTERRUPTED slot-in
+	//             (InterruptActivePopUpSlotIn) never runs the seq's restore callback, and a re-popup
+	//             during the pop-up hold window reads the still-parked peak as "resting". Each such
+	//             cycle multiplied popUpScaleMultiplier again. Interrupts became frequent once hover
+	//             pop-ups persisted (slot-anchor/pure-Y hover, reclaim handovers).
+	//   Affects:  CombatUXManager.GetPopUpPeakScale (callers: PopUpCard, MoveCardToTopPopUpBatch,
+	//             MoveCardToPopUpPosition)
+	//   Regress:  In Combat with popUpScaleMultiplier > 1, rapidly hover A -> B -> A across slot
+	//             bands (interrupting slot-ins), and let a recorder pop a card that is hover-held:
+	//             every pop-up must peak at resting scale x multiplier (no growth across repeats).
+	//   Related:  VISUAL-FIX(2026-07-31) pop-up position stacking (same pattern, position axis)
 	private Vector3 GetPopUpPeakScale(CardPhysObjScript physScript)
 	{
-		Vector3 baseScale = physScript.TargetScale;
+		Vector3 baseScale = Vector3.zero;
+		if (physScript != null)
+		{
+			int deckIndex = physicalCardsInDeck != null ? physicalCardsInDeck.IndexOf(physScript.gameObject) : -1;
+			if (deckIndex >= 0)
+				baseScale = GetDeckScaleAtIndex(deckIndex);
+			else if (physScript.popUpOriginalScale != Vector3.zero)
+				baseScale = physScript.popUpOriginalScale;
+		}
 		if (baseScale == Vector3.zero) baseScale = physicalCardDeckSize;
 		return baseScale * popUpScaleMultiplier;
 	}
@@ -1479,14 +1541,17 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// physicalCardsInDeck. Pop-up/slot-in displacement must not change what the cursor "hits", so
 	/// hover tests deck cards against this anchor instead of the live transform. Returns false for
 	/// cards outside the deck (reveal zone, minions, shop) — those keep live-collider testing.
+	/// deckIndex is the card's current index in physicalCardsInDeck (valid only when returning true),
+	/// for callers that need the slot's resting scale (e.g. the hover Y band).
 	/// </summary>
-	public bool TryGetDeckSlotPosition(CardPhysObjScript physScript, out Vector3 slotPos)
+	public bool TryGetDeckSlotPosition(CardPhysObjScript physScript, out Vector3 slotPos, out int deckIndex)
 	{
 		slotPos = Vector3.zero;
+		deckIndex = -1;
 		if (physScript == null || physicalCardsInDeck == null) return false;
-		int index = physicalCardsInDeck.IndexOf(physScript.gameObject);
-		if (index < 0) return false;
-		slotPos = GetFinalDeckPositionForCard(physScript, index);
+		deckIndex = physicalCardsInDeck.IndexOf(physScript.gameObject);
+		if (deckIndex < 0) return false;
+		slotPos = GetFinalDeckPositionForCard(physScript, deckIndex);
 		return true;
 	}
 
@@ -1704,7 +1769,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 			if (physScript != null)
 			{
-				physScript.isPlayingSpecialAnimation = true;
+				physScript.BeginSpecialAnimation(true);
 			}
 
 			// Use arc trajectory or direct move
@@ -1763,12 +1828,36 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			//   Affects:  PlayShuffleAnimationInternal (Start Card shuffle / overtime re-shuffle)
 			//   Regress:  Reach the Start Card shuffle; every non-Start card must be face-down
 			//             around the arc midpoint and land face-down; Start Card keeps its face.
+			// VISUAL-FIX(2026-09-10): 4.0 passive cards (isPassive) stayed face-down for the whole
+			//   combat even though they sit below the Start Card and are never revealed.
+			//   Cause:    The blanket rule below covers every non-Start deck card with force=true and
+			//             clears the revealed memory; passives were not exempt, so the opening shuffle
+			//             hid them and every later shuffle re-cleared the everRevealed protection that
+			//             the never-cover rule needs (plan-4.0-passive-cards open question #2).
+			//   Fix:      Passives take the opposite branch at the same airborne flip time: flip UP and
+			//             KEEP the revealed memory, so every later non-forced cover (SlotInCard,
+			//             MoveCardWithAnimation, AddPhysicalCardToDeck) is skipped. The flip animation
+			//             therefore plays once per combat only — later shuffles early-return on the
+			//             already-face-up state and the card just flies to its slot.
+			//   Affects:  PlayShuffleAnimationInternal (the only SetFaceUp(force:true) and the only
+			//             ClearRevealedMemory call site in the project); Start Card branch unchanged.
+			//   Regress:  Enter combat with passives in the deck: after the opening shuffle each passive
+			//             shows its face and stays face-up across rounds (later shuffles must not
+			//             animate it); hover pop-up then slot-in leaves it face-up; normal cards still
+			//             flip face-down mid-flight and land covered; Start Card unchanged.
 			if (physScript != null && !physScript.isPhysicalStartCard)
 			{
 				// InsertCallback time counts from sequence start, so include the stagger delay.
 				float flipTime = delay + shuffleDuration * 0.5f;
+				bool isPassiveCard = physScript.cardImRepresenting != null && physScript.cardImRepresenting.isPassive;
 				moveSequence.InsertCallback(flipTime, () =>
 				{
+					if (isPassiveCard)
+					{
+						// Passive: no hidden info — show the face and keep it (see VISUAL-FIX 2026-09-10).
+						physScript.SetFaceUp(true, true);
+						return;
+					}
 					// Shuffle rule: every deck card flips face-down and forgets it was revealed
 					// (force bypasses the everRevealed cover guard). Start Card keeps its face.
 					physScript.SetFaceUp(false, true, true);
@@ -2045,17 +2134,25 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// Front-only re-clamp of the reveal-zone card's target z (never pushes back).
 	/// Callers must ensure no in-flight position tween carries a completion callback they still
 	/// need: SetTargetPosition restarts the tween and a restart kills the old tween without
-	/// firing its callback. Cards held at a popup peak (isPlayingSpecialAnimation) are skipped.
+	/// firing its callback. TryReClampRevealZoneTargetZ enforces this (defers only to
+	/// callback-carrying tweens, VISUAL-FIX 2026-09-11); the reveal-entry landing callback calls
+	/// this after its own tween has finished. Cards whose special animation OWNS the position
+	/// (pop-up peak, Stage arc, attack, peel exit — CardPhysObjScript.SpecialAnimationPinsPosition)
+	/// are skipped; a scale-only animate pulse does not own it, so the re-clamp keeps working
+	/// through the emphasize pulse (VISUAL-FIX 2026-09-12).
 	/// </summary>
 	private void ReClampRevealZoneTargetZ()
 	{
 		if (physicalCardInRevealZone == null) return;
 		var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
 		if (revealPhys == null) return;
-		if (revealPhys.isPlayingSpecialAnimation)
+		if (revealPhys.SpecialAnimationPinsPosition)
 		{
 			// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
-			TestManager.Log("[CombatUXManager][RevealZDiag] ReClamp SKIP specialAnimation card=" + physicalCardInRevealZone.name + " revealTargetZ=" + revealPhys.TargetPosition.z);
+			TestManager.Log("[CombatUXManager][RevealZDiag] ReClamp SKIP specialAnimationPinsPosition card=" + physicalCardInRevealZone.name
+				+ " tag=" + revealPhys.lastSpecialAnimationTag
+				+ " poppedUp=" + revealPhys.isPoppedUp
+				+ " revealTargetZ=" + revealPhys.TargetPosition.z);
 			return;
 		}
 		float clampedZ = GetRevealZonePosition().z;
@@ -2130,24 +2227,306 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// Probe sample fired by CardPhysObjScript when the reveal-zone card's position tween
+	/// completes (VISUAL-FIX 2026-09-11). Every static LogRevealZoneZViolation call site runs
+	/// while the reveal card may still be tweening — a state the probe skips — so inversions
+	/// that only existed at landed/rest moments were never logged (the 2026-09-11 batch-insert
+	/// reproduction produced zero warnings while the bleed was on screen). Completion time
+	/// passes the probe's IsPositionTweenPlaying guard.
+	/// </summary>
+	public void NotifyRevealCardPositionTweenLanded()
+	{
+		LogRevealZoneZViolation("RevealTweenLanded");
+		ScheduleSettledStateDump();
+	}
+
+	// [RevealZDiag] temporary: schedule rest-state snapshots after deck mutations / tween
+	// landings. The 2026-09-11 "fixed cover" state exists only AFTER all tweens settle, which
+	// no existing probe call site samples (they all run mid-motion and early-return).
+	private void ScheduleSettledStateDump()
+	{
+		Invoke(nameof(DumpSettledRevealZState), 1.0f);
+		Invoke(nameof(DumpSettledRevealZState), 3.0f);
+	}
+
+	// [RevealZDiag] temporary: rest-state snapshot + near-tie detector. Logs only. The strict
+	// inversion probe stays silent for root z gaps in (0, 0.06) — the text-slab band — and for
+	// coverers outside physicalCardsInDeck; this dump shows the full picture at rest.
+	public void DumpSettledRevealZState()
+	{
+		if (!Application.isPlaying) return;
+		if (physicalCardInRevealZone == null && physicalCardsInDeck.Count == 0) return;
+		var sb = new System.Text.StringBuilder();
+		sb.Append("[CombatUXManager][RevealZDiag] SETTLED deckCount=" + physicalCardsInDeck.Count);
+		var reveal = physicalCardInRevealZone;
+		if (reveal != null)
+		{
+			var rp = reveal.GetComponent<CardPhysObjScript>();
+			sb.Append(" | reveal=" + reveal.name
+				+ " pos=" + reveal.transform.position.ToString("F3")
+				+ " target=" + rp.TargetPosition.ToString("F3")
+				+ " tween=" + rp.IsPositionTweenPlaying
+				+ " cb=" + rp.PositionTweenHasCompletionCallback
+				+ " special=" + rp.isPlayingSpecialAnimation
+				+ " pending=" + rp.isPendingSlotIn
+				+ " alsoInDeckIdx=" + physicalCardsInDeck.IndexOf(reveal));
+		}
+		else
+		{
+			sb.Append(" | reveal=null");
+		}
+		if (physicalCardsInDeck.Count > 0)
+		{
+			var front = physicalCardsInDeck[physicalCardsInDeck.Count - 1];
+			if (front != null)
+			{
+				var fp = front.GetComponent<CardPhysObjScript>();
+				sb.Append(" | front=[" + (physicalCardsInDeck.Count - 1) + "] " + front.name
+					+ " pos=" + front.transform.position.ToString("F3")
+					+ " target=" + fp.TargetPosition.ToString("F3")
+					+ " tween=" + fp.IsPositionTweenPlaying
+					+ " special=" + fp.isPlayingSpecialAnimation
+					+ " pending=" + fp.isPendingSlotIn);
+			}
+		}
+		TestManager.Log(sb.ToString());
+		// Near-tie detector: text slabs span 0.06 in front of each card face, so any rest pair
+		// closer than this bleeds without tripping the strict-inversion probe above.
+		var physCards = new System.Collections.Generic.List<CardPhysObjScript>();
+		foreach (var c in physicalCardsInDeck)
+		{
+			if (c == null) continue;
+			var p = c.GetComponent<CardPhysObjScript>();
+			if (p != null) physCards.Add(p);
+		}
+		if (physicalCardInRevealZone != null)
+		{
+			var p = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
+			if (p != null) physCards.Add(p);
+		}
+		for (int i = 0; i < physCards.Count; i++)
+		{
+			for (int j = i + 1; j < physCards.Count; j++)
+			{
+				var a = physCards[i];
+				var b = physCards[j];
+				if (a.isPlayingSpecialAnimation || b.isPlayingSpecialAnimation) continue;
+				if (a.IsPositionTweenPlaying || b.IsPositionTweenPlaying) continue;
+				float gap = Mathf.Abs(a.transform.position.z - b.transform.position.z);
+				if (gap < 0.07f)
+					TestManager.LogWarning("[CombatUXManager][RevealZDiag] NEAR-TIE gap=" + gap.ToString("F4")
+						+ " A=" + a.name + " posZ=" + a.transform.position.z.ToString("F3") + " targetZ=" + a.TargetPosition.z.ToString("F3")
+						+ " | B=" + b.name + " posZ=" + b.transform.position.z.ToString("F3") + " targetZ=" + b.TargetPosition.z.ToString("F3"));
+			}
+		}
+	}
+
+	// [RevealZDiag] Temporary: PER-FRAME cover monitor for the reveal-zone occlusion bug.
+	// Every existing probe (LogRevealZoneZViolation, SETTLED, NEAR-TIE) is either sampled at
+	// discrete moments or early-returns while a card is animating/tweening, so the actual cover
+	// frames were never captured. This runs in LateUpdate (after DOTween, which updates in
+	// Update), scans every physical card, and reports the exact frame on which another card's
+	// plane crosses in FRONT of the reveal card's plane while the two overlap on screen. That
+	// names the coverer, its driving state and its special-animation source tag at the moment it
+	// happens, with no inference. Reads state only; writes nothing. Remove with the rest of the
+	// [RevealZDiag] tooling (docs/RevealZCover_Handoff.md §6).
+	private float _coverEpisodeStart = -1f;
+	private GameObject _coverEpisodeCard;
+	private float _coverEpisodeWorstGap;
+	private int _coverEpisodeFrames;
+	private float _coverEpisodeLastLogTime;
+
+	/// <summary>Reveal-zone card plane vs another card's plane: this much in front is a hard cover,
+	/// less is the text-slab band (a card's text child sits 0.06 in front of its own face).</summary>
+	private const float CoverTextSlab = 0.06f;
+
+	private void LateUpdate()
+	{
+		if (!Application.isPlaying) return;
+		MonitorRevealZoneCover();
+	}
+
+	private void MonitorRevealZoneCover()
+	{
+		var reveal = physicalCardInRevealZone;
+		var revealPhys = reveal != null ? reveal.GetComponent<CardPhysObjScript>() : null;
+		if (revealPhys == null || revealPhys.cardFace == null)
+		{
+			EndCoverEpisode("noRevealCard");
+			return;
+		}
+		Bounds revealFace = revealPhys.cardFace.bounds;
+		float revealZ = reveal.transform.position.z;
+
+		GameObject worst = null;
+		float worstGap = 0f;
+		CardPhysObjScript worstPhys = null;
+		var all = CardPhysObjScript.AllPhysicalCards;
+		for (int i = 0; i < all.Count; i++)
+		{
+			var p = all[i];
+			if (p == null || p == revealPhys) continue;
+			if (p.transform.IsChildOf(reveal.transform)) continue;
+			if (p.cardFace == null) continue;
+			// Bigger z = further from the camera. Only a card with SMALLER z can be in front.
+			float gap = revealZ - p.transform.position.z;
+			if (gap <= 0.001f) continue;
+			if (!OverlapsOnScreen(revealFace, p.cardFace.bounds)) continue;
+			if (gap > worstGap)
+			{
+				worstGap = gap;
+				worst = p.gameObject;
+				worstPhys = p;
+			}
+		}
+
+		if (worst == null)
+		{
+			EndCoverEpisode("clear");
+			return;
+		}
+		if (_coverEpisodeStart < 0f || _coverEpisodeCard != worst)
+		{
+			EndCoverEpisode("covererChanged");
+			_coverEpisodeStart = Time.time;
+			_coverEpisodeCard = worst;
+			_coverEpisodeWorstGap = worstGap;
+			_coverEpisodeFrames = 1;
+			_coverEpisodeLastLogTime = Time.time;
+			int deckIndex = physicalCardsInDeck.IndexOf(worst);
+			TestManager.LogWarning("[CombatUXManager][RevealZDiag] COVER-START t=" + Time.time.ToString("F2")
+				+ " penetration=" + worstGap.ToString("F3") + " (" + (worstGap > CoverTextSlab ? "HARD" : "text-slab band") + ")"
+				+ " deckCount=" + physicalCardsInDeck.Count
+				+ " deckFocused=" + _isDeckFocused
+				+ " effectAnims=" + (combatManager != null && combatManager.isPlayingEffectAnimations)
+				+ "\n    coverer=[" + deckIndex + "] " + DescribeCardForCover(worstPhys, deckIndex)
+				+ "\n    reveal=" + DescribeCardForCover(revealPhys, physicalCardsInDeck.IndexOf(reveal))
+				+ "\n    idealRevealZ=" + GetRevealZonePosition().z.ToString("F3"));
+			return;
+		}
+		_coverEpisodeFrames++;
+		_coverEpisodeWorstGap = Mathf.Max(_coverEpisodeWorstGap, worstGap);
+		// Heartbeat so a long cover shows whether it is static or drifting (1 Hz cap).
+		if (Time.time - _coverEpisodeLastLogTime >= 1f)
+		{
+			_coverEpisodeLastLogTime = Time.time;
+			TestManager.LogWarning("[CombatUXManager][RevealZDiag] COVER-CONTINUE t=" + Time.time.ToString("F2")
+				+ " frames=" + _coverEpisodeFrames + " penetration=" + worstGap.ToString("F3")
+				+ " covererZ=" + worst.transform.position.z.ToString("F3")
+				+ " covererTargetZ=" + worstPhys.TargetPosition.z.ToString("F3")
+				+ " revealZ=" + revealZ.ToString("F3")
+				+ " revealTargetZ=" + revealPhys.TargetPosition.z.ToString("F3"));
+		}
+	}
+
+	private void EndCoverEpisode(string reason)
+	{
+		if (_coverEpisodeStart < 0f) return;
+		float duration = Time.time - _coverEpisodeStart;
+		// Always reported, blips included: the END line carries the duration/frame count that
+		// distinguishes a real cover (tens of frames) from single-frame z-fighting noise, so no
+		// COVER-START is ever left unexplained.
+		TestManager.LogWarning("[CombatUXManager][RevealZDiag] COVER-END reason=" + reason
+			+ " coverer=" + (_coverEpisodeCard != null ? _coverEpisodeCard.name : "null")
+			+ " duration=" + duration.ToString("F3") + " frames=" + _coverEpisodeFrames
+			+ " worstPenetration=" + _coverEpisodeWorstGap.ToString("F3")
+			+ (_coverEpisodeFrames <= 2 && _coverEpisodeWorstGap <= CoverTextSlab ? " (blip)" : ""));
+		_coverEpisodeStart = -1f;
+		_coverEpisodeCard = null;
+		_coverEpisodeWorstGap = 0f;
+		_coverEpisodeFrames = 0;
+	}
+
+	private static string DescribeCardForCover(CardPhysObjScript p, int deckIndex)
+	{
+		if (p == null) return "null";
+		return p.name
+			+ " pos=" + p.transform.position.ToString("F3")
+			+ " targetZ=" + p.TargetPosition.z.ToString("F3")
+			+ " tween=" + p.IsPositionTweenPlaying
+			+ " cb=" + p.PositionTweenHasCompletionCallback
+			+ " special=" + p.isPlayingSpecialAnimation
+			+ " specialTag=" + (string.IsNullOrEmpty(p.lastSpecialAnimationTag) ? "-" : p.lastSpecialAnimationTag)
+			+ " drivesPos=" + p.specialAnimationDrivesPosition
+			+ " pinsPos=" + p.SpecialAnimationPinsPosition
+			+ " poppedUp=" + p.isPoppedUp
+			+ " pending=" + p.isPendingSlotIn
+			+ " faceUp=" + p.isFaceUp
+			+ " inDeckIdx=" + deckIndex;
+	}
+
+	/// <summary>Screen-space (XY) overlap of two card faces; a sliver does not count as a cover.</summary>
+	private static bool OverlapsOnScreen(Bounds a, Bounds b)
+	{
+		float minX = Mathf.Max(a.min.x, b.min.x);
+		float maxX = Mathf.Min(a.max.x, b.max.x);
+		float minY = Mathf.Max(a.min.y, b.min.y);
+		float maxY = Mathf.Min(a.max.y, b.max.y);
+		if (maxX <= minX || maxY <= minY) return false;
+		float overlapArea = (maxX - minX) * (maxY - minY);
+		float revealArea = a.size.x * a.size.y;
+		return revealArea <= 0.0001f || overlapArea >= 0.08f * revealArea;
+	}
+
+	/// <summary>
 	/// Guarded re-clamp of the reveal-zone card's target z against the analytic deck front z.
-	/// Skipped while the reveal card has a position tween playing: SetTargetPosition restarts
-	/// the tween and a restart kills the in-flight tween without firing its completion callback
-	/// (the reveal-entry tween carries the input unblock; it re-clamps itself on landing via
-	/// wrappedOnComplete in MovePhysicalCardToRevealZone).
+	/// VISUAL-FIX(2026-09-11): reveal card fell a full tween duration behind batch deck inserts.
+	///   Cause:    This guard deferred while ANY position tween played. Deck cards have no such
+	///             guard and retarget immediately, so the 2nd+ card of a batch insert
+	///             (RIFT_PRIEST generating 2+ believers) shifted the deck +zOffset while the
+	///             reveal card's matching shift waited for its previous (plain, callback-less)
+	///             re-clamp tween to finish: the deck front card landed on its new slot and sat
+	///             IN FRONT of the still-chasing reveal card for the rest of its flight (text
+	///             slab pokes through first — see docs/RenderLayering.md). A single insert never
+	///             deferred, which is why only N>=2 batches reproduced.
+	///   Fix:      Defer only to tweens that CARRY a completion callback (the reveal-entry
+	///             tween: a restart would kill its input-unblock; it re-clamps itself on landing
+	///             via wrappedOnComplete in MovePhysicalCardToRevealZone). Plain re-clamp flights
+	///             restart immediately, in the same frame/duration/ease as the deck retarget
+	///             batch — equal 0.5 z steps plus an identical progress curve keep the reveal
+	///             card in front of the deck front card at every point of the flight.
+	///   Affects:  CardPhysObjScript (PositionTweenHasCompletionCallback, StartPositionTween
+	///             completion wiring + landed probe sample), this method, new
+	///             NotifyRevealCardPositionTweenLanded.
+	///   Regress:  RIFT_PRIEST-style batch generation of 2+ tokens: the revealed card stays in
+	///             front of the deck front card between and after the inserts (no back-card text
+	///             over it). Reveal entry still unblocks input exactly once on landing;
+	///             single-token insert, shuffle, reveal-to-bottom and row 86 hover unregressed.
 	/// </summary>
 	private void TryReClampRevealZoneTargetZ()
 	{
 		if (physicalCardInRevealZone == null) return;
 		var revealPhys = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
-		if (revealPhys != null && !revealPhys.IsPositionTweenPlaying)
+		if (revealPhys == null) return;
+		if (!revealPhys.IsPositionTweenPlaying)
 		{
 			ReClampRevealZoneTargetZ();
+			return;
 		}
-		else if (revealPhys != null)
+		if (!revealPhys.PositionTweenHasCompletionCallback)
 		{
+			// Plain (callback-less) tween — e.g. a previous re-clamp flight: restarting it
+			// immediately keeps the reveal card's z shift in the same frame/duration/ease batch
+			// as the deck retarget (equal 0.5 z steps + identical progress curve keep it in
+			// front of the deck front card at every point of the flight).
+			ReClampRevealZoneTargetZ();
+			return;
+		}
+		// VISUAL-FIX(2026-09-11): the reveal-ENTRY tween carries the input unblock. Deferring
+		//   the re-clamp until it landed let batch inserts move the deck front card first, and
+		//   the landing chase then crossed the already-occupied slot (transient cover, RIFT_PRIEST
+		//   double-token repro). Instead: retake the callback and restart the tween onto the
+		//   latest reveal z right now — the flight stays deck-batch-synchronized, and the unblock
+		//   fires exactly once on the restarted tween's landing.
+		float clampedZ = GetRevealZonePosition().z;
+		if (clampedZ < revealPhys.TargetPosition.z - 0.0001f)
+		{
+			var entryCallback = revealPhys.RetakePositionTweenCompletionCallback();
+			revealPhys.SetTargetPosition(
+				new Vector3(revealPhys.TargetPosition.x, revealPhys.TargetPosition.y, clampedZ),
+				entryCallback);
 			// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
-			TestManager.Log("[CombatUXManager][RevealZDiag] TryReClamp SKIP positionTweenPlaying card=" + physicalCardInRevealZone.name + " revealTargetZ=" + revealPhys.TargetPosition.z);
+			TestManager.Log("[CombatUXManager][RevealZDiag] TryReClamp RESTART entryTweenWithCallback card=" + physicalCardInRevealZone.name + " clampedZ=" + clampedZ);
 		}
 	}
 
@@ -2161,7 +2540,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		{
 			return;
 		}
-		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets START deckCount=" + physicalCardsInDeck.Count);
+		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets START deckCount=" + physicalCardsInDeck.Count + " layoutCount=" + GetLayoutDeckCount());
 		// Update card positions in deck
 		for (int i = 0; i < physicalCardsInDeck.Count; i++)
 		{
@@ -2193,6 +2572,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		TryReClampRevealZoneTargetZ();
 		// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
 		LogRevealZoneZViolation("UpdateAllPhysicalCardTargets");
+		ScheduleSettledStateDump();
 		TestManager.Log("[CombatUXManager] UpdateAllPhysicalCardTargets END");
 	}
 
@@ -2527,7 +2907,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var revealPhysScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
 			if (revealPhysScript != null)
 			{
-				revealPhysScript.isPlayingSpecialAnimation = true;
+				revealPhysScript.BeginSpecialAnimation(true);
 				revealPhysScript.SetRotationImmediate(Quaternion.identity);
 			}
 
@@ -2563,7 +2943,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 				float peelDelay = CombatAnimationSpeed.ScaleDuration((count - i) * peelStaggerDelay);
 				animTotalCount++;
-				physScript.isPlayingSpecialAnimation = true;
+				physScript.BeginSpecialAnimation(true);
 				card.transform.DOMove(peelPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
 					.SetEase(Ease.InOutQuad)
 					.SetDelay(peelDelay)
@@ -2583,7 +2963,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
 				Vector3 finalScale = GetDeckScaleAtIndex(i, _focusSegmentCount);
 				animTotalCount++;
-				physScript.isPlayingSpecialAnimation = true;
+				physScript.BeginSpecialAnimation(true);
 				physScript.SetTargetPosition(finalPos);
 				physScript.SetTargetScale(finalScale);
 				physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
@@ -2664,7 +3044,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 				float transDelay = CombatAnimationSpeed.ScaleDuration((count - 1 - i) * peelStaggerDelay);
 				animTotalCount++;
-				physScript.isPlayingSpecialAnimation = true;
+				physScript.BeginSpecialAnimation(true);
 				card.transform.DOMove(peelPos, CombatAnimationSpeed.ScaleDuration(peelCardDuration))
 					.SetEase(Ease.InOutQuad)
 					.SetDelay(transDelay)
@@ -2683,7 +3063,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
 				Vector3 finalScale = GetDeckScaleAtIndex(i, _focusSegmentCount);
 				animTotalCount++;
-				physScript.isPlayingSpecialAnimation = true;
+				physScript.BeginSpecialAnimation(true);
 				physScript.SetTargetPosition(finalPos);
 				physScript.SetTargetScale(finalScale);
 				physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
@@ -2742,7 +3122,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 			Vector3 finalPos = GetFinalDeckPositionForCard(physScript, i);
 			Vector3 finalScale = GetDeckScaleAtIndex(i);
-			physScript.isPlayingSpecialAnimation = true;
+			physScript.BeginSpecialAnimation(true);
 			physScript.SetTargetPosition(finalPos);
 			physScript.SetTargetScale(finalScale);
 			physScript.SetTargetRotation(GetFinalDeckRotationForCard(physScript));
@@ -2804,7 +3184,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			var revealPhysScript = physicalCardInRevealZone.GetComponent<CardPhysObjScript>();
 			if (revealPhysScript != null)
 			{
-				revealPhysScript.isPlayingSpecialAnimation = true;
+				revealPhysScript.BeginSpecialAnimation(true);
 			}
 
 			totalCount++;
@@ -3128,8 +3508,9 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					// Debug.Log("[CombatUXManager] AddPhysicalCardToDeck new card inside effect chain, skipping auto-tween card=" + cardAtIndex.name);
 					// Prevent UpdateAllPhysicalCardTargets from prematurely tweening this card into the deck
 					// before its MoveToPopUpPosition + SlotIn recorder animation plays.
-					cardPhys.isPlayingSpecialAnimation = true;
+					cardPhys.BeginSpecialAnimation(true);
 					cardPhys.isPendingSlotIn = true;
+
 				}
 			}
 			else
@@ -3154,6 +3535,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		TryReClampRevealZoneTargetZ();
 		// [RevealZDiag] temporary reproduction instrumentation (see LogRevealZoneZViolation)
 		LogRevealZoneZViolation("AddPhysicalCardToDeck");
+		ScheduleSettledStateDump();
 	}
 
 	#region Initialization
@@ -3787,6 +4169,21 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		var physScript = physicalCard.GetComponent<CardPhysObjScript>();
 		if (physScript == null) { onComplete?.Invoke(); return; }
 
+		// VISUAL-FIX(2026-09-11): fast-forward an in-flight callback-less position tween BEFORE
+		//   KillTweens/capture below.
+		//   Cause:    PopUpCard captured the transform as pop-up base AND restore point while the
+		//             card was mid re-clamp flight (reveal-zone card during its own effect's
+		//             source-card pop-up): KillTweens froze it at the captured z — behind the
+		//             deck front card for the whole pop-up + slot-in (transient cover; the
+		//             permanent-freeze variant is fixed by ReconvergeToTargetPosition).
+		//   Affects:  PopUpCard capture path; CardPhysObjScript.CompleteInFlightPositionTween.
+		//   Regress:  RIFT_PRIEST-style batch generation with the revealed card as source: the
+		//             pop-up must rise from (and slot back to) the reveal pose, never covering
+		//             behind the deck front card. Hover pop-up on a tweening deck card pops from
+		//             its slot. Reveal-entry input unblock timing unchanged (callback tweens
+		//             untouched).
+		physScript.CompleteInFlightPositionTween();
+
 		// Interrupt a still-running SlotInCard seq on this card (VISUAL-FIX 2026-07-31).
 		bool interrupted = InterruptActivePopUpSlotIn(physScript, "PopUpCard");
 		// Kill existing tweens to prevent conflicts
@@ -3816,13 +4213,22 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		Vector3 popupBasePos = popupDeckIndex >= 0
 			? GetFinalDeckPositionForCard(physScript, popupDeckIndex)
 			: physicalCard.transform.position;
+		// VISUAL-FIX(2026-09-12): a reveal-zone card has no deck slot, so its pop-up base was the
+		// live transform — a mid-shift pose. If the deck grows while the card is held at the peak
+		// (batch generation) the peak stays behind the deck front card and the deck covers the
+		// card for the whole pop-up. Anchor the base z on the live clamped reveal z instead, which
+		// GetRevealZonePosition recomputes from the current deck count on every call.
+		if (popupDeckIndex < 0 && physicalCard == physicalCardInRevealZone)
+		{
+			popupBasePos.z = GetRevealZonePosition().z;
+		}
 		Vector3 peakPos = popupBasePos + Vector3.up * popUpYOffset;
 		peakPos.x += popUpXOffset;
 		peakPos.z += popUpZBoost;
 
 		Vector3 peakScale = GetPopUpPeakScale(physScript);
 
-		physScript.isPlayingSpecialAnimation = true;
+		physScript.BeginSpecialAnimation(true);
 		physScript.isPoppedUp = true;
 		physScript.SetTargetPosition(peakPos);
 		physScript.SetTargetScale(peakScale);
@@ -3872,7 +4278,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		// Interrupt a still-running PopUpCard seq on this card (VISUAL-FIX 2026-07-31).
 		InterruptActivePopUpSlotIn(physScript, "SlotInCard");
 		// Guard against deck position updates interfering with the slot-in tween
-		physScript.isPlayingSpecialAnimation = true;
+		physScript.BeginSpecialAnimation(true);
 		// Face-down rule: returning to the static deck covers the card (skipped for ever-revealed cards)
 		physScript.SetFaceUp(false, true);
 
@@ -4046,7 +4452,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		TestManager.Log("[CombatUXManager] MoveCardToPopUpPosition logical=" + logicalCard.name + " deckIndex=" + deckIndex + " deckPos=" + deckPos + " peakPos=" + peakPos + " isPending=" + physScript.isPendingSlotIn);
 
-		physScript.isPlayingSpecialAnimation = true;
+		physScript.BeginSpecialAnimation(true);
 		physScript.isPoppedUp = true;
 		physScript.SetTargetPosition(peakPos);
 		physScript.SetTargetScale(peakScale);
