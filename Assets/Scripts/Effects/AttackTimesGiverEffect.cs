@@ -12,7 +12,8 @@ namespace DefaultNamespace.Effects
 	/// curse instance via CardScript.ModifyAttackTimes.
 	/// Every grant captures AttackChange requests flagged attackTimesChange so the particle
 	/// plays while the attack PRINT stays put — only the xN badge steps (RecorderAnimationPlayer
-	/// skips CommitAttackDisplayDelta for flagged requests). No attack-gain events are raised
+	/// defers flagged commits to projectile completion and routes them through
+	/// CommitAttackTimesDisplayDelta; VISUAL-FIX(2026-09-12)). No attack-gain events are raised
 	/// here: the value did not change, so 被强化 reactions must not fire.
 	/// </summary>
 	public class AttackTimesGiverEffect : AttackGiverEffect
@@ -84,6 +85,13 @@ namespace DefaultNamespace.Effects
 			var creatures = CollectFriendlyCreatures();
 			if (creatures.Count > 0)
 			{
+				// Per-card flagged captures so every creature's xN badge freezes at the
+				// pre-bump value and steps after its projectile lands. No particle here —
+				// the batch animation below already carries the popup/projectile visuals.
+				foreach (var creature in creatures)
+				{
+					CaptureAttackTimesChange(creature, times, null);
+				}
 				CaptureBatchStatusEffectAnimation(creatures, times);
 			}
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
@@ -137,21 +145,31 @@ namespace DefaultNamespace.Effects
 			}
 
 			// Mirror ApplyAttackCore's capture, flagged as a times change: particle plays,
-			// attack print stays put, xN badge refreshes via RefreshCardAttackDisplay.
+			// attack print stays put, xN badge commits after the projectile disappears.
+			CaptureAttackTimesChange(target, times, statusEffectParticlePrefab);
+		}
+
+		/// <summary>
+		/// Capture an AttackChange request flagged attackTimesChange WITHOUT mutating the card.
+		/// Used by GrantAttackTimes (after its mutation) and by BumpFriendlyCreatureAttackTimesAura
+		/// (the faction aura already covers every creature via CardScript.GetAttackTimes, so only
+		/// the display step is needed). particlePrefab may be null to skip the burst.
+		/// </summary>
+		private void CaptureAttackTimesChange(CardScript target, int times, ParticleSystem particlePrefab)
+		{
+			if (target == null || times <= 0) return;
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
 			var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
-			if (recorder != null)
+			if (recorder == null) return;
+			recorder.animationRequests.Add(new AnimationRequest
 			{
-				recorder.animationRequests.Add(new AnimationRequest
-				{
-					type = AnimationRequestType.AttackChange,
-					targetCard = target.gameObject,
-					statusEffectAmount = times,
-					statusEffectParticlePrefab = statusEffectParticlePrefab,
-					statusEffectParticleYOffset = particleYOffset,
-					attackTimesChange = true
-				});
-			}
+				type = AnimationRequestType.AttackChange,
+				targetCard = target.gameObject,
+				statusEffectAmount = times,
+				statusEffectParticlePrefab = particlePrefab,
+				statusEffectParticleYOffset = particleYOffset,
+				attackTimesChange = true
+			});
 		}
 	}
 }

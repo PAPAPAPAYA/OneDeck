@@ -580,6 +580,41 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 				req.deferDisplayCommit = true;
 			}
 		}
+
+		// VISUAL-FIX(2026-09-12): Attack print / xN badge committed while the projectile was still flying
+		//   Cause:    MarkDeferredDisplayCommits only deferred StatusEffectChange requests. AttackChange
+		//             requests committed at request-play time — in grant flows the AttackChange request
+		//             precedes PopUpBatch/StatusEffectProjectile, so the card face changed before the
+		//             projectile even launched. Attack-times (xN badge) had no snapshot at all and jumped
+		//             at logic time (per-frame RefreshAttackDisplay reads GetAttackTimes() live).
+		//   Fix:      Also defer AttackChange requests whose target receives a projectile in this
+		//             recorder; ApplyDeferredDeltasForTarget commits them when the projectile completes
+		//             (= destroyed, i.e. after it disappears). Requests flagged
+		//             applyDisplayDeltaOnProjectileSpawn (consume/transfer source cards) keep their
+		//             spawn-time commit and are skipped here. CardScript gains an attack-times display
+		//             snapshot (GetAttackTimesForDisplay) mirroring the attack-value one, and
+		//             BumpFriendlyCreatureAttackTimesAura captures per-card AttackChange requests so
+		//             aura bumps step the badge per projectile too.
+		//   Affects:  RecorderAnimationPlayer, CardScript, CardPhysObjScript, AttackTimesGiverEffect
+		//   Regress:  AttackTimesGiverEffect grant (xN steps after projectile lands, badge stays put
+		//             before), AttackGiverEffect / EnhanceCurse / PowerReactionEffect grant (attack
+		//             print steps after projectile lands), BATTLE_HORN aura bump (all friendly creature
+		//             badges step after their projectiles land), ConsumeOwnAttack (attack print still
+		//             drops at projectile spawn), POWER_SIPHONER transfer (sources keep end-of-playback
+		//             commit, self gain steps after projectile lands).
+		foreach (var req in recorder.animationRequests)
+		{
+			if (req == null || req.type != AnimationRequestType.AttackChange) continue;
+			if (req.applyDisplayDeltaOnProjectileSpawn) continue;
+			if (req.targetCard != null && projectileTargets.Contains(req.targetCard))
+			{
+				req.deferDisplayCommit = true;
+				// Diagnostic: this line should print when the recorder starts playing, and the
+				// matching "deferred commit" line must print only AFTER the target's projectile
+				// completes (compare against "[CombatUXManager] SpawnProjectile COMPLETE").
+				TestManager.Log("[RecorderAnimationPlayer] AttackChange deferred to projectile completion: card=" + req.targetCard.name + " amount=" + req.statusEffectAmount + " timesChange=" + req.attackTimesChange);
+			}
+		}
 	}
 
 	/// <summary>
@@ -690,6 +725,7 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 
 		var pendingDeltas = new Dictionary<CardScript, Dictionary<EnumStorage.StatusEffect, int>>();
 		var pendingAttackDeltas = new Dictionary<CardScript, int>();
+		var pendingAttackTimesDeltas = new Dictionary<CardScript, int>();
 		foreach (var recorder in allRecorders)
 		{
 			if (recorder == null || recorder.animationRequests == null) continue;
@@ -711,22 +747,27 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 				}
 				else if (req.type == AnimationRequestType.AttackChange)
 				{
-					if (!pendingAttackDeltas.ContainsKey(targetCardScript))
-						pendingAttackDeltas[targetCardScript] = 0;
-					pendingAttackDeltas[targetCardScript] += req.statusEffectAmount;
+					// Attack-times changes (attack +N times) shift the xN badge, not the attack
+					// print — the two pending delta pools must not mix.
+					var pendingTimesDeltaPool = req.attackTimesChange ? pendingAttackTimesDeltas : pendingAttackDeltas;
+					if (!pendingTimesDeltaPool.ContainsKey(targetCardScript))
+						pendingTimesDeltaPool[targetCardScript] = 0;
+					pendingTimesDeltaPool[targetCardScript] += req.statusEffectAmount;
 
 					_baselineCards.Add(targetCardScript);
 				}
 			}
 		}
 
-		// Merge status-effect and attack baselines per card: the status baseline is the
-		// current myStatusEffects minus pending statusEffectDeltas; the attack baseline is
-		// the current GetAttack() minus pending AttackChange deltas. SetDisplayBaseline is
-		// called once per card so neither freeze overwrites the other.
+		// Merge status-effect, attack-value and attack-times baselines per card: the status
+		// baseline is the current myStatusEffects minus pending statusEffectDeltas; the attack
+		// baseline is the current GetAttack() minus pending AttackChange deltas; the times
+		// baseline is the current GetAttackTimes() minus pending attackTimesChange deltas.
+		// SetDisplayBaseline is called once per card so neither freeze overwrites the other.
 		var baselineCards = new HashSet<CardScript>();
 		foreach (var card in pendingDeltas.Keys) baselineCards.Add(card);
 		foreach (var card in pendingAttackDeltas.Keys) baselineCards.Add(card);
+		foreach (var card in pendingAttackTimesDeltas.Keys) baselineCards.Add(card);
 
 		foreach (var card in baselineCards)
 		{
@@ -745,7 +786,13 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 				attackBaseline = card.GetAttack() - pendingAttackDeltas[card];
 			}
 
-			card.SetDisplayBaseline(baseline, attackBaseline);
+			int? attackTimesBaseline = null;
+			if (pendingAttackTimesDeltas.ContainsKey(card))
+			{
+				attackTimesBaseline = card.GetAttackTimes() - pendingAttackTimesDeltas[card];
+			}
+
+			card.SetDisplayBaseline(baseline, attackBaseline, attackTimesBaseline);
 		}
 	}
 
@@ -796,21 +843,44 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 
 
 	/// <summary>
-	/// Apply all still-deferred StatusEffectChange deltas for the given target in the given recorder.
-	/// Each delta is applied exactly once.
+	/// Apply all still-deferred StatusEffectChange / AttackChange deltas for the given target
+	/// in the given recorder. Each delta is applied exactly once; deferred AttackChange commits
+	/// land here when the paired projectile completes, so the attack print and xN badge step
+	/// per projectile instead of at request-play time.
 	/// </summary>
 	private void ApplyDeferredDeltasForTarget(EffectRecorder recorder, CardScript targetCardScript)
 	{
 		if (recorder == null || targetCardScript == null) return;
+		var visuals = CombatManager.Me != null ? CombatManager.Me.visuals : null;
 		foreach (var req in recorder.animationRequests)
 		{
-			if (req == null || req.type != AnimationRequestType.StatusEffectChange) continue;
+			if (req == null) continue;
 			if (req.displayDeltaApplied) continue;
 			if (!req.deferDisplayCommit) continue;
 			if (req.targetCard != targetCardScript.gameObject) continue;
 
-			targetCardScript.ApplyDisplayDelta(req.statusEffect, req.statusEffectDelta);
-			req.displayDeltaApplied = true;
+			if (req.type == AnimationRequestType.StatusEffectChange)
+			{
+				targetCardScript.ApplyDisplayDelta(req.statusEffect, req.statusEffectDelta);
+				req.displayDeltaApplied = true;
+			}
+			else if (req.type == AnimationRequestType.AttackChange)
+			{
+				// Attack-times changes shift the xN badge, not the attack print.
+				if (!req.attackTimesChange)
+				{
+					targetCardScript.CommitAttackDisplayDelta(req.statusEffectAmount);
+				}
+				else
+				{
+					targetCardScript.CommitAttackTimesDisplayDelta(req.statusEffectAmount);
+				}
+				req.displayDeltaApplied = true;
+				if (visuals != null) visuals.RefreshCardAttackDisplay(targetCardScript);
+				// Diagnostic: must appear after "[CombatUXManager] SpawnProjectile COMPLETE"
+				// for the same target — the card face changes exactly here.
+				TestManager.Log("[RecorderAnimationPlayer] AttackChange deferred commit on projectile completion: card=" + targetCardScript.GetDisplayName() + " amount=" + req.statusEffectAmount + " timesChange=" + req.attackTimesChange + " attackDisplay=" + targetCardScript.GetAttackForDisplay() + " timesDisplay=" + targetCardScript.GetAttackTimesForDisplay());
+			}
 		}
 	}
 
@@ -1189,18 +1259,30 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 						Mathf.Abs(request.statusEffectAmount));
 				}
 
-				// Commit the display delta (skipped when already applied at projectile spawn)
-				// so the attack print steps through the frozen baseline per request.
-				// Attack-times changes (attack +N times) shift the xN badge, not the attack
-				// print — the frozen value must stay put, so only the face refresh runs.
-				if (!request.attackTimesChange && !request.displayDeltaApplied)
+				// Commit the display delta (skipped when already applied at projectile spawn
+				// or when deferred to projectile completion) so the attack print / xN badge
+				// step through the frozen baseline per request. Attack-times changes (attack
+				// +N times) shift the xN badge, not the attack print — the frozen value must
+				// stay put, so CommitAttackTimesDisplayDelta runs instead.
+				// VISUAL-FIX(2026-09-12): the first cut only checked displayDeltaApplied here,
+				// so deferred requests still committed at request-play time (before the
+				// projectile launched) and the deferral never showed — mirror the
+				// StatusEffectChange case's deferDisplayCommit check.
+				if (!request.deferDisplayCommit && !request.displayDeltaApplied)
 				{
-					targetCardScript.CommitAttackDisplayDelta(request.statusEffectAmount);
+					if (!request.attackTimesChange)
+					{
+						targetCardScript.CommitAttackDisplayDelta(request.statusEffectAmount);
+					}
+					else
+					{
+						targetCardScript.CommitAttackTimesDisplayDelta(request.statusEffectAmount);
+					}
 					request.displayDeltaApplied = true;
-				}
 
-				// Refresh the attack print so the card face shows the committed attack value.
-				visuals.RefreshCardAttackDisplay(targetCardScript);
+					// Refresh the attack print so the card face shows the committed value.
+					visuals.RefreshCardAttackDisplay(targetCardScript);
+				}
 
 				request.onComplete?.Invoke();
 				break;

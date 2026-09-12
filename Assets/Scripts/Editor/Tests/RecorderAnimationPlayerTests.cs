@@ -154,6 +154,62 @@ public class RecorderAnimationPlayerTests : HeadlessCombatTestFixture
 	}
 
 	[UnityTest]
+	public IEnumerator PlayRequestCoroutine_DeferredAttackChange_DoesNotCommitAtPlayTime()
+	{
+		var target = CreateCard(true, "Target");
+		var cs = target.GetComponent<CardScript>();
+		cs.printedAttack = 2;
+		var playerGo = CreateGameObject("Player");
+		var player = playerGo.AddComponent<RecorderAnimationPlayer>();
+		RecorderAnimationPlayer.me = player;
+
+		// VISUAL-FIX(2026-09-12) regression: a deferred AttackChange must not commit when the
+		// request plays — the commit belongs to ApplyDeferredDeltasForTarget at projectile
+		// completion. Baseline freezes the display at the pre-chain value (live is 3, shown 2).
+		cs.ModifyAttack(1);
+		cs.SetDisplayBaseline(new List<EnumStorage.StatusEffect>(), 2, null);
+
+		var request = new AnimationRequest
+		{
+			type = AnimationRequestType.AttackChange,
+			targetCard = target,
+			statusEffectAmount = 1,
+			deferDisplayCommit = true
+		};
+
+		yield return player.PlayRequestCoroutine(request);
+
+		Assert.IsFalse(request.displayDeltaApplied, "Deferred request must stay uncommitted at play time");
+		Assert.AreEqual(2, cs.GetAttackForDisplay(), "Attack print stays frozen until the projectile lands");
+	}
+
+	[UnityTest]
+	public IEnumerator PlayRequestCoroutine_NonDeferredAttackChange_CommitsAtPlayTime()
+	{
+		var target = CreateCard(true, "Target");
+		var cs = target.GetComponent<CardScript>();
+		cs.printedAttack = 2;
+		var playerGo = CreateGameObject("Player");
+		var player = playerGo.AddComponent<RecorderAnimationPlayer>();
+		RecorderAnimationPlayer.me = player;
+
+		cs.ModifyAttack(1);
+		cs.SetDisplayBaseline(new List<EnumStorage.StatusEffect>(), 2, null);
+
+		var request = new AnimationRequest
+		{
+			type = AnimationRequestType.AttackChange,
+			targetCard = target,
+			statusEffectAmount = 1
+		};
+
+		yield return player.PlayRequestCoroutine(request);
+
+		Assert.IsTrue(request.displayDeltaApplied, "Non-deferred request commits when it plays");
+		Assert.AreEqual(3, cs.GetAttackForDisplay(), "Attack print steps to the committed value");
+	}
+
+	[UnityTest]
 	public IEnumerator PlayRecordersCoroutine_ProcessesMultipleRootRecorders()
 	{
 		var root1 = CreateGameObject("Root1").AddComponent<EffectRecorder>();

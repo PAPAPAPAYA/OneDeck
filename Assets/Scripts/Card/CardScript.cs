@@ -128,6 +128,9 @@ public class CardScript : MonoBehaviour
 	[System.NonSerialized]
 	private int? _displayAttack;
 
+	[System.NonSerialized]
+	private int? _displayAttackTimes;
+
 	/// <summary>
 	/// Fixed attack value snapshot (GRAVE_ROBBER: permanently becomes the revived enemy's attack).
 	/// -1 = no snapshot. Higher precedence than resolver/base so the card face reads the held value.
@@ -287,6 +290,26 @@ public class CardScript : MonoBehaviour
 	public void CommitAttackDisplayDelta(int delta)
 	{
 		_displayAttack = (_displayAttack ?? GetAttack()) + delta;
+	}
+
+	/// <summary>
+	/// Attack segment count for display. Returns the frozen snapshot while a display snapshot
+	/// is active (logic phase / animation playback), otherwise the live GetAttackTimes() — so
+	/// the xN badge never jumps at logic time (attack-times changes commit per animation request).
+	/// </summary>
+	public int GetAttackTimesForDisplay()
+	{
+		return _displayAttackTimes ?? GetAttackTimes();
+	}
+
+	/// <summary>
+	/// Apply a signed attack-segment delta to the frozen display value (attackTimesChange
+	/// counterpart of CommitAttackDisplayDelta). Commits happen as AttackChange requests play;
+	/// the display snapshot is cleared by CommitDisplayState so the badge falls back to live.
+	/// </summary>
+	public void CommitAttackTimesDisplayDelta(int delta)
+	{
+		_displayAttackTimes = (_displayAttackTimes ?? GetAttackTimes()) + delta;
 	}
 
 	/// <summary>
@@ -465,6 +488,7 @@ public class CardScript : MonoBehaviour
 		displayMyStatusEffects.AddRange(myStatusEffects);
 		_displayCardDesc = null;
 		_displayAttack = null;
+		_displayAttackTimes = null;
 		_hasDisplaySnapshot = false;
 	}
 
@@ -474,9 +498,10 @@ public class CardScript : MonoBehaviour
 	/// GetStatusEffectsForDisplay() returns the state before any pending animations.
 	/// attackBaseline (optional) freezes the attack print at the pre-animation value;
 	/// pass null to keep the existing attack snapshot (e.g. one captured by
-	/// SnapshotDisplayState for consume/transfer paths).
+	/// SnapshotDisplayState for consume/transfer paths). attackTimesBaseline (optional)
+	/// does the same for the attack-segment count (xN badge).
 	/// </summary>
-	public void SetDisplayBaseline(List<EnumStorage.StatusEffect> baseline, int? attackBaseline = null)
+	public void SetDisplayBaseline(List<EnumStorage.StatusEffect> baseline, int? attackBaseline = null, int? attackTimesBaseline = null)
 	{
 		if (displayMyStatusEffects == null)
 			displayMyStatusEffects = new List<EnumStorage.StatusEffect>();
@@ -487,6 +512,10 @@ public class CardScript : MonoBehaviour
 		if (attackBaseline.HasValue)
 		{
 			_displayAttack = attackBaseline.Value;
+		}
+		if (attackTimesBaseline.HasValue)
+		{
+			_displayAttackTimes = attackTimesBaseline.Value;
 		}
 		_hasDisplaySnapshot = true;
 

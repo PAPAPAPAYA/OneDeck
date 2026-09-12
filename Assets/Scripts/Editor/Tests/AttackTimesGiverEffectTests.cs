@@ -80,6 +80,27 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
+	public void BumpFriendlyCreatureAttackTimesAura_CapturesFlaggedAttackChangePerCreature()
+	{
+		var creature = CreateCard(true, "Creature");
+		creature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
+		CombatManager.combinedDeckZone.Add(creature);
+		var giver = CreateEffect<DefaultNamespace.Effects.AttackTimesGiverEffect>(creature);
+
+		EffectChainManager.MakeANewEffectRecorder(creature, giver.gameObject);
+		giver.BumpFriendlyCreatureAttackTimesAura(1);
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		var attackChange = recorder.animationRequests.Find(r => r.type == AnimationRequestType.AttackChange);
+		Assert.IsNotNull(attackChange, "aura bump should capture a per-card AttackChange for the deferred xN step");
+		Assert.IsTrue(attackChange.attackTimesChange, "aura request must be flagged attackTimesChange");
+		Assert.AreEqual(creature, attackChange.targetCard);
+		Assert.IsNull(attackChange.statusEffectParticlePrefab, "aura bump plays no extra particle burst");
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(0, creature.GetComponent<CardScript>().attackTimesModThisRound, "capture must not mutate per-card state");
+	}
+
+	[Test]
 	public void GiveSelfAttackTimes_GrantsThisRound_AndCapturesFlaggedAttackChange()
 	{
 		var card = CreateCard(true, "ComboStarter");

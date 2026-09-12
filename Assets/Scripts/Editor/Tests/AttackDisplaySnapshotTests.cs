@@ -109,4 +109,44 @@ public class AttackDisplaySnapshotTests : HeadlessCombatTestFixture
 
 		Assert.AreEqual(3, cs.GetAttackForDisplay(), "Live GetAttack() plus delta when no snapshot exists");
 	}
+
+	[Test]
+	public void GetAttackTimesForDisplay_ReturnsLiveTimesWithoutSnapshot()
+	{
+		var card = CreateCard(true, "Card");
+		var cs = card.GetComponent<CardScript>();
+		cs.extraAttackTimes = 2;
+
+		Assert.AreEqual(3, cs.GetAttackTimesForDisplay(), "No snapshot -> live GetAttackTimes()");
+	}
+
+	[Test]
+	public void CommitAttackTimesDisplayDelta_StepsThroughFrozenBaseline()
+	{
+		var card = CreateCard(true, "Card");
+		var cs = card.GetComponent<CardScript>();
+
+		// Baseline = pre-chain times (current 2 minus pending times delta 1).
+		cs.ModifyAttackTimesThisRound(1);
+		cs.SetDisplayBaseline(new System.Collections.Generic.List<EnumStorage.StatusEffect>(), null, 1);
+
+		cs.CommitAttackTimesDisplayDelta(1);
+		Assert.AreEqual(2, cs.GetAttackTimesForDisplay(), "Baseline + times delta");
+		Assert.AreEqual(2, cs.GetAttackTimes(), "Display commits never touch the live segment count");
+	}
+
+	[Test]
+	public void CommitDisplayState_RestoresLiveAttackTimes()
+	{
+		var card = CreateCard(true, "Card");
+		var cs = card.GetComponent<CardScript>();
+
+		cs.SetDisplayBaseline(new System.Collections.Generic.List<EnumStorage.StatusEffect>(), null, 1);
+		cs.ModifyAttackTimesThisRound(1); // logic already at 2
+
+		Assert.AreEqual(1, cs.GetAttackTimesForDisplay(), "Frozen at the pre-bump value during playback");
+
+		cs.CommitDisplayState();
+		Assert.AreEqual(2, cs.GetAttackTimesForDisplay(), "After commit the badge falls back to live GetAttackTimes()");
+	}
 }
