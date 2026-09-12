@@ -398,6 +398,9 @@ public class PhaseManager : MonoBehaviour
 		var opponent = OpponentDeckCache.Current;
 		if (opponent == null) return;
 		if (!PlayerIdentity.HasIdentity) return;
+		// includeSelf test mode: the server rejects reports against the player's own deck
+		// (400 own_deck), and a stuck outbox head would stall every later upload.
+		if (opponent.username == PlayerIdentity.Username) return;
 
 		UploadOutbox.Enqueue(NetUploadKind.MatchReport, new MatchReportRequest
 		{

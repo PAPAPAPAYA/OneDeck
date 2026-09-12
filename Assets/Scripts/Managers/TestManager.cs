@@ -29,6 +29,9 @@ namespace DefaultNamespace.Managers
 		[Tooltip("Enemy deck always uses DeckSaver.debugEnemyDeck (bypasses ghost fetch and default pool).")]
 		public bool useTestEnemyDeck;
 
+		[Tooltip("Opponent ghost fetch may also return decks recorded under this player's own username. Pushed to ServerConfig.opponentsIncludeSelf.")]
+		public bool includeSelfOpponentDecks;
+
 		[Tooltip("Combat auto-reveal. Uncheck to reveal cards by manual click only.")]
 		public bool autoReveal;
 
@@ -187,6 +190,7 @@ namespace DefaultNamespace.Managers
 			if (serverConfig != null)
 			{
 				serverConfig.enabled = uploadServerData;
+				serverConfig.opponentsIncludeSelf = includeSelfOpponentDecks;
 			}
 
 			TestManager.Log("[TestManager] Toggles - shuffleOverride=" + (overrideShuffleOrder ? "ON" : "OFF")
@@ -195,7 +199,8 @@ namespace DefaultNamespace.Managers
 				+ " recordData=[shop=" + (recordShopStats ? "ON" : "OFF")
 				+ " winRate=" + (recordWinRate ? "ON" : "OFF")
 				+ " combatCSV=" + (recordCombatCSV ? "ON" : "OFF") + "]"
-				+ " uploadServerData=" + (uploadServerData ? "ON" : "OFF"));
+				+ " uploadServerData=" + (uploadServerData ? "ON" : "OFF")
+				+ " includeSelfOpponentDecks=" + (includeSelfOpponentDecks ? "ON" : "OFF"));
 		}
 
 		/// <summary>

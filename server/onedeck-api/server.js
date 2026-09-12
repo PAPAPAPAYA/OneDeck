@@ -219,6 +219,9 @@ const stmts = {
 	randomDecks: db.prepare(`SELECT * FROM decks
 		WHERE game_version = ? AND session_num = ? AND player_id != ?
 		ORDER BY RANDOM() LIMIT ?`),
+	randomDecksIncludeSelf: db.prepare(`SELECT * FROM decks
+		WHERE game_version = ? AND session_num = ?
+		ORDER BY RANDOM() LIMIT ?`),
 	deckDefenseWin: db.prepare('UPDATE decks SET defense_wins = defense_wins + 1 WHERE deck_id = ?'),
 	deckDefenseLoss: db.prepare('UPDATE decks SET defense_losses = defense_losses + 1 WHERE deck_id = ?'),
 
@@ -421,10 +424,15 @@ app.get('/api/decks/opponents', (req, res) =>
 	if (!isStr(req.query.gameVersion, 1, 32)) return badRequest(res, 'invalid_game_version');
 	const maxSession = toInt(req.query.maxSession, 0, 30, 5);
 	const perSession = toInt(req.query.perSession, 1, 5, 2);
+	// includeSelf=1 (client test toggle): drop the self-exclusion so the requester's
+	// own decks can come back as opponents.
+	const includeSelf = req.query.includeSelf === '1';
 	const decks = [];
 	for (let s = 0; s <= maxSession; s++)
 	{
-		const rows = stmts.randomDecks.all(req.query.gameVersion, s, player.player_id, perSession);
+		const rows = includeSelf
+			? stmts.randomDecksIncludeSelf.all(req.query.gameVersion, s, perSession)
+			: stmts.randomDecks.all(req.query.gameVersion, s, player.player_id, perSession);
 		for (const r of rows)
 		{
 			decks.push({

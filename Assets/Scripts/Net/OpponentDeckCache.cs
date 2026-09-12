@@ -77,6 +77,16 @@ public static class OpponentDeckCache
 		}
 	}
 
+	/// <summary>Test toggle: the opponents fetch also returns the requesting player's own decks.</summary>
+	private static bool IncludeSelf
+	{
+		get
+		{
+			ServerConfig config = ServerConfig.Active;
+			return config != null && config.opponentsIncludeSelf;
+		}
+	}
+
 	// ------------------------------------------------------------------ run lifecycle
 
 	/// <summary>
@@ -115,7 +125,8 @@ public static class OpponentDeckCache
 		string query = "playerId=" + PlayerIdentity.PlayerId
 			+ "&gameVersion=" + DeckNetworkClient.GameVersion
 			+ "&maxSession=" + PrefetchMaxSession
-			+ "&perSession=" + PrefetchPerSession;
+			+ "&perSession=" + PrefetchPerSession
+			+ (IncludeSelf ? "&includeSelf=1" : "");
 		DeckNetworkClient.Me.GetJson("/api/decks/opponents", query,
 			body =>
 			{

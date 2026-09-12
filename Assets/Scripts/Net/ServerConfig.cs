@@ -60,6 +60,9 @@ public class ServerConfig : ScriptableObject
 	[Header("Opponent ghosts")]
 	public bool fetchOpponentDecks = true;
 
+	[Tooltip("Test toggle: /api/decks/opponents also returns decks recorded under this player's own username. Match reports against own decks are skipped client-side (the server rejects them).")]
+	public bool opponentsIncludeSelf;
+
 	[Header("Test data")]
 	[Tooltip("Prefixes the registered username with 'test_' so production rows can be cleaned by name.")]
 	public bool markAsTest;

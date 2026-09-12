@@ -5928,6 +5928,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
   overrideShuffleOrder: 0
   useTestEnemyDeck: 0
+  includeSelfOpponentDecks: 0
   autoReveal: 0
   recordShopStats: 0
   recordWinRate: 0

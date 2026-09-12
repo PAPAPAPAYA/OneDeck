@@ -17,7 +17,7 @@ Single-file server (`server.js`), same deployment model as pkidle.
 |--------|------|---------|
 | POST | `/api/players/register` | `{username}` -> `{playerId}`; 409 on name conflict |
 | POST | `/api/decks` | upload ghost deck snapshot |
-| GET | `/api/decks/opponents?playerId&gameVersion&maxSession&perSession` | batch opponent decks |
+| GET | `/api/decks/opponents?playerId&gameVersion&maxSession&perSession[&includeSelf=1]` | batch opponent decks; `includeSelf=1` (client test toggle) drops the self-exclusion so the requester's own decks can come back |
 | POST | `/api/matches/report` | battle result, idempotent by `reportId` |
 | POST | `/api/stats/snapshot` | lifetime cumulative shop/winrate stats (upsert, retry-safe) |
 | POST | `/api/runs` | one full run record with shop visits + combats, idempotent by `runId`; zero-combat runs are skipped (responds ok, stores nothing) |
