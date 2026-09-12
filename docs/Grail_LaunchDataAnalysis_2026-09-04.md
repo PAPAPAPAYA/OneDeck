@@ -58,11 +58,12 @@ Normalized cumulative series (UTC-midnight anchored, from the intake chain):
 | Sep 6 | 219* |
 | Sep 7 | 245* |
 | Sep 8 | 267 |
-| Sep 9 | 286† |
+| Sep 9 | 287† |
+| Sep 10 | 296† |
 
-\* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15 · 287 @ Sep 9 03:32.
+\* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15.
 
-† Sep 9 anchor = 267 + day-8 intake 19 (final, from full-day timestamps), cross-checked against the 287 raw reading; ±1 for Steam edge-cache lag (~2 h). Note: a 9/8 partial-day extrapolation (~23/day by midday) overshot the actual 19 — partial-day rates are recorded as observations only, never chained forward.
+† Sep 9 anchor = **287 exact** (dual-sample totals at 03:32 UTC, zero Sep-9 reviews existed before 04:38 UTC): day-8 final intake is therefore **20** (267 + 20), one more than the 19 first chained from cache-gapped lists. Sep 10 anchor = 287 + day-9 intake 9. Raw point-in-time readings now: … 287 @ Sep 9 03:32 · 299 @ Sep 10 02:56. Standing lesson (from the 9/8 partial-day extrapolation that overshot 19 vs ~23): partial-day rates are recorded as observations only, never chained forward; only full-UTC-day closures enter the chain.
 
 Like-for-like CCU (≈02:00–03:10 UTC samples only): 658 (d4) → 634 (d5) → 593 (d7) ≈ −5%/day in the US-prime window. Off-peak readings (556 @ Sep 6 07:00, 464 @ Sep 8 11:57) are not comparable and are excluded from trend claims.
 
@@ -184,6 +185,7 @@ Interpretation:
 - **2026-09-18**: if the daily rate has dropped below ~15/day, month-1 settles toward the lower band (~450 reviews).
 	- *Status 2026-09-08 (interim)*: day-7 intake 22, day-8 tracking ~23/day (12 reviews by 12:15 UTC) — still above the 15/day trigger; month-1 mid-band currently favored.
 	- *Status 2026-09-09 (interim, 03:32 UTC)*: day-8 closed at **19** — the 9/8 partial-day extrapolation (~23) overshot; decay to the 15/day trigger now projected around Sep 10–11. Like-for-like CCU (03:10–03:32 UTC): 593 (d7) → 468 (d9) ≈ −11%/day, softening faster than reviews. Negatives flat at 26 (zero new in 15 h). Month-1 increasingly points to the low band (~450–500 reviews); final call at this checkpoint.
+	- *Status 2026-09-10 (interim, 02:56 UTC)*: day-9 intake **9** — the 15/day trigger was crossed a day early, so the low-band month-1 condition is already met (projection ≈470–510 reviews ≈ 14k–20k units at 30–40×). Day-10 running 3 reviews by 02:56 UTC (morning block). Like-for-like CCU flattened: 468 (d9) → 465 (d10). Negatives 26 → 25 (one flip/deletion). §12 on Sep 18 closes the call on the full UTC-anchored series.
 
 ## 9. Recheck — 2026-09-05 (day 4–5)
 
