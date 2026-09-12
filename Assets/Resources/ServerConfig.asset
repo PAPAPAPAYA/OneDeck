@@ -24,4 +24,4 @@ MonoBehaviour:
   uploadCardCatalog: 1
   fetchOpponentDecks: 1
   opponentsIncludeSelf: 0
-  markAsTest: 1
+  markAsTest: 0
