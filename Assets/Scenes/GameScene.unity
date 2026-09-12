@@ -3064,7 +3064,7 @@ MonoBehaviour:
   cameraMinY: -1
   cameraMaxY: 0
   useDynamicScrollBounds: 1
-  scrollBottomPadding: 1
+  scrollBottomPadding: 3
 --- !u!1 &434224256
 GameObject:
   m_ObjectHideFlags: 0

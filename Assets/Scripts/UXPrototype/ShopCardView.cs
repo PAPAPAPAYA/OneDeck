@@ -68,14 +68,35 @@ public class ShopCardView : MonoBehaviour
 		int displayPrice = isShopItem ? Mathf.Max(0, basePrice - discountOff) : basePrice / 2;
 		if (discountOff > 0)
 		{
-			// Plan step 5: discounted board offer shows the struck-through base price + the reduced one.
+			// Discounted board offer: struck-through base price + the reduced one. The <s> markup
+			// is kept as metadata for PriceStrikeLine, which overlays the crisp diagonal line
+			// (TMP's built-in strike line can never render opaque on this font, 2026-09-11).
 			_cardPhysObj.cardPricePrint.text =
 				"<s>$" + basePrice + "</s> $" + displayPrice;
+			EnsureStrikeLine().SetVisible(true);
 		}
 		else
 		{
 			_cardPhysObj.cardPricePrint.text = "$" + displayPrice;
+			if (_strikeLine != null)
+			{
+				_strikeLine.SetVisible(false);
+			}
 		}
+	}
+
+	private PriceStrikeLine _strikeLine;
+
+	/// <summary>Lazily attaches the solid diagonal strikethrough line to the price print.</summary>
+	private PriceStrikeLine EnsureStrikeLine()
+	{
+		if (_strikeLine == null && _cardPhysObj.cardPricePrint != null)
+		{
+			var go = new GameObject("PriceStrikeLine");
+			go.transform.SetParent(_cardPhysObj.cardPricePrint.transform, false);
+			_strikeLine = go.AddComponent<PriceStrikeLine>();
+		}
+		return _strikeLine;
 	}
 
 	#endregion
@@ -213,6 +234,19 @@ public class ShopCardView : MonoBehaviour
 	public bool IsEnlarged
 	{
 		get { return _isEnlarged; }
+	}
+
+	/// <summary>
+	/// The card's grid slot moved (shelf reflow after a purchase). While enlarged, the captured
+	/// _originalPosition must track the new slot or RestoreCard would send the card to a stale
+	/// position; when not enlarged the caller retargets the card directly, so nothing to do.
+	/// </summary>
+	public void NotifySlotMoved(Vector3 newSlotPosition)
+	{
+		if (_isEnlarged)
+		{
+			_originalPosition = newSlotPosition;
+		}
 	}
 
 	/// <summary>

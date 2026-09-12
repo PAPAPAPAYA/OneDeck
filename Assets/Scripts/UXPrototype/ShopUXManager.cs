@@ -159,6 +159,11 @@ public class ShopUXManager : MonoBehaviour
 
 		// DIAG-LOG(2026-09-06): physical shelf contents (pairs with [ShopBoard] board list)
 		LogSpawnedShopCardIds();
+
+		// Wrapped shelf (4+ cards) pushes the deck band down via CurrentDeckPos; a single-row shelf
+		// restores it. Deck-only relayout keeps the shelf entry animation intact (RelayoutAll would
+		// snap the shelf cards to their slots).
+		RelayoutDeckBand();
 	}
 
 	/// <summary>
@@ -239,15 +244,42 @@ public class ShopUXManager : MonoBehaviour
 	{
 		int row = slotIndex / objPerRow;
 		int col = slotIndex % objPerRow;
-		return playerDeckPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
+		return CurrentDeckPos() + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
 	}
 
+	// VISUAL-FIX(2026-09-10): The 4th shelf card (初魇 RaritySlotU first-board guarantee) fell off the
+	//   right screen edge
+	//   Cause:    GetShopItemSlotPosition was a single un-wrapping row (x = (index-1) * xOffset), so a
+	//             board count above objPerRow ran past the visible width; the player-deck grid had
+	//             row/col wrap all along and the shelf never did.
+	//   Affects:  ShopUXManager shelf layout (spawn, RelayoutAll, hover restore), deck band position
+	//             (CurrentDeckPos), scroll lower bound (ComputeDynamicMinY).
+	//   Regress:  Own 初魇, enter Shop (first board = 3+1): the guaranteed ✦✦ card sits on shelf row 2
+	//             fully on screen and the deck band slides down one pitch; reroll (3 cards) slides the
+	//             band back up; buying a shelf card reflows the shelf with no holes.
+	//   Related:  UTILITY_SLOT_U_1 (初魇), UTILITY_OPTION_1 (魇市新摊 extraShopOptions)
 	/// <summary>
 	/// Shelf position for a shop item index (single source for the shelf layout formula).
+	/// Rows wrap on objPerRow with the deck grid's rhythm: indices 0..objPerRow-1 form row 0,
+	/// the next objPerRow cards land on row 2 one pitch below.
 	/// </summary>
 	private Vector3 GetShopItemSlotPosition(int shopIndex)
 	{
-		return shopItemPos + new Vector3((shopIndex - 1) * xOffset, 0f, 0f);
+		int row = shopIndex / objPerRow;
+		int col = shopIndex % objPerRow;
+		return shopItemPos + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
+	}
+
+	/// <summary>
+	/// Deck band origin. A single-row shelf keeps the deck at playerDeckPos (today's layout);
+	/// a wrapped shelf shifts the whole band down by one pitch per extra shelf row, keeping a
+	/// constant gap between the lowest shelf row and the top deck row.
+	/// </summary>
+	private Vector3 CurrentDeckPos()
+	{
+		int perRow = Mathf.Max(1, objPerRow);
+		int shelfRows = Mathf.CeilToInt((float)_spawnedShopCards.Count / perRow);
+		return playerDeckPos + new Vector3(0f, -Mathf.Max(0, shelfRows - 1) * yOffset, 0f);
 	}
 
 	/// <summary>
@@ -324,6 +356,16 @@ public class ShopUXManager : MonoBehaviour
 			physObj.SetPositionImmediate(GetShopItemSlotPosition(physObj.shopItemIndex));
 		}
 
+		RelayoutDeckBand();
+	}
+
+	/// <summary>
+	/// Recompute the deck band: empty slots snap to their grid slots and deck cards tween to
+	/// theirs. Also fires when the shelf row count crosses the objPerRow threshold — a wrapped
+	/// shelf (4+ cards) pushes the band down via CurrentDeckPos, a single-row shelf restores it.
+	/// </summary>
+	private void RelayoutDeckBand()
+	{
 		// List order equals slot index (slots are appended sequentially by SpawnEmptySlots).
 		for (int i = 0; i < _spawnedEmptySlots.Count; i++)
 		{
@@ -333,7 +375,11 @@ public class ShopUXManager : MonoBehaviour
 			var physObj = slot.GetComponent<CardPhysObjScript>();
 			if (physObj != null)
 			{
-				physObj.SetPositionImmediate(slotPosition);
+				// VISUAL-FIX(2026-09-11): tween so the band glides when a purchase crosses the
+				// objPerRow threshold; on entry/reroll slots already sit on their slot, so the
+				// zero-distance tween is a no-op. Snapping put an empty-slot frame under the
+				// shelf card still tweening up to row 0.
+				physObj.SetTargetPosition(slotPosition);
 			}
 			else
 			{
@@ -374,6 +420,20 @@ public class ShopUXManager : MonoBehaviour
 		return index;
 	}
 
+	// VISUAL-FIX(2026-09-11): Buying a first-row shelf card made the deck band's first row overlap it
+	//   Cause:    RemoveFromShopCards re-indexed remaining shelf cards' shopItemIndex but never
+	//             retargeted their physical positions; the formerly wrapped row-2 card stayed at its
+	//             old slot (y = 2.2 - 4.5 = -2.3) while RelayoutDeckBand saw a single-row shelf
+	//             (count <= objPerRow) and slid the deck band back up, landing deck row 0 at -2.5.
+	//   Affects:  ShopUXManager.RemoveFromShopCards (shelf reflow), RelayoutDeckBand (empty slots
+	//             tween with the band instead of snapping), ShopCardView.NotifySlotMoved (hover
+	//             enlarged card keeps its captured restore position on its NEW slot)
+	//   Regress:  objPerRow=3 shelf with 4 cards, buy a row-0 card: the row-1 card tweens up to
+	//             row 0 (no holes), the deck band glides up and never overlaps a shelf card; buy a
+	//             mid-row card on a 5+ card shelf: cards shift left/up with no holes; a hover
+	//             enlarged card during a purchase restores to its new slot on release.
+	//   Related:  VISUAL-FIX(2026-09-10) shelf wrap + band push-down (GetShopItemSlotPosition /
+	//             CurrentDeckPos) — wrapping was added but the purchase reflow was never wired.
 	/// <summary>
 	/// Remove a purchased card from the shop list and re-index the remaining shop cards.
 	/// </summary>
@@ -388,6 +448,27 @@ public class ShopUXManager : MonoBehaviour
 				physObj.shopItemIndex = i;
 			}
 		}
+
+		// Reflow the shelf: remaining cards tween to their re-indexed slots (also closes the hole
+		// left by any mid-row purchase). Enlarged cards keep hover ownership of their target;
+		// sync their captured restore position instead so RestoreCard lands on the new slot.
+		foreach (var card in _spawnedShopCards)
+		{
+			if (card == null) continue;
+			CardPhysObjScript physObj = card.GetComponent<CardPhysObjScript>();
+			if (physObj == null || physObj.shopItemIndex < 0) continue;
+			var view = card.GetComponent<ShopCardView>();
+			Vector3 slotPosition = GetShopItemSlotPosition(physObj.shopItemIndex);
+			if (view != null && view.IsEnlarged)
+			{
+				view.NotifySlotMoved(slotPosition);
+				continue;
+			}
+			physObj.SetTargetPosition(slotPosition);
+		}
+
+		// A purchase that crosses the objPerRow threshold (4->3) slides the deck band back up.
+		RelayoutDeckBand();
 	}
 
 	/// <summary>
@@ -442,7 +523,7 @@ public class ShopUXManager : MonoBehaviour
 			Vector3 spawnPosition = slotAssigner.Assign(cardScript.cardTypeID, out bool isStackedCopy);
 			
 			// Instantiate physical card
-			Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : playerDeckPos;
+			Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : CurrentDeckPos();
 			GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
 			
 			// Get CardPhysObjScript and setup
@@ -520,29 +601,59 @@ public class ShopUXManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Dynamic downward scroll limit: derived from the bottom-most player-deck row so the
-	/// camera can always reach the last row regardless of deck size. Slot count drives the
-	/// row count (empty slots are persistent visible content); falls back to the fixed
-	/// cameraMinY when the layout is not resolvable.
+	/// Dynamic downward scroll limit: derived from the lowest actually-laid-out content
+	/// (player-deck cards + persistent empty slots, logical TargetPosition so in-flight
+	/// tweens do not skew it). Scanning real positions keeps the bound correct through
+	/// shelf wrapping, deck-band shifts and card counts exceeding deckSize slots.
+	/// Falls back to the deckSize row formula when nothing is laid out yet, then to
+	/// the fixed cameraMinY.
 	/// </summary>
 	private float ComputeDynamicMinY()
 	{
-		int slotCount = _spawnedEmptySlots.Count;
-		if (slotCount <= 0 && ShopManager.me != null && ShopManager.me.deckSize != null)
+		float lowestContentY = Mathf.Min(
+			GetLaidOutLowestY(_spawnedPlayerCards),
+			GetLaidOutLowestY(_spawnedEmptySlots));
+
+		if (lowestContentY == float.MaxValue)
 		{
-			slotCount = ShopManager.me.deckSize.value;
+			int slotCount = ShopManager.me != null && ShopManager.me.deckSize != null ? ShopManager.me.deckSize.value : 0;
+			if (slotCount <= 0 || objPerRow <= 0)
+			{
+				return cameraMinY;
+			}
+			int rows = (slotCount + objPerRow - 1) / objPerRow;
+			lowestContentY = CurrentDeckPos().y - (rows - 1) * yOffset;
 		}
-		if (slotCount <= 0 || objPerRow <= 0 || _mainCamera == null)
+
+		if (_mainCamera == null)
 		{
 			return cameraMinY;
 		}
-
-		int rows = (slotCount + objPerRow - 1) / objPerRow;
-		float bottomRowY = playerDeckPos.y - (rows - 1) * yOffset;
 		float viewHalfHeight = _mainCamera.orthographic
 			? _mainCamera.orthographicSize
 			: Mathf.Tan(_mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) * Mathf.Abs(_mainCamera.transform.position.z);
-		return (bottomRowY - viewHalfHeight + scrollBottomPadding) - _cameraInitialY;
+		// Camera center rests ABOVE the lowest content by (viewHalfHeight - padding), so at the
+		// floor the bottom row sits scrollBottomPadding above the view's bottom edge.
+		float dynamicBound = (lowestContentY + viewHalfHeight - scrollBottomPadding) - _cameraInitialY;
+		// A shallow board could push the bound above the upward limit and invert the clamp range.
+		return Mathf.Min(dynamicBound, cameraMaxY);
+	}
+
+	/// <summary>
+	/// Lowest logical target Y among spawned card objects (skips nulls and objects without
+	/// CardPhysObjScript). Returns float.MaxValue when the list carries no measurable content.
+	/// </summary>
+	private static float GetLaidOutLowestY(List<GameObject> cards)
+	{
+		float lowestY = float.MaxValue;
+		foreach (var card in cards)
+		{
+			if (card == null) continue;
+			var physObj = card.GetComponent<CardPhysObjScript>();
+			if (physObj == null) continue;
+			lowestY = Mathf.Min(lowestY, physObj.TargetPosition.y);
+		}
+		return lowestY;
 	}
 
 	/// <summary>
@@ -949,6 +1060,9 @@ public class ShopUXManager : MonoBehaviour
 		
 		// DIAG-LOG(2026-09-06): physical shelf contents after reroll respawn (pairs with [ShopBoard] board list)
 		LogSpawnedShopCardIds();
+
+		// Reroll can cross the objPerRow threshold (4->3): slide the deck band back to the single-row position.
+		RelayoutDeckBand();
 		// Debug.Log($"[ShopUXManager] Reroll complete, spawned {_spawnedShopCards.Count} new shop cards.");
 	}
 
