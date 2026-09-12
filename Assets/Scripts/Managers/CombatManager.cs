@@ -201,6 +201,10 @@ public class CombatManager : MonoBehaviour
 	[Tooltip("Tracks the last card revived (set by ReviveEffect right before the awaken events raise; RELIC_DEATH_KNELL and GRAVE_ROBBER read it)")]
 	public CardScript lastCardRevived;
 
+	[Header("EXILE EVENT")]
+	[Tooltip("Tracks the last card exiled (set by ExileEffect right before the friendly-exile events raise; EXILE_BERSERKER batch guard reads it)")]
+	public CardScript lastCardExiled;
+
 	[Header("SHUFFLE EVENT TIMING")]
 	[Tooltip("Delay afterShuffle event until the first card is revealed after shuffle")]
 	private bool _raiseAfterShuffleOnNextReveal;

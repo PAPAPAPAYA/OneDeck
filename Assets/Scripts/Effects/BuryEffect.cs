@@ -204,20 +204,20 @@ public class BuryEffect : EffectScript
 	}
 
 	/// <summary>
-	/// Bury N friendly cards where N = baseCount - (this round's TOTAL card burials,
-	/// victim-side counters summed: my cards buried + enemy cards buried, regardless of
-	/// burier) (DECIMATION "埋葬6友方，本回合每埋葬过1卡，埋葬数-1" — burials anywhere
-	/// drain the quota, including my own burials of enemy cards). Negative clamps to 0.
+	/// Bury N friendly cards where N = baseCount - (this round's FRIENDLY-side burials,
+	/// victim-side counter: my side's cards buried by anyone this round)
+	/// (DECIMATION "埋葬6友方，本回合每埋葬过1友方，埋葬数-1" — only friendly burials
+	/// drain the quota). Negative clamps to 0.
 	/// </summary>
-	public void BuryMyCards_CountBasedOnAnyBuried(int baseCount)
+	public void BuryMyCards_CountBasedOnFriendlyBuried(int baseCount)
 	{
 		int buriedThisRound = 0;
-		if (ValueTrackerManager.me != null)
+		if (ValueTrackerManager.me != null && myCardScript != null && combatManager != null)
 		{
-			buriedThisRound += ValueTrackerManager.me.ownerCardsBuriedCountRef != null
-				? ValueTrackerManager.me.ownerCardsBuriedCountRef.value : 0;
-			buriedThisRound += ValueTrackerManager.me.enemyCardsBuriedCountRef != null
-				? ValueTrackerManager.me.enemyCardsBuriedCountRef.value : 0;
+			IntSO counter = myCardScript.myStatusRef == combatManager.ownerPlayerStatusRef
+				? ValueTrackerManager.me.ownerCardsBuriedCountRef
+				: ValueTrackerManager.me.enemyCardsBuriedCountRef;
+			buriedThisRound = counter != null ? counter.value : 0;
 		}
 		BuryMyCards(baseCount - buriedThisRound);
 	}

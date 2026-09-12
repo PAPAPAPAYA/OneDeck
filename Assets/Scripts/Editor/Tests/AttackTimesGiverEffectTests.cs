@@ -202,4 +202,29 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 		Assert.AreEqual(0, fired, "enemy-caused exile of my cards must not fire the self-side exile event");
 		Assert.IsFalse(CombatManager.combinedDeckZone.Contains(myCard), "my card is still exiled");
 	}
+
+	[Test]
+	public void GiveSelfAttackTimes_PerExiledCount_GrantsOnEveryThresholdMultiple()
+	{
+		var berserker = CreateCard(true, "Berserker");
+		var giver = CreateEffect<DefaultNamespace.Effects.AttackTimesGiverEffect>(berserker);
+		var cs = berserker.GetComponent<CardScript>();
+		var counter = ValueTrackerManager.friendlyExiledByOwnerThisRoundRef;
+
+		counter.value = 2;
+		giver.GiveSelfAttackTimes_PerExiledCount(3);
+		Assert.AreEqual(0, cs.attackTimesModThisRound, "2 exiles: below threshold, no grant");
+
+		counter.value = 3;
+		giver.GiveSelfAttackTimes_PerExiledCount(3);
+		Assert.AreEqual(1, cs.attackTimesModThisRound, "3rd exile grants +1");
+
+		counter.value = 4;
+		giver.GiveSelfAttackTimes_PerExiledCount(3);
+		Assert.AreEqual(1, cs.attackTimesModThisRound, "4 exiles: still one grant");
+
+		counter.value = 6;
+		giver.GiveSelfAttackTimes_PerExiledCount(3);
+		Assert.AreEqual(2, cs.attackTimesModThisRound, "6th exile grants the second +1");
+	}
 }

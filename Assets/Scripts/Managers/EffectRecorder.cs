@@ -26,5 +26,12 @@ namespace DefaultNamespace
 		/// Such recorders only play the cost-fail shake and should not show the success emphasize.
 		/// </summary>
 		public bool isCostFailRecorder = false;
+
+		/// <summary>
+		/// Batch-reaction context (2026-09-10): the last raised context card this recorder
+		/// processed. The loop guard compares it for per-target containers (see
+		/// EffectChainManager.EffectCanBeInvoked); null = legacy / no context.
+		/// </summary>
+		public GameObject guardContextTarget;
 	}
 }

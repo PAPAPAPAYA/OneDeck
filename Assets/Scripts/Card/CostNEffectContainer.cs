@@ -12,6 +12,23 @@ using UnityEngine.Events;
 // so this script is responsible for checking effect cost
 public class CostNEffectContainer : MonoBehaviour
 {
+	/// <summary>
+	/// Batch-reaction granularity (2026-09-10): the loop guard normally lets a (card, container)
+	/// pair fire once per open chain. When a listener reacts to a per-card raised event
+	/// (OnFriendlyCardBuried / OnFriendlyCardRevived / OnFriendlyCardGainedAttack /
+	/// OnFriendlyCardExiled) and this is set, every DISTINCT context card (the lastCardX
+	/// field the raiser loop sets right before raising) may fire the container once each
+	/// within the same chain; same-target repeats stay blocked so reactive chains cannot
+	/// loop back. Append-only: containers serialize this as an int.
+	/// </summary>
+	public enum BatchContextSource
+	{
+		None = 0,
+		LastCardBuried = 1,
+		LastCardRevived = 2,
+		LastCardGainedAttack = 3,
+		LastCardExiled = 4
+	}
 	#region GET MY CARD SCRIPT
 
 	private CardScript _myCardScript;
@@ -32,6 +49,9 @@ public class CostNEffectContainer : MonoBehaviour
 	public StringSO cursedCardTypeID;
 	[Tooltip("Target Card Type ID for cost checking (e.g., 'fly')")]
 	public StringSO targetCardTypeID;
+	[Header("Batch Reaction (4.0)")]
+	[Tooltip("When set, the loop guard keys on the last raised context card (batch granularity) instead of the legacy once-per-chain rule. Append-only enum.")]
+	public BatchContextSource batchContextSource = BatchContextSource.None;
 
 	[Header("Cost and Effect Events")]
 	public UnityEvent checkCostEvent;

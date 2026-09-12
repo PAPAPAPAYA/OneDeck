@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 4
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -56,12 +57,12 @@ MonoBehaviour:
       - m_Target: {fileID: 7027300096264675992}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackTimesGiverEffect,
           Assembly-CSharp
-        m_MethodName: GiveSelfAttackTimes
+        m_MethodName: GiveSelfAttackTimes_PerExiledCount
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 1
+          m_IntArgument: 3
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -141,6 +142,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -234,7 +236,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: EXILE_BERSERKER
   displayName: "\u72C2\u4FE1\u5F92"
-  cardDesc: "\u653B\u51FB;\u672C\u56DE\u5408\u6BCF\u653E\u9010 <b>1</b> \u53CB\u65B9,\u672C\u56DE\u5408\u653B\u51FB\u6B21\u6570
+  cardDesc: "\u653B\u51FB;\u672C\u56DE\u5408\u6BCF\u653E\u9010\u8FC7 <b>3</b> \u53CB\u65B9,\u672C\u56DE\u5408\u653B\u51FB\u6B21\u6570
     <b>+1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
@@ -248,7 +250,7 @@ MonoBehaviour:
   myTags: 07000000
   lifeMax: 0
   currentLife: 0
-  printedAttack: 2
+  printedAttack: 1
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0

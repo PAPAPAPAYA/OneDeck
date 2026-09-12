@@ -130,6 +130,19 @@ public class EffectChainManager : MonoBehaviour
 		var myCard = currentRec.cardObject;
 		var myEffect = currentRec.effectObject;
 
+		// Batch-reaction granularity (2026-09-10): flagged containers may fire once per
+		// DISTINCT context card (the raiser loop sets the matching CombatManager.lastCardX
+		// right before raising). Same-target repeats stay blocked so reactive chains cannot
+		// loop back into the same card. Unflagged containers keep the legacy once-per-chain rule.
+		bool perTarget = false;
+		GameObject contextTarget = null;
+		var myContainer = myEffect != null ? myEffect.GetComponent<CostNEffectContainer>() : null;
+		if (myContainer != null && myContainer.batchContextSource != CostNEffectContainer.BatchContextSource.None)
+		{
+			contextTarget = ResolveBatchContextTarget(myContainer.batchContextSource);
+			perTarget = contextTarget != null;
+		}
+
 		var invokedTimes = 0;
 		string matchedChains = "";
 		foreach (var chain in openedEffectRecorders)
@@ -138,7 +151,8 @@ public class EffectChainManager : MonoBehaviour
 			// Match by GameObject reference (instance), not by effectID string
 			if (wipChainScript.cardObject == myCard &&
 			    wipChainScript.effectObject == myEffect &&
-			    !string.IsNullOrEmpty(wipChainScript.processedEffectID))
+			    !string.IsNullOrEmpty(wipChainScript.processedEffectID) &&
+			    (!perTarget || wipChainScript.guardContextTarget == contextTarget))
 			{
 				invokedTimes++;
 				matchedChains += "chain#" + wipChainScript.chainID + "[" + wipChainScript.effectObject.name + "];";
@@ -163,8 +177,29 @@ public class EffectChainManager : MonoBehaviour
 		}
 
 		currentRec.processedEffectID = effectID;
+		currentRec.guardContextTarget = contextTarget;
 		chainDepth++;
 		return true;
+	}
+
+	/// <summary>
+	/// Resolves the batch context card for a per-target container from the matching
+	/// CombatManager.lastCardX field (set by the raiser loop right before raising).
+	/// Returns null when the field is unset, falling back to legacy single-fire.
+	/// </summary>
+	private GameObject ResolveBatchContextTarget(CostNEffectContainer.BatchContextSource source)
+	{
+		var combat = CombatManager.Me;
+		if (combat == null) return null;
+		CardScript card = null;
+		switch (source)
+		{
+			case CostNEffectContainer.BatchContextSource.LastCardBuried: card = combat.lastCardBuried; break;
+			case CostNEffectContainer.BatchContextSource.LastCardRevived: card = combat.lastCardRevived; break;
+			case CostNEffectContainer.BatchContextSource.LastCardGainedAttack: card = combat.lastCardGainedAttack; break;
+			case CostNEffectContainer.BatchContextSource.LastCardExiled: card = combat.lastCardExiled; break;
+		}
+		return card != null ? card.gameObject : null;
 	}
 
 	public void PopCurrentRecorder()

@@ -6933,6 +6933,7 @@ MonoBehaviour:
   lastCardAttacked: {fileID: 0}
   lastCardBuried: {fileID: 0}
   lastCardRevived: {fileID: 0}
+  lastCardExiled: {fileID: 0}
   captureRecorderAutoPlayForTesting: 0
   captureStartCardRevealRoutineForTesting: 0
 --- !u!4 &1151980345

@@ -325,6 +325,10 @@ public class ExileEffect : EffectScript
 			bool isMyCard = cardScript.myStatusRef == myCardScript.myStatusRef;
 			if (isMyCard)
 			{
+				// Last-exiled context (EXILE_BERSERKER batch guard): must be set BEFORE the
+				// raises so every exile event sees the card it fires for.
+				combatManager.lastCardExiled = cardScript;
+
 				// 4.0 step-5: self-side exile count by causer side (RIFT_REAPER "每放逐1友方").
 				if (ValueTrackerManager.me != null)
 				{

@@ -79,25 +79,26 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void BuryMyCards_CountBasedOnAnyBuried_ReducesWithTotalRoundBurials()
+	public void BuryMyCards_CountBasedOnFriendlyBuried_ReducesOnlyByFriendlyBurials()
 	{
 		var decimation = CreateCard(true, "Decimation");
 		AddCard(true, "F1", "A", 1, true);
 		AddCard(true, "F2", "B", 1, true);
 		AddCard(true, "F3", "C", 1, true);
 		AddCard(true, "F4", "D", 1, true);
+		AddCard(true, "F5", "E", 1, true);
 		CombatManager.combinedDeckZone.Add(CreateCard(false, "EnemyTopFiller")); // enemy: never in the friendly bury pool
-		ValueTrackerManager.ownerCardsBuriedCountRef.value = 2; // my cards buried
-		ValueTrackerManager.enemyCardsBuriedCountRef.value = 1; // enemy cards buried (any burier)
+		ValueTrackerManager.ownerCardsBuriedCountRef.value = 1; // my cards buried
+		ValueTrackerManager.enemyCardsBuriedCountRef.value = 2; // enemy cards buried (any burier): must NOT drain
 
 		var bury = CreateEffect<BuryEffect>(decimation);
 		EffectChainManager.MakeANewEffectRecorder(decimation, bury.gameObject);
-		bury.BuryMyCards_CountBasedOnAnyBuried(6);
+		bury.BuryMyCards_CountBasedOnFriendlyBuried(6);
 		EffectChainManager.Me.CloseOpenedChain();
-		// 6 - (2 + 1) = 3 friendly cards buried this call; they land in deck slots 0-2
-		int buriedBottom = CombatManager.combinedDeckZone.Take(3)
+		// 6 - 1 friendly = 5, capped by the 4 buryable friendlies (F1 is bottom-excluded)
+		int buriedBottom = CombatManager.combinedDeckZone.Take(4)
 			.Count(c => c.GetComponent<CardScript>().myStatusRef == OwnerStatus);
-		Assert.AreEqual(3, buriedBottom, "6 minus 3 total round burials (incl. enemy cards) = 3 buried");
+		Assert.AreEqual(4, buriedBottom, "6 minus 1 friendly burial = 5, all 4 buryable friendlies buried");
 	}
 
 	[Test]
@@ -644,5 +645,30 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		listener.response.AddListener(() => callback());
 		GameEventStorage.onMeBuried.RegisterListener(listener);
 		return listener;
+	}
+
+	[Test]
+	public void EffectCanBeInvoked_PerTargetGuard_AllowsEachDistinctBatchTargetOnce()
+	{
+		var reactor = CreateCard(true, "Reactor");
+		var container = CreateCostContainer(reactor);
+		container.batchContextSource = CostNEffectContainer.BatchContextSource.LastCardBuried;
+		var victimA = AddCard(true, "VictimA", "A", 1, true);
+		var victimB = AddCard(true, "VictimB", "B", 1, true);
+
+		CombatManager.lastCardBuried = victimA.GetComponent<CardScript>();
+		EffectChainManager.MakeANewEffectRecorder(reactor, container.gameObject);
+		Assert.IsTrue(EffectChainManager.Me.EffectCanBeInvoked("t1"), "first target allowed");
+		EffectChainManager.Me.PopCurrentRecorder();
+
+		CombatManager.lastCardBuried = victimB.GetComponent<CardScript>();
+		EffectChainManager.MakeANewEffectRecorder(reactor, container.gameObject);
+		Assert.IsTrue(EffectChainManager.Me.EffectCanBeInvoked("t1"), "distinct target allowed within the same chain");
+		EffectChainManager.Me.PopCurrentRecorder();
+
+		EffectChainManager.MakeANewEffectRecorder(reactor, container.gameObject);
+		Assert.IsFalse(EffectChainManager.Me.EffectCanBeInvoked("t1"), "same target repeat stays blocked");
+		EffectChainManager.Me.PopCurrentRecorder();
+		EffectChainManager.Me.CloseOpenedChain();
 	}
 }

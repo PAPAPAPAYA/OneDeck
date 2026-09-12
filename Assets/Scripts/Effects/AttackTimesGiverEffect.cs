@@ -30,6 +30,24 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
+		/// EXILE_BERSERKER "本回合每放逐过3友方,攻击次数+1": reads the per-side self-exile
+		/// counter (every exiled friendly card counts, batch exiles included) and grants +1
+		/// attack time whenever the running total lands on a multiple of cardsPerBonus. Fires
+		/// on every processed exile raise (batch guard), so crossing a multiple grants once.
+		/// </summary>
+		public virtual void GiveSelfAttackTimes_PerExiledCount(int cardsPerBonus)
+		{
+			if (cardsPerBonus <= 0) return;
+			var tracker = ValueTrackerManager.me;
+			if (tracker == null) return;
+			var exiledCounter = GetIntSOForOwner(
+				tracker.friendlyExiledByOwnerThisRoundRef,
+				tracker.friendlyExiledByEnemyThisRoundRef);
+			if (exiledCounter == null || exiledCounter.value % cardsPerBonus != 0) return;
+			GiveSelfAttackTimes(1);
+		}
+
+		/// <summary>
 		/// Give +N attack times to 1 random friendly creature for this round (COMBO_GRANTER
 		/// "本回合1友方生物攻击次数+1"). Self is eligible (文案无排除); ties of the random
 		/// pool follow the shuffled order.
