@@ -25,10 +25,10 @@ public enum CombatStatType
 	EnemyBuried,
 	/// <summary>How many times this card itself was buried.</summary>
 	TimesBuried,
-	/// <summary>Friendly cards this card staged. Enemy stagings are intentionally not counted source-side.</summary>
-	FriendlyStaged,
-	/// <summary>How many times this card itself was staged.</summary>
-	TimesStaged
+	/// <summary>Revives this card triggered, regardless of the revived card's owner.</summary>
+	RevivesTriggered,
+	/// <summary>How many times this card itself was revived.</summary>
+	TimesRevived
 }
 
 /// <summary>
@@ -100,8 +100,8 @@ public static class CombatStatRegistry
 		new CombatStatDef { type = CombatStatType.FriendlyBuried, columnHeader = "Bury>F", columnSortPriority = 6 },
 		new CombatStatDef { type = CombatStatType.EnemyBuried, columnHeader = "Bury>E", columnSortPriority = 7 },
 		new CombatStatDef { type = CombatStatType.TimesBuried, columnHeader = "Buried", columnSortPriority = 8 },
-		new CombatStatDef { type = CombatStatType.FriendlyStaged, columnHeader = "Stage>F", columnSortPriority = 9 },
-		new CombatStatDef { type = CombatStatType.TimesStaged, columnHeader = "Staged", columnSortPriority = 10 }
+		new CombatStatDef { type = CombatStatType.RevivesTriggered, columnHeader = "Revive", columnSortPriority = 9 },
+		new CombatStatDef { type = CombatStatType.TimesRevived, columnHeader = "Revived", columnSortPriority = 10 }
 	};
 
 	public static List<CombatStatDef> GetColumnsSorted()
@@ -270,19 +270,16 @@ public class CombatPerCardStatsTracker : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Record one stage performed by source. The staged card's own TimesStaged always increments;
-	/// source-side only friendly stagings count (same owner as the source) — per design there is
-	/// no enemy-staged column.
+	/// Record one revive performed by source. The revived card's own TimesRevived always increments;
+	/// source-side every triggered revive counts (RevivesTriggered), regardless of the victim's owner
+	/// — enemy-owner victims (ReviveTheirCards) are included by design.
 	/// </summary>
-	public void RecordStage(CardScript source, CardScript stagedCard)
+	public void RecordRevive(CardScript source, CardScript revivedCard)
 	{
-		if (stagedCard == null || stagedCard.IsNeutralCard) return; // neutral victims count on neither side
-		Add(stagedCard, CombatStatType.TimesStaged, 1f);
+		if (revivedCard == null || revivedCard.IsNeutralCard) return; // neutral victims count on neither side
+		Add(revivedCard, CombatStatType.TimesRevived, 1f);
 		if (source == null) return;
-		if (stagedCard.myStatusRef != null && stagedCard.myStatusRef == source.myStatusRef)
-		{
-			Add(source, CombatStatType.FriendlyStaged, 1f);
-		}
+		Add(source, CombatStatType.RevivesTriggered, 1f);
 	}
 
 	/// <summary>

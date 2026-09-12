@@ -318,41 +318,53 @@ public class CombatPerCardStatsTrackerTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void RecordStage_CountsFriendlySourceSideOnly_ButAlwaysCountsVictim()
+	public void RecordRevive_CountsEveryTriggeredRevive_SourceSideRegardlessOfVictimOwner()
 	{
-		var source = CreateCard(true, "Promoter", "promoter").GetComponent<CardScript>();
+		var source = CreateCard(true, "Necromancer", "necromancer").GetComponent<CardScript>();
 		var friendly = CreateCard(true, "Ally", "ally").GetComponent<CardScript>();
 		var enemy = CreateCard(false, "Foe", "foe").GetComponent<CardScript>();
 
-		_tracker.RecordStage(source, friendly);
-		_tracker.RecordStage(source, enemy);
+		_tracker.RecordRevive(source, friendly);
+		_tracker.RecordRevive(source, enemy);
 
 		var rows = _tracker.GetSessionRows();
-		var sourceRow = rows.Find(r => r.cardTypeID == "promoter");
-		Assert.AreEqual(1f, sourceRow.GetValue(CombatStatType.FriendlyStaged), "Only friendly stagings count source-side (no enemy-staged column by design)");
-		Assert.AreEqual(1f, rows.Find(r => r.cardTypeID == "ally").GetValue(CombatStatType.TimesStaged));
-		Assert.AreEqual(1f, rows.Find(r => r.cardTypeID == "foe").GetValue(CombatStatType.TimesStaged), "Victim side counts even when the staged card is enemy-owned");
+		var sourceRow = rows.Find(r => r.cardTypeID == "necromancer");
+		Assert.AreEqual(2f, sourceRow.GetValue(CombatStatType.RevivesTriggered), "Every triggered revive counts source-side, including enemy-owner victims (ReviveTheirCards)");
+		Assert.AreEqual(1f, rows.Find(r => r.cardTypeID == "ally").GetValue(CombatStatType.TimesRevived));
+		Assert.AreEqual(1f, rows.Find(r => r.cardTypeID == "foe").GetValue(CombatStatType.TimesRevived), "Victim side counts even when the revived card is enemy-owned");
 	}
 
 	[Test]
-	public void RecordBuryAndStage_SkipNeutralParticipants()
+	public void RecordRevive_SelfRevive_CountsOnBothColumns()
+	{
+		var self = CreateCard(true, "Phoenix", "phoenix").GetComponent<CardScript>();
+
+		_tracker.RecordRevive(self, self);
+
+		var selfRow = _tracker.GetSessionRows().Find(r => r.cardTypeID == "phoenix");
+		Assert.AreEqual(1f, selfRow.GetValue(CombatStatType.RevivesTriggered));
+		Assert.AreEqual(1f, selfRow.GetValue(CombatStatType.TimesRevived));
+	}
+
+	[Test]
+	public void RecordBuryAndRevive_SkipNeutralParticipants()
 	{
 		var startCard = CreateStartCard().GetComponent<CardScript>();
 		var normal = CreateCard(true, "Ally", "ally").GetComponent<CardScript>();
 
 		_tracker.RecordBury(startCard, normal);   // neutral source: no source-side count
 		_tracker.RecordBury(normal, startCard);   // neutral victim: neither side counts
-		_tracker.RecordStage(startCard, normal);
-		_tracker.RecordStage(normal, startCard);
+		_tracker.RecordRevive(startCard, normal);
+		_tracker.RecordRevive(normal, startCard);
 
 		var rows = _tracker.GetSessionRows();
 		Assert.AreEqual(1, rows.Count, "Only the normal card may appear");
 		Assert.AreEqual("ally", rows[0].cardTypeID);
 		Assert.AreEqual(1f, rows[0].GetValue(CombatStatType.TimesBuried), "Victim side still counts when the source is neutral");
-		Assert.AreEqual(1f, rows[0].GetValue(CombatStatType.TimesStaged));
+		Assert.AreEqual(1f, rows[0].GetValue(CombatStatType.TimesRevived));
 		Assert.AreEqual(0f, rows[0].GetValue(CombatStatType.FriendlyBuried), "Burying the neutral start card counts on neither side");
 		Assert.AreEqual(0f, rows[0].GetValue(CombatStatType.EnemyBuried));
-		Assert.AreEqual(0f, rows[0].GetValue(CombatStatType.FriendlyStaged));
+		Assert.AreEqual(0f, rows[0].GetValue(CombatStatType.RevivesTriggered));
 	}
 }
 

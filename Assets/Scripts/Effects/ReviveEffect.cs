@@ -270,9 +270,12 @@ public class ReviveEffect : EffectScript
 					if (ValueTrackerManager.me.enemyRevivedCountThisRoundRef != null)
 						ValueTrackerManager.me.enemyRevivedCountThisRoundRef.value++;
 				}
-			}
+				}
 
-			string myColor = GetMyCardColorTag();
+				// Per-card result stats: victim TimesRevived + source RevivesTriggered (any victim owner)
+				CombatPerCardStatsTracker.Me?.RecordRevive(myCardScript, targetCardScript);
+
+				string myColor = GetMyCardColorTag();
 			string targetColor = GetCardColorTag(targetCard);
 			AppendLog("// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>]将[<color=" + targetColor + ">" +
 				targetCardScript.gameObject.name + "</color>]" + (delayedRevive ? "延迟复活至Start Card前" : "复活至牌库顶"));

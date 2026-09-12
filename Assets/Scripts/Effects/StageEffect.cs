@@ -428,9 +428,6 @@ public class StageEffect : EffectScript
 					}
 				}
 
-				// Per-card result stats: source-side friendly-only + victim TimesStaged
-				CombatPerCardStatsTracker.Me?.RecordStage(myCardScript, targetCardScript);
-				
 				string myColor = GetMyCardColorTag();
 				string targetColor = GetCardColorTag(targetCard);
 				AppendLog("// [<color=" + myColor + ">" + myCard.gameObject.name + "</color>]将[<color=" + targetColor + ">" +
