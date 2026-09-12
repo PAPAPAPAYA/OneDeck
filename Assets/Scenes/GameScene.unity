@@ -5929,6 +5929,7 @@ MonoBehaviour:
   overrideShuffleOrder: 0
   useTestEnemyDeck: 0
   includeSelfOpponentDecks: 0
+  fightOwnGhostsOnly: 0
   autoReveal: 1
   recordShopStats: 1
   recordWinRate: 1
@@ -10770,6 +10771,7 @@ MonoBehaviour:
   - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
   useDebugEnemyDeck: 0
   debugEnemyDeck: {fileID: 11400000, guid: 7c4c427c8e6a9bf4f8e17cc44d562b8a, type: 2}
+  onlyGhostEnemyDeck: 0
   defaultEnemyDeckPool:
   - decks:
     - {fileID: 11400000, guid: f1a54b2ad6e85dc4e9a8472fb1acb4df, type: 2}

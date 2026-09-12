@@ -32,6 +32,9 @@ namespace DefaultNamespace.Managers
 		[Tooltip("Opponent ghost fetch may also return decks recorded under this player's own username. Pushed to ServerConfig.opponentsIncludeSelf.")]
 		public bool includeSelfOpponentDecks;
 
+		[Tooltip("Test mode: only fight own ghost decks. Forces ServerConfig.opponentsIncludeSelf ON (the server otherwise excludes your own decks, so no fresh ghosts would arrive) and disables the default pool fallback in DeckSaver (cache-dry = empty enemy deck). Match reports vs own decks are skipped by design (the server rejects them).")]
+		public bool fightOwnGhostsOnly;
+
 		[Tooltip("Combat auto-reveal. Uncheck to reveal cards by manual click only.")]
 		public bool autoReveal;
 
@@ -164,6 +167,7 @@ namespace DefaultNamespace.Managers
 			if (deckSaver != null)
 			{
 				deckSaver.useDebugEnemyDeck = useTestEnemyDeck;
+				deckSaver.onlyGhostEnemyDeck = fightOwnGhostsOnly;
 			}
 
 			if (combatManager != null)
@@ -190,7 +194,7 @@ namespace DefaultNamespace.Managers
 			if (serverConfig != null)
 			{
 				serverConfig.enabled = uploadServerData;
-				serverConfig.opponentsIncludeSelf = includeSelfOpponentDecks;
+				serverConfig.opponentsIncludeSelf = fightOwnGhostsOnly || includeSelfOpponentDecks;
 			}
 
 			TestManager.Log("[TestManager] Toggles - shuffleOverride=" + (overrideShuffleOrder ? "ON" : "OFF")
@@ -200,7 +204,8 @@ namespace DefaultNamespace.Managers
 				+ " winRate=" + (recordWinRate ? "ON" : "OFF")
 				+ " combatCSV=" + (recordCombatCSV ? "ON" : "OFF") + "]"
 				+ " uploadServerData=" + (uploadServerData ? "ON" : "OFF")
-				+ " includeSelfOpponentDecks=" + (includeSelfOpponentDecks ? "ON" : "OFF"));
+				+ " includeSelfOpponentDecks=" + (includeSelfOpponentDecks ? "ON" : "OFF")
+				+ " fightOwnGhostsOnly=" + (fightOwnGhostsOnly ? "ON" : "OFF"));
 		}
 
 		/// <summary>

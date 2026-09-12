@@ -75,6 +75,9 @@ namespace TestWriteRead
 		[Tooltip("Fixed enemy deck used when Use Debug Enemy Deck is enabled")]
 		public DeckSO debugEnemyDeck;
 
+		[Tooltip("Test toggle (pushed by TestManager.fightOwnGhostsOnly): default pool fallback disabled - enemy deck comes only from the ghost cache. Cache-dry leaves the deck empty.")]
+		public bool onlyGhostEnemyDeck = false;
+
 		[Header("Default Enemy Deck Pools")]
 		[Tooltip("Each entry corresponds to a session; one DeckSO is randomly selected from that session's pool")]
 		public List<EnemyDeckPoolEntry> defaultEnemyDeckPool = new List<EnemyDeckPoolEntry>(); // Default enemy deck pool configuration
@@ -382,6 +385,16 @@ namespace TestWriteRead
 			if (TryLoadFromOpponentCache())
 			{
 				OpponentDeckCache.StageEnemySource(OpponentDeckCache.SourceServer);
+				return;
+			}
+
+			// Ghost-only test mode: the default pool is never used. Clear the deck so a
+			// stale previous-combat deck cannot silently fight again; nothing is staged,
+			// so the enemy-source counters are untouched.
+			if (onlyGhostEnemyDeck)
+			{
+				enemyDeckToPopulate.deck.Clear();
+				TestManager.Log("[DeckSaver] Session " + sessionNumber.value + ": ghost-only mode ON but no ghost available - pool skipped, enemy deck cleared.");
 				return;
 			}
 
