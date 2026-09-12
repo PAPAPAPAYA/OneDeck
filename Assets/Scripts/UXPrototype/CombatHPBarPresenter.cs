@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Combat HP compare bar (top-center HUD). Pure presentation; no game-logic changes.
+/// Combat HP compare bar (full-screen vertical split background: enemy top, player bottom). Pure presentation; no game-logic changes.
 /// Polls CombatInfoDisplayer's displayed HP values — the same queue-frozen values the
 /// HP text shows — so the bar changes exactly when a hit lands.
 /// Motion design validated in docs/demo/CombatHPBarDemo.html.
@@ -381,14 +381,14 @@ public class CombatHPBarPresenter : MonoBehaviour
 			_ghostEdgeEnemy = edge;
 		}
 
-		float left = playerSide ? newPct : edge;
-		float right = playerSide ? edge : newPct;
-		PositionGhost(ghost, left, right, playerSide ? 0f : 1f);
+		float bottom = playerSide ? newPct : edge;
+		float top = playerSide ? edge : newPct;
+		PositionGhost(ghost, bottom, top, playerSide ? 0f : 1f);
 
 		// A new hit kills the side's running ghost tweens and restarts hold + collapse.
 		ghost.DOKill();
 		ghostRt.DOKill();
-		ApplySpeed(ghostRt.DOScaleX(0f, ghostCollapseDuration).SetEase(Ease.InQuad).SetDelay(ghostHoldDelay))
+		ApplySpeed(ghostRt.DOScaleY(0f, ghostCollapseDuration).SetEase(Ease.InQuad).SetDelay(ghostHoldDelay))
 			.OnComplete(() => ClearGhostEdge(playerSide));
 		ApplySpeed(ghost.DOFade(0f, ghostCollapseDuration).SetEase(Ease.InQuad).SetDelay(ghostHoldDelay));
 
@@ -404,21 +404,34 @@ public class CombatHPBarPresenter : MonoBehaviour
 		ghost.rectTransform.DOKill();
 		ClearGhostEdge(playerSide);
 
-		float left = Mathf.Min(oldPct, newPct);
-		float right = Mathf.Max(oldPct, newPct);
-		PositionGhost(ghost, left, right, 0.5f);
+		float bottom = Mathf.Min(oldPct, newPct);
+		float top = Mathf.Max(oldPct, newPct);
+		PositionGhost(ghost, bottom, top, 0.5f);
 		SetAlpha(ghost, healFlashAlpha);
 		ApplySpeed(ghost.DOFade(0f, healFlashDuration).SetEase(Ease.OutQuad));
 	}
 
-	private void PositionGhost(Image ghost, float leftPct, float rightPct, float pivotX)
+	// VISUAL-FIX(2026-09-10): HP compare bar did not adapt to window resolution/aspect
+	//   Cause:    HPBarRoot was a fixed 2000x2000 px rect (ConstantPixelSize canvas)
+	//             rotated 90 deg to fake the vertical split; a rotated rect stops
+	//             tracking the screen, so any window other than ~1920x1080 left gaps
+	//             or overflow.
+	//   Affects:  HPBarRoot scene geometry (now full-screen stretch anchors, rotation
+	//             removed), segment/flash Images (fillMethod Horizontal -> Vertical;
+	//             player fillOrigin Bottom, enemy Top), and this presenter's ghost
+	//             band axis.
+	//   Regress:  Combat at 20/20 HP: the bar splits the FULL screen at the vertical
+	//             midline (enemy top, player bottom); damage pulls the boundary;
+	//             drag-resize the Game window mid-combat: bar stays edge-to-edge and
+	//             ghost/flash bands keep spanning their share range.
+	private void PositionGhost(Image ghost, float bottomPct, float topPct, float pivotY)
 	{
 		RectTransform rt = ghost.rectTransform;
-		rt.anchorMin = new Vector2(leftPct, 0f);
-		rt.anchorMax = new Vector2(rightPct, 1f);
+		rt.anchorMin = new Vector2(0f, bottomPct);
+		rt.anchorMax = new Vector2(1f, topPct);
 		rt.offsetMin = Vector2.zero;
 		rt.offsetMax = Vector2.zero;
-		rt.pivot = new Vector2(pivotX, 0.5f);
+		rt.pivot = new Vector2(0.5f, pivotY);
 		rt.localScale = Vector3.one;
 		SetAlpha(ghost, ghostBaseAlpha);
 	}

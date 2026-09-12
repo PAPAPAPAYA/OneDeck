@@ -76,7 +76,7 @@
 1. 死件删除证据清单 (scene GUID / UnityEvent / 代码三路 grep) -> 用户确认 -> 从 GameScene 删 (死件不删 prefab)。
 2. resultInfoDisplay: 确认 matchH 后 1920 空间内的显示范围, 必要时 body 改 fraction 锚。
 3. Reroll/exit 按钮偏移 -420/-175 重调 (横窗 12% 视宽问题)。
-4. HPBarRoot 几何复核: 编辑态实测超右屏 85%, 先战斗态 runtime 探针确认 presenter 是否运行时重设, 再决定场景值是否修正。
+4. ~~HPBarRoot 几何复核~~ (2026-09-10 完成, 升级为全屏纵向重做): 探针定根因 = 2000x2000 固定 px + 90° 旋转伪纵向 (旋转矩形脱离锚点跟随, ConstantPixelSize 无补偿)。已实施: HPBarRoot 全屏拉伸锚 (0,0)-(1,1) 去旋转; 4 张 Filled Image (两段+两闪光) fillMethod Horizontal→Vertical (玩家 Bottom/敌人 Top); CombatHPBarPresenter ghost 带 X 轴→Y 轴 (anchor Y 区间 + DOScaleY 向本方底边/顶边塌缩)。验证: 视口角点 = (0,0)-(1,1) 与 Canvas 重合, 20/20 时两段 fill 各 0.5 分割线压中线。详见 CombatHPBarPresenter VISUAL-FIX(2026-09-10) + RegressionChecklist 行 87。
 5. Combat 中央堆 (Tips/Revealed/EffectResult) 与四角 HUD 在 1920 空间内重验重叠与占位。
 
 ### P3 相机补偿 (新组件)
@@ -101,7 +101,7 @@
 ## 5. 风险与验证项
 
 - matchH 切换后所有场景 HUD 像素偏移的屏幕占比变化 ~1.78 倍, P2 逐项重验, 预期需要一轮 Inspector 调参 (ShopUXManager.OnValidate 实时调参已支持)。
-- HPBarRoot 编辑态几何异常, 若 runtime 也超屏则是存量 bug, 顺带修。
+- ~~HPBarRoot 编辑态几何异常~~ 2026-09-10 已随全屏纵向重做吸收 (见 P2.4), P1 迁 SSS matchH 与其正交 (拉伸锚在两种 scaler 下都铺满)。
 - 像素化在相机距离变化下的视觉稳定性 (像素块尺寸是屏幕空间的, 世界缩小 = 卡面像素更细)。
 - TMP SubMeshUI (NotoSansSymbols2) 在缩放切换下的 fallback 表现。
 - Editor Game 窗口 aspect 锁定与 Free Aspect 拖拽都纳入验收。
