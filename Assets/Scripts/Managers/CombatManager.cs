@@ -326,7 +326,19 @@ public class CombatManager : MonoBehaviour
 			combinedDeckZone.Add(startCardInstance);
 
 		_infoDisplayer.RefreshDeckInfo();
-		GameEventStorage.me.beforeRoundStart.Raise(); // timepoint
+		// VISUAL-FIX(2026-09-11): round-start effects fired pre-shuffle at combat start
+		//   Cause:    GatherDecks raised beforeRoundStart right after assembling the deck, but the
+		//             opening shuffle only runs when the revealed Start Card's effect executes —
+		//             every later round raises the same event in HandleNewRoundStart AFTER the
+		//             shuffle completes. RELIC_WHITE_BANNER therefore staged pre-shuffle (its staged
+		//             card got shuffled away immediately) and all beforeRoundStart listeners
+		//             (WHITE_BANNER / RELIC_TRAINER / RIFT_HATCHERY) fired twice at combat start.
+		//   Fix:      Remove the GatherDecks raise; the first round start is the post-shuffle
+		//             HandleNewRoundStart, identical to every later round.
+		//   Affects:  CombatManager.GatherDecks
+		//   Regress:  Enter combat with WHITE_BANNER / RELIC_TRAINER / RIFT_HATCHERY in the deck:
+		//             no trigger before the opening shuffle; each fires exactly once after it.
+		//   Related:  round-start recorder flush in RevealCards (same date).
 
 		// Record deck snapshots (for win rate stats) - query directly from decks, no need to wait for instantiation.
 		// Skipped during the tutorial combat so the tutorial deck does not leak into win-rate records.
@@ -764,6 +776,31 @@ public class CombatManager : MonoBehaviour
 				return;
 			}
 
+			// VISUAL-FIX(2026-09-11): round-start stage animation yanked the already-revealed card back to the deck front
+			//   Cause:    HandleNewRoundStart raises beforeRoundStart inside the shuffle's onComplete, so
+			//             round-start stage effects (RELIC_WHITE_BANNER) captured their MoveToTopPopUpBatch
+			//             while nothing flushed the recorders; playback only happened at the post-reveal
+			//             afterShuffle autoplay — after the staged top card had already flown to the reveal
+			//             zone. The deferred stage re-inserted the reveal-zone physical into
+			//             physicalCardsInDeck (physicalCardInRevealZone left set), and the follow-up
+			//             MoveRevealedCardToIndex blind Insert duplicated the entry, whose higher index
+			//             then won UpdateAllPhysicalCardTargets and parked the card at the deck front
+			//             for the rest of the round.
+			//   Fix:      With round-start recorders still open, flush them first (instantiate physicals,
+			//             play the stage arc while the staged card is still in the deck), then re-enter
+			//             RevealCards to reveal normally.
+			//   Affects:  CombatManager.RevealCards round-start path, RoundStartFlushThenRevealRoutine
+			//   Regress:  WHITE_BANNER deck: trigger the opening shuffle; the banner's stage animation
+			//             completes before the staged creature is revealed, and the creature returns to
+			//             its bottom slot — no physical card stays parked at the deck front.
+			//   Related:  GatherDecks beforeRoundStart removal (same date); CombatUXManager
+			//             MoveRevealedCardToIndex / ApplyAnimationResult double-tracking hardening.
+			if (EffectChainManager.Me != null && EffectChainManager.Me.openedEffectRecorders.Count > 0)
+			{
+				StartCoroutine(RoundStartFlushThenRevealRoutine());
+				return;
+			}
+
 			visuals.InstantiateAllPhysicalCards();
 			
 			// Reveal Start Card (it's at the bottom of the list but top of the actual deck)
@@ -924,6 +961,20 @@ public class CombatManager : MonoBehaviour
 			// Wait for all attack animations to complete before allowing next operation
 			StartRecorderAutoPlay();
 		}
+	}
+
+	/// <summary>
+	/// VISUAL-FIX(2026-09-11) helper: flush the recorders captured by round-start effects
+	/// (HandleNewRoundStart raises beforeRoundStart inside the shuffle's onComplete) while
+	/// the staged card is still in the deck, then re-enter RevealCards so the reveal only
+	/// starts after the stage arc has played. Nested yield keeps the wait inside one
+	/// coroutine chain so input stays blocked until playback completes.
+	/// </summary>
+	private System.Collections.IEnumerator RoundStartFlushThenRevealRoutine()
+	{
+		visuals.InstantiateAllPhysicalCards();
+		yield return PlayRecorderAnimationsAndWait();
+		RevealCards();
 	}
 
 	// ========== Helper Methods ==========

@@ -483,6 +483,30 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		ReleaseDrivenBigShadow(false);
 
 		// Add to deck at the requested index
+		// VISUAL-FIX(2026-09-11): reveal-card return flight parked a staged card at the deck front forever
+		//   Cause:    When a deferred round-start stage animation played after its staged card had
+		//             already been revealed, ApplyAnimationResult (MoveToTopPopUpBatch) re-inserted
+		//             the reveal-zone physical into physicalCardsInDeck while physicalCardInRevealZone
+		//             still pointed at it. This method then Inserted the same physical AGAIN at the
+		//             requested index without removing the earlier entry, so the list held the card
+		//             twice; every UpdateAllPhysicalCardTargets gave the transform two conflicting
+		//             targets and the duplicate's higher index (deck front) won last — the card sat
+		//             parked at the staged slot while its logical card sat at the deck bottom, until
+		//             the next shuffle's RebuildPhysicalDeckFromShuffledList silently purged it.
+		//   Fix:      Remove before Insert so a stale re-insert can never duplicate the entry (a
+		//             no-op in the normal flow, where the reveal-zone card is never in the list);
+		//             ApplyAnimationResult's MoveToTop-family branches now clear the reveal
+		//             reference before claiming the card, and CombatManager flushes round-start
+		//             recorders before the reveal so the deferred-stage scenario cannot arise.
+		//   Affects:  CombatUXManager.MoveRevealedCardToIndex, ApplyAnimationResult
+		//             (MoveToTopBatch / MoveToTopPopUpBatch / MoveToTop), CombatManager
+		//             (round-start flush in RevealCards).
+		//   Regress:  WHITE_BANNER deck: trigger the Start Card shuffle; the banner stages a
+		//             creature which then reveals next. The creature must return to its bottom
+		//             slot on the following click and never re-appear parked at the deck front.
+		//             Also regress any Stage card mid-round (StageSelf / FINAL_ESCORT armed
+		//             round-end stage): staged card arcs to the deck front and is revealed first.
+		physicalCardsInDeck.Remove(physicalCard);
 		physicalCardsInDeck.Insert(Mathf.Clamp(index, 0, physicalCardsInDeck.Count), physicalCard);
 		InvalidateCardScriptCache();
 		// Debug.Log("[CombatUXManager] MoveRevealedCardToBottom inserted " + physicalCard.name + " at index 0 deckCount=" + physicalCardsInDeck.Count);
@@ -2231,6 +2255,13 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					var phys = GetPhysicalCard(card);
 					if (phys != null)
 					{
+						// VISUAL-FIX(2026-09-11) hardening: a card the reveal zone still owns must never
+						// be double-tracked — clear the reveal reference before the deck list claims it
+						// (see MoveRevealedCardToIndex for the failure mode).
+						if (physicalCardInRevealZone == phys)
+						{
+							physicalCardInRevealZone = null;
+						}
 						physicalCardsInDeck.Remove(phys);
 						// VISUAL-FIX(2026-05-24): ApplyAnimationResult appends moved cards before pending slot-in cards
 						//   Cause:    Same as MoveToBottomBatch skip logic: pending cards must not block append position.
@@ -2258,12 +2289,21 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				break;
 			case AnimationRequestType.MoveToTopPopUpBatch:
 				// Same as MoveToTopBatch: remove each target card and append after non-pending cards
+				// VISUAL-FIX(2026-09-11): a deferred stage (round-start effect playing after its staged
+				//   card was already revealed) resolved the target physical THROUGH the reveal-zone
+				//   cache and re-inserted it into physicalCardsInDeck while physicalCardInRevealZone
+				//   still pointed at it — double-tracked. Clear the reveal reference before the deck
+				//   list claims the card (full VISUAL-FIX block at MoveRevealedCardToIndex).
 				if (request.targetCards == null) break;
 				foreach (var card in request.targetCards)
 				{
 					var phys = GetPhysicalCard(card);
 					if (phys != null)
 					{
+						if (physicalCardInRevealZone == phys)
+						{
+							physicalCardInRevealZone = null;
+						}
 						physicalCardsInDeck.Remove(phys);
 						int appendIndex = physicalCardsInDeck.Count;
 						for (int i = physicalCardsInDeck.Count - 1; i >= 0; i--)
@@ -2308,6 +2348,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 					var phys = GetPhysicalCard(request.targetCard);
 					if (phys != null)
 					{
+						// VISUAL-FIX(2026-09-11) hardening: clear reveal ownership before the deck list
+						// claims the card (see MoveRevealedCardToIndex for the failure mode).
+						if (physicalCardInRevealZone == phys)
+						{
+							physicalCardInRevealZone = null;
+						}
 						physicalCardsInDeck.Remove(phys);
 						// Append after all non-special-animation cards
 						int appendIndex = physicalCardsInDeck.Count;

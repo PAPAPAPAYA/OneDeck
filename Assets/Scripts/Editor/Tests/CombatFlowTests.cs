@@ -42,6 +42,32 @@ public class CombatFlowTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
+	public void RoundStart_DoesNotFireAtGatherDecks_FiresOnceAfterOpeningShuffle()
+	{
+		var playerCardPrefab = CreateCard(true, "PlayerCardPrefab");
+		var enemyCardPrefab = CreateCard(false, "EnemyCardPrefab");
+
+		CombatManager.playerDeck = CreateDeckSO(new List<GameObject> { playerCardPrefab });
+		CombatManager.enemyDeck = CreateDeckSO(new List<GameObject> { enemyCardPrefab });
+		CombatManager.startCardPrefab = CreateStartCard();
+
+		int roundStartCount = 0;
+		RegisterEventCallback(GameEventStorage.beforeRoundStart, () => roundStartCount++);
+
+		// VISUAL-FIX(2026-09-11): the pre-shuffle GatherDecks timepoint was removed — round-start
+		// effects (RELIC_WHITE_BANNER / RELIC_TRAINER / RIFT_HATCHERY) must not fire before the
+		// opening shuffle, and must fire exactly once per round start.
+		CombatManager.GatherDecks();
+		Assert.AreEqual(0, roundStartCount,
+			"GatherDecks must not raise beforeRoundStart: round start = after the opening shuffle");
+
+		// Start Card shuffle completion is the round-start timepoint (OnStartCardShuffleAnimationComplete).
+		CombatManager.OnStartCardShuffleAnimationComplete();
+		Assert.AreEqual(1, roundStartCount,
+			"beforeRoundStart fires exactly once after the opening shuffle");
+	}
+
+	[Test]
 	public void RevealTopCard_MovesTopCardToRevealZone()
 	{
 		var card = CreateCard(true, "TestCard");
