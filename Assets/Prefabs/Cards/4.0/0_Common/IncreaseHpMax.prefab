@@ -57,7 +57,7 @@ MonoBehaviour:
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
   displayMyStatusEffects: 
-  myTags: 00000000
+  myTags: 
   lifeMax: 0
   currentLife: 0
   printedAttack: 0
