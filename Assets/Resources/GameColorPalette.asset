@@ -36,6 +36,7 @@ MonoBehaviour:
   floaterPlayer: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
   floaterEnemy: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
   floaterShadow: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
+  iconNameLabel: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
   tooltipBg: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
   tooltipText: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
   resultPanelBg: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}

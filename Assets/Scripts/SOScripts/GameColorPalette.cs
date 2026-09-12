@@ -59,6 +59,9 @@ public class GameColorPalette : ScriptableObject
 	public ColorSO floaterEnemy;
 	public ColorSO floaterShadow;
 
+	[Header("HUD Icons")]
+	public ColorSO iconNameLabel;	// name label under player/enemy combat icons
+
 	[Header("Overlay Panels")]
 	public ColorSO tooltipBg;
 	public ColorSO tooltipText;
@@ -88,6 +91,9 @@ public class GameColorPalette : ScriptableObject
 	public static Color FloaterPlayerColor => Me != null && Me.floaterPlayer != null ? Me.floaterPlayer.value : Color.white;
 	public static Color FloaterEnemyColor => Me != null && Me.floaterEnemy != null ? Me.floaterEnemy.value : Color.white;
 	public static Color FloaterShadowColor => Me != null && Me.floaterShadow != null ? Me.floaterShadow.value : Color.white;
+
+	// Icon name labels ("HUD Icons" group) — player/enemy name text under the combat icons.
+	public static Color IconNameLabelColor => Me != null && Me.iconNameLabel != null ? Me.iconNameLabel.value : Color.white;
 
 	// Overlay panel colors ("Overlay Panels" group) — tag tooltip and result stats panel.
 	public static Color TooltipBgColor => Me != null && Me.tooltipBg != null ? Me.tooltipBg.value : Color.white;
