@@ -47,8 +47,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UTILITY_ODDS_2
   displayName: "\u7AA5\u9B47\u955C"
-  cardDesc: "\u88AB\u52A8: <b>\u5947\u7269\u67B6</b>\u7684\u51FA\u73B0\u6982\u7387
-    <b>+15%</b>"
+  cardDesc: "\u88AB\u52A8: <b>25%</b> \u6982\u7387\u591A\u51FA <b>1</b> \u4EF6\u5546\u5E97\u88AB\u52A8\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -69,7 +68,7 @@ MonoBehaviour:
   cardType: 0
   isPassive: 1
   utilityKind: 9
-  utilityValue: 15
+  utilityValue: 25
   utilityValue2: 0
   utilityRarityWeightMults: []
   reservedTag: 0

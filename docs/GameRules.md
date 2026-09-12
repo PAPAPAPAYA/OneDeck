@@ -309,20 +309,22 @@ The shop runs a full board-generation pipeline every time a board is produced (i
 ### Money Flow
 
 - Combat victory pays `payday` = payCheck (12) + 2 × session number + Σ Income utility cards.
-- Reroll costs $2; each shop visit grants free rerolls = Σ FreeReroll utility cards (free rerolls still count toward discount / guarantee cadence).
+- Reroll costs $2; each shop visit grants free rerolls = Σ FreeReroll utility cards (free rerolls still generate a board and take part in every per-board roll below).
 - Sell price = half the card's rarity price (C/U/R = 4/8/12).
-- Discount utility: every N rerolls, one random offer on the current board is discounted (base price struck through, buy price reduced; never accumulates across boards).
+- Discount utility (魇市赊账 25% / 魇市半价 100%): every generated board (initial board + every reroll) rolls each discount spec's chance once, independently. On a hit, ONE random card on that board is discounted by the spec's percent-off (半价 = 50): the paid price rounds UP (`Ceil(price * (100 - percent) / 100)`), base price struck through. Sibling specs stack, clamped at 100 (= free, rare combo). Never accumulates across boards.
 
-### Board Types (分板)
+### Board Composition (mixed pool by default)
 
-- Every generated board rolls its type: utility ("奇物架") chance starts at 10% (session 1), 15% (session 3), 20% (session 5), plus OddsUtility card bonuses. ODDS_1 forces the visit's FIRST board to be a utility board.
-- Combat boards offer only combat cards; utility boards offer only utility cards (board purity). If every utility passive is owned and deck-size cards are ceiling-blocked, the utility pool runs dry and the roll falls through to combat (never a blank utility board).
+- `ShopManager.splitUtilityCombatBoards` (bool, default false = MIXED): the board-type roll is skipped entirely — utility and combat cards share ONE merged pool for the generic slots (`utilityBoardSlotCount` and the session utility-board-chance table are dormant; the "奇物架" UX marker never shows). Wave filters apply to the merged pool.
+- Split mode (true = legacy): every generated board rolls its type: utility ("奇物架") chance from the session table (10% session 1, 15% session 3, 20% session 5). Combat boards offer only combat cards; utility boards only utility cards (board purity). If the classified utility pool runs dry (every utility passive owned + deck-size cards ceiling-blocked), the roll falls through to combat (never a blank utility board). OddsUtility cards sit in BOTH pools (the merge in mixed mode reference-dedups them so their weight does not double).
+- ODDS cards no longer touch the board-type roll in either mode (2026-09-11): 深处 (ODDS_1) = the visit's FIRST board is guaranteed to CONTAIN 1 utility card (appended reserved slot, `firstBoardOnly`); 窥魇镜 (ODDS_2) = 25% per generated board to append 1 extra utility card. Both go through the reserved-slot pipeline below.
 
-### Guaranteed Slots (保底槽)
+### Guaranteed Slots (概率保底)
 
-- Rarity ladder: Common tier = the visit's first board guarantees 1 Uncommon; Uncommon tier = every board guarantees 1 Uncommon; Rare tier = every 3rd board guarantees 1 Rare.
-- ReservedTag utilities guarantee 1 card with the given tag every 3 boards.
-- Guarantees fire on the cadence boards even after rerolls (board index counts all generated boards). Candidates come from the board's own pool; if a utility board has no card matching the guarantee rarity, it falls back to any-rarity weighted roll (still utility-only).
+- Probability model (2026-09-11 rework; no cadence, no pity): every generated board rolls each reserved spec's chance once, independently. Unconfigured chance (≤0) falls back to the default 25%; 100 = every board.
+- Current values: 初魇 (SLOT_U_1) 25% → 1 Uncommon; 深魇 (SLOT_R) 25% → 1 Rare; 连魇 (SLOT_U_2) 100% → 1 Uncommon; tag slots (惊醒 / 噩梦 / 亡者入梦) 25% → 1 card carrying the given tag.
+- Reserved slots append on top and never displace generic slots; they bypass rarity weights.
+- Candidates: mixed mode draws from the merged pool; split mode keeps board purity (rarity/tag specs from the classified board pool; utility-card promises always from the utility pool). Utility-board drought → any-rarity weighted fallback (still utility-only); combat/mixed drought → the slot is skipped (no compensation).
 
 ### Utility Passives (被动 utility 卡)
 
@@ -332,7 +334,7 @@ The shop runs a full board-generation pipeline every time a board is produced (i
 
 ### Waves (潮汐)
 
-- Creature/Spell wave utilities: each board generation has a chance (20%) that a combat board's generic offers become all-creatures / all-non-creatures. Guaranteed slots are unaffected.
+- Creature/Spell wave utilities (百怪入梦 / 死寂的梦): each board generation rolls 20% that the generic offers become all-creatures / all-non-creatures — merged pool in mixed mode, combat board's generic slots only in split mode (creature judged first and wins on a hit). Guaranteed slots are unaffected; an empty filtered pool falls back to the unfiltered pool (a wave never blanks the shop).
 
 ---
 

@@ -55,8 +55,7 @@ public class UtilityShopBonusTests : HeadlessCombatTestFixture
 		Assert.AreEqual(0, bonus.extraShopOptions);
 		Assert.AreEqual(0, bonus.freeRerolls);
 		Assert.AreEqual(0, bonus.hpMaxBonus);
-		Assert.AreEqual(0f, bonus.oddsBonusPercent);
-		Assert.AreEqual(0, bonus.rerollDiscounts.Count);
+		Assert.AreEqual(0, bonus.boardDiscounts.Count);
 		Assert.AreEqual(0, bonus.reservedSlots.Count);
 		Assert.AreEqual(0, bonus.ownedUtilityTypeIds.Count);
 	}
@@ -118,49 +117,49 @@ public class UtilityShopBonusTests : HeadlessCombatTestFixture
 	[Test]
 	public void ReservedSlots_RarityLadder_AndTagSpecs()
 	{
-		// C-tier U slot: utilityValue2 <= 0 => first board only
-		MakeCard(EnumStorage.UtilityKind.RaritySlotU, 0, 0, typeId: "SU_C");
-		// U-tier U slot: utilityValue2 = 1 => every board
-		MakeCard(EnumStorage.UtilityKind.RaritySlotU, 0, 1, typeId: "SU_U");
-		// R slot: every 3 boards
-		MakeCard(EnumStorage.UtilityKind.RaritySlotR, 0, 3, typeId: "SR_A");
-		// Tag slot: revive, every 3 boards
-		MakeCard(EnumStorage.UtilityKind.ReservedTag, 0, 3, typeId: "TAG_R", tag: EnumStorage.Tag.Revive);
+		// Uncommon slot: unconfigured chance (0) -> DefaultReservedChancePercent at fire time
+		MakeCard(EnumStorage.UtilityKind.RaritySlotU, 0, 0, typeId: "SU_A");
+		// Uncommon slot: explicit 25% per-board roll
+		MakeCard(EnumStorage.UtilityKind.RaritySlotU, 0, 25, typeId: "SU_B");
+		// R slot: 25% per-board roll
+		MakeCard(EnumStorage.UtilityKind.RaritySlotR, 0, 25, typeId: "SR_A");
+		// Tag slot: revive, 25% per-board roll
+		MakeCard(EnumStorage.UtilityKind.ReservedTag, 0, 25, typeId: "TAG_R", tag: EnumStorage.Tag.Revive);
 
 		var bonus = UtilityShopBonus.Compute(_created);
 		Assert.AreEqual(4, bonus.reservedSlots.Count);
 
-		var suC = bonus.reservedSlots.Find(s => s.kind == EnumStorage.UtilityKind.RaritySlotU && s.firstBoardOnly);
-			Assert.IsNotNull(suC);
-			// Guaranteed rarity is kind-driven (RaritySlotU -> Uncommon), not the utility card's own rarity.
-			Assert.AreEqual(EnumStorage.Rarity.Uncommon, suC.rarity);
+		var suA = bonus.reservedSlots.Find(s => s.kind == EnumStorage.UtilityKind.RaritySlotU && s.chancePercent == 0);
+		Assert.IsNotNull(suA);
+		// Guaranteed rarity is kind-driven (RaritySlotU -> Uncommon), not the utility card's own rarity.
+		Assert.AreEqual(EnumStorage.Rarity.Uncommon, suA.rarity);
 
-			var suU = bonus.reservedSlots.Find(s => s.kind == EnumStorage.UtilityKind.RaritySlotU && !s.firstBoardOnly);
-			Assert.IsNotNull(suU);
-			Assert.AreEqual(EnumStorage.Rarity.Uncommon, suU.rarity);
-			Assert.AreEqual(1, suU.everyBoards);
+		var suB = bonus.reservedSlots.Find(s => s.kind == EnumStorage.UtilityKind.RaritySlotU && s.chancePercent == 25);
+		Assert.IsNotNull(suB);
+		Assert.AreEqual(EnumStorage.Rarity.Uncommon, suB.rarity);
 
-			var sr = bonus.reservedSlots.Find(s => s.kind == EnumStorage.UtilityKind.RaritySlotR);
-			Assert.IsNotNull(sr);
-			Assert.AreEqual(EnumStorage.Rarity.Rare, sr.rarity);
-			Assert.AreEqual(3, sr.everyBoards);
+		var sr = bonus.reservedSlots.Find(s => s.kind == EnumStorage.UtilityKind.RaritySlotR);
+		Assert.IsNotNull(sr);
+		Assert.AreEqual(EnumStorage.Rarity.Rare, sr.rarity);
+		Assert.AreEqual(25, sr.chancePercent);
 
 		var tag = bonus.reservedSlots.Find(s => s.kind == EnumStorage.UtilityKind.ReservedTag);
 		Assert.IsNotNull(tag);
 		Assert.AreEqual(EnumStorage.Tag.Revive, tag.tag);
-		Assert.AreEqual(3, tag.everyBoards);
+		Assert.AreEqual(25, tag.chancePercent);
 	}
 
 	[Test]
-	public void DiscountSpecs_ParsedWithCadence()
+	public void BoardDiscountSpecs_ParsedWithChanceAndPercent()
 	{
-		MakeCard(EnumStorage.UtilityKind.RerollDiscount, 1, 4, typeId: "DIS_C");
-		MakeCard(EnumStorage.UtilityKind.RerollDiscount, 2, 3, typeId: "DIS_U");
+		// utilityValue = percent off, utilityValue2 = per-board roll chance
+		MakeCard(EnumStorage.UtilityKind.RerollDiscount, 50, 25, typeId: "DIS_C");
+		MakeCard(EnumStorage.UtilityKind.RerollDiscount, 50, 100, typeId: "DIS_U");
 
 		var bonus = UtilityShopBonus.Compute(_created);
-		Assert.AreEqual(2, bonus.rerollDiscounts.Count);
-		Assert.IsTrue(bonus.rerollDiscounts.Exists(d => d.goldOff == 1 && d.everyRerolls == 4));
-		Assert.IsTrue(bonus.rerollDiscounts.Exists(d => d.goldOff == 2 && d.everyRerolls == 3));
+		Assert.AreEqual(2, bonus.boardDiscounts.Count);
+		Assert.IsTrue(bonus.boardDiscounts.Exists(d => d.percentOff == 50 && d.chancePercent == 25));
+		Assert.IsTrue(bonus.boardDiscounts.Exists(d => d.percentOff == 50 && d.chancePercent == 100));
 	}
 
 	[Test]
@@ -175,16 +174,74 @@ public class UtilityShopBonusTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void OddsCards_ForceFlagVsPercentBonus()
+	public void OddsCards_DeepFirstBoardForm_VsPerBoardChanceForm()
 	{
-		// ODDS_1 form: utilityValue2 > 0 -> force the visit's first board utility
+		// Deep form: utilityValue2 > 0 -> FIRST board guaranteed one utility card
 		MakeCard(EnumStorage.UtilityKind.OddsUtility, 100, 1, typeId: "ODDS_F");
-		// ODDS_2 form: utilityValue2 = 0 -> plain +% chance bonus
-		MakeCard(EnumStorage.UtilityKind.OddsUtility, 15, 0, typeId: "ODDS_P");
+		// Chance form: utilityValue2 = 0 -> per-board chance roll (utilityValue = percent)
+		MakeCard(EnumStorage.UtilityKind.OddsUtility, 25, 0, typeId: "ODDS_P");
 
 		var bonus = UtilityShopBonus.Compute(_created);
-		Assert.IsTrue(bonus.firstBoardUtilityForce);
-		Assert.AreEqual(15f, bonus.oddsBonusPercent, 0.001f);
+		Assert.AreEqual(2, bonus.reservedSlots.Count);
+
+		var deep = bonus.reservedSlots.Find(s => s.wantsUtilityCard && s.firstBoardOnly);
+		Assert.IsNotNull(deep);
+		Assert.AreEqual(100, deep.chancePercent);
+
+		var chance = bonus.reservedSlots.Find(s => s.wantsUtilityCard && !s.firstBoardOnly);
+		Assert.IsNotNull(chance);
+		Assert.AreEqual(25, chance.chancePercent);
+	}
+
+	[Test]
+	public void ChanceOrPercent_ZeroOrNegativeFallsBackToDefault()
+	{
+		Assert.AreEqual(25, UtilityShopBonus.ChanceOrPercent(0));
+		Assert.AreEqual(25, UtilityShopBonus.ChanceOrPercent(-5));
+		Assert.AreEqual(25, UtilityShopBonus.ChanceOrPercent(UtilityShopBonus.DefaultReservedChancePercent));
+		Assert.AreEqual(40, UtilityShopBonus.ChanceOrPercent(40));
+		Assert.AreEqual(100, UtilityShopBonus.ChanceOrPercent(100));
+		Assert.AreEqual(100, UtilityShopBonus.ChanceOrPercent(150));
+	}
+
+	[Test]
+	public void GoldOffForPercent_HalfPriceRoundsUp()
+	{
+		// Half price rounds up: 3 -> pay 2, 5 -> pay 3, 4 -> pay 2
+		Assert.AreEqual(1, UtilityShopBonus.GoldOffForPercent(3, 50));
+		Assert.AreEqual(2, UtilityShopBonus.GoldOffForPercent(5, 50));
+		Assert.AreEqual(2, UtilityShopBonus.GoldOffForPercent(4, 50));
+		// 100% off -> free
+		Assert.AreEqual(12, UtilityShopBonus.GoldOffForPercent(12, 100));
+		// Defensive edges
+		Assert.AreEqual(0, UtilityShopBonus.GoldOffForPercent(4, 0));
+		Assert.AreEqual(0, UtilityShopBonus.GoldOffForPercent(4, -10));
+		Assert.AreEqual(0, UtilityShopBonus.GoldOffForPercent(0, 50));
+	}
+
+	[Test]
+	public void RollBoardDiscountOffPercent_BothHit_ClampsTo100()
+	{
+		MakeCard(EnumStorage.UtilityKind.RerollDiscount, 50, 100, typeId: "DIS_A");
+		MakeCard(EnumStorage.UtilityKind.RerollDiscount, 60, 100, typeId: "DIS_B");
+		var bonus = UtilityShopBonus.Compute(_created);
+		Assert.AreEqual(100, UtilityShopBonus.RollBoardDiscountOffPercent(bonus, new System.Random(7)));
+		Assert.AreEqual(0, UtilityShopBonus.RollBoardDiscountOffPercent(null, new System.Random(7)));
+	}
+
+	[Test]
+	public void RollBoardDiscountOffPercent_DefaultChance_FiresSometimes()
+	{
+		// chancePercent 0 -> default 25%: over 300 seeded rolls the spec must both hit and miss.
+		MakeCard(EnumStorage.UtilityKind.RerollDiscount, 50, 0, typeId: "DIS_A");
+		var bonus = UtilityShopBonus.Compute(_created);
+		int hits = 0;
+		for (int i = 0; i < 300; i++)
+		{
+			if (UtilityShopBonus.RollBoardDiscountOffPercent(bonus, new System.Random(i)) > 0) hits++;
+		}
+		Assert.Greater(hits, 300 / 5, "default 25% chance should hit sometimes");
+		Assert.Less(hits, 300 * 4 / 5, "default 25% chance should miss sometimes");
 	}
 
 	[Test]

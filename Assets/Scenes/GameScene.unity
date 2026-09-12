@@ -1237,6 +1237,7 @@ MonoBehaviour:
   deckSlotBasePrice: 4
   deckSlotPriceStep: 4
   deckSlotPurchasesRef: {fileID: 11400000, guid: f7108533cd29ce143a91c62f18e07716, type: 2}
+  splitUtilityCombatBoards: 0
   sessionUtilityBoardChances:
   - startSession: 0
     utilityBoardChancePercent: 20

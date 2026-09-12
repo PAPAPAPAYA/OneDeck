@@ -47,7 +47,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UTILITY_SLOT_U_2
   displayName: "\u8FDE\u9B47"
-  cardDesc: "\u88AB\u52A8: \u6BCF\u4E2A\u8D27\u67B6\u5FC5\u51FA <b>1</b> \u5F20\u2726\u2726\u5361"
+  cardDesc: "\u88AB\u52A8: \u6BCF\u6B21\u751F\u6210\u8D27\u67B6\u5FC5\u51FA <b>1</b> \u5F20\u2726\u2726\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
@@ -69,7 +69,7 @@ MonoBehaviour:
   isPassive: 1
   utilityKind: 5
   utilityValue: 0
-  utilityValue2: 1
+  utilityValue2: 100
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1

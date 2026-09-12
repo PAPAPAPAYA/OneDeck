@@ -4,16 +4,20 @@ using DefaultNamespace.Managers;
 using UnityEngine;
 
 	/// <summary>
-	/// Pure-static shop board generation pipeline (plans/plan-utility-passive-shop-pipeline-2026-08-31.md, step 3).
-	/// Stages: 0 board-type roll (combat vs utility board; session table chance + OddsUtility bonus;
+	/// Pure-static shop board generation pipeline (plans/plan-utility-passive-shop-pipeline-2026-08-31.md, step 3;
+	/// probability + mixed-pool rework 2026-09-11: plans/plan-shop-utility-probability-mixedpool-2026-09-11.md).
+	/// Split mode (mixedPool = false): 0 board-type roll (combat vs utility board; session table chance;
 	/// skipped - always combat - when the classified utility pool is empty) -> 2 wave filters
 	/// (creature/spell, combat board generic slots only) -> 3 weighted generic rolls (weight
-	/// delegate supplied by ShopManager). Reserved guarantee slots are appended on top and never
-	/// displace generic slots; they fire regardless of board type and bypass rarity weights.
-	/// Purity rules (2026-09-02 ruling): owned utility type ids are excluded from both pools AND
-	/// reserved candidates; reserved candidates come from the CLASSIFIED board pool, so combat
-	/// boards only ever show combat cards and utility boards only ever show utility cards; deck-size
-	/// cards are excluded everywhere once the deck-size ceiling is reached.
+	/// delegate supplied by ShopManager). Mixed mode (mixedPool = true, ShopManager default): no
+	/// board-type roll - utility and combat cards share one merged pool for the generic slots and
+	/// utilitySlots is ignored. Reserved guarantee slots are appended on top and never displace
+	/// generic slots; each fires via an independent per-board chance roll (no cadence, no pity)
+	/// and bypasses rarity weights.
+	/// Purity rules (2026-09-02 ruling, split mode only): owned utility type ids are excluded from
+	/// both pools AND reserved candidates; reserved candidates come from the CLASSIFIED board pool;
+	/// deck-size cards are excluded everywhere once the deck-size ceiling is reached. Mixed mode
+	/// draws reserved candidates from the merged pool (OddsUtility cards reference-deduped).
 	/// Determinism for tests: all randomness flows through the injected System.Random; chance 0/100
 	/// and wave 0/100 produce fully deterministic boards.
 	/// </summary>
@@ -32,7 +36,8 @@ public static class ShopBoardPipeline
 		public bool isUtilityBoard;
 	}
 
-	/// <param name="stagedChancePercent">Session-table utility board chance; negative = no config, use DefaultUtilityBoardChancePercent.</param>
+	/// <param name="stagedChancePercent">Session-table utility board chance; negative = no config, use DefaultUtilityBoardChancePercent. Ignored in mixed mode.</param>
+	/// <param name="mixedPool">True = no board-type split: utility + combat cards share one merged pool (utilitySlots ignored).</param>
 	/// <param name="deckSizeAtCeiling">True once deck size hit the static ceiling: deck-size meter cards stop being offered.</param>
 	public static BoardResult GenerateBoard(
 		IEnumerable<GameObject> fullPool,
@@ -42,6 +47,7 @@ public static class ShopBoardPipeline
 		float stagedChancePercent,
 		int combatSlots,
 		int utilitySlots,
+		bool mixedPool,
 		bool deckSizeAtCeiling,
 		System.Random rng)
 	{
@@ -52,26 +58,34 @@ public static class ShopBoardPipeline
 		ClassifyPools(fullPool, bonus, deckSizeAtCeiling, combatPool, utilityPool);
 
 		var result = new BoardResult();
-		float chance = stagedChancePercent < 0f ? DefaultUtilityBoardChancePercent : stagedChancePercent;
-		if (bonus != null) chance += bonus.oddsBonusPercent;
-		chance = Mathf.Clamp(chance, 0f, 100f);
-		// ODDS_1-style force: the visit's first board is always a utility board (pool permitting).
-		bool forcedUtility = bonus != null && bonus.firstBoardUtilityForce && boardIndex == 0;
-		// A utility board requires a non-empty utility pool. The pool typically runs dry when
-		// every utility passive is owned (own-once rule) AND the deck-size card is ceiling-excluded
-		// - from then on the board-type roll falls through to combat so no visit wastes slots
-		// on a blank utility board.
-		result.isUtilityBoard = utilityPool.Count > 0 && (forcedUtility || rng.NextDouble() * 100.0 < chance);
-
-		// Wave filters: combat board generic slots only; reserved slots unaffected.
-		List<GameObject> genericPool = result.isUtilityBoard ? utilityPool : combatPool;
-		if (!result.isUtilityBoard && bonus != null)
+		// Wave filters: combat board generic slots only in split mode; merged pool in mixed
+		// mode. Reserved slots are unaffected by waves either way.
+		List<GameObject> mergedPool = null;
+		List<GameObject> genericPool;
+		if (mixedPool)
 		{
-			genericPool = ApplyWaveFilters(genericPool, bonus, rng);
+			mergedPool = MergePools(combatPool, utilityPool);
+			genericPool = bonus != null ? ApplyWaveFilters(mergedPool, bonus, rng) : mergedPool;
+		}
+		else
+		{
+			float chance = stagedChancePercent < 0f ? DefaultUtilityBoardChancePercent : stagedChancePercent;
+			chance = Mathf.Clamp(chance, 0f, 100f);
+			// A utility board requires a non-empty utility pool. The pool typically runs dry when
+			// every utility passive is owned (own-once rule) AND the deck-size card is ceiling-excluded
+			// - from then on the board-type roll falls through to combat so no visit wastes slots
+			// on a blank utility board.
+			result.isUtilityBoard = utilityPool.Count > 0 && rng.NextDouble() * 100.0 < chance;
+
+			genericPool = result.isUtilityBoard ? utilityPool : combatPool;
+			if (!result.isUtilityBoard && bonus != null)
+			{
+				genericPool = ApplyWaveFilters(genericPool, bonus, rng);
+			}
 		}
 
 		// Weighted generic rolls. An empty pool yields fewer cards, never a crash.
-		int genericSlotCount = result.isUtilityBoard ? utilitySlots : combatSlots;
+		int genericSlotCount = mixedPool ? combatSlots : (result.isUtilityBoard ? utilitySlots : combatSlots);
 		for (int i = 0; i < genericSlotCount; i++)
 		{
 			var card = RollWeighted(genericPool, weightOf, rng);
@@ -79,19 +93,25 @@ public static class ShopBoardPipeline
 		}
 
 		// Reserved guarantee slots, appended last so they never displace generic slots.
-		// Candidates come from the CLASSIFIED board pool (board purity, 2026-09-02 ruling):
-		// combat boards guarantee combat cards, utility boards guarantee utility cards.
+		// Rarity/tag candidates come from the CLASSIFIED board pool (board purity, 2026-09-02
+		// ruling); utility-card promises (ODDS forms) always draw from the utility pool; mixed
+		// mode draws everything from the merged pool.
 		if (bonus != null && bonus.reservedSlots != null)
 		{
-			List<GameObject> reservedPool = result.isUtilityBoard ? utilityPool : combatPool;
 			foreach (var spec in bonus.reservedSlots)
 			{
-				if (spec == null || !ReservedSlotFires(spec, boardIndex)) continue;
-				var candidate = RollReservedCandidate(reservedPool, spec, rng);
+				if (spec == null || !ReservedSlotFires(spec, boardIndex, rng)) continue;
+				// Utility-card promises (ODDS forms) draw from the utility pool on any board -
+				// the combat pool only holds OddsUtility-kind cards, which would starve the
+				// guarantee. Everything else keeps the classified board pool (board purity).
+				List<GameObject> specPool = mixedPool
+					? mergedPool
+					: (spec.wantsUtilityCard ? utilityPool : (result.isUtilityBoard ? utilityPool : combatPool));
+				var candidate = RollReservedCandidate(specPool, spec, rng);
 				// Utility-board drought (small pool; utility passives are own-once): don't force
 				// the rarity/tag - fall back to a normal weighted roll of any utility card.
-				// Combat boards keep skip-on-empty (their pools never realistically run dry).
-				if (candidate == null && result.isUtilityBoard)
+				// Combat and mixed boards keep skip-on-empty (no utility board to backfill from).
+				if (candidate == null && !mixedPool && result.isUtilityBoard)
 				{
 					candidate = RollWeighted(utilityPool, weightOf, rng);
 				}
@@ -119,8 +139,9 @@ public static class ShopBoardPipeline
 		int fullPoolCount = (fullPool as System.Collections.ICollection)?.Count ?? -1;
 		TestManager.Log("[ShopBoard] board#" + boardIndex
 			+ " type=" + (result.isUtilityBoard ? "UTILITY" : "COMBAT")
-			+ " utilityChance=" + chance.ToString("F0") + "%"
-			+ (forcedUtility ? " FORCED_FIRST_BOARD" : "")
+			+ (mixedPool
+				? " MIXED"
+				: " utilityChance=" + Mathf.Clamp(stagedChancePercent < 0f ? DefaultUtilityBoardChancePercent : stagedChancePercent, 0f, 100f).ToString("F0") + "%")
 			+ " fullPool=" + fullPoolCount
 			+ " combatPool=" + combatPool.Count + " utilityPool=" + utilityPool.Count
 			+ " genericPool=" + genericPool.Count
@@ -161,6 +182,22 @@ public static class ShopBoardPipeline
 				if (script.utilityKind == EnumStorage.UtilityKind.OddsUtility) utilityPool.Add(card);
 			}
 		}
+	}
+
+	/// <summary>
+	/// Mixed-pool merge of the classified pools. OddsUtility cards sit in BOTH pools by
+	/// classification (board exemption), so the merge reference-dedups to keep their roll
+	/// weight from doubling.
+	/// </summary>
+	private static List<GameObject> MergePools(List<GameObject> combatPool, List<GameObject> utilityPool)
+	{
+		var merged = new List<GameObject>(combatPool);
+		var seen = new HashSet<GameObject>(combatPool);
+		foreach (var card in utilityPool)
+		{
+			if (seen.Add(card)) merged.Add(card);
+		}
+		return merged;
 	}
 
 	/// <summary>
@@ -217,23 +254,22 @@ public static class ShopBoardPipeline
 	}
 
 	/// <summary>
-	/// Cadence model (matches UtilityShopBonus.ReservedSlotSpec docs): boardIndex counts boards
-	/// generated this visit starting at 0 (initial board = 0). firstBoardOnly fires on board 0
-	/// only; otherwise boardIndex % everyBoards == everyBoards - 1 (everyBoards=3 -> boards
-	/// 2, 5, 8..., so the initial board is never a cadence hit).
+	/// Probability model (matches UtilityShopBonus.ReservedSlotSpec docs): every generated board
+	/// rolls chancePercent once, independently - no cadence, no pity. firstBoardOnly fires on
+	/// board 0 only and skips the roll (ODDS deep form).
 	/// </summary>
-	private static bool ReservedSlotFires(UtilityShopBonus.ReservedSlotSpec spec, int boardIndex)
+	private static bool ReservedSlotFires(UtilityShopBonus.ReservedSlotSpec spec, int boardIndex, System.Random rng)
 	{
 		if (spec.firstBoardOnly) return boardIndex == 0;
-		int every = Mathf.Max(1, spec.everyBoards);
-		return boardIndex % every == every - 1;
+		return rng.NextDouble() * 100.0 < UtilityShopBonus.ChanceOrPercent(spec.chancePercent);
 	}
 
 	/// <summary>
 	/// Reserved candidates come from the already-classified board pool (owned-utility dedup and
 	/// the deck-size ceiling exclusion are baked into the classification), by predicate: rarity
-	/// slots by spec.rarity, tag slots by myTags. Weights are bypassed - a guarantee is not a
-	/// weighted roll. No matching candidate -> null (caller decides skip vs utility fallback).
+	/// slots by spec.rarity, tag slots by myTags, ODDS-style slots (wantsUtilityCard) by
+	/// utilityKind. Weights are bypassed - a guarantee is not a weighted roll. No matching
+	/// candidate -> null (caller decides skip vs utility fallback).
 	/// </summary>
 	private static GameObject RollReservedCandidate(List<GameObject> boardPool, UtilityShopBonus.ReservedSlotSpec spec, System.Random rng)
 	{
@@ -245,9 +281,11 @@ public static class ShopBoardPipeline
 			{
 				var script = card.GetComponent<CardScript>();
 				if (script == null) continue;
-				bool matches = spec.kind == EnumStorage.UtilityKind.ReservedTag
-					? script.myTags != null && script.myTags.Contains(spec.tag)
-					: script.rarity == spec.rarity;
+				bool matches = spec.wantsUtilityCard
+					? script.utilityKind != EnumStorage.UtilityKind.None
+					: spec.kind == EnumStorage.UtilityKind.ReservedTag
+						? script.myTags != null && script.myTags.Contains(spec.tag)
+						: script.rarity == spec.rarity;
 				if (matches) candidates.Add(card);
 			}
 		}

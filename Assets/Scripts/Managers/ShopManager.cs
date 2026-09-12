@@ -97,6 +97,8 @@ public class ShopManager : MonoBehaviour
 	[Tooltip("Run-persistent deck slot purchase counter (meter price + deckSize formula). Reset at run start.")]
 	public IntSO deckSlotPurchasesRef;
 	[Header("Utility Board Split (plan v2)")]
+	[Tooltip("True = legacy board-type split (combat vs utility board roll). False (default, 2026-09-11) = mixed pool: utility and combat cards share one pool, no board-type roll (utilityBoardSlotCount and sessionUtilityBoardChances dormant).")]
+	public bool splitUtilityCombatBoards = false;
 	[Tooltip("Session-based utility board chance (board split roll per generation). Matches the entry with the highest startSession <= current sessionNum. No match = pipeline built-in default (10%).")]
 	public List<SessionBoardChanceEntry> sessionUtilityBoardChances = new List<SessionBoardChanceEntry>
 	{
@@ -107,7 +109,6 @@ public class ShopManager : MonoBehaviour
 	[Tooltip("Generic offer slots on a utility board (before extraShopOptions). Combat boards keep using shopItemAmount.")]
 	public int utilityBoardSlotCount = 3;
 	private UtilityShopBonus.Bonus _utilityBonus;
-	private int _rerollsThisVisit;
 	private int _freeRerollsUsedThisVisit;
 	private int _boardsGeneratedThisVisit;
 	private bool _currentBoardIsUtility;
@@ -406,6 +407,7 @@ public class ShopManager : MonoBehaviour
 		RunRecorder.OnPayday(purse.value); // Async-PvP: goldAfterPayday snapshot before spending (plan §2.6)
 		// process shop items and display
 		GenerateShopItems();
+		ApplyBoardDiscount(); // initial board rolls discounts too (2026-09-11 probability rework)
 		UpdateShopItemInfo();
 		// process player deck and display
 		GatherPlayerDeckInfo();
@@ -499,7 +501,9 @@ public class ShopManager : MonoBehaviour
 		int ceiling = maxDeckSize != null ? maxDeckSize.value : int.MaxValue;
 		bool deckSizeAtCeiling = deckSize != null && deckSize.value >= ceiling;
 
-		// Full pipeline; reroll reruns all of it (board type re-rolled, boardIndex advances cadence).
+		// Full pipeline; reroll reruns all of it (board type re-rolled, reserved/chance rolls
+		// re-rolled per board). Mixed pool (splitUtilityCombatBoards = false) skips the
+		// board-type roll entirely.
 		var board = ShopBoardPipeline.GenerateBoard(
 			shopPoolRef != null ? shopPoolRef.deck : null,
 			WeightOf,
@@ -508,6 +512,7 @@ public class ShopManager : MonoBehaviour
 			GetUtilityBoardChancePercent(),
 			shopItemAmount + extraOptions,
 			utilityBoardSlotCount + extraOptions,
+			!splitUtilityCombatBoards,
 			deckSizeAtCeiling,
 			new System.Random());
 		_currentBoardIsUtility = board.isUtilityBoard;
@@ -612,8 +617,7 @@ public class ShopManager : MonoBehaviour
 			return;
 		}
 
-		// Free rerolls are consumed first and still count toward discount / reserved-slot cadence.
-		_rerollsThisVisit++;
+		// Free rerolls are consumed first and still count toward discount / reserved-slot rolls.
 		if (isFree)
 		{
 			_freeRerollsUsedThisVisit++;
@@ -694,36 +698,33 @@ public class ShopManager : MonoBehaviour
 
 	private void ResetVisitCounters()
 	{
-		_rerollsThisVisit = 0;
 		_freeRerollsUsedThisVisit = 0;
 		_boardsGeneratedThisVisit = 0;
 		_boardDiscounts.Clear();
 	}
 
 	/// <summary>
-	/// Settles reroll discounts onto the freshly generated board: every discount spec whose
-	/// cadence hits this reroll number adds its gold-off onto ONE random board card. Discounts
-	/// never accumulate across rerolls (board regenerates, dict cleared) and never apply to the
-	/// initial board of a visit (only Reroll() settles).
+	/// Settles board discounts onto the freshly generated board (probability model 2026-09-11):
+	/// every discount spec rolls its chance once per generated board - initial board included,
+	/// EnterShop and Reroll both settle - and the summed percent-off lands on ONE random board
+	/// card as a HALF PRICE ROUNDS UP gold-off. Discounts never accumulate across rerolls
+	/// (board regenerates, dict cleared).
 	/// </summary>
 	private void ApplyBoardDiscount()
 	{
 		_boardDiscounts.Clear();
 		if (_utilityBonus == null || currentShopItemDeckRef == null) return;
-		int totalOff = 0;
-		foreach (var spec in _utilityBonus.rerollDiscounts)
-		{
-			if (spec.everyRerolls > 0 && _rerollsThisVisit % spec.everyRerolls == 0)
-			{
-				totalOff += spec.goldOff;
-			}
-		}
-		if (totalOff <= 0 || currentShopItemDeckRef.deck.Count == 0) return;
+		int percentOff = UtilityShopBonus.RollBoardDiscountOffPercent(_utilityBonus, new System.Random());
+		if (percentOff <= 0 || currentShopItemDeckRef.deck.Count == 0) return;
 		int index = Random.Range(0, currentShopItemDeckRef.deck.Count);
 		var script = currentShopItemDeckRef.deck[index] != null ? currentShopItemDeckRef.deck[index].GetComponent<CardScript>() : null;
 		if (script != null)
 		{
-			_boardDiscounts[script] = totalOff;
+			int off = UtilityShopBonus.GoldOffForPercent(GetCardPrice(script), percentOff);
+			if (off > 0)
+			{
+				_boardDiscounts[script] = off;
+			}
 		}
 	}
 
