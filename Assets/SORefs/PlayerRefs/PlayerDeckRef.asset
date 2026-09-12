@@ -13,21 +13,12 @@ MonoBehaviour:
   m_Name: PlayerDeckRef
   m_EditorClassIdentifier: 
   deck:
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-  - {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  - {fileID: 1808145013887896563, guid: 4f8d2e8b145222b4096f942cac005ded, type: 3}
-  defaultDeck: {fileID: 11400000, guid: 6b82382b79ee9474da64b2f8b960a38a, type: 2}
-  resetOnStart: 1
+  - {fileID: 6570215035609445853, guid: dbac374b0d8abd64e81f4852bb3dc2da, type: 3}
+  - {fileID: 3086996215266703862, guid: 85d0f9d92c6946289e78d5b4c11f4bd0, type: 3}
+  - {fileID: 2518868686918562005, guid: e700c7edfd6677f469387df94c6bc218, type: 3}
+  - {fileID: 2518868686918562005, guid: e700c7edfd6677f469387df94c6bc218, type: 3}
+  - {fileID: 2518868686918562005, guid: e700c7edfd6677f469387df94c6bc218, type: 3}
+  - {fileID: 2518868686918562005, guid: e700c7edfd6677f469387df94c6bc218, type: 3}
+  defaultDeck: {fileID: 11400000, guid: 1a55cf73bd796a743b578b54bb1282ad, type: 2}
+  resetOnStart: 0
   description: player's deck, data only no instances

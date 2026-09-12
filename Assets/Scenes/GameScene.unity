@@ -119,6 +119,67 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1001 &4429864
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.998
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.205
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.57131
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1595794300168993419, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3539307345357344568, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_Name
+      value: StartCardParent (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3539307345357344568, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f858fca1cfb990d46bd9d4b053d81156, type: 3}
 --- !u!1 &4714165
 GameObject:
   m_ObjectHideFlags: 0
@@ -1731,13 +1792,33 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 133791163835700354, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_xAdvance
+      value: 2.6656613
+      objectReference: {fileID: 0}
+    - target: {fileID: 133791163835700354, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_fontStyle
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 133791163835700354, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_isUsingBold
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 133791163835700354, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_FontStyleInternal
+      value: 64
+      objectReference: {fileID: 0}
+    - target: {fileID: 133791163835700354, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_FontWeightInternal
+      value: 700
+      objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.24
+      value: -1.38
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4.12
+      value: 1.84
       objectReference: {fileID: 0}
     - target: {fileID: 758099387890630812, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5847,11 +5928,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
   overrideShuffleOrder: 0
   useTestEnemyDeck: 0
-  autoReveal: 1
-  recordShopStats: 1
-  recordWinRate: 1
-  recordCombatCSV: 1
-  uploadServerData: 1
+  autoReveal: 0
+  recordShopStats: 0
+  recordWinRate: 0
+  recordCombatCSV: 0
+  uploadServerData: 0
   shuffleOrderOverride: {fileID: 1151980352}
   deckSaver: {fileID: 1855501821}
   combatManager: {fileID: 1151980344}
@@ -5861,7 +5942,7 @@ MonoBehaviour:
   logCombatFlow: 0
   logEffectChains: 0
   logAnimationPlayback: 0
-  logVisualSync: 0
+  logVisualSync: 1
   logEditorTools: 0
   logTestManager: 0
   logDynamicDamageDisplay: 0
@@ -6917,7 +6998,7 @@ MonoBehaviour:
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   cardsRevealedThisRound: 0
   isPlayingEffectAnimations: 0
-  autoReveal: 1
+  autoReveal: 0
   combatAnimationSpeedScale: 1
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   roundsLastCombat: 0
@@ -7001,7 +7082,7 @@ MonoBehaviour:
   onAnyCardRevealed: {fileID: 11400000, guid: feb4324c8e4890244a64d7c6df40b02d, type: 2}
   combatFinished: {fileID: 11400000, guid: 34451577674d3fb46b8fdd603d955905, type: 2}
   records: []
-  exportToCSV: 1
+  exportToCSV: 0
   outputDirectory: CombatLogs
   printToConsole: 0
 --- !u!114 &1151980349
@@ -9012,7 +9093,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dd6cf277ef043d7adc973cb91e8e02d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableStats: 1
+  enableStats: 0
   resetOnStart: 0
   printOnSave: 0
 --- !u!4 &1457153434
@@ -13090,7 +13171,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d687fc62e6070d4d84e72e916f682f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  switchOnTracking: 1
+  switchOnTracking: 0
   resetOnStart: 0
   printOnSave: 0
 --- !u!4 &2103892657
@@ -13494,3 +13575,4 @@ SceneRoots:
   - {fileID: 1404473909}
   - {fileID: 1332386788}
   - {fileID: 264748622}
+  - {fileID: 4429864}
