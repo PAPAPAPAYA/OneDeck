@@ -86,8 +86,11 @@ namespace TestWriteRead
 		[Header("Debug")]
 		[SerializeField] private bool printOnSave = true;
 
-		// Card type ID to prefab mapping cache
-		private Dictionary<string, GameObject> _cardTypeToPrefabCache;
+	// Card type ID to prefab mapping cache
+	private Dictionary<string, GameObject> _cardTypeToPrefabCache;
+
+	// Opening-deck snapshot deferred by the per-run upload gate (see UploadDeckSnapshot)
+	private DeckSaveEntry gateBlockedSnapshot;
 
 		private void Start()
 		{
@@ -268,16 +271,45 @@ namespace TestWriteRead
 			UploadDeckSnapshot(CreateDeckSaveEntry());
 		}
 
+		/// <summary>Run-start cleanup: drop any deferred opening-deck snapshot.</summary>
+		public void ClearDeferredSnapshot()
+		{
+			gateBlockedSnapshot = null;
+		}
+
 		/// <summary>
 		/// Enqueue the just-saved player deck as a ghost-deck snapshot (plan §2.5).
-		/// Silently skipped when networking is off or identity is not registered yet.
+		/// Gate closed (no completed combat yet this run): the snapshot is deferred,
+		/// not dropped - the opening deck rides out with the first post-combat snapshot
+		/// (the next shop exit). Gate open: any deferred snapshot flushes first, then
+		/// the current one, preserving deck order. Capture does not require identity;
+		/// enqueue does.
 		/// </summary>
 		private void UploadDeckSnapshot(DeckSaveEntry deckEntry)
 		{
-			if (!PlayerIdentity.HasIdentity) return;
-			// Upload gate (per-run): a run's opening deck never becomes a ghost - only
-			// deck states after a completed combat do.
-			if (!CombatCompletionGate.HasCompletedCombatThisRun) return;
+			// Upload gate (per-run): before the first completed combat only defer.
+			if (!CombatCompletionGate.HasCompletedCombatThisRun)
+			{
+				gateBlockedSnapshot = deckEntry;
+				return;
+			}
+
+			// Keep deferring when the enqueue is not possible yet (no identity): a later
+			// snapshot retries the deferred one, still ahead of its own deck.
+			if (gateBlockedSnapshot != null && EnqueueSnapshot(gateBlockedSnapshot))
+			{
+				gateBlockedSnapshot = null;
+			}
+			EnqueueSnapshot(deckEntry);
+		}
+
+		/// <summary>
+		/// Build and enqueue one ghost-deck snapshot. False when identity is not
+		/// registered yet (nothing was enqueued).
+		/// </summary>
+		private bool EnqueueSnapshot(DeckSaveEntry deckEntry)
+		{
+			if (!PlayerIdentity.HasIdentity) return false;
 
 			var request = new DeckUploadRequest
 			{
@@ -290,6 +322,7 @@ namespace TestWriteRead
 				cardTypeIDs = deckEntry.cardTypeIDs
 			};
 			UploadOutbox.Enqueue(NetUploadKind.DeckSnapshot, request);
+			return true;
 		}
 
 		/// <summary>

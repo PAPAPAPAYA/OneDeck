@@ -125,22 +125,43 @@ public class CombatCompletionGateTests
 	}
 
 	[Test]
-	public void DeckSnapshot_BlockedUntilRunHasCompletedCombat()
+	public void DeckSnapshot_DeferredOpeningDeckUploadsWithFirstPostCombatSnapshot()
 	{
 		InstallHermeticIdentity();
 		InstallDeckSaverScaffold();
 
-		// Opening deck of a fresh run: never becomes a ghost.
+		// Opening deck of a fresh run: deferred, not uploaded.
 		DeckSaver.Me.SavePlayerDeckSnapshot();
 		Assert.AreEqual(0, UploadOutbox.PendingCount);
 
-		// After a completed combat: the deck state uploads.
+		// First completed combat opens the gate; the next snapshot (the second shop
+		// exit) carries the deferred opening deck plus the current deck, in order.
 		CombatCompletionGate.MarkCompleted();
 		DeckSaver.Me.SavePlayerDeckSnapshot();
-		Assert.AreEqual(1, UploadOutbox.PendingCount);
+		Assert.AreEqual(2, UploadOutbox.PendingCount);
+		Assert.AreEqual(NetUploadKind.DeckSnapshot.ToString(), ReadOutboxKind());
 
-		// New run: blocked again until that run completes a combat.
+		// New run: blocked again - snapshots defer instead of uploading.
 		CombatCompletionGate.OnRunStarted();
+		DeckSaver.Me.SavePlayerDeckSnapshot();
+		Assert.AreEqual(2, UploadOutbox.PendingCount);
+	}
+
+	[Test]
+	public void DeckSnapshot_RunStartCleanupDropsDeferredOpeningDeck()
+	{
+		InstallHermeticIdentity();
+		InstallDeckSaverScaffold();
+
+		// Run 1 defers its opening deck, then ends before the gate ever opens.
+		DeckSaver.Me.SavePlayerDeckSnapshot();
+		// Run-start cleanup (PhaseManager pairs ClearDeferredSnapshot with OnRunStarted).
+		DeckSaver.Me.ClearDeferredSnapshot();
+		CombatCompletionGate.OnRunStarted();
+
+		// Run 2 completes a combat: only its own deck uploads - run 1's deferred
+		// opening deck must not leak into the new run.
+		CombatCompletionGate.MarkCompleted();
 		DeckSaver.Me.SavePlayerDeckSnapshot();
 		Assert.AreEqual(1, UploadOutbox.PendingCount);
 	}

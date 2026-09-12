@@ -5,8 +5,9 @@ using UnityEngine;
 /// uploads only flow once the CURRENT run has completed at least one real combat.
 /// The scripted tutorial exits before the PhaseManager settlement point and never
 /// counts. OnRunStarted re-closes the gate at every run start (scene start /
-/// ResetRun), so a run's opening deck never becomes a ghost snapshot - only deck
-/// states observed after a completed combat do. Pure in-memory state; draws count.
+/// ResetRun), so the opening deck can only leave via DeckSaver's deferral (it rides
+/// out with the first post-combat snapshot), never before a completed combat.
+/// Pure in-memory state; draws count.
 /// </summary>
 public static class CombatCompletionGate
 {

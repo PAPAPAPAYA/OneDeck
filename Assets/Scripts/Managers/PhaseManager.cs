@@ -97,7 +97,7 @@ public class PhaseManager : MonoBehaviour
 		// Async-PvP: open the run journal (recovers any unfinished previous run, plan §2.6)
 		RunRecorder.StartRun();
 		// Upload gate: every run starts with the gate closed (per-run rule, plan §6)
-		CombatCompletionGate.OnRunStarted();
+		ResetRunUploadGate();
 		// Async-PvP: first-launch username dialog (plan: plans/plan-username-registration-panel-2026-09-04.md)
 		UsernameRegistrationPanel.EnsureCreated();
 		UsernameRegistrationPanel.RaiseIfNeeded();
@@ -374,7 +374,17 @@ public class PhaseManager : MonoBehaviour
 		// Async-PvP: open a new run journal (recovers + uploads any unfinished one, plan §2.6)
 		RunRecorder.StartRun();
 		// Upload gate: the new run starts with the gate closed (per-run rule, plan §6)
+		ResetRunUploadGate();
+	}
+
+	/// <summary>
+	/// Run-start pairing (scene start / ResetRun): the per-run gate closes and any
+	/// deferred opening-deck snapshot from the previous run is dropped with it.
+	/// </summary>
+	private void ResetRunUploadGate()
+	{
 		CombatCompletionGate.OnRunStarted();
+		if (TestWriteRead.DeckSaver.Me != null) TestWriteRead.DeckSaver.Me.ClearDeferredSnapshot();
 	}
 
 	/// <summary>Player deck cardTypeIDs for the run_end final deck snapshot (plan §2.6).</summary>
@@ -427,6 +437,10 @@ public class PhaseManager : MonoBehaviour
 		InvokeEnterCombatPhaseEvent();
 		// change phase
 		currentGamePhaseRef.currentGamePhase = EnumStorage.GamePhase.Combat;
+		// Async-PvP: deck snapshots enqueue in the event above (the shop-exit flush at
+		// ExitingShopPhase runs earlier); flush here so deferred + current decks leave
+		// at this shop exit instead of waiting for the next flush trigger.
+		UploadOutbox.Flush();
 	}
 
 	private void ExitingCombatPhase()
