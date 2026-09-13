@@ -197,6 +197,10 @@ namespace DefaultNamespace.Managers
 				serverConfig.opponentsIncludeSelf = fightOwnGhostsOnly || includeSelfOpponentDecks;
 			}
 
+			// fightOwnGhostsOnly: with randomized ghost selection, takes must be restricted to
+			// own decks so foreign cache entries can never win (own pool dry = null = deck cleared).
+			OpponentDeckCache.OnlyOwnDecks = fightOwnGhostsOnly;
+
 			TestManager.Log("[TestManager] Toggles - shuffleOverride=" + (overrideShuffleOrder ? "ON" : "OFF")
 				+ " testEnemyDeck=" + (useTestEnemyDeck ? "ON" : "OFF")
 				+ " autoReveal=" + (autoReveal ? "ON" : "OFF")

@@ -37,16 +37,24 @@ public class OpponentDeckCacheTests
 		if (config != null) UnityEngine.Object.DestroyImmediate(config);
 	}
 
-	private static OpponentDeckEntry MakeDeck(int deckId, int sessionNum)
+	private static OpponentDeckEntry MakeDeck(int deckId, int sessionNum, string username = null)
 	{
 		return new OpponentDeckEntry
 		{
 			deckId = deckId,
 			sessionNum = sessionNum,
-			username = "ghost" + deckId,
+			username = username ?? ("ghost" + deckId),
 			cardTypeIDs = new List<string> { "wolf", "shrine" },
 			hpMax = 25
 		};
+	}
+
+	/// <summary>Wipes both the in-memory and the on-disk cache for a fresh round.</summary>
+	private void ResetCacheDisk()
+	{
+		OpponentDeckCache.ResetCacheForTests();
+		string cacheFile = Path.Combine(tempDir, "opponent_cache.json");
+		if (File.Exists(cacheFile)) File.Delete(cacheFile);
 	}
 
 	[Test]
@@ -55,9 +63,11 @@ public class OpponentDeckCacheTests
 		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
 		OpponentDeckCache.InjectForTests(MakeDeck(2, 3));
 
-		Assert.AreEqual(1, OpponentDeckCache.TakeCandidate(3).deckId);
-		// Same run: the used deck never comes back; the other candidate does.
-		Assert.AreEqual(2, OpponentDeckCache.TakeCandidate(3).deckId);
+		// Selection is randomized, so only dedup is asserted order-independently:
+		// two takes drain both candidates in any order, the third finds nothing.
+		int first = OpponentDeckCache.TakeCandidate(3).deckId;
+		int second = OpponentDeckCache.TakeCandidate(3).deckId;
+		CollectionAssert.AreEquivalent(new[] { 1, 2 }, new[] { first, second });
 		Assert.IsNull(OpponentDeckCache.TakeCandidate(3));
 	}
 
@@ -65,6 +75,87 @@ public class OpponentDeckCacheTests
 	public void TakeCandidate_SessionMiss_ReturnsNull()
 	{
 		OpponentDeckCache.InjectForTests(MakeDeck(1, 2));
+		Assert.IsNull(OpponentDeckCache.TakeCandidate(3));
+	}
+
+	[Test]
+	public void TakeCandidate_RandomizesAmongSameSessionCandidates()
+	{
+		// Fixed seed keeps the run deterministic; across 40 fresh rounds the take must
+		// land on a non-insertion-first slot at least once ((1/4)^40 odds against all-first).
+		UnityEngine.Random.InitState(20260913);
+		bool hitNonFirst = false;
+		for (int round = 0; round < 40 && !hitNonFirst; round++)
+		{
+			ResetCacheDisk();
+			for (int k = 1; k <= 4; k++) OpponentDeckCache.InjectForTests(MakeDeck(round * 10 + k, 3));
+			if (OpponentDeckCache.TakeCandidate(3).deckId != round * 10 + 1) hitNonFirst = true;
+		}
+		Assert.IsTrue(hitNonFirst);
+	}
+
+	[Test]
+	public void MergeResponse_IncludeSelfOff_PurgesLegacySelfDecks()
+	{
+		Assume.That(PlayerIdentity.HasIdentity, "ownership filter tests need a local identity");
+		string selfName = PlayerIdentity.Username;
+
+		// Leftovers from the fightOwnGhostsOnly era: own decks sitting in the cache.
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3, selfName));
+		OpponentDeckCache.InjectForTests(MakeDeck(2, 3, "someoneElse"));
+		config.opponentsIncludeSelf = false;
+
+		OpponentDecksResponse response = new OpponentDecksResponse
+		{
+			decks = new List<OpponentDeckEntry>
+			{
+				MakeDeck(3, 3, "someoneElse"),
+				MakeDeck(4, 3, selfName)  // a misbehaving server: must be refused, not re-added
+			}
+		};
+		OpponentDeckCache.MergeResponse(response);
+
+		// Draining the session must yield exactly the two foreign decks: the legacy self
+		// entry was purged and the response's self deck was skipped.
+		List<int> taken = new List<int>();
+		for (int i = 0; i < 3; i++)
+		{
+			OpponentDeckEntry entry = OpponentDeckCache.TakeCandidate(3);
+			if (entry != null) taken.Add(entry.deckId);
+		}
+		CollectionAssert.AreEquivalent(new[] { 2, 3 }, taken);
+	}
+
+	[Test]
+	public void MergeResponse_IncludeSelfOn_KeepsSelfDecks()
+	{
+		Assume.That(PlayerIdentity.HasIdentity, "ownership filter tests need a local identity");
+		string selfName = PlayerIdentity.Username;
+		config.opponentsIncludeSelf = true;
+
+		OpponentDecksResponse response = new OpponentDecksResponse
+		{
+			decks = new List<OpponentDeckEntry> { MakeDeck(1, 3, selfName) }
+		};
+		OpponentDeckCache.MergeResponse(response);
+
+		OpponentDeckEntry kept = OpponentDeckCache.TakeCandidate(3);
+		Assert.IsNotNull(kept);
+		Assert.AreEqual(1, kept.deckId);
+	}
+
+	[Test]
+	public void TakeCandidate_OnlyOwnDecks_RestrictsToSelfAndReturnsNullWhenDry()
+	{
+		Assume.That(PlayerIdentity.HasIdentity, "ownership filter tests need a local identity");
+		string selfName = PlayerIdentity.Username;
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3, "someoneElse"));
+		OpponentDeckCache.InjectForTests(MakeDeck(2, 3, selfName));
+		OpponentDeckCache.OnlyOwnDecks = true;
+
+		Assert.AreEqual(2, OpponentDeckCache.TakeCandidate(3).deckId);
+		// Own pool dry: the foreign entry stays untouchable and the take returns null
+		// (DeckSaver cache-dry semantics: onlyGhostEnemyDeck clears the enemy deck).
 		Assert.IsNull(OpponentDeckCache.TakeCandidate(3));
 	}
 

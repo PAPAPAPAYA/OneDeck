@@ -368,6 +368,15 @@ namespace TestWriteRead
 			// Tutorial combat: the enemy deck is provided by TutorialManager.
 			if (TutorialManager.IsTutorialActive) return;
 
+			// Start from asset defaults so a previous ghost's saved hpMax cannot leak
+			// into debug/default-pool combats: EnteringShopPhase's ResetToDefault only
+			// restores hp (hpOg), never hpMax.
+			if (enemyStatusRef != null)
+			{
+				enemyStatusRef.ResetHpMax();
+				enemyStatusRef.hp = enemyStatusRef.hpMax;
+			}
+
 			// No ghost is fighting until the server branch actually injects one.
 			OpponentDeckCache.SetCurrentOpponent(null);
 
@@ -443,10 +452,12 @@ namespace TestWriteRead
 				enemyDeckToPopulate.deck.Clear();
 				enemyDeckToPopulate.deck.AddRange(cardPrefabs);
 
-				// Apply the ghost's saved hpMax (same rule as the JSON branch)
+				// Apply the ghost's saved hpMax (same rule as the JSON branch) and keep
+				// hp synced so the ghost always enters combat at full HP.
 				if (enemyStatusRef != null)
 				{
 					enemyStatusRef.hpMax = candidate.hpMax > 0 ? candidate.hpMax : 20;
+					enemyStatusRef.hp = enemyStatusRef.hpMax;
 				}
 
 				// Apply HP bonus for specific cardTypeIDs in the ghost deck

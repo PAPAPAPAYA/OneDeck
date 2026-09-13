@@ -40,6 +40,13 @@ public static class OpponentDeckCache
 	/// <summary>Test seam: when set, overrides the persistentDataPath directory for cache files.</summary>
 	public static string OverrideDirectoryForTests;
 
+	/// <summary>
+	/// Test toggle (pushed by TestManager.fightOwnGhostsOnly): takes are restricted to the
+	/// player's own decks; a session without own decks returns null (cache-dry, DeckSaver
+	/// then clears the enemy deck instead of letting a foreign candidate through).
+	/// </summary>
+	public static bool OnlyOwnDecks;
+
 	private const string CacheFileName = "opponent_cache.json";
 	private const string CountersFileName = "enemy_source_counters.json";
 
@@ -133,16 +140,36 @@ public static class OpponentDeckCache
 				prefetchInFlight = false;
 				OpponentDecksResponse response = JsonUtility.FromJson<OpponentDecksResponse>(body);
 				if (response == null || response.decks == null) return;
-				Load();
-				foreach (OpponentDeckEntry deck in response.decks)
-				{
-					if (deck == null || deck.cardTypeIDs == null || deck.cardTypeIDs.Count == 0) continue;
-					if (cache.decks.Exists(d => d != null && d.deckId == deck.deckId)) continue;
-					cache.decks.Add(deck);
-				}
-				Save();
+				MergeResponse(response);
 			},
 			(error, statusCode) => { prefetchInFlight = false; });
+	}
+
+	/// <summary>
+	/// Merge a fetched response into the disk cache (Prefetch callback body; public so tests
+	/// can exercise the merge without a network call). While includeSelf is off, own decks
+	/// must never sit in the opponent pool: legacy entries that predate the server-side
+	/// exclusion are dropped, and any the response still carries are refused, so the filter
+	/// self-heals on every successful prefetch.
+	/// </summary>
+	public static void MergeResponse(OpponentDecksResponse response)
+	{
+		bool excludeSelf = !IncludeSelf;
+		string selfName = excludeSelf ? PlayerIdentity.Username : null;
+		Load();
+		if (excludeSelf && !string.IsNullOrEmpty(selfName))
+		{
+			int purged = cache.decks.RemoveAll(d => d != null && d.username == selfName);
+			if (purged > 0) Debug.Log("[OpponentDeckCache] ownership filter: purged " + purged + " own-deck entries from the cache");
+		}
+		foreach (OpponentDeckEntry deck in response.decks)
+		{
+			if (deck == null || deck.cardTypeIDs == null || deck.cardTypeIDs.Count == 0) continue;
+			if (excludeSelf && !string.IsNullOrEmpty(selfName) && deck.username == selfName) continue;
+			if (cache.decks.Exists(d => d != null && d.deckId == deck.deckId)) continue;
+			cache.decks.Add(deck);
+		}
+		Save();
 	}
 
 	// ------------------------------------------------------------------ consumption (DeckSaver side)
@@ -150,13 +177,22 @@ public static class OpponentDeckCache
 	/// <summary>
 	/// Take an unused candidate for the session and mark it used. Null when the cache
 	/// is dry for that session (caller falls back to the local chain).
+	/// Selection is random among the unused same-session candidates so cache insertion
+	/// order never decides priority. With OnlyOwnDecks (fightOwnGhostsOnly) the pool is
+	/// restricted to the player's own decks first; a session without own decks returns null.
 	/// </summary>
 	public static OpponentDeckEntry TakeCandidate(int sessionNum)
 	{
 		Load();
-		OpponentDeckEntry candidate = cache.decks.Find(d =>
+		List<OpponentDeckEntry> candidates = cache.decks.FindAll(d =>
 			d != null && d.sessionNum == sessionNum && !cache.usedDeckIds.Contains(d.deckId));
-		if (candidate == null) return null;
+		if (OnlyOwnDecks)
+		{
+			string selfName = PlayerIdentity.Username;
+			candidates = candidates.FindAll(d => d.username == selfName);
+		}
+		if (candidates.Count == 0) return null;
+		OpponentDeckEntry candidate = candidates[UnityEngine.Random.Range(0, candidates.Count)];
 		cache.usedDeckIds.Add(candidate.deckId);
 		Save();
 		return candidate;
@@ -306,6 +342,7 @@ public static class OpponentDeckCache
 		opponent = null;
 		counters = null;
 		stagedSource = null;
+		OnlyOwnDecks = false;
 	}
 
 	/// <summary>Test seam: injects a deck straight into the cache (no network).</summary>
