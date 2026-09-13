@@ -258,7 +258,7 @@
   "displayName": "魇市深处",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "被动: 首个货架必含 <b>1</b> 件被动卡",
+  "cardDesc": "被动: 首个货架必含 <b>1</b> 件商店被动卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -500,8 +500,8 @@
   "displayName": "狂信徒",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击;本回合每放逐过 <b>3</b> 友方,本回合攻击次数 <b>+1</b>;每个被放逐的友方都参与计数",
-  "printedAttack": "2",
+  "cardDesc": "攻击;本回合每放逐过 <b>3</b> 友方,本回合攻击次数    <b>+1</b>",
+  "printedAttack": "1",
   "cardType": "1",
   "folder": "1_Uncommon"
  },
@@ -555,7 +555,7 @@
   "displayName": "操尸人",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "让墓地 <b>1</b> 友方生物攻击;墓地无友方则埋葬    <b>1</b> 张tag为[<tag:DeathRattle>]的友方卡",
+  "cardDesc": "使墓地 <b>1</b> 友方生物攻击;墓地无则埋葬    <b>1</b> [<tag:DeathRattle>]友方卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -841,7 +841,7 @@
   "displayName": "百怪入梦",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 每次生成货架 <b>20%</b> 概率:只掷出生物卡",
+  "cardDesc": "被动: <b>20%</b> 概率只掷出生物卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -852,7 +852,7 @@
   "displayName": "魇市半价",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 每次生成货架必出 <b>1</b> 件半价商品",
+  "cardDesc": "被动: 必出 <b>1</b> 件半价商品",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -863,7 +863,7 @@
   "displayName": "窥魇镜",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 件被动卡",
+  "cardDesc": "被动: <b>25%</b> 概率多出 <b>1</b> 件商店被动卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
