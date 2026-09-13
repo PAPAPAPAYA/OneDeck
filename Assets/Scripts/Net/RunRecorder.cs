@@ -63,7 +63,7 @@ public static class RunRecorder
 			finalDeck = new List<string>(),
 			shopVisits = new List<RunShopVisitEntry>(),
 			combats = new List<RunCombatEntry>(),
-			startedAt = DateTime.UtcNow.ToString("o")
+			startedAt = NetTime.NowIsoCst8()
 		};
 		ended = false;
 		seenCardTypeIDs.Clear();
@@ -82,7 +82,7 @@ public static class RunRecorder
 		current.heartsLeft = heartsLeft;
 		current.finalDeck = finalDeckCardTypeIDs != null ? new List<string>(finalDeckCardTypeIDs) : new List<string>();
 		current.seenPoolPct = ComputeSeenPoolPct();
-		current.endedAt = DateTime.UtcNow.ToString("o");
+		current.endedAt = NetTime.NowIsoCst8();
 		ended = true;
 		SaveSnapshot();
 		UploadCurrent();
@@ -142,7 +142,7 @@ public static class RunRecorder
 			goldEnter = goldEnter,
 			goldAfterPayday = goldAfterPayday,
 			goldExit = goldExitPurse,
-			ts = DateTime.UtcNow.ToString("o")
+			ts = NetTime.NowIsoCst8()
 		});
 		SaveSnapshot();
 		ResetVisit();
@@ -196,7 +196,7 @@ public static class RunRecorder
 			opponentDeckId = opponentDeckId,
 			perCard = HarvestPerCard(),
 			series = BuildSeriesSnapshot(),
-			ts = DateTime.UtcNow.ToString("o")
+			ts = NetTime.NowIsoCst8()
 		});
 		combatSeries.Clear();
 		SaveSnapshot();

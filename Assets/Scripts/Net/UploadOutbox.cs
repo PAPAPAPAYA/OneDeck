@@ -60,7 +60,7 @@ public static class UploadOutbox
 			kind = kind,
 			path = path,
 			jsonPayload = jsonPayload,
-			enqueuedAt = DateTime.UtcNow.ToString("o")
+			enqueuedAt = NetTime.NowIsoCst8()
 		});
 		while (items.Count > MaxItems) items.RemoveAt(0);
 		Save(items);

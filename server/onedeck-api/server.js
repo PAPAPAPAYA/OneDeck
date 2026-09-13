@@ -280,6 +280,14 @@ function nowIso()
 	return new Date().toISOString();
 }
 
+// Beijing wall clock (UTC+8, fixed offset - no DST in China). Run records use this
+// so uploaded_at matches the client-side RunRecorder/UploadOutbox timestamps
+// (both switched to UTC+8 on 2026-09-13).
+function nowIsoCst8()
+{
+	return new Date(Date.now() + 8 * 3600 * 1000).toISOString().replace('Z', '+08:00');
+}
+
 function isStr(v, min, max)
 {
 	return typeof v === 'string' && v.length >= min && v.length <= max;
@@ -649,7 +657,7 @@ app.post('/api/runs', (req, res) =>
 			req.body.result,
 			toInt(req.body.finalSession, 0, 99, 0),
 			toInt(req.body.heartsLeft, 0, 99, 0),
-			JSON.stringify(finalDeck), toFrac(req.body.seenPoolPct), nowIso());
+			JSON.stringify(finalDeck), toFrac(req.body.seenPoolPct), nowIsoCst8());
 		if (info.changes === 0) return false;
 		for (const v of visits)
 		{
