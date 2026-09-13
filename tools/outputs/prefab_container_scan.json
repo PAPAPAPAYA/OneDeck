@@ -1,0 +1,5006 @@
+[
+ {
+  "cardTypeID": "AVENGER_4.0",
+  "displayName": "厉鬼",
+  "rarity": "0",
+  "cardDesc": "攻击x2;遗言:强化自身 <b>1</b>",
+  "folder": "0_Common",
+  "file": "AVENGER_4.0.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "gain power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "BEAST_REVIVER",
+  "displayName": "马戏团的地下室",
+  "rarity": "0",
+  "cardDesc": "攻击;复活 <b>1</b> 生物友方",
+  "folder": "0_Common",
+  "file": "BEAST_REVIVER.prefab",
+  "containers": [
+   {
+    "child": "revive 1 creature",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "BLACKSMITH_4.0",
+  "displayName": "骨匠",
+  "rarity": "0",
+  "cardDesc": "攻击;强化 <b>1</b> 友方生物",
+  "folder": "0_Common",
+  "file": "BLACKSMITH_4.0.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "apply power to friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_REVIVER",
+  "displayName": "收蛊人",
+  "rarity": "0",
+  "cardDesc": "攻击;复活 <b>1</b> 敌方诅咒",
+  "folder": "0_Common",
+  "file": "CURSE_REVIVER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "revive enemy curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "ELITE_REVIVER",
+  "displayName": "镀金圣髑",
+  "rarity": "0",
+  "cardDesc": "攻击;复活 <b>1</b> 被强化过的友方生物",
+  "folder": "0_Common",
+  "file": "ELITE_REVIVER.prefab",
+  "containers": [
+   {
+    "child": "revive enhanced",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_DREDGER",
+  "displayName": "掘墓人",
+  "rarity": "0",
+  "cardDesc": "攻击;埋葬卡组顶 <b>3</b> 卡",
+  "folder": "0_Common",
+  "file": "GRAVE_DREDGER.prefab",
+  "containers": [
+   {
+    "child": "bury next cards",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryNextXCards(3)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_FIST",
+  "displayName": "血祭",
+  "rarity": "0",
+  "cardDesc": "埋葬 <b>1</b> 友方;攻击",
+  "folder": "0_Common",
+  "file": "GRAVE_FIST.prefab",
+  "containers": [
+   {
+    "child": "bury",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "降头师",
+  "rarity": "0",
+  "cardDesc": "复活 <b>1</b> 友方;强化 <b>1</b> 敌方诅咒",
+  "folder": "0_Common",
+  "file": "GRAVE_HEXER.prefab",
+  "containers": [
+   {
+    "child": "revive 1 friend",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "hex",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_PUNCH_4.0",
+  "displayName": "剜心祭",
+  "rarity": "0",
+  "cardDesc": "埋葬 <b>1</b> 友方;攻击x2",
+  "folder": "0_Common",
+  "file": "GRAVE_PUNCH_4.0.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "蛊婆",
+  "rarity": "0",
+  "cardDesc": "攻击;强化 <b>2</b> 敌方诅咒",
+  "folder": "0_Common",
+  "file": "HEXER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "'enhence hostile [curse]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE_LITE",
+  "displayName": "长夜",
+  "rarity": "0",
+  "cardDesc": "购买: 卡位 <b>+1</b>, 放逐自身",
+  "folder": "0_Common",
+  "file": "IncreaseDeckSizeLite.prefab",
+  "containers": [
+   {
+    "child": "Increase 1 deck size",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeBought.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "IncreaseDeckSizeBy(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SYSTEM_INCREASE_HP_MAX",
+  "displayName": "沉魇",
+  "rarity": "0",
+  "cardDesc": "购买: 生命值上限 <b>+8</b>, 放逐自身",
+  "folder": "0_Common",
+  "file": "IncreaseHpMax.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "LAST_GIFT",
+  "displayName": "遗赠",
+  "rarity": "0",
+  "cardDesc": "攻击;遗言:强化 <b>2</b> 友方生物",
+  "folder": "0_Common",
+  "file": "LAST_GIFT.prefab",
+  "containers": [
+   {
+    "child": "gift boost 1 creature",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_ACOLYTE",
+  "displayName": "侍僧",
+  "rarity": "0",
+  "cardDesc": "攻击;生成 <b>1</b> 信徒;苏醒:生成 <b>1</b> 信徒",
+  "folder": "0_Common",
+  "file": "RIFT_ACOLYTE.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "pro 1 rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "wake pro 2 rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeRevived.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_INSECT_4.0",
+  "displayName": "新皈依者",
+  "rarity": "0",
+  "cardDesc": "攻击;生成 <b>1</b> 信徒",
+  "folder": "0_Common",
+  "file": "RIFT_INSECT_4.0.prefab",
+  "containers": [
+   {
+    "child": "'add 1 [rift]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_SHEPHERD",
+  "displayName": "牧羊人",
+  "rarity": "0",
+  "cardDesc": "攻击;复活 <b>1</b> 张tag为[<tag:Believer>]的友方卡",
+  "folder": "0_Common",
+  "file": "RIFT_SHEPHERD.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "revive 1 believer",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCardsWithTag(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "活殉",
+  "rarity": "0",
+  "cardDesc": "埋葬 <b>1</b> 友方;强化 <b>4</b> 敌方诅咒",
+  "folder": "0_Common",
+  "file": "SACRIFICIAL_SPIRIT.prefab",
+  "containers": [
+   {
+    "child": "enhance curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(4)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SOLDIER_SKELETON_4.0",
+  "displayName": "骸骨哨兵",
+  "rarity": "0",
+  "cardDesc": "攻击;遗言:复活自身",
+  "folder": "0_Common",
+  "file": "SOLDIER_SKELETON_4.0.prefab",
+  "containers": [
+   {
+    "child": "stage self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveSelf(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SPIKE_SKELETON_4.0",
+  "displayName": "带刺的标本",
+  "rarity": "0",
+  "cardDesc": "攻击;遗言:攻击x2",
+  "folder": "0_Common",
+  "file": "SPIKE_SKELETON_4.0.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg multiple times",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SPIRIT_CALLER",
+  "displayName": "降灵会",
+  "rarity": "0",
+  "cardDesc": "攻击;复活 <b>1</b> 友方非生物",
+  "folder": "0_Common",
+  "file": "SPIRIT_CALLER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "revive 1 noncreature",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "TWIN_STRIKER",
+  "displayName": "连体人",
+  "rarity": "0",
+  "cardDesc": "攻击x2",
+  "folder": "0_Common",
+  "file": "TWIN_STRIKER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "UTILITY_DISCOUNT_1",
+  "displayName": "魇市赊账",
+  "rarity": "0",
+  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:<b>1</b> 件随机商品半价",
+  "folder": "0_Common",
+  "file": "UTILITY_DISCOUNT_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_INCOME_1",
+  "displayName": "冥币",
+  "rarity": "0",
+  "cardDesc": "被动: 收入 <b>+4</b>",
+  "folder": "0_Common",
+  "file": "UTILITY_INCOME_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_ODDS_1",
+  "displayName": "魇市深处",
+  "rarity": "0",
+  "cardDesc": "被动: 首个货架必含 <b>1</b> 件商店被动卡",
+  "folder": "0_Common",
+  "file": "UTILITY_ODDS_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_OPTION_1",
+  "displayName": "魇市新摊",
+  "rarity": "0",
+  "cardDesc": "被动: 商店货架 <b>+1</b>",
+  "folder": "0_Common",
+  "file": "UTILITY_OPTION_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_REROLL_1",
+  "displayName": "噩梦重播",
+  "rarity": "0",
+  "cardDesc": "被动: 免费重掷次数 <b>+1</b>",
+  "folder": "0_Common",
+  "file": "UTILITY_REROLL_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_SLOT_U_1",
+  "displayName": "初魇",
+  "rarity": "0",
+  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张✦✦卡",
+  "folder": "0_Common",
+  "file": "UTILITY_SLOT_U_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_WEIGHT_U",
+  "displayName": "魇影幢幢",
+  "rarity": "0",
+  "cardDesc": "被动: ✦✦卡的出货权重 <b>\\xD72</b>",
+  "folder": "0_Common",
+  "file": "UTILITY_WEIGHT_U.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "WAKING_FIGHTER",
+  "displayName": "回魂尸",
+  "rarity": "0",
+  "cardDesc": "攻击;苏醒:强化自身 <b>1</b>",
+  "folder": "0_Common",
+  "file": "WAKING_FIGHTER.prefab",
+  "containers": [
+   {
+    "child": "wake boost 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeRevived.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttack(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "WAR_TRAINER",
+  "displayName": "开刃",
+  "rarity": "0",
+  "cardDesc": "强化 <b>2</b> 友方生物",
+  "folder": "0_Common",
+  "file": "WAR_TRAINER.prefab",
+  "containers": [
+   {
+    "child": "apply power to friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "WOKEN_BLADE",
+  "displayName": "尸变",
+  "rarity": "0",
+  "cardDesc": "攻击;苏醒:攻击x2",
+  "folder": "0_Common",
+  "file": "WOKEN_BLADE.prefab",
+  "containers": [
+   {
+    "child": "wake attack x2",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeRevived.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(2)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "AWAKENED_REAPER",
+  "displayName": "勾魂人",
+  "rarity": "1",
+  "cardDesc": "攻击;苏醒:埋葬 <b>1</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "AWAKENED_REAPER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "wake bury 1 enemy",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeRevived.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "BATTLE_HORN",
+  "displayName": "股骨号角",
+  "rarity": "1",
+  "cardDesc": "本回合友方生物攻击次数 <b>+1</b>",
+  "folder": "1_Uncommon",
+  "file": "BATTLE_HORN.prefab",
+  "containers": [
+   {
+    "child": "aura bump",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BumpFriendlyCreatureAttackTimesAura(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "COMBO_GRANTER",
+  "displayName": "执鞭人",
+  "rarity": "1",
+  "cardDesc": "攻击;本回合 <b>1</b> 友方生物攻击次数 <b>+1</b>",
+  "folder": "1_Uncommon",
+  "file": "COMBO_GRANTER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "grant times 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveRandomFriendlyCreatureAttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "COMBO_STARTER",
+  "displayName": "渴血者",
+  "rarity": "1",
+  "cardDesc": "攻击;强化反应:攻击次数 <b>+1</b>",
+  "folder": "1_Uncommon",
+  "file": "COMBO_STARTER.prefab",
+  "containers": [
+   {
+    "child": "react times 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STATUS EFFECT\\POWER\\OnMeGainedAttack.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_EATER",
+  "displayName": "吞蛊人",
+  "rarity": "1",
+  "cardDesc": "攻击;攻击力=敌方诅咒攻击力",
+  "folder": "1_Uncommon",
+  "file": "CURSE_EATER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_GARDENER",
+  "displayName": "养蛊人",
+  "rarity": "1",
+  "cardDesc": "强化 <b>1</b> 敌方诅咒;复活 <b>1</b> 敌方诅咒",
+  "folder": "1_Uncommon",
+  "file": "CURSE_GARDENER.prefab",
+  "containers": [
+   {
+    "child": "revive enemy curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "hex 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_SUMMONER",
+  "displayName": "走阴人",
+  "rarity": "1",
+  "cardDesc": "复活 <b>1</b> 友方;复活 <b>1</b> 敌方诅咒",
+  "folder": "1_Uncommon",
+  "file": "CURSE_SUMMONER.prefab",
+  "containers": [
+   {
+    "child": "revive 1 friend",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "revive enemy curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_THIRST_BEAST_4.0",
+  "displayName": "噬咒兽",
+  "rarity": "1",
+  "cardDesc": "敌方诅咒揭晓时:复活自身;攻击",
+  "folder": "1_Uncommon",
+  "file": "CURSE_THIRST_BEAST_4.0.prefab",
+  "containers": [
+   {
+    "child": "enemy curse revealed revive self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnHostileCurseRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveSelf(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_THIRST_SHAMAN_4.0",
+  "displayName": "噬咒萨满",
+  "rarity": "1",
+  "cardDesc": "敌方诅咒每有 <b>1</b> 攻击力:强化 <b>1</b> 友方生物",
+  "folder": "1_Uncommon",
+  "file": "CURSE_THIRST_SHAMAN_4.0.prefab",
+  "containers": [
+   {
+    "child": "apply power to friendly = hostile curse power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly_BasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "DEATHBED_GRANT",
+  "displayName": "垂死反扑",
+  "rarity": "1",
+  "cardDesc": "被动:友方生物被埋葬时:该友方生物攻击",
+  "folder": "1_Uncommon",
+  "file": "DEATHBED_GRANT.prefab",
+  "containers": [
+   {
+    "child": "buried creature strikes",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnFriendlyCardBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackLastBuriedFriendlyCreature(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "DEATHBED_PORTER",
+  "displayName": "抬棺人",
+  "rarity": "1",
+  "cardDesc": "攻击;遗言:攻击;置顶 <b>1</b> 友方非生物",
+  "folder": "1_Uncommon",
+  "file": "DEATHBED_PORTER.prefab",
+  "containers": [
+   {
+    "child": "deathrattle attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "porter stage noncreature",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "蛊噬",
+  "rarity": "1",
+  "cardDesc": "强化 <b>2</b> 敌方诅咒;敌方诅咒每有 <b>3</b> 攻击力:再强化 <b>1</b>",
+  "folder": "1_Uncommon",
+  "file": "DETERIORATION_4.0.prefab",
+  "containers": [
+   {
+    "child": "for 3 power hostile [curse] power, enhance 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurseWithCoefficient_BasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "enhance 2",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "报丧人",
+  "rarity": "1",
+  "cardDesc": "攻击;复活 <b>1</b> 攻击力最高敌方;强化 <b>4</b> 敌方诅咒",
+  "folder": "1_Uncommon",
+  "file": "DOOM_HERALD.prefab",
+  "containers": [
+   {
+    "child": "enhance 4 curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(4)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "revive max atk enemy",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "EULOGIST",
+  "displayName": "司悼人",
+  "rarity": "1",
+  "cardDesc": "埋葬 <b>1</b> 张tag为[<tag:DeathRattle>]的友方卡;攻击",
+  "folder": "1_Uncommon",
+  "file": "EULOGIST.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "'bury 1 friendly [Deathrattle]/[Linger]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCardsWithTag(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "EXILE_BERSERKER",
+  "displayName": "狂信徒",
+  "rarity": "1",
+  "cardDesc": "攻击;本回合每放逐过 <b>3</b> 友方,本回合攻击次数 <b>+1</b>",
+  "folder": "1_Uncommon",
+  "file": "EXILE_BERSERKER.prefab",
+  "containers": [
+   {
+    "child": "react times 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\EXILE\\OnFriendlyCardExiled.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttackTimes_PerExiledCount(3)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "FINAL_ESCORT",
+  "displayName": "扶灵人",
+  "rarity": "1",
+  "cardDesc": "攻击;遗言:回合结束前:复活 <b>1</b> 墓地的最高攻击力友方生物",
+  "folder": "1_Uncommon",
+  "file": "FINAL_ESCORT.prefab",
+  "containers": [
+   {
+    "child": "arm round end escort",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ArmRoundEndRevive(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "round end revive creature",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\BeforeStartCardReveal.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCardsIfArmed(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "FLURRY_REVIVER",
+  "displayName": "死不瞑目",
+  "rarity": "1",
+  "cardDesc": "复活 <b>1</b> 攻击次数最多友方生物",
+  "folder": "1_Uncommon",
+  "file": "FLURRY_REVIVER.prefab",
+  "containers": [
+   {
+    "child": "revive max times",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "FUNERAL_WILL",
+  "displayName": "冥约",
+  "rarity": "1",
+  "cardDesc": "埋葬卡组顶 <b>2</b> 卡;遗言:延迟复活 <b>1</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "FUNERAL_WILL.prefab",
+  "containers": [
+   {
+    "child": "bury deck top 2",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryNextXCards(2)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deathrattle delayed revive 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_GIANT",
+  "displayName": "骸骨巨人",
+  "rarity": "1",
+  "cardDesc": "攻击力=墓地友方数量;攻击",
+  "folder": "1_Uncommon",
+  "file": "GRAVE_GIANT.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_PUPPETEER",
+  "displayName": "操尸人",
+  "rarity": "1",
+  "cardDesc": "使墓地 <b>1</b> 友方生物攻击;墓地无则埋葬 <b>1</b> [<tag:DeathRattle>]友方卡",
+  "folder": "1_Uncommon",
+  "file": "GRAVE_PUPPETEER.prefab",
+  "containers": [
+   {
+    "child": "grave manipulator",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "RaiseGraveCreatureOrBuryFallback(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_ROBBER",
+  "displayName": "食尸鬼",
+  "rarity": "1",
+  "cardDesc": "复活 <b>1</b> 攻击力最高敌方;攻击力变为该卡攻击力",
+  "folder": "1_Uncommon",
+  "file": "GRAVE_ROBBER.prefab",
+  "containers": [
+   {
+    "child": "rob the strongest",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveStrongestEnemyAndSnapshot(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_TOGETHER_4.0",
+  "displayName": "同葬",
+  "rarity": "1",
+  "cardDesc": "攻击;埋葬 <b>1</b> 友方;埋葬 <b>2</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "GRAVE_TOGETHER_4.0.prefab",
+  "containers": [
+   {
+    "child": "bury friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury hostile",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "咒刃",
+  "rarity": "1",
+  "cardDesc": "攻击;每有 <b>1</b> 攻击力,强化 <b>1</b> 敌方诅咒",
+  "folder": "1_Uncommon",
+  "file": "HEXBLADE.prefab",
+  "containers": [
+   {
+    "child": "curse per atk",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurseTimes_BasedOnAttack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "KINGSLAYER",
+  "displayName": "火刑柱",
+  "rarity": "1",
+  "cardDesc": "埋葬 <b>1</b> 攻击力最高敌方;复活 <b>1</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "KINGSLAYER.prefab",
+  "containers": [
+   {
+    "child": "revive 1 friend",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury strongest enemy",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryCardWithMaxAttack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "MASS_REVIVER",
+  "displayName": "墓园空了",
+  "rarity": "1",
+  "cardDesc": "复活 <b>3</b> 友方✦卡",
+  "folder": "1_Uncommon",
+  "file": "MASS_REVIVER.prefab",
+  "containers": [
+   {
+    "child": "revive 3 common",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(3)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "MIMIC_BLADE",
+  "displayName": "模仿犯",
+  "rarity": "1",
+  "cardDesc": "攻击力=友方最高攻击力;攻击x2",
+  "folder": "1_Uncommon",
+  "file": "MIMIC_BLADE.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "NECROMANCER",
+  "displayName": "招魂执事",
+  "rarity": "1",
+  "cardDesc": "复活 <b>1</b> 友方;苏醒:复活 <b>1</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "NECROMANCER.prefab",
+  "containers": [
+   {
+    "child": "awaken revive 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeRevived.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "revive 1 friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "REANIMATOR",
+  "displayName": "百鬼夜行",
+  "rarity": "1",
+  "cardDesc": "攻击;攻击力=本回合复活友方数",
+  "folder": "1_Uncommon",
+  "file": "REANIMATOR.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_ATTACK_BURIAL",
+  "displayName": "埋骨地",
+  "rarity": "1",
+  "cardDesc": "被动:友方每次攻击时,埋葬卡组顶 <b>1</b> 卡",
+  "folder": "1_Uncommon",
+  "file": "RELIC_ATTACK_BURIAL.prefab",
+  "containers": [
+   {
+    "child": "friendly attack bury top 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\DMG\\onAnyFriendlyCardAttacked.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryNextXCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_CHAIN_BURIAL",
+  "displayName": "连坐",
+  "rarity": "1",
+  "cardDesc": "被动:每次友方被埋葬时,埋葬卡组顶 <b>1</b> 卡",
+  "folder": "1_Uncommon",
+  "file": "RELIC_CHAIN_BURIAL.prefab",
+  "containers": [
+   {
+    "child": "friendly buried bury top 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnFriendlyCardBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryNextXCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_GRAVE_CURSE",
+  "displayName": "积尸气",
+  "rarity": "1",
+  "cardDesc": "被动:敌方诅咒攻击力=墓地友方卡数量",
+  "folder": "1_Uncommon",
+  "file": "RELIC_GRAVE_CURSE.prefab",
+  "containers": [
+   {
+    "child": "arm curse override",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\AfterShuffle.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "SetIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "血账",
+  "rarity": "1",
+  "cardDesc": "被动:回合结束前:本回合每埋葬 <b>1</b> 生物,强化 <b>1</b> 敌方诅咒",
+  "folder": "1_Uncommon",
+  "file": "RELIC_TALLY.prefab",
+  "containers": [
+   {
+    "child": "tally enhance curses",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\BeforeStartCardReveal.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurseTimes_BasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_TRAINER",
+  "displayName": "邪印",
+  "rarity": "1",
+  "cardDesc": "被动:回合开始:强化 <b>1</b> 攻击力最低友方生物",
+  "folder": "1_Uncommon",
+  "file": "RELIC_TRAINER.prefab",
+  "containers": [
+   {
+    "child": "train lowest",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\BeforeRoundFinished.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveFriendlyCardWithMinAttack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_WHITE_BANNER",
+  "displayName": "引魂幡",
+  "rarity": "1",
+  "cardDesc": "被动:回合开始:置顶 <b>1</b> 友方攻击力最高生物",
+  "folder": "1_Uncommon",
+  "file": "RELIC_WHITE_BANNER.prefab",
+  "containers": [
+   {
+    "child": "stage max attack friendly on round start",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\BeforeRoundFinished.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageCardWithMaxAttack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "REVIVE_SUMMONER",
+  "displayName": "复活见证人",
+  "rarity": "1",
+  "cardDesc": "复活 <b>1</b> 友方;生成 <b>1</b> 信徒",
+  "folder": "1_Uncommon",
+  "file": "REVIVE_SUMMONER.prefab",
+  "containers": [
+   {
+    "child": "revive 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "add 1 rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_GUIDE",
+  "displayName": "献祭司事",
+  "rarity": "1",
+  "cardDesc": "放逐 <b>1</b> 友方信徒: 埋葬 <b>2</b> 敌方非生物",
+  "folder": "1_Uncommon",
+  "file": "RIFT_GUIDE.prefab",
+  "containers": [
+   {
+    "child": "exile 1 rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [
+     "CheckCost_HasOwnCardOfType(1)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ExileMyCardsWithTypeID(1)",
+     "BuryTheirCards(2)"
+    ],
+    "targetCardTypeID": "RIFT"
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_HATCHERY",
+  "displayName": "黑弥撒",
+  "rarity": "1",
+  "cardDesc": "生成 <b>3</b> 信徒;回合开始:埋葬自身",
+  "folder": "1_Uncommon",
+  "file": "RIFT_HATCHERY.prefab",
+  "containers": [
+   {
+    "child": "bury self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\BeforeRoundFinished.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BurySelf(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "'add 1 [rift]'",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_MEDIUM",
+  "displayName": "扶乩",
+  "rarity": "1",
+  "cardDesc": "生成 <b>2</b> 信徒;苏醒:复活 <b>1</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "RIFT_MEDIUM.prefab",
+  "containers": [
+   {
+    "child": "awaken revive 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeRevived.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "add 2 rifts",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_PRIEST",
+  "displayName": "施洗者",
+  "rarity": "1",
+  "cardDesc": "生成 <b>2</b> 信徒;强化 <b>1</b> 友方生物",
+  "folder": "1_Uncommon",
+  "file": "RIFT_PRIEST.prefab",
+  "containers": [
+   {
+    "child": "'add 1 [rift]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "give attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_REVIVER",
+  "displayName": "以人易物",
+  "rarity": "1",
+  "cardDesc": "放逐 <b>1</b> 友方信徒: 复活 <b>2</b> 友方非生物",
+  "folder": "1_Uncommon",
+  "file": "RIFT_REVIVER.prefab",
+  "containers": [
+   {
+    "child": "exile 1 rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [
+     "CheckCost_HasOwnCardOfType(1)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ExileMyCardsWithTypeID(1)",
+     "ReviveMyCards(2)"
+    ],
+    "targetCardTypeID": "RIFT"
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_STRIKER",
+  "displayName": "鞭笞者",
+  "rarity": "1",
+  "cardDesc": "攻击x2;生成 <b>1</b> 信徒",
+  "folder": "1_Uncommon",
+  "file": "RIFT_STRIKER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "'add 1 [rift]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SACRIFICE_WEAKEST",
+  "displayName": "替罪羔羊",
+  "rarity": "1",
+  "cardDesc": "埋葬 <b>1</b> 攻击力最低友方;强化 <b>1</b> 该卡",
+  "folder": "1_Uncommon",
+  "file": "SACRIFICE_WEAKEST.prefab",
+  "containers": [
+   {
+    "child": "bury weakest",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryCardWithMinAttack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "boost it",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveFriendlyCardWithMinAttack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SNOWBALL",
+  "displayName": "蛊王",
+  "rarity": "1",
+  "cardDesc": "攻击x2;强化反应:强化自身 <b>1</b>",
+  "folder": "1_Uncommon",
+  "file": "SNOWBALL.prefab",
+  "containers": [
+   {
+    "child": "gain double power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STATUS EFFECT\\POWER\\OnMeGainedAttack.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttack(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SOUL_TRADER",
+  "displayName": "以命换命",
+  "rarity": "1",
+  "cardDesc": "复活 <b>2</b> 友方;埋葬 <b>1</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "SOUL_TRADER.prefab",
+  "containers": [
+   {
+    "child": "revive 2",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(2)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury 1 friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "UNDYING_WARRIOR",
+  "displayName": "钉不死的人",
+  "rarity": "1",
+  "cardDesc": "攻击;强化反应:复活自身",
+  "folder": "1_Uncommon",
+  "file": "UNDYING_WARRIOR.prefab",
+  "containers": [
+   {
+    "child": "gained attack revive self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STATUS EFFECT\\POWER\\OnMeGainedAttack.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveSelf(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "UTILITY_CREATURES_1",
+  "displayName": "百怪入梦",
+  "rarity": "1",
+  "cardDesc": "被动: <b>20%</b> 概率只掷出生物卡",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_CREATURES_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_HALFPRICE_1",
+  "displayName": "魇市半价",
+  "rarity": "1",
+  "cardDesc": "被动: 必出 <b>1</b> 件半价商品",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_HALFPRICE_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_ODDS_2",
+  "displayName": "窥魇镜",
+  "rarity": "1",
+  "cardDesc": "被动: <b>25%</b> 概率多出 <b>1</b> 件商店被动卡",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_ODDS_2.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_SLOT_U_2",
+  "displayName": "连魇",
+  "rarity": "1",
+  "cardDesc": "被动: 每次生成货架必出 <b>1</b> 张✦✦卡",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_SLOT_U_2.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_SPELLS_1",
+  "displayName": "死寂的梦",
+  "rarity": "1",
+  "cardDesc": "被动: 每次生成货架 <b>20%</b> 概率:只掷出非生物卡",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_SPELLS_1.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_TAG_AWAKEN",
+  "displayName": "惊醒",
+  "rarity": "1",
+  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张带[苏醒]的卡",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_TAG_AWAKEN.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_TAG_CURSE",
+  "displayName": "噩梦",
+  "rarity": "1",
+  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张带[诅咒]的卡",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_TAG_CURSE.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_TAG_REVIVE",
+  "displayName": "亡者入梦",
+  "rarity": "1",
+  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张带[复活]的卡",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_TAG_REVIVE.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "UTILITY_WEIGHT_R",
+  "displayName": "梦魇缠身",
+  "rarity": "1",
+  "cardDesc": "被动: ✦✦✦卡的出货权重 <b>\\xD72</b>",
+  "folder": "1_Uncommon",
+  "file": "UTILITY_WEIGHT_R.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "WEAKENING_FIELD",
+  "displayName": "瘴气",
+  "rarity": "1",
+  "cardDesc": "所有生物本回合攻击力 <b>-1</b>",
+  "folder": "1_Uncommon",
+  "file": "WEAKENING_FIELD.prefab",
+  "containers": [
+   {
+    "child": "weaken all",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ModifyAllCreatureAttackThisRoundExceptCurse(-1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "咒茧",
+  "rarity": "1",
+  "cardDesc": "强化 <b>1</b> 敌方诅咒;苏醒:强化 <b>2</b> 敌方诅咒",
+  "folder": "1_Uncommon",
+  "file": "WOKEN_HEX.prefab",
+  "containers": [
+   {
+    "child": "hex 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "wake hex 2",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeRevived.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "DECIMATION",
+  "displayName": "什一抽杀",
+  "rarity": "2",
+  "cardDesc": "埋葬 <b>6</b> 友方,本回合每埋葬过 <b>1</b> 友方,埋葬数 <b>-1</b>;攻击x3",
+  "folder": "2_Rare",
+  "file": "DECIMATION.prefab",
+  "containers": [
+   {
+    "child": "attack x3",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(3)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "decimate",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards_CountBasedOnFriendlyBuried(6)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "DUO_REVIVER",
+  "displayName": "阴婚",
+  "rarity": "2",
+  "cardDesc": "复活 <b>2</b> 友方✦✦卡",
+  "folder": "2_Rare",
+  "file": "DUO_REVIVER.prefab",
+  "containers": [
+   {
+    "child": "revive 2 uncommon",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_MILLER",
+  "displayName": "血肉磨坊",
+  "rarity": "2",
+  "cardDesc": "攻击;埋葬 <b>2</b> 友方;埋葬卡组顶 <b>5</b> 卡",
+  "folder": "2_Rare",
+  "file": "GRAVE_MILLER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury hostile",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryNextXCards(5)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "LAST_RITES",
+  "displayName": "安魂弥撒",
+  "rarity": "2",
+  "cardDesc": "遗言:触发所有在墓地友方的遗言",
+  "folder": "2_Rare",
+  "file": "LAST_RITES.prefab",
+  "containers": [
+   {
+    "child": "chain grave deathrattles",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "TriggerAllGraveyardFriendlyDeathrattles(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "MASS_SACRIFICE",
+  "displayName": "集体自焚",
+  "rarity": "2",
+  "cardDesc": "埋葬所有友方;每埋葬 <b>1</b> 友方,生成 <b>1</b> 信徒",
+  "folder": "2_Rare",
+  "file": "MASS_SACRIFICE.prefab",
+  "containers": [
+   {
+    "child": "sacrifice and spawn",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "SacrificeAllThenSpawnBelievers(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "MILLBLADE",
+  "displayName": "凌迟",
+  "rarity": "2",
+  "cardDesc": "攻击;每有 <b>1</b> 攻击力,埋葬卡组顶 <b>1</b> 卡",
+  "folder": "2_Rare",
+  "file": "MILLBLADE.prefab",
+  "containers": [
+   {
+    "child": "mill per atk",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryNextXCards_BasedOnAttack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "QUAD_STRIKER",
+  "displayName": "百臂巨人",
+  "rarity": "2",
+  "cardDesc": "攻击x4",
+  "folder": "2_Rare",
+  "file": "QUAD_STRIKER.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_ATTACK_HEX",
+  "displayName": "饲咒",
+  "rarity": "2",
+  "cardDesc": "被动:有卡攻击时,强化 <b>1</b> 敌方诅咒",
+  "folder": "2_Rare",
+  "file": "RELIC_ATTACK_HEX.prefab",
+  "containers": [
+   {
+    "child": "any attack enhance 1 curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\DMG\\onAnyCardAttacked.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_BLOOD_PACT",
+  "displayName": "血契",
+  "rarity": "2",
+  "cardDesc": "被动:友方攻击不再造成伤害,而是强化等量敌方诅咒",
+  "folder": "2_Rare",
+  "file": "RELIC_BLOOD_PACT.prefab",
+  "containers": [
+   {
+    "child": "arm blood pact",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\AfterShuffle.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "SetIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_CURSE_GRAVE",
+  "displayName": "勾魂簿",
+  "rarity": "2",
+  "cardDesc": "被动:敌方诅咒揭晓时,埋葬 <b>1</b> 敌方",
+  "folder": "2_Rare",
+  "file": "RELIC_CURSE_GRAVE.prefab",
+  "containers": [
+   {
+    "child": "enemy curse revealed bury 1 enemy",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnHostileCurseRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_CURSE_HASTE",
+  "displayName": "提前发作",
+  "rarity": "2",
+  "cardDesc": "被动:敌方诅咒攻击次数 <b>+1</b>",
+  "folder": "2_Rare",
+  "file": "RELIC_CURSE_HASTE.prefab",
+  "containers": [
+   {
+    "child": "curse times 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnHostileCurseRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveRevealedCurseAttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_CURSE_REVIVAL",
+  "displayName": "耳语唤尸",
+  "rarity": "2",
+  "cardDesc": "被动:敌方诅咒揭晓时,复活 <b>1</b> 友方",
+  "folder": "2_Rare",
+  "file": "RELIC_CURSE_REVIVAL.prefab",
+  "containers": [
+   {
+    "child": "enemy curse revealed revive 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnHostileCurseRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ReviveMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_DEATH_KNELL",
+  "displayName": "丧钟",
+  "rarity": "2",
+  "cardDesc": "被动:友方苏醒时:触发其遗言",
+  "folder": "2_Rare",
+  "file": "RELIC_DEATH_KNELL.prefab",
+  "containers": [
+   {
+    "child": "deathrattle wake",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnFriendlyCardRevived.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "TriggerDeathrattleOfLastRevivedFriendly(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_GRAVE_LORD",
+  "displayName": "白骨王座",
+  "rarity": "2",
+  "cardDesc": "被动:墓地中的友方生物攻击力 <b>+1</b>",
+  "folder": "2_Rare",
+  "file": "RELIC_GRAVE_LORD.prefab",
+  "containers": [
+   {
+    "child": "arm grave aura",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\AfterShuffle.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "SetIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_HIVE",
+  "displayName": "以血布道",
+  "rarity": "2",
+  "cardDesc": "被动:友方攻击时,生成 <b>1</b> 信徒",
+  "folder": "2_Rare",
+  "file": "RELIC_HIVE.prefab",
+  "containers": [
+   {
+    "child": "friendly attack add rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\DMG\\onAnyFriendlyCardAttacked.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RELIC_RIFT_OVERRIDE",
+  "displayName": "伪经",
+  "rarity": "2",
+  "cardDesc": "被动:友方信徒效果变为:复活 <b>1</b> 敌方诅咒;放逐自身",
+  "folder": "2_Rare",
+  "file": "RELIC_RIFT_OVERRIDE.prefab",
+  "containers": [
+   {
+    "child": "arm rift override",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\AfterShuffle.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "SetIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "REVIVING_STRIKER",
+  "displayName": "无头武生",
+  "rarity": "2",
+  "cardDesc": "攻击;遗言:攻击次数 <b>+1</b>,复活自身",
+  "folder": "2_Rare",
+  "file": "REVIVING_STRIKER.prefab",
+  "containers": [
+   {
+    "child": "revive self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttackTimes(1)",
+     "ReviveSelf(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_REAPER",
+  "displayName": "血飨",
+  "rarity": "2",
+  "cardDesc": "放逐所有信徒,每放逐 <b>1</b>,强化 <b>1</b> 友方生物",
+  "folder": "2_Rare",
+  "file": "RIFT_REAPER.prefab",
+  "containers": [
+   {
+    "child": "exile all rifts",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ExileMyCardsWithTypeID(99)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "boost per exiled",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly_BasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SLIME_4.0",
+  "displayName": "管道里的活物",
+  "rarity": "2",
+  "cardDesc": "攻击;遗言:复制自身",
+  "folder": "2_Rare",
+  "file": "SLIME_4.0.prefab",
+  "containers": [
+   {
+    "child": "add a copy of self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddSelfToMe(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SWARM_CURSER",
+  "displayName": "诅咒唱诗班",
+  "rarity": "2",
+  "cardDesc": "生成 <b>1</b> 信徒;每有 <b>1</b> 友方信徒,强化 <b>1</b> 敌方诅咒",
+  "folder": "2_Rare",
+  "file": "SWARM_CURSER.prefab",
+  "containers": [
+   {
+    "child": "curse per rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurseTimes_BasedOnTypeIDCount(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "pro 1 rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SWARM_QUEEN",
+  "displayName": "黑圣母",
+  "rarity": "2",
+  "cardDesc": "攻击;每有 <b>1</b> 攻击力,生成 <b>1</b> 信徒",
+  "folder": "2_Rare",
+  "file": "SWARM_QUEEN.prefab",
+  "containers": [
+   {
+    "child": "attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "pro per atk",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe_BasedOnAttack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "UNFINISHED_ROBOT_4.0",
+  "displayName": "缝合人",
+  "rarity": "2",
+  "cardDesc": "攻击;攻击力翻倍",
+  "folder": "2_Rare",
+  "file": "UNFINISHED_ROBOT_4.0.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "double self power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "DoubleOwnAttack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "UTILITY_SLOT_R",
+  "displayName": "深魇",
+  "rarity": "2",
+  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张✦✦✦卡",
+  "folder": "2_Rare",
+  "file": "UTILITY_SLOT_R.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "WEAPON_SPIRIT",
+  "displayName": "妖刀",
+  "rarity": "2",
+  "cardDesc": "被动:友方被强化时:强化 <b>1</b> 该友方",
+  "folder": "2_Rare",
+  "file": "WEAPON_SPIRIT.prefab",
+  "containers": [
+   {
+    "child": "amplify enhanced",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STATUS EFFECT\\POWER\\OnFriendlyCardGainedAttack.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToLastGainedAttack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_PUNCH",
+  "displayName": "尸爆",
+  "rarity": "0",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,攻击 \\xD7<b>2</b>",
+  "folder": "0_Common",
+  "file": "GRAVE_PUNCH.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_TOGETHER",
+  "displayName": "同路人",
+  "rarity": "",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,埋葬 <b>2</b> 敌方",
+  "folder": "0_Common",
+  "file": "GRAVE_TOGETHER.prefab",
+  "containers": [
+   {
+    "child": "bury hostile",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(2)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury friendly",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CORPSE_CANON",
+  "displayName": "冥界大炮",
+  "rarity": "1",
+  "cardDesc": "揭晓时:埋葬 1 友方;\\n友方被埋葬:攻击",
+  "folder": "1_Uncommon",
+  "file": "CORPSE_CANON.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnFriendlyCardBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_INVITATION",
+  "displayName": "冥界邀请",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击,墓地每有 <b>1</b> 友方:埋葬 <b>1</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "GRAVE_INVITATION.prefab",
+  "containers": [
+   {
+    "child": "bury hostile based on friendly in grave",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards_BasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "UNSTABLE_PORTAL",
+  "displayName": "不稳定传送门",
+  "rarity": "1",
+  "cardDesc": "揭晓时:置顶 <b>1</b> 友方,埋葬 <b>1</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "UNSTABLE_PORTAL.prefab",
+  "containers": [
+   {
+    "child": "bury friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage friendly",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "BODY_CANON",
+  "displayName": "人间大炮",
+  "rarity": "2",
+  "cardDesc": "揭晓时:埋葬所有友方,墓地每有一个友方:攻击",
+  "folder": "2_Rare",
+  "file": "BODY_CANON.prefab",
+  "containers": [
+   {
+    "child": "deal 1 dmg x friendly after start card",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimesBasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury all friendly cards",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryAllMyCards(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "LARGE_SCALE_DEATH",
+  "displayName": "大范围死亡",
+  "rarity": "2",
+  "cardDesc": "揭晓时:埋葬后 <b>4</b> 卡",
+  "folder": "2_Rare",
+  "file": "LARGE_SCALE_DEATH.prefab",
+  "containers": [
+   {
+    "child": "bury next cards",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryNextXCards(4)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "WISE_BURIAL",
+  "displayName": "不愚蠢的埋葬",
+  "rarity": "2",
+  "cardDesc": "揭晓:埋葬 <b>2</b> 友方[<tag:DeathRattle>]/[<tag:Linger>]",
+  "folder": "2_Rare",
+  "file": "WISE_BURIAL.prefab",
+  "containers": [
+   {
+    "child": "'bury 1 friendly [Deathrattle]/[Linger]'",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCardsWithTag(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_PORTAL",
+  "displayName": "冥界裂缝",
+  "rarity": "0",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 敌方;被埋葬:置顶 <b>1</b> 友方",
+  "folder": "0_Common",
+  "file": "GRAVE_PORTAL.prefab",
+  "containers": [
+   {
+    "child": "bury hostile",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage friendly (1)",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SOLDIER_SKELETON",
+  "displayName": "骷髅士兵",
+  "rarity": "0",
+  "cardDesc": "揭晓时:攻击;被埋葬:置顶自身",
+  "folder": "0_Common",
+  "file": "SOLDIER_SKELETON.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageSelf(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "AVENGER",
+  "displayName": "复仇者",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击;被埋葬:获得 <b>2</b> 攻击力",
+  "folder": "1_Uncommon",
+  "file": "AVENGER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "gain power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttack(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CONFUSED_PORTALMANCER",
+  "displayName": "错乱传送术士",
+  "rarity": "1",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方;\\n被埋葬:生成 <b>3</b> [次元裂缝] ",
+  "folder": "1_Uncommon",
+  "file": "CONFUSED_PORTALMANCER.prefab",
+  "containers": [
+   {
+    "child": "'add [rift]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury friendly",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSED_CORPSE",
+  "displayName": "被诅咒的尸体",
+  "rarity": "1",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒];被埋葬:攻击 \\xD7<b>3</b>",
+  "folder": "1_Uncommon",
+  "file": "CURSED_CORPSE.prefab",
+  "containers": [
+   {
+    "child": "deal dmg multiple times",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(3)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "enhance hostile [ju-on], deal dmg multiple times",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SCAPEGOAT",
+  "displayName": "替死鬼",
+  "rarity": "1",
+  "cardDesc": "被埋葬:攻击,置顶 1 友方",
+  "folder": "1_Uncommon",
+  "file": "SCAPEGOAT.prefab",
+  "containers": [
+   {
+    "child": "stage friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SPIKE_SKELETON",
+  "displayName": "针刺骷髅",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击;被埋葬:攻击 \\xD7<b>2</b>",
+  "folder": "1_Uncommon",
+  "file": "SPIKE_SKELETON.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimes(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg multiple times",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRAVE_KEEPER",
+  "displayName": "守墓人",
+  "rarity": "2",
+  "cardDesc": "友方被埋葬时:置顶自身;\\n揭晓时:攻击",
+  "folder": "2_Rare",
+  "file": "GRAVE_KEEPER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnFriendlyCardBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageSelf(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "MARTYR",
+  "displayName": "殉道者",
+  "rarity": "2",
+  "cardDesc": "被埋葬:所有友方获得 <b>1</b> 攻击力",
+  "folder": "2_Rare",
+  "file": "MARTYR.prefab",
+  "containers": [
+   {
+    "child": "give all friendly power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAllFriendlyAttack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SLIME",
+  "displayName": "史莱姆",
+  "rarity": "2",
+  "cardDesc": "揭晓时:攻击;\\n被埋葬:添加自身到卡组中",
+  "folder": "2_Rare",
+  "file": "SLIME.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "add a copy of self",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddSelfToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "FALL_INTO_RIFT",
+  "displayName": "坠入裂缝",
+  "rarity": "0",
+  "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],埋葬 <b>1</b> 敌方",
+  "folder": "0_Common",
+  "file": "FALL_INTO_RIFT.prefab",
+  "containers": [
+   {
+    "child": "'add [rift]'",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury hostile",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_INSECT",
+  "displayName": "次元虫",
+  "rarity": "0",
+  "cardDesc": "揭晓时:攻击;生成 <b>1</b> [次元裂缝]",
+  "folder": "0_Common",
+  "file": "RIFT_INSECT.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "'add 1 [rift]'",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_COFFIN",
+  "displayName": "次元棺材",
+  "rarity": "1",
+  "cardDesc": "<tag:Linger>;当友方被去除时:埋葬 <b>1</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "RIFT_COFFIN.prefab",
+  "containers": [
+   {
+    "child": "bury 1 hostile",
+    "event": null,
+    "costChecks": [
+     "CheckCost_IndexBeforeStartCard(0)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_DRAGON",
+  "displayName": "次元龙",
+  "rarity": "1",
+  "cardDesc": "揭晓时:生成 <b>1</b> [次元裂缝],攻击;\\n被置顶:生成 <b>1</b> [次元裂缝]",
+  "folder": "1_Uncommon",
+  "file": "RIFT_DRAGON.prefab",
+  "containers": [
+   {
+    "child": "'add [rift]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STAGE\\OnMeStaged.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": "RIFT"
+   },
+   {
+    "child": "deal dmg and add rift",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(2)",
+     "Attack(0)"
+    ],
+    "targetCardTypeID": "RIFT"
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_GUIDE",
+  "displayName": "次元引导者",
+  "rarity": "1",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:埋葬 <b>2</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "RIFT_GUIDE.prefab",
+  "containers": [
+   {
+    "child": "check and exile rift and bury hostile",
+    "event": null,
+    "costChecks": [
+     "CheckCost_HasOwnCardOfType(1)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ExileMyCardsWithTypeID(1)",
+     "BuryTheirCards(2)"
+    ],
+    "targetCardTypeID": "RIFT"
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_MONSTER",
+  "displayName": "次元兽",
+  "rarity": "1",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:攻击",
+  "folder": "1_Uncommon",
+  "file": "RIFT_MONSTER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [
+     "CheckCost_HasOwnCardOfType(1)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ExileMyCardsWithTypeID(1)",
+     "Attack(0)"
+    ],
+    "targetCardTypeID": "RIFT"
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_SUMMONER",
+  "displayName": "裂缝召唤师",
+  "rarity": "1",
+  "cardDesc": "揭晓时,去除 <b>1</b> [次元裂缝]:置顶 <b>2</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "RIFT_SUMMONER.prefab",
+  "containers": [
+   {
+    "child": "check and exile rift and stage friendly",
+    "event": null,
+    "costChecks": [
+     "CheckCost_HasOwnCardOfType(1)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ExileMyCardsWithTypeID(1)",
+     "StageMyCards(2)"
+    ],
+    "targetCardTypeID": "RIFT"
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SACRIFICE_RITUAL",
+  "displayName": "献祭仪式",
+  "rarity": "1",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,生成 <b>2</b> [次元裂缝]",
+  "folder": "1_Uncommon",
+  "file": "SACRIFICE_RITUAL.prefab",
+  "containers": [
+   {
+    "child": "bury friendly",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "'add [rift]'",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "临终诅咒",
+  "rarity": "2",
+  "cardDesc": "<tag:Linger>;当友方被去除时:敌方[诅咒]获得 <b>1</b> 力量",
+  "folder": "2_Rare",
+  "file": "DEATHBED_CURSE.prefab",
+  "containers": [
+   {
+    "child": "'if in grave: hostile [curse] + power'",
+    "event": null,
+    "costChecks": [
+     "CheckCost_IndexBeforeStartCard(0)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_DEVOURER",
+  "displayName": "次元吞噬者",
+  "rarity": "2",
+  "cardDesc": "揭晓时:攻击;当友方被去除时:获得 <b>1</b> 攻击力",
+  "folder": "2_Rare",
+  "file": "RIFT_DEVOURER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "gain power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\EXILE\\OnFriendlyCardExiled.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_THIRST_SUMMONER",
+  "displayName": "咒食的召唤师",
+  "rarity": "0",
+  "cardDesc": "当敌方[诅咒]揭晓时:置顶自身;\\n揭晓时:置顶 <b>1</b> 友方",
+  "folder": "0_Common",
+  "file": "CURSE_THIRST_SUMMONER.prefab",
+  "containers": [
+   {
+    "child": "stage self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnHostileCurseRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageSelf(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "POISONER",
+  "displayName": "咒师",
+  "rarity": "0",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],攻击",
+  "folder": "0_Common",
+  "file": "POISONER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "'enhence hostile [ju-on]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT_CURSE",
+  "displayName": "异次元的诅咒",
+  "rarity": "0",
+  "cardDesc": "揭晓时:增强 <b>1</b> 敌方[诅咒],生成 <b>1</b> [次元裂缝]",
+  "folder": "0_Common",
+  "file": "RIFT_CURSE.prefab",
+  "containers": [
+   {
+    "child": "'enhance hostile [ju-on]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "'add [rift]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "献祭诅咒",
+  "rarity": "0",
+  "cardDesc": "揭晓时:埋葬 <b>1</b> 友方,增强 <b>3</b> 敌方[诅咒]",
+  "folder": "0_Common",
+  "file": "SACRIFICIAL_CURSE.prefab",
+  "containers": [
+   {
+    "child": "enhance hostile curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(3)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "不死诅咒者",
+  "rarity": "0",
+  "cardDesc": "揭晓时:增强敌方[诅咒] <b>2</b>;\\n被埋葬:增强敌方[诅咒] <b>1</b>",
+  "folder": "0_Common",
+  "file": "UNDEAD_CURSER.prefab",
+  "containers": [
+   {
+    "child": "'enhence hostile [curse]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "enhence hostile [curse] 2",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSED_SKELETON",
+  "displayName": "被诅咒的骷髅",
+  "rarity": "1",
+  "cardDesc": "揭晓时,墓地每有 <b>1</b> 友方:增强 <b>1</b> 敌方[诅咒]",
+  "folder": "1_Uncommon",
+  "file": "CURSED_SKELETON.prefab",
+  "containers": [
+   {
+    "child": "enhance hostile curse for each friendly in grave",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse_BasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_THIRST_BEAST",
+  "displayName": "咒食的野兽",
+  "rarity": "1",
+  "cardDesc": "当敌方[诅咒]揭晓时:置顶自身;\\n揭晓时:攻击",
+  "folder": "1_Uncommon",
+  "file": "CURSE_THIRST_BEAST.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnHostileCurseRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageSelf(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_THIRST_SHAMAN",
+  "displayName": "咒食的萨满",
+  "rarity": "1",
+  "cardDesc": "揭晓时,敌方[诅咒]每有 <b>1</b> 攻击力:给予 <b>1</b> 友方 <b>1</b> 攻击力",
+  "folder": "1_Uncommon",
+  "file": "CURSE_THIRST_SHAMAN.prefab",
+  "containers": [
+   {
+    "child": "apply power to friendly = hostile curse power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly_BasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "MOTH_MAN",
+  "displayName": "飞蛾人",
+  "rarity": "1",
+  "cardDesc": "当敌方[诅咒]获得力量时:置顶 <b>1</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "MOTH_MAN.prefab",
+  "containers": [
+   {
+    "child": "stage friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\CURSE\\OnEnemyCurseCardGotPower.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "PREMATURE",
+  "displayName": "拔苗助长",
+  "rarity": "1",
+  "cardDesc": "揭晓时,敌方[诅咒]攻击力 - <b>1</b> :置顶敌方[诅咒]",
+  "folder": "1_Uncommon",
+  "file": "PREMATURE.prefab",
+  "containers": [
+   {
+    "child": "consume 1 hostile [ju-on] power, stage it",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [
+     "CheckCost_EnemyCurseCardHasAttack(1)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeEnemyCurseAttack(1)",
+     "StageTheirSpecificCard(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SMALL_SCALE_DEATH",
+  "displayName": "小范围死亡",
+  "rarity": "1",
+  "cardDesc": "揭晓时:埋葬后 <b>2</b> 卡,攻击",
+  "folder": "1_Uncommon",
+  "file": "SMALL_SCALE_DEATH.prefab",
+  "containers": [
+   {
+    "child": "enhance hostile curse",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury next 2",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryNextXCards(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CROW_CROWD",
+  "displayName": "乌合之众",
+  "rarity": "2",
+  "cardDesc": "揭晓时:将所有友方的攻击力(排除友方[诅咒])转移到敌方的[诅咒]",
+  "folder": "2_Rare",
+  "file": "CROW_CROWD.prefab",
+  "containers": [
+   {
+    "child": "'transfer all friendly power to hostile [curse]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "TransferAllAttackToHostileCurse(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_ENCHANTMENT",
+  "displayName": "诅咒附魔",
+  "rarity": "2",
+  "cardDesc": "<tag:Linger>;\\n当敌人受到伤害时:增强 <b>1</b> 敌方[诅咒]",
+  "folder": "2_Rare",
+  "file": "CURSE_ENCHANTMENT.prefab",
+  "containers": [
+   {
+    "child": "'if in grave, enhance hostile [curse]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\DMG\\OnTheirPlayerTookDmg.asset",
+    "costChecks": [
+     "CheckCost_IndexBeforeStartCard(0)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "DETERIORATION",
+  "displayName": "恶化",
+  "rarity": "2",
+  "cardDesc": "揭晓时,敌方[诅咒]每有 <b>2</b> 力量:增强 <b>1</b> 敌方[诅咒]",
+  "folder": "2_Rare",
+  "file": "DETERIORATION.prefab",
+  "containers": [
+   {
+    "child": "for 2 power hostile [curse] power, enhance 1",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurseWithCoefficient_BasedOnIntSO(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "PROLIFERATING_CURSE",
+  "displayName": "增殖的厄运",
+  "rarity": "2",
+  "cardDesc": "揭晓时:复制敌方 <b>1</b> [诅咒]",
+  "folder": "2_Rare",
+  "file": "PROLIFERATING_CURSE.prefab",
+  "containers": [
+   {
+    "child": "copy 1 hostile curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "CopyEnemyCurseCardToThem(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "BLACKSMITH",
+  "displayName": "铁匠",
+  "rarity": "0",
+  "cardDesc": "揭晓时:攻击,给予一个友方 <b>1</b> 攻击力",
+  "folder": "0_Common",
+  "file": "BLACKSMITH.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "apply power to friendly",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "COFFIN_MAKER",
+  "displayName": "棺材制造者",
+  "rarity": "0",
+  "cardDesc": "揭晓时:攻击,埋葬 <b>1</b> 敌方",
+  "folder": "0_Common",
+  "file": "COFFIN_MAKER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury hostile",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "MAD_SCIENTIST",
+  "displayName": "疯狂科学家",
+  "rarity": "0",
+  "cardDesc": "揭晓时:给予下 <b>3</b> 卡 <b>2</b> 攻击力",
+  "folder": "0_Common",
+  "file": "MAD_SCIENTIST.prefab",
+  "containers": [
+   {
+    "child": "apply power to next cards",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToLastXCards(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SACRIFICIAL_SWORD",
+  "displayName": "献祭剑",
+  "rarity": "0",
+  "cardDesc": "揭晓:埋葬 <b>1</b> 友方,给予 <b>1</b> 友方 <b>2</b> 攻击力",
+  "folder": "0_Common",
+  "file": "SACRIFICIAL_SWORD.prefab",
+  "containers": [
+   {
+    "child": "bury friendly",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "apply power to friendly",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "有副作用的传送门",
+  "rarity": "0",
+  "cardDesc": "揭晓时:增强自身诅咒 <b>1</b> ,置顶 <b>1</b> 友方",
+  "folder": "0_Common",
+  "file": "SIDE_EFFECT_PORTAL.prefab",
+  "containers": [
+   {
+    "child": "enhance friendly curse",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceFriendlyCurse(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "THE_FOOL",
+  "displayName": "愚者",
+  "rarity": "0",
+  "cardDesc": "揭晓时:置顶攻击力最多的敌方,攻击",
+  "folder": "0_Common",
+  "file": "THE_FOOL.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage hostile with most power",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageCardWithMaxAttack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "ADVANCE_PORTAL",
+  "displayName": "高等传送门",
+  "rarity": "1",
+  "cardDesc": "每揭晓 <b>2<counter></b> 次:置顶 <b>2</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "ADVANCE_PORTAL.prefab",
+  "containers": [
+   {
+    "child": "add counter",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfStatusEffect(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "consume counter to stage friendly",
+    "event": null,
+    "costChecks": [
+     "CheckCost_Counter(2)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeOwnStatusEffect(2)",
+     "StageMyCards(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "ALL_FOR_ONE",
+  "displayName": "人人为我",
+  "rarity": "1",
+  "cardDesc": "攻击力 = 所有友方卡攻击力总和(常态结算)",
+  "folder": "1_Uncommon",
+  "file": "ALL_FOR_ONE.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "ANTI_CREATURE_WEAPON",
+  "displayName": "对生物兵器",
+  "rarity": "1",
+  "cardDesc": "揭晓时:埋葬 <b>2</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "ANTI_CREATURE_WEAPON.prefab",
+  "containers": [
+   {
+    "child": "bury hostile",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "BONE_COMBINATION",
+  "displayName": "碎骨聚集体",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击 \\xD7本回合被埋葬的敌方数量",
+  "folder": "1_Uncommon",
+  "file": "BONE_COMBINATION.prefab",
+  "containers": [
+   {
+    "child": "deal dmg x hostile buried amount",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackTimesBasedOnOpponentBuriedCount(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "咒食的大召唤师",
+  "rarity": "1",
+  "cardDesc": "揭晓时,消耗敌方[诅咒] <b>2</b> 攻击力:置顶 <b>1</b> 友方;\\n揭晓时:给予下 <b>1</b> 卡 <b>2</b> 攻击力",
+  "folder": "1_Uncommon",
+  "file": "CURSE_THIRST_ARCH_SUMMONER.prefab",
+  "containers": [
+   {
+    "child": "consume hostile curse power to stage friendly",
+    "event": null,
+    "costChecks": [
+     "CheckCost_EnemyCurseCardHasAttack(2)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeEnemyCurseAttack(2)",
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "enhance next card",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToLastXCards(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "DR_MANHATTAN",
+  "displayName": "曼哈顿博士",
+  "rarity": "1",
+  "cardDesc": "揭晓时,消耗 <b>2</b> 攻击力:置顶 <b>2</b> 友方,埋葬 <b>2</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "DR_MANHATTAN.prefab",
+  "containers": [
+   {
+    "child": "consume power, stage firneldy bury hostile",
+    "event": null,
+    "costChecks": [
+     "CheckCost_OwnAttack(2)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeOwnAttack(2)",
+     "StageMyCards(2)",
+     "BuryTheirCards(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "FLESH_COMBINATION",
+  "displayName": "血肉聚集体",
+  "rarity": "1",
+  "cardDesc": "攻击力 = 友方卡牌数量(常态结算)",
+  "folder": "1_Uncommon",
+  "file": "FLESH_COMBINATION.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "GOBLIN_ASSASSIN_TEAM",
+  "displayName": "哥布林暗杀部队",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击;被置顶:埋葬 <b>1</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "GOBLIN_ASSASSIN_TEAM.prefab",
+  "containers": [
+   {
+    "child": "bury hostile",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STAGE\\OnMeStaged.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GOBLIN_CHARGE_TEAM",
+  "displayName": "哥布林冲锋部队",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击;\\n被置顶:攻击",
+  "folder": "1_Uncommon",
+  "file": "GOBLIN_CHARGE_TEAM.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg (1)",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STAGE\\OnMeStaged.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "POWER_CRAVER",
+  "displayName": "力量渴求者",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击;获得攻击力时:获得 <b>2</b> 倍攻击力",
+  "folder": "1_Uncommon",
+  "file": "POWER_CRAVER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "gain double power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STATUS EFFECT\\POWER\\OnMeGainedAttack.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AmplifyAttackGain(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "POWER_SURGE",
+  "displayName": "能量迸发",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击;\\n被置顶:给予 <b>2</b> 友方 <b>1</b> 攻击力",
+  "folder": "1_Uncommon",
+  "file": "POWER_SURGE.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "give friendly power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STAGE\\OnMeStaged.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "POWER_TRANSFER",
+  "displayName": "力量转移",
+  "rarity": "1",
+  "cardDesc": "揭晓时:去除 1 张敌方[攻击者](最高攻击力)1 攻击力:给予 1 张友方[攻击者](最低攻击力)1 攻击力",
+  "folder": "1_Uncommon",
+  "file": "POWER_TRANSFER.prefab",
+  "containers": [
+   {
+    "child": "consume enemy max attack",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ConsumeEnemyCardWithMaxAttack(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "give friendly min attack",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveFriendlyCardWithMinAttack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "QUICK_RESPONSE_PROTOCOL",
+  "displayName": "快速响应协议",
+  "rarity": "1",
+  "cardDesc": "<tag:Linger>;\\n再有 <b>4<counter></b> 敌人被揭晓:置顶 <b>1</b> 友方",
+  "folder": "1_Uncommon",
+  "file": "QUICK_RESPONSE_PROTOCOL.prefab",
+  "containers": [
+   {
+    "child": "add counter",
+    "event": null,
+    "costChecks": [
+     "CheckCost_IndexBeforeStartCard(0)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfStatusEffect(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "if in grave and counter requirement met, consume counter and stage friendly",
+    "event": null,
+    "costChecks": [
+     "CheckCost_Counter(4)",
+     "CheckCost_IndexBeforeStartCard(0)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeOwnStatusEffect(4)",
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SNATCHER",
+  "displayName": "屠夫",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击;被置顶:置顶 <b>1</b> 友方;被埋葬:埋葬 <b>1</b> 敌方",
+  "folder": "1_Uncommon",
+  "file": "SNATCHER.prefab",
+  "containers": [
+   {
+    "child": "stage friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STAGE\\OnMeStaged.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury hostile",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "TACTICAL_BREACHER",
+  "displayName": "战术爆破手",
+  "rarity": "1",
+  "cardDesc": "揭晓时:攻击;被置顶:获得 <b>1</b> 攻击力",
+  "folder": "1_Uncommon",
+  "file": "TACTICAL_BREACHER.prefab",
+  "containers": [
+   {
+    "child": "gain power",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\STAGE\\OnMeStaged.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttack(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "WEAPON_SPIRIT",
+  "displayName": "武器精灵",
+  "rarity": "1",
+  "cardDesc": "<tag:Linger>;当友方获得攻击力时:给予该友方 <b>1</b> 攻击力",
+  "folder": "1_Uncommon",
+  "file": "WEAPON_SPIRIT.prefab",
+  "containers": [
+   {
+    "child": "if in grave, apply power to last friendly power reciever",
+    "event": null,
+    "costChecks": [
+     "CheckCost_IndexBeforeStartCard(0)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToCardThatGainedAttack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "全能人",
+  "rarity": "2",
+  "cardDesc": "揭晓 <b>2<counter></b> 次:攻击,攻击力 = 墓地友方卡数 + 友方[次元裂缝]数 + 敌方[负面]攻击力总和(常态结算),置顶 <b>1</b> 友方,埋葬 <b>1</b> 敌方,给予 <b>1</b> 友方攻击力,生成 <b>1</b> [次元裂缝],增强 <b>1</b> 敌方[诅咒]",
+  "folder": "2_Rare",
+  "file": "ALMIGHTY.prefab",
+  "containers": [
+   {
+    "child": "consume counter to deal dmg; stage friendly; bury hostile; give friendly",
+    "event": null,
+    "costChecks": [
+     "CheckCost_Counter(2)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeOwnStatusEffect(2)",
+     "Attack(0)",
+     "StageMyCards(1)",
+     "BuryTheirCards(1)",
+     "GiveAttack(1)",
+     "AddCardToMe(0)",
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "gain counter",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfAttack(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "BOOSTER",
+  "displayName": "推进器",
+  "rarity": "2",
+  "cardDesc": "洗牌后:置顶 <b>2</b> 友方;揭晓时:埋葬 <b>1</b> 友方",
+  "folder": "2_Rare",
+  "file": "BOOSTER.prefab",
+  "containers": [
+   {
+    "child": "bury friendly",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\AfterShuffle.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "ELDER_SORCERER",
+  "displayName": "远古魔法使用者",
+  "rarity": "2",
+  "cardDesc": "揭晓时,本回合每置顶过 <b>1</b> 友方:给予 <b>1</b> 友方 <b>1</b> 攻击力",
+  "folder": "2_Rare",
+  "file": "ELDER_SORCERER.prefab",
+  "containers": [
+   {
+    "child": "give friendly power x staged friendly this round",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveAttackToXFriendly_BasedOnStaged(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "ETERNAL_GHOST",
+  "displayName": "不散的恶灵",
+  "rarity": "2",
+  "cardDesc": "<tag:Linger>;\\n当敌人受到伤害时:攻击",
+  "folder": "2_Rare",
+  "file": "ETERNAL_GHOST.prefab",
+  "containers": [
+   {
+    "child": "if in grave, deal dmg",
+    "event": null,
+    "costChecks": [
+     "CheckCost_IndexBeforeStartCard(0)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "POWER_SIPHONER",
+  "displayName": "力量虹吸人",
+  "rarity": "2",
+  "cardDesc": "揭晓时:转移所有友方的 <b>1</b> 攻击力到自身,攻击 \\xD7<b>2</b>",
+  "folder": "2_Rare",
+  "file": "POWER_SIPHONER.prefab",
+  "containers": [
+   {
+    "child": "deal dmg multiple times",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(2)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "transfer 1 friendly power to me",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "TransferOneAttackToSelf(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "UNFINISHED_ROBOT",
+  "displayName": "未完成的机器人",
+  "rarity": "2",
+  "cardDesc": "揭晓时:攻击,翻倍自身攻击力",
+  "folder": "2_Rare",
+  "file": "UNFINISHED_ROBOT.prefab",
+  "containers": [
+   {
+    "child": "double self power",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "DoubleOwnAttack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "JU_ON",
+  "displayName": "诅咒",
+  "rarity": "0",
+  "cardDesc": "对自身造成[攻击力]点伤害",
+  "folder": "Token",
+  "file": "JU_ON.prefab",
+  "containers": [
+   {
+    "child": "attack self with own attack",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AttackSelf(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "RIFT",
+  "displayName": "信徒",
+  "rarity": "0",
+  "cardDesc": "复活 1 友方,去除自身",
+  "folder": "Token",
+  "file": "RIFT.prefab",
+  "containers": [
+   {
+    "child": "exile self",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ExileSelf(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "revive 1 friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "FriendRiftRevealOrOverride(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "ZOMBIE",
+  "displayName": "行尸走肉",
+  "rarity": "0",
+  "cardDesc": "攻击",
+  "folder": "_Default cards",
+  "file": "ZOMBIE.prefab",
+  "containers": [
+   {
+    "child": "deal dmg (1)",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "Attack(0)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal dmg",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "DecreaseTheirHp(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "BLIND_COMBAT_PRIEST",
+  "displayName": "盲眼战斗牧师",
+  "rarity": "0",
+  "cardDesc": "揭晓时:给予下 <b>1</b> 卡 <b>3</b> 力量",
+  "folder": "_Recycle Bin",
+  "file": "BLIND_COMBAT_PRIEST.prefab",
+  "containers": [
+   {
+    "child": "apply power to next card",
+    "event": null,
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveStatusEffectToLastXCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSE_THIRST_SUMMONER_OLD",
+  "displayName": "咒食的召唤师",
+  "rarity": "0",
+  "cardDesc": "揭晓时,消耗敌方[诅咒] <b>1</b> 力量:置顶 <b>1</b> 友方",
+  "folder": "_Recycle Bin",
+  "file": "CURSE_THIRST_SUMMONER_OLD.prefab",
+  "containers": [
+   {
+    "child": "consume hostile [ju-on] power, stage friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [
+     "CheckCost_EnemyCursedCardHasPower(1)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeHostileCursePower(1)",
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "GRUDGE",
+  "displayName": "怨恨",
+  "rarity": "1",
+  "cardDesc": "<tag:Linger>;当友方被埋葬时:给予下 <b>2</b> 张卡 <b>2</b> 力量",
+  "folder": "_Recycle Bin",
+  "file": "GRUDGE.prefab",
+  "containers": [
+   {
+    "child": "'linger: apply 2 power to 2 next cards'",
+    "event": null,
+    "costChecks": [
+     "CheckCost_IndexBeforeStartCard(0)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "GiveStatusEffectToLastXCards(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE_PRO",
+  "displayName": "卡位增加 <大>",
+  "rarity": "2",
+  "cardDesc": "卡位增加 <b>3</b>",
+  "folder": "_Recycle Bin",
+  "file": "IncreaseDeckSizePro.prefab",
+  "containers": [
+   {
+    "child": "Increase 3 deck size",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeBought.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "IncreaseDeckSizeBy(3)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "{fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}",
+  "displayName": "",
+  "rarity": "1",
+  "cardDesc": "揭晓时:生成 1 [次元裂缝];增强 1 敌方[诅咒]",
+  "folder": "_Test Cards",
+  "file": "ADD_RIFT_AND_CURSE.prefab",
+  "containers": [
+   {
+    "child": "enhance curse",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "add rift",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "AddCardToMe(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "CURSED_UNDERTAKER",
+  "displayName": "被诅咒的送葬者",
+  "rarity": "1",
+  "cardDesc": "揭晓时:增强 1 敌方[诅咒],埋葬 1 敌方",
+  "folder": "_Test Cards",
+  "file": "CURSED_UNDERTAKER.prefab",
+  "containers": [
+   {
+    "child": "'enhencee hostile [ju-on]'",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "EnhanceCurse(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury hostile",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "DOWNED_FIGHTER",
+  "displayName": "倒地的战士",
+  "rarity": "1",
+  "cardDesc": "被埋葬,消耗 <b>1</b> [力量]: 造成 <b><dmg></b> 伤害;\\n揭晓时:造成 <b><dmg></b> 伤害",
+  "folder": "_Test Cards",
+  "file": "DOWNED_FIGHTER.prefab",
+  "containers": [
+   {
+    "child": "deal less dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "DecreaseTheirHp(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "deal more dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\BURY\\OnMeBuried.asset",
+    "costChecks": [
+     "CheckCost_Power(1)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeOwnStatusEffect(1)",
+     "DecreaseTheirHp(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "DUMMY",
+  "displayName": "木桩",
+  "rarity": "1",
+  "cardDesc": "无效果",
+  "folder": "_Test Cards",
+  "file": "DUMMY.prefab",
+  "containers": []
+ },
+ {
+  "cardTypeID": "GOLEM",
+  "displayName": "巨人",
+  "rarity": "1",
+  "cardDesc": "揭晓 <b>2<counter></b> 次:造成<b> <dmg> </b>伤害",
+  "folder": "_Test Cards",
+  "file": "GOLEM.prefab",
+  "containers": [
+   {
+    "child": "give counter to self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "GiveSelfStatusEffect(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "consume counter to deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [
+     "CheckCost_Counter(2)"
+    ],
+    "preEffects": [],
+    "effects": [
+     "ConsumeOwnStatusEffect(2)",
+     "DecreaseTheirHp(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "JIJI_THE_KING",
+  "displayName": "急急国王",
+  "rarity": "0",
+  "cardDesc": "洗牌后:置顶自身;\\n揭晓时:造成 <b><dmg></b> 伤害",
+  "folder": "_Test Cards",
+  "file": "JIJI_THE_KING.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "DecreaseTheirHp(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "stage self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\AfterShuffle.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageSelf(0)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "JIJI_THE_SECOND",
+  "displayName": "急急二世",
+  "rarity": "0",
+  "cardDesc": "洗牌后:造成 <b><dmg></b> 伤害",
+  "folder": "_Test Cards",
+  "file": "JIJI_THE_SECOND.prefab",
+  "containers": [
+   {
+    "child": "deal dmg",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\GAME FLOW\\AfterShuffle.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "DecreaseTheirHp(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "ONE_TIME_EXILE",
+  "displayName": "一次性放逐",
+  "rarity": "1",
+  "cardDesc": "揭晓时:放逐 1 友方, 放逐自身",
+  "folder": "_Test Cards",
+  "file": "ONE_TIME_EXILE.prefab",
+  "containers": [
+   {
+    "child": "exile self",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ExileSelf(3)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "exile friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "ExileMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SWITCH",
+  "displayName": "开关",
+  "rarity": "1",
+  "cardDesc": "揭晓时:置顶 1 友方;埋葬 1 敌方",
+  "folder": "_Test Cards",
+  "file": "SWITCH.prefab",
+  "containers": [
+   {
+    "child": "stage friendly",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "StageMyCards(1)"
+    ],
+    "targetCardTypeID": null
+   },
+   {
+    "child": "bury hostile",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\REVEAL\\OnMeRevealed.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "BuryTheirCards(1)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ },
+ {
+  "cardTypeID": "SYSTEM_INCREASE_DECK_SIZE",
+  "displayName": "卡位增加 <中>",
+  "rarity": "1",
+  "cardDesc": "卡位增加 <b>2</b>",
+  "folder": "_UTILITY",
+  "file": "IncreaseDeckSize.prefab",
+  "containers": [
+   {
+    "child": "Increase 2 deck size",
+    "event": "D:\\Unity Projects\\OneDeck\\Assets\\SORefs\\GameEvents\\_OTHER\\OnMeBought.asset",
+    "costChecks": [],
+    "preEffects": [],
+    "effects": [
+     "IncreaseDeckSizeBy(2)"
+    ],
+    "targetCardTypeID": null
+   }
+  ]
+ }
+]
