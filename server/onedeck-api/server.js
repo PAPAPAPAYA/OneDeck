@@ -738,13 +738,47 @@ const ADMIN_CSS = 'body{background:#0f1115;color:#e6e8ec;font:14px/1.6 sans-seri
 	+ 'table{border-collapse:collapse;margin:8px 0}th,td{border:1px solid #2a2f3a;padding:5px 10px;text-align:left}'
 	+ 'th{background:#161a22}td.num{text-align:right}.muted{color:#9aa3b2}'
 	+ '.cards{display:flex;gap:12px;flex-wrap:wrap}.card{background:#161a22;border:1px solid #2a2f3a;border-radius:8px;padding:10px 16px}'
-	+ '.card b{font-size:20px;display:block}a{color:#7cc4ff}';
+	+ '.card b{font-size:20px;display:block}a{color:#7cc4ff}'
+	+ 'details.sec{margin-top:28px}'
+	+ 'details.sec>summary{cursor:pointer;font-size:17px;color:#7cc4ff;border-bottom:1px solid #2a2f3a;padding-bottom:6px}'
+	+ 'details.grp{margin:10px 0}'
+	+ 'details.grp>summary{cursor:pointer;color:#9aa3b2}';
 
 function adminPage(title, token, bodyHtml)
 {
 	return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + esc(title) + '</title><style>'
 		+ ADMIN_CSS + '</style></head><body><h1>' + esc(title) + '</h1>' + bodyHtml
 		+ '<p class="muted">OneDeck API admin &middot; <a href="/admin?token=' + esc(token) + '">dashboard</a></p></body></html>';
+}
+
+// Collapsible dashboard section; title is plain text (escaped here). open pre-expands it.
+function section(title, bodyHtml, open)
+{
+	return '<details class="sec"' + (open ? ' open' : '') + '><summary>' + esc(title) + '</summary>'
+		+ bodyHtml + '</details>';
+}
+
+// Long per-card stat tables: one collapsed <details> per (version, session) group.
+// Rows must arrive pre-sorted so each group is contiguous; labelOf(row) returns
+// pre-escaped HTML for the group summary. A single group is auto-opened.
+function groupedStatsTable(rows, keyOf, labelOf, header, rowOf)
+{
+	if (rows.length === 0) return '<p class="muted">no data yet</p>';
+	const groups = [];
+	let last = null;
+	for (const r of rows)
+	{
+		const k = keyOf(r);
+		if (!last || last.key !== k)
+		{
+			last = { key: k, rows: [] };
+			groups.push(last);
+		}
+		last.rows.push(r);
+	}
+	return groups.map((g) => '<details class="grp"' + (groups.length === 1 ? ' open' : '')
+		+ '><summary>' + labelOf(g.rows[0]) + ' · ' + (g.rows.length === 1 ? '1 row' : g.rows.length + ' rows') + '</summary>'
+		+ '<table><tr>' + header + '</tr>' + g.rows.map(rowOf).join('') + '</table></details>').join('');
 }
 
 // Resolve display names from the catalog version with the most rows.
@@ -816,55 +850,46 @@ app.get('/admin', requireAdmin, (req, res) =>
 		+ '<div class="card"><b>' + count('SELECT COUNT(DISTINCT game_version) AS c FROM decks') + '</b>versions</div>'
 		+ '</div>';
 
-	// Shop stats aggregated over latest snapshots of all players
-	let shopHtml = '<h2>Shop stats (seen / bought, per session)</h2>';
+	// Shop stats aggregated over latest snapshots of all players.
+	// Section folds by default; inside, one <details> per (version, session) group.
 	const shopRows = db.prepare(`SELECT game_version, card_type_id, session_num,
 		SUM(appear) AS appear, SUM(bought) AS bought,
 		SUM(util_appear) AS util_appear, SUM(util_bought) AS util_bought
 		FROM stats_snapshots WHERE kind = 'shop'
 		GROUP BY game_version, card_type_id, session_num
 		ORDER BY game_version, session_num, appear DESC`).all();
-	if (shopRows.length === 0)
-	{
-		shopHtml += '<p class="muted">no data yet</p>';
-	}
-	else
-	{
-		shopHtml += '<table><tr><th>version</th><th>session</th><th>card</th><th>seen</th><th>bought</th><th>buy rate</th><th>util seen</th><th>util bought</th></tr>';
-		for (const r of shopRows)
+	const shopBody = groupedStatsTable(shopRows,
+		(r) => r.game_version + '|' + r.session_num,
+		(r) => esc(r.game_version) + ' · session ' + r.session_num,
+		'<th>card</th><th>seen</th><th>bought</th><th>buy rate</th><th>util seen</th><th>util bought</th>',
+		(r) =>
 		{
 			const rate = r.appear > 0 ? (100 * r.bought / r.appear).toFixed(1) + '%' : '-';
-			shopHtml += '<tr><td>' + esc(r.game_version) + '</td><td class="num">' + r.session_num + '</td><td>'
-				+ esc(cardName(catalog, r.card_type_id)) + '</td><td class="num">' + r.appear + '</td><td class="num">'
-				+ r.bought + '</td><td class="num">' + rate + '</td><td class="num">' + r.util_appear
-				+ '</td><td class="num">' + r.util_bought + '</td></tr>';
-		}
-		shopHtml += '</table>';
-	}
+			return '<tr><td>' + esc(cardName(catalog, r.card_type_id)) + '</td><td class="num">' + r.appear
+				+ '</td><td class="num">' + r.bought + '</td><td class="num">' + rate
+				+ '</td><td class="num">' + r.util_appear + '</td><td class="num">' + r.util_bought + '</td></tr>';
+		});
+	const shopHtml = section('Shop stats (seen / bought, per session) · ' + shopRows.length + ' rows', shopBody, false);
 
-	// Win rates aggregated over latest snapshots of all players
-	let winHtml = '<h2>Card win rates (per session)</h2>';
+	// Win rates aggregated over latest snapshots of all players.
+	// Section folds by default; inside, one <details> per (version, session) group.
 	const winRows = db.prepare(`SELECT game_version, card_type_id, session_num,
 		SUM(combats) AS combats, SUM(wins) AS wins, SUM(losses) AS losses
 		FROM stats_snapshots WHERE kind = 'winrate'
 		GROUP BY game_version, card_type_id, session_num
 		ORDER BY game_version, session_num, combats DESC`).all();
-	if (winRows.length === 0)
-	{
-		winHtml += '<p class="muted">no data yet</p>';
-	}
-	else
-	{
-		winHtml += '<table><tr><th>version</th><th>session</th><th>card</th><th>combats</th><th>wins</th><th>losses</th><th>win rate</th></tr>';
-		for (const r of winRows)
+	const winBody = groupedStatsTable(winRows,
+		(r) => r.game_version + '|' + r.session_num,
+		(r) => esc(r.game_version) + ' · session ' + r.session_num,
+		'<th>card</th><th>combats</th><th>wins</th><th>losses</th><th>win rate</th>',
+		(r) =>
 		{
 			const rate = r.combats > 0 ? (100 * r.wins / r.combats).toFixed(1) + '%' : '-';
-			winHtml += '<tr><td>' + esc(r.game_version) + '</td><td class="num">' + r.session_num + '</td><td>'
-				+ esc(cardName(catalog, r.card_type_id)) + '</td><td class="num">' + r.combats + '</td><td class="num">'
-				+ r.wins + '</td><td class="num">' + r.losses + '</td><td class="num">' + rate + '</td></tr>';
-		}
-		winHtml += '</table>';
-	}
+			return '<tr><td>' + esc(cardName(catalog, r.card_type_id)) + '</td><td class="num">' + r.combats
+				+ '</td><td class="num">' + r.wins + '</td><td class="num">' + r.losses
+				+ '</td><td class="num">' + rate + '</td></tr>';
+		});
+	const winHtml = section('Card win rates (per session) · ' + winRows.length + ' rows', winBody, false);
 
 	// Ghost decks: defense record per session
 	let deckHtml = '<h2>Ghost decks</h2>';
