@@ -50,7 +50,7 @@ MonoBehaviour:
   cardTypeID: RIFT_REVIVER
   displayName: "\u4EE5\u4EBA\u6613\u7269"
   cardDesc: "\u653E\u9010 <b>1</b> \u53CB\u65B9\u4FE1\u5F92: \u590D\u6D3B <b>2</b>
-    \u53CB\u65B9\u975E\u751F\u7269"
+    \u53CB\u65B9\u73B0\u8C61"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

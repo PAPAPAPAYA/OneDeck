@@ -226,7 +226,7 @@ MonoBehaviour:
   cardTypeID: RIFT_REAPER
   displayName: "\u8840\u98E8"
   cardDesc: "\u653E\u9010\u6240\u6709\u4FE1\u5F92,\u6BCF\u653E\u9010 <b>1</b>,\u5F3A\u5316
-    <b>1</b> \u53CB\u65B9\u751F\u7269"
+    <b>1</b> \u53CB\u65B9\u5B9E\u4F53"
   rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -144,6 +145,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -237,10 +239,11 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SNOWBALL
   displayName: "\u86CA\u738B"
-  cardDesc: "\u653B\u51FBx2;\u5F3A\u5316\u53CD\u5E94:\u5F3A\u5316\u81EA\u8EAB <b>1</b>"
+  cardDesc: "\u653B\u51FB;\u5F3A\u5316\u53CD\u5E94:\u5F3A\u5316\u81EA\u8EAB <b>1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -263,6 +266,7 @@ MonoBehaviour:
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &6623007537848238896
 MonoBehaviour:
   m_ObjectHideFlags: 0

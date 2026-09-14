@@ -234,7 +234,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: COMBO_GRANTER
   displayName: "\u6267\u97AD\u4EBA"
-  cardDesc: "\u653B\u51FB;\u672C\u56DE\u5408 <b>1</b> \u53CB\u65B9\u751F\u7269\u653B\u51FB\u6B21\u6570
+  cardDesc: "\u653B\u51FB;\u672C\u56DE\u5408 <b>1</b> \u53CB\u65B9\u5B9E\u4F53\u653B\u51FB\u6B21\u6570
     <b>+1</b>"
   rarity: 1
   shopRollWeightMultiplier: 1

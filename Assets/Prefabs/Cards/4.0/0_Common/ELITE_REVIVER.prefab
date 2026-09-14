@@ -51,7 +51,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: ELITE_REVIVER
   displayName: "\u9540\u91D1\u5723\u9AD1"
-  cardDesc: "\u653B\u51FB;\u590D\u6D3B <b>1</b> \u88AB\u5F3A\u5316\u8FC7\u7684\u53CB\u65B9\u751F\u7269"
+  cardDesc: "\u653B\u51FB;\u590D\u6D3B <b>1</b> \u88AB\u5F3A\u5316\u8FC7\u7684\u53CB\u65B9\u5B9E\u4F53"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

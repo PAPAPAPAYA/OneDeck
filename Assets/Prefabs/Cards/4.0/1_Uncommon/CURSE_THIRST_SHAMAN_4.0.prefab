@@ -50,7 +50,7 @@ MonoBehaviour:
   cardTypeID: CURSE_THIRST_SHAMAN_4.0
   displayName: "\u566C\u5492\u8428\u6EE1"
   cardDesc: "\u654C\u65B9\u8BC5\u5492\u6BCF\u6709 <b>1</b> \u653B\u51FB\u529B:\u5F3A\u5316
-    <b>1</b> \u53CB\u65B9\u751F\u7269"
+    <b>1</b> \u53CB\u65B9\u5B9E\u4F53"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

@@ -47,10 +47,11 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UTILITY_INCOME_1
   displayName: "\u51A5\u5E01"
-  cardDesc: "\u88AB\u52A8: \u6536\u5165 <b>+4</b>"
+  cardDesc: "\u88AB\u52A8: \u6536\u5165 <b>+4</b>, \u4E0D\u5360\u7528\u5361\u4F4D"
   rarity: 0
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
+  occupiesDeckSlot: 0
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}

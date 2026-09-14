@@ -177,7 +177,7 @@ MonoBehaviour:
   cardTypeID: RIFT_GUIDE
   displayName: "\u732E\u796D\u53F8\u4E8B"
   cardDesc: "\u653E\u9010 <b>1</b> \u53CB\u65B9\u4FE1\u5F92: \u57CB\u846C <b>2</b>
-    \u654C\u65B9\u975E\u751F\u7269"
+    \u654C\u65B9\u73B0\u8C61"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

@@ -731,7 +731,7 @@
   "displayName": "献祭司事",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "放逐 <b>1</b> 友方信徒,埋葬 <b>2</b>    敌方非生物",
+  "cardDesc": "放逐 <b>1</b> 友方信徒: 埋葬 <b>2</b>    敌方非生物",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -775,7 +775,7 @@
   "displayName": "以人易物",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "放逐 <b>1</b> 友方信徒,复活 <b>2</b>    友方非生物",
+  "cardDesc": "放逐 <b>1</b> 友方信徒: 复活 <b>2</b>    友方非生物",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"

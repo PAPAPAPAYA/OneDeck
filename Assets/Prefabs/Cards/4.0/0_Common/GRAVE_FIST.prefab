@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -138,7 +139,8 @@ MonoBehaviour:
   cardDesc: "\u57CB\u846C <b>1</b> \u53CB\u65B9;\u653B\u51FB"
   rarity: 0
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -161,6 +163,7 @@ MonoBehaviour:
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &1417447142227650579
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,6 +251,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []

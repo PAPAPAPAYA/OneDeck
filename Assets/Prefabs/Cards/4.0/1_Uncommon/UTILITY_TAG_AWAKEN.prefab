@@ -47,10 +47,12 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: UTILITY_TAG_AWAKEN
   displayName: "\u60CA\u9192"
-  cardDesc: "\u88AB\u52A8: \u6BCF\u6B21\u751F\u6210\u8D27\u67B6 <b>25%</b> \u6982\u7387:\u591A\u51FA <b>1</b> \u5F20\u5E26[\u82CF\u9192]\u7684\u5361"
+  cardDesc: "\u88AB\u52A8: \u4E0D\u5360\u7528\u5361\u4F4D, <b>25%</b> \u6982\u7387:\u591A\u51FA
+    <b>1</b> \u5F20[\u82CF\u9192]\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  physicalDeckCard: 1
+  occupiesDeckSlot: 0
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -73,3 +75,4 @@ MonoBehaviour:
   utilityRarityWeightMults: []
   reservedTag: 9
   attackSnapshotValue: -1
+  alwaysShowAttack: 0

@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -132,6 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -229,11 +231,12 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: SACRIFICE_WEAKEST
   displayName: "\u66FF\u7F6A\u7F94\u7F8A"
-  cardDesc: "\u57CB\u846C <b>1</b> \u653B\u51FB\u529B\u6700\u4F4E\u53CB\u65B9;\u5F3A\u5316
+  cardDesc: "\u57CB\u846C <b>1</b> \u653B\u51FB\u529B\u6700\u4F4E\u53CB\u65B9\u5B9E\u4F53;\u5F3A\u5316
     <b>1</b> \u8BE5\u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -256,6 +259,7 @@ MonoBehaviour:
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &2131515910441108459
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -133,6 +133,7 @@ MonoBehaviour:
   rarity: 0
   shopRollWeightMultiplier: 1.5
   takeUpSpace: 0
+  occupiesDeckSlot: 0
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
