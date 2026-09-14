@@ -100,7 +100,7 @@ Flow: Check cost -> `preEffectEvent` -> Check effect chain -> Execute effect.
 ### Effect Chain Manager
 - **Chain creation**: Starts when no chains open, or same card triggers a *different* effect object.
 - **Loop guard**: Same card instance + same effect component instance cannot be invoked twice within an open chain (checked by GameObject reference, not effectID string).
-- **Depth limit**: `chainDepth` > **99** blocks further effects.
+- **Depth limit**: `chainDepth` > **12** blocks further effects (tightened from 99 on 2026-09-14).
 - **Chain closing**: `CloseOpenedChain()` finalizes recorders and clears state.
 
 ### Cost Types
