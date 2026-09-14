@@ -4,14 +4,16 @@ using UnityEngine;
 
 /// <summary>
 /// EditMode tests for roadmap step 4 batch 2: E3 round-end event (raise order vs round
-/// start + per-round counter reset), E4 causer-based creature-burial counters, E6
+/// start + per-round counter reset), E4 causer-based friendly-burial counters
+/// (RELIC_TALLY; 2026-09-14 redesign: counts ALL friendly card types buried by a side,
+/// not just creatures — enemy cards buried by me no longer count), E6
 /// creatureOnly filter on StageCardWithMaxAttack, and FINAL_ESCORT's flag-gated
 /// one-shot round-end stage.
 /// </summary>
 public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 {
 	[Test]
-	public void MyCardBuriesEnemyCreature_CountsForOwnerCauser()
+	public void MyCardBuriesEnemyCreature_DoesNotCountForEitherCauser()
 	{
 		var buryCard = CreateCard(true, "Burier");
 		var enemyCreature = CreateCard(false, "EnemyCreature");
@@ -24,13 +26,13 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 		bury.BuryTheirCards(1);
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(1, ValueTrackerManager.creaturesBuriedByOwnerThisRoundRef.value, "owner-caused creature burial");
+		Assert.AreEqual(0, ValueTrackerManager.creaturesBuriedByOwnerThisRoundRef.value, "enemy card buried by me is not friendly: no longer feeds the causer counter (2026-09-14 redesign)");
 		Assert.AreEqual(0, ValueTrackerManager.creaturesBuriedByEnemyThisRoundRef.value, "enemy causer counter untouched");
 		Assert.AreEqual(1, ValueTrackerManager.enemyCardsBuriedCountRef.value, "legacy victim-side counter still tracks the victim faction");
 	}
 
 	[Test]
-	public void EnemyCardBuriesMyCreature_CountsForEnemyCauserOnly()
+	public void EnemyCardBuriesMyCreature_DoesNotCountForEitherCauser()
 	{
 		var enemyBurier = CreateCard(false, "EnemyBurier");
 		var myCreature = CreateCard(true, "MyCreature");
@@ -43,8 +45,26 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 		bury.BuryTheirCards(1);
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(1, ValueTrackerManager.creaturesBuriedByEnemyThisRoundRef.value, "enemy-caused creature burial");
-		Assert.AreEqual(0, ValueTrackerManager.creaturesBuriedByOwnerThisRoundRef.value, "enemy-caused burials never count for my side");
+		Assert.AreEqual(0, ValueTrackerManager.creaturesBuriedByEnemyThisRoundRef.value, "my card buried by the enemy is not enemy-friendly: no longer feeds the enemy causer counter (2026-09-14 redesign)");
+		Assert.AreEqual(0, ValueTrackerManager.creaturesBuriedByOwnerThisRoundRef.value, "owner-caused counter untouched");
+	}
+
+	[Test]
+	public void EnemySacrificesOwnCreature_CountsForEnemyCauser()
+	{
+		var enemyBurier = CreateCard(false, "EnemyBurier");
+		var enemyCreature = CreateCard(false, "EnemyCreature");
+		enemyCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
+		CombatManager.combinedDeckZone.Add(enemyBurier);
+		CombatManager.combinedDeckZone.Add(enemyCreature);
+
+		var bury = CreateEffect<BuryEffect>(enemyBurier);
+		EffectChainManager.MakeANewEffectRecorder(enemyBurier, bury.gameObject);
+		bury.BuryMyCards(1);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual(1, ValueTrackerManager.creaturesBuriedByEnemyThisRoundRef.value, "enemy's own sacrificed creature counts for the enemy causer");
+		Assert.AreEqual(0, ValueTrackerManager.creaturesBuriedByOwnerThisRoundRef.value, "owner-caused counter untouched");
 	}
 
 	[Test]
@@ -65,21 +85,22 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void BuryNonCreature_DoesNotTouchCreatureCounters()
+	public void MySacrificeOfMyOwnNonCreature_CountsForMe()
 	{
 		var buryCard = CreateCard(true, "Burier");
-		var enemyNonCreature = CreateCard(false, "EnemyCurseCard");
+		var myCurseToken = CreateCard(true, "MyCurseToken");
+		myCurseToken.GetComponent<CardScript>().cardType = EnumStorage.CardType.Token;
 		CombatManager.combinedDeckZone.Add(buryCard);
-		CombatManager.combinedDeckZone.Add(enemyNonCreature);
+		CombatManager.combinedDeckZone.Add(myCurseToken);
 
 		var bury = CreateEffect<BuryEffect>(buryCard);
 		EffectChainManager.MakeANewEffectRecorder(buryCard, bury.gameObject);
-		bury.BuryTheirCards(1);
+		bury.BuryMyCards(1);
 		EffectChainManager.Me.CloseOpenedChain();
 
-		Assert.AreEqual(0, ValueTrackerManager.creaturesBuriedByOwnerThisRoundRef.value);
+		Assert.AreEqual(1, ValueTrackerManager.creaturesBuriedByOwnerThisRoundRef.value, "friendly non-creature burials count too (2026-09-14 redesign: all friendly card types)");
 		Assert.AreEqual(0, ValueTrackerManager.creaturesBuriedByEnemyThisRoundRef.value);
-		Assert.AreEqual(1, ValueTrackerManager.enemyCardsBuriedCountRef.value, "legacy counter counts every card");
+		Assert.AreEqual(1, ValueTrackerManager.ownerCardsBuriedCountRef.value, "legacy victim-side counter tracks the victim faction");
 	}
 
 	[Test]

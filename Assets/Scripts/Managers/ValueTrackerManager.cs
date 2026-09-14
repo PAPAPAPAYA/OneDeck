@@ -34,7 +34,7 @@ public class ValueTrackerManager : MonoBehaviour
 	public IntSO creatureAttackTimesAuraEnemyThisRoundRef;
 
 	[Header("CreaturesBuriedBySide (4.0 E4)")]
-	[Tooltip("Per-round count of creature burials CAUSED by each side (RELIC_TALLY). Causer-based — enemy-caused burials never count for my side; my own sacrificed creatures do. Reset at every round start.")]
+	[Tooltip("Per-round count of FRIENDLY card burials CAUSED by each side (RELIC_TALLY). 2026-09-14 redesign: all friendly card types count, not just creatures; enemy cards buried by a side do NOT count for that side's tally. Reset at every round start.")]
 	public IntSO creaturesBuriedByOwnerThisRoundRef;
 	public IntSO creaturesBuriedByEnemyThisRoundRef;
 
