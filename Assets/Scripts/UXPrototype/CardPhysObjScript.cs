@@ -1519,6 +1519,9 @@ public class CardPhysObjScript : MonoBehaviour
 			_currentHoverOwner.EndHover("shuffle reset");
 		var mgr = CombatUXManager.me;
 		if (mgr == null) return;
+		// The shuffle re-arranges every slot, so a spread anchor can never survive it: force-clear
+		// even when the owner reference was already lost (plan 2026-09-14).
+		mgr.ClearHoverSpreadAnchor(null);
 		if (mgr.physicalCardsInDeck != null)
 		{
 			for (int i = 0; i < mgr.physicalCardsInDeck.Count; i++)
@@ -1613,6 +1616,10 @@ public class CardPhysObjScript : MonoBehaviour
 			}
 			TestManager.Log("[Hover] ownership transfer " + _currentHoverOwner.name + " -> " + name);
 			var loser = _currentHoverOwner;
+			// Hand the hover spread over IN PLACE (plan 2026-09-14): anchoring the winner before
+			// the loser releases makes the loser's identity-guarded clear a no-op, so the deck
+			// centre swaps A -> B in a single relayout instead of collapsing and reopening.
+			if (CombatUXManager.me != null) CombatUXManager.me.SetHoverSpreadAnchor(gameObject);
 			loser.EndHover("ownership lost to " + name);
 			// The loser may still be slot-wise under the cursor (overlap band): arm a reclaim
 			// pending so it re-acquires the moment the new owner's slot rect stops covering it.
@@ -1674,18 +1681,62 @@ public class CardPhysObjScript : MonoBehaviour
 		//             band bottom hands hover over to the next card exactly once, no A/B flicker,
 		//             no self re-pop; hover the Start Card (deck bottom) the same way.
 		//   Related:  VISUAL-FIX(2026-07-31) fast hover A->B, VISUAL-FIX(2026-08-16) shuffle window
+		//   Update(2026-09-14): the X extent is back as a CONFIGURABLE, slot-anchored half-width
+		//             (CombatUXManager.hoverRetentionXHalfWidth) — the "X ignored" decision above
+		//             left the retention region unbounded. See the VISUAL-FIX(2026-09-14) addendum
+		//             at the test site below; the Regress scenario above must still pass.
+		//   Related:  plans/plan-hover-retention-x-band-2026-09-14.md
 		if (inDeck)
 		{
-			// Pure-Y band test: X intentionally ignored (the pop-up slides out horizontally, so
-			// any X-sensitive region would re-create "cursor left" in the X axis). The band is
-			// anchored to the SLOT y and the slot's resting scale, so neither the pop-up
-			// displacement nor the in-flight scale tween changes what the cursor "hits".
+			// Slot-anchored band test: Y is the row, X is a configurable half-width around the
+			// slot centre. The anchor is the SLOT position and the slot's resting scale, so
+			// neither the pop-up displacement nor the in-flight scale tween changes what the
+			// cursor "hits"; the hover owner's own spread offset is always 0, so spread cannot
+			// move its own band either.
+			// VISUAL-FIX(2026-09-14): the X extent is configurable again (was unbounded)
+			//   Cause:    The 09-09 fix removed X from the test entirely to kill the pop-up
+			//             oscillation, which left the retention region = the whole screen row of
+			//             the slot, so moving sideways could not release the hover.
+			//   Affects:  CardPhysObjScript.IsCursorOverCard (shared by the UpdateHover
+			//             cursor-left poll and the UpdatePendingHover reclaim gate)
+			//   Regress:  In Combat (popUpXOffset = 4, hoverRetentionXHalfWidth = 6), park the
+			//             cursor on a face-up deck card and drift sideways onto the popped card:
+			//             the hover must survive to the popped card's far edge, end exactly once
+			//             past it, never self re-pop and never ping-pong A/B with the neighbouring
+			//             rows (row 86); set the field to 0 to restore the legacy whole-row region.
+			//   Related:  plans/plan-hover-retention-x-band-2026-09-14.md
 			float localHalfH = _hoverCollider is BoxCollider2D box
 				? box.size.y * 0.5f
 				: _hoverCollider.bounds.extents.y / Mathf.Max(transform.lossyScale.y, 0.0001f);
 			float slotScaleY = Mathf.Max(uxMgr.GetDeckScaleAtIndex(deckIndex).y, 0.0001f);
 			float halfH = localHalfH * slotScaleY;
-			return worldPos.y >= slotPos.y - halfH && worldPos.y <= slotPos.y + halfH;
+			bool insideRow = worldPos.y >= slotPos.y - halfH && worldPos.y <= slotPos.y + halfH;
+			// <= 0 keeps the legacy behaviour: X ignored, the whole row of the slot retains hover.
+			float bandHalfWidth = uxMgr != null ? uxMgr.hoverRetentionXHalfWidth : 0f;
+			if (insideRow && (bandHalfWidth <= 0f || Mathf.Abs(worldPos.x - slotPos.x) <= bandHalfWidth))
+				return true;
+			// VISUAL-FIX(2026-09-14): a hover acquired under an active spread was killed the same
+			//   frame (the "cannot hover pop-up" report)
+			//   Cause:    The band anchor (TryGetDeckSlotPosition) carries the spread offset, but
+			//             re-anchoring on acquisition (SetHoverSpreadAnchor) zeroes the winner's
+			//             own offset and retargets it to its un-spread rest slot while the cursor
+			//             is still standing on its DISPLACED pose. The first cursor-left poll then
+			//             fails, EndHover fires before hoverPopUpDelay (0.1 s) elapses, PopUpCard
+			//             is never called, and the collapse re-arms the same kill on re-entry.
+			//   Affects:  CardPhysObjScript.IsCursorOverCard (shared by the UpdateHover cursor-left
+			//             poll, the UpdatePendingHover gate and the loser reclaim arm)
+			//   Fix:      While this card has NOT popped up, a failed band test falls back to the
+			//             LIVE collider (OverlapPoint): the hover rides the body while the card
+			//             glides home and the pop-up delay elapses normally. A popped owner keeps
+			//             the band-only test — the pop deliberately vacates the cursor, and a live
+			//             test there would re-create the VISUAL-FIX(2026-09-09) oscillation.
+			//   Regress:  FloatStack, hoverSpreadX = 8, hoverSpreadReach = 1: hover a card, drift
+			//             onto the parted neighbour — the hover must survive the neighbour gliding
+			//             home under the cursor and pop up once it settles; sweep A -> B -> C:
+			//             each card pops exactly once, no kill loop and no 09-09 A/B ping-pong on
+			//             the popped card. Checklist row 100.
+			if (_hoverPoppedUp) return false;
+			return _hoverCollider.OverlapPoint(worldPos);
 		}
 		return _hoverCollider.OverlapPoint(worldPos);
 	}
@@ -1756,6 +1807,12 @@ public class CardPhysObjScript : MonoBehaviour
 		// The reveal-zone card is already fully displayed; pop-up would be redundant.
 		if (IsRevealZoneCard()) return;
 
+		// Hover spread (plans/plan-hover-card-spread-2026-09-14.md): anchor the deck gap on hover
+		// OWNERSHIP rather than on the pop-up, so a delayed pop-up (hoverPopUpDelay) cannot leave a
+		// collapse-then-reopen gap during an A->B handover. No-op for cards outside the deck
+		// (reveal zone, minions) and while the feature is inert (both spread axes 0).
+		if (CombatUXManager.me != null) CombatUXManager.me.SetHoverSpreadAnchor(gameObject);
+
 		// cardImRepresenting is expected to be set for the Start Card too (InstantiateAllPhysicalCards);
 		// the null guard keeps a genuinely cardless physical Start Card as an occluder-only hover
 		// (claims ownership, no pop-up) instead of throwing.
@@ -1797,6 +1854,10 @@ public class CardPhysObjScript : MonoBehaviour
 			if (cm != null) cm.autoReveal = _savedAutoReveal;
 		}
 
+		// Release the deck gap held for this card (identity-guarded in CombatUXManager, so a stale
+		// release after an A->B handover cannot drop the winner's spread).
+		if (CombatUXManager.me != null) CombatUXManager.me.ClearHoverSpreadAnchor(gameObject);
+
 		if (_hoverPoppedUp)
 		{
 			_hoverPoppedUp = false;
@@ -1831,6 +1892,8 @@ public class CardPhysObjScript : MonoBehaviour
 		{
 			TestManager.Log("[Hover] pending ownership transfer " + _currentHoverOwner.name + " -> " + name);
 			var loser = _currentHoverOwner;
+			// In-place spread handover, same as the OnMouseEnter transfer above.
+			if (CombatUXManager.me != null) CombatUXManager.me.SetHoverSpreadAnchor(gameObject);
 			loser.EndHover("ownership lost to " + name + " (pending)");
 			// Loser may still be slot-wise under the cursor (overlap band): arm a reclaim pending.
 			if (loser.IsCursorOverCard()) loser._hoverPending = true;

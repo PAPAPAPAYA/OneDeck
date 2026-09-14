@@ -229,6 +229,16 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	[Tooltip("Delay after hover before the card pops up (seconds). Not scaled by combat animation speed. 0 = pop up on the next frame after hover.")]
 	public float hoverPopUpDelay = 0.1f;
 
+	[Header("HOVER READ (pop-up inspection)")]
+	[Tooltip("Half-width (world units) of the X retention band around the hovered deck card's SLOT centre. The hover survives while the cursor stays in the slot's Y band AND within slot.x +/- this value. <= 0 = legacy behaviour (X ignored: the whole screen row of that slot retains the hover). Derivation for the shipped scene: the band must reach the popped card's far edge = |popUpXOffset| (4) + card half width (about 0.85 at floatStackMinScale 0.55 .. 1.55 at scale 1) + margin => about 5.5-6.2, so 6 keeps the pop-up readable at every slot scale; go below about 5.5 and drifting onto the popped card releases the hover (still finite, never a loop). Plan: plans/plan-hover-retention-x-band-2026-09-14.md")]
+	public float hoverRetentionXHalfWidth = 6f;
+	[Tooltip("Hover spread: world-unit X displacement of the NEAREST neighbouring deck card, decaying with distance up to hoverSpreadReach. Neighbours part on both sides of the hovered card. 0 = off. FloatStack starting point: the pop slides the hovered card |popUpXOffset| = 4 to one side, so the neighbour on that side must clear 4 + both half widths (about 1.55 each) => about 7-8, otherwise the parted neighbour sits under the popped card. Plan: plans/plan-hover-card-spread-2026-09-14.md")]
+	public float hoverSpreadX = 0f;
+	[Tooltip("Hover spread on Y (the FloatStack stack axis): opens a vertical gap at the hovered slot instead of parting the stack sideways. 0 = off.")]
+	public float hoverSpreadY = 0f;
+	[Tooltip("Hover spread: how many neighbours per side are displaced. 1 = only the immediate neighbours, at full amount; 2 adds the next ones out at half amount. 0 = feature off.")]
+	public int hoverSpreadReach = 1;
+
 	[Header("DECK FOCUS / PEEL")]
 	[Tooltip("Deprecated: the focus card moves to the cascade front slot (physicalCardDeckPos anchor). Kept for scene serialization compatibility only.")]
 	public Transform deckFocusTargetPos;
@@ -266,6 +276,12 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	private DeckLayoutOffsetProvider _deckOffsetProvider;
 	private List<GameObject> _peeledCards = new List<GameObject>();
 	public bool IsDeckFocused => _isDeckFocused;
+
+	// Hover spread anchor: the PHYSICAL card whose hover currently opens a gap in the deck
+	// (see SetHoverSpreadAnchor). null = no spread. The centre index is resolved live from this
+	// reference on every query, so deck reordering (ApplyAnimationResult, bury/stage, temp-card
+	// inserts) can never leave a stale centre index behind.
+	private GameObject _hoverSpreadAnchor;
 
 	private void OnEnable()
 	{
@@ -1527,12 +1543,110 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	/// Get the final deck position for a specific card, including its layout offset.
 	/// Cascade mode scales the position jitter by the card's cascade scale (cascadeScaleJitterWithCard).
 	/// Public since VISUAL-FIX(2026-09-09): also the stable hover hit-test anchor (TryGetDeckSlotPosition).
+	/// Also carries the hover spread offset (display-only: the logical layout math in
+	/// CalculatePositionAtIndex is deliberately untouched, so effect-driven deck moves keep
+	/// targeting the un-spread slot). Plan: plans/plan-hover-card-spread-2026-09-14.md
 	/// </summary>
 	public Vector3 GetFinalDeckPositionForCard(CardPhysObjScript physScript, int index)
 	{
 		Vector3 basePos = CalculatePositionAtIndex(index);
 		if (physScript == null) return basePos;
-		return basePos + _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, GetLayoutDeckCount());
+		return basePos
+			+ _deckOffsetProvider.GetPositionOffset(physScript) * GetCascadeJitterScale(index, GetLayoutDeckCount())
+			+ GetHoverSpreadOffset(index);
+	}
+
+	/// <summary>
+	/// True while hover spread can actually displace anything: a reach of at least one neighbour
+	/// and at least one non-zero axis. Both false → the whole feature is inert (no relayouts, no
+	/// offsets), which is the shipped default.
+	/// </summary>
+	public bool IsHoverSpreadEnabled => hoverSpreadReach > 0 && (hoverSpreadX != 0f || hoverSpreadY != 0f);
+
+	/// <summary>
+	/// Display-only offset that opens a gap around the hovered deck card: neighbours within
+	/// hoverSpreadReach slots part away from the anchor, the amount decaying linearly with
+	/// distance (nearest neighbour = full hoverSpreadX/hoverSpreadY). The hovered card's own
+	/// offset is 0, which is what keeps its pop-up peak and its hover retention band anchored on
+	/// its real slot. Plan: plans/plan-hover-card-spread-2026-09-14.md (ratified revision section)
+	/// </summary>
+	private Vector3 GetHoverSpreadOffset(int index)
+	{
+		if (_hoverSpreadAnchor == null || !IsHoverSpreadEnabled) return Vector3.zero;
+		// Resolve the centre live (see _hoverSpreadAnchor): deck reordering cannot stale it.
+		int center = physicalCardsInDeck.IndexOf(_hoverSpreadAnchor);
+		if (center < 0) return Vector3.zero;
+		int dist = index - center;
+		if (dist == 0) return Vector3.zero;
+		int abs = Mathf.Abs(dist);
+		if (abs > hoverSpreadReach) return Vector3.zero;
+		float falloff = 1f - (abs - 1) / (float)hoverSpreadReach;
+		// VISUAL-FIX(2026-09-14): spread directions were index-signed on BOTH axes
+		//   Cause:    FloatStack (floatStackStepY = +14) maps a HIGHER deck index to LOWER on
+		//             screen (DeckFloatStackLayout.ComputeSlotOffset), so the shared index sign
+		//             pushed visually-lower neighbours UP and visually-upper ones DOWN — the
+		//             stack SQUEEZED toward the hovered card instead of parting — and X parted
+		//             sideways where the ratified design wants a one-sided corridor.
+		//   Affects:  CombatUXManager.GetHoverSpreadOffset (display offsets via GetFinalDeckPositionForCard)
+		//   Fix:      Ratified revision 2026-09-14: X is ONE-SIDED toward screen right (+X, enemy
+		//             side — the same direction popUpXOffset = +4 slides), sign term removed for
+		//             X; Y parts in SCREEN space, its sign taken from comparing the two slots'
+		//             LAYOUT base Y (jitter-free, log-free via GetLayoutSlotBaseY), which is
+		//             layout-agnostic. Falloff and hoverSpreadReach semantics unchanged.
+		//   Regress:  FloatStack, spread on: hovering a mid-stack card moves neighbours ABOVE it
+		//             further up and neighbours BELOW it further down (the gap opens at the
+		//             hovered row) while every affected neighbour drifts RIGHT; the hovered card
+		//             itself never leaves its slot. Edge: Cascade slots share one base Y, so
+		//             Mathf.Sign(0) = +1 pushes every neighbour up — harmless (Y spread targets
+		//             FloatStack). Checklist row 100.
+		float ySign = Mathf.Sign(GetLayoutSlotBaseY(index) - GetLayoutSlotBaseY(center));
+		return new Vector3(hoverSpreadX * falloff, hoverSpreadY * falloff * ySign, 0f);
+	}
+
+	/// <summary>
+	/// Layout base Y of a deck slot: CalculatePositionAtIndex minus its logging wrapper (the
+	/// spread math runs per card per relayout AND per hover frame, so it must stay log-free).
+	/// Mirrors CalculatePositionAtIndex's exact arguments; jitter and spread excluded.
+	/// </summary>
+	private float GetLayoutSlotBaseY(int index)
+	{
+		return DeckPositionCalculator.CalculatePositionAtIndex(
+			index, GetLayoutDeckCount(), physicalCardDeckPos.position, xOffset, yOffset, zOffset,
+			BuildCascadeConfig(), BuildArcLoopConfig(), BuildFloatStackConfig()).y;
+	}
+
+	/// <summary>
+	/// Anchor the hover spread on a hovered PHYSICAL deck card and relayout (the card that owns
+	/// the hover calls this from BeginHover). Idempotent: re-anchoring the same card does nothing,
+	/// so the ownership-transfer path can set the winner's anchor before the loser releases it and
+	/// still get exactly one relayout per handover (no collapse-then-reopen flicker).
+	/// No-op when the feature is inert or the card is not in the deck (reveal zone, minions).
+	/// </summary>
+	public void SetHoverSpreadAnchor(GameObject physicalCard)
+	{
+		if (physicalCard == null) return;
+		if (!IsHoverSpreadEnabled) return;
+		if (_hoverSpreadAnchor == physicalCard) return;
+		if (physicalCardsInDeck == null || !physicalCardsInDeck.Contains(physicalCard)) return;
+		TestManager.Log("[CombatUXManager] SetHoverSpreadAnchor card=" + physicalCard.name);
+		_hoverSpreadAnchor = physicalCard;
+		UpdateAllPhysicalCardTargets();
+	}
+
+	/// <summary>
+	/// Release the hover spread (EndHover calls this). Identity-guarded: when the stored anchor is
+	/// a different card the call is ignored, so a stale release from the outgoing card cannot drop
+	/// the incoming card's spread during an ownership transfer. Pass null to force a clear (used by
+	/// the shuffle reset so an anchor can never survive a shuffle even if the owner reference was
+	/// lost).
+	/// </summary>
+	public void ClearHoverSpreadAnchor(GameObject physicalCard)
+	{
+		if (_hoverSpreadAnchor == null) return;
+		if (physicalCard != null && _hoverSpreadAnchor != physicalCard) return;
+		TestManager.Log("[CombatUXManager] ClearHoverSpreadAnchor card=" + _hoverSpreadAnchor.name);
+		_hoverSpreadAnchor = null;
+		UpdateAllPhysicalCardTargets();
 	}
 
 	/// <summary>
