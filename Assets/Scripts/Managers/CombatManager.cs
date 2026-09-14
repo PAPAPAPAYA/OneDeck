@@ -1194,6 +1194,27 @@ public class CombatManager : MonoBehaviour
 		GameEventStorage.me.beforeRoundStart.Raise();
 	}
 
+	/// <summary>
+	/// True when either side's displayed HP (the queue-frozen value the player currently
+	/// sees) has reached zero. Becomes true only after the lethal hit's animation lands
+	/// (CommitHpDisplay), so RecorderAnimationPlayer can finish the killing blow and then
+	/// cut the rest of the queued animations. Falls back to logic HP when no display
+	/// layer exists (headless).
+	/// </summary>
+	public bool IsDeathVisuallyLanded
+	{
+		get
+		{
+			if (CombatInfoDisplayer.me != null)
+			{
+				return CombatInfoDisplayer.me.GetDisplayedOwnerHp() <= 0
+					|| CombatInfoDisplayer.me.GetDisplayedEnemyHp() <= 0;
+			}
+			return (ownerPlayerStatusRef != null && ownerPlayerStatusRef.hp <= 0)
+				|| (enemyPlayerStatusRef != null && enemyPlayerStatusRef.hp <= 0);
+		}
+	}
+
 	private void HandleCombatFinished()
 	{
 		if (combatFinished.value) return;

@@ -26,6 +26,12 @@ public class RecorderAnimationPlayer : MonoBehaviour
 	/// </summary>
 	private Dictionary<GameObject, int> _sourceCardPendingCounts = new Dictionary<GameObject, int>();
 
+	/// <summary>
+	/// Set on the first death-abort firing within a playback batch so the HP display
+	/// resync (ClearHpDisplayLocks) runs exactly once per batch.
+	/// </summary>
+	private bool _deathAbortHandled;
+
 	void Awake()
 	{
 		me = this;
@@ -35,6 +41,7 @@ public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 	{
 		_heldSourceCards.Clear();
 		_sourceCardPendingCounts.Clear();
+		_deathAbortHandled = false;
 		TestManager.Log("[RecorderAnimationPlayer] PlayRecordersCoroutine START rootCount=" + rootRecorders.Count);
 		AttackAnimationManager.me?.HoldDeckFocus();
 		try
@@ -47,8 +54,27 @@ public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 			// deferred until the last recorder for that card finishes playing.
 			ComputeSourceCardPendingCounts(rootRecorders);
 
+			// VISUAL-FIX(2026-09-14): combat kept playing the whole animation batch after a side's
+			//   HP reached zero; the end only fired at the next reveal advance.
+			//   Cause:    the hp<=0 check lives in RevealCards Phase 1 (CombatManager), so the current
+			//             batch always played to completion before HandleCombatFinished could run.
+			//   Fix:      death-abort checkpoints in the playback loop (root loop / recorder start /
+			//             request loop, see AbortPlaybackForDeath). The predicate is the DISPLAYED HP
+			//             (CombatInfoDisplayer queue-frozen value), not logic HP: logic HP is already
+			//             <= 0 before playback starts, so displayed HP is the "killing blow has
+			//             landed" signal. Once true, the lethal hit (attack impact + floater + HP-bar
+			//             drain) finishes, then everything still queued is cut. On first abort the
+			//             pending HP display snapshots are resynced via ClearHpDisplayLocks — skipped
+			//             hits never commit, and a compensating CommitHpDisplay must NOT be used
+			//             because onHpDisplayCommitted would spawn ghost floaters for animations
+			//             that never played.
+			//   Affects:  RecorderAnimationPlayer playback loop; new CombatManager.IsDeathVisuallyLanded
+			//   Regress:  Lethal hit plays to its landing (float + HP-bar drain), then the batch stops
+			//             and "COMBAT FINISHED" appears (auto: next frame; manual: one more tap).
+			//             Multi-hit: cut after the lethal segment lands. Non-lethal batches unchanged.
 			foreach (var rootRecorder in rootRecorders)
 			{
+				if (AbortPlaybackForDeath("root recorder loop")) yield break;
 				if (rootRecorder == null)
 				{
 					TestManager.Log("[RecorderAnimationPlayer] Skipping null/destroyed root recorder.");
@@ -83,6 +109,26 @@ public IEnumerator PlayRecordersCoroutine(List<GameObject> rootRecorders)
 		}
 	}
 
+	/// <summary>
+	/// Death-abort checkpoint for playback (VISUAL-FIX(2026-09-14), see block above the
+	/// root recorder loop). Returns true when either side's displayed HP has reached zero,
+	/// meaning the lethal hit's animation has landed and the remaining queue must be cut.
+	/// The first firing within a batch resyncs the HP display: skipped hits never commit
+	/// their pending snapshots, and ClearHpDisplayLocks silently resyncs consumers to the
+	/// live HP without spawning floaters for animations that will never play.
+	/// </summary>
+	private bool AbortPlaybackForDeath(string checkpoint)
+	{
+		if (CombatManager.Me == null || !CombatManager.Me.IsDeathVisuallyLanded) return false;
+		if (!_deathAbortHandled)
+		{
+			_deathAbortHandled = true;
+			TestManager.Log("[RecorderAnimationPlayer] Death visually landed; aborting playback at " + checkpoint + ".");
+			CombatInfoDisplayer.me?.ClearHpDisplayLocks();
+		}
+		return true;
+	}
+
 public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 	{
 		if (recorder == null || recorder.animationPlayed) yield break;
@@ -91,6 +137,10 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 			TestManager.Log("[RecorderAnimationPlayer] PlayRecorderCoroutine: recorder GameObject was destroyed, skipping.");
 			yield break;
 		}
+		// Death-abort checkpoint: covers child recorders and subsequent roots too, since
+		// they all enter playback through this method. A recorder killed here keeps
+		// animationPlayed=false; PlayRecorderAnimationsAndWait's finally marks it played.
+		if (AbortPlaybackForDeath("recorder start card=" + (recorder.cardObject != null ? recorder.cardObject.name : "null"))) yield break;
 		recorder.animationPlayed = true;
 		var previousRecorder = _currentRecorder;
 		_currentRecorder = recorder;
@@ -264,6 +314,10 @@ public IEnumerator PlayRecorderCoroutine(EffectRecorder recorder)
 		foreach (var request in recorder.animationRequests)
 		{
 			if (request == null) continue;
+
+			// Death-abort checkpoint: once the lethal hit of THIS recorder has landed
+			// (its CommitHpDisplay brought displayed HP to 0), cut the remaining requests.
+			if (AbortPlaybackForDeath("request type=" + request.type)) yield break;
 
 			// Shake was already played above for cost-fail recorders.
 			if (recorder.isCostFailRecorder && request.type == AnimationRequestType.Shake)
