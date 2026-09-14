@@ -159,7 +159,7 @@ public class EffectChainManager : MonoBehaviour
 			}
 		}
 
-		bool canInvoke = !(invokedTimes > 0 || openedEffectRecorders.Count == 0) && chainDepth <= 99;
+		bool canInvoke = !(invokedTimes > 0 || openedEffectRecorders.Count == 0) && chainDepth <= 12;
 
 		// Diagnosability: log the gate values so a silently blocked invocation (no exception,
 		// no effect) can be attributed to invokedTimes / openChains / chainDepth.
