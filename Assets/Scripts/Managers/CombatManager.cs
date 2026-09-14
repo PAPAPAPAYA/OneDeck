@@ -303,7 +303,7 @@ public class CombatManager : MonoBehaviour
 		foreach (var card in playerDeck.deck)
 		{
 			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript != null && !cardScript.takeUpSpace) continue;
+			if (cardScript != null && !cardScript.physicalDeckCard) continue;
 
 			var cardInstance = factory.CreateLogicalCard(card, ownerPlayerStatusRef, enemyPlayerStatusRef, playerDeckParent.transform);
 			if (cardInstance != null)
@@ -313,7 +313,7 @@ public class CombatManager : MonoBehaviour
 		foreach (var card in enemyDeck.deck)
 		{
 			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript != null && !cardScript.takeUpSpace) continue;
+			if (cardScript != null && !cardScript.physicalDeckCard) continue;
 
 			var cardInstance = factory.CreateLogicalCard(card, enemyPlayerStatusRef, ownerPlayerStatusRef, enemyDeckParent.transform);
 			if (cardInstance != null)

@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// EditMode tests for the duplicate-copies-share-slot rule:
-/// UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, duplicatesShareSlot)
+/// UtilityFuncManagerScript.CountSlotOccupyingCards(deck, duplicatesShareSlot)
 /// and UtilityFuncManagerScript.DeckContainsCardType.
 /// </summary>
 public class DuplicateSlotCountTests
@@ -35,12 +35,12 @@ public class DuplicateSlotCountTests
 		_cleanup.Clear();
 	}
 
-	private GameObject CreateCard(string cardTypeID, bool takeUpSpace = true)
+	private GameObject CreateCard(string cardTypeID, bool occupiesDeckSlot = true)
 	{
 		var go = new GameObject("TestCard");
 		var cardScript = go.AddComponent<CardScript>();
 		cardScript.cardTypeID = cardTypeID;
-		cardScript.takeUpSpace = takeUpSpace;
+		cardScript.occupiesDeckSlot = occupiesDeckSlot;
 		_cleanup.Add(go);
 		return go;
 	}
@@ -57,7 +57,7 @@ public class DuplicateSlotCountTests
 	public void ToggleOff_CountsEveryCopy()
 	{
 		var deck = CreateDeck(CreateCard("imp"), CreateCard("imp"), CreateCard("imp"));
-		Assert.AreEqual(3, UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, false));
+		Assert.AreEqual(3, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, false));
 	}
 
 	[Test]
@@ -65,45 +65,57 @@ public class DuplicateSlotCountTests
 	{
 		var deck = CreateDeck(CreateCard("imp"), CreateCard("imp"), CreateCard("bat"));
 		Assert.AreEqual(
-			UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, false),
-			UtilityFuncManagerScript.CountCardsTakingUpSpace(deck));
+			UtilityFuncManagerScript.CountSlotOccupyingCards(deck, false),
+			UtilityFuncManagerScript.CountSlotOccupyingCards(deck));
 	}
 
 	[Test]
 	public void ToggleOn_DuplicatesCountOnce()
 	{
 		var deck = CreateDeck(CreateCard("imp"), CreateCard("imp"), CreateCard("imp"));
-		Assert.AreEqual(1, UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, true));
+		Assert.AreEqual(1, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, true));
 	}
 
 	[Test]
 	public void ToggleOn_MixedTypes_CountDistinctTypes()
 	{
 		var deck = CreateDeck(CreateCard("imp"), CreateCard("bat"), CreateCard("imp"), CreateCard("bat"), CreateCard("orc"));
-		Assert.AreEqual(3, UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, true));
+		Assert.AreEqual(3, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, true));
 	}
 
 	[Test]
 	public void ToggleOn_EmptyCardTypeID_NeverDeduplicated()
 	{
 		var deck = CreateDeck(CreateCard(""), CreateCard(""), CreateCard(null));
-		Assert.AreEqual(3, UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, true));
+		Assert.AreEqual(3, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, true));
 	}
 
 	[Test]
-	public void TakeUpSpaceFalse_ExcludedInBothModes()
+	public void SlotFree_ExcludedInBothModes()
 	{
 		var deck = CreateDeck(CreateCard("imp"), CreateCard("imp", false), CreateCard("imp", false));
-		Assert.AreEqual(1, UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, true));
-		Assert.AreEqual(1, UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, false));
+		Assert.AreEqual(1, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, true));
+		Assert.AreEqual(1, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, false));
+	}
+
+	[Test]
+	public void UtilityPassive_PhysicalButSlotFree_NotCounted()
+	{
+		// 2026-09-14: utility passives are physicalDeckCard=true (displayed/sellable/combat)
+		// but occupiesDeckSlot=false — they must never consume deck capacity.
+		var utility = CreateCard("UTILITY_INCOME_1", false);
+		utility.GetComponent<CardScript>().physicalDeckCard = true;
+		var deck = CreateDeck(CreateCard("imp"), utility);
+		Assert.AreEqual(1, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, true));
+		Assert.AreEqual(1, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, false));
 	}
 
 	[Test]
 	public void NullDeckAndNullEntries_ReturnZeroOrSkip()
 	{
-		Assert.AreEqual(0, UtilityFuncManagerScript.CountCardsTakingUpSpace(null, true));
+		Assert.AreEqual(0, UtilityFuncManagerScript.CountSlotOccupyingCards(null, true));
 		var deck = CreateDeck(null, CreateCard("imp"));
-		Assert.AreEqual(1, UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, true));
+		Assert.AreEqual(1, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, true));
 	}
 
 	[Test]
@@ -112,7 +124,7 @@ public class DuplicateSlotCountTests
 		var plain = new GameObject("PlainObject");
 		_cleanup.Add(plain);
 		var deck = CreateDeck(plain, CreateCard("imp"));
-		Assert.AreEqual(1, UtilityFuncManagerScript.CountCardsTakingUpSpace(deck, true));
+		Assert.AreEqual(1, UtilityFuncManagerScript.CountSlotOccupyingCards(deck, true));
 	}
 
 	[Test]

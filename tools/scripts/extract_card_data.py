@@ -49,7 +49,7 @@ def parse_cardscript(block_lines):
     fields = {}
     i = 0
     wanted = {"cardID", "cardTypeID", "displayName", "cardDesc", "rarity",
-              "shopRollWeightMultiplier", "takeUpSpace", "isStartCard",
+              "shopRollWeightMultiplier", "takeUpSpace", "physicalDeckCard", "occupiesDeckSlot", "isStartCard",
               "isMinion", "myTags", "myStatusEffects", "price"}
     while i < len(block_lines):
         line = block_lines[i]

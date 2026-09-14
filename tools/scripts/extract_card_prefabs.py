@@ -64,7 +64,7 @@ FIELD_PAT = re.compile(
     r"lastXCardsCount|xFriendlyCount|statusEffectLayerCount|yFriendlyLayerCount|layerCount|"
     r"statusEffectToGive|statusEffectToCheck|statusEffectToConsume|amount|powerAmount|multiplier|"
     r"statusEffectMultiplier|excludeSelf|isFromFriendly|fromFriendly|give|targetCardTypeID|"
-    r"curseCardTypeID|shopRollWeightMultiplier|takeUpSpace|myTags|yFriendlyLayerCount|"
+    r"curseCardTypeID|shopRollWeightMultiplier|takeUpSpace|physicalDeckCard|occupiesDeckSlot|myTags|yFriendlyLayerCount|"
     r"baseDmg|dmgAmountAlter|healAmountAlter|creatureFilter|tagsToCheck|typeIDFilter|"
     r"rarityFilter|sortBy|reviveTargetSide|delayedRevive|targetFriendly|curseEngine|"
     r"ownerIntSO|enemyIntSO|cardType|isPassive|printedAttack|attackTimes|extraAttackTimes|attackGrowth|consumeHostileCurse|"

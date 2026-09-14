@@ -35,6 +35,10 @@ public static class UtilityShopBonus
 		public int extraShopOptions;
 		public int freeRerolls;
 		public int hpMaxBonus;
+		/// <summary>ShopOptionChance: slots added to a generated board when its chance roll hits (extraBoardSlotsChancePercent).</summary>
+		public int extraBoardSlots;
+		/// <summary>ShopOptionChance: per-board roll chance %; 0 or less falls back to DefaultReservedChancePercent at roll time.</summary>
+		public int extraBoardSlotsChancePercent;
 		public float creatureWaveChancePercent;
 		public float spellWaveChancePercent;
 		public List<BoardDiscountSpec> boardDiscounts = new List<BoardDiscountSpec>();
@@ -152,6 +156,11 @@ public static class UtilityShopBonus
 					break;
 				case EnumStorage.UtilityKind.RerollSpellWave:
 					bonus.spellWaveChancePercent += script.utilityValue;
+					break;
+				case EnumStorage.UtilityKind.ShopOptionChance:
+					// utilityValue = slots granted on a hit, utilityValue2 = per-board roll chance %.
+					bonus.extraBoardSlots += Mathf.Max(0, script.utilityValue);
+					bonus.extraBoardSlotsChancePercent += script.utilityValue2;
 					break;
 			}
 		}

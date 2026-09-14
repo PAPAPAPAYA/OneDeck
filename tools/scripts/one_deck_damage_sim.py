@@ -239,7 +239,9 @@ def _load_card_pool_40():
 				# isPassive && utilityKind != UtilityKind.None
 				'is_utility_passive': bool(is_passive)
 					and utility_kind not in (None, 0),
-				'take_up_space': bool(_int_field(block, 'takeUpSpace')),
+				'take_up_space': bool(_int_field(block, 'physicalDeckCard')
+					if _int_field(block, 'physicalDeckCard') is not None
+					else _int_field(block, 'takeUpSpace')),
 				'is_start_card': bool(_int_field(block, 'isStartCard')),
 				'tags': _parse_my_tags(block),
 				'source_file': fname,
@@ -255,7 +257,7 @@ def dump_card_pool_40(out_path):
 
 	Prints the review lists required by plan Step 1: rarity dir-vs-field
 	mismatch, creatures with missing/zero printed ATK, non-creatures, utility
-	passives, and non-instantiable cards (takeUpSpace=false).
+	passives, and non-instantiable cards (physicalDeckCard=false).
 	"""
 	os.makedirs(os.path.dirname(out_path), exist_ok=True)
 	with open(out_path, 'w', encoding='utf-8') as f:
@@ -284,7 +286,7 @@ def dump_card_pool_40(out_path):
 	passives = [c for c in entries if c['is_utility_passive']]
 	print(f'[sim4] utility passives: {_names(passives)}')
 	non_instantiable = [c for c in entries if not c['take_up_space']]
-	print(f'[sim4] non-instantiable (takeUpSpace=0): {_names(non_instantiable)}')
+	print(f'[sim4] non-instantiable (physicalDeckCard=0): {_names(non_instantiable)}')
 	print(f'[sim4] card table written: {out_path}')
 	return entries
 
@@ -1307,7 +1309,7 @@ LEDGERED_40 = {
 	# 被动：生命值上限+4 — static effect applied at combat setup
 	# (apply_static_passives_40); no trigger handler.
 	'SYSTEM_INCREASE_HP_MAX',
-	# 卡位+1，放逐自身 — takeUpSpace=0: never instantiated in combat
+	# 卡位+1，放逐自身 — physicalDeckCard=0: never instantiated in combat
 	# (shop-only deck-cap meter card).
 	'SYSTEM_INCREASE_DECK_SIZE_LITE',
 	# Shop passives: no combat effect; occupy deck slots as never-revealed

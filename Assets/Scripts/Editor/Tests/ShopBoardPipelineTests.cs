@@ -557,4 +557,94 @@ public class ShopBoardPipelineTests : HeadlessCombatTestFixture
 		Assert.Greater(oddsPicks, runs * 35 / 100, "ODDS share far below 1/2: something is filtering the pool");
 		Assert.Less(oddsPicks, runs * 65 / 100, "ODDS share far above 1/2: the merge likely doubled the exempt card");
 	}
+
+	// ------------------------------------------------------------------
+	// ShopOptionChance: per-board chance roll grows the generic slot count
+	// (plans/plan-utility-option-p1-chance-board-2026-09-14.md).
+
+	[Test]
+	public void ChanceExtraSlots_Chance100_AddsSlotsOnCombatBoard()
+	{
+		MakeCard(typeId: "PLAIN");
+		var bonus = new UtilityShopBonus.Bonus { extraBoardSlots = 1, extraBoardSlotsChancePercent = 100 };
+
+		var board = ShopBoardPipeline.GenerateBoard(_created, s => 1f, bonus, 0, 0f, 2, 0, false, false, NewRng());
+		Assert.IsFalse(board.isUtilityBoard);
+		Assert.AreEqual(3, board.cards.Count); // 2 generic + 1 chance extra
+	}
+
+	[Test]
+	public void ChanceExtraSlots_Chance100_AddsSlotsOnUtilityBoard()
+	{
+		MakeCard(EnumStorage.UtilityKind.Income, typeId: "INC");
+		var bonus = new UtilityShopBonus.Bonus { extraBoardSlots = 1, extraBoardSlotsChancePercent = 100 };
+
+		var board = ShopBoardPipeline.GenerateBoard(_created, s => 1f, bonus, 0, 100f, 0, 2, false, false, NewRng());
+		Assert.IsTrue(board.isUtilityBoard);
+		Assert.AreEqual(3, board.cards.Count); // 2 generic + 1 chance extra, all utility-pool rolls
+		Assert.IsTrue(board.cards.TrueForAll(c => c.GetComponent<CardScript>().cardTypeID == "INC"));
+	}
+
+	[Test]
+	public void ChanceExtraSlots_MixedMode_AddsSlots()
+	{
+		MakeCard(typeId: "PLAIN");
+		var bonus = new UtilityShopBonus.Bonus { extraBoardSlots = 1, extraBoardSlotsChancePercent = 100 };
+
+		var board = ShopBoardPipeline.GenerateBoard(_created, s => 1f, bonus, 0, 0f, 2, 0, true, false, NewRng());
+		Assert.AreEqual(3, board.cards.Count);
+	}
+
+	[Test]
+	public void ChanceExtraSlots_ZeroSlots_NeverGrows()
+	{
+		// Guard on extraBoardSlots: no configured slots -> no roll, base board size.
+		MakeCard(typeId: "PLAIN");
+		var bonus = new UtilityShopBonus.Bonus { extraBoardSlots = 0, extraBoardSlotsChancePercent = 100 };
+
+		var board = ShopBoardPipeline.GenerateBoard(_created, s => 1f, bonus, 0, 0f, 2, 0, false, false, NewRng());
+		Assert.AreEqual(2, board.cards.Count);
+	}
+
+	[Test]
+	public void ChanceExtraSlots_MultiSlots_AddsConfiguredCount()
+	{
+		MakeCard(typeId: "PLAIN");
+		var bonus = new UtilityShopBonus.Bonus { extraBoardSlots = 2, extraBoardSlotsChancePercent = 100 };
+
+		var board = ShopBoardPipeline.GenerateBoard(_created, s => 1f, bonus, 0, 0f, 1, 0, false, false, NewRng());
+		Assert.AreEqual(3, board.cards.Count); // 1 generic + 2 chance extra
+	}
+
+	[Test]
+	public void ChanceExtraSlots_Chance0_RollsDefault25_PerBoard()
+	{
+		// Unconfigured chance (0) falls back to the default 25: statistical bound over 300 boards.
+		MakeCard(typeId: "PLAIN");
+		var bonus = new UtilityShopBonus.Bonus { extraBoardSlots = 1, extraBoardSlotsChancePercent = 0 };
+
+		int grew = 0;
+		const int runs = 300;
+		for (int i = 0; i < runs; i++)
+		{
+			var board = ShopBoardPipeline.GenerateBoard(_created, s => 1f, bonus, 0, 0f, 2, 0, false, false, new System.Random(i));
+			if (board.cards.Count == 3) grew++;
+		}
+		Assert.Greater(grew, runs / 5, "default 25% chance must fire well above a 20% floor over 300 boards");
+		Assert.Less(grew, runs * 4 / 5, "default 25% chance must miss well above a 20% floor over 300 boards");
+	}
+
+	[Test]
+	public void ChanceExtraSlots_GenericsGrow_ReservedUntouched()
+	{
+		// Chance extra grows generic slots; reserved slots still append on top, none displaced.
+		MakeCard(typeId: "PLAIN");
+		MakeCard(rarity: EnumStorage.Rarity.Uncommon, typeId: "U_TARGET");
+		var bonus = new UtilityShopBonus.Bonus { extraBoardSlots = 1, extraBoardSlotsChancePercent = 100 };
+		bonus.reservedSlots.Add(RaritySpec(EnumStorage.UtilityKind.RaritySlotU, 100, true));
+
+		var board = ShopBoardPipeline.GenerateBoard(_created, s => 1f, bonus, 0, 0f, 1, 0, false, false, NewRng());
+		Assert.AreEqual(3, board.cards.Count); // 1 generic + 1 chance extra + 1 reserved
+		Assert.IsTrue(board.cards.Exists(c => c.GetComponent<CardScript>().cardTypeID == "U_TARGET"));
+	}
 }

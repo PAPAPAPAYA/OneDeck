@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class CardScript : MonoBehaviour
 {
@@ -149,12 +150,16 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	public bool HasAttackAttribute => _attackResolver != null || printedAttack != 0 || attackGrowth != 0 || attackModThisRound != 0 || extraAttackTimes != 0 || attackTimesModThisRound != 0;
 
+	[Tooltip("Show the attack value on the face even at 0 (JU_ON curse token — 2026-09-02 ruling, carried by this flag since the 2026-09-14 Status -> Token rename).")]
+	public bool alwaysShowAttack = false;
+
 	/// <summary>
-	/// Whether this card shows an attack value on its face. Creature and Status cards always show
-	/// it, even at 0 (e.g. the JU_ON curse token — 2026-09-02 ruling); None-type cards only when
-	/// they actually hold attack (EnhanceCurse growth, RELIC_GRAVE_CURSE override, dynamic resolver).
+	/// Whether this card shows an attack value on its face. Creature cards always show it;
+	/// Token cards only via alwaysShowAttack (e.g. the JU_ON curse token — 2026-09-02 ruling)
+	/// or when they actually hold attack (EnhanceCurse growth, RELIC_GRAVE_CURSE override,
+	/// dynamic resolver); None-type cards only when they actually hold attack.
 	/// </summary>
-	public bool HasAttackDisplay => cardType != EnumStorage.CardType.None || HasAttackAttribute;
+	public bool HasAttackDisplay => cardType == EnumStorage.CardType.Creature || HasAttackAttribute || alwaysShowAttack;
 
 	/// <summary>
 	/// Deck-resident shop utility passive (plan v2): occupies a deck slot but has no combat-time

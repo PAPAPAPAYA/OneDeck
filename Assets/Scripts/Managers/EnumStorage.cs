@@ -94,7 +94,8 @@ public class EnumStorage : MonoBehaviour
 		OddsUtility,
 		ReservedTag,
 		RerollCreatureWave,
-		RerollSpellWave
+		RerollSpellWave,
+		ShopOptionChance
 	}
 
 	public static bool DoesListContainAmountOfStatusEffect(List<StatusEffect> listToCheck, int amount, StatusEffect statusEffectToCheck)

@@ -55,6 +55,8 @@ public class UtilityShopBonusTests : HeadlessCombatTestFixture
 		Assert.AreEqual(0, bonus.extraShopOptions);
 		Assert.AreEqual(0, bonus.freeRerolls);
 		Assert.AreEqual(0, bonus.hpMaxBonus);
+		Assert.AreEqual(0, bonus.extraBoardSlots);
+		Assert.AreEqual(0, bonus.extraBoardSlotsChancePercent);
 		Assert.AreEqual(0, bonus.boardDiscounts.Count);
 		Assert.AreEqual(0, bonus.reservedSlots.Count);
 		Assert.AreEqual(0, bonus.ownedUtilityTypeIds.Count);
@@ -74,6 +76,28 @@ public class UtilityShopBonusTests : HeadlessCombatTestFixture
 		Assert.AreEqual(1, bonus.extraShopOptions);
 		Assert.AreEqual(1, bonus.freeRerolls);
 		Assert.AreEqual(4, bonus.hpMaxBonus);
+	}
+
+	[Test]
+	public void ShopOptionChance_SumsSlotsAndChance()
+	{
+		MakeCard(EnumStorage.UtilityKind.ShopOptionChance, 1, 25, typeId: "OPT_P_A");
+		MakeCard(EnumStorage.UtilityKind.ShopOptionChance, 2, 0, typeId: "OPT_P_B");
+
+		var bonus = UtilityShopBonus.Compute(_created);
+		Assert.AreEqual(3, bonus.extraBoardSlots);
+		Assert.AreEqual(25, bonus.extraBoardSlotsChancePercent);
+		Assert.IsTrue(bonus.ownedUtilityTypeIds.Contains("OPT_P_A"));
+	}
+
+	[Test]
+	public void ShopOptionChance_NegativeSlotsClampedToZero()
+	{
+		MakeCard(EnumStorage.UtilityKind.ShopOptionChance, -1, 50, typeId: "OPT_P_NEG");
+
+		var bonus = UtilityShopBonus.Compute(_created);
+		Assert.AreEqual(0, bonus.extraBoardSlots);
+		Assert.AreEqual(50, bonus.extraBoardSlotsChancePercent);
 	}
 
 	[Test]

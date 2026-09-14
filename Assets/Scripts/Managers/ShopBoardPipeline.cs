@@ -13,7 +13,9 @@ using UnityEngine;
 	/// board-type roll - utility and combat cards share one merged pool for the generic slots and
 	/// utilitySlots is ignored. Reserved guarantee slots are appended on top and never displace
 	/// generic slots; each fires via an independent per-board chance roll (no cadence, no pity)
-	/// and bypasses rarity weights.
+	/// and bypasses rarity weights. ShopOptionChance cards grow the generic slot count when a
+/// separate per-board chance roll hits (bonus.extraBoardSlots / extraBoardSlotsChancePercent;
+/// unconfigured chance falls back to the default).
 	/// Purity rules (2026-09-02 ruling, split mode only): owned utility type ids are excluded from
 	/// both pools AND reserved candidates; reserved candidates come from the CLASSIFIED board pool;
 	/// deck-size cards are excluded everywhere once the deck-size ceiling is reached. Mixed mode
@@ -84,8 +86,19 @@ public static class ShopBoardPipeline
 			}
 		}
 
+		// Chance extra slots (ShopOptionChance): independent per-board roll - both board types,
+		// both modes - same probability model as reserved slots (no cadence, no pity; unconfigured
+		// chance 0 or less falls back to the default).
+		int chanceExtraSlots = 0;
+		if (bonus != null && bonus.extraBoardSlots > 0
+			&& rng.NextDouble() * 100.0 < UtilityShopBonus.ChanceOrPercent(bonus.extraBoardSlotsChancePercent))
+		{
+			chanceExtraSlots = bonus.extraBoardSlots;
+		}
+
 		// Weighted generic rolls. An empty pool yields fewer cards, never a crash.
 		int genericSlotCount = mixedPool ? combatSlots : (result.isUtilityBoard ? utilitySlots : combatSlots);
+		genericSlotCount += chanceExtraSlots;
 		for (int i = 0; i < genericSlotCount; i++)
 		{
 			var card = RollWeighted(genericPool, weightOf, rng);
@@ -145,6 +158,7 @@ public static class ShopBoardPipeline
 			+ " fullPool=" + fullPoolCount
 			+ " combatPool=" + combatPool.Count + " utilityPool=" + utilityPool.Count
 			+ " genericPool=" + genericPool.Count
+			+ " chanceExtraSlots=" + chanceExtraSlots
 			+ (combatAnomalies.Length > 0 ? " ANOMALY_IN_COMBAT_POOL=[" + combatAnomalies.TrimEnd() + "]" : " combatPoolClean")
 			+ " board=[" + string.Join(", ", boardIdList) + "]");
 

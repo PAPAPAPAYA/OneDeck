@@ -118,7 +118,7 @@ class MechanicAnalyzer:
             r'power|Power': '力量机制',
             r'infection|Infection': '感染机制',
             r'mana|Mana': '法力机制',
-            r'takeUpSpace:\s*0': '临时卡牌(不占空间)',
+            r'(?:takeUpSpace|physicalDeckCard):\s*0': '临时卡牌(非实体卡)',
         }
         
         for pattern, name in mechanic_patterns.items():

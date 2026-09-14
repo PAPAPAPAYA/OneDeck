@@ -42,20 +42,21 @@ public static class UtilityFuncManagerScript
 	}
 
 	/// <summary>
-	/// Count how many cards in a DeckSO actually take up deck size.
+	/// Count how many cards in a DeckSO occupy a deck-size slot.
 	/// </summary>
-	public static int CountCardsTakingUpSpace(DeckSO deck)
+	public static int CountSlotOccupyingCards(DeckSO deck)
 	{
-		return CountCardsTakingUpSpace(deck, false);
+		return CountSlotOccupyingCards(deck, false);
 	}
 
 	/// <summary>
-	/// Count how many cards in a DeckSO actually take up deck size.
+	/// Count how many cards in a DeckSO occupy a deck-size slot.
 	/// When duplicatesShareSlot is true, cards sharing a non-empty cardTypeID count as a
 	/// single slot (first copy takes the slot, further copies are free).
 	/// Cards with a null/empty cardTypeID are never deduplicated.
+	/// Slot-free cards (occupiesDeckSlot = false, e.g. utility passives) are never counted.
 	/// </summary>
-	public static int CountCardsTakingUpSpace(DeckSO deck, bool duplicatesShareSlot)
+	public static int CountSlotOccupyingCards(DeckSO deck, bool duplicatesShareSlot)
 	{
 		if (deck == null || deck.deck == null) return 0;
 
@@ -65,7 +66,7 @@ public static class UtilityFuncManagerScript
 		{
 			if (card == null) continue;
 			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript == null || !cardScript.takeUpSpace) continue;
+			if (cardScript == null || !cardScript.occupiesDeckSlot) continue;
 			if (countedTypeIDs != null && !string.IsNullOrEmpty(cardScript.cardTypeID)
 				&& !countedTypeIDs.Add(cardScript.cardTypeID))
 			{

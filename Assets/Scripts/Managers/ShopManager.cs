@@ -300,7 +300,7 @@ public class ShopManager : MonoBehaviour
 			return;
 		}
 
-		if (cardToBuyScript.takeUpSpace) // if card player trying to buy takes up space in deck
+		if (cardToBuyScript.occupiesDeckSlot) // if card player trying to buy consumes a deckSize slot
 		{
 			// Duplicate-slot rule: a copy of an already-owned cardTypeID costs no slot
 			bool isFreeDuplicate = DuplicateCopiesShareSlot
@@ -308,7 +308,7 @@ public class ShopManager : MonoBehaviour
 				&& UtilityFuncManagerScript.DeckContainsCardType(playerDeckRef, cardToBuyScript.cardTypeID);
 			if (!isFreeDuplicate)
 			{
-				int actualSize = UtilityFuncManagerScript.CountCardsTakingUpSpace(playerDeckRef, DuplicateCopiesShareSlot);
+				int actualSize = UtilityFuncManagerScript.CountSlotOccupyingCards(playerDeckRef, DuplicateCopiesShareSlot);
 				if (actualSize >= deckSize.value) return; // check if player deck not full
 			}
 		}
@@ -366,7 +366,7 @@ public class ShopManager : MonoBehaviour
 		if (playerDeckRef.deck.Count - 1 < cardIndex) return; // check if card index valid
 		var cardToSell = playerDeckRef.deck[cardIndex]; // store card player tyring to sell
 		var cardScript = cardToSell.GetComponent<CardScript>();
-		if (!cardScript.takeUpSpace) return; // non-space cards cannot be sold
+		if (!cardScript.physicalDeckCard) return; // non-physical cards cannot be sold
 		purse.value += GetCardPrice(cardScript) / 2; // get the money
 		playerDeckRef.deck.Remove(cardToSell); // remove it from player deck
 		RefreshUtilityBonus();
@@ -466,7 +466,7 @@ public class ShopManager : MonoBehaviour
 		{
 			var card = playerDeckRef.deck[i];
 			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.takeUpSpace) continue; // if card doesn't take up space, skip it
+			if (!cardScript.physicalDeckCard) continue; // if card is not a physical deck card, skip it
 			_deckInfoStr +=
 				"#" + displayIndex + " <size=+2><b>" + // number
 				card.name + // name
