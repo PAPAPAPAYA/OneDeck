@@ -75,7 +75,7 @@ namespace DefaultNamespace.Managers
 				// Check capacity limit
 				if (checkDeckSizeLimit && deckSizeLimit != null)
 				{
-					int currentSize = UtilityFuncManagerScript.CountCardsTakingUpSpace(playerDeck);
+					int currentSize = UtilityFuncManagerScript.CountSlotOccupyingCards(playerDeck);
 					if (currentSize >= deckSizeLimit.value)
 					{
 						// Debug.Log("[CombatStartCardGiver] Deck is full, stop adding");

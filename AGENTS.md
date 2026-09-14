@@ -126,7 +126,7 @@ enum Tag { None, Linger, ManaX, DeathRattle }
 - `TagTooltipDatabaseSO` (`Assets/Resources/TagTooltipDatabase.asset`, lazy singleton `Me`) maps each tag to a `displayName` StringSO (`Assets/SORefs/Strings/TagNames/`) and a tooltip `description` StringSO (`Assets/SORefs/Strings/TagTooltips/`). All StringSO assets must have `reset = false`.
 - **Single source of truth**: every user-visible tag text resolves through `TagTooltipDatabaseSO.GetTagDisplayName(tag)` (falls back to the enum name when unconfigured) — in-card tag print, hover tooltip title (`CardTagTooltip`), and cardDesc `<tag:EnumName>` placeholders. To rename a tag, edit only the `TagName_*.asset` value.
 - **cardDesc tag-reference v2**: `<tag:X>` renders display names via `ComputeDynamicCardDesc`; tag refs = `tag为[<tag:X>]的…卡`; `[ ]` reserved for tag phrases, card refs bare (信徒/诅咒 = tokens); 【】 deprecated 2026-09-04 — font lacks glyphs (search prefabs for `u3010` escapes). Docs: `docs/CardDesc_TagReference_Convention_v2.md`.
-- Hover tooltip: `CardTagTooltip` from `CardPhysObjScript` hover; `CombatUXManager.hoverPopUpDelay` (default 0.1s) gates `PopUpCard` (0 = next frame).
+- Hover tooltip: `CardTagTooltip` from `CardPhysObjScript` hover; `CombatUXManager.hoverPopUpDelay` (default 0.1s) gates `PopUpCard` (0 = next frame). Shows a card-type block before tag blocks via `CardTypeTooltipDatabaseSO` (`Assets/Resources/CardTypeTooltipDatabase.asset`): Creature=实体/可攻击, None=现象/不可攻击; Token and Start Card show no type block (types without a DB entry are excluded).
 
 ## Events
 
@@ -153,7 +153,7 @@ Two-half panel for the just-finished combat; store `CombatPerCardStatsTracker.Me
 ## Shop Systems
 
 - **Duplicate slot rule**: `ShopManager.duplicateCopiesShareSlotRef` (BoolSO, default OFF) — same-`cardTypeID` copies share 1 deck slot, stacked; only the stack base shows price. Empty slots are persistent background objects, never consumed by buy/sell.
-- **Utility passives & board pipeline**: `CardScript.utilityKind` + `IsUtilityPassive`; bonuses recomputed from the deck by `UtilityShopBonus` (no accumulating listeners); board generation in `ShopBoardPipeline.GenerateBoard` (pure static, injected Random); deck-slot meter card via `DeckSizeIncreaseEffect` (cap 16). Shop HP invariant: shop phase always full HP.
+- **Utility passives & board pipeline**: `CardScript.utilityKind` + `IsUtilityPassive`; bonuses recomputed from the deck by `UtilityShopBonus` (no accumulating listeners); board generation in `ShopBoardPipeline.GenerateBoard` (pure static, injected Random); deck-slot meter card via `DeckSizeIncreaseEffect` (cap 16). Utility passives are slot-free (`occupiesDeckSlot` = false, skips buy capacity) but physical (`physicalDeckCard`, ex-`takeUpSpace`: displayed/sellable/combat-instantiated). Shop HP invariant: shop phase always full HP.
 - Details: `docs/ShopSystems.md`; plans `plans/plan-duplicate-cards-share-deck-slot-2026-07-31.md`, `plans/plan-utility-passive-shop-pipeline-2026-08-31.md`.
 
 ## Animation System
@@ -170,7 +170,7 @@ Critical points:
 ## Critical Rules
 
 - **HPAlterEffect**: Automatically adds `baseDmg.value`; set `baseDmg` to 0 when passing a specific value.
-- **CardType**: `CardScript.cardType` (`EnumStorage.CardType` {None, Creature, Status}, append-only) replaced the `isCreature` bool (2026-09-02). Creature = attack-bearing 生物 (ATK column non-empty); Status = curse-type tokens (e.g. JU_ON) — outside every creature predicate and creature-only aura (BATTLE_HORN, RELIC_GRAVE_LORD), no special-cases anywhere. "Damaging card" predicates = `IsCreature || HasAttackAttribute` (damage capability, not type). Plan: `plans/plan-card-type-status-2026-09-02.md`.
+- **CardType**: `CardScript.cardType` (`EnumStorage.CardType` {None, Creature, Token}, append-only) replaced the `isCreature` bool (2026-09-02; 2026-09-14 Status identifier renamed → Token 衍生物, serialized value 2 unchanged). Creature = attack-bearing 实体 (ATK column non-empty; desc 谓词 2026-09-14 起「生物/非生物」→「实体/现象」); Token = 衍生物 tokens (信徒 RIFT + 诅咒 JU_ON) — outside every creature predicate and creature-only aura (BATTLE_HORN, RELIC_GRAVE_LORD), no special-cases anywhere. "Damaging card" predicates = `IsCreature || HasAttackAttribute` (damage capability, not type); attack face display = Creature always, else `HasAttackAttribute` or `alwaysShowAttack` flag (JU_ON). Plans: `plans/plan-card-type-status-2026-09-02.md`, `plans/plan-cardtype-shiti-xianxiang-2026-09-14.md`.
 - **cardTypeID**: Used for saving / statistics / card-type filtering (not instance ID).
 - **Anti-loop**: Do not attach multiple looping effect instances to the same card.
 - **GameEvent.Raise**: Use `Raise()` only for non-faction-specific events. For owner/opponent events, use `RaiseOwner()` / `RaiseOpponent()` based on the trigger object's faction. Direct `Raise()` on faction events is prohibited.

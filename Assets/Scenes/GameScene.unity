@@ -1852,6 +1852,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2018614695696351118, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
+      propertyPath: m_text
+      value: "> \u57CB\u846C <b>4</b> \u53CB\u65B9,\u672C\u56DE\u5408\u6BCF\u57CB\u846C\u8FC7
+        <b>1</b> \u53CB\u65B9,\u57CB\u846C\u6570 <b>-1</b>;\u653B\u51FBx3"
+      objectReference: {fileID: 0}
     - target: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_Name
       value: PhysicalCardParent
@@ -7143,10 +7148,10 @@ MonoBehaviour:
   combatAnimationSpeedScale: 1
   roundNumRef: {fileID: 11400000, guid: ab0b41f3dddb85b4da0879597008d14f, type: 2}
   roundsLastCombat: 0
-  overtimeRoundThreshold: 20
+  overtimeRoundThreshold: 5
   cardToAddWhenOvertime: {fileID: 8718476725744197808, guid: 02a88e7c9e961d84db56f71fec8b0ede, type: 3}
   fatigueAmount: 1
-  fatigueRevealThreshold: 99
+  fatigueRevealThreshold: 40
   totalCardsRevealed: 0
   lastCardGotStatusEffect: {fileID: 0}
   lastCardGotPower: {fileID: 0}
@@ -9187,6 +9192,10 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   hoverPopUpDelay: 0.1
+  hoverRetentionXHalfWidth: 6
+  hoverSpreadX: 0.5
+  hoverSpreadY: 0
+  hoverSpreadReach: 3
   deckFocusTargetPos: {fileID: 714939180}
   peelSlideDistance: 12
   deckShiftDuration: 0.3

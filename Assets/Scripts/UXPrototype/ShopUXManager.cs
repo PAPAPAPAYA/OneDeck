@@ -513,8 +513,8 @@ public class ShopUXManager : MonoBehaviour
 				continue;
 			}
 			
-			// Do not instantiate cards that do not take up deck space
-			if (!cardScript.takeUpSpace)
+			// Do not instantiate cards that are not physical deck cards
+			if (!cardScript.physicalDeckCard)
 			{
 				continue;
 			}
@@ -710,13 +710,13 @@ public class ShopUXManager : MonoBehaviour
 		CardPhysObjScript purchasedCardPhys = purchasedCard.GetComponent<CardPhysObjScript>();
 		CardScript cardScript = purchasedCardPhys != null ? purchasedCardPhys.cardImRepresenting : null;
 		
-		// 2. Check if card occupies deck space
-		if (cardScript != null && !cardScript.takeUpSpace)
+		// 2. Check if card is a physical deck card
+		if (cardScript != null && !cardScript.physicalDeckCard)
 		{
-			// If doesn't occupy space, remove directly from _spawnedShopCards and destroy
+			// If not physical, remove directly from _spawnedShopCards and destroy
 			RemoveFromShopCards(purchasedCardIndex);
 			Destroy(purchasedCard);
-			// Debug.Log($"[ShopUXManager] Card purchased (no space), destroyed immediately");
+			// Debug.Log($"[ShopUXManager] Card purchased (non-physical), destroyed immediately");
 			return;
 		}
 		

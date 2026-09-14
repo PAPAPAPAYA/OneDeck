@@ -1,2 +1,15 @@
 fileFormatVersion: 2
 guid: 9f01314777625ad4bb0bc22828e9728c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - baseDmg: {fileID: 11400000, guid: fb52aef52820fa34883c2e79218e4ad7, type: 2}
+  - ownerIntSO: {instanceID: 0}
+  - enemyIntSO: {instanceID: 0}
+  - curseEngine: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
