@@ -58,15 +58,17 @@ public class EnumStorage : MonoBehaviour
 		MultiAttack
 	}
 
-	// Card type taxonomy (2026-09-02, plans/plan-card-type-status-2026-09-02.md).
-	// Creature = attack-bearing creature (4.0 生物, ATK column non-empty).
-	// Status = curse-type tokens (诅咒, e.g. JU_ON) that grow attack via EnhanceCurse but are not creatures.
+	// Card type taxonomy (2026-09-02, plans/plan-card-type-status-2026-09-02.md; 2026-09-14
+	// Status -> Token identifier rename, plans/plan-cardtype-shiti-xianxiang-2026-09-14.md —
+	// token衍生物收纳信徒/诅咒 token; identifier-only rename, serialized value 2 unchanged).
+	// Creature = attack-bearing creature (4.0 实体, ATK column non-empty).
+	// Token = token derivatives (信徒 RIFT + 诅咒 JU_ON) that are never creatures.
 	// Append-only: prefabs serialize this as ints - inserting or reordering corrupts existing assets.
 	public enum CardType
 	{
 		None,
 		Creature,
-		Status
+		Token
 	}
 
 	public enum Rarity

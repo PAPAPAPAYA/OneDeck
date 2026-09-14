@@ -16,7 +16,7 @@ Distinguishes **card-type references** (a specific card, keyed by `cardTypeID`) 
 - **Clause-head trigger keywords stay bare** (self-referential grammar, not target refs):
   `遗言：` `苏醒：` `回响：` `被动：` `强化反应：`.
 - **State/numeric conditions stay bare, no brackets**: 被强化 (= `attackGrowth > 0`),
-  攻击力最高, 非生物.
+  攻击力最高, 现象.
 
 ## Sentence patterns
 
@@ -77,5 +77,5 @@ GRAVE_FIST, GRAVE_TOGETHER_4.0, GRAVE_MILLER, SACRIFICIAL_SPIRIT (behavior-neutr
 ## Resolved items
 
 WEAKENING_FIELD — resolved 2026-09-04: the `除了诅咒` exclusion was dropped; desc now reads
-`所有生物本回合攻击力-1`, matching `ModifyAllCreatureAttackThisRoundExceptCurse` (2026-09-02
+`所有实体本回合攻击力-1`, matching `ModifyAllCreatureAttackThisRoundExceptCurse` (2026-09-02
 type split: creature filter only, creature curses like JU_ON are hit).

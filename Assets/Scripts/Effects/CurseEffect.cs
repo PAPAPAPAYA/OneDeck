@@ -95,7 +95,7 @@ namespace DefaultNamespace.Effects
 		/// <summary>
 		/// Repeats the IntSO value as a COUNT: calls EnhanceCurse(1) once per point, each
 		/// independently finding-or-creating an enemy curse (RELIC_TALLY
-		/// "本回合每埋葬1生物，强化1敌方诅咒" — B burials mean B separate +1 enhancements,
+		/// "本回合每埋葬1实体，强化1敌方诅咒" — B burials mean B separate +1 enhancements,
 		/// not one curse +B). Uses ownerIntSO/enemyIntSO like EnhanceCurse_BasedOnIntSO.
 		/// </summary>
 		public virtual void EnhanceCurseTimes_BasedOnIntSO()

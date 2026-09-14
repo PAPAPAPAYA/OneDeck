@@ -188,7 +188,7 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Give permanent attack to X random friendly CREATURES (WAR_TRAINER, BLACKSMITH,
-		/// POWER_SURGE, SACRIFICIAL_SWORD — printed 强化N友方生物). Reads xFriendlyCount /
+		/// POWER_SURGE, SACRIFICIAL_SWORD — printed 强化N友方实体). Reads xFriendlyCount /
 		/// yFriendlyLayerCount. Creature-only: attack-holding Status curses are excluded
 		/// (2026-09-04 ruling).
 		/// </summary>
@@ -197,8 +197,8 @@ namespace DefaultNamespace.Effects
 			if (xFriendlyCount <= 0 || yFriendlyLayerCount <= 0) return;
 
 			var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
-			// Printed text is 强化N友方生物: a Status-type curse that already holds attack passes
-			// PassesDamageFilter's HasAttackAttribute branch but is not a 生物 (2026-09-02 type
+			// Printed text is 强化N友方实体: a Status-type curse that already holds attack passes
+			// PassesDamageFilter's HasAttackAttribute branch but is not a 实体 (2026-09-02 type
 			// split) — the enhance pool must judge pure IsCreature (2026-09-04 ruling).
 			friendlyCards.RemoveAll(c => c == null || !c.IsCreature);
 			if (friendlyCards.Count <= 0) return;
@@ -220,7 +220,7 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Based on ownerIntSO/enemyIntSO, repeat N times: give 1 attack to one random
-		/// friendly creature (RIFT_REAPER 友方生物, CURSE_THIRST_SHAMAN) — reads the enemy
+		/// friendly creature (RIFT_REAPER 友方实体, CURSE_THIRST_SHAMAN) — reads the enemy
 		/// curse attack aggregate. Creature-only pool, same as GiveAttackToXFriendly.
 		/// </summary>
 		public virtual void GiveAttackToXFriendly_BasedOnIntSO()
@@ -234,7 +234,7 @@ namespace DefaultNamespace.Effects
 			for (int i = 0; i < intSO.value; i++)
 			{
 				var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
-				// Same creature-only enhance pool as GiveAttackToXFriendly (RIFT_REAPER 友方生物).
+				// Same creature-only enhance pool as GiveAttackToXFriendly (RIFT_REAPER 友方实体).
 				friendlyCards.RemoveAll(c => c == null || !c.IsCreature);
 				if (friendlyCards.Count <= 0) break;
 
@@ -270,7 +270,7 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Give permanent attack to the card that most recently gained attack (WEAPON_SPIRIT
-		/// "被动：友方生物被强化时：强化1该生物" — the enhanced creature gets amplified).
+		/// "被动：友方实体被强化时：强化1该实体" — the enhanced creature gets amplified).
 		/// Creatures only; the effect-chain loop guard blocks amplification re-triggers within
 		/// the same chain, so each external enhancement reaction fires exactly once.
 		/// </summary>
@@ -326,7 +326,7 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Apply a THIS-ROUND attack modifier to every creature on both sides (WEAKENING_FIELD
-		/// "所有生物本回合攻击力-1"). Status-type curse cards are skipped naturally — they are not
+		/// "所有实体本回合攻击力-1"). Status-type curse cards are skipped naturally — they are not
 		/// creatures (2026-09-02 type split replaced the former curse-typeID exclusion). Uses
 		/// CardScript.ModifyAttackThisRound — this is not a 强化 grant, so no attack-gain events
 		/// fire (the round reset clears it). Method name kept: WEAKENING_FIELD.prefab binds it by

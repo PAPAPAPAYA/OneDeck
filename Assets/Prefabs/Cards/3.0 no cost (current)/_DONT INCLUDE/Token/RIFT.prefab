@@ -259,7 +259,7 @@ MonoBehaviour:
   attackModThisRound: 0
   extraAttackTimes: 0
   attackTimesModThisRound: 0
-  cardType: 0
+  cardType: 2
   isPassive: 0
   utilityKind: 0
   utilityValue: 0

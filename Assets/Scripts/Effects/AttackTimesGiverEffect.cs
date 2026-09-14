@@ -50,7 +50,7 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Give +N attack times to 1 random friendly creature for this round (COMBO_GRANTER
-		/// "本回合1友方生物攻击次数+1"). Self is eligible (文案无排除); ties of the random
+		/// "本回合1友方实体攻击次数+1"). Self is eligible (文案无排除); ties of the random
 		/// pool follow the shuffled order.
 		/// </summary>
 		public virtual void GiveRandomFriendlyCreatureAttackTimes(int times)
@@ -66,7 +66,7 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Bump the faction's per-round creature attack-times aura (BATTLE_HORN
-		/// "本回合友方生物攻击次数+1", 4.0 E7). Aura lives on ValueTrackerManager, is reset at
+		/// "本回合友方实体攻击次数+1", 4.0 E7). Aura lives on ValueTrackerManager, is reset at
 		/// every round start, and is read by CardScript.GetAttackTimes for Creature-type cards —
 		/// creatures generated later in the same round are covered automatically. The batch
 		/// animation runs over the creatures present at grant time (current beneficiaries).

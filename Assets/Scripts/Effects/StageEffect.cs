@@ -19,9 +19,9 @@ public class StageEffect : EffectScript
 	[Header("Self Exclusion")]
 	[Tooltip("If true, the source card will not be selected when staging multiple cards")]
 	public bool excludeSelf = true;
-	[Tooltip("If true, StageCardWithMaxAttack only considers creatures (FINAL_ESCORT 置顶1友方攻击力最高生物)")]
+	[Tooltip("If true, StageCardWithMaxAttack only considers creatures (FINAL_ESCORT 置顶1友方攻击力最高实体)")]
 	public bool creatureOnly = false;
-	[Tooltip("Narrow the StageMyCards pool to creatures or non-creatures (DEATHBED_PORTER 置顶1友方非生物)")]
+	[Tooltip("Narrow the StageMyCards pool to creatures or non-creatures (DEATHBED_PORTER 置顶1友方现象)")]
 	public EffectScript.EffectCreatureFilter creatureFilter = EffectScript.EffectCreatureFilter.Any;
 
 	[Header("Based on IntSO")]
@@ -330,7 +330,7 @@ public class StageEffect : EffectScript
 	{
 		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.IsCreature) return false;
 		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.IsCreature) return false;
-		if (creatureFilter == EffectScript.EffectCreatureFilter.Status && cardScript.cardType != EnumStorage.CardType.Status) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Token && cardScript.cardType != EnumStorage.CardType.Token) return false;
 		return true;
 	}
 
@@ -375,7 +375,7 @@ public class StageEffect : EffectScript
 
 	/// <summary>
 	/// One-shot round-end stage armed by the deathrattle (FINAL_ESCORT
-	/// "遗言：回合结束：置顶1友方攻击力最高生物", 4.0 E3). The deathrattle only arms the
+	/// "遗言：回合结束：置顶1友方攻击力最高实体", 4.0 E3). The deathrattle only arms the
 	/// flag; the prefab's permanent onRoundEnd listener calls this, which stages once and
 	/// disarms — no dynamic listener registration needed. The card object survives being
 	/// buried, so the flag (and the listener) live as long as the card does.

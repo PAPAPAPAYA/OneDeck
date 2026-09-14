@@ -25,7 +25,11 @@ public class CardScript : MonoBehaviour
 	{
 		return string.IsNullOrEmpty(displayName) ? gameObject.name : displayName;
 	}
-	public bool takeUpSpace = true; // whether this card takes up deck size
+	[FormerlySerializedAs("takeUpSpace")]
+	[Tooltip("Whether this card exists as a physical deck card: shown in the shop deck band, sellable, instantiated into the combat deck")]
+	public bool physicalDeckCard = true;
+	[Tooltip("Whether buying this card consumes a deckSize slot. Slot-free cards (utility passives) skip the buy-capacity check but stay physical")]
+	public bool occupiesDeckSlot = true;
 	[Tooltip("Whether this is the round start marker card (Start Card)")]
 	public bool isStartCard = false;
 	
@@ -74,10 +78,11 @@ public class CardScript : MonoBehaviour
 	public int attackTimesModThisRound;
 
 	/// <summary>
-	/// Card type (plans/plan-card-type-status-2026-09-02.md): Creature = attack-bearing creature
-	/// (4.0 spec 生物, invariant 生物 ⟺ ATK column non-empty); Status = curse-type tokens
-	/// (诅咒, e.g. JU_ON) that grow attack via EnhanceCurse but are NOT creatures — they drop out
-	/// of every creature predicate (埋葬N生物, BATTLE_HORN aura, RELIC_TALLY burial counter, ...).
+	/// Card type (plans/plan-card-type-status-2026-09-02.md; 2026-09-14 Status -> Token rename,
+	/// plans/plan-cardtype-shiti-xianxiang-2026-09-14.md): Creature = attack-bearing creature
+	/// (4.0 spec 实体, invariant 实体 ⟺ ATK column non-empty); Token = token derivatives
+	/// (信徒 RIFT + 诅咒 JU_ON) — NOT creatures, they drop out of every creature predicate
+	/// (埋葬N实体, BATTLE_HORN aura, ...).
 	/// Explicit field — never inferred from components.
 	/// </summary>
 	public EnumStorage.CardType cardType = EnumStorage.CardType.None;

@@ -252,7 +252,7 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 		// Curse spared comes from the STATUS card type now (the typeID exclusion was removed with
 		// the 2026-09-02 card-type split), not from the JU_ON typeID.
 		var curse = AddCard(true, "Curse", "JU_ON", 5, false);
-		curse.GetComponent<CardScript>().cardType = EnumStorage.CardType.Status;
+		curse.GetComponent<CardScript>().cardType = EnumStorage.CardType.Token;
 		var nonCreature = AddCard(true, "NonCreature", "B", 5, false);
 		CombatManager.combinedDeckZone.Add(field);
 

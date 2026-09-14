@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// DEATHBED_GRANT engine (4.0 step-5): "被动：友方生物被埋葬时：该友方生物攻击".
+/// DEATHBED_GRANT engine (4.0 step-5): "被动：友方实体被埋葬时：该友方实体攻击".
 /// Reads CombatManager.lastCardBuried (set by BuryEffect right before every bury event raise)
 /// and, when the buried card is a friendly creature, performs THE BURIED CARD's own attack
 /// — the card's enhanced attack value is what lands, closing the 强化×埋葬 loop

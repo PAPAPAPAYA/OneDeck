@@ -10,9 +10,10 @@ public class EffectScript : MonoBehaviour
 	/// Creature membership filter for movement-effect pools (4.0 step-5): BuryEffect and
 	/// StageEffect use this; ReviveEffect keeps its own nested CreatureFilter enum.
 	/// Append-only: effects serialize this as ints - inserting or reordering corrupts existing assets.
-	/// Status (2026-09-02): selects CardType.Status cards (curse-type tokens), never creatures.
+	/// Token (2026-09-02 as Status, renamed 2026-09-14): selects CardType.Token cards
+	/// (token衍生物: 信徒 RIFT + 诅咒 JU_ON), never creatures.
 	/// </summary>
-	public enum EffectCreatureFilter { Any, Creature, NonCreature, Status }
+	public enum EffectCreatureFilter { Any, Creature, NonCreature, Token }
 
 	protected CombatManager combatManager;
 	protected GameObject myCard;

@@ -318,6 +318,7 @@ The shop runs a full board-generation pipeline every time a board is produced (i
 - `ShopManager.splitUtilityCombatBoards` (bool, default false = MIXED): the board-type roll is skipped entirely — utility and combat cards share ONE merged pool for the generic slots (`utilityBoardSlotCount` and the session utility-board-chance table are dormant; the "奇物架" UX marker never shows). Wave filters apply to the merged pool.
 - Split mode (true = legacy): every generated board rolls its type: utility ("奇物架") chance from the session table (10% session 1, 15% session 3, 20% session 5). Combat boards offer only combat cards; utility boards only utility cards (board purity). If the classified utility pool runs dry (every utility passive owned + deck-size cards ceiling-blocked), the roll falls through to combat (never a blank utility board). OddsUtility cards sit in BOTH pools (the merge in mixed mode reference-dedups them so their weight does not double).
 - ODDS cards no longer touch the board-type roll in either mode (2026-09-11): 深处 (ODDS_1) = the visit's FIRST board is guaranteed to CONTAIN 1 utility card (appended reserved slot, `firstBoardOnly`); 窥魇镜 (ODDS_2) = 25% per generated board to append 1 extra utility card. Both go through the reserved-slot pipeline below.
+- Chance extra slots (2026-09-14): 魇市游摊 (OPTION_P_1) = 25% per generated board (independent roll, unconfigured ≤0 falls back to 25) to grow the generic slot count by 1 — applies in both modes and to both board types; rerolls re-roll the chance. Unconditional sibling: 魇市新摊 (OPTION_1, Uncommon since 2026-09-14) always +1. Both stack with each other (own-once keeps each at one copy).
 
 ### Guaranteed Slots (概率保底)
 
@@ -328,7 +329,7 @@ The shop runs a full board-generation pipeline every time a board is produced (i
 
 ### Utility Passives (被动 utility 卡)
 
-- A utility passive occupies a deck slot while held (`takeUpSpace`), never reveals in combat, and its shop effect applies the whole time it is in the deck; selling removes the effect. Owning a copy removes it from utility-board offers (one copy per kind).
+- A utility passive occupies NO deck slot while held (`occupiesDeckSlot` = false, 2026-09-14): it skips the buy-capacity check entirely. It stays a physical deck card (`physicalDeckCard`): shown in the shop deck band, sellable, and still instantiated into the combat deck, where it reveals as an inert card (this corrects the older "never reveals in combat" claim, which never matched the code — `GatherDecks` only filters `physicalDeckCard`). Its shop effect applies the whole time it is in the deck; selling removes the effect. Owning a copy removes it from utility-board offers (one copy per kind).
 - Baseline growth (independent of utility cards): deckSize = 3 + 1 × session + slot purchases (ceiling 16); hpMax = base + 2 × session + Σ HP cards; payday see above.
 - Deck-slot meter card (卡位扩张): +1 deck size per purchase, consumed on purchase, price escalates (4 + 2 × purchases this run), stops being offered at the ceiling.
 

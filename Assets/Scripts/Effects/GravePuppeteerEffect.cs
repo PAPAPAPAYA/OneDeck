@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// GRAVE_PUPPETEER engine (4.0 step-5): "让墓地1友方生物攻击；墓地无友方则埋葬1友方遗言卡".
+/// GRAVE_PUPPETEER engine (4.0 step-5): "让墓地1友方实体攻击；墓地无友方则埋葬1友方遗言卡".
 /// Ruling 2026-08-30: A variant — the picked graveyard creature strikes WITHOUT leaving the
 /// grave (uses its own AttackEffect via PerformAttackAs); random 1 target; creatures only.
 /// When the grave holds no friendly creature, falls back to burying 1 friendly 遗言-tagged card.

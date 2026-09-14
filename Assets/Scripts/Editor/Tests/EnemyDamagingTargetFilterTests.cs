@@ -108,11 +108,11 @@ public class EnemyDamagingTargetFilterTests : HeadlessCombatTestFixture
 	{
 		// WAR_TRAINER regression (2026-09-04): a friendly Status-type curse grown by the
 		// enemy's EnhanceCurse passes PassesDamageFilter (HasAttackAttribute) but is not a
-		// 生物 — the 强化 pool must stay creature-only.
+		// 实体 — the 强化 pool must stay creature-only.
 		var giverCard = CreateCard(true, "Giver");
 		var curse = CreateCard(true, "Curse");
 		var curseScript = curse.GetComponent<CardScript>();
-		curseScript.cardType = EnumStorage.CardType.Status;
+		curseScript.cardType = EnumStorage.CardType.Token;
 		curseScript.ModifyAttack(2);
 		var creature = CreateCard(true, "Creature");
 		creature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;

@@ -1,18 +1,21 @@
 using System.Text;
+using DefaultNamespace.SOScripts;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Floating tag tooltip shown when hovering a physical card. Self-contained:
+/// Floating tooltip shown when hovering a physical card. Self-contained:
 /// builds its own Screen Space canvas/panel at runtime on first use (no scene
 /// wiring needed), anchors to the hovered card (right side by default, left
 /// side when the right would overflow the screen, vertically centered and
 /// clamped), and force-hides on phase change, card flip to face-down, or card
-/// destroy. Each visible tag gets a bold "[Tag]" title line followed by its
-/// explanation on the next line, where the explanation comes from
-/// TagTooltipDatabaseSO (StringSO per tag); tags without a configured
-/// explanation show the title only. Follows the
+/// destroy. First block is the card type — "[实体]/可攻击" or "[现象]/不可攻击"
+/// — resolved via CardTypeTooltipDatabaseSO; types without a database entry
+/// (Token 衍生物) and the Start Card show no type block. Each visible tag then
+/// gets a bold "[Tag]" title line followed by its explanation on the next
+/// line, from TagTooltipDatabaseSO (StringSO per tag); tags without a
+/// configured explanation show the title only. Follows the
 /// presenter convention (CombatIconPresenter, CombatHPBarPresenter): pure
 /// presentation, no game logic.
 /// </summary>
@@ -56,26 +59,62 @@ public class CardTagTooltip : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Per visible tag: a bold "[Tag]" title line, then the explanation on the
-	/// next line; tag blocks are separated by a blank line. The explanation is
-	/// looked up in TagTooltipDatabaseSO; tags without a (non-empty) description
-	/// show the title only. Returns an empty string when there are no visible tags.
+	/// First the card-type block (via <see cref="TryAppendTypeBlock"/>, skipped for
+	/// Token cards and the Start Card), then one block per visible tag: a bold
+	/// "[Tag]" title line and the explanation on the next line, separated by a
+	/// blank line. The explanation is looked up in TagTooltipDatabaseSO; tags
+	/// without a (non-empty) description show the title only. Returns an empty
+	/// string when there is neither a type block nor any visible tag (no tooltip).
 	/// </summary>
 	private static string BuildTooltipText(CardPhysObjScript card)
 	{
+		StringBuilder sb = new StringBuilder();
+		bool hasTypeBlock = TryAppendTypeBlock(card, sb);
+		bool hasVisibleTag = TryAppendTagBlocks(card, sb, hasTypeBlock);
+		return hasTypeBlock || hasVisibleTag ? sb.ToString() : string.Empty;
+	}
+
+	/// <summary>
+	/// Type block for the hovered card: bold "[Name]" title from
+	/// CardTypeTooltipDatabaseSO, explanation on the next line. Skipped for the
+	/// Start Card and for card types without a database entry (Token 衍生物 —
+	/// data-driven exclusion, 2026-09-14).
+	/// </summary>
+	private static bool TryAppendTypeBlock(CardPhysObjScript card, StringBuilder sb)
+	{
+		if (card.cardImRepresenting == null || card.cardImRepresenting.isStartCard) return false;
+
+		EnumStorage.CardType cardType = card.cardImRepresenting.cardType;
+		CardTypeTooltipDatabaseSO db = CardTypeTooltipDatabaseSO.Me;
+		string displayName = db != null ? db.GetDisplayName(cardType) : null;
+		if (string.IsNullOrEmpty(displayName)) return false;
+
+		sb.Append("<b>[");
+		sb.Append(displayName);
+		sb.Append("]</b>");
+		StringSO description = db.GetDescription(cardType);
+		if (description != null && !string.IsNullOrEmpty(description.value))
+		{
+			sb.Append("\n");
+			sb.Append(description.value);
+		}
+		return true;
+	}
+
+	private static bool TryAppendTagBlocks(CardPhysObjScript card, StringBuilder sb, bool hasPrecedingBlock)
+	{
 		if (card.cardImRepresenting == null || card.cardImRepresenting.myTags == null || card.cardImRepresenting.myTags.Count == 0)
 		{
-			return string.Empty;
+			return false;
 		}
 
 		TagTooltipDatabaseSO db = TagTooltipDatabaseSO.Me;
-		StringBuilder sb = new StringBuilder();
 		bool hasVisibleTag = false;
 		for (int i = 0; i < card.cardImRepresenting.myTags.Count; i++)
 		{
 			EnumStorage.Tag tag = card.cardImRepresenting.myTags[i];
 			if (tag == EnumStorage.Tag.None) continue;
-			if (hasVisibleTag)
+			if (hasVisibleTag || (hasPrecedingBlock && sb.Length > 0))
 			{
 				sb.Append("\n\n");
 			}
@@ -91,7 +130,7 @@ public class CardTagTooltip : MonoBehaviour
 			hasVisibleTag = true;
 		}
 
-		return hasVisibleTag ? sb.ToString() : string.Empty;
+		return hasVisibleTag;
 	}
 
 	private static string GetTagDescription(TagTooltipDatabaseSO db, EnumStorage.Tag tag)

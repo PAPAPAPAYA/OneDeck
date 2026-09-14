@@ -17,8 +17,9 @@ public class ReviveEffect : EffectScript
 {
 	public enum ReviveTargetSide { MyCards, TheirCards }
 	// Append-only: prefabs serialize this as ints - inserting or reordering corrupts existing assets.
-	// Status (2026-09-02): selects CardType.Status cards (curse-type tokens), never creatures.
-	public enum CreatureFilter { Any, Creature, NonCreature, Status }
+	// Token (2026-09-02 as Status, renamed 2026-09-14): selects CardType.Token cards
+	// (token衍生物: 信徒 RIFT + 诅咒 JU_ON), never creatures.
+	public enum CreatureFilter { Any, Creature, NonCreature, Token }
 	public enum ReviveSortBy { None, MaxAttack, MaxExtraAttackTimes }
 	public enum ReviveRarityFilter { Any, Common, Uncommon, Rare }
 
@@ -109,7 +110,7 @@ public class ReviveEffect : EffectScript
 	{
 		if (creatureFilter == CreatureFilter.Creature && !cardScript.IsCreature) return false;
 		if (creatureFilter == CreatureFilter.NonCreature && cardScript.IsCreature) return false;
-		if (creatureFilter == CreatureFilter.Status && cardScript.cardType != EnumStorage.CardType.Status) return false;
+		if (creatureFilter == CreatureFilter.Token && cardScript.cardType != EnumStorage.CardType.Token) return false;
 		if (onlyEnhanced && cardScript.attackGrowth <= 0) return false;
 		if (!string.IsNullOrEmpty(typeIDFilter) && cardScript.cardTypeID != typeIDFilter) return false;
 		if (rarityFilter != ReviveRarityFilter.Any)
