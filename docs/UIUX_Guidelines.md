@@ -63,7 +63,7 @@ Rules:
 | `pressDur` | 60 ms | press duration (< hoverDur, always) |
 | `ease` | overshoot, strength 1.7 | CSS `cubic-bezier(0.34, 1.7, 0.64, 1)`; DOTween ≈ `Ease.OutBack` with overshoot ≈ 1.7 |
 | `pressTarget` | ground | face lands on the shadow (alternative "rest" kept only for feel comparison) |
-| `tipDelay` | 250 ms | tooltip appear delay — **discrepancy**: Unity `CombatUXManager.hoverPopUpDelay` is currently 0.1 s; reconcile when porting |
+| `tipDelay` | 250 ms | tooltip appear delay — **resolved 2026-09-16 (user decision): the engine value wins** — Unity `CombatUXManager.hoverPopUpDelay` stays at 0.1 s |
 | `tipMargin` | 24 px | min left-gap before tooltip flips to the right side |
 | tooltip viewport clamp | 8 px | hard margin, always inside viewport |
 
@@ -114,11 +114,13 @@ Layout rules:
 - Sell price = half the base price (current rule).
 - **The trigger confirmation IS the consequence motion**: no flash/invert on fire — in the real shop the bought card flies to a deck slot and the sold card flies out; a color blink before that flight breaks object permanence. (Flight motion itself is specced in `PhaseTransitionDemo.html`.)
 - Unaffordable: card face and price button are both dim-disabled; hovering plays the denial animation once per enter.
+- Unity port (2026-09-16, `plans/plan-physbutton-price-button-2026-09-16.md`): implemented via the `PhysButton` component (world-sprite mode) — the price print under the card became the button label with a sliced face + ground shadow; buy/sell fires on release inside; hover text swap (`$4` → `买入` / `$2` → `售出`); unaffordable dims the card face (`CardPhysObjScript.SetFaceDimmed`) and the button, with the §2.2 denial on hover. Long-press removed from `ShopCardView`. The consequence motion (buy = card tweens to its deck slot, sell = card flies to the shop start and shrinks) already existed, so no flash/invert was needed. The uGUI reroll/exit buttons get the same feel via `PhysButton` UI mode, attached at runtime by `ShopUXManager` (no scene edit); their activation stays owned by uGUI `Button`.
+- Card body interaction (2026-09-16 user decision): **hover preview in combat** (`CardPhysObjScript` hover popup); in the shop the card body click-to-enlarge preview stays and never transacts.
 
 ### 3.4 Tooltip
 
 - A tooltip is an **attachment of an interactive host**, never a standalone element. The host keeps its own hover physics (cards still lift); the tooltip appears after `tipDelay` (250 ms) and disappears **immediately** on leave.
-- Placement: host's **left side, vertically centered**; flips to the right when the left gap < `tipMargin` (24 px); always clamped inside the viewport with an 8 px hard margin; **re-follows the host in real time** on move / resize / scroll.
+- Placement: host's **left side, vertically centered**; flips to the right when the left gap < `tipMargin` (24 px); always clamped inside the viewport with an 8 px hard margin; **re-follows the host in real time** on move / resize / scroll. **Resolved 2026-09-16 (user decision): the engine placement wins** — Unity `CardTagTooltip` sits on the host's **right side, flipping left on overflow**, and that is the frozen convention (the demo's left-default is a deliberate divergence, do not "fix" either side toward the other).
 - One host may carry **multiple tooltips**, stacked vertically (a hard cap is TBD).
 - Tooltips are flat, non-physical, and never intercept the pointer. Content = tag name + description.
 - Unity counterparts: `CardTagTooltip` (hover via `CardPhysObjScript`) and `CombatUXManager.hoverPopUpDelay`.
@@ -143,6 +145,8 @@ Layout rules:
 - Input-side rules (activation on release, drag-out cancel, price-button transactions) belong to the component event layer, not the animation layer.
 
 ## Version History
+
+- v0.9 · 2026-09-16 · Price-button buy/sell ported (§3.3): `PhysButton` world mode on shop cards, long-press removed; uGUI reroll/exit buttons get the §2 feel via runtime-attached UI mode. Decisions frozen: engine wins on tooltip placement (right-side default, flip left) and `tipDelay` (0.1 s); card body = hover preview in combat, click-enlarge in shop (§3.4, §2.1).
 
 - v0.8 · 2026-09-08 · Card effect text: 2-line `…` clamp removed — desc wraps to full text, never truncated (Unity: desc TMP overflow Ellipsis→Overflow via `PhysicalCardParent.prefab` override; demo `.card-effect` line-clamp removed, rarity row shrinks first). See 3.2.
 

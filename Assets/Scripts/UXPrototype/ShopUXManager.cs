@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using UnityEngine;
+using UnityEngine.UI;
 using DG.Tweening;
 
 public class ShopUXManager : MonoBehaviour
@@ -595,6 +596,7 @@ public class ShopUXManager : MonoBehaviour
 	
 	private void Start()
 	{
+		AttachPhysButtonsToShopCanvasButtons();
 		_mainCamera = Camera.main;
 		if (_mainCamera == null) return;
 
@@ -607,6 +609,24 @@ public class ShopUXManager : MonoBehaviour
 		//   Related:  Assets/MilkShake/Scripts/Shaker.cs Update(), dynamic scroll bounds (ComputeDynamicMinY)
 		_scrollTarget = _mainCamera.transform.parent != null ? _mainCamera.transform.parent : _mainCamera.transform;
 		_cameraInitialY = _scrollTarget.position.y;
+	}
+
+	/// <summary>
+	/// UI kit §02: physical lift/press/refusal feel for the existing uGUI shop buttons,
+	/// attached at runtime (no scene edit). PhysButton only adds visuals and the disabled
+	/// denial; the Button keeps owning activation (uGUI fires on release-over, which is R7).
+	/// Offsets are canvas reference px (Guidelines 2.1 defaults: rs 4, hl 4, deny 6).
+	/// </summary>
+	private void AttachPhysButtonsToShopCanvasButtons()
+	{
+		GameObject canvasGo = GameObject.Find("Shop Canvas");
+		if (canvasGo == null) return;
+		foreach (Button button in canvasGo.GetComponentsInChildren<Button>(true))
+		{
+			if (button.GetComponent<PhysButton>() != null) continue;
+			PhysButton physButton = button.gameObject.AddComponent<PhysButton>();
+			physButton.ConfigureUIButton(4f, 4f, 6f);
+		}
 	}
 	
 	// Live Inspector tuning: OnValidate (editor-only) flags a relayout and Update applies it on

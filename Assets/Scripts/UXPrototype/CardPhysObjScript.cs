@@ -39,6 +39,7 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardAttackPrint;
 	[Tooltip("Thin divider line above the bottom row (card template v1.1); colored with the faction text color")]
 	public SpriteRenderer cardDivider;
+	private bool _faceDimmed;
 
 	[Header("CARD ART")]
 	[Tooltip("Card face sprite used when this card is owned by the player")]
@@ -1344,11 +1345,15 @@ public class CardPhysObjScript : MonoBehaviour
 			finalFaceColor = Color.Lerp(baseFaceColor, baseFaceColor * tintColor, appliedIntensity);
 		}
 
+		// UI kit §04: unaffordable shop cards render the disabled face token (dim, shadowless).
+		if (_faceDimmed) finalFaceColor = GameColorPalette.CardFaceDimColor;
+
 		cardFace.color = finalFaceColor;
 
 		// Apply text color based on ownership
 		Color textColor = isPhysicalStartCard ? GameColorPalette.StartCardTextColor
 			: isOwner ? GameColorPalette.OwnerTextColor : GameColorPalette.OpponentTextColor;
+		if (_faceDimmed) textColor = GameColorPalette.CardTextSoftColor;
 		if (cardNamePrint != null) cardNamePrint.color = textColor;
 		if (cardDescPrint != null) cardDescPrint.color = textColor;
 		if (cardCostPrint != null) cardCostPrint.color = textColor;
@@ -1358,6 +1363,15 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardAttackPrint != null) cardAttackPrint.color = textColor;
 		// Divider follows the text color at 65% opacity (card template v1.1, demo .card-divider)
 		if (cardDivider != null) { Color dc = textColor; dc.a = 0.65f; cardDivider.color = dc; }
+	}
+
+	/// <summary>
+	/// Shop-only disabled look (UI kit §04): dim face + soft text while the card is
+	/// unaffordable. Reset by ShopCardView whenever the price stops showing.
+	/// </summary>
+	public void SetFaceDimmed(bool dimmed)
+	{
+		_faceDimmed = dimmed;
 	}
 
 	/// <summary>
