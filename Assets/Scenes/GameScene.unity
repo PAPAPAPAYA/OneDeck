@@ -6074,6 +6074,7 @@ MonoBehaviour:
   includeSelfOpponentDecks: 0
   fightOwnGhostsOnly: 0
   autoReveal: 1
+  overrideCombatSeed: 0
   recordShopStats: 1
   recordWinRate: 1
   recordCombatCSV: 1
