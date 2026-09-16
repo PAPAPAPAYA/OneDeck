@@ -17,9 +17,11 @@ public class ReviveEffect : EffectScript
 {
 	public enum ReviveTargetSide { MyCards, TheirCards }
 	// Append-only: prefabs serialize this as ints - inserting or reordering corrupts existing assets.
+	// Creature selects CardType.Creature; Phenomenon (2026-09-15, renamed from NonCreature)
+	// selects CardType.None ONLY - tokens are a third bucket matched by neither side.
 	// Token (2026-09-02 as Status, renamed 2026-09-14): selects CardType.Token cards
 	// (token衍生物: 信徒 RIFT + 诅咒 JU_ON), never creatures.
-	public enum CreatureFilter { Any, Creature, NonCreature, Token }
+	public enum CreatureFilter { Any, Creature, Phenomenon, Token }
 	public enum ReviveSortBy { None, MaxAttack, MaxExtraAttackTimes }
 	public enum ReviveRarityFilter { Any, Common, Uncommon, Rare }
 
@@ -28,7 +30,7 @@ public class ReviveEffect : EffectScript
 	[Header("Selection Configuration")]
 	[Tooltip("Side used by the generic selection; the ReviveMy*/ReviveTheir* entry points pick it explicitly")]
 	public ReviveTargetSide reviveTargetSide = ReviveTargetSide.MyCards;
-	[Tooltip("Any / Creature only / NonCreature only")]
+	[Tooltip("Any / Creature only / Phenomenon (CardType.None) only")]
 	public CreatureFilter creatureFilter = CreatureFilter.Any;
 	[Tooltip("Non-empty filters by exact cardTypeID (e.g. RIFT for believers)")]
 	public string typeIDFilter = "";
@@ -109,7 +111,7 @@ public class ReviveEffect : EffectScript
 	private bool PassesPredicateFilters(CardScript cardScript)
 	{
 		if (creatureFilter == CreatureFilter.Creature && !cardScript.IsCreature) return false;
-		if (creatureFilter == CreatureFilter.NonCreature && cardScript.IsCreature) return false;
+		if (creatureFilter == CreatureFilter.Phenomenon && cardScript.cardType != EnumStorage.CardType.None) return false;
 		if (creatureFilter == CreatureFilter.Token && cardScript.cardType != EnumStorage.CardType.Token) return false;
 		if (onlyEnhanced && cardScript.attackGrowth <= 0) return false;
 		if (!string.IsNullOrEmpty(typeIDFilter) && cardScript.cardTypeID != typeIDFilter) return false;

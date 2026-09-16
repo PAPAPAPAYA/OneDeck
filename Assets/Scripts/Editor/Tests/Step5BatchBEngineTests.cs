@@ -5,7 +5,7 @@ using UnityEngine;
 
 /// <summary>
 /// EditMode tests for 4.0 step-5 batch B engine gaps: bury predicate/attack pickers,
-/// per-attack loops (curse/believer/token), non-creature filters, onlyEnhanced revive,
+/// per-attack loops (curse/believer/token), phenomenon filters (tokens excluded), onlyEnhanced revive,
 /// grave-creature aura, revived-count resolver term, self-exile counter and the
 /// WEAKENING_FIELD this-round modifier.
 /// </summary>
@@ -102,37 +102,65 @@ public class Step5BatchBEngineTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void BuryTheirCards_NonCreatureFilter_SkipsCreatures()
+	public void BuryTheirCards_PhenomenonFilter_SkipsCreaturesAndTokens()
 	{
 		var burier = CreateCard(true, "Guide");
 		AddCard(false, "EnemyCreature", "A", 1, true);
 		AddCard(false, "EnemyCurse", "B", 1, false);
+		var enemyToken = AddCard(false, "EnemyToken", "T", 1, false);
+		enemyToken.GetComponent<CardScript>().cardType = EnumStorage.CardType.Token;
 		CombatManager.combinedDeckZone.Add(CreateCard(true, "TopFiller"));
 
 		var bury = CreateEffect<BuryEffect>(burier);
-		bury.creatureFilter = EffectScript.EffectCreatureFilter.NonCreature;
+		bury.creatureFilter = EffectScript.EffectCreatureFilter.Phenomenon;
 		EffectChainManager.MakeANewEffectRecorder(burier, bury.gameObject);
 		bury.BuryTheirCards(2);
 		EffectChainManager.Me.CloseOpenedChain();
 		Assert.IsTrue(CombatManager.combinedDeckZone[0].GetComponent<CardScript>().cardTypeID == "B",
-			"only the non-creature enemy card is eligible for burial");
+			"only the CardType.None enemy card is eligible; creature and token are both excluded");
+		Assert.IsTrue(CombatManager.combinedDeckZone[1].GetComponent<CardScript>().cardTypeID == "A",
+			"the token was never buried (the old !IsCreature predicate would have buried it)");
 	}
 
 	[Test]
-	public void StageMyCards_NonCreatureFilter_SkipsCreatures()
+	public void StageMyCards_PhenomenonFilter_SkipsCreaturesAndTokens()
 	{
 		var porter = CreateCard(true, "Porter");
 		AddCard(true, "Creature", "A", 1, true);
-		AddCard(true, "NonCreature", "B", 1, false);
+		AddCard(true, "Phenomenon", "B", 1, false);
+		var believerToken = AddCard(true, "BelieverToken", "T", 1, false);
+		believerToken.GetComponent<CardScript>().cardType = EnumStorage.CardType.Token;
 		CombatManager.combinedDeckZone.Add(CreateCard(true, "TopFiller"));
 
 		var stage = CreateEffect<StageEffect>(porter);
-		stage.creatureFilter = EffectScript.EffectCreatureFilter.NonCreature;
+		stage.creatureFilter = EffectScript.EffectCreatureFilter.Phenomenon;
 		EffectChainManager.MakeANewEffectRecorder(porter, stage.gameObject);
 		stage.StageMyCards(1);
 		EffectChainManager.Me.CloseOpenedChain();
 		Assert.AreEqual("B", CombatManager.combinedDeckZone[CombatManager.combinedDeckZone.Count - 1].GetComponent<CardScript>().cardTypeID,
-			"non-creature staged to the deck top");
+			"the CardType.None card is staged to the deck top; token excluded from the pool");
+	}
+
+	[Test]
+	public void ReviveEffect_PhenomenonFilter_SkipsCreaturesAndTokens()
+	{
+		var reviver = CreateCard(true, "GravePorter");
+		var startCard = CreateCard(true, "StartCard");
+		startCard.GetComponent<CardScript>().isStartCard = true;
+		AddCard(true, "GraveCreature", "A", 1, true);
+		AddCard(true, "GravePhenomenon", "B", 1, false);
+		var graveToken = AddCard(true, "GraveToken", "T", 1, false);
+		graveToken.GetComponent<CardScript>().cardType = EnumStorage.CardType.Token;
+		CombatManager.combinedDeckZone.Add(startCard);
+
+		var revive = CreateEffect<ReviveEffect>(reviver);
+		revive.creatureFilter = ReviveEffect.CreatureFilter.Phenomenon;
+		EffectChainManager.MakeANewEffectRecorder(reviver, revive.gameObject);
+		revive.ReviveMyCards(1);
+		EffectChainManager.Me.CloseOpenedChain();
+
+		Assert.AreEqual("B", CombatManager.combinedDeckZone[CombatManager.combinedDeckZone.Count - 1].GetComponent<CardScript>().cardTypeID,
+			"revive picks the CardType.None grave card; creature and token stay buried");
 	}
 
 	[Test]

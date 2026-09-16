@@ -21,7 +21,7 @@ public class StageEffect : EffectScript
 	public bool excludeSelf = true;
 	[Tooltip("If true, StageCardWithMaxAttack only considers creatures (FINAL_ESCORT 置顶1友方攻击力最高实体)")]
 	public bool creatureOnly = false;
-	[Tooltip("Narrow the StageMyCards pool to creatures or non-creatures (DEATHBED_PORTER 置顶1友方现象)")]
+	[Tooltip("Narrow the StageMyCards pool: Creature / Phenomenon (CardType.None only, tokens excluded) / Token")]
 	public EffectScript.EffectCreatureFilter creatureFilter = EffectScript.EffectCreatureFilter.Any;
 
 	[Header("Based on IntSO")]
@@ -329,7 +329,7 @@ public class StageEffect : EffectScript
 	private bool PassesCreatureFilter(CardScript cardScript)
 	{
 		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.IsCreature) return false;
-		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.IsCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Phenomenon && cardScript.cardType != EnumStorage.CardType.None) return false;
 		if (creatureFilter == EffectScript.EffectCreatureFilter.Token && cardScript.cardType != EnumStorage.CardType.Token) return false;
 		return true;
 	}

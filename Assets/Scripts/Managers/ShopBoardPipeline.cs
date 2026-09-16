@@ -229,7 +229,8 @@ public static class ShopBoardPipeline
 		}
 		if (rng.NextDouble() * 100.0 < Mathf.Clamp(bonus.spellWaveChancePercent, 0f, 100f))
 		{
-			var nonCreatures = combatPool.FindAll(c => !c.GetComponent<CardScript>().IsCreature);
+			// Spell wave = 现象 pool: CardType.None only; tokens (RIFT/JU_ON) excluded (2026-09-15).
+			var nonCreatures = combatPool.FindAll(c => c.GetComponent<CardScript>().cardType == EnumStorage.CardType.None);
 			return nonCreatures.Count > 0 ? nonCreatures : combatPool;
 		}
 		return combatPool;

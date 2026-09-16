@@ -165,7 +165,7 @@ public class BuryEffect : EffectScript
 	private bool PassesCreatureFilter(CardScript cardScript)
 	{
 		if (creatureFilter == EffectScript.EffectCreatureFilter.Creature && !cardScript.IsCreature) return false;
-		if (creatureFilter == EffectScript.EffectCreatureFilter.NonCreature && cardScript.IsCreature) return false;
+		if (creatureFilter == EffectScript.EffectCreatureFilter.Phenomenon && cardScript.cardType != EnumStorage.CardType.None) return false;
 		if (creatureFilter == EffectScript.EffectCreatureFilter.Token && cardScript.cardType != EnumStorage.CardType.Token) return false;
 		return true;
 	}
