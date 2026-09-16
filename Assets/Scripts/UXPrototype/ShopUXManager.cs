@@ -247,6 +247,19 @@ public class ShopUXManager : MonoBehaviour
 		return CurrentDeckPos() + new Vector3((col - 1) * xOffset, -row * yOffset, 0f);
 	}
 
+	/// <summary>
+	/// First grid index of the slot-free (utility) track. Utility passives do not consume deck
+	/// slots, so their display zone always starts right after the last persistent empty slot
+	/// (grid index = deckSize). Defensive fallback when deckSize is unavailable: the end of
+	/// the occupying track assigned so far.
+	/// </summary>
+	private int GetUtilityZoneBaseSlot(int occupyingTrackEndSlot)
+	{
+		return ShopManager.me != null && ShopManager.me.deckSize != null
+			? ShopManager.me.deckSize.value
+			: occupyingTrackEndSlot;
+	}
+
 	// VISUAL-FIX(2026-09-10): The 4th shelf card (初魇 RaritySlotU first-board guarantee) fell off the
 	//   right screen edge
 	//   Cause:    GetShopItemSlotPosition was a single un-wrapping row (x = (index-1) * xOffset), so a
@@ -283,38 +296,51 @@ public class ShopUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Assigns player-deck grid slots. With DuplicateStackingEnabled, the first card of each
-	/// cardTypeID takes the next slot and further copies stack toward the upper-left of that slot.
+	/// Assigns player-deck grid slots in two tracks. Slot-occupying cards take the main grid
+	/// (0..deckSize-1, where the persistent empty-slot frames live); slot-free cards
+	/// (occupiesDeckSlot = false, utility passives) take a trailing track that always starts
+	/// after the last empty slot, so they render in a fixed zone behind the empty slots and
+	/// never interleave with occupying cards. With DuplicateStackingEnabled, the first card of
+	/// each cardTypeID takes the next slot of its own track and further copies stack toward
+	/// the upper-left of that slot.
 	/// </summary>
 	private class StackSlotAssigner
 	{
-		private readonly ShopUXManager _owner;
-		private readonly Dictionary<string, int> _slotByType = new Dictionary<string, int>();
-		private readonly Dictionary<string, int> _copyCountByType = new Dictionary<string, int>();
+		private class Track
+		{
+			public int NextSlot;
+			public readonly Dictionary<string, int> SlotByType = new Dictionary<string, int>();
+			public readonly Dictionary<string, int> CopyCountByType = new Dictionary<string, int>();
+		}
 
-		public int NextSlot { get; private set; }
+		private readonly ShopUXManager _owner;
+		private readonly Track _occupyingTrack = new Track();
+		private readonly Track _utilityTrack = new Track();
 
 		public StackSlotAssigner(ShopUXManager owner)
 		{
 			_owner = owner;
 		}
 
-		public Vector3 Assign(string cardTypeID, out bool isStackedCopy)
+		public Vector3 Assign(string cardTypeID, bool occupiesDeckSlot, out bool isStackedCopy)
 		{
+			Track track = occupiesDeckSlot ? _occupyingTrack : _utilityTrack;
+			int baseSlot = occupiesDeckSlot ? 0 : _owner.GetUtilityZoneBaseSlot(_occupyingTrack.NextSlot);
 			isStackedCopy = false;
 			if (!_owner.DuplicateStackingEnabled || string.IsNullOrEmpty(cardTypeID))
 			{
-				return _owner.GetPlayerDeckSlotPosition(NextSlot++);
+				return _owner.GetPlayerDeckSlotPosition(baseSlot + track.NextSlot++);
 			}
 			int slot;
-			if (!_slotByType.TryGetValue(cardTypeID, out slot))
+			if (!track.SlotByType.TryGetValue(cardTypeID, out slot))
 			{
-				_slotByType[cardTypeID] = NextSlot;
-				_copyCountByType[cardTypeID] = 0;
-				return _owner.GetPlayerDeckSlotPosition(NextSlot++);
+				slot = baseSlot + track.NextSlot++;
+				track.SlotByType[cardTypeID] = slot;
+				track.CopyCountByType[cardTypeID] = 0;
+				return _owner.GetPlayerDeckSlotPosition(slot);
 			}
-			int copyIndex = Mathf.Min(_copyCountByType[cardTypeID] + 1, _owner.duplicateStackMaxOffsetCount);
-			_copyCountByType[cardTypeID] = copyIndex;
+			int copyIndex = Mathf.Min(track.CopyCountByType[cardTypeID] + 1, _owner.duplicateStackMaxOffsetCount);
+			track.CopyCountByType[cardTypeID] = copyIndex;
 			isStackedCopy = true;
 			return _owner.GetPlayerDeckSlotPosition(slot) + _owner.duplicateStackOffset * copyIndex;
 		}
@@ -323,6 +349,8 @@ public class ShopUXManager : MonoBehaviour
 	/// <summary>
 	/// Recompute target positions for every player-deck card:
 	/// unique cardTypeIDs take grid slots, duplicates stack upper-left.
+	/// Slot-free cards (occupiesDeckSlot = false) land on the trailing utility track behind
+	/// the empty slots (see StackSlotAssigner).
 	/// Empty slots are persistent background objects and never move.
 	/// </summary>
 	private void RelayoutPlayerDeckCards()
@@ -333,7 +361,7 @@ public class ShopUXManager : MonoBehaviour
 			if (card == null) continue;
 			var physObj = card.GetComponent<CardPhysObjScript>();
 			if (physObj == null || physObj.cardImRepresenting == null) continue;
-			physObj.SetTargetPosition(assigner.Assign(physObj.cardImRepresenting.cardTypeID, out bool isStackedCopy));
+			physObj.SetTargetPosition(assigner.Assign(physObj.cardImRepresenting.cardTypeID, physObj.cardImRepresenting.occupiesDeckSlot, out bool isStackedCopy));
 			SetPriceSuppressed(card, isStackedCopy);
 		}
 	}
@@ -519,8 +547,9 @@ public class ShopUXManager : MonoBehaviour
 				continue;
 			}
 			
-			// Calculate position: grid slot per unique cardTypeID, duplicates stack upper-left when the toggle is on
-			Vector3 spawnPosition = slotAssigner.Assign(cardScript.cardTypeID, out bool isStackedCopy);
+			// Calculate position: grid slot per unique cardTypeID (slot-free cards take the
+			// trailing utility track), duplicates stack upper-left when the toggle is on
+			Vector3 spawnPosition = slotAssigner.Assign(cardScript.cardTypeID, cardScript.occupiesDeckSlot, out bool isStackedCopy);
 			
 			// Instantiate physical card
 			Vector3 initialPosition = playerDeckStartPos != null ? playerDeckStartPos.position : CurrentDeckPos();
@@ -868,6 +897,9 @@ public class ShopUXManager : MonoBehaviour
 			return;
 
 		SpawnEmptySlots(_spawnedEmptySlots.Count, ShopManager.me.deckSize.value - _spawnedEmptySlots.Count, true);
+		// The utility track base (= deckSize) moved with the new slots: re-slot the deck cards
+		// so slot-free cards stay behind the empty slots instead of overlapping the new row.
+		RelayoutPlayerDeckCards();
 	}
 
 	/// <summary>
