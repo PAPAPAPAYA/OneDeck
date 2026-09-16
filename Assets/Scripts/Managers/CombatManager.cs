@@ -99,6 +99,10 @@ public class CombatManager : MonoBehaviour
 	[Header("START CARD")]
 	public GameObject startCardPrefab; // Start Card prefab
 
+	[Header("TRIGGER ORDER")]
+	[SerializeField][Tooltip("Optional config that fixes the GameEvent trigger order of specific cardTypeIDs by reordering deck instantiation in GatherDecks. Smaller triggerOrder triggers earlier. Null = default deck-order instantiation.")]
+	private CardTriggerOrderConfig cardTriggerOrderConfig;
+
 	[Header("ZONES")]
 	public List<GameObject> combinedDeckZone;
 	public GameObject revealZone;
@@ -314,25 +318,8 @@ public class CombatManager : MonoBehaviour
 			return;
 		}
 
-		foreach (var card in playerDeck.deck)
-		{
-			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript != null && !cardScript.physicalDeckCard) continue;
-
-			var cardInstance = factory.CreateLogicalCard(card, ownerPlayerStatusRef, enemyPlayerStatusRef, playerDeckParent.transform);
-			if (cardInstance != null)
-				combinedDeckZone.Add(cardInstance);
-		}
-
-		foreach (var card in enemyDeck.deck)
-		{
-			var cardScript = card.GetComponent<CardScript>();
-			if (cardScript != null && !cardScript.physicalDeckCard) continue;
-
-			var cardInstance = factory.CreateLogicalCard(card, enemyPlayerStatusRef, ownerPlayerStatusRef, enemyDeckParent.transform);
-			if (cardInstance != null)
-				combinedDeckZone.Add(cardInstance);
-		}
+		InstantiateDeckSide(factory, playerDeck.deck, ownerPlayerStatusRef, enemyPlayerStatusRef, playerDeckParent.transform);
+		InstantiateDeckSide(factory, enemyDeck.deck, enemyPlayerStatusRef, ownerPlayerStatusRef, enemyDeckParent.transform);
 
 		// Instantiate Start Card and add to the bottom of deck
 		var startCardInstance = factory.CreateStartCard(startCardPrefab, playerDeckParent.transform);
@@ -368,6 +355,30 @@ public class CombatManager : MonoBehaviour
 		CombatPerCardStatsTracker.Me?.RegisterDeckComposition(combinedDeckZone);
 
 		currentCombatState = EnumStorage.CombatState.Reveal; // change state to reveal
+	}
+
+	// Instantiates one side's deck. Instantiation sequence follows cardTriggerOrderConfig
+	// (GameEvent listeners register on instantiate and Raise iterates backwards, so later
+	// instantiation triggers earlier), while combinedDeckZone keeps the original deck order.
+	private void InstantiateDeckSide(CardFactory factory, List<GameObject> deck, PlayerStatusSO ownerStatus,
+		PlayerStatusSO theirStatus, Transform parent)
+	{
+		int[] instantiationOrder = CardTriggerOrderManager.BuildInstantiationOrder(deck, cardTriggerOrderConfig);
+		var instances = new GameObject[deck.Count];
+		foreach (var deckIndex in instantiationOrder)
+		{
+			var card = deck[deckIndex];
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null && !cardScript.physicalDeckCard) continue;
+
+			instances[deckIndex] = factory.CreateLogicalCard(card, ownerStatus, theirStatus, parent);
+		}
+
+		foreach (var instance in instances)
+		{
+			if (instance != null)
+				combinedDeckZone.Add(instance);
+		}
 	}
 
 	private void CheckDebugOvertimeShortcut()

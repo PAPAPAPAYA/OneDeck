@@ -60,6 +60,10 @@ server/onedeck-api/     # Async-PvP backend (Express + better-sqlite3, single fi
 - `combinedDeckZone` - Merged deck (index 0 = bottom, index Count-1 = top)
 - `revealZone` - Currently revealed card
 
+### Trigger Order Config
+- Global/faction `GameEvent.Raise` fires listeners in **reverse instantiation order** (`GameEventListener` registers in `OnEnable`).
+- `CardTriggerOrderConfig` SO (`Assets/SORefs/CardTriggerOrderConfig.asset`, wired on `CombatManager`) + `CardTriggerOrderManager` reorder deck instantiation in `GatherDecks`: smaller `triggerOrder` = earlier trigger, applied per side; configured cards fire before unconfigured ones; mid-combat spawned cards always fire first (not configurable).
+
 ### Deck Index & Direction
 - `index 0` = bottom = **last revealed** = furthest back in visual stack.
 - `index Count-1` = top = **first revealed** = frontmost in visual stack.

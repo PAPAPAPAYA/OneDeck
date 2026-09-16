@@ -7138,6 +7138,7 @@ MonoBehaviour:
   playerDeckParent: {fileID: 1394699263}
   enemyDeckParent: {fileID: 1887081633}
   startCardPrefab: {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
+  cardTriggerOrderConfig: {fileID: 11400000, guid: 2097716d4a0860f48aa566ec284e8248, type: 2}
   combinedDeckZone: []
   revealZone: {fileID: 0}
   awaitingRevealConfirm: 1
