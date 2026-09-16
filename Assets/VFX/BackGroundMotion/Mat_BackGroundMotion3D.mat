@@ -42,11 +42,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _FBM2Freq: 2
-    - _Intensity: 1
-    - _Levels: 3
-    - _LineWidth: 3
-    - _NoiseScale: 6
-    - _Speed: 0.1
+    - _Intensity: 0.4
+    - _Levels: 2
+    - _LineWidth: 5
+    - _NoiseScale: 5
+    - _Speed: 0.08
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
     - _BgColor: {r: 0.101960786, g: 0.1882353, b: 0.21568628, a: 0}
