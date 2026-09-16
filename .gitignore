@@ -108,6 +108,9 @@ InitTestScene*.unity*
 .reasonix/
 .tmp-mcp-scan/
 
+# Parallel agent session claims (ephemeral, per-machine)
+.agent_registry/
+
 # Python bytecode cache
 __pycache__/
 *.pyc

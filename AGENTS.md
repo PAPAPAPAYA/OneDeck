@@ -19,6 +19,12 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 - **Document Format**: If any non Unity-generated file is found to violate the CRLF + Tab leading-indent standard, convert it to the compliant format before editing.
 - **Editing AGENTS.md**: When adding content, condense wording or move detail into `plans/`/`docs/` files and reference them. Never finish an edit with the file over the 32 KB limit — the size check is part of the edit.
 
+## Parallel Session Registry
+- Before any task that edits files or uses Unity Editor tools, create `.agent_registry/<YYYYMMDD-HHMMSS>-<task>.md` (UTC+8): task summary, planned file paths, editor claims (`execute_code` / `run_tests` / SaveScene / Play).
+- Scan all claims before starting; overlap → report to the user and let them decide; never block-wait.
+- Only create/delete your own claim file; never modify others'. Delete yours on completion or abort. Claims with mtime older than 48h are stale — any session may delete.
+- Spec: `docs/AgentRegistry.md`.
+
 ## Core Loop
 
 `Shop` -> `Combat` -> `Result` -> `Shop`
@@ -37,6 +43,20 @@ Assets/
 └── docs/
 server/onedeck-api/     # Async-PvP backend (Express + better-sqlite3, single file). Runs on ECS, not Unity. See its README.md
 ```
+
+## Code Placement Guide
+
+Route new work by capability domain; god files (`CombatManager` / `RecorderAnimationPlayer` / `CombatUXManager`) are under managed split (`plans/plan-manager-split-combatmanager-rap-cux-2026-09-16.md`):
+
+| New work | Where it goes |
+|---|---|
+| Card behavior / new effects | `Effects/` + `GameEventListener` bindings; pure math → static helpers, not managers |
+| Combat orchestration (zones / fatigue / throne / input block) | Child component on the CombatManager GameObject behind the `CombatManager.Me` facade — do not grow `CombatManager.cs` |
+| Combat presentation / visuals | Own component or `CombatUXManager.<Area>.cs` partial — never the `CombatUXManager.cs` main file |
+| Animation playback | `RecorderAnimationPlayer` per-request-type coroutines / partials; pre-play pure computation → static planner class |
+| Shop generation | `ShopBoardPipeline` (pure, injected Random); shop state/UI → `ShopManager` / `ShopUXManager` |
+
+Clean-as-You-Code rule: edits inside the three god files stay bug-fix sized; feature-sized additions must land in a new/partial file or child component, wiring through the existing facade singletons.
 
 ## External References
 
