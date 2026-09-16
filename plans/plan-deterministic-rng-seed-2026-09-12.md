@@ -1,7 +1,7 @@
 # 随机数种子化与战斗复现方案 (Deterministic RNG Seed)
 
 日期: 2026-09-12
-状态: **方案已拍板** (2026-09-12, 四项均按推荐采纳), 待「修改代码」开工
+状态: **已实施** (2026-09-15, Step 1-4 全部落地; 双程序集编译 0 错; EditMode 套件 RngDeterminismTests 新增, 全量套件与 Play 观感待验; 工作流文档 docs/RngDeterminism.md)
 目标: 用随机种子稳定复现 bug, 关键覆盖战斗内随机 (牌序 / 效果目标随机等)
 关联: docs/GameRules.md, docs/RegressionChecklist.md, TestManager 三开关 (testmanager-test-toggles-split), DeckSaver Recorded session 文件夹
 

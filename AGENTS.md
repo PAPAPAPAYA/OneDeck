@@ -182,6 +182,7 @@ Critical points:
 - **Input Block Reference Counting**: `BlockInput`/`UnblockInput` use reference counting; always pair them.
 - **Visual Bug Comments**: When fixing a visual/presentation bug in `Effects/`, `UXPrototype/`, or `Managers/Animation*.cs`, use the `VISUAL-FIX(YYYY-MM-DD):` block format defined in `docs/VisualBugPrevention_Guide.md`. Search existing `VISUAL-FIX` comments before editing.
 - **Regression Checklist**: Every visual bug fix must append or update a row in `docs/RegressionChecklist.md`. Do not delete obsolete rows; mark them `~~strikethrough~~` with `(Obsolete YYYY-MM-DD)`.
+- **Deterministic RNG**: all logic-path randomness (combat/shop/setup) reads the `Rng` service (`RngChannel.Deck/Target/Shop/Setup`, `Assets/Scripts/Managers/RngService.cs`); never add `UnityEngine.Random` in logic paths (visual jitter/stagger only). Repro: `TestManager.overrideCombatSeed` / cmdline `-odseed N`; per-combat `Seed_*.txt` + `DeterminismDigest_*.txt` land in `CombatLogs/`. Docs: `docs/RngDeterminism.md`.
 
 ## Color Tags
 
