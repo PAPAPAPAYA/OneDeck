@@ -123,6 +123,29 @@ public class AttackTimesGiverEffectTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
+	public void GiveSelfAttackTimesPermanent_GrantsPermanent_AndSurvivesRoundReset()
+	{
+		var card = CreateCard(true, "RevivingStriker");
+		var giver = CreateEffect<DefaultNamespace.Effects.AttackTimesGiverEffect>(card);
+
+		EffectChainManager.MakeANewEffectRecorder(card, giver.gameObject);
+		giver.GiveSelfAttackTimesPermanent(1);
+		var recorder = EffectChainManager.currentEffectRecorder.GetComponent<EffectRecorder>();
+		var attackChange = recorder.animationRequests.Find(r => r.type == AnimationRequestType.AttackChange);
+		Assert.IsNotNull(attackChange, "grant should capture an AttackChange request");
+		Assert.IsTrue(attackChange.attackTimesChange, "request must be flagged attackTimesChange so the attack print stays put");
+		EffectChainManager.Me.CloseOpenedChain();
+
+		var cs = card.GetComponent<CardScript>();
+		Assert.AreEqual(1, cs.extraAttackTimes, "self grant is permanent on the instance");
+		Assert.AreEqual(0, cs.attackTimesModThisRound, "self grant must not touch this-round state");
+		Assert.AreEqual(2, cs.GetAttackTimes());
+
+		cs.ResetRoundAttackModifiers();
+		Assert.AreEqual(2, cs.GetAttackTimes(), "permanent grant survives the round reset");
+	}
+
+	[Test]
 	public void GiveRandomFriendlyCreatureAttackTimes_GrantsToExactlyOneCreature()
 	{
 		var granter = CreateCard(true, "Granter");

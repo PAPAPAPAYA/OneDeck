@@ -31,6 +31,19 @@ namespace DefaultNamespace.Effects
 		}
 
 		/// <summary>
+		/// Permanently give +N attack times to this card itself (REVIVING_STRIKER
+		/// "攻击次数+1,复活自身": the grant rides the card instance and survives round
+		/// resets — same permanence class as GiveRevealedCurseAttackTimes).
+		/// </summary>
+		public virtual void GiveSelfAttackTimesPermanent(int times)
+		{
+			if (times <= 0) return;
+			GrantAttackTimes(myCardScript, times, permanent: true);
+			CaptureBatchStatusEffectAnimation(new List<CardScript> { myCardScript }, times);
+			CombatInfoDisplayer.me?.RefreshDeckInfo();
+		}
+
+		/// <summary>
 		/// EXILE_BERSERKER "本回合每放逐过3友方,攻击次数+1": reads the per-side self-exile
 		/// counter (every exiled friendly card counts, batch exiles included) and grants +1
 		/// attack time whenever the running total lands on a multiple of cardsPerBonus. Fires

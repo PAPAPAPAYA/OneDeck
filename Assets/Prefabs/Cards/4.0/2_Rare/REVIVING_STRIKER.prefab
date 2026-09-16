@@ -190,7 +190,7 @@ MonoBehaviour:
       - m_Target: {fileID: 8115162125025344088}
         m_TargetAssemblyTypeName: DefaultNamespace.Effects.AttackTimesGiverEffect,
           Assembly-CSharp
-        m_MethodName: GiveSelfAttackTimes
+        m_MethodName: GiveSelfAttackTimesPermanent
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
