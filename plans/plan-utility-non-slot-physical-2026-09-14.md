@@ -55,6 +55,12 @@
 - 战斗稀释仍在（方案A 保留的隐性代价）；观察是否被感知为负体验。
 - 16 上限吃满时 utility 仍可出货可买（上限检查跳过）。
 
+## 7. UI 规范跟进（2026-09-15）
+
+- `docs/demo/UIKitDemo.html` §08 商店页 v1.1 新增**「商店升级」面板**：位于卡组板块下方，样式与卡组面板一致（半透明深色浮层 + 卡排 + 价格按钮），展示**已拥有的 utility 卡**。规范要点：utility 不占卡位 → 头部只有标题、无卡位计数、不做空卡位凹槽；卡面无攻击力（底行仅卡名）；交互与卡组面板相同（点按预览、价格按钮售出，hover `$N → 售出`，售价 = 半价）。
+- 与本计划 §1.5「与普通卡同货架流换行」的关系：该面板是已购 utility **独立分区展示**的 UI 规范稿（混排牌库条之外的界面方向）；Unity 侧 `ShopUXManager` 牌库条**未改动**，实装与否待拍板。若实装，显示/售出逻辑可复用现有 `physicalDeckCard` 管线，仅改牌库条分区呈现。
+- demo 中的卡名/效果（日进斗金/幸运币/百宝囊）为占位示例，实装时替换为真实 utility 卡。
+
 ## 附录A：prefab 批改清单（20 张，全部 `occupiesDeckSlot: 0`）
 
 18 张 utility（desc 均追加「, 不占用卡位」）：UTILITY_DISCOUNT_1 / INCOME_1 / ODDS_1 / ODDS_2 / OPTION_1（1_Uncommon）/ OPTION_P_1 / REROLL_1 / SLOT_U_1 / SLOT_U_2 / SLOT_R / WEIGHT_U / WEIGHT_R / CREATURES_1 / HALFPRICE_1 / SPELLS_1 / TAG_AWAKEN / TAG_CURSE / TAG_REVIVE。

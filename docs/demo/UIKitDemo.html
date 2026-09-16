@@ -848,9 +848,10 @@
 
 	<!-- ===================== 08 shop page ===================== -->
 	<section id="shoppage" data-title="08 商店页 Shop Page">
-		<div class="spec-head"><h2>08 商店页 Shop Page</h2><span class="tag-status">v1.0 · 2026-09-05 参考稿</span></div>
+		<div class="spec-head"><h2>08 商店页 Shop Page</h2><span class="tag-status">v1.1 · 2026-09-15</span></div>
 		<ul class="notes">
-			<li>整页布局按 2026-09-05 参考稿：顶栏 HUD（<b>离开商店</b> / 头像+用户名 / HP / 金钱 / 稀有度概率 / 卡位·心数 / 收入 / <b>选项</b>）＋ <b>商店</b> 面板（重掷 + 货架卡）＋ <b>卡组</b> 面板（卡位计数 + 持有卡 + 空卡位）。</li>
+			<li>整页布局按 2026-09-05 参考稿：顶栏 HUD（<b>离开商店</b> / 头像+用户名 / HP / 金钱 / 稀有度概率 / 卡位·心数 / 收入 / <b>选项</b>）＋ <b>商店</b> 面板（重掷 + 货架卡）＋ <b>卡组</b> 面板（卡位计数 + 持有卡 + 空卡位）＋ <b>商店升级</b> 面板（已拥有的 utility 卡）。</li>
+			<li><b>商店升级</b>面板样式与卡组面板一致（半透明深色浮层 + 卡排 + 价格按钮），但 utility（被动）卡<b>不占卡位</b>：头部只有标题、无卡位计数，不做空卡位凹槽；utility 卡无攻击力，卡面底行仅卡名；交互与卡组面板相同——点按卡片预览、点价格按钮售出（hover <code>$N → 售出</code>，售价 = 半价）。</li>
 			<li>灰色等高线背景 = 玩家 HP display 的视觉基底（整页无缝世界概念见 <code>PhaseTransitionDemo.html</code>）；商店 / 卡组面板为半透明深色浮层。</li>
 			<li><b>交互参数全部引用全局参数条</b>（rs / hl / hoverDur / pressDur / 缓动 / 拒绝动效），本节不新增参数。可交互 = 离开商店、选项、重掷、价格按钮（规范见 04 节）；HP / 金钱 / 稀有度概率 / 卡位计数 / 心数 / 收入一律只读平面（R2 逆命题）。</li>
 			<li>本节为布局与状态规范：点击只记日志，不搬动数据；空卡位 = 凹槽（06 节）；售价 = 半价（现行规则）。</li>
@@ -1002,6 +1003,59 @@
 						<div class="slot">空卡位</div>
 					</div>
 				</div>
+				<div class="shop-panel">
+					<div class="shop-panel-head"><b>商店升级</b></div>
+					<div class="card-row">
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="日进斗金(预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦</div>
+									<div class="card-effect">每回合收入 +$2</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">日进斗金</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="售出·日进斗金 $2" data-hover-text="售出">
+								<button class="phys-face btn btn-price">$2</button>
+							</div>
+						</div>
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="幸运币(预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦✦</div>
+									<div class="card-effect">高稀有度卡出现概率提升</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">幸运币</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="售出·幸运币 $3" data-hover-text="售出">
+								<button class="phys-face btn btn-price">$3</button>
+							</div>
+						</div>
+						<div class="buy-col">
+							<div class="phys" data-interactive data-name="百宝囊(预览)">
+								<div class="phys-face card-face">
+									<div class="card-art"></div>
+									<div class="card-rarity">✦</div>
+									<div class="card-effect">商店选项槽出现概率提升</div>
+									<div class="card-divider"></div>
+									<div class="card-bottom">
+										<span class="card-name">百宝囊</span>
+									</div>
+								</div>
+							</div>
+							<div class="phys" data-interactive data-name="售出·百宝囊 $1" data-hover-text="售出">
+								<button class="phys-face btn btn-price">$1</button>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="log"></div>
@@ -1013,6 +1067,7 @@
 		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；提示加 <code>data-tips='[["标签","描述"]]'</code>（可多条）；悬停换文案加 <code>data-hover-text="..."</code>。无需写新 JS。
 		3) 新全局参数 = 在 <code>PARAMS</code> 数组加一项，参数条、状态对象、规格 JSON 自动生成。
 		4) 手感确认后，把数值同步进 <code>docs/UIUX_Guidelines.md</code> 与 Unity 实现。<br>
+		版本：v0.9 · 2026-09-15 · 08 节商店页新增「商店升级」面板：卡组板块下方，样式与卡组面板一致，展示已拥有的 utility（被动）卡——头部无卡位计数、无空卡位凹槽、卡面无攻击力，交互同卡组面板（预览 + 价格按钮售出）<br>
 		版本：v0.8 · 2026-09-08 · 卡牌效果描述不再 2 行截断省略号，全文折行完整显示；稀有度行让位收缩，效果底边仍贴分隔线向上生长；Unity 侧对应 desc TMP 溢出 Ellipsis→Overflow（PhysicalCardParent.prefab 覆盖项）<br>
 		版本：v0.7 · 2026-09-06 · 卡名溢出不再省略号，改为水平压扁适配（JS scaleX，无下限）；Unity 侧对应 CardPhysObjScript.FitCardNamePrint（TMP characterHorizontalScale）<br>
 		版本：v0.6 · 2026-09-05 · 买/卖弃用长按改为价格按钮单击成交（04 节重写，移除 lpThreshold 参数与 lp-fill）；新增 08 商店页栏目（2026-09-05 参考稿布局，交互参数全部引用全局参数条）<br>
