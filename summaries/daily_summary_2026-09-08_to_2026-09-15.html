@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 开发总结 - 2026-09-08 ~ 09-15</title>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body {
+			font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+			background: linear-gradient(160deg, #14142a 0%, #1a1a2e 45%, #16213e 100%);
+			min-height: 100vh;
+			color: #e0e0e0;
+			padding: 40px 20px;
+		}
+		.container { max-width: 1060px; margin: 0 auto; }
+
+		/* ---------- Header ---------- */
+		.header {
+			text-align: center;
+			margin-bottom: 36px;
+			padding: 30px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 20px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			backdrop-filter: blur(10px);
+		}
+		.header h1 {
+			font-size: 2.4em;
+			margin-bottom: 10px;
+			background: linear-gradient(90deg, #e94560, #ff8e6b);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+		.header .subtitle { color: #888; font-size: 1.02em; line-height: 1.7; }
+		.header .stats {
+			display: flex;
+			justify-content: center;
+			gap: 44px;
+			margin-top: 24px;
+			flex-wrap: wrap;
+		}
+		.stat-box { text-align: center; }
+		.stat-box .number { font-size: 2em; font-weight: bold; color: #e94560; }
+		.stat-box .label { font-size: 0.85em; color: #aaa; margin-top: 4px; }
+
+		/* ---------- Theme strip ---------- */
+		.theme-banner {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 12px;
+			margin-bottom: 44px;
+		}
+		.theme-card {
+			background: linear-gradient(160deg, rgba(233, 69, 96, 0.10), rgba(83, 52, 131, 0.12));
+			border: 1px solid rgba(233, 69, 96, 0.22);
+			border-radius: 14px;
+			padding: 14px 16px;
+			text-align: center;
+		}
+		.theme-card .icon { font-size: 1.6em; margin-bottom: 6px; }
+		.theme-card .name { font-weight: 600; color: #fff; margin-bottom: 3px; font-size: 0.95em; }
+		.theme-card .desc { font-size: 0.8em; color: #999; line-height: 1.5; }
+
+		/* ---------- Timeline ---------- */
+		.timeline { position: relative; padding: 6px 0 4px 0; }
+		.timeline::before {
+			content: '';
+			position: absolute;
+			left: 113px;
+			top: 10px;
+			bottom: 10px;
+			width: 2px;
+			background: linear-gradient(180deg, rgba(233, 69, 96, 0.55), rgba(83, 52, 131, 0.35) 70%, rgba(52, 152, 219, 0.4));
+			border-radius: 2px;
+		}
+		.day { position: relative; padding: 0 0 36px 148px; }
+		.day:last-child { padding-bottom: 6px; }
+		.day-date-block { position: absolute; left: 0; top: -4px; width: 94px; text-align: right; }
+		.day-date-block .date { font-size: 1.3em; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+		.day-date-block .dow { font-size: 0.78em; color: #888; margin-top: 2px; }
+		.day::before {
+			content: '';
+			position: absolute;
+			left: 106px;
+			top: 5px;
+			width: 16px;
+			height: 16px;
+			border-radius: 50%;
+			background: #e94560;
+			border: 3px solid #1a1a2e;
+			box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.35);
+		}
+		.day.today::before { background: #3498db; box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.4); }
+		.day-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+		.day-head h3 { color: #fff; font-size: 1.18em; }
+		.day-head .day-count {
+			font-size: 0.78em;
+			color: #bbb;
+			background: rgba(255, 255, 255, 0.07);
+			padding: 2px 10px;
+			border-radius: 8px;
+		}
+		.items { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 12px; }
+
+		/* ---------- Item cards ---------- */
+		.item {
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 14px;
+			padding: 15px 18px;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			transition: transform 0.25s, box-shadow 0.25s;
+		}
+		.item:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(233, 69, 96, 0.12); }
+		.item.wide { grid-column: 1 / -1; }
+		.item .title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+		.item h4 { color: #fff; font-size: 0.98em; flex: 1; min-width: 140px; }
+		.item ul { list-style: none; margin-top: 9px; }
+		.item li {
+			padding: 3px 0 3px 16px;
+			position: relative;
+			color: #ccc;
+			line-height: 1.6;
+			font-size: 0.88em;
+		}
+		.item li::before { content: '▸'; position: absolute; left: 0; color: #e94560; }
+		.meta { margin-top: 9px; font-size: 0.75em; color: #808090; }
+		.meta code {
+			background: rgba(255, 255, 255, 0.08);
+			padding: 1px 6px;
+			border-radius: 4px;
+			font-family: 'Consolas', monospace;
+			color: #b8a9d9;
+		}
+		code {
+			background: rgba(255, 255, 255, 0.08);
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-family: 'Consolas', monospace;
+			font-size: 0.9em;
+		}
+
+		/* ---------- Type tags ---------- */
+		.tag {
+			display: inline-block;
+			padding: 1px 9px;
+			border-radius: 6px;
+			font-size: 0.7em;
+			font-weight: 600;
+		}
+		.tag.feature { background: rgba(46, 204, 113, 0.18); color: #2ecc71; }
+		.tag.bugfix { background: rgba(231, 76, 60, 0.18); color: #e74c3c; }
+		.tag.balance { background: rgba(241, 196, 15, 0.16); color: #f1c40f; }
+		.tag.cards { background: rgba(230, 126, 34, 0.16); color: #e67e22; }
+		.tag.net { background: rgba(52, 152, 219, 0.18); color: #5dade2; }
+		.tag.ops { background: rgba(93, 173, 226, 0.14); color: #85c1e9; }
+		.tag.tools { background: rgba(155, 89, 182, 0.18); color: #bb8fce; }
+		.tag.ui { background: rgba(26, 188, 156, 0.16); color: #48c9b0; }
+		.tag.engine { background: rgba(52, 152, 219, 0.18); color: #3498db; }
+		.tag.sync { background: rgba(192, 132, 72, 0.18); color: #d9a05b; }
+		.tag.diag { background: rgba(149, 165, 166, 0.18); color: #b3bdc1; }
+
+		/* ---------- Status badges ---------- */
+		.status {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			padding: 1px 9px;
+			border-radius: 6px;
+			font-size: 0.7em;
+			font-weight: 700;
+			border: 1px solid transparent;
+			white-space: nowrap;
+		}
+		.status.ok { color: #2ecc71; background: rgba(46, 204, 113, 0.10); border-color: rgba(46, 204, 113, 0.35); }
+		.status.wip { color: #5dade2; background: rgba(52, 152, 219, 0.12); border-color: rgba(52, 152, 219, 0.4); }
+		.status.pending { color: #f5b041; background: rgba(241, 196, 15, 0.10); border-color: rgba(241, 196, 15, 0.35); }
+
+		/* ---------- Closing boxes ---------- */
+		.highlight-box {
+			background: linear-gradient(135deg, rgba(233, 69, 96, 0.10), rgba(83, 52, 131, 0.10));
+			border: 1px solid rgba(233, 69, 96, 0.3);
+			border-radius: 16px;
+			padding: 24px;
+			margin-top: 34px;
+		}
+		.highlight-box h3 { color: #e94560; margin-bottom: 14px; font-size: 1.2em; }
+		.highlight-box ul { list-style: none; padding: 0; }
+		.highlight-box li {
+			padding: 7px 0 7px 24px;
+			position: relative;
+			color: #ddd;
+			line-height: 1.7;
+			font-size: 0.95em;
+		}
+		.highlight-box li::before { content: '▸'; position: absolute; left: 0; color: #e94560; }
+
+		.verify-box {
+			background: linear-gradient(135deg, rgba(241, 196, 15, 0.07), rgba(233, 69, 96, 0.06));
+			border: 1px solid rgba(241, 196, 15, 0.3);
+			border-radius: 16px;
+			padding: 24px;
+			margin-top: 22px;
+		}
+		.verify-box h3 { color: #f5b041; margin-bottom: 6px; font-size: 1.2em; }
+		.verify-box .note { color: #999; font-size: 0.85em; margin-bottom: 16px; }
+		.verify-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+		.verify-col {
+			background: rgba(255, 255, 255, 0.04);
+			border: 1px solid rgba(255, 255, 255, 0.07);
+			border-radius: 12px;
+			padding: 14px 16px;
+		}
+		.verify-col h4 { color: #f5b041; font-size: 0.92em; margin-bottom: 8px; }
+		.verify-col ul { list-style: none; }
+		.verify-col li {
+			padding: 4px 0 4px 15px;
+			position: relative;
+			color: #ccc;
+			line-height: 1.55;
+			font-size: 0.84em;
+		}
+		.verify-col li::before { content: '·'; position: absolute; left: 2px; color: #f5b041; font-weight: bold; }
+
+		.footer { text-align: center; margin-top: 46px; padding: 20px; color: #666; font-size: 0.88em; line-height: 1.8; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>OneDeck 开发总结</h1>
+			<div class="subtitle">2026年9月8日 ~ 9月15日 · RNG 确定性落地 · utility 商店轴成型 · 卡池规则口径大扫除 · 渲染与联网收口</div>
+			<div class="stats">
+				<div class="stat-box">
+					<div class="number">67</div>
+					<div class="label">Git 提交（09-08 ~ 09-14）</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">8</div>
+					<div class="label">活跃开发日</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">+3,918</div>
+					<div class="label">C# 新增行（已提交）</div>
+				</div>
+				<div class="stat-box">
+					<div class="number">539 / 540</div>
+					<div class="label">EditMode 测试绿（+55 用例 · 1 存量 Ignore）</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="theme-banner">
+			<div class="theme-card">
+				<div class="icon">🎰</div>
+				<div class="name">RNG 确定性</div>
+				<div class="desc">四通道 RngService + 种子复现管线（09-15 未提交待验）</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🎴</div>
+				<div class="name">卡池规则口径</div>
+				<div class="desc">Token 改名 · 实体/现象谓词 · 成本「:」规 · 链深 12</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🏪</div>
+				<div class="name">utility 商店轴</div>
+				<div class="desc">概率货架 → 混池 → 两轴拆分 → 排空卡位双轨</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🎨</div>
+				<div class="name">渲染与 hover</div>
+				<div class="desc">层级收口 · z-slab 定案 · hover 体系三连修 · HP 条</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🌐</div>
+				<div class="name">联网运维</div>
+				<div class="desc">UTC+8 时间戳 · ghost 三连修 · admin 折叠 · markAsTest 关</div>
+			</div>
+			<div class="theme-card">
+				<div class="icon">🔬</div>
+				<div class="name">数据与模拟</div>
+				<div class="desc">sim4 U 层 78 卡 · Grail 复盘 · Notion 全量同步 53 行</div>
+			</div>
+		</div>
+
+		<div class="timeline">
+			<!-- ============ 09-08 ============ -->
+			<div class="day">
+				<div class="day-date-block">
+					<div class="date">09-08</div>
+					<div class="dow">周二</div>
+				</div>
+				<div class="day-head">
+					<h3>商店调参落地 · 卡名 v3 同步 · sim4 启动</h3>
+					<span class="day-count">16 commits</span>
+				</div>
+				<div class="items">
+					<div class="item">
+						<div class="title-row">
+							<h4>商店实时调参方案 A</h4>
+							<span class="tag feature">Feature</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li><code>OnValidate</code> 脏标记 + <code>RelayoutAll</code>，Inspector 改数即重排</li>
+							<li>相机滚动 rig 与 Shaker 冲突修复（滚动写父级，动态下限扫实际 TargetPosition）</li>
+							<li>商店文字去色、重排版</li>
+						</ul>
+						<div class="meta"><code>dff366a</code> ShopUXManager.cs</div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>v3 卡名「cult pulp」同步 Unity</h4>
+							<span class="tag cards">Cards</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>108 张 displayName + 35 张 desc 数字格式 <code>&lt;b&gt;N&lt;/b&gt;</code>，从 Notion DB 回写 prefab</li>
+							<li>新卡 REVIVING_STRIKER（无头武生，✦✦✦）建卡入池</li>
+							<li>新增 <code>unity-card-factory</code> skill（Notion DB 行 → 卡 prefab）</li>
+						</ul>
+						<div class="meta"><code>d886f8a</code> <code>a7d285c</code> <code>0173eed</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>DB ↔ prefab 双向同步收官</h4>
+							<span class="tag sync">Sync</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>稀有度挪动 / 数值口径 / 复活绑定两轮互同步</li>
+							<li>稀有度记法定档 = ✦ 数量（无颜色）；测试路径全绿</li>
+						</ul>
+						<div class="meta"><code>c875b39</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>desc 批量规整两条</h4>
+							<span class="tag ui">UI</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>「揭晓时：」前缀批删 14 张（新卡裸子句 = 揭晓触发）</li>
+							<li>desc 多行化：去省略号全文折行（<code>overflowMode</code> 1→0）</li>
+						</ul>
+						<div class="meta"><code>48e7c7f</code> <code>6cd28e7</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>sim4 模拟器：数据层 + 伤害实现</h4>
+							<span class="tag tools">Tools</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>Step 1 common 试样链 + 伤害 sim 实现与近似台账</li>
+							<li>关键裁定：每卡每触发每回合一次门 / 生成卡一律进墓地 / 攻击力成长 = 永久账本</li>
+						</ul>
+						<div class="meta"><code>dcc9f60</code> <code>5cb19dc</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>渲染层级收口 + 间隔成长</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>phase canvases sorting 0→1：HP 数字 / 阵营图标 / 跳字画在卡之上（行 84）</li>
+							<li>baseline growth：<code>StepGrowth = growth × floor(session/interval)</code>，默认 2/2/1 零变化</li>
+						</ul>
+						<div class="meta"><code>845dfb9</code> <code>0400995</code> <code>160fbfb</code></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============ 09-09 ============ -->
+			<div class="day">
+				<div class="day-date-block">
+					<div class="date">09-09</div>
+					<div class="dow">周三</div>
+				</div>
+				<div class="day-head">
+					<h3>显示 bug 双修日</h3>
+					<span class="day-count">0 commits（次日上链）</span>
+				</div>
+				<div class="items">
+					<div class="item">
+						<div class="title-row">
+							<h4>hover popup 振荡修复</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>弹起 X 偏移 hit-test + ownership 仲裁，锚定牌堆槽位；败者回收 pending</li>
+							<li>行 86；09-14 又迭代一版（见下）</li>
+						</ul>
+						<div class="meta"><code>9d0a0b4</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>ResultStatsPanel 嵌套 canvas 陷阱</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>根因：嵌套 canvas 自身 CanvasScaler 无效，1080×1080 只显示 1 行</li>
+							<li>改为根 canvas + 镜像 donor renderMode/camera（方案 B′）；视觉三档验证待 Play</li>
+						</ul>
+						<div class="meta"><code>d00d79b</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>sim4 sanity + 四配置报告</h4>
+							<span class="tag tools">Tools</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>Common 试样链 Step 1-6 全通，sanity 四项 + 四配置报告落 <code>tools/outputs/sim4</code></li>
+							<li>与 3.0 量级哨兵对照通过</li>
+						</ul>
+						<div class="meta"><code>0aa0153</code>（部分）</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============ 09-10 ============ -->
+			<div class="day">
+				<div class="day-date-block">
+					<div class="date">09-10</div>
+					<div class="dow">周四</div>
+				</div>
+				<div class="day-head">
+					<h3>批量粒度拍板 · 经济调参 · sim4 U 层</h3>
+					<span class="day-count">9 commits</span>
+				</div>
+				<div class="items">
+					<div class="item">
+						<div class="title-row">
+							<h4>批量粒度五卡裁定</h4>
+							<span class="tag cards">Cards</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>狂信徒每放逐过 3 友方触发、守卫 per-target（<code>BatchContextSource</code> + <code>guardContextTarget</code>）</li>
+							<li>妖刀固定 +1、连坐仅 desc、什一友好口径改名；492 绿</li>
+						</ul>
+						<div class="meta"><code>28bd4fe</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>经济调参三连</h4>
+							<span class="tag balance">Balance</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>稀有度权重引用 early/mid/late → 0/1/2（guid 保留）；uncommon 价 8→6、钱包 2→8、卡位步进 2→4</li>
+							<li>7 张 rare→uncommon 降级；INCOME 2→4；HP_MAX 改 +8 无卡位</li>
+						</ul>
+						<div class="meta"><code>ec14e5c</code> <code>7c09e3b</code> <code>452d60d</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>sim4 U 层扩展</h4>
+							<span class="tag tools">Tools</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>78 卡表 + U handlers + 延期动词 + 本回合槽；token / 稀有度口径对齐</li>
+							<li>一键 run bat + 4 配置报告</li>
+						</ul>
+						<div class="meta"><code>0aa0153</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>卡表上传陈旧诊断</h4>
+							<span class="tag diag">Diagnosis</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>线上 card_catalog 108/109 名字不一致；根因 = 上传门按 <code>Application.version</code> 判定，改名不触发</li>
+							<li>挪开 <code>catalog_version.txt</code> 解堵，下一场结算重传</li>
+						</ul>
+						<div class="meta"><code>1140960</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>HUD 两修</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>HP 对比条全屏纵向化：去旋转 + 4 图 Vertical fill；根因 = 2000×2000 固定 px + rot90° 脱锚</li>
+							<li>新卡 popup peak 落 legacy linear fan：ArcLoop/FloatStack 漏传 layout config（行 89）</li>
+						</ul>
+						<div class="meta"><code>0cf60d4</code> <code>97ea9b8</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>统计与门禁微调</h4>
+							<span class="tag feature">Feature</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>per-card 统计 Stage 列换成复活对（复活数 / 被复活数）</li>
+							<li>首局牌组快照移到 upload gate 之后；结算屏只留横幅 + TAP（整局报告删除）</li>
+						</ul>
+						<div class="meta"><code>23b67f2</code> <code>f7e5ccc</code> <code>1d99a54</code></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============ 09-11 ============ -->
+			<div class="day">
+				<div class="day-date-block">
+					<div class="date">09-11</div>
+					<div class="dow">周五</div>
+				</div>
+				<div class="day-head">
+					<h3>引魂幡修复 · utility 混池上链</h3>
+					<span class="day-count">1 commit（多数次日上链）</span>
+				</div>
+				<div class="items">
+					<div class="item">
+						<div class="title-row">
+							<h4>引魂幡回合开始修复</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>删 GatherDecks 早 Raise + 回合开始 flush 重入（RoundStartFlushThenRevealRoutine）</li>
+							<li>HATCHERY / TRAINER 首回合时点变化，Play 观察待做</li>
+						</ul>
+						<div class="meta"><code>5cb4777</code> 行 93</div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>utility 概率化 + 混池</h4>
+							<span class="tag feature">Feature</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>管线 Step 1-3 全链：每次生成货架 roll、11 张 prefab 直改、HALFPRICE 入池</li>
+							<li>DB 对齐 + GameRules / ShopSystems 重写；504/505 绿</li>
+						</ul>
+						<div class="meta"><code>bffaf8b</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>商店经济呈现两修</h4>
+							<span class="tag feature">Feature</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>收入行显示真实发薪；免费 reroll 未用完时按钮显示 $0</li>
+							<li>价格划线锐化：TMP StrikethroughThickness 4.2→8.4（根因 = 18 号字 0.9px 亚像素 + SDF 柔化）</li>
+						</ul>
+						<div class="meta"><code>4378309</code> <code>660276a</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>渲染两小修</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>卡面 / 阴影材质迁 URP 2D Sprite-Unlit（ZWrite Off）</li>
+							<li>货架 wrap + 购买回流 + 滚动边界</li>
+						</ul>
+						<div class="meta"><code>1e56ced</code> <code>660276a</code></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============ 09-12 ============ -->
+			<div class="day">
+				<div class="day-date-block">
+					<div class="date">09-12</div>
+					<div class="dow">周六</div>
+				</div>
+				<div class="day-head">
+					<h3>大推送日：积压清仓 + 定案三连</h3>
+					<span class="day-count">25 commits（含积压拆分推送）</span>
+				</div>
+				<div class="items">
+					<div class="item wide">
+						<div class="title-row">
+							<h4>积压工作区 11 连拆分上链</h4>
+							<span class="tag ops">Ops</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>五功能流 hunk 级拆分推送（2f7b3e4..1140960）：08 日以来的场景 / 工具 / 视觉债清仓</li>
+							<li>z-slab 后卡文字透前卡定案修复：真凶 = emphasize 脉冲钉死揭晓卡 position；<code>BeginSpecialAnimation(drivesPosition)</code> + <code>SpecialAnimationPinsPosition</code>（22 倒挂全清）</li>
+							<li>同批：回底 Y 偏高修复（FloatStack effectiveCount 漏 −1）+ RevealZDiag 探针 + 被动卡常亮</li>
+						</ul>
+						<div class="meta"><code>2f7b3e4</code>…<code>1140960</code> <code>d3c3567</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>攻次 / xN 卡面等 projectile 落地</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li><code>_displayAttackTimes</code> 快照 + landing 提交扩展；仅目标侧，source 侧拍板不动</li>
+						</ul>
+						<div class="meta"><code>b85504a</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>HUD 微调三件</h4>
+							<span class="tag ui">UI</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>阵营图标下方用户名标签（双方显示 / ??? 兜底 / Navy）</li>
+							<li>图标 + HP 显示条缩小、条端点内收；退出商店相机复位</li>
+						</ul>
+						<div class="meta"><code>6cad3a1</code> <code>8daa6b1</code> <code>8b58e60</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>对战自测开关</h4>
+							<span class="tag net">Net</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li><code>fightOwnGhostsOnly</code>：强制 includeSelf + 封死默认池</li>
+							<li>opponents fetch includeSelf toggle + 跳过自牌对局上报</li>
+						</ul>
+						<div class="meta"><code>d4d1786</code> <code>6d46d58</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>RNG 确定性方案拍板</h4>
+							<span class="tag tools">Tools</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>四通道 proposal ratified，落 <code>plans/plan-deterministic-rng-seed-2026-09-12.md</code>（09-15 实施，见下）</li>
+						</ul>
+						<div class="meta"><code>cfd0997</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>杂项</h4>
+							<span class="tag balance">Balance</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>AVENGER 自我增强 2→1；窗口可调 + 1080 默认宽；Grail 09-11/12 anchors + 差评 watch</li>
+						</ul>
+						<div class="meta"><code>e293fb6</code> <code>f58664c</code> <code>7327018</code></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============ 09-13 ============ -->
+			<div class="day">
+				<div class="day-date-block">
+					<div class="date">09-13</div>
+					<div class="dow">周日</div>
+				</div>
+				<div class="day-head">
+					<h3>联网运维 + 成本「:」规</h3>
+					<span class="day-count">7 commits</span>
+				</div>
+				<div class="items">
+					<div class="item">
+						<div class="title-row">
+							<h4>run 链时间戳切 UTC+8</h4>
+							<span class="tag net">Net</span>
+							<span class="status ok">✓ 已部署</span>
+						</div>
+						<ul>
+							<li><code>NetTime.NowIsoCst8</code> 固定 +8 带显式 +08:00 后缀（避开 AddHours + "o" 格式的 Z 后缀陷阱）</li>
+							<li>仅 run 链路 5 处 + uploaded_at；已部署（回滚 bak-20260913-cst8）；旧行不迁移</li>
+						</ul>
+						<div class="meta"><code>d4791e1</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>成本子句「:」新规 + 双卡改造</h4>
+							<span class="tag cards">Cards</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>cost 子句用「:」分割；cost 效果与后续效果必须同容器</li>
+							<li>RIFT_REVIVER / RIFT_GUIDE 单容器化落地；扫描器 <code>scan_cost_then_effect_prefabs.py</code></li>
+						</ul>
+						<div class="meta"><code>9d383cc</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>ghost 自牌偏置三连修</h4>
+							<span class="tag net">Net</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>take 随机化 + onlyGhostEnemyDeck 仅自牌过滤 + 敌方满 HP 入场</li>
+							<li>磁盘缓存 17 条自牌等 prefetch 自愈（或删 json 立清）</li>
+						</ul>
+						<div class="meta"><code>e0e824d</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>埋葬递归 SOE 崩溃诊断</h4>
+							<span class="tag diag">Diagnosis</span>
+							<span class="status pending">⚑ 修法次日落</span>
+						</div>
+						<ul>
+							<li>213 层嵌套 BuryNextXCards：连坐容器 + 垂死反扑 + 骸骨哨兵自复活供料</li>
+							<li>关键事实：<code>chainDepth</code> 只在 CloseOpenedChain 清零 ⇒ 中途换 effect 对象清链是必要机制</li>
+						</ul>
+						<div class="meta">→ 09-14 落链深 99→12</div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>运维杂项</h4>
+							<span class="tag ops">Ops</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>admin shop-stats / win-rate 折叠为原生 <code>&lt;details&gt;</code>（零脚本）</li>
+							<li>ServerConfig markAsTest 关；notion-vs-unity desc 对比工具；Grail 09-13 anchor 修正 + 残局负分 watch</li>
+						</ul>
+						<div class="meta"><code>2e8803c</code> <code>778cf64</code> <code>ef128a3</code> <code>87f9ff8</code></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============ 09-14 ============ -->
+			<div class="day">
+				<div class="day-date-block">
+					<div class="date">09-14</div>
+					<div class="dow">周一</div>
+				</div>
+				<div class="day-head">
+					<h3>卡池规则大迭代</h3>
+					<span class="day-count">9 commits</span>
+				</div>
+				<div class="items">
+					<div class="item">
+						<div class="title-row">
+							<h4>CardType Status→Token + 实体/现象谓词</h4>
+							<span class="tag cards">Cards</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>Status 改名 Token（序列化值 2 不变），信徒 / 诅咒归桶；25 张 desc「生物/非生物」→「实体/现象」</li>
+							<li>hover 类型行：<code>CardTypeTooltipDatabaseSO</code>（实体可攻击 / 现象不可攻击；Token / Start Card 不显示）</li>
+						</ul>
+						<div class="meta"><code>36c6532</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>utility 两轴拆分 + 概率货架卡</h4>
+							<span class="tag feature">Feature</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li><code>takeUpSpace</code>→<code>physicalDeckCard</code>（FormerlySerializedAs）+ 新增 <code>occupiesDeckSlot</code>（默认 true）</li>
+							<li>唯一门禁 = BuyFunc；UTILITY_OPTION_P_1 魇市游摊（Common，13/25 每次货架 roll）；20 prefab + 3 文档</li>
+						</ul>
+						<div class="meta"><code>93d7f8c</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>hover spread + X retention band</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>审出「spread 开启即无法 hover popup」根因：换锚归零赢家 offset → band 被抽走</li>
+							<li>Fix1：未弹出者 band 失败回退 live collider；X 单向 + X/Y 按槽位基线分开（行 100 Play 待验）</li>
+						</ul>
+						<div class="meta"><code>38c6b18</code></div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>致死 HP 即停动画</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li><code>IsDeathVisuallyLanded</code> 谓词 + 三检查点 + ClearHpDisplayLocks（禁补 Commit 防幽灵跳字）</li>
+							<li>DeathAbortPlaybackTests 5 用例全绿；529/530</li>
+						</ul>
+						<div class="meta"><code>413ddbc</code> 行 101</div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>链深收口 + prefab 批量刷新</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status ok">✓ 已提交</span>
+						</div>
+						<ul>
+							<li>效果链深 99→12（埋葬递归 SOE 针对性收口，AGENTS.md 同步）</li>
+							<li>4.0 prefab 批量：desc 谓词 / 序列化字段刷新 / 稀有度挪动；RELIC_TALLY 埋葬计数扩全类型</li>
+						</ul>
+						<div class="meta"><code>2919cb4</code> <code>6c0e467</code> <code>414b2f0</code> <code>b0ff6a4</code></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============ 09-15 ============ -->
+			<div class="day today">
+				<div class="day-date-block">
+					<div class="date">09-15</div>
+					<div class="dow">周二 · 今日</div>
+				</div>
+				<div class="day-head">
+					<h3>RNG 确定性 + 现象谓词收紧</h3>
+					<span class="day-count">未提交（工作区）</span>
+				</div>
+				<div class="items">
+					<div class="item wide">
+						<div class="title-row">
+							<h4>RngService 四通道确定性 RNG</h4>
+							<span class="tag engine">Engine</span>
+							<span class="status wip">✎ 未提交</span>
+							<span class="status pending">⚑ 套件 + Play 待验</span>
+						</div>
+						<ul>
+							<li>Deck / Target / Shop / Setup 四通道；逻辑路径随机全部收口，禁 <code>UnityEngine.Random</code> 进逻辑</li>
+							<li>复现管线：<code>TestManager.overrideCombatSeed</code> / 命令行 <code>-odseed N</code>；每场落 <code>Seed_*.txt</code> + <code>DeterminismDigest_*.txt</code></li>
+							<li>独立算法 12 项 PASS；新增 <code>RngDeterminismTests</code>；文档 <code>docs/RngDeterminism.md</code></li>
+						</ul>
+						<div class="meta">RngService.cs（新）· CombatManager / ShopBoardPipeline 等 20+ 文件</div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>现象谓词收紧防 token 泄漏</h4>
+							<span class="tag bugfix">Bugfix</span>
+							<span class="status wip">✎ 未提交</span>
+							<span class="status ok">✓ 539/540</span>
+						</div>
+						<ul>
+							<li>NonCreature→Phenomenon：谓词收紧为 <code>cardType == None</code>，token（信徒/诅咒）不再漏进现象选取</li>
+							<li>prefab 原位换组件 fileID 不动，保 UnityEvent 引用；DEATHBED_PORTER 改复活卡</li>
+						</ul>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>CardTriggerOrder 设计师触发顺序</h4>
+							<span class="tag engine">Engine</span>
+							<span class="status wip">✎ 未提交</span>
+						</div>
+						<ul>
+							<li>原理：<code>GameEvent.Raise</code> 逆序迭代监听 ⇒ 反转实例化序即得触发序</li>
+							<li><code>CardTriggerOrderConfig</code> SO 按 cardTypeID 配 triggerOrder，GatherDecks 消费；玩家 / 敌方分侧独立</li>
+						</ul>
+						<div class="meta">CardTriggerOrderManager.cs / Config.cs / Tests（均新）</div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>utility 排空卡位后面双轨发位</h4>
+							<span class="tag feature">Feature</span>
+							<span class="status wip">✎ 未提交</span>
+							<span class="status pending">⚑ EditMode 未跑</span>
+						</div>
+						<ul>
+							<li><code>StackSlotAssigner</code> 按 <code>occupiesDeckSlot</code> 分流：utility 轨基准 = deckSize，恒在空卡位之后</li>
+							<li><code>SpawnAdditionalEmptySpaces</code> 补 RelayoutPlayerDeckCards 防扩容重叠（行 102）</li>
+						</ul>
+						<div class="meta">ShopUXManager.cs</div>
+					</div>
+					<div class="item">
+						<div class="title-row">
+							<h4>prefab → Notion 4.0 DB 全量同步</h4>
+							<span class="tag sync">Sync</span>
+							<span class="status ok">✓ 已回写</span>
+						</div>
+						<ul>
+							<li>53 行落地：desc 50 / rarity 3 / ATK 2 / 中文名 1，09-14 欠账清零</li>
+							<li>DECIMATION 真削（×3 → 单次 + ATK 2）；MASS_REVIVER → ✦✦✦；desc 新写统一无 <code>&lt;b&gt;</code></li>
+							<li>遗留：UTILITY_OPTION_1 序列化 rarity=0 vs 目录 1_Uncommon 漂移待修</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="highlight-box">
+			<h3>本期重点工作总结</h3>
+			<ul>
+				<li><strong>RNG 确定性落地</strong> — 从 09-12 拍板到 09-15 实施：四通道服务 + 种子复现管线 + digest 落盘，战斗/商店/setup 全部随机可复现，平衡迭代从此有可复现基线（未提交待验）</li>
+				<li><strong>utility 商店轴四步成型</strong> — 概率货架（09-11）→ 混池默认 → 两轴拆分（09-14）→ 排空卡位双轨发位（09-15），一周内从想法到完整商店逻辑</li>
+				<li><strong>卡池口径大扫除</strong> — Token 改名 + 实体/现象谓词 + 成本「:」规 + 批量粒度裁定 + 触发顺序可配，desc ↔ 实现一致性拉到新高，并回写 Notion 53 行</li>
+				<li><strong>稳定性收口</strong> — 埋葬递归 SOE 诊断 → 链深 12；致死即停动画；渲染层级 / z-slab / hover / 回底 Y 一批历史显示债定案清偿</li>
+				<li><strong>联网运维闭环</strong> — UTC+8 时间戳上线、ghost 自牌偏置三连修、markAsTest 关闭、admin 折叠，数据可信度继续加码</li>
+			</ul>
+		</div>
+
+		<div class="verify-box">
+			<h3>待验证与遗留</h3>
+			<div class="note">汇总自会话备忘与 docs/RegressionChecklist.md，按处理类型分组：</div>
+			<div class="verify-grid">
+				<div class="verify-col">
+					<h4>⚑ Play 待验（checklist 行号）</h4>
+					<ul>
+						<li>行 100 hover spread 方向修订</li>
+						<li>行 102 utility 排空卡位双轨发位</li>
+						<li>用户名标签观感（6cad3a1）</li>
+						<li>攻次 projectile defer（b85504a）</li>
+						<li>HP 条纵向化（0cf60d4）/ ResultStatsPanel 三档（d00d79b）</li>
+						<li>引魂幡 HATCHERY/TRAINER 首回合时点</li>
+						<li>致死即停动画（413ddbc）</li>
+					</ul>
+				</div>
+				<div class="verify-col">
+					<h4>⚑ 测试补跑</h4>
+					<ul>
+						<li>RNG：全量 EditMode 套件 + RngDeterminismTests</li>
+						<li>utility 双轨发位：EditMode 未跑</li>
+						<li>539/540 中 1 非绿项确认仍是存量 Ignore</li>
+					</ul>
+				</div>
+				<div class="verify-col">
+					<h4>✎ 未提交待 commit</h4>
+					<ul>
+						<li>09-15 全部工作：RNG / 现象谓词 / 触发顺序 / 排空卡位</li>
+						<li>prefab 挪动：MASS_REVIVER→2_Rare 等 6 张</li>
+					</ul>
+				</div>
+				<div class="verify-col">
+					<h4>◇ 数据漂移 / 待拍板</h4>
+					<ul>
+						<li>UTILITY_OPTION_1 序列化 rarity=0 vs 目录 1_Uncommon</li>
+						<li>DECIMATION ExtraATKTimes 手填 2 待清</li>
+						<li>GRAVE_FIST 等 10 张同类成本「:」改造清单</li>
+						<li>extraDmg≠0 卡角标口径逐张核（承上期）</li>
+						<li>16 张 utility 中文名圈改（承上期）</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="footer">
+			OneDeck Unity Roguelike Card Game | 开发者: PAPAYA<br>
+			数据来源: git log（09-08 ~ 09-14，67 commits，C# +3,918/−642）+ 工作区未提交状态 + 会话记忆备忘 | 生成时间: 2026-09-15
+		</div>
+	</div>
+</body>
+</html>
