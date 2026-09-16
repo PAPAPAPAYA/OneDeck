@@ -138,7 +138,7 @@ MonoBehaviour:
   cardTypeID: MASS_REVIVER
   displayName: "\u7A7A\u5893\u56ED"
   cardDesc: "\u590D\u6D3B <b>3</b> \u53CB\u65B9\u2726\u5361"
-  rarity: 1
+  rarity: 2
   shopRollWeightMultiplier: 1
   physicalDeckCard: 1
   occupiesDeckSlot: 1

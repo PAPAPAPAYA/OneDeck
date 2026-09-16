@@ -49,7 +49,7 @@ MonoBehaviour:
   displayName: "\u9B47\u5E02\u65B0\u644A"
   cardDesc: "\u88AB\u52A8: \u4E0D\u5360\u7528\u5361\u4F4D, \u5546\u5E97\u8D27\u67B6
     <b>+1</b> "
-  rarity: 0
+  rarity: 1
   shopRollWeightMultiplier: 1
   physicalDeckCard: 1
   occupiesDeckSlot: 0

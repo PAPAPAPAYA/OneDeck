@@ -1,0 +1,54 @@
+53 rows to update
+3cb827b8c3c181e58b80c8e7015b84b5 | AVENGER_4.0 | {"card desc": "攻击;遗言:强化自身 1"}
+3c7827b8c3c181468ffee12f7463681d | BATTLE_HORN | {"card desc": "本回合友方实体攻击次数 +1"}
+3c7827b8c3c181e4b8b1e546db0c43c4 | BEAST_REVIVER | {"card desc": "攻击;复活 1 友方实体"}
+3c7827b8c3c181e3a1d5cc6197fec1d6 | BLACKSMITH_4.0 | {"card desc": "攻击;强化 1 友方实体"}
+3c7827b8c3c181ef98a7c2a6e4303057 | COMBO_GRANTER | {"card desc": "攻击;本回合 1 友方实体攻击次数 +1"}
+3d2827b8c3c1814a8fefe286bd11a1c1 | CURSE_THIRST_SHAMAN_4.0 | {"card desc": "敌方诅咒每有 1 攻击力:强化 1 友方实体"}
+3c7827b8c3c181f59509c35dd106944d | DEATHBED_GRANT | {"card desc": "被动:友方实体被埋葬时:该友方实体攻击"}
+3c7827b8c3c18176b159d81ed0512bd4 | DEATHBED_PORTER | {"card desc": "攻击;遗言:攻击;置顶 1 友方现象"}
+3c7827b8c3c181e3a9aece7d359664cc | DECIMATION | {"ATK": 2, "card desc": "埋葬 4 友方,本回合每埋葬过 1 友方,埋葬数 -1;攻击"}
+3c7827b8c3c181669bf7d101cd79cf81 | ELITE_REVIVER | {"card desc": "攻击;复活 1 被强化过的友方实体"}
+3c7827b8c3c18174a60ee0b60d103e34 | FINAL_ESCORT | {"card desc": "攻击;遗言:回合结束前:复活 1 墓地最高攻击力友方实体"}
+3c7827b8c3c18180ac69ee5cc05f9541 | FLURRY_REVIVER | {"card desc": "复活 1 攻击次数最多友方实体"}
+3c7827b8c3c181acb929c0c85d759b55 | FUNERAL_WILL | {"card desc": "埋葬卡组顶 2 卡;遗言:复活 1 友方到末尾"}
+3c7827b8c3c1812c9d70e4eac3df0648 | GRAVE_PUNCH_4.0 | {"card desc": "埋葬 1 友方;攻击"}
+3c7827b8c3c181ecbf01d78f6bd989aa | GRAVE_PUPPETEER | {"card desc": "墓地 1 友方实体攻击;墓地无则埋葬 1 [遗言]友方卡"}
+3c7827b8c3c18125bb28c5c33618eeef | GRAVE_ROBBER | {"card desc": "复活 1 攻击力最高敌方;攻击力变为该卡攻击力; 攻击"}
+3c7827b8c3c18146b887d35025a02cb8 | LAST_GIFT | {"card desc": "攻击;遗言:强化 2 友方实体"}
+3c7827b8c3c181d79a8aea51ef9eb0c5 | MASS_REVIVER | {"中文名": "空墓园"}
+3c7827b8c3c181aba9affda164e55efc | MIMIC_BLADE | {"card desc": "攻击力=友方最高攻击力;攻击"}
+3c7827b8c3c181f3b559cee8cee8e9e0 | QUAD_STRIKER | {"card desc": "攻击"}
+3c7827b8c3c1818da3c8f28a574f3e11 | RELIC_ATTACK_HEX | {"card desc": "被动:友方攻击时,强化 1 敌方诅咒"}
+3c7827b8c3c1816e8940ca709dae722c | RELIC_CURSE_GRAVE | {"rarity": "uncommon"}
+3c7827b8c3c1813aa0d5c4a2d1ce3ead | RELIC_CURSE_REVIVAL | {"rarity": "uncommon"}
+3c8827b8c3c180f5ba3ce06dcd676562 | RELIC_GRAVE_LORD | {"card desc": "被动:墓地中的友方实体攻击力 +1"}
+3c7827b8c3c181c5b309d0117af2d0b1 | RELIC_TALLY | {"card desc": "被动:回合结束前:本回合每埋葬 1 友方,强化 1 敌方诅咒"}
+3c8827b8c3c180ae99feca17bb8fb17c | RELIC_TRAINER | {"card desc": "被动:回合开始:强化 1 攻击力最低友方实体"}
+3d2827b8c3c18136a3aed5b847ca8edf | RELIC_WHITE_BANNER | {"card desc": "被动:回合开始:置顶 1 友方攻击力最高实体"}
+3c8827b8c3c1806298b0cd67aa7a5d61 | RIFT_GUIDE | {"card desc": "放逐 1 友方信徒: 埋葬 2 敌方现象"}
+3c7827b8c3c1814f95a0fbd852ce663a | RIFT_PRIEST | {"card desc": "生成 2 信徒;强化 1 友方实体"}
+3c7827b8c3c1814d8ce5f6169bd5447d | RIFT_REAPER | {"card desc": "放逐所有信徒,每放逐 1,强化 1 友方实体"}
+3c8827b8c3c180689f9af89b7ec6f0af | RIFT_REVIVER | {"card desc": "放逐 1 友方信徒: 复活 2 友方现象"}
+3c7827b8c3c18105bfbccc075808ade4 | RIFT_STRIKER | {"card desc": "攻击;生成 1 信徒"}
+3c7827b8c3c18177b363e55d560d46b4 | SACRIFICE_WEAKEST | {"card desc": "埋葬 1 攻击力最低友方实体;强化 1 该卡"}
+3c7827b8c3c181ecbef7f7a49bacd8d6 | SNOWBALL | {"card desc": "攻击;强化反应:强化自身 1"}
+3c7827b8c3c1814190f1de9842a9a922 | SPIRIT_CALLER | {"ATK": 0, "card desc": "复活 1 友方现象"}
+3c7827b8c3c18179b934de12143bda43 | TWIN_STRIKER | {"card desc": "攻击"}
+3d2827b8c3c1814aa8b7d4a39cfd5dec | UTILITY_CREATURES_1 | {"card desc": "被动: 不占用卡位, 20% 概率只掷出实体卡"}
+3d2827b8c3c181b4919ac2e27600aa65 | UTILITY_DISCOUNT_1 | {"card desc": "被动: 不占用卡位, 25% 概率: 1 件随机商品半价"}
+3d8827b8c3c181e9be68ee255db0eac2 | UTILITY_HALFPRICE_1 | {"card desc": "被动: 不占用卡位, 必出 1 件半价商品"}
+3d2827b8c3c18110b890f11f196e11c4 | UTILITY_ODDS_2 | {"card desc": "被动: 不占用卡位, 25% 概率多出 1 商店被动卡"}
+3d2827b8c3c181568ad7cc90b770f41f | UTILITY_OPTION_1 | {"rarity": "normal", "card desc": "被动: 不占用卡位, 商店货架 +1"}
+3db827b8c3c181b6bd76c1b927df3188 | UTILITY_OPTION_P_1 | {"card desc": "被动: 不占用卡位, 25% 概率:货架 +1"}
+3d2827b8c3c18114aebace85899e8346 | UTILITY_SLOT_R | {"card desc": "被动: 不占用卡位, 25% 概率:多出 1 ✦✦✦卡"}
+3d2827b8c3c18178b5b7dd32b0feb85e | UTILITY_SLOT_U_1 | {"card desc": "被动: 不占用卡位, 25% 概率:多出 1 张✦✦卡"}
+3d2827b8c3c1816f8eaad9c6ba70437e | UTILITY_SLOT_U_2 | {"card desc": "被动: 不占用卡位, 每次生成货架必出 1 张✦✦卡"}
+3d2827b8c3c18141a8acf2fa54579412 | UTILITY_SPELLS_1 | {"card desc": "被动: 不占用卡位, 20% 概率:只掷出现象卡"}
+3d2827b8c3c1815b8099c80a77fd6947 | UTILITY_TAG_AWAKEN | {"card desc": "被动: 不占用卡位, 25% 概率:多出 1 张[苏醒]卡"}
+3d2827b8c3c18188b271cbf0c3c3c1ed | UTILITY_TAG_CURSE | {"card desc": "被动: 不占用卡位, 25% 概率:多出 1 张[诅咒]卡"}
+3d2827b8c3c18199b64dd10c41e875f9 | UTILITY_TAG_REVIVE | {"card desc": "被动: 不占用卡位, 25% 概率:多出 1 张[复活]卡"}
+3d2827b8c3c18110862eeb62f9353f38 | UTILITY_WEIGHT_R | {"card desc": "被动: 不占用卡位, ✦✦✦卡的出货权重 ×2"}
+3d2827b8c3c1816da5b2de277a131cbc | UTILITY_WEIGHT_U | {"card desc": "被动: 不占用卡位, ✦✦卡的出货权重 ×2"}
+3c7827b8c3c1819faa2ce51c16ba49ea | WAR_TRAINER | {"card desc": "强化 2 友方实体"}
+3c8827b8c3c180399fa1f850ef2f09b2 | WEAKENING_FIELD | {"card desc": "所有实体本回合攻击力 -1"}

@@ -5,7 +5,7 @@
   "displayName": "厉鬼",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击x2;遗言:强化自身 <b>1</b>",
+  "cardDesc": "攻击;遗言:强化自身 <b>1</b>",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
@@ -16,7 +16,7 @@
   "displayName": "马戏团的地下室",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击;复活 <b>1</b> 生物友方",
+  "cardDesc": "攻击;复活 <b>1</b> 友方实体",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
@@ -27,7 +27,7 @@
   "displayName": "骨匠",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击;强化 <b>1</b> 友方生物",
+  "cardDesc": "攻击;强化 <b>1</b> 友方实体",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "0_Common"
@@ -49,7 +49,7 @@
   "displayName": "镀金圣髑",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击;复活 <b>1</b> 被强化过的友方生物",
+  "cardDesc": "攻击;复活 <b>1</b> 被强化过的友方实体",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
@@ -93,7 +93,7 @@
   "displayName": "剜心祭",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "埋葬 <b>1</b> 友方;攻击x2",
+  "cardDesc": "埋葬 <b>1</b> 友方;攻击",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "0_Common"
@@ -137,7 +137,7 @@
   "displayName": "遗赠",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击;遗言:强化 <b>2</b> 友方生物",
+  "cardDesc": "攻击;遗言:强化 <b>2</b> 友方实体",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "0_Common"
@@ -148,9 +148,9 @@
   "displayName": "侍僧",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击;生成 <b>1</b> 信徒;苏醒:生成    <b>1</b> 信徒",
-  "printedAttack": "1",
-  "cardType": "1",
+  "cardDesc": "生成 <b>1</b> 信徒;苏醒:生成 <b>1</b>    信徒",
+  "printedAttack": "0",
+  "cardType": "0",
   "folder": "0_Common"
  },
  {
@@ -214,8 +214,8 @@
   "displayName": "降灵会",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击;复活 <b>1</b> 友方非生物",
-  "printedAttack": "2",
+  "cardDesc": "复活 <b>1</b> 友方现象",
+  "printedAttack": "0",
   "cardType": "1",
   "folder": "0_Common"
  },
@@ -225,7 +225,7 @@
   "displayName": "连体人",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "攻击x2",
+  "cardDesc": "攻击",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "0_Common"
@@ -236,7 +236,7 @@
   "displayName": "魇市赊账",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:<b>1</b> 件随机商品半价",
+  "cardDesc": "被动: 不占用卡位, <b>25%</b> 概率:    <b>1</b> 件随机商品半价",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -247,7 +247,7 @@
   "displayName": "冥币",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "被动: 收入 <b>+4</b>",
+  "cardDesc": "被动: 收入 <b>+4</b>, 不占用卡位",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -258,18 +258,18 @@
   "displayName": "魇市深处",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "被动: 首个货架必含 <b>1</b> 件商店被动卡",
+  "cardDesc": "被动: 首个货架必含 <b>1</b> 件商店被动卡, 不占用卡位",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
  },
  {
-  "file": "UTILITY_OPTION_1",
-  "cardTypeID": "UTILITY_OPTION_1",
-  "displayName": "魇市新摊",
+  "file": "UTILITY_OPTION_P_1",
+  "cardTypeID": "UTILITY_OPTION_P_1",
+  "displayName": "魇市游摊",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "被动: 商店货架 <b>+1</b>",
+  "cardDesc": "被动: 不占用卡位, <b>25%</b> 概率:货架    <b>+1</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -280,7 +280,7 @@
   "displayName": "噩梦重播",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "被动: 免费重掷次数 <b>+1</b>",
+  "cardDesc": "被动: 免费重掷次数 <b>+1</b>, 不占用卡位",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -291,7 +291,7 @@
   "displayName": "初魇",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张✦✦卡",
+  "cardDesc": "被动: 不占用卡位, <b>25%</b> 概率:多出    <b>1</b> 张✦✦卡 ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -302,7 +302,7 @@
   "displayName": "魇影幢幢",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "被动: ✦✦卡的出货权重 <b>×2</b>",
+  "cardDesc": "被动: 不占用卡位, ✦✦卡的出货权重    <b>×2</b> ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -324,7 +324,7 @@
   "displayName": "开刃",
   "rarity": "0",
   "rarityName": "normal",
-  "cardDesc": "强化 <b>2</b> 友方生物",
+  "cardDesc": "强化 <b>2</b> 友方实体",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "0_Common"
@@ -352,23 +352,12 @@
   "folder": "1_Uncommon"
  },
  {
-  "file": "BATTLE_HORN",
-  "cardTypeID": "BATTLE_HORN",
-  "displayName": "股骨号角",
-  "rarity": "1",
-  "rarityName": "uncommon",
-  "cardDesc": "本回合友方生物攻击次数 <b>+1</b>",
-  "printedAttack": "0",
-  "cardType": "0",
-  "folder": "1_Uncommon"
- },
- {
   "file": "COMBO_GRANTER",
   "cardTypeID": "COMBO_GRANTER",
   "displayName": "执鞭人",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击;本回合 <b>1</b> 友方生物攻击次数    <b>+1</b>",
+  "cardDesc": "攻击;本回合 <b>1</b> 友方实体攻击次数    <b>+1</b>",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -434,7 +423,7 @@
   "displayName": "噬咒萨满",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "敌方诅咒每有 <b>1</b> 攻击力:强化    <b>1</b> 友方生物",
+  "cardDesc": "敌方诅咒每有 <b>1</b> 攻击力:强化    <b>1</b> 友方实体",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -445,7 +434,7 @@
   "displayName": "垂死反扑",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动:友方生物被埋葬时:该友方生物攻击",
+  "cardDesc": "被动:友方实体被埋葬时:该友方实体攻击",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -456,7 +445,7 @@
   "displayName": "抬棺人",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击;遗言:攻击;置顶 <b>1</b> 友方非生物",
+  "cardDesc": "攻击;遗言:攻击;置顶 <b>1</b> 友方现象",
   "printedAttack": "2",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -478,7 +467,7 @@
   "displayName": "报丧人",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击;复活 <b>1</b> 攻击力最高敌方;强化    <b>4</b> 敌方诅咒",
+  "cardDesc": "攻击;复活 <b>1</b> 攻击力最高敌方;强化    <b>3</b> 敌方诅咒",
   "printedAttack": "0",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -511,7 +500,7 @@
   "displayName": "扶灵人",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击;遗言:回合结束前:复活    <b>1</b> 墓地的最高攻击力友方生物",
+  "cardDesc": "攻击;遗言:回合结束前:复活    <b>1</b> 墓地最高攻击力友方实体",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -522,7 +511,7 @@
   "displayName": "死不瞑目",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "复活 <b>1</b> 攻击次数最多友方生物",
+  "cardDesc": "复活 <b>1</b> 攻击次数最多友方实体",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -533,7 +522,7 @@
   "displayName": "冥约",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "埋葬卡组顶 <b>2</b> 卡;遗言:延迟复活    <b>1</b> 友方",
+  "cardDesc": "埋葬卡组顶 <b>2</b> 卡;遗言:复活    <b>1</b> 友方到末尾",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -555,7 +544,7 @@
   "displayName": "操尸人",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "使墓地 <b>1</b> 友方生物攻击;墓地无则埋葬    <b>1</b> [<tag:DeathRattle>]友方卡",
+  "cardDesc": "墓地 <b>1</b> 友方实体攻击;墓地无则埋葬    <b>1</b> [<tag:DeathRattle>]友方卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -566,7 +555,7 @@
   "displayName": "食尸鬼",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "复活 <b>1</b> 攻击力最高敌方;攻击力变为该卡攻击力",
+  "cardDesc": "复活 <b>1</b> 攻击力最高敌方;攻击力变为该卡攻击力;    攻击",
   "printedAttack": "0",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -605,23 +594,12 @@
   "folder": "1_Uncommon"
  },
  {
-  "file": "MASS_REVIVER",
-  "cardTypeID": "MASS_REVIVER",
-  "displayName": "墓园空了",
-  "rarity": "1",
-  "rarityName": "uncommon",
-  "cardDesc": "复活 <b>3</b> 友方✦卡",
-  "printedAttack": "0",
-  "cardType": "0",
-  "folder": "1_Uncommon"
- },
- {
   "file": "MIMIC_BLADE",
   "cardTypeID": "MIMIC_BLADE",
   "displayName": "模仿犯",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击力=友方最高攻击力;攻击x2",
+  "cardDesc": "攻击力=友方最高攻击力;攻击",
   "printedAttack": "0",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -671,6 +649,28 @@
   "folder": "1_Uncommon"
  },
  {
+  "file": "RELIC_CURSE_GRAVE",
+  "cardTypeID": "RELIC_CURSE_GRAVE",
+  "displayName": "勾魂簿",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "被动:敌方诅咒揭晓时,埋葬    <b>1</b> 敌方",
+  "printedAttack": "0",
+  "cardType": "0",
+  "folder": "1_Uncommon"
+ },
+ {
+  "file": "RELIC_CURSE_REVIVAL",
+  "cardTypeID": "RELIC_CURSE_REVIVAL",
+  "displayName": "耳语唤尸",
+  "rarity": "1",
+  "rarityName": "uncommon",
+  "cardDesc": "被动:敌方诅咒揭晓时,复活    <b>1</b> 友方",
+  "printedAttack": "0",
+  "cardType": "0",
+  "folder": "1_Uncommon"
+ },
+ {
   "file": "RELIC_GRAVE_CURSE",
   "cardTypeID": "RELIC_GRAVE_CURSE",
   "displayName": "积尸气",
@@ -687,7 +687,7 @@
   "displayName": "血账",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动:回合结束前:本回合每埋葬    <b>1</b> 生物,强化 <b>1</b> 敌方诅咒",
+  "cardDesc": "被动:回合结束前:本回合每埋葬    <b>1</b> 友方,强化 <b>1</b> 敌方诅咒",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -698,7 +698,7 @@
   "displayName": "邪印",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动:回合开始:强化 <b>1</b> 攻击力最低友方生物",
+  "cardDesc": "被动:回合开始:强化 <b>1</b> 攻击力最低友方实体",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -709,7 +709,7 @@
   "displayName": "引魂幡",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动:回合开始:置顶 <b>1</b> 友方攻击力最高生物",
+  "cardDesc": "被动:回合开始:置顶 <b>1</b> 友方攻击力最高实体",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -731,7 +731,7 @@
   "displayName": "献祭司事",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "放逐 <b>1</b> 友方信徒: 埋葬 <b>2</b>    敌方非生物",
+  "cardDesc": "放逐 <b>1</b> 友方信徒: 埋葬 <b>2</b>    敌方现象",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -764,7 +764,7 @@
   "displayName": "施洗者",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "生成 <b>2</b> 信徒;强化 <b>1</b> 友方生物",
+  "cardDesc": "生成 <b>2</b> 信徒;强化 <b>1</b> 友方实体",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -775,7 +775,7 @@
   "displayName": "以人易物",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "放逐 <b>1</b> 友方信徒: 复活 <b>2</b>    友方非生物",
+  "cardDesc": "放逐 <b>1</b> 友方信徒: 复活 <b>2</b>    友方现象",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -786,7 +786,7 @@
   "displayName": "鞭笞者",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击x2;生成 <b>1</b> 信徒",
+  "cardDesc": "攻击;生成 <b>1</b> 信徒",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -797,7 +797,7 @@
   "displayName": "替罪羔羊",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "埋葬 <b>1</b> 攻击力最低友方;强化    <b>1</b> 该卡",
+  "cardDesc": "埋葬 <b>1</b> 攻击力最低友方实体;强化    <b>1</b> 该卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -808,7 +808,7 @@
   "displayName": "蛊王",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "攻击x2;强化反应:强化自身 <b>1</b>",
+  "cardDesc": "攻击;强化反应:强化自身 <b>1</b>",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "1_Uncommon"
@@ -841,7 +841,7 @@
   "displayName": "百怪入梦",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: <b>20%</b> 概率只掷出生物卡",
+  "cardDesc": "被动: 不占用卡位, <b>20%</b> 概率只掷出实体卡 ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -852,7 +852,7 @@
   "displayName": "魇市半价",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 必出 <b>1</b> 件半价商品",
+  "cardDesc": "被动: 不占用卡位, 必出 <b>1</b>    件半价商品 ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -863,7 +863,18 @@
   "displayName": "窥魇镜",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: <b>25%</b> 概率多出 <b>1</b> 件商店被动卡",
+  "cardDesc": "被动: 不占用卡位, <b>25%</b> 概率多出    <b>1</b> 商店被动卡 ",
+  "printedAttack": "0",
+  "cardType": "0",
+  "folder": "1_Uncommon"
+ },
+ {
+  "file": "UTILITY_OPTION_1",
+  "cardTypeID": "UTILITY_OPTION_1",
+  "displayName": "魇市新摊",
+  "rarity": "0",
+  "rarityName": "normal",
+  "cardDesc": "被动: 不占用卡位, 商店货架    <b>+1</b> ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -874,7 +885,7 @@
   "displayName": "连魇",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 每次生成货架必出 <b>1</b> 张✦✦卡",
+  "cardDesc": "被动: 不占用卡位, 每次生成货架必出    <b>1</b> 张✦✦卡 ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -885,7 +896,7 @@
   "displayName": "死寂的梦",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 每次生成货架 <b>20%</b> 概率:只掷出非生物卡",
+  "cardDesc": "被动: 不占用卡位,  <b>20%</b> 概率:只掷出现象卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -896,7 +907,7 @@
   "displayName": "惊醒",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张带[苏醒]的卡",
+  "cardDesc": "被动: 不占用卡位, <b>25%</b> 概率:多出    <b>1</b> 张[苏醒]卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -907,7 +918,7 @@
   "displayName": "噩梦",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张带[诅咒]的卡",
+  "cardDesc": "被动: 不占用卡位, <b>25%</b> 概率:多出    <b>1</b> 张[诅咒]卡 ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -918,7 +929,7 @@
   "displayName": "亡者入梦",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张带[复活]的卡",
+  "cardDesc": "被动: 不占用卡位, <b>25%</b> 概率:多出    <b>1</b> 张[复活]卡 ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -929,7 +940,7 @@
   "displayName": "梦魇缠身",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动: ✦✦✦卡的出货权重    <b>×2</b>",
+  "cardDesc": "被动: 不占用卡位, ✦✦✦卡的出货权重    <b>×2</b> ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -940,7 +951,7 @@
   "displayName": "瘴气",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "所有生物本回合攻击力 <b>-1</b>",
+  "cardDesc": "所有实体本回合攻击力 <b>-1</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -957,13 +968,24 @@
   "folder": "1_Uncommon"
  },
  {
+  "file": "BATTLE_HORN",
+  "cardTypeID": "BATTLE_HORN",
+  "displayName": "股骨号角",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "本回合友方实体攻击次数 <b>+1</b>",
+  "printedAttack": "0",
+  "cardType": "0",
+  "folder": "2_Rare"
+ },
+ {
   "file": "DECIMATION",
   "cardTypeID": "DECIMATION",
   "displayName": "什一抽杀",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "埋葬 <b>6</b> 友方,本回合每埋葬过    <b>1</b> 友方,埋葬数 <b>-1</b>;攻击x3",
-  "printedAttack": "3",
+  "cardDesc": "埋葬 <b>4</b> 友方,本回合每埋葬过    <b>1</b> 友方,埋葬数 <b>-1</b>;攻击",
+  "printedAttack": "2",
   "cardType": "1",
   "folder": "2_Rare"
  },
@@ -1001,6 +1023,17 @@
   "folder": "2_Rare"
  },
  {
+  "file": "MASS_REVIVER",
+  "cardTypeID": "MASS_REVIVER",
+  "displayName": "空墓园",
+  "rarity": "2",
+  "rarityName": "rare",
+  "cardDesc": "复活 <b>3</b> 友方✦卡",
+  "printedAttack": "0",
+  "cardType": "0",
+  "folder": "2_Rare"
+ },
+ {
   "file": "MASS_SACRIFICE",
   "cardTypeID": "MASS_SACRIFICE",
   "displayName": "集体自焚",
@@ -1028,7 +1061,7 @@
   "displayName": "百臂巨人",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "攻击x4",
+  "cardDesc": "攻击",
   "printedAttack": "1",
   "cardType": "1",
   "folder": "2_Rare"
@@ -1039,7 +1072,7 @@
   "displayName": "饲咒",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "被动:有卡攻击时,强化 <b>1</b> 敌方诅咒",
+  "cardDesc": "被动:友方攻击时,强化 <b>1</b> 敌方诅咒",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"
@@ -1056,34 +1089,12 @@
   "folder": "2_Rare"
  },
  {
-  "file": "RELIC_CURSE_GRAVE",
-  "cardTypeID": "RELIC_CURSE_GRAVE",
-  "displayName": "勾魂簿",
-  "rarity": "2",
-  "rarityName": "rare",
-  "cardDesc": "被动:敌方诅咒揭晓时,埋葬    <b>1</b> 敌方",
-  "printedAttack": "0",
-  "cardType": "0",
-  "folder": "2_Rare"
- },
- {
   "file": "RELIC_CURSE_HASTE",
   "cardTypeID": "RELIC_CURSE_HASTE",
   "displayName": "提前发作",
   "rarity": "2",
   "rarityName": "rare",
   "cardDesc": "被动:敌方诅咒攻击次数 <b>+1</b>",
-  "printedAttack": "0",
-  "cardType": "0",
-  "folder": "2_Rare"
- },
- {
-  "file": "RELIC_CURSE_REVIVAL",
-  "cardTypeID": "RELIC_CURSE_REVIVAL",
-  "displayName": "耳语唤尸",
-  "rarity": "2",
-  "rarityName": "rare",
-  "cardDesc": "被动:敌方诅咒揭晓时,复活    <b>1</b> 友方",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"
@@ -1105,7 +1116,7 @@
   "displayName": "白骨王座",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "被动:墓地中的友方生物攻击力    <b>+1</b>",
+  "cardDesc": "被动:墓地中的友方实体攻击力    <b>+1</b>",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"
@@ -1149,7 +1160,7 @@
   "displayName": "血飨",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "放逐所有信徒,每放逐 <b>1</b>,强化    <b>1</b> 友方生物",
+  "cardDesc": "放逐所有信徒,每放逐 <b>1</b>,强化    <b>1</b> 友方实体",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"
@@ -1204,7 +1215,7 @@
   "displayName": "深魇",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "被动: 每次生成货架 <b>25%</b> 概率:多出 <b>1</b> 张✦✦✦卡",
+  "cardDesc": "被动: 不占用卡位,  <b>25%</b> 概率:多出    <b>1</b> ✦✦✦卡 ",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "2_Rare"

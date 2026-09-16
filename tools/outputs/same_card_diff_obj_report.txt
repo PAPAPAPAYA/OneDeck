@@ -1,0 +1,49 @@
+SameCardDifferentObject candidate hits (log replay approximation)
+total Make lines hits: 37
+unique (new card/effect <- open card/effect) pairs: 6
+
+  15x  NEW card=[Attacker] effect=[HPAlterEffect]  <-  OPEN card=[Attacker] effect=[AttackEffect]
+  10x  NEW card=[Reactor] effect=[PowerReactionEffect]  <-  OPEN card=[Reactor] effect=[CostNEffectContainer]
+   6x  NEW card=[Reactor] effect=[HPAlterEffect]  <-  OPEN card=[Reactor] effect=[CostNEffectContainer]
+   2x  NEW card=[CURSE_SUMMONER(Clone)] effect=[revive 1 friend]  <-  OPEN card=[CURSE_SUMMONER(Clone)] effect=[revive enemy curse]
+   2x  NEW card=[TestCard] effect=[EffectObj]  <-  OPEN card=[TestCard] effect=[HPAlterEffect]
+   2x  NEW card=[TestCard] effect=[EffectA]  <-  OPEN card=[TestCard] effect=[EffectObj]
+
+--- raw excerpts (first 40) ---
+L110683: [EffectChainManager] MakeANewEffectRecorder chain#1 card=CURSE_SUMMONER(Clone) effect=revive 1 friend isRoot=True parent=ROOT stackSize=1
+L113364: [EffectChainManager] MakeANewEffectRecorder chain#1 card=TestCard effect=EffectObj isRoot=True parent=ROOT stackSize=1
+L113965: [EffectChainManager] MakeANewEffectRecorder chain#1 card=TestCard effect=EffectA isRoot=True parent=ROOT stackSize=1
+L125045: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L125415: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L125515: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L125666: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L125766: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L126846: [EffectChainManager] MakeANewEffectRecorder chain#2 card=Reactor effect=HPAlterEffect isRoot=False parent=1 stackSize=2
+L128033: [EffectChainManager] MakeANewEffectRecorder chain#3 card=Reactor effect=HPAlterEffect isRoot=False parent=2 stackSize=3
+L128374: [EffectChainManager] MakeANewEffectRecorder chain#4 card=Reactor effect=HPAlterEffect isRoot=False parent=3 stackSize=4
+L192292: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L192800: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L207582: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L211753: [EffectChainManager] MakeANewEffectRecorder chain#1 card=CURSE_SUMMONER(Clone) effect=revive 1 friend isRoot=True parent=ROOT stackSize=1
+L214434: [EffectChainManager] MakeANewEffectRecorder chain#1 card=TestCard effect=EffectObj isRoot=True parent=ROOT stackSize=1
+L215035: [EffectChainManager] MakeANewEffectRecorder chain#1 card=TestCard effect=EffectA isRoot=True parent=ROOT stackSize=1
+L217394: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L217648: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L217902: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L218153: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L218404: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L218906: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L219157: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L219408: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L219659: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L226115: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L226485: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L226585: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L226736: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L226836: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Reactor effect=PowerReactionEffect isRoot=True parent=ROOT stackSize=1
+L227916: [EffectChainManager] MakeANewEffectRecorder chain#2 card=Reactor effect=HPAlterEffect isRoot=False parent=1 stackSize=2
+L228327: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L229103: [EffectChainManager] MakeANewEffectRecorder chain#3 card=Reactor effect=HPAlterEffect isRoot=False parent=2 stackSize=3
+L229444: [EffectChainManager] MakeANewEffectRecorder chain#4 card=Reactor effect=HPAlterEffect isRoot=False parent=3 stackSize=4
+L293362: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
+L293870: [EffectChainManager] MakeANewEffectRecorder chain#1 card=Attacker effect=HPAlterEffect isRoot=True parent=ROOT stackSize=1
