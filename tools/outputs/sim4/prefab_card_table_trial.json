@@ -2,7 +2,7 @@
 	{
 		"cid": "AVENGER_4.0",
 		"display_name": "厉鬼",
-		"card_desc": "攻击x2;遗言:强化自身 <b>1</b>",
+		"card_desc": "攻击;遗言:强化自身 <b>1</b>",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 1,
@@ -46,9 +46,9 @@
 	{
 		"cid": "BATTLE_HORN",
 		"display_name": "股骨号角",
-		"card_desc": "本回合友方生物攻击次数 <b>+1</b>",
-		"rarity": "1_Uncommon",
-		"rarity_field": 1,
+		"card_desc": "本回合友方实体攻击次数 <b>+1</b>",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
 		"printed_attack": 0,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
@@ -65,7 +65,7 @@
 	{
 		"cid": "BEAST_REVIVER",
 		"display_name": "马戏团的地下室",
-		"card_desc": "攻击;复活 <b>1</b> 生物友方",
+		"card_desc": "攻击;复活 <b>1</b> 友方实体",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 1,
@@ -86,7 +86,7 @@
 	{
 		"cid": "BLACKSMITH_4.0",
 		"display_name": "骨匠",
-		"card_desc": "攻击;强化 <b>1</b> 友方生物",
+		"card_desc": "攻击;强化 <b>1</b> 友方实体",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 2,
@@ -107,7 +107,7 @@
 	{
 		"cid": "COMBO_GRANTER",
 		"display_name": "执鞭人",
-		"card_desc": "攻击;本回合 <b>1</b> 友方生物攻击次数 <b>+1</b>",
+		"card_desc": "攻击;本回合 <b>1</b> 友方实体攻击次数 <b>+1</b>",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 1,
@@ -256,7 +256,7 @@
 	{
 		"cid": "CURSE_THIRST_SHAMAN_4.0",
 		"display_name": "噬咒萨满",
-		"card_desc": "敌方诅咒每有 <b>1</b> 攻击力:强化 <b>1</b> 友方生物",
+		"card_desc": "敌方诅咒每有 <b>1</b> 攻击力:强化 <b>1</b> 友方实体",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -278,7 +278,7 @@
 	{
 		"cid": "DEATHBED_GRANT",
 		"display_name": "垂死反扑",
-		"card_desc": "被动:友方生物被埋葬时:该友方生物攻击",
+		"card_desc": "被动:友方实体被埋葬时:该友方实体攻击",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -300,7 +300,7 @@
 	{
 		"cid": "DEATHBED_PORTER",
 		"display_name": "抬棺人",
-		"card_desc": "攻击;遗言:攻击;置顶 <b>1</b> 友方非生物",
+		"card_desc": "攻击;遗言:攻击;复活 <b>1</b> 友方现象",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 2,
@@ -319,9 +319,95 @@
 		"source_file": "DEATHBED_PORTER.prefab"
 	},
 	{
+		"cid": "DECIMATION",
+		"display_name": "什一抽杀",
+		"card_desc": "埋葬 <b>4</b> 友方,本回合每埋葬过 <b>1</b> 友方,埋葬数 <b>-1</b>;攻击",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 2,
+		"attack_growth": 0,
+		"extra_attack_times": 2,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"MultiAttack",
+			"Bury"
+		],
+		"source_file": "DECIMATION.prefab"
+	},
+	{
+		"cid": "DETERIORATION_4.0",
+		"display_name": "蛊噬",
+		"card_desc": "强化 <b>2</b> 敌方诅咒;敌方诅咒每有 <b>3</b> 攻击力:再强化 <b>1</b>",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse"
+		],
+		"source_file": "DETERIORATION_4.0.prefab"
+	},
+	{
+		"cid": "DOOM_HERALD",
+		"display_name": "报丧人",
+		"card_desc": "攻击;复活 <b>1</b> 攻击力最高敌方;强化 <b>3</b> 敌方诅咒",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse",
+			"Revive"
+		],
+		"source_file": "DOOM_HERALD.prefab"
+	},
+	{
+		"cid": "DUO_REVIVER",
+		"display_name": "阴婚",
+		"card_desc": "复活 <b>2</b> 友方✦✦卡",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Revive"
+		],
+		"source_file": "DUO_REVIVER.prefab"
+	},
+	{
 		"cid": "ELITE_REVIVER",
 		"display_name": "镀金圣髑",
-		"card_desc": "攻击;复活 <b>1</b> 被强化过的友方生物",
+		"card_desc": "攻击;复活 <b>1</b> 被强化过的友方实体",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 1,
@@ -363,10 +449,10 @@
 	{
 		"cid": "EXILE_BERSERKER",
 		"display_name": "狂信徒",
-		"card_desc": "攻击;本回合每放逐 <b>1</b> 友方,本回合攻击次数 <b>+1</b>",
+		"card_desc": "攻击;本回合每放逐过 <b>3</b> 友方,本回合攻击次数 <b>+1</b>",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
-		"printed_attack": 2,
+		"printed_attack": 1,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
 		"card_type": 1,
@@ -384,7 +470,7 @@
 	{
 		"cid": "FINAL_ESCORT",
 		"display_name": "扶灵人",
-		"card_desc": "攻击;遗言:回合结束前:复活 <b>1</b> 墓地的最高攻击力友方生物",
+		"card_desc": "攻击;遗言:回合结束前:复活 <b>1</b> 墓地最高攻击力友方实体",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 1,
@@ -406,7 +492,7 @@
 	{
 		"cid": "FLURRY_REVIVER",
 		"display_name": "死不瞑目",
-		"card_desc": "复活 <b>1</b> 攻击次数最多友方生物",
+		"card_desc": "复活 <b>1</b> 攻击次数最多友方实体",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -427,7 +513,7 @@
 	{
 		"cid": "FUNERAL_WILL",
 		"display_name": "冥约",
-		"card_desc": "埋葬卡组顶 <b>2</b> 卡;遗言:延迟复活 <b>1</b> 友方",
+		"card_desc": "埋葬卡组顶 <b>2</b> 卡;遗言:复活 <b>1</b> 友方到末尾",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -530,9 +616,30 @@
 		"source_file": "GRAVE_HEXER.prefab"
 	},
 	{
+		"cid": "GRAVE_MILLER",
+		"display_name": "血肉磨坊",
+		"card_desc": "攻击;埋葬 <b>2</b> 友方;埋葬卡组顶 <b>5</b> 卡",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 2,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Bury"
+		],
+		"source_file": "GRAVE_MILLER.prefab"
+	},
+	{
 		"cid": "GRAVE_PUNCH_4.0",
 		"display_name": "剜心祭",
-		"card_desc": "埋葬 <b>1</b> 友方;攻击x2",
+		"card_desc": "埋葬 <b>1</b> 友方;攻击",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 2,
@@ -554,7 +661,7 @@
 	{
 		"cid": "GRAVE_PUPPETEER",
 		"display_name": "操尸人",
-		"card_desc": "让墓地 <b>1</b> 友方生物攻击;墓地无友方则埋葬 <b>1</b> 张tag为[<tag:DeathRattle>]的友方卡",
+		"card_desc": "墓地 <b>1</b> 友方实体攻击;墓地无则埋葬 <b>1</b> [<tag:DeathRattle>]友方卡",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -575,7 +682,7 @@
 	{
 		"cid": "GRAVE_ROBBER",
 		"display_name": "食尸鬼",
-		"card_desc": "复活 <b>1</b> 攻击力最高敌方;攻击力变为该卡攻击力",
+		"card_desc": "复活 <b>1</b> 攻击力最高敌方;攻击力变为该卡攻击力; 攻击",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -613,6 +720,27 @@
 			"Bury"
 		],
 		"source_file": "GRAVE_TOGETHER_4.0.prefab"
+	},
+	{
+		"cid": "HEXBLADE",
+		"display_name": "咒刃",
+		"card_desc": "攻击;每有 <b>1</b> 攻击力,强化 <b>1</b> 敌方诅咒",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse"
+		],
+		"source_file": "HEXBLADE.prefab"
 	},
 	{
 		"cid": "HEXER",
@@ -660,7 +788,7 @@
 	{
 		"cid": "LAST_GIFT",
 		"display_name": "遗赠",
-		"card_desc": "攻击;遗言:强化 <b>2</b> 友方生物",
+		"card_desc": "攻击;遗言:强化 <b>2</b> 友方实体",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 2,
@@ -680,11 +808,32 @@
 		"source_file": "LAST_GIFT.prefab"
 	},
 	{
+		"cid": "LAST_RITES",
+		"display_name": "安魂弥撒",
+		"card_desc": "遗言:触发所有在墓地友方的遗言",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"DeathRattle"
+		],
+		"source_file": "LAST_RITES.prefab"
+	},
+	{
 		"cid": "MASS_REVIVER",
-		"display_name": "墓园空了",
+		"display_name": "空墓园",
 		"card_desc": "复活 <b>3</b> 友方✦卡",
-		"rarity": "1_Uncommon",
-		"rarity_field": 1,
+		"rarity": "2_Rare",
+		"rarity_field": 2,
 		"printed_attack": 0,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
@@ -701,9 +850,52 @@
 		"source_file": "MASS_REVIVER.prefab"
 	},
 	{
+		"cid": "MASS_SACRIFICE",
+		"display_name": "集体自焚",
+		"card_desc": "埋葬所有友方;每埋葬 <b>1</b> 友方,生成 <b>1</b> 信徒",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Bury",
+			"Believer"
+		],
+		"source_file": "MASS_SACRIFICE.prefab"
+	},
+	{
+		"cid": "MILLBLADE",
+		"display_name": "凌迟",
+		"card_desc": "攻击;每有 <b>1</b> 攻击力,埋葬卡组顶 <b>1</b> 卡",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 2,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Bury"
+		],
+		"source_file": "MILLBLADE.prefab"
+	},
+	{
 		"cid": "MIMIC_BLADE",
 		"display_name": "模仿犯",
-		"card_desc": "攻击力=友方最高攻击力;攻击x2",
+		"card_desc": "攻击力=友方最高攻击力;攻击",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -742,6 +934,27 @@
 			"Revive"
 		],
 		"source_file": "NECROMANCER.prefab"
+	},
+	{
+		"cid": "QUAD_STRIKER",
+		"display_name": "百臂巨人",
+		"card_desc": "攻击",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 1,
+		"attack_growth": 0,
+		"extra_attack_times": 3,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"MultiAttack"
+		],
+		"source_file": "QUAD_STRIKER.prefab"
 	},
 	{
 		"cid": "REANIMATOR",
@@ -787,9 +1000,53 @@
 		"source_file": "RELIC_ATTACK_BURIAL.prefab"
 	},
 	{
+		"cid": "RELIC_ATTACK_HEX",
+		"display_name": "饲咒",
+		"card_desc": "被动:友方攻击时,强化 <b>1</b> 敌方诅咒",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse",
+			"Passive"
+		],
+		"source_file": "RELIC_ATTACK_HEX.prefab"
+	},
+	{
+		"cid": "RELIC_BLOOD_PACT",
+		"display_name": "血契",
+		"card_desc": "被动:友方攻击不再造成伤害,而是强化等量敌方诅咒",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse",
+			"Passive"
+		],
+		"source_file": "RELIC_BLOOD_PACT.prefab"
+	},
+	{
 		"cid": "RELIC_CHAIN_BURIAL",
 		"display_name": "连坐",
-		"card_desc": "被动:友方被埋葬时,埋葬卡组顶 <b>1</b> 卡",
+		"card_desc": "被动:每次友方被埋葬时,埋葬卡组顶 <b>1</b> 卡",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -809,9 +1066,190 @@
 		"source_file": "RELIC_CHAIN_BURIAL.prefab"
 	},
 	{
+		"cid": "RELIC_CURSE_GRAVE",
+		"display_name": "勾魂簿",
+		"card_desc": "被动:敌方诅咒揭晓时,埋葬 <b>1</b> 敌方",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse",
+			"Bury",
+			"Passive"
+		],
+		"source_file": "RELIC_CURSE_GRAVE.prefab"
+	},
+	{
+		"cid": "RELIC_CURSE_HASTE",
+		"display_name": "提前发作",
+		"card_desc": "被动:敌方诅咒攻击次数 <b>+1</b>",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse",
+			"Passive"
+		],
+		"source_file": "RELIC_CURSE_HASTE.prefab"
+	},
+	{
+		"cid": "RELIC_CURSE_REVIVAL",
+		"display_name": "耳语唤尸",
+		"card_desc": "被动:敌方诅咒揭晓时,复活 <b>1</b> 友方",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse",
+			"Passive",
+			"Revive"
+		],
+		"source_file": "RELIC_CURSE_REVIVAL.prefab"
+	},
+	{
+		"cid": "RELIC_DEATH_KNELL",
+		"display_name": "丧钟",
+		"card_desc": "被动:友方苏醒时:触发其遗言",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"DeathRattle",
+			"Awaken",
+			"Passive"
+		],
+		"source_file": "RELIC_DEATH_KNELL.prefab"
+	},
+	{
+		"cid": "RELIC_GRAVE_CURSE",
+		"display_name": "积尸气",
+		"card_desc": "被动:敌方诅咒攻击力=墓地友方卡数量",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Curse",
+			"Passive"
+		],
+		"source_file": "RELIC_GRAVE_CURSE.prefab"
+	},
+	{
+		"cid": "RELIC_GRAVE_LORD",
+		"display_name": "白骨王座",
+		"card_desc": "被动:墓地中的友方实体攻击力 <b>+1</b>",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Passive"
+		],
+		"source_file": "RELIC_GRAVE_LORD.prefab"
+	},
+	{
+		"cid": "RELIC_HIVE",
+		"display_name": "以血布道",
+		"card_desc": "被动:友方攻击时,生成 <b>1</b> 信徒",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Believer",
+			"Passive"
+		],
+		"source_file": "RELIC_HIVE.prefab"
+	},
+	{
+		"cid": "RELIC_RIFT_OVERRIDE",
+		"display_name": "伪经",
+		"card_desc": "被动:友方信徒效果变为:复活 <b>1</b> 敌方诅咒;放逐自身",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Believer",
+			"Curse",
+			"Passive",
+			"Revive",
+			"Exile"
+		],
+		"source_file": "RELIC_RIFT_OVERRIDE.prefab"
+	},
+	{
 		"cid": "RELIC_TALLY",
 		"display_name": "血账",
-		"card_desc": "被动:回合结束前:本回合每埋葬 <b>1</b> 生物,强化 <b>1</b> 敌方诅咒",
+		"card_desc": "被动:回合结束前:本回合每埋葬 <b>1</b> 友方,强化 <b>1</b> 敌方诅咒",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -834,7 +1272,7 @@
 	{
 		"cid": "RELIC_TRAINER",
 		"display_name": "邪印",
-		"card_desc": "被动:回合开始:强化 <b>1</b> 攻击力最低友方生物",
+		"card_desc": "被动:回合开始:强化 <b>1</b> 攻击力最低友方实体",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -856,7 +1294,7 @@
 	{
 		"cid": "RELIC_WHITE_BANNER",
 		"display_name": "引魂幡",
-		"card_desc": "被动:回合开始:置顶 <b>1</b> 友方攻击力最高生物",
+		"card_desc": "被动:回合开始:置顶 <b>1</b> 友方攻击力最高实体",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -897,16 +1335,37 @@
 		"source_file": "REVIVE_SUMMONER.prefab"
 	},
 	{
-		"cid": "RIFT_ACOLYTE",
-		"display_name": "侍僧",
-		"card_desc": "攻击;生成 <b>1</b> 信徒;苏醒:生成 <b>1</b> 信徒",
-		"rarity": "0_Common",
-		"rarity_field": 0,
+		"cid": "REVIVING_STRIKER",
+		"display_name": "无头武生",
+		"card_desc": "攻击;遗言:攻击次数 <b>+1</b>,复活自身",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
 		"printed_attack": 1,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
 		"card_type": 1,
 		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"DeathRattle"
+		],
+		"source_file": "REVIVING_STRIKER.prefab"
+	},
+	{
+		"cid": "RIFT_ACOLYTE",
+		"display_name": "侍僧",
+		"card_desc": "生成 <b>1</b> 信徒;苏醒:生成 <b>1</b> 信徒",
+		"rarity": "0_Common",
+		"rarity_field": 0,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
 		"is_passive": false,
 		"utility_kind": 0,
 		"is_utility_passive": false,
@@ -921,7 +1380,7 @@
 	{
 		"cid": "RIFT_GUIDE",
 		"display_name": "献祭司事",
-		"card_desc": "放逐 <b>1</b> 友方信徒,埋葬 <b>2</b> 敌方非生物",
+		"card_desc": "放逐 <b>1</b> 友方信徒: 埋葬 <b>2</b> 敌方现象",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1009,7 +1468,7 @@
 	{
 		"cid": "RIFT_PRIEST",
 		"display_name": "施洗者",
-		"card_desc": "生成 <b>2</b> 信徒;强化 <b>1</b> 友方生物",
+		"card_desc": "生成 <b>2</b> 信徒;强化 <b>1</b> 友方实体",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1029,9 +1488,31 @@
 		"source_file": "RIFT_PRIEST.prefab"
 	},
 	{
+		"cid": "RIFT_REAPER",
+		"display_name": "血飨",
+		"card_desc": "放逐所有信徒,每放逐 <b>1</b>,强化 <b>1</b> 友方实体",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Enhance",
+			"Exile"
+		],
+		"source_file": "RIFT_REAPER.prefab"
+	},
+	{
 		"cid": "RIFT_REVIVER",
 		"display_name": "以人易物",
-		"card_desc": "放逐 <b>1</b> 友方信徒,复活 <b>2</b> 友方非生物",
+		"card_desc": "放逐 <b>1</b> 友方信徒: 复活 <b>2</b> 友方现象",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1075,7 +1556,7 @@
 	{
 		"cid": "RIFT_STRIKER",
 		"display_name": "鞭笞者",
-		"card_desc": "攻击x2;生成 <b>1</b> 信徒",
+		"card_desc": "攻击;生成 <b>1</b> 信徒",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 1,
@@ -1097,7 +1578,7 @@
 	{
 		"cid": "SACRIFICE_WEAKEST",
 		"display_name": "替罪羔羊",
-		"card_desc": "埋葬 <b>1</b> 攻击力最低友方;强化 <b>1</b> 该卡",
+		"card_desc": "埋葬 <b>1</b> 攻击力最低友方实体;强化 <b>1</b> 该卡",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1139,9 +1620,30 @@
 		"source_file": "SACRIFICIAL_SPIRIT.prefab"
 	},
 	{
+		"cid": "SLIME_4.0",
+		"display_name": "管道里的活物",
+		"card_desc": "攻击;遗言:复制自身",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 2,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": null,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"DeathRattle"
+		],
+		"source_file": "SLIME_4.0.prefab"
+	},
+	{
 		"cid": "SNOWBALL",
 		"display_name": "蛊王",
-		"card_desc": "攻击x2;强化反应:强化自身 <b>1</b>",
+		"card_desc": "攻击;强化反应:强化自身 <b>1</b>",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 1,
@@ -1229,10 +1731,10 @@
 	{
 		"cid": "SPIRIT_CALLER",
 		"display_name": "降灵会",
-		"card_desc": "攻击;复活 <b>1</b> 友方非生物",
+		"card_desc": "复活 <b>1</b> 友方现象",
 		"rarity": "0_Common",
 		"rarity_field": 0,
-		"printed_attack": 2,
+		"printed_attack": 0,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
 		"card_type": 1,
@@ -1248,9 +1750,52 @@
 		"source_file": "SPIRIT_CALLER.prefab"
 	},
 	{
+		"cid": "SWARM_CURSER",
+		"display_name": "诅咒唱诗班",
+		"card_desc": "生成 <b>1</b> 信徒;每有 <b>1</b> 友方信徒,强化 <b>1</b> 敌方诅咒",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Believer",
+			"Curse"
+		],
+		"source_file": "SWARM_CURSER.prefab"
+	},
+	{
+		"cid": "SWARM_QUEEN",
+		"display_name": "黑圣母",
+		"card_desc": "攻击;每有 <b>1</b> 攻击力,生成 <b>1</b> 信徒",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 2,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Believer"
+		],
+		"source_file": "SWARM_QUEEN.prefab"
+	},
+	{
 		"cid": "SYSTEM_INCREASE_DECK_SIZE_LITE",
 		"display_name": "长夜",
-		"card_desc": "卡位 <b>+1</b>, 放逐自身",
+		"card_desc": "购买: 卡位 <b>+1</b>, 放逐自身",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -1269,7 +1814,7 @@
 	{
 		"cid": "SYSTEM_INCREASE_HP_MAX",
 		"display_name": "沉魇",
-		"card_desc": "被动: 生命值上限 <b>+4</b>",
+		"card_desc": "购买: 生命值上限 <b>+8</b>, 放逐自身",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -1280,17 +1825,15 @@
 		"is_passive": true,
 		"utility_kind": 1,
 		"is_utility_passive": true,
-		"take_up_space": true,
+		"take_up_space": false,
 		"is_start_card": false,
-		"tags": [
-			"Passive"
-		],
+		"tags": [],
 		"source_file": "IncreaseHpMax.prefab"
 	},
 	{
 		"cid": "TWIN_STRIKER",
 		"display_name": "连体人",
-		"card_desc": "攻击x2",
+		"card_desc": "攻击",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 1,
@@ -1331,9 +1874,30 @@
 		"source_file": "UNDYING_WARRIOR.prefab"
 	},
 	{
+		"cid": "UNFINISHED_ROBOT_4.0",
+		"display_name": "缝合人",
+		"card_desc": "攻击;攻击力翻倍",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 1,
+		"is_creature": true,
+		"is_passive": false,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Enhance"
+		],
+		"source_file": "UNFINISHED_ROBOT_4.0.prefab"
+	},
+	{
 		"cid": "UTILITY_CREATURES_1",
 		"display_name": "百怪入梦",
-		"card_desc": "被动: 每次生成货架有 <b>20%</b> 概率:战斗架的全部商品变为生物卡",
+		"card_desc": "被动: 不占用卡位, <b>20%</b> 概率只掷出实体卡",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1354,7 +1918,7 @@
 	{
 		"cid": "UTILITY_DISCOUNT_1",
 		"display_name": "魇市赊账",
-		"card_desc": "被动: 每重掷 <b>4</b> 次,随机商品降价 <b>2</b>",
+		"card_desc": "被动: 不占用卡位, <b>25%</b> 概率: <b>1</b> 件随机商品半价",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -1373,9 +1937,30 @@
 		"source_file": "UTILITY_DISCOUNT_1.prefab"
 	},
 	{
+		"cid": "UTILITY_HALFPRICE_1",
+		"display_name": "魇市半价",
+		"card_desc": "被动: 不占用卡位, 必出 <b>1</b> 件半价商品",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 8,
+		"is_utility_passive": true,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Passive"
+		],
+		"source_file": "UTILITY_HALFPRICE_1.prefab"
+	},
+	{
 		"cid": "UTILITY_INCOME_1",
 		"display_name": "冥币",
-		"card_desc": "被动: 收入 <b>+2</b>",
+		"card_desc": "被动: 收入 <b>+4</b>, 不占用卡位",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -1396,7 +1981,7 @@
 	{
 		"cid": "UTILITY_ODDS_1",
 		"display_name": "魇市深处",
-		"card_desc": "被动: 首个货架必为<b>奇物架</b>",
+		"card_desc": "被动: 首个货架必含 <b>1</b> 件商店被动卡, 不占用卡位",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -1417,7 +2002,7 @@
 	{
 		"cid": "UTILITY_ODDS_2",
 		"display_name": "窥魇镜",
-		"card_desc": "被动: <b>奇物架</b>的出现概率 <b>+15%</b>",
+		"card_desc": "被动: 不占用卡位, <b>25%</b> 概率多出 <b>1</b> 商店被动卡",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1438,9 +2023,9 @@
 	{
 		"cid": "UTILITY_OPTION_1",
 		"display_name": "魇市新摊",
-		"card_desc": "被动: 商店货架 <b>+1</b>",
-		"rarity": "0_Common",
-		"rarity_field": 0,
+		"card_desc": "被动: 不占用卡位, 商店货架 <b>+1</b>",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
 		"printed_attack": 0,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
@@ -1457,9 +2042,30 @@
 		"source_file": "UTILITY_OPTION_1.prefab"
 	},
 	{
+		"cid": "UTILITY_OPTION_P_1",
+		"display_name": "魇市游摊",
+		"card_desc": "被动: 不占用卡位, <b>25%</b> 概率:货架 <b>+1</b>",
+		"rarity": "0_Common",
+		"rarity_field": 0,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 13,
+		"is_utility_passive": true,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Passive"
+		],
+		"source_file": "UTILITY_OPTION_P_1.prefab"
+	},
+	{
 		"cid": "UTILITY_REROLL_1",
 		"display_name": "噩梦重播",
-		"card_desc": "被动: 免费重掷次数 <b>+1</b>",
+		"card_desc": "被动: 免费重掷次数 <b>+1</b>, 不占用卡位",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -1478,9 +2084,30 @@
 		"source_file": "UTILITY_REROLL_1.prefab"
 	},
 	{
+		"cid": "UTILITY_SLOT_R",
+		"display_name": "深魇",
+		"card_desc": "被动: 不占用卡位,  <b>25%</b> 概率:多出 <b>1</b> ✦✦✦卡",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 6,
+		"is_utility_passive": true,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Passive"
+		],
+		"source_file": "UTILITY_SLOT_R.prefab"
+	},
+	{
 		"cid": "UTILITY_SLOT_U_1",
 		"display_name": "初魇",
-		"card_desc": "被动: 首个货架必出 <b>1</b> 张✦✦卡",
+		"card_desc": "被动: 不占用卡位, <b>25%</b> 概率:多出 <b>1</b> 张✦✦卡",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -1501,7 +2128,7 @@
 	{
 		"cid": "UTILITY_SLOT_U_2",
 		"display_name": "连魇",
-		"card_desc": "被动: 每个货架必出 <b>1</b> 张✦✦卡",
+		"card_desc": "被动: 不占用卡位, 每次生成货架必出 <b>1</b> 张✦✦卡",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1522,7 +2149,7 @@
 	{
 		"cid": "UTILITY_SPELLS_1",
 		"display_name": "死寂的梦",
-		"card_desc": "被动: 每次生成货架有 <b>20%</b> 概率:战斗架的全部商品变为非生物卡",
+		"card_desc": "被动: 不占用卡位,  <b>20%</b> 概率:只掷出现象卡",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1541,11 +2168,95 @@
 		"source_file": "UTILITY_SPELLS_1.prefab"
 	},
 	{
-		"cid": "UTILITY_WEIGHT_U",
-		"display_name": "魇影幢幢",
-		"card_desc": "被动: ✦✦卡的出货权重 <b>×2</b>",
+		"cid": "UTILITY_TAG_AWAKEN",
+		"display_name": "惊醒",
+		"card_desc": "被动: 不占用卡位, <b>25%</b> 概率:多出 <b>1</b> 张[苏醒]卡",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 10,
+		"is_utility_passive": true,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Passive"
+		],
+		"source_file": "UTILITY_TAG_AWAKEN.prefab"
+	},
+	{
+		"cid": "UTILITY_TAG_CURSE",
+		"display_name": "噩梦",
+		"card_desc": "被动: 不占用卡位, <b>25%</b> 概率:多出 <b>1</b> 张[诅咒]卡",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 10,
+		"is_utility_passive": true,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Passive"
+		],
+		"source_file": "UTILITY_TAG_CURSE.prefab"
+	},
+	{
+		"cid": "UTILITY_TAG_REVIVE",
+		"display_name": "亡者入梦",
+		"card_desc": "被动: 不占用卡位, <b>25%</b> 概率:多出 <b>1</b> 张[复活]卡",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 10,
+		"is_utility_passive": true,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Passive"
+		],
+		"source_file": "UTILITY_TAG_REVIVE.prefab"
+	},
+	{
+		"cid": "UTILITY_WEIGHT_R",
+		"display_name": "梦魇缠身",
+		"card_desc": "被动: 不占用卡位, ✦✦✦卡的出货权重 <b>×2</b>",
+		"rarity": "1_Uncommon",
+		"rarity_field": 1,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 7,
+		"is_utility_passive": true,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Passive"
+		],
+		"source_file": "UTILITY_WEIGHT_R.prefab"
+	},
+	{
+		"cid": "UTILITY_WEIGHT_U",
+		"display_name": "魇影幢幢",
+		"card_desc": "被动: 不占用卡位, ✦✦卡的出货权重 <b>×2</b>",
+		"rarity": "0_Common",
+		"rarity_field": 0,
 		"printed_attack": 0,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
@@ -1586,7 +2297,7 @@
 	{
 		"cid": "WAR_TRAINER",
 		"display_name": "开刃",
-		"card_desc": "强化 <b>2</b> 友方生物",
+		"card_desc": "强化 <b>2</b> 友方实体",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -1607,7 +2318,7 @@
 	{
 		"cid": "WEAKENING_FIELD",
 		"display_name": "瘴气",
-		"card_desc": "所有生物本回合攻击力 <b>-1</b>",
+		"card_desc": "所有实体本回合攻击力 <b>-1</b>",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1624,6 +2335,29 @@
 			"Curse"
 		],
 		"source_file": "WEAKENING_FIELD.prefab"
+	},
+	{
+		"cid": "WEAPON_SPIRIT",
+		"display_name": "妖刀",
+		"card_desc": "被动:友方被强化时:强化 <b>1</b> 该友方",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
+		"printed_attack": 0,
+		"attack_growth": 0,
+		"extra_attack_times": 0,
+		"card_type": 0,
+		"is_creature": false,
+		"is_passive": true,
+		"utility_kind": 0,
+		"is_utility_passive": false,
+		"take_up_space": true,
+		"is_start_card": false,
+		"tags": [
+			"Enhance",
+			"EnhanceReaction",
+			"Passive"
+		],
+		"source_file": "WEAPON_SPIRIT.prefab"
 	},
 	{
 		"cid": "WOKEN_BLADE",

@@ -32,7 +32,7 @@ EXCLUDED_STATUS = ('备用', '已删')
 TOKEN_CIDS = ('JU_ON', 'RIFT')
 # Reconcile scope = current TRIAL_RARITY_DIRS; other rarities are deferred
 # batches and counted, not failed.
-RARITY_IN_SCOPE = ('normal', 'uncommon')
+RARITY_IN_SCOPE = ('normal', 'uncommon', 'rare')
 
 
 TAG_CN_TO_ENUM = {
