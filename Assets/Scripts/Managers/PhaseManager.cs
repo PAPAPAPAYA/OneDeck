@@ -282,6 +282,11 @@ public class PhaseManager : MonoBehaviour
 	/// </summary>
 	private void ResetRun()
 	{
+		// Fresh run seed: the Setup channel (starting card / reward / default enemy pool picks)
+		// re-rolls per run; combat seeds derive from it per session
+		// (plans/plan-deterministic-rng-seed-2026-09-12.md).
+		Rng.NewRun();
+
 		// Reset core IntSO/BoolSO refs to their original values
 		hearts?.ResetToDefault();
 		heartMax?.ResetToDefault();

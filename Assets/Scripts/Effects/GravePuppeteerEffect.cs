@@ -48,7 +48,7 @@ public class GravePuppeteerEffect : EffectScript
 
 		if (candidates.Count > 0)
 		{
-			var chosen = candidates[Random.Range(0, candidates.Count)];
+			var chosen = candidates[Rng.Next(RngChannel.Target, candidates.Count)];
 			PerformAttackAs(chosen);
 			return;
 		}

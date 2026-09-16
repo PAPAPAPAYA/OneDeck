@@ -152,7 +152,7 @@ namespace DefaultNamespace.Effects
 			}
 			
 			// Randomly select one matching card
-			CardScript selectedCard = matchingCards[Random.Range(0, matchingCards.Count)];
+			CardScript selectedCard = matchingCards[Rng.Next(RngChannel.Target, matchingCards.Count)];
 			GameObject cardPrefab = selectedCard.gameObject;
 			
 			// Save original card's status effects

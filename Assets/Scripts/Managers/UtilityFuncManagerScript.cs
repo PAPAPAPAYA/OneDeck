@@ -26,9 +26,11 @@ public static class UtilityFuncManagerScript
 	}
 
 	// shuffle given list
-	public static List<T> ShuffleList<T>(List<T> list)
+	// Deterministic: reads from the Rng service channel instead of UnityEngine.Random.
+	// Default Target = effect target picks; deck-order callers pass RngChannel.Deck explicitly.
+	public static List<T> ShuffleList<T>(List<T> list, RngChannel channel = RngChannel.Target)
 	{
-		return list.OrderBy(x => Random.value).ToList();
+		return Rng.Shuffle(channel, list);
 	}
 
 	// copy game object list
@@ -108,15 +110,14 @@ public static class UtilityFuncManagerScript
 
 	/// <summary>
 	/// Generates a random number following Gaussian (normal) distribution using Box-Muller transform.
+	/// Deterministic: reads from the given Rng service channel.
 	/// </summary>
 	/// <param name="mean">Center of the distribution.</param>
 	/// <param name="stdDev">Standard deviation (spread). Higher = more dispersed.</param>
-	public static float GaussianRandom(float mean, float stdDev)
+	/// <param name="channel">Rng channel to consume from (deck-order callers pass RngChannel.Deck).</param>
+	public static float GaussianRandom(float mean, float stdDev, RngChannel channel)
 	{
-		float u1 = 1.0f - Random.value;
-		float u2 = 1.0f - Random.value;
-		float randStdNormal = Mathf.Sqrt(-2.0f * Mathf.Log(u1)) * Mathf.Sin(2.0f * Mathf.PI * u2);
-		return mean + stdDev * randStdNormal;
+		return Rng.Gaussian(channel, mean, stdDev);
 	}
 
 	// get a random point on a circle

@@ -84,7 +84,7 @@ namespace DefaultNamespace.Managers
 				}
 				
 				// Randomly select card
-				int randomIndex = Random.Range(0, rewardPoolDeck.deck.Count);
+				int randomIndex = Rng.Next(RngChannel.Setup, rewardPoolDeck.deck.Count);
 				GameObject cardToAdd = rewardPoolDeck.deck[randomIndex];
 				
 				// Add to player deck

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TestWriteRead;
 using UnityEngine;
@@ -37,6 +38,9 @@ namespace DefaultNamespace.Managers
 
 		[Tooltip("Combat auto-reveal. Uncheck to reveal cards by manual click only.")]
 		public bool autoReveal;
+
+		[Tooltip("Deterministic combat RNG: non-zero = every combat re-seeds RngService with this seed (bug reproduction — same seed + same decks = same combat). 0 = normal per-run random. Also settable via command line '-odseed N'.")]
+		public int overrideCombatSeed;
 
 		[Header("Data Recording (local files)")]
 		[Tooltip("Shop stats recording (shop_stats.json/CSV). Pushed to ShopStatsManager.enableStats.")]
@@ -126,8 +130,26 @@ namespace DefaultNamespace.Managers
 
 		private void Start()
 		{
+			ParseCommandLineSeed();
 			ResolveReferences();
 			ApplyTestToggles();
+		}
+
+		/// <summary>
+		/// Standalone builds: '-odseed N' sets overrideCombatSeed so bug reproduction works
+		/// without the Inspector.
+		/// </summary>
+		private void ParseCommandLineSeed()
+		{
+			string[] args = Environment.GetCommandLineArgs();
+			for (int i = 0; i < args.Length - 1; i++)
+			{
+				if (string.Equals(args[i], "-odseed", StringComparison.Ordinal) && int.TryParse(args[i + 1], out int parsed))
+				{
+					overrideCombatSeed = parsed;
+					break;
+				}
+			}
 		}
 
 		private void OnValidate()
@@ -209,7 +231,8 @@ namespace DefaultNamespace.Managers
 				+ " combatCSV=" + (recordCombatCSV ? "ON" : "OFF") + "]"
 				+ " uploadServerData=" + (uploadServerData ? "ON" : "OFF")
 				+ " includeSelfOpponentDecks=" + (includeSelfOpponentDecks ? "ON" : "OFF")
-				+ " fightOwnGhostsOnly=" + (fightOwnGhostsOnly ? "ON" : "OFF"));
+				+ " fightOwnGhostsOnly=" + (fightOwnGhostsOnly ? "ON" : "OFF")
+				+ " overrideCombatSeed=" + overrideCombatSeed);
 		}
 
 		/// <summary>
@@ -244,7 +267,7 @@ namespace DefaultNamespace.Managers
 
 			if (combatStatsLogger == null)
 			{
-				combatStatsLogger = Object.FindFirstObjectByType<CombatStatsLogger>();
+				combatStatsLogger = UnityEngine.Object.FindFirstObjectByType<CombatStatsLogger>();
 			}
 		}
 
@@ -255,7 +278,7 @@ namespace DefaultNamespace.Managers
 			LogInternal(message, null, LogType.Log);
 		}
 
-		public static void Log(object message, Object context)
+		public static void Log(object message, UnityEngine.Object context)
 		{
 			LogInternal(message, context, LogType.Log);
 		}
@@ -265,7 +288,7 @@ namespace DefaultNamespace.Managers
 			LogInternal(message, null, LogType.Warning);
 		}
 
-		public static void LogWarning(object message, Object context)
+		public static void LogWarning(object message, UnityEngine.Object context)
 		{
 			LogInternal(message, context, LogType.Warning);
 		}
@@ -275,17 +298,17 @@ namespace DefaultNamespace.Managers
 			LogInternal(message, null, LogType.Error);
 		}
 
-		public static void LogError(object message, Object context)
+		public static void LogError(object message, UnityEngine.Object context)
 		{
 			LogInternal(message, context, LogType.Error);
 		}
 
-		private static void LogInternal(object message, Object context, LogType logType)
+		private static void LogInternal(object message, UnityEngine.Object context, LogType logType)
 		{
 			if (Me == null)
 			{
 				// Edit-mode / pre-Awake logs: resolve the scene instance so the switches still apply.
-				Me = Object.FindFirstObjectByType<TestManager>();
+				Me = UnityEngine.Object.FindFirstObjectByType<TestManager>();
 				if (Me == null)
 				{
 					ForwardToUnity(message, context, logType);
@@ -302,7 +325,7 @@ namespace DefaultNamespace.Managers
 			ForwardToUnity(message, context, logType);
 		}
 
-		private static void ForwardToUnity(object message, Object context, LogType logType)
+		private static void ForwardToUnity(object message, UnityEngine.Object context, LogType logType)
 		{
 			bool hasContext = context != null;
 			switch (logType)
@@ -338,6 +361,12 @@ namespace DefaultNamespace.Managers
 				return LogCategory.VisualSync;
 			}
 			if (message.Contains("[CombatManager]") || message.Contains("[PhaseManager]"))
+			{
+				return LogCategory.CombatFlow;
+			}
+			// Deterministic-RNG seed / digest logs are combat flow information
+			// (plans/plan-deterministic-rng-seed-2026-09-12.md).
+			if (message.Contains("[Seed]"))
 			{
 				return LogCategory.CombatFlow;
 			}

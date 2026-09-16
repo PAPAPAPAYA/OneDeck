@@ -192,7 +192,7 @@ public static class OpponentDeckCache
 			candidates = candidates.FindAll(d => d.username == selfName);
 		}
 		if (candidates.Count == 0) return null;
-		OpponentDeckEntry candidate = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+		OpponentDeckEntry candidate = candidates[Rng.Next(RngChannel.Setup, candidates.Count)];
 		cache.usedDeckIds.Add(candidate.deckId);
 		Save();
 		return candidate;

@@ -499,7 +499,7 @@ namespace TestWriteRead
 			}
 
 			// Randomly select one deck from the pool
-			var selectedDeck = selectedPool.decks[UnityEngine.Random.Range(0, selectedPool.decks.Count)];
+			var selectedDeck = selectedPool.decks[Rng.Next(RngChannel.Setup, selectedPool.decks.Count)];
 
 			// Use utility function to copy deck
 			UtilityFuncManagerScript.CopyGameObjectList(selectedDeck.deck, enemyDeckToPopulate.deck, true);

@@ -206,7 +206,7 @@ namespace DefaultNamespace.Effects
 			{
 				CardScript targetCardScript = spreadEvenly
 					? cardsToGiveTag[i].GetComponent<CardScript>()
-					: cardsToGiveTag[Random.Range(0, cardsToGiveTag.Count)].GetComponent<CardScript>();
+					: cardsToGiveTag[Rng.Next(RngChannel.Target, cardsToGiveTag.Count)].GetComponent<CardScript>();
 				targetCards.Add(targetCardScript);
 			}
 
@@ -358,7 +358,7 @@ namespace DefaultNamespace.Effects
 				var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
 				if (friendlyCards.Count <= 0) break;
 
-				int randomIndex = Random.Range(0, friendlyCards.Count);
+				int randomIndex = Rng.Next(RngChannel.Target, friendlyCards.Count);
 				var targetCard = friendlyCards[randomIndex];
 
 				ApplyStatusEffectToCard(targetCard, 1);

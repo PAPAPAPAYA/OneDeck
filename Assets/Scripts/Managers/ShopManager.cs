@@ -514,7 +514,7 @@ public class ShopManager : MonoBehaviour
 			utilityBoardSlotCount + extraOptions,
 			!splitUtilityCombatBoards,
 			deckSizeAtCeiling,
-			new System.Random());
+			Rng.Channel(RngChannel.Shop));
 		_currentBoardIsUtility = board.isUtilityBoard;
 
 		foreach (var card in board.cards)
@@ -714,9 +714,9 @@ public class ShopManager : MonoBehaviour
 	{
 		_boardDiscounts.Clear();
 		if (_utilityBonus == null || currentShopItemDeckRef == null) return;
-		int percentOff = UtilityShopBonus.RollBoardDiscountOffPercent(_utilityBonus, new System.Random());
+		int percentOff = UtilityShopBonus.RollBoardDiscountOffPercent(_utilityBonus, Rng.Channel(RngChannel.Shop));
 		if (percentOff <= 0 || currentShopItemDeckRef.deck.Count == 0) return;
-		int index = Random.Range(0, currentShopItemDeckRef.deck.Count);
+		int index = Rng.Next(RngChannel.Shop, currentShopItemDeckRef.deck.Count);
 		var script = currentShopItemDeckRef.deck[index] != null ? currentShopItemDeckRef.deck[index].GetComponent<CardScript>() : null;
 		if (script != null)
 		{

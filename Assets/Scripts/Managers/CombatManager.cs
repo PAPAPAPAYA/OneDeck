@@ -292,6 +292,20 @@ public class CombatManager : MonoBehaviour
 	{
 		combinedDeckZone.Clear();
 
+		// Deterministic combat RNG: non-zero override seed wins (bug reproduction), otherwise
+		// the combat seed derives from the run seed + session number. Deck/Target/Shop channels
+		// re-seed here every combat (plans/plan-deterministic-rng-seed-2026-09-12.md).
+		int sessionNum = TestWriteRead.DeckSaver.Me != null && TestWriteRead.DeckSaver.Me.sessionNumber != null ? TestWriteRead.DeckSaver.Me.sessionNumber.value : 0;
+		int overrideSeed = TestManager.Me != null ? TestManager.Me.overrideCombatSeed : 0;
+		int combatSeed = overrideSeed != 0 ? overrideSeed : Rng.ComputeCombatSeed(sessionNum);
+		Rng.InitCombat(combatSeed);
+		DeterminismTracker.BeginCombat(combatSeed, sessionNum,
+			playerDeck != null ? playerDeck.name : "null",
+			enemyDeck != null ? enemyDeck.name : "null");
+		TestManager.Log("[Seed] combat=" + sessionNum + " seed=" + combatSeed + (overrideSeed != 0 ? " (override)" : "")
+			+ " playerDeck=" + (playerDeck != null ? playerDeck.name : "null")
+			+ " enemyDeck=" + (enemyDeck != null ? enemyDeck.name : "null"));
+
 		// Use CardFactory for consistent logical card creation
 		var factory = CardFactory.me;
 		if (factory == null)
@@ -1024,6 +1038,9 @@ public class CombatManager : MonoBehaviour
 		revealZone = combinedDeckZone[^1];
 		combinedDeckZone.RemoveAt(combinedDeckZone.Count - 1);
 
+		// Determinism ledger: fold the reveal sequence (card + ownership) into the combat digest
+		DeterminismTracker.RecordReveal(cardRevealed.cardTypeID, cardRevealed.myStatusRef == ownerPlayerStatusRef);
+
 		// Physical movement: from deck to reveal zone
 		visuals.MoveCardToRevealZone(cardRevealed.gameObject, onMoveToRevealZoneComplete);
 
@@ -1231,6 +1248,8 @@ public class CombatManager : MonoBehaviour
 		if (!ShouldAutoConfirm()) return;
 
 		combatFinished.value = true;
+		// Determinism ledger: write the combat digest (reveal sequence + per-card damage)
+		DeterminismTracker.EndCombat();
 		visuals.ClearAllPhysicalCards();
 	}
 

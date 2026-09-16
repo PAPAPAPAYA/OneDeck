@@ -58,7 +58,7 @@ namespace DefaultNamespace.Effects
 			if (times <= 0) return;
 			var creatures = CollectFriendlyCreatures();
 			if (creatures.Count <= 0) return;
-			var target = creatures[Random.Range(0, creatures.Count)];
+			var target = creatures[Rng.Next(RngChannel.Target, creatures.Count)];
 			GrantAttackTimes(target, times, permanent: false);
 			CaptureBatchStatusEffectAnimation(new List<CardScript> { target }, times);
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
