@@ -123,9 +123,9 @@ Flow: Check cost -> `preEffectEvent` -> Check effect chain -> Execute effect.
 
 ### Effect Chain Manager
 - **Chain creation**: Starts when no chains open, or same card triggers a *different* effect object.
-- **Loop guard**: Same card instance + same effect component instance cannot be invoked twice within an open chain (checked by GameObject reference, not effectID string).
-- **Depth limit**: `chainDepth` > **12** blocks further effects (tightened from 99 on 2026-09-14).
-- **Chain closing**: `CloseOpenedChain()` finalizes recorders and clears state.
+- **Loop guard**: Same card instance + same effect component instance cannot be invoked twice within a chain generation (GameObject reference, not effectID string). History persists across mid-cascade closes (2026-09-17, starves the 09-13 bury-recursion); `EndAttackSegmentScope` re-arms per attack segment.
+- **Depth limit**: `chainDepth` > 99 blocks effects (per-cascade backstop; the 2026-09-14 "12" commit only changed a log var, never enforced — reverted 2026-09-17).
+- **Chain closing**: `CloseOpenedChain()` finalizes recorders only; guard history + `chainDepth` reset via `ResetGenerationGuards()` at CombatManager phase/reveal boundaries.
 
 ### Cost Types
 Cost checks are `CheckCost_*` methods on `CostNEffectContainer`: `Mana`, `Rested`, `Revive`, `Infected`, `Power`, `Counter`, `InGrave`, `HasEnemyCardInCombinedDeck`, `HasOwnCardOfType`, `IndexBeforeStartCard`, `EnemyCursedCardHasPower`. Failures call `SetCostNotMet(message)`.
