@@ -206,16 +206,10 @@ public class ShopManager : MonoBehaviour
 	public GameObject rerollButtonBg;
 	public GameObject exitButton;
 	public GameObject sectionIdentifier;
-	private string _deckInfoStr = "Your Deck: \n\n";
-	private string _shopInfoStr = "Shop: \n\n";
 
 	private void Update()
 	{
 		if (gamePhaseRef.currentGamePhase != EnumStorage.GamePhase.Shop) return;
-		//ShowDeck();
-		//ShowShopItems();
-		//ShowShopTips();
-		ShowPlayerStats();
 
 		// toggle sell/buy mode
 		if (Input.GetKeyDown(KeyCode.S))
@@ -347,8 +341,7 @@ public class ShopManager : MonoBehaviour
 				RunRecorder.OnCardBought(cardTypeID); // Async-PvP run journal (plan §2.6)
 			}
 		}
-		GatherPlayerDeckInfo();
-		UpdateShopItemInfo();
+		ShopHudBar.RefreshIfActive();
 
 		// Plan step 5: emphasize pulse on the bought card's deck instance when a utility
 		// passive's effect (re)applies via the recompute (payday-time application happens
@@ -378,9 +371,8 @@ public class ShopManager : MonoBehaviour
 		{
 			ShopUXManager.Instance?.OnCardSold(physicalCardInstance, cardIndex);
 		}
-		
-		GatherPlayerDeckInfo();
-		UpdateShopItemInfo();
+
+		ShopHudBar.RefreshIfActive();
 	}
 
 	public void EnterShop()
@@ -408,9 +400,8 @@ public class ShopManager : MonoBehaviour
 		// process shop items and display
 		GenerateShopItems();
 		ApplyBoardDiscount(); // initial board rolls discounts too (2026-09-11 probability rework)
-		UpdateShopItemInfo();
-		// process player deck and display
-		GatherPlayerDeckInfo();
+		// show + refresh the top HUD bar (payday / baseline growth are final by here)
+		ShopHudBar.ShowIfActive();
 		// show reroll button
 		rerollButton.SetActive(true);
 		rerollButtonBg.SetActive(true);
@@ -447,33 +438,11 @@ public class ShopManager : MonoBehaviour
 		}
 		_boughtCardInstances.Clear();
 
-		deckInfoDisplay.text = "";
-		shopInfoDisplay.text = "";
-		phaseInfoDisplay.text = "";
-		playerStatsDisplay.text = "";
+		ShopHudBar.HideIfActive();
 		rerollButton.SetActive(false);
 		rerollButtonBg.SetActive(false);
 		exitButton.SetActive(false);
 		sectionIdentifier.SetActive(false);
-	}
-
-	private void GatherPlayerDeckInfo()
-	{
-		_deckInfoStr = "Your Deck:\n\n";
-		//deckInstList.Clear();
-		int displayIndex = 1;
-		for (var i = 0; i < playerDeckRef.deck.Count; i++)
-		{
-			var card = playerDeckRef.deck[i];
-			var cardScript = card.GetComponent<CardScript>();
-			if (!cardScript.physicalDeckCard) continue; // if card is not a physical deck card, skip it
-			_deckInfoStr +=
-				"#" + displayIndex + " <size=+2><b>" + // number
-				card.name + // name
-				"</b></size>: " + "$" + GetCardPrice(cardScript) / 2 + // price
-				"\n" + cardScript.GetCardDescForDisplay() + "\n\n"; // desc
-			displayIndex++;
-		}
 	}
 
 	private void GenerateShopItems()
@@ -534,63 +503,6 @@ public class ShopManager : MonoBehaviour
 		}
 	}
 
-	private void UpdateShopItemInfo()
-	{
-		// Plan step 5 readability: board-type marker (plan §1 "utility 板需视觉标识") + the
-		// effective rarity weight table (placeholder for the hover tips).
-		string header = "Shop:\n\n";
-		if (_currentBoardIsUtility)
-		{
-			header += "◆ 奇物架 — 本架只陈列奇物\n\n";
-		}
-		var weightRef = GetActiveRarityWeightRef();
-		if (weightRef != null && weightRef.entries != null && weightRef.entries.Count > 0)
-		{
-			var parts = new System.Collections.Generic.List<string>();
-			foreach (var e in weightRef.entries)
-			{
-				parts.Add(e.rarity + " x" + e.weight);
-			}
-			header += "<size=60%>权重 " + string.Join(" / ", parts) + "</size>\n\n";
-		}
-		_shopInfoStr = header;
-		for (var i = 0; i < currentShopItemDeckRef.deck.Count; i++)
-		{
-			var card = currentShopItemDeckRef.deck[i];
-			var cardScript = card.GetComponent<CardScript>();
-			_shopInfoStr +=
-				"#" + (i + 1) + " <size=+2><b>" + // number
-				card.name + // name
-				"</b></size>: " + "$" + GetCardPrice(cardScript) + // price
-				"\n" + cardScript.GetCardDescForDisplay() + "\n\n"; // desc
-		}
-	}
-
-	private void ShowDeck()
-	{
-		deckInfoDisplay.text = _deckInfoStr;
-	}
-
-	private void ShowShopItems()
-	{
-		shopInfoDisplay.text = _shopInfoStr;
-	}
-
-	private void ShowShopTips()
-	{
-		string currentMode = sellMode ? "Selling" : "Buying";
-		phaseInfoDisplay.text = phaseInfo + " Current: " + currentMode;
-								
-	}
-	private void ShowPlayerStats()
-	{
-		int freeLeft = (_utilityBonus != null ? _utilityBonus.freeRerolls : 0) - _freeRerollsUsedThisVisit;
-		playerStatsDisplay.text =
-			"HP Max: " + CombatManager.Me.ownerPlayerStatusRef.hpMax +
-			"\nYou have: $" + purse.value + " (+$" + GetCurrentPayday() + "/combat)" +
-			(freeLeft > 0 ? "\nFree Rerolls: " + freeLeft : "");
-	}
-
 	/// <summary>
 	/// Plan step 5: reroll button shows whether the next reroll is free (and how many remain).
 	/// </summary>
@@ -626,11 +538,11 @@ public class ShopManager : MonoBehaviour
 		{
 			purse.value -= RerollPriceRef.value;
 		}
+		ShopHudBar.RefreshIfActive();
 
 		// First generate new shop item data
 		GenerateShopItems();
 		ApplyBoardDiscount();
-		UpdateShopItemInfo();
 		UpdateRerollButtonLabel();
 		// record reroll
 		if (ShopStatsManager.Me != null)
@@ -661,7 +573,7 @@ public class ShopManager : MonoBehaviour
 	/// Paycheck the shop pays on entry: base payCheck + baseline growth + Income utility.
 	/// Same formula as the EnterShop payday; shared by the payday and the live income display.
 	/// </summary>
-	private int GetCurrentPayday()
+	public int GetCurrentPayday()
 	{
 		return UtilityShopBonus.ComputePayday(payCheck.value, GetSessionNum(), incomeGrowthPerStep, sessionsPerIncomeStep, _utilityBonus);
 	}

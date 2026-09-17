@@ -136,6 +136,7 @@ Layout rules:
 - The gray topographic background is the player HP display base (the seamless-world concept lives in `PhaseTransitionDemo.html`); shop/deck panels are dark translucent overlays.
 - Interactive elements — leave shop, options, reroll, price buttons — all reuse the global physics params (2.1); no page-specific tuning. HP / money / rarity odds / counters / income are read-only flats (the R2 converse).
 - Empty deck slots are recessed (3.5); buy/sell follows 3.3.
+- Unity port (2026-09-17, `plans/plan-hud-topbar-inventory-2026-09-17.md`): the top HUD bar is a runtime-built `ShopHudBar` (no scene edit) of flat `HudChip` read-only units (R2 converse) — panel = `TooltipBg`, text = `TooltipText`, accent numbers = `highlight`; chips Money / Income (payday +$N/combat) / HP (cur/max) / Deck (cur/max). The HP chip is current/max by design so the combat-side own-HP display can reuse the same prefab. Legacy debug TMP displays are hidden at runtime; free-rerolls count lives only on the reroll button label.
 
 ## 4. Unity Implementation Notes
 
@@ -145,6 +146,8 @@ Layout rules:
 - Input-side rules (activation on release, drag-out cancel, price-button transactions) belong to the component event layer, not the animation layer.
 
 ## Version History
+
+- v0.10 · 2026-09-17 · Recessed empty slots (§3.5) ported as a prefab bake; top HUD bar ported (§3.6): runtime `ShopHudBar` + `HudChip` read-only chips, legacy debug texts retired. HP chip = current/max (combat reuse planned). See 3.5/3.6.
 
 - v0.9 · 2026-09-16 · Price-button buy/sell ported (§3.3): `PhysButton` world mode on shop cards, long-press removed; uGUI reroll/exit buttons get the §2 feel via runtime-attached UI mode. Decisions frozen: engine wins on tooltip placement (right-side default, flip left) and `tipDelay` (0.1 s); card body = hover preview in combat, click-enlarge in shop (§3.4, §2.1).
 

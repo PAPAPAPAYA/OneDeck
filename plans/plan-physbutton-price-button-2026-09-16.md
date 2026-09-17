@@ -1,6 +1,6 @@
 # PhysButton + Price-Button Buy/Sell Port (UIKitDemo §02/§04 → Unity)
 
-2026-09-16 · status: **implemented** (offline compile 0 errors; play-mode verification pending)
+2026-09-16 · status: **implemented & play-verified** (user confirmed 2026-09-17; offline compile 0 errors)
 
 Phase 1 of the UI-kit interaction port: the `.phys` state machine from `docs/demo/UIKitDemo.html` §02 as a reusable component, and §04's price-button buy/sell replacing the last long-press idiom. Phase 2 (consequence flight motion) needs no new work — buy/sell/reroll flight animations already existed (`ShopUXManager.OnCardPurchased` / `OnCardSold` / `OnReroll`).
 

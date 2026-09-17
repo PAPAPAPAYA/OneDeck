@@ -597,6 +597,7 @@ public class ShopUXManager : MonoBehaviour
 	private void Start()
 	{
 		AttachPhysButtonsToShopCanvasButtons();
+		ShopHudBar.BootstrapForShop();
 		_mainCamera = Camera.main;
 		if (_mainCamera == null) return;
 

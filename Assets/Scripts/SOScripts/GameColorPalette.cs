@@ -101,6 +101,9 @@ public class GameColorPalette : ScriptableObject
 	public static Color ResultPanelBgColor => Me != null && Me.resultPanelBg != null ? Me.resultPanelBg.value : Color.white;
 	public static Color ResultPanelTextColor => Me != null && Me.resultPanelText != null ? Me.resultPanelText.value : Color.white;
 
+	// Numeric accent ("HUD" usage) — emphasized numbers/prices (UI kit §1.1 price accent).
+	public static Color HighlightColor => Me != null && Me.highlight != null ? Me.highlight.value : Color.white;
+
 	// Physical card colors — the single source CardPhysObjScript reads from (it keeps
 	// no serialized color fields). White fallback keeps a miswired palette visible.
 	public static Color OwnerCardColor => Me != null && Me.ownerCardColor != null ? Me.ownerCardColor.value : Color.white;
