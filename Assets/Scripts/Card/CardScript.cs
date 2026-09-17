@@ -102,6 +102,17 @@ public class CardScript : MonoBehaviour
 	public bool isPassive = false;
 
 	/// <summary>
+	/// Revive-pool type wildcard (fatigue loop-breaker ammo, 2026-09-16,
+	/// plans/plan-fatigue-revive-wildcard-2026-09-16.md): the carrier passes any
+	/// ReviveEffect CreatureFilter type line, so infinite revive loops keep surfacing
+	/// fatigue cards and re-pay the fatigue damage on every re-reveal. Consulted ONLY
+	/// by ReviveEffect.PassesPredicateFilters; Bury/Stage filters, creature auras,
+	/// damage predicates and face/tooltip display are untouched.
+	/// </summary>
+	[Tooltip("ReviveEffect pool wildcard: passes any CreatureFilter type line (revive gate only).")]
+	public bool wildcardTypeFilter = false;
+
+	/// <summary>
 	/// Utility card classification (shop utility passives, plans/plan-utility-passive-shop-pipeline-2026-08-31).
 	/// None = normal card, zero cost. Enum is append-only (EnumStorage.UtilityKind).
 	/// </summary>

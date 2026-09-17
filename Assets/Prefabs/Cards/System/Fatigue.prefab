@@ -160,6 +160,7 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  wildcardTypeFilter: 1
 --- !u!114 &1434156692957901577
 MonoBehaviour:
   m_ObjectHideFlags: 0

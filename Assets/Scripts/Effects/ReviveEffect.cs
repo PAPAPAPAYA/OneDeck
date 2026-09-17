@@ -110,9 +110,15 @@ public class ReviveEffect : EffectScript
 	/// </summary>
 	private bool PassesPredicateFilters(CardScript cardScript)
 	{
-		if (creatureFilter == CreatureFilter.Creature && !cardScript.IsCreature) return false;
-		if (creatureFilter == CreatureFilter.Phenomenon && cardScript.cardType != EnumStorage.CardType.None) return false;
-		if (creatureFilter == CreatureFilter.Token && cardScript.cardType != EnumStorage.CardType.Token) return false;
+		// Fatigue wildcard (2026-09-16, plans/plan-fatigue-revive-wildcard-2026-09-16.md):
+		// bypass ONLY the type lines so revive loops keep surfacing fatigue cards as
+		// self-recycling ammo; enhancement/ID/rarity gates still apply.
+		if (!cardScript.wildcardTypeFilter)
+		{
+			if (creatureFilter == CreatureFilter.Creature && !cardScript.IsCreature) return false;
+			if (creatureFilter == CreatureFilter.Phenomenon && cardScript.cardType != EnumStorage.CardType.None) return false;
+			if (creatureFilter == CreatureFilter.Token && cardScript.cardType != EnumStorage.CardType.Token) return false;
+		}
 		if (onlyEnhanced && cardScript.attackGrowth <= 0) return false;
 		if (!string.IsNullOrEmpty(typeIDFilter) && cardScript.cardTypeID != typeIDFilter) return false;
 		if (rarityFilter != ReviveRarityFilter.Any)
