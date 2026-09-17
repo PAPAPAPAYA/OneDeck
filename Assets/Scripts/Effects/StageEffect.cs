@@ -19,7 +19,7 @@ public class StageEffect : EffectScript
 	[Header("Self Exclusion")]
 	[Tooltip("If true, the source card will not be selected when staging multiple cards")]
 	public bool excludeSelf = true;
-	[Tooltip("If true, StageCardWithMaxAttack only considers creatures (FINAL_ESCORT 置顶1友方攻击力最高实体)")]
+	[Tooltip("If true, StageCardWithMaxAttack only considers creatures (RELIC_WHITE_BANNER 置顶1友方攻击力最高实体)")]
 	public bool creatureOnly = false;
 	[Tooltip("Narrow the StageMyCards pool: Creature / Phenomenon (CardType.None only, tokens excluded) / Token")]
 	public EffectScript.EffectCreatureFilter creatureFilter = EffectScript.EffectCreatureFilter.Any;
@@ -63,6 +63,36 @@ public class StageEffect : EffectScript
 	{
 		int index = GetCardIndexInCombinedDeck(card);
 		return index >= 0 && index == _combinedDeck.Count - 1;
+	}
+
+	/// <summary>
+	/// Find the current index of the Start Card in combinedDeck.
+	/// Returns -1 if no Start Card is present.
+	/// </summary>
+	private int GetStartCardIndex()
+	{
+		_combinedDeck = combatManager.combinedDeckZone;
+		for (int i = 0; i < _combinedDeck.Count; i++)
+		{
+			var cardScript = _combinedDeck[i].GetComponent<CardScript>();
+			if (cardScript != null && cardScript.isStartCard)
+				return i;
+		}
+		return -1;
+	}
+
+	/// <summary>
+	/// Check if card is below the Start Card in deck order (index < startCardIndex).
+	/// The grave-side region is revive-only: stage is a live-deck scheduler and must not
+	/// pull consumed cards back to the top (closes the stage-from-grave loop shape,
+	/// plans/plan-infinity-detection-2026-09-17.md). Always returns false when no Start
+	/// Card is found.
+	/// </summary>
+	private bool IsCardBelowStartCard(GameObject card)
+	{
+		int startCardIndex = GetStartCardIndex();
+		if (startCardIndex < 0) return false;
+		return GetCardIndexInCombinedDeck(card) < startCardIndex;
 	}
 
 	public void StageSelf() // put self on top of the deck
@@ -288,6 +318,7 @@ public class StageEffect : EffectScript
 			    cardScript.isPassive ||
 			    isFriendly != targetFriendly ||
 			    IsCardAtTop(card) ||
+			    IsCardBelowStartCard(card) ||
 			    cardScript.isMinion ||
 			    (excludeSelf && card == myCard))
 			{
@@ -358,6 +389,7 @@ public class StageEffect : EffectScript
 			    cardScript.isPassive ||
 			    isFriendly != targetFriendly ||
 			    IsCardAtTop(card) ||
+			    IsCardBelowStartCard(card) ||
 			    cardScript.isMinion ||
 			    (creatureOnly && !cardScript.IsCreature) ||
 			    (excludeSelf && card == myCard))
@@ -373,30 +405,14 @@ public class StageEffect : EffectScript
 		StageChosenCards(new List<GameObject> { topCard.gameObject }, 1);
 	}
 
-	/// <summary>
-	/// One-shot round-end stage armed by the deathrattle (FINAL_ESCORT
-	/// "遗言：回合结束：置顶1友方攻击力最高实体", 4.0 E3). The deathrattle only arms the
-	/// flag; the prefab's permanent onRoundEnd listener calls this, which stages once and
-	/// disarms — no dynamic listener registration needed. The card object survives being
-	/// buried, so the flag (and the listener) live as long as the card does.
-	/// </summary>
-	[HideInInspector]
-	public bool roundEndStageArmed;
-
-	public void ArmRoundEndStageMaxAttackCreature()
-	{
-		roundEndStageArmed = true;
-	}
-
-	public void StageMaxAttackCreatureIfArmed()
-	{
-		if (!roundEndStageArmed) return;
-		roundEndStageArmed = false;
-		StageCardWithMaxAttack();
-	}
-
 	private void StageChosenCards(List<GameObject> cardsToStage, int amount)
 	{
+		// Grave-side exclusion (2026-09-17): single choke point for every stage path
+		// (pools, StageSelf, future methods). Cards below the Start Card — including
+		// cards not in the deck at all (reveal zone / exiled, IndexOf == -1) — are out
+		// of reach; revive remains the only grave-side channel. The max-picking pools
+		// pre-filter as well so "best eligible" is chosen among stage-able cards.
+		cardsToStage.RemoveAll(IsCardBelowStartCard);
 		amount = Mathf.Clamp(amount, 0, cardsToStage.Count);
 		if (amount == 0) return;
 

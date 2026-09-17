@@ -201,13 +201,17 @@ public class ReviveEffectTests : HeadlessCombatTestFixture
 	{
 		var start = CreateStartCard();
 		var grave = CreateCard(true, "Grave");
-		CombatManager.combinedDeckZone.AddRange(new List<GameObject> { grave, start });
+		// Card placed ABOVE the Start Card: the 2026-09-17 stage/grave split makes StageSelf
+		// from below the Start Card a no-op (revive is the only grave-side channel), so the
+		// stage-does-not-raise-awaken assertion is exercised from the live zone instead.
+		var filler = CreateCard(true, "Filler");
+		CombatManager.combinedDeckZone.AddRange(new List<GameObject> { start, grave, filler });
 		AttachSpyListener(grave, GameEventStorage.onMeRevived, () => _spy.OnMeRevived());
 		var stage = CreateEffect<StageEffect>(grave);
 
 		WithRecorder(grave, stage, () => stage.StageSelf());
 
-		Assert.AreSame(grave, CombatManager.combinedDeckZone[1], "Stage should still move the card to top (sanity)");
+		Assert.AreSame(grave, CombatManager.combinedDeckZone[CombatManager.combinedDeckZone.Count - 1], "Stage should still move the card to top (sanity)");
 		Assert.AreEqual(0, _spy.meRevivedCount, "苏醒 must NOT fire on Stage — only revive effects trigger it");
 	}
 

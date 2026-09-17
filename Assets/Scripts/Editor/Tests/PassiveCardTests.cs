@@ -136,7 +136,11 @@ public class PassiveCardTests : HeadlessCombatTestFixture
 	{
 		var passive = CreatePassive("Passive");
 		var normal = CreateCard(true, "Normal");
-		CombatManager.combinedDeckZone.AddRange(new List<GameObject> { passive, normal, _start });
+		// Start Card at the bottom so the live-zone candidate sits ABOVE it, and a filler
+		// occupies the top slot (excluded by IsCardAtTop) so the staging is non-vacuous
+		// (2026-09-17 stage/grave split: cards below the Start Card are revive-only).
+		var filler = CreateCard(true, "TopFiller");
+		CombatManager.combinedDeckZone.AddRange(new List<GameObject> { _start, passive, normal, filler });
 		var source = CreateCard(true, "Stager");
 		var stage = CreateEffect<StageEffect>(source);
 
@@ -147,7 +151,7 @@ public class PassiveCardTests : HeadlessCombatTestFixture
 		var deck = CombatManager.combinedDeckZone;
 		Assert.AreSame(normal, deck[deck.Count - 1], "The only stageable card is the non-passive one");
 		Assert.Contains(passive, deck, "Passive stays in the deck, unstaged");
-		Assert.AreEqual(0, deck.IndexOf(passive), "Passive position is untouched by staging");
+		Assert.AreEqual(1, deck.IndexOf(passive), "Passive position is untouched by staging");
 	}
 
 	[Test]

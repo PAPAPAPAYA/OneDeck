@@ -7,8 +7,10 @@ using UnityEngine;
 /// start + per-round counter reset), E4 causer-based friendly-burial counters
 /// (RELIC_TALLY; 2026-09-14 redesign: counts ALL friendly card types buried by a side,
 /// not just creatures — enemy cards buried by me no longer count), E6
-/// creatureOnly filter on StageCardWithMaxAttack, and FINAL_ESCORT's flag-gated
-/// one-shot round-end stage.
+/// creatureOnly filter on StageCardWithMaxAttack, and the 2026-09-17 stage/grave split
+/// (stage cannot reach cards below the Start Card; revive is the only grave-side channel).
+/// FINAL_ESCORT's former flag-gated round-end stage tests were replaced by the
+/// grave-exclusion guards — the card moved to the ReviveEffect round-end arm pattern.
 /// </summary>
 public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 {
@@ -153,43 +155,51 @@ public class RoundEndAndBurialCountersTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void StageMaxAttackCreatureIfArmed_StageOnceThenDisarm()
+	public void StageChosenCards_GraveSideCardsOutOfReach()
 	{
-		var escort = CreateCard(true, "Escort");
-		var bigCreature = CreateCard(true, "BigCreature");
-		bigCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
-		bigCreature.GetComponent<CardScript>().printedAttack = 5;
-		CombatManager.combinedDeckZone.Add(escort);
-		CombatManager.combinedDeckZone.Add(bigCreature);
-		CombatManager.combinedDeckZone.Add(CreateCard(true, "TopFiller"));
+		// deck order: [graveCreature, startCard, liveCreature, topFiller] — the grave-side
+		// creature (index 0, below the Start Card) has the highest attack but is revive-only
+		// territory (2026-09-17 stage/grave split).
+		var graveCreature = CreateCard(true, "GraveCreature");
+		graveCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
+		graveCreature.GetComponent<CardScript>().printedAttack = 9;
+		CombatManager.combinedDeckZone.Add(graveCreature);
+		CombatManager.combinedDeckZone.Add(CreateStartCard());
+		var liveCreature = CreateCard(true, "LiveCreature");
+		liveCreature.GetComponent<CardScript>().cardType = EnumStorage.CardType.Creature;
+		liveCreature.GetComponent<CardScript>().printedAttack = 5;
+		CombatManager.combinedDeckZone.Add(liveCreature);
+		var filler = CreateCard(true, "TopFiller");
+		CombatManager.combinedDeckZone.Add(filler);
 
-		var stage = CreateEffect<StageEffect>(escort);
+		var stager = CreateCard(true, "Stager");
+		var stage = CreateEffect<StageEffect>(stager);
 		stage.targetFriendly = true;
 		stage.creatureOnly = true;
 
-		// not armed: no-op
-		EffectChainManager.MakeANewEffectRecorder(escort, stage.gameObject);
-		stage.StageMaxAttackCreatureIfArmed();
+		EffectChainManager.MakeANewEffectRecorder(stager, stage.gameObject);
+		stage.StageCardWithMaxAttack();
 		EffectChainManager.Me.CloseOpenedChain();
-		Assert.AreNotEqual(bigCreature, CombatManager.combinedDeckZone[CombatManager.combinedDeckZone.Count - 1],
-			"unarmed round-end stage is a no-op");
 
-		// armed: stages exactly once
-		stage.ArmRoundEndStageMaxAttackCreature();
-		EffectChainManager.MakeANewEffectRecorder(escort, stage.gameObject);
-		stage.StageMaxAttackCreatureIfArmed();
-		EffectChainManager.Me.CloseOpenedChain();
-		Assert.AreEqual(bigCreature, CombatManager.combinedDeckZone[CombatManager.combinedDeckZone.Count - 1],
-			"armed round-end stage moves the highest-attack friendly creature to the deck top");
+		Assert.AreEqual(liveCreature, CombatManager.combinedDeckZone[CombatManager.combinedDeckZone.Count - 1],
+			"stage cannot reach grave-side cards: the live creature is staged even though the grave one has higher attack");
+	}
 
-		// disarmed after firing
-		int count = CombatManager.combinedDeckZone.Count;
-		EffectChainManager.MakeANewEffectRecorder(escort, stage.gameObject);
-		stage.StageMaxAttackCreatureIfArmed();
+	[Test]
+	public void StageSelf_FromGraveSide_IsNoOp()
+	{
+		var buriedCard = CreateCard(true, "BuriedSelf");
+		CombatManager.combinedDeckZone.Add(buriedCard); // index 0, below the Start Card
+		CombatManager.combinedDeckZone.Add(CreateStartCard());
+
+		var stage = CreateEffect<StageEffect>(buriedCard);
+
+		EffectChainManager.MakeANewEffectRecorder(buriedCard, stage.gameObject);
+		stage.StageSelf();
 		EffectChainManager.Me.CloseOpenedChain();
-		Assert.AreEqual(bigCreature, CombatManager.combinedDeckZone[CombatManager.combinedDeckZone.Count - 1],
-			"flag disarmed: repeat call does not restage");
-		Assert.AreEqual(count, CombatManager.combinedDeckZone.Count);
+
+		Assert.AreEqual(buriedCard, CombatManager.combinedDeckZone[0],
+			"StageSelf from the grave side is a no-op: revive is the only grave-side channel");
 	}
 
 	[Test]
