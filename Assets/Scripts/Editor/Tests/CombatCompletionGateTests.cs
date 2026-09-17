@@ -111,7 +111,7 @@ public class CombatCompletionGateTests
 	}
 
 	[Test]
-	public void GateAlreadyOpen_CatalogUploadsAgainOnlyOnVersionDrift()
+	public void GateAlreadyOpen_CatalogUploadsAgainOnlyOnContentDrift()
 	{
 		InstallHermeticIdentity();
 		InstallPoolScaffold();
@@ -119,9 +119,85 @@ public class CombatCompletionGateTests
 		CombatCompletionGate.MarkCompleted();
 		Assert.AreEqual(1, UploadOutbox.PendingCount);
 
-		// Version idempotence: an already-stamped version uploads nothing more.
+		// Content idempotence: an unchanged pool fingerprints identically, so an
+		// open gate alone uploads nothing more.
 		CombatCompletionGate.MarkCompleted();
 		Assert.AreEqual(1, UploadOutbox.PendingCount);
+	}
+
+	[Test]
+	public void ComputeFingerprint_SensitiveToEveryCatalogField()
+	{
+		string baseline = CardCatalogUploader.ComputeFingerprint(SampleEntries());
+
+		// Same entries, different list order: order-insensitive.
+		List<CatalogCardEntry> reordered = SampleEntries();
+		reordered.Reverse();
+		Assert.AreEqual(baseline, CardCatalogUploader.ComputeFingerprint(reordered));
+
+		// Same tags, different serialization order: still order-insensitive.
+		List<CatalogCardEntry> tagsReordered = SampleEntries();
+		tagsReordered[0].tags.Reverse();
+		Assert.AreEqual(baseline, CardCatalogUploader.ComputeFingerprint(tagsReordered));
+
+		// Any single field mutation changes the fingerprint.
+		Assert.AreNotEqual(baseline, CardCatalogUploader.ComputeFingerprint(
+			MutateEntry(0, entry => entry.name = "owl_renamed")), "name drift must change the fingerprint");
+		Assert.AreNotEqual(baseline, CardCatalogUploader.ComputeFingerprint(
+			MutateEntry(1, entry => entry.tags.Remove("DeathRattle"))), "tag content drift must change the fingerprint");
+		Assert.AreNotEqual(baseline, CardCatalogUploader.ComputeFingerprint(
+			MutateEntry(0, entry => entry.rarity = "Uncommon")), "rarity drift must change the fingerprint");
+		Assert.AreNotEqual(baseline, CardCatalogUploader.ComputeFingerprint(
+			MutateEntry(1, entry => entry.cost += 1)), "cost drift must change the fingerprint");
+
+		// Pool membership changes (add / remove) change the fingerprint.
+		List<CatalogCardEntry> withExtra = SampleEntries();
+		withExtra.Add(new CatalogCardEntry { cardTypeID = "boar", name = "boar_name", tags = new List<string>(), rarity = "Common", cost = 2 });
+		Assert.AreNotEqual(baseline, CardCatalogUploader.ComputeFingerprint(withExtra));
+
+		List<CatalogCardEntry> minusOne = SampleEntries();
+		minusOne.RemoveAt(1);
+		Assert.AreNotEqual(baseline, CardCatalogUploader.ComputeFingerprint(minusOne));
+	}
+
+	[Test]
+	public void LegacyVersionSentinel_MigratesToFirstFingerprintUpload()
+	{
+		InstallHermeticIdentity();
+		InstallPoolScaffold();
+
+		// Pre-upgrade sentinel: the old format stored the packaged game version.
+		File.WriteAllText(CatalogVersionPath, DeckNetworkClient.GameVersion);
+
+		// A version string never equals a fingerprint: the first gated upload
+		// re-sends once, then the freshly stamped fingerprint goes quiet.
+		CombatCompletionGate.MarkCompleted();
+		Assert.AreEqual(1, UploadOutbox.PendingCount);
+
+		CardCatalogUploader.MaybeUpload();
+		Assert.AreEqual(1, UploadOutbox.PendingCount);
+	}
+
+	[Test]
+	public void GateAlreadyOpen_ContentDriftReuploadsViaSentinelMismatch()
+	{
+		InstallHermeticIdentity();
+		InstallPoolScaffold();
+
+		CombatCompletionGate.MarkCompleted();
+		Assert.AreEqual(1, UploadOutbox.PendingCount);
+
+		// Simulate content drift without touching prefab assets: poison the sentinel
+		// so it cannot match the freshly computed fingerprint (the same path a real
+		// rename / retag / price change takes).
+		File.WriteAllText(CatalogVersionPath, "stale-fingerprint-from-earlier-content");
+
+		CombatCompletionGate.MarkCompleted();
+		Assert.AreEqual(2, UploadOutbox.PendingCount);
+
+		// Re-stamped after the re-upload: quiet again.
+		CombatCompletionGate.MarkCompleted();
+		Assert.AreEqual(2, UploadOutbox.PendingCount);
 	}
 
 	[Test]
@@ -167,6 +243,23 @@ public class CombatCompletionGateTests
 	}
 
 	// ------------------------------------------------------------------ scaffolding
+
+	/// <summary>Fresh fingerprint fixtures per call: mutations in one test never leak into another.</summary>
+	private static List<CatalogCardEntry> SampleEntries()
+	{
+		return new List<CatalogCardEntry>
+		{
+			new CatalogCardEntry { cardTypeID = "owl", name = "owl_name", tags = new List<string> { "Linger", "ManaX" }, rarity = "Rare", cost = 7 },
+			new CatalogCardEntry { cardTypeID = "wolf", name = "wolf_name", tags = new List<string> { "DeathRattle" }, rarity = "Common", cost = 3 }
+		};
+	}
+
+	private static List<CatalogCardEntry> MutateEntry(int index, Action<CatalogCardEntry> mutation)
+	{
+		List<CatalogCardEntry> entries = SampleEntries();
+		mutation(entries[index]);
+		return entries;
+	}
 
 	private void InstallHermeticIdentity()
 	{
