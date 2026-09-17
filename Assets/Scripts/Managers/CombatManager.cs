@@ -73,6 +73,13 @@ public class CombatManager : MonoBehaviour
 			var go = new GameObject("CombatPerCardStatsTracker");
 			go.AddComponent<CombatPerCardStatsTracker>();
 		}
+
+		// Ensure the L0 hard-stop budget guard exists (infinity defense,
+		// plans/plan-infinity-detection-2026-09-17.md; per-round force-clear + global caps)
+		if (GetComponent<CombatBudgetGuard>() == null)
+		{
+			gameObject.AddComponent<CombatBudgetGuard>();
+		}
 	}
 
 	private void OnValidate()
@@ -252,7 +259,9 @@ public class CombatManager : MonoBehaviour
 		cardsRevealedThisRound = 0;
 		totalCardsRevealed = 0;
 		EffectChainManager.Me.CloseOpenedChain();
+		EffectChainManager.Me.ResetGenerationGuards();
 		EffectChainManager.Me.chainNumber = 0;
+		if (CombatBudgetGuard.Me != null) CombatBudgetGuard.Me.ResetState();
 		
 		// clean up effect recorders
 		if (EffectChainManager.Me != null)
@@ -653,8 +662,9 @@ public class CombatManager : MonoBehaviour
 			yield break;
 		}
 
-		// 2. Close the chain
+		// 2. Close the chain (playback boundary = chain-generation boundary: guards/depth reset here)
 		EffectChainManager.Me.CloseOpenedChain();
+		EffectChainManager.Me.ResetGenerationGuards();
 
 		try
 		{
@@ -902,6 +912,7 @@ public class CombatManager : MonoBehaviour
 				}
 
 				EffectChainManager.Me.CloseOpenedChain();
+				EffectChainManager.Me.ResetGenerationGuards();
 				return;
 			}
 
@@ -938,6 +949,7 @@ public class CombatManager : MonoBehaviour
 			}
 
 			EffectChainManager.Me.CloseOpenedChain();
+			EffectChainManager.Me.ResetGenerationGuards();
 		}
 		// ========== Phase 2: Wait to trigger current card effect ==========
 		else
@@ -1064,6 +1076,9 @@ public class CombatManager : MonoBehaviour
 		// Check fatigue (based on reveal card count)
 		CheckFatigueByRevealCount();
 
+		// L0 hard stop (2026-09-17): per-round / global fuses + passive budget telemetry
+		CombatBudgetGuard.Me?.NotifyReveal(cardsRevealedThisRound, totalCardsRevealed, combinedDeckZone.Count, roundNumRef.value);
+
 		// Record combat stats
 		GetComponent<CombatStatsLogger>()?.OnCardRevealed(cardRevealed);
 		RunRecorder.OnCombatCardRevealed(cardRevealed);
@@ -1082,6 +1097,16 @@ public class CombatManager : MonoBehaviour
 		
 		var cardScript = revealZone.GetComponent<CardScript>();
 		if (cardScript == null) return;
+
+		// L0 hard stop (2026-09-17): past the per-round reveal cap the rest of the round
+		// flips cards without effect processing; the Start Card shuffle must still fire
+		// so the round boundary survives.
+		if (CombatBudgetGuard.Me != null && CombatBudgetGuard.Me.RoundForceClearActive && !cardScript.isStartCard)
+		{
+			TestManager.Log("[CombatManager] Round force-clear active: skipping reveal effects for [" + cardScript.name + "]");
+			_infoDisplayer.RefreshDeckInfo();
+			return;
+		}
 
 		GameEventStorage.me.onAnyCardRevealed.Raise();
 		GameEventStorage.me.onMeRevealed.RaiseSpecific(revealZone);
@@ -1177,6 +1202,9 @@ public class CombatManager : MonoBehaviour
 
 	private void HandleNewRoundStart()
 	{
+		// L0 hard stop (2026-09-17): fresh per-round reveal budget
+		if (CombatBudgetGuard.Me != null) CombatBudgetGuard.Me.NotifyRoundStart();
+
 		// Physical card reset
 		visuals.ReviveAllPhysicalCards();
 
@@ -1241,6 +1269,21 @@ public class CombatManager : MonoBehaviour
 			return (ownerPlayerStatusRef != null && ownerPlayerStatusRef.hp <= 0)
 				|| (enemyPlayerStatusRef != null && enemyPlayerStatusRef.hp <= 0);
 		}
+	}
+
+	/// <summary>
+	/// L0 forced conclusion (2026-09-17): invoked by CombatBudgetGuard when a global
+	/// budget cap trips. Placeholder outcome semantics (§7.7, swappable): no HP is
+	/// touched — the result screen reads whatever remains, so the higher-HP side wins
+	/// and equal HP draws. Drains any open chain first so nothing keeps cascading.
+	/// </summary>
+	public void ForceConcludeCombat(string reason)
+	{
+		if (combatFinished.value) return;
+		TestManager.Log("[CombatManager] FORCE CONCLUDE COMBAT: " + reason);
+		EffectChainManager.Me.CloseOpenedChain();
+		EffectChainManager.Me.ResetGenerationGuards();
+		HandleCombatFinished();
 	}
 
 	private void HandleCombatFinished()

@@ -200,6 +200,9 @@ public static class DeterminismTracker
 	private static uint _revealHash;
 	private static int _revealCount;
 	private static bool _active;
+	private static int _maxRevealsPerRound;
+	private static int _maxCascadeDepth;
+	private static int _maxPoolSize;
 
 	/// <summary>Called at combat start (CombatManager.GatherDecks), after Rng.InitCombat.</summary>
 	public static void BeginCombat(int combatSeed, int sessionNumber, string playerDeckName, string enemyDeckName)
@@ -208,6 +211,9 @@ public static class DeterminismTracker
 		_sessionNumber = sessionNumber;
 		_revealHash = RngDigest.OffsetBasis;
 		_revealCount = 0;
+		_maxRevealsPerRound = 0;
+		_maxCascadeDepth = 0;
+		_maxPoolSize = 0;
 		_active = true;
 
 		string content =
@@ -226,6 +232,17 @@ public static class DeterminismTracker
 		_revealHash = RngDigest.Fnv1a(_revealHash, cardTypeID ?? string.Empty);
 		_revealHash = RngDigest.Fnv1a(_revealHash, isOwner ? 1 : 0);
 		_revealCount++;
+	}
+
+	/// <summary>
+	/// Fold one budget-telemetry sample into the combat peaks (2026-09-17 passive
+	/// instrumentation, zero behavior change); called from CombatBudgetGuard per reveal.
+	/// </summary>
+	public static void RecordBudgetPeaks(int cardsRevealedThisRound, int cascadeDepth, int poolSize)
+	{
+		if (cardsRevealedThisRound > _maxRevealsPerRound) _maxRevealsPerRound = cardsRevealedThisRound;
+		if (cascadeDepth > _maxCascadeDepth) _maxCascadeDepth = cascadeDepth;
+		if (poolSize > _maxPoolSize) _maxPoolSize = poolSize;
 	}
 
 	/// <summary>Called when combatFinished is set. Writes the digest file and closes the ledger.</summary>
@@ -263,6 +280,9 @@ public static class DeterminismTracker
 			"session=" + _sessionNumber + "\r\n" +
 			"version=" + Application.version + "\r\n" +
 			"reveals=" + _revealCount + "\r\n" +
+			"maxRevealsPerRound=" + _maxRevealsPerRound + "\r\n" +
+			"maxCascadeDepth=" + _maxCascadeDepth + "\r\n" +
+			"maxPoolSize=" + _maxPoolSize + "\r\n" +
 			"revealDigest=" + RngDigest.ToHex(_revealHash) + "\r\n" +
 			"damageDigest=" + RngDigest.ToHex(damageHash);
 		WriteFile("DeterminismDigest_Session" + _sessionNumber + "_" + Timestamp() + ".txt", content);

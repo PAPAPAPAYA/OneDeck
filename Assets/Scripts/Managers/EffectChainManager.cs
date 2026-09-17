@@ -29,7 +29,26 @@ public class EffectChainManager : MonoBehaviour
 	public GameObject lastEffectObject; // tracks last effect inst
 	public List<GameObject> openedEffectRecorders; // tracks opened effect containers
 	public List<GameObject> closedEffectRecorders; // tracks closed effect containers
-	public int chainDepth; // chain depth to prevent stack overflow, currently when depth reached 99 effect will not be processed
+	public int chainDepth; // anti-loop backstop; accumulates per reveal-cascade, reset only via ResetGenerationGuards at phase/reveal boundaries
+	// Anti-loop backstop value. 99 = original stack-safety fuse. The 2026-09-14 "12" tightening
+	// only ever changed a log variable, never enforcement; kept 99 until legit-cascade depth
+	// data justifies a tighter per-cascade budget.
+	public const int ChainDepthLimit = 99;
+
+	// Generation-scoped loop-guard history: one entry per PASSING (card, effect, context)
+	// invocation. Deliberately NOT cleared by CloseOpenedChain — mid-cascade chain closes
+	// (SameCardDifferentObject / cost-fail shake) must not re-arm the loop guard; that re-arm
+	// is what sustained the 2026-09-13 bury-recursion stack overflow. Cleared only by
+	// ResetGenerationGuards; EndAttackSegmentScope removes segment entries so per-segment
+	// attack-event refires (plans/plan-per-segment-attack-events-2026-09-05.md) keep working.
+	private readonly List<GuardEntry> generationGuardHistory = new List<GuardEntry>();
+
+	private struct GuardEntry
+	{
+		public GameObject card;
+		public GameObject effect;
+		public GameObject contextTarget;
+	}
 	
 	// Stack to track nested recorder creation. Each InvokeEffectEvent pushes its recorder,
 	// then pops it after effect execution. This prevents currentEffectRecorder from being
@@ -66,12 +85,15 @@ public class EffectChainManager : MonoBehaviour
 	{
 		foreach (var chain in openedEffectRecorders)
 		{
+			if (chain == null) continue;
 			var openedChainScript = chain.GetComponent<EffectRecorder>();
+			if (openedChainScript == null) continue;
 			bool sameCard = openedChainScript.cardObject.Equals(myCard);
 			bool sameEffect = openedChainScript.effectObject.Equals(myEffectInst);
 
 			if (sameCard && !sameEffect) // same card, different effect
 			{
+				TestManager.Log("[EffectChainManager] SameCardDifferentObject hit card=[" + myCard.name + "] newEffect=[" + myEffectInst.name + "] closing chain#" + openedChainScript.chainID + "[" + openedChainScript.effectObject.name + "] (recorder grouping only; loop guard persists)");
 				return true;
 			}
 		}
@@ -81,8 +103,8 @@ public class EffectChainManager : MonoBehaviour
 	public void MakeANewEffectRecorder(GameObject myCard, GameObject myEffectInst)
 	{
 		// chainDepth must NOT reset here: it accumulates across nested invocations within one
-		// chain generation so the >99 fuse in EffectCanBeInvoked can actually fire (it was dead
-		// code while being reset per recorder). Per-chain-generation reset happens in CloseOpenedChain.
+		// chain generation so the fuse in EffectCanBeInvoked can actually fire (it was dead
+		// code while being reset per recorder). Reset happens in ResetGenerationGuards only.
 		chainNumber++;
 		var newEffectChain = Instantiate(effectRecorderPrefab, transform);
 		var newChainScript = newEffectChain.GetComponent<EffectRecorder>();
@@ -144,33 +166,30 @@ public class EffectChainManager : MonoBehaviour
 		}
 
 		var invokedTimes = 0;
-		string matchedChains = "";
-		foreach (var chain in openedEffectRecorders)
+		// Match by GameObject reference (instance), not by effectID string; history is
+		// generation-scoped (survives mid-cascade CloseOpenedChain), see generationGuardHistory.
+		foreach (var entry in generationGuardHistory)
 		{
-			var wipChainScript = chain.GetComponent<EffectRecorder>();
-			// Match by GameObject reference (instance), not by effectID string
-			if (wipChainScript.cardObject == myCard &&
-			    wipChainScript.effectObject == myEffect &&
-			    !string.IsNullOrEmpty(wipChainScript.processedEffectID) &&
-			    (!perTarget || wipChainScript.guardContextTarget == contextTarget))
+			if (entry.card == myCard &&
+			    entry.effect == myEffect &&
+			    (!perTarget || entry.contextTarget == contextTarget))
 			{
 				invokedTimes++;
-				matchedChains += "chain#" + wipChainScript.chainID + "[" + wipChainScript.effectObject.name + "];";
 			}
 		}
 
-		bool canInvoke = !(invokedTimes > 0 || openedEffectRecorders.Count == 0) && chainDepth <= 12;
+		bool canInvoke = !(invokedTimes > 0 || openedEffectRecorders.Count == 0) && chainDepth <= ChainDepthLimit;
 
 		// Diagnosability: log the gate values so a silently blocked invocation (no exception,
 		// no effect) can be attributed to invokedTimes / openChains / chainDepth.
 		TestManager.Log("[EffectChainManager] EffectCanBeInvoked effectID=[" + effectID + "] invokedTimes=" + invokedTimes + " openChains=" + openedEffectRecorders.Count + " chainDepth=" + chainDepth + " canInvoke=" + canInvoke);
 
-		if (invokedTimes > 0 || openedEffectRecorders.Count == 0) // same card instance + effect already invoked in opened chains
+		if (invokedTimes > 0 || openedEffectRecorders.Count == 0) // same card instance + effect already invoked in this chain generation
 		{
 			return false;
 		}
 
-		if (chainDepth > 99)
+		if (chainDepth > ChainDepthLimit)
 		{
 			TestManager.LogError("[EffectChainManager] ERROR: chain depth reached limit");
 			return false;
@@ -178,6 +197,7 @@ public class EffectChainManager : MonoBehaviour
 
 		currentRec.processedEffectID = effectID;
 		currentRec.guardContextTarget = contextTarget;
+		generationGuardHistory.Add(new GuardEntry { card = myCard, effect = myEffect, contextTarget = contextTarget });
 		chainDepth++;
 		return true;
 	}
@@ -250,10 +270,31 @@ public class EffectChainManager : MonoBehaviour
 		UtilityFuncManagerScript.CopyList(openedEffectRecorders, closedEffectRecorders, false);
 		openedEffectRecorders.Clear();
 		lastEffectObject = null; // also clear last effect object or else after shuffle if same card is revealed or after reveal if same card is legally revealed again, it won't go through
-		chainDepth = 0;
+		// chainDepth deliberately NOT reset here (2026-09-17): mid-cascade closes must not
+		// re-arm the depth fuse or the loop guard — see generationGuardHistory / ResetGenerationGuards.
 		recorderStack.Clear();
 		currentEffectRecorderParent = null;
 
+	}
+
+	/// <summary>
+	/// Phase/reveal boundary reset (CombatManager calls this next to CloseOpenedChain):
+	/// clears the generation-scoped loop-guard history and the depth fuse. Mid-cascade
+	/// chain closes (SameCardDifferentObject / cost-fail shake) must NOT call this.
+	/// </summary>
+	public void ResetGenerationGuards()
+	{
+		if (generationGuardHistory.Count > 0 || chainDepth > 0)
+		{
+			TestManager.Log("[EffectChainManager] ResetGenerationGuards history=" + generationGuardHistory.Count + " chainDepth=" + chainDepth);
+		}
+		// L0 telemetry (2026-09-17): the value about to be cleared IS the cascade's depth peak.
+		if (chainDepth > 0 && CombatBudgetGuard.Me != null)
+		{
+			CombatBudgetGuard.Me.NotifyCascadeDepth(chainDepth);
+		}
+		generationGuardHistory.Clear();
+		chainDepth = 0;
 	}
 
 	#region Attack Segment Scope
@@ -296,6 +337,7 @@ public class EffectChainManager : MonoBehaviour
 			{
 				openedEffectRecorders.RemoveAt(i);
 				closedEffectRecorders.Add(rec);
+				RemoveGenerationGuardEntry(rec); // segment scope-closing re-arms the persistent guard for per-segment refires
 			}
 			else
 			{
@@ -307,6 +349,28 @@ public class EffectChainManager : MonoBehaviour
 			int last = _segmentScopeOwnerEffects.Count - 1;
 			lastEffectObject = _segmentScopeOwnerEffects[last];
 			_segmentScopeOwnerEffects.RemoveAt(last);
+		}
+	}
+
+	/// <summary>
+	/// Removes the guard-history entry recorded by a passing invocation whose recorder is
+	/// being scope-closed by EndAttackSegmentScope. Only recorders that actually passed the
+	/// guard carry an entry (processedEffectID set); blocked recorders must not remove one.
+	/// </summary>
+	private void RemoveGenerationGuardEntry(GameObject rec)
+	{
+		var recScript = rec.GetComponent<EffectRecorder>();
+		if (recScript == null || string.IsNullOrEmpty(recScript.processedEffectID)) return;
+		for (int i = generationGuardHistory.Count - 1; i >= 0; i--)
+		{
+			var entry = generationGuardHistory[i];
+			if (entry.card == recScript.cardObject &&
+			    entry.effect == recScript.effectObject &&
+			    entry.contextTarget == recScript.guardContextTarget)
+			{
+				generationGuardHistory.RemoveAt(i);
+				return;
+			}
 		}
 	}
 
