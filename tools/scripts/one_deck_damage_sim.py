@@ -107,17 +107,15 @@ def card_rarity(cid):
 # ('1_Uncommon', '2_Rare').
 # ---------------------------------------------------------------------------
 TRIAL_RARITY_DIRS = ('0_Common', '1_Uncommon', '2_Rare')
-RARITY_DIR_TO_NAME = {'0_Common': 'normal', '1_Uncommon': 'uncommon',
-					  '2_Rare': 'rare'}
 
 # DB-desc-authoritative overrides for prefab field drift (2026-09-16):
 # these cards' descs dropped 攻击xN on BOTH sides, but the serialized
 # extraAttackTimes is still 1. Zero the prefab fields in Unity to remove
-# these entries.
+# these entries. DECIMATION is intentionally NOT overridden: the 2026-09-16
+# ruling keeps its x3 (prefab extraAttackTimes = 2).
 EXTRA_ATTACK_TIMES_OVERRIDE = {
 	'TWIN_STRIKER': 0, 'AVENGER_4.0': 0, 'GRAVE_PUNCH_4.0': 0,
 	'RIFT_STRIKER': 0, 'SNOWBALL': 0, 'MIMIC_BLADE': 0,
-	'DECIMATION': 0,
 }
 RARITY_DIR_TO_NAME = {'0_Common': 'normal', '1_Uncommon': 'uncommon',
 					  '2_Rare': 'rare'}
