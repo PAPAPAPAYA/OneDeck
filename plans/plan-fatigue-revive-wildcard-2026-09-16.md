@@ -80,8 +80,8 @@ if (!cardScript.wildcardTypeFilter)
 
 ## 5. 执行状态
 
-- [ ] Step 1 CardScript 字段
-- [ ] Step 2 ReviveEffect 旁路
-- [ ] Step 3 Fatigue.prefab 旗标
-- [ ] Step 4 EditMode 测试
-- [ ] Step 5 编译 + 用户验证
+- [x] Step 1 CardScript 字段（62f7222）
+- [x] Step 2 ReviveEffect 旁路（62f7222）
+- [x] Step 3 Fatigue.prefab 旗标（62f7222；YAML 直改 `wildcardTypeFilter: 1`，编辑器外完成）
+- [x] Step 4 EditMode 测试（FatigueWildcardReviveTests 4 用例；用例 4 以 Stage 路径代表非复活闸口——Bury 谓词同属无旁路事实，未单测）
+- [x] Step 5 编译（双程序集 0 错）+ EditMode 全量 559 绿（2026-09-17）；余 Play 观察点待用户（overtime 后 BEAST_REVIVER / FINAL_ESCORT 随机池能拉坍塌、揭晓双向 1 伤、FLURRY/ELITE 依旧拉不到）
