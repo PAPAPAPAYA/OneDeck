@@ -561,6 +561,7 @@ public class EffectScript : MonoBehaviour
 		if (attackerCard == null) return;
 		var attackEffect = attackerCard.GetComponentInChildren<AttackEffect>(true);
 		if (attackEffect == null) return;
+		CaptureDriverPopUpForStrikeFeedback();
 		if (EffectChainManager.Me != null)
 		{
 			EffectChainManager.Me.MakeANewEffectRecorder(attackerCard.gameObject, attackEffect.gameObject);
@@ -570,6 +571,37 @@ public class EffectScript : MonoBehaviour
 		{
 			EffectChainManager.Me.PopCurrentRecorder();
 		}
+	}
+
+	// VISUAL-FIX(2026-09-17): Proxy-strike driver cards triggered with no visual feedback
+	//   Cause:    The strike's Attack request is captured on the ATTACKED creature's segment
+	//             recorder (per-segment attack events, 2026-09-05), so the driver card's own
+	//             invocation recorder stays at reqs=0. Playback's off-reveal source-card popup
+	//             is keyed on animationRequests.Count > 0 (RecorderAnimationPlayer), so the
+	//             driver (DEATHBED_GRANT / GRAVE_PUPPETEER) animated nothing while only the
+	//             victim's attack played.
+	//   Fix:      Before the attack recorder opens, capture a self PopUp request for the
+	//             driver card into the still-current invocation recorder. That flips the
+	//             playback sourceNeedsPopup path: the driver pops + emphasizes, stays at peak
+	//             while the victim's attack segment plays underneath, and slots back in when
+	//             the last recorder holding it finishes. The captured PopUp request itself is
+	//             dedup-skipped at playback (target already popped by the auto path).
+	//   Affects:  EffectScript.PerformAttackAs (DEATHBED_GRANT buried-strike, GRAVE_PUPPETEER graveyard strike)
+	//   Regress:  Driver card pops + emphasizes while the buried creature strikes, then slots
+	//             back in; revealed-card drivers (source in reveal zone) must not pop; no
+	//             double-pop on the driver when it is already held by an earlier recorder.
+	private void CaptureDriverPopUpForStrikeFeedback()
+	{
+		if (myCardScript == null || CombatManager.Me == null) return;
+		if (CombatManager.Me.revealZone == myCardScript.gameObject) return;
+		var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
+		var recorder = recorderGo != null ? recorderGo.GetComponent<EffectRecorder>() : null;
+		if (recorder == null) return;
+		recorder.animationRequests.Add(new AnimationRequest
+		{
+			type = AnimationRequestType.PopUp,
+			targetCard = myCardScript.gameObject
+		});
 	}
 
 }
