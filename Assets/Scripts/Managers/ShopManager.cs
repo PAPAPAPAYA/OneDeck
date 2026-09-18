@@ -143,6 +143,21 @@ public class ShopManager : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Roll odds (percent) of the active rarity weight table, for the shop chrome
+	/// rarity chips. Zero total (or no table) yields 0/0/0.
+	/// </summary>
+	public void GetRarityOddsPercents(out float commonPct, out float uncommonPct, out float rarePct)
+	{
+		ShopRarityWeightSO active = GetActiveRarityWeightRef();
+		if (active != null)
+		{
+			active.GetOddsPercents(out commonPct, out uncommonPct, out rarePct);
+			return;
+		}
+		commonPct = uncommonPct = rarePct = 0f;
+	}
+
+	/// <summary>
 	/// Resolves the utility board chance for the current session (mirrors GetActiveRarityWeightRef).
 	/// Returns -1 when the table is empty or no entry matches, so ShopBoardPipeline applies its
 	/// built-in default - scene deserialization wipes the list's field initializer, therefore the

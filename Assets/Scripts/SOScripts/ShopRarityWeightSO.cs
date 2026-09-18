@@ -32,5 +32,26 @@ namespace DefaultNamespace.Managers
 			}
 			return 1f;
 		}
+
+		/// <summary>
+		/// Normalized roll odds per rarity tier (percent, 0-100) for HUD display.
+		/// Tiers missing from the table count as weight 1 (matches GetWeight).
+		/// An all-zero total yields 0/0/0.
+		/// </summary>
+		public void GetOddsPercents(out float commonPct, out float uncommonPct, out float rarePct)
+		{
+			float common = GetWeight(EnumStorage.Rarity.Common);
+			float uncommon = GetWeight(EnumStorage.Rarity.Uncommon);
+			float rare = GetWeight(EnumStorage.Rarity.Rare);
+			float total = common + uncommon + rare;
+			if (total <= 0f)
+			{
+				commonPct = uncommonPct = rarePct = 0f;
+				return;
+			}
+			commonPct = common / total * 100f;
+			uncommonPct = uncommon / total * 100f;
+			rarePct = rare / total * 100f;
+		}
 	}
 }
