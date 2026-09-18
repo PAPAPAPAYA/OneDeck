@@ -159,3 +159,14 @@ Edit-mode headless 体系复用 HeadlessCombatTestFixture / NullCombatVisuals,�
 | 敌方 deck 三来源 | OpponentDeckCache SourceServer/SourceLocal/SourcePool |
 | 服务器 decks 表 / 出队 / 认证模型 / ensureColumn | server.js:73 / :428 / :19 / :193 |
 | RNG 确定化 + digest | RngService.cs(RngChannel、DeterminismDigest) |
+
+## 13. 样本卡组终止性单测(2026-09-18 进行中,待编辑器恢复后接手)
+
+- 样本(用户拍板):`Assets/SORefs/Decks/test decks/chain tests/4.0/lethal infinite test.asset`(RELIC_CURSE_REVIVAL + CURSE_GARDENER,自终止=打死对面,生产熔断不该出手)与 `non-lethal infinite test.asset`(GRAVE_HEXER + SPIRIT_CALLER,无攻击,期望 overtime 疲劳收敛打死;测试内 overtimeRoundThreshold=2,60 回合全局闸只许兜底)。
+- 数据判读(2026-09-18):09:05 digest(reveals=17/池6/深度2/零熔断)= lethal 击杀自终止,符合预期;昨晚 22:48/22:55/23:19 三局 Seed 落盘、无 digest = 不击杀循环跑挂(当时编辑器未载 22:30 提交)。
+- 测试:`InfiniteDeckTerminationTests`(Editor/Tests,未提交)。同步 headless 驱动器 = fixture 揭晓原语(RevealTopCard/TriggerRevealedCard/PutRevealedCardToBottom)+ L0 手动 NotifyReveal/force-clear 复刻 + Start Card 回合边界(疲劳检查→roundNumRef 自增→OnStartCardShuffleAnimationComplete)。敌 deck = 2×JU_ON(复活轴燃料:ReviveTheirCards typeIDFilter=JU_ON / EnhanceCurse 都要敌诅在场)。
+- EditMode 三件套坑(桥已照 CurseSummonerPrefabSmokeTests 落地,幂等,驱动器每次触发前对揭晓卡补桥以覆盖疲劳卡/新生成 token):①OnEnable 不跑→监听器不注册,重挂 onMeRevealed+RegisterListener;②RuntimeOnly UnityEvent(callState=2)被跳过→翻转 effectEvent/checkCostEvent/response;③CardFactory.CreateLogicalCard 只注状态引用,EffectScript.myCard/myCardScript/combatManager 与 CostNEffectContainer._myCardScript 全空→反射注入。
+- 机制事实:JU_ON 伤害 = AttackSelf(printedAttack=0,诅咒自伤载体侧),全部伤害来自 CURSE_GARDENER 的 EnhanceCurse(1)(CurseEffect.EnhanceCurse:找敌诅+1 永久攻,找不到还会生成)。lethal 链 = enhance 落地 → JU_ON 揭晓自伤递增。
+- 当前卡点:桥后两测零伤害(HP 30/30),已加 DIAG 断言在 lethal 测试失败消息里(reveals/revivedO/revivedE/stagedO/deck/forceClear/conclude/enemyHp),下一跑即定位断环。候选:EnhanceCurse 没落地 / AttackSelf 在 EditMode 没提交伤害 / 容器仍静默。
+- 编辑器事故记录:10:09 起主线程长时间无响应(用户处理一次弹窗后短暂恢复;测试启动撞域重载,MCP 插件会话断开;期间出现第 3 个 Unity.exe 进程)。接管会话:先确认编辑器可用与唯一性再 run_tests(先 SaveScene 清 dirty)。
+- 待办:两测绿 → 全量 EditMode 回归 → surgical 提交 InfiniteDeckTerminationTests.cs → 删 registry 20260918-090854。已先行提交:594eed5(tag 登记)、21af9e3(cardsRevealedThisRound 回合重置)。
