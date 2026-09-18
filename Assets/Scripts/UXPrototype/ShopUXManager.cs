@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using DefaultNamespace.Managers;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using DG.Tweening;
 
 public class ShopUXManager : MonoBehaviour
@@ -68,6 +68,12 @@ public class ShopUXManager : MonoBehaviour
 	[Tooltip("World-space gap kept below the bottom deck row when the dynamic bound is computed")]
 	public float scrollBottomPadding = 1f;
 	
+	[Header("Shop Chrome (world)")]
+	[Tooltip("Sliced sprite reused by the world chrome band / chips / buttons (the card face sprite keeps them consistent with price buttons)")]
+	public Sprite chromeSprite;
+	[Tooltip("Font asset for chrome labels (world-space TMP)")]
+	public TMP_FontAsset chromeFont;
+
 	// Store instantiated physical cards for cleanup
 	private List<GameObject> _spawnedShopCards = new List<GameObject>();
 	private List<GameObject> _spawnedPlayerCards = new List<GameObject>();
@@ -596,8 +602,7 @@ public class ShopUXManager : MonoBehaviour
 	
 	private void Start()
 	{
-		AttachPhysButtonsToShopCanvasButtons();
-		ShopHudBar.BootstrapForShop();
+		ShopChrome.Bootstrap(chromeSprite, chromeFont);
 		_mainCamera = Camera.main;
 		if (_mainCamera == null) return;
 
@@ -612,24 +617,6 @@ public class ShopUXManager : MonoBehaviour
 		_cameraInitialY = _scrollTarget.position.y;
 	}
 
-	/// <summary>
-	/// UI kit §02: physical lift/press/refusal feel for the existing uGUI shop buttons,
-	/// attached at runtime (no scene edit). PhysButton only adds visuals and the disabled
-	/// denial; the Button keeps owning activation (uGUI fires on release-over, which is R7).
-	/// Offsets are canvas reference px (Guidelines 2.1 defaults: rs 4, hl 4, deny 6).
-	/// </summary>
-	private void AttachPhysButtonsToShopCanvasButtons()
-	{
-		GameObject canvasGo = GameObject.Find("Shop Canvas");
-		if (canvasGo == null) return;
-		foreach (Button button in canvasGo.GetComponentsInChildren<Button>(true))
-		{
-			if (button.GetComponent<PhysButton>() != null) continue;
-			PhysButton physButton = button.gameObject.AddComponent<PhysButton>();
-			physButton.ConfigureUIButton(4f, 4f, 6f);
-		}
-	}
-	
 	// Live Inspector tuning: OnValidate (editor-only) flags a relayout and Update applies it on
 	// the next frame, so Inspector edits to xOffset / yOffset / shopItemPos / playerDeckPos take
 	// effect at once instead of waiting for the next buy / sell / reroll.
@@ -971,6 +958,10 @@ public class ShopUXManager : MonoBehaviour
 	{
 		// DIAG-LOG(2026-08-08): tracing why the shop Reroll button may appear dead
 		TestManager.Log("[ShopButton] ShopUXManager.OnReroll() called. existingCards=" + _spawnedShopCards.Count + " startPos=" + (shopItemStartPos != null ? shopItemStartPos.name : "null"));
+		// Roll guard (plan-world-entity-shop-chrome): gate the whole shop and deny the
+		// reroll button until the new board has spawned — a queued second click can't roll twice.
+		ShopInputGate.Block();
+		if (ShopChrome.Instance != null) ShopChrome.Instance.SetRerollRolling(true);
 		// 1. Make existing shop cards fly to shop start position and shrink
 		AnimateShopCardsExit();
 		
@@ -1035,6 +1026,8 @@ public class ShopUXManager : MonoBehaviour
 		SpawnShopCardsInternal();
 		// DIAG-LOG(2026-08-08): tracing whether the reroll visual refresh completed
 		TestManager.Log("[ShopButton] Reroll visual refresh done. newCards=" + _spawnedShopCards.Count);
+		ShopInputGate.Unblock();
+		if (ShopChrome.Instance != null) ShopChrome.Instance.SetRerollRolling(false);
 	}
 	
 	/// <summary>
@@ -1116,6 +1109,8 @@ public class ShopUXManager : MonoBehaviour
 
 		// Reroll can cross the objPerRow threshold (4->3): slide the deck band back to the single-row position.
 		RelayoutDeckBand();
+		// Layout contract (plan-world-entity-shop-chrome): the shelf must stay below the chrome band.
+		ShopChrome.CheckShelfClearance(_spawnedShopCards);
 		// Debug.Log($"[ShopUXManager] Reroll complete, spawned {_spawnedShopCards.Count} new shop cards.");
 	}
 

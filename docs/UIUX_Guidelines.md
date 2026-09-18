@@ -116,6 +116,7 @@ Layout rules:
 - Unaffordable: card face and price button are both dim-disabled; hovering plays the denial animation once per enter.
 - Unity port (2026-09-16, `plans/plan-physbutton-price-button-2026-09-16.md`): implemented via the `PhysButton` component (world-sprite mode) — the price print under the card became the button label with a sliced face + ground shadow; buy/sell fires on release inside; hover text swap (`$4` → `买入` / `$2` → `售出`); unaffordable dims the card face (`CardPhysObjScript.SetFaceDimmed`) and the button, with the §2.2 denial on hover. Long-press removed from `ShopCardView`. The consequence motion (buy = card tweens to its deck slot, sell = card flies to the shop start and shrinks) already existed, so no flash/invert was needed. The uGUI reroll/exit buttons get the same feel via `PhysButton` UI mode, attached at runtime by `ShopUXManager` (no scene edit); their activation stays owned by uGUI `Button`.
 - Card body interaction (2026-09-16 user decision): **hover preview in combat** (`CardPhysObjScript` hover popup); in the shop the card body click-to-enlarge preview stays and never transacts.
+- **Direction change (2026-09-18, `plans/plan-world-entity-shop-chrome-2026-09-18.md`): all interactive shop chrome became world physical buttons; the PhysButton UI mode (this port note's uGUI half) is deleted along with "Shop Canvas" — two independent input pipelines (physics `OnMouse*` + EventSystem) with no arbitration was the root defect it papers over.
 
 ### 3.4 Tooltip
 
@@ -137,6 +138,7 @@ Layout rules:
 - Interactive elements — leave shop, options, reroll, price buttons — all reuse the global physics params (2.1); no page-specific tuning. HP / money / rarity odds / counters / income are read-only flats (the R2 converse).
 - Empty deck slots are recessed (3.5); buy/sell follows 3.3.
 - Unity port (2026-09-17, `plans/plan-hud-topbar-inventory-2026-09-17.md`): the top HUD bar is a runtime-built `ShopHudBar` (no scene edit) of flat `HudChip` read-only units (R2 converse) — panel = `TooltipBg`, text = `TooltipText`, accent numbers = `highlight`; chips Money / Income (payday +$N/combat) / HP (cur/max) / Deck (cur/max). The HP chip is current/max by design so the combat-side own-HP display can reuse the same prefab. Legacy debug TMP displays are hidden at runtime; free-rerolls count lives only on the reroll button label.
+- **Direction change (2026-09-18, `plans/plan-world-entity-shop-chrome-2026-09-18.md`): the bar (and reroll/exit) moved from this canvas to a world-space header strip with world buttons — "Shop Canvas" is deleted from the shop. Chips stay flat/read-only (R2 converse) as world `HudChip`s. Plan has motivation + migration order.
 
 ## 4. Unity Implementation Notes
 
@@ -146,6 +148,8 @@ Layout rules:
 - Input-side rules (activation on release, drag-out cancel, price-button transactions) belong to the component event layer, not the animation layer.
 
 ## Version History
+
+- v0.11 · 2026-09-18 · All interactive shop chrome ported to world physical buttons: runtime `ShopChrome` (band + `HudChip`s + reroll/exit, `ShopChromeAnchor` viewport pin) replaces the canvas `ShopHudBar` + uGUI reroll/exit; "Shop Canvas" deleted from the scene; PhysButton UI mode + `PhysButtonPointerRelay` deleted; single input pipeline gated by `ShopInputGate`; shelf-below-band layout contract. Rationale: two un-arbitrated input pipelines (physics vs EventSystem) — click-through double-fire, duplicated modal blocking, hover/visual region divergence. Plan: `plans/plan-world-entity-shop-chrome-2026-09-18.md`. See 3.3/3.6 port notes.
 
 - v0.10 · 2026-09-17 · Recessed empty slots (§3.5) ported as a prefab bake; top HUD bar ported (§3.6): runtime `ShopHudBar` + `HudChip` read-only chips, legacy debug texts retired. HP chip = current/max (combat reuse planned). See 3.5/3.6.
 

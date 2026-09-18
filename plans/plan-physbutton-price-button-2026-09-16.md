@@ -2,6 +2,8 @@
 
 2026-09-16 · status: **implemented & play-verified** (user confirmed 2026-09-17; offline compile 0 errors)
 
+> 2026-09-18 direction update: the **UI mode** from this plan is deprecated for deletion — all interactive shop chrome becomes world-space physical buttons instead (`plans/plan-world-entity-shop-chrome-2026-09-18.md`). The world mode (price button) is unaffected.
+
 Phase 1 of the UI-kit interaction port: the `.phys` state machine from `docs/demo/UIKitDemo.html` §02 as a reusable component, and §04's price-button buy/sell replacing the last long-press idiom. Phase 2 (consequence flight motion) needs no new work — buy/sell/reroll flight animations already existed (`ShopUXManager.OnCardPurchased` / `OnCardSold` / `OnReroll`).
 
 ## User decisions (2026-09-16)

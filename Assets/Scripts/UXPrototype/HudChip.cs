@@ -3,13 +3,22 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // UI kit 3.5 read-only info unit: flat panel + one label. No shadow, no lift, no
-// raycast target (R2 converse: players never try to press it). Phase-agnostic on
-// purpose: the shop top bar uses it today, the combat-side own-HP display is
-// planned to reuse the same prefab.
+// raycast target (R2 converse: players never try to press it). Render-agnostic since
+// the 2026-09-18 world-chrome port: the panel is an Image (canvas) or a SpriteRenderer
+// (world) — Setup picks whichever is present; the label is TMP_Text, the common base of
+// UI and world TMP.
 public class HudChip : MonoBehaviour
 {
-	[SerializeField] private Image _panel;
+	[SerializeField] private Image _panelImage;
+	[SerializeField] private SpriteRenderer _panelSprite;
 	[SerializeField] private TMP_Text _label;
+
+	/// <summary>Runtime-built variant (world chrome): wires refs that serialization can't.</summary>
+	public void Bind(SpriteRenderer panel, TMP_Text label)
+	{
+		_panelSprite = panel;
+		_label = label;
+	}
 
 	/// <summary>
 	/// Applies the read-only look from the palette. Accent (true) uses the numeric
@@ -17,7 +26,9 @@ public class HudChip : MonoBehaviour
 	/// </summary>
 	public void Setup(string initialText, bool accent)
 	{
-		if (_panel != null) _panel.color = GameColorPalette.TooltipBgColor;
+		Color panelColor = GameColorPalette.TooltipBgColor;
+		if (_panelImage != null) _panelImage.color = panelColor;
+		if (_panelSprite != null) _panelSprite.color = panelColor;
 		if (_label != null)
 		{
 			_label.color = accent ? GameColorPalette.HighlightColor : GameColorPalette.TooltipTextColor;

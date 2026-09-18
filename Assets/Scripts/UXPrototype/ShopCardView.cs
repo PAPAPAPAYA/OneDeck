@@ -21,6 +21,8 @@ public class ShopCardView : MonoBehaviour
 	private string _lastPriceText;
 	private Action _buyAction;
 	private Action _sellAction;
+	private DeckSizeIncreaseEffect _deckSizeEffect; // cached pricing probe, resolved once per card instead of per frame
+	private bool _deckSizeEffectResolved;
 
 	// Card-local design scale: demo card face is 118 px wide == 3.2 card-local units.
 	private const float UNITS_PER_PX = 3.2f / 118f;
@@ -73,7 +75,7 @@ public class ShopCardView : MonoBehaviour
 		PhysButton priceButton = EnsurePriceButton();
 		priceButton.gameObject.SetActive(true);
 
-		int basePrice = ShopManager.me != null ? ShopManager.me.GetCardPrice(_cardPhysObj.cardImRepresenting) : 0;
+		int basePrice = ShopManager.me != null ? ShopManager.me.GetCardPrice(_cardPhysObj.cardImRepresenting, ResolveDeckSizeEffect()) : 0;
 		bool isShopItem = _cardPhysObj.shopItemIndex >= 0;
 		int discountOff = isShopItem && ShopManager.me != null ? ShopManager.me.GetBoardDiscount(_cardPhysObj.cardImRepresenting) : 0;
 		int displayPrice = isShopItem ? Mathf.Max(0, basePrice - discountOff) : basePrice / 2;
@@ -104,6 +106,19 @@ public class ShopCardView : MonoBehaviour
 				_strikeLine.SetVisible(false);
 			}
 		}
+	}
+
+	/// <summary>GetCardPrice probes for DeckSizeIncreaseEffect; this card's result never changes, so resolve once.</summary>
+	private DeckSizeIncreaseEffect ResolveDeckSizeEffect()
+	{
+		if (!_deckSizeEffectResolved)
+		{
+			_deckSizeEffectResolved = true;
+			_deckSizeEffect = _cardPhysObj.cardImRepresenting != null
+				? _cardPhysObj.cardImRepresenting.GetComponentInChildren<DeckSizeIncreaseEffect>(true)
+				: null;
+		}
+		return _deckSizeEffect;
 	}
 
 	/// <summary>
@@ -220,7 +235,7 @@ public class ShopCardView : MonoBehaviour
 	{
 		if (!_isEnlarged) return;
 
-		if (Input.GetMouseButtonDown(0))
+		if (Input.GetMouseButtonDown(0) && !ShopInputGate.Blocked)
 		{
 			RestoreCard();
 			_enlargeCooldown = ENLARGE_COOLDOWN_TIME;
@@ -231,7 +246,7 @@ public class ShopCardView : MonoBehaviour
 	private void OnMouseDown()
 	{
 		GamePhaseSO phaseRef = _cardPhysObj.currentGamePhaseRef;
-		if (phaseRef != null && phaseRef.Value() == EnumStorage.GamePhase.Shop)
+		if (phaseRef != null && phaseRef.Value() == EnumStorage.GamePhase.Shop && !ShopInputGate.Blocked)
 		{
 			_pressActive = true;
 		}

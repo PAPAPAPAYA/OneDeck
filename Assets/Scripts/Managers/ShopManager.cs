@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DefaultNamespace.Managers;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class ShopManager : MonoBehaviour
@@ -178,7 +176,13 @@ public class ShopManager : MonoBehaviour
 	/// </summary>
 	public int GetCardPrice(CardScript cardScript)
 	{
-		if (cardScript != null && cardScript.GetComponentInChildren<DeckSizeIncreaseEffect>(true) != null)
+		return GetCardPrice(cardScript, cardScript != null ? cardScript.GetComponentInChildren<DeckSizeIncreaseEffect>(true) : null);
+	}
+
+	/// <summary>Overload for callers that cache the slot-effect probe (per-frame price displays).</summary>
+	public int GetCardPrice(CardScript cardScript, DeckSizeIncreaseEffect slotEffect)
+	{
+		if (cardScript != null && slotEffect != null)
 		{
 			int purchases = deckSlotPurchasesRef != null ? deckSlotPurchasesRef.value : 0;
 			return UtilityShopBonus.GetDeckSlotPrice(deckSlotBasePrice, deckSlotPriceStep, purchases);
@@ -198,13 +202,6 @@ public class ShopManager : MonoBehaviour
 	}
 
 	[Header("UI objects")]
-	public TextMeshProUGUI phaseInfoDisplay;
-	public TextMeshProUGUI deckInfoDisplay;
-	public TextMeshProUGUI shopInfoDisplay;
-	public TextMeshProUGUI playerStatsDisplay;
-	public GameObject rerollButton;
-	public GameObject rerollButtonBg;
-	public GameObject exitButton;
 	public GameObject sectionIdentifier;
 
 	private void Update()
@@ -318,7 +315,6 @@ public class ShopManager : MonoBehaviour
 			playerDeckRef.deck.Add(cardToBuy);
 			RefreshUtilityBonus();
 			ApplyHpMaxFromDeck();
-			UpdateRerollButtonLabel(); // free/paid reroll can flip mid-visit when FreeReroll cards are bought
 		}
 
 		currentShopItemDeckRef.deck.Remove(cardToBuy); // remove it from current shop item list
@@ -341,7 +337,7 @@ public class ShopManager : MonoBehaviour
 				RunRecorder.OnCardBought(cardTypeID); // Async-PvP run journal (plan §2.6)
 			}
 		}
-		ShopHudBar.RefreshIfActive();
+		ShopChrome.RefreshIfActive();
 
 		// Plan step 5: emphasize pulse on the bought card's deck instance when a utility
 		// passive's effect (re)applies via the recompute (payday-time application happens
@@ -364,7 +360,6 @@ public class ShopManager : MonoBehaviour
 		playerDeckRef.deck.Remove(cardToSell); // remove it from player deck
 		RefreshUtilityBonus();
 		ApplyHpMaxFromDeck();
-		UpdateRerollButtonLabel(); // free/paid reroll can flip mid-visit when FreeReroll cards are sold
 		
 		// Notify ShopUXManager to handle sell animation
 		if (physicalCardInstance != null)
@@ -372,7 +367,7 @@ public class ShopManager : MonoBehaviour
 			ShopUXManager.Instance?.OnCardSold(physicalCardInstance, cardIndex);
 		}
 
-		ShopHudBar.RefreshIfActive();
+		ShopChrome.RefreshIfActive();
 	}
 
 	public void EnterShop()
@@ -400,14 +395,8 @@ public class ShopManager : MonoBehaviour
 		// process shop items and display
 		GenerateShopItems();
 		ApplyBoardDiscount(); // initial board rolls discounts too (2026-09-11 probability rework)
-		// show + refresh the top HUD bar (payday / baseline growth are final by here)
-		ShopHudBar.ShowIfActive();
-		// show reroll button
-		rerollButton.SetActive(true);
-		rerollButtonBg.SetActive(true);
-		UpdateRerollButtonLabel();
-		// show exit button
-		exitButton.SetActive(true);
+		// show + refresh the world chrome (payday / baseline growth are final by here)
+		ShopChrome.ShowIfActive();
 		// show section identifiers
 		sectionIdentifier.SetActive(true);
 		// record shop visit
@@ -438,10 +427,7 @@ public class ShopManager : MonoBehaviour
 		}
 		_boughtCardInstances.Clear();
 
-		ShopHudBar.HideIfActive();
-		rerollButton.SetActive(false);
-		rerollButtonBg.SetActive(false);
-		exitButton.SetActive(false);
+		ShopChrome.HideIfActive();
 		sectionIdentifier.SetActive(false);
 	}
 
@@ -503,19 +489,11 @@ public class ShopManager : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Plan step 5: reroll button shows whether the next reroll is free (and how many remain).
-	/// </summary>
-	private void UpdateRerollButtonLabel()
-	{
-		if (rerollButton == null) return;
-		var label = rerollButton.GetComponentInChildren<TMPro.TextMeshProUGUI>(true);
-		if (label == null) return;
-		int freeLeft = (_utilityBonus != null ? _utilityBonus.freeRerolls : 0) - _freeRerollsUsedThisVisit;
-		label.text = freeLeft > 0
-			? "Reroll: $0"
-			: "Reroll: $" + (RerollPriceRef != null ? RerollPriceRef.value : 0);
-	}
+	/// <summary>Free rerolls left this visit (utility bonus minus the ones used).</summary>
+	public int FreeRerollsLeft => (_utilityBonus != null ? _utilityBonus.freeRerolls : 0) - _freeRerollsUsedThisVisit;
+
+	/// <summary>Paid reroll price (0 when the ref is unwired).</summary>
+	public int RerollPrice => RerollPriceRef != null ? RerollPriceRef.value : 0;
 
 	public void Reroll()
 	{
@@ -538,12 +516,11 @@ public class ShopManager : MonoBehaviour
 		{
 			purse.value -= RerollPriceRef.value;
 		}
-		ShopHudBar.RefreshIfActive();
+		ShopChrome.RefreshIfActive();
 
 		// First generate new shop item data
 		GenerateShopItems();
 		ApplyBoardDiscount();
-		UpdateRerollButtonLabel();
 		// record reroll
 		if (ShopStatsManager.Me != null)
 		{

@@ -2,6 +2,8 @@
 
 2026-09-17 · status: **implemented & play-verified** (user confirmed 2026-09-17; offline compile 0 errors; edit-mode smoke test passed)
 
+> 2026-09-18 direction update: the canvas `ShopHudBar` from this plan moves to a world-space header strip as part of the all-world-buttons convergence; the shop canvas is retired (`plans/plan-world-entity-shop-chrome-2026-09-18.md`). `HudChip` (flat read-only unit, palette-driven) is kept, generalized to a world prefab.
+
 Implementation record (user decisions applied: HP chip = current/max for future combat reuse, others default):
 - `Assets/Resources/HudChip.prefab` (new): panel Image (shop `UISprite`, sliced, raycast off, `TooltipBg`/Navy) + `Value` TMP (`RobotoCondensed-Regular SDF`, 24pt, `TooltipText`/GreyWhite) + `LayoutElement` + `HudChip` (refs wired). Built in-editor via execute_code.
 - `Assets/Scripts/UXPrototype/HudChip.cs` (new): flat read-only chip; `Setup(text, accent)` / `SetText` / `SetVisible`; accent = `GameColorPalette.HighlightColor` (new static over the existing `highlight` ColorSO).
