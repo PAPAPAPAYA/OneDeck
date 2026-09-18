@@ -216,9 +216,6 @@ public class ShopManager : MonoBehaviour
 		return priceRef.value;
 	}
 
-	[Header("UI objects")]
-	public GameObject sectionIdentifier;
-
 	private void Update()
 	{
 		if (gamePhaseRef.currentGamePhase != EnumStorage.GamePhase.Shop) return;

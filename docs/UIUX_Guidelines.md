@@ -139,6 +139,7 @@ Layout rules:
 - Empty deck slots are recessed (3.5); buy/sell follows 3.3.
 - Unity port (2026-09-17, `plans/plan-hud-topbar-inventory-2026-09-17.md`): the top HUD bar is a runtime-built `ShopHudBar` (no scene edit) of flat `HudChip` read-only units (R2 converse) — panel = `TooltipBg`, text = `TooltipText`, accent numbers = `highlight`; chips Money / Income (payday +$N/combat) / HP (cur/max) / Deck (cur/max). The HP chip is current/max by design so the combat-side own-HP display can reuse the same prefab. Legacy debug TMP displays are hidden at runtime; free-rerolls count lives only on the reroll button label.
 - **Direction change (2026-09-18, `plans/plan-world-entity-shop-chrome-2026-09-18.md`): the bar (and reroll/exit) moved from this canvas to a world-space header strip with world buttons — "Shop Canvas" is deleted from the shop. Chips stay flat/read-only (R2 converse) as world `HudChip`s. Plan has motivation + migration order.
+- **Chrome v2 + section panels (2026-09-18, `plans/plan-shop-panels-port-2026-09-18.md`)**: the annotated layout shipped — chrome top bar rows ([avatar+username / HP / $] | [✦/✦✦/✦✦✦ rarity-odds % from the active `ShopRarityWeightSO`] | [Wins / Hearts / +$N/combat]) with Exit + options placeholder; the deck chip moved into the Deck panel header as a `03/05` counter, and the reroll button moved into the Shop panel header. Three runtime-built translucent `ShopSectionPanels` (Shop/Deck/Upgrades) wrap the rows; owned utility passives (`occupiesDeckSlot` = false) render in the Upgrades row below the deck band. Wins/Hearts = `PhaseManager.wins/winCon/hearts/heartMax`; username = `PlayerIdentity.Username`. Adaptations: ▦/♥/❚ glyphs are outside every bundled static font atlas (✦ only) — Wins/Hearts use full-word labels and the options button shows "||".
 
 ## 4. Unity Implementation Notes
 
@@ -148,6 +149,8 @@ Layout rules:
 - Input-side rules (activation on release, drag-out cancel, price-button transactions) belong to the component event layer, not the animation layer.
 
 ## Version History
+
+- v0.12 · 2026-09-18 · Shop-page panels port (§08): chrome top bar v2 (avatar+username, rarity-odds chips, Wins/Hearts, options placeholder), three world `ShopSectionPanels` with headers + `03/05` deck counter, reroll relocated into the Shop panel header, owned utility passives moved into the Upgrades panel row. Wins/Hearts = `PhaseManager` IntSOs; ▦/♥/❚ absent from every static font atlas → full-word Wins/Hearts labels, "||" options. Plan: `plans/plan-shop-panels-port-2026-09-18.md`. See 3.6 port notes.
 
 - v0.11 · 2026-09-18 · All interactive shop chrome ported to world physical buttons: runtime `ShopChrome` (band + `HudChip`s + reroll/exit, `ShopChromeAnchor` viewport pin) replaces the canvas `ShopHudBar` + uGUI reroll/exit; "Shop Canvas" deleted from the scene; PhysButton UI mode + `PhysButtonPointerRelay` deleted; single input pipeline gated by `ShopInputGate`; shelf-below-band layout contract. Rationale: two un-arbitrated input pipelines (physics vs EventSystem) — click-through double-fire, duplicated modal blocking, hover/visual region divergence. Plan: `plans/plan-world-entity-shop-chrome-2026-09-18.md`. See 3.3/3.6 port notes.
 
