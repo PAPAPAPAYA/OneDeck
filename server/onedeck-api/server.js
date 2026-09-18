@@ -946,15 +946,23 @@ app.get('/admin', requireAdmin, (req, res) =>
 			let deck = [];
 			try { deck = JSON.parse(r.final_deck); } catch { /* keep empty */ }
 			const tagCounts = new Map();
+			let matchedCards = 0;
 			for (const id of deck)
 			{
 				const c = catalog.get(id);
 				if (!c) continue;
-				for (const t of c.tags) tagCounts.set(t, (tagCounts.get(t) || 0) + 1);
+				matchedCards++;
+				for (const t of c.tags)
+				{
+					if (t === 'Passive') continue;
+					tagCounts.set(t, (tagCounts.get(t) || 0) + 1);
+				}
 			}
-			let dominant = '-';
-			let bestN = 0;
-			for (const [t, n] of tagCounts) if (n > bestN) { dominant = t; bestN = n; }
+			// Top-2 non-passive tags; stable sort keeps first-seen order on ties.
+			const top2 = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2);
+			const archetypeText = top2.length === 0 ? '-'
+				: top2.map(([t, n]) => t + '(' + Math.round(100 * n / matchedCards) + '%)').join(' ');
+			const dominant = top2.length > 0 ? top2[0][0] : '-';
 			const agg = archetypes.get(dominant) || { runs: 0, victories: 0, sumSession: 0 };
 			agg.runs++;
 			if (r.result === 'victory') agg.victories++;
@@ -964,14 +972,14 @@ app.get('/admin', requireAdmin, (req, res) =>
 				+ esc(r.run_id.slice(0, 8)) + '</a></td><td>' + esc(r.username || '?') + '</td><td>' + esc(r.game_version)
 				+ '</td><td>' + esc(r.result) + '</td><td class="num">' + r.final_session + '</td><td class="num">'
 				+ r.hearts_left + '</td><td class="num">' + deck.length + '</td><td class="num">'
-				+ (100 * r.seen_pool_pct).toFixed(0) + '%</td><td>' + esc(dominant) + '</td><td class="muted">'
+				+ (100 * r.seen_pool_pct).toFixed(0) + '%</td><td>' + esc(archetypeText) + '</td><td class="muted">'
 				+ esc(r.uploaded_at) + '</td></tr>';
 		}
 		runHtml += '</table>';
 	}
 
 	// Archetype summary
-	let archHtml = '<h2>Archetypes (dominant tag of final deck)</h2>';
+	let archHtml = '<h2>Archetypes (dominant non-passive tag of final deck)</h2>';
 	if (archetypes.size === 0)
 	{
 		archHtml += '<p class="muted">no runs yet (or card catalog not uploaded)</p>';
