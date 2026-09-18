@@ -73,21 +73,32 @@ async function run(access) {
   const sid = init.sid;
   await rpc("notifications/initialized", {}, sid, access);
 
-  const call = await rpc("tools/call", {
-    name: "notion-query-data-sources",
-    arguments: {
-      data: {
-        data_source_urls: ["collection://" + DB_ID],
-        query: 'SELECT * FROM "collection://' + DB_ID + '"',
-        mode: "sql",
+  // SQL mode caps each response at 100 rows (has_more flag) — page through
+  // with LIMIT/OFFSET until a short batch, then merge into one JSON file.
+  const PAGE = 100;
+  let all = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const call = await rpc("tools/call", {
+      name: "notion-query-data-sources",
+      arguments: {
+        data: {
+          data_source_urls: ["collection://" + DB_ID],
+          query: 'SELECT * FROM "collection://' + DB_ID + '" LIMIT ' + PAGE + " OFFSET " + offset,
+          mode: "sql",
+        },
       },
-    },
-  }, sid, access);
-  const text = (call.payload.result && call.payload.result.content || [])
-    .map(c => c.text || "").join("\n");
-  fs.writeFileSync(OUT, text, "utf-8");
-  console.log("RESULT length:", text.length);
-  console.log("RESULT head:", text.slice(0, 600));
+    }, sid, access);
+    if (call.payload.error) throw new Error("query failed: " + JSON.stringify(call.payload.error));
+    const text = (call.payload.result && call.payload.result.content || [])
+      .map(c => c.text || "").join("\n");
+    const page = JSON.parse(text);
+    all = all.concat(page.results || []);
+    console.log("page offset=" + offset + " rows=" + (page.results || []).length + " has_more=" + page.has_more);
+    if (!page.results || page.results.length < PAGE) break;
+  }
+  const merged = JSON.stringify({ results: all, has_more: false, total: all.length });
+  fs.writeFileSync(OUT, merged, "utf-8");
+  console.log("RESULT rows:", all.length);
 }
 
 (async () => {
