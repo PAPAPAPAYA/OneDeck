@@ -67,6 +67,7 @@ public class GameColorPalette : ScriptableObject
 	public ColorSO tooltipText;
 	public ColorSO resultPanelBg;
 	public ColorSO resultPanelText;
+	public ColorSO shopPanelBg;	// translucent dark section panel — UIKitDemo 08 shop page
 
 	[Header("UI Kit / Physical UI")]
 	public ColorSO cardArtBg;	// card art zone (dark navy) — UIKitDemo --card-art
