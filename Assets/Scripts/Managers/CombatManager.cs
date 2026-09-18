@@ -1204,6 +1204,10 @@ public class CombatManager : MonoBehaviour
 	{
 		// L0 hard stop (2026-09-17): fresh per-round reveal budget
 		if (CombatBudgetGuard.Me != null) CombatBudgetGuard.Me.NotifyRoundStart();
+		// cardsRevealedThisRound is per-round by name (the never-called ResetCardsRevealedCount
+		// API confirms the intent); it previously only reset at combat cleanup, which made the
+		// L0 per-round reveal cap cumulative across rounds (2026-09-18).
+		cardsRevealedThisRound = 0;
 
 		// Physical card reset
 		visuals.ReviveAllPhysicalCards();
