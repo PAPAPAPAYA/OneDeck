@@ -66,6 +66,7 @@ Normalized cumulative series (UTC-midnight anchored, from the intake chain):
 | Sep 14 | 347 |
 | Sep 15 | 357 |
 | Sep 16 | 366 |
+| Sep 17 | 373 |
 
 \* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15.
 
@@ -176,6 +177,7 @@ Interpretation:
 	- Demo live ≥ 8 weeks before launch (Next-Fest-style exposure window), removed at launch with save carry-over — a standard wishlist-conversion setup.
 	- Dev's own framing ("our biggest game ever") and the price jump from the studio's usual $3–4 to $9.99 imply wishlist totals meaningfully above prior Sokpop titles.
 - A real wishlist curve is only obtainable from the developer or a paid Sensor Tower / Gamalytic subscription.
+- *(Addendum 2026-09-18: the pre-launch figure was later obtained — **21,857 outstanding wishlists** via Gamalytic's `game-details` API while it still flagged Grail as unreleased and served the stat on the free tier. Conversion analysis in §12.)*
 
 ## 7. OneDeck-Relevant Observations
 
@@ -198,6 +200,7 @@ Interpretation:
 	- *Status 2026-09-13 (interim, 03:21 UTC)*: day-12 = **15** (rebound, highest since day 7) **but with 5 negatives in one day — the worst cohort yet (33% negative)**. New dominant theme: the *endgame* — (a) EN: "played for hours to finally beat the final boss and take the grail… the game then slaps me, says FAIL, and ends my run" (finale reads as a bug or a trap); (b) EN 25 h: undefeated PvP records (10 fights) yet "the final boss (Computer) is just stupidly broken… terrible balancing, no player satisfaction"; (c) EN: "very bad community… cheating, corrupting, abusing" (first community-conduct negative); (d) zh-CN: "除了第二个英雄…其他英雄都太垃圾了…10小时就腻了…深度不深" (character imbalance + shallow depth); (e) DE: "bugs". The endgame/finale now joins matchmaking and patch-nerfs as a design-level complaint axis — and unlike ops issues, it hits the moment of maximum emotional investment. Like-for-like CCU: 468 (d9) → 465 (d10) → **359 (d13)** — the plateau broke, ≈ −8%/day over the last 3 days. Day-13 partial = 0 known (edge cache ~6 h stale at sampling). Month-1 tracking ≈ **510–580 reviews ≈ 15k–23k units** (low-band upper edge to mid-band lower edge). §12 on Sep 18 closes the call.
 	- *Status 2026-09-15 (interim, 12:03 UTC)*: day-13 closed at **7**, day-14 at **10**, day-15 partial 3 by 08:59 — floor band now 7–20/day, centered ≈12/day. Anchors: Sep 14 = 347, Sep 15 = 357 (±1: totals 361 @ 12:03 vs 360 surfaced rows — one review hidden by the list-cache gap). Negatives +2 (33 → 35, spike cooling): (a) EN 3.4 h "disappointing vs The Bazaar" grab-bag — low agency, weak balance, punishing upgrades, poor post-battle UI, energy SFX, broken borderless mode, 60 fps cap, font issues at high res; (b) EN 17 h: abandoned 12 runs ("skill matters less than luck"), crash on the final day via transition-animation freeze, and **Continue starts a new run instead of restoring the save** — first save-continuity complaint. Language: EN-dominant (16/20), german 2. Month-1 tracking ≈ **500–520 reviews ≈ 15k–21k units**. CCU 277 @ 11:53 UTC is off-anchor (EU-evening sample), trend check deferred to the §12 anchor. §12 on Sep 18 closes the call.
 	- *Status 2026-09-16 (interim, 14:12 UTC)*: day-15 closed at **9** (anchor Sep 16 = 366; totals 372 = 336/36, 90.3%), day-16 running 4–6 by 08:04 UTC (edge-cache lag stretched to ~6–8 h this session). Floor band steady at ~9–12/day. Negatives +1 (35 → 36): EN 14 h "Algebraic Formula Battle Simulator" — argues total deck energy cost must stay net-positive across every shuffle, so randomized play order means one bad sequence drains the run; forced drafting of every pulled card blocks experimentation until the formula is solved. A new sub-flavor of the agency axis: *the game is a solved equation, the player just watches the dice*. First dutch review (75.8 h playtime — a Dutch veteran). Month-1 tracking ≈ **500–520 reviews ≈ 15k–21k units** (unchanged). CCU 321 @ 14:12 UTC off-anchor; anchor check at §12.
+	- *Status 2026-09-17 (interim, 03:47 UTC)*: day-16 closed at **7** (new floor; anchor Sep 17 = 373, totals 376 = 339/37, 90.2%), day-17 partial 2 by 02:47 UTC. Negatives +1 (36 → 37): EN 1.3 h, pacing — loves deckbuilders with a constant "engine revving" feel, "here I feel like I'm constantly running on fumes"; **refunded** (second refund in the negative pool) yet still recommends trying it — "the refund window fits a couple of runs", and a demo would help. Constructive tone, voted down anyway. Like-for-like CCU: 359 (d13) → **317 (d17)** = −3%/day — the bleed decelerated from −8%/day. Month-1 tracking **≈490–510 reviews ≈ 15k–20k units** (straddling the low-band boundary). §12 tomorrow (Sep 18, 00:00 UTC anchor) closes the call.
 
 ## 9. Recheck — 2026-09-05 (day 4–5)
 
@@ -259,6 +262,44 @@ Per-day intake: 48 → 55 → 39 → 42 → 35 → ~26 → (day 7 running ~30/da
 4. **Intake is now region-cyclical**: the day-7 early block (00:00–03:10 UTC = US prime time) delivered 4+ reviews while Sep-6 EU hours were slow — daily totals sampled in EU-morning hours will understate the pace; prefer 24 h+ windows.
 5. **Sales implication**: day-6 ~26 reviews × 30–40× → ~800–1,000 units/day; cumulative week-1 ≈ 8,000–11,000 units unchanged; month-1 bands unchanged.
 6. Data-quality note: Steam's `appreviews` edge cache served stale lists intermittently this session (one "recent" page dated ~2 days back while totals were fresh); totals were cross-checked on two independent fetches and the day-6 count reconciled against the cumulative chain (219 + 5 + 21 + 4 = 249, ±2).
+
+## 12. Recheck — 2026-09-18 (day 18, checkpoint close-out)
+
+Snapshot at 03:56 UTC 2026-09-18. The scheduled 00:00 UTC automation run did not fire; taken manually. The list endpoint served ~26 h stale pages this session, so the day-17/day-18 split carries ±1–2.
+
+| Metric | Value | vs 2026-09-17 |
+|--------|-------|---------------|
+| Total reviews | **380** (343 pos / 37 neg, 90.3%, "Very Positive") | +4 / 24.2 h |
+| Day-17 closure (Sep 17) | **≈4** (3–5, cache-gap bound) | day-16 was 7 |
+| Day-18 partial (to 03:56) | 1–2 (newest review Sep 18 01:41) | — |
+| CCU | **283** (03:56, anchor-comparable) | 317 → 283 (−11%) |
+
+Final intake chain (UTC days): 48 → 55 → 39 → 42 → 35 → 26 → 22 → 20 → 9 → 20 → 9 → 15 → 7 → 10 → 9 → 7 → ≈4 → (day-18 partial 1–2). Cumulative anchors: Sep 18 ≈ 377–379 (raw reading 380 @ 03:56).
+
+### Findings
+
+1. **Checkpoint verdict (§8, 2026-09-18)**: the <15/day trigger fired on day 9 and held — day-16 closed at 7, day-17 at ≈4. **Month-1 verdict: low band, ≈490–510 reviews ≈ 15k–20k units; net ≈ $88k–119k ≈ ¥59万–80万** (FX 6.726). The mid band (550–650) is unreachable without an external event (season-1 content, a streamer wave).
+2. **Week-1 verification (the §8 original checkpoint)**: 267 actual vs ~235 projected — +14%; the 270–275 revised band was essentially exact (267, −1%).
+3. **CCU (anchor-comparable series)**: 658 (d4) → 634 (d5) → 593 (d7) → 468 (d9) → 465 (d10) → 359 (d13) → 317 (d17) → 283 (d18). Two phases: −8%/day (d10–d13), then −3.3%/day (d13–d17). CCU is decaying slower than review intake over the same windows — consistent with a retained core (season/ladder players log in but rarely review).
+4. **Negatives**: 37 total, but only +4 in the final 5 days (the day-12 five-negative cohort was the spike). Cumulative rate pinned at 90.2–90.3% for the whole week. Day-18 taxonomy: matchmaking/PvP fairness (3–4) · balance/character (4–5) · endgame/finale design (3) · update nerfs (2) · agency/formula (2–3) · tech: crashes/save/UI (5–6) · pacing/refund (2) · community conduct (1) · genre-fit (1–2). No new theme since Sep 13.
+5. Ops cadence observed: no new patch announced through day 18 in the review corpus; the update-blame complaint thread (§10–§12) therefore remains unaddressed as of this snapshot.
+
+### Wishlist-conversion addendum (added 2026-09-18)
+
+Pre-launch outstanding wishlists: **21,857** (Gamalytic `game-details` API; surfaced via its unreleased-state free tier — see §6 addendum).
+
+| Window | Est. units | Wishlist-equivalent conversion (of 21,857) |
+|--------|-----------|--------------------------------------------|
+| Day 1 | 1,440–1,920 | **6.6–8.8%** (mid ≈7.7%) |
+| Week 1 | 8,000–10,700 | **37–49%** (mid ≈43%) |
+| Month 1 | 15,000–20,000 | 69–91% — impossible as true conversion |
+
+Interpretation:
+
+- These are *wishlist-equivalent* rates, not true conversion: the numerator includes buyers who never wishlisted (Sokpop's 112-game brand audience buying on release day, demo players converting directly, external traffic).
+- A month-1 figure of 69–91% of the entire pre-launch pool exceeds any plausible true conversion — **the wishlist pool explains at most ~half of week-1 sales** at typical 15–30% week-1 benchmarks. The rest is brand-direct + demo carry-over, which is exactly why actual week-1 (8.0k–10.7k units) beat Gamalytic's wishlist-regression *month-1* prediction (7.8k) within seven days.
+- Benchmark context: typical indie D1 conversion ≈5–10%, week-1 ≈15–30%. Grail's D1 sits inside the band; week-1 runs ~1.5–2× the band — consistent with a demo-installed fanbase that bypasses the wishlist reminder entirely.
+- OneDeck takeaway: when a launch is fueled by an installed demo / prior-title fan base, wishlist count is a misleading sizing metric — it understates month-1 by 2–3× pre-release and overstates "conversion" post-release. Size by audience-carrying assets (demo installs, prior-title owners), not wishlists alone.
 
 ## Appendix: Data Provenance
 
