@@ -471,3 +471,32 @@ git commit -m "feat(shop): scene tuning + label cleanup + docs for panel port"
 - **Spec coverage:** top bar (avatar+用户名 ✓ Task 3, HP/$ ✓ existing chips repositioned Task 3, rarity odds ✓ Tasks 2+3, 胜场·心数 ✓ Task 3 via PhaseManager IntSOs, 收入 ✓ Task 3, 离开商店 ✓ existing, 选项 ✓ Task 3 placeholder) · Shop panel + reroll in header ✓ Task 4 · Deck panel + 03/05 counter ✓ Task 4 · recessed 空卡位 ✓ existing (unchanged, now inside Deck panel bounds) · Upgrades panel (owned utilities, sell half price, no counter/recesses) ✓ Task 5 · panel translucency ✓ Task 1 color. Annotated-layout gaps: none identified.
 - **Placeholder scan:** all code steps contain concrete code or exact fileIDs/paths; verification steps name the exact test/class or manual scenario. Glyph fallbacks are explicit with concrete substitute strings.
 - **Type consistency:** `ShopSectionPanels` surface (Bootstrap/Instance/SetRerollRolling/RefreshLayout/RefreshCounter/RefreshIfActive/ShowIfActive/HideIfActive/ComputeContentBounds/FormatSlotCount) is identical across Tasks 3-6; `ShopUXManager` accessors (`Spawned*` × 4, `physCardSize`) match between Tasks 4-5; `ShopRarityWeightSO.GetOddsPercents` / `ShopManager.GetRarityOddsPercents` signatures match Task 2 definition ↔ Task 3 consumption; `GetUtilityZoneBaseSlot` return semantics change is confined to Task 5 and its only callers are `StackSlotAssigner.Assign` (:335).
+
+---
+
+## Execution Record (2026-09-18)
+
+All 6 tasks executed inline (superpowers:executing-plans); 7 commits on `main`:
+
+| Commit | Content |
+|---|---|
+| `1a1de9e` | Task 1 — ShopPanelBg palette color |
+| `ba3363e` | Task 2 — rarity-odds API + 3 tests |
+| `ac2d33a` | Task 3 — chrome top bar v2 |
+| `bffc4b2` | Task 4 — ShopSectionPanels + reroll relocation |
+| `8dd0eff` | Task 5 — Upgrades row utility split |
+| `c523d39` | Task 6 — scene tuning + label cleanup + docs |
+| `5944616` | Unity-generated .meta files for the new scripts |
+
+### Deviations from the plan (all deliberate)
+
+1. **Glyph substitution decided pre-emptively (Task 3).** The plan said ship spec glyphs (`▦`/`♥`/`❚❚`) and substitute only if an in-editor check showed tofu. Instead the bundled static font atlases were grepped directly: `NotoSansSymbols2 SDF` contains ONLY `✦` (U+2726, codepoint 10022) and RobotoCondensed lacks `♥` (9829) — so the shipped labels are full-word `Wins`/`Hearts` (fit the 1.9u chips at fontSize 1.9) and the options button shows `||`. Rarity chips keep `✦` (atlas-verified).
+2. **Reroll removal split across Tasks 3-4 (compilable commits).** Task 3 removed the reroll *button* from `ShopChrome.Build` but kept `SetRerollRolling`/`RefreshRerollState` as null-guarded no-ops (the two `ShopUXManager` call sites still referenced them); Task 4 removed the methods and switched the call sites to `ShopSectionPanels.SetRerollRolling`. Every commit compiles.
+3. **Panel-refit hook consolidated (Task 5).** Task 4 placed `RefreshLayout()` calls at the end of `RelayoutDeckBand` and `SpawnEmptySlots`; Task 5 moved the single hook into `RelayoutPlayerDeckCards` — every flow that moves a deck/utility card or empty slot ends there, so the other two calls were removed (avoids double-refits and covers the `SpawnAdditionalEmptySpaces` path, which calls `RelayoutPlayerDeckCards` directly).
+4. **`ShopManager.sectionIdentifier` fully removed (Task 6).** The plan offered "leave the field with a deprecation comment, or remove"; removal was chosen (scene reference line deleted with the GameObject blocks).
+5. **Scene commit isolation.** `GameScene.unity` carried unrelated uncommitted user edits (TestManager log toggles, a component add). Only the 6 port-related diff hunks were staged via a filtered patch (`git apply --cached`); the user's hunks remain unstaged in the working tree.
+
+### Verification status (open)
+
+- EditMode tests written but NOT executed in the authoring session (no Unity MCP available): `ShopRarityWeightSOTests` (3), `ShopSectionPanelsTests` (4), `GameColorPaletteWiringTests` (auto-covers the new `shopPanelBg` field). Run via Test Runner.
+- Play-mode checklist: RegressionChecklist row 106. If `[ShopChrome] shelf top` warns, drop `shopItemPos.y` 1.5 → 1.4 (Inspector live-tunes via OnValidate → RelayoutAll).
