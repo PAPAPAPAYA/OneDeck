@@ -113,9 +113,11 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		CombatManager.ownerPlayerStatusRef.hp = 30;
 		CombatManager.enemyPlayerStatusRef.hp = 30;
 		// Fatigue engages fast: overtime from round 3 exercises AddFatigueCards inside the
-		// real round boundary; reveal-count fatigue off for isolation.
+		// real round boundary. Reveal-count fatigue uses the production scene value (40) —
+		// unlike the round-clock overtime fatigue it keeps ticking inside round-boundary-
+		// starved loops like this one.
 		CombatManager.overtimeRoundThreshold = 2;
-		CombatManager.fatigueRevealThreshold = 0;
+		CombatManager.fatigueRevealThreshold = 40;
 		// Bare AddComponent instance: fatigueAmount defaults to 0, which makes
 		// AddFatigueCards a no-op — pin the per-overtime-round fatigue card count.
 		CombatManager.fatigueAmount = 1;
@@ -269,6 +271,12 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 			{
 				if (CombatManager.combinedDeckZone.Count == 0) break;
 				RevealTopCard();
+				// Production fires the reveal-count fatigue check per reveal inside
+				// RevealNextCardCore (:1077) — the fixture primitive bypasses that path,
+				// so mirror the call here (private, hence reflection).
+				typeof(CombatManager)
+					.GetMethod("CheckFatigueByRevealCount", BindingFlags.NonPublic | BindingFlags.Instance)
+					?.Invoke(CombatManager.Me, null);
 				// Fixture RevealTopCard bypasses RevealNextCardCore — notify the L0 guard manually.
 				guard.NotifyReveal(CombatManager.cardsRevealedThisRound, CombatManager.totalCardsRevealed,
 					CombatManager.combinedDeckZone.Count, CombatManager.roundNumRef.value);
