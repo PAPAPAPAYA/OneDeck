@@ -58,8 +58,6 @@ public class ShopChrome : MonoBehaviour
 	private HudChip _avatarChip;
 	private TMP_Text _avatarLabel;
 	private PhysButton _optionsButton;
-	private PhysButton _rerollButton;     // DEPRECATED 2026-09-18: button moves to the Shop panel
-	private TextMeshPro _rerollLabel;     // header (ShopSectionPanels, Task 4) — kept until then.
 	private PhysButton _exitButton;
 	private PhaseManager _phaseManager;
 
@@ -75,9 +73,6 @@ public class ShopChrome : MonoBehaviour
 	private int _lastHearts = int.MinValue;
 	private int _lastHeartMax = int.MinValue;
 	private string _lastUsername;
-	private string _lastRerollLabel;
-	private bool _lastRerollDisabled;
-	private bool _rerollRolling;
 
 	/// <summary>Bottom edge of the chrome band in world Y — the shelf layout contract limit.</summary>
 	public static float BandBottomWorldY()
@@ -129,17 +124,6 @@ public class ShopChrome : MonoBehaviour
 	public static void HideIfActive()
 	{
 		if (_instance != null) _instance.gameObject.SetActive(false);
-	}
-
-	/// <summary>
-	/// Reroll animation guard. DEPRECATED 2026-09-18: the reroll button moves into the Shop
-	/// panel header (ShopSectionPanels, plan-shop-panels-port-2026-09-18 Task 4); until that
-	/// task lands this remains a null-guarded no-op (Build no longer creates the button).
-	/// </summary>
-	public void SetRerollRolling(bool rolling)
-	{
-		_rerollRolling = rolling;
-		RefreshRerollState();
 	}
 
 	/// <summary>
@@ -375,30 +359,6 @@ public class ShopChrome : MonoBehaviour
 		{
 			_lastUsername = username;
 			if (_avatarLabel != null) _avatarLabel.text = username;
-		}
-
-		RefreshRerollState();
-	}
-
-	private void RefreshRerollState()
-	{
-		ShopManager shop = ShopManager.me;
-		if (shop == null || _rerollButton == null) return;
-
-		int freeLeft = shop.FreeRerollsLeft;
-		string label = freeLeft > 0 ? "Reroll: $0" : "Reroll: $" + shop.RerollPrice;
-		bool disabled = _rerollRolling || (freeLeft <= 0 && shop.purse != null && shop.purse.value < shop.RerollPrice);
-
-		if (label != _lastRerollLabel)
-		{
-			_lastRerollLabel = label;
-			_rerollLabel.text = label;
-		}
-		if (disabled != _lastRerollDisabled)
-		{
-			_lastRerollDisabled = disabled;
-			_rerollButton.SetDisabled(disabled);
-			_rerollLabel.color = disabled ? GameColorPalette.CardTextSoftColor : GameColorPalette.OwnerTextColor;
 		}
 	}
 }

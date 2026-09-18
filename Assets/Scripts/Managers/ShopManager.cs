@@ -353,6 +353,7 @@ public class ShopManager : MonoBehaviour
 			}
 		}
 		ShopChrome.RefreshIfActive();
+		ShopSectionPanels.RefreshIfActive();
 
 		// Plan step 5: emphasize pulse on the bought card's deck instance when a utility
 		// passive's effect (re)applies via the recompute (payday-time application happens
@@ -383,6 +384,7 @@ public class ShopManager : MonoBehaviour
 		}
 
 		ShopChrome.RefreshIfActive();
+		ShopSectionPanels.RefreshIfActive();
 	}
 
 	public void EnterShop()
@@ -412,8 +414,7 @@ public class ShopManager : MonoBehaviour
 		ApplyBoardDiscount(); // initial board rolls discounts too (2026-09-11 probability rework)
 		// show + refresh the world chrome (payday / baseline growth are final by here)
 		ShopChrome.ShowIfActive();
-		// show section identifiers
-		sectionIdentifier.SetActive(true);
+		ShopSectionPanels.ShowIfActive();
 		// record shop visit
 		if (ShopStatsManager.Me != null)
 		{
@@ -443,7 +444,7 @@ public class ShopManager : MonoBehaviour
 		_boughtCardInstances.Clear();
 
 		ShopChrome.HideIfActive();
-		sectionIdentifier.SetActive(false);
+		ShopSectionPanels.HideIfActive();
 	}
 
 	private void GenerateShopItems()
@@ -532,6 +533,7 @@ public class ShopManager : MonoBehaviour
 			purse.value -= RerollPriceRef.value;
 		}
 		ShopChrome.RefreshIfActive();
+		ShopSectionPanels.RefreshIfActive();
 
 		// First generate new shop item data
 		GenerateShopItems();

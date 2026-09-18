@@ -77,9 +77,17 @@ public class ShopUXManager : MonoBehaviour
 	// Store instantiated physical cards for cleanup
 	private List<GameObject> _spawnedShopCards = new List<GameObject>();
 	private List<GameObject> _spawnedPlayerCards = new List<GameObject>();
+	// Owned utility passives (occupiesDeckSlot = false) rendered in the Upgrades panel row
+	// below the deck band (plan-shop-panels-port-2026-09-18 Task 5).
+	private List<GameObject> _spawnedUtilityCards = new List<GameObject>();
 	// Persistent empty slots, one per deckSize grid slot, rendered behind the cards.
 	// Never consumed by buy/sell; only created on shop entry and deckSize increase.
 	private List<GameObject> _spawnedEmptySlots = new List<GameObject>();
+
+	public IReadOnlyList<GameObject> SpawnedShopCards => _spawnedShopCards;
+	public IReadOnlyList<GameObject> SpawnedPlayerCards => _spawnedPlayerCards;
+	public IReadOnlyList<GameObject> SpawnedUtilityCards => _spawnedUtilityCards;
+	public IReadOnlyList<GameObject> SpawnedEmptySlots => _spawnedEmptySlots;
 	
 	private Camera _mainCamera;
 	private float _cameraInitialY;
@@ -423,6 +431,9 @@ public class ShopUXManager : MonoBehaviour
 		}
 
 		RelayoutPlayerDeckCards();
+
+		// Section panels re-fit around the deck band + shelf content.
+		ShopSectionPanels.Instance?.RefreshLayout();
 	}
 
 	/// <summary>
@@ -603,6 +614,7 @@ public class ShopUXManager : MonoBehaviour
 	private void Start()
 	{
 		ShopChrome.Bootstrap(chromeSprite, chromeFont);
+		ShopSectionPanels.Bootstrap(chromeSprite, chromeFont);
 		_mainCamera = Camera.main;
 		if (_mainCamera == null) return;
 
@@ -947,6 +959,10 @@ public class ShopUXManager : MonoBehaviour
 
 			_spawnedEmptySlots.Add(emptySpace);
 		}
+
+		// Section panels re-fit around the new slots; the Deck counter (03/05) reads the count.
+		ShopSectionPanels.Instance?.RefreshLayout();
+		ShopSectionPanels.Instance?.RefreshCounter();
 	}
 
 	/// <summary>
@@ -961,7 +977,7 @@ public class ShopUXManager : MonoBehaviour
 		// Roll guard (plan-world-entity-shop-chrome): gate the whole shop and deny the
 		// reroll button until the new board has spawned — a queued second click can't roll twice.
 		ShopInputGate.Block();
-		if (ShopChrome.Instance != null) ShopChrome.Instance.SetRerollRolling(true);
+		ShopSectionPanels.SetRerollRolling(true);
 		// 1. Make existing shop cards fly to shop start position and shrink
 		AnimateShopCardsExit();
 		
@@ -1027,7 +1043,7 @@ public class ShopUXManager : MonoBehaviour
 		// DIAG-LOG(2026-08-08): tracing whether the reroll visual refresh completed
 		TestManager.Log("[ShopButton] Reroll visual refresh done. newCards=" + _spawnedShopCards.Count);
 		ShopInputGate.Unblock();
-		if (ShopChrome.Instance != null) ShopChrome.Instance.SetRerollRolling(false);
+		ShopSectionPanels.SetRerollRolling(false);
 	}
 	
 	/// <summary>
