@@ -164,6 +164,12 @@ public class CardPhysObjScript : MonoBehaviour
 		isPlayingSpecialAnimation = true;
 		specialAnimationDrivesPosition = drivesPosition;
 		lastSpecialAnimationTag = caller ?? string.Empty;
+		// VISUAL-FIX(2026-09-18): a position-driving special animation (move flight, slot-in,
+		// reveal flight, ...) takes over transform.position, so a stale pop-up live-follow
+		// declaration must release here — otherwise the per-frame follow write fights the new
+		// mover tween (move-flight jitter, plan-popup-peak-live-follow-2026-09-18.md). Scale-only
+		// Begin(false) (emphasize pulse) keeps the flag: it does not own the position.
+		if (drivesPosition) popUpFollowsDeckSlot = false;
 	}
 
 	// ========== Face Down / Flip ==========
@@ -193,6 +199,13 @@ public class CardPhysObjScript : MonoBehaviour
 	public Tween activePopUpSlotInSeq;
 	[HideInInspector]
 	public Action activePopUpSlotInOnComplete;
+
+	// ========== Pop-up peak live-follow (VISUAL-FIX 2026-09-18) ==========
+	[Header("POPUP PEAK LIVE-FOLLOW")]
+	[Tooltip("While held at a pop-up peak, the peak continuously re-anchors to the card's CURRENT deck slot. Set by CombatUXManager.PopUpCard when the pop flight lands, cleared by SlotInCard / re-pop. See UpdatePopUpFollow.")]
+	public bool popUpFollowsDeckSlot = false;
+	[Tooltip("Exponential approach speed (1/s) for the live-follow peak glide.")]
+	public float popUpFollowLerpSpeed = 12f;
 
 	[Header("Reveal Zone Pending")]
 	[Tooltip("When special animation finishes, move to reveal zone instead of default target")]
@@ -318,8 +331,43 @@ public class CardPhysObjScript : MonoBehaviour
 			ApplyBackColor();
 		}
 		UpdateTintTimer();
+		UpdatePopUpFollow();
 		UpdatePendingHover();
 		UpdateHover();
+	}
+
+	// VISUAL-FIX(2026-09-18): concurrent pop-up holds landed on the SAME peak
+	//   Cause:    PopUpCard anchored the peak once, at pop time, from the card's deck-slot
+	//             index (CombatUXManager). Mid-cascade buries reorder physicalCardsInDeck
+	//             (both via the layout sweep and via animation-advance list mutations that
+	//             run NO sweep), so a later popper could resolve the SAME index while an
+	//             earlier card was still held at the peak anchored to that slot.
+	//             Log-proven (Editor.log 23:19 session): RELIC_CHAIN_BURIAL pop at 6.79s and
+	//             DEATHBED_GRANT pop at 9.02s both computed index=1 count=7 and landed on
+	//             peaks (3.99, 0.61, -0.50) vs (3.98, 0.60, -0.50) — one card stacked on the
+	//             other for the whole hold.
+	//   Fix:      Peak live-follow: when the hold phase is active (popUpFollowsDeckSlot set
+	//             by PopUpCard's flight completion, cleared by SlotInCard/re-pop), every frame
+	//             re-derives the peak from the card's CURRENT index via
+	//             CombatUXManager.TryGetPopUpPeakForCard and glides the card there. Indices
+	//             are unique per card, so two held cards can never share a peak. Paused while
+	//             the deck is peel-focused (restore owns the view), holds last peak when the
+	//             card leaves the deck list.
+	//   Affects:  CardPhysObjScript.UpdatePopUpFollow, CombatUXManager.PopUpCard/TryGetPopUpPeakForCard/SlotInCard
+	//   Regress:  913 trio (RELIC_CHAIN_BURIAL + DEATHBED_GRANT + SOLDIER_SKELETON_4.0): each
+	//             held pop-up rides its own slot while buries shift the deck — no stacking;
+	//             slot-in still returns each card to its live slot (row 104 driver popup
+	//             feedback intact); hover pop-up of a deck card still tracks its slot; reveal-
+	//             zone pops keep the legacy live-transform peak (TryGetPopUpPeakForCard=false).
+	//   Plan:     plans/plan-popup-peak-live-follow-2026-09-18.md (evidence table + alternatives ruled out)
+	private void UpdatePopUpFollow()
+	{
+		if (!popUpFollowsDeckSlot || !isPoppedUp || !isPlayingSpecialAnimation) return;
+		if (_combatUXManager == null || _combatUXManager.IsDeckFocused) return;
+		if (!_combatUXManager.TryGetPopUpPeakForCard(this, out var peak)) return; // not in deck list — hold last peak
+		TargetPosition = peak;
+		float t = 1f - Mathf.Exp(-popUpFollowLerpSpeed * Time.deltaTime);
+		transform.position = Vector3.Lerp(transform.position, peak, t);
 	}
 
 	/// <summary>

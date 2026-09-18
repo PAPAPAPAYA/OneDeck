@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
+  m_Name: multiple popup test
+  m_EditorClassIdentifier: 
+  deck:
+  - {fileID: 4351262439919075274, guid: 6a0c4305884d93e43bea828342c42a1b, type: 3}
+  - {fileID: 3591665617141263396, guid: 8beba6137ba00e343bad7932cec280dc, type: 3}
+  - {fileID: 2419164153547357531, guid: 4f192b614d3e4ff48b9c1d55b82c58b1, type: 3}
+  - {fileID: 7981514837180212169, guid: 794c5ef88e20c8845945bddffc9d59f6, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: add curse + stage friendly

@@ -356,7 +356,7 @@ namespace DefaultNamespace.Managers
 			// previously the [RecorderAnimationPlayer]-prefixed probes (ZTRACE, emphasize) landed in
 			// AnimationPlayback, which the scene ships OFF, so that instrumentation produced zero
 			// visible lines and the emphasize path was reported as unidentified.
-			if (message.Contains("[RevealZDiag]") || message.Contains("[PopUpFollowDiag]"))
+			if (message.Contains("[RevealZDiag]"))
 			{
 				return LogCategory.VisualSync;
 			}

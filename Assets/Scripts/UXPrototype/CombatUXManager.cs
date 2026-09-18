@@ -4300,6 +4300,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Interrupt a still-running SlotInCard seq on this card (VISUAL-FIX 2026-07-31).
 		bool interrupted = InterruptActivePopUpSlotIn(physScript, "PopUpCard");
+		physScript.popUpFollowsDeckSlot = false; // follow re-arms when this pop's flight lands
 		// Kill existing tweens to prevent conflicts
 		physScript.KillTweens();
 		// Face-down rule: popping a card up shows its face
@@ -4323,22 +4324,31 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		//             always rise to the same peak above its deck slot, never higher.
 		// Compute peak from the card's LOGICAL deck slot so a re-pop-up can never stack
 		// popUpYOffset on itself; non-deck cards (reveal zone) keep legacy current-pos math.
-		int popupDeckIndex = physicalCardsInDeck.IndexOf(physicalCard);
-		Vector3 popupBasePos = popupDeckIndex >= 0
-			? GetFinalDeckPositionForCard(physScript, popupDeckIndex)
-			: physicalCard.transform.position;
-		// VISUAL-FIX(2026-09-12): a reveal-zone card has no deck slot, so its pop-up base was the
-		// live transform — a mid-shift pose. If the deck grows while the card is held at the peak
-		// (batch generation) the peak stays behind the deck front card and the deck covers the
-		// card for the whole pop-up. Anchor the base z on the live clamped reveal z instead, which
-		// GetRevealZonePosition recomputes from the current deck count on every call.
-		if (popupDeckIndex < 0 && physicalCard == physicalCardInRevealZone)
+		// 2026-09-18: the deck-slot branch delegates to TryGetPopUpPeakForCard so the initial
+		// flight and the hold-time live-follow (CardPhysObjScript.UpdatePopUpFollow) share one
+		// peak formula.
+		Vector3 peakPos;
+		if (TryGetPopUpPeakForCard(physScript, out peakPos))
 		{
-			popupBasePos.z = GetRevealZonePosition().z;
+			// Deck card: peak anchored on its live deck slot; while held, UpdatePopUpFollow
+			// keeps re-anchoring the peak as buries reorder physicalCardsInDeck.
 		}
-		Vector3 peakPos = popupBasePos + Vector3.up * popUpYOffset;
-		peakPos.x += popUpXOffset;
-		peakPos.z += popUpZBoost;
+		else
+		{
+			// VISUAL-FIX(2026-09-12): a reveal-zone card has no deck slot, so its pop-up base was the
+			//   live transform — a mid-shift pose. If the deck grows while the card is held at the peak
+			//   (batch generation) the peak stays behind the deck front card and the deck covers the
+			//   card for the whole pop-up. Anchor the base z on the live clamped reveal z instead, which
+			//   GetRevealZonePosition recomputes from the current deck count on every call.
+			Vector3 popupBasePos = physicalCard.transform.position;
+			if (physicalCard == physicalCardInRevealZone)
+			{
+				popupBasePos.z = GetRevealZonePosition().z;
+			}
+			peakPos = popupBasePos + Vector3.up * popUpYOffset;
+			peakPos.x += popUpXOffset;
+			peakPos.z += popUpZBoost;
+		}
 
 		Vector3 peakScale = GetPopUpPeakScale(physScript);
 
@@ -4362,6 +4372,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 				physScript.activePopUpSlotInSeq = null;
 				physScript.activePopUpSlotInOnComplete = null;
 			}
+			physScript.popUpFollowsDeckSlot = true; // hold phase: peak live-follows the card's deck slot
 			AnimationStateTracker.me?.CompleteAnimation();
 			UnblockPopUpSlotInInput();
 			onComplete?.Invoke();
@@ -4369,6 +4380,27 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 		seq.Play();
 		physScript.activePopUpSlotInSeq = seq;
 		physScript.activePopUpSlotInOnComplete = onComplete;
+	}
+
+	/// <summary>
+	/// Computes the pop-up peak for a DECK card from its live deck-slot index:
+	/// <see cref="GetFinalDeckPositionForCard"/> (layout + jitter + hover spread) plus the
+	/// shared pop-up offsets. Returns false when the card is not in
+	/// <see cref="physicalCardsInDeck"/> — callers fall back to the legacy live-transform base.
+	/// Shared by the initial PopUpCard flight and the hold-time live-follow
+	/// (CardPhysObjScript.UpdatePopUpFollow) so both use one peak formula.
+	/// </summary>
+	public bool TryGetPopUpPeakForCard(CardPhysObjScript physScript, out Vector3 peakPos)
+	{
+		peakPos = Vector3.zero;
+		if (physScript == null || physicalCardsInDeck == null) return false;
+		int popupDeckIndex = physicalCardsInDeck.IndexOf(physScript.gameObject);
+		if (popupDeckIndex < 0) return false;
+		peakPos = GetFinalDeckPositionForCard(physScript, popupDeckIndex)
+			+ Vector3.up * popUpYOffset;
+		peakPos.x += popUpXOffset;
+		peakPos.z += popUpZBoost;
+		return true;
 	}
 
 	/// <summary>
@@ -4391,6 +4423,7 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 		// Interrupt a still-running PopUpCard seq on this card (VISUAL-FIX 2026-07-31).
 		InterruptActivePopUpSlotIn(physScript, "SlotInCard");
+		physScript.popUpFollowsDeckSlot = false; // slot-in owns the motion from here on
 		// Guard against deck position updates interfering with the slot-in tween
 		physScript.BeginSpecialAnimation(true);
 		// Face-down rule: returning to the static deck covers the card (skipped for ever-revealed cards)
