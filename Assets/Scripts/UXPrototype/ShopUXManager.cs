@@ -225,6 +225,14 @@ public class ShopUXManager : MonoBehaviour
 			}
 		}
 		_spawnedPlayerCards.Clear();
+		foreach (var card in _spawnedUtilityCards)
+		{
+			if (card != null)
+			{
+				Destroy(card);
+			}
+		}
+		_spawnedUtilityCards.Clear();
 		foreach (var slot in _spawnedEmptySlots)
 		{
 			if (slot != null)
@@ -253,6 +261,16 @@ public class ShopUXManager : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Deck-grid membership of a card: slot-free cards (utility passives) render in the
+	/// Upgrades panel row; everything else occupies the deck grid. Null defaults to
+	/// occupying (matches the pre-split behavior for unbound cards).
+	/// </summary>
+	private static bool OccupiesSlot(CardScript cardScript)
+	{
+		return cardScript == null || cardScript.occupiesDeckSlot;
+	}
+
+	/// <summary>
 	/// Grid position for a player-deck slot index (shared row/column math for cards and empty slots).
 	/// </summary>
 	private Vector3 GetPlayerDeckSlotPosition(int slotIndex)
@@ -263,16 +281,20 @@ public class ShopUXManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// First grid index of the slot-free (utility) track. Utility passives do not consume deck
-	/// slots, so their display zone always starts right after the last persistent empty slot
-	/// (grid index = deckSize). Defensive fallback when deckSize is unavailable: the end of
-	/// the occupying track assigned so far.
+	/// First grid index of the slot-free (utility) track. Utility passives do not consume
+	/// deck slots and render in the Upgrades panel row BELOW the deck band (2026-09-18
+	/// panels port), so their track starts on the first grid slot after the deck band
+	/// (the row after the last deckSize slot). Defensive fallback when deckSize is
+	/// unavailable: the end of the occupying track assigned so far.
 	/// </summary>
 	private int GetUtilityZoneBaseSlot(int occupyingTrackEndSlot)
 	{
-		return ShopManager.me != null && ShopManager.me.deckSize != null
-			? ShopManager.me.deckSize.value
-			: occupyingTrackEndSlot;
+		if (ShopManager.me != null && ShopManager.me.deckSize != null)
+		{
+			int perRow = Mathf.Max(1, objPerRow);
+			return Mathf.CeilToInt((float)ShopManager.me.deckSize.value / perRow) * perRow;
+		}
+		return occupyingTrackEndSlot;
 	}
 
 	// VISUAL-FIX(2026-09-10): The 4th shelf card (初魇 RaritySlotU first-board guarantee) fell off the
@@ -313,11 +335,10 @@ public class ShopUXManager : MonoBehaviour
 	/// <summary>
 	/// Assigns player-deck grid slots in two tracks. Slot-occupying cards take the main grid
 	/// (0..deckSize-1, where the persistent empty-slot frames live); slot-free cards
-	/// (occupiesDeckSlot = false, utility passives) take a trailing track that always starts
-	/// after the last empty slot, so they render in a fixed zone behind the empty slots and
-	/// never interleave with occupying cards. With DuplicateStackingEnabled, the first card of
-	/// each cardTypeID takes the next slot of its own track and further copies stack toward
-	/// the upper-left of that slot.
+	/// (occupiesDeckSlot = false, utility passives) take the trailing utility track, which
+	/// starts after the deck band and renders inside the Upgrades panel (2026-09-18 port).
+	/// With DuplicateStackingEnabled, the first card of each cardTypeID takes the next slot
+	/// of its own track and further copies stack toward the upper-left of that slot.
 	/// </summary>
 	private class StackSlotAssigner
 	{
@@ -364,9 +385,10 @@ public class ShopUXManager : MonoBehaviour
 	/// <summary>
 	/// Recompute target positions for every player-deck card:
 	/// unique cardTypeIDs take grid slots, duplicates stack upper-left.
-	/// Slot-free cards (occupiesDeckSlot = false) land on the trailing utility track behind
-	/// the empty slots (see StackSlotAssigner).
+	/// Slot-free cards (occupiesDeckSlot = false) land on the utility track in the
+	/// Upgrades panel row below the deck band (see StackSlotAssigner).
 	/// Empty slots are persistent background objects and never move.
+	/// Ends with a ShopSectionPanels refit (single choke point for panel layout).
 	/// </summary>
 	private void RelayoutPlayerDeckCards()
 	{
@@ -379,6 +401,20 @@ public class ShopUXManager : MonoBehaviour
 			physObj.SetTargetPosition(assigner.Assign(physObj.cardImRepresenting.cardTypeID, physObj.cardImRepresenting.occupiesDeckSlot, out bool isStackedCopy));
 			SetPriceSuppressed(card, isStackedCopy);
 		}
+		// Slot-free utility passives live in the Upgrades panel row (below the deck band);
+		// the shared assigner routes them to the utility track via occupiesDeckSlot = false.
+		foreach (var card in _spawnedUtilityCards)
+		{
+			if (card == null) continue;
+			var physObj = card.GetComponent<CardPhysObjScript>();
+			if (physObj == null || physObj.cardImRepresenting == null) continue;
+			physObj.SetTargetPosition(assigner.Assign(physObj.cardImRepresenting.cardTypeID, physObj.cardImRepresenting.occupiesDeckSlot, out bool isStackedCopy));
+			SetPriceSuppressed(card, isStackedCopy);
+		}
+
+		// Section panels re-fit: single choke point — every flow that moves a deck/utility
+		// card or an empty slot ends up here (RelayoutDeckBand, buys, sells, deckSize growth).
+		ShopSectionPanels.Instance?.RefreshLayout();
 	}
 
 	/// <summary>
@@ -431,9 +467,6 @@ public class ShopUXManager : MonoBehaviour
 		}
 
 		RelayoutPlayerDeckCards();
-
-		// Section panels re-fit around the deck band + shelf content.
-		ShopSectionPanels.Instance?.RefreshLayout();
 	}
 
 	/// <summary>
@@ -600,8 +633,16 @@ public class ShopUXManager : MonoBehaviour
 				physicalCard.transform.localScale = physCardSize;
 			}
 			
-			// Record instantiated card
-			_spawnedPlayerCards.Add(physicalCard);
+			// Record instantiated card: slot-free utility passives render in the Upgrades
+			// panel row below the deck band, not inside the deck grid.
+			if (cardScript.occupiesDeckSlot)
+			{
+				_spawnedPlayerCards.Add(physicalCard);
+			}
+			else
+			{
+				_spawnedUtilityCards.Add(physicalCard);
+			}
 		}
 		
 		// Spawn persistent empty slots behind every grid slot (cards sit on top of them)
@@ -661,7 +702,9 @@ public class ShopUXManager : MonoBehaviour
 	{
 		float lowestContentY = Mathf.Min(
 			GetLaidOutLowestY(_spawnedPlayerCards),
-			GetLaidOutLowestY(_spawnedEmptySlots));
+			Mathf.Min(
+				GetLaidOutLowestY(_spawnedEmptySlots),
+				GetLaidOutLowestY(_spawnedUtilityCards)));
 
 		if (lowestContentY == float.MaxValue)
 		{
@@ -779,28 +822,37 @@ public class ShopUXManager : MonoBehaviour
 				// Clear shopItemIndex, mark as no longer a shop item
 				purchasedCardPhys.shopItemIndex = -1;
 			}
-			
+
+			// Utility passives (slot-free) join the Upgrades row instead of the deck grid.
+			List<GameObject> targetList = OccupiesSlot(cardScript) ? _spawnedPlayerCards : _spawnedUtilityCards;
 			int lastCopyIndex = FindLastPlayerCardIndexOfType(cardScript.cardTypeID);
 			if (lastCopyIndex >= 0)
 			{
 				// Stack onto the existing copies
-				_spawnedPlayerCards.Insert(lastCopyIndex + 1, purchasedCard);
+				targetList.Insert(lastCopyIndex + 1, purchasedCard);
 			}
 			else
 			{
 				// First copy of its type: takes the next free grid slot via RelayoutPlayerDeckCards
-				_spawnedPlayerCards.Add(purchasedCard);
+				targetList.Add(purchasedCard);
 			}
 			RelayoutPlayerDeckCards();
 			return;
 		}
-		
+
 		// 4. Remove from _spawnedShopCards
 		RemoveFromShopCards(purchasedCardIndex);
 
 		// 5. Add to player deck; the next free grid slot comes from RelayoutPlayerDeckCards
 		// (empty slots are persistent background objects, nothing to consume)
-		_spawnedPlayerCards.Add(purchasedCard);
+		if (OccupiesSlot(cardScript))
+		{
+			_spawnedPlayerCards.Add(purchasedCard);
+		}
+		else
+		{
+			_spawnedUtilityCards.Add(purchasedCard);
+		}
 
 		// Clear shopItemIndex, mark as no longer a shop item
 		if (purchasedCardPhys != null)
@@ -823,22 +875,28 @@ public class ShopUXManager : MonoBehaviour
 	public void OnCardSold(GameObject soldCardInstance, int cardIndex)
 	{
 		if (soldCardInstance == null) return;
-		
-		// 1. Find index of sold card in _spawnedPlayerCards
+
+		// 1. Find the sold card: deck grid first, then the Upgrades row (utility passives).
 		int spawnedIndex = _spawnedPlayerCards.IndexOf(soldCardInstance);
+		List<GameObject> ownerList = _spawnedPlayerCards;
 		if (spawnedIndex < 0)
 		{
-			// Debug.LogWarning($"[ShopUXManager] Sold card not found in _spawnedPlayerCards");
+			spawnedIndex = _spawnedUtilityCards.IndexOf(soldCardInstance);
+			ownerList = _spawnedUtilityCards;
+		}
+		if (spawnedIndex < 0)
+		{
+			// Debug.LogWarning($"[ShopUXManager] Sold card not found in spawned card lists");
 			// Destroy directly
 			Destroy(soldCardInstance);
 			return;
 		}
-		
+
 		// 2. Duplicate-slot rule: empty slots are persistent, so nothing is respawned
 		CardPhysObjScript soldCardPhys = soldCardInstance.GetComponent<CardPhysObjScript>();
 		if (DuplicateStackingEnabled)
 		{
-			_spawnedPlayerCards.RemoveAt(spawnedIndex);
+			ownerList.RemoveAt(spawnedIndex);
 
 			if (soldCardPhys != null)
 			{
@@ -859,8 +917,8 @@ public class ShopUXManager : MonoBehaviour
 			return;
 		}
 
-		// 3. Remove from _spawnedPlayerCards
-		_spawnedPlayerCards.RemoveAt(spawnedIndex);
+		// 3. Remove from its owner list
+		ownerList.RemoveAt(spawnedIndex);
 
 		// 4. Set sold card's target position to shop start position (play sell animation)
 		if (soldCardPhys != null)
@@ -959,10 +1017,6 @@ public class ShopUXManager : MonoBehaviour
 
 			_spawnedEmptySlots.Add(emptySpace);
 		}
-
-		// Section panels re-fit around the new slots; the Deck counter (03/05) reads the count.
-		ShopSectionPanels.Instance?.RefreshLayout();
-		ShopSectionPanels.Instance?.RefreshCounter();
 	}
 
 	/// <summary>
@@ -1149,7 +1203,13 @@ public class ShopUXManager : MonoBehaviour
 	public void PulsePlayerCard(CardScript cardScript)
 	{
 		if (cardScript == null) return;
-		foreach (var card in _spawnedPlayerCards)
+		if (PulseMatchingCard(_spawnedPlayerCards, cardScript)) return;
+		PulseMatchingCard(_spawnedUtilityCards, cardScript);
+	}
+
+	private static bool PulseMatchingCard(List<GameObject> cards, CardScript cardScript)
+	{
+		foreach (var card in cards)
 		{
 			if (card == null) continue;
 			var phys = card.GetComponent<CardPhysObjScript>();
@@ -1158,7 +1218,8 @@ public class ShopUXManager : MonoBehaviour
 			Vector3 baseScale = phys.TargetScale;
 			phys.SetTargetScale(baseScale * 1.2f, DG.Tweening.Ease.OutBack, 0.12f);
 			phys.SetTargetScale(baseScale, DG.Tweening.Ease.OutQuad, 0.13f, 0.13f);
-			return;
+			return true;
 		}
+		return false;
 	}
 }
