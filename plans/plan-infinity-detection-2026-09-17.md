@@ -160,13 +160,18 @@ Edit-mode headless 体系复用 HeadlessCombatTestFixture / NullCombatVisuals,�
 | 服务器 decks 表 / 出队 / 认证模型 / ensureColumn | server.js:73 / :428 / :19 / :193 |
 | RNG 确定化 + digest | RngService.cs(RngChannel、DeterminismDigest) |
 
-## 13. 样本卡组终止性单测(2026-09-18 进行中,待编辑器恢复后接手)
+## 13. 样本卡组终止性单测(2026-09-18 已完成,提交 b327bc3)
 
 - 样本(用户拍板):`Assets/SORefs/Decks/test decks/chain tests/4.0/lethal infinite test.asset`(RELIC_CURSE_REVIVAL + CURSE_GARDENER,自终止=打死对面,生产熔断不该出手)与 `non-lethal infinite test.asset`(GRAVE_HEXER + SPIRIT_CALLER,无攻击,期望 overtime 疲劳收敛打死;测试内 overtimeRoundThreshold=2,60 回合全局闸只许兜底)。
 - 数据判读(2026-09-18):09:05 digest(reveals=17/池6/深度2/零熔断)= lethal 击杀自终止,符合预期;昨晚 22:48/22:55/23:19 三局 Seed 落盘、无 digest = 不击杀循环跑挂(当时编辑器未载 22:30 提交)。
-- 测试:`InfiniteDeckTerminationTests`(Editor/Tests,未提交)。同步 headless 驱动器 = fixture 揭晓原语(RevealTopCard/TriggerRevealedCard/PutRevealedCardToBottom)+ L0 手动 NotifyReveal/force-clear 复刻 + Start Card 回合边界(疲劳检查→roundNumRef 自增→OnStartCardShuffleAnimationComplete)。敌 deck = 2×JU_ON(复活轴燃料:ReviveTheirCards typeIDFilter=JU_ON / EnhanceCurse 都要敌诅在场)。
-- EditMode 三件套坑(桥已照 CurseSummonerPrefabSmokeTests 落地,幂等,驱动器每次触发前对揭晓卡补桥以覆盖疲劳卡/新生成 token):①OnEnable 不跑→监听器不注册,重挂 onMeRevealed+RegisterListener;②RuntimeOnly UnityEvent(callState=2)被跳过→翻转 effectEvent/checkCostEvent/response;③CardFactory.CreateLogicalCard 只注状态引用,EffectScript.myCard/myCardScript/combatManager 与 CostNEffectContainer._myCardScript 全空→反射注入。
-- 机制事实:JU_ON 伤害 = AttackSelf(printedAttack=0,诅咒自伤载体侧),全部伤害来自 CURSE_GARDENER 的 EnhanceCurse(1)(CurseEffect.EnhanceCurse:找敌诅+1 永久攻,找不到还会生成)。lethal 链 = enhance 落地 → JU_ON 揭晓自伤递增。
-- 当前卡点:桥后两测零伤害(HP 30/30),已加 DIAG 断言在 lethal 测试失败消息里(reveals/revivedO/revivedE/stagedO/deck/forceClear/conclude/enemyHp),下一跑即定位断环。候选:EnhanceCurse 没落地 / AttackSelf 在 EditMode 没提交伤害 / 容器仍静默。
-- 编辑器事故记录:10:09 起主线程长时间无响应(用户处理一次弹窗后短暂恢复;测试启动撞域重载,MCP 插件会话断开;期间出现第 3 个 Unity.exe 进程)。接管会话:先确认编辑器可用与唯一性再 run_tests(先 SaveScene 清 dirty)。
-- 待办:两测绿 → 全量 EditMode 回归 → surgical 提交 InfiniteDeckTerminationTests.cs → 删 registry 20260918-090854。已先行提交:594eed5(tag 登记)、21af9e3(cardsRevealedThisRound 回合重置)。
+- **结果(2026-09-18 接手会话)**:`InfiniteDeckTerminationTests` 两测全绿(提交 b327bc3,含 .meta),全量 EditMode 561 total/560 绿/0 失败/1 既有 Ignore。
+- **追加(2026-09-18,833d385)**:non-lethal 样本启用按揭晓数疲劳——`fatigueRevealThreshold` 0→生产值 40,驱动器每次 RevealTopCard 后反射补调私有 `CheckFatigueByRevealCount`(生产挂 RevealNextCardCore:1077,fixture 原语绕过该路径,不补调则阈值无效)。动机:overtime 型疲劳时钟=回合数,会被复活拉环饿死回合边界冻住(round 1 拖 200 揭晓);按揭晓数型时钟=总揭晓数,饿死回合内照常走针,是该类循环唯一有效的疲劳计量器。启用后 non-lethal 收敛 1.76s→0.26s。
+- **接手会话定位并修复的四个断环(全部在测试文件内,产品代码零改动)**:
+  1. **链代守卫不复位**:fixture 原语不带 `CloseOpenedChain + ResetGenerationGuards`,第一圈后守卫历史烧毁所有(卡,效果)对,后续揭晓全部静默(revivedO/E 卡 1、零伤害)。修复=驱动器每次触发循环末尾补两连调(镜像 CombatManager 确认路径 :952)。
+  2. **`fatigueAmount` 默认 0**:fixture 裸 AddComponent 建的 CombatManager 该字段为 0,AddFatigueCards 空转。修复=测试显式 `fatigueAmount = 1`。
+  3. **Start Card 用了裸桩**:fixture 的 CreateStartCard 只有 isStartCard=true 的 CardScript,无容器/洗牌效果 → 回合边界只发生一次(第一张),之后起始卡被复活轴搅动压在牌堆中部永不再浮出 → rounds 冻结 → thisRound 累到 200 触发 per-round 熔断 → 全部非起始卡触发被跳过。修复=改载真 `StartCard.prefab`,且驱动器镜像生产特判(CombatManager.RevealCards:起始卡不走 reveal 事件广播,直接 `container.InvokeEffectEvent()`)。真身 ExecuteShuffleEffect 内含 round++/疲劳检查/Rng 全洗/AlwaysBottom 回底。
+  4. **`CombatBudgetGuard.Me` 为 null**:EditMode 不跑 Awake,静态单例从不指向测试 guard,HandleNewRoundStart 的 NotifyRoundStart 落空 → forceClear 一旦触发永不清除。修复=CreateGuard 反射写静态 Me。
+- **语义修正(拍板记录)**:non-lethal 样本并非「无杀伤」——GRAVE_HEXER 的 EnhanceCurse 叠攻敌方 JU_ON,诅咒自噬约 3 回合即杀死敌方,比疲劳收敛更快。测试改断言:死亡终止 + 过劳机制确已介入(rounds 越过阈值、疲劳卡已入堆)+ 熔断未出手;不再要求玩家被疲劳扣血。
+- **引擎动态观察**:复活轴(ReviveBatch 移顶)+ 回底插 0 的组合可把起始卡压在牌堆中部饿死回合边界(round 1 曾拖到 200 揭晓)——per-round 熔断的「起始卡洗牌仍触发」设计恰好兜住此场景,边界最终存活。生产整局若出现超大 perRoundRevealPeak 即此形态。
+- 编辑器事故记录:10:09 起主线程长时间无响应(用户处理一次弹窗后短暂恢复;测试启动撞域重载,MCP 插件会话断开;期间出现第 3 个 Unity.exe 进程)。接手会话同款事故复现一次:强同步重编译期间弹「Scene(s) Have Been Modified」模态框阻塞主线程,经 Win32 BM_CLICK「Don't Save」(丢弃的是测试对象脏标记)解除;后续流程先 refresh 编译完再跑测试,未再复现。
+- 已提交:594eed5(tag 登记)、21af9e3(cardsRevealedThisRound 回合重置)、b327bc3(本测试)。registry 20260918-090854 已删除。
