@@ -27,7 +27,6 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 {
 	private const string DeckFolder = "Assets/SORefs/Decks/test decks/chain tests/4.0";
 	private const string StartCardPrefabPath = "Assets/Prefabs/Cards/System/StartCard.prefab";
-	private const string JuOnPrefabPath = "Assets/Prefabs/Cards/3.0 no cost (current)/_DONT INCLUDE/Token/JU_ON.prefab";
 	private const string FatiguePrefabPath = "Assets/Prefabs/Cards/System/Fatigue.prefab";
 	private const int MaxIterations = 5000;
 
@@ -206,7 +205,7 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		// the curse again. The loop's own pump eventually kills the enemy, so it is unbounded
 		// but self-terminating — and it must trip the detector well before that.
 		CombatManager.playerDeck = LoadSampleDeck("lethal infinite test");
-		CombatManager.enemyDeck = CreateCurseStubDeck();
+		CombatManager.enemyDeck = CreateInertStubDeck(3);
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
 		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
@@ -240,7 +239,7 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		// there. No kill pump of its own: the loop is drained by overtime fatigue (reveal-count
 		// clock — a round-clock would be starved with the boundary, see §13).
 		CombatManager.playerDeck = LoadSampleDeck("non-lethal infinite test");
-		CombatManager.enemyDeck = CreateCurseStubDeck();
+		CombatManager.enemyDeck = CreateInertStubDeck(3);
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
 		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
@@ -352,11 +351,22 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		return prefab;
 	}
 
-	private DeckSO CreateCurseStubDeck()
+	/// <summary>
+	/// Inert opponent (plan §3 木桩: no-effect cards, no pre-seeded curse). The combo decks
+	/// seed their OWN curse - CurseEffect.EnhanceCurse spawns one whenever none exists - and the
+	/// "at most one JU_ON" invariant is emergent (only EnhanceCurse / EnhanceFriendlyCurse create
+	/// curses, and only from zero; ReviveEffect moves an existing one back), so a pre-seeded
+	/// curse - let alone two - is a state the game cannot reach (plan §17). Measured 0/1/2 seeded
+	/// curses: identical verdict, so zero is both canonical and sufficient.
+	/// </summary>
+	private DeckSO CreateInertStubDeck(int count)
 	{
-		var juOn = AssetDatabase.LoadAssetAtPath<GameObject>(JuOnPrefabPath);
-		Assert.IsNotNull(juOn, "JU_ON curse token prefab missing: " + JuOnPrefabPath);
-		return CreateDeckSO(new List<GameObject> { juOn, juOn });
+		var cards = new List<GameObject>();
+		for (int i = 0; i < count; i++)
+		{
+			cards.Add(CreateCard(false, "InertStub" + i, "INERT_STUB"));
+		}
+		return CreateDeckSO(cards);
 	}
 
 	private DeckSO LoadSampleDeck(string assetName)

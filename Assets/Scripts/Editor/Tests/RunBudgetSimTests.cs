@@ -42,7 +42,7 @@ public class RunBudgetSimTests
 	[Test]
 	public void LethalSample_ReportsInfinite_AndKillsWithoutL0()
 	{
-		var report = RunBudgetSim.Run(LoadSampleDeck("lethal infinite test"), CreateCurseStubDeck(), seed: 4242);
+		var report = RunBudgetSim.RunVsDummy(LoadSampleDeck("lethal infinite test"), dummySize: 3, dummyHp: 30, seed: 4242);
 
 		Debug.Log("[RunBudgetSim] " + report.Summary);
 
@@ -61,7 +61,7 @@ public class RunBudgetSimTests
 	[Test]
 	public void NonLethalSample_ReportsInfinite()
 	{
-		var report = RunBudgetSim.Run(LoadSampleDeck("non-lethal infinite test"), CreateCurseStubDeck(), seed: 4242);
+		var report = RunBudgetSim.RunVsDummy(LoadSampleDeck("non-lethal infinite test"), dummySize: 3, dummyHp: 30, seed: 4242);
 
 		Debug.Log("[RunBudgetSim] " + report.Summary);
 
@@ -77,7 +77,7 @@ public class RunBudgetSimTests
 	public void SameSeed_ReproducesTheSameCombat()
 	{
 		var deckA = LoadSampleDeck("lethal infinite test");
-		var deckB = CreateCurseStubDeck();
+		var deckB = LoadSampleDeck("non-lethal infinite test");
 
 		var first = RunBudgetSim.Run(deckA, deckB, seed: 77);
 		var second = RunBudgetSim.Run(deckA, deckB, seed: 77);
@@ -94,19 +94,21 @@ public class RunBudgetSimTests
 	}
 
 	[Test]
-	public void LethalSample_VsInertDummy_StillReportsInfinite()
+	public void LethalSample_VsSeededCurseEnemy_ReportsInfinite()
 	{
-		// The attribution isolation form: a single deck against a no-effect opponent pins
-		// responsibility on that deck alone (§4 step 1/2).
-		var report = RunBudgetSim.RunVsDummy(LoadSampleDeck("lethal infinite test"),
-			dummySize: 5, dummyHp: 10000, seed: 4242);
+		// Covers the deck-vs-deck entry point with a REAL enemy deck. One JU_ON is the
+		// reachable maximum (plan §17): only CurseEffect.EnhanceCurse creates curses and only
+		// when none exists, so the 2xJU_ON stub this test used to carry was a state the game
+		// cannot produce.
+		var report = RunBudgetSim.Run(LoadSampleDeck("lethal infinite test"), CreateSingleCurseDeck(), seed: 4242);
 
-		Debug.Log("[RunBudgetSim] dummy isolation: " + report.Summary);
+		Debug.Log("[RunBudgetSim] seeded-curse enemy: " + report.Summary);
 
 		Assert.IsTrue(report.SuspectedInfinite,
-			"a deck that loops on its own trips against an inert opponent too: " + report.Summary);
+			"the loop must still be detected against a real curse-carrying enemy: " + report.Summary);
 		Assert.GreaterOrEqual(report.MaxSightingsOfOneArrangement, 3,
 			"repeat-count evidence must be present: " + report.Summary);
+		Assert.LessOrEqual(report.EnemyHpFinal, 0, "the pump must kill the enemy: " + report.Summary);
 	}
 
 	// ---- fixtures ----
@@ -118,18 +120,18 @@ public class RunBudgetSimTests
 		return deck;
 	}
 
-	/// <summary>
-	/// The combo decks' fuel: enemy-side JU_ON curses (both samples drive a revive axis targeting
-	/// JU_ON). Lives only for the test, hence a runtime-created DeckSO rather than an asset.
+	//// <summary>
+	/// A real enemy deck carrying ONE JU_ON - the reachable maximum (plan §17). Lives only for
+	/// the test, hence a runtime-created DeckSO rather than an asset.
 	/// </summary>
-	private DeckSO CreateCurseStubDeck()
+	private DeckSO CreateSingleCurseDeck()
 	{
 		var juOn = AssetDatabase.LoadAssetAtPath<GameObject>(JuOnPrefabPath);
 		Assert.IsNotNull(juOn, "JU_ON curse token prefab missing: " + JuOnPrefabPath);
 		var deck = ScriptableObject.CreateInstance<DeckSO>();
 		_tempObjects.Add(deck);
-		deck.name = "curse-stub(2xJU_ON)";
-		deck.deck = new List<GameObject> { juOn, juOn };
+		deck.name = "curse-enemy(1xJU_ON)";
+		deck.deck = new List<GameObject> { juOn };
 		return deck;
 	}
 }

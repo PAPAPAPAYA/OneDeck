@@ -37,7 +37,6 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	private const string DeckFolder = "Assets/SORefs/Decks/test decks/chain tests/4.0";
 	private const string FatiguePrefabPath = "Assets/Prefabs/Cards/System/Fatigue.prefab";
 	private const string StartCardPrefabPath = "Assets/Prefabs/Cards/System/StartCard.prefab";
-	private const string JuOnPrefabPath = "Assets/Prefabs/Cards/3.0 no cost (current)/_DONT INCLUDE/Token/JU_ON.prefab";
 	private const int MaxIterations = 5000;
 
 	/// <summary>
@@ -85,11 +84,22 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	/// Curses enter the grave by normal consumption, so the revivers have pool from
 	/// the first consumed card onward.
 	/// </summary>
-	private DeckSO CreateCurseStubDeck()
+	/// <summary>
+	/// Inert opponent (plan §3 木桩: no-effect cards, no pre-seeded curse). The combo decks
+	/// seed their OWN curse - CurseEffect.EnhanceCurse spawns one whenever none exists - and the
+	/// "at most one JU_ON" invariant is emergent (only EnhanceCurse / EnhanceFriendlyCurse create
+	/// curses, and only from zero; ReviveEffect moves an existing one back), so a pre-seeded
+	/// curse - let alone two - is a state the game cannot reach (plan §17). Measured 0/1/2 seeded
+	/// curses: identical verdict, so zero is both canonical and sufficient.
+	/// </summary>
+	private DeckSO CreateInertStubDeck(int count)
 	{
-		var juOn = AssetDatabase.LoadAssetAtPath<GameObject>(JuOnPrefabPath);
-		Assert.IsNotNull(juOn, "JU_ON curse token prefab missing: " + JuOnPrefabPath);
-		return CreateDeckSO(new List<GameObject> { juOn, juOn });
+		var cards = new List<GameObject>();
+		for (int i = 0; i < count; i++)
+		{
+			cards.Add(CreateCard(false, "InertStub" + i, "INERT_STUB"));
+		}
+		return CreateDeckSO(cards);
 	}
 
 	/// <summary>
@@ -107,7 +117,7 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	public void LethalInfiniteDeck_KillsStubOpponent()
 	{
 		CombatManager.playerDeck = LoadSampleDeck("lethal infinite test");
-		CombatManager.enemyDeck = CreateCurseStubDeck();
+		CombatManager.enemyDeck = CreateInertStubDeck(3);
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
 		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
@@ -149,7 +159,7 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	public void NonLethalInfiniteDeck_FatigueConverges()
 	{
 		CombatManager.playerDeck = LoadSampleDeck("non-lethal infinite test");
-		CombatManager.enemyDeck = CreateCurseStubDeck();
+		CombatManager.enemyDeck = CreateInertStubDeck(3);
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
 		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
