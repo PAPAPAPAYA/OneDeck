@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using DefaultNamespace;
+using DefaultNamespace.Managers;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -38,6 +39,31 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	private const string StartCardPrefabPath = "Assets/Prefabs/Cards/System/StartCard.prefab";
 	private const string JuOnPrefabPath = "Assets/Prefabs/Cards/3.0 no cost (current)/_DONT INCLUDE/Token/JU_ON.prefab";
 	private const int MaxIterations = 5000;
+
+	/// <summary>
+	/// Pinned combat seed. Without it GatherDecks falls back to Rng.ComputeCombatSeed, which
+	/// derives from Rng.RunSeed — itself generated from UnityEngine.Random, so the SAME test
+	/// produced different combat shapes in different editor sessions (observed 2026-09-19: the
+	/// round-clock fatigue engaged in one session and not in the next). The seed goes in through
+	/// TestManager.overrideCombatSeed, the same production path as '-odseed N'.
+	/// </summary>
+	private const int PinnedCombatSeed = 20260919;
+
+	public override void SetUp()
+	{
+		base.SetUp();
+		var tm = CreateGameObject("TestManager").AddComponent<TestManager>();
+		TestManager.Me = tm;
+		tm.overrideCombatSeed = PinnedCombatSeed;
+	}
+
+	public override void TearDown()
+	{
+		// TestManager.Me is a static the shared fixture does not clear; leaving it set would
+		// leak this seed (and its log-category switches) into every later test in the run.
+		TestManager.Me = null;
+		base.TearDown();
+	}
 
 	/// <summary>
 	/// The REAL Start Card prefab: its listener -> StartCardShuffleEffect.ExecuteShuffleEffect
@@ -160,11 +186,25 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		}
 
 		Assert.Less(iterations, MaxIterations, "driver must terminate within the bound");
-		// Overtime machinery must have engaged: rounds past the threshold add fatigue cards.
-		Assert.Greater(CombatManager.roundNumRef.value, CombatManager.overtimeRoundThreshold,
-			"rounds must have crossed the overtime threshold");
+		// Overtime machinery must have engaged — but the ROUND clock cannot be the evidence.
+		// CheckFatigueNAddFatigue fires on roundNum > overtimeRoundThreshold, and this loop
+		// starves the round boundary: with the driver terminating on logic HP (2026-09-19, plan
+		// §16) the enemy dies inside round 2, before that check can ever fire. §13 already
+		// concluded the reveal-count clock is "the only clock that keeps ticking inside a
+		// round-starved loop", so that is what this asserts. The previous round-clock assertion
+		// only passed because the old display-lagging terminator let extra rounds accumulate.
+		Assert.GreaterOrEqual(CombatManager.totalCardsRevealed, CombatManager.fatigueRevealThreshold,
+			"the reveal-count fatigue clock must have crossed its threshold (threshold="
+			+ CombatManager.fatigueRevealThreshold + ")"
+			+ " DIAG reveals=" + CombatManager.totalCardsRevealed
+			+ " rounds=" + CombatManager.roundNumRef.value
+			+ " deck=" + CombatManager.combinedDeckZone.Count
+			+ " fatigueInDeck=" + CountFatigueCards());
 		Assert.Greater(CountFatigueCards(), 0,
-			"overtime fatigue must have been added to the deck before the combat ended");
+			"overtime fatigue must have been added to the deck before the combat ended"
+			+ " DIAG reveals=" + CombatManager.totalCardsRevealed
+			+ " rounds=" + CombatManager.roundNumRef.value
+			+ " fatigueThreshold=" + CombatManager.fatigueRevealThreshold);
 		Assert.LessOrEqual(CombatManager.enemyPlayerStatusRef.hp, 0,
 			"combat must end by death, not by running out of patience"
 			+ " DIAG iters=" + iterations
