@@ -1,7 +1,7 @@
 # Plan: 无限检测与防下发(Infinity Detection and Serving Gate)
 
 - 日期: 2026-09-17
-- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag),2026-09-19 P1 排列周期检测器落地(§14,编译/测试待验),P1 起按 §10 分期等「修改代码」开工;**2026-09-19 接手会话复核(§15):lethal 样本实为回合内循环,§14「整周期」结论与「尺寸修正」均作废(脚手架触发接线 artifact),运行时验收待按 §15 待办重做**
+- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 测试待跑)。P1 至此完成;P2 起按 §10 分期等「修改代码」开工
 - 关联: docs/RngDeterminism.md(Rng/digest 基建)、docs/RegressionChecklist.md、docs/AgentRegistry.md;2026-09-13 埋葬递归 SOE 崩溃诊断
 - 核心抽象: `RunBudgetSim(deckA, deckB|木桩, seed) -> BudgetTripReport`,对局归因 / 离线回扫 / 可选预检三处共用一份实现
 
@@ -146,7 +146,8 @@
 | 期 | 内容 | 验收 |
 |---|---|---|
 | P0 | ✅ 已落地(5a09ebb):揭晓强制结清 + 全局闸 + 被动埋点;连坐每回合上限已砍 | 09-13 复现局必终止 → Play 2026-09-18 用户已验 |
-| P1 | RunBudgetSim headless 化 + L1 信号接入 | 09-13 复现局被信号命中 |
+| P1a | ✅ L1 排列周期检测器(§14/§15) | 两块标本被信号命中,EditMode 已验 |
+| P1b | ✅ RunBudgetSim headless 化(§16,2026-09-19) | 两块标本经 sim 复现同一结论 + 固定 seed 可复现;离线编译已验,EditMode 待跑 |
 | P2 | 归因三连 + ddmin 最小化 + loop_reports 上报 | 标本提取出带角色三卡最小集 |
 | P3 | 服务端 flag / 证据表 / 出队过滤 / 三来源统一 / admin | 被 flag 的 deck 不再下发 |
 | P4 | 组合库表 + 匹配交集检查 + 复核流 | 含标本组合的任意 deck 在匹配时被滤除 |
@@ -298,4 +299,116 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 - 遗留:`MapRealEventToFixtureEvent` 目前在两个测试类各持一份(沿用「BridgeCard 由各测试文件自持」的既有惯例,未动共享夹具)。若后续还要第三个文件用,可考虑提到 `HeadlessCombatTestFixture` 作 protected 助手。
 - 另记一次环境事件:全量套件某次启动报 `Test job failed to initialize (tests did not start within timeout)`(默认 15s init 窗口),重试时把 `run_tests.init_timeout` 提到 120000 后正常跑完 577 项;期间编辑器一度 `ready_for_tools=false`(`stale_status`),非模态阻塞。
 
+## 16. P1b:RunBudgetSim headless 化(2026-09-19)
 
+§2 把 `RunBudgetSim(deckA, deckB|木桩, seed) -> BudgetTripReport` 定为核心抽象:P2 归因、P5 回扫、上传前预检三处共用一份实现。P1 之前只落了检测器,这份抽象一直缺失——本节点补齐。
+
+### 16.1 为什么必须搬出测试程序集
+
+`HeadlessCombatTestFixture` 住在 `Assets/Scripts/Editor/Tests/`,非测试代码(批扫工具、将来的 sim 门)根本无法复用;而「给两个 deck 跑一局并判定成环」正是 P2/P5 都要用的能力。项目**没有 asmdef**,所以 `Assets/Scripts/Editor/**` 整体落在 `Assembly-CSharp-Editor`:把 sim 放进这个非 Tests 目录即可被 batch `-executeMethod` 调用,同时仍然拿得到 `SerializedObject`(UnityEvent callState 翻转)与 `AssetDatabase`(预制体加载)这两个 **editor-only** API——而所有预期消费者本来就都跑在编辑器 / batchmode 里。
+
+### 16.2 交付物
+
+| 文件 | 职责 |
+|---|---|
+| `Assets/Scripts/Editor/Headless/HeadlessCombatRig.cs` | 非测试版 headless 战斗环境:单例装配 / 拆卸(镜像 fixture)、卡与 DeckSO 工厂、揭晓原语、**生产接线 bridge**、`SetCombatSeed`、`CheckFatigueByRevealCount` |
+| `Assets/Scripts/Editor/Headless/BudgetTripReport.cs` | 报告数据(`[Serializable]`,P5 可直接 `JsonUtility` 序列化);两条独立判据见下 |
+| `Assets/Scripts/Editor/Headless/RunBudgetSim.cs` | `Run(deckA, deckB, seed)` / `RunVsDummy(deckA, size, hp, seed)` / `BuildDummyDeck`;Options(生产默认值);同步揭晓循环 |
+| `Assets/Scripts/Editor/Tests/RunBudgetSimTests.cs` | 两标本回归 + **固定 seed 可复现** + 木桩隔离形态 |
+
+### 16.3 两条判据刻意分开(对齐 §3/§4/§15)
+
+报告同时给出两个互不推导的字段:
+
+- `SuspectedInfinite` = 排列周期检测器触发 = **flag 判据**(无界递归本体,§3 主判据)。
+- `BudgetCapConcluded` = L0 熔断出手 = **玩家可感伤害**("打不完"),是预算/遥测信号,**不是** flag 判据。
+
+这把 §3「预算启发降级为辅助、循环本体才是主判据」和 §15 的更正落实成了类型。`NeedsAttribution` = 两者取或,供 P2 归因筛选。
+
+### 16.4 确定化走生产路径
+
+`GatherDecks` 自己会 seed(`CombatManager.cs:321`:`overrideSeed != 0 ? overrideSeed : Rng.ComputeCombatSeed(session)` → `Rng.InitCombat`),所以 rig **建了一个 `TestManager` 并把 seed 写进 `overrideCombatSeed`**,而不是绕过它自己去调 `Rng.InitCombat`——即 `-odseed N` 的同一条路。这是 P2「原配对重放」和「敌 deck vs 木桩」能站得住的前提。注意 `Rng.RunSeed` 是 run 级随机、`Setup` 通道由它派生,而 headless func 不经过商店/选牌,故单局复现只需 combat seed。
+
+### 16.5 已验 / 待验
+
+- **已验(离线编译)**:`dotnet build Assembly-CSharp-Editor.csproj` → **0 error / 18 warning(全部在无关文件)**。方法:把 4 个新文件临时加进 Unity 生成的 csproj(该文件在 `.gitignore` 内且 Unity 会重新生成)。**MCP 不可用时的替代验证路径,记于此。**
+- **已验(EditMode)**:`RunBudgetSimTests` **4/4 绿**(2.06s)——两块标本 + 固定 seed 可复现 + 木桩隔离。
+  - lethal 标本实测:`lethal infinite test vs curse-stub(2xJU_ON) seed=4242 infinite=YES [cycle hash=efa31007 repeats=9] reveals=19 rounds=1 iters=20 deck=5 oHp=30 eHp=0 cascadePeak=2`。整局 19 次揭晓全在第 1 回合,检测器第 3 次同排列即触发,L0 熔断未出手。
+  - 控制台同时可见确定的**生产接线**在跑:`[Seed] combat=0 seed=4242 (override)`(即 `overrideCombatSeed` → `Rng.InitCombat` 这条生产路径),以及用户描述的原始环:CURSE_GARDENER「hex 1」→「revive enemy curse」→ JU_ON 揭晓 → RELIC_CURSE_REVIVAL「enemy curse revealed revive 1」→ ReviveBatch 回顶 → 回到 CURSE_GARDENER。
+- **已验(全量 EditMode)**:**581 total / 580 绿 / 0 失败 / 1 既有 Ignore**。顺带确认:`ShopSectionPanelsTests.ComputeContentBounds_SingleCenter_ReturnsCenteredBounds` 已由并行 shop 任务修掉,本任务的三批改动之外无回归。
+- **本轮额外修复(§15.6 的连带,非 P1b 引入)**:跑全量时 `InfiniteDeckTerminationTests.NonLethalInfiniteDeck_FatigueConverges` 红了(`rounds must have crossed the overtime threshold — expected >2, got 2`,连跑 3 次稳定复现)。根因两层:①§15.6 把 driver 终止条件换成逻辑 HP 后,敌方在**第 2 回合**就死,而 `CheckFatigueNAddFatigue` 的判据是 `roundNum > overtimeRoundThreshold`(=2)——第 3 回合的回合钟疲劳永远没机会触发;旧断言之所以一直绿,是靠旧终止条件(显示层滞后)多攒出来的回合数。②该测试**没有固定 seed**,而 fixture 不建 `TestManager`,于是 `GatherDecks` 走 `Rng.ComputeCombatSeed` ← `Rng.RunSeed` ← `UnityEngine.Random`,同一份代码在不同编辑器会话里跑出不同战局(实测:重启前绿、重启后稳定红)。处置:给该类 `SetUp/TearDown` 增加固定 seed(`PinnedCombatSeed`,走 `TestManager.overrideCombatSeed` 即 `-odseed N` 的同一条路,并在 TearDown 清 `TestManager.Me` 防泄漏),同时把回合钟断言换成**按揭晓数钟**断言(§13 自己认定的「该类循环唯一有效的疲劳计量器」)。产品代码零改动。
+- **待验**:无。
+- 木桩用**无效果普通卡**而非 §3 字面的「中立起手卡 × N」:`isStartCard` 是驱动的回合边界标志,拿它当木桩会让每次木桩揭晓都变成回合边界,故改用无容器的惰性卡,同样无效果但不劫持边界。
+
+### 16.6 与既有测试的关系
+
+`RunBudgetSimTests` 与 `ArrangementCycleDetectorTests` / `InfiniteDeckTerminationTests` 跑**同一批标本**,但走的是两套独立实现(fixture 驱动 vs rig 驱动)。两份实现互相印证是刻意的——不要为了消重把其中一份删掉;要统一的话,留一份当另一份的对照。`MapRealEventToFixtureEvent` 目前三份复制(两个测试类 + rig),沿用「bridge 由各文件自持」的既有惯例,未动共享夹具。
+
+### 16.7 运维备注(本轮踩到的)
+
+- `run_tests` 若报 `Test job failed to initialize` 或反复起不来,先查 `mcpforunity://editor/state` 的 `tests.current_job_id`:域重载会留下**孤儿 job** 并阻塞后续所有运行,用 `run_tests` 带 `clear_stuck: true` 清掉即可(本轮实测有效)。
+- 编辑器重启后 MCP bridge 需要一段时间才重新注册;期间 `resources/read` 无响应容易被误判为"服务已死",先查 8080 是否 LISTENING 再下结论。
+- **跑 Test Runner 前必须先保存 scene**:scene 脏(`*` 标记)时 runner 启动会弹「Scene(s) Have Been Modified」模态框,阻塞主线程 → job 报 `failed to initialize (tests did not start within timeout)` 或直接挂起,而 `editor/state` 仍然显示 `ready_for_tools: true`、窗口标题也不变,极易误判成 runner/bridge 坏了。本轮实测多次命中(用户也反馈"遇到很多次")。规范已写入 `AGENTS.md` 的 Agent Post-Mortem Notes;`GameScene.unity` 带用户未提交改动,**严禁自动关掉该弹窗**。
+
+## 17. 核查:诅咒数量与标本木桩形状(2026-09-19,用户质询后)
+
+用户指出两点,源码核查 + 实测结论如下。
+
+### 17.1 源码事实
+
+- **`CurseEffect.EnhanceCurse(amount)` 在没有目标诅咒时会生成一张**:先 `FindEnemyCardWithTypeID(cardTypeID.value)`(扫 `combinedDeckZone` + `revealZone`,跳过中立卡);找不到就 `CreateEnemyCard(cardPrefab)` → `CombatFuncs.AddCard_TargetSpecific` → `CardFactory.SpawnCardForPlayer(..., deckIndex: 0)`,然后给这张新卡加攻击。**找到时只强化找到的那一张**(首个匹配),不会生成第二张。
+- **「至多一张 JU_ON」是涌现性质,不是显式约束**:全库没有任何咒语唯一性守卫(`AddCard_TargetSpecific` 只做 `SpawnCardForPlayer`,无去重)。游戏内能造诅咒的路径只有 `CurseEffect.EnhanceCurse` / `EnhanceFriendlyCurse`(**仅当一张都没有时才生成**)与 `ReviveEffect`(把已有的移回)。所以任意时刻 ≤1 张,但这是这些效果的性质,不是引擎不变量。
+- 因此**「敌方预置 2×JU_ON」是游戏不可达状态**——这是历史测试脚手架的产物,不是设计。
+
+### 17.2 实测:木桩形状对结论无影响
+
+`TempCurseCountDiag`(临时,已删;源码留 `.agent_tmp/TempCurseCountDiag.cs.saved`),seed 4242,同一 deck 换三种敌方:
+
+| deck | 敌方 | infinite | reveals | rounds | repeats | eHp | L0 |
+|---|---|---|---|---|---|---|---|
+| lethal | 0 诅咒(惰性木桩) | True | 17 | 1 | 8 | 0 | False |
+| lethal | 1×JU_ON | True | 18 | 1 | 9 | 0 | False |
+| lethal | 2×JU_ON(现状) | True | 19 | 1 | 9 | 0 | False |
+| non-lethal | 0 诅咒 | True | 255 | 3 | 100 | 0 | False |
+| non-lethal | 1×JU_ON | True | 249 | 3 | 99 | 0 | False |
+| non-lethal | 2×JU_ON(现状) | True | 257 | 3 | 100 | 0 | False |
+
+**结论:三者判据完全一致**(都 `infinite=True`、同回合数、都无 L0、都被击杀自终止),只有揭晓数差 1–8 次。所以两个标本**不是因为木桩形状才过的**,现有结论成立。
+
+### 17.3 由此作废的一条旧说法
+
+`InfiniteDeckTerminationTests.CreateCurseStubDeck` 的注释写着「without curses in the enemy deck the "add curse" leg fizzles forever and nothing churns」——**与源码不符**,`EnhanceCurse` 会自己生成第一张。0 诅咒那一行实测就是反证(17 揭晓、rounds=1、检定触发、击杀)。这也与 §3 的木桩定义(敌方 = 无效果卡 + 大血量)一致:combo 自带点火,木桩不需要喂诅咒。
+
+### 17.4 建议(待「修改代码」)
+
+把四处 `CreateCurseStubDeck()` 的 2×JU_ON 换成**不预置诅咒**(惰性木桩,或 1×JU_ON),并删掉那条错误注释。这是**保真度清理**:让测试只跑游戏可达的状态。判据不变,实测已证。涉及 `ArrangementCycleDetectorTests` / `InfiniteDeckTerminationTests` / `RunBudgetSimTests`。
+
+### 17.5 附带修掉的自身缺陷
+
+`HeadlessCombatRig` 的共享 dummy UI 用 `new GameObject` 建在**活动场景**里且不受 `Dispose` 管,跑完会在场景里留孤儿 → `GameScene` 变脏 → **下一次 Test Runner 运行弹保存框**(即用户反复遇到的那个坑)。已补 `HeadlessCombatRig.DestroySharedResources()`,并在 `RunBudgetSimTests.OneTimeTearDown` 调用;`AGENTS.md` 与记忆里的条目也据此补了「测试自身会弄脏场景」这一层。
+
+## 18. 验证可见性缺口:检测器在生产配置下是隐形的(2026-09-19,用户验证 step 4 时发现)
+
+用户在 Play 模式按 §16 的验证步骤跑端到端,**看不到 trip 日志**。核查结论:
+
+- 日志确实**受 TestManager 分类开关管理**:`TestManager.InferCategory` 把 `[CombatArrangementCycleDetector]` 路由到 `LogCategory.CombatFlow`(TestManager.cs:363-366),`IsEnabled` 再读 `Me.logCombatFlow`(字段声明默认 `true`)。
+- **但 `GameScene.unity` 里 TestManager 的日志开关序列化值全是 `0`**:`logCombatFlow` / `logEffectChains` / `logAnimationPlayback` / `logVisualSync` / `logEditorTools` / `logTestManager` / `logDynamicDamageDisplay` / `logStatusEffectDisplay` / `logDamageFloater` / `logShopFlow` / `logUncategorized` 全 0。所以 Play 模式下 `LogInternal` 直接 `return`,日志被静默丢弃。组件挂在场景内名为 `TestManager` 的对象上(单实例,active)。
+- 验证时的开启方式:Hierarchy 选 `TestManager` 对象 → Inspector 勾 **`logCombatFlow`** → 进 Play → Console 过滤 `Arrangement cycle tripped`。顺带:场景里 `autoReveal = 1`,战斗会自己跑完,不需要手点。
+
+**更值得注意的**:`Tripped` / `TripCount` / `LastTripHash` 都是**属性**(`get; private set;`),而 Unity Inspector 只显示字段,所以运行时**没有**任何别的可视化途径——trip 唯一的输出就是这条被开关拦掉的日志。也就是说:**按当前生产配置,检测器即使触发了也无人知晓**。这与「我们已经有检测能力」是两回事;P2 接上 `OnCycleTripped` 之前,这个缺口一直在。
+
+引擎事件要让玩家/开发者看见,库里已有的范式是 `CombatLog.me?.Append(...)` + `GameColorPalette`(疲劳就是这么播报的:`CheckFatigueNAddFatigue` 里 `CombatLog.me?.Append(疲劳提示)`),检测器没走这条。是否该让 trip 进入战斗内可见日志是**设计决定**(玩家该不该看到「检测到无限递归」?),留给后续拍板;但至少「能检出」与「看得见」要分开记账。
+
+### 18.1 已加专属开关(2026-09-19,用户要求)
+
+用户验证 step 4 时先靠 `logCombatFlow` 看到了 trip 日志,但那会把 `[CombatManager]` / `[PhaseManager]` / `[CombatBudgetGuard]` 一起放出来。已给检测器单开一类:
+
+- `TestManager.LogCategory` 新增 `InfinityDetection`;新增字段 `public bool logInfinityDetection = true`(带 Tooltip);`IsEnabled` 加对应 case;`InferCategory` 把 `[CombatArrangementCycleDetector]` 从 CombatFlow 分支里**独立出来**单独返回 `InfinityDetection`。
+- 影响面核查:`LogCategory` 仅在 `TestManager` 内部使用(无序列化依赖、无 int 索引、无外部引用),新增成员是纯增量的;改动 = 日志路由,**无游戏行为变化**。
+- **实测新字段在既有场景实例上的取值**:`logInfinityDetection=True | logCombatFlow=True | logEffectChains=False`。即新字段取的是**字段初始化值 `true`**——Unity 对序列化数据里缺失的字段沿用初始值(场景尚未保存该字段故未覆盖)。所以 trip 日志现在**默认可见**,且可以把 `logCombatFlow` 关回去而不失去它。
+- 验证:离线 `dotnet build` 0 error;全量 EditMode **581 total / 580 绿 / 0 失败 / 1 既有 Ignore**。
+
+两处**刻意没动**:
+
+1. `[CombatBudgetGuard]` 留在 CombatFlow——它的 `FORCE CONCLUDE COMBAT` 也能由非无限原因(如正常长局触到 `maxRounds`)触发,语义比"无限检测"宽。
+2. trip 是否要进**战斗内可见日志**:**该路线已作废**——用户 2026-09-19 明确「战斗内日志不显示给玩家了,已经淘汰」。所以 trip 目前唯一可见面就是上面的 TestManager 开关(开发者向);玩家侧要不要感知「检测到无限递归」,在 P2 接上 `OnCycleTripped` 时需重新设计出口,不能再往 `CombatLog` 上挂。
