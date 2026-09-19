@@ -117,6 +117,14 @@ It does **not** affect shop/result phase transitions. `DeckTester.autoSpace` is 
 - `fatigueRevealThreshold` + `totalCardsRevealed` - Fatigue after N reveals.
 - `overtimeRoundThreshold` + `fatigueAmount` - Fatigue after N rounds.
 
+## Infinity Gate (LIVE in production)
+
+An opponent deck that loops forever would hang the victim, so a serving gate withholds such decks; it is live (per-content `decks.flag` + the `combos` library, which blocks any ghost CONTAINING a proven combo). L0 `CombatBudgetGuard` remains the only hard "every combat ends" guarantee; L1 `CombatArrangementCycleDetector` queues evidence, and attribution/minimization run **in the editor only**. Design, snapshot and operation manual: `plans/plan-infinity-detection-2026-09-17.md` §20-§24 — **read §24 first**.
+
+- **Judge a loop WITHOUT the fatigue clock**: `RunBudgetSim.Options.LoopDetection()` (fatigue off). Production parameters mask real loops — fatigue injects cards that break the arrangement, which produced false "single-seed" verdicts (§23.5). `Production()` stays for harm measurement, per §16.3's split.
+- **Verdict sources**: editor attribution, and the P5 back-scan (`tools/outputs/dump_decks.py --prod` → menu `Tools/Infinity/Batch Scan` → dry-run, then post with `tools/outputs/post_loop_reports.js`). The poster posts only PROVEN entries and needs `--player-id` from `tools/outputs/_scan_reporter.txt` (gitignored — the operator's own account gets `own_deck`).
+- **Cost bounds are load-bearing**: `ScanGuardTotal=400`, `ScanMinimizerMaxRuns=120`, and run scans in slices — an unbounded scan crashed the editor with "System out of memory" (§23.5).
+
 ## Effect System
 
 ### Trigger Flow

@@ -1,7 +1,7 @@
 # Plan: 无限检测与防下发(Infinity Detection and Serving Gate)
 
 - 日期: 2026-09-17
-- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端);**2026-09-19 P3 设计落定(§20):四项拍板 = flag 粒度取内容指纹 / 一次报告即 flag / 服务端出队过滤 + 客户端缓存清理 / node --test 验收;§8「三来源」更正为两来源**;**2026-09-19 P3 已实现并验证(§20.7)**:服务端 flag 列 + `loop_reports` / `flagged_fingerprints` / `POST /api/loop-reports` / 出队过滤 / admin 解封,客户端 journal 记 ghost deckId + 缓存 purge + `LoopReportUploader`;`npm test` 9/9、全量 EditMode 600 total/599 绿/0 失败/1 既有 Ignore、线上库副本迁移实测通过。遗留:打包内无 verdict(保护链依赖 P5)、`ProcessPendingAndUpload` 生产触发时机(§19.6.2)、客户端↔服务端 E2E 未跑。**2026-09-19 P4 已实现(§21)**:组合库 + 入库门槛 + 匹配时多重集包含过滤 + `blockedCombos`;服务端 `npm test` 17/17。**2026-09-19 P5 已实现(§23)**:只读 dump + 头less 扫描(105 副实扫)+ 默认干跑的上报器;首跑 9 副命中(5 已证 / 4 单 seed 未证),零生产写入;触发定为「随卡改动/发版跑」(§11.4 结案)
+- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端);**2026-09-19 P3 设计落定(§20):四项拍板 = flag 粒度取内容指纹 / 一次报告即 flag / 服务端出队过滤 + 客户端缓存清理 / node --test 验收;§8「三来源」更正为两来源**;**2026-09-19 P3 已实现并验证(§20.7)**:服务端 flag 列 + `loop_reports` / `flagged_fingerprints` / `POST /api/loop-reports` / 出队过滤 / admin 解封,客户端 journal 记 ghost deckId + 缓存 purge + `LoopReportUploader`;`npm test` 9/9、全量 EditMode 600 total/599 绿/0 失败/1 既有 Ignore、线上库副本迁移实测通过。遗留:打包内无 verdict(保护链依赖 P5)、`ProcessPendingAndUpload` 生产触发时机(§19.6.2)、客户端↔服务端 E2E 未跑。**2026-09-19 P4 已实现(§21)**:组合库 + 入库门槛 + 匹配时多重集包含过滤 + `blockedCombos`;服务端 `npm test` 17/17。**2026-09-19 P5 已实现并首次写入生产(§23/§23.6)**:只读 dump + 无头扫描 + 默认干跑的上报器(触发定为「随卡改动/发版跑」,§11.4 结案);**判定口径修正后全量 109 行实扫 → 16 副无限 / 13 副已证 → 上报为 6 个组合键 + 14 行 deck flag**(线上 `active_combos 0→6`),未证 4 副(5/55/6/91)留报告;扫描器身份 `onedeck-scan`。**当前状态快照与操作手册见 §24**
 - 关联: docs/RngDeterminism.md(Rng/digest 基建)、docs/RegressionChecklist.md、docs/AgentRegistry.md;2026-09-13 埋葬递归 SOE 崩溃诊断
 - 核心抽象: `RunBudgetSim(deckA, deckB|木桩, seed) -> BudgetTripReport`,对局归因 / 离线回扫 / 可选预检三处共用一份实现
 
@@ -155,7 +155,7 @@
 | P2 | ✅ 客户端核心已落地(2026-09-19,§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线;loop_reports 落表/上报按 §19.6.1 归 P3 | 最小集演示在 lethal 样本完成(09-13 三卡环已被 P0 修复拆除,§19.4);遗留:`ProcessPending` 生产触发时机(§19.6.2) |
 | P3 | ✅ 已实现(2026-09-19,§20/§20.7):服务端 flag 列 + 内容指纹 + loop_reports/flagged_fingerprints 表 + POST /api/loop-reports + 出队过滤 + flaggedDeckIds + admin 解封;客户端 journal 记 ghost deckId + 缓存 purge + LoopReportUploader | 被 flag 的 deck 不再下发:服务端 `npm test` 9/9(含"报告后出队不再返回"与"重传自动 flag");客户端 EditMode 5/5 + 全量 600/599 绿 |
 | P4 | ✅ 已实现(2026-09-19,§21):组合库表 + 入库门槛(1-最小/多 seed 稳健/未截断)+ 匹配时多重集包含过滤 + `blockedCombos` 客户端缓存清理 + admin retire/reactivate | 含标本组合的任意 deck 在匹配时被滤除:服务端 `npm test` 17/17(含"加料 deck 被扣""未证明不入库""退役恢复") |
-| P5 | ✅ 已实现(2026-09-19,§23):`dump_decks.py` 只读 dump + `InfinityBatchScan`(sim + ddmin + 报告分档)+ `post_loop_reports.js`(默认干跑) | 回扫报告落盘:首跑 105 副实扫,9 副命中(5 已证 / 4 未证),零生产写入 |
+| P5 | ✅ 已实现并投入生产(2026-09-19,§23/§23.6):`dump_decks.py` 只读 dump + `InfinityBatchScan`(sim + ddmin + 报告分档)+ `post_loop_reports.js`(默认干跑) | 回扫报告落盘**并已下发过滤生效**:全量 109 行实扫 → 16 副无限 / **13 副已证 → 上报为 6 个组合 + 14 行 deck flag**(线上 `active_combos 0→6`);未证 4 副(5/55/6/91)留报告 |
 
 Edit-mode headless 体系复用 HeadlessCombatTestFixture / NullCombatVisuals,不进 Play Mode。
 
@@ -712,3 +712,68 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 2. **deck 56 属于 `test_papaya` 自己** → 被服务端按规则拒(`400 own_deck`)。用户裁定「给扫描器一个专用身份」,于是注册了 **`onedeck-scan`**(玩家数 5→6);它的 playerId 存在 `tools/outputs/_scan_reporter.txt`(已 gitignore——playerId 本身即 API 凭据)。**以后 P5 上报一律用这个身份**:既不受 own_deck 限制(能报自己账号的 deck),审计上也能一眼区分扫描上报与玩家上报(海报还会在 `signals` 里附 `batch-scan`)。
 
 **残留(未上报)**:deck 5 / 55(多 seed 成环但 ddmin 在 120 次预算内没收敛出 1-最小集)、deck 6(repeats=3 且单 seed)、deck 91(与 88/89 内容重复)。它们仍是报告里的 `infinite` 条目,若将来要覆盖需放宽 `ScanMinimizerMaxRuns` 后重跑并复核(注意 §23.5 的 OOM 教训)。
+
+## 24. 现状快照与操作手册(2026-09-19 收尾)
+
+> 给接手的人:读完这一节就知道「现在什么在跑、什么还没做、命令怎么写」。设计细节在 §20(服务端+客户端)、§21(组合库)、§23(P5),事故与教训在 §23.3/§23.5。
+
+### 24.1 线上现状(实测,2026-09-19)
+
+| 事实 | 值 |
+|---|---|
+| 服务端版本 | P3+P4 已上线(`feefd0d`/`a454189` 的服务端 → 已部署到 `i-uf66n1ofpudgn9b6rg7o`);`POST /api/loop-reports` 返回 401 而非 404 即为新版 |
+| 下发闸门 | `decks.flag` **14 行**被扣、`active_combos` **6 个**、`flagged_fingerprints` 13、`loop_reports` 13 |
+| 6 个组合键 | `GRAVE_HEXER`×2(6 副);`CURSE_GARDENER`+`RELIC_CURSE_REVIVAL`(3 副);`GRAVE_HEXER`+`SPIRIT_CALLER`;`KINGSLAYER`+`CURSE_SUMMONER`;`CURSE_SUMMONER`×2;`RIFT_ACOLYTE`+`REVIVE_SUMMONER`+`RIFT_STRIKER`+`GRAVE_GIANT` |
+| 上报者 | 12 条来自 `test_papaya`,1 条(deck 56)来自专用扫描器身份 **`onedeck-scan`**;其 playerId 在 `tools/outputs/_scan_reporter.txt`(**gitignore**,playerId 即凭据) |
+| 数据库 | 109 副 deck / 6 个 player;迁移是 boot 时增量完成(§22) |
+
+**玩家实际获得的保护 = L0 熔断(任何对局必然结束)+ 下发闸门(6 个组合不再出现在对手里)。** 闸门覆盖面仍取决于「谁产出 verdict」:打包内跑不了归因 sim(§19.5),所以今天能产出 verdict 的只有**编辑器里的归因**(playtest)与 **P5 离线回扫**。正式包里只会上传无 verdict 的证据,服务端不据此 flag。
+
+### 24.2 还没做的(按重要性)
+
+1. **§19.6.2 归因触发时机**——`ProcessPendingAndUpload` 没有生产调用方:跑归因会清空活动单例(`HeadlessCombatRig.Create` → `CleanupSingletons`),所以不能挂在游戏运行中的 tick 上。需要「无活动对局」硬闸或单例保存/恢复。
+2. **打包内的 verdict 来源**——P5 目前只能在编辑器里跑;若要让正式包也能出 verdict,要么把 sim 移出编辑器程序集(2 个编辑器 API 边界,见 §23.1 之外的讨论),要么接受「离线确认」的延迟。
+3. **卡改动后的组合复验**——§4 的 `retired(卡改动后须复验)`目前只有 admin 手动 retire/reactivate;自动复验需要挂到建卡/发版流程(§11.4 已定为「随卡改动/发版跑」,但**没有 CI 钩子**,目前靠人记得跑)。
+4. **P4 匹配层缺端到端验证**——服务端单测证明「含组合的 deck 被扣」,但没有跑过「真实客户端 → 真的不再下发」的联调;客户端缓存清理(`blockedCombos`)也只有单测。
+5. **未上报的 4 副**:deck 5/55(多 seed 成环但 ddmin 在 120 次预算内没收敛出 1-最小集)、deck 6(repeats=3 且单 seed)、deck 91(与 88/89 内容重复)。要覆盖需放宽 `ScanMinimizerMaxRuns` 并在切片下小步重跑(§23.5 的 OOM 教训)。
+6. **§11.1 阈值标定**仍未做(周期检测器的触发次数/哈希内容/回合重置),L0 绝对上限也没做生产对局夹逼。
+
+### 24.3 操作手册(全部在仓库里,零手工文件)
+
+```bash
+# 1) 只读 dump 线上 decks(workbench exec;Windows 需 MSYS_NO_PATHCONV=1)
+export PATH="$PATH:/c/Users/Papaya/.workbench/bin"; MSYS_NO_PATHCONV=1 python tools/outputs/dump_decks.py --prod
+
+# 2) 扫描(必须在编辑器里;菜单 Tools/Infinity/Batch Scan 或 -executeMethod InfinityBatchScan.ScanFromBatch)
+#    务必分批:Run(candidates, ...) 接受过滤后的候选列表,每批 20-40 副
+#    成本上限已在代码里:ScanGuardTotal=400 / ScanMinimizerMaxRuns=120(§23.5 的 OOM 教训)
+
+# 3) 干跑上报清单(零请求)
+node tools/outputs/post_loop_reports.js tools/outputs/infinity_scan_<stamp>.json
+
+# 4) 真发(用扫描器身份;id 从本地 gitignore 文件读,别粘进对话)
+node tools/outputs/post_loop_reports.js <report.json> --post --player-id "$(cat tools/outputs/_scan_reporter.txt)"
+
+# 5) 核对线上:flag/组合/日志
+workbench exec --instance-id i-uf66n1ofpudgn9b6rg7o --output json --command 'cd /var/www/onedeck/server && node scripts/inspect-db.js'
+workbench exec --instance-id i-uf66n1ofpudgn9b6rg7o --output json --command 'pm2 logs onedeck-api --lines 40 --nostream'
+```
+
+**跑扫描/测试前必读**(都是这轮踩过的):
+
+- **先 `refresh_unity` 并核对「程序集 mtime > 源文件 mtime」**;窗口失焦时 Unity 挂起编译,而 `run_tests` 匹配到 0 个测试**不会**强制重编译 → 假绿(AGENTS.md 有专条)。
+- **`EditorApplication.delayCall` 在失焦时不触发**;长任务同步跑或分批。
+- **不要一次性跑全量 ddmin**:关疲劳后每次 sim 都不提前结束,几百次谓词求值会把机器提交上限吃穿(§23.5,编辑器 OOM 崩溃)。
+- 跑测试前保存场景;`pm2 restart` 属服务重启,执行前先说明(workbench 技能的规则)。
+
+### 24.4 文件地图
+
+| 面 | 位置 |
+|---|---|
+| 检测器 / 证据队列 | `Assets/Scripts/Managers/CombatArrangementCycleDetector.cs`、`InfinityTripJournal.cs` |
+| L0 熔断 | `Assets/Scripts/Managers/CombatBudgetGuard.cs` |
+| 无头仿真 / 归因 / 最小化 / 组合条目 | `Assets/Scripts/Editor/Headless/{HeadlessCombatRig,RunBudgetSim,BudgetTripReport,InfinityAttribution,ComboMinimizer,LoopReport,InfinityAttributionProcessor,InfinityBatchScan}.cs` |
+| 服务端 | `server/onedeck-api/server.js`(+ `tests/loopReports.test.js`、`tests/combos.test.js`、`scripts/{backup-db,inspect-db}.js`) |
+| 客户端网络面 | `Assets/Scripts/Net/{OpponentDeckCache,UploadOutbox,LoopReportUploader,NetDtos,ServerConfig}.cs` |
+| 运维脚本 | `tools/outputs/{dump_decks.py,post_loop_reports.js}`(+ 其 node 测试) |
+| 报告产物 | `tools/outputs/infinity_scan_*.md`(入库)、`infinity_rings_*.md`、`_exp_8889.txt`(88/89 环证据);`*.json` 含玩家名 → **gitignore** |
