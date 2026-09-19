@@ -51,6 +51,17 @@ public class OpponentDeckEntry
 	public int defenseLosses;
 }
 
+/// <summary>
+/// One proven-infinite card set from the server's combo library (plan §21). The set is a
+/// MULTISET: a repeated cardTypeID requires that many copies in the deck.
+/// </summary>
+[Serializable]
+public class OpponentBlockedCombo
+{
+	public string key;
+	public List<string> cards;
+}
+
 [Serializable]
 public class OpponentDecksResponse
 {
@@ -62,6 +73,12 @@ public class OpponentDecksResponse
 	/// would stay fightable.
 	/// </summary>
 	public List<int> flaggedDeckIds;
+	/// <summary>
+	/// Active combos (plan §21). Any cached deck CONTAINING one of these sets is dropped: the
+	/// server already withholds such decks from new fetches, but a deck cached before the combo
+	/// was registered would otherwise stay fightable from disk.
+	/// </summary>
+	public List<OpponentBlockedCombo> blockedCombos;
 }
 
 [Serializable]

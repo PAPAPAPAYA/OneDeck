@@ -50,6 +50,12 @@ public class LoopReport
 
 	public bool oneMinimal;
 	public bool truncated;
+	/// <summary>
+	/// False when the deck did not loop on every supplied seed. Part of the §4 ingest gate: the
+	/// combo library only takes sets that are multi-seed stable, 1-minimal and untruncated
+	/// (the server re-checks all three before registering a combo).
+	/// </summary>
+	public bool multiSeedStable;
 
 	public string status = "candidate";
 
@@ -100,6 +106,7 @@ public static class LoopReportBuilder
 			}
 			report.oneMinimal = minimized.IsOneMinimal;
 			report.truncated = minimized.Truncated;
+			report.multiSeedStable = minimized.MultiSeedStable;
 		}
 
 		report.mySide = ids.ToArray();

@@ -1,7 +1,7 @@
 # Plan: 无限检测与防下发(Infinity Detection and Serving Gate)
 
 - 日期: 2026-09-17
-- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端);**2026-09-19 P3 设计落定(§20):四项拍板 = flag 粒度取内容指纹 / 一次报告即 flag / 服务端出队过滤 + 客户端缓存清理 / node --test 验收;§8「三来源」更正为两来源**;**2026-09-19 P3 已实现并验证(§20.7)**:服务端 flag 列 + `loop_reports` / `flagged_fingerprints` / `POST /api/loop-reports` / 出队过滤 / admin 解封,客户端 journal 记 ghost deckId + 缓存 purge + `LoopReportUploader`;`npm test` 9/9、全量 EditMode 600 total/599 绿/0 失败/1 既有 Ignore、线上库副本迁移实测通过。遗留:打包内无 verdict(保护链依赖 P5)、`ProcessPendingAndUpload` 生产触发时机(§19.6.2)、客户端↔服务端 E2E 未跑
+- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端);**2026-09-19 P3 设计落定(§20):四项拍板 = flag 粒度取内容指纹 / 一次报告即 flag / 服务端出队过滤 + 客户端缓存清理 / node --test 验收;§8「三来源」更正为两来源**;**2026-09-19 P3 已实现并验证(§20.7)**:服务端 flag 列 + `loop_reports` / `flagged_fingerprints` / `POST /api/loop-reports` / 出队过滤 / admin 解封,客户端 journal 记 ghost deckId + 缓存 purge + `LoopReportUploader`;`npm test` 9/9、全量 EditMode 600 total/599 绿/0 失败/1 既有 Ignore、线上库副本迁移实测通过。遗留:打包内无 verdict(保护链依赖 P5)、`ProcessPendingAndUpload` 生产触发时机(§19.6.2)、客户端↔服务端 E2E 未跑。**2026-09-19 P4 已实现(§21)**:组合库 + 入库门槛 + 匹配时多重集包含过滤 + `blockedCombos`;服务端 `npm test` 17/17。下一期 P5(存量回扫批工具:服务器全量 + 本地 RecordedDecks)
 - 关联: docs/RngDeterminism.md(Rng/digest 基建)、docs/RegressionChecklist.md、docs/AgentRegistry.md;2026-09-13 埋葬递归 SOE 崩溃诊断
 - 核心抽象: `RunBudgetSim(deckA, deckB|木桩, seed) -> BudgetTripReport`,对局归因 / 离线回扫 / 可选预检三处共用一份实现
 
@@ -65,6 +65,7 @@
   - roles: 续链角色 engine / chain-switcher / pump(示例见 §6)
   - tripSignals / reproSeeds / ~~evidenceRef~~(实现落为 `LoopReport.tripSignal` + `liveTripSignal` 两字段承载证据,不单列 evidenceRef;§19.1)
   - status: candidate → active(admin 复核后)/ retired(卡改动后须复验)
+    - **落地状态(2026-09-19,§21)**:组合库 = 服务端 `combos` 表;入库**自动**(sim 门槛:1-最小 + 多 seed 稳健 + 未截断,§7.6);`retired` 由 admin 在面板上置位/恢复,退役后不再参与匹配扣留
 
 组合库必须由 sim 判定入库,不能靠读 desc 手工维护——desc 会因省略而撒谎(例:丧钟×无头武生在 desc 层看似递归,实际被 ReviveSelf 的墓区早退拦死)。
 入库判据(2026-09-18 用户拍板)= sim 中检出**无界递归**(同回合排列周期,见 §3),与「预算打不完」解耦。带击杀泵的循环同样必 flag:`lethal infinite test`(RELIC_CURSE_REVIVAL + CURSE_GARDENER,循环每圈增强诅咒、恰好三回合内击杀自终止)是典型标本——验收标准:该 deck 必须被排列周期检测器命中并入库,尽管其自然对局 17 揭晓击杀、预算零触顶。
@@ -153,7 +154,7 @@
 | P1b | ✅ RunBudgetSim headless 化(§16,2026-09-19) | 两块标本经 sim 复现同一结论 + 固定 seed 可复现;离线编译已验,EditMode 待跑 |
 | P2 | ✅ 客户端核心已落地(2026-09-19,§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线;loop_reports 落表/上报按 §19.6.1 归 P3 | 最小集演示在 lethal 样本完成(09-13 三卡环已被 P0 修复拆除,§19.4);遗留:`ProcessPending` 生产触发时机(§19.6.2) |
 | P3 | ✅ 已实现(2026-09-19,§20/§20.7):服务端 flag 列 + 内容指纹 + loop_reports/flagged_fingerprints 表 + POST /api/loop-reports + 出队过滤 + flaggedDeckIds + admin 解封;客户端 journal 记 ghost deckId + 缓存 purge + LoopReportUploader | 被 flag 的 deck 不再下发:服务端 `npm test` 9/9(含"报告后出队不再返回"与"重传自动 flag");客户端 EditMode 5/5 + 全量 600/599 绿 |
-| P4 | 组合库表 + 匹配交集检查 + 复核流 | 含标本组合的任意 deck 在匹配时被滤除 |
+| P4 | ✅ 已实现(2026-09-19,§21):组合库表 + 入库门槛(1-最小/多 seed 稳健/未截断)+ 匹配时多重集包含过滤 + `blockedCombos` 客户端缓存清理 + admin retire/reactivate | 含标本组合的任意 deck 在匹配时被滤除:服务端 `npm test` 17/17(含"加料 deck 被扣""未证明不入库""退役恢复") |
 | P5 | 存量回扫批工具(服务器全量 + 本地 RecordedDecks) | 回扫报告落盘 |
 
 Edit-mode headless 体系复用 HeadlessCombatTestFixture / NullCombatVisuals,不进 Play Mode。
@@ -556,3 +557,38 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 - `PlayerDeckId` 未加(§20.3 初稿曾列):玩家正在使用的卡组没有服务端行身份,记它无意义;证据里只需要被指控的 ghost deckId。
 - `minimizedCards` 未单列请求字段(§20.2 初稿曾列):它已在 `payload`(LoopReport JSON)里,避免两处真相。
 - 客户端 ↔ 真实服务端的 E2E(play mode 触发上传 → 服务端 flag → 下次 prefetch 不再下发)未跑:两端的契约各自有测试钉住(服务端 HTTP 集成 + 客户端 payload 断言),端到端留给 `ProcessPendingAndUpload` 接上触发方之后一起验。
+
+## 21. P4 组合库 + 匹配交集检查(2026-09-19)
+
+### 21.1 为什么 P4 必须存在(与 §20 的分工)
+
+P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"的 deck 被扣。改一张牌就是新指纹,照样下发 —— 服务端测试 `flagging is content-scoped: supersets and subsets stay served` 把这个边界钉成了规格。§1 目标 1(玩家永远不会匹配到会无限的敌方 deck)真正成立需要**子集判定**:含该组合的任意 deck 都扣,不管它另外还带了多少张牌。P4 就是这一层。
+
+### 21.2 设计要点
+
+- **组合库表 `combos`**:`combo_key`(组合卡表的多重集指纹,复用 §20 的 `deckFingerprint`,所以 deck 与组合共用同一套键概念)、`cards`(JSON 卡表,多重集)、`status`(active/retired)、`first_report_id`、`report_count`、`created_at/updated_at/retired_at/retired_reason`。**卡表不可手改** —— 它来自 sim 证明的最小集,手改等于宣称 sim 错了。
+- **入库门槛 = 三条件全满足**(§4 的「多 seed 稳健 + ddmin 最小集」落成可判定字段):payload 里 `oneMinimal === true` 且 `truncated !== true` 且 `multiSeedStable !== false`,且 `mySide` 非空。未知/缺失一律视为「未证明」—— 宁可不入库。**为此给 `LoopReport` 补了 `multiSeedStable`**(此前只有 oneMinimal/truncated;`ComboMinimizer.MultiSeedStable` 一直存在,只是没进 payload)。顺带澄清:`IsOneMinimal == true` 已蕴含「多 seed 全过且未截断」(最小化在 `!MultiSeedStable` 时提前返回、IsOneMinimal 保持 false),两个字段是**冗余但显式**的证据,便于反证。
+- **匹配时判定**:`GET /api/decks/opponents` 取出候选行后在 JS 里做**多重集包含**判定(组合要两张 X,deck 里就得有两张 X),命中者不进响应。SQL 的 `ORDER BY RANDOM() LIMIT n` 保留但 limit 放大 20 倍(`CANDIDATE_OVERFETCH`),采样裁剪移到 JS —— 被扣的 deck 极少,20 倍余量足够填满响应;真出现某 session 95% 以上被扣才可能少给,而客户端本就容忍少给(会回落本地池)。
+- **缓存侧**:响应新增 `blockedCombos`(active 组合的卡表),客户端 `MergeResponse` 删除**含该组合**的缓存条目。理由同 §20.3:服务端看不到客户端磁盘缓存,而组合在注册之前就可能已被缓存。
+- **复核流**(§10 P4 第三项):admin 面板新增 Combo library 段,`retire`(卡片已修)/ `reactivate` 两个动作 + 退役原因。**退役组合收到新报告不会自动复活**:只累加 `report_count` 并打 WARN 日志,交 admin 判断 —— 退役通常意味着「卡改了」,而 sim 证据本身分不清「没修好」和「客户端版本旧」。
+- **版本无关**:组合键与 §20 指纹一样不分 game_version(同一副卡表在任何版本都是同一个环);`blockedCombos` 下发全量 active 列表(数量小),`flaggedDeckIds` 才按版本 + session 范围裁剪。
+- **默认池仍不参与**(§20.1 第 3 条不变):它是开发者资产,不来自玩家。
+
+### 21.3 实施记录(2026-09-19)
+
+| 面 | 改动 |
+|---|---|
+| 服务端 | `combos` 表;`extractProvenCombo`(入库门槛);`POST /api/loop-reports` 在 flag 的同时入库组合并回传 `comboKey`/`comboStatus`;出队路径改为「取候选 → 多重集包含过滤 → JS 采样」;响应新增 `blockedCombos`;admin Combo library 段 + `POST /admin/combos/status`(retire/reactivate + 退役原因);新增 `adminParam`(表单体或 query 都认)与 `express.urlencoded` 解析 |
+| 客户端 | `OpponentBlockedCombo` DTO + `OpponentDecksResponse.blockedCombos`;`OpponentDeckCache.ContainsBlockedCombo`(多重集包含)+ `MergeResponse` 按组合清理缓存 |
+| 证据 | `LoopReport.multiSeedStable` + `LoopReportBuilder` 接线 |
+
+**验证**:
+
+- 服务端 `npm test` → **17/17 绿**(P4 新增 8 条):含组合的**加料 deck** 被扣而无关 deck 照发;六种「未证明」payload(非 1-最小 / 截断 / 非多 seed 稳健 / 缺标志 / 空集 / 非 JSON)一律不入库**但仍 flag 卡组内容**;多重集语义(`[A,A,B]` 不被单张 A 满足);证据型 verdict 永不入库;`blockedCombos` 下发且退役后消失;退役恢复下发、重新激活再次扣留、退役元数据清空;退役组合的新报告只累加证据计数并保持退役;未授权退役 403;面板渲染。
+- 客户端 EditMode:`OpponentDeckCacheTests` 新增 2 条(含组合的缓存条目被清、半个组合与多重集不误伤);全量 **602 total / 0 失败 / 1 既有 Ignore**(P3 那次 600,新增 2 条),按 AGENTS.md 的 stale-assembly 规矩先 refresh 并核对程序集新鲜度后才跑。
+
+**遗留**:
+
+- 匹配层只做「服务端出队过滤 + 客户端缓存清理」,没有匹配瞬间的最终校验 —— 理论上仍有窗口:某次 prefetch 之后新注册的组合,要等下一次 prefetch 才作用到本地缓存(客户端每次进商店都会 `EnsureStockForSession` → `Prefetch`,窗口最长一个 session)。
+- §4 的 `retired(卡改动后须复验)`只是字段 + admin 手动动作;**卡改动自动触发复验**未做(需要 P5 回扫或建卡流程挂钩)。
+- `enemySide` 仍恒空(§7.1 跨侧不立项)。
