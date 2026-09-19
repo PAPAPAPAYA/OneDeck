@@ -48,6 +48,13 @@ public class BudgetTripReport
 	public int OwnerHpFinal;
 	public int EnemyHpFinal;
 
+	/// <summary>
+	/// Every reveal in order, as "side:cardTypeID" (side O/E/N, a leading * marks the Start Card).
+	/// Off by default (Options.RecordRevealTrace) because it is only worth its memory when someone
+	/// wants to READ the loop rather than trust the hash — the P5 ring check and design reviews.
+	/// </summary>
+	public System.Collections.Generic.List<string> RevealTrace = new System.Collections.Generic.List<string>();
+
 	/// <summary>The plan's flag criterion (§4/§15): was an unbounded recursion detected?</summary>
 	public bool SuspectedInfinite
 	{

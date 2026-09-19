@@ -170,6 +170,63 @@ public class InfinityBatchScanTests
 			"two copies are not one");
 	}
 
+	// ------------------------------------------------------------------ ring traces
+
+	[Test]
+	public void FindTailPeriod_FindsTheShortestRepeatingWindow()
+	{
+		// The lethal specimen's ring: gardener reveals, the revived curse reveals, repeat.
+		var alternating = new List<string>();
+		for (int i = 0; i < 20; i++) { alternating.Add("O:CURSE_GARDENER"); alternating.Add("E:JU_ON"); }
+		Assert.AreEqual(2, InfinityBatchScan.FindTailPeriod(alternating, out int alternatingRepeats));
+		Assert.AreEqual(20, alternatingRepeats, "every period counts, including the final partial one");
+
+		// A single-card ring (deck 109's GRAVE_HEXER x2 in the scan trace).
+		var constant = new List<string> { "O:GRAVE_HEXER", "O:GRAVE_HEXER", "O:GRAVE_HEXER", "O:GRAVE_HEXER", "O:GRAVE_HEXER", "O:GRAVE_HEXER" };
+		Assert.AreEqual(1, InfinityBatchScan.FindTailPeriod(constant, out int constantRepeats));
+		Assert.AreEqual(6, constantRepeats);
+
+		// Warm-up that never settles: the detector must say so rather than invent a period.
+		var ramping = new List<string> { "A", "A", "B", "A", "B", "C", "A", "B", "C", "D", "A", "B" };
+		Assert.AreEqual(0, InfinityBatchScan.FindTailPeriod(ramping, out int rampingRepeats));
+		Assert.AreEqual(0, rampingRepeats);
+
+		Assert.AreEqual(0, InfinityBatchScan.FindTailPeriod(new List<string> { "A", "B" }, out int tinyRepeats),
+			"too short to claim a period");
+		Assert.AreEqual(0, tinyRepeats);
+	}
+
+	[Test]
+	public void RingsToMarkdown_ShowsTheWindowAndTheBindingEvidence()
+	{
+		var report = new InfinityBatchScan.RingTraceReport
+		{
+			generatedUtc = "2026-09-19T00:00:00Z",
+			dummySize = 3,
+			dummyHp = 100000000,
+			rings = new List<InfinityBatchScan.RingTrace>
+			{
+				new InfinityBatchScan.RingTrace
+				{
+					deckId = 66, label = "deck 66", status = "proven",
+					minimalSet = new[] { "CURSE_GARDENER", "RELIC_CURSE_REVIVAL" },
+					reveals = 1500, rounds = 8, repeats = 100, tripHashRepeats = 100,
+					period = 2, periodRepeats = 97,
+					window = new[] { "O:CURSE_GARDENER", "E:JU_ON" },
+					tail = new[] { "O:CURSE_GARDENER", "E:JU_ON" },
+					roles = new[] { "CURSE_GARDENER <Engine> [OnMeRevealed -> EnhanceCurse,ReviveTheirCards]" },
+				},
+			},
+		};
+
+		string markdown = InfinityBatchScan.RingsToMarkdown(report);
+		StringAssert.Contains("deck 66  [proven]", markdown);
+		StringAssert.Contains("**repeating window: period 2, repeated x97**", markdown);
+		StringAssert.Contains("O:CURSE_GARDENER -> E:JU_ON", markdown, "the ring itself must be legible");
+		StringAssert.Contains("OnMeRevealed -> EnhanceCurse", markdown, "and the binding evidence for checking it");
+		StringAssert.Contains("fatigue OFF", markdown);
+	}
+
 	[Test]
 	public void PrefabMap_ResolvesTheComboCards()
 	{

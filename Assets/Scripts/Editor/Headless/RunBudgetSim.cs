@@ -44,6 +44,11 @@ public static class RunBudgetSim
 		public int FatigueRevealThreshold = 40;
 		public int FatigueAmount = 1;
 
+		public bool RecordRevealTrace = false;
+
+		/// <summary>Cap for the reveal trace; a runaway loop must not grow the report without bound.</summary>
+		public int RevealTraceCap = 400;
+
 		public static Options Production()
 		{
 			return new Options();
@@ -198,6 +203,10 @@ public static class RunBudgetSim
 
 			var revealed = cm.revealZone.GetComponent<CardScript>();
 			bool wasStartCard = revealed != null && revealed.isStartCard;
+			if (options.RecordRevealTrace && report.RevealTrace.Count < options.RevealTraceCap)
+			{
+				report.RevealTrace.Add(DescribeReveal(revealed, wasStartCard, cm));
+			}
 
 			rig.BridgeCard(cm.revealZone);
 
@@ -269,5 +278,24 @@ public static class RunBudgetSim
 		report.EnemyHpFinal = cm.enemyPlayerStatusRef.hp;
 		report.OwnerDied = cm.ownerPlayerStatusRef.hp <= 0;
 		report.EnemyDied = cm.enemyPlayerStatusRef.hp <= 0;
+	}
+
+	/// <summary>
+	/// One trace entry: "O:cardTypeID" / "E:cardTypeID" / "N:cardTypeID", with a leading * for the
+	/// Start Card. The side matters — a loop that revives the ENEMY's card reveals a different
+	/// sequence than one that revives its own, and that is exactly what a ring review reads.
+	/// </summary>
+	private static string DescribeReveal(CardScript card, bool wasStartCard, CombatManager cm)
+	{
+		string prefix = wasStartCard ? "*" : "";
+		if (card == null) return prefix + "?:?";
+		string side = "N";
+		if (card.myStatusRef != null && cm != null)
+		{
+			if (card.myStatusRef == cm.ownerPlayerStatusRef) side = "O";
+			else if (card.myStatusRef == cm.enemyPlayerStatusRef) side = "E";
+		}
+		string id = !string.IsNullOrEmpty(card.cardTypeID) ? card.cardTypeID : card.name;
+		return prefix + side + ":" + id;
 	}
 }

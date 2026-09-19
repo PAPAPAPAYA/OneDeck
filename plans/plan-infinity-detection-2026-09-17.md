@@ -630,7 +630,7 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
   | 文件 | 职责 |
   |---|---|
   | `tools/outputs/dump_decks.py` | 只读 dump 线上 `decks` 表 → `tools/outputs/decks_current.json`(走 workbench exec,同 dump_catalog.py) |
-  | `Assets/Scripts/Editor/Headless/InfinityBatchScan.cs` | 建 cardTypeID→prefab 映射(`AssetDatabase` 扫 `Assets/Prefabs/Cards`)→ 按卡表去重 → 跳过已 flag → 逐副 sim → 命中则 ddmin → 写 `infinity_scan_<UTC>.json` + `.md`;`[MenuItem]` + `-executeMethod` 入口;也扫本地 `Assets/SORefs/Decks/Recorded/**` 但**不参与上报**(无服务端行) |
+  | `Assets/Scripts/Editor/Headless/InfinityBatchScan.cs` | 建 cardTypeID→prefab 映射(`AssetDatabase` 扫 `Assets/Prefabs/Cards`)→ 按卡表去重 → 跳过已 flag → 逐副 sim → 命中则 ddmin → 写 `infinity_scan_<UTC>.json` + `.md`;`[MenuItem]` + `-executeMethod` 入口;也扫本地 `Assets/SORefs/Decks/Recorded/**` 但**不参与上报**(无服务端行)。另含环追踪(`TraceRingsFromLastScan` / `FindTailPeriod`,见 §23.4) |
   | `tools/outputs/post_loop_reports.js` | 读报告 → POST `/api/loop-reports`;**默认干跑**,`--post` 才真发 |
 
 - **门槛比「检测到」更严**:poster 默认只发**已证**条目(1-最小 + 多 seed 稳健 + 未截断 = 服务端入库门槛),单 seed 成环的**默认扣下并列出**。这条不是拍脑袋——首跑实测 9 副命中里就有 4 副是单 seed 成环(`multiSeedStable=false`),若按 status 直接上报,会把 4 副真实玩家的 deck 按弱证据 flag 掉,违背 §4「仅单 seed 成环不入库」。`--include-unproven` 供人判断后刻意放行。
@@ -651,3 +651,27 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 ### 23.3 一个环境坑(值得记住)
 
 **Unity 失焦时会挂起脚本编译**:`InternalEditorUtility.isApplicationActive == false` 期间 `refresh_unity` 只排队不执行(实测卡住 4 分钟、程序集 mtime 不动),窗口重新获得焦点那一刻才编译。而 `run_tests` **匹配到 0 个测试时不会触发强制重编译**——于是「新写的测试类还没编译 → 按类名跑 → 0 个测试、状态 passed」是个极具迷惑性的假绿。处置:跑测试前先确认 `isApplicationActive` 与「程序集 mtime > 源文件 mtime」。
+
+同一失焦状态下 **`EditorApplication.delayCall` 的排程也静默不触发**:定时批扫(当时窗口在前台)跑完了;几分钟后同方式的环追踪排程,失焦期间既无日志也无产物。长任务改为在 `execute_code` 里**同步执行**(超时也无妨,主线程会继续并把产物写完),或仅在窗口激活时排程。
+
+### 23.4 环的可检查证据(2026-09-19,用户要求「展示它们的环」)
+
+只给最小集清单不足以复核,所以补了「把环读出来」的能力:`BudgetTripReport.RevealTrace`(每次揭晓记 `侧:cardTypeID`,Start Card 带 `*`)+ `Options.RecordRevealTrace`;扫描器侧 `TraceRingsFromLastScan` 对每副命中 deck **只跑它的最小集**(最小集才是环,整副是填充)并自动找出**重复窗口**;产物 `tools/outputs/infinity_rings_<UTC>.{json,md}`。
+
+**方法论修正(第一次跑就撞上)**:追踪最初用生产参数,于是引擎按揭晓数疲劳往牌堆里塞 `SYSTEM_FATIGUE`,周期搜索抓到的是「每揭晓一次出一张疲劳卡」——deck 66/67 报出 `period 1 = O:SYSTEM_FATIGUE`,是引擎噪声不是环。**追踪改为关掉疲劳**后环才显形(扫描本身仍用生产参数,判定不变);差异写进了产物说明。
+
+实测(seed 4242,木桩 3 卡 1e8 HP,疲劳关):
+
+| deck | 判定 | 最小集 | 周期 | 窗口 | 机制(来自 roles 证据) |
+|---|---|---|---|---|---|
+| 66 / 67 | 已证 | `CURSE_GARDENER` + `RELIC_CURSE_REVIVAL` | **2 ×97** | `O:CURSE_GARDENER → E:JU_ON` | 养蛊人揭晓→复活/强化敌方诅咒(`ReviveTheirCards`/`EnhanceCurse`),诅咒揭晓→`OnHostileCurseRevealed:ReviveMyCards` 把养蛊人拉回。**与 §4 标本同一个环** |
+| 109 | 已证 | `GRAVE_HEXER` ×2 | **1 ×195** | `O:GRAVE_HEXER` | 坟冢巫妖 `OnMeRevealed:ReviveMyCards,EnhanceCurse` —— 两张互捞,同类型卡自环 |
+| 110 | 已证 | 2×`CURSE_REVIVER` + `GRAVE_HEXER` + `CURSE_SUMMONER` + 2 张 utility | **2 ×24** | `O:CURSE_SUMMONER → O:GRAVE_HEXER` | 两个捞牌源互相喂(`ReviveMyCards`/`ReviveTheirCards`) |
+| 5 | 已证 | 6 张(`REVIVE_SUMMONER`×2 + `EXILE_BERSERKER`/`RIFT_REAPER`/`RIFT_PRIEST`/`RELIC_HIVE`) | 1 ×3(最松) | `O:REVIVE_SUMMONER` | 复活召唤 + 放逐/攻击 + 蜂巢(`onAnyFriendlyCardAttacked:AddCardToMe`)的宽环 |
+| 88 / 89 | 未证 | 16–18 张 | 无周期 | — | 环在爬升/未收敛,与「单 seed 成环」一致 |
+| 107 / 111 | 未证 | 10 / 17 张 | 2 ×9 / ×22 | `O:CURSE_SUMMONER → O:GRAVE_HEXER` | **与 deck 110 同形**;但在生产参数 + 双 seed 下不可复现,故仍属未证 |
+
+**两条对 P4 组合库有影响的观察**:
+
+1. **最小集里有时留着 utility 被动与 `SYSTEM_INCREASE_HP_MAX`**(110/111),而 deck 109 的同类牌被 ddmin 剔掉了——说明 1-最小性的「必要性」可能是**结构性**的(少一张牌就改变排列周期,查不到第 3 次重复)而非**因果性**的。若把这种集合原样做成组合键,匹配面会跟着这些被动牌走。**上线前建议**:对入库组合在多层卡表上复验同一最小集是否稳定,或把 utility/被动排除在组合键之外,否则 P4 的子集判定会漏掉「同一元凶 + 不同被动」的变体。
+2. deck 66 与 67 的最小集相同 → 会落到**同一个组合键**;110 与 107/111 的核心同形 → 一旦 107/111 被证明,会与 110 合成同一组合的不同实例。这正是组合库「以卡片集合为键」的设计意图,记录备查。

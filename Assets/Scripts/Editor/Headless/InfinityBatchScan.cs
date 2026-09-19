@@ -541,4 +541,263 @@ public static class InfinityBatchScan
 		sorted.Sort(StringComparer.Ordinal);
 		return string.Join("|", sorted.ToArray());
 	}
+
+	// ------------------------------------------------------------------ ring traces
+
+	/// <summary>
+	/// One deck's loop made readable: the minimal set, the reveal sequence, and the shortest
+	/// repeating window found in it. The hash proves a repeat; this shows WHAT repeats.
+	/// </summary>
+	[Serializable]
+	public class RingTrace
+	{
+		public int deckId;
+		public string label;
+		public string status;
+		public string[] minimalSet;
+		public int reveals;
+		public int rounds;
+		public int repeats;
+		public int tripHashRepeats;
+		public int period;
+		public int periodRepeats;
+		public string[] window;
+		public string[] tail;
+		public string[] roles;
+	}
+
+	[Serializable]
+	public class RingTraceReport
+	{
+		public string generatedUtc;
+		public int dummySize;
+		public int dummyHp;
+		public int periodSeeds;
+		public List<RingTrace> rings = new List<RingTrace>();
+	}
+
+	/// <summary>
+	/// Traces the rings of the decks in the newest scan report: for each entry the scanner called
+	/// infinite, re-run its MINIMAL set (that is the ring — the full deck is just padding) with the
+	/// reveal trace on, then find the repeating window. Report only, like the scan itself.
+	/// </summary>
+	[MenuItem("Tools/Infinity/Trace Rings From Last Scan")]
+	public static void TraceRingsFromMenu()
+	{
+		string path = TraceRingsFromLastScan(null, DefaultSeeds,
+			InfinityAttribution.DefaultDummySize, InfinityAttribution.DefaultDummyHp, null, true);
+		Debug.Log("[InfinityBatchScan] ring trace " + (path != null ? "written: " + path : "skipped (no scan report)"));
+	}
+
+	public static string TraceRingsFromLastScan(ScanReport scan, int[] seeds, int dummySize, int dummyHp,
+		RunBudgetSim.Options options, bool writeReport)
+	{
+		if (EditorApplication.isPlaying)
+		{
+			throw new InvalidOperationException(
+				"[InfinityBatchScan] refusing to trace while the editor is in Play mode: the rig cleans up the live singletons.");
+		}
+		if (scan == null) scan = LoadNewestScanReport();
+		if (scan == null || scan.decks == null)
+		{
+			Debug.LogWarning("[InfinityBatchScan] no scan report to trace — run the batch scan first");
+			return null;
+		}
+
+		if (options == null) options = RunBudgetSim.Options.Production();
+		// Fatigue OFF for the trace (the scan itself keeps production options): with the
+		// reveal-count clock running, the engine injects SYSTEM_FATIGUE cards into the deck every
+		// few reveals, and a period search over that trace latches onto the fatigue cadence
+		// instead of the loop — measured 2026-09-19: period 1 "O:SYSTEM_FATIGUE" for a deck whose
+		// real ring is CURSE_GARDENER <-> RELIC_CURSE_REVIVAL. The ring is what repeats; the
+		// fatigue clock is the thing that eventually stops it.
+		options.EnableOvertimeFatigue = false;
+		options.RecordRevealTrace = true;
+		if (seeds == null || seeds.Length == 0) seeds = DefaultSeeds;
+
+		List<string> warnings = null;
+		Dictionary<string, GameObject> prefabs = BuildCardPrefabMap(warnings);
+
+		var report = new RingTraceReport
+		{
+			generatedUtc = DateTime.UtcNow.ToString("o"),
+			dummySize = dummySize,
+			dummyHp = dummyHp,
+			periodSeeds = seeds.Length,
+		};
+
+		foreach (DeckResult deck in scan.decks)
+		{
+			if (deck.status != StatusInfinite || string.IsNullOrEmpty(deck.reportJson)) continue;
+
+			var payload = JsonUtility.FromJson<LoopReport>(deck.reportJson);
+			List<string> minimal = payload != null && payload.mySide != null && payload.mySide.Length > 0
+				? new List<string>(payload.mySide)
+				: new List<string>(deck.cards);
+
+			var entry = new RingTrace
+			{
+				deckId = deck.deckId,
+				label = deck.label,
+				status = IsProven(deck) ? "proven" : "unproven",
+				minimalSet = minimal.ToArray(),
+				repeats = deck.repeats,
+				roles = payload != null ? payload.roles : new string[0],
+			};
+
+			var prefabList = new List<GameObject>();
+			bool resolved = true;
+			foreach (string typeID in minimal)
+			{
+				if (prefabs.TryGetValue(typeID, out GameObject prefab) && prefab != null) prefabList.Add(prefab);
+				else { resolved = false; break; }
+			}
+			if (!resolved)
+			{
+				entry.period = 0;
+				entry.window = new string[] { "(a card in the minimal set has no prefab)" };
+				report.rings.Add(entry);
+				continue;
+			}
+
+			var traceDeck = ScriptableObject.CreateInstance<DeckSO>();
+			traceDeck.name = "ring-" + (deck.deckId > 0 ? deck.deckId.ToString() : deck.label);
+			traceDeck.deck = prefabList;
+			try
+			{
+				BudgetTripReport trip = RunBudgetSim.RunVsDummy(traceDeck, dummySize, dummyHp, seeds[0], options);
+				entry.reveals = trip.TotalReveals;
+				entry.rounds = trip.Rounds;
+				entry.tripHashRepeats = trip.MaxSightingsOfOneArrangement;
+
+				List<string> trace = trip.RevealTrace;
+				int periodRepeats = 0;
+				entry.period = FindTailPeriod(trace, out periodRepeats);
+				entry.periodRepeats = periodRepeats;
+				entry.window = periodRepeats > 0
+					? Slice(trace, trace.Count - entry.period, trace.Count)
+					: new string[0];
+				entry.tail = Slice(trace, Math.Max(0, trace.Count - 3 * Math.Max(entry.period, 8)), trace.Count);
+			}
+			finally
+			{
+				UnityEngine.Object.DestroyImmediate(traceDeck);
+			}
+
+			report.rings.Add(entry);
+			Debug.Log("[InfinityBatchScan] ring " + entry.label + ": period=" + entry.period
+				+ " x" + entry.periodRepeats + " reveals=" + entry.reveals);
+		}
+
+		if (!writeReport) return null;
+
+		string dir = Path.Combine(ProjectRoot(), OutputDir);
+		Directory.CreateDirectory(dir);
+		string stamp = report.generatedUtc.Replace(":", "-").Replace(".", "-");
+		string jsonPath = Path.Combine(dir, "infinity_rings_" + stamp + ".json");
+		File.WriteAllText(jsonPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
+		File.WriteAllText(Path.Combine(dir, "infinity_rings_" + stamp + ".md"), RingsToMarkdown(report), new UTF8Encoding(false));
+		return jsonPath;
+	}
+
+	/// <summary>
+	/// Shortest window that repeats back-to-back at the end of the trace, and how many times it
+	/// does. A tail check (not a whole-trace check) on purpose: a pumping loop can ramp up before
+	/// it settles into the repeat, and the settling point is the ring.
+	/// </summary>
+	public static int FindTailPeriod(List<string> trace, out int repeats)
+	{
+		repeats = 0;
+		if (trace == null || trace.Count < 6) return 0;
+
+		for (int p = 1; p <= trace.Count / 3; p++)
+		{
+			bool matches = true;
+			for (int i = trace.Count - 2 * p; i < trace.Count - p; i++)
+			{
+				if (trace[i] != trace[i + p]) { matches = false; break; }
+			}
+			if (!matches) continue;
+
+			int matched = 2 * p;
+			for (int i = trace.Count - 2 * p - 1; i >= 0 && trace[i] == trace[i + p]; i--) matched++;
+			repeats = matched / p;
+			return p;
+		}
+		return 0;
+	}
+
+	private static string[] Slice(List<string> source, int from, int to)
+	{
+		if (source == null || from >= to) return new string[0];
+		var slice = new List<string>();
+		for (int i = Math.Max(0, from); i < to && i < source.Count; i++) slice.Add(source[i]);
+		return slice.ToArray();
+	}
+
+	private static ScanReport LoadNewestScanReport()
+	{
+		string dir = Path.Combine(ProjectRoot(), OutputDir);
+		if (!Directory.Exists(dir)) return null;
+		string newest = null;
+		foreach (string file in Directory.GetFiles(dir, "infinity_scan_*.json"))
+		{
+			if (newest == null || File.GetLastWriteTimeUtc(file) > File.GetLastWriteTimeUtc(newest)) newest = file;
+		}
+		if (newest == null) return null;
+		try { return JsonUtility.FromJson<ScanReport>(File.ReadAllText(newest, Encoding.UTF8)); }
+		catch (Exception error)
+		{
+			Debug.LogWarning("[InfinityBatchScan] scan report unreadable: " + error.Message);
+			return null;
+		}
+	}
+
+	public static string RingsToMarkdown(RingTraceReport report)
+	{
+		var sb = new StringBuilder();
+		sb.Append("# Infinity ring traces — ").AppendLine(report.generatedUtc);
+		sb.AppendLine();
+		sb.Append("- dummy ").Append(report.dummySize).Append(" cards @ ").Append(report.dummyHp)
+			.Append(" HP | each ring is the MINIMAL set alone (the full deck is padding)").AppendLine();
+		sb.Append("- traced with overtime fatigue OFF, so the sequence shows the loop itself rather ")
+			.AppendLine("than the fatigue clock that eventually stops it (the scan keeps production options)");
+		sb.AppendLine();
+		foreach (RingTrace ring in report.rings)
+		{
+			sb.Append("## deck ").Append(ring.deckId > 0 ? ring.deckId.ToString() : ring.label)
+				.Append("  [").Append(ring.status).Append(']').AppendLine();
+			sb.AppendLine();
+			sb.Append("- minimal set: `").Append(string.Join("`, `", ring.minimalSet)).AppendLine("`");
+			sb.Append("- reveals: ").Append(ring.reveals).Append(" | rounds: ").Append(ring.rounds)
+				.Append(" | arrangement repeats (trip evidence): ").Append(ring.tripHashRepeats).AppendLine();
+			if (ring.period > 0)
+			{
+				sb.Append("- **repeating window: period ").Append(ring.period).Append(", repeated x")
+					.Append(ring.periodRepeats).Append("**").AppendLine();
+				sb.AppendLine();
+				sb.Append("  ```").AppendLine();
+				sb.Append("  ").AppendLine(string.Join(" -> ", ring.window));
+				sb.Append("  ```").AppendLine();
+			}
+			else
+			{
+				sb.Append("- no strict tail period (the loop may still be ramping at the cap)").AppendLine();
+			}
+			if (ring.tail != null && ring.tail.Length > 0)
+			{
+				sb.AppendLine();
+				sb.Append("  last ").Append(ring.tail.Length).Append(" reveals: `")
+					.Append(string.Join(" ", ring.tail)).AppendLine("`");
+			}
+			if (ring.roles != null && ring.roles.Length > 0)
+			{
+				sb.AppendLine();
+				sb.AppendLine("  binding evidence:");
+				foreach (string role in ring.roles) sb.Append("  - `").Append(role).AppendLine("`");
+			}
+			sb.AppendLine();
+		}
+		return sb.ToString();
+	}
 }
