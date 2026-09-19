@@ -56,6 +56,12 @@ public class LoopReport
 	/// (the server re-checks all three before registering a combo).
 	/// </summary>
 	public bool multiSeedStable;
+	/// <summary>
+	/// Utility passives ddmin kept but that were stripped and re-verified (or kept because the loop
+	/// died without them). Evidence for why the set looks the way it does — the server stores it
+	/// verbatim, and a passive in a combo key would hide same-loop variants with another passive.
+	/// </summary>
+	public string stripNote = "";
 
 	public string status = "candidate";
 
@@ -107,6 +113,12 @@ public static class LoopReportBuilder
 			report.oneMinimal = minimized.IsOneMinimal;
 			report.truncated = minimized.Truncated;
 			report.multiSeedStable = minimized.MultiSeedStable;
+			if (minimized.StrippedCards != null && minimized.StrippedCards.Count > 0)
+			{
+				report.stripNote = minimized.StripVerified
+					? "stripped utility passive(s) " + minimized.StrippedIds() + " — re-verified: the remainder still loops"
+					: "kept utility passive(s) " + minimized.StrippedIds() + " — the loop dies without them (structure-sensitive minimum)";
+			}
 		}
 
 		report.mySide = ids.ToArray();

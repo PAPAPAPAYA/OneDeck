@@ -675,3 +675,18 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 
 1. **最小集里有时留着 utility 被动与 `SYSTEM_INCREASE_HP_MAX`**(110/111),而 deck 109 的同类牌被 ddmin 剔掉了——说明 1-最小性的「必要性」可能是**结构性**的(少一张牌就改变排列周期,查不到第 3 次重复)而非**因果性**的。若把这种集合原样做成组合键,匹配面会跟着这些被动牌走。**上线前建议**:对入库组合在多层卡表上复验同一最小集是否稳定,或把 utility/被动排除在组合键之外,否则 P4 的子集判定会漏掉「同一元凶 + 不同被动」的变体。
 2. deck 66 与 67 的最小集相同 → 会落到**同一个组合键**;110 与 107/111 的核心同形 → 一旦 107/111 被证明,会与 110 合成同一组合的不同实例。这正是组合库「以卡片集合为键」的设计意图,记录备查。
+
+### 23.5 判定口径修正 + 编辑器 OOM 事故(2026-09-19)
+
+**口径修正(用户拍板「改:关疲劳测环」)**:`RunBudgetSim.Options.LoopDetection()` = 生产默认但**关掉 overtime 疲劳**(并把回合钟推到 999)。理由是可测的:疲劳每 `FatigueRevealThreshold` 次揭晓往牌堆塞惰性卡,改变排列 → 把 flag 判据要找的重复冲掉。实测 deck 107/111「整副 + 非被动核心」在 3 个 seed 上**全部成环**(repeats 162–199),而生产参数下它们在 2 个 seed 上都测不出——**此前「单 seed 成环」的结论是假阴性**。§16.3 本来就把两件事分开(`SuspectedInfinite` = flag 判据;`BudgetCapConcluded`/疲劳 = 玩家可感伤害),本次让扫描与 P2 归因都按这个拆分走:
+- 扫描判定与 ddmin 用 `LoopDetection()`;**生产参数结果降级为遥测列**(`DeckResult.productionTripped/productionRepeats/productionReveals`,只在检测到环的 deck 上补跑一次);MD 表加两列。
+- P2 归因(`InfinityAttributionProcessor`)同样改用 `LoopDetection()`。
+- 新增 `BudgetTripReport.RevealHashes`(与 RevealTrace 同开关):**排列哈希序列**。这揭示了 88/89 与紧环的本质差别——`repeats=65` 统计的是「同一排列本回合出现 65 次」,**不是连续 65 次**;88/89 的重复是**不连续**的(其他揭晓夹在中间),所以相邻周期检测对它们必然找不到窗口。`RingTrace` 增加 `recurrenceIndices`/`recurrenceGaps`,报告改为「无相邻窗口 + 出现位置与间隔」而非「无周期」。
+
+**实测(关疲劳,3 个 seed: 4242/7/11)**:107/110/111 的 full 与 core 变体 **12/12 全成环**(repeats 45–199);88 full 3/3(repeats 65)、89 full 3/3(56–199),但 **88 core 在 seed 7 不成环(repeats=1)、89 core 在 seed 11 不成环(repeats=2)** → 88/89 属「宽环 + 低重复度 + 对牌组构成敏感」,它们的被动卡是承重的。**用户对 107/111 的「需要最先连续两张复活友方」假设未获支持**:3 个 seed 的开头各不相同(有 DUMMY 开头、有 ZOMBIE 开头),均照样进环。
+
+**被动剔除(用户要求)**:`ComboMinimizer` 在 ddmin 之后剔除 `CardScript.IsUtilityPassive`(实测覆盖全部 12 张 `UTILITY_*` 与 `SYSTEM_INCREASE_HP_MAX`,它们 `isPassive=true` 且 0 个效果容器),**但必须先复验**「剔除后仍在所有 seed 上成环」才采用;否则保留原集合并把证据写进 `LoopReport.stripNote`(例如 deck 110 在旧口径下就是「剔了就不成环」)。小牌组里 ddmin 自己会剔掉被动,该逻辑轮不到;大牌组才需要它。
+
+**事故:编辑器 OOM 崩溃**。在关疲劳 + `GuardTotal=1500` + ddmin 数百次谓词求值的组合下重跑全量扫描,Unity 抛 `Could not allocate memory: System out of memory!` → `Crash!!!`(崩溃报告 `%TEMP%/Unity/Editor/Crashes`),进程退出;同机 bash 也同时被 `0xC000012D`(提交上限)杀掉。取证:rig 每次都正确 `Dispose`(销毁对象 + 关 preview scene),**不是单纯泄漏**——单次调用里 sim 数 × 每次揭晓数 × 每次分配的累积把机器的提交上限吃光。**处置(已落代码,待编译验证)**:`InfinityBatchScan.ScanGuardTotal = 400`(所有实测 trip 都落在 ~60 揭晓内,6 倍余量)、`ScanMinimizerMaxRuns = 120`(超预算 → Truncated,本就不入库),并把长扫描改为**分批调用**(`Run` 已支持传入过滤后的候选列表,不必改代码)。
+
+**未落库**:以上改动在工作区,**重启编辑器后需先 refresh + 跑 `InfinityBatchScanTests`/`InfinityPipelineTests` 复验再提交**。旧口径的扫描报告(`infinity_scan_2026-09-19T10-57-36…`,5 已证 / 4 未证)是旧口径产物,新口径的分布尚未测出;上报集合(用户已把「先不定」的裁定更新为「先看 88/89 的具体环」)仍待定。

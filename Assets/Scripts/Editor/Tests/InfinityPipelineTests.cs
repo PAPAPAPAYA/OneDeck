@@ -20,6 +20,8 @@ public class InfinityPipelineTests
 	private const string BurialPath = "Assets/Prefabs/Cards/4.0/1_Uncommon/RELIC_CHAIN_BURIAL.prefab";
 	private const string GrantPath = "Assets/Prefabs/Cards/4.0/1_Uncommon/DEATHBED_GRANT.prefab";
 	private const string SkeletonPath = "Assets/Prefabs/Cards/4.0/0_Common/SOLDIER_SKELETON_4.0.prefab";
+	private const string UtilityIncomePath = "Assets/Prefabs/Cards/4.0/0_Common/UTILITY_INCOME_1.prefab";
+	private const string UtilitySlotPath = "Assets/Prefabs/Cards/4.0/1_Uncommon/UTILITY_SLOT_U_2.prefab";
 
 	private static readonly int[] Seeds = { 4242, 7 };
 
@@ -126,6 +128,58 @@ public class InfinityPipelineTests
 		Assert.IsFalse(result.MultiSeedStable,
 			"§4: a deck that does not loop must never produce a combo entry");
 		Assert.IsFalse(result.IsOneMinimal, "nothing was minimized");
+	}
+
+	[Test]
+	public void Minimize_StripsUtilityPassives_AndReverifiesTheRemainder()
+	{
+		// A real deck's shape: the lethal pair plus utility passives. ddmin measures the ARRANGEMENT,
+		// and a passive changes it without doing anything, so a "1-minimal" set can keep one for
+		// structural reasons — measured on decks 110/111, where ddmin kept two (2026-09-19). Those
+		// must not reach a combo key: the key is a containment test, so a passive inside it would
+		// hide every variant that runs the same loop with a different passive.
+		var cards = new List<GameObject>();
+		var lethal = LoadSampleDeck("lethal infinite test");
+		foreach (var card in lethal.deck) cards.Add(card);
+		foreach (var path in new[] { UtilityIncomePath, UtilitySlotPath })
+		{
+			var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+			Assert.IsNotNull(prefab, "utility prefab missing: " + path);
+			cards.Add(prefab);
+		}
+
+		var result = ComboMinimizer.Minimize(NewDeck("lethal+passives", cards), Seeds,
+			dummySize: 3, dummyHp: 100000000, options: FastOptions());
+		Debug.Log("[P2] minimize lethal+passives -> " + result.CardIds()
+			+ " stripped=" + result.StrippedIds() + " verified=" + result.StripVerified);
+
+		// What matters is the END STATE: a combo key must never contain a utility passive, whether
+		// ddmin dropped it (small decks — it can, since the pair loops alone) or the strip did
+		// (large decks, where removing a passive breaks the trip — decks 110/111 in the field).
+		Assert.AreEqual(2, result.Cards.Count, "the adopted minimum is the two combo cards: " + result.CardIds());
+		Assert.IsTrue(result.IsOneMinimal, "1-minimality holds on the adopted set");
+		Assert.IsFalse(result.CardIds().Contains("UTILITY_"), "no utility passive may survive: " + result.CardIds());
+		if (result.StrippedCards.Count > 0)
+		{
+			Assert.IsTrue(result.StripVerified,
+				"a stripped set is adopted only after re-verifying that it still loops: " + result.StrippedIds());
+		}
+
+		// The adopted set is what the combo key is built from, so the payload must explain itself
+		// whenever the strip (not ddmin) did the removal.
+		var attribution = new InfinityAttributionResult
+		{
+			OwnerDeckName = "test", EnemyDeckName = "lethal+passives", Seed = Seeds[0],
+			Responsibility = InfinityResponsibility.EnemyDeck, EnemyVsDummy = new BudgetTripReport(),
+		};
+		var report = LoopReportBuilder.Build(attribution, result, Seeds, attribution.EnemyVsDummy);
+		Assert.AreEqual(2, report.mySide.Length);
+		Assert.IsFalse(string.Join(",", report.mySide).Contains("UTILITY_"));
+		if (result.StrippedCards.Count > 0)
+		{
+			StringAssert.Contains("stripped utility passive", report.stripNote);
+			StringAssert.Contains("re-verified", report.stripNote);
+		}
 	}
 
 	// ---- combo entry (§4 schema) ----

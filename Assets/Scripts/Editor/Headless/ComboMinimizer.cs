@@ -14,10 +14,37 @@ public class MinimizeResult
 	/// <summary>False when the input deck did not loop on EVERY supplied seed — nothing ingested.</summary>
 	public bool MultiSeedStable;
 
+	/// <summary>
+	/// Utility passives (and the HP-max meter card) that ddmin could not remove. They do nothing in
+	/// combat — but they DO occupy slots in the arrangement hash, so a "1-minimal" set can keep one
+	/// for structural reasons. Such a card must never reach a combo key: the key is a containment
+	/// test, so a passive in it would hide every variant that runs the same loop with a different
+	/// passive (2026-09-19 user ruling; measured on decks 110/111, where ddmin kept two).
+	/// </summary>
+	public List<GameObject> StrippedCards = new List<GameObject>();
+	/// <summary>
+	/// True when the passive-free remainder was re-verified to still loop (on every seed) and was
+	/// adopted as the result. False with a non-empty StrippedCards means the passives turned out to
+	/// be load-bearing and the ORIGINAL set was kept — evidence, not a silent strip.
+	/// </summary>
+	public bool StripVerified;
+
 	public string CardIds()
 	{
 		var ids = new List<string>();
 		foreach (var c in Cards)
+		{
+			var cs = c != null ? c.GetComponent<CardScript>() : null;
+			ids.Add(cs != null ? cs.cardTypeID : "?");
+		}
+		return string.Join(",", ids.ToArray());
+	}
+
+	/// <summary>Card type ids of the stripped utility passives (empty when nothing was stripped).</summary>
+	public string StrippedIds()
+	{
+		var ids = new List<string>();
+		foreach (var c in StrippedCards)
 		{
 			var cs = c != null ? c.GetComponent<CardScript>() : null;
 			ids.Add(cs != null ? cs.cardTypeID : "?");
@@ -91,6 +118,40 @@ public static class ComboMinimizer
 		result.Cards = current;
 		result.Truncated = truncated;
 		result.RunsPerformed = runs;
+
+		// Drop utility passives before claiming a minimum (2026-09-19 ruling). ddmin measures the
+		// ARRANGEMENT, and a passive changes the arrangement without doing anything — so it can
+		// survive on structure alone. Verify the remainder first: if the loop dies without them they
+		// were load-bearing (or the measurement is structure-sensitive) and the original set stands,
+		// recorded as evidence rather than silently trimmed.
+		if (!truncated)
+		{
+			var stripped = new List<GameObject>();
+			var remainder = new List<GameObject>();
+			foreach (var card in current)
+			{
+				var cs = card != null ? card.GetComponent<CardScript>() : null;
+				if (cs != null && cs.IsUtilityPassive) stripped.Add(card);
+				else remainder.Add(card);
+			}
+			if (stripped.Count > 0 && remainder.Count > 0)
+			{
+				result.StrippedCards = stripped;
+				if (runs < maxRuns && LoopsOnAllSeeds(remainder, seeds, dummySize, dummyHp, options, ref runs))
+				{
+					result.StripVerified = true;
+					current = remainder;
+					granularity = 2;
+				}
+			}
+			else if (stripped.Count > 0)
+			{
+				// Every remaining card is a passive: no combo to register at all.
+				result.StrippedCards = stripped;
+			}
+		}
+
+		result.Cards = current;
 
 		// 1-minimality check: with the set this small it is cheap, and it is the property the
 		// combo library actually relies on ("these cards, no fewer").

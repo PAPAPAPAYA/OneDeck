@@ -44,6 +44,17 @@ public static class InfinityBatchScan
 	/// <summary>Seeds every candidate is checked against. §4 requires a minimal set to be robust across seeds.</summary>
 	public static readonly int[] DefaultSeeds = { 4242, 7 };
 
+	/// <summary>
+	/// Cost bounds for the scan. With fatigue off, a run that does NOT loop no longer ends early —
+	/// it goes to the reveal cap, and ddmin evaluates hundreds of such runs. Measured 2026-09-19:
+	/// the unbounded combination (GuardTotal 1500 × hundreds of runs × reveal tracing) filled the
+	/// machine's commit charge and the editor died with "System out of memory". Every observed trip
+	/// lands within ~60 reveals, so 400 is ample margin, and a minimizer that cannot finish inside
+	/// its budget reports Truncated — which must not be ingested anyway (§4).
+	/// </summary>
+	public const int ScanGuardTotal = 400;
+	public const int ScanMinimizerMaxRuns = 120;
+
 	// ------------------------------------------------------------------ inputs
 
 	[Serializable]
@@ -98,6 +109,13 @@ public static class InfinityBatchScan
 		public bool oneMinimal;
 		public bool truncated;
 		public bool multiSeedStable;
+		/// <summary>Utility passives ddmin kept even after the strip attempt (see LoopReport.stripNote).</summary>
+		public string strippedCards;
+		public bool stripVerified;
+		/// <summary>Telemetry: did the same deck ALSO trip with production parameters (fatigue on)?</summary>
+		public bool productionTripped;
+		public int productionRepeats;
+		public int productionReveals;
 		/// <summary>The LoopReport JSON, verbatim — what post_loop_reports.js sends. Empty unless status = infinite.</summary>
 		public string reportJson;
 	}
@@ -178,7 +196,10 @@ public static class InfinityBatchScan
 				"[InfinityBatchScan] refusing to scan while the editor is in Play mode: the headless rig cleans up the live singletons.");
 		}
 
-		if (options == null) options = RunBudgetSim.Options.Production();
+		if (options == null) options = RunBudgetSim.Options.LoopDetection();
+		// Bound the work: see the cost note on ScanGuardTotal. A caller that wants the long caps can
+		// pass its own options, but the scan's default must not be able to exhaust the machine.
+		if (options.GuardTotal > ScanGuardTotal) options.GuardTotal = ScanGuardTotal;
 		if (seeds == null || seeds.Length == 0) seeds = DefaultSeeds;
 
 		var warnings = new List<string>();
@@ -262,7 +283,7 @@ public static class InfinityBatchScan
 		return report;
 	}
 
-	/// <summary>Runs one candidate: enemy-vs-dummy, then ddmin when it loops.</summary>
+	/// <summary>Runs one candidate: loop detection (fatigue off), then ddmin, then a harm telemetry pass.</summary>
 	private static void ScanCandidate(Candidate candidate, List<GameObject> cardPrefabs, DeckResult result,
 		int[] seeds, int dummySize, int dummyHp, RunBudgetSim.Options options)
 	{
@@ -282,10 +303,27 @@ public static class InfinityBatchScan
 				return;
 			}
 
-			MinimizeResult minimized = ComboMinimizer.Minimize(deck, seeds, dummySize, dummyHp, options);
+			MinimizeResult minimized = ComboMinimizer.Minimize(deck, seeds, dummySize, dummyHp, options,
+				ScanMinimizerMaxRuns);
 			result.oneMinimal = minimized.IsOneMinimal;
 			result.truncated = minimized.Truncated;
 			result.multiSeedStable = minimized.MultiSeedStable;
+			if (minimized.StrippedCards != null && minimized.StrippedCards.Count > 0)
+			{
+				result.strippedCards = minimized.StrippedIds();
+				result.stripVerified = minimized.StripVerified;
+			}
+			result.status = StatusInfinite;
+
+			// Telemetry: the same deck under PRODUCTION parameters. Fatigue injects inert cards that
+			// break the arrangement, so this is the "how visible is the harm" reading, not a verdict
+			// (§16.3) — a deck that only trips here is not a thing: fatigue interrupts loops, it
+			// cannot manufacture one, which is why the detection pass is the one that gates.
+			BudgetTripReport production = RunBudgetSim.RunVsDummy(deck, dummySize, dummyHp, seeds[0],
+				RunBudgetSim.Options.Production());
+			result.productionTripped = production.SuspectedInfinite;
+			result.productionRepeats = production.MaxSightingsOfOneArrangement;
+			result.productionReveals = production.TotalReveals;
 
 			// Reuse the runtime pipeline's builder so a scan entry has exactly the shape a live
 			// report has (roles evidence included). The verdict is the EnemyDeck leg by
@@ -300,7 +338,6 @@ public static class InfinityBatchScan
 			};
 			LoopReport report = LoopReportBuilder.Build(attribution, minimized, seeds, trip);
 			result.reportJson = report.ToJson();
-			result.status = StatusInfinite;
 		}
 		finally
 		{
@@ -513,8 +550,8 @@ public static class InfinityBatchScan
 	{
 		int count = 0;
 		sb.AppendLine();
-		sb.AppendLine("| deck | source | cards | reveals | rounds | repeats | 1-min | truncated | multi-seed |");
-		sb.AppendLine("|---|---|---|---|---|---|---|---|---|");
+		sb.AppendLine("| deck | source | cards | reveals | rounds | repeats | 1-min | truncated | multi-seed | prod trip | prod repeats |");
+		sb.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|");
 		foreach (DeckResult deck in report.decks)
 		{
 			if (deck.status != status) continue;
@@ -528,7 +565,9 @@ public static class InfinityBatchScan
 				.Append(" | ").Append(deck.repeats)
 				.Append(" | ").Append(deck.oneMinimal)
 				.Append(" | ").Append(deck.truncated)
-				.Append(" | ").Append(deck.multiSeedStable).AppendLine(" |");
+				.Append(" | ").Append(deck.multiSeedStable)
+				.Append(" | ").Append(deck.productionTripped)
+				.Append(" | ").Append(deck.productionRepeats).AppendLine(" |");
 		}
 		if (count == 0) sb.AppendLine("(none)");
 		sb.AppendLine();
@@ -564,6 +603,14 @@ public static class InfinityBatchScan
 		public string[] window;
 		public string[] tail;
 		public string[] roles;
+		/// <summary>
+		/// Where the tripping arrangement recurred, as reveal indices, plus the gap sizes. A tight
+		/// ring shows consecutive indices; a wide ring (decks 88/89) shows recurrences with other
+		/// reveals in between — "repeats = 65" never meant "65 in a row".
+		/// </summary>
+		public int[] recurrenceIndices;
+		public string recurrenceGaps;
+		public int tripHashRepeatsInRound;
 	}
 
 	[Serializable]
@@ -580,6 +627,8 @@ public static class InfinityBatchScan
 	/// Traces the rings of the decks in the newest scan report: for each entry the scanner called
 	/// infinite, re-run its MINIMAL set (that is the ring — the full deck is just padding) with the
 	/// reveal trace on, then find the repeating window. Report only, like the scan itself.
+	/// Slicing a run is supported through the overloads that take a caller-supplied ScanReport or
+	/// candidate list, so a long scan can be driven in short, observable steps.
 	/// </summary>
 	[MenuItem("Tools/Infinity/Trace Rings From Last Scan")]
 	public static void TraceRingsFromMenu()
@@ -604,13 +653,12 @@ public static class InfinityBatchScan
 			return null;
 		}
 
-		if (options == null) options = RunBudgetSim.Options.Production();
-		// Fatigue OFF for the trace (the scan itself keeps production options): with the
-		// reveal-count clock running, the engine injects SYSTEM_FATIGUE cards into the deck every
-		// few reveals, and a period search over that trace latches onto the fatigue cadence
-		// instead of the loop — measured 2026-09-19: period 1 "O:SYSTEM_FATIGUE" for a deck whose
-		// real ring is CURSE_GARDENER <-> RELIC_CURSE_REVIVAL. The ring is what repeats; the
-		// fatigue clock is the thing that eventually stops it.
+		if (options == null) options = RunBudgetSim.Options.LoopDetection();
+		// The trace wants the LOOP, not the engine's fatigue clock — with the reveal-count clock
+		// running, the engine injects SYSTEM_FATIGUE cards every few reveals and a period search
+		// latches onto that cadence instead (measured 2026-09-19: period 1 "O:SYSTEM_FATIGUE" for a
+		// deck whose real ring is CURSE_GARDENER <-> RELIC_CURSE_REVIVAL). LoopDetection already
+		// turns fatigue off; this line keeps the trace correct even if a caller passes its own.
 		options.EnableOvertimeFatigue = false;
 		options.RecordRevealTrace = true;
 		if (seeds == null || seeds.Length == 0) seeds = DefaultSeeds;
@@ -678,6 +726,20 @@ public static class InfinityBatchScan
 					? Slice(trace, trace.Count - entry.period, trace.Count)
 					: new string[0];
 				entry.tail = Slice(trace, Math.Max(0, trace.Count - 3 * Math.Max(entry.period, 8)), trace.Count);
+
+				// Recurrence of the TRIPPING arrangement (not just any adjacent period): the flag
+				// criterion counts these, and their spacing is what separates a tight ring from a
+				// wide one — a wide loop still trips, with unrelated reveals in between.
+				var indices = new List<int>();
+				for (int i = 0; i < trip.RevealHashes.Count; i++)
+				{
+					if (trip.RevealHashes[i] == trip.TripHash) indices.Add(i);
+				}
+				entry.recurrenceIndices = indices.ToArray();
+				entry.tripHashRepeatsInRound = trip.MaxSightingsOfOneArrangement;
+				var gaps = new List<string>();
+				for (int i = 1; i < indices.Count && gaps.Count < 24; i++) gaps.Add((indices[i] - indices[i - 1]).ToString());
+				entry.recurrenceGaps = string.Join(",", gaps.ToArray());
 			}
 			finally
 			{
@@ -782,7 +844,14 @@ public static class InfinityBatchScan
 			}
 			else
 			{
-				sb.Append("- no strict tail period (the loop may still be ramping at the cap)").AppendLine();
+				sb.Append("- no ADJACENT repeating window — the loop recurs with other reveals in between").AppendLine();
+			}
+			if (ring.recurrenceIndices != null && ring.recurrenceIndices.Length > 0)
+			{
+				sb.Append("- the tripping arrangement recurs at reveals [")
+					.Append(string.Join(",", Array.ConvertAll(ring.recurrenceIndices, i => i.ToString()))).Append("]");
+				if (ring.recurrenceIndices.Length > 24) sb.Append(" (first 24 shown)");
+				sb.Append("; gaps between recurrences: ").Append(ring.recurrenceGaps).AppendLine();
 			}
 			if (ring.tail != null && ring.tail.Length > 0)
 			{

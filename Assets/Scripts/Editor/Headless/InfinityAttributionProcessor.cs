@@ -32,7 +32,11 @@ public static class InfinityAttributionProcessor
 		int dummySize = InfinityAttribution.DefaultDummySize, int dummyHp = InfinityAttribution.DefaultDummyHp)
 	{
 		if (seeds == null || seeds.Length == 0) seeds = DefaultSeeds;
-		if (options == null) options = RunBudgetSim.Options.Production();
+		// Loop detection, not production parameters: fatigue injects inert cards that break the
+		// arrangement, and this pass exists to answer "is the recursion real?" (§23.4 measurement
+		// correction, 2026-09-19 user ruling). The harm side (caps, fatigue, "can't finish") is a
+		// separate reading and never decides admission.
+		if (options == null) options = RunBudgetSim.Options.LoopDetection();
 
 		var entries = new List<AttributedEntry>();
 		foreach (var entry in InfinityTripJournal.Drain())

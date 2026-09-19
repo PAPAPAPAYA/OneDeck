@@ -55,6 +55,14 @@ public class BudgetTripReport
 	/// </summary>
 	public System.Collections.Generic.List<string> RevealTrace = new System.Collections.Generic.List<string>();
 
+	/// <summary>
+	/// The arrangement hash sampled after each reveal (same guard as RevealTrace). RevealTrace says
+	/// WHICH cards came out; this says WHEN the arrangement repeated — and the difference matters: a
+	/// tight loop repeats the same hash consecutively, while a wide loop (decks 88/89) recurs with
+	/// other reveals in between, so "repeats = 65" does not mean "65 in a row".
+	/// </summary>
+	public System.Collections.Generic.List<uint> RevealHashes = new System.Collections.Generic.List<uint>();
+
 	/// <summary>The plan's flag criterion (§4/§15): was an unbounded recursion detected?</summary>
 	public bool SuspectedInfinite
 	{

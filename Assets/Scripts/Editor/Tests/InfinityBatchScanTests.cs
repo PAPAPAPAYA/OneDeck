@@ -228,6 +228,50 @@ public class InfinityBatchScanTests
 	}
 
 	[Test]
+	public void RingsToMarkdown_ReportsRecurrenceSpacingForWideRings()
+	{
+		// Deck 88/89 shape: the tripping arrangement recurs, but NOT adjacently, so there is no
+		// adjacent period and the report must say where it recurs rather than implying "no loop".
+		var report = new InfinityBatchScan.RingTraceReport
+		{
+			generatedUtc = "2026-09-19T00:00:00Z", dummySize = 3, dummyHp = 100000000,
+			rings = new List<InfinityBatchScan.RingTrace>
+			{
+				new InfinityBatchScan.RingTrace
+				{
+					deckId = 88, label = "deck 88", status = "infinite",
+					minimalSet = new[] { "CURSE_REVIVER", "GRAVE_HEXER" },
+					reveals = 1500, rounds = 15, repeats = 65, tripHashRepeats = 65,
+					period = 0, periodRepeats = 0,
+					recurrenceIndices = new[] { 12, 25, 41, 58 },
+					recurrenceGaps = "13,16,17",
+					tripHashRepeatsInRound = 65,
+				},
+			},
+		};
+
+		string markdown = InfinityBatchScan.RingsToMarkdown(report);
+		StringAssert.Contains("no ADJACENT repeating window", markdown);
+		StringAssert.Contains("recurs at reveals [12,25,41,58]", markdown);
+		StringAssert.Contains("gaps between recurrences: 13,16,17", markdown,
+			"spacing is what separates a wide ring from a tight one");
+	}
+
+	[Test]
+	public void LoopDetectionOptions_DisableTheFatigueClock()
+	{
+		// The flag criterion asks "is the recursion real?". Fatigue injects inert cards that break
+		// the arrangement, so measuring with it on produced false negatives (decks 107/111, §23.4).
+		var production = RunBudgetSim.Options.Production();
+		Assert.IsTrue(production.EnableOvertimeFatigue, "production options keep the harm-side clock");
+
+		var detection = RunBudgetSim.Options.LoopDetection();
+		Assert.IsFalse(detection.EnableOvertimeFatigue, "loop detection must not let fatigue break the loop");
+		Assert.AreEqual(production.GuardTotal, detection.GuardTotal, "everything else stays production-identical");
+		Assert.AreEqual(production.GuardRounds, detection.GuardRounds);
+	}
+
+	[Test]
 	public void PrefabMap_ResolvesTheComboCards()
 	{
 		List<string> warnings = null;

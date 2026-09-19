@@ -53,6 +53,24 @@ public static class RunBudgetSim
 		{
 			return new Options();
 		}
+
+		/// <summary>
+		/// Options for asking "IS this an unbounded recursion?" — production defaults with overtime
+		/// fatigue OFF (2026-09-19 user ruling).
+		/// Fatigue is the engine's way of STOPPING a loop: it injects inert cards into the deck every
+		/// FatigueRevealThreshold reveals, which changes the arrangement and masks the repetition the
+		/// flag criterion is looking for. Measured: decks 107/111 reproduced on 3/3 seeds with fatigue
+		/// off and on none of them with it on — the earlier "single-seed" verdict was a false negative.
+		/// Keep Production() for anything that measures player-visible harm (the L0 caps, fatigue
+		/// clocks, "can't finish"); §16.3's two criteria are exactly this split.
+		/// </summary>
+		public static Options LoopDetection()
+		{
+			var options = new Options();
+			options.EnableOvertimeFatigue = false;
+			options.OvertimeRoundThreshold = 999;
+			return options;
+		}
 	}
 
 	/// <summary>Replays deckA versus deckB. deckA is the owner (player) side.</summary>
@@ -235,6 +253,11 @@ public static class RunBudgetSim
 			rig.EffectChainManager.ResetGenerationGuards();
 
 			detector.NotifyRevealBoundary();
+
+			if (options.RecordRevealTrace && report.RevealHashes.Count < options.RevealTraceCap)
+			{
+				report.RevealHashes.Add(detector.LastSampledHash);
+			}
 
 			// Mirror the detector's own round bookkeeping so the report can state how often an
 			// arrangement repeated inside a single round.
