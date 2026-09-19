@@ -132,3 +132,7 @@ __pycache__/
 /tools/outputs/decks_current.json
 /tools/outputs/infinity_scan_*.json
 /tools/outputs/infinity_rings_*.json
+
+# P5 scanner reporter playerId (credential-shaped: playerId is the API credential)
+/tools/outputs/_scan_reporter.txt
+/tools/outputs/_scan56.json

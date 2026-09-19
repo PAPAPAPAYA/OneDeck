@@ -690,3 +690,25 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 **事故:编辑器 OOM 崩溃**。在关疲劳 + `GuardTotal=1500` + ddmin 数百次谓词求值的组合下重跑全量扫描,Unity 抛 `Could not allocate memory: System out of memory!` → `Crash!!!`(崩溃报告 `%TEMP%/Unity/Editor/Crashes`),进程退出;同机 bash 也同时被 `0xC000012D`(提交上限)杀掉。取证:rig 每次都正确 `Dispose`(销毁对象 + 关 preview scene),**不是单纯泄漏**——单次调用里 sim 数 × 每次揭晓数 × 每次分配的累积把机器的提交上限吃光。**处置(已落代码,待编译验证)**:`InfinityBatchScan.ScanGuardTotal = 400`(所有实测 trip 都落在 ~60 揭晓内,6 倍余量)、`ScanMinimizerMaxRuns = 120`(超预算 → Truncated,本就不入库),并把长扫描改为**分批调用**(`Run` 已支持传入过滤后的候选列表,不必改代码)。
 
 **未落库**:以上改动在工作区,**重启编辑器后需先 refresh + 跑 `InfinityBatchScanTests`/`InfinityPipelineTests` 复验再提交**。旧口径的扫描报告(`infinity_scan_2026-09-19T10-57-36…`,5 已证 / 4 未证)是旧口径产物,新口径的分布尚未测出;上报集合(用户已把「先不定」的裁定更新为「先看 88/89 的具体环」)仍待定。
+
+### 23.6 首次生产写入:6 个组合入库 + 13 副 deck flag(2026-09-19)
+
+用户裁定「6 个组合全报」后执行(`post_loop_reports.js --post`,先干跑给用户看过完整清单):
+
+| 组合键 | 卡片 | 覆盖 deck | reports |
+|---|---|---|---|
+| `dc13975a6287828a` | `GRAVE_HEXER` ×2 | 106,107,108,109,110,111 | 6 |
+| `288e0bd3ce6ed9cd` | `CURSE_GARDENER` + `RELIC_CURSE_REVIVAL` | 65,66,67 | 3 |
+| `4c18bc4a33cf0d9e` | `GRAVE_HEXER` + `SPIRIT_CALLER` | 64 | 1 |
+| `baae04663b71b769` | `KINGSLAYER` + `CURSE_SUMMONER` | 88 | 1 |
+| `4f752e40d0e06982` | `CURSE_SUMMONER` ×2 | 89 | 1 |
+| `6fa8b86dda76b5fa` | `RIFT_ACOLYTE` + `REVIVE_SUMMONER` + `RIFT_STRIKER` + `GRAVE_GIANT` | 56 | 1 |
+
+**写前/写后(线上实测)**:`flagged 0 → 14`,`loop_reports 0 → 13`,`active_combos 0 → 6`,`flagged_fingerprints 0 → 13`,`players 5 → 6`。13 条报告里 12 条来自 `test_papaya`、1 条(deck 56)来自新建的扫描器身份。
+
+**两处身份问题(都已解决,值得记住)**:
+
+1. **本机身份文件里的 `papaya` 在生产不存在** → 首轮 13 次全是 HTTP 401 `unknown_player`。生产现有玩家只有 fiff / renoxiao / test_papaya / papayatk / 玩家#1299。上报者身份必须取自**生产库**的玩家,不能想当然认为本机身份可用(本机身份可能是对着本地 dev 库注册的)。上报者 id 用只读 SQL 从线上库取,**不落对话、不落库**。
+2. **deck 56 属于 `test_papaya` 自己** → 被服务端按规则拒(`400 own_deck`)。用户裁定「给扫描器一个专用身份」,于是注册了 **`onedeck-scan`**(玩家数 5→6);它的 playerId 存在 `tools/outputs/_scan_reporter.txt`(已 gitignore——playerId 本身即 API 凭据)。**以后 P5 上报一律用这个身份**:既不受 own_deck 限制(能报自己账号的 deck),审计上也能一眼区分扫描上报与玩家上报(海报还会在 `signals` 里附 `batch-scan`)。
+
+**残留(未上报)**:deck 5 / 55(多 seed 成环但 ddmin 在 120 次预算内没收敛出 1-最小集)、deck 6(repeats=3 且单 seed)、deck 91(与 88/89 内容重复)。它们仍是报告里的 `infinite` 条目,若将来要覆盖需放宽 `ScanMinimizerMaxRuns` 后重跑并复核(注意 §23.5 的 OOM 教训)。
