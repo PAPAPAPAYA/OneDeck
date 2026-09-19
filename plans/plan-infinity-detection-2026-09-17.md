@@ -592,3 +592,30 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 - 匹配层只做「服务端出队过滤 + 客户端缓存清理」,没有匹配瞬间的最终校验 —— 理论上仍有窗口:某次 prefetch 之后新注册的组合,要等下一次 prefetch 才作用到本地缓存(客户端每次进商店都会 `EnsureStockForSession` → `Prefetch`,窗口最长一个 session)。
 - §4 的 `retired(卡改动后须复验)`只是字段 + admin 手动动作;**卡改动自动触发复验**未做(需要 P5 回扫或建卡流程挂钩)。
 - `enemySide` 仍恒空(§7.1 跨侧不立项)。
+
+## 22. P3/P4 上线记录(2026-09-19)
+
+**通道**:本机没有 SSH 密钥(项目运维本来也不走 SSH——`summaries/` 归档写着「无公网 IP 运维走 workbench-cli skill」,`tools/outputs/dump_catalog.py` 是同一套)。所以先补 CLI:Windows 不在官方 install.sh 支持范围内,手动下载 `workbench-windows-amd64.zip`、**校验官方 sha256**(`e15c039…`)→ `~/.workbench/bin/workbench.exe`(v1.0.1);用户提供 `onedeck-workbench` RAM 子账号 AK 写入 `~/.workbench/config.json`(凭据不进对话记录)。
+
+**目标**:实例 `i-uf66n1ofpudgn9b6rg7o`(cn-shanghai,公网 8.153.150.197);会话身份 root,pm2 进程 `onedeck-api` 亦 root。
+
+| 步 | 动作 | 结果 |
+|---|---|---|
+| 1 | 只读侦察 | 远端 `/var/www/onedeck/{server,data}`、node v22.22.1、pm2 online |
+| 2 | **覆盖前溯源** | box 上 `server.js` 的 sha256 与仓库任何提交都不符 → 下载回本机,**去掉 CR 后与 `8c52211` 逐字节相同**(1100 行)——哈希不符是 CRLF/LF 假象,**机器上没有未入库改动**,确认可覆盖 |
+| 3 | `workbench upload` 两个部署脚本 → `scripts/` | 通过(该通道在仓库里此前从未被用过);坑见下 |
+| 4 | 迁移前基线 `inspect-db.js` | 无新表新列,`decks=109 players=5` |
+| 5 | WAL 安全在线备份 | `onedeck.db.bak-2026-09-19T10-21-14-601.db`(1518 页 / 109 decks,脚本重开副本核验) |
+| 6 | `cp -p server.js server.js.bak-20260919-p3p4` → 上传为 `.new` → **sha256 与本地逐字节一致** → `node --check` → `mv` + `pm2 restart` | 沿用机器既有 `.bak-<日期>` 惯例;上传 `5a9ea88e…` 双方相同 |
+| 7 | 验证 | `/api/health` 200(uptime 归零=重启生效);`POST /api/loop-reports` **404 → 401**;`POST /admin/combos/status` **403**(存在且鉴权);`inspect-db` → 三表四列就位、**109/109 指纹回填**、flagged=0;日志 `backfilled 109 deck fingerprint(s)` + `listening`,error log 空 |
+
+**两个 shell 陷阱(已补进 server README)**:
+
+1. Git Bash 会把**远端路径** `/var/www/onedeck/...` 改写成 `D:/Program Files/Git/var/www/...`,上传直接报 `InvalidParameter.Path` → 必须 `MSYS_NO_PATHCONV=1`(exec 的 `--command` 不受影响,因为它不以 `/` 开头)。
+2. `download` 的**本地路径**必须是 Windows 形态:Windows 版 CLI 把 `/tmp/x.js` 理解成 `D:\tmp\x.js`(会真的在 D 盘建目录)。
+
+**刻意跳过 `npm install`**:依赖块自 `8c52211` 未变(仅内置模块 + 已装的 express/better-sqlite3),不必要地动线上 node_modules 是多余风险。README runbook 里那步保留为「包依赖变动时执行」。
+
+**刻意未做——零生产写入**:没有测试上报、没有造 flag、没有建 test 玩家。功能面验收由 17 条 node 测试在临时库上覆盖(同一份代码);若要做上线后功能性冒烟,按 2026-09-13 `tools/outputs/_verify_cst8_run_smoke.js` 的既有模式(一次性 `test_` 玩家 + 自查自清)单独授权执行。
+
+**上线后的真实边界(不变)**:闸门现在**在线可用**,但**产不出 verdict**(打包内跑不了归因 sim,§19.5),所以除非有人从编辑器/playtest 客户端上报,线上不会出现 flag。生产保护仍取决于 P5(离线确认)与 §19.6.2(归因触发时机)。

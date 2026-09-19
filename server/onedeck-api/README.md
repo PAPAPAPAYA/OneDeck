@@ -81,6 +81,15 @@ DB=/var/www/onedeck/data/onedeck.db   # db (DATA_DIR default resolves here)
 # 0) one-time: install the CLI and configure credentials
 curl -fsSL https://workbench-cli.oss-cn-hangzhou.aliyuncs.com/install.sh | bash   # Windows: install.ps1
 #   ~/.workbench/config.json (chmod 600) — mode AK | RamRoleArn | CredentialsCmd | CredentialsURI
+#   Windows: the installer refuses (MINGW/MSYS); download workbench-windows-amd64.zip, verify it
+#   against the published checksums.sha256, and put workbench.exe on PATH.
+
+# ⚠ Git Bash rewrites a REMOTE path argument (/var/www/...) into D:/Program Files/Git/var/www/...,
+#   which fails with InvalidParameter.Path. Set MSYS_NO_PATHCONV=1 for every upload/download.
+export MSYS_NO_PATHCONV=1
+
+# ⚠ `download`'s LOCAL path must be Windows-shaped: a Windows CLI reads /tmp/x.js as D:\tmp\x.js
+#   (and creates D:\tmp). Use e.g. C:/Users/<you>/AppData/Local/Temp/x.js.
 
 # 1) back the live db up ONLINE first — WAL-safe: a plain `cp onedeck.db` can silently miss
 #    pages still in onedeck.db-wal. (This is a new file; nothing is overwritten.)
@@ -94,7 +103,12 @@ workbench exec --instance-id $INSTANCE --output json --timeout 60 \
   --command "cd $REMOTE && cp server.js server.js.prev-$(date +%Y%m%d-%H%M%S) && echo backed-up"
 workbench upload server/onedeck-api/server.js "$REMOTE/server.js.new" --instance-id $INSTANCE
 workbench exec --instance-id $INSTANCE --output json \
-  --command "cd $REMOTE && mv server.js.new server.js && npm install --omit=dev && pm2 restart onedeck-api"
+  --command "cd $REMOTE && node --check server.js.new 2>/dev/null || cp server.js.new /tmp/c.js && node --check /tmp/c.js && rm -f /tmp/c.js"
+workbench exec --instance-id $INSTANCE --output json \
+  --command "cd $REMOTE && mv server.js.new server.js && pm2 restart onedeck-api"
+#   `npm install --omit=dev` belongs here ONLY when the dependency block changed — otherwise it
+#   just churns node_modules on a live box. Check with: git diff <deployed-commit>..HEAD -- package.json
+#   Note: `node --check` refuses the .new extension, hence the copy-to-.js dance above.
 
 # 3) verify from the dev machine: health, and that the NEW route exists.
 #    401 unknown_player = deployed; 404 not_found = still the old code.
