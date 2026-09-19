@@ -124,3 +124,10 @@ __pycache__/
 /Assets/_Recovery/
 /CombatLogs/
 .agent_tmp/
+
+# P5 infinity scan inputs/outputs: decks_current.json and the scan JSON embed live player
+# usernames and full deck lists, and this repository is PUBLIC. The tools and the PII-free
+# Markdown report are tracked; the raw dumps stay local (regenerate with
+# tools/outputs/dump_decks.py --prod).
+/tools/outputs/decks_current.json
+/tools/outputs/infinity_scan_*.json

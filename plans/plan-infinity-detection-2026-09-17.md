@@ -1,7 +1,7 @@
 # Plan: 无限检测与防下发(Infinity Detection and Serving Gate)
 
 - 日期: 2026-09-17
-- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端);**2026-09-19 P3 设计落定(§20):四项拍板 = flag 粒度取内容指纹 / 一次报告即 flag / 服务端出队过滤 + 客户端缓存清理 / node --test 验收;§8「三来源」更正为两来源**;**2026-09-19 P3 已实现并验证(§20.7)**:服务端 flag 列 + `loop_reports` / `flagged_fingerprints` / `POST /api/loop-reports` / 出队过滤 / admin 解封,客户端 journal 记 ghost deckId + 缓存 purge + `LoopReportUploader`;`npm test` 9/9、全量 EditMode 600 total/599 绿/0 失败/1 既有 Ignore、线上库副本迁移实测通过。遗留:打包内无 verdict(保护链依赖 P5)、`ProcessPendingAndUpload` 生产触发时机(§19.6.2)、客户端↔服务端 E2E 未跑。**2026-09-19 P4 已实现(§21)**:组合库 + 入库门槛 + 匹配时多重集包含过滤 + `blockedCombos`;服务端 `npm test` 17/17。下一期 P5(存量回扫批工具:服务器全量 + 本地 RecordedDecks)
+- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端);**2026-09-19 P3 设计落定(§20):四项拍板 = flag 粒度取内容指纹 / 一次报告即 flag / 服务端出队过滤 + 客户端缓存清理 / node --test 验收;§8「三来源」更正为两来源**;**2026-09-19 P3 已实现并验证(§20.7)**:服务端 flag 列 + `loop_reports` / `flagged_fingerprints` / `POST /api/loop-reports` / 出队过滤 / admin 解封,客户端 journal 记 ghost deckId + 缓存 purge + `LoopReportUploader`;`npm test` 9/9、全量 EditMode 600 total/599 绿/0 失败/1 既有 Ignore、线上库副本迁移实测通过。遗留:打包内无 verdict(保护链依赖 P5)、`ProcessPendingAndUpload` 生产触发时机(§19.6.2)、客户端↔服务端 E2E 未跑。**2026-09-19 P4 已实现(§21)**:组合库 + 入库门槛 + 匹配时多重集包含过滤 + `blockedCombos`;服务端 `npm test` 17/17。**2026-09-19 P5 已实现(§23)**:只读 dump + 头less 扫描(105 副实扫)+ 默认干跑的上报器;首跑 9 副命中(5 已证 / 4 单 seed 未证),零生产写入;触发定为「随卡改动/发版跑」(§11.4 结案)
 - 关联: docs/RngDeterminism.md(Rng/digest 基建)、docs/RegressionChecklist.md、docs/AgentRegistry.md;2026-09-13 埋葬递归 SOE 崩溃诊断
 - 核心抽象: `RunBudgetSim(deckA, deckB|木桩, seed) -> BudgetTripReport`,对局归因 / 离线回扫 / 可选预检三处共用一份实现
 
@@ -155,7 +155,7 @@
 | P2 | ✅ 客户端核心已落地(2026-09-19,§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线;loop_reports 落表/上报按 §19.6.1 归 P3 | 最小集演示在 lethal 样本完成(09-13 三卡环已被 P0 修复拆除,§19.4);遗留:`ProcessPending` 生产触发时机(§19.6.2) |
 | P3 | ✅ 已实现(2026-09-19,§20/§20.7):服务端 flag 列 + 内容指纹 + loop_reports/flagged_fingerprints 表 + POST /api/loop-reports + 出队过滤 + flaggedDeckIds + admin 解封;客户端 journal 记 ghost deckId + 缓存 purge + LoopReportUploader | 被 flag 的 deck 不再下发:服务端 `npm test` 9/9(含"报告后出队不再返回"与"重传自动 flag");客户端 EditMode 5/5 + 全量 600/599 绿 |
 | P4 | ✅ 已实现(2026-09-19,§21):组合库表 + 入库门槛(1-最小/多 seed 稳健/未截断)+ 匹配时多重集包含过滤 + `blockedCombos` 客户端缓存清理 + admin retire/reactivate | 含标本组合的任意 deck 在匹配时被滤除:服务端 `npm test` 17/17(含"加料 deck 被扣""未证明不入库""退役恢复") |
-| P5 | 存量回扫批工具(服务器全量 + 本地 RecordedDecks) | 回扫报告落盘 |
+| P5 | ✅ 已实现(2026-09-19,§23):`dump_decks.py` 只读 dump + `InfinityBatchScan`(sim + ddmin + 报告分档)+ `post_loop_reports.js`(默认干跑) | 回扫报告落盘:首跑 105 副实扫,9 副命中(5 已证 / 4 未证),零生产写入 |
 
 Edit-mode headless 体系复用 HeadlessCombatTestFixture / NullCombatVisuals,不进 Play Mode。
 
@@ -164,7 +164,7 @@ Edit-mode headless 体系复用 HeadlessCombatTestFixture / NullCombatVisuals,�
 1. 阈值标定(2026-09-18 修订):主标定对象改为**周期检测器参数**——同一排列出现次数触发阈值、哈希内容(cardTypeID+阵营序列)、回合边界重置;L0 绝对上限(100/1500/60)与生产对局夹逼照走。K×池等相对预算启发降级为遥测,不再是标定重点;
 2. ~~敌责与硬上限触顶的结果语义~~ 2026-09-18 已拍板,见 §9(含 4 条细化项待确认);
 3. ~~组合库入库:自动 or admin 复核~~ 已拍板 = 自动入库,admin 事后申诉/退役(§7.6);
-4. 回扫频率与触发时机。
+4. ~~回扫频率与触发时机~~ **已拍板 2026-09-19:随卡改动/发版跑**(§23.1;`-executeMethod InfinityBatchScan.ScanFromBatch` 可挂流程)。
 
 ## 12. 附录:代码事实锚点
 
@@ -619,3 +619,35 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 **刻意未做——零生产写入**:没有测试上报、没有造 flag、没有建 test 玩家。功能面验收由 17 条 node 测试在临时库上覆盖(同一份代码);若要做上线后功能性冒烟,按 2026-09-13 `tools/outputs/_verify_cst8_run_smoke.js` 的既有模式(一次性 `test_` 玩家 + 自查自清)单独授权执行。
 
 **上线后的真实边界(不变)**:闸门现在**在线可用**,但**产不出 verdict**(打包内跑不了归因 sim,§19.5),所以除非有人从编辑器/playtest 客户端上报,线上不会出现 flag。生产保护仍取决于 P5(离线确认)与 §19.6.2(归因触发时机)。
+
+## 23. P5 存量回扫批工具(2026-09-19)
+
+### 23.1 设计要点
+
+- **核心洞见**:P5 要回答的问题**就是**下发闸门要问的那一个——「这副 deck 作为对手时会不会自环」。所以不必跑 §4 的归因三连,只需要「敌 vs 木桩」这一腿:每副候选 `RunVsDummy(deck, dummySize=3, dummyHp=1e8)`,命中 `SuspectedInfinite` 的再 ddmin 取最小集。木桩参数直接复用 `InfinityAttribution.DefaultDummySize/DefaultDummyHp`(§17 已证 0/1/2 张诅咒结论一致)。
+- **职责按「谁能做什么」切开**(沿用既有边界):网络/运维留在脚本侧,sim 留在 Unity 侧,而**写生产**这一步必须能单独干跑、单独计数:
+
+  | 文件 | 职责 |
+  |---|---|
+  | `tools/outputs/dump_decks.py` | 只读 dump 线上 `decks` 表 → `tools/outputs/decks_current.json`(走 workbench exec,同 dump_catalog.py) |
+  | `Assets/Scripts/Editor/Headless/InfinityBatchScan.cs` | 建 cardTypeID→prefab 映射(`AssetDatabase` 扫 `Assets/Prefabs/Cards`)→ 按卡表去重 → 跳过已 flag → 逐副 sim → 命中则 ddmin → 写 `infinity_scan_<UTC>.json` + `.md`;`[MenuItem]` + `-executeMethod` 入口;也扫本地 `Assets/SORefs/Decks/Recorded/**` 但**不参与上报**(无服务端行) |
+  | `tools/outputs/post_loop_reports.js` | 读报告 → POST `/api/loop-reports`;**默认干跑**,`--post` 才真发 |
+
+- **门槛比「检测到」更严**:poster 默认只发**已证**条目(1-最小 + 多 seed 稳健 + 未截断 = 服务端入库门槛),单 seed 成环的**默认扣下并列出**。这条不是拍脑袋——首跑实测 9 副命中里就有 4 副是单 seed 成环(`multiSeedStable=false`),若按 status 直接上报,会把 4 副真实玩家的 deck 按弱证据 flag 掉,违背 §4「仅单 seed 成环不入库」。`--include-unproven` 供人判断后刻意放行。
+- 报告分档:`.md` 把 infinite 拆成「proven minimum(postable)」与「unproven(NOT posted by default)」两段;`InfinityBatchScan.IsProven` 与 poster 的门槛同构(跨语言镜像,两处注释互指)。
+- 去重按**卡多重集**(deck 行是每次上传一行,首跑 109 行里只有 105 种内容);**卡片解析不全则拒绝模拟**(掉一张牌可能把环变成非环,而错误结论会 flag 真实 deck)。
+- 扫描拒绝在 Play 模式运行:rig 建起来会清空活动单例(与 §19.6.2 同源)。
+- **触发 = 随卡改动/发版跑**(2026-09-19 用户拍板,§11.4 由此结案):`-executeMethod InfinityBatchScan.ScanFromBatch` 可挂进流程;菜单项 `Tools/Infinity/Batch Scan (report only)` 供手动。
+
+### 23.2 实施记录
+
+- 首跑(2026-09-19,dump 线上 109 行):**candidates=109 / scanned=105 / infinite=9 / clean=96 / deduped=4 / unresolved=0**,两条警告(`RIFT_GUIDE`、`WEAPON_SPIRIT` 各有两个 prefab 共用同一 cardTypeID——扫描保留第一个并告警;这是卡资产层面的重复 ID,建议单独清理)。
+- 9 副命中里 **5 副已证**(deck 5 / 66 / 67 / 109 / 110:1-最小 + 多 seed 稳健),**4 副未证**(deck 88 / 89 / 107 / 111:`multiSeedStable=false`,单 seed 成环)。命中集中在同一族卡表(`CURSE_GARDENER` / `RELIC_CURSE_REVIVAL` / `CURSE_REVIVER` / `GRAVE_HEXER` / `RELIC_CHAIN_BURIAL` / `RELIC_CURSE_GRAVE`),与 §4 标本同源。
+- **本次为零生产写入**(用户裁定「首跑只出报告」):未 POST、未建 flag、未动线上数据;仅只读 dump + 本地报告。那 5 副已证条目是否上报,待用户看完报告再定。
+- 报告落盘:`tools/outputs/infinity_scan_<UTC>.json` + `.md`;poster 干跑对同一文件即可预演上报清单。
+
+**测试**:`InfinityBatchScanTests` 8/8(命中即最小集 + payload 可反序列化回 LoopReport + 单卡非环 + 不可解析不得模拟 + 内容去重 + 已 flag 跳过 + 报告序列化与分档 + prefab 映射);`tools/outputs/post_loop_reports.test.js` 6/6(默认干跑零请求 + 缺 reporter 拒绝 + 只发已证条目且 payload 逐字不变 + `--include-unproven` 刻意放行 + 无条目零请求 + 非报告文件报错退出)。
+
+### 23.3 一个环境坑(值得记住)
+
+**Unity 失焦时会挂起脚本编译**:`InternalEditorUtility.isApplicationActive == false` 期间 `refresh_unity` 只排队不执行(实测卡住 4 分钟、程序集 mtime 不动),窗口重新获得焦点那一刻才编译。而 `run_tests` **匹配到 0 个测试时不会触发强制重编译**——于是「新写的测试类还没编译 → 按类名跑 → 0 个测试、状态 passed」是个极具迷惑性的假绿。处置:跑测试前先确认 `isApplicationActive` 与「程序集 mtime > 源文件 mtime」。
