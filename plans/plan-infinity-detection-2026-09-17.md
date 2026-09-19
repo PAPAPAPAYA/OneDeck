@@ -1,7 +1,7 @@
 # Plan: 无限检测与防下发(Infinity Detection and Serving Gate)
 
 - 日期: 2026-09-17
-- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 测试待跑)。P1 至此完成;P2 起按 §10 分期等「修改代码」开工
+- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端)
 - 关联: docs/RngDeterminism.md(Rng/digest 基建)、docs/RegressionChecklist.md、docs/AgentRegistry.md;2026-09-13 埋葬递归 SOE 崩溃诊断
 - 核心抽象: `RunBudgetSim(deckA, deckB|木桩, seed) -> BudgetTripReport`,对局归因 / 离线回扫 / 可选预检三处共用一份实现
 
@@ -63,7 +63,7 @@
   - mySide: [cardTypeID...]
   - enemySide: [cardTypeID...](跨侧预留,现阶段恒空)
   - roles: 续链角色 engine / chain-switcher / pump(示例见 §6)
-  - tripSignals / reproSeeds / evidenceRef
+  - tripSignals / reproSeeds / ~~evidenceRef~~(实现落为 `LoopReport.tripSignal` + `liveTripSignal` 两字段承载证据,不单列 evidenceRef;§19.1)
   - status: candidate → active(admin 复核后)/ retired(卡改动后须复验)
 
 组合库必须由 sim 判定入库,不能靠读 desc 手工维护——desc 会因省略而撒谎(例:丧钟×无头武生在 desc 层看似递归,实际被 ReviveSelf 的墓区早退拦死)。
@@ -148,7 +148,7 @@
 | P0 | ✅ 已落地(5a09ebb):揭晓强制结清 + 全局闸 + 被动埋点;连坐每回合上限已砍 | 09-13 复现局必终止 → Play 2026-09-18 用户已验 |
 | P1a | ✅ L1 排列周期检测器(§14/§15) | 两块标本被信号命中,EditMode 已验 |
 | P1b | ✅ RunBudgetSim headless 化(§16,2026-09-19) | 两块标本经 sim 复现同一结论 + 固定 seed 可复现;离线编译已验,EditMode 待跑 |
-| P2 | 归因三连 + ddmin 最小化 + loop_reports 上报 | 标本提取出带角色三卡最小集 |
+| P2 | ✅ 客户端核心已落地(2026-09-19,§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线;loop_reports 落表/上报按 §19.6.1 归 P3 | 最小集演示在 lethal 样本完成(09-13 三卡环已被 P0 修复拆除,§19.4);遗留:`ProcessPending` 生产触发时机(§19.6.2) |
 | P3 | 服务端 flag / 证据表 / 出队过滤 / 三来源统一 / admin | 被 flag 的 deck 不再下发 |
 | P4 | 组合库表 + 匹配交集检查 + 复核流 | 含标本组合的任意 deck 在匹配时被滤除 |
 | P5 | 存量回扫批工具(服务器全量 + 本地 RecordedDecks) | 回扫报告落盘 |
@@ -379,9 +379,9 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 
 `InfiniteDeckTerminationTests.CreateCurseStubDeck` 的注释写着「without curses in the enemy deck the "add curse" leg fizzles forever and nothing churns」——**与源码不符**,`EnhanceCurse` 会自己生成第一张。0 诅咒那一行实测就是反证(17 揭晓、rounds=1、检定触发、击杀)。这也与 §3 的木桩定义(敌方 = 无效果卡 + 大血量)一致:combo 自带点火,木桩不需要喂诅咒。
 
-### 17.4 建议(待「修改代码」)
+### 17.4 建议(✅ 已执行 2026-09-19,8a21caf)
 
-把四处 `CreateCurseStubDeck()` 的 2×JU_ON 换成**不预置诅咒**(惰性木桩,或 1×JU_ON),并删掉那条错误注释。这是**保真度清理**:让测试只跑游戏可达的状态。判据不变,实测已证。涉及 `ArrangementCycleDetectorTests` / `InfiniteDeckTerminationTests` / `RunBudgetSimTests`。
+~~把四处 `CreateCurseStubDeck()` 的 2×JU_ON 换成**不预置诅咒**(惰性木桩,或 1×JU_ON),并删掉那条错误注释。这是**保真度清理**:让测试只跑游戏可达的状态。判据不变,实测已证。涉及 `ArrangementCycleDetectorTests` / `InfiniteDeckTerminationTests` / `RunBudgetSimTests`。~~ 已落地:三个测试文件改惰性木桩,另保留一个 1×JU_ON(可达上限)的 deck-vs-deck 用例以覆盖 `Run(deckA, deckB)` 入口;错误注释已删,判据实测不变。
 
 ### 17.5 附带修掉的自身缺陷
 
@@ -465,10 +465,14 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 
 **跑测试时发现的真 bug(已修)**:`ProcessPending` 跑归因 sim 时,sim 里的真实检测器**也会触发**,把复现用的 trip 又写回队列 —— 队列永远排不空(实测 `ProcessPending` 消费 1 条后残留 2 条)。修法是给 journal 加**抑制深度**:`RunBudgetSim` 每次运行都包在 `PushSuppression()/PopSuppression()` 里,`Record` 在抑制期直接返回。"模拟不是真实 trip"这条语义现在由代码表达。
 
+- 测试:`InfinityTripJournalTests`(4 测,随 cddc1e4 落地)——journal FIFO 顺序 / 有界丢最旧 / Drain 清空移交 / 处理器对未复现 trip 不产条目。
+
 ### 19.6 待补
 
 1. `loop_reports` 落表与上报:表在服务端,按 §8 属 P3 的「证据表」;P2 只产出 payload(已具备)。
 2. 编辑器侧触发时机:目前 `ProcessPending` 由调用方决定,生产场景里需要一个"不在战斗中"的 tick 或战斗结束回调来定时排空(与帧预算解耦)。
+
+(2026-09-19 审核确认两项仍成立:服务端 `loop_reports`/`flag` 零实现;`ProcessPending` 全库仅 `InfinityTripJournalTests` 调用,生产侧无触发方。)
 
 ### 19.7 记录:证据链必须追两层,不能只看一跳
 
