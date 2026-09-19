@@ -48,6 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls:
@@ -63,9 +64,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  preEffectEvent:
-    m_PersistentCalls:
-      m_Calls: []
   effectEvent:
     m_PersistentCalls:
       m_Calls:
@@ -106,6 +104,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuryEffect
   tagsToCheck: 00000000
+  excludeSelf: 1
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
+  ignoreStartCardBoundary: 0
+  creatureFilter: 0
+  targetFriendly: 1
+  lastSuccessfulBuryCount: 0
 --- !u!114 &3130667770415808563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,6 +125,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ExileEffect
   tagToCheck: 0
   cardTypeIDSO: {fileID: 11400000, guid: 9366c9efe6242a14fbe096e5eb4d0ddb, type: 2}
+  ownerIntSO: {fileID: 0}
+  enemyIntSO: {fileID: 0}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -173,22 +180,32 @@ MonoBehaviour:
     <b>2</b> \u654C\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
   theirStatusRef: {fileID: 0}
   myStatusEffects: 
+  displayMyStatusEffects: 
   myTags: 
-  delayCost: 0
-  buryCost: 0
-  exposeCost: 0
-  minionCostCount: 0
-  minionCostCardTypeID: 
-  minionCostOwner: 0
-  exileCostCount: 0
-  exileCostCardTypeID: 
-  exileCostOwner: 0
+  lifeMax: 0
+  currentLife: 0
+  printedAttack: 0
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
+  attackTimesModThisRound: 0
+  cardType: 0
+  isPassive: 0
+  wildcardTypeFilter: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
+  attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &-4728943355192809547
 MonoBehaviour:
   m_ObjectHideFlags: 0
