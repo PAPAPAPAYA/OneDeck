@@ -3,7 +3,9 @@ using System.Reflection;
 using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Non-test twin of HeadlessCombatTestFixture, for the infinity plan's core abstraction
@@ -25,6 +27,17 @@ using UnityEngine;
 public class HeadlessCombatRig : System.IDisposable
 {
 	private static TMPro.TextMeshProUGUI _sharedDummyText;
+	/// <summary>Long-lived preview scene holding the shared dummy UI (see SetupDummyUI).</summary>
+	private static Scene _sharedDummyScene;
+
+	/// <summary>
+	/// Isolated scene for everything this rig creates. Edit Mode tests that build objects in the
+	/// ACTIVE scene mark GameScene dirty, and a dirty scene makes the next Test Runner run raise
+	/// the "Scene(s) Have Been Modified" modal, which blocks the main thread (measured 2026-09-19:
+	/// one rig run = one sceneDirtied event on GameScene). A preview scene is never saved, so the
+	/// dirt — and the modal — stops at the source.
+	/// </summary>
+	private Scene _scene;
 
 	private readonly List<GameObject> _createdObjects = new List<GameObject>();
 	private readonly List<ScriptableObject> _createdScriptables = new List<ScriptableObject>();
@@ -44,6 +57,7 @@ public class HeadlessCombatRig : System.IDisposable
 	{
 		CleanupSingletons();
 		var rig = new HeadlessCombatRig();
+		rig._scene = EditorSceneManager.NewPreviewScene();
 
 		// Player statuses.
 		rig.OwnerStatus = rig.CreateScriptableObject<PlayerStatusSO>();
@@ -149,6 +163,7 @@ public class HeadlessCombatRig : System.IDisposable
 		_createdScriptables.Clear();
 
 		CleanupSingletons();
+		if (_scene.IsValid()) EditorSceneManager.ClosePreviewScene(_scene);
 	}
 
 	/// <summary>
@@ -316,7 +331,9 @@ public class HeadlessCombatRig : System.IDisposable
 		{
 			// Shared across rigs: creating a TextMeshProUGUI per run triggers TLS allocator
 			// warnings (same reason HeadlessCombatTestFixture shares one).
+			if (!_sharedDummyScene.IsValid()) _sharedDummyScene = EditorSceneManager.NewPreviewScene();
 			var dummyTextObj = new GameObject("HeadlessSharedDummyText");
+			SceneManager.MoveGameObjectToScene(dummyTextObj, _sharedDummyScene);
 			_sharedDummyText = dummyTextObj.AddComponent<TMPro.TextMeshProUGUI>();
 		}
 
@@ -335,6 +352,8 @@ public class HeadlessCombatRig : System.IDisposable
 	public GameObject CreateGameObject(string name)
 	{
 		var obj = new GameObject(name);
+		// Move it out of the active scene right away; see _scene for why.
+		SceneManager.MoveGameObjectToScene(obj, _scene);
 		_createdObjects.Add(obj);
 		return obj;
 	}
@@ -504,6 +523,11 @@ public class HeadlessCombatRig : System.IDisposable
 		{
 			Object.DestroyImmediate(_sharedDummyText.gameObject);
 			_sharedDummyText = null;
+		}
+		if (_sharedDummyScene.IsValid())
+		{
+			EditorSceneManager.ClosePreviewScene(_sharedDummyScene);
+			_sharedDummyScene = default(Scene);
 		}
 	}
 
