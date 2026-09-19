@@ -65,7 +65,9 @@ public static class RunBudgetSim
 	public static BudgetTripReport RunVsDummy(DeckSO deckA, int dummySize, int dummyHp, int seed, Options options = null)
 	{
 		if (options == null) options = new Options();
-		options.EnemyHp = dummyHp;
+		// enemyHp travels as an argument, NOT through options: attribution reuses one Options
+		// object across several runs, and mutating it here would leak the dummy's huge HP into
+		// the later real-pairing replay.
 		return Execute(deckA, null, seed, options, dummyHp, dummySize);
 	}
 
