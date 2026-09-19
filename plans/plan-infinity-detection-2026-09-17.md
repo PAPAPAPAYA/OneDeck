@@ -452,11 +452,24 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 - **最小化的演示标本改用 lethal 样本**:ddmin 在 2 卡上证明「两张缺一不可」(`Minimize_LethalSample_KeepsBothComboCards`),这才是有效的 1-最小性演示。
 - §6 原写的「应产出带角色三卡最小集」在环被拆除后不再适用:改为在仍无界的标本上产出最小集,并保留 `roles` 字段承载**证据**(见 §19.6)。
 
-### 19.5 待补
+### 19.5 运行时接线:延迟归因(2026-09-19 用户拍板方案 1,已落地)
+
+拍板内容:**不在战斗帧里跑 sim**;trip 时只记证据,出战斗后再做昂贵归因。
+
+- `Assets/Scripts/Managers/InfinityTripJournal.cs`(**运行时程序集**,刻意如此):trip 时入队的证据 = 排列哈希 / 重复数 / 本回合采样数 / **combat seed** / 双方 DeckSO 与名字 / UTC 时间戳。有上限(32 条,超了丢最旧),双向 FIFO,`Drain()` 移交。
+- 挂钩:`CombatArrangementCycleDetector` 在 trip 分支里 `Record(...)`(不跑任何模拟)。`OnCycleTripped` 事件保留给其它消费者。
+- `Assets/Scripts/Editor/Headless/InfinityAttributionProcessor.cs`(编辑器侧):`ProcessPending()` 排空队列 → `InfinityAttribution` 三连 → 定责方做 `ComboMinimizer` → 产出 `LoopReport`(**由调用方决定何时跑**:菜单项、编辑器 update tick 且确认不在战斗中、或测试)。未复现的 trip **不产出条目**(绝不猜);配对责产出 `mySide` 为空的条目(§7.1,不 flag 任何人)。
+- `LoopReport.liveTripSignal` 新增:记录**真实那次** trip(哈希/重复数/combat seed/时间),与 `tripSignal`(headless 复现)区分开。
+
+**架构约束(重要)**:`RunBudgetSim` 依赖 `SerializedObject` + `AssetDatabase`,两者都是 editor-only,所以**打包后的游戏跑不了归因**。这不是缺口而是分工——正式包里的正确形态是:检测器只负责**采集证据并上传**(P3 的 `loop_reports`),归因由离线/服务端完成(P5 批扫与 P2 的 sim 共用同一份实现,正是 §2 的初衷)。
+
+**跑测试时发现的真 bug(已修)**:`ProcessPending` 跑归因 sim 时,sim 里的真实检测器**也会触发**,把复现用的 trip 又写回队列 —— 队列永远排不空(实测 `ProcessPending` 消费 1 条后残留 2 条)。修法是给 journal 加**抑制深度**:`RunBudgetSim` 每次运行都包在 `PushSuppression()/PopSuppression()` 里,`Record` 在抑制期直接返回。"模拟不是真实 trip"这条语义现在由代码表达。
+
+### 19.6 待补
 
 1. `loop_reports` 落表与上报:表在服务端,按 §8 属 P3 的「证据表」;P2 只产出 payload(已具备)。
-2. 运行时的 `OnCycleTripped` 消费者接线(把检测器事件接到 `InfinityAttribution` 上)——需要先定"在哪个时机跑 sim"(P2 的在线归因),且真实对局里跑三局 sim 有帧预算问题,待拍板。
+2. 编辑器侧触发时机:目前 `ProcessPending` 由调用方决定,生产场景里需要一个"不在战斗中"的 tick 或战斗结束回调来定时排空(与帧预算解耦)。
 
-### 19.6 记录:证据链必须追两层,不能只看一跳
+### 19.7 记录:证据链必须追两层,不能只看一跳
 
 首次跑测试时 `roles` 记成了 `RELIC_CURSE_REVIVAL <Unknown> [OnHostileCurseRevealed -> InvokeEffectEventVoid]` —— 因为卡上的 `GameEventListener` 调的是容器的 `InvokeEffectEventVoid`,**真正的效果方法在容器自己的 `effectEvent` 里**。只读一跳会让每张卡的证据都一样、且角色全部落到 `Unknown`。已修为:经 `listener.response.GetPersistentTarget(i)` 取到 `CostNEffectContainer`,再读它的 `effectEvent`,容器外的目标才回落到直接方法名。触发事件名本身一直是准的。
