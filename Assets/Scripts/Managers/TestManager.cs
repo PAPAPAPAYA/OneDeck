@@ -360,7 +360,7 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.VisualSync;
 			}
-			if (message.Contains("[CombatManager]") || message.Contains("[PhaseManager]") || message.Contains("[CombatBudgetGuard]"))
+			if (message.Contains("[CombatManager]") || message.Contains("[PhaseManager]") || message.Contains("[CombatBudgetGuard]") || message.Contains("[CombatArrangementCycleDetector]"))
 			{
 				return LogCategory.CombatFlow;
 			}

@@ -1,7 +1,7 @@
 # Plan: 无限检测与防下发(Infinity Detection and Serving Gate)
 
 - 日期: 2026-09-17
-- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 待验),P1 起按 §10 分期等「修改代码」开工
+- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag),2026-09-19 P1 排列周期检测器落地(§14,编译/测试待验),P1 起按 §10 分期等「修改代码」开工;**2026-09-19 接手会话复核(§15):lethal 样本实为回合内循环,§14「整周期」结论与「尺寸修正」均作废(脚手架触发接线 artifact),运行时验收待按 §15 待办重做**
 - 关联: docs/RngDeterminism.md(Rng/digest 基建)、docs/RegressionChecklist.md、docs/AgentRegistry.md;2026-09-13 埋葬递归 SOE 崩溃诊断
 - 核心抽象: `RunBudgetSim(deckA, deckB|木桩, seed) -> BudgetTripReport`,对局归因 / 离线回扫 / 可选预检三处共用一份实现
 
@@ -33,7 +33,7 @@
 
 ## 3. L1 运行时预算检测
 
-判据原则:不证明无限,只判「打不完」(预算超时)。触发任一 = 疑似 → 强制终局 → 归因。
+判据原则(2026-09-18 用户改拍):主判据 = **直接检测循环本体**——同一回合内完全相同的卡片排列重复出现 = 无限递归,即 flag 判据;不依赖「打不完」的结果推断,L1 相对预算启发(K×池等)降级为辅助/遥测信号。触发任一信号 = 疑似 → headless 归因 sim 确认 → 强制终局 + flag。09-17 原原则「不证明无限,只判打不完」作废。
 
 | 信号 | 阈值(待标定) | 抓什么 |
 |---|---|---|
@@ -42,9 +42,10 @@
 | chainDepth 触顶事件 | EffectChainManager 现有 | 单链深递归 |
 | 物理嵌套深度闸(P0 新增) | 见 §5 | 09-13 型换链级联 |
 | 合池总量 | > 上限 | token 增殖型 |
-| 状态 digest 重复 | 排除单调计数器后全状态哈希重复 | 真·严格无限(提前退出 + 循环节证据) |
+| 状态 digest 重复 → 升级为**同回合排列哈希重复**(2026-09-18 拍板主判据) | 同一排列第 3 次出现(次数可调) | 循环本体 = 无限递归。哈希 = cardTypeID+阵营 序列(**纯排列,不含 HP/power/盾**):带泵循环(lethal infinite 型,每圈增强诅咒但仍按圈重复排列)依然命中;原「排除单调计数器后全状态哈希」反而会漏带泵循环,作废 |
 
 - 复现基建现成:RngService 四通道确定化、TestManager.overrideCombatSeed / -odseed、DeterminismDigest(RngService.cs)。
+- 排列周期检测器设计要点(2026-09-18):①哈希每揭晓一次,O(卡组长度),回合边界(Start Card 洗牌)重置哈希集合——§13 回合饿死形态下同回合拖几百揭晓无碍;②「第 2 次出现」即触发会误伤有限循环(SLIME CheckCost_Counter(2) 型),取**第 3 次出现**触发,且触发后先跑归因三连 sim——确认无界才强制终局 + flag,有限则游戏继续、只记遥测,误报代价为零;③盲区 = 增殖型(衍生物/疲劳卡插入改变卡数即打破排列):合池上限信号 + L0 兜底,增殖型是否属 flag 判据另行拍板。
 - 木桩定义:敌方 = 中立起手卡 × N + 大血量,无效果。
 - 首受害者成本:每个新组合约 1 局受影响对局,之后该 deck 被标记。接受。
 
@@ -66,6 +67,7 @@
   - status: candidate → active(admin 复核后)/ retired(卡改动后须复验)
 
 组合库必须由 sim 判定入库,不能靠读 desc 手工维护——desc 会因省略而撒谎(例:丧钟×无头武生在 desc 层看似递归,实际被 ReviveSelf 的墓区早退拦死)。
+入库判据(2026-09-18 用户拍板)= sim 中检出**无界递归**(同回合排列周期,见 §3),与「预算打不完」解耦。带击杀泵的循环同样必 flag:`lethal infinite test`(RELIC_CURSE_REVIVAL + CURSE_GARDENER,循环每圈增强诅咒、恰好三回合内击杀自终止)是典型标本——验收标准:该 deck 必须被排列周期检测器命中并入库,尽管其自然对局 17 揭晓击杀、预算零触顶。
 
 ## 5. L0 引擎硬终止(P0 前置)
 
@@ -86,6 +88,8 @@
 09-13 换链环修复状态:2026-09-17 修改 same-card-different-object 分支——中Cascade关链只做 recorder 分组,守卫与深度不再被换链洗掉,仅由 ResetGenerationGuards 在阶段/揭晓边界清零(EffectChainManager.cs:285/:292;SameCardDifferentObject 日志标注 "recorder grouping only; loop guard persists",:96)。三方环每圈换链不再重置计数器,将触闸。已提交(5a09ebb,与 L0 硬终止同交);EditMode 559 绿,Play 待验。
 
 池层防线(2026-09-17 补充):置顶环的必要条件是「置顶触发器每级联重燃」(每次揭晓 ResetGenerationGuards 重发预算);现有置顶绑定全是低频(4.0 活跃池唯一 = RELIC_WHITE_BANNER 回合开始族,FINAL_ESCORT 已改复活),今日不环——但这道护栏是池层惯例不是引擎闸,离无限一张卡(onAnyCardRevealed → StageMyCards(1) 单卡成环:每级联 pop 1 + 置顶 1,合池净不变,回合永不结束)。处置 = 审计而非引擎闸:把「高频事件(onAnyCardRevealed / onFriendlyCardBuried 族)× 置顶/埋葬/自埋自顶」加进 unity-card-infinity-check 审计口径,新卡建卡时拦;L0 兜底。标定前置:先落被动埋点(per-round 揭晓数 / 级联深度峰值 / 合池峰值进 CombatLogs digest,行为零变化),真实对局夹逼出安全边距再定阈值。
+
+疲劳卡 AttackSelf 化(2026-09-18,工作区未提交):Fatigue.prefab 子效果由 HPAlterEffect(DecreaseMyHp + DecreaseTheirHp,双方各 1)改为 AttackEffect.AttackSelf(仅自方 1,走攻击管线;cardDesc 改「对自己攻击」)。影响核查(review 2026-09-18):① overtime 每触发每方疲劳伤害 2→1(双方仍对称竞速,收敛仍成立——疲劳卡每被揭一次打一次,随卡数累积加速);② 新增 onAnyCardAttacked 事件面(GUID 67599e7 验证全卡池零监听,今日惰性;已列入 unity-card-infinity-check 审计关注);③ printedAttack=1 使疲劳卡进入「伤害卡」谓词(IsCreature||HasAttackAttribute),会被 Power 赋予类选中——Power 对 AttackEffect 不计伤害,只产 TestManager 诊断日志噪声;④ 结果面板将出 SYSTEM_FATIGUE 行(IsNeutralCard 仅看 isStartCard,不排除),记 DamageDealtToSelf;⑤ 自伤先扣己方盾(与原路径一致);⑥ BloodPact 转换只作用于攻敌路径,自伤不受影响;⑦ 遗留:子物体名仍叫 "deal 1 dmg to both players",建议改名;⑧ 与复活通配(wildcardTypeFilter,62f7222)配合成立:复活轴捞回疲劳卡即多一次自伤,「复活疲劳自杀」加速,支撑 §9 我责判负分支。
 
 ## 6. 一号标本:09-13 三方环
 
@@ -118,18 +122,30 @@
 - 信任模型:playerId 即凭证(server.js:19 注释自认),客户端上报可伪造、可诬告——误伤由归因 sim 防住(敌单独不环不 flag);证据落盘供离线批扫工具复核可疑上报。软标记 = 默认排除出池;硬拉黑留给 admin。
 - 可选挂点:OpponentDeckCache.Prefetch(:128,每 session 预取 6 副)之后后台跑配对预算 sim,判定随缓存条目存。
 
-## 9. 结果语义(待拍板)
+## 9. 结果语义(2026-09-18 用户拍板)
 
-- 敌责:判玩家胜,还是无效局不扣?
-- 我责:判负,牌不封(已定);
-- 配对责:无效局 + 记录;
-- L0 硬上限触顶时的残局判定规则(胜负如何结算;2026-09-17 拍板延后,P0 先用占位,见 §7.7)。
+判平局 = 无效局,双方不计胜负。flag 一律指 flag **卡片组合**(§4 组合库条目,非 flag 整副卡组;下发层表现为含该组合的 ghost 不下发,主人可继续用/传,§7.2)。
+
+- 敌责:第一层 = 下发过滤拦(§8/P3-P4);漏网之局判平局。
+- 我责(玩家侧无限允许,不封牌):
+  - 能打死敌方 → 正常判胜利;造成无限的卡片组合仍 flag;
+  - 不能打死 → 疲劳自杀路径(疲劳卡 2026-09-18 改 AttackSelf 自伤,见 §5)正常判负;疲劳也杀不动(被盾/回复顶住)则判平局;
+  - 两种结局均 flag 卡片组合。
+- 配对责:判平局 + 记录,**不 flag**(2026-09-18 用户拍板维持 §7.1:现无配对才成立的无限;将来立项时 flag 条目需加卡片归属方字段(enemySide)+ 匹配时跨侧组合检测)。
+- L0 硬上限触顶:判平局(替换 §7.7 HP 比例占位)。
+
+拍板细化项(review 2026-09-18):
+
+1. ~~「能打死也 flag」与 §4 入库判据冲突~~ **已解决**(2026-09-18 用户拍板):flag 判据 = 无限递归(sim 排列周期检测,见 §3),lethal infinite 型带泵循环必 flag;
+2. ~~配对责 flag 与 §7.1/§7.4 冲突~~ **已解决**(2026-09-18 用户拍板):配对责不 flag,维持 §7.1,将来需要时再补归属字段 + 跨侧检测;
+3. 「能打死 → 判胜利」要求归因 sim 跑到自然终局(sim-to-completion)确认击杀,而非预算触顶即停;已并入检测器流程(§3 设计要点②:触发先 sim,确认无界才终局);胜负以 sim 复跑结果为准,不重开玩家局;
+4. 边界:敌责=平局仅在强制终局介入时成立;若疲劳竞速先自然杀死玩家,该局自然判负——受害者保护实际依赖 L1 早检(检测器)+ 下发过滤,终局语义只兜强制终局的部分。
 
 ## 10. 实施分期
 
 | 期 | 内容 | 验收 |
 |---|---|---|
-| P0 | ✅ 已落地(5a09ebb):揭晓强制结清 + 全局闸 + 被动埋点;连坐每回合上限已砍 | 09-13 复现局必终止 → 待 Play 复现验证 |
+| P0 | ✅ 已落地(5a09ebb):揭晓强制结清 + 全局闸 + 被动埋点;连坐每回合上限已砍 | 09-13 复现局必终止 → Play 2026-09-18 用户已验 |
 | P1 | RunBudgetSim headless 化 + L1 信号接入 | 09-13 复现局被信号命中 |
 | P2 | 归因三连 + ddmin 最小化 + loop_reports 上报 | 标本提取出带角色三卡最小集 |
 | P3 | 服务端 flag / 证据表 / 出队过滤 / 三来源统一 / admin | 被 flag 的 deck 不再下发 |
@@ -140,8 +156,8 @@ Edit-mode headless 体系复用 HeadlessCombatTestFixture / NullCombatVisuals,�
 
 ## 11. 待拍板清单
 
-1. 阈值标定:K、回合上限、池上限(前置 = 被动埋点采数,再拿 09-13 复现局与正常局夹逼);
-2. 敌责与硬上限触顶的结果语义(占位先按 §7.7,后拍板);
+1. 阈值标定(2026-09-18 修订):主标定对象改为**周期检测器参数**——同一排列出现次数触发阈值、哈希内容(cardTypeID+阵营序列)、回合边界重置;L0 绝对上限(100/1500/60)与生产对局夹逼照走。K×池等相对预算启发降级为遥测,不再是标定重点;
+2. ~~敌责与硬上限触顶的结果语义~~ 2026-09-18 已拍板,见 §9(含 4 条细化项待确认);
 3. ~~组合库入库:自动 or admin 复核~~ 已拍板 = 自动入库,admin 事后申诉/退役(§7.6);
 4. 回扫频率与触发时机。
 
@@ -175,3 +191,111 @@ Edit-mode headless 体系复用 HeadlessCombatTestFixture / NullCombatVisuals,�
 - **引擎动态观察**:复活轴(ReviveBatch 移顶)+ 回底插 0 的组合可把起始卡压在牌堆中部饿死回合边界(round 1 曾拖到 200 揭晓)——per-round 熔断的「起始卡洗牌仍触发」设计恰好兜住此场景,边界最终存活。生产整局若出现超大 perRoundRevealPeak 即此形态。
 - 编辑器事故记录:10:09 起主线程长时间无响应(用户处理一次弹窗后短暂恢复;测试启动撞域重载,MCP 插件会话断开;期间出现第 3 个 Unity.exe 进程)。接手会话同款事故复现一次:强同步重编译期间弹「Scene(s) Have Been Modified」模态框阻塞主线程,经 Win32 BM_CLICK「Don't Save」(丢弃的是测试对象脏标记)解除;后续流程先 refresh 编译完再跑测试,未再复现。
 - 已提交:594eed5(tag 登记)、21af9e3(cardsRevealedThisRound 回合重置)、b327bc3(本测试)。registry 20260918-090854 已删除。
+- **Play Mode 验证(2026-09-18,用户复现)**:09-13 型复现局在 P0 硬终止下按预期收场,P0 验收闭环;两处「Play 待验」状态随之更新。
+
+## 14. 排列周期检测器落地(2026-09-19,P1 核心件,编译/测试待验)
+
+- 实现:`Assets/Scripts/Managers/CombatArrangementCycleDetector.cs` — 纯排列哈希(cardTypeID+阵营 序列,RngDigest.FNV-1a),每次揭晓在确认路径(CombatManager 两条 confirm 路径的链代重置后)采样一次;同一回合第 3 次出现同一排列 → Tripped + `OnCycleTripped(uint hash)` 事件(P2 归因挂点)+ TestManager 日志(已登记进 CombatFlow 路由)。观察-only:不强制终局(§3 要点② 的 sim 门归 P2),L0 保底不变。
+- CombatManager 挂钩(均镜像 CombatBudgetGuard 模式):Awake 自动创建组件、战斗清理 ResetState、回合开始 NotifyRoundStart(洗牌后旧排列时代作废)。TestManager.InferCategory 已登记 `[CombatArrangementCycleDetector]`。
+- 静默期安全论证(已被测试钉住):静止卡组满回合每个排列每回合只被采样一次(采样周期=卡组数、每回合样本数=卡组数-1,起始卡回顶即回合边界),回合重置把跨回合重样排除 → 安静对局不可能误触;触发线取「第 3 次出现」以避开有限循环(SLIME CheckCost_Counter(2) 型最多重复两圈)。
+- 测试:`Assets/Scripts/Editor/Tests/ArrangementCycleDetectorTests.cs` — 6 个单测(三次触发/两次不触/回合重置清计数/ResetState 清锁/静止满回合旋转不误触/顺序+阵营都入哈希且哈希无副作用/事件只在阈值触发)+ 1 个集成验收(lethal infinite test deck 必须触发检测器——循环本体无界,尽管自然对局 17 揭晓击杀)。
+- TDD:RED 已验证(测试先写,csc 离线编译报 CS0246 类型不存在);GREEN 已于 2026-09-19 10:10 经 Unity 真实编译器验证通过(Editor.log 零 error,新文件零 warning)。**剩 EditMode 测试运行**(Test Runner → ArrangementCycleDetectorTests,7 个)——实现落盘时编辑器在 Play 模式,编译推迟到退出后已自动完成,测试运行交用户点击。
+- 盲区备忘(沿用 §3):周期跨回合边界(依赖洗牌参与循环)的组合检测不到——重洗打破排列;增长型靠合池上限 + L0。属已知接受的盲区。
+- **验收调查(2026-09-19,CycDiag 取证)**:lethal 样本在运行时检测器下**不触发**——根因 = 该引擎周期恰好 = 一整回合(回合 1/3/4/6 采样哈希逐位相同),排列重复点全部落在回合边界,被回合重置精确擦除;非实现 bug,是「同回合内第 3 次出现」规则的信息极限。**用户拍板(方案 A)**:运行时检测器只保卡死型(回合内循环);整周期引擎(lethal 型)归 P2 RunBudgetSim 判(无限血木桩下击杀不落、循环无界)。运行时验收标本改用 non-lethal 样本(回合饿死形态,全局长在单回合内,回合内重复可抓);整周期模式由单测 `RoundPeriodicArrangement_DoesNotTripWithinRoundRule` 钉为规格行为。sim 侧将来可安全启用跨回合规则(误报代价为零)。另确认:洗牌吃推进式 RngChannel.Deck,安静卡组跨回合排列不重复,故跨回合规则在小卡组(<~12 张,洗牌空间不足)有误报面——sim 内使用亦需注意。
+- **尺寸修正(2026-09-19 用户质询后澄清)**:「整周期盲区」部分是 5 张木桩的 artifact——lethal 置顶轴不压起始卡,回合照常每 ~卡组张数 次揭晓推进;生产合池 30-60 张时单回合长度 ≫ 该引擎 17 揭晓的击杀,**整个循环发生在单回合内,运行时检测器可抓**。真正盲区仅「引擎周期 > 一个真实回合长度」的慢引擎(deck-dependent,击杀速度随诅咒密度变化)。lethal 验收保持归 P2 sim(木桩尺寸下无法演示),non-lethal 饿形态保留为运行时集成验收。
+
+### 交接状态(2026-09-19,给接手会话)
+
+> **本节的「待办(按序)」已被 §15 取代(2026-09-19 接手会话)**:待办 1 已完成(测试已跑,7/8 绿);
+> 待办 2 的「删埋点」现应等到 §15 的验收重做之后;待办 3 的答案见 §15 根因分析。以下为历史记录,保留不删。
+
+**已完成(本会话)**:
+- `CombatArrangementCycleDetector.cs`(新)+ CombatManager 5 处挂钩(Awake 自动创建/:264 ResetState/:1206 NotifyRoundStart/两条 confirm 路径 NotifyRevealBoundary)+ TestManager InferCategory 路由登记 + `ArrangementCycleDetectorTests.cs`(新,8 测:6 单测 + 整周期规格钉住 + non-lethal 集成验收)。
+- RED 验证(csc CS0246)→ GREEN 验证(Unity 真实编译,Editor.log 零 error,2026-09-19 10:10)。TDD 流程完整。
+
+**待办(按序)**:
+1. **用户在 Test Runner 重跑 `ArrangementCycleDetectorTests`**。若本会话观察器已死:直接 `grep CycDiag "C:/Users/Papaya/AppData/Local/Unity/Editor/Editor.log"` 读新序列。
+2. 全绿后:删除 `RunDriverWithDetector` 里的 `[CycDiag]` 临时埋点块(注释标了 temporary;`LastSampledHash` 属性可保留);跑全量 EditMode 确认无回归;删除 registry claim(若还在)。
+3. non-lethal 若不触发:读 CycDiag 序列区分「不重复」vs「重复晚于击杀」,再按 §14 分析定(补 tweak 或运行时验收改纯构造单测)。
+4. 提交建议:检测器+测试+两处挂钩一个 commit(`feat(infinity): arrangement-cycle detector`),plan 文档单独 commit。**勿带入**下列用户自己的改动。
+
+**本会话文件归属**(工作区混杂,提交前核对):
+- 本任务:`Assets/Scripts/Managers/CombatArrangementCycleDetector.cs`(.meta 同)、`Assets/Scripts/Editor/Tests/ArrangementCycleDetectorTests.cs`(.meta 同)、`Assets/Scripts/Managers/TestManager.cs`(仅 InferCategory 一行)、`plans/plan-infinity-detection-2026-09-17.md`。`CombatManager.cs` 是本任务 5 处挂钩 + 可能混有用户改动,commit 前 `git diff` 分辨。
+- **用户自己的未提交改动(勿动勿提交)**:Fatigue.prefab(AttackSelf 改造,审查结论见 §5)、GameScene.unity、PlayerDeckRef.asset、ServerConfig.asset、Fonts/Shop UI 一批(ShopTopBarLayout 等)。
+
+**环境备忘**:
+- Unity MCP 在接手会话大概率不可用(select_tools 4 个候选名全 unknown)——替代路线已验证:Editor.log(`C:/Users/Papaya/AppData/Local/Unity/Editor/Editor.log`)+ 后台观察器轮询;Play 模式下编译推迟,观察器等程序集重建信号。
+- 编辑器 Play 模式期间勿用 GUI 自动化操作(§13 事故史;用户场景有未保存改动)。
+
+## 15. 接手会话复核:harness 保真度修正(2026-09-19)
+
+**结论:lethal 样本是回合内循环,运行时检测器可抓;§14 的「整周期」判断是测试脚手架 artifact,不是引擎事实。**
+
+### 15.1 根因:headless 脚手架不还原真实触发接线
+
+- `HeadlessCombatTestFixture` 的 `GameEventStorage` 每个事件字段都是 `CreateScriptableObject<GameEvent>()` 新建实例,`curseCardTypeID` 是新建 `StringSO`(`reset` 默认 true → `value` 为空)。预制体里的 listener 序列化指向的是**真实事件资产**,与夹具实例不是同一个对象,所以 `BridgeCard` 只能把**每张卡的每个 listener 一律改指 `onMeRevealed`**("listener re-point & registration")。
+- 生产 `GameScene.unity` 的真实接线(本节已逐字段提取核对):
+  - `onMeRevealed` → `Assets/SORefs/GameEvents/REVEAL/OnMeRevealed.asset`
+  - `onEnemyCurseCardRevealed` → `Assets/SORefs/GameEvents/REVEAL/OnHostileCurseRevealed.asset`
+  - `curseCardTypeID` → JU_ON CardTypeSO(guid `07a2aa37…`)
+- 后果(两块,都是本 combo 的关键路径):
+  1. `TriggerRevealedCard()` 的 `onEnemyCurseCardRevealed.RaiseOwner()` 分支因 `curseCardTypeID` 为空**永不触发**;
+  2. **RELIC_CURSE_REVIVAL(耳语唤尸)的真实触发是 `OnHostileCurseRevealed`**(预制体验证),脚手架收不到 → 它退化成「耳语唤尸**自己揭晓**时复活友方」。CURSE_GARDENER 的真实触发恰是 `OnMeRevealed`,所以它没被扭曲——一个 combo 里只有一半的触发是对的。
+
+### 15.2 实测证据(临时诊断 3 变体,结束即删)
+
+同一 lethal deck(player = `lethal infinite test`;enemy = N×JU_ON),驱动复用现有 driver 原语;唯一变量是接线与木桩尺寸:
+
+| 变体 | 接线 | 回合推进 | 检测器 | 敌方死亡 |
+|---|---|---|---|---|
+| A-current2 | 现状脚手架(N=2) | 每 ~5 揭晓推进一次(round 1→8) | **不触发** | i=32 |
+| B-faithful2 | 生产接线(N=2) | **全程 round=1,从不推进** | **i=7 触发** | i=25 |
+| C-faithful20 | 生产接线(N=20,deck=23) | **全程 round=1** | **i=18 触发** | i=66 |
+
+B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排列一个回合内重复 **149 / 144 次** —— 教科书式紧回合内循环,与用户描述完全一致(养蛊人复活诅咒 → 诅咒揭晓触发耳语唤尸 → 复活养蛊人 → 无限重复;`hex 1` 每圈 `EnhanceCurse` 强化诅咒,至击杀自终止)。A 变体的「回合照常推进 + 不触发」正是 §14 观测到的现象,现已证明是接线 artifact。
+
+### 15.3 修正记录
+
+- §14「验收调查」的「引擎周期恰好 = 一整回合」与「尺寸修正」的「lethal 置顶轴不压起始卡,回合照常推进」**均作废**——两者都建立在 A 变体之上。
+- 真实形态:lethal 与 non-lethal **同为回合饿死形态**,差别只在 lethal 自带击杀泵(强化诅咒 → 自噬击杀)。方案 A(「运行时只保卡死型、lethal 归 P2 sim」)的前提因此不成立。
+- 单测 `RoundPeriodicArrangement_DoesNotTripWithinRoundRule` 钉住的是 artifact,**不应作为规格行为**;`ArrangementCycleDetectorTests` 类注释里同源的「division of labor」描述也需同步。
+- 运行时验收标本可以回到 lethal(即 §4 原定验收标准:该 deck 必须被检测器命中,尽管其自然对局自终止)——但**必须用生产接线**,否则测的不是同一个循环。
+- **检测器实现本身无 bug**,`CombatArrangementCycleDetector.cs` 无需改动。
+
+### 15.4 已交付(2026-09-19,用户授权「修改代码」后;改动全部落在 `ArrangementCycleDetectorTests.cs`)
+
+1. **触发保真度**:`BridgeCard` 不再一律改指 `onMeRevealed`,改为 `MapRealEventToFixtureEvent` —— 按 listener 序列化所指向的**真实事件资产名**映射到夹具的事件实例(`OnHostileCurseRevealed → onEnemyCurseCardRevealed` 等);未登记的名字回落 `onMeRevealed`,保持 combo 外卡片的旧行为。新增 `EnableProductionTriggerWiring()` 设 `curseCardTypeID.value = "JU_ON"`(与 `Assets/SORefs/CombatRefs/CurseCardTypeID.asset` 及场景接线一致),须在 `GatherDecks` 前调用。
+2. **driver 终止条件改为逻辑 HP**(`enemyPlayerStatusRef.hp <= 0 || ownerPlayerStatusRef.hp <= 0`),弃用 `IsDeathVisuallyLanded`:夹具挂了 dummy `CombatInfoDisplayer`,而 `GetDisplayedEnemyHp()` 在有待提交伤害时返回**队列冻结值**,紧循环里击杀落地后该标志仍不置位(实测旧接线为 True、生产接线恒 False)。同时按 `InfiniteDeckTerminationTests` 的成熟做法接入 L0 guard(200/1500/60)+ 每揭晓反射补调 `CheckFatigueByRevealCount` + force-clear 跳过,并启用按揭晓数疲劳(`PrepareOvertimeFatigue`,复用生产值)。
+3. **验收标本**:新增 `LethalInfiniteDeck_TripsCycleDetector`(生产接线下 lethal 必须触发检测器 + 泵击杀 + L0 未出手);`NonLethalInfiniteDeck_TripsCycleDetector` 保留并修好终止与断言;原 `RoundPeriodicArrangement_DoesNotTripWithinRoundRule` 更名 `CrossRoundPeriodicArrangement_DoesNotTrip`,注释改为「纯规则边界单测,**不**建模 lethal 样本」。
+4. `[CycDiag]` 临时埋点已删;测试类头注释同步改写(去掉「ruling A / 分工」的错误叙述,写明两个标本同为回合饿死形态)。
+5. **未动**:`HeadlessCombatTestFixture`(改共享夹具会波及他人测试)、`CombatArrangementCycleDetector.cs`(实现无 bug)。`InfiniteDeckTerminationTests.cs` 的接线统一见 §15.6。
+
+实测(2026-09-19 11:4x,测试内 `[CycleDetector]` 汇总行):
+
+| 标本 | iters | reveals | 末回合 | 检测器 | 结局 |
+|---|---|---|---|---|---|
+| lethal(2 诅咒) | 26 | 25 | **1** | 触发 | eHp=0 / oHp=30,L0 未出手 |
+| non-lethal(2 诅咒) | 250 | 249 | 3(严重饿死) | 触发 | eHp=0 / oHp=29,疲劳卡已入堆,L0 未出手 |
+
+- `ArrangementCycleDetectorTests`:**9/9 绿**(0.9s)。
+- 全量 EditMode:**577 total / 1 失败** —— 仅 `ShopSectionPanelsTests.ComputeContentBounds_SingleCenter_ReturnsCenteredBounds`(并行 shop 任务的未提交改动,非本任务回归;改动前的基线同样红)。
+- 提交待定:工作区混有用户与并行会话的未提交改动,按 §14「勿带入」的约束,commit 需先与用户确认范围。
+
+### 15.5 本轮环境与基线(2026-09-19 11:0x–11:3x UTC+8)
+
+- **Unity MCP 可用**(`http://127.0.0.1:8080/mcp`,`OneDeck@033fe4d4cdd447fb`,Unity 6000.3.9f1;由上一会话的 MCP for Unity 窗口启动)。本会话经 HTTP 直连调用 MCP 工具(会话内无原生 unity 工具绑定),`run_tests` / `read_console` / `refresh_unity` 均正常。
+- 注意:`read_console` **带 filter** 在大 console 下极易超 2.0s ping 预算(反复失败),建议诊断输出落盘(`Application.dataPath + "/../…"`)再读文件——已验证稳定。
+- `ArrangementCycleDetectorTests`:**8 测 / 7 绿 / 1 红**(红 = `NonLethalInfiniteDeck_TripsCycleDetector`,driver 不终止;检测器本身在 non-lethal 上**确实触发**,周期 2,round 恒为 1)。
+- 全量 EditMode:**579 total / 2 失败** —— ① 本任务 non-lethal;② `ShopSectionPanelsTests.ComputeContentBounds_SingleCenter_ReturnsCenteredBounds`(属并行 shop 任务的未提交改动,非本任务回归)。
+- 编辑器期间出现一次 Unity「Hold on」模态(强同步重编译进度框),**自行消失**,本会话未做任何弹窗点击(未触碰用户未保存的 GameScene)。
+
+### 15.6 后续:termination 测试统一到生产接线(2026-09-19,用户授权「修改代码」)
+
+- `InfiniteDeckTerminationTests.cs` 已从旧接线迁到生产接线:新增 `EnableProductionTriggerWiring()`(设 `curseCardTypeID.value = "JU_ON"`,须在 `GatherDecks` 前调用)与 `MapRealEventToFixtureEvent`(按 listener 序列化的**真实资产名**映射),`BridgeCard` 不再一律改指 `onMeRevealed`;driver 终止条件由 `IsDeathVisuallyLanded` 改为**逻辑 HP**(同 §15.4 点 2 的根因);文件头与 `BridgeCard` 注释同步更正。
+- **影响面实测**(全样本卡触发事件扫描):四个卡里只有 `RELIC_CURSE_REVIVAL`(OnHostileCurseRevealed)会被旧桥改写;`GRAVE_HEXER` / `SPIRIT_CALLER` / `JU_ON` / `Fatigue` 全是 OnMeRevealed,`StartCard` 无 listener。所以 **non-lethal 那个测试行为不变**,lethal 那个现在跑的才是真循环。
+- 注意:lethal 测试**只换接线不换终止条件会直接变红**——它的 `IsDeathVisuallyLanded` 只在旧接线下置位(dummy `CombatInfoDisplayer` 的队列冻结值),换接线后会跑满 5000 上限。两处必须同改。
+- 复验:`InfiniteDeckTerminationTests` + `ArrangementCycleDetectorTests` 共 **11/11 绿**;全量 EditMode **577 total / 1 失败**,仍仅为 shop 任务的 `ShopSectionPanelsTests`(与本任务无关)。
+- 遗留:`MapRealEventToFixtureEvent` 目前在两个测试类各持一份(沿用「BridgeCard 由各测试文件自持」的既有惯例,未动共享夹具)。若后续还要第三个文件用,可考虑提到 `HeadlessCombatTestFixture` 作 protected 助手。
+- 另记一次环境事件:全量套件某次启动报 `Test job failed to initialize (tests did not start within timeout)`(默认 15s init 窗口),重试时把 `run_tests.init_timeout` 提到 120000 后正常跑完 577 项;期间编辑器一度 `ready_for_tools=false`(`stale_status`),非模态阻塞。
+
+
