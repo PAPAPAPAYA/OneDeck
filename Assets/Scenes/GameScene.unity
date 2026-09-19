@@ -1208,7 +1208,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
+  m_Children: []
   m_Father: {fileID: 2016868083}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &152842586
@@ -1761,7 +1761,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &309960882
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5355,7 +5355,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d395f692b9ee8f04c8266542b1569c21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.TestManager
-  overrideShuffleOrder: 1
+  overrideShuffleOrder: 0
   useTestEnemyDeck: 0
   includeSelfOpponentDecks: 0
   fightOwnGhostsOnly: 0
@@ -5374,7 +5374,7 @@ MonoBehaviour:
   logCombatFlow: 0
   logEffectChains: 0
   logAnimationPlayback: 0
-  logVisualSync: 1
+  logVisualSync: 0
   logEditorTools: 0
   logTestManager: 0
   logDynamicDamageDisplay: 0
@@ -6389,6 +6389,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1151980345}
   - component: {fileID: 1151980352}
+  - component: {fileID: 1151980353}
   - component: {fileID: 1151980344}
   - component: {fileID: 1151980347}
   - component: {fileID: 1151980346}
@@ -6569,12 +6570,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbc126ac2175bbf439e7642b6f5fb18d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefaultNamespace.Managers.ShuffleOrderOverride
-  useCustomOrder: 1
+  useCustomOrder: 0
   customOrderPrefabs:
   - {fileID: 7981514837180212169, guid: 794c5ef88e20c8845945bddffc9d59f6, type: 3}
   - {fileID: 8770473793408235678, guid: cdeb79fcea00f2742bbd44a2e79b2a77, type: 3}
   - {fileID: 2419164153547357531, guid: 4f192b614d3e4ff48b9c1d55b82c58b1, type: 3}
   - {fileID: 8718476725744197808, guid: 760e4c56ff98af5478a88bc85d924112, type: 3}
+--- !u!114 &1151980353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1151980343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29395f0ba8e58f44eb254f5e421362af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatBudgetGuard
+  maxRevealsPerRound: 100
+  maxTotalReveals: 1500
+  maxRounds: 60
 --- !u!1 &1162866020
 GameObject:
   m_ObjectHideFlags: 0
