@@ -24,6 +24,12 @@ using UnityEngine;
 /// fixture's PutRevealedCardToBottom also omits the R2 life-bounce. Round boundary =
 /// Start Card reveal: fatigue check, round increment (real: StartCardShuffleEffect),
 /// then OnStartCardShuffleAnimationComplete.
+/// TRIGGER WIRING (2026-09-19, plan §15): these tests run the PRODUCTION trigger bridge —
+/// BridgeCard maps each listener from the real event asset it was serialized against to the
+/// fixture's matching instance, and curseCardTypeID is set, mirroring GameScene.unity. The
+/// legacy bridge pointed every listener at onMeRevealed, which rewrote the lethal deck's
+/// RELIC_CURSE_REVIVAL (real trigger OnHostileCurseRevealed) into "fires on my own reveal" and
+/// made this file exercise a different loop than production.
 /// </summary>
 public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 {
@@ -60,12 +66,24 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		return CreateDeckSO(new List<GameObject> { juOn, juOn });
 	}
 
+	/// <summary>
+	/// Mirrors the production wiring of GameScene.unity's GameEventStorage: the curse type id
+	/// gates the onEnemyCurseCardRevealed broadcast, so it must be set or the lethal deck's
+	/// relic (RELIC_CURSE_REVIVAL) can never fire. Must run BEFORE GatherDecks.
+	/// </summary>
+	private void EnableProductionTriggerWiring()
+	{
+		Assert.IsNotNull(GameEventStorage.curseCardTypeID, "fixture must expose a curseCardTypeID StringSO");
+		GameEventStorage.curseCardTypeID.value = "JU_ON";
+	}
+
 	[Test]
 	public void LethalInfiniteDeck_KillsStubOpponent()
 	{
 		CombatManager.playerDeck = LoadSampleDeck("lethal infinite test");
 		CombatManager.enemyDeck = CreateCurseStubDeck();
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
+		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
 		BridgeAllCards();
 
@@ -107,6 +125,7 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		CombatManager.playerDeck = LoadSampleDeck("non-lethal infinite test");
 		CombatManager.enemyDeck = CreateCurseStubDeck();
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
+		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
 		BridgeAllCards();
 
@@ -197,9 +216,11 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	/// Edit Mode never runs Awake/OnEnable and skips RuntimeOnly persistent UnityEvent
 	/// calls (callState=2), and CardFactory.CreateLogicalCard wires only the status refs —
 	/// the EffectScript/container back-references the game resolves at spawn are null.
-	/// This is the same bridge CurseSummonerPrefabSmokeTests applies to its hand-instantiated
-	/// cards (runtime-ref injection + callState flip + listener re-point & registration),
-	/// made idempotent per card instance so the driver can re-bridge freshly spawned cards
+	/// This is the CurseSummonerPrefabSmokeTests bridge (runtime-ref injection + callState
+	/// flip + listener registration) with one difference: listeners are re-pointed to the
+	/// fixture event matching the REAL asset they were serialized against, preserving
+	/// production trigger semantics, instead of everything landing on onMeRevealed. Made
+	/// idempotent per card instance so the driver can re-bridge freshly spawned cards
 	/// (fatigue cards, curse tokens) right before they are triggered.
 	/// </summary>
 	private void BridgeCard(GameObject card)
@@ -227,8 +248,36 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		foreach (var listener in card.GetComponentsInChildren<GameEventListener>(true))
 		{
 			ForceEditorCallState(listener, "response");
-			listener.@event = GameEventStorage.onMeRevealed;
-			GameEventStorage.onMeRevealed.RegisterListener(listener);
+			GameEvent target = MapRealEventToFixtureEvent(listener.@event);
+			listener.@event = target;
+			target.RegisterListener(listener);
+		}
+	}
+
+	/// <summary>
+	/// Re-points a listener from the REAL event asset it was serialized against to the
+	/// fixture's equivalent instance, so cross-card triggers keep their production semantics
+	/// (the fixture builds its own GameEvent objects, so identity matching is impossible and
+	/// asset-name matching is the contract). Unknown events fall back to onMeRevealed, which is
+	/// the legacy bridge behavior and keeps cards outside these combos working as before.
+	/// </summary>
+	private GameEvent MapRealEventToFixtureEvent(GameEvent real)
+	{
+		if (real == null) return GameEventStorage.onMeRevealed;
+		switch (real.name)
+		{
+			case "OnMeRevealed": return GameEventStorage.onMeRevealed;
+			case "OnHostileCurseRevealed": return GameEventStorage.onEnemyCurseCardRevealed;
+			case "OnAnyCardRevealed": return GameEventStorage.onAnyCardRevealed;
+			case "OnHostileCardRevealed": return GameEventStorage.onHostileCardRevealed;
+			case "OnMeRevived": return GameEventStorage.onMeRevived;
+			case "OnAnyCardRevived": return GameEventStorage.onAnyCardRevived;
+			case "OnFriendlyCardRevived": return GameEventStorage.onFriendlyCardRevived;
+			case "OnEnemyCardRevived": return GameEventStorage.onEnemyCardRevived;
+			case "OnMeBuried": return GameEventStorage.onMeBuried;
+			case "OnAnyCardBuried": return GameEventStorage.onAnyCardBuried;
+			case "OnFriendlyCardBuried": return GameEventStorage.onFriendlyCardBuried;
+			default: return GameEventStorage.onMeRevealed;
 		}
 	}
 
@@ -265,7 +314,11 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		while (iterations++ < maxIterations)
 		{
 			if (guard.ConcludeRequested) break;                        // global cap terminator
-			if (CombatManager.Me.IsDeathVisuallyLanded) break;         // lethal / fatigue terminator (headless: logic HP)
+			// Headless terminator is LOGIC HP, not IsDeathVisuallyLanded: this fixture wires a
+			// dummy CombatInfoDisplayer, so the visual flag reads the DISPLAY layer, whose
+			// enemy-HP accessor returns a queue-frozen value while hits are pending — in a tight
+			// revive loop it never lands, even after the killing blow.
+			if (CombatManager.enemyPlayerStatusRef.hp <= 0 || CombatManager.ownerPlayerStatusRef.hp <= 0) break;
 
 			if (CombatManager.revealZone == null)
 			{
