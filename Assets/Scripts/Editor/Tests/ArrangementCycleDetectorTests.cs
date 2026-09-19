@@ -217,12 +217,22 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 
 		var guard = CreateGuard(200, 1500, 60);
 		var detector = CreateDetector();
+
+		// §20.3: the live ghost's deck row has to ride along with the trip — it is what the
+		// loop-report upload accuses (DeckSaver sets this when it injects a server ghost).
+		InfinityTripJournal.Clear();
+		OpponentDeckCache.SetCurrentOpponent(new OpponentDeckEntry { deckId = 505, username = "ghost" });
+
 		int iterations = RunDriverWithDetector(detector, guard, MaxIterations);
 
 		Assert.Less(iterations, MaxIterations, "driver must terminate within the bound" + Diag(detector, guard, iterations));
 		Assert.IsTrue(detector.Tripped,
 			"the lethal revive loop repeats its arrangement inside round 1 and must trip the detector"
 			+ Diag(detector, guard, iterations));
+		Assert.Greater(InfinityTripJournal.Count, 0, "a trip must be journaled for the P2/P3 pipeline");
+		Assert.AreEqual(505, InfinityTripJournal.Pending[0].EnemyDeckId,
+			"the journaled trip must name the server deck row the report accuses (§20.3)");
+		OpponentDeckCache.SetCurrentOpponent(null);
 		Assert.LessOrEqual(CombatManager.enemyPlayerStatusRef.hp, 0,
 			"the lethal pump must still kill the enemy — the detector is observation-only"
 			+ Diag(detector, guard, iterations));

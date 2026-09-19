@@ -20,7 +20,9 @@ public enum NetUploadKind
 	MatchReport,
 	StatsSnapshot,
 	RunRecord,
-	CardCatalog
+	CardCatalog,
+	/// <summary>Infinity-loop evidence (plan §20): POST /api/loop-reports.</summary>
+	LoopReport
 }
 
 /// <summary>
@@ -56,6 +58,9 @@ public class ServerConfig : ScriptableObject
 	public bool includeCombatSeries = true;
 
 	public bool uploadCardCatalog = true;
+
+	[Tooltip("Infinity-loop evidence reports (plan §20). A confirmed report flags the ghost deck's content on the server so it stops being served.")]
+	public bool uploadLoopReports = true;
 
 	[Header("Opponent ghosts")]
 	public bool fetchOpponentDecks = true;

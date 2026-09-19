@@ -42,8 +42,8 @@ public class InfinityTripJournalTests
 	public void Journal_QueuesOldestFirst_AndDrainClears()
 	{
 		var deck = LoadSampleDeck("lethal infinite test");
-		InfinityTripJournal.Record(0xAAAAu, 1, 5, 11, deck, deck);
-		InfinityTripJournal.Record(0xBBBBu, 2, 9, 22, deck, deck);
+		InfinityTripJournal.Record(0xAAAAu, 1, 5, 11, deck, deck, 0);
+		InfinityTripJournal.Record(0xBBBBu, 2, 9, 22, deck, deck, 909);
 
 		Assert.AreEqual(2, InfinityTripJournal.Count);
 		Assert.AreEqual(0xAAAAu, InfinityTripJournal.Pending[0].TripHash, "oldest first");
@@ -53,6 +53,8 @@ public class InfinityTripJournalTests
 		Assert.AreEqual(2, drained.Count);
 		Assert.AreEqual(0, InfinityTripJournal.Count, "draining must empty the queue");
 		Assert.AreEqual(22, drained[1].CombatSeed, "the seed must survive the round trip");
+		Assert.AreEqual(909, drained[1].EnemyDeckId, "the accused ghost deck row must survive too (§20.3)");
+		Assert.AreEqual(0, drained[0].EnemyDeckId, "0 = local pool enemy, nothing to flag");
 		Assert.IsNotEmpty(drained[0].CapturedUtc);
 	}
 
@@ -62,7 +64,7 @@ public class InfinityTripJournalTests
 		var deck = LoadSampleDeck("lethal infinite test");
 		for (int i = 0; i < InfinityTripJournal.MaxEntries + 5; i++)
 		{
-			InfinityTripJournal.Record((uint)i, 1, 1, i, deck, deck);
+			InfinityTripJournal.Record((uint)i, 1, 1, i, deck, deck, 0);
 		}
 
 		Assert.AreEqual(InfinityTripJournal.MaxEntries, InfinityTripJournal.Count,
@@ -76,7 +78,7 @@ public class InfinityTripJournalTests
 	{
 		var lethal = LoadSampleDeck("lethal infinite test");
 		// The enemy side carries the looping deck, so the expected verdict is EnemyDeck.
-		InfinityTripJournal.Record(0x1234u, 1, 7, 4242, lethal, lethal);
+		InfinityTripJournal.Record(0x1234u, 1, 7, 4242, lethal, lethal, 505);
 
 		var options = new RunBudgetSim.Options();
 		options.GuardTotal = 300;

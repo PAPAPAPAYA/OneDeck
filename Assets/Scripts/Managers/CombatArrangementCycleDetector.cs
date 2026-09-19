@@ -93,9 +93,13 @@ public class CombatArrangementCycleDetector : MonoBehaviour
 		LastTripHash = hash;
 		// P2 hook, deferred by user ruling 2026-09-19: record the evidence NOW so the expensive
 		// attribution simulation can run out of combat. Nothing is simulated here.
+		// §20: the accusation has to name a server deck row, so the live ghost's deck_id rides
+		// along (0 = local default-pool enemy, which has no row and is not player content).
 		var cm = CombatManager.Me;
+		var ghost = OpponentDeckCache.Current;
 		InfinityTripJournal.Record(hash, TripCount, SightingsThisRound, Rng.CombatSeed,
-			cm != null ? cm.playerDeck : null, cm != null ? cm.enemyDeck : null);
+			cm != null ? cm.playerDeck : null, cm != null ? cm.enemyDeck : null,
+			ghost != null ? ghost.deckId : 0);
 		TestManager.Log("[CombatArrangementCycleDetector] Arrangement cycle tripped: sighting #" + count
 			+ " of arrangement " + RngDigest.ToHex(hash) + " within one round (sightingsThisRound=" + SightingsThisRound
 			+ ") — unbounded recursion suspected; observation-only, the P2 attribution sim gates any forced conclusion");

@@ -29,6 +29,12 @@ public static class InfinityTripJournal
 		public string EnemyDeckName;
 		public DeckSO PlayerDeck;
 		public DeckSO EnemyDeck;
+		/// <summary>
+		/// Server deck row of the ghost being fought — the accusation's target for
+		/// POST /api/loop-reports (plan §20.3). 0 when the enemy came from the local default
+		/// pool: no server row exists and pool decks are not player-uploaded content.
+		/// </summary>
+		public int EnemyDeckId;
 		public string CapturedUtc;
 	}
 
@@ -57,7 +63,7 @@ public static class InfinityTripJournal
 	public static IReadOnlyList<Entry> Pending { get { return _entries; } }
 
 	public static void Record(uint tripHash, int tripCount, int sightingsThisRound,
-		int combatSeed, DeckSO playerDeck, DeckSO enemyDeck)
+		int combatSeed, DeckSO playerDeck, DeckSO enemyDeck, int enemyDeckId)
 	{
 		if (!IsRecordingEnabled) return;
 
@@ -73,6 +79,7 @@ public static class InfinityTripJournal
 			EnemyDeckName = enemyDeck != null ? enemyDeck.name : "null",
 			PlayerDeck = playerDeck,
 			EnemyDeck = enemyDeck,
+			EnemyDeckId = enemyDeckId,
 			CapturedUtc = System.DateTime.UtcNow.ToString("o"),
 		});
 	}

@@ -55,6 +55,33 @@ public class OpponentDeckEntry
 public class OpponentDecksResponse
 {
 	public List<OpponentDeckEntry> decks;
+	/// <summary>
+	/// Deck ids flagged as infinite inside the requested range (plan §20.3). The server cannot
+	/// see the client's disk cache, so it names every flagged id in the prefetch range and
+	/// OpponentDeckCache drops cached copies — otherwise a deck prefetched BEFORE it was flagged
+	/// would stay fightable.
+	/// </summary>
+	public List<int> flaggedDeckIds;
+}
+
+[Serializable]
+public class LoopReportUploadRequest
+{
+	public string playerId;
+	public string gameVersion;
+	/// <summary>Server deck row of the accused ghost deck (decks.deck_id).</summary>
+	public int opponentDeckId;
+	/// <summary>
+	/// "EnemyDeck" = the headless re-run proved the ghost loops by itself — the ONLY verdict the
+	/// server flags on. "" / "None" / "OwnerDeck" / "PairOnly" land as evidence and change no
+	/// state (plan §20.2, rulings §7.1/§7.2).
+	/// </summary>
+	public string verdict;
+	public int seed;
+	/// <summary>Human-readable trip evidence, e.g. "arrangement-cycle <hex> repeats=9".</summary>
+	public string signals;
+	/// <summary>LoopReport JSON. A string because JsonUtility cannot nest arbitrary shapes; the server stores it verbatim.</summary>
+	public string payload;
 }
 
 [Serializable]

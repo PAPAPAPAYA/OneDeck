@@ -1,7 +1,7 @@
 # Plan: 无限检测与防下发(Infinity Detection and Serving Gate)
 
 - 日期: 2026-09-17
-- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端)
+- 状态: 方案评审稿;2026-09-17 已落地 L0 全部硬终止 + 置顶墓区排除 + 疲劳复活通配(5a09ebb / 34075e5 / 62f7222,EditMode 559 绿,Play 2026-09-18 用户已验),2026-09-18 §9 结果语义拍板 + 检测方向改拍(排列周期 = 无限递归主判据,预算启发降级;配对责不 flag)。**2026-09-19 三批收尾**:①§15 复核更正——lethal 样本实为回合内循环,§14「整周期」结论作废(脚手架触发接线 artifact),运行时验收按生产接线重做;②§15.6 `InfiniteDeckTerminationTests` 统一到生产接线;③§16 P1b `RunBudgetSim` headless 化补齐(离线编译 0 error,EditMode 4/4 已绿)。P1 至此完成。**2026-09-19 P2 客户端核心落地并收口**(§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线(trip 只记证据,出战斗后归因);loop_reports 落表/上报按 §19.6.1 归 P3;遗留 `ProcessPending` 生产触发时机(§19.6.2)。下一期 P3(§8 服务端);**2026-09-19 P3 设计落定(§20):四项拍板 = flag 粒度取内容指纹 / 一次报告即 flag / 服务端出队过滤 + 客户端缓存清理 / node --test 验收;§8「三来源」更正为两来源**;**2026-09-19 P3 已实现并验证(§20.7)**:服务端 flag 列 + `loop_reports` / `flagged_fingerprints` / `POST /api/loop-reports` / 出队过滤 / admin 解封,客户端 journal 记 ghost deckId + 缓存 purge + `LoopReportUploader`;`npm test` 9/9、全量 EditMode 600 total/599 绿/0 失败/1 既有 Ignore、线上库副本迁移实测通过。遗留:打包内无 verdict(保护链依赖 P5)、`ProcessPendingAndUpload` 生产触发时机(§19.6.2)、客户端↔服务端 E2E 未跑
 - 关联: docs/RngDeterminism.md(Rng/digest 基建)、docs/RegressionChecklist.md、docs/AgentRegistry.md;2026-09-13 埋葬递归 SOE 崩溃诊断
 - 核心抽象: `RunBudgetSim(deckA, deckB|木桩, seed) -> BudgetTripReport`,对局归因 / 离线回扫 / 可选预检三处共用一份实现
 
@@ -117,10 +117,13 @@
 
 ## 8. 下发过滤与服务器
 
-- 敌方 deck 三来源统一 flag 过滤:server ghosts(OpponentDeckCache.cs:137,GET /api/decks/opponents)+ 本地 json 回退 + default pool(DeckSaver.defaultEnemyDeckPool);选牌口统一检查,缓存条目须可刷新(MergeResponse)。
-- 服务端:decks 表 ensureColumn 加 flag 列;新增 loop_reports 证据表(deck_id, reporter, seed, signals, pair_fingerprint, ts);server.js:193 ensureColumn 模式现成,decks 表 :73,出队过滤 :428。
-- 信任模型:playerId 即凭证(server.js:19 注释自认),客户端上报可伪造、可诬告——误伤由归因 sim 防住(敌单独不环不 flag);证据落盘供离线批扫工具复核可疑上报。软标记 = 默认排除出池;硬拉黑留给 admin。
-- 可选挂点:OpponentDeckCache.Prefetch(:128,每 session 预取 6 副)之后后台跑配对预算 sim,判定随缓存条目存。
+> **2026-09-19 P3 已实现,本节按实现更新**(设计全文见 §20;下面是结论口径,不是初稿)。
+
+- **敌人来源是两条,不是三条**(更正 2026-09-19):本地 json 回退 2026-09-04 已删,现行链 = `debug > server ghost > default pool`(`DeckSaver.PopulateEnemyDeckBySessionNumber`,DeckSaver.cs:366)。过滤面因此只有两类:**server ghost 由服务端出队过滤**(`GET /api/decks/opponents` 的 `randomDecks`/`randomDecksIncludeSelf` 加 `flag = 0`)+ **客户端清掉已缓存的旧 ghost**(响应带 `flaggedDeckIds`,`OpponentDeckCache.MergeResponse` 删除命中条目);**default pool 不过滤**——它是烤进客户端的开发者资产,不来自玩家,由 §5 的池层审计口径管。
+- 服务端(server.js):`decks` 表 ensureColumn 加 `fingerprint` / `flag` / `flag_reason` / `flagged_at`;新增 `loop_reports` 证据表(deck_id, reporter_player_id, game_version, fingerprint, verdict, seed, signals, payload, created_at)+ `flagged_fingerprints` 内容键表;`ensureColumn` 模式现成(:193),decks 表 :73,出队过滤在 `randomDecks`。新增 `POST /api/loop-reports` 与 `POST /admin/decks/unflag`。
+- **flag 键 = 卡组内容指纹**(cardTypeID 多重集哈希,非 deck_id、非玩家):每上传一次快照就新增一行,行级 flag 会被下一次上传绕过;指纹全局(不分版本)——同一副卡表在任何版本都是同一个环。等值匹配,P4 升级为子集匹配。
+- 信任模型:playerId 即凭证(server.js:19 注释自认),客户端上报可伪造、可诬告——**2026-09-19 拍板:一次带 verdict 的报告即 flag**(§7.6 的自动化延续),admin 事后申诉/解封;每条 report 记 reporter,误报可追溯。verdict 缺省(纯证据)不 flag,留给 P5 离线确认。
+- 可选挂点(未做):`OpponentDeckCache.Prefetch`(:128,每 session 预取 6 副)之后后台跑配对预算 sim,判定随缓存条目存。
 
 ## 9. 结果语义(2026-09-18 用户拍板)
 
@@ -149,7 +152,7 @@
 | P1a | ✅ L1 排列周期检测器(§14/§15) | 两块标本被信号命中,EditMode 已验 |
 | P1b | ✅ RunBudgetSim headless 化(§16,2026-09-19) | 两块标本经 sim 复现同一结论 + 固定 seed 可复现;离线编译已验,EditMode 待跑 |
 | P2 | ✅ 客户端核心已落地(2026-09-19,§19;76a3099 / 19b7afb / cddc1e4):归因三连 + ddmin 最小化 + 组合条目 + 延迟归因管线;loop_reports 落表/上报按 §19.6.1 归 P3 | 最小集演示在 lethal 样本完成(09-13 三卡环已被 P0 修复拆除,§19.4);遗留:`ProcessPending` 生产触发时机(§19.6.2) |
-| P3 | 服务端 flag / 证据表 / 出队过滤 / 三来源统一 / admin | 被 flag 的 deck 不再下发 |
+| P3 | ✅ 已实现(2026-09-19,§20/§20.7):服务端 flag 列 + 内容指纹 + loop_reports/flagged_fingerprints 表 + POST /api/loop-reports + 出队过滤 + flaggedDeckIds + admin 解封;客户端 journal 记 ghost deckId + 缓存 purge + LoopReportUploader | 被 flag 的 deck 不再下发:服务端 `npm test` 9/9(含"报告后出队不再返回"与"重传自动 flag");客户端 EditMode 5/5 + 全量 600/599 绿 |
 | P4 | 组合库表 + 匹配交集检查 + 复核流 | 含标本组合的任意 deck 在匹配时被滤除 |
 | P5 | 存量回扫批工具(服务器全量 + 本地 RecordedDecks) | 回扫报告落盘 |
 
@@ -477,3 +480,79 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 ### 19.7 记录:证据链必须追两层,不能只看一跳
 
 首次跑测试时 `roles` 记成了 `RELIC_CURSE_REVIVAL <Unknown> [OnHostileCurseRevealed -> InvokeEffectEventVoid]` —— 因为卡上的 `GameEventListener` 调的是容器的 `InvokeEffectEventVoid`,**真正的效果方法在容器自己的 `effectEvent` 里**。只读一跳会让每张卡的证据都一样、且角色全部落到 `Unknown`。已修为:经 `listener.response.GetPersistentTarget(i)` 取到 `CostNEffectContainer`,再读它的 `effectEvent`,容器外的目标才回落到直接方法名。触发事件名本身一直是准的。
+
+## 20. P3 设计:服务端 flag / 证据表 / 出队过滤 / 客户端过滤面(2026-09-19)
+
+### 20.1 四项拍板(2026-09-19 用户)
+
+1. **flag 粒度 = 内容指纹**,不是 deck 行、不是玩家。decks 表每上传一次快照就新增一行(`DeckSaver.EnqueueSnapshot` → `POST /api/decks`),只 flag 被举报的那一行,对方下一次快照上传即绕过。指纹 = 该 deck 的 cardTypeID **多重集**(排序后 join)sha256 前 16 hex;当前用等值匹配,P4 把同一张表升级为子集(组合)匹配,结构不变。
+2. **采信门槛 = 一次报告即 flag**(§7.6「入库自动、admin 只管事后申诉/退役」的延续),report 记 reporter,误报可追溯;admin 可解封。
+3. **客户端过滤面 = 服务端出队过滤 + 缓存清理**。磁盘缓存 `OpponentDeckCache` 只增不改(`MergeResponse` 对已存在的 deckId 直接 continue),响应需带 `flaggedDeckIds` 让客户端清掉已缓存的条目;default pool 不参与过滤(开发者维护的资产,§5 池层防线与审计口径管,不来自玩家)。
+4. **验收 = node --test**(新增 `server/onedeck-api/tests/`,临时 DATA_DIR):上传 → 报告 → flag → 出队不再返回 → 解封恢复。
+5. **forced 平局的上报维持现状**(2026-09-19 用户):P3 不碰 match report。被 flag 的 deck 仍会因平局积 `defense_wins`(虚高),等将来统一平局语义时再改 —— 见 §20.5。
+
+顺带更正 §8:**「三来源」已过时成两来源** —— 本地 json 回退 2026-09-04 已删,现行链是 `debug > server ghost > default pool`(`DeckSaver.PopulateEnemyDeckBySessionNumber`,DeckSaver.cs:366)。
+
+### 20.2 服务端(server.js)
+
+表(沿用 `CREATE TABLE IF NOT EXISTS` + `ensureColumn` 双轨,ensureColumn 现成于 server.js:194):
+
+| 表 | 字段 |
+|---|---|
+| `decks`(改) | `flag INTEGER NOT NULL DEFAULT 0` / `flag_reason TEXT NOT NULL DEFAULT ''` / `flagged_at TEXT` —— 审计与展示面;过滤判据是指纹集合,flag 列是它的物化快照 |
+| `flagged_fingerprints`(新) | `fingerprint TEXT PRIMARY KEY, first_deck_id INTEGER, report_count INTEGER, created_at TEXT, updated_at TEXT` |
+| `loop_reports`(新) | `report_id TEXT PRIMARY KEY, deck_id INTEGER, reporter_player_id TEXT, game_version TEXT, fingerprint TEXT, verdict TEXT, seed INTEGER, signals TEXT, payload TEXT, created_at TEXT` |
+
+端点:
+
+- `POST /api/loop-reports`:`{playerId, gameVersion, opponentDeckId, verdict, seed, signals, minimizedCards, payload}`。校验 deck 存在(404)/ 非自己(400 own_deck);写 `loop_reports`;`report_id` 由 `(deck_id, fingerprint, seed)` 派生 → 天然幂等(沿用 matches/report 的 reportId 模式)。**只有带 verdict(已证单侧无限)的报告触发 flag**:该行 + 同 game_version 下所有同指纹行置 flag,指纹入 `flagged_fingerprints` 并累加 `report_count`。
+- `POST /api/decks`(改):插入前算指纹,命中 `flagged_fingerprints` → 新行直接落 flag(重传同内容即刻拦住)。
+- `GET /api/decks/opponents`(改):两条随机查询加 `AND flag = 0`;响应新增 `flaggedDeckIds` = 该 game_version 下 `session_num <= maxSession` 且 flag=1 的 deck_id 列表(覆盖客户端 prefetch 范围,服务端不必知道客户端缓存内容)。
+- `POST /api/admin/decks/unflag?token=...`:按 deck_id 或按指纹解封(二选一参数);admin 页面新增 section(loop_reports 列表 + flagged decks + 解封按钮;改状态走 POST,不用 GET)。
+- 结构性最小改动:`server.js` 末尾把 listen 包进 `if (require.main === module)`,`module.exports = { app, db }` —— 生产行为零差异,但 node 测试能 require 起临时库(现在 boot 即 listen,测不了)。
+
+### 20.3 客户端
+
+- `InfinityTripJournal.Entry` 增 `EnemyDeckId` / `PlayerDeckId`(trip 时从 `OpponentDeckCache.Current` 取;本地 pool 对手 = 0)。这是 P2 遗留的「报告没有落点」缺口。
+- `OpponentDecksResponse` DTO 加 `flaggedDeckIds`;`OpponentDeckCache.MergeResponse` 处理它 → 从磁盘缓存 RemoveAll 命中条目 + 日志。
+- `NetUploadKind.LoopReport` + `ServerConfig.uploadLoopReports = true` + `UploadOutbox.EndpointFor` 分支 + `NetDtos.LoopReportUploadRequest`;新 `LoopReportUploader`(runtime)把 `LoopReport` 与对应的 `Entry.EnemyDeckId` 组装入 outbox。`EnemyDeckId == 0` 不上报(没有可 flag 的行,池由审计口径管)。
+- **上报源与保护链(重要)**:今天能产出 verdict 的只有编辑器侧 `InfinityAttributionProcessor`;打包内跑不了归因(RunBudgetSim 依赖 SerializedObject/AssetDatabase,§19.5 已记)。所以生产保护链是「运行时检测 → 证据上传(P3 表)→ 离线确认(P5 批扫)→ flag 过滤(P3)」,「一次报告即 flag」作用于**带 verdict 的报告**(今日 = 编辑器 / playtest 客户端);verdict 为空的报告只落证据不 flag。P3 把两种形态收进同一张表,P5 是把无 verdict 证据变成 flag 的那一环。
+- **§9 联动(2026-09-19 用户拍板:维持现状,P3 不碰)**:`PhaseManager.ReportMatchResult`(PhaseManager.cs:401,调用点 :205)把非决定性收场一律按 `won=false` 上报 —— 含 L0 强制终局与 §9 判平 —— 服务端于是给被 flag 的 deck 记一次 `defense_win`。这与「判平局 = 无效局,双方不计胜负」的字面不一致,但代价限于「被 flag 的 deck 的 defense 胜率虚高」这个展示面问题,值得单独一轮统一平局语义(届时 match_reports 的 `won` 需改三态)时处理。**P3 不改 `PhaseManager`,实施顺序第 3 步不含此项。**
+
+### 20.4 测试与验收
+
+- 服务端 `tests/loop-reports.test.js`(node 内置 test runner;package.json 加 `"test": "node --test tests/"`):①同内容两行、报告其一 → 出队两条都不返回;②报告后再上传同内容 → 新行落库即 flag;③异内容 deck 不受影响;④报告自己的 deck → 400、不存在的 deck → 404;⑤重复报告幂等;⑥admin 解封后出队恢复;⑦`flaggedDeckIds` 只含该版本该 session 范围。
+- 客户端 EditMode:`OpponentDeckCacheTests` 扩展(purge 命中项 + 保留未命中项),`LoopReportUploader` payload / 开关 / `EnemyDeckId = 0` 跳过(沿用既有 hermetic 假 HTTP 模式)。
+
+### 20.5 已拍板(无遗留待确认)
+
+- **forced 平局的上报 = 维持现状**(2026-09-19 用户,推翻本轮设计的初版建议):不再提「非决定性收场一律不上报」,`PhaseManager` 在 P3 内零改动。已知接受的不一致:被 flag 的 deck 会因平局积 `defense_wins`;将来做「平局三态」时一并解决(需要 `match_reports.won` 改 `result TEXT` + admin 的 defense 统计口径跟着改)。
+- 其他三项拍板见 §20.1;P3 没有未决问题。
+
+### 20.6 实施顺序
+
+1. `server.js`(表 / 指纹 / 端点 / 出队过滤 / admin)→ 2. node 测试 → 3. 客户端(journal deckId、缓存 purge、uploader + 开关)→ 4. EditMode 测试 → 5. 文档(§8 两来源更正、server README 端点表 + 测试命令)。
+
+### 20.7 实施记录(2026-09-19,用户授权「修改代码」后)
+
+**已落地**:
+
+| 面 | 改动 |
+|---|---|
+| 服务端 | `server.js`:decks 加 `fingerprint/flag/flag_reason/flagged_at`(CREATE TABLE + ensureColumn + **启动回填**存量行指纹);新表 `loop_reports`(证据,含 reporter 与 payload)与 `flagged_fingerprints`(内容键);`POST /api/loop-reports`(verdict=EnemyDeck 才 flag,report_id 幂等 = deck+指纹+seed+verdict+reporter);`POST /api/decks` 命中指纹即落 flag;出队两条查询加 `flag = 0`;响应新增 `flaggedDeckIds`(版本 + session 范围内);admin 面板新增 Infinity gate 段(flag 列表 / 报告列表 / 指纹表 + POST 解封表单);listen 包进 `require.main` 守卫 + `module.exports` |
+| 客户端 | `InfinityTripJournal.Entry.EnemyDeckId`(+ `Record` 参数);检测器 trip 时从 `OpponentDeckCache.Current` 取 ghost deckId;`OpponentDecksResponse.flaggedDeckIds` + `MergeResponse` 清除命中缓存;`NetUploadKind.LoopReport` + `ServerConfig.uploadLoopReports` + outbox 端点;新 DTO `LoopReportUploadRequest`;新 runtime `LoopReportUploader.EnqueueEvidence`(只入队不 flush);编辑器侧 `InfinityAttributionProcessor.ProcessPendingEntries` / `ProcessPendingAndUpload`(原 `ProcessPending` 保持不碰 outbox) |
+
+**验证**:
+
+- 服务端 `npm test` → **9/9 绿**(临时 DATA_DIR,`node --test`):内容指纹连带 flag、重传自动 flag、超集/子集不误伤、无 verdict 不 flag、自报/不存在 deck 拒绝、按 reporter 幂等 + 第二受害者另记证据、admin 解封 + 解封后不再自动 flag、purge 列表版本/范围限定、admin 面板渲染。
+- 迁移实测:对**线上库的副本**启动 → 新列 + 新表 + 索引就位,7/7 存量 deck 回填指纹,无报错(线上迁移走同一路径 `ensureColumn`)。
+- 客户端 EditMode:`LoopReportUploaderTests` 5/5(本地 pool 跳过 / 入队内容与路由 / 开关关闭不入队 / 归因后入队并带 live deckId / 只归因不碰 outbox);`OpponentDeckCacheTests` 新增 2 条 purge 用例;`ArrangementCycleDetectorTests.LethalInfiniteDeck_TripsCycleDetector` 增 ghost deckId 断言。**全量 EditMode 600 total / 599 绿 / 0 失败 / 1 既有 Ignore**;跑完 GameScene 仍干净。
+- 一处踩坑记录:**用文件工具改完 .cs 后必须 `refresh_unity` 再跑测试**,否则 Test Runner 用的是上一次编译的程序集——本轮实测出现过一次(第一次刷新后立刻跑,运行于旧 DLL,报的是旧断言的失败文案;刷新落盘时间与 run 启动时间只差 2 秒)。另外全量跑仍需 `init_timeout` 放宽(默认 15s 会报 `failed to initialize`)。
+
+**未做 / 边界**:
+
+- **打包内产不出 verdict**:归因 sim 依赖 SerializedObject/AssetDatabase(§19.5),正式包只能上「无 verdict 的证据」,而服务端只对带 verdict 的报告 flag ⇒ 生产保护链 = 运行时检测 → 证据上传(P3 表)→ 离线确认(P5)→ flag 过滤(P3)。今天能真正触发 flag 的是编辑器/playtest 客户端。
+- **`ProcessPendingAndUpload` 没有生产触发方**(§19.6.2 未决):跑归因会清空活动单例(`HeadlessCombatRig.Create` → `CleanupSingletons`),所以不能挂在游戏运行中的 tick 上;需要保存/恢复单例或加「无活动对局」硬闸,单独立项。
+- `PlayerDeckId` 未加(§20.3 初稿曾列):玩家正在使用的卡组没有服务端行身份,记它无意义;证据里只需要被指控的 ghost deckId。
+- `minimizedCards` 未单列请求字段(§20.2 初稿曾列):它已在 `payload`(LoopReport JSON)里,避免两处真相。
+- 客户端 ↔ 真实服务端的 E2E(play mode 触发上传 → 服务端 flag → 下次 prefetch 不再下发)未跑:两端的契约各自有测试钉住(服务端 HTTP 集成 + 客户端 payload 断言),端到端留给 `ProcessPendingAndUpload` 接上触发方之后一起验。

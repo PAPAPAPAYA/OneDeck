@@ -169,6 +169,18 @@ public static class OpponentDeckCache
 			if (cache.decks.Exists(d => d != null && d.deckId == deck.deckId)) continue;
 			cache.decks.Add(deck);
 		}
+		// Infinity gate (plan §20.3): decks flagged since this cache was filled must not be
+		// fightable. Removal — not just a take-time skip — so the file, the session stock and
+		// usedDeckIds stay consistent; the next prefetch tops the stock back up if needed.
+		if (response.flaggedDeckIds != null && response.flaggedDeckIds.Count > 0)
+		{
+			int purgedFlagged = cache.decks.RemoveAll(d => d != null && response.flaggedDeckIds.Contains(d.deckId));
+			if (purgedFlagged > 0)
+			{
+				Debug.Log("[OpponentDeckCache] infinity gate: dropped " + purgedFlagged
+					+ " flagged deck(s) from the cache");
+			}
+		}
 		Save();
 	}
 

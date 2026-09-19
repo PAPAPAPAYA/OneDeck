@@ -127,6 +127,42 @@ public class OpponentDeckCacheTests
 	}
 
 	[Test]
+	public void MergeResponse_FlaggedDeckIds_PurgesCachedCopies()
+	{
+		// Prefetched before the flag existed: three ghosts are already in the disk cache...
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.InjectForTests(MakeDeck(2, 3));
+		OpponentDeckCache.InjectForTests(MakeDeck(3, 3));
+
+		// ...then a later prefetch reports deck 2 as flagged (plan §20.3) and brings a fresh ghost.
+		OpponentDecksResponse response = new OpponentDecksResponse
+		{
+			decks = new List<OpponentDeckEntry> { MakeDeck(4, 3) },
+			flaggedDeckIds = new List<int> { 2 }
+		};
+		OpponentDeckCache.MergeResponse(response);
+
+		List<int> taken = new List<int>();
+		for (int i = 0; i < 5; i++)
+		{
+			OpponentDeckEntry entry = OpponentDeckCache.TakeCandidate(3);
+			if (entry != null) taken.Add(entry.deckId);
+		}
+		CollectionAssert.AreEquivalent(new[] { 1, 3, 4 }, taken,
+			"the flagged deck is gone; everything else - including the newly fetched ghost - stays");
+	}
+
+	[Test]
+	public void MergeResponse_FlagListAbsent_KeepsCacheIntact()
+	{
+		// An older server sends no flaggedDeckIds field at all: the purge must not throw or
+		// empty the cache (JsonUtility leaves the list null for a response without the key).
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.MergeResponse(new OpponentDecksResponse { decks = new List<OpponentDeckEntry>() });
+		Assert.AreEqual(1, OpponentDeckCache.TakeCandidate(3).deckId);
+	}
+
+	[Test]
 	public void MergeResponse_IncludeSelfOn_KeepsSelfDecks()
 	{
 		Assume.That(PlayerIdentity.HasIdentity, "ownership filter tests need a local identity");
