@@ -226,6 +226,22 @@ CREATE TABLE IF NOT EXISTS flagged_fingerprints (
 	created_at TEXT NOT NULL,
 	updated_at TEXT NOT NULL
 );
+
+-- Combo library (plan §4/§21, P4). One row per PROVEN minimum card set: the match-time check
+-- withholds any deck that CONTAINS the set (multiset containment), so an offender cannot dodge
+-- the gate by padding their deck. Ingested automatically from a report whose evidence carries a
+-- 1-minimal, multi-seed-stable, untruncated result (§7.6); admin retire/reactivate afterwards.
+CREATE TABLE IF NOT EXISTS combos (
+	combo_key TEXT PRIMARY KEY,
+	cards TEXT NOT NULL,
+	status TEXT NOT NULL DEFAULT 'active',
+	first_report_id TEXT NOT NULL DEFAULT '',
+	report_count INTEGER NOT NULL DEFAULT 0,
+	created_at TEXT NOT NULL,
+	updated_at TEXT NOT NULL,
+	retired_at TEXT,
+	retired_reason TEXT NOT NULL DEFAULT ''
+);
 `);
 
 // S0 (2026-09-04): migrate dbs created before the new columns (e.g. the live ECS db).
@@ -324,6 +340,20 @@ const stmts = {
 			report_count = report_count + 1, updated_at = excluded.updated_at`),
 	deleteFingerprint: db.prepare('DELETE FROM flagged_fingerprints WHERE fingerprint = ?'),
 	listFingerprints: db.prepare('SELECT * FROM flagged_fingerprints ORDER BY updated_at DESC LIMIT 200'),
+
+	// --- combo library (§21) ---
+	comboByKey: db.prepare('SELECT * FROM combos WHERE combo_key = ?'),
+	listActiveCombos: db.prepare("SELECT combo_key, cards FROM combos WHERE status = 'active'"),
+	listCombos: db.prepare('SELECT * FROM combos ORDER BY updated_at DESC LIMIT 200'),
+	upsertCombo: db.prepare(`INSERT INTO combos
+		(combo_key, cards, status, first_report_id, report_count, created_at, updated_at)
+		VALUES (?, ?, 'active', ?, 1, ?, ?)
+		ON CONFLICT (combo_key) DO UPDATE SET
+			report_count = report_count + 1, updated_at = excluded.updated_at`),
+	retireCombo: db.prepare(`UPDATE combos SET status = 'retired', retired_at = ?, retired_reason = ?,
+		updated_at = ? WHERE combo_key = ?`),
+	reactivateCombo: db.prepare(`UPDATE combos SET status = 'active', retired_at = NULL,
+		retired_reason = '', updated_at = ? WHERE combo_key = ?`),
 
 	insertReport: db.prepare(`INSERT OR IGNORE INTO match_reports
 		(report_id, player_id, opponent_deck_id, won, session_num, game_version, created_at)
@@ -439,6 +469,79 @@ function deckFingerprint(cardTypeIds)
 // §7.1/§7.2 keep player-owned and pair-only infinities out of the serving filter.
 const VERDICT_INFINITE = 'EnemyDeck';
 
+// How many candidates the ghost query pulls per session before the combo containment filter runs
+// in JS. Blocked decks are rare, so a wide margin keeps the response full; if a session were ever
+// more than 95% blocked the caller simply gets fewer than perSession decks that round.
+const CANDIDATE_OVERFETCH = 20;
+
+// Card id -> copy count. Deck contents and combos are both MULTISETS: two copies of a card are
+// not one, so every containment test below counts rather than set-memberships.
+function countCards(cardTypeIds)
+{
+	const counts = new Map();
+	for (const id of cardTypeIds) counts.set(id, (counts.get(id) || 0) + 1);
+	return counts;
+}
+
+// Multiset containment: does the deck hold at least every card of the combo, with multiplicity?
+function containsMultiset(deckCounts, comboCounts)
+{
+	for (const [card, needed] of comboCounts)
+	{
+		if ((deckCounts.get(card) || 0) < needed) return false;
+	}
+	return true;
+}
+
+// Active combo library as count maps, for the match-time containment check. Rebuilt per request
+// (the table is tiny and an admin retire must take effect immediately).
+function activeComboCounts()
+{
+	const combos = [];
+	for (const row of stmts.listActiveCombos.all())
+	{
+		let cards = [];
+		try { cards = JSON.parse(row.cards); } catch { continue; }
+		if (!Array.isArray(cards) || cards.length === 0) continue;
+		combos.push({ key: row.combo_key, counts: countCards(cards) });
+	}
+	return combos;
+}
+
+// Does this deck contain any combo in the library? Returns the offending combo key, or ''.
+function findContainedCombo(cardTypeIds, combos)
+{
+	if (combos.length === 0) return '';
+	const deckCounts = countCards(cardTypeIds);
+	for (const combo of combos)
+	{
+		if (containsMultiset(deckCounts, combo.counts)) return combo.key;
+	}
+	return '';
+}
+
+// A LoopReport payload carries the minimized set plus its proof flags. Only a 1-minimal,
+// multi-seed-stable, untruncated set may enter the combo library: §4 forbids ingesting a
+// truncated candidate ("not a proven minimum"), and a set that is not 1-minimal is not
+// "these cards, no fewer" — the exact property the library's containment check relies on.
+// Returns { key, cards } or null; unknown/missing flags are treated as "not proven".
+function extractProvenCombo(payloadJson)
+{
+	if (typeof payloadJson !== 'string' || payloadJson === '') return null;
+	let report = null;
+	try { report = JSON.parse(payloadJson); } catch { return null; }
+	if (!report || !Array.isArray(report.mySide) || report.mySide.length === 0) return null;
+	if (report.oneMinimal !== true) return null;
+	if (report.truncated === true) return null;
+	if (report.multiSeedStable === false) return null;
+
+	const cards = report.mySide.filter((id) => typeof id === 'string' && id.length >= 1 && id.length <= 64);
+	if (cards.length !== report.mySide.length) return null;
+	const key = deckFingerprint(cards);
+	if (key === '') return null;
+	return { key, cards };
+}
+
 function badRequest(res, code)
 {
 	return res.status(400).json({ error: code });
@@ -495,6 +598,9 @@ const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', true); // real client IP arrives via nginx X-Forwarded-For
 app.use(express.json({ limit: '256kb' }));
+// Admin forms post as urlencoded; every other endpoint is JSON. Parsed separately so a malformed
+// form body cannot turn into a json parse error for the API routes.
+app.use(express.urlencoded({ extended: false, limit: '16kb' }));
 app.use((err, req, res, next) =>
 {
 	if (err && err.type === 'entity.parse.failed') return badRequest(res, 'invalid_json');
@@ -561,19 +667,28 @@ app.get('/api/decks/opponents', (req, res) =>
 	// includeSelf=1 (client test toggle): drop the self-exclusion so the requester's
 	// own decks can come back as opponents.
 	const includeSelf = req.query.includeSelf === '1';
+	// §21: decks containing an active combo are withheld. The containment test needs the card
+	// lists, so the SQL keeps sampling candidates (over-fetched) and the filter runs here.
+	const combos = activeComboCounts();
+	const candidateLimit = perSession * CANDIDATE_OVERFETCH;
 	const decks = [];
 	for (let s = 0; s <= maxSession; s++)
 	{
 		const rows = includeSelf
-			? stmts.randomDecksIncludeSelf.all(req.query.gameVersion, s, perSession)
-			: stmts.randomDecks.all(req.query.gameVersion, s, player.player_id, perSession);
+			? stmts.randomDecksIncludeSelf.all(req.query.gameVersion, s, candidateLimit)
+			: stmts.randomDecks.all(req.query.gameVersion, s, player.player_id, candidateLimit);
+
+		const eligible = [];
 		for (const r of rows)
 		{
-			decks.push({
+			let cardTypeIDs = [];
+			try { cardTypeIDs = JSON.parse(r.card_type_ids); } catch { continue; }
+			if (findContainedCombo(cardTypeIDs, combos) !== '') continue;
+			eligible.push({
 				deckId: r.deck_id,
 				sessionNum: r.session_num,
 				username: r.username,
-				cardTypeIDs: JSON.parse(r.card_type_ids),
+				cardTypeIDs,
 				hpMax: r.hp_max,
 				winAmount: r.win_amount,
 				heartLeft: r.heart_left,
@@ -581,12 +696,29 @@ app.get('/api/decks/opponents', (req, res) =>
 				defenseLosses: r.defense_losses,
 			});
 		}
+
+		// Random sample of perSession (the SQL used to do this with ORDER BY RANDOM() LIMIT n;
+		// the combo filter has to run in JS, so the trim moved here).
+		for (let taken = 0; taken < perSession && eligible.length > 0; taken++)
+		{
+			const pick = Math.floor(Math.random() * eligible.length);
+			decks.push(eligible[pick]);
+			eligible.splice(pick, 1);
+		}
 	}
 	// Infinity gate (§20): deck ids flagged inside the range this client prefetches, so it can
 	// drop already-cached copies. The server cannot know the client's cache, but the prefetch
 	// range (sessions 0..maxSession) is exactly where its entries came from.
 	const flaggedDeckIds = stmts.flaggedIdsInRange.all(req.query.gameVersion, maxSession).map((r) => r.deck_id);
-	return res.json({ decks, flaggedDeckIds });
+	// §21: the same for combos — a cached deck that CONTAINS an active combo has to go too, and
+	// only the client can test its own cache, so it gets the cards.
+	const blockedCombos = stmts.listActiveCombos.all().map((row) =>
+	{
+		let cards = [];
+		try { cards = JSON.parse(row.cards); } catch { /* keep empty */ }
+		return { key: row.combo_key, cards: Array.isArray(cards) ? cards : [] };
+	});
+	return res.json({ decks, flaggedDeckIds, blockedCombos });
 });
 
 // ---------------------------------------------------------------------------
@@ -641,18 +773,27 @@ app.post('/api/loop-reports', (req, res) =>
 		.update(deckId + '|' + fingerprint + '|' + seed + '|' + verdict + '|' + player.player_id)
 		.digest('hex').slice(0, 32);
 	const accused = verdict === VERDICT_INFINITE && fingerprint !== '';
+	// §21: a proven minimum also enters the combo library, which is the check that withholds any
+	// deck CONTAINING the cards (P3's content flag alone only covers the exact same card list).
+	const combo = accused ? extractProvenCombo(payload) : null;
 
 	const tx = db.transaction(() =>
 	{
 		const info = stmts.insertLoopReport.run(reportId, deckId, player.player_id, deck.game_version,
 			fingerprint, verdict, seed, signals, payload, nowIso());
-		if (info.changes === 0) return { deduped: true, flagged: false, rows: 0 };
-		if (!accused) return { deduped: false, flagged: false, rows: 0 };
+		if (info.changes === 0) return { deduped: true, flagged: false, rows: 0, combo: null };
+		if (!accused) return { deduped: false, flagged: false, rows: 0, combo: null };
 		// One confirmed report flags (§20.1 ruling 2): register the fingerprint and flag every
 		// row that carries it — the reported row, its twin uploads, and every future upload.
 		const flagged = stmts.flagDecksByFingerprint.run('auto: loop report ' + reportId.slice(0, 8), nowIso(), fingerprint);
 		stmts.upsertFingerprint.run(fingerprint, deckId, nowIso(), nowIso());
-		return { deduped: false, flagged: true, rows: flagged.changes };
+		if (combo)
+		{
+			// A retired combo stays retired (an admin retired it for a reason — usually a card
+			// change); the renewed evidence only bumps report_count, and the log flags it.
+			stmts.upsertCombo.run(combo.key, JSON.stringify(combo.cards), reportId, nowIso(), nowIso());
+		}
+		return { deduped: false, flagged: true, rows: flagged.changes, combo: combo };
 	});
 	const outcome = tx();
 	if (outcome.rows > 0)
@@ -660,8 +801,23 @@ app.post('/api/loop-reports', (req, res) =>
 		console.log('[onedeck-api] flagged ' + outcome.rows + ' deck row(s) for fingerprint ' + fingerprint
 			+ ' (deck ' + deckId + ', reporter ' + player.username + ', verdict ' + verdict + ')');
 	}
-	return res.status(outcome.deduped ? 200 : 201)
-		.json({ ok: true, reportId, deduped: outcome.deduped, flagged: outcome.flagged, fingerprint });
+	let comboStatus = '';
+	if (outcome.combo)
+	{
+		const row = stmts.comboByKey.get(outcome.combo.key);
+		comboStatus = row ? row.status : '';
+		console.log('[onedeck-api] combo ' + outcome.combo.key + ' [' + outcome.combo.cards.join(',')
+			+ '] ' + comboStatus + ' (report ' + reportId.slice(0, 8) + ')');
+		if (comboStatus === 'retired')
+		{
+			console.log('[onedeck-api] WARNING: a retired combo was reported again — cards may not be fixed: '
+				+ outcome.combo.key);
+		}
+	}
+	return res.status(outcome.deduped ? 200 : 201).json({
+		ok: true, reportId, deduped: outcome.deduped, flagged: outcome.flagged,
+		fingerprint, comboKey: outcome.combo ? outcome.combo.key : '', comboStatus,
+	});
 });
 
 // ---------------------------------------------------------------------------
@@ -961,18 +1117,39 @@ function groupedStatsTable(rows, keyOf, labelOf, header, rowOf)
 		+ '<table><tr>' + header + '</tr>' + g.rows.map(rowOf).join('') + '</table></details>').join('');
 }
 
-// Infinity gate (§20): inline POST form for lifting a flag. A form (not a link) so the state
-// change can never ride on a GET — prefetchers and crawlers must not unflag anything.
+// Infinity gate / combo library (§20/§21): inline POST form. A form (not a link) so a state
+// change can never ride on a GET — prefetchers and crawlers must not clear a flag or retire a
+// combo. Fields travel in the body; the token stays in the query for requireAdmin.
+function adminPostForm(token, path, fields, label, withReasonField)
+{
+	let html = '<form method="POST" action="' + path + '?token=' + encodeURIComponent(token)
+		+ '" style="margin:0;display:flex;gap:4px">';
+	for (const key of Object.keys(fields))
+	{
+		const value = fields[key];
+		if (value === undefined || value === null || value === '') continue;
+		html += '<input type="hidden" name="' + esc(key) + '" value="' + esc(value) + '">';
+	}
+	if (withReasonField) html += '<input name="reason" placeholder="reason" size="12">';
+	html += '<button type="submit">' + esc(label) + '</button></form>';
+	return html;
+}
+
 function unflagForm(token, params, label)
 {
-	let action = '/admin/decks/unflag?token=' + encodeURIComponent(token);
-	for (const key of Object.keys(params))
-	{
-		if (params[key] === undefined || params[key] === null || params[key] === '') continue;
-		action += '&' + key + '=' + encodeURIComponent(params[key]);
-	}
-	return '<form method="POST" action="' + action + '" style="margin:0">'
-		+ '<button type="submit">' + esc(label) + '</button></form>';
+	return adminPostForm(token, '/admin/decks/unflag', params, label, false);
+}
+
+function comboStatusForm(token, comboKey, status, label)
+{
+	return adminPostForm(token, '/admin/combos/status', { comboKey: comboKey, status: status }, label, status === 'retired');
+}
+
+// Read a field from either the form body or the query string (older links put them in the query).
+function adminParam(req, name)
+{
+	if (req.body && typeof req.body[name] === 'string' && req.body[name] !== '') return req.body[name];
+	return req.query[name];
 }
 
 // Resolve display names from the catalog version with the most rows.
@@ -1192,6 +1369,34 @@ app.get('/admin', requireAdmin, (req, res) =>
 			}
 			html += '</table>';
 		}
+
+		html += '<h2>Combo library (match-time containment check)</h2>';
+		const comboRows = stmts.listCombos.all();
+		if (comboRows.length === 0)
+		{
+			html += '<p class="muted">no combos — reports whose minimized set was not a proven '
+				+ 'minimum only flag their own deck content</p>';
+		}
+		else
+		{
+			html += '<table><tr><th>combo</th><th>cards</th><th>status</th><th>reports</th><th>updated</th>'
+				+ '<th>retired at</th><th>reason</th><th>action</th></tr>';
+			for (const c of comboRows)
+			{
+				let cards = [];
+				try { cards = JSON.parse(c.cards); } catch { /* keep empty */ }
+				const isActive = c.status === 'active';
+				html += '<tr><td class="muted">' + esc(c.combo_key) + '</td><td>'
+					+ esc(cards.map((id) => cardName(catalog, id)).join(' + ')) + '</td><td>'
+					+ (isActive ? 'active' : 'retired') + '</td><td class="num">' + c.report_count
+					+ '</td><td class="muted">' + esc(c.updated_at) + '</td><td class="muted">'
+					+ esc(c.retired_at || '-') + '</td><td>' + esc(c.retired_reason || '-') + '</td><td>'
+					+ comboStatusForm(token, c.combo_key, isActive ? 'retired' : 'active',
+						isActive ? 'retire' : 'reactivate')
+					+ '</td></tr>';
+			}
+			html += '</table>';
+		}
 		return html;
 	})(), false);
 
@@ -1350,8 +1555,8 @@ app.get('/admin/run/:id', requireAdmin, (req, res) =>
 // later uploads of the same deck are not auto-flagged again. POST: never a GET state change.
 app.post('/admin/decks/unflag', requireAdmin, (req, res) =>
 {
-	const deckId = toInt(req.query.deckId, 1, Number.MAX_SAFE_INTEGER, 0);
-	const fingerprint = isStr(req.query.fingerprint, 1, 64) ? req.query.fingerprint : '';
+	const deckId = toInt(adminParam(req, 'deckId'), 1, Number.MAX_SAFE_INTEGER, 0);
+	const fingerprint = isStr(adminParam(req, 'fingerprint'), 1, 64) ? adminParam(req, 'fingerprint') : '';
 	if (deckId > 0)
 	{
 		stmts.unflagDeckById.run(deckId);
@@ -1366,6 +1571,33 @@ app.post('/admin/decks/unflag', requireAdmin, (req, res) =>
 	else
 	{
 		return badRequest(res, 'invalid_unflag_target');
+	}
+	return res.redirect('/admin?token=' + encodeURIComponent(req.query.token));
+});
+
+// Combo library review flow (§21). Retiring stops the containment check for cards the admin
+// believes are fixed; reactivating restores it. The card set itself is never edited by hand —
+// it comes from a proven minimum, and a wrong set means the sim was wrong, not the table.
+app.post('/admin/combos/status', requireAdmin, (req, res) =>
+{
+	const comboKey = isStr(adminParam(req, 'comboKey'), 1, 64) ? adminParam(req, 'comboKey') : '';
+	const status = adminParam(req, 'status');
+	if (comboKey === '' || !stmts.comboByKey.get(comboKey)) return badRequest(res, 'unknown_combo');
+	if (status === 'retired')
+	{
+		const rawReason = adminParam(req, 'reason');
+		const reason = isStr(rawReason, 1, 200) ? rawReason : 'retired by admin';
+		stmts.retireCombo.run(nowIso(), reason, nowIso(), comboKey);
+		console.log('[onedeck-api] admin retired combo ' + comboKey + ' (' + reason + ')');
+	}
+	else if (status === 'active')
+	{
+		stmts.reactivateCombo.run(nowIso(), comboKey);
+		console.log('[onedeck-api] admin reactivated combo ' + comboKey);
+	}
+	else
+	{
+		return badRequest(res, 'invalid_combo_status');
 	}
 	return res.redirect('/admin?token=' + encodeURIComponent(req.query.token));
 });
