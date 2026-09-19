@@ -43,6 +43,9 @@ public class LoopReport
 	public string[] roles = new string[0];
 
 	public string tripSignal = "";
+	/// <summary>The LIVE trip that queued this entry (deferred path only): hash, repeats,
+	/// combat seed and capture time. tripSignal above describes the headless reproduction.</summary>
+	public string liveTripSignal = "";
 	public int[] reproSeeds = new int[0];
 
 	public bool oneMinimal;

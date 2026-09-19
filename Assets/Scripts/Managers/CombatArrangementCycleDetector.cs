@@ -91,6 +91,11 @@ public class CombatArrangementCycleDetector : MonoBehaviour
 		Tripped = true;
 		TripCount++;
 		LastTripHash = hash;
+		// P2 hook, deferred by user ruling 2026-09-19: record the evidence NOW so the expensive
+		// attribution simulation can run out of combat. Nothing is simulated here.
+		var cm = CombatManager.Me;
+		InfinityTripJournal.Record(hash, TripCount, SightingsThisRound, Rng.CombatSeed,
+			cm != null ? cm.playerDeck : null, cm != null ? cm.enemyDeck : null);
 		TestManager.Log("[CombatArrangementCycleDetector] Arrangement cycle tripped: sighting #" + count
 			+ " of arrangement " + RngDigest.ToHex(hash) + " within one round (sightingsThisRound=" + SightingsThisRound
 			+ ") — unbounded recursion suspected; observation-only, the P2 attribution sim gates any forced conclusion");

@@ -95,6 +95,9 @@ public static class RunBudgetSim
 		report.Seed = seed;
 
 		HeadlessCombatRig rig = HeadlessCombatRig.Create(options.GuardPerRound, options.GuardTotal, options.GuardRounds);
+		// A simulation is not a live trip: suppress the journal for the whole run so the
+		// attribution processor's own replays cannot queue themselves as new evidence.
+		InfinityTripJournal.PushSuppression();
 		try
 		{
 			var cm = rig.CombatManager;
@@ -147,6 +150,7 @@ public static class RunBudgetSim
 		finally
 		{
 			rig.Dispose();
+			InfinityTripJournal.PopSuppression();
 		}
 
 		return report;
