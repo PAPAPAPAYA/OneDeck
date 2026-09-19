@@ -20,6 +20,12 @@ using UnityEngine.UI;
 /// queue-frozen values the HP text shows); max HP reads live from the side's
 /// PlayerStatusSO (same accepted side effect as the vertical version).
 /// Plan: plans/plan-hp-numeric-display-horizontal-2026-08-08.md
+///
+/// 2026-09-19: the PLAYER side is also the shop-phase HP readout (shop top bar
+/// reuses this component, repositioned via ShopTopBarLayout; combat anchor/scale
+/// captured at Awake and restored on combat entry). Outside combat the display
+/// queue is frozen at the last combat's values, so current HP reads the live
+/// PlayerStatusSO instead. Enemy side stays combat-only.
 /// </summary>
 public class HPNumericDisplayHorizontal : MonoBehaviour
 {
@@ -112,8 +118,17 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	private readonly List<DigitStrip> _currentDigitStrips = new List<DigitStrip>();
 	private readonly List<DigitStrip> _maxDigitStrips = new List<DigitStrip>();
 
-	private bool _wasInCombat;
+	private bool _wasVisible;
+	// Last observed phase, driving re-placement on ANY phase change (see the
+	// VISUAL-FIX(2026-09-19) block in Update). Initialized to Result — never the boot
+	// phase — so the first Update always places, mirroring CombatIconPresenter.
+	private EnumStorage.GamePhase _lastPhase = EnumStorage.GamePhase.Result;
 	private Vector2 _rootBasePos;
+	// Shop-phase placement (2026-09-19): the component's own RectTransform is moved to
+	// the shop top bar; the combat anchor/scale is captured at Awake and restored.
+	private RectTransform _selfRt;
+	private Vector2 _combatAnchoredPos;
+	private Vector3 _combatScale = Vector3.one;
 	private float _em = 1f; // current digit em = currentPlain.fontSize in px.
 	private float _maxEm = 1f; // max digit em = _em * maxFontScale.
 	private float _digitWidth = 10f;
@@ -146,6 +161,12 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		if (palette != null && (side == Side.Player ? palette.hpNormalPlayer : palette.hpNormalEnemy) == null)
 		{
 			Debug.LogWarning("[HPNumericDisplayHorizontal] GameColorPalette hpNormal" + (side == Side.Player ? "Player" : "Enemy") + " not wired; color falls back to white.");
+		}
+		_selfRt = transform as RectTransform;
+		if (_selfRt != null)
+		{
+			_combatAnchoredPos = _selfRt.anchoredPosition;
+			_combatScale = _selfRt.localScale;
 		}
 		_em = currentPlain.fontSize;
 		_maxEm = _em * maxFontScale;
@@ -225,17 +246,37 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 
 	private void Update()
 	{
-		bool inCombat = gamePhaseRef.Value() == EnumStorage.GamePhase.Combat;
-		if (inCombat && !_wasInCombat)
+		EnumStorage.GamePhase phase = gamePhaseRef.Value();
+		bool inCombat = phase == EnumStorage.GamePhase.Combat;
+		// The player side doubles as the shop top-bar HP readout (2026-09-19);
+		// the enemy side stays combat-only.
+		bool visible = inCombat || (side == Side.Player && phase == EnumStorage.GamePhase.Shop);
+		// VISUAL-FIX(2026-09-19): Leaving the shop for combat left the player pill at the shop
+		//   Cause:    Placement was applied only from EnterVisiblePhase, which fires on an
+		//             invisible->visible edge. The player side is visible in BOTH Shop and
+		//             Combat, so _wasVisible stayed true across the switch and the display kept
+		//             the anchor/scale of the phase it entered from (combat->shop was masked by
+		//             the Result phase in between, which does cross an edge).
+		//   Affects:  HPNumericDisplayHorizontal player side (shop top-bar reuse).
+		//   Regress:  Enter Shop, leave to Combat: the pill must return to (290, 89) / scale 0.8
+		//             bottom-left while the enemy pill sits at (-290, -89) / 0.8 top-right.
+		//             Result -> Shop must still place it at the ShopTopBarLayout anchor, and
+		//             Result must hide both sides and restore their combat anchors.
+		if (phase != _lastPhase)
 		{
-			EnterCombat();
+			_lastPhase = phase;
+			ApplyPhasePlacement(side == Side.Player && phase == EnumStorage.GamePhase.Shop);
 		}
-		else if (!inCombat && _wasInCombat)
+		if (visible && !_wasVisible)
 		{
-			ExitCombat();
+			EnterVisiblePhase(!inCombat);
 		}
-		_wasInCombat = inCombat;
-		if (!inCombat)
+		else if (!visible && _wasVisible)
+		{
+			ExitVisiblePhase();
+		}
+		_wasVisible = visible;
+		if (!visible)
 		{
 			return;
 		}
@@ -326,10 +367,11 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 
 	// ------------------------------------------------------------------ phases
 
-	// Silent sync to the current displayed values on combat entry: no tweens, no
-	// effects, so the first frame never plays a phantom damage/heal from defaults.
-	private void EnterCombat()
+	// Silent sync to the current displayed values on entering a visible phase: no
+	// tweens, no effects, so the first frame never plays a phantom damage/heal.
+	private void EnterVisiblePhase(bool shopPhase)
 	{
+		ApplyPhasePlacement(shopPhase);
 		CleanupVisuals();
 		int hp = GetDisplayedHp();
 		int hpMax = GetLiveMaxHp();
@@ -341,10 +383,35 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		displayRoot.gameObject.SetActive(true);
 	}
 
-	private void ExitCombat()
+	private void ExitVisiblePhase()
 	{
 		CleanupVisuals();
 		displayRoot.gameObject.SetActive(false);
+		// Leaving a visible phase always restores the combat anchor, so the next
+		// combat entry finds the transform untouched even if a phase is skipped.
+		if (_selfRt != null)
+		{
+			_selfRt.anchoredPosition = _combatAnchoredPos;
+			_selfRt.localScale = _combatScale;
+		}
+	}
+
+	private void ApplyPhasePlacement(bool shopPhase)
+	{
+		if (_selfRt == null)
+		{
+			return;
+		}
+		if (shopPhase)
+		{
+			_selfRt.anchoredPosition = ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.HpDisplayViewport, canvas);
+			_selfRt.localScale = Vector3.one * ShopTopBarLayout.HpDisplayShopScale;
+		}
+		else
+		{
+			_selfRt.anchoredPosition = _combatAnchoredPos;
+			_selfRt.localScale = _combatScale;
+		}
 	}
 
 	private void CleanupVisuals()
@@ -416,15 +483,22 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 
 	private int GetDisplayedHp()
 	{
-		if (CombatInfoDisplayer.me == null || CombatManager.Me == null)
+		if (CombatManager.Me == null)
 		{
 			return 0;
 		}
-		if (side == Side.Player && CombatManager.Me.ownerPlayerStatusRef == null)
+		PlayerStatusSO status = side == Side.Player ? CombatManager.Me.ownerPlayerStatusRef : CombatManager.Me.enemyPlayerStatusRef;
+		if (status == null)
 		{
 			return 0;
 		}
-		if (side == Side.Enemy && CombatManager.Me.enemyPlayerStatusRef == null)
+		// Outside combat the display queue is frozen at the last combat's values; the
+		// shop readout shows the live status HP (shop phase = full-HP invariant).
+		if (gamePhaseRef.Value() != EnumStorage.GamePhase.Combat)
+		{
+			return status.hp;
+		}
+		if (CombatInfoDisplayer.me == null)
 		{
 			return 0;
 		}

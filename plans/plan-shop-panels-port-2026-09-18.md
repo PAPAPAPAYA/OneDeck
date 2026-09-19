@@ -17,7 +17,7 @@
 - Shop is world-only: no uGUI; one physics input pipeline via `ShopInputGate`; interactive elements are `PhysButton`; read-only elements are flat `HudChip`s (R2 converse).
 - New shop visuals are runtime-built (pattern of `ShopChrome.Bootstrap`) — no new scene objects for visuals; the only scene edits are two serialized tuning values and deletion of two superseded label objects (Task 6).
 - UI copy stays English per engine convention: `Shop`, `Deck`, `Upgrades`, `Reroll: $N`, `Exit`, options glyph `❚❚`.
-- The `✦` glyph resolves via the NotoSansSymbols2 fallback wired on the RobotoCondensed SDF assets (see `CardPhysObjScript.cs:488-490`) — chips using `chromeFont` can print `✦` directly. `▦` (U+25A6) / `♥` (U+2665) need an in-editor glyph check; if tofu, use `W`/`H` prefix labels instead (verification step in Task 3).
+- The `✦` glyph resolves via the NotoSansSymbols2 fallback wired on the RobotoCondensed SDF assets (see `CardPhysObjScript.cs:488-490`) — chips using `chromeFont` can print `✦` directly. The annotated layout's other three glyphs — `❚❚` (U+275A, options), `🜲` (U+1F732, wins), `♥` (U+2665, hearts) — are absent from every bundled static font atlas. fontTools-verified coverage (2026-09-18): U+275A and U+2665 EXIST in `NotoSansSymbols2-Regular.ttf` (bakeable into the ✦ fallback atlas the same way); U+1F732 (Alchemical Symbols block) exists in NO bundled font, so 🜲 needs a newly bundled font with that coverage or a covered substitute glyph (verification step in Task 3).
 - Existing refresh triggers: `ShopManager` calls `ShopChrome.RefreshIfActive()` in `EnterShop`/`BuyFunc`/`SellFunc`/`Reroll` and `ShowIfActive`/`HideIfActive` in `EnterShop`/`ExitShop` — panels get sibling calls at the same sites.
 - Repo has uncommitted user changes (incl. `GameScene.unity`) — commit ONLY paths listed per task; never `git add -A`.
 
@@ -208,7 +208,7 @@ Change `BandInsetFromTop` usage: rows are laid from the top edge down (see Step 
   - Avatar chip at `(leftX, topY - RowOneYOffset - RowPitch)`: flat chip of width `ChipWidth`, label = `PlayerIdentity.Username` (fallback `"???"`), plus a child square `SpriteRenderer` (`SetupSliced`, `GameColorPalette.ShopPanelBgColor`) of size `(AvatarSquareSize, AvatarSquareSize)` positioned at the chip's left inside edge (`localPosition = new Vector3(-ChipWidth / 2f + AvatarSquareSize / 2f + 0.1f, 0f, -0.01f)`); store the label TMP as `_avatarLabel`.
   - Row 1 (y = `topY - RowOneYOffset`, centered as a group around x=0, lg chips): HP (`_hpChip`), Money (`_moneyChip`, accent). Group width = `2*ChipWidth + ChipSpacing`; start x = `-groupWidth/2 + ChipWidth/2`.
   - Row 2 (y = `topY - RowOneYOffset - RowPitch`, sm dark chips, `CreateChipVariant(width, fontSize, usePanelBg: true)`): rarity chips `_rarityCommonChip`, `_rarityUncommonChip`, `_rarityRareChip` labeled `"✦ 0%"`, `"✦✦ 0%"`, `"✦✦✦ 0%"` (the `✦` resolves via the RobotoCondensed SDF fallback — see Constraints).
-  - Row 3 (y = `topY - RowOneYOffset - 2*RowPitch`, sm dark chips): `_winsChip` (`"▦ 0/6"`), `_heartsChip` (`"♥ 0/3"`), `_incomeChip` (existing, `"+$0/combat"`).
+  - Row 3 (y = `topY - RowOneYOffset - 2*RowPitch`, sm dark chips): `_winsChip` (`"🜲 0/6"` — annotated-layout wins glyph, U+1F732; NOT the demo's ▦), `_heartsChip` (`"♥ 0/3"`), `_incomeChip` (existing, `"+$0/combat"`).
   - DELETE: `_deckChip` (slot counter moves to the Deck panel header, Task 4) and `_rerollButton`/`_rerollLabel` + their `CreateButton` (reroll moves to the Shop panel header, Task 4).
   - Factor `CreateChip` into `CreateChip(name, x, y, initialText, accent, float width = ChipWidth, float fontSize = ChipFontSize, bool darkPanel = false)`; when `darkPanel` is true the panel color is `GameColorPalette.ShopPanelBgColor` instead of `TooltipBgColor`.
 
@@ -226,7 +226,7 @@ Change `BandInsetFromTop` usage: rows are laid from the top edge down (see Step 
 		&& phaseManager.hearts != null && phaseManager.heartMax != null)
 	{
 		if (phaseManager.wins.value != _lastWins || phaseManager.winCon.value != _lastWinCon)
-		{ _lastWins = phaseManager.wins.value; _lastWinCon = phaseManager.winCon.value; _winsChip.SetText("▦ " + _lastWins + "/" + _lastWinCon); }
+		{ _lastWins = phaseManager.wins.value; _lastWinCon = phaseManager.winCon.value; _winsChip.SetText("🜲 " + _lastWins + "/" + _lastWinCon); }
 		if (phaseManager.hearts.value != _lastHearts || phaseManager.heartMax.value != _lastHeartMax)
 		{ _lastHearts = phaseManager.hearts.value; _lastHeartMax = phaseManager.heartMax.value; _heartsChip.SetText("♥ " + _lastHearts + "/" + _lastHeartMax); }
 	}
@@ -236,7 +236,7 @@ Change `BandInsetFromTop` usage: rows are laid from the top edge down (see Step 
 ```
 Also ensure `ShowIfActive()` runs `Refresh()` (it does today — keep). DELETE the `RefreshRerollState()` method body + its call in `Refresh()` and the `SetRerollRolling` method (Task 4 re-implements them on `ShopSectionPanels`).
 
-- [ ] **Step 4: Glyph check.** Enter Play Mode → Shop: rarity chips show `✦`, wins shows `▦`, hearts shows `♥`, options button shows `❚❚`. If `▦`/`♥`/`❚❚` render as tofu, replace with text prefixes: `_winsChip.SetText("W " + ...)`, `_heartsChip.SetText("H " + ...)`, options label `"||"` — note the substitution in the commit message.
+- [ ] **Step 4: Glyph check.** Enter Play Mode → Shop: rarity chips show `✦`, wins shows `🜲`, hearts shows `♥`, options button shows `❚❚`. Verified 2026-09-18 via fontTools: `♥`/`❚` exist in `NotoSansSymbols2-Regular.ttf` (✦-style fallback-atlas bake makes them render); `🜲` (U+1F732) exists in NO bundled font — if it is not bundled separately, replace with text prefixes: `_winsChip.SetText("W " + ...)`, `_heartsChip.SetText("H " + ...)`, options label `"||"` — note the substitution in the commit message.
 
 - [ ] **Step 5: Commit**
 ```bash
@@ -500,3 +500,34 @@ All 6 tasks executed inline (superpowers:executing-plans); 7 commits on `main`:
 
 - EditMode tests written but NOT executed in the authoring session (no Unity MCP available): `ShopRarityWeightSOTests` (3), `ShopSectionPanelsTests` (4), `GameColorPaletteWiringTests` (auto-covers the new `shopPanelBg` field). Run via Test Runner.
 - Play-mode checklist: RegressionChecklist row 106. If `[ShopChrome] shelf top` warns, drop `shopItemPos.y` 1.5 → 1.4 (Inspector live-tunes via OnValidate → RelayoutAll).
+
+---
+
+## Follow-up Record (2026-09-18, same day)
+
+**Compile fixes applied (uncommitted).** `dotnet build` surfaced 4 errors the authoring session never compiled:
+
+1. `GameColorPalette.ShopPanelBgColor` static accessor was missing (Task 1 Step 2 only added the serialized field) → CS0117 ×3 (`ShopChrome.cs:188/258`, `ShopSectionPanels.cs:180`). Fixed by adding the accessor (fallback `new Color(0,0,0,0.85f)`); asset-side wiring was already correct.
+2. `ShopSectionPanels.cs` lacked `using DefaultNamespace.Managers;` for `TestManager` → CS0103 at :72. Fixed.
+
+Both `Assembly-CSharp` and `Assembly-CSharp-Editor` build clean after the fixes.
+
+**Glyph set corrected by the user.** The three intended non-`✦` glyphs are `❚❚` (U+275A, options), `🜲` (U+1F732, wins — NOT the demo's `▦` U+25A6), `♥` (U+2665, hearts). fontTools coverage check of every bundled font (`NotoSansSymbols2-Regular.ttf`, RobotoCondensed Regular/Bold, SourceHanSansCN Regular/Bold, LiberationSans):
+
+- U+2665 `♥` — present in NotoSansSymbols2 (+ LiberationSans, SourceHanSansCN) → ✦-style fallback-atlas bake works.
+- U+275A `❚` — present ONLY in NotoSansSymbols2 → ✦-style bake works.
+- U+1F732 `🜲` — MISSING from every bundled font (Alchemical Symbols block). The ✦-style bake alone cannot provide it; needs a newly bundled font covering U+1F700–1F77F, or a covered substitute glyph (e.g. keep the demo's `▦`).
+
+Until the atlas is baked, the shipped full-word `Wins`/`Hearts` labels and `"||"` options placeholder stay. Open TODO: TMP Font Asset Creator — append `♥❚` (and `🜲` if a font is bundled) to `NotoSansSymbols2 SDF.asset`, keep Static + self-typeface (pitfalls: `plan-card-template-v1.1-port-2026-09-05.md:51-52`), then restore the spec labels in `ShopChrome.Build`.
+
+---
+
+## Glyph TODO — RESOLVED (2026-09-19)
+
+Closed by the next session under `plans/plan-shop-topbar-combat-hud-reuse-2026-09-19.md`; the placeholder labels (`Wins`/`Hearts` words, `"||"` options) are gone.
+
+- `♥` U+2665 and `❚` U+275A **baked into `Assets/Fonts/NotoSansSymbols2 SDF.asset`** (atlas now holds ✦ 10022, ✧ 10023, … 8230, ♥ 9829, ❚ 10074). Method: set `m_SourceFontFile` via `SerializedObject` → `atlasPopulationMode = Dynamic` → `TryAddCharacters` → back to `Static` → SetDirty + `AssetDatabase.SaveAssets()`.
+- `🜲` U+1F732 **bundled** as `Assets/Fonts/NotoSansSymbols-Regular.ttf` (Noto Sans Symbols v2.003, OFL — the only Noto family member covering the Alchemical block; `OFL-NotoSansSymbols.txt` alongside) and baked into the new `Assets/Fonts/NotoSansSymbolsAlchemical SDF.asset` (1 glyph, SDFAA 512×512, padding 9, static), which is appended LAST on `RobotoCondensed-Regular SDF.asset`'s `m_FallbackFontAssetTable`.
+- **Unity 6.3 TMP pitfalls hit during the bake** (worth reading before any future glyph addition): `TMP_FontAsset.TryAddCharacters(uint[])` **truncates codepoints to `char`** (`GetCodePoint(uint[])` casts), so supplementary-plane characters must be passed as the UTF-16 **surrogate pair** (`uint[]{0xD83D, 0xDF32}`; the string overload does not combine surrogates either). `CreateFontAsset(...)` leaves a 1×1 placeholder atlas that TMP reinitializes on the first add — not an error. `sourceFontFile`, `atlasPadding`, `atlasWidth` are read-only properties; write via `SerializedObject` (`m_SourceFontFile`, `m_AtlasPadding`, …). `GlyphRenderMode` lives in `UnityEngine.TextCore.LowLevel`.
+
+Also closed the same day: the deck/hex copy switched to Chinese per the user (商店 / 卡组 / 商店升级 / 重掷 $N / 空卡位 / 从商店购买卡牌), and the top bar was reordered to the §08 three-row column — see `docs/UIUX_Guidelines.md` §3.6 and `docs/RegressionChecklist.md` row 107.

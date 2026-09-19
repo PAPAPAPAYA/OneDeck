@@ -5,13 +5,17 @@ using UnityEngine;
 
 // Shop top chrome (Guidelines 3.6) as WORLD entities: flat read-only chips plus the exit /
 // options physical buttons floating in a reserved viewport-top zone (no full-bleed band —
-// the units sit directly on the shop background). Chrome v2 (2026-09-18 annotated layout):
-// three chip rows (avatar+username / HP / $ | rarity odds x3 | wins / hearts / income).
-// The reroll button and the deck slot count live in the Shop/Deck panel headers
-// (ShopSectionPanels). Replaces the 2026-09-17 canvas ShopHudBar (plan-world-entity-shop-
-// chrome-2026-09-18) — one input pipeline (physics OnMouse), one input gate (ShopInputGate),
-// no canvas layer. Runtime-built from ShopUXManager.Start (no scene edit); colors come
-// from GameColorPalette statics at build time.
+// the units sit directly on the shop background). 2026-09-19 §08 layout: row 0 = 离开商店 |
+// the reused combat canvas pieces (avatar+username, horizontal HP display) | money chip
+// ... ❚❚, all on one line; row 1 = rarity odds; row 2 = wins / hearts / income — rows 1-2
+// left-aligned on the HUD column the avatar block starts (ShopTopBarLayout viewport
+// anchors, shared with the reused components). The reroll button and the deck slot count
+// live in the Shop/Deck panel headers (ShopSectionPanels). Chrome copy is Chinese (user
+// decision 2026-09-19); glyph labels (❚❚ / 🜲 / ♥) resolve through the chrome font fallback
+// chain (NotoSansSymbols2 SDF + NotoSansSymbolsAlchemical SDF).
+// Replaces the 2026-09-17 canvas ShopHudBar (plan-world-entity-shop-chrome-2026-09-18) —
+// one input pipeline (physics OnMouse), one input gate (ShopInputGate), no canvas layer.
+// Runtime-built from ShopUXManager.Start (no scene edit); colors from GameColorPalette.
 //
 // Layout contract: the band occupies the top of the viewport. Card layout must keep the
 // shelf below BandBottomWorldY; ShopUXManager asserts it once per shelf build.
@@ -19,7 +23,7 @@ public class ShopChrome : MonoBehaviour
 {
 	private const string ChromeName = "Shop Chrome";
 
-	public const float BandHeight = 2.6f;      // reserved clearance zone at the viewport top (3 HUD rows, no rendered band)
+	public const float BandHeight = 2.6f;      // reserved clearance zone at the viewport top (2 HUD rows, no rendered band)
 	public const float CameraForwardOffset = 2f; // chrome z distance in front of the camera
 	public const float BandInsetFromTop = 0.5f; // band center below the viewport top edge (ShopChromeAnchor)
 
@@ -27,17 +31,19 @@ public class ShopChrome : MonoBehaviour
 	private const float ChipSpacing = 0.25f;
 	private const float ChipWidth = 2.2f;
 	private const float ChipHeight = 0.5f;
-	private const float SmallChipWidth = 1.9f;  // rarity / wins / hearts chips (demo chip-sm)
+	private const float SmallChipWidth = 1.7f;  // rarity / wins / hearts chips (demo chip-sm)
 	private const float SmallChipFontSize = 1.9f;
-	private const float AvatarSquareSize = 0.42f;
-	private const float RowPitch = 0.72f;       // vertical distance between HUD chip rows
-	private const float ButtonWidth = 2.0f;
-	private const float ButtonHeight = 0.56f;
+	private const float MoneyChipWidth = 2.4f;  // demo chip-lg
+	private const float MoneyChipHeight = 0.62f;
+	private const float MoneyChipFontSize = 2.8f;
+	private const float OptionsButtonWidth = 0.72f;
+	private const float ButtonHeight = 0.64f;
+	private const float ExitButtonWidth = 2.6f;
 	// World-TMP calibration: the card price print renders ~0.31u tall at fontSize 12 on a
-	// 0.2-scaled transform -> ~0.13u per fontSize point at scale 1. Button labels match the
-	// price-button text height; chips are a notch smaller.
-	private const float ButtonFontSize = 2.4f;
+	// 0.2-scaled transform -> ~0.13u per fontSize point at scale 1.
 	private const float ChipFontSize = 2.2f;
+	private const float ButtonFontSize = 2.4f;
+	private const float ExitButtonFontSize = 2.8f;
 	private const float RestShadowUnits = 0.05f; // demo rs 4px at chrome scale (tune at play look)
 	private const float DenyShiftUnits = 0.075f;
 
@@ -49,22 +55,17 @@ public class ShopChrome : MonoBehaviour
 
 	private HudChip _moneyChip;
 	private HudChip _incomeChip;
-	private HudChip _hpChip;
 	private HudChip _rarityCommonChip;
 	private HudChip _rarityUncommonChip;
 	private HudChip _rarityRareChip;
 	private HudChip _winsChip;
 	private HudChip _heartsChip;
-	private HudChip _avatarChip;
-	private TMP_Text _avatarLabel;
 	private PhysButton _optionsButton;
 	private PhysButton _exitButton;
 	private PhaseManager _phaseManager;
 
 	private int _lastPurse = int.MinValue;
 	private int _lastPayday = int.MinValue;
-	private int _lastHp = int.MinValue;
-	private int _lastHpMax = int.MinValue;
 	private int _lastCommonOdds = int.MinValue;
 	private int _lastUncommonOdds = int.MinValue;
 	private int _lastRareOdds = int.MinValue;
@@ -72,7 +73,6 @@ public class ShopChrome : MonoBehaviour
 	private int _lastWinCon = int.MinValue;
 	private int _lastHearts = int.MinValue;
 	private int _lastHeartMax = int.MinValue;
-	private string _lastUsername;
 
 	/// <summary>Bottom edge of the chrome band in world Y — the shelf layout contract limit.</summary>
 	public static float BandBottomWorldY()
@@ -154,16 +154,19 @@ public class ShopChrome : MonoBehaviour
 		Camera cam = Camera.main;
 		float halfW = cam != null ? cam.orthographicSize * cam.aspect : 8f;
 
-		// Chrome v2 (2026-09-18 annotated layout): three HUD chip rows float under the
-		// viewport top — [avatar | HP | $] / [rarity odds x3] / [wins | hearts | income] —
-		// Exit (left) and the options placeholder (right) on the top row. The reroll button
-		// and the deck slot count moved into the Shop/Deck panel headers (ShopSectionPanels,
-		// plan-shop-panels-port-2026-09-18). No full-bleed band: units float directly on the
-		// shop background; BandHeight lives on as the reserved clearance zone only.
-		float leftX = -halfW + EdgeMargin + ButtonWidth / 2f;
-		float rightX = halfW - EdgeMargin - ButtonWidth / 2f;
-		_exitButton = CreateButton("ExitButton", "Exit", leftX, 0f, out _);
-		_optionsButton = CreateButton("OptionsButton", "||", rightX, 0f, out _);
+		// 2026-09-19 §08 order: row 0 = [离开商店] [avatar | HP | $ (reused combat canvas
+		// pieces + this money chip)] ... [❚❚]; row 1 = rarity odds; row 2 = wins / hearts /
+		// income. Rows 1-2 are left-aligned on the HUD column the avatar block starts, so
+		// their anchor X comes from the shared ShopTopBarLayout viewport, not from halfW.
+		float row0Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.PlayerIconViewport.y, cam);
+		float row1Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.OddsRowViewportY, cam);
+		float row2Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.StatsRowViewportY, cam);
+		float columnX = ShopTopBarLayout.ViewportToChromeLocal(new Vector2(ShopTopBarLayout.HudColumnViewportX, 0f), cam).x;
+
+		float exitX = -halfW + EdgeMargin + ExitButtonWidth / 2f;
+		float optionsX = halfW - EdgeMargin - OptionsButtonWidth / 2f;
+		_exitButton = CreateButton("ExitButton", "离开商店", exitX, row0Y, ExitButtonWidth, ExitButtonFontSize, out _);
+		_optionsButton = CreateButton("OptionsButton", "❚❚", optionsX, row0Y, OptionsButtonWidth, ButtonFontSize, out _);
 		_optionsButton.SetWorldAction(() => Debug.Log("[ShopChrome] Options pressed (placeholder — no options menu yet)"));
 		_phaseManager = FindObjectOfType<PhaseManager>();
 		if (_phaseManager == null)
@@ -177,44 +180,29 @@ public class ShopChrome : MonoBehaviour
 			_phaseManager.EnteringCombatPhase();
 		});
 
-		// Avatar + username chip (demo topbar "sq + 用户名"), same identity source as the
-		// combat player name label (CombatIconPresenter -> PlayerIdentity.Username).
-		_avatarChip = CreateChip("ChipAvatar", leftX, -RowPitch, ChipWidth, ChipFontSize, false, false);
-		_avatarLabel = _avatarChip != null ? _avatarChip.GetComponentInChildren<TMP_Text>() : null;
-		GameObject avatarSquare = new GameObject("AvatarSquare", typeof(SpriteRenderer));
-		avatarSquare.transform.SetParent(_avatarChip.transform, false);
-		avatarSquare.transform.localPosition = new Vector3(-ChipWidth / 2f + AvatarSquareSize / 2f + 0.1f, 0f, -0.01f);
-		SpriteRenderer squareSr = avatarSquare.GetComponent<SpriteRenderer>();
-		SetupSliced(squareSr, GameColorPalette.ShopPanelBgColor);
-		squareSr.size = new Vector2(AvatarSquareSize, AvatarSquareSize);
-		if (_avatarLabel != null)
-		{
-			// Shift the name right of the square; overflow is fine (world TMP extends).
-			_avatarLabel.rectTransform.localPosition = new Vector3(AvatarSquareSize / 2f + 0.1f, 0f, 0f);
-		}
+		// Money chip: row 0, right of the reused combat HP display.
+		Vector2 moneyLocal = ShopTopBarLayout.ViewportToChromeLocal(ShopTopBarLayout.MoneyChipViewport, cam);
+		_moneyChip = CreateChip("ChipMoney", moneyLocal.x, moneyLocal.y, MoneyChipWidth, MoneyChipHeight, MoneyChipFontSize, true, false);
 
-		// Row 1 (lg chips, centered as a group): HP + money.
-		_hpChip = CreateChip("ChipHP", -(ChipWidth + ChipSpacing) / 2f, 0f, ChipWidth, ChipFontSize, false, false);
-		_moneyChip = CreateChip("ChipMoney", (ChipWidth + ChipSpacing) / 2f, 0f, ChipWidth, ChipFontSize, true, false);
+		// Row 1 (sm dark chips): rarity odds from the active session weight table,
+		// left-aligned on the HUD column.
+		float x = columnX + SmallChipWidth * 0.5f;
+		_rarityCommonChip = CreateChip("ChipRarityCommon", x, row1Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+		x += SmallChipWidth + ChipSpacing;
+		_rarityUncommonChip = CreateChip("ChipRarityUncommon", x, row1Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+		x += SmallChipWidth + ChipSpacing;
+		_rarityRareChip = CreateChip("ChipRarityRare", x, row1Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
 
-		// Row 2 (sm dark chips): rarity odds from the active session weight table.
-		float rarityPitch = SmallChipWidth + ChipSpacing;
-		_rarityCommonChip = CreateChip("ChipRarityCommon", -rarityPitch, -RowPitch, SmallChipWidth, SmallChipFontSize, false, true);
-		_rarityUncommonChip = CreateChip("ChipRarityUncommon", 0f, -RowPitch, SmallChipWidth, SmallChipFontSize, false, true);
-		_rarityRareChip = CreateChip("ChipRarityRare", rarityPitch, -RowPitch, SmallChipWidth, SmallChipFontSize, false, true);
-
-		// Row 3 (sm dark + lg): wins / hearts / payday. Full-word labels (Wins/Hearts)
-		// because the ▦/♥ glyphs are outside every bundled static font atlas (✦ only, see
-		// CardPhysObjScript) and would render as tofu.
-		float winsHeartsPitch = SmallChipWidth + ChipSpacing;
-		float row3Width = winsHeartsPitch + SmallChipWidth + ChipSpacing + ChipWidth;
-		float row3Start = -row3Width / 2f;
-		_winsChip = CreateChip("ChipWins", row3Start + SmallChipWidth / 2f, -2f * RowPitch, SmallChipWidth, SmallChipFontSize, false, true);
-		_heartsChip = CreateChip("ChipHearts", row3Start + winsHeartsPitch + SmallChipWidth / 2f, -2f * RowPitch, SmallChipWidth, SmallChipFontSize, false, true);
-		_incomeChip = CreateChip("ChipIncome", row3Start + winsHeartsPitch + SmallChipWidth + ChipSpacing + ChipWidth / 2f, -2f * RowPitch, ChipWidth, ChipFontSize, false, false);
+		// Row 2: wins / hearts / payday, left-aligned on the same column (demo hud-line 3).
+		x = columnX + SmallChipWidth * 0.5f;
+		_winsChip = CreateChip("ChipWins", x, row2Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+		x += SmallChipWidth + ChipSpacing;
+		_heartsChip = CreateChip("ChipHearts", x, row2Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+		x += SmallChipWidth + ChipSpacing + ChipWidth * 0.5f;
+		_incomeChip = CreateChip("ChipIncome", x, row2Y, ChipWidth, ChipHeight, ChipFontSize, false, false);
 	}
 
-	private PhysButton CreateButton(string name, string label, float x, float y, out TextMeshPro labelTmp)
+	private PhysButton CreateButton(string name, string label, float x, float y, float width, float fontSize, out TextMeshPro labelTmp)
 	{
 		GameObject rootGo = new GameObject(name, typeof(BoxCollider2D));
 		rootGo.transform.SetParent(transform, false);
@@ -233,8 +221,8 @@ public class ShopChrome : MonoBehaviour
 		faceGo.transform.localPosition = new Vector3(0f, 0f, 0.02f);
 		SetupSliced(faceGo.GetComponent<SpriteRenderer>(), GameColorPalette.OwnerCardColor);
 
-		labelTmp = CreateLabel(visualGo.transform, label, ButtonFontSize, GameColorPalette.OwnerTextColor,
-			new Vector2(ButtonWidth - 0.2f, ButtonHeight));
+		labelTmp = CreateLabel(visualGo.transform, label, fontSize, GameColorPalette.OwnerTextColor,
+			new Vector2(width - 0.2f, ButtonHeight));
 
 		PhysButton button = rootGo.AddComponent<PhysButton>();
 		button.SetShadowTransform(shadowGo.transform);
@@ -245,21 +233,21 @@ public class ShopChrome : MonoBehaviour
 		button.denyShift = DenyShiftUnits;
 		button.label = labelTmp;
 		// Label rect is centered on the Visual origin, so the face centers there too.
-		button.ConfigureWorldFaceSize(new Vector2(ButtonWidth, ButtonHeight), Vector2.zero);
+		button.ConfigureWorldFaceSize(new Vector2(width, ButtonHeight), Vector2.zero);
 		return button;
 	}
 
-	private HudChip CreateChip(string name, float x, float y, float width, float fontSize, bool accent, bool darkPanel)
+	private HudChip CreateChip(string name, float x, float y, float width, float height, float fontSize, bool accent, bool darkPanel)
 	{
 		GameObject chipGo = new GameObject(name);
 		chipGo.transform.SetParent(transform, false);
 		chipGo.transform.localPosition = new Vector3(x, y, 0.02f);
 		SpriteRenderer panel = chipGo.AddComponent<SpriteRenderer>();
 		SetupSliced(panel, darkPanel ? GameColorPalette.ShopPanelBgColor : GameColorPalette.TooltipBgColor);
-		panel.size = new Vector2(width, ChipHeight);
+		panel.size = new Vector2(width, height);
 		TextMeshPro label = CreateLabel(chipGo.transform, string.Empty, fontSize,
 			accent ? GameColorPalette.HighlightColor : GameColorPalette.TooltipTextColor,
-			new Vector2(width - 0.15f, ChipHeight));
+			new Vector2(width - 0.15f, height));
 		HudChip chip = chipGo.AddComponent<HudChip>();
 		chip.Bind(panel, label);
 		return chip;
@@ -289,7 +277,7 @@ public class ShopChrome : MonoBehaviour
 		sr.color = color;
 	}
 
-	/// <summary>Pulls all shop stats into chips + reroll state; labels rewrite only on change.</summary>
+	/// <summary>Pulls all shop stats into chips; labels rewrite only on change.</summary>
 	public void Refresh()
 	{
 		ShopManager shop = ShopManager.me;
@@ -306,17 +294,7 @@ public class ShopChrome : MonoBehaviour
 		if (payday != _lastPayday)
 		{
 			_lastPayday = payday;
-			if (_incomeChip != null) _incomeChip.SetText("+$" + payday + "/combat");
-		}
-
-		PlayerStatusSO status = CombatManager.Me != null ? CombatManager.Me.ownerPlayerStatusRef : null;
-		int hp = status != null ? status.hp : 0;
-		int hpMax = status != null ? status.hpMax : 0;
-		if (hp != _lastHp || hpMax != _lastHpMax)
-		{
-			_lastHp = hp;
-			_lastHpMax = hpMax;
-			if (_hpChip != null) _hpChip.SetText(hp + "/" + hpMax);
+			if (_incomeChip != null) _incomeChip.SetText("+$" + payday + "/ROUND");
 		}
 
 		shop.GetRarityOddsPercents(out float commonPct, out float uncommonPct, out float rarePct);
@@ -343,22 +321,14 @@ public class ShopChrome : MonoBehaviour
 			{
 				_lastWins = _phaseManager.wins.value;
 				_lastWinCon = _phaseManager.winCon.value;
-				if (_winsChip != null) _winsChip.SetText("Wins " + _lastWins + "/" + _lastWinCon);
+				if (_winsChip != null) _winsChip.SetText("🜲 " + _lastWins + "/" + _lastWinCon);
 			}
 			if (_phaseManager.hearts.value != _lastHearts || _phaseManager.heartMax.value != _lastHeartMax)
 			{
 				_lastHearts = _phaseManager.hearts.value;
 				_lastHeartMax = _phaseManager.heartMax.value;
-				if (_heartsChip != null) _heartsChip.SetText("Hearts " + _lastHearts + "/" + _lastHeartMax);
+				if (_heartsChip != null) _heartsChip.SetText("♥ " + _lastHearts + "/" + _lastHeartMax);
 			}
-		}
-
-		string username = PlayerIdentity.Username;
-		if (string.IsNullOrEmpty(username)) username = "???";
-		if (username != _lastUsername)
-		{
-			_lastUsername = username;
-			if (_avatarLabel != null) _avatarLabel.text = username;
 		}
 	}
 }

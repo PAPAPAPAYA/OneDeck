@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DefaultNamespace.Managers;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -163,9 +164,9 @@ public class ShopSectionPanels : MonoBehaviour
 		_shopPanel = CreatePanel("PanelShop");
 		_deckPanel = CreatePanel("PanelDeck");
 		_upgradesPanel = CreatePanel("PanelUpgrades");
-		_shopHeader = CreateHeader("HeaderShop", "Shop", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
-		_deckHeader = CreateHeader("HeaderDeck", "Deck", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
-		_upgradesHeader = CreateHeader("HeaderUpgrades", "Upgrades", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
+		_shopHeader = CreateHeader("HeaderShop", "商店", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
+		_deckHeader = CreateHeader("HeaderDeck", "卡组", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
+		_upgradesHeader = CreateHeader("HeaderUpgrades", "商店升级", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
 		_deckCounter = CreateHeader("DeckCounter", string.Empty, TextAlignmentOptions.Right, GameColorPalette.HighlightColor);
 		_rerollButton = CreateRerollButton();
 	}
@@ -222,7 +223,7 @@ public class ShopSectionPanels : MonoBehaviour
 		faceGo.transform.localPosition = new Vector3(0f, 0f, 0.02f);
 		SetupSliced(faceGo.GetComponent<SpriteRenderer>(), GameColorPalette.OwnerCardColor);
 
-		TextMeshPro label = CreateButtonLabel(visualGo.transform, "Reroll: $0");
+		TextMeshPro label = CreateButtonLabel(visualGo.transform, "重掷 $0");
 
 		PhysButton button = rootGo.AddComponent<PhysButton>();
 		button.SetShadowTransform(shadowGo.transform);
@@ -330,7 +331,7 @@ public class ShopSectionPanels : MonoBehaviour
 		if (shop == null || _rerollButton == null) return;
 
 		int freeLeft = shop.FreeRerollsLeft;
-		string label = freeLeft > 0 ? "Reroll: $0" : "Reroll: $" + shop.RerollPrice;
+		string label = freeLeft > 0 ? "重掷 $0" : "重掷 $" + shop.RerollPrice;
 		bool disabled = _rerollRolling || (freeLeft <= 0 && shop.purse != null && shop.purse.value < shop.RerollPrice);
 
 		if (label != _lastRerollLabel)

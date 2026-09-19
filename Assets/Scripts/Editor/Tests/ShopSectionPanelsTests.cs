@@ -9,11 +9,18 @@ using UnityEngine;
 public class ShopSectionPanelsTests
 {
 	[Test]
-	public void ComputeContentBounds_SingleCenter_ReturnsCenteredBounds()
+	public void ComputeContentBounds_SingleCenter_ExpandsByGivenHalfExtents()
 	{
 		var centers = new System.Collections.Generic.List<Vector3> { new Vector3(1f, 2f, 0f) };
 		Bounds b = ShopSectionPanels.ComputeContentBounds(centers, 1.4f, 2.0f, 2.5f);
-		Assert.AreEqual(new Vector3(1f, 2f, 0f), b.center);
+		// Assert the edges, which is what FitPanel consumes. The extents are deliberately
+		// asymmetric (2.0 above / 2.5 below, the extra below being the price-button
+		// allowance), so b.center sits 0.25 BELOW the input center — asserting center
+		// == input center only holds for symmetric extents and is not the contract.
+		Assert.AreEqual(1f - 1.4f, b.min.x, 0.001f);
+		Assert.AreEqual(1f + 1.4f, b.max.x, 0.001f);
+		Assert.AreEqual(2f - 2.5f, b.min.y, 0.001f);
+		Assert.AreEqual(2f + 2.0f, b.max.y, 0.001f);
 		Assert.AreEqual(2.8f, b.size.x, 0.001f);
 		Assert.AreEqual(4.5f, b.size.y, 0.001f);
 	}
