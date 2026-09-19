@@ -17,6 +17,7 @@ Unity roguelike card game. Both decks are merged, shuffled, and cards are reveal
 - **Code Changes**: Do not execute code modifications except adding logs, unless the user explicitly says "修改代码". Otherwise, provide plans and solutions only.
 - **Play Mode Tests**: Do not run Play Mode tests unless the user explicitly requests them (Strategy B / `unity-card-playmode-test`).
 - **SaveScene is pre-approved** (user ruling 2026-09-19): `EditorSceneManager.SaveScene` / `SaveOpenScenes` is considered a safe operation and may be called without asking. That is the only editor state-write with blanket permission — everything else still follows the rules above. Typical use: save before a Test Runner run so the "Scene(s) Have Been Modified" modal never appears.
+- **Commit straight to `main`, no feature branches** (user ruling 2026-09-19): this is a single-developer repo — branch and PR ceremony is not wanted. Commit and push to `main` directly.
 - **Document Format**: If any non Unity-generated file is found to violate the CRLF + Tab leading-indent standard, convert it to the compliant format before editing.
 - **Editing AGENTS.md**: When adding content, condense wording or move detail into `plans/`/`docs/` files and reference them. Never finish an edit with the file over the 32 KB limit — the size check is part of the edit.
 
