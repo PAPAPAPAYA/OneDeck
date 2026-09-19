@@ -66,43 +66,55 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ## Update deploy (code-only change, e.g. the P3/P4 infinity gate)
 
-Box layout: `/var/www/onedeck/server` holds the code, `/var/www/onedeck/data` the db
-(`DATA_DIR` default resolves there — pm2 logs too). Every step below is run against `$HOST`.
+**Transport is the Alibaba Cloud Workbench CLI, not SSH** — this project's ECS ops have gone
+through it since the backend first shipped (`无公网 IP 运维走 workbench-cli skill`, see
+`tools/outputs/dump_catalog.py` for the same pattern). One-off invocations are stateless, so
+chain everything that shares context with `&&` in a single call.
+
+```
+INSTANCE=i-uf66n1ofpudgn9b6rg7o      # onedeck box
+REMOTE=/var/www/onedeck/server        # code
+DB=/var/www/onedeck/data/onedeck.db   # db (DATA_DIR default resolves here)
+```
 
 ```bash
-HOST=<user>@8.153.150.197     # your SSH login for the box
+# 0) one-time: install the CLI and configure credentials
+curl -fsSL https://workbench-cli.oss-cn-hangzhou.aliyuncs.com/install.sh | bash   # Windows: install.ps1
+#   ~/.workbench/config.json (chmod 600) — mode AK | RamRoleArn | CredentialsCmd | CredentialsURI
 
-# 1) transfer the server files (no new dependencies since S0; the install step stays anyway)
-scp server/onedeck-api/server.js server/onedeck-api/package.json server/onedeck-api/README.md "$HOST:/var/www/onedeck/server/"
-scp -r server/onedeck-api/scripts "$HOST:/var/www/onedeck/server/"
+# 1) back the live db up ONLINE first — WAL-safe: a plain `cp onedeck.db` can silently miss
+#    pages still in onedeck.db-wal. (This is a new file; nothing is overwritten.)
+workbench upload server/onedeck-api/scripts/backup-db.js "$REMOTE/scripts/backup-db.js" --instance-id $INSTANCE
+workbench exec --instance-id $INSTANCE --output json --timeout 60 \
+  --command "cd $REMOTE && node scripts/backup-db.js"
 
-# 2) back the live db up ONLINE first — WAL-safe. A plain `cp onedeck.db` can silently miss
-#    pages still sitting in onedeck.db-wal; this uses SQLite's online backup API.
-ssh "$HOST" 'cd /var/www/onedeck/server && node scripts/backup-db.js'
+# 2) push the server files. `upload` refuses to overwrite without confirmation, so the
+#    server.js replacement is written through the remote shell instead (same file, one command).
+workbench exec --instance-id $INSTANCE --output json --timeout 60 \
+  --command "cd $REMOTE && cp server.js server.js.prev-$(date +%Y%m%d-%H%M%S) && echo backed-up"
+workbench upload server/onedeck-api/server.js "$REMOTE/server.js.new" --instance-id $INSTANCE
+workbench exec --instance-id $INSTANCE --output json \
+  --command "cd $REMOTE && mv server.js.new server.js && npm install --omit=dev && pm2 restart onedeck-api"
 
-# 3) install + restart
-ssh "$HOST" 'cd /var/www/onedeck/server && npm install --omit=dev && pm2 restart onedeck-api'
-
-# 4) verify from the dev machine: health, and that the NEW route exists.
+# 3) verify from the dev machine: health, and that the NEW route exists.
 #    401 unknown_player = deployed; 404 not_found = still the old code.
 curl -s http://8.153.150.197/api/health
 curl -s -o /dev/null -w '%{http_code}\n' -X POST http://8.153.150.197/api/loop-reports \
   -H 'Content-Type: application/json' -d '{}'
 
-# 5) verify the migration applied, then read the log tail
-ssh "$HOST" 'cd /var/www/onedeck/server && node scripts/inspect-db.js'
-ssh "$HOST" 'pm2 logs onedeck-api --lines 30 --nostream'
+# 4) verify the migration applied, then read the log tail
+workbench exec --instance-id $INSTANCE --output json --command "cd $REMOTE && node scripts/inspect-db.js"
+workbench exec --instance-id $INSTANCE --output json --command "pm2 logs onedeck-api --lines 30 --nostream"
 ```
 
 `inspect-db.js` is read-only and prints `MISSING` for anything the code expects but the db lacks
 (the boot migration adds columns and tables; the fingerprint backfill reports its row count in the
-log). Both scripts resolve the db the same way `server.js` does, so no `DATA_DIR` is needed on the
-standard box layout.
+log). Both scripts resolve the db exactly like `server.js`, so no `DATA_DIR` is needed on the box.
 
-**Rollback**: `pm2 stop onedeck-api`, `cp data/onedeck.db.bak-<stamp>.db data/onedeck.db`, put the
-previous `server.js` back, `pm2 start onedeck-api`. The migration is additive (ADD COLUMN + new
-tables), so an older `server.js` runs fine against a migrated db — the backup is insurance, not a
-required step of a rollback.
+`pm2 restart` is a service restart — per the workbench skill's own rule, announce it before running
+it. **Rollback**: put `server.js.prev-<stamp>` back + `pm2 restart onedeck-api`; the db backup is
+insurance for the unexpected, not a required rollback step (the migration is additive — ADD COLUMN
++ new tables — so an older `server.js` runs fine against a migrated db).
 
 ## Ops notes
 
