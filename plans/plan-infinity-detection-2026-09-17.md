@@ -433,13 +433,30 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 - **`enemySide` 恒空**:跨侧无限按 §7.1 不立项,字段只是预留,使管线天然 pair-aware。
 - 顺带修掉 `RunVsDummy` 的一个副作用:它曾把 `dummyHp` 写回调用方的 `Options`,而归因要复用同一个 Options 对象跑三局 —— 会把木桩的巨大血量漏进后面的真配对重放。现在血量只走参数。
 
-### 19.3 验证状态
+### 19.3 验证状态(2026-09-19 已全部跑通)
 
-- **已验**:离线 `dotnet build Assembly-CSharp-Editor.csproj` → 0 error(过程中该路径抓到 `LoopReport` 缺 `using DefaultNamespace;` 的 CS0246,已修)。
-- **未验(需编辑器)**:三个模块的任何运行时行为;`ComboRoleClassifier` 对 §6 三卡的输出;ddmin 在真实 deck 上的收敛与预算表现。
+- **已验(离线)**:`dotnet build Assembly-CSharp-Editor.csproj` → 0 error。该路径本轮抓到两个真错误:`LoopReport` 缺 `using DefaultNamespace;` 的 CS0246、以及下面 §19.6 的证据链一跳问题。
+- **已验(EditMode)**:`InfinityPipelineTests`(6)+`InfinityRingReproducerTests`(2)= **8/8 绿**;含这两个类在内全量 **589 total / 588 绿 / 0 失败 / 1 既有 Ignore**。跑完 `GameScene` 仍然干净(预览场景隔离对新测试同样成立)。
 
-### 19.4 待补(P2 未完成部分)
+### 19.4 09-13 三方环实测结论:已被 P0 拆除(2026-09-19)
 
-1. **09-13 三方环复现用例**(P2 的验收基准,也是 §6 的三重用途:RunBudgetSim 验收 / P0 回归 / 最小化演练)。先要实测:在 P0 修复(链代守卫不再被换链洗掉)之后,该环是否**仍然无界**——若已被守卫拦住,它就是一个「必须终止」的回归用例,而最小化的演示标本要改用 lethal 样本。这一步必须跑,不能靠读代码下结论。
-2. 归因 / 最小化 / 条目的 EditMode 测试。
-3. `loop_reports` 落表与上报:表在服务端,按 §8 属 P3 的「证据表」;P2 只产出 payload(已具备)。
+实测(RunBudgetSim,seed 4242,敌方 = 惰性木桩):
+
+| 敌方木桩 | infinite | reveals | rounds | 结局 | cascadePeak |
+|---|---|---|---|---|---|
+| 30 HP | no | 67 | 7 | 敌方死亡 | **1** |
+| 1e8 HP | no | 100 | 9 | **我方死亡** | **1** |
+
+- **该环不再成环**:唯一的病理签名——213 层链嵌套栈溢出——消失,cascade 深度峰值只有 1。2026-09-17 的修复(同卡不同对象的换链只做 recorder 分组,守卫与 chainDepth 不再被洗掉)确实生效。
+- 因此它是**「必须终止」的回归用例**,不是无界循环标本。已落成 `InfinityRingReproducerTests`(2 测):断言不成环 + 由死亡终止 + cascade 深度 ≤ 5(以 213 为历史基线)+ L0 未出手,并且**在对一个杀不死的对手时也一样**。
+- **最小化的演示标本改用 lethal 样本**:ddmin 在 2 卡上证明「两张缺一不可」(`Minimize_LethalSample_KeepsBothComboCards`),这才是有效的 1-最小性演示。
+- §6 原写的「应产出带角色三卡最小集」在环被拆除后不再适用:改为在仍无界的标本上产出最小集,并保留 `roles` 字段承载**证据**(见 §19.6)。
+
+### 19.5 待补
+
+1. `loop_reports` 落表与上报:表在服务端,按 §8 属 P3 的「证据表」;P2 只产出 payload(已具备)。
+2. 运行时的 `OnCycleTripped` 消费者接线(把检测器事件接到 `InfinityAttribution` 上)——需要先定"在哪个时机跑 sim"(P2 的在线归因),且真实对局里跑三局 sim 有帧预算问题,待拍板。
+
+### 19.6 记录:证据链必须追两层,不能只看一跳
+
+首次跑测试时 `roles` 记成了 `RELIC_CURSE_REVIVAL <Unknown> [OnHostileCurseRevealed -> InvokeEffectEventVoid]` —— 因为卡上的 `GameEventListener` 调的是容器的 `InvokeEffectEventVoid`,**真正的效果方法在容器自己的 `effectEvent` 里**。只读一跳会让每张卡的证据都一样、且角色全部落到 `Unknown`。已修为:经 `listener.response.GetPersistentTarget(i)` 取到 `CostNEffectContainer`,再读它的 `effectEvent`,容器外的目标才回落到直接方法名。触发事件名本身一直是准的。

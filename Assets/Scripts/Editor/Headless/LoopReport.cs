@@ -137,8 +137,26 @@ public static class LoopReportBuilder
 				int count = listener.response.GetPersistentEventCount();
 				for (int i = 0; i < count; i++)
 				{
-					string m = listener.response.GetPersistentMethodName(i);
-					if (!string.IsNullOrEmpty(m)) methods.Add(m);
+					// The listener usually calls CostNEffectContainer.InvokeEffectEventVoid, and the REAL
+					// effect methods live one hop deeper in that container's own effectEvent — recording
+					// only the first hop yields "InvokeEffectEventVoid" for every card (measured
+					// 2026-09-19: that made every role classify as Unknown).
+					var container = listener.response.GetPersistentTarget(i) as CostNEffectContainer;
+					if (container != null && container.effectEvent != null)
+					{
+						var effectEvent = container.effectEvent;
+						int effectCount = effectEvent.GetPersistentEventCount();
+						for (int j = 0; j < effectCount; j++)
+						{
+							string effectMethod = effectEvent.GetPersistentMethodName(j);
+							if (!string.IsNullOrEmpty(effectMethod)) methods.Add(effectMethod);
+						}
+					}
+					else
+					{
+						string m = listener.response.GetPersistentMethodName(i);
+						if (!string.IsNullOrEmpty(m)) methods.Add(m);
+					}
 				}
 			}
 		}
@@ -174,7 +192,9 @@ public static class ComboRoleClassifier
 		{
 			if (string.IsNullOrEmpty(m)) continue;
 			if (m.Contains("ReviveSelf")) hasReviveSelf = true;
-			if (m.Contains("Bury") || m.Contains("Stage")) hasDeckMove = true;
+			// "Revive*" counts as deck movement too (reviving returns a card to the deck);
+			// ReviveSelf was already claimed by the Pump rule above.
+			if (m.Contains("Bury") || m.Contains("Stage") || m.Contains("Revive")) hasDeckMove = true;
 			if (m.Contains("Attack")) hasAttack = true;
 		}
 
