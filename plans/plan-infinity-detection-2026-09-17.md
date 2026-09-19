@@ -348,7 +348,7 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 
 - `run_tests` 若报 `Test job failed to initialize` 或反复起不来,先查 `mcpforunity://editor/state` 的 `tests.current_job_id`:域重载会留下**孤儿 job** 并阻塞后续所有运行,用 `run_tests` 带 `clear_stuck: true` 清掉即可(本轮实测有效)。
 - 编辑器重启后 MCP bridge 需要一段时间才重新注册;期间 `resources/read` 无响应容易被误判为"服务已死",先查 8080 是否 LISTENING 再下结论。
-- **跑 Test Runner 前必须先保存 scene**:scene 脏(`*` 标记)时 runner 启动会弹「Scene(s) Have Been Modified」模态框,阻塞主线程 → job 报 `failed to initialize (tests did not start within timeout)` 或直接挂起,而 `editor/state` 仍然显示 `ready_for_tools: true`、窗口标题也不变,极易误判成 runner/bridge 坏了。本轮实测多次命中(用户也反馈"遇到很多次")。规范已写入 `AGENTS.md` 的 Agent Post-Mortem Notes;`GameScene.unity` 带用户未提交改动,**严禁自动关掉该弹窗**。
+- **跑 Test Runner 前必须先保存 scene,而且每次都要(跑测试本身就会把 scene 弄脏)**:scene 脏(`*` 标记)时 runner 启动会弹「Scene(s) Have Been Modified」模态框,阻塞主线程 → job 报 `failed to initialize (tests did not start within timeout)` 或直接挂起,而 `editor/state` 仍然显示 `ready_for_tools: true`、窗口标题也不变,极易误判成 runner/bridge 坏了。本轮实测多次命中(用户也反馈"遇到很多次")。规范已写入 `AGENTS.md` 的 Agent Post-Mortem Notes;`GameScene.unity` 带用户未提交改动,**严禁自动关掉该弹窗**。 **2026-09-19 实测根因**:脏不是用户造成的,而是**测试运行自己造成的**——Edit Mode 夹具把临时 GameObject 建在活动场景里,跑前标题干净、跑完就出现 `*`(中间无任何用户编辑)。所以「保存一次」不解决问题:**任何一次运行之后的下一次运行都会再弹**。Unity 没有清脏标记的公开 API(只有 `MarkSceneDirty`)。根治手段是把夹具对象建到 `EditorSceneManager.NewPreviewScene()` 里而不是活动场景。**2026-09-19 已在 `HeadlessCombatRig` 上验证**:用 `EditorSceneManager.sceneDirtied` 计数做 A/B —— 改之前一次 rig 运行让 GameScene 脏 **1** 次,改之后 **0** 次,而 sim 结果逐字节一致(同揭示数 17、同 trip hash `23517005`),同 seed 可复现性不变,销毁共享 dummy 后再跑也正常(预览场景会自动重建,无已销毁对象陷阱)。**`HeadlessCombatTestFixture`(约 40 个测试类)已于同日套用同样的处理**,并做了收尾 A/B:全量 **581 个测试跑完GameScene 仍然干净**(跑前跑后标题都无 `*`),套件 **581/581 通过 / 0 失败** —— 说明预览场景隔离对所有测试类无副作用,而「跑测试会弄脏场景」这个反复出现的坑从源头消失了。残留脏面:让**生产代码**在活动场景建对象的测试(如 `ResultStatsPanel.Build`)或任何真实编辑器编辑,所以跑前保存仍是好习惯。
 
 ## 17. 核查:诅咒数量与标本木桩形状(2026-09-19,用户质询后)
 
@@ -412,3 +412,34 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 
 1. `[CombatBudgetGuard]` 留在 CombatFlow——它的 `FORCE CONCLUDE COMBAT` 也能由非无限原因(如正常长局触到 `maxRounds`)触发,语义比"无限检测"宽。
 2. trip 是否要进**战斗内可见日志**:**该路线已作废**——用户 2026-09-19 明确「战斗内日志不显示给玩家了,已经淘汰」。所以 trip 目前唯一可见面就是上面的 TestManager 开关(开发者向);玩家侧要不要感知「检测到无限递归」,在 P2 接上 `OnCycleTripped` 时需重新设计出口,不能再往 `CombatLog` 上挂。
+
+## 19. P2 客户端核心落地(2026-09-19):归因 + 最小化 + 组合条目
+
+§10 的 P2 = 「归因三连 + ddmin 最小化 + loop_reports 上报」。本轮先落**不依赖运行时的三件**(离线编译通过),运行时验证与 09-13 复现用例待编辑器空出后补(见 §19.4)。
+
+### 19.1 交付物(`Assets/Scripts/Editor/Headless/`)
+
+| 文件 | 职责 |
+|---|---|
+| `InfinityAttribution.cs` | §4 三连:敌 deck vs 木桩 → 我 deck vs 木桩 → 原配对重放;输出 `InfinityResponsibility { None, EnemyDeck, OwnerDeck, PairOnly }` 与三步各自的 `BudgetTripReport` 作为证据 |
+| `ComboMinimizer.cs` | ddmin(按 chunk 补集试删)+ 多 seed 稳健门槛 + 1-最小性复核;输出 `MinimizeResult`(含 `Truncated` / `MultiSeedStable` / `IsOneMinimal`) |
+| `LoopReport.cs` | §4 条目 schema(mySide / enemySide / roles / tripSignals / reproSeeds / status)+ `LoopReportBuilder` + `ComboRoleClassifier`;`JsonUtility` 可直接序列化 |
+
+### 19.2 设计要点(可被质疑的地方都写在这里)
+
+- **木桩血量必须极大**(默认 `1e8`)。理由是 §3/§15 那个「无限血木桩」框架的必然推论:lethal 型 combo 的自终止方式是**打死对面**,若木桩血量正常,它的循环看起来就是有限的、排列永远不会重复到触发线。1e8 按实测的泵增速率约需 1.4e4 次揭晓才能啃穿,远超默认 1500 的全局上限,于是木桩恒久存活、唯一的终止者只剩 L0 熔断,循环本体的重复就暴露出来了。
+- **最小化门槛是多 seed 全通过**(§4 原文:仅单 seed 成环不入库)。ddmin 的每次谓词求值 = 每 seed 一次完整 headless 对局,所以带 `maxRuns` 预算;预算耗尽返回 `Truncated`,**不得**当作已证最小集入库。生产 ghost deck(30-60 张)会明显吃紧——这是 P5 需要正视的成本点。
+- **roles 是启发式 + 原始证据并列**,不是权威判定:`ComboRoleClassifier` 只看效果方法名(ReviveSelf→Pump / Bury|Stage→Engine / Attack→ChainSwitcher),对 §6 三方环能复现手工映射(SOLDIER_SKELETON=Pump、RELIC_CHAIN_BURIAL=Engine、DEATHBED_GRANT=ChainSwitcher),但对环外卡形就是猜测——所以每条 `roles` 同时记下该卡真实的 `触发事件 -> 效果方法` 列表,便于反证。组合库以**卡片集合**为键,不以角色为键。
+- **`enemySide` 恒空**:跨侧无限按 §7.1 不立项,字段只是预留,使管线天然 pair-aware。
+- 顺带修掉 `RunVsDummy` 的一个副作用:它曾把 `dummyHp` 写回调用方的 `Options`,而归因要复用同一个 Options 对象跑三局 —— 会把木桩的巨大血量漏进后面的真配对重放。现在血量只走参数。
+
+### 19.3 验证状态
+
+- **已验**:离线 `dotnet build Assembly-CSharp-Editor.csproj` → 0 error(过程中该路径抓到 `LoopReport` 缺 `using DefaultNamespace;` 的 CS0246,已修)。
+- **未验(需编辑器)**:三个模块的任何运行时行为;`ComboRoleClassifier` 对 §6 三卡的输出;ddmin 在真实 deck 上的收敛与预算表现。
+
+### 19.4 待补(P2 未完成部分)
+
+1. **09-13 三方环复现用例**(P2 的验收基准,也是 §6 的三重用途:RunBudgetSim 验收 / P0 回归 / 最小化演练)。先要实测:在 P0 修复(链代守卫不再被换链洗掉)之后,该环是否**仍然无界**——若已被守卫拦住,它就是一个「必须终止」的回归用例,而最小化的演示标本要改用 lethal 样本。这一步必须跑,不能靠读代码下结论。
+2. 归因 / 最小化 / 条目的 EditMode 测试。
+3. `loop_reports` 落表与上报:表在服务端,按 §8 属 P3 的「证据表」;P2 只产出 payload(已具备)。
