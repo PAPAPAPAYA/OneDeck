@@ -1147,8 +1147,8 @@
   "folder": "1_Uncommon"
  },
  {
-  "file": "RIFT_GUIDE",
-  "cardTypeID": "RIFT_GUIDE",
+  "file": "RIFT_GUIDE_4.0",
+  "cardTypeID": "RIFT_GUIDE_4.0",
   "displayName": "献祭司事",
   "rarity": "1",
   "rarityName": "uncommon",
@@ -1937,12 +1937,12 @@
   "folder": "2_Rare"
  },
  {
-  "file": "WEAPON_SPIRIT",
-  "cardTypeID": "WEAPON_SPIRIT",
+  "file": "WEAPON_SPIRIT_4.0",
+  "cardTypeID": "WEAPON_SPIRIT_4.0",
   "displayName": "妖刀",
   "rarity": "2",
   "rarityName": "rare",
-  "cardDesc": "被动:友方被强化时:强化 <b>1</b> 该友方",
+  "cardDesc": "被动:友方被强化时:强化 <b>1</b>该友方",
   "printedAttack": "0",
   "utilityKind": "0",
   "myTags": [
