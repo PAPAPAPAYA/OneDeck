@@ -80,6 +80,7 @@ namespace DefaultNamespace.Managers
 		public enum LogCategory
 		{
 			CombatFlow,
+			InfinityDetection,
 			EffectChains,
 			AnimationPlayback,
 			VisualSync,
@@ -95,6 +96,9 @@ namespace DefaultNamespace.Managers
 		[Header("Log Switches")]
 		[Tooltip("Log combat flow messages from CombatManager and PhaseManager.")]
 		public bool logCombatFlow = true;
+
+		[Tooltip("Log infinity-defense detection messages (CombatArrangementCycleDetector arrangement-cycle trips). Kept separate from CombatFlow because a trip is rare and must be observable without opening the noisy combat-flow bucket.")]
+		public bool logInfinityDetection = true;
 
 		[Tooltip("Log effect chain messages from EffectChainManager, BuryEffect, StageEffect, ApplyStatusEffectCore, ReviveEffect, and EffectScript (attack-attribute invariant).")]
 		public bool logEffectChains = true;
@@ -364,6 +368,13 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.CombatFlow;
 			}
+			// Infinity-defense detection gets its own switch (plan-infinity-detection §18): a
+			// detected unbounded recursion is rare and load-bearing, so it must not require
+			// enabling the whole CombatFlow bucket just to be visible.
+			if (message.Contains("[CombatArrangementCycleDetector]"))
+			{
+				return LogCategory.InfinityDetection;
+			}
 			// Deterministic-RNG seed / digest logs are combat flow information
 			// (plans/plan-deterministic-rng-seed-2026-09-12.md).
 			if (message.Contains("[Seed]"))
@@ -435,6 +446,7 @@ namespace DefaultNamespace.Managers
 			switch (category)
 			{
 				case LogCategory.CombatFlow: return Me.logCombatFlow;
+				case LogCategory.InfinityDetection: return Me.logInfinityDetection;
 				case LogCategory.EffectChains: return Me.logEffectChains;
 				case LogCategory.AnimationPlayback: return Me.logAnimationPlayback;
 				case LogCategory.VisualSync: return Me.logVisualSync;

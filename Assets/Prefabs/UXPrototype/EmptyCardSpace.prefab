@@ -384,7 +384,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Empty Space
+  m_text: "\u7A7A\u5361\u4F4D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
   m_sharedMaterial: {fileID: -5703313505547693256, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
@@ -565,7 +565,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Buy a card from shop
+  m_text: "\u4ECE\u5546\u5E97\u8D2D\u4E70\u5361\u724C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
   m_sharedMaterial: {fileID: -5703313505547693256, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}

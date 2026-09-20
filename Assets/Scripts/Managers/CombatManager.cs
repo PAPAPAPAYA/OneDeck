@@ -80,6 +80,13 @@ public class CombatManager : MonoBehaviour
 		{
 			gameObject.AddComponent<CombatBudgetGuard>();
 		}
+
+		// Ensure the L1 arrangement-cycle detector exists (same plan §3, 2026-09-18 ruling:
+		// same-arrangement Nth sighting within one round = unbounded recursion)
+		if (GetComponent<CombatArrangementCycleDetector>() == null)
+		{
+			gameObject.AddComponent<CombatArrangementCycleDetector>();
+		}
 	}
 
 	private void OnValidate()
@@ -262,6 +269,7 @@ public class CombatManager : MonoBehaviour
 		EffectChainManager.Me.ResetGenerationGuards();
 		EffectChainManager.Me.chainNumber = 0;
 		if (CombatBudgetGuard.Me != null) CombatBudgetGuard.Me.ResetState();
+		if (CombatArrangementCycleDetector.Me != null) CombatArrangementCycleDetector.Me.ResetState();
 		
 		// clean up effect recorders
 		if (EffectChainManager.Me != null)
@@ -913,6 +921,7 @@ public class CombatManager : MonoBehaviour
 
 				EffectChainManager.Me.CloseOpenedChain();
 				EffectChainManager.Me.ResetGenerationGuards();
+				if (CombatArrangementCycleDetector.Me != null) CombatArrangementCycleDetector.Me.NotifyRevealBoundary();
 				return;
 			}
 
@@ -950,6 +959,7 @@ public class CombatManager : MonoBehaviour
 
 			EffectChainManager.Me.CloseOpenedChain();
 			EffectChainManager.Me.ResetGenerationGuards();
+			if (CombatArrangementCycleDetector.Me != null) CombatArrangementCycleDetector.Me.NotifyRevealBoundary();
 		}
 		// ========== Phase 2: Wait to trigger current card effect ==========
 		else
@@ -1204,6 +1214,7 @@ public class CombatManager : MonoBehaviour
 	{
 		// L0 hard stop (2026-09-17): fresh per-round reveal budget
 		if (CombatBudgetGuard.Me != null) CombatBudgetGuard.Me.NotifyRoundStart();
+		if (CombatArrangementCycleDetector.Me != null) CombatArrangementCycleDetector.Me.NotifyRoundStart();
 		// cardsRevealedThisRound is per-round by name (the never-called ResetCardsRevealedCount
 		// API confirms the intent); it previously only reset at combat cleanup, which made the
 		// L0 per-round reveal cap cumulative across rounds (2026-09-18).

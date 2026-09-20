@@ -3,13 +3,19 @@ using DefaultNamespace.Managers;
 using TMPro;
 using UnityEngine;
 
-// Shop top chrome (Guidelines 3.6) as WORLD entities: flat read-only chips plus reroll/exit
-// physical buttons floating in a reserved viewport-top zone (no full-bleed band — the demo
-// and the 2026-09-17 canvas bar both put the units directly on the shop background). Replaces the 2026-09-17 canvas
-// ShopHudBar and the uGUI reroll/exit buttons (plan-world-entity-shop-chrome-2026-09-18) —
-// one input pipeline (physics OnMouse), one input gate (ShopInputGate), no canvas layer
-// rendering above the world. Runtime-built from ShopUXManager.Start (no scene edit);
-// colors come from GameColorPalette statics at build time.
+// Shop top chrome (Guidelines 3.6) as WORLD entities: flat read-only chips plus the exit /
+// options physical buttons floating in a reserved viewport-top zone (no full-bleed band —
+// the units sit directly on the shop background). 2026-09-19 §08 layout: row 0 = 离开商店 |
+// the reused combat canvas pieces (avatar+username, horizontal HP display) | money chip
+// ... ❚❚, all on one line; row 1 = rarity odds; row 2 = wins / hearts / income — rows 1-2
+// left-aligned on the HUD column the avatar block starts (ShopTopBarLayout viewport
+// anchors, shared with the reused components). The reroll button and the deck slot count
+// live in the Shop/Deck panel headers (ShopSectionPanels). Chrome copy is Chinese (user
+// decision 2026-09-19); glyph labels (❚❚ / 🜲 / ♥) resolve through the chrome font fallback
+// chain (NotoSansSymbols2 SDF + NotoSansSymbolsAlchemical SDF).
+// Replaces the 2026-09-17 canvas ShopHudBar (plan-world-entity-shop-chrome-2026-09-18) —
+// one input pipeline (physics OnMouse), one input gate (ShopInputGate), no canvas layer.
+// Runtime-built from ShopUXManager.Start (no scene edit); colors from GameColorPalette.
 //
 // Layout contract: the band occupies the top of the viewport. Card layout must keep the
 // shelf below BandBottomWorldY; ShopUXManager asserts it once per shelf build.
@@ -17,7 +23,7 @@ public class ShopChrome : MonoBehaviour
 {
 	private const string ChromeName = "Shop Chrome";
 
-	public const float BandHeight = 1.0f;      // reserved clearance zone at the viewport top (no rendered band)
+	public const float BandHeight = 2.6f;      // reserved clearance zone at the viewport top (2 HUD rows, no rendered band)
 	public const float CameraForwardOffset = 2f; // chrome z distance in front of the camera
 	public const float BandInsetFromTop = 0.5f; // band center below the viewport top edge (ShopChromeAnchor)
 
@@ -25,13 +31,19 @@ public class ShopChrome : MonoBehaviour
 	private const float ChipSpacing = 0.25f;
 	private const float ChipWidth = 2.2f;
 	private const float ChipHeight = 0.5f;
-	private const float ButtonWidth = 2.0f;
-	private const float ButtonHeight = 0.56f;
+	private const float SmallChipWidth = 1.7f;  // rarity / wins / hearts chips (demo chip-sm)
+	private const float SmallChipFontSize = 1.9f;
+	private const float MoneyChipWidth = 2.4f;  // demo chip-lg
+	private const float MoneyChipHeight = 0.62f;
+	private const float MoneyChipFontSize = 2.8f;
+	private const float OptionsButtonWidth = 0.72f;
+	private const float ButtonHeight = 0.64f;
+	private const float ExitButtonWidth = 2.6f;
 	// World-TMP calibration: the card price print renders ~0.31u tall at fontSize 12 on a
-	// 0.2-scaled transform -> ~0.13u per fontSize point at scale 1. Button labels match the
-	// price-button text height; chips are a notch smaller.
-	private const float ButtonFontSize = 2.4f;
+	// 0.2-scaled transform -> ~0.13u per fontSize point at scale 1.
 	private const float ChipFontSize = 2.2f;
+	private const float ButtonFontSize = 2.4f;
+	private const float ExitButtonFontSize = 2.8f;
 	private const float RestShadowUnits = 0.05f; // demo rs 4px at chrome scale (tune at play look)
 	private const float DenyShiftUnits = 0.075f;
 
@@ -43,21 +55,24 @@ public class ShopChrome : MonoBehaviour
 
 	private HudChip _moneyChip;
 	private HudChip _incomeChip;
-	private HudChip _hpChip;
-	private HudChip _deckChip;
-	private PhysButton _rerollButton;
-	private TextMeshPro _rerollLabel;
+	private HudChip _rarityCommonChip;
+	private HudChip _rarityUncommonChip;
+	private HudChip _rarityRareChip;
+	private HudChip _winsChip;
+	private HudChip _heartsChip;
+	private PhysButton _optionsButton;
 	private PhysButton _exitButton;
+	private PhaseManager _phaseManager;
 
 	private int _lastPurse = int.MinValue;
 	private int _lastPayday = int.MinValue;
-	private int _lastHp = int.MinValue;
-	private int _lastHpMax = int.MinValue;
-	private int _lastDeck = int.MinValue;
-	private int _lastDeckMax = int.MinValue;
-	private string _lastRerollLabel;
-	private bool _lastRerollDisabled;
-	private bool _rerollRolling;
+	private int _lastCommonOdds = int.MinValue;
+	private int _lastUncommonOdds = int.MinValue;
+	private int _lastRareOdds = int.MinValue;
+	private int _lastWins = int.MinValue;
+	private int _lastWinCon = int.MinValue;
+	private int _lastHearts = int.MinValue;
+	private int _lastHeartMax = int.MinValue;
 
 	/// <summary>Bottom edge of the chrome band in world Y — the shelf layout contract limit.</summary>
 	public static float BandBottomWorldY()
@@ -111,13 +126,6 @@ public class ShopChrome : MonoBehaviour
 		if (_instance != null) _instance.gameObject.SetActive(false);
 	}
 
-	/// <summary>Reroll animation guard: the button denies input and the gate covers the rest of the shop.</summary>
-	public void SetRerollRolling(bool rolling)
-	{
-		_rerollRolling = rolling;
-		RefreshRerollState();
-	}
-
 	/// <summary>
 	/// Layout-contract assertion (call after every shelf build): the topmost shelf card must
 	/// stay below the band, or hover/deny excursions of a price button can slide under it.
@@ -146,47 +154,59 @@ public class ShopChrome : MonoBehaviour
 		Camera cam = Camera.main;
 		float halfW = cam != null ? cam.orthographicSize * cam.aspect : 8f;
 
-		// No full-bleed band: per Guidelines 3.6 / the demo the HUD units float directly on
-		// the shop background (a navy band behind navy chips made both vanish). BandHeight
-		// lives on as the reserved clearance zone only (see ShopChromeAnchor / CheckShelfClearance).
+		// 2026-09-19 §08 order: row 0 = [离开商店] [avatar | HP | $ (reused combat canvas
+		// pieces + this money chip)] ... [❚❚]; row 1 = rarity odds; row 2 = wins / hearts /
+		// income. Rows 1-2 are left-aligned on the HUD column the avatar block starts, so
+		// their anchor X comes from the shared ShopTopBarLayout viewport, not from halfW.
+		float row0Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.PlayerIconViewport.y, cam);
+		float row1Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.OddsRowViewportY, cam);
+		float row2Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.StatsRowViewportY, cam);
+		float columnX = ShopTopBarLayout.ViewportToChromeLocal(new Vector2(ShopTopBarLayout.HudColumnViewportX, 0f), cam).x;
 
-		// Exit (left end) + reroll (right end), per Guidelines 3.6 order.
-		// Exit = the old canvas button's exact wiring: PhaseManager.ExitingShopPhase +
-		// EnteringCombatPhase (ShopManager.ExitShop only cleans up and is triggered by the
-		// onEnterCombatPhase event — it never changes the phase itself).
-		float leftX = -halfW + EdgeMargin + ButtonWidth / 2f;
-		float rightX = halfW - EdgeMargin - ButtonWidth / 2f;
-		_exitButton = CreateButton("ExitButton", "Exit", leftX, out _);
-		_rerollButton = CreateButton("RerollButton", "Reroll: $0", rightX, out _rerollLabel);
-		_rerollButton.SetWorldAction(() => { if (ShopManager.me != null) ShopManager.me.Reroll(); });
-		PhaseManager phaseManager = FindObjectOfType<PhaseManager>();
-		if (phaseManager == null)
+		float exitX = -halfW + EdgeMargin + ExitButtonWidth / 2f;
+		float optionsX = halfW - EdgeMargin - OptionsButtonWidth / 2f;
+		_exitButton = CreateButton("ExitButton", "离开商店", exitX, row0Y, ExitButtonWidth, ExitButtonFontSize, out _);
+		_optionsButton = CreateButton("OptionsButton", "❚❚", optionsX, row0Y, OptionsButtonWidth, ButtonFontSize, out _);
+		_optionsButton.SetWorldAction(() => Debug.Log("[ShopChrome] Options pressed (placeholder — no options menu yet)"));
+		_phaseManager = FindObjectOfType<PhaseManager>();
+		if (_phaseManager == null)
 		{
 			TestManager.LogWarning("[ShopChrome] PhaseManager not found in scene — exit button inert");
 		}
 		_exitButton.SetWorldAction(() =>
 		{
-			if (phaseManager == null) return;
-			phaseManager.ExitingShopPhase();
-			phaseManager.EnteringCombatPhase();
+			if (_phaseManager == null) return;
+			_phaseManager.ExitingShopPhase();
+			_phaseManager.EnteringCombatPhase();
 		});
 
-		// Chips between the buttons, laid out left to right (no layout group in world space)
-		float chipX = leftX + ButtonWidth / 2f + ChipSpacing + ChipWidth / 2f;
-		_moneyChip = CreateChip("ChipMoney", chipX, "$0", true);
-		chipX += ChipWidth + ChipSpacing;
-		_incomeChip = CreateChip("ChipIncome", chipX, "+$0/combat", false);
-		chipX += ChipWidth + ChipSpacing;
-		_hpChip = CreateChip("ChipHP", chipX, "0/0", false);
-		chipX += ChipWidth + ChipSpacing;
-		_deckChip = CreateChip("ChipDeck", chipX, "0/0", false);
+		// Money chip: row 0, right of the reused combat HP display.
+		Vector2 moneyLocal = ShopTopBarLayout.ViewportToChromeLocal(ShopTopBarLayout.MoneyChipViewport, cam);
+		_moneyChip = CreateChip("ChipMoney", moneyLocal.x, moneyLocal.y, MoneyChipWidth, MoneyChipHeight, MoneyChipFontSize, true, false);
+
+		// Row 1 (sm dark chips): rarity odds from the active session weight table,
+		// left-aligned on the HUD column.
+		float x = columnX + SmallChipWidth * 0.5f;
+		_rarityCommonChip = CreateChip("ChipRarityCommon", x, row1Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+		x += SmallChipWidth + ChipSpacing;
+		_rarityUncommonChip = CreateChip("ChipRarityUncommon", x, row1Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+		x += SmallChipWidth + ChipSpacing;
+		_rarityRareChip = CreateChip("ChipRarityRare", x, row1Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+
+		// Row 2: wins / hearts / payday, left-aligned on the same column (demo hud-line 3).
+		x = columnX + SmallChipWidth * 0.5f;
+		_winsChip = CreateChip("ChipWins", x, row2Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+		x += SmallChipWidth + ChipSpacing;
+		_heartsChip = CreateChip("ChipHearts", x, row2Y, SmallChipWidth, ChipHeight, SmallChipFontSize, false, true);
+		x += SmallChipWidth + ChipSpacing + ChipWidth * 0.5f;
+		_incomeChip = CreateChip("ChipIncome", x, row2Y, ChipWidth, ChipHeight, ChipFontSize, false, false);
 	}
 
-	private PhysButton CreateButton(string name, string label, float x, out TextMeshPro labelTmp)
+	private PhysButton CreateButton(string name, string label, float x, float y, float width, float fontSize, out TextMeshPro labelTmp)
 	{
 		GameObject rootGo = new GameObject(name, typeof(BoxCollider2D));
 		rootGo.transform.SetParent(transform, false);
-		rootGo.transform.localPosition = new Vector3(x, 0f, 0f);
+		rootGo.transform.localPosition = new Vector3(x, y, 0f);
 
 		GameObject visualGo = new GameObject("Visual");
 		visualGo.transform.SetParent(rootGo.transform, false);
@@ -201,8 +221,8 @@ public class ShopChrome : MonoBehaviour
 		faceGo.transform.localPosition = new Vector3(0f, 0f, 0.02f);
 		SetupSliced(faceGo.GetComponent<SpriteRenderer>(), GameColorPalette.OwnerCardColor);
 
-		labelTmp = CreateLabel(visualGo.transform, label, ButtonFontSize, GameColorPalette.OwnerTextColor,
-			new Vector2(ButtonWidth - 0.2f, ButtonHeight));
+		labelTmp = CreateLabel(visualGo.transform, label, fontSize, GameColorPalette.OwnerTextColor,
+			new Vector2(width - 0.2f, ButtonHeight));
 
 		PhysButton button = rootGo.AddComponent<PhysButton>();
 		button.SetShadowTransform(shadowGo.transform);
@@ -213,21 +233,21 @@ public class ShopChrome : MonoBehaviour
 		button.denyShift = DenyShiftUnits;
 		button.label = labelTmp;
 		// Label rect is centered on the Visual origin, so the face centers there too.
-		button.ConfigureWorldFaceSize(new Vector2(ButtonWidth, ButtonHeight), Vector2.zero);
+		button.ConfigureWorldFaceSize(new Vector2(width, ButtonHeight), Vector2.zero);
 		return button;
 	}
 
-	private HudChip CreateChip(string name, float x, string initialText, bool accent)
+	private HudChip CreateChip(string name, float x, float y, float width, float height, float fontSize, bool accent, bool darkPanel)
 	{
 		GameObject chipGo = new GameObject(name);
 		chipGo.transform.SetParent(transform, false);
-		chipGo.transform.localPosition = new Vector3(x, 0f, 0.02f);
+		chipGo.transform.localPosition = new Vector3(x, y, 0.02f);
 		SpriteRenderer panel = chipGo.AddComponent<SpriteRenderer>();
-		SetupSliced(panel, GameColorPalette.TooltipBgColor);
-		panel.size = new Vector2(ChipWidth, ChipHeight);
-		TextMeshPro label = CreateLabel(chipGo.transform, initialText, ChipFontSize,
+		SetupSliced(panel, darkPanel ? GameColorPalette.ShopPanelBgColor : GameColorPalette.TooltipBgColor);
+		panel.size = new Vector2(width, height);
+		TextMeshPro label = CreateLabel(chipGo.transform, string.Empty, fontSize,
 			accent ? GameColorPalette.HighlightColor : GameColorPalette.TooltipTextColor,
-			new Vector2(ChipWidth - 0.15f, ChipHeight));
+			new Vector2(width - 0.15f, height));
 		HudChip chip = chipGo.AddComponent<HudChip>();
 		chip.Bind(panel, label);
 		return chip;
@@ -257,7 +277,7 @@ public class ShopChrome : MonoBehaviour
 		sr.color = color;
 	}
 
-	/// <summary>Pulls all shop stats into chips + reroll state; labels rewrite only on change.</summary>
+	/// <summary>Pulls all shop stats into chips; labels rewrite only on change.</summary>
 	public void Refresh()
 	{
 		ShopManager shop = ShopManager.me;
@@ -274,50 +294,41 @@ public class ShopChrome : MonoBehaviour
 		if (payday != _lastPayday)
 		{
 			_lastPayday = payday;
-			if (_incomeChip != null) _incomeChip.SetText("+$" + payday + "/combat");
+			if (_incomeChip != null) _incomeChip.SetText("+$" + payday + "/ROUND");
 		}
 
-		PlayerStatusSO status = CombatManager.Me != null ? CombatManager.Me.ownerPlayerStatusRef : null;
-		int hp = status != null ? status.hp : 0;
-		int hpMax = status != null ? status.hpMax : 0;
-		if (hp != _lastHp || hpMax != _lastHpMax)
+		shop.GetRarityOddsPercents(out float commonPct, out float uncommonPct, out float rarePct);
+		if ((int)commonPct != _lastCommonOdds)
 		{
-			_lastHp = hp;
-			_lastHpMax = hpMax;
-			if (_hpChip != null) _hpChip.SetText(hp + "/" + hpMax);
+			_lastCommonOdds = (int)commonPct;
+			if (_rarityCommonChip != null) _rarityCommonChip.SetText("✦ " + (int)commonPct + "%");
+		}
+		if ((int)uncommonPct != _lastUncommonOdds)
+		{
+			_lastUncommonOdds = (int)uncommonPct;
+			if (_rarityUncommonChip != null) _rarityUncommonChip.SetText("✦✦ " + (int)uncommonPct + "%");
+		}
+		if ((int)rarePct != _lastRareOdds)
+		{
+			_lastRareOdds = (int)rarePct;
+			if (_rarityRareChip != null) _rarityRareChip.SetText("✦✦✦ " + (int)rarePct + "%");
 		}
 
-		int deck = shop.playerDeckRef != null && shop.playerDeckRef.deck != null ? shop.playerDeckRef.deck.Count : 0;
-		int maxDeck = shop.deckSize != null ? shop.deckSize.value : 0;
-		if (deck != _lastDeck || maxDeck != _lastDeckMax)
+		if (_phaseManager != null && _phaseManager.wins != null && _phaseManager.winCon != null
+			&& _phaseManager.hearts != null && _phaseManager.heartMax != null)
 		{
-			_lastDeck = deck;
-			_lastDeckMax = maxDeck;
-			if (_deckChip != null) _deckChip.SetText(deck + "/" + maxDeck);
-		}
-
-		RefreshRerollState();
-	}
-
-	private void RefreshRerollState()
-	{
-		ShopManager shop = ShopManager.me;
-		if (shop == null || _rerollButton == null) return;
-
-		int freeLeft = shop.FreeRerollsLeft;
-		string label = freeLeft > 0 ? "Reroll: $0" : "Reroll: $" + shop.RerollPrice;
-		bool disabled = _rerollRolling || (freeLeft <= 0 && shop.purse != null && shop.purse.value < shop.RerollPrice);
-
-		if (label != _lastRerollLabel)
-		{
-			_lastRerollLabel = label;
-			_rerollLabel.text = label;
-		}
-		if (disabled != _lastRerollDisabled)
-		{
-			_lastRerollDisabled = disabled;
-			_rerollButton.SetDisabled(disabled);
-			_rerollLabel.color = disabled ? GameColorPalette.CardTextSoftColor : GameColorPalette.OwnerTextColor;
+			if (_phaseManager.wins.value != _lastWins || _phaseManager.winCon.value != _lastWinCon)
+			{
+				_lastWins = _phaseManager.wins.value;
+				_lastWinCon = _phaseManager.winCon.value;
+				if (_winsChip != null) _winsChip.SetText("🜲 " + _lastWins + "/" + _lastWinCon);
+			}
+			if (_phaseManager.hearts.value != _lastHearts || _phaseManager.heartMax.value != _lastHeartMax)
+			{
+				_lastHearts = _phaseManager.hearts.value;
+				_lastHeartMax = _phaseManager.heartMax.value;
+				if (_heartsChip != null) _heartsChip.SetText("♥ " + _lastHearts + "/" + _lastHeartMax);
+			}
 		}
 	}
 }

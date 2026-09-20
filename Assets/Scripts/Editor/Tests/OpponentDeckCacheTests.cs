@@ -37,14 +37,15 @@ public class OpponentDeckCacheTests
 		if (config != null) UnityEngine.Object.DestroyImmediate(config);
 	}
 
-	private static OpponentDeckEntry MakeDeck(int deckId, int sessionNum, string username = null)
+	private static OpponentDeckEntry MakeDeck(int deckId, int sessionNum, string username = null,
+		List<string> cards = null)
 	{
 		return new OpponentDeckEntry
 		{
 			deckId = deckId,
 			sessionNum = sessionNum,
 			username = username ?? ("ghost" + deckId),
-			cardTypeIDs = new List<string> { "wolf", "shrine" },
+			cardTypeIDs = cards ?? new List<string> { "wolf", "shrine" },
 			hpMax = 25
 		};
 	}
@@ -124,6 +125,96 @@ public class OpponentDeckCacheTests
 			if (entry != null) taken.Add(entry.deckId);
 		}
 		CollectionAssert.AreEquivalent(new[] { 2, 3 }, taken);
+	}
+
+	[Test]
+	public void MergeResponse_FlaggedDeckIds_PurgesCachedCopies()
+	{
+		// Prefetched before the flag existed: three ghosts are already in the disk cache...
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.InjectForTests(MakeDeck(2, 3));
+		OpponentDeckCache.InjectForTests(MakeDeck(3, 3));
+
+		// ...then a later prefetch reports deck 2 as flagged (plan §20.3) and brings a fresh ghost.
+		OpponentDecksResponse response = new OpponentDecksResponse
+		{
+			decks = new List<OpponentDeckEntry> { MakeDeck(4, 3) },
+			flaggedDeckIds = new List<int> { 2 }
+		};
+		OpponentDeckCache.MergeResponse(response);
+
+		List<int> taken = new List<int>();
+		for (int i = 0; i < 5; i++)
+		{
+			OpponentDeckEntry entry = OpponentDeckCache.TakeCandidate(3);
+			if (entry != null) taken.Add(entry.deckId);
+		}
+		CollectionAssert.AreEquivalent(new[] { 1, 3, 4 }, taken,
+			"the flagged deck is gone; everything else - including the newly fetched ghost - stays");
+	}
+
+	[Test]
+	public void MergeResponse_FlagListAbsent_KeepsCacheIntact()
+	{
+		// An older server sends no flaggedDeckIds field at all: the purge must not throw or
+		// empty the cache (JsonUtility leaves the list null for a response without the key).
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.MergeResponse(new OpponentDecksResponse { decks = new List<OpponentDeckEntry>() });
+		Assert.AreEqual(1, OpponentDeckCache.TakeCandidate(3).deckId);
+	}
+
+	[Test]
+	public void MergeResponse_BlockedCombos_PurgesCachedDecksThatContainThem()
+	{
+		// Cached earlier: one ghost embeds the proven pair, two hold only half of it each.
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3, null, new List<string> { "A", "B", "X", "Y" }));
+		OpponentDeckCache.InjectForTests(MakeDeck(2, 3, null, new List<string> { "A", "X", "Y" }));
+		OpponentDeckCache.InjectForTests(MakeDeck(3, 3, null, new List<string> { "B", "X", "Y" }));
+
+		// The server registers A+B as a proven combo (plan §21) and pushes it with the fetch.
+		OpponentDeckCache.MergeResponse(new OpponentDecksResponse
+		{
+			decks = new List<OpponentDeckEntry>(),
+			blockedCombos = new List<OpponentBlockedCombo>
+			{
+				new OpponentBlockedCombo { key = "combo-ab", cards = new List<string> { "A", "B" } }
+			}
+		});
+
+		List<int> taken = new List<int>();
+		for (int i = 0; i < 5; i++)
+		{
+			OpponentDeckEntry entry = OpponentDeckCache.TakeCandidate(3);
+			if (entry != null) taken.Add(entry.deckId);
+		}
+		CollectionAssert.AreEquivalent(new[] { 2, 3 }, taken,
+			"only the deck CONTAINING the combo is dropped; half the pair is not a match");
+	}
+
+	[Test]
+	public void MergeResponse_BlockedCombo_MultisetNotSet()
+	{
+		// A combo that needs two copies of a card is not satisfied by one (multiset containment).
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3, null, new List<string> { "A", "B" }));
+		OpponentDeckCache.InjectForTests(MakeDeck(2, 3, null, new List<string> { "A", "A", "B" }));
+
+		OpponentDeckCache.MergeResponse(new OpponentDecksResponse
+		{
+			decks = new List<OpponentDeckEntry>(),
+			blockedCombos = new List<OpponentBlockedCombo>
+			{
+				new OpponentBlockedCombo { key = "combo-aab", cards = new List<string> { "A", "A", "B" } }
+			}
+		});
+
+		List<int> taken = new List<int>();
+		for (int i = 0; i < 5; i++)
+		{
+			OpponentDeckEntry entry = OpponentDeckCache.TakeCandidate(3);
+			if (entry != null) taken.Add(entry.deckId);
+		}
+		CollectionAssert.AreEquivalent(new[] { 1 }, taken,
+			"one copy of A does not satisfy a combo needing two");
 	}
 
 	[Test]

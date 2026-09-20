@@ -5611,6 +5611,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d940f2ada57806b4aab2c2daa8e24b22, type: 2}
   - {fileID: 11400000, guid: 2994601d95056fe41aebea4df95c19e7, type: 2}
   - {fileID: 11400000, guid: 3f09f919702a6804ebea1e090682e365, type: 2}
+  - {fileID: 11400000, guid: 567027bf313f8e444a86e2353b878a25, type: 2}
   m_FontWeightTable:
   - regularTypeface: {fileID: 0}
     italicTypeface: {fileID: 0}

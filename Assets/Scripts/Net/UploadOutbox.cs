@@ -135,6 +135,7 @@ public static class UploadOutbox
 			case NetUploadKind.StatsSnapshot: return config.uploadStatsSnapshots;
 			case NetUploadKind.RunRecord: return config.uploadRunRecords;
 			case NetUploadKind.CardCatalog: return config.uploadCardCatalog;
+			case NetUploadKind.LoopReport: return config.uploadLoopReports;
 			default: return false;
 		}
 	}
@@ -148,6 +149,7 @@ public static class UploadOutbox
 			case NetUploadKind.StatsSnapshot: return "/api/stats/snapshot";
 			case NetUploadKind.RunRecord: return "/api/runs";
 			case NetUploadKind.CardCatalog: return "/api/cards/catalog";
+			case NetUploadKind.LoopReport: return "/api/loop-reports";
 			default: return "/api/unknown";
 		}
 	}

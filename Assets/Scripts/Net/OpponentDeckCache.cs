@@ -169,6 +169,29 @@ public static class OpponentDeckCache
 			if (cache.decks.Exists(d => d != null && d.deckId == deck.deckId)) continue;
 			cache.decks.Add(deck);
 		}
+		// Infinity gate (plan §20.3): decks flagged since this cache was filled must not be
+		// fightable. Removal — not just a take-time skip — so the file, the session stock and
+		// usedDeckIds stay consistent; the next prefetch tops the stock back up if needed.
+		if (response.flaggedDeckIds != null && response.flaggedDeckIds.Count > 0)
+		{
+			int purgedFlagged = cache.decks.RemoveAll(d => d != null && response.flaggedDeckIds.Contains(d.deckId));
+			if (purgedFlagged > 0)
+			{
+				Debug.Log("[OpponentDeckCache] infinity gate: dropped " + purgedFlagged
+					+ " flagged deck(s) from the cache");
+			}
+		}
+		// §21: same idea for the combo library — a deck CONTAINING a proven combo is withheld by
+		// the server, so a copy cached before the combo was registered has to go as well.
+		if (response.blockedCombos != null && response.blockedCombos.Count > 0)
+		{
+			int purgedCombos = cache.decks.RemoveAll(d => d != null && ContainsBlockedCombo(d.cardTypeIDs, response.blockedCombos));
+			if (purgedCombos > 0)
+			{
+				Debug.Log("[OpponentDeckCache] combo gate: dropped " + purgedCombos
+					+ " cached deck(s) containing a blocked combo");
+			}
+		}
 		Save();
 	}
 
@@ -248,6 +271,46 @@ public static class OpponentDeckCache
 		else if (source == SourceLocal) counters.local++;
 		else if (source == SourcePool) counters.pool++;
 		SaveCounters();
+	}
+
+	/// <summary>
+	/// True when the deck holds every card of any active combo, with multiplicity (plan §21).
+	/// Multiset, not set: a combo needing two copies is not satisfied by one. Counts are built
+	/// per deck (card lists are tens of entries, combos are typically 1-3 cards).
+	/// </summary>
+	private static bool ContainsBlockedCombo(List<string> cardTypeIDs, List<OpponentBlockedCombo> combos)
+	{
+		if (cardTypeIDs == null || cardTypeIDs.Count == 0) return false;
+
+		Dictionary<string, int> deckCounts = null;
+		foreach (OpponentBlockedCombo combo in combos)
+		{
+			if (combo == null || combo.cards == null || combo.cards.Count == 0) continue;
+			if (deckCounts == null)
+			{
+				deckCounts = new Dictionary<string, int>();
+				foreach (string id in cardTypeIDs)
+				{
+					deckCounts.TryGetValue(id, out int n);
+					deckCounts[id] = n + 1;
+				}
+			}
+
+			var needed = new Dictionary<string, int>();
+			foreach (string id in combo.cards)
+			{
+				needed.TryGetValue(id, out int n);
+				needed[id] = n + 1;
+			}
+			bool contained = true;
+			foreach (KeyValuePair<string, int> pair in needed)
+			{
+				deckCounts.TryGetValue(pair.Key, out int have);
+				if (have < pair.Value) { contained = false; break; }
+			}
+			if (contained) return true;
+		}
+		return false;
 	}
 
 	// ------------------------------------------------------------------ persistence

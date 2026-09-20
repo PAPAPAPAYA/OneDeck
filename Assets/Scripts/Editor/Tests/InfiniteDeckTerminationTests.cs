@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using DefaultNamespace;
+using DefaultNamespace.Managers;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -24,14 +25,44 @@ using UnityEngine;
 /// fixture's PutRevealedCardToBottom also omits the R2 life-bounce. Round boundary =
 /// Start Card reveal: fatigue check, round increment (real: StartCardShuffleEffect),
 /// then OnStartCardShuffleAnimationComplete.
+/// TRIGGER WIRING (2026-09-19, plan §15): these tests run the PRODUCTION trigger bridge —
+/// BridgeCard maps each listener from the real event asset it was serialized against to the
+/// fixture's matching instance, and curseCardTypeID is set, mirroring GameScene.unity. The
+/// legacy bridge pointed every listener at onMeRevealed, which rewrote the lethal deck's
+/// RELIC_CURSE_REVIVAL (real trigger OnHostileCurseRevealed) into "fires on my own reveal" and
+/// made this file exercise a different loop than production.
 /// </summary>
 public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 {
 	private const string DeckFolder = "Assets/SORefs/Decks/test decks/chain tests/4.0";
 	private const string FatiguePrefabPath = "Assets/Prefabs/Cards/System/Fatigue.prefab";
 	private const string StartCardPrefabPath = "Assets/Prefabs/Cards/System/StartCard.prefab";
-	private const string JuOnPrefabPath = "Assets/Prefabs/Cards/3.0 no cost (current)/_DONT INCLUDE/Token/JU_ON.prefab";
 	private const int MaxIterations = 5000;
+
+	/// <summary>
+	/// Pinned combat seed. Without it GatherDecks falls back to Rng.ComputeCombatSeed, which
+	/// derives from Rng.RunSeed — itself generated from UnityEngine.Random, so the SAME test
+	/// produced different combat shapes in different editor sessions (observed 2026-09-19: the
+	/// round-clock fatigue engaged in one session and not in the next). The seed goes in through
+	/// TestManager.overrideCombatSeed, the same production path as '-odseed N'.
+	/// </summary>
+	private const int PinnedCombatSeed = 20260919;
+
+	public override void SetUp()
+	{
+		base.SetUp();
+		var tm = CreateGameObject("TestManager").AddComponent<TestManager>();
+		TestManager.Me = tm;
+		tm.overrideCombatSeed = PinnedCombatSeed;
+	}
+
+	public override void TearDown()
+	{
+		// TestManager.Me is a static the shared fixture does not clear; leaving it set would
+		// leak this seed (and its log-category switches) into every later test in the run.
+		TestManager.Me = null;
+		base.TearDown();
+	}
 
 	/// <summary>
 	/// The REAL Start Card prefab: its listener -> StartCardShuffleEffect.ExecuteShuffleEffect
@@ -53,19 +84,42 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	/// Curses enter the grave by normal consumption, so the revivers have pool from
 	/// the first consumed card onward.
 	/// </summary>
-	private DeckSO CreateCurseStubDeck()
+	/// <summary>
+	/// Inert opponent (plan §3 木桩: no-effect cards, no pre-seeded curse). The combo decks
+	/// seed their OWN curse - CurseEffect.EnhanceCurse spawns one whenever none exists - and the
+	/// "at most one JU_ON" invariant is emergent (only EnhanceCurse / EnhanceFriendlyCurse create
+	/// curses, and only from zero; ReviveEffect moves an existing one back), so a pre-seeded
+	/// curse - let alone two - is a state the game cannot reach (plan §17). Measured 0/1/2 seeded
+	/// curses: identical verdict, so zero is both canonical and sufficient.
+	/// </summary>
+	private DeckSO CreateInertStubDeck(int count)
 	{
-		var juOn = AssetDatabase.LoadAssetAtPath<GameObject>(JuOnPrefabPath);
-		Assert.IsNotNull(juOn, "JU_ON curse token prefab missing: " + JuOnPrefabPath);
-		return CreateDeckSO(new List<GameObject> { juOn, juOn });
+		var cards = new List<GameObject>();
+		for (int i = 0; i < count; i++)
+		{
+			cards.Add(CreateCard(false, "InertStub" + i, "INERT_STUB"));
+		}
+		return CreateDeckSO(cards);
+	}
+
+	/// <summary>
+	/// Mirrors the production wiring of GameScene.unity's GameEventStorage: the curse type id
+	/// gates the onEnemyCurseCardRevealed broadcast, so it must be set or the lethal deck's
+	/// relic (RELIC_CURSE_REVIVAL) can never fire. Must run BEFORE GatherDecks.
+	/// </summary>
+	private void EnableProductionTriggerWiring()
+	{
+		Assert.IsNotNull(GameEventStorage.curseCardTypeID, "fixture must expose a curseCardTypeID StringSO");
+		GameEventStorage.curseCardTypeID.value = "JU_ON";
 	}
 
 	[Test]
 	public void LethalInfiniteDeck_KillsStubOpponent()
 	{
 		CombatManager.playerDeck = LoadSampleDeck("lethal infinite test");
-		CombatManager.enemyDeck = CreateCurseStubDeck();
+		CombatManager.enemyDeck = CreateInertStubDeck(3);
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
+		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
 		BridgeAllCards();
 
@@ -105,8 +159,9 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	public void NonLethalInfiniteDeck_FatigueConverges()
 	{
 		CombatManager.playerDeck = LoadSampleDeck("non-lethal infinite test");
-		CombatManager.enemyDeck = CreateCurseStubDeck();
+		CombatManager.enemyDeck = CreateInertStubDeck(3);
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
+		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
 		BridgeAllCards();
 
@@ -141,11 +196,25 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		}
 
 		Assert.Less(iterations, MaxIterations, "driver must terminate within the bound");
-		// Overtime machinery must have engaged: rounds past the threshold add fatigue cards.
-		Assert.Greater(CombatManager.roundNumRef.value, CombatManager.overtimeRoundThreshold,
-			"rounds must have crossed the overtime threshold");
+		// Overtime machinery must have engaged — but the ROUND clock cannot be the evidence.
+		// CheckFatigueNAddFatigue fires on roundNum > overtimeRoundThreshold, and this loop
+		// starves the round boundary: with the driver terminating on logic HP (2026-09-19, plan
+		// §16) the enemy dies inside round 2, before that check can ever fire. §13 already
+		// concluded the reveal-count clock is "the only clock that keeps ticking inside a
+		// round-starved loop", so that is what this asserts. The previous round-clock assertion
+		// only passed because the old display-lagging terminator let extra rounds accumulate.
+		Assert.GreaterOrEqual(CombatManager.totalCardsRevealed, CombatManager.fatigueRevealThreshold,
+			"the reveal-count fatigue clock must have crossed its threshold (threshold="
+			+ CombatManager.fatigueRevealThreshold + ")"
+			+ " DIAG reveals=" + CombatManager.totalCardsRevealed
+			+ " rounds=" + CombatManager.roundNumRef.value
+			+ " deck=" + CombatManager.combinedDeckZone.Count
+			+ " fatigueInDeck=" + CountFatigueCards());
 		Assert.Greater(CountFatigueCards(), 0,
-			"overtime fatigue must have been added to the deck before the combat ended");
+			"overtime fatigue must have been added to the deck before the combat ended"
+			+ " DIAG reveals=" + CombatManager.totalCardsRevealed
+			+ " rounds=" + CombatManager.roundNumRef.value
+			+ " fatigueThreshold=" + CombatManager.fatigueRevealThreshold);
 		Assert.LessOrEqual(CombatManager.enemyPlayerStatusRef.hp, 0,
 			"combat must end by death, not by running out of patience"
 			+ " DIAG iters=" + iterations
@@ -197,9 +266,11 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	/// Edit Mode never runs Awake/OnEnable and skips RuntimeOnly persistent UnityEvent
 	/// calls (callState=2), and CardFactory.CreateLogicalCard wires only the status refs —
 	/// the EffectScript/container back-references the game resolves at spawn are null.
-	/// This is the same bridge CurseSummonerPrefabSmokeTests applies to its hand-instantiated
-	/// cards (runtime-ref injection + callState flip + listener re-point & registration),
-	/// made idempotent per card instance so the driver can re-bridge freshly spawned cards
+	/// This is the CurseSummonerPrefabSmokeTests bridge (runtime-ref injection + callState
+	/// flip + listener registration) with one difference: listeners are re-pointed to the
+	/// fixture event matching the REAL asset they were serialized against, preserving
+	/// production trigger semantics, instead of everything landing on onMeRevealed. Made
+	/// idempotent per card instance so the driver can re-bridge freshly spawned cards
 	/// (fatigue cards, curse tokens) right before they are triggered.
 	/// </summary>
 	private void BridgeCard(GameObject card)
@@ -227,8 +298,36 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		foreach (var listener in card.GetComponentsInChildren<GameEventListener>(true))
 		{
 			ForceEditorCallState(listener, "response");
-			listener.@event = GameEventStorage.onMeRevealed;
-			GameEventStorage.onMeRevealed.RegisterListener(listener);
+			GameEvent target = MapRealEventToFixtureEvent(listener.@event);
+			listener.@event = target;
+			target.RegisterListener(listener);
+		}
+	}
+
+	/// <summary>
+	/// Re-points a listener from the REAL event asset it was serialized against to the
+	/// fixture's equivalent instance, so cross-card triggers keep their production semantics
+	/// (the fixture builds its own GameEvent objects, so identity matching is impossible and
+	/// asset-name matching is the contract). Unknown events fall back to onMeRevealed, which is
+	/// the legacy bridge behavior and keeps cards outside these combos working as before.
+	/// </summary>
+	private GameEvent MapRealEventToFixtureEvent(GameEvent real)
+	{
+		if (real == null) return GameEventStorage.onMeRevealed;
+		switch (real.name)
+		{
+			case "OnMeRevealed": return GameEventStorage.onMeRevealed;
+			case "OnHostileCurseRevealed": return GameEventStorage.onEnemyCurseCardRevealed;
+			case "OnAnyCardRevealed": return GameEventStorage.onAnyCardRevealed;
+			case "OnHostileCardRevealed": return GameEventStorage.onHostileCardRevealed;
+			case "OnMeRevived": return GameEventStorage.onMeRevived;
+			case "OnAnyCardRevived": return GameEventStorage.onAnyCardRevived;
+			case "OnFriendlyCardRevived": return GameEventStorage.onFriendlyCardRevived;
+			case "OnEnemyCardRevived": return GameEventStorage.onEnemyCardRevived;
+			case "OnMeBuried": return GameEventStorage.onMeBuried;
+			case "OnAnyCardBuried": return GameEventStorage.onAnyCardBuried;
+			case "OnFriendlyCardBuried": return GameEventStorage.onFriendlyCardBuried;
+			default: return GameEventStorage.onMeRevealed;
 		}
 	}
 
@@ -265,7 +364,11 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 		while (iterations++ < maxIterations)
 		{
 			if (guard.ConcludeRequested) break;                        // global cap terminator
-			if (CombatManager.Me.IsDeathVisuallyLanded) break;         // lethal / fatigue terminator (headless: logic HP)
+			// Headless terminator is LOGIC HP, not IsDeathVisuallyLanded: this fixture wires a
+			// dummy CombatInfoDisplayer, so the visual flag reads the DISPLAY layer, whose
+			// enemy-HP accessor returns a queue-frozen value while hits are pending — in a tight
+			// revive loop it never lands, even after the killing blow.
+			if (CombatManager.enemyPlayerStatusRef.hp <= 0 || CombatManager.ownerPlayerStatusRef.hp <= 0) break;
 
 			if (CombatManager.revealZone == null)
 			{

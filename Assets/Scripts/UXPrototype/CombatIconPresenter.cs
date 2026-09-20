@@ -2,14 +2,16 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Shows the PlayerIcon / EnemyIcon HUD elements only during the Combat phase.
-/// Follows the same GamePhase-polled SetActive convention as CombatHPBarPresenter
-/// and HPNumericDisplay. Pure presentation; no game-logic changes.
-/// Optional name labels under each icon: player shows PlayerIdentity.Username,
-/// enemy shows OpponentDeckCache.Current.username (both "???" when unset/absent).
-/// Labels are children of the icons, so the phase toggles hide them with their
-/// parent; the text re-polls per frame with a diff guard, matching the file's
-/// polling convention.
+/// Shows the PlayerIcon / EnemyIcon HUD elements per game phase.
+/// Player icon: Combat AND Shop (2026-09-19: the shop top bar reuses the combat
+/// avatar + username block, repositioned via ShopTopBarLayout; the combat anchor
+/// and scale are captured at Awake and restored on combat entry).
+/// Enemy icon: Combat only.
+/// Same GamePhase-polled SetActive convention as CombatHPBarPresenter and
+/// HPNumericDisplay. Pure presentation; no game-logic changes.
+/// Name label under the icon shows PlayerIdentity.Username ("???" when unset).
+/// The label is a child of the icon, so the phase toggles hide it with the parent;
+/// the text re-polls per frame with a diff guard, matching the polling convention.
 /// </summary>
 public class CombatIconPresenter : MonoBehaviour
 {
@@ -22,11 +24,16 @@ public class CombatIconPresenter : MonoBehaviour
 	public TMP_Text playerNameLabel;
 	public TMP_Text enemyNameLabel;
 
-	private bool _wasInCombat;
+	private const string UnknownName = "???";
+
+	private EnumStorage.GamePhase _lastPhase = EnumStorage.GamePhase.Result;
 	private string _lastPlayerName;
 	private string _lastEnemyName;
 
-	private const string UnknownName = "???";
+	private RectTransform _playerIconRt;
+	private Canvas _canvas;
+	private Vector2 _combatAnchoredPos;
+	private Vector3 _combatScale;
 
 	private void Awake()
 	{
@@ -39,38 +46,69 @@ public class CombatIconPresenter : MonoBehaviour
 		// VISUAL-FIX(2026-07-22): Player/Enemy icons stay visible outside the Combat phase
 		//   Cause:    PlayerIcon/EnemyIcon were scene-only objects with no script ever
 		//             toggling them, so they rendered during Shop/Result phases too.
-		//   Affects:  PlayerIcon, EnemyIcon under Combat Canvas
-		//   Regress:  Enter Shop phase: both icons must be inactive; re-enter Combat:
-		//             both icons must reappear at their anchored positions.
+		//   Affects:  PlayerIcon/EnemyIcon under Combat Canvas
+		//   Regress:  Enter Shop phase: ENEMY icon must be inactive (the PLAYER icon now
+		//             intentionally stays, repositioned to the shop top bar); re-enter
+		//             Combat: both icons at their original anchored positions/scale.
 		playerIcon.SetActive(false);
 		enemyIcon.SetActive(false);
-		// Combat input is click-driven: no label graphic may intercept raycasts.
+		_playerIconRt = playerIcon.transform as RectTransform;
+		if (_playerIconRt != null)
+		{
+			_combatAnchoredPos = _playerIconRt.anchoredPosition;
+			_combatScale = _playerIconRt.localScale;
+		}
+		_canvas = playerIcon.GetComponentInParent<Canvas>();
+		// Combat/shop input is click-driven: no label graphic may intercept raycasts.
 		if (playerNameLabel != null) playerNameLabel.raycastTarget = false;
 		if (enemyNameLabel != null) enemyNameLabel.raycastTarget = false;
 	}
 
 	private void Update()
 	{
-		bool inCombat = gamePhaseRef.Value() == EnumStorage.GamePhase.Combat;
-		if (inCombat && !_wasInCombat)
+		EnumStorage.GamePhase phase = gamePhaseRef.Value();
+		if (phase != _lastPhase)
 		{
-			EnterCombat();
+			ApplyPhase(phase);
+			_lastPhase = phase;
 		}
-		else if (!inCombat && _wasInCombat)
+		if (phase == EnumStorage.GamePhase.Combat)
 		{
-			ExitCombat();
+			RefreshPlayerNameLabel();
+			RefreshEnemyNameLabel();
 		}
-		_wasInCombat = inCombat;
-		if (inCombat)
+		else if (phase == EnumStorage.GamePhase.Shop)
 		{
-			RefreshNameLabels();
+			RefreshPlayerNameLabel();
 		}
 	}
 
-	// Diff-guarded write so the TMP mesh only rebuilds on an actual change; the
+	private void ApplyPhase(EnumStorage.GamePhase phase)
+	{
+		bool inCombat = phase == EnumStorage.GamePhase.Combat;
+		bool inShop = phase == EnumStorage.GamePhase.Shop;
+		playerIcon.SetActive(inCombat || inShop);
+		enemyIcon.SetActive(inCombat);
+		if (_playerIconRt == null)
+		{
+			return;
+		}
+		if (inShop)
+		{
+			_playerIconRt.anchoredPosition = ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.PlayerIconViewport, _canvas);
+			_playerIconRt.localScale = Vector3.one * ShopTopBarLayout.PlayerIconShopScale;
+		}
+		else
+		{
+			_playerIconRt.anchoredPosition = _combatAnchoredPos;
+			_playerIconRt.localScale = _combatScale;
+		}
+	}
+
+	// Diff-guarded writes so the TMP mesh only rebuilds on an actual change; the
 	// enemy name can arrive shortly after the phase switch (ghost deck injection),
-	// so polling here instead of a one-shot EnterCombat write is the safe pattern.
-	private void RefreshNameLabels()
+	// so polling here instead of a one-shot entry write is the safe pattern.
+	private void RefreshPlayerNameLabel()
 	{
 		string playerName = PlayerIdentity.Username;
 		if (string.IsNullOrEmpty(playerName))
@@ -86,6 +124,10 @@ public class CombatIconPresenter : MonoBehaviour
 				playerNameLabel.color = GameColorPalette.IconNameLabelColor;
 			}
 		}
+	}
+
+	private void RefreshEnemyNameLabel()
+	{
 		string enemyName = OpponentDeckCache.Current != null ? OpponentDeckCache.Current.username : null;
 		if (string.IsNullOrEmpty(enemyName))
 		{
@@ -100,17 +142,5 @@ public class CombatIconPresenter : MonoBehaviour
 				enemyNameLabel.color = GameColorPalette.IconNameLabelColor;
 			}
 		}
-	}
-
-	private void EnterCombat()
-	{
-		playerIcon.SetActive(true);
-		enemyIcon.SetActive(true);
-	}
-
-	private void ExitCombat()
-	{
-		playerIcon.SetActive(false);
-		enemyIcon.SetActive(false);
 	}
 }

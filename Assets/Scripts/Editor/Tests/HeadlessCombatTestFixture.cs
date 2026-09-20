@@ -5,7 +5,9 @@ using DefaultNamespace;
 using DefaultNamespace.Managers;
 using DefaultNamespace.SOScripts;
 using NUnit.Framework;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Base fixture for headless combat unit tests.
@@ -33,11 +35,24 @@ public abstract class HeadlessCombatTestFixture
 
 	// Shared dummy UI to avoid repeated TextMeshProUGUI creation (triggers TLS allocator warnings)
 	private static TMPro.TextMeshProUGUI _sharedDummyText;
+	/// <summary>Long-lived preview scene holding the shared dummy UI (see SetupDummyUI).</summary>
+	private static Scene _sharedDummyScene;
+
+	//// <summary>
+	/// Isolated scene for everything this fixture creates. Building these objects in the ACTIVE
+	/// scene marks GameScene dirty, and a dirty scene makes the next Test Runner run raise the
+	/// "Scene(s) Have Been Modified" modal, which blocks the main thread so the job reads as
+	/// "failed to initialize" (measured 2026-09-19: a full run left GameScene dirty with no user
+	/// edit in between). A preview scene is never saved, so the dirt stops at the source.
+	/// Validated first in HeadlessCombatRig: 1 -> 0 sceneDirtied events, identical sim results.
+	/// </summary>
+	private Scene _scene;
 
 	[SetUp]
 	public virtual void SetUp()
 	{
 		CleanupSingletons();
+		_scene = EditorSceneManager.NewPreviewScene();
 
 		// Player statuses
 		OwnerStatus = CreateScriptableObject<PlayerStatusSO>();
@@ -224,6 +239,7 @@ public abstract class HeadlessCombatTestFixture
 		_createdScriptables.Clear();
 
 		CleanupSingletons();
+		if (_scene.IsValid()) EditorSceneManager.ClosePreviewScene(_scene);
 	}
 
 	[OneTimeTearDown]
@@ -233,6 +249,11 @@ public abstract class HeadlessCombatTestFixture
 		{
 			UnityEngine.Object.DestroyImmediate(_sharedDummyText.gameObject);
 			_sharedDummyText = null;
+		}
+		if (_sharedDummyScene.IsValid())
+		{
+			EditorSceneManager.ClosePreviewScene(_sharedDummyScene);
+			_sharedDummyScene = default(Scene);
 		}
 	}
 
@@ -301,6 +322,8 @@ public abstract class HeadlessCombatTestFixture
 	protected GameObject CreateGameObject(string name)
 	{
 		var obj = new GameObject(name);
+		// Move it out of the active scene right away; see _scene for why.
+		SceneManager.MoveGameObjectToScene(obj, _scene);
 		_createdObjects.Add(obj);
 		return obj;
 	}
@@ -324,7 +347,9 @@ public abstract class HeadlessCombatTestFixture
 	{
 		if (_sharedDummyText == null)
 		{
+			if (!_sharedDummyScene.IsValid()) _sharedDummyScene = EditorSceneManager.NewPreviewScene();
 			var dummyTextObj = new GameObject("SharedDummyText");
+			SceneManager.MoveGameObjectToScene(dummyTextObj, _sharedDummyScene);
 			_sharedDummyText = dummyTextObj.AddComponent<TMPro.TextMeshProUGUI>();
 		}
 

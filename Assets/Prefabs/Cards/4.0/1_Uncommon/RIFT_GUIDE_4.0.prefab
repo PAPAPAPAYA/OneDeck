@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 6974803707158568953}
   - component: {fileID: 9033646256975296485}
   m_Layer: 0
-  m_Name: RIFT_GUIDE
+  m_Name: RIFT_GUIDE_4.0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -174,13 +174,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
-  cardTypeID: RIFT_GUIDE
+  cardTypeID: RIFT_GUIDE_4.0
   displayName: "\u732E\u796D\u53F8\u4E8B"
   cardDesc: "\u653E\u9010 <b>1</b> \u53CB\u65B9\u4FE1\u5F92: \u57CB\u846C <b>2</b>
     \u654C\u65B9\u73B0\u8C61"
   rarity: 1
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -197,12 +198,14 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 0
+  wildcardTypeFilter: 0
   utilityKind: 0
   utilityValue: 0
   utilityValue2: 0
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &9033646256975296485
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -143,6 +143,21 @@ public class ShopManager : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Roll odds (percent) of the active rarity weight table, for the shop chrome
+	/// rarity chips. Zero total (or no table) yields 0/0/0.
+	/// </summary>
+	public void GetRarityOddsPercents(out float commonPct, out float uncommonPct, out float rarePct)
+	{
+		ShopRarityWeightSO active = GetActiveRarityWeightRef();
+		if (active != null)
+		{
+			active.GetOddsPercents(out commonPct, out uncommonPct, out rarePct);
+			return;
+		}
+		commonPct = uncommonPct = rarePct = 0f;
+	}
+
+	/// <summary>
 	/// Resolves the utility board chance for the current session (mirrors GetActiveRarityWeightRef).
 	/// Returns -1 when the table is empty or no entry matches, so ShopBoardPipeline applies its
 	/// built-in default - scene deserialization wipes the list's field initializer, therefore the
@@ -200,9 +215,6 @@ public class ShopManager : MonoBehaviour
 		}
 		return priceRef.value;
 	}
-
-	[Header("UI objects")]
-	public GameObject sectionIdentifier;
 
 	private void Update()
 	{
@@ -338,6 +350,7 @@ public class ShopManager : MonoBehaviour
 			}
 		}
 		ShopChrome.RefreshIfActive();
+		ShopSectionPanels.RefreshIfActive();
 
 		// Plan step 5: emphasize pulse on the bought card's deck instance when a utility
 		// passive's effect (re)applies via the recompute (payday-time application happens
@@ -368,6 +381,7 @@ public class ShopManager : MonoBehaviour
 		}
 
 		ShopChrome.RefreshIfActive();
+		ShopSectionPanels.RefreshIfActive();
 	}
 
 	public void EnterShop()
@@ -397,8 +411,7 @@ public class ShopManager : MonoBehaviour
 		ApplyBoardDiscount(); // initial board rolls discounts too (2026-09-11 probability rework)
 		// show + refresh the world chrome (payday / baseline growth are final by here)
 		ShopChrome.ShowIfActive();
-		// show section identifiers
-		sectionIdentifier.SetActive(true);
+		ShopSectionPanels.ShowIfActive();
 		// record shop visit
 		if (ShopStatsManager.Me != null)
 		{
@@ -428,7 +441,7 @@ public class ShopManager : MonoBehaviour
 		_boughtCardInstances.Clear();
 
 		ShopChrome.HideIfActive();
-		sectionIdentifier.SetActive(false);
+		ShopSectionPanels.HideIfActive();
 	}
 
 	private void GenerateShopItems()
@@ -517,6 +530,7 @@ public class ShopManager : MonoBehaviour
 			purse.value -= RerollPriceRef.value;
 		}
 		ShopChrome.RefreshIfActive();
+		ShopSectionPanels.RefreshIfActive();
 
 		// First generate new shop item data
 		GenerateShopItems();
