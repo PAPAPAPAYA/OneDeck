@@ -83,7 +83,9 @@ async function run(access) {
       arguments: {
         data: {
           data_source_urls: ["collection://" + DB_ID],
-          query: 'SELECT * FROM "collection://' + DB_ID + '" LIMIT ' + PAGE + " OFFSET " + offset,
+          // Explicit column list: SELECT * degrades on this SQL layer (full-scan
+          // pages randomly return NULL for some number columns, e.g. ExtraATKTimes).
+          query: 'SELECT CARD_TYPE_ID, "中文名", rarity, ATK, "card desc", tag, "状态", "Unity 配置状态", "生物", utility, ExtraATKTimes FROM "collection://' + DB_ID + '" LIMIT ' + PAGE + " OFFSET " + offset,
           mode: "sql",
         },
       },
@@ -95,6 +97,25 @@ async function run(access) {
     all = all.concat(page.results || []);
     console.log("page offset=" + offset + " rows=" + (page.results || []).length + " has_more=" + page.has_more);
     if (!page.results || page.results.length < PAGE) break;
+  }
+  // The SQL layer randomly NULLs number columns on large full scans (values are
+  // intact: a WHERE-filtered query returns them). Re-fetch the sparse column
+  // with a small filtered query and overlay.
+  const fixup = await rpc("tools/call", {
+    name: "notion-query-data-sources",
+    arguments: {
+      data: {
+        data_source_urls: ["collection://" + DB_ID],
+        query: 'SELECT CARD_TYPE_ID, ExtraATKTimes FROM "collection://' + DB_ID + '" WHERE ExtraATKTimes IS NOT NULL',
+        mode: "sql",
+      },
+    },
+  }, sid, access);
+  const fixText = (fixup.payload.result && fixup.payload.result.content || [])
+    .map(c => c.text || "").join("\n");
+  const byId = new Map(all.map(r => [r.CARD_TYPE_ID, r]));
+  for (const r of JSON.parse(fixText).results || []) {
+    if (byId.has(r.CARD_TYPE_ID)) byId.get(r.CARD_TYPE_ID).ExtraATKTimes = r.ExtraATKTimes;
   }
   const merged = JSON.stringify({ results: all, has_more: false, total: all.length });
   fs.writeFileSync(OUT, merged, "utf-8");

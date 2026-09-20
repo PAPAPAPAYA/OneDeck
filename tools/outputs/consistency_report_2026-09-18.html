@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>OneDeck 三侧一致性检查</title><style>
+body{font-family:'Segoe UI',sans-serif;margin:24px;color:#222;max-width:1200px}
+h2{border-bottom:2px solid #888;padding-bottom:4px;margin-top:36px}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{border:1px solid #bbb;padding:4px 8px;text-align:left;vertical-align:top}
+th{background:#eee}.b{color:#fff;border-radius:4px;padding:1px 6px;font-size:11px}
+.muted{color:#777}.num{font-size:26px;font-weight:bold;margin-right:18px}
+code{background:#f4f4f4;padding:0 3px}</style></head><body>
+<h1>OneDeck 三侧一致性检查</h1><p class=muted>generated 2026-09-18 19:47 (UTC+8) | unity=113 notion=119 catalog=115 | ERROR=3 WARN=7 INFO=0 | 价格基线={'common': 4, 'uncommon': 6, 'rare': 12}</p>
+<h2>问题明细（按卡分组）</h2>
+<table><tr><th>卡</th><th>级别</th><th>字段</th><th>详情</th></tr>
+<tr><td rowspan=1><code>DEATHBED_PORTER</code><br>抬棺人</td>
+<td><span class="b" style="background:#b8860b">WARN</span></td><td>catalog.stale</td><td>prefab 改于 2026-09-17, catalog 上传于 2026-09-15 (改卡后未重传)</td></tr>
+<tr><td rowspan=1><code>DECIMATION</code><br>什一抽杀</td>
+<td><span class="b" style="background:#b8860b">WARN</span></td><td>catalog.stale</td><td>prefab 改于 2026-09-17, catalog 上传于 2026-09-15 (改卡后未重传)</td></tr>
+<tr><td rowspan=2><code>QUAD_STRIKER</code><br>百臂巨人</td>
+<td><span class="b" style="background:#c0392b">ERROR</span></td><td>catalog.tags</td><td>engine(myTags+reserved)=['多次攻击'] catalog=[]</td></tr>
+<tr>
+<td><span class="b" style="background:#b8860b">WARN</span></td><td>catalog.stale</td><td>prefab 改于 2026-09-17, catalog 上传于 2026-09-15 (改卡后未重传)</td></tr>
+<tr><td rowspan=1><code>RELIC_TALLY</code><br>血账</td>
+<td><span class="b" style="background:#b8860b">WARN</span></td><td>catalog.stale</td><td>prefab 改于 2026-09-17, catalog 上传于 2026-09-15 (改卡后未重传)</td></tr>
+<tr><td rowspan=1><code>REVIVING_STRIKER</code><br>无头武生</td>
+<td><span class="b" style="background:#b8860b">WARN</span></td><td>catalog.stale</td><td>prefab 改于 2026-09-17, catalog 上传于 2026-09-15 (改卡后未重传)</td></tr>
+<tr><td rowspan=1><code>SPIRIT_CALLER</code><br>降灵会</td>
+<td><span class="b" style="background:#b8860b">WARN</span></td><td>catalog.stale</td><td>prefab 改于 2026-09-17, catalog 上传于 2026-09-15 (改卡后未重传)</td></tr>
+<tr><td rowspan=1><code>SYSTEM_INCREASE_DECK_SIZE</code><br></td>
+<td><span class="b" style="background:#c0392b">ERROR</span></td><td>coverage</td><td>catalog 僵尸行(无对应 prefab, 疑似 3.0 残留)</td></tr>
+<tr><td rowspan=1><code>SYSTEM_INCREASE_DECK_SIZE_PRO</code><br></td>
+<td><span class="b" style="background:#c0392b">ERROR</span></td><td>coverage</td><td>catalog 僵尸行(无对应 prefab, 疑似 3.0 残留)</td></tr>
+<tr><td rowspan=1><code>ZOMBIE</code><br>行尸走肉</td>
+<td><span class="b" style="background:#b8860b">WARN</span></td><td>catalog.stale</td><td>prefab 改于 2026-09-18, catalog 上传于 2026-09-15 (改卡后未重传)</td></tr>
+</table>
+<h2>catalog game_version 健康</h2><table><tr><th>game_version</th><th>行数</th></tr>
+<tr><td>0.2.0</td><td>115</td></tr>
+</table><p class=muted>admin 取名口径 = 行数最多的版本（server.js loadCatalogMap）。</p>
+<h2>Notion 侧附加信息</h2><ul>
+<li>备用/已删行（不要求 prefab）: DELAYER, RELIC_TAINT, CURSE_ECHO, SOUL_SWAPPER, JU_ON, RIFT</li>
+<li>无 CARD_TYPE_ID 或重复行: 无</li>
+<li>重复 cardTypeID prefab: 0 组</li>
+</ul></body></html>

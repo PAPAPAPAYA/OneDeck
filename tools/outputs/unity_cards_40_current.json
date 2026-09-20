@@ -1954,5 +1954,20 @@
   "cardType": "None",
   "extraAttackTimes": "0",
   "folder": "2_Rare"
+ },
+ {
+  "file": "ZOMBIE",
+  "cardTypeID": "ZOMBIE",
+  "displayName": "行尸走肉",
+  "rarity": "0",
+  "rarityName": "common",
+  "cardDesc": "攻击",
+  "printedAttack": "2",
+  "utilityKind": "0",
+  "myTags": [],
+  "reservedTag": "None",
+  "cardType": "Creature",
+  "extraAttackTimes": "0",
+  "folder": "_Default cards"
  }
 ]
