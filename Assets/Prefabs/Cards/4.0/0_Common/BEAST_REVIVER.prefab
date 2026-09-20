@@ -87,6 +87,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  oncePerRound: 1
   roundEndReviveArmed: 0
 --- !u!1 &5490173269118527125
 GameObject:
@@ -138,7 +139,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: BEAST_REVIVER
   displayName: "\u9A6C\u620F\u56E2\u7684\u5730\u4E0B\u5BA4"
-  cardDesc: "\u653B\u51FB;\u590D\u6D3B <b>1</b> \u53CB\u65B9\u5B9E\u4F53"
+  cardDesc: "\u653B\u51FB;\u6BCF\u56DE\u5408\u4E00\u6B21,\u590D\u6D3B <b>1</b> \u53CB\u65B9\u5B9E\u4F53"
   rarity: 0
   shopRollWeightMultiplier: 1
   physicalDeckCard: 1

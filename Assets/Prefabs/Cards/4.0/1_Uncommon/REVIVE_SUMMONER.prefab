@@ -86,6 +86,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  oncePerRound: 1
   roundEndReviveArmed: 0
 --- !u!1 &6788459959842888888
 GameObject:
@@ -137,7 +138,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: REVIVE_SUMMONER
   displayName: "\u590D\u6D3B\u89C1\u8BC1\u4EBA"
-  cardDesc: "\u590D\u6D3B <b>1</b> \u53CB\u65B9;\u751F\u6210 <b>1</b> \u4FE1\u5F92"
+  cardDesc: "\u751F\u6210 <b>1</b> \u4FE1\u5F92;\u6BCF\u56DE\u5408\u4E00\u6B21,\u590D\u6D3B <b>1</b> \u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1

@@ -173,6 +173,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  oncePerRound: 1
   roundEndReviveArmed: 0
 --- !u!1 &6426072152774848527
 GameObject:
@@ -225,9 +226,8 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: NECROMANCER
   displayName: "\u62DB\u9B42\u6267\u4E8B"
-  cardDesc: "\u590D\u6D3B <b>1</b> \u53CB\u65B9;\u82CF\u9192:\u590D\u6D3B <b>1</b>
-    \u53CB\u65B9"
-  rarity: 1
+  cardDesc: "\u82CF\u9192:\u590D\u6D3B <b>1</b> \u53CB\u65B9;\u6BCF\u56DE\u5408\u4E00\u6B21,\u590D\u6D3B <b>1</b> \u53CB\u65B9"
+  rarity: 2
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
   isStartCard: 0

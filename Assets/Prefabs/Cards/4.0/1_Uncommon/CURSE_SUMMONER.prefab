@@ -86,6 +86,7 @@ MonoBehaviour:
   onlyEnhanced: 0
   tagsToCheck: 
   excludeSelf: 1
+  oncePerRound: 1
   roundEndReviveArmed: 0
 --- !u!1 &2078823438484378029
 GameObject:
@@ -225,7 +226,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: CURSE_SUMMONER
   displayName: "\u8D70\u9634\u4EBA"
-  cardDesc: "\u590D\u6D3B <b>1</b> \u53CB\u65B9;\u590D\u6D3B <b>1</b> \u654C\u65B9\u8BC5\u5492"
+  cardDesc: "\u590D\u6D3B <b>1</b> \u654C\u65B9\u8BC5\u5492;\u6BCF\u56DE\u5408\u4E00\u6B21,\u590D\u6D3B <b>1</b> \u53CB\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
   takeUpSpace: 1
