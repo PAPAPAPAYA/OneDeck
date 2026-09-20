@@ -196,5 +196,5 @@
 - 脚本 `tools/scripts/apply_revive_gate_prefabs_2.py`(同首波的 fileID+GUID 双重定位 + desc 替换):6 prefab 落闸 + desc 更新(「每回合两次/三次」按 §8.1.6 规范,受限子句居末)。
 - `ReviveOncePerRoundPrefabTests` 扩 6 例(锁闸值 + desc),并将布尔断言改为次数断言。
 - 目标回归:两个测试类 23/23 绿(含旧 8 例在 int 语义下的兼容读取)。
-- 已知副作用:RELIC_CURSE_REVIVAL 加闸后标本卡组 "lethal infinite test"(RELIC+GARDENER)不再无限,依赖它的侦测/管道测试(ReportsInfinite/Attribution/Minimize 等)转为红灯 —— 与首波的 2 红同类,标本重造另案照旧(全池无活环后,正控标本只能用测试专用合成卡)。
+- 已知副作用:RELIC_CURSE_REVIVAL 加闸后标本卡组 "lethal infinite test"(RELIC+GARDENER)不再无限,依赖它的侦测/管道测试(ReportsInfinite/Attribution/Minimize 等)转为红灯 —— 与首波的 2 红同类,标本重造另案照旧(全池无活环后,正控标本只能用测试专用合成卡)。 全量 EditMode 649 跑 635 绿,14 红全部为 lethal 标本失效(根因同一);用户拍板(2026-09-20 晚):暂留红灯,标本重造另案。
 - Notion 4.0 DB 同步(6 行 desc)走 unity-notion-card-sync。
