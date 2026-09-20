@@ -13,6 +13,9 @@ Usage:
 	python tools/outputs/dump_decks.py            # local dev DB
 	python tools/outputs/dump_decks.py --prod     # live ECS DB (read-only SELECT)
 
+Exit code: 0 on success, non-zero on failure. It is NOT the deck row count -
+any non-zero result means the dump failed and decks_current.json is unchanged.
+
 Note for Windows: run with the repo root as the working directory (paths are relative to it).
 """
 import json
@@ -56,7 +59,8 @@ def summarize(payload):
 	versions = sorted(set(d.get("gameVersion") or "?" for d in decks))
 	print("decks: %d rows, %d distinct contents, %d already flagged" % (len(decks), len(contents), flagged))
 	print("game versions: %s" % ", ".join(versions))
-	return len(decks)
+	# Exit code, not the row count: a non-zero result means the dump failed.
+	return 0
 
 
 def write_output(payload):

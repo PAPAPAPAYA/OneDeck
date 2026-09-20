@@ -17,7 +17,14 @@ TSV row format mirrors the legacy _prod_catalog.tsv:
 Usage:
 	python dump_catalog.py            # local dev DB
 	python dump_catalog.py --prod     # live ECS DB (read-only SELECT)
+
+Exit code: 0 on success, non-zero on failure. It is NOT the row count - callers
+treat any non-zero result as a failed refresh.
+
+Local mode reads the dev DB as-is; nothing syncs it from prod, so a stale local
+DB silently yields a wrong catalog side. Use --prod for the live server.
 """
+import datetime
 import json
 import os
 import subprocess
@@ -54,6 +61,19 @@ REMOTE_JS = (
 def write_outputs(lines):
 	rows = [l.split("\t") for l in lines if l.startswith("CAT\t")]
 	vers = [l.split("\t") for l in lines if l.startswith("VER\t")]
+	if not rows:
+		# An empty catalog would make the checker report every card as missing;
+		# fail loudly instead of writing it.
+		print("no catalog rows parsed - refusing to write an empty catalog")
+		return 1
+	# The remote side reports every version's row count, but rows travel for the
+	# best version only. A mismatch means lines were lost in transit (observed
+	# 2026-09-20: 2 of 115 rows never arrived), which would silently under-report
+	# the catalog and surface as phantom "not uploaded" drift - so refuse.
+	if vers and int(vers[0][2]) != len(rows):
+		print("row count mismatch: remote reported %s rows for version %s, %d arrived"
+			% (vers[0][2], vers[0][1], len(rows)))
+		return 1
 	os.makedirs(OUT_DIR, exist_ok=True)
 	with open(OUT_TSV, "w", encoding="utf-8", newline="") as fp:
 		fp.write("\n".join(lines_lt(r) for r in rows) + ("\n" if rows else ""))
@@ -61,7 +81,8 @@ def write_outputs(lines):
 		for v in vers:
 			fp.write("%s\t%s\n" % (v[1], v[2]))
 	print("wrote %d catalog rows, %d game_versions -> %s" % (len(rows), len(vers), OUT_TSV))
-	return len(rows)
+	# Exit code, not the row count: callers check this and abort on non-zero.
+	return 0
 
 
 def lines_lt(r):
@@ -75,6 +96,10 @@ def dump_local():
 	if not local_db:
 		print("local DB not found, tried:\n  " + "\n  ".join(LOCAL_DBS))
 		return 1
+	# Nothing syncs this dev DB from prod, and a stale one produces a report full
+	# of phantom drift without any error - so always print which DB was read.
+	print("local DB: %s (mtime %s)" % (local_db, datetime.datetime.fromtimestamp(
+		os.path.getmtime(local_db)).strftime("%Y-%m-%d %H:%M")))
 	uri = "file:%s?mode=ro" % os.path.abspath(local_db).replace("\\", "/")
 	conn = sqlite3.connect(uri, uri=True)
 	try:

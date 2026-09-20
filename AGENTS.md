@@ -125,6 +125,10 @@ An opponent deck that loops forever would hang the victim, so a serving gate wit
 - **Verdict sources**: editor attribution, and the P5 back-scan (`tools/outputs/dump_decks.py --prod` → menu `Tools/Infinity/Batch Scan` → dry-run, then post with `tools/outputs/post_loop_reports.js`). The poster posts only PROVEN entries and needs `--player-id` from `tools/outputs/_scan_reporter.txt` (gitignored — the operator's own account gets `own_deck`).
 - **Cost bounds are load-bearing**: `ScanGuardTotal=400`, `ScanMinimizerMaxRuns=120`, and run scans in slices — an unbounded scan crashed the editor with "System out of memory" (§23.5).
 
+## Card Data Consistency
+
+- `tools/check_consistency.bat` - three-way drift report (prefabs / Notion / server catalog); manual: `docs/ConsistencyTool.md`.
+
 ## Effect System
 
 ### Trigger Flow

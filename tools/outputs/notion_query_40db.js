@@ -73,6 +73,19 @@ async function run(access) {
   const sid = init.sid;
   await rpc("notifications/initialized", {}, sid, access);
 
+  // The MCP answers in plain text rather than JSON when the workspace is rate
+  // limited or the session is refused; surface what it actually said instead of
+  // a bare "Unexpected token".
+  function parseJsonResponse(text, label) {
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      const head = (text || "").replace(/\s+/g, " ").trim().slice(0, 200);
+      throw new Error(label + " returned non-JSON (usually an MCP rate limit or a refused "
+        + "session): " + head);
+    }
+  }
+
   // SQL mode caps each response at 100 rows (has_more flag) — page through
   // with LIMIT/OFFSET until a short batch, then merge into one JSON file.
   const PAGE = 100;
@@ -93,7 +106,7 @@ async function run(access) {
     if (call.payload.error) throw new Error("query failed: " + JSON.stringify(call.payload.error));
     const text = (call.payload.result && call.payload.result.content || [])
       .map(c => c.text || "").join("\n");
-    const page = JSON.parse(text);
+    const page = parseJsonResponse(text, "Notion SQL query");
     all = all.concat(page.results || []);
     console.log("page offset=" + offset + " rows=" + (page.results || []).length + " has_more=" + page.has_more);
     if (!page.results || page.results.length < PAGE) break;
@@ -114,7 +127,7 @@ async function run(access) {
   const fixText = (fixup.payload.result && fixup.payload.result.content || [])
     .map(c => c.text || "").join("\n");
   const byId = new Map(all.map(r => [r.CARD_TYPE_ID, r]));
-  for (const r of JSON.parse(fixText).results || []) {
+  for (const r of parseJsonResponse(fixText, "ExtraATKTimes fixup").results || []) {
     if (byId.has(r.CARD_TYPE_ID)) byId.get(r.CARD_TYPE_ID).ExtraATKTimes = r.ExtraATKTimes;
   }
   const merged = JSON.stringify({ results: all, has_more: false, total: all.length });

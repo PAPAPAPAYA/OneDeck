@@ -12,6 +12,14 @@ game_version health. Writes an HTML report and exits non-zero on error-level dri
 
 Usage:
 	python tools/check_consistency.py [--refresh [--prod]] [--report PATH]
+
+--refresh re-runs the three extractors before checking; --prod makes the catalog
+step read the live ECS DB instead of the local dev DB (which nothing syncs from
+prod, so it is often stale); --report PATH overrides the default output
+tools/outputs/consistency_report_<date>.html.
+
+Exit code: 0 = clean, 1 = ERROR-level drift found (report written), 2 = a
+refresh step failed (inputs left as they were, no report written).
 """
 import datetime
 import io
@@ -164,17 +172,45 @@ def to_int(v):
 		return 0
 
 
+def arg_value(flag):
+	"""Value of a `--flag value` pair, or None when the flag is absent."""
+	if flag not in sys.argv:
+		return None
+	i = sys.argv.index(flag)
+	return sys.argv[i + 1] if i + 1 < len(sys.argv) else None
+
+
+def run_step(name, cmd):
+	"""Run one input-producing step, surfacing its output.
+
+	The children are chatty (the extractor lists every card) and their failures —
+	an expired Notion token above all — arrive on stderr. Capture and echo both,
+	otherwise a failed refresh surfaces as a bare CalledProcessError whose actual
+	reason is swallowed. Exit 2 marks "inputs stale", keeping it distinct from the
+	exit 1 the drift check itself uses.
+	"""
+	print("refreshing %s..." % name)
+	proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+	sys.stdout.write(proc.stdout)
+	if proc.returncode != 0:
+		if proc.stderr.strip():
+			sys.stderr.write(proc.stderr)
+		sys.stderr.write("step '%s' failed (exit %d) - inputs were NOT refreshed\n"
+			% (name, proc.returncode))
+		sys.exit(2)
+
+
 def main():
 	refresh = "--refresh" in sys.argv
+	prod = "--prod" in sys.argv
 	if refresh:
-		print("refreshing inputs...")
-		subprocess.run([sys.executable, os.path.join(OUT, "extract_unity_cards_40.py")], check=True)
-		subprocess.run(["node", os.path.join(OUT, "notion_query_40db.js")], check=True,
-			capture_output=True, text=True, encoding="utf-8")
+		run_step("engine prefabs (Assets/Prefabs/Cards/4.0)",
+			[sys.executable, os.path.join(OUT, "extract_unity_cards_40.py")])
+		run_step("Notion 4.0 DB", ["node", os.path.join(OUT, "notion_query_40db.js")])
 		dump_cmd = [sys.executable, os.path.join(OUT, "dump_catalog.py")]
-		if "--prod" in sys.argv:
+		if prod:
 			dump_cmd.append("--prod")
-		subprocess.run(dump_cmd, check=True)
+		run_step("server catalog (%s)" % ("prod" if prod else "local dev DB"), dump_cmd)
 
 	tagmap = load_tagmap()
 	prices = load_price_refs()
@@ -275,7 +311,7 @@ def main():
 	print("unity=%d notion=%d(active %d) catalog=%d | ERROR=%d WARN=%d INFO=%d" % (
 		len(unity), len(notion), len(active_notion), len(catalog), len(err), len(warn), len(info)))
 	report_path = write_report(issues, unity, notion, catalog, versions, prices, tagmap,
-		dupes, notion_no_id, notion_backup)
+		dupes, notion_no_id, notion_backup, arg_value("--report"))
 	print("report: %s" % report_path)
 	for sev in ("ERROR", "WARN"):
 		for i in issues:
@@ -293,12 +329,14 @@ def esc(s):
 	return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
 
 
-def write_report(issues, unity, notion, catalog, versions, prices, tagmap, dupes, notion_no_id, notion_backup):
+def write_report(issues, unity, notion, catalog, versions, prices, tagmap, dupes, notion_no_id,
+		notion_backup, out_path=None):
 	by_card = {}
 	for i in issues:
 		by_card.setdefault(i["card"], []).append(i)
 	now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-	path = os.path.join(OUT, "consistency_report_%s.html" % datetime.date.today().isoformat())
+	path = out_path or os.path.join(OUT, "consistency_report_%s.html" % datetime.date.today().isoformat())
+	os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
 	h = ['<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>OneDeck 三侧一致性检查</title><style>',
 	     "body{font-family:'Segoe UI',sans-serif;margin:24px;color:#222;max-width:1200px}",
 	     "h2{border-bottom:2px solid #888;padding-bottom:4px;margin-top:36px}",
