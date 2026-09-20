@@ -219,7 +219,11 @@ public class InfinityPipelineTests
 		// only card leaves an EMPTY deck, which cannot loop (LoopsOnAllSeeds false for empty), so
 		// the set IS 1-minimal. The old polarity break reported false, which would have made the
 		// server reject a real single-card combo.
-		var deck = NewDeck("single-life-loop", new List<GameObject> { CreateLifeCard("LIFE_LOOPER", 5) });
+		// life 40, not 5: criterion v2 (§26, 2026-09-20) only trips on a periodic run of >= 8
+		// cycles without a round boundary — a 5-life bounce is a bounded repetition by that
+		// definition. This test is about minimizer POLARITY, so the specimen only has to loop long
+		// enough to be flagged (40 laps trip via the starvation test well before the backstop).
+		var deck = NewDeck("single-life-loop", new List<GameObject> { CreateLifeCard("LIFE_LOOPER", 40) });
 		var result = ComboMinimizer.Minimize(deck, Seeds, dummySize: 2, dummyHp: 100000000, options: FastOptions());
 
 		Debug.Log("[P2] minimize single-card -> " + result.CardIds() + " runs=" + result.RunsPerformed

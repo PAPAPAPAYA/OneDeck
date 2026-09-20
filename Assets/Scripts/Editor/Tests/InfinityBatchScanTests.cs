@@ -124,6 +124,25 @@ public class InfinityBatchScanTests
 		Assert.AreEqual(InfinityBatchScan.StatusAlreadyFlagged, report.decks[0].status);
 	}
 
+	[Test]
+	public void Scan_IncludeFlagged_ReMeasuresTheDeck()
+	{
+		// §26 (2026-09-20): the stale-flag path needs an already-flagged deck to be re-measured — a
+		// card change can fix a loop, and the pre-§26 scan skipped those rows outright, so an
+		// outdated flag could never be retired on evidence.
+		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("lethal infinite test", deckId: 201);
+		candidate.AlreadyFlagged = true;
+
+		InfinityBatchScan.ScanReport report = InfinityBatchScan.Run(
+			new List<InfinityBatchScan.Candidate> { candidate }, Seeds,
+			InfinityAttribution.DefaultDummySize, InfinityAttribution.DefaultDummyHp, null, false, true);
+
+		Assert.AreEqual(0, report.skippedFlagged, "includeFlagged must not skip the row");
+		Assert.AreEqual(1, report.scanned);
+		Assert.AreEqual(InfinityBatchScan.StatusInfinite, report.decks[0].status);
+		Assert.IsTrue(report.decks[0].unbounded, "the re-measurement carries the criterion v2 verdict");
+	}
+
 	// ------------------------------------------------------------------ report shape
 
 	[Test]

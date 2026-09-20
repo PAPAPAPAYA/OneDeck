@@ -57,8 +57,11 @@ function loadReport(file)
 
 /**
  * Entries worth posting. The bar is the SAME ingest gate the server applies to a combo
- * (oneMinimal + untruncated + multi-seed stable, §4/§21): a deck that only loops on one observed
- * seed is not yet a proven loop, and posting it would flag a real player's deck on weak evidence.
+ * (unbounded + oneMinimal + untruncated + multi-seed stable, §4/§21/§26): a deck that only loops
+ * on one observed seed is not yet a proven loop, and posting it would flag a real player's deck
+ * on weak evidence. `unbounded` is criterion v2 (2026-09-20): the scan verdict must come from a
+ * periodic run the round boundary did not reset — a gate-bounded repetition (2 same-type cards
+ * reviving each other, 4 cycles) must never be posted.
  * --include-unproven lifts that bar deliberately, for a case an operator has judged by hand.
  */
 function postable(report, includeUnproven)
@@ -68,6 +71,9 @@ function postable(report, includeUnproven)
 		if (!deck || deck.status !== 'infinite') return false;
 		if (!(Number(deck.deckId) > 0)) return false;
 		if (typeof deck.reportJson !== 'string' || deck.reportJson.length === 0) return false;
+		// Criterion v2 is NOT a strength bar an operator may lift: --include-unproven relaxes
+		// "how much evidence", never "was it a loop at all".
+		if (deck.unbounded !== true) return false;
 		if (includeUnproven) return true;
 		return deck.oneMinimal === true && deck.truncated !== true && deck.multiSeedStable !== false;
 	});
@@ -143,23 +149,25 @@ async function main()
 	const counts = describe(report);
 	console.log('[post_loop_reports] entries: '
 		+ [...counts.entries()].map(([k, v]) => k + '=' + v).join(' '));
-	console.log('[post_loop_reports] postable (infinite, proven minimum, with a server deck row): '
-		+ targets.length + (args.includeUnproven ? '  [--include-unproven: bar lifted]' : ''));
+	console.log('[post_loop_reports] postable (infinite, unbounded, proven minimum, with a server deck row): '
+		+ targets.length + (args.includeUnproven ? '  [--include-unproven: strength bar lifted]' : ''));
 
 	for (const deck of targets)
 	{
 		let cards = deck.cards || [];
 		console.log('  - deck ' + deck.deckId + '  ' + cards.join(',')
-			+ '  (1-minimal=' + deck.oneMinimal + ' truncated=' + deck.truncated + ' multiSeed=' + deck.multiSeedStable + ')');
+			+ '  (unbounded=' + deck.unbounded + ' cycles=' + deck.cycles + ' starved=' + deck.roundStarved
+			+ ' 1-minimal=' + deck.oneMinimal + ' truncated=' + deck.truncated + ' multiSeed=' + deck.multiSeedStable + ')');
 	}
 
 	if (skipped.length > 0)
 	{
-		console.log('[post_loop_reports] WITHHELD (infinite but not a proven minimum — one observed seed is not enough, §4):');
+		console.log('[post_loop_reports] WITHHELD (infinite but not postable — not unbounded (criterion v2, plan §26), or not a proven minimum: one observed seed is not enough, §4):');
 		for (const deck of skipped)
 		{
 			console.log('  x deck ' + (deck.deckId || '-') + '  ' + (deck.source || '')
-				+ '  1-minimal=' + deck.oneMinimal + ' truncated=' + deck.truncated + ' multiSeed=' + deck.multiSeedStable
+				+ '  unbounded=' + deck.unbounded + ' cycles=' + deck.cycles + ' starved=' + deck.roundStarved
+				+ ' 1-minimal=' + deck.oneMinimal + ' truncated=' + deck.truncated + ' multiSeed=' + deck.multiSeedStable
 				+ (Number(deck.deckId) > 0 ? '' : '  (no server row)'));
 		}
 	}

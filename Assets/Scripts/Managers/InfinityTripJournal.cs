@@ -23,6 +23,11 @@ public static class InfinityTripJournal
 		public uint TripHash;
 		public int TripCount;
 		public int SightingsThisRound;
+		/// <summary>Criterion v2 (§26) evidence: cycle repetitions / period of the tripping run.</summary>
+		public int TripCycles;
+		public int TripPeriod;
+		/// <summary>Criterion v2 (§26) evidence: the tripping round was starved (cycle did not need the round boundary).</summary>
+		public bool RoundStarved;
 		/// <summary>The combat's seed — the key that makes a headless re-run reproduce the combat.</summary>
 		public int CombatSeed;
 		public string PlayerDeckName;
@@ -63,7 +68,8 @@ public static class InfinityTripJournal
 	public static IReadOnlyList<Entry> Pending { get { return _entries; } }
 
 	public static void Record(uint tripHash, int tripCount, int sightingsThisRound,
-		int combatSeed, DeckSO playerDeck, DeckSO enemyDeck, int enemyDeckId)
+		int combatSeed, DeckSO playerDeck, DeckSO enemyDeck, int enemyDeckId,
+		int tripCycles = 0, int tripPeriod = 0, bool roundStarved = false)
 	{
 		if (!IsRecordingEnabled) return;
 
@@ -74,6 +80,9 @@ public static class InfinityTripJournal
 			TripHash = tripHash,
 			TripCount = tripCount,
 			SightingsThisRound = sightingsThisRound,
+			TripCycles = tripCycles,
+			TripPeriod = tripPeriod,
+			RoundStarved = roundStarved,
 			CombatSeed = combatSeed,
 			PlayerDeckName = playerDeck != null ? playerDeck.name : "null",
 			EnemyDeckName = enemyDeck != null ? enemyDeck.name : "null",

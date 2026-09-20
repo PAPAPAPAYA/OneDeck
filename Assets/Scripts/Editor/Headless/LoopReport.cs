@@ -57,6 +57,19 @@ public class LoopReport
 	/// </summary>
 	public bool multiSeedStable;
 	/// <summary>
+	/// Criterion v2 (§26, 2026-09-20) ingest gate: the reproduction tripped the periodic-run
+	/// criterion, i.e. an UNBOUNDED recursion — not a gate-bounded repetition (2 same-type cards
+	/// reviving each other reach 4 cycles and must not register). The server refuses a combo whose
+	/// payload does not carry `unbounded: true`, so evidence from older clients cannot register one.
+	/// </summary>
+	public bool unbounded;
+	/// <summary>Criterion v2 evidence: cycle repetitions of the tripping run (bounded forms top out at 4; true loops start at 18).</summary>
+	public int cycles;
+	/// <summary>Criterion v2 evidence: period of the tripping run.</summary>
+	public int period;
+	/// <summary>Criterion v2 evidence: the tripping round was starved (the cycle did not need the round boundary to continue).</summary>
+	public bool roundStarved;
+	/// <summary>
 	/// Utility passives ddmin kept but that were stripped and re-verified (or kept because the loop
 	/// died without them). Evidence for why the set looks the way it does — the server stores it
 	/// verbatim, and a passive in a combo key would hide same-loop variants with another passive.
@@ -127,7 +140,13 @@ public static class LoopReportBuilder
 
 		if (tripEvidence != null)
 		{
+			report.unbounded = tripEvidence.SuspectedInfinite;
+			report.cycles = tripEvidence.TripCycles;
+			report.period = tripEvidence.TripPeriod;
+			report.roundStarved = tripEvidence.TripRoundStarved;
 			report.tripSignal = "arrangement-cycle " + RngDigest.ToHex(tripEvidence.TripHash)
+				+ " cycles=" + tripEvidence.TripCycles + "(p=" + tripEvidence.TripPeriod + ")"
+				+ " starved=" + tripEvidence.TripRoundStarved
 				+ " repeats=" + tripEvidence.MaxSightingsOfOneArrangement
 				+ " reveals=" + tripEvidence.TotalReveals;
 		}

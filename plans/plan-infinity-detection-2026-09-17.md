@@ -897,3 +897,39 @@ workbench exec --instance-id i-uf66n1ofpudgn9b6rg7o --output json --command 'pm2
 - **P=6 周期上限**:实测真环周期 1–2;更长周期会被低估,必要时调 P。
 - **木桩敏感性**:结论建立在 1e8 HP 木桩 + 关疲劳上(与 §23.5 同口径);生产参数下这些环被疲劳稀释,不用于判据。
 - 成本上限不变:`ScanGuardTotal=400` / `ScanMinimizerMaxRuns=120`,扫描切片 20–40 副。
+
+### 26.7 实施与上线记录(2026-09-20,用户授权「修改代码」+「写线上」)
+
+**落地**(工作区,提交见文末):
+
+| 面 | 改动 |
+|---|---|
+| 检测器 | `CombatArrangementCycleDetector`:判据替换为 §26.2 —— p∈[1..6] 周期连续段 `cycles ≥ tripCycles(8)` **且** `reveals > starvationFactor(3) × 回合开始合池`,或 `cycles ≥ tripCyclesBackstop(24)` 兜底;新增 per-round 环形缓冲(128)+ 周期扫描(O(128×6)/揭晓);`NotifyRoundStart` 记 `roundStartPoolSize` 并清缓冲;`sightingsToTrip`/`_sightings` **保留为遥测**;新增证据属性 `LastTripPeriod/LastTripCycles/LastTripReveals/LastTripRoundStarved`、`RevealsThisRound`、`RoundStartPoolSize` |
+| 报告/条目 | `BudgetTripReport`(TripCycles/TripPeriod/TripRevealsInRound/TripRoundStarved/TripRoundStartPool + Summary 带证据)← `RunBudgetSim` 从检测器抄;`InfinityTripJournal.Entry` + `Record(..., tripCycles, tripPeriod, roundStarved)`(可选参数,旧调用不破);`LoopReport` 增 `unbounded/cycles/period/roundStarved`,tripSignal 带周期证据 |
+| 扫描器 | `DeckResult` 增同名字段;`IsProven` += `unbounded`;`Run(..., bool includeFlagged = false)` + 新菜单 `Tools/Infinity/Batch Scan incl. flagged`(补 §24.2-3 缺口:已 flag 的 deck 以前直接 skip,无法复验);MD 表 `repeats` 列扩为 `cycles(p)/starved/unbounded` |
+| 门槛 | poster `postable()` += `unbounded === true`,且**该条在 `--include-unproven` 之前**——它是判据不是强度门槛,操作者不能放行"根本不是环"的条目;服务端 `extractProvenCombo` += `report.unbounded !== true → null`(旧客户端无法注册组合);README(端点表 + Infinity gate 段)同步 |
+| 测试 | 判据单测重写:`PeriodicRunInStarvedRoundTrips`(9 圈未 starved 不触发 → 第 10 揭晓触发)、`BoundedRepetitionDoesNotTrip`(GH×2 形态回归钉)、`RoundStartResetClearsTheRun`、`ResetState...`、`TripRaisesOnCycleTrippedHook`、`SideAndOrder...`(去掉旧 3 次断言);`lethal` 集成断言补 v2 证据(cycles ≥ 8 / starved);`non-lethal` **反转**为「不得 trip + 必须死亡终止」(revive gate 的回归守卫);`RunBudgetSimTests.LethalSample...` 拆成 flag 跑(1e8 木桩 + `LoopDetection` + GuardTotal 400,断言 starved/trip/由 L0 收场)+ kill 跑(30 HP,断言泵杀);`Minimize_SingleCardLoop...` 标本 life 5→40(5 命是被判据正确排除的"有界重复");`Scan_IncludeFlagged_ReMeasuresTheDeck` 新增 |
+
+**全量重扫(只读,109 候选 / 105 内容,`includeFlagged` 开,6 片)**:**只有 deck 66 / 67 仍判无界**(66 cycles=24 走兜底、67 cycles=14 + starved;均 1-min + 多 seed);其余 103 种内容全部 clean——含此前 14 行 flag 里的 12 行。
+
+**线上处置(已执行,全部可逆)**:
+
+- **退役 5 组合**:`4c18bc4a33cf0d9e` / `4f752e40d0e06982` / `6fa8b86dda76b5fa` / `baae04663b71b769` / `dc13975a6287828a`(reason `criterion-v2-rescan-2026-09-20-no-longer-unbounded-plan26`)。
+- **解封 10 指纹**:`99aee54c37c83c46`(56)、`d2667f7200340b43`(64)、`fd6b7bd65744e496`(88)、`f5b0f5431d596e6a`(89/91)、`629c5ced164c8f71`(106)、`0814a2873117a7b3`(107)、`af3f9f8cb31ef562`(108)、`85888b86f12a0308`(109)、`7771f6af63d7edff`(110)、`9371c40854970faf`(111)。按指纹解封会连带删 `flagged_fingerprints` 键,重传不会被自动重 flag。
+- **保留**:组合 `288e0bd3ce6ed9cd`(`CURSE_GARDENER`+`RELIC_CURSE_REVIVAL`)+ 指纹 `666c59dae9efba22`(65)/ `6e62494c8bc594a0`(66)/ `00441cbe26a3372d`(67)。
+- **写前/写后实测**:`active_combos 6→1`、`decks.flag 14→3`、`flagged_fingerprints 13→3`、`loop_reports 13` 条证据保留;pm2 日志逐条记录退休/解封(15 项全部 302)。写前用只读探针确认 admin 通道(带 token→400,无 token→403)。
+- 指纹由本地按服务端同一算法(`sha256(sorted ids join \u0001).slice(0,16)`)从 dump 复算,**与线上 `flagged_fingerprints` 13 条逐一比对吻合**后才用于解封(C# 侧没有对应实现,`ContentKey` 是另一套纯文本键)。
+
+**测试结果**:选中 6 类 **40/40 绿**(含全部判据/标本/扫描测试);服务端 `npm test` **19/19**;poster `node --test` **6/6**;全量 EditMode **641 total / 640 绿 / 0 失败 / 1 既有 Ignore**(上一轮 639 → 本轮 +2 新测试;两条标本红灯随 §26.5 的处置转绿,别无回归)。
+
+**本轮踩到的两个测试保真度坑(已修,值得记)**:
+
+1. **自终止早于饥饿** —— v2 要求 flag 跑"饿死回合",而 lethal 型的自终止方式是打死对面:30 HP 木桩在 ~18 揭晓就被泵杀掉,回合远未到饥饿线 → 无界循环看起来有界。`RunBudgetSimTests` 因此拆成 flag 跑(1e8 木桩 + `LoopDetection` + GuardTotal 400,断言 starved/trip/L0 收场)与 kill 跑(30 HP,断言泵杀)。`ArrangementCycleDetectorTests.LethalInfiniteDeck_*` 同因:它**在全量套件里红、单独跑绿**(顺序/种子相关的 RNG 差异),被本轮全量抓出。
+2. **HP 是 `hp` + `hpMax` 两个字段,伤害路径把 `hp` 夹到 `hpMax`** —— 只抬 `hp` 会被夹回 100。两侧都抬到 1e8 后,唯一终止者才是 L0 熔断(60 回合/1500 揭晓口径),该断言才稳定;只抬对面则我方会在 ~350 揭晓被疲劳自伤打死。
+
+**边界与遗留**:
+
+- **deck 65 是新判据的边缘个案**:§26.1 本机复跑判 starved=True(最长回合 44 > 3×13),扫描的单 seed 判定因初始牌序差异判 clean(18 圈 < 兜底 24)。处置取保守(保留 flag),且它含保留组合 → 无论如何都被扣留(组合的**多重集包含**判定覆盖它)。
+- **扫描的初始判定仍是单 seed**(多 seed 只在 ddmin 阶段应用);边缘个案的判定会随牌序/种子漂移。要收紧就把检测 pass 也改成多 seed(成本 ×N)——本轮未做,记此备查。
+- **木桩参数是判据的一部分**:lethal 型必须用 1e8 木桩测量,否则它的自终止(打死对面)会让循环看起来有限——`RunBudgetSimTests` 现在把 flag 跑与 kill 跑分开,正是这条的回归钉。
+- 包内 verdict 来源 / 卡改动自动复验 / P4 端到端 照旧见 §24.2。

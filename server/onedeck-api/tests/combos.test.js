@@ -139,7 +139,8 @@ async function neverServed(playerId, deckId)
 
 /**
  * A LoopReport payload as LoopReportUploader sends it: the minimized set plus the proof flags.
- * The server ingests a combo only when the set is 1-minimal, untruncated and multi-seed stable.
+ * The server ingests a combo only when the set is unbounded (criterion v2, plan §26: a periodic
+ * run the round boundary did not reset), 1-minimal, untruncated and multi-seed stable.
  */
 function provenPayload(mySide, overrides)
 {
@@ -149,6 +150,10 @@ function provenPayload(mySide, overrides)
 		oneMinimal: true,
 		truncated: false,
 		multiSeedStable: true,
+		unbounded: true,
+		cycles: 100,
+		period: 2,
+		roundStarved: true,
 		reproSeeds: [4242, 7],
 	}, overrides || {}));
 }
@@ -214,6 +219,8 @@ test('only a proven minimum enters the library', async () =>
 		{ name: 'not 1-minimal', payload: provenPayload(combo, { oneMinimal: false }) },
 		{ name: 'truncated', payload: provenPayload(combo, { truncated: true }) },
 		{ name: 'not multi-seed stable', payload: provenPayload(combo, { multiSeedStable: false }) },
+		{ name: 'not unbounded (criterion v2: a gate-bounded repetition)', payload: provenPayload(combo, { unbounded: false }) },
+		{ name: 'unbounded flag absent (pre-v2 client)', payload: provenPayload(combo, { unbounded: undefined }) },
 		{ name: 'proof flags missing entirely', payload: JSON.stringify({ mySide: combo }) },
 		{ name: 'empty minimized set', payload: provenPayload([]) },
 		{ name: 'payload not json', payload: 'not-json-at-all' },

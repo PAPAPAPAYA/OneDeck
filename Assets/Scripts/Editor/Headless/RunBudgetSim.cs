@@ -295,6 +295,11 @@ public static class RunBudgetSim
 		report.ArrangementCycleTripped = detector.Tripped;
 		report.TripHash = detector.LastTripHash;
 		report.TripCount = detector.TripCount;
+		report.TripCycles = detector.LastTripCycles;
+		report.TripPeriod = detector.LastTripPeriod;
+		report.TripRevealsInRound = detector.LastTripReveals;
+		report.TripRoundStarved = detector.LastTripRoundStarved;
+		report.TripRoundStartPool = detector.RoundStartPoolSize;
 		report.MaxSightingsOfOneArrangement = maxSightings;
 		report.DistinctArrangementsInWorstRound = distinctInWorstRound;
 		report.OwnerHpFinal = cm.ownerPlayerStatusRef.hp;

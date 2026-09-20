@@ -524,6 +524,9 @@ function findContainedCombo(cardTypeIds, combos)
 // multi-seed-stable, untruncated set may enter the combo library: §4 forbids ingesting a
 // truncated candidate ("not a proven minimum"), and a set that is not 1-minimal is not
 // "these cards, no fewer" — the exact property the library's containment check relies on.
+// Criterion v2 (2026-09-20, plan §26) adds `unbounded`: the verdict must come from a periodic
+// run the round boundary did not reset (a gate-bounded repetition reaches 4 cycles and must
+// never register). Payloads without the flag are refused — older clients cannot register combos.
 // Returns { key, cards } or null; unknown/missing flags are treated as "not proven".
 function extractProvenCombo(payloadJson)
 {
@@ -534,6 +537,7 @@ function extractProvenCombo(payloadJson)
 	if (report.oneMinimal !== true) return null;
 	if (report.truncated === true) return null;
 	if (report.multiSeedStable === false) return null;
+	if (report.unbounded !== true) return null;
 
 	const cards = report.mySide.filter((id) => typeof id === 'string' && id.length >= 1 && id.length <= 64);
 	if (cards.length !== report.mySide.length) return null;

@@ -106,6 +106,14 @@ public static class InfinityBatchScan
 		public int reveals;
 		public int rounds;
 		public int repeats;
+		/// <summary>Criterion v2 (§26): cycle repetitions of the tripping run (bounded forms top out at 4, true loops start at 18).</summary>
+		public int cycles;
+		/// <summary>Criterion v2 (§26): period of the tripping run.</summary>
+		public int period;
+		/// <summary>Criterion v2 (§26): the tripping round was starved — the cycle needed no round boundary.</summary>
+		public bool roundStarved;
+		/// <summary>Criterion v2 ingest flag: the run met the unbounded criterion (mirrors LoopReport.unbounded).</summary>
+		public bool unbounded;
 		public bool oneMinimal;
 		public bool truncated;
 		public bool multiSeedStable;
@@ -158,6 +166,21 @@ public static class InfinityBatchScan
 	}
 
 	/// <summary>
+	/// Re-verification entry point (§26): scans the already-flagged decks too, so a card change
+	/// that fixed a loop shows up as a deck the gate no longer has evidence against.
+	/// </summary>
+	[MenuItem("Tools/Infinity/Batch Scan incl. flagged (report only)")]
+	public static void ScanIncludingFlaggedFromMenu()
+	{
+		ScanReport report = Run(null, DefaultSeeds, InfinityAttribution.DefaultDummySize,
+			InfinityAttribution.DefaultDummyHp, null, true, true);
+		Debug.Log("[InfinityBatchScan] include-flag scan done: " + (report != null
+			? report.scanned + " scanned, " + report.infinite + " infinite, "
+				+ report.skippedFlagged + " already flagged (skipped), " + report.deduped + " duplicate(s)"
+			: "nothing to scan"));
+	}
+
+	/// <summary>
 	/// Batch-mode entry point for a card-change / release step:
 	///   Unity.exe -batchmode -quit -executeMethod InfinityBatchScan.ScanFromBatch
 	/// Exits non-zero when the scan itself failed, so a pipeline can stop on it.
@@ -185,8 +208,14 @@ public static class InfinityBatchScan
 	/// nothing is uploaded. Returns null when there is no input at all, so a caller can tell
 	/// "nothing to do" from "scanned zero".
 	/// </summary>
+	/// <param name="includeFlagged">
+	/// Re-verify decks the server already flagged (§26, 2026-09-20). Off by default — a scan of
+	/// new content has nothing to say about rows that are already withheld — but the stale-flag
+	/// path needs it: a card change can fix a loop, and without this the affected decks could
+	/// never be re-measured (they were skipped outright).
+	/// </param>
 	public static ScanReport Run(List<Candidate> candidates, int[] seeds, int dummySize, int dummyHp,
-		RunBudgetSim.Options options, bool writeReport)
+		RunBudgetSim.Options options, bool writeReport, bool includeFlagged = false)
 	{
 		// The rig clears the live singletons when it is built, so a scan during Play mode would
 		// tear down the running game (plan §19.6.2 has the same root).
@@ -243,7 +272,7 @@ public static class InfinityBatchScan
 				continue;
 			}
 
-			if (candidate.AlreadyFlagged)
+			if (candidate.AlreadyFlagged && !includeFlagged)
 			{
 				result.status = StatusAlreadyFlagged;
 				report.skippedFlagged++;
@@ -296,6 +325,10 @@ public static class InfinityBatchScan
 			result.reveals = trip.TotalReveals;
 			result.rounds = trip.Rounds;
 			result.repeats = trip.MaxSightingsOfOneArrangement;
+			result.cycles = trip.TripCycles;
+			result.period = trip.TripPeriod;
+			result.roundStarved = trip.TripRoundStarved;
+			result.unbounded = trip.SuspectedInfinite;
 
 			if (!trip.SuspectedInfinite)
 			{
@@ -514,9 +547,9 @@ public static class InfinityBatchScan
 			sb.AppendLine();
 		}
 
-		sb.AppendLine("## Infinite — proven minimum (postable: tools/outputs/post_loop_reports.js)");
+		sb.AppendLine("## Infinite — proven minimum (unbounded + 1-minimal + multi-seed; postable: tools/outputs/post_loop_reports.js)");
 		AppendRows(sb, report, StatusInfinite, IsProven);
-		sb.AppendLine("## Infinite — unproven (NOT posted by default: single-seed, or ddmin found no 1-minimal core)");
+		sb.AppendLine("## Infinite — unproven (NOT posted by default: not unbounded (criterion v2), single-seed, or ddmin found no 1-minimal core)");
 		AppendRows(sb, report, StatusInfinite, deck => !IsProven(deck));
 		sb.AppendLine("## Already flagged on the server (skipped)");
 		AppendRows(sb, report, StatusAlreadyFlagged, null);
@@ -528,12 +561,13 @@ public static class InfinityBatchScan
 	}
 
 	/// <summary>
-	/// The §4/§21 ingest gate, mirrored by post_loop_reports.js: only a 1-minimal, multi-seed
-	/// stable, untruncated verdict is strong enough to accuse a real player's deck.
+	/// The §4/§21/§26 ingest gate, mirrored by post_loop_reports.js: only an UNBOUNDED verdict
+	/// (criterion v2: a periodic run the round boundary did not reset) that is also 1-minimal,
+	/// multi-seed stable and untruncated is strong enough to accuse a real player's deck.
 	/// </summary>
 	public static bool IsProven(DeckResult deck)
 	{
-		return deck != null && deck.oneMinimal && !deck.truncated && deck.multiSeedStable;
+		return deck != null && deck.unbounded && deck.oneMinimal && !deck.truncated && deck.multiSeedStable;
 	}
 
 	private static int CountProven(ScanReport report)
@@ -550,8 +584,8 @@ public static class InfinityBatchScan
 	{
 		int count = 0;
 		sb.AppendLine();
-		sb.AppendLine("| deck | source | cards | reveals | rounds | repeats | 1-min | truncated | multi-seed | prod trip | prod repeats |");
-		sb.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|");
+		sb.AppendLine("| deck | source | cards | reveals | rounds | cycles | starved | repeats | 1-min | truncated | multi-seed | unbounded | prod trip | prod repeats |");
+		sb.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
 		foreach (DeckResult deck in report.decks)
 		{
 			if (deck.status != status) continue;
@@ -562,10 +596,13 @@ public static class InfinityBatchScan
 				.Append(" | ").Append(deck.cards != null ? string.Join(",", deck.cards) : "")
 				.Append(" | ").Append(deck.reveals)
 				.Append(" | ").Append(deck.rounds)
+				.Append(" | ").Append(deck.cycles).Append("(p=").Append(deck.period).Append(")")
+				.Append(" | ").Append(deck.roundStarved)
 				.Append(" | ").Append(deck.repeats)
 				.Append(" | ").Append(deck.oneMinimal)
 				.Append(" | ").Append(deck.truncated)
 				.Append(" | ").Append(deck.multiSeedStable)
+				.Append(" | ").Append(deck.unbounded)
 				.Append(" | ").Append(deck.productionTripped)
 				.Append(" | ").Append(deck.productionRepeats).AppendLine(" |");
 		}

@@ -41,10 +41,11 @@ function fixtureReport()
 				deckId: 11, label: 'deck 11 (a, 4.0, session 0)', source: 'server', gameVersion: '4.0',
 				status: 'infinite', cards: ['RELIC_CURSE_REVIVAL', 'CURSE_GARDENER'],
 				reveals: 19, rounds: 1, repeats: 9, oneMinimal: true, truncated: false, multiSeedStable: true,
+				unbounded: true, cycles: 100, period: 2, roundStarved: true,
 				reportJson: JSON.stringify({
 					responsibility: 'EnemyDeck',
 					mySide: ['RELIC_CURSE_REVIVAL', 'CURSE_GARDENER'],
-					oneMinimal: true, truncated: false, multiSeedStable: true,
+					oneMinimal: true, truncated: false, multiSeedStable: true, unbounded: true,
 					reproSeeds: [4242, 7], tripSignal: 'arrangement-cycle abcd repeats=9 reveals=19',
 				}),
 			},
@@ -52,13 +53,25 @@ function fixtureReport()
 				deckId: 0, label: 'lethal infinite test', source: 'recorded', gameVersion: '0.2.0',
 				status: 'infinite', cards: ['RELIC_CURSE_REVIVAL', 'CURSE_GARDENER'],
 				reveals: 19, rounds: 1, repeats: 9, oneMinimal: true, truncated: false, multiSeedStable: true,
+				unbounded: true, cycles: 100, period: 2, roundStarved: true,
 				reportJson: '{"responsibility":"EnemyDeck","mySide":["RELIC_CURSE_REVIVAL","CURSE_GARDENER"]}',
 			},
 			{
 				deckId: 13, label: 'deck 13 (c, 4.0, session 2)', source: 'server', gameVersion: '4.0',
 				status: 'infinite', cards: ['CURSE_REVIVER', 'CURSE_SUMMONER'],
 				reveals: 162, rounds: 7, repeats: 38, oneMinimal: false, truncated: false, multiSeedStable: false,
+				unbounded: true, cycles: 38, period: 2, roundStarved: true,
 				reportJson: '{"responsibility":"EnemyDeck","mySide":["CURSE_REVIVER"],"oneMinimal":false,"multiSeedStable":false}',
+			},
+			{
+				// Criterion v2 false positive shape (2026-09-20, plan §26): a gate-bounded
+				// oscillation is 1-minimal and multi-seed stable but NOT unbounded — it must never
+				// be posted, not even with --include-unproven.
+				deckId: 14, label: 'deck 14 (d, 4.0, session 1)', source: 'server', gameVersion: '4.0',
+				status: 'infinite', cards: ['GRAVE_HEXER', 'GRAVE_HEXER'],
+				reveals: 400, rounds: 45, repeats: 3, oneMinimal: true, truncated: false, multiSeedStable: true,
+				unbounded: false, cycles: 4, period: 1, roundStarved: false,
+				reportJson: '{"responsibility":"EnemyDeck","mySide":["GRAVE_HEXER","GRAVE_HEXER"],"oneMinimal":true,"multiSeedStable":true,"unbounded":false}',
 			},
 			{
 				deckId: 12, label: 'deck 12 (b, 4.0, session 0)', source: 'server', gameVersion: '4.0',
@@ -127,11 +140,13 @@ test('dry run (the default) sends nothing', async () =>
 		const result = await runPoster([file]);
 		assert.strictEqual(result.status, 0, result.stderr);
 		assert.match(result.stdout, /DRY RUN/);
-		assert.match(result.stdout, /postable \(infinite, proven minimum, with a server deck row\): 1/,
-			'only the proven entry counts: the local deck has no server row and the single-seed one is unproven');
+		assert.match(result.stdout, /postable \(infinite, unbounded, proven minimum, with a server deck row\): 1/,
+			'only the proven entry counts: the local deck has no server row, the single-seed one is unproven, and deck 14 is gate-bounded');
 		assert.match(result.stdout, /deck 11/);
 		assert.match(result.stdout, /WITHHELD[\s\S]*deck 13/,
 			'an infinite-but-unproven verdict must be reported as withheld, not silently dropped');
+		assert.match(result.stdout, /WITHHELD[\s\S]*deck 14/,
+			'a gate-bounded repetition (criterion v2: unbounded=false) must be withheld as well');
 	}
 	finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
@@ -196,6 +211,8 @@ test('--include-unproven lifts the bar deliberately', async () =>
 		const deckIds = stub.received.map((r) => r.body.opponentDeckId).sort((a, b) => a - b);
 		assert.deepStrictEqual(deckIds, [11, 13], 'the local recorded deck still has no server row to accuse');
 		assert.match(result.stdout, /bar lifted/);
+		assert.ok(!deckIds.includes(14),
+			'--include-unproven lifts the evidence-strength bar only: a criterion-v2 non-loop (deck 14) is never filed');
 	}
 	finally
 	{

@@ -24,10 +24,20 @@ public class BudgetTripReport
 	public bool ArrangementCycleTripped;
 	public uint TripHash;
 	public int TripCount;
-	/// <summary>Most sightings of one identical arrangement inside a single round.</summary>
+	/// <summary>Most sightings of one identical arrangement inside a single round (telemetry since criterion v2).</summary>
 	public int MaxSightingsOfOneArrangement;
 	/// <summary>Distinct arrangements seen in the round that contained the most of them.</summary>
 	public int DistinctArrangementsInWorstRound;
+	/// <summary>Criterion v2 (§26): cycle repetitions of the periodic run that tripped.</summary>
+	public int TripCycles;
+	/// <summary>Criterion v2 (§26): period of the tripping run.</summary>
+	public int TripPeriod;
+	/// <summary>Criterion v2 (§26): reveals sampled in the round the trip happened in.</summary>
+	public int TripRevealsInRound;
+	/// <summary>Criterion v2 (§26): the round was starved (reveals &gt; 3 x round-start pool), i.e. the cycle did not need the round boundary to continue.</summary>
+	public bool TripRoundStarved;
+	/// <summary>Criterion v2 (§26): combined-deck size captured at the tripping round's start.</summary>
+	public int TripRoundStartPool;
 
 	// ---- engine budget evidence (L0 "can't finish") ----
 	public bool RoundForceClearUsed;
@@ -92,6 +102,9 @@ public class BudgetTripReport
 				.Append(" infinite=").Append(SuspectedInfinite ? "YES" : "no");
 			if (ArrangementCycleTripped)
 				sb.Append(" [cycle hash=").Append(RngDigest.ToHex(TripHash))
+					.Append(" cycles=").Append(TripCycles)
+					.Append("(p=").Append(TripPeriod).Append(")")
+					.Append(" starved=").Append(TripRoundStarved)
 					.Append(" repeats=").Append(MaxSightingsOfOneArrangement)
 					.Append(" trippedAt=round-internal]");
 			sb.Append(" reveals=").Append(TotalReveals)

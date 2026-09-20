@@ -7,9 +7,13 @@ using UnityEngine;
 
 /// <summary>
 /// Tests for the L1 arrangement-cycle infinity detector
-/// (plans/plan-infinity-detection-2026-09-17.md §3/§14, §15 corrections).
-/// The rule under test: the identical arrangement (cardTypeID + side sequence) appearing for
-/// the 3rd time WITHIN one round = unbounded recursion.
+/// (plans/plan-infinity-detection-2026-09-17.md §3/§14, §15 corrections, §26 criterion v2).
+/// The rule under test (v2, 2026-09-20): a PERIODIC run of identical arrangements — the same
+/// arrangement sequence repeating for >= tripCycles cycles with a fixed period — inside a round
+/// that the run starved (reveals > 3 x round-start pool), or a run long enough to be unambiguous
+/// (backstop). Raw repetition is telemetry only: after the once-per-round revive gate shipped, a
+/// gate-bounded oscillation still repeats 3-4 times per round while rounds advance normally
+/// (measured: bounded forms top out at 4 cycles, true loops start at 18).
 /// TRIGGER FIDELITY (2026-09-19, plan §15): HeadlessCombatTestFixture builds its own
 /// GameEventStorage event instances, so prefab listeners — which are serialized against the
 /// REAL event assets — can never hear them. The legacy bridge worked around that by pointing
@@ -18,10 +22,10 @@ using UnityEngine;
 /// on my own reveal" and the sample measured a DIFFERENT loop than production. These tests
 /// therefore wire listeners to the fixture event matching their real asset (see
 /// MapRealEventToFixtureEvent) and set curseCardTypeID, mirroring GameScene.unity.
-/// Both acceptance specimens are round-STARVED revive loops (the revive axis keeps returning
-/// cards to the top, so the Start Card never surfaces): the whole combat lives inside round 1
-/// and the arrangement repeats there. They differ only in how they end — the lethal sample
-/// pumps its curse until the enemy dies, the non-lethal one is drained by overtime fatigue.
+/// Specimen roles after the 2026-09-20 revive gate (plan-revive-loop-mitigation §8):
+///   lethal infinite test — STILL unbounded (round-starved, ~100 cycles) → positive specimen;
+///   non-lethal infinite test — GRAVE_HEXER is gated now, so it no longer loops → inverted into
+///   the gate's regression guard (must NOT trip; weaken the gate and this test goes red).
 /// </summary>
 public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 {
@@ -31,41 +35,85 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 	private const int MaxIterations = 5000;
 
 	[Test]
-	public void ThirdSightingOfIdenticalArrangementTrips()
+	public void PeriodicRunInStarvedRoundTrips()
 	{
 		var detector = CreateDetector();
 		foreach (var card in BuildDeck("CYC_A", "CYC_B", "CYC_C"))
 		{
 			CombatManager.combinedDeckZone.Add(card);
 		}
+		detector.NotifyRoundStart(); // pool = 3, so starvation needs more than 9 reveals
 
-		detector.NotifyRevealBoundary();
-		detector.NotifyRevealBoundary();
-		Assert.IsFalse(detector.Tripped, "two sightings of the identical arrangement must not trip");
+		// Samples 1..9: an identical-arrangement run of 9 cycles that has NOT starved the round
+		// (9 reveals <= 3 x pool) — below BOTH v2 conditions, so it must not trip.
+		for (int i = 0; i < 9; i++)
+		{
+			detector.NotifyRevealBoundary();
+		}
+		Assert.IsFalse(detector.Tripped,
+			"9 periodic cycles in a round that is not starved must not trip: a cycle the round boundary can re-arm is gate-bounded");
+		Assert.AreEqual(9, detector.SightingsThisRound, "raw sightings stay telemetry");
 
+		// Sample 10 pushes the round past 3 x pool: now the periodic run is unbounded evidence.
 		detector.NotifyRevealBoundary();
-		Assert.IsTrue(detector.Tripped, "the 3rd sighting of the identical arrangement within one round must trip");
+		Assert.IsTrue(detector.Tripped,
+			"a periodic run past tripCycles in a starved round must trip");
 		Assert.AreEqual(1, detector.TripCount);
 		Assert.AreNotEqual(0u, detector.LastTripHash);
+		Assert.AreEqual(1, detector.LastTripPeriod, "a constant arrangement sequence is period 1");
+		Assert.GreaterOrEqual(detector.LastTripCycles, 8);
+		Assert.IsTrue(detector.LastTripRoundStarved);
 	}
 
 	[Test]
-	public void RoundStartResetClearsSightings()
+	public void BoundedRepetitionDoesNotTrip()
+	{
+		// Criterion v2 pin (2026-09-20 §26): the gate-bounded oscillation shape — a handful of
+		// identical arrangements inside a normal-length round — is exactly what the live
+		// GRAVE_HEXER x2 family does now (measured: 4 cycles max, rounds advancing).
+		var detector = CreateDetector();
+		foreach (var card in BuildDeck("CYC_A", "CYC_B", "CYC_C", "CYC_D", "CYC_E", "CYC_F"))
+		{
+			CombatManager.combinedDeckZone.Add(card);
+		}
+		detector.NotifyRoundStart(); // pool = 6
+
+		for (int i = 0; i < 4; i++)
+		{
+			detector.NotifyRevealBoundary();
+		}
+
+		Assert.IsFalse(detector.Tripped,
+			"4 identical samples are far below tripCycles and the round is nowhere near starved — the exact false positive v2 removes");
+		Assert.AreEqual(4, detector.SightingsThisRound, "the raw sighting telemetry still counts them");
+		Assert.AreEqual(4, detector.RevealsThisRound);
+	}
+
+	[Test]
+	public void RoundStartResetClearsTheRun()
 	{
 		var detector = CreateDetector();
 		foreach (var card in BuildDeck("CYC_A", "CYC_B", "CYC_C"))
 		{
 			CombatManager.combinedDeckZone.Add(card);
 		}
-
-		detector.NotifyRevealBoundary();
 		detector.NotifyRoundStart();
-		detector.NotifyRevealBoundary();
-		detector.NotifyRevealBoundary();
-		Assert.IsFalse(detector.Tripped, "round start must clear sightings — only two sightings since the reset");
 
-		detector.NotifyRevealBoundary();
-		Assert.IsTrue(detector.Tripped, "the 3rd sighting after the round reset must trip");
+		for (int i = 0; i < 9; i++)
+		{
+			detector.NotifyRevealBoundary();
+		}
+		Assert.IsFalse(detector.Tripped, "9 cycles without starvation are not yet a trip");
+
+		detector.NotifyRoundStart();
+		for (int i = 0; i < 9; i++)
+		{
+			detector.NotifyRevealBoundary();
+		}
+
+		Assert.IsFalse(detector.Tripped,
+			"the round boundary cleared the run, so 9 fresh samples cannot reach the cycle threshold again");
+		Assert.AreEqual(9, detector.SightingsThisRound, "telemetry restarts at the round boundary");
 	}
 
 	[Test]
@@ -76,16 +124,19 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		{
 			CombatManager.combinedDeckZone.Add(card);
 		}
-
-		detector.NotifyRevealBoundary();
-		detector.NotifyRevealBoundary();
-		detector.NotifyRevealBoundary();
+		detector.NotifyRoundStart();
+		for (int i = 0; i < 12; i++)
+		{
+			detector.NotifyRevealBoundary();
+		}
 		Assert.IsTrue(detector.Tripped);
 
 		detector.ResetState();
 		Assert.IsFalse(detector.Tripped, "combat cleanup (ResetState) must clear the trip latch");
 		Assert.AreEqual(0, detector.SightingsThisRound);
 		Assert.AreEqual(0, detector.TripCount);
+		Assert.AreEqual(0, detector.RevealsThisRound);
+		Assert.AreEqual(0, detector.RoundStartPoolSize);
 	}
 
 	[Test]
@@ -130,13 +181,6 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 
 		Assert.AreNotEqual(forward, swapped, "same cardTypeIDs in a different order/side mix must hash differently");
 		Assert.AreEqual(0, detector.SightingsThisRound, "hashing must be side-effect free");
-
-		// Three samples of the identical arrangement trip regardless of earlier peeks.
-		detector.NotifyRevealBoundary();
-		detector.NotifyRevealBoundary();
-		detector.NotifyRevealBoundary();
-		Assert.IsTrue(detector.Tripped);
-		Assert.AreEqual(swapped, detector.LastTripHash);
 	}
 
 	[Test]
@@ -147,13 +191,16 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		{
 			CombatManager.combinedDeckZone.Add(card);
 		}
+		detector.NotifyRoundStart();
 
 		uint? firedHash = null;
 		detector.OnCycleTripped += hash => firedHash = hash;
 
-		detector.NotifyRevealBoundary();
-		detector.NotifyRevealBoundary();
-		Assert.IsFalse(firedHash.HasValue, "the hook must not fire before the trip threshold");
+		for (int i = 0; i < 9; i++)
+		{
+			detector.NotifyRevealBoundary();
+		}
+		Assert.IsFalse(firedHash.HasValue, "the hook must not fire before the criterion is met (no starvation yet)");
 		detector.NotifyRevealBoundary();
 
 		Assert.IsTrue(firedHash.HasValue, "the P2 attribution hook must fire exactly on trip");
@@ -211,8 +258,16 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		CombatManager.GatherDecks();
 		BridgeAllCards();
 
-		CombatManager.ownerPlayerStatusRef.hp = 30;
-		CombatManager.enemyPlayerStatusRef.hp = 30;
+		// BOTH sides unkillable, so the only terminator left is the L0 cap (this is what the §16.3
+		// split means in practice): a 30-HP enemy dies to the loop's own pump in ~18 reveals
+		// (round 1, not yet starved), and a 30-HP owner dies to fatigue's self-damage around reveal
+		// 350. Either death ends the combat before the caps and makes the flag run order/seed
+		// dependent — measured, and the reason this test flapped. hpMax must move too: the damage
+		// path clamps hp to hpMax.
+		CombatManager.ownerPlayerStatusRef.hpMax = 100000000;
+		CombatManager.ownerPlayerStatusRef.hp = 100000000;
+		CombatManager.enemyPlayerStatusRef.hpMax = 100000000;
+		CombatManager.enemyPlayerStatusRef.hp = 100000000;
 		PrepareOvertimeFatigue();
 
 		var guard = CreateGuard(200, 1500, 60);
@@ -229,25 +284,31 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		Assert.IsTrue(detector.Tripped,
 			"the lethal revive loop repeats its arrangement inside round 1 and must trip the detector"
 			+ Diag(detector, guard, iterations));
+		Assert.GreaterOrEqual(detector.LastTripCycles, 8,
+			"criterion v2: the trip must carry a periodic run well past the cycle threshold"
+			+ Diag(detector, guard, iterations));
+		Assert.IsTrue(detector.LastTripRoundStarved,
+			"criterion v2: the lethal loop starves the round boundary (reveals >> 3 x round-start pool)"
+			+ Diag(detector, guard, iterations));
 		Assert.Greater(InfinityTripJournal.Count, 0, "a trip must be journaled for the P2/P3 pipeline");
 		Assert.AreEqual(505, InfinityTripJournal.Pending[0].EnemyDeckId,
 			"the journaled trip must name the server deck row the report accuses (§20.3)");
 		OpponentDeckCache.SetCurrentOpponent(null);
-		Assert.LessOrEqual(CombatManager.enemyPlayerStatusRef.hp, 0,
-			"the lethal pump must still kill the enemy — the detector is observation-only"
-			+ Diag(detector, guard, iterations));
-		Assert.IsFalse(guard.ConcludeRequested,
-			"the kill converges long before the L0 caps" + Diag(detector, guard, iterations));
+		Assert.IsTrue(guard.ConcludeRequested,
+			"with an unkillable opponent nothing else ends the loop, so the L0 caps must conclude it — "
+			+ "the trip is the flag criterion, the conclusion is the harm (§16.3)" + Diag(detector, guard, iterations));
 		Debug.Log("[CycleDetector] lethal specimen" + Diag(detector, guard, iterations));
 	}
 
 	[Test]
-	public void NonLethalInfiniteDeck_TripsCycleDetector()
+	public void NonLethalInfiniteDeck_NoLongerLoopsAndMustNotTrip()
 	{
-		// Second acceptance specimen: the non-lethal revive loop starves the round boundary the
-		// same way, so the whole combat lives inside ONE round and the arrangement repeats
-		// there. No kill pump of its own: the loop is drained by overtime fatigue (reveal-count
-		// clock — a round-clock would be starved with the boundary, see §13).
+		// INVERTED SPECIMEN (2026-09-20, plan §26 with plan-revive-loop-mitigation §8): GRAVE_HEXER
+		// is one of the eight hub revive effects the once-per-round gate now caps, so this deck no
+		// longer starves the round — measured: 5-6 rounds, ~50 reveals, ending by death, one
+		// arrangement reaching only 2 sightings. The detector must NOT flag it: flagging a
+		// gate-bounded repetition is exactly the v2 false positive §26 removes. Kept as the GATE's
+		// regression guard — weaken or remove the gate and the loop (and this red) returns.
 		CombatManager.playerDeck = LoadSampleDeck("non-lethal infinite test");
 		CombatManager.enemyDeck = CreateInertStubDeck(3);
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
@@ -264,14 +325,16 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		int iterations = RunDriverWithDetector(detector, guard, MaxIterations);
 
 		Assert.Less(iterations, MaxIterations, "driver must terminate within the bound" + Diag(detector, guard, iterations));
-		Assert.IsTrue(detector.Tripped,
-			"the starved-round non-lethal loop must trip the within-round cycle detector"
+		Assert.IsFalse(detector.Tripped,
+			"the once-per-round revive gate bounded this loop, so it must NOT be flagged as unbounded"
 			+ Diag(detector, guard, iterations));
 		Assert.IsTrue(CombatManager.Me.IsDeathVisuallyLanded || CombatManager.enemyPlayerStatusRef.hp <= 0
 			|| CombatManager.ownerPlayerStatusRef.hp <= 0,
 			"the combat must still converge by death — the detector is observation-only"
 			+ Diag(detector, guard, iterations));
-		Debug.Log("[CycleDetector] non-lethal specimen" + Diag(detector, guard, iterations));
+		Assert.IsFalse(guard.ConcludeRequested,
+			"the gated loop converges naturally; the L0 caps must stay unused" + Diag(detector, guard, iterations));
+		Debug.Log("[CycleDetector] non-lethal specimen (must NOT trip)" + Diag(detector, guard, iterations));
 	}
 
 	private string Diag(CombatArrangementCycleDetector detector, CombatBudgetGuard guard, int iterations)

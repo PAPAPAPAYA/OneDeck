@@ -19,7 +19,7 @@ Single-file server (`server.js`), same deployment model as pkidle.
 | POST | `/api/decks` | upload ghost deck snapshot; a deck whose content fingerprint is already flagged lands flagged |
 | GET | `/api/decks/opponents?playerId&gameVersion&maxSession&perSession[&includeSelf=1]` | batch opponent decks; flagged decks are never returned, decks CONTAINING an active combo are withheld too (multiset containment), `flaggedDeckIds` lists the flagged ids inside the requested range and `blockedCombos` carries the active combo card sets, both so the client can drop cached copies; `includeSelf=1` (client test toggle) drops the self-exclusion so the requester's own decks can come back |
 | POST | `/api/matches/report` | battle result, idempotent by `reportId` |
-| POST | `/api/loop-reports` | infinity-loop evidence against a ghost deck: `{playerId, gameVersion, opponentDeckId, verdict, seed, signals, payload}`. Verdict `EnemyDeck` (= a headless re-run proved the ghost loops by itself) flags the deck's CONTENT fingerprint and — when the payload carries a proven minimum (`oneMinimal` and not `truncated`/`multiSeedStable: false`) — registers the minimized card set in the combo library (response: `comboKey`, `comboStatus`). Every other verdict is stored as evidence and changes no state. Idempotent per `(deck, fingerprint, seed, verdict, reporter)` |
+| POST | `/api/loop-reports` | infinity-loop evidence against a ghost deck: `{playerId, gameVersion, opponentDeckId, verdict, seed, signals, payload}`. Verdict `EnemyDeck` (= a headless re-run proved the ghost loops by itself) flags the deck's CONTENT fingerprint and — when the payload carries a proven minimum (`unbounded`, `oneMinimal`, not `truncated`/`multiSeedStable: false`) — registers the minimized card set in the combo library (response: `comboKey`, `comboStatus`). `unbounded` is criterion v2 (plan §26, 2026-09-20): a periodic arrangement run the round boundary did not reset; payloads without it (older clients) are refused so a gate-bounded repetition can never register. Every other verdict is stored as evidence and changes no state. Idempotent per `(deck, fingerprint, seed, verdict, reporter)` |
 | POST | `/api/stats/snapshot` | lifetime cumulative shop/winrate stats (upsert, retry-safe) |
 | POST | `/api/runs` | one full run record with shop visits + combats, idempotent by `runId`; zero-combat runs are skipped (responds ok, stores nothing) |
 | POST | `/api/cards/catalog` | card metadata per game version (upsert) |
@@ -29,7 +29,7 @@ Single-file server (`server.js`), same deployment model as pkidle.
 | POST | `/admin/decks/unflag?token=...&fingerprint=..` | clear a content key: unflags every row carrying it AND deregisters it, so later uploads are not auto-flagged |
 | POST | `/admin/combos/status?token=...` | body `comboKey` + `status` (`retired` / `active`) + optional `reason`: retire a combo (stop withholding decks that contain it — use it when the cards were patched) or bring it back |
 
-## Infinity gate (plan §20 / §21)
+## Infinity gate (plan §20 / §21 / §26)
 
 A deck that loops forever by itself must never be served, at two granularities:
 
@@ -37,10 +37,16 @@ A deck that loops forever by itself must never be served, at two granularities:
   because every snapshot upload inserts a new row and a row-level flag would be evaded by the next
   upload. One confirmed report flags; `loop_reports` keeps the reporter and the payload for the
   audit trail.
-- **Combo library (P4).** A report whose evidence carries a PROVEN minimum (1-minimal, multi-seed
-  stable, untruncated) also registers that card set, and from then on any deck CONTAINING the set
-  is withheld — an offender cannot dodge the gate by padding their deck. Admin can retire a combo
-  after the cards are patched, or reactivate it.
+- **Combo library (P4).** A report whose evidence carries a PROVEN minimum (unbounded, 1-minimal,
+  multi-seed stable, untruncated) also registers that card set, and from then on any deck CONTAINING
+  the set is withheld — an offender cannot dodge the gate by padding their deck. Admin can retire a
+  combo after the cards are patched, or reactivate it.
+- **"Unbounded" is criterion v2 (§26, 2026-09-20).** The verdict must come from a PERIODIC
+  arrangement run the round boundary did not reset: the once-per-round revive gate bounds a loop
+  like `GRAVE_HEXER`×2 to ~4 cycles per round while rounds keep advancing, and flagging that was a
+  false positive (measured: bounded forms top out at 4 cycles, true loops start at 18). Retiring the
+  combos that no longer qualify is a supported admin path — the 2026-09-20 card-change re-scan
+  retired 5 of 6 combos and unflagged 10 deck fingerprints on exactly this evidence.
 
 Deployment: existing dbs migrate on boot (`ensureColumn` + a fingerprint backfill for rows that
 predate the column), so no manual migration step.

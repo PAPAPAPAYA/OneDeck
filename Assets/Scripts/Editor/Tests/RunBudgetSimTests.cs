@@ -42,31 +42,60 @@ public class RunBudgetSimTests
 	[Test]
 	public void LethalSample_ReportsInfinite_AndKillsWithoutL0()
 	{
-		var report = RunBudgetSim.RunVsDummy(LoadSampleDeck("lethal infinite test"), dummySize: 3, dummyHp: 30, seed: 4242);
+		// Criterion v2 (§26) requires the flag run to STARVE the round, so it must be measured
+		// against an unkillable dummy — the §3/§19.2 canon: the lethal loop's own termination is
+		// "kill the other side", so with a normal-HP dummy the pump ends the combat in ~17 reveals
+		// (round 1, 7 cards, nowhere near starvation) and an unbounded loop looks finite. The kill
+		// claim is therefore pinned in its OWN run with a normal dummy; that run is deliberately
+		// not the flag measurement. Fatigue clock off per §23.5 — production fatigue injects inert
+		// cards that break the arrangement and hide the repetition.
+		var lethal = LoadSampleDeck("lethal infinite test");
+		var options = RunBudgetSim.Options.LoopDetection();
+		options.GuardTotal = 400;
 
-		Debug.Log("[RunBudgetSim] " + report.Summary);
+		var flagRun = RunBudgetSim.RunVsDummy(lethal, dummySize: 3, dummyHp: InfinityAttribution.DefaultDummyHp,
+			seed: 4242, options: options);
 
-		Assert.IsTrue(report.SuspectedInfinite,
-			"the lethal revive loop repeats its arrangement inside one round, so the flag criterion must hold: " + report.Summary);
-		Assert.GreaterOrEqual(report.MaxSightingsOfOneArrangement, 3,
-			"the report must carry how often the arrangement repeated in a single round: " + report.Summary);
-		Assert.IsTrue(report.EnemyDied,
-			"the loop's own pump kills the stub opponent: " + report.Summary);
-		Assert.IsFalse(report.BudgetCapConcluded,
-			"the kill converges long before the L0 caps, which must stay unused: " + report.Summary);
-		Assert.AreEqual(1, report.Rounds,
-			"the whole lethal combat lives inside round 1 (round-starved loop): " + report.Summary);
+		Debug.Log("[RunBudgetSim] flag run: " + flagRun.Summary);
+
+		Assert.IsTrue(flagRun.SuspectedInfinite,
+			"against an unkillable dummy the lethal loop starves the round, so the flag criterion must hold: " + flagRun.Summary);
+		Assert.IsTrue(flagRun.TripRoundStarved,
+			"criterion v2: the lethal trip carries starvation evidence: " + flagRun.Summary);
+		Assert.GreaterOrEqual(flagRun.TripCycles, 8,
+			"criterion v2: the tripping run repeats well past the cycle threshold: " + flagRun.Summary);
+		Assert.GreaterOrEqual(flagRun.MaxSightingsOfOneArrangement, 3,
+			"the report must carry how often the arrangement repeated in a single round: " + flagRun.Summary);
+		Assert.Less(flagRun.TripRevealsInRound, flagRun.TotalReveals,
+			"detection must land well before the run ends: " + flagRun.Summary);
+		Assert.IsTrue(flagRun.BudgetCapConcluded,
+			"against an UNKILLABLE dummy nothing else can end the loop, so the L0 caps must be the one that does — "
+			+ "the trip is the flag criterion, the conclusion is the harm (§16.3): " + flagRun.Summary);
+
+		// Same deck, killable dummy: the loop's own pump ends the combat before any starvation.
+		var killRun = RunBudgetSim.RunVsDummy(lethal, dummySize: 3, dummyHp: 30, seed: 4242);
+
+		Debug.Log("[RunBudgetSim] kill run: " + killRun.Summary);
+
+		Assert.IsTrue(killRun.EnemyDied,
+			"the loop's own pump kills a normal-HP opponent: " + killRun.Summary);
+		Assert.IsFalse(killRun.BudgetCapConcluded,
+			"a killable opponent ends the combat long before the L0 caps: " + killRun.Summary);
 	}
 
 	[Test]
-	public void NonLethalSample_ReportsInfinite()
+	public void NonLethalSample_NoLongerLoops_AndTerminatesNaturally()
 	{
+		// Inverted 2026-09-20 (plan §26 + plan-revive-loop-mitigation §8): the once-per-round
+		// revive gate fixed the non-lethal loop (GRAVE_HEXER is gated), so the flag criterion must
+		// now read "not infinite" — flagging this deck would be the gate-bounded false positive the
+		// v2 criterion removes. Kept as the gate's regression guard.
 		var report = RunBudgetSim.RunVsDummy(LoadSampleDeck("non-lethal infinite test"), dummySize: 3, dummyHp: 30, seed: 4242);
 
 		Debug.Log("[RunBudgetSim] " + report.Summary);
 
-		Assert.IsTrue(report.SuspectedInfinite,
-			"the non-lethal revive loop starves the round boundary too, so the cycle rule must trip: " + report.Summary);
+		Assert.IsFalse(report.SuspectedInfinite,
+			"the gated revive loop is bounded: the arrangement-cycle criterion must not fire on a gate-bounded repetition: " + report.Summary);
 		Assert.IsTrue(report.EnemyDied,
 			"the combat still converges by death (the detector is observation-only): " + report.Summary);
 		Assert.IsFalse(report.BudgetCapConcluded,
