@@ -822,3 +822,78 @@ workbench exec --instance-id i-uf66n1ofpudgn9b6rg7o --output json --command 'pm2
 - `ProcessPendingEntries` 无总量闸(32 × ~400 sims;§19.6.2 落地时必须加)。
 - `prefetchInFlight` 无 try/finally 保护;outbox 无入队去重;live 与 sim 的排列哈希域不同(revealZone 采样时点差;周期性信号不受影响)。
 - 归因触发时机 / 打包内 verdict 来源 / 组合复验 CI / P4 端到端 —— 照旧见 §24.2。
+
+## 26. 判据 v2:有界/无界判别器(2026-09-20 提案,**未实现**)
+
+> 起因:用户质询「GRAVE_HEXER×2 为啥会成环」。实测结论:revive gate(§8.2)把 195–199 圈的紧环压到 4 圈,而判据仍是「同回合同排列 ≥3 次」——**有界振荡恰好越过触发线**,于是出现「卡还在 flag、但已不再危险」。用户 2026-09-20 拍板目标:**只检真无限,不检有界几次重复**。
+
+### 26.1 实测:现判据与真无界的分离度
+
+同一口径(`LoopDetection()` 关疲劳、GuardTotal 400、木桩 3 卡 1e8 HP、seed 4242),对 6 个线上组合 + 13 副被 flag 的 deck 逐条跑,同时算三个量:
+
+- `oldMaxSightings` = 现判据量(单回合内同一排列出现次数,现阈值 3);
+- `cycles(p)` = 新增量:单回合内**最长 p-周期连续段**的重复圈数(p ≤ 6);
+- `starved` = 该回合揭示数 > 3 × 回合开始合池大小。
+
+| 样本 | oldMaxSightings | cycles(p) | 回合数 | 最长回合揭示 | starved | 判定 |
+|---|---|---|---|---|---|---|
+| 组合 `CURSE_GARDENER+RELIC_CURSE_REVIVAL` | 100 | **100**(p=2) | 2 | 204 | True | **真无界** |
+| deck 67 / 66 / 65 | 100 / 58 / 18 | **100 / 59 / 18**(p=2) | 2 / 11 / 13 | 204 / 121 / 44 | True | **真无界** |
+| 组合 `GRAVE_HEXER`×2 | 3 | 4(p=1) | 45 | 9 | False | 有界 |
+| 组合 `CURSE_SUMMONER`×2 | 3 | 4(p=1) | 50 | 8 | False | 有界 |
+| deck 89 / 106 / 107 / 108 / 109 / 111 | 3 | 4(p=1) | 21–37 | 11–22 | False | 有界 |
+| deck 110 | 2 | 2(p=3) | 27 | 18 | False | 有界 |
+| deck 56 / 64 / 88 | 1 | 1 | 17–28 | 18–34 | False | 无 |
+| 组合 `GRAVE_HEXER+SPIRIT_CALLER` / `KINGSLAYER+CURSE_SUMMONER` / `RIFT_ACOLYTE+REVIVE_SUMMONER+RIFT_STRIKER+GRAVE_GIANT` | 2 | 2–3 | 22–59 | 8–27 | False | 无 |
+
+**分离度:有界形态上限 4 圈 vs 真无界下限 18 圈 —— 阈值在 [5,17] 内任意取值结论不变。**
+
+机制备注(支撑判据设计):GRAVE_HEXER 的 `revive 1 friend` **`typeIDFilter` 为空**(可捞任意友方)+ `oncePerRound: 1`(每组件实例每回合 1 次成功复活,空墓 fizzle 不扣费,`ReviveEffect.cs:64-76/:321`)。两张同名片互捞 = 对哈希的恒等变换(哈希只记 cardTypeID+阵营,同名卡不可区分)→ 排列周期 1;闸门把每回合复活压到 2 次 → 回合边界存活(106:37 回合/400 揭晓)→ **有界振荡**,不是无界递归。
+
+### 26.2 判据 v2 定义
+
+单回合内,排列样本序列满足:
+
+1. **周期段**:存在 p ∈ [1..6],使序列含 p-周期连续段且其重复圈数 `cycles ≥ 8`;**且**
+2. **未被回合边界重置**:该回合揭示数 > 3 × 回合开始合池大小(即该周期不是靠回合开局的复活额度补给重演);**或**
+3. 兜底:`cycles ≥ 24`(不可辩驳的长重复,无需 starved)。
+
+保留不变:回合边界清空历史、观测-only(不强制终局)、L0 仍是唯一硬保证、`LoopDetection()`(关疲劳)为判定口径(§23.5)、两条判据分工(§16.3,`SuspectedInfinite` = flag 判据,`BudgetCapConcluded` = 玩家可感伤害)。
+
+**语义转变**:判据从「排列重复」改为「**排列重复且未被回合边界重置**」——因为闸门正是靠回合边界补给额度的;一个需要回合边界才能继续的循环,每回合消耗的是有限额度,**本质有界**。这条同时解释了为什么清单式治理会反复:判据治"排列重复"、闸门治"复活次数",两者不在同一量纲上。
+
+### 26.3 落点(实现锚点)
+
+| 面 | 改动 |
+|---|---|
+| `CombatArrangementCycleDetector.cs` | `NotifyRevealBoundary()` 增加 per-round 环形缓冲(建议 64)与周期扫描(O(64×6)/揭晓);`NotifyRoundStart()` 记 `roundStartPoolSize`(`CombatManager.Me.combinedDeckZone.Count`)并清缓冲;`ResetState()` 同步清;trip 条件替换为 §26.2;新增序列化阈值 `tripCycles=8 / starvationFactor=3 / maxPeriod=6`;`sightingsToTrip`/`_sightings` **保留为遥测**(日志仍能看到"3 次命中但未达无界");新增证据属性 `TripPeriod / TripCycles / RevealsInTripRound / RoundStartPoolSize` |
+| `BudgetTripReport.cs` / `RunBudgetSim.cs` | 报告增同名字段;`SuspectedInfinite` 语义不变(= 检测器 trip,判据已内建在检测器里) |
+| `InfinityBatchScan.cs` | `IsProven`(:534)+= `unbounded`;候选入口加 `includeFlagged`(默认 false)—— 补上 §24.2-3 的缺口:已 flag 的 deck 目前**无法复验**(:246 直接 skip,过时 flag 不能自证清白);MD 表 `repeats` 列扩为 `cycles(p)` + `starved` |
+| `LoopReport.cs` / `InfinityAttributionProcessor.cs` | payload 增 `unbounded / cycles / period / starved` |
+| `tools/outputs/post_loop_reports.js` | proven 门槛 += `unbounded === true`(与 C# 侧同构) |
+| `server/onedeck-api/server.js` | `extractProvenCombo`(:528)增 `if (report.unbounded !== true) return null;` —— 旧客户端/旧证据不能注册新组合 |
+
+### 26.4 数据处置(实测预判;待判据实现后复跑确认)
+
+- **保留**:组合 `288e0bd3ce6ed9cd`(`CURSE_GARDENER+RELIC_CURSE_REVIVAL`);deck 65 / 66 / 67 保持 flag。
+- **退役组合(5)**:`dc13975a6287828a`(GH×2)、`4c18bc4a33cf0d9e`(GH+SPIRIT_CALLER)、`baae04663b71b769`(KINGSLAYER+CURSE_SUMMONER)、`4f752e40d0e06982`(CURSE_SUMMONER×2)、`6fa8b86dda76b5fa`(RIFT_ACOLYTE+REVIVE_SUMMONER+RIFT_STRIKER+GRAVE_GIANT)。
+- **解封 deck 指纹(10)**:56 / 64 / 88 / 89 / 106 / 107 / 108 / 109 / 110 / 111 —— 按指纹解封会**同时删 `flagged_fingerprints` 键**(否则重传自动重 flag,§20.7)。
+- 动作全部可逆(retire↔reactivate;解封后仍可再报);执行前先 `dump_decks.py --prod` 取最新行与指纹。
+
+### 26.5 测试与验收
+
+- 检测器单测(新):①p=2、8 圈、starved → trip;②4 圈、正常回合 → **不** trip(GH×2 形态回归钉);③旧判据"3 次命中"→ 不 trip;④回合边界清历史;⑤`cycles=7` 不 trip、`=8` trip 的边界。
+- 活体标本:`lethal`(`CURSE_GARDENER+RELIC_CURSE_REVIVAL`)在新判据下仍 trip(实测 100 圈)→ 作正向标本;`non-lethal` 两条红改为「必须终止 / 不得 trip」(它们同时是 revive gate 的回归守卫)。
+- 复跑回归:§26.1 表逐行一致(有界 ≤4 圈、真无界 ≥18 圈);扫描器 `includeFlagged` 路径同样跑通。
+- 服务端 `npm test`:增「缺 `unbounded` 不入库」用例;客户端 payload 测试同步。
+
+### 26.6 顺序与风险
+
+顺序(每步独立可验):①检测器 + 单测 → ②报告/扫描器 + `includeFlagged` → ③重扫复判(只读,切片跑,§23.5 的 OOM 口径)→ ④用户确认后写线上(retire/解封)→ ⑤上报链与服务端门槛 + 文档。
+
+风险与取舍:
+
+- **放松判据 = 漏检风险**:三层兜住 —— 兜底条款 `cycles ≥ 24`、L0 硬保证(§5)、遥测保留(旧计数仍记录,日志里能看到"命中 3 次但未达无界")。
+- **P=6 周期上限**:实测真环周期 1–2;更长周期会被低估,必要时调 P。
+- **木桩敏感性**:结论建立在 1e8 HP 木桩 + 关疲劳上(与 §23.5 同口径);生产参数下这些环被疲劳稀释,不用于判据。
+- 成本上限不变:`ScanGuardTotal=400` / `ScanMinimizerMaxRuns=120`,扫描切片 20–40 副。
