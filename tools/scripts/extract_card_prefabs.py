@@ -201,4 +201,18 @@ for dirpath, _, files in os.walk(ROOT):
             s = card_summary(p, rel)
             if s:
                 results.append(s)
-print("\n".join(results))
+
+# --out PATH: write the file (and the dated twin, per the 2026-09-20 convention in
+# tools/scripts/dated_output.py) instead of stdout; default keeps the legacy redirect use.
+text = "\n".join(results)
+if "--out" in sys.argv:
+    out_path = sys.argv[sys.argv.index("--out") + 1]
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, "w", encoding="utf-8", newline="") as fp:
+        fp.write(text + "\n")
+    sys.path.insert(0, "tools/scripts")
+    from dated_output import alias_copy
+    print("dated twin: %s" % alias_copy(out_path), file=sys.stderr)
+    print("wrote %d cards -> %s" % (len(results), out_path), file=sys.stderr)
+else:
+    print(text)

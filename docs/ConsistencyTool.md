@@ -111,3 +111,14 @@ Tracked in git, so a report is archived by its date in the filename:
 
 Refresh them (and commit the result) after any card change, so the next comparison starts from a
 faithful baseline.
+
+## Dated-artifact convention (2026-09-20)
+
+Every recurring tools product is written twice: the fixed-path alias above (what consumers read)
+plus a dated twin `<stem>_<YYYYMMDD_HHMMSS>.<ext>` — the uploadable, browsable artifact
+(`unity_cards_40_20260920_204838.json`, `catalog_20260920_204932.tsv`, …). Generators implementing
+it: `extract_unity_cards_40.py`, `notion_query_40db.js`, `dump_catalog.py`, the notion-sync skill's
+`extract_unity_cards.py`, and `extract_card_prefabs.py --out`. The shared helper is
+`tools/scripts/dated_output.py` — new recurring generators import it (`alias_copy(path)`) instead of
+hand-rolling the twin logic. Commit dated twins when you want a snapshot archived (same cadence as
+the snapshots above); the aliases stay the pipeline inputs.

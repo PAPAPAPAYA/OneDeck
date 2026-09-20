@@ -132,6 +132,15 @@ async function run(access) {
   }
   const merged = JSON.stringify({ results: all, has_more: false, total: all.length });
   fs.writeFileSync(OUT, merged, "utf-8");
+  // Dated-artifact convention (2026-09-20, tools/scripts/dated_output.py):
+  // dated twin <stem>_<YYYYMMDD_HHMMSS>.json next to the fixed-path alias.
+  const d = new Date();
+  const p2 = (n) => String(n).padStart(2, "0");
+  const ts = d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate())
+    + "_" + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds());
+  const twin = OUT.replace(/\.json$/, "_" + ts + ".json");
+  fs.copyFileSync(OUT, twin);
+  console.log("dated twin:", twin);
   console.log("RESULT rows:", all.length);
 }
 

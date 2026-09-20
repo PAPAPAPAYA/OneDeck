@@ -66,8 +66,8 @@ public class ReviveOncePerRoundGateTests : HeadlessCombatTestFixture
 		Assert.IsNotNull(revealed, "Loop must reveal something");
 		Assert.IsTrue(revealed.isStartCard,
 			"Two gated hubs must let the Start Card surface; still cycling after " + safety + " reveals");
-		Assert.LessOrEqual(reveals, 6,
-			"Start Card should surface within a few reveals once both per-round charges are spent (was " + reveals + ")");
+		Assert.AreEqual(5, reveals,
+			"Hand-simulated: fizzle, revive, revive, gate-blocked fizzle, then the Start Card (was " + reveals + ")");
 	}
 
 	[Test]

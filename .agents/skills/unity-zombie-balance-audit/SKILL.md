@@ -26,7 +26,8 @@ Recompute every combat card's expected per-activation value against the ZOMBIE b
 ## Workflow
 
 1. **Re-extract prefab data**:
-   `python tools/scripts/extract_card_prefabs.py > tools/outputs/card_prefab_extract.txt`
+   `python tools/scripts/extract_card_prefabs.py --out tools/outputs/card_prefab_extract.txt`
+   (writes the alias plus a dated twin per the 2026-09-20 convention in `tools/scripts/dated_output.py`; legacy stdout redirect still works)
    If new effect classes/fields were added to cards since the last run, extend the script's `FIELD_PAT` first (see Computation Rules for known field pitfalls).
 
 2. **Fetch rarity/中文名 from Notion** (SQL over the 4.0 data source; join key `CARD_TYPE_ID` ↔ prefab `cardTypeID`, NOT file name). Fallback when Notion is unreachable: rarity from prefab folder. `状态=备用` rows have no prefab — list them, never score or "fix" them.

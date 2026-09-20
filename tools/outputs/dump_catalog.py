@@ -80,6 +80,13 @@ def write_outputs(lines):
 	with open(OUT_VER, "w", encoding="utf-8", newline="") as fp:
 		for v in vers:
 			fp.write("%s\t%s\n" % (v[1], v[2]))
+	# Dated-artifact convention (2026-09-20, tools/scripts/dated_output.py):
+	# one shared stamp for the two files so a pair is recognizable at a glance.
+	sys.path.insert(0, "tools/scripts")
+	from dated_output import stamp, alias_copy
+	ts = stamp()
+	print("dated twin: %s" % alias_copy(OUT_TSV, ts))
+	print("dated twin: %s" % alias_copy(OUT_VER, ts))
 	print("wrote %d catalog rows, %d game_versions -> %s" % (len(rows), len(vers), OUT_TSV))
 	# Exit code, not the row count: callers check this and abort on non-zero.
 	return 0

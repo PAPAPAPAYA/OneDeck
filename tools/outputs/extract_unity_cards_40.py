@@ -121,6 +121,11 @@ def main():
 	os.makedirs(os.path.dirname(out_path), exist_ok=True)
 	with open(out_path, "w", encoding="utf-8") as fp:
 		json.dump(out, fp, ensure_ascii=False, indent=1)
+	# Dated-artifact convention (2026-09-20, tools/scripts/dated_output.py):
+	# the _current alias feeds consumers; the dated twin is the uploadable artifact.
+	sys.path.insert(0, "tools/scripts")
+	from dated_output import alias_copy
+	print("dated twin: %s" % alias_copy(out_path))
 	# Print ASCII-safe summary: Windows consoles often use GBK and mangle CJK.
 	print("wrote %d cards to %s" % (len(out), out_path))
 	for c in out:

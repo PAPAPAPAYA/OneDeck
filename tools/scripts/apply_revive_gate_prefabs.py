@@ -1,3 +1,7 @@
+# EXECUTED 2026-09-20 (commit 027fdd0a) — DO NOT RERUN: every target prefab now has
+# oncePerRound serialized, so a rerun aborts at the first file by design. NECROMANCER
+# has additionally MOVED to 2_Rare/ after this script ran. Kept as the migration record.
+#
 # One-shot YAML gate insertion for plan-revive-loop-mitigation-2026-09-19 §8.3 (group 1).
 # For each prefab: insert `oncePerRound: 1` into the ReviveEffect MonoBehaviour on the named
 # child GameObject (verified by m_GameObject fileID + ReviveEffect script guid), replace the
