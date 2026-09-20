@@ -51,26 +51,27 @@ public class ReviveEffect : EffectScript
 	public bool excludeSelf = true;
 
 	[Header("Once-Per-Round Gate")]
-	[Tooltip("True = at most one successful revive per round for this component instance (plans/plan-revive-loop-mitigation-2026-09-19.md §8.2). Empty-grave fizzles do not consume the charge; the gate reopens at every round start.")]
-	public bool oncePerRound = false;
+	[Tooltip("0 = unlimited; N = at most N successful revives per round for this component instance (plans/plan-revive-loop-mitigation-2026-09-19.md §8.2, per-round-count extension 2026-09-20). Prefabs gated before the int switch serialize 1, which reads as the single-charge limit. Empty-grave fizzles do not consume charges; the gate reopens at every round start.")]
+	public int oncePerRound = 0;
 
 	private int _oncePerRoundSuccesses;
 	private int _oncePerRoundRoundStamp = -1;
 
 	/// <summary>
-	/// Once-per-round gate: true when this component instance has already spent this round's
-	/// charge. Lazy stamp off CombatManager.roundNumRef — a changed round number reopens the gate.
+	/// Per-round gate: true when this component instance has already spent this round's
+	/// charges (oncePerRound = N per round). Lazy stamp off CombatManager.roundNumRef —
+	/// a changed round number reopens the gate.
 	/// </summary>
 	private bool OncePerRoundSpent()
 	{
-		if (!oncePerRound) return false;
+		if (oncePerRound <= 0) return false;
 		int round = combatManager != null && combatManager.roundNumRef != null ? combatManager.roundNumRef.value : 0;
 		if (_oncePerRoundRoundStamp != round)
 		{
 			_oncePerRoundRoundStamp = round;
 			_oncePerRoundSuccesses = 0;
 		}
-		return _oncePerRoundSuccesses >= 1;
+		return _oncePerRoundSuccesses >= oncePerRound;
 	}
 
 	/// <summary>
@@ -318,7 +319,7 @@ public class ReviveEffect : EffectScript
 				targetCardScript.gameObject.name + "</color>]" + (delayedRevive ? "延迟复活至Start Card前" : "复活至牌库顶"));
 		}
 		if (revivedCards.Count == 0) return;
-		if (oncePerRound) _oncePerRoundSuccesses++; // charge spent only on an actual revive; empty-grave fizzles keep it
+		if (oncePerRound > 0) _oncePerRoundSuccesses++; // charge spent only on an actual revive; empty-grave fizzles keep it
 
 		// 2. Snapshot post-move indices BEFORE raising awaken events: reactive chains
 		//    (苏醒 -> effects) may modify deck order before animation playback.

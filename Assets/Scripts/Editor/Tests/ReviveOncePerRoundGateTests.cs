@@ -6,18 +6,18 @@ using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
-/// EditMode tests for the once-per-round revive gate
-/// (plans/plan-revive-loop-mitigation-2026-09-19.md §8.2).
-/// Gate semantics: per card instance x ReviveEffect component, at most one successful
-/// revive per round; empty-grave fizzles do not consume the charge; the charge reopens
-/// at every round start (lazy stamp off CombatManager.roundNumRef).
+/// EditMode tests for the per-round revive gate
+/// (plans/plan-revive-loop-mitigation-2026-09-19.md §8.2, per-round-count extension 2026-09-20).
+/// Gate semantics: per card instance x ReviveEffect component, at most N successful
+/// revives per round (oncePerRound = N; 0 = unlimited); empty-grave fizzles do not consume
+/// charges; the gate reopens at every round start (lazy stamp off CombatManager.roundNumRef).
 /// </summary>
 public class ReviveOncePerRoundGateTests : HeadlessCombatTestFixture
 {
-	private ReviveEffect CreateGatedReviver(GameObject sourceCard)
+	private ReviveEffect CreateGatedReviver(GameObject sourceCard, int charges = 1)
 	{
 		var effect = CreateEffect<ReviveEffect>(sourceCard);
-		effect.oncePerRound = true;
+		effect.oncePerRound = charges;
 		return effect;
 	}
 
@@ -194,11 +194,67 @@ public class ReviveOncePerRoundGateTests : HeadlessCombatTestFixture
 		var graveB = CreateCard(true, "GraveB");
 		CombatManager.combinedDeckZone.AddRange(new List<GameObject> { graveA, graveB, start });
 		var source = CreateCard(true, "Reviver");
-		var effect = CreateEffect<ReviveEffect>(source); // oncePerRound defaults to false
+		var effect = CreateEffect<ReviveEffect>(source); // oncePerRound defaults to 0 (unlimited)
 
 		effect.ReviveMyCards(1);
 		effect.ReviveMyCards(1);
 		Assert.AreEqual(2, ValueTrackerManager.ownerRevivedCountRef.value,
-			"Default (flag off) keeps the classic unlimited behavior");
+			"Default (0) keeps the classic unlimited behavior");
+	}
+
+	[Test]
+	public void PerRoundGate_TwoCharges_SecondAllowed_ThirdBlocked()
+	{
+		var start = CreateStartCard();
+		var graveA = CreateCard(true, "GraveA");
+		var graveB = CreateCard(true, "GraveB");
+		CombatManager.combinedDeckZone.AddRange(new List<GameObject> { graveA, graveB, start });
+		var source = CreateCard(true, "Hub");
+		var effect = CreateGatedReviver(source, 2);
+
+		effect.ReviveMyCards(1);
+		effect.ReviveMyCards(1);
+		Assert.AreEqual(2, ValueTrackerManager.ownerRevivedCountRef.value,
+			"A two-charge gate allows two successful revives in the same round");
+
+		var graveC = CreateCard(true, "GraveC");
+		CombatManager.combinedDeckZone.Insert(0, graveC);
+		effect.ReviveMyCards(1);
+
+		Assert.AreEqual(2, ValueTrackerManager.ownerRevivedCountRef.value,
+			"The third revive in the same round is gated at two charges");
+		Assert.AreSame(graveC, CombatManager.combinedDeckZone[0], "Gated revive must not move any card");
+	}
+
+	[Test]
+	public void PerRoundGate_TwoChargeHubs_ReachStartCardAtReveal7()
+	{
+		// Same minimal loop deck as OncePerRoundGate_HubLoop_ReachesStartCard, but with
+		// two-charge gates (the SPIRIT_CALLER 每回合两次 shape): an empty-grave fizzle, then
+		// two revive volleys, then both gates are spent and the Start Card surfaces.
+		var start = CreateStartCard();
+		var hubA = CreateCard(true, "HubA");
+		var hubB = CreateCard(true, "HubB");
+		CombatManager.combinedDeckZone.AddRange(new List<GameObject> { start, hubA, hubB });
+		WireHub(hubA, CreateGatedReviver(hubA, 2));
+		WireHub(hubB, CreateGatedReviver(hubB, 2));
+
+		CardScript revealed = null;
+		int reveals = 0;
+		const int safety = 20;
+		while (reveals < safety)
+		{
+			revealed = RevealTopCard();
+			reveals++;
+			if (revealed == null || revealed.isStartCard) break;
+			TriggerRevealedCard();
+			PutRevealedCardToBottom();
+		}
+
+		Assert.IsNotNull(revealed, "Loop must reveal something");
+		Assert.IsTrue(revealed.isStartCard,
+			"Two two-charge hubs must let the Start Card surface; still cycling after " + safety + " reveals");
+		Assert.AreEqual(7, reveals,
+			"Hand-simulated: fizzle, two revive volleys (4 revives), gate-blocked fizzle, then the Start Card (was " + reveals + ")");
 	}
 }

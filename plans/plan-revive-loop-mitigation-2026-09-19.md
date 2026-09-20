@@ -144,7 +144,7 @@
 ### 8.4 残余环清单(加闸后)
 
 - 枢纽×枢纽、枢纽×辐条、MASS/DUO→枢纽:全部死于闸门。
-- 同名双卡:BEAST×2 / RIFT_SHEPHERD×2 已被组一堵死;ELITE×2 需外部强化(脆,接受);MASS×2 / DUO×2 / FLURRY×2 / SPIRIT×2 / PORTER×2 结构性不可能(自身类型/稀有度不匹配自身过滤)。
+- 同名双卡:BEAST×2 / RIFT_SHEPHERD×2 已被组一堵死;ELITE×2 需外部强化(脆,接受);MASS×2 / DUO×2 / FLURRY×2 / ~~SPIRIT×2~~ / PORTER×2 结构性不可能(自身类型/稀有度不匹配自身过滤) —— **2026-09-20 晚更正:SPIRIT×2 的「结构性不可能」已不成立,并行会话把 SPIRIT_CALLER 从实体改成现象卡后它匹配自身过滤,实测绑定成环,已于 §10 加闸**。
 - 亡语复活被第三方埋葬反复喂:埋葬稀缺,接受。
 - 苏醒级联(NECROMANCER 拉 RIFT_MEDIUM 等):保留,以 Rare 压制出现率;实测仍泛滥则回头执行 §4.6。
 
@@ -168,3 +168,33 @@
 - **回归**:全量 EditMode 639 跑 637 绿。2 红 = `ArrangementCycleDetectorTests.NonLethalInfiniteDeck_TripsCycleDetector` + `RunBudgetSimTests.NonLethalSample_ReportsInfinite` —— **预期内**:标本卡组 "non-lethal infinite test" = GRAVE_HEXER(已闸)× SPIRIT_CALLER,即 §8.4 所言「枢纽×辐条死于闸门」;战斗 5 轮 52 揭晓正常收场(敌方死于疲劳),侦测器无从 trip。用户拍板(2026-09-20):**暂留红灯**,标本重造另案;FLURRY×SPIRIT 替代对亦不成环(SPIRIT_CALLER 经并行会话修改后无法攻击)。
 - **Notion 同步**:7 行 desc 注入「每回合一次,」+ NECROMANCER `rare`;GRAVE_HEXER 行用户已手改(语义已到,逗号差异按归一规则跳过)。
 - **另案**:侦测器标本重造(需现存仍成环的卡对);§4.6 苏醒禁令(保留观察);疲劳稀释;§8.5 附带发现(SPIRIT_CALLER 已由并行会话处置,GRAVE_ROBBER desc 同)。
+
+## 10. 第二波加闸:全池复查与每回合次数扩展(2026-09-20 晚)
+
+### 10.1 复查发现(第二波环源)
+
+加闸后的全池绑定复查(prefab 实测 + 引擎源码)发现 §8.4 的辐条区仍有四个活环,全部由「无闸的现象(CardType.None)复活口」驱动:
+
+1. **SPIRIT_CALLER×2**(白白,无前置):并行会话把它从实体改成现象卡后,它匹配自己的现象过滤(excludeSelf 只排除同实例)。
+2. **MASS_REVIVER + SPIRIT_CALLER**:MASS(现象,Rare)拉 3 Common → 拉到 SPIRIT;SPIRIT 的现象过滤反拉 MASS。§8.4 只看了 MASS→枢纽,漏了辐条反拉。
+3. **DUO_REVIVER + RIFT_REVIVER + 信徒发生器**:DUO 拉 2 Uncommon(含 RIFT_REVIVER/REVIVE_SUMMONER);RIFT_REVIVER 放逐信徒拉 2 现象(含 DUO);发生器每揭晓 +1 信徒,产销净零。
+4. **RIFT_REVIVER×2 + 发生器**:最小环,RIFT_REVIVER 自身是现象卡,两张互拉,放逐 cost 由发生器永续供给。
+
+另:诅咒家族(RELIC_CURSE_REVIVAL 闭环)的全部驱动确认无闸:CURSE_GARDENER / CURSE_REVIVER / CURSE_SUMMONER 敌方半 / RELIC_RIFT_OVERRIDE 信徒 / DOOM_HERALD / GRAVE_ROBBER(后两张条件:诅咒为墓地最高攻)。
+
+### 10.2 拍板(2026-09-20 晚,用户)
+
+- SPIRIT_CALLER 每回合**2**次;MASS_REVIVER / DUO_REVIVER / ELITE_REVIVER 每回合**1**次;RELIC_CURSE_REVIVAL 每回合**3**次(单点灭诅咒家族,驱动不动);RIFT_REVIVER 每回合**2**次。
+- 残余确认:FLURRY_REVIVER 无闸但结构性安全(实体过滤,无回程边);NECRO/MEDIUM 苏醒放大器保留;GRAVE_ROBBER×GRAVE_ROBBER 镜像互拉理论存在但不可刻意构造,风险接受。
+
+### 10.3 引擎改动
+
+`ReviveEffect.oncePerRound` 由 bool 改为 **int**(0=无闸,N=每回合 N 次成功复活,空墓不消耗,`roundNumRef` 惰性戳重置)。同名同字段:旧 prefab 的 `oncePerRound: 1` 被 int 原样读为上限 1,八个首波闸位零迁移。`ReviveOncePerRoundGateTests` 扩 2 例(两电荷第三次被闸 / 双 K=2 枢纽第 7 揭晓 Start Card 必达)。
+
+### 10.4 执行记录
+
+- 脚本 `tools/scripts/apply_revive_gate_prefabs_2.py`(同首波的 fileID+GUID 双重定位 + desc 替换):6 prefab 落闸 + desc 更新(「每回合两次/三次」按 §8.1.6 规范,受限子句居末)。
+- `ReviveOncePerRoundPrefabTests` 扩 6 例(锁闸值 + desc),并将布尔断言改为次数断言。
+- 目标回归:两个测试类 23/23 绿(含旧 8 例在 int 语义下的兼容读取)。
+- 已知副作用:RELIC_CURSE_REVIVAL 加闸后标本卡组 "lethal infinite test"(RELIC+GARDENER)不再无限,依赖它的侦测/管道测试(ReportsInfinite/Attribution/Minimize 等)转为红灯 —— 与首波的 2 红同类,标本重造另案照旧(全池无活环后,正控标本只能用测试专用合成卡)。
+- Notion 4.0 DB 同步(6 行 desc)走 unity-notion-card-sync。
