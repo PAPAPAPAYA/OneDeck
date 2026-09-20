@@ -427,7 +427,14 @@ public class HeadlessCombatRig : System.IDisposable
 		if (CombatManager.revealZone == null) return;
 		var cardToBottom = CombatManager.revealZone;
 		CombatManager.revealZone = null;
-		CombatManager.combinedDeckZone.Insert(0, cardToBottom);
+		// R2 parity (2026-09-20 review fix): production routes through ResolveGravePlacement —
+		// a card with currentLife > 0 bounces to startCardIndex + 1 and consumes 1 life; only
+		// life-less cards (or the R13 no-Start-Card window) go to index 0. The rig calls the
+		// production method itself so this can never drift: a private mirror would silently
+		// reintroduce the index-0-only behavior the P5 batch scan measured wrong.
+		var cardScript = cardToBottom.GetComponent<CardScript>();
+		int destIndex = cardScript != null ? CombatManager.ResolveGravePlacement(cardScript) : 0;
+		CombatManager.combinedDeckZone.Insert(destIndex, cardToBottom);
 	}
 
 	public void TriggerRevealedCard()
@@ -511,11 +518,10 @@ public class HeadlessCombatRig : System.IDisposable
 	}
 
 	/// <summary>
-	/// Destroys the shared dummy UI object. Editor tests MUST call this from OneTimeTearDown:
-	/// the dummy lives in the ACTIVE SCENE (not under any rig-owned parent), so leaving it behind
-	/// marks GameScene dirty — and the next Test Runner run then trips the
-	/// "Scene(s) Have Been Modified" modal, which blocks the main thread and looks like a broken
-	/// runner. A short-lived batch process can skip it (the process exit takes it away).
+	/// Destroys the shared dummy UI object and its preview scene. Editor tests MUST call this from
+	/// OneTimeTearDown: the dummy lives in a long-lived PREVIEW scene (never saved, so no GameScene
+	/// dirt and no save-modal risk), but without this call the object leaks across test classes.
+	/// A short-lived batch process can skip it (the process exit takes it away).
 	/// </summary>
 	public static void DestroySharedResources()
 	{

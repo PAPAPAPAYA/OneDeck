@@ -78,13 +78,6 @@ public class InfiniteDeckTerminationTests : HeadlessCombatTestFixture
 	}
 
 	/// <summary>
-	/// The combo decks' fuel: enemy-side JU_ON curses. Both loops are revive-axis
-	/// (ReviveMyCards / ReviveTheirCards typeIDFilter=JU_ON + EnhanceCurse) — without
-	/// curses in the enemy deck the "add curse" leg fizzles forever and nothing churns.
-	/// Curses enter the grave by normal consumption, so the revivers have pool from
-	/// the first consumed card onward.
-	/// </summary>
-	/// <summary>
 	/// Inert opponent (plan §3 木桩: no-effect cards, no pre-seeded curse). The combo decks
 	/// seed their OWN curse - CurseEffect.EnhanceCurse spawns one whenever none exists - and the
 	/// "at most one JU_ON" invariant is emergent (only EnhanceCurse / EnhanceFriendlyCurse create

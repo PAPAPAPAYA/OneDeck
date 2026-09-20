@@ -12,6 +12,7 @@ using UnityEngine;
 public class InfinityTripJournalTests
 {
 	private const string DeckFolder = "Assets/SORefs/Decks/test decks/chain tests/4.0";
+	private const string JuOnPrefabPath = "Assets/Prefabs/Cards/3.0 no cost (current)/_DONT INCLUDE/Token/JU_ON.prefab";
 
 	private readonly List<Object> _tempObjects = new List<Object>();
 
@@ -105,10 +106,41 @@ public class InfinityTripJournalTests
 			"no queued trip means no work and no invented entry");
 	}
 
+	[Test]
+	public void Processor_NonReproducingTrip_YieldsZeroEntries()
+	{
+		// Characterization pin: a live trip is only a SUSPICION. When the headless reproduction
+		// cannot reproduce the loop (here both sides are the inert single-JU_ON deck — the
+		// reachable maximum curse count per §17), attribution says None and the processor drops
+		// the trip: never a guess, no combo entry.
+		var inert = BuildSingleCurseDeck();
+		InfinityTripJournal.Record(0x9999u, 1, 5, 4242, inert, inert, 505);
+
+		var options = new RunBudgetSim.Options();
+		options.GuardTotal = 300;
+
+		var reports = InfinityAttributionProcessor.ProcessPending(new[] { 4242 }, options);
+
+		Assert.AreEqual(0, reports.Count, "a trip that does not reproduce headlessly must yield no entry");
+		Assert.AreEqual(0, InfinityTripJournal.Count, "the queue is still drained — the suspicion was adjudicated, not kept");
+	}
+
 	private DeckSO LoadSampleDeck(string assetName)
 	{
 		var deck = AssetDatabase.LoadAssetAtPath<DeckSO>(DeckFolder + "/" + assetName + ".asset");
 		Assert.IsNotNull(deck, "sample deck missing: " + assetName);
+		return deck;
+	}
+
+	/// <summary>A real deck holding one JU_ON — the reachable maximum (§17) — as an inert enemy.</summary>
+	private DeckSO BuildSingleCurseDeck()
+	{
+		var juOn = AssetDatabase.LoadAssetAtPath<GameObject>(JuOnPrefabPath);
+		Assert.IsNotNull(juOn, "JU_ON prefab missing: " + JuOnPrefabPath);
+		var deck = ScriptableObject.CreateInstance<DeckSO>();
+		_tempObjects.Add(deck);
+		deck.name = "inert-enemy(1xJU_ON)";
+		deck.deck = new List<GameObject> { juOn };
 		return deck;
 	}
 }

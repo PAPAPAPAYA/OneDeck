@@ -33,7 +33,7 @@ public class CombatArrangementCycleDetector : MonoBehaviour
 	/// <summary>Sticky trip latch for the current combat; ResetState (combat cleanup) clears it.</summary>
 	public bool Tripped { get; private set; }
 
-	/// <summary>Number of distinct arrangements that have reached the trip threshold this combat.</summary>
+	/// <summary>Number of trip events this combat; sticky — fires only for the first arrangement reaching the threshold (ResetState clears it).</summary>
 	public int TripCount { get; private set; }
 
 	/// <summary>Arrangement hash of the most recent trip (RngDigest hex via RngDigest.ToHex).</summary>
@@ -108,7 +108,7 @@ public class CombatArrangementCycleDetector : MonoBehaviour
 
 	/// <summary>
 	/// Pure hash of the combined deck arrangement: cardTypeID + side (owner/enemy/neutral)
-	/// per slot, index 0 -> top. Side-effect free; used by the sampler and by tests.
+	/// per slot, index 0 -> bottom (last revealed). Side-effect free; used by the sampler and by tests.
 	/// </summary>
 	public uint ComputeCurrentArrangementHash()
 	{

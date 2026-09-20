@@ -6,7 +6,8 @@ using UnityEngine;
 /// plans/plan-infinity-detection-2026-09-17.md): per-round reveal force-clear, global
 /// total-reveal / round caps with a swappable placeholder conclusion, and the passive
 /// telemetry peak tracking. Unit-level state machine tests; the reveal-flow wiring is
-/// covered by Play validation.
+/// driven headlessly at the production notify points (RunBudgetSim,
+/// InfiniteDeckTerminationTests).
 /// </summary>
 public class CombatBudgetHardStopTests : HeadlessCombatTestFixture
 {

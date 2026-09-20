@@ -72,6 +72,23 @@ public static class UploadOutbox
 		cache = null;
 	}
 
+	/// <summary>
+	/// Test seam: when set, replaces the network send during a flush
+	/// (path, jsonPayload, onOk, onFail) so tests can simulate any HTTP status without network.
+	/// </summary>
+	public static Action<string, string, Action<string>, Action<string, long>> SendOverrideForTests;
+
+	/// <summary>
+	/// Test seam: pumps one whole flush synchronously. Pair with SendOverrideForTests — a
+	/// synchronously-completing send makes every callback fire inside MoveNext. Edit Mode has no
+	/// coroutine pump, and Flush() would lazily create DeckNetworkClient in the active scene.
+	/// </summary>
+	public static void FlushSynchronouslyForTests()
+	{
+		IEnumerator routine = FlushCoroutine();
+		while (routine.MoveNext()) { }
+	}
+
 	/// <summary>Clears the queue and deletes its file. Also the OnValidate path for environment flips.</summary>
 	public static void DiscardAll()
 	{
@@ -87,8 +104,9 @@ public static class UploadOutbox
 	}
 
 	/// <summary>
-	/// Drain the queue via DeckNetworkClient. Stops at the first failure and keeps the
-	/// failed head as next trigger's first item, so ordering is preserved.
+	/// Drain the queue via DeckNetworkClient. A permanent rejection (HTTP 4xx) drops the head
+	/// and continues with the next entry; a transient failure (transport error, 5xx) stops the
+	/// flush and keeps the failed head as next trigger's first item, so ordering is preserved.
 	/// </summary>
 	public static void Flush()
 	{
@@ -109,11 +127,30 @@ public static class UploadOutbox
 				PendingRequest head = items[0];
 				bool done = false;
 				bool ok = false;
-				DeckNetworkClient.Me.PostJson(head.path, head.jsonPayload,
-					(body) => { ok = true; done = true; },
-					(error, statusCode) => { done = true; });
+				long statusCode = 0;
+				Action<string> onOk = (body) => { ok = true; done = true; };
+				Action<string, long> onFail = (error, code) => { statusCode = code; done = true; };
+				if (SendOverrideForTests != null)
+					SendOverrideForTests(head.path, head.jsonPayload, onOk, onFail);
+				else
+					DeckNetworkClient.Me.PostJson(head.path, head.jsonPayload, onOk, onFail);
 				while (!done) yield return null;
-				if (!ok) yield break;
+				if (!ok)
+				{
+					// 4xx = the server rejected the request itself (401 unknown_player /
+					// 400 own_deck / 404 deck_not_found): retrying can never succeed, and
+					// DeckNetworkClient already treats 4xx as final. Drop the poison head so
+					// one bad entry cannot stall every later upload behind it (2026-09-20).
+					if (statusCode >= 400 && statusCode < 500)
+					{
+						Debug.LogWarning("[UploadOutbox] dropping " + head.kind + " -> " + head.path
+							+ ": permanent server rejection (HTTP " + statusCode + ")");
+						items.RemoveAt(0);
+						Save(items);
+						continue;
+					}
+					yield break;
+				}
 				items.RemoveAt(0);
 				Save(items);
 			}

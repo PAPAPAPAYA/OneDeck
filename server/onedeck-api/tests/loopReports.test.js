@@ -195,6 +195,22 @@ test('re-uploading flagged content is flagged at insert', async () =>
 	assert.strictEqual(await neverServed(players.victim1, reupload.deckId), true, 're-upload is never served');
 });
 
+test('the content fingerprint ignores card order: a shuffled re-upload is flagged at insert', async () =>
+{
+	const ids = content('order', ['CARD_order_C']);
+	const original = await uploadDeck(players.offender1, ids, { sessionNum: 2 });
+	assert.strictEqual((await report(players.victim1, original.deckId)).body.flagged, true);
+
+	// Same multiset, different order: the fingerprint sorts before hashing (server.js), so the
+	// shuffled row must hit the auto-flag path exactly like a byte-identical re-upload.
+	const reordered = await uploadDeck(players.offender1, ids.slice().reverse(), { sessionNum: 2 });
+	assert.strictEqual(flagOf(reordered.deckId).fingerprint, flagOf(original.deckId).fingerprint,
+		'card order must not change the content fingerprint');
+	assert.strictEqual(reordered.flagged, true, 'upload response must report the auto-flag');
+	assert.strictEqual(flagOf(reordered.deckId).flag, 1, 'the shuffled row lands flagged');
+	assert.strictEqual(await neverServed(players.victim1, reordered.deckId), true, 'shuffled re-upload is never served');
+});
+
 test('flagging is content-scoped: supersets and subsets stay served', async () =>
 {
 	const flagged = await uploadDeck(players.offender2, content('scope'), { sessionNum: 1 });
@@ -221,6 +237,30 @@ test('evidence-only reports change no state', async () =>
 	assert.strictEqual(
 		db.prepare('SELECT COUNT(*) AS c FROM loop_reports WHERE deck_id = ?').get(deck.deckId).c, 4);
 	assert.ok(await everServed(players.victim2, deck.deckId), 'deck is still served');
+});
+
+test('loop reports require a known player: 401 unknown_player, not 404', async () =>
+{
+	// The §24.1 deploy probe is "POST /api/loop-reports answers 401, not 404" — pin that contract.
+	const body = {
+		gameVersion: GAME_VERSION,
+		opponentDeckId: 1,
+		verdict: INFINITE_VERDICT,
+		seed: 4242,
+		signals: 'arrangement-cycle abc repeats=9',
+		payload: '{"mySide":["CARD_X"]}',
+	};
+
+	const missing = await post('/api/loop-reports', body);
+	assert.strictEqual(missing.status, 401, 'a missing playerId is 401, not 404: ' + JSON.stringify(missing.body));
+	assert.strictEqual(missing.body.error, 'unknown_player');
+
+	// Well-formed but never registered (32 hex chars, so it passes the length check) — this is the
+	// exact request shape a misconfigured deploy fires at the gate.
+	const unknown = await post('/api/loop-reports',
+		Object.assign({ playerId: '0123456789abcdef0123456789abcdef' }, body));
+	assert.strictEqual(unknown.status, 401, 'an unknown playerId is 401, not 404: ' + JSON.stringify(unknown.body));
+	assert.strictEqual(unknown.body.error, 'unknown_player');
 });
 
 test('a report against your own deck or a missing deck is rejected', async () =>

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// P2 pipeline tests (plan-infinity-detection §4): attribution tri-run, ddmin minimization and
@@ -39,6 +41,18 @@ public class InfinityPipelineTests
 
 	private readonly List<Object> _tempObjects = new List<Object>();
 
+	/// <summary>Preview scene for runtime-built cards; see SetUp for why the active scene is off-limits.</summary>
+	private Scene _cardScene;
+
+	[SetUp]
+	public void SetUp()
+	{
+		// Runtime-built cards must live outside the active scene: creating them in GameScene
+		// marks it dirty, and a dirty scene makes the next Test Runner run hit the save modal
+		// (same reason HeadlessCombatRig builds everything in a preview scene).
+		_cardScene = EditorSceneManager.NewPreviewScene();
+	}
+
 	[TearDown]
 	public void TearDown()
 	{
@@ -47,6 +61,7 @@ public class InfinityPipelineTests
 			if (obj != null) Object.DestroyImmediate(obj);
 		}
 		_tempObjects.Clear();
+		if (_cardScene.IsValid()) EditorSceneManager.ClosePreviewScene(_cardScene);
 	}
 
 	[OneTimeTearDown]
@@ -182,6 +197,41 @@ public class InfinityPipelineTests
 		}
 	}
 
+	// ---- seed contract + 1-minimality polarity (2026-09-20 review fixes) ----
+
+	[Test]
+	public void Minimize_NullOrEmptySeeds_Throws()
+	{
+		var lethal = LoadSampleDeck("lethal infinite test");
+		Assert.Throws<System.ArgumentException>(
+			() => ComboMinimizer.Minimize(lethal, null, dummySize: 3, dummyHp: 100, options: FastOptions()),
+			"null seeds must be refused: the old { 0 } fallback hit the seed-0 sentinel (no override), so the combat seed derived from UnityEngine.Random via Rng.RunSeed and the multi-seed predicate was nondeterministic");
+		Assert.Throws<System.ArgumentException>(
+			() => ComboMinimizer.Minimize(lethal, new List<int>(), dummySize: 3, dummyHp: 100, options: FastOptions()),
+			"an empty seed list must be refused for the same reason");
+	}
+
+	[Test]
+	public void Minimize_SingleCardLoop_IsOneMinimal()
+	{
+		// A one-card deck whose card carries R2 life: it bounces above the Start Card every lap,
+		// so the arrangement repeats inside one round — a genuine single-card loop. Removing its
+		// only card leaves an EMPTY deck, which cannot loop (LoopsOnAllSeeds false for empty), so
+		// the set IS 1-minimal. The old polarity break reported false, which would have made the
+		// server reject a real single-card combo.
+		var deck = NewDeck("single-life-loop", new List<GameObject> { CreateLifeCard("LIFE_LOOPER", 5) });
+		var result = ComboMinimizer.Minimize(deck, Seeds, dummySize: 2, dummyHp: 100000000, options: FastOptions());
+
+		Debug.Log("[P2] minimize single-card -> " + result.CardIds() + " runs=" + result.RunsPerformed
+			+ " oneMinimal=" + result.IsOneMinimal + " stable=" + result.MultiSeedStable);
+
+		Assert.IsTrue(result.MultiSeedStable, "the single life-bearing card must loop on every seed");
+		Assert.AreEqual(1, result.Cards.Count, "nothing can be removed from a one-card set");
+		Assert.IsTrue(result.IsOneMinimal,
+			"removing the only card yields an empty (non-looping) deck: a 1-card loop IS 1-minimal");
+		Assert.IsFalse(result.Truncated, "a one-card set needs almost no budget");
+	}
+
 	// ---- combo entry (§4 schema) ----
 
 	[Test]
@@ -255,5 +305,20 @@ public class InfinityPipelineTests
 		deck.name = name;
 		deck.deck = cards;
 		return deck;
+	}
+
+	/// <summary>A runtime-built card carrying R2 life, living in the preview scene (see SetUp).</summary>
+	private GameObject CreateLifeCard(string cardTypeID, int lifeMax)
+	{
+		var card = new GameObject(cardTypeID + "_obj");
+		SceneManager.MoveGameObjectToScene(card, _cardScene);
+		_tempObjects.Add(card);
+		var cs = card.AddComponent<CardScript>();
+		cs.cardTypeID = cardTypeID;
+		cs.myStatusEffects = new List<EnumStorage.StatusEffect>();
+		cs.myTags = new List<EnumStorage.Tag>();
+		cs.lifeMax = lifeMax;
+		cs.currentLife = lifeMax;
+		return card;
 	}
 }

@@ -34,8 +34,8 @@ public class RunBudgetSimTests
 	[OneTimeTearDown]
 	public void OneTimeTearDown()
 	{
-		// The rig's shared dummy UI lives in the active scene; without this the class leaves an
-		// orphan behind, GameScene stays dirty, and the NEXT Test Runner run hits the save modal.
+		// The rig's shared dummy UI lives in a preview scene (never saved, so no GameScene dirt);
+		// without this call the object still leaks across test classes.
 		HeadlessCombatRig.DestroySharedResources();
 	}
 

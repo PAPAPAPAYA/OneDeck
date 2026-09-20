@@ -68,6 +68,14 @@ public static class ComboMinimizer
 {
 	public const int DefaultMaxRuns = 400;
 
+	/// <summary>
+	/// Minimize a deck to a 1-minimal looping subset.
+	/// </summary>
+	/// <exception cref="System.ArgumentException">
+	/// Thrown when <paramref name="seeds"/> is null or empty. Seed 0 is the no-override sentinel,
+	/// so falling back to it would derive the combat seed from UnityEngine.Random via Rng.RunSeed
+	/// and make the multi-seed stability predicate nondeterministic.
+	/// </exception>
 	public static MinimizeResult Minimize(DeckSO deck, IList<int> seeds, int dummySize, int dummyHp,
 		RunBudgetSim.Options options = null, int maxRuns = DefaultMaxRuns)
 	{
@@ -75,7 +83,11 @@ public static class ComboMinimizer
 		if (deck == null || deck.deck == null) return result;
 
 		var all = new List<GameObject>(deck.deck);
-		if (seeds == null || seeds.Count == 0) seeds = new List<int> { 0 };
+		if (seeds == null || seeds.Count == 0)
+			throw new System.ArgumentException(
+				"seeds must contain at least one combat seed: seed 0 is the no-override sentinel, so the "
+				+ "combat seed would derive from UnityEngine.Random via Rng.RunSeed and the multi-seed "
+				+ "stability predicate would be nondeterministic", nameof(seeds));
 
 		int runs = 0;
 		result.MultiSeedStable = LoopsOnAllSeeds(all, seeds, dummySize, dummyHp, options, ref runs);
@@ -141,7 +153,6 @@ public static class ComboMinimizer
 				{
 					result.StripVerified = true;
 					current = remainder;
-					granularity = 2;
 				}
 			}
 			else if (stripped.Count > 0)
@@ -163,7 +174,10 @@ public static class ComboMinimizer
 				if (runs >= maxRuns) { result.Truncated = true; result.IsOneMinimal = false; break; }
 				var probe = new List<GameObject>(current);
 				probe.Remove(card);
-				if (probe.Count == 0) { result.IsOneMinimal = false; break; }
+				// An empty probe cannot loop (LoopsOnAllSeeds false for empty), so removing the
+				// only card of a 1-card set breaks the loop: that set IS 1-minimal. Skipping the
+				// predicate also saves a full sim per seed.
+				if (probe.Count == 0) continue;
 				if (LoopsOnAllSeeds(probe, seeds, dummySize, dummyHp, options, ref runs))
 				{
 					result.IsOneMinimal = false;

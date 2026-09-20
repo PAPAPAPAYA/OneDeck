@@ -506,7 +506,7 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 
 端点:
 
-- `POST /api/loop-reports`:`{playerId, gameVersion, opponentDeckId, verdict, seed, signals, minimizedCards, payload}`。校验 deck 存在(404)/ 非自己(400 own_deck);写 `loop_reports`;`report_id` 由 `(deck_id, fingerprint, seed)` 派生 → 天然幂等(沿用 matches/report 的 reportId 模式)。**只有带 verdict(已证单侧无限)的报告触发 flag**:该行 + 同 game_version 下所有同指纹行置 flag,指纹入 `flagged_fingerprints` 并累加 `report_count`。
+- `POST /api/loop-reports`:`{playerId, gameVersion, opponentDeckId, verdict, seed, signals, payload}`(`minimizedCards` 不单独成字段,已在 payload 内 —— §20.7 实施记录)。校验 deck 存在(404)/ 非自己(400 own_deck);写 `loop_reports`;`report_id` 由 `(deck_id, fingerprint, seed, verdict, reporter)` 派生(§20.7)→ 天然幂等(沿用 matches/report 的 reportId 模式)。**只有带 verdict(已证单侧无限)的报告触发 flag**:该行 + 所有同指纹行置 flag(指纹全局、不分版本 —— §20.1 拍板 1,`flagDecksByFingerprint` 无版本过滤),指纹入 `flagged_fingerprints` 并累加 `report_count`。
 - `POST /api/decks`(改):插入前算指纹,命中 `flagged_fingerprints` → 新行直接落 flag(重传同内容即刻拦住)。
 - `GET /api/decks/opponents`(改):两条随机查询加 `AND flag = 0`;响应新增 `flaggedDeckIds` = 该 game_version 下 `session_num <= maxSession` 且 flag=1 的 deck_id 列表(覆盖客户端 prefetch 范围,服务端不必知道客户端缓存内容)。
 - `POST /api/admin/decks/unflag?token=...`:按 deck_id 或按指纹解封(二选一参数);admin 页面新增 section(loop_reports 列表 + flagged decks + 解封按钮;改状态走 POST,不用 GET)。
@@ -522,7 +522,7 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 
 ### 20.4 测试与验收
 
-- 服务端 `tests/loop-reports.test.js`(node 内置 test runner;package.json 加 `"test": "node --test tests/"`):①同内容两行、报告其一 → 出队两条都不返回;②报告后再上传同内容 → 新行落库即 flag;③异内容 deck 不受影响;④报告自己的 deck → 400、不存在的 deck → 404;⑤重复报告幂等;⑥admin 解封后出队恢复;⑦`flaggedDeckIds` 只含该版本该 session 范围。
+- 服务端 `tests/loopReports.test.js`(node 内置 test runner;package.json 加 `"test": "node --test tests/"`):①同内容两行、报告其一 → 出队两条都不返回;②报告后再上传同内容 → 新行落库即 flag;③异内容 deck 不受影响;④报告自己的 deck → 400、不存在的 deck → 404;⑤重复报告幂等;⑥admin 解封后出队恢复;⑦`flaggedDeckIds` 只含该版本该 session 范围。
 - 客户端 EditMode:`OpponentDeckCacheTests` 扩展(purge 命中项 + 保留未命中项),`LoopReportUploader` payload / 开关 / `EnemyDeckId = 0` 跳过(沿用既有 hermetic 假 HTTP 模式)。
 
 ### 20.5 已拍板(无遗留待确认)
@@ -727,7 +727,7 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 | 上报者 | 12 条来自 `test_papaya`,1 条(deck 56)来自专用扫描器身份 **`onedeck-scan`**;其 playerId 在 `tools/outputs/_scan_reporter.txt`(**gitignore**,playerId 即凭据) |
 | 数据库 | 109 副 deck / 6 个 player;迁移是 boot 时增量完成(§22) |
 
-**玩家实际获得的保护 = L0 熔断(任何对局必然结束)+ 下发闸门(6 个组合不再出现在对手里)。** 闸门覆盖面仍取决于「谁产出 verdict」:打包内跑不了归因 sim(§19.5),所以今天能产出 verdict 的只有**编辑器里的归因**(playtest)与 **P5 离线回扫**。正式包里只会上传无 verdict 的证据,服务端不据此 flag。
+**玩家实际获得的保护 = L0 熔断(任何对局必然结束)+ 下发闸门(6 个组合不再出现在对手里)。** 闸门覆盖面仍取决于「谁产出 verdict」:打包内跑不了归因 sim(§19.5),所以今天能产出 verdict 的只有**编辑器里的归因**(playtest)与 **P5 离线回扫**。正式包里检测器照常 trip 并写 `InfinityTripJournal`,但打包内没有任何 drain/upload 消费者 —— `LoopReportUploader.EnqueueEvidence` 在全仓库唯一的调用方是编辑器程序集的 `InfinityAttributionProcessor`(§24.2.1)→ 正式包实际上**什么都不上传**(2026-09-20 审查更正:此前的「正式包上传无 verdict 证据」说法不成立);服务端本就只据带 verdict 的报告 flag。
 
 ### 24.2 还没做的(按重要性)
 
@@ -737,6 +737,7 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 4. **P4 匹配层缺端到端验证**——服务端单测证明「含组合的 deck 被扣」,但没有跑过「真实客户端 → 真的不再下发」的联调;客户端缓存清理(`blockedCombos`)也只有单测。
 5. **未上报的 4 副**:deck 5/55(多 seed 成环但 ddmin 在 120 次预算内没收敛出 1-最小集)、deck 6(repeats=3 且单 seed)、deck 91(与 88/89 内容重复)。要覆盖需放宽 `ScanMinimizerMaxRuns` 并在切片下小步重跑(§23.5 的 OOM 教训)。
 6. **§11.1 阈值标定**仍未做(周期检测器的触发次数/哈希内容/回合重置),L0 绝对上限也没做生产对局夹逼。
+7. **缓存清理的 fail-open 窗口比「最长一个 session」宽**(2026-09-20 审查发现):purge 只在 prefetch 响应落地时跑(`OpponentDeckCache.MergeResponse`);库存已满时 `EnsureStockForSession` 跳过 prefetch,网络失败时错误回调只清标志不清缓存 → 离线进商店时含组合的存量缓存照样可被 `TakeCandidate` 取出。L0 仍是兜底,但窗口无硬上界;匹配时刻客户端不复查(组合列表在 MergeResponse 后即丢弃)。修法候选:`TakeCandidate` 拿最近一次拉到的组合列表跑 `ContainsBlockedCombo`(需把列表留下来),或在 `EnsureStockForSession` 跳过 prefetch 时也做一次本地 purge。
 
 ### 24.3 操作手册(全部在仓库里,零手工文件)
 
@@ -744,7 +745,7 @@ P3 的 flag 是**等值内容键**:只有"卡表恰好等于被证明那一副"�
 # 1) 只读 dump 线上 decks(workbench exec;Windows 需 MSYS_NO_PATHCONV=1)
 export PATH="$PATH:/c/Users/Papaya/.workbench/bin"; MSYS_NO_PATHCONV=1 python tools/outputs/dump_decks.py --prod
 
-# 2) 扫描(必须在编辑器里;菜单 Tools/Infinity/Batch Scan 或 -executeMethod InfinityBatchScan.ScanFromBatch)
+# 2) 扫描(必须在编辑器里;菜单 Tools/Infinity/Batch Scan (report only) 或 -executeMethod InfinityBatchScan.ScanFromBatch)
 #    务必分批:Run(candidates, ...) 接受过滤后的候选列表,每批 20-40 副
 #    成本上限已在代码里:ScanGuardTotal=400 / ScanMinimizerMaxRuns=120(§23.5 的 OOM 教训)
 
@@ -777,3 +778,47 @@ workbench exec --instance-id i-uf66n1ofpudgn9b6rg7o --output json --command 'pm2
 | 客户端网络面 | `Assets/Scripts/Net/{OpponentDeckCache,UploadOutbox,LoopReportUploader,NetDtos,ServerConfig}.cs` |
 | 运维脚本 | `tools/outputs/{dump_decks.py,post_loop_reports.js}`(+ 其 node 测试) |
 | 报告产物 | `tools/outputs/infinity_scan_*.md`(入库)、`infinity_rings_*.md`、`_exp_8889.txt`(88/89 环证据);`*.json` 含玩家名 → **gitignore** |
+
+---
+
+## 25. 审查轮 + 修复轮(2026-09-20,含交接状态)
+
+### 25.1 审查(5 面并行;结论:实现与 plan 一致,无 Critical)
+- L0/L1 客户端核心、P1b/P2 无头仿真与归因、P3 服务端、P3 客户端+P4、P5 工具,逐面对照 plan 与 main 代码核实;服务端测试实跑 17/17、poster 测试 6/6。
+- 重要发现 4 条 + Minor 十余条;其中 5 项进入修复轮(用户授权「修改代码」)。
+
+### 25.2 修复轮交付(2026-09-20,工作区,**提交前**)
+| 修复 | 文件 | 语义 |
+|---|---|---|
+| R2 坟墓回弹保真 | `HeadlessCombatRig.PutRevealedCardToBottom` | 直接调生产 `CombatManager.ResolveGravePlacement`(不镜像,永不漂移):`currentLife>0` → `startCardIndex+1` 且扣 1 命;R13 窗口 → 0 |
+| Outbox 毒头 | `UploadOutbox.FlushCoroutine` | 4xx = 永久拒绝 → 丢头告警继续;传输错误/5xx = 临时 → 照旧停住等下一触发 |
+| Minimizer 种子契约 | `ComboMinimizer.Minimize` | null/空 seeds → `ArgumentException`(seed 0 是「无 override」哨兵,旧 `{0}` 回退使谓词非确定、`MultiSeedStable` 失真) |
+| 单卡环极小性 | `ComboMinimizer` 1-minimality 检查 | `probe.Count==0` → `continue`(空卡组不成环,1 卡环即 1-极小);旧 `break`+`false` 会让服务端拒收真单卡组合 |
+| 服务端测试 | `tests/loopReports.test.js` +2 | ①未认证 401(≠404,上线探针)②乱序重传同指纹自动 flag;**19/19 已绿** |
+| 新 Unity 测试 | `HeadlessCombatRigParityTests`(4)/ `UploadOutboxTests`(2)/ `InfinityPipelineTests`(+2)/ `InfinityTripJournalTests`(+1) | 断言见各文件头注释;journal 那条是 characterization pin(行为本在,补上钉) |
+| 注释清理 | `CombatArrangementCycleDetector`(TripCount 文档 / index 0->bottom)、`CombatBudgetHardStopTests` 头、`InfiniteDeckTerminationTests` 删 §17.4 旧错注释、`RunBudgetSimTests`/`HeadlessCombatRig` preview-scene 注释 | 纯注释,零行为 |
+| plan 文本更正 | 本文件 §20.2(report_id 构成 / 指纹全局 / minimizedCards)、§20.4(测试文件名)、§24.1(正式包实际上传 = 无)、§24.2(+第 7 条)、§24.3(菜单名) | §17.4 / §19.5 的旧声称随代码落地自动成真 |
+
+### 25.3 验证状态(交接时)
+- 编译已核对:`isCompiling==false`,`Assembly-CSharp` / `Assembly-CSharp-Editor` DLL mtime 均新于全部改动源码(2026-09-20 13:26 UTC+8)。
+- **EditMode 选择运行被用户手动打断(不是失败!)——绿灯证据不存在,下个会话必须重跑。**
+- **2026-09-20 接手会话重跑完成(§25.4)**:12 类选择 76 测 → 74 绿 / 2 红;全量 EditMode **639 total / 637 绿 / 2 红** —— 两红 = `ArrangementCycleDetectorTests.NonLethalInfiniteDeck_TripsCycleDetector` + `RunBudgetSimTests.NonLethalSample_ReportsInfinite`,即 `plan-revive-loop-mitigation-2026-09-19.md:168` 记录的闸门后预期红(用户 09-20 拍板暂留、标本重造另案),别无回归;跑完 `GameScene` 仍干净(预览场景隔离对新增测试同样成立)。记一次环境事件:首个全量尝试报 `Test job failed to initialize`(180s 窗口被**失焦期排队的编译**在窗口获得焦点后的域重载打断,`clear_stuck` 报无孤儿 job),原地重跑即过。
+- 服务端 `npm test` 19/19 已绿(实跑)。
+- RED 注意:实现由中途配额中断的子代理完成,新测试的红相未被见证。可选择性补见证:`git stash push -- <生产文件>` → 跑对应测试看红 → `git stash pop`。依赖链:`Minimize_SingleCardLoop_IsOneMinimal` 没有 rig 修复不会过(单卡环靠 R2 回弹成环)。
+
+### 25.4 下个会话的步骤
+1. 建自己的 `.agent_registry` claim(上一会话的已删;先扫描现存 claim 比对文件面)。
+2. `refresh_unity`(compile: request)→ `execute_code` 核对 `isCompiling==false` 且程序集 mtime > 源码 mtime(AGENTS.md stale-assembly 条)。
+3. 若 `run_tests` 报残留 job → `clear_stuck: true`(被打断的运行可能留了 `current_job_id`)。
+4. `execute_code`: `EditorSceneManager.SaveOpenScenes()`(预授权)→ 立即 `run_tests`(EditMode,`init_timeout` 180000,`test_names` 非空):`HeadlessCombatRigParityTests`, `UploadOutboxTests`, `InfinityPipelineTests`, `InfinityTripJournalTests`, `ArrangementCycleDetectorTests`, `InfiniteDeckTerminationTests`, `CombatBudgetHardStopTests`, `RunBudgetSimTests`, `InfinityRingReproducerTests`, `InfinityBatchScanTests`, `LoopReportUploaderTests`, `OpponentDeckCacheTests`。**total 必须 > 0(0 = 假绿)**;`read_console` 看新增告警。
+5. 绿后提交:只 stage 本轮文件(§25.2 表中文件 + 两个新测试文件及其 `.meta` + 本 plan)。**严禁 stage 用户并行工作**:`SPIRIT_CALLER.prefab`、`GRAVE_ROBBER.prefab`、`ServerConfig.asset`(`enabled 1→0` 是本地开关!)、`GameScene.unity`、`plan-revive-loop-mitigation-2026-09-19.md`。
+6. 建议 message:`fix(infinity): review round - rig R2 bounce parity, outbox 4xx poison-head drop, minimizer seed/1-minimality guards`。直提 `main` 并 push(2026-09-19 用户拍板)。
+7. 删自己的 claim。
+
+### 25.5 本轮明确未修(审查发现的留存清单)
+- `SightingsThisRound` 字段名不副实(记的是当轮总采样数,非该排列重复数);`OwnerDeck`/`PairOnly` verdict 仍以 ghost deckId 上报(无害,不 flag)。
+- JS/C# proven 判据不对称(`post_loop_reports.js` 非 false 即过 vs C# 必须 true;扫描器输出总带全字段,无现实风险)。
+- admin token 非恒定时间比较 + 走 query string + admin 路由无限速(项目既有姿态)。
+- `ProcessPendingEntries` 无总量闸(32 × ~400 sims;§19.6.2 落地时必须加)。
+- `prefetchInFlight` 无 try/finally 保护;outbox 无入队去重;live 与 sim 的排列哈希域不同(revealZone 采样时点差;周期性信号不受影响)。
+- 归因触发时机 / 打包内 verdict 来源 / 组合复验 CI / P4 端到端 —— 照旧见 §24.2。
