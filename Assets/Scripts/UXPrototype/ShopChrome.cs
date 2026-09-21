@@ -117,6 +117,9 @@ public class ShopChrome : MonoBehaviour
 	public static void ShowIfActive()
 	{
 		if (_instance == null) return;
+		// The chrome is camera-pinned; showing it mid-travel would float it over the departing
+		// page. The driver calls ShowIfActive again on landing (ResultToShopRoutine).
+		if (PhaseTransitionDriver.IsTransitioning) return;
 		_instance.gameObject.SetActive(true);
 		_instance.Refresh();
 	}
@@ -176,6 +179,10 @@ public class ShopChrome : MonoBehaviour
 		_exitButton.SetWorldAction(() =>
 		{
 			if (_phaseManager == null) return;
+			// Phase transition driver (plan-phase-transition-world-camera-2026-09-21): the 离开商店
+			// button is THE canonical shop->combat trigger (user ruling 2026-09-21); when the driver
+			// is available it wraps these calls in the camera travel, else the legacy hard cut runs.
+			if (PhaseTransitionDriver.RequestShopToCombat(_phaseManager)) return;
 			_phaseManager.ExitingShopPhase();
 			_phaseManager.EnteringCombatPhase();
 		});

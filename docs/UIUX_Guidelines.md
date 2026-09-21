@@ -1,6 +1,6 @@
 # OneDeck UI/UX Guidelines
 
-Frozen decision record for OneDeck UI interaction feel, distilled from the executable spec `docs/demo/UIKitDemo.html` (v0.8, 2026-09-08). The demo remains the interactive tuning surface — tune there, then sync the numbers here and into the Unity implementation. Card-flight and shop↔combat phase-transition motion are specced separately in `docs/demo/PhaseTransitionDemo.html` (no Unity port plan yet) and are out of scope here.
+Frozen decision record for OneDeck UI interaction feel, distilled from the executable spec `docs/demo/UIKitDemo.html` (v0.8, 2026-09-08). The demo remains the interactive tuning surface — tune there, then sync the numbers here and into the Unity implementation. Card-flight and shop↔combat phase-transition motion are specced in `docs/demo/PhaseTransitionDemo.html` and ported to Unity per `docs/PhaseTransition.md` (plan `plans/plan-phase-transition-world-camera-2026-09-21.md`, shipped 2026-09-21); they are out of scope here.
 
 ## R0. Light Source (inviolable)
 

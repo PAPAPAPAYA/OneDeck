@@ -143,6 +143,8 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 
 	private Tween _popTween;
 	private Tween _rowGlideTween;
+	private Tween _placementTween;
+	private Tween _placementScaleTween;
 
 	private void Awake()
 	{
@@ -248,9 +250,12 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	{
 		EnumStorage.GamePhase phase = gamePhaseRef.Value();
 		bool inCombat = phase == EnumStorage.GamePhase.Combat;
-		// The player side doubles as the shop top-bar HP readout (2026-09-19);
-		// the enemy side stays combat-only.
-		bool visible = inCombat || (side == Side.Player && phase == EnumStorage.GamePhase.Shop);
+		// The player side doubles as the shop top-bar HP readout (2026-09-19) and stays visible
+		// through the Result phase (2026-09-21 phase transition rule, demo :27-28); the enemy
+		// side stays combat-only and is suppressed while the transition driver holds canvas UI.
+		bool visible = side == Side.Player
+			? inCombat || phase == EnumStorage.GamePhase.Shop || phase == EnumStorage.GamePhase.Result
+			: inCombat && !PhaseTransitionDriver.SuppressCombatCanvasUI;
 		// VISUAL-FIX(2026-09-19): Leaving the shop for combat left the player pill at the shop
 		//   Cause:    Placement was applied only from EnterVisiblePhase, which fires on an
 		//             invisible->visible edge. The player side is visible in BOTH Shop and
@@ -260,8 +265,10 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		//   Affects:  HPNumericDisplayHorizontal player side (shop top-bar reuse).
 		//   Regress:  Enter Shop, leave to Combat: the pill must return to (290, 89) / scale 0.8
 		//             bottom-left while the enemy pill sits at (-290, -89) / 0.8 top-right.
-		//             Result -> Shop must still place it at the ShopTopBarLayout anchor, and
-		//             Result must hide both sides and restore their combat anchors.
+		//             Result -> Shop must still place it at the ShopTopBarLayout anchor.
+		//             (Updated 2026-09-21: the PLAYER side now STAYS visible through Result —
+		//             phase-transition rule, demo PhaseTransitionDemo.html:27-28 — so Result no
+		//             longer hides it; the enemy side still hides outside Combat.)
 		if (phase != _lastPhase)
 		{
 			_lastPhase = phase;
@@ -381,11 +388,28 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		SetCounterInstant(_current, true, hp);
 		SetCounterInstant(_max, false, hpMax);
 		displayRoot.gameObject.SetActive(true);
+		// Enemy HUD counter-direction entrance (demo :724-727): slide DOWN in from above.
+		if (side == Side.Enemy && PhaseTransitionDriver.EnemyEntrancePending && _selfRt != null)
+		{
+			var cfg = PhaseTransitionConfigSO.Me;
+			if (cfg != null)
+			{
+				float refHeight = canvas != null && canvas.scaleFactor > 0.0001f
+					? Screen.height / canvas.scaleFactor
+					: Screen.height;
+				float slidePx = PhaseFlightPlanner.DemoPxToCanvasPx(cfg.enemySlideDemoPx, refHeight);
+				KillTween(ref _placementTween);
+				_selfRt.anchoredPosition = _combatAnchoredPos + new Vector2(0f, slidePx);
+				_placementTween = cfg.ApplyEase(_selfRt.DOAnchorPos(_combatAnchoredPos, Mathf.Max(0.25f, cfg.transDur * 0.5f)).SetUpdate(UpdateType.Normal, true));
+			}
+		}
 	}
 
 	private void ExitVisiblePhase()
 	{
 		CleanupVisuals();
+		KillTween(ref _placementTween);
+		KillTween(ref _placementScaleTween);
 		displayRoot.gameObject.SetActive(false);
 		// Leaving a visible phase always restores the combat anchor, so the next
 		// combat entry finds the transform untouched even if a phase is skipped.
@@ -402,16 +426,24 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		{
 			return;
 		}
-		if (shopPhase)
+		Vector2 targetPos = shopPhase
+			? ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.HpDisplayViewport, canvas)
+			: _combatAnchoredPos;
+		Vector3 targetScale = shopPhase ? Vector3.one * ShopTopBarLayout.HpDisplayShopScale : _combatScale;
+		var cfg = PhaseTransitionConfigSO.Me;
+		if (PhaseTransitionDriver.IsTransitioning && cfg != null)
 		{
-			_selfRt.anchoredPosition = ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.HpDisplayViewport, canvas);
-			_selfRt.localScale = Vector3.one * ShopTopBarLayout.HpDisplayShopScale;
+			// Shared-element flight (demo flyShared HUD branch): glide, don't snap.
+			KillTween(ref _placementTween);
+			KillTween(ref _placementScaleTween);
+			_placementTween = cfg.ApplyEase(_selfRt.DOAnchorPos(targetPos, cfg.transDur).SetUpdate(UpdateType.Normal, true));
+			_placementScaleTween = cfg.ApplyEase(_selfRt.DOScale(targetScale, cfg.transDur).SetUpdate(UpdateType.Normal, true));
+			return;
 		}
-		else
-		{
-			_selfRt.anchoredPosition = _combatAnchoredPos;
-			_selfRt.localScale = _combatScale;
-		}
+		KillTween(ref _placementTween);
+		KillTween(ref _placementScaleTween);
+		_selfRt.anchoredPosition = targetPos;
+		_selfRt.localScale = targetScale;
 	}
 
 	private void CleanupVisuals()

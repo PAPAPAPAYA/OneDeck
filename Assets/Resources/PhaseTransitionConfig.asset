@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e99c1efc1922be04bbe601f319193af2, type: 3}
+  m_Name: PhaseTransitionConfig
+  m_EditorClassIdentifier: Assembly-CSharp::PhaseTransitionConfigSO
+  enabled: 1
+  skipInHeadless: 1
+  transDur: 0.8
+  cardStagger: 0.07
+  easeMode: 0
+  overshoot: 1.7
+  cardArcDemoPx: 90
+  enemySlideDemoPx: 140
+  pagePadDemoPx: 200

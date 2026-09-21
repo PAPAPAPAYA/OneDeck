@@ -91,6 +91,7 @@ public class ShopUXManager : MonoBehaviour
 	
 	private Camera _mainCamera;
 	private float _cameraInitialY;
+	private PhaseManager _phaseManager;
 	// Scroll writes go on the camera's parent rig: the camera's localPosition is owned
 	// per-frame by MilkShake Shaker, which would clobber any offset written directly.
 	private Transform _scrollTarget;
@@ -202,6 +203,9 @@ public class ShopUXManager : MonoBehaviour
 	/// </summary>
 	public void ClearSpawnedShopCards()
 	{
+		// The transition driver keeps the whole shop page alive while the camera travels away
+		// (OwnsDeckCards); the cards are cleared for real on the next shop entry instead.
+		if (PhaseTransitionDriver.OwnsDeckCards) return;
 		foreach (var card in _spawnedShopCards)
 		{
 			if (card != null)
@@ -217,6 +221,7 @@ public class ShopUXManager : MonoBehaviour
 	/// </summary>
 	public void ClearSpawnedPlayerCards()
 	{
+		if (PhaseTransitionDriver.OwnsDeckCards) return;
 		foreach (var card in _spawnedPlayerCards)
 		{
 			if (card != null)
@@ -241,6 +246,18 @@ public class ShopUXManager : MonoBehaviour
 			}
 		}
 		_spawnedEmptySlots.Clear();
+	}
+
+	/// <summary>
+	/// Hands the player-deck physical cards to PhaseTransitionDriver for the combat-page flight
+	/// (plan-phase-transition-world-camera-2026-09-21 §6): copies the list and clears it WITHOUT
+	/// destroying, transferring ownership. The driver destroys the dummies after the landing swap.
+	/// </summary>
+	public List<GameObject> ReleasePlayerDeckCardsToDriver()
+	{
+		var copy = new List<GameObject>(_spawnedPlayerCards);
+		_spawnedPlayerCards.Clear();
+		return copy;
 	}
 	
 	/// <summary>
@@ -658,6 +675,7 @@ public class ShopUXManager : MonoBehaviour
 		ShopSectionPanels.Bootstrap(chromeSprite, chromeFont);
 		_mainCamera = Camera.main;
 		if (_mainCamera == null) return;
+		_phaseManager = FindFirstObjectByType<PhaseManager>();
 
 		// VISUAL-FIX(2026-09-08): Camera scroll snapped back instantly after each wheel tick
 		//   Cause:    MilkShake Shaker sits on Main Camera and overwrites its localPosition every
@@ -755,6 +773,14 @@ public class ShopUXManager : MonoBehaviour
 	{
 		if (!enableCameraScroll || _mainCamera == null || _scrollTarget == null)
 			return;
+		// Scroll owns the camera only on the shop page, and never while the transition driver
+		// does (it tweens the same rig). Pre-transition this was ungated, so wheel input during
+		// combat yanked the camera back toward the shop clamp range (plan §4 arbitration).
+		if (PhaseTransitionDriver.IsTransitioning)
+			return;
+		if (_phaseManager != null && _phaseManager.currentGamePhaseRef != null
+			&& _phaseManager.currentGamePhaseRef.Value() != EnumStorage.GamePhase.Shop)
+			return;
 		
 		float scrollInput = Input.GetAxis("Mouse ScrollWheel");
 		if (Mathf.Abs(scrollInput) < 0.001f)
@@ -776,6 +802,9 @@ public class ShopUXManager : MonoBehaviour
 	public void ResetCameraPosition()
 	{
 		if (_scrollTarget == null) return;
+		// The transition driver owns the rig Y from the CURRENT scroll position; resetting here
+		// would snap the camera before the travel starts.
+		if (PhaseTransitionDriver.IsTransitioning) return;
 
 		Vector3 cameraPos = _scrollTarget.position;
 		cameraPos.y = _cameraInitialY;

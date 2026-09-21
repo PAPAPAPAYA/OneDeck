@@ -1,12 +1,16 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
 /// <summary>
 /// Shows the PlayerIcon / EnemyIcon HUD elements per game phase.
-/// Player icon: Combat AND Shop (2026-09-19: the shop top bar reuses the combat
-/// avatar + username block, repositioned via ShopTopBarLayout; the combat anchor
-/// and scale are captured at Awake and restored on combat entry).
-/// Enemy icon: Combat only.
+/// Player icon: Combat, Shop AND Result (2026-09-19: the shop top bar reuses the combat
+/// avatar + username block, repositioned via ShopTopBarLayout; 2026-09-21 phase transition:
+/// avatar + HP stay visible through the Result overlay, demo PhaseTransitionDemo.html:27-28;
+/// the combat anchor and scale are captured at Awake and restored on combat entry).
+/// Enemy icon: Combat only (suppressed while the transition driver keeps canvas UI hidden).
+/// During a driver transition the per-phase re-anchor becomes a glide tween instead of a snap,
+/// and the enemy icon enters with a counter-direction slide (demo flyShared, :704-727).
 /// Same GamePhase-polled SetActive convention as CombatHPBarPresenter and
 /// HPNumericDisplay. Pure presentation; no game-logic changes.
 /// Name label under the icon shows PlayerIdentity.Username ("???" when unset).
@@ -31,9 +35,15 @@ public class CombatIconPresenter : MonoBehaviour
 	private string _lastEnemyName;
 
 	private RectTransform _playerIconRt;
+	private RectTransform _enemyIconRt;
 	private Canvas _canvas;
 	private Vector2 _combatAnchoredPos;
 	private Vector3 _combatScale;
+	private Vector2 _enemyCombatAnchoredPos;
+	private bool _lastSuppressed;
+	private Tween _glideTween;
+	private Tween _scaleTween;
+	private Tween _enemySlideTween;
 
 	private void Awake()
 	{
@@ -58,6 +68,11 @@ public class CombatIconPresenter : MonoBehaviour
 			_combatAnchoredPos = _playerIconRt.anchoredPosition;
 			_combatScale = _playerIconRt.localScale;
 		}
+		_enemyIconRt = enemyIcon.transform as RectTransform;
+		if (_enemyIconRt != null)
+		{
+			_enemyCombatAnchoredPos = _enemyIconRt.anchoredPosition;
+		}
 		_canvas = playerIcon.GetComponentInParent<Canvas>();
 		// Combat/shop input is click-driven: no label graphic may intercept raycasts.
 		if (playerNameLabel != null) playerNameLabel.raycastTarget = false;
@@ -67,10 +82,12 @@ public class CombatIconPresenter : MonoBehaviour
 	private void Update()
 	{
 		EnumStorage.GamePhase phase = gamePhaseRef.Value();
-		if (phase != _lastPhase)
+		bool suppressed = PhaseTransitionDriver.SuppressCombatCanvasUI;
+		if (phase != _lastPhase || suppressed != _lastSuppressed)
 		{
 			ApplyPhase(phase);
 			_lastPhase = phase;
+			_lastSuppressed = suppressed;
 		}
 		if (phase == EnumStorage.GamePhase.Combat)
 		{
@@ -87,22 +104,65 @@ public class CombatIconPresenter : MonoBehaviour
 	{
 		bool inCombat = phase == EnumStorage.GamePhase.Combat;
 		bool inShop = phase == EnumStorage.GamePhase.Shop;
-		playerIcon.SetActive(inCombat || inShop);
-		enemyIcon.SetActive(inCombat);
+		bool inResult = phase == EnumStorage.GamePhase.Result;
+		bool suppressed = PhaseTransitionDriver.SuppressCombatCanvasUI;
+		// 2026-09-21 rule (demo :27-28): player avatar stays visible through the Result phase.
+		playerIcon.SetActive(inCombat || inShop || inResult);
+		bool enemyWasActive = enemyIcon.activeSelf;
+		bool enemyVisible = inCombat && !suppressed;
+		enemyIcon.SetActive(enemyVisible);
+		if (enemyVisible && !enemyWasActive && PhaseTransitionDriver.EnemyEntrancePending)
+		{
+			PlayEnemyEntrance();
+		}
 		if (_playerIconRt == null)
 		{
 			return;
 		}
-		if (inShop)
+		Vector2 targetPos = inShop
+			? ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.PlayerIconViewport, _canvas)
+			: _combatAnchoredPos;
+		Vector3 targetScale = inShop ? Vector3.one * ShopTopBarLayout.PlayerIconShopScale : _combatScale;
+		var cfg = PhaseTransitionConfigSO.Me;
+		if (PhaseTransitionDriver.IsTransitioning && cfg != null)
 		{
-			_playerIconRt.anchoredPosition = ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.PlayerIconViewport, _canvas);
-			_playerIconRt.localScale = Vector3.one * ShopTopBarLayout.PlayerIconShopScale;
+			// Shared-element flight (demo flyShared HUD branch, :704-709): glide between homes.
+			KillTween(ref _glideTween);
+			KillTween(ref _scaleTween);
+			_glideTween = cfg.ApplyEase(_playerIconRt.DOAnchorPos(targetPos, cfg.transDur).SetUpdate(UpdateType.Normal, true));
+			_scaleTween = cfg.ApplyEase(_playerIconRt.DOScale(targetScale, cfg.transDur).SetUpdate(UpdateType.Normal, true));
 		}
 		else
 		{
-			_playerIconRt.anchoredPosition = _combatAnchoredPos;
-			_playerIconRt.localScale = _combatScale;
+			KillTween(ref _glideTween);
+			KillTween(ref _scaleTween);
+			_playerIconRt.anchoredPosition = targetPos;
+			_playerIconRt.localScale = targetScale;
 		}
+	}
+
+	/// <summary>
+	/// Enemy HUD counter-direction entrance (demo :724-727): starts above its combat anchor and
+	/// slides DOWN in against the camera's upward travel.
+	/// </summary>
+	private void PlayEnemyEntrance()
+	{
+		if (_enemyIconRt == null) return;
+		var cfg = PhaseTransitionConfigSO.Me;
+		if (cfg == null) return;
+		float refHeight = _canvas != null && _canvas.scaleFactor > 0.0001f
+			? Screen.height / _canvas.scaleFactor
+			: Screen.height;
+		float slidePx = PhaseFlightPlanner.DemoPxToCanvasPx(cfg.enemySlideDemoPx, refHeight);
+		KillTween(ref _enemySlideTween);
+		_enemyIconRt.anchoredPosition = _enemyCombatAnchoredPos + new Vector2(0f, slidePx);
+		_enemySlideTween = cfg.ApplyEase(_enemyIconRt.DOAnchorPos(_enemyCombatAnchoredPos, Mathf.Max(0.25f, cfg.transDur * 0.5f)).SetUpdate(UpdateType.Normal, true));
+	}
+
+	private static void KillTween(ref Tween tween)
+	{
+		if (tween != null && tween.IsActive()) tween.Kill();
+		tween = null;
 	}
 
 	// Diff-guarded writes so the TMP mesh only rebuilds on an actual change; the

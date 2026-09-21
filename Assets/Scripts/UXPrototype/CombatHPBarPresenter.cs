@@ -159,7 +159,10 @@ public class CombatHPBarPresenter : MonoBehaviour
 
 	private void Update()
 	{
-		bool inCombat = gamePhaseRef.Value() == EnumStorage.GamePhase.Combat;
+		// Suppressed while the transition driver holds combat canvas UI until the camera lands
+		// (plan-phase-transition-world-camera-2026-09-21 §4); the bar then EnterCombats on release.
+		bool inCombat = gamePhaseRef.Value() == EnumStorage.GamePhase.Combat
+			&& !PhaseTransitionDriver.SuppressCombatCanvasUI;
 		if (inCombat && !_wasInCombat)
 		{
 			EnterCombat();

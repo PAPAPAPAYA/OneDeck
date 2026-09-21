@@ -128,6 +128,9 @@ public class PhaseManager : MonoBehaviour
 		if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop) // if in shop phase
 		{
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
+			// Phase transition driver (plan-phase-transition-world-camera-2026-09-21): when
+			// available it wraps the exit/enter calls in the camera travel; false = legacy hard cut.
+			if (PhaseTransitionDriver.RequestShopToCombat(this)) return;
 			ExitingShopPhase();
 			EnteringCombatPhase();
 		}
@@ -239,14 +242,25 @@ public class PhaseManager : MonoBehaviour
 		{
 			ShowResult();
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
-			ExitingResultPhase();
-			sessionNum.value++;
-			if (_isRunEnded)
-			{
-				ResetRun();
-			}
-			EnteringShopPhase();
+			// Phase transition driver: wraps the advance in the downward camera travel when available.
+			if (PhaseTransitionDriver.RequestResultToShop(this)) return;
+			AdvanceFromResultToShop();
 		}
+	}
+
+	/// <summary>
+	/// Result -> Shop advance. Extracted so PhaseTransitionDriver can run the identical sequence
+	/// inside its camera-travel coroutine (called at travel start, shop spawns off-screen below).
+	/// </summary>
+	public void AdvanceFromResultToShop()
+	{
+		ExitingResultPhase();
+		sessionNum.value++;
+		if (_isRunEnded)
+		{
+			ResetRun();
+		}
+		EnteringShopPhase();
 	}
 
 	private void ShowResult()
