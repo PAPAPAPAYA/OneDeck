@@ -40,4 +40,38 @@ public class ShopPageHudTests
 		Assert.AreEqual(0f, ShopPageHud.CanvasPxToWorld(100f, 1f, 1f, 0f, 6.06f), Epsilon);
 		Assert.AreEqual(0f, ShopPageHud.CanvasPxToWorld(100f, 1f, 1f, -100f, 6.06f), Epsilon);
 	}
+
+	// Sliced-mirror goldens (VISUAL-FIX 2026-09-21): SlicedWorldSize x SlicedWorldScale must
+	// reproduce the canvas target size, and the world border fraction must equal the canvas
+	// border fraction (canvas border local px = border/spritePPU x refPPU; world border =
+	// border/spritePPU x localScale).
+
+	[Test]
+	public void B1_SlicedSplitPreservesFinalWorldSize()
+	{
+		Vector2 size = ShopPageHud.SlicedWorldSize(new Vector2(192f, 276f), new Vector2(0.9f, 0.9f), 100f);
+		float scale = ShopPageHud.SlicedWorldScale(100f, 0.005f);
+		Assert.AreEqual(192f * 0.9f * 0.005f, size.x * scale, Epsilon);
+		Assert.AreEqual(276f * 0.9f * 0.005f, size.y * scale, Epsilon);
+	}
+
+	[Test]
+	public void B2_SlicedSplitPreservesBorderProportion()
+	{
+		// RoundedCorner: 64 px border at 256 PPU; canvas refPPU 100 -> canvas border 25 local px.
+		// World border = 64/256 x localScale; over a 192 px x unit wide frame both must give 13%.
+		float unit = 0.005f;
+		float scale = ShopPageHud.SlicedWorldScale(100f, unit);
+		float worldBorderFraction = 64f / 256f * scale / (192f * 1f * unit);
+		float canvasBorderFraction = 64f / 256f * 100f / 192f;
+		Assert.AreEqual(canvasBorderFraction, worldBorderFraction, Epsilon);
+	}
+
+	[Test]
+	public void B3_InvalidRefPpuFallsBackTo100()
+	{
+		Assert.AreEqual(ShopPageHud.SlicedWorldSize(new Vector2(10f, 10f), Vector2.one, 100f),
+			ShopPageHud.SlicedWorldSize(new Vector2(10f, 10f), Vector2.one, 0f));
+		Assert.AreEqual(ShopPageHud.SlicedWorldScale(100f, 0.5f), ShopPageHud.SlicedWorldScale(0f, 0.5f), Epsilon);
+	}
 }

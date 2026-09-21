@@ -292,27 +292,81 @@ public class ShopPageHud : MonoBehaviour
 
 	// ------------------------------------------------------------------ helpers
 
+	/// <summary>
+	/// Border-exact sliced world sizing (VISUAL-FIX 2026-09-21, see MirrorSprite): a canvas
+	/// sliced Image renders its 9-slice border at border/spritePPU x referencePPU local px,
+	/// while a SpriteRenderer's sliced border is border/spritePPU x transform.localScale
+	/// (independent of sr.size). Splitting the target size as sizeDelta x childScale / refPPU
+	/// on sr.size and refPPU x unit on localScale keeps the final size identical AND makes
+	/// the border thickness land at exactly canvas-border-px x unit.
+	/// </summary>
+	public static Vector2 SlicedWorldSize(Vector2 canvasSize, Vector2 childScale, float refPpu)
+	{
+		if (refPpu <= 0.0001f) refPpu = 100f;
+		return new Vector2(canvasSize.x * childScale.x / refPpu, canvasSize.y * childScale.y / refPpu);
+	}
+
+	/// <summary>Companion scale for SlicedWorldSize; see its summary for the derivation.</summary>
+	public static float SlicedWorldScale(float refPpu, float unit)
+	{
+		if (refPpu <= 0.0001f) refPpu = 100f;
+		return refPpu * unit;
+	}
+
+	// VISUAL-FIX(2026-09-21): World avatar/HP pill rendered bloated vs the canvas originals
+	//   Cause:    (1) MirrorSprite sized by sizeDelta only and dropped the child
+	//             RectTransform's localScale — the avatar's `image` child (scale 0.9) filled
+	//             the frame edge-to-edge, erasing the cream margin. (2) The 9-slice border
+	//             proportion came out ~2x the canvas (see SlicedWorldSize's summary).
+	//   Affects:  ShopPageHud.MirrorSprite (avatar frame/image/shadows, HP pill bg/shadow).
+	//   Regress:  Shop top bar at scroll 0 must pixel-match the canvas shop bar: the dark
+	//             image keeps its cream frame margin; corner radius matches combat exactly.
+	//   Related:  ShopPageHudTests B1/B2 goldens; GameScene PlayerIcon `image` scale 0.9.
 	private static void MirrorSprite(GameObject go, Image source, float unit)
 	{
 		SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
 		sr.sprite = source.sprite;
-		sr.drawMode = SpriteDrawMode.Sliced;
 		sr.color = source.color;
-		sr.size = new Vector2(source.rectTransform.sizeDelta.x * unit, source.rectTransform.sizeDelta.y * unit);
+		Vector3 childScale = source.rectTransform.localScale;
+		float refPpu = 100f;
+		Canvas canvas = source.canvas;
+		if (canvas != null && canvas.referencePixelsPerUnit > 0.0001f) refPpu = canvas.referencePixelsPerUnit;
+		if (source.type == Image.Type.Sliced && source.sprite != null)
+		{
+			sr.drawMode = SpriteDrawMode.Sliced;
+			sr.size = SlicedWorldSize(source.rectTransform.sizeDelta, childScale, refPpu);
+			float s = SlicedWorldScale(refPpu, unit);
+			go.transform.localScale = new Vector3(s, s, 1f);
+			return;
+		}
+		// Non-sliced sources have no border to preserve: scale the native sprite rect
+		// straight onto the target size.
+		sr.drawMode = SpriteDrawMode.Simple;
+		if (source.sprite != null && source.sprite.pixelsPerUnit > 0.0001f)
+		{
+			Vector2 native = source.sprite.rect.size / source.sprite.pixelsPerUnit;
+			if (native.x > 0.0001f && native.y > 0.0001f)
+			{
+				go.transform.localScale = new Vector3(
+					source.rectTransform.sizeDelta.x * childScale.x * unit / native.x,
+					source.rectTransform.sizeDelta.y * childScale.y * unit / native.y, 1f);
+			}
+		}
 	}
 
 	private static void CopyText(TextMeshPro target, TMP_Text source, float unit, Color color)
 	{
+		Vector3 childScale = source.rectTransform.localScale;
 		target.font = source.font;
 		target.fontSharedMaterial = source.font.material;
 		target.fontStyle = source.fontStyle;
-		target.fontSize = source.fontSize * unit / TmpWorldUnitsPerEm;
+		target.fontSize = source.fontSize * unit * childScale.x / TmpWorldUnitsPerEm;
 		target.alignment = source.alignment;
 		target.enableWordWrapping = false;
 		target.overflowMode = TextOverflowModes.Overflow;
 		target.rectTransform.sizeDelta = new Vector2(
-			source.rectTransform.sizeDelta.x * unit,
-			source.rectTransform.sizeDelta.y * unit);
+			source.rectTransform.sizeDelta.x * unit * childScale.x,
+			source.rectTransform.sizeDelta.y * unit * childScale.y);
 		target.text = source.text;
 		target.color = color;
 		target.raycastTarget = false;

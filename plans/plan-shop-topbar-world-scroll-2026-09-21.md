@@ -146,3 +146,14 @@ VISUAL-FIX(2026-09-21) blocks where behavior visibly changes (the two presenters
 - **Scrolled-shop exit discoverability** (user ruling 2's cost): mitigated by the existing Space shortcut + `phaseInfo` prompt; if playtests show players getting lost, the fallback is a small pinned corner button — deliberately NOT built now.
 - **Resolution/aspect change after Build**: chrome already builds once (pre-existing limitation); the mirror math recomputes only at Bootstrap. Same as today; recorded, not fixed here.
 - **Mirror misses a decoration** (e.g. an unconfirmed pill background): step 0 probe exists precisely for this; the mirror walks ALL Image/TMP children rather than a hardcoded list.
+
+---
+
+## Fidelity fix addendum (2026-09-21, same day, follow-up session)
+
+User report after playing the f4e28e26 build: the shop avatar looked wrong next to the combat one. Root-caused WITHOUT a live probe (scene-YAML structure dump + rendering-math), then fixed and play-verified:
+
+- **Bug A — child `localScale` dropped by the mirror.** The avatar `image` child is 192×192 at scale 0.9 in the canvas (cream frame margin all around); `MirrorSprite` sized by `sizeDelta` only, so the world copy filled the frame edge-to-edge. Fixed by folding `source.rectTransform.localScale` into the size split (`CopyText` folds it too).
+- **Bug B — 9-slice border proportion ~2x the canvas.** Canvas sliced Image border = border/spritePPU x canvas.referencePixelsPerUnit (64/256x100 = 25 local px = 13% of the 192 px frame); SpriteRenderer sliced border = border/spritePPU x transform.localScale, independent of `sr.size` (was 28%). Fix: `sr.size = sizeDelta x childScale / refPPU` with `localScale = refPPU x unit` — final size identical, border lands at exactly canvas-border-px x unit. Pure helpers `SlicedWorldSize`/`SlicedWorldScale` + `ShopPageHudTests` B1-B3 goldens.
+- **Pill check (the §5 step-0 worry)**: the pill background IS inside `displayRoot` (`shadow` 400x138 a0.6 + `custom button` bg + `HP` prefix), so the original mirror already copied it; only the two generic bugs applied.
+- **Verification**: EditMode 7/7 targeted, 670/671 full suite (1 pre-existing Ignore); play-mode RT captures (`.utmp/shot_shop.png` vs `shot_combat.png`) — margin/corner structure matches the canvas original; scrolled capture shows the whole bar leaving with the page; hpMax poke +2 -> pill reached 27/27 (count-up ran; bridge latency hid the mid-frame); shop->combat transition + landing swap intact; console clean. RegressionChecklist row 111.
