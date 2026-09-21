@@ -1,7 +1,7 @@
 # Plan: 无限侦测正控标本重建 — 合成活环卡对(2026-09-21)
 
 日期:2026-09-21
-状态:**已拍板方向(方案 2B),待执行**。
+状态:**已执行完毕(2026-09-21)**。执行记录见 §8。
 上游:`plans/plan-revive-loop-mitigation-2026-09-19.md` §10(第二波加闸)、`plans/plan-infinity-detection-2026-09-17.md`(L0/L1 侦测管线,§26 criterion v2)。
 
 ## 1. 问题定义
@@ -87,3 +87,21 @@
 3. §3 逐文件重接;
 4. §4 防回归锁;
 5. 全量回归 + 执行记录回填本节下方。
+
+## 8. 执行记录(2026-09-21)
+
+- **生成**:`tools/scripts/make_test_loop_hub.py`(LF,沿用 apply_revive_gate_prefabs 家族模式,严格断言 + DO-NOT-RERUN 头)产出:
+	- `Assets/Prefabs/Cards/4.0/-1_Test/TEST_LOOP_HUB.prefab`(guid `87e2e1691e244ee19872f950d70483b9`)——SPIRIT_CALLER 文本克隆,与模板 diff 恰好 6 处:根 m_Name / cardTypeID → TEST_LOOP_HUB、displayName → 测试枢纽、cardDesc → 测试用无闸复活枢纽、creatureFilter 2 → 0(Any)、oncePerRound 行删除;excludeSelf 1 与 OnMeRevealed 绑定不变。
+	- `Assets/SORefs/Decks/test decks/chain tests/4.0/test infinite loop.asset`(guid `abdeddb9f49a4a48ada4d21840914ebe`)——DeckSO,deck = 2 份同 GUID 的 TEST_LOOP_HUB 根 GameObject 引用。
+- **§2.3 三项安全检查全过**:
+	1. `BuildCardPrefabMap`(`InfinityBatchScan.cs:481`)扫 `Assets/Prefabs/Cards` 全树,编辑器探针确认 `mapHasHub=True`;并把该断言永久钉进 `InfinityBatchScanTests.PrefabMap_ResolvesTheComboCards`。
+	2. `tools/outputs/extract_unity_cards_40.py` 已自带 `EXCLUDE_MARKERS = ("-1_Test",)`(第 18 行),文件夹在产出行之前被整体跳过 → TEST_LOOP_HUB 不可能进入 `unity_cards_40_current.json`,check_consistency 不会报「prefab 缺 Notion 行」;无需改工具。
+	3. 商店池 = `ShopPoolRef.asset` 显式 GUID 列表(112 项,无文件夹扫描),探针确认 0 项落在 `-1_Test/`;`ShopBoardPipeline.GenerateBoard` 只消费注入池,天然安全。
+- **§3 重接**:7 个文件 14 个测试全部换用 `test infinite loop`;期望值证据串换 TEST_LOOP_HUB。`LethalSample_ReportsInfinite_AndKillsWithoutL0` 拆为 `LoopingSpecimen_ReportsInfinite`(击杀半删除,由 InfiniteDeckTerminationTests 覆盖);`LethalSample_VsSeededCurseEnemy_ReportsInfinite` → `LoopingSpecimen_VsRealEnemyDeck_ReportsInfinite`(击杀断言拆出:枢纽无伤害,该对局由生产疲劳时钟随机结束,与 flag 无关);`LethalInfiniteDeck_TripsCycleDetector` → `LoopingSpecimen_TripsCycleDetector`(删除 EnableProductionTriggerWiring 调用——枢纽不需要诅咒接线)。lethal / non-lethal 旧资产、InfiniteDeckTerminationTests、其余未红测试未动。
+- **§4 防回归锁**:新建 `InfinitySpecimenTests.cs`(避开另一并行会话持有的 ReviveOncePerRoundPrefabTests.cs,用户 2026-09-21 拍板):`HubIsAnUngatedReviveHub`(oncePerRound==0、creatureFilter==0、excludeSelf==true)+ `SpecimenDeckIsExactlyTwoHubs`(deck 恰好 2 份同 GUID)。
+- **§5 验证**:
+	- LoopDetection sanity(标本生成后即跑):`infinite=YES cycles=19(p=1) starved=True repeats=199`,L0-concluded,proven infinite。
+	- 定向回归 8 类 50/50 绿;全量 EditMode **653/653(652 过 + 1 既存 Ignore),0 失败**;TestResults.xml 逐一复核 19 个关键用例(14 重接 + 2 防回归锁 + 3 保留绿)全部 Passed。
+- **过程插曲**:第一次全量 run_tests 被一次域重载(与另一会话的编译交错)杀掉,bridge 报 "Test job failed to initialize";按既定预案(SaveOpenScenes + 清死任务)重试一次即通过。场景最终 clean。
+- **未做**(按 §6):生产代码零改动、lethal / non-lethal 资产与 InfiniteDeckTerminationTests 未动、未上服务器、未同步 Notion、未动商店池。
+- **未提交**:用户未要求 commit,全部改动留在工作区(与另一会话的 RIFT_REVIVER 闸门镜像改动同区,互不重叠)。

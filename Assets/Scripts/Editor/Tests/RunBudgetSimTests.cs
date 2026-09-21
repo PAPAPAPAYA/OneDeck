@@ -40,28 +40,30 @@ public class RunBudgetSimTests
 	}
 
 	[Test]
-	public void LethalSample_ReportsInfinite_AndKillsWithoutL0()
+	public void LoopingSpecimen_ReportsInfinite()
 	{
+		// Positive control for the flag criterion, on the SYNTHETIC specimen
+		// (plan-infinity-specimen-synthetic 2026-09-21, option 2B): TEST_LOOP_HUB x2 — an ungated
+		// revive pair that loops forever and deals no damage. The kill-semantics half that used to
+		// ride on the lethal sample lives in InfiniteDeckTerminationTests.LethalInfiniteDeck_KillsStubOpponent
+		// (kept on the OLD specimen, which still kills), so this test only pins the flag.
 		// Criterion v2 (§26) requires the flag run to STARVE the round, so it must be measured
-		// against an unkillable dummy — the §3/§19.2 canon: the lethal loop's own termination is
-		// "kill the other side", so with a normal-HP dummy the pump ends the combat in ~17 reveals
-		// (round 1, 7 cards, nowhere near starvation) and an unbounded loop looks finite. The kill
-		// claim is therefore pinned in its OWN run with a normal dummy; that run is deliberately
-		// not the flag measurement. Fatigue clock off per §23.5 — production fatigue injects inert
-		// cards that break the arrangement and hide the repetition.
-		var lethal = LoadSampleDeck("lethal infinite test");
+		// against an unkillable dummy: a normal-HP dummy ends nothing here (the hub deals no damage),
+		// so the L0 caps conclude the run. Fatigue clock off per §23.5 — production fatigue injects
+		// inert cards that break the arrangement and hide the repetition.
+		var specimen = LoadSampleDeck("test infinite loop");
 		var options = RunBudgetSim.Options.LoopDetection();
 		options.GuardTotal = 400;
 
-		var flagRun = RunBudgetSim.RunVsDummy(lethal, dummySize: 3, dummyHp: InfinityAttribution.DefaultDummyHp,
+		var flagRun = RunBudgetSim.RunVsDummy(specimen, dummySize: 3, dummyHp: InfinityAttribution.DefaultDummyHp,
 			seed: 4242, options: options);
 
 		Debug.Log("[RunBudgetSim] flag run: " + flagRun.Summary);
 
 		Assert.IsTrue(flagRun.SuspectedInfinite,
-			"against an unkillable dummy the lethal loop starves the round, so the flag criterion must hold: " + flagRun.Summary);
+			"against an unkillable dummy the hub pair starves the round, so the flag criterion must hold: " + flagRun.Summary);
 		Assert.IsTrue(flagRun.TripRoundStarved,
-			"criterion v2: the lethal trip carries starvation evidence: " + flagRun.Summary);
+			"criterion v2: the trip carries starvation evidence: " + flagRun.Summary);
 		Assert.GreaterOrEqual(flagRun.TripCycles, 8,
 			"criterion v2: the tripping run repeats well past the cycle threshold: " + flagRun.Summary);
 		Assert.GreaterOrEqual(flagRun.MaxSightingsOfOneArrangement, 3,
@@ -69,18 +71,8 @@ public class RunBudgetSimTests
 		Assert.Less(flagRun.TripRevealsInRound, flagRun.TotalReveals,
 			"detection must land well before the run ends: " + flagRun.Summary);
 		Assert.IsTrue(flagRun.BudgetCapConcluded,
-			"against an UNKILLABLE dummy nothing else can end the loop, so the L0 caps must be the one that does — "
+			"against an UNKILLABLE dummy and a damage-free loop nothing else can end it, so the L0 caps must be the one that does — "
 			+ "the trip is the flag criterion, the conclusion is the harm (§16.3): " + flagRun.Summary);
-
-		// Same deck, killable dummy: the loop's own pump ends the combat before any starvation.
-		var killRun = RunBudgetSim.RunVsDummy(lethal, dummySize: 3, dummyHp: 30, seed: 4242);
-
-		Debug.Log("[RunBudgetSim] kill run: " + killRun.Summary);
-
-		Assert.IsTrue(killRun.EnemyDied,
-			"the loop's own pump kills a normal-HP opponent: " + killRun.Summary);
-		Assert.IsFalse(killRun.BudgetCapConcluded,
-			"a killable opponent ends the combat long before the L0 caps: " + killRun.Summary);
 	}
 
 	[Test]
@@ -123,21 +115,21 @@ public class RunBudgetSimTests
 	}
 
 	[Test]
-	public void LethalSample_VsSeededCurseEnemy_ReportsInfinite()
+	public void LoopingSpecimen_VsRealEnemyDeck_ReportsInfinite()
 	{
-		// Covers the deck-vs-deck entry point with a REAL enemy deck. One JU_ON is the
-		// reachable maximum (plan §17): only CurseEffect.EnhanceCurse creates curses and only
-		// when none exists, so the 2xJU_ON stub this test used to carry was a state the game
-		// cannot produce.
-		var report = RunBudgetSim.Run(LoadSampleDeck("lethal infinite test"), CreateSingleCurseDeck(), seed: 4242);
+		// Covers the deck-vs-deck entry point with a REAL enemy deck. The hub pair does not care
+		// what the enemy plays — the loop spins either way. No kill assertion here: the hub deals
+		// no damage, so the run ends on whichever side the production fatigue clock kills —
+		// seed-dependent and irrelevant to the flag (the old lethal specimen's kill claim now lives
+		// in InfiniteDeckTerminationTests, on the preserved old deck).
+		var report = RunBudgetSim.Run(LoadSampleDeck("test infinite loop"), CreateSingleCurseDeck(), seed: 4242);
 
-		Debug.Log("[RunBudgetSim] seeded-curse enemy: " + report.Summary);
+		Debug.Log("[RunBudgetSim] real-enemy run: " + report.Summary);
 
 		Assert.IsTrue(report.SuspectedInfinite,
-			"the loop must still be detected against a real curse-carrying enemy: " + report.Summary);
+			"the loop must still be detected against a real enemy deck: " + report.Summary);
 		Assert.GreaterOrEqual(report.MaxSightingsOfOneArrangement, 3,
 			"repeat-count evidence must be present: " + report.Summary);
-		Assert.LessOrEqual(report.EnemyHpFinal, 0, "the pump must kill the enemy: " + report.Summary);
 	}
 
 	// ---- fixtures ----

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6efbe0d49340fc4b911481940925fb9, type: 3}
+  m_Name: test infinite loop
+  m_EditorClassIdentifier: 
+  deck:
+  - {fileID: 4234701159843460202, guid: 87e2e1691e244ee19872f950d70483b9, type: 3}
+  - {fileID: 4234701159843460202, guid: 87e2e1691e244ee19872f950d70483b9, type: 3}
+  defaultDeck: {fileID: 0}
+  resetOnStart: 0
+  description: two TEST_LOOP_HUB copies revive each other - minimal same-round loop

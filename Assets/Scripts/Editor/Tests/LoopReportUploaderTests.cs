@@ -103,10 +103,10 @@ public class LoopReportUploaderTests
 	[Test]
 	public void ProcessPendingAndUpload_QueuesTheAttributedReport()
 	{
-		var lethal = LoadSampleDeck("lethal infinite test");
+		var specimen = LoadSampleDeck("test infinite loop");
 		// Enemy side carries the looping deck (so the verdict is EnemyDeck) and the live trip was
 		// fought against server ghost deck 505.
-		InfinityTripJournal.Record(0x1234u, 1, 7, 4242, lethal, lethal, 505);
+		InfinityTripJournal.Record(0x1234u, 1, 7, 4242, specimen, specimen, 505);
 
 		var options = new RunBudgetSim.Options { GuardTotal = 300 };
 		var reports = InfinityAttributionProcessor.ProcessPendingAndUpload(new[] { 4242 }, options);
@@ -120,15 +120,15 @@ public class LoopReportUploaderTests
 		Assert.AreEqual("EnemyDeck", request.verdict);
 		Assert.AreEqual(4242, request.seed);
 		StringAssert.Contains("combatSeed=4242", request.signals, "the LIVE trip's evidence rides in signals");
-		StringAssert.Contains("RELIC_CURSE_REVIVAL", request.payload, "the minimized combo rides in the payload");
+		StringAssert.Contains("TEST_LOOP_HUB", request.payload, "the minimized combo rides in the payload");
 		Assert.AreEqual(0, InfinityTripJournal.Count, "processing must drain the queue");
 	}
 
 	[Test]
 	public void ProcessPending_DoesNotTouchTheOutbox()
 	{
-		var lethal = LoadSampleDeck("lethal infinite test");
-		InfinityTripJournal.Record(0x1234u, 1, 7, 4242, lethal, lethal, 505);
+		var specimen = LoadSampleDeck("test infinite loop");
+		InfinityTripJournal.Record(0x1234u, 1, 7, 4242, specimen, specimen, 505);
 
 		var options = new RunBudgetSim.Options { GuardTotal = 300 };
 		var reports = InfinityAttributionProcessor.ProcessPending(new[] { 4242 }, options);

@@ -7,7 +7,7 @@ using UnityEngine;
 /// P5 batch scan tests (plan §23). The scan is the offline confirmation path that turns the
 /// serving gate into production protection, so what matters here is that a verdict is only ever
 /// produced from a fully-resolved deck, and that a loop is reported with a proven minimum.
-/// Cost: one ddmin run on the lethal sample plus one clean run — kept deliberately small.
+/// Cost: one ddmin run on the hub specimen plus one clean run — kept deliberately small.
 /// </summary>
 public class InfinityBatchScanTests
 {
@@ -26,7 +26,7 @@ public class InfinityBatchScanTests
 	[Test]
 	public void Scan_LeapingDeck_IsReportedInfiniteWithAProvenMinimum()
 	{
-		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("lethal infinite test", deckId: 42);
+		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("test infinite loop", deckId: 42);
 
 		InfinityBatchScan.ScanReport report = InfinityBatchScan.Run(
 			new List<InfinityBatchScan.Candidate> { candidate }, Seeds,
@@ -48,7 +48,7 @@ public class InfinityBatchScanTests
 		var payload = JsonUtility.FromJson<LoopReport>(deck.reportJson);
 		Assert.IsNotNull(payload);
 		Assert.AreEqual("EnemyDeck", payload.responsibility, "a deck that loops against an inert dummy is the enemy-side verdict");
-		Assert.AreEqual(2, payload.mySide.Length, "the lethal sample's minimum is both combo cards");
+		Assert.AreEqual(2, payload.mySide.Length, "the specimen's minimum is both hub copies");
 		Assert.IsTrue(payload.oneMinimal);
 		Assert.IsTrue(payload.multiSeedStable, "the report states the ingest-gate evidence explicitly");
 		Assert.IsNotEmpty(payload.roles, "raw binding evidence rides along for falsification");
@@ -59,8 +59,8 @@ public class InfinityBatchScanTests
 	[Test]
 	public void Scan_SingleCardDeck_IsClean()
 	{
-		// Half of the lethal pair: resolvable, but on its own there is no loop.
-		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("lethal infinite test", deckId: 7, limit: 1);
+		// A lone hub copy: resolvable, but on its own there is nothing to revive (excludeSelf), so no loop.
+		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("test infinite loop", deckId: 7, limit: 1);
 
 		InfinityBatchScan.ScanReport report = InfinityBatchScan.Run(
 			new List<InfinityBatchScan.Candidate> { candidate }, Seeds,
@@ -97,8 +97,8 @@ public class InfinityBatchScanTests
 	[Test]
 	public void Scan_DuplicateContent_IsMeasuredOnce()
 	{
-		InfinityBatchScan.Candidate first = CandidateFromSampleDeck("lethal infinite test", deckId: 100);
-		InfinityBatchScan.Candidate twin = CandidateFromSampleDeck("lethal infinite test", deckId: 101, label: "twin");
+		InfinityBatchScan.Candidate first = CandidateFromSampleDeck("test infinite loop", deckId: 100);
+		InfinityBatchScan.Candidate twin = CandidateFromSampleDeck("test infinite loop", deckId: 101, label: "twin");
 
 		InfinityBatchScan.ScanReport report = InfinityBatchScan.Run(
 			new List<InfinityBatchScan.Candidate> { first, twin }, Seeds,
@@ -112,7 +112,7 @@ public class InfinityBatchScanTests
 	[Test]
 	public void Scan_AlreadyFlaggedDeck_IsSkipped()
 	{
-		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("lethal infinite test", deckId: 200);
+		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("test infinite loop", deckId: 200);
 		candidate.AlreadyFlagged = true;
 
 		InfinityBatchScan.ScanReport report = InfinityBatchScan.Run(
@@ -130,7 +130,7 @@ public class InfinityBatchScanTests
 		// §26 (2026-09-20): the stale-flag path needs an already-flagged deck to be re-measured — a
 		// card change can fix a loop, and the pre-§26 scan skipped those rows outright, so an
 		// outdated flag could never be retired on evidence.
-		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("lethal infinite test", deckId: 201);
+		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("test infinite loop", deckId: 201);
 		candidate.AlreadyFlagged = true;
 
 		InfinityBatchScan.ScanReport report = InfinityBatchScan.Run(
@@ -148,7 +148,7 @@ public class InfinityBatchScanTests
 	[Test]
 	public void Scan_WritesAReportThatSurvivesSerialization()
 	{
-		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("lethal infinite test", deckId: 300);
+		InfinityBatchScan.Candidate candidate = CandidateFromSampleDeck("test infinite loop", deckId: 300);
 
 		InfinityBatchScan.ScanReport report = InfinityBatchScan.Run(
 			new List<InfinityBatchScan.Candidate> { candidate }, Seeds,
@@ -194,7 +194,7 @@ public class InfinityBatchScanTests
 	[Test]
 	public void FindTailPeriod_FindsTheShortestRepeatingWindow()
 	{
-		// The lethal specimen's ring: gardener reveals, the revived curse reveals, repeat.
+		// A tight two-card ring: one card reveals, the revived one reveals, repeat.
 		var alternating = new List<string>();
 		for (int i = 0; i < 20; i++) { alternating.Add("O:CURSE_GARDENER"); alternating.Add("E:JU_ON"); }
 		Assert.AreEqual(2, InfinityBatchScan.FindTailPeriod(alternating, out int alternatingRepeats));
@@ -299,6 +299,8 @@ public class InfinityBatchScanTests
 		Assert.IsNotEmpty(map, "the card prefab scan must find the project's cards");
 		Assert.IsTrue(map.ContainsKey("RELIC_CURSE_REVIVAL"), "a 4.0 card must resolve by its cardTypeID");
 		Assert.IsTrue(map.ContainsKey("CURSE_GARDENER"));
+		Assert.IsTrue(map.ContainsKey("TEST_LOOP_HUB"),
+			"the synthetic infinity specimen must resolve too — this map is the positive control's proving ground (plan-infinity-specimen-synthetic §2.3)");
 	}
 
 	// ------------------------------------------------------------------ helpers

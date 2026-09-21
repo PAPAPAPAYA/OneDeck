@@ -22,8 +22,10 @@ using UnityEngine;
 /// on my own reveal" and the sample measured a DIFFERENT loop than production. These tests
 /// therefore wire listeners to the fixture event matching their real asset (see
 /// MapRealEventToFixtureEvent) and set curseCardTypeID, mirroring GameScene.unity.
-/// Specimen roles after the 2026-09-20 revive gate (plan-revive-loop-mitigation §8):
-///   lethal infinite test — STILL unbounded (round-starved, ~100 cycles) → positive specimen;
+/// Specimen roles after the 2026-09-20 revive gate (plan-revive-loop-mitigation §8) and the
+/// 2026-09-21 synthetic specimen (plan-infinity-specimen-synthetic §2, option 2B):
+///   test infinite loop — TEST_LOOP_HUB x2, an ungated revive pair that loops forever → positive specimen;
+///   lethal infinite test — the pre-gate specimen, kept for InfiniteDeckTerminationTests only;
 ///   non-lethal infinite test — GRAVE_HEXER is gated now, so it no longer loops → inverted into
 ///   the gate's regression guard (must NOT trip; weaken the gate and this test goes red).
 /// </summary>
@@ -242,28 +244,27 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 	}
 
 	[Test]
-	public void LethalInfiniteDeck_TripsCycleDetector()
+	public void LoopingSpecimen_TripsCycleDetector()
 	{
-		// Plan §4 acceptance specimen, restored under PRODUCTION trigger wiring (§15):
-		// CURSE_GARDENER (OnMeRevealed -> ReviveTheirCards(1, typeIDFilter=JU_ON), plus
-		// CurseEffect.EnhanceCurse each activation) and RELIC_CURSE_REVIVAL
-		// (OnHostileCurseRevealed -> ReviveMyCards(1, excludeSelf)) form a tight within-round
-		// loop: the revived curse is revealed, which revives the gardener, whose reveal revives
-		// the curse again. The loop's own pump eventually kills the enemy, so it is unbounded
-		// but self-terminating — and it must trip the detector well before that.
-		CombatManager.playerDeck = LoadSampleDeck("lethal infinite test");
+		// Plan §4 acceptance specimen, now the SYNTHETIC positive control
+		// (plan-infinity-specimen-synthetic 2026-09-21, option 2B): two TEST_LOOP_HUB copies
+		// (OnMeRevealed -> ReviveMyCards(1), ungated, no creature filter, excludeSelf) pull each
+		// other out of the grave — A's reveal revives B, B's reveal revives A, and every 2 reveals
+		// the same arrangement recurs. The hub needs no curse wiring, deals no damage and has no
+		// cost, so the loop runs until the L0 caps conclude it — and it must trip the detector
+		// well before that. Decoupled from the production pool: no future revive gate can starve
+		// this specimen again (the 2026-09-20 incident, where gating RELIC_CURSE_REVIVAL bounded
+		// the old lethal specimen and this test went red).
+		CombatManager.playerDeck = LoadSampleDeck("test infinite loop");
 		CombatManager.enemyDeck = CreateInertStubDeck(3);
 		CombatManager.startCardPrefab = LoadStartCardPrefab();
-		EnableProductionTriggerWiring();
 		CombatManager.GatherDecks();
 		BridgeAllCards();
 
 		// BOTH sides unkillable, so the only terminator left is the L0 cap (this is what the §16.3
-		// split means in practice): a 30-HP enemy dies to the loop's own pump in ~18 reveals
-		// (round 1, not yet starved), and a 30-HP owner dies to fatigue's self-damage around reveal
-		// 350. Either death ends the combat before the caps and makes the flag run order/seed
-		// dependent — measured, and the reason this test flapped. hpMax must move too: the damage
-		// path clamps hp to hpMax.
+		// split means in practice): the hub pair deals no damage, so without the HP raise the run
+		// ends on whichever side the fatigue clock kills first and the flag verdict becomes
+		// order/seed dependent. hpMax must move too: the damage path clamps hp to hpMax.
 		CombatManager.ownerPlayerStatusRef.hpMax = 100000000;
 		CombatManager.ownerPlayerStatusRef.hp = 100000000;
 		CombatManager.enemyPlayerStatusRef.hpMax = 100000000;
@@ -282,13 +283,13 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 
 		Assert.Less(iterations, MaxIterations, "driver must terminate within the bound" + Diag(detector, guard, iterations));
 		Assert.IsTrue(detector.Tripped,
-			"the lethal revive loop repeats its arrangement inside round 1 and must trip the detector"
+			"the synthetic hub loop repeats its arrangement inside round 1 and must trip the detector"
 			+ Diag(detector, guard, iterations));
 		Assert.GreaterOrEqual(detector.LastTripCycles, 8,
 			"criterion v2: the trip must carry a periodic run well past the cycle threshold"
 			+ Diag(detector, guard, iterations));
 		Assert.IsTrue(detector.LastTripRoundStarved,
-			"criterion v2: the lethal loop starves the round boundary (reveals >> 3 x round-start pool)"
+			"criterion v2: the hub loop starves the round boundary (reveals >> 3 x round-start pool)"
 			+ Diag(detector, guard, iterations));
 		Assert.Greater(InfinityTripJournal.Count, 0, "a trip must be journaled for the P2/P3 pipeline");
 		Assert.AreEqual(505, InfinityTripJournal.Pending[0].EnemyDeckId,
@@ -297,7 +298,7 @@ public class ArrangementCycleDetectorTests : HeadlessCombatTestFixture
 		Assert.IsTrue(guard.ConcludeRequested,
 			"with an unkillable opponent nothing else ends the loop, so the L0 caps must conclude it — "
 			+ "the trip is the flag criterion, the conclusion is the harm (§16.3)" + Diag(detector, guard, iterations));
-		Debug.Log("[CycleDetector] lethal specimen" + Diag(detector, guard, iterations));
+		Debug.Log("[CycleDetector] synthetic specimen" + Diag(detector, guard, iterations));
 	}
 
 	[Test]

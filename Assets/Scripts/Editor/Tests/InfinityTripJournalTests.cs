@@ -77,9 +77,9 @@ public class InfinityTripJournalTests
 	[Test]
 	public void Processor_TurnsAQueuedTripIntoAComboEntry()
 	{
-		var lethal = LoadSampleDeck("lethal infinite test");
+		var specimen = LoadSampleDeck("test infinite loop");
 		// The enemy side carries the looping deck, so the expected verdict is EnemyDeck.
-		InfinityTripJournal.Record(0x1234u, 1, 7, 4242, lethal, lethal, 505);
+		InfinityTripJournal.Record(0x1234u, 1, 7, 4242, specimen, specimen, 505);
 
 		var options = new RunBudgetSim.Options();
 		options.GuardTotal = 300;
