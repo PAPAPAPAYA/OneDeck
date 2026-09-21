@@ -257,4 +257,67 @@ public class ReviveOncePerRoundGateTests : HeadlessCombatTestFixture
 		Assert.AreEqual(7, reveals,
 			"Hand-simulated: fizzle, two revive volleys (4 revives), gate-blocked fizzle, then the Start Card (was " + reveals + ")");
 	}
+
+	[Test]
+	public void GateMirror_RRShapeContainer_SpentGateBlocksExileAndRevive()
+	{
+		// RR-isomorphic container (plan-revive-gate-mirror-cost-2026-09-21 §4.1): cost =
+		// has-believer + gate mirror (oncePerRound = 2); effects = exile 1 RIFT + revive 2
+		// phenomena. While the gate is open both effects fire; once spent, the whole
+		// container fails its cost so the exile never fires without its revive payoff.
+		var start = CreateStartCard();
+		var graveA = CreateCard(true, "GraveA");
+		var graveB = CreateCard(true, "GraveB");
+		var believer1 = CreateCard(true, "Believer1", "RIFT");
+		CombatManager.combinedDeckZone.AddRange(new List<GameObject> { graveA, graveB, start, believer1 });
+
+		var rr = CreateCard(true, "RIFT_REVIVER", "RIFT_REVIVER");
+		var container = CreateCostContainer(rr);
+		var riftSO = CreateScriptableObject<DefaultNamespace.SOScripts.StringSO>();
+		riftSO.value = "RIFT";
+		container.targetCardTypeID = riftSO;
+		var revive = CreateEffect<ReviveEffect>(rr);
+		revive.oncePerRound = 2;
+		revive.creatureFilter = ReviveEffect.CreatureFilter.Phenomenon;
+		container.gateSource = revive;
+		var exile = CreateEffect<ExileEffect>(rr);
+		exile.cardTypeIDSO = riftSO;
+
+		container.checkCostEvent.AddListener(() => container.CheckCost_HasOwnCardOfType(1));
+		container.checkCostEvent.AddListener(() => container.CheckCost_ReviveGateOpen());
+		container.effectEvent.AddListener(() => exile.ExileMyCardsWithTypeID(1));
+		container.effectEvent.AddListener(() => revive.ReviveMyCards(2));
+
+		// Gate open, believer present: exile + revive both happen (1 of 2 charges spent).
+		var first = container.InvokeEffectEvent();
+		Assert.IsTrue(first.success, "First invocation: gate open + believer present");
+		Assert.IsFalse(CombatManager.combinedDeckZone.Contains(believer1), "First invocation exiles the believer");
+		Assert.AreEqual(2, ValueTrackerManager.ownerRevivedCountRef.value, "First invocation revives 2 phenomena");
+		EffectChainManager.Me.CloseOpenedChain();
+		EffectChainManager.Me.ResetGenerationGuards();
+
+		// Second invocation spends the last charge.
+		var believer2 = CreateCard(true, "Believer2", "RIFT");
+		var graveC = CreateCard(true, "GraveC");
+		var graveD = CreateCard(true, "GraveD");
+		CombatManager.combinedDeckZone.Insert(0, graveC);
+		CombatManager.combinedDeckZone.Insert(0, graveD);
+		CombatManager.combinedDeckZone.Add(believer2);
+		var second = container.InvokeEffectEvent();
+		Assert.IsTrue(second.success, "Second invocation: gate still open");
+		Assert.IsFalse(CombatManager.combinedDeckZone.Contains(believer2), "Second invocation exiles the believer");
+		Assert.AreEqual(4, ValueTrackerManager.ownerRevivedCountRef.value, "Second invocation revives 2 more phenomena");
+		EffectChainManager.Me.CloseOpenedChain();
+		EffectChainManager.Me.ResetGenerationGuards();
+
+		// Third invocation: the gate is spent, the cost fails, nothing happens.
+		var believer3 = CreateCard(true, "Believer3", "RIFT");
+		var graveE = CreateCard(true, "GraveE");
+		CombatManager.combinedDeckZone.Insert(0, graveE);
+		CombatManager.combinedDeckZone.Add(believer3);
+		var third = container.InvokeEffectEvent();
+		Assert.IsFalse(third.success, "Third invocation must fail the cost (gate spent)");
+		Assert.IsTrue(CombatManager.combinedDeckZone.Contains(believer3), "Blocked container must not exile the believer");
+		Assert.AreEqual(4, ValueTrackerManager.ownerRevivedCountRef.value, "Blocked container must not revive");
+	}
 }

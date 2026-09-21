@@ -58,6 +58,10 @@ public class CostNEffectContainer : MonoBehaviour
 	[Tooltip("assign effect component's function")]
 	public UnityEvent effectEvent;
 
+	[Header("Gate Mirror (4.0)")]
+	[Tooltip("Optional: cost fails while this ReviveEffect's per-round gate is spent, so paired cost-paying effects (e.g. exile) do not fire without their payoff.")]
+	public ReviveEffect gateSource;
+
 	private int _costNotMetFlag = 0;
 	private readonly List<string> _costFailMessages = new();
 
@@ -447,6 +451,18 @@ public class CostNEffectContainer : MonoBehaviour
 		// cost not met
 		_costNotMetFlag++;
 		_costFailMessages.Add("// 牌库中[" + targetCardTypeID.value + "]友方卡牌不足,无法激活[" + _myCardScript.gameObject.name + "](需要" + requiredCount + "张)\n");
+	}
+
+	/// <summary>
+	/// Gate-mirror check (RIFT_REVIVER): while the referenced ReviveEffect's per-round gate
+	/// is spent, fail the cost so the whole container (exile + revive) stays inert.
+	/// </summary>
+	public void CheckCost_ReviveGateOpen()
+	{
+		if (gateSource == null) return; // no mirror configured -> always open
+		if (!gateSource.IsGateSpent()) return;
+		_costNotMetFlag++;
+		_costFailMessages.Add("// [" + _myCardScript.gameObject.name + "]本回合复活次数已用完\n");
 	}
 
 	#endregion

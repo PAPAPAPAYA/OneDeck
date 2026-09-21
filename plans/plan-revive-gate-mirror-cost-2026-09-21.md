@@ -102,3 +102,13 @@ public void CheckCost_ReviveGateOpen()
 3. §4 两组测试;
 4. 全量回归;
 5. 执行记录回填本节下方。
+
+## 执行记录(2026-09-21)
+
+1. ✅ 3.1/3.2 已落地(`ReviveEffect.IsGateSpent()`、`CostNEffectContainer.gateSource` + `CheckCost_ReviveGateOpen`,文案 `// [卡名]本回合复活次数已用完`);refresh 后 Assembly-CSharp.dll mtime > 两处源文件,反射确认三成员在位,编译 0 错(仅存量 warning)。
+2. ✅ `tools/scripts/apply_rr_gate_mirror.py` 执行成功:RR `exile 1 rift` 子物体容器 `gateSource → {fileID: 3033783065272076210}`(同子物体 ReviveEffect),`checkCostEvent` 增第二条持久化调用 `CheckCost_ReviveGateOpen`(m_Mode 1,自引用 m_Target)。diff = +13 行,无重排;prefab 保持 LF(Unity YAML 约定)。`AssetDatabase.ImportAsset(ForceUpdate)` 后在 Unity 内探针确认:1 个容器,gateSource=ReviveEffect,persistent calls=2。
+3. ✅ 两组测试各 +1 例:
+	- `ReviveOncePerRoundGateTests.GateMirror_RRShapeContainer_SpentGateBlocksExileAndRevive`:RR 形同构容器(cost=有信徒+闸镜像,效果=放逐1 RIFT+复活2现象,闸2)。前两次调用放逐+复活均发生(复活计数 2→4,信徒1/2 被放逐),第三次闸满 cost 失败:信徒3 仍在卡组、复活计数不变、`success=false`。
+	- `ReviveOncePerRoundPrefabTests.RiftReviver_GateMirrorWired`:persistent calls=2、第二条方法名 `CheckCost_ReviveGateOpen`、gateSource 非空且在同一子物体、oncePerRound=2。
+4. ✅ 回归:目标两类 25/25 绿(23 旧 + 2 新);全量 EditMode 651 例,637 绿 + 14 红,14 红与 `plan-infinity-specimen-synthetic-2026-09-21.md` §10.4 记录的 lethal 标本族既知红灯逐一对应(用户已裁定保留红灯),无新增红灯。GameScene 干净(isDirty=False)。
+5. ✅ 执行记录回填完成。未提交(计划不含提交步骤,等用户指示)。

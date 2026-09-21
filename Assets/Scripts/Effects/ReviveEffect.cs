@@ -75,6 +75,15 @@ public class ReviveEffect : EffectScript
 	}
 
 	/// <summary>
+	/// Public read for container-level cost checks (gate-mirror): true when this component
+	/// instance's per-round charges are spent. Read-only; never consumes a charge.
+	/// </summary>
+	public bool IsGateSpent()
+	{
+		return OncePerRoundSpent();
+	}
+
+	/// <summary>
 	/// Get card owner's color tag (delegates to base palette-aware helper)
 	/// </summary>
 	private string GetCardColorTag(GameObject card)

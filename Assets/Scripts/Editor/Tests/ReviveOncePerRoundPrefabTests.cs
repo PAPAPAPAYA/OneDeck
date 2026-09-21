@@ -131,6 +131,27 @@ public class ReviveOncePerRoundPrefabTests
 	}
 
 	[Test]
+	public void RiftReviver_GateMirrorWired()
+	{
+		// plan-revive-gate-mirror-cost-2026-09-21 §3.3: the container's cost must mirror the
+		// sibling ReviveEffect gate (second persistent check + gateSource reference), so a
+		// spent gate blocks the paired exile together with the revive.
+		var prefab = Load(Uncommon + "RIFT_REVIVER.prefab");
+		var containers = prefab.GetComponentsInChildren<CostNEffectContainer>(true);
+		Assert.AreEqual(1, containers.Length, "RIFT_REVIVER must have exactly one CostNEffectContainer");
+		var container = containers[0];
+		Assert.AreEqual(2, container.checkCostEvent.GetPersistentEventCount(),
+			"checkCostEvent must have the believer cost + the gate mirror");
+		Assert.AreEqual("CheckCost_HasOwnCardOfType", container.checkCostEvent.GetPersistentMethodName(0),
+			"the original believer cost must stay first");
+		Assert.AreEqual("CheckCost_ReviveGateOpen", container.checkCostEvent.GetPersistentMethodName(1),
+			"the second persistent call must be the gate mirror");
+		Assert.IsNotNull(container.gateSource, "gateSource must reference the ReviveEffect component");
+		Assert.AreEqual("exile 1 rift", container.gateSource.gameObject.name, "gateSource must live on the same child");
+		Assert.AreEqual(2, container.gateSource.oncePerRound, "the mirrored gate is RR's 2-charge gate");
+	}
+
+	[Test]
 	public void RelicCurseRevival_Gated3()
 	{
 		AssertGated(Uncommon + "RELIC_CURSE_REVIVAL.prefab", "enemy curse revealed revive 1",
