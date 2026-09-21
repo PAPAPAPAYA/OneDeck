@@ -26,6 +26,11 @@ using UnityEngine.UI;
 /// captured at Awake and restored on combat entry). Outside combat the display
 /// queue is frozen at the last combat's values, so current HP reads the live
 /// PlayerStatusSO instead. Enemy side stays combat-only.
+/// 2026-09-21 world scroll (plan-shop-topbar-world-scroll-2026-09-21 §3.3): in a
+/// SETTLED shop the canvas pill hides — the world copy lives in ShopPageHud and
+/// scrolls with the page; during a driver transition (IsTransitioning) the canvas
+/// pill stays visible and glides (shared-element flight), so it parks at the shop
+/// anchor while hidden. Combat odometer/strips/shake/pop are untouched.
 /// </summary>
 public class HPNumericDisplayHorizontal : MonoBehaviour
 {
@@ -251,10 +256,27 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		EnumStorage.GamePhase phase = gamePhaseRef.Value();
 		bool inCombat = phase == EnumStorage.GamePhase.Combat;
 		// The player side doubles as the shop top-bar HP readout (2026-09-19) and stays visible
-		// through the Result phase (2026-09-21 phase transition rule, demo :27-28); the enemy
-		// side stays combat-only and is suppressed while the transition driver holds canvas UI.
+		// through the Result phase (2026-09-21 phase transition rule, demo :27-28). 2026-09-21
+		// world-scroll handoff (plan-shop-topbar-world-scroll-2026-09-21 §3.3): in a SETTLED
+		// shop the canvas pill hides (the world copy in ShopPageHud shows); during a driver
+		// transition it stays visible and glides. The enemy side stays combat-only and is
+		// suppressed while the transition driver holds canvas UI.
+		// VISUAL-FIX(2026-09-21): landing in the shop left the canvas pill stacked over the new
+		//   world pill, and the shop -> combat flight lost its start point
+		//   Cause:    The player side was visible in every settled shop, and the old
+		//             ExitVisiblePhase always restored the COMBAT anchor — so the canvas copy
+		//             hovered over ShopPageHud, and when 离开商店 flipped the phase the glide
+		//             started already home instead of from the shop top bar.
+		//   Affects:  HPNumericDisplayHorizontal player side (shop phase + shop->combat glide).
+		//   Regress:  Result -> Shop landing: canvas pill hides on the landing poll (the world
+		//             pill is the only one visible); it stays parked at the SHOP anchor while
+		//             hidden. 离开商店 / Space from a settled shop: canvas pill glides shop
+		//             anchor -> combat anchor. Buy/sell HP utility in a settled shop: the WORLD
+		//             pill counts up/down; combat odometer/shake/pop untouched. Driver bypass
+		//             (config off / headless): same-frame hard cut, no glide.
 		bool visible = side == Side.Player
-			? inCombat || phase == EnumStorage.GamePhase.Shop || phase == EnumStorage.GamePhase.Result
+			? inCombat || phase == EnumStorage.GamePhase.Result
+				|| (phase == EnumStorage.GamePhase.Shop && PhaseTransitionDriver.IsTransitioning)
 			: inCombat && !PhaseTransitionDriver.SuppressCombatCanvasUI;
 		// VISUAL-FIX(2026-09-19): Leaving the shop for combat left the player pill at the shop
 		//   Cause:    Placement was applied only from EnterVisiblePhase, which fires on an
@@ -268,7 +290,9 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		//             Result -> Shop must still place it at the ShopTopBarLayout anchor.
 		//             (Updated 2026-09-21: the PLAYER side now STAYS visible through Result —
 		//             phase-transition rule, demo PhaseTransitionDemo.html:27-28 — so Result no
-		//             longer hides it; the enemy side still hides outside Combat.)
+		//             longer hides it; the enemy side still hides outside Combat. Since the
+		//             2026-09-21 world-scroll handoff it hides in a SETTLED shop instead — see
+		//             the VISUAL-FIX(2026-09-21) block in Update.)
 		if (phase != _lastPhase)
 		{
 			_lastPhase = phase;
@@ -411,12 +435,18 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		KillTween(ref _placementTween);
 		KillTween(ref _placementScaleTween);
 		displayRoot.gameObject.SetActive(false);
-		// Leaving a visible phase always restores the combat anchor, so the next
-		// combat entry finds the transform untouched even if a phase is skipped.
+		// 2026-09-21 world-scroll handoff: hiding in a SETTLED shop parks the pill at the SHOP
+		// anchor (not the combat anchor), so the next 离开商店 trigger finds the shared-element
+		// flight's start point at the shop top bar. Any other exit (combat end) keeps the
+		// combat-anchor restore, so the next combat entry finds the transform untouched even
+		// if a phase is skipped.
+		bool parkAtShop = gamePhaseRef.Value() == EnumStorage.GamePhase.Shop;
 		if (_selfRt != null)
 		{
-			_selfRt.anchoredPosition = _combatAnchoredPos;
-			_selfRt.localScale = _combatScale;
+			_selfRt.anchoredPosition = parkAtShop
+				? ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.HpDisplayViewport, canvas)
+				: _combatAnchoredPos;
+			_selfRt.localScale = parkAtShop ? Vector3.one * ShopTopBarLayout.HpDisplayShopScale : _combatScale;
 		}
 	}
 

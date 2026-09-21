@@ -4,10 +4,14 @@ using UnityEngine;
 
 /// <summary>
 /// Shows the PlayerIcon / EnemyIcon HUD elements per game phase.
-/// Player icon: Combat, Shop AND Result (2026-09-19: the shop top bar reuses the combat
+/// Player icon: Combat, Shop AND Result (2026-09-19: the shop top bar reused the combat
 /// avatar + username block, repositioned via ShopTopBarLayout; 2026-09-21 phase transition:
 /// avatar + HP stay visible through the Result overlay, demo PhaseTransitionDemo.html:27-28;
 /// the combat anchor and scale are captured at Awake and restored on combat entry).
+/// 2026-09-21 world scroll (plan-shop-topbar-world-scroll-2026-09-21 §3.3): in a SETTLED
+/// shop the canvas icon hides — the world copy lives in ShopPageHud and scrolls with the
+/// page; during a driver transition (IsTransitioning) the canvas icon stays visible and
+/// glides between its shop/combat homes exactly as before (shared-element flight).
 /// Enemy icon: Combat only (suppressed while the transition driver keeps canvas UI hidden).
 /// During a driver transition the per-phase re-anchor becomes a glide tween instead of a snap,
 /// and the enemy icon enters with a counter-direction slide (demo flyShared, :704-727).
@@ -33,6 +37,9 @@ public class CombatIconPresenter : MonoBehaviour
 	private EnumStorage.GamePhase _lastPhase = EnumStorage.GamePhase.Result;
 	private string _lastPlayerName;
 	private string _lastEnemyName;
+	// Init true (never the boot state) so the first Update always applies, mirroring the
+	// _lastPhase = Result trick below.
+	private bool _lastTransitioning = true;
 
 	private RectTransform _playerIconRt;
 	private RectTransform _enemyIconRt;
@@ -57,9 +64,11 @@ public class CombatIconPresenter : MonoBehaviour
 		//   Cause:    PlayerIcon/EnemyIcon were scene-only objects with no script ever
 		//             toggling them, so they rendered during Shop/Result phases too.
 		//   Affects:  PlayerIcon/EnemyIcon under Combat Canvas
-		//   Regress:  Enter Shop phase: ENEMY icon must be inactive (the PLAYER icon now
-		//             intentionally stays, repositioned to the shop top bar); re-enter
-		//             Combat: both icons at their original anchored positions/scale.
+		//   Regress:  Enter Shop phase: ENEMY icon must be inactive; the PLAYER icon follows
+		//             the phase rule as of 2026-09-21 (hidden in a settled shop — the world
+		//             copy in ShopPageHud shows; visible again during driver transitions and
+		//             in Combat/Result); re-enter Combat: both icons at their original
+		//             anchored positions/scale.
 		playerIcon.SetActive(false);
 		enemyIcon.SetActive(false);
 		_playerIconRt = playerIcon.transform as RectTransform;
@@ -83,11 +92,25 @@ public class CombatIconPresenter : MonoBehaviour
 	{
 		EnumStorage.GamePhase phase = gamePhaseRef.Value();
 		bool suppressed = PhaseTransitionDriver.SuppressCombatCanvasUI;
-		if (phase != _lastPhase || suppressed != _lastSuppressed)
+		// VISUAL-FIX(2026-09-21): landing in the shop left the canvas avatar stacked over the
+		//   new world copy
+		//   Cause:    Visibility only re-applied on phase/suppress flips; the transition
+		//             landing flips IsTransitioning false while the phase stays Shop, so the
+		//             settled-shop handoff rule (plan-shop-topbar-world-scroll-2026-09-21
+		//             §3.3) never re-ran and the canvas icon stayed visible over ShopPageHud.
+		//   Affects:  CombatIconPresenter player side (shop phase).
+		//   Regress:  Result -> Shop landing: canvas avatar hides on the landing poll, the
+		//             world copy (ShopPageHud) is the only avatar visible; wheel scroll takes
+		//             it away with the page. 离开商店 / Space from a settled shop: the canvas
+		//             avatar re-activates next Update and glides shop anchor -> combat anchor
+		//             as before. Driver bypass (config off / headless): same-frame hard cut.
+		bool transitioning = PhaseTransitionDriver.IsTransitioning;
+		if (phase != _lastPhase || suppressed != _lastSuppressed || transitioning != _lastTransitioning)
 		{
 			ApplyPhase(phase);
 			_lastPhase = phase;
 			_lastSuppressed = suppressed;
+			_lastTransitioning = transitioning;
 		}
 		if (phase == EnumStorage.GamePhase.Combat)
 		{
@@ -107,7 +130,11 @@ public class CombatIconPresenter : MonoBehaviour
 		bool inResult = phase == EnumStorage.GamePhase.Result;
 		bool suppressed = PhaseTransitionDriver.SuppressCombatCanvasUI;
 		// 2026-09-21 rule (demo :27-28): player avatar stays visible through the Result phase.
-		playerIcon.SetActive(inCombat || inShop || inResult);
+		// 2026-09-21 world-scroll handoff: in a SETTLED shop the canvas avatar hides (the
+		// world copy in ShopPageHud shows); during a driver transition it stays visible and
+		// glides. Placement writes below keep running while hidden, so the hidden icon parks
+		// at the shop anchor and the next shop -> combat flight starts from the right spot.
+		playerIcon.SetActive(inCombat || inResult || (inShop && PhaseTransitionDriver.IsTransitioning));
 		bool enemyWasActive = enemyIcon.activeSelf;
 		bool enemyVisible = inCombat && !suppressed;
 		enemyIcon.SetActive(enemyVisible);

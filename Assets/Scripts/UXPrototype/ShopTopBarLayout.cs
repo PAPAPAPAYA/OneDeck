@@ -62,8 +62,9 @@ public static class ShopTopBarLayout
 	}
 
 	/// <summary>
-	/// Viewport position to a ShopChrome-local offset (the chrome root is pinned by
-	/// ShopChromeAnchor at the camera XY, BandInsetFromTop below the viewport top).
+	/// Viewport position to a ShopChrome-local offset (the chrome root is placed ONCE at
+	/// Build: camera XY, BandInsetFromTop below the viewport top — page content since the
+	/// 2026-09-21 world-scroll port, no per-frame anchor).
 	/// </summary>
 	public static Vector2 ViewportToChromeLocal(Vector2 viewport, Camera cam)
 	{
