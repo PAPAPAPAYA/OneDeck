@@ -154,6 +154,19 @@ public class ShopSectionPanels : MonoBehaviour
 		return used.ToString("00") + "/" + total.ToString("00");
 	}
 
+	/// <summary>
+	/// Deck slots currently occupied, read from the player's deck SO — the authoritative
+	/// count (same helper as the BuyFunc deck-full gate). Slot-free utility passives never
+	/// count (they render in the Upgrades panel); with the duplicate-share-slot rule on,
+	/// copies of one cardTypeID count once. The spawned empty slots cannot be used for
+	/// this: they are one recessed frame per GRID slot — always deckSize of them, cards
+	/// drawn on top — not a count of the free ones.
+	/// </summary>
+	public static int CountUsedSlots(DeckSO deck, bool duplicatesShareSlot)
+	{
+		return deck != null ? UtilityFuncManagerScript.CountSlotOccupyingCards(deck, duplicatesShareSlot) : 0;
+	}
+
 	private void OnDestroy()
 	{
 		if (_instance == this) _instance = null;
@@ -314,10 +327,23 @@ public class ShopSectionPanels : MonoBehaviour
 		RefreshRerollState();
 	}
 
+	// VISUAL-FIX(2026-09-21): Deck panel slot counter read 00/NN forever (never 01/03, 03/03)
+	//   Cause:    used = deckSize - SpawnedEmptySlots.Count, assuming the spawned empty slots are
+	//             the FREE ones. They are one recessed frame per GRID slot instead — spawned up to
+	//             deckSize on shop entry and on deckSize growth, cleared only with the cards — so
+	//             the subtraction was always deckSize - deckSize = 0 and the left number could
+	//             never leave 00. (The port plan carried the same wrong assumption.)
+	//   Affects:  ShopSectionPanels.RefreshCounter (Deck panel header), reached from
+	//             ShopManager buy/sell/reroll RefreshIfActive and ShowIfActive
+	//   Regress:  Enter Shop: counter reads 00/03 with an empty deck; buy a slot card -> 01/03,
+	//             02/03 ... 03/03; sell -> decrements; buy the deck-slot meter card -> denominator
+	//             grows; owning a utility passive (Upgrades row) never moves the number
+	//   Related:  ShopManager.BuyFunc deck-full gate, UtilityFuncManagerScript.CountSlotOccupyingCards
 	private void RefreshCounter()
 	{
-		int total = ShopManager.me != null && ShopManager.me.deckSize != null ? ShopManager.me.deckSize.value : 0;
-		int used = total - (ShopUXManager.Instance != null ? ShopUXManager.Instance.SpawnedEmptySlots.Count : 0);
+		ShopManager shop = ShopManager.me;
+		int total = shop != null && shop.deckSize != null ? shop.deckSize.value : 0;
+		int used = shop != null ? CountUsedSlots(shop.playerDeckRef, shop.DuplicateCopiesShareSlot) : 0;
 		if (used == _lastCounterUsed && total == _lastCounterTotal) return;
 		_lastCounterUsed = used;
 		_lastCounterTotal = total;
