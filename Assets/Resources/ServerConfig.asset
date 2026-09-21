@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b5d6fafc98379844abcdfbdc2f4fe87, type: 3}
   m_Name: ServerConfig
   m_EditorClassIdentifier: Assembly-CSharp::ServerConfig
-  enabled: 1
+  enabled: 0
   environment: 1
   localBaseUrl: http://127.0.0.1:3000
   productionBaseUrl: http://8.153.150.197
