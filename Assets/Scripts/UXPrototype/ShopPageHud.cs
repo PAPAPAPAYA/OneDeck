@@ -44,6 +44,10 @@ public class ShopPageHud : MonoBehaviour
 	private int _shownHp;
 	private int _shownHpMax;
 	private Tween _countTween;
+	// Live-tuning flag (ShopLayoutConfigSO.OnValidate → ApplyMirrorLayout): set mid-travel,
+	// consumed by the next active Update — the chrome root is inactive during the camera
+	// flight, so the rebuild naturally waits for the shop to be visible again.
+	private bool _mirrorDirty;
 
 	/// <summary>
 	/// Pure canvas px -> world units conversion (plan §3.2 calibration; EditMode goldens in
@@ -115,6 +119,34 @@ public class ShopPageHud : MonoBehaviour
 		}
 
 		InitHpText();
+	}
+
+	/// <summary>
+	/// Live-tuning path (ShopLayoutConfigSO.OnValidate): rebuilds the world avatar/HP
+	/// mirrors so retuned viewport anchors / shop scales apply immediately. Mid-travel it
+	/// only flags — the canvas source pieces are being tweened then, and mirroring them
+	/// would bake half-flown offsets into the copies.
+	/// </summary>
+	public void ApplyMirrorLayout()
+	{
+		if (PhaseTransitionDriver.IsTransitioning)
+		{
+			_mirrorDirty = true;
+			return;
+		}
+		RebuildMirrors();
+	}
+
+	private void RebuildMirrors()
+	{
+		KillTween(ref _countTween);
+		for (int i = transform.childCount - 1; i >= 0; i--)
+		{
+			Destroy(transform.GetChild(i).gameObject);
+		}
+		_nameLabel = null;
+		_hpValue = null;
+		Build();
 	}
 
 	// ------------------------------------------------------------------ avatar mirror
@@ -262,6 +294,12 @@ public class ShopPageHud : MonoBehaviour
 
 	private void Update()
 	{
+		// Deferred mirror rebuild lands here (ApplyMirrorLayout sets the flag mid-travel).
+		if (_mirrorDirty && !PhaseTransitionDriver.IsTransitioning)
+		{
+			_mirrorDirty = false;
+			RebuildMirrors();
+		}
 		PollUsername();
 	}
 

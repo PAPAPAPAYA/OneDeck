@@ -74,6 +74,36 @@ public class ShopUXManager : MonoBehaviour
 	[Tooltip("Font asset for chrome labels (world-space TMP)")]
 	public TMP_FontAsset chromeFont;
 
+	[Header("Shop Section Panels (live tuning)")]
+	[Tooltip("Shared appearance of the Shop/Deck/Upgrades panels; any Inspector edit on this component re-fits the panels on the next frame")]
+	public PanelsTuning panels = new PanelsTuning();
+
+	/// <summary>
+	/// Shared appearance tuning for the runtime-built ShopSectionPanels
+	/// (plan-shop-sectionpanels-live-tuning-2026-09-22). Defaults equal the former in-code
+	/// constants; the panels resolve these at RefreshLayout time (never snapshotted), so
+	/// Play-mode Inspector edits apply on the next frame via the _layoutDirty channel.
+	/// Lives here — a persistent scene component — because tuned values on the runtime-built
+	/// panel object itself could neither survive exit nor be saved into the scene.
+	/// </summary>
+	[System.Serializable]
+	public class PanelsTuning
+	{
+		public float headerHeight = 1.2f;
+		public float sidePadding = 0.55f;
+		public float topPadding = 0.35f;
+		public float bottomPadding = 0.5f;
+		public float fitTweenDuration = 0.3f;
+		public float headerFontSize = 3.2f;
+		public float headerLeftMargin = 0.25f;
+		public float headerRightMargin = 0.25f;
+		public float buttonWidth = 2.0f;
+		public float buttonHeight = 0.56f;
+		public float buttonFontSize = 2.4f;
+		public float restShadowUnits = 0.05f;
+		public float denyShiftUnits = 0.075f;
+	}
+
 	// Store instantiated physical cards for cleanup
 	private List<GameObject> _spawnedShopCards = new List<GameObject>();
 	private List<GameObject> _spawnedPlayerCards = new List<GameObject>();
@@ -690,7 +720,10 @@ public class ShopUXManager : MonoBehaviour
 
 	// Live Inspector tuning: OnValidate (editor-only) flags a relayout and Update applies it on
 	// the next frame, so Inspector edits to xOffset / yOffset / shopItemPos / playerDeckPos take
-	// effect at once instead of waiting for the next buy / sell / reroll.
+	// effect at once instead of waiting for the next buy / sell / reroll. The ShopSectionPanels
+	// re-fit (shared PanelsTuning, plan-shop-sectionpanels-live-tuning-2026-09-22) rides the same
+	// flag — OnValidate fires for ANY field edit here, and the extra refit is a few transform
+	// writes. Skipped mid-travel; landing ShowIfActive re-fits with the current values.
 	private bool _layoutDirty = false;
 
 	private void Update()
@@ -699,6 +732,7 @@ public class ShopUXManager : MonoBehaviour
 		{
 			_layoutDirty = false;
 			RelayoutAll();
+			if (!PhaseTransitionDriver.IsTransitioning) ShopSectionPanels.RefitIfBuilt();
 		}
 		HandleCameraScroll();
 	}

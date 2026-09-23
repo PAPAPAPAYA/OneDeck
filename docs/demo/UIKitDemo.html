@@ -412,12 +412,18 @@
 			pointer-events: none;
 		}
 		.shop-page > :not(.topo-bg) { position: relative; z-index: 1; }
-		.shop-topbar { display: flex; align-items: flex-start; gap: 12px; }
-		.btn-leave { font-size: 20px; padding: 10px 18px; }
-		.topbar-hud { display: flex; flex-direction: column; gap: 6px; }
-		.hud-line { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-		.chip-lg { font-size: 19px; padding: 6px 12px; }
-		.chip-lg small { font-size: 12px; font-weight: 700; }
+		/* Topbar per the 2026-09-22 reference: row 1 = 离开商店 + rarity odds +
+		   options (right corner); row 2 = avatar+用户名, big HP / $ chips, and the
+		   right-aligned 卡位·心数 / 收入 stack. */
+		.shop-topbar { display: flex; flex-direction: column; gap: 10px; }
+		.btn-leave { font-size: 22px; padding: 10px 20px; }
+		.hud-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+		.hud-avatar { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; cursor: default; }
+		.hud-avatar .sq { width: 40px; height: 40px; background: var(--panel); border-radius: 6px; }
+		.hud-stack { display: flex; flex-direction: column; gap: 5px; margin-left: auto; align-items: flex-start; }
+		.hud-stack .hud-line { gap: 6px; }
+		.chip-lg { font-size: 22px; padding: 8px 14px; }
+		.chip-lg small { font-size: 13px; font-weight: 700; }
 		.chip-sm { font-size: 12px; padding: 3px 8px; }
 		.phys-opts { margin-left: auto; }
 		.shop-panel {
@@ -434,8 +440,8 @@
 			color: #fff;
 		}
 		.shop-panel-head > b { font-size: 17px; }
-		.slot-count { font-size: 20px; font-weight: 800; color: #fff; }
-		.slot-count small { font-size: 12px; font-weight: 700; }
+		.slot-count { font-size: 26px; font-weight: 800; color: #fff; }
+		.slot-count small { font-size: 14px; font-weight: 700; }
 		.card-row { display: flex; gap: 14px; flex-wrap: wrap; }
 		.buy-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
@@ -848,9 +854,9 @@
 
 	<!-- ===================== 08 shop page ===================== -->
 	<section id="shoppage" data-title="08 商店页 Shop Page">
-		<div class="spec-head"><h2>08 商店页 Shop Page</h2><span class="tag-status">v1.1 · 2026-09-15</span></div>
+		<div class="spec-head"><h2>08 商店页 Shop Page</h2><span class="tag-status">v1.2 · 2026-09-22</span></div>
 		<ul class="notes">
-			<li>整页布局按 2026-09-05 参考稿：顶栏 HUD（<b>离开商店</b> / 头像+用户名 / HP / 金钱 / 稀有度概率 / 卡位·心数 / 收入 / <b>选项</b>）＋ <b>商店</b> 面板（重掷 + 货架卡）＋ <b>卡组</b> 面板（卡位计数 + 持有卡 + 空卡位）＋ <b>商店升级</b> 面板（已拥有的 utility 卡）。</li>
+			<li>整页布局按 2026-09-22 参考稿：顶栏第一行 = <b>离开商店</b> ＋ 稀有度概率（✦/✦✦/✦✦✦）＋ 右角<b>选项</b>；第二行 = 头像+用户名 / 大 HP / 大金钱 / 右对齐的 卡位·心数＋收入 堆叠。下方 <b>商店</b> 面板（重掷 + 货架卡）＋ <b>卡组</b> 面板（大字号卡位计数 + 持有卡 + 空卡位）＋ <b>商店升级</b> 面板（已拥有的 utility 卡）。</li>
 			<li><b>商店升级</b>面板样式与卡组面板一致（半透明深色浮层 + 卡排 + 价格按钮），但 utility（被动）卡<b>不占卡位</b>：头部只有标题、无卡位计数，不做空卡位凹槽；utility 卡无攻击力，卡面底行仅卡名；交互与卡组面板相同——点按卡片预览、点价格按钮售出（hover <code>$N → 售出</code>，售价 = 半价）。</li>
 			<li>灰色等高线背景 = 玩家 HP display 的视觉基底（整页无缝世界概念见 <code>PhaseTransitionDemo.html</code>）；商店 / 卡组面板为半透明深色浮层。</li>
 			<li><b>交互参数全部引用全局参数条</b>（rs / hl / hoverDur / pressDur / 缓动 / 拒绝动效），本节不新增参数。可交互 = 离开商店、选项、重掷、价格按钮（规范见 04 节）；HP / 金钱 / 稀有度概率 / 卡位计数 / 心数 / 收入一律只读平面（R2 逆命题）。</li>
@@ -860,28 +866,28 @@
 			<div class="shop-page">
 				<svg class="topo-bg" id="shopTopo" viewBox="0 0 480 720" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"></svg>
 				<div class="shop-topbar">
-					<div class="phys" data-interactive data-name="离开商店">
-						<button class="phys-face btn btn-leave">离开商店</button>
+					<div class="hud-line">
+						<div class="phys" data-interactive data-name="离开商店">
+							<button class="phys-face btn btn-leave">离开商店</button>
+						</div>
+						<span class="chip dark">✦ 50%</span>
+						<span class="chip dark">✦✦ 40%</span>
+						<span class="chip dark">✦✦✦ 10%</span>
+						<div class="phys phys-opts" data-interactive data-name="选项">
+							<button class="phys-face btn btn-icon">❚❚</button>
+						</div>
 					</div>
-					<div class="topbar-hud">
-						<div class="hud-line">
-							<span class="chip"><span class="sq"></span>用户名</span>
-							<span class="chip chip-lg">HP <b>15</b><small>/20</small></span>
-							<span class="chip chip-lg">$20</span>
-						</div>
-						<div class="hud-line">
-							<span class="chip dark chip-sm">✦ 50%</span>
-							<span class="chip dark chip-sm">✦✦ 40%</span>
-							<span class="chip dark chip-sm">✦✦✦ 10%</span>
-						</div>
-						<div class="hud-line">
-							<span class="chip dark chip-sm">▦ 2/6</span>
-							<span class="chip dark chip-sm">♥ 1/3</span>
+					<div class="hud-line">
+						<span class="hud-avatar"><span class="sq"></span>用户名</span>
+						<span class="chip chip-lg">HP <b>15</b><small>/20</small></span>
+						<span class="chip dark chip-lg">$20</span>
+						<span class="hud-stack">
+							<span class="hud-line">
+								<span class="chip dark chip-sm">▦ 2/6</span>
+								<span class="chip dark chip-sm">♥ 1/3</span>
+							</span>
 							<span class="chip dark chip-sm">+$12/ROUND</span>
-						</div>
-					</div>
-					<div class="phys phys-opts" data-interactive data-name="选项">
-						<button class="phys-face btn btn-icon">❚❚</button>
+						</span>
 					</div>
 				</div>
 				<div class="shop-panel">
@@ -1067,6 +1073,7 @@
 		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；提示加 <code>data-tips='[["标签","描述"]]'</code>（可多条）；悬停换文案加 <code>data-hover-text="..."</code>。无需写新 JS。
 		3) 新全局参数 = 在 <code>PARAMS</code> 数组加一项，参数条、状态对象、规格 JSON 自动生成。
 		4) 手感确认后，把数值同步进 <code>docs/UIUX_Guidelines.md</code> 与 Unity 实现。<br>
+		版本：v1.2 · 2026-09-22 · 08 节顶栏按 2026-09-22 参考稿重排：第一行 离开商店＋稀有度概率＋右角选项，第二行 头像+用户名 / 大 HP / 大金钱（$ 改深色 chip）/ 右对齐 卡位·心数＋收入 堆叠；卡组面板卡位计数 03/05 放大<br>
 		版本：v0.9 · 2026-09-15 · 08 节商店页新增「商店升级」面板：卡组板块下方，样式与卡组面板一致，展示已拥有的 utility（被动）卡——头部无卡位计数、无空卡位凹槽、卡面无攻击力，交互同卡组面板（预览 + 价格按钮售出）<br>
 		版本：v0.8 · 2026-09-08 · 卡牌效果描述不再 2 行截断省略号，全文折行完整显示；稀有度行让位收缩，效果底边仍贴分隔线向上生长；Unity 侧对应 desc TMP 溢出 Ellipsis→Overflow（PhysicalCardParent.prefab 覆盖项）<br>
 		版本：v0.7 · 2026-09-06 · 卡名溢出不再省略号，改为水平压扁适配（JS scaleX，无下限）；Unity 侧对应 CardPhysObjScript.FitCardNamePrint（TMP characterHorizontalScale）<br>

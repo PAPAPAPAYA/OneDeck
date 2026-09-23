@@ -10,9 +10,14 @@ using UnityEngine;
 /// Shop / Deck / Upgrades rows, with header labels, the Deck slot counter (03/05) and
 /// the reroll button — relocated from the chrome band into the Shop panel header per
 /// the 2026-09-18 annotated layout. Built once by Bootstrap (mirrors ShopChrome);
-/// refitted by RefreshLayout, which ShopUXManager calls after every relayout. Panels
+/// refitted by RefreshLayout, which ShopUXManager calls after every relayout. 2026-09-22:
+/// appearance values are live-tunable via ShopUXManager.panels
+/// (plan-shop-sectionpanels-live-tuning-2026-09-22) — resolved at RefreshLayout time,
+/// never snapshotted. Panels
 /// carry no colliders and never intercept physics input. Pure helpers (bounds, slot
-/// format) are static for EditMode coverage.
+/// format) are static for EditMode coverage. 2026-09-23: widget recipes (panel bg /
+/// header labels / reroll button) build through ShopWorldWidgets — this file keeps fit
+/// + refresh logic only (plan-shop-layout-config-widget-factory).
 /// </summary>
 public class ShopSectionPanels : MonoBehaviour
 {
@@ -20,25 +25,32 @@ public class ShopSectionPanels : MonoBehaviour
 
 	private const float PanelZ = 0.5f;   // behind cards (z 0) and empty slots (z 0.1)
 	private const float HeaderZ = 0.4f;  // in front of the panel background
-	private const float HeaderHeight = 1.2f;
-	private const float SidePadding = 0.55f;
-	private const float TopPadding = 0.35f;
-	private const float BottomPadding = 0.5f;
-	private const float FitTweenDuration = 0.3f;
-	private const float HeaderFontSize = 3.2f;
-	private const float HeaderLeftMargin = 0.25f;
-	private const float HeaderRightMargin = 0.25f;
-	private const float ButtonWidth = 2.0f;
-	private const float ButtonHeight = 0.56f;
-	private const float ButtonFontSize = 2.4f;
-	private const float RestShadowUnits = 0.05f;
-	private const float DenyShiftUnits = 0.075f;
+
+	// Fallback defaults for the live tuning on ShopUXManager.panels
+	// (plan-shop-sectionpanels-live-tuning-2026-09-22): every layout/style read resolves
+	// ShopUXManager.Instance.panels at point of use (Tuning helper below) — never
+	// snapshotted — so a Play-mode Inspector edit applies on the next RefreshLayout. The
+	// consts only cover the panels-exist-without-manager corner (tests / headless).
+	private const float HeaderHeightDefault = 1.2f;
+	private const float SidePaddingDefault = 0.55f;
+	private const float TopPaddingDefault = 0.35f;
+	private const float BottomPaddingDefault = 0.5f;
+	private const float FitTweenDurationDefault = 0.3f;
+	private const float HeaderFontSizeDefault = 3.2f;
+	private const float HeaderLeftMarginDefault = 0.25f;
+	private const float HeaderRightMarginDefault = 0.25f;
+	private const float ButtonWidthDefault = 2.0f;
+	private const float ButtonHeightDefault = 0.56f;
+	private const float ButtonFontSizeDefault = 2.4f;
+	private const float RestShadowUnitsDefault = 0.05f;
+	private const float DenyShiftUnitsDefault = 0.075f;
 
 	// Card face half-extents at scale 1, from the EmptyCardSpace bake (3.3 x 4.7 units).
-	// The below factor includes the price-button allowance (matches ShopChrome.CheckShelfClearance).
-	private const float FaceHalfWidthFactor = 1.65f;
-	private const float FaceAboveHalfHeightFactor = 2.35f;
-	private const float FaceBelowHalfHeightFactor = 2.5f;
+	// The below factor includes the price-button allowance; it is THE shared source —
+	// ShopChrome.CheckShelfClearance reads it too (2026-09-23, ex-hardcoded 2.5f).
+	public const float FaceHalfWidthFactor = 1.65f;
+	public const float FaceAboveHalfHeightFactor = 2.35f;
+	public const float FaceBelowHalfHeightFactor = 2.5f;
 
 	private static ShopSectionPanels _instance;
 	public static ShopSectionPanels Instance => _instance;
@@ -93,6 +105,25 @@ public class ShopSectionPanels : MonoBehaviour
 		if (_instance != null && _instance.gameObject.activeSelf) _instance.Refresh();
 	}
 
+	/// <summary>
+	/// Live tuning entry (plan-shop-sectionpanels-live-tuning-2026-09-22 §3.5): re-fit all
+	/// three panels from the current ShopUXManager.panels values. No-op before Bootstrap;
+	/// callers skip it mid-travel (IsTransitioning) — landing ShowIfActive re-fits anyway.
+	/// </summary>
+	public static void RefitIfBuilt()
+	{
+		if (_instance != null) _instance.RefreshLayout();
+	}
+
+	// Point-of-use resolver for the shared tuning: reads the field off ShopUXManager.panels
+	// at call time so retuned values never go stale; falls back to the *Default consts when
+	// the manager is absent (tests / headless construction).
+	private static float Tuning(System.Func<ShopUXManager.PanelsTuning, float> selector, float fallback)
+	{
+		ShopUXManager ux = ShopUXManager.Instance;
+		return ux != null && ux.panels != null ? selector(ux.panels) : fallback;
+	}
+
 	public static void ShowIfActive()
 	{
 		if (_instance == null) return;
@@ -117,6 +148,7 @@ public class ShopSectionPanels : MonoBehaviour
 	/// <summary>Re-fit all three panels around the current content (call after every relayout).</summary>
 	public void RefreshLayout()
 	{
+		ApplySharedStyle();
 		ShopUXManager ux = ShopUXManager.Instance;
 		float scale = ux != null ? ux.physCardSize.x : 0.8f;
 		float halfW = FaceHalfWidthFactor * scale;
@@ -128,6 +160,31 @@ public class ShopSectionPanels : MonoBehaviour
 		deckCenters.AddRange(TargetsOf(ux != null ? ux.SpawnedEmptySlots : null));
 		FitPanel(_deckPanel, _deckHeader, _deckCounter, deckCenters, halfW, aboveH, belowH, reroll: false);
 		FitPanel(_upgradesPanel, _upgradesHeader, null, TargetsOf(ux != null ? ux.SpawnedUtilityCards : null), halfW, aboveH, belowH, reroll: false);
+	}
+
+	// Build-once style values re-applied on every refit so a Play-mode tuning session moves
+	// them too (plan §3.3): header font sizes, reroll label font/rect, reroll face+collider
+	// size and its press/hover/deny params. Panel geometry re-derives from the paddings
+	// inside FitPanel on every call by itself.
+	private void ApplySharedStyle()
+	{
+		float headerFontSize = Tuning(t => t.headerFontSize, HeaderFontSizeDefault);
+		_shopHeader.fontSize = headerFontSize;
+		_deckHeader.fontSize = headerFontSize;
+		_upgradesHeader.fontSize = headerFontSize;
+
+		if (_rerollButton == null) return;
+		float buttonWidth = Tuning(t => t.buttonWidth, ButtonWidthDefault);
+		float buttonHeight = Tuning(t => t.buttonHeight, ButtonHeightDefault);
+		_rerollButton.ConfigureWorldFaceSize(new Vector2(buttonWidth, buttonHeight), Vector2.zero);
+		_rerollButton.restShadow = Tuning(t => t.restShadowUnits, RestShadowUnitsDefault);
+		_rerollButton.hoverLift = Tuning(t => t.restShadowUnits, RestShadowUnitsDefault);
+		_rerollButton.denyShift = Tuning(t => t.denyShiftUnits, DenyShiftUnitsDefault);
+		if (_rerollLabel != null)
+		{
+			_rerollLabel.fontSize = Tuning(t => t.buttonFontSize, ButtonFontSizeDefault);
+			_rerollLabel.rectTransform.sizeDelta = new Vector2(buttonWidth - 0.2f, buttonHeight);
+		}
 	}
 
 	/// <summary>Content bounds for a set of card/slot centers: X expanded by halfWidth,
@@ -180,100 +237,46 @@ public class ShopSectionPanels : MonoBehaviour
 		_shopHeader = CreateHeader("HeaderShop", "商店", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
 		_deckHeader = CreateHeader("HeaderDeck", "卡组", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
 		_upgradesHeader = CreateHeader("HeaderUpgrades", "商店升级", TextAlignmentOptions.Left, GameColorPalette.TooltipTextColor);
-		_deckCounter = CreateHeader("DeckCounter", string.Empty, TextAlignmentOptions.Right, GameColorPalette.HighlightColor);
+		// VISUAL-FIX(2026-09-22): Deck panel counter (03/05) rendered yellow — it read the
+		//   log-highlight token (#FFEB04) while the UIKitDemo §08 slot-count is white
+		//   Regress: counter matches the white panel headers; LogHighlight.asset stays for combat logs
+		_deckCounter = CreateHeader("DeckCounter", string.Empty, TextAlignmentOptions.Right, GameColorPalette.TooltipTextColor);
 		_rerollButton = CreateRerollButton();
 	}
 
 	private SpriteRenderer CreatePanel(string name)
 	{
-		GameObject go = new GameObject(name);
-		go.transform.SetParent(transform, false);
-		SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
-		sr.sprite = _sprite;
-		sr.drawMode = SpriteDrawMode.Sliced;
-		sr.color = GameColorPalette.ShopPanelBgColor;
-		sr.size = new Vector2(1f, 1f);
-		go.transform.position = new Vector3(0f, 0f, PanelZ);
-		return sr;
+		return ShopWorldWidgets.CreateSliced(transform, name, _sprite,
+			GameColorPalette.ShopPanelBgColor, new Vector3(0f, 0f, PanelZ), new Vector2(1f, 1f));
 	}
 
 	private TextMeshPro CreateHeader(string name, string text, TextAlignmentOptions alignment, Color color)
 	{
-		GameObject go = new GameObject(name);
-		go.transform.SetParent(transform, false);
-		TextMeshPro tmp = go.AddComponent<TextMeshPro>();
-		tmp.font = _font;
-		tmp.fontSharedMaterial = _font.material;
-		tmp.fontSize = HeaderFontSize;
-		tmp.color = color;
-		tmp.alignment = alignment;
-		tmp.enableWordWrapping = false;
-		tmp.overflowMode = TextOverflowModes.Overflow;
-		tmp.text = text;
-		tmp.rectTransform.sizeDelta = new Vector2(6f, 1f);
-		tmp.rectTransform.pivot = new Vector2(alignment == TextAlignmentOptions.Left ? 0f : 1f, 0.5f);
-		go.transform.position = new Vector3(0f, 0f, HeaderZ);
-		return tmp;
+		// Header pivot rides the alignment (left headers grow right, the right-aligned
+		// deck counter grows left) — same rule as the pre-factory CreateHeader.
+		Vector2 pivot = new Vector2(alignment == TextAlignmentOptions.Left ? 0f : 1f, 0.5f);
+		return ShopWorldWidgets.CreateWorldLabel(transform, name, _font, text,
+			Tuning(t => t.headerFontSize, HeaderFontSizeDefault), color, alignment,
+			new Vector2(6f, 1f), pivot, new Vector3(0f, 0f, HeaderZ));
 	}
 
-	// Same world-button recipe as ShopChrome.CreateButton (kept local: the chrome owns
-	// its private copy; the panels own theirs).
+	// Same world-button recipe as ShopChrome's (both via ShopWorldWidgets since
+	// 2026-09-23); the reroll keeps its action + label wiring here, position comes from
+	// FitPanel.
 	private PhysButton CreateRerollButton()
 	{
-		GameObject rootGo = new GameObject("RerollButton", typeof(BoxCollider2D));
-		rootGo.transform.SetParent(transform, false);
-
-		GameObject visualGo = new GameObject("Visual");
-		visualGo.transform.SetParent(rootGo.transform, false);
-
-		GameObject shadowGo = new GameObject("Shadow", typeof(SpriteRenderer));
-		shadowGo.transform.SetParent(rootGo.transform, false);
-		shadowGo.transform.localPosition = new Vector3(0f, 0f, 0.04f);
-		SetupSliced(shadowGo.GetComponent<SpriteRenderer>(), GameColorPalette.CardShadowColor);
-
-		GameObject faceGo = new GameObject("Face", typeof(SpriteRenderer));
-		faceGo.transform.SetParent(visualGo.transform, false);
-		faceGo.transform.localPosition = new Vector3(0f, 0f, 0.02f);
-		SetupSliced(faceGo.GetComponent<SpriteRenderer>(), GameColorPalette.OwnerCardColor);
-
-		TextMeshPro label = CreateButtonLabel(visualGo.transform, "重掷 $0");
-
-		PhysButton button = rootGo.AddComponent<PhysButton>();
-		button.SetShadowTransform(shadowGo.transform);
-		button.SetWorldFace(faceGo.GetComponent<SpriteRenderer>());
-		button.SetVisualGroup(visualGo.transform);
-		button.restShadow = RestShadowUnits;
-		button.hoverLift = RestShadowUnits;
-		button.denyShift = DenyShiftUnits;
-		button.label = label;
-		button.ConfigureWorldFaceSize(new Vector2(ButtonWidth, ButtonHeight), Vector2.zero);
+		TextMeshPro label;
+		PhysButton button = ShopWorldWidgets.CreateWorldButton(transform, "RerollButton", _font, _sprite,
+			"重掷 $0", 0f, 0f,
+			Tuning(t => t.buttonWidth, ButtonWidthDefault),
+			Tuning(t => t.buttonHeight, ButtonHeightDefault),
+			Tuning(t => t.buttonFontSize, ButtonFontSizeDefault),
+			Tuning(t => t.restShadowUnits, RestShadowUnitsDefault),
+			Tuning(t => t.denyShiftUnits, DenyShiftUnitsDefault),
+			out label);
 		button.SetWorldAction(() => { if (ShopManager.me != null) ShopManager.me.Reroll(); });
 		_rerollLabel = label;
 		return button;
-	}
-
-	private TextMeshPro CreateButtonLabel(Transform parent, string text)
-	{
-		GameObject go = new GameObject("Label");
-		go.transform.SetParent(parent, false);
-		TextMeshPro tmp = go.AddComponent<TextMeshPro>();
-		tmp.font = _font;
-		tmp.fontSharedMaterial = _font.material;
-		tmp.fontSize = ButtonFontSize;
-		tmp.color = GameColorPalette.OwnerTextColor;
-		tmp.alignment = TextAlignmentOptions.Center;
-		tmp.enableWordWrapping = false;
-		tmp.overflowMode = TextOverflowModes.Overflow;
-		tmp.rectTransform.sizeDelta = new Vector2(ButtonWidth - 0.2f, ButtonHeight);
-		tmp.text = text;
-		return tmp;
-	}
-
-	private void SetupSliced(SpriteRenderer sr, Color color)
-	{
-		sr.sprite = _sprite;
-		sr.drawMode = SpriteDrawMode.Sliced;
-		sr.color = color;
 	}
 
 	private static List<Vector3> TargetsOf(IReadOnlyList<GameObject> cards)
@@ -299,25 +302,37 @@ public class ShopSectionPanels : MonoBehaviour
 		if (reroll && _rerollButton != null) _rerollButton.gameObject.SetActive(visible);
 		if (!visible) return;
 
-		Vector3 min = content.min - new Vector3(SidePadding, BottomPadding, 0f);
-		Vector3 max = content.max + new Vector3(SidePadding, HeaderHeight + TopPadding, 0f);
+		float sidePadding = Tuning(t => t.sidePadding, SidePaddingDefault);
+		float topPadding = Tuning(t => t.topPadding, TopPaddingDefault);
+		float bottomPadding = Tuning(t => t.bottomPadding, BottomPaddingDefault);
+		float headerHeight = Tuning(t => t.headerHeight, HeaderHeightDefault);
+		float headerLeftMargin = Tuning(t => t.headerLeftMargin, HeaderLeftMarginDefault);
+		float headerRightMargin = Tuning(t => t.headerRightMargin, HeaderRightMarginDefault);
+		float buttonWidth = Tuning(t => t.buttonWidth, ButtonWidthDefault);
+		// Snap while hidden (phase travel): a tween would land later than the next show; the
+		// visible case keeps the gliding fit (tunable via fitTweenDuration).
+		float fitDuration = Tuning(t => t.fitTweenDuration, FitTweenDurationDefault);
+		if (!gameObject.activeSelf) fitDuration = 0f;
+
+		Vector3 min = content.min - new Vector3(sidePadding, bottomPadding, 0f);
+		Vector3 max = content.max + new Vector3(sidePadding, headerHeight + topPadding, 0f);
 		Vector3 targetPos = new Vector3((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f, PanelZ);
 		Vector2 targetSize = new Vector2(max.x - min.x, max.y - min.y);
 
 		panel.transform.DOKill();
 		DOTween.Kill(panel);
-		panel.transform.DOMove(targetPos, FitTweenDuration).SetEase(Ease.OutQuad);
-		DOTween.To(() => panel.size, v => panel.size = v, targetSize, FitTweenDuration).SetEase(Ease.OutQuad);
+		panel.transform.DOMove(targetPos, fitDuration).SetEase(Ease.OutQuad);
+		DOTween.To(() => panel.size, v => panel.size = v, targetSize, fitDuration).SetEase(Ease.OutQuad);
 
-		float headerY = max.y - HeaderHeight * 0.5f;
-		header.transform.position = new Vector3(min.x + HeaderLeftMargin, headerY, HeaderZ);
+		float headerY = max.y - headerHeight * 0.5f;
+		header.transform.position = new Vector3(min.x + headerLeftMargin, headerY, HeaderZ);
 		if (counter != null)
 		{
-			counter.transform.position = new Vector3(max.x - HeaderRightMargin, headerY, HeaderZ);
+			counter.transform.position = new Vector3(max.x - headerRightMargin, headerY, HeaderZ);
 		}
 		if (reroll && _rerollButton != null)
 		{
-			_rerollButton.transform.position = new Vector3(max.x - HeaderRightMargin - ButtonWidth * 0.5f - 0.15f, headerY, 0f);
+			_rerollButton.transform.position = new Vector3(max.x - headerRightMargin - buttonWidth * 0.5f - 0.15f, headerY, 0f);
 		}
 	}
 

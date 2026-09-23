@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82598fa5e688488f94b43ef80b0ecea4, type: 3}
+  m_Name: ShopLayoutConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ShopLayoutConfigSO
+  bandHeight: 2.6
+  bandInsetFromTop: 0.5
+  cameraForwardOffset: 2
+  exitButtonViewportY: 0.956
+  exitButtonOffsetX: 0
+  exitButtonWidth: 2.6
+  exitButtonFontSize: 2.8
+  buttonHeight: 0.64
+  buttonFontSize: 2.4
+  optionsButtonWidth: 0.72
+  worldEdgeMargin: 0.35
+  moneyChipViewport: {x: 0.654, y: 0.959}
+  moneyChipWidth: 2.4
+  moneyChipHeight: 0.62
+  moneyChipFontSize: 2.8
+  hudColumnViewportX: 0.252
+  oddsRowViewportY: 0.883
+  statsRowViewportY: 0.81
+  chipSpacing: 0.25
+  smallChipWidth: 1.7
+  chipHeight: 0.5
+  smallChipFontSize: 1.9
+  chipWidth: 2.2
+  chipFontSize: 2.2
+  playerIconViewport: {x: 0.292, y: 0.956}
+  hpDisplayViewport: {x: 0.437, y: 0.959}
+  playerIconShopScale: 0.28
+  hpDisplayShopScale: 0.5
+  restShadowUnits: 0.05
+  denyShiftUnits: 0.075
