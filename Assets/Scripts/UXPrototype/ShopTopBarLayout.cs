@@ -1,49 +1,35 @@
 using UnityEngine;
 
 /// <summary>
-/// Shared top-bar placement for the Shop phase (2026-09-19 layout: UIKitDemo §08 order).
-/// One constant source (viewport space, (0,1) = top-left) consumed by both render
-/// systems that draw the shop top bar:
-///   - the world-space chips of ShopChrome (via ViewportToChromeLocal), and
+/// Shared top-bar placement for the Shop phase — LEFT-ALIGNED band model (2026-09-23
+/// step 2, plan-shop-per-element-placement; supersedes the viewport-X model of
+/// cf8c52c). Consumed by both render systems that draw the shop top bar:
+///   - the world-space chrome (ShopChrome chips/buttons + ShopPageHud mirrors) via
+///     ChromeLocalXFromLeftOffset + ViewportToChromeLocalY, and
 ///   - the reused combat canvas pieces — player icon (CombatIconPresenter) and the
 ///     horizontal HP display (HPNumericDisplayHorizontal, player side) — via
-///     ViewportToCanvasAnchored.
+///     LeftOffsetToCanvasAnchored.
 ///
-/// §08 order: row 0 = 离开商店 | avatar+username | HP | money ... ❚❚ (all level);
-/// row 1 = rarity odds; row 2 = wins / hearts / income. Rows 1-2 are left-aligned on
-/// HudColumnViewportX, i.e. the column the avatar block starts.
+/// Coordinates: X = the element center's world-unit offset from the view's LEFT edge
+/// (the band rides the edge, so gaps between elements stay FIXED in world units
+/// across aspect changes — the whole reason for this semantics); Y = viewport
+/// fraction, which is aspect-safe (the vertical span is locked by orthoSize).
+/// Demo §08 order: 离开商店 | avatar+username | HP | money | wins/hearts | income,
+/// with the rarity odds row above; exact arrangement is data (ShopLayoutConfigSO).
 ///
-/// 2026-09-23 (plan-shop-layout-config-widget-factory): every value resolves through
-/// ShopLayoutConfigSO (Resources/ShopLayoutConfig) with the ...Default statics below as
-/// fallbacks. The resolving properties keep the pre-config API names, so all four
-/// consumers (ShopChrome, ShopPageHud, CombatIconPresenter, HPNumericDisplayHorizontal)
-/// read the live asset with zero per-consumer wiring — canvas pieces pick up retuned
-/// values at their next placement application (phase handoff).
-///
-/// Positions are resolution-independent; sizes stay per-system (world units for
-/// chips, canvas reference pixels for the reused components). Caveat: the chrome's
-/// exit/options buttons are laid out in WORLD units, so their viewport footprint
-/// shrinks as the camera half-width grows — these X constants are tuned against the
-/// shipping Game view and a markedly different aspect will shift the relationship.
+/// Values resolve through ShopLayoutConfigSO (Resources/ShopLayoutConfig) with the
+/// ...Default constants here as fallbacks; the resolving properties keep stable API
+/// names for the four consumers.
 /// </summary>
 public static class ShopTopBarLayout
 {
-	// Fallback defaults — the single default source (ShopLayoutConfigSO field initializers
-	// reference these). Row 0 (avatar -> HP -> money, left to right after 离开商店),
-	// anchored on each piece's CENTER; the canvas pieces already anchor bottom-left, so
-	// the anchored position computed below is their center in canvas reference pixels.
-	// The avatar's Y sits a touch below the HP/money row so its oversized decoration
-	// (see PlayerIconShopScaleDefault) clears the viewport top.
-	public static readonly Vector2 PlayerIconViewportDefault = new Vector2(0.292f, 0.956f);
-	public static readonly Vector2 HpDisplayViewportDefault = new Vector2(0.437f, 0.959f);
-	public static readonly Vector2 MoneyChipViewportDefault = new Vector2(0.654f, 0.959f);
-
-	// Rows 1-2: rarity odds, then wins / hearts / income — left-aligned on the HUD column.
-	// The column X is set just left of the avatar block so the odds row clears the reroll
-	// button in the Shop panel header (which sits at world Y 4.33, between the two rows).
-	public const float OddsRowViewportYDefault = 0.883f;
-	public const float StatsRowViewportYDefault = 0.810f;
-	public const float HudColumnViewportXDefault = 0.252f;
+	// Fallback defaults — the single default source for the mirror anchors (the
+	// ShopLayoutConfigSO field initializers reference these too). Baked at ortho 6.06 /
+	// aspect 16:9 (2x halfW = 21.5467) from the former viewport constants 0.292 / 0.437.
+	public const float PlayerIconXFromLeftEdgeDefault = 6.29f;
+	public const float PlayerIconViewportYDefault = 0.956f;
+	public const float HpDisplayXFromLeftEdgeDefault = 9.42f;
+	public const float HpDisplayViewportYDefault = 0.959f;
 
 	// Scale overrides applied to the reused combat components while in the Shop phase
 	// (their combat scale is captured at Awake and restored on combat entry).
@@ -54,55 +40,40 @@ public static class ShopTopBarLayout
 	public const float PlayerIconShopScaleDefault = 0.28f;
 	public const float HpDisplayShopScaleDefault = 0.5f;
 
-	// Config-resolving read points — same names as the pre-config constants.
-	public static Vector2 PlayerIconViewport => ShopLayoutConfigSO.V2(c => c.playerIconViewport, PlayerIconViewportDefault);
-	public static Vector2 HpDisplayViewport => ShopLayoutConfigSO.V2(c => c.hpDisplayViewport, HpDisplayViewportDefault);
-	public static Vector2 MoneyChipViewport => ShopLayoutConfigSO.V2(c => c.moneyChipViewport, MoneyChipViewportDefault);
-	public static float OddsRowViewportY => ShopLayoutConfigSO.V(c => c.oddsRowViewportY, OddsRowViewportYDefault);
-	public static float StatsRowViewportY => ShopLayoutConfigSO.V(c => c.statsRowViewportY, StatsRowViewportYDefault);
-	public static float HudColumnViewportX => ShopLayoutConfigSO.V(c => c.hudColumnViewportX, HudColumnViewportXDefault);
+	// Shipping Main Camera ortho size — the fallback when Camera.main is unavailable at
+	// a canvas placement read (GameScene Main Camera value; see plan §3.2).
+	public const float FallbackOrthoSize = 6.06f;
+
+	// Config-resolving read points — stable names for the consumers.
+	public static float PlayerIconXFromLeftEdge => ShopLayoutConfigSO.V(c => c.playerIconXFromLeftEdge, PlayerIconXFromLeftEdgeDefault);
+	public static float PlayerIconViewportY => ShopLayoutConfigSO.V(c => c.playerIconViewportY, PlayerIconViewportYDefault);
+	public static float HpDisplayXFromLeftEdge => ShopLayoutConfigSO.V(c => c.hpDisplayXFromLeftEdge, HpDisplayXFromLeftEdgeDefault);
+	public static float HpDisplayViewportY => ShopLayoutConfigSO.V(c => c.hpDisplayViewportY, HpDisplayViewportYDefault);
 	public static float PlayerIconShopScale => ShopLayoutConfigSO.V(c => c.playerIconShopScale, PlayerIconShopScaleDefault);
 	public static float HpDisplayShopScale => ShopLayoutConfigSO.V(c => c.hpDisplayShopScale, HpDisplayShopScaleDefault);
 
-	/// <summary>
-	/// Viewport position to a canvas RectTransform anchoredPosition. Requires the
-	/// target's anchors to sit at the canvas bottom-left ((0,0), as the combat HUD
-	/// pieces do), so the anchored position is simply the reference-pixel offset.
-	/// </summary>
-	public static Vector2 ViewportToCanvasAnchored(Vector2 viewport, Canvas canvas)
+	/// <summary>Camera.main's ortho size with the shipping fallback (canvas-side reads).</summary>
+	public static float MainOrthoSize
 	{
-		float scale = canvas != null ? canvas.scaleFactor : 1f;
-		if (scale <= 0.0001f)
+		get
 		{
-			scale = 1f;
+			Camera cam = Camera.main;
+			return cam != null ? cam.orthographicSize : FallbackOrthoSize;
 		}
-		return new Vector2(viewport.x * Screen.width / scale, viewport.y * Screen.height / scale);
 	}
 
 	/// <summary>
-	/// Viewport position to a ShopChrome-local offset (the chrome root is placed ONCE at
-	/// Build: camera XY, BandInsetFromTop below the viewport top — page content since the
-	/// 2026-09-21 world-scroll port, no per-frame anchor).
+	/// World-unit offset from the view's left edge to a chrome-LOCAL x (the chrome root
+	/// sits at the camera center: view-left is -halfW). The whole band rides the edge,
+	/// which is what keeps inter-element gaps fixed across aspect changes.
 	/// </summary>
-	public static Vector2 ViewportToChromeLocal(Vector2 viewport, Camera cam)
+	public static float ChromeLocalXFromLeftOffset(float xFromLeftEdge, float halfW)
 	{
-		return cam != null
-			? ViewportToChromeLocal(viewport, cam.orthographicSize * cam.aspect, cam.orthographicSize)
-			: Vector2.zero;
+		return xFromLeftEdge - halfW;
 	}
 
-	/// <summary>
-	/// Same conversion from build-captured geometry (the ShopChrome.ApplyLayout path) —
-	/// no camera needed, so chrome re-placement never reads the live camera transform.
-	/// </summary>
-	public static Vector2 ViewportToChromeLocal(Vector2 viewport, float halfW, float orthoSize)
-	{
-		float localX = (viewport.x - 0.5f) * 2f * halfW;
-		float localY = (viewport.y - 1f) * 2f * orthoSize + ShopChrome.BandInsetFromTop;
-		return new Vector2(localX, localY);
-	}
-
-	/// <summary>Chrome-local Y of a viewport Y (same origin as ViewportToChromeLocal's y).</summary>
+	/// <summary>Chrome-local Y of a viewport Y (chrome root is BandInsetFromTop below the
+	/// viewport top — page content since the 2026-09-21 world-scroll port).</summary>
 	public static float ViewportToChromeLocalY(float viewportY, Camera cam)
 	{
 		return cam != null ? ViewportToChromeLocalY(viewportY, cam.orthographicSize) : 0f;
@@ -116,5 +87,24 @@ public static class ShopTopBarLayout
 	public static float ViewportToChromeLocalY(float viewportY, float orthoSize)
 	{
 		return (viewportY - 1f) * 2f * orthoSize + ShopChrome.BandInsetFromTop;
+	}
+
+	/// <summary>
+	/// Left-aligned band anchor to a canvas RectTransform anchoredPosition (the combat
+	/// HUD pieces anchor bottom-left). X: world-unit left offset → screen px, where the
+	/// aspect term cancels — offset / (2 x halfW) x Screen.width with halfW =
+	/// orthoSize x Screen.width/Screen.height reduces to offset x Screen.height /
+	/// (2 x orthoSize). Y: viewport fraction x Screen.height, as before. Both then
+	/// divide by the canvas scale into reference pixels.
+	/// </summary>
+	public static Vector2 LeftOffsetToCanvasAnchored(float xFromLeftEdge, float viewportY, Canvas canvas, float orthoSize)
+	{
+		float scale = canvas != null ? canvas.scaleFactor : 1f;
+		if (scale <= 0.0001f)
+		{
+			scale = 1f;
+		}
+		float pxPerWorldUnit = Screen.height / Mathf.Max(0.0001f, 2f * orthoSize);
+		return new Vector2(xFromLeftEdge * pxPerWorldUnit / scale, viewportY * Screen.height / scale);
 	}
 }

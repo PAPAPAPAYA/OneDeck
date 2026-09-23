@@ -444,7 +444,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		if (_selfRt != null)
 		{
 			_selfRt.anchoredPosition = parkAtShop
-				? ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.HpDisplayViewport, canvas)
+				? ShopTopBarLayout.LeftOffsetToCanvasAnchored(ShopTopBarLayout.HpDisplayXFromLeftEdge, ShopTopBarLayout.HpDisplayViewportY, canvas, ShopTopBarLayout.MainOrthoSize)
 				: _combatAnchoredPos;
 			_selfRt.localScale = parkAtShop ? Vector3.one * ShopTopBarLayout.HpDisplayShopScale : _combatScale;
 		}
@@ -457,7 +457,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 			return;
 		}
 		Vector2 targetPos = shopPhase
-			? ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.HpDisplayViewport, canvas)
+			? ShopTopBarLayout.LeftOffsetToCanvasAnchored(ShopTopBarLayout.HpDisplayXFromLeftEdge, ShopTopBarLayout.HpDisplayViewportY, canvas, ShopTopBarLayout.MainOrthoSize)
 			: _combatAnchoredPos;
 		Vector3 targetScale = shopPhase ? Vector3.one * ShopTopBarLayout.HpDisplayShopScale : _combatScale;
 		var cfg = PhaseTransitionConfigSO.Me;

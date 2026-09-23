@@ -147,7 +147,7 @@ public class CombatIconPresenter : MonoBehaviour
 			return;
 		}
 		Vector2 targetPos = inShop
-			? ShopTopBarLayout.ViewportToCanvasAnchored(ShopTopBarLayout.PlayerIconViewport, _canvas)
+			? ShopTopBarLayout.LeftOffsetToCanvasAnchored(ShopTopBarLayout.PlayerIconXFromLeftEdge, ShopTopBarLayout.PlayerIconViewportY, _canvas, ShopTopBarLayout.MainOrthoSize)
 			: _combatAnchoredPos;
 		Vector3 targetScale = inShop ? Vector3.one * ShopTopBarLayout.PlayerIconShopScale : _combatScale;
 		var cfg = PhaseTransitionConfigSO.Me;

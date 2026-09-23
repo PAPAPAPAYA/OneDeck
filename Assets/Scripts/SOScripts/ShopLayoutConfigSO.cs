@@ -1,24 +1,73 @@
 using UnityEngine;
 
 /// <summary>
-/// Shop page layout tuning (2026-09-23, plan-shop-layout-config-widget-factory): every
-/// chrome-band placement value (band/root, row 0 buttons + money chip, chip rows 1-2),
-/// the avatar/HP mirror viewport anchors + shop scales, and the world-button feel params
-/// in ONE Resources asset — the single Inspector surface for shop page layout.
-/// Defaults stay in code: the field initializers reference the shipped consts
-/// (ShopChrome.*Default / ShopTopBarLayout.*Default), so a MISSING asset is legal and
-/// falls back to the same values (headless/tests never hard-fail) and the defaults can
-/// never drift between asset and code. Every layout read resolves the asset at point of
-/// use (ShopLayoutConfigSO.V / V2) — never snapshotted.
-/// Live path: OnValidate nudges ShopChrome.ApplyLayout (band + chips + buttons, same
-/// frame) and ShopPageHud.ApplyMirrorLayout (world avatar/HP rebuild, deferred
-/// mid-transition); the canvas HUD pieces (CombatIconPresenter / HPNumericDisplayHorizontal)
-/// read the shared ShopTopBarLayout resolvers at their next placement application, so
-/// they pick up retuned values at the next phase handoff with no extra wiring.
-/// Absorbs ShopChromeConfigSO (2026-09-23, exit-button-only knobs) — deleted.
+/// Shop page layout tuning, per-element placement model (2026-09-23 step 2,
+/// plan-shop-per-element-placement; supersedes the row/stack model of cf8c52c): every
+/// top-bar element — 7 chips, the exit button, the avatar/HP mirror anchors — carries
+/// its OWN placement in ONE Resources asset, the single Inspector surface.
+/// Coordinates: X = the element center's world-unit offset from the view's LEFT edge
+/// (the whole band rides the edge, so chip gaps stay FIXED across aspect changes);
+/// Y = viewport fraction (aspect-safe: the vertical span is locked by orthoSize).
+/// ❚❚ stays right-edge anchored (corner hug). Widths/heights/font sizes are per
+/// element, world units.
+/// Defaults: the ...Default statics below are the single default source — instance
+/// field initializers AND code fallbacks reference them. They are baked from the
+/// former row-stack formula at the shipping camera (ortho 6.06, aspect 16:9, 2x halfW
+/// = 21.5467), so the default layout is pixel-identical to cf8c52c at that window;
+/// other aspects need a one-time Play calibration (what this feature is for).
+/// Live path: OnValidate → ShopChrome.ApplyLayout / ShopPageHud.ApplyMirrorLayout
+/// (same mechanics as cf8c52c); canvas HUD pieces read the shared ShopTopBarLayout
+/// resolvers at their next placement application. Overlap between elements is NOT
+/// guarded (user ruling 2026-09-23) — values are hand-tuned.
 /// </summary>
 public class ShopLayoutConfigSO : ScriptableObject
 {
+	/// <summary>
+	/// One element's placement. X is world units from the view's left edge to the
+	/// element CENTER; Y a viewport fraction; size/font world units (world-TMP
+	/// calibration: ~0.13u per font point at scale 1).
+	/// </summary>
+	[System.Serializable]
+	public class ElementPlacement
+	{
+		public float xFromLeftEdge;
+		public float viewportY;
+		public float width;
+		public float height;
+		public float fontSize;
+	}
+
+	// ------------------------------------------------------------------ defaults
+	// Baked at ortho 6.06 / aspect 16:9 (2x halfW = 21.5467) from the former row-stack
+	// formula — see plan §2 for the derivation of each number.
+
+	public static readonly ElementPlacement ExitButtonDefault = new ElementPlacement
+		{ xFromLeftEdge = 1.65f, viewportY = 0.956f, width = 2.6f, height = 0.64f, fontSize = 2.8f };
+	public static readonly ElementPlacement MoneyChipDefault = new ElementPlacement
+		{ xFromLeftEdge = 14.09f, viewportY = 0.959f, width = 2.4f, height = 0.62f, fontSize = 2.8f };
+	public static readonly ElementPlacement RarityCommonDefault = new ElementPlacement
+		{ xFromLeftEdge = 6.28f, viewportY = 0.883f, width = 1.7f, height = 0.5f, fontSize = 1.9f };
+	public static readonly ElementPlacement RarityUncommonDefault = new ElementPlacement
+		{ xFromLeftEdge = 8.23f, viewportY = 0.883f, width = 1.7f, height = 0.5f, fontSize = 1.9f };
+	public static readonly ElementPlacement RarityRareDefault = new ElementPlacement
+		{ xFromLeftEdge = 10.18f, viewportY = 0.883f, width = 1.7f, height = 0.5f, fontSize = 1.9f };
+	public static readonly ElementPlacement WinsChipDefault = new ElementPlacement
+		{ xFromLeftEdge = 6.28f, viewportY = 0.810f, width = 1.7f, height = 0.5f, fontSize = 1.9f };
+	public static readonly ElementPlacement HeartsChipDefault = new ElementPlacement
+		{ xFromLeftEdge = 8.23f, viewportY = 0.810f, width = 1.7f, height = 0.5f, fontSize = 1.9f };
+	public static readonly ElementPlacement IncomeChipDefault = new ElementPlacement
+		{ xFromLeftEdge = 11.28f, viewportY = 0.810f, width = 2.2f, height = 0.5f, fontSize = 2.2f };
+
+	public const float DefaultOptionsRightMargin = 0.35f; // face right edge to the view's right edge, world units
+	public const float DefaultOptionsViewportY = 0.956f;
+	public const float DefaultOptionsWidth = 0.72f;
+	public const float DefaultOptionsHeight = 0.64f;
+	public const float DefaultOptionsFontSize = 2.4f;
+	public const float RestShadowUnitsDefault = 0.05f;
+	public const float DenyShiftUnitsDefault = 0.075f;
+
+	// ------------------------------------------------------------------ singleton + resolvers
+
 	private static ShopLayoutConfigSO _me;
 	private static bool _loadAttempted;
 
@@ -43,12 +92,14 @@ public class ShopLayoutConfigSO : ScriptableObject
 		return cfg != null ? selector(cfg) : fallback;
 	}
 
-	/// <summary>Config-aware Vector2 read (viewport anchors): the asset value when present, else the code default.</summary>
-	public static Vector2 V2(System.Func<ShopLayoutConfigSO, Vector2> selector, Vector2 fallback)
+	/// <summary>Config-aware placement read: the asset's element when present, else the code default.</summary>
+	public static ElementPlacement Placement(System.Func<ShopLayoutConfigSO, ElementPlacement> selector, ElementPlacement fallback)
 	{
 		ShopLayoutConfigSO cfg = Me;
 		return cfg != null ? selector(cfg) : fallback;
 	}
+
+	// ------------------------------------------------------------------ fields
 
 	[Header("Band & Root (page content, captured once at Build)")]
 	[Tooltip("Reserved clearance zone at the page top in world units; also the shelf layout contract limit via ShopChrome.BandBottomWorldY.")]
@@ -58,67 +109,43 @@ public class ShopLayoutConfigSO : ScriptableObject
 	[Tooltip("Chrome z distance in front of the camera, world units.")]
 	public float cameraForwardOffset = ShopChrome.CameraForwardOffsetDefault;
 
-	[Header("Row 0 — exit / options buttons, money chip")]
-	[Tooltip("Viewport Y of the 离开商店 button center. Only this button moves; avatar/HP/money keep their row.")]
-	[Range(0.5f, 1f)] public float exitButtonViewportY = ShopTopBarLayout.PlayerIconViewportDefault.y;
-	[Tooltip("Horizontal offset of the 离开商店 button from its left-edge anchor, world units (+ = right). Shelf keeps no avoidance against a moved button (user ruling 2026-09-22).")]
-	public float exitButtonOffsetX = 0f;
-	[Tooltip("离开商店 button face width, world units.")]
-	public float exitButtonWidth = ShopChrome.ExitButtonWidthDefault;
-	[Tooltip("离开商店 label font size.")]
-	public float exitButtonFontSize = ShopChrome.ExitButtonFontSizeDefault;
-	[Tooltip("Shared face height of both row-0 buttons, world units.")]
-	public float buttonHeight = ShopChrome.ButtonHeightDefault;
-	[Tooltip("❚❚ label font size.")]
-	public float buttonFontSize = ShopChrome.ButtonFontSizeDefault;
-	[Tooltip("❚❚ button face width, world units (right-anchored at the edge margin).")]
-	public float optionsButtonWidth = ShopChrome.OptionsButtonWidthDefault;
-	[Tooltip("Edge margin for the exit (left anchor) and options (right anchor) buttons, world units.")]
-	public float worldEdgeMargin = ShopChrome.EdgeMarginDefault;
-	[Tooltip("Money chip center (viewport space, (0,1) = top-left).")]
-	public Vector2 moneyChipViewport = ShopTopBarLayout.MoneyChipViewportDefault;
-	[Tooltip("Money chip panel width, world units (demo chip-lg).")]
-	public float moneyChipWidth = ShopChrome.MoneyChipWidthDefault;
-	[Tooltip("Money chip panel height, world units.")]
-	public float moneyChipHeight = ShopChrome.MoneyChipHeightDefault;
-	[Tooltip("Money chip label font size.")]
-	public float moneyChipFontSize = ShopChrome.MoneyChipFontSizeDefault;
+	[Header("Exit Button (离开商店; X = world offset from the view's left edge to center)")]
+	public ElementPlacement exitButton = ExitButtonDefault;
 
-	[Header("Rows 1-2 — rarity odds / wins-hearts-income chips")]
-	[Tooltip("Left-aligned column X for both chip rows (viewport space; set to clear the reroll button in the Shop panel header).")]
-	public float hudColumnViewportX = ShopTopBarLayout.HudColumnViewportXDefault;
-	[Tooltip("Rarity odds row Y (viewport space).")]
-	public float oddsRowViewportY = ShopTopBarLayout.OddsRowViewportYDefault;
-	[Tooltip("Wins/hearts/income row Y (viewport space).")]
-	public float statsRowViewportY = ShopTopBarLayout.StatsRowViewportYDefault;
-	[Tooltip("In-row chip gap, world units.")]
-	public float chipSpacing = ShopChrome.ChipSpacingDefault;
-	[Tooltip("Small chip (rarity/wins/hearts) panel width, world units (demo chip-sm).")]
-	public float smallChipWidth = ShopChrome.SmallChipWidthDefault;
-	[Tooltip("Small chip panel height, world units.")]
-	public float chipHeight = ShopChrome.ChipHeightDefault;
-	[Tooltip("Small chip label font size.")]
-	public float smallChipFontSize = ShopChrome.SmallChipFontSizeDefault;
-	[Tooltip("Income chip panel width, world units (large chip).")]
-	public float chipWidth = ShopChrome.ChipWidthDefault;
-	[Tooltip("Income chip label font size.")]
-	public float chipFontSize = ShopChrome.ChipFontSizeDefault;
+	[Header("Options Button (❚❚, right-edge anchored)")]
+	[Tooltip("❚❚ face right edge to the view's right edge, world units (corner hug survives aspect changes).")]
+	public float optionsRightMargin = DefaultOptionsRightMargin;
+	public float optionsViewportY = DefaultOptionsViewportY;
+	public float optionsWidth = DefaultOptionsWidth;
+	public float optionsHeight = DefaultOptionsHeight;
+	public float optionsFontSize = DefaultOptionsFontSize;
+
+	[Header("Chips (each fully placeable; X = world offset from the view's left edge to center)")]
+	public ElementPlacement moneyChip = MoneyChipDefault;
+	public ElementPlacement rarityCommon = RarityCommonDefault;
+	public ElementPlacement rarityUncommon = RarityUncommonDefault;
+	public ElementPlacement rarityRare = RarityRareDefault;
+	public ElementPlacement wins = WinsChipDefault;
+	public ElementPlacement hearts = HeartsChipDefault;
+	public ElementPlacement income = IncomeChipDefault;
 
 	[Header("Avatar & HP Mirror (shared with the canvas HUD pieces)")]
-	[Tooltip("Player avatar block center (viewport space) — world mirror (ShopPageHud) and canvas icon (CombatIconPresenter).")]
-	public Vector2 playerIconViewport = ShopTopBarLayout.PlayerIconViewportDefault;
-	[Tooltip("HP pill center (viewport space) — world mirror and canvas HPNumericDisplayHorizontal.")]
-	public Vector2 hpDisplayViewport = ShopTopBarLayout.HpDisplayViewportDefault;
+	[Tooltip("Player avatar block center: world-unit offset from the view's left edge.")]
+	public float playerIconXFromLeftEdge = 6.29f;
+	public float playerIconViewportY = 0.956f;
 	[Tooltip("Shop-phase scale override for the canvas player icon (bounded by its 222x306 decoration — above ~0.35 it clips the viewport top).")]
 	public float playerIconShopScale = ShopTopBarLayout.PlayerIconShopScaleDefault;
+	[Tooltip("HP pill center: world-unit offset from the view's left edge.")]
+	public float hpDisplayXFromLeftEdge = 9.42f;
+	public float hpDisplayViewportY = 0.959f;
 	[Tooltip("Shop-phase scale override for the canvas horizontal HP display.")]
 	public float hpDisplayShopScale = ShopTopBarLayout.HpDisplayShopScaleDefault;
 
-	[Header("Button Feel (both row-0 world buttons)")]
+	[Header("Button Feel (both world buttons)")]
 	[Tooltip("Rest/hover shadow depth, world units.")]
-	public float restShadowUnits = ShopChrome.RestShadowUnitsDefault;
+	public float restShadowUnits = RestShadowUnitsDefault;
 	[Tooltip("Deny shake distance, world units.")]
-	public float denyShiftUnits = ShopChrome.DenyShiftUnitsDefault;
+	public float denyShiftUnits = DenyShiftUnitsDefault;
 
 	private void OnValidate()
 	{

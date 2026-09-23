@@ -5,15 +5,10 @@ using UnityEngine;
 
 // Shop top chrome (Guidelines 3.6) as WORLD page content: flat read-only chips plus the
 // exit / options physical buttons floating in a reserved viewport-top zone (no full-bleed
-// band — the units sit directly on the shop background). 2026-09-19 §08 layout: row 0 =
-// 离开商店 | the reused combat pieces as world mirrors (avatar+username, horizontal HP
-// pill — ShopPageHud) | money chip ... ❚❚, all on one line; row 1 = rarity odds; row 2 =
-// wins / hearts / income — rows 1-2 left-aligned on the HUD column the avatar block
-// starts (ShopTopBarLayout viewport anchors, shared with the mirrored components). The
-// reroll button and the deck slot count live in the Shop/Deck panel headers
-// (ShopSectionPanels). Chrome copy is Chinese (user decision 2026-09-19); glyph labels
-// (❚❚ / 🜲 / ♥) resolve through the chrome font fallback chain (NotoSansSymbols2 SDF +
-// NotoSansSymbolsAlchemical SDF).
+// band — the units sit directly on the shop background). The reroll button and the deck
+// slot count live in the Shop/Deck panel headers (ShopSectionPanels). Chrome copy is
+// Chinese (user decision 2026-09-19); glyph labels (❚❚ / 🜲 / ♥) resolve through the
+// chrome font fallback chain (NotoSansSymbols2 SDF + NotoSansSymbolsAlchemical SDF).
 // Replaces the 2026-09-17 canvas ShopHudBar (plan-world-entity-shop-chrome-2026-09-18) —
 // one input pipeline (physics OnMouse), one input gate (ShopInputGate), no canvas layer.
 // Runtime-built from ShopUXManager.Start (no scene edit); colors from GameColorPalette.
@@ -39,12 +34,12 @@ using UnityEngine;
 //             brings them back; Space exits from a fully scrolled shop; CheckShelfClearance
 //             limit unchanged; combat/result HUD (canvas) untouched.
 //
-// 2026-09-23 layout config (plan-shop-layout-config-widget-factory): every placement
-// value (band/root, buttons, chips) resolves through ShopLayoutConfigSO
-// (Resources/ShopLayoutConfig) with the ...Default consts below as fallbacks, and
-// ApplyLayout() re-writes root + all children from the config live (OnValidate path).
-// Widget recipes (button/chip/label/sliced) live in ShopWorldWidgets — this file keeps
-// placement only.
+// 2026-09-23 per-element placement (plan-shop-per-element-placement; supersedes the
+// row/stack model of cf8c52c): every chip/button resolves its OWN ElementPlacement from
+// ShopLayoutConfigSO — X = world-unit offset from the view's LEFT edge (the band rides
+// the edge, so gaps stay fixed across aspect changes), Y = viewport fraction, per-element
+// size/font. There is NO stacking arithmetic left in this file. Widget recipes
+// (button/chip/label/sliced) live in ShopWorldWidgets.
 //
 // Layout contract: the band occupies the top of the page (= the viewport at scroll 0).
 // Card layout must keep the shelf below BandBottomWorldY; ShopUXManager asserts it once
@@ -53,33 +48,12 @@ public class ShopChrome : MonoBehaviour
 {
 	private const string ChromeName = "Shop Chrome";
 
-	// Fallback defaults for the live layout config (single default source: the
-	// ShopLayoutConfigSO field initializers reference these). Every placement read
-	// resolves the asset at point of use via ShopLayoutConfigSO.V — never snapshotted —
-	// so a Play-mode Inspector edit applies on the next ApplyLayout.
+	// Fallback defaults for the band/root values (cross-file readers:
+	// ShopTopBarLayout conversion helpers). All element placements/sizes/fonts live as
+	// ...Default statics on ShopLayoutConfigSO — the single default source.
 	public const float BandHeightDefault = 2.6f;      // reserved clearance zone at the page top (2 HUD rows, no rendered band)
 	public const float CameraForwardOffsetDefault = 2f; // chrome z distance in front of the camera
 	public const float BandInsetFromTopDefault = 0.5f; // band center below the viewport top edge (Build-time root placement)
-
-	public const float EdgeMarginDefault = 0.35f;
-	public const float ChipSpacingDefault = 0.25f;
-	public const float ChipWidthDefault = 2.2f;
-	public const float ChipHeightDefault = 0.5f;
-	public const float SmallChipWidthDefault = 1.7f;  // rarity / wins / hearts chips (demo chip-sm)
-	public const float SmallChipFontSizeDefault = 1.9f;
-	public const float MoneyChipWidthDefault = 2.4f;  // demo chip-lg
-	public const float MoneyChipHeightDefault = 0.62f;
-	public const float MoneyChipFontSizeDefault = 2.8f;
-	public const float OptionsButtonWidthDefault = 0.72f;
-	public const float ButtonHeightDefault = 0.64f;
-	public const float ExitButtonWidthDefault = 2.6f;
-	// World-TMP calibration: the card price print renders ~0.31u tall at fontSize 12 on a
-	// 0.2-scaled transform -> ~0.13u per fontSize point at scale 1.
-	public const float ChipFontSizeDefault = 2.2f;
-	public const float ButtonFontSizeDefault = 2.4f;
-	public const float ExitButtonFontSizeDefault = 2.8f;
-	public const float RestShadowUnitsDefault = 0.05f; // demo rs 4px at chrome scale (tune at play look)
-	public const float DenyShiftUnitsDefault = 0.075f;
 
 	// Config-aware band values (cross-file readers: ShopTopBarLayout conversion helpers).
 	public static float BandHeight => ShopLayoutConfigSO.V(c => c.bandHeight, BandHeightDefault);
@@ -212,19 +186,17 @@ public class ShopChrome : MonoBehaviour
 		_orthoSize = cam != null ? cam.orthographicSize : 5f;
 		if (cam != null) _rigPos = cam.transform.position;
 
-		// 2026-09-19 §08 order: row 0 = [离开商店] [avatar | HP | $ ...] ... [❚❚]; row 1 =
-		// rarity odds; row 2 = wins / hearts / income. Creation only wires the objects and
-		// their actions at default sizes — placement (positions, sizes, fonts) is
-		// ApplyLayout's job, and the chrome root is still inactive here, so the defaults
-		// never render. 2026-09-22 user ruling (kept): ONLY the exit button carries a
-		// dedicated offset/Y — avatar/HP/money stay on the shared row, and the shelf keeps
-		// no avoidance against a moved button (CheckShelfClearance tracks the band).
+		// Creation only wires the objects at the config-default sizes — placement
+		// (positions, sizes, fonts) is ApplyLayout's job, and the chrome root is still
+		// inactive here, so the defaults never render.
 		_exitButton = ShopWorldWidgets.CreateWorldButton(transform, "ExitButton", _font, _sprite,
-			"离开商店", 0f, 0f, ExitButtonWidthDefault, ButtonHeightDefault, ExitButtonFontSizeDefault,
-			RestShadowUnitsDefault, DenyShiftUnitsDefault, out _exitLabel);
+			"离开商店", 0f, 0f, ShopLayoutConfigSO.ExitButtonDefault.width, ShopLayoutConfigSO.ExitButtonDefault.height,
+			ShopLayoutConfigSO.ExitButtonDefault.fontSize,
+			ShopLayoutConfigSO.RestShadowUnitsDefault, ShopLayoutConfigSO.DenyShiftUnitsDefault, out _exitLabel);
 		_optionsButton = ShopWorldWidgets.CreateWorldButton(transform, "OptionsButton", _font, _sprite,
-			"❚❚", 0f, 0f, OptionsButtonWidthDefault, ButtonHeightDefault, ButtonFontSizeDefault,
-			RestShadowUnitsDefault, DenyShiftUnitsDefault, out _optionsLabel);
+			"❚❚", 0f, 0f, ShopLayoutConfigSO.DefaultOptionsWidth, ShopLayoutConfigSO.DefaultOptionsHeight,
+			ShopLayoutConfigSO.DefaultOptionsFontSize,
+			ShopLayoutConfigSO.RestShadowUnitsDefault, ShopLayoutConfigSO.DenyShiftUnitsDefault, out _optionsLabel);
 		_optionsButton.SetWorldAction(() => Debug.Log("[ShopChrome] Options pressed (placeholder — no options menu yet)"));
 		_phaseManager = FindObjectOfType<PhaseManager>();
 		if (_phaseManager == null)
@@ -242,22 +214,13 @@ public class ShopChrome : MonoBehaviour
 			_phaseManager.EnteringCombatPhase();
 		});
 
-		// Money chip: row 0, right of the reused combat HP display; row 1 (sm dark chips):
-		// rarity odds; row 2: wins / hearts / payday (demo hud-line 3).
-		_moneyChip = ShopWorldWidgets.CreateChip(transform, "ChipMoney", _sprite, _font,
-			MoneyChipWidthDefault, MoneyChipHeightDefault, MoneyChipFontSizeDefault, false);
-		_rarityCommonChip = ShopWorldWidgets.CreateChip(transform, "ChipRarityCommon", _sprite, _font,
-			SmallChipWidthDefault, ChipHeightDefault, SmallChipFontSizeDefault, true);
-		_rarityUncommonChip = ShopWorldWidgets.CreateChip(transform, "ChipRarityUncommon", _sprite, _font,
-			SmallChipWidthDefault, ChipHeightDefault, SmallChipFontSizeDefault, true);
-		_rarityRareChip = ShopWorldWidgets.CreateChip(transform, "ChipRarityRare", _sprite, _font,
-			SmallChipWidthDefault, ChipHeightDefault, SmallChipFontSizeDefault, true);
-		_winsChip = ShopWorldWidgets.CreateChip(transform, "ChipWins", _sprite, _font,
-			SmallChipWidthDefault, ChipHeightDefault, SmallChipFontSizeDefault, true);
-		_heartsChip = ShopWorldWidgets.CreateChip(transform, "ChipHearts", _sprite, _font,
-			SmallChipWidthDefault, ChipHeightDefault, SmallChipFontSizeDefault, true);
-		_incomeChip = ShopWorldWidgets.CreateChip(transform, "ChipIncome", _sprite, _font,
-			ChipWidthDefault, ChipHeightDefault, ChipFontSizeDefault, false);
+		_moneyChip = CreateChipFromDefault("ChipMoney", ShopLayoutConfigSO.MoneyChipDefault, false);
+		_rarityCommonChip = CreateChipFromDefault("ChipRarityCommon", ShopLayoutConfigSO.RarityCommonDefault, true);
+		_rarityUncommonChip = CreateChipFromDefault("ChipRarityUncommon", ShopLayoutConfigSO.RarityUncommonDefault, true);
+		_rarityRareChip = CreateChipFromDefault("ChipRarityRare", ShopLayoutConfigSO.RarityRareDefault, true);
+		_winsChip = CreateChipFromDefault("ChipWins", ShopLayoutConfigSO.WinsChipDefault, true);
+		_heartsChip = CreateChipFromDefault("ChipHearts", ShopLayoutConfigSO.HeartsChipDefault, true);
+		_incomeChip = CreateChipFromDefault("ChipIncome", ShopLayoutConfigSO.IncomeChipDefault, false);
 
 		ApplyLayout();
 
@@ -266,13 +229,20 @@ public class ShopChrome : MonoBehaviour
 		_pageHud = ShopPageHud.Bootstrap(transform);
 	}
 
+	private HudChip CreateChipFromDefault(string name, ShopLayoutConfigSO.ElementPlacement p, bool darkPanel)
+	{
+		return ShopWorldWidgets.CreateChip(transform, name, _sprite, _font, p.width, p.height, p.fontSize, darkPanel);
+	}
+
 	/// <summary>
 	/// Live-tuning path (ShopLayoutConfigSO.OnValidate) and Build's final placement pass:
 	/// rewrites the root position, the BandBottomWorldY shelf limit and every chip/button
-	/// position + face size + label font from the config. Uses ONLY Build-captured
-	/// geometry (_rigPos / _halfW / _orthoSize), never the live camera transform, so
-	/// applying mid-scroll stays correct (page-content rule); the BoxCollider2D rides on
-	/// each button root and follows for free.
+	/// position + face size + label font from its own ElementPlacement. X is the element
+	/// center's world-unit offset from the view's LEFT edge (fixed-gap semantics: the band
+	/// rides the edge across aspect changes); Y a viewport fraction. Uses ONLY
+	/// Build-captured geometry (_rigPos / _halfW / _orthoSize), never the live camera
+	/// transform, so applying mid-scroll stays correct (page-content rule); the
+	/// BoxCollider2D rides on each button root and follows for free.
 	/// </summary>
 	public void ApplyLayout()
 	{
@@ -282,62 +252,47 @@ public class ShopChrome : MonoBehaviour
 		transform.position = new Vector3(_rigPos.x, _rigPos.y + _orthoSize - bandInset, _rigPos.z + forwardOffset);
 		_bandBottomWorldY = _rigPos.y + _orthoSize - bandHeight;
 
-		// Row 0 rides the avatar row (ShopTopBarLayout row order); rows 1-2 stack on the
-		// shared HUD column the avatar block starts.
-		float row0Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.PlayerIconViewport.y, _orthoSize);
-		float row1Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.OddsRowViewportY, _orthoSize);
-		float row2Y = ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.StatsRowViewportY, _orthoSize);
-		float columnX = ShopTopBarLayout.ViewportToChromeLocal(new Vector2(ShopTopBarLayout.HudColumnViewportX, 0f), _halfW, _orthoSize).x;
+		float restShadow = ShopLayoutConfigSO.V(c => c.restShadowUnits, ShopLayoutConfigSO.RestShadowUnitsDefault);
+		float denyShift = ShopLayoutConfigSO.V(c => c.denyShiftUnits, ShopLayoutConfigSO.DenyShiftUnitsDefault);
 
-		float edgeMargin = ShopLayoutConfigSO.V(c => c.worldEdgeMargin, EdgeMarginDefault);
-		float exitWidth = ShopLayoutConfigSO.V(c => c.exitButtonWidth, ExitButtonWidthDefault);
-		float exitViewportY = ShopLayoutConfigSO.V(c => c.exitButtonViewportY, ShopTopBarLayout.PlayerIconViewportDefault.y);
-		float exitOffsetX = ShopLayoutConfigSO.V(c => c.exitButtonOffsetX, 0f);
-		float exitFontSize = ShopLayoutConfigSO.V(c => c.exitButtonFontSize, ExitButtonFontSizeDefault);
-		float buttonHeight = ShopLayoutConfigSO.V(c => c.buttonHeight, ButtonHeightDefault);
-		float optionsWidth = ShopLayoutConfigSO.V(c => c.optionsButtonWidth, OptionsButtonWidthDefault);
-		float buttonFontSize = ShopLayoutConfigSO.V(c => c.buttonFontSize, ButtonFontSizeDefault);
-		float restShadow = ShopLayoutConfigSO.V(c => c.restShadowUnits, RestShadowUnitsDefault);
-		float denyShift = ShopLayoutConfigSO.V(c => c.denyShiftUnits, DenyShiftUnitsDefault);
+		ApplyButton(_exitButton, _exitLabel, ShopLayoutConfigSO.Placement(c => c.exitButton, ShopLayoutConfigSO.ExitButtonDefault), restShadow, denyShift);
 
-		ApplyButton(_exitButton, _exitLabel, new Vector3(ExitAnchorX(exitOffsetX, edgeMargin, exitWidth),
-			ShopTopBarLayout.ViewportToChromeLocalY(exitViewportY, _orthoSize), 0f),
-			exitWidth, buttonHeight, exitFontSize, restShadow, denyShift);
-		ApplyButton(_optionsButton, _optionsLabel, new Vector3(_halfW - edgeMargin - optionsWidth * 0.5f, row0Y, 0f),
-			optionsWidth, buttonHeight, buttonFontSize, restShadow, denyShift);
+		float optionsX = _halfW
+			- ShopLayoutConfigSO.V(c => c.optionsRightMargin, ShopLayoutConfigSO.DefaultOptionsRightMargin)
+			- ShopLayoutConfigSO.V(c => c.optionsWidth, ShopLayoutConfigSO.DefaultOptionsWidth) * 0.5f;
+		float optionsY = ShopTopBarLayout.ViewportToChromeLocalY(
+			ShopLayoutConfigSO.V(c => c.optionsViewportY, ShopLayoutConfigSO.DefaultOptionsViewportY), _orthoSize);
+		ApplyButton(_optionsButton, _optionsLabel, optionsX, optionsY,
+			ShopLayoutConfigSO.V(c => c.optionsWidth, ShopLayoutConfigSO.DefaultOptionsWidth),
+			ShopLayoutConfigSO.V(c => c.optionsHeight, ShopLayoutConfigSO.DefaultOptionsHeight),
+			ShopLayoutConfigSO.V(c => c.optionsFontSize, ShopLayoutConfigSO.DefaultOptionsFontSize),
+			restShadow, denyShift);
 
-		ApplyChip(_moneyChip, ShopTopBarLayout.ViewportToChromeLocal(ShopTopBarLayout.MoneyChipViewport, _halfW, _orthoSize),
-			ShopLayoutConfigSO.V(c => c.moneyChipWidth, MoneyChipWidthDefault),
-			ShopLayoutConfigSO.V(c => c.moneyChipHeight, MoneyChipHeightDefault),
-			ShopLayoutConfigSO.V(c => c.moneyChipFontSize, MoneyChipFontSizeDefault));
-
-		float smallWidth = ShopLayoutConfigSO.V(c => c.smallChipWidth, SmallChipWidthDefault);
-		float chipHeight = ShopLayoutConfigSO.V(c => c.chipHeight, ChipHeightDefault);
-		float smallFontSize = ShopLayoutConfigSO.V(c => c.smallChipFontSize, SmallChipFontSizeDefault);
-		float spacing = ShopLayoutConfigSO.V(c => c.chipSpacing, ChipSpacingDefault);
-		// Rows 1-2 (sm dark chips), left-aligned on the HUD column: centers advance by
-		// width + gap; the large income chip hangs one extra half-width past hearts.
-		ApplyChip(_rarityCommonChip, new Vector2(columnX + smallWidth * 0.5f, row1Y), smallWidth, chipHeight, smallFontSize);
-		ApplyChip(_rarityUncommonChip, new Vector2(columnX + smallWidth * 1.5f + spacing, row1Y), smallWidth, chipHeight, smallFontSize);
-		ApplyChip(_rarityRareChip, new Vector2(columnX + smallWidth * 2.5f + spacing * 2f, row1Y), smallWidth, chipHeight, smallFontSize);
-		ApplyChip(_winsChip, new Vector2(columnX + smallWidth * 0.5f, row2Y), smallWidth, chipHeight, smallFontSize);
-		ApplyChip(_heartsChip, new Vector2(columnX + smallWidth * 1.5f + spacing, row2Y), smallWidth, chipHeight, smallFontSize);
-		float chipWidth = ShopLayoutConfigSO.V(c => c.chipWidth, ChipWidthDefault);
-		float chipFontSize = ShopLayoutConfigSO.V(c => c.chipFontSize, ChipFontSizeDefault);
-		ApplyChip(_incomeChip, new Vector2(columnX + smallWidth * 2.5f + spacing * 2f + chipWidth * 0.5f, row2Y), chipWidth, chipHeight, chipFontSize);
+		ApplyChip(_moneyChip, ShopLayoutConfigSO.Placement(c => c.moneyChip, ShopLayoutConfigSO.MoneyChipDefault));
+		ApplyChip(_rarityCommonChip, ShopLayoutConfigSO.Placement(c => c.rarityCommon, ShopLayoutConfigSO.RarityCommonDefault));
+		ApplyChip(_rarityUncommonChip, ShopLayoutConfigSO.Placement(c => c.rarityUncommon, ShopLayoutConfigSO.RarityUncommonDefault));
+		ApplyChip(_rarityRareChip, ShopLayoutConfigSO.Placement(c => c.rarityRare, ShopLayoutConfigSO.RarityRareDefault));
+		ApplyChip(_winsChip, ShopLayoutConfigSO.Placement(c => c.wins, ShopLayoutConfigSO.WinsChipDefault));
+		ApplyChip(_heartsChip, ShopLayoutConfigSO.Placement(c => c.hearts, ShopLayoutConfigSO.HeartsChipDefault));
+		ApplyChip(_incomeChip, ShopLayoutConfigSO.Placement(c => c.income, ShopLayoutConfigSO.IncomeChipDefault));
 	}
 
-	/// <summary>World-local X of the exit button: left-edge anchor plus the config offset.</summary>
-	private float ExitAnchorX(float offsetX, float edgeMargin, float width)
+	/// <summary>Chrome-local X of a left-edge world offset (view-left is -halfW).</summary>
+	private float LocalX(float xFromLeftEdge)
 	{
-		return -_halfW + edgeMargin + width / 2f + offsetX;
+		return ShopTopBarLayout.ChromeLocalXFromLeftOffset(xFromLeftEdge, _halfW);
 	}
 
-	private static void ApplyButton(PhysButton button, TextMeshPro label, Vector3 localPos,
-		float width, float height, float fontSize, float restShadow, float denyShift)
+	private void ApplyButton(PhysButton button, TextMeshPro label, ShopLayoutConfigSO.ElementPlacement p, float restShadow, float denyShift)
+	{
+		ApplyButton(button, label, LocalX(p.xFromLeftEdge),
+			ShopTopBarLayout.ViewportToChromeLocalY(p.viewportY, _orthoSize), p.width, p.height, p.fontSize, restShadow, denyShift);
+	}
+
+	private void ApplyButton(PhysButton button, TextMeshPro label, float x, float y, float width, float height, float fontSize, float restShadow, float denyShift)
 	{
 		if (button == null) return;
-		button.transform.localPosition = localPos;
+		button.transform.localPosition = new Vector3(x, y, 0f);
 		button.ConfigureWorldFaceSize(new Vector2(width, height), Vector2.zero);
 		button.restShadow = restShadow;
 		button.hoverLift = restShadow;
@@ -349,11 +304,12 @@ public class ShopChrome : MonoBehaviour
 		}
 	}
 
-	private static void ApplyChip(HudChip chip, Vector2 localPos, float width, float height, float fontSize)
+	private void ApplyChip(HudChip chip, ShopLayoutConfigSO.ElementPlacement p)
 	{
 		if (chip == null) return;
-		chip.transform.localPosition = new Vector3(localPos.x, localPos.y, 0.02f);
-		chip.ApplyLayout(new Vector2(width, height), fontSize);
+		chip.transform.localPosition = new Vector3(LocalX(p.xFromLeftEdge),
+			ShopTopBarLayout.ViewportToChromeLocalY(p.viewportY, _orthoSize), 0.02f);
+		chip.ApplyLayout(new Vector2(p.width, p.height), p.fontSize);
 	}
 
 	/// <summary>Pulls all shop stats into chips; labels rewrite only on change.</summary>

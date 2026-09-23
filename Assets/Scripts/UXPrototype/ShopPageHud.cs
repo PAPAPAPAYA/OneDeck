@@ -153,7 +153,9 @@ public class ShopPageHud : MonoBehaviour
 
 	private void BuildAvatar(Transform iconSource, float unit, Camera cam)
 	{
-		Vector2 center = ShopTopBarLayout.ViewportToChromeLocal(ShopTopBarLayout.PlayerIconViewport, cam);
+		Vector2 center = new Vector2(
+			ShopTopBarLayout.ChromeLocalXFromLeftOffset(ShopTopBarLayout.PlayerIconXFromLeftEdge, cam.orthographicSize * cam.aspect),
+			ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.PlayerIconViewportY, cam));
 		GameObject avatar = new GameObject("Avatar");
 		avatar.transform.SetParent(transform, false);
 		avatar.transform.localPosition = center;
@@ -186,7 +188,9 @@ public class ShopPageHud : MonoBehaviour
 
 	private void BuildHpPill(HPNumericDisplayHorizontal pillSource, float unit, Camera cam)
 	{
-		Vector2 center = ShopTopBarLayout.ViewportToChromeLocal(ShopTopBarLayout.HpDisplayViewport, cam);
+		Vector2 center = new Vector2(
+			ShopTopBarLayout.ChromeLocalXFromLeftOffset(ShopTopBarLayout.HpDisplayXFromLeftEdge, cam.orthographicSize * cam.aspect),
+			ShopTopBarLayout.ViewportToChromeLocalY(ShopTopBarLayout.HpDisplayViewportY, cam));
 		GameObject pill = new GameObject("HpPill");
 		pill.transform.SetParent(transform, false);
 		// displayRoot rides at its own anchored offset inside the (zero-size) pill root; the

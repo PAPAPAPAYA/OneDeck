@@ -15,30 +15,64 @@ MonoBehaviour:
   bandHeight: 2.6
   bandInsetFromTop: 0.5
   cameraForwardOffset: 2
-  exitButtonViewportY: 0.956
-  exitButtonOffsetX: 0
-  exitButtonWidth: 2.6
-  exitButtonFontSize: 2.8
-  buttonHeight: 0.64
-  buttonFontSize: 2.4
-  optionsButtonWidth: 0.72
-  worldEdgeMargin: 0.35
-  moneyChipViewport: {x: 0.654, y: 0.959}
-  moneyChipWidth: 2.4
-  moneyChipHeight: 0.62
-  moneyChipFontSize: 2.8
-  hudColumnViewportX: 0.252
-  oddsRowViewportY: 0.883
-  statsRowViewportY: 0.81
-  chipSpacing: 0.25
-  smallChipWidth: 1.7
-  chipHeight: 0.5
-  smallChipFontSize: 1.9
-  chipWidth: 2.2
-  chipFontSize: 2.2
-  playerIconViewport: {x: 0.292, y: 0.956}
-  hpDisplayViewport: {x: 0.437, y: 0.959}
+  exitButton:
+    xFromLeftEdge: 1.65
+    viewportY: 0.956
+    width: 2.6
+    height: 0.64
+    fontSize: 2.8
+  optionsRightMargin: 0.35
+  optionsViewportY: 0.956
+  optionsWidth: 0.72
+  optionsHeight: 0.64
+  optionsFontSize: 2.4
+  moneyChip:
+    xFromLeftEdge: 14.09
+    viewportY: 0.959
+    width: 2.4
+    height: 0.62
+    fontSize: 2.8
+  rarityCommon:
+    xFromLeftEdge: 6.28
+    viewportY: 0.883
+    width: 1.7
+    height: 0.5
+    fontSize: 1.9
+  rarityUncommon:
+    xFromLeftEdge: 8.23
+    viewportY: 0.883
+    width: 1.7
+    height: 0.5
+    fontSize: 1.9
+  rarityRare:
+    xFromLeftEdge: 10.18
+    viewportY: 0.883
+    width: 1.7
+    height: 0.5
+    fontSize: 1.9
+  wins:
+    xFromLeftEdge: 6.28
+    viewportY: 0.81
+    width: 1.7
+    height: 0.5
+    fontSize: 1.9
+  hearts:
+    xFromLeftEdge: 8.23
+    viewportY: 0.81
+    width: 1.7
+    height: 0.5
+    fontSize: 1.9
+  income:
+    xFromLeftEdge: 11.28
+    viewportY: 0.81
+    width: 2.2
+    height: 0.5
+    fontSize: 2.2
+  playerIconXFromLeftEdge: 6.29
+  playerIconViewportY: 0.956
   playerIconShopScale: 0.28
+  hpDisplayXFromLeftEdge: 9.42
+  hpDisplayViewportY: 0.959
   hpDisplayShopScale: 0.5
   restShadowUnits: 0.05
   denyShiftUnits: 0.075
