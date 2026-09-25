@@ -69,9 +69,11 @@ public class ShopUXManager : MonoBehaviour
 	public float scrollBottomPadding = 1f;
 	
 	[Header("Shop Chrome (world)")]
-	[Tooltip("Sliced sprite reused by the world chrome band / chips / buttons (the card face sprite keeps them consistent with price buttons)")]
+	[Tooltip("Authored shop top-bar page prefab (2026-09-24 prefab port — plan-shop-hud-prefab-widgets); consumed by ShopChrome.Bootstrap")]
+	public GameObject hudPagePrefab;
+	[Tooltip("Sliced sprite for the section panels / reroll button (ShopSectionPanels; the card face sprite keeps them consistent with price buttons)")]
 	public Sprite chromeSprite;
-	[Tooltip("Font asset for chrome labels (world-space TMP)")]
+	[Tooltip("Font asset for section panel labels (world-space TMP; ShopSectionPanels)")]
 	public TMP_FontAsset chromeFont;
 
 	[Header("Shop Section Panels (live tuning)")]
@@ -701,7 +703,7 @@ public class ShopUXManager : MonoBehaviour
 	
 	private void Start()
 	{
-		ShopChrome.Bootstrap(chromeSprite, chromeFont);
+		ShopChrome.Bootstrap(hudPagePrefab);
 		ShopSectionPanels.Bootstrap(chromeSprite, chromeFont);
 		_mainCamera = Camera.main;
 		if (_mainCamera == null) return;

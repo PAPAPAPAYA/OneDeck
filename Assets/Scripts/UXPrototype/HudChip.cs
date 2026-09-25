@@ -44,21 +44,6 @@ public class HudChip : MonoBehaviour
 		if (_label != null) _label.text = text;
 	}
 
-	/// <summary>
-	/// Live-tuning resize (ShopLayoutConfigSO → ShopChrome.ApplyLayout): panel size plus
-	/// label font/rect in one call. The label rect keeps the chip's width-0.15 inset rule
-	/// (ex-ShopChrome.CreateChip).
-	/// </summary>
-	public void ApplyLayout(Vector2 size, float fontSize)
-	{
-		if (_panelSprite != null) _panelSprite.size = size;
-		if (_label != null)
-		{
-			_label.fontSize = fontSize;
-			_label.rectTransform.sizeDelta = new Vector2(size.x - 0.15f, size.y);
-		}
-	}
-
 	public void SetVisible(bool visible)
 	{
 		gameObject.SetActive(visible);

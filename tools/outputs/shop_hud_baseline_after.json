@@ -1,0 +1,16 @@
+{
+  "root": {"name": "Shop Chrome", "position": [0,5.56,-98], "parent": "null"},
+  "camera": {"orthoSize": 6.06, "aspect": 0.9689497},
+  "elements": [
+    {"name": "ExitButton", "kind": "button", "localPosition": [-2.21183467,-0.033280354,0], "worldPosition": [-2.21183467,5.52671957,-98], "activeSelf": true, "faceSize": [2.79,0.75], "faceSorting": 0, "faceLocal": [0,0,0.02], "shadowSize": [2.79,0.75], "shadowLocal": [0.05,-0.05,0.04], "shadowSorting": 0, "colliderSize": [2.915,0.875], "colliderOffset": [-0.0125000011,0.0125000011], "fontSize": 5.71, "labelRect": [2.59,0.75], "labelLocal": [0,0,0], "text": "离开商店"},
+    {"name": "OptionsButton", "kind": "button", "localPosition": [5.16183472,-0.033280354,0], "worldPosition": [5.16183472,5.52671957,-98], "activeSelf": true, "faceSize": [0.72,0.64], "faceSorting": 0, "faceLocal": [0,0,0.02], "shadowSize": [0.72,0.64], "shadowLocal": [0.05,-0.05,0.04], "shadowSorting": 0, "colliderSize": [0.845,0.765], "colliderOffset": [-0.0125000011,0.0125000011], "fontSize": 2.4, "labelRect": [0.520000041,0.64], "labelLocal": [0,0,0], "text": "❚❚"},
+    {"name": "ChipMoney", "kind": "chip", "localPosition": [8.218165,0.00307990075,0.02], "worldPosition": [8.218165,5.56308,-97.98], "activeSelf": true, "panelSize": [2.4,0.62], "panelSorting": 0, "fontSize": 2.8, "labelRect": [2.25,0.62], "labelLocal": [0,0,0], "text": "$20"},
+    {"name": "ChipRarityCommon", "kind": "chip", "localPosition": [0.52816534,-0.10600014,0.02], "worldPosition": [0.52816534,5.454,-97.98], "activeSelf": true, "panelSize": [1.66,0.74], "panelSorting": 0, "fontSize": 3.85, "labelRect": [1.51,0.74], "labelLocal": [0,0,0], "text": "✦ 90%"},
+    {"name": "ChipRarityUncommon", "kind": "chip", "localPosition": [2.27816486,-0.10600014,0.02], "worldPosition": [2.27816486,5.454,-97.98], "activeSelf": true, "panelSize": [1.67,0.7], "panelSorting": 0, "fontSize": 3.86, "labelRect": [1.52,0.7], "labelLocal": [0,0,0], "text": "✦✦ 9%"},
+    {"name": "ChipRarityRare", "kind": "chip", "localPosition": [4.12816525,-0.10600014,0.02], "worldPosition": [4.12816525,5.454,-97.98], "activeSelf": true, "panelSize": [1.64,0.75], "panelSorting": 0, "fontSize": 3.82, "labelRect": [1.49,0.75], "labelLocal": [0,0,0], "text": "✦✦✦ 1%"},
+    {"name": "ChipWins", "kind": "chip", "localPosition": [2.238165,-0.712000251,0.02], "worldPosition": [2.238165,4.84799957,-97.98], "activeSelf": true, "panelSize": [1.7,0.5], "panelSorting": 0, "fontSize": 3.64, "labelRect": [1.55000007,0.5], "labelLocal": [0,0,0], "text": "🜲 0/6"},
+    {"name": "ChipHearts", "kind": "chip", "localPosition": [4.158165,-0.833200157,0.02], "worldPosition": [4.158165,4.7268,-97.98], "activeSelf": true, "panelSize": [1.7,0.5], "panelSorting": 0, "fontSize": 3.76, "labelRect": [1.55000007,0.5], "labelLocal": [0,0,0], "text": "♥ 3/3"},
+    {"name": "ChipIncome", "kind": "chip", "localPosition": [2.56816483,-1.31799972,0.02], "worldPosition": [2.56816483,4.242,-97.98], "activeSelf": true, "panelSize": [2.2,0.5], "panelSorting": 0, "fontSize": 3.19, "labelRect": [2.05,0.5], "labelLocal": [0,0,0], "text": "+$12/ROUND"}
+  ],
+  "pageHud": {"name": "Shop Page Hud", "localPosition": [0,0,0], "childCount": 2}
+}

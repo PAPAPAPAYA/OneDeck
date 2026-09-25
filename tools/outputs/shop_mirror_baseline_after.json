@@ -1,0 +1,19 @@
+{
+  "blocks": [
+    {"name": "Avatar", "localPosition": [-3.30183482,-0.954400063,0], "worldPosition": [-3.30183482,4.6056,-98], "children": [
+      {"name": "big shadow", "localPosition": [0.08922009,-0.08922009,0.06], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.92,2.76], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "small shadow", "localPosition": [0,0,0.049999997], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [2.22,3.06], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "frame", "localPosition": [0,0,0.04], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.92,2.76], "color": [0.8509804,0.8352941,0.7921569,1], "sorting": 0 },
+      {"name": "image", "localPosition": [0,0.178440183,0.03], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.72799993,1.72799993], "color": [0.101960786,0.1882353,0.215686277,1], "sorting": 0 },
+      {"name": "PlayerNameLabel", "localPosition": [0,-0.423795432,0.01], "activeSelf": true, "kind": "tmp", "text": "test_papaya", "fontSize": 1.3383013, "fontStyle": "Bold", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [0.8922009,0.334575325], "alignment": "Center", "font": "RobotoCondensed-Regular SDF", "localScale": [1,1,1] }
+    ] },
+    {"name": "HpPill", "localPosition": [-1.85183477,-0.954400063,0], "worldPosition": [-1.85183477,4.6056,-98], "children": [
+      {"name": "shadow", "localPosition": [0.0644125938,-0.08051568,0.06], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [4,1.38], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "custom button", "localPosition": [-0.0161031485,0,0.049999997], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [4,1.38], "color": [0.819607854,0.8039216,0.784313738,1], "sorting": 0 },
+      {"name": "HP", "localPosition": [-0.7004864,0.394526869,0.01], "activeSelf": true, "kind": "tmp", "text": "HP", "fontSize": 10.3060074, "fontStyle": "Normal", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [1.61031377,0.402578443], "alignment": "TopLeft", "font": "RobotoCondensed-Bold SDF", "localScale": [1,1,1] },
+      {"name": "HpValue", "localPosition": [0.986317158,0,0.01], "activeSelf": true, "kind": "tmp", "text": "25/25", "fontSize": 10.3060074, "fontStyle": "Normal", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [2.89856482,1.236721], "alignment": "Center", "font": "RobotoCondensed-Bold SDF", "localScale": [1,1,1] }
+    ] }
+  ],
+  "canvasIcon": {"anchored": [236.276672,980.557251], "scale": [0.41,0.41,0.41], "activeSelf": false},
+  "canvasHp": {"selfAnchored": [369.5845,980.557251], "selfScale": [0.74,0.74,0.74], "activeSelf": true}
+}

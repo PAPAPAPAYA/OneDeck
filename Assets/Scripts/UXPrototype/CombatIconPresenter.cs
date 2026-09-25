@@ -147,9 +147,9 @@ public class CombatIconPresenter : MonoBehaviour
 			return;
 		}
 		Vector2 targetPos = inShop
-			? ShopTopBarLayout.LeftOffsetToCanvasAnchored(ShopTopBarLayout.PlayerIconXFromLeftEdge, ShopTopBarLayout.PlayerIconViewportY, _canvas, ShopTopBarLayout.MainOrthoSize)
+			? ShopTopBarLayout.ShopAnchorAvatar(_canvas)
 			: _combatAnchoredPos;
-		Vector3 targetScale = inShop ? Vector3.one * ShopTopBarLayout.PlayerIconShopScale : _combatScale;
+		Vector3 targetScale = inShop ? Vector3.one * ShopTopBarLayout.ShopScaleAvatar : _combatScale;
 		var cfg = PhaseTransitionConfigSO.Me;
 		if (PhaseTransitionDriver.IsTransitioning && cfg != null)
 		{

@@ -1,0 +1,33 @@
+{
+  "pageHud": {"name": "Shop Page Hud", "localPosition": [0,0,0]},
+  "blocks": [
+    {"name": "Avatar", "localPosition": [0.4181652,-0.033280354,0], "worldPosition": [0.4181652,5.52671957,-98], "children": [
+      {"name": "big shadow", "localPosition": [0.0609307922,-0.0609307922,0.06], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.92,2.76], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "small shadow", "localPosition": [0,0,0.049999997], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [2.22,3.06], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "frame", "localPosition": [0,0,0.04], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.92,2.76], "color": [0.8509804,0.8352941,0.7921569,1], "sorting": 0 },
+      {"name": "image", "localPosition": [0,0.121861584,0.03], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.72799993,1.72799993], "color": [0.101960786,0.1882353,0.215686277,1], "sorting": 0 },
+      {"name": "PlayerNameLabel", "localPosition": [0,-0.28942126,0.01], "activeSelf": true, "kind": "tmp", "text": "???", "fontSize": 0.9139619, "fontStyle": "Bold", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [0.609307945,0.228490472], "alignment": "Center", "font": "RobotoCondensed-Regular SDF", "localScale": [1,1,1] }
+    ] },
+    {"name": "HpPill", "localPosition": [4.214596,0.00307990075,0], "worldPosition": [4.214596,5.56308,-98], "children": [
+      {"name": "shadow", "localPosition": [-0.622908533,-0.0544024929,0.06], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [4,1.38], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "custom button", "localPosition": [-0.677311,0,0.049999997], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [4,1.38], "color": [0.819607854,0.8039216,0.784313738,1], "sorting": 0 },
+      {"name": "HP", "localPosition": [-1.13973224,0.2665722,0.01], "activeSelf": true, "kind": "tmp", "text": "HP", "fontSize": 6.96351862, "fontStyle": "Normal", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [1.08804977,0.272012442], "alignment": "TopLeft", "font": "RobotoCondensed-Bold SDF", "localScale": [1,1,1] },
+      {"name": "HpValue", "localPosition": [0,0,0.01], "activeSelf": true, "kind": "tmp", "text": "25/25", "fontSize": 6.96351862, "fontStyle": "Normal", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [1.95848966,0.8356223], "alignment": "Center", "font": "RobotoCondensed-Bold SDF", "localScale": [1,1,1] }
+    ] },
+    {"name": "Avatar", "localPosition": [-3.30183482,-0.954400063,0], "worldPosition": [-3.30183482,4.6056,-98], "children": [
+      {"name": "big shadow", "localPosition": [0.08922009,-0.08922009,0.06], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.92,2.76], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "small shadow", "localPosition": [0,0,0.049999997], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [2.22,3.06], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "frame", "localPosition": [0,0,0.04], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.92,2.76], "color": [0.8509804,0.8352941,0.7921569,1], "sorting": 0 },
+      {"name": "image", "localPosition": [0,0.178440183,0.03], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [1.72799993,1.72799993], "color": [0.101960786,0.1882353,0.215686277,1], "sorting": 0 },
+      {"name": "PlayerNameLabel", "localPosition": [0,-0.423795432,0.01], "activeSelf": true, "kind": "tmp", "text": "test_papaya", "fontSize": 1.3383013, "fontStyle": "Bold", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [0.8922009,0.334575325], "alignment": "Center", "font": "RobotoCondensed-Regular SDF", "localScale": [1,1,1] }
+    ] },
+    {"name": "HpPill", "localPosition": [-0.8655176,-0.954400063,0], "worldPosition": [-0.8655176,4.6056,-98], "children": [
+      {"name": "shadow", "localPosition": [-0.9219046,-0.08051568,0.06], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [4,1.38], "color": [0.101960786,0.1882353,0.215686277,0.6], "sorting": 0 },
+      {"name": "custom button", "localPosition": [-1.00242031,0,0.049999997], "activeSelf": true, "kind": "sprite", "sprite": "9-Sliced", "drawMode": "Sliced", "size": [4,1.38], "color": [0.819607854,0.8039216,0.784313738,1], "sorting": 0 },
+      {"name": "HP", "localPosition": [-1.68680358,0.394526869,0.01], "activeSelf": true, "kind": "tmp", "text": "HP", "fontSize": 10.3060074, "fontStyle": "Normal", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [1.61031377,0.402578443], "alignment": "TopLeft", "font": "RobotoCondensed-Bold SDF", "localScale": [1,1,1] },
+      {"name": "HpValue", "localPosition": [0,0,0.01], "activeSelf": true, "kind": "tmp", "text": "25/25", "fontSize": 10.3060074, "fontStyle": "Normal", "color": [0.101960786,0.1882353,0.215686277,1], "rect": [2.89856482,1.236721], "alignment": "Center", "font": "RobotoCondensed-Bold SDF", "localScale": [1,1,1] }
+    ] }
+  ],
+  "canvasIcon": {"anchored": [236.276642,980.557251], "scale": [0.41,0.41,0.41], "activeSelf": false},
+  "canvasHp": {"selfAnchored": [369.584473,980.557251], "selfScale": [0.74,0.74,0.74], "activeSelf": true}
+}

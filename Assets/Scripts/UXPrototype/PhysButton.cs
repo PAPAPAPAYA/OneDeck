@@ -53,9 +53,12 @@ public class PhysButton : MonoBehaviour
 
 	private const float WiggleDecay = 0.55f;
 
-	private SpriteRenderer _faceRenderer;
-	private Transform _shadow;
-	private Transform _visualGroup;
+	// Prefab-authored wiring (plan-shop-hud-prefab-widgets §3.5): prefab instances carry
+	// these serialized; the runtime builders (price/reroll buttons) keep using the setters
+	// below — both paths write the same fields, and the setters stay the write API for code.
+	[SerializeField] private SpriteRenderer _faceRenderer;
+	[SerializeField] private Transform _shadow;
+	[SerializeField] private Transform _visualGroup;
 	private Color _faceColor = Color.white;
 	private Vector2 _faceOffset;
 	private Tween _moveTween;
@@ -183,6 +186,17 @@ public class PhysButton : MonoBehaviour
 			col.size = size + new Vector2(restShadow + denyShift, restShadow + denyShift);
 			col.offset = center + new Vector2((restShadow - denyShift) / 2f, (denyShift - restShadow) / 2f);
 		}
+	}
+
+	[ContextMenu("Sync Collider To Face")]
+	private void SyncColliderToFace()
+	{
+		// Prefab-stage helper (plan-shop-hud-prefab-widgets §3.5): re-runs the exact
+		// ConfigureWorldFaceSize union math against the face's CURRENT size — collider
+		// envelope follows the resized face; face/shadow sizes re-write to the same values.
+		if (_faceRenderer == null) return;
+		Vector3 faceLocal = _faceRenderer.transform.localPosition;
+		ConfigureWorldFaceSize(_faceRenderer.size, new Vector2(faceLocal.x, faceLocal.y));
 	}
 
 	#endregion
