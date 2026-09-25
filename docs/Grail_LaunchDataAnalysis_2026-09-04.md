@@ -67,6 +67,11 @@ Normalized cumulative series (UTC-midnight anchored, from the intake chain):
 | Sep 15 | 357 |
 | Sep 16 | 366 |
 | Sep 17 | 373 |
+| Sep 18 | 380 |
+| Sep 19 | 385 |
+| Sep 20 | 394 |
+| Sep 21 | 399 |
+| Sep 22 | 400 |
 
 \* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15.
 
@@ -270,11 +275,11 @@ Snapshot at 03:56 UTC 2026-09-18. The scheduled 00:00 UTC automation run did not
 | Metric | Value | vs 2026-09-17 |
 |--------|-------|---------------|
 | Total reviews | **380** (343 pos / 37 neg, 90.3%, "Very Positive") | +4 / 24.2 h |
-| Day-17 closure (Sep 17) | **≈4** (3–5, cache-gap bound) | day-16 was 7 |
-| Day-18 partial (to 03:56) | 1–2 (newest review Sep 18 01:41) | — |
+| Day-17 closure (Sep 17) | **4** (confirmed exact on 2026-09-21) | day-16 was 7 |
+| Day-18 partial (to 03:56) | **0** (newest review was Sep 17 17:41 — first-pass timestamp misread, corrected 2026-09-21) | — |
 | CCU | **283** (03:56, anchor-comparable) | 317 → 283 (−11%) |
 
-Final intake chain (UTC days): 48 → 55 → 39 → 42 → 35 → 26 → 22 → 20 → 9 → 20 → 9 → 15 → 7 → 10 → 9 → 7 → ≈4 → (day-18 partial 1–2). Cumulative anchors: Sep 18 ≈ 377–379 (raw reading 380 @ 03:56).
+Final intake chain (UTC days): 48 → 55 → 39 → 42 → 35 → 26 → 22 → 20 → 9 → 20 → 9 → 15 → 7 → 10 → 9 → 7 → 4 → (day-18 partial 0 at sampling). Cumulative anchor: **Sep 18 = 380 exact** (raw reading 380 @ 03:56 with zero day-18 reviews at sampling).
 
 ### Findings
 
@@ -300,6 +305,17 @@ Interpretation:
 - A month-1 figure of 69–91% of the entire pre-launch pool exceeds any plausible true conversion — **the wishlist pool explains at most ~half of week-1 sales** at typical 15–30% week-1 benchmarks. The rest is brand-direct + demo carry-over, which is exactly why actual week-1 (8.0k–10.7k units) beat Gamalytic's wishlist-regression *month-1* prediction (7.8k) within seven days.
 - Benchmark context: typical indie D1 conversion ≈5–10%, week-1 ≈15–30%. Grail's D1 sits inside the band; week-1 runs ~1.5–2× the band — consistent with a demo-installed fanbase that bypasses the wishlist reminder entirely.
 - OneDeck takeaway: when a launch is fueled by an installed demo / prior-title fan base, wishlist count is a misleading sizing metric — it understates month-1 by 2–3× pre-release and overstates "conversion" post-release. Size by audience-carrying assets (demo installs, prior-title owners), not wishlists alone.
+
+## 13. Post-close-out monitoring (§12 settled the checkpoint; this section tracks drift only)
+
+**2026-09-21 (11:42 UTC, day 21):** totals **399 = 355 / 44 (89.0%)**, +19 rows since Sep 18 00:00 minus one deleted review. Anchors: Sep 19 = 385, Sep 20 = 394, Sep 21 = 399. Chain: … 4 → 5 → 9 → 5 → (1 on day 21).
+
+- **Intake**: the 5–9/day floor keeps sagging (day-17 closed at 4). Month-1 call tightens to **≈450–465 reviews ≈ 13.5k–18.5k units** — exactly on the §12 low-band line, slightly below the 15k–20k first pass.
+- **Negatives re-accelerated**: +7 in 3 days (37 → 44), marginal cohort negativity ≈35% (days 18–20) vs ~10% in launch week. Flagship: the day-19 negative (EN, 35.6 h, **8 votes — most-upvoted negative of the launch**) — "runs feel great until around turn 6, then a crapshoot… card pool too big and too synergy-dependent (Attack needing Bleed, Bleed wanting Burn, Burn needing Shock)… winning feels lucky rather than skilled… no real changes since beta". It now occupies the store page's helpful sort. Cumulative rate 89.0% and drifting −0.4pp/day; tier risk ("Mostly Positive" <80%) is far, but helpful-sort visibility risk is live.
+- Theme deltas this batch: synergy-web legibility (the Attack→Bleed→Burn→Shock chain), "adds little over the demo / same cards every run" (the Sokpop-shallow axis), first German negatives (2), clarity-vs-Bazaar (feedback legibility). Endgame/finale axis quiet this batch.
+- CCU 212 @ 11:42 UTC is off-anchor (EU midday); anchor-comparable trend check deferred.
+
+**2026-09-22 (05:08 UTC, day 22):** totals **400 = 356 / 44 (89.0%)** — one review in 17.4 h; day-21 closed at **2** (chain … 4 → 5 → 9 → 5 → 2), day-22 partial 0 known. Negatives flat (44) for the first time since the day-19 spike; the deletion/flip noise from Sep 21 resolved (+1 pos, totals +1, no vote changes). Near-anchor CCU 181 @ 05:08 UTC vs 283 @ d18 — the steepest step yet (−36% over 4 days, caveat: 05:08 vs 03:56 sample times). Month-1 call tightens again to **≈420–435 reviews ≈ 12.8k–17k units**, now *below* the §12 low-band line — week-3 intake collapsed faster than the launch-week cohort tables implied it would. Store-page risk unchanged: the 8-vote balance negative still owns the helpful sort; no developer response visible in the review corpus as of this pull.
 
 ## Appendix: Data Provenance
 
