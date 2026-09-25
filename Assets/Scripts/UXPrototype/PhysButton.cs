@@ -74,11 +74,30 @@ public class PhysButton : MonoBehaviour
 
 	public bool IsDisabled => _externalDisabled;
 
+	// VISUAL-FIX(2026-09-25): Reroll button face ignored panels.buttonWidth/buttonHeight
+	//   tuning — only its shadow and collider resized.
+	//   Cause:    Awake unconditionally ran _faceRenderer = GetComponent<SpriteRenderer>();
+	//             the face lives on a child and the root has no SpriteRenderer, so the
+	//             reference injected by SetWorldFace was overwritten with null.
+	//             ShopSectionPanels.Bootstrap builds under a deactivated root, so Awake
+	//             ran LATER (on activation) than SetWorldFace — the clobber won. The
+	//             prefab top-bar buttons' serialized references were nulled the same way
+	//             (their SetDisabled dim color silently no-oped).
+	//   Affects:  PhysButton.Awake / ConfigureWorldFaceSize / ApplyDisabledVisual;
+	//             ShopSectionPanels.ApplySharedStyle (reroll retune); ShopChrome
+	//             top-bar Exit/Options buttons
+	//   Regress:  Play: tune ShopUXManager.panels.buttonWidth/buttonHeight in the
+	//             Inspector — the reroll face must resize together with its shadow;
+	//             hover/press/disabled dim on price and top-bar buttons still works
+	//   Related:  ShopSectionPanels.Bootstrap (inactive-root deferred Awake),
+	//             ShopWorldWidgets.CreateWorldButton
 	private void Awake()
 	{
 		// Self-renderer only (callers normally put the face on a child and assign it via
-		// SetWorldFace); the shadow child must never be picked up here.
-		_faceRenderer = GetComponent<SpriteRenderer>();
+		// SetWorldFace); the shadow child must never be picked up here. Guard so a
+		// deferred Awake (built under an inactive root) cannot clobber the injected
+		// reference — see VISUAL-FIX(2026-09-25) above.
+		if (_faceRenderer == null) _faceRenderer = GetComponent<SpriteRenderer>();
 	}
 
 	private void Update()
