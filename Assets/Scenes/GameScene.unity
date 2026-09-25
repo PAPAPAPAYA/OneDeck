@@ -3039,7 +3039,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3747bdc48b5973489f2651c84f2c09e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xOffset: 3.2
+  xOffset: 2.8
   yOffset: 4.5
   objPerRow: 3
   physCardEnlargeSize: 1.5
@@ -3049,10 +3049,10 @@ MonoBehaviour:
   physCardSize: {x: 0.8, y: 0.8, z: 0.8}
   spawnParent: {fileID: 423783302}
   shopItems: {fileID: 11400000, guid: 17439637f3a767d449065efc84c6e6ca, type: 2}
-  shopItemPos: {x: 0, y: 1.5, z: 0}
+  shopItemPos: {x: 0, y: 0, z: 0}
   shopItemStartPos: {fileID: 1870616910}
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
-  playerDeckPos: {x: 0, y: -3.4, z: 0}
+  playerDeckPos: {x: 0, y: -6, z: 0}
   playerDeckStartPos: {fileID: 478120492}
   duplicateStackOffset: {x: -0.1, y: 0.1, z: 0.02}
   duplicateStackMaxOffsetCount: 5
@@ -3065,22 +3065,24 @@ MonoBehaviour:
   cameraMaxY: 0
   useDynamicScrollBounds: 1
   scrollBottomPadding: 3
+  hudPagePrefab: {fileID: 3805871494095744686, guid: 0923243771841054291fb6bc04ef08b4, type: 3}
   chromeSprite: {fileID: -5177388603050735206, guid: ee4c724560d27684d969ba363b913448, type: 3}
   chromeFont: {fileID: 11400000, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
   panels:
-    headerHeight: 1.2
-    sidePadding: 0.55
-    topPadding: 0.35
-    bottomPadding: 0.5
+    headerHeight: 0.8
+    sidePadding: 0.18
+    topPadding: 0.2
+    bottomPadding: 0.6
     fitTweenDuration: 0.3
-    headerFontSize: 3.2
-    headerLeftMargin: 0.25
-    headerRightMargin: 0.25
-    buttonWidth: 2
-    buttonHeight: 0.56
-    buttonFontSize: 2.4
+    headerFontSize: 6
+    headerLeftMargin: 0.23
+    headerRightMargin: 0.23
+    buttonWidth: 1.75
+    buttonHeight: 0.52
+    buttonFontSize: 4
     restShadowUnits: 0.05
     denyShiftUnits: 0.075
+    fontBold: 1
 --- !u!1 &434224256
 GameObject:
   m_ObjectHideFlags: 0

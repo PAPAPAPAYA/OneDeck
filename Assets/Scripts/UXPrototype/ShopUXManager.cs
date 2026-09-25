@@ -104,6 +104,8 @@ public class ShopUXManager : MonoBehaviour
 		public float buttonFontSize = 2.4f;
 		public float restShadowUnits = 0.05f;
 		public float denyShiftUnits = 0.075f;
+		[Tooltip("Synthetic-bold (TMP FontStyles.Bold) for the panel headers, deck counter and reroll label; applies live like the other tuning fields")]
+		public bool fontBold = false;
 	}
 
 	// Store instantiated physical cards for cleanup

@@ -124,6 +124,13 @@ public class ShopSectionPanels : MonoBehaviour
 		return ux != null && ux.panels != null ? selector(ux.panels) : fallback;
 	}
 
+	// Point-of-use resolver for the font-bold toggle (PanelsTuning.fontBold).
+	private static bool TuningBold()
+	{
+		ShopUXManager ux = ShopUXManager.Instance;
+		return ux != null && ux.panels != null && ux.panels.fontBold;
+	}
+
 	public static void ShowIfActive()
 	{
 		if (_instance == null) return;
@@ -169,9 +176,16 @@ public class ShopSectionPanels : MonoBehaviour
 	private void ApplySharedStyle()
 	{
 		float headerFontSize = Tuning(t => t.headerFontSize, HeaderFontSizeDefault);
+		// FontStyles.Bold is TMP synthetic bold (vertex dilation) — emboldens glyphs served
+		// by the CJK fallback chain too, no Bold font asset needed (probe-verified 2026-09-25).
+		FontStyles fontStyle = TuningBold() ? FontStyles.Bold : FontStyles.Normal;
 		_shopHeader.fontSize = headerFontSize;
+		_shopHeader.fontStyle = fontStyle;
 		_deckHeader.fontSize = headerFontSize;
+		_deckHeader.fontStyle = fontStyle;
 		_upgradesHeader.fontSize = headerFontSize;
+		_upgradesHeader.fontStyle = fontStyle;
+		if (_deckCounter != null) _deckCounter.fontStyle = fontStyle;
 
 		if (_rerollButton == null) return;
 		float buttonWidth = Tuning(t => t.buttonWidth, ButtonWidthDefault);
@@ -183,6 +197,7 @@ public class ShopSectionPanels : MonoBehaviour
 		if (_rerollLabel != null)
 		{
 			_rerollLabel.fontSize = Tuning(t => t.buttonFontSize, ButtonFontSizeDefault);
+			_rerollLabel.fontStyle = fontStyle;
 			_rerollLabel.rectTransform.sizeDelta = new Vector2(buttonWidth - 0.2f, buttonHeight);
 		}
 	}
