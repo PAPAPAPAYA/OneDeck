@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe7686bffff299143ad9a848844bda45, type: 3}
   m_Name: ShopPanelBg
   m_EditorClassIdentifier: Assembly-CSharp::ColorSO
-  value: {r: 0, g: 0, b: 0, a: 0.85}
-  description: Translucent dark background for shop page section panels (UIKitDemo 08)
+  value: {r: 0.101960786, g: 0.1882353, b: 0.21568628, a: 0.5019608}
+  description: Translucent dark background for shop page section panels (UIKitDemo
+    08)

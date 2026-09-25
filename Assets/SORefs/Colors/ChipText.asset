@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe7686bffff299143ad9a848844bda45, type: 3}
-  m_Name: SlotRecess
+  m_Name: ChipText
   m_EditorClassIdentifier: Assembly-CSharp::ColorSO
-  value: {r: 0.14118, g: 0.20784, b: 0.23529, a: 1}
-  description: Recessed empty deck slot (UIKitDemo --recess). Initial value TBD -
-    tune in editor against the shop table.
+  value: {r: 0.7490196, g: 0.7372549, b: 0.70980394, a: 1}
+  description: Chip label text (plan-palette-chip-button-color-decoupling-2026-09-25).
+    Initial = GreyWhite value.

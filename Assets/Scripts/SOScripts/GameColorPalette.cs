@@ -76,6 +76,11 @@ public class GameColorPalette : ScriptableObject
 	public ColorSO cardTextSoft;	// secondary card text — --ink-soft
 	public ColorSO slotRecess;	// recessed empty deck slot — --recess
 
+	[Header("Shop Top Bar Widgets")]
+	public ColorSO chipBg;		// chip panel background — decoupled from tooltipBg (2026-09-25)
+	public ColorSO chipText;	// chip label text — decoupled from tooltipText (2026-09-25)
+	public ColorSO buttonFace;	// button face (top bar + reroll + price) — decoupled from ownerCardColor (2026-09-25)
+
 	// Resolved HUD colors — the single source the HUD components (HPNumericDisplay,
 	// HPNumericDisplayHorizontal, CombatHPBarPresenter) read from; they keep no
 	// serialized color fields. White fallback keeps a miswired palette visible.
@@ -124,6 +129,13 @@ public class GameColorPalette : ScriptableObject
 	public static Color CardFaceDimColor => Me != null && Me.cardFaceDim != null ? Me.cardFaceDim.value : Color.white;
 	public static Color CardTextSoftColor => Me != null && Me.cardTextSoft != null ? Me.cardTextSoft.value : Color.white;
 	public static Color SlotRecessColor => Me != null && Me.slotRecess != null ? Me.slotRecess.value : Color.white;
+
+	// Shop top bar widget colors ("Shop Top Bar Widgets" group) — chips and button
+	// faces decoupled from the tooltip/card slots
+	// (plan-palette-chip-button-color-decoupling-2026-09-25).
+	public static Color ChipBgColor => Me != null && Me.chipBg != null ? Me.chipBg.value : Color.white;
+	public static Color ChipTextColor => Me != null && Me.chipText != null ? Me.chipText.value : Color.white;
+	public static Color ButtonFaceColor => Me != null && Me.buttonFace != null ? Me.buttonFace.value : Color.white;
 
 #if UNITY_EDITOR
 	/// <summary>

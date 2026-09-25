@@ -177,6 +177,8 @@ MonoBehaviour:
   flipDuration: 0.3
   popUpOriginalPosition: {x: 0, y: 0, z: 0}
   popUpOriginalScale: {x: 0, y: 0, z: 0}
+  popUpFollowsDeckSlot: 0
+  popUpFollowLerpSpeed: 12
   pendingRevealZoneMove: 0
   pendingRevealPosition: {x: 0, y: 0, z: 0}
   pendingRevealScale: {x: 0, y: 0, z: 0}
@@ -832,6 +834,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2776642290113555631}
   - component: {fileID: 3532074199001407903}
+  - component: {fileID: 5556586585232183654}
   m_Layer: 0
   m_Name: PhysicalCardFace
   m_TagString: Untagged
@@ -913,6 +916,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &5556586585232183654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6660535032677159528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf2fa025c5739e4dae78f0854f64475, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PaletteTint
+  slot: 10
 --- !u!1 &7280397999573166645
 GameObject:
   m_ObjectHideFlags: 0

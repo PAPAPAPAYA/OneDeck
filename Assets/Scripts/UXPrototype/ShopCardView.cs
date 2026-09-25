@@ -192,7 +192,7 @@ public class ShopCardView : MonoBehaviour
 		SpriteRenderer faceSr = faceGo.GetComponent<SpriteRenderer>();
 		faceSr.sprite = _cardPhysObj.cardFace != null ? _cardPhysObj.cardFace.sprite : null;
 		faceSr.drawMode = SpriteDrawMode.Sliced;
-		faceSr.color = GameColorPalette.OwnerCardColor;
+		faceSr.color = GameColorPalette.ButtonFaceColor;
 
 		// The print (and its PriceStrikeLine child) becomes the button label.
 		printT.SetParent(visualGo.transform, false);

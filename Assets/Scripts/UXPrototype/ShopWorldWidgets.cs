@@ -2,20 +2,21 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Shared world-widget recipes for the runtime-built shop chrome (2026-09-23,
-/// plan-shop-layout-config-widget-factory): the button / chip / label / sliced-sprite
-/// builders ShopChrome and ShopSectionPanels previously each kept as private copies.
-/// Byte-level invariants carried over from both recipes (do not "improve" in place —
-/// the chrome renders against these exact values):
+/// World-widget recipes for the runtime-built shop panels (2026-09-23,
+/// plan-shop-layout-config-widget-factory). Since the 2026-09-24 prefab port
+/// (plan-shop-hud-prefab-widgets) the shop top bar is authored in
+/// ShopHudPage.prefab — the sole remaining consumer is ShopSectionPanels (panel
+/// backgrounds, header labels, reroll button).
+/// Byte-level invariants carried over from the original recipes (do not "improve" in
+/// place — the panels render against these exact values):
 ///   - button hierarchy Root(BoxCollider2D)/Visual/Shadow(z +0.04, under Root)/Face
 ///     (z +0.02, under Visual)/Label(under Visual), colors CardShadowColor /
 ///     OwnerCardColor / OwnerTextColor, hoverLift = restShadow;
 ///   - chip root z 0.02, dark chips on ShopPanelBgColor else TooltipBgColor, white
-///     TooltipTextColor label with a width-0.15 rect inset (HudChip.ApplyLayout keeps
-///     the same rule for live retunes);
+///     TooltipTextColor label with a width-0.15 rect inset;
 ///   - world TMP: no wrap, Overflow overflow, raycastTarget left at the TMP default.
-/// Sizes, fonts and press feel are arguments — callers resolve them from
-/// ShopLayoutConfigSO / their own Tuning; this class owns no layout decisions.
+/// Sizes, fonts and press feel are arguments — callers resolve them from their own
+/// Tuning; this class owns no layout decisions.
 /// </summary>
 public static class ShopWorldWidgets
 {
@@ -109,7 +110,7 @@ public static class ShopWorldWidgets
 		SpriteRenderer face = faceGo.GetComponent<SpriteRenderer>();
 		face.sprite = sprite;
 		face.drawMode = SpriteDrawMode.Sliced;
-		face.color = GameColorPalette.OwnerCardColor;
+		face.color = GameColorPalette.ButtonFaceColor;
 
 		labelTmp = CreateWorldLabel(visualGo.transform, "Label", font, label, fontSize,
 			GameColorPalette.OwnerTextColor, TextAlignmentOptions.Center,
