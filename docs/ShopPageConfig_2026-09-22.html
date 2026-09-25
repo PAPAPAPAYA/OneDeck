@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OneDeck 商店页面配置文档 (2026-09-22)</title>
+<style>
+	body {
+		font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+		max-width: 1080px;
+		margin: 0 auto;
+		padding: 24px 32px 64px;
+		color: #24313a;
+		background: #fafaf7;
+		line-height: 1.65;
+	}
+	h1 {
+		font-size: 26px;
+		border-bottom: 3px solid #1a3037;
+		padding-bottom: 10px;
+	}
+	h2 {
+		font-size: 20px;
+		color: #1a3037;
+		border-left: 5px solid #ffeb04;
+		padding-left: 10px;
+		margin-top: 44px;
+	}
+	h3 {
+		font-size: 16px;
+		color: #33474f;
+		margin-top: 28px;
+	}
+	code, .mono {
+		font-family: Consolas, "Courier New", monospace;
+		font-size: 0.92em;
+		background: #eef0e9;
+		padding: 1px 5px;
+		border-radius: 3px;
+	}
+	table {
+		border-collapse: collapse;
+		width: 100%;
+		margin: 12px 0 20px;
+		font-size: 13.5px;
+	}
+	th, td {
+		border: 1px solid #cfd4cc;
+		padding: 5px 9px;
+		text-align: left;
+		vertical-align: top;
+	}
+	th {
+		background: #1a3037;
+		color: #f2f2ec;
+		font-weight: 600;
+	}
+	tr:nth-child(even) td {
+		background: #f2f3ee;
+	}
+	.warn {
+		background: #fff6e0;
+		border-left: 4px solid #e0a800;
+		padding: 8px 14px;
+		margin: 10px 0;
+	}
+	.note {
+		background: #eaf3fa;
+		border-left: 4px solid #4a90c4;
+		padding: 8px 14px;
+		margin: 10px 0;
+	}
+	.good {
+		background: #eef7ea;
+		border-left: 4px solid #58a05a;
+		padding: 8px 14px;
+		margin: 10px 0;
+	}
+	.meta {
+		color: #6b7a80;
+		font-size: 13px;
+	}
+	.swatch {
+		display: inline-block;
+		width: 14px;
+		height: 14px;
+		border: 1px solid #888;
+		border-radius: 3px;
+		vertical-align: -2px;
+		margin-right: 6px;
+	}
+	pre {
+		background: #22292e;
+		color: #d8e2d8;
+		padding: 14px 18px;
+		border-radius: 6px;
+		overflow-x: auto;
+		font-size: 13px;
+		line-height: 1.5;
+	}
+	.toc a {
+		color: #1a3037;
+		text-decoration: none;
+	}
+	.toc a:hover {
+		text-decoration: underline;
+	}
+</style>
+</head>
+<body>
+
+<h1>OneDeck 商店页面配置文档</h1>
+<p class="meta">
+	快照时间: 2026-09-22 (UTC+8, Unity 编辑器实时读取) &nbsp;|&nbsp;
+	代码基线: main @ 02ffe072 &nbsp;|&nbsp;
+	数据来源: execute_code 场景/SO 序列化值 + 源码常量逐条核对
+</p>
+<p class="meta">相关计划: <code>plans/plan-shop-topbar-combat-hud-reuse-2026-09-19.md</code>、<code>plans/plan-shop-topbar-world-scroll-2026-09-21.md</code>、<code>plans/plan-shop-panels-port-2026-09-18.md</code>、<code>plans/plan-phase-transition-world-camera-2026-09-21.md</code>;系统综述见 <code>docs/ShopSystems.md</code>。</p>
+
+<h2 id="toc">目录</h2>
+<div class="toc">
+	<a href="#arch">1. 总体架构</a><br>
+	<a href="#objects">2. 场景对象与运行时构建物</a><br>
+	<a href="#camera">3. 相机与页面滚动</a><br>
+	<a href="#chrome">4. 顶栏 ShopChrome</a><br>
+	<a href="#topbarlayout">5. 顶栏共享锚点 ShopTopBarLayout</a><br>
+	<a href="#pagehud">6. 世界镜像 ShopPageHud</a><br>
+	<a href="#panels">7. 三面板 ShopSectionPanels</a><br>
+	<a href="#layout">8. 货架 / 卡组 / 空卡位布局 (ShopUXManager)</a><br>
+	<a href="#interaction">9. 卡片交互与按钮 (ShopCardView / PhysButton)</a><br>
+	<a href="#input">10. 输入管线与快捷键</a><br>
+	<a href="#economy">11. 经济配置 (SO 实测值)</a><br>
+	<a href="#pipeline">12. 货架生成管线 (ShopBoardPipeline)</a><br>
+	<a href="#transition">13. 阶段过渡 (PhaseTransitionDriver)</a><br>
+	<a href="#assets">14. 资产与颜色引用</a><br>
+	<a href="#obs">15. 观察与注意事项</a><br>
+	<a href="#tuning">16. 常用调参速查</a>
+</div>
+
+<h2 id="arch">1. 总体架构</h2>
+<p>商店是一个<strong>纯世界空间(world-space)单页</strong>:货架、卡组带、升级行、顶栏、面板全部是
+	<code>SpriteRenderer</code> + 世界 <code>TextMeshPro</code> + <code>BoxCollider2D</code> 物理点击,没有任何 uGUI 交互(战斗画布在商店阶段隐藏,仅作过渡共享元素)。
+	2026-09-21 起<strong>顶栏也是页面内容</strong>:Build 时定位一次,滚轮下滚随整页一起离屏,不跟随相机。</p>
+<p>页面纵向结构(自上而下,世界坐标,正交相机静止位 y=0):</p>
+<pre>
+y ≈ +5.6   顶栏 Shop Chrome (页面内容, 非相机锚定)
+           row0: [离开商店] [头像+用户名 | HP药丸] [$钱包] ......... [❚❚]
+           row1: ✦ / ✦✦ / ✦✦✦ 稀有度概率 (左对齐 HUD 列)
+           row2: 🜲 胜数 | ♥ 心数 | +$/ROUND 收入
+y ≈ +4.3   商店面板 header 行 (「商店」标题 + 重掷按钮)
+y = +1.5   货架 (shopItemPos 起, 3列网格, 4+张自动换行并把卡组带下推)
+y = -3.4   卡组带 (playerDeckPos 起): 「卡组」header + 03/05 计数器
+           占格卡 + 凹陷空卡位 (每 deckSize 格一个, 永不被消耗)
+卡组带下   升级行 (utility 被动, 不占卡位): 「商店升级」header
+y ≤ 滚动   滚轮下限 = 最低内容行 - padding
+</pre>
+<p>战斗页位于商店页<strong>正上方一个屏高</strong>(<code>PhaseTransitionDriver</code> 把 7 个战斗世界标记 +pageH),由「离开商店」按钮触发相机纵向travel过渡。</p>
+
+<h2 id="objects">2. 场景对象与运行时构建物</h2>
+<table>
+	<tr><th>对象 / 类</th><th>存在方式</th><th>说明</th></tr>
+	<tr><td><code>ShopManager.me</code></td><td>场景 (GameScene)</td><td>经济、买/卖/重掷、货架生成调用方</td></tr>
+	<tr><td><code>ShopUXManager.Instance</code></td><td>场景 (GameScene)</td><td>实例化/布局/滚动;<code>Start()</code> 里 Bootstrap chrome 与 panels;父级即 spawnParent</td></tr>
+	<tr><td><code>ShopStartPos</code> / <code>DeckStartPos</code></td><td>场景 Transform</td><td>货架/卡组卡的飞入起点</td></tr>
+	<tr><td><code>Shop Chrome</code> (ShopChrome)</td><td><strong>运行时构建</strong></td><td><code>ShopUXManager.Start()</code> → <code>ShopChrome.Bootstrap</code>,场景根对象,一次性定位</td></tr>
+	<tr><td><code>Shop Section Panels</code> (ShopSectionPanels)</td><td><strong>运行时构建</strong></td><td>同上 Bootstrap,三块半透明面板 + header + 计数器 + 重掷按钮</td></tr>
+	<tr><td><code>Shop Page Hud</code> (ShopPageHud)</td><td><strong>运行时构建</strong></td><td><code>ShopChrome.Build</code> 末尾挂到 chrome 根下,镜像 canvas 头像/HP</td></tr>
+	<tr><td><code>PhaseTransitionDriver</code></td><td><strong>运行时构建</strong></td><td><code>RuntimeInitializeOnLoadMethod(AfterSceneLoad)</code> 自动创建,config 关闭则不建</td></tr>
+	<tr><td>Camera Man</td><td>场景</td><td>主相机父级 rig,滚动/过渡 tween 都写这里(Shaker 每帧占有相机自身 localPosition)</td></tr>
+</table>
+
+<h2 id="camera">3. 相机与页面滚动</h2>
+<table>
+	<tr><th>项</th><th>当前值</th><th>来源</th></tr>
+	<tr><td>投影 / 正交尺寸</td><td>Orthographic, size <strong>6.06</strong></td><td>场景 Inspector(代码无写入点)</td></tr>
+	<tr><td>相机位置</td><td>(0, 0, -100),父 rig 同位</td><td>场景</td></tr>
+	<tr><td>编辑器 Game 视口</td><td>657 × 724.8 px (aspect 0.906)</td><td>实时读取;<code>ShopTopBarLayout</code> 的世界常量按此视口调校,宽高比大变会破坏顶栏对位</td></tr>
+	<tr><td>镜头震动</td><td>MilkShake Shaker 占有相机 localPosition</td><td>代码(<code>Assets/MilkShake</code>)</td></tr>
+</table>
+
+<h3>滚轮滚动 (ShopUXManager 相机滚动段)</h3>
+<table>
+	<tr><th>字段</th><th>场景值</th><th>说明</th></tr>
+	<tr><td><code>enableCameraScroll</code></td><td>true</td><td>总开关</td></tr>
+	<tr><td><code>cameraScrollSpeed</code></td><td>5</td><td>每 tick 位移 = 滚轮输入 × 5</td></tr>
+	<tr><td><code>cameraMaxY</code></td><td>0</td><td>上滚上限偏移 = 初始位,即<strong>滚不回顶栏以上</strong>(顶栏在滚动 0 处可见)</td></tr>
+	<tr><td><code>cameraMinY</code></td><td>-1</td><td>固定下限,仅动态边界不可用时兜底</td></tr>
+	<tr><td><code>useDynamicScrollBounds</code></td><td>true</td><td>下限由实际内容行推导</td></tr>
+	<tr><td><code>scrollBottomPadding</code></td><td>3</td><td>最低内容行距视口底边的世界距离</td></tr>
+</table>
+<p><strong>动态下限公式</strong> (<code>ComputeDynamicMinY</code>):取已布局的卡组卡/空卡位/升级卡的最低逻辑 y,<br>
+	<code>minOffset = (lowestContentY + viewHalfHeight − scrollBottomPadding) − cameraInitialY</code>,且恒 <code>≤ cameraMaxY</code>。<br>
+	滚动只写在相机<strong>父级 rig</strong> 上(Shaker 冲突规避),且 <code>IsTransitioning</code> 或非 Shop 阶段时滚动被门禁吞掉。</p>
+
+<h2 id="chrome">4. 顶栏 ShopChrome</h2>
+<p>2026-09-19 §08 三行布局 + 2026-09-21 整体页面化。文件 <code>Assets/Scripts/UXPrototype/ShopChrome.cs</code>。</p>
+<h3>结构常量</h3>
+<table>
+	<tr><th>常量</th><th>值</th><th>说明</th></tr>
+	<tr><td><code>BandHeight</code></td><td>2.6</td><td>页面顶部保留净空带(无渲染底板,芯片直接铺在背景上)</td></tr>
+	<tr><td><code>BandInsetFromTop</code></td><td>0.5</td><td>根节点中心位于视口顶边下方 0.5u</td></tr>
+	<tr><td><code>CameraForwardOffset</code></td><td>2</td><td>根 z = 相机 z + 2(相机在 z=-100,故根约 z=-98)</td></tr>
+	<tr><td><code>EdgeMargin</code> / <code>ChipSpacing</code></td><td>0.35 / 0.25</td><td>左右边距 / 芯片间距</td></tr>
+	<tr><td>普通芯片</td><td>2.2 × 0.5,字号 2.2</td><td>收入芯片用此尺寸</td></tr>
+	<tr><td>小芯片</td><td>1.7 × 0.5,字号 1.9</td><td>稀有度 / 胜数 / 心数(row1、row2 共 6 个)</td></tr>
+	<tr><td>钱包芯片</td><td>2.4 × 0.62,字号 2.8</td><td>row0,accent 黄字</td></tr>
+	<tr><td>离开商店按钮</td><td>宽 2.6 × 高 0.64,字号 2.8</td><td>row0 左端</td></tr>
+	<tr><td>❚❚ 选项按钮</td><td>宽 0.72 × 高 0.64,字号 2.4</td><td>row0 右端,当前为占位(仅打日志)</td></tr>
+	<tr><td><code>RestShadow</code> / <code>hoverLift</code></td><td>0.05</td><td>世界按钮投影偏移(顶栏/面板按钮统一覆写,PhysButton 默认值见 §9)</td></tr>
+	<tr><td><code>DenyShiftUnits</code></td><td>0.075</td><td>拒绝点击的位移幅度</td></tr>
+</table>
+
+<h3>行为规则</h3>
+<ul>
+	<li><strong>一次性定位</strong>:Build 时写根位置(视口顶部、滚动 0 的等价值)并捕获 <code>BandBottomWorldY</code>(= 相机 y + orthoSize − 2.6);之后不再跟随相机,随滚轮离屏。</li>
+	<li><strong>货架契约</strong>:货架最顶卡(含价格按钮余量 2.5×scale)不得越过 <code>BandBottomWorldY</code>,每次货架重建由 <code>CheckShelfClearance</code> 断言(越线仅 <code>[ShopChrome]</code> 警告,不拦截)。</li>
+	<li><strong>显示/隐藏</strong>:进店 <code>EnterShop</code> 显示、离店隐藏;过渡中(<code>PhaseTransitionDriver.IsTransitioning</code>)不显示,落地后再显示(Result→Shop 落地回调)。</li>
+	<li><strong>刷新</strong>:买/卖/重掷/显示时 <code>RefreshIfActive</code>,全部字段差分守护,文本变了才重建 mesh。</li>
+	<li><strong>离开商店按钮</strong>是唯一的 canonical 商店→战斗触发:优先走 <code>PhaseTransitionDriver.RequestShopToCombat</code>,驱动不可用时回退硬切(<code>ExitingShopPhase + EnteringCombatPhase</code>)。</li>
+	<li>滚下去看不到顶栏是<strong>有意的</strong>(用户裁定):滚回顶部或按 Space 离开。</li>
+</ul>
+
+<h2 id="topbarlayout">5. 顶栏共享锚点 ShopTopBarLayout</h2>
+<p>静态常量类,视口空间 (0,1)=左上。同一份锚点喂给世界芯片(<code>ViewportToChromeLocal</code>)和战斗 canvas 复用件(<code>ViewportToCanvasAnchored</code>),保证商店顶栏与战斗 HUD 对位。</p>
+<table>
+	<tr><th>常量</th><th>值</th><th>说明</th></tr>
+	<tr><td><code>PlayerIconViewport</code></td><td>(0.292, 0.956)</td><td>头像中心(装饰 222×306 超出 rect,y 略低于 HP 行防裁切)</td></tr>
+	<tr><td><code>HpDisplayViewport</code></td><td>(0.437, 0.959)</td><td>玩家 HP 药丸中心</td></tr>
+	<tr><td><code>MoneyChipViewport</code></td><td>(0.654, 0.959)</td><td>钱包芯片中心</td></tr>
+	<tr><td><code>OddsRowViewportY</code></td><td>0.883</td><td>row1(稀有度概率)</td></tr>
+	<tr><td><code>StatsRowViewportY</code></td><td>0.810</td><td>row2(胜数/心数/收入)</td></tr>
+	<tr><td><code>HudColumnViewportX</code></td><td>0.252</td><td>row1-2 左对齐列(避开重掷按钮所在世界 Y 4.33)</td></tr>
+	<tr><td><code>PlayerIconShopScale</code></td><td>0.28</td><td>商店阶段头像缩放覆盖(0.35 会裁顶)</td></tr>
+	<tr><td><code>HpDisplayShopScale</code></td><td>0.5</td><td>商店阶段 HP 药丸缩放覆盖</td></tr>
+</table>
+
+<h2 id="pagehud">6. 世界镜像 ShopPageHud</h2>
+<p> settled shop 中 canvas 头像/HP 隐藏后,由世界副本顶上(挂 chrome 根下,随页面滚动)。镜像规则:</p>
+<ul>
+	<li><strong>镜像而非重绘</strong>:遍历 canvas 源(玩家 <code>CombatIconPresenter.playerIcon</code> 层级、玩家侧 <code>HPNumericDisplayHorizontal.displayRoot</code> 层级)逐子物体拷 sprite/颜色/字体,px → 世界经 <code>CanvasPxToWorld</code> 校准;滚动 0 处与 canvas 原件像素级一致。</li>
+	<li><strong>HP 数字合并为单个世界 TMP</strong>「hp/hpMax」(无里程表条):商店恒满血,但买/卖 HP utility 会移动 hpMax,数值变化播 ~0.3s 整数 count-up/down tween(<code>CountUpSeconds = 0.3</code>)。</li>
+	<li>字号换算 <code>TmpWorldUnitsPerEm = 0.1</code>;层叠 z 步进 0.01(canvas 后→前 = z 大→小)。</li>
+	<li>9-slice 边框保真:<code>SlicedWorldSize / SlicedWorldScale</code>(VISUAL-FIX 2026-09-21,child localScale + border 比例)。</li>
+	<li><code>canvas.scaleFactor</code> 首渲染时序陷阱用 <code>ComputeCanvasScaleFactor</code>(按 CanvasScaler 公式重算)规避。</li>
+	<li>用户名轮询 <code>PlayerIdentity.Username</code>,空 → 「???」,差分刷新;无碰撞体,不可交互。</li>
+</ul>
+
+<h2 id="panels">7. 三面板 ShopSectionPanels</h2>
+<p>商店/卡组/商店升级三块半透明深色圆角面板,运行时构建,无碰撞体,不参与物理输入。每次布局变化后由 <code>RelayoutPlayerDeckCards</code>(唯一 choke point)触发 <code>RefreshLayout</code> 拟合。</p>
+<h3>常量</h3>
+<table>
+	<tr><th>常量</th><th>值</th><th>说明</th></tr>
+	<tr><td><code>PanelZ</code> / <code>HeaderZ</code></td><td>0.5 / 0.4</td><td>面板底板在卡(z0)/空卡位(z0.1)之后,header 在底板前</td></tr>
+	<tr><td><code>HeaderHeight</code> / <code>HeaderFontSize</code></td><td>1.2 / 3.2</td><td>header 行高与字号(商店 / 卡组 / 商店升级)</td></tr>
+	<tr><td><code>SidePadding</code> / <code>TopPadding</code> / <code>BottomPadding</code></td><td>0.55 / 0.35 / 0.5</td><td>内容外扩</td></tr>
+	<tr><td><code>FitTweenDuration</code></td><td>0.3</td><td>面板 DOMove/DOTween 尺寸拟合时长 (OutQuad)</td></tr>
+	<tr><td><code>FaceHalfWidthFactor</code></td><td>1.65</td><td>卡面半宽系数 × scale(来自 EmptyCardSpace 烘焙 3.3 × 4.7)</td></tr>
+	<tr><td><code>FaceAboveHalfHeightFactor</code> / <code>FaceBelowHalfHeightFactor</code></td><td>2.35 / 2.5</td><td>上/下半高系数(下含价格按钮余量,与 CheckShelfClearance 同口径)</td></tr>
+	<tr><td>重掷按钮</td><td>2.0 × 0.56,字号 2.4</td><td>商店面板 header 内,右缘 −0.15;世界 Y ≈ 4.33</td></tr>
+</table>
+<h3>内容与规则</h3>
+<ul>
+	<li>header 文案:「商店」「卡组」「商店升级」;卡组面板 header 右侧是 <code>03/05</code> 槽位计数器(HighlightColor 黄)。</li>
+	<li><strong>计数器口径</strong>(2026-09-21 修复):分母 = <code>deckSize.value</code>,分子 = <code>CountSlotOccupyingCards(deck, duplicatesShareSlot)</code> —— 与 BuyFunc 门禁同源;凹陷空卡位是<strong>每格一个框</strong>(恒等于 deckSize),不能当空闲数用;utility 被动永不计数。</li>
+	<li><strong>重掷按钮</strong>:免费次数内显示「重掷 $0」(utility freeRerolls,每店访问重置),否则「重掷 $2」;滚动中或买不起时禁用(灰字 CardTextSoftColor + SetDisabled);点击 → <code>ShopManager.Reroll()</code>。</li>
+	<li>面板拟合同步走 DOTween,旧 tween 先 Kill;无内容的面板整块隐藏。</li>
+</ul>
+
+<h2 id="layout">8. 货架 / 卡组 / 空卡位布局 (ShopUXManager)</h2>
+<p>Inspector 序列化值(场景实测):</p>
+<table>
+	<tr><th>字段</th><th>场景值</th><th>说明</th></tr>
+	<tr><td><code>xOffset</code> / <code>yOffset</code> / <code>objPerRow</code></td><td>3.2 / 4.5 / 3</td><td>网格间距与列数(货架与卡组共用同一节奏)</td></tr>
+	<tr><td><code>physCardSize</code></td><td>(0.8, 0.8, 0.8)</td><td>卡统一缩放</td></tr>
+	<tr><td><code>shopItemPos</code> / <code>playerDeckPos</code></td><td>(0, 1.5, 0) / (0, −3.4, 0)</td><td>货架行 0 / 卡组行 0 的网格原点</td></tr>
+	<tr><td><code>physicalCardPrefab</code></td><td>PhysicalCardParent</td><td><code>Assets/Prefabs/UXPrototype/PhysicalCardParent.prefab</code></td></tr>
+	<tr><td><code>emptyCardSpacePrefab</code></td><td>EmptyCardSpaceParent</td><td><code>Assets/Prefabs/UXPrototype/EmptyCardSpaceParent.prefab</code>(凹陷空卡位,§3.5 纯 prefab 烘焙)</td></tr>
+	<tr><td><code>physCardEnlargeSize</code> / <code>enlargedPosition</code></td><td>1.5 / (0, 0, −1)</td><td>货架卡悬停放大倍率与放大位(ShopCardView 接管)</td></tr>
+	<tr><td><code>duplicateStackOffset</code> / <code>duplicateStackMaxOffsetCount</code></td><td>(−0.1, 0.1, 0.02) / 5</td><td>同 ID 复制体堆叠方向(左上)与封顶(规则当前 OFF,见 §11)</td></tr>
+	<tr><td><code>emptySlotZOffset</code></td><td>0.1</td><td>空卡位垫在卡后(z 越大离相机越远)</td></tr>
+	<tr><td><code>emptySlotSpawnDuration</code> / <code>emptySlotSpawnStagger</code></td><td>0.35 / 0.04</td><td>空卡位弹出:scale 0 → OutBack 过冲 → 正常,逐格延迟</td></tr>
+	<tr><td><code>chromeSprite</code> / <code>chromeFont</code></td><td>9-Sliced / RobotoCondensed-Regular SDF</td><td>chrome/panels 共用的 9-slice 精灵与字体(见 §14)</td></tr>
+</table>
+
+<h3>布局公式</h3>
+<table>
+	<tr><th>元素</th><th>公式</th></tr>
+	<tr><td>货架槽位</td><td><code>shopItemPos + ((col−1)·xOffset, −row·yOffset, 0)</code>,row = index / 3,col = index % 3;4+ 张自动换行</td></tr>
+	<tr><td>卡组带原点</td><td><code>playerDeckPos − max(0, 货架行数−1) · yOffset</code>(wrapped 货架把整条卡组带按行距下推,恒定间隙)</td></tr>
+	<tr><td>卡组槽位</td><td><code>CurrentDeckPos + ((col−1)·xOffset, −row·yOffset, 0)</code></td></tr>
+	<tr><td>升级轨基准</td><td><code>ceil(deckSize / 3) · 3</code>(卡组带后的第一个整行起点;占格卡走 0..deckSize−1 主轨,不占格 utility 走其后升级轨,双轨由 <code>StackSlotAssigner</code> 分流)</td></tr>
+	<tr><td>空卡位</td><td>槽位 i + z 0.1;进店与 deckSize 增长时补齐到 deckSize 个,<strong>永不被买/卖消耗、永不移动</strong></td></tr>
+	<tr><td>入场/重掷动画</td><td>卡从 ShopStartPos / DeckStartPos 飞入(卡位移时长 + 0.05s 后销毁旧卡重掷)</td></tr>
+</table>
+<p>占格判定:<code>occupiesDeckSlot</code> = true 走卡组网格;false(utility 被动)进升级行;非物理卡(<code>physicalDeckCard = false</code>)既不实例化也不可售。Inspector 改 <code>xOffset/yOffset/shopItemPos/playerDeckPos</code> 走 <code>OnValidate</code> → 下一帧 <code>RelayoutAll</code> 实时生效。</p>
+
+<h2 id="interaction">9. 卡片交互与按钮</h2>
+<h3>ShopCardView(挂在每张商店/卡组卡实例上)</h3>
+<table>
+	<tr><th>项</th><th>值</th><th>说明</th></tr>
+	<tr><td><code>ENLARGE_COOLDOWN_TIME</code></td><td>0.5s</td><td>放大/还原点击冷却(受 ShopInputGate 门禁)</td></tr>
+	<tr><td><code>UNITS_PER_PX</code></td><td>3.2 / 118</td><td>价格按钮 px→世界换算</td></tr>
+	<tr><td><code>PRICE_FACE_PAD_X</code> / <code>_Y</code></td><td>0.22 / 0.14</td><td>价格面片内边距</td></tr>
+	<tr><td>价格划线</td><td>仅 <code>ShopCardView.cs:73</code> 一处 <code>&lt;s&gt;</code></td><td>划线粗细在 RobotoCondensed SDF 资产上(StrikethroughThickness 8.4)</td></tr>
+	<tr><td><code>suppressPriceDisplay</code></td><td>-</td><td>复制堆叠的非基础卡隐藏价格(当前规则 OFF,不生效)</td></tr>
+</table>
+<h3>PhysButton 反馈参数(引擎默认;顶栏/面板世界按钮统一覆写)</h3>
+<table>
+	<tr><th>参数</th><th>引擎默认</th><th>chrome/panels 覆写</th></tr>
+	<tr><td><code>restShadow</code>(静止投影)</td><td>0.1085</td><td>0.05</td></tr>
+	<tr><td><code>hoverLift</code>(悬停抬升)</td><td>0.1085,0.12s</td><td>0.05</td></tr>
+	<tr><td><code>pressDuration</code></td><td>0.06s</td><td>(继承)</td></tr>
+	<tr><td><code>denyShift</code>(拒绝甩动)</td><td>0.1628,out 0.08s + swing 0.11s,衰减 0.55,hold 0.15s + retreat 0.12s</td><td>0.075</td></tr>
+	<tr><td>tooltip</td><td><code>hoverText</code> + hoverPopUpDelay 0.1s,右默认</td><td>(按需)</td></tr>
+</table>
+
+<h2 id="input">10. 输入管线与快捷键</h2>
+<ul>
+	<li><strong>单一物理管线</strong>:所有商店交互(按钮、卡体点击放大/还原)走 OnMouse 物理,<code>ShopInputGate</code> 引用计数统一门禁(重掷期间 Block;过渡期间 Block/由驱动接管)。没有 uGUI 输入。</li>
+	<li><strong>键盘</strong>:Space = 离开商店(PhaseManager,滚动到一半也能离开)。⚠ <code>ShopManager.Update</code> 里的 S(买卖切换)、R(重掷)、1-6(数字键买/卖)<strong>全部已注释停用</strong>。</li>
+	<li>⚠ 场景 <code>phaseInfo</code> 文案(「Press SPACE / R / NUMBER KEY / S …」)是遗留物,与实际键盘支持不符,仅存于数据未展示。</li>
+</ul>
+
+<h2 id="economy">11. 经济配置 (SO 实测值)</h2>
+<p>以下为编辑器实时序列化值(引用资产均在 <code>Assets/SORefs/ShopRefs/</code>;全部 <code>resetOnStart = true</code>,valueOg = value 为出厂值):</p>
+<table>
+	<tr><th>配置</th><th>资产 / 字段</th><th>当前值</th><th>说明</th></tr>
+	<tr><td>每场收入 (payCheck)</td><td>PayCheckRef</td><td>12</td><td>每打完一场战斗进店时发放(先快照后发放)</td></tr>
+	<tr><td>重掷价格</td><td>RerollPriceRef</td><td>2</td><td>免费重掷耗尽后</td></tr>
+	<tr><td>普通卡价</td><td>CommonPriceRef</td><td>4</td><td>按 prefab rarity 解析</td></tr>
+	<tr><td>稀有(优)卡价</td><td>UncommonPriceRef</td><td>6</td><td>同上</td></tr>
+	<tr><td>史诗(珍)卡价</td><td>RarePriceRef</td><td>12</td><td>同上</td></tr>
+	<tr><td>初始卡组大小</td><td>DeckSizeRef (valueOg 3)</td><td>3</td><td>分母即面板 03/05 的分母</td></tr>
+	<tr><td>卡组上限</td><td>MaxDeckSizeRef</td><td>12</td><td>deckSize 公式钳制顶(代码 fallback 16,资产接的是 12)</td></tr>
+	<tr><td>同 ID 共享槽</td><td>DuplicateCopiesShareSlotRef</td><td><strong>OFF (false)</strong></td><td>开 = 复制体共 1 槽堆叠、仅基础卡显示价格、计数去重</td></tr>
+	<tr><td>收入成长</td><td>incomeGrowthPerStep / sessionsPerIncomeStep</td><td>2 / 1</td><td>每场 +2(旧斜率)</td></tr>
+	<tr><td>hpMax 成长</td><td>hpMaxGrowthPerStep / sessionsPerHpMaxStep</td><td>2 / 1</td><td>每场 +2,叠加 deck HP utility</td></tr>
+	<tr><td>卡组成长</td><td>deckSizeGrowthPerStep / sessionsPerDeckSizeStep</td><td>1 / 1</td><td>每场 +1(进店时按公式重算并补空卡位)</td></tr>
+	<tr><td>扩容卡首价</td><td>deckSlotBasePrice</td><td>4</td><td> DeckSizeIncreaseEffect 计价卡</td></tr>
+	<tr><td>扩容卡步进</td><td>deckSlotPriceStep</td><td><strong>4</strong></td><td>⚠ 代码默认 2,场景已改为 4;计价 = base + step × 已购次数(DeckSlotPurchasesRef,跑内持久,开局清零)</td></tr>
+	<tr><td>utility 混池</td><td>splitUtilityCombatBoards</td><td><strong>false</strong></td><td>2026-09-11 起默认混池:utility 与战斗卡同一池,无 board-type roll(见 §12)</td></tr>
+	<tr><td>utility 面板槽位</td><td>utilityBoardSlotCount</td><td>3</td><td>仅 split 模式生效(当前休眠)</td></tr>
+</table>
+
+<h3>会话覆盖表 (ShopManager 场景序列化)</h3>
+<table>
+	<tr><th>表</th><th>条目</th><th>说明</th></tr>
+	<tr><td><code>sessionRarityWeights</code></td><td>session ≥0 → ShopRarityWeightRef_0 = C 90 / U 9 / R 1<br>session ≥2 → ShopRarityWeightRef_1 = C 75 / U 22 / R 3<br>session ≥4 → ShopRarityWeightRef_2 = C 60 / U 35 / R 5</td><td>取「startSession ≤ 当前场数」的最大者;无匹配回退 <code>rarityWeightRef</code>(= Ref_1)</td></tr>
+	<tr><td><code>sessionUtilityBoardChances</code></td><td>≥0 → 20%,≥3 → 15%,≥5 → 10%</td><td>⚠ 当前混池模式下<strong>整表休眠</strong>(board-type roll 被跳过);兜底默认 10% 在 <code>ShopBoardPipeline.DefaultUtilityBoardChancePercent</code></td></tr>
+</table>
+
+<h3>进店结算流程 (EnterShop 顺序)</h3>
+<ol>
+	<li><code>RunRecorder.OnShopEnter</code>(Async-PvP 快照,发放前)→ 清访问计数器</li>
+	<li><code>RefreshUtilityBonus</code>(从当前卡组重算全部 utility 贡献,无累积监听)</li>
+	<li><code>ApplyBaselineGrowth</code>:deckSize = valueOg + 每场成长 + 扩容购买次数,钳 [1, 12];补空卡位;hpMax 同公式重算且 <strong>hp = hpMax</strong>(商店恒满血不变式)</li>
+	<li>钱包 += <code>GetCurrentPayday()</code> = payCheck + 收入成长 + utility income 加成</li>
+	<li><code>GenerateShopItems</code>(§12)+ <code>ApplyBoardDiscount</code>(半价掷签)</li>
+	<li>显示 chrome / panels,记录 ShopStatsManager 访问</li>
+</ol>
+<p>卖卡 = <code>GetCardPrice / 2</code>(整数除);非物理卡不可卖;每次买/卖后重算 utility bonus + hpMax 满血,并 pulse 对应 deck 实例(1.2× OutBack 0.12s)。</p>
+
+<h2 id="pipeline">12. 货架生成管线 (ShopBoardPipeline)</h2>
+<p>纯静态、注入 <code>Rng.Channel(Shop)</code>(确定性随机)。当前模式 = <strong>混池(mixedPool)</strong>:</p>
+<table>
+	<tr><th>步骤</th><th>规则(当前生效路径)</th></tr>
+	<tr><td>1. 池分类</td><td>utilityKind ≠ None/ OddsUtility 的卡 + 扩容卡 → utility 池;OddsUtility 双池;其余 → 战斗池。<strong>已拥有的 utility 类型从双池剔除</strong>(own-once);到上限时扩容卡全链剔除</td></tr>
+	<tr><td>2. 通用槽</td><td>槽位 = <code>shopItemAmount(3) + extraShopOptions</code>;战斗/utility 卡同一混合池(引用去重防 OddsUtility 权重翻倍)按权重 roll:<code>weight = 会话表(rarity) × shopRollWeightMultiplier × utility 稀有度乘子</code></td></tr>
+	<tr><td>3. 波过滤</td><td>仅战斗波生效:生物波命中 → 只生物;现象波(命中且生物波 miss)→ 只 CardType.None;过滤后为空回退全池(波永不清空货架)</td></tr>
+	<tr><td>4. 机会加槽</td><td>utility bonus <code>extraBoardSlots</code> 命中 <code>extraBoardSlotsChancePercent</code>(如魇市游摊 13%)→ 本板 +N 槽,独立 per-board 概率,无保底无 pity</td></tr>
+	<tr><td>5. 保留槽</td><td>追加在通用槽之后,永不挤占;每板独立 chance roll(默认 25%),<code>firstBoardOnly</code> 只在第 0 板;按 rarity / tag / ODDS 谓词<strong>绕过权重</strong>均匀抽;混池从合并池抽;utility 板抽空回退普通权重 roll</td></tr>
+	<tr><td>6. 半价折扣</td><td>每块生成板(首板与重掷板均)每条 discount spec 独立掷 chance;命中百分比<strong>求和后落在 1 张随机板卡</strong>上,半价向上取整;重掷即清零重掷</td></tr>
+</table>
+<p>游标日志:<code>[ShopBoard] board#N type=… fullPool=… combatPool=… utilityPool=… chanceExtraSlots=… board=[IDs]</code>,与 <code>[ShopBoard] physical shelf=[…]</code> 一一对应。</p>
+
+<h2 id="transition">13. 阶段过渡 (PhaseTransitionDriver)</h2>
+<p>配置资产:<code>Assets/Resources/PhaseTransitionConfig.asset</code>(缺资产 = 过渡自动关闭,不报错)。实测值:</p>
+<table>
+	<tr><th>字段</th><th>值</th><th>说明</th></tr>
+	<tr><td><code>enabled</code></td><td>true</td><td>总开关;off = 硬切旧行为</td></tr>
+	<tr><td><code>skipInHeadless</code></td><td>true</td><td>批处理 / overrideCombatSeed / NullCombatVisuals 时跳过(确定性运行零过渡成本)</td></tr>
+	<tr><td><code>transDur</code></td><td>0.8s</td><td>相机 travel + 全部共享飞行时长</td></tr>
+	<tr><td><code>cardStagger</code></td><td>0.07s</td><td>逐卡飞行延迟</td></tr>
+	<tr><td><code>easeMode</code> / <code>overshoot</code></td><td>Overshoot / 1.7</td><td>DOTween OutBack;Smooth≈OutQuad,Linear</td></tr>
+	<tr><td><code>cardArcDemoPx</code></td><td>90</td><td>卡飞行弧高(demo px,740px 页面换算)</td></tr>
+	<tr><td><code>enemySlideDemoPx</code></td><td>140</td><td>敌方 HUD 反向滑入距离</td></tr>
+	<tr><td><code>pagePadDemoPx</code></td><td>200</td><td>页面外背景垫(v1.1 world topo)</td></tr>
+</table>
+<ul>
+	<li>世界结构:战斗页 = 商店页 +pageH;启用时把 <code>CombatUXManager</code> 的 7 个世界标记(牌堆/揭晓/展示/墓区/新临时卡/状态消耗/聚焦)整体 +pageH,禁用时对称还原,回退字节级一致。</li>
+	<li>Shop→Combat:阶段在 travel 开始时翻转;借用的商店卡组卡做飞行替身(弧线 + 扇形旋转 5°/张 + 顶点盖牌,combat-entry shuffle 是 never-cover 规则的合法盖牌点),落地后真身就位、替身销毁;敌方 HUD 反向滑下;期间 ShopInputGate + CombatManager 输入双封锁。</li>
+	<li>Result→Shop:相机回到离开时的滚动位(<code>_lastShopY</code>),头像/HP 药丸由 presenter 滑回顶栏,落地显示 chrome。</li>
+	<li>相机/滚动/面板显示全部以 <code>IsTransitioning</code> 仲裁;滚动 rig 与过渡 tween 同写 Camera Man。</li>
+</ul>
+
+<h2 id="assets">14. 资产与颜色引用</h2>
+<h3>资产</h3>
+<table>
+	<tr><th>用途</th><th>资产</th></tr>
+	<tr><td>chrome/panels 9-slice 精灵</td><td><code>Assets/Sprites/RoundedCorner.png</code> 内的 <strong>9-Sliced</strong> 子精灵(注意:资产文件名仍是 RoundedCorner)</td></tr>
+	<tr><td>chrome 字体主字体</td><td>RobotoCondensed-Regular SDF</td></tr>
+	<tr><td>字体 fallback 链(实测顺序)</td><td>[0] SourceHanSansCN-Regular SDF → [1] SourceHanSansCN-Bold SDF → [2] <strong>NotoSansSymbols2 SDF</strong>(✦ ♥ ❚)→ [3] <strong>NotoSansSymbolsAlchemical SDF</strong>(🜲,链尾)</td></tr>
+	<tr><td>卡实例 / 空卡位 prefab</td><td><code>Assets/Prefabs/UXPrototype/PhysicalCardParent.prefab</code> / <code>EmptyCardSpaceParent.prefab</code></td></tr>
+	<tr><td>卡池 / 现货架 SO</td><td><code>ShopPoolRef.asset</code>(<strong>ShopPoolRef 必须含全部 4.0 prefab</strong>,有 check-shop-pool-ref 技能校验)、<code>ShopCurrentItemDeckRef.asset</code>、<code>StartingDeckPoolRef.asset</code></td></tr>
+	<tr><td>玩家侧 SO</td><td>PlayerDeckRef / PlayerDeckSizeRef / MaxDeckSizeRef / PurseRef / SessionNumRef / DeckSlotPurchasesRef / DuplicateCopiesShareSlotRef</td></tr>
+	<tr><td>稀有度权重</td><td><code>SORefs/ShopRefs/ShopRarityWeightRefs/ShopRarityWeightRef_{0,1,2}.asset</code></td></tr>
+	<tr><td>过渡配置</td><td><code>Assets/Resources/PhaseTransitionConfig.asset</code></td></tr>
+</table>
+<h3>chrome/panels 用色(全部来自 GameColorPalette 静态,实测 RGBA)</h3>
+<table>
+	<tr><th>色名</th><th>HEX</th><th>用途</th></tr>
+	<tr><td>OwnerCardColor</td><td><span class="swatch" style="background:#D1CDC8"></span>#D1CDC8</td><td>按钮面片(离开/❚❚/重掷)</td></tr>
+	<tr><td>CardShadowColor</td><td><span class="swatch" style="background:#0A0E19"></span>#0A0E19 60%</td><td>按钮投影</td></tr>
+	<tr><td>OwnerTextColor</td><td><span class="swatch" style="background:#1A3037"></span>#1A3037</td><td>按钮文字</td></tr>
+	<tr><td>TooltipBgColor / TooltipTextColor</td><td><span class="swatch" style="background:#1A3037"></span>#1A3037 / <span class="swatch" style="background:#D1CDC8"></span>#D1CDC8</td><td>钱包芯片底 / 普通芯片字</td></tr>
+	<tr><td>ShopPanelBgColor</td><td><span class="swatch" style="background:#000000"></span>#000000 85%</td><td>三面板底板 + 深色小芯片底</td></tr>
+	<tr><td>HighlightColor</td><td><span class="swatch" style="background:#FFEB04"></span>#FFEB04</td><td>钱包 / 收入字、槽位计数器</td></tr>
+	<tr><td>CardTextSoftColor</td><td><span class="swatch" style="background:#5A6669"></span>#5A6669</td><td>禁用态重掷文字</td></tr>
+	<tr><td>HpNormalPlayerColor / IconNameLabelColor</td><td><span class="swatch" style="background:#1A3037"></span>#1A3037</td><td>世界 HP 数字 / 用户名</td></tr>
+</table>
+
+<h2 id="obs">15. 观察与注意事项</h2>
+<div class="warn">
+	<strong>货架净空临界</strong>:按当前正交 6.06,货架空位公式算出的行 0 卡顶(含价格按钮余量)= 1.5 + 2.5 × 0.8 = <strong>3.50</strong>,而 chrome 带底 = 0 + 6.06 − 2.6 = <strong>3.46</strong> —— 理论上 <code>CheckShelfClearance</code> 每次货架重建都会报 0.04u 越线警告。这正是未落地计划 <code>plans/plan-shop-topbar-heightfit-resize-2026-09-21.md</code> 的课题(相机高度自适应),当前以警告形式存在,不拦截。
+</div>
+<div class="note">
+	<strong>phaseInfo 文案过期</strong>:S/R/数字键已停用(代码注释),快捷键实际只剩 Space(离开)+ 滚轮 + 物理点击;但 <code>phaseInfo</code> 字符串仍宣传四组快捷键。清理属低风险项,待拍板。
+</div>
+<ul>
+	<li>相机正交尺寸 6.06 无代码写入点,纯场景值;Game 视口宽高比大变会破坏顶栏世界常量的对位(ShopTopBarLayout 顶部已注明该 caveat)。</li>
+	<li><code>sessionUtilityBoardChances</code> 表在混池模式下休眠;若未来切回 split 模式,注意场景表是 20/15/10 递减而非代码默认的 10/15/20 递增。</li>
+	<li>EditMode 覆盖:ShopPageHudTests 像素金证(B1/B2)、ShopSectionPanels 静态助手(FormatSlotCount / ComputeContentBounds / CountUsedSlots)、PhaseFlightPlanner 布局计算。</li>
+	<li>统计埋点:ShopStatsManager(进店/出现/购买/重掷,boardType 维度)+ RunRecorder Async-PvP 日志(goldEnter/goldAfterPayday 等),离店 Flush。</li>
+</ul>
+
+<h2 id="tuning">16. 常用调参速查</h2>
+<table>
+	<tr><th>想改什么</th><th>去哪改</th></tr>
+	<tr><td>货架张数 / 列数 / 网格间距</td><td>ShopManager <code>shopItemAmount</code>;ShopUXManager <code>objPerRow / xOffset / yOffset</code>(Inspector 实时生效)</td></tr>
+	<tr><td>滚动速度 / 下限余量</td><td>ShopUXManager <code>cameraScrollSpeed / scrollBottomPadding</code></td></tr>
+	<tr><td>价格 / 收入 / 重掷 / 扩容计价</td><td>对应 IntSO 资产(§11);扩容步进在 ShopManager <code>deckSlotPriceStep</code></td></tr>
+	<tr><td>稀有度概率曲线</td><td>三个 ShopRarityWeightRef_*.asset + <code>sessionRarityWeights</code> 起始场数</td></tr>
+	<tr><td>面板留白 / header 高度 / 重掷按钮尺寸</td><td><code>ShopSectionPanels.cs</code> 常量(需重编译)</td></tr>
+	<tr><td>顶栏行位 / 头像 HP 缩放</td><td><code>ShopTopBarLayout.cs</code> 视口常量(注意按当前 Game 宽高比调校)</td></tr>
+	<tr><td>过渡时长 / 缓动 / 弧高</td><td><code>Assets/Resources/PhaseTransitionConfig.asset</code>(无需重编译)</td></tr>
+	<tr><td>空卡位弹出节奏</td><td>ShopUXManager <code>emptySlotSpawnDuration / emptySlotSpawnStagger</code></td></tr>
+</table>
+
+<p class="meta" style="margin-top:40px">文档生成: ZCode (execute_code 实测 + 源码核对) · 2026-09-22 · 若与代码冲突以代码为准</p>
+</body>
+</html>
