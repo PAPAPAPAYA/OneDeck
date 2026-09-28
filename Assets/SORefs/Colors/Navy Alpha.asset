@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe7686bffff299143ad9a848844bda45, type: 3}
   m_Name: Navy Alpha
   m_EditorClassIdentifier: Assembly-CSharp::ColorSO
-  value: {r: 0.101960786, g: 0.1882353, b: 0.21568628, a: 0.5019608}
+  value: {r: 0.101960786, g: 0.1882353, b: 0.21568628, a: 0.69803923}
   description: Text color on player cards (also HP numeric normal)
