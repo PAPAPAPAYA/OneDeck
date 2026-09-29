@@ -7,7 +7,7 @@ using UnityEngine;
 /// <summary>
 /// Runtime-built world-space section panels for the shop page (UIKitDemo 08 port,
 /// plan-shop-panels-port-2026-09-18): translucent dark rounded rectangles behind the
-/// Shop / Deck / Upgrades rows, with header labels, the Deck slot counter (03/05) and
+/// Shop / Deck / Upgrades rows, with header labels, the Deck slot counter and
 /// the reroll button — relocated from the chrome band into the Shop panel header per
 /// the 2026-09-18 annotated layout. Built once by Bootstrap (mirrors ShopChrome);
 /// refitted by RefreshLayout, which ShopUXManager calls after every relayout. 2026-09-22:
@@ -17,7 +17,10 @@ using UnityEngine;
 /// carry no colliders and never intercept physics input. Pure helpers (bounds, slot
 /// format) are static for EditMode coverage. 2026-09-23: widget recipes (panel bg /
 /// header labels / reroll button) build through ShopWorldWidgets — this file keeps fit
-/// + refresh logic only (plan-shop-layout-config-widget-factory).
+/// + refresh logic only (plan-shop-layout-config-widget-factory). 2026-09-29: the reroll
+/// button's style moved to the authored RerollButton.prefab (Tpl_WorldButton variant) —
+/// this file keeps only its action / dynamic-text / disabled wiring
+/// (plan-shop-reroll-button-prefab-2026-09-29).
 /// </summary>
 public class ShopSectionPanels : MonoBehaviour
 {
@@ -39,11 +42,6 @@ public class ShopSectionPanels : MonoBehaviour
 	private const float HeaderFontSizeDefault = 3.2f;
 	private const float HeaderLeftMarginDefault = 0.25f;
 	private const float HeaderRightMarginDefault = 0.25f;
-	private const float ButtonWidthDefault = 2.0f;
-	private const float ButtonHeightDefault = 0.56f;
-	private const float ButtonFontSizeDefault = 2.4f;
-	private const float RestShadowUnitsDefault = 0.05f;
-	private const float DenyShiftUnitsDefault = 0.075f;
 
 	// Card face half-extents at scale 1, from the EmptyCardSpace bake (3.3 x 4.7 units).
 	// The below factor includes the price-button allowance; it is THE shared source —
@@ -67,6 +65,8 @@ public class ShopSectionPanels : MonoBehaviour
 	private TextMeshPro _deckCounter;
 	private PhysButton _rerollButton;
 	private TMP_Text _rerollLabel;
+	private PaletteTint _rerollLabelTint;
+	private GameObject _rerollButtonPrefab;
 	private bool _rerollRolling;
 	private string _lastRerollLabel;
 	private bool _lastRerollDisabled;
@@ -75,9 +75,11 @@ public class ShopSectionPanels : MonoBehaviour
 
 	/// <summary>
 	/// Builds the panels once (idempotent) as a scene-root object; shows them when the
-	/// game is already in Shop phase (same bootstrap-timing guard as ShopChrome).
+	/// game is already in Shop phase (same bootstrap-timing guard as ShopChrome). The
+	/// reroll button prefab is optional — a null / unwired value falls back to the legacy
+	/// runtime-built button (old scenes / headless).
 	/// </summary>
-	public static void Bootstrap(Sprite sprite, TMP_FontAsset font)
+	public static void Bootstrap(Sprite sprite, TMP_FontAsset font, GameObject rerollButtonPrefab)
 	{
 		if (_instance != null) return;
 		if (sprite == null || font == null)
@@ -91,6 +93,7 @@ public class ShopSectionPanels : MonoBehaviour
 		_instance = root.AddComponent<ShopSectionPanels>();
 		_instance._sprite = sprite;
 		_instance._font = font;
+		_instance._rerollButtonPrefab = rerollButtonPrefab;
 		_instance.Build();
 
 		if (ShopManager.me != null && ShopManager.me.gamePhaseRef != null
@@ -170,9 +173,9 @@ public class ShopSectionPanels : MonoBehaviour
 	}
 
 	// Build-once style values re-applied on every refit so a Play-mode tuning session moves
-	// them too (plan §3.3): header font sizes, reroll label font/rect, reroll face+collider
-	// size and its press/hover/deny params. Panel geometry re-derives from the paddings
-	// inside FitPanel on every call by itself.
+	// them too (plan §3.3): header font sizes — the reroll
+	// label's style is owned by its prefab since the 2026-09-29 port. Panel geometry
+	// re-derives from the paddings inside FitPanel on every call by itself.
 	private void ApplySharedStyle()
 	{
 		float headerFontSize = Tuning(t => t.headerFontSize, HeaderFontSizeDefault);
@@ -186,20 +189,6 @@ public class ShopSectionPanels : MonoBehaviour
 		_upgradesHeader.fontSize = headerFontSize;
 		_upgradesHeader.fontStyle = fontStyle;
 		if (_deckCounter != null) _deckCounter.fontStyle = fontStyle;
-
-		if (_rerollButton == null) return;
-		float buttonWidth = Tuning(t => t.buttonWidth, ButtonWidthDefault);
-		float buttonHeight = Tuning(t => t.buttonHeight, ButtonHeightDefault);
-		_rerollButton.ConfigureWorldFaceSize(new Vector2(buttonWidth, buttonHeight), Vector2.zero);
-		_rerollButton.restShadow = Tuning(t => t.restShadowUnits, RestShadowUnitsDefault);
-		_rerollButton.hoverLift = Tuning(t => t.restShadowUnits, RestShadowUnitsDefault);
-		_rerollButton.denyShift = Tuning(t => t.denyShiftUnits, DenyShiftUnitsDefault);
-		if (_rerollLabel != null)
-		{
-			_rerollLabel.fontSize = Tuning(t => t.buttonFontSize, ButtonFontSizeDefault);
-			_rerollLabel.fontStyle = fontStyle;
-			_rerollLabel.rectTransform.sizeDelta = new Vector2(buttonWidth - 0.2f, buttonHeight);
-		}
 	}
 
 	/// <summary>Content bounds for a set of card/slot centers: X expanded by halfWidth,
@@ -275,23 +264,52 @@ public class ShopSectionPanels : MonoBehaviour
 			new Vector2(6f, 1f), pivot, new Vector3(0f, 0f, HeaderZ));
 	}
 
-	// Same world-button recipe as ShopChrome's (both via ShopWorldWidgets since
-	// 2026-09-23); the reroll keeps its action + label wiring here, position comes from
-	// FitPanel.
+	// Reroll button: authored prefab when wired (style authority — RerollButton.prefab,
+	// a Tpl_WorldButton variant, 2026-09-29 plan), legacy runtime build otherwise (old
+	// scenes / headless). Both paths keep the action + label wiring here; position comes
+	// from FitPanel.
 	private PhysButton CreateRerollButton()
 	{
-		TextMeshPro label;
-		PhysButton button = ShopWorldWidgets.CreateWorldButton(transform, "RerollButton", _font, _sprite,
+		if (_rerollButtonPrefab != null)
+		{
+			GameObject go = Instantiate(_rerollButtonPrefab, transform, false);
+			go.name = "RerollButton";
+			PhysButton button = go.GetComponent<PhysButton>();
+			TextMeshPro label = go.GetComponentInChildren<TextMeshPro>(true);
+			Transform faceTr = go.transform.Find("Visual/Face");
+			SpriteRenderer face = faceTr != null ? faceTr.GetComponent<SpriteRenderer>() : null;
+			// VISUAL-FIX(2026-09-29): Reroll face stayed white after a disabled -> re-enable cycle
+			//   Cause:    PhysButton._faceColor (the re-enable restore color) is captured only in
+			//             SetWorldFace; prefab instances carry _faceRenderer serialized but nobody
+			//             called the setter, so _faceColor kept its Color.white default.
+			//   Affects:  ShopSectionPanels.CreateRerollButton prefab branch (ApplyDisabledVisual
+			//             restore); chrome Exit/Options buttons never disable, so they were unaffected
+			//   Regress:  Play: drain purse + free rerolls -> reroll disabled (dim) -> regain money
+			//             or a free reroll -> face must return to ButtonFace, not white
+			//   Related:  PhysButton.SetWorldFace / ApplyDisabledVisual, RerollButton.prefab
+			// The palette Apply first is deliberate: the instance is built under an inactive
+			// root, so PaletteTint.OnEnable has not run yet and the capture must see the live
+			// palette color, not the prefab's baked-at-port-time one.
+			PaletteTint faceTint = face != null ? face.GetComponent<PaletteTint>() : null;
+			if (faceTint != null) faceTint.Apply();
+			button.SetWorldFace(face);
+			button.SetWorldAction(() => { if (ShopManager.me != null) ShopManager.me.Reroll(); });
+			_rerollLabel = label;
+			_rerollLabelTint = label != null ? label.GetComponent<PaletteTint>() : null;
+			return button;
+		}
+
+		TextMeshPro fallbackLabel;
+		PhysButton fallbackButton = ShopWorldWidgets.CreateWorldButton(transform, "RerollButton", _font, _sprite,
 			"重掷 $0", 0f, 0f,
-			Tuning(t => t.buttonWidth, ButtonWidthDefault),
-			Tuning(t => t.buttonHeight, ButtonHeightDefault),
-			Tuning(t => t.buttonFontSize, ButtonFontSizeDefault),
-			Tuning(t => t.restShadowUnits, RestShadowUnitsDefault),
-			Tuning(t => t.denyShiftUnits, DenyShiftUnitsDefault),
-			out label);
-		button.SetWorldAction(() => { if (ShopManager.me != null) ShopManager.me.Reroll(); });
-		_rerollLabel = label;
-		return button;
+			// Legacy fallback values = the former factory defaults of the retired
+			// panels.button* tuning (width / height / font size / rest shadow / deny shift).
+			2.0f, 0.56f, 2.4f, 0.05f, 0.075f,
+			out fallbackLabel);
+		fallbackButton.SetWorldAction(() => { if (ShopManager.me != null) ShopManager.me.Reroll(); });
+		_rerollLabel = fallbackLabel;
+		_rerollLabelTint = null;
+		return fallbackButton;
 	}
 
 	private static List<Vector3> TargetsOf(IReadOnlyList<GameObject> cards)
@@ -323,7 +341,6 @@ public class ShopSectionPanels : MonoBehaviour
 		float headerHeight = Tuning(t => t.headerHeight, HeaderHeightDefault);
 		float headerLeftMargin = Tuning(t => t.headerLeftMargin, HeaderLeftMarginDefault);
 		float headerRightMargin = Tuning(t => t.headerRightMargin, HeaderRightMarginDefault);
-		float buttonWidth = Tuning(t => t.buttonWidth, ButtonWidthDefault);
 		// Snap while hidden (phase travel): a tween would land later than the next show; the
 		// visible case keeps the gliding fit (tunable via fitTweenDuration).
 		float fitDuration = Tuning(t => t.fitTweenDuration, FitTweenDurationDefault);
@@ -347,7 +364,10 @@ public class ShopSectionPanels : MonoBehaviour
 		}
 		if (reroll && _rerollButton != null)
 		{
-			_rerollButton.transform.position = new Vector3(max.x - headerRightMargin - buttonWidth * 0.5f - 0.15f, headerY, 0f);
+			// Width reads the live instance face (prefab is the size authority since the
+			// 2026-09-29 port) so a prefab-side resize keeps the button right-aligned.
+			Vector2 faceSize = _rerollButton.WorldFaceSize;
+			_rerollButton.transform.position = new Vector3(max.x - headerRightMargin - faceSize.x * 0.5f - 0.15f, headerY, 0f);
 		}
 	}
 
@@ -399,7 +419,19 @@ public class ShopSectionPanels : MonoBehaviour
 		{
 			_lastRerollDisabled = disabled;
 			_rerollButton.SetDisabled(disabled);
-			_rerollLabel.color = disabled ? GameColorPalette.CardTextSoftColor : GameColorPalette.OwnerTextColor;
+			// Prefab label: flip the PaletteTint slot (OwnerText <-> CardTextSoft) instead of
+			// a raw color write — a direct color would be clobbered by the next PaletteTint
+			// re-apply (OnEnable / editor Changed broadcast). The runtime-built fallback label
+			// has no tint component and keeps the direct color flip.
+			if (_rerollLabelTint != null)
+			{
+				_rerollLabelTint.slot = disabled ? PaletteTint.Slot.CardTextSoft : PaletteTint.Slot.OwnerText;
+				_rerollLabelTint.Apply();
+			}
+			else
+			{
+				_rerollLabel.color = disabled ? GameColorPalette.CardTextSoftColor : GameColorPalette.OwnerTextColor;
+			}
 		}
 	}
 }

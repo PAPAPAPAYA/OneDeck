@@ -74,6 +74,10 @@ public class PhysButton : MonoBehaviour
 
 	public bool IsDisabled => _externalDisabled;
 
+	/// <summary>Current face sliced size (zero when no face) — the panels re-fit positions
+	/// the reroll button by this instead of the retired panels.buttonWidth tuning.</summary>
+	public Vector2 WorldFaceSize => _faceRenderer != null ? _faceRenderer.size : default;
+
 	// VISUAL-FIX(2026-09-25): Reroll button face ignored panels.buttonWidth/buttonHeight
 	//   tuning — only its shadow and collider resized.
 	//   Cause:    Awake unconditionally ran _faceRenderer = GetComponent<SpriteRenderer>();

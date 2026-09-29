@@ -3066,6 +3066,7 @@ MonoBehaviour:
   useDynamicScrollBounds: 1
   scrollBottomPadding: 3
   hudPagePrefab: {fileID: 3805871494095744686, guid: 0923243771841054291fb6bc04ef08b4, type: 3}
+  rerollButtonPrefab: {fileID: 9199868540181086274, guid: 219aa0b130d8b5b499a7a41c70082e32, type: 3}
   chromeSprite: {fileID: -5177388603050735206, guid: ee4c724560d27684d969ba363b913448, type: 3}
   chromeFont: {fileID: 11400000, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
   panels:

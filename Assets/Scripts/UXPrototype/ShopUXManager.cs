@@ -71,7 +71,9 @@ public class ShopUXManager : MonoBehaviour
 	[Header("Shop Chrome (world)")]
 	[Tooltip("Authored shop top-bar page prefab (2026-09-24 prefab port — plan-shop-hud-prefab-widgets); consumed by ShopChrome.Bootstrap")]
 	public GameObject hudPagePrefab;
-	[Tooltip("Sliced sprite for the section panels / reroll button (ShopSectionPanels; the card face sprite keeps them consistent with price buttons)")]
+	[Tooltip("Authored reroll button prefab (2026-09-29 prefab port — plan-shop-reroll-button-prefab); a Tpl_WorldButton variant, style authority for ShopSectionPanels")]
+	public GameObject rerollButtonPrefab;
+	[Tooltip("Sliced sprite for the section panels (ShopSectionPanels; the card face sprite keeps them consistent with price buttons)")]
 	public Sprite chromeSprite;
 	[Tooltip("Font asset for section panel labels (world-space TMP; ShopSectionPanels)")]
 	public TMP_FontAsset chromeFont;
@@ -99,12 +101,7 @@ public class ShopUXManager : MonoBehaviour
 		public float headerFontSize = 3.2f;
 		public float headerLeftMargin = 0.25f;
 		public float headerRightMargin = 0.25f;
-		public float buttonWidth = 2.0f;
-		public float buttonHeight = 0.56f;
-		public float buttonFontSize = 2.4f;
-		public float restShadowUnits = 0.05f;
-		public float denyShiftUnits = 0.075f;
-		[Tooltip("Synthetic-bold (TMP FontStyles.Bold) for the panel headers, deck counter and reroll label; applies live like the other tuning fields")]
+		[Tooltip("Synthetic-bold (TMP FontStyles.Bold) for the panel headers and deck counter (the reroll label's style is owned by its prefab since the 2026-09-29 port); applies live like the other tuning fields")]
 		public bool fontBold = false;
 	}
 
@@ -706,7 +703,7 @@ public class ShopUXManager : MonoBehaviour
 	private void Start()
 	{
 		ShopChrome.Bootstrap(hudPagePrefab);
-		ShopSectionPanels.Bootstrap(chromeSprite, chromeFont);
+		ShopSectionPanels.Bootstrap(chromeSprite, chromeFont, rerollButtonPrefab);
 		_mainCamera = Camera.main;
 		if (_mainCamera == null) return;
 		_phaseManager = FindFirstObjectByType<PhaseManager>();
