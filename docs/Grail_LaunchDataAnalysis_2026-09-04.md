@@ -317,6 +317,12 @@ Interpretation:
 
 **2026-09-22 (05:08 UTC, day 22):** totals **400 = 356 / 44 (89.0%)** — one review in 17.4 h; day-21 closed at **2** (chain … 4 → 5 → 9 → 5 → 2), day-22 partial 0 known. Negatives flat (44) for the first time since the day-19 spike; the deletion/flip noise from Sep 21 resolved (+1 pos, totals +1, no vote changes). Near-anchor CCU 181 @ 05:08 UTC vs 283 @ d18 — the steepest step yet (−36% over 4 days, caveat: 05:08 vs 03:56 sample times). Month-1 call tightens again to **≈420–435 reviews ≈ 12.8k–17k units**, now *below* the §12 low-band line — week-3 intake collapsed faster than the launch-week cohort tables implied it would. Store-page risk unchanged: the 8-vote balance negative still owns the helpful sort; no developer response visible in the review corpus as of this pull.
 
+**2026-09-29 (02:11 UTC, day 29):** totals **433 = 377 / 56 (87.1%)** — +33 reviews and **+12 negatives in 6.9 days** (worst negative accumulation rate since launch week: ≈1.7/day). Known day closures (list lags ~7.5 h; 9/23–24 inferred): … 2 | ≈4–5 → ≈4–5 → 5 → 2 → 9 → 6 | day-29 partial 1–2. Month-1 (Sep 1–30) closes tomorrow at **≈436–440 reviews ≈ 13k–17.5k units; gross ≈ $115k–154k, net ≈ $81k–108k ≈ ¥54万–73万** — final, below every pre-launch third-party prediction band's midpoint discipline (Gamalytic M1 7.8k units was beaten ~1.8×, but the doc's own corrected low band 13.5k–26k is exited at the bottom).
+
+- **New negative axes this week**: (a) *ranked system design* — "ranked is progressive, not elo-based; playing more by default raises rank" (first matchmaking-system-as-design complaint, distinct from the old fairness axis); (b) *Zappy balance* — EN 9.3 h with 5 votes (rising flagship contender): "Zappy is currently broken and makes up 80% of my matchup losses… watching the agonizing combo particles without your card choices even impacting the game" — merges balance + spectator-agency; (c) *UX mess* (2 votes), (d) *handheld perf* — FR: crashes on Rog Ally X; (e) genre-fit "zero innovation, different coat of paint". The helpful-sort top is now contested between the 8-vote synergy-web negative and the 5-vote Zappy one.
+- zh-CN flow continues positive (3 in this batch, incl. a 75 h veteran; lifetime zh-CN negatives still 3).
+- CCU 197 @ 02:11 UTC (anchor-comparable): 317 (d17) → 283 (d18) → 197 (d29) ≈ −4.3%/day over 11 days — slow bleed, no collapse; d22's 181 reading now looks like intraday noise, not a cliff.
+
 ## Appendix: Data Provenance
 
 | Endpoint | Use |
