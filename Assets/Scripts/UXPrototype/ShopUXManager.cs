@@ -73,6 +73,8 @@ public class ShopUXManager : MonoBehaviour
 	public GameObject hudPagePrefab;
 	[Tooltip("Authored reroll button prefab (2026-09-29 prefab port — plan-shop-reroll-button-prefab); a Tpl_WorldButton variant, style authority for ShopSectionPanels")]
 	public GameObject rerollButtonPrefab;
+	[Tooltip("Authored buy/sell price button prefab (2026-09-29 prefab port — plan-shop-price-button-prefab); a Tpl_WorldButton variant, style authority for ShopCardView.EnsurePriceButton")]
+	public GameObject priceButtonPrefab;
 	[Tooltip("Sliced sprite for the section panels (ShopSectionPanels; the card face sprite keeps them consistent with price buttons)")]
 	public Sprite chromeSprite;
 	[Tooltip("Font asset for section panel labels (world-space TMP; ShopSectionPanels)")]

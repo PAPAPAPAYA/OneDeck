@@ -158,6 +158,8 @@ public class ShopCardView : MonoBehaviour
 	/// <summary>
 	/// Build the price button around the existing price print: the print becomes the label,
 	/// a sliced face sprite + hard shadow sit under it, and a BoxCollider2D covers the face.
+	/// Style authority is PriceButton.prefab (2026-09-29 prefab port) when wired; the legacy
+	/// runtime build stays as the fallback (old scenes / headless).
 	/// </summary>
 	private PhysButton EnsurePriceButton()
 	{
@@ -169,7 +171,56 @@ public class ShopCardView : MonoBehaviour
 		// Static root = stable hitbox (envelope-sized in ConfigureWorldFaceSize); only the
 		// Visual group moves for hover/press/deny. The shadow stays a direct child of the
 		// root: it is grounded and never moves.
-		GameObject rootGo = new GameObject("PriceButton", typeof(BoxCollider2D));
+		GameObject rootGo;
+		if (ShopUXManager.Instance != null && ShopUXManager.Instance.priceButtonPrefab != null)
+		{
+			// Authored prefab path (plan-shop-price-button-prefab-2026-09-29): the prefab is a
+			// Tpl_WorldButton variant with the Label child deleted — the price print is external
+			// and re-parented below. Colors / feel / z layering are prefab data; only per-card
+			// wiring happens here. Root placement mirrors the legacy build (:174-176).
+			Vector3 printLocalPos = printT.localPosition;
+			rootGo = Instantiate(ShopUXManager.Instance.priceButtonPrefab, printT.parent, false);
+			rootGo.transform.localPosition = printLocalPos;
+			rootGo.transform.localRotation = Quaternion.identity;
+			rootGo.transform.localScale = Vector3.one;
+
+			Transform shadowTr = rootGo.transform.Find("Shadow");
+			Transform faceTr = rootGo.transform.Find("Visual/Face");
+			// Card-face sprite stays a code copy (plan §3.1-5): the per-card shape source; the
+			// prefab's baked sprite is only a placeholder. PaletteTint owns the colors.
+			if (_cardPhysObj.cardFace != null)
+			{
+				if (shadowTr != null) shadowTr.GetComponent<SpriteRenderer>().sprite = _cardPhysObj.cardFace.sprite;
+				if (faceTr != null) faceTr.GetComponent<SpriteRenderer>().sprite = _cardPhysObj.cardFace.sprite;
+			}
+
+			// VISUAL-FIX(2026-09-29): prefab price button face turned white after disabled -> re-enable
+			//   Cause:    PhysButton._faceColor (the re-enable restore color) is captured only in
+			//             SetWorldFace; prefab instances carry _faceRenderer serialized but nobody
+			//             called the setter, so _faceColor kept its Color.white default.
+			//   Affects:  ShopCardView.EnsurePriceButton prefab branch (ApplyDisabledVisual restore);
+			//             the palette Apply first mirrors the reroll fix (capture the live palette
+			//             color, not a stale one)
+			//   Regress:  Play: unaffordable card dims -> afford it again -> face must return to
+			//             ButtonFace, not white
+			//   Related:  PhysButton.SetWorldFace / ApplyDisabledVisual, PriceButton.prefab,
+			//             ShopSectionPanels.CreateRerollButton prefab branch (same fix, 09-29)
+			SpriteRenderer prefabFaceSr = faceTr != null ? faceTr.GetComponent<SpriteRenderer>() : null;
+			PaletteTint faceTint = prefabFaceSr != null ? prefabFaceSr.GetComponent<PaletteTint>() : null;
+			if (faceTint != null) faceTint.Apply();
+			PhysButton prefabButton = rootGo.GetComponent<PhysButton>();
+			prefabButton.SetWorldFace(prefabFaceSr);
+
+			// The print (and its PriceStrikeLine child) becomes the button label.
+			printT.SetParent(faceTr != null ? faceTr.parent : rootGo.transform, false);
+			printT.localPosition = new Vector3(0f, 0f, printZ);
+			prefabButton.label = _cardPhysObj.cardPricePrint;
+
+			_priceButton = prefabButton;
+			return prefabButton;
+		}
+
+		rootGo = new GameObject("PriceButton", typeof(BoxCollider2D));
 		rootGo.transform.SetParent(printT.parent, false);
 		rootGo.transform.localPosition = printT.localPosition;
 		rootGo.transform.localRotation = Quaternion.identity;
