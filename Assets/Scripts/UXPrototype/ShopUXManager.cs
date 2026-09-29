@@ -77,7 +77,7 @@ public class ShopUXManager : MonoBehaviour
 	public GameObject priceButtonPrefab;
 	[Tooltip("Sliced sprite for the section panels (ShopSectionPanels; the card face sprite keeps them consistent with price buttons)")]
 	public Sprite chromeSprite;
-	[Tooltip("Font asset for section panel labels (world-space TMP; ShopSectionPanels)")]
+	[Tooltip("Font asset for section panel headers / deck counter (world-space TMP; ShopSectionPanels)")]
 	public TMP_FontAsset chromeFont;
 
 	[Header("Shop Section Panels (live tuning)")]
@@ -103,6 +103,14 @@ public class ShopUXManager : MonoBehaviour
 		public float headerFontSize = 3.2f;
 		public float headerLeftMargin = 0.25f;
 		public float headerRightMargin = 0.25f;
+		[Tooltip("Deck counter used side (\"03/\") TMP point size — the used label's base size")]
+		public float counterUsedFontSize = 10f;
+		[Tooltip("Deck counter total side (\"05\") TMP point size")]
+		public float counterTotalFontSize = 5f;
+		[Tooltip("Deck counter used label position, offset from the panel's top-right header anchor")]
+		public Vector2 counterUsedOffset = new Vector2(-1.0f, 0f);
+		[Tooltip("Deck counter total label position, offset from the panel's top-right header anchor")]
+		public Vector2 counterTotalOffset = Vector2.zero;
 		[Tooltip("Synthetic-bold (TMP FontStyles.Bold) for the panel headers and deck counter (the reroll label's style is owned by its prefab since the 2026-09-29 port); applies live like the other tuning fields")]
 		public bool fontBold = false;
 	}

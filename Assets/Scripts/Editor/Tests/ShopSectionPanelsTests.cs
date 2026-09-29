@@ -76,10 +76,12 @@ public class ShopSectionPanelsTests
 	}
 
 	[Test]
-	public void FormatSlotCount_PadsToTwoDigits()
+	public void FormatCounterParts_PadToTwoDigits()
 	{
-		Assert.AreEqual("03/05", ShopSectionPanels.FormatSlotCount(3, 5));
-		Assert.AreEqual("12/12", ShopSectionPanels.FormatSlotCount(12, 12));
+		Assert.AreEqual("03/", ShopSectionPanels.FormatCounterUsed(3));
+		Assert.AreEqual("05", ShopSectionPanels.FormatCounterTotal(5));
+		Assert.AreEqual("12/", ShopSectionPanels.FormatCounterUsed(12));
+		Assert.AreEqual("12", ShopSectionPanels.FormatCounterTotal(12));
 	}
 
 	// VISUAL-FIX(2026-09-21): the counter's used term must come from the deck SO. The old
@@ -109,10 +111,11 @@ public class ShopSectionPanelsTests
 	}
 
 	[Test]
-	public void FormatSlotCount_WithCountedSlots_ReadsOccupancyOverCapacity()
+	public void FormatCounterParts_WithCountedSlots_ReadsOccupancyOverCapacity()
 	{
 		var deck = CreateDeck(CreateCard("imp"));
-		Assert.AreEqual("01/03", ShopSectionPanels.FormatSlotCount(ShopSectionPanels.CountUsedSlots(deck, false), 3));
+		Assert.AreEqual("01/", ShopSectionPanels.FormatCounterUsed(ShopSectionPanels.CountUsedSlots(deck, false)));
+		Assert.AreEqual("03", ShopSectionPanels.FormatCounterTotal(3));
 	}
 
 	private GameObject CreateCard(string cardTypeID, bool occupiesDeckSlot = true)

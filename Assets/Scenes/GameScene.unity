@@ -3079,11 +3079,10 @@ MonoBehaviour:
     headerFontSize: 6
     headerLeftMargin: 0.23
     headerRightMargin: 0.23
-    buttonWidth: 1.75
-    buttonHeight: 0.52
-    buttonFontSize: 4
-    restShadowUnits: 0.05
-    denyShiftUnits: 0.075
+    counterUsedFontSize: 10
+    counterTotalFontSize: 5
+    counterUsedOffset: {x: -1, y: 0}
+    counterTotalOffset: {x: 0, y: 0}
     fontBold: 1
 --- !u!1 &434224256
 GameObject:

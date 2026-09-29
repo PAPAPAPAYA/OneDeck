@@ -20,7 +20,9 @@ using UnityEngine;
 /// + refresh logic only (plan-shop-layout-config-widget-factory). 2026-09-29: the reroll
 /// button's style moved to the authored RerollButton.prefab (Tpl_WorldButton variant) —
 /// this file keeps only its action / dynamic-text / disabled wiring
-/// (plan-shop-reroll-button-prefab-2026-09-29).
+/// (plan-shop-reroll-button-prefab-2026-09-29). Same day: the deck counter split into
+/// two HP-pill-style labels (used + "/" at the big size, total small) positioned by
+/// anchor-relative offset tunings (plan-shop-deck-counter-hp-style-2026-09-29).
 /// </summary>
 public class ShopSectionPanels : MonoBehaviour
 {
@@ -42,6 +44,13 @@ public class ShopSectionPanels : MonoBehaviour
 	private const float HeaderFontSizeDefault = 3.2f;
 	private const float HeaderLeftMarginDefault = 0.25f;
 	private const float HeaderRightMarginDefault = 0.25f;
+	private const float CounterUsedFontSizeDefault = 10f;
+	private const float CounterTotalFontSizeDefault = 5f;
+	// Vector2 cannot be a const — static readonly for the manager-absent corner. The
+	// offset defaults are starting points (used's right edge ~1 unit left of the anchor,
+	// putting the "/" left of the total); the Play tuning session moves them from there.
+	private static readonly Vector2 CounterUsedOffsetDefault = new Vector2(-1.0f, 0f);
+	private static readonly Vector2 CounterTotalOffsetDefault = Vector2.zero;
 
 	// Card face half-extents at scale 1, from the EmptyCardSpace bake (3.3 x 4.7 units).
 	// The below factor includes the price-button allowance; it is THE shared source —
@@ -62,7 +71,12 @@ public class ShopSectionPanels : MonoBehaviour
 	private TextMeshPro _shopHeader;
 	private TextMeshPro _deckHeader;
 	private TextMeshPro _upgradesHeader;
-	private TextMeshPro _deckCounter;
+	// HP-pill-style split (plan-shop-deck-counter-hp-style-2026-09-29): the used side
+	// ("03/") renders at the big base size, the total side ("05") at the small size.
+	// Zero padding keeps both pieces at a constant 2-char width, so the fixed anchor
+	// offsets never misalign as the numbers change.
+	private TextMeshPro _deckCounterUsed;
+	private TextMeshPro _deckCounterTotal;
 	private PhysButton _rerollButton;
 	private TMP_Text _rerollLabel;
 	private PaletteTint _rerollLabelTint;
@@ -127,6 +141,13 @@ public class ShopSectionPanels : MonoBehaviour
 		return ux != null && ux.panels != null ? selector(ux.panels) : fallback;
 	}
 
+	// Same point-of-use resolver for the counter's Vector2 offset tunings.
+	private static Vector2 TuningVec2(System.Func<ShopUXManager.PanelsTuning, Vector2> selector, Vector2 fallback)
+	{
+		ShopUXManager ux = ShopUXManager.Instance;
+		return ux != null && ux.panels != null ? selector(ux.panels) : fallback;
+	}
+
 	// Point-of-use resolver for the font-bold toggle (PanelsTuning.fontBold).
 	private static bool TuningBold()
 	{
@@ -165,15 +186,15 @@ public class ShopSectionPanels : MonoBehaviour
 		float aboveH = FaceAboveHalfHeightFactor * scale;
 		float belowH = FaceBelowHalfHeightFactor * scale;
 
-		FitPanel(_shopPanel, _shopHeader, null, TargetsOf(ux != null ? ux.SpawnedShopCards : null), halfW, aboveH, belowH, reroll: true);
+		FitPanel(_shopPanel, _shopHeader, null, null, TargetsOf(ux != null ? ux.SpawnedShopCards : null), halfW, aboveH, belowH, reroll: true);
 		List<Vector3> deckCenters = TargetsOf(ux != null ? ux.SpawnedPlayerCards : null);
 		deckCenters.AddRange(TargetsOf(ux != null ? ux.SpawnedEmptySlots : null));
-		FitPanel(_deckPanel, _deckHeader, _deckCounter, deckCenters, halfW, aboveH, belowH, reroll: false);
-		FitPanel(_upgradesPanel, _upgradesHeader, null, TargetsOf(ux != null ? ux.SpawnedUtilityCards : null), halfW, aboveH, belowH, reroll: false);
+		FitPanel(_deckPanel, _deckHeader, _deckCounterUsed, _deckCounterTotal, deckCenters, halfW, aboveH, belowH, reroll: false);
+		FitPanel(_upgradesPanel, _upgradesHeader, null, null, TargetsOf(ux != null ? ux.SpawnedUtilityCards : null), halfW, aboveH, belowH, reroll: false);
 	}
 
 	// Build-once style values re-applied on every refit so a Play-mode tuning session moves
-	// them too (plan §3.3): header font sizes — the reroll
+	// them too (plan §3.3): header font sizes + the deck counter's two labels — the reroll
 	// label's style is owned by its prefab since the 2026-09-29 port. Panel geometry
 	// re-derives from the paddings inside FitPanel on every call by itself.
 	private void ApplySharedStyle()
@@ -188,7 +209,19 @@ public class ShopSectionPanels : MonoBehaviour
 		_deckHeader.fontStyle = fontStyle;
 		_upgradesHeader.fontSize = headerFontSize;
 		_upgradesHeader.fontStyle = fontStyle;
-		if (_deckCounter != null) _deckCounter.fontStyle = fontStyle;
+		if (_deckCounterUsed != null)
+		{
+			_deckCounterUsed.fontSize = Tuning(t => t.counterUsedFontSize, CounterUsedFontSizeDefault);
+			_deckCounterUsed.fontStyle = fontStyle;
+		}
+		if (_deckCounterTotal != null)
+		{
+			_deckCounterTotal.fontSize = Tuning(t => t.counterTotalFontSize, CounterTotalFontSizeDefault);
+			_deckCounterTotal.fontStyle = fontStyle;
+		}
+		// Force the next RefreshCounter to rewrite both texts so size retunes apply live.
+		_lastCounterUsed = int.MinValue;
+		_lastCounterTotal = int.MinValue;
 	}
 
 	/// <summary>Content bounds for a set of card/slot centers: X expanded by halfWidth,
@@ -209,10 +242,18 @@ public class ShopSectionPanels : MonoBehaviour
 		return new Bounds((min + max) * 0.5f, max - min);
 	}
 
-	/// <summary>Deck panel slot counter text: two-digit zero-padded "03/05".</summary>
-	public static string FormatSlotCount(int used, int total)
+	/// <summary>Deck counter used side: zero-padded two digits + trailing slash ("03/"),
+	/// rendered at the used label's base size (HP pill HpValue format convention).</summary>
+	public static string FormatCounterUsed(int used)
 	{
-		return used.ToString("00") + "/" + total.ToString("00");
+		return used.ToString("00") + "/";
+	}
+
+	/// <summary>Deck counter total side: zero-padded two digits ("05"), rendered at the
+	/// total label's smaller size (HP pill HpMax format convention).</summary>
+	public static string FormatCounterTotal(int total)
+	{
+		return total.ToString("00");
 	}
 
 	/// <summary>
@@ -244,7 +285,10 @@ public class ShopSectionPanels : MonoBehaviour
 		// VISUAL-FIX(2026-09-22): Deck panel counter (03/05) rendered yellow — it read the
 		//   log-highlight token (#FFEB04) while the UIKitDemo §08 slot-count is white
 		//   Regress: counter matches the white panel headers; LogHighlight.asset stays for combat logs
-		_deckCounter = CreateHeader("DeckCounter", string.Empty, TextAlignmentOptions.Right, GameColorPalette.TooltipTextColor);
+		_deckCounterUsed = CreateHeader("DeckCounterUsed", string.Empty, TextAlignmentOptions.Right, GameColorPalette.TooltipTextColor);
+		_deckCounterUsed.fontSize = Tuning(t => t.counterUsedFontSize, CounterUsedFontSizeDefault);
+		_deckCounterTotal = CreateHeader("DeckCounterTotal", string.Empty, TextAlignmentOptions.Right, GameColorPalette.TooltipTextColor);
+		_deckCounterTotal.fontSize = Tuning(t => t.counterTotalFontSize, CounterTotalFontSizeDefault);
 		_rerollButton = CreateRerollButton();
 	}
 
@@ -325,13 +369,14 @@ public class ShopSectionPanels : MonoBehaviour
 		return result;
 	}
 
-	private void FitPanel(SpriteRenderer panel, TextMeshPro header, TextMeshPro counter, List<Vector3> centers, float halfW, float aboveH, float belowH, bool reroll)
+	private void FitPanel(SpriteRenderer panel, TextMeshPro header, TextMeshPro counterUsed, TextMeshPro counterTotal, List<Vector3> centers, float halfW, float aboveH, float belowH, bool reroll)
 	{
 		Bounds content = ComputeContentBounds(centers, halfW, aboveH, belowH);
 		bool visible = content.size.sqrMagnitude > 0.0001f;
 		panel.gameObject.SetActive(visible);
 		header.gameObject.SetActive(visible);
-		if (counter != null) counter.gameObject.SetActive(visible);
+		if (counterUsed != null) counterUsed.gameObject.SetActive(visible);
+		if (counterTotal != null) counterTotal.gameObject.SetActive(visible);
 		if (reroll && _rerollButton != null) _rerollButton.gameObject.SetActive(visible);
 		if (!visible) return;
 
@@ -358,9 +403,17 @@ public class ShopSectionPanels : MonoBehaviour
 
 		float headerY = max.y - headerHeight * 0.5f;
 		header.transform.position = new Vector3(min.x + headerLeftMargin, headerY, HeaderZ);
-		if (counter != null)
+		// The counter's two labels (HP-pill style split, plan-shop-deck-counter-hp-style-
+		// 2026-09-29) ride anchor-relative offsets: Play tuning moves them, while panel
+		// refits (deckSize growth shifts max.x) keep them glued to the header corner.
+		if (counterUsed != null)
 		{
-			counter.transform.position = new Vector3(max.x - headerRightMargin, headerY, HeaderZ);
+			Vector3 anchor = new Vector3(max.x - headerRightMargin, headerY, HeaderZ);
+			// Explicit Vector2 -> Vector3 cast: UnityEngine defines the conversion both ways,
+			// so anchor + Vector2 is an ambiguous '+' (CS0034).
+			counterUsed.transform.position = anchor + (Vector3)TuningVec2(t => t.counterUsedOffset, CounterUsedOffsetDefault);
+			if (counterTotal != null)
+				counterTotal.transform.position = anchor + (Vector3)TuningVec2(t => t.counterTotalOffset, CounterTotalOffsetDefault);
 		}
 		if (reroll && _rerollButton != null)
 		{
@@ -397,7 +450,8 @@ public class ShopSectionPanels : MonoBehaviour
 		if (used == _lastCounterUsed && total == _lastCounterTotal) return;
 		_lastCounterUsed = used;
 		_lastCounterTotal = total;
-		if (_deckCounter != null) _deckCounter.text = FormatSlotCount(used, total);
+		if (_deckCounterUsed != null) _deckCounterUsed.text = FormatCounterUsed(used);
+		if (_deckCounterTotal != null) _deckCounterTotal.text = FormatCounterTotal(total);
 	}
 
 	// Reroll label/disabled port from ShopChrome.RefreshRerollState (button relocated here).
