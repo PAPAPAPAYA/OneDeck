@@ -4,18 +4,20 @@ using UnityEngine;
 
 // Shop top chrome (Guidelines 3.6) as WORLD page content. Since 2026-09-24
 // (plan-shop-hud-prefab-widgets) the bar is an authored prefab: this file is a thin
-// loader that instantiates the ShopHudPage prefab wired on ShopUXManager.hudPagePrefab,
-// applies the one-shot root placement (page content — scrolls away with the wheel,
-// 2026-09-21 world scroll) and lets ShopHudBinder push strings into the page's
-// HudTextBinding / HudActionBinding widgets. Positions, sizes, fonts, texts and colors
-// are prefab data (Assets/Prefabs/ShopHud/ShopHudPage.prefab + Tpl_* variants +
-// PaletteTint); this file keeps only the frozen public API surface and the band contract
-// the shelf layout consumes.
+// loader that instantiates the ShopHudPage prefab wired on ShopUXManager.hudPagePrefab
+// and lets ShopHudBinder push strings into the page's HudTextBinding / HudActionBinding
+// widgets. Positions, sizes, fonts, texts and colors are prefab data
+// (Assets/Prefabs/ShopHud/ShopHudPage.prefab + Tpl_* variants + PaletteTint); this file
+// keeps only the frozen public API surface and the band contract the shelf layout
+// consumes. Root placement is the authored prefab root transform since 2026-09-29
+// (page content — scrolls away with the wheel, 2026-09-21 world scroll); the loader
+// no longer writes the page position at all.
 //
 // 2026-09-21 world scroll (plan-shop-topbar-world-scroll-2026-09-21): the bar is PAGE
-// content, not camera-pinned. The root position and BandBottomWorldY are written ONCE at
-// build (the spot the old anchor computed at scroll 0) and the whole bar then scrolls
-// away with the wheel like any other shop world content. A scrolled-down shop shows no
+// content, not camera-pinned. BandBottomWorldY is captured ONCE at build and the whole
+// bar then scrolls away with the wheel like any other shop world content (since
+// 2026-09-29 the root position itself is the authored prefab transform, authored to the
+// scroll-0 camera spot). A scrolled-down shop shows no
 // exit button on purpose (user ruling 2026-09-21): scroll back up, or press Space (the
 // PhaseManager shortcut).
 // VISUAL-FIX(2026-09-21): whole top bar (chips + buttons + avatar/HP) stayed pinned to
@@ -37,12 +39,12 @@ public class ShopChrome : MonoBehaviour
 	// helpers, ShopHudPage field initializers). After Build the authored ShopHudPage
 	// fields win — the prefab owns the contract (plan §2.3).
 	public const float BandHeightDefault = 2.6f;      // reserved clearance zone at the page top (no rendered band)
-	public const float CameraForwardOffsetDefault = 2f; // page z distance in front of the camera
-	public const float BandInsetFromTopDefault = 0.5f; // page root center below the viewport top edge
+	public const float CameraForwardOffsetDefault = 2f; // legend: page z the retired camera formula added (no longer drives placement)
+	public const float BandInsetFromTopDefault = 0.5f; // legend: root-to-band geometry the retired formula used (gizmo band line)
 
-	// Page-first band values. BandInsetFromTop feeds ShopTopBarLayout.ViewportToChromeLocalY,
-	// which the KEPT mirror path consumes (ShopPageHud avatar/HP placement) — so it must
-	// resolve from the authored page once built (plan §7.9); before Build the defaults apply.
+	// Page-first band values (legend/gizmo only since 2026-09-29 — root placement is the
+	// authored prefab transform). Resolve from the authored page once built; before Build
+	// the defaults apply.
 	public static float BandHeight => _page != null ? _page.bandHeight : BandHeightDefault;
 	public static float BandInsetFromTop => _page != null ? _page.bandInsetFromTop : BandInsetFromTopDefault;
 	public static float CameraForwardOffset => _page != null ? _page.cameraForwardOffset : CameraForwardOffsetDefault;
@@ -52,9 +54,10 @@ public class ShopChrome : MonoBehaviour
 
 	private static ShopHudPage _page;
 
-	// Build-captured camera center (the page-content placement basis, 2026-09-21 world-
-	// scroll semantics). The canvas-side world→anchored inversion (ShopTopBarLayout) reads
-	// it, so a scrolled camera cannot shift the parked shop anchors.
+	// Build-captured camera center — the canvas-side world→anchored inversion basis
+	// (ShopTopBarLayout), so a scrolled camera cannot shift the parked shop anchors. Not
+	// a placement basis anymore (2026-09-29: root placement is the authored prefab
+	// transform); captured for the inversion only.
 	private static Vector3 _rigPos;
 	public static Vector3 BuildCameraCenter => _rigPos;
 
@@ -89,9 +92,7 @@ public class ShopChrome : MonoBehaviour
 		}
 
 		Camera cam = Camera.main;
-		float orthoSize = cam != null ? cam.orthographicSize : 5f;
-		Vector3 rigPos = cam != null ? cam.transform.position : Vector3.zero;
-		_rigPos = rigPos;
+		_rigPos = cam != null ? cam.transform.position : Vector3.zero;
 
 		GameObject root = Instantiate(hudPagePrefab);
 		root.name = ChromeName;
@@ -106,8 +107,9 @@ public class ShopChrome : MonoBehaviour
 			_page = null;
 			return;
 		}
-		// Page-content placement, written once (2026-09-21 world scroll semantics).
-		_page.OpenPage(rigPos, orthoSize);
+		// Band-bottom contract capture; the root placement is the authored prefab
+		// transform (2026-09-29), one-shot and page-content (2026-09-21 world scroll).
+		_page.OpenPage();
 		_bandBottomWorldY = _page.BandBottomWorldY;
 
 		_instance._binder = root.GetComponent<ShopHudBinder>();

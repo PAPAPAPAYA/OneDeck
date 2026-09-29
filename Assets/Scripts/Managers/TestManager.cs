@@ -381,7 +381,8 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.CombatFlow;
 			}
-			if (message.Contains("[ShopButton]") || message.Contains("[ShopBoard]"))
+			if (message.Contains("[ShopButton]") || message.Contains("[ShopBoard]") ||
+			    message.Contains("[ShopChrome]"))
 			{
 				return LogCategory.ShopFlow;
 			}

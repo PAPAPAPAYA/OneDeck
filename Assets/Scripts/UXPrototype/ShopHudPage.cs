@@ -1,35 +1,45 @@
+using DefaultNamespace.Managers;
 using UnityEngine;
 
 /// <summary>
 /// Authored root of the prefab shop top bar (plan-shop-hud-prefab-widgets §3.6; mirror
-/// prefab-ized 2026-09-24, plan-shop-mirror-prefab). Carries the three layout-contract
-/// values that cannot be expressed by the prefab transform alone (root placement needs
-/// runtime rig/ortho capture), applies the one-shot root placement (ex-ShopChrome
-/// .ApplyLayout :249-253 formula), and draws an EDITOR-ONLY gizmo: the bandHeight
-/// clearance line. The avatar/HP widgets are authored children (Tpl_Avatar / Tpl_HpPill)
-/// and need no placeholder frames anymore. Zero runtime behavior beyond OpenPage.
+/// prefab-ized 2026-09-24, plan-shop-mirror-prefab). Since 2026-09-29 the ROOT PLACEMENT
+/// IS THE PREFAB'S OWN TRANSFORM: OpenPage no longer overwrites transform.position (the
+/// ex-ApplyLayout camera formula is retired) — the authored root position must match the
+/// shop camera at scroll 0 (scene Camera Man (0,0,-100) + ortho 6.06 → (0, 5.56, -98)),
+/// and the bar then scrolls away with the page exactly as before (one-shot placement:
+/// the camera moves, the bar stays). OpenPage only derives the band-bottom shelf
+/// contract from the final root position and draws an EDITOR-ONLY gizmo: the bandHeight
+/// clearance line. The avatar/HP widgets are authored children (Tpl_Avatar / Tpl_HpPill).
+/// Zero runtime behavior beyond OpenPage.
 /// </summary>
 public class ShopHudPage : MonoBehaviour
 {
-	[Header("Layout Contract (shelf limit + root placement; hand-keep in sync with visual height)")]
-	[Tooltip("Reserved clearance zone at the page top in world units; also the shelf contract limit via ShopChrome.BandBottomWorldY.")]
+	[Header("Layout Contract (shelf limit + gizmo; hand-keep in sync with visual height)")]
+	[Tooltip("Reserved clearance zone at the page top in world units; also the shelf contract limit via ShopChrome.BandBottomWorldY (root.y + bandInsetFromTop - bandHeight).")]
 	public float bandHeight = ShopChrome.BandHeightDefault;
-	[Tooltip("Page root center below the viewport top edge, world units.")]
+	[Tooltip("Legend only (retired camera-formula value; no longer drives placement): keeps the gizmo band line at root.y + bandInsetFromTop - bandHeight.")]
 	public float bandInsetFromTop = ShopChrome.BandInsetFromTopDefault;
-	[Tooltip("Page z distance in front of the camera, world units.")]
+	[Tooltip("Legend only (retired camera-formula value; no longer drives placement): page z distance the formula added in front of the camera.")]
 	public float cameraForwardOffset = ShopChrome.CameraForwardOffsetDefault;
 
 	/// <summary>World Y of the band bottom after OpenPage (the shelf layout contract limit).</summary>
 	public float BandBottomWorldY { get; private set; } = float.MaxValue;
 
 	/// <summary>
-	/// One-shot root placement at build time (page content, scroll-safe): the old
-	/// ApplyLayout root formula verbatim, plus the captured band-bottom contract value.
+	/// One-shot build contract capture (page content, scroll-safe). Placement is the
+	/// authored prefab root transform (2026-09-29); this derives the band-bottom shelf
+	/// contract from it — numerically identical to the retired camera formula. A root
+	/// left at the origin can never be a valid placement (the shop camera sits at
+	/// z -100), so it warns.
 	/// </summary>
-	public void OpenPage(Vector3 rigPos, float orthoSize)
+	public void OpenPage()
 	{
-		transform.position = new Vector3(rigPos.x, rigPos.y + orthoSize - bandInsetFromTop, rigPos.z + cameraForwardOffset);
-		BandBottomWorldY = rigPos.y + orthoSize - bandHeight;
+		if (transform.position == Vector3.zero)
+		{
+			TestManager.LogWarning("[ShopChrome] hudPagePrefab root transform is at the origin — authored placement lost; set the ShopHudPage root position to the shop camera scroll-0 spot");
+		}
+		BandBottomWorldY = transform.position.y + bandInsetFromTop - bandHeight;
 	}
 
 #if UNITY_EDITOR
