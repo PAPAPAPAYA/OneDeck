@@ -1123,9 +1123,10 @@ public class ShopUXManager : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Reroll phase 1: flip the existing shop cards face-down in place. Shop cards are born
-	/// face-up without ever calling SetFaceUp, so everRevealed stays false and the plain
-	/// (non-forced) cover passes the never-cover guard in CardPhysObjScript.
+	/// Reroll phase 1: flip the existing shop cards face-down in place. The reroll re-hides
+	/// the board (same rationale as the combat shuffle force-cover), so the cover is forced:
+	/// cards flipped up by a PREVIOUS reroll carry everRevealed=true and the never-cover
+	/// guard would silently eat the plain cover, skipping the flip-down entirely.
 	/// </summary>
 	private void FlipShopCardsFaceDown()
 	{
@@ -1135,7 +1136,19 @@ public class ShopUXManager : MonoBehaviour
 			CardPhysObjScript physObj = card.GetComponent<CardPhysObjScript>();
 			if (physObj == null) continue;
 			physObj.flipDuration = rerollFlipDuration;
-			physObj.SetFaceUp(false, true);
+			// VISUAL-FIX(2026-09-30): every reroll after the first skipped the face-down flip
+			//   Cause:    The reroll's own face-up flip sets everRevealed=true on the new board
+			//             (CardPhysObjScript.SetFaceUp). On the NEXT reroll those cards are the
+			//             "old" ones, and the plain (non-forced) cover early-returns on the
+			//             never-cover guard, so the old board stayed face-up until destroy —
+			//             only the first reroll (entry-spawned cards, everRevealed=false)
+			//             showed the flip-down.
+			//   Affects:  ShopUXManager.FlipShopCardsFaceDown (the project's second
+			//             SetFaceUp(force:true) site after the combat shuffle)
+			//   Regress:  Reroll twice in a row: the second reroll must flip the old board
+			//             face-down before the new cards flip up. Shop entry spawn unchanged.
+			//   Related:  plan-shop-reroll-flip-2026-09-30 §3.2
+			physObj.SetFaceUp(false, true, true);
 		}
 	}
 	

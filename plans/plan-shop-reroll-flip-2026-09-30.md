@@ -1,7 +1,7 @@
 # Plan: 商店重掷动画 → 两段式原地翻牌 (2026-09-30)
 
 - **Date**: 2026-09-30
-- **Status**: IMPLEMENTED 2026-09-30（本会话实施；EditMode 全量基线零漂移；Play 目测待用户）
+- **Status**: IMPLEMENTED 2026-09-30（本会话实施；EditMode 全量基线零漂移；Play 目测待用户）。**FIX 2026-09-30**:二次以后重掷不翻背 = 重掷自己的翻正把 `everRevealed` 置真，下次重掷的普通翻背被 never-cover 守卫吞掉 → 翻背改 `force:true`（项目第二个 force 点，第一个=战斗洗牌）；EditMode 复跑零漂移。
 - **Request (user, 2026-09-30)**: 重掷时现在的卡片动画改为卡片翻转。拍板（AskUserQuestion）：**两段式原地翻**（旧卡原地翻背 → 原位替换 → 新卡原地翻正），翻正**逐张错开**。
 
 ## 1. Goal / non-goals
@@ -41,7 +41,7 @@ public float rerollFlipHold = 0f;         // 翻背落地到第一张翻正的�
 
 ### 3.2 Phase 1 — 旧卡原地翻背（`AnimateShopCardsExit` → `FlipShopCardsFaceDown`）
 
-每张旧卡 `flipDuration = rerollFlipDuration` 后 `SetFaceUp(false, true)`。不再飞行/缩放，留在槽位。翻背全体同步。
+每张旧卡 `flipDuration = rerollFlipDuration` 后 `SetFaceUp(false, true, force: true)`。不再飞行/缩放，留在槽位。翻背全体同步。**force 必需（FIX 09-30）**：重掷自己的翻正会把 `everRevealed` 置真，二次以后重掷的普通翻背会被 never-cover 守卫吞掉；`force` 是项目第二个 force 点（第一个 = 战斗洗牌）。
 
 ### 3.3 Phase 2 — 原位替换 + 逐张翻正
 
