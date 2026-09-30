@@ -94,6 +94,22 @@ public class ShopManager : MonoBehaviour
 	public int deckSlotPriceStep = 2;
 	[Tooltip("Run-persistent deck slot purchase counter (meter price + deckSize formula). Reset at run start.")]
 	public IntSO deckSlotPurchasesRef;
+	[Header("Upgrade-Slot Cap (plan-upgrade-slot-cap-2026-09-30)")]
+	[Tooltip("Dynamic upgrade-slot cap (utility passive limit): base + per-session growth + meter purchases, clamped to maxUpgradeSlots. Mirrors deckSize.")]
+	public IntSO upgradeCap;
+	[Tooltip("Static upgrade-slot ceiling. Mirrors maxDeckSize.")]
+	public IntSO maxUpgradeSlots;
+	[Tooltip("Upgrade cap growth added per completed growth step, applied on top of upgradeCap.valueOg at shop entry.")]
+	public int upgradeCapGrowthPerStep = 1;
+	[Min(1)]
+	[Tooltip("Sessions per upgrade-cap growth step.")]
+	public int sessionsPerUpgradeCapStep = 1;
+	[Tooltip("Price of the first upgrade-slot purchase of a run; each prior purchase adds upgradeSlotPriceStep.")]
+	public int upgradeSlotBasePrice = 4;
+	[Tooltip("Price increase per already-made upgrade-slot purchase this run.")]
+	public int upgradeSlotPriceStep = 2;
+	[Tooltip("Run-persistent upgrade slot purchase counter (meter price + upgradeCap formula). Reset at run start.")]
+	public IntSO upgradeSlotPurchasesRef;
 	[Header("Utility Board Split (plan v2)")]
 	[Tooltip("True = legacy board-type split (combat vs utility board roll). False (default, 2026-09-11) = mixed pool: utility and combat cards share one pool, no board-type roll (utilityBoardSlotCount and sessionUtilityBoardChances dormant).")]
 	public bool splitUtilityCombatBoards = false;
@@ -191,6 +207,13 @@ public class ShopManager : MonoBehaviour
 	/// </summary>
 	public int GetCardPrice(CardScript cardScript)
 	{
+		// Upgrade-slot meter cards override the rarity price with their own escalating meter
+		// price, exactly like the deck-slot meter below.
+		if (cardScript != null && cardScript.GetComponentInChildren<UpgradeCapIncreaseEffect>(true) != null)
+		{
+			int upgradePurchases = upgradeSlotPurchasesRef != null ? upgradeSlotPurchasesRef.value : 0;
+			return UtilityShopBonus.GetUpgradeSlotPrice(upgradeSlotBasePrice, upgradeSlotPriceStep, upgradePurchases);
+		}
 		return GetCardPrice(cardScript, cardScript != null ? cardScript.GetComponentInChildren<DeckSizeIncreaseEffect>(true) : null);
 	}
 
@@ -214,6 +237,16 @@ public class ShopManager : MonoBehaviour
 			return 0;
 		}
 		return priceRef.value;
+	}
+
+	/// <summary>Upgrade-slot meter price: base + step per already-made purchase this run
+	/// (mirror of the deck-slot meter price path). Read by ShopCardView's cached probe and
+	/// funneled by the single-arg GetCardPrice.</summary>
+	public int GetUpgradeCapMeterPrice(UpgradeCapIncreaseEffect capEffect)
+	{
+		if (capEffect == null) return 0;
+		int purchases = upgradeSlotPurchasesRef != null ? upgradeSlotPurchasesRef.value : 0;
+		return UtilityShopBonus.GetUpgradeSlotPrice(upgradeSlotBasePrice, upgradeSlotPriceStep, purchases);
 	}
 
 	private void Update()
@@ -303,6 +336,23 @@ public class ShopManager : MonoBehaviour
 			return;
 		}
 
+		// Upgrade-slot meter card: same ceiling guard, against the static maxUpgradeSlots
+		// ceiling (plans/plan-upgrade-slot-cap-2026-09-30.md).
+		bool isUpgradeCapCard = cardToBuyScript.GetComponentInChildren<UpgradeCapIncreaseEffect>(true) != null;
+		if (isUpgradeCapCard && upgradeCap != null && maxUpgradeSlots != null && upgradeCap.value >= maxUpgradeSlots.value)
+		{
+			return;
+		}
+
+		// Upgrade-slot cap: independent limit that only applies to utility passives (each copy
+		// counts 1). Reads the dynamic upgradeCap, not the static ceiling — buying the upgrade
+		// meter card raises the cap and reopens upgrade purchases.
+		if (cardToBuyScript.IsUtilityPassive && upgradeCap != null
+			&& UtilityFuncManagerScript.CountUpgradeCards(playerDeckRef) >= upgradeCap.value)
+		{
+			return;
+		}
+
 		if (cardToBuyScript.occupiesDeckSlot) // if card player trying to buy consumes a deckSize slot
 		{
 			// Duplicate-slot rule: a copy of an already-owned cardTypeID costs no slot
@@ -321,7 +371,9 @@ public class ShopManager : MonoBehaviour
 
 		// Deck-slot meter card never enters the deck (self-exile): its onMeBought effect bumps the
 		// run purchase counter + deckSize; the shop-entry formula reproduces the same deck size.
-		if (!isDeckSlotCard)
+		// The upgrade-slot meter card self-exiles the same way (its onMeBought effect bumps the
+		// upgrade-slot purchase counter + upgradeCap).
+		if (!isDeckSlotCard && !isUpgradeCapCard)
 		{
 			// Add the card to player deck regardless of whether it takes up space
 			playerDeckRef.deck.Add(cardToBuy);
@@ -468,6 +520,8 @@ public class ShopManager : MonoBehaviour
 		int extraOptions = bonus != null ? bonus.extraShopOptions : 0;
 		int ceiling = maxDeckSize != null ? maxDeckSize.value : int.MaxValue;
 		bool deckSizeAtCeiling = deckSize != null && deckSize.value >= ceiling;
+		int upgradeCeiling = maxUpgradeSlots != null ? maxUpgradeSlots.value : int.MaxValue;
+		bool upgradeCapAtCeiling = upgradeCap != null && upgradeCap.value >= upgradeCeiling;
 
 		// Full pipeline; reroll reruns all of it (board type re-rolled, reserved/chance rolls
 		// re-rolled per board). Mixed pool (splitUtilityCombatBoards = false) skips the
@@ -482,7 +536,8 @@ public class ShopManager : MonoBehaviour
 			utilityBoardSlotCount + extraOptions,
 			!splitUtilityCombatBoards,
 			deckSizeAtCeiling,
-			Rng.Channel(RngChannel.Shop));
+			Rng.Channel(RngChannel.Shop),
+			upgradeCapAtCeiling);
 		_currentBoardIsUtility = board.isUtilityBoard;
 
 		foreach (var card in board.cards)
@@ -582,6 +637,12 @@ public class ShopManager : MonoBehaviour
 			int ceiling = maxDeckSize != null ? maxDeckSize.value : 16;
 			deckSize.value = UtilityShopBonus.ComputeDeckSize(deckSize.valueOg, session, deckSizeGrowthPerStep, sessionsPerDeckSizeStep, purchases, ceiling);
 			ShopUXManager.Instance?.SpawnAdditionalEmptySpaces();
+		}
+		if (upgradeCap != null)
+		{
+			int upgradePurchases = upgradeSlotPurchasesRef != null ? upgradeSlotPurchasesRef.value : 0;
+			int upgradeCeiling = maxUpgradeSlots != null ? maxUpgradeSlots.value : 16;
+			upgradeCap.value = UtilityShopBonus.ComputeUpgradeCap(upgradeCap.valueOg, session, upgradeCapGrowthPerStep, sessionsPerUpgradeCapStep, upgradePurchases, upgradeCeiling);
 		}
 		ApplyHpMaxFromDeck();
 	}

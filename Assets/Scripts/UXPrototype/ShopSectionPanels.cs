@@ -77,6 +77,10 @@ public class ShopSectionPanels : MonoBehaviour
 	// offsets never misalign as the numbers change.
 	private TextMeshPro _deckCounterUsed;
 	private TextMeshPro _deckCounterTotal;
+	// Upgrade-slot cap counter (plans/plan-upgrade-slot-cap-2026-09-30.md): same HP-pill
+	// split, riding the Upgrades header corner.
+	private TextMeshPro _upgradeCounterUsed;
+	private TextMeshPro _upgradeCounterTotal;
 	private PhysButton _rerollButton;
 	private TMP_Text _rerollLabel;
 	private PaletteTint _rerollLabelTint;
@@ -86,6 +90,8 @@ public class ShopSectionPanels : MonoBehaviour
 	private bool _lastRerollDisabled;
 	private int _lastCounterUsed = int.MinValue;
 	private int _lastCounterTotal = int.MinValue;
+	private int _lastUpgradeUsed = int.MinValue;
+	private int _lastUpgradeTotal = int.MinValue;
 
 	/// <summary>
 	/// Builds the panels once (idempotent) as a scene-root object; shows them when the
@@ -190,7 +196,7 @@ public class ShopSectionPanels : MonoBehaviour
 		List<Vector3> deckCenters = TargetsOf(ux != null ? ux.SpawnedPlayerCards : null);
 		deckCenters.AddRange(TargetsOf(ux != null ? ux.SpawnedEmptySlots : null));
 		FitPanel(_deckPanel, _deckHeader, _deckCounterUsed, _deckCounterTotal, deckCenters, halfW, aboveH, belowH, reroll: false);
-		FitPanel(_upgradesPanel, _upgradesHeader, null, null, TargetsOf(ux != null ? ux.SpawnedUtilityCards : null), halfW, aboveH, belowH, reroll: false);
+		FitPanel(_upgradesPanel, _upgradesHeader, _upgradeCounterUsed, _upgradeCounterTotal, TargetsOf(ux != null ? ux.SpawnedUtilityCards : null), halfW, aboveH, belowH, reroll: false);
 	}
 
 	// Build-once style values re-applied on every refit so a Play-mode tuning session moves
@@ -219,9 +225,21 @@ public class ShopSectionPanels : MonoBehaviour
 			_deckCounterTotal.fontSize = Tuning(t => t.counterTotalFontSize, CounterTotalFontSizeDefault);
 			_deckCounterTotal.fontStyle = fontStyle;
 		}
+		if (_upgradeCounterUsed != null)
+		{
+			_upgradeCounterUsed.fontSize = Tuning(t => t.counterUsedFontSize, CounterUsedFontSizeDefault);
+			_upgradeCounterUsed.fontStyle = fontStyle;
+		}
+		if (_upgradeCounterTotal != null)
+		{
+			_upgradeCounterTotal.fontSize = Tuning(t => t.counterTotalFontSize, CounterTotalFontSizeDefault);
+			_upgradeCounterTotal.fontStyle = fontStyle;
+		}
 		// Force the next RefreshCounter to rewrite both texts so size retunes apply live.
 		_lastCounterUsed = int.MinValue;
 		_lastCounterTotal = int.MinValue;
+		_lastUpgradeUsed = int.MinValue;
+		_lastUpgradeTotal = int.MinValue;
 	}
 
 	/// <summary>Content bounds for a set of card/slot centers: X expanded by halfWidth,
@@ -289,6 +307,10 @@ public class ShopSectionPanels : MonoBehaviour
 		_deckCounterUsed.fontSize = Tuning(t => t.counterUsedFontSize, CounterUsedFontSizeDefault);
 		_deckCounterTotal = CreateHeader("DeckCounterTotal", string.Empty, TextAlignmentOptions.Right, GameColorPalette.TooltipTextColor);
 		_deckCounterTotal.fontSize = Tuning(t => t.counterTotalFontSize, CounterTotalFontSizeDefault);
+		_upgradeCounterUsed = CreateHeader("UpgradeCounterUsed", string.Empty, TextAlignmentOptions.Right, GameColorPalette.TooltipTextColor);
+		_upgradeCounterUsed.fontSize = Tuning(t => t.counterUsedFontSize, CounterUsedFontSizeDefault);
+		_upgradeCounterTotal = CreateHeader("UpgradeCounterTotal", string.Empty, TextAlignmentOptions.Right, GameColorPalette.TooltipTextColor);
+		_upgradeCounterTotal.fontSize = Tuning(t => t.counterTotalFontSize, CounterTotalFontSizeDefault);
 		_rerollButton = CreateRerollButton();
 	}
 
@@ -447,11 +469,24 @@ public class ShopSectionPanels : MonoBehaviour
 		ShopManager shop = ShopManager.me;
 		int total = shop != null && shop.deckSize != null ? shop.deckSize.value : 0;
 		int used = shop != null ? CountUsedSlots(shop.playerDeckRef, shop.DuplicateCopiesShareSlot) : 0;
-		if (used == _lastCounterUsed && total == _lastCounterTotal) return;
-		_lastCounterUsed = used;
-		_lastCounterTotal = total;
-		if (_deckCounterUsed != null) _deckCounterUsed.text = FormatCounterUsed(used);
-		if (_deckCounterTotal != null) _deckCounterTotal.text = FormatCounterTotal(total);
+		if (used != _lastCounterUsed || total != _lastCounterTotal)
+		{
+			_lastCounterUsed = used;
+			_lastCounterTotal = total;
+			if (_deckCounterUsed != null) _deckCounterUsed.text = FormatCounterUsed(used);
+			if (_deckCounterTotal != null) _deckCounterTotal.text = FormatCounterTotal(total);
+		}
+
+		// Upgrade-slot cap counter (plans/plan-upgrade-slot-cap-2026-09-30.md): the denominator
+		// is the DYNAMIC upgradeCap (not the maxUpgradeSlots ceiling), so buying the upgrade
+		// meter card grows it live, same as the deck counter's denominator on a slot card.
+		int upgradeTotal = shop != null && shop.upgradeCap != null ? shop.upgradeCap.value : 0;
+		int upgradeUsed = shop != null ? UtilityFuncManagerScript.CountUpgradeCards(shop.playerDeckRef) : 0;
+		if (upgradeUsed == _lastUpgradeUsed && upgradeTotal == _lastUpgradeTotal) return;
+		_lastUpgradeUsed = upgradeUsed;
+		_lastUpgradeTotal = upgradeTotal;
+		if (_upgradeCounterUsed != null) _upgradeCounterUsed.text = FormatCounterUsed(upgradeUsed);
+		if (_upgradeCounterTotal != null) _upgradeCounterTotal.text = FormatCounterTotal(upgradeTotal);
 	}
 
 	// Reroll label/disabled port from ShopChrome.RefreshRerollState (button relocated here).

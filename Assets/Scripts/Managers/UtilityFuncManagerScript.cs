@@ -80,6 +80,26 @@ public static class UtilityFuncManagerScript
 	}
 
 	/// <summary>
+	/// Count upgrade cards (utility passives) in a DeckSO for the upgrade-slot cap
+	/// (plans/plan-upgrade-slot-cap-2026-09-30.md). Each copy counts 1 (no cardTypeID dedup).
+	/// Utility passives are slot-free (occupiesDeckSlot = false), so this is disjoint from
+	/// CountSlotOccupyingCards.
+	/// </summary>
+	public static int CountUpgradeCards(DeckSO deck)
+	{
+		if (deck == null || deck.deck == null) return 0;
+
+		int count = 0;
+		foreach (var card in deck.deck)
+		{
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			if (cardScript != null && cardScript.IsUtilityPassive) count++;
+		}
+		return count;
+	}
+
+	/// <summary>
 	/// Check whether a DeckSO contains any card with the given cardTypeID.
 	/// </summary>
 	public static bool DeckContainsCardType(DeckSO deck, string cardTypeID)

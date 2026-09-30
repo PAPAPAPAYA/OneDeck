@@ -27,6 +27,8 @@ public class ShopCardView : MonoBehaviour
 	private Action _sellAction;
 	private DeckSizeIncreaseEffect _deckSizeEffect; // cached pricing probe, resolved once per card instead of per frame
 	private bool _deckSizeEffectResolved;
+	private UpgradeCapIncreaseEffect _upgradeCapEffect; // second meter family (upgrade-slot meter), same once-per-card caching
+	private bool _upgradeCapEffectResolved;
 
 	// Card-local design scale: demo card face is 118 px wide == 3.2 card-local units.
 	private const float UNITS_PER_PX = 3.2f / 118f;
@@ -84,7 +86,7 @@ public class ShopCardView : MonoBehaviour
 		PhysButton priceButton = EnsurePriceButton();
 		priceButton.gameObject.SetActive(true);
 
-		int basePrice = ShopManager.me != null ? ShopManager.me.GetCardPrice(_cardPhysObj.cardImRepresenting, ResolveDeckSizeEffect()) : 0;
+		int basePrice = ShopManager.me != null ? ResolveBasePrice() : 0;
 		bool isShopItem = _cardPhysObj.shopItemIndex >= 0;
 		int discountOff = isShopItem && ShopManager.me != null ? ShopManager.me.GetBoardDiscount(_cardPhysObj.cardImRepresenting) : 0;
 		int displayPrice = isShopItem ? Mathf.Max(0, basePrice - discountOff) : basePrice / 2;
@@ -128,6 +130,33 @@ public class ShopCardView : MonoBehaviour
 				: null;
 		}
 		return _deckSizeEffect;
+	}
+
+	/// <summary>Same once-per-card caching for the upgrade-slot meter family.</summary>
+	private UpgradeCapIncreaseEffect ResolveUpgradeCapEffect()
+	{
+		if (!_upgradeCapEffectResolved)
+		{
+			_upgradeCapEffectResolved = true;
+			_upgradeCapEffect = _cardPhysObj.cardImRepresenting != null
+				? _cardPhysObj.cardImRepresenting.GetComponentInChildren<UpgradeCapIncreaseEffect>(true)
+				: null;
+		}
+		return _upgradeCapEffect;
+	}
+
+	/// <summary>
+	/// Base price of the represented card: deck-slot meter price, then upgrade-slot meter
+	/// price, then the rarity table. Mirrors ShopManager.GetCardPrice's single-arg priority
+	/// while keeping the once-per-card probe caching.
+	/// </summary>
+	private int ResolveBasePrice()
+	{
+		var slotEffect = ResolveDeckSizeEffect();
+		if (slotEffect != null) return ShopManager.me.GetCardPrice(_cardPhysObj.cardImRepresenting, slotEffect);
+		var capEffect = ResolveUpgradeCapEffect();
+		if (capEffect != null) return ShopManager.me.GetUpgradeCapMeterPrice(capEffect);
+		return ShopManager.me.GetCardPrice(_cardPhysObj.cardImRepresenting, null);
 	}
 
 	/// <summary>

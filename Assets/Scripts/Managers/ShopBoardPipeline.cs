@@ -41,6 +41,8 @@ public static class ShopBoardPipeline
 	/// <param name="stagedChancePercent">Session-table utility board chance; negative = no config, use DefaultUtilityBoardChancePercent. Ignored in mixed mode.</param>
 	/// <param name="mixedPool">True = no board-type split: utility + combat cards share one merged pool (utilitySlots ignored).</param>
 	/// <param name="deckSizeAtCeiling">True once deck size hit the static ceiling: deck-size meter cards stop being offered.</param>
+	/// <param name="rng">Deterministic shop channel; null = fresh unseeded Random (tests).</param>
+	/// <param name="upgradeCapAtCeiling">True once the upgrade cap hit its static ceiling: upgrade-slot meter cards stop being offered. Optional trailing param — the ~45 positional test call sites that stop at rng keep compiling untouched.</param>
 	public static BoardResult GenerateBoard(
 		IEnumerable<GameObject> fullPool,
 		Func<CardScript, float> weightOf,
@@ -51,13 +53,14 @@ public static class ShopBoardPipeline
 		int utilitySlots,
 		bool mixedPool,
 		bool deckSizeAtCeiling,
-		System.Random rng)
+		System.Random rng = null,
+		bool upgradeCapAtCeiling = false)
 	{
 		if (rng == null) rng = new System.Random();
 
 		var combatPool = new List<GameObject>();
 		var utilityPool = new List<GameObject>();
-		ClassifyPools(fullPool, bonus, deckSizeAtCeiling, combatPool, utilityPool);
+		ClassifyPools(fullPool, bonus, deckSizeAtCeiling, upgradeCapAtCeiling, combatPool, utilityPool);
 
 		var result = new BoardResult();
 		// Wave filters: combat board generic slots only in split mode; merged pool in mixed
@@ -138,7 +141,7 @@ public static class ShopBoardPipeline
 		foreach (var card in combatPool)
 		{
 			var script = card.GetComponent<CardScript>();
-			if (script != null && ((script.utilityKind != EnumStorage.UtilityKind.None && script.utilityKind != EnumStorage.UtilityKind.OddsUtility) || card.GetComponentInChildren<DeckSizeIncreaseEffect>(true) != null))
+			if (script != null && ((script.utilityKind != EnumStorage.UtilityKind.None && script.utilityKind != EnumStorage.UtilityKind.OddsUtility) || card.GetComponentInChildren<DeckSizeIncreaseEffect>(true) != null || card.GetComponentInChildren<UpgradeCapIncreaseEffect>(true) != null))
 			{
 				combatAnomalies += script.cardTypeID + " ";
 			}
@@ -166,12 +169,13 @@ public static class ShopBoardPipeline
 	}
 
 	/// <summary>
-	/// Board-split classification: utility kinds (except OddsUtility) and deck-size cards are
-	/// utility-board-only; OddsUtility is exempt and may appear on both boards; everything else
-	/// is combat-pool. Owned utility type ids are removed before classification, so they leave
-	/// both pools.
+	/// Board-split classification: utility kinds (except OddsUtility), deck-size cards and
+	/// upgrade-slot meter cards are utility-board-only; OddsUtility is exempt and may appear
+	/// on both boards; everything else is combat-pool. Owned utility type ids are removed
+	/// before classification, so they leave both pools. Each meter card family is ceiling-
+	/// excluded by its own ceiling flag.
 	/// </summary>
-	private static void ClassifyPools(IEnumerable<GameObject> fullPool, UtilityShopBonus.Bonus bonus, bool deckSizeAtCeiling, List<GameObject> combatPool, List<GameObject> utilityPool)
+	private static void ClassifyPools(IEnumerable<GameObject> fullPool, UtilityShopBonus.Bonus bonus, bool deckSizeAtCeiling, bool upgradeCapAtCeiling, List<GameObject> combatPool, List<GameObject> utilityPool)
 	{
 		if (fullPool == null) return;
 		foreach (var card in fullPool)
@@ -182,10 +186,12 @@ public static class ShopBoardPipeline
 			// The deck-size effect may live on a child GameObject (IncreaseDeckSizeLite prefab):
 			// a root-only GetComponent misses it and misclassifies the card into the combat pool.
 			bool isDeckSlotCard = script.GetComponentInChildren<DeckSizeIncreaseEffect>(true) != null;
+			bool isUpgradeCapCard = script.GetComponentInChildren<UpgradeCapIncreaseEffect>(true) != null;
 			if (deckSizeAtCeiling && isDeckSlotCard) continue;
+			if (upgradeCapAtCeiling && isUpgradeCapCard) continue;
 			if (bonus != null && bonus.ownedUtilityTypeIds != null && bonus.ownedUtilityTypeIds.Contains(script.cardTypeID)) continue;
 
-			bool utilityOnly = (script.utilityKind != EnumStorage.UtilityKind.None && script.utilityKind != EnumStorage.UtilityKind.OddsUtility) || isDeckSlotCard;
+			bool utilityOnly = (script.utilityKind != EnumStorage.UtilityKind.None && script.utilityKind != EnumStorage.UtilityKind.OddsUtility) || isDeckSlotCard || isUpgradeCapCard;
 			if (utilityOnly)
 			{
 				utilityPool.Add(card);

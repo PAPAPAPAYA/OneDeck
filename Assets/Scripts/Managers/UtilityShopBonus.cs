@@ -253,4 +253,21 @@ public static class UtilityShopBonus
 	{
 		return basePrice + Mathf.Max(0, priceStepPerPurchase) * Mathf.Max(0, purchasesAlreadyMade);
 	}
+
+	/// <summary>
+	/// Upgrade-slot cap recompute at shop entry: identical capped-growth math as the deck
+	/// size (plans/plan-upgrade-slot-cap-2026-09-30.md). Thin alias keeps call sites readable.
+	/// </summary>
+	public static int ComputeUpgradeCap(int upgradeCapOg, int sessionNum, int upgradeCapGrowthPerStep, int sessionsPerUpgradeCapStep, int slotPurchases, int ceiling)
+	{
+		return ComputeDeckSize(upgradeCapOg, sessionNum, upgradeCapGrowthPerStep, sessionsPerUpgradeCapStep, slotPurchases, ceiling);
+	}
+
+	/// <summary>
+	/// Upgrade-slot meter price: identical escalating formula as the deck-slot meter.
+	/// </summary>
+	public static int GetUpgradeSlotPrice(int basePrice, int priceStepPerPurchase, int purchasesAlreadyMade)
+	{
+		return GetDeckSlotPrice(basePrice, priceStepPerPurchase, purchasesAlreadyMade);
+	}
 }
