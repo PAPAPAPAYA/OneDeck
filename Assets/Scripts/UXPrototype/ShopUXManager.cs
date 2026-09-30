@@ -119,8 +119,10 @@ public class ShopUXManager : MonoBehaviour
 		public Vector2 counterUsedOffset = new Vector2(-1.0f, 0f);
 		[Tooltip("Deck counter total label position, offset from the panel's top-right header anchor")]
 		public Vector2 counterTotalOffset = Vector2.zero;
-		[Tooltip("Synthetic-bold (TMP FontStyles.Bold) for the panel headers and deck counter (the reroll label's style is owned by its prefab since the 2026-09-29 port); applies live like the other tuning fields")]
+		[Tooltip("Bold the panel headers and deck counters (the reroll label's style is owned by its prefab since the 2026-09-29 port); applies live like the other tuning fields")]
 		public bool fontBold = false;
+		[Tooltip("Bold SDF the fontBold toggle swaps in (real Latin weights from its atlas, real CJK weights via its SourceHanSansCN-Bold fallback); unwired = legacy TMP synthetic bold on the regular asset")]
+		public TMP_FontAsset boldFont;
 	}
 
 	// Store instantiated physical cards for cleanup
