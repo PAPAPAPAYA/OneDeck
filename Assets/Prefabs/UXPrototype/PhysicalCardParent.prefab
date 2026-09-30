@@ -715,9 +715,13 @@ MonoBehaviour:
   isPlayingSpecialAnimation: 0
   isPendingSlotIn: 0
   isPoppedUp: 0
+  specialAnimationDrivesPosition: 1
+  lastSpecialAnimationTag: 
   flipDuration: 0.3
   popUpOriginalPosition: {x: 0, y: 0, z: 0}
   popUpOriginalScale: {x: 0, y: 0, z: 0}
+  popUpFollowsDeckSlot: 0
+  popUpFollowLerpSpeed: 12
   pendingRevealZoneMove: 0
   pendingRevealPosition: {x: 0, y: 0, z: 0}
   pendingRevealScale: {x: 0, y: 0, z: 0}
@@ -998,8 +1002,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 5
-  m_fontSizeBase: 5
+  m_fontSize: 20.3
+  m_fontSizeBase: 20.3
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
