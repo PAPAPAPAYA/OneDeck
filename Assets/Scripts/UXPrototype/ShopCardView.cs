@@ -65,7 +65,12 @@ public class ShopCardView : MonoBehaviour
 
 		GamePhaseSO phaseRef = _cardPhysObj.currentGamePhaseRef;
 		bool shopPhase = phaseRef != null && phaseRef.Value() == EnumStorage.GamePhase.Shop;
-		bool showPrice = shopPhase && _cardPhysObj.cardImRepresenting != null && !suppressPriceDisplay;
+		// plan-shop-reroll-flip-2026-09-30: face-down cards (reroll flip reveal) hide the
+		// whole price block. cardPricePrint is a FlipRoot face element and hides with the
+		// flip, but the price PhysButton is not — without this guard it would float on the
+		// card back during the face-down phase.
+		bool showPrice = shopPhase && _cardPhysObj.cardImRepresenting != null && !suppressPriceDisplay
+			&& _cardPhysObj.isFaceUp;
 		if (!showPrice)
 		{
 			if (!_priceLabelExternal) _cardPhysObj.cardPricePrint.gameObject.SetActive(false);

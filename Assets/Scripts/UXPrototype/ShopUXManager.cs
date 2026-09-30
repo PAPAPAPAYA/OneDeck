@@ -54,6 +54,14 @@ public class ShopUXManager : MonoBehaviour
 	[Tooltip("Per-slot delay for the spawn pop; 0 = all slots pop simultaneously")]
 	public float emptySlotSpawnStagger = 0.04f;
 
+	[Header("Reroll Flip (plan-shop-reroll-flip-2026-09-30)")]
+	[Tooltip("Total duration of one flip (face-down or face-up) during a reroll; shop phase is never combat-speed scaled")]
+	public float rerollFlipDuration = 0.3f;
+	[Tooltip("Per-card delay between the staggered face-up flips; 0 = all cards flip up simultaneously")]
+	public float rerollFlipStagger = 0.04f;
+	[Tooltip("Hold beat between the face-down flip landing and the first face-up flip")]
+	public float rerollFlipHold = 0f;
+
 	[Header("Camera Scroll Settings")]
 	[Tooltip("Whether to enable mouse wheel to control camera up/down movement")]
 	public bool enableCameraScroll = true;
@@ -1095,8 +1103,9 @@ public class ShopUXManager : MonoBehaviour
 
 	/// <summary>
 	/// Call this method when shop rerolls
-	/// 1. Existing shop cards fly to shop start position and shrink to destroy
-	/// 2. Generate new physical cards after animation completes
+	/// 1. Existing shop cards flip face-down in place (plan-shop-reroll-flip-2026-09-30)
+	/// 2. Swap the board after the flip-down lands, spawn new cards face-down in place,
+	///    then flip them face-up staggered
 	/// </summary>
 	public void OnReroll()
 	{
@@ -1106,51 +1115,45 @@ public class ShopUXManager : MonoBehaviour
 		// reroll button until the new board has spawned — a queued second click can't roll twice.
 		ShopInputGate.Block();
 		ShopSectionPanels.SetRerollRolling(true);
-		// 1. Make existing shop cards fly to shop start position and shrink
-		AnimateShopCardsExit();
+		// 1. Flip existing shop cards face-down in place (no flight, no scale)
+		FlipShopCardsFaceDown();
 		
-		// 2. Start coroutine, wait for animation complete then spawn new cards
+		// 2. Start coroutine, wait for the flip-down to land then swap the board
 		StartCoroutine(SpawnNewShopCardsAfterDelay());
 	}
 	
 	/// <summary>
-	/// Make existing shop cards fly to shop start position and shrink
+	/// Reroll phase 1: flip the existing shop cards face-down in place. Shop cards are born
+	/// face-up without ever calling SetFaceUp, so everRevealed stays false and the plain
+	/// (non-forced) cover passes the never-cover guard in CardPhysObjScript.
 	/// </summary>
-	private void AnimateShopCardsExit()
+	private void FlipShopCardsFaceDown()
 	{
-		Vector3 exitPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;
-		
 		foreach (var card in _spawnedShopCards)
 		{
-			if (card != null)
-			{
-				CardPhysObjScript physObj = card.GetComponent<CardPhysObjScript>();
-				if (physObj != null)
-				{
-					// Set target position to shop start position and shrink
-					physObj.SetTargetPosition(exitPosition);
-					physObj.SetTargetScale(Vector3.zero);
-				}
-			}
+			if (card == null) continue;
+			CardPhysObjScript physObj = card.GetComponent<CardPhysObjScript>();
+			if (physObj == null) continue;
+			physObj.flipDuration = rerollFlipDuration;
+			physObj.SetFaceUp(false, true);
 		}
 	}
 	
 	/// <summary>
-	/// Coroutine: Wait for exit animation to complete, destroy old cards and generate new ones
+	/// Coroutine: wait for the face-down flip to complete, destroy old cards, spawn the new
+	/// board face-down in place, then flip the new cards face-up staggered. Input stays
+	/// blocked until the last flip lands.
 	/// </summary>
 	private System.Collections.IEnumerator SpawnNewShopCardsAfterDelay()
 	{
 		// DIAG-LOG(2026-08-08): probe 1 - coroutine entered
-		TestManager.Log("[ShopButton] Coroutine entered. waitTime=" + (_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null ? _spawnedShopCards[0].GetComponent<CardPhysObjScript>() != null ? _spawnedShopCards[0].GetComponent<CardPhysObjScript>().moveDuration + 0.05f : 0.35f : 0.35f) + " timeScale=" + Time.timeScale);
-		// Wait for animation to complete (using CardPhysObjScript's moveDuration, default 0.3s, add a buffer)
-		float waitTime = 0.35f;
-		if (_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null)
+		TestManager.Log("[ShopButton] Coroutine entered. waitTime=" + ((_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null && _spawnedShopCards[0].GetComponent<CardPhysObjScript>() != null) ? rerollFlipDuration + rerollFlipHold : rerollFlipHold) + " timeScale=" + Time.timeScale);
+		// Wait for the face-down flip to land (skipped when the shelf was empty), plus the hold beat.
+		float waitTime = rerollFlipHold;
+		if (_spawnedShopCards.Count > 0 && _spawnedShopCards[0] != null
+			&& _spawnedShopCards[0].GetComponent<CardPhysObjScript>() != null)
 		{
-			var physObj = _spawnedShopCards[0].GetComponent<CardPhysObjScript>();
-			if (physObj != null)
-			{
-				waitTime = physObj.moveDuration + 0.05f;
-			}
+			waitTime = rerollFlipDuration + rerollFlipHold;
 		}
 		yield return new WaitForSeconds(waitTime);
 		// DIAG-LOG(2026-08-08): probe 2 - past the wait
@@ -1166,16 +1169,43 @@ public class ShopUXManager : MonoBehaviour
 		}
 		_spawnedShopCards.Clear();
 		
-		// Generate new shop physical cards
+		// Generate new shop physical cards (face-down, born in place on their slots)
 		SpawnShopCardsInternal();
 		// DIAG-LOG(2026-08-08): tracing whether the reroll visual refresh completed
 		TestManager.Log("[ShopButton] Reroll visual refresh done. newCards=" + _spawnedShopCards.Count);
+		
+		// Flip the new cards face-up one by one; unblock only after the last flip lands.
+		yield return FlipSpawnedCardsFaceUpStaggered();
 		ShopInputGate.Unblock();
 		ShopSectionPanels.SetRerollRolling(false);
 	}
 	
 	/// <summary>
-	/// Internal method: Generate shop physical cards based on current shopItems
+	/// Reroll phase 2: flip the freshly spawned face-down cards face-up, starting the next
+	/// card rerollFlipStagger after the previous one; waits out the last flip before
+	/// returning so the caller unblocks input only when every card is face-up.
+	/// </summary>
+	private System.Collections.IEnumerator FlipSpawnedCardsFaceUpStaggered()
+	{
+		for (int i = 0; i < _spawnedShopCards.Count; i++)
+		{
+			var card = _spawnedShopCards[i];
+			if (card == null) continue;
+			CardPhysObjScript physObj = card.GetComponent<CardPhysObjScript>();
+			if (physObj == null) continue;
+			if (i > 0 && rerollFlipStagger > 0f)
+			{
+				yield return new WaitForSeconds(rerollFlipStagger);
+			}
+			physObj.flipDuration = rerollFlipDuration;
+			physObj.SetFaceUp(true, true);
+		}
+		yield return new WaitForSeconds(rerollFlipDuration);
+	}
+	
+	/// <summary>
+	/// Internal method: Generate shop physical cards based on current shopItems, born
+	/// face-down in place on their slots (reroll flip reveal, plan-shop-reroll-flip-2026-09-30)
 	/// (Don't clean list because it was cleaned before calling)
 	/// </summary>
 	private void SpawnShopCardsInternal()
@@ -1214,9 +1244,9 @@ public class ShopUXManager : MonoBehaviour
 			
 			Vector3 spawnPosition = GetShopItemSlotPosition(i);
 			
-			// Instantiate physical card (from shop start position, trigger DOTween entry animation)
-			Vector3 initialPosition = shopItemStartPos != null ? shopItemStartPos.position : shopItemPos;
-			GameObject physicalCard = Instantiate(physicalCardPrefab, initialPosition, Quaternion.identity, spawnParent);
+			// Reroll flip reveal: cards are born face-down in place on their slots (no entry
+			// flight); the staggered face-up flip is driven by FlipSpawnedCardsFaceUpStaggered.
+			GameObject physicalCard = Instantiate(physicalCardPrefab, spawnPosition, Quaternion.identity, spawnParent);
 			
 			// Get CardPhysObjScript and setup
 			CardPhysObjScript physObjScript = physicalCard.GetComponent<CardPhysObjScript>();
@@ -1225,10 +1255,10 @@ public class ShopUXManager : MonoBehaviour
 			{
 				physObjScript.cardImRepresenting = cardScript;
 				physObjScript.shopItemIndex = i;
-				physObjScript.SetPositionImmediate(initialPosition);
-				physObjScript.SetTargetPosition(spawnPosition);
-				physObjScript.SetScaleImmediate(Vector3.zero);
-				physObjScript.SetTargetScale(physCardSize);
+				physObjScript.flipDuration = rerollFlipDuration;
+				physObjScript.SetPositionImmediate(spawnPosition);
+				physObjScript.SetScaleImmediate(physCardSize);
+				physObjScript.SetFaceUp(false, false);
 				
 				// VISUAL-FIX(2026-06-30): Shop cards show raw <dmg> placeholders instead of damage numbers
 				//   Cause:    ShopUXManager initialized cardDescPrint.text with raw cardDesc,
