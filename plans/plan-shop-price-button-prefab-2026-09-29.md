@@ -81,3 +81,13 @@ Non-goals:
 
 1. 全池 cardFace sprite 同资产核验后，删代码里的 sprite copy（1 行 + 1 行）。
 2. 价签文字样式集中化 → 姊妹计划 `plans/plan-shop-price-text-style-centralization-2026-09-29.md`，路径待用户拍板（批量烘 prefab vs 运行时权威）。
+
+## 7. Label port（2026-09-30，已实施）
+
+用户拍板「价签文本做到 prefab 上，像重掷按钮一样调」→ Label 烘回 `PriceButton.prefab`，print 退役：
+
+- **烘焙**（execute_code preview scene + `LoadPrefabContents`/`SaveAsPrefabAsset`，变体新增物体路径）：`Visual/Label`（RectTransform 2.4×0.64 scale 1，localPos (0,0,-0.02)）+ TMP（样式拷自 `PhysicalCardParent` 活实例解析值：RobotoCondensed-Regular + **Bold 合成** + #1A3037 = OwnerText，fontSize **3.6** = print 18 × 0.2 换算，Center/Middle，wrap off）+ `PaletteTint(OwnerText)`；子物体 `StrikeLine` 烘 `PriceStrikeLine` 组件（替代运行时创建）；`PhysButton.label` 指向新 TMP。
+- **代码**（`ShopCardView.cs`）：prefab 分支不再 re-parent print——`_priceLabelExternal` 置位、print 永久隐藏；`SetPriceText`/`ResizePriceButtonFace`/`EnsureStrikeLine` 全部改走 `PhysButton.label`（TMP_Text 基类）；prefab 缺 Label（旧版本资产）→ LogWarning + 回退 legacy 构建（守卫保证未烘焙 prefab 场景零破坏）。
+- **零漂移验证**：同语境 A/B 探针（print re-parent 进按钮 vs 烘焙 label，同一父级）——`$3`/`$12`/折扣双价三条 textBounds×scale **逐位相等**（0.4058/0.6087/1.3253 ×0.4219），renderer bounds 两行完全相等（第三行为 stale-mesh 伪影）。注意：跨语境测量（print 在卡 canvas 链 lossyScale 0.16）会产生假差异，必须同语境对比。
+- **EditMode** 664/663/1 基线零漂移。**坑**：`PhysButton.label` 是 `TMP_Text` 基类不是 `TextMeshPro`（CS0266）。
+- **提交范围**：仅 `ShopCardView.cs` + 文档；PriceButton.prefab 工作区含并行 Play 调参（restShadow 0.1 / collider y 1.1 等，非本会话），prefab 整体留待调参收口后一并提交——git 内旧 prefab 无 Label，由 fallback 守卫兜底。

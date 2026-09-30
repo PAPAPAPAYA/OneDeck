@@ -54,3 +54,9 @@ Non-goals:
 1. ~~样式目标值~~ —— **已拍板（20:49）**：Bold + 字号 5，已写入。
 2. ~~Minion 模板对齐~~ —— **关闭（20:49）**：用户拍板不用管。
 3. ~~GameScene 场景实例定性~~ —— **已关闭（20:46）**：用户直接删除实例，override 问题根除。
+
+## 6. 2026-09-30 事后核验：f243cd1c 误伤 AttackPrint，价签集中化目标已被 Label port 取代
+
+- **发现**：本计划 §3.2 的「m_fontSize 20.3 → 5」实际落在 `PhysicalCardParent.prefab` 的 **AttackPrint**（攻击角标，GO 8652292240949848764）上，**不是价签 print**。2026-09-30 实例探针：CardPrice fontSize **18**（从未变过）、AttackPrint fontSize **5**（从 20.3 缩小）——commit f243cd1c 把攻击角标缩小了约 4×，价签样式从未落地。根因：§2.1「基底 PhysicalCard.prefab 无 cardPricePrint、print 为变体新增物体」的核验有误——基底**有** CardPrice（cardPricePrint 字段经 stripped ref 指向基底 TMP），被改的 :1001 块属于 AttackPrint。
+- **后果**：卡面攻击数字自 09-29 起渲染为 1/4 大小（Play 未验所以未被发现）。**修复待用户拍板**：AttackPrint 5 → 20.3 一行回滚（或编辑器里改回）。
+- **取代**：价签样式集中化的原始目标由 2026-09-30 的 Label port 实现——价签文本样式（字体/字号/加粗/颜色/PaletteTint 槽位）现集中于 `PriceButton.prefab` 的 `Visual/Label`，一处调整全池生效。本计划视为被取代（superseded），其「防漂移约定」随之迁移到 Label port。
