@@ -2912,7 +2912,7 @@ MonoBehaviour:
   shopItemPos: {x: 0, y: -0.2, z: 0}
   shopItemStartPos: {fileID: 1870616910}
   playerDeck: {fileID: 11400000, guid: 1848b5e0c0f17294083067ba8feb5f94, type: 2}
-  playerDeckPos: {x: 0, y: -6.1, z: 0}
+  playerDeckPos: {x: 0, y: -6.3, z: 0}
   playerDeckStartPos: {fileID: 478120492}
   duplicateStackOffset: {x: -0.1, y: 0.1, z: 0.02}
   duplicateStackMaxOffsetCount: 5
@@ -2938,7 +2938,7 @@ MonoBehaviour:
     headerHeight: 1.24
     sidePadding: 0.45
     topPadding: 0.02
-    bottomPadding: 0.6
+    bottomPadding: 0.8
     fitTweenDuration: 0.3
     headerFontSize: 6.5
     headerLeftMargin: 0.23
@@ -2947,7 +2947,7 @@ MonoBehaviour:
     counterTotalFontSize: 5
     counterUsedOffset: {x: -0.72, y: 0}
     counterTotalOffset: {x: -0.25, y: -0.17}
-    fontBold: 0
+    fontBold: 1
     boldFont: {fileID: 11400000, guid: 3a6b8ccac21066a49a28aab8bed39aeb, type: 2}
 --- !u!1 &434224256
 GameObject:
