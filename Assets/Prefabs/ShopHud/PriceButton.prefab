@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 2.4, y: 0.64}
+  m_SizeDelta: {x: 2.4, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &8192109289255326276
 MeshRenderer:
@@ -64,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -5703313505547693256, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
+  - {fileID: 5964396723322719202, guid: 3a6b8ccac21066a49a28aab8bed39aeb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -108,16 +108,16 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: $0
+  m_text: "\u4E70\u5165"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
-  m_sharedMaterial: {fileID: -5703313505547693256, guid: 78f0e9d33a94e0a4f9407b45d9e9a88f, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 3a6b8ccac21066a49a28aab8bed39aeb, type: 2}
+  m_sharedMaterial: {fileID: 5964396723322719202, guid: 3a6b8ccac21066a49a28aab8bed39aeb, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4281806874
   m_fontColor: {r: 0.101960786, g: 0.1882353, b: 0.21568628, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -130,20 +130,20 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 3.6
-  m_fontSizeBase: 3.6
+  m_fontSize: 5
+  m_fontSizeBase: 5
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 1
+  m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -258,11 +258,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 809822158402610972, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_Size.x
-      value: 1.2
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 809822158402610972, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_Size.y
-      value: 1.1
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 1473555239533807119, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_LocalPosition.x
@@ -332,25 +332,29 @@ PrefabInstance:
       propertyPath: restShadow
       value: 0.108474575
       objectReference: {fileID: 0}
+    - target: {fileID: 2643004532703876597, guid: bad20356592834a4895ef0e120543d65, type: 3}
+      propertyPath: authoredFaceSize
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4928599686278613461, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_Name
       value: PriceButton
       objectReference: {fileID: 0}
     - target: {fileID: 5572032865407825734, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_Size.x
-      value: 1.2
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 5572032865407825734, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_Size.y
-      value: 1.1
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 8791752274157095208, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_Size.x
-      value: 1.2711865
+      value: 1.7711864
       objectReference: {fileID: 0}
     - target: {fileID: 8791752274157095208, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_Size.y
-      value: 0.67118645
+      value: 1.0711864
       objectReference: {fileID: 0}
     - target: {fileID: 8791752274157095208, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_Offset.x
