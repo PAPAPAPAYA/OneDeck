@@ -54,6 +54,8 @@ public float rerollFlipHold = 0f;         // 翻背落地到第一张翻正的�
 
 `UpdatePriceDisplay` 的 `showPrice` 条件追加 `&& _cardPhysObj.isFaceUp` —— 复用现有 `!showPrice` 隐藏分支（print + PhysButton + SetFaceDimmed(false)），旧卡翻背与新卡背面出生两条路径同被覆盖，翻正后自动恢复。
 
+**FIX2 2026-09-30（购买按钮跟随翻转）**：`EnsurePriceButton` 把按钮挂在 `printT.parent` = **FlipRoot** 下（prefab/legacy 两分支同），翻面 scaleX 压扁会带上按钮，且 `isFaceUp` 在 tween 起跳即翻 → 按钮在翻正前半程浮在卡背上。修：`CardPhysObjScript.isFlipPlaying`（`_flipTween != null`，complete/kill 都置空）+ `UpdatePriceDisplay` 在**整个翻转 tween 期间**隐藏价格块、落地才显示；挂载点与坐标不动（用户拍板方向 = 按钮不参与翻转，全程隐藏优于静态悬浮在翻转卡上方）。
+
 ## 4. Timing / 验证
 
 - 默认时序 ≈ 0.3（翻背）+ 0（hold）+ 0.3（翻正）+ 4×0.04（stagger）≈ **0.76s**（原 ≈0.65s），三字段 Inspector 手调。

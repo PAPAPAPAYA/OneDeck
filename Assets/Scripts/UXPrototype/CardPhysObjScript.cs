@@ -187,6 +187,13 @@ public class CardPhysObjScript : MonoBehaviour
 	private Transform[] _faceElements;
 	private Tween _flipTween;
 
+	/// <summary>
+	/// True while a squash-flip tween is in flight (animated SetFaceUp start until
+	/// complete/kill). Visibility drivers outside the flip system (e.g. ShopCardView's
+	/// price button) gate on this so UI never shows mid-flip.
+	/// </summary>
+	public bool isFlipPlaying => _flipTween != null;
+
 	[HideInInspector]
 	public Vector3 popUpOriginalPosition;
 	[HideInInspector]

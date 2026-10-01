@@ -69,10 +69,20 @@ public class ShopCardView : MonoBehaviour
 		bool shopPhase = phaseRef != null && phaseRef.Value() == EnumStorage.GamePhase.Shop;
 		// plan-shop-reroll-flip-2026-09-30: face-down cards (reroll flip reveal) hide the
 		// whole price block. cardPricePrint is a FlipRoot face element and hides with the
-		// flip, but the price PhysButton is not — without this guard it would float on the
-		// card back during the face-down phase.
+		// flip, but the price PhysButton is parented under FlipRoot too (EnsurePriceButton),
+		// so it must not show during any flip phase.
+		// VISUAL-FIX(2026-09-30): the buy/price button squashed along with every reroll flip
+		//   Cause:    EnsurePriceButton parents the button under printT.parent == FlipRoot
+		//             (prefab and legacy branches alike), so the flip scaleX squash applied
+		//             to it; and the isFaceUp guard flips state at the TWEEN START, so the
+		//             button popped back over the card back during the first half of the
+		//             face-up flip.
+		//   Affects:  ShopCardView.UpdatePriceDisplay (visibility only; parenting unchanged)
+		//   Regress:  Reroll: the price button must never be visible mid-flip and must be
+		//             back on every card once the flip-up lands. Resting phases unchanged.
+		//   Related:  CardPhysObjScript.isFlipPlaying, plan-shop-reroll-flip-2026-09-30
 		bool showPrice = shopPhase && _cardPhysObj.cardImRepresenting != null && !suppressPriceDisplay
-			&& _cardPhysObj.isFaceUp;
+			&& _cardPhysObj.isFaceUp && !_cardPhysObj.isFlipPlaying;
 		if (!showPrice)
 		{
 			if (!_priceLabelExternal) _cardPhysObj.cardPricePrint.gameObject.SetActive(false);
