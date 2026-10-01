@@ -5254,7 +5254,7 @@ MonoBehaviour:
   cardWinRateTracker: {fileID: 2103892656}
   combatStatsLogger: {fileID: 1151980348}
   logCombatFlow: 0
-  logInfinityDetection: 1
+  logInfinityDetection: 0
   logEffectChains: 0
   logAnimationPlayback: 0
   logVisualSync: 0
