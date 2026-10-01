@@ -32,7 +32,6 @@ public class CardPhysObjScript : MonoBehaviour
 	public TextMeshPro cardCostPrint;
 	public TextMeshPro cardNamePrint;
 	public TextMeshPro cardDescPrint;
-	public TextMeshPro cardPricePrint;
 	public TextMeshPro cardRarityPrint;
 	public TextMeshPro cardTagPrint;
 	public TextMeshPro cardStatusEffectPrint;
@@ -183,6 +182,11 @@ public class CardPhysObjScript : MonoBehaviour
 	public bool everRevealed { get; private set; }
 
 	private Transform _flipRoot;
+	/// <summary>
+	/// Runtime-built flip container the face elements (and the shop price button) live
+	/// under; null on prefabs that skipped BuildFlipRoot (start cards / face-less prefabs).
+	/// </summary>
+	public Transform FlipRoot { get { return _flipRoot; } }
 	private SpriteRenderer _cardBackRenderer;
 	private Transform[] _faceElements;
 	private Tween _flipTween;
@@ -328,7 +332,6 @@ public class CardPhysObjScript : MonoBehaviour
 			UpdateStatusEffectDisplay();
 			UpdateCardDescription();
 			UpdateCostDisplay();
-			UpdatePriceDisplay();
 			UpdateRarityDisplay();
 			UpdateTagDisplay();
 			RefreshAttackDisplay();
@@ -385,18 +388,6 @@ public class CardPhysObjScript : MonoBehaviour
 		// Hide cost display
 		if (cardCostPrint != null)
 			cardCostPrint.gameObject.SetActive(false);
-	}
-	/// <summary>
-	/// Update Price display, only shown in Shop Phase.
-	/// </summary>
-	private void UpdatePriceDisplay()
-	{
-		if (cardPricePrint == null) return;
-
-		if (currentGamePhaseRef == null || currentGamePhaseRef.Value() != EnumStorage.GamePhase.Shop)
-		{
-			cardPricePrint.gameObject.SetActive(false);
-		}
 	}
 
 	/// <summary>
@@ -880,7 +871,6 @@ public class CardPhysObjScript : MonoBehaviour
 		if (cardNamePrint != null) faces.Add(cardNamePrint.transform);
 		if (cardDescPrint != null) faces.Add(cardDescPrint.transform);
 		if (cardCostPrint != null) faces.Add(cardCostPrint.transform);
-		if (cardPricePrint != null) faces.Add(cardPricePrint.transform);
 		if (cardRarityPrint != null) faces.Add(cardRarityPrint.transform);
 		if (cardTagPrint != null) faces.Add(cardTagPrint.transform);
 		if (cardStatusEffectPrint != null) faces.Add(cardStatusEffectPrint.transform);

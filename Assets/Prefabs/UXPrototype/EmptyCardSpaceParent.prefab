@@ -57,7 +57,6 @@ MonoBehaviour:
   cardCostPrint: {fileID: 0}
   cardNamePrint: {fileID: 5625894641483297666}
   cardDescPrint: {fileID: 3921530853659920247}
-  cardPricePrint: {fileID: 0}
   cardRarityPrint: {fileID: 0}
   cardTagPrint: {fileID: 0}
   cardStatusEffectPrint: {fileID: 0}

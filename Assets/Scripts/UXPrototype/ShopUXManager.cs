@@ -83,6 +83,8 @@ public class ShopUXManager : MonoBehaviour
 	public GameObject rerollButtonPrefab;
 	[Tooltip("Authored buy/sell price button prefab (2026-09-29 prefab port — plan-shop-price-button-prefab); a Tpl_WorldButton variant, style authority for ShopCardView.EnsurePriceButton")]
 	public GameObject priceButtonPrefab;
+	[Tooltip("Card-local X/Y of the buy/sell price button on shop/deck cards, offset from the card center (2026-10-01: replaces the CardPrice print anchor removed from PhysicalCard.prefab). Live-tunable in Play — ShopCardView re-asserts it on every price display pass. Z stays -0.02, code-owned.")]
+	public Vector2 priceButtonPosition = new Vector2(-0.27f, -3.51f);
 	[Tooltip("Sliced sprite for the section panels (ShopSectionPanels; the card face sprite keeps them consistent with price buttons)")]
 	public Sprite chromeSprite;
 	[Tooltip("Font asset for section panel headers / deck counter (world-space TMP; ShopSectionPanels)")]
