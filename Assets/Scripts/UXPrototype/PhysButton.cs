@@ -51,6 +51,10 @@ public class PhysButton : MonoBehaviour
 	[Tooltip("Shown while hovered; the rest text is owned by the caller and rewritten on unhover")]
 	public string hoverText = "";
 
+	[Header("Authored Face Size (prefab-baked; runtime no-op)")]
+	[Tooltip("True: ConfigureWorldFaceSize does nothing at runtime — face/shadow sizes, positions and the collider envelope stay exactly as authored in the prefab (2026-09-30 price button). The prefab-stage Sync Collider To Face helper still works. False: the face is re-fitted from the label text bounds on every price text change.")]
+	public bool authoredFaceSize = false;
+
 	private const float WiggleDecay = 0.55f;
 
 	// Prefab-authored wiring (plan-shop-hud-prefab-widgets §3.5): prefab instances carry
@@ -187,9 +191,14 @@ public class PhysButton : MonoBehaviour
 	/// Face/shadow sliced size plus the root collider's envelope — the union of the face at
 	/// rest, hover and press, the grounded shadow, and the deny excursion — so the pointer
 	/// never leaves the hit area because the face moved away (edge flicker).
+	/// Runtime no-op when <see cref="authoredFaceSize"/> is set — the prefab bake is final.
 	/// </summary>
 	public void ConfigureWorldFaceSize(Vector2 size, Vector2 center)
 	{
+		// Authored-size mode: every write below would clobber the authored prefab values.
+		// isPlaying is false in prefab stage, so the Sync Collider To Face authoring
+		// helper (ContextMenu) keeps working.
+		if (authoredFaceSize && Application.isPlaying) return;
 		if (_faceRenderer != null)
 		{
 			_faceRenderer.size = size;

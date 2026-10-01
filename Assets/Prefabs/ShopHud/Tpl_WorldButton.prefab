@@ -545,6 +545,7 @@ MonoBehaviour:
   denyRetreatDuration: 0.12
   label: {fileID: 3813238752163664797}
   hoverText: 
+  authoredFaceSize: 0
   _faceRenderer: {fileID: 809822158402610972}
   _shadow: {fileID: 1473555239533807119}
   _visualGroup: {fileID: 1390591786636875499}
