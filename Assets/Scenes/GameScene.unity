@@ -2904,6 +2904,7 @@ MonoBehaviour:
   objPerRow: 3
   physCardEnlargeSize: 1.5
   enlargedPosition: {x: 0, y: 0, z: -1}
+  enlargedSortingOrder: 50
   physicalCardPrefab: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
   emptyCardSpacePrefab: {fileID: 2875936279184479118, guid: 33eb8770bf2947b4292cafc4e659e608, type: 3}
   physCardSize: {x: 0.8, y: 0.8, z: 0.8}
@@ -2922,12 +2923,17 @@ MonoBehaviour:
   rerollFlipDuration: 0.3
   rerollFlipStagger: 0.04
   rerollFlipHold: 0
+  hoverLiftEnabled: 1
+  hoverLift: 0.075
+  hoverLiftDuration: 0.12
+  hoverRetentionMargin: 0.25
   enableCameraScroll: 1
   cameraScrollSpeed: 5
   cameraMinY: -1
   cameraMaxY: 0
   useDynamicScrollBounds: 1
   scrollBottomPadding: 3
+  blockScrollWhileEnlarged: 1
   hudPagePrefab: {fileID: 3805871494095744686, guid: 0923243771841054291fb6bc04ef08b4, type: 3}
   rerollButtonPrefab: {fileID: 9199868540181086274, guid: 219aa0b130d8b5b499a7a41c70082e32, type: 3}
   priceButtonPrefab: {fileID: 4953393041055508960, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
@@ -10360,6 +10366,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1895662632}
   m_CullTransparentMesh: 1
+--- !u!1001 &1899633038
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.49794
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.55614
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 11.0854
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4953393041055508960, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_Name
+      value: PriceButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 4953393041055508960, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
 --- !u!1 &1918268427
 GameObject:
   m_ObjectHideFlags: 0
@@ -11925,67 +11992,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6e1bf2e1c5da20d4d8c8358362afd9fb, type: 3}
---- !u!1001 &1818815009986328925
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.40916
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 9.85078
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1793923648785626845, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4953393041055508960, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_Name
-      value: PriceButton (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 4953393041055508960, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 77f11379573e5f74fa84c05384aa1a81, type: 3}
 --- !u!1001 &3557901334636591101
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12137,4 +12143,4 @@ SceneRoots:
   - {fileID: 1985173587}
   - {fileID: 1607687214}
   - {fileID: 1479488092}
-  - {fileID: 1818815009986328925}
+  - {fileID: 1899633038}

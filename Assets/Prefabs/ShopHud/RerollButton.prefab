@@ -56,6 +56,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2643004532703876597, guid: bad20356592834a4895ef0e120543d65, type: 3}
+      propertyPath: hoverLift
+      value: 0.075
+      objectReference: {fileID: 0}
+    - target: {fileID: 2643004532703876597, guid: bad20356592834a4895ef0e120543d65, type: 3}
+      propertyPath: restShadow
+      value: 0.075
+      objectReference: {fileID: 0}
     - target: {fileID: 2791782810320482441, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_SizeDelta.x
       value: 1.55

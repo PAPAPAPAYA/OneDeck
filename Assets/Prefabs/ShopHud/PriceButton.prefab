@@ -278,15 +278,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1746648964187707112, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.40916
+      value: -1.49794
       objectReference: {fileID: 0}
     - target: {fileID: 1746648964187707112, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -2.55614
       objectReference: {fileID: 0}
     - target: {fileID: 1746648964187707112, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 9.85078
+      value: 11.0854
       objectReference: {fileID: 0}
     - target: {fileID: 1746648964187707112, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: m_LocalRotation.w
@@ -322,15 +322,15 @@ PrefabInstance:
       objectReference: {fileID: 3962142392997177512}
     - target: {fileID: 2643004532703876597, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: denyShift
-      value: 0.16271186
+      value: 0.075
       objectReference: {fileID: 0}
     - target: {fileID: 2643004532703876597, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: hoverLift
-      value: 0.108474575
+      value: 0.075
       objectReference: {fileID: 0}
     - target: {fileID: 2643004532703876597, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: restShadow
-      value: 0.108474575
+      value: 0.075
       objectReference: {fileID: 0}
     - target: {fileID: 2643004532703876597, guid: bad20356592834a4895ef0e120543d65, type: 3}
       propertyPath: authoredFaceSize
