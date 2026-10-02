@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
@@ -14,6 +15,38 @@ public class ShopCardView : MonoBehaviour
 	private bool _pressActive = false;
 	private float _enlargeCooldown = 0f;
 	private const float ENLARGE_COOLDOWN_TIME = 0.5f;
+
+	// Card hover lift related (plan-shop-card-hover-lift-2026-10-01): shop-page cards
+	// (shelf / deck band / upgrades row) lift diagonally toward the top-left light (the
+	// PhysButton.HoverVector convention). The lift rides CardPhysObjScript's
+	// TargetPosition system; _hoverBase is the REST pose captured at arm time
+	// (TargetPosition carries the lift while hovered), and the retention test is anchored
+	// on the rest bounds so the lift displacement can never flip the cursor test (combat
+	// hover's flicker-loop lesson — no OnMouseExit).
+	private bool _isHoverLifted = false;
+	private Vector3 _hoverBase;
+	private Bounds _hoverRestBounds;
+	private Collider2D _hoverCollider;
+	private Camera _hoverCamera;
+
+	// Grounded-element pinning (完全分离, 2026-10-01): while the face is off its rest spot
+	// for a face-only reason, grounded elements stay world-pinned at their rest spots (the
+	// button's own "hit target never moves" invariant, extended to the card). The price
+	// button pins through BOTH the hover lift AND the enlarge preview — the tag is a table
+	// element: the face lifts off it, and the enlarged preview flies away from it (position
+	// AND scale counter-held, so the tag never grows with the enlarged card); the big shadow
+	// pins through the hover lift only — the enlarge flight carries it. Purchase / sell
+	// reattach everything first so the pinned elements ride those flights.
+	private bool _pinButtonActive = false;
+	private Transform _pinButtonTr;
+	private Vector3 _pinButtonRestLocal;
+	private Vector3 _pinButtonRestLocalScale = Vector3.one;
+	private Vector3 _pinButtonRestWorld;
+	private Vector3 _pinButtonRestWorldScale = Vector3.one;
+	private bool _pinShadowActive = false;
+	private Transform _pinShadowTr;
+	private Vector3 _pinShadowRestLocal;
+	private Vector3 _pinShadowRestWorld;
 
 	// Price button (UI kit §04: buy/sell = single click on the price button; long-press
 	// removed 2026-09-16). Built lazily on the first shop-phase price display.
@@ -46,6 +79,8 @@ public class ShopCardView : MonoBehaviour
 	{
 		UpdatePriceDisplay();
 		HandleClickToRestore();
+		UpdateHoverLift();
+		UpdateLiftPins();
 
 		if (_enlargeCooldown > 0f)
 		{
@@ -288,6 +323,11 @@ public class ShopCardView : MonoBehaviour
 	/// </summary>
 	private void ApplyPriceButtonPlacement(Transform buttonRoot)
 	{
+		// While the lift/enlarge pin holds THIS button to its rest world spot, the
+		// authored-placement re-assert would fight the pin every frame. The pin's reattach
+		// lands on the arm-time local and the next unpinned pass re-asserts live Inspector
+		// edits. A button built mid-flight (never captured) keeps the normal re-assert.
+		if (_pinButtonActive && _pinButtonTr == buttonRoot) return;
 		Vector2 pos = ShopUXManager.Instance != null ? ShopUXManager.Instance.priceButtonPosition : DefaultPriceButtonPos;
 		Vector3 desired = new Vector3(pos.x, pos.y, PRICE_BUTTON_Z);
 		if (buttonRoot.localPosition != desired) buttonRoot.localPosition = desired;
@@ -311,7 +351,10 @@ public class ShopCardView : MonoBehaviour
 	#region Shop Input
 
 	/// <summary>
-	/// Detect click again to restore card.
+	/// Detect click again to restore card. The enlarge modal holds the shop input gate
+	/// itself, so the gate must not gate the dismiss — the only allowed click while
+	/// enlarged. The transition driver's own block (it owns camera and cards mid-flight)
+	/// still suppresses the dismiss.
 	/// </summary>
 	private void HandleClickToRestore()
 	{
@@ -351,6 +394,259 @@ public class ShopCardView : MonoBehaviour
 
 	#endregion
 
+	#region Card Hover Lift
+
+	private void OnMouseEnter()
+	{
+		TryArmHoverLift();
+	}
+
+	/// <summary>
+	/// Arm the hover lift: every gate must pass while the card is AT REST (the position-tween
+	/// gate also guarantees the rest-pose capture below is not mid-flight — entry flight,
+	/// purchase flight to the deck, sell flight). The card then rises to base + hoverLiftY with
+	/// a slight scale bump, OutBack (PhysButton hover feel).
+	/// </summary>
+	private void TryArmHoverLift()
+	{
+		if (_isHoverLifted || _isEnlarged) return;
+		if (ShopUXManager.Instance == null || !ShopUXManager.Instance.hoverLiftEnabled) return;
+		if (_enlargeCooldown > 0f) return;
+		if (ShopInputGate.Blocked || PhaseTransitionDriver.IsTransitioning) return;
+		if (_cardPhysObj.IsPositionTweenPlaying) return;
+		if (!_cardPhysObj.isFaceUp || _cardPhysObj.isFlipPlaying) return;
+
+		GamePhaseSO phaseRef = _cardPhysObj.currentGamePhaseRef;
+		if (phaseRef == null || phaseRef.Value() != EnumStorage.GamePhase.Shop) return;
+
+		if (_hoverCollider == null) _hoverCollider = GetComponent<Collider2D>();
+		if (_hoverCollider == null) return; // no collider: no retention rect, never arm
+
+		_hoverBase = _cardPhysObj.TargetPosition;
+		_hoverRestBounds = _hoverCollider.bounds;
+		_isHoverLifted = true;
+		// Grounded elements captured at arm: the card is at rest here, so the current world
+		// position IS the rest world position. The price button is lazily built by the price
+		// display pass, so it may not exist yet on a fresh card — it then simply rides this
+		// lift session (re-armed lifts pin it normally).
+		CaptureButtonPin();
+		_pinShadowTr = null;
+		SpriteRenderer bigShadow = _cardPhysObj.bigShadowRenderer;
+		if (bigShadow != null && bigShadow.gameObject.activeInHierarchy)
+		{
+			_pinShadowTr = bigShadow.transform;
+			_pinShadowRestLocal = _pinShadowTr.localPosition;
+			_pinShadowRestWorld = _pinShadowTr.position;
+			_pinShadowActive = true;
+		}
+		ReassertLiftedPose();
+	}
+
+	/// <summary>
+	/// Capture the price button's rest pose for world-pinning. Only valid while the card is at
+	//  rest (a mid-flight capture would freeze the tag in mid-air), so a click during the entry
+	/// flight leaves the tag riding that session. Already-active pin = capture is a no-op and
+	/// the existing pin carries over seamlessly (e.g. lift → enlarge, restore → re-hover).
+	/// </summary>
+	private void CaptureButtonPin()
+	{
+		if (_pinButtonActive) return;
+		if (_priceButton == null || !_priceButton.gameObject.activeInHierarchy) return;
+		if (_cardPhysObj.IsPositionTweenPlaying) return;
+		_pinButtonTr = _priceButton.transform;
+		_pinButtonRestLocal = _pinButtonTr.localPosition;
+		_pinButtonRestLocalScale = _pinButtonTr.localScale;
+		_pinButtonRestWorld = _pinButtonTr.position;
+		_pinButtonRestWorldScale = _pinButtonTr.lossyScale;
+		_hoverBase = _cardPhysObj.TargetPosition;
+		_pinButtonActive = true;
+	}
+
+	/// <summary>
+	/// Per-frame hover poll. OnMouseExit is deliberately NOT used to end the lift (the lifted
+	/// card moves under the cursor — the combat hover's flicker-loop lesson): the cursor is
+	/// tested against the REST-pose retention rect every frame instead. Two release flavors:
+	/// another owner took the target (enlarge / manager gone) → silent release, the pinned
+	/// elements reattach and ride; transient gates or the cursor leaving (incl. the price
+	/// button claiming the cursor — 完全分离: hovering the tag drops the card) → settle home.
+	/// </summary>
+	private void UpdateHoverLift()
+	{
+		if (!_isHoverLifted) return;
+
+		if (_isEnlarged || ShopUXManager.Instance == null)
+		{
+			// The enlarge state owns the target now (EnlargeCard already reattached the
+			// shadow so it rides the preview flight); the price button pin carries over
+			// into the enlarge hold — the tag stays on its shelf spot.
+			_isHoverLifted = false;
+			return;
+		}
+
+		if (ShopInputGate.Blocked || PhaseTransitionDriver.IsTransitioning
+			|| !_cardPhysObj.isFaceUp || _cardPhysObj.isFlipPlaying
+			|| !IsCursorInHoverRetention() || PriceButtonOwnsCursor())
+		{
+			DropHoverLift();
+			return;
+		}
+
+		// Live tuning: re-assert the lifted position when hoverLift changed mid-hover. The
+		// compare keeps the steady state write-free (ApplyPriceButtonPlacement pattern).
+		ReassertLiftedPose();
+	}
+
+	/// <summary>True while the cursor is on the price button — the tag owns the interaction and the card settles back home (完全分离).</summary>
+	private bool PriceButtonOwnsCursor()
+	{
+		return _priceButton != null && _priceButton.gameObject.activeInHierarchy && _priceButton.IsPointerOver;
+	}
+
+	private void ReassertLiftedPose()
+	{
+		float lift = ShopUXManager.Instance.hoverLift;
+		Vector3 liftedPosition = _hoverBase + new Vector3(-lift, lift, 0f);
+		if (_cardPhysObj.TargetPosition != liftedPosition)
+		{
+			_cardPhysObj.SetTargetPosition(liftedPosition, Ease.OutBack, ShopUXManager.Instance.hoverLiftDuration);
+		}
+	}
+
+	private void DropHoverLift()
+	{
+		_isHoverLifted = false;
+		_cardPhysObj.SetTargetPosition(_hoverBase, Ease.OutQuad, ShopUXManager.Instance.hoverLiftDuration);
+	}
+
+	/// <summary>
+	/// Grounded-element pins, per frame. Each pin holds while the face is off its rest spot
+	/// for ITS face-only reason, and reattaches the moment that reason ends:
+	///   button — hover lift, enlarge preview, or the glide home from either (the tag stays
+	///   on its shelf spot through all of it);
+	///   shadow — hover lift / drop-back glide only (the enlarge flight carries the shadow).
+	/// </summary>
+	private void UpdateLiftPins()
+	{
+		if (PhaseTransitionDriver.IsTransitioning)
+		{
+			// The transition driver owns the flight — reattach so the pinned elements ride it
+			// instead of fighting it for their transform.
+			ReattachAllPins();
+			return;
+		}
+
+		if (_pinButtonActive)
+		{
+			if (_isHoverLifted || _isEnlarged || _cardPhysObj.IsPositionTweenPlaying)
+			{
+				if (_pinButtonTr != null)
+				{
+					_pinButtonTr.position = _pinButtonRestWorld;
+					// Counter-scale: the tag rides FlipRoot, so the enlarged card's scale would
+					// grow it — divide it back out to hold the captured rest world scale.
+					Vector3 parentLossy = _pinButtonTr.parent != null ? _pinButtonTr.parent.lossyScale : Vector3.one;
+					_pinButtonTr.localScale = new Vector3(
+						_pinButtonRestWorldScale.x / Mathf.Max(Mathf.Abs(parentLossy.x), 0.0001f),
+						_pinButtonRestWorldScale.y / Mathf.Max(Mathf.Abs(parentLossy.y), 0.0001f),
+						_pinButtonRestWorldScale.z / Mathf.Max(Mathf.Abs(parentLossy.z), 0.0001f));
+				}
+			}
+			else
+			{
+				ReattachButtonPin();
+			}
+		}
+
+		if (_pinShadowActive)
+		{
+			bool faceOffRest = _isHoverLifted
+				|| (_cardPhysObj.IsPositionTweenPlaying && _cardPhysObj.TargetPosition == _hoverBase);
+			if (faceOffRest)
+			{
+				if (_pinShadowTr != null) _pinShadowTr.position = _pinShadowRestWorld;
+			}
+			else
+			{
+				ReattachShadowPin();
+			}
+		}
+	}
+
+	private void ReattachButtonPin()
+	{
+		_pinButtonActive = false;
+		if (_pinButtonTr != null)
+		{
+			_pinButtonTr.localPosition = _pinButtonRestLocal;
+			_pinButtonTr.localScale = _pinButtonRestLocalScale;
+		}
+	}
+
+	private void ReattachShadowPin()
+	{
+		_pinShadowActive = false;
+		if (_pinShadowTr != null) _pinShadowTr.localPosition = _pinShadowRestLocal;
+	}
+
+	/// <summary>
+	/// Reattach every pinned element to the card: they ride whatever takes over next
+	/// (purchase flight, sell flight, transition). Never writes the card target — the
+	/// caller / new owner owns it.
+	/// </summary>
+	private void ReattachAllPins()
+	{
+		_isHoverLifted = false;
+		ReattachButtonPin();
+		ReattachShadowPin();
+	}
+
+	/// <summary>
+	/// Cursor still inside the card's REST bounds (sampled at arm, shifted by NotifySlotMoved
+	/// on reflow) expanded by hoverRetentionMargin. The cursor is projected onto the rest
+	/// pose's z plane, so the lift displacement never changes what the cursor "hits".
+	/// </summary>
+	private bool IsCursorInHoverRetention()
+	{
+		if (_hoverCollider == null)
+		{
+			_hoverCollider = GetComponent<Collider2D>();
+			if (_hoverCollider == null) return true; // cannot test: keep the lift (combat fallback)
+		}
+		if (_hoverCamera == null)
+		{
+			_hoverCamera = Camera.main;
+			if (_hoverCamera == null) return true;
+		}
+		Vector3 screenPos = Input.mousePosition;
+		screenPos.z = _hoverCamera.WorldToScreenPoint(_hoverRestBounds.center).z;
+		Vector3 worldPos = _hoverCamera.ScreenToWorldPoint(screenPos);
+		float margin = ShopUXManager.Instance.hoverRetentionMargin;
+		Bounds retention = _hoverRestBounds;
+		retention.Expand(margin * 2f);
+		return retention.Contains(worldPos);
+	}
+
+	/// <summary>
+	/// True while the hover lift is active. ShopUXManager reflow paths check this to sync the
+	/// lift base (NotifySlotMoved) instead of retargeting the card flat.
+	/// </summary>
+	public bool IsHoverLifted
+	{
+		get { return _isHoverLifted; }
+	}
+
+	/// <summary>
+	/// Target ownership handoff (purchase / sell / transition): end the lift WITHOUT writing
+	/// the target — the new owner (flight, relayout, transition driver) retargets from here.
+	/// The pinned (grounded) elements reattach and ride the new owner's flight.
+	/// </summary>
+	public void NotifyTargetTaken()
+	{
+		ReattachAllPins();
+	}
+
+	#endregion
+
 	#region Card Enlarge
 
 	/// <summary>
@@ -363,16 +659,27 @@ public class ShopCardView : MonoBehaviour
 	}
 
 	/// <summary>
-	/// The card's grid slot moved (shelf reflow after a purchase). While enlarged, the captured
-	/// _originalPosition must track the new slot or RestoreCard would send the card to a stale
-	/// position; when not enlarged the caller retargets the card directly, so nothing to do.
+	/// The card's grid slot moved (shelf reflow after a purchase, deck/utility reflow). While
+	/// enlarged, the captured _originalPosition must track the new slot or RestoreCard would
+	/// send it to a stale position. While hover-lifted, the lift base and retention rect must
+	/// track it too so the card keeps riding its new slot (target = new base + lift). When
+	/// neither, only the base is kept fresh for a later hover; the caller retargets directly.
 	/// </summary>
 	public void NotifySlotMoved(Vector3 newSlotPosition)
 	{
+		Vector3 delta = newSlotPosition - _hoverBase;
 		if (_isEnlarged)
 		{
 			_originalPosition = newSlotPosition;
 		}
+		if (_isHoverLifted)
+		{
+			_hoverRestBounds.center += delta;
+			ReassertLiftedPose();
+		}
+		if (_pinButtonActive) _pinButtonRestWorld += delta;
+		if (_pinShadowActive) _pinShadowRestWorld += delta;
+		_hoverBase = newSlotPosition;
 	}
 
 	/// <summary>
@@ -382,8 +689,19 @@ public class ShopCardView : MonoBehaviour
 	{
 		if (_enlargeCooldown > 0) return;
 
-		_originalPosition = _cardPhysObj.TargetPosition;
+		// Capture the REST pose: while hover-lifted, TargetPosition carries the lift offset,
+		// and RestoreCard must land on the un-lifted slot. The lift ends here; the big shadow
+		// reattaches and rides the preview flight, while the price button stays grounded —
+		// its pin carries over into the enlarge hold (a direct click without a prior hover
+		// captures the pin now, before the flight tweens start).
+		_originalPosition = _isHoverLifted ? _hoverBase : _cardPhysObj.TargetPosition;
 		_originalScale = _cardPhysObj.TargetScale;
+		if (_isHoverLifted)
+		{
+			_isHoverLifted = false;
+			ReattachShadowPin();
+		}
+		CaptureButtonPin();
 
 		if (ShopUXManager.Instance != null)
 		{

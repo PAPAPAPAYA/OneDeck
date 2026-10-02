@@ -611,7 +611,27 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 
 		// Start DOTween position animation
-		StartPositionTween(onComplete);
+		StartPositionTween(null, null, onComplete);
+	}
+
+	/// <summary>
+	/// Set target position with an explicit ease and duration (e.g. the shop hover lift), same
+	/// override pattern as SetTargetScale. The defaults overload keeps moveDuration/moveEase.
+	/// </summary>
+	public void SetTargetPosition(Vector3 target, Ease easeOverride, float durationOverride, Action onComplete = null)
+	{
+		TestManager.Log("[CardPhysObjScript] SetTargetPosition card=" + name + " currentPos=" + transform.position + " newTarget=" + target + " isPlayingSpecial=" + isPlayingSpecialAnimation);
+		TargetPosition = target;
+
+		// If a special animation owns the position, do not start DOTween (it would fight the
+		// caller's own transform drive).
+		if (SpecialAnimationPinsPosition)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		StartPositionTween(easeOverride, durationOverride, onComplete);
 	}
 
 	/// <summary>
@@ -695,7 +715,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// <summary>
 	/// Start position DOTween animation
 	/// </summary>
-	private void StartPositionTween(Action onComplete = null)
+	private void StartPositionTween(Ease? easeOverride = null, float? durationOverride = null, Action onComplete = null)
 	{
 		// If already animating and target is the same, do not restart
 		if (_positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
@@ -704,8 +724,8 @@ public class CardPhysObjScript : MonoBehaviour
 			_positionTween.Kill();
 		}
 
-		TestManager.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + moveDuration);
-		float scaledDuration = GetCombatScaledDuration(moveDuration);
+		float scaledDuration = durationOverride.HasValue ? durationOverride.Value : GetCombatScaledDuration(moveDuration);
+		TestManager.Log("[CardPhysObjScript] StartPositionTween START card=" + name + " from=" + transform.position + " to=" + TargetPosition + " duration=" + scaledDuration);
 		// VISUAL-FIX(2026-09-11): record callback presence on the live tween and sample the
 		//   reveal-z probe on landing. The re-clamp guard (CombatUXManager
 		//   .TryReClampRevealZoneTargetZ) now defers only to callback-carrying tweens, so
@@ -715,7 +735,7 @@ public class CardPhysObjScript : MonoBehaviour
 		_positionTweenHasCompletionCallback = onComplete != null;
 		_positionTweenCompletionCallback = onComplete;
 		var tween = transform.DOMove(TargetPosition, scaledDuration)
-			.SetEase(moveEase)
+			.SetEase(easeOverride.HasValue ? easeOverride.Value : moveEase)
 			.SetUpdate(UpdateType.Normal, true)
 			.OnComplete(() =>
 			{

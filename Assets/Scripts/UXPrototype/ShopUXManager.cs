@@ -62,6 +62,16 @@ public class ShopUXManager : MonoBehaviour
 	[Tooltip("Hold beat between the face-down flip landing and the first face-up flip")]
 	public float rerollFlipHold = 0f;
 
+	[Header("Card Hover Lift (plan-shop-card-hover-lift-2026-10-01)")]
+	[Tooltip("商店页卡片 hover 弹起总开关（货架 + 牌库 + 升级区）")]
+	public bool hoverLiftEnabled = true;
+	[Tooltip("hover 时卡片朝左上光源斜向弹起的等量位移（-x/+y，PhysButton.HoverVector 同约定；价签与大影子钉在原地不随卡面）")]
+	public float hoverLift = 0.25f;
+	[Tooltip("弹起/落下单程时长（秒）；OutBack 弹起 / OutQuad 落下，与 PhysButton 手感一致")]
+	public float hoverLiftDuration = 0.12f;
+	[Tooltip("hover 保留区在卡片静止 bounds 四周外扩的世界单位（防抬起后光标在卡缘抖动循环；网格间距若变密需调小）")]
+	public float hoverRetentionMargin = 0.25f;
+
 	[Header("Camera Scroll Settings")]
 	[Tooltip("Whether to enable mouse wheel to control camera up/down movement")]
 	public bool enableCameraScroll = true;
@@ -465,26 +475,42 @@ public class ShopUXManager : MonoBehaviour
 		var assigner = new StackSlotAssigner(this);
 		foreach (var card in _spawnedPlayerCards)
 		{
-			if (card == null) continue;
-			var physObj = card.GetComponent<CardPhysObjScript>();
-			if (physObj == null || physObj.cardImRepresenting == null) continue;
-			physObj.SetTargetPosition(assigner.Assign(physObj.cardImRepresenting.cardTypeID, physObj.cardImRepresenting.occupiesDeckSlot, out bool isStackedCopy));
-			SetPriceSuppressed(card, isStackedCopy);
+			RetargetDeckCard(card, assigner);
 		}
 		// Slot-free utility passives live in the Upgrades panel row (below the deck band);
 		// the shared assigner routes them to the utility track via occupiesDeckSlot = false.
 		foreach (var card in _spawnedUtilityCards)
 		{
-			if (card == null) continue;
-			var physObj = card.GetComponent<CardPhysObjScript>();
-			if (physObj == null || physObj.cardImRepresenting == null) continue;
-			physObj.SetTargetPosition(assigner.Assign(physObj.cardImRepresenting.cardTypeID, physObj.cardImRepresenting.occupiesDeckSlot, out bool isStackedCopy));
-			SetPriceSuppressed(card, isStackedCopy);
+			RetargetDeckCard(card, assigner);
 		}
 
 		// Section panels re-fit: single choke point — every flow that moves a deck/utility
 		// card or an empty slot ends up here (RelayoutDeckBand, buys, sells, deckSize growth).
 		ShopSectionPanels.Instance?.RefreshLayout();
+	}
+
+	/// <summary>
+	/// One deck/utility card through the assigner. Hover-lifted cards sync their lift base to
+	/// the new slot instead of being retargeted flat, so the lift survives the reflow
+	/// (plan-shop-card-hover-lift-2026-10-01). The assigner is stateful — the
+	/// occupying-then-utility loop order decides slot allocation and must stay as-is.
+	/// </summary>
+	private void RetargetDeckCard(GameObject card, StackSlotAssigner assigner)
+	{
+		if (card == null) return;
+		var physObj = card.GetComponent<CardPhysObjScript>();
+		if (physObj == null || physObj.cardImRepresenting == null) return;
+		Vector3 slotPosition = assigner.Assign(physObj.cardImRepresenting.cardTypeID, physObj.cardImRepresenting.occupiesDeckSlot, out bool isStackedCopy);
+		var view = card.GetComponent<ShopCardView>();
+		if (view != null && view.IsHoverLifted)
+		{
+			view.NotifySlotMoved(slotPosition);
+		}
+		else
+		{
+			physObj.SetTargetPosition(slotPosition);
+		}
+		SetPriceSuppressed(card, isStackedCopy);
 	}
 
 	/// <summary>
@@ -502,6 +528,12 @@ public class ShopUXManager : MonoBehaviour
 			if (physObj == null || physObj.shopItemIndex < 0) continue;
 			var view = card.GetComponent<ShopCardView>();
 			if (view != null && view.IsEnlarged) continue;
+			if (view != null && view.IsHoverLifted)
+			{
+				// Snap would yank the lifted card back mid-hover; sync its base and keep the lift.
+				view.NotifySlotMoved(GetShopItemSlotPosition(physObj.shopItemIndex));
+				continue;
+			}
 			physObj.SetPositionImmediate(GetShopItemSlotPosition(physObj.shopItemIndex));
 		}
 
@@ -601,6 +633,7 @@ public class ShopUXManager : MonoBehaviour
 		// Reflow the shelf: remaining cards tween to their re-indexed slots (also closes the hole
 		// left by any mid-row purchase). Enlarged cards keep hover ownership of their target;
 		// sync their captured restore position instead so RestoreCard lands on the new slot.
+		// Hover-lifted cards do the same for their lift base (the lift rides the reflow).
 		foreach (var card in _spawnedShopCards)
 		{
 			if (card == null) continue;
@@ -608,7 +641,7 @@ public class ShopUXManager : MonoBehaviour
 			if (physObj == null || physObj.shopItemIndex < 0) continue;
 			var view = card.GetComponent<ShopCardView>();
 			Vector3 slotPosition = GetShopItemSlotPosition(physObj.shopItemIndex);
-			if (view != null && view.IsEnlarged)
+			if (view != null && (view.IsEnlarged || view.IsHoverLifted))
 			{
 				view.NotifySlotMoved(slotPosition);
 				continue;
@@ -887,6 +920,10 @@ public class ShopUXManager : MonoBehaviour
 		GameObject purchasedCard = _spawnedShopCards[purchasedCardIndex];
 		CardPhysObjScript purchasedCardPhys = purchasedCard.GetComponent<CardPhysObjScript>();
 		CardScript cardScript = purchasedCardPhys != null ? purchasedCardPhys.cardImRepresenting : null;
+
+		// Hover-lift handoff (plan-shop-card-hover-lift-2026-10-01): the purchase flight owns
+		// the target from here — end the lift without writing the target back.
+		purchasedCard.GetComponent<ShopCardView>()?.NotifyTargetTaken();
 		
 		// 2. Check if card is a physical deck card
 		if (cardScript != null && !cardScript.physicalDeckCard)
@@ -972,11 +1009,15 @@ public class ShopUXManager : MonoBehaviour
 		}
 		if (spawnedIndex < 0)
 		{
-			// Debug.LogWarning($"[ShopUXManager] Sold card not found in spawned card lists");
+			// Debug.Log($"[ShopUXManager] Sold card not found in spawned card lists");
 			// Destroy directly
 			Destroy(soldCardInstance);
 			return;
 		}
+
+		// Hover-lift handoff (plan-shop-card-hover-lift-2026-10-01): the sell flight owns the
+		// target from here — end the lift without writing the target back.
+		soldCardInstance.GetComponent<ShopCardView>()?.NotifyTargetTaken();
 
 		// 2. Duplicate-slot rule: empty slots are persistent, so nothing is respawned
 		CardPhysObjScript soldCardPhys = soldCardInstance.GetComponent<CardPhysObjScript>();
