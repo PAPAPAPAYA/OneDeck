@@ -4,14 +4,17 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Zeros every TestManager log switch once a test run starts. The switches are
-/// Play-mode debugging state (field defaults are all true); when they are left on,
-/// test runs flood the console with combat-sim logs (~6M lines per full suite).
-/// Runs are detected by polling TestJobDataHolder.TestRuns (non-empty from run
-/// initialization, long before the first test body), because TestRunnerApi
-/// callback registrations made outside the test-framework package proved
-/// unreliable here (registered but never dispatched, 2026-10-01). Re-enable
-/// switches in the Inspector when debugging a test; the next run re-zeros them.
+/// Mutes TestManager logging for the whole duration of a test run. Test bodies run
+/// inside a single editor tick, so pinning per-instance log switches (the
+/// 2026-10-01 approach) could never catch rig-created TestManager instances; the
+/// static TestManager.TestRunSilence, checked first in TestManager.LogInternal,
+/// closes that gap and the Me==null ungated fallback. Touching no instance fields
+/// also removes the old "SaveScene bakes pinned switches into the scene" residue
+/// trap. Run detection polls TestJobDataHolder.TestRuns (non-empty from run
+/// initialization, long before the first test body; entries are removed again on
+/// run completion), because TestRunnerApi callback registrations made outside the
+/// test-framework package proved unreliable here (registered but never
+/// dispatched, 2026-10-01). Re-enable switches in the Inspector when debugging.
 /// </summary>
 [InitializeOnLoad]
 class TestManagerLogSilencer
@@ -20,7 +23,7 @@ class TestManagerLogSilencer
 
 	private static ScriptableObject _jobDataHolder;
 	private static FieldInfo _testRunsField;
-	private static bool _loggedZeroingThisRun;
+	private static bool _loggedSilenceThisRun;
 
 	static TestManagerLogSilencer()
 	{
@@ -33,16 +36,20 @@ class TestManagerLogSilencer
 		int activeRuns = GetActiveTestRunCount();
 		if (activeRuns == 0)
 		{
-			_loggedZeroingThisRun = false;
+			if (TestManager.TestRunSilence)
+			{
+				TestManager.TestRunSilence = false;
+				Debug.Log("[TestManagerLogSilencer] Test run ended; TestManager.TestRunSilence released.");
+			}
+			_loggedSilenceThisRun = false;
 			return;
 		}
 
-		// Pin the switches for the whole run: mid-run scene reloads (StoreSceneSetup /
-		// RestoreSceneSetup) bring the on-disk state back, so zero once is not enough.
-		if (PinSwitchesOff() && !_loggedZeroingThisRun)
+		TestManager.TestRunSilence = true;
+		if (!_loggedSilenceThisRun)
 		{
-			_loggedZeroingThisRun = true;
-			Debug.Log("[TestManagerLogSilencer] TestManager log switches pinned off for this run; re-enable in the Inspector for test debugging.");
+			_loggedSilenceThisRun = true;
+			Debug.Log("[TestManagerLogSilencer] Test run active; TestManager.TestRunSilence engaged (TestManager log output muted until the run ends).");
 		}
 	}
 
@@ -72,35 +79,5 @@ class TestManagerLogSilencer
 
 		var runs = _testRunsField.GetValue(_jobDataHolder) as System.Collections.ICollection;
 		return runs != null ? runs.Count : 0;
-	}
-
-	/// <summary>Returns true when at least one switch had to be turned off.</summary>
-	private static bool PinSwitchesOff()
-	{
-		var managers = Object.FindObjectsByType<TestManager>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-		if (managers.Length == 0)
-		{
-			return false;
-		}
-
-		bool anyWasOn = false;
-		foreach (var field in typeof(TestManager).GetFields(BindingFlags.Public | BindingFlags.Instance))
-		{
-			if (field.FieldType != typeof(bool) || !field.Name.StartsWith("log"))
-			{
-				continue;
-			}
-
-			foreach (var manager in managers)
-			{
-				if ((bool)field.GetValue(manager))
-				{
-					anyWasOn = true;
-					field.SetValue(manager, false);
-				}
-			}
-		}
-
-		return anyWasOn;
 	}
 }

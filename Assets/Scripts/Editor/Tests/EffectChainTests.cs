@@ -25,6 +25,13 @@ public class EffectChainTests : HeadlessCombatTestFixture
 	[Test]
 	public void ChainDepthExceeds99_BlocksFurtherEffects()
 	{
+		// Opt into EffectChains logging: this test observes the depth limit through its
+		// LogError, which is silent by default (log* defaults false, 2026-10-02; the run
+		// silence exempts errors). Me is set by hand because Awake does not run in Edit Mode.
+		var tm = CreateGameObject("ChainDepthTestManager").AddComponent<DefaultNamespace.Managers.TestManager>();
+		tm.logEffectChains = true;
+		DefaultNamespace.Managers.TestManager.Me = tm;
+
 		UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType.Error, "[EffectChainManager] ERROR: chain depth reached limit");
 
 		var card = CreateCard(true, "TestCard");

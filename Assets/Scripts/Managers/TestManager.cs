@@ -16,6 +16,12 @@ namespace DefaultNamespace.Managers
 
 		public static TestManager Me;
 
+		// Master mute for the whole duration of an editor test run, set by
+		// TestManagerLogSilencer. Checked first in LogInternal so it also covers
+		// fixture/rig-created instances and the Me == null ungated fallback; resets
+		// on domain reload. Run-lifecycle state; do not set by hand.
+		public static bool TestRunSilence;
+
 		private void Awake()
 		{
 			Me = this;
@@ -93,42 +99,47 @@ namespace DefaultNamespace.Managers
 		Uncategorized
 	}
 
+		// Defaults are all false (2026-10-02): these are Play-mode debugging state, and every
+		// TestManager created by test rigs/fixtures inherits the C# defaults; with true the
+		// EditMode suite flooded ~90k EffectChains console entries per run. Enable switches
+		// in the Inspector when debugging; TestManagerLogSilencer mutes them for the
+		// duration of every test run via TestRunSilence.
 		[Header("Log Switches")]
 		[Tooltip("Log combat flow messages from CombatManager and PhaseManager.")]
-		public bool logCombatFlow = true;
+		public bool logCombatFlow = false;
 
 		[Tooltip("Log infinity-defense detection messages (CombatArrangementCycleDetector arrangement-cycle trips). Kept separate from CombatFlow because a trip is rare and must be observable without opening the noisy combat-flow bucket.")]
-		public bool logInfinityDetection = true;
+		public bool logInfinityDetection = false;
 
 		[Tooltip("Log effect chain messages from EffectChainManager, BuryEffect, StageEffect, ApplyStatusEffectCore, ReviveEffect, and EffectScript (attack-attribute invariant).")]
-		public bool logEffectChains = true;
+		public bool logEffectChains = false;
 
 		[Tooltip("Log animation playback messages from RecorderAnimationPlayer and AnimationStateTracker.")]
-		public bool logAnimationPlayback = true;
+		public bool logAnimationPlayback = false;
 
 		[Tooltip("Log visual/deck sync messages from CombatUXManager and CardPhysObjScript.")]
-		public bool logVisualSync = true;
+		public bool logVisualSync = false;
 
 		[Tooltip("Log editor tool messages from EnemyDeckRecorder and CardTypeIDValidator.")]
-		public bool logEditorTools = true;
+		public bool logEditorTools = false;
 
 		[Tooltip("Log TestManager internal messages.")]
-		public bool logTestManager = true;
+		public bool logTestManager = false;
 
 		[Tooltip("Log dynamic damage display messages from CardScript, HPAlterEffect, and CardPhysObjScript.")]
-		public bool logDynamicDamageDisplay = true;
+		public bool logDynamicDamageDisplay = false;
 
 		[Tooltip("Log status effect display messages from CardPhysObjScript and CardScript display state.")]
-		public bool logStatusEffectDisplay = true;
+		public bool logStatusEffectDisplay = false;
 
 		[Tooltip("Log damage floater messages from DamageFloaterPresenter.")]
-		public bool logDamageFloater = true;
+		public bool logDamageFloater = false;
 
 		[Tooltip("Log shop flow messages from ShopManager, ShopUXManager, and PhaseManager shop transitions.")]
-		public bool logShopFlow = true;
+		public bool logShopFlow = false;
 
 		[Tooltip("Log messages whose tag is not recognized by InferCategory (new or untagged logs).")]
-		public bool logUncategorized = true;
+		public bool logUncategorized = false;
 
 		#endregion
 
@@ -309,6 +320,14 @@ namespace DefaultNamespace.Managers
 
 		private static void LogInternal(object message, UnityEngine.Object context, LogType logType)
 		{
+			// Errors and exceptions stay visible during test runs: an unexpected one must
+			// still fail its test, and tests assert on load-bearing errors (e.g. the
+			// chain-depth limit) via LogAssert. The flood is Log/Warning volume.
+			if (TestRunSilence && logType != LogType.Error && logType != LogType.Exception)
+			{
+				return;
+			}
+
 			if (Me == null)
 			{
 				// Edit-mode / pre-Awake logs: resolve the scene instance so the switches still apply.
