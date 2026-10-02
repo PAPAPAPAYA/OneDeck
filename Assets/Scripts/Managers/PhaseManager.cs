@@ -130,9 +130,17 @@ public class PhaseManager : MonoBehaviour
 
 		if (currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop) // if in shop phase
 		{
-			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace) return;
+			// User ruling 2026-10-02: the Space shortcut is removed — the 离开商店 button
+			// (ShopHudBinder LeaveShop) is the only player-facing shop->combat trigger, and it
+			// is ShopInputGate-gated so an open enlarge preview blocks it. DeckTester.autoSpace
+			// still drives this branch for full-run automation.
+			if (!DeckTester.me.autoSpace) return;
 			// Phase transition driver (plan-phase-transition-world-camera-2026-09-21): when
 			// available it wraps the exit/enter calls in the camera travel; false = legacy hard cut.
+			// F1 busy guard (plan-phase-transition-audit-fixes-2026-10-02): LOAD-BEARING for
+			// autoSpace — during a Result->Shop travel the phase already reads Shop, and an
+			// unguarded auto-frame ran the legacy hard cut and double-entered combat mid-flight.
+			if (PhaseTransitionDriver.IsTransitioning) return;
 			if (PhaseTransitionDriver.RequestShopToCombat(this)) return;
 			ExitingShopPhase();
 			EnteringCombatPhase();
@@ -246,6 +254,10 @@ public class PhaseManager : MonoBehaviour
 			ShowResult();
 			if (!Input.GetKeyDown(KeyCode.Space) && !DeckTester.me.autoSpace && !Input.GetMouseButtonDown(0)) return;
 			// Phase transition driver: wraps the advance in the downward camera travel when available.
+			// F1 busy guard (plan-phase-transition-audit-fixes-2026-10-02): defensive — the
+			// Result->Shop travel flips the phase to Shop at travel start so this branch is
+			// unreachable mid-flight today; the guard keeps it symmetric with the Shop branch.
+			if (PhaseTransitionDriver.IsTransitioning) return;
 			if (PhaseTransitionDriver.RequestResultToShop(this)) return;
 			AdvanceFromResultToShop();
 		}

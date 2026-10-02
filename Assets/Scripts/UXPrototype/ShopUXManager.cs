@@ -972,6 +972,23 @@ public class ShopUXManager : MonoBehaviour
 			}
 		}
 	}
+
+	/// <summary>
+	/// Transition-start dismiss (2026-10-02 audit F2): restore every currently enlarged
+	/// preview to its slot. RestoreCard releases each modal's ShopInputGate hold and
+	/// retargets the card, so a transition started while a preview is up (PhaseManager's
+	/// Space shortcut bypasses the gate) leaves balanced gate bookkeeping and no enlarged
+	/// card lingering on the abandoned page. RestoreCard early-returns on non-enlarged views.
+	/// </summary>
+	public void RestoreAllEnlargedCards()
+	{
+		var enlarged = new List<ShopCardView>();
+		CollectEnlargedViews(enlarged);
+		foreach (var view in enlarged)
+		{
+			view.RestoreCard();
+		}
+	}
 	
 	/// <summary>
 	/// Call this method after player purchases a card

@@ -195,6 +195,13 @@ public class PhaseTransitionDriver : MonoBehaviour
 		var cfg = PhaseTransitionConfigSO.Me;
 		_transitioning = true;
 		_ownsDeckCards = true;
+		// F2 (plan-phase-transition-audit-fixes-2026-10-02): dismiss any enlarge preview BEFORE
+		// the phase calls — RestoreCard retargets the card and releases its modal ShopInputGate
+		// hold, so no enlarged card lingers on the abandoned page and the gate pair stays
+		// balanced. The player-facing Space shortcut was removed (user ruling 2026-10-02) and
+		// the button is gate-blocked, so the reachable modal+bypass path left is automation
+		// (DeckTester.autoSpace); the dismiss keeps that path clean too.
+		if (ShopUXManager.Instance != null) ShopUXManager.Instance.RestoreAllEnlargedCards();
 		_suppressCombatCanvasUI = true;
 		_lastShopY = _rig.position.y;
 		ShopInputGate.Block();
@@ -220,7 +227,19 @@ public class PhaseTransitionDriver : MonoBehaviour
 		Track(ApplyCfgEase(cfg, _rig.DOMoveY(_combatPageY, dur).SetUpdate(UpdateType.Normal, true)));
 		FlyDummiesToCombatStack(dummies, dur, stagger, cfg);
 
-		yield return new WaitForSecondsRealtime(PhaseFlightPlanner.TotalDuration(dur, stagger) + 0.05f);
+		// VISUAL-FIX(2026-10-02): deck tails of 4+ cards popped into their stack slots mid-arc
+		//   Cause:    The landing wait used the demo's fixed 3-card formula (transDur + 2*cardStagger,
+		//             PhaseFlightPlanner.TotalDuration(float, float)) while dummy i lands at
+		//             i*stagger + transDur; with the shipped config (0.8s / 0.07s) decks above 3
+		//             cards destroyed their tail dummies up to 0.65s before landing (12-card deck),
+		//             teleporting the real face-down cards into the stack slots (3-card decks hid it).
+		//   Affects:  PhaseTransitionDriver.ShopToCombatRoutine (landing wait), PhaseFlightPlanner
+		//             (new count-aware TotalDuration overload; the 3-card demo golden is unchanged)
+		//   Regress:  Transition with an 8+ card player deck: every dummy visibly lands on its
+		//             stack slot before the destroy/swap; a 3-card deck is visually identical to
+		//             before. PhaseFlightPlannerTests count goldens (1/3/4/8) stay green.
+		//   Related:  plan-phase-transition-audit-fixes-2026-10-02 F3, docs/demo/PhaseTransitionDemo.html:739
+		yield return new WaitForSecondsRealtime(PhaseFlightPlanner.TotalDuration(dur, stagger, dummies.Count) + 0.05f);
 
 		// Land: release combat progression; RevealCards now instantiates the real physicals
 		// (face-down at the same stack slots the dummies landed on) and reveals the Start Card.

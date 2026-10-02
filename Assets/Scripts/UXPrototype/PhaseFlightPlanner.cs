@@ -57,4 +57,15 @@ public static class PhaseFlightPlanner
 	{
 		return duration + 2f * stagger;
 	}
+
+	/// <summary>
+	/// Count-aware total transition wait (2026-10-02 audit F3): dummy i lands at
+	/// i*stagger + duration, so the wait must cover (cardCount - 1) stagger steps.
+	/// cardCount = 3 reproduces the demo wait (:739) byte-for-byte — the fixed 3-card
+	/// overload above stays for the demo-heritage 1:1 golden.
+	/// </summary>
+	public static float TotalDuration(float duration, float stagger, int cardCount)
+	{
+		return duration + Mathf.Max(0, cardCount - 1) * stagger;
+	}
 }

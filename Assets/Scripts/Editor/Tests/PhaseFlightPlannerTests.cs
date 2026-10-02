@@ -73,4 +73,16 @@ public class PhaseFlightPlannerTests
 		// Demo wait (:739): transDur + 2*cardStagger = 0.8 + 0.14 = 0.94 s.
 		Assert.AreEqual(0.94f, PhaseFlightPlanner.TotalDuration(0.8f, 0.07f), 1e-4f);
 	}
+
+	[Test]
+	public void TotalDuration_CountAware_CoversEveryStaggerStep()
+	{
+		// 2026-10-02 audit F3: dummy i lands at i*stagger + duration, so the count-aware
+		// wait covers (count - 1) stagger steps. count = 3 is byte-identical to the demo
+		// golden above; 1/4/8 pin the shipped-config values the driver now waits out.
+		Assert.AreEqual(0.94f, PhaseFlightPlanner.TotalDuration(0.8f, 0.07f, 3), 1e-4f);
+		Assert.AreEqual(0.80f, PhaseFlightPlanner.TotalDuration(0.8f, 0.07f, 1), 1e-4f);
+		Assert.AreEqual(1.01f, PhaseFlightPlanner.TotalDuration(0.8f, 0.07f, 4), 1e-4f);
+		Assert.AreEqual(1.29f, PhaseFlightPlanner.TotalDuration(0.8f, 0.07f, 8), 1e-4f);
+	}
 }

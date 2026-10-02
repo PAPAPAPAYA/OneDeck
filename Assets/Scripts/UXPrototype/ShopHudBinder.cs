@@ -116,6 +116,10 @@ public class ShopHudBinder : MonoBehaviour
 				// Phase transition driver (plan-phase-transition-world-camera-2026-09-21): the 离开商店
 				// button is THE canonical shop->combat trigger (user ruling 2026-09-21); when the driver
 				// is available it wraps these calls in the camera travel, else the legacy hard cut runs.
+				// F1 busy guard (plan-phase-transition-audit-fixes-2026-10-02): defensive — the
+				// PhysButton is ShopInputGate-blocked during a travel today; never fall through
+				// to the legacy hard cut if the driver is busy.
+				if (PhaseTransitionDriver.IsTransitioning) return;
 				if (PhaseTransitionDriver.RequestShopToCombat(_phaseManager)) return;
 				_phaseManager.ExitingShopPhase();
 				_phaseManager.EnteringCombatPhase();

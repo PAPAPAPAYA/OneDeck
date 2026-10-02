@@ -1185,9 +1185,7 @@ MonoBehaviour:
   CommonPriceRef: {fileID: 11400000, guid: c113456951addca44a8d86642dffd44e, type: 2}
   UncommonPriceRef: {fileID: 11400000, guid: b7cd10ed5ca1ffe4da00c2590ace062e, type: 2}
   RarePriceRef: {fileID: 11400000, guid: e57676058a6a9344883c99c068362e4f, type: 2}
-  phaseInfo: 'Press <b>[SPACE]</b> to EXIT SHOP
-
-    Press <b>[R]</b> to REROLL
+  phaseInfo: 'Press <b>[R]</b> to REROLL
 
     Press
     <b>[NUMBER KEY]</b> to BUY/SELL

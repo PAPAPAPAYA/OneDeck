@@ -2,6 +2,7 @@
 
 - **Date**: 2026-10-02
 - **Status**: audit complete; fixes designed, NOT implemented (each step waits for 「修改代码」 + step-gate confirmation)
+- **Update 2026-10-02**: F1–F3 implemented (F4/F5 skipped by user). The §3.2 optional add-on (gate PhaseManager's Space by `ShopInputGate`) was superseded by a stronger user ruling the same day: the Space shortcut is removed entirely — 离开商店 button is the only player-facing shop→combat trigger (`docs/RegressionChecklist.md` row 131); the F2 dismiss stays as the automation-path defense.
 - **Audit scope**: `PhaseTransitionDriver` / `PhaseFlightPlanner` / `PhaseManager` enter-exit pipeline / scene UnityEvent wiring (`GameScene.unity`) / `ShopChrome` / `ShopSectionPanels` / `ShopUXManager` / `ShopCardView` / `ShopHudBinder` / `PhysButton` / `CombatIconPresenter` / `HPNumericDisplayHorizontal` / `CombatManager` enter-exit / `PhaseTransitionConfig.asset` / `docs/PhaseTransition.md` declared contracts
 - **Relation to prior work**: supplements `plans/plan-phase-transition-world-camera-2026-09-21.md` (§ Arbitration) and `docs/PhaseTransition.md`; interacts with the 10-01/10-02 shop interaction commits (`7b1b64f2` hover lift, `1007baf3` enlarge arbitration, `c6ae434f` enlarge modal) which did not exist when the transition shipped
 
