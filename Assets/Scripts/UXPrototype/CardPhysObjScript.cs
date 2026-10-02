@@ -2012,6 +2012,17 @@ public class CardPhysObjScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Shop enlarge modal (plan-shop-card-hover-lift-2026-10-01 §8): the preview allows no
+	/// interaction but the dismiss click — end the informational hover (tag tooltip) without
+	/// touching the card target. Mirrors the force-hide cleanup: ownership is cleared first.
+	/// </summary>
+	public void EndHoverForShopModal()
+	{
+		if (_currentHoverOwner == this) _currentHoverOwner = null;
+		EndHover("shop enlarge modal");
+	}
+
+	/// <summary>
 	/// Retry a hover that was rejected at OnMouseEnter time by a transient gate (input block,
 	/// effect animations, or z-arbitration loss) — see the VISUAL-FIX(2026-07-31) block in
 	/// OnMouseEnter. Re-runs the same gates every frame; resumes through the normal ownership
@@ -2089,7 +2100,10 @@ public class CardPhysObjScript : MonoBehaviour
 		if (_hoverTooltipTimer >= 0f)
 		{
 			_hoverTooltipTimer -= Time.deltaTime;
-			if (_hoverTooltipTimer < 0f)
+			// A held shop input gate (enlarge preview modal / reroll / transition) suppresses
+			// the tooltip: the modal allows no hover feedback. The timer keeps running, so a
+			// hover that survives until the gate opens still shows its tooltip.
+			if (_hoverTooltipTimer < 0f && !ShopInputGate.Blocked)
 			{
 				TestManager.Log("[Hover] tooltip delay elapsed, ShowFor card=" + name + " tags=[" + GetTagText() + "]");
 				CardTagTooltip.ShowFor(this);

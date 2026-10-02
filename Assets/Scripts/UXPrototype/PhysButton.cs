@@ -254,6 +254,10 @@ public class PhysButton : MonoBehaviour
 
 	private void PointerEnterCommon()
 	{
+		// Modal windows hold the shop input gate (enlarge preview): no hover arming, no
+		// hover/deny visuals — press starts and release activations are already gated in
+		// OnMouseDown / FinishPress.
+		if (ShopInputGate.Blocked) return;
 		IsPointerOver = true;
 		_denyPlayedThisEnter = false;
 		if (IsDisabled)

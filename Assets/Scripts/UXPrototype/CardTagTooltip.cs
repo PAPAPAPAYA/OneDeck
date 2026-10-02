@@ -31,6 +31,41 @@ public class CardTagTooltip : MonoBehaviour
 	private CardPhysObjScript _source;
 	private Camera _camera;
 	private EnumStorage.GamePhase? _phaseAtShow;
+	// Persistent mode (plan-shop-card-hover-lift-2026-10-01 §8.4): the enlarge preview shows
+	// the tag tooltip for its whole lifetime. While pinned, hover-driven HideFor calls are
+	// ignored; only UnpinFor, Show for another card, or the Update force-hide checks (source
+	// destroyed / flipped face-down / phase changed) take it down.
+	private bool _pinned;
+
+	/// <summary>
+	/// Show the tooltip for the given card and PIN it: it stays visible (following the card)
+	/// until UnpinFor, even through hover end / cursor离开. Used by the enlarge preview modal.
+	/// No-op when the card has no visible tags (nothing to pin).
+	/// </summary>
+	public static void PinFor(CardPhysObjScript card)
+	{
+		if (card == null) return;
+		string tooltipText = BuildTooltipText(card);
+		if (string.IsNullOrEmpty(tooltipText)) return;
+		EnsureInstance();
+		if (_instance == null) return;
+		_instance._pinned = true;
+		_instance.Show(card, tooltipText);
+	}
+
+	/// <summary>
+	/// Remove the persistent tooltip pinned by <see cref="PinFor"/>. Clears the pin only when
+	/// the tooltip is currently shown for that card (or the card is already gone).
+	/// </summary>
+	public static void UnpinFor(CardPhysObjScript card)
+	{
+		if (_instance == null) return;
+		if (card == null || _instance._source == card)
+		{
+			_instance._pinned = false;
+			_instance.Hide();
+		}
+	}
 
 	/// <summary>
 	/// Show the tooltip for the given card (called after the hover delay elapses).
@@ -52,6 +87,9 @@ public class CardTagTooltip : MonoBehaviour
 	public static void HideFor(CardPhysObjScript card)
 	{
 		if (_instance == null) return;
+		// A pinned tooltip (enlarge preview) ignores hover-driven hides; only UnpinFor or
+		// the Update force-hide checks may take it down.
+		if (_instance._pinned) return;
 		if (card == null || _instance._source == card)
 		{
 			_instance.Hide();
@@ -199,6 +237,7 @@ public class CardTagTooltip : MonoBehaviour
 	private void Hide()
 	{
 		_source = null;
+		_pinned = false;
 		if (_panel != null)
 		{
 			_panel.gameObject.SetActive(false);

@@ -360,7 +360,7 @@ public class ShopCardView : MonoBehaviour
 	{
 		if (!_isEnlarged) return;
 
-		if (Input.GetMouseButtonDown(0) && !ShopInputGate.Blocked)
+		if (Input.GetMouseButtonDown(0) && !PhaseTransitionDriver.IsTransitioning)
 		{
 			RestoreCard();
 			_enlargeCooldown = ENLARGE_COOLDOWN_TIME;
@@ -726,6 +726,21 @@ public class ShopCardView : MonoBehaviour
 
 		_isEnlarged = true;
 
+		// Modal preview (plan-shop-card-hover-lift-2026-10-01 §8): hold the shop input gate
+		// so every other interaction dies while enlarged — PhysButton hovers/presses (buy,
+		// sell, reroll, top bar), card-body presses (no second enlarge), hover lifts. The
+		// only allowed click is the dismiss (HandleClickToRestore exempts itself). Reference
+		// counting pairs this with the Unblock in RestoreCard / OnDestroy.
+		ShopInputGate.Block();
+		// The tag tooltip becomes a permanent fixture of the preview (§8.4): pin it BEFORE
+		// ending the hover, so the hover teardown's HideFor is ignored by the pin. The
+		// tooltip self-follows the card every frame; a card without type/tag info pins
+		// nothing (PinFor no-ops).
+		CardTagTooltip.PinFor(_cardPhysObj);
+		// The informational hover state ends here — the modal allows no hover feedback
+		// (the pinned tooltip above carries the tag info instead).
+		_cardPhysObj.EndHoverForShopModal();
+
 		// DIAGNOSTIC: log dynamic damage resolution state when player enlarges a shop card.
 		if (_cardPhysObj != null && _cardPhysObj.cardImRepresenting != null)
 		{
@@ -747,7 +762,26 @@ public class ShopCardView : MonoBehaviour
 		_cardPhysObj.SetEnlargedSorting(false);
 
 		_isEnlarged = false;
+		ShopInputGate.Unblock();
+		// Take the pinned preview tooltip down with the modal (no-op when the card had no
+		// type/tag info and nothing was pinned).
+		CardTagTooltip.UnpinFor(_cardPhysObj);
 		// Debug.Log("[ShopCardView] Card restored: " + (_cardPhysObj.cardImRepresenting != null ? _cardPhysObj.cardImRepresenting.gameObject.name : "null"));
+	}
+
+	/// <summary>
+	/// The enlarge modal holds the shop input gate; a destroyed enlarged card (reroll
+	/// rebuild, phase teardown) must release it or the gate stays off-balance and the shop
+	/// remains gated forever. Pinned-element state dies with the transform — nothing else
+	/// to restore here.
+	/// </summary>
+	private void OnDestroy()
+	{
+		if (_isEnlarged)
+		{
+			_isEnlarged = false;
+			ShopInputGate.Unblock();
+		}
 	}
 
 	/// <summary>
