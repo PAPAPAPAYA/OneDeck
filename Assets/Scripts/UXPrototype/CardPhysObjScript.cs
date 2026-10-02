@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DG.Tweening;
 using MilkShake;
 using TMPro;
@@ -712,8 +713,71 @@ public class CardPhysObjScript : MonoBehaviour
 		TargetRotation = target;
 	}
 
+	// VISUAL-FIX(2026-10-02): the enlarged shop preview was occluded twice over — first by the
+	//   top-bar chrome chips, then (after a first fix that raised a SortingGroup) by the
+	//   card's OWN big shadow and shelf-pinned price button.
+	//   Cause:    every shop sprite renders on the Default sorting layer at sortingOrder 0, so
+	//             overlap is settled by camera distance — the Main Camera is orthographic at
+	//             z -100 (smaller z = closer) and the chrome band root sits at z -98, closer
+	//             than the preview (z -1). The SortingGroup beat the chrome BUT took over the
+	//             subtree's internal sorting, which no longer matched the card's
+	//             camera-distance z layout (big shadow local +0.25 behind the face, prints and
+	//             status stickers negative in front): the riding shadow and the pinned tag
+	//             floated ABOVE the preview face.
+	//   Fix:      no SortingGroup — while enlarged, every Renderer under the card gets the
+	//             SAME sortingOrder bump (ShopUXManager.enlargedSortingOrder, default 50),
+	//             snapshotted and restored on drop. A uniform shift sorts the whole card
+	//             above the chrome (order 0) while keeping the authored camera-distance
+	//             layering intact inside it, so the shadow and the pinned tag fall back
+	//             behind the face. (Renderer.sortingOrder covers both the SpriteRenderers
+	//             and the MeshRenderers TMP drives for its text prints.)
+	//   Affects:  ShopCardView enlarge preview (EnlargeCard / RestoreCard)
+	//   Regress:  In the shop, enlarge a card (with and without prior wheel scroll): the
+	//             preview draws over every chrome chip/button it overlaps; the card's own big
+	//             shadow and pinned $6 tag stay BEHIND the face; desc/tags/status stickers
+	//             stay on top; after restore everything sorts exactly like the shelf again;
+	//             hover lift unchanged (no bump while not enlarged).
+	//   Related:  ShopHudPage.prefab (chrome root z -98), ShopUXManager.enlargedSortingOrder
+	private readonly Dictionary<Renderer, int> _enlargedOriginalOrders = new Dictionary<Renderer, int>();
+
 	/// <summary>
-	/// Start position DOTween animation
+	/// Raise (or restore) this card's whole renderer subtree above the world chrome band while
+	/// the shop enlarge preview is up. The bump is applied uniformly so the card's internal
+	/// camera-distance layering stays exactly as authored (a SortingGroup was tried first and
+	/// reordered the subtree, floating the card's own shadow/price button above the face —
+	/// see VISUAL-FIX(2026-10-02)).
+	/// </summary>
+	public void SetEnlargedSorting(bool enlarged, int sortingOrder = 0)
+	{
+		if (!enlarged)
+		{
+			RestoreEnlargedSorting();
+			return;
+		}
+
+		RestoreEnlargedSorting(); // defensive: re-enlarge without a restore must not stack bumps
+		foreach (var renderer in GetComponentsInChildren<Renderer>(true))
+		{
+			_enlargedOriginalOrders[renderer] = renderer.sortingOrder;
+			renderer.sortingOrder += sortingOrder;
+		}
+	}
+
+	private void RestoreEnlargedSorting()
+	{
+		if (_enlargedOriginalOrders.Count == 0) return;
+		foreach (var pair in _enlargedOriginalOrders)
+		{
+			// Renderers destroyed mid-preview (reroll rebuild, phase teardown) read as null.
+			if (pair.Key != null) pair.Key.sortingOrder = pair.Value;
+		}
+		_enlargedOriginalOrders.Clear();
+	}
+
+	/// <summary>
+	/// Start position DOTween animation. easeOverride/durationOverride follow the
+	/// SetTargetScale override pattern: explicit values are used verbatim (no combat scaling),
+	/// defaults keep moveDuration/moveEase.
 	/// </summary>
 	private void StartPositionTween(Ease? easeOverride = null, float? durationOverride = null, Action onComplete = null)
 	{

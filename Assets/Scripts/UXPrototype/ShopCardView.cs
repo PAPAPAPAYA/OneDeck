@@ -707,7 +707,16 @@ public class ShopCardView : MonoBehaviour
 		{
 			float enlargeSize = ShopUXManager.Instance.physCardEnlargeSize;
 			_cardPhysObj.SetTargetScale(new Vector3(enlargeSize, enlargeSize, enlargeSize));
-			_cardPhysObj.SetTargetPosition(ShopUXManager.Instance.enlargedPosition);
+			// The preview lands on the authored center PLUS the current scroll travel, so a
+			// preview started from a scrolled view still lands on the screen center
+			// (enlargedPosition stays the authored center at rest scroll; x/z tunable there).
+			Vector3 enlargeTarget = ShopUXManager.Instance.enlargedPosition;
+			enlargeTarget.y += ShopUXManager.Instance.CameraScrollOffsetY;
+			_cardPhysObj.SetTargetPosition(enlargeTarget);
+			// Draw the whole card subtree above the chrome band while the preview is up
+			// (VISUAL-FIX(2026-10-02) in CardPhysObjScript.SetEnlargedSorting). Skipped when
+			// no manager exists — that path has no chrome to beat either.
+			_cardPhysObj.SetEnlargedSorting(true, ShopUXManager.Instance.enlargedSortingOrder);
 		}
 		else
 		{
@@ -733,9 +742,41 @@ public class ShopCardView : MonoBehaviour
 
 		_cardPhysObj.SetTargetPosition(_originalPosition);
 		_cardPhysObj.SetTargetScale(_originalScale);
+		// Drop the enlarge sorting boost before the flight home so the landing pose sorts
+		// like any other shelf card again (chrome above shelf cards restored).
+		_cardPhysObj.SetEnlargedSorting(false);
 
 		_isEnlarged = false;
 		// Debug.Log("[ShopCardView] Card restored: " + (_cardPhysObj.cardImRepresenting != null ? _cardPhysObj.cardImRepresenting.gameObject.name : "null"));
+	}
+
+	/// <summary>
+	/// The camera scroll rig moved by deltaY (world units, post-clamp). While enlarged, shift
+	/// the preview by the same delta so it stays glued to the screen center. Only the live
+	/// pose moves — _originalPosition stays on its world-fixed slot for RestoreCard. Normally
+	/// the wheel is gated off during a preview (ShopUXManager.blockScrollWhileEnlarged); this
+	/// follower is the gate-off mode and the guard for any other rig mover.
+	/// </summary>
+	public void NotifyScrollDelta(float deltaY)
+	{
+		if (!_isEnlarged || _cardPhysObj == null || Mathf.Approximately(deltaY, 0f)) return;
+
+		Vector3 target = _cardPhysObj.TargetPosition;
+		target.y += deltaY;
+
+		if (_cardPhysObj.IsPositionTweenPlaying)
+		{
+			// Enlarge flight still playing: retarget and let the tween carry the shift.
+			_cardPhysObj.SetTargetPosition(target);
+		}
+		else
+		{
+			// Landed: translate synchronously with the rig move — same frame, zero offset.
+			Vector3 pos = _cardPhysObj.transform.position;
+			pos.y += deltaY;
+			_cardPhysObj.transform.position = pos;
+			_cardPhysObj.UpdateTargetPositionOnly(target);
+		}
 	}
 
 	#endregion

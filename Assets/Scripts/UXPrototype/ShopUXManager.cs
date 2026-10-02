@@ -23,6 +23,8 @@ public class ShopUXManager : MonoBehaviour
 	[Header("Enlarge Settings")]
 	[Tooltip("Target position after enlargement")]
 	public Vector3 enlargedPosition = Vector3.zero;
+	[Tooltip("SortingOrder bump given to EVERY renderer under the enlarged preview's card so it draws above the world chrome band (top-bar chips sit at z -98 and win the distance sort against the preview's z -1). Applied uniformly so the card's internal z layering stays intact. 0 disables the boost.")]
+	public int enlargedSortingOrder = 50;
 	
 	[Header("Spawn Settings")]
 	public GameObject physicalCardPrefab;
@@ -85,6 +87,8 @@ public class ShopUXManager : MonoBehaviour
 	public bool useDynamicScrollBounds = true;
 	[Tooltip("World-space gap kept below the bottom deck row when the dynamic bound is computed")]
 	public float scrollBottomPadding = 1f;
+	[Tooltip("Block wheel scroll while a card is enlarged so the centered preview cannot drift. Turn off to let the enlarged preview follow the scroll delta instead (ShopCardView.NotifyScrollDelta).")]
+	public bool blockScrollWhileEnlarged = true;
 	
 	[Header("Shop Chrome (world)")]
 	[Tooltip("Authored shop top-bar page prefab (2026-09-24 prefab port — plan-shop-hud-prefab-widgets); consumed by ShopChrome.Bootstrap")]
@@ -875,6 +879,26 @@ public class ShopUXManager : MonoBehaviour
 		float scrollInput = Input.GetAxis("Mouse ScrollWheel");
 		if (Mathf.Abs(scrollInput) < 0.001f)
 			return;
+
+		// VISUAL-FIX(2026-10-02): Wheel scroll during an enlarge preview left the centered card
+		//   Cause:    EnlargeCard tweened to the fixed world enlargedPosition once and nothing
+		//             re-anchored it while HandleCameraScroll moved the rig, so the preview
+		//             drifted off the screen center as soon as the wheel moved. Scrolling
+		//             BEFORE enlarging had the same flaw — the card flew to the authored
+		//             center of the rest view, not the current one.
+		//   Affects:  ShopUXManager.HandleCameraScroll (gate + delta follower + VISUAL-FIX
+		//             block), ShopCardView.EnlargeCard (target = authored center + scroll
+		//             offset) + NotifyScrollDelta, ShopUXManager.CameraScrollOffsetY
+		//   Regress:  blockScrollWhileEnlarged on (default): enlarge a card, wheel up/down —
+		//             the camera holds and the preview stays centered; off: the preview
+		//             follows the wheel 1:1 with zero lag; scroll anywhere first, then
+		//             enlarge — the card lands on the CURRENT screen center; restore after
+		//             scrolling lands the card back on its world-fixed slot.
+		//   Related:  ShopCardView.NotifyScrollDelta, CardPhysObjScript.UpdateTargetPositionOnly
+		_enlargedScrollScratch.Clear();
+		CollectEnlargedViews(_enlargedScrollScratch);
+		if (_enlargedScrollScratch.Count > 0 && blockScrollWhileEnlarged)
+			return;
 		
 		// Calculate new Y position
 		float minYOffset = useDynamicScrollBounds ? ComputeDynamicMinY() : cameraMinY;
@@ -882,6 +906,17 @@ public class ShopUXManager : MonoBehaviour
 		// Wheel up (positive input) moves the camera up toward the shop row; wheel down dives into the deck
 		cameraPos.y += scrollInput * cameraScrollSpeed;
 		cameraPos.y = Mathf.Clamp(cameraPos.y, _cameraInitialY + minYOffset, _cameraInitialY + cameraMaxY);
+		// Delta actually applied after clamping — the follower must consume the same value
+		// or it accumulates drift at the scroll bounds.
+		float appliedDelta = cameraPos.y - _scrollTarget.position.y;
+
+		if (_enlargedScrollScratch.Count > 0 && !Mathf.Approximately(appliedDelta, 0f))
+		{
+			foreach (var view in _enlargedScrollScratch)
+			{
+				view.NotifyScrollDelta(appliedDelta);
+			}
+		}
 		
 		_scrollTarget.position = cameraPos;
 	}
@@ -899,6 +934,43 @@ public class ShopUXManager : MonoBehaviour
 		Vector3 cameraPos = _scrollTarget.position;
 		cameraPos.y = _cameraInitialY;
 		_scrollTarget.position = cameraPos;
+	}
+
+	/// <summary>
+	/// How far the scroll rig has traveled from its authored rest Y (positive = scrolled up).
+	/// The shop enlarge preview adds this to the authored enlargedPosition so a preview
+	/// started from a scrolled view lands on the CURRENT screen center.
+	/// </summary>
+	public float CameraScrollOffsetY
+	{
+		get { return _scrollTarget != null ? _scrollTarget.position.y - _cameraInitialY : 0f; }
+	}
+
+	// Scratch buffer for the enlarge-vs-scroll arbitration in HandleCameraScroll (no per-frame alloc).
+	private readonly List<ShopCardView> _enlargedScrollScratch = new List<ShopCardView>();
+
+	/// <summary>
+	/// Collect every currently enlarged shop card view across the spawned card lists.
+	/// Empty slots are persistent background objects without a view, so they are skipped.
+	/// </summary>
+	private void CollectEnlargedViews(List<ShopCardView> results)
+	{
+		CollectEnlargedViews(_spawnedShopCards, results);
+		CollectEnlargedViews(_spawnedPlayerCards, results);
+		CollectEnlargedViews(_spawnedUtilityCards, results);
+	}
+
+	private static void CollectEnlargedViews(List<GameObject> cards, List<ShopCardView> results)
+	{
+		foreach (var card in cards)
+		{
+			if (card == null) continue;
+			var view = card.GetComponent<ShopCardView>();
+			if (view != null && view.IsEnlarged)
+			{
+				results.Add(view);
+			}
+		}
 	}
 	
 	/// <summary>
