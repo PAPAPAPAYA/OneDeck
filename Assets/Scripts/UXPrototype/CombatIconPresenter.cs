@@ -9,12 +9,16 @@ using UnityEngine;
 /// avatar + HP stay visible through the Result overlay, demo PhaseTransitionDemo.html:27-28;
 /// the combat anchor and scale are captured at Awake and restored on combat entry).
 /// 2026-09-21 world scroll (plan-shop-topbar-world-scroll-2026-09-21 §3.3): in a SETTLED
-/// shop the canvas icon hides — the world copy lives in ShopPageHud and scrolls with the
-/// page; during a driver transition (IsTransitioning) the canvas icon stays visible and
-/// glides between its shop/combat homes exactly as before (shared-element flight).
-/// Enemy icon: Combat only (suppressed while the transition driver keeps canvas UI hidden).
-/// During a driver transition the per-phase re-anchor becomes a glide tween instead of a snap,
-/// and the enemy icon enters with a counter-direction slide (demo flyShared, :704-727).
+/// shop the canvas icon hides — the world copy lives in the ShopHudPage chrome and scrolls
+/// with the page; during a driver transition (IsTransitioning) the canvas icon stays visible
+/// and glides between its shop/combat homes exactly as before (shared-element flight).
+/// Enemy icon: Combat + Result (2026-10-02 re-audit fix 3 — the demo keeps the enemy HUD
+/// behind the result overlay) + while a travel world-flies it.
+/// 2026-10-02 re-audit fixes 2/3/7 (docs/PhaseTransition.md): while the driver travels, both
+/// icons fly in WORLD space (HudWorldFlight) between the shop chrome mirror spot and their
+/// combat anchors — no scale tween, and the camera's overshoot carries them like the demo.
+/// The enemy icon enters with a full-transDur counter-direction slide from enemySlide above,
+/// started together with the camera travel (demo flyShared, :704-727).
 /// Same GamePhase-polled SetActive convention as CombatHPBarPresenter and
 /// HPNumericDisplay. Pure presentation; no game-logic changes.
 /// Name label under the icon shows PlayerIdentity.Username ("???" when unset).
@@ -40,6 +44,7 @@ public class CombatIconPresenter : MonoBehaviour
 	// Init true (never the boot state) so the first Update always applies, mirroring the
 	// _lastPhase = Result trick below.
 	private bool _lastTransitioning = true;
+	private PhaseTransitionDriver.TransitionTravel _lastTravel = PhaseTransitionDriver.TransitionTravel.None;
 
 	private RectTransform _playerIconRt;
 	private RectTransform _enemyIconRt;
@@ -50,7 +55,9 @@ public class CombatIconPresenter : MonoBehaviour
 	private bool _lastSuppressed;
 	private Tween _glideTween;
 	private Tween _scaleTween;
-	private Tween _enemySlideTween;
+	// World flights (fixes 2/3/7): one per icon, created lazily at the first travel edge.
+	private HudWorldFlight _playerFlight;
+	private HudWorldFlight _enemyFlight;
 
 	private void Awake()
 	{
@@ -105,12 +112,16 @@ public class CombatIconPresenter : MonoBehaviour
 		//             avatar re-activates next Update and glides shop anchor -> combat anchor
 		//             as before. Driver bypass (config off / headless): same-frame hard cut.
 		bool transitioning = PhaseTransitionDriver.IsTransitioning;
-		if (phase != _lastPhase || suppressed != _lastSuppressed || transitioning != _lastTransitioning)
+		var travel = PhaseTransitionDriver.Travel;
+		bool travelEdge = travel != _lastTravel;
+		if (phase != _lastPhase || suppressed != _lastSuppressed || transitioning != _lastTransitioning || travelEdge)
 		{
+			if (travelEdge) OnTravelEdge(travel);
 			ApplyPhase(phase);
 			_lastPhase = phase;
 			_lastSuppressed = suppressed;
 			_lastTransitioning = transitioning;
+			_lastTravel = travel;
 		}
 		if (phase == EnumStorage.GamePhase.Combat)
 		{
@@ -131,18 +142,26 @@ public class CombatIconPresenter : MonoBehaviour
 		bool suppressed = PhaseTransitionDriver.SuppressCombatCanvasUI;
 		// 2026-09-21 rule (demo :27-28): player avatar stays visible through the Result phase.
 		// 2026-09-21 world-scroll handoff: in a SETTLED shop the canvas avatar hides (the
-		// world copy in ShopPageHud shows); during a driver transition it stays visible and
-		// glides. Placement writes below keep running while hidden, so the hidden icon parks
-		// at the shop anchor and the next shop -> combat flight starts from the right spot.
+		// world copy in the chrome shows); during a driver transition it stays visible and
+		// world-flies. Placement writes below keep running while hidden, so the hidden icon
+		// parks at the shop anchor and the next shop -> combat flight starts from the right spot.
 		playerIcon.SetActive(inCombat || inResult || (inShop && PhaseTransitionDriver.IsTransitioning));
-		bool enemyWasActive = enemyIcon.activeSelf;
-		bool enemyVisible = inCombat && !suppressed;
+		// 2026-10-02 re-audit fix 3: the enemy HUD stays visible through the Result phase
+		// (demo keeps it behind the overlay) and while a travel world-flies it (slide-in on
+		// Shop->Combat, slide-up-out on Result->Shop); otherwise Combat-only as before.
+		var travel = PhaseTransitionDriver.Travel;
+		bool enemyVisible = travel != PhaseTransitionDriver.TransitionTravel.None
+			|| inResult
+			|| (inCombat && !suppressed);
 		enemyIcon.SetActive(enemyVisible);
-		if (enemyVisible && !enemyWasActive && PhaseTransitionDriver.EnemyEntrancePending)
-		{
-			PlayEnemyEntrance();
-		}
 		if (_playerIconRt == null)
+		{
+			return;
+		}
+		// While a travel owns the icon (world flight, fixes 3/7) the anchored placement
+		// stands down — the flight writes .position and anchoredPosition tracks it.
+		if (travel != PhaseTransitionDriver.TransitionTravel.None
+			&& _playerFlight != null && _playerFlight.Active)
 		{
 			return;
 		}
@@ -153,7 +172,8 @@ public class CombatIconPresenter : MonoBehaviour
 		var cfg = PhaseTransitionConfigSO.Me;
 		if (PhaseTransitionDriver.IsTransitioning && cfg != null)
 		{
-			// Shared-element flight (demo flyShared HUD branch, :704-709): glide between homes.
+			// Fallback glide (no chrome mirrors -> no world flight, headless corner): the
+			// pre-fix anchored glide between homes.
 			KillTween(ref _glideTween);
 			KillTween(ref _scaleTween);
 			_glideTween = cfg.ApplyEase(_playerIconRt.DOAnchorPos(targetPos, cfg.transDur).SetUpdate(UpdateType.Normal, true));
@@ -169,21 +189,115 @@ public class CombatIconPresenter : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Enemy HUD counter-direction entrance (demo :724-727): starts above its combat anchor and
-	/// slides DOWN in against the camera's upward travel.
+	/// Travel edges drive the world flights (fixes 2/3/7): the player avatar detaches from
+	/// the shop top bar (world mirror spot) and flies to its combat anchor and back; the
+	/// enemy icon slides in from / out to enemySlide above its combat home, full transDur,
+	/// together with the camera travel. Without the chrome mirrors (headless corner) no
+	/// flight starts and the legacy anchored placement/glide applies.
 	/// </summary>
-	private void PlayEnemyEntrance()
+	// VISUAL-FIX(2026-10-03): the enemy icon (latently the player icon too) landed short of
+	//   its combat anchor after the Shop->Combat flight — stranded mid-screen for the whole
+	//   combat (user report; [CiP-DIAG] trace: edge frame rigY=2.66 vs canvasTopY=0.00).
+	//   Cause:    The flight home was derived from the CAMERA RIG's Y (HudHomeAtPage(snap,
+	//             CombatPageY, RigY)), but the Screen Space Camera canvas root lags the rig
+	//             within the travel-start frame: the rig tween's first step had already
+	//             moved (2.66) while the canvas still sat at the shop page (0.00). The
+	//             formula credited the rig's in-flight offset to the canvas, landing the
+	//             icon short by exactly that lag. The enemy HP pill escaped only by script
+	//             execution order (its Update ran before the tween's first evaluation) —
+	//             same latent bug in HPNumericDisplayHorizontal.
+	//   Affects:  CombatIconPresenter + HPNumericDisplayHorizontal OnTravelEdge flight
+	//             homes; PhaseFlightPlanner.HudHomeAtPage's third arg is now the carrying
+	//             canvas plane's own Y (renamed rigY -> planeY).
+	//   Regress:  Shop -> combat: enemy icon + HP pill land exactly on their authored
+	//             combat anchors (icon next to the pill, top-right row) and the player
+	//             icon + pill on theirs, regardless of when each Update processed the
+	//             travel edge; Result -> shop flight start points unchanged.
+	//   Related:  docs/PhaseTransition.md "HUD world flights", [CiP-DIAG]/[HPN-DIAG] probes
+	private void OnTravelEdge(PhaseTransitionDriver.TransitionTravel travel)
 	{
-		if (_enemyIconRt == null) return;
 		var cfg = PhaseTransitionConfigSO.Me;
 		if (cfg == null) return;
-		float refHeight = _canvas != null && _canvas.scaleFactor > 0.0001f
-			? Screen.height / _canvas.scaleFactor
-			: Screen.height;
-		float slidePx = PhaseFlightPlanner.DemoPxToCanvasPx(cfg.enemySlideDemoPx, refHeight);
-		KillTween(ref _enemySlideTween);
-		_enemyIconRt.anchoredPosition = _enemyCombatAnchoredPos + new Vector2(0f, slidePx);
-		_enemySlideTween = cfg.ApplyEase(_enemyIconRt.DOAnchorPos(_enemyCombatAnchoredPos, Mathf.Max(0.25f, cfg.transDur * 0.5f)).SetUpdate(UpdateType.Normal, true));
+		switch (travel)
+		{
+			case PhaseTransitionDriver.TransitionTravel.ToCombat:
+			{
+				if (_playerIconRt != null && ShopChrome.TryGetAvatarWorldCenter(out Vector3 shopHome))
+				{
+					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapPlayerToCombatAnchor(), PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					EnsureFlight(ref _playerFlight, _playerIconRt).Begin(shopHome, to, cfg.transDur, cfg);
+				}
+				if (_enemyIconRt != null)
+				{
+					Vector3 home = PhaseFlightPlanner.HudHomeAtPage(SnapEnemyToCombatAnchor(), PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					Vector3 from = home + Vector3.up * EnemySlideWorld(cfg);
+					EnsureFlight(ref _enemyFlight, _enemyIconRt).Begin(from, home, cfg.transDur, cfg);
+				}
+				break;
+			}
+			case PhaseTransitionDriver.TransitionTravel.ToShop:
+			{
+				if (_playerIconRt != null && ShopChrome.TryGetAvatarWorldCenter(out Vector3 shopHome))
+				{
+					Vector3 from = PhaseFlightPlanner.HudHomeAtPage(_playerIconRt.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					EnsureFlight(ref _playerFlight, _playerIconRt).Begin(from, shopHome, cfg.transDur, cfg);
+				}
+				if (_enemyIconRt != null)
+				{
+					Vector3 home = PhaseFlightPlanner.HudHomeAtPage(_enemyIconRt.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					EnsureFlight(ref _enemyFlight, _enemyIconRt).Begin(home, home + Vector3.up * EnemySlideWorld(cfg), cfg.transDur, cfg);
+				}
+				break;
+			}
+			default:
+				if (_playerFlight != null) _playerFlight.Kill();
+				if (_enemyFlight != null) _enemyFlight.Kill();
+				break;
+		}
+	}
+
+	private HudWorldFlight EnsureFlight(ref HudWorldFlight flight, RectTransform rt)
+	{
+		if (flight == null) flight = new HudWorldFlight(rt, _canvas);
+		return flight;
+	}
+
+	/// <summary>
+	/// The carrying canvas root's current world Y — the flight-home basis (HudHomeAtPage).
+	/// NOT the camera rig: the canvas root lags the rig within the travel-start frame
+	/// (VISUAL-FIX(2026-10-03)); the rig Y remains only as the no-canvas fallback.
+	/// </summary>
+	private float CanvasPlaneY => _canvas != null ? _canvas.transform.position.y : HudWorldFlight.RigY;
+
+	/// <summary>Snaps the player icon to its combat anchor state (kill glide tweens, combat scale — fix 7 has no scale tween) and returns its world position.</summary>
+	private Vector3 SnapPlayerToCombatAnchor()
+	{
+		KillTween(ref _glideTween);
+		KillTween(ref _scaleTween);
+		_playerIconRt.anchoredPosition = _combatAnchoredPos;
+		_playerIconRt.localScale = _combatScale;
+		return _playerIconRt.position;
+	}
+
+	/// <summary>Snaps the enemy icon back to its combat anchor (a shop-park may have left it at the shop anchor) and returns its world position.</summary>
+	private Vector3 SnapEnemyToCombatAnchor()
+	{
+		_enemyIconRt.anchoredPosition = _enemyCombatAnchoredPos;
+		return _enemyIconRt.position;
+	}
+
+	/// <summary>Enemy HUD slide distance in world units (demo enemySlide 140 px on the 740 px page).</summary>
+	private static float EnemySlideWorld(PhaseTransitionConfigSO cfg)
+	{
+		return PhaseFlightPlanner.PxToWorld(cfg.enemySlideDemoPx, PhaseFlightPlanner.PageHeightWorld(ShopTopBarLayout.MainOrthoSize));
+	}
+
+	private void LateUpdate()
+	{
+		// World-flight re-projection runs after every Update placement write (and after the
+		// camera's own motion), so the rendered pose is the world-locked one.
+		if (_playerFlight != null) _playerFlight.Tick();
+		if (_enemyFlight != null) _enemyFlight.Tick();
 	}
 
 	private static void KillTween(ref Tween tween)

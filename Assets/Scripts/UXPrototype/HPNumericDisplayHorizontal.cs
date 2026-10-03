@@ -27,10 +27,16 @@ using UnityEngine.UI;
 /// queue is frozen at the last combat's values, so current HP reads the live
 /// PlayerStatusSO instead. Enemy side stays combat-only.
 /// 2026-09-21 world scroll (plan-shop-topbar-world-scroll-2026-09-21 §3.3): in a
-/// SETTLED shop the canvas pill hides — the world copy lives in ShopPageHud and
-/// scrolls with the page; during a driver transition (IsTransitioning) the canvas
+/// SETTLED shop the canvas pill hides — the world copy lives in the ShopHudPage chrome
+/// and scrolls with the page; during a driver transition (IsTransitioning) the canvas
 /// pill stays visible and glides (shared-element flight), so it parks at the shop
 /// anchor while hidden. Combat odometer/strips/shake/pop are untouched.
+/// 2026-10-02 re-audit fixes 2/3/7 (docs/PhaseTransition.md): while the driver travels,
+/// the pill flies in WORLD space (HudWorldFlight) between the shop chrome mirror spot
+/// and its combat anchor — no scale tween; the enemy pill enters with a full-transDur
+/// counter-direction slide from enemySlide above (started together with the camera
+/// travel, demo :724-727) and stays visible through Result, sliding UP out on the
+/// return descent (fix 3, demo :727).
 /// </summary>
 public class HPNumericDisplayHorizontal : MonoBehaviour
 {
@@ -128,6 +134,9 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	// VISUAL-FIX(2026-09-19) block in Update). Initialized to Result — never the boot
 	// phase — so the first Update always places, mirroring CombatIconPresenter.
 	private EnumStorage.GamePhase _lastPhase = EnumStorage.GamePhase.Result;
+	// World flight (fixes 2/3/7): owns this side's pill while the driver travels.
+	private PhaseTransitionDriver.TransitionTravel _lastTravel = PhaseTransitionDriver.TransitionTravel.None;
+	private HudWorldFlight _flight;
 	private Vector2 _rootBasePos;
 	// Shop-phase placement (2026-09-19): the component's own RectTransform is moved to
 	// the shop top bar; the combat anchor/scale is captured at Awake and restored.
@@ -255,12 +264,20 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	{
 		EnumStorage.GamePhase phase = gamePhaseRef.Value();
 		bool inCombat = phase == EnumStorage.GamePhase.Combat;
+		// Travel edges drive the world flight (fixes 2/3/7) BEFORE the phase placement
+		// block, so the flight's combat-anchor snap wins over any same-frame placement.
+		var travel = PhaseTransitionDriver.Travel;
+		if (travel != _lastTravel)
+		{
+			OnTravelEdge(travel);
+			_lastTravel = travel;
+		}
 		// The player side doubles as the shop top-bar HP readout (2026-09-19) and stays visible
 		// through the Result phase (2026-09-21 phase transition rule, demo :27-28). 2026-09-21
 		// world-scroll handoff (plan-shop-topbar-world-scroll-2026-09-21 §3.3): in a SETTLED
-		// shop the canvas pill hides (the world copy in ShopPageHud shows); during a driver
-		// transition it stays visible and glides. The enemy side stays combat-only and is
-		// suppressed while the transition driver holds canvas UI.
+		// shop the canvas pill hides (the world copy in the chrome shows); during a driver
+		// transition it stays visible and world-flies. 2026-10-02 re-audit fix 3: the ENEMY
+		// side also stays visible through Result and while a travel world-flies it.
 		// VISUAL-FIX(2026-09-21): landing in the shop left the canvas pill stacked over the new
 		//   world pill, and the shop -> combat flight lost its start point
 		//   Cause:    The player side was visible in every settled shop, and the old
@@ -277,7 +294,9 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		bool visible = side == Side.Player
 			? inCombat || phase == EnumStorage.GamePhase.Result
 				|| (phase == EnumStorage.GamePhase.Shop && PhaseTransitionDriver.IsTransitioning)
-			: inCombat && !PhaseTransitionDriver.SuppressCombatCanvasUI;
+			: (inCombat && !PhaseTransitionDriver.SuppressCombatCanvasUI)
+				|| phase == EnumStorage.GamePhase.Result
+				|| travel != PhaseTransitionDriver.TransitionTravel.None;
 		// VISUAL-FIX(2026-09-19): Leaving the shop for combat left the player pill at the shop
 		//   Cause:    Placement was applied only from EnterVisiblePhase, which fires on an
 		//             invisible->visible edge. The player side is visible in BOTH Shop and
@@ -412,21 +431,8 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		SetCounterInstant(_current, true, hp);
 		SetCounterInstant(_max, false, hpMax);
 		displayRoot.gameObject.SetActive(true);
-		// Enemy HUD counter-direction entrance (demo :724-727): slide DOWN in from above.
-		if (side == Side.Enemy && PhaseTransitionDriver.EnemyEntrancePending && _selfRt != null)
-		{
-			var cfg = PhaseTransitionConfigSO.Me;
-			if (cfg != null)
-			{
-				float refHeight = canvas != null && canvas.scaleFactor > 0.0001f
-					? Screen.height / canvas.scaleFactor
-					: Screen.height;
-				float slidePx = PhaseFlightPlanner.DemoPxToCanvasPx(cfg.enemySlideDemoPx, refHeight);
-				KillTween(ref _placementTween);
-				_selfRt.anchoredPosition = _combatAnchoredPos + new Vector2(0f, slidePx);
-				_placementTween = cfg.ApplyEase(_selfRt.DOAnchorPos(_combatAnchoredPos, Mathf.Max(0.25f, cfg.transDur * 0.5f)).SetUpdate(UpdateType.Normal, true));
-			}
-		}
+		// Enemy HUD counter-direction entrance: driven by the driver's Travel edge
+		// (OnTravelEdge — full-transDur world slide, fixes 2/3); no anchored variant here.
 	}
 
 	private void ExitVisiblePhase()
@@ -456,6 +462,13 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		{
 			return;
 		}
+		// While a travel owns the pill (world flight, fixes 2/3/7) the anchored placement
+		// stands down — the flight writes .position and anchoredPosition tracks it.
+		if (PhaseTransitionDriver.Travel != PhaseTransitionDriver.TransitionTravel.None
+			&& _flight != null && _flight.Active)
+		{
+			return;
+		}
 		Vector2 targetPos = shopPhase
 			? ShopTopBarLayout.ShopAnchorHpDisplay(canvas)
 			: _combatAnchoredPos;
@@ -463,7 +476,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		var cfg = PhaseTransitionConfigSO.Me;
 		if (PhaseTransitionDriver.IsTransitioning && cfg != null)
 		{
-			// Shared-element flight (demo flyShared HUD branch): glide, don't snap.
+			// Fallback glide (no chrome mirror -> no world flight, headless corner).
 			KillTween(ref _placementTween);
 			KillTween(ref _placementScaleTween);
 			_placementTween = cfg.ApplyEase(_selfRt.DOAnchorPos(targetPos, cfg.transDur).SetUpdate(UpdateType.Normal, true));
@@ -474,6 +487,107 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		KillTween(ref _placementScaleTween);
 		_selfRt.anchoredPosition = targetPos;
 		_selfRt.localScale = targetScale;
+	}
+
+	/// <summary>
+	/// Travel edges drive the world flight (fixes 2/3/7): the player pill detaches from the
+	/// shop top bar (world mirror spot) and flies to its combat anchor and back; the enemy
+	/// pill slides in from / out to enemySlide above its combat home, full transDur, together
+	/// with the camera travel. Without the chrome mirror (headless corner) no flight starts
+	/// and the legacy anchored placement/glide applies.
+	/// </summary>
+	private void OnTravelEdge(PhaseTransitionDriver.TransitionTravel travel)
+	{
+		var cfg = PhaseTransitionConfigSO.Me;
+		if (cfg == null || _selfRt == null) return;
+		// Player shop home = the built page's HpPill world center (single placement source,
+		// plan-shop-mirror-prefab §3.4); no mirror -> no flight (fallback glide handles it).
+		// Pre-declared: the && short-circuit leaves the out unassigned on the enemy side.
+		Vector3 shopHome = Vector3.zero;
+		bool mirrorOk = side == Side.Player && ShopChrome.TryGetHpPillWorldCenter(out shopHome);
+		switch (travel)
+		{
+			case PhaseTransitionDriver.TransitionTravel.ToCombat:
+			{
+				if (side == Side.Player)
+				{
+					// Mirror check BEFORE the snap: the fallback glide needs the parked shop anchor intact.
+					if (!mirrorOk) return;
+					Vector3 snapPos = SnapToCombatAnchor();
+					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(snapPos, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					_flight = EnsureFlight();
+					_flight.Begin(shopHome, to, cfg.transDur, cfg);
+				}
+				else
+				{
+					// Entrance (fix 2): slide DOWN in from enemySlide above; the world position
+					// keeps the pill outside the viewport until the camera's arrival, like the demo.
+					Vector3 snapPos = SnapToCombatAnchor();
+					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(snapPos, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					_flight = EnsureFlight();
+					_flight.Begin(to + Vector3.up * SlideWorld(cfg), to, cfg.transDur, cfg);
+				}
+				break;
+			}
+			case PhaseTransitionDriver.TransitionTravel.ToShop:
+			{
+				if (side == Side.Player)
+				{
+					if (!mirrorOk) return;
+					Vector3 from = PhaseFlightPlanner.HudHomeAtPage(_selfRt.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					_flight = EnsureFlight();
+					_flight.Begin(from, shopHome, cfg.transDur, cfg);
+				}
+				else
+				{
+					// Exit (fix 3): slides UP out while the camera descends (demo :727 -enemySlide).
+					Vector3 home = PhaseFlightPlanner.HudHomeAtPage(_selfRt.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					_flight = EnsureFlight();
+					_flight.Begin(home, home + Vector3.up * SlideWorld(cfg), cfg.transDur, cfg);
+				}
+				break;
+			}
+			default:
+				if (_flight != null) _flight.Kill();
+				break;
+		}
+	}
+
+	private HudWorldFlight EnsureFlight()
+	{
+		if (_flight == null) _flight = new HudWorldFlight(_selfRt, canvas);
+		return _flight;
+	}
+
+	/// <summary>Snaps the pill to its combat anchor state (kill placement tweens, combat scale — fix 7 has no scale tween) and returns its world position. Runs for BOTH sides: a shop-park can have left the transform at the shop anchor.</summary>
+	private Vector3 SnapToCombatAnchor()
+	{
+		KillTween(ref _placementTween);
+		KillTween(ref _placementScaleTween);
+		_selfRt.anchoredPosition = _combatAnchoredPos;
+		_selfRt.localScale = _combatScale;
+		return _selfRt.position;
+	}
+
+	/// <summary>
+	/// The carrying canvas root's current world Y — the flight-home basis (HudHomeAtPage).
+	/// NOT the camera rig: the canvas root lags the rig within the travel-start frame
+	/// (VISUAL-FIX(2026-10-03) in CombatIconPresenter); the rig Y remains only as the
+	/// no-canvas fallback.
+	/// </summary>
+	private float CanvasPlaneY => canvas != null ? canvas.transform.position.y : HudWorldFlight.RigY;
+
+	/// <summary>Enemy HUD slide distance in world units (demo enemySlide 140 px on the 740 px page).</summary>
+	private static float SlideWorld(PhaseTransitionConfigSO cfg)
+	{
+		return PhaseFlightPlanner.PxToWorld(cfg.enemySlideDemoPx, PhaseFlightPlanner.PageHeightWorld(ShopTopBarLayout.MainOrthoSize));
+	}
+
+	private void LateUpdate()
+	{
+		// World-flight re-projection runs after every Update placement write, so the rendered
+		// pose is the world-locked one.
+		if (_flight != null) _flight.Tick();
 	}
 
 	private void CleanupVisuals()

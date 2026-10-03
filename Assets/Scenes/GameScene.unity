@@ -1187,10 +1187,10 @@ MonoBehaviour:
   RarePriceRef: {fileID: 11400000, guid: e57676058a6a9344883c99c068362e4f, type: 2}
   phaseInfo: 'Press <b>[R]</b> to REROLL
 
-    Press
-    <b>[NUMBER KEY]</b> to BUY/SELL
+    Press <b>[NUMBER KEY]</b> to BUY/SELL
 
-    Press <b>[S]</b> to TOGGLE buying/selling'
+    Press
+    <b>[S]</b> to TOGGLE buying/selling'
   sellMode: 0
   incomeGrowthPerStep: 2
   sessionsPerIncomeStep: 1
@@ -1619,7 +1619,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &309960882
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8994,7 +8994,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1707367312
 RectTransform:
   m_ObjectHideFlags: 0

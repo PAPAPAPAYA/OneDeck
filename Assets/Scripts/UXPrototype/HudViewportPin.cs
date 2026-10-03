@@ -47,6 +47,18 @@ public class HudViewportPin : MonoBehaviour
 
 	private void ApplyPin()
 	{
+		// 2026-10-02 transition fix 4 (docs/PhaseTransition.md): the chrome root no longer
+		// hides at travel start — it is page content that scrolls away with the camera — so
+		// "root active" no longer implies "settled shop". The pin holds only in a settled
+		// shop; mid-travel and outside the shop the button stays at its page spot and scrolls
+		// with the band like every other chrome widget (re-pinning on the next settled frame,
+		// matching the established re-pin-on-landing behavior).
+		if (PhaseTransitionDriver.IsTransitioning) return;
+		if (ShopManager.me == null || ShopManager.me.gamePhaseRef == null
+			|| ShopManager.me.gamePhaseRef.currentGamePhase != EnumStorage.GamePhase.Shop)
+		{
+			return;
+		}
 		Camera cam = Camera.main;
 		if (cam == null)
 		{

@@ -130,9 +130,11 @@ public class ShopChrome : MonoBehaviour
 	public static void ShowIfActive()
 	{
 		if (_instance == null) return;
-		// Showing the bar mid-travel would float it over the departing/arriving page. The
-		// driver calls ShowIfActive again on landing (ResultToShopRoutine).
-		if (PhaseTransitionDriver.IsTransitioning) return;
+		// 2026-10-02 re-audit fix 4b (docs/PhaseTransition.md): no IsTransitioning gate — the
+		// bar is PAGE content, so showing it at the Result->Shop travel start (EnterShop runs
+		// there) lets it scroll INTO view with the descent, symmetric with the section
+		// panels. The old gate made the bar pop at landing only while the panels were already
+		// visible mid-descent.
 		_instance.gameObject.SetActive(true);
 		_instance.Refresh();
 	}
@@ -140,6 +142,21 @@ public class ShopChrome : MonoBehaviour
 	public static void HideIfActive()
 	{
 		if (_instance != null) _instance.gameObject.SetActive(false);
+	}
+
+	/// <summary>
+	/// Shows/hides only the world Avatar + HpPill mirror children (2026-10-02 re-audit
+	/// fixes 4/7): during a driver travel the canvas HUD world-flies as the single shared
+	/// avatar/HP copy, so the mirrors hide at travel start and return on the shop landing
+	/// (driver calls). No-op before the chrome is built (headless / bypass).
+	/// </summary>
+	public static void SetMirrorsActive(bool active)
+	{
+		if (_page == null) return;
+		Transform avatar = _page.transform.Find("Avatar");
+		if (avatar != null) avatar.gameObject.SetActive(active);
+		Transform hpPill = _page.transform.Find("HpPill");
+		if (hpPill != null) hpPill.gameObject.SetActive(active);
 	}
 
 	/// <summary>

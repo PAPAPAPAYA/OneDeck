@@ -85,4 +85,24 @@ public class PhaseFlightPlannerTests
 		Assert.AreEqual(1.01f, PhaseFlightPlanner.TotalDuration(0.8f, 0.07f, 4), 1e-4f);
 		Assert.AreEqual(1.29f, PhaseFlightPlanner.TotalDuration(0.8f, 0.07f, 8), 1e-4f);
 	}
+
+	[Test]
+	public void HudHomeAtPage_ShiftsByPlaneDistanceToPage()
+	{
+		// 2026-10-02 re-audit fixes 2/3/7: the canvas plane rides the camera, so a HUD
+		// element's world home at a page's camera height = current world pos + (pageY - planeY),
+		// where planeY is the carrying canvas root's own Y (NOT the rig — VISUAL-FIX(2026-10-03):
+		// the canvas lags the rig within the travel-start frame). Combat page one pageH above
+		// the synced plane: shift is exactly +12.12.
+		var atCombat = PhaseFlightPlanner.HudHomeAtPage(new Vector3(1f, 2f, -3f), 12.12f, 0f);
+		Assert.AreEqual(1f, atCombat.x, Tol, "x is never written (Y-only travel)");
+		Assert.AreEqual(14.12f, atCombat.y, Tol);
+		Assert.AreEqual(-3f, atCombat.z, Tol, "z is never written");
+		// Back down: combat anchor world -> shop page home (plane 12.12 above shop origin).
+		var atShop = PhaseFlightPlanner.HudHomeAtPage(new Vector3(0f, 24.24f, 0f), 0f, 12.12f);
+		Assert.AreEqual(12.12f, atShop.y, Tol);
+		// Plane already at the page: identity.
+		var identity = PhaseFlightPlanner.HudHomeAtPage(new Vector3(5f, 6f, 7f), 12.12f, 12.12f);
+		Assert.AreEqual(6f, identity.y, Tol);
+	}
 }

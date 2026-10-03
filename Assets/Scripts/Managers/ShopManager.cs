@@ -492,8 +492,17 @@ public class ShopManager : MonoBehaviour
 		}
 		_boughtCardInstances.Clear();
 
-		ShopChrome.HideIfActive();
-		ShopSectionPanels.HideIfActive();
+		// 2026-10-02 re-audit fix 4a (docs/PhaseTransition.md): while the transition driver
+		// owns the travel, the chrome + section panels are world PAGE content and scroll away
+		// with the camera — hiding them here made the departing page go bare while its cards
+		// were still flying (the demo keeps shelf/prices/chips scrolling out). The legacy hard
+		// cut (driver off: headless/seed/bypass — the camera never moves) keeps today's hide,
+		// otherwise the shop chrome would overlap the combat page.
+		if (!PhaseTransitionDriver.IsTransitioning)
+		{
+			ShopChrome.HideIfActive();
+			ShopSectionPanels.HideIfActive();
+		}
 	}
 
 	private void GenerateShopItems()

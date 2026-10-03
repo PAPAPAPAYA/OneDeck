@@ -68,4 +68,20 @@ public static class PhaseFlightPlanner
 	{
 		return duration + Mathf.Max(0, cardCount - 1) * stagger;
 	}
+
+	/// <summary>
+	/// World home of a canvas HUD element at a page's camera height (2026-10-02 re-audit
+	/// fixes 2/3/7): the Screen Space Camera canvas plane rides the camera, so a rect's
+	/// world position when the plane sits at pageY is its current world position shifted
+	/// by the PLANE's own Y distance to that page. planeY must be the carrying canvas
+	/// root's current world Y — NOT the camera rig's: within the travel-start frame the
+	/// rig tween has already moved while the canvas root still lags at its last synced
+	/// spot (VISUAL-FIX(2026-10-03) in CombatIconPresenter), and the rig's in-flight
+	/// offset would land the flight short by exactly that lag. Pure Y translation —
+	/// the transition camera only ever travels vertically.
+	/// </summary>
+	public static Vector3 HudHomeAtPage(Vector3 rectWorldPos, float pageY, float planeY)
+	{
+		return rectWorldPos + new Vector3(0f, pageY - planeY, 0f);
+	}
 }

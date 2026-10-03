@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -72,6 +73,10 @@ public class ResultStatsPanel : MonoBehaviour
 	// Halves container geometry, shared by Build() and the adaptive-height math
 	private const float HalvesInset = 8f;   // Inset of the Halves rect from the body edges
 	private const float HalvesSpacing = 8f; // Vertical gap between the player and enemy halves
+
+	// Entrance animation (demo :361-385): overlay fade 200 ms linear + panel scale 240 ms.
+	private const float ResultFadeDuration = 0.2f;
+	private const float ResultScaleDuration = 0.24f;
 
 	private RectTransform _root;
 	private Canvas _parentCanvas;
@@ -158,6 +163,24 @@ public class ResultStatsPanel : MonoBehaviour
 		// RGB from the palette; alpha stays a layout knob (backgroundAlpha).
 		Color bgColor = GameColorPalette.ResultPanelBgColor;
 		bg.color = new Color(bgColor.r, bgColor.g, bgColor.b, _layout.backgroundAlpha);
+
+		// VISUAL-FIX(2026-10-02): result panel popped in with no entrance animation
+		//   Cause:    Build() placed the finished panel immediately, while the demo fades the
+		//             overlay in over 200 ms and scales the panel 0.92 -> 1 over 240 ms on the
+		//             shared ease (PhaseTransitionDemo.html:361-385).
+		//   Affects:  ResultStatsPanel.Build (Body entrance only — layout/data writes untouched)
+		//   Regress:  Enter Result: the panel fades in + scale-pops on the shared ease
+		//             (Overshoot default); a Rebuild (live layout tuning) replays it; exiting
+		//             Result mid-animation destroys the root safely (DOTween safe mode).
+		//   Related:  docs/PhaseTransition.md open-item 5
+		var entranceGroup = bodyGo.AddComponent<CanvasGroup>();
+		entranceGroup.alpha = 0f;
+		bodyRect.localScale = new Vector3(0.92f, 0.92f, 1f);
+		entranceGroup.DOFade(1f, ResultFadeDuration).SetEase(Ease.Linear).SetUpdate(UpdateType.Normal, true);
+		Tween entranceScale = bodyRect.DOScale(Vector3.one, ResultScaleDuration).SetUpdate(UpdateType.Normal, true);
+		var easeCfg = PhaseTransitionConfigSO.Me;
+		if (easeCfg != null) easeCfg.ApplyEase(entranceScale);
+		else entranceScale.SetEase(Ease.OutBack);
 
 		// Two stacked halves inside the body: top = player-created cards, bottom = enemy-created cards
 		var halvesGo = new GameObject("Halves", typeof(RectTransform));

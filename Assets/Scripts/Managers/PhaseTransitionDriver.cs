@@ -29,16 +29,22 @@ public class PhaseTransitionDriver : MonoBehaviour
 	private bool _transitioning;
 	private bool _ownsDeckCards;
 	private bool _suppressCombatCanvasUI;
-	private bool _enemyEntrancePending;
+	private TransitionTravel _travel;
+
+	/// <summary>Travel direction while a transition coroutine runs (the HUD presenters run their world flights on its edges, fixes 2/3/7).</summary>
+	public enum TransitionTravel { None, ToCombat, ToShop }
 
 	/// <summary>True while any transition coroutine runs. Gates shop scroll, phase-change snaps, chrome show.</summary>
 	public static bool IsTransitioning => Me != null && Me._transitioning;
 	/// <summary>True while the driver has claimed the shop's spawned cards (they must survive ClearSpawnedCards).</summary>
 	public static bool OwnsDeckCards => Me != null && Me._ownsDeckCards;
-	/// <summary>True while combat canvas UI (HP bar, enemy HUD) must stay hidden despite the Combat phase.</summary>
+	/// <summary>True while combat canvas UI (HP compare bar) must stay hidden until the camera lands.</summary>
 	public static bool SuppressCombatCanvasUI => Me != null && Me._suppressCombatCanvasUI;
-	/// <summary>Consumed by the enemy HUD presenters on their next activation: play the slide-in entrance.</summary>
-	public static bool EnemyEntrancePending => Me != null && Me._enemyEntrancePending;
+	/// <summary>Current travel direction (None = settled). Static so the canvas HUD presenters can read it without a driver reference.</summary>
+	public static TransitionTravel Travel => Me != null ? Me._travel : TransitionTravel.None;
+	/// <summary>World Y of the two page origins (captured at Awake; 0 before init). Home basis for the HUD world flights.</summary>
+	public static float ShopPageY => Me != null ? Me._shopPageY : 0f;
+	public static float CombatPageY => Me != null ? Me._combatPageY : 0f;
 
 	private Camera _cam;
 	private Transform _rig;
@@ -194,6 +200,7 @@ public class PhaseTransitionDriver : MonoBehaviour
 	{
 		var cfg = PhaseTransitionConfigSO.Me;
 		_transitioning = true;
+		_travel = TransitionTravel.ToCombat;
 		_ownsDeckCards = true;
 		// F2 (plan-phase-transition-audit-fixes-2026-10-02): dismiss any enlarge preview BEFORE
 		// the phase calls — RestoreCard retargets the card and releases its modal ShopInputGate
@@ -202,6 +209,11 @@ public class PhaseTransitionDriver : MonoBehaviour
 		// the button is gate-blocked, so the reachable modal+bypass path left is automation
 		// (DeckTester.autoSpace); the dismiss keeps that path clean too.
 		if (ShopUXManager.Instance != null) ShopUXManager.Instance.RestoreAllEnlargedCards();
+		// 2026-10-02 re-audit fixes 4/7: the chrome band (chips/buttons) is page content and
+		// stays visible to scroll away with the camera (fix 4a — ExitShop skips its hide while
+		// IsTransitioning); only the world Avatar/HpPill mirrors hide — the canvas HUD
+		// world-flies as the single shared copy (fix 7).
+		ShopChrome.SetMirrorsActive(false);
 		_suppressCombatCanvasUI = true;
 		_lastShopY = _rig.position.y;
 		ShopInputGate.Block();
@@ -262,14 +274,12 @@ public class PhaseTransitionDriver : MonoBehaviour
 			if (dummy != null) Destroy(dummy);
 		}
 
-		// Canvas UI appears: HP bar activates; enemy HUD slides DOWN in (counter-direction, demo :724-727).
-		_enemyEntrancePending = true;
+		// Canvas UI release: the HP compare bar activates on the next poll; the enemy HUD has
+		// been sliding in since travel start (fix 2 — world flight, demo :724-727).
 		_suppressCombatCanvasUI = false;
-		yield return null;
-		yield return null;
-		_enemyEntrancePending = false;
 
 		_ownsDeckCards = false;
+		_travel = TransitionTravel.None;
 		_transitioning = false;
 		ShopInputGate.Unblock();
 	}
@@ -278,11 +288,17 @@ public class PhaseTransitionDriver : MonoBehaviour
 	{
 		var cfg = PhaseTransitionConfigSO.Me;
 		_transitioning = true;
+		_travel = TransitionTravel.ToShop;
 		ShopInputGate.Block();
 		if (CombatManager.Me != null) CombatManager.Me.BlockInput(this);
 
+		// Fixes 4/7: the world mirrors hide so the descending canvas HUD is the only
+		// avatar/HP copy; chrome + panels are page content and scroll INTO view during the
+		// descent (EnterShop -> ShowIfActive runs at travel start, gate removed — fix 4b).
+		ShopChrome.SetMirrorsActive(false);
+
 		// Shop content spawns a page below (off-screen); avatar + HP pill glide back to the
-		// shop top bar via their presenters (IsTransitioning = tween instead of snap).
+		// shop top bar via their presenters' world flights (Travel = ToShop).
 		pm.AdvanceFromResultToShop();
 
 		float dur = cfg != null ? Mathf.Max(0.05f, cfg.transDur) : 0.8f;
@@ -290,10 +306,12 @@ public class PhaseTransitionDriver : MonoBehaviour
 		yield return new WaitForSecondsRealtime(dur + 0.05f);
 
 		if (CombatManager.Me != null) CombatManager.Me.UnblockInput(this);
+		_travel = TransitionTravel.None;
 		_transitioning = false;
 		ShopInputGate.Unblock();
-		// Chrome show was gated by IsTransitioning during the travel; reveal it on landing.
-		ShopChrome.ShowIfActive();
+		// Landing swap: the flying canvas HUD handed back to the phase rules (and hides in a
+		// settled shop), so the world Avatar/HpPill mirrors return (fixes 4/7).
+		ShopChrome.SetMirrorsActive(true);
 	}
 
 	/// <summary>
@@ -326,22 +344,45 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 			var seq = DOTween.Sequence().SetUpdate(UpdateType.Normal, true);
 			seq.AppendInterval(delay);
-			seq.Append(dummy.transform.DOMove(apex, dur * 0.5f).SetEase(Ease.OutQuad));
-			seq.Append(dummy.transform.DOMove(to, dur * 0.5f).SetEase(Ease.InQuad));
-			seq.Insert(delay, dummy.transform.DOScale(deckScale, dur));
-			seq.Insert(delay, dummy.transform.DORotate(new Vector3(0f, 0f, fanRot), dur * 0.5f));
-			seq.Insert(delay + dur * 0.5f, dummy.transform.DORotate(Vector3.zero, dur * 0.5f));
+			// VISUAL-FIX(2026-10-02): card flights ignored the shared ease — Overshoot mode did
+			//   not bend the card paths
+			//   Cause:    The two move segments hardcoded Ease.OutQuad (up) + Ease.InQuad (down)
+			//             while the demo's fly() runs the WHOLE flight on the shared ease
+			//             (PhaseTransitionDemo.html:684-691 — animation-level easing re-applies
+			//             per keyframe interval, i.e. per segment).
+			//   Affects:  PhaseTransitionDriver.FlyDummiesToCombatStack (move segments, scale,
+			//             fan rotation — all flight tweens now carry cfg.ApplyEase)
+			//   Regress:  Transition with easeMode Overshoot (default): cards visibly overshoot
+			//             past the apex and past their landing slot like the camera does; with
+			//             Smooth/Linear the flight is a plain eased path. Camera + cards land
+			//             together as before.
+			//   Related:  docs/PhaseTransition.md open-item 1, PhaseTransitionConfigSO.ApplyEase
+			seq.Append(ApplyCfgEase(cfg, dummy.transform.DOMove(apex, dur * 0.5f)));
+			seq.Append(ApplyCfgEase(cfg, dummy.transform.DOMove(to, dur * 0.5f)));
+			seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DOScale(deckScale, dur)));
+			seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DORotate(new Vector3(0f, 0f, fanRot), dur * 0.5f)));
+			seq.Insert(delay + dur * 0.5f, ApplyCfgEase(cfg, dummy.transform.DORotate(Vector3.zero, dur * 0.5f)));
 			Track(seq);
 
 			if (phys != null)
 			{
 				// flipAtMid (demo :692): cover at the arc apex. force=true: the combat-entry
 				// shuffle is the never-cover rule's legal cover point (FaceDownFlipSystem).
+				// VISUAL-FIX(2026-10-02): mid-arc cover played the animated scaleX flip while the
+				//   demo swaps to the card back INSTANTLY at the apex (is-back class toggle,
+				//   PhaseTransitionDemo.html:692-694)
+				//   Cause:    SetFaceUp(false, animated:true) at delay + transDur/2 — the same
+				//             time the flight tweens are mid-motion.
+				//   Affects:  PhaseTransitionDriver.FlyDummiesToCombatStack (flip delayed call)
+				//   Regress:  Transition: deck cards show their backs immediately at the arc
+				//             midpoint — no scaleX pinch; landing stack look unchanged; the
+				//             never-cover force path is untouched.
+				//   Related:  docs/PhaseTransition.md open-item 6, docs/FaceDownFlipSystem.md
 				float flipAt = PhaseFlightPlanner.FlipTime(delay, dur);
 				var captured = phys;
 				Track(DOVirtual.DelayedCall(flipAt, () =>
 				{
-					if (captured != null) captured.SetFaceUp(false, true, true);
+					if (captured != null) captured.SetFaceUp(false, false, true);
 				}, true));
 			}
 		}
