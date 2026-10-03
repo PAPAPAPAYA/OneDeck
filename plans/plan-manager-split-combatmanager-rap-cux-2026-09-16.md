@@ -1,7 +1,7 @@
 # 三大管理类拆分方案:CombatManager / RecorderAnimationPlayer / CombatUXManager
 
 日期: 2026-09-16
-状态: **拍板完成,未实施** (2026-09-16 四项全部按低风险选项拍板,见 §7;AGENTS.md Code Placement Guide 已落地;其余切片未动工)
+状态: **拍板完成,未实施** (2026-09-16 四项全部按低风险选项拍板,见 §7;AGENTS.md Code Placement Guide 已落地;其余切片未动工。2026-10-03 复核:三 god 文件切片仍全部未动工,体量/行号数据已刷新至当日,复核记录见 §4.0)
 目标: 评估三个最庞大管理类是否该拆、怎么拆,给出可分步执行、每步可验证的低风险路线
 关联: plans/refactor-combat-ux-manager-2026-05-17.md (阶段2未执行的旧案,本文档 §4 复活并修正), docs/RegressionChecklist.md, docs/AnimationSystem.md, docs/DeckLayouts.md
 
@@ -9,23 +9,23 @@
 
 | 类 | 行数 | 裁决 | 一句话理由 |
 |----|------|------|-----------|
-| CombatManager | 1367 | **拆,低风险切片** | 真问题是 RevealCards 单方法 ~250 行;类本身未失控,facade 不动、职责外移即可 |
+| CombatManager | 1425 | **拆,低风险切片** | 真问题是 RevealCards 单方法 ~220 行;类本身未失控,facade 不动、职责外移即可 |
 | RecorderAnimationPlayer | 1671 | **缓拆,只摘纯计算** | 单一职责的播放引擎,复杂度是内在的;真问题是 PlayRequestCoroutine 单方法 ~730 行;但它是全项目 bug 密集区,动它收益低风险高 |
-| CombatUXManager | 4637 | **必须拆,最高优先级** | 4 个月涨 2669 行(+136%),05-17 旧案阶段2从未执行;但旧案"五组件一次拆"被证明推不动,改为 partial-class 过渡 + 逐个组件摘除 |
+| CombatUXManager | 4670 | **必须拆,最高优先级** | 4 个月涨 2669 行(+136%),05-17 旧案阶段2从未执行;但旧案"五组件一次拆"被证明推不动,改为 partial-class 过渡 + 逐个组件摘除 |
 
-全局前置条件:等当前工作区未提交工作(RNG 验证 / 触发顺序 / 商店尾区 / PhysButton)落库后再动任何一片;每片一个 commit,全量 EditMode 绿(基线 ~545)才进下一片。
+全局前置条件:等当前工作区未提交工作落库后再动任何一片;每片一个 commit,全量 EditMode 绿(开工时实测基线,2026-09-16 时 ~545)才进下一片。(2026-10-03:工作区干净,原列出的未提交工作——RNG 验证 / 触发顺序 / 商店尾区 / PhysButton——均已落库,前置条件已满足。CM 后续 5 次提交 2026-09-16..19 均为功能/修复,非切片)
 
-## 1. 体量事实 (2026-09-16 实测)
+## 1. 体量事实 (2026-09-16 实测,2026-10-03 刷新)
 
 ### 1.1 三类对比
 
 | 指标 | CombatManager | RecorderAnimationPlayer | CombatUXManager |
 |------|--------------|------------------------|-----------------|
-| 行数 | 1367 | 1671 | **4637** |
+| 行数 | 1425 | 1671 | **4670** |
 | 方法数(约) | 60 | 30 | 106 |
-| 最大方法 | RevealCards ~250 行 (783-1030) | **PlayRequestCoroutine ~730 行 (941-1671)** | SyncPhysicalCards ~373 行 (299-672) |
+| 最大方法 | RevealCards ~220 行 (801-1018) | **PlayRequestCoroutine ~730 行 (941-1671)** | SyncPhysicalCards ~373 行 (299-672) |
 | 200+ 行方法数 | 1 | 1 | 5 (373/287/269/243/220) |
-| 外部引用文件数 | 15+ (CM.Me);Editor 测试 32 文件 | ~30 文件 | 19 文件 |
+| 外部引用文件数 | 15+ (CM.Me);Editor 测试 32 文件 | ~30 文件 | 20 文件 (2026-10-03 实测) |
 | 对其他两类的依赖 | 创建 RAP (Awake) | CM.Me ×20 处, CUX ×23 处 | 被 RAP 依赖 |
 
 ### 1.2 外部耦合面(决定拆分成本)
@@ -71,12 +71,19 @@
 
 ## 4. CombatUXManager 方案 (最高优先级,复活并修正 05-17 旧案)
 
+### 4.0 复核记录 (2026-10-03)
+
+- **切片未动工确认**:CUX-0..4 / CUX-6 全部未执行,`CombatUXManager.cs` 仍是单文件(无 partial 拆分文件)。三类中唯一动过 CUX 本体的是视觉修复 d7086d70;CM 的 5 次后续提交(RNG 迁移 / 触发顺序 / L0-L1 防护)与 RAP 零提交均非切片;`InputBlockCounter`/`ThroneZone`/`FatigueHandler`/`RecorderPlaybackPlanner`/`DeckFocusController`/`StatusEffectProjectileSystem` 组件类均不存在(`ThroneZoneTests` 只是测 CombatManager 静态 throne 区方法)。
+- **增长已放缓,§7-#4 落位指引实效得到验证**:2026-09-16 → 2026-10-03(17 天)CUX 仅 +33 行(4637 → 4670,≈60 行/月,此前 ~670 行/月)。全部涨幅来自一个视觉修复 d7086d70(2026-09-18,popup peak live-follows deck slot,+49/-16),hunks 全部落在 ICombatVisuals 区(4124-4670)。同期商店 chrome v5 + 阶段转场工作全部落进约 19 个新独立文件(ShopChrome*/ShopHud*/Hud*/PhaseFlightPlanner/PhaseHudFlight/ShopSectionPanels 等)——新功能有处可归,CUX 本体不再被动吸行。
+- **优先级判断维持**:CUX 不再是失控增长曲线,但 4670 行仍是 CombatManager 的 3.3 倍、region 结构原封未动;CUX-0(零风险、当日见效)仍是第一个该执行的切片。
+- **数据刷新范围**:§0/§1.1 行数与最大方法行距、§4.2 region 行号均已刷至当日;region 划分与 2026-09-16 完全一致(无新增/合并/改名)。
+
 ### 4.1 为什么旧案要修正
 
 - 05-17 案阶段1(CardMoveConfig / DeckPositionCalculator 抽取 + 字典缓存)已落地;**阶段2"五组件一次拆"至今未执行**。
 - 期间 CUX 从 1968 → 4637 行(4 个月 +2669 行,约 670 行/月)。结论:**大爆炸式组件拆分在这个项目推不动**(等一个"完整窗口"永远等不到),必须改成"每片独立可合入"的流水线,并加增长控制。
 
-### 4.2 Region 盘点 (今日行号,漂移 ±几行不影响结论)
+### 4.2 Region 盘点 (行号刷至 2026-10-03,漂移 ±几行不影响结论)
 
 | Region | 行范围 | 行数 | 去向 |
 |--------|--------|------|------|
@@ -91,18 +98,20 @@
 | Cleanup | 3349-3655 | 306 | partial |
 | Initialization | 3655-3725 | 70 | 主文件 |
 | Status Effect Projectile | 3725-4124 | 399 | **StatusEffectProjectileSystem 组件(旧案 E/P0)** |
-| ICombatVisuals 实现 | 4124-4637 | 513 | 主文件(对外接口墙,签名永不动) |
+| ICombatVisuals 实现 | 4124-4670 | 546 (+33,d7086d70) | 主文件(对外接口墙,签名永不动) |
 
 ### 4.3 步骤(每步独立 commit)
 
 | # | 动作 | 风险 | 说明 |
 |---|------|------|------|
-| CUX-0 | **partial class 物理拆文件**:CombatUXManager.Layout.cs / .Peel.cs / .Projectile.cs / .Cleanup.cs / .Visuals.cs | 零 | 同类同名,只是分文件;场景/测试/调用点/序列化全不动。当日见效:主文件 4637 → ~1500,新功能从此有"该进哪个文件"的归置 |
+| CUX-0 | **partial class 物理拆文件**:CombatUXManager.Layout.cs / .Peel.cs / .Projectile.cs / .Cleanup.cs / .Visuals.cs | 零 | 同类同名,只是分文件;场景/测试/调用点/序列化全不动。当日见效:主文件 4670 → ~1550,新功能从此有"该进哪个文件"的归置 |
 | CUX-1 | Cascade Layout helpers 纯化 → DeckPositionCalculator 系静态 | 低 | 沿 05-17 阶段1路线继续;数学已在 docs/DeckLayouts.md 有 golden 测试(三个 Layout 测试类) |
 | CUX-2 | StatusEffectProjectileSystem 组件 | 低 | 旧案 P0 原案执行;依赖最少;外部仅 statusEffectConsumePos 等 6 处引用 |
 | CUX-3 | DeckFocusController 组件 | 中 | 旧案 D;先做 StartPeelCoroutine/TransitionFocusCoroutine 去重(AnimateCardToPeelPosition/AnimateCardToDeckPosition)再搬 |
 | CUX-4 | (降级/暂缓)PhysicalCardManager + DeckSynchronizer | 高 | `physicalCardsInDeck` 被 RAP.ApplyAnimationResult 直接推进、被 CM 读;牵连三角,放最后,等 CM/RAP 稳定后再议 |
 | CUX-5 | **功能落位指引(已落地 2026-09-16)** | 零 | 拍板修正:不做「CUX 单独增长禁令」,改为 AGENTS.md「Code Placement Guide」通用落位表(§7-#4);新功能按表落位,god 文件内只收 bug-fix 级改动;可选 CUX-6 行数 tripwire 测试见 §8 |
+
+执行状态 (2026-10-03):CUX-0..4 / CUX-6 均未动工;CUX-5 已落地,其增长放缓实效见 §4.0。
 
 - 组件均挂同一 GameObject、Awake 自建,场景不重拖;`CombatUXManager.me` facade 转发,外部 ~20 处成员访问零改动。
 - Headless 测试走 NullCombatVisualsBehaviour,不触 CUX 本体,天然免疫。
