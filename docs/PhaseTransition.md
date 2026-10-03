@@ -12,6 +12,8 @@ ONE continuous world, two pages stacked vertically:
 
 Transitions = the camera rig (`Camera Man`, parent of Main Camera — MilkShake keeps owning the camera child's localPosition) tweens Y between the pages. The world never cuts.
 
+The v1.1 world topo background (2026-10-03) is ONE world-space sheet (`WorldTopoBackground` + `Custom/ContourLinesBackgroundWorld`) spanning both pages plus the config PAD (`pagePadDemoPx`, overshoot headroom). The region above the combat page center (50%, user ruling) is the enemy HP display area — `GameColorPalette.HpBarEnemyColor` base, dark-red contour lines; gray below is the player region. The pattern is world-locked (the travel carries it; shop wheel scroll gains the demo's parallax). It replaces the screen-fixed BackGroundMotion3D RawImage under the Global Canvas (disabled; camera clear stays as fallback), and is what makes the overshoot reveal more background instead of a void.
+
 ## Orchestration: `PhaseTransitionDriver`
 
 Runtime-built singleton (`RuntimeInitializeOnLoadMethod.AfterSceneLoad`); no scene objects. Wraps the existing `PhaseManager` enter/exit pipeline:
@@ -54,7 +56,7 @@ All transition tweens run unscaled-time. They are NOT scaled by `CombatAnimation
 ## Arbitration
 
 - **Camera**: only the driver writes rig Y during a transition; `ShopUXManager.HandleCameraScroll` is gated by phase (shop only — fixing the pre-existing combat-wheel bug) AND by `IsTransitioning`. `ResetCameraPosition` no-ops while transitioning.
-- **Shop chrome visibility (fix 4)**: `ShopManager.ExitShop` skips its `HideIfActive` pair while `IsTransitioning` — chrome + panels are page content and scroll away with the camera; the legacy hard cut keeps the hide (the camera never moves there). `ShopChrome.ShowIfActive` has no `IsTransitioning` gate (both chrome and panels appear at the Result→Shop travel start and scroll INTO view). `HudViewportPin` (OptionsButton) holds only in a settled shop — mid-travel/outside the shop the button scrolls with the band and re-pins on the next settled frame.
+- **Shop chrome visibility (fix 4)**: `ShopManager.ExitShop` skips its `HideIfActive` pair while `IsTransitioning` — chrome + panels are page content and scroll away with the camera; the legacy hard cut keeps the hide (the camera never moves there). `ShopChrome.ShowIfActive` has no `IsTransitioning` gate (both chrome and panels appear at the Result→Shop travel start and scroll INTO view). `HudViewportPin` (OptionsButton) is always pinned while the band is active (2026-10-03 ruling — row 144); mid-travel and in combat the button stays at the viewport corner while the rest of the band scrolls with the page.
 - **Input**: `ShopInputGate` + `CombatManager.BlockInput(driver)` paired across the travel; `PhaseManager` phase keys route through the driver first. **Busy guard (2026-10-02 audit F1)**: while `IsTransitioning`, every phase-key/button call site (`PhaseManager.Update` Shop + Result branches, `ShopHudBinder` LeaveShop) returns instead of running the legacy hard cut — the driver's `false` return means "driver unavailable → legacy is correct", never "busy" (during a Result→Shop travel the phase already reads Shop, so an unguarded Shop branch would double-enter combat mid-flight).
 
 ## Verified (2026-09-21 Play Mode)
@@ -71,11 +73,11 @@ All transition tweens run unscaled-time. They are NOT scaled by `CombatAnimation
 
 ### Accepted (user rulings, 2026-09-21)
 
-1. ❚❚ options button does not fly (no combat-side home exists today).
+1. **❚❚ options button — superseded 2026-10-03 (user ruling, v1.1 round):** it never flies AND never moves — `HudViewportPin` is ungated (always pinned while the chrome band is active), so the shop viewport corner serves combat as-is with unchanged press semantics. RegressionChecklist row 144.
 2. Combat→Shop uses the shop's existing spawn-pop entry; no return card flight.
 3. Shop→combat drag-up gesture not ported (离开商店 button is the trigger).
 4. Demo param bar → `PhaseTransitionConfigSO` asset instead of a runtime UI.
-5. v1.1 backlog: world topo background spanning both pages (red band = enemy HP display), ❚❚ flight, combat→shop card return flight. Until the topo lands, the OutBack overshoot (measured peak ≈1.19 world units past the combat page edge) peeks at the plain camera background — the demo's 200 px PAD exists exactly to cover this.
+5. v1.1 status (updated 2026-10-03): the world topo background is LANDED (row 143); the ❚❚ flight was superseded by the always-pin ruling (item 1); still open: the combat→shop card return flight. The 2026-10-03 overshoot-peek note is resolved by the sheet (its PAD headroom = `pagePadDemoPx`).
 
 ### Fixed — 2026-10-02 re-audit items (vs `PhaseTransitionDemo.html`)
 
