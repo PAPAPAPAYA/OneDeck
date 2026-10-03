@@ -137,6 +137,12 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	// World flight (fixes 2/3/7): owns this side's pill while the driver travels.
 	private PhaseTransitionDriver.TransitionTravel _lastTravel = PhaseTransitionDriver.TransitionTravel.None;
 	private HudWorldFlight _flight;
+	// 2026-10-03 handoff seam: the flight completes INTO the world mirror — the canvas
+	// copy eases into the mirror's shop scale over the flight's final window, then the
+	// flight's onComplete swaps copies in the same frame. _handedOffToMirror keeps the
+	// visibility rule from re-activating the canvas copy while the driver winds down.
+	private bool _handedOffToMirror;
+	private const float HandoffScaleWindow = 0.35f; // flight fraction used to ease between combat scale and the mirror's shop scale (opening window on departure, final window on return)
 	private Vector2 _rootBasePos;
 	// Shop-phase placement (2026-09-19): the component's own RectTransform is moved to
 	// the shop top bar; the combat anchor/scale is captured at Awake and restored.
@@ -293,7 +299,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		//             (config off / headless): same-frame hard cut, no glide.
 		bool visible = side == Side.Player
 			? inCombat || phase == EnumStorage.GamePhase.Result
-				|| (phase == EnumStorage.GamePhase.Shop && PhaseTransitionDriver.IsTransitioning)
+				|| (phase == EnumStorage.GamePhase.Shop && PhaseTransitionDriver.IsTransitioning && !_handedOffToMirror)
 			: (inCombat && !PhaseTransitionDriver.SuppressCombatCanvasUI)
 				|| phase == EnumStorage.GamePhase.Result
 				|| travel != PhaseTransitionDriver.TransitionTravel.None;
@@ -513,17 +519,33 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 				{
 					// Mirror check BEFORE the snap: the fallback glide needs the parked shop anchor intact.
 					if (!mirrorOk) return;
-					Vector3 snapPos = SnapToCombatAnchor();
-					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(snapPos, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					_handedOffToMirror = false;
+					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapToCombatAnchor(), PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					// VISUAL-FIX(2026-10-03): pill popped 0.41 -> 0.8 at travel start
+					//   Cause:    SnapToCombatAnchor wrote the combat scale instantly while the
+					//             replaced mirror renders at ShopMirrorScale.canvasShopScale.
+					//   Affects:  HPNumericDisplayHorizontal.OnTravelEdge (player, both travels)
+					//   Regress:  离开商店: the pill starts at the mirror's size and grows into
+					//             the combat scale over the opening window — no size pop at the
+					//             band; Result->Shop: symmetric shrink into the band.
+					//   Related:  docs/PhaseTransition.md (HUD world flights), ShopMirrorScale
+					_selfRt.localScale = Vector3.one * ShopTopBarLayout.ShopScaleHpDisplay;
+					KillTween(ref _placementScaleTween);
+					_placementScaleTween = _selfRt.DOScale(_combatScale, cfg.transDur * HandoffScaleWindow)
+						.SetEase(Ease.OutQuad).SetUpdate(UpdateType.Normal, true);
 					_flight = EnsureFlight();
 					_flight.Begin(shopHome, to, cfg.transDur, cfg);
+					// Presenter-driven mirror hide (replaces the driver's synchronous pre-phase
+					// hide): the canvas copy is already active and world-locked at the mirror
+					// spot, so the swap has no blank frame regardless of script execution order.
+					ShopChrome.SetMirrorsActive(false);
 				}
 				else
 				{
 					// Entrance (fix 2): slide DOWN in from enemySlide above; the world position
 					// keeps the pill outside the viewport until the camera's arrival, like the demo.
-					Vector3 snapPos = SnapToCombatAnchor();
-					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(snapPos, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapToCombatAnchor(), PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					_selfRt.localScale = _combatScale; // was SnapToCombatAnchor's job before 2026-10-03
 					_flight = EnsureFlight();
 					_flight.Begin(to + Vector3.up * SlideWorld(cfg), to, cfg.transDur, cfg);
 				}
@@ -534,9 +556,26 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 				if (side == Side.Player)
 				{
 					if (!mirrorOk) return;
+					_handedOffToMirror = false;
 					Vector3 from = PhaseFlightPlanner.HudHomeAtPage(_selfRt.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					// Shrink into the mirror's shop scale over the final window so the swap
+					// below lands size-matched (the old landing swap popped 0.8 -> 0.41).
+					_selfRt.localScale = _combatScale;
+					KillTween(ref _placementScaleTween);
+					_placementScaleTween = _selfRt.DOScale(Vector3.one * ShopTopBarLayout.ShopScaleHpDisplay, cfg.transDur * HandoffScaleWindow)
+						.SetDelay(cfg.transDur * (1f - HandoffScaleWindow)).SetEase(Ease.OutQuad).SetUpdate(UpdateType.Normal, true);
 					_flight = EnsureFlight();
-					_flight.Begin(from, shopHome, cfg.transDur, cfg);
+					var captured = this;
+					_flight.Begin(from, shopHome, cfg.transDur, cfg, () =>
+					{
+						// Same-frame swap at flight end: the mirror shows, the canvas copy
+						// hides, and the settled-shop rule must not re-activate it while the
+						// driver winds down (its own SetMirrorsActive(true) stays as a
+						// defensive idempotent call).
+						ShopChrome.SetMirrorsActive(true);
+						captured._handedOffToMirror = true;
+						if (captured.displayRoot != null) captured.displayRoot.gameObject.SetActive(false);
+					});
 				}
 				else
 				{
@@ -548,6 +587,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 				break;
 			}
 			default:
+				_handedOffToMirror = false;
 				if (_flight != null) _flight.Kill();
 				break;
 		}
@@ -559,13 +599,12 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		return _flight;
 	}
 
-	/// <summary>Snaps the pill to its combat anchor state (kill placement tweens, combat scale — fix 7 has no scale tween) and returns its world position. Runs for BOTH sides: a shop-park can have left the transform at the shop anchor.</summary>
+	/// <summary>Snaps the pill to its combat anchor POSITION (the home math needs it) and returns its world position. Scale is no longer written here (2026-10-03 handoff seam): the flight endpoints own scale — player flights ease between the mirror's shop scale and combat scale, enemy flights set combat scale explicitly at their call sites. Runs for BOTH sides: a shop-park can have left the transform at the shop anchor.</summary>
 	private Vector3 SnapToCombatAnchor()
 	{
 		KillTween(ref _placementTween);
 		KillTween(ref _placementScaleTween);
 		_selfRt.anchoredPosition = _combatAnchoredPos;
-		_selfRt.localScale = _combatScale;
 		return _selfRt.position;
 	}
 
