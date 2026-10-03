@@ -51,8 +51,10 @@ public class HudWorldFlight
 	/// Starts a straight world flight of the rect center from -> to (shared ease, unscaled
 	/// time — phase-boundary motion is never combat-speed-scaled). No scale change (demo
 	/// flyShared): the rect renders at whatever scale the caller snapped it to beforehand.
+	/// onComplete (optional) fires when the flight tween completes — the 2026-10-03 handoff
+	/// seam uses it for the same-frame mirror swap at flight end.
 	/// </summary>
-	public void Begin(Vector3 fromCenterWorld, Vector3 toCenterWorld, float duration, PhaseTransitionConfigSO cfg)
+	public void Begin(Vector3 fromCenterWorld, Vector3 toCenterWorld, float duration, PhaseTransitionConfigSO cfg, System.Action onComplete = null)
 	{
 		Kill();
 		if (_rt == null || _canvasRoot == null || _cam == null) return;
@@ -66,10 +68,27 @@ public class HudWorldFlight
 		_tween = tween.SetUpdate(UpdateType.Normal, true);
 		_tween.OnComplete(() =>
 		{
-			// Clear the ownership flag on completion — leaving it set made the anchored
-			// placement stand-down bookkeeping read a stale Active after landing.
+			// Clear the ownership flag on completion (kept from before the 2026-10-03 handoff
+			// seam — leaving it set made the anchored placement stand-down bookkeeping read a
+			// stale Active after landing), then run the caller's hook (mirror swap).
 			_following = false;
+			if (onComplete != null) onComplete();
 		});
+	}
+
+	/// <summary>
+	/// World-locks the rect at a fixed world point (no tween) until Kill() — the camera's
+	/// own motion then carries the element exactly like page content (2026-10-03 compare-bar
+	/// pin). Same re-projection path as Begin.
+	/// </summary>
+	public void Pin(Vector3 centerWorld)
+	{
+		Kill();
+		if (_rt == null || _canvasRoot == null || _cam == null) return;
+		_centerOffset = _rt.TransformPoint(_rt.rect.center) - _rt.position;
+		_center = centerWorld;
+		ApplyWorldPoint();
+		_following = true;
 	}
 
 	/// <summary>Stops the flight. The rect keeps its current rendered pose; normal placement writes take over.</summary>
