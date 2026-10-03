@@ -1,6 +1,6 @@
 # Phase Transition HUD Handoff (Pill/Avatar Swap + Compare-Bar World Pin) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Make the player HP pill / avatar mirror swap invisible (same-frame, scale-matched handoff driven by the world flight itself) and turn the full-screen HP compare bar into combat page content that slides with the camera instead of popping at landing.
 
@@ -44,7 +44,7 @@
 	- `public void Begin(Vector3 fromCenterWorld, Vector3 toCenterWorld, float duration, PhaseTransitionConfigSO cfg, System.Action onComplete = null)` — same flight as today plus an optional DOTween `OnComplete` hook (default keeps all existing call sites compiling).
 	- `public void Pin(Vector3 centerWorld)` — world-locks the rect at a fixed world point (no tween) until `Kill()`; used by Task 5.
 
-- [ ] **Step 1: Extend `Begin` and add `Pin`**
+- [x] **Step 1: Extend `Begin` and add `Pin`**
 
 Replace the current `Begin` body (`PhaseHudFlight.cs:55-67`) with:
 
@@ -87,15 +87,15 @@ public void Pin(Vector3 centerWorld)
 }
 ```
 
-- [ ] **Step 2: Refresh + verify compile**
+- [x] **Step 2: Refresh + verify compile**
 
 Unity MCP `refresh_unity` (`compile: request`); confirm `isCompiling == false` and `Assembly-CSharp.dll` mtime > `PhaseHudFlight.cs` mtime. Expected: no console errors.
 
-- [ ] **Step 3: EditMode suite stays green**
+- [x] **Step 3: EditMode suite stays green**
 
 `EditorSceneManager.SaveOpenScenes()` via `execute_code`, then `run_tests` (EditMode, full suite, `init_timeout: 180000`). Expected: same totals as the pre-change run (no test exercises this class; nothing may regress).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add Assets/Scripts/UXPrototype/PhaseHudFlight.cs
@@ -111,7 +111,7 @@ git commit -m "phase-transition: HudWorldFlight Pin + onComplete hook (handoff p
 - Consumes: Task 1 `Begin(..., onComplete)`; `ShopChrome.SetMirrorsActive(bool)` (`ShopChrome.cs:153`); `ShopTopBarLayout.ShopScaleHpDisplay` (`ShopTopBarLayout.cs:85`); `PhaseFlightPlanner.HudHomeAtPage(Vector3, float, float)`; `PhaseTransitionDriver.CombatPageY` / `.Travel` / `.IsTransitioning`; `HudWorldFlight.RigY`.
 - Produces: `private const float HandoffScaleWindow = 0.35f` (per-presenter; Task 4 defines its own with the same value), `private bool _handedOffToMirror` pattern reused by Task 4. No public surface.
 
-- [ ] **Step 1: Add handoff state + scale-window constant**
+- [x] **Step 1: Add handoff state + scale-window constant**
 
 Next to the existing flight fields (after `private HudWorldFlight _flight;`):
 
@@ -124,7 +124,7 @@ private bool _handedOffToMirror;
 private const float HandoffScaleWindow = 0.35f; // flight fraction used to ease between combat scale and the mirror's shop scale (opening window on departure, final window on return)
 ```
 
-- [ ] **Step 2: `SnapToCombatAnchor` stops writing scale**
+- [x] **Step 2: `SnapToCombatAnchor` stops writing scale**
 
 Replace the method (`HPNumericDisplayHorizontal.cs:561-568`) with:
 
@@ -139,7 +139,7 @@ private Vector3 SnapToCombatAnchor()
 }
 ```
 
-- [ ] **Step 3: Rewrite the player branches of `OnTravelEdge`; pin enemy scale explicitly**
+- [x] **Step 3: Rewrite the player branches of `OnTravelEdge`; pin enemy scale explicitly**
 
 In `OnTravelEdge` (`HPNumericDisplayHorizontal.cs:499-552`), replace the `ToCombat` case with:
 
@@ -233,7 +233,7 @@ and the `default` case (resets the handoff flag on every settle):
 				break;
 ```
 
-- [ ] **Step 4: Visibility rule honors the handoff flag**
+- [x] **Step 4: Visibility rule honors the handoff flag**
 
 In `Update` (`HPNumericDisplayHorizontal.cs:294-299`), change the player branch to:
 
@@ -248,11 +248,11 @@ In `Update` (`HPNumericDisplayHorizontal.cs:294-299`), change the player branch 
 
 (After the handoff, the next Update's `!visible && _wasVisible` edge runs `ExitVisiblePhase`, which parks the pill at the shop anchor/scale — exactly the parked state the next cycle needs. This is the intended cleanup path; do not bypass it.)
 
-- [ ] **Step 5: Refresh + full EditMode suite**
+- [x] **Step 5: Refresh + full EditMode suite**
 
 `refresh_unity` (`compile: request`) → confirm assembly mtime > source mtime → `SaveOpenScenes()` → `run_tests` (EditMode full, `init_timeout: 180000`). Expected: green, same totals.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add Assets/Scripts/UXPrototype/HPNumericDisplayHorizontal.cs
@@ -269,7 +269,7 @@ git commit -m "phase-transition: player HP pill scale-matched flight-driven mirr
 - Consumes: Task 1 `Begin(..., onComplete)`; `ShopChrome.SetMirrorsActive(bool)`; `ShopChrome.TryGetAvatarWorldCenter(out Vector3)`; `ShopTopBarLayout.ShopScaleAvatar` (`ShopTopBarLayout.cs:82`).
 - Produces: nothing new. Review Focus item 3 lives here: the driver removal and the presenter hide MUST ship in this one commit.
 
-- [ ] **Step 1: Driver — remove the synchronous departure mirror hide**
+- [x] **Step 1: Driver — remove the synchronous departure mirror hide**
 
 In `PhaseTransitionDriver.ShopToCombatRoutine`, delete the `ShopChrome.SetMirrorsActive(false);` call (`PhaseTransitionDriver.cs:216`) and replace the comment block above it (`PhaseTransitionDriver.cs:212-215`) with:
 
@@ -287,7 +287,7 @@ In `PhaseTransitionDriver.ShopToCombatRoutine`, delete the `ShopChrome.SetMirror
 
 (Net effect: `ShopToCombatRoutine` makes no mirror call on departure; `ResultToShopRoutine`'s hide and both landing shows are unchanged.)
 
-- [ ] **Step 2: Avatar — handoff state + visibility rule**
+- [x] **Step 2: Avatar — handoff state + visibility rule**
 
 In `CombatIconPresenter`, after the flight fields (`CombatIconPresenter.cs:58-60`):
 
@@ -304,7 +304,7 @@ In `ApplyPhase` (`CombatIconPresenter.cs:148`), change the player rule to:
 	playerIcon.SetActive(inCombat || inResult || (inShop && PhaseTransitionDriver.IsTransitioning && !_handedOffToMirror));
 ```
 
-- [ ] **Step 3: Avatar — `SnapPlayerToCombatAnchor` stops writing scale; rewrite player branches**
+- [x] **Step 3: Avatar — `SnapPlayerToCombatAnchor` stops writing scale; rewrite player branches**
 
 Replace `SnapPlayerToCombatAnchor` (`CombatIconPresenter.cs:247-254`) with:
 
@@ -375,11 +375,11 @@ and the `default` case with:
 
 (The enemy blocks of both cases are unchanged — the enemy icon never parks at the shop and has no mirror.)
 
-- [ ] **Step 4: Refresh + full EditMode suite**
+- [x] **Step 4: Refresh + full EditMode suite**
 
 Same gate as Task 2 Step 5. Expected: green, same totals.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add Assets/Scripts/Managers/PhaseTransitionDriver.cs Assets/Scripts/UXPrototype/CombatIconPresenter.cs
@@ -395,7 +395,7 @@ git commit -m "phase-transition: avatar handoff + presenter-driven departure mir
 - Consumes: Task 1 `HudWorldFlight.Pin(Vector3)` / `Kill()` / `Tick()`; `PhaseFlightPlanner.HudHomeAtPage(Vector3, float, float)`; `PhaseTransitionDriver.CombatPageY` / `.Travel`; `HudWorldFlight.RigY`.
 - Produces: nothing new. `PhaseTransitionDriver.SuppressCombatCanvasUI` loses its last gating consumer for the bar but stays in place for the icon/pill enemy rules (retirement is a separate cleanup, not this plan).
 
-- [ ] **Step 1: Pin state fields**
+- [x] **Step 1: Pin state fields**
 
 After `private Vector2 _barRootBasePos;` (`CombatHPBarPresenter.cs:62`):
 
@@ -408,7 +408,7 @@ private HudWorldFlight _pin;
 private PhaseTransitionDriver.TransitionTravel _lastTravel = PhaseTransitionDriver.TransitionTravel.None;
 ```
 
-- [ ] **Step 2: Travel edge + new visibility rule in `Update`**
+- [x] **Step 2: Travel edge + new visibility rule in `Update`**
 
 Replace the top of `Update` (the suppression comment + `inCombat` computation + edge block, `CombatHPBarPresenter.cs:160-178`) with:
 
@@ -454,7 +454,7 @@ Replace the top of `Update` (the suppression comment + `inCombat` computation + 
 
 (the rest of `Update` is unchanged; `_wasInCombat` keeps its name but now tracks `visible`.)
 
-- [ ] **Step 3: `OnTravelEdge` + pin tick in `LateUpdate`**
+- [x] **Step 3: `OnTravelEdge` + pin tick in `LateUpdate`**
 
 Add after `Update`:
 
@@ -497,11 +497,11 @@ and extend `LateUpdate` (`CombatHPBarPresenter.cs:223-232`) to:
 	}
 ```
 
-- [ ] **Step 4: Refresh + full EditMode suite**
+- [x] **Step 4: Refresh + full EditMode suite**
 
 Same gate as Task 2 Step 5. Expected: green, same totals.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add Assets/Scripts/UXPrototype/CombatHPBarPresenter.cs
@@ -514,7 +514,7 @@ git commit -m "phase-transition: compare bar world-pinned during travels (slides
 - Modify: `docs/PhaseTransition.md:29-31` (HUD world flights paragraph), `:19-21` (orchestration bullets), `:70-90` (deviations)
 - Modify: `docs/RegressionChecklist.md` (append rows 139, 140 after row 138)
 
-- [ ] **Step 1: `docs/PhaseTransition.md` updates**
+- [x] **Step 1: `docs/PhaseTransition.md` updates**
 
 - In the "HUD world flights" paragraph, replace the sentences "During the travel the world Avatar/HpPill mirrors hide (single shared copy; `ShopChrome.SetMirrorsActive`) and return on the shop landing. The full-screen HP compare bar is NOT a shared element — it stays suppressed until landing, combat-only as before." with:
 
@@ -526,14 +526,14 @@ git commit -m "phase-transition: compare bar world-pinned during travels (slides
 
   "6. Handoff scale window (2026-10-03): the canvas HUD eases between the combat scale and the mirror's `canvasShopScale` over the flight's opening/final 35% (`HandoffScaleWindow`, `Ease.OutQuad`). The demo needs no such tween (one shared element, same size both homes); our two-copy emulation (canvas HUD vs world prefab mirror) does. Not demo-visible: the flight path itself still carries no scale tween per fix 7."
 
-- [ ] **Step 2: Regression rows**
+- [x] **Step 2: Regression rows**
 
 Append to `docs/RegressionChecklist.md` (same column format as rows 132-138):
 
 - Row 139 — "Visual fix (2026-10-03): player HP pill / avatar mirror swap was visible — 1-frame blank at departure, 1-frame double render at arrival, and a scale pop (combat 0.8 vs mirror `canvasShopScale` 0.41) because the swap ran at driver-coroutine time vs presenter-poll time with no scale matching" | `HPNumericDisplayHorizontal` / `CombatIconPresenter` (flight-driven handoff, `HandoffScaleWindow` ease, `_handedOffToMirror`), `PhaseTransitionDriver` (synchronous departure hide removed) | 2026-10-03 | ⚠️ | Step: 离开商店 then Result→shop, twice. Check: no blank frame at the band on departure; pill/avatar grow from mirror size over the first third of the ascent and shrink back over the last third of the descent; landing swap shows neither a size pop nor a doubled pill; settled shop shows the mirror only; bypass (`-odseed 5`) hard cut unchanged.
 - Row 140 — "Visual fix (2026-10-03): HP compare bar popped in at the combat landing and out at the Result→Shop travel start — it is combat page content and must slide with the camera (demo v1.1 topo: red band)" | `CombatHPBarPresenter` (`HudWorldFlight.Pin` during both travels; visibility rule Combat ∪ traveling; `SuppressCombatCanvasUI` no longer gates the bar) | 2026-10-03 | ⚠️ | Step: 离开商店 — the bar slides IN from the top edge with the page (it may open on the previous combat's split and ease to the new one); finish into Result — bar hidden as before; continue to shop — the bar reappears at travel start and slides UP out; bypass hard cut unchanged.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add docs/PhaseTransition.md docs/RegressionChecklist.md
