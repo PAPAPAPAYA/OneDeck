@@ -42,7 +42,7 @@
 **Files:**
 - Create: `Assets/Shaders/ContourLinesBackgroundWorld.shader`
 
-- [ ] **Step 1: Write the shader**
+- [x] **Step 1: Write the shader**
 
 World-basis port of `Custom/ContourLinesBackground` (noise functions copied verbatim) plus the enemy band. Region colors: player side = the current camera-clear gray with the teal-tinted line color pre-blended from the retired graph's values (`lerp(0.741/0.729/0.702, 0.102/0.188/0.216, 0.749)` — the graph material's `_LineColor` alpha, see `Mat_BackGroundMotion3D.mat`); enemy side defaults = demo `#a02332` / a 0.55-darkened red (deliberately darker than the demo's per-channel ~0.78/0.69/0.76 `#7d1826` — runtime value is palette-bound per R2 anyway). Contour tuning defaults (`_Levels 2` / `_NoiseScale 3` / `_LineWidth 2` / `_Speed 0.08` / `_Intensity 1`) mirror the retired material's actual serialized values rather than the old .shader's defaults — the 0.749 is already baked into `_LineColor`, so an `_Intensity` below 1 would halve the line strength (F5, Review Focus 3).
 
@@ -198,11 +198,11 @@ Shader "Custom/ContourLinesBackgroundWorld"
 }
 ```
 
-- [ ] **Step 2: Refresh + console check**
+- [x] **Step 2: Refresh + console check**
 
 `refresh_unity` (`mode: force`, `scope: all`); `read_console` errors — expected: no shader compile errors.
 
-- [ ] **Step 3: Create the Resources material (build inclusion — load-bearing, F2)**
+- [x] **Step 3: Create the Resources material (build inclusion — load-bearing, F2)**
 
 Nothing serialized references the new shader, so a player build would strip it and the runtime load in Task 2 would return null (editor Play cannot catch this — the project's convention is the serialized material, cf. `PixelationFullscreen`). Read the generated GUID from `Assets/Shaders/ContourLinesBackgroundWorld.shader.meta` after the Step 2 refresh, then create `Assets/Resources/Materials/WorldTopoBackground.mat` (missing `.meta` is fine — Unity generates it on refresh; the load is by path):
 
@@ -240,7 +240,7 @@ Material:
 
 Then `refresh_unity` (`scope: assets`); `read_console` — expected: the material imports clean (no pink-inspector / shader-reference errors).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add Assets/Shaders/ContourLinesBackgroundWorld.shader Assets/Shaders/ContourLinesBackgroundWorld.shader.meta Assets/Resources/Materials/WorldTopoBackground.mat Assets/Resources/Materials/WorldTopoBackground.mat.meta
@@ -256,7 +256,7 @@ git commit -m "v1.1: world-basis contour background shader with enemy band (red 
 - Consumes: `PhaseTransitionConfigSO.Me.pagePadDemoPx`; `PhaseFlightPlanner.PageHeightWorld` / `PxToWorld`; `CombatUXManager.me.physicalCardDeckPos` (Z basis only); `GameColorPalette.HpBarEnemyColor`; `Resources.Load<Material>("Materials/WorldTopoBackground")` (Task 1 Step 3 — build inclusion, F2).
 - Produces: nothing public. Static boot mirrors `PhaseTransitionDriver.AutoCreate`.
 
-- [ ] **Step 1: Write the component**
+- [x] **Step 1: Write the component**
 
 ```csharp
 using UnityEngine;
@@ -394,11 +394,11 @@ public class WorldTopoBackground : MonoBehaviour
 }
 ```
 
-- [ ] **Step 2: Refresh + compile gate + full EditMode suite**
+- [x] **Step 2: Refresh + compile gate + full EditMode suite**
 
 Record the pre-task EditMode baseline totals first (N5 — the 676/1 figure from plan research is unverified). Then: `refresh_unity` (`compile: request`) → `isCompiling == false` AND assembly mtime > source mtime → `SaveOpenScenes()` → `run_tests` (EditMode full, `init_timeout: 180000`). Expected: green, totals identical to the recorded baseline (nothing exercises this class).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add Assets/Scripts/UXPrototype/WorldTopoBackground.cs
@@ -412,7 +412,7 @@ git commit -m "v1.1: WorldTopoBackground runtime sheet builder (both pages + PAD
 
 > Transient window (awareness only, 2026-10-03 review nit N4): between the Task 2 and Task 3 commits, a Play session shows BOTH the old screen-fixed RawImage contour lines (over everything, screen-locked) AND the new world sheet (behind everything) — a one-commit overlap, gone as soon as this task lands. Rollback = re-enable the GameObject.
 
-- [ ] **Step 1: Disable via execute_code + save (pre-approved)**
+- [x] **Step 1: Disable via execute_code + save (pre-approved)**
 
 ```csharp
 GameObject bg = GameObject.Find("background");
@@ -424,7 +424,7 @@ return info + " -> disabled";
 ```
 then `EditorSceneManager.SaveOpenScenes()` and `git status` must show `Assets/Scenes/GameScene.unity` modified.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add Assets/Scenes/GameScene.unity
@@ -439,7 +439,7 @@ git commit -m "v1.1: retire screen-fixed background RawImage (world topo sheet r
 **Interfaces:**
 - Consumes: nothing new. `PhysButton` press semantics (`ShopInputGate.Blocked` checks) are untouched — the gate is free outside transitions, so combat presses reach the `ShopHudBinder` Options placeholder log with the identical hover/press feel.
 
-- [ ] **Step 1: Ungate `ApplyPin` + update the class doc**
+- [x] **Step 1: Ungate `ApplyPin` + update the class doc**
 
 In the class header comment, replace the tail " — it survives wheel scroll while the rest of the band scrolls away with the page." with "." (consume the preceding em-dash too — the line ends at "...ruling (plan-shop-topbar-world-scroll-2026-09-21)."), then append:
 
@@ -483,11 +483,11 @@ Replace the `ApplyPin` head (the 2026-10-02 comment block + the two early-return
 
 (the rest of `ApplyPin` — collider edge math and the corner write — is unchanged.)
 
-- [ ] **Step 2: Refresh + compile gate + full EditMode suite**
+- [x] **Step 2: Refresh + compile gate + full EditMode suite**
 
 Same gate as Task 2 Step 2. Expected: green, same totals.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add Assets/Scripts/UXPrototype/HudViewportPin.cs
@@ -500,14 +500,14 @@ git commit -m "v1.1: OptionsButton always-pinned (2026-10-03 ruling — shop cor
 - Modify: `docs/PhaseTransition.md` (world model, deviations 1/5, arbitration)
 - Modify: `docs/RegressionChecklist.md` (rows 143, 144; row 135 annotation)
 
-- [ ] **Step 1: `docs/PhaseTransition.md`**
+- [x] **Step 1: `docs/PhaseTransition.md`**
 
 - World model section, after the transition paragraph: add — "The v1.1 world topo background (2026-10-03) is ONE world-space sheet (`WorldTopoBackground` + `Custom/ContourLinesBackgroundWorld`) spanning both pages plus the config PAD (`pagePadDemoPx`, overshoot headroom). The region above the combat page center (50%, user ruling) is the enemy HP display area — `GameColorPalette.HpBarEnemyColor` base, dark-red contour lines; gray below is the player region. The pattern is world-locked (the travel carries it; shop wheel scroll gains the demo's parallax). It replaces the screen-fixed BackGroundMotion3D RawImage under the Global Canvas (disabled; camera clear stays as fallback), and is what makes the overshoot reveal more background instead of a void."
 - Accepted deviation 1: replace with — "1. **❚❚ options button — superseded 2026-10-03 (user ruling, v1.1 round):** it never flies AND never moves — `HudViewportPin` is ungated (always pinned while the chrome band is active), so the shop viewport corner serves combat as-is with unchanged press semantics. RegressionChecklist row 144."
 - Accepted deviation 5: replace the "v1.1 backlog:" sentence with — "v1.1 status (updated 2026-10-03): the world topo background is LANDED (row 143); the ❚❚ flight was superseded by the always-pin ruling (item 1); still open: the combat→shop card return flight. The 2026-10-03 overshoot-peek note is resolved by the sheet (its PAD headroom = `pagePadDemoPx`)."
 - Arbitration "Shop chrome visibility (fix 4)" bullet: replace "`HudViewportPin` (OptionsButton) holds only in a settled shop — mid-travel/outside the shop the button scrolls with the band and re-pins on the next settled frame." with "`HudViewportPin` (OptionsButton) is always pinned while the band is active (2026-10-03 ruling — row 144); mid-travel and in combat the button stays at the viewport corner while the rest of the band scrolls with the page."
 
-- [ ] **Step 2: Regression rows**
+- [x] **Step 2: Regression rows**
 
 Append after row 142 (same column format):
 
@@ -516,7 +516,7 @@ Append after row 142 (same column format):
 
 Also annotate row 135's Check cell: append "(OptionsButton clause superseded by row 144, 2026-10-03)" after "no floating OptionsButton over combat." — the row itself stays intact.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add docs/PhaseTransition.md docs/RegressionChecklist.md
