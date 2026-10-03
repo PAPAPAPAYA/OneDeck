@@ -129,7 +129,7 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: START_CARD
   displayName: "\u65F6\u7A7A\u53D8\u52A8"
-  cardDesc: "\u63ED\u6653:\u6D17\u724C"
+  cardDesc: "\u6D17\u724C"
   rarity: 0
   shopRollWeightMultiplier: 1
   physicalDeckCard: 1

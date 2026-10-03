@@ -852,7 +852,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3311838246655014247, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_text
-      value: "\u6D17\u724C"
+      value: "> \u6D17\u724C"
       objectReference: {fileID: 0}
     - target: {fileID: 3311838246655014247, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_fontSize
@@ -908,15 +908,15 @@ PrefabInstance:
       objectReference: {fileID: -5177388603050735206, guid: ee4c724560d27684d969ba363b913448, type: 3}
     - target: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_Color.b
-      value: 0.03529412
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_Color.g
-      value: 0.5921569
+      value: 0.6117647
       objectReference: {fileID: 0}
     - target: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_Color.r
-      value: 0.76862746
+      value: 0.89411765
       objectReference: {fileID: 0}
     - target: {fileID: 3473898615914785401, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_DrawMode
@@ -940,7 +940,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4862150238569319107, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_text
-      value: "\u65F6\u7A7A\u53D8\u6362"
+      value: "\u65F6\u7A7A\u53D8\u52A8"
       objectReference: {fileID: 0}
     - target: {fileID: 4862150238569319107, guid: 8f1aa58827d56614391dd5244b79346b, type: 3}
       propertyPath: m_fontSize
