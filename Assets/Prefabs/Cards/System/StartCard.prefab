@@ -61,6 +61,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -79,6 +80,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!1 &8718476725744197808
 GameObject:
   m_ObjectHideFlags: 0
@@ -130,7 +132,8 @@ MonoBehaviour:
   cardDesc: "\u63ED\u6653:\u6D17\u724C"
   rarity: 0
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 1
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -138,3 +141,20 @@ MonoBehaviour:
   myStatusEffects: 
   displayMyStatusEffects: 
   myTags: 
+  lifeMax: 0
+  currentLife: 0
+  printedAttack: 0
+  attackGrowth: 0
+  attackModThisRound: 0
+  extraAttackTimes: 0
+  attackTimesModThisRound: 0
+  cardType: 0
+  isPassive: 0
+  wildcardTypeFilter: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
+  attackSnapshotValue: -1
+  alwaysShowAttack: 0

@@ -170,6 +170,8 @@ MonoBehaviour:
   flipDuration: 0.3
   popUpOriginalPosition: {x: 0, y: 0, z: 0}
   popUpOriginalScale: {x: 0, y: 0, z: 0}
+  popUpFollowsDeckSlot: 0
+  popUpFollowLerpSpeed: 12
   pendingRevealZoneMove: 0
   pendingRevealPosition: {x: 0, y: 0, z: 0}
   pendingRevealScale: {x: 0, y: 0, z: 0}
