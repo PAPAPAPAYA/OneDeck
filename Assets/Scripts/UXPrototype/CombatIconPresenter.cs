@@ -58,6 +58,10 @@ public class CombatIconPresenter : MonoBehaviour
 	// World flights (fixes 2/3/7): one per icon, created lazily at the first travel edge.
 	private HudWorldFlight _playerFlight;
 	private HudWorldFlight _enemyFlight;
+	// 2026-10-03 handoff seam: same contract as HPNumericDisplayHorizontal — the flight
+	// completes INTO the world mirror (scale-matched), then swaps copies in one frame.
+	private bool _handedOffToMirror;
+	private const float HandoffScaleWindow = 0.35f; // keep in sync with HPNumericDisplayHorizontal.HandoffScaleWindow
 
 	private void Awake()
 	{
@@ -145,7 +149,7 @@ public class CombatIconPresenter : MonoBehaviour
 		// world copy in the chrome shows); during a driver transition it stays visible and
 		// world-flies. Placement writes below keep running while hidden, so the hidden icon
 		// parks at the shop anchor and the next shop -> combat flight starts from the right spot.
-		playerIcon.SetActive(inCombat || inResult || (inShop && PhaseTransitionDriver.IsTransitioning));
+		playerIcon.SetActive(inCombat || inResult || (inShop && PhaseTransitionDriver.IsTransitioning && !_handedOffToMirror));
 		// 2026-10-02 re-audit fix 3: the enemy HUD stays visible through the Result phase
 		// (demo keeps it behind the overlay) and while a travel world-flies it (slide-in on
 		// Shop->Combat, slide-up-out on Result->Shop); otherwise Combat-only as before.
@@ -224,8 +228,22 @@ public class CombatIconPresenter : MonoBehaviour
 			{
 				if (_playerIconRt != null && ShopChrome.TryGetAvatarWorldCenter(out Vector3 shopHome))
 				{
+					_handedOffToMirror = false;
 					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapPlayerToCombatAnchor(), PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					// VISUAL-FIX(2026-10-03): avatar popped shop scale -> combat scale at travel start
+					//   Cause:    SnapPlayerToCombatAnchor wrote the combat scale instantly while the
+					//             replaced mirror renders at ShopMirrorScale.canvasShopScale.
+					//   Affects:  CombatIconPresenter.OnTravelEdge (player, both travels)
+					//   Regress:  离开商店: the avatar starts at the mirror's size and grows over the
+					//             opening window; Result->Shop: symmetric shrink into the band; the
+					//             landing swap is a same-frame, size-matched exchange.
+					//   Related:  docs/PhaseTransition.md (HUD world flights), ShopMirrorScale
+					_playerIconRt.localScale = Vector3.one * ShopTopBarLayout.ShopScaleAvatar;
+					_scaleTween = _playerIconRt.DOScale(_combatScale, cfg.transDur * HandoffScaleWindow)
+						.SetEase(Ease.OutQuad).SetUpdate(UpdateType.Normal, true);
 					EnsureFlight(ref _playerFlight, _playerIconRt).Begin(shopHome, to, cfg.transDur, cfg);
+					// Presenter-driven mirror hide — see HPNumericDisplayHorizontal (2026-10-03).
+					ShopChrome.SetMirrorsActive(false);
 				}
 				if (_enemyIconRt != null)
 				{
@@ -239,8 +257,20 @@ public class CombatIconPresenter : MonoBehaviour
 			{
 				if (_playerIconRt != null && ShopChrome.TryGetAvatarWorldCenter(out Vector3 shopHome))
 				{
+					_handedOffToMirror = false;
 					Vector3 from = PhaseFlightPlanner.HudHomeAtPage(_playerIconRt.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
-					EnsureFlight(ref _playerFlight, _playerIconRt).Begin(from, shopHome, cfg.transDur, cfg);
+					_playerIconRt.localScale = _combatScale;
+					_scaleTween = _playerIconRt.DOScale(Vector3.one * ShopTopBarLayout.ShopScaleAvatar, cfg.transDur * HandoffScaleWindow)
+						.SetDelay(cfg.transDur * (1f - HandoffScaleWindow)).SetEase(Ease.OutQuad).SetUpdate(UpdateType.Normal, true);
+					var capturedRt = _playerIconRt;
+					EnsureFlight(ref _playerFlight, _playerIconRt).Begin(from, shopHome, cfg.transDur, cfg, () =>
+					{
+						// Same-frame swap at flight end — mirror shows, canvas copy hides
+						// (see HPNumericDisplayHorizontal, 2026-10-03).
+						ShopChrome.SetMirrorsActive(true);
+						_handedOffToMirror = true;
+						if (capturedRt != null) capturedRt.gameObject.SetActive(false);
+					});
 				}
 				if (_enemyIconRt != null)
 				{
@@ -250,6 +280,7 @@ public class CombatIconPresenter : MonoBehaviour
 				break;
 			}
 			default:
+				_handedOffToMirror = false;
 				if (_playerFlight != null) _playerFlight.Kill();
 				if (_enemyFlight != null) _enemyFlight.Kill();
 				break;
@@ -269,13 +300,12 @@ public class CombatIconPresenter : MonoBehaviour
 	/// </summary>
 	private float CanvasPlaneY => _canvas != null ? _canvas.transform.position.y : HudWorldFlight.RigY;
 
-	/// <summary>Snaps the player icon to its combat anchor state (kill glide tweens, combat scale — fix 7 has no scale tween) and returns its world position.</summary>
+	/// <summary>Snaps the player icon to its combat anchor POSITION (kill glide tweens; the home math needs it) and returns its world position. Scale is no longer written here (2026-10-03 handoff seam): the player flight endpoints own scale.</summary>
 	private Vector3 SnapPlayerToCombatAnchor()
 	{
 		KillTween(ref _glideTween);
 		KillTween(ref _scaleTween);
 		_playerIconRt.anchoredPosition = _combatAnchoredPos;
-		_playerIconRt.localScale = _combatScale;
 		return _playerIconRt.position;
 	}
 

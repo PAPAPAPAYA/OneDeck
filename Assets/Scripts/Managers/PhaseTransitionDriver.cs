@@ -211,9 +211,13 @@ public class PhaseTransitionDriver : MonoBehaviour
 		if (ShopUXManager.Instance != null) ShopUXManager.Instance.RestoreAllEnlargedCards();
 		// 2026-10-02 re-audit fixes 4/7: the chrome band (chips/buttons) is page content and
 		// stays visible to scroll away with the camera (fix 4a — ExitShop skips its hide while
-		// IsTransitioning); only the world Avatar/HpPill mirrors hide — the canvas HUD
-		// world-flies as the single shared copy (fix 7).
-		ShopChrome.SetMirrorsActive(false);
+		// IsTransitioning). 2026-10-03 handoff seam: the departure mirror hide now lives in the
+		// HUD presenters (right after flight.Begin world-locks the canvas copy at the mirror
+		// spot), so this coroutine no longer touches the mirrors on departure — hiding here
+		// raced the presenters' Update and could blank the avatar/HP for one frame. The
+		// Result->Shop hide below stays (mirrors are already off; defensive) and the landing
+		// SetMirrorsActive(true) stays as an idempotent safety net behind the flight's
+		// onComplete handoff.
 		_suppressCombatCanvasUI = true;
 		_lastShopY = _rig.position.y;
 		ShopInputGate.Block();
