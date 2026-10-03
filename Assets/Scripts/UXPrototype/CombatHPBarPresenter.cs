@@ -61,6 +61,13 @@ public class CombatHPBarPresenter : MonoBehaviour
 	private float _targetPlayerPct = 0.5f;
 	private Vector2 _barRootBasePos;
 
+	// 2026-10-03: world pin during driver travels — the bar is combat PAGE content and
+	// slides with the page (in from the top edge on Shop->Combat, up out on Result->Shop)
+	// instead of popping in/out at landing. Same HudWorldFlight re-projection as the
+	// icon/pill flights, pinned (no tween).
+	private HudWorldFlight _pin;
+	private PhaseTransitionDriver.TransitionTravel _lastTravel = PhaseTransitionDriver.TransitionTravel.None;
+
 	// Farthest old boundary of an unfinished ghost trail per side (playerPct
 	// coordinates), so rapid successive hits accumulate into one continuous trail.
 	private float? _ghostEdgePlayer;
@@ -159,20 +166,38 @@ public class CombatHPBarPresenter : MonoBehaviour
 
 	private void Update()
 	{
-		// Suppressed while the transition driver holds combat canvas UI until the camera lands
-		// (plan-phase-transition-world-camera-2026-09-21 §4); the bar then EnterCombats on release.
-		bool inCombat = gamePhaseRef.Value() == EnumStorage.GamePhase.Combat
-			&& !PhaseTransitionDriver.SuppressCombatCanvasUI;
-		if (inCombat && !_wasInCombat)
+		// Travel edges drive the world pin BEFORE the visibility edge block (same ordering
+		// convention as the icon/pill presenters).
+		var travel = PhaseTransitionDriver.Travel;
+		if (travel != _lastTravel)
+		{
+			OnTravelEdge(travel);
+			_lastTravel = travel;
+		}
+		// VISUAL-FIX(2026-10-03): HP compare bar popped in/out at transition landings
+		//   Cause:    SuppressCombatCanvasUI held the bar hidden until the camera landed,
+		//             then EnterCombat SetActive'd it in one frame; on Result->Shop,
+		//             ExitCombat hid it at travel start. The demo's combat HP display is
+		//             page content (v1.1 topo: red band) and slides with the camera.
+		//   Affects:  CombatHPBarPresenter.Update (visibility rule), OnTravelEdge (pin)
+		//   Regress:  离开商店: the bar slides IN from the top edge with the page; combat
+		//             behavior (fills/ghost/flash/shake/pulse) unchanged; Result->Shop: the
+		//             bar reappears on the combat page at travel start and slides UP out;
+		//             driver bypass (headless/seed): Travel stays None — the rule reduces to
+		//             Combat-only, byte-identical to before.
+		//   Related:  docs/PhaseTransition.md (HUD world flights), HudWorldFlight.Pin
+		bool visible = gamePhaseRef.Value() == EnumStorage.GamePhase.Combat
+			|| travel != PhaseTransitionDriver.TransitionTravel.None;
+		if (visible && !_wasInCombat)
 		{
 			EnterCombat();
 		}
-		else if (!inCombat && _wasInCombat)
+		else if (!visible && _wasInCombat)
 		{
 			ExitCombat();
 		}
-		_wasInCombat = inCombat;
-		if (!inCombat)
+		_wasInCombat = visible;
+		if (!visible)
 		{
 			return;
 		}
@@ -220,8 +245,38 @@ public class CombatHPBarPresenter : MonoBehaviour
 		UpdatePulseState(false, 1f - playerPct);
 	}
 
+	/// <summary>
+	/// Travel edges pin the bar to its combat-page home (2026-10-03): world-locked with no
+	/// tween, so the camera's travel carries it in from the top edge (Shop->Combat) and up
+	/// out (Result->Shop) exactly like page content. Travel->None unpins; the normal
+	/// placement writes resume seamlessly because anchoredPosition tracks the world writes.
+	/// </summary>
+	private void OnTravelEdge(PhaseTransitionDriver.TransitionTravel travel)
+	{
+		switch (travel)
+		{
+			case PhaseTransitionDriver.TransitionTravel.ToCombat:
+			case PhaseTransitionDriver.TransitionTravel.ToShop:
+				if (_pin == null) _pin = new HudWorldFlight(barRoot, canvas);
+				_pin.Pin(PhaseFlightPlanner.HudHomeAtPage(barRoot.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY));
+				break;
+			default:
+				if (_pin != null) _pin.Kill();
+				break;
+		}
+	}
+
+	/// <summary>
+	/// The carrying canvas root's current world Y — the flight-home basis (HudHomeAtPage).
+	/// NOT the camera rig: the canvas root lags the rig within the travel-start frame
+	/// (VISUAL-FIX(2026-10-03) in CombatIconPresenter); the rig Y remains only as the
+	/// no-canvas fallback.
+	/// </summary>
+	private float CanvasPlaneY => canvas != null ? canvas.transform.position.y : HudWorldFlight.RigY;
+
 	private void LateUpdate()
 	{
+		if (_pin != null) _pin.Tick();
 		if (!_wasInCombat)
 		{
 			return;
