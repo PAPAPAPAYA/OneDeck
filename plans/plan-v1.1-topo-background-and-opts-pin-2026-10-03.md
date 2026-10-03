@@ -6,18 +6,18 @@
 
 **Architecture:** Two seams. (1) The current background is SCREEN-FIXED: a Global-Canvas RawImage (`Mat_BackGroundMotion3D`, line-only Shader Graph, bg alpha 0) over the Main Camera's solid clear color (0.741, 0.729, 0.702). It cannot do world-locked parallax or a world-Y region split, and Shader Graph assets are not script-editable — so a new hand-written world-basis shader (`Custom/ContourLinesBackgroundWorld`, noise family copied verbatim from `Custom/ContourLinesBackground`) renders on ONE runtime-built world quad (`WorldTopoBackground`, driver-style `RuntimeInitializeOnLoadMethod` boot): sheet spans shop bottom − PAD → combat top + PAD, red region above the combat page center. The old RawImage is disabled in the scene (rollback = re-enable); the camera clear color stays as the final fallback. (2) `HudViewportPin` drops its settled-shop-only gate (2026-10-02 fix 4) per the 2026-10-03 ruling: the pin holds whenever the widget is active, so the button stays at the corner through travels, combat and result instead of scrolling with the band.
 
-**Tech Stack:** Unity 6, URP HLSL (hand-written, no Shader Graph), `GameColorPalette.HpBarEnemyColor`, `PhaseTransitionConfigSO.pagePadDemoPx` (PAD 200 px — documented "v1.1 world topo only"), `PhaseFlightPlanner.PageHeightWorld` / `PxToWorld`, driver-style `RuntimeInitializeOnLoadMethod.AfterSceneLoad` boot.
+**Tech Stack:** Unity 6, URP HLSL (hand-written, no Shader Graph), `GameColorPalette.HpBarEnemyColor`, `PhaseTransitionConfigSO.pagePadDemoPx` (PAD 200 px — documented "v1.1 world topo only"), `PhaseFlightPlanner.PageHeightWorld` / `PxToWorld`, driver-style `RuntimeInitializeOnLoadMethod.AfterSceneLoad` boot. Build inclusion (F2): the shader is referenced ONLY by a `Resources`-loaded material (`Resources.Load<Material>("Materials/WorldTopoBackground")`, created in Task 1 Step 3) — a bare `Shader.Find` target would be stripped from player builds; the serialized-material convention is the same one `PixelationFullscreen` uses.
 
 **Spec:** `docs/demo/PhaseTransitionDemo.html` — `buildTopo` (:544-580): one continuous sheet, `PAD = 200` px beyond each page edge ("overshoot headroom"), red rect from the WORLD-TOP (PAD included) down to `COMBAT_TOP + 407` (top ~55% of the combat page), contour strokes dark-red inside the red region — i.e. the overshoot past the combat page reveals MORE RED, never void. User rulings 2026-10-03 (this round):
 
-- **R1 (❚❚):** no flight, no second home — the shop viewport-pinned coordinates serve combat directly; keep the same pressable feel (PhysButton + ShopInputGate semantics unchanged; combat presses hit the `ShopHudBinder` Options placeholder log, gate is free outside transitions).
+- **R1 (❚❚):** no flight, no second home — the shop viewport-pinned coordinates serve combat directly; keep the same pressable feel (PhysButton + ShopInputGate semantics unchanged; combat presses hit the `ShopHudBinder` Options placeholder log, gate is free outside transitions). Known trade-off, added by review: that same combat press also fires `CombatManager`'s any-click confirm (reveal/trigger; in Result it continues) — Review Focus 7 / Play step 5b, an open decision rather than a plan fix.
 - **R2 (red):** band base color = `GameColorPalette.HpBarEnemyColor` (palette-bound, set-once at Awake — same runtime convention as the HP presenters).
 - **R3 (split):** red/gray boundary at **50%** of the combat page (= combat page center world Y), not the demo's 55%.
 
 ## Global Constraints
 
 - Line endings CRLF, tab indentation, English comments/docs (AGENTS.md).
-- New/edited visual code in `UXPrototype/` carries `VISUAL-FIX(2026-10-03):` blocks; append RegressionChecklist rows 143, 144 (141/142 taken); annotate (not delete) row 135's superseded OptionsButton clause.
+- New/edited visual code in `UXPrototype/` carries `VISUAL-FIX(2026-10-03):` blocks per `docs/VisualBugPrevention_Guide.md` (F4): Task 2's class header holds the full block (symptom / Cause / Affects / Regress); Task 4 folds the user ruling into a `VISUAL-FIX(2026-10-03)` block (the ruling supersedes the 2026-10-02 settled-shop scope). Append RegressionChecklist rows 143, 144 (141/142 taken); annotate (not delete) row 135's superseded OptionsButton clause.
 - After every `.cs` edit: `refresh_unity` (`compile: request`), confirm `isCompiling == false` AND `Assembly-CSharp.dll` mtime > edited source mtime before `run_tests`. Shader edits: `refresh_unity` + `read_console` error check (shader errors surface in the console, not the C# gate).
 - Before every `run_tests`: `EditorSceneManager.SaveOpenScenes()` (pre-approved) as the immediately preceding step; EditMode full suite `init_timeout: 180000`.
 - Scene edit (Task 3) via `execute_code` + `SaveOpenScenes` (pre-approved); disable, never delete, the old RawImage.
@@ -27,12 +27,13 @@
 
 ## Review Focus
 
-1. **Quad Z sign:** the float stack steps BACK slots at `-0.01f * i`, so "farther from camera" = more negative Z; the sheet sits at `deckZ - 2f`. If the camera convention is ever inverted the sheet would cover the combat content (symptom: cards invisible) — Play matrix step 3 catches it; flip the offset sign if so.
+1. **Quad Z sign — SETTLED 2026-10-03 review (F1; the first draft's premise was inverted):** the project's convention is "smaller z = closer to camera" (`CombatUXManager.cs:3556`; every `DeckPositionCalculator` layout uses `z = basePos.z - zOffset * index` with scene `zOffset = 0.5`; camera rig at z = -100, deck anchor z = 0, reveal zone z = -5). "Farther from camera" = LARGER Z, so the sheet sits at `deckZ + 2f` (z = +2 — behind the deck back plane at 0 and the transient new-card spawn headroom at +1). The first draft's `deckZ - 2f` (z = -2) would have landed BETWEEN the reveal zone and the deck — in front of every card — and its alpha-1 output would have covered the combat content (the "cards invisible" symptom). Play matrix step 3 remains as the visual net, not the discovery mechanism.
 2. **Split basis:** `rigY` is captured at `AfterSceneLoad` BEFORE any wheel scroll — the same basis `PhaseTransitionDriver.Awake` uses for `ShopPageY`. Play matrix step 2 confirms the band bottom lands at the viewport center on combat landing.
-3. **Look parity:** the contour density/character is a starting value set (Levels 6 / world-scaled noise / Intensity 0.5) that will need ONE eyeball-tune pass against the retired BackGroundMotion3D look (`_Levels` / `_WorldScale` / `_Intensity` on the material; Play matrix step 6). This is the only non-deterministic item in the plan.
-4. **Bypass parity:** in the legacy hard-cut path the whole band hides at shop exit, so bypass combat has NO OptionsButton (unchanged); the sheet still renders (red band one page above the shop viewport — off-screen) and the pattern basis changes from screen-locked to world-locked (intended, Play matrix step 7).
+3. **Look parity — CONFIRM-ONLY after the 2026-10-03 review (F5):** the shader defaults mirror the retired `Mat_BackGroundMotion3D` material's actual serialized values (Levels 2 / NoiseScale 3 → `_WorldScale = 3/pageH` / LineWidth 2 / Speed 0.08 / Intensity 1). The graph's internal node math is unknown, so parity is not guaranteed — but Play matrix step 6 is a confirm pass (tune `_Levels` / `_WorldScale` / `_Intensity` only if visibly off), no longer a planned tune round.
+4. **Bypass parity:** in the legacy hard-cut path the whole band hides at shop exit (`ShopManager.ExitShop:501-505`), so bypass combat has NO OptionsButton (unchanged); the sheet still renders (red band one page above the shop viewport — off-screen) and the pattern basis changes from screen-locked to world-locked (intended, Play matrix step 7).
 5. **Result phase:** the band root stays active through Result (driver path), so the pinned button remains at the corner, behind the Result overlay where they overlap — matches the demo's placement semantics; no code gates it.
 6. **Palette timing:** set-once at Awake; a `HpBarEnemyColor` retune applies on the next play session (identical to how the HP presenters bind strip colors at creation).
+7. **Pinned-button click double-fire (OPEN DECISION — added by the 2026-10-03 review, F3):** `CombatManager.ShouldAutoConfirm()` (`CombatManager.cs:939/988/1317` — reveal, trigger, combat-finished) fires on ANY `GetMouseButtonDown(0)`, and `PhysButton.OnMouseDown` only consults `ShopInputGate.Blocked` (free in combat/Result). With the always-pin, pressing ❚❚ in combat therefore logs the Options placeholder AND reveals/triggers a card; in Result the same click also advances to the shop. R1's "pressable in combat" ruling arguably accepts this, but the plan does not make that product call silently — Play step 5b observes it; if it feels wrong, the follow-up is a click-consumption seam between `PhysButton` and `CombatManager` (out of scope here).
 
 ---
 
@@ -43,7 +44,7 @@
 
 - [ ] **Step 1: Write the shader**
 
-World-basis port of `Custom/ContourLinesBackground` (noise functions copied verbatim) plus the enemy band. Region colors: player side = the current camera-clear gray with the teal-tinted line color pre-blended from the retired graph's values (`lerp(0.741/0.729/0.702, 0.102/0.188/0.216, 0.749)`); enemy side defaults = demo `#a02332` / `#7d1826` (overwritten from the palette at runtime).
+World-basis port of `Custom/ContourLinesBackground` (noise functions copied verbatim) plus the enemy band. Region colors: player side = the current camera-clear gray with the teal-tinted line color pre-blended from the retired graph's values (`lerp(0.741/0.729/0.702, 0.102/0.188/0.216, 0.749)` — the graph material's `_LineColor` alpha, see `Mat_BackGroundMotion3D.mat`); enemy side defaults = demo `#a02332` / a 0.55-darkened red (deliberately darker than the demo's per-channel ~0.78/0.69/0.76 `#7d1826` — runtime value is palette-bound per R2 anyway). Contour tuning defaults (`_Levels 2` / `_NoiseScale 3` / `_LineWidth 2` / `_Speed 0.08` / `_Intensity 1`) mirror the retired material's actual serialized values rather than the old .shader's defaults — the 0.749 is already baked into `_LineColor`, so an `_Intensity` below 1 would halve the line strength (F5, Review Focus 3).
 
 ```shader
 Shader "Custom/ContourLinesBackgroundWorld"
@@ -53,14 +54,14 @@ Shader "Custom/ContourLinesBackgroundWorld"
 		_BgColor("Player Region Background", Color) = (0.7411765, 0.7294118, 0.7019608, 1)
 		_LineColor("Player Region Line Color", Color) = (0.2625, 0.3239, 0.3378, 1)
 		_RedColor("Enemy Region Background", Color) = (0.627451, 0.137255, 0.196078, 1)
-		_LineColorRed("Enemy Region Line Color", Color) = (0.345098, 0.075498, 0.107843, 1)
+		_LineColorRed("Enemy Region Line Color", Color) = (0.345098, 0.075490, 0.107843, 1)
 		_SplitWorldY("Enemy Band Bottom World Y", Float) = 12.12
-		_WorldScale("Noise Cycles Per World Unit", Float) = 0.357
-		_Levels("Contour Levels", Float) = 6
-		_LineWidth("Line Width", Float) = 3
-		_NoiseScale("Noise Scale", Float) = 4.33
-		_Speed("Morph Speed", Float) = 0.05
-		_Intensity("Line Intensity", Range(0, 1)) = 0.5
+		_WorldScale("Noise Cycles Per World Unit", Float) = 0.2475
+		_Levels("Contour Levels", Float) = 2
+		_LineWidth("Line Width", Float) = 2
+		_NoiseScale("Noise Scale", Float) = 3
+		_Speed("Morph Speed", Float) = 0.08
+		_Intensity("Line Intensity", Range(0, 1)) = 1
 	}
 
 	SubShader
@@ -201,10 +202,48 @@ Shader "Custom/ContourLinesBackgroundWorld"
 
 `refresh_unity` (`mode: force`, `scope: all`); `read_console` errors — expected: no shader compile errors.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Create the Resources material (build inclusion — load-bearing, F2)**
+
+Nothing serialized references the new shader, so a player build would strip it and the runtime load in Task 2 would return null (editor Play cannot catch this — the project's convention is the serialized material, cf. `PixelationFullscreen`). Read the generated GUID from `Assets/Shaders/ContourLinesBackgroundWorld.shader.meta` after the Step 2 refresh, then create `Assets/Resources/Materials/WorldTopoBackground.mat` (missing `.meta` is fine — Unity generates it on refresh; the load is by path):
+
+```yaml
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: WorldTopoBackground
+  m_Shader: {fileID: 4800000, guid: <SHADER_GUID_FROM_META>, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties:
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats: []
+    m_Colors: []
+  m_BuildTextureStacks: []
+```
+
+Then `refresh_unity` (`scope: assets`); `read_console` — expected: the material imports clean (no pink-inspector / shader-reference errors).
+
+- [ ] **Step 4: Commit**
 
 ```bash
-git add Assets/Shaders/ContourLinesBackgroundWorld.shader
+git add Assets/Shaders/ContourLinesBackgroundWorld.shader Assets/Shaders/ContourLinesBackgroundWorld.shader.meta Assets/Resources/Materials/WorldTopoBackground.mat Assets/Resources/Materials/WorldTopoBackground.mat.meta
 git commit -m "v1.1: world-basis contour background shader with enemy band (red pad headroom)"
 ```
 
@@ -214,7 +253,7 @@ git commit -m "v1.1: world-basis contour background shader with enemy band (red 
 - Create: `Assets/Scripts/UXPrototype/WorldTopoBackground.cs`
 
 **Interfaces:**
-- Consumes: `PhaseTransitionConfigSO.Me.pagePadDemoPx`; `PhaseFlightPlanner.PageHeightWorld` / `PxToWorld`; `CombatUXManager.me.physicalCardDeckPos` (Z basis only); `GameColorPalette.HpBarEnemyColor`.
+- Consumes: `PhaseTransitionConfigSO.Me.pagePadDemoPx`; `PhaseFlightPlanner.PageHeightWorld` / `PxToWorld`; `CombatUXManager.me.physicalCardDeckPos` (Z basis only); `GameColorPalette.HpBarEnemyColor`; `Resources.Load<Material>("Materials/WorldTopoBackground")` (Task 1 Step 3 — build inclusion, F2).
 - Produces: nothing public. Static boot mirrors `PhaseTransitionDriver.AutoCreate`.
 
 - [ ] **Step 1: Write the component**
@@ -232,15 +271,30 @@ using UnityEngine;
 /// world-locked — the camera travel carries it like page content and the shop wheel scroll
 /// gains the demo's parallax. The region above the combat page center (50% split, user ruling
 /// 2026-10-03) is the ENEMY HP display area: base color bound to GameColorPalette.HpBarEnemyColor
-/// (ruling: palette-bound), contour lines a fixed 0.55 multiply of it (demo #7d1826 on #a02332);
-/// gray below is the player region (camera-clear gray + teal-tinted lines matching the retired
-/// BackGroundMotion3D look). Static geometry: built once at AfterSceneLoad (the same timing and
-/// rig basis as PhaseTransitionDriver.Awake's page capture — before any wheel scroll), never
-/// moves, zero per-frame work. Bypass (headless/seed): the red band sits one page above the shop
+/// (ruling: palette-bound); contour lines a fixed 0.55 multiply of it — deliberately darker
+/// than the demo's per-channel ~0.78/0.69/0.76 dark red (#7d1826 on #a02332), and overwritten
+/// from the palette at runtime anyway. Gray below is the player region (camera-clear gray +
+/// teal-tinted lines pre-blended from the retired BackGroundMotion3D material). Static
+/// geometry: built once at AfterSceneLoad (the same timing and rig basis as
+/// PhaseTransitionDriver.Awake's page capture — before any wheel scroll), never moves, zero
+/// per-frame work. Bypass (headless/seed): the red band sits one page above the shop
 /// viewport — off-screen; the sheet still renders as the plain background. Replaces the
 /// screen-fixed BackGroundMotion3D RawImage under the Global Canvas (disabled in the scene
 /// 2026-10-03; the camera clear color stays as the final fallback behind everything).
 /// </summary>
+// VISUAL-FIX(2026-10-03): Shop→Combat OutBack overshoot peak revealed plain camera background
+//   above the HP compare bar's enemy half (user report + screenshot) — the bar is world-pinned
+//   page content while the old backdrop was a screen-fixed RawImage, and nothing world-side
+//   existed above the combat page edge; the demo covers this with its red PAD (buildTopo: the
+//   red rect starts at the world-sheet top, PAD included).
+//   Cause:    a screen-fixed backdrop cannot provide world-locked parallax or a world-Y region
+//             split, and Shader Graph assets are not script-editable — hence the hand-written
+//             world-basis shader + this runtime sheet.
+//   Affects:  WorldTopoBackground, Custom/ContourLinesBackgroundWorld, GameScene `background`
+//             (disabled). Companion ruling: HudViewportPin row 144 (not this file).
+//   Regress:  离开商店 (Overshoot) — at the peak the area above the bar is band-red, no void;
+//             Result→shop descent — below the shop page is gray topo; combat cards / reveal
+//             zone / HUD all draw OVER the sheet (RegressionChecklist row 143).
 public class WorldTopoBackground : MonoBehaviour
 {
 	private static WorldTopoBackground Me;
@@ -279,9 +333,14 @@ public class WorldTopoBackground : MonoBehaviour
 	}
 
 	// Sheet spans shop page bottom - PAD -> combat page top + PAD (demo WORLD_H = 2 pages
-	// + 2 PADs). Width covers any practical aspect with margin. Z sits two units farther
-	// from the camera than the deck plane (the float stack's -z back direction), so every
-	// opaque card/chrome pixel depth-tests over the sheet.
+	// + 2 PADs). Width covers any practical aspect with margin. Z sits two units BEHIND the
+	// deck plane on the +z side: the project convention is "smaller z = closer to camera"
+	// (CombatUXManager deck z = basePos.z - zOffset * index, scene zOffset 0.5; camera rig at
+	// z -100, deck anchor z 0, reveal zone z -5), the deck's back plane is the anchor z and
+	// transient new-card spawns reach anchor z + 1, so anchor z + 2 keeps every opaque
+	// card/chrome pixel depth-testing over the sheet. (The first draft's deckZ - 2f landed
+	// BETWEEN the reveal zone and the deck — in front of every card — and the alpha-1 sheet
+	// covered combat content. F1, Review Focus 1.)
 	private void BuildSheet(Camera cam, float pageH, float rigY)
 	{
 		var cfg = PhaseTransitionConfigSO.Me;
@@ -295,24 +354,29 @@ public class WorldTopoBackground : MonoBehaviour
 		float deckZ = 0f;
 		var ux = CombatUXManager.me;
 		if (ux != null && ux.physicalCardDeckPos != null) deckZ = ux.physicalCardDeckPos.position.z;
-		t.position = new Vector3(cam.transform.position.x, rigY + pageH * 0.5f, deckZ - 2f);
+		t.position = new Vector3(cam.transform.position.x, rigY + pageH * 0.5f, deckZ + 2f);
 		t.localScale = new Vector3(pageH * Mathf.Max(2.5f, cam.aspect + 1f), 2f * pageH + 2f * pad, 1f);
-		Shader shader = Shader.Find("Custom/ContourLinesBackgroundWorld");
-		if (shader == null)
+		// Build inclusion (load-bearing, F2): the shader is referenced ONLY by this
+		// Resources-loaded material — a bare Shader.Find target would be stripped from player
+		// builds and the sheet would silently vanish outside the editor. Instantiate before
+		// mutating (SetFloat/SetColor below) so the shared Resources asset stays pristine.
+		Material loaded = Resources.Load<Material>("Materials/WorldTopoBackground");
+		if (loaded == null)
 		{
-			Debug.LogError("[WorldTopoBackground] ContourLinesBackgroundWorld shader not found; background not built.");
+			Debug.LogError("[WorldTopoBackground] Resources material 'Materials/WorldTopoBackground' not found; background not built.");
 			Destroy(quad);
 			enabled = false;
 			return;
 		}
-		_material = new Material(shader);
+		_material = new Material(loaded);
 		quad.GetComponent<MeshRenderer>().sharedMaterial = _material;
 	}
 
 	// Split = combat page center (50%, user ruling 2026-10-03) = shop page origin + pageH —
 	// the same value PhaseTransitionDriver.CombatPageY captures. World pattern density
 	// normalizes the screen-basis noise scale by the page height so the look matches the
-	// retired screen-fixed backdrop at the default ortho.
+	// retired screen-fixed backdrop at the default ortho (Levels/NoiseScale/Speed/Intensity
+	// defaults mirror Mat_BackGroundMotion3D's serialized values — Review Focus 3, F5).
 	private void BindMaterial(float pageH, float rigY)
 	{
 		_material.SetFloat("_SplitWorldY", rigY + pageH);
@@ -332,7 +396,7 @@ public class WorldTopoBackground : MonoBehaviour
 
 - [ ] **Step 2: Refresh + compile gate + full EditMode suite**
 
-`refresh_unity` (`compile: request`) → `isCompiling == false` AND assembly mtime > source mtime → `SaveOpenScenes()` → `run_tests` (EditMode full, `init_timeout: 180000`). Expected: green, same totals (676 passed / 1 pre-existing skip; nothing exercises this class).
+Record the pre-task EditMode baseline totals first (N5 — the 676/1 figure from plan research is unverified). Then: `refresh_unity` (`compile: request`) → `isCompiling == false` AND assembly mtime > source mtime → `SaveOpenScenes()` → `run_tests` (EditMode full, `init_timeout: 180000`). Expected: green, totals identical to the recorded baseline (nothing exercises this class).
 
 - [ ] **Step 3: Commit**
 
@@ -345,6 +409,8 @@ git commit -m "v1.1: WorldTopoBackground runtime sheet builder (both pages + PAD
 
 **Files:**
 - Modify: `Assets/Scenes/GameScene.unity` (disable GameObject `background`, id 567038032, under Global Canvas)
+
+> Transient window (awareness only, 2026-10-03 review nit N4): between the Task 2 and Task 3 commits, a Play session shows BOTH the old screen-fixed RawImage contour lines (over everything, screen-locked) AND the new world sheet (behind everything) — a one-commit overlap, gone as soon as this task lands. Rollback = re-enable the GameObject.
 
 - [ ] **Step 1: Disable via execute_code + save (pre-approved)**
 
@@ -375,7 +441,7 @@ git commit -m "v1.1: retire screen-fixed background RawImage (world topo sheet r
 
 - [ ] **Step 1: Ungate `ApplyPin` + update the class doc**
 
-In the class header comment, replace the sentence "it survives wheel scroll while the rest of the band scrolls away with the page." with:
+In the class header comment, replace the tail " — it survives wheel scroll while the rest of the band scrolls away with the page." with "." (consume the preceding em-dash too — the line ends at "...ruling (plan-shop-topbar-world-scroll-2026-09-21)."), then append:
 
 ```
 // 2026-10-03 user ruling (v1.1 round): the pin holds whenever this widget is active —
@@ -388,13 +454,26 @@ Replace the `ApplyPin` head (the 2026-10-02 comment block + the two early-return
 ```csharp
 	private void ApplyPin()
 	{
-		// 2026-10-03 user ruling (v1.1 round): the button NEVER moves — its shop viewport
-		// corner serves combat as-is (no demo-style two-home flight), with the same
-		// pressable PhysButton/ShopInputGate feel. This supersedes both the settled-shop-only
-		// scope (2026-10-02 fix 4) and the mid-travel scroll-with-the-band behavior: the pin
-		// holds whenever this widget is active (chrome band = shop, travels, driver-path
-		// combat + result). The legacy hard-cut path still hides the whole band at shop exit,
-		// so bypass combat has no button — byte-identical to before (Review Focus 4).
+		// VISUAL-FIX(2026-10-03): OptionsButton scrolled with the band mid-travel and was
+		//   absent in driver-path combat/Result (settled-shop-only pin, 2026-10-02 fix 4).
+		//   2026-10-03 user ruling (v1.1 round): the button NEVER moves — its shop viewport
+		//   corner serves combat as-is (no demo-style two-home flight), with the same
+		//   pressable PhysButton/ShopInputGate feel. This supersedes the settled-shop-only
+		//   scope: the pin holds whenever this widget is active (chrome band = shop, travels,
+		//   driver-path combat + result). The legacy hard-cut path still hides the whole band
+		//   at shop exit, so bypass combat has no button — byte-identical to before
+		//   (Review Focus 4). Known side effect (Review Focus 7): the press also fires
+		//   CombatManager's any-click confirm in combat/Result — an open product decision,
+		//   not handled here.
+		//   Cause:    2026-10-02 fix 4 turned the band into scroll-away page content; the
+		//             settled-shop pin gate then un-pinned the button for the whole non-shop
+		//             stretch of the loop.
+		//   Affects:  HudViewportPin.ApplyPin; RegressionChecklist rows 135 (clause
+		//             annotated) and 144.
+		//   Regress:  离开商店 → combat → Result → shop ×2 — the button stays at the viewport
+		//             corner the whole loop (no scroll-away, no landing re-pin pop); a combat
+		//             press logs the Options placeholder (see Focus 7 for the reveal side
+		//             effect); legacy hard cut (driver off) still hides it in combat.
 		Camera cam = Camera.main;
 		if (cam == null)
 		{
@@ -432,7 +511,7 @@ git commit -m "v1.1: OptionsButton always-pinned (2026-10-03 ruling — shop cor
 
 Append after row 142 (same column format):
 
-- Row 143 — "Visual fix (2026-10-03): at the Shop→Combat overshoot peak the compare bar's enemy half detached from the screen top, revealing plain background (user report + screenshot) — the bar is world-pinned page content while the old backdrop was a screen-fixed RawImage, and nothing world-side existed above the combat page edge. The demo covers this with its red PAD (buildTopo: the red rect starts at the world-sheet top, PAD included)" | `WorldTopoBackground` (new, both pages + `pagePadDemoPx` PAD), `Custom/ContourLinesBackgroundWorld` (world-basis noise, red band above combat page center 50%, palette-bound), GameScene (`background` RawImage disabled) | 2026-10-03 | ⚠️ | **Step:** 离开商店 (Overshoot) — at the peak the area above the bar is band-red, no void; Result→shop — at the descent overshoot the area below the shop page is gray topo; contours parallax with the travel and with shop wheel scroll (new).<br>**Check:** Combat/shop content draws over the sheet; enemy band red matches the bar (palette); look parity vs the retired backdrop within one tune pass (`_Levels`/`_WorldScale`/`_Intensity`); bypass (`-odseed 5`) hard cut — no band on the shop page, background still renders. |
+- Row 143 — "Visual fix (2026-10-03): at the Shop→Combat overshoot peak the compare bar's enemy half detached from the screen top, revealing plain background (user report + screenshot) — the bar is world-pinned page content while the old backdrop was a screen-fixed RawImage, and nothing world-side existed above the combat page edge. The demo covers this with its red PAD (buildTopo: the red rect starts at the world-sheet top, PAD included)" | `WorldTopoBackground` (new, both pages + `pagePadDemoPx` PAD), `Custom/ContourLinesBackgroundWorld` (world-basis noise, red band above combat page center 50%, palette-bound), GameScene (`background` RawImage disabled) | 2026-10-03 | ⚠️ | **Step:** 离开商店 (Overshoot) — at the peak the area above the bar is band-red, no void; Result→shop — at the descent overshoot the area below the shop page is gray topo; contours parallax with the travel and with shop wheel scroll (new).<br>**Check:** Combat/shop content draws over the sheet; enemy band red matches the bar (palette); look parity vs the retired backdrop is confirm-only (shader defaults mirror the retired material — tune `_Levels`/`_WorldScale`/`_Intensity` only if visibly off); bypass (`-odseed 5`) hard cut — no band on the shop page, background still renders. |
 - Row 144 — "Behavior change (2026-10-03 user ruling, v1.1 round): OptionsButton never moves — shop viewport corner serves combat; the 2026-10-02 settled-shop-only pin scope and the mid-travel scroll-with-the-band behavior are superseded (demo's two-home ❚❚ flight rejected)" | `HudViewportPin` (`ApplyPin` ungated — pin holds while the chrome band is active) | 2026-10-03 | ⚠️ | **Step:** 离开商店 → combat → Result → shop, twice.<br>**Check:** The button stays at the viewport corner through the whole loop (no band scroll-away, no landing re-pin pop); combat press hits the Options placeholder log with unchanged hover/press feel; legacy hard cut (driver off) still hides it in combat (bypass parity). |
 
 Also annotate row 135's Check cell: append "(OptionsButton clause superseded by row 144, 2026-10-03)" after "no floating OptionsButton over combat." — the row itself stays intact.
@@ -448,10 +527,11 @@ git commit -m "docs: v1.1 topo sheet + OptionsButton always-pin (PhaseTransition
 
 - [ ] 1. 离开商店 (Overshoot): at the peak the area above the compare bar is band-red — no void; contours are world-locked (they ride the travel like the cards do).
 - [ ] 2. Band-bottom landing: the red/gray boundary sits at the viewport center on combat landing (50% ruling).
-- [ ] 3. Combat: cards / reveal zone / HUD all draw over the sheet (Review Focus 1 — if cards are INVISIBLE the Z sign is flipped: report immediately); combat feedback visuals unchanged.
+- [ ] 3. Combat: cards / reveal zone / HUD all draw over the sheet (Review Focus 1 — the sign is settled statically at `deckZ + 2f`; if anything is still invisible, report immediately); combat feedback visuals unchanged.
 - [ ] 4. Result→Shop: at the descent overshoot the area below the shop page is gray topo — no void; the button rides the corner the whole way.
 - [ ] 5. ❚❚: same corner in shop and combat, pressable in combat (console shows the Options placeholder log), hover/press feel identical; in Result it sits behind the overlay where they overlap.
-- [ ] 6. Look tune (one pass, on the TopoSheet material): if contour density/character differs noticeably from the retired backdrop, adjust `_Levels` / `_WorldScale` / `_Intensity` (Review Focus 3).
+- [ ] 5b. ❚❚ side effect (Review Focus 7 — open decision): press ❚❚ in combat and confirm the same click ALSO reveals/triggers a card (it will — `CombatManager.ShouldAutoConfirm` is any-click); likewise in Result (a click continues to the shop). Report to the user as the ruling's known trade-off; fix only on user instruction.
+- [ ] 6. Look confirm (Review Focus 3): contour density/character should match the retired backdrop as-is — the shader defaults mirror `Mat_BackGroundMotion3D`'s serialized values (Levels 2 / NoiseScale 3 / Speed 0.08 / Intensity 1, line alpha 0.749 pre-blended); adjust `_Levels` / `_WorldScale` / `_Intensity` only if visibly off.
 - [ ] 7. Bypass `-odseed 5`: hard cut; no red band on the shop page (it is one page up); background pattern present (now world-basis).
 - [ ] 8. Palette: change `HpBarEnemyColor` → re-enter Play → the band follows (matches the bar again).
 
@@ -462,4 +542,5 @@ git commit -m "docs: v1.1 topo sheet + OptionsButton always-pin (PhaseTransition
 - **Spec coverage:** demo buildTopo (PAD headroom + red-through-PAD) → Tasks 1-2 (sheet + world-basis shader, boundary at 50% per R3, red palette-bound per R2); ❚❚ per R1 (no flight, always pinned) → Task 4; docs/rows → Task 5; the combat→shop card return flight is deliberately NOT in this round (accepted deviation 2 stands; v1.1 item stays open).
 - **Placeholder scan:** every code step is the full file/diff; the only tune item (contour look) is an explicit Play step (6), not a code TBD.
 - **Type consistency:** `PhaseTransitionConfigSO.Me` / `pagePadDemoPx`, `PhaseFlightPlanner.PageHeightWorld(float)` / `PxToWorld(float, float)`, `CombatUXManager.me.physicalCardDeckPos`, `GameColorPalette.HpBarEnemyColor`, `ShopHudBinder` Options placeholder — all verified to exist at the cited members during plan research (2026-10-03).
-- **Review Focus:** 6 items; each has a pinning step (Z-sign watch + Play 3, split basis + Play 2, look tune + Play 6, bypass + Play 7, Result behavior + Play 5, palette timing + Play 8).
+- **Review Focus:** 7 items; each has a pinning step (Z-sign settled statically + Play 3 as the net, split basis + Play 2, look confirm + Play 6, bypass + Play 7, Result behavior + Play 5, palette timing + Play 8, pinned-button click double-fire + Play 5b).
+- **2026-10-03 review amendments (this file revised before execution, findings F1-F5 + nits):** (1) sheet Z flipped `deckZ - 2f` -> `deckZ + 2f` — the first draft's sign rationale inverted the project's z convention (smaller z = closer to camera; `CombatUXManager.cs:3556`, camera rig z = -100, deck anchor z = 0) — Review Focus 1 rewritten; (2) shader build inclusion — new Task 1 Step 3 creates a Resources-loaded material (`Resources.Load` in Task 2) so the shader survives player builds (a bare `Shader.Find` target would be stripped; editor Play cannot catch this); (3) Review Focus 7 added — the always-pinned button's press also fires `CombatManager.ShouldAutoConfirm` in combat/Result (open product decision, observed not fixed; Play step 5b); (4) `VISUAL-FIX(2026-10-03)` blocks added to Tasks 2/4 per the project's own Global Constraints and `docs/VisualBugPrevention_Guide.md`; (5) contour defaults now mirror the retired `Mat_BackGroundMotion3D` material (Levels 2 / NoiseScale 3 / Speed 0.08 / Intensity 1 — the 0.749 line alpha is already pre-blended into `_LineColor`, so stacking `_Intensity 0.5` would halve the line strength); Review Focus 3 demoted to confirm-only; (6) EditMode baseline recorded at runtime instead of the hard-coded 676/1.
