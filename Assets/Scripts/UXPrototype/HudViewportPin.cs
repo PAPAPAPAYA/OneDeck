@@ -3,8 +3,10 @@ using UnityEngine;
 // Pins this widget to the camera viewport's top-right corner for as long as the shop
 // chrome root is active (plan-shop-options-viewport-pin-2026-09-28). User ruling
 // 2026-09-28: this widget is the ONLY chrome element exempt from the 2026-09-21
-// "no pinned elements" world-scroll ruling (plan-shop-topbar-world-scroll-2026-09-21) —
-// it survives wheel scroll while the rest of the band scrolls away with the page.
+// "no pinned elements" world-scroll ruling (plan-shop-topbar-world-scroll-2026-09-21).
+// 2026-10-03 user ruling (v1.1 round): the pin holds whenever this widget is active —
+// the shop viewport corner serves combat as-is (no demo-style two-home flight; the button
+// never moves), with unchanged press semantics. RegressionChecklist row 144.
 //
 // World-space transforms have no screen anchors, so the corner is recomputed every
 // frame from Camera.main: ortho half width = orthographicSize x aspect. The reader runs
@@ -47,18 +49,26 @@ public class HudViewportPin : MonoBehaviour
 
 	private void ApplyPin()
 	{
-		// 2026-10-02 transition fix 4 (docs/PhaseTransition.md): the chrome root no longer
-		// hides at travel start — it is page content that scrolls away with the camera — so
-		// "root active" no longer implies "settled shop". The pin holds only in a settled
-		// shop; mid-travel and outside the shop the button stays at its page spot and scrolls
-		// with the band like every other chrome widget (re-pinning on the next settled frame,
-		// matching the established re-pin-on-landing behavior).
-		if (PhaseTransitionDriver.IsTransitioning) return;
-		if (ShopManager.me == null || ShopManager.me.gamePhaseRef == null
-			|| ShopManager.me.gamePhaseRef.currentGamePhase != EnumStorage.GamePhase.Shop)
-		{
-			return;
-		}
+		// VISUAL-FIX(2026-10-03): OptionsButton scrolled with the band mid-travel and was
+		//   absent in driver-path combat/Result (settled-shop-only pin, 2026-10-02 fix 4).
+		//   2026-10-03 user ruling (v1.1 round): the button NEVER moves — its shop viewport
+		//   corner serves combat as-is (no demo-style two-home flight), with the same
+		//   pressable PhysButton/ShopInputGate feel. This supersedes the settled-shop-only
+		//   scope: the pin holds whenever this widget is active (chrome band = shop, travels,
+		//   driver-path combat + result). The legacy hard-cut path still hides the whole band
+		//   at shop exit, so bypass combat has no button — byte-identical to before
+		//   (Review Focus 4). Known side effect (Review Focus 7): the press also fires
+		//   CombatManager's any-click confirm in combat/Result — an open product decision,
+		//   not handled here.
+		//   Cause:    2026-10-02 fix 4 turned the band into scroll-away page content; the
+		//             settled-shop pin gate then un-pinned the button for the whole non-shop
+		//             stretch of the loop.
+		//   Affects:  HudViewportPin.ApplyPin; RegressionChecklist rows 135 (clause
+		//             annotated) and 144.
+		//   Regress:  离开商店 → combat → Result → shop ×2 — the button stays at the viewport
+		//             corner the whole loop (no scroll-away, no landing re-pin pop); a combat
+		//             press logs the Options placeholder (see Focus 7 for the reveal side
+		//             effect); legacy hard cut (driver off) still hides it in combat.
 		Camera cam = Camera.main;
 		if (cam == null)
 		{
