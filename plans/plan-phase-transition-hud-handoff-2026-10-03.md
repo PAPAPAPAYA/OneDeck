@@ -1,6 +1,6 @@
 # Phase Transition HUD Handoff (Pill/Avatar Swap + Compare-Bar World Pin) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the player HP pill / avatar mirror swap invisible (same-frame, scale-matched handoff driven by the world flight itself) and turn the full-screen HP compare bar into combat page content that slides with the camera instead of popping at landing.
 
