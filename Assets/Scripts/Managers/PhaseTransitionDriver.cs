@@ -384,7 +384,23 @@ public class PhaseTransitionDriver : MonoBehaviour
 			if (phys != null) phys.KillTweens();
 			float delay = PhaseFlightPlanner.FlightDelay(i, stagger);
 			Vector3 from = dummy.transform.position;
-			Vector3 to = anchor + new Vector3(0f, stepWorld * i, -0.01f * i);
+			// VISUAL-FIX(2026-10-04): flight dummy stack buried every rim shadow (no inter-card
+			//   shadows during the transition; they popped in at the landing swap)
+			//   Cause:    The landing z baked the demo's hardcoded -0.01/card step while the
+			//             shipped deck layout steps zOffset (scene: 0.5) per card. A card's
+			//             PhysicalCardShadow (local z +0.2) only renders in the inter-card gap
+			//             when the stack step exceeds 0.2, so at 0.01 every rim landed behind
+			//             ~20 neighbour faces and the landing swap teleported the stack onto
+			//             the real 0.5-step z model (shadows appeared in one pop).
+			//   Affects:  PhaseTransitionDriver.FlyDummiesToCombatStack (landing z only;
+			//             y/scale/arc untouched; user paused-scene finding,
+			//             plan-transition-entrance-and-shadow-audit-2026-10-04 Part A)
+			//   Regress:  Transition with any deck: the flying stack shows the same per-card
+			//             rim shadows as the landed combat deck and the landing swap becomes
+			//             z-invisible. Headless/bypass paths never reach this code.
+			//   Related:  docs/demo/PhaseTransitionDemo.html flyShared branch (demo 3-card
+			//             stack made the 0.01 step invisible), RegressionChecklist row 149
+			Vector3 to = anchor + new Vector3(0f, stepWorld * i, -(ux != null ? ux.zOffset : 0.01f) * i);
 			Vector3 apex = PhaseFlightPlanner.ArcApex(from, to, arcWorld);
 			// Demo rot: (i - 1) * 5 degrees for 3 cards; generalize to a centered fan.
 			float fanRot = (i - (dummies.Count - 1) * 0.5f) * 5f;

@@ -4,8 +4,9 @@ Session findings after the animated flip landed (2c98be1a, supersedes the 2026-1
 instant apex swap; RegressionChecklist row 147). RULINGS RECEIVED 2026-10-04 (same day):
 
 - **Part A ruling**: user says the disappearing shadow IS `PhysicalCardShadow` (not the price
-  block, not a new back-shadow wish). Re-diagnosis below — audit geometry CONFIRMED correct;
-  a rendering-mechanism cause was NOT found; one screenshot pending to close it.
+  block, not a new back-shadow wish). RESOLVED same day via the user's paused-scene probe:
+  root cause = flight-dummy z-step gap (see re-diagnosis point 3); fixed in
+  `FlyDummiesToCombatStack` (VISUAL-FIX 2026-10-04, RegressionChecklist row 149).
 - **Part B ruling**: recommended plan APPROVED — implemented same day (see Part B status).
 
 ## Part A — "the other shadow disappears after the flip" (diagnosis, ruling pending)
@@ -68,19 +69,27 @@ Fresh read-only probes (preview scenes + prefab walks, all inactive-instance saf
    active flags.)
 2. **No runtime path touches the rim.** Project-wide grep: `BuildFlipRoot`'s reparent is the
    ONLY code reference. `ApplyColor`/`ApplyBackColor`/`ShopCardView` never touch it.
-3. **Leading candidate for what was actually seen**: FloatStack big-shadow suppression —
-   `CombatUXManager.ApplyFloatStackShadowSuppression` suppresses EVERY deck card's
-   `PhysicalCardBigShadow` in combat (only the revealed card keeps one, driven to the deck
-   anchor), while SHOP deck cards each show their own BigShadow crescent. The suppression
-   lands at the same moment as the flip (landing/deck layout), so it reads as "the flip ate
-   a shadow". Under this theory "BigShadow still shows" = the single driven anchor shadow.
+3. **RESOLVED (user paused-scene probe, 2026-10-04 evening): the flight-dummy z-step gap.**
+   The user paused mid-transition (flight dummies still on screen,
+   `physicalCardsInDeck` still 0) and inspected: every dummy's `PhysicalCardShadow`
+   z-landed BEHIND the other friendly cards. Numbers: `FlyDummiesToCombatStack` bakes the
+   demo's hardcoded **-0.01/card** landing z-step while the shipped deck layout steps
+   **`zOffset` = 0.5/card** (CombatUXManager scene value; every `DeckPositionCalculator`
+   mode uses `basePos.z - zOffset*index`). A card's rim (local z +0.2, dead-center) only
+   renders in the inter-card gap when the stack step exceeds 0.2 — at 0.01 every rim was
+   buried behind ~20 neighbour faces, so the flying deck showed no per-card shadows and
+   the landing swap teleported the stack onto the 0.5-step model (shadows popped in one
+   frame). That pop was the original "a shadow disappeared after the flip" sighting.
+   (The earlier FloatStack-suppression suspicion is WITHDRAWN — suppression only touches
+   BigShadow and is the shipped combat design.) Fix: dummy landing z = `-zOffset*i`
+   (VISUAL-FIX(2026-10-04) in `FlyDummiesToCombatStack`; row 149).
 4. **Minor fact for later work**: `MinionPhysicalCardParent.prefab` / `PhysicalCard.prefab`
    carry a DIFFERENT `PhysicalCardShadow` — active, alpha 1.00, offset (0.15, 0, 0.10) — a
    genuinely VISIBLE solid sliver. Combat spawns isMinion cards from the Minion prefab, so
    minion cards visibly differ from PhysicalCardParent cards in shadow structure. Not the
    flight flip's doing, but a real cross-prefab inconsistency worth a future pass.
-5. **Closing evidence needed**: one screenshot of the deck where the shadow is missed
-   (ideally shop deck + combat deck side by side), or the object path inspected mid-play.
+5. ~~Closing evidence needed~~ Closed by the paused-scene probe (point 3); the fix awaits
+   the user's next Play run (row 149 ⚠️).
 
 ## Part B — enemy cards + start card entrance slide (APPROVED + IMPLEMENTED 2026-10-04)
 
