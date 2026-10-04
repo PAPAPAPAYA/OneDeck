@@ -1,7 +1,7 @@
 # 三大管理类拆分方案:CombatManager / RecorderAnimationPlayer / CombatUXManager
 
 日期: 2026-09-16
-状态: **拍板完成,未实施** (2026-09-16 四项全部按低风险选项拍板,见 §7;AGENTS.md Code Placement Guide 已落地;其余切片未动工。2026-10-03 复核:三 god 文件切片仍全部未动工,体量/行号数据已刷新至当日,复核记录见 §4.0)
+状态: **拍板完成,未实施** (2026-09-16 四项全部按低风险选项拍板,见 §7;AGENTS.md Code Placement Guide 已落地;其余切片未动工。2026-10-03/04 复核:三 god 文件切片仍全部未动工,体量/行号数据已刷新,复核记录见 §4.0;下一代拆分候选见 §9)
 目标: 评估三个最庞大管理类是否该拆、怎么拆,给出可分步执行、每步可验证的低风险路线
 关联: plans/refactor-combat-ux-manager-2026-05-17.md (阶段2未执行的旧案,本文档 §4 复活并修正), docs/RegressionChecklist.md, docs/AnimationSystem.md, docs/DeckLayouts.md
 
@@ -77,6 +77,7 @@
 - **增长已放缓,§7-#4 落位指引实效得到验证**:2026-09-16 → 2026-10-03(17 天)CUX 仅 +33 行(4637 → 4670,≈60 行/月,此前 ~670 行/月)。全部涨幅来自一个视觉修复 d7086d70(2026-09-18,popup peak live-follows deck slot,+49/-16),hunks 全部落在 ICombatVisuals 区(4124-4670)。同期商店 chrome v5 + 阶段转场工作全部落进约 19 个新独立文件(ShopChrome*/ShopHud*/Hud*/PhaseFlightPlanner/PhaseHudFlight/ShopSectionPanels 等)——新功能有处可归,CUX 本体不再被动吸行。
 - **优先级判断维持**:CUX 不再是失控增长曲线,但 4670 行仍是 CombatManager 的 3.3 倍、region 结构原封未动;CUX-0(零风险、当日见效)仍是第一个该执行的切片。
 - **数据刷新范围**:§0/§1.1 行数与最大方法行距、§4.2 region 行号均已刷至当日;region 划分与 2026-09-16 完全一致(无新增/合并/改名)。
+- **2026-10-04 增核**:当日四笔 v1.1 代码提交全部落独立文件(等高线 shader、OptionsButton 换角滑行 → HudViewportPin.cs 净 +89、假想飞行 squash flip → PhaseTransitionDriver/PhaseFlightPlanner);三大 god 文件与 §9 候选行数逐行未变,本节数字仍然有效。
 
 ### 4.1 为什么旧案要修正
 
@@ -149,3 +150,28 @@
 | **Strangler pattern**:绞杀者式渐进替换,拒绝大爆炸 | 业界通用(legacy 重构共识) | 05-17 阶段2 大爆炸方案停滞 4 个月即反例;本文档每片独立 commit 可合入即此路线 |
 | **Package-by-feature + asmdef**:按能力域组织文件夹,程序集定义在编译期强制依赖边界 | Unity 官方组织指南 / 社区共识 | 长期方向(全部切片完成后另议);当前单 Assembly-CSharp 不动,避免 Editor 测试宿主(Assembly-CSharp-Editor)迁移风险 |
 | **正向落位规则优于负向禁令** | SonarQube 规则粒度 / 主流风格指南惯例 | AGENTS.md 用「功能 → 去处」正向表,而非「禁止增长」负向单行 —— 负向规则会诱发 gaming 且不回答「该放哪」 |
+
+## 9. 下一代拆分候选 (2026-10-04 增补)
+
+三大 god 文件之外的千行级/准千行级代码文件盘点(行数 2026-10-04 实测;增量为 09-16 → 10-03,10-04 增核逐行未变):
+
+| 文件 | 行数 | 增量 | 判读 |
+|---|---|---|---|
+| CardPhysObjScript | 2137 | +157 | 第二大代码文件;物理卡实体,四 region(翻转 / Float Stack 大影子 / 特写动画 / 悬停 tooltip),~68 方法;稳步增长,暂无失控迹象 |
+| ShopUXManager | 1476 | **+376** | **增长最危险**:17 天 ≈660 行/月,正是 CUX 失控期速率;hover lift / enlarge preview / reroll flip / price button 等一串商店交互全落本体(+522/-146) |
+| HPNumericDisplayHorizontal | 1193 | +289 | HP 横条组件被商店顶栏 v5 镜像 + 阶段转场飞行连续加码(10-03/04 仍有提交) |
+| HPNumericDisplay | 1042 | 0 | 同族竖条版,完全稳定 |
+| CardScript | 965 | +11 | 卡片核心组件,缓慢爬升,暂不紧迫 |
+
+边角:Assets/DevLog.cs(721 行)不是代码——伪装成 .cs 的纯注释开发日志,仅占行数;Editor 测试大文件(Step5BatchBEngineTests 702 / ShopBoardPipelineTests 650 等)属测试宿主,不处理。
+
+### 9.1 ShopUXManager 落位盲区(制度性根因)
+
+- AGENTS.md「Code Placement Guide」shop 行写的是「shop state/UI → ShopManager / ShopUXManager」,只指路、没有 partial/组件出口——商店新功能「按表落位」就合法落进 ShopUXManager 本体。落位指引拦住了 CUX,却把 ShopUXManager 当成合法泄洪口。
+- 修法(提议,待拍板后改 AGENTS.md):shop 行改为「shop 生成 → ShopBoardPipeline;shop 状态 → ShopManager;shop 交互/呈现 → ShopUXManager partial 或独立组件(PhysButton 绑定类 / ShopSectionPanels 类新文件),不再进 ShopUXManager.cs 本体」——shop chrome v5(ShopChrome/Hud* 家族)已证明 shop 呈现层可以独立成文件。
+
+### 9.2 处置建议
+
+- 不开「第四方案」:先按 §4.0 结论执行 CUX-0,验证 partial 流水线跑通后,把同一套手法复制给 CardPhysObjScript(候选 #1)与 ShopUXManager(候选 #2,先落 §9.1 的盲区修正)。
+- HPNumericDisplayHorizontal 的增长源(商店镜像 + 转场飞行)属阶段转场 v1.1 收尾工作,收口后再评估;若继续涨,摘「转场飞行」为独立组件。
+- CUX-6 行数 tripwire(§8)若落地,可把 CardPhysObjScript / ShopUXManager 加进同一断言统一守护。
