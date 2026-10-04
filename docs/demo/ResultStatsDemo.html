@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Result 统计面板 v2 — 迭代 UI Demo</title>
+	<!--
+		ResultStatsDemo.html — Result 阶段 per-card stats 面板迭代版静态原型。
+
+		Purpose:
+			当前游戏内 ResultStatsPanel = 上下两半 YOU/ENEMY + 10 列缩写表格。
+			本 demo 为迭代方向(2026-10-03 与用户确认):
+			1. 全部 10 项统计保留,按类别分 Tab(输出 / 强化 / 操控);
+			2. 数据展示图形化(伤害比例条 / 箭头数值 / 计数 chips);
+			3. 静态多状态评审:三个 Tab 默认态 + 边界状态 + 现状对照。
+			数据均为虚构演示数据,字段对应 CombatPerCardStatsTracker 的 PerCardStatRecord。
+
+		How to extend (keep this pattern):
+			1. 数据集在 JS 顶部 DATASETS,字段名与 CombatStatType 对应;
+			2. 新 Tab = TABS 增加一项 { label, legend, sort, total, row };
+			3. 新边界状态 = 新增数据集 + 一个 data-mount 挂载点。
+
+		Project standards: CRLF line endings, tab indentation, UTF-8.
+	-->
+	<style>
+		/* ===================== design tokens (from UIKitDemo.html) ===================== */
+		:root {
+			--paper: #9aa097;      /* page stage gray */
+			--panel: #868b84;      /* section panel */
+			--recess: #3f4441;     /* recessed / empty slot */
+			--face: #ecece8;       /* interactive face (lit) */
+			--face-dim: #c4c5bf;   /* disabled face */
+			--ink: #1c1e1c;        /* primary text / dark card */
+			--ink-soft: #5a5e58;   /* secondary text */
+			--shadow-c: #232723;   /* hard shadow */
+			/* GameColorPalette */
+			--you: #d1cdc8;        /* OwnerCardColor (GreyWhite) */
+			--enemy: #a81d27;      /* OpponentCardColor (Red 1) */
+			--dmg: #ff0000;        /* LogDamage */
+			--pow: #ff991a;        /* PowerTint */
+			--friendly: #87ceeb;   /* LogFriendly */
+			/* shape */
+			--r-btn: 8px;
+			--r-chip: 6px;
+		}
+
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+
+		body {
+			font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+			background: #0f1a1f;
+			color: #d5dde2;
+			min-height: 100vh;
+		}
+
+		code {
+			background: #263740;
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-size: 12px;
+			font-family: Consolas, monospace;
+		}
+
+		/* ===================== header ===================== */
+		.intro {
+			padding: 30px 40px 14px;
+			max-width: 1100px;
+			margin: 0 auto;
+		}
+		.intro h1 { font-size: 26px; color: #fff; margin-bottom: 10px; }
+		.intro p { line-height: 1.8; color: #b0c0c8; margin-bottom: 8px; font-size: 14px; }
+		.intro .rule { color: #ffd479; }
+		.intro ul { color: #b0c0c8; font-size: 14px; line-height: 1.8; padding-left: 22px; margin-bottom: 8px; }
+
+		/* ===================== sections ===================== */
+		section { max-width: 1100px; margin: 26px auto; padding: 0 40px; }
+		.spec-head {
+			display: flex;
+			align-items: baseline;
+			gap: 12px;
+			border-bottom: 1px solid #24343e;
+			padding-bottom: 8px;
+		}
+		.spec-head h2 { font-size: 18px; color: #fff; }
+		.tag-status { font-size: 12px; color: #9fb2bc; }
+		.sec-note { color: #9fb2bc; font-size: 13px; margin: 10px 0 0; line-height: 1.7; }
+
+		.demo-cap { text-align: center; color: #9fb2bc; font-size: 13px; margin: 24px 0 10px; }
+		.demo-cap b { color: #ffd479; }
+
+		/* ===================== v2 panel ===================== */
+		.rs-panel {
+			width: 100%;
+			max-width: 780px;
+			margin: 0 auto;
+			background: var(--face);
+			color: var(--ink);
+			border-radius: 14px;
+			box-shadow: 8px 8px 0 0 rgba(10, 14, 25, .6);
+			padding: 14px 18px 12px;
+		}
+		.rs-head { display: flex; align-items: baseline; }
+		.rs-title { font-size: 20px; font-weight: 800; }
+		.rs-rounds {
+			margin-left: auto;
+			font-size: 12px;
+			font-weight: 700;
+			color: var(--ink-soft);
+			background: #fff;
+			border: 1.5px solid var(--ink);
+			border-radius: var(--r-chip);
+			padding: 2px 8px;
+		}
+
+		/* category tabs (phys button: rest -> hover lift -> active pressed) */
+		.rs-tabs { display: flex; gap: 8px; margin-top: 10px; }
+		.rs-tab {
+			font: inherit;
+			font-weight: 700;
+			font-size: 14px;
+			background: var(--face);
+			color: var(--ink);
+			border: 2px solid var(--ink);
+			border-radius: var(--r-btn);
+			padding: 4px 18px;
+			box-shadow: 3px 3px 0 0 var(--shadow-c);
+			cursor: pointer;
+			transition: transform 60ms, box-shadow 60ms;
+		}
+		.rs-tab:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 var(--shadow-c); }
+		.rs-tab.on {
+			background: var(--ink);
+			color: var(--face);
+			transform: translate(2px, 2px);
+			box-shadow: 1px 1px 0 0 var(--shadow-c);
+		}
+		.rs-legend { margin-top: 8px; font-size: 11px; color: var(--ink-soft); line-height: 1.6; }
+
+		/* faction half */
+		.rs-half { margin-top: 10px; }
+		.rs-half-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+		.rs-fac {
+			font-weight: 800;
+			font-size: 12px;
+			letter-spacing: 1px;
+			padding: 3px 10px;
+			border-radius: var(--r-chip);
+			border: 2px solid var(--ink);
+			box-shadow: 2px 2px 0 0 var(--shadow-c);
+		}
+		.rs-half.you .rs-fac { background: var(--you); color: var(--ink); }
+		.rs-half.enemy .rs-fac { background: var(--enemy); color: #fff; }
+		.rs-half-total { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+
+		/* rows */
+		.rs-rows { border-top: 2px solid var(--ink); }
+		.rs-rows.scroll { max-height: 236px; overflow-y: auto; scrollbar-width: thin; }
+		.rs-row {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			padding: 5px 2px;
+			border-bottom: 1px dashed rgba(28, 30, 28, .25);
+			min-height: 34px;
+		}
+		.rs-name {
+			flex: 0 0 132px;
+			display: flex;
+			align-items: baseline;
+			gap: 4px;
+			font-weight: 700;
+			font-size: 14px;
+			min-width: 0;
+		}
+		.rs-name-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.rs-count { flex-shrink: 0; color: var(--ink-soft); font-size: 12px; }
+
+		/* damage cell: proportional bar + value + share */
+		.rs-dmg { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+		.rs-bar {
+			flex: 1;
+			height: 12px;
+			background: var(--recess);
+			border-radius: 3px;
+			overflow: hidden;
+			min-width: 30px;
+		}
+		.rs-bar-fill { height: 100%; background: var(--dmg); opacity: .85; }
+		.rs-dmg-val { min-width: 84px; text-align: right; font-weight: 800; font-size: 14px; color: var(--dmg); }
+		.rs-dmg-val.zero { color: var(--ink-soft); opacity: .4; font-weight: 700; }
+		.rs-share { color: var(--ink-soft); font-weight: 700; font-size: 11px; }
+
+		/* stat group (buff / ctrl tabs) */
+		.rs-stats {
+			flex: 1;
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			gap: 10px;
+			min-width: 0;
+			flex-wrap: wrap;
+		}
+		.rs-atk { font-weight: 800; font-size: 15px; color: var(--pow); white-space: nowrap; }
+		.rs-atk.zero { opacity: .25; }
+		.rs-chip {
+			font-size: 11px;
+			font-weight: 700;
+			background: #fff;
+			border: 1.5px solid var(--ink);
+			border-radius: var(--r-chip);
+			padding: 2px 7px;
+			white-space: nowrap;
+		}
+		.rs-chip.zero { opacity: .3; border-style: dashed; }
+
+		/* never-triggered row: demoted whole-row zero state */
+		.rs-chip.untriggered { background: transparent; border-style: dashed; color: var(--ink-soft); }
+		.rs-row.zero-row { opacity: .45; }
+		.rs-row.zero-row .rs-name { color: var(--ink-soft); }
+
+		.rs-empty {
+			padding: 12px;
+			text-align: center;
+			color: var(--ink-soft);
+			font-weight: 700;
+			font-size: 13px;
+			border: 2px dashed rgba(28, 30, 28, .3);
+			border-radius: var(--r-btn);
+		}
+		.rs-foot { margin-top: 6px; text-align: center; font-size: 11px; color: var(--ink-soft); font-weight: 700; }
+
+		/* ===================== edge-state grid ===================== */
+		.edge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+		@media (max-width: 900px) { .edge-grid { grid-template-columns: 1fr; } }
+		.edge-grid .rs-panel { max-width: none; }
+
+		/* ===================== 03 current-version reference ===================== */
+		.cur-panel {
+			max-width: 880px;
+			margin: 0 auto;
+			background: rgba(28, 30, 28, .62);
+			border-radius: 8px;
+			padding: 12px 14px;
+		}
+		.cur-half + .cur-half { margin-top: 12px; }
+		.cur-title { text-align: center; font-weight: 800; font-size: 13px; padding: 3px 0; }
+		.cur-title.you { color: #d1cdc8; }
+		.cur-title.enemy { color: #a81d27; }
+		.cur-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+		.cur-table td { padding: 3px 2px; text-align: center; color: #d1cdc8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.cur-table td.l { text-align: left; padding-left: 6px; }
+		.cur-table tr.h td { font-weight: 800; border-bottom: 1px solid rgba(209, 205, 200, .35); }
+		.cur-table tr + tr td { border-top: 1px dashed rgba(209, 205, 200, .12); }
+		.cur-table td.dmg { color: #ff4d4d; }
+		.cur-table td.pow { color: #ff991a; }
+		.pain { max-width: 880px; margin: 14px auto 0; color: #b0c0c8; font-size: 13px; line-height: 1.9; padding-left: 22px; }
+		.pain b { color: #ffd479; }
+
+		/* ===================== 04 spec table ===================== */
+		.spec-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; color: #d5dde2; }
+		.spec-table th, .spec-table td { border: 1px solid #2c3e48; padding: 6px 10px; text-align: left; }
+		.spec-table th { background: #16232b; color: #ffd479; }
+		.spec-table td.c { text-align: center; }
+		.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+		.spec-notes { color: #9fb2bc; font-size: 13px; line-height: 1.9; margin-top: 12px; padding-left: 22px; }
+
+		.footer { max-width: 1100px; margin: 30px auto 40px; padding: 0 40px; color: #6b7c86; font-size: 12px; line-height: 1.8; }
+	</style>
+</head>
+<body>
+
+	<header class="intro">
+		<h1>Result 统计面板 v2 — 迭代 UI Demo</h1>
+		<p><b>对象:</b>战斗结束(Result 阶段)的 per-card 统计面板。现状 = 上下两半 YOU/ENEMY + 10 列缩写表格(见 03 对照)。本页为迭代版静态原型,数据全部虚构。</p>
+		<p class="rule"><b>迭代要点:</b></p>
+		<ul>
+			<li><b>10 项统计全保留</b>,按类别分 3 个 Tab:输出 / 强化 / 操控 —— 一屏只看一类,不再有 10 列缩写表头;</li>
+			<li><b>图形化</b>:伤害 = 比例条形 + 数值 + 半区占比;攻击强化 = ↑↓ 箭头数值;操控 = 计数 chips,零值自动淡化;</li>
+			<li><b>全零行降级</b>:进场但从未触发的卡收敛为「未触发」弱行,不再是一排同样权重的 0;</li>
+			<li><b>半区头部给合计</b>:占比的分母可见,每张卡的贡献有据可查;</li>
+			<li>阵营色沿用 <code>GameColorPalette</code>(我方灰白 / 敌方红),面板语言沿用 <code>UIKitDemo.html</code> 纸面 + 硬阴影 + 物理按钮。</li>
+		</ul>
+		<p>范围说明:仅统计面板本体;Result 页其他元素(回到商店按钮、头像/HP 等)不在本 demo 内。Tab 可点击切换,但三个 Tab 状态已静态平铺,不点也能评审全部内容。</p>
+	</header>
+
+	<!-- ===================== 01 main panels: three tab states ===================== -->
+	<section id="s-tabs">
+		<div class="spec-head"><h2>01 主面板 · 三个 Tab 状态</h2><span class="tag-status">同一份数据 · tab 可点击切换</span></div>
+
+		<div class="demo-cap"><b>Tab:输出</b> — 伤害比例条(按半区最大值归一)+ 数值(半区占比)+ 触发计数</div>
+		<div class="rs-panel" data-mount="main" data-tab="dmg"></div>
+
+		<div class="demo-cap"><b>Tab:强化</b> — ↑ 给予攻击 / ↓ 获得攻击(强化橙)+ 生成计数</div>
+		<div class="rs-panel" data-mount="main" data-tab="buff"></div>
+
+		<div class="demo-cap"><b>Tab:操控</b> — 埋葬 / 复活计数 chips,零值自动淡化</div>
+		<div class="rs-panel" data-mount="main" data-tab="ctrl"></div>
+	</section>
+
+	<!-- ===================== 02 edge states ===================== -->
+	<section id="s-edge">
+		<div class="spec-head"><h2>02 边界状态</h2><span class="tag-status">少卡 / 多行 / 长名 / 零数据</span></div>
+
+		<div class="edge-grid">
+			<div>
+				<div class="demo-cap"><b>少卡</b> — 每半区仅 1 种卡,面板收紧不撑高</div>
+				<div class="rs-panel" data-mount="few" data-tab="dmg"></div>
+			</div>
+			<div>
+				<div class="demo-cap"><b>多行</b> — 半区 12 种卡,行区定高滚动 + 底部提示</div>
+				<div class="rs-panel" data-mount="many" data-tab="dmg" data-scroll="1"></div>
+			</div>
+			<div>
+				<div class="demo-cap"><b>超长卡名</b> — 名称列定宽省略号,数量后缀保留,条形被压缩仍可读</div>
+				<div class="rs-panel" data-mount="long" data-tab="dmg"></div>
+			</div>
+			<div>
+				<div class="demo-cap"><b>半区零数据</b> — 无记录半区显示占位;从未触发的卡 = 「未触发」弱行</div>
+				<div class="rs-panel" data-mount="empty" data-tab="dmg"></div>
+			</div>
+		</div>
+	</section>
+
+	<!-- ===================== 03 current-version reference ===================== -->
+	<section id="s-current">
+		<div class="spec-head"><h2>03 现状对照</h2><span class="tag-status">游戏内 ResultStatsPanel 复刻 · 同一份数据</span></div>
+
+		<div class="demo-cap"><b>当前版本</b> — 10 列缩写表格,上下两半各自滚动</div>
+		<div class="cur-panel">
+			<div class="cur-half">
+				<div class="cur-title you">YOU</div>
+				<table class="cur-table">
+					<tr class="h"><td class="l">Card</td><td>Dmg&gt;Opp</td><td>Trig</td><td>AtkGive</td><td>AtkRecv</td><td>Gen</td><td>Bury&gt;F</td><td>Bury&gt;E</td><td>Buried</td><td>Revive</td><td>Revived</td></tr>
+					<tr><td class="l">烈焰术士</td><td class="dmg">24 (60%)</td><td>3</td><td class="pow">0</td><td class="pow">4</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+					<tr><td class="l">战斗号角</td><td class="dmg">0</td><td>4</td><td class="pow">12</td><td class="pow">0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+					<tr><td class="l">信徒 (2)</td><td class="dmg">8 (20%)</td><td>2</td><td class="pow">0</td><td class="pow">2</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+					<tr><td class="l">复生牧师</td><td class="dmg">4 (10%)</td><td>2</td><td class="pow">0</td><td class="pow">0</td><td>2</td><td>0</td><td>0</td><td>0</td><td>3</td><td>0</td></tr>
+					<tr><td class="l">掘墓人</td><td class="dmg">4 (10%)</td><td>1</td><td class="pow">0</td><td class="pow">0</td><td>0</td><td>1</td><td>2</td><td>0</td><td>0</td><td>0</td></tr>
+					<tr><td class="l">石盾卫</td><td class="dmg">0</td><td>0</td><td class="pow">0</td><td class="pow">0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+				</table>
+			</div>
+			<div class="cur-half">
+				<div class="cur-title enemy">ENEMY</div>
+				<table class="cur-table">
+					<tr class="h"><td class="l">Card</td><td>Dmg&gt;Opp</td><td>Trig</td><td>AtkGive</td><td>AtkRecv</td><td>Gen</td><td>Bury&gt;F</td><td>Bury&gt;E</td><td>Buried</td><td>Revive</td><td>Revived</td></tr>
+					<tr><td class="l">墓地领主</td><td class="dmg">15 (44%)</td><td>2</td><td class="pow">0</td><td class="pow">5</td><td>0</td><td>1</td><td>0</td><td>0</td><td>2</td><td>0</td></tr>
+					<tr><td class="l">毒蜂 (2)</td><td class="dmg">9 (26%)</td><td>4</td><td class="pow">0</td><td class="pow">3</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+					<tr><td class="l">诅咒</td><td class="dmg">6 (18%)</td><td>3</td><td class="pow">0</td><td class="pow">0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+					<tr><td class="l">食腐鸦</td><td class="dmg">4 (12%)</td><td>2</td><td class="pow">0</td><td class="pow">0</td><td>1</td><td>2</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+					<tr><td class="l">暗影祭司</td><td class="dmg">0</td><td>3</td><td class="pow">6</td><td class="pow">0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+				</table>
+			</div>
+		</div>
+
+		<ul class="pain">
+			<li><b>缩写表头</b>:Dmg&gt;Opp / Bury&gt;F / Trig 等 10 个缩写需要记忆成本,新玩家读不懂;</li>
+			<li><b>无视觉锚点</b>:所有列等宽等权重,贡献度对比(谁是输出核心)靠逐格心算;</li>
+			<li><b>数值与占比混排</b>:"24 (60%)" 挤在一格,列宽窄时双双截断;</li>
+			<li><b>零值噪声</b>:全零行(石盾卫)与有数据行同样权重,越打越长的列表里有效信息被稀释;</li>
+			<li><b>占比无分母</b>:百分比的黑盒 —— 看不到半区总伤害,占比无法验证。</li>
+		</ul>
+	</section>
+
+	<!-- ===================== 04 data mapping spec ===================== -->
+	<section id="s-spec">
+		<div class="spec-head"><h2>04 数据映射(移植规格)</h2><span class="tag-status">对应 CombatStatRegistry / CombatPerCardStatsTracker</span></div>
+		<table class="spec-table">
+			<tr><th>CombatStatType</th><th>现表头</th><th>v2 Tab</th><th>v2 图形形式</th><th>颜色</th></tr>
+			<tr><td><code>DamageDealtToOpponent</code></td><td>Dmg&gt;Opp</td><td class="c">输出</td><td>比例条(半区最大值归一)+ 数值 + 半区占比</td><td><span class="sw" style="background:#ff0000"></span>伤害红</td></tr>
+			<tr><td><code>TriggerCount</code></td><td>Trig</td><td class="c">输出</td><td>计数 chip「触发 ×N」</td><td>—</td></tr>
+			<tr><td><code>AttackGiven</code></td><td>AtkGive</td><td class="c">强化</td><td>「↑ N」箭头数值</td><td><span class="sw" style="background:#ff991a"></span>强化橙</td></tr>
+			<tr><td><code>AttackReceived</code></td><td>AtkRecv</td><td class="c">强化</td><td>「↓ N」箭头数值</td><td><span class="sw" style="background:#ff991a"></span>强化橙</td></tr>
+			<tr><td><code>CardsGenerated</code></td><td>Gen</td><td class="c">强化</td><td>计数 chip「生成 N」</td><td>—</td></tr>
+			<tr><td><code>FriendlyBuried</code></td><td>Bury&gt;F</td><td class="c">操控</td><td>计数 chip「葬友 N」</td><td>—</td></tr>
+			<tr><td><code>EnemyBuried</code></td><td>Bury&gt;E</td><td class="c">操控</td><td>计数 chip「葬敌 N」</td><td>—</td></tr>
+			<tr><td><code>TimesBuried</code></td><td>Buried</td><td class="c">操控</td><td>计数 chip「被葬 N」</td><td>—</td></tr>
+			<tr><td><code>RevivesTriggered</code></td><td>Revive</td><td class="c">操控</td><td>计数 chip「复活 N」</td><td>—</td></tr>
+			<tr><td><code>TimesRevived</code></td><td>Revived</td><td class="c">操控</td><td>计数 chip「被复活 N」</td><td>—</td></tr>
+		</table>
+		<ul class="spec-notes">
+			<li><code>DamageDealtToSelf</code> / <code>PowerGiven</code> / <code>PowerReceived</code> 维持 <code>showInResultPanel = false</code>,继续记录不显示;</li>
+			<li>排除规则不变:中立卡(<code>IsNeutralCard</code>)与 Utility Passive 不进表;</li>
+			<li>卡名后缀 <code>(X)</code> = 初始卡组同名牌数量,仅 X ≥ 2 时显示(与现状一致);</li>
+			<li>占比 = 该行该列值 ÷ 本半区该列合计;值为 0 时不显示占比;半区合计显示在半区头部;</li>
+			<li>每个 Tab 内行排序 = 该 Tab 主指标降序(输出:伤害 → 触发;强化:给予+获得;操控:五类合计);</li>
+			<li>全零行(所有统计均为 0)= 「未触发」弱行,整行降透明度,不渲染统计格;</li>
+			<li>阵营归属 = 卡牌创建方(<code>creatorSide</code>),与现状一致:玩家生成的敌方诅咒归 YOU 半区。</li>
+		</ul>
+	</section>
+
+	<div class="footer">
+		版本:v1 · 2026-10-03 · 视觉标准 <code>UIKitDemo.html</code> · 现状实现 <code>Assets/Scripts/UXPrototype/ResultStatsPanel.cs</code><br>
+		确认方向后按 04 节映射移植到 ResultStatsPanel(Tab 容器 + 行模板替换 BuildRowCells)。
+	</div>
+
+	<script>
+		/* ===================== datasets (fields mirror CombatStatType) ===================== */
+		function norm(r) {
+			const d = { count: 1, dmg: 0, trig: 0, atkG: 0, atkR: 0, gen: 0, buryF: 0, buryE: 0, buried: 0, revive: 0, revived: 0 };
+			return Object.assign(d, r);
+		}
+		function normData(data) {
+			data.you = data.you.map(norm);
+			data.enemy = data.enemy.map(norm);
+			return data;
+		}
+
+		const DATA_MAIN = normData({
+			rounds: 6,
+			you: [
+				{ name: '烈焰术士', dmg: 24, trig: 3, atkR: 4 },
+				{ name: '战斗号角', trig: 4, atkG: 12 },
+				{ name: '信徒', count: 2, dmg: 8, trig: 2, atkR: 2 },
+				{ name: '复生牧师', dmg: 4, trig: 2, gen: 2, revive: 3 },
+				{ name: '掘墓人', dmg: 4, trig: 1, buryF: 1, buryE: 2 },
+				{ name: '石盾卫' }
+			],
+			enemy: [
+				{ name: '墓地领主', dmg: 15, trig: 2, atkR: 5, buryF: 1, revive: 2 },
+				{ name: '毒蜂', count: 2, dmg: 9, trig: 4, atkR: 3 },
+				{ name: '诅咒', dmg: 6, trig: 3 },
+				{ name: '食腐鸦', dmg: 4, trig: 2, gen: 1, buryF: 2 },
+				{ name: '暗影祭司', trig: 3, atkG: 6, revive: 1 }
+			]
+		});
+
+		const DATA_FEW = normData({
+			rounds: 4,
+			you: [ { name: '烈焰术士', dmg: 18, trig: 2 } ],
+			enemy: [ { name: '毒蜂', dmg: 7, trig: 3 } ]
+		});
+
+		const DATA_MANY = normData((function () {
+			const names = ['猎手', '术士', '卫士', '祭司', '游侠', '刺客', '召唤师', '德鲁伊', '圣骑士', '死灵法师', '武僧', '吟游诗人'];
+			const mk = (n, i) => ({
+				name: n, count: i % 4 === 3 ? 2 : 1,
+				dmg: Math.max(0, 26 - i * 2 - (i % 3)), trig: (i % 5) + 1,
+				atkG: i % 3 === 0 ? i + 1 : 0, atkR: i % 2, gen: i % 6 === 0 ? 1 : 0,
+				buryF: i % 4, buryE: (i + 1) % 3, buried: i % 2,
+				revive: i % 5 === 0 ? 2 : 0, revived: i % 3 === 0 ? 1 : 0
+			});
+			return {
+				rounds: 11,
+				you: names.map((n, i) => mk(n, i)),
+				enemy: names.map((n, i) => mk(n, (i + 5) % 12))
+			};
+		})());
+
+		const DATA_LONG = normData({
+			rounds: 8,
+			you: [
+				{ name: '究极·时空大贤者阿尔卡纳·改', dmg: 26, trig: 3, atkR: 2 },
+				{ name: '超重型自动防御傀儡 MK-VII 量产型', count: 3, dmg: 11, trig: 2, atkG: 4 }
+			],
+			enemy: [
+				{ name: '深渊凝视者·不可名状之终焉化身', dmg: 19, trig: 5, revive: 1 },
+				{ name: '上古腐烂沼泽共生体(变异)', count: 2, dmg: 6, trig: 2, buryF: 2 }
+			]
+		});
+
+		const DATA_EMPTY = normData({
+			rounds: 2,
+			you: [
+				{ name: '烈焰术士', dmg: 4, trig: 1 },
+				{ name: '石盾卫' },
+				{ name: '吟游诗人', count: 2 }
+			],
+			enemy: []
+		});
+
+		const DATASETS = { main: DATA_MAIN, few: DATA_FEW, many: DATA_MANY, long: DATA_LONG, empty: DATA_EMPTY };
+
+		/* ===================== tab definitions ===================== */
+		function sum(rows, k) { return rows.reduce((t, r) => t + r[k], 0); }
+		function buffTotal(r) { return r.atkG + r.atkR + r.gen; }
+		function ctrlTotal(r) { return r.buryF + r.buryE + r.buried + r.revive + r.revived; }
+		function isZeroRow(r) { return !r.dmg && !r.trig && !buffTotal(r) && !ctrlTotal(r); }
+		function countSuffix(r) { return r.count >= 2 ? ' <span class="rs-count">(' + r.count + ')</span>' : ''; }
+		function chip(label, n) { return '<span class="rs-chip' + (n ? '' : ' zero') + '">' + label + ' ' + n + '</span>'; }
+
+		function rowDmg(r, ctx) {
+			const pct = ctx.dmgTotal > 0 && r.dmg > 0 ? Math.round(r.dmg / ctx.dmgTotal * 100) : 0;
+			const w = ctx.dmgMax > 0 ? Math.round(r.dmg / ctx.dmgMax * 100) : 0;
+			return '<div class="rs-row">'
+				+ '<div class="rs-name"><span class="rs-name-text">' + r.name + '</span>' + countSuffix(r) + '</div>'
+				+ '<div class="rs-dmg">'
+				+ '<div class="rs-bar"><div class="rs-bar-fill" style="width:' + w + '%"></div></div>'
+				+ '<div class="rs-dmg-val' + (r.dmg ? '' : ' zero') + '">' + r.dmg + (pct ? ' <span class="rs-share">(' + pct + '%)</span>' : '') + '</div>'
+				+ '</div>'
+				+ chip('触发 ×', r.trig)
+				+ '</div>';
+		}
+
+		function rowBuff(r) {
+			return '<div class="rs-row">'
+				+ '<div class="rs-name"><span class="rs-name-text">' + r.name + '</span>' + countSuffix(r) + '</div>'
+				+ '<div class="rs-stats">'
+				+ '<span class="rs-atk' + (r.atkG ? '' : ' zero') + '">↑ ' + r.atkG + '</span>'
+				+ '<span class="rs-atk' + (r.atkR ? '' : ' zero') + '">↓ ' + r.atkR + '</span>'
+				+ chip('生成', r.gen)
+				+ '</div></div>';
+		}
+
+		function rowCtrl(r) {
+			return '<div class="rs-row">'
+				+ '<div class="rs-name"><span class="rs-name-text">' + r.name + '</span>' + countSuffix(r) + '</div>'
+				+ '<div class="rs-stats">'
+				+ chip('葬友', r.buryF)
+				+ chip('葬敌', r.buryE)
+				+ chip('被葬', r.buried)
+				+ chip('复活', r.revive)
+				+ chip('被复活', r.revived)
+				+ '</div></div>';
+		}
+
+		function rowZero(r) {
+			return '<div class="rs-row zero-row">'
+				+ '<div class="rs-name"><span class="rs-name-text">' + r.name + '</span>' + countSuffix(r) + '</div>'
+				+ '<div class="rs-stats"><span class="rs-chip untriggered">未触发</span></div>'
+				+ '</div>';
+		}
+
+		const TABS = {
+			dmg: {
+				label: '输出',
+				legend: '条形 = 对敌方伤害(按本半区最大值归一)· 数值后括号 = 占本半区总伤害比例',
+				sort: (a, b) => (b.dmg - a.dmg) || (b.trig - a.trig),
+				total: rows => '合计 ' + sum(rows, 'dmg') + ' 伤 · ' + rows.length + ' 种卡',
+				row: rowDmg
+			},
+			buff: {
+				label: '强化',
+				legend: '↑ = 永久攻击给予 · ↓ = 永久攻击获得 · 生成 = 战斗中产生的卡(衍生物等)',
+				sort: (a, b) => buffTotal(b) - buffTotal(a),
+				total: rows => '合计给予 +' + sum(rows, 'atkG') + ' · ' + rows.length + ' 种卡',
+				row: rowBuff
+			},
+			ctrl: {
+				label: '操控',
+				legend: '葬友 / 葬敌 = 埋葬的友方 / 敌方卡 · 被葬 / 被复活 = 自身被埋葬 / 被复活次数',
+				sort: (a, b) => ctrlTotal(b) - ctrlTotal(a),
+				total: rows => '操控合计 ' + (sum(rows, 'buryF') + sum(rows, 'buryE') + sum(rows, 'buried') + sum(rows, 'revive') + sum(rows, 'revived')) + ' · ' + rows.length + ' 种卡',
+				row: rowCtrl
+			}
+		};
+
+		/* ===================== panel rendering ===================== */
+		function renderHalf(faction, rows, tabId) {
+			const tab = TABS[tabId];
+			const ctx = {
+				dmgTotal: sum(rows, 'dmg'),
+				dmgMax: rows.reduce((m, r) => Math.max(m, r.dmg), 0)
+			};
+			let html = '<div class="rs-half ' + faction + '">'
+				+ '<div class="rs-half-head">'
+				+ '<span class="rs-fac">' + (faction === 'you' ? 'YOU 我方' : 'ENEMY 敌方') + '</span>'
+				+ '<span class="rs-half-total">' + tab.total(rows) + '</span>'
+				+ '</div>';
+			if (!rows.length) {
+				html += '<div class="rs-empty">本半区无记录</div>';
+			} else {
+				const sorted = rows.slice().sort(tab.sort);
+				html += '<div class="rs-rows">'
+					+ sorted.map(r => isZeroRow(r) ? rowZero(r) : tab.row(r, ctx)).join('')
+					+ '</div>';
+			}
+			return html + '</div>';
+		}
+
+		function mountPanel(el, data, activeTab) {
+			el.innerHTML =
+				'<div class="rs-head"><span class="rs-title">战斗统计</span><span class="rs-rounds">Rounds: ' + data.rounds + '</span></div>'
+				+ '<div class="rs-tabs">'
+				+ Object.keys(TABS).map(id =>
+					'<button class="rs-tab' + (id === activeTab ? ' on' : '') + '" data-tab="' + id + '">' + TABS[id].label + '</button>').join('')
+				+ '</div>'
+				+ '<div class="rs-legend">' + TABS[activeTab].legend + '</div>'
+				+ renderHalf('you', data.you, activeTab)
+				+ renderHalf('enemy', data.enemy, activeTab);
+			if (el.dataset.scroll) {
+				el.querySelectorAll('.rs-rows').forEach(r => r.classList.add('scroll'));
+				el.innerHTML += '<div class="rs-foot">↕ 滚动查看 · 每半区 ' + Math.max(data.you.length, data.enemy.length) + ' 种卡</div>';
+			}
+			el.dataset.tab = activeTab;
+		}
+
+		document.querySelectorAll('.rs-panel[data-mount]').forEach(el => {
+			mountPanel(el, DATASETS[el.dataset.mount], el.dataset.tab);
+		});
+
+		document.addEventListener('click', e => {
+			const btn = e.target.closest('.rs-tab');
+			if (!btn) return;
+			const panel = btn.closest('.rs-panel');
+			mountPanel(panel, DATASETS[panel.dataset.mount], btn.dataset.tab);
+		});
+	</script>
+</body>
+</html>
