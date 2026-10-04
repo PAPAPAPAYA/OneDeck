@@ -56,7 +56,7 @@ All transition tweens run unscaled-time. They are NOT scaled by `CombatAnimation
 ## Arbitration
 
 - **Camera**: only the driver writes rig Y during a transition; `ShopUXManager.HandleCameraScroll` is gated by phase (shop only — fixing the pre-existing combat-wheel bug) AND by `IsTransitioning`. `ResetCameraPosition` no-ops while transitioning.
-- **Shop chrome visibility (fix 4)**: `ShopManager.ExitShop` skips its `HideIfActive` pair while `IsTransitioning` — chrome + panels are page content and scroll away with the camera; the legacy hard cut keeps the hide (the camera never moves there). `ShopChrome.ShowIfActive` has no `IsTransitioning` gate (both chrome and panels appear at the Result→Shop travel start and scroll INTO view). `HudViewportPin` (OptionsButton) is always pinned while the band is active (2026-10-03 ruling — row 144); mid-travel and in combat the button stays at the viewport corner while the rest of the band scrolls with the page.
+- **Shop chrome visibility (fix 4)**: `ShopManager.ExitShop` skips its `HideIfActive` pair while `IsTransitioning` — chrome + panels are page content and scroll away with the camera; the legacy hard cut keeps the hide (the camera never moves there). `ShopChrome.ShowIfActive` has no `IsTransitioning` gate (both chrome and panels appear at the Result→Shop travel start and scroll INTO view). `HudViewportPin` (OptionsButton) is always pinned while the band is active (2026-10-03 ruling — row 144); mid-travel and in combat the button stays pinned while the rest of the band scrolls with the page. 2026-10-04: the combat-phase home moved to the viewport BOTTOM-right (row 146) — travels keep the departure corner until landing.
 - **Input**: `ShopInputGate` + `CombatManager.BlockInput(driver)` paired across the travel; `PhaseManager` phase keys route through the driver first. **Busy guard (2026-10-02 audit F1)**: while `IsTransitioning`, every phase-key/button call site (`PhaseManager.Update` Shop + Result branches, `ShopHudBinder` LeaveShop) returns instead of running the legacy hard cut — the driver's `false` return means "driver unavailable → legacy is correct", never "busy" (during a Result→Shop travel the phase already reads Shop, so an unguarded Shop branch would double-enter combat mid-flight).
 
 ## Verified (2026-09-21 Play Mode)
@@ -73,7 +73,7 @@ All transition tweens run unscaled-time. They are NOT scaled by `CombatAnimation
 
 ### Accepted (user rulings, 2026-09-21)
 
-1. **❚❚ options button — superseded 2026-10-03 (user ruling, v1.1 round):** it never flies AND never moves — `HudViewportPin` is ungated (always pinned while the chrome band is active), so the shop viewport corner serves combat as-is with unchanged press semantics. RegressionChecklist row 144.
+1. **❚❚ options button — superseded 2026-10-03 (user ruling, v1.1 round), corner amended 2026-10-04:** it never flies — `HudViewportPin` is ungated (always pinned while the chrome band is active) with unchanged press semantics. 2026-10-04: the combat-phase home is the viewport BOTTOM-right (`insetFromBottom`, renamed from `insetFromTop`, same 0.105 value); shop/Result keep the top-right corner and a travel holds the departure corner until landing (`!IsTransitioning`, since the phase flips to Combat at travel start). RegressionChecklist rows 144-146.
 2. Combat→Shop uses the shop's existing spawn-pop entry; no return card flight.
 3. Shop→combat drag-up gesture not ported (离开商店 button is the trigger).
 4. Demo param bar → `PhaseTransitionConfigSO` asset instead of a runtime UI.

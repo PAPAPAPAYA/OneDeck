@@ -1448,7 +1448,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HudViewportPin
   insetFromRight: 0.25
-  insetFromTop: 0.105
+  insetFromBottom: 0.105
 --- !u!1001 &8046052957559882455
 PrefabInstance:
   m_ObjectHideFlags: 0
