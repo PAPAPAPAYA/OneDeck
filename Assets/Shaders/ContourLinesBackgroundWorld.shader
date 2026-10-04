@@ -12,6 +12,7 @@ Shader "Custom/ContourLinesBackgroundWorld"
 		_LineWidth("Line Width", Float) = 2
 		_NoiseScale("Noise Scale", Float) = 3
 		_Speed("Morph Speed", Float) = 0.08
+		_FBM2Freq("Field Bias (x 0.5)", Float) = 2
 		_Intensity("Line Intensity", Range(0, 1)) = 1
 	}
 
@@ -62,43 +63,45 @@ Shader "Custom/ContourLinesBackgroundWorld"
 				float _LineWidth;
 				float _NoiseScale;
 				float _Speed;
+				float _FBM2Freq;
 				float _Intensity;
 			CBUFFER_END
 
-			// Hash-based pseudo-random gradient in [-1, 1]^2 (iq-style hash22) — identical
-			// noise family to Custom/ContourLinesBackground so the contour character carries over.
-			float2 Hash22(float2 p)
+			// Hash: map an integer 3D lattice coordinate to a pseudo-random gradient
+			// direction in [-1, 1]^3. Deterministic: same input, same output.
+			// (iq-style hash33 without sin(); ported verbatim from
+			// Assets/VFX/BackGroundMotion/SliceNoise3D.hlsl so the contour character
+			// matches the retired BackGroundMotion3D backdrop exactly — user report
+			// 2026-10-03: the first port's 3-octave fbm family did not.)
+			float3 SliceHash3(float3 p)
 			{
-				float3 p3 = frac(float3(p.xyx) * float3(0.1031, 0.1030, 0.0973));
-				p3 += dot(p3, p3.yzx + 33.33);
-				return frac((p3.xx + p3.yz) * p3.zy) * 2.0 - 1.0;
+				p = frac(p * float3(0.1031, 0.1030, 0.0973));
+				p += dot(p, p.yxz + 33.33);
+				return frac((p.xxy + p.yxx) * p.zyx) * 2.0 - 1.0;
 			}
 
-			// Classic 2D gradient (Perlin-style) noise, roughly in [-1, 1].
-			float GradientNoise(float2 p)
+			// 3D gradient (Perlin-style) noise: dot products of corner gradients with the
+			// local offset, trilinearly interpolated with a quintic fade. SINGLE octave —
+			// the original backdrop's field is one smooth Perlin slice along the time axis
+			// (its "FBM" branch is muted to a constant bias; see frag). Rescaled to [0, 1]
+			// so Levels/LineWidth keep the retired material's tuning meaning.
+			float VNoise3D(float3 pos)
 			{
-				float2 i = floor(p);
-				float2 f = frac(p);
-				float2 u = f * f * (3.0 - 2.0 * f);
-				float a = dot(Hash22(i), f);
-				float b = dot(Hash22(i + float2(1.0, 0.0)), f - float2(1.0, 0.0));
-				float c = dot(Hash22(i + float2(0.0, 1.0)), f - float2(0.0, 1.0));
-				float d = dot(Hash22(i + float2(1.0, 1.0)), f - float2(1.0, 1.0));
-				return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
-			}
-
-			// 3-octave fbm for the terrain height field. Gentle amplitude decay keeps contours smooth and rounded.
-			float Fbm(float2 p)
-			{
-				float sum = 0.0;
-				float amp = 0.5;
-				for (int octave = 0; octave < 3; octave++)
-				{
-					sum += amp * GradientNoise(p);
-					p = p * 2.03 + float2(17.3, 9.1);
-					amp *= 0.35;
-				}
-				return sum;
+				float3 i = floor(pos);
+				float3 f = frac(pos);
+				float3 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+				float n000 = dot(SliceHash3(i), f);
+				float n100 = dot(SliceHash3(i + float3(1.0, 0.0, 0.0)), f - float3(1.0, 0.0, 0.0));
+				float n010 = dot(SliceHash3(i + float3(0.0, 1.0, 0.0)), f - float3(0.0, 1.0, 0.0));
+				float n110 = dot(SliceHash3(i + float3(1.0, 1.0, 0.0)), f - float3(1.0, 1.0, 0.0));
+				float n001 = dot(SliceHash3(i + float3(0.0, 0.0, 1.0)), f - float3(0.0, 0.0, 1.0));
+				float n101 = dot(SliceHash3(i + float3(1.0, 0.0, 1.0)), f - float3(1.0, 0.0, 1.0));
+				float n011 = dot(SliceHash3(i + float3(0.0, 1.0, 1.0)), f - float3(0.0, 1.0, 1.0));
+				float n111 = dot(SliceHash3(i + float3(1.0, 1.0, 1.0)), f - float3(1.0, 1.0, 1.0));
+				float n = lerp(lerp(lerp(n000, n100, u.x), lerp(n010, n110, u.x), u.y),
+					lerp(lerp(n001, n101, u.x), lerp(n011, n111, u.x), u.y),
+					u.z);
+				return clamp(n * 0.6667 + 0.5, 0.0, 1.0);
 			}
 
 			Varyings vert(Attributes input)
@@ -111,26 +114,29 @@ Shader "Custom/ContourLinesBackgroundWorld"
 
 			half4 frag(Varyings input) : SV_Target
 			{
-				// World-space basis: the pattern is world-locked — the camera travel carries it
-				// like page content and the shop wheel scroll gains the demo's parallax. Density
-				// is normalized by the binder (_WorldScale = _NoiseScale / pageH) so the look
-				// matches the retired screen-fixed backdrop at the default ortho.
+				// World-space basis: the pattern is world-locked — the camera travel carries
+				// it like page content and the shop wheel scroll gains the demo's parallax.
+				// Density is normalized by the binder (_WorldScale = _NoiseScale / pageH) so
+				// the field spans the same number of noise cells per page height as the
+				// retired screen-fixed backdrop; its screen aspect correction is unnecessary
+				// here because world units are already isotropic.
 				float2 p = input.positionWS.xy * _WorldScale;
 
-				// Slow in-place morph: bounded sinusoidal domain warp, no net drift (kept from
-				// the retired backdrop — an accepted static-ness deviation from the demo).
-				float t = _Time.y * _Speed;
-				float2 warpPhase = float2(sin(t), cos(t * 0.83)) * 1.5;
-				float2 warp = float2(
-					GradientNoise(p * 0.5 + warpPhase),
-					GradientNoise(p * 0.5 - warpPhase + float2(31.7, 11.3)));
+				// Slow morph: the time axis SLICES through the 3D noise field, so contour
+				// lines are born and die smoothly instead of drifting. No domain warp, no
+				// fbm — the original look is ONE smooth Perlin slice. The retired graph's
+				// second VNoise3D branch is muted (pos *= 0) and survives only as the
+				// constant bias _FBM2Freq * 0.5, ported as-is: it shifts WHICH iso-line
+				// family shows (default 2 = the mid-height line, matching the shipped
+				// Mat_BackGroundMotion3D material).
+				float3 pos = float3(p.x, p.y, _Time.y * _Speed);
+				float h = VNoise3D(pos) + _FBM2Freq * 0.5;
 
-				float h = Fbm(p + 0.35 * warp) * 0.5 + 0.5;
-
-				// Anti-aliased iso-lines at _Levels height intervals.
+				// Anti-aliased iso-lines at INTEGER v (the original's phase: dist =
+				// frac(v), not the half-integer variant), width in fwidth(v) units.
 				float v = h * _Levels;
 				float fw = fwidth(v);
-				float distToLine = abs(frac(v + 0.5) - 0.5);
+				float distToLine = frac(v);
 				float lineMask = 1.0 - smoothstep(0.0, fw * _LineWidth, distToLine);
 
 				// Enemy band: world Y above the split (combat page center, 50% — user ruling
