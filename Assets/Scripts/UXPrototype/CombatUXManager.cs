@@ -3709,6 +3709,10 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 			if (physScript == null) continue;
 			_deckOffsetProvider.AssignOffset(physScript);
 			Vector3 pos = GetFinalDeckPositionForCard(physScript, i);
+			// Entrance slide (plan-transition-entrance-and-shadow-audit-2026-10-04 Part B):
+			// enemy-owned cards + Start Card spawn one slide above when the transition gate is
+			// on; the Start Card shuffle animation delivers the drop. Zero otherwise.
+			pos += PhaseTransitionDriver.GetEntranceSpawnOffset(physScript.cardImRepresenting);
 			Quaternion rot = GetFinalDeckRotationForCard(physScript);
 			physScript.SetPositionImmediate(pos);
 			physScript.SetRotationImmediate(rot);

@@ -36,6 +36,16 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 	/// <summary>True while any transition coroutine runs. Gates shop scroll, phase-change snaps, chrome show.</summary>
 	public static bool IsTransitioning => Me != null && Me._transitioning;
+	/// <summary>
+	/// Entrance slide gate (plan-transition-entrance-and-shadow-audit-2026-10-04 Part B): true
+	/// from ToCombat travel start until the landing handoff confirms the real physicals spawned.
+	/// While true, enemy-owned cards and the Start Card spawn one enemy-slide ABOVE their final
+	/// stack slot (GetEntranceSpawnOffset) and the Start Card shuffle animation delivers the
+	/// drop; player slots are covered by the flight dummies. Never set when the driver is
+	/// unavailable (headless/bypass/direct phase flips) — spawn positions stay byte-for-byte
+	/// legacy.
+	/// </summary>
+	public static bool CombatEntrancePending { get; private set; }
 	/// <summary>True while the driver has claimed the shop's spawned cards (they must survive ClearSpawnedCards).</summary>
 	public static bool OwnsDeckCards => Me != null && Me._ownsDeckCards;
 	/// <summary>True while combat canvas UI (HP compare bar) must stay hidden until the camera lands.</summary>
@@ -110,6 +120,7 @@ public class PhaseTransitionDriver : MonoBehaviour
 			return;
 		}
 		Me = this;
+		CombatEntrancePending = false;
 		_cam = Camera.main;
 		if (_cam == null) return;
 		_rig = _cam.transform.parent != null ? _cam.transform.parent : _cam.transform;
@@ -122,7 +133,12 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		if (Me == this) Me = null;
+		if (Me == this)
+		{
+			Me = null;
+			// Scene teardown mid-transition must not leak the gate into the next scene.
+			CombatEntrancePending = false;
+		}
 		KillAllTweens();
 	}
 
@@ -196,12 +212,37 @@ public class PhaseTransitionDriver : MonoBehaviour
 		return true;
 	}
 
+	/// <summary>
+	/// Entrance spawn offset for cards without flight-dummy coverage (enemy-owned cards + the
+	/// Start Card): one enemy-slide — the same distance/direction as the enemy HUD slide-in
+	/// (transition fix 2) — above the final stack slot; the Start Card shuffle animation, which
+	/// plays at every combat start and flies all cards to their shuffled positions, delivers the
+	/// downward motion for free. Zero while the entrance gate is off. Presentation-only read in
+	/// CombatUXManager.InstantiateAllPhysicalCards' layout loop.
+	/// </summary>
+	public static Vector3 GetEntranceSpawnOffset(CardScript cardScript)
+	{
+		if (!CombatEntrancePending || cardScript == null) return Vector3.zero;
+		bool isEnemy = cardScript.myStatusRef != null && CombatManager.Me != null
+			&& cardScript.myStatusRef != CombatManager.Me.ownerPlayerStatusRef;
+		if (!isEnemy && !cardScript.isStartCard) return Vector3.zero;
+		var cfg = PhaseTransitionConfigSO.Me;
+		var cam = Camera.main;
+		if (cfg == null || cam == null) return Vector3.zero;
+		float slide = PhaseFlightPlanner.PxToWorld(cfg.enemySlideDemoPx, PhaseFlightPlanner.PageHeightWorld(cam.orthographicSize));
+		return new Vector3(0f, slide, 0f);
+	}
+
 	private IEnumerator ShopToCombatRoutine(PhaseManager pm)
 	{
 		var cfg = PhaseTransitionConfigSO.Me;
 		_transitioning = true;
 		_travel = TransitionTravel.ToCombat;
 		_ownsDeckCards = true;
+		// Part B entrance slide: enemy cards + Start Card get no dummy coverage, so from here
+		// until the landing handoff they spawn one slide above their slots and ride the Start
+		// Card shuffle animation down (GetEntranceSpawnOffset).
+		CombatEntrancePending = true;
 		// F2 (plan-phase-transition-audit-fixes-2026-10-02): dismiss any enlarge preview BEFORE
 		// the phase calls — RestoreCard retargets the card and releases its modal ShopInputGate
 		// hold, so no enlarged card lingers on the abandoned page and the gate pair stays
@@ -277,6 +318,8 @@ public class PhaseTransitionDriver : MonoBehaviour
 		{
 			if (dummy != null) Destroy(dummy);
 		}
+		// The physicals spawned (wait loop above), so the shuffle owns the entrance from here.
+		CombatEntrancePending = false;
 
 		// Canvas UI release: the HP compare bar activates on the next poll; the enemy HUD has
 		// been sliding in since travel start (fix 2 — world flight, demo :724-727).

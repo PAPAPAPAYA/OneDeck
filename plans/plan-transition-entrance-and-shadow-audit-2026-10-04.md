@@ -1,9 +1,12 @@
 # Transition Entrance Slide & Flip-Shadow Audit (2026-10-04)
 
 Session findings after the animated flip landed (2c98be1a, supersedes the 2026-10-02 fix-6
-instant apex swap; RegressionChecklist row 147). Two open items. NEITHER has code changes —
-both await user rulings. Evidence was gathered with read-only editor experiments (preview
-scenes only; GameScene untouched by them).
+instant apex swap; RegressionChecklist row 147). RULINGS RECEIVED 2026-10-04 (same day):
+
+- **Part A ruling**: user says the disappearing shadow IS `PhysicalCardShadow` (not the price
+  block, not a new back-shadow wish). Re-diagnosis below — audit geometry CONFIRMED correct;
+  a rendering-mechanism cause was NOT found; one screenshot pending to close it.
+- **Part B ruling**: recommended plan APPROVED — implemented same day (see Part B status).
 
 ## Part A — "the other shadow disappears after the flip" (diagnosis, ruling pending)
 
@@ -50,7 +53,36 @@ After the Shop→Combat flight the deck cards flip face-down; the user reports
   small design change (back-shadow sprite or enlarged back silhouette). NOT implemented.
 - **(c)** Neither → need a screenshot or the object name to continue.
 
-## Part B — enemy cards + start card entrance slide (proposal, approval pending)
+### Re-diagnosis after the ruling (2026-10-04, user named PhysicalCardShadow)
+
+Fresh read-only probes (preview scenes + prefab walks, all inactive-instance safe):
+
+1. **The audit's geometry is CONFIRMED — with one evidence correction.** The prefab has THREE
+   `PhysicalCardShadow`-named nodes. Only the TOP-LEVEL one under `PhysicalCard/` is active:
+   localPos (0, 0, +0.20), dead-center behind the full-alpha `PhysicalCardFace` (z=0) and the
+   full-alpha runtime `CardBack` (z=0) — invisible in BOTH states; the flip cannot change
+   that. (The audit's first experiment — and one session probe — misread the NESTED
+   `deprecated/old shadow/PhysicalCardShadow` (offset (0.15,-0.15,0.1), under an INACTIVE
+   `deprecated` node): depth-first same-name lookup hits it after the flip reparents the real
+   rim into FlipRoot. Do not trust flat YAML/dump name matches on this prefab; walk with
+   active flags.)
+2. **No runtime path touches the rim.** Project-wide grep: `BuildFlipRoot`'s reparent is the
+   ONLY code reference. `ApplyColor`/`ApplyBackColor`/`ShopCardView` never touch it.
+3. **Leading candidate for what was actually seen**: FloatStack big-shadow suppression —
+   `CombatUXManager.ApplyFloatStackShadowSuppression` suppresses EVERY deck card's
+   `PhysicalCardBigShadow` in combat (only the revealed card keeps one, driven to the deck
+   anchor), while SHOP deck cards each show their own BigShadow crescent. The suppression
+   lands at the same moment as the flip (landing/deck layout), so it reads as "the flip ate
+   a shadow". Under this theory "BigShadow still shows" = the single driven anchor shadow.
+4. **Minor fact for later work**: `MinionPhysicalCardParent.prefab` / `PhysicalCard.prefab`
+   carry a DIFFERENT `PhysicalCardShadow` — active, alpha 1.00, offset (0.15, 0, 0.10) — a
+   genuinely VISIBLE solid sliver. Combat spawns isMinion cards from the Minion prefab, so
+   minion cards visibly differ from PhysicalCardParent cards in shadow structure. Not the
+   flight flip's doing, but a real cross-prefab inconsistency worth a future pass.
+5. **Closing evidence needed**: one screenshot of the deck where the shadow is missed
+   (ideally shop deck + combat deck side by side), or the object path inspected mid-play.
+
+## Part B — enemy cards + start card entrance slide (APPROVED + IMPLEMENTED 2026-10-04)
 
 ### Why they "pop" today
 
@@ -100,6 +132,22 @@ After the Shop→Combat flight the deck cards flip face-down; the user reports
   larger change (not recommended first).
 - Rejected alternative: spawning enemy cards at travel start — instantiate is owned by
   `RevealCards` (combat logic); the driver must stay presentation-only.
+
+### Implementation (2026-10-04, approved)
+
+- `PhaseTransitionDriver.CombatEntrancePending` (static gate): set at ToCombat travel start
+  (before the phase calls), cleared after the landing wait loop confirms the physicals
+  spawned; also cleared defensively in `Awake`/`OnDestroy` so a scene teardown mid-transition
+  cannot leak it into the next scene. Headless/bypass (`Available == false`) and direct
+  phase flips never set it.
+- `PhaseTransitionDriver.GetEntranceSpawnOffset(CardScript)`: zero while the gate is off;
+  otherwise enemy-owned (`myStatusRef != ownerPlayerStatusRef`, null-safe) or `isStartCard`
+  cards get `+PxToWorld(cfg.enemySlideDemoPx, PageHeightWorld(Camera.main.orthographicSize))`
+  on Y (= 2.293 world units at the shipping ortho, same as the enemy HUD slide-in).
+- `CombatUXManager.InstantiateAllPhysicalCards` layout loop: one `pos += ...` line (the
+  plan-blessed single-line touch on the god file). Spawn positions, rotations, scales and
+  `DeckPositionCalculator` math untouched; gate-off path is byte-for-byte legacy.
+- Play verification still pending (needs a user Play run of one Shop→Combat transition).
 
 ## Session evidence
 
