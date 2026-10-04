@@ -35,6 +35,11 @@ public class PhaseTransitionConfigSO : ScriptableObject
 	public float cardArcDemoPx = 90f;
 	[Tooltip("Enemy HUD counter-direction slide-in distance, demo px (demo: 140)")]
 	public float enemySlideDemoPx = 140f;
+	[Header("Entrance slides (Part C full-dummy coverage; demo px on the 740px page)")]
+	[Tooltip("Enemy-card flight clones spawn this far ABOVE their final stack slot before arcing in, demo px (default 140 = the shipped entrance look). Enemy clones enter face-down regardless — hidden info.")]
+	public float enemyCardSlideDemoPx = 140f;
+	[Tooltip("Start-card flight clone spawn height above its slot, demo px (default 140). The Start Card clone stays face-up per its spawn rule.")]
+	public float startCardSlideDemoPx = 140f;
 	[Tooltip("Background padding beyond each page edge for overshoot peek, demo px (demo: 200). v1.1 world topo only.")]
 	public float pagePadDemoPx = 200f;
 

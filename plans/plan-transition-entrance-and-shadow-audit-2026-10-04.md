@@ -91,7 +91,7 @@ Fresh read-only probes (preview scenes + prefab walks, all inactive-instance saf
 5. ~~Closing evidence needed~~ Closed by the paused-scene probe (point 3); the fix awaits
    the user's next Play run (row 149 ⚠️).
 
-## Part B — enemy cards + start card entrance slide (APPROVED + IMPLEMENTED 2026-10-04)
+## Part B — enemy cards + start card entrance slide (implemented 93f2b921, SUPERSEDED same day by Part C)
 
 ### Why they "pop" today
 
@@ -144,6 +144,12 @@ Fresh read-only probes (preview scenes + prefab walks, all inactive-instance saf
 
 ### Implementation (2026-10-04, approved)
 
+> **SUPERSEDED (2026-10-04 evening, user request "中立卡和敌方卡出现的时机和友方卡一样"):**
+> the spawn-offset path was removed in the same day — with full dummy coverage (Part C below)
+> every slot has a flying dummy, so a spawn offset on the REAL cards would visibly teleport
+> them at the landing swap. The two tuning fields it proposed survived as
+> `enemyCardSlideDemoPx` / `startCardSlideDemoPx` (now controlling the clone spawn heights).
+
 - `PhaseTransitionDriver.CombatEntrancePending` (static gate): set at ToCombat travel start
   (before the phase calls), cleared after the landing wait loop confirms the physicals
   spawned; also cleared defensively in `Awake`/`OnDestroy` so a scene teardown mid-transition
@@ -157,6 +163,39 @@ Fresh read-only probes (preview scenes + prefab walks, all inactive-instance saf
   plan-blessed single-line touch on the god file). Spawn positions, rotations, scales and
   `DeckPositionCalculator` math untouched; gate-off path is byte-for-byte legacy.
 - Play verification still pending (needs a user Play run of one Shop→Combat transition).
+
+## Part C — full dummy coverage: enemy + Start Card on the shared flight schedule (2026-10-04, approved + implemented)
+
+User request: the neutral (Start) card and enemy cards should APPEAR at the same timing as
+the friendly cards — today (pre-Part-C) they popped in at the landing while friendly slots
+were flown in by the borrowed shop dummies.
+
+Feasibility fact (verified): `GatherDecks` runs in `CombatManager.Update`'s state machine
+(`CombatState.GatherDeckLists`), i.e. 1-2 frames AFTER the driver's phase flip, and
+`RevealCards` stays input-blocked until landing — so the driver can read the fully-populated
+`combinedDeckZone` at travel start without touching combat logic.
+
+Implementation (all in `PhaseTransitionDriver`):
+
+- `FlyDummiesToCombatStack` refactored into `BuildFlightGeometry` (struct with anchor /
+  deck scale / step / arc / z-step) + `FlyDummyToSlot(dummy, slotIndex, fanCount, ..., flip)`;
+  the per-card arc/scale/fan/flip code is unchanged (VISUAL-FIX blocks moved with it).
+  `flip=false` skips the mid-arc cover: enemy clones spawn ALREADY face-down (hidden info —
+  their faces must never flash) and the Start Card clone stays face-up (its spawn rule).
+- `CoverUncoveredSlotsWithDummies` coroutine: waits (≤0.5s guard) for `combinedDeckZone`,
+  then for every index >= the borrowed player dummies instantiates one presentation clone
+  with the same prefab selection as `InstantiateAllPhysicalCards` (physical / minion /
+  start-card prefab), wires `cardImRepresenting` (enemy orange back + opponent art come free
+  per frame), spawns it at `slot + (0, slide, 0)` and flies it on the shared schedule.
+  `slide` = `enemyCardSlideDemoPx` / `startCardSlideDemoPx` (new config fields, default 140
+  = the shipped look). `combinedDeckZone[i]` IS the card `InstantiateAllPhysicalCards` puts
+  on slot i, so clone slots match the real landing slots by construction.
+- The clones join the shared dummy list → destroyed by the existing landing swap; the
+  landing wait uses the full count and compensates the 1-2-frame schedule lag by waiting on
+  elapsed wall time (`travelStart` captured before the camera tween).
+- `enemySlideDemoPx` is back to pure enemy-HUD semantics (its card-entrance reuse ended).
+- Headless/bypass/driver-off: the cover coroutine never runs — everything lands the legacy
+  way. Edge: a slot without a wired prefab stays landing-pop.
 
 ## Session evidence
 

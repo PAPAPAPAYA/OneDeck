@@ -36,16 +36,6 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 	/// <summary>True while any transition coroutine runs. Gates shop scroll, phase-change snaps, chrome show.</summary>
 	public static bool IsTransitioning => Me != null && Me._transitioning;
-	/// <summary>
-	/// Entrance slide gate (plan-transition-entrance-and-shadow-audit-2026-10-04 Part B): true
-	/// from ToCombat travel start until the landing handoff confirms the real physicals spawned.
-	/// While true, enemy-owned cards and the Start Card spawn one enemy-slide ABOVE their final
-	/// stack slot (GetEntranceSpawnOffset) and the Start Card shuffle animation delivers the
-	/// drop; player slots are covered by the flight dummies. Never set when the driver is
-	/// unavailable (headless/bypass/direct phase flips) — spawn positions stay byte-for-byte
-	/// legacy.
-	/// </summary>
-	public static bool CombatEntrancePending { get; private set; }
 	/// <summary>True while the driver has claimed the shop's spawned cards (they must survive ClearSpawnedCards).</summary>
 	public static bool OwnsDeckCards => Me != null && Me._ownsDeckCards;
 	/// <summary>True while combat canvas UI (HP compare bar) must stay hidden until the camera lands.</summary>
@@ -120,7 +110,6 @@ public class PhaseTransitionDriver : MonoBehaviour
 			return;
 		}
 		Me = this;
-		CombatEntrancePending = false;
 		_cam = Camera.main;
 		if (_cam == null) return;
 		_rig = _cam.transform.parent != null ? _cam.transform.parent : _cam.transform;
@@ -133,12 +122,7 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		if (Me == this)
-		{
-			Me = null;
-			// Scene teardown mid-transition must not leak the gate into the next scene.
-			CombatEntrancePending = false;
-		}
+		if (Me == this) Me = null;
 		KillAllTweens();
 	}
 
@@ -212,37 +196,12 @@ public class PhaseTransitionDriver : MonoBehaviour
 		return true;
 	}
 
-	/// <summary>
-	/// Entrance spawn offset for cards without flight-dummy coverage (enemy-owned cards + the
-	/// Start Card): one enemy-slide — the same distance/direction as the enemy HUD slide-in
-	/// (transition fix 2) — above the final stack slot; the Start Card shuffle animation, which
-	/// plays at every combat start and flies all cards to their shuffled positions, delivers the
-	/// downward motion for free. Zero while the entrance gate is off. Presentation-only read in
-	/// CombatUXManager.InstantiateAllPhysicalCards' layout loop.
-	/// </summary>
-	public static Vector3 GetEntranceSpawnOffset(CardScript cardScript)
-	{
-		if (!CombatEntrancePending || cardScript == null) return Vector3.zero;
-		bool isEnemy = cardScript.myStatusRef != null && CombatManager.Me != null
-			&& cardScript.myStatusRef != CombatManager.Me.ownerPlayerStatusRef;
-		if (!isEnemy && !cardScript.isStartCard) return Vector3.zero;
-		var cfg = PhaseTransitionConfigSO.Me;
-		var cam = Camera.main;
-		if (cfg == null || cam == null) return Vector3.zero;
-		float slide = PhaseFlightPlanner.PxToWorld(cfg.enemySlideDemoPx, PhaseFlightPlanner.PageHeightWorld(cam.orthographicSize));
-		return new Vector3(0f, slide, 0f);
-	}
-
 	private IEnumerator ShopToCombatRoutine(PhaseManager pm)
 	{
 		var cfg = PhaseTransitionConfigSO.Me;
 		_transitioning = true;
 		_travel = TransitionTravel.ToCombat;
 		_ownsDeckCards = true;
-		// Part B entrance slide: enemy cards + Start Card get no dummy coverage, so from here
-		// until the landing handoff they spawn one slide above their slots and ride the Start
-		// Card shuffle animation down (GetEntranceSpawnOffset).
-		CombatEntrancePending = true;
 		// F2 (plan-phase-transition-audit-fixes-2026-10-02): dismiss any enlarge preview BEFORE
 		// the phase calls — RestoreCard retargets the card and releases its modal ShopInputGate
 		// hold, so no enlarged card lingers on the abandoned page and the gate pair stays
@@ -281,8 +240,15 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 		float dur = cfg != null ? Mathf.Max(0.05f, cfg.transDur) : 0.8f;
 		float stagger = cfg != null ? cfg.cardStagger : 0.07f;
+		float travelStart = Time.unscaledTime;
 		Track(ApplyCfgEase(cfg, _rig.DOMoveY(_combatPageY, dur).SetUpdate(UpdateType.Normal, true)));
 		FlyDummiesToCombatStack(dummies, dur, stagger, cfg);
+		// Part C full-dummy coverage (user request 2026-10-04 "出现的时机和友方卡一样"): the
+		// enemy cards + Start Card used to pop in at the landing — now presentation clones fly
+		// their slots on the SAME stagger schedule. Supersedes the Part B spawn-offset path
+		// (gate + offset removed; every slot has dummy coverage, so the landing swap for the
+		// real cards is invisible end to end).
+		yield return CoverUncoveredSlotsWithDummies(dummies, dur, stagger, cfg);
 
 		// VISUAL-FIX(2026-10-02): deck tails of 4+ cards popped into their stack slots mid-arc
 		//   Cause:    The landing wait used the demo's fixed 3-card formula (transDur + 2*cardStagger,
@@ -296,7 +262,10 @@ public class PhaseTransitionDriver : MonoBehaviour
 		//             stack slot before the destroy/swap; a 3-card deck is visually identical to
 		//             before. PhaseFlightPlannerTests count goldens (1/3/4/8) stay green.
 		//   Related:  plan-phase-transition-audit-fixes-2026-10-02 F3, docs/demo/PhaseTransitionDemo.html:739
-		yield return new WaitForSecondsRealtime(PhaseFlightPlanner.TotalDuration(dur, stagger, dummies.Count) + 0.05f);
+		// The cover coroutine may start the clone flights 1-2 frames after t=0 (GatherDecks runs
+		// on CombatManager.Update's state machine), so the landing waits on elapsed wall time.
+		float flightTotal = PhaseFlightPlanner.TotalDuration(dur, stagger, Mathf.Max(1, dummies.Count)) + 0.05f;
+		yield return new WaitForSecondsRealtime(Mathf.Max(0.05f, flightTotal - (Time.unscaledTime - travelStart)));
 
 		// Land: release combat progression; RevealCards now instantiates the real physicals
 		// (face-down at the same stack slots the dummies landed on) and reveals the Start Card.
@@ -318,8 +287,6 @@ public class PhaseTransitionDriver : MonoBehaviour
 		{
 			if (dummy != null) Destroy(dummy);
 		}
-		// The physicals spawned (wait loop above), so the shuffle owns the entrance from here.
-		CombatEntrancePending = false;
 
 		// Canvas UI release: the HP compare bar activates on the next poll; the enemy HUD has
 		// been sliding in since travel start (fix 2 — world flight, demo :724-727).
@@ -361,6 +328,29 @@ public class PhaseTransitionDriver : MonoBehaviour
 		ShopChrome.SetMirrorsActive(true);
 	}
 
+	private struct FlightGeometry
+	{
+		public Vector3 Anchor;
+		public Vector3 DeckScale;
+		public float StepWorld;
+		public float ArcWorld;
+		public float ZStep;
+	}
+
+	private FlightGeometry BuildFlightGeometry(PhaseTransitionConfigSO cfg)
+	{
+		var ux = CombatUXManager.me;
+		FlightGeometry geo;
+		geo.Anchor = ux != null && ux.physicalCardDeckPos != null
+			? ux.physicalCardDeckPos.position
+			: new Vector3(0f, _combatPageY, 0f);
+		geo.DeckScale = ux != null ? ux.physicalCardDeckSize : Vector3.one;
+		geo.StepWorld = ux != null ? ux.floatStackStepY * ux.floatStackPxToWorld : 0.14f;
+		geo.ArcWorld = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.cardArcDemoPx : 90f, _pageH);
+		geo.ZStep = ux != null ? ux.zOffset : 0.01f;
+		return geo;
+	}
+
 	/// <summary>
 	/// Arc + stagger + mid-flight face-down flip of the borrowed shop deck cards (demo flyShared
 	/// cards branch, :713-723). Dummy i lands on stack slot i above the deck anchor; the real
@@ -368,98 +358,172 @@ public class PhaseTransitionDriver : MonoBehaviour
 	/// </summary>
 	private void FlyDummiesToCombatStack(List<GameObject> dummies, float dur, float stagger, PhaseTransitionConfigSO cfg)
 	{
-		var ux = CombatUXManager.me;
-		Vector3 anchor = ux != null && ux.physicalCardDeckPos != null
-			? ux.physicalCardDeckPos.position
-			: new Vector3(0f, _combatPageY, 0f);
-		Vector3 deckScale = ux != null ? ux.physicalCardDeckSize : Vector3.one;
-		float stepWorld = ux != null ? ux.floatStackStepY * ux.floatStackPxToWorld : 0.14f;
-		float arcWorld = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.cardArcDemoPx : 90f, _pageH);
-
+		var geo = BuildFlightGeometry(cfg);
 		for (int i = 0; i < dummies.Count; i++)
 		{
-			var dummy = dummies[i];
-			if (dummy == null) continue;
-			var phys = dummy.GetComponent<CardPhysObjScript>();
-			if (phys != null) phys.KillTweens();
-			float delay = PhaseFlightPlanner.FlightDelay(i, stagger);
-			Vector3 from = dummy.transform.position;
-			// VISUAL-FIX(2026-10-04): flight dummy stack buried every rim shadow (no inter-card
-			//   shadows during the transition; they popped in at the landing swap)
-			//   Cause:    The landing z baked the demo's hardcoded -0.01/card step while the
-			//             shipped deck layout steps zOffset (scene: 0.5) per card. A card's
-			//             PhysicalCardShadow (local z +0.2) only renders in the inter-card gap
-			//             when the stack step exceeds 0.2, so at 0.01 every rim landed behind
-			//             ~20 neighbour faces and the landing swap teleported the stack onto
-			//             the real 0.5-step z model (shadows appeared in one pop).
-			//   Affects:  PhaseTransitionDriver.FlyDummiesToCombatStack (landing z only;
-			//             y/scale/arc untouched; user paused-scene finding,
-			//             plan-transition-entrance-and-shadow-audit-2026-10-04 Part A)
-			//   Regress:  Transition with any deck: the flying stack shows the same per-card
-			//             rim shadows as the landed combat deck and the landing swap becomes
-			//             z-invisible. Headless/bypass paths never reach this code.
-			//   Related:  docs/demo/PhaseTransitionDemo.html flyShared branch (demo 3-card
-			//             stack made the 0.01 step invisible), RegressionChecklist row 149
-			Vector3 to = anchor + new Vector3(0f, stepWorld * i, -(ux != null ? ux.zOffset : 0.01f) * i);
-			Vector3 apex = PhaseFlightPlanner.ArcApex(from, to, arcWorld);
-			// Demo rot: (i - 1) * 5 degrees for 3 cards; generalize to a centered fan.
-			float fanRot = (i - (dummies.Count - 1) * 0.5f) * 5f;
+			FlyDummyToSlot(dummies[i], i, dummies.Count, dur, stagger, cfg, geo, flip: true);
+		}
+	}
 
-			var seq = DOTween.Sequence().SetUpdate(UpdateType.Normal, true);
-			seq.AppendInterval(delay);
-			// VISUAL-FIX(2026-10-02): card flights ignored the shared ease — Overshoot mode did
-			//   not bend the card paths
-			//   Cause:    The two move segments hardcoded Ease.OutQuad (up) + Ease.InQuad (down)
-			//             while the demo's fly() runs the WHOLE flight on the shared ease
-			//             (PhaseTransitionDemo.html:684-691 — animation-level easing re-applies
-			//             per keyframe interval, i.e. per segment).
-			//   Affects:  PhaseTransitionDriver.FlyDummiesToCombatStack (move segments, scale,
-			//             fan rotation — all flight tweens now carry cfg.ApplyEase)
-			//   Regress:  Transition with easeMode Overshoot (default): cards visibly overshoot
-			//             past the apex and past their landing slot like the camera does; with
-			//             Smooth/Linear the flight is a plain eased path. Camera + cards land
-			//             together as before.
-			//   Related:  docs/PhaseTransition.md open-item 1, PhaseTransitionConfigSO.ApplyEase
-			seq.Append(ApplyCfgEase(cfg, dummy.transform.DOMove(apex, dur * 0.5f)));
-			seq.Append(ApplyCfgEase(cfg, dummy.transform.DOMove(to, dur * 0.5f)));
-			seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DOScale(deckScale, dur)));
-			seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DORotate(new Vector3(0f, 0f, fanRot), dur * 0.5f)));
-			seq.Insert(delay + dur * 0.5f, ApplyCfgEase(cfg, dummy.transform.DORotate(Vector3.zero, dur * 0.5f)));
-			Track(seq);
+	/// <summary>
+	/// One card's staggered arc onto stack slot slotIndex (shared by the borrowed shop dummies
+	/// and the Part C enemy/Start-Card clones). flip=false skips the mid-arc cover: enemy clones
+	/// spawn ALREADY face-down (hidden info — their faces must never show) and the Start Card
+	/// clone stays face-up per its spawn rule.
+	/// </summary>
+	private void FlyDummyToSlot(GameObject dummy, int slotIndex, int fanCount, float dur, float stagger, PhaseTransitionConfigSO cfg, FlightGeometry geo, bool flip)
+	{
+		if (dummy == null) return;
+		var phys = dummy.GetComponent<CardPhysObjScript>();
+		if (phys != null) phys.KillTweens();
+		float delay = PhaseFlightPlanner.FlightDelay(slotIndex, stagger);
+		Vector3 from = dummy.transform.position;
+		// VISUAL-FIX(2026-10-04): flight dummy stack buried every rim shadow (no inter-card
+		//   shadows during the transition; they popped in at the landing swap)
+		//   Cause:    The landing z baked the demo's hardcoded -0.01/card step while the
+		//             shipped deck layout steps zOffset (scene: 0.5) per card. A card's
+		//             PhysicalCardShadow (local z +0.2) only renders in the inter-card gap
+		//             when the stack step exceeds 0.2, so at 0.01 every rim landed behind
+		//             ~20 neighbour faces and the landing swap teleported the stack onto
+		//             the real 0.5-step z model (shadows appeared in one pop).
+		//   Affects:  PhaseTransitionDriver.FlyDummyToSlot (landing z only;
+		//             y/scale/arc untouched; user paused-scene finding,
+		//             plan-transition-entrance-and-shadow-audit-2026-10-04 Part A)
+		//   Regress:  Transition with any deck: the flying stack shows the same per-card
+		//             rim shadows as the landed combat deck and the landing swap becomes
+		//             z-invisible. Headless/bypass paths never reach this code.
+		//   Related:  docs/demo/PhaseTransitionDemo.html flyShared branch (demo 3-card
+		//             stack made the 0.01 step invisible), RegressionChecklist row 149
+		Vector3 to = geo.Anchor + new Vector3(0f, geo.StepWorld * slotIndex, -geo.ZStep * slotIndex);
+		Vector3 apex = PhaseFlightPlanner.ArcApex(from, to, geo.ArcWorld);
+		// Demo rot: (i - 1) * 5 degrees for 3 cards; generalize to a centered fan.
+		float fanRot = (slotIndex - (fanCount - 1) * 0.5f) * 5f;
 
-			if (phys != null)
+		var seq = DOTween.Sequence().SetUpdate(UpdateType.Normal, true);
+		seq.AppendInterval(delay);
+		// VISUAL-FIX(2026-10-02): card flights ignored the shared ease — Overshoot mode did
+		//   not bend the card paths
+		//   Cause:    The two move segments hardcoded Ease.OutQuad (up) + Ease.InQuad (down)
+		//             while the demo's fly() runs the WHOLE flight on the shared ease
+		//             (PhaseTransitionDemo.html:684-691 — animation-level easing re-applies
+		//             per keyframe interval, i.e. per segment).
+		//   Affects:  PhaseTransitionDriver.FlyDummyToSlot (move segments, scale,
+		//             fan rotation — all flight tweens now carry cfg.ApplyEase)
+		//   Regress:  Transition with easeMode Overshoot (default): cards visibly overshoot
+		//             past the apex and past their landing slot like the camera does; with
+		//             Smooth/Linear the flight is a plain eased path. Camera + cards land
+		//             together as before.
+		//   Related:  docs/PhaseTransition.md open-item 1, PhaseTransitionConfigSO.ApplyEase
+		seq.Append(ApplyCfgEase(cfg, dummy.transform.DOMove(apex, dur * 0.5f)));
+		seq.Append(ApplyCfgEase(cfg, dummy.transform.DOMove(to, dur * 0.5f)));
+		seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DOScale(geo.DeckScale, dur)));
+		seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DORotate(new Vector3(0f, 0f, fanRot), dur * 0.5f)));
+		seq.Insert(delay + dur * 0.5f, ApplyCfgEase(cfg, dummy.transform.DORotate(Vector3.zero, dur * 0.5f)));
+		Track(seq);
+
+		if (flip && phys != null)
+		{
+			// force=true: the combat-entry shuffle is the never-cover rule's legal cover
+			// point (FaceDownFlipSystem); the dummies are destroyed after the landing swap,
+			// so no ClearRevealedMemory is needed.
+			// VISUAL-FIX(2026-10-02): mid-arc cover played the animated scaleX flip while the
+			//   demo swaps to the card back INSTANTLY at the apex (is-back class toggle,
+			//   PhaseTransitionDemo.html:692-694) — made instant (fix 6).
+			// VISUAL-FIX(2026-10-04): animated squash flip restored (user ruling — the instant
+			//   swap read as a hard pop; supersedes the 2026-10-02 fix 6 demo-fidelity ruling)
+			//   Cause:    SetFaceUp(false, animated:false) at delay + transDur/2 replaced the
+			//             face with the back in a single frame, mid-flight.
+			//   Affects:  PhaseTransitionDriver.FlyDummyToSlot (flip call + schedule),
+			//             PhaseFlightPlanner.FlipStart (new: apex-centered start + landing clamp)
+			//   Regress:  Transition: each dummy plays the scaleX squash flip centered on its
+			//             arc apex (pinch = back first appears at the demo cover point) and
+			//             the back is fully open BEFORE the card lands. FlipRoot scaleX never
+			//             fights the flight's root-transform tweens (BuildFlipRoot separation);
+			//             the flip runs unscaled-time like every transition tween; the
+			//             never-cover force path is untouched.
+			//   Related:  docs/PhaseTransition.md deviations item 6, docs/FaceDownFlipSystem.md
+			// Schedule with the combat-scaled duration (the flip's own GetCombatScaledDuration
+			// applies the same scaler once the phase reads Combat, which it does from travel
+			// start): the scheduled window is always >= the real flip, so the back can only
+			// open EARLY relative to the clamp, never past the landing.
+			float flipDur = CombatAnimationSpeed.ScaleDuration(phys.flipDuration);
+			float flipStart = PhaseFlightPlanner.FlipStart(delay, dur, flipDur);
+			var captured = phys;
+			Track(DOVirtual.DelayedCall(flipStart, () =>
 			{
-				// force=true: the combat-entry shuffle is the never-cover rule's legal cover
-				// point (FaceDownFlipSystem); the dummies are destroyed after the landing swap,
-				// so no ClearRevealedMemory is needed.
-				// VISUAL-FIX(2026-10-02): mid-arc cover played the animated scaleX flip while the
-				//   demo swaps to the card back INSTANTLY at the apex (is-back class toggle,
-				//   PhaseTransitionDemo.html:692-694) — made instant (fix 6).
-				// VISUAL-FIX(2026-10-04): animated squash flip restored (user ruling — the instant
-				//   swap read as a hard pop; supersedes the 2026-10-02 fix 6 demo-fidelity ruling)
-				//   Cause:    SetFaceUp(false, animated:false) at delay + transDur/2 replaced the
-				//             face with the back in a single frame, mid-flight.
-				//   Affects:  PhaseTransitionDriver.FlyDummiesToCombatStack (flip call + schedule),
-				//             PhaseFlightPlanner.FlipStart (new: apex-centered start + landing clamp)
-				//   Regress:  Transition: each dummy plays the scaleX squash flip centered on its
-				//             arc apex (pinch = back first appears at the demo cover point) and
-				//             the back is fully open BEFORE the card lands. FlipRoot scaleX never
-				//             fights the flight's root-transform tweens (BuildFlipRoot separation);
-				//             the flip runs unscaled-time like every transition tween; the
-				//             never-cover force path is untouched.
-				//   Related:  docs/PhaseTransition.md deviations item 6, docs/FaceDownFlipSystem.md
-				// Schedule with the combat-scaled duration (the flip's own GetCombatScaledDuration
-				// applies the same scaler once the phase reads Combat, which it does from travel
-				// start): the scheduled window is always >= the real flip, so the back can only
-				// open EARLY relative to the clamp, never past the landing.
-				float flipDur = CombatAnimationSpeed.ScaleDuration(phys.flipDuration);
-				float flipStart = PhaseFlightPlanner.FlipStart(delay, dur, flipDur);
-				var captured = phys;
-				Track(DOVirtual.DelayedCall(flipStart, () =>
-				{
-					if (captured != null) captured.SetFaceUp(false, true, true);
-				}, true));
+				if (captured != null) captured.SetFaceUp(false, true, true);
+			}, true));
+		}
+	}
+
+	/// <summary>
+	/// Part C full-dummy coverage (user request 2026-10-04: enemy cards + Start Card appear on
+	/// the same staggered schedule as the friendly cards instead of popping in at the landing).
+	/// Waits for CombatManager's GatherDecks (a state machine on Update — ready 1-2 frames after
+	/// the phase flip), then instantiates one presentation clone per uncovered deck slot
+	/// (combinedDeckZone indices >= the borrowed player dummies, same prefab selection as
+	/// InstantiateAllPhysicalCards) and flies it onto the shared schedule. Enemy clones enter
+	/// face-down already; the Start Card clone keeps its face. The clones join `dummies` so the
+	/// landing swap destroys them with the borrowed ones. Presentation-only: the only combat
+	/// read is the already-populated combinedDeckZone — RevealCards stays blocked until landing.
+	/// Slot alignment: combinedDeckZone[i] IS the card InstantiateAllPhysicalCards places on
+	/// slot i, so clone slots match the real landing slots by construction.
+	/// </summary>
+	private IEnumerator CoverUncoveredSlotsWithDummies(List<GameObject> dummies, float dur, float stagger, PhaseTransitionConfigSO cfg)
+	{
+		float guard = 0f;
+		while (guard < 0.5f)
+		{
+			var cm = CombatManager.Me;
+			if (cm != null && cm.combinedDeckZone != null && cm.combinedDeckZone.Count > 0) break;
+			guard += Time.unscaledDeltaTime;
+			yield return null;
+		}
+		var combat = CombatManager.Me;
+		var ux = CombatUXManager.me;
+		if (combat == null || combat.combinedDeckZone == null || combat.combinedDeckZone.Count == 0 || ux == null)
+		{
+			yield break; // no deck to cover: the real cards land the legacy way
+		}
+
+		var geo = BuildFlightGeometry(cfg);
+		float pageH = PhaseFlightPlanner.PageHeightWorld(Camera.main != null ? Camera.main.orthographicSize : 6f);
+		float enemySlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.enemyCardSlideDemoPx : 140f, pageH);
+		float startSlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.startCardSlideDemoPx : 140f, pageH);
+
+		// dummies.Count = the borrowed player-deck cards = the player section (deck order), so
+		// list index == combinedDeckZone index for the uncovered tail.
+		for (int i = dummies.Count; i < combat.combinedDeckZone.Count; i++)
+		{
+			var card = combat.combinedDeckZone[i];
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			bool isStart = cardScript != null && cardScript.isStartCard;
+			GameObject prefab = ux.physicalCardPrefab;
+			if (cardScript != null)
+			{
+				if (isStart) prefab = ux.startCardPhysicalPrefab != null ? ux.startCardPhysicalPrefab : prefab;
+				else if (cardScript.isMinion) prefab = ux.minionPhysicalPrefab != null ? ux.minionPhysicalPrefab : prefab;
 			}
+			if (prefab == null) continue; // no prefab wired: this slot stays landing-pop (legacy)
+
+			bool isEnemy = cardScript != null && cardScript.myStatusRef != null
+				&& cardScript.myStatusRef != combat.ownerPlayerStatusRef;
+			float slide = isStart ? startSlide : enemySlide;
+			Vector3 slot = geo.Anchor + new Vector3(0f, geo.StepWorld * i, -geo.ZStep * i);
+			GameObject clone = Instantiate(prefab, slot + new Vector3(0f, slide, 0f), Quaternion.identity);
+			clone.name = "[entrance dummy] " + card.name;
+			var phys = clone.GetComponent<CardPhysObjScript>();
+			if (phys == null)
+			{
+				Destroy(clone);
+				continue;
+			}
+			phys.cardImRepresenting = cardScript; // drives ApplyBackColor (enemy orange) / ApplyColor per frame
+			phys.SetScaleImmediate(geo.DeckScale);
+			if (!isStart) phys.SetFaceUp(false, false);
+			dummies.Add(clone);
+			FlyDummyToSlot(clone, i, combat.combinedDeckZone.Count, dur, stagger, cfg, geo, flip: false);
 		}
 	}
 
