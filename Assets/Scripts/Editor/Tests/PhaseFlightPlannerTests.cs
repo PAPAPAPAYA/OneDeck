@@ -63,8 +63,33 @@ public class PhaseFlightPlannerTests
 	public void FlipTime_IsMidFlight()
 	{
 		// Demo flipAtMid (:692): delay + transDur/2. Card 1: 0.07 + 0.4 = 0.47 s.
+		// Since the 2026-10-04 animated flip this value is the PINCH moment (FlipRoot
+		// scaleX = 0, the back first appears), not an instant swap.
 		Assert.AreEqual(0.47f, PhaseFlightPlanner.FlipTime(0.07f, 0.8f), 1e-4f);
 		Assert.AreEqual(0.4f, PhaseFlightPlanner.FlipTime(0f, 0.8f), 1e-4f);
+	}
+
+	[Test]
+	public void FlipStart_CentersFlipOnApex()
+	{
+		// 2026-10-04 animated flip: start = pinch point (FlipTime) - half the flip, so the
+		// scaleX pinch stays at the demo cover point and the back opens during the descent.
+		// flipDuration 0.3 s is the CardPhysObjScript shipping default.
+		Assert.AreEqual(0.25f, PhaseFlightPlanner.FlipStart(0f, 0.8f, 0.3f), 1e-4f);
+		Assert.AreEqual(0.32f, PhaseFlightPlanner.FlipStart(0.07f, 0.8f, 0.3f), 1e-4f);
+	}
+
+	[Test]
+	public void FlipStart_ClampsToFinishBeforeLanding()
+	{
+		// Short flight: the start is pulled earlier so the back is fully open by landing
+		// (start 0.05 + flip 0.3 = 0.35 < landing 0.4).
+		Assert.AreEqual(0.05f, PhaseFlightPlanner.FlipStart(0f, 0.4f, 0.3f), 1e-4f);
+		// Flight exactly one flip long: the flip ends exactly at landing.
+		Assert.AreEqual(0f, PhaseFlightPlanner.FlipStart(0f, 0.3f, 0.3f), 1e-4f);
+		// Degenerate (flight shorter than the flip): never start before the card's own
+		// launch — the flip runs into the landing swap, which lands later anyway.
+		Assert.AreEqual(0f, PhaseFlightPlanner.FlipStart(0f, 0.2f, 0.3f), 1e-4f);
 	}
 
 	[Test]

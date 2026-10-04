@@ -370,23 +370,35 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 			if (phys != null)
 			{
-				// flipAtMid (demo :692): cover at the arc apex. force=true: the combat-entry
-				// shuffle is the never-cover rule's legal cover point (FaceDownFlipSystem).
+				// force=true: the combat-entry shuffle is the never-cover rule's legal cover
+				// point (FaceDownFlipSystem); the dummies are destroyed after the landing swap,
+				// so no ClearRevealedMemory is needed.
 				// VISUAL-FIX(2026-10-02): mid-arc cover played the animated scaleX flip while the
 				//   demo swaps to the card back INSTANTLY at the apex (is-back class toggle,
-				//   PhaseTransitionDemo.html:692-694)
-				//   Cause:    SetFaceUp(false, animated:true) at delay + transDur/2 — the same
-				//             time the flight tweens are mid-motion.
-				//   Affects:  PhaseTransitionDriver.FlyDummiesToCombatStack (flip delayed call)
-				//   Regress:  Transition: deck cards show their backs immediately at the arc
-				//             midpoint — no scaleX pinch; landing stack look unchanged; the
+				//   PhaseTransitionDemo.html:692-694) — made instant (fix 6).
+				// VISUAL-FIX(2026-10-04): animated squash flip restored (user ruling — the instant
+				//   swap read as a hard pop; supersedes the 2026-10-02 fix 6 demo-fidelity ruling)
+				//   Cause:    SetFaceUp(false, animated:false) at delay + transDur/2 replaced the
+				//             face with the back in a single frame, mid-flight.
+				//   Affects:  PhaseTransitionDriver.FlyDummiesToCombatStack (flip call + schedule),
+				//             PhaseFlightPlanner.FlipStart (new: apex-centered start + landing clamp)
+				//   Regress:  Transition: each dummy plays the scaleX squash flip centered on its
+				//             arc apex (pinch = back first appears at the demo cover point) and
+				//             the back is fully open BEFORE the card lands. FlipRoot scaleX never
+				//             fights the flight's root-transform tweens (BuildFlipRoot separation);
+				//             the flip runs unscaled-time like every transition tween; the
 				//             never-cover force path is untouched.
-				//   Related:  docs/PhaseTransition.md open-item 6, docs/FaceDownFlipSystem.md
-				float flipAt = PhaseFlightPlanner.FlipTime(delay, dur);
+				//   Related:  docs/PhaseTransition.md deviations item 6, docs/FaceDownFlipSystem.md
+				// Schedule with the combat-scaled duration (the flip's own GetCombatScaledDuration
+				// applies the same scaler once the phase reads Combat, which it does from travel
+				// start): the scheduled window is always >= the real flip, so the back can only
+				// open EARLY relative to the clamp, never past the landing.
+				float flipDur = CombatAnimationSpeed.ScaleDuration(phys.flipDuration);
+				float flipStart = PhaseFlightPlanner.FlipStart(delay, dur, flipDur);
 				var captured = phys;
-				Track(DOVirtual.DelayedCall(flipAt, () =>
+				Track(DOVirtual.DelayedCall(flipStart, () =>
 				{
-					if (captured != null) captured.SetFaceUp(false, false, true);
+					if (captured != null) captured.SetFaceUp(false, true, true);
 				}, true));
 			}
 		}

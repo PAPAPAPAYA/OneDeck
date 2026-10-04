@@ -46,10 +46,27 @@ public static class PhaseFlightPlanner
 		return index * stagger;
 	}
 
-	/// <summary>Face-down flip time within one flight (demo flipAtMid: delay + transDur/2, :692-694).</summary>
+	/// <summary>Face-down flip time within one flight (demo flipAtMid: delay + transDur/2, :692-694).
+	/// With the 2026-10-04 animated flip this is the PINCH moment (FlipRoot scaleX = 0, the back
+	/// first appears), not an instant swap.</summary>
 	public static float FlipTime(float delay, float duration)
 	{
 		return delay + duration * 0.5f;
+	}
+
+	/// <summary>
+	/// Animated-flip START time (2026-10-04 user ruling, supersedes the demo's instant apex
+	/// swap / 2026-10-02 fix 6): the squash flip is CENTERED on the arc apex, so the scaleX
+	/// pinch — the moment the back first appears — stays at the demo's flipAtMid point while
+	/// the back finishes opening during the descent, before the card lands. Clamped so the
+	/// flip can never start before the card's own launch, and so it always completes by
+	/// landing (delay + duration) whenever the flight is at least one flip long.
+	/// </summary>
+	public static float FlipStart(float delay, float duration, float flipDuration)
+	{
+		float ideal = FlipTime(delay, duration) - flipDuration * 0.5f;
+		float latest = delay + duration - flipDuration;
+		return Mathf.Max(delay, Mathf.Min(ideal, latest));
 	}
 
 	/// <summary>Total transition wait: camera duration plus the stagger tail (demo: transDur + 2*cardStagger, :739).</summary>
