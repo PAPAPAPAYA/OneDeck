@@ -1408,9 +1408,11 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 
 	/// <summary>
 	/// Count-parameterized overload for callers computing against a future deck size
-	/// (e.g. MoveRevealedCardToBottom uses effectiveCount before the reveal resolves).
+	/// (e.g. MoveRevealedCardToBottom uses effectiveCount before the reveal resolves;
+	/// PhaseTransitionDriver's entrance dummies tween to the scale the real layout will
+	/// compute once the deck holds the full combinedDeckZone count).
 	/// </summary>
-	private Vector3 GetDeckScaleAtIndex(int unityIndex, int count)
+	public Vector3 GetDeckScaleAtIndex(int unityIndex, int count)
 	{
 		if (deckLayoutMode == DeckLayoutMode.Linear) return physicalCardDeckSize;
 		if (count <= 0) return physicalCardDeckSize;
@@ -1604,15 +1606,33 @@ public class CombatUXManager : MonoBehaviour, ICombatVisuals
 	}
 
 	/// <summary>
+	/// Layout base POSITION of a deck slot computed against a FUTURE deck size (jitter and
+	/// spread excluded, log-free — same semantics as GetLayoutSlotBaseY with the live count
+	/// replaced by layoutCount). Public since the Part D entrance fix (2026-10-05): the phase
+	/// transition's flight dummies must land on the slots the real layout will compute once
+	/// InstantiateAllPhysicalCards fills the deck to the full combinedDeckZone count — the
+	/// live-count path would read 0 mid-transition and collapse the FloatStack centering onto
+	/// the anchor. plan-transition-entrance-and-shadow-audit-2026-10-04.md Part D.
+	/// Deliberately jitter/spread-free: DeckLayoutOffsetProvider.GetPositionOffset auto-assigns
+	/// a random offset for a phys it has never seen, so the driver must not route a dummy phys
+	/// through GetFinalDeckPositionForCard (the real card's fresh landing jitter cannot be
+	/// matched anyway; the landing swap + opening shuffle mask the residual).
+	/// </summary>
+	public Vector3 GetLayoutSlotBasePosition(int index, int layoutCount)
+	{
+		return DeckPositionCalculator.CalculatePositionAtIndex(
+			index, layoutCount, physicalCardDeckPos.position, xOffset, yOffset, zOffset,
+			BuildCascadeConfig(), BuildArcLoopConfig(), BuildFloatStackConfig());
+	}
+
+	/// <summary>
 	/// Layout base Y of a deck slot: CalculatePositionAtIndex minus its logging wrapper (the
 	/// spread math runs per card per relayout AND per hover frame, so it must stay log-free).
 	/// Mirrors CalculatePositionAtIndex's exact arguments; jitter and spread excluded.
 	/// </summary>
 	private float GetLayoutSlotBaseY(int index)
 	{
-		return DeckPositionCalculator.CalculatePositionAtIndex(
-			index, GetLayoutDeckCount(), physicalCardDeckPos.position, xOffset, yOffset, zOffset,
-			BuildCascadeConfig(), BuildArcLoopConfig(), BuildFloatStackConfig()).y;
+		return GetLayoutSlotBasePosition(index, GetLayoutDeckCount()).y;
 	}
 
 	/// <summary>

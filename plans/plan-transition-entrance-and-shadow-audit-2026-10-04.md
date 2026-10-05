@@ -243,7 +243,21 @@ the combat page, overlapping the enemy HUD zone, visually detached from the deck
    (the approved same-timing reading); the landing swap destroys them as before; headless/
    bypass keeps the legacy path.
 
-Status: PLAN ONLY — no code changed for Part D yet; awaits the user's 修改代码 ruling.
+Status: IMPLEMENTED 2026-10-05 (EditMode suite green; Play verification pending —
+RegressionChecklist row 151 ⚠️). One deviation from the letter of item 1, same math:
+the flight target routes through the NEW count-parameterized seam
+`CombatUXManager.GetLayoutSlotBasePosition(i, futureCount)` (+ the now-public
+`GetDeckScaleAtIndex(i, futureCount)`) instead of `GetFinalDeckPositionForCard(phys, i)`
+directly — that method's jitter term calls `DeckLayoutOffsetProvider.GetPositionOffset`,
+which AUTO-ASSIGNS a random offset for a phys it has never seen, so routing a dummy/clone
+phys through it would bake a random jitter into the flight target (the real card's fresh
+landing jitter is unmatched anyway; the landing swap + opening shuffle mask the residual,
+exactly as the note above accepts). Item 1's count reality is also handled here: the
+future count N (= combinedDeckZone.Count) only exists after GatherDecks (1-2 frames after
+the phase flip), so the WHOLE flight schedule — player dummies included — is created after
+the zone wait, and the landing wait is measured from the scheduling moment (the old
+wall-time back-subtraction from travelStart is gone). The degenerate zone-timeout path
+flies the player dummies on the legacy linear bake so they never strand at shop positions.
 
 ## Session evidence
 

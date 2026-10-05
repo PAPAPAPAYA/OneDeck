@@ -30,6 +30,9 @@ public class PhaseTransitionDriver : MonoBehaviour
 	private bool _ownsDeckCards;
 	private bool _suppressCombatCanvasUI;
 	private TransitionTravel _travel;
+	// Part D entrance v2: the total Shop→Combat flight wait computed by
+	// ScheduleCombatEntranceFlights (shared stagger measured from the scheduling moment).
+	private float _entranceFlightTotal;
 
 	/// <summary>Travel direction while a transition coroutine runs (the HUD presenters run their world flights on its edges, fixes 2/3/7).</summary>
 	public enum TransitionTravel { None, ToCombat, ToShop }
@@ -240,15 +243,16 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 		float dur = cfg != null ? Mathf.Max(0.05f, cfg.transDur) : 0.8f;
 		float stagger = cfg != null ? cfg.cardStagger : 0.07f;
-		float travelStart = Time.unscaledTime;
 		Track(ApplyCfgEase(cfg, _rig.DOMoveY(_combatPageY, dur).SetUpdate(UpdateType.Normal, true)));
-		FlyDummiesToCombatStack(dummies, dur, stagger, cfg);
 		// Part C full-dummy coverage (user request 2026-10-04 "出现的时机和友方卡一样"): the
-		// enemy cards + Start Card used to pop in at the landing — now presentation clones fly
-		// their slots on the SAME stagger schedule. Supersedes the Part B spawn-offset path
-		// (gate + offset removed; every slot has dummy coverage, so the landing swap for the
-		// real cards is invisible end to end).
-		yield return CoverUncoveredSlotsWithDummies(dummies, dur, stagger, cfg);
+		// enemy cards + Start Card used to pop in at the landing — presentation clones fly
+		// their slots on the SAME stagger schedule. Part D v2 (2026-10-04 plan): the WHOLE
+		// schedule (player dummies + clones) is created only once combinedDeckZone exists —
+		// the real-layout landing targets need the full future deck count, which GatherDecks
+		// assembles 1-2 frames after the phase flip — and each clone spawns AT its flight
+		// start, so no resting column ever hangs above the deck.
+		_entranceFlightTotal = 0f;
+		yield return ScheduleCombatEntranceFlights(dummies, dur, stagger, cfg);
 
 		// VISUAL-FIX(2026-10-02): deck tails of 4+ cards popped into their stack slots mid-arc
 		//   Cause:    The landing wait used the demo's fixed 3-card formula (transDur + 2*cardStagger,
@@ -262,10 +266,9 @@ public class PhaseTransitionDriver : MonoBehaviour
 		//             stack slot before the destroy/swap; a 3-card deck is visually identical to
 		//             before. PhaseFlightPlannerTests count goldens (1/3/4/8) stay green.
 		//   Related:  plan-phase-transition-audit-fixes-2026-10-02 F3, docs/demo/PhaseTransitionDemo.html:739
-		// The cover coroutine may start the clone flights 1-2 frames after t=0 (GatherDecks runs
-		// on CombatManager.Update's state machine), so the landing waits on elapsed wall time.
-		float flightTotal = PhaseFlightPlanner.TotalDuration(dur, stagger, Mathf.Max(1, dummies.Count)) + 0.05f;
-		yield return new WaitForSecondsRealtime(Mathf.Max(0.05f, flightTotal - (Time.unscaledTime - travelStart)));
+		// The flights are created at the end of ScheduleCombatEntranceFlights, so the shared
+		// schedule starts exactly here — the count-aware total needs no wall-time subtraction.
+		yield return new WaitForSecondsRealtime(Mathf.Max(0.05f, _entranceFlightTotal));
 
 		// Land: release combat progression; RevealCards now instantiates the real physicals
 		// (face-down at the same stack slots the dummies landed on) and reveals the Start Card.
@@ -328,6 +331,9 @@ public class PhaseTransitionDriver : MonoBehaviour
 		ShopChrome.SetMirrorsActive(true);
 	}
 
+	// Part D v2: the real flight targets come from CombatUXManager's future-count layout seam
+	// (exact for every mode); Anchor/StepWorld/ZStep/DeckScale only feed the degenerate
+	// fallback bake (combinedDeckZone never assembled within the guard). ArcWorld is shared.
 	private struct FlightGeometry
 	{
 		public Vector3 Anchor;
@@ -352,31 +358,38 @@ public class PhaseTransitionDriver : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Arc + stagger + mid-flight face-down flip of the borrowed shop deck cards (demo flyShared
-	/// cards branch, :713-723). Dummy i lands on stack slot i above the deck anchor; the real
-	/// combat physicals pop into the same slots at landing, so destroying the dummies is invisible.
+	/// Degenerate-path flight (combinedDeckZone never assembled within the guard window, so
+	/// the real-layout targeting is impossible): the borrowed shop cards fly the LEGACY linear
+	/// bake (anchor + step*i) so they never strand at their shop positions; no clones exist.
+	/// Returns the count-aware flight total for the landing wait.
 	/// </summary>
-	private void FlyDummiesToCombatStack(List<GameObject> dummies, float dur, float stagger, PhaseTransitionConfigSO cfg)
+	private float FlyDummiesToCombatStack(List<GameObject> dummies, float dur, float stagger, PhaseTransitionConfigSO cfg)
 	{
 		var geo = BuildFlightGeometry(cfg);
 		for (int i = 0; i < dummies.Count; i++)
 		{
-			FlyDummyToSlot(dummies[i], i, dummies.Count, dur, stagger, cfg, geo, flip: true);
+			FlyDummyToSlot(dummies[i], i, dummies.Count, dur, cfg, geo, flip: true,
+				delay: PhaseFlightPlanner.FlightDelay(i, stagger),
+				target: geo.Anchor + new Vector3(0f, geo.StepWorld * i, -geo.ZStep * i),
+				finalScale: geo.DeckScale);
 		}
+		return PhaseFlightPlanner.TotalDuration(dur, stagger, Mathf.Max(1, dummies.Count)) + 0.05f;
 	}
 
 	/// <summary>
-	/// One card's staggered arc onto stack slot slotIndex (shared by the borrowed shop dummies
-	/// and the Part C enemy/Start-Card clones). flip=false skips the mid-arc cover: enemy clones
-	/// spawn ALREADY face-down (hidden info — their faces must never show) and the Start Card
-	/// clone stays face-up per its spawn rule.
+	/// One card's staggered arc onto its slot (shared by the borrowed shop dummies and the
+	/// Part C enemy/Start-Card clones). `target` and `finalScale` are computed by the caller —
+	/// real-layout path: CombatUXManager's future-count seam (GetLayoutSlotBasePosition +
+	/// GetDeckScaleAtIndex with the full combinedDeckZone count); degenerate fallback: the
+	/// legacy linear bake. flip=false skips the mid-arc cover: enemy clones spawn ALREADY
+	/// face-down (hidden info — their faces must never show) and the Start Card clone stays
+	/// face-up per its spawn rule.
 	/// </summary>
-	private void FlyDummyToSlot(GameObject dummy, int slotIndex, int fanCount, float dur, float stagger, PhaseTransitionConfigSO cfg, FlightGeometry geo, bool flip)
+	private void FlyDummyToSlot(GameObject dummy, int slotIndex, int fanCount, float dur, PhaseTransitionConfigSO cfg, FlightGeometry geo, bool flip, float delay, Vector3 target, Vector3 finalScale)
 	{
 		if (dummy == null) return;
 		var phys = dummy.GetComponent<CardPhysObjScript>();
 		if (phys != null) phys.KillTweens();
-		float delay = PhaseFlightPlanner.FlightDelay(slotIndex, stagger);
 		Vector3 from = dummy.transform.position;
 		// VISUAL-FIX(2026-10-04): flight dummy stack buried every rim shadow (no inter-card
 		//   shadows during the transition; they popped in at the landing swap)
@@ -394,7 +407,25 @@ public class PhaseTransitionDriver : MonoBehaviour
 		//             z-invisible. Headless/bypass paths never reach this code.
 		//   Related:  docs/demo/PhaseTransitionDemo.html flyShared branch (demo 3-card
 		//             stack made the 0.01 step invisible), RegressionChecklist row 149
-		Vector3 to = geo.Anchor + new Vector3(0f, geo.StepWorld * slotIndex, -geo.ZStep * slotIndex);
+		//   (2026-10-05: the target source moved to the real-layout seam — block below —
+		//   which carries the same zOffset-per-card step, so this property still holds.)
+		// VISUAL-FIX(2026-10-05): entrance flights landed on a linear bake that never matched
+		//   the shipped FloatStack layout (plan-transition-entrance-and-shadow-audit-2026-10-04
+		//   Part D; latent since the 09-21 port, inherited by the Part C clones)
+		//   Cause:    Dummy i flew to anchor + step*i while the real FloatStack slot is
+		//             CENTERED (DeckFloatStackLayout.ComputeSlotOffset: y = step*(N-2j-1)/2 +
+		//             lift) — for a 6-card deck the Start Card's real slot sat ~3.2 units BELOW
+		//             the baked target with the vertical order inverted; the landing swap plus
+		//             the opening Start-Card shuffle masked it.
+		//   Affects:  PhaseTransitionDriver.FlyDummyToSlot (target/landing scale are now
+		//             caller-computed via CombatUXManager.GetLayoutSlotBasePosition(i,
+		//             futureCount) + GetDeckScaleAtIndex(i, futureCount) — exact for every
+		//             layout mode)
+		//   Regress:  Transition with any deck: every flying card lands on the slot the real
+		//             layout computes for its index, so the landing swap is position-invisible
+		//             and the row-149 z-step property above holds by construction.
+		//   Related:  docs/DeckLayouts.md (FloatStack centering), RegressionChecklist row 151
+		Vector3 to = target;
 		Vector3 apex = PhaseFlightPlanner.ArcApex(from, to, geo.ArcWorld);
 		// Demo rot: (i - 1) * 5 degrees for 3 cards; generalize to a centered fan.
 		float fanRot = (slotIndex - (fanCount - 1) * 0.5f) * 5f;
@@ -416,7 +447,7 @@ public class PhaseTransitionDriver : MonoBehaviour
 		//   Related:  docs/PhaseTransition.md open-item 1, PhaseTransitionConfigSO.ApplyEase
 		seq.Append(ApplyCfgEase(cfg, dummy.transform.DOMove(apex, dur * 0.5f)));
 		seq.Append(ApplyCfgEase(cfg, dummy.transform.DOMove(to, dur * 0.5f)));
-		seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DOScale(geo.DeckScale, dur)));
+		seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DOScale(finalScale, dur)));
 		seq.Insert(delay, ApplyCfgEase(cfg, dummy.transform.DORotate(new Vector3(0f, 0f, fanRot), dur * 0.5f)));
 		seq.Insert(delay + dur * 0.5f, ApplyCfgEase(cfg, dummy.transform.DORotate(Vector3.zero, dur * 0.5f)));
 		Track(seq);
@@ -457,19 +488,25 @@ public class PhaseTransitionDriver : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Part C full-dummy coverage (user request 2026-10-04: enemy cards + Start Card appear on
-	/// the same staggered schedule as the friendly cards instead of popping in at the landing).
-	/// Waits for CombatManager's GatherDecks (a state machine on Update — ready 1-2 frames after
-	/// the phase flip), then instantiates one presentation clone per uncovered deck slot
-	/// (combinedDeckZone indices >= the borrowed player dummies, same prefab selection as
-	/// InstantiateAllPhysicalCards) and flies it onto the shared schedule. Enemy clones enter
-	/// face-down already; the Start Card clone keeps its face. The clones join `dummies` so the
-	/// landing swap destroys them with the borrowed ones. Presentation-only: the only combat
-	/// read is the already-populated combinedDeckZone — RevealCards stays blocked until landing.
-	/// Slot alignment: combinedDeckZone[i] IS the card InstantiateAllPhysicalCards places on
-	/// slot i, so clone slots match the real landing slots by construction.
+	/// Part D entrance v2 (supersedes the Part C spawn-now cover; plan
+	/// plan-transition-entrance-and-shadow-audit-2026-10-04.md): waits for CombatManager's
+	/// GatherDecks (a state machine on Update — ready 1-2 frames after the phase flip), then
+	/// schedules the WHOLE entrance on the shared stagger with REAL layout landing targets
+	/// (CombatUXManager's future-count seam — the legacy linear bake mis-landed FloatStack by
+	/// up to ~3 units with the vertical order inverted). Player section: the borrowed shop
+	/// dummies fly to their future slots on the shared stagger. Uncovered tail (enemy cards +
+	/// Start Card): one presentation clone per slot (same prefab selection as
+	/// InstantiateAllPhysicalCards), spawned AT its flight start by a DOVirtual.DelayedCall —
+	/// the clone instantiates at spawn height and its flight tween (zero extra delay) begins
+	/// the same tick, so the motionless column above the deck never exists. Sets
+	/// _entranceFlightTotal for the landing wait. Degenerate zone timeout: the dummies still
+	/// fly the legacy linear bake (they must never strand at shop positions); no clones — the
+	/// real cards land the legacy way. Presentation-only: the only combat read is the
+	/// already-populated combinedDeckZone — RevealCards stays blocked until landing. Slot
+	/// alignment: combinedDeckZone[i] IS the card InstantiateAllPhysicalCards places on slot i,
+	/// so flight slots match the real landing slots by construction.
 	/// </summary>
-	private IEnumerator CoverUncoveredSlotsWithDummies(List<GameObject> dummies, float dur, float stagger, PhaseTransitionConfigSO cfg)
+	private IEnumerator ScheduleCombatEntranceFlights(List<GameObject> dummies, float dur, float stagger, PhaseTransitionConfigSO cfg)
 	{
 		float guard = 0f;
 		while (guard < 0.5f)
@@ -483,17 +520,39 @@ public class PhaseTransitionDriver : MonoBehaviour
 		var ux = CombatUXManager.me;
 		if (combat == null || combat.combinedDeckZone == null || combat.combinedDeckZone.Count == 0 || ux == null)
 		{
-			yield break; // no deck to cover: the real cards land the legacy way
+			_entranceFlightTotal = FlyDummiesToCombatStack(dummies, dur, stagger, cfg);
+			yield break; // no deck to target: legacy bake for the dummies, real cards land legacy
 		}
 
+		int deckCount = combat.combinedDeckZone.Count;
 		var geo = BuildFlightGeometry(cfg);
 		float pageH = PhaseFlightPlanner.PageHeightWorld(Camera.main != null ? Camera.main.orthographicSize : 6f);
-		float enemySlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.enemyCardSlideDemoPx : 140f, pageH);
-		float startSlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.startCardSlideDemoPx : 140f, pageH);
+		float enemySlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.enemyCardSlideDemoPx : 60f, pageH);
+		float startSlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.startCardSlideDemoPx : 60f, pageH);
 
 		// dummies.Count = the borrowed player-deck cards = the player section (deck order), so
-		// list index == combinedDeckZone index for the uncovered tail.
-		for (int i = dummies.Count; i < combat.combinedDeckZone.Count; i++)
+		// list index == combinedDeckZone index for the player slots and the uncovered tail.
+		for (int i = 0; i < dummies.Count; i++)
+		{
+			FlyDummyToSlot(dummies[i], i, dummies.Count, dur, cfg, geo, flip: true,
+				delay: PhaseFlightPlanner.FlightDelay(i, stagger),
+				target: ux.GetLayoutSlotBasePosition(i, deckCount),
+				finalScale: ux.GetDeckScaleAtIndex(i, deckCount));
+		}
+
+		// VISUAL-FIX(2026-10-05): the Part C clones rested in a motionless column above the deck
+		//   Cause:    Every clone spawned the moment combinedDeckZone appeared (~t=0.05s) but
+		//             flew at delay = i * stagger — up to ~1s of stacked, stationary clones
+		//             (15-card deck) hanging over the deck anchor until their own launch.
+		//   Affects:  PhaseTransitionDriver.ScheduleCombatEntranceFlights (per-clone
+		//             DOVirtual.DelayedCall spawn; the clone's flight tween runs at delay 0)
+		//   Regress:  Transition with any enemy/start cards: each clone appears at its spawn
+		//             height exactly when its flight starts and arcs in immediately — no
+		//             resting column exists at any time. Player dummies unchanged (their
+		//             stagger lives inside the tween as before). Headless/bypass never runs.
+		//   Related:  plan-transition-entrance-and-shadow-audit-2026-10-04.md Part D item 2,
+		//             RegressionChecklist row 151
+		for (int i = dummies.Count; i < deckCount; i++)
 		{
 			var card = combat.combinedDeckZone[i];
 			if (card == null) continue;
@@ -507,24 +566,42 @@ public class PhaseTransitionDriver : MonoBehaviour
 			}
 			if (prefab == null) continue; // no prefab wired: this slot stays landing-pop (legacy)
 
-			bool isEnemy = cardScript != null && cardScript.myStatusRef != null
-				&& cardScript.myStatusRef != combat.ownerPlayerStatusRef;
-			float slide = isStart ? startSlide : enemySlide;
-			Vector3 slot = geo.Anchor + new Vector3(0f, geo.StepWorld * i, -geo.ZStep * i);
-			GameObject clone = Instantiate(prefab, slot + new Vector3(0f, slide, 0f), Quaternion.identity);
-			clone.name = "[entrance dummy] " + card.name;
-			var phys = clone.GetComponent<CardPhysObjScript>();
-			if (phys == null)
+			float slideY = isStart ? startSlide : enemySlide;
+			int index = i;
+			Track(DOVirtual.DelayedCall(PhaseFlightPlanner.FlightDelay(i, stagger), () =>
 			{
-				Destroy(clone);
-				continue;
-			}
-			phys.cardImRepresenting = cardScript; // drives ApplyBackColor (enemy orange) / ApplyColor per frame
-			phys.SetScaleImmediate(geo.DeckScale);
-			if (!isStart) phys.SetFaceUp(false, false);
-			dummies.Add(clone);
-			FlyDummyToSlot(clone, i, combat.combinedDeckZone.Count, dur, stagger, cfg, geo, flip: false);
+				SpawnEntranceClone(card, index, prefab, slideY, deckCount, dummies, dur, cfg, geo, ux);
+			}, true));
 		}
+
+		_entranceFlightTotal = PhaseFlightPlanner.TotalDuration(dur, stagger, Mathf.Max(deckCount, dummies.Count)) + 0.05f;
+	}
+
+	/// <summary>
+	/// One entrance clone (delayed-spawn body): instantiates at spawn height above the slot's
+	/// real layout position, wires cardImRepresenting (enemy orange back + opponent art come
+	/// free per frame), applies the face rules (enemy face-down already, Start Card keeps its
+	/// face) and flies onto the shared schedule with zero extra delay.
+	/// </summary>
+	private void SpawnEntranceClone(GameObject card, int slotIndex, GameObject prefab, float slideY, int deckCount, List<GameObject> dummies, float dur, PhaseTransitionConfigSO cfg, FlightGeometry geo, CombatUXManager ux)
+	{
+		Vector3 target = ux.GetLayoutSlotBasePosition(slotIndex, deckCount);
+		Vector3 finalScale = ux.GetDeckScaleAtIndex(slotIndex, deckCount);
+		GameObject clone = Instantiate(prefab, target + new Vector3(0f, slideY, 0f), Quaternion.identity);
+		clone.name = "[entrance dummy] " + card.name;
+		var phys = clone.GetComponent<CardPhysObjScript>();
+		if (phys == null)
+		{
+			Destroy(clone);
+			return;
+		}
+		var cardScript = card.GetComponent<CardScript>();
+		phys.cardImRepresenting = cardScript; // drives ApplyBackColor (enemy orange) / ApplyColor per frame
+		phys.SetScaleImmediate(finalScale);
+		if (cardScript == null || !cardScript.isStartCard) phys.SetFaceUp(false, false);
+		dummies.Add(clone);
+		FlyDummyToSlot(clone, slotIndex, deckCount, dur, cfg, geo, flip: false,
+			delay: 0f, target: target, finalScale: finalScale);
 	}
 
 	private void Track(Tween tween)
