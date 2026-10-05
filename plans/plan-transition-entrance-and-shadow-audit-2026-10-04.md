@@ -197,6 +197,54 @@ Implementation (all in `PhaseTransitionDriver`):
 - Headless/bypass/driver-off: the cover coroutine never runs — everything lands the legacy
   way. Edge: a slot without a wired prefab stays landing-pop.
 
+## Part D — entrance clones v2: real-layout landing + spawn-at-flight-start (2026-10-04 diagnosis; fix PENDING the user's 修改代码)
+
+### What the user saw (GIF, frozen right after the camera landing)
+
+The Part C clones sat as a tight stack ~2.3–3.8 units ABOVE the deck anchor — top-center of
+the combat page, overlapping the enemy HUD zone, visually detached from the deck. ("检查一下
+敌方/起始卡生成的位置，现在效果比较奇怪")
+
+### Root causes (code-verified, three defects)
+
+1. **Landing targets use a linear bake that does not match the FloatStack layout** — and it
+   never did (latent since the 09-21 port, inherited by Part C):
+   - `FlyDummyToSlot` flies every card to `anchor + stepWorld * i` (the 10-02 comment
+     "dummy i lands on stack slot i" is wrong for FloatStack).
+   - The real FloatStack slot (`DeckFloatStackLayout.ComputeSlotOffset`) is CENTERED around
+     the anchor: `y = effStep * (N − 2j − 1) / 2 + lift` — deck bottom (j=0, LAST revealed)
+     is the visual TOP of the stack; deck top (j=N−1, FIRST revealed = Start Card) is the
+     LOWEST card on screen. For a 6-card deck the Start Card's real slot is ≈ anchor−1.47
+     while the clone target is anchor+1.76 — 3.2 units off, vertical order inverted.
+   - The player dummies carried the same error all along (≤0.6 units for 2-3 card decks);
+     the Start Card shuffle re-flies every card right after landing, which masked it.
+2. **Hover window**: clones spawn at t≈0.05s but fly at `delay = i * stagger` — a motionless
+   column above the deck (up to ~1s for a 15-card deck). The friendly dummies never hover:
+   their flight overlaps the camera travel end to end.
+3. **Landing after the camera**: clone landing = delay + dur > transDur — later than the
+   friendly cards, the opposite of the approved "出现的时机和友方卡一样" reading.
+
+(GIF static from frame 1 = editor-unfocus freeze during recording — the
+`runInBackground=false` trap — not a new stall in the transition itself.)
+
+### v2 fix plan
+
+1. **Real-layout landing**: flight target = `CombatUXManager.GetFinalDeckPositionForCard(
+   phys, i)` (public; exact for every layout mode — FloatStack centering/lift/compress
+   included). Applies to BOTH the clones and the player dummies, clearing the latent 09-21
+   error. Known residual: `GetPositionOffset` jitter for a phys that never got `AssignOffset`
+   may differ from the real card's — Cascade-only and masked by the landing swap + shuffle.
+2. **No hover**: per-clone spawn AT flight start — `DOVirtual.DelayedCall(delay)` instantiates
+   and flies immediately; no resting column exists at any time.
+3. **Spawn height retune**: `enemyCardSlideDemoPx` / `startCardSlideDemoPx` default
+   140 → 60 (≈0.98 world units, just above the stack front); still Inspector-tunable per
+   card class.
+4. **Schedule unchanged**: clones continue after the player section on the shared stagger
+   (the approved same-timing reading); the landing swap destroys them as before; headless/
+   bypass keeps the legacy path.
+
+Status: PLAN ONLY — no code changed for Part D yet; awaits the user's 修改代码 ruling.
+
 ## Session evidence
 
 - Experiments: preview-scene prefab tree dumps (PhysicalCard / StartCard / their Parent
