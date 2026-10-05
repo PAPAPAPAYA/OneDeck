@@ -286,6 +286,16 @@ public class PhaseTransitionDriver : MonoBehaviour
 			guard += Time.unscaledDeltaTime;
 			yield return null;
 		}
+		{
+			// Landing-swap probe (entrance diagnostics): the moment the real physicals replace
+			// the flying dummies — with the physicals/zone counts at the swap frame.
+			var uxSwap = CombatUXManager.me;
+			var cmSwap = CombatManager.Me;
+			TestManager.Log(string.Format("[PhaseTransition] landing swap: physicals={0} zoneCount={1} t={2:F2}",
+				uxSwap != null && uxSwap.physicalCardsInDeck != null ? uxSwap.physicalCardsInDeck.Count : -1,
+				cmSwap != null && cmSwap.combinedDeckZone != null ? cmSwap.combinedDeckZone.Count : -1,
+				Time.unscaledTime));
+		}
 		foreach (var dummy in dummies)
 		{
 			if (dummy != null) Destroy(dummy);
@@ -520,6 +530,7 @@ public class PhaseTransitionDriver : MonoBehaviour
 		var ux = CombatUXManager.me;
 		if (combat == null || combat.combinedDeckZone == null || combat.combinedDeckZone.Count == 0 || ux == null)
 		{
+			TestManager.Log("[PhaseTransition] combinedDeckZone not ready within guard — legacy linear bake fallback (no clones)");
 			_entranceFlightTotal = FlyDummiesToCombatStack(dummies, dur, stagger, cfg);
 			yield break; // no deck to target: legacy bake for the dummies, real cards land legacy
 		}
@@ -527,16 +538,30 @@ public class PhaseTransitionDriver : MonoBehaviour
 		int deckCount = combat.combinedDeckZone.Count;
 		var geo = BuildFlightGeometry(cfg);
 		float pageH = PhaseFlightPlanner.PageHeightWorld(Camera.main != null ? Camera.main.orthographicSize : 6f);
-		float enemySlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.enemyCardSlideDemoPx : 60f, pageH);
-		float startSlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.startCardSlideDemoPx : 60f, pageH);
+		float enemySlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.enemyCardSlideDemoPx : 400f, pageH);
+		float startSlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.startCardSlideDemoPx : 400f, pageH);
+
+		// Entrance diagnostics (plan 10-04 Part D verification round 1): the user reported the
+		// enemy/Start-Card fly-in as invisible ("appear too low") — these probes log each card's
+		// spawn/target against the camera viewport at the spawn moment. Toggle: TestManager
+		// logVisualSync ([PhaseTransition] routes there, TestManager.InferCategory).
+		float camY = Camera.main != null ? Camera.main.transform.position.y : 0f;
+		float ortho = Camera.main != null ? Camera.main.orthographicSize : 0f;
+		TestManager.Log(string.Format(
+			"[PhaseTransition] entrance schedule: playerDummies={0} deckCount={1} dur={2:F2} stagger={3:F3} combatPageY={4:F2} camY={5:F2} landingViewportY=[{6:F2},{7:F2}]",
+			dummies.Count, deckCount, dur, stagger, _combatPageY, camY, _combatPageY - ortho, _combatPageY + ortho));
 
 		// dummies.Count = the borrowed player-deck cards = the player section (deck order), so
 		// list index == combinedDeckZone index for the player slots and the uncovered tail.
 		for (int i = 0; i < dummies.Count; i++)
 		{
+			Vector3 dummyTarget = ux.GetLayoutSlotBasePosition(i, deckCount);
+			float dummyDelay = PhaseFlightPlanner.FlightDelay(i, stagger);
+			TestManager.Log(string.Format("[PhaseTransition] dummy {0} from={1} target={2} delay={3:F2}",
+				i, dummies[i].transform.position, dummyTarget, dummyDelay));
 			FlyDummyToSlot(dummies[i], i, dummies.Count, dur, cfg, geo, flip: true,
-				delay: PhaseFlightPlanner.FlightDelay(i, stagger),
-				target: ux.GetLayoutSlotBasePosition(i, deckCount),
+				delay: dummyDelay,
+				target: dummyTarget,
 				finalScale: ux.GetDeckScaleAtIndex(i, deckCount));
 		}
 
@@ -587,7 +612,16 @@ public class PhaseTransitionDriver : MonoBehaviour
 	{
 		Vector3 target = ux.GetLayoutSlotBasePosition(slotIndex, deckCount);
 		Vector3 finalScale = ux.GetDeckScaleAtIndex(slotIndex, deckCount);
-		GameObject clone = Instantiate(prefab, target + new Vector3(0f, slideY, 0f), Quaternion.identity);
+		Vector3 spawnPos = target + new Vector3(0f, slideY, 0f);
+		// Spawn-moment probe (see the entrance diagnostics note in ScheduleCombatEntranceFlights).
+		float camY = Camera.main != null ? Camera.main.transform.position.y : 0f;
+		float ortho = Camera.main != null ? Camera.main.orthographicSize : 0f;
+		TestManager.Log(string.Format(
+			"[PhaseTransition] clone {0} '{1}' spawn={2} target={3} slideY={4:F2} t={5:F2} camY={6:F2} viewportY=[{7:F2},{8:F2}] spawnVisible={9} targetVisible={10}",
+			slotIndex, card.name, spawnPos, target, slideY, Time.unscaledTime, camY, camY - ortho, camY + ortho,
+			spawnPos.y >= camY - ortho && spawnPos.y <= camY + ortho,
+			target.y >= camY - ortho && target.y <= camY + ortho));
+		GameObject clone = Instantiate(prefab, spawnPos, Quaternion.identity);
 		clone.name = "[entrance dummy] " + card.name;
 		var phys = clone.GetComponent<CardPhysObjScript>();
 		if (phys == null)

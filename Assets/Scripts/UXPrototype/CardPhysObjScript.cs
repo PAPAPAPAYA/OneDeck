@@ -1262,6 +1262,24 @@ public class CardPhysObjScript : MonoBehaviour
 		if (_cardBackRenderer != null)
 		{
 			_cardBackRenderer.gameObject.SetActive(!isFaceUp);
+			// VISUAL-FIX(2026-10-05): non-owner card backs rendered one wrong frame at spawn/flip
+			//   Cause:    The runtime-created CardBack initializes to GameColorPalette.OwnerCardColor
+			//             (GreyWhite/white, BuildFlipRoot) and the ownership tint ran ONLY in Update's
+			//             per-frame ApplyBackColor — a card that spawns face-down (entrance clone,
+			//             landing-swap physical) rendered the OWNER-white back for 1+ frames before
+			//             the first Update repainted it. Owner cards show no flash (initial == final
+			//             color), so only ENEMY / Start-Card backs visibly flashed white (user GIF
+			//             2026-10-05: white back behind the revealed Start Card; 70ms GIF frames
+			//             stretch one game frame to ~two).
+			//   Affects:  CardPhysObjScript.ApplyFaceVisibility (immediate ResolveBackTintColor when
+			//             the back becomes visible) — covers the instant SetFaceUp spawn path, the
+			//             animated flip's pinch callback and every future face-down spawn path.
+			//   Regress:  Any card turning face-down shows its final ownership back color in the
+			//             SAME frame it becomes visible — no white flash on enemy/start backs at
+			//             entrance or landing swap; the per-frame ApplyBackColor is unchanged.
+			//   Related:  plan-transition-entrance-and-shadow-audit-2026-10-04 Part D verification,
+			//             RegressionChecklist row 152
+			if (!isFaceUp) _cardBackRenderer.color = ResolveBackTintColor();
 		}
 	}
 
@@ -1272,22 +1290,26 @@ public class CardPhysObjScript : MonoBehaviour
 	private void ApplyBackColor()
 	{
 		if (_cardBackRenderer == null) return;
+		_cardBackRenderer.color = ResolveBackTintColor();
+	}
 
-		Color backColor;
+	/// <summary>
+	/// Ownership back tint (the exact predicate ApplyBackColor paints by). Split out so the
+	/// moment the back becomes VISIBLE it can be tinted in the same frame — see the
+	/// VISUAL-FIX(2026-10-05) block in ApplyFaceVisibility.
+	/// </summary>
+	private Color ResolveBackTintColor()
+	{
 		if (isPhysicalStartCard)
 		{
-			backColor = GameColorPalette.StartCardColor;
+			return GameColorPalette.StartCardColor;
 		}
-		else if (cardImRepresenting == null || cardImRepresenting.myStatusRef == null
+		if (cardImRepresenting == null || cardImRepresenting.myStatusRef == null
 			|| cardImRepresenting.myStatusRef == CombatManager.Me?.ownerPlayerStatusRef)
 		{
-			backColor = GameColorPalette.OwnerCardColor;
+			return GameColorPalette.OwnerCardColor;
 		}
-		else
-		{
-			backColor = GameColorPalette.OpponentCardColor;
-		}
-		_cardBackRenderer.color = backColor;
+		return GameColorPalette.OpponentCardColor;
 	}
 
 	/// <summary>

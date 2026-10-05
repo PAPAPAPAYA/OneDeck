@@ -259,6 +259,28 @@ the zone wait, and the landing wait is measured from the scheduling moment (the 
 wall-time back-subtraction from travelStart is gone). The degenerate zone-timeout path
 flies the player dummies on the legacy linear bake so they never strand at shop positions.
 
+### Verification round 1 (2026-10-05, user GIF + probe; fixes in commit after 88356391)
+
+1. **White flash (~2 GIF frames, non-friendly cards) — PROVEN and fixed (row 152)**: the
+   runtime `CardBack` is created with `GameColorPalette.OwnerCardColor` (= GreyWhite,
+   white) in `BuildFlipRoot`, and the ownership tint ran ONLY in Update's per-frame
+   `ApplyBackColor` — every face-down spawn (entrance clone, landing-swap physical)
+   rendered owner-white for 1+ frames; owner cards' initial == final color so only
+   enemy/Start-Card backs visibly flashed. Fix: `ApplyFaceVisibility` applies the new
+   `ResolveBackTintColor()` in the same frame the back becomes visible. (The frozen user
+   GIF captured the state: white enemy back behind the revealed Start Card.)
+2. **"Enemy/neutral cards appear too low, fly-in invisible" — quantified**: edit-mode
+   probe: deck anchor = combat page CENTER (Y 12.12 at ortho 6.06); all FloatStack slots
+   sit within ±0.85 of it. The 60px slide = a ~1-unit micro-drop at mid-screen, and the
+   flight overlaps the camera travel (clones spawn above the viewport, mostly landed by
+   camera arrival) → read as a pop-in. Slide defaults retuned 60 → 400 demo px (spawn at
+   the top edge of the landing viewport → full visible descent). Tunable per card class
+   in `PhaseTransitionConfigSO`.
+3. **Entrance diagnostics added** (user-requested reproduction logs): `[PhaseTransition]`
+   probes — schedule summary, per-dummy from/target/delay, per-clone spawn/target vs
+   camera viewport (spawnVisible/targetVisible), landing-swap counts. Routed to
+   TestManager **logVisualSync** via InferCategory.
+
 ## Session evidence
 
 - Experiments: preview-scene prefab tree dumps (PhysicalCard / StartCard / their Parent

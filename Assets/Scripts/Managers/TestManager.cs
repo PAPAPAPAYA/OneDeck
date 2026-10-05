@@ -400,6 +400,14 @@ namespace DefaultNamespace.Managers
 			{
 				return LogCategory.CombatFlow;
 			}
+			// Phase-transition entrance instrumentation (plan-transition-entrance-and-shadow-audit
+			// 2026-10-04 Part D verification round): spawn/target/viewport probes for the
+			// enemy/Start-Card fly-in. Routes to VisualSync so one toggle shows all transition
+			// probes (the driver itself logs nothing by default).
+			if (message.Contains("[PhaseTransition]"))
+			{
+				return LogCategory.VisualSync;
+			}
 			if (message.Contains("[ShopButton]") || message.Contains("[ShopBoard]") ||
 			    message.Contains("[ShopChrome]"))
 			{
