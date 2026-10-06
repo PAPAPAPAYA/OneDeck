@@ -14,8 +14,13 @@ public class EffectScript : MonoBehaviour
 	/// selects CardType.None ONLY - tokens are a third bucket matched by neither side.
 	/// Token (2026-09-02 as Status, renamed 2026-09-14): selects CardType.Token cards
 	/// (token衍生物: 信徒 RIFT + 诅咒 JU_ON), never creatures.
+	/// Damager (2026-10-06, plan-card-selector-targeting §3.1/A.5): damage-capability
+	/// predicate (IsCreature || HasAttackAttribute) — the Giver-family filter
+	/// (StatusEffectGiverEffect.PassesDamageFilter). Read by CardSelectorSolver only;
+	/// legacy PassesCreatureFilter implementations deliberately do not handle it (a
+	/// serialized Damager on a legacy component falls through to Any behavior — frozen path).
 	/// </summary>
-	public enum EffectCreatureFilter { Any, Creature, Phenomenon, Token }
+	public enum EffectCreatureFilter { Any, Creature, Phenomenon, Token, Damager }
 
 	protected CombatManager combatManager;
 	protected GameObject myCard;
