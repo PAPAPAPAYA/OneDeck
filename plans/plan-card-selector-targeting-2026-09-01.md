@@ -1,7 +1,7 @@
 # 目标选取统一化：共享 CardSelector 实施计划
 
 日期：2026-09-01
-状态：**方向已拍板（共享 CardSelector，不扩 Tag 系统），实施待「修改代码」**。按步骤 gate 推进：每步完成后汇报，用户确认后继续下一步。Step 0 审计已完成并落附录 A（2026-10-04），parity 表已确认、A.5 修订已拍板（见 A.6）；2026-10-06 审核修订已落（§3.1 重写 + 三处表达力缺口 + zone 成员语义校准，见 A.7，含同日复核修正 #8）。**Step 1 引擎已实施**（537bdf57：CardSelector + CardSelectorSolver + Damager 档，25 goldens 绿，全量 704 零漂移）；**Step 2 ReviveEffect 接入已实施**（开关默认关、legacy 路径冻结、29 个活跃 prefab 零改动；ELITE_REVIVER 真实 prefab 翻转对照 + FINAL_ESCORT 排序对照，12 tests 绿，全量 716: 715/0/1 零漂移）；下一步 Step 3（BuryEffect + StageEffect 接入）待用户确认。
+状态：**方向已拍板（共享 CardSelector，不扩 Tag 系统），实施待「修改代码」**。按步骤 gate 推进：每步完成后汇报，用户确认后继续下一步。Step 0 审计已完成并落附录 A（2026-10-04），parity 表已确认、A.5 修订已拍板（见 A.6）；2026-10-06 审核修订已落（§3.1 重写 + 三处表达力缺口 + zone 成员语义校准，见 A.7，含同日复核修正 #8）。**Step 1 引擎已实施**（537bdf57）；**Step 2 ReviveEffect 接入已实施**（5a16a3bc，12 tests，全量 716 零漂移）；**Step 3 BuryEffect + StageEffect 接入已实施**（开关默认关、legacy 冻结；BuryNextXCards→WalkFromSource 且 TEST 旁路映射 spec 补丁；Stage 系 zone=Anywhere 保留总闸语义，仅 max picker 用 DeckSide 预滤；StageCardWithMostStatusEffect 留 per-method；18 tests 含三张真实 prefab 翻转对照，全量 734: 733/0/1 零漂移）；下一步 Step 4（ExileEffect 接入）待用户确认。
 上游：2026-09-01 对话拍板。相关：`plans/plan-utility-passive-shop-pipeline-2026-08-31.md`（Tag.Revive 打标，与本计划正交）、`plans/plan-4.0-revive-awaken-2026-08-29.md`（ReviveEffect 现状）。
 
 ## 1. 已拍板决策（对话裁决记录）

@@ -24,6 +24,12 @@ public class StageEffect : EffectScript
 	[Tooltip("Narrow the StageMyCards pool: Creature / Phenomenon (CardType.None only, tokens excluded) / Token")]
 	public EffectScript.EffectCreatureFilter creatureFilter = EffectScript.EffectCreatureFilter.Any;
 
+	[Header("Unified Target Selector (plan-card-selector-targeting §3.3)")]
+	[Tooltip("True = build pools via CardSelectorSolver + targetSelector; False = legacy per-entry bodies (existing prefabs). StageCardWithMostStatusEffect stays per-method (status-count sort is not expressible as a SelectorSort).")]
+	public bool useTargetSelector = false;
+	[Tooltip("Serialized selector spec for selector mode. Pool entries read side/creatureFilter(only StageMyCards)/excludeSelf/tagFilter from here, with parity-specific parts force-patched per entry. The executor-level grave-side choke in StageChosenCards still applies to every path. Legacy fields are NOT read in selector mode.")]
+	public CardSelector targetSelector = new CardSelector();
+
 	[Header("Based on IntSO")]
 	[Tooltip("IntSO used when this card belongs to the owner/player")]
 	public IntSO ownerIntSO;
@@ -106,6 +112,7 @@ public class StageEffect : EffectScript
 
 	public void StageCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { StageCardsWithTagViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
@@ -127,6 +134,7 @@ public class StageEffect : EffectScript
 
 	public void StageMyCards(int amount)
 	{
+		if (useTargetSelector) { StageMyCardsViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var myCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myCards, true);
@@ -148,6 +156,7 @@ public class StageEffect : EffectScript
 
 	public void StageMyTokens(int amount)
 	{
+		if (useTargetSelector) { StageMyTokensViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var myTokens = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myTokens, true);
@@ -169,6 +178,7 @@ public class StageEffect : EffectScript
 
 	public void StageMyCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { StageMyCardsWithTagViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
@@ -190,6 +200,7 @@ public class StageEffect : EffectScript
 
 	public void StageTheirCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { StageTheirCardsWithTagViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
@@ -215,6 +226,7 @@ public class StageEffect : EffectScript
 	/// <param name="targetCardTypeID">Target card type ID, empty string matches all friendly Minion cards</param>
 	public void StageAllFriendlyMinion(string targetCardTypeID)
 	{
+		if (useTargetSelector) { StageAllFriendlyMinionViaSelector(targetCardTypeID); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var friendlyMinions = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, friendlyMinions, true);
@@ -263,6 +275,7 @@ public class StageEffect : EffectScript
 	/// <param name="targetCardTypeID">Target card type ID</param>
 	public void StageTheirSpecificCard(string targetCardTypeID)
 	{
+		if (useTargetSelector) { StageTheirSpecificCardViaSelector(targetCardTypeID); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var matchingCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, matchingCards, true);
@@ -375,6 +388,7 @@ public class StageEffect : EffectScript
 	/// </summary>
 	public void StageCardWithMaxAttack()
 	{
+		if (useTargetSelector) { StageCardWithMaxAttackViaSelector(); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var eligibleCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, eligibleCards, true);
@@ -404,6 +418,138 @@ public class StageEffect : EffectScript
 		if (topCard == null) return;
 		StageChosenCards(new List<GameObject> { topCard.gameObject }, 1);
 	}
+
+	#region CardSelector path (Step 3, plan §3.3)
+
+	/// <summary>
+	/// Base spec for Stage pool entries. zone stays Anywhere ON PURPOSE: legacy stage pools do
+	/// NOT pre-filter the grave side — the StageChosenCards choke (RemoveAll below Start Card)
+	/// drops those candidates after selection, and pre-filtering here would change how many
+	/// cards survive to the amount clamp. Only StageCardWithMaxAttack pre-filters (its legacy
+	/// loop excludes below-Start-Card cards before picking), so it overrides to DeckSide.
+	/// excludeTopSlot mirrors IsCardAtTop, present on every legacy pool entry.
+	/// </summary>
+	private CardSelector BuildStageSpecBase()
+	{
+		var spec = targetSelector != null ? targetSelector.Clone() : new CardSelector();
+		spec.zone = CardSelector.SelectorZone.Anywhere;
+		spec.excludeTopSlot = true;
+		spec.excludeBottomSlot = false;
+		spec.includeRevealZone = false;
+		return spec;
+	}
+
+	private List<GameObject> SelectStagePool(CardSelector spec)
+	{
+		int startCardIndex;
+		_combinedDeck = combatManager.combinedDeckZone;
+		return CardSelectorSolver.Select(_combinedDeck, myCardScript, spec, out startCardIndex);
+	}
+
+	private void StageMyCardsViaSelector(int amount)
+	{
+		var spec = BuildStageSpecBase();
+		spec.side = CardSelector.SelectorSide.Friendly;
+		spec.minionMode = CardSelector.SelectorMinion.Exclude;
+		spec.excludePassive = true;
+		spec.tagFilter = null;
+		StageChosenCards(SelectStagePool(spec), amount); // creatureFilter + excludeSelf from the serialized spec
+	}
+
+	private void StageMyTokensViaSelector(int amount)
+	{
+		var spec = BuildStageSpecBase();
+		spec.side = CardSelector.SelectorSide.Friendly;
+		spec.minionMode = CardSelector.SelectorMinion.Only; // legacy parity: isMinion as a positive predicate
+		spec.excludePassive = true;
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity: no creatureFilter here
+		spec.tagFilter = null;
+		StageChosenCards(SelectStagePool(spec), amount); // excludeSelf from the serialized spec
+	}
+
+	private void StageMyCardsWithTagViaSelector(int amount)
+	{
+		var spec = BuildStageSpecBase();
+		spec.side = CardSelector.SelectorSide.Friendly;
+		spec.minionMode = CardSelector.SelectorMinion.Exclude;
+		spec.excludePassive = true;
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity: no creatureFilter here
+		StageChosenCards(SelectStagePool(spec), amount); // tagFilter + excludeSelf from the serialized spec
+	}
+
+	private void StageCardsWithTagViaSelector(int amount)
+	{
+		var spec = BuildStageSpecBase();
+		spec.side = CardSelector.SelectorSide.Both;
+		spec.minionMode = CardSelector.SelectorMinion.Exclude;
+		spec.excludePassive = true;
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity
+		StageChosenCards(SelectStagePool(spec), amount);
+	}
+
+	private void StageTheirCardsWithTagViaSelector(int amount)
+	{
+		var spec = BuildStageSpecBase();
+		spec.side = CardSelector.SelectorSide.Enemy;
+		spec.minionMode = CardSelector.SelectorMinion.Exclude;
+		spec.excludePassive = true;
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity
+		StageChosenCards(SelectStagePool(spec), amount);
+	}
+
+	private void StageAllFriendlyMinionViaSelector(string targetCardTypeID)
+	{
+		var spec = BuildStageSpecBase();
+		spec.side = CardSelector.SelectorSide.Friendly;
+		spec.minionMode = CardSelector.SelectorMinion.Only;
+		spec.excludePassive = true;
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity
+		spec.sort = CardSelector.SelectorSort.KeepOrder;            // legacy parity: no shuffle
+		spec.typeIDFilter = string.IsNullOrEmpty(targetCardTypeID) ? "" : targetCardTypeID; // method param overrides
+		var pool = SelectStagePool(spec);
+		StageChosenCards(pool, pool.Count);
+	}
+
+	private void StageTheirSpecificCardViaSelector(string targetCardTypeID)
+	{
+		if (string.IsNullOrEmpty(targetCardTypeID))
+		{
+			// Legacy parity: an empty param matches no cardTypeID at all → the failure path.
+			string emptyColor = GetMyCardColorTag();
+			AppendLog($"// [<color={emptyColor}>{myCard.gameObject.name}</color>]置顶敌方卡牌失败(没有找到ID为'{targetCardTypeID}'的卡牌)");
+			return;
+		}
+		var spec = BuildStageSpecBase();
+		spec.side = CardSelector.SelectorSide.Enemy;
+		spec.minionMode = CardSelector.SelectorMinion.Exclude;
+		spec.excludePassive = true;
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity
+		spec.tagFilter = null;
+		spec.typeIDFilter = targetCardTypeID; // method param overrides
+		var pool = SelectStagePool(spec);
+		if (pool.Count == 0)
+		{
+			string myColor = GetMyCardColorTag();
+			AppendLog($"// [<color={myColor}>{myCard.gameObject.name}</color>]置顶敌方卡牌失败(没有找到ID为'{targetCardTypeID}'的卡牌)");
+			return;
+		}
+		StageChosenCards(pool, 1);
+	}
+
+	private void StageCardWithMaxAttackViaSelector()
+	{
+		var spec = BuildStageSpecBase();
+		spec.zone = CardSelector.SelectorZone.DeckSide; // legacy parity: this picker pre-filters the grave side
+		spec.minionMode = CardSelector.SelectorMinion.Exclude;
+		spec.excludePassive = true;
+		spec.tagFilter = null;
+		spec.sort = CardSelector.SelectorSort.MaxAttack;
+		var pool = SelectStagePool(spec); // side + creatureFilter from the serialized spec (flip maps targetFriendly→side, creatureOnly→creatureFilter=Creature)
+		if (pool.Count <= 0) return;
+		StageChosenCards(new List<GameObject> { pool[0] }, 1); // excludeSelf from the serialized spec
+	}
+
+	#endregion
 
 	private void StageChosenCards(List<GameObject> cardsToStage, int amount)
 	{

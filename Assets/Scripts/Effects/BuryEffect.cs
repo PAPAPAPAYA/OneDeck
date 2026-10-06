@@ -33,6 +33,12 @@ public class BuryEffect : EffectScript
 	[Tooltip("For the max/min attack pickers: true = friendly cards, false = enemy cards")]
 	public bool targetFriendly = true;
 
+	[Header("Unified Target Selector (plan-card-selector-targeting §3.3)")]
+	[Tooltip("True = build pools via CardSelectorSolver + targetSelector; False = legacy per-entry bodies (existing prefabs).")]
+	public bool useTargetSelector = false;
+	[Tooltip("Serialized selector spec for selector mode. Pool entries read side/creatureFilter(except tag entries)/excludeSelf/tagFilter/sort from here, with parity-specific parts force-patched per entry (appendix A.2 drift preserved). BuryNextXCards walks via CardSelectorSolver.WalkFromSource with a fixed shape; its TEST-ONLY ignoreStartCardBoundary still applies. Legacy fields are NOT read in selector mode (except ignoreStartCardBoundary).")]
+	public CardSelector targetSelector = new CardSelector();
+
 	/// <summary>
 	/// Get card owner's color tag (delegates to base palette-aware helper)
 	/// </summary>
@@ -122,6 +128,7 @@ public class BuryEffect : EffectScript
 
 	public void BuryCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { BuryCardsWithTagViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
@@ -143,6 +150,7 @@ public class BuryEffect : EffectScript
 
 	public void BuryMyCards(int amount)
 	{
+		if (useTargetSelector) { BuryMyCardsViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var myCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myCards, true);
@@ -185,6 +193,7 @@ public class BuryEffect : EffectScript
 	/// </summary>
 	public void BuryCardWithMaxAttack()
 	{
+		if (useTargetSelector) { BuryCardWithAttackViaSelector(max: true); return; }
 		var card = CardScript.FindCardWithMaxAttack(combatManager.combinedDeckZone, combatManager.revealZone,
 			c => IsBuryable(c) && CardOnTargetSide(c));
 		if (card == null) return;
@@ -197,6 +206,7 @@ public class BuryEffect : EffectScript
 	/// </summary>
 	public void BuryCardWithMinAttack()
 	{
+		if (useTargetSelector) { BuryCardWithAttackViaSelector(max: false); return; }
 		var card = CardScript.FindCardWithMinAttack(combatManager.combinedDeckZone, combatManager.revealZone,
 			c => IsBuryable(c) && CardOnTargetSide(c) && c.GetAttack() > 0);
 		if (card == null) return;
@@ -241,6 +251,7 @@ public class BuryEffect : EffectScript
 
 	public void BuryMyCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { BuryMyCardsWithTagViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
@@ -262,6 +273,7 @@ public class BuryEffect : EffectScript
 
 	public void BuryTheirCards(int amount)
 	{
+		if (useTargetSelector) { BuryTheirCardsViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var theirCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, theirCards, true);
@@ -283,6 +295,7 @@ public class BuryEffect : EffectScript
 
 	public void BuryTheirCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { BuryTheirCardsWithTagViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsWithTag = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsWithTag, true);
@@ -318,6 +331,7 @@ public class BuryEffect : EffectScript
 
 	public void BuryAllMyCards()
 	{
+		if (useTargetSelector) { BuryAllMyCardsViaSelector(); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var myCards = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, myCards, true);
@@ -350,6 +364,7 @@ public class BuryEffect : EffectScript
 		// Entry log BEFORE the amount guard: an amount<=0 silent return must be visible here.
 		TestManager.Log("[BuryEffect] BuryNextXCards ENTER amount=" + amount + " myCard=" + (myCard != null ? myCard.name : "null"));
 		if (amount <= 0) return;
+		if (useTargetSelector) { BuryNextXCardsViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		TestManager.Log("[BuryEffect] BuryNextXCards START amount=" + amount + " myCard=" + myCard.name + " inReveal=" + (combatManager.revealZone != null && combatManager.revealZone == myCard) + " deckCount=" + _combinedDeck.Count);
 		int startIndex;
@@ -413,6 +428,132 @@ public class BuryEffect : EffectScript
 
 	[HideInInspector]
 	public int lastSuccessfulBuryCount;
+
+	#region CardSelector path (Step 3, plan §3.3)
+
+	/// <summary>
+	/// Base spec for Bury pool entries: live-deck reach — DeckSide excludes the grave side and
+	/// excludeBottomSlot mirrors IsCardAtBottom. Entry helpers patch the parity-specific parts;
+	/// the legacy exclusion-set drift across entries is preserved verbatim (appendix A.2).
+	/// </summary>
+	private CardSelector BuildBurySpecBase()
+	{
+		var spec = targetSelector != null ? targetSelector.Clone() : new CardSelector();
+		spec.zone = CardSelector.SelectorZone.DeckSide;
+		spec.excludeBottomSlot = true;
+		spec.excludeTopSlot = false;
+		spec.includeRevealZone = false;
+		spec.minionMode = CardSelector.SelectorMinion.Exclude;
+		return spec;
+	}
+
+	private List<GameObject> SelectBuryPool(CardSelector spec)
+	{
+		int startCardIndex;
+		_combinedDeck = combatManager.combinedDeckZone;
+		return CardSelectorSolver.Select(_combinedDeck, myCardScript, spec, out startCardIndex);
+	}
+
+	private void BuryMyCardsViaSelector(int amount)
+	{
+		var spec = BuildBurySpecBase();
+		spec.side = CardSelector.SelectorSide.Friendly;
+		spec.excludePassive = false; // legacy parity: BuryMyCards does not exclude passives
+		spec.tagFilter = null;
+		BuryChosenCards(SelectBuryPool(spec), amount); // creatureFilter + excludeSelf from the serialized spec
+	}
+
+	private void BuryTheirCardsViaSelector(int amount)
+	{
+		var spec = BuildBurySpecBase();
+		spec.side = CardSelector.SelectorSide.Enemy;
+		spec.excludePassive = false; // legacy parity
+		spec.tagFilter = null;
+		BuryChosenCards(SelectBuryPool(spec), amount);
+	}
+
+	private void BuryCardsWithTagViaSelector(int amount)
+	{
+		var spec = BuildBurySpecBase();
+		spec.side = CardSelector.SelectorSide.Both;
+		spec.excludePassive = false;                              // legacy parity
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity: tag entries skip creatureFilter
+		BuryChosenCards(SelectBuryPool(spec), amount);            // tagFilter + excludeSelf from the serialized spec
+	}
+
+	private void BuryMyCardsWithTagViaSelector(int amount)
+	{
+		var spec = BuildBurySpecBase();
+		spec.side = CardSelector.SelectorSide.Friendly;
+		spec.excludePassive = false;                              // legacy parity
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity
+		BuryChosenCards(SelectBuryPool(spec), amount);
+	}
+
+	private void BuryTheirCardsWithTagViaSelector(int amount)
+	{
+		var spec = BuildBurySpecBase();
+		spec.side = CardSelector.SelectorSide.Enemy;
+		spec.excludePassive = false;                              // legacy parity
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity
+		BuryChosenCards(SelectBuryPool(spec), amount);
+	}
+
+	private void BuryAllMyCardsViaSelector()
+	{
+		var spec = BuildBurySpecBase();
+		spec.side = CardSelector.SelectorSide.Friendly;
+		spec.excludePassive = true;                                 // legacy parity: BuryAllMyCards DOES exclude passives
+		spec.creatureFilter = EffectScript.EffectCreatureFilter.Any; // legacy parity
+		spec.sort = CardSelector.SelectorSort.KeepOrder;            // legacy parity: no shuffle
+		var pool = SelectBuryPool(spec);
+		BuryChosenCards(pool, pool.Count);
+	}
+
+	private void BuryCardWithAttackViaSelector(bool max)
+	{
+		var spec = BuildBurySpecBase();
+		spec.excludePassive = true;     // legacy parity: IsBuryable excludes passives
+		spec.tagFilter = null;
+		spec.sort = max ? CardSelector.SelectorSort.MaxAttack : CardSelector.SelectorSort.MinAttack;
+		spec.positiveAttackOnly = !max; // legacy parity: the min picker requires positive attack
+		var pool = SelectBuryPool(spec); // side + creatureFilter from the serialized spec (flip maps targetFriendly→side)
+		if (pool.Count <= 0) return;
+		BuryChosenCards(new List<GameObject> { pool[0] }, 1);
+		// Note: includeRevealZone stays off on purpose. Legacy passes revealZone to the
+		// FindCardWith* helpers, but IsBuryable rejects the revealed card via
+		// IsCardBelowStartCard (IndexOf == -1 < startCardIndex) whenever a Start Card exists,
+		// and in the no-Start-Card window the reveal card is only ever the neutral Start Card
+		// (ShouldSkip) — so the reveal candidate is observationally always rejected.
+	}
+
+	private void BuryNextXCardsViaSelector(int amount)
+	{
+		// Positional walk (appendix A.5 #5): a selection strategy, not a predicate pool —
+		// fixed shape, no serialized config. The TEST-ONLY ignoreStartCardBoundary maps to
+		// excludeNeutral=false + lowerBound=0 (plan ruling, Step 3 note).
+		var spec = new CardSelector
+		{
+			excludeNeutral = !ignoreStartCardBoundary,
+			excludePassive = true,
+			minionMode = CardSelector.SelectorMinion.Exclude,
+			excludeBottomSlot = true
+		};
+		int lowerBound = ignoreStartCardBoundary ? 0 : Mathf.Max(GetStartCardIndex(), 0);
+		_combinedDeck = combatManager.combinedDeckZone;
+		var cardsToBury = CardSelectorSolver.WalkFromSource(_combinedDeck, myCardScript, spec, amount, lowerBound, passiveSourceStartsFromTop: true);
+		if (cardsToBury.Count > 0)
+		{
+			TestManager.Log("[BuryEffect] BuryNextXCards[selector] found cardsToBury=" + cardsToBury.Count + " cards=" + string.Join(",", cardsToBury.ConvertAll(c => c.name)));
+			BuryChosenCards(cardsToBury, cardsToBury.Count);
+		}
+		else
+		{
+			TestManager.Log("[BuryEffect] BuryNextXCards[selector] found NO cards to bury");
+		}
+	}
+
+	#endregion
 
 	private void BuryChosenCards(List<GameObject> cardsToBury, int amount)
 	{
