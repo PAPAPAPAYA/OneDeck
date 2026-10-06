@@ -20,4 +20,6 @@ MonoBehaviour:
   overshoot: 1.7
   cardArcDemoPx: 90
   enemySlideDemoPx: 140
+  enemyCardSlideDemoPx: 1200
+  startCardSlideDemoPx: 1200
   pagePadDemoPx: 200
