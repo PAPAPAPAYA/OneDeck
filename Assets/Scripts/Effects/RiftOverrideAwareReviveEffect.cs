@@ -20,7 +20,10 @@ public class RiftOverrideAwareReviveEffect : ReviveEffect
 			var storage = GameEventStorage.me;
 			if (storage != null && storage.curseCardTypeID != null && !string.IsNullOrEmpty(storage.curseCardTypeID.value))
 			{
-				typeIDFilter = storage.curseCardTypeID.value;
+				// Selector mode reads targetSelector (SelectorTypeIDOverride layered on top of
+				// typeIDFilter); legacy mode mutates the typeIDFilter field as before.
+				if (useTargetSelector) SelectorTypeIDOverride = storage.curseCardTypeID.value;
+				else typeIDFilter = storage.curseCardTypeID.value;
 			}
 			ReviveTheirCards(1);
 			return;

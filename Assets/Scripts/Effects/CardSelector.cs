@@ -47,4 +47,30 @@ public class CardSelector
 	public bool excludeTopSlot = false;    // index Count-1 (Stage family atTop)
 	[Tooltip("True = merge the reveal-zone card into the pool with dedup (Giver/picker semantics; it still passes side + predicates + fixed exclusions). False = never added (the revealed card is not a deck member anyway).")]
 	public bool includeRevealZone = false;
+
+	/// <summary>
+	/// Member-wise copy so entry methods can layer spec patches (plan §3.3 construction mode)
+	/// without mutating the serialized targetSelector instance.
+	/// </summary>
+	public CardSelector Clone()
+	{
+		var copy = new CardSelector();
+		copy.side = side;
+		copy.zone = zone;
+		copy.minionMode = minionMode;
+		copy.creatureFilter = creatureFilter;
+		copy.rarityFilter = rarityFilter;
+		copy.sort = sort;
+		copy.typeIDFilter = typeIDFilter;
+		copy.enhancedOnly = enhancedOnly;
+		copy.positiveAttackOnly = positiveAttackOnly;
+		copy.tagFilter = tagFilter != null ? new List<EnumStorage.Tag>(tagFilter) : null;
+		copy.excludeSelf = excludeSelf;
+		copy.excludeNeutral = excludeNeutral;
+		copy.excludePassive = excludePassive;
+		copy.excludeBottomSlot = excludeBottomSlot;
+		copy.excludeTopSlot = excludeTopSlot;
+		copy.includeRevealZone = includeRevealZone;
+		return copy;
+	}
 }

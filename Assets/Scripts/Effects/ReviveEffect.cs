@@ -50,6 +50,18 @@ public class ReviveEffect : EffectScript
 	[Tooltip("If true, the source card will not be selected when reviving multiple cards")]
 	public bool excludeSelf = true;
 
+	[Header("Unified Target Selector (plan-card-selector-targeting §3.3)")]
+	[Tooltip("True = build pools via CardSelectorSolver + targetSelector; False = legacy fields (BuildRevivePool). Existing prefabs keep False.")]
+	public bool useTargetSelector = false;
+	[Tooltip("Serialized selector spec for selector mode. Entry methods hard-patch zone/side/tagFilter per entry (BuildSelectorSpec); the shared config (creatureFilter / rarity / typeID / enhanced / sort / excludeSelf) is read from here. Legacy fields are NOT read in selector mode.")]
+	public CardSelector targetSelector = new CardSelector();
+
+	/// <summary>
+	/// Runtime typeID override for selector mode — RiftOverrideAwareReviveEffect mirrors its
+	/// legacy typeIDFilter mutation here. Not serialized (per-instance session value).
+	/// </summary>
+	public string SelectorTypeIDOverride { get; set; }
+
 	[Header("Once-Per-Round Gate")]
 	[Tooltip("0 = unlimited; N = at most N successful revives per round for this component instance (plans/plan-revive-loop-mitigation-2026-09-19.md §8.2, per-round-count extension 2026-09-20). Prefabs gated before the int switch serialize 1, which reads as the single-charge limit. Empty-grave fizzles do not consume charges; the gate reopens at every round start.")]
 	public int oncePerRound = 0;
@@ -222,22 +234,58 @@ public class ReviveEffect : EffectScript
 
 	public void ReviveMyCards(int amount)
 	{
-		ReviveChosenCards(SortOrShufflePool(BuildRevivePool(true)), amount);
+		ReviveChosenCards(ResolvePool(true, false), amount);
 	}
 
 	public void ReviveMyCardsWithTag(int amount)
 	{
-		ReviveChosenCards(SortOrShufflePool(BuildRevivePool(true, true)), amount);
+		ReviveChosenCards(ResolvePool(true, true), amount);
 	}
 
 	public void ReviveTheirCards(int amount)
 	{
-		ReviveChosenCards(SortOrShufflePool(BuildRevivePool(false)), amount);
+		ReviveChosenCards(ResolvePool(false, false), amount);
 	}
 
 	public void ReviveTheirCardsWithTag(int amount)
 	{
-		ReviveChosenCards(SortOrShufflePool(BuildRevivePool(false, true)), amount);
+		ReviveChosenCards(ResolvePool(false, true), amount);
+	}
+
+	/// <summary>
+	/// Entry-level pool resolution (§3.3): selector path when useTargetSelector is on, legacy
+	/// path otherwise. The legacy path is frozen — parity is guarded by ReviveEffectTests,
+	/// the prefab flip tests and the full EditMode suite.
+	/// </summary>
+	private List<GameObject> ResolvePool(bool friendly, bool useTags)
+	{
+		if (!useTargetSelector) return SortOrShufflePool(BuildRevivePool(friendly, useTags));
+		int startCardIndex;
+		return CardSelectorSolver.Select(combatManager != null ? combatManager.combinedDeckZone : null,
+			myCardScript, BuildSelectorSpec(friendly, useTags), out startCardIndex);
+	}
+
+	/// <summary>
+	/// Entry-hardcoded shape for the revive family (appendix A.2 ReviveEffect row): grave-side
+	/// only, full fixed exclusions, no reveal merge, no boundary-slot rules; side is per-entry
+	/// and only the *WithTag entries pass the serialized tagFilter through. Everything else
+	/// (creatureFilter / rarity / typeID / enhanced / sort / excludeSelf) is the serialized
+	/// targetSelector's config — no runtime reads of the legacy fields in selector mode.
+	/// </summary>
+	private CardSelector BuildSelectorSpec(bool friendly, bool useTags)
+	{
+		var spec = targetSelector != null ? targetSelector.Clone() : new CardSelector();
+		spec.zone = CardSelector.SelectorZone.GraveSide;
+		spec.side = friendly ? CardSelector.SelectorSide.Friendly : CardSelector.SelectorSide.Enemy;
+		spec.minionMode = CardSelector.SelectorMinion.Exclude;
+		spec.excludeNeutral = true;
+		spec.excludePassive = true;
+		spec.includeRevealZone = false;
+		spec.excludeBottomSlot = false;
+		spec.excludeTopSlot = false;
+		if (!useTags) spec.tagFilter = null;
+		if (!string.IsNullOrEmpty(SelectorTypeIDOverride)) spec.typeIDFilter = SelectorTypeIDOverride;
+		return spec;
 	}
 
 	[Header("Round-End Arm Gate")]
