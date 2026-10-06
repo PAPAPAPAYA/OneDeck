@@ -294,7 +294,11 @@ public class BuryStageSelectorTests : HeadlessCombatTestFixture
 
 		effect.BuryMyCards(1);
 
-		Assert.AreSame(f1, CombatManager.combinedDeckZone[0], "legacy path reads legacy filters only");
+		// Legacy buries ONE random FRIENDLY card (F1/E1 pool). If the hostile selector config
+		// leaked, the pool would be empty and the untouched deck would leave StartCard on top.
+		var top = CombatManager.combinedDeckZone[0];
+		Assert.That(new[] { "F1", "E1" }, Does.Contain(top.name),
+			"legacy path reads legacy filters only (random friendly pick)");
 	}
 
 	// ---------- Stage selector path ----------

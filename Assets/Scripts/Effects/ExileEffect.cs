@@ -22,6 +22,12 @@ public class ExileEffect : EffectScript
 	[Tooltip("IntSO used when this card belongs to the enemy")]
 	public IntSO enemyIntSO;
 
+	[Header("Unified Target Selector (plan-card-selector-targeting §3.3)")]
+	[Tooltip("True = build pools via CardSelectorSolver + targetSelector; False = legacy per-entry bodies (existing prefabs).")]
+	public bool useTargetSelector = false;
+	[Tooltip("Serialized selector spec for selector mode. Parity locks forced per entry (appendix A.2): legacy Exile has NO minion filter, NO self exclusion and NO zone limits, so the base spec forces minionMode=Any + excludeSelf=false + zone=Anywhere; excludePassive is only true on the main/tag entries (Minion/WithTypeID entries never excluded passives). Predicate upgrades (creatureFilter/rarity/enhanced) read from the spec — neutral defaults equal legacy. ExileMyCardsWithTypeID's StringSO maps to typeIDFilter at flip time per §3.3.")]
+	public CardSelector targetSelector = new CardSelector();
+
 	/// <summary>
 	/// Get card owner's color tag (delegates to base palette-aware helper)
 	/// </summary>
@@ -48,6 +54,7 @@ public class ExileEffect : EffectScript
 
 	public void ExileMyCards(int amount)
 	{
+		if (useTargetSelector) { ExileCardsViaSelector(amount, CardSelector.SelectorSide.Friendly, excludePassive: true, minionOnly: false); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
@@ -69,6 +76,7 @@ public class ExileEffect : EffectScript
 
 	public void ExileTheirCards(int amount)
 	{
+		if (useTargetSelector) { ExileCardsViaSelector(amount, CardSelector.SelectorSide.Enemy, excludePassive: true, minionOnly: false); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
@@ -90,6 +98,7 @@ public class ExileEffect : EffectScript
 
 	public void ExileRandomCards(int amount)
 	{
+		if (useTargetSelector) { ExileCardsViaSelector(amount, CardSelector.SelectorSide.Both, excludePassive: true, minionOnly: false); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
@@ -111,6 +120,7 @@ public class ExileEffect : EffectScript
 
 	public void ExileMyCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { ExileCardsWithTagViaSelector(amount, CardSelector.SelectorSide.Friendly); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
@@ -135,6 +145,7 @@ public class ExileEffect : EffectScript
 
 	public void ExileTheirCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { ExileCardsWithTagViaSelector(amount, CardSelector.SelectorSide.Enemy); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
@@ -159,6 +170,7 @@ public class ExileEffect : EffectScript
 
 	public void ExileCardsWithTag(int amount)
 	{
+		if (useTargetSelector) { ExileCardsWithTagViaSelector(amount, CardSelector.SelectorSide.Both); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
@@ -180,6 +192,7 @@ public class ExileEffect : EffectScript
 
 	public void ExileMyMinions(int amount)
 	{
+		if (useTargetSelector) { ExileCardsViaSelector(amount, CardSelector.SelectorSide.Friendly, excludePassive: false, minionOnly: true); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var minions = new List<GameObject>();
 
@@ -202,6 +215,7 @@ public class ExileEffect : EffectScript
 
 	public void ExileTheirMinions(int amount)
 	{
+		if (useTargetSelector) { ExileCardsViaSelector(amount, CardSelector.SelectorSide.Enemy, excludePassive: false, minionOnly: true); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var minions = new List<GameObject>();
 
@@ -228,6 +242,7 @@ public class ExileEffect : EffectScript
 	/// <param name="amount">Number of cards to exile</param>
 	public void ExileMyCardsWithTypeID(int amount)
 	{
+		if (useTargetSelector) { ExileCardsWithTypeIDViaSelector(amount); return; }
 		_combinedDeck = combatManager.combinedDeckZone;
 		var cardsToExile = new List<GameObject>();
 		UtilityFuncManagerScript.CopyGameObjectList(_combinedDeck, cardsToExile, true);
@@ -275,6 +290,67 @@ public class ExileEffect : EffectScript
 
 		ExileTheirCards(intSO.value);
 	}
+
+	#region CardSelector path (Step 4, plan §3.3)
+
+	/// <summary>
+	/// Base spec for Exile pool entries (appendix A.2 parity locks): legacy Exile reaches the
+	/// WHOLE deck including the grave side and never excludes the source card or filters
+	/// minions on the main entries — so the base forces zone=Anywhere + excludeSelf=false +
+	/// minionMode=Any. Predicate upgrades (creatureFilter / rarity / enhanced / includeRevealZone)
+	/// read from the serialized spec with neutral defaults equal to legacy.
+	/// </summary>
+	private CardSelector BuildExileSpecBase()
+	{
+		var spec = targetSelector != null ? targetSelector.Clone() : new CardSelector();
+		spec.zone = CardSelector.SelectorZone.Anywhere;
+		spec.excludeSelf = false;      // legacy parity: no Exile entry ever excludes the source
+		spec.minionMode = CardSelector.SelectorMinion.Any; // legacy parity: main entries have no minion filter
+		spec.excludeBottomSlot = false;
+		spec.excludeTopSlot = false;
+		spec.includeRevealZone = false;
+		return spec;
+	}
+
+	private void ExileCardsViaSelector(int amount, CardSelector.SelectorSide side, bool excludePassive, bool minionOnly)
+	{
+		var spec = BuildExileSpecBase();
+		spec.side = side;
+		spec.excludePassive = excludePassive; // legacy parity: Minion entries never excluded passives
+		spec.minionMode = minionOnly ? CardSelector.SelectorMinion.Only : CardSelector.SelectorMinion.Any;
+		spec.tagFilter = null;
+		int startCardIndex;
+		_combinedDeck = combatManager.combinedDeckZone;
+		ExileChosenCards(CardSelectorSolver.Select(_combinedDeck, myCardScript, spec, out startCardIndex), amount);
+	}
+
+	private void ExileCardsWithTagViaSelector(int amount, CardSelector.SelectorSide side)
+	{
+		var spec = BuildExileSpecBase();
+		spec.side = side;
+		spec.excludePassive = true;
+		// tagFilter passes through from the serialized spec (flip maps legacy tagToCheck=X →
+		// tagFilter=[X]). NOTE an unconfigured spec (null/empty) filters nothing, while the
+		// legacy tagToCheck default (None) matched nothing — configured-prefab parity only.
+		int startCardIndex;
+		_combinedDeck = combatManager.combinedDeckZone;
+		ExileChosenCards(CardSelectorSolver.Select(_combinedDeck, myCardScript, spec, out startCardIndex), amount);
+	}
+
+	private void ExileCardsWithTypeIDViaSelector(int amount)
+	{
+		var spec = BuildExileSpecBase();
+		spec.side = CardSelector.SelectorSide.Friendly;
+		spec.excludePassive = false; // legacy parity: WithTypeID never excluded passives
+		spec.tagFilter = null;
+		// typeIDFilter comes from the serialized spec — §3.3 flip mapping:
+		// cardTypeIDSO.value → typeIDFilter at flip time (no runtime read of the StringSO).
+		int startCardIndex;
+		_combinedDeck = combatManager.combinedDeckZone;
+		ExileChosenCards(CardSelectorSolver.Select(_combinedDeck, myCardScript, spec, out startCardIndex), amount);
+	}
+
+	#endregion
 
 	private void ExileChosenCards(List<GameObject> cardsToExile, int amount)
 	{
