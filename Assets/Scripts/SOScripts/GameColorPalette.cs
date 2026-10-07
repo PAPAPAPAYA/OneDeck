@@ -81,6 +81,15 @@ public class GameColorPalette : ScriptableObject
 	public ColorSO chipText;	// chip label text — decoupled from tooltipText (2026-09-25)
 	public ColorSO buttonFace;	// button face (top bar + reroll + price) — decoupled from ownerCardColor (2026-09-25)
 
+	[Header("HP Name Plate")]
+	public ColorSO hpPlateFacePlayer;	// face fill, player plate
+	public ColorSO hpPlateFaceEnemy;	// face fill, enemy plate
+	public ColorSO hpPlateInkPlayer;	// digit + HP label ink, player plate
+	public ColorSO hpPlateInkEnemy;		// digit + HP label ink, enemy plate
+	public ColorSO hpPlateNamePlayer;	// username band text, player plate
+	public ColorSO hpPlateNameEnemy;	// username band text, enemy plate
+	public ColorSO hpPlateShadow;		// extended hard shadow slab + name band (both sides)
+
 	// Resolved HUD colors — the single source the HUD components (HPNumericDisplay,
 	// HPNumericDisplayHorizontal, CombatHPBarPresenter) read from; they keep no
 	// serialized color fields. White fallback keeps a miswired palette visible.
@@ -136,6 +145,17 @@ public class GameColorPalette : ScriptableObject
 	public static Color ChipBgColor => Me != null && Me.chipBg != null ? Me.chipBg.value : Color.white;
 	public static Color ChipTextColor => Me != null && Me.chipText != null ? Me.chipText.value : Color.white;
 	public static Color ButtonFaceColor => Me != null && Me.buttonFace != null ? Me.buttonFace.value : Color.white;
+
+	// HP name plate colors ("HP Name Plate" group) — the merged combat HUD plate
+	// (plan-hp-name-plate-2026-10-07). Same palette-authoritative pattern as the HP
+	// group; the shop mirror plate resolves the player slots via PaletteTint.
+	public static Color HpPlateFacePlayerColor => Me != null && Me.hpPlateFacePlayer != null ? Me.hpPlateFacePlayer.value : Color.white;
+	public static Color HpPlateFaceEnemyColor => Me != null && Me.hpPlateFaceEnemy != null ? Me.hpPlateFaceEnemy.value : Color.white;
+	public static Color HpPlateInkPlayerColor => Me != null && Me.hpPlateInkPlayer != null ? Me.hpPlateInkPlayer.value : Color.white;
+	public static Color HpPlateInkEnemyColor => Me != null && Me.hpPlateInkEnemy != null ? Me.hpPlateInkEnemy.value : Color.white;
+	public static Color HpPlateNamePlayerColor => Me != null && Me.hpPlateNamePlayer != null ? Me.hpPlateNamePlayer.value : Color.white;
+	public static Color HpPlateNameEnemyColor => Me != null && Me.hpPlateNameEnemy != null ? Me.hpPlateNameEnemy.value : Color.white;
+	public static Color HpPlateShadowColor => Me != null && Me.hpPlateShadow != null ? Me.hpPlateShadow.value : Color.white;
 
 #if UNITY_EDITOR
 	/// <summary>

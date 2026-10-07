@@ -31,6 +31,8 @@ using UnityEngine;
 //             down takes chips, buttons, avatar and HP pill away with the cards; wheel up
 //             brings them back; Space exits from a fully scrolled shop; CheckShelfClearance
 //             limit unchanged; combat/result HUD (canvas) untouched.
+//             (2026-10-07: the avatar + HP pill mirrors merged into the NamePlate widget —
+//             plan-hp-name-plate-2026-10-07.)
 public class ShopChrome : MonoBehaviour
 {
 	private const string ChromeName = "Shop Chrome";
@@ -145,18 +147,17 @@ public class ShopChrome : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Shows/hides only the world Avatar + HpPill mirror children (2026-10-02 re-audit
-	/// fixes 4/7): during a driver travel the canvas HUD world-flies as the single shared
-	/// avatar/HP copy, so the mirrors hide at travel start and return on the shop landing
-	/// (driver calls). No-op before the chrome is built (headless / bypass).
+	/// Shows/hides only the world NamePlate mirror child (2026-10-02 re-audit fixes 4/7;
+	/// the Avatar + HpPill pair merged into one plate per plan-hp-name-plate-2026-10-07):
+	/// during a driver travel the canvas HUD world-flies as the single shared copy, so the
+	/// mirror hides at travel start and returns on the shop landing (driver calls). No-op
+	/// before the chrome is built (headless / bypass).
 	/// </summary>
 	public static void SetMirrorsActive(bool active)
 	{
 		if (_page == null) return;
-		Transform avatar = _page.transform.Find("Avatar");
-		if (avatar != null) avatar.gameObject.SetActive(active);
-		Transform hpPill = _page.transform.Find("HpPill");
-		if (hpPill != null) hpPill.gameObject.SetActive(active);
+		Transform plate = _page.transform.Find("NamePlate");
+		if (plate != null) plate.gameObject.SetActive(active);
 	}
 
 	/// <summary>
@@ -183,13 +184,11 @@ public class ShopChrome : MonoBehaviour
 	}
 
 	/// <summary>
-	/// World center of the built page's Avatar / HpPill prefab children — the canvas
-	/// avatar/HP park there in the Shop phase (plan-shop-mirror-prefab §3.4); false until
-	/// the chrome is built.
+	/// World center of the built page's NamePlate prefab child — the canvas plate parks
+	/// there in the Shop phase (plan-hp-name-plate-2026-10-07 §3.4, ex plan-shop-mirror-
+	/// prefab §3.4); false until the chrome is built.
 	/// </summary>
-	public static bool TryGetAvatarWorldCenter(out Vector3 worldPos) => TryGetMirrorWorldCenter("Avatar", out worldPos);
-
-	public static bool TryGetHpPillWorldCenter(out Vector3 worldPos) => TryGetMirrorWorldCenter("HpPill", out worldPos);
+	public static bool TryGetNamePlateWorldCenter(out Vector3 worldPos) => TryGetMirrorWorldCenter("NamePlate", out worldPos);
 
 	private static bool TryGetMirrorWorldCenter(string childName, out Vector3 worldPos)
 	{
@@ -202,9 +201,7 @@ public class ShopChrome : MonoBehaviour
 	}
 
 	/// <summary>Shop scale authored on the mirror widget root (ShopMirrorScale); null until built.</summary>
-	public static float? AvatarShopScale => GetMirrorScale("Avatar");
-
-	public static float? HpDisplayShopScale => GetMirrorScale("HpPill");
+	public static float? HpDisplayShopScale => GetMirrorScale("NamePlate");
 
 	private static float? GetMirrorScale(string childName)
 	{

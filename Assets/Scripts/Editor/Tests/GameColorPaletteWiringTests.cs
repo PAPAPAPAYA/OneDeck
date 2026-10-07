@@ -111,6 +111,20 @@ public class GameColorPaletteWiringTests
 		Assert.AreNotEqual(palette.startCardColor.value, palette.opponentCardColor.value, "Start card must stand out from opponent cards");
 	}
 
+	// HP name plate (plan-hp-name-plate-2026-10-07): player/enemy plate faces, inks
+	// and name-band inks must stay distinguishable; the shadow slot must be wired.
+	// (Name/ink fields deliberately SHARE assets with face fields by design, so only
+	// the player-vs-enemy pairs are pinned here — not AllItemsAreUnique.)
+	[Test]
+	public void HpPlateFields_PlayerEnemyPairsDiffer()
+	{
+		GameColorPalette palette = LoadPalette();
+		Assert.IsNotNull(palette.hpPlateShadow, "hpPlateShadow must be wired");
+		Assert.AreNotEqual(palette.hpPlateFacePlayer.value, palette.hpPlateFaceEnemy.value, "Player and enemy plate faces must differ");
+		Assert.AreNotEqual(palette.hpPlateInkPlayer.value, palette.hpPlateInkEnemy.value, "Player and enemy plate inks must differ");
+		Assert.AreNotEqual(palette.hpPlateNamePlayer.value, palette.hpPlateNameEnemy.value, "Player and enemy plate name inks must differ");
+	}
+
 	// Resolved statics follow the wired assets.
 	[Test]
 	public void ResolvedColors_MatchWiredAssets()
@@ -138,5 +152,12 @@ public class GameColorPaletteWiringTests
 		Assert.AreEqual(palette.startCardTextColor.value, GameColorPalette.StartCardTextColor);
 		Assert.AreEqual(palette.infectedTint.value, GameColorPalette.InfectedTintColor);
 		Assert.AreEqual(palette.powerTint.value, GameColorPalette.PowerTintColor);
+		Assert.AreEqual(palette.hpPlateFacePlayer.value, GameColorPalette.HpPlateFacePlayerColor);
+		Assert.AreEqual(palette.hpPlateFaceEnemy.value, GameColorPalette.HpPlateFaceEnemyColor);
+		Assert.AreEqual(palette.hpPlateInkPlayer.value, GameColorPalette.HpPlateInkPlayerColor);
+		Assert.AreEqual(palette.hpPlateInkEnemy.value, GameColorPalette.HpPlateInkEnemyColor);
+		Assert.AreEqual(palette.hpPlateNamePlayer.value, GameColorPalette.HpPlateNamePlayerColor);
+		Assert.AreEqual(palette.hpPlateNameEnemy.value, GameColorPalette.HpPlateNameEnemyColor);
+		Assert.AreEqual(palette.hpPlateShadow.value, GameColorPalette.HpPlateShadowColor);
 	}
 }

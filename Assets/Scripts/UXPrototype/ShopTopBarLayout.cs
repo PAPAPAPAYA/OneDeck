@@ -2,13 +2,12 @@ using UnityEngine;
 
 /// <summary>
 /// Shop-phase canvas placement for the reused combat HUD pieces — WORLD-DRIVEN since the
-/// mirror prefab port (2026-09-24, plan-shop-mirror-prefab): the canvas avatar/HP park at
-/// the world position of the built ShopHudPage's Avatar / HpPill prefab children,
-/// inverted into canvas space, so the prefab is the single placement source (move the
-/// widget in the prefab stage and the transition flight follows). Before the chrome is
-/// built (headless / batch / early frames) the resolvers fall back to the last-authored
-/// SO-era values baked as consts below — the numbers the deleted ShopLayoutConfig.asset
-/// carried (NOT the old code defaults).
+/// mirror prefab port (2026-09-24, plan-shop-mirror-prefab; avatar+HP merged into the
+/// NamePlate 2026-10-07, plan-hp-name-plate-2026-10-07): the canvas plate parks at the
+/// world position of the built ShopHudPage's NamePlate prefab child, inverted into
+/// canvas space, so the prefab is the single placement source (move the widget in the
+/// prefab stage and the transition flight follows). Before the chrome is built
+/// (headless / batch / early frames) the resolvers fall back to the consts below.
 /// </summary>
 public static class ShopTopBarLayout
 {
@@ -16,14 +15,14 @@ public static class ShopTopBarLayout
 	// a canvas placement read (GameScene Main Camera value).
 	public const float FallbackOrthoSize = 6.06f;
 
-	// SO-era fallback anchors/scales (chrome-not-built reads only). These are the
-	// user-tuned values the deleted ShopLayoutConfig.asset held; the live path reads the
-	// built page's prefab children instead.
-	private const float FallbackPlayerIconXFromLeftEdge = 2.57f;
-	private const float FallbackPlayerIconViewportY = 0.88f;
-	public const float FallbackAvatarShopScale = 0.41f;
-	private const float FallbackHpDisplayXFromLeftEdge = 4.02f;
-	private const float FallbackHpDisplayViewportY = 0.88f;
+	// SO-era fallback anchor/scale (chrome-not-built reads only). Retuned 2026-10-07 to
+	// the NamePlate mirror's page spot (plan-hp-name-plate-2026-10-07): the built page's
+	// NamePlate child at page-local (-4.45, -1.8) resolves to world (-4.35, 3.76) on the
+	// authored page root (0.1, 5.56, -98); the live path reads the built page instead.
+	// ViewportY derives from the WORLD Y (fixes plan 2026-10-07 §5): (3.76 + ortho 6.06) /
+	// (2 x 6.06) = 0.81 — the first cut baked the page-LOCAL Y and parked mid-screen.
+	private const float FallbackHpDisplayXFromLeftEdge = 6.42f;
+	private const float FallbackHpDisplayViewportY = 0.81f;
 	public const float FallbackHpDisplayShopScale = 0.74f;
 
 	/// <summary>Camera.main's ortho size with the shipping fallback (canvas-side reads).</summary>
@@ -62,26 +61,15 @@ public static class ShopTopBarLayout
 		return new Vector2(px / scale, py / scale);
 	}
 
-	/// <summary>Player avatar shop anchor: the built page's Avatar world center, inverted; SO-era algebra as headless fallback.</summary>
-	public static Vector2 ShopAnchorAvatar(Canvas canvas)
-	{
-		return ShopChrome.TryGetAvatarWorldCenter(out Vector3 world)
-			? WorldToCanvasAnchored(world, ShopChrome.BuildCameraCenter, canvas, MainOrthoSize)
-			: FallbackAnchor(FallbackPlayerIconXFromLeftEdge, FallbackPlayerIconViewportY, canvas);
-	}
-
-	/// <summary>HP pill shop anchor: the built page's HpPill world center, inverted; SO-era algebra as headless fallback.</summary>
+	/// <summary>HP name plate shop anchor: the built page's NamePlate world center, inverted; SO-era algebra as headless fallback (plan-hp-name-plate-2026-10-07 §3.4).</summary>
 	public static Vector2 ShopAnchorHpDisplay(Canvas canvas)
 	{
-		return ShopChrome.TryGetHpPillWorldCenter(out Vector3 world)
+		return ShopChrome.TryGetNamePlateWorldCenter(out Vector3 world)
 			? WorldToCanvasAnchored(world, ShopChrome.BuildCameraCenter, canvas, MainOrthoSize)
 			: FallbackAnchor(FallbackHpDisplayXFromLeftEdge, FallbackHpDisplayViewportY, canvas);
 	}
 
-	/// <summary>Shop scale authored on the Tpl_Avatar root; fallback const before the chrome is built.</summary>
-	public static float ShopScaleAvatar => ShopChrome.AvatarShopScale ?? FallbackAvatarShopScale;
-
-	/// <summary>Shop scale authored on the Tpl_HpPill root; fallback const before the chrome is built.</summary>
+	/// <summary>Shop scale authored on the Tpl_HpNamePlate root; fallback const before the chrome is built.</summary>
 	public static float ShopScaleHpDisplay => ShopChrome.HpDisplayShopScale ?? FallbackHpDisplayShopScale;
 
 	private static Vector2 FallbackAnchor(float xFromLeftEdge, float viewportY, Canvas canvas)

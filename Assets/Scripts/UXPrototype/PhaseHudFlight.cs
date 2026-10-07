@@ -13,8 +13,9 @@ using UnityEngine;
 /// phase placement writes resume seamlessly once the flight hands back.
 /// Home math: PhaseFlightPlanner.HudHomeAtPage (the canvas plane rides the camera, so a
 /// page-home world position is the rect's current world position shifted by the rig's Y
-/// distance to that page). Element homes: ShopChrome.TryGetAvatarWorldCenter /
-/// TryGetHpPillWorldCenter (shop top bar) and the captured combat anchors (combat page).
+/// distance to that page). Element home: ShopChrome.TryGetNamePlateWorldCenter (shop top
+/// bar, 2026-10-07 HP name plate — was the Avatar/HpPill pair) and the captured combat
+/// anchors (combat page).
 /// </summary>
 public class HudWorldFlight
 {

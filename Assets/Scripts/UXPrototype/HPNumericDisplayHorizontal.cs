@@ -37,6 +37,18 @@ using UnityEngine.UI;
 /// counter-direction slide from enemySlide above (started together with the camera
 /// travel, demo :724-727) and stays visible through Result, sliding UP out on the
 /// return descent (fix 3, demo :727).
+///
+/// 2026-10-07 HP NAME PLATE (plan-hp-name-plate-2026-10-07, docs/demo/HPNamePlateDemo.html):
+/// the display becomes the merged plate — the digit row is wrapped by a sliced face
+/// Image over the standard hard shadow (cardShadow) extended down-right into the
+/// username band, replacing the per-side PlayerIcon/EnemyIcon + name labels
+/// (CombatIconPresenter, retired). LayoutRoots lays out label row + face + shadow +
+/// name; the slash renders at the max group's scale; hit shake / landing pop move the
+/// whole plate (they already move displayRoot). The name polls per frame with the
+/// presenter's diff guard (PlayerIdentity.Username / OpponentDeckCache, "???" fallback)
+/// and auto-shrinks to a floor before TMP ellipsis. All geometry is em-relative
+/// (1em = current digit font size); colors come from the GameColorPalette "HP Name
+/// Plate" group.
 /// </summary>
 public class HPNumericDisplayHorizontal : MonoBehaviour
 {
@@ -58,20 +70,50 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	public RectTransform maxStrips;
 	public GamePhaseSO gamePhaseRef;
 	public Canvas canvas;
+	[Tooltip("Plate face Image (sliced rounded sprite), child of displayRoot — sized/positioned by LayoutRoots.")]
+	public Image faceImage;
+	[Tooltip("Plate hard-shadow Image (sliced rounded sprite), child of displayRoot — extended down-right into the name band.")]
+	public Image shadowImage;
+	[Tooltip("Username TMP in the shadow band, child of displayRoot; polls PlayerIdentity/OpponentDeckCache.")]
+	public TMP_Text nameLabel;
+	[Tooltip("Static 'HP' label at the left of the digit row (full digit size); laid out by LayoutRoots.")]
+	public TMP_Text hpLabel;
 
 	[Header("Typography")]
-	[Tooltip("Max (slash-right) digits render at em * maxFontScale; the slash renders at em.")]
-	public float maxFontScale = 0.75f;
+	[Tooltip("Max digits AND the slash render at em * maxFontScale.")]
+	public float maxFontScale = 0.47f;
 	[Tooltip("Gap between digit groups and the slash, in em.")]
-	public float groupGapEm = 0.15f;
+	public float groupGapEm = 0f;
 
 	[Header("Layout")]
-	[Tooltip("Max digit group vertical offset from the row center, in em (positive = lower). 0 = same centerline as current.")]
-	public float maxOffsetYEm = 0f;
-	[Tooltip("Slash vertical offset from the row center, in em (positive = lower). 0 = centered.")]
-	public float slashOffsetYEm = 0f;
+	[Tooltip("Max digit group vertical offset from the row center, in em (positive = lower). Bottom-aligned-with-raise geometry: (raise - 0.5 + maxFontScale * 0.5) em.")]
+	public float maxOffsetYEm = -0.215f;
+	[Tooltip("Slash vertical offset from the row center, in em. Matches maxOffsetYEm so the slash rides the max group's raise.")]
+	public float slashOffsetYEm = -0.215f;
 	[Tooltip("Slash horizontal offset from its default slot between the digit groups, in em (positive = right).")]
 	public float slashOffsetXEm = 0f;
+
+	[Header("Plate (demo spec, em; 1em = current digit font size)")]
+	[Tooltip("Face horizontal padding around the digit row.")]
+	public float facePadXEm = 0.12f;
+	[Tooltip("Face vertical padding (the 1em line box provides the air).")]
+	public float facePadYEm = 0.01f;
+	[Tooltip("Shadow overhang past the face's right edge (R0 light: shadow extends down-right).")]
+	public float shadowExtendXEm = 0.16f;
+	[Tooltip("Shadow extension below the face = the name band height.")]
+	public float shadowExtendYEm = 0.41f;
+	[Tooltip("Name band inset from the face's left edge.")]
+	public float shadowInsetXEm = 0.11f;
+	[Tooltip("Gap between the HP label and the current digits, in em.")]
+	public float labelGapEm = 0.11f;
+	[Tooltip("Username font size in em (of the current digit size).")]
+	public float nameScaleEm = 0.32f;
+	[Tooltip("Username letter-spacing in em (of the current digit size).")]
+	public float nameTrackingEm = 0.05f;
+	[Tooltip("Auto-shrink floor for the username, as a fraction of nameScaleEm; beyond it TMP ellipsis takes over.")]
+	[Range(0.2f, 1f)] public float nameShrinkFloor = 0.55f;
+	[Tooltip("Username inset from the shadow's right edge; the demo value equals extend-x so the name's right edge lands on the face's right edge.")]
+	public float nameSidePadEm = 0.16f;
 
 	[Header("Counting (demo constants, shared with HPNumericDisplay)")]
 	public int stepMs = 50;
@@ -100,6 +142,8 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	public bool editModePreview = true;
 	public int previewHp = 12;
 	public int previewHpMax = 20;
+	[Tooltip("Edit Mode only: sample username laid out in the shadow band (same shrink/ellipsis path as runtime).")]
+	public string previewName = "???";
 
 	private const int StripCycles = 3;
 	private const int DigitsPerCycle = 10;
@@ -132,7 +176,8 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	private bool _wasVisible;
 	// Last observed phase, driving re-placement on ANY phase change (see the
 	// VISUAL-FIX(2026-09-19) block in Update). Initialized to Result — never the boot
-	// phase — so the first Update always places, mirroring CombatIconPresenter.
+	// phase — so the first Update always places (the convention the retired
+	// CombatIconPresenter established).
 	private EnumStorage.GamePhase _lastPhase = EnumStorage.GamePhase.Result;
 	// World flight (fixes 2/3/7): owns this side's pill while the driver travels.
 	private PhaseTransitionDriver.TransitionTravel _lastTravel = PhaseTransitionDriver.TransitionTravel.None;
@@ -154,6 +199,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	private float _digitWidth = 10f;
 	private float _maxDigitWidth = 8f;
 	private float _slashWidth = 10f;
+	private float _labelWidth; // measured 'HP' label advance at _em
 	private float _stripLineSpacing;
 	private float _glyphBlockEm = 1f; // font glyph block (ascent - descent) in em; digit mask slots size/offset by it
 	private int _fixedDigitCount = 1;
@@ -169,7 +215,8 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	private void Awake()
 	{
 		if (displayRoot == null || currentRoot == null || currentPlain == null || currentStrips == null
-			|| slashText == null || maxRoot == null || maxPlain == null || maxStrips == null || gamePhaseRef == null)
+			|| slashText == null || maxRoot == null || maxPlain == null || maxStrips == null || gamePhaseRef == null
+			|| faceImage == null || shadowImage == null || nameLabel == null || hpLabel == null)
 		{
 			Debug.LogError("[HPNumericDisplayHorizontal] Missing serialized reference(s), disabling.");
 			enabled = false;
@@ -193,8 +240,26 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		_em = currentPlain.fontSize;
 		_maxEm = _em * maxFontScale;
 		maxPlain.fontSize = _maxEm;
-		slashText.fontSize = _em;
+		// The slash renders at the max group's scale (plate demo); measure AFTER the
+		// font size is set so the row math uses the real glyph advance.
+		slashText.fontSize = _maxEm;
 		slashText.text = "/";
+		// The HP label participates in the row at full digit size.
+		hpLabel.font = currentPlain.font;
+		hpLabel.fontSize = _em;
+		hpLabel.text = "HP";
+		hpLabel.enableWordWrapping = false;
+		hpLabel.overflowMode = TextOverflowModes.Overflow;
+		hpLabel.color = NormalColorValue;
+		_labelWidth = hpLabel.GetPreferredValues("HP").x;
+		if (_labelWidth <= 0.01f)
+		{
+			_labelWidth = _em * 1.2f;
+		}
+		// The username rides the digits' bold font (CJK via its fallback chain); the
+		// color comes from the plate name slot. Shrink/ellipsis handled in LayoutName.
+		nameLabel.font = currentPlain.font;
+		nameLabel.enableWordWrapping = false;
 		TMP_FontAsset fontAsset = currentPlain.font;
 		// 1em line advance: same formula and rationale as HPNumericDisplay (the
 		// lineSpacing is a font-relative percentage, so one value serves both the
@@ -258,6 +323,11 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		currentPlain.gameObject.SetActive(false);
 		maxPlain.gameObject.SetActive(false);
 		slashText.color = NormalColorValue;
+		// Plate palette colors (face / hard shadow / name band) — single source,
+		// same pattern as the digit ink above.
+		faceImage.color = FaceColorValue;
+		shadowImage.color = GameColorPalette.HpPlateShadowColor;
+		nameLabel.color = NameColorValue;
 		// Combat input is click-driven: no graphic of this display may intercept raycasts.
 		foreach (Graphic graphic in displayRoot.GetComponentsInChildren<Graphic>(true))
 		{
@@ -335,6 +405,13 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		if (!visible)
 		{
 			return;
+		}
+
+		// Username poll: the player side in every visible phase; the enemy side only
+		// in Combat (the same gating the retired CombatIconPresenter used).
+		if (side == Side.Player || inCombat)
+		{
+			RefreshNameLabel();
 		}
 
 		int hp = GetDisplayedHp();
@@ -434,6 +511,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		_fixedDigitCount = DigitCount(hp);
 		_fixedMaxDigitCount = DigitCount(hpMax);
 		LayoutRoots();
+		RefreshNameLabel();
 		SetCounterInstant(_current, true, hp);
 		SetCounterInstant(_max, false, hpMax);
 		displayRoot.gameObject.SetActive(true);
@@ -510,7 +588,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		// plan-shop-mirror-prefab §3.4); no mirror -> no flight (fallback glide handles it).
 		// Pre-declared: the && short-circuit leaves the out unassigned on the enemy side.
 		Vector3 shopHome = Vector3.zero;
-		bool mirrorOk = side == Side.Player && ShopChrome.TryGetHpPillWorldCenter(out shopHome);
+		bool mirrorOk = side == Side.Player && ShopChrome.TryGetNamePlateWorldCenter(out shopHome);
 		switch (travel)
 		{
 			case PhaseTransitionDriver.TransitionTravel.ToCombat:
@@ -611,7 +689,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	/// <summary>
 	/// The carrying canvas root's current world Y — the flight-home basis (HudHomeAtPage).
 	/// NOT the camera rig: the canvas root lags the rig within the travel-start frame
-	/// (VISUAL-FIX(2026-10-03) in CombatIconPresenter); the rig Y remains only as the
+	/// (VISUAL-FIX(2026-10-03), ex-CombatIconPresenter); the rig Y remains only as the
 	/// no-canvas fallback.
 	/// </summary>
 	private float CanvasPlaneY => canvas != null ? canvas.transform.position.y : HudWorldFlight.RigY;
@@ -651,24 +729,112 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 
 	// ------------------------------------------------------------------ layout
 
-	// Row: [current digits] gap [/] gap [max digits], centered on the displayRoot
-	// pivot (0.5, 0.5). Each digit group is a top-pivot box whose single visible
-	// strip line lands on the row center (group top sits at +lineHeight/2).
+	// Row: [HP label] gap [current digits] gap [/] gap [max digits], centered on the
+	// displayRoot pivot (0.5, 0.5). Each digit group is a top-pivot box whose single
+	// visible strip line lands on the row center (group top sits at +lineHeight/2).
+	// The plate (face Image + extended shadow + name band) is laid out around the
+	// same row by LayoutPlate, so the whole element shares one geometry source.
 	private void LayoutRoots()
 	{
 		float gap = _em * groupGapEm;
+		float labelGap = _em * labelGapEm;
 		float width = _fixedDigitCount * _digitWidth;
 		float maxWidth = _fixedMaxDigitCount * _maxDigitWidth;
-		float total = width + gap + _slashWidth + gap + maxWidth;
+		float total = _labelWidth + labelGap + width + gap + _slashWidth + gap + maxWidth;
 		displayRoot.sizeDelta = new Vector2(total, _em);
 		float x = -total * 0.5f;
+		if (hpLabel != null)
+		{
+			hpLabel.rectTransform.sizeDelta = new Vector2(_labelWidth, _em);
+			hpLabel.rectTransform.anchoredPosition = new Vector2(x + _labelWidth * 0.5f, 0f);
+		}
+		float rowX = x + _labelWidth + labelGap;
 		currentRoot.sizeDelta = new Vector2(width, _em);
-		currentRoot.anchoredPosition = new Vector2(x, _em * 0.5f);
-		float slashX = x + width + gap;
+		currentRoot.anchoredPosition = new Vector2(rowX, _em * 0.5f);
+		float slashX = rowX + width + gap;
 		slashText.rectTransform.sizeDelta = new Vector2(_slashWidth, _em);
 		slashText.rectTransform.anchoredPosition = new Vector2(slashX + _slashWidth * 0.5f + slashOffsetXEm * _em, slashOffsetYEm * _em);
 		maxRoot.sizeDelta = new Vector2(maxWidth, _maxEm);
 		maxRoot.anchoredPosition = new Vector2(slashX + _slashWidth + gap, _maxEm * 0.5f + maxOffsetYEm * _em);
+		LayoutPlate(total);
+	}
+
+	// The plate silhouette around the digit row (demo HPNamePlateDemo.html §3.1):
+	// a face Image padded around the row, and the hard-shadow Image extended
+	// down-right past it — right overhang (extend-x) and bottom name band
+	// (extend-y) with the band inset from the face's left edge. The name label
+	// is right-aligned inside the band; band top == face bottom by construction.
+	// All rects are center-anchored children of displayRoot ((0.5,0.5)/(0.5,0.5))
+	// except the name's (1,0.5) pivot, which pins its right edge.
+	private void LayoutPlate(float totalRowWidth)
+	{
+		if (faceImage == null || shadowImage == null)
+		{
+			return; // pre-plate scene state (Awake would have disabled us anyway)
+		}
+		float padX = _em * facePadXEm;
+		float padY = _em * facePadYEm;
+		float extX = _em * shadowExtendXEm;
+		float extY = _em * shadowExtendYEm;
+		float inset = _em * shadowInsetXEm;
+		float faceW = totalRowWidth + 2f * padX;
+		float faceH = _em + 2f * padY;
+		RectTransform faceRt = faceImage.rectTransform;
+		faceRt.sizeDelta = new Vector2(faceW, faceH);
+		faceRt.anchoredPosition = Vector2.zero;
+		RectTransform shadowRt = shadowImage.rectTransform;
+		shadowRt.sizeDelta = new Vector2(faceW - inset + extX, faceH + extY);
+		// VISUAL-FIX(2026-10-07): name band flush with the face's left edge, right overhang ~4x too thin
+		//   Cause:    The slab center formula wrote (extX - inset) — the inset sign was flipped, so the
+		//             slab spanned [faceLeft, faceRight + (extX - inset)] instead of the demo spec
+		//             [faceLeft + inset, faceRight + extX].
+		//   Affects:  HPNumericDisplayHorizontal.LayoutPlate (canvas plate + Edit Mode preview)
+		//   Regress:  Live rect read: shadow slab edges == [faceLeft + inset, faceRight + extX] on
+		//             both sides; name band top == face bottom unchanged; side-by-side with
+		//             docs/demo/HPNamePlateDemo.html §3.1.
+		//   Related:  plans/plan-hp-name-plate-fixes-2026-10-07.md §3
+		shadowRt.anchoredPosition = new Vector2((extX + inset) * 0.5f, -extY * 0.5f);
+		if (nameLabel != null)
+		{
+			RectTransform nameRt = nameLabel.rectTransform;
+			// Right edge = shadow right edge - name side pad; with nameSidePadEm ==
+			// shadowExtendXEm (demo) that lands exactly on the face's right edge.
+			float nameRight = faceW * 0.5f + extX - _em * nameSidePadEm;
+			float bandW = nameRight - (-faceW * 0.5f + inset);
+			nameRt.sizeDelta = new Vector2(bandW, extY);
+			nameRt.anchoredPosition = new Vector2(nameRight, -(faceH * 0.5f + extY * 0.5f));
+			LayoutName(nameLabel.text);
+		}
+	}
+
+	// Username layout: measure at the demo scale, auto-shrink toward the floor
+	// (nameShrinkFloor of nameScaleEm) while it overflows the band, then hand the
+	// remainder to TMP ellipsis. Tracking is em-of-current-digit-size in the demo,
+	// while TMP characterSpacing is 1/100 em of the text's own font size — convert.
+	private void LayoutName(string value)
+	{
+		if (nameLabel == null || string.IsNullOrEmpty(value))
+		{
+			return;
+		}
+		float baseSize = _em * nameScaleEm;
+		nameLabel.text = value;
+		nameLabel.overflowMode = TextOverflowModes.Overflow;
+		nameLabel.fontSize = baseSize;
+		nameLabel.characterSpacing = nameTrackingEm * _em / baseSize * 100f;
+		float boxW = nameLabel.rectTransform.sizeDelta.x;
+		if (boxW <= 0.01f)
+		{
+			return;
+		}
+		float w = nameLabel.GetPreferredValues(value).x;
+		if (w > boxW)
+		{
+			nameLabel.fontSize = Mathf.Max(baseSize * nameShrinkFloor, baseSize * (boxW / w));
+			nameLabel.characterSpacing = nameTrackingEm * _em / nameLabel.fontSize * 100f;
+			w = nameLabel.GetPreferredValues(value).x;
+		}
+		nameLabel.overflowMode = w > boxW ? TextOverflowModes.Ellipsis : TextOverflowModes.Overflow;
 	}
 
 	private static void StretchFull(RectTransform rt)
@@ -695,6 +861,44 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 
 	// Per-side normal color from the palette ("HP Bar / Numeric" group).
 	private Color NormalColorValue => side == Side.Player ? GameColorPalette.HpNormalPlayerColor : GameColorPalette.HpNormalEnemyColor;
+
+	// Per-side plate colors ("HP Name Plate" group): face fill and username ink.
+	private Color FaceColorValue => side == Side.Player ? GameColorPalette.HpPlateFacePlayerColor : GameColorPalette.HpPlateFaceEnemyColor;
+	private Color NameColorValue => side == Side.Player ? GameColorPalette.HpPlateNamePlayerColor : GameColorPalette.HpPlateNameEnemyColor;
+
+	// Name sources — the same poll contract the retired CombatIconPresenter used:
+	// diff-guarded per frame; the enemy name can arrive shortly after the phase
+	// switch (ghost deck injection), so polling beats a one-shot entry write.
+	private const string UnknownName = "???";
+	private string _lastName;
+
+	private string ResolveNameValue()
+	{
+		if (side == Side.Player)
+		{
+			string playerName = PlayerIdentity.Username;
+			return string.IsNullOrEmpty(playerName) ? UnknownName : playerName;
+		}
+		string enemyName = OpponentDeckCache.Current != null ? OpponentDeckCache.Current.username : null;
+		return string.IsNullOrEmpty(enemyName) ? UnknownName : enemyName;
+	}
+
+	/// <summary>Diff-guarded username poll; writes text, colors and the shrink/ellipsis layout on change.</summary>
+	private void RefreshNameLabel()
+	{
+		if (nameLabel == null)
+		{
+			return;
+		}
+		string value = ResolveNameValue();
+		if (_lastName == value)
+		{
+			return;
+		}
+		_lastName = value;
+		nameLabel.color = NameColorValue;
+		LayoutName(value);
+	}
 
 	private int GetDisplayedHp()
 	{
@@ -1080,6 +1284,10 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		Vector2 curPos = currentRoot.anchoredPosition;
 		Vector2 slashPos = slashText.rectTransform.anchoredPosition;
 		Vector2 maxPos = maxRoot.anchoredPosition;
+		// The plate silhouette grows with the row: capture face/shadow widths so they
+		// glide to the new size in the same window instead of snapping with LayoutRoots.
+		Vector2 faceSize = faceImage != null ? faceImage.rectTransform.sizeDelta : Vector2.zero;
+		Vector2 shadowSize = shadowImage != null ? shadowImage.rectTransform.sizeDelta : Vector2.zero;
 		_fixedDigitCount = needed;
 		_fixedMaxDigitCount = neededMax;
 		LayoutRoots();
@@ -1092,10 +1300,23 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		slashText.rectTransform.anchoredPosition = slashPos;
 		maxRoot.anchoredPosition = maxPos;
 		KillTween(ref _rowGlideTween);
-		_rowGlideTween = ApplySpeed(DOTween.Sequence()
+		Sequence glide = DOTween.Sequence()
 			.Append(currentRoot.DOAnchorPosX(newCurX, dividerGlideDuration).SetEase(Ease.OutQuad))
 			.Join(slashText.rectTransform.DOAnchorPosX(newSlashX, dividerGlideDuration).SetEase(Ease.OutQuad))
-			.Join(maxRoot.DOAnchorPosX(newMaxX, dividerGlideDuration).SetEase(Ease.OutQuad)));
+			.Join(maxRoot.DOAnchorPosX(newMaxX, dividerGlideDuration).SetEase(Ease.OutQuad));
+		if (faceImage != null)
+		{
+			Vector2 newFaceSize = faceImage.rectTransform.sizeDelta;
+			faceImage.rectTransform.sizeDelta = faceSize;
+			glide.Join(DOTween.To(() => faceImage.rectTransform.sizeDelta, v => faceImage.rectTransform.sizeDelta = v, newFaceSize, dividerGlideDuration).SetEase(Ease.OutQuad));
+		}
+		if (shadowImage != null)
+		{
+			Vector2 newShadowSize = shadowImage.rectTransform.sizeDelta;
+			shadowImage.rectTransform.sizeDelta = shadowSize;
+			glide.Join(DOTween.To(() => shadowImage.rectTransform.sizeDelta, v => shadowImage.rectTransform.sizeDelta = v, newShadowSize, dividerGlideDuration).SetEase(Ease.OutQuad));
+		}
+		_rowGlideTween = ApplySpeed(glide);
 	}
 
 	// ------------------------------------------------------------------ helpers
@@ -1157,8 +1378,26 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		_em = currentPlain.fontSize;
 		_maxEm = _em * maxFontScale;
 		maxPlain.fontSize = _maxEm;
-		slashText.fontSize = _em;
+		// Plate: the slash rides the max group's scale, the HP label the full digit size.
+		slashText.fontSize = _maxEm;
 		slashText.text = "/";
+		if (hpLabel != null)
+		{
+			hpLabel.font = currentPlain.font;
+			hpLabel.fontSize = _em;
+			hpLabel.text = "HP";
+			hpLabel.enableWordWrapping = false;
+			hpLabel.overflowMode = TextOverflowModes.Overflow;
+			_labelWidth = hpLabel.GetPreferredValues("HP").x;
+			if (_labelWidth <= 0.01f)
+			{
+				_labelWidth = _em * 1.2f;
+			}
+		}
+		else
+		{
+			_labelWidth = 0f;
+		}
 		_digitWidth = currentPlain.GetPreferredValues("0").x;
 		if (_digitWidth <= 0.01f)
 		{
@@ -1172,7 +1411,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		_slashWidth = slashText.GetPreferredValues("/").x;
 		if (_slashWidth <= 0.01f)
 		{
-			_slashWidth = _em * 0.5f;
+			_slashWidth = _maxEm * 0.5f;
 		}
 		_fixedDigitCount = DigitCount(previewHp);
 		_fixedMaxDigitCount = DigitCount(previewHpMax);
@@ -1188,6 +1427,14 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		currentPlain.color = NormalColorValue;
 		maxPlain.color = NormalColorValue;
 		slashText.color = NormalColorValue;
+		if (hpLabel != null) hpLabel.color = NormalColorValue;
+		if (faceImage != null) faceImage.color = FaceColorValue;
+		if (shadowImage != null) shadowImage.color = GameColorPalette.HpPlateShadowColor;
+		if (nameLabel != null)
+		{
+			nameLabel.color = NameColorValue;
+			LayoutName(string.IsNullOrEmpty(previewName) ? "???" : previewName);
+		}
 	}
 #endif
 }

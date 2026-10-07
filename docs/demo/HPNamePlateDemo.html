@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HP Name Plate Demo</title>
+<style>
+	:root {
+		/* Shared plate geometry, in units of the plate's digit font-size (1em).
+		   Defaults measured from the 2026-10-07 mockup (cap height = 0.72em).
+		   Tuned live by the sliders at the bottom; the spec export prints them. */
+		--pad-x: 0.12;       /* face horizontal padding */
+		--pad-y: 0.01;       /* face vertical padding (the 1em line box provides the air) */
+		--radius: 0.21;      /* corner radius, face + shadow */
+		--ext-x: 0.16;       /* shadow overhang past the face's right edge */
+		--ext-y: 0.41;       /* shadow extension downward = name band height */
+		--shade-inset: 0.11; /* name band inset from the face's left edge */
+		--max-scale: 0.47;   /* max digits + slash font size */
+		--max-raise: 0.05;   /* max group + slash bottom raise off the baseline */
+		--label-gap: 0.11;   /* gap between the "HP" label and the current digits */
+		--name-scale: 0.32;  /* username font size */
+		--name-track: 0.05;  /* username letter-spacing */
+		--name-pad-x: 0.16;  /* username inset from the shadow's right edge */
+	}
+
+	body {
+		margin: 0;
+		padding: 40px 24px 64px;
+		background: #ececf0;
+		color: #1a1a1a;
+		font-family: "Segoe UI", Arial, sans-serif;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 36px;
+	}
+
+	h1 { font-size: 18px; font-weight: 600; margin: 0; }
+	h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: #555; text-transform: uppercase; letter-spacing: 0.06em; }
+
+	section { width: 960px; box-sizing: border-box; }
+
+	/* ---------------------------------------------------------------- plate */
+
+	/* The merged HUD element: face (HP digits) + the standard hard UI shadow,
+	   extended downward to hold the username. Replaces PlayerIcon/EnemyIcon +
+	   name label + HPNumericDisplayHorizontal. Both sides share the identical
+	   layout — the R0 light source is top-left (docs/UIUX_Guidelines.md), so
+	   every shadow extends down-right; the enemy plate differs only by face/ink
+	   colors.
+	   Font stack approximates the game's RobotoCondensed-Bold; CJK names fall
+	   back to a system CJK font (the Unity label font handles this natively). */
+	.hp-plate {
+		position: relative;
+		display: inline-block;
+		font-family: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+		font-size: var(--fs, 92px);
+		line-height: 1;
+		user-select: none;
+		/* The band IS the standard hard shadow (GameColorPalette.cardShadow =
+		   "Navy Alpha" #1A3037 at 70% — the same PaletteTint slot the world
+		   buttons use), not a colored region — it composites over the background. */
+		--shade: rgba(26, 48, 55, 0.7);
+	}
+
+	.hp-plate.player { --face: #d1cdc8; --ink: #1a3037; --name-ink: #d1cdc8; }
+	.hp-plate.enemy  { --face: #801424; --ink: #bfbdb5; --name-ink: #bfbdb5; }
+
+	/* All plate geometry is computed in px from --fs (the plate root's digit
+	   font-size): an em inside a child whose own font-size differs (max group,
+	   name) would resolve against that child's font-size, not the root's. */
+
+	/* Shadow slab: its top-left hides behind the face; visible signature = the
+	   right strip (ext-x) and the bottom name band (ext-y), with the band inset
+	   from the face's left edge (shade-inset), as in the mockup. */
+	.hp-plate .plate-shade {
+		position: absolute;
+		top: 0;
+		left: calc(var(--shade-inset) * var(--fs));
+		right: calc(var(--ext-x) * -1 * var(--fs));
+		bottom: calc(var(--ext-y) * -1 * var(--fs));
+		background: var(--shade);
+		border-radius: calc(var(--radius) * var(--fs));
+	}
+
+	/* Face: "HP" + current digits + slash + max digits. Bottoms of all groups are
+	   aligned, which reads as baseline alignment for these descender-less glyphs;
+	   the max group + slash ride a small raise (max-raise) off that baseline. */
+	.hp-plate .plate-face {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		background: var(--face);
+		color: var(--ink);
+		border-radius: calc(var(--radius) * var(--fs));
+		padding: calc(var(--pad-y) * var(--fs)) calc(var(--pad-x) * var(--fs));
+		white-space: nowrap;
+		font-weight: 700;
+	}
+
+	.hp-plate .hp-label { margin-right: calc(var(--label-gap) * var(--fs)); }
+	.hp-plate .hp-current, .hp-plate .hp-max { display: inline-block; }
+	.hp-plate .hp-slash {
+		font-size: calc(var(--max-scale) * var(--fs));
+		margin-bottom: calc(var(--max-raise) * var(--fs));
+	}
+	.hp-plate .hp-max {
+		font-size: calc(var(--max-scale) * var(--fs));
+		margin-bottom: calc(var(--max-raise) * var(--fs));
+	}
+
+	/* Odometer digit roll: fixed-width 1em windows over three 0-9 cycles. The 1em
+	   here intentionally resolves against each group's own font-size. */
+	.hp-plate .hp-digits { display: inline-flex; }
+	.hp-plate .hp-digit { display: inline-block; height: 1em; overflow: hidden; text-align: center; }
+	.hp-plate .hp-strip { display: block; will-change: transform; }
+	.hp-plate .hp-strip > span { display: block; height: 1em; }
+
+	/* Username in the shadow's bottom band; its right edge aligns with the face's
+	   right edge (name-pad-x == ext-x in the mockup). */
+	.hp-plate .plate-name {
+		position: absolute;
+		bottom: calc(var(--ext-y) * -1 * var(--fs));
+		height: calc(var(--ext-y) * var(--fs));
+		line-height: calc(var(--ext-y) * var(--fs));
+		right: calc((var(--name-pad-x) - var(--ext-x)) * var(--fs));
+		font-size: calc(var(--name-scale) * var(--fs));
+		font-weight: 700;
+		letter-spacing: calc(var(--name-track) * var(--fs));
+		color: var(--name-ink);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		text-align: right;
+	}
+	body.upper .plate-name { text-transform: uppercase; }
+
+	/* ------------------------------------------------------------- contexts */
+
+	.stage {
+		--fs: 34px;
+		position: relative;
+		width: 960px;
+		height: 540px;
+		border-radius: 12px;
+		background: radial-gradient(ellipse at 50% 40%, #3d464e 0%, #262d33 70%, #1d2328 100%);
+		overflow: hidden;
+	}
+	.stage .stage-note {
+		position: absolute;
+		top: 50%; left: 50%;
+		transform: translate(-50%, -50%);
+		color: rgba(255, 255, 255, 0.18);
+		font-size: 15px;
+		letter-spacing: 0.12em;
+	}
+	.stage .hp-plate { position: absolute; }
+	.stage #stagePlayer { left: 42px; bottom: 42px; }
+	.stage #stageEnemy { right: 42px; top: 42px; }
+
+	.detail-row {
+		display: flex;
+		justify-content: center;
+		gap: 64px;
+	}
+	.detail-card {
+		--fs: 92px;
+		background: #f6f6f8;
+		border: 1px solid #dcdce2;
+		border-radius: 12px;
+		padding: 40px 48px calc(40px + var(--ext-y) * 92px + 8px);
+		text-align: center;
+	}
+	.detail-card .side-label {
+		font-size: 13px;
+		font-weight: 600;
+		color: #777;
+		letter-spacing: 0.1em;
+		margin-bottom: 28px;
+	}
+
+	.shopbar {
+		--fs: 22px;
+		width: 960px;
+		box-sizing: border-box;
+		background: #9aa097;
+		border-radius: 12px;
+		padding: 14px 20px calc(14px + var(--ext-y) * 22px);
+		display: flex;
+		align-items: flex-start;
+		gap: 20px;
+	}
+	.shopbar .shop-note {
+		color: rgba(0, 0, 0, 0.45);
+		font-size: 13px;
+		line-height: 1.5;
+		padding-top: 4px;
+	}
+
+	/* ------------------------------------------------------------- controls */
+
+	.controls {
+		background: #ffffff;
+		border: 1px solid #d5d5dc;
+		border-radius: 8px;
+		padding: 16px 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	.controls .side-head {
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: #666;
+		border-top: 1px solid #ececf0;
+		padding-top: 10px;
+	}
+	.controls .side-head:first-child { border-top: none; padding-top: 0; }
+	.control-row { display: flex; align-items: center; gap: 12px; }
+	.control-row label { width: 110px; font-size: 14px; font-weight: 600; }
+	.control-row input[type="range"] { flex: 1; }
+	.control-row input[type="text"] {
+		flex: 1; padding: 4px 8px; font-size: 14px;
+		border: 1px solid #c8c8d2; border-radius: 6px;
+	}
+	.control-row .value-label { width: 40px; text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; }
+	.button-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+	.button-row button {
+		padding: 6px 14px; font-size: 14px; font-weight: 600;
+		border: 1px solid #b8b8c2; border-radius: 6px; background: #f6f6f9; cursor: pointer;
+	}
+	.button-row button:hover { background: #e8e8ee; }
+	.toggle-row {
+		display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px;
+		border-top: 1px solid #e2e2e8; padding-top: 12px;
+	}
+	.toggle-row label { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+
+	.tune-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px 32px;
+	}
+	.tune-grid .control-row label { width: 170px; }
+	.tune-grid .value-label { width: 48px; }
+
+	pre.spec {
+		background: #14181c;
+		color: #c9d4dc;
+		border-radius: 8px;
+		padding: 16px 20px;
+		font-size: 13px;
+		line-height: 1.55;
+		overflow-x: auto;
+		margin: 0;
+	}
+
+	.notes { font-size: 14px; line-height: 1.7; }
+	.notes li { margin-bottom: 4px; }
+	.notes code { background: #e2e2e8; border-radius: 4px; padding: 0 4px; }
+</style>
+</head>
+<body class="upper">
+
+<h1>HP Name Plate Demo — merged icon + HP display</h1>
+
+<section>
+	<h2>Combat stage (mock, static mirror)</h2>
+	<div class="stage">
+		<div class="stage-note">COMBAT STAGE (mock) — detail plates below are the interactive ones</div>
+		<div class="hp-plate player" id="stagePlayer">
+			<div class="plate-shade"></div>
+			<div class="plate-face">
+				<span class="hp-label">HP</span><span class="hp-current">20</span><span class="hp-slash">/</span><span class="hp-max">20</span>
+			</div>
+			<div class="plate-name">PAPAYA</div>
+		</div>
+		<div class="hp-plate enemy" id="stageEnemy">
+			<div class="plate-shade"></div>
+			<div class="plate-face">
+				<span class="hp-label">HP</span><span class="hp-current">20</span><span class="hp-slash">/</span><span class="hp-max">20</span>
+			</div>
+			<div class="plate-name">KAIZEN</div>
+		</div>
+	</div>
+</section>
+
+<section>
+	<h2>Detail (interactive)</h2>
+	<div class="detail-row">
+		<div class="detail-card">
+			<div class="side-label">PLAYER — bottom-left</div>
+			<div class="hp-plate player" id="detailPlayer">
+				<div class="plate-shade"></div>
+				<div class="plate-face">
+					<span class="hp-label">HP</span><span class="hp-current">20</span><span class="hp-slash">/</span><span class="hp-max">20</span>
+				</div>
+				<div class="plate-name">PAPAYA</div>
+			</div>
+		</div>
+		<div class="detail-card">
+			<div class="side-label">ENEMY — top-right</div>
+			<div class="hp-plate enemy" id="detailEnemy">
+				<div class="plate-shade"></div>
+				<div class="plate-face">
+					<span class="hp-label">HP</span><span class="hp-current">20</span><span class="hp-slash">/</span><span class="hp-max">20</span>
+				</div>
+				<div class="plate-name">KAIZEN</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section>
+	<h2>Shop top bar (mock, static mirror)</h2>
+	<div class="shopbar">
+		<div class="hp-plate player" id="shopPlayer">
+			<div class="plate-shade"></div>
+			<div class="plate-face">
+				<span class="hp-label">HP</span><span class="hp-current">20</span><span class="hp-slash">/</span><span class="hp-max">20</span>
+			</div>
+			<div class="plate-name">PAPAYA</div>
+		</div>
+		<div class="shop-note">
+			Settled shop: the world-space chrome mirror (successor of the ShopHudPage
+			<code>Tpl_Avatar</code> + <code>Tpl_HpPill</code> slots). The Result phase keeps both
+			plates visible behind the overlay, same as today's HUD rule.
+		</div>
+	</div>
+</section>
+
+<section class="controls">
+	<div class="side-head">PLAYER</div>
+	<div class="control-row">
+		<label for="pCur">Current HP</label>
+		<input type="range" id="pCur" min="0" max="300" value="20">
+		<span class="value-label" id="pCurLabel">20</span>
+	</div>
+	<div class="control-row">
+		<label for="pMax">Max HP</label>
+		<input type="range" id="pMax" min="1" max="300" value="20">
+		<span class="value-label" id="pMaxLabel">20</span>
+	</div>
+	<div class="control-row">
+		<label for="pName">Username</label>
+		<input type="text" id="pName" value="PAPAYA" maxlength="24">
+	</div>
+	<div class="button-row">
+		<button data-side="player" data-delta="-10">-10</button>
+		<button data-side="player" data-delta="-5">-5</button>
+		<button data-side="player" data-delta="-1">-1</button>
+		<button data-side="player" data-delta="1">+1</button>
+		<button data-side="player" data-delta="5">+5</button>
+		<button data-side="player" data-delta="10">+10</button>
+	</div>
+	<div class="side-head">ENEMY</div>
+	<div class="control-row">
+		<label for="eCur">Current HP</label>
+		<input type="range" id="eCur" min="0" max="300" value="20">
+		<span class="value-label" id="eCurLabel">20</span>
+	</div>
+	<div class="control-row">
+		<label for="eMax">Max HP</label>
+		<input type="range" id="eMax" min="1" max="300" value="20">
+		<span class="value-label" id="eMaxLabel">20</span>
+	</div>
+	<div class="control-row">
+		<label for="eName">Username</label>
+		<input type="text" id="eName" value="KAIZEN" maxlength="24">
+	</div>
+	<div class="button-row">
+		<button data-side="enemy" data-delta="-10">-10</button>
+		<button data-side="enemy" data-delta="-5">-5</button>
+		<button data-side="enemy" data-delta="-1">-1</button>
+		<button data-side="enemy" data-delta="1">+1</button>
+		<button data-side="enemy" data-delta="5">+5</button>
+		<button data-side="enemy" data-delta="10">+10</button>
+	</div>
+	<div class="button-row">
+		<button id="nameCjk">CJK names</button>
+		<button id="nameLong">Long names</button>
+		<button id="nameEmpty">Empty names → ???</button>
+		<button id="nameReset">Reset names</button>
+	</div>
+	<div class="toggle-row">
+		<label><input type="checkbox" id="tglScroll" checked> Digit roll</label>
+		<label><input type="checkbox" id="tglShake" checked> Hit shake</label>
+		<label><input type="checkbox" id="tglEase" checked> Ease-out finish</label>
+		<label><input type="checkbox" id="tglLand" checked> Landing pop</label>
+		<label><input type="checkbox" id="tglGlide" checked> Digit-growth glide</label>
+		<label><input type="checkbox" id="tglUpper" checked> Uppercase names</label>
+		<label><input type="checkbox" id="tglShrink" checked> Name auto-shrink</label>
+	</div>
+</section>
+
+<section class="controls">
+	<h2>Tuning (em, 1em = current-digit font size)</h2>
+	<div class="tune-grid">
+		<div class="control-row"><label>face padding-x</label><input type="range" data-tune="padX" min="0" max="0.6" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>face padding-y</label><input type="range" data-tune="padY" min="0" max="0.3" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>corner radius</label><input type="range" data-tune="radius" min="0" max="0.5" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>shadow extend-x</label><input type="range" data-tune="extX" min="0" max="0.8" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>shadow extend-y (band)</label><input type="range" data-tune="extY" min="0.2" max="0.9" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>shadow inset (left)</label><input type="range" data-tune="shadeInset" min="0" max="0.4" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>max / slash scale</label><input type="range" data-tune="maxScale" min="0.3" max="0.85" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>max / slash raise</label><input type="range" data-tune="maxRaise" min="0" max="0.2" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>HP label gap</label><input type="range" data-tune="labelGap" min="0" max="0.4" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>name scale</label><input type="range" data-tune="nameScale" min="0.15" max="0.7" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>name tracking</label><input type="range" data-tune="nameTrack" min="0" max="0.2" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>name side pad</label><input type="range" data-tune="namePadX" min="0" max="0.4" step="0.01"><span class="value-label"></span></div>
+	</div>
+</section>
+
+<section>
+	<h2>Spec export (live)</h2>
+	<pre class="spec" id="specOut"></pre>
+</section>
+
+<section class="notes">
+	<h2>Notes</h2>
+	<ul>
+		<li>Geometry defaults are pixel-measured from the mockup: face #D1CDC8, ink #1A3037 (== palette Navy / <code>hpNormalPlayer</code>), max group at 0.47 scale raised 0.05em off the baseline, name cap height 0.32 scale, name right edge aligned with the face's right edge.</li>
+		<li>The username band is not a colored region — it IS the standard hard UI shadow (<code>GameColorPalette.cardShadow</code> = "Navy Alpha" #1A3037 @ 70%, the same <code>PaletteTint</code> slot the world buttons use), extended downward to hold the name. It composites over whatever is behind it; no new palette color is introduced.</li>
+		<li>Both sides share the identical layout: the R0 light source is top-left (<code>docs/UIUX_Guidelines.md</code>, inviolable), so every shadow extends down-right — no mirroring. The enemy plate differs only by face/ink colors: face = <code>hpBarEnemy</code> (Red 2 #801424), ink = <code>hpNormalEnemy</code> (GreyWhite 2 #BFBDB5).</li>
+		<li>Carried over from <code>HPNumericDisplayHorizontal</code>: adaptive counting with ease-out finish, odometer digit roll on both digit groups, hit shake (amplitude scales with damage), landing pop, digit-growth glide (99 → 100). Motion constants unchanged.</li>
+		<li>New: <code>HP</code> label at current-digit size; the slash now renders at the max group's scale (today it renders at full em); avatar + separate name label are gone — the username lives in the extended shadow band; hit shake / landing pop now move the whole merged element.</li>
+		<li>Not carried over (same as the current horizontal version): low-HP red pulse, zero-out drop.</li>
+		<li>Empty username falls back to <code>???</code> (same as <code>CombatIconPresenter</code>). Long names shrink to a 55% floor, then ellipsize.</li>
+	</ul>
+</section>
+
+<script>
+	(function () {
+		// ------------------------------------------------------------- constants
+
+		var STEP_MS = 50;
+		var TARGET_COUNT_MS = 500;
+		var EASE_OUT_POINTS = 5;
+		var EASE_OUT_EXTRA_MS = 35;
+		var ROLL_BASE_MS = 90;
+		var ROLL_PER_STEP_MS = 50;
+		var ROLL_STAGGER_MS = 45;
+		var GLIDE_MS = 240;
+		var NAME_SHRINK_FLOOR = 0.55;
+
+		var flags = { scroll: true, shake: true, easeOut: true, landPop: true, glide: true, upper: true, shrink: true };
+
+		// Tuning state, mirrored into the CSS custom properties on :root.
+		var tune = { padX: 0.12, padY: 0.01, radius: 0.21, extX: 0.16, extY: 0.41, shadeInset: 0.11, maxScale: 0.47, maxRaise: 0.05, labelGap: 0.11, nameScale: 0.32, nameTrack: 0.05, namePadX: 0.16 };
+		var cssVar = { padX: '--pad-x', padY: '--pad-y', radius: '--radius', extX: '--ext-x', extY: '--ext-y', shadeInset: '--shade-inset', maxScale: '--max-scale', maxRaise: '--max-raise', labelGap: '--label-gap', nameScale: '--name-scale', nameTrack: '--name-track', namePadX: '--name-pad-x' };
+
+		var STRIP_HTML = (function () {
+			var html = '';
+			for (var cycle = 0; cycle < 3; cycle++) {
+				for (var d = 0; d <= 9; d++) {
+					html += '<span>' + d + '</span>';
+				}
+			}
+			return html;
+		})();
+
+		// ---------------------------------------------------------- count pacing
+
+		function stepSizeFor(remaining) {
+			if (remaining <= EASE_OUT_POINTS) {
+				return 1;
+			}
+			var fastSteps = Math.max(1, Math.floor(TARGET_COUNT_MS / STEP_MS));
+			return Math.max(1, Math.ceil(remaining / fastSteps));
+		}
+
+		function stepDelay(remaining) {
+			if (!flags.easeOut || remaining > EASE_OUT_POINTS) {
+				return STEP_MS;
+			}
+			return STEP_MS + (EASE_OUT_POINTS + 1 - remaining) * EASE_OUT_EXTRA_MS;
+		}
+
+		function canonical(d) {
+			return 10 + d;
+		}
+
+		// -------------------------------------------------------- digit groups
+
+		// One odometer group (current or max) inside a plate face. Falls back to
+		// plain text when digit roll is off; the same tick loop drives both.
+		function createDigitGroup(el) {
+			var built = false;
+			var container = null;
+			var strips = [];
+
+			function probeWidth() {
+				var probe = document.createElement('span');
+				probe.style.visibility = 'hidden';
+				probe.textContent = '0';
+				el.appendChild(probe);
+				var w = probe.offsetWidth;
+				el.removeChild(probe);
+				return Math.max(1, w);
+			}
+
+			function makeDigit(digit, w) {
+				var wrap = document.createElement('span');
+				wrap.className = 'hp-digit';
+				wrap.style.width = w + 'px';
+				var strip = document.createElement('span');
+				strip.className = 'hp-strip';
+				strip.innerHTML = STRIP_HTML;
+				var idx = canonical(digit);
+				strip.style.transform = 'translateY(' + (-idx) + 'em)';
+				wrap.appendChild(strip);
+				return { wrap: wrap, strip: strip, idx: idx, gen: 0 };
+			}
+
+			function scheduleSnap(entry, canonIdx, waitMs, gen) {
+				setTimeout(function () {
+					if (entry.gen !== gen) {
+						return;
+					}
+					entry.strip.style.transition = 'none';
+					entry.strip.style.transform = 'translateY(' + (-canonIdx) + 'em)';
+					entry.idx = canonIdx;
+				}, waitMs + 30);
+			}
+
+			return {
+				isBuilt: function () {
+					return built;
+				},
+				build: function (value) {
+					container = document.createElement('span');
+					container.className = 'hp-digits';
+					el.textContent = '';
+					el.appendChild(container);
+					strips = [];
+					var w = probeWidth();
+					var s = String(value);
+					for (var i = 0; i < s.length; i++) {
+						var entry = makeDigit(parseInt(s.charAt(i), 10), w);
+						strips.push(entry);
+						container.appendChild(entry.wrap);
+					}
+					built = true;
+				},
+				teardown: function (value) {
+					el.textContent = value;
+					built = false;
+					container = null;
+					strips = [];
+				},
+				set: function (value, direction) {
+					var s = String(value);
+					var w = probeWidth();
+					while (strips.length < s.length) {
+						var added = makeDigit(0, w);
+						strips.unshift(added);
+						container.insertBefore(added.wrap, container.firstChild);
+					}
+					while (strips.length > s.length) {
+						var removed = strips.shift();
+						container.removeChild(removed.wrap);
+					}
+					for (var i = 0; i < s.length; i++) {
+						var entry = strips[i];
+						var fromRight = s.length - 1 - i;
+						var targetDigit = parseInt(s.charAt(i), 10);
+						var base = canonical(entry.idx % 10);
+						var currentDigit = base - 10;
+						if (targetDigit === currentDigit) {
+							entry.strip.style.transition = 'none';
+							entry.strip.style.transform = 'translateY(' + (-base) + 'em)';
+							entry.idx = base;
+							continue;
+						}
+						var k;
+						if (direction > 0) {
+							k = targetDigit > currentDigit ? canonical(targetDigit) : 20 + targetDigit;
+						} else {
+							k = targetDigit < currentDigit ? canonical(targetDigit) : targetDigit;
+						}
+						var steps = Math.abs(k - base);
+						var dur = ROLL_BASE_MS + steps * ROLL_PER_STEP_MS;
+						var delay = fromRight * ROLL_STAGGER_MS;
+						var gen = ++entry.gen;
+						entry.strip.style.transition = 'transform ' + dur + 'ms cubic-bezier(.3,.7,.35,1) ' + delay + 'ms';
+						entry.strip.style.transform = 'translateY(' + (-k) + 'em)';
+						entry.idx = k;
+						scheduleSnap(entry, canonical(targetDigit), delay + dur, gen);
+					}
+				}
+			};
+		}
+
+		// ------------------------------------------------------------ counters
+
+		function createCounter(show, onSettled) {
+			var displayed = 0;
+			var target = 0;
+			var timer = null;
+
+			function tick() {
+				if (displayed === target) {
+					timer = null;
+					if (onSettled) {
+						onSettled();
+					}
+					return;
+				}
+				var direction = displayed < target ? 1 : -1;
+				var remaining = Math.abs(target - displayed);
+				var step = Math.min(remaining, stepSizeFor(remaining));
+				displayed += direction * step;
+				show(displayed, direction);
+				if (displayed !== target) {
+					timer = setTimeout(tick, stepDelay(Math.abs(target - displayed)));
+				} else {
+					timer = null;
+					if (onSettled) {
+						onSettled();
+					}
+				}
+			}
+
+			return {
+				init: function (value) {
+					if (timer !== null) {
+						clearTimeout(timer);
+						timer = null;
+					}
+					displayed = value;
+					target = value;
+					show(value, 0);
+				},
+				setTarget: function (value) {
+					target = value;
+					// First step runs synchronously so the number starts moving in
+					// the same frame as the hit shake, not one tick behind it.
+					if (timer === null && displayed !== target) {
+						tick();
+					}
+				},
+				getDisplayed: function () {
+					return displayed;
+				}
+			};
+		}
+
+		// --------------------------------------------------------------- plate
+
+		function createPlate(root, animated) {
+			var face = root.querySelector('.plate-face');
+			var currentEl = root.querySelector('.hp-current');
+			var slashEl = root.querySelector('.hp-slash');
+			var maxEl = root.querySelector('.hp-max');
+			var nameEl = root.querySelector('.plate-name');
+			var curGroup = createDigitGroup(currentEl);
+			var maxGroup = createDigitGroup(maxEl);
+			var lastLogical = null;
+
+			function show(group, el, value, direction) {
+				if (animated && flags.scroll) {
+					if (!group.isBuilt()) {
+						group.build(value);
+					}
+					group.set(value, direction);
+				} else {
+					if (group.isBuilt()) {
+						group.teardown(value);
+					}
+					el.textContent = value;
+				}
+			}
+
+			function playShake(damage) {
+				if (!animated || !flags.shake) {
+					return;
+				}
+				var amplitude = Math.min(10, 2 + damage * 0.3);
+				var rot = Math.min(2.2, amplitude * 0.22);
+				root.animate([
+					{ transform: 'translate(0px, 0px) rotate(0deg)' },
+					{ transform: 'translate(' + (-amplitude) + 'px, ' + (amplitude * 0.2) + 'px) rotate(' + (-rot) + 'deg)' },
+					{ transform: 'translate(' + amplitude + 'px, ' + (-amplitude * 0.15) + 'px) rotate(' + rot + 'deg)' },
+					{ transform: 'translate(' + (-amplitude * 0.6) + 'px, ' + (amplitude * 0.1) + 'px) rotate(' + (-rot * 0.6) + 'deg)' },
+					{ transform: 'translate(' + (amplitude * 0.6) + 'px, 0px) rotate(' + (rot * 0.5) + 'deg)' },
+					{ transform: 'translate(' + (-amplitude * 0.25) + 'px, 0px) rotate(' + (-rot * 0.25) + 'deg)' },
+					{ transform: 'translate(0px, 0px) rotate(0deg)' }
+				], { duration: 320, easing: 'ease-out' });
+			}
+
+			function playPop() {
+				if (!animated || !flags.landPop) {
+					return;
+				}
+				root.animate([
+					{ transform: 'scale(1)' },
+					{ transform: 'scale(1.07)', offset: 0.45 },
+					{ transform: 'scale(1)' }
+				], { duration: 140, easing: 'ease-out' });
+			}
+
+			var curCounter = createCounter(function (v, dir) { show(curGroup, currentEl, v, dir); }, playPop);
+			var maxCounter = createCounter(function (v, dir) { show(maxGroup, maxEl, v, dir); }, playPop);
+
+			// Digit-growth glide: FLIP the three face items so a digit-count change
+			// re-centers the row with a slide instead of a jump.
+			function measure() {
+				return [currentEl, slashEl, maxEl].map(function (el) {
+					return el.getBoundingClientRect().left;
+				});
+			}
+
+			function glide(before) {
+				if (!animated || !flags.glide || !before) {
+					return;
+				}
+				[currentEl, slashEl, maxEl].forEach(function (el, i) {
+					var d = before[i] - el.getBoundingClientRect().left;
+					if (Math.abs(d) > 0.5) {
+						el.animate([
+							{ transform: 'translateX(' + d + 'px)' },
+							{ transform: 'translateX(0px)' }
+						], { duration: GLIDE_MS, easing: 'ease-out' });
+					}
+				});
+			}
+
+			function fitName() {
+				nameEl.style.fontSize = '';
+				var fs = parseFloat(getComputedStyle(root).fontSize);
+				var avail = Math.max(30, face.offsetWidth + (tune.extX - tune.namePadX - 0.10) * fs);
+				nameEl.style.maxWidth = avail + 'px';
+				if (!flags.shrink) {
+					return;
+				}
+				var natural = nameEl.scrollWidth;
+				if (natural > avail && natural > 0) {
+					var s = tune.nameScale * avail / natural;
+					nameEl.style.fontSize = Math.max(tune.nameScale * NAME_SHRINK_FLOOR, s) + 'em';
+				}
+			}
+
+			return {
+				animated: animated,
+				setHP: function (cur, max, opts) {
+					opts = opts || {};
+					if (opts.instant || !animated) {
+						curCounter.init(cur);
+						maxCounter.init(max);
+						lastLogical = cur;
+						return;
+					}
+					if (lastLogical !== null && cur < lastLogical) {
+						playShake(lastLogical - cur);
+					}
+					lastLogical = cur;
+					var before = measure();
+					curCounter.setTarget(cur);
+					maxCounter.setTarget(max);
+					glide(before);
+				},
+				setName: function (name) {
+					nameEl.textContent = name || '???';
+					fitName();
+				},
+				syncScroll: function () {
+					var v = curCounter.getDisplayed();
+					var m = maxCounter.getDisplayed();
+					if (flags.scroll && animated) {
+						if (!curGroup.isBuilt()) {
+							curGroup.build(v);
+						}
+						if (!maxGroup.isBuilt()) {
+							maxGroup.build(m);
+						}
+					} else {
+						if (curGroup.isBuilt()) {
+							curGroup.teardown(v);
+						}
+						if (maxGroup.isBuilt()) {
+							maxGroup.teardown(m);
+						}
+					}
+					fitName();
+				},
+				refreshLayout: function () {
+					if (curGroup.isBuilt()) {
+						var v = curCounter.getDisplayed();
+						curGroup.teardown(v);
+						curGroup.build(v);
+					}
+					if (maxGroup.isBuilt()) {
+						var m = maxCounter.getDisplayed();
+						maxGroup.teardown(m);
+						maxGroup.build(m);
+					}
+					fitName();
+				}
+			};
+		}
+
+		// ------------------------------------------------------------ instances
+
+		var plates = {
+			player: [
+				createPlate(document.getElementById('detailPlayer'), true),
+				createPlate(document.getElementById('stagePlayer'), false),
+				createPlate(document.getElementById('shopPlayer'), false)
+			],
+			enemy: [
+				createPlate(document.getElementById('detailEnemy'), true),
+				createPlate(document.getElementById('stageEnemy'), false)
+			]
+		};
+
+		var state = {
+			player: { cur: 20, max: 20, name: 'PAPAYA' },
+			enemy: { cur: 20, max: 20, name: 'KAIZEN' }
+		};
+
+		function render(side, instant) {
+			var s = state[side];
+			plates[side].forEach(function (plate) {
+				plate.setHP(s.cur, s.max, { instant: instant || !plate.animated });
+				plate.setName(s.name);
+			});
+			document.getElementById(side === 'player' ? 'pCurLabel' : 'eCurLabel').textContent = s.cur;
+			document.getElementById(side === 'player' ? 'pMaxLabel' : 'eMaxLabel').textContent = s.max;
+		}
+
+		// ------------------------------------------------------------- bindings
+
+		function bindSlider(id, side, key) {
+			document.getElementById(id).addEventListener('input', function () {
+				state[side][key] = parseInt(this.value, 10);
+				render(side, false);
+			});
+		}
+		bindSlider('pCur', 'player', 'cur');
+		bindSlider('pMax', 'player', 'max');
+		bindSlider('eCur', 'enemy', 'cur');
+		bindSlider('eMax', 'enemy', 'max');
+
+		document.getElementById('pName').addEventListener('input', function () {
+			state.player.name = this.value;
+			render('player', true);
+		});
+		document.getElementById('eName').addEventListener('input', function () {
+			state.enemy.name = this.value;
+			render('enemy', true);
+		});
+
+		var deltaButtons = document.querySelectorAll('button[data-delta]');
+		for (var i = 0; i < deltaButtons.length; i++) {
+			deltaButtons[i].addEventListener('click', function () {
+				var side = this.getAttribute('data-side');
+				state[side].cur = Math.max(0, state[side].cur + parseInt(this.getAttribute('data-delta'), 10));
+				render(side, false);
+			});
+		}
+
+		function setNames(playerName, enemyName) {
+			state.player.name = playerName;
+			state.enemy.name = enemyName;
+			document.getElementById('pName').value = playerName;
+			document.getElementById('eName').value = enemyName;
+			render('player', true);
+			render('enemy', true);
+		}
+		document.getElementById('nameCjk').addEventListener('click', function () { setNames('木瓜船长', '对面的大魔王'); });
+		document.getElementById('nameLong').addEventListener('click', function () { setNames('PAPAYA_THE_IMMORTAL_DESTROYER', 'KAIZENOOOOOOOOOOOO'); });
+		document.getElementById('nameEmpty').addEventListener('click', function () { setNames('', ''); });
+		document.getElementById('nameReset').addEventListener('click', function () { setNames('PAPAYA', 'KAIZEN'); });
+
+		function bindToggle(id, key, onChange) {
+			document.getElementById(id).addEventListener('change', function () {
+				flags[key] = this.checked;
+				if (onChange) {
+					onChange();
+				}
+			});
+		}
+		bindToggle('tglScroll', 'scroll', function () {
+			plates.player.concat(plates.enemy).forEach(function (p) { p.syncScroll(); });
+		});
+		bindToggle('tglShake', 'shake', null);
+		bindToggle('tglEase', 'easeOut', null);
+		bindToggle('tglLand', 'landPop', null);
+		bindToggle('tglGlide', 'glide', null);
+		bindToggle('tglUpper', 'upper', function () {
+			document.body.classList.toggle('upper', flags.upper);
+			plates.player.concat(plates.enemy).forEach(function (p) { p.refreshLayout(); });
+		});
+		bindToggle('tglShrink', 'shrink', function () {
+			plates.player.concat(plates.enemy).forEach(function (p) { p.refreshLayout(); });
+		});
+
+		// --------------------------------------------------------------- tuning
+
+		var specOut = document.getElementById('specOut');
+
+		function specText() {
+			function row(label, value) {
+				var pad = '................................';
+				return (label + ' ' + pad).slice(0, 34) + ' ' + value;
+			}
+			return [
+				'HP name plate — geometry (em; 1em = current-digit font size)',
+				row('face padding-x', tune.padX.toFixed(2) + 'em'),
+				row('face padding-y', tune.padY.toFixed(2) + 'em'),
+				row('corner radius', tune.radius.toFixed(2) + 'em'),
+				row('shadow extend-x', tune.extX.toFixed(2) + 'em') + '   (right overhang, R0 light top-left)',
+				row('shadow extend-y', tune.extY.toFixed(2) + 'em') + '   (name band height)',
+				row('shadow inset (left)', tune.shadeInset.toFixed(2) + 'em'),
+				row('max / slash scale', tune.maxScale.toFixed(2)),
+				row('max / slash raise', tune.maxRaise.toFixed(2) + 'em') + '   (off the baseline)',
+				row('HP label gap', tune.labelGap.toFixed(2) + 'em'),
+				row('name scale', tune.nameScale.toFixed(2)) + '   (shrink floor ' + (tune.nameScale * NAME_SHRINK_FLOOR).toFixed(2) + ')',
+				row('name tracking', tune.nameTrack.toFixed(2) + 'em'),
+				row('name side pad', tune.namePadX.toFixed(2) + 'em') + '   (== extend-x: name edge == face edge)',
+				'',
+				'layout: identical on both sides (shadow always down-right, name right-aligned) — enemy differs only by face/ink colors',
+				'band: the standard hard UI shadow (cardShadow "Navy Alpha" #1A3037 @ 70%), extended down for the username — no new palette color',
+				'colors player: face #D1CDC8 / ink #1A3037 (hpNormalPlayer Navy) / name #D1CDC8',
+				'colors enemy:  face #801424 (hpBarEnemy Red 2) / ink #BFBDB5 (hpNormalEnemy GreyWhite 2) / name #BFBDB5',
+				'motion: count ' + STEP_MS + 'ms step / ' + TARGET_COUNT_MS + 'ms target, ease-out last ' + EASE_OUT_POINTS + ' points; roll ' + ROLL_BASE_MS + '+' + ROLL_PER_STEP_MS + 'ms/step, ' + ROLL_STAGGER_MS + 'ms stagger; shake 320ms; pop 140ms; glide ' + GLIDE_MS + 'ms'
+			].join('\n');
+		}
+
+		function applyTune() {
+			for (var k in tune) {
+				if (Object.prototype.hasOwnProperty.call(tune, k)) {
+					document.documentElement.style.setProperty(cssVar[k], tune[k]);
+				}
+			}
+			specOut.textContent = specText();
+			plates.player.concat(plates.enemy).forEach(function (p) { p.refreshLayout(); });
+		}
+
+		var tuneInputs = document.querySelectorAll('input[data-tune]');
+		for (var j = 0; j < tuneInputs.length; j++) {
+			(function (input) {
+				var key = input.getAttribute('data-tune');
+				var label = input.parentElement.querySelector('.value-label');
+				input.value = tune[key];
+				label.textContent = tune[key].toFixed(2);
+				input.addEventListener('input', function () {
+					tune[key] = parseFloat(this.value);
+					label.textContent = tune[key].toFixed(2);
+					applyTune();
+				});
+			})(tuneInputs[j]);
+		}
+
+		// ----------------------------------------------------------------- init
+
+		applyTune();
+		render('player', true);
+		render('enemy', true);
+	})();
+</script>
+
+</body>
+</html>

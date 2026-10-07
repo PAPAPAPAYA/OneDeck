@@ -30,6 +30,10 @@ public class PaletteTint : MonoBehaviour
 		ChipBg,
 		ChipText,
 		ButtonFace,
+		// HP name plate (plan-hp-name-plate-2026-10-07): the shop mirror plate widgets.
+		// The mirror is always the player's plate, so these resolve the player slots.
+		HpPlateFace,
+		HpPlateName,
 	}
 
 	[Tooltip("Which GameColorPalette slot paints this GameObject's SpriteRenderer / TMP_Text.")]
@@ -93,6 +97,8 @@ public class PaletteTint : MonoBehaviour
 			case Slot.ChipBg: return GameColorPalette.ChipBgColor;
 			case Slot.ChipText: return GameColorPalette.ChipTextColor;
 			case Slot.ButtonFace: return GameColorPalette.ButtonFaceColor;
+			case Slot.HpPlateFace: return GameColorPalette.HpPlateFacePlayerColor;
+			case Slot.HpPlateName: return GameColorPalette.HpPlateNamePlayerColor;
 			default: return Color.white;
 		}
 	}
