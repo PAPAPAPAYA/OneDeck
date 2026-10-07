@@ -1,14 +1,14 @@
 # Plan: HP Name Plate — verification fixes — 2026-10-07
 
 - **Date**: 2026-10-07
-- **Status**: Implemented + verified 2026-10-07 (EditMode 743: 742/0/1-skip zero drift; Play probes: face corners on-canvas w/ 42.5 px inner margin, slab edges == demo spec on both sides incl. growth-glide resize, mirror "HP 27/27" at the Result→Shop swap, fallback Y 874.8 vs live 875.05; rows 153/154 ✅). Shipped in commit 2a89d7c9.
+- **Status**: Implemented + verified 2026-10-07 (EditMode 743: 742/0/1-skip zero drift; Play probes: face corners on-canvas w/ 42.5 px inner margin, slab edges == demo spec on both sides incl. growth-glide resize, mirror "HP 27/27" at the Result→Shop swap, fallback Y 874.8 vs live 875.05; rows 153/154 ✅). Shipped in commit 2a89d7c9. Fix 5 (slash full-size ruling) implemented + verified the same day: EditMode 743 zero drift again; Play — slash fontSize == `_em` on both sides, centerline y 0, combat inner margin 33.5 px on-canvas, mirror big slash, swap face-width match 3.4529 vs 3.4524 wu; row 155 ✅. Shipped in commit aee90fdb.
 - **Request (user, 2026-10-07)**: 修法落成文档 — write the fixes found in the implementation verification into a plan document.
 - **Parent plan**: `plans/plan-hp-name-plate-2026-10-07.md` (shipped, uncommitted working tree).
 - **Verification basis**: EditMode suite 743 (742 green + 1 pre-existing skip); Play probes with `runInBackground=true`, frame-dense flight logging (`Logs/flight_probe.txt`, deleted after analysis); live rect reads; Game-view screenshots. All evidence values below were measured live in Play on 2026-10-07.
 
 ## 1. Context
 
-The HP name plate implementation landed per the parent plan and verified mostly clean. Four deviations were found, none blocking the EditMode suite. Each fix below is specific to file/field/line and carries its own verification. One further anomaly (verification combat #2 plate misplacement) was traced to a test artifact — see §6, no code change.
+The HP name plate implementation landed per the parent plan and verified mostly clean. Four deviations were found in the first pass, none blocking the EditMode suite; Fix 5 was added the same day after the user's slash-size ruling (the shipped code renders the slash at the max group's scale). Each fix below is specific to file/field/line and carries its own verification. One further anomaly (verification combat #2 plate misplacement) was traced to a test artifact — see §6, no code change.
 
 ## 2. Fix 1 — combat anchors clip the plates off-screen (visible, must fix)
 
@@ -57,14 +57,27 @@ The HP name plate implementation landed per the parent plan and verified mostly 
 
 **Verification**: headless bypass (`-odseed N` or NullVisuals) shop phase — the canvas plate parks at the top bar region, not mid-screen.
 
+## 5.5 Fix 5 — slash back to the full digit size (user ruling 2026-10-07)
+
+**Context**: the parent plan specced the slash at the max group's scale (measured from the small mockup) and the implementation shipped it that way (`slashText.fontSize = _maxEm`). User ruling 2026-10-07 (new mockup + explicit call): the separator between hp and hpmax renders at the FULL digit size — identical to the pre-plate component. The demo is already updated (`docs/demo/HPNamePlateDemo.html`).
+
+**Fix** (`HPNumericDisplayHorizontal.cs`):
+- Awake + `ApplyEditModePreview`: `slashText.fontSize = _maxEm;` → `slashText.fontSize = _em;` (`_slashWidth` is already measured after the assignment — order is correct).
+- `maxFontScale` tooltip "Max digits AND the slash render at em * maxFontScale." → "Max digits render at em * maxFontScale (the slash always renders full-size)."
+- `slashOffsetYEm`: the slash at full em shares the current digits' centerline → 0 (code default `slashOffsetYEm = -0.215f` → `0f`, and both scene instances re-serialized 0; its tooltip stops referencing the max-group raise. `maxOffsetYEm` keeps −0.215 for the max group).
+
+**Mirror prefab** (`Tpl_HpNamePlate.prefab`, extends Fix 3's edit): the `Slash` child goes full size — fontSize ≈ the `HpValue` size (4.844 → 10.306) and y back to the row center (−0.22 → 0).
+
+**Verification**: demo detail plate side-by-side (slash at the big digits' height, bottom-aligned); live read: slash fontSize == current digits' fontSize on both sides; the shop mirror shows the big slash.
+
 ## 6. Test artifact — combat #2 misplacement (no code change)
 
 In verification combat #2 both plates sat misplaced for the whole combat (player at the shop park, enemy off-screen above) and self-healed at the Result phase edge. Root cause: a `Thread.Sleep(3000)` inside the same editor-script call that triggered LeaveShop froze the main thread at travel start; the unscaled DOTween tweens elapsed during the freeze and the flights jumped. Combat #1/#3 (no freeze, frame-dense probe) landed exactly on the anchors. Production risk is a >maximumDeltaTime (0.33 s) hitch exactly at a travel-start frame — same jump, self-healing at the next phase edge. Optional hardening: none required for ship; note only.
 
 ## 7. Implementation checklist + ritual
 
-1. Fix 2 (code one-liner + VISUAL-FIX block + RegressionChecklist row).
-2. Fix 1 (scene anchors) + Fix 3 (prefab texts) + Fix 4 (const).
+1. Fix 2 + Fix 5 code-side (LayoutPlate one-liner, slash back to `_em` + tooltip/offset defaults) with VISUAL-FIX blocks + RegressionChecklist rows.
+2. Fix 1 (scene anchors) + Fix 3/Fix 5 prefab-side (`Tpl_HpNamePlate` static texts + full-size slash) + Fix 4 (const) + Fix 5's `slashOffsetYEm` re-serialize on both scene instances.
 3. Ritual: `refresh_unity` (compile: request) → assembly DLL mtime > source mtime → `SaveOpenScenes()` → full EditMode `run_tests` (`init_timeout` 180000) green.
 4. Play spot-check: §2/§3/§4/§5 verification bullets; both transition directions; headless bypass once.
 5. Close-out: RegressionChecklist row 153 → ✅ (after Play), commit per the straight-to-`main` workflow.
