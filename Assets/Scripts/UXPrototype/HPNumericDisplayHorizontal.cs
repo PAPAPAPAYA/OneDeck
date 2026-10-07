@@ -43,7 +43,7 @@ using UnityEngine.UI;
 /// Image over the standard hard shadow (cardShadow) extended down-right into the
 /// username band, replacing the per-side PlayerIcon/EnemyIcon + name labels
 /// (CombatIconPresenter, retired). LayoutRoots lays out label row + face + shadow +
-/// name; the slash renders at the max group's scale; hit shake / landing pop move the
+/// name; the slash renders full-size (2026-10-07 ruling); hit shake / landing pop move the
 /// whole plate (they already move displayRoot). The name polls per frame with the
 /// presenter's diff guard (PlayerIdentity.Username / OpponentDeckCache, "???" fallback)
 /// and auto-shrinks to a floor before TMP ellipsis. All geometry is em-relative
@@ -80,7 +80,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	public TMP_Text hpLabel;
 
 	[Header("Typography")]
-	[Tooltip("Max digits AND the slash render at em * maxFontScale.")]
+	[Tooltip("Max digits render at em * maxFontScale (the slash always renders full-size).")]
 	public float maxFontScale = 0.47f;
 	[Tooltip("Gap between digit groups and the slash, in em.")]
 	public float groupGapEm = 0f;
@@ -88,8 +88,8 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	[Header("Layout")]
 	[Tooltip("Max digit group vertical offset from the row center, in em (positive = lower). Bottom-aligned-with-raise geometry: (raise - 0.5 + maxFontScale * 0.5) em.")]
 	public float maxOffsetYEm = -0.215f;
-	[Tooltip("Slash vertical offset from the row center, in em. Matches maxOffsetYEm so the slash rides the max group's raise.")]
-	public float slashOffsetYEm = -0.215f;
+	[Tooltip("Slash vertical offset from the row center, in em. The full-size slash shares the current digits' centerline (0).")]
+	public float slashOffsetYEm = 0f;
 	[Tooltip("Slash horizontal offset from its default slot between the digit groups, in em (positive = right).")]
 	public float slashOffsetXEm = 0f;
 
@@ -240,9 +240,19 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		_em = currentPlain.fontSize;
 		_maxEm = _em * maxFontScale;
 		maxPlain.fontSize = _maxEm;
-		// The slash renders at the max group's scale (plate demo); measure AFTER the
-		// font size is set so the row math uses the real glyph advance.
-		slashText.fontSize = _maxEm;
+		// VISUAL-FIX(2026-10-07): slash rendered small at the max group's scale, riding its raise
+		//   Cause:    The parent plan specced the slash at _maxEm from the small mockup; the
+		//             2026-10-07 ruling (new mockup) restores the pre-plate behavior — the
+		//             separator between current and max renders at the FULL digit size.
+		//   Affects:  HPNumericDisplayHorizontal (Awake + ApplyEditModePreview slash fontSize,
+		//             slashOffsetYEm default), Tpl_HpNamePlate.prefab Slash child
+		//   Regress:  Live read: slash fontSize == current digits' fontSize on both sides; slash
+		//             centered on the digits' centerline; shop mirror shows the big slash;
+		//             side-by-side with docs/demo/HPNamePlateDemo.html.
+		//   Related:  plans/plan-hp-name-plate-fixes-2026-10-07.md §5.5
+		// The slash renders full-size; measure AFTER the font size is set so the row math
+		// uses the real glyph advance.
+		slashText.fontSize = _em;
 		slashText.text = "/";
 		// The HP label participates in the row at full digit size.
 		hpLabel.font = currentPlain.font;
@@ -1378,8 +1388,8 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		_em = currentPlain.fontSize;
 		_maxEm = _em * maxFontScale;
 		maxPlain.fontSize = _maxEm;
-		// Plate: the slash rides the max group's scale, the HP label the full digit size.
-		slashText.fontSize = _maxEm;
+		// Plate: the slash and the HP label render at the full digit size (2026-10-07 ruling).
+		slashText.fontSize = _em;
 		slashText.text = "/";
 		if (hpLabel != null)
 		{
