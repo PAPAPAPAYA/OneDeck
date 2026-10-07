@@ -20,6 +20,10 @@ public class OpponentDeckCacheTests
 		tempDir = Path.Combine(Path.GetTempPath(), "onedeck_opp_cache_test_" + Guid.NewGuid().ToString("N"));
 		Directory.CreateDirectory(tempDir);
 		OpponentDeckCache.OverrideDirectoryForTests = tempDir;
+		// Hermeticity: Load() memoizes, so a static cache left over in the editor domain
+		// (real ghost decks from a play session, or an aborted prior run) would survive the
+		// directory swap and leak into the temp file via InjectForTests/Save.
+		OpponentDeckCache.ResetCacheForTests();
 
 		config = ScriptableObject.CreateInstance<ServerConfig>();
 		config.enabled = true;
