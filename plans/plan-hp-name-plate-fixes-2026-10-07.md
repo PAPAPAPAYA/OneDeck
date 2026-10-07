@@ -1,7 +1,7 @@
 # Plan: HP Name Plate — verification fixes — 2026-10-07
 
 - **Date**: 2026-10-07
-- **Status**: Implemented + verified 2026-10-07 (EditMode 743: 742/0/1-skip zero drift; Play probes: face corners on-canvas w/ 42.5 px inner margin, slab edges == demo spec on both sides incl. growth-glide resize, mirror "HP 27/27" at the Result→Shop swap, fallback Y 874.8 vs live 875.05; rows 153/154 ✅). Shipped in commit 2a89d7c9. Fix 5 (slash full-size ruling) implemented + verified the same day: EditMode 743 zero drift again; Play — slash fontSize == `_em` on both sides, centerline y 0, combat inner margin 33.5 px on-canvas, mirror big slash, swap face-width match 3.4529 vs 3.4524 wu; row 155 ✅. Shipped in commit aee90fdb.
+- **Status**: Implemented + verified 2026-10-07 (EditMode 743: 742/0/1-skip zero drift; Play probes: face corners on-canvas w/ 42.5 px inner margin, slab edges == demo spec on both sides incl. growth-glide resize, mirror "HP 27/27" at the Result→Shop swap, fallback Y 874.8 vs live 875.05; rows 153/154 ✅). Shipped in commit 2a89d7c9. Fix 5 (slash full-size ruling) implemented + verified the same day: EditMode 743 zero drift again; Play — slash fontSize == `_em` on both sides, centerline y 0, combat inner margin 33.5 px on-canvas, mirror big slash, swap face-width match 3.4529 vs 3.4524 wu; row 155 ✅. Shipped in commit aee90fdb. Fix 6 (row-group pivots, found in Fix 5 verification) implemented + verified: ink gaps 1.36/1.64 px, Play combat/Result screenshots clean; EditMode 743 run had ONE unrelated environment-state failure (`OpponentDeckCacheTests.CacheFile_PersistsAcrossReload` — the non-hermetic test reads the machine's real ghost-deck cache, polluted by today's play probes; not a code regression).
 - **Request (user, 2026-10-07)**: 修法落成文档 — write the fixes found in the implementation verification into a plan document.
 - **Parent plan**: `plans/plan-hp-name-plate-2026-10-07.md` (shipped, uncommitted working tree).
 - **Verification basis**: EditMode suite 743 (742 green + 1 pre-existing skip); Play probes with `runInBackground=true`, frame-dense flight logging (`Logs/flight_probe.txt`, deleted after analysis); live rect reads; Game-view screenshots. All evidence values below were measured live in Play on 2026-10-07.
@@ -69,6 +69,18 @@ The HP name plate implementation landed per the parent plan and verified mostly 
 **Mirror prefab** (`Tpl_HpNamePlate.prefab`, extends Fix 3's edit): the `Slash` child goes full size — fontSize ≈ the `HpValue` size (4.844 → 10.306) and y back to the row center (−0.22 → 0).
 
 **Verification**: demo detail plate side-by-side (slash at the big digits' height, bottom-aligned); live read: slash fontSize == current digits' fontSize on both sides; the shop mirror shows the big slash.
+
+## 5.6 Fix 6 — canvas row mis-tiling: `currentRoot`/`maxRoot` pivot (found in Fix 5 verification, user report 2026-10-07)
+
+**Symptom**: in combat the digit row renders with a ~66 px hole between the current digits and the slash, and the slash ink overlaps the max group's first digit by ~29 px — the user's screenshot ("HP12 ⁄20" cluster) after Fix 5.
+
+**Evidence (live TMP ink bounds, displayRoot space, "HP 12/20")**: before the fix — current ink [−90.35, 27.74], slash ink [93.80, 137.85] (66 px hole), max ink [109.09, 166.73] (28.8 px overlap with the slash). After — current [−25.65, 92.44], slash [93.80, 137.85], max [139.49, 197.14]: gaps 1.36 / 1.64 px, right margin to the face 1.93 px — matches the demo's tight rendering.
+
+**Root cause**: `LayoutRoots` places `currentRoot`/`maxRoot` by their box LEFT edge (`anchoredPosition = rowX` / `slashX + slashW + gap`, no +half correction — unlike `hpLabel`/`slashText`, which get `+width*0.5` for their center pivots), but both group roots carry pivot (0.5, 1) in the scene, so each rendered half-its-width left of the intended tile. Invisible before the plate (no face wrapped the row; the old pill sprite was hand-sized around whatever the row did) and made glaring by Fix 5's full-size slash. The mirror prefab was hand-tuned to the intended math, which is why the prefab looked right while combat did not.
+
+**Fix** (scene-only, `GameScene.unity`): `currentRoot.pivot` and `maxRoot.pivot` → **(0, 1)** on BOTH `PlayerHPDisplayH` and `EnemyHPDisplayH` (x 0.5 → 0; y stays 1 — the vertical math is top-pivot by design). No code change.
+
+**Verification**: ink gaps above; Play combat/Result screenshots — both plates render "HP 19⁄25" tightly like the demo; EditMode suite re-run (see §7 note — one unrelated environment-state failure).
 
 ## 6. Test artifact — combat #2 misplacement (no code change)
 
