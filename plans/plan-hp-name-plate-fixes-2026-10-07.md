@@ -1,7 +1,7 @@
 # Plan: HP Name Plate — verification fixes — 2026-10-07
 
 - **Date**: 2026-10-07
-- **Status**: Fixes specced; awaiting implementation
+- **Status**: Implemented + verified 2026-10-07 (EditMode 743: 742/0/1-skip zero drift; Play probes: face corners on-canvas w/ 42.5 px inner margin, slab edges == demo spec on both sides incl. growth-glide resize, mirror "HP 27/27" at the Result→Shop swap, fallback Y 874.8 vs live 875.05; rows 153/154 ✅). Shipped in commit 2a89d7c9.
 - **Request (user, 2026-10-07)**: 修法落成文档 — write the fixes found in the implementation verification into a plan document.
 - **Parent plan**: `plans/plan-hp-name-plate-2026-10-07.md` (shipped, uncommitted working tree).
 - **Verification basis**: EditMode suite 743 (742 green + 1 pre-existing skip); Play probes with `runInBackground=true`, frame-dense flight logging (`Logs/flight_probe.txt`, deleted after analysis); live rect reads; Game-view screenshots. All evidence values below were measured live in Play on 2026-10-07.
