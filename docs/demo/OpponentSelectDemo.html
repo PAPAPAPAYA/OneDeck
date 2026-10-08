@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>OneDeck 选敌页 Demo v4 — Shop → Select → Combat</title>
+	<!--
+		Opponent-select page demo v4, serving plans/plan-opponent-select-page-2026-10-06.md.
+
+		World model (extends PhaseTransitionDemo 2026-08-19 model):
+			ONE continuous world; shop page below, select page +1 above it, combat
+			page +2 on top (camera mode only). The background topo IS the HP bar
+			display: red = enemy territory, gray = player territory.
+
+		Two combat-entry modes (params bar 入场方式, user question 2026-10-07):
+			MORPH (default, recommended): pick -> the CAMERA DOES NOT MOVE. The
+				select page becomes the combat page in place: the HP bar's enemy
+				red recedes to the combat band while player gray grows up from
+				below (clip-path animation), the picked candidate's NAMEPLATE
+				flies to the combat enemy HUD home (top-right, scaling up to
+				combat plate size), its three key cards arc-fly into the back of
+				the float stack (flip face-down mid-flight), and the player deck
+				cards arc-fly from the shop row into the stack — same as the
+				player side. The player plate never moves (it already sits at its
+				combat home since leg1). Object constancy: the opponent you
+				picked is the one that lands. Side benefit: no +2 page -> plan
+				§8's _combatPageY shift and its consumer sweep disappear.
+			CAMERA (fallback): leg2 moves the camera to the +2 combat page (the
+				original plan geometry); in this mode the select page background
+				is ALREADY split player/enemy (red top / gray bottom, same as
+				combat) per the user's 2026-10-07 fallback ruling.
+
+		Nameplates: ported from docs/demo/HPNamePlateDemo.html (2026-10-07 spec):
+			face (HP + current / max) + the standard hard UI shadow slab
+			(#1A3037 @ 70%) extended down-right to form the username band.
+			Player: face #D1CDC8 / ink #1A3037. Enemy: face #801424 /
+			ink #BFBDB5. All geometry in em off the plate's --fs (panel plates
+			26px, combat-stage plates 34px).
+
+		v3 layout (user feedback 2026-10-08):
+			- Enemy key cards are RED cards with the phys hard shadow; hover
+			  pops the card (UIKitDemo lift), click enlarges.
+			- 选择 +$N is its OWN phys button layered over the panel: its
+			  hover/press pop no longer lifts the panel shadow with it.
+			- No title chip / hint line on the select page.
+			- The bottom row is reserved for the player plate + options button;
+			  candidate panels sit above it.
+		v4 layout (user feedback 2026-10-08, second pass):
+			- Candidate panels are FLAT TRANSLUCENT dark rounded rects
+			  (ShopPanelBg #1A3037 @ 0.5, ShopSectionPanels style) hugging their
+			  content — no recessed slab, no panel-level shadow; shadows live on
+			  the content (cards / button / plate band).
+			- Panels narrowed (352px, centered) and re-laid per the mockup:
+			  card tops align with the plate top; the 选择 button's bottom aligns
+			  with the cards' bottom; plate and button share one width and one
+			  right edge.
+			- The plate shade renders at 0.5 alpha — the engine's RENDERED
+			  band (measured from a game_view capture) sits at ~0.45-0.5
+			  effective alpha; the nominal 0.698 inspector value is attenuated
+			  by the sliced sprite.
+			- Panel plates render at the combat plate size (fs 34): the morph
+			  pick flight is pure translation, no scaling.
+			- SELECT phase tag + 关键卡 label removed.
+
+		NOTE: the +$N bounty semantics are an assumption (treated as a pick
+		reward in demo data) — confirm before wiring into the plan.
+
+		Plan decisions still reflected: D1 independent page · D2 fixed 3 ghost
+		candidates (fictional demo data) · D3 unpicked return to pool · D4 no
+		reroll, NO back-to-shop button (the reset button on the combat page is
+		DEMO-ONLY).
+
+		Standards referenced:
+			nameplate spec         -> docs/demo/HPNamePlateDemo.html
+			world/transition model -> docs/demo/PhaseTransitionDemo.html
+			combat stack look      -> docs/demo/CardStackRevealDemo.html
+			physics / tokens       -> docs/demo/UIKitDemo.html (overshoot default)
+
+		Project standards: CRLF line endings, tab indentation, UTF-8.
+	-->
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+
+		body {
+			font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+			background: #0f1a1f;
+			color: #d5dde2;
+			min-height: 100vh;
+		}
+
+		code {
+			background: #263740;
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-size: 12px;
+			font-family: Consolas, monospace;
+		}
+
+		.intro {
+			padding: 24px 40px 12px;
+			max-width: 1100px;
+			margin: 0 auto;
+		}
+		.intro h1 { font-size: 22px; color: #fff; margin-bottom: 8px; }
+		.intro p { line-height: 1.75; color: #b0c0c8; margin-bottom: 6px; font-size: 13px; }
+		.intro .rule { color: #ffd479; }
+
+		/* ===================== params bar ===================== */
+		.params {
+			position: sticky;
+			top: 0;
+			z-index: 60;
+			background: #141f26;
+			border-top: 1px solid #24343e;
+			border-bottom: 1px solid #24343e;
+			padding: 8px 40px;
+		}
+		.params-inner {
+			max-width: 1100px;
+			margin: 0 auto;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px 20px;
+			align-items: center;
+			font-size: 12px;
+		}
+		.params .p-title { color: #ffd479; font-weight: 700; margin-right: 4px; }
+		.ctl { display: inline-flex; align-items: center; gap: 6px; color: #9fb2bc; }
+		.ctl input[type=range] { width: 90px; accent-color: #9fd3ff; }
+		.ctl select {
+			background: #1e2f39;
+			color: #d5dde2;
+			border: 1px solid #2c3e48;
+			border-radius: 4px;
+			font-size: 12px;
+			padding: 2px 4px;
+		}
+		.ctl .val { font-family: Consolas, monospace; color: #fff; min-width: 44px; }
+		.p-btn {
+			background: #1e2f39;
+			color: #9fd3ff;
+			border: 1px solid #2c3e48;
+			border-radius: 4px;
+			font-size: 12px;
+			padding: 3px 10px;
+			cursor: pointer;
+		}
+		.p-btn:hover { background: #263b47; }
+		#copyStatus { color: #7fdca4; font-size: 12px; }
+
+		/* ===================== camera & world ===================== */
+		.room {
+			display: flex;
+			justify-content: center;
+			padding: 26px 0 60px;
+		}
+		.camera {
+			position: relative;
+			width: 420px;
+			height: 740px;
+			overflow: hidden;
+			border-radius: 14px;
+			box-shadow: 0 18px 50px rgba(0,0,0,.45);
+			touch-action: none;
+			user-select: none;
+			-webkit-user-select: none;
+			background: #b8b5ae;
+		}
+		.world {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 420px;
+			/* height set in JS: 3 pages + PAD above combat + PAD below shop */
+			will-change: transform;
+		}
+		.world.moving { transition: transform var(--td) var(--ease); }
+		#topo { position: absolute; left: 0; top: 0; pointer-events: none; }
+		/* select-page gray overlay: same topo in player colors; the clip top edge
+		   IS the HP-bar boundary — animates down->up as gray grows (morph pick) */
+		#topoSelGray {
+			position: absolute;
+			left: 0;
+			pointer-events: none;
+			clip-path: inset(100% 0 0 0);
+			transition: clip-path var(--td) var(--ease);
+		}
+		#topoSelGray.split { clip-path: inset(55% 0 0 0); } /* gray covers bottom 45% (combat split: red 407/740) */
+
+		.abs { position: absolute; }
+
+		/* ===================== physical bits (UIKitDemo model) ===================== */
+		.phys {
+			position: absolute;
+			cursor: pointer;
+			-webkit-tap-highlight-color: transparent;
+		}
+		.phys-face {
+			position: relative;
+			overflow: hidden;
+			background: #ecece8;
+			color: #1a3037;
+			box-shadow: 4px 4px 0 0 rgba(10,14,25,.6);
+			transition: transform 120ms var(--ease), box-shadow 120ms var(--ease), background 120ms linear;
+		}
+		.phys.is-hover > .phys-face {
+			transform: translate(-4px, -4px);
+			box-shadow: 8px 8px 0 0 rgba(10,14,25,.6);
+		}
+		.phys.is-pressed > .phys-face {
+			transform: translate(4px, 4px);
+			box-shadow: 0 0 0 0 rgba(10,14,25,.6);
+			transition-duration: 60ms;
+		}
+
+		.big-btn .phys-face {
+			border-radius: 10px;
+			padding: 14px 20px;
+			font-size: 21px;
+			font-weight: 800;
+			text-align: center;
+		}
+		.small-btn .phys-face {
+			border-radius: 8px;
+			padding: 7px 12px;
+			font-size: 13px;
+			font-weight: 700;
+		}
+		.icon-btn .phys-face {
+			width: 30px;
+			height: 30px;
+			border-radius: 7px;
+			font-size: 13px;
+			font-weight: 800;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0;
+		}
+
+		/* ===================== HP name plate (port of HPNamePlateDemo.html 2026-10-07) ===================== */
+		/* face (HP digits) + the standard hard UI shadow slab, extended down-right
+		   to hold the username band. All geometry in units of --fs (root font
+		   size). Shadows extend down-right only (R0 light source top-left). */
+		.plate {
+			position: absolute;
+			font-family: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+			font-size: var(--fs, 34px);
+			line-height: 1;
+			user-select: none;
+			pointer-events: none;   /* display-only; clicks fall through */
+			will-change: left, top, transform;
+			--pad-x: 0.12;
+			--pad-y: 0.01;
+			--radius: 0.21;
+			--ext-x: 0.16;
+			--ext-y: 0.41;        /* shadow extension downward = name band height */
+			--shade-inset: 0.11;
+			--max-scale: 0.47;
+			--max-raise: 0.05;
+			--label-gap: 0.11;
+			--name-scale: 0.32;
+			--name-track: 0.05;
+			--name-pad-x: 0.16;   /* == ext-x: name right edge == face right edge */
+			/* engine-measured: the sliced sprite attenuates the nominal 0.698 cardShadow
+			   to ~0.45-0.5 effective alpha (measured from an engine game_view capture
+			   2026-10-08); 0.5 reproduces the RENDERED look, not the inspector value */
+			--shade: rgba(26, 48, 55, 0.5);
+			transition: opacity 180ms linear;
+		}
+		.plate.player { --face: #d1cdc8; --ink: #1a3037; --name-ink: #d1cdc8; }
+		.plate.enemy  { --face: #801424; --ink: #bfbdb5; --name-ink: #bfbdb5; }
+		.plate .plate-shade {
+			position: absolute;
+			top: 0;
+			left: calc(var(--shade-inset) * var(--fs));
+			right: calc(var(--ext-x) * -1 * var(--fs));
+			bottom: calc(var(--ext-y) * -1 * var(--fs));
+			background: var(--shade);
+			border-radius: calc(var(--radius) * var(--fs));
+		}
+		.plate .plate-face {
+			position: relative;
+			display: flex;
+			align-items: flex-end;
+			background: var(--face);
+			color: var(--ink);
+			border-radius: calc(var(--radius) * var(--fs));
+			padding: calc(var(--pad-y) * var(--fs)) calc(var(--pad-x) * var(--fs));
+			white-space: nowrap;
+			font-weight: 700;
+		}
+		.plate .hp-label { margin-right: calc(var(--label-gap) * var(--fs)); }
+		.plate .hp-slash { font-size: var(--fs); }
+		.plate .hp-max {
+			font-size: calc(var(--max-scale) * var(--fs));
+			margin-bottom: calc(var(--max-raise) * var(--fs));
+		}
+		.plate .plate-name {
+			position: absolute;
+			bottom: calc(var(--ext-y) * -1 * var(--fs));
+			height: calc(var(--ext-y) * var(--fs));
+			line-height: calc(var(--ext-y) * var(--fs));
+			right: calc((var(--name-pad-x) - var(--ext-x)) * var(--fs));
+			font-size: calc(var(--name-scale) * var(--fs));
+			font-weight: 700;
+			letter-spacing: calc(var(--name-track) * var(--fs));
+			color: var(--name-ink);
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			text-align: right;
+			text-transform: uppercase;
+		}
+
+		/* shop-only chips */
+		.chips { display: flex; align-items: flex-start; gap: 8px; color: #1a3037; }
+		.chips .money { font-size: 22px; font-weight: 800; }
+		.chips .col { display: flex; flex-direction: column; gap: 2px; font-size: 11px; font-weight: 700; }
+		.chips .col span {
+			background: rgba(236,236,232,.65);
+			border-radius: 4px;
+			padding: 1px 6px;
+		}
+
+		.section-label { color: #1a3037; }
+		.section-label b { font-size: 19px; margin-right: 6px; }
+		.section-label span { font-size: 11px; font-weight: 700; opacity: .75; }
+		.section-label .count { float: right; font-size: 20px; font-weight: 800; }
+
+		/* ===================== cards ===================== */
+		.mcard {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			will-change: left, top, transform;
+		}
+		.mcard .face {
+			position: absolute;
+			inset: 0;
+			border-radius: 14px;
+			overflow: hidden;
+			background: #d4d0c8;
+			box-shadow: 0 8px 20px rgba(0,0,0,.25);
+			border: 1px solid rgba(0,0,0,.06);
+		}
+		.mcard .back {
+			display: none;
+			position: absolute;
+			inset: 0;
+			border-radius: 14px;
+			background: #e8e4dc;
+			box-shadow: 0 8px 20px rgba(0,0,0,.25);
+			border: 1px solid rgba(0,0,0,.08);
+		}
+		.mcard.is-back .face { display: none; }
+		.mcard.is-back .back { display: block; }
+		/* card template v2 (mini): art zone / name + atk */
+		.mcard .art {
+			position: absolute;
+			left: 9px;
+			right: 9px;
+			top: 9px;
+			height: 55%;
+			border-radius: 8px;
+			background: #0a0e19;
+		}
+		.mcard .nm {
+			position: absolute;
+			left: 11px;
+			bottom: 8px;
+			font-size: 15px;
+			font-weight: 800;
+			color: #1a3037;
+			white-space: nowrap;
+		}
+		.mcard .atk {
+			position: absolute;
+			right: 11px;
+			bottom: 7px;
+			font-size: 19px;
+			font-weight: 800;
+			color: #1a3037;
+		}
+		.mcard .rty {
+			position: absolute;
+			right: 11px;
+			top: 58%;
+			font-size: 10px;
+			letter-spacing: 1px;
+			color: #0a0e19;
+		}
+
+		/* enemy key cards: RED faces with the phys hard shadow; hover pops the
+		   card (UIKitDemo lift, applied to .face so the wrapper's scale transform
+		   is untouched); click enlarges (PopUpCard analogue). */
+		.mcard.key { cursor: pointer; transition: opacity 220ms linear; }
+		.mcard.key .face {
+			background: #b71c2c;
+			border: none;
+			box-shadow: 6px 6px 0 0 rgba(10,14,25,.6);
+			transition: transform 120ms var(--ease), box-shadow 120ms var(--ease);
+		}
+		.mcard.key:hover .face {
+			transform: translate(-6px, -6px);
+			box-shadow: 12px 12px 0 0 rgba(10,14,25,.6);
+		}
+		.mcard.key .nm { color: #ecece8; }
+		.mcard.key .atk { color: #ecece8; }
+		.mcard.key .rty { color: rgba(236,236,232,.75); }
+
+		.shelf-card {
+			width: 110px;
+			height: 150px;
+			border-radius: 10px;
+			background: #ecece8;
+			box-shadow: 4px 4px 0 0 rgba(10,14,25,.6);
+		}
+		.price {
+			font-size: 14px;
+			font-weight: 800;
+			color: #1a3037;
+			text-align: center;
+		}
+		.slot {
+			width: 110px;
+			height: 150px;
+			border-radius: 10px;
+			background: rgba(26,48,55,.35);
+			box-shadow: inset 3px 3px 0 rgba(0,0,0,.3), inset -2px -2px 0 rgba(255,255,255,.06);
+			display: flex;
+			align-items: flex-end;
+			justify-content: center;
+			padding-bottom: 10px;
+			color: rgba(236,236,232,.6);
+			font-size: 12px;
+			font-weight: 700;
+		}
+
+		/* combat static decor (hidden until the pick in morph mode) */
+		.decor { transition: opacity 300ms linear; }
+		.decor.hidden { opacity: 0; }
+		.stack-card {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			box-shadow: 0 8px 20px rgba(0,0,0,.25);
+			border: 1px solid rgba(0,0,0,.06);
+		}
+		.stack-card.red { background: #b71c2c; }
+		.stack-card.gold { background: #c9981f; overflow: hidden; }
+		.stack-card.gold .art {
+			position: absolute;
+			left: 12px;
+			right: 12px;
+			top: 12px;
+			height: 52%;
+			border-radius: 8px;
+			background: #0a0e19;
+		}
+		.stack-card.gold .nm {
+			position: absolute;
+			left: 14px;
+			bottom: 30px;
+			font-size: 17px;
+			font-weight: 800;
+			color: #1c1e1c;
+		}
+		.stack-card.gold .ds {
+			position: absolute;
+			left: 14px;
+			bottom: 12px;
+			font-size: 11px;
+			font-weight: 700;
+			color: rgba(28,30,28,.7);
+		}
+		.stack-shadow {
+			width: 150px;
+			height: 210px;
+			border-radius: 14px;
+			background: #43534d;
+			pointer-events: none;
+		}
+
+		/* ===================== select page ===================== */
+		/* candidate panel = a flat translucent dark rounded rect that hugs its
+		   content — ShopSectionPanels style (ShopPanelBg #1A3037 @ 0.5): NO
+		   inset/cast shadow on the panel itself; shadows belong to the content
+		   (cards / button / plate band). Not interactive — picking happens
+		   through the 选择 button. */
+		.cand {
+			width: 364px;
+			opacity: 0;
+			transform: translateY(18px);
+			transition: opacity 220ms linear, transform 260ms var(--ease);
+		}
+		.cand.in { opacity: 1; transform: none; }
+		.cand-face {
+			height: 117px;
+			border-radius: 12px;
+			background: rgba(26,48,55,.5);
+		}
+		/* 选择 +$N: its own phys button layered over the panel — its hover/press
+		   pop moves ONLY the button, never the panel shadow */
+		.cand-btn {
+			width: 108px;
+			opacity: 0;
+			transform: translateY(18px);
+			transition: opacity 220ms linear, transform 260ms var(--ease);
+		}
+		.cand-btn.in { opacity: 1; transform: none; }
+		.cand-btn .phys-face {
+			height: 38px;
+			border-radius: 8px;
+			background: #b71c2c;
+			color: #ecece8;
+			font-size: 16px;
+			font-weight: 800;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		/* ===================== enlarge shade (camera space) ===================== */
+		#shade {
+			position: absolute;
+			inset: 0;
+			z-index: 80;
+			background: rgba(15,26,31,.45);
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 160ms linear, visibility 160ms;
+		}
+		#shade.on { opacity: 1; visibility: visible; }
+
+		.phase-tag {
+			position: absolute;
+			left: 10px;
+			top: 8px;
+			z-index: 40;
+			font-size: 11px;
+			font-weight: 700;
+			color: rgba(26,48,55,.55);
+			background: rgba(236,236,232,.55);
+			border-radius: 4px;
+			padding: 2px 8px;
+			pointer-events: none;
+		}
+		.phase-tag.on-red { color: rgba(236,236,232,.75); background: rgba(26,48,55,.35); }
+	</style>
+</head>
+<body>
+
+	<header class="intro">
+		<h1>选敌页 Demo v4 — 名牌规格 + 红卡 + 两种战斗入场方式</h1>
+		<p><b>版式（2026-10-08 第二轮）：</b>候选面板 = <b>ShopSectionPanels 同款</b>平铺半透明深色圆角矩形（ShopPanelBg #1A3037 @ 0.5，贴合内容、面板自身无阴影；阴影只属于内容：红卡/按钮/名牌带）。面板内：左 <b>3 张红色关键卡</b>（硬阴影，<b>hover 弹起</b>，点击放大，无伤害数字）+ 右侧<b>敌方名牌</b>与【选择 +$N】<b>同宽同右缘</b>（卡顶 = 名牌顶，卡底 = 按钮底，对齐参考 mockup 图三）。名牌样式移植自 <code>HPNamePlateDemo.html</code>，<b>阴影带透明度 0.5</b>（对齐引擎实测渲染：引擎 Image 名义 0.698，经九宫格 sprite 衰减后实际 ≈0.45-0.5）。面板名牌与战斗名牌同字号（34px），morph 飞行为纯平移无缩放。无标题/提示语/页签；选敌页<b>最下面一行留给玩家名牌 + 选项按钮</b>（= 战斗位）。</p>
+		<p class="rule"><b>入场方式（参数栏可切换对比）：</b><b>原位 morph（默认·推荐）</b>——点选后<b>镜头不动</b>：背景 HP bar 敌方红带回退、玩家灰区上长，被选名牌直飞战斗右上位（同时放大到战斗名牌尺寸），其 3 张关键卡弧飞入牌堆后方（中点翻背），玩家卡组卡从商店行弧飞入堆——与玩家侧同款处理；被选对象全程在屏，身份连续，且战斗页不再需要 +2 屏（plan §8 的 _combatPageY 上移风险消失）。<b>镜头移动（备选）</b>——leg2 镜头上移到 +2 战斗页（plan 原几何），此时选敌页背景按备选裁定<b>直接玩家/敌人二分</b>（与战斗同款），敌方名牌改为滑入式注入。</p>
+		<p><b>待确认：</b>【选择 +$N】的 +$N 语义 demo 按「挑选奖励」占位（演示数据虚构）。操作：商店页点【离开，开始新的一天】或<b>上滑</b> → 选敌页；点【选择 +$N】（单击即选，O2）→ 战斗；点战斗页【重置演示】回到商店（demo 专用，D4 真机无返回）。切换入场方式会硬重置回商店页。视觉/物理标准 = <code>PhaseTransitionDemo.html</code> / <code>UIKitDemo.html</code> / <code>HPNamePlateDemo.html</code>。</p>
+	</header>
+
+	<div class="params">
+		<div class="params-inner" id="paramsInner">
+			<span class="p-title">过场参数</span>
+		</div>
+	</div>
+
+	<div class="room">
+		<div class="camera" id="camera">
+			<div class="world" id="world">
+				<svg id="topo" xmlns="http://www.w3.org/2000/svg"></svg>
+				<svg id="topoSelGray" xmlns="http://www.w3.org/2000/svg"></svg>
+				<div class="abs phase-tag on-red" id="tagCombat">COMBAT +2（顶红 = 敌方 HP · 底灰 = 玩家 HP）</div>
+				<div class="abs phase-tag" id="tagShop">SHOP 0（整页背景 = 玩家 HP display）</div>
+
+				<!-- combat decor: float stack (CardStackRevealDemo standard); repositioned by entry mode -->
+				<div class="abs decor stack-shadow" id="stackShadow"></div>
+				<div class="abs decor stack-card red" id="stackRed"></div>
+				<div class="abs decor stack-card gold" id="stackGold">
+					<div class="art"></div>
+					<div class="nm">时空变换</div>
+					<div class="ds">洗牌</div>
+				</div>
+
+				<!-- enemy plate (camera mode only: slides in from above, filled on pick;
+				     morph mode flies the PICKED candidate's own plate here instead) -->
+				<div class="plate enemy" id="enemyPlate" style="--fs:34px;">
+					<div class="plate-shade"></div>
+					<div class="plate-face"><span class="hp-label">HP</span><span class="hp-current" id="enemyHpCur">-</span><span class="hp-slash">/</span><span class="hp-max" id="enemyHpMax">-</span></div>
+					<div class="plate-name" id="enemyPlateName">？？？</div>
+				</div>
+
+				<!-- select page content (panels + plates + key cards created in JS) -->
+
+				<!-- shop content (world content, scrolls) -->
+				<div class="phys big-btn" id="btnLeave" style="left:16px; width:388px;">
+					<div class="phys-face">离开，开始新的一天</div>
+				</div>
+				<div class="abs chips" id="shopChips">
+					<span class="money">$20</span>
+					<div class="col">
+						<span>▦ 2/6</span><span>♥ 1/3</span><span>+$12/ROUND</span>
+					</div>
+				</div>
+				<div class="abs section-label" id="lblShop"><b>商店</b><span>长按购买</span></div>
+				<div class="phys small-btn" id="btnReroll" style="width:76px;">
+					<div class="phys-face">重掷 $1</div>
+				</div>
+				<div class="abs shelf-card" id="shelf0"></div>
+				<div class="abs shelf-card" id="shelf1"></div>
+				<div class="abs shelf-card" id="shelf2"></div>
+				<div class="abs price" id="price0">$4</div>
+				<div class="abs price" id="price1">$6</div>
+				<div class="abs price" id="price2">$8</div>
+				<div class="abs section-label" id="lblDeck"><b>卡组</b><span>长按售出</span><span class="count">03/05</span></div>
+				<div class="abs price" id="dprice0">$2</div>
+				<div class="abs price" id="dprice1">$3</div>
+				<div class="abs price" id="dprice2">$4</div>
+				<div class="abs slot" id="slot0">空卡位</div>
+				<div class="abs slot" id="slot1">空卡位</div>
+
+				<!-- shared: player plate + options button + deck cards (created in JS) -->
+				<div class="plate player" id="playerPlate" style="--fs:34px;">
+					<div class="plate-shade"></div>
+					<div class="plate-face"><span class="hp-label">HP</span><span class="hp-current">25</span><span class="hp-slash">/</span><span class="hp-max">25</span></div>
+					<div class="plate-name">PAPAYA</div>
+				</div>
+				<div class="phys icon-btn" id="btnOpts">
+					<div class="phys-face">❚❚</div>
+				</div>
+			</div>
+
+			<!-- enlarge shade: camera space, click to restore -->
+			<div id="shade"></div>
+		</div>
+	</div>
+
+	<script>
+		/* ===================== tunable parameters ===================== */
+		const PARAMS = [
+			{ key: 'entryMode',    label: '入场方式',       type: 'select',
+				options: [['morph', '原位 morph（镜头不动·推荐）'], ['camera', '镜头移动（+2 页）']],
+				def: 'morph' },
+			{ key: 'transDur',     label: '过场时长(每段)', min: 300, max: 1600, step: 50,  def: 800, unit: 'ms' },
+			{ key: 'ease',         label: '缓动',           type: 'select',
+				options: [['overshoot', 'overshoot 回弹'], ['cubic-bezier(.2,.7,.3,1)', 'smooth'], ['linear', 'linear']],
+				def: 'overshoot' },
+			{ key: 'overshoot',    label: '回弹强度',       min: 1,   max: 3,    step: 0.05, def: 1.7 },
+			{ key: 'cardStagger',  label: '飞卡交错',       min: 0,   max: 220,  step: 10,  def: 70,  unit: 'ms' },
+			{ key: 'cardArc',      label: '飞卡弧高',       min: 0,   max: 220,  step: 5,   def: 90,  unit: 'px' },
+			{ key: 'enemySlide',   label: '敌方滑入距离',   min: 0,   max: 320,  step: 10,  def: 140, unit: 'px' },
+			{ key: 'panelStagger', label: '面板入场交错',   min: 0,   max: 200,  step: 10,  def: 60,  unit: 'ms' },
+		];
+		const state = {};
+		function easeValue() {
+			return state.ease === 'overshoot'
+				? 'cubic-bezier(0.34, ' + state.overshoot + ', 0.64, 1)'
+				: state.ease;
+		}
+		function applyEase() {
+			document.documentElement.style.setProperty('--ease', easeValue());
+			document.documentElement.style.setProperty('--td', state.transDur + 'ms');
+		}
+
+		/* ===================== world geometry ===================== */
+		const PAD = 200;               /* topo padding beyond each outer page edge (overshoot headroom) */
+		const PAGE_W = 420, PAGE_H = 740;
+		const COMBAT_TOP = PAD;                  /* world y of combat page top (+2, camera mode) */
+		const SELECT_TOP = PAD + PAGE_H;         /* world y of select page top (+1; = combat page in morph mode) */
+		const SHOP_TOP = PAD + PAGE_H * 2;       /* world y of shop page top (0)  */
+		const WORLD_H = PAGE_H * 3 + PAD * 2;
+		const world = document.getElementById('world');
+		const camera = document.getElementById('camera');
+		world.style.height = WORLD_H + 'px';
+		/* where the combat page lives under the current entry mode */
+		const combatTop = () => state.entryMode === 'morph' ? SELECT_TOP : COMBAT_TOP;
+
+		/* ===================== topographic background ===================== */
+		/* One continuous SVG: red = enemy territory (combat page top band + the
+		   WHOLE select page in morph mode), gray = player territory. A second
+		   SVG (#topoSelGray) redraws the select page in player gray; its
+		   clip-path top edge is the HP-bar boundary and animates the split. */
+		(function buildTopo() {
+			const RED_BOTTOM = COMBAT_TOP + 407; /* red covers ~55% of the combat page */
+			const inRed = y => y < RED_BOTTOM || (y >= SELECT_TOP && y < SELECT_TOP + PAGE_H);
+			let seed = 20261006;
+			const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+			/* precompute row segment strings once so both SVGs share the same waves */
+			const rows = [];
+			for (let y = -14; y < WORLD_H + 20; y += 44) {
+				let seg = '';
+				for (let x = -20; x < PAGE_W + 40; x += 70) {
+					const dy = (rnd() - 0.5) * 30;
+					const dx = 35 + (rnd() - 0.5) * 10;
+					seg += ' q ' + dx + ' ' + dy + ' 70 0';
+				}
+				rows.push({ y, seg });
+			}
+			const NS = 'http://www.w3.org/2000/svg';
+			const svg = document.getElementById('topo');
+			svg.setAttribute('width', PAGE_W);
+			svg.setAttribute('height', WORLD_H);
+			svg.setAttribute('viewBox', '0 0 ' + PAGE_W + ' ' + WORLD_H);
+			const mk = (host, tag, attrs) => {
+				const el = document.createElementNS(NS, tag);
+				for (const k in attrs) el.setAttribute(k, attrs[k]);
+				host.appendChild(el);
+			};
+			mk(svg, 'rect', { x: 0, y: 0, width: PAGE_W, height: RED_BOTTOM, fill: '#a02332' });
+			mk(svg, 'rect', { x: 0, y: RED_BOTTOM, width: PAGE_W, height: SELECT_TOP - RED_BOTTOM, fill: '#b8b5ae' });
+			mk(svg, 'rect', { x: 0, y: SELECT_TOP, width: PAGE_W, height: PAGE_H, fill: '#a02332' });
+			mk(svg, 'rect', { x: 0, y: SHOP_TOP, width: PAGE_W, height: WORLD_H - SHOP_TOP, fill: '#b8b5ae' });
+			rows.forEach(r => mk(svg, 'path', {
+				d: 'M -20 ' + r.y + r.seg,
+				fill: 'none',
+				stroke: inRed(r.y) ? '#7d1826' : '#a3a29a',
+				'stroke-width': 1.4,
+				opacity: 0.9,
+			}));
+			/* gray overlay for the select page (page-local coords) */
+			const ov = document.getElementById('topoSelGray');
+			ov.setAttribute('width', PAGE_W);
+			ov.setAttribute('height', PAGE_H);
+			ov.setAttribute('viewBox', '0 0 ' + PAGE_W + ' ' + PAGE_H);
+			ov.style.top = SELECT_TOP + 'px';
+			mk(ov, 'rect', { x: 0, y: 0, width: PAGE_W, height: PAGE_H, fill: '#b8b5ae' });
+			rows.forEach(r => {
+				if (r.y < SELECT_TOP - 44 || r.y > SELECT_TOP + PAGE_H) return;
+				mk(ov, 'path', {
+					d: 'M -20 ' + (r.y - SELECT_TOP) + r.seg,
+					fill: 'none',
+					stroke: '#a3a29a',
+					'stroke-width': 1.4,
+					opacity: 0.9,
+				});
+			});
+		})();
+
+		/* ===================== layout (page coords -> world coords) ===================== */
+		const CARD_W = 150, CARD_H = 210, SHOP_CARD_SCALE = 0.733, KEY_CARD_SCALE = 0.44;
+		const STACK = { x: 231, y: 400 };       /* combat page coords of the stack anchor */
+		const STEP = 14;                        /* stackStepY (CardStackRevealDemo) */
+		const REVEAL = { x: -17, y: 43, s: 1.18 }; /* slot0 + (-floatX, -upY), revealScale */
+		const PLATE_FS_PANEL = 34, PLATE_FS_STAGE = 34;   /* one plate size everywhere — the morph flight is pure translation */
+
+		const $ = id => document.getElementById(id);
+		const put = (el, x, y) => { el.style.left = x + 'px'; el.style.top = y + 'px'; };
+		const center = (el, cx, cy) => put(el, cx - CARD_W / 2, cy - CARD_H / 2);
+
+		/* shop content */
+		put($('btnLeave'), 16, SHOP_TOP + 14);
+		put($('shopChips'), 185, SHOP_TOP + 88);
+		put($('lblShop'), 24, SHOP_TOP + 140); $('lblShop').style.width = '372px';
+		put($('btnReroll'), 320, SHOP_TOP + 136);
+		[0, 1, 2].forEach(i => {
+			put($('shelf' + i), 24 + i * 130, SHOP_TOP + 172);
+			put($('price' + i), 24 + i * 130, SHOP_TOP + 328); $('price' + i).style.width = '110px';
+			put($('dprice' + i), 24 + i * 130, SHOP_TOP + 556); $('dprice' + i).style.width = '110px';
+		});
+		put($('lblDeck'), 24, SHOP_TOP + 358); $('lblDeck').style.width = '372px';
+		put($('slot0'), 24, SHOP_TOP + 582);
+		put($('slot1'), 154, SHOP_TOP + 582);
+
+		/* ===================== ghost candidates (fictional demo data) ===================== */
+		/* key cards = the ghost deck's three highest-damage cards; bounty = the
+		   +$N shown on the select button (ASSUMED pick reward, unconfirmed). */
+		const CANDIDATES = [
+			{ uname: '夜雨声烦', hp: 28, bounty: 4, cards: [
+				{ nm: '时空变换', atk: '', rty: '✦✦✦' },
+				{ nm: '血咒术士', atk: 3,  rty: '✦✦' },
+				{ nm: '苔衣小鼠', atk: 1,  rty: '✦' } ] },
+			{ uname: '影织者K', hp: 24, bounty: 3, cards: [
+				{ nm: '信徒',     atk: 1,  rty: '✦' },
+				{ nm: '铁壳龟',   atk: 2,  rty: '✦✦' },
+				{ nm: '蓝色的鱼', atk: 2,  rty: '✦✦✦' } ] },
+			{ uname: '雾岛听风', hp: 31, bounty: 5, cards: [
+				{ nm: '战争号角', atk: '', rty: '✦✦' },
+				{ nm: '圣墓守卫', atk: 4,  rty: '✦✦✦' },
+				{ nm: '苔衣小鼠', atk: 1,  rty: '✦' } ] },
+		];
+		/* select-page layout: three content-hugging panels (narrower than the page,
+		   per the 2026-10-08 mockup) above the reserved bottom row (player plate +
+		   options button live there, at their combat homes) */
+		const PANEL_X = 28, PANEL_W = 364, PANEL_Y = [44, 185, 326], PANEL_H = 117;
+		/* panel-relative content layout: card tops align with the plate top, the
+		   button bottom aligns with the cards' bottom; plate and 选择 button share
+		   one width and one right edge (mockup alignment) */
+		const KEY_CX = [45, 124, 203], KEY_CY = 64;       /* key card centers, panel-relative */
+		const PLATE_TOP = 12;                             /* enemy plate top, panel-relative (x right-aligned at build) */
+		const BTN_POS = { x: 252, y: 67 };                /* 选择 button, panel-relative (w 108 == plate face) */
+
+		let pickedIdx = null;
+		const plates = [];      /* world-level enemy plates (one per candidate) */
+		const plateHome = [];   /* panel-slot world coords of each plate */
+		const keyCards = [];    /* world-level .mcard.key elements, flat [cand*3 + slot] */
+		const candGroups = [];  /* { panel, btn } per candidate, for the entrance fade/slide */
+
+		function makePlate(side, fs, cur, max, name) {
+			const el = document.createElement('div');
+			el.className = 'abs plate ' + side;
+			el.style.setProperty('--fs', fs + 'px');
+			el.innerHTML =
+				'<div class="plate-shade"></div>' +
+				'<div class="plate-face"><span class="hp-label">HP</span><span class="hp-current">' + cur + '</span><span class="hp-slash">/</span><span class="hp-max">' + max + '</span></div>' +
+				'<div class="plate-name">' + name + '</div>';
+			return el;
+		}
+
+		CANDIDATES.forEach((c, i) => {
+			const panel = document.createElement('div');
+			panel.className = 'abs cand';
+			panel.innerHTML = '<div class="cand-face"></div>';
+			put(panel, PANEL_X, SELECT_TOP + PANEL_Y[i]);
+			world.appendChild(panel);
+
+			const btn = document.createElement('div');
+			btn.className = 'phys cand-btn';
+			btn.innerHTML = '<div class="phys-face">选择 +$' + c.bounty + '</div>';
+			put(btn, PANEL_X + BTN_POS.x, SELECT_TOP + PANEL_Y[i] + BTN_POS.y);
+			btn.style.zIndex = 8;
+			world.appendChild(btn);
+			btn.addEventListener('click', () => { if (!dragMoved) pick(i); });
+			candGroups.push({ panel, btn });
+
+			const plate = makePlate('enemy', PLATE_FS_PANEL, c.hp, c.hp, c.uname);
+			world.appendChild(plate);
+			/* right-align the plate face inside the panel (face right edge = panel
+			   inner right; the shade overhang extends past it) */
+			const plateX = PANEL_X + (PANEL_W - 12) - plate.offsetWidth - Math.round(0.16 * PLATE_FS_PANEL);
+			const plateY = SELECT_TOP + PANEL_Y[i] + PLATE_TOP;
+			put(plate, plateX, plateY);
+			plate.style.zIndex = 7;
+			plates.push(plate);
+			plateHome.push({ x: plateX, y: plateY });
+
+			c.cards.forEach((k, j) => {
+				const el = document.createElement('div');
+				el.className = 'abs mcard key';
+				el.innerHTML =
+					'<div class="face"><div class="art"></div>' +
+					'<div class="rty">' + k.rty + '</div>' +
+					'<div class="nm">' + k.nm + '</div>' +
+					(k.atk !== '' ? '<div class="atk">' + k.atk + '</div>' : '') +
+					'</div>' +
+					'<div class="back"></div>';
+				center(el, PANEL_X + KEY_CX[j], SELECT_TOP + PANEL_Y[i] + KEY_CY);
+				el.style.transform = 'scale(' + KEY_CARD_SCALE + ')';
+				el.style.zIndex = 6;
+				world.appendChild(el);
+				el.addEventListener('click', ev => {
+					ev.stopPropagation();
+					if (dragMoved || phase !== 'select') return;
+					if (enlarged && enlarged.el === el) closeEnlarge();
+					else openEnlarge(el);
+				});
+				keyCards.push(el);
+			});
+		});
+
+		/* ===================== shared elements & their page homes ===================== */
+		const deckData = [
+			{ name: '蓝色的鱼', atk: 1, rty: '✦✦✦' },
+			{ name: '铁壳龟',   atk: 2, rty: '✦✦' },
+			{ name: '苔衣小鼠', atk: 1, rty: '✦' },
+		];
+		const deckCards = deckData.map((c, i) => {
+			const el = document.createElement('div');
+			el.className = 'abs mcard';
+			el.innerHTML =
+				'<div class="face"><div class="art"></div>' +
+				'<div class="rty">' + c.rty + '</div>' +
+				'<div class="nm">' + c.name + '</div>' +
+				'<div class="atk">' + c.atk + '</div></div>' +
+				'<div class="back"></div>';
+			el.style.zIndex = 5 + i;
+			world.appendChild(el);
+			return el;
+		});
+
+		/* homes: shop = shop page layout; select = combat layout (player plate and
+		   options already sit at their combat homes — they do not move in leg2,
+		   "same treatment as the player side"); deck cards have NO select home —
+		   they ride the world during leg1; combat = float stack slots. */
+		const homes = {
+			playerPlate: { shop: { x: 24, y: 66 }, select: { x: 24, y: 672 }, combat: { x: 24, y: 672 } },
+			btnOpts:     { shop: { x: 376, y: 18 }, select: { x: 376, y: 692 }, combat: { x: 376, y: 692 } },
+			cards: deckCards.map((el, i) => ({
+				shop:   { cx: 24 + i * 130 + 55, cy: 479, s: SHOP_CARD_SCALE },
+				combat: { cx: STACK.x, cy: STACK.y + STEP * (-2 + i), s: 1 }, /* i=0 -> -2 steps (back), i=2 -> 0 (front) */
+			})),
+		};
+
+		const pageTop = target => target === 'combat' ? combatTop() : target === 'select' ? SELECT_TOP : SHOP_TOP;
+
+		function placeShared(target) {
+			const top = pageTop(target);
+			const hud = homes.playerPlate[target];
+			put($('playerPlate'), hud.x, top + hud.y);
+			const opt = homes.btnOpts[target];
+			put($('btnOpts'), opt.x, top + opt.y);
+			if (target !== 'select') {
+				homes.cards.forEach((h, i) => {
+					const hh = h[target];
+					center(deckCards[i], hh.cx, top + hh.cy);
+					deckCards[i].style.transform = 'scale(' + hh.s + ')';
+					deckCards[i].classList.toggle('is-back', target === 'combat');
+				});
+			}
+			$('enemyPlate').style.transition = 'none';
+			$('enemyPlate').style.transform = 'translateY(' + (target === 'combat' ? 0 : -state.enemySlide) + 'px)';
+		}
+
+		/* ===================== transitions ===================== */
+		let phase = 'shop';   /* shop | moving | select | combat */
+		world.style.transform = 'translateY(' + (-SHOP_TOP) + 'px)';
+
+		function moveCamera(toPage) {
+			world.classList.add('moving');
+			world.style.transform = 'translateY(' + (-pageTop(toPage)) + 'px)';
+		}
+
+		/* WAAPI flight for one element; resolves when landed. */
+		function fly(el, from, to, opts) {
+			opts = opts || {};
+			const mid = opts.arc
+				? [{
+						left: ((from.x + to.x) / 2) + 'px',
+						top: ((from.y + to.y) / 2 - opts.arc) + 'px',
+						transform: 'scale(' + ((from.s + to.s) / 2) + ') rotate(' + (opts.rot || 0) + 'deg)',
+						offset: 0.5,
+					}]
+				: [];
+			const anim = el.animate(
+				[
+					{ left: from.x + 'px', top: from.y + 'px', transform: 'scale(' + from.s + ') rotate(0deg)', offset: 0 },
+					...mid,
+					{ left: to.x + 'px', top: to.y + 'px', transform: 'scale(' + to.s + ') rotate(0deg)', offset: 1 },
+				],
+				{ duration: opts.dur || state.transDur, easing: easeValue(), delay: opts.delay || 0, fill: 'backwards' }
+			);
+			if (opts.flipAtMid) {
+				setTimeout(() => el.classList.toggle('is-back', opts.flipToBack), (opts.delay || 0) + (opts.dur || state.transDur) / 2);
+			}
+			return anim.finished.catch(() => {}).then(() => {
+				put(el, to.x, to.y);
+				el.style.transform = 'scale(' + to.s + ')';
+			});
+		}
+		function cur(idOrEl) {
+			const el = typeof idOrEl === 'string' ? $(idOrEl) : idOrEl;
+			return { x: parseFloat(el.style.left) || 0, y: parseFloat(el.style.top) || 0 };
+		}
+		const wait = ms => new Promise(r => setTimeout(r, ms));
+		const decor = () => [$('stackShadow'), $('stackRed'), $('stackGold')];
+
+		/* shared-element flights for the camera-model transitions (leg1, camera
+		   leg2, resets). playerPlate/btnOpts glide between page homes; deck cards
+		   only fly when the target has a card home (shop/combat), never on leg1. */
+		function flyShared(target) {
+			const jobs = [];
+			const top = pageTop(target);
+			const hudH = homes.playerPlate[target];
+			jobs.push(fly($('playerPlate'), { ...cur('playerPlate'), s: 1 }, { x: hudH.x, y: top + hudH.y, s: 1 }));
+			const optH = homes.btnOpts[target];
+			jobs.push(fly($('btnOpts'), { ...cur('btnOpts'), s: 1 }, { x: optH.x, y: top + optH.y, s: 1 }));
+			if (target !== 'select') {
+				homes.cards.forEach((h, i) => {
+					const from = { ...cur(deckCards[i]), s: h[target === 'combat' ? 'shop' : 'combat'].s };
+					const hh = h[target];
+					jobs.push(fly(deckCards[i], from, { x: hh.cx - CARD_W / 2, y: top + hh.cy - CARD_H / 2, s: hh.s }, {
+						arc: state.cardArc,
+						rot: (i - 1) * 5,
+						delay: i * state.cardStagger,
+						flipAtMid: true,
+						flipToBack: target === 'combat',
+					}));
+				});
+			}
+			/* enemy plate (camera mode): slides down in (combat) / up out (else) */
+			const ep = $('enemyPlate');
+			ep.style.transition = 'transform ' + state.transDur + 'ms ' + easeValue();
+			ep.style.transform = 'translateY(' + (target === 'combat' ? 0 : -state.enemySlide) + 'px)';
+			return Promise.all(jobs);
+		}
+
+		/* entrance stagger for one candidate group (panel + its plate + button + cards) */
+		function panelsIn() {
+			candGroups.forEach((g, i) => {
+				const d = (i * state.panelStagger) + 'ms';
+				g.panel.style.transitionDelay = d;
+				g.btn.style.transitionDelay = d;
+				g.panel.classList.add('in');
+				g.btn.classList.add('in');
+				plates[i].style.transitionDelay = d;
+				plates[i].style.opacity = '1';
+				for (let j = 0; j < 3; j++) {
+					const k = keyCards[i * 3 + j];
+					k.style.transitionDelay = d;
+					k.style.opacity = '1';
+				}
+			});
+		}
+		function panelsOut() {
+			candGroups.forEach((g, i) => {
+				g.panel.style.transitionDelay = '0ms';
+				g.btn.style.transitionDelay = '0ms';
+				g.panel.classList.remove('in');
+				g.btn.classList.remove('in');
+				plates[i].style.transitionDelay = '0ms';
+				plates[i].style.opacity = '0';
+				for (let j = 0; j < 3; j++) {
+					const k = keyCards[i * 3 + j];
+					k.style.transitionDelay = '0ms';
+					k.style.opacity = '0';
+				}
+			});
+		}
+
+		/* leg1: shop -> select (minimal choreography, plan §4.4; same in both modes) */
+		function goSelect() {
+			if (phase !== 'shop') return;
+			phase = 'moving';
+			moveCamera('select');
+			Promise.all([flyShared('select'), wait(state.transDur)]).then(() => {
+				phase = 'select';
+				panelsIn();
+			});
+		}
+
+		function pick(i) {
+			if (phase !== 'select' || enlarged) return;
+			if (state.entryMode === 'morph') pickMorph(i);
+			else pickCamera(i);
+		}
+
+		/* camera-mode pick: populate the enemy plate, then leg2 flies up to the
+		   +2 combat page (original plan geometry; the picked identity rides the
+		   world away with its panel and re-enters as the sliding enemy plate). */
+		function pickCamera(i) {
+			const c = CANDIDATES[i];
+			pickedIdx = i;
+			$('enemyHpCur').textContent = c.hp;
+			$('enemyHpMax').textContent = c.hp;
+			$('enemyPlateName').textContent = c.uname;
+			positionEnemyPlate();   /* the face grew with the real content — re-anchor the right edge */
+			phase = 'moving';
+			moveCamera('combat');
+			Promise.all([flyShared('combat'), wait(state.transDur + 2 * state.cardStagger)]).then(() => { phase = 'combat'; });
+		}
+
+		/* right-anchor the camera-mode enemy plate for its CURRENT content (the
+		   face width grows with the digits/name; measure after setting text) */
+		function positionEnemyPlate() {
+			const ep = $('enemyPlate');
+			put(ep, PAGE_W - 16 - Math.round(0.16 * PLATE_FS_STAGE) - ep.offsetWidth, combatTop() + 26);
+		}
+
+		/* morph-mode pick: THE CAMERA DOES NOT MOVE. HP bar red recedes / player
+		   gray grows (clip-path), the picked plate flies to the enemy HUD home
+		   (scaling up to combat plate size), its key cards arc into the stack
+		   back (flip face-down), player deck cards arc in from the shop row one
+		   page below. Player plate never moves. */
+		function pickMorph(i) {
+			pickedIdx = i;
+			phase = 'moving';
+			panelsOut();
+			/* the picked candidate's loose content stays visible (it flies, not fades) */
+			plates[i].style.opacity = '1';
+			for (let j = 0; j < 3; j++) keyCards[i * 3 + j].style.opacity = '1';
+			$('topoSelGray').classList.add('split');       /* HP bar: enemy recedes, player grows */
+			decor().forEach(el => el.classList.remove('hidden'));
+			const jobs = [];
+			/* picked plate -> combat enemy HUD home (top-right); one plate size
+			   everywhere (fs 34), so the flight is pure translation with the
+			   face's right edge pinned to the page margin */
+			const plate = plates[i];
+			const toX = PAGE_W - 16 - Math.round(0.16 * PLATE_FS_STAGE) - plate.offsetWidth;
+			const toY = SELECT_TOP + 26;
+			plate.style.zIndex = 45;
+			jobs.push(fly(plate, { ...cur(plate), s: 1 }, { x: toX, y: toY, s: 1 }));
+			/* picked candidate's key cards -> back of the float stack, face-down */
+			CANDIDATES[i].cards.forEach((k, j) => {
+				const el = keyCards[i * 3 + j];
+				const slotCy = SELECT_TOP + STACK.y + STEP * (-5 + j) - CARD_H / 2;
+				jobs.push(fly(el, { ...cur(el), s: KEY_CARD_SCALE }, { x: STACK.x - CARD_W / 2, y: slotCy, s: 1 }, {
+					arc: state.cardArc,
+					rot: (j - 1) * 5,
+					delay: j * state.cardStagger + 40,
+					flipAtMid: true,
+					flipToBack: true,
+				}));
+			});
+			/* player deck cards -> float stack (same as the camera-mode leg2) */
+			homes.cards.forEach((h, idx) => {
+				jobs.push(fly(deckCards[idx], { ...cur(deckCards[idx]), s: h.shop.s }, { x: h.combat.cx - CARD_W / 2, y: SELECT_TOP + h.combat.cy - CARD_H / 2, s: h.combat.s }, {
+					arc: state.cardArc,
+					rot: (idx - 1) * 5,
+					delay: idx * state.cardStagger,
+					flipAtMid: true,
+					flipToBack: true,
+				}));
+			});
+			Promise.all([Promise.all(jobs), wait(state.transDur + 2 * state.cardStagger)]).then(() => {
+				phase = 'combat';
+				btnReset.style.display = '';
+			});
+		}
+
+		/* DEMO-ONLY reset (D4: the real select page has no way back to the shop) */
+		function goReset() {
+			if (phase !== 'combat') return;
+			closeEnlarge();
+			phase = 'moving';
+			if (state.entryMode === 'morph') {
+				$('topoSelGray').classList.remove('split');
+				decor().forEach(el => el.classList.add('hidden'));
+				const jobs = [];
+				/* plate back to its panel slot at panel size */
+				const plate = plates[pickedIdx];
+				const home = plateHome[pickedIdx];
+				jobs.push(fly(plate, { ...cur(plate), s: 1 }, { x: home.x, y: home.y, s: 1 })
+					.then(() => { plate.style.zIndex = 7; }));
+				/* key cards back to the panel slots, face-up again */
+				CANDIDATES[pickedIdx].cards.forEach((k, j) => {
+					const el = keyCards[pickedIdx * 3 + j];
+					jobs.push(fly(el, { ...cur(el), s: 1 }, { x: PANEL_X + KEY_CX[j] - CARD_W / 2, y: SELECT_TOP + PANEL_Y[pickedIdx] + KEY_CY - CARD_H / 2, s: KEY_CARD_SCALE }, {
+						arc: state.cardArc,
+						delay: j * state.cardStagger,
+						flipAtMid: true,
+						flipToBack: false,
+					}));
+				});
+				moveCamera('shop');
+				Promise.all([Promise.all(jobs), flyShared('shop'), wait(state.transDur + 2 * state.cardStagger)]).then(() => {
+					phase = 'shop';
+					pickedIdx = null;
+					btnReset.style.display = 'none';
+					/* contents stay hidden until the next leg1 entrance (panelsIn) */
+					plates.forEach(p => { p.style.transitionDelay = '0ms'; p.style.opacity = '0'; });
+					keyCards.forEach(el => { el.style.transitionDelay = '0ms'; el.style.opacity = '0'; });
+				});
+			} else {
+				panelsOut();
+				moveCamera('shop');
+				Promise.all([flyShared('shop'), wait(state.transDur)]).then(() => {
+					phase = 'shop';
+					pickedIdx = null;
+					$('enemyHpCur').textContent = '-';
+					$('enemyHpMax').textContent = '-';
+					$('enemyPlateName').textContent = '？？？';
+				});
+			}
+		}
+
+		/* demo-only reset button lives on the combat page (world content) */
+		const btnReset = document.createElement('div');
+		btnReset.className = 'phys small-btn';
+		btnReset.innerHTML = '<div class="phys-face">重置演示（demo）</div>';
+		btnReset.style.width = '130px';
+		world.appendChild(btnReset);
+
+		$('btnLeave').addEventListener('click', () => { if (!dragMoved) goSelect(); });
+		btnReset.addEventListener('click', goReset);
+		$('btnReroll').addEventListener('click', () => {});
+		$('btnOpts').addEventListener('click', () => {});
+
+		/* ===================== key card enlarge (PopUpCard analogue) ===================== */
+		const shade = $('shade');
+		let enlarged = null;   /* { el, x, y, s, z } home snapshot */
+		function openEnlarge(el) {
+			if (enlarged) closeEnlarge();
+			enlarged = { el: el, x: parseFloat(el.style.left), y: parseFloat(el.style.top), s: KEY_CARD_SCALE, z: el.style.zIndex };
+			el.style.zIndex = 90;
+			shade.classList.add('on');
+			const to = { x: PAGE_W / 2 - CARD_W / 2, y: SELECT_TOP + PAGE_H / 2 - CARD_H / 2, s: 1.15 };
+			el.getAnimations().forEach(a => a.cancel());
+			el.animate(
+				[
+					{ left: enlarged.x + 'px', top: enlarged.y + 'px', transform: 'scale(' + KEY_CARD_SCALE + ')' },
+					{ left: to.x + 'px', top: to.y + 'px', transform: 'scale(' + to.s + ')' },
+				],
+				{ duration: 220, easing: easeValue(), fill: 'forwards' }
+			).finished.catch(() => {}).then(() => {
+				put(el, to.x, to.y);
+				el.style.transform = 'scale(' + to.s + ')';
+			});
+		}
+		function closeEnlarge() {
+			if (!enlarged) return;
+			const h = enlarged;
+			enlarged = null;
+			shade.classList.remove('on');
+			const from = { ...cur(h.el), s: parseFloat((h.el.style.transform.match(/scale\(([\d.]+)\)/) || [])[1]) || KEY_CARD_SCALE };
+			h.el.getAnimations().forEach(a => a.cancel());
+			h.el.animate(
+				[
+					{ left: from.x + 'px', top: from.y + 'px', transform: 'scale(' + from.s + ')' },
+					{ left: h.x + 'px', top: h.y + 'px', transform: 'scale(' + h.s + ')' },
+				],
+				{ duration: 180, easing: easeValue(), fill: 'forwards' }
+			).finished.catch(() => {}).then(() => {
+				put(h.el, h.x, h.y);
+				h.el.style.transform = 'scale(' + h.s + ')';
+				h.el.style.zIndex = h.z;
+			});
+		}
+		shade.addEventListener('click', closeEnlarge);
+
+		/* ===================== drag-up gesture (shop -> select) ===================== */
+		let dragY0 = null, dragMoved = false;
+		camera.addEventListener('pointerdown', e => { dragY0 = e.clientY; dragMoved = false; });
+		camera.addEventListener('pointermove', e => {
+			if (dragY0 === null) return;
+			if (Math.abs(e.clientY - dragY0) > 10) dragMoved = true;
+		});
+		camera.addEventListener('pointerup', e => {
+			if (dragY0 !== null && phase === 'shop' && dragY0 - e.clientY > 60) goSelect();
+			dragY0 = null;
+			setTimeout(() => { dragMoved = false; }, 0);
+		});
+
+		/* ===================== physical state machine (hover/press) ===================== */
+		document.querySelectorAll('.phys').forEach(el => {
+			el.addEventListener('pointerenter', () => el.classList.add('is-hover'));
+			el.addEventListener('pointerleave', () => { el.classList.remove('is-hover'); el.classList.remove('is-pressed'); });
+			el.addEventListener('pointerdown', e => { if (e.button === 0) el.classList.add('is-pressed'); });
+			el.addEventListener('contextmenu', e => e.preventDefault());
+		});
+		window.addEventListener('pointerup', () => {
+			document.querySelectorAll('.phys.is-pressed').forEach(el => el.classList.remove('is-pressed'));
+		});
+
+		/* ===================== entry-mode layout ===================== */
+		/* Places every mode-dependent element; synchronous hard reset to the shop
+		   page. Used at init and whenever 入场方式 changes. */
+		function hardResetLayout() {
+			closeEnlarge();
+			pickedIdx = null;
+			phase = 'shop';
+			const morph = state.entryMode === 'morph';
+			const ct = combatTop();
+			/* camera: instant (no transition) back to the shop view */
+			world.classList.remove('moving');
+			world.style.transform = 'translateY(' + (-SHOP_TOP) + 'px)';
+			/* select-page chrome */
+			panelsOut();
+			/* HP-bar boundary: camera mode pre-splits the select page (user's
+			   fallback ruling); morph mode starts full red so the pick can recede it */
+			$('topoSelGray').classList.toggle('split', !morph);
+			/* combat decor + mode-dependent elements follow combatTop() */
+			center($('stackShadow'), STACK.x + REVEAL.x, ct + STACK.y + REVEAL.y + 30);
+			$('stackShadow').style.transform = 'scale(' + REVEAL.s + ')';
+			center($('stackRed'), STACK.x, ct + STACK.y + STEP);
+			center($('stackGold'), STACK.x + REVEAL.x, ct + STACK.y + REVEAL.y);
+			$('stackGold').style.transform = 'scale(' + REVEAL.s + ')';
+			decor().forEach(el => el.classList.toggle('hidden', morph));
+			/* camera-mode enemy plate (morph flies the candidate's own plate instead) */
+			const ep = $('enemyPlate');
+			ep.style.display = morph ? 'none' : '';
+			$('enemyHpCur').textContent = '-';
+			$('enemyHpMax').textContent = '-';
+			$('enemyPlateName').textContent = '？？？';
+			if (!morph) {
+				positionEnemyPlate();
+			}
+			put(btnReset, 145, ct + 692);
+			btnReset.style.display = morph ? 'none' : '';   /* morph: the select page only becomes combat after the pick */
+			put($('tagCombat'), 10, ct + 8);
+			$('tagCombat').style.display = morph ? 'none' : '';
+			put($('tagShop'), 10, SHOP_TOP + 8);
+			/* candidate plates + key cards back to their panel slots */
+			plates.forEach((plate, i) => {
+				put(plate, plateHome[i].x, plateHome[i].y);
+				plate.style.transform = 'none';
+				plate.style.zIndex = 7;
+				plate.style.transitionDelay = '0ms';
+				plate.style.opacity = '0';
+			});
+			keyCards.forEach((el, idx) => {
+				const i = Math.floor(idx / 3), j = idx % 3;
+				center(el, PANEL_X + KEY_CX[j], SELECT_TOP + PANEL_Y[i] + KEY_CY);
+				el.style.transform = 'scale(' + KEY_CARD_SCALE + ')';
+				el.classList.remove('is-back');
+				el.style.zIndex = 6;
+				el.style.transitionDelay = '0ms';
+				el.style.opacity = '0';
+			});
+			placeShared('shop');
+		}
+
+		/* ===================== params bar ===================== */
+		(function buildControls() {
+			const host = document.getElementById('paramsInner');
+			PARAMS.forEach(p => {
+				state[p.key] = p.def;
+				const wrap = document.createElement('label');
+				wrap.className = 'ctl';
+				const name = document.createElement('span');
+				name.textContent = p.label;
+				wrap.appendChild(name);
+				let input, val;
+				if (p.type === 'select') {
+					input = document.createElement('select');
+					p.options.forEach(([v, l]) => {
+						const o = document.createElement('option');
+						o.value = v; o.textContent = l;
+						input.appendChild(o);
+					});
+					input.value = p.def;
+				} else {
+					input = document.createElement('input');
+					input.type = 'range';
+					input.min = p.min; input.max = p.max; input.step = p.step; input.value = p.def;
+					val = document.createElement('span');
+					val.className = 'val';
+				}
+				input.addEventListener('input', () => {
+					state[p.key] = input.type === 'range' ? Number(input.value) : input.value;
+					applyEase();
+					if (val) val.textContent = input.value + (p.unit || '');
+					if (p.key === 'entryMode') hardResetLayout();
+					else if (phase === 'shop') placeShared('shop'); /* enemySlide preview */
+				});
+				wrap.appendChild(input);
+				if (val) { val.textContent = p.def + (p.unit || ''); wrap.appendChild(val); }
+				host.appendChild(wrap);
+			});
+			applyEase();
+			hardResetLayout();
+			const btnCopy = document.createElement('button');
+			btnCopy.className = 'p-btn';
+			btnCopy.textContent = '复制规格 JSON';
+			const btnResetParams = document.createElement('button');
+			btnResetParams.className = 'p-btn';
+			btnResetParams.textContent = '重置';
+			const status = document.createElement('span');
+			status.id = 'copyStatus';
+			host.appendChild(btnCopy);
+			host.appendChild(btnResetParams);
+			host.appendChild(status);
+			btnCopy.addEventListener('click', () => {
+				navigator.clipboard.writeText(JSON.stringify(state, null, '\t')).then(() => {
+					status.textContent = '已复制';
+					setTimeout(() => status.textContent = '', 1200);
+				});
+			});
+			btnResetParams.addEventListener('click', () => {
+				host.querySelectorAll('.ctl').forEach((wrap, i) => {
+					const p = PARAMS[i];
+					state[p.key] = p.def;
+					const input = wrap.querySelector('input,select');
+					input.value = p.def;
+					const val = wrap.querySelector('.val');
+					if (val) val.textContent = p.def + (p.unit || '');
+				});
+				applyEase();
+				hardResetLayout();
+			});
+		})();
+	</script>
+</body>
+</html>
