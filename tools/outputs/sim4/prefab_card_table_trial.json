@@ -17,7 +17,8 @@
 		"is_start_card": false,
 		"tags": [
 			"DeathRattle",
-			"Enhance"
+			"Enhance",
+			"MultiAttack"
 		],
 		"source_file": "AVENGER_4.0.prefab"
 	},
@@ -65,7 +66,7 @@
 	{
 		"cid": "BEAST_REVIVER",
 		"display_name": "马戏团的地下室",
-		"card_desc": "攻击;复活 <b>1</b> 友方实体",
+		"card_desc": "攻击;每回合一次,复活 <b>1</b> 友方实体",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 1,
@@ -212,7 +213,7 @@
 	{
 		"cid": "CURSE_SUMMONER",
 		"display_name": "走阴人",
-		"card_desc": "复活 <b>1</b> 友方;复活 <b>1</b> 敌方诅咒",
+		"card_desc": "复活 <b>1</b> 敌方诅咒;每回合一次,复活 <b>1</b> 友方",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -386,7 +387,7 @@
 	{
 		"cid": "DUO_REVIVER",
 		"display_name": "阴婚",
-		"card_desc": "复活 <b>2</b> 友方✦✦卡",
+		"card_desc": "每回合一次,复活 <b>2</b> 友方✦✦卡",
 		"rarity": "2_Rare",
 		"rarity_field": 2,
 		"printed_attack": 0,
@@ -407,7 +408,7 @@
 	{
 		"cid": "ELITE_REVIVER",
 		"display_name": "镀金圣髑",
-		"card_desc": "攻击;复活 <b>1</b> 被强化过的友方实体",
+		"card_desc": "攻击;每回合一次,复活 <b>1</b> 被强化过的友方实体",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 1,
@@ -596,7 +597,7 @@
 	{
 		"cid": "GRAVE_HEXER",
 		"display_name": "降头师",
-		"card_desc": "复活 <b>1</b> 友方;强化 <b>1</b> 敌方诅咒",
+		"card_desc": "强化 <b>1</b> 敌方诅咒;每回合一次,复活 <b>1</b> 友方",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
@@ -682,7 +683,7 @@
 	{
 		"cid": "GRAVE_ROBBER",
 		"display_name": "食尸鬼",
-		"card_desc": "复活 <b>1</b> 攻击力最高敌方;攻击力变为该卡攻击力; 攻击",
+		"card_desc": "复活 <b>1</b> 攻击力最高敌方;攻击力变为该卡攻击力;攻击",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -766,7 +767,7 @@
 	{
 		"cid": "KINGSLAYER",
 		"display_name": "火刑柱",
-		"card_desc": "埋葬 <b>1</b> 攻击力最高敌方;复活 <b>1</b> 友方",
+		"card_desc": "埋葬 <b>1</b> 攻击力最高敌方;每回合一次,复活 <b>1</b> 友方",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -831,7 +832,7 @@
 	{
 		"cid": "MASS_REVIVER",
 		"display_name": "空墓园",
-		"card_desc": "复活 <b>3</b> 友方✦卡",
+		"card_desc": "每回合一次,复活 <b>3</b> 友方✦卡",
 		"rarity": "2_Rare",
 		"rarity_field": 2,
 		"printed_attack": 0,
@@ -916,9 +917,9 @@
 	{
 		"cid": "NECROMANCER",
 		"display_name": "招魂执事",
-		"card_desc": "复活 <b>1</b> 友方;苏醒:复活 <b>1</b> 友方",
-		"rarity": "1_Uncommon",
-		"rarity_field": 1,
+		"card_desc": "苏醒:复活 <b>1</b> 友方;每回合一次,复活 <b>1</b> 友方",
+		"rarity": "2_Rare",
+		"rarity_field": 2,
 		"printed_attack": 0,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
@@ -1113,7 +1114,7 @@
 	{
 		"cid": "RELIC_CURSE_REVIVAL",
 		"display_name": "耳语唤尸",
-		"card_desc": "被动:敌方诅咒揭晓时,复活 <b>1</b> 友方",
+		"card_desc": "被动:敌方诅咒揭晓时,每回合三次,复活 <b>1</b> 友方",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1315,7 +1316,7 @@
 	{
 		"cid": "REVIVE_SUMMONER",
 		"display_name": "复活见证人",
-		"card_desc": "复活 <b>1</b> 友方;生成 <b>1</b> 信徒",
+		"card_desc": "生成 <b>1</b> 信徒;每回合一次,复活 <b>1</b> 友方",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1378,7 +1379,7 @@
 		"source_file": "RIFT_ACOLYTE.prefab"
 	},
 	{
-		"cid": "RIFT_GUIDE",
+		"cid": "RIFT_GUIDE_4.0",
 		"display_name": "献祭司事",
 		"card_desc": "放逐 <b>1</b> 友方信徒: 埋葬 <b>2</b> 敌方现象",
 		"rarity": "1_Uncommon",
@@ -1397,7 +1398,7 @@
 			"Exile",
 			"Bury"
 		],
-		"source_file": "RIFT_GUIDE.prefab"
+		"source_file": "RIFT_GUIDE_4.0.prefab"
 	},
 	{
 		"cid": "RIFT_HATCHERY",
@@ -1512,7 +1513,7 @@
 	{
 		"cid": "RIFT_REVIVER",
 		"display_name": "以人易物",
-		"card_desc": "放逐 <b>1</b> 友方信徒: 复活 <b>2</b> 友方现象",
+		"card_desc": "放逐 <b>1</b> 友方信徒: 每回合两次,复活 <b>2</b> 友方现象",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1534,7 +1535,7 @@
 	{
 		"cid": "RIFT_SHEPHERD",
 		"display_name": "牧羊人",
-		"card_desc": "攻击;复活 <b>1</b> 张tag为[<tag:Believer>]的友方卡",
+		"card_desc": "攻击;每回合一次,复活 <b>1</b> 张tag为[<tag:Believer>]的友方卡",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 1,
@@ -1687,7 +1688,7 @@
 	{
 		"cid": "SOUL_TRADER",
 		"display_name": "以命换命",
-		"card_desc": "复活 <b>2</b> 友方;埋葬 <b>1</b> 友方",
+		"card_desc": "埋葬 <b>1</b> 友方;每回合一次,复活 <b>2</b> 友方",
 		"rarity": "1_Uncommon",
 		"rarity_field": 1,
 		"printed_attack": 0,
@@ -1731,14 +1732,14 @@
 	{
 		"cid": "SPIRIT_CALLER",
 		"display_name": "降灵会",
-		"card_desc": "复活 <b>1</b> 友方现象",
+		"card_desc": "每回合两次,复活 <b>1</b> 友方现象",
 		"rarity": "0_Common",
 		"rarity_field": 0,
 		"printed_attack": 0,
 		"attack_growth": 0,
 		"extra_attack_times": 0,
-		"card_type": 1,
-		"is_creature": true,
+		"card_type": 0,
+		"is_creature": false,
 		"is_passive": false,
 		"utility_kind": 0,
 		"is_utility_passive": false,
@@ -2337,7 +2338,7 @@
 		"source_file": "WEAKENING_FIELD.prefab"
 	},
 	{
-		"cid": "WEAPON_SPIRIT",
+		"cid": "WEAPON_SPIRIT_4.0",
 		"display_name": "妖刀",
 		"card_desc": "被动:友方被强化时:强化 <b>1</b> 该友方",
 		"rarity": "2_Rare",
@@ -2357,7 +2358,7 @@
 			"EnhanceReaction",
 			"Passive"
 		],
-		"source_file": "WEAPON_SPIRIT.prefab"
+		"source_file": "WEAPON_SPIRIT_4.0.prefab"
 	},
 	{
 		"cid": "WOKEN_BLADE",

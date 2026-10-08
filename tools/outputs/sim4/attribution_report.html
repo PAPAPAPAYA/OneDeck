@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sim4 归因报告 — OneDeck 4.0 全池(2026-10-06)</title>
+<style>
+	body {
+		font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+		background: #f4f6f9;
+		color: #1f2733;
+		margin: 0;
+		padding: 24px 16px 48px;
+	}
+	.wrap { max-width: 1080px; margin: 0 auto; }
+	h1 { font-size: 22px; margin: 0 0 4px; }
+	.sub { color: #5a6572; font-size: 13px; margin-bottom: 18px; }
+	.chip {
+		display: inline-block; background: #e8eef7; color: #274b8f;
+		border-radius: 10px; padding: 1px 10px; font-size: 12px; margin-right: 6px;
+	}
+	h2 { font-size: 16px; margin: 26px 0 8px; border-left: 4px solid #274b8f; padding-left: 8px; }
+	.card {
+		background: #fff; border: 1px solid #e2e7ee; border-radius: 10px;
+		padding: 14px 16px; margin-bottom: 14px;
+	}
+	.kpis { display: flex; gap: 12px; flex-wrap: wrap; }
+	.kpi {
+		flex: 1 1 200px; background: #fff; border: 1px solid #e2e7ee;
+		border-radius: 10px; padding: 12px 14px;
+	}
+	.kpi .v { font-size: 22px; font-weight: 700; }
+	.kpi .l { font-size: 12px; color: #5a6572; margin-top: 2px; }
+	.ok { color: #1e7d46; }
+	.warn { color: #c0392b; }
+	table { border-collapse: collapse; width: 100%; font-size: 13px; }
+	th, td { border-bottom: 1px solid #edf0f4; padding: 5px 8px; text-align: left; }
+	th { color: #5a6572; font-weight: 600; font-size: 12px; background: #f8fafc; }
+	td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+	.pos { color: #c0392b; font-weight: 600; }
+	.neg { color: #1e7d46; font-weight: 600; }
+	.badge {
+		display: inline-block; border-radius: 9px; padding: 0 8px;
+		font-size: 11px; font-weight: 600;
+	}
+	.b-over { background: #fbe9e7; color: #c0392b; }
+	.b-under { background: #e8f5ee; color: #1e7d46; }
+	.b-p1 { background: #c0392b; color: #fff; }
+	.b-p2 { background: #e67e22; color: #fff; }
+	.b-p3 { background: #274b8f; color: #fff; }
+	.note { font-size: 12px; color: #5a6572; margin: 6px 0 0; }
+	.big { font-size: 15px; font-weight: 700; }
+	ul { margin: 6px 0; padding-left: 20px; }
+	li { margin: 3px 0; font-size: 13.5px; }
+	code {
+		background: #f0f3f7; border-radius: 4px; padding: 1px 6px;
+		font-size: 12px; font-family: Consolas, monospace;
+	}
+</style>
+</head>
+<body>
+<div class="wrap">
+	<h1>Sim4 归因报告 — OneDeck 4.0 全池(112 张)</h1>
+	<div class="sub">
+		2026-10-06 · 归因三步收官 ·
+		<span class="chip">数据 matches/</span>
+		<span class="chip">枚举 pairs/</span>
+		<span class="chip">回归 regression/</span>
+		<span class="chip">真值源:docs/Sim4_Handoff_2026-09-16.md + 台账二·十~二·十二</span>
+	</div>
+
+	<div class="kpis">
+		<div class="kpi"><div class="v">6,400 场</div><div class="l">Step1 逐场导出(4 配置×8 批次×200,与报告同种子对账一致)</div></div>
+		<div class="kpi"><div class="v">36,630 场</div><div class="l">Step2 两卡枚举(6328 组合×3 种子×2 配置)</div></div>
+		<div class="kpi"><div class="v ok">非终止核对 ✓</div><div class="l">门禁后无无限组合:diverged 全部 = L0 揭晓预算兜底,无真死锁</div></div>
+		<div class="kpi"><div class="v">R² 0.465 / 0.269</div><div class="l">Step3 伤害模型(n=85k,p99 截尾)/ 胜率模型(n=10.8k)</div></div>
+	</div>
+
+	<h2>伤害模型关键系数(y = 该卡本场伤害,p99=56 截尾)</h2>
+	<div class="card">
+		<table>
+			<tr><th>变量</th><th class="num">系数</th><th class="num">t</th><th>解读</th></tr>
+			<tr><td>is_creature</td><td class="num pos">+7.59</td><td class="num">+73.5</td><td>实体卡直伤基本盘</td></tr>
+			<tr><td>tag_MultiAttack</td><td class="num pos">+7.46</td><td class="num">+46.3</td><td>多段攻击的段数收益</td></tr>
+			<tr><td>printed_attack(每点)</td><td class="num pos">+2.13</td><td class="num">+39.2</td><td>攻力线性兑现</td></tr>
+			<tr><td>rounds(每 10 轮)</td><td class="num pos">+1.35</td><td class="num">+26.5</td><td>长局滚雪球(HP50 更明显)</td></tr>
+			<tr><td>tag_Revive</td><td class="num neg">−1.75</td><td class="num">−18.4</td><td>复活轴不靠直伤</td></tr>
+			<tr><td>tag_Curse</td><td class="num neg">−1.34</td><td class="num">−16.4</td><td>诅咒轴伤害走转化通路</td></tr>
+		</table>
+		<p class="note">重尾实证:截尾前 top 1% 行占原始总伤害 ≈100%(诅咒环场);未截尾结论会被极端场主导。</p>
+	</div>
+
+	<h2>胜率模型关键系数(y = 本侧获胜,平局剔除)</h2>
+	<div class="card">
+		<table>
+			<tr><th>变量</th><th class="num">系数(pp/张)</th><th class="num">t</th><th>解读</th></tr>
+			<tr><td>对手 tag_Enhance 数</td><td class="num pos">−7.8</td><td class="num">−15.8</td><td>对手强化轴 = 最强胜率威胁(HP50 诅咒环的回归面)</td></tr>
+			<tr><td>tag_MultiAttack</td><td class="num neg">+9.2</td><td class="num">+9.6</td><td>己方多段最值钱</td></tr>
+			<tr><td>tag_Enhance</td><td class="num neg">+6.4</td><td class="num">+10.8</td><td>己方强化轴同样抬胜率</td></tr>
+			<tr><td>utility_passive</td><td class="num pos">−7.5</td><td class="num">−9.2</td><td>占卡位稀释代价(呼应 09-16 的 28-33% win%)</td></tr>
+			<tr><td>rarity_rare</td><td class="num pos">−3.2</td><td class="num">−5.7</td><td>池级信号:Rare 偏支援/现象,非单卡问题(注意与轴共线)</td></tr>
+		</table>
+	</div>
+
+	<h2>超模榜(残差 t,正 = 超出特征模型预期)</h2>
+	<div class="card">
+		<table>
+			<tr><th>卡</th><th>中文名</th><th class="num">中位 Dmg</th><th class="num">t</th><th>定性</th></tr>
+			<tr><td>RELIC_RIFT_OVERRIDE</td><td>伪经</td><td class="num">0</td><td class="num pos">+34.8</td><td>中位 0 尾部爆发型(信徒改写环)</td></tr>
+			<tr><td>GRAVE_GIANT</td><td>骸骨巨人</td><td class="num">20.0</td><td class="num pos">+24.5</td><td>墓地规模成长</td></tr>
+			<tr><td>GRAVE_ROBBER</td><td>食尸鬼</td><td class="num">12.0</td><td class="num pos">+18.2</td><td>攻力窃取兑现</td></tr>
+			<tr><td>MIMIC_BLADE</td><td>模仿犯</td><td class="num pos">24.0</td><td class="num pos">+15.9</td><td>全场最高中位——路线 B ×2 常规局即兑现</td></tr>
+			<tr><td>DEATHBED_PORTER</td><td>抬棺人</td><td class="num">16.0</td><td class="num pos">+13.9</td><td>遗言攻+复活 双段收益</td></tr>
+		</table>
+	</div>
+
+	<h2>欠模榜(对照解读:支援型 0 伤卡 ≠ 弱卡)</h2>
+	<div class="card">
+		<table>
+			<tr><th>卡</th><th>中文名</th><th class="num">中位 Dmg</th><th class="num">t</th><th>解读</th></tr>
+			<tr><td>TWIN_STRIKER</td><td>连体人</td><td class="num">8.0</td><td class="num neg">−15.6</td><td><span class="big">同位对比信号</span>:与模仿犯同为 ATK1×2,固定攻力版显著弱于复制攻力版</td></tr>
+			<tr><td>RELIC_DEATH_KNELL</td><td>丧钟</td><td class="num">0</td><td class="num neg">−24.9</td><td>引擎支援位(苏醒触发遗言),直伤模型本就不适用</td></tr>
+			<tr><td>FINAL_ESCORT</td><td>扶灵人</td><td class="num">4.0</td><td class="num neg">−21.1</td><td>回合末延迟复活,收益在节奏不在伤害</td></tr>
+			<tr><td>HEXBLADE</td><td>咒刃</td><td class="num">0</td><td class="num neg">−13.0</td><td>攻击转化强化,直伤被设计性转移</td></tr>
+		</table>
+	</div>
+
+	<h2>两卡枚举:超模组合信号</h2>
+	<div class="card">
+		<ul>
+			<li><span class="big warn">蛊噬自镜像 = 1.24×10<sup>51</sup></span>(10v10_hp50;6v6 亦 1.27×10<sup>31</sup>)——「强化2 + 每3攻再强化1」对诅咒攻自乘正反馈,<b>2 卡即爆</b>;blowout Top10 全部含蛊噬(配妖刀/报丧人/蛊婆/养蛊人/咒茧/降头师/战号/收蛊人任意一张)</li>
+			<li><span class="big">血契 = 通用放大器</span>:厉鬼+血契 稳定双 blowout;遗赠+血契 单刀 104(HP25 的 4 倍,全场仅 2 例 one_hit)</li>
+			<li>纯对抓不到 09-16 咒刃×萨满环——环需第三方种子卡自举(校准已用三卡探针 + 实战轴数据双验证:10<sup>10</sup>~10<sup>22</sup> 全部被 flag 抓住,小额零误报)</li>
+		</ul>
+	</div>
+
+	<h2>待拍板设计清单(按优先级)</h2>
+	<div class="card">
+		<table>
+			<tr><th>#</th><th>议题</th><th>数据依据</th></tr>
+			<tr><td><span class="badge b-p1">P1</span></td><td>蛊噬「强化2+每3攻再强化1」设成长上限</td><td>自镜像 1.24×10<sup>51</sup>,2 卡即爆</td></tr>
+			<tr><td><span class="badge b-p2">P2</span></td><td>血契「攻击转化强化」放大器定位</td><td>厉鬼+血契双 blowout、遗赠+血契单刀 104</td></tr>
+			<tr><td><span class="badge b-p2">P3</span></td><td>连体人 vs 模仿犯 同位差(固定攻力 vs 复制攻力)</td><td>残差 −15.6 vs +15.9,中位 8 vs 24</td></tr>
+			<tr><td><span class="badge b-p3">P4</span></td><td>Rare 池胜率构成偏支援</td><td>rarity_rare −3.2pp(池级,非单卡)</td></tr>
+			<tr><td><span class="badge b-p3">P5</span></td><td>诅咒互馈环上限(原 §五.3)</td><td>实战轴 10<sup>22</sup> 信号 + 蛊噬数据已就位</td></tr>
+		</table>
+	</div>
+
+	<h2>三防护与复现</h2>
+	<div class="card">
+		<ul>
+			<li>重尾截尾:p99=56(796 行被截);批次协变量:axis/config 哑元入模,共线显式声明;台账近似项已写入报告</li>
+			<li>复现:<code>--export-matches-40 --sessions 200</code> → <code>--pairs-40 --seeds 3</code> → <code>--regress-40</code>(全部同种子可复现);引擎健康:<code>--selftest-40</code></li>
+			<li>局限:镜像对卡组是 sim 重构,组合实战可达性需结合轴条件概率判读</li>
+		</ul>
+	</div>
+</div>
+</body>
+</html>

@@ -1,156 +1,156 @@
 # Sim4 报告 — 10v10, HP=50
 
-sessions/批次: 200; uniform combats: 198; diverged: 2
+sessions/批次: 200; uniform combats: 196; diverged: 4
 
 ### 裸强度(均匀随机环境)
 
 | Card | 中文名 | Dmg/Round | Reveals/Round | Awakens/Round | Burials/Round | Presence | Win% |
 |---|---|---|---|---|---|---|---|
-| CURSE_EATER | 吞蛊人 | 2790780767709869113344.00 | 0.15 | 0.02 | 0.19 | 32 | 41% |
-| GRAVE_ROBBER | 食尸鬼 | 837.47 | 0.16 | 0.02 | 0.20 | 36 | 64% |
-| COMBO_STARTER | 渴血者 | 17.88 | 0.17 | 0.02 | 0.24 | 37 | 38% |
-| MIMIC_BLADE | 模仿犯 | 5.27 | 0.12 | 0.02 | 0.15 | 34 | 76% |
-| GRAVE_FIST | 血祭 | 2.55 | 0.16 | 0.04 | 0.20 | 41 | 59% |
-| DECIMATION | 什一抽杀 | 2.37 | 0.17 | 0.02 | 0.22 | 37 | 35% |
-| SPIKE_SKELETON_4.0 | 带刺的标本 | 0.94 | 0.12 | 0.03 | 0.16 | 38 | 55% |
-| GRAVE_GIANT | 骸骨巨人 | 0.89 | 0.13 | 0.03 | 0.16 | 41 | 76% |
-| DEATHBED_PORTER | 抬棺人 | 0.71 | 0.11 | 0.02 | 0.15 | 36 | 78% |
-| QUAD_STRIKER | 百臂巨人 | 0.61 | 0.13 | 0.02 | 0.18 | 39 | 69% |
-| REVIVING_STRIKER | 无头武生 | 0.61 | 0.25 | 0.15 | 0.29 | 31 | 65% |
-| AVENGER_4.0 | 厉鬼 | 0.60 | 0.16 | 0.04 | 0.21 | 44 | 48% |
-| WAKING_FIGHTER | 回魂尸 | 0.47 | 0.19 | 0.05 | 0.26 | 47 | 47% |
-| GRAVE_MILLER | 血肉磨坊 | 0.43 | 0.20 | 0.02 | 0.24 | 44 | 57% |
-| AWAKENED_REAPER | 勾魂人 | 0.40 | 0.18 | 0.03 | 0.23 | 42 | 55% |
-| MILLBLADE | 凌迟 | 0.38 | 0.17 | 0.04 | 0.22 | 35 | 49% |
-| BLACKSMITH_4.0 | 骨匠 | 0.38 | 0.13 | 0.01 | 0.17 | 42 | 52% |
-| GRAVE_PUNCH_4.0 | 剜心祭 | 0.37 | 0.18 | 0.04 | 0.22 | 37 | 35% |
-| EULOGIST | 司悼人 | 0.37 | 0.18 | 0.03 | 0.23 | 46 | 35% |
-| RIFT_INSECT_4.0 | 新皈依者 | 0.35 | 0.14 | 0.03 | 0.19 | 35 | 40% |
-| SOLDIER_SKELETON_4.0 | 骸骨哨兵 | 0.34 | 0.25 | 0.17 | 0.31 | 32 | 56% |
-| LAST_GIFT | 遗赠 | 0.33 | 0.09 | 0.01 | 0.13 | 30 | 73% |
-| SLIME_4.0 | 管道里的活物 | 0.31 | 0.40 | 0.03 | 0.53 | 31 | 39% |
-| GRAVE_DREDGER | 掘墓人 | 0.31 | 0.14 | 0.02 | 0.19 | 35 | 49% |
-| WOKEN_BLADE | 尸变 | 0.30 | 0.11 | 0.01 | 0.13 | 29 | 52% |
-| UNDYING_WARRIOR | 钉不死的人 | 0.29 | 0.12 | 0.02 | 0.17 | 33 | 48% |
-| CURSE_THIRST_BEAST_4.0 | 噬咒兽 | 0.29 | 0.18 | 0.05 | 0.25 | 37 | 65% |
-| GRAVE_TOGETHER_4.0 | 同葬 | 0.28 | 0.16 | 0.01 | 0.23 | 43 | 60% |
-| SWARM_QUEEN | 黑圣母 | 0.27 | 0.10 | 0.01 | 0.13 | 27 | 44% |
-| RIFT_STRIKER | 鞭笞者 | 0.24 | 0.17 | 0.01 | 0.23 | 43 | 47% |
-| EXILE_BERSERKER | 狂信徒 | 0.23 | 0.18 | 0.03 | 0.23 | 36 | 25% |
-| ELITE_REVIVER | 镀金圣髑 | 0.23 | 0.16 | 0.02 | 0.20 | 40 | 50% |
-| RIFT_SHEPHERD | 牧羊人 | 0.20 | 0.16 | 0.04 | 0.20 | 36 | 67% |
-| FINAL_ESCORT | 扶灵人 | 0.19 | 0.14 | 0.03 | 0.17 | 34 | 56% |
-| BEAST_REVIVER | 马戏团的地下室 | 0.17 | 0.15 | 0.02 | 0.20 | 37 | 38% |
-| SNOWBALL | 蛊王 | 0.16 | 0.12 | 0.03 | 0.16 | 31 | 39% |
-| UNFINISHED_ROBOT_4.0 | 缝合人 | 0.14 | 0.13 | 0.02 | 0.18 | 37 | 35% |
-| COMBO_GRANTER | 执鞭人 | 0.13 | 0.10 | 0.02 | 0.13 | 25 | 52% |
-| TWIN_STRIKER | 连体人 | 0.12 | 0.09 | 0.01 | 0.11 | 20 | 50% |
-| HEXBLADE | 咒刃 | 0.09 | 0.15 | 0.02 | 0.19 | 31 | 35% |
-| REANIMATOR | 百鬼夜行 | 0.08 | 0.20 | 0.02 | 0.25 | 36 | 61% |
-| DOOM_HERALD | 报丧人 | 0.07 | 0.15 | 0.02 | 0.20 | 37 | 41% |
-| HEXER | 蛊婆 | 0.07 | 0.12 | 0.02 | 0.17 | 32 | 31% |
-| CURSE_REVIVER | 收蛊人 | 0.03 | 0.16 | 0.02 | 0.21 | 34 | 53% |
-| SPIRIT_CALLER | 降灵会 | 0.00 | 0.14 | 0.02 | 0.18 | 36 | 44% |
-| FUNERAL_WILL | 冥约 | 0.00 | 0.18 | 0.05 | 0.23 | 31 | 55% |
-| RELIC_HIVE | 以血布道 | 0.00 | 0.00 | 0.00 | 0.00 | 27 | 37% |
-| RELIC_GRAVE_LORD | 白骨王座 | 0.00 | 0.00 | 0.00 | 0.00 | 38 | 42% |
-| UTILITY_SLOT_U_2 | 连魇 | 0.00 | 0.00 | 0.00 | 0.00 | 39 | 41% |
-| CURSE_THIRST_SHAMAN_4.0 | 噬咒萨满 | 0.00 | 0.10 | 0.01 | 0.14 | 32 | 50% |
-| CURSE_GARDENER | 养蛊人 | 0.00 | 0.21 | 0.04 | 0.28 | 42 | 26% |
-| SWARM_CURSER | 诅咒唱诗班 | 0.00 | 0.14 | 0.01 | 0.18 | 35 | 51% |
-| RIFT | RIFT | 0.00 | 11.41 | 0.67 | 17.40 | 0 | 0% |
-| WOKEN_HEX | 咒茧 | 0.00 | 0.16 | 0.03 | 0.21 | 37 | 38% |
-| RIFT_REAPER | 血飨 | 0.00 | 0.12 | 0.01 | 0.17 | 31 | 55% |
-| SACRIFICE_WEAKEST | 替罪羔羊 | 0.00 | 0.17 | 0.01 | 0.21 | 31 | 52% |
-| RELIC_ATTACK_BURIAL | 埋骨地 | 0.00 | 0.00 | 0.00 | 0.00 | 36 | 39% |
-| RELIC_CURSE_GRAVE | 勾魂簿 | 0.00 | 0.00 | 0.00 | 0.00 | 42 | 33% |
-| MASS_REVIVER | 空墓园 | 0.00 | 0.23 | 0.04 | 0.30 | 50 | 44% |
-| RIFT_MEDIUM | 扶乩 | 0.00 | 0.17 | 0.02 | 0.22 | 42 | 55% |
-| JU_ON | JU_ON | 0.00 | 1.31 | 0.54 | 1.68 | 0 | 0% |
-| UTILITY_INCOME_1 | 冥币 | 0.00 | 0.00 | 0.00 | 0.00 | 39 | 41% |
-| UTILITY_TAG_AWAKEN | 惊醒 | 0.00 | 0.00 | 0.00 | 0.00 | 45 | 40% |
-| UTILITY_WEIGHT_R | 梦魇缠身 | 0.00 | 0.00 | 0.00 | 0.00 | 29 | 45% |
-| UTILITY_OPTION_1 | 魇市新摊 | 0.00 | 0.00 | 0.00 | 0.00 | 40 | 42% |
-| UTILITY_CREATURES_1 | 百怪入梦 | 0.00 | 0.00 | 0.00 | 0.00 | 36 | 47% |
-| UTILITY_DISCOUNT_1 | 魇市赊账 | 0.00 | 0.00 | 0.00 | 0.00 | 38 | 39% |
-| DETERIORATION_4.0 | 蛊噬 | 0.00 | 0.18 | 0.01 | 0.23 | 38 | 42% |
-| GRAVE_PUPPETEER | 操尸人 | 0.00 | 0.15 | 0.03 | 0.21 | 39 | 49% |
-| WAR_TRAINER | 开刃 | 0.00 | 0.12 | 0.03 | 0.15 | 29 | 48% |
-| RELIC_DEATH_KNELL | 丧钟 | 0.00 | 0.00 | 0.00 | 0.00 | 33 | 36% |
-| RELIC_GRAVE_CURSE | 积尸气 | 0.00 | 0.00 | 0.00 | 0.00 | 38 | 47% |
-| RELIC_CHAIN_BURIAL | 连坐 | 0.00 | 0.00 | 0.00 | 0.00 | 30 | 33% |
-| RELIC_TALLY | 血账 | 0.00 | 0.00 | 0.00 | 0.00 | 33 | 24% |
-| RELIC_TRAINER | 邪印 | 0.00 | 0.00 | 0.00 | 0.00 | 41 | 66% |
-| LAST_RITES | 安魂弥撒 | 0.00 | 0.12 | 0.01 | 0.15 | 28 | 61% |
-| DUO_REVIVER | 阴婚 | 0.00 | 0.18 | 0.03 | 0.26 | 40 | 40% |
-| RELIC_CURSE_HASTE | 提前发作 | 0.00 | 0.00 | 0.00 | 0.00 | 43 | 42% |
-| UTILITY_OPTION_P_1 | 魇市游摊 | 0.00 | 0.00 | 0.00 | 0.00 | 46 | 33% |
-| NECROMANCER | 招魂执事 | 0.00 | 0.17 | 0.03 | 0.22 | 37 | 51% |
-| REVIVE_SUMMONER | 复活见证人 | 0.00 | 0.24 | 0.04 | 0.28 | 45 | 38% |
-| UTILITY_ODDS_1 | 魇市深处 | 0.00 | 0.00 | 0.00 | 0.00 | 34 | 38% |
-| UTILITY_SPELLS_1 | 死寂的梦 | 0.00 | 0.00 | 0.00 | 0.00 | 38 | 32% |
-| BATTLE_HORN | 股骨号角 | 0.00 | 0.19 | 0.01 | 0.25 | 37 | 59% |
-| SOUL_TRADER | 以命换命 | 0.00 | 0.11 | 0.01 | 0.14 | 26 | 46% |
-| UTILITY_ODDS_2 | 窥魇镜 | 0.00 | 0.00 | 0.00 | 0.00 | 39 | 54% |
-| RELIC_CURSE_REVIVAL | 耳语唤尸 | 0.00 | 0.00 | 0.00 | 0.00 | 33 | 48% |
-| UTILITY_TAG_CURSE | 噩梦 | 0.00 | 0.00 | 0.00 | 0.00 | 34 | 18% |
-| UTILITY_SLOT_U_1 | 初魇 | 0.00 | 0.00 | 0.00 | 0.00 | 37 | 62% |
-| SACRIFICIAL_SPIRIT | 活殉 | 0.00 | 0.19 | 0.02 | 0.28 | 41 | 44% |
-| RIFT_HATCHERY | 黑弥撒 | 0.00 | 0.07 | 0.07 | 0.29 | 34 | 32% |
-| GRAVE_HEXER | 降头师 | 0.00 | 0.14 | 0.02 | 0.19 | 35 | 29% |
-| RIFT_ACOLYTE | 侍僧 | 0.00 | 0.21 | 0.03 | 0.25 | 42 | 43% |
-| WEAPON_SPIRIT | 妖刀 | 0.00 | 0.00 | 0.00 | 0.00 | 33 | 39% |
-| MASS_SACRIFICE | 集体自焚 | 0.00 | 0.10 | 0.00 | 0.13 | 28 | 25% |
-| RELIC_BLOOD_PACT | 血契 | 0.00 | 0.00 | 0.00 | 0.00 | 35 | 0% |
-| CURSE_SUMMONER | 走阴人 | 0.00 | 0.14 | 0.02 | 0.20 | 38 | 32% |
-| RELIC_ATTACK_HEX | 饲咒 | 0.00 | 0.00 | 0.00 | 0.00 | 39 | 54% |
-| DEATHBED_GRANT | 垂死反扑 | 0.00 | 0.00 | 0.00 | 0.00 | 36 | 61% |
-| UTILITY_SLOT_R | 深魇 | 0.00 | 0.00 | 0.00 | 0.00 | 41 | 41% |
-| RELIC_WHITE_BANNER | 引魂幡 | 0.00 | 0.00 | 0.00 | 0.00 | 30 | 53% |
-| UTILITY_WEIGHT_U | 魇影幢幢 | 0.00 | 0.00 | 0.00 | 0.00 | 35 | 46% |
-| UTILITY_REROLL_1 | 噩梦重播 | 0.00 | 0.00 | 0.00 | 0.00 | 20 | 40% |
-| UTILITY_HALFPRICE_1 | 魇市半价 | 0.00 | 0.00 | 0.00 | 0.00 | 40 | 35% |
-| RIFT_REVIVER | 以人易物 | 0.00 | 0.20 | 0.03 | 0.25 | 40 | 68% |
-| FLURRY_REVIVER | 死不瞑目 | 0.00 | 0.15 | 0.02 | 0.20 | 34 | 35% |
-| KINGSLAYER | 火刑柱 | 0.00 | 0.11 | 0.02 | 0.15 | 29 | 48% |
-| RELIC_RIFT_OVERRIDE | 伪经 | 0.00 | 0.00 | 0.00 | 0.00 | 34 | 38% |
-| RIFT_PRIEST | 施洗者 | 0.00 | 0.12 | 0.01 | 0.15 | 34 | 50% |
-| UTILITY_TAG_REVIVE | 亡者入梦 | 0.00 | 0.00 | 0.00 | 0.00 | 31 | 45% |
-| WEAKENING_FIELD | 瘴气 | 0.00 | 0.18 | 0.02 | 0.22 | 31 | 52% |
-| RIFT_GUIDE | 献祭司事 | 0.00 | 0.21 | 0.04 | 0.27 | 46 | 26% |
+| UNFINISHED_ROBOT_4.0 | 缝合人 | 2072.56 | 0.14 | 0.02 | 0.20 | 27 | 26% |
+| EXILE_BERSERKER | 狂信徒 | 484.45 | 0.14 | 0.01 | 0.20 | 34 | 47% |
+| DEATHBED_PORTER | 抬棺人 | 27.27 | 0.10 | 0.01 | 0.14 | 29 | 48% |
+| HEXER | 蛊婆 | 11.47 | 0.16 | 0.03 | 0.20 | 31 | 48% |
+| SPIKE_SKELETON_4.0 | 带刺的标本 | 11.32 | 0.12 | 0.02 | 0.16 | 36 | 78% |
+| AWAKENED_REAPER | 勾魂人 | 3.13 | 0.17 | 0.05 | 0.22 | 40 | 57% |
+| WAKING_FIGHTER | 回魂尸 | 3.07 | 0.13 | 0.02 | 0.17 | 35 | 51% |
+| RIFT_STRIKER | 鞭笞者 | 1.19 | 0.17 | 0.04 | 0.22 | 34 | 38% |
+| MIMIC_BLADE | 模仿犯 | 1.14 | 0.11 | 0.02 | 0.15 | 42 | 71% |
+| DECIMATION | 什一抽杀 | 1.08 | 0.15 | 0.03 | 0.20 | 44 | 59% |
+| GRAVE_GIANT | 骸骨巨人 | 0.96 | 0.12 | 0.03 | 0.17 | 29 | 59% |
+| GRAVE_ROBBER | 食尸鬼 | 0.85 | 0.18 | 0.04 | 0.25 | 45 | 38% |
+| AVENGER_4.0 | 厉鬼 | 0.77 | 0.11 | 0.02 | 0.14 | 31 | 58% |
+| QUAD_STRIKER | 百臂巨人 | 0.71 | 0.14 | 0.02 | 0.19 | 42 | 48% |
+| SOLDIER_SKELETON_4.0 | 骸骨哨兵 | 0.62 | 0.36 | 0.24 | 0.44 | 44 | 52% |
+| GRAVE_PUNCH_4.0 | 剜心祭 | 0.58 | 0.12 | 0.02 | 0.16 | 25 | 52% |
+| LAST_GIFT | 遗赠 | 0.54 | 0.14 | 0.03 | 0.20 | 40 | 55% |
+| GRAVE_FIST | 血祭 | 0.53 | 0.14 | 0.04 | 0.18 | 36 | 56% |
+| TWIN_STRIKER | 连体人 | 0.43 | 0.16 | 0.02 | 0.20 | 39 | 56% |
+| BLACKSMITH_4.0 | 骨匠 | 0.42 | 0.16 | 0.05 | 0.20 | 38 | 58% |
+| WOKEN_BLADE | 尸变 | 0.41 | 0.16 | 0.02 | 0.20 | 34 | 50% |
+| RIFT_INSECT_4.0 | 新皈依者 | 0.40 | 0.16 | 0.02 | 0.19 | 35 | 60% |
+| CURSE_EATER | 吞蛊人 | 0.37 | 0.12 | 0.02 | 0.17 | 35 | 46% |
+| GRAVE_DREDGER | 掘墓人 | 0.37 | 0.16 | 0.05 | 0.22 | 38 | 50% |
+| COMBO_STARTER | 渴血者 | 0.32 | 0.17 | 0.02 | 0.21 | 43 | 37% |
+| UNDYING_WARRIOR | 钉不死的人 | 0.32 | 0.13 | 0.02 | 0.20 | 33 | 36% |
+| SNOWBALL | 蛊王 | 0.31 | 0.11 | 0.01 | 0.16 | 34 | 53% |
+| MILLBLADE | 凌迟 | 0.30 | 0.14 | 0.01 | 0.18 | 35 | 43% |
+| EULOGIST | 司悼人 | 0.29 | 0.14 | 0.03 | 0.19 | 34 | 35% |
+| SWARM_QUEEN | 黑圣母 | 0.29 | 0.10 | 0.01 | 0.13 | 27 | 56% |
+| FINAL_ESCORT | 扶灵人 | 0.25 | 0.18 | 0.04 | 0.24 | 46 | 46% |
+| GRAVE_MILLER | 血肉磨坊 | 0.25 | 0.11 | 0.00 | 0.14 | 28 | 46% |
+| CURSE_THIRST_BEAST_4.0 | 噬咒兽 | 0.24 | 0.11 | 0.02 | 0.14 | 28 | 54% |
+| GRAVE_TOGETHER_4.0 | 同葬 | 0.22 | 0.18 | 0.02 | 0.23 | 40 | 42% |
+| SLIME_4.0 | 管道里的活物 | 0.22 | 0.38 | 0.02 | 0.50 | 23 | 39% |
+| RIFT_SHEPHERD | 牧羊人 | 0.21 | 0.17 | 0.03 | 0.22 | 35 | 31% |
+| HEXBLADE | 咒刃 | 0.21 | 0.14 | 0.02 | 0.20 | 30 | 30% |
+| ELITE_REVIVER | 镀金圣髑 | 0.20 | 0.17 | 0.02 | 0.23 | 34 | 44% |
+| COMBO_GRANTER | 执鞭人 | 0.19 | 0.13 | 0.01 | 0.17 | 32 | 44% |
+| REVIVING_STRIKER | 无头武生 | 0.16 | 0.32 | 0.20 | 0.37 | 36 | 58% |
+| DOOM_HERALD | 报丧人 | 0.10 | 0.10 | 0.01 | 0.14 | 21 | 43% |
+| BEAST_REVIVER | 马戏团的地下室 | 0.08 | 0.15 | 0.02 | 0.19 | 28 | 64% |
+| REANIMATOR | 百鬼夜行 | 0.07 | 0.12 | 0.02 | 0.16 | 29 | 41% |
+| CURSE_REVIVER | 收蛊人 | 0.07 | 0.13 | 0.01 | 0.17 | 36 | 39% |
+| RIFT_GUIDE_4.0 | 献祭司事 | 0.00 | 0.19 | 0.03 | 0.25 | 41 | 54% |
+| REVIVE_SUMMONER | 复活见证人 | 0.00 | 0.13 | 0.01 | 0.16 | 34 | 56% |
+| DETERIORATION_4.0 | 蛊噬 | 0.00 | 0.15 | 0.02 | 0.21 | 35 | 37% |
+| UTILITY_TAG_AWAKEN | 惊醒 | 0.00 | 0.00 | 0.00 | 0.00 | 52 | 42% |
+| RIFT_ACOLYTE | 侍僧 | 0.00 | 0.18 | 0.02 | 0.22 | 44 | 36% |
+| CURSE_GARDENER | 养蛊人 | 0.00 | 0.15 | 0.01 | 0.21 | 41 | 46% |
+| RELIC_TRAINER | 邪印 | 0.00 | 0.00 | 0.00 | 0.00 | 31 | 55% |
+| RELIC_BLOOD_PACT | 血契 | 0.00 | 0.00 | 0.00 | 0.00 | 39 | 0% |
+| RELIC_DEATH_KNELL | 丧钟 | 0.00 | 0.00 | 0.00 | 0.00 | 28 | 39% |
+| CURSE_SUMMONER | 走阴人 | 0.00 | 0.20 | 0.03 | 0.26 | 46 | 46% |
+| RELIC_CHAIN_BURIAL | 连坐 | 0.00 | 0.00 | 0.00 | 0.00 | 42 | 43% |
+| DEATHBED_GRANT | 垂死反扑 | 0.00 | 0.00 | 0.00 | 0.00 | 38 | 76% |
+| RIFT_MEDIUM | 扶乩 | 0.00 | 0.18 | 0.03 | 0.21 | 39 | 33% |
+| UTILITY_ODDS_1 | 魇市深处 | 0.00 | 0.00 | 0.00 | 0.00 | 22 | 45% |
+| CURSE_THIRST_SHAMAN_4.0 | 噬咒萨满 | 0.00 | 0.12 | 0.02 | 0.16 | 26 | 38% |
+| RIFT_REAPER | 血飨 | 0.00 | 0.13 | 0.01 | 0.18 | 35 | 49% |
+| UTILITY_CREATURES_1 | 百怪入梦 | 0.00 | 0.00 | 0.00 | 0.00 | 49 | 33% |
+| RIFT_PRIEST | 施洗者 | 0.00 | 0.14 | 0.01 | 0.19 | 35 | 54% |
+| RELIC_TALLY | 血账 | 0.00 | 0.00 | 0.00 | 0.00 | 33 | 58% |
+| SPIRIT_CALLER | 降灵会 | 0.00 | 0.15 | 0.03 | 0.20 | 34 | 41% |
+| RELIC_GRAVE_CURSE | 积尸气 | 0.00 | 0.00 | 0.00 | 0.00 | 40 | 45% |
+| DUO_REVIVER | 阴婚 | 0.00 | 0.10 | 0.01 | 0.15 | 30 | 40% |
+| KINGSLAYER | 火刑柱 | 0.00 | 0.16 | 0.01 | 0.20 | 30 | 50% |
+| RELIC_CURSE_HASTE | 提前发作 | 0.00 | 0.00 | 0.00 | 0.00 | 38 | 32% |
+| UTILITY_WEIGHT_U | 魇影幢幢 | 0.00 | 0.00 | 0.00 | 0.00 | 33 | 58% |
+| RELIC_ATTACK_BURIAL | 埋骨地 | 0.00 | 0.00 | 0.00 | 0.00 | 33 | 55% |
+| UTILITY_ODDS_2 | 窥魇镜 | 0.00 | 0.00 | 0.00 | 0.00 | 36 | 47% |
+| JU_ON | JU_ON | 0.00 | 1.04 | 0.35 | 1.37 | 0 | 0% |
+| RIFT | RIFT | 0.00 | 12.38 | 0.65 | 18.19 | 0 | 0% |
+| UTILITY_WEIGHT_R | 梦魇缠身 | 0.00 | 0.00 | 0.00 | 0.00 | 34 | 32% |
+| RELIC_RIFT_OVERRIDE | 伪经 | 0.00 | 0.00 | 0.00 | 0.00 | 35 | 46% |
+| WEAPON_SPIRIT_4.0 | 妖刀 | 0.00 | 0.00 | 0.00 | 0.00 | 32 | 47% |
+| UTILITY_INCOME_1 | 冥币 | 0.00 | 0.00 | 0.00 | 0.00 | 35 | 40% |
+| RELIC_GRAVE_LORD | 白骨王座 | 0.00 | 0.00 | 0.00 | 0.00 | 37 | 43% |
+| MASS_SACRIFICE | 集体自焚 | 0.00 | 0.13 | 0.00 | 0.16 | 33 | 39% |
+| WEAKENING_FIELD | 瘴气 | 0.00 | 0.30 | 0.04 | 0.37 | 44 | 50% |
+| UTILITY_REROLL_1 | 噩梦重播 | 0.00 | 0.00 | 0.00 | 0.00 | 31 | 42% |
+| UTILITY_TAG_REVIVE | 亡者入梦 | 0.00 | 0.00 | 0.00 | 0.00 | 53 | 45% |
+| UTILITY_SLOT_U_1 | 初魇 | 0.00 | 0.00 | 0.00 | 0.00 | 26 | 46% |
+| LAST_RITES | 安魂弥撒 | 0.00 | 0.11 | 0.01 | 0.16 | 32 | 41% |
+| RELIC_WHITE_BANNER | 引魂幡 | 0.00 | 0.00 | 0.00 | 0.00 | 40 | 38% |
+| SACRIFICIAL_SPIRIT | 活殉 | 0.00 | 0.12 | 0.02 | 0.15 | 31 | 32% |
+| UTILITY_OPTION_P_1 | 魇市游摊 | 0.00 | 0.00 | 0.00 | 0.00 | 48 | 50% |
+| GRAVE_PUPPETEER | 操尸人 | 0.00 | 0.10 | 0.02 | 0.14 | 28 | 54% |
+| SACRIFICE_WEAKEST | 替罪羔羊 | 0.00 | 0.17 | 0.03 | 0.22 | 44 | 39% |
+| UTILITY_DISCOUNT_1 | 魇市赊账 | 0.00 | 0.00 | 0.00 | 0.00 | 39 | 51% |
+| GRAVE_HEXER | 降头师 | 0.00 | 0.13 | 0.02 | 0.18 | 33 | 58% |
+| RIFT_HATCHERY | 黑弥撒 | 0.00 | 0.04 | 0.04 | 0.18 | 30 | 43% |
+| WAR_TRAINER | 开刃 | 0.00 | 0.16 | 0.01 | 0.22 | 40 | 60% |
+| RELIC_CURSE_REVIVAL | 耳语唤尸 | 0.00 | 0.00 | 0.00 | 0.00 | 35 | 31% |
+| NECROMANCER | 招魂执事 | 0.00 | 0.14 | 0.01 | 0.19 | 32 | 34% |
+| SOUL_TRADER | 以命换命 | 0.00 | 0.15 | 0.01 | 0.20 | 36 | 47% |
+| UTILITY_OPTION_1 | 魇市新摊 | 0.00 | 0.00 | 0.00 | 0.00 | 32 | 50% |
+| RELIC_HIVE | 以血布道 | 0.00 | 0.00 | 0.00 | 0.00 | 45 | 53% |
+| UTILITY_TAG_CURSE | 噩梦 | 0.00 | 0.00 | 0.00 | 0.00 | 47 | 40% |
+| UTILITY_SLOT_R | 深魇 | 0.00 | 0.00 | 0.00 | 0.00 | 45 | 38% |
+| BATTLE_HORN | 股骨号角 | 0.00 | 0.11 | 0.01 | 0.15 | 32 | 59% |
+| UTILITY_SLOT_U_2 | 连魇 | 0.00 | 0.00 | 0.00 | 0.00 | 35 | 37% |
+| FLURRY_REVIVER | 死不瞑目 | 0.00 | 0.16 | 0.02 | 0.22 | 40 | 32% |
+| RIFT_REVIVER | 以人易物 | 0.00 | 0.13 | 0.01 | 0.17 | 34 | 41% |
+| UTILITY_SPELLS_1 | 死寂的梦 | 0.00 | 0.00 | 0.00 | 0.00 | 30 | 37% |
+| RELIC_CURSE_GRAVE | 勾魂簿 | 0.00 | 0.00 | 0.00 | 0.00 | 38 | 55% |
+| UTILITY_HALFPRICE_1 | 魇市半价 | 0.00 | 0.00 | 0.00 | 0.00 | 41 | 32% |
+| SWARM_CURSER | 诅咒唱诗班 | 0.00 | 0.08 | 0.00 | 0.11 | 22 | 32% |
+| WOKEN_HEX | 咒茧 | 0.00 | 0.18 | 0.03 | 0.23 | 32 | 44% |
+| RELIC_ATTACK_HEX | 饲咒 | 0.00 | 0.00 | 0.00 | 0.00 | 42 | 38% |
+| MASS_REVIVER | 空墓园 | 0.00 | 0.15 | 0.01 | 0.21 | 37 | 46% |
+| FUNERAL_WILL | 冥约 | 0.00 | 0.24 | 0.06 | 0.31 | 41 | 29% |
 
 ### 轴: revive(26 卡)
 
-dropped(divergence/守恒失败): 1
+dropped(divergence/守恒失败): 4
 
 | Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | 轴内 Win% | 轴内 Awakens/R |
 |---|---|---|---|---|---|---|
-| GRAVE_ROBBER | 食尸鬼 | 837.47 | 54.14 | 64% | 55% | 0.24 |
-| UNDYING_WARRIOR | 钉不死的人 | 0.29 | 1.02 | 48% | 47% | 0.20 |
-| CURSE_THIRST_BEAST_4.0 | 噬咒兽 | 0.29 | 0.69 | 65% | 43% | 0.24 |
-| BEAST_REVIVER | 马戏团的地下室 | 0.17 | 0.60 | 38% | 46% | 0.17 |
-| ELITE_REVIVER | 镀金圣髑 | 0.23 | 0.53 | 50% | 45% | 0.18 |
-| FINAL_ESCORT | 扶灵人 | 0.19 | 0.53 | 56% | 43% | 0.23 |
-| REANIMATOR | 百鬼夜行 | 0.08 | 0.49 | 61% | 47% | 0.16 |
-| RIFT_SHEPHERD | 牧羊人 | 0.20 | 0.41 | 67% | 44% | 0.16 |
-| DOOM_HERALD | 报丧人 | 0.07 | 0.16 | 41% | 45% | 0.15 |
-| CURSE_REVIVER | 收蛊人 | 0.03 | 0.10 | 53% | 35% | 0.16 |
-| CURSE_GARDENER | 养蛊人 | 0.00 | 0.00 | 26% | 41% | 0.17 |
-| CURSE_SUMMONER | 走阴人 | 0.00 | 0.00 | 32% | 42% | 0.13 |
-| DUO_REVIVER | 阴婚 | 0.00 | 0.00 | 40% | 41% | 0.09 |
-| FLURRY_REVIVER | 死不瞑目 | 0.00 | 0.00 | 35% | 52% | 0.10 |
-| FUNERAL_WILL | 冥约 | 0.00 | 0.00 | 55% | 43% | 0.19 |
-| GRAVE_HEXER | 降头师 | 0.00 | 0.00 | 29% | 37% | 0.23 |
-| KINGSLAYER | 火刑柱 | 0.00 | 0.00 | 48% | 46% | 0.16 |
-| MASS_REVIVER | 空墓园 | 0.00 | 0.00 | 44% | 49% | 0.13 |
-| NECROMANCER | 招魂执事 | 0.00 | 0.00 | 51% | 41% | 0.16 |
-| RELIC_CURSE_REVIVAL | 耳语唤尸 | 0.00 | 0.00 | 48% | 45% | 0.00 |
-| RELIC_RIFT_OVERRIDE | 伪经 | 0.00 | 0.00 | 38% | 40% | 0.00 |
-| REVIVE_SUMMONER | 复活见证人 | 0.00 | 0.00 | 38% | 42% | 0.15 |
-| RIFT_MEDIUM | 扶乩 | 0.00 | 0.00 | 55% | 48% | 0.11 |
-| RIFT_REVIVER | 以人易物 | 0.00 | 0.00 | 68% | 42% | 0.15 |
-| SOUL_TRADER | 以命换命 | 0.00 | 0.00 | 46% | 43% | 0.16 |
-| SPIRIT_CALLER | 降灵会 | 0.00 | 0.00 | 44% | 41% | 0.18 |
+| GRAVE_ROBBER | 食尸鬼 | 0.85 | 8.17 | 38% | 59% | 0.19 |
+| UNDYING_WARRIOR | 钉不死的人 | 0.32 | 0.79 | 36% | 45% | 0.17 |
+| CURSE_THIRST_BEAST_4.0 | 噬咒兽 | 0.24 | 0.56 | 54% | 44% | 0.18 |
+| ELITE_REVIVER | 镀金圣髑 | 0.20 | 0.52 | 44% | 52% | 0.15 |
+| FINAL_ESCORT | 扶灵人 | 0.25 | 0.52 | 46% | 42% | 0.21 |
+| BEAST_REVIVER | 马戏团的地下室 | 0.08 | 0.48 | 64% | 56% | 0.19 |
+| RIFT_SHEPHERD | 牧羊人 | 0.21 | 0.47 | 31% | 48% | 0.20 |
+| REANIMATOR | 百鬼夜行 | 0.07 | 0.46 | 41% | 43% | 0.17 |
+| DOOM_HERALD | 报丧人 | 0.10 | 0.12 | 43% | 37% | 0.15 |
+| CURSE_REVIVER | 收蛊人 | 0.07 | 0.07 | 39% | 40% | 0.17 |
+| CURSE_GARDENER | 养蛊人 | 0.00 | 0.00 | 46% | 52% | 0.17 |
+| CURSE_SUMMONER | 走阴人 | 0.00 | 0.00 | 46% | 41% | 0.17 |
+| DUO_REVIVER | 阴婚 | 0.00 | 0.00 | 40% | 48% | 0.14 |
+| FLURRY_REVIVER | 死不瞑目 | 0.00 | 0.00 | 32% | 42% | 0.14 |
+| FUNERAL_WILL | 冥约 | 0.00 | 0.00 | 29% | 45% | 0.20 |
+| GRAVE_HEXER | 降头师 | 0.00 | 0.00 | 58% | 51% | 0.17 |
+| KINGSLAYER | 火刑柱 | 0.00 | 0.00 | 50% | 46% | 0.18 |
+| MASS_REVIVER | 空墓园 | 0.00 | 0.00 | 46% | 46% | 0.09 |
+| NECROMANCER | 招魂执事 | 0.00 | 0.00 | 34% | 51% | 0.13 |
+| RELIC_CURSE_REVIVAL | 耳语唤尸 | 0.00 | 0.00 | 31% | 52% | 0.00 |
+| RELIC_RIFT_OVERRIDE | 伪经 | 0.00 | 0.00 | 46% | 59% | 0.00 |
+| REVIVE_SUMMONER | 复活见证人 | 0.00 | 0.00 | 56% | 43% | 0.13 |
+| RIFT_MEDIUM | 扶乩 | 0.00 | 0.00 | 33% | 46% | 0.09 |
+| RIFT_REVIVER | 以人易物 | 0.00 | 0.00 | 41% | 39% | 0.16 |
+| SOUL_TRADER | 以命换命 | 0.00 | 0.00 | 47% | 38% | 0.14 |
+| SPIRIT_CALLER | 降灵会 | 0.00 | 0.00 | 41% | 44% | 0.11 |
 
 ### 轴: deathrattle(11 卡)
 
@@ -158,66 +158,66 @@ dropped(divergence/守恒失败): 0
 
 | Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | 轴内 Win% | 轴内 Awakens/R |
 |---|---|---|---|---|---|---|
-| SPIKE_SKELETON_4.0 | 带刺的标本 | 0.94 | 5.59 | 55% | 49% | 0.12 |
-| DEATHBED_PORTER | 抬棺人 | 0.71 | 4.43 | 78% | 39% | 0.19 |
-| REVIVING_STRIKER | 无头武生 | 0.61 | 3.22 | 65% | 35% | 1.08 |
-| SOLDIER_SKELETON_4.0 | 骸骨哨兵 | 0.34 | 2.54 | 56% | 37% | 1.26 |
-| AVENGER_4.0 | 厉鬼 | 0.60 | 2.51 | 48% | 37% | 0.28 |
-| LAST_GIFT | 遗赠 | 0.33 | 2.09 | 73% | 45% | 0.15 |
-| SLIME_4.0 | 管道里的活物 | 0.31 | 1.98 | 39% | 36% | 0.34 |
-| FINAL_ESCORT | 扶灵人 | 0.19 | 1.07 | 56% | 33% | 0.13 |
-| FUNERAL_WILL | 冥约 | 0.00 | 0.00 | 55% | 32% | 0.34 |
-| LAST_RITES | 安魂弥撒 | 0.00 | 0.00 | 61% | 32% | 0.16 |
-| RELIC_DEATH_KNELL | 丧钟 | 0.00 | 0.00 | 36% | 30% | 0.00 |
+| SPIKE_SKELETON_4.0 | 带刺的标本 | 11.32 | 5.21 | 78% | 51% | 0.14 |
+| AVENGER_4.0 | 厉鬼 | 0.77 | 4.81 | 58% | 46% | 0.23 |
+| REVIVING_STRIKER | 无头武生 | 0.16 | 3.94 | 58% | 38% | 1.22 |
+| DEATHBED_PORTER | 抬棺人 | 27.27 | 3.77 | 48% | 45% | 0.12 |
+| SOLDIER_SKELETON_4.0 | 骸骨哨兵 | 0.62 | 2.66 | 52% | 34% | 1.35 |
+| LAST_GIFT | 遗赠 | 0.54 | 2.00 | 55% | 44% | 0.14 |
+| SLIME_4.0 | 管道里的活物 | 0.22 | 1.93 | 39% | 32% | 0.45 |
+| FINAL_ESCORT | 扶灵人 | 0.25 | 1.14 | 46% | 34% | 0.14 |
+| FUNERAL_WILL | 冥约 | 0.00 | 0.00 | 29% | 31% | 0.35 |
+| LAST_RITES | 安魂弥撒 | 0.00 | 0.00 | 41% | 30% | 0.15 |
+| RELIC_DEATH_KNELL | 丧钟 | 0.00 | 0.00 | 39% | 28% | 0.00 |
 
 ### 轴: believer(13 卡)
 
-dropped(divergence/守恒失败): 35
+dropped(divergence/守恒失败): 31
 
 | Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | 轴内 Win% | 轴内 Awakens/R |
 |---|---|---|---|---|---|---|
-| RIFT_INSECT_4.0 | 新皈依者 | 0.35 | 2.39 | 40% | 56% | 0.09 |
-| RIFT_STRIKER | 鞭笞者 | 0.24 | 2.23 | 47% | 50% | 0.06 |
-| SWARM_QUEEN | 黑圣母 | 0.27 | 1.89 | 44% | 49% | 0.06 |
-| RIFT_SHEPHERD | 牧羊人 | 0.20 | 0.99 | 67% | 49% | 0.06 |
-| MASS_SACRIFICE | 集体自焚 | 0.00 | 0.00 | 25% | 22% | 0.00 |
-| RELIC_HIVE | 以血布道 | 0.00 | 0.00 | 37% | 47% | 0.00 |
-| RELIC_RIFT_OVERRIDE | 伪经 | 0.00 | 0.00 | 38% | 42% | 0.00 |
-| REVIVE_SUMMONER | 复活见证人 | 0.00 | 0.00 | 38% | 48% | 0.05 |
-| RIFT_ACOLYTE | 侍僧 | 0.00 | 0.00 | 43% | 43% | 0.03 |
-| RIFT_HATCHERY | 黑弥撒 | 0.00 | 0.00 | 32% | 46% | 0.16 |
-| RIFT_MEDIUM | 扶乩 | 0.00 | 0.00 | 55% | 46% | 0.04 |
-| RIFT_PRIEST | 施洗者 | 0.00 | 0.00 | 50% | 53% | 0.03 |
-| SWARM_CURSER | 诅咒唱诗班 | 0.00 | 0.00 | 51% | 47% | 0.04 |
+| SWARM_QUEEN | 黑圣母 | 0.29 | 2.37 | 56% | 50% | 0.07 |
+| RIFT_INSECT_4.0 | 新皈依者 | 0.40 | 2.21 | 60% | 50% | 0.10 |
+| RIFT_STRIKER | 鞭笞者 | 1.19 | 2.14 | 38% | 53% | 0.09 |
+| RIFT_SHEPHERD | 牧羊人 | 0.21 | 1.16 | 31% | 48% | 0.05 |
+| MASS_SACRIFICE | 集体自焚 | 0.00 | 0.00 | 39% | 24% | 0.00 |
+| RELIC_HIVE | 以血布道 | 0.00 | 0.00 | 53% | 55% | 0.00 |
+| RELIC_RIFT_OVERRIDE | 伪经 | 0.00 | 0.00 | 46% | 47% | 0.00 |
+| REVIVE_SUMMONER | 复活见证人 | 0.00 | 0.00 | 56% | 46% | 0.05 |
+| RIFT_ACOLYTE | 侍僧 | 0.00 | 0.00 | 36% | 48% | 0.04 |
+| RIFT_HATCHERY | 黑弥撒 | 0.00 | 0.00 | 43% | 43% | 0.21 |
+| RIFT_MEDIUM | 扶乩 | 0.00 | 0.00 | 33% | 42% | 0.04 |
+| RIFT_PRIEST | 施洗者 | 0.00 | 0.00 | 54% | 55% | 0.06 |
+| SWARM_CURSER | 诅咒唱诗班 | 0.00 | 0.00 | 32% | 45% | 0.02 |
 
 ### 轴: bury(22 卡)
 
-dropped(divergence/守恒失败): 16
+dropped(divergence/守恒失败): 4
 
 | Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | 轴内 Win% | 轴内 Awakens/R |
 |---|---|---|---|---|---|---|
-| GRAVE_FIST | 血祭 | 2.55 | 1.33 | 59% | 50% | 0.05 |
-| EULOGIST | 司悼人 | 0.37 | 0.99 | 35% | 59% | 0.03 |
-| MILLBLADE | 凌迟 | 0.38 | 0.97 | 49% | 50% | 0.04 |
-| GRAVE_MILLER | 血肉磨坊 | 0.43 | 0.85 | 57% | 54% | 0.04 |
-| AWAKENED_REAPER | 勾魂人 | 0.40 | 0.78 | 55% | 44% | 0.04 |
-| DECIMATION | 什一抽杀 | 2.37 | 0.70 | 35% | 51% | 0.03 |
-| GRAVE_DREDGER | 掘墓人 | 0.31 | 0.68 | 49% | 48% | 0.02 |
-| GRAVE_PUNCH_4.0 | 剜心祭 | 0.37 | 0.59 | 35% | 58% | 0.04 |
-| GRAVE_TOGETHER_4.0 | 同葬 | 0.28 | 0.51 | 60% | 55% | 0.04 |
-| DEATHBED_GRANT | 垂死反扑 | 0.00 | 0.00 | 61% | 75% | 0.00 |
-| GRAVE_PUPPETEER | 操尸人 | 0.00 | 0.00 | 49% | 44% | 0.04 |
-| KINGSLAYER | 火刑柱 | 0.00 | 0.00 | 48% | 51% | 0.04 |
-| MASS_SACRIFICE | 集体自焚 | 0.00 | 0.00 | 25% | 33% | 0.01 |
-| RELIC_ATTACK_BURIAL | 埋骨地 | 0.00 | 0.00 | 39% | 43% | 0.00 |
-| RELIC_CHAIN_BURIAL | 连坐 | 0.00 | 0.00 | 33% | 45% | 0.00 |
-| RELIC_CURSE_GRAVE | 勾魂簿 | 0.00 | 0.00 | 33% | 41% | 0.00 |
-| RELIC_TALLY | 血账 | 0.00 | 0.00 | 24% | 41% | 0.00 |
-| RIFT_GUIDE | 献祭司事 | 0.00 | 0.00 | 26% | 45% | 0.04 |
-| RIFT_HATCHERY | 黑弥撒 | 0.00 | 0.00 | 32% | 41% | 0.10 |
-| SACRIFICE_WEAKEST | 替罪羔羊 | 0.00 | 0.00 | 52% | 42% | 0.04 |
-| SACRIFICIAL_SPIRIT | 活殉 | 0.00 | 0.00 | 44% | 31% | 0.03 |
-| SOUL_TRADER | 以命换命 | 0.00 | 0.00 | 46% | 47% | 0.03 |
+| DECIMATION | 什一抽杀 | 1.08 | 2.06 | 59% | 62% | 0.03 |
+| GRAVE_FIST | 血祭 | 0.53 | 1.70 | 56% | 59% | 0.06 |
+| GRAVE_PUNCH_4.0 | 剜心祭 | 0.58 | 1.47 | 52% | 53% | 0.04 |
+| MILLBLADE | 凌迟 | 0.30 | 0.91 | 43% | 53% | 0.04 |
+| GRAVE_DREDGER | 掘墓人 | 0.37 | 0.85 | 50% | 50% | 0.04 |
+| EULOGIST | 司悼人 | 0.29 | 0.81 | 35% | 49% | 0.04 |
+| AWAKENED_REAPER | 勾魂人 | 3.13 | 0.79 | 57% | 36% | 0.03 |
+| GRAVE_MILLER | 血肉磨坊 | 0.25 | 0.79 | 46% | 55% | 0.02 |
+| GRAVE_TOGETHER_4.0 | 同葬 | 0.22 | 0.47 | 42% | 45% | 0.03 |
+| DEATHBED_GRANT | 垂死反扑 | 0.00 | 0.00 | 76% | 67% | 0.00 |
+| GRAVE_PUPPETEER | 操尸人 | 0.00 | 0.00 | 54% | 50% | 0.03 |
+| KINGSLAYER | 火刑柱 | 0.00 | 0.00 | 50% | 42% | 0.05 |
+| MASS_SACRIFICE | 集体自焚 | 0.00 | 0.00 | 39% | 34% | 0.01 |
+| RELIC_ATTACK_BURIAL | 埋骨地 | 0.00 | 0.00 | 55% | 49% | 0.00 |
+| RELIC_CHAIN_BURIAL | 连坐 | 0.00 | 0.00 | 43% | 33% | 0.00 |
+| RELIC_CURSE_GRAVE | 勾魂簿 | 0.00 | 0.00 | 55% | 36% | 0.00 |
+| RELIC_TALLY | 血账 | 0.00 | 0.00 | 58% | 38% | 0.00 |
+| RIFT_GUIDE_4.0 | 献祭司事 | 0.00 | 0.00 | 54% | 35% | 0.03 |
+| RIFT_HATCHERY | 黑弥撒 | 0.00 | 0.00 | 43% | 46% | 0.12 |
+| SACRIFICE_WEAKEST | 替罪羔羊 | 0.00 | 0.00 | 39% | 42% | 0.04 |
+| SACRIFICIAL_SPIRIT | 活殉 | 0.00 | 0.00 | 32% | 45% | 0.03 |
+| SOUL_TRADER | 以命换命 | 0.00 | 0.00 | 47% | 40% | 0.03 |
 
 ### 轴: curse(23 卡)
 
@@ -225,74 +225,74 @@ dropped(divergence/守恒失败): 7
 
 | Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | 轴内 Win% | 轴内 Awakens/R |
 |---|---|---|---|---|---|---|
-| CURSE_EATER | 吞蛊人 | 2790780767709869113344.00 | 87087209343769552.00 | 41% | 51% | 0.11 |
-| DOOM_HERALD | 报丧人 | 0.07 | 35695218001433596.00 | 41% | 43% | 0.06 |
-| CURSE_REVIVER | 收蛊人 | 0.03 | 8629350733282.38 | 53% | 54% | 0.08 |
-| HEXBLADE | 咒刃 | 0.09 | 7861921934860.51 | 35% | 45% | 0.07 |
-| HEXER | 蛊婆 | 0.07 | 7218546203645.31 | 31% | 44% | 0.07 |
-| CURSE_THIRST_BEAST_4.0 | 噬咒兽 | 0.29 | 493637874915.22 | 65% | 39% | 0.12 |
-| CURSE_GARDENER | 养蛊人 | 0.00 | 0.00 | 26% | 43% | 0.10 |
-| CURSE_SUMMONER | 走阴人 | 0.00 | 0.00 | 32% | 47% | 0.08 |
-| CURSE_THIRST_SHAMAN_4.0 | 噬咒萨满 | 0.00 | 0.00 | 50% | 60% | 0.06 |
-| DETERIORATION_4.0 | 蛊噬 | 0.00 | 0.00 | 42% | 52% | 0.08 |
-| GRAVE_HEXER | 降头师 | 0.00 | 0.00 | 29% | 43% | 0.07 |
-| RELIC_ATTACK_HEX | 饲咒 | 0.00 | 0.00 | 54% | 49% | 0.00 |
+| HEXER | 蛊婆 | 11.47 | 258990997083368062976.00 | 48% | 42% | 0.07 |
+| CURSE_EATER | 吞蛊人 | 0.37 | 4293408069732558336.00 | 46% | 59% | 0.08 |
+| HEXBLADE | 咒刃 | 0.21 | 1661491530827951616.00 | 30% | 44% | 0.07 |
+| CURSE_THIRST_BEAST_4.0 | 噬咒兽 | 0.24 | 43398510674866.11 | 54% | 43% | 0.11 |
+| CURSE_REVIVER | 收蛊人 | 0.07 | 6762945823241.49 | 39% | 40% | 0.09 |
+| DOOM_HERALD | 报丧人 | 0.10 | 59221755926.30 | 43% | 42% | 0.12 |
+| CURSE_GARDENER | 养蛊人 | 0.00 | 0.00 | 46% | 50% | 0.07 |
+| CURSE_SUMMONER | 走阴人 | 0.00 | 0.00 | 46% | 41% | 0.05 |
+| CURSE_THIRST_SHAMAN_4.0 | 噬咒萨满 | 0.00 | 0.00 | 38% | 64% | 0.05 |
+| DETERIORATION_4.0 | 蛊噬 | 0.00 | 0.00 | 37% | 44% | 0.07 |
+| GRAVE_HEXER | 降头师 | 0.00 | 0.00 | 58% | 46% | 0.07 |
+| RELIC_ATTACK_HEX | 饲咒 | 0.00 | 0.00 | 38% | 45% | 0.00 |
 | RELIC_BLOOD_PACT | 血契 | 0.00 | 0.00 | 0% | 1% | 0.00 |
-| RELIC_CURSE_GRAVE | 勾魂簿 | 0.00 | 0.00 | 33% | 49% | 0.00 |
-| RELIC_CURSE_HASTE | 提前发作 | 0.00 | 0.00 | 42% | 43% | 0.00 |
-| RELIC_CURSE_REVIVAL | 耳语唤尸 | 0.00 | 0.00 | 48% | 43% | 0.00 |
-| RELIC_GRAVE_CURSE | 积尸气 | 0.00 | 0.00 | 47% | 47% | 0.00 |
-| RELIC_RIFT_OVERRIDE | 伪经 | 0.00 | 0.00 | 38% | 49% | 0.00 |
-| RELIC_TALLY | 血账 | 0.00 | 0.00 | 24% | 50% | 0.00 |
-| SACRIFICIAL_SPIRIT | 活殉 | 0.00 | 0.00 | 44% | 33% | 0.05 |
-| SWARM_CURSER | 诅咒唱诗班 | 0.00 | 0.00 | 51% | 37% | 0.04 |
-| WEAKENING_FIELD | 瘴气 | 0.00 | 0.00 | 52% | 49% | 0.09 |
-| WOKEN_HEX | 咒茧 | 0.00 | 0.00 | 38% | 46% | 0.10 |
+| RELIC_CURSE_GRAVE | 勾魂簿 | 0.00 | 0.00 | 55% | 51% | 0.00 |
+| RELIC_CURSE_HASTE | 提前发作 | 0.00 | 0.00 | 32% | 45% | 0.00 |
+| RELIC_CURSE_REVIVAL | 耳语唤尸 | 0.00 | 0.00 | 31% | 45% | 0.00 |
+| RELIC_GRAVE_CURSE | 积尸气 | 0.00 | 0.00 | 45% | 45% | 0.00 |
+| RELIC_RIFT_OVERRIDE | 伪经 | 0.00 | 0.00 | 46% | 41% | 0.00 |
+| RELIC_TALLY | 血账 | 0.00 | 0.00 | 58% | 46% | 0.00 |
+| SACRIFICIAL_SPIRIT | 活殉 | 0.00 | 0.00 | 32% | 49% | 0.07 |
+| SWARM_CURSER | 诅咒唱诗班 | 0.00 | 0.00 | 32% | 46% | 0.04 |
+| WEAKENING_FIELD | 瘴气 | 0.00 | 0.00 | 50% | 41% | 0.07 |
+| WOKEN_HEX | 咒茧 | 0.00 | 0.00 | 44% | 46% | 0.07 |
 
 ### 轴: enhance(13 卡)
+
+dropped(divergence/守恒失败): 0
+
+| Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | 轴内 Win% | 轴内 Awakens/R |
+|---|---|---|---|---|---|---|
+| UNFINISHED_ROBOT_4.0 | 缝合人 | 2072.56 | 3507573174.87 | 26% | 25% | 0.09 |
+| AVENGER_4.0 | 厉鬼 | 0.77 | 18.94 | 58% | 41% | 0.10 |
+| BLACKSMITH_4.0 | 骨匠 | 0.42 | 12.36 | 58% | 42% | 0.07 |
+| SNOWBALL | 蛊王 | 0.31 | 9.31 | 53% | 41% | 0.09 |
+| WAKING_FIGHTER | 回魂尸 | 3.07 | 4.24 | 51% | 34% | 0.07 |
+| LAST_GIFT | 遗赠 | 0.54 | 2.63 | 55% | 44% | 0.07 |
+| CURSE_THIRST_SHAMAN_4.0 | 噬咒萨满 | 0.00 | 0.00 | 38% | 35% | 0.06 |
+| RELIC_TRAINER | 邪印 | 0.00 | 0.00 | 55% | 44% | 0.00 |
+| RIFT_PRIEST | 施洗者 | 0.00 | 0.00 | 54% | 34% | 0.04 |
+| RIFT_REAPER | 血飨 | 0.00 | 0.00 | 49% | 40% | 0.04 |
+| SACRIFICE_WEAKEST | 替罪羔羊 | 0.00 | 0.00 | 39% | 26% | 0.04 |
+| WAR_TRAINER | 开刃 | 0.00 | 0.00 | 60% | 40% | 0.05 |
+| WEAPON_SPIRIT_4.0 | 妖刀 | 0.00 | 0.00 | 47% | 49% | 0.00 |
+
+### 轴: awaken(8 卡)
 
 dropped(divergence/守恒失败): 1
 
 | Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | 轴内 Win% | 轴内 Awakens/R |
 |---|---|---|---|---|---|---|
-| AVENGER_4.0 | 厉鬼 | 0.60 | 3.59 | 48% | 37% | 0.07 |
-| LAST_GIFT | 遗赠 | 0.33 | 3.34 | 73% | 49% | 0.09 |
-| BLACKSMITH_4.0 | 骨匠 | 0.38 | 3.09 | 52% | 40% | 0.07 |
-| WAKING_FIGHTER | 回魂尸 | 0.47 | 3.08 | 47% | 35% | 0.07 |
-| UNFINISHED_ROBOT_4.0 | 缝合人 | 0.14 | 2.79 | 35% | 34% | 0.05 |
-| SNOWBALL | 蛊王 | 0.16 | 2.44 | 39% | 36% | 0.08 |
-| CURSE_THIRST_SHAMAN_4.0 | 噬咒萨满 | 0.00 | 0.00 | 50% | 25% | 0.08 |
-| RELIC_TRAINER | 邪印 | 0.00 | 0.00 | 66% | 44% | 0.00 |
-| RIFT_PRIEST | 施洗者 | 0.00 | 0.00 | 50% | 38% | 0.07 |
-| RIFT_REAPER | 血飨 | 0.00 | 0.00 | 55% | 40% | 0.05 |
-| SACRIFICE_WEAKEST | 替罪羔羊 | 0.00 | 0.00 | 52% | 25% | 0.05 |
-| WAR_TRAINER | 开刃 | 0.00 | 0.00 | 48% | 49% | 0.06 |
-| WEAPON_SPIRIT | 妖刀 | 0.00 | 0.00 | 39% | 46% | 0.00 |
-
-### 轴: awaken(8 卡)
-
-dropped(divergence/守恒失败): 2
-
-| Card | 中文名 | 裸 Dmg/R | 轴内 Dmg/R | 裸 Win% | 轴内 Win% | 轴内 Awakens/R |
-|---|---|---|---|---|---|---|
-| AWAKENED_REAPER | 勾魂人 | 0.40 | 475483.75 | 55% | 51% | 0.17 |
-| WOKEN_BLADE | 尸变 | 0.30 | 2.93 | 52% | 47% | 0.14 |
-| WAKING_FIGHTER | 回魂尸 | 0.47 | 2.74 | 47% | 56% | 0.15 |
-| NECROMANCER | 招魂执事 | 0.00 | 0.00 | 51% | 43% | 0.13 |
-| RELIC_DEATH_KNELL | 丧钟 | 0.00 | 0.00 | 36% | 41% | 0.00 |
-| RIFT_ACOLYTE | 侍僧 | 0.00 | 0.00 | 43% | 39% | 0.11 |
-| RIFT_MEDIUM | 扶乩 | 0.00 | 0.00 | 55% | 43% | 0.08 |
-| WOKEN_HEX | 咒茧 | 0.00 | 0.00 | 38% | 41% | 0.16 |
+| WOKEN_BLADE | 尸变 | 0.41 | 3.05 | 50% | 56% | 0.14 |
+| WAKING_FIGHTER | 回魂尸 | 3.07 | 2.80 | 51% | 47% | 0.15 |
+| AWAKENED_REAPER | 勾魂人 | 3.13 | 2.58 | 57% | 50% | 0.16 |
+| NECROMANCER | 招魂执事 | 0.00 | 0.00 | 34% | 46% | 0.14 |
+| RELIC_DEATH_KNELL | 丧钟 | 0.00 | 0.00 | 39% | 45% | 0.00 |
+| RIFT_ACOLYTE | 侍僧 | 0.00 | 0.00 | 36% | 39% | 0.12 |
+| RIFT_MEDIUM | 扶乩 | 0.00 | 0.00 | 33% | 46% | 0.08 |
+| WOKEN_HEX | 咒茧 | 0.00 | 0.00 | 44% | 45% | 0.15 |
 
 ### 信徒 / 诅咒经济(各批次)
 
 | 批次 | RIFT 生成/战(A+B) | 诅咒强化来源 → 总量/战 |
 |---|---|---|
-| uniform | 78.23 | CURSE_EATER 16702400049172700987392.0, GRAVE_ROBBER 5008.9, DETERIORATION_4.0 1452.1, COMBO_STARTER 105.3, MIMIC_BLADE 27.7, DECIMATION 12.4, GRAVE_FIST 11.9, SWARM_CURSER 5.2, SACRIFICIAL_SPIRIT 4.3, RELIC_TALLY 3.7, RELIC_ATTACK_HEX 3.5, DOOM_HERALD 2.6, HEXER 1.4, WOKEN_HEX 1.1, CURSE_GARDENER 1.1, WEAPON_SPIRIT 1.0, GRAVE_HEXER 0.8, HEXBLADE 0.7, GRAVE_GIANT 0.5, AVENGER_4.0 0.5, SPIKE_SKELETON_4.0 0.5, GRAVE_PUNCH_4.0 0.4, EXILE_BERSERKER 0.4, RIFT_STRIKER 0.4, SOLDIER_SKELETON_4.0 0.2, REVIVING_STRIKER 0.2, MILLBLADE 0.2, GRAVE_MILLER 0.2, GRAVE_DREDGER 0.1, DEATHBED_PORTER 0.1, EULOGIST 0.1, FINAL_ESCORT 0.1, WAKING_FIGHTER 0.1, GRAVE_TOGETHER_4.0 0.1, ELITE_REVIVER 0.1, RIFT_SHEPHERD 0.1, SLIME_4.0 0.1, RIFT_INSECT_4.0 0.1, BLACKSMITH_4.0 0.1, WOKEN_BLADE 0.1, QUAD_STRIKER 0.1, LAST_GIFT 0.1, BEAST_REVIVER 0.1, SWARM_QUEEN 0.0, SNOWBALL 0.0, CURSE_THIRST_BEAST_4.0 0.0, CURSE_REVIVER 0.0, REANIMATOR 0.0, COMBO_GRANTER 0.0, TWIN_STRIKER 0.0, UNFINISHED_ROBOT_4.0 0.0, UNDYING_WARRIOR 0.0 |
-| revive | 60.72 | GRAVE_ROBBER 357.9, SWARM_CURSER 13.0, DOOM_HERALD 8.1, GRAVE_HEXER 3.9, CURSE_GARDENER 3.2, SACRIFICIAL_SPIRIT 2.1, CURSE_EATER 1.9, DETERIORATION_4.0 1.9, RELIC_TALLY 1.9, RELIC_ATTACK_HEX 1.7, HEXER 1.6, WOKEN_HEX 0.9, WEAPON_SPIRIT 0.4, CURSE_THIRST_BEAST_4.0 0.4, REANIMATOR 0.3, UNDYING_WARRIOR 0.2, SOLDIER_SKELETON_4.0 0.2, EULOGIST 0.2, ELITE_REVIVER 0.1, REVIVING_STRIKER 0.1, SLIME_4.0 0.1, BEAST_REVIVER 0.1, FINAL_ESCORT 0.1, GRAVE_PUNCH_4.0 0.1, LAST_GIFT 0.0, RIFT_STRIKER 0.0, HEXBLADE 0.0, EXILE_BERSERKER 0.0, SNOWBALL 0.0, RIFT_SHEPHERD 0.0 |
-| deathrattle | 58.78 | RELIC_TALLY 2.0, SACRIFICIAL_SPIRIT 1.9, RELIC_ATTACK_HEX 1.7, DETERIORATION_4.0 1.6, SPIKE_SKELETON_4.0 1.6, SWARM_CURSER 0.9, DOOM_HERALD 0.9, DEATHBED_PORTER 0.8, AVENGER_4.0 0.6, REVIVING_STRIKER 0.6, SOLDIER_SKELETON_4.0 0.6, WEAPON_SPIRIT 0.4, HEXER 0.4, WOKEN_HEX 0.4, CURSE_GARDENER 0.3, LAST_GIFT 0.2, GRAVE_HEXER 0.2, WOKEN_BLADE 0.2, SLIME_4.0 0.2, AWAKENED_REAPER 0.1, GRAVE_GIANT 0.1, GRAVE_MILLER 0.1, BLACKSMITH_4.0 0.1, HEXBLADE 0.1, FINAL_ESCORT 0.0, EULOGIST 0.0, ELITE_REVIVER 0.0, BEAST_REVIVER 0.0, SWARM_QUEEN 0.0, UNDYING_WARRIOR 0.0 |
-| believer | 701.90 | SWARM_CURSER 130.3, DETERIORATION_4.0 4.8, SACRIFICIAL_SPIRIT 1.8, RELIC_ATTACK_HEX 1.6, RELIC_TALLY 1.6, DOOM_HERALD 1.0, HEXER 0.8, SWARM_QUEEN 0.5, WEAPON_SPIRIT 0.5, GRAVE_HEXER 0.4, WOKEN_HEX 0.4, CURSE_GARDENER 0.4, RIFT_STRIKER 0.4, HEXBLADE 0.4, RIFT_INSECT_4.0 0.3, WOKEN_BLADE 0.2, MIMIC_BLADE 0.1, RIFT_SHEPHERD 0.1, GRAVE_FIST 0.0 |
-| bury | 327.78 | RELIC_TALLY 12.6, SACRIFICIAL_SPIRIT 6.4, SWARM_CURSER 4.2, DETERIORATION_4.0 3.2, RELIC_ATTACK_HEX 1.5, DOOM_HERALD 0.9, AVENGER_4.0 0.7, MILLBLADE 0.6, HEXER 0.6, DECIMATION 0.5, CURSE_GARDENER 0.3, REVIVING_STRIKER 0.3, WOKEN_HEX 0.2, UNDYING_WARRIOR 0.2, GRAVE_HEXER 0.2, WEAPON_SPIRIT 0.2, AWAKENED_REAPER 0.2, CURSE_EATER 0.2, GRAVE_MILLER 0.2, GRAVE_PUNCH_4.0 0.2, GRAVE_FIST 0.2, GRAVE_DREDGER 0.2, DEATHBED_PORTER 0.2, SWARM_QUEEN 0.1, EULOGIST 0.1, BLACKSMITH_4.0 0.1, QUAD_STRIKER 0.1, HEXBLADE 0.1, RIFT_SHEPHERD 0.1, MIMIC_BLADE 0.0, RIFT_STRIKER 0.0, GRAVE_TOGETHER_4.0 0.0, CURSE_THIRST_BEAST_4.0 0.0, FINAL_ESCORT 0.0 |
-| curse | 103.32 | REVIVING_STRIKER 5914217925365377052158083006124261376.0, DETERIORATION_4.0 2069886901533089726564149592141594624.0, AVENGER_4.0 148029777567760919986162047127650304.0, CURSE_EATER 916446228897388416.0, DECIMATION 549021618057266240.0, DOOM_HERALD 375632060937366016.0, GRAVE_FIST 9986987126834036.0, GRAVE_TOGETHER_4.0 9361939018506008.0, UNDYING_WARRIOR 9346645089317378.0, COMBO_GRANTER 1984948925009261.2, SPIKE_SKELETON_4.0 211768517006690.8, HEXBLADE 165466978753365.0, SOLDIER_SKELETON_4.0 148766853526659.5, CURSE_REVIVER 90809385177701.7, HEXER 75963043210389.1, CURSE_THIRST_BEAST_4.0 5194707377990.1, MIMIC_BLADE 587216004137.2, AWAKENED_REAPER 379336101760.3, GRAVE_ROBBER 266314239368.1, DEATHBED_PORTER 23633.2, RIFT_INSECT_4.0 18381.6, ELITE_REVIVER 10740.8, SWARM_CURSER 59.7, COMBO_STARTER 29.0, RIFT_STRIKER 24.0, SACRIFICIAL_SPIRIT 19.6, EXILE_BERSERKER 15.9, RELIC_TALLY 15.9, RELIC_ATTACK_HEX 11.7, WOKEN_HEX 6.7, GRAVE_MILLER 6.2, CURSE_GARDENER 5.0, GRAVE_HEXER 4.9, GRAVE_DREDGER 4.9, WEAPON_SPIRIT 2.8, UNFINISHED_ROBOT_4.0 2.2, LAST_GIFT 2.0, RIFT_SHEPHERD 1.4, QUAD_STRIKER 1.0, WAKING_FIGHTER 0.8, SWARM_QUEEN 0.6, WOKEN_BLADE 0.6, MILLBLADE 0.5, FINAL_ESCORT 0.3, SNOWBALL 0.3, TWIN_STRIKER 0.3, GRAVE_GIANT 0.3, EULOGIST 0.2, BEAST_REVIVER 0.2, BLACKSMITH_4.0 0.2, GRAVE_PUNCH_4.0 0.2, SLIME_4.0 0.1 |
-| enhance | 56.05 | WAKING_FIGHTER 1.9, WEAPON_SPIRIT 1.8, DEATHBED_PORTER 1.7, BLACKSMITH_4.0 1.7, DETERIORATION_4.0 1.6, QUAD_STRIKER 1.4, UNFINISHED_ROBOT_4.0 1.4, LAST_GIFT 1.2, AVENGER_4.0 0.9, RELIC_ATTACK_HEX 0.9, SWARM_CURSER 0.9, SACRIFICIAL_SPIRIT 0.7, DOOM_HERALD 0.7, SNOWBALL 0.7, RELIC_TALLY 0.7, HEXER 0.6, HEXBLADE 0.5, DECIMATION 0.4, CURSE_GARDENER 0.3, GRAVE_HEXER 0.2, WOKEN_HEX 0.2, GRAVE_DREDGER 0.2, GRAVE_GIANT 0.2, SLIME_4.0 0.2, REVIVING_STRIKER 0.1, EXILE_BERSERKER 0.1, RIFT_STRIKER 0.1, RIFT_SHEPHERD 0.1, SOLDIER_SKELETON_4.0 0.1, CURSE_THIRST_BEAST_4.0 0.1, RIFT_INSECT_4.0 0.0, AWAKENED_REAPER 0.0, EULOGIST 0.0, CURSE_REVIVER 0.0, REANIMATOR 0.0, ELITE_REVIVER 0.0 |
-| awaken | 70.96 | TWIN_STRIKER 4389331.4, AWAKENED_REAPER 2749626.4, WOKEN_HEX 9.6, SWARM_CURSER 8.7, DETERIORATION_4.0 7.5, RELIC_TALLY 1.8, DOOM_HERALD 1.5, SACRIFICIAL_SPIRIT 1.4, RELIC_ATTACK_HEX 1.0, WOKEN_BLADE 1.0, HEXER 0.8, CURSE_EATER 0.6, MIMIC_BLADE 0.6, WAKING_FIGHTER 0.5, CURSE_GARDENER 0.5, WEAPON_SPIRIT 0.5, COMBO_STARTER 0.4, GRAVE_HEXER 0.3, SLIME_4.0 0.2, AVENGER_4.0 0.2, DEATHBED_PORTER 0.2, RIFT_INSECT_4.0 0.2, EXILE_BERSERKER 0.1, ELITE_REVIVER 0.0, BEAST_REVIVER 0.0, COMBO_GRANTER 0.0, FINAL_ESCORT 0.0, RIFT_SHEPHERD 0.0, HEXBLADE 0.0 |
+| uniform | 80.47 | UNFINISHED_ROBOT_4.0 11536.3, EXILE_BERSERKER 2695.8, DETERIORATION_4.0 167.6, DEATHBED_PORTER 149.4, HEXER 64.7, SPIKE_SKELETON_4.0 57.9, WAKING_FIGHTER 15.3, AWAKENED_REAPER 15.1, RIFT_STRIKER 5.1, SWARM_CURSER 4.5, RELIC_ATTACK_HEX 3.4, RELIC_TALLY 2.8, SACRIFICIAL_SPIRIT 2.2, HEXBLADE 1.9, DOOM_HERALD 1.6, GRAVE_GIANT 1.4, GRAVE_PUNCH_4.0 1.3, SOLDIER_SKELETON_4.0 1.2, LAST_GIFT 1.2, WOKEN_HEX 1.2, CURSE_EATER 1.1, REVIVING_STRIKER 0.9, CURSE_GARDENER 0.8, WEAPON_SPIRIT_4.0 0.7, GRAVE_HEXER 0.7, WOKEN_BLADE 0.5, DECIMATION 0.4, RIFT_SHEPHERD 0.4, UNDYING_WARRIOR 0.3, RIFT_INSECT_4.0 0.3, QUAD_STRIKER 0.3, AVENGER_4.0 0.2, GRAVE_FIST 0.2, SLIME_4.0 0.2, TWIN_STRIKER 0.2, REANIMATOR 0.2, MILLBLADE 0.2, GRAVE_TOGETHER_4.0 0.1, SWARM_QUEEN 0.1, FINAL_ESCORT 0.1, MIMIC_BLADE 0.1, BLACKSMITH_4.0 0.1, GRAVE_DREDGER 0.1, COMBO_STARTER 0.1, CURSE_THIRST_BEAST_4.0 0.1, SNOWBALL 0.0, GRAVE_ROBBER 0.0, EULOGIST 0.0, GRAVE_MILLER 0.0, BEAST_REVIVER 0.0, COMBO_GRANTER 0.0, CURSE_REVIVER 0.0 |
+| revive | 61.53 | GRAVE_ROBBER 46.8, DOOM_HERALD 9.4, DETERIORATION_4.0 5.3, CURSE_GARDENER 3.0, GRAVE_HEXER 3.0, RELIC_TALLY 2.9, SACRIFICIAL_SPIRIT 2.9, DECIMATION 2.8, SWARM_CURSER 2.2, RELIC_ATTACK_HEX 1.9, HEXER 1.4, GRAVE_FIST 0.8, UNDYING_WARRIOR 0.8, GRAVE_GIANT 0.7, AVENGER_4.0 0.6, EXILE_BERSERKER 0.5, WOKEN_HEX 0.5, WEAPON_SPIRIT_4.0 0.3, CURSE_THIRST_BEAST_4.0 0.3, SPIKE_SKELETON_4.0 0.3, LAST_GIFT 0.3, RIFT_SHEPHERD 0.2, ELITE_REVIVER 0.1, WOKEN_BLADE 0.1, EULOGIST 0.1, FINAL_ESCORT 0.1, SWARM_QUEEN 0.1, COMBO_GRANTER 0.1, COMBO_STARTER 0.0, GRAVE_MILLER 0.0, REANIMATOR 0.0, BEAST_REVIVER 0.0, HEXBLADE 0.0 |
+| deathrattle | 23.80 | REVIVING_STRIKER 2.2, RELIC_ATTACK_HEX 1.8, SPIKE_SKELETON_4.0 1.4, RELIC_TALLY 1.2, AVENGER_4.0 1.1, SACRIFICIAL_SPIRIT 1.1, SWARM_CURSER 1.1, DEATHBED_PORTER 1.0, HEXER 0.6, DETERIORATION_4.0 0.6, DOOM_HERALD 0.6, MILLBLADE 0.5, SLIME_4.0 0.4, GRAVE_HEXER 0.4, WOKEN_HEX 0.4, LAST_GIFT 0.4, FINAL_ESCORT 0.3, CURSE_EATER 0.3, SOLDIER_SKELETON_4.0 0.3, CURSE_GARDENER 0.2, GRAVE_GIANT 0.1, QUAD_STRIKER 0.1, UNDYING_WARRIOR 0.1, EXILE_BERSERKER 0.0, WEAPON_SPIRIT_4.0 0.0, RIFT_STRIKER 0.0, COMBO_STARTER 0.0, COMBO_GRANTER 0.0, SNOWBALL 0.0, HEXBLADE 0.0, GRAVE_ROBBER 0.0, BLACKSMITH_4.0 0.0, CURSE_THIRST_BEAST_4.0 0.0 |
+| believer | 450.31 | SWARM_CURSER 81.5, DETERIORATION_4.0 45.2, SACRIFICIAL_SPIRIT 2.0, RELIC_TALLY 1.2, RIFT_STRIKER 1.0, DOOM_HERALD 0.9, RELIC_ATTACK_HEX 0.9, HEXER 0.6, SWARM_QUEEN 0.5, GRAVE_HEXER 0.4, CURSE_GARDENER 0.4, WOKEN_HEX 0.4, RIFT_INSECT_4.0 0.3, QUAD_STRIKER 0.3, HEXBLADE 0.2, RIFT_SHEPHERD 0.2, AVENGER_4.0 0.2, SOLDIER_SKELETON_4.0 0.1, LAST_GIFT 0.1, ELITE_REVIVER 0.1, CURSE_EATER 0.1, COMBO_GRANTER 0.1, WEAPON_SPIRIT_4.0 0.1, AWAKENED_REAPER 0.1, GRAVE_MILLER 0.0, DEATHBED_PORTER 0.0, COMBO_STARTER 0.0, CURSE_THIRST_BEAST_4.0 0.0, REANIMATOR 0.0, BEAST_REVIVER 0.0 |
+| bury | 205.73 | RELIC_TALLY 10.9, SACRIFICIAL_SPIRIT 7.6, SNOWBALL 2.9, DETERIORATION_4.0 2.7, SWARM_CURSER 1.7, RELIC_ATTACK_HEX 1.4, LAST_GIFT 1.2, AWAKENED_REAPER 0.9, GRAVE_PUNCH_4.0 0.7, HEXER 0.4, AVENGER_4.0 0.3, DOOM_HERALD 0.3, MIMIC_BLADE 0.3, GRAVE_HEXER 0.3, CURSE_GARDENER 0.3, DECIMATION 0.3, GRAVE_FIST 0.2, WEAPON_SPIRIT_4.0 0.2, WAKING_FIGHTER 0.2, UNDYING_WARRIOR 0.2, WOKEN_HEX 0.2, RIFT_SHEPHERD 0.2, BLACKSMITH_4.0 0.1, GRAVE_MILLER 0.1, HEXBLADE 0.1, MILLBLADE 0.1, SWARM_QUEEN 0.1, EULOGIST 0.1, TWIN_STRIKER 0.1, WOKEN_BLADE 0.1, REANIMATOR 0.1, GRAVE_TOGETHER_4.0 0.0, GRAVE_DREDGER 0.0, FINAL_ESCORT 0.0, SLIME_4.0 0.0, RIFT_INSECT_4.0 0.0, COMBO_STARTER 0.0, ELITE_REVIVER 0.0, CURSE_THIRST_BEAST_4.0 0.0 |
+| curse | 57.43 | RIFT_STRIKER 4313464753033965993984.0, HEXER 2454375822100933378048.0, AWAKENED_REAPER 1478807980760706842624.0, CURSE_EATER 40687271292957769728.0, TWIN_STRIKER 35833803910118981632.0, GRAVE_PUNCH_4.0 35280857247017267200.0, HEXBLADE 31490860205983428608.0, UNFINISHED_ROBOT_4.0 21849553862735376384.0, MIMIC_BLADE 4963992711654255616.0, BEAST_REVIVER 32876543361764388.0, LAST_GIFT 16225673922615346.0, CURSE_THIRST_BEAST_4.0 411273969037976.2, GRAVE_FIST 244723576171870.2, DETERIORATION_4.0 164125290870214.7, CURSE_REVIVER 64090300055484.7, DOOM_HERALD 561225863170.6, ELITE_REVIVER 519485857613.4, GRAVE_ROBBER 192301444.0, UNDYING_WARRIOR 1182507.6, SLIME_4.0 118433.9, COMBO_STARTER 7200.9, SWARM_CURSER 81.6, AVENGER_4.0 54.0, COMBO_GRANTER 24.6, SACRIFICIAL_SPIRIT 16.4, RELIC_TALLY 14.7, RELIC_ATTACK_HEX 12.3, WOKEN_HEX 5.2, GRAVE_GIANT 4.8, GRAVE_HEXER 4.7, MILLBLADE 4.6, RIFT_SHEPHERD 4.2, CURSE_GARDENER 4.1, GRAVE_MILLER 2.8, WEAPON_SPIRIT_4.0 2.8, BLACKSMITH_4.0 2.0, DECIMATION 1.2, SOLDIER_SKELETON_4.0 1.1, SNOWBALL 1.0, QUAD_STRIKER 0.7, WOKEN_BLADE 0.6, EULOGIST 0.4, RIFT_INSECT_4.0 0.3, DEATHBED_PORTER 0.3, GRAVE_TOGETHER_4.0 0.2, FINAL_ESCORT 0.1, WAKING_FIGHTER 0.1, EXILE_BERSERKER 0.1, REANIMATOR 0.0, SWARM_QUEEN 0.0 |
+| enhance | 19.26 | UNFINISHED_ROBOT_4.0 11855597322.7, AVENGER_4.0 45.1, MIMIC_BLADE 38.6, BLACKSMITH_4.0 33.6, SNOWBALL 18.3, WAKING_FIGHTER 6.3, SOLDIER_SKELETON_4.0 5.9, EXILE_BERSERKER 5.7, WEAPON_SPIRIT_4.0 2.0, DETERIORATION_4.0 1.5, GRAVE_GIANT 1.4, HEXER 1.3, SACRIFICIAL_SPIRIT 1.1, RELIC_ATTACK_HEX 0.9, SWARM_CURSER 0.8, DOOM_HERALD 0.7, DECIMATION 0.6, RELIC_TALLY 0.6, HEXBLADE 0.5, TWIN_STRIKER 0.5, CURSE_GARDENER 0.3, ELITE_REVIVER 0.3, WOKEN_HEX 0.3, GRAVE_TOGETHER_4.0 0.2, GRAVE_ROBBER 0.2, GRAVE_HEXER 0.2, SPIKE_SKELETON_4.0 0.2, LAST_GIFT 0.1, MILLBLADE 0.1, GRAVE_DREDGER 0.1, REANIMATOR 0.1, AWAKENED_REAPER 0.0, RIFT_INSECT_4.0 0.0, WOKEN_BLADE 0.0 |
+| awaken | 114.06 | SWARM_CURSER 10.2, WOKEN_HEX 7.7, DETERIORATION_4.0 3.9, RELIC_ATTACK_HEX 2.1, DOOM_HERALD 1.6, GRAVE_ROBBER 1.5, SACRIFICIAL_SPIRIT 1.5, WAKING_FIGHTER 1.3, WOKEN_BLADE 1.3, AWAKENED_REAPER 1.3, RELIC_TALLY 1.1, SPIKE_SKELETON_4.0 1.1, HEXER 1.0, WEAPON_SPIRIT_4.0 0.4, GRAVE_HEXER 0.4, CURSE_GARDENER 0.4, DEATHBED_PORTER 0.3, MILLBLADE 0.2, CURSE_THIRST_BEAST_4.0 0.2, GRAVE_PUNCH_4.0 0.2, SNOWBALL 0.2, BLACKSMITH_4.0 0.1, REVIVING_STRIKER 0.1, GRAVE_TOGETHER_4.0 0.1, TWIN_STRIKER 0.1, GRAVE_MILLER 0.1, GRAVE_DREDGER 0.1, HEXBLADE 0.0 |

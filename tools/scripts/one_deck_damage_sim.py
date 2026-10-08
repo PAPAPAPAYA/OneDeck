@@ -108,14 +108,18 @@ def card_rarity(cid):
 # ---------------------------------------------------------------------------
 TRIAL_RARITY_DIRS = ('0_Common', '1_Uncommon', '2_Rare')
 
-# DB-desc-authoritative overrides for prefab field drift (2026-09-16):
-# these cards' descs dropped 攻击xN on BOTH sides, but the serialized
-# extraAttackTimes is still 1. Zero the prefab fields in Unity to remove
-# these entries. DECIMATION is intentionally NOT overridden: the 2026-09-16
-# ruling keeps its x3 (prefab extraAttackTimes = 2).
-EXTRA_ATTACK_TIMES_OVERRIDE = {
-	'TWIN_STRIKER': 0, 'AVENGER_4.0': 0, 'GRAVE_PUNCH_4.0': 0,
-	'RIFT_STRIKER': 0, 'SNOWBALL': 0, 'MIMIC_BLADE': 0,
+# Mirror of Unity ReviveEffect.oncePerRound (per-round revive gate, 2026-09-20;
+# gate-mirror cost check 2026-09-21): cid -> N successful revive BATCHES per
+# card instance per round (one batch may revive several cards); absent cid =
+# unlimited. Charges reopen at every round start; an empty-grave fizzle keeps
+# the charge; a spent gate fizzles the whole batch. Values read from prefabs
+# 2026-10-06 (Sim4 drift sync, docs/Sim4_Handoff_2026-09-16.md).
+REVIVE_ONCE_PER_ROUND = {
+	'ELITE_REVIVER': 1, 'SPIRIT_CALLER': 2, 'RELIC_CURSE_REVIVAL': 3,
+	'RIFT_REVIVER': 2, 'DUO_REVIVER': 1, 'MASS_REVIVER': 1,
+	'BEAST_REVIVER': 1, 'GRAVE_HEXER': 1, 'RIFT_SHEPHERD': 1,
+	'CURSE_SUMMONER': 1, 'KINGSLAYER': 1, 'REVIVE_SUMMONER': 1,
+	'SOUL_TRADER': 1, 'NECROMANCER': 1,
 }
 RARITY_DIR_TO_NAME = {'0_Common': 'normal', '1_Uncommon': 'uncommon',
 					  '2_Rare': 'rare'}
@@ -209,6 +213,12 @@ def _load_card_pool_40():
 				continue
 			block = blocks[0]
 			cid = _CID_RE.search(block).group(1)
+			if cid == 'SYSTEM_INCREASE_UPGRADE_CAP':
+				# 添龛 shop meter card (2026-09-30): no combat-instantiation
+				# effect — excluded to keep the trial pool at 112 (2026-10-06
+				# ruling). SYSTEM_INCREASE_HP_MAX / _DECK_SIZE_LITE stay IN:
+				# they have real combat presence.
+				continue
 			m = _DISPLAY_RE.search(block)
 			raw = m.group(1).strip() if m else cid
 			try:
@@ -401,7 +411,7 @@ class Card40:
 				 'atk_mod_round', 'attack_times_base', 'attack_times_mod_round',
 				 'card_type', 'is_believer', 'is_passive', 'echo_bounce',
 				 'echo_counter', 'exiled', 'reveal_count', 'is_start', 'tags',
-				 'rarity')
+				 'rarity', 'revive_gate_round', 'revive_gate_spent')
 	_id_counter = 0
 
 	def __init__(self, cid, owner, atk=0, attack_times=1, card_type=0,
@@ -429,6 +439,10 @@ class Card40:
 		self.is_start = is_start
 		self.tags = list(tags or [])
 		self.rarity = rarity
+		# Per-round revive gate (ReviveEffect.oncePerRound mirror): lazy
+		# stamp off state.round_num — reading a new round reopens the gate.
+		self.revive_gate_round = -1
+		self.revive_gate_spent = 0
 
 	@property
 	def atk(self):
@@ -463,8 +477,6 @@ def build_card40(cid, owner):
 	if info is None:
 		raise KeyError(f'build_card40: cid not in trial table: {cid}')
 	extra = info['extra_attack_times'] or 0
-	if cid in EXTRA_ATTACK_TIMES_OVERRIDE:
-		extra = EXTRA_ATTACK_TIMES_OVERRIDE[cid]
 	return Card40(cid, owner,
 				  atk=info['printed_attack'] or 0,
 				  attack_times=1 + extra,
@@ -952,9 +964,27 @@ def verb_bury_deck_top(state, source, count):
 	return buried
 
 
+def revive_gate_open(state, card):
+	"""Mirror of Unity ReviveEffect.IsGateSpent (read-only, no charge spent):
+	lazy per-round stamp off state.round_num; True = charges still available.
+	Ungated cids are always open."""
+	n = REVIVE_ONCE_PER_ROUND.get(card.cid, 0)
+	if not n:
+		return True
+	if card.revive_gate_round != state.round_num:
+		card.revive_gate_round = state.round_num
+		card.revive_gate_spent = 0
+	return card.revive_gate_spent < n
+
+
 def verb_revive(state, source, predicate, rng, faction=None, count=1):
 	"""复活N[目标]: graveyard-side pool only (passives excluded — they are
-	immovable and non-revivable); fires awaken per card."""
+	immovable and non-revivable); fires awaken per card.
+	Per-round gate (ReviveEffect.oncePerRound mirror): a spent gate fizzles
+	the whole batch up front; the charge is spent ONCE per batch that revives
+	at least one card (Unity ReviveChosenCards), empty-grave fizzles keep it."""
+	if not revive_gate_open(state, source):
+		return []
 	pool = [c for c in graveyard_cards(state) if not c.is_passive]
 	pool = faction_filter(pool, faction)
 	targets = select_targets_40(state, pool, predicate, rng, count=count)
@@ -962,6 +992,8 @@ def verb_revive(state, source, predicate, rng, faction=None, count=1):
 		revive_card_40(state, t, source=source)
 		if t.owner == source.owner:
 			state.revived_friendly_this_round[source.owner] += 1
+	if targets and source.cid in REVIVE_ONCE_PER_ROUND:
+		source.revive_gate_spent += 1
 	return targets
 
 
@@ -1169,13 +1201,13 @@ def selftest_verbs_40():
 	verb_exile(state, blacksmith, victim[0])
 	assert victim[0].exiled and victim[0] not in state.deck
 
-	# 攻击 via verb: GRAVE_PUNCH lost its x2 (2026-09-16 desc sweep,
-	# EXTRA_ATTACK_TIMES_OVERRIDE) -> atk 2, single segment.
+	# 攻击 via verb: GRAVE_PUNCH keeps its engine-side x2 (2026-10-06 ruling:
+	# the ATK badge carries the segment count; prefab extraAttackTimes = 1).
 	punch = build_card40('GRAVE_PUNCH_4.0', 'A')
 	add_alive_40(state, punch, position='top')
-	assert punch.attack_times == 1
+	assert punch.attack_times == 2
 	dmg = verb_attack(state, punch)
-	assert dmg == 2 and state.hp['B'] == 25 - 2, f'attack {dmg}'
+	assert dmg == 4 and state.hp['B'] == 25 - 4, f'attack {dmg}'
 
 	# U verbs: set_attack (signed ledger), weaken round-clear, copy-self,
 	# attack_times permanent vs 本回合.
@@ -1998,7 +2030,7 @@ _handler40('RELIC_TRAINER',
 		   passive_events=[('round_start', None, _relic_trainer_round_start)])
 
 
-# RIFT_GUIDE 献祭司事 (非生物): 放逐1友方信徒,埋葬2敌方非生物
+# RIFT_GUIDE_4.0 献祭司事 (非生物): 放逐1友方信徒,埋葬2敌方非生物
 def _rift_guide_reveal(state, card):
 	believer = select_targets_40(state, _believer_pool(state, card.owner),
 								 lambda c: True, state.rng, 1)
@@ -2008,15 +2040,21 @@ def _rift_guide_reveal(state, card):
 					  faction=opp(card.owner), count=2)
 
 
-_handler40('RIFT_GUIDE', on_revealed=_rift_guide_reveal)
+_handler40('RIFT_GUIDE_4.0', on_revealed=_rift_guide_reveal)
 
 
-# RIFT_REVIVER 以人易物 (非生物): 放逐1友方信徒,复活2友方非生物
+# RIFT_REVIVER 以人易物 (非生物): 放逐1友方信徒: 每回合两次,复活2友方现象
+# (cost = has-believer + gate mirror, Unity CheckCost_ReviveGateOpen: a spent
+# gate or no available believer leaves the whole container inert — the exile
+# never fires without its revive payoff; oncePerRound = 2)
 def _rift_reviver_reveal(state, card):
+	if not revive_gate_open(state, card):
+		return
 	believer = select_targets_40(state, _believer_pool(state, card.owner),
 								 lambda c: True, state.rng, 1)
-	if believer:
-		verb_exile(state, card, believer[0])
+	if not believer:
+		return
+	verb_exile(state, card, believer[0])
 	verb_revive(state, card, pred_non_creature, state.rng,
 				faction=card.owner, count=2)
 
@@ -2385,7 +2423,7 @@ _handler40('RELIC_DEATH_KNELL',
 		   passive_events=[('awaken', None, _relic_death_knell_event)])
 
 
-# WEAPON_SPIRIT 妖刀 被动: 友方被强化时:强化1该友方 (chain-guarded:
+# WEAPON_SPIRIT_4.0 妖刀 被动: 友方被强化时:强化1该友方 (chain-guarded:
 # its own +1 fires 'enhanced' again within the same root chain and is
 # blocked by the once-per-handler chain guard)
 def _weapon_spirit_event(state, card, payload):
@@ -2393,7 +2431,7 @@ def _weapon_spirit_event(state, card, payload):
 		give_enhance_40(state, payload['card'], 1, source=card)
 
 
-_handler40('WEAPON_SPIRIT',
+_handler40('WEAPON_SPIRIT_4.0',
 		   passive_events=[('enhanced', None, _weapon_spirit_event)])
 
 
@@ -2640,6 +2678,7 @@ class CombatStats:
 		self.generated = Counter()   # (cid, owner) -> count
 		self.curse_enh = Counter()   # source cid -> amount
 		self.attack_events = 0
+		self.max_attack = 0          # largest single attack (all segments)
 		bus = state.bus
 		bus.subscribe('revealed', lambda p: self.reveals.__setitem__(
 			p['card'].cid, self.reveals[p['card'].cid] + 1))
@@ -2657,6 +2696,8 @@ class CombatStats:
 		self.attack_events += 1
 		cid = p['attacker'].cid
 		self.dmg[cid] = self.dmg[cid] + p['total']
+		if p['total'] > self.max_attack:
+			self.max_attack = p['total']
 
 	def _on_enhanced(self, p):
 		if p['card'].cid == CURSE_TOKEN_CID and p.get('source'):
@@ -2707,13 +2748,16 @@ def winner_of_40(state):
 	return None
 
 
-def run_batch_40(sessions, size, hp_max, axis=None, rng=None):
+def run_batch_40(sessions, size, hp_max, axis=None, rng=None, sink=None):
 	"""Run a batch of combats; aggregate per-cid stats over healthy runs.
 
 	Returns (agg, diverged): agg holds round totals and per-cid Counters
 	(reveals/dmg/awakens/burials/curse_enh keyed by cid, believers keyed by
 	(cid, owner), wins/presence keyed by cid); diverged counts runs dropped
 	for engine divergence or conservation failure.
+	sink: optional per-match callback (attribution step 1). Fires for EVERY
+	combat, healthy or diverged, with a JSON-ready dict (deck cid lists,
+	winner, rounds, hp_final, healthy flag, divergence reason, per-cid stats).
 	"""
 	rng = rng or random.Random()
 	agg = {'rounds': 0, 'reveals': Counter(), 'dmg': Counter(),
@@ -2727,6 +2771,28 @@ def run_batch_40(sessions, size, hp_max, axis=None, rng=None):
 		state = setup_combat_40(deck_a, deck_b, hp_max=hp_max)
 		stats = CombatStats(state)
 		run_combat_40(state, rng)
+		winner = winner_of_40(state)
+		if sink is not None:
+			sink({
+				'deck_a': [c.cid for c in deck_a],
+				'deck_b': [c.cid for c in deck_b],
+				'winner': winner,
+				'rounds': state.round_num,
+				'hp_final': {'A': state.hp['A'], 'B': state.hp['B']},
+				'healthy': not (state.divergence
+								or not conservation_ok_40(state)),
+				'divergence': state.divergence,
+				'stats': {
+					'dmg': dict(stats.dmg),
+					'reveals': dict(stats.reveals),
+					'awakens': dict(stats.awakens),
+					'burials': dict(stats.burials),
+					'curse_enh': dict(stats.curse_enh),
+					'max_attack': stats.max_attack,
+					'believers': {f'{cid}|{owner}': n for (cid, owner), n
+								  in stats.generated.items()},
+				},
+			})
 		if state.divergence or not conservation_ok_40(state):
 			diverged += 1
 			continue
@@ -2738,7 +2804,6 @@ def run_batch_40(sessions, size, hp_max, axis=None, rng=None):
 		agg['burials'] += stats.burials
 		agg['curse_enh'] += stats.curse_enh
 		agg['believers'] += stats.generated
-		winner = winner_of_40(state)
 		for cid in (c.cid for c in deck_a):
 			agg['presence'][cid] += 1
 			if winner == 'A':
@@ -2933,6 +2998,499 @@ def generate_report_40(out_dir, sessions=200):
 		with open(path, 'w', encoding='utf-8') as f:
 			f.write('\n'.join(lines))
 		print(f'[sim6] report written: {path}')
+
+
+MATCH_EXPORT_CONFIGS = [('6v6_hp25', 6, 25), ('6v6_hp50', 6, 50),
+						('10v10_hp25', 10, 25), ('10v10_hp50', 10, 50)]
+
+
+def export_matches_40(out_dir, sessions=200):
+	"""Attribution step 1 (Sim4_Handoff_2026-09-16 §六.1): per-match JSONL.
+
+	Mirrors the report grid exactly: 4 configs x (uniform + 7 axis batches),
+	each batch re-seeded with the SAME deterministic seed as
+	generate_report_40, so exported matches and report aggregates agree.
+	One JSON line per combat — healthy and diverged alike (analysis filters
+	by 'healthy'): deck cid lists, winner, rounds, hp_final, divergence
+	reason, per-cid dmg/reveals/awakens/burials/curse_enh/believers.
+	"""
+	os.makedirs(out_dir, exist_ok=True)
+	for name, size, hp in MATCH_EXPORT_CONFIGS:
+		path = os.path.join(out_dir, f'matches_{name}.jsonl')
+		with open(path, 'w', encoding='utf-8') as f:
+			for axis in ['uniform'] + list(AXIS_TAG_40):
+				seed = f'sim4|{size}|{hp}|{axis}'
+				batch_rng = random.Random(seed)
+
+				def _sink(rec, _axis=axis, _seed=seed, _f=f, _name=name):
+					rec = dict(rec)
+					rec.update({'config': _name, 'axis': _axis,
+								'batch_seed': _seed})
+					_f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+
+				run_batch_40(sessions, size, hp,
+							 axis=None if axis == 'uniform' else axis,
+							 rng=batch_rng, sink=_sink)
+		n_lines = sum(1 for _ in open(path, encoding='utf-8'))
+		print(f'[sim6] matches exported: {path} ({n_lines} lines)')
+
+
+def flag_match_40(rec, max_rounds=40, max_reveals=3000):
+	"""Attribution flags for one match record (Sim4_Handoff §六.2).
+
+	Non-termination signals: per the 2026-10-06 ruling, after the per-round
+	revive gates NO combo should hang — a diverged/round_cap/reveal_pressure
+	hit is either a real design issue or a sim<->Unity fidelity gap, and is
+	reported, never silently accepted. Blowout signals: bounded but extreme
+	growth (e.g. the curse feedback ring, which terminates but explodes).
+	"""
+	flags = []
+	stats = rec.get('stats', {})
+	reveals = sum(stats.get('reveals', {}).values())
+	dmg_total = sum(stats.get('dmg', {}).values())
+	hp_max = rec.get('hp_max')
+	if not rec.get('healthy', True):
+		flags.append('diverged')
+	if rec.get('winner') is None:
+		flags.append('no_winner')
+	if rec.get('rounds', 0) >= max_rounds:
+		flags.append('round_cap')
+	if reveals >= 0.8 * max_reveals:
+		flags.append('reveal_pressure')
+	if hp_max and dmg_total >= 8 * 2 * hp_max:
+		flags.append('dmg_blowout')
+	if sum(stats.get('curse_enh', {}).values()) >= 500:
+		flags.append('curse_blowout')
+	if hp_max and stats.get('max_attack', 0) >= 4 * hp_max:
+		flags.append('one_hit_blowout')
+	if rec.get('rounds', 0) >= 30:
+		flags.append('long_game')
+	return flags
+
+
+PAIR_EXPORT_CONFIGS = [('6v6_hp25', 6, 25), ('10v10_hp50', 10, 50)]
+
+
+def run_pairs_40(out_dir, seeds=3, max_rounds=40, max_reveals=3000):
+	"""Attribution step 2 (Sim4_Handoff §六.2): all-pairs enumeration.
+
+	Every unordered combat-pool pair (plus same-card pairs) runs as a
+	MIRRORED match: each side holds the same half-half multiset of the two
+	cards (3+3 for 6v6, 5+5 for 10v10), independently shuffled per seed.
+	Mirroring exercises same-side synergies AND cross-side mirror loops in
+	one match; multiple copies give self-feeding combos room to build up.
+	"""
+	os.makedirs(out_dir, exist_ok=True)
+	cids = sorted(COMBAT_POOL_40)
+	combos = [(x, y) for i, x in enumerate(cids) for y in cids[i:]]
+	for cfg_name, size, hp in PAIR_EXPORT_CONFIGS:
+		half = size // 2
+		path = os.path.join(out_dir, f'pairs_{cfg_name}.jsonl')
+		n_written = 0
+		with open(path, 'w', encoding='utf-8') as f:
+			for x, y in combos:
+				for seed_i in range(seeds):
+					rng = random.Random(f'pairs4|{cfg_name}|{x}|{y}|{seed_i}')
+					deck_a = [build_card40(x, 'A') for _ in range(size - half)] \
+						+ [build_card40(y, 'A') for _ in range(half)]
+					deck_b = [build_card40(x, 'B') for _ in range(size - half)] \
+						+ [build_card40(y, 'B') for _ in range(half)]
+					rng.shuffle(deck_a)
+					rng.shuffle(deck_b)
+					state = setup_combat_40(deck_a, deck_b, hp_max=hp)
+					stats = CombatStats(state)
+					run_combat_40(state, rng, max_rounds=max_rounds,
+								  max_reveals=max_reveals)
+					rec = {
+						'config': cfg_name, 'size': size, 'hp_max': hp,
+						'pair': [x, y], 'same_card': x == y,
+						'seed_i': seed_i,
+						'winner': winner_of_40(state),
+						'rounds': state.round_num,
+						'hp_final': {'A': state.hp['A'], 'B': state.hp['B']},
+						'healthy': not (state.divergence
+										or not conservation_ok_40(state)),
+						'divergence': state.divergence,
+						'stats': {
+							'dmg': dict(stats.dmg),
+							'reveals': dict(stats.reveals),
+							'awakens': dict(stats.awakens),
+							'burials': dict(stats.burials),
+							'curse_enh': dict(stats.curse_enh),
+							'max_attack': stats.max_attack,
+							'believers': {f'{cid}|{owner}': n
+										  for (cid, owner), n
+										  in stats.generated.items()},
+						},
+					}
+					rec['flags'] = flag_match_40(rec, max_rounds, max_reveals)
+					f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+					n_written += 1
+		print(f'[sim6] pairs exported: {path} ({n_written} matches)')
+
+
+def write_pairs_summary(out_dir, seeds):
+	"""Aggregate the pairs_*.jsonl exports into pairs_summary.md."""
+	by_flag = Counter()
+	examples = defaultdict(list)
+	blowout = []
+	nonterm_keys = ('diverged', 'round_cap', 'reveal_pressure')
+	total = 0
+	for cfg_name, _, _hp in PAIR_EXPORT_CONFIGS:
+		path = os.path.join(out_dir, f'pairs_{cfg_name}.jsonl')
+		if not os.path.exists(path):
+			continue
+		with open(path, encoding='utf-8') as f:
+			for line in f:
+				rec = json.loads(line)
+				total += 1
+				for fl in rec['flags']:
+					by_flag[fl] += 1
+					if len(examples[fl]) < 5:
+						examples[fl].append(
+							f"{rec['pair'][0]}+{rec['pair'][1]} [{cfg_name}]")
+				if set(rec['flags']) & {'dmg_blowout', 'curse_blowout',
+										'one_hit_blowout'}:
+					blowout.append((sum(rec['stats']['dmg'].values())
+									+ sum(rec['stats']['curse_enh'].values()),
+									rec['pair'], cfg_name, rec['flags']))
+	lines = ['# Sim4 Step2 两卡组合枚举汇总(2026-10-06)', '',
+			 f'- 覆盖:C(112,2)+同卡 = 6328 组合 × {seeds} 种子 × '
+			 f'{len(PAIR_EXPORT_CONFIGS)} 配置(6v6_hp25 / 10v10_hp50),'
+			 f'共 {total} 场',
+			 f'- **非终止核对**(门禁后预期无无限组合):'
+			 f'diverged={by_flag["diverged"]} 场,'
+			 f'round_cap={by_flag["round_cap"]} 场,'
+			 f'reveal_pressure={by_flag["reveal_pressure"]} 场',
+			 f'- blowout:dmg_blowout={by_flag["dmg_blowout"]},'
+			 f'curse_blowout={by_flag["curse_blowout"]},'
+			 f'one_hit_blowout={by_flag["one_hit_blowout"]};'
+			 f'no_winner={by_flag["no_winner"]},long_game={by_flag["long_game"]}',
+			 '', '## 标记明细(每类至多 5 例)', '']
+	for fl in sorted(by_flag):
+		lines.append(f'- **{fl}** ×{by_flag[fl]}: ' + '; '.join(examples[fl]))
+	blowout.sort(key=lambda t: -t[0])
+	if blowout:
+		lines += ['', '## blowout Top 15(dmg+curse_enh 总量排序)', '',
+				  '| 量级 | 组合 | 配置 | flags |', '|---|---|---|---|']
+		for score, pair, cfg, flags in blowout[:15]:
+			lines.append(f'| {score:.3g} | {pair[0]} + {pair[1]} | {cfg} '
+						 f'| {",".join(flags)} |')
+	else:
+		lines += ['', '(无 blowout 标记场)', '']
+	path = os.path.join(out_dir, 'pairs_summary.md')
+	with open(path, 'w', encoding='utf-8') as f:
+		f.write('\n'.join(lines) + '\n')
+	print(f'[sim6] pairs summary: {path} '
+		  f'(nonterm total = {sum(by_flag[k] for k in nonterm_keys)})')
+	return by_flag
+
+
+# ---------------------------------------------------------------------------
+# Attribution step 3 (Sim4_Handoff §六.3): feature regression.
+# Pure-python OLS on sparse rows (no numpy dependency). Three protections
+# per the handoff: (1) heavy tails winsorized at the global p99 with tail
+# diagnostics; (2) batch source (axis) and config enter as covariates —
+# axis conditioning DELIBERATELY correlates tags with batches, so axis
+# coefficients are declared collinear and card features are read jointly;
+# (3) the ledger's known approximations are declared in the report.
+# ---------------------------------------------------------------------------
+REGRESS_MATCH_CONFIGS = ('6v6_hp25', '6v6_hp50', '10v10_hp25', '10v10_hp50')
+REGRESS_BASE_CONFIG = '6v6_hp25'
+REGRESS_BASE_AXIS = 'uniform'
+
+
+def _card_feature_names_40():
+	return ['is_creature', 'printed_attack', 'segments', 'gate', 'copies',
+			'tag_Bury', 'tag_DeathRattle', 'tag_Enhance', 'tag_Believer',
+			'tag_Exile', 'tag_Curse', 'tag_Awaken', 'tag_Passive',
+			'tag_Revive', 'tag_EnhanceReaction', 'tag_MultiAttack',
+			'rarity_uncommon', 'rarity_rare', 'utility_passive']
+
+
+_TAG_NAME_SET = set(TAG_ENUM_NAMES.values())
+
+
+def _card_feature_vec_40(cid, copies=1):
+	info = CARD_POOL_40[cid]
+	tags = set(info['tags'] or [])
+	vec = {
+		'is_creature': 1.0 if info['is_creature'] else 0.0,
+		'printed_attack': float(info['printed_attack'] or 0),
+		'segments': float(1 + (info['extra_attack_times'] or 0)),
+		'gate': 1.0 if REVIVE_ONCE_PER_ROUND.get(cid, 0) else 0.0,
+		'copies': float(copies),
+		'rarity_uncommon': 1.0 if info['rarity'] == '1_Uncommon' else 0.0,
+		'rarity_rare': 1.0 if info['rarity'] == '2_Rare' else 0.0,
+		'utility_passive': 1.0 if info['is_utility_passive'] else 0.0,
+	}
+	for t in _TAG_NAME_SET & tags:
+		vec[f'tag_{t}'] = 1.0
+	return vec
+
+
+def _gauss_solve(a, b):
+	"""Solve a·x=b (Gauss-Jordan with partial pivoting); a is modified."""
+	n = len(b)
+	for col in range(n):
+		piv = max(range(col, n), key=lambda r: abs(a[r][col]))
+		if abs(a[piv][col]) < 1e-12:
+			raise ValueError('singular normal matrix')
+		a[col], a[piv] = a[piv], a[col]
+		b[col], b[piv] = b[piv], b[col]
+		piv_inv = 1.0 / a[col][col]
+		for j in range(col, n):
+			a[col][j] *= piv_inv
+		b[col] *= piv_inv
+		for r in range(n):
+			if r != col and a[r][col] != 0.0:
+				f = a[r][col]
+				for j in range(col, n):
+					a[r][j] -= f * a[col][j]
+				b[r] -= f * b[col]
+	return b
+
+
+def _mat_inverse(m):
+	n = len(m)
+	a = [row[:] + [1.0 if i == j else 0.0 for j in range(n)]
+		 for i, row in enumerate(m)]
+	for col in range(n):
+		piv = max(range(col, n), key=lambda r: abs(a[r][col]))
+		a[col], a[piv] = a[piv], a[col]
+		piv_inv = 1.0 / a[col][col]
+		for j in range(col, 2 * n):
+			a[col][j] *= piv_inv
+		for r in range(n):
+			if r != col and a[r][col] != 0.0:
+				f = a[r][col]
+				for j in range(col, 2 * n):
+					a[r][j] -= f * a[col][j]
+	return [row[n:] for row in a]
+
+
+def _ols_sparse(rows, k):
+	"""rows: iterable of ({col: value}, y). Returns (beta, se, r2, n)."""
+	xtx = [[0.0] * k for _ in range(k)]
+	xty = [0.0] * k
+	yn = 0.0
+	y2 = 0.0
+	n = 0
+	for feats, y in rows:
+		n += 1
+		yn += y
+		y2 += y * y
+		idx = [(0, 1.0)] + sorted(feats.items())
+		m = len(idx)
+		for a_i in range(m):
+			ia, va = idx[a_i]
+			xty[ia] += va * y
+			xav = va
+			for b_i in range(a_i, m):
+				ib, vb = idx[b_i]
+				xtx[ia][ib] += xav * vb
+				if a_i != b_i:
+					xtx[ib][ia] += xav * vb
+	beta = _gauss_solve([row[:] for row in xtx], xty[:])
+	rss = 0.0
+	for feats, y in rows:
+		pred = beta[0] + sum(v * beta[c] for c, v in feats.items())
+		rss += (y - pred) ** 2
+	dof = max(n - k, 1)
+	sigma2 = rss / dof
+	xtx_inv = _mat_inverse(xtx)
+	se = [(max(sigma2 * xtx_inv[j][j], 0.0)) ** 0.5 for j in range(k)]
+	tss = y2 - yn * yn / n
+	r2 = 1.0 - rss / tss if tss > 0 else 0.0
+	return beta, se, r2, n
+
+
+def _load_regress_rows(matches_dir):
+	"""Read the step-1 exports; returns (damage records, deck records)."""
+	dmg_rows = []   # (config, axis, cid, copies, dmg, rounds, winner)
+	deck_rows = []  # (config, axis, deck cids, winner)
+	for cfg in REGRESS_MATCH_CONFIGS:
+		path = os.path.join(matches_dir, f'matches_{cfg}.jsonl')
+		if not os.path.exists(path):
+			print(f'[sim6] regression: missing {path}, skipped')
+			continue
+		with open(path, encoding='utf-8') as f:
+			for line in f:
+				rec = json.loads(line)
+				if not rec.get('healthy'):
+					continue
+				stats = rec['stats']
+				counts = Counter(rec['deck_a']) + Counter(rec['deck_b'])
+				for cid in counts:
+					dmg_rows.append((rec['config'], rec['axis'], cid,
+									 counts[cid], stats['dmg'].get(cid, 0),
+									 rec['rounds'], rec['winner']))
+				deck_rows.append((rec['config'], rec['axis'],
+								  rec['deck_a'], rec['deck_b'],
+								  rec['winner'], rec['rounds']))
+	return dmg_rows, deck_rows
+
+
+def _winsorize(values, q=0.99):
+	s = sorted(values)
+	thr = s[min(int(len(s) * q), len(s) - 1)]
+	clipped = sum(1 for v in values if v > thr)
+	tail = sum(v for v in values if v > thr)
+	total = sum(values)
+	return thr, clipped, (tail / total if total else 0.0)
+
+
+def _axis_config_feats(config, axis, col):
+	feats = {}
+	if axis != REGRESS_BASE_AXIS:
+		feats[col[f'axis_{axis}']] = 1.0
+	if config != REGRESS_BASE_CONFIG:
+		feats[col[f'config_{config}']] = 1.0
+	return feats
+
+
+def run_regress_40(matches_dir, out_dir):
+	"""Attribution step 3: fit the damage + win models, write the report."""
+	os.makedirs(out_dir, exist_ok=True)
+	dmg_rows, deck_rows = _load_regress_rows(matches_dir)
+	if not dmg_rows:
+		print('[sim6] regression: no match data — run --export-matches-40 first')
+		return
+	names = ['const'] + _card_feature_names_40() \
+		+ [f'axis_{a}' for a in AXIS_TAG_40] \
+		+ [f'config_{c}' for c in REGRESS_MATCH_CONFIGS
+		   if c != REGRESS_BASE_CONFIG] + ['rounds']
+	col = {n: i + 1 for i, n in enumerate(names[1:])}
+	k = len(names)
+
+	# --- damage model (winsorized p99) ---
+	thr, n_clip, tail_share = _winsorize([r[4] for r in dmg_rows])
+	rows = []
+	for cfg, axis, cid, copies, dmg, rounds, _w in dmg_rows:
+		feats = _axis_config_feats(cfg, axis, col)
+		for fname, v in _card_feature_vec_40(cid, copies).items():
+			feats[col[fname]] = v
+		feats[col['rounds']] = rounds / 10.0
+		rows.append((feats, min(dmg, thr)))
+	beta_d, se_d, r2_d, n_d = _ols_sparse(rows, k)
+	t_d = [beta_d[i] / se_d[i] if se_d[i] else 0.0 for i in range(k)]
+
+	# --- residuals per cid for the league table ---
+	resid = defaultdict(list)
+	for (cfg, axis, cid, copies, dmg, rounds, _w), (feats, yw) in zip(
+			dmg_rows, rows):
+		pred = beta_d[0] + sum(v * beta_d[c] for c, v in feats.items())
+		resid[cid].append(yw - pred)
+
+	# --- win model (decided matches; deck feature sums + opponent block) ---
+	wnames = ['const'] + _card_feature_names_40() \
+		+ ['opp_attack_sum', 'opp_creatures', 'opp_segments_sum',
+		   'opp_enhance', 'opp_revive'] \
+		+ [f'axis_{a}' for a in AXIS_TAG_40] \
+		+ [f'config_{c}' for c in REGRESS_MATCH_CONFIGS
+		   if c != REGRESS_BASE_CONFIG] + ['rounds']
+	wcol = {n: i + 1 for i, n in enumerate(wnames[1:])}
+	kw = len(wnames)
+	wrows = []
+	for cfg, axis, da, db, winner, rounds in deck_rows:
+		if winner is None:
+			continue
+		for side, own, oppd in (('A', da, db), ('B', db, da)):
+			feats = _axis_config_feats(cfg, axis, wcol)
+			ca, cb = Counter(own), Counter(oppd)
+			for cid, n in ca.items():
+				for fname, v in _card_feature_vec_40(cid, n).items():
+					feats[wcol[fname]] = feats.get(wcol[fname], 0.0) + v
+			opp_sum = sum(_card_feature_vec_40(c, n)['printed_attack']
+						  for c, n in cb.items())
+			opp_cr = sum(_card_feature_vec_40(c, n)['is_creature']
+						 for c, n in cb.items())
+			opp_sg = sum(_card_feature_vec_40(c, n)['segments']
+						 for c, n in cb.items())
+			opp_en = sum(n for c, n in cb.items()
+						 if 'Enhance' in (CARD_POOL_40[c]['tags'] or []))
+			opp_rv = sum(n for c, n in cb.items()
+						 if 'Revive' in (CARD_POOL_40[c]['tags'] or []))
+			feats[wcol['opp_attack_sum']] = opp_sum
+			feats[wcol['opp_creatures']] = opp_cr
+			feats[wcol['opp_segments_sum']] = opp_sg
+			feats[wcol['opp_enhance']] = opp_en
+			feats[wcol['opp_revive']] = opp_rv
+			feats[wcol['rounds']] = rounds / 10.0
+			wrows.append((feats, 1.0 if winner == side else 0.0))
+	beta_w, se_w, r2_w, n_w = _ols_sparse(wrows, kw)
+	t_w = [beta_w[i] / se_w[i] if se_w[i] else 0.0 for i in range(kw)]
+
+	# --- league table (descriptive robust stats + model residual t) ---
+	league = []
+	all_cids = sorted({r[2] for r in dmg_rows})
+	for cid in all_cids:
+		vals = sorted(r[4] for r in dmg_rows if r[2] == cid)
+		n = len(vals)
+		med = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2
+		q1, q3 = vals[n // 4], vals[min(n - 1, 3 * n // 4)]
+		rs = resid.get(cid, [])
+		mr = sum(rs) / len(rs) if rs else 0.0
+		sd = (sum((x - mr) ** 2 for x in rs) / max(len(rs) - 1, 1)) ** 0.5
+		tsc = mr / (sd / len(rs) ** 0.5) if sd > 0 and rs else 0.0
+		info = CARD_POOL_40.get(cid)
+		league.append((cid, info['display_name'] if info else cid, n,
+					   med, q1, q3, mr, tsc))
+
+	_write_regress_report(out_dir, names, beta_d, se_d, t_d, r2_d, n_d,
+						  thr, n_clip, tail_share,
+						  wnames, beta_w, se_w, t_w, r2_w, n_w, league)
+
+
+def _fmt_coef(names, beta, se, t, k):
+	rows = sorted(range(1, k), key=lambda i: -abs(t[i]))
+	lines = ['| 变量 | 系数 | SE | t |', '|---|---|---|---|']
+	for i in rows[:18]:
+		lines.append(f'| {names[i]} | {beta[i]:.3f} | {se[i]:.3f} '
+					 f'| {t[i]:+.1f} |')
+	return lines
+
+
+def _write_regress_report(out_dir, dnames, bd, sd, td, r2d, nd, thr, nclip,
+						  tail, wnames, bw, sw, tw, r2w, nw, league):
+	over = sorted(league, key=lambda r: -r[7])[:10]
+	under = sorted(league, key=lambda r: r[7])[:10]
+	lines = ['# Sim4 Step3 特征回归归因(2026-10-06)', '',
+			 '数据源:Step 1 逐场导出(healthy 场);行数:伤害模型 '
+			 f'{nd}、胜率模型 {nw}(平局剔除)。', '',
+			 '## 三防护声明', '',
+			 f'1. **重尾截尾**:伤害 y 在全局 p99={thr:.4g} 截尾;'
+			 f'被截 {nclip} 行,截尾前 top 段占总伤害 {tail * 100:.1f}%'
+			 '(重尾实证,未截尾结论会由极端场主导)',
+			 '2. **批次协变量**:axis/config 哑元入模;轴条件化使 tag 与批次'
+			 '故意共线,axis 系数仅作对照,卡特征请联合解读',
+			 '3. **已知近似**(台账):萨满 n>200 比例折叠(近似)、咒刃同目标'
+			 '+N 折叠(精确)、镜像僵局仅存在于 pairs 数据(本表为轴批次实战'
+			 '构成)、Power 上限为 3.0 残留描述(4.0 未用)', '',
+			 '## 伤害模型(y=该卡本场伤害,p99 截尾)',
+			 f'R²={r2d:.3f}, n={nd}', '']
+	lines += _fmt_coef(dnames, bd, sd, td, len(dnames))
+	lines += ['', '## 胜率模型(y=本侧是否获胜,线性概率,平局剔除)',
+			  f'R²={r2w:.3f}, n={nw}', '']
+	lines += _fmt_coef(wnames, bw, sw, tw, len(wnames))
+	lines += ['', '## 超模榜(残差 t 降序;正=超出特征模型预期)',
+			  '', '| Card | 中文名 | 出场 | 中位Dmg | IQR | 残差均值 | t |',
+			  '|---|---|---|---|---|---|---|']
+	for cid, name, n, med, q1, q3, mr, tsc in over:
+		lines.append(f'| {cid} | {name} | {n} | {med:.2f} '
+					 f'| {q1:.1f}~{q3:.1f} | {mr:+.3f} | {tsc:+.1f} |')
+	lines += ['', '## 欠模榜(残差 t 升序;负=低于特征模型预期)', '',
+			  '| Card | 中文名 | 出场 | 中位Dmg | IQR | 残差均值 | t |',
+			  '|---|---|---|---|---|---|---|']
+	for cid, name, n, med, q1, q3, mr, tsc in under:
+		lines.append(f'| {cid} | {name} | {n} | {med:.2f} '
+					 f'| {q1:.1f}~{q3:.1f} | {mr:+.3f} | {tsc:+.1f} |')
+	path = os.path.join(out_dir, 'regression_report.md')
+	with open(path, 'w', encoding='utf-8') as f:
+		f.write('\n'.join(lines) + '\n')
+	print(f'[sim6] regression report: {path} '
+		  f'(dmg R2={r2d:.3f} n={nd}; win R2={r2w:.3f} n={nw}; '
+		  f'p99={thr:.4g}, tail {tail * 100:.1f}%)')
 
 
 class Card:
@@ -4396,11 +4954,42 @@ if __name__ == '__main__':
 	parser.add_argument('--report-40', action='store_true',
 						help='Generate the 4.0 Common trial reports '
 							 '(4 configs x axis batches) and exit')
+	parser.add_argument('--export-matches-40', action='store_true',
+						help='Attribution step 1: write per-match JSONL '
+							 '(matches/matches_<config>.jsonl, 4 configs x '
+							 'axis batches x sessions) and exit')
+	parser.add_argument('--pairs-40', action='store_true',
+						help='Attribution step 2: enumerate all combat-pool '
+							 'pairs (6328 combos x seeds x 2 configs), flag '
+							 'blowout/stall/non-termination into pairs/ and '
+							 'exit')
+	parser.add_argument('--regress-40', action='store_true',
+						help='Attribution step 3: feature regression on the '
+							 'step-1 match exports (damage + win models, '
+							 'league table) into regression/ and exit')
+	parser.add_argument('--seeds', type=int, default=3,
+						help='Seeds per pair for --pairs-40 (default 3)')
 	args = parser.parse_args()
 
 	if args.report_40:
 		generate_report_40(os.path.join(base_dir, '..', 'outputs', 'sim4'),
 						   sessions=max(args.sessions, 1))
+		sys.exit(0)
+	if args.export_matches_40:
+		export_matches_40(os.path.join(base_dir, '..', 'outputs', 'sim4',
+									   'matches'),
+						  sessions=max(args.sessions, 1))
+		sys.exit(0)
+	if args.pairs_40:
+		pairs_dir = os.path.join(base_dir, '..', 'outputs', 'sim4', 'pairs')
+		run_pairs_40(pairs_dir, seeds=max(args.seeds, 1))
+		write_pairs_summary(pairs_dir, max(args.seeds, 1))
+		sys.exit(0)
+	if args.regress_40:
+		run_regress_40(os.path.join(base_dir, '..', 'outputs', 'sim4',
+									'matches'),
+					   os.path.join(base_dir, '..', 'outputs', 'sim4',
+									'regression'))
 		sys.exit(0)
 	if args.selftest_40:
 		selftest_40()

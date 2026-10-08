@@ -127,7 +127,7 @@
 
 漂移方向判定:DB 已是用户最新设计,落后方=prefab 残留字段+sim handler。同步内容:
 
-- **攻击xN 削减波**(双例试 desc 均为普通「攻击」,prefab `extraAttackTimes` 残留 1):TWIN_STRIKER/AVENGER/GRAVE_PUNCH/RIFT_STRIKER/SNOWBALL/MIMIC_BLADE 共 6 张,sim 用 `EXTRA_ATTACK_TIMES_OVERRIDE` 显式归零并启动告警——**待用户在 Unity 侧把 6 张字段清零后移除覆盖表**
+- **攻击xN 削减波**(双例试 desc 均为普通「攻击」,prefab `extraAttackTimes` 残留 1):TWIN_STRIKER/AVENGER/GRAVE_PUNCH/RIFT_STRIKER/SNOWBALL/MIMIC_BLADE 共 6 张,sim 用 `EXTRA_ATTACK_TIMES_OVERRIDE` 显式归零并启动告警——**待用户在 Unity 侧把 6 张字段清零后移除覆盖表**(2026-10-06 拍板:清零方向作废,改路线 B 保留字段值,sim 删覆盖表,见二·十)
 - **措辞波**:生物→实体、非生物→现象,谓词实现不变(cardType 判定),handler 无需改
 - **机制变更**:侍僧=非生物无攻击(纯生成);降灵会=无攻击(纯复活现象);抬棺人遗言=攻击+复活1友方现象(原置顶删除);冥约「复活1友方到末尾」=延迟复活语义(落起始卡前一格,原语复用);狂信徒=每放逐过3友方+ATK 2→1;食尸鬼尾部加攻击;血账明确「每埋葬1友方」(owner 侧,与实现一致)
 - **沉魇购买化**:「购买: 生命值上限+8, 放逐自身」——不再是战斗被动,physicalDeckCard=0 自动出战斗池,静态+4 钩子失效删除;长夜同波
@@ -147,6 +147,35 @@
 - **血量档改版(用户拍板)**:去掉无上限配置,改 HP25/HP50 双档;报告文件名 report_{6v6,6v6_hp50,10v10_hp25,10v10_hp50}.md;Win% 四配置全部有效
 - **性能两坑修复**(无上限局残留问题在 HP 局复现概率低但已根治):噬咒萨满逐点强化扇出 → n>200 按比例分配+随机余数(近似);咒刃逐点强化敌方诅咒 → 同目标 +N 精确折叠 O(1)。10 场无上限战斗 224s→0.05s
 - **归因级设计信号(数据实证)**:HP50 诅咒轴批次,收蛊人(攻=敌方诅咒攻)单场强化总量达 10^18 量级——咒刃×萨满×蛊婆互馈环把诅咒攻推上天后吞蛊人一刀即秒杀;归因/回归必须截尾或稳健统计
+
+## 二·十、09-16→10-06 Unity 漂移同步(2026-10-06,路线 B 拍板)
+
+背景:09-16 交接后 Unity 侧继续演进(每回合复活门禁 09-20/21、RIFT_GUIDE/WEAPON_SPIRIT 改名 *_4.0 09-19、无头武生遗言攻次 09-17、desc 规范 10-06 拍板「desc 一律裸写攻击,段数收引擎侧/ATK 角标唯一载体」)。以 prefab 实际接线为准逐项核对,sim 侧同步:
+
+- **xN 覆盖表删除(路线 B)**:TWIN_STRIKER/AVENGER_4.0/GRAVE_PUNCH_4.0/RIFT_STRIKER/SNOWBALL/MIMIC_BLADE prefab `extraAttackTimes` 实测仍=1 且 10-06 desc 审计判合规 → 二·八的「削减卡清零」方向作废,6 张按 ×2 段模拟(sim 删 `EXTRA_ATTACK_TIMES_OVERRIDE`);二·九「什一抽杀 extra=2 归零」同步作废——DECIMATION 一直未被覆盖,sim 保留 x3
+- **每回合复活门禁精确镜像**(Unity ReviveEffect.oncePerRound,09-20/21):`REVIVE_ONCE_PER_ROUND` 14 卡(SPIRIT_CALLER=2/RIFT_REVIVER=2/RELIC_CURSE_REVIVAL=3,其余 11 张=1);verb_revive 前置门检(门耗尽整批 fizzle),成功批次耗 1 充能(Unity ReviveChosenCards 按批计费),空坟不耗,round_num 懒重置;RIFT_REVIVER 同步 Unity CheckCost_ReviveGateOpen:门耗尽或无可放逐信徒时整个容器不触发(原 sim 无信徒仍复活,已修正)
+- **池子口径**:装载器精确排除 SYSTEM_INCREASE_UPGRADE_CAP(添龛商店计量卡,战斗实例无效果;SYSTEM_INCREASE_HP_MAX/_DECK_SIZE_LITE 有战斗钩子,保留),池子维持 112
+- **cid 改名**:RIFT_GUIDE→RIFT_GUIDE_4.0、WEAPON_SPIRIT→WEAPON_SPIRIT_4.0(4.0 段注释+注册 4 处;3.0 段同名卡、LINGER_CIDS、旧报告文本不动);NECROMANCER 稀有度 Uncommon→Rare 随卡表重导自动修正
+- **快照/验证**:notion_full_snapshot_2026-10-06.json 重拉(119 行,按 rarity 分段查询规避 Notion SQL 分页截断);reconcile ZOMBIE(默认卡,在 _Default cards/,不入 sim 三个稀有度目录)加 DEFAULT_CARD_CIDS 豁免后仅剩 1 项 FAIL:**AVENGER_4.0 多次攻击 tag prefab 缺失**(DB 于 09-16 之后新增,prefab myTags 仍 [遗言,强化],其余 7 张 xN 卡双侧一致——Unity 侧待补,唯一未决漂移);六段自测全绿;四配置报告 200 sessions 重跑(6v6: uniform 199/200,漂移战斗 4→1)
+- **新设计信号**:模仿犯 ×2(复制友方最高攻 + 双段攻击)在 6v6 裸强度表冲到 15.95 Dmg/Round,远超第二名——路线 B 数值面最大变化,归因时重点核查
+
+## 二·十一、归因 Step2 两卡组合枚举(2026-10-06)
+
+- **工具**:`--pairs-40 --seeds N`(run_pairs_40/flag_match_40/write_pairs_summary):6328 组合 × 3 种子 × 2 配置 = 36630 场,镜像对卡组(双方各持同两卡对半混编);每行落 `tools/outputs/sim4/pairs/pairs_<config>.jsonl` 含 flags;汇总 `pairs_summary.md`
+- **非终止核对(用户预期:门禁后无无限组合)成立**:diverged 全部 2741 场同因 `max_reveals exceeded (3000)`(L0 揭晓预算兜底,典型 = 勾魂人+集体自焚级埋葬/复活洪水),无其他 divergence;round_cap 14454 场为镜像对卡组的对称僵局(设计使然,非死锁)
+- **校准**:纯对(咒刃×萨满)探针=平局(环缺第三方种子卡,自举不了);三卡镜像(咒刃+萨满+蛊婆)点火(10v10 dmg 370/刀 38)但有界;Step1 诅咒轴实战数据 10^10~10^22 全部被 curse_blowout+dmg_blowout 抓住、小额(≤300)不误报——flag 灵敏度合格
+- **设计信号 No.1:蛊噬 DETERIORATION_4.0 自镜像 = 1.24e+51**(10v10_hp50;6v6 亦 1.27e+31),且 blowout Top10 全部含蛊噬(×妖刀/报丧人/蛊婆/养蛊人/咒茧/降头师/战号/收蛊人 8 张任意第二诅咒强化卡)——「强化2+每3攻再强化1」对诅咒攻自乘正反馈,2 卡即爆,取代 09-16 三卡环成为最强超模信号,直通用户 §五.3(互馈环上限)拍板
+- **设计信号 No.2**:厉鬼+血契(AVENGER_4.0+RELIC_BLOOD_PACT)curse_blowout+dmg_blowout 常客;遗赠+血契单刀 104(≥4×HP)one_hit_blowout ×2——血契「攻击转化强化」系搭配永续成长攻击者 = 通用放大器
+- 已知局限:镜像对卡组是 sim 重构(真实商店两卡密度更低),超模组合的真实可达性需结合轴条件概率判读;§六.3 特征回归(重尾截尾+批次协变量)待开工
+
+## 二·十二、归因 Step3 特征回归(2026-10-06,§六三步收官)
+
+- **工具**:`--regress-40`(run_regress_40,纯 Python 稀疏 OLS,无 numpy 依赖;高斯消元经无噪合成数据精确复原校验);报告 `tools/outputs/sim4/regression/regression_report.md`
+- **伤害模型**(行=对局×cid,y=p99=56 截尾,R²=0.465,n=85k):实体 +7.6/多段 +7.5/攻力每点 +2.1 直伤;复活 -1.75/诅咒 -1.34(支援轴直伤低);截尾前 top 1% 行占原始总伤害 ~100%(重尾实证=诅咒环场,未截尾结论会被极端场主导)
+- **胜率模型**(行=侧,y=胜负线性概率,平局剔除,R²=0.269,n=10.8k):对手强化轴每卡 **-7.8pp** = 最强胜率威胁(HP50 诅咒环的回归面印证);己方多段 +9.2pp/强化 +6.4pp;**utility 被动 -7.5pp**(占卡位稀释代价再量化,呼应 09-16 的 28-33% win%);**rarity_rare -3.2pp**(Rare 池偏支援/现象,胜率贡献为负——池构成信号非单卡问题,注意共线)
+- **超模榜**(残差 t):伪经 +34.8(中位 0 尾部爆发型)、骸骨巨人 +24.5(中位 20,墓地规模成长)、食尸鬼 +18.2、**模仿犯 +15.9(中位 24,全场最高中位——路线 B ×2 的常 规局兑现)**、抬棺人 +13.9、带刺标本 +12.4
+- **欠模榜**(对照解读:支援型 0 伤卡≠弱卡):丧钟/安魂弥撒(引擎支援位)、**连体人 -15.6(与模仿犯同为 ATK1×2,固定攻力版显著弱于复制攻力版——同位对比设计信号)**、扶灵人 -21.1、咒刃 -13.0(攻击转化强化本就不出直伤)
+- 归因三步(§六)至此全部收官;后续设计拍板输入:蛊噬自乘环上限(Step2 No.1)、血契放大器、连体人 vs 模仿犯同位差、Rare 池胜率构成
 
 ## 三、验收
 

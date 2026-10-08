@@ -30,6 +30,10 @@ EXCLUDED_STATUS = ('备用', '已删')
 # Tokens: DB rows exist but engine-side they are generated, never prefabs
 # under the 4.0 folders; exclude from the missing-prefab direction.
 TOKEN_CIDS = ('JU_ON', 'RIFT')
+# Default cards (ZOMBIE) live in 4.0/_Default cards/, outside the three
+# rarity dirs the sim pool loads, and are not shop-pool cards; exclude from
+# the missing-prefab direction (2026-10-06: ZOMBIE joined the DB as normal).
+DEFAULT_CARD_CIDS = ('ZOMBIE',)
 # Reconcile scope = current TRIAL_RARITY_DIRS; other rarities are deferred
 # batches and counted, not failed.
 RARITY_IN_SCOPE = ('normal', 'uncommon', 'rare')
@@ -98,7 +102,7 @@ def main():
 	for cid in sorted(prefab.keys() - notion.keys()):
 		fails.append(f'prefab-only (missing in Notion): {cid}')
 	for cid in sorted(notion.keys() - prefab.keys()):
-		if cid in TOKEN_CIDS:
+		if cid in TOKEN_CIDS or cid in DEFAULT_CARD_CIDS:
 			continue
 		fails.append(f'Notion-only (missing prefab): {cid}')
 
