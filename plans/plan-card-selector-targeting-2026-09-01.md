@@ -1,7 +1,7 @@
 # 目标选取统一化：共享 CardSelector 实施计划
 
 日期：2026-09-01
-状态：**方向已拍板（共享 CardSelector，不扩 Tag 系统），实施待「修改代码」**。按步骤 gate 推进：每步完成后汇报，用户确认后继续下一步。Step 0 审计已完成并落附录 A（2026-10-04），parity 表已确认、A.5 修订已拍板（见 A.6）；2026-10-06 审核修订已落（§3.1 重写 + 三处表达力缺口 + zone 成员语义校准，见 A.7，含同日复核修正 #8）。**Step 1 引擎已实施**（537bdf57）；**Step 2 ReviveEffect 接入已实施**（5a16a3bc，12 tests，全量 716 零漂移）；**Step 3 BuryEffect + StageEffect 接入已实施**（aee60287：开关默认关、legacy 冻结；BuryNextXCards→WalkFromSource 且 TEST 旁路映射 spec 补丁；Stage 系 zone=Anywhere 保留总闸语义，仅 max picker 用 DeckSide 预滤；StageCardWithMostStatusEffect 留 per-method；18 tests 含三张真实 prefab 翻转对照）；**Step 4 ExileEffect 接入已实施**（8336861d：9 入口分支，parity 锁=zone Anywhere/minionMode Any/excludeSelf false 强制 + Minion/WithTypeID 不排 passive；8 tests 含 RIFT_MONSTER 真实 prefab 翻转，全量 742: 741/0/1 零漂移）。下一步 Step 5（收尾：新卡一律 selector 规范 + Giver 家族按需迁移 + legacy 清理判据执行）待用户确认。
+状态：**已全部实施完毕（Step 0-5 完成，2026-10-06 收官）**。Step 0 parity 审计落附录 A 并确认（A.6 裁决 + A.7 审核修订 + #8 复核修正）；**Step 1 引擎 537bdf57；Step 2 Revive 5a16a3bc；Step 3 Bury/Stage aee60287；Step 4 Exile 8336861d（全量 742: 741/0/1 零漂移）**；Step 5 收尾记录见 §7（新卡一律 selector 规范 + Giver 按需另案 + legacy 保留判据状态 + AGENTS.md 引用跳过）。后续事项：存量 74 个组件的逐卡翻转（可选、按需）与 Giver 家族 selector 化（另立计划）。
 上游：2026-09-01 对话拍板。相关：`plans/plan-utility-passive-shop-pipeline-2026-08-31.md`（Tag.Revive 打标，与本计划正交）、`plans/plan-4.0-revive-awaken-2026-08-29.md`（ReviveEffect 现状）。
 
 ## 1. 已拍板决策（对话裁决记录）
@@ -139,6 +139,30 @@ public CardSelector targetSelector = new CardSelector();
 - 不改 Tag enum 本体（Tag.Revive 追加归 utility 管线 Step 1，正交推进）；不引入"隐藏 tag"显示概念。
 - 不删任何 legacy 字段/分支，直至 prefab 引用清零（§4 Step 5 判据）。
 - 不做通用过滤器 SO / 运行时规则组合（当前 90+ 卡规模下序列化字段组合已够；避免过度设计）。
+
+## 7. Step 5 收尾记录（2026-10-06）
+
+### 7.1 新卡配置规范（一律 selector）
+
+自本计划收官起，新卡（5.0 / 平衡扩充 / 铺卡批量脚本）的移动效果类组件一律配 `useTargetSelector = true` + `targetSelector`，**不再配置 legacy 逐效果字段**（它们是冻结的 parity 垫片，仅为存量 109 prefab 存在）。可配置面与硬编码面的边界：
+
+- **spec 可配**（序列化 `targetSelector`）：`side`（主入口阵营形状）、`creatureFilter`（含 `Damager` 档）、`rarityFilter`、`typeIDFilter`、`enhancedOnly`、`positiveAttackOnly`、`sort`（含 `KeepOrder`）、`tagFilter`、`excludeSelf`、`includeRevealZone`（Giver 式揭示并池升级）、`zone`（GraveSide/DeckSide/Anywhere）。
+- **入口硬编码，勿在 spec 上配**（Step 2-4 已按附录 A parity 表锁死，spec 值会被覆盖）：各入口的排除集漂移部分（哪些入口排/不排 passive、minion 正向等）；BuryNextXCards 的 walk 形状（`WalkFromSource` 固定参数，TEST 旁路走 `ignoreStartCardBoundary`）；`*WithTag` 入口开 tagFilter、非 Tag 入口强制剥离；Stage 系 zone=Anywhere（总闸语义）与 max picker 的 DeckSide 预滤；Exile 系强制 Anywhere/minion Any/self 不排。
+- 数量永远走入口方法参数/IntSO（§3.1 拍板不变）；oncePerRound / delayedRevive 是执行侧配置，与 selector 正交、照常配。
+
+### 7.2 Giver 家族处置
+
+维持 A.5 #10 拍板：**按需迁移，不阻塞**。新卡若需 Giver 式选取（全域+揭示合并 / 伤害能力谓词 / 有放回随机），移动四件套的 spec 已能表达大半（`includeRevealZone=true` + `creatureFilter=Damager`）；Giver 类本体（StatusEffectGiver/AttackGiver/AttackTimesGiver ≈57 绑定）的 selector 化另立计划，本计划不动。
+
+### 7.3 Legacy 清理判据执行状态
+
+- 判据 1「无 prefab 使用 `tagsToCheck` 语义」：**✓ 成立**（2026-10-06 复扫：四类全部 prefab 的 tagToCheck/tagFilter 均无非零配置）。
+- 判据 2「GUID 扫描 legacy 字段 prefab 引用清零」：**未达成**——翻转积压 = **74 个组件实例**（Bury 28 / Stage 20 / Exile 4 / Revive 22，含非默认 legacy 配置；其中 `oncePerRound` / `delayedRevive` 为执行侧配置、翻转时不迁移，`targetFriendly` 仅 picker 入口需要映射为 side）。字段/分支删除推迟到积压逐卡清零后（翻转映射按 §3.3 与附录 A.2 执行）。
+- 结论：**legacy 路径与字段全部保留，本计划不删任何代码**。
+
+### 7.4 AGENTS.md 引用行
+
+**跳过**：当前 31737/32768 字节，加一行（~150B）后余量 <1 KB，违反「Keep ≥ 1 KB headroom」硬规则；§5 预案「超限不动」生效。新卡规范以本节为准（铺卡批量脚本与 unity-card-factory skill 后续引用此处）。
 
 ## 附录 A：Step 0 parity 审计（2026-10-04，基于当时 main 全量复核）
 
