@@ -1,7 +1,7 @@
 # 移除敌方卡组 local json 中间层（无 ghost 直落 default pool）
 
 日期：2026-09-04
-状态：**待执行**。需用户确认决策点并明确「修改代码」后再动代码。
+状态：**已执行（2026-09-04 当日完成；核对于 2026-10-06）**。决策点落地：D1-B（读写两半均删）——`DeckSaver` 已无 `TryLoadFromJson`/deckdata.json 写入，玩家卡组快照仅走服务器上传（`SavePlayerDeckSnapshot` → outbox `/api/decks`）；D2——遥测 `SourceLocal` 常量与 `EnemySourceCounters.local` 计数保留、无新调用点（历史值冻结）；D3——场景绑定已改名 `PopulateEnemyDeckBySessionNumber` / `SavePlayerDeckSnapshot`。现状链 = `debug > server ghost > default pool`。
 背景：敌方卡组 fallback 链现为 `debug > server ghost > local json (deckdata.json) > default pool`。目标：删除 local json 层，无 ghost 时直接落 default pool；数据上报侧同步收敛。
 
 ## 1. 现状基线（2026-09-04 实测）

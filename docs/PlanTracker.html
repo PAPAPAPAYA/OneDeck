@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OneDeck Plan 状态追踪 · 2026-10-04</title>
+<style>
+	:root {
+		--bg: #101014; --card: #1a1a21; --card2: #20202a; --line: #2c2c38;
+		--tx: #e8e8ee; --tx2: #9a9aa8; --tx3: #6c6c7a;
+		--ruling: #ff6b6b; --partial: #ffa94d; --notstarted: #e599f7;
+		--verify: #4dabf7; --dead: #868e96; --done: #51cf66;
+	}
+	* { box-sizing: border-box; }
+	body { margin: 0; background: var(--bg); color: var(--tx); font: 14px/1.6 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
+	wrap, .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
+	h1 { font-size: 22px; margin: 0 0 4px; }
+	.meta { color: var(--tx2); font-size: 12.5px; margin-bottom: 18px; }
+	.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+	.chip { cursor: pointer; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 5px 14px; font-size: 13px; user-select: none; transition: all .12s; }
+	.chip:hover { border-color: var(--tx2); }
+	.chip .n { opacity: .75; font-size: 12px; margin-left: 4px; }
+	.chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+	.chip.off { opacity: .32; }
+	.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
+	select, input, button { background: var(--card); color: var(--tx); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font-size: 13px; outline: none; }
+	input { flex: 1; min-width: 220px; }
+	button { cursor: pointer; } button:hover { border-color: var(--tx2); }
+	details.advice { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin-bottom: 20px; }
+	details.advice summary { cursor: pointer; font-weight: 600; }
+	details.advice ol { margin: 8px 0 4px; padding-left: 22px; color: var(--tx2); }
+	details.advice li { margin: 3px 0; }
+	.sech { margin: 26px 0 10px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+	.sech .cnt { color: var(--tx3); font-weight: 400; font-size: 13px; }
+	.sech .bar { flex: 1; height: 1px; background: var(--line); }
+	.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; }
+	.card.dead .t { text-decoration: line-through; }
+	.r1 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+	.badge { border-radius: 4px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; color: #101014; white-space: nowrap; }
+	.t { font-weight: 700; font-size: 14.5px; color: var(--tx); text-decoration: none; }
+	.t:hover { text-decoration: underline; }
+	.date, .dom, .cm { color: var(--tx3); font-size: 12px; white-space: nowrap; }
+	.cm { font-family: Consolas, monospace; color: var(--tx2); }
+	.rem { margin: 8px 0 2px; padding-left: 4px; list-style: none; }
+	.rem li { color: var(--tx2); font-size: 13px; padding-left: 18px; position: relative; margin: 2px 0; }
+	.rem li::before { content: "▸"; position: absolute; left: 2px; color: var(--tx3); }
+	.note { color: var(--tx3); font-size: 12.5px; margin-top: 6px; font-style: italic; }
+	.file { font-family: Consolas, monospace; font-size: 11.5px; color: var(--tx3); margin-top: 6px; }
+	.empty { color: var(--tx3); text-align: center; padding: 40px 0; }
+	footer { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--tx2); font-size: 12.5px; }
+	footer li { margin: 3px 0; }
+	a { color: var(--verify); }
+</style>
+</head>
+<body>
+<div class="wrap">
+	<h1>OneDeck Plan 状态追踪</h1>
+	<div class="meta">生成于 2026-10-04 · 数据源:plans/ 全量扫描(116 个 plan/prd 文件)+ 仓库会话记忆 · 状态口径见页尾 · 点击标题打开对应 plan 文件</div>
+
+	<details class="advice">
+		<summary>建议下一步(按影响力排)</summary>
+		<ol>
+			<li><b>5 个待拍板都是一句话的事</b>:transition-entrance-and-shadow-audit(10-04 新审计,两项裁定)、ui-aspect-adaptation(P1-P4 等开工令)、zero-attack-dry-swing、card-selector-targeting、popup-deck-centering。</li>
+			<li><b>部分完成里影响面最大</b>:async-pvp 批 F(上线链路联调+部署)、infinity-detection §24.2(运维收尾清单)、prd-card-life-system(引擎已好,缺卡配置)。</li>
+			<li><b>48 个待验证可攒一个 Play 验证批量日</b>:集中在商店 UI 链(09-22~10-03 的 prefab 化/翻牌/置顶系列,Play 矩阵都列在各 plan §里)和转场链(10-02/10-03 审计修复矩阵)。</li>
+			<li><b>未开始仅 1 个</b>:plan-setup-effect(2026-08-03),若不做可考虑归档。</li>
+		</ol>
+	</details>
+
+	<div class="stats" id="stats"></div>
+	<div class="controls">
+		<select id="domainSel"></select>
+		<input id="search" type="search" placeholder="搜索标题 / 文件名 / 剩余项…">
+		<button id="reset">重置过滤</button>
+	</div>
+	<div id="list"></div>
+
+	<footer>
+		<b>状态口径</b>
+		<ul>
+			<li><b>待拍板</b> — 方案已给,等你一个决定才继续;实施未动工。</li>
+			<li><b>部分完成</b> — 计划内明确列有未实施步骤(详情见各条剩余项)。</li>
+			<li><b>待验证</b> — 代码/配置已落地(多数已提交),只差 Play Mode / 你的目测验证。</li>
+			<li><b>未开始</b> — 计划写完,零实施痕迹。</li>
+			<li><b>已废弃/被取代</b> — 被后续计划接替或随改版退役(部分成果仍现行,见备注)。</li>
+			<li><b>已完成</b> — 计划自身宣告完成且无遗留项。</li>
+		</ul>
+		<ul>
+			<li>状态判定 = plan 文本(状态行 / 执行记录 / §遗留清单)+ 会话记忆(截至 2026-10-04);少数 plan 的状态行未回填,已在该条目标注。</li>
+			<li>「待修改代码」为本仓库规约:需你明确说出指令才动代码。</li>
+			<li>本页是时点快照;要更新状态,直接编辑文件内 <code>DATA</code> 数组对应条目即可。</li>
+			<li>全部细节以 plan 文件为准(点标题打开)。</li>
+		</ul>
+	</footer>
+</div>
+
+<script>
+"use strict";
+const STATUS = {
+	ruling:     { label: "待拍板",       color: "var(--ruling)",    def: true  },
+	partial:    { label: "部分完成",     color: "var(--partial)",   def: true  },
+	notstarted: { label: "未开始",       color: "var(--notstarted)",def: true  },
+	verify:     { label: "待验证",       color: "var(--verify)",    def: true  },
+	dead:       { label: "已废弃/被取代", color: "var(--dead)",      def: false },
+	done:       { label: "已完成",       color: "var(--done)",      def: false }
+};
+const ORDER = ["ruling", "partial", "notstarted", "verify", "dead", "done"];
+
+// s=状态 g=领域 d=日期 r=剩余项 c=commit n=备注
+const DATA = [
+	// ===== 4.0 卡池 / 卡面 =====
+	{f:"plan-4.0-core-cards-2026-08-27.md",t:"4.0 核心池 24 卡 prefab 配置",d:"2026-08-27",g:"卡池",s:"verify",c:"6259c66d",r:["静态验证第 6 步无执行记录:24 张全量 listener-check + Strategy B 抽查×4(GRAVE_PUNCH/RIFT_MONSTER/DETERIORATION/SNOWBALL)"]},
+	{f:"plan-4.0-implementation-roadmap-2026-08-28.md",t:"4.0 卡片实施推进总路线图",d:"2026-08-28",g:"卡池",s:"done",r:[],n:"第 0-5 步全部完成(第 5 步 61 张 08-30 a47a825 收官;显示层中文名/desc 09-08/09-22 同步);10-04 复核 DB↔prefab 零漂移:活跃行(含 RIFT/JU_ON token)全有 prefab,备用 4 张(51/52/78/102)全无 prefab;唯一 Unity 侧多出 SYSTEM_INCREASE_UPGRADE_CAP 无 DB 行(升级位计划已知项)"},
+	{f:"plan-4.0-passive-cards-2026-08-29.md",t:"4.0 被动卡引擎(isPassive)",d:"2026-08-29",g:"卡池",s:"done",r:[],n:"引擎+15 张 prefab 配置全部落地(08-30~09-05 分批提交;10-04 复核:15 张 isPassive=1 且监听事件全部接线);RELIC_TAINT 无 prefab,DB 状态本就=备用(10-04 复核),§6 开放问题#3「相邻」语义随备用搁置;实际被动家族更大:WHITE_BANNER/ATTACK_BURIAL/DEATHBED_GRANT/UTILITY_* 也挂 isPassive"},
+	{f:"plan-cardtype-shiti-xianxiang-2026-09-14.md",t:"desc 谓词改名实体/现象 + CardType.Token",d:"2026-09-14",g:"卡池",s:"verify",r:["EditMode + hover 类型行待验(会话记忆)","plan 状态行未回填(仍写待「修改代码」,实际 2026-09-14 已实施)"],n:"25 张 desc 替换 + Status→Token 改名 + alwaysShowAttack + 类型 SO 均已落地"},
+	{f:"plan-card-template-v1.1-port-2026-09-05.md",t:"卡面模板 v1.1 移植(UIKitDemo §03)",d:"2026-09-05",g:"卡池",s:"verify",r:["Play-mode 验证待用户明确要求","ShopCardView 买卖仍长按;CardStatusEffect 显示区域 / art 暗底盒待定(Not done 清单)"],n:"模板层已完成"},
+	{f:"plan-card-name-horizontal-squash-2026-09-06.md",t:"卡名超长横向压缩替代省略号",d:"2026-09-06",g:"卡池",s:"done",n:"6 项 handoff 全过(最长实测名 squash 0.735)"},
+	{f:"plan-card-colors-palette-single-source-2026-08-17.md",t:"卡牌颜色单源化(GameColorPalette)",d:"2026-08-17",g:"卡池",s:"partial",c:"d4bc30e",r:["死资产清理:Red.asset / Red 2.asset / FloaterPlayer.asset / FloaterEnemy.asset 仍未删"]},
+	{f:"plan-card-type-status-2026-09-02.md",t:"CardType 枚举替换 isCreature",d:"2026-09-02",g:"卡池",s:"done",n:"Step 1–9 全过,EditMode 426 跑 425 过"},
+	{f:"plan-curse-summoner-prefab-2026-09-02.md",t:"CURSE_SUMMONER prefab 配置",d:"2026-09-02",g:"卡池",s:"done"},
+	{f:"plan-color-so-palette-2026-07-22.md",t:"ColorSO / GameColorPalette 集中配色",d:"2026-07-22",g:"卡池",s:"done",n:"4 阶段全落地"},
+	{f:"plan-utility-option-p1-chance-board-2026-09-14.md",t:"概率货架卡 + OPTION_1 升稀有",d:"2026-09-14",g:"卡池",s:"verify",r:["卡名「魇市游摊」待圈改"],n:"全链当日落地"},
+	// ===== 牌堆布局 =====
+	{f:"plan-recessed-empty-slots-2026-09-17.md",t:"空卡位凹陷样式重做",d:"2026-09-17",g:"布局",s:"verify",c:"2858ac0",r:["Play 验证 4 项:凹陷观感/买卖覆盖/扩容 pop/hover 无响应","底部居中标签重定位(可选,未做)","09-25 方案 A(SlotRecess 即时变色:PaletteTint 枚举追加 + prefab 挂 tint)已给,待「修改代码」"]},
+	{f:"plan-float-stack-shadow-follow-2026-08-16.md",t:"Float Stack 大影子跟随",d:"2026-08-16",g:"布局",s:"partial",r:["Iteration 2(pop-up follow gate / rotation 复评)与 Iteration 3(ComputeFollowPose goldens / checklist / AGENTS.md)未开始(§4/§5)","调参值为占位,待 Play 调整"],n:"影子跟随本体(enable/disable)已现行"},
+	{f:"plan-float-stack-center-scale-2026-08-15.md",t:"Float Stack 居中/压缩/底限布局",d:"2026-08-15",g:"布局",s:"done",n:"文件头 implementation pending 未回填"},
+	{f:"plan-float-stack-reveal-layout-2026-08-13.md",t:"Float Stack 揭示布局(第四模式)",d:"2026-08-13",g:"布局",s:"done",c:"bac16efb"},
+	{f:"plan-arc-loop-deck-layout-2026-08-12.md",t:"椭圆弧环牌堆布局",d:"2026-08-12",g:"布局",s:"done",c:"bac16efb",n:"文件头未回填;DeckArcLoopLayout + 测试在库"},
+	{f:"plan-peel-deck-via-cascade-2026-08-03.md",t:"PeelDeck 改级联前槽布局",d:"2026-08-03",g:"布局",s:"done",c:"7e3d890e",n:"_focusSegmentCount 驱动,文件头未回填"},
+	{f:"plan-deck-peel-focus-system-2026-05-05.md",t:"卡组剥离聚焦(PeelDeck)系统",d:"2026-05-05",g:"布局",s:"partial",r:["LiftCardInDeckCoroutine 次级抬卡动画未实现","测试用例 7(墓中卡状态效果抬卡)不可测"],n:"_deckFocusOffset 偏移机制已由级联前槽方案退役(部分被接替)"},
+	{f:"plan-card-cascade-layout-2026-07-17.md",t:"平滑曲线瀑布式牌堆布局",d:"2026-07-17",g:"布局",s:"done",n:"toggle 已并入 deckLayoutMode 枚举"},
+	{f:"plan-dynamic-showpos-cascade-2026-07-28.md",t:"级联布局动态弧中点(showPos)",d:"2026-07-28",g:"布局",s:"done",n:"showPos 语义后被 useDynamicArcMidpoint 接替(AGENTS.md)"},
+	{f:"prd-card-cascade-layout-2026-07-17.md",t:"级联曲线牌组布局(Bezier 弧线)",d:"2026-07-17",g:"布局",s:"verify",r:["PlayMode 目测 checklist 行 43-48/50(仍 ⚠️)","§8 in-scene 参数调优(open decision)"]},
+	// ===== 动画 / 表现 =====
+	{f:"plan-death-abort-animation-playback-2026-09-14.md",t:"HP 归零后剪断动画队列",d:"2026-09-14",g:"动画",s:"verify",r:["Play 观感:多段致死/单击致死/反应链致死、无幽灵跳字、终端值=live 值","提交(验证后拆分)"],n:"EditMode 回归 5 用例全绿"},
+	{f:"plan-fatigue-revive-wildcard-2026-09-16.md",t:"疲劳卡复活通配(自毁弹药)",d:"2026-09-16",g:"动画",s:"verify",c:"62f7222",r:["§5 Play 观察点:overtime 后 BEAST_REVIVER/FINAL_ESCORT 拉坍塌、揭晓双向 1 伤、FLURRY/ELITE 拉不到"]},
+	{f:"plan-per-segment-attack-events-2026-09-05.md",t:"每段攻击独立事件",d:"2026-09-05",g:"动画",s:"verify",r:["Play Mode:RELIC_HIVE 多段生成信徒与动画交错","RELIC 组合平衡复核(unity-card-infinity-check / pool audit)"]},
+	{f:"plan-popup-peak-live-follow-2026-09-18.md",t:"弹起峰值逐帧跟随牌位",d:"2026-09-18",g:"动画",s:"verify",c:"d7086d70",r:["移动中 jitter 修复后的复验口径(913 三卡组无逐帧拔河)无回填记录"]},
+	{f:"plan-popup-deck-centering-2026-07-01.md",t:"弹起源卡组居中聚焦",d:"2026-07-01",g:"动画",s:"ruling",r:["决策 1:恢复时机(弹起阶段后 vs 效果全程)","决策 2:AddTempCard 索引用插入前/后计数"],n:"代码零痕迹,两决策确认后才实施(§7)"},
+	{f:"plan-card-flip-face-down-2026-07-20.md",t:"牌堆卡面朝下/翻面系统",d:"2026-07-20",g:"动画",s:"verify",r:["§6 Manual PlayMode 清单 8 项(翻面时机/洗牌盖回/Start Card 豁免等)无执行记录","真卡背素材(可选后续)"]},
+	{f:"plan-damage-floater-2026-07-26.md",t:"伤害飘字(-N 数字)",d:"2026-07-26",g:"动画",s:"verify",r:["§8 Play 视觉核对 2–8 项(落地帧/多段/护盾 0 损失/治疗不飘/阶段重同步/倍速)"]},
+	{f:"plan-damage-floater-delta-commit-2026-08-04.md",t:"飘字按每击 HP 损失归因",d:"2026-08-04",g:"动画",s:"done",n:"Play 复现已验(2026-08-04,2/2/1)"},
+	{f:"plan-pixelation-shader-2026-08-05.md",t:"全屏像素化 + 块状精灵 shader",d:"2026-08-05",g:"动画",s:"verify",c:"78adfc87",r:["场景画布转换保存确认(3/4 画布已 SSC,GameScene 需保存确认)"],n:"toggle=PixelationEffectController.me;三张截图已过"},
+	{f:"plan-status-effect-giver-popup-batch-2026-05-21.md",t:"状态给予 batch popup 动画",d:"2026-05-21",g:"动画",s:"verify",r:["Phase 3 Play 验证 4 场景:单目标/3 友方并行/reveal zone/headless 无执行记录"]},
+	{f:"plan-source-card-auto-popup-slotin-2026-07-01.md",t:"source card 自动 popup/slotin 重构",d:"2026-07-01",g:"动画",s:"done",c:"c84e6727"},
+	{f:"plan-effect-recorder-driven-animation-2026-05-10.md",t:"EffectRecorder 树驱动顺序动画",d:"2026-05-10",g:"动画",s:"done",c:"7dfa65c9"},
+	{f:"prototype-effect-recorder-driven-animation-2026-05-10.md",t:"EffectRecorder 驱动动画最小原型",d:"2026-05-10",g:"动画",s:"done"},
+	{f:"research-effect-recorder-driven-animation-2026-05-08.md",t:"EffectRecorder 动画架构可行性研究",d:"2026-05-08",g:"动画",s:"done"},
+	{f:"prd-aftershuffle-reveal-timing-fix-2026-06-08.md",t:"afterShuffle 事件时序修复",d:"2026-06-08",g:"动画",s:"verify",r:["复测 RegressionChecklist 行 10(BOOSTER afterShuffle→Stage,06-13 同步移除后要求 re-verify)"]},
+	{f:"prd-animation-move-to-top-popup-batch-2026-05-24.md",t:"MoveToTopPopUpBatch 弧形置顶批量动画",d:"2026-05-24",g:"动画",s:"done"},
+	{f:"prd-animation-popup-slot-in-2026-05-20.md",t:"PopUp/SlotIn 通用动画",d:"2026-05-20",g:"动画",s:"done"},
+	{f:"prd-bury-batch-phys-index-fix-2026-05-24.md",t:"Bury/Stage 批量动画索引对齐",d:"2026-05-24",g:"动画",s:"done"},
+	{f:"prd-start-card-recorder-unification-2026-05-27.md",t:"启动卡接入 EffectRecorder 管线",d:"2026-05-27",g:"动画",s:"done"},
+	{f:"prd-stage-sync-removal-ju-on-slot-in-2026-06-13.md",t:"移除 StageEffect 逻辑阶段同步(JU_ON 错位)",d:"2026-06-13",g:"动画",s:"verify",r:["复测 checklist 行 20(PREMATURE+JU_ON)及行 10"]},
+	{f:"prd-exile-effect-sync-removal-2026-06-19.md",t:"移除 ExileEffect 逻辑阶段同步",d:"2026-06-19",g:"动画",s:"verify",r:["复测 checklist 行 25(放逐揭示区卡/GiveStatusEffect→Exile 同目标链)"]},
+	{f:"prd-power-reaction-status-effect-delta-commit-2026-06-20.md",t:"状态效果显示按投射物逐次提交",d:"2026-06-20",g:"动画",s:"verify",r:["复测 checklist 行 29/30(SACRIFICIAL_SWORD+POWER_CRAVER+WEAPON_SPIRIT)"]},
+	{f:"prd-status-effect-recorder-projectile-2026-05-21.md",t:"StatusEffectGiverEffect 迁移 recorder 投射物",d:"2026-05-21",g:"动画",s:"verify",r:["复验 checklist 行 15/17/42(自身投射物/按层投射物/targetCards 共享列表回归)"]},
+	{f:"plan-card-animation-serialization-2026-05-05.md",t:"卡牌动画事件级串行化",d:"2026-05-05",g:"动画",s:"done",n:"AnimationStateTracker 在库且接线完整"},
+	// ===== 商店 =====
+	{f:"plan-shop-card-hover-lift-2026-10-01.md",t:"商店卡 hover 弹起动画",d:"2026-10-01",g:"商店",s:"verify",c:"7b1b64f2/9eacd549",r:["Play 目测:§4 十点/§6.4/§7.3/§8.3/§8.4","§6.5 hoverLift 全局统一方案按用户要求搁置(卡片保留独立字段 0.25)"],n:"v3 EditMode 基线 675/674 零漂移"},
+	{f:"plan-upgrade-slot-cap-2026-09-30.md",t:"升级位上限系统(添龛)",d:"2026-09-30",g:"商店",s:"verify",c:"136e88e5",r:["三方一致性工具可能标记 SYSTEM_INCREASE_UPGRADE_CAP(Notion/服务端目录无行)","商店权重/稀有度调参未做"]},
+	{f:"plan-shop-reroll-flip-2026-09-30.md",t:"重掷两段式原地翻牌",d:"2026-09-30",g:"商店",s:"verify",c:"7211cda7/de12a684",r:["§4 Play 验证 5 点:观感/价格按钮不浮卡背/空货架/入场不变/价格显示","远端 7211cda7 与本地 da5ce2a 重复 patch 待对齐(会话记忆)"]},
+	{f:"plan-shop-price-button-prefab-2026-09-29.md",t:"价签按钮 prefab 化",d:"2026-09-29",g:"商店",s:"verify",c:"be00bb6/41d12e6f/1a49c105",r:["§4.3 Play 目测矩阵:变暗恢复/hover 换字/折扣划线/买卖重排","全池 sprite 核验后删 copy;价签文字集中化姊妹计划待拍板(§6)"],n:"Label port 09-30 已烘回 prefab"},
+	{f:"plan-shop-reroll-button-prefab-2026-09-29.md",t:"重掷按钮 prefab 化",d:"2026-09-29",g:"商店",s:"verify",c:"4b69ac76/0fea4016",r:["§4.3 Play 目测矩阵:点击/免费翻转/disabled 恢复 face 色/hover/deny/滚动拒绝"]},
+	{f:"plan-shop-deck-counter-hp-style-2026-09-29.md",t:"卡组计数 HP 式双标签",d:"2026-09-29",g:"商店",s:"verify",r:["§4.2 Play 目测矩阵:偏移/字号实时调/重排跟随/两字号基线对齐"]},
+	{f:"plan-shop-price-text-style-centralization-2026-09-29.md",t:"价签文字样式集中化",d:"2026-09-29",g:"商店",s:"dead",r:["AttackPrint 字号误伤 5→20.3 回滚待用户拍板(§6)"],n:"被取代:plan-shop-price-button-prefab(Label port,样式移入 PriceButton.prefab)"},
+	{f:"plan-shop-mirror-prefab-2026-09-24.md",t:"头像/HP 镜像 prefab 化",d:"2026-09-24",g:"商店",s:"verify",r:["§6.2 Play 矩阵 5 项:进店同位/count-up/两循环转场/prefab 单源/缩放跟随"],n:"拷贝机 455 行已删,85 字段 diff NONE"},
+	{f:"plan-shop-hud-prefab-widgets-2026-09-23.md",t:"商店顶栏 prefab 模板化(v5)",d:"2026-09-23",g:"商店",s:"verify",r:["步骤 10 Play 验证矩阵(§6.2):基线一致/滚动/买卖刷新/转场/prefab 改色","§8 面板模板化 = 后续独立小步"],n:"7 chips + 2 按钮 + 镜像全部进 ShopHudPage.prefab"},
+	{f:"plan-shop-per-element-placement-2026-09-23.md",t:"顶栏逐元素独立布局",d:"2026-09-23",g:"商店",s:"dead",n:"被取代:plan-shop-hud-prefab-widgets + plan-shop-mirror-prefab(该 SO 最终删除)"},
+	{f:"plan-shop-layout-config-widget-factory-2026-09-23.md",t:"商店布局 SO + 控件工厂",d:"2026-09-23",g:"商店",s:"dead",n:"被取代:SO 被 per-element 重写、本体被 09-24 镜像 prefab 删除;剩余验证项已无对象"},
+	{f:"plan-shop-sectionpanels-live-tuning-2026-09-22.md",t:"面板参数 Play 实时调参",d:"2026-09-22",g:"商店",s:"verify",r:["§6 Play 检查:调参实时 refit/跟随/隐藏语义"],n:"场景接线已随 10-01 提交(255846e5+15a5bfcd fontBold 激活)"},
+	{f:"plan-shop-options-viewport-pin-2026-09-28.md",t:"OptionsButton 视口右上钉住",d:"2026-09-28",g:"商店",s:"verify",c:"322ba18f",r:["§5 Play 矩阵 7 项:滚动钉住/无闪变/resize/转场/点击/飞行期隐藏"]},
+	{f:"plan-shop-panels-port-2026-09-18.md",t:"商店三面板 + 顶栏 v2 移植",d:"2026-09-18",g:"商店",s:"verify",r:["RegressionChecklist 行 106 未回填","两项 EditMode 测试当时未跑(后续全量应已覆盖)","顶栏部分被 09-19/09-23 计划演进(三面板本体保留)"],n:"7 commits on main"},
+	{f:"plan-world-entity-shop-chrome-2026-09-18.md",t:"商店全交互世界化(PhysButton)",d:"2026-09-18",g:"商店",s:"verify",r:["§Verification Play 6 项:band 固定/重掷单发与 disabled/单管线/芯片刷新/预览门控","§Sub-decision:芯片全量迁世界 flagged for user"]},
+	{f:"plan-shop-utility-probability-mixedpool-2026-09-11.md",t:"utility 概率化 + 混池开关",d:"2026-09-11",g:"商店",s:"verify",r:["卡名占位待圈改(11 张 utility/概率卡)"],n:"Step 4 测试已随后续全量绿;DB rarity 漂移已裁定按 Unity(09-12)"},
+	{f:"plan-shop-shelf-objperrow-wrap-2026-09-10.md",t:"货架动态换行布局",d:"2026-09-10",g:"商店",s:"verify",r:["Verification 1-8 Play 目测未跑:4 卡落屏/band 回弹/购买回流/滚动下限"]},
+	{f:"plan-shop-topbar-world-scroll-2026-09-21.md",t:"顶栏整体随页面滚动",d:"2026-09-21",g:"商店",s:"verify",c:"f4e28e2",r:["§6 Play 检查 1-8(addendum 已用 RT 截图验过滚动/落地/HP 计数部分)"],n:"09-29 chrome 根摆放已 Play 验(1a69101),本计划残余验证待补"},
+	{f:"plan-shop-topbar-combat-hud-reuse-2026-09-19.md",t:"商店顶栏复用战斗 HUD",d:"2026-09-19",g:"商店",s:"partial",r:["Left open:Shop 面板 header 仍压在 chrome band 内(cosmetic,需商店 pitch 重调,另案)"]},
+	{f:"plan-shop-topbar-heightfit-resize-2026-09-21.md",t:"顶栏高度定标 + 拉伸自适应",d:"2026-09-21",g:"商店",s:"dead",n:"未实施;前提(商店期 canvas avatar+HP)同日被世界化取代。被取代:plan-shop-topbar-world-scroll"},
+	{f:"plan-physbutton-price-button-2026-09-16.md",t:"PhysButton + 价签按钮买卖移植",d:"2026-09-16",g:"商店",s:"dead",n:"UI 模式 09-18 裁定弃用待删;世界模式价签按钮保留为现行。被取代:plan-world-entity-shop-chrome"},
+	{f:"plan-duplicate-cards-share-deck-slot-2026-07-31.md",t:"重复卡共享卡组槽位",d:"2026-07-31",g:"商店",s:"verify",r:["§8 Play 视觉检查:堆叠/售出/占位符/DeckSizeIncrease"]},
+	{f:"plan-utility-non-slot-physical-2026-09-14.md",t:"utility 不占卡位双轴拆分",d:"2026-09-14",g:"商店",s:"verify",r:["Play 观感:牌库条显示/pulse/换行","§7 商店升级面板实装待拍板"],n:"20 prefab + Notion 18 行已落地;EditMode 已被后续全量覆盖"},
+	{f:"plan-utility-passive-shop-pipeline-2026-08-31.md",t:"utility 被动商店管线 v2",d:"2026-08-31",g:"商店",s:"partial",c:"2e13d24/753ec69/fbad597",r:["①16 张新卡中文名/desc 占位待圈改","②摘「中」卡位卡出池待用户追认","③分 session 胜率基线观察需 Play 跑局待授权"],n:"方案七步全部完成并 push"},
+	{f:"plan-palette-chip-button-color-decoupling-2026-09-25.md",t:"Palette 颜色解耦(chip/按钮)",d:"2026-09-25",g:"商店",s:"verify",r:["Play 目检:§4 探针矩阵、Money/Income chip 半透明确认"]},
+	{f:"plan-hud-topbar-inventory-2026-09-17.md",t:"商店顶栏 chip 库存",d:"2026-09-17",g:"商店",s:"done",c:"540c91c",n:"Play 已验(09-17);canvas ShopHudBar 被 09-18 世界化接替,HudChip 通用件保留"},
+	// ===== 战斗引擎 =====
+	{f:"plan-zero-attack-dry-swing-2026-09-14.md",t:"0 攻生物空挥",d:"2026-09-14",g:"战斗",s:"ruling",r:["dry-swing 主体(门禁改 <0/空挥捕获/RIFT_ACOLYTE 等死绑定清理/测试改写)等「修改代码」","3.0 池 sweep 与「4.0=现行池」口径待拍板确认"]},
+	{f:"plan-card-selector-targeting-2026-09-01.md",t:"共享 CardSelector 目标选取统一化",d:"2026-09-01",g:"战斗",s:"ruling",r:["Step 0–5 全部未实施,每步 gate 等「修改代码」指令(§4)","排除集相对 09-01 已有漂移,实施前需重核"],n:"方向已拍板(共享 CardSelector,不扩 Tag)"},
+	{f:"plan-setup-effect-2026-08-03.md",t:"新增 Setup(准备)效果",d:"2026-08-03",g:"战斗",s:"notstarted",r:["SetupEffect.cs / Tag Setup / 卡 prefab 绑定全部未做(§Implementation 1-3)"],n:"全仓 grep 零命中"},
+	{f:"plan-infinity-detection-2026-09-17.md",t:"无限检测与防下发(L0–P5)",d:"2026-09-17",g:"战斗",s:"partial",r:["§24.2:归因生产触发时机 + 打包内 verdict 来源缺失","组合自动复验无 CI 钩子;P4 客户端↔服务端 E2E 未跑","deck 5/55/6/91 未上报;阈值标定未做;缓存 purge fail-open 窗口","§26.7:deck 65 边缘个案;扫描单 seed"],n:"L0–P5 全链已上线;后续由 revive-loop-mitigation / specimen-synthetic 接续"},
+	{f:"plan-tutorial-combat-2026-07-28.md",t:"首次启动教学战斗",d:"2026-07-28",g:"战斗",s:"partial",r:["教程 DeckSO 未创建/未接线(GameScene tutorialPlayerDeck/EnemyDeck fileID:0,功能休眠)","场景资产配置与 Play 验证未做"],n:"TutorialManager.cs 与 PhaseManager 接线已存在"},
+	{f:"prd-card-life-system-2026-08-07.md",t:"卡牌生命值系统(每轮可揭示次数)",d:"2026-08-07",g:"战斗",s:"partial",c:"78ef4772",r:["第一批 5-8 张卡配置 life 值(当前无任何 prefab lifeMax>0)","§6 playtest 与 §8 life 0 行为回归 diff"],n:"引擎 R1-R13 已实现"},
+	{f:"plan-revive-gate-mirror-cost-2026-09-21.md",t:"RIFT_REVIVER 闸镜像 cost 检查",d:"2026-09-21",g:"战斗",s:"verify",r:["未提交(计划不含提交步骤,等用户指示)"],n:"EditMode 651 例无新增红灯"},
+	{f:"plan-deterministic-rng-seed-2026-09-12.md",t:"随机种子化与战斗复现",d:"2026-09-12",g:"战斗",s:"done",c:"cc53f02/b4068f2",n:"Play 已验 + 后续全量套件多轮绿(会话记忆);plan 头「待验」未回填"},
+	{f:"plan-attack-resolver-recursion-fix-2026-08-25.md",t:"攻击解析器无限递归修复",d:"2026-08-25",g:"战斗",s:"done",n:"文件头 not implemented 未回填;守卫 + 测试均在库"},
+	{f:"plan-4.0-revive-awaken-2026-08-29.md",t:"4.0 复活/苏醒引擎(ReviveEffect)",d:"2026-08-29",g:"战斗",s:"done",n:"开放问题裁决 #1–#4 全部落地"},
+	{f:"plan-4.0-engine-long-tail-2026-08-30.md",t:"4.0 引擎长尾(攻击次数/回合结束等)",d:"2026-08-30",g:"战斗",s:"done",c:"f97e97a/3470a4e/eb6c3c2"},
+	{f:"plan-revive-loop-mitigation-2026-09-19.md",t:"无条件复活互拉循环治理",d:"2026-09-19",g:"战斗",s:"done",c:"3919a102/027fdd0a",n:"14 红为用户裁定暂留;侦测器标本重造/苏醒禁令/疲劳稀释均转另案"},
+	{f:"plan-infinity-specimen-synthetic-2026-09-21.md",t:"无限正控合成标本重建",d:"2026-09-21",g:"战斗",s:"done",c:"0910816c",n:"14 个预期红按用户裁定暂留"},
+	{f:"plan-bury-cost-mechanism-2026-03-19.md",t:"Bury Cost(发动前置埋葬)机制",d:"2026-03-19",g:"战斗",s:"dead",n:"随 3.0 无费用改版移除(buryCost 已不在代码库)"},
+	// ===== 网络 =====
+	{f:"plan-async-pvp-client-2026-09-03.md",t:"异步 PvP 客户端(上传/幽灵/记录)",d:"2026-09-03",g:"网络",s:"partial",r:["批 F 未开始:Play 双端互见验证/本地起服全流程联调/测试数据清理/部署 S0 到 ECS/AGENTS.md 收尾(§6)","批 B「Play 双端互见」待人工跑;§5 服务器低危 2 项(report 事务/trust proxy)"],n:"S0/A/B/C/D/E/G 批已完成"},
+	{f:"plan-username-registration-panel-2026-09-04.md",t:"用户名注册面板",d:"2026-09-04",g:"网络",s:"partial",r:["手工 Play 弹窗全流程(确认/随机/重名/稍后再说/进店重弹)并入批 F 双端联调(§5 ⬜)"]},
+	{f:"plan-combat-completion-upload-gate-2026-09-06.md",t:"完成战斗前的上传/记录门禁",d:"2026-09-06",g:"网络",s:"verify",r:["§4 手工联网验收:新档逛店退出→无上传;打完首战→快照/counters/catalog 到位","§2.7 服务器端加固(可选,后续)"],n:"§5 执行状态全 ✅,每局哨兵已落地"},
+	{f:"plan-card-catalog-content-fingerprint-2026-09-17.md",t:"卡目录上传改内容指纹去重",d:"2026-09-17",g:"网络",s:"verify",c:"e67f86b",r:["§4 末项 Play 观察:故意改一张卡名 → 下一场结算 → 服务器 catalog 该卡更新"]},
+	{f:"plan-ghost-pool-self-deck-bias-2026-09-13.md",t:"Ghost 对手池自牌偏置",d:"2026-09-13",g:"网络",s:"done",n:"自牌缓存仅覆盖 session 5 = 拍板不修"},
+	{f:"plan-remove-local-json-enemy-fallback-2026-09-04.md",t:"移除本地 JSON 敌人卡组层",d:"2026-09-04",g:"网络",s:"verify",c:"c1b25860",r:["§5 Play 手验:空池 warning/ghost 注入/enemy_source 计数/仪表盘","§2 D4 空池兜底(可选,未加)"],n:"代码已落地,plan 头「待执行」未回填"},
+	{f:"plan-recorded-deck-pool-archive-2026-09-04.md",t:"Recorded v1 敌方卡组归档隔离",d:"2026-09-04",g:"网络",s:"done",c:"e5c907b3/12976a2b",n:"v2 池已回填 #1-#10"},
+	// ===== UI / HUD =====
+	{f:"plan-v1.1-topo-background-and-opts-pin-2026-10-03.md",t:"v1.1 世界地形背景 + ❚❚ 常钉",d:"2026-10-03",g:"UI",s:"verify",c:"0c956867/8f726d03/7906ed3a",r:["Task 6 用户 Play 矩阵 1-8 全未勾","5b:❚❚ 战斗中点击同时触发 reveal 的 open decision","combat→shop 返回飞卡留 v1.1 backlog"]},
+	{f:"plan-ui-aspect-adaptation-2026-09-09.md",t:"UI 窗口比例自适应统一",d:"2026-09-09",g:"UI",s:"ruling",r:["P1 缩放轴统一(Combat/Result/Global 三 canvas)","P2 活件重锚(死件清理 10-04 作废)","P3 视锥补偿(等 transition 10-04 裁定;orthoSize 杠杆);P4 回归(§4)"],n:"2026-10-04 re-audit 完成(§6):商店 canvas 已删/P3 改正交杠杆;待「修改代码」开工"},
+	{f:"plan-roboto-condensed-font-2026-08-15.md",t:"全局字体换 Roboto Condensed",d:"2026-08-15",g:"UI",s:"verify",r:["Play-mode 目测(当时会话 refresh 卡死未截图,§8)"],n:"序列化接线均已验"},
+	{f:"plan-result-per-card-stats-2026-07-23.md",t:"结算页逐卡战斗统计",d:"2026-07-23",g:"UI",s:"verify",r:["步骤 8 Play Mode 验证(同 ID 双边用例)无记录"],n:"tracker + 测试 + 接线均在库"},
+	{f:"plan-hover-card-spread-2026-09-14.md",t:"悬停邻居散开",d:"2026-09-14",g:"UI",s:"verify",r:["09-14 审出「spread 开启即无法 popup」:Fix1 已实施(未弹出者 band 失败回退 live collider),RegressionChecklist 行 100 Play 待验"],n:"两轴默认 0,实机调参由用户 Inspector 进行"},
+	{f:"plan-hover-card-tag-tooltip-2026-07-22.md",t:"悬停卡牌标签浮窗",d:"2026-07-22",g:"UI",s:"done",c:"4fb0f637",n:"可选高亮标注(Optional)未做"},
+	{f:"plan-hover-popup-interrupt-2026-07-31.md",t:"悬停弹起快速 A→B 中断",d:"2026-07-31",g:"UI",s:"done",n:"含 Addendum 并行弹起 + round 2 爬升修复"},
+	{f:"plan-hover-retention-x-band-2026-09-14.md",t:"悬停保持区 X 带可调",d:"2026-09-14",g:"UI",s:"done",n:"Play 验证并入 checklist 行 98"},
+	{f:"plan-hp-compare-bar-2026-07-18.md",t:"战斗 HP 对比条",d:"2026-07-18",g:"UI",s:"done",c:"a1cfe129",n:"遗留口径:低血量脉冲阈值(对比条份额<0.25 vs 数字自身比例 hpMax×0.25)不同源,待拍板(09-11)"},
+	{f:"plan-hp-numeric-display-horizontal-2026-08-08.md",t:"HP 数值显示横式(12/20)",d:"2026-08-08",g:"UI",s:"verify",r:["旧竖版场景对象已停用,待新版本确认后清理(§4)"]},
+	{f:"plan-hp-numeric-display-2026-07-19.md",t:"HP 数值显示(竖式+滚轮)",d:"2026-07-19",g:"UI",s:"done",c:"24d56d9f",n:"使用侧已被横式变体接替"},
+	{f:"plan-hp-bar-shadow-2026-07-21.md",t:"HP 对比条投影",d:"2026-07-21",g:"UI",s:"done",c:"490bc436"},
+	{f:"plan-tag-tooltip-description-and-card-anchor-2026-07-26.md",t:"标签 tooltip 说明与卡锚定",d:"2026-07-26",g:"UI",s:"done"},
+	// ===== 转场 =====
+	{f:"plan-transition-entrance-and-shadow-audit-2026-10-04.md",t:"过场入场滑动与阴影审计",d:"2026-10-04",g:"转场",s:"ruling",r:["Part A:阴影消失裁定待选 (a)/(b)/(c)","Part B:enemy/start card 入场滑动方案待批准"],n:"两项均无代码改动,纯待裁定(2026-10-04 新审计)"},
+	{f:"plan-phase-transition-hud-handoff-2026-10-03.md",t:"转场 HUD 交接 + 对比条钉世界",d:"2026-10-03",g:"转场",s:"verify",c:"9ca72e41/6331cae8",r:["Task 6 Play 矩阵 6 项:去/回程无空白帧、对比条随页滑入滑出、两次全循环、-odseed 5 bypass、resize 漂移"],n:"Tasks 1-5 已提交"},
+	{f:"plan-phase-transition-audit-fixes-2026-10-02.md",t:"商店↔战斗转场审计修复",d:"2026-10-02",g:"转场",s:"verify",r:["§5 Play 矩阵:双击 Space/弹窗期 Space/8 卡 tail 落位/回归"],n:"F4(布局无关 dummy 落位)= 用户裁定不做;EditMode 677/676/1 绿"},
+	{f:"plan-phase-transition-world-camera-2026-09-21.md",t:"商店↔战斗连续世界转场",d:"2026-09-21",g:"转场",s:"done",n:"用户 Play 全循环 ×2 已验(rigY 0↔12.12)"},
+	// ===== 工具 / 基建 =====
+	{f:"plan-manager-split-combatmanager-rap-cux-2026-09-16.md",t:"三大管理类拆分路线",d:"2026-09-16",g:"工具",s:"partial",r:["CM-1..4 / CUX-0..4 / RAP-1/2 全部未动工(§4.3,2026-10-03/04 复核)","CUX-6 tripwire(可选)待授权","§9 next-gen 拆分候选(10-04 新增)待排期"],n:"四项方向已拍板;CUX-5 已落地"},
+	{f:"plan-python-sim-4.0-upgrade-2026-08-31.md",t:"Python 模拟器升级 4.0 口径",d:"2026-08-31",g:"工具",s:"partial",r:["§4 Step 7(Layer B 卡组种群共演化)未启动——拍板「先扩 U 层再议」,U/R 已补齐","数据导出 + 两卡组合枚举 + 特征回归归因未做"],n:"Common 试样链 Step 1-6 全通"},
+	{f:"plan-testing-headless-unit-test-2026-05-05.md",t:"无头 EditMode 战斗单测",d:"2026-05-05",g:"工具",s:"partial",r:["具名迁移目标(DeathbedCurseTests/FallIntoRiftTests/RiftTests)未按名落地(实际被 ~50 文件测试体系吸收)","§七验收清单未回勾;Step 6 菜单项(可选)未做"],n:"HeadlessCombatTestFixture 基建已大成,是现行测试骨干"},
+	{f:"plan-the-bazaar-pool-analysis-2026-08-30.md",t:"The Bazaar 卡池分析系列",d:"2026-08-30",g:"工具",s:"done",n:"11 篇分析文档全交付(docs/Bazaar_*)"},
+	{f:"prd-deck-enemy-recorder-2026-06-14.md",t:"敌方牌组录制器 v2.0(手动 Record Now)",d:"2026-06-14",g:"工具",s:"done"},
+	{f:"prd-deck-enemy-recorder-2026-05-27.md",t:"敌方牌组录制器 v1.1(自动录制)",d:"2026-05-27",g:"工具",s:"dead",n:"被取代:prd-deck-enemy-recorder-2026-06-14(v2.0)"},
+	{f:"refactor-combat-ux-manager-2026-05-17.md",t:"CombatUXManager 上帝类拆分(阶段1)",d:"2026-05-17",g:"工具",s:"dead",n:"阶段 1 已落地;阶段 2/3(五子系统拆分/日志降噪)由 plan-manager-split-2026-09-16 接管"}
+];
+
+// ===== render =====
+const state = { visible: new Set(ORDER.filter(k => STATUS[k].def)), domain: "", q: "" };
+
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+function filtered() {
+	const q = state.q.trim().toLowerCase();
+	return DATA.filter(e =>
+		state.visible.has(e.s) &&
+		(!state.domain || e.g === state.domain) &&
+		(!q || (e.t + " " + e.f + " " + (e.r || []).join(" ") + " " + (e.n || "") + " " + e.g).toLowerCase().includes(q))
+	);
+}
+
+function render() {
+	const rows = filtered();
+	// stats chips
+	document.getElementById("stats").innerHTML = ORDER.map(k => {
+		const n = DATA.filter(e => e.s === k).length;
+		const on = state.visible.has(k);
+		return `<span class="chip ${on ? "" : "off"}" data-st="${k}"><span class="dot" style="background:${STATUS[k].color}"></span>${STATUS[k].label}<span class="n">${n}</span></span>`;
+	}).join("");
+	// domain select
+	const doms = [...new Set(DATA.map(e => e.g))];
+	document.getElementById("domainSel").innerHTML = `<option value="">全部领域 (${DATA.length})</option>` +
+		doms.map(d => `<option value="${d}" ${state.domain === d ? "selected" : ""}>${d} (${DATA.filter(e => e.g === d).length})</option>`).join("");
+	// list
+	const list = document.getElementById("list");
+	if (!rows.length) { list.innerHTML = `<div class="empty">没有匹配的条目 —— 试试放开状态 chip 或清空搜索。</div>`; return; }
+	list.innerHTML = ORDER.map(k => {
+		const items = rows.filter(e => e.s === k).sort((a, b) => b.d.localeCompare(a.d));
+		if (!items.length) return "";
+		return `<div class="sech"><span class="dot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${STATUS[k].color}"></span>${STATUS[k].label}<span class="cnt">${items.length}</span><span class="bar"></span></div>` +
+			items.map(e => {
+				const rem = (e.r && e.r.length) ? `<ul class="rem">${e.r.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+				const note = e.n ? `<div class="note">${esc(e.n)}</div>` : "";
+				const cm = e.c ? `<span class="cm">commit ${esc(e.c)}</span>` : "";
+				return `<div class="card ${e.s === "dead" ? "dead" : ""}">
+					<div class="r1">
+						<span class="badge" style="background:${STATUS[e.s].color}">${STATUS[e.s].label}</span>
+						<a class="t" href="../plans/${esc(e.f)}">${esc(e.t)}</a>
+						<span class="date">${esc(e.d)}</span>
+						<span class="dom">${esc(e.g)}</span>
+						${cm}
+					</div>
+					${rem}${note}
+					<div class="file">plans/${esc(e.f)}</div>
+				</div>`;
+			}).join("");
+	}).join("");
+}
+
+document.getElementById("stats").addEventListener("click", ev => {
+	const chip = ev.target.closest(".chip"); if (!chip) return;
+	const k = chip.dataset.st;
+	state.visible.has(k) ? state.visible.delete(k) : state.visible.add(k);
+	render();
+});
+document.getElementById("domainSel").addEventListener("change", ev => { state.domain = ev.target.value; render(); });
+document.getElementById("search").addEventListener("input", ev => { state.q = ev.target.value; render(); });
+document.getElementById("reset").addEventListener("click", () => {
+	state.visible = new Set(ORDER.filter(k => STATUS[k].def));
+	state.domain = ""; state.q = "";
+	document.getElementById("search").value = "";
+	render();
+});
+render();
+</script>
+</body>
+</html>

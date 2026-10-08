@@ -1,7 +1,7 @@
 # Recorded 敌方卡组池 v1 归档计划（卡组设计 v2 隔离）
 
 日期：2026-09-04
-状态：**待执行**。纯资产/场景操作，全程不改代码；涉及场景改动与资源移动，执行前需用户确认。
+状态：**已执行（核对于 2026-10-06）**。`Recorded/Session0~7` 共 70 个 DeckSO 已带 GUID 迁至 `Assets/SORefs/Decks/Deprecated Decks/Recorded_v1/`，`Recorded/` 空壳 + meta 原地保留，`EnemyDeckRecorder.outputFolder` 未动（新录制仍入 `Recorded/Session{N}`）。与原案的一处偏差：default pool 未停留在「仅剩 2 手工卡组」，清空 Recorded 引用后已重新填充为 `Default Enemy Decks/#1~#10` 共 10 副手工卡组（零 Recorded 残留引用），v2 录制由 skill 后续按需增补。
 背景：卡牌设计迭代出 v2 版本，需把 default enemy deck pool 中现存的 v1 recorded 卡组归档，并保证之后新录制的卡组与 v1 不混合。
 
 ## 1. 现状基线（2026-09-04 实测）
