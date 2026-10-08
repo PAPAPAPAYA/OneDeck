@@ -1,7 +1,7 @@
 # Plan: HP Name Plate (merged avatar + HP display) — 2026-10-07
 
 - **Date**: 2026-10-07
-- **Status**: Implemented 2026-10-07 (steps 1-6 done; EditMode suite 743/742/0/1-skip green). Play verification 2026-10-07 (frame-dense flight probes + screenshots): transitions/mirror handoff/Result visibility/shop mirror values+name all correct; four deviations found — fixes specced in `plans/plan-hp-name-plate-fixes-2026-10-07.md` (anchor clipping, shadow-slab sign flip, mirror HP/Slash empty texts, fallback viewportY).
+- **Status**: Implemented 2026-10-07 (steps 1-6 done; EditMode suite 743/742/0/1-skip green). Play verification 2026-10-07 (frame-dense flight probes + screenshots): transitions/mirror handoff/Result visibility/shop mirror values+name all correct; four deviations found — fixes specced in `plans/plan-hp-name-plate-fixes-2026-10-07.md` (anchor clipping, shadow-slab sign flip, mirror HP/Slash empty texts, fallback viewportY). 2026-10-08 style alignment (user request): both canvas displays re-tuned to the hand-retuned mirror's proportions (em=1.0 rebase) — scene-only serialized fields, both sides: `maxFontScale` 0.47→0.5, `maxOffsetYEm` −0.215→−0.19, `nameScaleEm` 0.32→0.35, `nameTrackingEm` 0.05→0, `nameSidePadEm`/`shadowExtendXEm`/`shadowInsetXEm` →0.1, `facePadYEm` −0.02 + `facePadXEm` 0.1046 (solved) → face exactly 3.2×0.96em = mirror 4×1.2@0.8, `labelGapEm` 0.11→−0.04 (HP ink touches digits, mirror rhythm). Enemy palette kept per-side (red face); code defaults untouched (still 0.47/0.32/0.16 — new instances would need re-tune or a future default bump).
 - **Request (user, 2026-10-07)**: replace the player icon + HP numerical display with the mockup style — no avatar, username only, merged into the HP display by extending the shadow to hold it; shadow direction uniformly down-right per the UI guideline; the username region is not a colored area but the same shadow as the other buttons, extended. Deliver HTML demo first, then update UI docs, then this plan.
 - **Design source**: `docs/demo/HPNamePlateDemo.html` (geometry pixel-measured from the mockup; live tuning + spec export). Doc updates already landed: `docs/UIUX_Guidelines.md` §3.7 + v0.16, `docs/PhaseTransition.md` pending note.
 - **Reads**: `GameScene.unity` (HUD wiring), `HPNumericDisplayHorizontal.cs`, `CombatIconPresenter.cs`, `ShopHudPage.prefab` + `Tpl_Avatar.prefab` / `Tpl_HpPill.prefab`, `ShopChrome.cs`, `ShopTopBarLayout.cs`, `ShopMirrorScale.cs`, `ShopHudBinder.cs`, `HudCountBinding.cs`, `HudTextBinding.cs`, `PhaseTransitionDriver.cs`, `PhaseHudFlight.cs`, `PhysButton.cs`, `ShopWorldWidgets.cs`, `PaletteTint.cs`, `GameColorPalette.cs` + `GameColorPalette.asset`, `PlayerIdentity.cs`, `OpponentDeckCache.cs`, `docs/PhaseTransition.md`, `docs/UIUX_Guidelines.md`.
@@ -74,7 +74,7 @@ Geometry (em; 1em = current-digit font size = 128 canvas px at combat scale 0.8)
 | extend-x | 0.16 | shadow right overhang |
 | extend-y | 0.41 | shadow bottom extension = name band height |
 | shade inset | 0.11 | band inset from the face's left edge |
-| max / slash scale | 0.47 | both at `_maxEm` (slash is full-em today — code change) |
+| max scale | 0.47 | max digits only; the slash stays at full em (user ruling 2026-10-07, no code change) |
 | max / slash raise | 0.05 | off the baseline (`maxOffsetYEm` ≈ −0.05; today −0.21/−0.17) |
 | HP label gap | 0.11 | label at full digit size |
 | name scale / tracking | 0.32 / 0.05 | shrink floor 55%, then ellipsis |
@@ -100,7 +100,7 @@ With the icon gone, the plate takes the icon's corner spot (the demo's stage moc
 Extend `HPNumericDisplayHorizontal` in place — it already owns counting, odometer strips, shake/pop, digit-growth glide, phase visibility, shop parking, and the world flight. Additions:
 
 1. **Layout**: `LayoutRoots()` grows to (a) include the `HP` label width + `labelGapEm` in the row, (b) size/anchor the face Image (row width + pads, height ≈ 1.02em, centered on `displayRoot`), (c) size/anchor the shadow Image (face rect + inset-left/extend-right/extend-down), (d) place the name label in the band. Digit-growth glide also tweens face/shadow widths in the same `dividerGlideDuration`.
-2. **Slash at max scale**: `slashText.fontSize = _maxEm` (measure `_slashWidth` AFTER assigning; today the order is fontSize=_em then measure).
+2. **Slash at full em**: `slashText.fontSize = _em` — unchanged from the pre-plate component (user ruling 2026-10-07; measure `_slashWidth` AFTER assigning). Only the max group renders at `_maxEm`.
 3. **Name**: new serialized `TMP_Text nameLabel` (child of `displayRoot`, band region); poll per frame with the presenter's diff-guard (`PlayerIdentity.Username` / `OpponentDeckCache.Current.username`, `???` fallback); auto-shrink to a 55% floor then TMP ellipsis; color = plate-name palette field. Enemy poll gated like today (Combat branch).
 4. **Edit Mode preview**: extend `ApplyEditModePreview` to lay out face/shadow/name (`previewHp`/`previewHpMax` + a `previewName`) so the plate is scene-visible without Play.
 5. Retire `CombatIconPresenter` (component + GO) and delete the `PlayerIcon`/`EnemyIcon` subtrees; move its name-poll responsibility into (3). The retired vertical `PlayerHPDisplay`/`EnemyHPDisplay` stay untouched (follow-up).

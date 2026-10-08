@@ -396,11 +396,11 @@
 		.shop-wrap { display: flex; justify-content: center; }
 		.shop-page {
 			position: relative;
-			width: 480px;
+			width: 536px; /* content column 448 (panel width) + the right band the corner-pinned options lives in */
 			border-radius: 12px;
 			overflow: hidden;
 			background: #b8b5ae;
-			padding: 14px 16px 18px;
+			padding: 14px 72px 18px 16px;
 			color: var(--ink);
 		}
 		.shop-page .topo-bg {
@@ -412,20 +412,125 @@
 			pointer-events: none;
 		}
 		.shop-page > :not(.topo-bg) { position: relative; z-index: 1; }
-		/* Topbar per the 2026-09-22 reference: row 1 = 离开商店 + rarity odds +
-		   options (right corner); row 2 = avatar+用户名, big HP / $ chips, and the
-		   right-aligned 卡位·心数 / 收入 stack. */
-		.shop-topbar { display: flex; flex-direction: column; gap: 10px; }
-		.btn-leave { font-size: 22px; padding: 10px 20px; }
+		/* Topbar per the 2026-10-07 reference: row 1 = 离开商店 (dominant, absorbs
+		   the row's slack) + two-line rarity odds chips, bottoms flush; row 2 = HP
+		   name plate + $ / 卡位 / 升级位 / 收入 spread edge-to-edge. Both rows span
+		   the exact width of the panels below (2026-10-07 ruling); options is
+		   pinned to the page's top-right corner (page-level form of the
+		   2026-09-28 viewport-pin ruling). */
+		.shop-topbar { display: flex; flex-direction: column; gap: 12px; }
+		.shop-topbar .hud-line { flex-wrap: nowrap; gap: 12px; }
+		.hud-line.hud-top { align-items: flex-end; } /* odds chips' bottoms flush with the taller leave button */
+		.hud-line.hud-main { align-items: stretch; justify-content: space-between; } /* full panel width, equal heights */
+		.shop-topbar .phys-leave { flex: 1 1 auto; } /* the leave button absorbs the row's slack */
+		.shop-topbar .phys-leave .btn-leave { width: 100%; }
+		.btn-leave { font-size: 40px; padding: 8px 20px; }
 		.hud-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-		.hud-avatar { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; cursor: default; }
-		.hud-avatar .sq { width: 40px; height: 40px; background: var(--panel); border-radius: 6px; }
-		.hud-stack { display: flex; flex-direction: column; gap: 5px; margin-left: auto; align-items: flex-start; }
-		.hud-stack .hud-line { gap: 6px; }
-		.chip-lg { font-size: 22px; padding: 8px 14px; }
-		.chip-lg small { font-size: 13px; font-weight: 700; }
-		.chip-sm { font-size: 12px; padding: 3px 8px; }
-		.phys-opts { margin-left: auto; }
+		.shop-page > .phys-opts { position: absolute; top: 8px; right: 10px; }
+		.shop-page .phys-opts .btn-icon { width: 52px; height: 52px; font-size: 22px; }
+
+		/* HP name plate — same structure as the shipped Tpl_HpNamePlate /
+		   HPNamePlateDemo.html: digit face (HP + current + full-size slash + small
+		   raised max) over the standard hard shadow, which extends down-right into
+		   the username band. All geometry is em-relative to the digit font-size
+		   (--pfs); the band is the production cardShadow ("Navy Alpha") at 70%.
+		   Read-only: no lift/press physics (R2 inverse). */
+		.hp-plate {
+			--pfs: 40px; /* digit font-size = the plate's geometry unit */
+			position: relative;
+			display: inline-block;
+			height: calc(var(--pfs) * 1.43); /* digit face (1.02) + name band (0.41) */
+			font-family: 'Roboto Condensed', 'Arial Narrow', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+			font-size: var(--pfs);
+			line-height: 1;
+			font-weight: 800;
+			user-select: none;
+			cursor: default;
+		}
+		.hp-plate .plate-shade {
+			position: absolute;
+			top: 0;
+			left: calc(var(--pfs) * 0.11);   /* band inset from the face's left edge */
+			right: calc(var(--pfs) * -0.16); /* band overhang past the face's right edge */
+			bottom: 0;
+			background: rgba(26, 48, 55, 0.7); /* production cardShadow @ 70% */
+			border-radius: calc(var(--pfs) * 0.21);
+		}
+		.hp-plate .plate-face {
+			position: relative;
+			display: flex;
+			align-items: flex-end; /* all groups share the baseline */
+			background: var(--face);
+			color: var(--ink);
+			border-radius: calc(var(--pfs) * 0.21);
+			padding: calc(var(--pfs) * 0.01) calc(var(--pfs) * 0.12);
+			white-space: nowrap;
+		}
+		.hp-plate .hp-label { margin-right: calc(var(--pfs) * 0.11); }
+		.hp-plate .hp-slash { font-size: var(--pfs); } /* full digit size, Fix 5 2026-10-07 */
+		.hp-plate .hp-max {
+			font-size: calc(var(--pfs) * 0.47);
+			margin-bottom: calc(var(--pfs) * 0.05); /* small raise off the baseline */
+		}
+		.hp-plate .plate-name {
+			position: absolute;
+			bottom: 0;
+			height: calc(var(--pfs) * 0.41);
+			line-height: calc(var(--pfs) * 0.41);
+			right: 0; /* name's right edge = face's right edge (name-pad-x == ext-x) */
+			font-size: calc(var(--pfs) * 0.32);
+			font-weight: 700;
+			letter-spacing: calc(var(--pfs) * 0.05);
+			color: var(--face); /* light ink on the dark band */
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			text-align: right;
+		}
+
+		/* row 2 read-only chips: flat dark panels, no shadow physics; the row is
+		   flex-stretched to the plate's total height, so every chip's top/bottom
+		   edges align with the plate (face top = chip top, band bottom = chip
+		   bottom) — the alignment the 2026-10-07 reference calls out. */
+		.chip-money {
+			display: flex;
+			align-items: center;
+			background: var(--panel);
+			color: #fff;
+			border-radius: var(--r-chip);
+			padding: 0 18px;
+			font-size: 28px;
+			font-weight: 800;
+		}
+		.chip-stat {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 2px;
+			background: var(--panel);
+			color: #fff;
+			border-radius: var(--r-chip);
+			padding: 0 12px;
+			font-weight: 800;
+		}
+		.chip-stat .ic { font-style: normal; font-size: 16px; line-height: 1; }
+		.chip-stat .v { font-size: 15px; line-height: 1; }
+
+		/* row 1 two-line odds chip: stars over the percentage */
+		.chip-odds {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 3px;
+			background: var(--panel);
+			color: #fff;
+			border-radius: var(--r-chip);
+			padding: 8px 14px;
+			font-weight: 800;
+		}
+		.chip-odds .ic { font-style: normal; font-size: 15px; line-height: 1; letter-spacing: 0.14em; }
+		.chip-odds .v { font-size: 16px; line-height: 1; }
 		.shop-panel {
 			margin-top: 14px;
 			background: rgba(63, 68, 65, .55);
@@ -854,40 +959,41 @@
 
 	<!-- ===================== 08 shop page ===================== -->
 	<section id="shoppage" data-title="08 商店页 Shop Page">
-		<div class="spec-head"><h2>08 商店页 Shop Page</h2><span class="tag-status">v1.2 · 2026-09-22</span></div>
+		<div class="spec-head"><h2>08 商店页 Shop Page</h2><span class="tag-status">v1.3 · 2026-10-07</span></div>
 		<ul class="notes">
-			<li>整页布局按 2026-09-22 参考稿：顶栏第一行 = <b>离开商店</b> ＋ 稀有度概率（✦/✦✦/✦✦✦）＋ 右角<b>选项</b>；第二行 = 头像+用户名 / 大 HP / 大金钱 / 右对齐的 卡位·心数＋收入 堆叠。下方 <b>商店</b> 面板（重掷 + 货架卡）＋ <b>卡组</b> 面板（大字号卡位计数 + 持有卡 + 空卡位）＋ <b>商店升级</b> 面板（已拥有的 utility 卡）。</li>
+			<li>整页布局按 2026-10-07 参考稿：顶栏第一行 = <b>离开商店</b> ＋ 稀有度概率双行 chip（✦ 图标在上、百分比在下）＋ 钉死页面右上角的<b>选项</b>按钮（09-28 视口钉角裁定的页面级表达）；第二行 = <b>HP 铭牌</b> ＋ <b>$</b> ＋ <b>♚ 卡位</b> ＋ <b>♥ 升级位</b> ＋ <b>收入</b>，单行排布。下方 <b>商店</b> 面板（重掷 + 货架卡）＋ <b>卡组</b> 面板（大字号卡位计数 + 持有卡 + 空卡位）＋ <b>商店升级</b> 面板（已拥有的 utility 卡）。</li>
+			<li><b>HP 铭牌</b>与已实装的 <code>Tpl_HpNamePlate</code> 同构（<code>HPNamePlateDemo.html</code>）：数字面（HP ＋ 当前值 ＋ 全字号斜杠 ＋ 小号抬升的 max）叠在标准硬阴影上，阴影向右下延展成<b>用户名带</b>；几何全部以数字字号（--pfs）为 em 单位，生产映射 = GameColorPalette 的 HpPlate 组 + PaletteTint 槽位。</li>
+			<li><b>对齐规则</b>：顶栏两行与下方面板<b>同宽同缘</b>（内容列 448，行内空隙吃满整行）；第一行更高——离开商店按钮吸收行内剩余宽度，概率 chip 底边与按钮底边对齐；第二行整行等高——行高 = 铭牌总高（数字面 1.02em ＋ 名字带 0.41em），$ / 卡位 / 升级位 / 收入 chip 顶底边与铭牌对齐（flex stretch，chip 顶 = 数字面顶，chip 底 = 名字带底）；选项按钮不占内容列——钉在页面右上角的留白带里（页宽 536 = 内容列 448 ＋ 右侧角标带 72），高于第一行、与概率 chip 无重叠。</li>
 			<li><b>商店升级</b>面板样式与卡组面板一致（半透明深色浮层 + 卡排 + 价格按钮），但 utility（被动）卡<b>不占卡位</b>：头部只有标题、无卡位计数，不做空卡位凹槽；utility 卡无攻击力，卡面底行仅卡名；交互与卡组面板相同——点按卡片预览、点价格按钮售出（hover <code>$N → 售出</code>，售价 = 半价）。</li>
 			<li>灰色等高线背景 = 玩家 HP display 的视觉基底（整页无缝世界概念见 <code>PhaseTransitionDemo.html</code>）；商店 / 卡组面板为半透明深色浮层。</li>
-			<li><b>交互参数全部引用全局参数条</b>（rs / hl / hoverDur / pressDur / 缓动 / 拒绝动效），本节不新增参数。可交互 = 离开商店、选项、重掷、价格按钮（规范见 04 节）；HP / 金钱 / 稀有度概率 / 卡位计数 / 心数 / 收入一律只读平面（R2 逆命题）。</li>
-			<li>本节为布局与状态规范：点击只记日志，不搬动数据；空卡位 = 凹槽（06 节）；售价 = 半价（现行规则）。</li>
+			<li><b>交互参数全部引用全局参数条</b>（rs / hl / hoverDur / pressDur / 缓动 / 拒绝动效），本节不新增参数。可交互 = 离开商店、选项、重掷、价格按钮（规范见 04 节）；HP 铭牌 / 金钱 / 稀有度概率 / 卡位 / 升级位 / 收入一律只读平面（R2 逆命题）。</li>
+			<li>本节为布局与状态规范：点击只记日志，不搬动数据；空卡位 = 凹槽（06 节）；售价 = 半价（现行规则）；商店阶段恒满血（HP 示例 = 20/20）。</li>
 		</ul>
 		<div class="shop-wrap">
 			<div class="shop-page">
 				<svg class="topo-bg" id="shopTopo" viewBox="0 0 480 720" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"></svg>
+				<div class="phys phys-opts" data-interactive data-name="选项">
+					<button class="phys-face btn btn-icon">❚❚</button>
+				</div>
 				<div class="shop-topbar">
-					<div class="hud-line">
-						<div class="phys" data-interactive data-name="离开商店">
+					<div class="hud-line hud-top">
+						<div class="phys phys-leave" data-interactive data-name="离开商店">
 							<button class="phys-face btn btn-leave">离开商店</button>
 						</div>
-						<span class="chip dark">✦ 50%</span>
-						<span class="chip dark">✦✦ 40%</span>
-						<span class="chip dark">✦✦✦ 10%</span>
-						<div class="phys phys-opts" data-interactive data-name="选项">
-							<button class="phys-face btn btn-icon">❚❚</button>
-						</div>
+						<span class="chip-odds"><span class="ic">✦</span><span class="v">50%</span></span>
+						<span class="chip-odds"><span class="ic">✦✦</span><span class="v">40%</span></span>
+						<span class="chip-odds"><span class="ic">✦✦✦</span><span class="v">10%</span></span>
 					</div>
-					<div class="hud-line">
-						<span class="hud-avatar"><span class="sq"></span>用户名</span>
-						<span class="chip chip-lg">HP <b>15</b><small>/20</small></span>
-						<span class="chip dark chip-lg">$20</span>
-						<span class="hud-stack">
-							<span class="hud-line">
-								<span class="chip dark chip-sm">▦ 2/6</span>
-								<span class="chip dark chip-sm">♥ 1/3</span>
-							</span>
-							<span class="chip dark chip-sm">+$12/ROUND</span>
+					<div class="hud-line hud-main">
+						<span class="hp-plate">
+							<span class="plate-shade"></span>
+							<span class="plate-face"><span class="hp-label">HP</span><span class="hp-current">20</span><span class="hp-slash">/</span><span class="hp-max">20</span></span>
+							<span class="plate-name">PAPAYA</span>
 						</span>
+						<span class="chip-money">$20</span>
+						<span class="chip-stat"><span class="ic">♚</span><span class="v">2/6</span></span>
+						<span class="chip-stat"><span class="ic">♥</span><span class="v">1/3</span></span>
+						<span class="chip-stat"><span class="ic">+$12/</span><span class="v">ROUND</span></span>
 					</div>
 				</div>
 				<div class="shop-panel">
@@ -1073,7 +1179,8 @@
 		2) 交互元素加 <code>class="phys" data-interactive</code> 即自动获得悬停/按下/取消状态机；提示加 <code>data-tips='[["标签","描述"]]'</code>（可多条）；悬停换文案加 <code>data-hover-text="..."</code>。无需写新 JS。
 		3) 新全局参数 = 在 <code>PARAMS</code> 数组加一项，参数条、状态对象、规格 JSON 自动生成。
 		4) 手感确认后，把数值同步进 <code>docs/UIUX_Guidelines.md</code> 与 Unity 实现。<br>
-		版本：v1.2 · 2026-09-22 · 08 节顶栏按 2026-09-22 参考稿重排：第一行 离开商店＋稀有度概率＋右角选项，第二行 头像+用户名 / 大 HP / 大金钱（$ 改深色 chip）/ 右对齐 卡位·心数＋收入 堆叠；卡组面板卡位计数 03/05 放大<br>
+		版本：v1.3 · 2026-10-07 · 08 节顶栏按 2026-10-07 参考稿重排：第一行 离开商店（加大、吸收行宽）＋双行概率 chip（✦ 在上/百分比在下、底边对齐按钮），选项按钮钉在页面右上角留白带（内容列 448 窄于页宽 536，选项与概率 chip 无重叠）；第二行 HP 铭牌（Tpl_HpNamePlate 同构：数字面＋硬阴影下延用户名带，斜杠全字号）＋ $/♚卡位/♥升级位/收入 铺满整行等高对齐（行高=铭牌总高）；两行顶栏与下方面板同宽同缘；HP 示例改 20/20（商店满血不变量）<br>
+	版本：v1.2 · 2026-09-22 · 08 节顶栏按 2026-09-22 参考稿重排：第一行 离开商店＋稀有度概率＋右角选项，第二行 头像+用户名 / 大 HP / 大金钱（$ 改深色 chip）/ 右对齐 卡位·心数＋收入 堆叠；卡组面板卡位计数 03/05 放大<br>
 		版本：v0.9 · 2026-09-15 · 08 节商店页新增「商店升级」面板：卡组板块下方，样式与卡组面板一致，展示已拥有的 utility（被动）卡——头部无卡位计数、无空卡位凹槽、卡面无攻击力，交互同卡组面板（预览 + 价格按钮售出）<br>
 		版本：v0.8 · 2026-09-08 · 卡牌效果描述不再 2 行截断省略号，全文折行完整显示；稀有度行让位收缩，效果底边仍贴分隔线向上生长；Unity 侧对应 desc TMP 溢出 Ellipsis→Overflow（PhysicalCardParent.prefab 覆盖项）<br>
 		版本：v0.7 · 2026-09-06 · 卡名溢出不再省略号，改为水平压扁适配（JS scaleX，无下限）；Unity 侧对应 CardPhysObjScript.FitCardNamePrint（TMP characterHorizontalScale）<br>

@@ -14,8 +14,8 @@
 		--ext-x: 0.16;       /* shadow overhang past the face's right edge */
 		--ext-y: 0.41;       /* shadow extension downward = name band height */
 		--shade-inset: 0.11; /* name band inset from the face's left edge */
-		--max-scale: 0.47;   /* max digits + slash font size */
-		--max-raise: 0.05;   /* max group + slash bottom raise off the baseline */
+		--max-scale: 0.47;   /* max digits font size (the slash always renders full-size) */
+		--max-raise: 0.05;   /* max group bottom raise off the baseline */
 		--label-gap: 0.11;   /* gap between the "HP" label and the current digits */
 		--name-scale: 0.32;  /* username font size */
 		--name-track: 0.05;  /* username letter-spacing */
@@ -84,7 +84,8 @@
 
 	/* Face: "HP" + current digits + slash + max digits. Bottoms of all groups are
 	   aligned, which reads as baseline alignment for these descender-less glyphs;
-	   the max group + slash ride a small raise (max-raise) off that baseline. */
+	   the max group rides a small raise (max-raise) off that baseline, while the
+	   slash renders at the full digit size (user ruling 2026-10-07). */
 	.hp-plate .plate-face {
 		position: relative;
 		display: flex;
@@ -100,8 +101,7 @@
 	.hp-plate .hp-label { margin-right: calc(var(--label-gap) * var(--fs)); }
 	.hp-plate .hp-current, .hp-plate .hp-max { display: inline-block; }
 	.hp-plate .hp-slash {
-		font-size: calc(var(--max-scale) * var(--fs));
-		margin-bottom: calc(var(--max-raise) * var(--fs));
+		font-size: var(--fs);
 	}
 	.hp-plate .hp-max {
 		font-size: calc(var(--max-scale) * var(--fs));
@@ -402,8 +402,8 @@
 		<div class="control-row"><label>shadow extend-x</label><input type="range" data-tune="extX" min="0" max="0.8" step="0.01"><span class="value-label"></span></div>
 		<div class="control-row"><label>shadow extend-y (band)</label><input type="range" data-tune="extY" min="0.2" max="0.9" step="0.01"><span class="value-label"></span></div>
 		<div class="control-row"><label>shadow inset (left)</label><input type="range" data-tune="shadeInset" min="0" max="0.4" step="0.01"><span class="value-label"></span></div>
-		<div class="control-row"><label>max / slash scale</label><input type="range" data-tune="maxScale" min="0.3" max="0.85" step="0.01"><span class="value-label"></span></div>
-		<div class="control-row"><label>max / slash raise</label><input type="range" data-tune="maxRaise" min="0" max="0.2" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>max scale (slash = full)</label><input type="range" data-tune="maxScale" min="0.3" max="0.85" step="0.01"><span class="value-label"></span></div>
+		<div class="control-row"><label>max raise</label><input type="range" data-tune="maxRaise" min="0" max="0.2" step="0.01"><span class="value-label"></span></div>
 		<div class="control-row"><label>HP label gap</label><input type="range" data-tune="labelGap" min="0" max="0.4" step="0.01"><span class="value-label"></span></div>
 		<div class="control-row"><label>name scale</label><input type="range" data-tune="nameScale" min="0.15" max="0.7" step="0.01"><span class="value-label"></span></div>
 		<div class="control-row"><label>name tracking</label><input type="range" data-tune="nameTrack" min="0" max="0.2" step="0.01"><span class="value-label"></span></div>
@@ -419,13 +419,13 @@
 <section class="notes">
 	<h2>Notes</h2>
 	<ul>
-		<li>Geometry defaults are pixel-measured from the mockup: face #D1CDC8, ink #1A3037 (== palette Navy / <code>hpNormalPlayer</code>), max group at 0.47 scale raised 0.05em off the baseline, name cap height 0.32 scale, name right edge aligned with the face's right edge.</li>
+		<li>Geometry defaults are pixel-measured from the mockup: face #D1CDC8, ink #1A3037 (== palette Navy / <code>hpNormalPlayer</code>), max group at 0.47 scale raised 0.05em off the baseline, the slash at the full digit size (user ruling 2026-10-07), name cap height 0.32 scale, name right edge aligned with the face's right edge.</li>
 		<li>The username band is not a colored region — it IS the standard hard UI shadow (<code>GameColorPalette.cardShadow</code> = "Navy Alpha" #1A3037 @ 70%, the same <code>PaletteTint</code> slot the world buttons use), extended downward to hold the name. It composites over whatever is behind it; no new palette color is introduced.</li>
 		<li>Both sides share the identical layout: the R0 light source is top-left (<code>docs/UIUX_Guidelines.md</code>, inviolable), so every shadow extends down-right — no mirroring. The enemy plate differs only by face/ink colors: face = <code>hpBarEnemy</code> (Red 2 #801424), ink = <code>hpNormalEnemy</code> (GreyWhite 2 #BFBDB5).</li>
 		<li>Carried over from <code>HPNumericDisplayHorizontal</code>: adaptive counting with ease-out finish, odometer digit roll on both digit groups, hit shake (amplitude scales with damage), landing pop, digit-growth glide (99 → 100). Motion constants unchanged.</li>
-		<li>New: <code>HP</code> label at current-digit size; the slash now renders at the max group's scale (today it renders at full em); avatar + separate name label are gone — the username lives in the extended shadow band; hit shake / landing pop now move the whole merged element.</li>
+		<li>New: <code>HP</code> label at current-digit size; avatar + separate name label are gone — the username lives in the extended shadow band; hit shake / landing pop now move the whole merged element. The slash stays at the full digit size (unchanged from today's behavior — only the max group renders small).</li>
 		<li>Not carried over (same as the current horizontal version): low-HP red pulse, zero-out drop.</li>
-		<li>Empty username falls back to <code>???</code> (same as <code>CombatIconPresenter</code>). Long names shrink to a 55% floor, then ellipsize.</li>
+		<li>Empty username falls back to <code>???</code> (same as the retired <code>CombatIconPresenter</code>). Long names shrink to a 55% floor, then ellipsize.</li>
 	</ul>
 </section>
 
@@ -912,8 +912,8 @@
 				row('shadow extend-x', tune.extX.toFixed(2) + 'em') + '   (right overhang, R0 light top-left)',
 				row('shadow extend-y', tune.extY.toFixed(2) + 'em') + '   (name band height)',
 				row('shadow inset (left)', tune.shadeInset.toFixed(2) + 'em'),
-				row('max / slash scale', tune.maxScale.toFixed(2)),
-				row('max / slash raise', tune.maxRaise.toFixed(2) + 'em') + '   (off the baseline)',
+				row('max scale', tune.maxScale.toFixed(2)) + '   (slash = full digit size)',
+				row('max raise', tune.maxRaise.toFixed(2) + 'em') + '   (off the baseline)',
 				row('HP label gap', tune.labelGap.toFixed(2) + 'em'),
 				row('name scale', tune.nameScale.toFixed(2)) + '   (shrink floor ' + (tune.nameScale * NAME_SHRINK_FLOOR).toFixed(2) + ')',
 				row('name tracking', tune.nameTrack.toFixed(2) + 'em'),
