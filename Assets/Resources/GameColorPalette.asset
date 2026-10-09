@@ -51,7 +51,7 @@ MonoBehaviour:
   chipText: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
   buttonFace: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
   hpPlateFacePlayer: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}
-  hpPlateFaceEnemy: {fileID: 11400000, guid: ca296abf7be675e4da84c27084cce3b6, type: 2}
+  hpPlateFaceEnemy: {fileID: 11400000, guid: 98c5b8e47841efc41a1c0f788c72e79e, type: 2}
   hpPlateInkPlayer: {fileID: 11400000, guid: 92e5441414931bb40b3caa2378cfa4a5, type: 2}
   hpPlateInkEnemy: {fileID: 11400000, guid: 26ce20a8085bc7e44a35331ef352fd51, type: 2}
   hpPlateNamePlayer: {fileID: 11400000, guid: d714db718d43e64429051d1421639534, type: 2}

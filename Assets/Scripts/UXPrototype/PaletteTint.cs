@@ -34,6 +34,12 @@ public class PaletteTint : MonoBehaviour
 		// The mirror is always the player's plate, so these resolve the player slots.
 		HpPlateFace,
 		HpPlateName,
+		// Enemy plates (plan-opponent-select-panel-prefab-2026-10-08): the select-page
+		// candidate plates resolve these. Colors are EXISTING assets (user ruling 2026-10-09,
+		// no new ColorSO): the palette asset already wires hpPlate*Enemy to Red 2 / GreyWhite 2.
+		HpPlateFaceEnemy,
+		HpPlateInkEnemy,
+		HpPlateNameEnemy,
 	}
 
 	[Tooltip("Which GameColorPalette slot paints this GameObject's SpriteRenderer / TMP_Text.")]
@@ -99,6 +105,9 @@ public class PaletteTint : MonoBehaviour
 			case Slot.ButtonFace: return GameColorPalette.ButtonFaceColor;
 			case Slot.HpPlateFace: return GameColorPalette.HpPlateFacePlayerColor;
 			case Slot.HpPlateName: return GameColorPalette.HpPlateNamePlayerColor;
+			case Slot.HpPlateFaceEnemy: return GameColorPalette.HpPlateFaceEnemyColor;
+			case Slot.HpPlateInkEnemy: return GameColorPalette.HpPlateInkEnemyColor;
+			case Slot.HpPlateNameEnemy: return GameColorPalette.HpPlateNameEnemyColor;
 			default: return Color.white;
 		}
 	}
