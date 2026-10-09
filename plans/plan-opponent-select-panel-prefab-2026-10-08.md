@@ -108,7 +108,7 @@ serialized 引用：`panelBg`(SpriteRenderer)、`plateNameBinding`(HudTextBindin
 
 ## 11. 实施记录（2026-10-09）
 
-- **P-S1 完成**：PaletteTint.Slot append 3 槽（16 HpPlateFaceEnemy / 17 HpPlateInkEnemy / 18 HpPlateNameEnemy）+ Resolve 行。颜色全用已有资产（用户裁定）：敌方名牌三色 = 调色板既有接线 **Red 2 / GreyWhite 2 / GreyWhite 2**，零新建 ColorSO；按钮面复用 HpPlateFaceEnemy 槽（即 Red 2），label 用 TooltipText。
+- **P-S1 完成**：PaletteTint.Slot append 3 槽（16 HpPlateFaceEnemy / 17 HpPlateInkEnemy / 18 HpPlateNameEnemy）+ Resolve 行。颜色全用已有资产（用户裁定）：敌方名牌三色 = 调色板既有接线 **Red 1 / GreyWhite 2 / GreyWhite 2**，零新建 ColorSO；按钮面复用 HpPlateFaceEnemy 槽（即 Red 1），label 用 TooltipText。
 - **P-S2 完成**：SelectButton.prefab（Tpl_WorldButton 变体，PrefabInstance wrapper）：face/shadow SR m_Size 2.211×0.778（child 0.8 惯例 → 渲染 1.769×0.622）、label「选择 +$0」fs5 TooltipText、label z −0.09、collider 1.894×0.747 / offset(−0.0125, 0.0125)、Tpl 的 HudActionBinding（LeaveShop）已 RemovedComponents——选择 action 由页面泵 SetWorldAction 接。
 - **P-S3 完成**：OpponentSelectPanel.prefab。实施差值以本节为准（§5 表为设计稿）：
 	- **占位卡 = PhysicalCardParent.prefab**（Assets/Prefabs/UXPrototype/）——判例：Cards/4.0 卡 prefab 是纯逻辑体（0 渲染器），卡面视觉由 CombatUXManager 运行时用 PhysicalCardParent 构建。prefab 内烘 3 个连接实例；S2 页面泵换 ghost 真卡时走同模板 + 推 name/desc。
