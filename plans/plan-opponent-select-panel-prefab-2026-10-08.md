@@ -1,7 +1,7 @@
 # Plan: 选敌页候选面板 prefab（OpponentSelectPanel）
 
 日期：2026-10-08
-状态：**方案已拍板（2026-10-08 三决策，见 §0），实施待「修改代码」**。按 step-gate 协议：每步完成停下汇报，确认后继续。
+状态：**P-S1..S4 已实施（2026-10-09，「颜色用已有的」裁定 + 修改代码授权），EditMode 零漂移，Play 目检待做**。实施记录见 §11。
 关联：`plans/plan-opponent-select-page-2026-10-06.md`（主计划；本计划 = §4.3 选敌页内容的第一个交付物细化）、`docs/demo/OpponentSelectDemo.html`（v4 视觉规格）、`plans/plan-hp-name-plate-2026-10-07.md`（名牌规格）、`plans/plan-shop-hud-prefab-widgets-2026-09-23.md`（模板+变体 prefab 体系）
 
 ## 0. 拍板记录（2026-10-08 对话）
@@ -105,3 +105,19 @@ serialized 引用：`panelBg`(SpriteRenderer)、`plateNameBinding`(HudTextBindin
 - O-B：按钮 label 白色槽位 `TooltipText` vs demo #ECECE8 的微差，Play 目检后再定。
 - +$N 数据语义仍未拍板（主计划 §9 / demo NOTE）——prefab 只承担 authored 占位文本。
 - 占位卡选哪张 prefab：prefab 阶段任选低频卡（如 1_R 常见卡），S3 时定。
+
+## 11. 实施记录（2026-10-09）
+
+- **P-S1 完成**：PaletteTint.Slot append 3 槽（16 HpPlateFaceEnemy / 17 HpPlateInkEnemy / 18 HpPlateNameEnemy）+ Resolve 行。颜色全用已有资产（用户裁定）：敌方名牌三色 = 调色板既有接线 **Red 2 / GreyWhite 2 / GreyWhite 2**，零新建 ColorSO；按钮面复用 HpPlateFaceEnemy 槽（即 Red 2），label 用 TooltipText。
+- **P-S2 完成**：SelectButton.prefab（Tpl_WorldButton 变体，PrefabInstance wrapper）：face/shadow SR m_Size 2.211×0.778（child 0.8 惯例 → 渲染 1.769×0.622）、label「选择 +$0」fs5 TooltipText、label z −0.09、collider 1.894×0.747 / offset(−0.0125, 0.0125)、Tpl 的 HudActionBinding（LeaveShop）已 RemovedComponents——选择 action 由页面泵 SetWorldAction 接。
+- **P-S3 完成**：OpponentSelectPanel.prefab。实施差值以本节为准（§5 表为设计稿）：
+	- **占位卡 = PhysicalCardParent.prefab**（Assets/Prefabs/UXPrototype/）——判例：Cards/4.0 卡 prefab 是纯逻辑体（0 渲染器），卡面视觉由 CombatUXManager 运行时用 PhysicalCardParent 构建。prefab 内烘 3 个连接实例；S2 页面泵换 ghost 真卡时走同模板 + 推 name/desc。
+	- **keyCardScale 自动拟合 = 0.7311**（槽 0.328 × 0.7311 ≈ 0.2398）：PhysicalCardParent 链带 1.25² = 1.5625 缩放，原始脸幅 3.25×4.71；拟合目标 = v4 对齐裁定「卡顶=名牌顶(+0.7616)、卡底=按钮底(−0.7611)」跨度 1.5227 wu。卡中心因此 = 面板正中（keyY 0，非 demo 的 64px）。
+	- **按钮 x = 名牌根 x = 1.8933**：同宽 + 同右缘 → 中心重合（demo 自身右缘差 8px 不采纳）。名牌 face 右缘 2.7843（12px 内缩）。
+	- 名牌 root scale 0.557（em 基准 fs10 → em 0.557 wu = 战斗 34px）；实例覆写：6 个 PaletteTint 槽位 + HpValue/HpMax「24」+ NameLabel **「???」（半角——全角「？」全字体无字形判例，mesh 恒空）**。
+	- z：底板 0.5 / 卡 0.35 / 名牌·按钮 0.3。
+- **P-S4 完成**：view refs 全接（panelBg / plateNameBinding / plateCountBindings[2] / selectButton / selectLabel / cardSlots[3] / placeholderCards[3]）。
+- **对齐审计**（世界坐标实测）：cardTop−plateTop = 0.000、cardBottom−btnBottom = 0.000、plateRight−btnRight = 0.007（宽差残差 ≈0.4px）。
+- **回归**：EditMode 全量 743 = 742 绿 / 0 失败 / 1 skip（既有嵌套协程豁免）——零漂移。
+- **目检截图**：Assets/Screenshots/opponent-select-panel-editmode.png（全景）+ opponent-select-panel-closeup.png（名牌/按钮/卡特写）。
+- **待办**：Play 目检（用户）；主计划 S2 页面泵（Fill 契约见 OpponentSelectPanel.cs 头注）。
