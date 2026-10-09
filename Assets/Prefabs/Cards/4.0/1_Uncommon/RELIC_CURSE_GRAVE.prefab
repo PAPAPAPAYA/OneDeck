@@ -66,6 +66,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &1480930376038834397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85,6 +86,24 @@ MonoBehaviour:
   ignoreStartCardBoundary: 0
   creatureFilter: 0
   targetFriendly: 1
+  useTargetSelector: 0
+  targetSelector:
+    side: 0
+    zone: 2
+    minionMode: 0
+    creatureFilter: 0
+    rarityFilter: 0
+    sort: 0
+    typeIDFilter: 
+    enhancedOnly: 0
+    positiveAttackOnly: 0
+    tagFilter: 
+    excludeSelf: 1
+    excludeNeutral: 1
+    excludePassive: 1
+    excludeBottomSlot: 0
+    excludeTopSlot: 0
+    includeRevealZone: 0
   lastSuccessfulBuryCount: 0
 --- !u!1 &9079975747741187427
 GameObject:
@@ -139,6 +158,8 @@ MonoBehaviour:
     <b>1</b> \u654C\u65B9"
   rarity: 1
   shopRollWeightMultiplier: 1
+  ownerCardFaceSprite: {fileID: 21300000, guid: a324b2ad6cdf5e847a481661d9b8c2d0, type: 3}
+  opponentCardFaceSprite: {fileID: 21300000, guid: d148b00b89cf8a94798d078684f430f7, type: 3}
   physicalDeckCard: 1
   occupiesDeckSlot: 1
   isStartCard: 0
@@ -157,6 +178,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 1
+  wildcardTypeFilter: 0
   utilityKind: 0
   utilityValue: 0
   utilityValue2: 0

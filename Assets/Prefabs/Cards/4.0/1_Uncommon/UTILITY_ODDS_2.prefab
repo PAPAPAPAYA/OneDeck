@@ -51,6 +51,8 @@ MonoBehaviour:
     <b>1</b> \u5546\u5E97\u88AB\u52A8\u5361 "
   rarity: 1
   shopRollWeightMultiplier: 1
+  ownerCardFaceSprite: {fileID: 21300000, guid: 11439dd3f3011974685824bc84236752, type: 3}
+  opponentCardFaceSprite: {fileID: 21300000, guid: fc8f76fc57423144893ab2c0f8b8fa3c, type: 3}
   physicalDeckCard: 1
   occupiesDeckSlot: 0
   isStartCard: 0
@@ -69,6 +71,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 1
+  wildcardTypeFilter: 0
   utilityKind: 9
   utilityValue: 25
   utilityValue2: 0

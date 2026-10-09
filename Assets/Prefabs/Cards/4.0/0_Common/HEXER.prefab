@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -65,6 +66,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &1422275508679169885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,6 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -154,6 +157,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &3248563334424783409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -228,7 +232,10 @@ MonoBehaviour:
   cardDesc: "\u653B\u51FB;\u5F3A\u5316 <b>2</b> \u654C\u65B9\u8BC5\u5492"
   rarity: 0
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  ownerCardFaceSprite: {fileID: 0}
+  opponentCardFaceSprite: {fileID: 21300000, guid: bc4049b81b1b0694b91183d1cbe62fd9, type: 3}
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -245,12 +252,14 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  wildcardTypeFilter: 0
   utilityKind: 0
   utilityValue: 0
   utilityValue2: 0
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &8078813556771325488
 MonoBehaviour:
   m_ObjectHideFlags: 0

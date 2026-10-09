@@ -1452,10 +1452,16 @@ public class CardPhysObjScript : MonoBehaviour
 			baseFaceColor = GameColorPalette.OwnerCardColor;
 		}
 
-		// Update card face art based on ownership
+		// Update card face art based on ownership.
+		// Per-card art (CardScript on cardImRepresenting, v13) wins; the shared physical-card
+		// template sprites stay as the fallback for cards without their own art.
 		if (cardImg != null)
 		{
-			Sprite targetSprite = isOwner ? ownerCardFaceSprite : opponentCardFaceSprite;
+			Sprite targetSprite = null;
+			if (cardImRepresenting != null)
+				targetSprite = isOwner ? cardImRepresenting.ownerCardFaceSprite : cardImRepresenting.opponentCardFaceSprite;
+			if (targetSprite == null)
+				targetSprite = isOwner ? ownerCardFaceSprite : opponentCardFaceSprite;
 			if (targetSprite != null)
 			{
 				cardImg.sprite = targetSprite;

@@ -19,6 +19,12 @@ public class CardScript : MonoBehaviour
 	[Tooltip("Shop roll weight multiplier for this specific card. Applied on top of rarity weight. 1 = default, 0 = never appears, 2 = twice as likely")]
 	public float shopRollWeightMultiplier = 1f;
 
+	[Header("Card Art (v13)")]
+	[Tooltip("Per-card face art shown when this card is owned by the player. Null falls back to the shared physical-card template sprite")]
+	public Sprite ownerCardFaceSprite;
+	[Tooltip("Per-card face art shown when this card is owned by the opponent. Null falls back to the shared physical-card template sprite")]
+	public Sprite opponentCardFaceSprite;
+
 	/// <summary>
 	/// Returns the display name for this card. Uses displayName if set, otherwise falls back to GameObject name.
 	/// </summary>

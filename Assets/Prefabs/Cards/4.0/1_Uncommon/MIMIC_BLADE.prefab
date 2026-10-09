@@ -53,6 +53,8 @@ MonoBehaviour:
   cardDesc: "\u653B\u51FB\u529B=\u53CB\u65B9\u6700\u9AD8\u653B\u51FB\u529B;\u653B\u51FB"
   rarity: 1
   shopRollWeightMultiplier: 1
+  ownerCardFaceSprite: {fileID: 21300000, guid: b906a35fef755cb498b3ddf291ef8df4, type: 3}
+  opponentCardFaceSprite: {fileID: 21300000, guid: 360b384978e993148962e8a79c360211, type: 3}
   physicalDeckCard: 1
   occupiesDeckSlot: 1
   isStartCard: 0
@@ -71,6 +73,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  wildcardTypeFilter: 0
   utilityKind: 0
   utilityValue: 0
   utilityValue2: 0
@@ -187,6 +190,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &5367850273175035815
 MonoBehaviour:
   m_ObjectHideFlags: 0

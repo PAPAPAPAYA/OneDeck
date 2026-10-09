@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -65,6 +66,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &5635944406729624940
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,6 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -154,6 +157,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &8227121491846606079
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164,17 +168,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5bddc72b2099c374583edd4d0a65f9b5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ReviveEffect
   reviveTargetSide: 0
   creatureFilter: 2
-  typeIDFilter:
+  typeIDFilter: 
   sortBy: 0
   rarityFilter: 0
   delayedRevive: 0
   onlyEnhanced: 0
-  tagsToCheck:
+  tagsToCheck: 
   excludeSelf: 1
+  useTargetSelector: 0
+  targetSelector:
+    side: 0
+    zone: 2
+    minionMode: 0
+    creatureFilter: 0
+    rarityFilter: 0
+    sort: 0
+    typeIDFilter: 
+    enhancedOnly: 0
+    positiveAttackOnly: 0
+    tagFilter: 
+    excludeSelf: 1
+    excludeNeutral: 1
+    excludePassive: 1
+    excludeBottomSlot: 0
+    excludeTopSlot: 0
+    includeRevealZone: 0
+  oncePerRound: 0
   roundEndReviveArmed: 0
 --- !u!1 &7450878365787762939
 GameObject:
@@ -223,6 +246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -241,6 +265,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &7348487545963779581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,7 +346,10 @@ MonoBehaviour:
   cardDesc: "\u653B\u51FB;\u9057\u8A00:\u653B\u51FB;\u590D\u6D3B <b>1</b> \u53CB\u65B9\u73B0\u8C61"
   rarity: 1
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  ownerCardFaceSprite: {fileID: 21300000, guid: ec20e175edd3c834d9114ba1c4a8a747, type: 3}
+  opponentCardFaceSprite: {fileID: 21300000, guid: c7097370d14b0094bbb029a82e612938, type: 3}
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -338,12 +366,14 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 1
   isPassive: 0
+  wildcardTypeFilter: 0
   utilityKind: 0
   utilityValue: 0
   utilityValue2: 0
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &7024253999828245242
 MonoBehaviour:
   m_ObjectHideFlags: 0

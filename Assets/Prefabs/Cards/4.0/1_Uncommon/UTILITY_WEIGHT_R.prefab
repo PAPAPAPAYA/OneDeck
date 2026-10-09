@@ -51,6 +51,8 @@ MonoBehaviour:
     <b>\xD72</b> "
   rarity: 1
   shopRollWeightMultiplier: 1
+  ownerCardFaceSprite: {fileID: 21300000, guid: c98706575b5f83b4198113a30d0df236, type: 3}
+  opponentCardFaceSprite: {fileID: 21300000, guid: 7806c1476b42898448844965558e3c18, type: 3}
   physicalDeckCard: 1
   occupiesDeckSlot: 0
   isStartCard: 0
@@ -69,6 +71,7 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 1
+  wildcardTypeFilter: 0
   utilityKind: 7
   utilityValue: 0
   utilityValue2: 0

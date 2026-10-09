@@ -49,10 +49,14 @@ MonoBehaviour:
   cardID: 0
   cardTypeID: RELIC_CHAIN_BURIAL
   displayName: "\u8FDE\u5750"
-  cardDesc: "\u88AB\u52A8:\u6BCF\u6B21\u53CB\u65B9\u88AB\u57CB\u846C\u65F6,\u57CB\u846C\u5361\u7EC4\u9876 <b>1</b> \u5361"
+  cardDesc: "\u88AB\u52A8:\u6BCF\u6B21\u53CB\u65B9\u88AB\u57CB\u846C\u65F6,\u57CB\u846C\u5361\u7EC4\u9876
+    <b>1</b> \u5361"
   rarity: 1
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  ownerCardFaceSprite: {fileID: 21300000, guid: 4acc798715aea044f80c047c74c3a971, type: 3}
+  opponentCardFaceSprite: {fileID: 21300000, guid: a21162e78f2b7c0479295158dd791257, type: 3}
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -69,12 +73,14 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 1
+  wildcardTypeFilter: 0
   utilityKind: 0
   utilityValue: 0
   utilityValue2: 0
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &960765534072424449
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,6 +156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -168,6 +175,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &4533223242713247046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -187,4 +195,22 @@ MonoBehaviour:
   ignoreStartCardBoundary: 0
   creatureFilter: 0
   targetFriendly: 1
+  useTargetSelector: 0
+  targetSelector:
+    side: 0
+    zone: 2
+    minionMode: 0
+    creatureFilter: 0
+    rarityFilter: 0
+    sort: 0
+    typeIDFilter: 
+    enhancedOnly: 0
+    positiveAttackOnly: 0
+    tagFilter: 
+    excludeSelf: 1
+    excludeNeutral: 1
+    excludePassive: 1
+    excludeBottomSlot: 0
+    excludeTopSlot: 0
+    includeRevealZone: 0
   lastSuccessfulBuryCount: 0

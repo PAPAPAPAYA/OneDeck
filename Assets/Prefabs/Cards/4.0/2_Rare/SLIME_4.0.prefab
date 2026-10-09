@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -65,6 +66,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &3867047442082935561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,6 +128,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -144,6 +147,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &7727905674073188646
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,6 +171,7 @@ MonoBehaviour:
   damageDisplayKey: 
   dynamicDmgDisplaySource: 0
   dynamicDmgDisplayMultiplyByPower: 0
+  curseEngine: {fileID: 0}
 --- !u!1 &4399626932432832125
 GameObject:
   m_ObjectHideFlags: 0
@@ -180,7 +185,7 @@ GameObject:
   - component: {fileID: 8077765617682880074}
   - component: {fileID: 6546019247129871635}
   m_Layer: 0
-  m_Name: SLIME
+  m_Name: SLIME_4.0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -217,11 +222,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: SLIME_4.0
-  displayName: "\u7ba1\u9053\u91cc\u7684\u6d3b\u7269"
+  displayName: "\u7BA1\u9053\u91CC\u7684\u6D3B\u7269"
   cardDesc: "\u653B\u51FB;\u9057\u8A00:\u590D\u5236\u81EA\u8EAB"
   rarity: 2
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  ownerCardFaceSprite: {fileID: 0}
+  opponentCardFaceSprite: {fileID: 21300000, guid: 6b6c13efdae9b004bb59dddd551ae0ab, type: 3}
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -235,7 +243,17 @@ MonoBehaviour:
   attackGrowth: 0
   attackModThisRound: 0
   extraAttackTimes: 0
+  attackTimesModThisRound: 0
   cardType: 1
+  isPassive: 0
+  wildcardTypeFilter: 0
+  utilityKind: 0
+  utilityValue: 0
+  utilityValue2: 0
+  utilityRarityWeightMults: []
+  reservedTag: 0
+  attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &8077765617682880074
 MonoBehaviour:
   m_ObjectHideFlags: 0

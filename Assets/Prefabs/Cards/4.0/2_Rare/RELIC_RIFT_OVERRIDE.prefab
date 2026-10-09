@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CostNEffectContainer
   cursedCardTypeID: {fileID: 11400000, guid: 07a2aa375c0142b418e46314e9b2ca22, type: 2}
   targetCardTypeID: {fileID: 0}
+  batchContextSource: 0
   checkCostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -65,6 +66,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  gateSource: {fileID: 0}
 --- !u!114 &1682534730503171044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -132,7 +134,10 @@ MonoBehaviour:
     <b>1</b> \u654C\u65B9\u8BC5\u5492;\u653E\u9010\u81EA\u8EAB"
   rarity: 2
   shopRollWeightMultiplier: 1
-  takeUpSpace: 1
+  ownerCardFaceSprite: {fileID: 21300000, guid: e984aebe99e95194fb1dea306c8329d4, type: 3}
+  opponentCardFaceSprite: {fileID: 21300000, guid: ab57141e9d45fa942b3a015975367db8, type: 3}
+  physicalDeckCard: 1
+  occupiesDeckSlot: 1
   isStartCard: 0
   isMinion: 0
   myStatusRef: {fileID: 0}
@@ -149,12 +154,14 @@ MonoBehaviour:
   attackTimesModThisRound: 0
   cardType: 0
   isPassive: 1
+  wildcardTypeFilter: 0
   utilityKind: 0
   utilityValue: 0
   utilityValue2: 0
   utilityRarityWeightMults: []
   reservedTag: 0
   attackSnapshotValue: -1
+  alwaysShowAttack: 0
 --- !u!114 &7162684540279425836
 MonoBehaviour:
   m_ObjectHideFlags: 0
