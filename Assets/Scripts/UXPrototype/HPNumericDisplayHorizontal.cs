@@ -104,6 +104,8 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	public float shadowExtendYEm = 0.41f;
 	[Tooltip("Name band inset from the face's left edge.")]
 	public float shadowInsetXEm = 0.11f;
+	[Tooltip("Shadow top-edge inset below the face's top edge (0 = flush with the face, demo spec).")]
+	public float shadowInsetYEm = 0f;
 	[Tooltip("Gap between the HP label and the current digits, in em.")]
 	public float labelGapEm = 0.11f;
 	[Tooltip("Username font size in em (of the current digit size).")]
@@ -772,8 +774,10 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 	// The plate silhouette around the digit row (demo HPNamePlateDemo.html §3.1):
 	// a face Image padded around the row, and the hard-shadow Image extended
 	// down-right past it — right overhang (extend-x) and bottom name band
-	// (extend-y) with the band inset from the face's left edge. The name label
-	// is right-aligned inside the band; band top == face bottom by construction.
+	// (extend-y) with the band inset from the face's left edge; shadowInsetYEm
+	// additionally drops the slab's top edge below the face's top (0 = demo's
+	// flush top). The name label is right-aligned inside the band; band top ==
+	// face bottom by construction.
 	// All rects are center-anchored children of displayRoot ((0.5,0.5)/(0.5,0.5))
 	// except the name's (1,0.5) pivot, which pins its right edge.
 	private void LayoutPlate(float totalRowWidth)
@@ -787,13 +791,14 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		float extX = _em * shadowExtendXEm;
 		float extY = _em * shadowExtendYEm;
 		float inset = _em * shadowInsetXEm;
+		float insetY = _em * shadowInsetYEm;
 		float faceW = totalRowWidth + 2f * padX;
 		float faceH = _em + 2f * padY;
 		RectTransform faceRt = faceImage.rectTransform;
 		faceRt.sizeDelta = new Vector2(faceW, faceH);
 		faceRt.anchoredPosition = Vector2.zero;
 		RectTransform shadowRt = shadowImage.rectTransform;
-		shadowRt.sizeDelta = new Vector2(faceW - inset + extX, faceH + extY);
+		shadowRt.sizeDelta = new Vector2(faceW - inset + extX, faceH - insetY + extY);
 		// VISUAL-FIX(2026-10-07): name band flush with the face's left edge, right overhang ~4x too thin
 		//   Cause:    The slab center formula wrote (extX - inset) — the inset sign was flipped, so the
 		//             slab spanned [faceLeft, faceRight + (extX - inset)] instead of the demo spec
@@ -803,7 +808,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		//             both sides; name band top == face bottom unchanged; side-by-side with
 		//             docs/demo/HPNamePlateDemo.html §3.1.
 		//   Related:  plans/plan-hp-name-plate-fixes-2026-10-07.md §3
-		shadowRt.anchoredPosition = new Vector2((extX + inset) * 0.5f, -extY * 0.5f);
+		shadowRt.anchoredPosition = new Vector2((extX + inset) * 0.5f, -(insetY + extY) * 0.5f);
 		if (nameLabel != null)
 		{
 			RectTransform nameRt = nameLabel.rectTransform;
