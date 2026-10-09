@@ -62,6 +62,7 @@
 - 新文件（如 `Assets/Scripts/UXPrototype/OpponentSelectPage.cs`），世界内容按 `ShopSectionPanels`/`ShopWorldWidgets` 同款模式构建（chromeSprite/chromeFont + PaletteTint 槽位）；无 canvas uGUI 输入，交互全走 PhysButton（world-only 交互裁定）。
 - 版式：标题 chip「选择下一场对手」+ N 张候选面板横排（PhysButton）：username / session / deckSize（hpMax 可选）。点击 = 选中即起飞（无确认步，见 O2）。
 - UI demo（2026-10-06；2026-10-08 v4 迭代）：`docs/demo/OpponentSelectDemo.html` — 三页全流程（商店→选敌→战斗）。v4 按 10-07 mockup + 10-08 两轮反馈：候选面板 = **ShopSectionPanels 同款平铺半透明深色圆角矩形**（ShopPanelBg #1A3037 @ 0.5，贴合内容、面板自身无阴影，阴影只属于内容）内左 3 张**红色关键卡**（硬阴影、hover 弹起、点击放大、无伤害数字）+ 右侧敌方**名牌**与【选择 +$N】**同宽同右缘**（卡顶=名牌顶、卡底=按钮底；+$N 语义按「挑选奖励」占位待确认）；名牌移植 `docs/demo/HPNamePlateDemo.html` 规格，**阴影带透明度 0.5**（引擎实测渲染 ≈0.45-0.5：Image 名义 0.698 经九宫格 sprite 衰减）；面板名牌与战斗名牌同字号（34px），morph 飞行纯平移。无标题/提示语/页签；最下面一行留给玩家名牌 + 选项按钮（= 战斗位，leg2 不再移动）。两种入场方式可切换：**原位 morph（demo 默认·推荐：镜头不动，HP bar 红退回战斗带/灰区上长，被选名牌直飞战斗右上位，关键卡弧飞入牌堆后方翻背）** vs 镜头移动（plan 原 +2 几何，选敌页背景按备选裁定玩家/敌人二分）。morph 若成立，§8 的 `_combatPageY` 上移风险与消费方 sweep 均消失。
+- 候选面板 prefab 细化（2026-10-08 拍板）：`plans/plan-opponent-select-panel-prefab-2026-10-08.md` — 全包含单 prefab / 真实卡面实例 / +$N 占位三拍板，含结构/几何(px→wu 表)/配色槽位/实施步 P-S1..S4。
 - 无返回商店按钮（D4）。缓存 0 候选不进本页；1..N-1 有几个显示几个。
 - 全部位置/尺寸参数挂 config 可调（用户偏好：可独立调参的原件）。
 
