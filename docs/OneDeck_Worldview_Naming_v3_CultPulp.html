@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OneDeck 卡名迭代 v3 · 古典邪教 × 低俗恐怖(卡名全案)</title>
+<style>
+	:root{
+		--bg:#141119;
+		--panel:#1c1824;
+		--panel2:#231e2e;
+		--ink:#ded7c8;
+		--dim:#948b99;
+		--faint:#6f6779;
+		--line:#332c3f;
+		--blood:#c14a52;
+		--gold:#c9a86a;
+	}
+	*{box-sizing:border-box}
+	html{scroll-behavior:smooth}
+	body{
+		margin:0;
+		background:var(--bg);
+		color:var(--ink);
+		font:15px/1.8 "Segoe UI","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+	}
+	code{font-family:Consolas,"Cascadia Mono",monospace;font-size:.88em;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;color:#cfc4a6}
+	.serif{font-family:"Noto Serif SC","Source Han Serif SC",STSong,SimSun,serif}
+
+	/* ---------- hero ---------- */
+	.hero{
+		padding:52px 32px 34px;
+		background:
+			radial-gradient(1100px 420px at 50% -80px,rgba(140,48,56,.28),transparent 70%),
+			radial-gradient(700px 300px at 85% 10%,rgba(164,135,208,.08),transparent 70%),
+			linear-gradient(180deg,#191423 0%,var(--bg) 100%);
+		border-bottom:1px solid var(--line);
+		text-align:center;
+	}
+	.kicker{font-size:12px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:14px}
+	.kicker b{color:var(--blood);font-weight:600}
+	h1{
+		margin:0 0 6px;
+		font-family:"Noto Serif SC","Source Han Serif SC",STSong,SimSun,serif;
+		font-size:34px;font-weight:700;letter-spacing:2px;color:#efe8d6;
+	}
+	h1 .sub{display:block;font-size:16px;font-weight:400;letter-spacing:8px;color:var(--gold);margin-top:10px}
+	.status{margin:22px 0 10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+	.pill{
+		font-size:12.5px;letter-spacing:1px;padding:5px 14px;border-radius:999px;
+		border:1px solid rgba(193,74,82,.5);background:rgba(193,74,82,.12);color:#e3989e;
+	}
+	.pill.neutral{border-color:var(--line);background:var(--panel);color:var(--dim)}
+	.scope{max-width:820px;margin:14px auto 0;font-size:13.5px;color:var(--dim);line-height:2}
+	.stats{
+		margin:26px auto 0;display:flex;gap:0;justify-content:center;flex-wrap:wrap;
+		border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+		width:fit-content;max-width:92%;
+	}
+	.stat{padding:14px 34px;border-right:1px solid var(--line)}
+	.stat:first-child{border-left:1px solid var(--line)}
+	.stat b{display:block;font-size:26px;font-family:Georgia,serif;color:#e8dfca;font-weight:600}
+	.stat span{font-size:12px;letter-spacing:2px;color:var(--faint)}
+
+	/* ---------- toc ---------- */
+	.toc{
+		position:sticky;top:0;z-index:20;
+		display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+		padding:12px 20px;
+		background:rgba(20,17,25,.93);backdrop-filter:blur(8px);
+		border-bottom:1px solid var(--line);
+	}
+	.toc a{
+		font-size:12.5px;letter-spacing:1px;color:var(--dim);text-decoration:none;
+		padding:4px 12px;border-radius:999px;border:1px solid var(--line);
+		transition:.15s;
+	}
+	.toc a:hover{color:var(--ink);border-color:var(--blood);background:rgba(193,74,82,.1)}
+	.toc a i{font-style:normal;color:var(--faint);margin-left:4px;font-size:11px}
+
+	/* ---------- layout ---------- */
+	.wrap{max-width:1080px;margin:0 auto;padding:0 28px 80px}
+	section{scroll-margin-top:215px}
+	.sec-h{margin:64px 0 20px;display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px}
+	.sec-h .no{font-family:Georgia,serif;font-size:15px;color:var(--blood);letter-spacing:1px}
+	.sec-h h2{margin:0;font-size:23px;font-family:"Noto Serif SC",SimSun,serif;font-weight:700;letter-spacing:2px;color:#ece4d0}
+	.sec-h .en{margin-left:auto;font-size:12px;letter-spacing:2px;color:var(--faint)}
+
+	h3{font-size:16.5px;letter-spacing:1px;color:#d9cfae;margin:34px 0 12px;font-weight:600}
+	p.note{color:var(--dim);font-size:13.5px}
+
+	/* ---------- quote / rules ---------- */
+	.quote{
+		margin:26px 0;padding:26px 30px;position:relative;
+		background:linear-gradient(160deg,rgba(140,48,56,.10),rgba(28,24,36,.6));
+		border:1px solid rgba(193,74,82,.28);border-left:3px solid var(--blood);
+		border-radius:0 6px 6px 0;
+	}
+	.quote p{
+		margin:0;font-family:"Noto Serif SC",SimSun,serif;font-size:17.5px;line-height:2.15;
+		color:#e8ddc4;letter-spacing:.5px;
+	}
+	ol.rules{counter-reset:r;list-style:none;padding:0;margin:16px 0}
+	ol.rules li{
+		counter-increment:r;position:relative;padding:12px 16px 12px 58px;margin-bottom:10px;
+		background:var(--panel);border:1px solid var(--line);border-radius:6px;font-size:14.5px;line-height:1.9;
+	}
+	ol.rules li::before{
+		content:counter(r);position:absolute;left:16px;top:12px;
+		width:28px;height:28px;line-height:28px;text-align:center;
+		font-family:Georgia,serif;font-size:15px;color:var(--blood);
+		border:1px solid rgba(193,74,82,.45);border-radius:50%;
+	}
+	ul.plain{padding-left:22px;margin:12px 0}
+	ul.plain li{margin-bottom:8px;font-size:14.5px;line-height:1.9}
+	ul.plain li b{color:#e0c98f}
+	mark{background:rgba(201,168,106,.2);color:#ecd9a8;padding:1px 5px;border-radius:3px}
+
+	/* ---------- tables ---------- */
+	table{width:100%;border-collapse:collapse;margin:14px 0 8px;font-size:14px}
+	th{
+		text-align:left;font-size:11.5px;font-weight:600;letter-spacing:2px;color:var(--faint);
+		padding:8px 12px;border-bottom:1px solid var(--line);text-transform:uppercase;white-space:nowrap;
+	}
+	.cid-h{text-transform:none;letter-spacing:1px}
+	td{padding:9px 12px;border-bottom:1px solid rgba(51,44,63,.55);vertical-align:top}
+	tbody tr{transition:background .12s}
+	tbody tr:hover{background:rgba(255,255,255,.03)}
+	td.cname{
+		font-family:"Noto Serif SC","Source Han Serif SC",STSong,SimSun,serif;
+		font-size:16.5px;letter-spacing:1px;color:#f0e7d2;white-space:nowrap;
+	}
+	td.cid{font-family:Consolas,monospace;font-size:12px;color:#8d87a3;white-space:nowrap;letter-spacing:.2px}
+	td.cdesc{color:#b6ad9e;font-size:13.5px;line-height:1.7}
+	td.ctag{white-space:nowrap}
+
+	/* ---------- badges ---------- */
+	.b{
+		display:inline-block;font-size:11px;line-height:1;letter-spacing:1px;
+		padding:4px 8px;border-radius:3px;margin:0 5px 3px 0;
+	}
+	.b-root{background:rgba(193,74,82,.15);color:#e08d94;border:1px solid rgba(193,74,82,.45)}
+	.b-icon{background:rgba(201,168,106,.1);color:#cfae74;border:1px solid rgba(201,168,106,.38)}
+	.b-bak{background:transparent;color:#9a92a6;border:1px dashed #6b6276}
+	.b-clear{background:rgba(164,135,208,.12);color:#b79bdd;border:1px solid rgba(164,135,208,.4)}
+	.bx{font-size:11px;color:var(--faint);margin-right:6px}
+
+	/* ---------- family sections ---------- */
+	.fam{margin:52px 0 8px}
+	.fam-h{
+		display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+		padding:14px 18px;margin-bottom:4px;
+		background:linear-gradient(90deg,var(--accbg),transparent 75%);
+		border-left:3px solid var(--acc);border-radius:0 6px 6px 0;
+	}
+	.fam-h .fno{font-family:Georgia,serif;font-size:14px;color:var(--acc);letter-spacing:1px}
+	.fam-h h2{margin:0;font-size:20px;font-family:"Noto Serif SC",SimSun,serif;letter-spacing:2px;color:#ece4d0;font-weight:700}
+	.fam-h .fcnt{font-size:12.5px;color:var(--acc);border:1px solid var(--acc);border-radius:999px;padding:2px 12px;letter-spacing:1px}
+	.fam-h .froot{margin-left:auto;font-size:12.5px;color:var(--dim);letter-spacing:1px}
+	.fam-h .froot b{color:#d8c9a0;font-weight:600}
+
+	/* ---------- backup pool ---------- */
+	.pool{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:20px 0}
+	.pcard{
+		background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--gold);
+		border-radius:6px;padding:18px 20px;
+	}
+	.pcard .nm{font-family:"Noto Serif SC",SimSun,serif;font-size:21px;letter-spacing:3px;color:#efe5cc;margin-bottom:8px}
+	.pcard p{margin:0;font-size:13px;color:var(--dim);line-height:1.9}
+
+	/* ---------- landing ---------- */
+	ol.landing{list-style:none;padding:0;counter-reset:l}
+	ol.landing li{
+		counter-increment:l;position:relative;padding:14px 18px 14px 56px;margin-bottom:12px;
+		background:var(--panel);border:1px solid var(--line);border-radius:6px;font-size:14px;line-height:1.95;color:#c9c0b0;
+	}
+	ol.landing li::before{
+		content:counter(l);position:absolute;left:16px;top:14px;
+		width:26px;height:26px;line-height:26px;text-align:center;
+		font-family:Georgia,serif;font-size:14px;color:var(--gold);
+		border:1px solid rgba(201,168,106,.4);border-radius:50%;
+	}
+	ol.landing li b{color:#e8dfca}
+
+	/* ---------- toolbar ---------- */
+	.toolbar{
+		display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+		position:sticky;top:52px;z-index:15;
+		padding:12px 16px;margin:30px 0 6px;
+		background:rgba(20,17,25,.95);backdrop-filter:blur(8px);
+		border:1px solid var(--line);border-radius:8px;
+	}
+	.toolbar input{
+		flex:1 1 260px;min-width:200px;
+		background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+		color:var(--ink);font-size:14px;padding:8px 14px;outline:none;
+		font-family:inherit;
+	}
+	.toolbar input:focus{border-color:rgba(193,74,82,.6)}
+	.chips{display:flex;gap:6px;flex-wrap:wrap}
+	.chips button{
+		font-size:12px;letter-spacing:1px;padding:6px 13px;border-radius:999px;cursor:pointer;
+		background:var(--panel2);border:1px solid var(--line);color:var(--dim);transition:.15s;
+		font-family:inherit;
+	}
+	.chips button:hover{color:var(--ink)}
+	.chips button.on{background:rgba(193,74,82,.16);border-color:rgba(193,74,82,.55);color:#e6999f}
+	#count{font-size:12px;color:var(--faint);letter-spacing:1px;white-space:nowrap}
+
+	.legend{margin:6px 0 4px;font-size:12.5px;color:var(--dim)}
+	footer{
+		border-top:1px solid var(--line);margin-top:70px;padding:26px 32px 40px;
+		font-size:12.5px;color:var(--faint);text-align:center;line-height:2;
+	}
+	.totop{float:right;color:var(--dim);text-decoration:none;font-size:12px;letter-spacing:1px}
+	.totop:hover{color:var(--ink)}
+
+	@media (max-width:640px){
+		h1{font-size:25px}
+		.stat{padding:10px 18px}
+		.fam-h .froot{margin-left:0;width:100%}
+		td.cname{font-size:15px}
+	}
+	@media print{
+		body{background:#fff;color:#222}
+		.toc,.toolbar{display:none}
+		.hero,.quote,ol.rules li,ol.landing li,.pcard,table{background:none;color:#222}
+		td.cname{color:#111}
+	}
+</style>
+</head>
+<body>
+
+<header class="hero">
+	<div class="kicker">OneDeck 世界观命名迭代 · v1 新怪谈 → v2 都市怪谈<i>(废止)</i> → <b>v3 古典邪教 × 低俗恐怖(现行)</b></div>
+	<h1>卡名全案<span class="sub">古 典 邪 教 × 低 俗 恐 怖</span></h1>
+	<div class="status">
+		<span class="pill">定稿 · 2026-09-08</span>
+		<span class="pill">Notion 中文名列已写入(116 行)</span>
+		<span class="pill">Unity prefab displayName 已同步(108 处)</span>
+	</div>
+	<p class="scope">
+		范围:仅 <code>CardScript.displayName</code>。<b>不动</b> <code>cardTypeID</code>(程序代号,命名时禁止参考其语义),<b>不动</b> <code>cardDesc</code> 机制文本。
+		前置文档:<code>docs/OneDeck_Worldview_Naming_v2_ModernUrban.md</code>(v2,都市怪谈方案,已废止)。
+		数据源:Notion「4.0 card database」116 行(2026-09-08 快照)。
+	</p>
+	<div class="stats">
+		<div class="stat"><b>116</b><span>卡名</span></div>
+		<div class="stat"><b>6</b><span>家族</span></div>
+		<div class="stat"><b>108</b><span>prefab 改名</span></div>
+		<div class="stat"><b>4</b><span>备用池名</span></div>
+	</div>
+</header>
+
+<nav class="toc">
+	<a href="#s0">§0 调性总纲</a>
+	<a href="#s1">§1 命名句法</a>
+	<a href="#s2">§2 词根纪律</a>
+	<a href="#p1">PART 1 全量命名表<i>116</i></a>
+	<a href="#f1">1.1 复活/苏醒<i>31</i></a>
+	<a href="#f2">1.2 信徒/放逐<i>13</i></a>
+	<a href="#f3">1.3 诅咒<i>17</i></a>
+	<a href="#f4">1.4 埋葬/遗言<i>24</i></a>
+	<a href="#f5">1.5 攻击/强化<i>13</i></a>
+	<a href="#f6">1.6 商店/系统<i>18</i></a>
+	<a href="#p2">PART 2 备用名池</a>
+	<a href="#p3">PART 3 落地状态</a>
+</nav>
+
+<div class="wrap">
+
+	<!-- ================= §0 ================= -->
+	<section id="s0">
+		<div class="sec-h"><span class="no">§0</span><h2>调性总纲</h2><span class="en">TONE</span></div>
+
+		<h3>一句话</h3>
+		<div class="quote">
+			<p>商店是梦——你在魇市里逛摊子,梦里什么都有。战斗是醒来——醒来后的城市里那些东西是真的:现代都市的地皮下埋着一个旧教团,怪异是它的圣徒与显灵。卡名 = 低俗恐怖小说的章节名:每一个名字要么让人不适,要么让人背后一凉,<b>绝不让人发笑</b>。</p>
+		</div>
+
+		<h3>与 v2 的关系</h3>
+		<ul class="plain">
+			<li>v2(现代都市怪谈)的「日常中的非日常」路线<b>废止</b>:悬念句卡名机制信号为零、同模子句式扎堆、同机制家族无词汇标记。</li>
+			<li>v3 全面转向<b>古典邪教 + 低俗恐怖</b>(body horror / urban legend 角色):名词具体、画面 graphic、恐怖优先,禁止日常反讽与黑色幽默。</li>
+			<li>v2 的「零奇幻词根」禁令废止,替换为<b>词根纪律</b>(见 §2)。</li>
+			<li>「苏醒」的 fiction = <b>复活后的苏醒</b>(回来的东西睁眼了),与梦/醒包装无关;梦只属于商店。</li>
+		</ul>
+
+		<h3>命名硬规则</h3>
+		<ol class="rules">
+			<li><b>恐怖优先</b>:拒绝平淡意象与蠢萌读感;每个名字必须 graphic、具体。</li>
+			<li><b>从 desc 出发</b>:cardTypeID 仅是程序代号,禁止作为词源。</li>
+			<li><b>埋友方 = 中性祭祀意象</b>:自愿的代价(祭/殉/牲),不带「拉敌人下水」的攻击性读感,且名字需读得出攻击能力。</li>
+			<li><b>诅咒系 = 中国古典咒术</b>(蛊/降头/咒/厌胜);信徒系 = 古典教团(西方邪典职衔与仪式);两系以外允许西方邪典意象(耳语/邪印/倒十字/圣痕/火刑柱)。</li>
+			<li><b>稀有度词不进卡名</b>:卡面稀有度统一为 ✦ 数量,卡名禁止出现红/蓝/星数指代;商店卡只管噩梦氛围。</li>
+			<li><b>token 保持机制透明</b>:信徒 = 信徒,诅咒 = 诅咒。</li>
+		</ol>
+	</section>
+
+	<!-- ================= §1 ================= -->
+	<section id="s1">
+		<div class="sec-h"><span class="no">§1</span><h2>实体 / 现象 / 状态 命名句法</h2><span class="en">SYNTAX</span></div>
+		<table>
+			<thead><tr><th>类型</th><th>句法</th><th>读感</th><th>例</th></tr></thead>
+			<tbody>
+				<tr><td><b>实体</b>(生物,能造成伤害)</td><td>名词性主体:角色 / 怪物 / 称号</td><td>「这是谁」</td><td class="cname">食尸鬼、狂信徒、连体人</td></tr>
+				<tr><td><b>现象</b>(非生物)</td><td>事件句 / 征兆 / 物件</td><td>「发生了什么」</td><td class="cname">墓园空了、黑弥撒、血契</td></tr>
+				<tr><td><b>状态</b>(诅咒)</td><td>固定家族词根</td><td>「它缠着你」</td><td class="cname">蛊 / 咒家族</td></tr>
+			</tbody>
+		</table>
+	</section>
+
+	<!-- ================= §2 ================= -->
+	<section id="s2">
+		<div class="sec-h"><span class="no">§2</span><h2>词根纪律(半绑定制)</h2><span class="en">ROOTS</span></div>
+		<p class="note">每条机制轴配一个词根库,卡名自带机制归属:</p>
+		<table>
+			<thead><tr><th>轴</th><th>词根库</th><th>禁忌</th></tr></thead>
+			<tbody>
+				<tr><td><b>商店(梦)</b></td><td class="cname">魇 / 梦 / 夜</td><td>战斗卡禁用「梦」字</td></tr>
+				<tr><td><b>诅咒</b></td><td class="cname">蛊 / 降头 / 咒</td><td>不用民俗妖怪名</td></tr>
+				<tr><td><b>信徒</b></td><td class="cname">教团职衔与仪式:司祭 / 侍僧 / 施洗 / 弥撒 / 殉道 / 血飨</td><td>不用现代传销梗</td></tr>
+				<tr><td><b>复活/苏醒</b></td><td class="cname">回 / 招 / 唤 / 魂 + 尸变 / 起尸</td><td>不用「梦游」类</td></tr>
+				<tr><td><b>埋友方代价</b></td><td class="cname">祭 / 殉 / 牲</td><td>不带攻击敌方读感</td></tr>
+				<tr><td><b>遗言</b></td><td class="cname">遗 / 殓 / 丧 / 悼</td><td>—</td></tr>
+				<tr><td><b>埋敌方</b></td><td class="cname">勾 / 索</td><td>—</td></tr>
+			</tbody>
+		</table>
+
+		<h3>半绑定规则(讨论结论 2026-09-08)</h3>
+		<ol class="rules">
+			<li>词根绑「家族最大公约数」:同条件族绑条件词根,同收益族绑收益词根。</li>
+			<li><mark>浓度上限 60~70%</mark>:每族留 3~4 张纯意象 icon 卡当记忆锚点(黑弥撒、什一抽杀级),铺满词根即成模板,禁止。</li>
+			<li>交叉卡(同时属两族)取<b>更稀有、更标识构筑方向</b>的一侧词根。例:SACRIFICIAL_SPIRIT 取「殉」,SWARM_CURSER 取教团职衔。</li>
+			<li>词根的价值是组牌时快速归类,不承担传达完整机制的任务(机制由 desc 承担)。</li>
+		</ol>
+	</section>
+
+	<!-- ================= PART 1 ================= -->
+	<section id="p1">
+		<div class="sec-h"><span class="no">PART 1</span><h2>全量命名表</h2><span class="en">116 行 · 按家族分组</span></div>
+
+		<div class="toolbar">
+			<input id="q" type="search" placeholder="搜索:卡名 / cardTypeID / desc 关键词 …">
+			<div class="chips" id="tagchips">
+				<button data-tag="all" class="on">全部</button>
+				<button data-tag="root">[根] 带词根</button>
+				<button data-tag="icon">[icon] 豁免锚点</button>
+				<button data-tag="bak">[备] DB 备用</button>
+			</div>
+			<span id="count">显示 116 / 116</span>
+		</div>
+		<p class="legend">
+			标注:<span class="b b-root">根</span> = 带家族词根&nbsp;&nbsp;
+			<span class="b b-icon">icon</span> = 词根豁免锚点(每族 3~4 张纯意象记忆锚点)&nbsp;&nbsp;
+			<span class="b b-bak">备</span> = DB 备用卡&nbsp;&nbsp;
+			<span class="b b-clear">机制透明</span> = token 保持机制词
+		</p>
+
+		<!-- ======== 1.1 ======== -->
+		<section class="fam" id="f1" style="--acc:#7ea8b8;--accbg:rgba(126,168,184,.13)">
+			<header class="fam-h">
+				<span class="fno">1.1</span><h2>复活 / 苏醒族</h2>
+				<span class="fcnt">31 卡</span>
+				<span class="froot">词根 <b>回 / 招 / 唤 / 魂</b> + <b>尸变 / 起尸</b></span>
+			</header>
+			<table>
+				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
+				<tbody>
+					<tr data-tags="root"><td class="cname">降灵会</td><td class="cid">SPIRIT_CALLER</td><td class="cdesc">攻击;复活1友方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">招魂执事</td><td class="cid">NECROMANCER</td><td class="cdesc">复活1友方;苏醒:复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">墓园空了</td><td class="cid">MASS_REVIVER</td><td class="cdesc">复活3友方✦卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">镀金圣髑</td><td class="cid">ELITE_REVIVER</td><td class="cdesc">攻击;复活1被强化过的友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">马戏团的地下室</td><td class="cid">BEAST_REVIVER</td><td class="cdesc">攻击;复活1生物友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">死不瞑目</td><td class="cid">FLURRY_REVIVER</td><td class="cdesc">复活1攻击次数最多友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">阴婚</td><td class="cid">DUO_REVIVER</td><td class="cdesc">复活2友方✦✦卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">百鬼夜行</td><td class="cid">REANIMATOR</td><td class="cdesc">攻击;攻击力=本回合复活友方数</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">钉不死的人</td><td class="cid">UNDYING_WARRIOR</td><td class="cdesc">攻击;强化反应:复活自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">以命换命</td><td class="cid">SOUL_TRADER</td><td class="cdesc">复活2友方;埋葬1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root bak"><td class="cname">换命</td><td class="cid">SOUL_SWAPPER</td><td class="cdesc">攻击;复活1友方;埋葬1敌方</td><td class="ctag"><span class="b b-root">根</span><span class="b b-bak">备</span></td></tr>
+					<tr data-tags="root"><td class="cname">复活见证人</td><td class="cid">REVIVE_SUMMONER</td><td class="cdesc">复活1友方;生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">耳语唤尸</td><td class="cid">RELIC_CURSE_REVIVAL</td><td class="cdesc">被动:敌方诅咒揭晓时:复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">报丧人</td><td class="cid">DOOM_HERALD</td><td class="cdesc">攻击;复活1攻击力最高敌方;强化4敌方诅咒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">食尸鬼</td><td class="cid">GRAVE_ROBBER</td><td class="cdesc">复活1攻击力最高敌方;攻击力变为该卡攻击力</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">牧羊人</td><td class="cid">RIFT_SHEPHERD</td><td class="cdesc">攻击;复活1张tag为[信徒]的友方卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">扶乩</td><td class="cid">RIFT_MEDIUM</td><td class="cdesc">生成2信徒;苏醒:复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">以人易物</td><td class="cid">RIFT_REVIVER</td><td class="cdesc">放逐1友方信徒,复活2友方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">走阴人</td><td class="cid">CURSE_SUMMONER</td><td class="cdesc">复活1友方;复活1敌方诅咒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root bak"><td class="cname">阴魂不散</td><td class="cid">CURSE_ECHO</td><td class="cdesc">复活敌方诅咒;回响1</td><td class="ctag"><span class="b b-root">根</span><span class="b b-bak">备</span></td></tr>
+					<tr data-tags="root"><td class="cname">噬咒兽</td><td class="cid">CURSE_THIRST_BEAST_4.0</td><td class="cdesc">敌方诅咒揭晓时:复活自身;攻击</td><td class="ctag"><span class="b b-root">根·咒</span></td></tr>
+					<tr data-tags="root"><td class="cname">回魂尸</td><td class="cid">WAKING_FIGHTER</td><td class="cdesc">攻击;苏醒:强化自身1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">尸变</td><td class="cid">WOKEN_BLADE</td><td class="cdesc">攻击;苏醒:攻击x2</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">咒茧</td><td class="cid">WOKEN_HEX</td><td class="cdesc">强化1敌方诅咒;苏醒:强化2敌方诅咒</td><td class="ctag"><span class="b b-root">根·咒</span></td></tr>
+					<tr data-tags="root"><td class="cname">勾魂人</td><td class="cid">AWAKENED_REAPER</td><td class="cdesc">攻击;苏醒:埋葬1敌方</td><td class="ctag"><span class="b b-root">根·勾</span></td></tr>
+					<tr data-tags="icon"><td class="cname">丧钟</td><td class="cid">RELIC_DEATH_KNELL</td><td class="cdesc">被动:友方苏醒时:触发其遗言</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">冥约</td><td class="cid">FUNERAL_WILL</td><td class="cdesc">埋葬2卡组顶;遗言:延迟复活1友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">扶灵人</td><td class="cid">FINAL_ESCORT</td><td class="cdesc">攻击;遗言:回合结束前:复活1墓地最高攻友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">骸骨哨兵</td><td class="cid">SOLDIER_SKELETON_4.0</td><td class="cdesc">攻击;遗言:复活自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">无头武生</td><td class="cid">REVIVING_STRIKER</td><td class="cdesc">攻击;遗言:攻击次数+1,复活自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">火刑柱</td><td class="cid">KINGSLAYER</td><td class="cdesc">埋葬1攻击力最高敌方;复活1友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+				</tbody>
+			</table>
+		</section>
+
+		<!-- ======== 1.2 ======== -->
+		<section class="fam" id="f2" style="--acc:#c0574f;--accbg:rgba(192,87,79,.14)">
+			<header class="fam-h">
+				<span class="fno">1.2</span><h2>信徒 / 放逐族</h2>
+				<span class="fcnt">13 卡</span>
+				<span class="froot">词根 <b>教团职衔与仪式</b></span>
+			</header>
+			<table>
+				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
+				<tbody>
+					<tr data-tags="root"><td class="cname">新皈依者</td><td class="cid">RIFT_INSECT_4.0</td><td class="cdesc">攻击;生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">侍僧</td><td class="cid">RIFT_ACOLYTE</td><td class="cdesc">攻击;生成1信徒;苏醒:生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">鞭笞者</td><td class="cid">RIFT_STRIKER</td><td class="cdesc">攻击x2;生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">施洗者</td><td class="cid">RIFT_PRIEST</td><td class="cdesc">生成2信徒;强化1友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">黑弥撒</td><td class="cid">RIFT_HATCHERY</td><td class="cdesc">生成3信徒;回合开始:埋葬自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">黑圣母</td><td class="cid">SWARM_QUEEN</td><td class="cdesc">攻击;每有1攻击力,生成1信徒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">以血布道</td><td class="cid">RELIC_HIVE</td><td class="cdesc">被动:友方攻击时:生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">诅咒唱诗班</td><td class="cid">SWARM_CURSER</td><td class="cdesc">生成1信徒;每有1友方信徒,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根·咒+教团</span></td></tr>
+					<tr data-tags="root"><td class="cname">献祭司事</td><td class="cid">RIFT_GUIDE</td><td class="cdesc">放逐1友方信徒,埋葬2敌方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">血飨</td><td class="cid">RIFT_REAPER</td><td class="cdesc">放逐所有信徒,每放逐1,强化1友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">伪经</td><td class="cid">RELIC_RIFT_OVERRIDE</td><td class="cdesc">被动:友方信徒效果变为:"复活1敌方诅咒;放逐自身"</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">狂信徒</td><td class="cid">EXILE_BERSERKER</td><td class="cdesc">攻击;本回合每放逐1友方,攻击次数+1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="clear"><td class="cname">信徒</td><td class="cid">(token)</td><td class="cdesc">信徒 token</td><td class="ctag"><span class="b b-clear">机制透明</span></td></tr>
+				</tbody>
+			</table>
+		</section>
+
+		<!-- ======== 1.3 ======== -->
+		<section class="fam" id="f3" style="--acc:#8faf4e;--accbg:rgba(143,175,78,.13)">
+			<header class="fam-h">
+				<span class="fno">1.3</span><h2>诅咒族</h2>
+				<span class="fcnt">17 卡</span>
+				<span class="froot">词根 <b>蛊 / 咒</b>(中国古典咒术)</span>
+			</header>
+			<table>
+				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
+				<tbody>
+					<tr data-tags="clear"><td class="cname">诅咒</td><td class="cid">JU_ON</td><td class="cdesc">(状态 token)对自身造成[攻击力]点伤害</td><td class="ctag"><span class="b b-clear">机制透明</span></td></tr>
+					<tr data-tags="root"><td class="cname">蛊噬</td><td class="cid">DETERIORATION_4.0</td><td class="cdesc">强化2敌方诅咒;敌方诅咒每有3攻击力,额外强化1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">蛊婆</td><td class="cid">HEXER</td><td class="cdesc">攻击;强化3敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">降头师</td><td class="cid">GRAVE_HEXER</td><td class="cdesc">复活1友方;强化2敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">咒刃</td><td class="cid">HEXBLADE</td><td class="cdesc">攻击;每有1攻击力,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">养蛊人</td><td class="cid">CURSE_GARDENER</td><td class="cdesc">强化1敌方诅咒;复活1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">收蛊人</td><td class="cid">CURSE_REVIVER</td><td class="cdesc">攻击;复活1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">吞蛊人</td><td class="cid">CURSE_EATER</td><td class="cdesc">攻击;攻击力=敌方诅咒攻击力</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">噬咒萨满</td><td class="cid">CURSE_THIRST_SHAMAN_4.0</td><td class="cdesc">敌方诅咒每有1攻击力,强化1友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">血契</td><td class="cid">RELIC_BLOOD_PACT</td><td class="cdesc">被动:友方攻击不再造成伤害,而是强化等量敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">饲咒</td><td class="cid">RELIC_ATTACK_HEX</td><td class="cdesc">被动:有卡攻击时:强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root bak"><td class="cname">人牲</td><td class="cid">RELIC_TAINT</td><td class="cdesc">被动:友方信徒与敌方诅咒相邻时:放逐该信徒,强化2敌方诅咒</td><td class="ctag"><span class="b b-root">根</span><span class="b b-bak">备</span></td></tr>
+					<tr data-tags="root"><td class="cname">积尸气</td><td class="cid">RELIC_GRAVE_CURSE</td><td class="cdesc">被动:敌方诅咒攻击力=墓地友方卡数量</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">蛊王</td><td class="cid">SNOWBALL</td><td class="cdesc">攻击x2;强化反应:强化自身1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">提前发作</td><td class="cid">RELIC_CURSE_HASTE</td><td class="cdesc">被动:敌方诅咒攻击次数+1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">瘴气</td><td class="cid">WEAKENING_FIELD</td><td class="cdesc">所有生物本回合攻击力-1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">活殉</td><td class="cid">SACRIFICIAL_SPIRIT</td><td class="cdesc">攻击;埋葬1友方;强化5敌方诅咒</td><td class="ctag"><span class="b b-root">根·殉</span><span class="bx">交叉取殉</span></td></tr>
+				</tbody>
+			</table>
+		</section>
+
+		<!-- ======== 1.4 ======== -->
+		<section class="fam" id="f4" style="--acc:#a09487;--accbg:rgba(160,148,135,.13)">
+			<header class="fam-h">
+				<span class="fno">1.4</span><h2>埋葬 / 遗言族</h2>
+				<span class="fcnt">24 卡</span>
+				<span class="froot">代价 <b>祭 / 殉 / 牲</b> · 遗言 <b>遗 / 殓 / 丧 / 悼</b> · 埋敌 <b>勾 / 索</b></span>
+			</header>
+			<table>
+				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
+				<tbody>
+					<tr data-tags="root"><td class="cname">血祭</td><td class="cid">GRAVE_FIST</td><td class="cdesc">埋葬1友方;攻击</td><td class="ctag"><span class="b b-root">根·祭</span></td></tr>
+					<tr data-tags="root"><td class="cname">剜心祭</td><td class="cid">GRAVE_PUNCH_4.0</td><td class="cdesc">埋葬1友方;攻击x2</td><td class="ctag"><span class="b b-root">根·祭</span></td></tr>
+					<tr data-tags="root"><td class="cname">替罪羔羊</td><td class="cid">SACRIFICE_WEAKEST</td><td class="cdesc">埋葬1攻击力最低友方;强化1该卡</td><td class="ctag"><span class="b b-root">根·牲</span></td></tr>
+					<tr data-tags="icon"><td class="cname">集体自焚</td><td class="cid">MASS_SACRIFICE</td><td class="cdesc">埋葬所有友方;每埋葬1友方,生成1信徒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">什一抽杀</td><td class="cid">DECIMATION</td><td class="cdesc">埋葬6友方,本回合每埋葬过1友方,埋葬数-1;攻击x3</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">血肉磨坊</td><td class="cid">GRAVE_MILLER</td><td class="cdesc">攻击;埋葬2友方,埋葬卡组顶5卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">掘墓人</td><td class="cid">GRAVE_DREDGER</td><td class="cdesc">攻击;埋葬卡组顶3卡</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">凌迟</td><td class="cid">MILLBLADE</td><td class="cdesc">攻击;每有1攻击力,埋葬卡组顶1卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">同葬</td><td class="cid">GRAVE_TOGETHER_4.0</td><td class="cdesc">攻击;埋葬1友方;埋葬2敌方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">骸骨巨人</td><td class="cid">GRAVE_GIANT</td><td class="cdesc">攻击力=墓地友方数量;攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">连坐</td><td class="cid">RELIC_CHAIN_BURIAL</td><td class="cdesc">被动:友方被埋葬时:埋葬1卡组顶卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">埋骨地</td><td class="cid">RELIC_ATTACK_BURIAL</td><td class="cdesc">被动:友方每次攻击:埋葬卡组顶1卡</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">血账</td><td class="cid">RELIC_TALLY</td><td class="cdesc">被动:回合结束前:本回合每埋葬1生物,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">勾魂簿</td><td class="cid">RELIC_CURSE_GRAVE</td><td class="cdesc">被动:敌方诅咒揭晓时:埋葬1敌方</td><td class="ctag"><span class="b b-root">根·勾</span></td></tr>
+					<tr data-tags="icon"><td class="cname">白骨王座</td><td class="cid">RELIC_GRAVE_LORD</td><td class="cdesc">被动:墓地中的友方生物攻击力+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">司悼人</td><td class="cid">EULOGIST</td><td class="cdesc">埋葬1张tag为[遗言]的友方卡;攻击</td><td class="ctag"><span class="b b-root">根·悼</span></td></tr>
+					<tr data-tags="icon"><td class="cname">安魂弥撒</td><td class="cid">LAST_RITES</td><td class="cdesc">遗言:触发所有在墓地友方的遗言</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">遗赠</td><td class="cid">LAST_GIFT</td><td class="cdesc">攻击;遗言:强化2友方生物</td><td class="ctag"><span class="b b-root">根·遗</span></td></tr>
+					<tr data-tags="icon"><td class="cname">抬棺人</td><td class="cid">DEATHBED_PORTER</td><td class="cdesc">攻击;遗言:攻击;置顶1友方非生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">垂死反扑</td><td class="cid">DEATHBED_GRANT</td><td class="cdesc">被动:友方生物被埋葬时:该友方生物攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">操尸人</td><td class="cid">GRAVE_PUPPETEER</td><td class="cdesc">让墓地1友方生物攻击;墓地无友方则埋葬1张[遗言]友方卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">厉鬼</td><td class="cid">AVENGER_4.0</td><td class="cdesc">攻击x2;遗言:强化自身1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">带刺的标本</td><td class="cid">SPIKE_SKELETON_4.0</td><td class="cdesc">攻击;遗言:攻击x2</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">管道里的活物</td><td class="cid">SLIME_4.0</td><td class="cdesc">遗言:复制自身;攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+				</tbody>
+			</table>
+		</section>
+
+		<!-- ======== 1.5 ======== -->
+		<section class="fam" id="f5" style="--acc:#c98a4b;--accbg:rgba(201,138,75,.13)">
+			<header class="fam-h">
+				<span class="fno">1.5</span><h2>攻击 / 强化友方 / 数值族</h2>
+				<span class="fcnt">13 卡</span>
+				<span class="froot">多为 icon(例外词根 <b>刃 / 魂</b>)</span>
+			</header>
+			<table>
+				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
+				<tbody>
+					<tr data-tags="icon"><td class="cname">连体人</td><td class="cid">TWIN_STRIKER</td><td class="cdesc">攻击x2</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">百臂巨人</td><td class="cid">QUAD_STRIKER</td><td class="cdesc">攻击x4</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">股骨号角</td><td class="cid">BATTLE_HORN</td><td class="cdesc">本回合友方生物攻击次数+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">执鞭人</td><td class="cid">COMBO_GRANTER</td><td class="cdesc">攻击;本回合1友方生物攻击次数+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">渴血者</td><td class="cid">COMBO_STARTER</td><td class="cdesc">攻击;强化反应:攻击次数+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">模仿犯</td><td class="cid">MIMIC_BLADE</td><td class="cdesc">攻击力=友方最高攻击力;攻击x2</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">缝合人</td><td class="cid">UNFINISHED_ROBOT_4.0</td><td class="cdesc">攻击;攻击力翻倍</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">骨匠</td><td class="cid">BLACKSMITH_4.0</td><td class="cdesc">攻击;强化1友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">开刃</td><td class="cid">WAR_TRAINER</td><td class="cdesc">强化2友方生物</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
+					<tr data-tags="root"><td class="cname">妖刀</td><td class="cid">WEAPON_SPIRIT</td><td class="cdesc">被动:友方生物触发强化反应时:强化1该生物</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
+					<tr data-tags="icon"><td class="cname">邪印</td><td class="cid">RELIC_TRAINER</td><td class="cdesc">被动:回合开始:强化1攻击力最低友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">引魂幡</td><td class="cid">RELIC_WHITE_BANNER</td><td class="cdesc">被动:回合开始:置顶1友方攻击力最高生物</td><td class="ctag"><span class="b b-root">根·魂</span></td></tr>
+					<tr data-tags="icon bak"><td class="cname">鬼打墙</td><td class="cid">DELAYER</td><td class="cdesc">延后1攻击力最高敌方;攻击</td><td class="ctag"><span class="b b-icon">icon</span><span class="b b-bak">备</span></td></tr>
+				</tbody>
+			</table>
+		</section>
+
+		<!-- ======== 1.6 ======== -->
+		<section class="fam" id="f6" style="--acc:#a487d0;--accbg:rgba(164,135,208,.13)">
+			<header class="fam-h">
+				<span class="fno">1.6</span><h2>商店 / 系统</h2>
+				<span class="fcnt">18 卡</span>
+				<span class="froot">词根 <b>魇 / 梦 / 夜</b>(战斗卡禁用「梦」字)</span>
+			</header>
+			<table>
+				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th></tr></thead>
+				<tbody>
+					<tr data-tags=""><td class="cname">噩梦重播</td><td class="cid">UTILITY_REROLL_1</td><td class="cdesc">被动:免费重掷次数+1</td></tr>
+					<tr data-tags=""><td class="cname">魇市赊账</td><td class="cid">UTILITY_DISCOUNT_1</td><td class="cdesc">被动:每重掷4次,随机商品降价2</td></tr>
+					<tr data-tags=""><td class="cname">冥币</td><td class="cid">UTILITY_INCOME_1</td><td class="cdesc">被动:收入+2</td></tr>
+					<tr data-tags=""><td class="cname">魇市深处</td><td class="cid">UTILITY_ODDS_1</td><td class="cdesc">被动:首个货架必为奇物架</td></tr>
+					<tr data-tags=""><td class="cname">窥魇镜</td><td class="cid">UTILITY_ODDS_2</td><td class="cdesc">奇物架的出现概率+15%</td></tr>
+					<tr data-tags=""><td class="cname">魇市新摊</td><td class="cid">UTILITY_OPTION_1</td><td class="cdesc">被动:商店货架+1</td></tr>
+					<tr data-tags=""><td class="cname">百怪入梦</td><td class="cid">UTILITY_CREATURES_1</td><td class="cdesc">20%概率:战斗架全部商品变为生物卡</td></tr>
+					<tr data-tags=""><td class="cname">死寂的梦</td><td class="cid">UTILITY_SPELLS_1</td><td class="cdesc">20%概率:战斗架全部商品变为非生物卡</td></tr>
+					<tr data-tags=""><td class="cname">噩梦</td><td class="cid">UTILITY_TAG_CURSE</td><td class="cdesc">每3个货架必出1张[诅咒]卡</td></tr>
+					<tr data-tags=""><td class="cname">亡者入梦</td><td class="cid">UTILITY_TAG_REVIVE</td><td class="cdesc">每3个货架必出1张[复活]卡</td></tr>
+					<tr data-tags=""><td class="cname">惊醒</td><td class="cid">UTILITY_TAG_AWAKEN</td><td class="cdesc">每3个货架必出1张[苏醒]卡</td></tr>
+					<tr data-tags=""><td class="cname">深魇</td><td class="cid">UTILITY_SLOT_R</td><td class="cdesc">每3个货架必出1张✦✦✦卡</td></tr>
+					<tr data-tags=""><td class="cname">初魇</td><td class="cid">UTILITY_SLOT_U_1</td><td class="cdesc">被动:首个货架必出1张✦✦卡</td></tr>
+					<tr data-tags=""><td class="cname">连魇</td><td class="cid">UTILITY_SLOT_U_2</td><td class="cdesc">每个货架必出1张✦✦卡</td></tr>
+					<tr data-tags=""><td class="cname">梦魇缠身</td><td class="cid">UTILITY_WEIGHT_R</td><td class="cdesc">✦✦✦卡的出货权重x2</td></tr>
+					<tr data-tags=""><td class="cname">魇影幢幢</td><td class="cid">UTILITY_WEIGHT_U</td><td class="cdesc">✦✦卡的出货权重x2</td></tr>
+					<tr data-tags=""><td class="cname">长夜</td><td class="cid">SYSTEM_INCREASE_DECK_SIZE_LITE</td><td class="cdesc">卡位+1,放逐自身</td></tr>
+					<tr data-tags=""><td class="cname">沉魇</td><td class="cid">SYSTEM_INCREASE_HP_MAX</td><td class="cdesc">被动:生命值上限+4</td></tr>
+				</tbody>
+			</table>
+		</section>
+	</section>
+
+	<!-- ================= PART 2 ================= -->
+	<section id="p2">
+		<div class="sec-h"><span class="no">PART 2</span><h2>备用名池</h2><span class="en">未来新卡优先取用</span></div>
+		<div class="pool">
+			<div class="pcard"><div class="nm">倒十字</div><p>反信仰凶兆,留给诅咒 / 仪式系新卡。</p></div>
+			<div class="pcard"><div class="nm">圣痕</div><p>强化反应族的天然图形(被祝福时伤口渗血),现族 4 张命名已满,留给新卡。</p></div>
+			<div class="pcard"><div class="nm">无常</div><p>中国阴差;AWAKENED_REAPER 现名「勾魂人」与「勾魂簿」构成埋敌方词根对,不换。</p></div>
+			<div class="pcard"><div class="nm">人皮经</div><p>「伪经」的 graphic 升级版,现名保留。</p></div>
+		</div>
+	</section>
+
+	<!-- ================= PART 3 ================= -->
+	<section id="p3">
+		<div class="sec-h"><span class="no">PART 3</span><h2>落地状态</h2><span class="en">STATUS · 截至 2026-09-08</span></div>
+		<ol class="landing">
+			<li><b>Notion</b>:4.0 card database「中文名」列已于 2026-09-08 按本案全量覆盖写入(116 行)。</li>
+			<li><b>Unity prefab</b>:已同步(2026-09-08)。108 处改名 = 4.0 池 107 张 + 信徒 token(<code>RIFT.prefab</code>「次元裂缝」→「信徒」,单点生效于全部生成信徒的卡);DUO_REVIVER(阴婚)/ SLIME_4.0(管道里的活物)/ JU_ON(诅咒)原名已符合;<code>cardTypeID</code> 未动。REVIVING_STRIKER(无头武生)prefab 同日新建(2_Rare,ATK=1,rare,遗言:攻击次数+1+复活自身,已入 ShopPoolRef);4 张备用(SOUL_SWAPPER / CURSE_ECHO / RELIC_TAINT / DELAYER)无 prefab,不涉及。</li>
+			<li><b>v2 文档</b>保留作历史档,不作命名依据;机制词(埋葬/复活/强化/诅咒/苏醒/揭晓/生成/放逐/置顶/延后)维持白话基线,本案不触碰。</li>
+			<li>desc 若再变动,<b>以 Notion DB 为准</b>回填本表。</li>
+		</ol>
+	</section>
+
+</div>
+
+<footer>
+	源文档:<code>docs/OneDeck_Worldview_Naming_v3_CultPulp.md</code>(2026-09-08 定稿) · 本页为该文档的只读展示,内容以源文档与 Notion DB 为准<br>
+	生成于 2026-10-10 · OneDeck 世界观命名迭代 v3 —— 古典邪教 × 低俗恐怖
+</footer>
+
+<script>
+	(function () {
+		var q = document.getElementById('q');
+		var chips = document.querySelectorAll('#tagchips button');
+		var count = document.getElementById('count');
+		var total = document.querySelectorAll('section.fam tbody tr').length;
+		var tag = 'all';
+
+		function apply() {
+			var s = q.value.trim().toLowerCase();
+			var shown = 0;
+			document.querySelectorAll('section.fam tbody tr').forEach(function (tr) {
+				var okQ = !s || tr.textContent.toLowerCase().indexOf(s) !== -1;
+				var okT = tag === 'all' || (' ' + (tr.getAttribute('data-tags') || '') + ' ').indexOf(' ' + tag + ' ') !== -1;
+				var ok = okQ && okT;
+				tr.hidden = !ok;
+				if (ok) shown++;
+			});
+			document.querySelectorAll('section.fam').forEach(function (sec) {
+				var any = false;
+				sec.querySelectorAll('tbody tr').forEach(function (tr) { if (!tr.hidden) any = true; });
+				sec.hidden = !any;
+			});
+			count.textContent = '显示 ' + shown + ' / ' + total;
+		}
+
+		q.addEventListener('input', apply);
+		chips.forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				chips.forEach(function (b) { b.classList.remove('on'); });
+				btn.classList.add('on');
+				tag = btn.getAttribute('data-tag');
+				apply();
+			});
+		});
+	})();
+</script>
+
+</body>
+</html>
