@@ -2732,7 +2732,8 @@ MonoBehaviour:
   rerollFlipHold: 0
   hoverLiftEnabled: 1
   hoverLift: 0.075
-  hoverLiftDuration: 0.12
+  hoverLiftDuration: 0.16
+  hoverLiftOvershoot: 2.2
   hoverRetentionMargin: 0.25
   enableCameraScroll: 1
   cameraScrollSpeed: 5

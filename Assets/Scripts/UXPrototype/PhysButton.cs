@@ -31,7 +31,10 @@ public class PhysButton : MonoBehaviour
 	public float restShadow = 0.1085f;
 	[Tooltip("Hover lift toward the light hl")]
 	public float hoverLift = 0.1085f;
-	public float hoverDuration = 0.12f;
+	public float hoverDuration = 0.16f;
+	[Range(1f, 3f)]
+	[Tooltip("Bounce overshoot of the hover lift (Ease.OutBack amplitude; 1.7 = UIKitDemo default, >2 keeps the rebound visible on this small travel)")]
+	public float hoverOvershoot = 2.2f;
 	[Tooltip("Press must stay shorter than hoverDuration (R5)")]
 	public float pressDuration = 0.06f;
 
@@ -315,7 +318,7 @@ public class PhysButton : MonoBehaviour
 
 	private void EnterHoverVisual()
 	{
-		TweenOffsetTo(HoverVector, hoverDuration, Ease.OutBack);
+		TweenOffsetTo(HoverVector, hoverDuration, Ease.OutBack, hoverOvershoot);
 		UpdateLabelSwap();
 	}
 
@@ -396,10 +399,11 @@ public class PhysButton : MonoBehaviour
 		}
 	}
 
-	private Tween TweenOffsetTo(Vector2 target, float duration, Ease ease)
+	private Tween TweenOffsetTo(Vector2 target, float duration, Ease ease, float? overshoot = null)
 	{
 		if (_moveTween != null && _moveTween.IsActive()) _moveTween.Kill();
-		_moveTween = DOTween.To(() => _faceOffset, ApplyOffset, target, duration).SetEase(ease);
+		_moveTween = DOTween.To(() => _faceOffset, ApplyOffset, target, duration)
+			.SetEase(ease, overshoot ?? float.NaN);
 		return _moveTween;
 	}
 

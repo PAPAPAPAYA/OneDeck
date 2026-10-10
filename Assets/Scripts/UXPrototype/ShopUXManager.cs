@@ -70,7 +70,10 @@ public class ShopUXManager : MonoBehaviour
 	[Tooltip("hover 时卡片朝左上光源斜向弹起的等量位移（-x/+y，PhysButton.HoverVector 同约定；价签与大影子钉在原地不随卡面）")]
 	public float hoverLift = 0.25f;
 	[Tooltip("弹起/落下单程时长（秒）；OutBack 弹起 / OutQuad 落下，与 PhysButton 手感一致")]
-	public float hoverLiftDuration = 0.12f;
+	public float hoverLiftDuration = 0.16f;
+	[Range(1f, 3f)]
+	[Tooltip("Bounce overshoot of the lift-up tween (Ease.OutBack amplitude; 1.7 = UIKitDemo default, >2 keeps the rebound visible on this small travel)")]
+	public float hoverLiftOvershoot = 2.2f;
 	[Tooltip("hover 保留区在卡片静止 bounds 四周外扩的世界单位（防抬起后光标在卡缘抖动循环；网格间距若变密需调小）")]
 	public float hoverRetentionMargin = 0.25f;
 

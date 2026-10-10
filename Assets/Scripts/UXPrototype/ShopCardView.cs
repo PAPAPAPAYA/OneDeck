@@ -508,7 +508,7 @@ public class ShopCardView : MonoBehaviour
 		Vector3 liftedPosition = _hoverBase + new Vector3(-lift, lift, 0f);
 		if (_cardPhysObj.TargetPosition != liftedPosition)
 		{
-			_cardPhysObj.SetTargetPosition(liftedPosition, Ease.OutBack, ShopUXManager.Instance.hoverLiftDuration);
+			_cardPhysObj.SetTargetPosition(liftedPosition, Ease.OutBack, ShopUXManager.Instance.hoverLiftDuration, ShopUXManager.Instance.hoverLiftOvershoot);
 		}
 	}
 

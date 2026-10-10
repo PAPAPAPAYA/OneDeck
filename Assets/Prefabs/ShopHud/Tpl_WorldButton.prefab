@@ -534,7 +534,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PhysButton
   restShadow: 0.05
   hoverLift: 0.05
-  hoverDuration: 0.12
+  hoverDuration: 0.16
+  hoverOvershoot: 2.2
   pressDuration: 0.06
   denyShift: 0.075
   denyOutDuration: 0.08

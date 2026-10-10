@@ -612,7 +612,7 @@ public class CardPhysObjScript : MonoBehaviour
 		}
 
 		// Start DOTween position animation
-		StartPositionTween(null, null, onComplete);
+		StartPositionTween(null, null, null, onComplete);
 	}
 
 	/// <summary>
@@ -632,7 +632,28 @@ public class CardPhysObjScript : MonoBehaviour
 			return;
 		}
 
-		StartPositionTween(easeOverride, durationOverride, onComplete);
+		StartPositionTween(easeOverride, durationOverride, null, onComplete);
+	}
+
+	/// <summary>
+	/// Set target position with an explicit ease, duration and Back-family bounce overshoot
+	/// (the shop hover-lift rebound; feeds the DOTween SetEase(Ease, overshoot) overload),
+	/// same override pattern as SetTargetScale.
+	/// </summary>
+	public void SetTargetPosition(Vector3 target, Ease easeOverride, float durationOverride, float overshootOverride, Action onComplete = null)
+	{
+		TestManager.Log("[CardPhysObjScript] SetTargetPosition card=" + name + " currentPos=" + transform.position + " newTarget=" + target + " isPlayingSpecial=" + isPlayingSpecialAnimation);
+		TargetPosition = target;
+
+		// If a special animation owns the position, do not start DOTween (it would fight the
+		// caller's own transform drive).
+		if (SpecialAnimationPinsPosition)
+		{
+			onComplete?.Invoke();
+			return;
+		}
+
+		StartPositionTween(easeOverride, durationOverride, overshootOverride, onComplete);
 	}
 
 	/// <summary>
@@ -779,7 +800,7 @@ public class CardPhysObjScript : MonoBehaviour
 	/// SetTargetScale override pattern: explicit values are used verbatim (no combat scaling),
 	/// defaults keep moveDuration/moveEase.
 	/// </summary>
-	private void StartPositionTween(Ease? easeOverride = null, float? durationOverride = null, Action onComplete = null)
+	private void StartPositionTween(Ease? easeOverride = null, float? durationOverride = null, float? overshootOverride = null, Action onComplete = null)
 	{
 		// If already animating and target is the same, do not restart
 		if (_positionTween != null && _positionTween.IsActive() && _positionTween.IsPlaying())
@@ -799,7 +820,7 @@ public class CardPhysObjScript : MonoBehaviour
 		_positionTweenHasCompletionCallback = onComplete != null;
 		_positionTweenCompletionCallback = onComplete;
 		var tween = transform.DOMove(TargetPosition, scaledDuration)
-			.SetEase(easeOverride.HasValue ? easeOverride.Value : moveEase)
+			.SetEase(easeOverride.HasValue ? easeOverride.Value : moveEase, overshootOverride ?? float.NaN)
 			.SetUpdate(UpdateType.Normal, true)
 			.OnComplete(() =>
 			{
