@@ -72,6 +72,8 @@ Normalized cumulative series (UTC-midnight anchored, from the intake chain):
 | Sep 20 | 394 |
 | Sep 21 | 399 |
 | Sep 22 | 400 |
+| Sep 30 | 436 (month-1 close) |
+| Oct 9 | 468 |
 
 \* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15.
 
@@ -322,6 +324,16 @@ Interpretation:
 - **New negative axes this week**: (a) *ranked system design* — "ranked is progressive, not elo-based; playing more by default raises rank" (first matchmaking-system-as-design complaint, distinct from the old fairness axis); (b) *Zappy balance* — EN 9.3 h with 5 votes (rising flagship contender): "Zappy is currently broken and makes up 80% of my matchup losses… watching the agonizing combo particles without your card choices even impacting the game" — merges balance + spectator-agency; (c) *UX mess* (2 votes), (d) *handheld perf* — FR: crashes on Rog Ally X; (e) genre-fit "zero innovation, different coat of paint". The helpful-sort top is now contested between the 8-vote synergy-web negative and the 5-vote Zappy one.
 - zh-CN flow continues positive (3 in this batch, incl. a 75 h veteran; lifetime zh-CN negatives still 3).
 - CCU 197 @ 02:11 UTC (anchor-comparable): 317 (d17) → 283 (d18) → 197 (d29) ≈ −4.3%/day over 11 days — slow bleed, no collapse; d22's 181 reading now looks like intraday noise, not a cliff.
+
+**2026-10-10 (01:44 UTC, day 40 — month-1 final):** totals **469 = 407 / 62 (86.8%)**; month-1 (Sep 1–30) closed at **436 reviews ±1** (interim days Sep 23–29 carry ±2 list-backfill noise; month boundary exact). Month-1 verdict vs all prior bands:
+
+- **Units ≈ 13.1k–17.4k (30–40×); gross ≈ $115k–153k; net ≈ $81k–107k ≈ ¥54万–72万.** Just under the §12 low-band floor (13.5k) — the week-3 collapse decided it: week 1 alone was 267 reviews = 61% of the entire month.
+- Prediction scorecard: Gamalytic pre-launch M1 7.8k → beaten 1.7–2.2×; doc's own corrected band 13.5k–26k → landed at the floor (−3%); cohort model (§5: D1 40–50 reviews → Y1 7k–11k) → Grail did ~15k in month 1 alone, confirming the 2.5–3× launch-advantage coefficient and its fanbase-fueled origin.
+- **October drift (Oct 1–9): 33 reviews ≈ 3.7/day; 5 negatives ≈ 15% marginal** (cooled sharply from the day-19–29 spike). Cumulative rate stabilized at 86.8%.
+- New negative axes in October: **always-online requirement for a single-player game** (EN, 2 votes — first DRM-axis complaint), **low-end iGPU performance** (zh-CN, 5 min played, 4 votes — zh-CN negative #4 lifetime), **won't launch after windowed-mode switch + support no-response** (pt-BR). Known axes (repetition, card-description clarity, RNG-vs-endboss) continue.
+- Demo veterans still trickling in: month-2 reviews include playtimes of 287 h, 156 h, 109 h — the pre-launch demo cohort is a months-long review annuity.
+- CCU 163 @ 01:44 UTC (anchor-comparable): 197 (d29) → 163 (d40) ≈ −1.7%/day — slow bleed, no collapse; the retained core is holding.
+- For OneDeck: the month-1 shape (61% of reviews in week 1, then −50%+ weekly decay with no content update to catch it) is the exact failure mode §12 flagged for a seasons game without a season-1 drop in month 1.
 
 ## Appendix: Data Provenance
 
