@@ -43,6 +43,19 @@ public class PhaseTransitionConfigSO : ScriptableObject
 	[Tooltip("Background padding beyond each page edge for overshoot peek, demo px (demo: 200). v1.1 world topo only.")]
 	public float pagePadDemoPx = 200f;
 
+	[Tooltip("Player-card flight clone spawn height BELOW its final stack slot, demo px (selection leg2 only — the player section enters from off-screen bottom, plan §4.4 2026-10-10).")]
+	public float playerCardSlideDemoPx = 400f;
+
+	[Header("Opponent select page (plan-opponent-select-page-2026-10-06 §4.3/§4.6, 2026-10-10)")]
+	[Tooltip("Select-page master switch (independent of the transition master above). Off = 离开商店 goes straight to combat, today's behavior.")]
+	public bool selectionPageEnabled = false;
+	[Tooltip("Ghost candidates shown on the select page. 2 = the layout-plan side-by-side arrangement; 1 centers the single panel (plan O-L2).")]
+	[Range(1, 2)] public int selectionCandidateCount = 2;
+	[Tooltip("Display-only bounty on the 选择 button (+$N placeholder, P3): the +$N semantics are still unruled, this only feeds the label.")]
+	public int bountyPlaceholder = 0;
+	[Tooltip("OpponentSelectPanel v2 prefab instantiated once per candidate.")]
+	public GameObject opponentSelectPanelPrefab;
+
 	public Ease GetEase()
 	{
 		switch (easeMode)

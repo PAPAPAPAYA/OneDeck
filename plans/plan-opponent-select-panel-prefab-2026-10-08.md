@@ -1,7 +1,7 @@
 # Plan: 选敌页候选面板 prefab（OpponentSelectPanel）
 
 日期：2026-10-08
-状态：**P-S1..S4 已实施（2026-10-09，「颜色用已有的」裁定 + 修改代码授权），EditMode 零漂移，Play 目检待做**。实施记录见 §11。
+状态：**P-S1..S4 已实施（2026-10-09，「颜色用已有的」裁定 + 修改代码授权），EditMode 零漂移，Play 目检待做**。实施记录见 §11。**2026-10-10 起面板 prefab 由用户手摆固化的 `OpponentSelectPanel v2.prefab` 取代（内部布局改为名牌+按钮上排、3 卡下排），页面布局与量测数值见 `plans/plan-opponent-select-page-layout-2026-10-10.md`；本文件的 v1 结构记录留档。**
 关联：`plans/plan-opponent-select-page-2026-10-06.md`（主计划；本计划 = §4.3 选敌页内容的第一个交付物细化）、`docs/demo/OpponentSelectDemo.html`（v4 视觉规格）、`plans/plan-hp-name-plate-2026-10-07.md`（名牌规格）、`plans/plan-shop-hud-prefab-widgets-2026-09-23.md`（模板+变体 prefab 体系）
 
 ## 0. 拍板记录（2026-10-08 对话）
