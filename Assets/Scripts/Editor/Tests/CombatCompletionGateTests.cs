@@ -242,7 +242,46 @@ public class CombatCompletionGateTests
 		Assert.AreEqual(1, UploadOutbox.PendingCount);
 	}
 
-	// ------------------------------------------------------------------ scaffolding
+		[Test]
+		public void DeckSnapshot_EmptyDeckNeverEnqueuedEvenWithGateOpen()
+		{
+			InstallHermeticIdentity();
+			InstallDeckSaverScaffold();
+			CombatCompletionGate.MarkCompleted();
+
+			// Fully empty deck: dropped outright, nothing enqueued.
+			DeckSaver.Me.playerDeck.deck.Clear();
+			DeckSaver.Me.SavePlayerDeckSnapshot();
+			Assert.AreEqual(0, UploadOutbox.PendingCount);
+
+			// Raw entries present but none survive sanitization (no CardScript ->
+			// no cardTypeID) sanitizes down to the same empty upload.
+			DeckSaver.Me.playerDeck.deck.Add(CreateScaffoldObject("cardless"));
+			DeckSaver.Me.SavePlayerDeckSnapshot();
+			Assert.AreEqual(0, UploadOutbox.PendingCount);
+		}
+
+		[Test]
+		public void DeckSnapshot_EmptyDeckDoesNotOccupyTheDeferredSlot()
+		{
+			InstallHermeticIdentity();
+			InstallDeckSaverScaffold();
+
+			// Gate closed: an empty snapshot must be dropped, not parked in the
+			// deferred slot.
+			DeckSaver.Me.playerDeck.deck.Clear();
+			DeckSaver.Me.SavePlayerDeckSnapshot();
+			Assert.AreEqual(0, UploadOutbox.PendingCount);
+
+			// The next real snapshot carries only itself - no deferred empty deck
+			// riding along.
+			CombatCompletionGate.MarkCompleted();
+			DeckSaver.Me.playerDeck.deck.Add(CreateCardScaffold("wolf"));
+			DeckSaver.Me.SavePlayerDeckSnapshot();
+			Assert.AreEqual(1, UploadOutbox.PendingCount);
+		}
+
+		// ------------------------------------------------------------------ scaffolding
 
 	/// <summary>Fresh fingerprint fixtures per call: mutations in one test never leak into another.</summary>
 	private static List<CatalogCardEntry> SampleEntries()

@@ -290,6 +290,15 @@ namespace TestWriteRead
 		/// </summary>
 		private void UploadDeckSnapshot(DeckSaveEntry deckEntry)
 		{
+			// Empty decks are never uploaded: the server rejects them (invalid_card_list)
+			// and a cardless snapshot is never a fightable ghost. Dropped outright, not
+			// parked in the deferred slot.
+			if (deckEntry.cardTypeIDs == null || deckEntry.cardTypeIDs.Count == 0)
+			{
+				TestManager.Log("[DeckSaver] Empty deck snapshot skipped (no uploadable cards).");
+				return;
+			}
+
 			// Upload gate (per-run): before the first completed combat only defer.
 			if (!CombatCompletionGate.HasCompletedCombatThisRun)
 			{
