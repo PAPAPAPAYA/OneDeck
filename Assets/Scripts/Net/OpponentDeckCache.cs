@@ -104,6 +104,8 @@ public static class OpponentDeckCache
 		Load();
 		cache.usedDeckIds.Clear();
 		opponent = null;
+		reservedEntry = null;
+		reservedSessionNum = -1;
 		Save();
 		Prefetch();
 	}
@@ -235,6 +237,84 @@ public static class OpponentDeckCache
 		opponent = deck == null
 			? null
 			: new CurrentOpponent { deckId = deck.deckId, username = deck.username };
+	}
+
+	// ------------------------------------------------------------------ select-page flow (plan-opponent-select-page-2026-10-06 §4.1)
+
+	/// <summary>
+	/// Select-page pick reservation: ConsumeCandidate stashes the full entry so DeckSaver
+	/// can populate from it without re-randomizing (plan §4.2). Memory-only like
+	/// stagedSource — a crash between pick and inject leaves the deckId marked used, the
+	/// same acceptable state as an app exit mid-select; cleared by OnRunStarted.
+	/// </summary>
+	private static OpponentDeckEntry reservedEntry;
+	private static int reservedSessionNum = -1;
+
+	/// <summary>True while a select-page pick waits for its populate (tests / diagnostics).</summary>
+	public static bool HasReservedEntry { get { return reservedEntry != null; } }
+
+	/// <summary>
+	/// Unused same-session candidates for the select page, up to n, random order. Same
+	/// filter as TakeCandidate (OnlyOwnDecks included) and NOT marked used — picking is
+	/// the separate ConsumeCandidate step. Pure read: nothing is saved.
+	/// </summary>
+	public static List<OpponentDeckEntry> PeekCandidates(int sessionNum, int n)
+	{
+		Load();
+		List<OpponentDeckEntry> candidates = cache.decks.FindAll(d =>
+			d != null && d.sessionNum == sessionNum && !cache.usedDeckIds.Contains(d.deckId));
+		if (OnlyOwnDecks)
+		{
+			string selfName = PlayerIdentity.Username;
+			candidates = candidates.FindAll(d => d.username == selfName);
+		}
+		Rng.Shuffle(RngChannel.Setup, candidates);
+		if (candidates.Count > n) candidates.RemoveRange(n, candidates.Count - n);
+		return candidates;
+	}
+
+	/// <summary>
+	/// Select-page pick: mark used + set Current + reserve the full entry for the DeckSaver
+	/// reservation branch. Re-consuming the same deckId (double tap on the same panel) is
+	/// an idempotent no-op; a deckId that left the cache (flag purge etc.) is ignored.
+	/// </summary>
+	public static void ConsumeCandidate(int sessionNum, int deckId)
+	{
+		Load();
+		if (reservedEntry != null && reservedEntry.deckId == deckId) return;
+		OpponentDeckEntry entry = cache.decks.Find(d =>
+			d != null && d.deckId == deckId && d.sessionNum == sessionNum);
+		if (entry == null) return;
+		if (!cache.usedDeckIds.Contains(deckId))
+		{
+			cache.usedDeckIds.Add(deckId);
+			Save();
+		}
+		reservedEntry = entry;
+		reservedSessionNum = sessionNum;
+		SetCurrentOpponent(entry);
+	}
+
+	/// <summary>
+	/// Hand the reserved entry to the DeckSaver reservation branch and consume it. A stale
+	/// session mismatch clears silently and returns null — populate then walks the normal
+	/// chain. A mismatch cannot occur in the live flow (pick and populate share the
+	/// session); it only guards test / editor-domain leftovers.
+	/// </summary>
+	public static OpponentDeckEntry TakeReservedEntry(int sessionNum)
+	{
+		OpponentDeckEntry entry = reservedEntry;
+		bool matches = entry != null && reservedSessionNum == sessionNum;
+		reservedEntry = null;
+		reservedSessionNum = -1;
+		return matches ? entry : null;
+	}
+
+	/// <summary>Full cached entry by deckId (null when absent) — Current-refill lookups (plan §4.2).</summary>
+	public static OpponentDeckEntry FindEntry(int deckId)
+	{
+		Load();
+		return cache.decks.Find(d => d != null && d.deckId == deckId);
 	}
 
 	// ------------------------------------------------------------------ enemy source telemetry
@@ -405,6 +485,8 @@ public static class OpponentDeckCache
 		opponent = null;
 		counters = null;
 		stagedSource = null;
+		reservedEntry = null;
+		reservedSessionNum = -1;
 		OnlyOwnDecks = false;
 	}
 

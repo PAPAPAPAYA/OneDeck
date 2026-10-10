@@ -386,6 +386,29 @@ namespace TestWriteRead
 				enemyStatusRef.hp = enemyStatusRef.hpMax;
 			}
 
+			// Select-page reservation (plan-opponent-select-page-2026-10-06 §4.2): the pick
+			// already happened on the select page, so populate from the reserved entry
+			// without re-randomizing. An unresolvable pick (a cardTypeID that stopped
+			// resolving since the peek) is discarded and the normal chain takes over.
+			OpponentDeckEntry reserved = OpponentDeckCache.TakeReservedEntry(sessionNumber.value);
+			if (reserved != null)
+			{
+				if (TryFillFromCandidate(reserved))
+				{
+					OpponentDeckCache.StageEnemySource(OpponentDeckCache.SourceServer);
+					return;
+				}
+				OpponentDeckCache.DiscardCandidate(reserved.deckId);
+			}
+			// Idempotency guard (plan §4.2): a repeated same-session populate after the
+			// reservation was consumed (leg2's EnterCombatPhase pass) re-fills from Current
+			// instead of taking a fresh candidate — the picked opponent must never change.
+			else if (TryFillFromCurrentIfSameSession())
+			{
+				OpponentDeckCache.StageEnemySource(OpponentDeckCache.SourceServer);
+				return;
+			}
+
 			// No ghost is fighting until the server branch actually injects one.
 			OpponentDeckCache.SetCurrentOpponent(null);
 
@@ -434,48 +457,70 @@ namespace TestWriteRead
 			{
 				var candidate = OpponentDeckCache.TakeCandidate(sessionNumber.value);
 				if (candidate == null) return false;
+				if (TryFillFromCandidate(candidate)) return true;
 
-				var cardPrefabs = new List<GameObject>();
-				bool allKnown = candidate.cardTypeIDs != null && candidate.cardTypeIDs.Count > 0;
-				if (allKnown)
-				{
-					foreach (var typeID in candidate.cardTypeIDs)
-					{
-						var prefab = FindCardPrefabByTypeID(typeID);
-						if (prefab == null)
-						{
-							allKnown = false;
-							break;
-						}
-						cardPrefabs.Add(prefab);
-					}
-				}
-				if (!allKnown)
-				{
-					// Whole-deck discard: one unknown card means an unplayable ghost (plan §2.4).
-					OpponentDeckCache.DiscardCandidate(candidate.deckId);
-					continue;
-				}
-
-				// Populate enemy deck
-				enemyDeckToPopulate.deck.Clear();
-				enemyDeckToPopulate.deck.AddRange(cardPrefabs);
-
-				// Apply the ghost's saved hpMax (same rule as the JSON branch) and keep
-				// hp synced so the ghost always enters combat at full HP.
-				if (enemyStatusRef != null)
-				{
-					enemyStatusRef.hpMax = candidate.hpMax > 0 ? candidate.hpMax : 20;
-					enemyStatusRef.hp = enemyStatusRef.hpMax;
-				}
-
-				// Apply HP bonus for specific cardTypeIDs in the ghost deck
-				ApplyEnemyHpBonus(CalculateHpBonus(candidate.cardTypeIDs));
-
-				// Stash for the VS display and the match report (plan §2.5)
-				OpponentDeckCache.SetCurrentOpponent(candidate);
-				return true;
+				// Whole-deck discard: one unknown card means an unplayable ghost (plan §2.4).
+				OpponentDeckCache.DiscardCandidate(candidate.deckId);
 			}
+		}
+
+		/// <summary>
+		/// Populate from one resolved ghost entry: validates every cardTypeID (any unknown
+		/// one fails the whole deck, plan §2.4), fills deck + hpMax + HP bonus and stashes
+		/// Current. Shared by the take-loop, the select-page reservation branch and the
+		/// Current-refill guard (plan §4.2).
+		/// </summary>
+		private bool TryFillFromCandidate(OpponentDeckEntry candidate)
+		{
+			var cardPrefabs = new List<GameObject>();
+			bool allKnown = candidate != null && candidate.cardTypeIDs != null && candidate.cardTypeIDs.Count > 0;
+			if (allKnown)
+			{
+				foreach (var typeID in candidate.cardTypeIDs)
+				{
+					var prefab = FindCardPrefabByTypeID(typeID);
+					if (prefab == null)
+					{
+						allKnown = false;
+						break;
+					}
+					cardPrefabs.Add(prefab);
+				}
+			}
+			if (!allKnown) return false;
+
+			// Populate enemy deck
+			enemyDeckToPopulate.deck.Clear();
+			enemyDeckToPopulate.deck.AddRange(cardPrefabs);
+
+			// Apply the ghost's saved hpMax (same rule as the JSON branch) and keep
+			// hp synced so the ghost always enters combat at full HP.
+			if (enemyStatusRef != null)
+			{
+				enemyStatusRef.hpMax = candidate.hpMax > 0 ? candidate.hpMax : 20;
+				enemyStatusRef.hp = enemyStatusRef.hpMax;
+			}
+
+			// Apply HP bonus for specific cardTypeIDs in the ghost deck
+			ApplyEnemyHpBonus(CalculateHpBonus(candidate.cardTypeIDs));
+
+			// Stash for the VS display and the match report (plan §2.5)
+			OpponentDeckCache.SetCurrentOpponent(candidate);
+			return true;
+		}
+
+		/// <summary>
+		/// Idempotency guard (plan §4.2): refill from Current when it belongs to the session
+		/// being populated. Today's one-populate-per-combat flow never hits this (Current's
+		/// session differs by then); it exists for the select-page flow where populate runs
+		/// once at pick (reservation) and again at EnterCombatPhase.
+		/// </summary>
+		private bool TryFillFromCurrentIfSameSession()
+		{
+			var current = OpponentDeckCache.Current;
+			if (current == null) return false;
+			OpponentDeckEntry entry = OpponentDeckCache.FindEntry(current.deckId);
+			return entry != null && entry.sessionNum == sessionNumber.value && TryFillFromCandidate(entry);
 		}
 
 		/// <summary>

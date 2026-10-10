@@ -347,4 +347,141 @@ public class OpponentDeckCacheTests
 		// usedDeckIds also round-trip: the taken deck stays used after a reload
 		Assert.IsNull(OpponentDeckCache.TakeCandidate(1));
 	}
+
+	// ------------------------------------------------------------------ select-page flow (plan-opponent-select-page-2026-10-06 §4.1)
+
+	[Test]
+	public void PeekCandidates_ReturnsUpToN_WithoutMarkingUsed()
+	{
+		for (int k = 1; k <= 3; k++) OpponentDeckCache.InjectForTests(MakeDeck(k, 3));
+
+		List<OpponentDeckEntry> peeked = OpponentDeckCache.PeekCandidates(3, 2);
+		Assert.AreEqual(2, peeked.Count);
+		CollectionAssert.AllItemsAreUnique(peeked);
+
+		// Peek must not mark: everything is still takeable afterwards.
+		Assert.IsNotNull(OpponentDeckCache.TakeCandidate(3));
+		Assert.IsNotNull(OpponentDeckCache.TakeCandidate(3));
+		Assert.IsNotNull(OpponentDeckCache.TakeCandidate(3));
+		Assert.IsNull(OpponentDeckCache.TakeCandidate(3));
+	}
+
+	[Test]
+	public void PeekCandidates_SessionAndOwnershipFilters_FollowTakeCandidate()
+	{
+		Assume.That(PlayerIdentity.HasIdentity, "ownership filter tests need a local identity");
+		string selfName = PlayerIdentity.Username;
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 2));  // wrong session
+		OpponentDeckCache.InjectForTests(MakeDeck(2, 3, "someoneElse"));
+		OpponentDeckCache.InjectForTests(MakeDeck(3, 3, selfName));
+		OpponentDeckCache.OnlyOwnDecks = true;
+
+		List<OpponentDeckEntry> peeked = OpponentDeckCache.PeekCandidates(3, 5);
+		Assert.AreEqual(1, peeked.Count);
+		Assert.AreEqual(3, peeked[0].deckId);
+	}
+
+	[Test]
+	public void PeekCandidates_RandomizesAcrossRounds()
+	{
+		// Same手法 as TakeCandidate_RandomizesAmongSameSessionCandidates: a fixed seed and
+		// 40 fresh rounds — the first peeked slot must not always be the insertion-first
+		// deck ((1/4)^40 odds against all-first).
+		UnityEngine.Random.InitState(20261010);
+		bool hitNonFirst = false;
+		for (int round = 0; round < 40 && !hitNonFirst; round++)
+		{
+			ResetCacheDisk();
+			for (int k = 1; k <= 4; k++) OpponentDeckCache.InjectForTests(MakeDeck(round * 10 + k, 3));
+			if (OpponentDeckCache.PeekCandidates(3, 1)[0].deckId != round * 10 + 1) hitNonFirst = true;
+		}
+		Assert.IsTrue(hitNonFirst);
+	}
+
+	[Test]
+	public void ConsumeCandidate_MarksUsedSetsCurrentAndReserves()
+	{
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.InjectForTests(MakeDeck(2, 3));
+
+		OpponentDeckCache.ConsumeCandidate(3, 2);
+		Assert.AreEqual(2, OpponentDeckCache.Current.deckId);
+		Assert.IsTrue(OpponentDeckCache.HasReservedEntry);
+
+		// The pick is marked used: the take pool drains to just deck 1 (D3: the unpicked
+		// candidate stays reachable).
+		List<int> taken = new List<int>();
+		for (int i = 0; i < 3; i++)
+		{
+			OpponentDeckEntry entry = OpponentDeckCache.TakeCandidate(3);
+			if (entry != null) taken.Add(entry.deckId);
+		}
+		CollectionAssert.AreEquivalent(new[] { 1 }, taken);
+	}
+
+	[Test]
+	public void ConsumeCandidate_SameDeckId_IsIdempotent()
+	{
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.ConsumeCandidate(3, 1);
+		OpponentDeckCache.ConsumeCandidate(3, 1);  // double tap on the same panel
+
+		// The reservation and Current survive the second consume intact, and the only
+		// deck in the pool stays consumed exactly once (take drains to empty, not to a
+		// resurrected candidate).
+		Assert.IsTrue(OpponentDeckCache.HasReservedEntry);
+		Assert.AreEqual(1, OpponentDeckCache.Current.deckId);
+		Assert.AreEqual(1, OpponentDeckCache.TakeReservedEntry(3).deckId);
+		Assert.IsNull(OpponentDeckCache.TakeCandidate(3));
+	}
+
+	[Test]
+	public void TakeReservedEntry_HandsOutOnceAndClears()
+	{
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.ConsumeCandidate(3, 1);
+
+		OpponentDeckEntry reserved = OpponentDeckCache.TakeReservedEntry(3);
+		Assert.AreEqual(1, reserved.deckId);
+		Assert.AreEqual("ghost1", reserved.username);
+		Assert.IsFalse(OpponentDeckCache.HasReservedEntry);
+
+		// A second handout finds nothing — populate must fall through, not re-fill.
+		Assert.IsNull(OpponentDeckCache.TakeReservedEntry(3));
+	}
+
+	[Test]
+	public void TakeReservedEntry_SessionMismatch_ClearsSilently()
+	{
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.ConsumeCandidate(3, 1);
+
+		Assert.IsNull(OpponentDeckCache.TakeReservedEntry(4));
+		Assert.IsFalse(OpponentDeckCache.HasReservedEntry);
+	}
+
+	[Test]
+	public void ConsumeCandidate_UnknownOrForeignSessionDeck_IsIgnored()
+	{
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.ConsumeCandidate(4, 1);  // session mismatch
+		OpponentDeckCache.ConsumeCandidate(3, 99);  // unknown deckId
+
+		Assert.IsFalse(OpponentDeckCache.HasReservedEntry);
+		Assert.IsNull(OpponentDeckCache.Current);
+		Assert.IsNotNull(OpponentDeckCache.TakeCandidate(3));  // deck 1 untouched
+	}
+
+	[Test]
+	public void OnRunStarted_ClearsReservation()
+	{
+		config.enabled = false;  // keep OnRunStarted's prefetch offline
+		OpponentDeckCache.InjectForTests(MakeDeck(1, 3));
+		OpponentDeckCache.ConsumeCandidate(3, 1);
+		Assert.IsTrue(OpponentDeckCache.HasReservedEntry);
+
+		OpponentDeckCache.OnRunStarted();
+
+		Assert.IsFalse(OpponentDeckCache.HasReservedEntry);
+	}
 }
