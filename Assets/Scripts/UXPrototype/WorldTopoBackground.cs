@@ -65,9 +65,12 @@ public class WorldTopoBackground : MonoBehaviour
 		}
 		float pageH = PhaseFlightPlanner.PageHeightWorld(cam.orthographicSize);
 		float rigY = cam.transform.parent != null ? cam.transform.parent.position.y : cam.transform.position.y;
-		BuildSheet(cam, pageH, rigY);
+		// Selection page (plan-opponent-select-page-2026-10-06 4.4): the sheet grows one page
+		// and the red/gray split climbs to the combat page so the middle page reads all-player.
+		float pages = SelectionPages();
+		BuildSheet(cam, pageH, rigY, pages);
 		if (_material == null) return;
-		BindMaterial(pageH, rigY);
+		BindMaterial(pageH, rigY, pages);
 		BindRedColor();
 	}
 
@@ -80,7 +83,13 @@ public class WorldTopoBackground : MonoBehaviour
 	// card/chrome pixel depth-testing over the sheet. (The first draft's deckZ - 2f landed
 	// BETWEEN the reveal zone and the deck — in front of every card — and the alpha-1 sheet
 	// covered combat content. F1, Review Focus 1.)
-	private void BuildSheet(Camera cam, float pageH, float rigY)
+	private float SelectionPages()
+	{
+		var cfg = PhaseTransitionConfigSO.Me;
+		return cfg != null && cfg.selectionPageEnabled ? 3f : 2f;
+	}
+
+	private void BuildSheet(Camera cam, float pageH, float rigY, float pages)
 	{
 		var cfg = PhaseTransitionConfigSO.Me;
 		float padPx = cfg != null ? cfg.pagePadDemoPx : 200f;
@@ -93,8 +102,8 @@ public class WorldTopoBackground : MonoBehaviour
 		float deckZ = 0f;
 		var ux = CombatUXManager.me;
 		if (ux != null && ux.physicalCardDeckPos != null) deckZ = ux.physicalCardDeckPos.position.z;
-		t.position = new Vector3(cam.transform.position.x, rigY + pageH * 0.5f, deckZ + 2f);
-		t.localScale = new Vector3(pageH * Mathf.Max(2.5f, cam.aspect + 1f), 2f * pageH + 2f * pad, 1f);
+		t.position = new Vector3(cam.transform.position.x, rigY + (pages - 1f) * pageH * 0.5f, deckZ + 2f);
+		t.localScale = new Vector3(pageH * Mathf.Max(2.5f, cam.aspect + 1f), pages * pageH + 2f * pad, 1f);
 		// Build inclusion (load-bearing, F2): the shader is referenced ONLY by this
 		// Resources-loaded material — a bare Shader.Find target would be stripped from player
 		// builds and the sheet would silently vanish outside the editor. Instantiate before
@@ -116,9 +125,9 @@ public class WorldTopoBackground : MonoBehaviour
 	// normalizes the screen-basis noise scale by the page height so the look matches the
 	// retired screen-fixed backdrop at the default ortho (Levels/NoiseScale/Speed/Intensity
 	// defaults mirror Mat_BackGroundMotion3D's serialized values — Review Focus 3, F5).
-	private void BindMaterial(float pageH, float rigY)
+	private void BindMaterial(float pageH, float rigY, float pages)
 	{
-		_material.SetFloat("_SplitWorldY", rigY + pageH);
+		_material.SetFloat("_SplitWorldY", rigY + (pages - 1f) * pageH);
 		_material.SetFloat("_WorldScale", _material.GetFloat("_NoiseScale") / pageH);
 	}
 

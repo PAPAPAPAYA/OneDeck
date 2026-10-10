@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using DG.Tweening;
+using TestWriteRead;
 using UnityEngine;
 
 /// <summary>
@@ -34,8 +35,8 @@ public class PhaseTransitionDriver : MonoBehaviour
 	// ScheduleCombatEntranceFlights (shared stagger measured from the scheduling moment).
 	private float _entranceFlightTotal;
 
-	/// <summary>Travel direction while a transition coroutine runs (the HUD presenters run their world flights on its edges, fixes 2/3/7).</summary>
-	public enum TransitionTravel { None, ToCombat, ToShop }
+	/// <summary>Travel direction while a transition coroutine runs (the HUD presenters run their world flights on its edges, fixes 2/3/7). ToSelection = the shop→select leg (landing page one screen up; combat flip deferred to leg2).</summary>
+	public enum TransitionTravel { None, ToCombat, ToShop, ToSelection }
 
 	/// <summary>True while any transition coroutine runs. Gates shop scroll, phase-change snaps, chrome show.</summary>
 	public static bool IsTransitioning => Me != null && Me._transitioning;
@@ -48,6 +49,14 @@ public class PhaseTransitionDriver : MonoBehaviour
 	/// <summary>World Y of the two page origins (captured at Awake; 0 before init). Home basis for the HUD world flights.</summary>
 	public static float ShopPageY => Me != null ? Me._shopPageY : 0f;
 	public static float CombatPageY => Me != null ? Me._combatPageY : 0f;
+	/// <summary>Middle page (shop + 1) — the selection page plane; S2's page builder mounts here.</summary>
+	public static float SelectionPageY => Me != null ? Me._selectionPageY : 0f;
+	/// <summary>
+	/// The page the CURRENT travel lands on — HUD flight homes key off this (selection leg1
+	/// lands one page BELOW combat). Equals CombatPageY outside the select flow, so the
+	/// legacy presenters read it unchanged.
+	/// </summary>
+	public static float LandingPageY => Me != null ? Me._landingPageY : 0f;
 
 	private Camera _cam;
 	private Transform _rig;
@@ -55,9 +64,22 @@ public class PhaseTransitionDriver : MonoBehaviour
 	private float _pageH;
 	private float _shopPageY;
 	private float _combatPageY;
+	private float _selectionPageY;
+	private float _landingPageY;
+	private bool _selectionPageMode;
 	private float _lastShopY;
 	private bool _offsetApplied;
 	private readonly List<Tween> _tweens = new List<Tween>();
+
+	/// <summary>Live select-page master switch (the world offset / combat page height follow it).</summary>
+	private static bool SelectionModeActive
+	{
+		get
+		{
+			var cfg = PhaseTransitionConfigSO.Me;
+			return cfg != null && cfg.selectionPageEnabled;
+		}
+	}
 
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
 	private static void AutoCreate()
@@ -118,7 +140,10 @@ public class PhaseTransitionDriver : MonoBehaviour
 		_rig = _cam.transform.parent != null ? _cam.transform.parent : _cam.transform;
 		_pageH = PhaseFlightPlanner.PageHeightWorld(_cam.orthographicSize);
 		_shopPageY = _rig.position.y;
-		_combatPageY = _shopPageY + _pageH;
+		_selectionPageMode = SelectionModeActive;
+		_selectionPageY = _shopPageY + _pageH;
+		_combatPageY = _shopPageY + (_selectionPageMode ? 2f : 1f) * _pageH;
+		_landingPageY = _combatPageY;
 		_lastShopY = _shopPageY;
 		_phaseManager = FindFirstObjectByType<PhaseManager>();
 	}
@@ -132,7 +157,8 @@ public class PhaseTransitionDriver : MonoBehaviour
 	private void Update()
 	{
 		bool available = Available;
-		if (available != _offsetApplied)
+		bool selectMode = SelectionModeActive;
+		if (available != _offsetApplied || (available && selectMode != _selectionPageMode))
 		{
 			ApplyWorldOffset(available);
 		}
@@ -154,21 +180,47 @@ public class PhaseTransitionDriver : MonoBehaviour
 		}
 	}
 
-	/// <summary>Shifts the combat world markers by +/- pageH. Symmetric and flag-idempotent.</summary>
+	/// <summary>
+	/// Shifts the combat world markers so the combat page (one screen above the shop, TWO
+	/// with the select page enabled) receives the spawned combat content. Page-count changes
+	/// (selectionPageEnabled flip) remove the old shift before applying the new one.
+	/// </summary>
 	private void ApplyWorldOffset(bool on)
 	{
 		var ux = CombatUXManager.me;
 		if (ux == null) return;
-		float delta = on ? _pageH : -_pageH;
-		OffsetMarker(ux.physicalCardDeckPos, delta);
-		OffsetMarker(ux.physicalCardRevealPos, delta);
-		OffsetMarker(ux.showPos, delta);
-		OffsetMarker(ux.gravePosition, delta);
-		OffsetMarker(ux.physicalCardNewTempCardPos, delta);
-		OffsetMarker(ux.statusEffectConsumePos, delta);
-		OffsetMarker(ux.deckFocusTargetPos, delta);
+		if (_offsetApplied)
+		{
+			ShiftWorldMarkers(-(_selectionPageMode ? 2f : 1f) * _pageH);
+		}
+		if (on)
+		{
+			_selectionPageMode = SelectionModeActive;
+			_combatPageY = _shopPageY + (_selectionPageMode ? 2f : 1f) * _pageH;
+			_landingPageY = _combatPageY;
+			ShiftWorldMarkers((_selectionPageMode ? 2f : 1f) * _pageH);
+		}
 		_offsetApplied = on;
 	}
+
+	private void ShiftWorldMarkers(float delta)
+	{
+		OffsetMarker(ux_physicalCardDeckPos, delta);
+		OffsetMarker(ux_physicalCardRevealPos, delta);
+		OffsetMarker(ux_showPos, delta);
+		OffsetMarker(ux_gravePosition, delta);
+		OffsetMarker(ux_physicalCardNewTempCardPos, delta);
+		OffsetMarker(ux_statusEffectConsumePos, delta);
+		OffsetMarker(ux_deckFocusTargetPos, delta);
+	}
+
+	private Transform ux_physicalCardDeckPos => CombatUXManager.me != null ? CombatUXManager.me.physicalCardDeckPos : null;
+	private Transform ux_physicalCardRevealPos => CombatUXManager.me != null ? CombatUXManager.me.physicalCardRevealPos : null;
+	private Transform ux_showPos => CombatUXManager.me != null ? CombatUXManager.me.showPos : null;
+	private Transform ux_gravePosition => CombatUXManager.me != null ? CombatUXManager.me.gravePosition : null;
+	private Transform ux_physicalCardNewTempCardPos => CombatUXManager.me != null ? CombatUXManager.me.physicalCardNewTempCardPos : null;
+	private Transform ux_statusEffectConsumePos => CombatUXManager.me != null ? CombatUXManager.me.statusEffectConsumePos : null;
+	private Transform ux_deckFocusTargetPos => CombatUXManager.me != null ? CombatUXManager.me.deckFocusTargetPos : null;
 
 	private static void OffsetMarker(Transform marker, float deltaY)
 	{
@@ -199,11 +251,323 @@ public class PhaseTransitionDriver : MonoBehaviour
 		return true;
 	}
 
+	/// <summary>
+	/// Shop -> Selection entry point (离开商店 with the select page on, plan
+	/// plan-opponent-select-page-2026-10-06 §4.4): leg1 flies the camera up ONE page; the
+	/// candidate panels are fixed world content at the selection plane, revealed by the
+	/// travel. The caller passes the SAME peeked list its bypass decision used
+	/// (OpponentSelectPage.TryPeekForSession — PeekCandidates randomizes per call).
+	/// The combat phase flip is DEFERRED to leg2 (the enemy deck is injected at the pick).
+	/// </summary>
+	public static bool RequestShopToSelection(PhaseManager pm, List<OpponentDeckEntry> candidates)
+	{
+		if (!Available || pm == null || IsTransitioning) return false;
+		if (candidates == null || candidates.Count == 0) return false;
+		EnsureCreated();
+		if (Me._rig == null) return false;
+		Me.StartCoroutine(Me.ShopToSelectionRoutine(pm, candidates));
+		return true;
+	}
+
+	/// <summary>
+	/// Leg1 (shop → selection): phase leaves Shop (shop content clears a page below), the
+	/// page builds at the selection plane, the camera travels, the player plate hands off
+	/// to its combat home one page early (LandingPageY = selection) and the options button
+	/// glides to its bottom-right combat home. Landing state: IsTransitioning stays TRUE
+	/// through the pick dwell (shop scroll + phase snaps stay gated) while ShopInputGate
+	/// reopens — the select PhysButtons route through it and the abandoned shop page is
+	/// off-viewport and harmless. This coroutine ends at the dwell; the pick re-launches
+	/// leg2 via <see cref="SelectionToCombatRoutine"/>.
+	/// </summary>
+	private IEnumerator ShopToSelectionRoutine(PhaseManager pm, List<OpponentDeckEntry> candidates)
+	{
+		var cfg = PhaseTransitionConfigSO.Me;
+		_transitioning = true;
+		_travel = TransitionTravel.ToSelection;
+		_landingPageY = _selectionPageY;
+		if (ShopUXManager.Instance != null) ShopUXManager.Instance.RestoreAllEnlargedCards();
+		_suppressCombatCanvasUI = true;
+		_lastShopY = _rig.position.y;
+		ShopInputGate.Block();
+
+		// Shop content clears a page below; combat content is NOT assembled yet.
+		pm.ExitingShopPhase();
+
+		// The page mounts at the selection plane (fixed world content, revealed by the camera).
+		OpponentSelectPage.Bootstrap(candidates, _selectionPageY);
+
+		float dur = cfg != null ? Mathf.Max(0.05f, cfg.transDur) : 0.8f;
+		Track(ApplyCfgEase(cfg, _rig.DOMoveY(_selectionPageY, dur).SetUpdate(UpdateType.Normal, true)));
+		yield return new WaitForSecondsRealtime(dur + 0.05f);
+
+		// Dwell: the page takes input back (select PhysButtons), the transition latch stays on.
+		ShopInputGate.Unblock();
+		OpponentSelectPage page = OpponentSelectPage.Instance;
+		if (page != null)
+		{
+			page.onPicked = index => Me.StartCoroutine(Me.SelectionToCombatRoutine(pm, page, index));
+		}
+	}
+
+	/// <summary>
+	/// Leg2 (selection → combat), launched by the pick: ConsumeCandidate + populate inject
+	/// the picked deck FIRST (plan §4.4 order — the entrance needs the content), then the
+	/// phase flip assembles combinedDeckZone and the entrance choreography runs with the
+	/// three origin groups (plan §4.4, 2026-10-10 ruling): enemy key cards from the picked
+	/// panel's slots (spawn-at-takeoff on their display faces), remaining enemy cards +
+	/// Start Card from off-screen ABOVE, player cards from off-screen BELOW.
+	/// </summary>
+	private IEnumerator SelectionToCombatRoutine(PhaseManager pm, OpponentSelectPage page, int pickedIndex)
+	{
+		var cfg = PhaseTransitionConfigSO.Me;
+		_travel = TransitionTravel.ToCombat;
+		_landingPageY = _combatPageY;
+
+		// Pick → inject (reservation branch fills the deck; the guard keeps repeats honest).
+		int session = page.Candidates[pickedIndex].sessionNum;
+		OpponentDeckCache.ConsumeCandidate(session, page.Candidates[pickedIndex].deckId);
+		if (DeckSaver.Me != null) DeckSaver.Me.PopulateEnemyDeckBySessionNumber();
+
+		// Panels out: only the picked plate + key faces stay visible (they fly).
+		page.PrepareLeg2Flights(pickedIndex);
+
+		_suppressCombatCanvasUI = true;
+		ShopInputGate.Block();
+		pm.EnteringCombatPhase();
+		// EnterCombat force-clears the input block, so block AFTER the phase calls (legacy note).
+		if (CombatManager.Me != null) CombatManager.Me.BlockInput(this);
+
+		float dur = cfg != null ? Mathf.Max(0.05f, cfg.transDur) : 0.8f;
+		float stagger = cfg != null ? cfg.cardStagger : 0.07f;
+
+		// The picked enemy plate translates to the combat HUD home in parallel with the
+		// camera (player-plate treatment); O-L1: the uniform scale ratio lands it at the
+		// HUD's rendered size — Play-tune point.
+		Transform plate = page.PickedPlate;
+		HPNumericDisplayHorizontal enemyDisplay = FindEnemyHpDisplay();
+		if (plate != null && enemyDisplay != null && enemyDisplay.displayRoot != null)
+		{
+			Vector3 target = enemyDisplay.displayRoot.position
+				+ new Vector3(0f, _combatPageY - _rig.position.y, 0f);
+			float ratio = enemyDisplay.displayRoot.lossyScale.x / Mathf.Max(0.0001f, plate.lossyScale.x);
+			Track(ApplyCfgEase(cfg, plate.DOMove(target, dur).SetUpdate(UpdateType.Normal, true)));
+			Track(ApplyCfgEase(cfg, plate.DOScale(plate.localScale * ratio, dur).SetUpdate(UpdateType.Normal, true)));
+		}
+
+		_entranceFlightTotal = 0f;
+		var flightDummies = new List<GameObject>();
+		yield return ScheduleSelectionCombatEntranceFlights(page, dur, stagger, cfg, flightDummies);
+		yield return new WaitForSecondsRealtime(Mathf.Max(0.05f, _entranceFlightTotal));
+
+		// Land: release combat progression (same seam as the legacy routine).
+		if (CombatManager.Me != null) CombatManager.Me.UnblockInput(this);
+		float guard = 0f;
+		while (guard < 1.5f)
+		{
+			var ux = CombatUXManager.me;
+			var cm = CombatManager.Me;
+			if (ux != null && cm != null && cm.combinedDeckZone != null
+				&& ux.physicalCardsInDeck.Count >= cm.combinedDeckZone.Count && cm.combinedDeckZone.Count > 0)
+			{
+				break;
+			}
+			guard += Time.unscaledDeltaTime;
+			yield return null;
+		}
+		foreach (var dummy in flightDummies)
+		{
+			if (dummy != null) Destroy(dummy);
+		}
+
+		_suppressCombatCanvasUI = false;
+		OpponentSelectPage.TeardownStatic();
+		_travel = TransitionTravel.None;
+		_transitioning = false;
+		ShopInputGate.Unblock();
+	}
+
+	/// <summary>The enemy-side combat plate (leg2 panel-plate flight target).</summary>
+	private static HPNumericDisplayHorizontal FindEnemyHpDisplay()
+	{
+		foreach (var display in UnityEngine.Object.FindObjectsByType<HPNumericDisplayHorizontal>(UnityEngine.FindObjectsInactive.Include, UnityEngine.FindObjectsSortMode.None))
+		{
+			if (display != null && display.side == HPNumericDisplayHorizontal.Side.Enemy) return display;
+		}
+		return null;
+	}
+
+	/// <summary>
+	/// Selection leg2 entrance: the legacy choreography's three-origin variant (plan §4.4).
+	/// No shop dummies exist (the select flow never borrows them) — EVERY flying card is a
+	/// spawn-at-takeoff clone: player section from BELOW the viewport, unclaimed enemy
+	/// cards + Start Card from ABOVE (legacy behavior), and the picked panel's key-card
+	/// faces from their panel poses (the display face hides the tick its real-instance
+	/// clone spawns there). Slot alignment matches the legacy guarantee: zone index IS the
+	/// layout slot index.
+	/// </summary>
+	private IEnumerator ScheduleSelectionCombatEntranceFlights(OpponentSelectPage page, float dur, float stagger, PhaseTransitionConfigSO cfg, List<GameObject> flightDummies)
+	{
+		float guard = 0f;
+		while (guard < 0.5f)
+		{
+			var cm = CombatManager.Me;
+			if (cm != null && cm.combinedDeckZone != null && cm.combinedDeckZone.Count > 0) break;
+			guard += Time.unscaledDeltaTime;
+			yield return null;
+		}
+		var combat = CombatManager.Me;
+		var ux = CombatUXManager.me;
+		if (combat == null || combat.combinedDeckZone == null || combat.combinedDeckZone.Count == 0 || ux == null)
+		{
+			// Degenerate: nothing to target — the real cards land the legacy way; the panel
+			// plate flight already launched independently and the page fades at teardown.
+			TestManager.Log("[PhaseTransition] selection leg2: zone not ready within guard — no clone choreography");
+			_entranceFlightTotal = 0f;
+			yield break;
+		}
+
+		int deckCount = combat.combinedDeckZone.Count;
+		var geo = BuildFlightGeometry(cfg);
+		float pageH = PhaseFlightPlanner.PageHeightWorld(Camera.main != null ? Camera.main.orthographicSize : 6f);
+		float enemySlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.enemyCardSlideDemoPx : 400f, pageH);
+		float startSlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.startCardSlideDemoPx : 400f, pageH);
+		float playerSlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.playerCardSlideDemoPx : 400f, pageH);
+
+		int playerCount = ResolvePlayerSectionCount();
+		var claimed = new HashSet<int>();
+		var plans = new List<ClonePlan>();
+
+		// Player section: below-viewport spawns (deck order → zone indices [0, playerCount)).
+		for (int i = 0; i < playerCount && i < deckCount; i++)
+		{
+			var card = combat.combinedDeckZone[i];
+			if (card == null) continue;
+			claimed.Add(i);
+			plans.Add(new ClonePlan
+			{
+				Slot = i,
+				Card = card,
+				Prefab = SelectPhysicalPrefab(ux, card.GetComponent<CardScript>()),
+				SlideY = -playerSlide
+			});
+		}
+
+		// Key cards: each display face claims the first unclaimed enemy-section slot with
+		// its cardTypeID and becomes that slot's clone origin.
+		if (page.PickedFaces != null)
+		{
+			foreach (GameObject face in page.PickedFaces)
+			{
+				if (face == null) continue;
+				var facePhys = face.GetComponent<CardPhysObjScript>();
+				var faceScript = facePhys != null ? facePhys.cardImRepresenting : null;
+				int slot = FindUnclaimedSlot(combat.combinedDeckZone, playerCount, faceScript != null ? faceScript.cardTypeID : null, claimed);
+				if (slot < 0) continue;
+				claimed.Add(slot);
+				plans.Add(new ClonePlan
+				{
+					Slot = slot,
+					Card = combat.combinedDeckZone[slot],
+					Prefab = SelectPhysicalPrefab(ux, combat.combinedDeckZone[slot] != null ? combat.combinedDeckZone[slot].GetComponent<CardScript>() : null),
+					SlideY = 0f,
+					SpawnOverride = face.transform.position,
+					FaceToHide = face
+				});
+			}
+		}
+
+		// Unclaimed tail (remaining enemy cards + Start Card): above-viewport spawns (legacy).
+		for (int i = playerCount; i < deckCount; i++)
+		{
+			if (claimed.Contains(i)) continue;
+			var card = combat.combinedDeckZone[i];
+			if (card == null) continue;
+			var cardScript = card.GetComponent<CardScript>();
+			bool isStart = cardScript != null && cardScript.isStartCard;
+			float slideY = isStart ? startSlide : enemySlide;
+			plans.Add(new ClonePlan
+			{
+				Slot = i,
+				Card = card,
+				Prefab = SelectPhysicalPrefab(ux, cardScript),
+				SlideY = slideY
+			});
+		}
+
+		foreach (var plan in plans)
+		{
+			var captured = plan;
+			Track(DOVirtual.DelayedCall(PhaseFlightPlanner.FlightDelay(plan.Slot, stagger), () =>
+			{
+				if (captured.FaceToHide != null) captured.FaceToHide.SetActive(false);
+				SpawnEntranceClone(captured.Card, captured.Slot, captured.Prefab, captured.SlideY,
+					deckCount, flightDummies, dur, cfg, geo, ux, captured.SpawnOverride);
+			}, true));
+		}
+
+		_entranceFlightTotal = PhaseFlightPlanner.TotalDuration(dur, stagger, Mathf.Max(deckCount, 1)) + 0.05f;
+	}
+
+	private struct ClonePlan
+	{
+		public int Slot;
+		public GameObject Card;
+		public GameObject Prefab;
+		public float SlideY;
+		public Vector3? SpawnOverride;
+		public GameObject FaceToHide;
+	}
+
+	/// <summary>Prefab selection shared with the legacy entrance loop (start card → minion → default).</summary>
+	private static GameObject SelectPhysicalPrefab(CombatUXManager ux, CardScript cardScript)
+	{
+		GameObject prefab = ux.physicalCardPrefab;
+		if (cardScript != null)
+		{
+			if (cardScript.isStartCard)
+			{
+				if (ux.startCardPhysicalPrefab != null) prefab = ux.startCardPhysicalPrefab;
+			}
+			else if (cardScript.isMinion && ux.minionPhysicalPrefab != null)
+			{
+				prefab = ux.minionPhysicalPrefab;
+			}
+		}
+		return prefab;
+	}
+
+	/// <summary>First enemy-section index whose cardTypeID matches and is not claimed yet (−1 when none).</summary>
+	private static int FindUnclaimedSlot(List<GameObject> zone, int playerCount, string typeID, HashSet<int> claimed)
+	{
+		if (string.IsNullOrEmpty(typeID)) return -1;
+		for (int i = playerCount; i < zone.Count; i++)
+		{
+			if (claimed.Contains(i) || zone[i] == null) continue;
+			var cardScript = zone[i].GetComponent<CardScript>();
+			if (cardScript != null && cardScript.cardTypeID == typeID) return i;
+		}
+		return -1;
+	}
+
+	/// <summary>Player-section size = the non-null entries of the player deck (zone order: player first).</summary>
+	private static int ResolvePlayerSectionCount()
+	{
+		var saver = DeckSaver.Me;
+		if (saver == null || saver.playerDeck == null || saver.playerDeck.deck == null) return 0;
+		int count = 0;
+		foreach (var prefab in saver.playerDeck.deck)
+		{
+			if (prefab != null) count++;
+		}
+		return count;
+	}
+
 	private IEnumerator ShopToCombatRoutine(PhaseManager pm)
 	{
 		var cfg = PhaseTransitionConfigSO.Me;
 		_transitioning = true;
 		_travel = TransitionTravel.ToCombat;
+		_landingPageY = _combatPageY;
 		_ownsDeckCards = true;
 		// F2 (plan-phase-transition-audit-fixes-2026-10-02): dismiss any enlarge preview BEFORE
 		// the phase calls — RestoreCard retargets the card and releases its modal ShopInputGate
@@ -608,11 +972,11 @@ public class PhaseTransitionDriver : MonoBehaviour
 	/// free per frame), applies the face rules (enemy face-down already, Start Card keeps its
 	/// face) and flies onto the shared schedule with zero extra delay.
 	/// </summary>
-	private void SpawnEntranceClone(GameObject card, int slotIndex, GameObject prefab, float slideY, int deckCount, List<GameObject> dummies, float dur, PhaseTransitionConfigSO cfg, FlightGeometry geo, CombatUXManager ux)
+	private void SpawnEntranceClone(GameObject card, int slotIndex, GameObject prefab, float slideY, int deckCount, List<GameObject> dummies, float dur, PhaseTransitionConfigSO cfg, FlightGeometry geo, CombatUXManager ux, Vector3? spawnPosOverride = null)
 	{
 		Vector3 target = ux.GetLayoutSlotBasePosition(slotIndex, deckCount);
 		Vector3 finalScale = ux.GetDeckScaleAtIndex(slotIndex, deckCount);
-		Vector3 spawnPos = target + new Vector3(0f, slideY, 0f);
+		Vector3 spawnPos = spawnPosOverride ?? target + new Vector3(0f, slideY, 0f);
 		// Spawn-moment probe (see the entrance diagnostics note in ScheduleCombatEntranceFlights).
 		float camY = Camera.main != null ? Camera.main.transform.position.y : 0f;
 		float ortho = Camera.main != null ? Camera.main.orthographicSize : 0f;

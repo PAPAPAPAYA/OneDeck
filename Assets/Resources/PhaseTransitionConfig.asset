@@ -23,3 +23,8 @@ MonoBehaviour:
   enemyCardSlideDemoPx: 1200
   startCardSlideDemoPx: 1200
   pagePadDemoPx: 200
+  playerCardSlideDemoPx: 400
+  selectionPageEnabled: 1
+  selectionCandidateCount: 2
+  bountyPlaceholder: 0
+  opponentSelectPanelPrefab: {fileID: 4358460461262372737, guid: 539a6530eedc7ed44b81c25654146027, type: 3}

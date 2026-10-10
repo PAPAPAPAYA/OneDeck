@@ -141,6 +141,15 @@ public class PhaseManager : MonoBehaviour
 			// autoSpace — during a Result->Shop travel the phase already reads Shop, and an
 			// unguarded auto-frame ran the legacy hard cut and double-entered combat mid-flight.
 			if (PhaseTransitionDriver.IsTransitioning) return;
+			// Select-page branch (plan-opponent-select-page-2026-10-06 4.4/4.5): mirrors the
+			// ShopHudBinder button path for the legacy trigger; 0 candidates falls through.
+			int selectSession = sessionNum != null ? sessionNum.value : 0;
+			System.Collections.Generic.List<OpponentDeckEntry> selectCandidates;
+			if (OpponentSelectPage.TryPeekForSession(selectSession, out selectCandidates)
+				&& PhaseTransitionDriver.RequestShopToSelection(this, selectCandidates))
+			{
+				return;
+			}
 			if (PhaseTransitionDriver.RequestShopToCombat(this)) return;
 			ExitingShopPhase();
 			EnteringCombatPhase();

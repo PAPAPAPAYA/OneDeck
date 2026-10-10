@@ -255,10 +255,13 @@ public class CombatHPBarPresenter : MonoBehaviour
 	{
 		switch (travel)
 		{
+			// LandingPageY = the page the current travel lands on (selection leg1 lands one
+			// page below combat - the bar shows its shop appearance there, plan 4.4).
+			case PhaseTransitionDriver.TransitionTravel.ToSelection:
 			case PhaseTransitionDriver.TransitionTravel.ToCombat:
 			case PhaseTransitionDriver.TransitionTravel.ToShop:
 				if (_pin == null) _pin = new HudWorldFlight(barRoot, canvas);
-				_pin.Pin(PhaseFlightPlanner.HudHomeAtPage(barRoot.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY));
+				_pin.Pin(PhaseFlightPlanner.HudHomeAtPage(barRoot.position, PhaseTransitionDriver.LandingPageY, CanvasPlaneY));
 				break;
 			default:
 				if (_pin != null) _pin.Kill();

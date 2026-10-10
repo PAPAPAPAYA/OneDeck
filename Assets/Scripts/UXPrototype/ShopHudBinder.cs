@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DefaultNamespace.Managers;
 using UnityEngine;
 
@@ -120,6 +121,15 @@ public class ShopHudBinder : MonoBehaviour
 				// PhysButton is ShopInputGate-blocked during a travel today; never fall through
 				// to the legacy hard cut if the driver is busy.
 				if (PhaseTransitionDriver.IsTransitioning) return;
+				// Select-page branch (plan-opponent-select-page-2026-10-06 4.4/4.5): the peek
+				// decides - 0 candidates (or any bypass row) falls through to the combat path.
+				int selectSession = ShopManager.me != null && ShopManager.me.sessionNum != null ? ShopManager.me.sessionNum.value : 0;
+				List<OpponentDeckEntry> selectCandidates;
+				if (OpponentSelectPage.TryPeekForSession(selectSession, out selectCandidates)
+					&& PhaseTransitionDriver.RequestShopToSelection(_phaseManager, selectCandidates))
+				{
+					return;
+				}
 				if (PhaseTransitionDriver.RequestShopToCombat(_phaseManager)) return;
 				_phaseManager.ExitingShopPhase();
 				_phaseManager.EnteringCombatPhase();

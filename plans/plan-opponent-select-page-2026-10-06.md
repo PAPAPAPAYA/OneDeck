@@ -1,7 +1,7 @@
 # Plan: 商店后对手选择页（选敌页）
 
 日期：2026-10-06
-状态：**方向已拍板（2026-10-06 四决策，见 §0），实施待「修改代码」**。按 step-gate 协议推进：每步完成后停下汇报，确认后继续下一步。
+状态：**方向已拍板（2026-10-06 四决策 D1-D4）+ 实施细节已拍齐（2026-10-10 第二轮：关键卡规则 / camera 入场编排 / O1-O4 全落定，见 §4.3/§4.4/§9），实施待「修改代码」**。按 step-gate 协议推进：每步完成后停下汇报，确认后继续下一步。
 关联：`plans/plan-async-pvp-client-2026-09-03.md`（§2.4 对手缓存 / §2.5 注入）、`plans/plan-ghost-pool-self-deck-bias-2026-09-13.md`（TakeCandidate 随机化 + 过滤）、`plans/plan-phase-transition-world-camera-2026-09-21.md`（转场系统）、`docs/PhaseTransition.md`
 
 ## 0. 拍板记录（2026-10-06 对话）
@@ -57,19 +57,22 @@
 - 幂等护栏：reservation 已消费且 `Current` 属本 session 的重复 populate（leg2 后进入 combat 时那一次）→ 从 `Current` 重新填充同内容，**不得**再落 `TakeCandidate`（防二次选取换人）。
 - debug / default pool 分支不动。
 
-### 4.3 选敌页内容（新组件，不进 god 文件）
+### 4.3 选敌页内容（2026-10-10 修订：v2 prefab 基准）
 
-- 新文件（如 `Assets/Scripts/UXPrototype/OpponentSelectPage.cs`），世界内容按 `ShopSectionPanels`/`ShopWorldWidgets` 同款模式构建（chromeSprite/chromeFont + PaletteTint 槽位）；无 canvas uGUI 输入，交互全走 PhysButton（world-only 交互裁定）。
-- 版式：标题 chip「选择下一场对手」+ N 张候选面板横排（PhysButton）：username / session / deckSize（hpMax 可选）。点击 = 选中即起飞（无确认步，见 O2）。
-- UI demo（2026-10-06；2026-10-08 v4 迭代）：`docs/demo/OpponentSelectDemo.html` — 三页全流程（商店→选敌→战斗）。v4 按 10-07 mockup + 10-08 两轮反馈：候选面板 = **ShopSectionPanels 同款平铺半透明深色圆角矩形**（ShopPanelBg #1A3037 @ 0.5，贴合内容、面板自身无阴影，阴影只属于内容）内左 3 张**红色关键卡**（硬阴影、hover 弹起、点击放大、无伤害数字）+ 右侧敌方**名牌**与【选择 +$N】**同宽同右缘**（卡顶=名牌顶、卡底=按钮底；+$N 语义按「挑选奖励」占位待确认）；名牌移植 `docs/demo/HPNamePlateDemo.html` 规格，**阴影带透明度 0.5**（引擎实测渲染 ≈0.45-0.5：Image 名义 0.698 经九宫格 sprite 衰减）；面板名牌与战斗名牌同字号（34px），morph 飞行纯平移。无标题/提示语/页签；最下面一行留给玩家名牌 + 选项按钮（= 战斗位，leg2 不再移动）。两种入场方式可切换：**原位 morph（demo 默认·推荐：镜头不动，HP bar 红退回战斗带/灰区上长，被选名牌直飞战斗右上位，关键卡弧飞入牌堆后方翻背）** vs 镜头移动（plan 原 +2 几何，选敌页背景按备选裁定玩家/敌人二分）。morph 若成立，§8 的 `_combatPageY` 上移风险与消费方 sweep 均消失。
-- 候选面板 prefab 细化（2026-10-08 拍板）：`plans/plan-opponent-select-panel-prefab-2026-10-08.md` — 全包含单 prefab / 真实卡面实例 / +$N 占位三拍板，含结构/几何(px→wu 表)/配色槽位/实施步 P-S1..S4。
-- 无返回商店按钮（D4）。缓存 0 候选不进本页；1..N-1 有几个显示几个。
-- 全部位置/尺寸参数挂 config 可调（用户偏好：可独立调参的原件）。
+- **面板 prefab = `Assets/Prefabs/ShopHud/OpponentSelectPanel v2.prefab`**（用户手摆固化，view refs 已接；内部布局与页面摆位实测值见 `plans/plan-opponent-select-page-layout-2026-10-10.md`，N=2 并排）。页面构建器新文件（如 `Assets/Scripts/UXPrototype/OpponentSelectPage.cs`，不进 god 文件）：按布局计划 §2 实测值实例化 N 个 v2、按 §4.3 关键卡规则 + 候选数据 Fill（契约见 OpponentSelectPanel.cs 头注）。无 canvas uGUI 输入，交互全走 PhysButton（world-only 裁定）。生命周期：离店点击 Peek 通过后建页填数据，leg2 落地后 teardown。
+- **关键卡选卡规则（2026-10-10 拍板）**：ghost 卡组按 cardTypeID 去重、排除 utility 被动后，按稀有度从高到低**逐层随机取、补满 3 为止**（层内随机；上层取完进下层）；层内随机用 `UnityEngine.Random`（TakeCandidate 匹配类口径，同 §4.1 注明）；去重后总数不足 3 张 → 空槽隐藏（SetActive false），不补假卡。展示顺序：稀有度降序、同层按卡组顺序左→右。Fill 时面板占位卡（PhysicalCardParent 显示体）隐藏，按真实卡 prefab 重建卡脸并推 name/desc/atk。
+- 交互：点【选择】= ConsumeCandidate + 注入 + leg2（O2 单击即选）。关键卡 hover 弹起 + 点击放大（PopUpCard 同款，走 ShopInputGate 门）排入 **S3 打磨步，可独立砍**。
+- 【选择 +$N】纯展示占位（P3）：运行时数值来自 `PhaseTransitionConfigSO.bountyPlaceholder`（默认 0，v2 prefab authored 文本为「选择 +$4」），赏金语义拍板后替换真实来源。
+- 无返回商店按钮（D4）。缓存 0 候选不进本页（时序见 §4.5 尾注）；1 候选 → 单面板 x=0 居中（布局计划 O-L2）。
+- 位置/尺寸基准 = 布局计划实测值（不再零散挂 config；面板级调参直接在 v2 prefab 上做）。
+- UI demo（2026-10-06；2026-10-08 v4 迭代）：`docs/demo/OpponentSelectDemo.html` — 视觉规格参考（ShopPanelBg @0.5 平铺面板、硬阴影、名牌阴影带 0.5）留存；**2026-10-10 裁定：入场实施 camera 模式（§4.4），demo 推荐的 morph 编排（镜头不动/背景 clip/名牌原位变身）不实施**；demo 的「面板名牌 34px 与战斗同字号纯平移」口径同步作废（v2 面板名牌 em 1.0，衔接见 §4.4/O-L1）。
+- v1 面板 prefab（`OpponentSelectPanel.prefab`，2026-10-09 实施）弃用留档；清理时机 = 布局计划 SL2（删场景实例前经用户确认）。
 
-### 4.4 转场接线（PhaseTransitionDriver）
+### 4.4 转场接线（PhaseTransitionDriver；2026-10-10 camera 裁定细化）
 
 - 新增 `RequestShopToSelection(pm)` 与选敌→战斗 routine；`_selectionPageY = _shopPageY + _pageH`；选敌页启用时 `_combatPageY = _shopPageY + 2*_pageH`，未启用保持现状。
-- leg1 为最小编排（rig 飞行 + 商店页滑出/选敌页滑入）；leg2 落地复用现有 `ScheduleCombatEntranceFlights`（敌方/起始卡飞入编排不动）。
+- **leg1（商店→选敌，2026-10-10 裁定）**：rig 飞行（overshoot 页外 PAD 余量照 demo 规矩）＋三件 HUD 事：①**玩家名牌 handoff 提前到 leg1**——商店名牌→战斗名牌交接原是一次性（shop→combat 单段旅行内完成），拆两段后交接点前移，战斗名牌自选敌页起上岗（商店期 HP 恒满，显示无歧义）；②**选项按钮平移**：屏幕右上（商店钉死位）→ 右下战斗位，随 leg1 平移、之后不动（它不是纯视口钉死物——钉的只是商店位）；③选敌面板**固定在 +1 页随镜头揭示**，无独立入场动画。选敌页背景 = **玩家灰全页延伸**（O4 落定：无红；背景覆盖需 +1 页）。
+- **leg2（选敌→战斗，落地编排）**：相机再上一页至 +2；**敌人名牌**面板位→战斗位（+8.64, +5.27）平移——对象恒常同玩家名牌处理，尺寸衔接 O-L1（面板 em 1.0 vs 战斗位渲染尺寸）落地前实测，纯平移或补 scale 到时定；**关键卡**面板槽位「起飞即生成」physical 实例（复用 PartD 机制，面板显示体同刻隐藏）飞入牌堆——同 cardTypeID 多副本时面板张对应其中一实例，其余副本走上方组；**剩余敌卡 + start card** 屏幕外上方移入；**玩家卡**屏幕外下方移入。三组来源参数进 `PhaseTransitionConfigSO`。**本条取代原「entrance 编排不动」**——`ScheduleCombatEntranceFlights` 的来源分组要改。
 - ShopHudBinder 离店绑定改为按 config 分流：选敌页启用 → `RequestShopToSelection`，否则现状 `RequestShopToCombat`。PhaseManager.cs:144 legacy 路径同步分流。
 - 选敌页停留期间输入门：`BlockInput`/`UnblockInput` 配对（页面自持 requester），leg1/leg2 期间沿用转场既有屏蔽。
 
@@ -83,9 +86,11 @@
 | `fightOwnGhostsOnly` / `onlyGhostEnemyDeck` | 页面照常，候选按现有过滤；0 候选 → 跳页走现状 cache-dry 链 |
 | 缓存 0 候选（离线等） | 跳页，现状链落 default pool |
 
+时序注（2026-10-10）：**离店点击先 `PeekCandidates` 再分流**——0 候选当场走现状 `RequestShopToCombat` 链，≥1 候选才建页 + `RequestShopToSelection`；Peek 不标记，之后正式 populate 才消耗。
+
 ### 4.6 PhaseTransitionConfigSO 新增
 
-- `selectionPageEnabled`（默认 false，Play 验证通过后置 true）、`selectionCandidateCount`（2-3，默认见 O1）、选敌页飞行时长/滑距等调参字段。
+- `selectionPageEnabled`（默认 false，Play 验证通过后置 true）、`selectionCandidateCount`（默认 **2**，O1 落定）、`bountyPlaceholder`（+$N 展示值，默认 0）、leg1/leg2 飞行时长/滑距、**entrance 三组来源参数**（关键卡面板位 / 敌卡+start card 屏外上 / 玩家卡屏外下：弧高/时长/交错）。
 
 ## 5. 上报与遥测口径
 
@@ -97,14 +102,15 @@
 | 步 | 内容 | 验证 |
 |---|------|------|
 | S1 | §4.1 + §4.2：cache Peek/Consume/reservation + DeckSaver 预留分支 + 幂等护栏 | EditMode 专项（§7.1）+ 全量回归零漂移 |
-| S2 | §4.3 + §4.6：选敌页世界内容 + config 字段 + 输入门 | EditMode bypass 矩阵；编辑器内目检 |
-| S3 | §4.4：两段转场接线 + `_combatPageY` 上移 + 消费方清点 | Play Mode 人工全流程（§7.2）+ RegressionChecklist 追加行 |
+| S2 | §4.3 + §4.6：OpponentSelectPage 构建器（v2 实例 ×N + 关键卡规则 Fill + bountyPlaceholder）+ config 字段 + 输入门 | EditMode bypass 矩阵 + 选卡规则专项；编辑器内目检 |
+| S3 | §4.4：两段转场接线（含名牌 handoff 前移 / 选项按钮平移 / entrance 三组来源改编排）+ `_combatPageY` 上移 + 消费方清点 + 关键卡 hover/放大（打磨步，可砍） | Play Mode 人工全流程（§7.2）+ RegressionChecklist 追加行 |
 
 ## 7. 测试
 
 ### 7.1 EditMode（并入 OpponentDeckCacheTests 或新建 OpponentSelectTests）
 
 - Peek：不标记已用；数量 ≤ N；`fightOwnGhostsOnly` 过滤生效；固定 `Random.InitState` 下多次调用可命中非首条（延续 09-13 测试手法）。
+- 关键卡选卡规则（§4.3，纯函数化后测）：cardTypeID 去重；utility 被动排除；逐层补满 3（固定 `Random.InitState` 下断言层序与随机命中）；去重后 <3 → 返回实际数（空槽由 Fill 隐藏）；展示顺序 = 稀有度降序、同层卡组顺序。
 - Consume：标记 used + `Current` 更新；重复 consume 幂等；未选条目仍可被后续 `TakeCandidate` 命中（D3 回池断言）。
 - 预留分支：populate 使用 picked 内容（deck/hpMax/username 对上）+ 清 reservation；无 reservation 走现状链；ResetRun 清预留；同 session 重复 populate 不换人。
 - Bypass：§4.5 全行断言（选敌页不创建、离店走现状请求）。
@@ -116,15 +122,17 @@
 
 ## 8. 风险与注意
 
-- `_combatPageY` 上移一屏：读 `CombatPageY` static 的消费方自动跟随；但任何「商店 + 一屏」硬编码假设要清点（CombatHPBarPresenter HudWorldFlight、entrance 落点探针、PhaseTransitionDemo）。**S3 首项做消费方 sweep**。
+- `_combatPageY` 上移一屏：读 `CombatPageY` static 的消费方自动跟随；但任何「商店 + 一屏」硬编码假设要清点（CombatHPBarPresenter HudWorldFlight、entrance 落点探针、PhaseTransitionDemo）。**S3 首项做消费方 sweep**（camera 裁定下本项不豁免）。
+- **entrance 编排改动**（2026-10-10）：三组来源改在 10-04/05 刚重构建的 PartC/PartD 之上——起飞即生成机制复用，但来源分组/目标序要动；回归靠 §7.2 Play 目检 + PhaseFlightPlanner goldens。
+- **名牌 handoff 前移**：交接原语复用现有 shop→combat 流程（canvasShopScale 链），前移后防双名牌同屏闪烁——leg1 期间商店名牌随页出视口、战斗名牌落位，时序上错帧交接。
 - pick 时立即注入是时序变化：注入只写 `enemyDeckToPopulate` + hpMax（无 Raise），需确认对 `AnimationStateTracker`/`GameEventStorage` 无副作用。
 - entrance 飞行依赖敌方卡组在 leg2 起飞前就绪：pick → 注入 → leg2 顺序强制。
 - 选敌页停留期间退出 app：shop_visit 已收口 + 零战斗剔除保护上传；picked 已标 used 但战斗未打——下 run 去重本就重置，无漂移。
 - 既有编辑器坑照旧适用：改 `.cs` 后 refresh + 确认 assembly mtime，`run_tests` 前 SaveScene（AGENTS.md 09-19 判例）。
 
-## 9. 开放点（实施中再拍）
+## 9. 开放点（2026-10-10 全部落定）
 
-- O1：`selectionCandidateCount` 默认 3 还是 2（先按 3 配）。
-- O2：单击即选 vs 选中 + 确认按钮（先按单击即选）。
-- O3：候选面板是否带 hpMax / 卡组构成预览（v1 文本 chip，卡面预览二期）。
-- O4：选敌页背景是否复用 v1.1 topo 红带样式。
+- O1 ✅ `selectionCandidateCount` 默认 **2**（2026-10-10，布局计划实测两面板并排）。
+- O2 ✅ **单击即选**（2026-10-10 追认；点【选择】= Consume + 注入 + leg2）。
+- O3 ✅ 卡面预览 = **v2 真卡脸 ×3**（关键卡规则见 §4.3；hpMax 在名牌上，session/deckSize 文本 chip 不做）。
+- O4 ✅ 选敌页背景 = **玩家灰全页延伸、无红**（2026-10-10；背景覆盖 +1 页）。

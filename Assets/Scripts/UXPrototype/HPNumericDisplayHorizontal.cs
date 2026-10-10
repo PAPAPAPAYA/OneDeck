@@ -565,6 +565,13 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		{
 			return;
 		}
+		// Selection dwell (plan-opponent-select-page-2026-10-06 §4.4): the page is alive and
+		// the pill must HOLD its select-page world spot — the shop-phase placement below
+		// would snap it back to the shop top bar anchor.
+		if (OpponentSelectPage.Instance != null)
+		{
+			return;
+		}
 		Vector2 targetPos = shopPhase
 			? ShopTopBarLayout.ShopAnchorHpDisplay(canvas)
 			: _combatAnchoredPos;
@@ -603,14 +610,39 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		bool mirrorOk = side == Side.Player && ShopChrome.TryGetNamePlateWorldCenter(out shopHome);
 		switch (travel)
 		{
+			case PhaseTransitionDriver.TransitionTravel.ToSelection:
+			{
+				// Selection leg1 (plan-opponent-select-page-2026-10-06 §4.4): the player plate
+				// hands off to its combat home one page EARLY (LandingPageY = the selection
+				// page) — identical mechanics to the ToCombat flight, one page lower. The
+				// enemy side does NOTHING: no enemy combat HUD exists on the selection page
+				// (the candidates carry their own plates); the enemy pill enters on the leg2
+				// ToCombat edge.
+				if (side != Side.Player) break;
+				if (!mirrorOk) return;
+				_handedOffToMirror = false;
+				Vector3 selectionHome = PhaseFlightPlanner.HudHomeAtPage(SnapToCombatAnchor(), PhaseTransitionDriver.LandingPageY, CanvasPlaneY);
+				_selfRt.localScale = Vector3.one * ShopTopBarLayout.ShopScaleHpDisplay;
+				KillTween(ref _placementScaleTween);
+				_placementScaleTween = _selfRt.DOScale(_combatScale, cfg.transDur * HandoffScaleWindow)
+					.SetEase(Ease.OutQuad).SetUpdate(UpdateType.Normal, true);
+				_flight = EnsureFlight();
+				_flight.Begin(shopHome, selectionHome, cfg.transDur, cfg);
+				ShopChrome.SetMirrorsActive(false);
+				break;
+			}
 			case PhaseTransitionDriver.TransitionTravel.ToCombat:
 			{
 				if (side == Side.Player)
 				{
+					// Selection leg2 (plan §4.4): the plate already sits at its select-page
+					// home and RIDES the rig (the canvas plane travels with the camera) — a
+					// second mirror flight would teleport it back to the hidden shop spot.
+					if (OpponentSelectPage.Instance != null) break;
 					// Mirror check BEFORE the snap: the fallback glide needs the parked shop anchor intact.
 					if (!mirrorOk) return;
 					_handedOffToMirror = false;
-					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapToCombatAnchor(), PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapToCombatAnchor(), PhaseTransitionDriver.LandingPageY, CanvasPlaneY);
 					// VISUAL-FIX(2026-10-03): pill popped 0.41 -> 0.8 at travel start
 					//   Cause:    SnapToCombatAnchor wrote the combat scale instantly while the
 					//             replaced mirror renders at ShopMirrorScale.canvasShopScale.
@@ -634,7 +666,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 				{
 					// Entrance (fix 2): slide DOWN in from enemySlide above; the world position
 					// keeps the pill outside the viewport until the camera's arrival, like the demo.
-					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapToCombatAnchor(), PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapToCombatAnchor(), PhaseTransitionDriver.LandingPageY, CanvasPlaneY);
 					_selfRt.localScale = _combatScale; // was SnapToCombatAnchor's job before 2026-10-03
 					_flight = EnsureFlight();
 					_flight.Begin(to + Vector3.up * SlideWorld(cfg), to, cfg.transDur, cfg);
@@ -647,7 +679,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 				{
 					if (!mirrorOk) return;
 					_handedOffToMirror = false;
-					Vector3 from = PhaseFlightPlanner.HudHomeAtPage(_selfRt.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					Vector3 from = PhaseFlightPlanner.HudHomeAtPage(_selfRt.position, PhaseTransitionDriver.LandingPageY, CanvasPlaneY);
 					// Shrink into the mirror's shop scale over the final window so the swap
 					// below lands size-matched (the old landing swap popped 0.8 -> 0.41).
 					_selfRt.localScale = _combatScale;
@@ -670,7 +702,7 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 				else
 				{
 					// Exit (fix 3): slides UP out while the camera descends (demo :727 -enemySlide).
-					Vector3 home = PhaseFlightPlanner.HudHomeAtPage(_selfRt.position, PhaseTransitionDriver.CombatPageY, CanvasPlaneY);
+					Vector3 home = PhaseFlightPlanner.HudHomeAtPage(_selfRt.position, PhaseTransitionDriver.LandingPageY, CanvasPlaneY);
 					_flight = EnsureFlight();
 					_flight.Begin(home, home + Vector3.up * SlideWorld(cfg), cfg.transDur, cfg);
 				}

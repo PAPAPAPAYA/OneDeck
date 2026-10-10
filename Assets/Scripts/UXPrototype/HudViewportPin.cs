@@ -79,7 +79,12 @@ public class HudViewportPin : MonoBehaviour
 	{
 		bool combatHome = _phaseManager != null
 			&& _phaseManager.currentGamePhaseRef != null
-			&& _phaseManager.currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat;
+			&& (_phaseManager.currentGamePhaseRef.Value() == EnumStorage.GamePhase.Combat
+				// Selection dwell (plan-opponent-select-page-2026-10-06 §4.4): the phase still
+				// reads Shop on the select page, but the button holds its bottom-right combat
+				// home there too (2026-10-10 user ruling).
+				|| (OpponentSelectPage.Instance != null
+					&& _phaseManager.currentGamePhaseRef.Value() == EnumStorage.GamePhase.Shop));
 		if (!combatHome)
 		{
 			// Shop + Result + the Result→Shop travel: top-right home, restored instantly
@@ -88,7 +93,8 @@ public class HudViewportPin : MonoBehaviour
 			_cornerBlend = 0f;
 			return;
 		}
-		if (PhaseTransitionDriver.Travel == PhaseTransitionDriver.TransitionTravel.ToCombat)
+		if (PhaseTransitionDriver.Travel == PhaseTransitionDriver.TransitionTravel.ToCombat
+			|| PhaseTransitionDriver.Travel == PhaseTransitionDriver.TransitionTravel.ToSelection)
 		{
 			// Fly during the camera travel: start once, same duration + shared ease as the
 			// rig DOMoveY so the button reaches the bottom-right exactly at the landing
