@@ -238,14 +238,15 @@
 		<span class="pill">定稿 · 2026-09-08</span>
 		<span class="pill">Notion 中文名列已写入(116 行)</span>
 		<span class="pill">Unity prefab displayName 已同步(108 处)</span>
+		<span class="pill">2026-10-11 按 Notion DB 回填(119 行)</span>
 	</div>
 	<p class="scope">
 		范围:仅 <code>CardScript.displayName</code>。<b>不动</b> <code>cardTypeID</code>(程序代号,命名时禁止参考其语义),<b>不动</b> <code>cardDesc</code> 机制文本。
 		前置文档:<code>docs/OneDeck_Worldview_Naming_v2_ModernUrban.md</code>(v2,都市怪谈方案,已废止)。
-		数据源:Notion「4.0 card database」116 行(2026-09-08 快照)。
+		数据源:Notion「4.0 card database」116 行(2026-09-08 快照;2026-10-11 按 119 行 DB 复核回填,见 PART 3-5)。
 	</p>
 	<div class="stats">
-		<div class="stat"><b>116</b><span>卡名</span></div>
+		<div class="stat"><b>119</b><span>卡名</span></div>
 		<div class="stat"><b>6</b><span>家族</span></div>
 		<div class="stat"><b>108</b><span>prefab 改名</span></div>
 		<div class="stat"><b>4</b><span>备用池名</span></div>
@@ -256,13 +257,13 @@
 	<a href="#s0">§0 调性总纲</a>
 	<a href="#s1">§1 命名句法</a>
 	<a href="#s2">§2 词根纪律</a>
-	<a href="#p1">PART 1 全量命名表<i>116</i></a>
+	<a href="#p1">PART 1 全量命名表<i>119</i></a>
 	<a href="#f1">1.1 复活/苏醒<i>31</i></a>
 	<a href="#f2">1.2 信徒/放逐<i>13</i></a>
 	<a href="#f3">1.3 诅咒<i>17</i></a>
 	<a href="#f4">1.4 埋葬/遗言<i>24</i></a>
-	<a href="#f5">1.5 攻击/强化<i>13</i></a>
-	<a href="#f6">1.6 商店/系统<i>18</i></a>
+	<a href="#f5">1.5 攻击/强化<i>14</i></a>
+	<a href="#f6">1.6 商店/系统<i>20</i></a>
 	<a href="#p2">PART 2 备用名池</a>
 	<a href="#p3">PART 3 落地状态</a>
 </nav>
@@ -304,7 +305,7 @@
 			<thead><tr><th>类型</th><th>句法</th><th>读感</th><th>例</th></tr></thead>
 			<tbody>
 				<tr><td><b>实体</b>(生物,能造成伤害)</td><td>名词性主体:角色 / 怪物 / 称号</td><td>「这是谁」</td><td class="cname">食尸鬼、狂信徒、连体人</td></tr>
-				<tr><td><b>现象</b>(非生物)</td><td>事件句 / 征兆 / 物件</td><td>「发生了什么」</td><td class="cname">墓园空了、黑弥撒、血契</td></tr>
+				<tr><td><b>现象</b>(非生物)</td><td>事件句 / 征兆 / 物件</td><td>「发生了什么」</td><td class="cname">空墓园、黑弥撒、血契</td></tr>
 				<tr><td><b>状态</b>(诅咒)</td><td>固定家族词根</td><td>「它缠着你」</td><td class="cname">蛊 / 咒家族</td></tr>
 			</tbody>
 		</table>
@@ -338,7 +339,7 @@
 
 	<!-- ================= PART 1 ================= -->
 	<section id="p1">
-		<div class="sec-h"><span class="no">PART 1</span><h2>全量命名表</h2><span class="en">116 行 · 按家族分组</span></div>
+		<div class="sec-h"><span class="no">PART 1</span><h2>全量命名表</h2><span class="en">119 行 · 按家族分组</span></div>
 
 		<div class="toolbar">
 			<input id="q" type="search" placeholder="搜索:卡名 / cardTypeID / desc 关键词 …">
@@ -348,7 +349,7 @@
 				<button data-tag="icon">[icon] 豁免锚点</button>
 				<button data-tag="bak">[备] DB 备用</button>
 			</div>
-			<span id="count">显示 116 / 116</span>
+			<span id="count">显示 119 / 119</span>
 		</div>
 		<p class="legend">
 			标注:<span class="b b-root">根</span> = 带家族词根&nbsp;&nbsp;
@@ -369,7 +370,7 @@
 				<tbody>
 					<tr data-tags="root"><td class="cname">降灵会</td><td class="cid">SPIRIT_CALLER</td><td class="cdesc">攻击;复活1友方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">招魂执事</td><td class="cid">NECROMANCER</td><td class="cdesc">复活1友方;苏醒:复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="icon"><td class="cname">墓园空了</td><td class="cid">MASS_REVIVER</td><td class="cdesc">复活3友方✦卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">空墓园</td><td class="cid">MASS_REVIVER</td><td class="cdesc">复活3友方✦卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">镀金圣髑</td><td class="cid">ELITE_REVIVER</td><td class="cdesc">攻击;复活1被强化过的友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">马戏团的地下室</td><td class="cid">BEAST_REVIVER</td><td class="cdesc">攻击;复活1生物友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">死不瞑目</td><td class="cid">FLURRY_REVIVER</td><td class="cdesc">复活1攻击次数最多友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
@@ -420,7 +421,7 @@
 					<tr data-tags="icon"><td class="cname">黑圣母</td><td class="cid">SWARM_QUEEN</td><td class="cdesc">攻击;每有1攻击力,生成1信徒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="root"><td class="cname">以血布道</td><td class="cid">RELIC_HIVE</td><td class="cdesc">被动:友方攻击时:生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">诅咒唱诗班</td><td class="cid">SWARM_CURSER</td><td class="cdesc">生成1信徒;每有1友方信徒,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根·咒+教团</span></td></tr>
-					<tr data-tags="root"><td class="cname">献祭司事</td><td class="cid">RIFT_GUIDE</td><td class="cdesc">放逐1友方信徒,埋葬2敌方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">献祭司事</td><td class="cid">RIFT_GUIDE_4.0</td><td class="cdesc">放逐1友方信徒,埋葬2敌方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">血飨</td><td class="cid">RIFT_REAPER</td><td class="cdesc">放逐所有信徒,每放逐1,强化1友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="icon"><td class="cname">伪经</td><td class="cid">RELIC_RIFT_OVERRIDE</td><td class="cdesc">被动:友方信徒效果变为:"复活1敌方诅咒;放逐自身"</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="root"><td class="cname">狂信徒</td><td class="cid">EXILE_BERSERKER</td><td class="cdesc">攻击;本回合每放逐1友方,攻击次数+1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
@@ -501,8 +502,8 @@
 		<!-- ======== 1.5 ======== -->
 		<section class="fam" id="f5" style="--acc:#c98a4b;--accbg:rgba(201,138,75,.13)">
 			<header class="fam-h">
-				<span class="fno">1.5</span><h2>攻击 / 强化友方 / 数值族</h2>
-				<span class="fcnt">13 卡</span>
+<span class="fno">1.5</span><h2>攻击 / 强化友方 / 数值族</h2>
+					<span class="fcnt">14 卡</span>
 				<span class="froot">多为 icon(例外词根 <b>刃 / 魂</b>)</span>
 			</header>
 			<table>
@@ -517,10 +518,11 @@
 					<tr data-tags="icon"><td class="cname">缝合人</td><td class="cid">UNFINISHED_ROBOT_4.0</td><td class="cdesc">攻击;攻击力翻倍</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">骨匠</td><td class="cid">BLACKSMITH_4.0</td><td class="cdesc">攻击;强化1友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="root"><td class="cname">开刃</td><td class="cid">WAR_TRAINER</td><td class="cdesc">强化2友方生物</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
-					<tr data-tags="root"><td class="cname">妖刀</td><td class="cid">WEAPON_SPIRIT</td><td class="cdesc">被动:友方生物触发强化反应时:强化1该生物</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
+					<tr data-tags="root"><td class="cname">妖刀</td><td class="cid">WEAPON_SPIRIT_4.0</td><td class="cdesc">被动:友方生物触发强化反应时:强化1该生物</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
 					<tr data-tags="icon"><td class="cname">邪印</td><td class="cid">RELIC_TRAINER</td><td class="cdesc">被动:回合开始:强化1攻击力最低友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="root"><td class="cname">引魂幡</td><td class="cid">RELIC_WHITE_BANNER</td><td class="cdesc">被动:回合开始:置顶1友方攻击力最高生物</td><td class="ctag"><span class="b b-root">根·魂</span></td></tr>
 					<tr data-tags="icon bak"><td class="cname">鬼打墙</td><td class="cid">DELAYER</td><td class="cdesc">延后1攻击力最高敌方;攻击</td><td class="ctag"><span class="b b-icon">icon</span><span class="b b-bak">备</span></td></tr>
+					<tr data-tags="icon"><td class="cname">行尸走肉</td><td class="cid">ZOMBIE</td><td class="cdesc">攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 				</tbody>
 			</table>
 		</section>
@@ -529,7 +531,7 @@
 		<section class="fam" id="f6" style="--acc:#a487d0;--accbg:rgba(164,135,208,.13)">
 			<header class="fam-h">
 				<span class="fno">1.6</span><h2>商店 / 系统</h2>
-				<span class="fcnt">18 卡</span>
+				<span class="fcnt">20 卡</span>
 				<span class="froot">词根 <b>魇 / 梦 / 夜</b>(战斗卡禁用「梦」字)</span>
 			</header>
 			<table>
@@ -537,10 +539,12 @@
 				<tbody>
 					<tr data-tags=""><td class="cname">噩梦重播</td><td class="cid">UTILITY_REROLL_1</td><td class="cdesc">被动:免费重掷次数+1</td></tr>
 					<tr data-tags=""><td class="cname">魇市赊账</td><td class="cid">UTILITY_DISCOUNT_1</td><td class="cdesc">被动:每重掷4次,随机商品降价2</td></tr>
+					<tr data-tags=""><td class="cname">魇市半价</td><td class="cid">UTILITY_HALFPRICE_1</td><td class="cdesc">被动:不占用卡位,必出1件半价商品</td></tr>
 					<tr data-tags=""><td class="cname">冥币</td><td class="cid">UTILITY_INCOME_1</td><td class="cdesc">被动:收入+2</td></tr>
 					<tr data-tags=""><td class="cname">魇市深处</td><td class="cid">UTILITY_ODDS_1</td><td class="cdesc">被动:首个货架必为奇物架</td></tr>
 					<tr data-tags=""><td class="cname">窥魇镜</td><td class="cid">UTILITY_ODDS_2</td><td class="cdesc">奇物架的出现概率+15%</td></tr>
 					<tr data-tags=""><td class="cname">魇市新摊</td><td class="cid">UTILITY_OPTION_1</td><td class="cdesc">被动:商店货架+1</td></tr>
+					<tr data-tags=""><td class="cname">魇市游摊</td><td class="cid">UTILITY_OPTION_P_1</td><td class="cdesc">被动:不占用卡位,25%概率:货架+1</td></tr>
 					<tr data-tags=""><td class="cname">百怪入梦</td><td class="cid">UTILITY_CREATURES_1</td><td class="cdesc">20%概率:战斗架全部商品变为生物卡</td></tr>
 					<tr data-tags=""><td class="cname">死寂的梦</td><td class="cid">UTILITY_SPELLS_1</td><td class="cdesc">20%概率:战斗架全部商品变为非生物卡</td></tr>
 					<tr data-tags=""><td class="cname">噩梦</td><td class="cid">UTILITY_TAG_CURSE</td><td class="cdesc">每3个货架必出1张[诅咒]卡</td></tr>
@@ -577,6 +581,7 @@
 			<li><b>Unity prefab</b>:已同步(2026-09-08)。108 处改名 = 4.0 池 107 张 + 信徒 token(<code>RIFT.prefab</code>「次元裂缝」→「信徒」,单点生效于全部生成信徒的卡);DUO_REVIVER(阴婚)/ SLIME_4.0(管道里的活物)/ JU_ON(诅咒)原名已符合;<code>cardTypeID</code> 未动。REVIVING_STRIKER(无头武生)prefab 同日新建(2_Rare,ATK=1,rare,遗言:攻击次数+1+复活自身,已入 ShopPoolRef);4 张备用(SOUL_SWAPPER / CURSE_ECHO / RELIC_TAINT / DELAYER)无 prefab,不涉及。</li>
 			<li><b>v2 文档</b>保留作历史档,不作命名依据;机制词(埋葬/复活/强化/诅咒/苏醒/揭晓/生成/放逐/置顶/延后)维持白话基线,本案不触碰。</li>
 			<li>desc 若再变动,<b>以 Notion DB 为准</b>回填本表。</li>
+			<li><b>2026-10-11 回填</b>:按 Notion DB(119 行)全量复核对齐——MASS_REVIVER「墓园空了」→「空墓园」(2026-09-15 漂移修复 f54e7123 改名,prefab/DB 一致);RIFT_GUIDE/WEAPON_SPIRIT 行 ID 补 <code>_4.0</code> 后缀(DB+Unity 于 09-20 后改名,中文名不变);补入 UTILITY_HALFPRICE_1(魇市半价,09-11 入池)、UTILITY_OPTION_P_1(魇市游摊,09-14 建卡)、ZOMBIE(行尸走肉,纯攻击基线卡,zombie balance audit 基线,入 1.5)。复核结论:其余 113 行名字与 DB 全一致,4 张[备]与 DB 状态=备用 吻合,DB 无空中文名。</li>
 		</ol>
 	</section>
 
@@ -584,7 +589,7 @@
 
 <footer>
 	源文档:<code>docs/OneDeck_Worldview_Naming_v3_CultPulp.md</code>(2026-09-08 定稿) · 本页为该文档的只读展示,内容以源文档与 Notion DB 为准<br>
-	生成于 2026-10-10 · OneDeck 世界观命名迭代 v3 —— 古典邪教 × 低俗恐怖
+	生成于 2026-10-10 · 2026-10-11 按 Notion DB 回填 · OneDeck 世界观命名迭代 v3 —— 古典邪教 × 低俗恐怖
 </footer>
 
 <script>

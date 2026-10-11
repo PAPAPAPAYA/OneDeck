@@ -1,6 +1,6 @@
 # OneDeck 世界观迭代 v3 —— 古典邪教 × 低俗恐怖(卡名全案)
 
-> 2026-09-08 · 前置:`docs/OneDeck_Worldview_Naming_v2_ModernUrban.md`(v2,都市怪谈方案,已废止)· 数据源:Notion「4.0 card database」(116 行,2026-09-08 快照)
+> 2026-09-08 · 前置:`docs/OneDeck_Worldview_Naming_v2_ModernUrban.md`(v2,都市怪谈方案,已废止)· 数据源:Notion「4.0 card database」(116 行,2026-09-08 快照;2026-10-11 按 119 行 DB 全量复核回填,见 PART 3-5)
 > 状态:**定稿,已写入 Notion 中文名列(2026-09-08) · Unity prefab `displayName` 已同步(2026-09-08)**
 > 本案范围:仅 `CardScript.displayName`。不动 `cardTypeID`(程序代号,命名时禁止参考其语义),不动 `cardDesc` 机制文本。
 
@@ -33,7 +33,7 @@
 | 类型 | 句法 | 读感 | 例 |
 |---|---|---|---|
 | 实体(生物,能造成伤害) | 名词性主体:角色/怪物/称号 | "这是谁" | 食尸鬼、狂信徒、连体人 |
-| 现象(非生物) | 事件句/征兆/物件 | "发生了什么" | 墓园空了、黑弥撒、血契 |
+| 现象(非生物) | 事件句/征兆/物件 | "发生了什么" | 空墓园、黑弥撒、血契 |
 | 状态(诅咒) | 固定家族词根 | "它缠着你" | 蛊/咒家族 |
 
 ## §2 词根纪律(半绑定制)
@@ -57,7 +57,7 @@
 3. 交叉卡(同时属两族)取更稀有、更标识构筑方向的一侧词根。例:SACRIFICIAL_SPIRIT 取「殉」,SWARM_CURSER 取教团职衔。
 4. 词根的价值是组牌时快速归类,不承担传达完整机制的任务(机制由 desc 承担)。
 
-## PART 1 全量命名表(116 行,按家族分组)
+## PART 1 全量命名表(119 行,按家族分组)
 
 > 标注:[根] = 带家族词根;[icon] = 词根豁免锚点;[备] = DB 备用卡。
 
@@ -67,7 +67,7 @@
 |---|---|---|---|
 | SPIRIT_CALLER | 攻击;复活1友方非生物 | 降灵会 | [根] |
 | NECROMANCER | 复活1友方;苏醒:复活1友方 | 招魂执事 | [根] |
-| MASS_REVIVER | 复活3友方✦卡 | 墓园空了 | [icon] |
+| MASS_REVIVER | 复活3友方✦卡 | 空墓园 | [icon] |
 | ELITE_REVIVER | 攻击;复活1被强化过的友方生物 | 镀金圣髑 | [icon] |
 | BEAST_REVIVER | 攻击;复活1生物友方 | 马戏团的地下室 | [icon] |
 | FLURRY_REVIVER | 复活1攻击次数最多友方生物 | 死不瞑目 | [icon] |
@@ -109,7 +109,7 @@
 | SWARM_QUEEN | 攻击;每有1攻击力,生成1信徒 | 黑圣母 | [icon] |
 | RELIC_HIVE | 被动:友方攻击时:生成1信徒 | 以血布道 | [根] |
 | SWARM_CURSER | 生成1信徒;每有1友方信徒,强化1敌方诅咒 | 诅咒唱诗班 | [根·咒+教团] |
-| RIFT_GUIDE | 放逐1友方信徒,埋葬2敌方非生物 | 献祭司事 | [根] |
+| RIFT_GUIDE_4.0 | 放逐1友方信徒,埋葬2敌方非生物 | 献祭司事 | [根] |
 | RIFT_REAPER | 放逐所有信徒,每放逐1,强化1友方生物 | 血飨 | [根] |
 | RELIC_RIFT_OVERRIDE | 被动:友方信徒效果变为:"复活1敌方诅咒;放逐自身" | 伪经 | [icon] |
 | EXILE_BERSERKER | 攻击;本回合每放逐1友方,攻击次数+1 | 狂信徒 | [根] |
@@ -166,7 +166,7 @@
 | SPIKE_SKELETON_4.0 | 攻击;遗言:攻击x2 | 带刺的标本 | [icon] |
 | SLIME_4.0 | 遗言:复制自身;攻击 | 管道里的活物 | [icon] |
 
-### 1.5 攻击 / 强化友方 / 数值族(13,多为 icon)
+### 1.5 攻击 / 强化友方 / 数值族(14,多为 icon)
 
 | cardTypeID | desc | 卡名 | 标注 |
 |---|---|---|---|
@@ -179,21 +179,24 @@
 | UNFINISHED_ROBOT_4.0 | 攻击;攻击力翻倍 | 缝合人 | [icon] |
 | BLACKSMITH_4.0 | 攻击;强化1友方生物 | 骨匠 | [icon] |
 | WAR_TRAINER | 强化2友方生物 | 开刃 | [根·刃] |
-| WEAPON_SPIRIT | 被动:友方生物触发强化反应时:强化1该生物 | 妖刀 | [根·刃] |
+| WEAPON_SPIRIT_4.0 | 被动:友方生物触发强化反应时:强化1该生物 | 妖刀 | [根·刃] |
 | RELIC_TRAINER | 被动:回合开始:强化1攻击力最低友方生物 | 邪印 | [icon] |
 | RELIC_WHITE_BANNER | 被动:回合开始:置顶1友方攻击力最高生物 | 引魂幡 | [根·魂] |
 | DELAYER | 延后1攻击力最高敌方;攻击 | 鬼打墙 | [icon][备] |
+| ZOMBIE | 攻击 | 行尸走肉 | [icon] |
 
-### 1.6 商店 / 系统(18,词根:魇/梦/夜;战斗卡禁用"梦"字)
+### 1.6 商店 / 系统(20,词根:魇/梦/夜;战斗卡禁用"梦"字)
 
 | cardTypeID | desc | 卡名 |
 |---|---|---|
 | UTILITY_REROLL_1 | 被动:免费重掷次数+1 | 噩梦重播 |
 | UTILITY_DISCOUNT_1 | 被动:每重掷4次,随机商品降价2 | 魇市赊账 |
+| UTILITY_HALFPRICE_1 | 被动:不占用卡位,必出1件半价商品 | 魇市半价 |
 | UTILITY_INCOME_1 | 被动:收入+2 | 冥币 |
 | UTILITY_ODDS_1 | 被动:首个货架必为奇物架 | 魇市深处 |
 | UTILITY_ODDS_2 | 奇物架的出现概率+15% | 窥魇镜 |
 | UTILITY_OPTION_1 | 被动:商店货架+1 | 魇市新摊 |
+| UTILITY_OPTION_P_1 | 被动:不占用卡位,25%概率:货架+1 | 魇市游摊 |
 | UTILITY_CREATURES_1 | 20%概率:战斗架全部商品变为生物卡 | 百怪入梦 |
 | UTILITY_SPELLS_1 | 20%概率:战斗架全部商品变为非生物卡 | 死寂的梦 |
 | UTILITY_TAG_CURSE | 每3个货架必出1张[诅咒]卡 | 噩梦 |
@@ -224,3 +227,4 @@
 2. **Unity prefab**:已同步(2026-09-08)。108 处改名 = 4.0 池 107 张 + 信徒 token(`RIFT.prefab`「次元裂缝」→「信徒」,单点生效于全部生成信徒的卡);DUO_REVIVER(阴婚)/SLIME_4.0(管道里的活物)/JU_ON(诅咒)原名已符合;`cardTypeID` 未动。REVIVING_STRIKER(无头武生)prefab 同日新建(2_Rare,ATK=1,rare,遗言:攻击次数+1+复活自身,已入 ShopPoolRef);4 张备用(SOUL_SWAPPER/CURSE_ECHO/RELIC_TAINT/DELAYER)无 prefab,不涉及。
 3. **v2 文档**保留作历史档,不作命名依据;机制词(埋葬/复活/强化/诅咒/苏醒/揭晓/生成/放逐/置顶/延后)维持白话基线,本案不触碰。
 4. desc 若再变动,以 Notion DB 为准回填本表。
+5. **2026-10-11 回填**:按 Notion DB(119 行)全量复核对齐——MASS_REVIVER「墓园空了」→「空墓园」(2026-09-15 漂移修复 f54e7123 改名,prefab/DB 一致);RIFT_GUIDE/WEAPON_SPIRIT 行 ID 补 `_4.0` 后缀(DB+Unity 于 09-20 后改名,中文名不变);补入 UTILITY_HALFPRICE_1(魇市半价,09-11 入池)、UTILITY_OPTION_P_1(魇市游摊,09-14 建卡)、ZOMBIE(行尸走肉,纯攻击基线卡,zombie balance audit 基线,入 1.5)。复核结论:其余 113 行名字与 DB 全一致,4 张[备]与 DB 状态=备用 吻合,DB 无空中文名。
