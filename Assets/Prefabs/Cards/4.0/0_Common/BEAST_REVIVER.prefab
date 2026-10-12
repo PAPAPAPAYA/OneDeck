@@ -157,7 +157,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: BEAST_REVIVER
-  displayName: "\u9A6C\u620F\u56E2\u7684\u5730\u4E0B\u5BA4"
+  displayName: "\u9A6C\u620F\u56E2\u7684\u718A"
   cardDesc: "\u653B\u51FB;\u6BCF\u56DE\u5408\u4E00\u6B21,\u590D\u6D3B <b>1</b> \u53CB\u65B9\u5B9E\u4F53"
   rarity: 0
   shopRollWeightMultiplier: 1

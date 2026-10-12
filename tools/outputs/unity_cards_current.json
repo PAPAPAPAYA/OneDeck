@@ -13,7 +13,7 @@
  {
   "file": "BEAST_REVIVER",
   "cardTypeID": "BEAST_REVIVER",
-  "displayName": "马戏团的地下室",
+  "displayName": "马戏团的熊",
   "rarity": "0",
   "rarityName": "normal",
   "cardDesc": "攻击;每回合一次,复活 <b>1</b> 友方实体",
@@ -68,7 +68,7 @@
  {
   "file": "GRAVE_FIST",
   "cardTypeID": "GRAVE_FIST",
-  "displayName": "血祭",
+  "displayName": "血祭司",
   "rarity": "0",
   "rarityName": "normal",
   "cardDesc": "埋葬 <b>1</b> 友方;攻击",
@@ -90,7 +90,7 @@
  {
   "file": "GRAVE_PUNCH_4.0",
   "cardTypeID": "GRAVE_PUNCH_4.0",
-  "displayName": "剜心祭",
+  "displayName": "剜心祭司",
   "rarity": "0",
   "rarityName": "normal",
   "cardDesc": "埋葬 <b>1</b> 友方;攻击",
@@ -343,7 +343,7 @@
  {
   "file": "WOKEN_BLADE",
   "cardTypeID": "WOKEN_BLADE",
-  "displayName": "尸变",
+  "displayName": "起尸鬼",
   "rarity": "0",
   "rarityName": "normal",
   "cardDesc": "攻击;苏醒:攻击x2",
@@ -412,7 +412,7 @@
   "displayName": "走阴人",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "复活 <b>1</b> 敌方诅咒;每回合一次,复活 <b>1</b> 友方",
+  "cardDesc": "复活 <b>1</b> 敌方诅咒;每回合一次,复活    <b>1</b> 友方",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -574,7 +574,7 @@
  {
   "file": "GRAVE_TOGETHER_4.0",
   "cardTypeID": "GRAVE_TOGETHER_4.0",
-  "displayName": "同葬",
+  "displayName": "殉葬人",
   "rarity": "1",
   "rarityName": "uncommon",
   "cardDesc": "攻击;埋葬 <b>1</b> 友方;埋葬 <b>2</b>    敌方",
@@ -618,7 +618,7 @@
  {
   "file": "REANIMATOR",
   "cardTypeID": "REANIMATOR",
-  "displayName": "百鬼夜行",
+  "displayName": "百鬼将",
   "rarity": "1",
   "rarityName": "uncommon",
   "cardDesc": "攻击;攻击力=本回合复活友方数",
@@ -643,7 +643,7 @@
   "displayName": "连坐",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动:每次友方被埋葬时,埋葬卡组顶 <b>1</b> 卡",
+  "cardDesc": "被动:每次友方被埋葬时,埋葬卡组顶    <b>1</b> 卡",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -665,7 +665,7 @@
   "displayName": "耳语唤尸",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "被动:敌方诅咒揭晓时,每回合三次,复活 <b>1</b> 友方",
+  "cardDesc": "被动:敌方诅咒揭晓时,每回合三次,复活    <b>1</b> 友方",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -819,7 +819,7 @@
   "displayName": "以命换命",
   "rarity": "1",
   "rarityName": "uncommon",
-  "cardDesc": "埋葬 <b>1</b> 友方;每回合一次,复活 <b>2</b> 友方",
+  "cardDesc": "埋葬 <b>1</b> 友方;每回合一次,复活    <b>2</b> 友方",
   "printedAttack": "0",
   "cardType": "0",
   "folder": "1_Uncommon"
@@ -981,7 +981,7 @@
  {
   "file": "DECIMATION",
   "cardTypeID": "DECIMATION",
-  "displayName": "什一抽杀",
+  "displayName": "监斩官",
   "rarity": "2",
   "rarityName": "rare",
   "cardDesc": "埋葬 <b>4</b> 友方,本回合每埋葬过    <b>1</b> 友方,埋葬数 <b>-1</b>;攻击",
@@ -1047,7 +1047,7 @@
  {
   "file": "MILLBLADE",
   "cardTypeID": "MILLBLADE",
-  "displayName": "凌迟",
+  "displayName": "千刀手",
   "rarity": "2",
   "rarityName": "rare",
   "cardDesc": "攻击;每有 <b>1</b> 攻击力,埋葬卡组顶    <b>1</b> 卡",

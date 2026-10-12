@@ -1,0 +1,19 @@
+GRAVE_FIST: already renamed, skip
+GRAVE_PUNCH_4.0: 剜心祭 -> 剜心祭司 [escaped] Assets/Prefabs/Cards/4.0\0_Common\GRAVE_PUNCH_4.0.prefab
+GRAVE_TOGETHER_4.0: 同葬 -> 殉葬人 [escaped] Assets/Prefabs/Cards/4.0\1_Uncommon\GRAVE_TOGETHER_4.0.prefab
+MILLBLADE: 凌迟 -> 千刀手 [escaped] Assets/Prefabs/Cards/4.0\2_Rare\MILLBLADE.prefab
+DECIMATION: 什一抽杀 -> 监斩官 [escaped] Assets/Prefabs/Cards/4.0\2_Rare\DECIMATION.prefab
+REANIMATOR: 百鬼夜行 -> 百鬼将 [escaped] Assets/Prefabs/Cards/4.0\1_Uncommon\REANIMATOR.prefab
+WOKEN_BLADE: 尸变 -> 起尸鬼 [escaped] Assets/Prefabs/Cards/4.0\0_Common\WOKEN_BLADE.prefab
+BEAST_REVIVER: 马戏团的地下室 -> 马戏团的熊 [escaped] Assets/Prefabs/Cards/4.0\0_Common\BEAST_REVIVER.prefab
+
+--- verify (re-read from disk) ---
+GRAVE_FIST: new=True old_gone=True eol_ok=False
+GRAVE_PUNCH_4.0: new=True old_gone=True eol_ok=False
+GRAVE_TOGETHER_4.0: new=True old_gone=True eol_ok=False
+MILLBLADE: new=True old_gone=True eol_ok=False
+DECIMATION: new=True old_gone=True eol_ok=False
+REANIMATOR: new=True old_gone=True eol_ok=False
+WOKEN_BLADE: new=True old_gone=True eol_ok=False
+BEAST_REVIVER: new=True old_gone=True eol_ok=False
+FAILED

@@ -1,0 +1,25 @@
+=== 1) doc rows vs Notion (join by cardTypeID) ===
+doc rows total: 116 (incl. 1 token row)   real-ID rows: 115   joined: 115   join-fail: 0
+doc token row: ('(token)', '信徒', '1.2 信徒 / 放逐族')
+Notion rows with 中文名 in (信徒,诅咒): [('JU_ON', '诅咒', '启用'), ('RIFT', '信徒', '启用')]
+
+--- name mismatches: 1 ---
+  MASS_REVIVER (doc写 MASS_REVIVER) [1.1 复活 / 苏醒族]
+    doc   : 墓园空了
+    notion: 空墓园  (状态=None)  unity=空墓园
+
+--- doc rows with no Notion row: 0 ---
+
+=== 2) Notion rows not joinable to any doc row (doc omissions) ===
+count: 4
+  RIFT  notion名=信徒  状态=启用 | (无prefab)
+  UTILITY_HALFPRICE_1  notion名=魇市半价  状态=None | unity名=魇市半价 (file=UTILITY_HALFPRICE_1)
+  UTILITY_OPTION_P_1  notion名=魇市游摊  状态=None | unity名=魇市游摊 (file=UTILITY_OPTION_P_1)
+  ZOMBIE  notion名=行尸走肉  状态=None | unity名=行尸走肉 (file=ZOMBIE)
+
+=== 3) Notion rows with empty 中文名 ===
+count: 0
+
+=== 4) stats ===
+Notion rows total: 119
+状态 distribution: {'启用(空)': 113, '备用': 4, '启用': 2}

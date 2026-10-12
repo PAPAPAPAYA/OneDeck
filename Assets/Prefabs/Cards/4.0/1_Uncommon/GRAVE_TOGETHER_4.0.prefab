@@ -224,7 +224,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardID: 0
   cardTypeID: GRAVE_TOGETHER_4.0
-  displayName: "\u540C\u846C"
+  displayName: "\u6B89\u846C\u4EBA"
   cardDesc: "\u653B\u51FB;\u57CB\u846C <b>1</b> \u53CB\u65B9;\u57CB\u846C <b>2</b>
     \u654C\u65B9"
   rarity: 1

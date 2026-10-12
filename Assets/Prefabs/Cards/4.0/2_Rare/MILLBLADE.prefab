@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: MILLBLADE
-  displayName: "\u51CC\u8FDF"
+  displayName: "\u5343\u5200\u624B"
   cardDesc: "\u653B\u51FB;\u6BCF\u6709 <b>1</b> \u653B\u51FB\u529B,\u57CB\u846C\u5361\u7EC4\u9876
     <b>1</b> \u5361"
   rarity: 2

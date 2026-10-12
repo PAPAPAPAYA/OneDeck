@@ -243,7 +243,7 @@
 	<p class="scope">
 		范围:仅 <code>CardScript.displayName</code>。<b>不动</b> <code>cardTypeID</code>(程序代号,命名时禁止参考其语义),<b>不动</b> <code>cardDesc</code> 机制文本。
 		前置文档:<code>docs/OneDeck_Worldview_Naming_v2_ModernUrban.md</code>(v2,都市怪谈方案,已废止)。
-		数据源:Notion「4.0 card database」116 行(2026-09-08 快照;2026-10-11 按 119 行 DB 复核回填,见 PART 3-5)。
+		数据源:Notion「4.0 card database」116 行(2026-09-08 快照;2026-10-11 按 119 行 DB 复核回填,见 PART 3-5、3-6)。
 	</p>
 	<div class="stats">
 		<div class="stat"><b>119</b><span>卡名</span></div>
@@ -301,6 +301,7 @@
 	<!-- ================= §1 ================= -->
 	<section id="s1">
 		<div class="sec-h"><span class="no">§1</span><h2>实体 / 现象 / 状态 命名句法</h2><span class="en">SYNTAX</span></div>
+		<p class="note"><b>优先级裁定(2026-10-11)</b>:本节句法优先级高于 §0-3 的意象/词根规则——实体卡名必须是名词性主体(角色/怪物/称号);物件/器械名可豁免(咒刃、镀金圣髑、血肉磨坊、带刺的标本、遗赠)。</p>
 		<table>
 			<thead><tr><th>类型</th><th>句法</th><th>读感</th><th>例</th></tr></thead>
 			<tbody>
@@ -331,7 +332,7 @@
 		<h3>半绑定规则(讨论结论 2026-09-08)</h3>
 		<ol class="rules">
 			<li>词根绑「家族最大公约数」:同条件族绑条件词根,同收益族绑收益词根。</li>
-			<li><mark>浓度上限 60~70%</mark>:每族留 3~4 张纯意象 icon 卡当记忆锚点(黑弥撒、什一抽杀级),铺满词根即成模板,禁止。</li>
+			<li><mark>浓度上限 60~70%</mark>:每族留 3~4 张纯意象 icon 卡当记忆锚点(黑弥撒、监斩官级),铺满词根即成模板,禁止。</li>
 			<li>交叉卡(同时属两族)取<b>更稀有、更标识构筑方向</b>的一侧词根。例:SACRIFICIAL_SPIRIT 取「殉」,SWARM_CURSER 取教团职衔。</li>
 			<li>词根的价值是组牌时快速归类,不承担传达完整机制的任务(机制由 desc 承担)。</li>
 		</ol>
@@ -368,37 +369,37 @@
 			<table>
 				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
 				<tbody>
-					<tr data-tags="root"><td class="cname">降灵会</td><td class="cid">SPIRIT_CALLER</td><td class="cdesc">攻击;复活1友方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">招魂执事</td><td class="cid">NECROMANCER</td><td class="cdesc">复活1友方;苏醒:复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="icon"><td class="cname">空墓园</td><td class="cid">MASS_REVIVER</td><td class="cdesc">复活3友方✦卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">镀金圣髑</td><td class="cid">ELITE_REVIVER</td><td class="cdesc">攻击;复活1被强化过的友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">马戏团的地下室</td><td class="cid">BEAST_REVIVER</td><td class="cdesc">攻击;复活1生物友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">死不瞑目</td><td class="cid">FLURRY_REVIVER</td><td class="cdesc">复活1攻击次数最多友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">阴婚</td><td class="cid">DUO_REVIVER</td><td class="cdesc">复活2友方✦✦卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">百鬼夜行</td><td class="cid">REANIMATOR</td><td class="cdesc">攻击;攻击力=本回合复活友方数</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">降灵会</td><td class="cid">SPIRIT_CALLER</td><td class="cdesc">每回合两次,复活1友方现象</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">招魂执事</td><td class="cid">NECROMANCER</td><td class="cdesc">苏醒:复活1友方;每回合一次,复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">空墓园</td><td class="cid">MASS_REVIVER</td><td class="cdesc">每回合一次,复活3友方✦卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">镀金圣髑</td><td class="cid">ELITE_REVIVER</td><td class="cdesc">攻击;每回合一次,复活1被强化过的友方实体</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">马戏团的熊</td><td class="cid">BEAST_REVIVER</td><td class="cdesc">攻击;每回合一次,复活1友方实体</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">死不瞑目</td><td class="cid">FLURRY_REVIVER</td><td class="cdesc">复活1攻击次数最多友方实体</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">阴婚</td><td class="cid">DUO_REVIVER</td><td class="cdesc">每回合一次,复活2友方✦✦卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">百鬼将</td><td class="cid">REANIMATOR</td><td class="cdesc">攻击;攻击力=本回合复活友方数</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">钉不死的人</td><td class="cid">UNDYING_WARRIOR</td><td class="cdesc">攻击;强化反应:复活自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="root"><td class="cname">以命换命</td><td class="cid">SOUL_TRADER</td><td class="cdesc">复活2友方;埋葬1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">以命换命</td><td class="cid">SOUL_TRADER</td><td class="cdesc">埋葬1友方;每回合一次,复活2友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root bak"><td class="cname">换命</td><td class="cid">SOUL_SWAPPER</td><td class="cdesc">攻击;复活1友方;埋葬1敌方</td><td class="ctag"><span class="b b-root">根</span><span class="b b-bak">备</span></td></tr>
-					<tr data-tags="root"><td class="cname">复活见证人</td><td class="cid">REVIVE_SUMMONER</td><td class="cdesc">复活1友方;生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">耳语唤尸</td><td class="cid">RELIC_CURSE_REVIVAL</td><td class="cdesc">被动:敌方诅咒揭晓时:复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="icon"><td class="cname">报丧人</td><td class="cid">DOOM_HERALD</td><td class="cdesc">攻击;复活1攻击力最高敌方;强化4敌方诅咒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">食尸鬼</td><td class="cid">GRAVE_ROBBER</td><td class="cdesc">复活1攻击力最高敌方;攻击力变为该卡攻击力</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">牧羊人</td><td class="cid">RIFT_SHEPHERD</td><td class="cdesc">攻击;复活1张tag为[信徒]的友方卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">复活见证人</td><td class="cid">REVIVE_SUMMONER</td><td class="cdesc">生成1信徒;每回合一次,复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">耳语唤尸</td><td class="cid">RELIC_CURSE_REVIVAL</td><td class="cdesc">被动:敌方诅咒揭晓时,每回合三次,复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">报丧人</td><td class="cid">DOOM_HERALD</td><td class="cdesc">攻击;复活1攻击力最高敌方;强化3敌方诅咒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">食尸鬼</td><td class="cid">GRAVE_ROBBER</td><td class="cdesc">复活1攻击力最高敌方;攻击力变为该卡攻击力;攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">牧羊人</td><td class="cid">RIFT_SHEPHERD</td><td class="cdesc">攻击;每回合一次,复活1张tag为[信徒]的友方卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="root"><td class="cname">扶乩</td><td class="cid">RIFT_MEDIUM</td><td class="cdesc">生成2信徒;苏醒:复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">以人易物</td><td class="cid">RIFT_REVIVER</td><td class="cdesc">放逐1友方信徒,复活2友方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="icon"><td class="cname">走阴人</td><td class="cid">CURSE_SUMMONER</td><td class="cdesc">复活1友方;复活1敌方诅咒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">以人易物</td><td class="cid">RIFT_REVIVER</td><td class="cdesc">放逐1友方信徒:每回合两次,复活2友方现象</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">走阴人</td><td class="cid">CURSE_SUMMONER</td><td class="cdesc">复活1敌方诅咒;每回合一次,复活1友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="root bak"><td class="cname">阴魂不散</td><td class="cid">CURSE_ECHO</td><td class="cdesc">复活敌方诅咒;回响1</td><td class="ctag"><span class="b b-root">根</span><span class="b b-bak">备</span></td></tr>
 					<tr data-tags="root"><td class="cname">噬咒兽</td><td class="cid">CURSE_THIRST_BEAST_4.0</td><td class="cdesc">敌方诅咒揭晓时:复活自身;攻击</td><td class="ctag"><span class="b b-root">根·咒</span></td></tr>
 					<tr data-tags="root"><td class="cname">回魂尸</td><td class="cid">WAKING_FIGHTER</td><td class="cdesc">攻击;苏醒:强化自身1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">尸变</td><td class="cid">WOKEN_BLADE</td><td class="cdesc">攻击;苏醒:攻击x2</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">起尸鬼</td><td class="cid">WOKEN_BLADE</td><td class="cdesc">攻击;苏醒:攻击x2</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">咒茧</td><td class="cid">WOKEN_HEX</td><td class="cdesc">强化1敌方诅咒;苏醒:强化2敌方诅咒</td><td class="ctag"><span class="b b-root">根·咒</span></td></tr>
 					<tr data-tags="root"><td class="cname">勾魂人</td><td class="cid">AWAKENED_REAPER</td><td class="cdesc">攻击;苏醒:埋葬1敌方</td><td class="ctag"><span class="b b-root">根·勾</span></td></tr>
 					<tr data-tags="icon"><td class="cname">丧钟</td><td class="cid">RELIC_DEATH_KNELL</td><td class="cdesc">被动:友方苏醒时:触发其遗言</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">冥约</td><td class="cid">FUNERAL_WILL</td><td class="cdesc">埋葬2卡组顶;遗言:延迟复活1友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="root"><td class="cname">扶灵人</td><td class="cid">FINAL_ESCORT</td><td class="cdesc">攻击;遗言:回合结束前:复活1墓地最高攻友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">冥约</td><td class="cid">FUNERAL_WILL</td><td class="cdesc">埋葬卡组顶2卡;遗言:复活1友方到末尾</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">扶灵人</td><td class="cid">FINAL_ESCORT</td><td class="cdesc">攻击;遗言:回合结束前:复活1墓地最高攻击力友方实体</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="icon"><td class="cname">骸骨哨兵</td><td class="cid">SOLDIER_SKELETON_4.0</td><td class="cdesc">攻击;遗言:复活自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">无头武生</td><td class="cid">REVIVING_STRIKER</td><td class="cdesc">攻击;遗言:攻击次数+1,复活自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">火刑柱</td><td class="cid">KINGSLAYER</td><td class="cdesc">埋葬1攻击力最高敌方;复活1友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">火刑柱</td><td class="cid">KINGSLAYER</td><td class="cdesc">埋葬1攻击力最高敌方;每回合一次,复活1友方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 				</tbody>
 			</table>
 		</section>
@@ -414,17 +415,17 @@
 				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
 				<tbody>
 					<tr data-tags="root"><td class="cname">新皈依者</td><td class="cid">RIFT_INSECT_4.0</td><td class="cdesc">攻击;生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">侍僧</td><td class="cid">RIFT_ACOLYTE</td><td class="cdesc">攻击;生成1信徒;苏醒:生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">鞭笞者</td><td class="cid">RIFT_STRIKER</td><td class="cdesc">攻击x2;生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">施洗者</td><td class="cid">RIFT_PRIEST</td><td class="cdesc">生成2信徒;强化1友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">侍僧</td><td class="cid">RIFT_ACOLYTE</td><td class="cdesc">生成1信徒;苏醒:生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">鞭笞者</td><td class="cid">RIFT_STRIKER</td><td class="cdesc">攻击;生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">施洗者</td><td class="cid">RIFT_PRIEST</td><td class="cdesc">生成2信徒;强化1友方实体</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="icon"><td class="cname">黑弥撒</td><td class="cid">RIFT_HATCHERY</td><td class="cdesc">生成3信徒;回合开始:埋葬自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">黑圣母</td><td class="cid">SWARM_QUEEN</td><td class="cdesc">攻击;每有1攻击力,生成1信徒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="root"><td class="cname">以血布道</td><td class="cid">RELIC_HIVE</td><td class="cdesc">被动:友方攻击时:生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">以血布道</td><td class="cid">RELIC_HIVE</td><td class="cdesc">被动:友方攻击时,生成1信徒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">诅咒唱诗班</td><td class="cid">SWARM_CURSER</td><td class="cdesc">生成1信徒;每有1友方信徒,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根·咒+教团</span></td></tr>
-					<tr data-tags="root"><td class="cname">献祭司事</td><td class="cid">RIFT_GUIDE_4.0</td><td class="cdesc">放逐1友方信徒,埋葬2敌方非生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">血飨</td><td class="cid">RIFT_REAPER</td><td class="cdesc">放逐所有信徒,每放逐1,强化1友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="icon"><td class="cname">伪经</td><td class="cid">RELIC_RIFT_OVERRIDE</td><td class="cdesc">被动:友方信徒效果变为:"复活1敌方诅咒;放逐自身"</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="root"><td class="cname">狂信徒</td><td class="cid">EXILE_BERSERKER</td><td class="cdesc">攻击;本回合每放逐1友方,攻击次数+1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">献祭司事</td><td class="cid">RIFT_GUIDE_4.0</td><td class="cdesc">放逐1友方信徒:埋葬2敌方现象</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">血飨</td><td class="cid">RIFT_REAPER</td><td class="cdesc">放逐所有信徒,每放逐1,强化1友方实体</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="icon"><td class="cname">伪经</td><td class="cid">RELIC_RIFT_OVERRIDE</td><td class="cdesc">被动:友方信徒效果变为:复活1敌方诅咒;放逐自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">狂信徒</td><td class="cid">EXILE_BERSERKER</td><td class="cdesc">攻击;本回合每放逐过3友方,本回合攻击次数+1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="clear"><td class="cname">信徒</td><td class="cid">(token)</td><td class="cdesc">信徒 token</td><td class="ctag"><span class="b b-clear">机制透明</span></td></tr>
 				</tbody>
 			</table>
@@ -440,23 +441,23 @@
 			<table>
 				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
 				<tbody>
-					<tr data-tags="clear"><td class="cname">诅咒</td><td class="cid">JU_ON</td><td class="cdesc">(状态 token)对自身造成[攻击力]点伤害</td><td class="ctag"><span class="b b-clear">机制透明</span></td></tr>
-					<tr data-tags="root"><td class="cname">蛊噬</td><td class="cid">DETERIORATION_4.0</td><td class="cdesc">强化2敌方诅咒;敌方诅咒每有3攻击力,额外强化1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">蛊婆</td><td class="cid">HEXER</td><td class="cdesc">攻击;强化3敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">降头师</td><td class="cid">GRAVE_HEXER</td><td class="cdesc">复活1友方;强化2敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="clear"><td class="cname">诅咒</td><td class="cid">JU_ON</td><td class="cdesc">对自身造成[攻击力]点伤害</td><td class="ctag"><span class="b b-clear">机制透明</span></td></tr>
+					<tr data-tags="root"><td class="cname">蛊噬</td><td class="cid">DETERIORATION_4.0</td><td class="cdesc">强化2敌方诅咒;敌方诅咒每有3攻击力:再强化1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">蛊婆</td><td class="cid">HEXER</td><td class="cdesc">攻击;强化2敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">降头师</td><td class="cid">GRAVE_HEXER</td><td class="cdesc">强化1敌方诅咒;每回合一次,复活1友方</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">咒刃</td><td class="cid">HEXBLADE</td><td class="cdesc">攻击;每有1攻击力,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">养蛊人</td><td class="cid">CURSE_GARDENER</td><td class="cdesc">强化1敌方诅咒;复活1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">收蛊人</td><td class="cid">CURSE_REVIVER</td><td class="cdesc">攻击;复活1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">吞蛊人</td><td class="cid">CURSE_EATER</td><td class="cdesc">攻击;攻击力=敌方诅咒攻击力</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">噬咒萨满</td><td class="cid">CURSE_THIRST_SHAMAN_4.0</td><td class="cdesc">敌方诅咒每有1攻击力,强化1友方生物</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">噬咒萨满</td><td class="cid">CURSE_THIRST_SHAMAN_4.0</td><td class="cdesc">敌方诅咒每有1攻击力:强化1友方实体</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">血契</td><td class="cid">RELIC_BLOOD_PACT</td><td class="cdesc">被动:友方攻击不再造成伤害,而是强化等量敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">饲咒</td><td class="cid">RELIC_ATTACK_HEX</td><td class="cdesc">被动:有卡攻击时:强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">饲咒</td><td class="cid">RELIC_ATTACK_HEX</td><td class="cdesc">被动:友方攻击时,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root bak"><td class="cname">人牲</td><td class="cid">RELIC_TAINT</td><td class="cdesc">被动:友方信徒与敌方诅咒相邻时:放逐该信徒,强化2敌方诅咒</td><td class="ctag"><span class="b b-root">根</span><span class="b b-bak">备</span></td></tr>
 					<tr data-tags="root"><td class="cname">积尸气</td><td class="cid">RELIC_GRAVE_CURSE</td><td class="cdesc">被动:敌方诅咒攻击力=墓地友方卡数量</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">蛊王</td><td class="cid">SNOWBALL</td><td class="cdesc">攻击x2;强化反应:强化自身1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">蛊王</td><td class="cid">SNOWBALL</td><td class="cdesc">攻击;强化反应:强化自身1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
 					<tr data-tags="root"><td class="cname">提前发作</td><td class="cid">RELIC_CURSE_HASTE</td><td class="cdesc">被动:敌方诅咒攻击次数+1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">瘴气</td><td class="cid">WEAKENING_FIELD</td><td class="cdesc">所有生物本回合攻击力-1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">活殉</td><td class="cid">SACRIFICIAL_SPIRIT</td><td class="cdesc">攻击;埋葬1友方;强化5敌方诅咒</td><td class="ctag"><span class="b b-root">根·殉</span><span class="bx">交叉取殉</span></td></tr>
+					<tr data-tags="root"><td class="cname">瘴气</td><td class="cid">WEAKENING_FIELD</td><td class="cdesc">所有实体本回合攻击力-1</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">活殉</td><td class="cid">SACRIFICIAL_SPIRIT</td><td class="cdesc">埋葬1友方;强化4敌方诅咒</td><td class="ctag"><span class="b b-root">根·殉</span><span class="bx">交叉取殉</span></td></tr>
 				</tbody>
 			</table>
 		</section>
@@ -471,30 +472,30 @@
 			<table>
 				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
 				<tbody>
-					<tr data-tags="root"><td class="cname">血祭</td><td class="cid">GRAVE_FIST</td><td class="cdesc">埋葬1友方;攻击</td><td class="ctag"><span class="b b-root">根·祭</span></td></tr>
-					<tr data-tags="root"><td class="cname">剜心祭</td><td class="cid">GRAVE_PUNCH_4.0</td><td class="cdesc">埋葬1友方;攻击x2</td><td class="ctag"><span class="b b-root">根·祭</span></td></tr>
-					<tr data-tags="root"><td class="cname">替罪羔羊</td><td class="cid">SACRIFICE_WEAKEST</td><td class="cdesc">埋葬1攻击力最低友方;强化1该卡</td><td class="ctag"><span class="b b-root">根·牲</span></td></tr>
+					<tr data-tags="root"><td class="cname">血祭司</td><td class="cid">GRAVE_FIST</td><td class="cdesc">埋葬1友方;攻击</td><td class="ctag"><span class="b b-root">根·祭</span></td></tr>
+					<tr data-tags="root"><td class="cname">剜心祭司</td><td class="cid">GRAVE_PUNCH_4.0</td><td class="cdesc">埋葬1友方;攻击</td><td class="ctag"><span class="b b-root">根·祭</span></td></tr>
+					<tr data-tags="root"><td class="cname">替罪羔羊</td><td class="cid">SACRIFICE_WEAKEST</td><td class="cdesc">埋葬1攻击力最低友方实体;强化1该卡</td><td class="ctag"><span class="b b-root">根·牲</span></td></tr>
 					<tr data-tags="icon"><td class="cname">集体自焚</td><td class="cid">MASS_SACRIFICE</td><td class="cdesc">埋葬所有友方;每埋葬1友方,生成1信徒</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">什一抽杀</td><td class="cid">DECIMATION</td><td class="cdesc">埋葬6友方,本回合每埋葬过1友方,埋葬数-1;攻击x3</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">血肉磨坊</td><td class="cid">GRAVE_MILLER</td><td class="cdesc">攻击;埋葬2友方,埋葬卡组顶5卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">监斩官</td><td class="cid">DECIMATION</td><td class="cdesc">埋葬4友方,本回合每埋葬过1友方,埋葬数-1;攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">血肉磨坊</td><td class="cid">GRAVE_MILLER</td><td class="cdesc">攻击;埋葬2友方;埋葬卡组顶5卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="root"><td class="cname">掘墓人</td><td class="cid">GRAVE_DREDGER</td><td class="cdesc">攻击;埋葬卡组顶3卡</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="icon"><td class="cname">凌迟</td><td class="cid">MILLBLADE</td><td class="cdesc">攻击;每有1攻击力,埋葬卡组顶1卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">同葬</td><td class="cid">GRAVE_TOGETHER_4.0</td><td class="cdesc">攻击;埋葬1友方;埋葬2敌方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">千刀手</td><td class="cid">MILLBLADE</td><td class="cdesc">攻击;每有1攻击力,埋葬卡组顶1卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">殉葬人</td><td class="cid">GRAVE_TOGETHER_4.0</td><td class="cdesc">攻击;埋葬1友方;埋葬2敌方</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">骸骨巨人</td><td class="cid">GRAVE_GIANT</td><td class="cdesc">攻击力=墓地友方数量;攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">连坐</td><td class="cid">RELIC_CHAIN_BURIAL</td><td class="cdesc">被动:友方被埋葬时:埋葬1卡组顶卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="root"><td class="cname">埋骨地</td><td class="cid">RELIC_ATTACK_BURIAL</td><td class="cdesc">被动:友方每次攻击:埋葬卡组顶1卡</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">血账</td><td class="cid">RELIC_TALLY</td><td class="cdesc">被动:回合结束前:本回合每埋葬1生物,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
-					<tr data-tags="root"><td class="cname">勾魂簿</td><td class="cid">RELIC_CURSE_GRAVE</td><td class="cdesc">被动:敌方诅咒揭晓时:埋葬1敌方</td><td class="ctag"><span class="b b-root">根·勾</span></td></tr>
-					<tr data-tags="icon"><td class="cname">白骨王座</td><td class="cid">RELIC_GRAVE_LORD</td><td class="cdesc">被动:墓地中的友方生物攻击力+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">连坐</td><td class="cid">RELIC_CHAIN_BURIAL</td><td class="cdesc">被动:每次友方被埋葬时,埋葬卡组顶1卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">埋骨地</td><td class="cid">RELIC_ATTACK_BURIAL</td><td class="cdesc">被动:友方每次攻击时,埋葬卡组顶1卡</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">血账</td><td class="cid">RELIC_TALLY</td><td class="cdesc">被动:回合结束前:本回合每埋葬1友方,强化1敌方诅咒</td><td class="ctag"><span class="b b-root">根</span></td></tr>
+					<tr data-tags="root"><td class="cname">勾魂簿</td><td class="cid">RELIC_CURSE_GRAVE</td><td class="cdesc">被动:敌方诅咒揭晓时,埋葬1敌方</td><td class="ctag"><span class="b b-root">根·勾</span></td></tr>
+					<tr data-tags="icon"><td class="cname">白骨王座</td><td class="cid">RELIC_GRAVE_LORD</td><td class="cdesc">被动:墓地中的友方实体攻击力+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="root"><td class="cname">司悼人</td><td class="cid">EULOGIST</td><td class="cdesc">埋葬1张tag为[遗言]的友方卡;攻击</td><td class="ctag"><span class="b b-root">根·悼</span></td></tr>
 					<tr data-tags="icon"><td class="cname">安魂弥撒</td><td class="cid">LAST_RITES</td><td class="cdesc">遗言:触发所有在墓地友方的遗言</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="root"><td class="cname">遗赠</td><td class="cid">LAST_GIFT</td><td class="cdesc">攻击;遗言:强化2友方生物</td><td class="ctag"><span class="b b-root">根·遗</span></td></tr>
-					<tr data-tags="icon"><td class="cname">抬棺人</td><td class="cid">DEATHBED_PORTER</td><td class="cdesc">攻击;遗言:攻击;置顶1友方非生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">垂死反扑</td><td class="cid">DEATHBED_GRANT</td><td class="cdesc">被动:友方生物被埋葬时:该友方生物攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">操尸人</td><td class="cid">GRAVE_PUPPETEER</td><td class="cdesc">让墓地1友方生物攻击;墓地无友方则埋葬1张[遗言]友方卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">厉鬼</td><td class="cid">AVENGER_4.0</td><td class="cdesc">攻击x2;遗言:强化自身1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">遗赠</td><td class="cid">LAST_GIFT</td><td class="cdesc">攻击;遗言:强化2友方实体</td><td class="ctag"><span class="b b-root">根·遗</span></td></tr>
+					<tr data-tags="icon"><td class="cname">抬棺人</td><td class="cid">DEATHBED_PORTER</td><td class="cdesc">攻击;遗言:攻击;复活1友方现象</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">垂死反扑</td><td class="cid">DEATHBED_GRANT</td><td class="cdesc">被动:友方实体被埋葬时:该友方实体攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">操尸人</td><td class="cid">GRAVE_PUPPETEER</td><td class="cdesc">墓地1友方实体攻击;墓地无则埋葬1[遗言]友方卡</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">厉鬼</td><td class="cid">AVENGER_4.0</td><td class="cdesc">攻击;遗言:强化自身1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">带刺的标本</td><td class="cid">SPIKE_SKELETON_4.0</td><td class="cdesc">攻击;遗言:攻击x2</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">管道里的活物</td><td class="cid">SLIME_4.0</td><td class="cdesc">遗言:复制自身;攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">管道里的活物</td><td class="cid">SLIME_4.0</td><td class="cdesc">攻击;遗言:复制自身</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 				</tbody>
 			</table>
 		</section>
@@ -509,18 +510,18 @@
 			<table>
 				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th><th>标注</th></tr></thead>
 				<tbody>
-					<tr data-tags="icon"><td class="cname">连体人</td><td class="cid">TWIN_STRIKER</td><td class="cdesc">攻击x2</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">百臂巨人</td><td class="cid">QUAD_STRIKER</td><td class="cdesc">攻击x4</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">股骨号角</td><td class="cid">BATTLE_HORN</td><td class="cdesc">本回合友方生物攻击次数+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">执鞭人</td><td class="cid">COMBO_GRANTER</td><td class="cdesc">攻击;本回合1友方生物攻击次数+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">连体人</td><td class="cid">TWIN_STRIKER</td><td class="cdesc">攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">百臂巨人</td><td class="cid">QUAD_STRIKER</td><td class="cdesc">攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">股骨号角</td><td class="cid">BATTLE_HORN</td><td class="cdesc">本回合友方实体攻击次数+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">执鞭人</td><td class="cid">COMBO_GRANTER</td><td class="cdesc">攻击;本回合1友方实体攻击次数+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">渴血者</td><td class="cid">COMBO_STARTER</td><td class="cdesc">攻击;强化反应:攻击次数+1</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">模仿犯</td><td class="cid">MIMIC_BLADE</td><td class="cdesc">攻击力=友方最高攻击力;攻击x2</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="icon"><td class="cname">模仿犯</td><td class="cid">MIMIC_BLADE</td><td class="cdesc">攻击力=友方最高攻击力;攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 					<tr data-tags="icon"><td class="cname">缝合人</td><td class="cid">UNFINISHED_ROBOT_4.0</td><td class="cdesc">攻击;攻击力翻倍</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="icon"><td class="cname">骨匠</td><td class="cid">BLACKSMITH_4.0</td><td class="cdesc">攻击;强化1友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="root"><td class="cname">开刃</td><td class="cid">WAR_TRAINER</td><td class="cdesc">强化2友方生物</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
-					<tr data-tags="root"><td class="cname">妖刀</td><td class="cid">WEAPON_SPIRIT_4.0</td><td class="cdesc">被动:友方生物触发强化反应时:强化1该生物</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
-					<tr data-tags="icon"><td class="cname">邪印</td><td class="cid">RELIC_TRAINER</td><td class="cdesc">被动:回合开始:强化1攻击力最低友方生物</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
-					<tr data-tags="root"><td class="cname">引魂幡</td><td class="cid">RELIC_WHITE_BANNER</td><td class="cdesc">被动:回合开始:置顶1友方攻击力最高生物</td><td class="ctag"><span class="b b-root">根·魂</span></td></tr>
+					<tr data-tags="icon"><td class="cname">骨匠</td><td class="cid">BLACKSMITH_4.0</td><td class="cdesc">攻击;强化1友方实体</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">开刃</td><td class="cid">WAR_TRAINER</td><td class="cdesc">强化2友方实体</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
+					<tr data-tags="root"><td class="cname">妖刀</td><td class="cid">WEAPON_SPIRIT_4.0</td><td class="cdesc">被动:友方被强化时:强化1该友方</td><td class="ctag"><span class="b b-root">根·刃</span></td></tr>
+					<tr data-tags="icon"><td class="cname">邪印</td><td class="cid">RELIC_TRAINER</td><td class="cdesc">被动:回合开始:强化1攻击力最低友方实体</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
+					<tr data-tags="root"><td class="cname">引魂幡</td><td class="cid">RELIC_WHITE_BANNER</td><td class="cdesc">被动:回合开始:置顶1友方攻击力最高实体</td><td class="ctag"><span class="b b-root">根·魂</span></td></tr>
 					<tr data-tags="icon bak"><td class="cname">鬼打墙</td><td class="cid">DELAYER</td><td class="cdesc">延后1攻击力最高敌方;攻击</td><td class="ctag"><span class="b b-icon">icon</span><span class="b b-bak">备</span></td></tr>
 					<tr data-tags="icon"><td class="cname">行尸走肉</td><td class="cid">ZOMBIE</td><td class="cdesc">攻击</td><td class="ctag"><span class="b b-icon">icon</span></td></tr>
 				</tbody>
@@ -537,26 +538,26 @@
 			<table>
 				<thead><tr><th>卡名</th><th class="cid-h">cardTypeID</th><th>desc</th></tr></thead>
 				<tbody>
-					<tr data-tags=""><td class="cname">噩梦重播</td><td class="cid">UTILITY_REROLL_1</td><td class="cdesc">被动:免费重掷次数+1</td></tr>
-					<tr data-tags=""><td class="cname">魇市赊账</td><td class="cid">UTILITY_DISCOUNT_1</td><td class="cdesc">被动:每重掷4次,随机商品降价2</td></tr>
+					<tr data-tags=""><td class="cname">噩梦重播</td><td class="cid">UTILITY_REROLL_1</td><td class="cdesc">被动:免费重掷次数+1,不占用卡位</td></tr>
+					<tr data-tags=""><td class="cname">魇市赊账</td><td class="cid">UTILITY_DISCOUNT_1</td><td class="cdesc">被动:不占用卡位,25%概率:1件随机商品半价</td></tr>
 					<tr data-tags=""><td class="cname">魇市半价</td><td class="cid">UTILITY_HALFPRICE_1</td><td class="cdesc">被动:不占用卡位,必出1件半价商品</td></tr>
-					<tr data-tags=""><td class="cname">冥币</td><td class="cid">UTILITY_INCOME_1</td><td class="cdesc">被动:收入+2</td></tr>
-					<tr data-tags=""><td class="cname">魇市深处</td><td class="cid">UTILITY_ODDS_1</td><td class="cdesc">被动:首个货架必为奇物架</td></tr>
-					<tr data-tags=""><td class="cname">窥魇镜</td><td class="cid">UTILITY_ODDS_2</td><td class="cdesc">奇物架的出现概率+15%</td></tr>
-					<tr data-tags=""><td class="cname">魇市新摊</td><td class="cid">UTILITY_OPTION_1</td><td class="cdesc">被动:商店货架+1</td></tr>
+					<tr data-tags=""><td class="cname">冥币</td><td class="cid">UTILITY_INCOME_1</td><td class="cdesc">被动:收入+4,不占用卡位</td></tr>
+					<tr data-tags=""><td class="cname">魇市深处</td><td class="cid">UTILITY_ODDS_1</td><td class="cdesc">被动:首个货架必含1件商店被动卡,不占用卡位</td></tr>
+					<tr data-tags=""><td class="cname">窥魇镜</td><td class="cid">UTILITY_ODDS_2</td><td class="cdesc">被动:不占用卡位,25%概率多出1商店被动卡</td></tr>
+					<tr data-tags=""><td class="cname">魇市新摊</td><td class="cid">UTILITY_OPTION_1</td><td class="cdesc">被动:不占用卡位,商店货架+1</td></tr>
 					<tr data-tags=""><td class="cname">魇市游摊</td><td class="cid">UTILITY_OPTION_P_1</td><td class="cdesc">被动:不占用卡位,25%概率:货架+1</td></tr>
-					<tr data-tags=""><td class="cname">百怪入梦</td><td class="cid">UTILITY_CREATURES_1</td><td class="cdesc">20%概率:战斗架全部商品变为生物卡</td></tr>
-					<tr data-tags=""><td class="cname">死寂的梦</td><td class="cid">UTILITY_SPELLS_1</td><td class="cdesc">20%概率:战斗架全部商品变为非生物卡</td></tr>
-					<tr data-tags=""><td class="cname">噩梦</td><td class="cid">UTILITY_TAG_CURSE</td><td class="cdesc">每3个货架必出1张[诅咒]卡</td></tr>
-					<tr data-tags=""><td class="cname">亡者入梦</td><td class="cid">UTILITY_TAG_REVIVE</td><td class="cdesc">每3个货架必出1张[复活]卡</td></tr>
-					<tr data-tags=""><td class="cname">惊醒</td><td class="cid">UTILITY_TAG_AWAKEN</td><td class="cdesc">每3个货架必出1张[苏醒]卡</td></tr>
-					<tr data-tags=""><td class="cname">深魇</td><td class="cid">UTILITY_SLOT_R</td><td class="cdesc">每3个货架必出1张✦✦✦卡</td></tr>
-					<tr data-tags=""><td class="cname">初魇</td><td class="cid">UTILITY_SLOT_U_1</td><td class="cdesc">被动:首个货架必出1张✦✦卡</td></tr>
-					<tr data-tags=""><td class="cname">连魇</td><td class="cid">UTILITY_SLOT_U_2</td><td class="cdesc">每个货架必出1张✦✦卡</td></tr>
-					<tr data-tags=""><td class="cname">梦魇缠身</td><td class="cid">UTILITY_WEIGHT_R</td><td class="cdesc">✦✦✦卡的出货权重x2</td></tr>
-					<tr data-tags=""><td class="cname">魇影幢幢</td><td class="cid">UTILITY_WEIGHT_U</td><td class="cdesc">✦✦卡的出货权重x2</td></tr>
-					<tr data-tags=""><td class="cname">长夜</td><td class="cid">SYSTEM_INCREASE_DECK_SIZE_LITE</td><td class="cdesc">卡位+1,放逐自身</td></tr>
-					<tr data-tags=""><td class="cname">沉魇</td><td class="cid">SYSTEM_INCREASE_HP_MAX</td><td class="cdesc">被动:生命值上限+4</td></tr>
+					<tr data-tags=""><td class="cname">百怪入梦</td><td class="cid">UTILITY_CREATURES_1</td><td class="cdesc">被动:不占用卡位,20%概率只掷出实体卡</td></tr>
+					<tr data-tags=""><td class="cname">死寂的梦</td><td class="cid">UTILITY_SPELLS_1</td><td class="cdesc">被动:不占用卡位,20%概率:只掷出现象卡</td></tr>
+					<tr data-tags=""><td class="cname">噩梦</td><td class="cid">UTILITY_TAG_CURSE</td><td class="cdesc">被动:不占用卡位,25%概率:多出1张[诅咒]卡</td></tr>
+					<tr data-tags=""><td class="cname">亡者入梦</td><td class="cid">UTILITY_TAG_REVIVE</td><td class="cdesc">被动:不占用卡位,25%概率:多出1张[复活]卡</td></tr>
+					<tr data-tags=""><td class="cname">惊醒</td><td class="cid">UTILITY_TAG_AWAKEN</td><td class="cdesc">被动:不占用卡位,25%概率:多出1张[苏醒]卡</td></tr>
+					<tr data-tags=""><td class="cname">深魇</td><td class="cid">UTILITY_SLOT_R</td><td class="cdesc">被动:不占用卡位,25%概率:多出1✦✦✦卡</td></tr>
+					<tr data-tags=""><td class="cname">初魇</td><td class="cid">UTILITY_SLOT_U_1</td><td class="cdesc">被动:不占用卡位,25%概率:多出1张✦✦卡</td></tr>
+					<tr data-tags=""><td class="cname">连魇</td><td class="cid">UTILITY_SLOT_U_2</td><td class="cdesc">被动:不占用卡位,每次生成货架必出1张✦✦卡</td></tr>
+					<tr data-tags=""><td class="cname">梦魇缠身</td><td class="cid">UTILITY_WEIGHT_R</td><td class="cdesc">被动:不占用卡位,✦✦✦卡的出货权重x2</td></tr>
+					<tr data-tags=""><td class="cname">魇影幢幢</td><td class="cid">UTILITY_WEIGHT_U</td><td class="cdesc">被动:不占用卡位,✦✦卡的出货权重x2</td></tr>
+					<tr data-tags=""><td class="cname">长夜</td><td class="cid">SYSTEM_INCREASE_DECK_SIZE_LITE</td><td class="cdesc">购买:卡位+1,放逐自身</td></tr>
+					<tr data-tags=""><td class="cname">沉魇</td><td class="cid">SYSTEM_INCREASE_HP_MAX</td><td class="cdesc">购买:生命值上限+8,放逐自身</td></tr>
 				</tbody>
 			</table>
 		</section>
@@ -582,6 +583,8 @@
 			<li><b>v2 文档</b>保留作历史档,不作命名依据;机制词(埋葬/复活/强化/诅咒/苏醒/揭晓/生成/放逐/置顶/延后)维持白话基线,本案不触碰。</li>
 			<li>desc 若再变动,<b>以 Notion DB 为准</b>回填本表。</li>
 			<li><b>2026-10-11 回填</b>:按 Notion DB(119 行)全量复核对齐——MASS_REVIVER「墓园空了」→「空墓园」(2026-09-15 漂移修复 f54e7123 改名,prefab/DB 一致);RIFT_GUIDE/WEAPON_SPIRIT 行 ID 补 <code>_4.0</code> 后缀(DB+Unity 于 09-20 后改名,中文名不变);补入 UTILITY_HALFPRICE_1(魇市半价,09-11 入池)、UTILITY_OPTION_P_1(魇市游摊,09-14 建卡)、ZOMBIE(行尸走肉,纯攻击基线卡,zombie balance audit 基线,入 1.5)。复核结论:其余 113 行名字与 DB 全一致,4 张[备]与 DB 状态=备用 吻合,DB 无空中文名。</li>
+			<li><b>2026-10-11 desc 回填</b>:全表 81 行 desc 按 Notion DB 回填——复活系补「每回合N次」限次、生物→实体/现象措辞、多处数值改动(HEXER 强化3→2、DECIMATION 埋6→4、UTILITY_INCOME +2→+4、HP_MAX +4→+8 等)、多次攻击 xN 移出 desc(查 DB <code>ExtraATKTimes</code> 列与「多次攻击」tag)、SPIRIT_CALLER 重做为现象、UTILITY 系补「不占用卡位」、SYSTEM 系改「购买:」触发。漂移明细:<code>tools/outputs/desc_drift_report.txt</code>。</li>
+			<li><b>2026-10-11 改名第一批(§1 优先级裁定)</b>:8 张实体卡由事件/现象句式改为角色/怪物句式——血祭→血祭司、剜心祭→剜心祭司、同葬→殉葬人、凌迟→千刀手、什一抽杀→监斩官、百鬼夜行→百鬼将、尸变→起尸鬼、马戏团的地下室→马戏团的熊;物件/器械名裁定保留(咒刃/镀金圣髑/血肉磨坊/带刺的标本/遗赠)。prefab <code>displayName</code> 与 Notion 中文名同日同步。</li>
 		</ol>
 	</section>
 

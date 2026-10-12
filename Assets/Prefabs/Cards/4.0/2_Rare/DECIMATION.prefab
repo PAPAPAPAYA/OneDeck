@@ -226,7 +226,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardScript
   cardID: 0
   cardTypeID: DECIMATION
-  displayName: "\u4EC0\u4E00\u62BD\u6740"
+  displayName: "\u76D1\u65A9\u5B98"
   cardDesc: "\u57CB\u846C <b>4</b> \u53CB\u65B9,\u672C\u56DE\u5408\u6BCF\u57CB\u846C\u8FC7
     <b>1</b> \u53CB\u65B9,\u57CB\u846C\u6570 <b>-1</b>;\u653B\u51FB"
   rarity: 2

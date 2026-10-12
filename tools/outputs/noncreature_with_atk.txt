@@ -1,0 +1,2 @@
+cardType != Creature but printedAttack non-empty:
+total: 0

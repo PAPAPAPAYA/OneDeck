@@ -1,6 +1,6 @@
 # OneDeck 世界观迭代 v3 —— 古典邪教 × 低俗恐怖(卡名全案)
 
-> 2026-09-08 · 前置:`docs/OneDeck_Worldview_Naming_v2_ModernUrban.md`(v2,都市怪谈方案,已废止)· 数据源:Notion「4.0 card database」(116 行,2026-09-08 快照;2026-10-11 按 119 行 DB 全量复核回填,见 PART 3-5)
+> 2026-09-08 · 前置:`docs/OneDeck_Worldview_Naming_v2_ModernUrban.md`(v2,都市怪谈方案,已废止)· 数据源:Notion「4.0 card database」(116 行,2026-09-08 快照;2026-10-11 按 119 行 DB 全量复核回填,见 PART 3-5、3-6)
 > 状态:**定稿,已写入 Notion 中文名列(2026-09-08) · Unity prefab `displayName` 已同步(2026-09-08)**
 > 本案范围:仅 `CardScript.displayName`。不动 `cardTypeID`(程序代号,命名时禁止参考其语义),不动 `cardDesc` 机制文本。
 
@@ -30,6 +30,8 @@
 
 ## §1 实体 / 现象 / 状态 命名句法
 
+> **优先级裁定(2026-10-11)**:本节句法优先级高于 §0-3 的意象/词根规则——实体卡名必须是名词性主体(角色/怪物/称号);物件/器械名可豁免(咒刃、镀金圣髑、血肉磨坊、带刺的标本、遗赠)。
+
 | 类型 | 句法 | 读感 | 例 |
 |---|---|---|---|
 | 实体(生物,能造成伤害) | 名词性主体:角色/怪物/称号 | "这是谁" | 食尸鬼、狂信徒、连体人 |
@@ -53,7 +55,7 @@
 **半绑定规则**(讨论结论 2026-09-08):
 
 1. 词根绑"家族最大公约数":同条件族绑条件词根,同收益族绑收益词根。
-2. **浓度上限 60~70%**:每族留 3~4 张纯意象 icon 卡当记忆锚点(黑弥撒、什一抽杀级),铺满词根即成模板,禁止。
+2. **浓度上限 60~70%**:每族留 3~4 张纯意象 icon 卡当记忆锚点(黑弥撒、监斩官级),铺满词根即成模板,禁止。
 3. 交叉卡(同时属两族)取更稀有、更标识构筑方向的一侧词根。例:SACRIFICIAL_SPIRIT 取「殉」,SWARM_CURSER 取教团职衔。
 4. 词根的价值是组牌时快速归类,不承担传达完整机制的任务(机制由 desc 承担)。
 
@@ -65,123 +67,123 @@
 
 | cardTypeID | desc | 卡名 | 标注 |
 |---|---|---|---|
-| SPIRIT_CALLER | 攻击;复活1友方非生物 | 降灵会 | [根] |
-| NECROMANCER | 复活1友方;苏醒:复活1友方 | 招魂执事 | [根] |
-| MASS_REVIVER | 复活3友方✦卡 | 空墓园 | [icon] |
-| ELITE_REVIVER | 攻击;复活1被强化过的友方生物 | 镀金圣髑 | [icon] |
-| BEAST_REVIVER | 攻击;复活1生物友方 | 马戏团的地下室 | [icon] |
-| FLURRY_REVIVER | 复活1攻击次数最多友方生物 | 死不瞑目 | [icon] |
-| DUO_REVIVER | 复活2友方✦✦卡 | 阴婚 | [icon] |
-| REANIMATOR | 攻击;攻击力=本回合复活友方数 | 百鬼夜行 | [icon] |
+| SPIRIT_CALLER | 每回合两次,复活1友方现象 | 降灵会 | [根] |
+| NECROMANCER | 苏醒:复活1友方;每回合一次,复活1友方 | 招魂执事 | [根] |
+| MASS_REVIVER | 每回合一次,复活3友方✦卡 | 空墓园 | [icon] |
+| ELITE_REVIVER | 攻击;每回合一次,复活1被强化过的友方实体 | 镀金圣髑 | [icon] |
+| BEAST_REVIVER | 攻击;每回合一次,复活1友方实体 | 马戏团的熊 | [icon] |
+| FLURRY_REVIVER | 复活1攻击次数最多友方实体 | 死不瞑目 | [icon] |
+| DUO_REVIVER | 每回合一次,复活2友方✦✦卡 | 阴婚 | [icon] |
+| REANIMATOR | 攻击;攻击力=本回合复活友方数 | 百鬼将 | [icon] |
 | UNDYING_WARRIOR | 攻击;强化反应:复活自身 | 钉不死的人 | [icon] |
-| SOUL_TRADER | 复活2友方;埋葬1友方 | 以命换命 | [根] |
+| SOUL_TRADER | 埋葬1友方;每回合一次,复活2友方 | 以命换命 | [根] |
 | SOUL_SWAPPER | 攻击;复活1友方;埋葬1敌方 | 换命 | [根][备] |
-| REVIVE_SUMMONER | 复活1友方;生成1信徒 | 复活见证人 | [根] |
-| RELIC_CURSE_REVIVAL | 被动:敌方诅咒揭晓时:复活1友方 | 耳语唤尸 | [根] |
-| DOOM_HERALD | 攻击;复活1攻击力最高敌方;强化4敌方诅咒 | 报丧人 | [icon] |
-| GRAVE_ROBBER | 复活1攻击力最高敌方;攻击力变为该卡攻击力 | 食尸鬼 | [icon] |
-| RIFT_SHEPHERD | 攻击;复活1张tag为[信徒]的友方卡 | 牧羊人 | [icon] |
+| REVIVE_SUMMONER | 生成1信徒;每回合一次,复活1友方 | 复活见证人 | [根] |
+| RELIC_CURSE_REVIVAL | 被动:敌方诅咒揭晓时,每回合三次,复活1友方 | 耳语唤尸 | [根] |
+| DOOM_HERALD | 攻击;复活1攻击力最高敌方;强化3敌方诅咒 | 报丧人 | [icon] |
+| GRAVE_ROBBER | 复活1攻击力最高敌方;攻击力变为该卡攻击力;攻击 | 食尸鬼 | [icon] |
+| RIFT_SHEPHERD | 攻击;每回合一次,复活1张tag为[信徒]的友方卡 | 牧羊人 | [icon] |
 | RIFT_MEDIUM | 生成2信徒;苏醒:复活1友方 | 扶乩 | [根] |
-| RIFT_REVIVER | 放逐1友方信徒,复活2友方非生物 | 以人易物 | [根] |
-| CURSE_SUMMONER | 复活1友方;复活1敌方诅咒 | 走阴人 | [icon] |
+| RIFT_REVIVER | 放逐1友方信徒:每回合两次,复活2友方现象 | 以人易物 | [根] |
+| CURSE_SUMMONER | 复活1敌方诅咒;每回合一次,复活1友方 | 走阴人 | [icon] |
 | CURSE_ECHO | 复活敌方诅咒;回响1 | 阴魂不散 | [根][备] |
 | CURSE_THIRST_BEAST_4.0 | 敌方诅咒揭晓时:复活自身;攻击 | 噬咒兽 | [根·咒] |
 | WAKING_FIGHTER | 攻击;苏醒:强化自身1 | 回魂尸 | [根] |
-| WOKEN_BLADE | 攻击;苏醒:攻击x2 | 尸变 | [根] |
+| WOKEN_BLADE | 攻击;苏醒:攻击x2 | 起尸鬼 | [根] |
 | WOKEN_HEX | 强化1敌方诅咒;苏醒:强化2敌方诅咒 | 咒茧 | [根·咒] |
 | AWAKENED_REAPER | 攻击;苏醒:埋葬1敌方 | 勾魂人 | [根·勾] |
 | RELIC_DEATH_KNELL | 被动:友方苏醒时:触发其遗言 | 丧钟 | [icon] |
-| FUNERAL_WILL | 埋葬2卡组顶;遗言:延迟复活1友方 | 冥约 | [icon] |
-| FINAL_ESCORT | 攻击;遗言:回合结束前:复活1墓地最高攻友方生物 | 扶灵人 | [根] |
+| FUNERAL_WILL | 埋葬卡组顶2卡;遗言:复活1友方到末尾 | 冥约 | [icon] |
+| FINAL_ESCORT | 攻击;遗言:回合结束前:复活1墓地最高攻击力友方实体 | 扶灵人 | [根] |
 | SOLDIER_SKELETON_4.0 | 攻击;遗言:复活自身 | 骸骨哨兵 | [icon] |
 | REVIVING_STRIKER | 攻击;遗言:攻击次数+1,复活自身 | 无头武生 | [icon] |
-| KINGSLAYER | 埋葬1攻击力最高敌方;复活1友方 | 火刑柱 | [icon] |
+| KINGSLAYER | 埋葬1攻击力最高敌方;每回合一次,复活1友方 | 火刑柱 | [icon] |
 
 ### 1.2 信徒 / 放逐族(13,词根:教团职衔与仪式)
 
 | cardTypeID | desc | 卡名 | 标注 |
 |---|---|---|---|
 | RIFT_INSECT_4.0 | 攻击;生成1信徒 | 新皈依者 | [根] |
-| RIFT_ACOLYTE | 攻击;生成1信徒;苏醒:生成1信徒 | 侍僧 | [根] |
-| RIFT_STRIKER | 攻击x2;生成1信徒 | 鞭笞者 | [根] |
-| RIFT_PRIEST | 生成2信徒;强化1友方生物 | 施洗者 | [根] |
+| RIFT_ACOLYTE | 生成1信徒;苏醒:生成1信徒 | 侍僧 | [根] |
+| RIFT_STRIKER | 攻击;生成1信徒 | 鞭笞者 | [根] |
+| RIFT_PRIEST | 生成2信徒;强化1友方实体 | 施洗者 | [根] |
 | RIFT_HATCHERY | 生成3信徒;回合开始:埋葬自身 | 黑弥撒 | [icon] |
 | SWARM_QUEEN | 攻击;每有1攻击力,生成1信徒 | 黑圣母 | [icon] |
-| RELIC_HIVE | 被动:友方攻击时:生成1信徒 | 以血布道 | [根] |
+| RELIC_HIVE | 被动:友方攻击时,生成1信徒 | 以血布道 | [根] |
 | SWARM_CURSER | 生成1信徒;每有1友方信徒,强化1敌方诅咒 | 诅咒唱诗班 | [根·咒+教团] |
-| RIFT_GUIDE_4.0 | 放逐1友方信徒,埋葬2敌方非生物 | 献祭司事 | [根] |
-| RIFT_REAPER | 放逐所有信徒,每放逐1,强化1友方生物 | 血飨 | [根] |
-| RELIC_RIFT_OVERRIDE | 被动:友方信徒效果变为:"复活1敌方诅咒;放逐自身" | 伪经 | [icon] |
-| EXILE_BERSERKER | 攻击;本回合每放逐1友方,攻击次数+1 | 狂信徒 | [根] |
+| RIFT_GUIDE_4.0 | 放逐1友方信徒:埋葬2敌方现象 | 献祭司事 | [根] |
+| RIFT_REAPER | 放逐所有信徒,每放逐1,强化1友方实体 | 血飨 | [根] |
+| RELIC_RIFT_OVERRIDE | 被动:友方信徒效果变为:复活1敌方诅咒;放逐自身 | 伪经 | [icon] |
+| EXILE_BERSERKER | 攻击;本回合每放逐过3友方,本回合攻击次数+1 | 狂信徒 | [根] |
 | (token) | 信徒 token | 信徒 | 机制透明 |
 
 ### 1.3 诅咒族(17,词根:蛊/咒——中国古典咒术)
 
 | cardTypeID | desc | 卡名 | 标注 |
 |---|---|---|---|
-| JU_ON | (状态 token)对自身造成[攻击力]点伤害 | 诅咒 | 机制透明 |
-| DETERIORATION_4.0 | 强化2敌方诅咒;敌方诅咒每有3攻击力,额外强化1 | 蛊噬 | [根] |
-| HEXER | 攻击;强化3敌方诅咒 | 蛊婆 | [根] |
-| GRAVE_HEXER | 复活1友方;强化2敌方诅咒 | 降头师 | [根] |
+| JU_ON | 对自身造成[攻击力]点伤害 | 诅咒 | 机制透明 |
+| DETERIORATION_4.0 | 强化2敌方诅咒;敌方诅咒每有3攻击力:再强化1 | 蛊噬 | [根] |
+| HEXER | 攻击;强化2敌方诅咒 | 蛊婆 | [根] |
+| GRAVE_HEXER | 强化1敌方诅咒;每回合一次,复活1友方 | 降头师 | [根] |
 | HEXBLADE | 攻击;每有1攻击力,强化1敌方诅咒 | 咒刃 | [根] |
 | CURSE_GARDENER | 强化1敌方诅咒;复活1敌方诅咒 | 养蛊人 | [根] |
 | CURSE_REVIVER | 攻击;复活1敌方诅咒 | 收蛊人 | [根] |
 | CURSE_EATER | 攻击;攻击力=敌方诅咒攻击力 | 吞蛊人 | [根] |
-| CURSE_THIRST_SHAMAN_4.0 | 敌方诅咒每有1攻击力,强化1友方生物 | 噬咒萨满 | [根] |
+| CURSE_THIRST_SHAMAN_4.0 | 敌方诅咒每有1攻击力:强化1友方实体 | 噬咒萨满 | [根] |
 | RELIC_BLOOD_PACT | 被动:友方攻击不再造成伤害,而是强化等量敌方诅咒 | 血契 | [根] |
-| RELIC_ATTACK_HEX | 被动:有卡攻击时:强化1敌方诅咒 | 饲咒 | [根] |
+| RELIC_ATTACK_HEX | 被动:友方攻击时,强化1敌方诅咒 | 饲咒 | [根] |
 | RELIC_TAINT | 被动:友方信徒与敌方诅咒相邻时:放逐该信徒,强化2敌方诅咒 | 人牲 | [根][备] |
 | RELIC_GRAVE_CURSE | 被动:敌方诅咒攻击力=墓地友方卡数量 | 积尸气 | [根] |
-| SNOWBALL | 攻击x2;强化反应:强化自身1 | 蛊王 | [根] |
+| SNOWBALL | 攻击;强化反应:强化自身1 | 蛊王 | [根] |
 | RELIC_CURSE_HASTE | 被动:敌方诅咒攻击次数+1 | 提前发作 | [根] |
-| WEAKENING_FIELD | 所有生物本回合攻击力-1 | 瘴气 | [根] |
-| SACRIFICIAL_SPIRIT | 攻击;埋葬1友方;强化5敌方诅咒 | 活殉 | [根·殉,交叉取殉] |
+| WEAKENING_FIELD | 所有实体本回合攻击力-1 | 瘴气 | [根] |
+| SACRIFICIAL_SPIRIT | 埋葬1友方;强化4敌方诅咒 | 活殉 | [根·殉,交叉取殉] |
 
 ### 1.4 埋葬 / 遗言族(24;代价词根 祭/殉/牲,遗言词根 遗/殓/丧/悼,埋敌词根 勾/索)
 
 | cardTypeID | desc | 卡名 | 标注 |
 |---|---|---|---|
-| GRAVE_FIST | 埋葬1友方;攻击 | 血祭 | [根·祭] |
-| GRAVE_PUNCH_4.0 | 埋葬1友方;攻击x2 | 剜心祭 | [根·祭] |
-| SACRIFICE_WEAKEST | 埋葬1攻击力最低友方;强化1该卡 | 替罪羔羊 | [根·牲] |
+| GRAVE_FIST | 埋葬1友方;攻击 | 血祭司 | [根·祭] |
+| GRAVE_PUNCH_4.0 | 埋葬1友方;攻击 | 剜心祭司 | [根·祭] |
+| SACRIFICE_WEAKEST | 埋葬1攻击力最低友方实体;强化1该卡 | 替罪羔羊 | [根·牲] |
 | MASS_SACRIFICE | 埋葬所有友方;每埋葬1友方,生成1信徒 | 集体自焚 | [icon] |
-| DECIMATION | 埋葬6友方,本回合每埋葬过1友方,埋葬数-1;攻击x3 | 什一抽杀 | [icon] |
-| GRAVE_MILLER | 攻击;埋葬2友方,埋葬卡组顶5卡 | 血肉磨坊 | [icon] |
+| DECIMATION | 埋葬4友方,本回合每埋葬过1友方,埋葬数-1;攻击 | 监斩官 | [icon] |
+| GRAVE_MILLER | 攻击;埋葬2友方;埋葬卡组顶5卡 | 血肉磨坊 | [icon] |
 | GRAVE_DREDGER | 攻击;埋葬卡组顶3卡 | 掘墓人 | [根] |
-| MILLBLADE | 攻击;每有1攻击力,埋葬卡组顶1卡 | 凌迟 | [icon] |
-| GRAVE_TOGETHER_4.0 | 攻击;埋葬1友方;埋葬2敌方 | 同葬 | [icon] |
+| MILLBLADE | 攻击;每有1攻击力,埋葬卡组顶1卡 | 千刀手 | [icon] |
+| GRAVE_TOGETHER_4.0 | 攻击;埋葬1友方;埋葬2敌方 | 殉葬人 | [icon] |
 | GRAVE_GIANT | 攻击力=墓地友方数量;攻击 | 骸骨巨人 | [icon] |
-| RELIC_CHAIN_BURIAL | 被动:友方被埋葬时:埋葬1卡组顶卡 | 连坐 | [icon] |
-| RELIC_ATTACK_BURIAL | 被动:友方每次攻击:埋葬卡组顶1卡 | 埋骨地 | [根] |
-| RELIC_TALLY | 被动:回合结束前:本回合每埋葬1生物,强化1敌方诅咒 | 血账 | [根] |
-| RELIC_CURSE_GRAVE | 被动:敌方诅咒揭晓时:埋葬1敌方 | 勾魂簿 | [根·勾] |
-| RELIC_GRAVE_LORD | 被动:墓地中的友方生物攻击力+1 | 白骨王座 | [icon] |
+| RELIC_CHAIN_BURIAL | 被动:每次友方被埋葬时,埋葬卡组顶1卡 | 连坐 | [icon] |
+| RELIC_ATTACK_BURIAL | 被动:友方每次攻击时,埋葬卡组顶1卡 | 埋骨地 | [根] |
+| RELIC_TALLY | 被动:回合结束前:本回合每埋葬1友方,强化1敌方诅咒 | 血账 | [根] |
+| RELIC_CURSE_GRAVE | 被动:敌方诅咒揭晓时,埋葬1敌方 | 勾魂簿 | [根·勾] |
+| RELIC_GRAVE_LORD | 被动:墓地中的友方实体攻击力+1 | 白骨王座 | [icon] |
 | EULOGIST | 埋葬1张tag为[遗言]的友方卡;攻击 | 司悼人 | [根·悼] |
 | LAST_RITES | 遗言:触发所有在墓地友方的遗言 | 安魂弥撒 | [icon] |
-| LAST_GIFT | 攻击;遗言:强化2友方生物 | 遗赠 | [根·遗] |
-| DEATHBED_PORTER | 攻击;遗言:攻击;置顶1友方非生物 | 抬棺人 | [icon] |
-| DEATHBED_GRANT | 被动:友方生物被埋葬时:该友方生物攻击 | 垂死反扑 | [icon] |
-| GRAVE_PUPPETEER | 让墓地1友方生物攻击;墓地无友方则埋葬1张[遗言]友方卡 | 操尸人 | [icon] |
-| AVENGER_4.0 | 攻击x2;遗言:强化自身1 | 厉鬼 | [icon] |
+| LAST_GIFT | 攻击;遗言:强化2友方实体 | 遗赠 | [根·遗] |
+| DEATHBED_PORTER | 攻击;遗言:攻击;复活1友方现象 | 抬棺人 | [icon] |
+| DEATHBED_GRANT | 被动:友方实体被埋葬时:该友方实体攻击 | 垂死反扑 | [icon] |
+| GRAVE_PUPPETEER | 墓地1友方实体攻击;墓地无则埋葬1[遗言]友方卡 | 操尸人 | [icon] |
+| AVENGER_4.0 | 攻击;遗言:强化自身1 | 厉鬼 | [icon] |
 | SPIKE_SKELETON_4.0 | 攻击;遗言:攻击x2 | 带刺的标本 | [icon] |
-| SLIME_4.0 | 遗言:复制自身;攻击 | 管道里的活物 | [icon] |
+| SLIME_4.0 | 攻击;遗言:复制自身 | 管道里的活物 | [icon] |
 
 ### 1.5 攻击 / 强化友方 / 数值族(14,多为 icon)
 
 | cardTypeID | desc | 卡名 | 标注 |
 |---|---|---|---|
-| TWIN_STRIKER | 攻击x2 | 连体人 | [icon] |
-| QUAD_STRIKER | 攻击x4 | 百臂巨人 | [icon] |
-| BATTLE_HORN | 本回合友方生物攻击次数+1 | 股骨号角 | [icon] |
-| COMBO_GRANTER | 攻击;本回合1友方生物攻击次数+1 | 执鞭人 | [icon] |
+| TWIN_STRIKER | 攻击 | 连体人 | [icon] |
+| QUAD_STRIKER | 攻击 | 百臂巨人 | [icon] |
+| BATTLE_HORN | 本回合友方实体攻击次数+1 | 股骨号角 | [icon] |
+| COMBO_GRANTER | 攻击;本回合1友方实体攻击次数+1 | 执鞭人 | [icon] |
 | COMBO_STARTER | 攻击;强化反应:攻击次数+1 | 渴血者 | [icon] |
-| MIMIC_BLADE | 攻击力=友方最高攻击力;攻击x2 | 模仿犯 | [icon] |
+| MIMIC_BLADE | 攻击力=友方最高攻击力;攻击 | 模仿犯 | [icon] |
 | UNFINISHED_ROBOT_4.0 | 攻击;攻击力翻倍 | 缝合人 | [icon] |
-| BLACKSMITH_4.0 | 攻击;强化1友方生物 | 骨匠 | [icon] |
-| WAR_TRAINER | 强化2友方生物 | 开刃 | [根·刃] |
-| WEAPON_SPIRIT_4.0 | 被动:友方生物触发强化反应时:强化1该生物 | 妖刀 | [根·刃] |
-| RELIC_TRAINER | 被动:回合开始:强化1攻击力最低友方生物 | 邪印 | [icon] |
-| RELIC_WHITE_BANNER | 被动:回合开始:置顶1友方攻击力最高生物 | 引魂幡 | [根·魂] |
+| BLACKSMITH_4.0 | 攻击;强化1友方实体 | 骨匠 | [icon] |
+| WAR_TRAINER | 强化2友方实体 | 开刃 | [根·刃] |
+| WEAPON_SPIRIT_4.0 | 被动:友方被强化时:强化1该友方 | 妖刀 | [根·刃] |
+| RELIC_TRAINER | 被动:回合开始:强化1攻击力最低友方实体 | 邪印 | [icon] |
+| RELIC_WHITE_BANNER | 被动:回合开始:置顶1友方攻击力最高实体 | 引魂幡 | [根·魂] |
 | DELAYER | 延后1攻击力最高敌方;攻击 | 鬼打墙 | [icon][备] |
 | ZOMBIE | 攻击 | 行尸走肉 | [icon] |
 
@@ -189,26 +191,26 @@
 
 | cardTypeID | desc | 卡名 |
 |---|---|---|
-| UTILITY_REROLL_1 | 被动:免费重掷次数+1 | 噩梦重播 |
-| UTILITY_DISCOUNT_1 | 被动:每重掷4次,随机商品降价2 | 魇市赊账 |
+| UTILITY_REROLL_1 | 被动:免费重掷次数+1,不占用卡位 | 噩梦重播 |
+| UTILITY_DISCOUNT_1 | 被动:不占用卡位,25%概率:1件随机商品半价 | 魇市赊账 |
 | UTILITY_HALFPRICE_1 | 被动:不占用卡位,必出1件半价商品 | 魇市半价 |
-| UTILITY_INCOME_1 | 被动:收入+2 | 冥币 |
-| UTILITY_ODDS_1 | 被动:首个货架必为奇物架 | 魇市深处 |
-| UTILITY_ODDS_2 | 奇物架的出现概率+15% | 窥魇镜 |
-| UTILITY_OPTION_1 | 被动:商店货架+1 | 魇市新摊 |
+| UTILITY_INCOME_1 | 被动:收入+4,不占用卡位 | 冥币 |
+| UTILITY_ODDS_1 | 被动:首个货架必含1件商店被动卡,不占用卡位 | 魇市深处 |
+| UTILITY_ODDS_2 | 被动:不占用卡位,25%概率多出1商店被动卡 | 窥魇镜 |
+| UTILITY_OPTION_1 | 被动:不占用卡位,商店货架+1 | 魇市新摊 |
 | UTILITY_OPTION_P_1 | 被动:不占用卡位,25%概率:货架+1 | 魇市游摊 |
-| UTILITY_CREATURES_1 | 20%概率:战斗架全部商品变为生物卡 | 百怪入梦 |
-| UTILITY_SPELLS_1 | 20%概率:战斗架全部商品变为非生物卡 | 死寂的梦 |
-| UTILITY_TAG_CURSE | 每3个货架必出1张[诅咒]卡 | 噩梦 |
-| UTILITY_TAG_REVIVE | 每3个货架必出1张[复活]卡 | 亡者入梦 |
-| UTILITY_TAG_AWAKEN | 每3个货架必出1张[苏醒]卡 | 惊醒 |
-| UTILITY_SLOT_R | 每3个货架必出1张✦✦✦卡 | 深魇 |
-| UTILITY_SLOT_U_1 | 被动:首个货架必出1张✦✦卡 | 初魇 |
-| UTILITY_SLOT_U_2 | 每个货架必出1张✦✦卡 | 连魇 |
-| UTILITY_WEIGHT_R | ✦✦✦卡的出货权重x2 | 梦魇缠身 |
-| UTILITY_WEIGHT_U | ✦✦卡的出货权重x2 | 魇影幢幢 |
-| SYSTEM_INCREASE_DECK_SIZE_LITE | 卡位+1,放逐自身 | 长夜 |
-| SYSTEM_INCREASE_HP_MAX | 被动:生命值上限+4 | 沉魇 |
+| UTILITY_CREATURES_1 | 被动:不占用卡位,20%概率只掷出实体卡 | 百怪入梦 |
+| UTILITY_SPELLS_1 | 被动:不占用卡位,20%概率:只掷出现象卡 | 死寂的梦 |
+| UTILITY_TAG_CURSE | 被动:不占用卡位,25%概率:多出1张[诅咒]卡 | 噩梦 |
+| UTILITY_TAG_REVIVE | 被动:不占用卡位,25%概率:多出1张[复活]卡 | 亡者入梦 |
+| UTILITY_TAG_AWAKEN | 被动:不占用卡位,25%概率:多出1张[苏醒]卡 | 惊醒 |
+| UTILITY_SLOT_R | 被动:不占用卡位,25%概率:多出1✦✦✦卡 | 深魇 |
+| UTILITY_SLOT_U_1 | 被动:不占用卡位,25%概率:多出1张✦✦卡 | 初魇 |
+| UTILITY_SLOT_U_2 | 被动:不占用卡位,每次生成货架必出1张✦✦卡 | 连魇 |
+| UTILITY_WEIGHT_R | 被动:不占用卡位,✦✦✦卡的出货权重x2 | 梦魇缠身 |
+| UTILITY_WEIGHT_U | 被动:不占用卡位,✦✦卡的出货权重x2 | 魇影幢幢 |
+| SYSTEM_INCREASE_DECK_SIZE_LITE | 购买:卡位+1,放逐自身 | 长夜 |
+| SYSTEM_INCREASE_HP_MAX | 购买:生命值上限+8,放逐自身 | 沉魇 |
 
 ---
 
@@ -228,3 +230,5 @@
 3. **v2 文档**保留作历史档,不作命名依据;机制词(埋葬/复活/强化/诅咒/苏醒/揭晓/生成/放逐/置顶/延后)维持白话基线,本案不触碰。
 4. desc 若再变动,以 Notion DB 为准回填本表。
 5. **2026-10-11 回填**:按 Notion DB(119 行)全量复核对齐——MASS_REVIVER「墓园空了」→「空墓园」(2026-09-15 漂移修复 f54e7123 改名,prefab/DB 一致);RIFT_GUIDE/WEAPON_SPIRIT 行 ID 补 `_4.0` 后缀(DB+Unity 于 09-20 后改名,中文名不变);补入 UTILITY_HALFPRICE_1(魇市半价,09-11 入池)、UTILITY_OPTION_P_1(魇市游摊,09-14 建卡)、ZOMBIE(行尸走肉,纯攻击基线卡,zombie balance audit 基线,入 1.5)。复核结论:其余 113 行名字与 DB 全一致,4 张[备]与 DB 状态=备用 吻合,DB 无空中文名。
+6. **2026-10-11 desc 回填**:全表 81 行 desc 按 Notion DB 回填——复活系补「每回合N次」限次、生物→实体/现象措辞、多处数值改动(如 HEXER 强化3→2、DECIMATION 埋6→4、UTILITY_INCOME +2→+4、HP_MAX +4→+8)、多次攻击 xN 移出 desc(查 DB「ExtraATKTimes」列与「多次攻击」tag)、SPIRIT_CALLER 重做为现象、UTILITY 系补「不占用卡位」、SYSTEM 系改「购买:」触发。漂移明细:`tools/outputs/desc_drift_report.txt`。
+7. **2026-10-11 改名第一批(§1 优先级裁定)**:8 张实体卡由事件/现象句式改为角色/怪物句式——血祭→血祭司、剜心祭→剜心祭司、同葬→殉葬人、凌迟→千刀手、什一抽杀→监斩官、百鬼夜行→百鬼将、尸变→起尸鬼、马戏团的地下室→马戏团的熊;物件/器械名裁定保留(咒刃/镀金圣髑/血肉磨坊/带刺的标本/遗赠)。prefab `displayName` 与 Notion 中文名同日同步。
