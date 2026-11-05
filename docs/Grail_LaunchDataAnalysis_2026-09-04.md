@@ -74,6 +74,7 @@ Normalized cumulative series (UTC-midnight anchored, from the intake chain):
 | Sep 22 | 400 |
 | Sep 30 | 436 (month-1 close) |
 | Oct 9 | 468 |
+| Oct 13 | 480 |
 
 \* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15.
 
@@ -334,6 +335,32 @@ Interpretation:
 - Demo veterans still trickling in: month-2 reviews include playtimes of 287 h, 156 h, 109 h — the pre-launch demo cohort is a months-long review annuity.
 - CCU 163 @ 01:44 UTC (anchor-comparable): 197 (d29) → 163 (d40) ≈ −1.7%/day — slow bleed, no collapse; the retained core is holding.
 - For OneDeck: the month-1 shape (61% of reviews in week 1, then −50%+ weekly decay with no content update to catch it) is the exact failure mode §12 flagged for a seasons game without a season-1 drop in month 1.
+
+**2026-10-14 (01:12 UTC, day 44 — patch-history correlation, first ISteamNews pull):** totals **480 = 415 / 65 (86.5%)**, +11 in 4 days (≈2.75/day), negatives +3 (steady 0.75/day). CCU **138** @ 01:12 (anchor-comparable): 163 (d40) → 138 (d44) ≈ −4%/day.
+
+Patch timeline (ISteamNews `GetNewsForApp`): 9/2 v1.0.2 cheaper unlocks · 9/4 v1.0.3 faster rank climb · 9/9 v1.1.0 exploit fix + **ghost wipe** + balancing · 9/10 v1.1.1 hotfix · 9/30 **v1.2.0 October update** (new cards/traits/enemies, Mabel rework, October reward track, OST as paid DLC; solo dev declares monthly update cadence) · 10/1 v1.2 hotfix (rank-decay server job overran "**due to the increase in players**", ranks manually corrected) · 10/2 macOS hotfix · 10/6 v1.2.1 (per-card balancing: Mop poison halved, Bayonet buffed, crash fixes).
+
+Correlations:
+
+1. **9/9 v1.1.0 balancing → 9/11 update-blame negative (2-day lag)**: "harsh nerfs to damage builds… updates ruined the fun from the demo" — the first patch-blame review was a direct response to this patch, and the day-12 five-negative cohort partially traces back to it.
+2. **9/30 v1.2.0 bent no curve**: review intake continued down (Oct ≈ 2.75–3.7/day vs 4.8/day in Sep 23–29) and CCU kept decaying. But the 10/1 hotfix records an "increase in players" large enough to break the rank-decay server job — a transient season-start return wave that never showed in sampled CCU and produced no review uplift. Textbook confirmation of the month-1 finding: **a month-boundary content drop lands outside the churn window and cannot rescue it**.
+3. **10/6 v1.2.1** is the first balance pass aimed at the meta complaints — but it tunes individual card numbers (Mop poison halved, etc.) without touching the pool-size/legibility axis the 8-vote negative centered on, and arrived 17 days after that review. No "they fixed it" praise reviews in the corpus yet.
+4. **Two-tier response pattern confirmed across the whole launch**: ops-level complaints (unlock grind, rank climb speed, exploit) each got a patch within 1–3 days; design-level complaints (synergy-web legibility, Zappy dominance, ranked-not-elo) had no dedicated response as of day 44. The 10/1 rank-decay bug also retroactively validates the 9/29 "ranked is progressive, not elo" complaint — the rank system was genuinely misbehaving.
+5. M2 tracking: Oct 1–14 = 44 reviews ≈ 3.3/day → **M2 projection ≈ 95–105 reviews ≈ 2.9k–4.2k units** (k ≈ 0.7 of month 1). Ghost wipe on 9/9 is the same clean-slate move OneDeck's async-PvP backend should budget for post-patch.
+
+### The flagship negative, full text (Thornleaf, 2026-09-19)
+
+Author Thornleaf · English · 35.6 h at review · helpful votes **8 (Sep 21) → 34 (Oct 14)** — a 4× surge in 3.5 weeks, now very likely the most-upvoted review on the store page, ahead of every positive. Full translation (original ≈330 words):
+
+> 这款游戏潜力巨大，但它触犯了卡组构建游戏的头号大忌。好卡太难获得了。
+>
+> 每一局的开局体验都很棒，但大约到第 6 回合左右就变成纯粹看运气了。每一轮你都要花 30 金币去寻找一件能契合你策略的东西，结果一无所获。没有卡，也没有特性。然后你就会输给一个整套都是 8 张金卡、3 个已升级且主题统一的对手。某些地点的数值成长也很糟糕（说的就是"农田"）。
+>
+> 即使赢了也同样缺乏成就感，因为你很少是真正"构筑"出一副好卡组的，通常只是看运气捡到好东西或者捡不到。所以即便你拿到一副很强的卡组，你也只会觉得自己运气好，而不是技术强。这主要归因于卡池太大且太特化了。即便你走某个流派，该流派里也有一半的卡必须混入另一个流派才能发挥作用。遇到主题相符但只有在额外加入 5 张不合主题的卡时才好用的卡，这种循环让人极其挫败。这款游戏里满是这类卡：攻击卡需要流血卡才强，而大部分流血卡又想让你用灼烧，一半的灼烧卡又只有配合感电才好用。这方面设计得很不好，很可惜，因为这款游戏本身有不少可取之处。
+>
+> 我几个月后可能还会再试试，但自测试版以来没有任何实质改变，所以我不太乐观。
+
+OneDeck checklist extracted from it: shop reroll economy (30-gold dead pulls), pool size vs theme cohesion (cross-theme dependency chains read as noise), location/encounter scaling, "win felt like luck" = rating system must attribute wins to visible decisions, and beta→1.0 perceived-stagnation (patch notes existed but did not change the reviewer's mind — patches must touch the complained axis to register).
 
 ## Appendix: Data Provenance
 
