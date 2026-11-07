@@ -75,6 +75,7 @@ Normalized cumulative series (UTC-midnight anchored, from the intake chain):
 | Sep 30 | 436 (month-1 close) |
 | Oct 9 | 468 |
 | Oct 13 | 480 |
+| Nov 7 | 477 (store-page aggregate, net of removals — outside the intake chain; see §13 Nov 7) |
 
 \* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15.
 
@@ -347,6 +348,21 @@ Correlations:
 3. **10/6 v1.2.1** is the first balance pass aimed at the meta complaints — but it tunes individual card numbers (Mop poison halved, etc.) without touching the pool-size/legibility axis the 8-vote negative centered on, and arrived 17 days after that review. No "they fixed it" praise reviews in the corpus yet.
 4. **Two-tier response pattern confirmed across the whole launch**: ops-level complaints (unlock grind, rank climb speed, exploit) each got a patch within 1–3 days; design-level complaints (synergy-web legibility, Zappy dominance, ranked-not-elo) had no dedicated response as of day 44. The 10/1 rank-decay bug also retroactively validates the 9/29 "ranked is progressive, not elo" complaint — the rank system was genuinely misbehaving.
 5. M2 tracking: Oct 1–14 = 44 reviews ≈ 3.3/day → **M2 projection ≈ 95–105 reviews ≈ 2.9k–4.2k units** (k ≈ 0.7 of month 1). Ghost wipe on 9/9 is the same clean-slate move OneDeck's async-PvP backend should budget for post-patch.
+
+**2026-11-07 (05:10 UTC, day 68 — data-source outage session):** the `appreviews` endpoint 302-redirects every request variant this session (documented params, age-gate cookies, full browser headers, legacy `start_offset` — Location: store root), steamcommunity.com is TCP-unreachable, and Gamalytic's free-tier game-details now returns 403 "requires an API key" (the §6 addendum loophole is closed). Only the store page's embedded summary tooltips, ISteamNews and CCU were reachable — no per-day chain, language mix or negative-taxonomy refresh this session. Pos/neg splits are inferred from the tooltip percentages (Steam floors them; the 47-review recent window pins its split exactly, the 477-review lifetime split carries ±2).
+
+| Metric | Value | vs 2026-10-13/14 anchors (appreviews) |
+|--------|-------|--------------------------------------|
+| Total reviews (store page) | **477, ~85% positive ("Very Positive")** — pos/neg inferred **≈408 / ≈69 (range 406–410 / 67–71)** | **−3 total over 24 days; pos down ~5–9, neg up ~2–6** |
+| Trailing 30 days (Oct 8 → Nov 7) | **47 = 36 pos / 11 neg exact, 76%, "Mostly Positive"** | first trailing-window reading in this doc — tier sits below the lifetime badge |
+| CCU | **88** @ 05:06 + 05:20 UTC (two samples) | off-anchor hour (05:00 vs the 02:00 US-prime block) — recorded, trend check deferred |
+| USD/CNY | 6.686 | 6.726 on Sep 18 |
+
+- **Trailing-window tier drop**: the store page now renders **"Mostly Positive"** for the trailing 30 days while the lifetime badge holds "Very Positive" — marginal cohort negativity ≈23% (11/47), continuing the Oct 1–9 drift (15%).
+- **Reconciliation gap (unresolvable this session)**: trailing-30d (47) minus the Oct 8–14 segment (≈18, from the doc's anchors) implies ≥ ~29 new reviews in Oct 15–Nov 7, yet the cumulative pool *fell* 3 — implying **~30+ removals over 24 days** (deletions, refund purges, or profile privatizations) or a corpus discrepancy between the store-page aggregate and the appreviews totals. Deletion-shadowing makes every intake figure here a lower bound. Re-anchor the chain with appreviews when the block lifts.
+- **Intake**: trailing-window arithmetic ≈1.2/day for Oct 15 → Nov 7 (vs 3.7/day Oct 1–9, 2.2/day Oct 10–14) — the decay steepened again. **M2 (October) intake ≈ 65 reviews ≈ 2.0k–2.6k units** (lower bound), well below the Oct 14 projection of 95–105 (k≈0.7): realized k ≈ 0.15 of month 1.
+- **v1.3.0 "November update" (posted 2026-10-31 ~11:14 UTC, live Nov 1)**: the **Zappy month** — 4 new Zappy cards (Doohickey, Exo-rig, Bearing, Shredder) + 2 new Zappy traits (Scrapper, Resourceful) + Sanguine, refreshed reward track, and a **4th-character preview event "Fay's cards shop"**, with **Fay announced for December**; balance pass (Hoarder / Bloodletting / Dungarees / Pickled nuts / Auger). First content response aimed at a design-axis complaint (Zappy dominance, the 5-vote Sep-29 flagship contender) — but additive (more Zappy cards/traits), not a rework of the complained mechanic, and the pool-size/legibility axis is untouched. Third consecutive on-cadence monthly drop.
+- For OneDeck: the monthly cadence has so far outlived the trailing window's goodwill — the tier slipped **before** the November drop landed. Watch whether v1.3.0 / Fay bend the trailing window; the §13 Oct 10 lesson (month-boundary content drops land outside the churn window) remains the base case.
 
 ### The flagship negative, full text (Thornleaf, 2026-09-19)
 
