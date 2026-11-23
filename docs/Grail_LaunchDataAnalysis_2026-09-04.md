@@ -75,7 +75,8 @@ Normalized cumulative series (UTC-midnight anchored, from the intake chain):
 | Sep 30 | 436 (month-1 close) |
 | Oct 9 | 468 |
 | Oct 13 | 480 |
-| Nov 7 | 477 (store-page aggregate, net of removals — outside the intake chain; see §13 Nov 7) |
+| Nov 7 | 477 [score] (store tooltip — a narrower corpus than the rows above; **not** "net of removals", corrected 2026-11-23 — see §13 Nov 23) |
+| Nov 23 | 527 [all] (community-hub list, same basis as this chain) · 492 [score] (store tooltip) |
 
 \* Day-4 intake: §9 first reported 43; cumulative reconciliation on Sep 7 (249 = 219 + 26 + 4, exact) favors 42, so the chain standardizes on 42 (±1 on the Sep-5..8 anchors). Raw point-in-time readings, kept for reference: 145 @ Sep 4 02:15 · 186 @ Sep 5 02:06 · 230 @ Sep 6 07:00 · 249 @ Sep 7 03:10 · 279 @ Sep 8 12:15.
 
@@ -359,14 +360,37 @@ Correlations:
 | USD/CNY | 6.686 | 6.726 on Sep 18 |
 
 - **Trailing-window tier drop**: the store page now renders **"Mostly Positive"** for the trailing 30 days while the lifetime badge holds "Very Positive" — marginal cohort negativity ≈23% (11/47), continuing the Oct 1–9 drift (15%).
-- **Reconciliation gap (unresolvable this session)**: trailing-30d (47) minus the Oct 8–14 segment (≈18, from the doc's anchors) implies ≥ ~29 new reviews in Oct 15–Nov 7, yet the cumulative pool *fell* 3 — implying **~30+ removals over 24 days** (deletions, refund purges, or profile privatizations) or a corpus discrepancy between the store-page aggregate and the appreviews totals. Deletion-shadowing makes every intake figure here a lower bound. Re-anchor the chain with appreviews when the block lifts.
+- **Reconciliation gap (unresolvable this session)**: trailing-30d (47) minus the Oct 8–14 segment (≈18, from the doc's anchors) implies ≥ ~29 new reviews in Oct 15–Nov 7, yet the cumulative pool *fell* 3 — implying **~30+ removals over 24 days** (deletions, refund purges, or profile privatizations) or a corpus discrepancy between the store-page aggregate and the appreviews totals. Deletion-shadowing makes every intake figure here a lower bound. Re-anchor the chain with appreviews when the block lifts. *(2026-11-23: withdrawn — no removal wave; 477 is a [score] total read against [all] anchors. See the Nov 23 entry below.)*
 - **Intake**: trailing-window arithmetic ≈1.2/day for Oct 15 → Nov 7 (vs 3.7/day Oct 1–9, 2.2/day Oct 10–14) — the decay steepened again. **M2 (October) intake ≈ 65 reviews ≈ 2.0k–2.6k units** (lower bound), well below the Oct 14 projection of 95–105 (k≈0.7): realized k ≈ 0.15 of month 1.
 - **v1.3.0 "November update" (posted 2026-10-31 ~11:14 UTC, live Nov 1)**: the **Zappy month** — 4 new Zappy cards (Doohickey, Exo-rig, Bearing, Shredder) + 2 new Zappy traits (Scrapper, Resourceful) + Sanguine, refreshed reward track, and a **4th-character preview event "Fay's cards shop"**, with **Fay announced for December**; balance pass (Hoarder / Bloodletting / Dungarees / Pickled nuts / Auger). First content response aimed at a design-axis complaint (Zappy dominance, the 5-vote Sep-29 flagship contender) — but additive (more Zappy cards/traits), not a rework of the complained mechanic, and the pool-size/legibility axis is untouched. Third consecutive on-cadence monthly drop.
 - For OneDeck: the monthly cadence has so far outlived the trailing window's goodwill — the tier slipped **before** the November drop landed. Watch whether v1.3.0 / Fay bend the trailing window; the §13 Oct 10 lesson (month-boundary content drops land outside the churn window) remains the base case.
 
+**2026-11-23 (10:38–12:46 UTC, day 84 — data-source recovery, basis reconciliation, flagship hand-over):** `appreviews` still answers `302 → store root` — for every appid tried incl. a control (Slay the Spire), from two independent egresses (HK, BR), with cookie sessions and header variants — so the block is endpoint-side, not IP- or app-specific. Three substitutes filled the gap: the store tooltips (+ `appdetails.recommendations.total`), `appreviewhistogram` (weekly up/down rollups from release + a 30-entry daily `recent` array), and a **cursor-paged crawl of the steamcommunity review hub** (53 pages → 527 review cards: verdict, text, helpful votes, playtime, posted date in US Pacific, "Product refunded" marker). Endpoints: Appendix.
+
+**Basis labels from this entry on**: **[score]** = what Steam counts toward the review score (store tooltip, histogram); **[all]** = every public review (hub list ≡ the historical `appreviews` `purchase_type=all` dumps).
+
+| Metric | Value | vs 2026-11-07 anchors |
+|--------|-------|----------------------|
+| Total reviews — [score] | **492, 85%, "Very Positive"** (store tooltip; `appdetails` agrees) | +15 in 16 days = exactly the histogram's Nov 7–21 daily sum → **zero net removals** on this basis |
+| Total reviews — [all] | **527 = 455 / 72 (86.3%)**, newest Nov 21 (hub list, same basis as the Sep–Oct chain) | **480 = 415 / 65** @ Oct 14 → +47, negatives +7 |
+| Trailing 30 days — [score] | **35 = 31 / 4, 88.6%, "Very Positive"** (histogram `recent`, Oct 23 → Nov 21 UTC; tooltip identical) | 47 = 36 / 11, 76%, "Mostly Positive" → **tier recovered** |
+| CCU | 64–65 @ 10:38–10:44 UTC · **80** @ 12:46 UTC | off-anchor hours (US night / EU late morning); the 01:00–03:00 UTC series (138 @ d44) needs a same-hour re-sample |
+| Price | **$9.99 → $7.99 (−20%)** "Special Promotion" ending 2026-11-23 18:00 UTC · CN ¥42 → ¥33.6 | first discount since the launch window |
+| USD/CNY | 6.6813 | 6.686 on Nov 7 |
+
+- **The Nov 7 "reconciliation gap" is withdrawn.** The hub list reproduces the historical anchors almost to the review: ≤ Sep 7 **271** vs 267 · ≤ Sep 14 **359** vs 357 · ≤ Sep 21 **398** vs 400 · ≤ Oct 14 **482** vs 480; negatives ≤ Sep 28 **55** vs 56, ≤ Oct 12 **65** vs 65. There was **no ~30-review removal wave** — Nov 7's 477 (and today's 492) are [score] totals read against [all] anchors. The [all] − [score] gap is launch-window-concentrated (+25 by Sep 7 against the histogram and +27–31 ever since; +34–35 against the tooltip), the signature of reviews excluded from the score (non-Steam-purchase activation is the usual cause; hub cards carry no purchase-type marker, so unverified here). Residual: histogram rollups sum to 499 vs the tooltip's 492 — 7 reviews of unknown composition. Standing rule: label the basis on every figure and never chain across bases.
+- **Intake [all]**: M1 final **442** = 386 / 56 (Oct 10's "436 ±1" under-counted Sep 23–29: the hub has 44 reviews for Sep 22–30 vs the 36 the chain implied) · **M2 final 63** = 48 / 15, 2.0/day, 23.8% negative · M3 to date (Nov 1–23) **22** = 21 / 1, 0.96/day. Weekly [score]: 19 (Oct 6–12) → 14 → 7 → 14 (Oct 27–Nov 2) → 4 → 4 → 9 (Nov 17–21, partial). M2 landed at **≈0.14× month 1** (Oct 14 projected 95–105 on k ≈ 0.7); M3 projects to ≈28–29 ≈ 0.85k–1.2k units. Cumulative **527 ≈ 15.8k–21.1k units** (492 [score] → 14.8k–19.7k — the multiplier's calibration does not distinguish the bases), gross ≈ **$142k–189k**, net ≈ $99k–133k ≈ **¥66万–89万**. Year-1 tracking: the November slope (~1/day) extrapolates to ≈810 lifetime reviews by Aug 2027 → 24k–32k units, the **floor of the §4 corrected band** (24k–44k); only sale- and Fay-driven spikes move it off the floor.
+- **The tier recovery is window rolloff on a tiny n, not a turnaround.** The trailing window's four negatives: the Oct 25 flagship, an Oct 30 RNG complaint, a refunded genre-fit (Oct 31), a Nov 4 "autobattlers might not be for me". Marginal negativity by week [score]: 36.8% (Oct 6–12: 7 of 19 — crash / perf / always-online / content) → 21.4% → 28.6% → 14.3% → 25% (1/4) → **0% (0/4) → 0% (0/9)**. The window is veteran-dominated: 17 of 36 hub reviews carry ≥50 h (10 carry ≥100 h), median 56.7 h among positives; the ≥50 h share of positives ran 36% (Sep) → 60% (Oct) → 48% (Nov). "The Bazaar" is named in 68 of 527 reviews but only 3 of the last 45 — the launch-window framing has faded. The newest positive-with-request axis is an **endless mode** (3 of the trailing positives, led by a 157 h / 4-vote review).
+- **Patch cadence**: no post since v1.3.0 (Oct 31) — 23 days, the longest announcement gap since launch (previous: Sep 10 → Sep 30, 20 days). v1.3.0's balance pass has drawn no update-blame review: 22 reviews and 1 negative in the three weeks after it (v1.2.0 drew two patch-blame negatives — Oct 1, Oct 14).
+- **First discount**: −20%, "Special Promotion" ending Mon Nov 23 18:00 UTC (10:00 PST) — the standard Fri 10:00 → Mon 10:00 PT weekend window, so live since ≈Nov 20 18:00 UTC (start inferred from the window, end read off the page). Too early to read: the Nov 17–21 cluster (10 reviews, all positive, 7–176 h playtime) is veterans writing late reviews, not deal buyers.
+- **Negatives since the Oct 14 snapshot [all] (7)**: balance / RNG-vs-meta (Oct 14 "the rabbit keeps more unbalanced after every patch", the Oct 25 flagship, Oct 30 "like winning the lottery… 70 plus hours and i haven't gotten that satisfaction yet", bench-marked against Balatro / Monster Train) · always-online for a single-player game (Oct 20, 2 votes — DRM axis repeat) · genre-fit ×2 (Oct 31, refunded: slow combat at max speed, card readability, "linear and sequential" vs simultaneous combos in other autobattlers; Nov 4) · zh-CN reroll economy (Oct 19, below). Already in the Oct 14 count but first recorded here: a beta tester's "extensive feedback… none of them made it into the launch" — 4 GB-VRAM performance, a card-click UX bug, dev non-response (Oct 12). "Product refunded" marker: 8 lifetime (7 negative).
+- **Chinese-language reviews [all, script-detected]**: **50 = 9.5% of the list** (44 / 5 / 1 by month), **10 negative (20%)** — correcting the running tallies above (Sep 29 "3 lifetime", Oct 10 "#4"): the list already held 9 by Oct 9. Axes beyond the launch ones: region-matching latency + 60 fps lock (Sep 17, 70.6 h), a patch nerfing the reviewer's favourite build (Oct 1, 30.4 h), "too little content" (Oct 9, 40.7 h), reroll economy (Oct 19, 8.2 h: "四五十金币刷完都不一定见得到需要的构筑"). Includes one traditional-Chinese review.
+- **Flagship hand-over**: the Thornleaf negative is **gone** — absent from the full hub list, and its profile URL now redirects to the author's review list (account intact) — deleted sometime after Oct 14. Its successor tops the helpful sort: **Oct 25 · 24.2 h · 26 helpful votes + 5 awards in 4 weeks** (≈0.9 votes/day — slightly behind its predecessor's 34 votes in 3.5 weeks), #3 of all 527 reviews by raw votes behind two launch-week positives (31, 31). Full text and checklist below. The axis is new: not the card pool's synergy web but **the opponent pool** — "sweaty builds", "you've let the new characters run amok" — plus five concrete asks.
+- **For OneDeck**: (1) in async PvP the difficulty curve *is* the ghost pool, and it hardens on its own as casual players churn — "I never see those type of decks fighing me anymore" is the pool homogenizing in week 8. Difficulty-banded ghost selection and a standing set of curated reference decks belong in the launch scope, not after the first "sweaty builds" review. (2) A non-rated track (story / achievements with no ladder consequence) is the new flagship's most concrete ask — cheap insurance for the PvE-minded half of the audience. (3) A deleted flagship does not retire an axis: it resurfaced five weeks later under a new author with a sharper diagnosis. Count axes, not reviews. (4) At ~1 review/day one negative moves the trailing tier by ~3 points — do not read tier at this sample size.
+
 ### The flagship negative, full text (Thornleaf, 2026-09-19)
 
-Author Thornleaf · English · 35.6 h at review · helpful votes **8 (Sep 21) → 34 (Oct 14)** — a 4× surge in 3.5 weeks, now very likely the most-upvoted review on the store page, ahead of every positive. Full translation (original ≈330 words):
+Author Thornleaf · English · 35.6 h at review · helpful votes **8 (Sep 21) → 34 (Oct 14)** — a 4× surge in 3.5 weeks, now very likely the most-upvoted review on the store page, ahead of every positive. *Status 2026-11-23: gone from the public list — absent from the full hub crawl, profile URL redirecting to the author's review list (account intact); deleted sometime after Oct 14. Successor below.* Full translation (original ≈330 words):
 
 > 这款游戏潜力巨大，但它触犯了卡组构建游戏的头号大忌。好卡太难获得了。
 >
@@ -378,17 +402,37 @@ Author Thornleaf · English · 35.6 h at review · helpful votes **8 (Sep 21) �
 
 OneDeck checklist extracted from it: shop reroll economy (30-gold dead pulls), pool size vs theme cohesion (cross-theme dependency chains read as noise), location/encounter scaling, "win felt like luck" = rating system must attribute wins to visible decisions, and beta→1.0 perceived-stagnation (patch notes existed but did not change the reviewer's mind — patches must touch the complained axis to register).
 
+### The successor flagship negative, full text (elderon_moongazer, 2026-10-25)
+
+Author elderon_moongazer · English · 24.2 h at review · helpful votes **26 (+5 awards) by Nov 23**, four weeks after posting — #3 of all 527 reviews by raw votes and first among negatives (runner-up: the Sep 23 "finding hopefully 1 card that might maybe fit" review, 12 votes). Full translation (original ≈330 words):
+
+> 测试版的时候我很爱这款游戏，喜欢它的方向和它做的事情。系统容易理解，有一点学习曲线，但你能跨过去。然而正式发售之后，我觉得它随机性太重，要对抗的"卷王"构筑也太多，已经不好玩了。我想弄明白测试版之后新加的剧情，可只要我选错一次（为了拿这个恩典 Grace），别人的卷王构筑就把我彻底碾压。我想爱这款游戏，但现在的平衡完全是垃圾，你们放任新角色撒野，毁掉了一局又一局。要是再让我碰到一套纯拖时间的兔子（Rabbit）或者"零费"松鼠（Squirrel）构筑……
+>
+> 我希望看到的东西：
+>
+> 1. 让我从几个对手里挑，就像我们打普通怪物时那样。
+> 2. 放一些 AI 卡组进来，而不只有玩家。不是所有人都能运气好到开局就成型，可我现在已经再也碰不到那种（没成型的）卡组了。
+> 3. 做一个非 PvP 模式？我想看剧情，想刷成就，而不是被无数套离谱的卡组轮番轰炸。一个不影响天分、或者影响很小的模式。
+> 4. 把老鼠（Rat）平衡一下，让它能对抗 Rabbit 和 Squirrel——我好几局里一只 Rat 都没见过，这说明你们把某些角色做得太强了。
+> 5. 别让玩家靠维基页面才能学会怎么玩你的游戏，能不能把 Grace 标在卡上？比如在"计划（Plans）"卡上加个小白圈，或者干脆标在卡框上。要手动翻的卡太多了，还得等特定事件触发才能拿"好结局"，游戏内本身给点提示会很有帮助。
+>
+> 我特别希望这款游戏能成为我会推荐给朋友的东西，就像测试版时我做的那样。我会每隔几个月再试一次，到时候也许会重写这篇评测。但在那之前，我没法推荐这款我曾经在测试版里如此热爱的游戏。2.5/5
+
+OneDeck checklist extracted from it: ghost-pool difficulty drift (the served pool hardens as casual decks churn out — banded selection + curated reference decks), opponent choice as an agency lever (pick from N candidate ghosts the way PvE encounters are picked), a zero-rating-impact mode for story / achievement play, faction presence as a balance signal ("I haven't seen a Rat in several runs"), and in-game legibility of key objectives (mark them on the card face; never outsource to a wiki). Reading the two flagships side by side: Thornleaf blamed the *card pool* (synergy web), this one blames the *opponent pool* — in async PvP the meta the player faces is itself a balance surface.
+
 ## Appendix: Data Provenance
 
 | Endpoint | Use |
 |----------|-----|
-| `store.steampowered.com/appreviews/{appid}?json=1&filter=all&language=all&num_per_page=100&purchase_type=all&cursor=…` | full review dump (dates, language, votes); per-language totals via `language=` filter |
+| `store.steampowered.com/appreviews/{appid}?json=1&filter=all&language=all&num_per_page=100&purchase_type=all&cursor=…` | full review dump (dates, language, votes); per-language totals via `language=` filter. **Blocked since ≥ 2026-11-07**: `302 → store root` for every appid and egress tested — use the two fallbacks below |
+| `store.steampowered.com/appreviewhistogram/{appid}?l=english` | [score] weekly `rollups` (up/down from release) + `recent` (last 30 days, daily up/down); reachable while `appreviews` is not; cached ~1–2 days |
+| `steamcommunity.com/app/{appid}/reviews/?browsefilter=mostrecent&filterLanguage=all` → follow each page's `MoreContentForm` (`homecontent/` + `userreviewscursor`) | [all] full-list fallback, 10 cards/page (verdict, text, helpful votes, hours, US-Pacific posted date, "Product refunded" marker); no language or purchase-type field; `userreviewsoffset` alone is ignored |
 | `store.steampowered.com/api/appdetails?appids=…&cc=us` | price, release date, platforms, categories |
 | `api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=…` | live CCU |
 | `api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=…` | dev news posts (patch cadence, demo history) |
 | `store.steampowered.com/search/results/?sort_by=Released_DESC` | new-release scan (rate-limited; partial) |
 | `open.er-api.com/v6/latest/USD` | FX snapshot |
 
-Third-party pages attempted and blocked/paywalled: SteamSpy (Cloudflare), Gamalytic (API key), Sensor Tower / VG Insights (timeout / account), SteamDB (no wishlist data), Wayback Machine (no launch-week snapshots for the comps).
+Third-party pages attempted and blocked/paywalled: SteamSpy (Cloudflare), Gamalytic (API key), Sensor Tower / VG Insights (timeout / account), SteamDB (no wishlist data), Wayback Machine (no launch-week snapshots for the comps), SteamCharts (404 for this appid, 2026-11-23).
 
 External sources: [Steam store page](https://store.steampowered.com/app/3597200/Grail/), [SteamDB](https://steamdb.info/app/3597200/charts/), [GameDiscoverCo on Stacklands (450k copies)](https://newsletter.gamediscover.co/p/how-one-of-sokpops-almost-100-steam), [r/gamedev reviews-to-sales ratio](https://www.reddit.com/r/gamedev/comments/13pmidl/ratio_of_steam_reviews_to_copies_sold/), [RPS preview](https://www.rockpapershotgun.com/deckbuilder-grail-quells-the-fear-in-my-heart-of-playing-the-wrong-card-by-pinning-all-of-the-strategy-on-the-deckbuilding).
