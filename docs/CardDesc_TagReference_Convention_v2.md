@@ -71,9 +71,13 @@ and never triggers a block (RIFT_SHEPHERD `tag为[<tag:Believer>]的友方卡` �
 Data: `Assets/Resources/CardTooltipDatabase.asset` (`CardTooltipDatabaseSO`) — one entry per
 explainable card (`cardPrefab` + optional `descriptionOverride` StringSO), plus the block
 style tunables in `cardBlock` (title format, title/body color, font size, spacing before).
-Today the only entry is the RIFT token (15 cards of the 4.0 pool match; list in
-`plans/plan-card-ref-tooltip-believer-2026-11-25.md`). Adding the curse (JU_ON) token is a
-data-only change but is deferred (about 22 cards).
+Entries today: the RIFT token (15 cards of the 4.0 pool match; list in
+`plans/plan-card-ref-tooltip-believer-2026-11-25.md`) and the JU_ON curse token
+(2026-11-25: 22 cards bare-name it as 敌方诅咒/诅咒 — every 敌方诅咒 text is a card
+reference per the typeID-keyed wiring below; the token's display name IS 诅咒, so the
+native bare-name match needs no alias; list in `plans/plan-card-ref-tooltip-curse-2026-11-25.md`).
+Cards naming both tokens (伪经 RELIC_RIFT_OVERRIDE, 诅咒唱诗班 SWARM_CURSER) get both
+blocks, believer block first (database order). Neither token matches itself.
 
 Authoring impact: naming a database card bare in a cardDesc is enough to get the block —
 no prefab wiring, no tag. A StringSO used as `titleFormat` or `descriptionOverride` must

@@ -15,6 +15,8 @@ MonoBehaviour:
   entries:
   - cardPrefab: {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
     descriptionOverride: {fileID: 0}
+  - cardPrefab: {fileID: 1808145013887896563, guid: 670314465ad32b1469ca4556495e4456, type: 3}
+    descriptionOverride: {fileID: 0}
   cardBlock:
     titleFormat: {fileID: 0}
     titleColor: {fileID: 0}

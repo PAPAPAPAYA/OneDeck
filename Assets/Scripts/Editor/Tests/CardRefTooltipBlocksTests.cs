@@ -15,21 +15,27 @@ using UnityEngine.UI;
 /// <summary>
 /// EditMode tests for the hover-tooltip card-reference block (CardRefTooltipBlocks +
 /// CardTagTooltip second label): the bare-name vs tag-phrase resolution rule, the
-/// CardTooltipDatabase singleton data, goldens against the real 4.0 card pool
-/// (exactly 15 cards bare-name the RIFT believer token), the prefab wiring guard
-/// (serialized references to the RIFT prefab / RiftCardTypeID SO), and the real
-/// two-label layout (ApplyContent in a preview scene). The tooltip instance is
-/// built by reflection inside a preview scene so the open GameScene stays clean.
+/// CardTooltipDatabase singleton data (RIFT believer + JU_ON curse entries), goldens
+/// against the real 4.0 card pool (15 cards bare-name the believer token, 22 the
+/// curse token, 2 name both), the prefab wiring guards (serialized references to the
+/// RIFT prefab / RiftCardTypeID SO, the JU_ON prefab, and the inline
+/// cardTypeID: JU_ON wiring string), and the real two-label layout (ApplyContent in
+/// a preview scene). The tooltip instance is built by reflection inside a preview
+/// scene so the open GameScene stays clean.
 /// </summary>
 public class CardRefTooltipBlocksTests
 {
 	private const string BelieverName = "信徒";
+	private const string CurseName = "诅咒";
 	private const string RelicHivePath = "Assets/Prefabs/Cards/4.0/2_Rare/RELIC_HIVE.prefab";
 	private const string RiftReaperPath = "Assets/Prefabs/Cards/4.0/2_Rare/RIFT_REAPER.prefab";
 	private const string RiftShepherdPath = "Assets/Prefabs/Cards/4.0/0_Common/RIFT_SHEPHERD.prefab";
 	private const string MassSacrificePath = "Assets/Prefabs/Cards/4.0/2_Rare/MASS_SACRIFICE.prefab";
 	private const string RiftAcolytePath = "Assets/Prefabs/Cards/4.0/0_Common/RIFT_ACOLYTE.prefab";
 	private const string RelicRiftOverridePath = "Assets/Prefabs/Cards/4.0/2_Rare/RELIC_RIFT_OVERRIDE.prefab";
+	private const string CurseEaterPath = "Assets/Prefabs/Cards/4.0/1_Uncommon/CURSE_EATER.prefab";
+	private const string CurseGardenerPath = "Assets/Prefabs/Cards/4.0/1_Uncommon/CURSE_GARDENER.prefab";
+	private const string SwarmCurserPath = "Assets/Prefabs/Cards/4.0/2_Rare/SWARM_CURSER.prefab";
 
 	/// <summary>Pool cards whose raw cardDesc bare-names the believer token (verified set).</summary>
 	private static readonly string[] RiftRefHitIds =
@@ -38,6 +44,17 @@ public class CardRefTooltipBlocksTests
 		"RIFT_ACOLYTE", "RIFT_GUIDE_4.0", "RIFT_HATCHERY", "RIFT_INSECT_4.0",
 		"RIFT_MEDIUM", "RIFT_PRIEST", "RIFT_REAPER", "RIFT_REVIVER",
 		"RIFT_STRIKER", "SWARM_CURSER", "SWARM_QUEEN"
+	};
+
+	/// <summary>Pool cards whose raw cardDesc bare-names the curse token (verified set).</summary>
+	private static readonly string[] JuOnRefHitIds =
+	{
+		"CURSE_EATER", "CURSE_GARDENER", "CURSE_REVIVER", "CURSE_SUMMONER",
+		"CURSE_THIRST_BEAST_4.0", "CURSE_THIRST_SHAMAN_4.0", "DETERIORATION_4.0",
+		"DOOM_HERALD", "GRAVE_HEXER", "HEXBLADE", "HEXER", "RELIC_ATTACK_HEX",
+		"RELIC_BLOOD_PACT", "RELIC_CURSE_GRAVE", "RELIC_CURSE_HASTE",
+		"RELIC_CURSE_REVIVAL", "RELIC_GRAVE_CURSE", "RELIC_RIFT_OVERRIDE",
+		"RELIC_TALLY", "SACRIFICIAL_SPIRIT", "SWARM_CURSER", "WOKEN_HEX"
 	};
 
 	private static readonly BindingFlags InstanceFlags = BindingFlags.NonPublic | BindingFlags.Instance;
@@ -123,6 +140,55 @@ public class CardRefTooltipBlocksTests
 	{
 		CardScript rift = RiftScript();
 		return "<b>" + rift.GetDisplayName() + "</b>\n" + rift.cardDesc;
+	}
+
+	private static CardScript JuOnScript()
+	{
+		return CardTooltipDatabaseSO.Me.entries[1].cardPrefab.GetComponent<CardScript>();
+	}
+
+	private static string GoldenCurseCardRefText()
+	{
+		CardScript juon = JuOnScript();
+		return "<b>" + juon.GetDisplayName() + "</b>\n" + juon.cardDesc;
+	}
+
+	/// <summary>
+	/// Test-side composition mirror of the production card-reference text (Resolve is
+	/// guarded by the exact-hit-set golds; this checks only the block composition).
+	/// </summary>
+	private static string ExpectedCardRefText(CardScript card)
+	{
+		var sb = new StringBuilder();
+		foreach (CardTooltipDatabaseSO.Entry entry in CardRefTooltipBlocks.Resolve(card, CardTooltipDatabaseSO.Me))
+		{
+			if (sb.Length > 0) sb.Append("\n\n");
+			sb.Append("<b>").Append(CardRefTooltipBlocks.GetTitle(CardTooltipDatabaseSO.Me, entry)).Append("</b>");
+			string body = CardRefTooltipBlocks.GetBody(entry);
+			if (!string.IsNullOrEmpty(body)) sb.Append("\n").Append(body);
+		}
+		return sb.ToString();
+	}
+
+	/// <summary>
+	/// True when any string serialized property on any component of the prefab equals the
+	/// given value - the inline "cardTypeID: JU_ON" wiring form that object-reference
+	/// scans cannot see (CURSE_EATER wires its curse consumption this way).
+	/// </summary>
+	private static bool PrefabHasInlineCardTypeIdValue(GameObject prefabRoot, string value)
+	{
+		foreach (Component component in prefabRoot.GetComponentsInChildren<Component>(true))
+		{
+			if (component == null) continue;
+			var serialized = new SerializedObject(component);
+			var iterator = serialized.GetIterator();
+			while (iterator.Next(true))
+			{
+				if (iterator.propertyType != SerializedPropertyType.String) continue;
+				if (iterator.stringValue == value) return true;
+			}
+		}
+		return false;
 	}
 
 	private static MethodInfo BuildTooltipContentMethod()
@@ -242,6 +308,7 @@ public class CardRefTooltipBlocksTests
 		Assert.IsTrue(CardRefTooltipBlocks.DescReferencesCard("生成<b>1</b>信徒", BelieverName), "plain bare name");
 		Assert.IsTrue(CardRefTooltipBlocks.DescReferencesCard("被动:友方信徒效果变为:复活<b>1</b>敌方诅咒;放逐自身", BelieverName), "bare name without brackets");
 		Assert.IsTrue(CardRefTooltipBlocks.DescReferencesCard("放逐所有信徒,每放逐<b>1</b>,强化<b>1</b>友方实体", BelieverName), "bare name inside a clause");
+		Assert.IsTrue(CardRefTooltipBlocks.DescReferencesCard("强化<b>1</b>敌方诅咒", CurseName), "curse bare name inside the 敌方诅咒 phrase");
 	}
 
 	[Test]
@@ -252,6 +319,7 @@ public class CardRefTooltipBlocksTests
 		Assert.IsFalse(CardRefTooltipBlocks.DescReferencesCard("复活1张tag为[信徒]的友方卡", BelieverName),
 			"[信徒] is a bracketed tag phrase");
 		Assert.IsFalse(CardRefTooltipBlocks.DescReferencesCard("攻击", BelieverName), "no reference at all");
+		Assert.IsFalse(CardRefTooltipBlocks.DescReferencesCard("复活1张tag为[诅咒]的友方卡", CurseName), "[诅咒] is a bracketed tag phrase");
 	}
 
 	[Test]
@@ -266,29 +334,42 @@ public class CardRefTooltipBlocksTests
 	// ---------- 4-6: database + text builders ----------
 
 	[Test]
-	public void Database_Singleton_LoadsSingleRiftEntry()
+	public void Database_Singleton_LoadsRiftAndCurseEntries()
 	{
 		CardTooltipDatabaseSO db = CardTooltipDatabaseSO.Me;
 		Assert.IsNotNull(db, "CardTooltipDatabase asset must load from Resources");
-		Assert.AreEqual(1, db.entries.Count, "exactly one entry (the RIFT believer token)");
-		CardTooltipDatabaseSO.Entry entry = db.entries[0];
-		Assert.IsNotNull(entry.cardPrefab, "entry cardPrefab");
-		CardScript referenced = entry.cardPrefab.GetComponent<CardScript>();
-		Assert.IsNotNull(referenced, "entry prefab root CardScript");
-		Assert.AreEqual("RIFT", referenced.cardTypeID);
-		Assert.AreEqual(BelieverName, referenced.GetDisplayName());
-		Assert.IsNotEmpty(referenced.cardDesc, "the referenced card must have effect text");
-		Assert.IsNull(entry.descriptionOverride, "no override configured");
+		Assert.AreEqual(2, db.entries.Count, "two entries: the RIFT believer token and the JU_ON curse token");
+		CardTooltipDatabaseSO.Entry riftEntry = db.entries[0];
+		Assert.IsNotNull(riftEntry.cardPrefab, "believer entry cardPrefab");
+		CardScript rift = riftEntry.cardPrefab.GetComponent<CardScript>();
+		Assert.IsNotNull(rift, "believer entry prefab root CardScript");
+		Assert.AreEqual("RIFT", rift.cardTypeID);
+		Assert.AreEqual(BelieverName, rift.GetDisplayName());
+		Assert.IsNotEmpty(rift.cardDesc, "the referenced card must have effect text");
+		Assert.IsNull(riftEntry.descriptionOverride, "no override configured");
+		CardTooltipDatabaseSO.Entry curseEntry = db.entries[1];
+		Assert.IsNotNull(curseEntry.cardPrefab, "curse entry cardPrefab");
+		CardScript juon = curseEntry.cardPrefab.GetComponent<CardScript>();
+		Assert.IsNotNull(juon, "curse entry prefab root CardScript");
+		Assert.AreEqual("JU_ON", juon.cardTypeID);
+		Assert.AreEqual(CurseName, juon.GetDisplayName());
+		Assert.AreEqual(EnumStorage.CardType.Token, juon.cardType, "the curse token is a Token card");
+		Assert.IsNotEmpty(juon.cardDesc, "the referenced card must have effect text");
+		Assert.IsNull(curseEntry.descriptionOverride, "no override configured");
 	}
 
 	[Test]
 	public void BuildCardRefText_HitCards_MatchReferencedCardDesc()
 	{
 		string golden = GoldenCardRefText();
+		string curseGolden = GoldenCurseCardRefText();
 		Assert.AreEqual(golden, CardRefTooltipBlocks.BuildCardRefText(LoadCardScript(RelicHivePath)), "RELIC_HIVE");
 		Assert.AreEqual(golden, CardRefTooltipBlocks.BuildCardRefText(LoadCardScript(RiftReaperPath)), "RIFT_REAPER");
+		Assert.AreEqual(curseGolden, CardRefTooltipBlocks.BuildCardRefText(LoadCardScript(CurseGardenerPath)), "CURSE_GARDENER");
+		Assert.AreEqual(curseGolden, CardRefTooltipBlocks.BuildCardRefText(LoadCardScript(CurseEaterPath)), "CURSE_EATER");
 		Assert.IsEmpty(CardRefTooltipBlocks.BuildCardRefText(LoadCardScript(RiftShepherdPath)), "RIFT_SHEPHERD is a tag reference only");
 		Assert.IsEmpty(CardRefTooltipBlocks.BuildCardRefText(RiftScript()), "the RIFT token itself is not a hit");
+		Assert.IsEmpty(CardRefTooltipBlocks.BuildCardRefText(JuOnScript()), "the JU_ON token itself is not a hit");
 	}
 
 	[Test]
@@ -341,7 +422,7 @@ public class CardRefTooltipBlocksTests
 	[Test]
 	public void Resolve_CardPool_ExactHitSet()
 	{
-		var expected = new SortedSet<string>(RiftRefHitIds);
+		var expected = new SortedSet<string>(RiftRefHitIds.Concat(JuOnRefHitIds));
 		var actual = new SortedSet<string>();
 		foreach (GameObject prefab in LoadCardPool())
 		{
@@ -393,26 +474,98 @@ public class CardRefTooltipBlocksTests
 			"RELIC_RIFT_OVERRIDE describes the token but wires no token reference");
 	}
 
-	// ---------- 10-11: TooltipContent composition ----------
-
 	[Test]
-	public void TooltipContent_NonHitsHaveEmptyCardRefText_HitsHaveGolden()
+	public void Resolve_CardPool_CurseHitSet_MatchesJuOnEntry()
 	{
-		string golden = GoldenCardRefText();
-		var hitIds = new HashSet<string>(RiftRefHitIds);
+		CardTooltipDatabaseSO db = CardTooltipDatabaseSO.Me;
+		string juonTypeId = JuOnScript().cardTypeID;
+		Assert.AreEqual("JU_ON", juonTypeId, "database entry 1 must be the JU_ON curse token");
+		var expected = new SortedSet<string>(JuOnRefHitIds);
+		var actual = new SortedSet<string>();
 		foreach (GameObject prefab in LoadCardPool())
 		{
 			var card = prefab.GetComponent<CardScript>();
-			string cardRefText = ContentField(BuildContent(card), "CardRefText");
+			foreach (CardTooltipDatabaseSO.Entry entry in CardRefTooltipBlocks.Resolve(card, db))
+			{
+				if (entry.cardPrefab.GetComponent<CardScript>().cardTypeID == juonTypeId)
+				{
+					actual.Add(card.cardTypeID);
+				}
+			}
+		}
+		List<string> missing = expected.Except(actual).ToList();
+		List<string> unexpected = actual.Except(expected).ToList();
+		Assert.IsTrue(missing.Count == 0 && unexpected.Count == 0,
+			"curse hit set mismatch.\nmissing (" + missing.Count + "): " + string.Join(", ", missing)
+				+ "\nunexpected (" + unexpected.Count + "): " + string.Join(", ", unexpected));
+	}
+
+	[Test]
+	public void WiringGuard_OnlyHitCardsReferenceJuOnPrefab()
+	{
+		GameObject juonPrefab = CardTooltipDatabaseSO.Me.entries[1].cardPrefab;
+		Assert.IsNotNull(juonPrefab, "JU_ON prefab from the database entry");
+		// CurseCardTypeID.asset is deliberately NOT a wiring target here: a default-valued
+		// cursedCardTypeID field pointing at it is serialized on most pool cards, so the
+		// asset's presence proves nothing about curse wiring.
+		var targets = new UnityEngine.Object[] { juonPrefab };
+		var hitIds = new HashSet<string>(JuOnRefHitIds);
+		foreach (GameObject prefab in LoadCardPool())
+		{
+			if (!PrefabReferencesAnyTarget(prefab, targets)) continue;
+			string id = prefab.GetComponent<CardScript>().cardTypeID;
+			Assert.IsTrue(hitIds.Contains(id),
+				"card " + id + " serializes a reference to the JU_ON token prefab but is not a card-reference hit");
+		}
+	}
+
+	[Test]
+	public void WiringGuard_CurseInlineCardTypeIdStringIsHit()
+	{
+		var hitIds = new HashSet<string>(JuOnRefHitIds);
+		Assert.IsTrue(PrefabHasInlineCardTypeIdValue(LoadPrefab(CurseEaterPath), "JU_ON"),
+			"CURSE_EATER must carry the inline cardTypeID: JU_ON wiring string");
+		Assert.IsFalse(PrefabHasInlineCardTypeIdValue(LoadPrefab(MassSacrificePath), "JU_ON"),
+			"a non-curse card must not carry the inline JU_ON string");
+		foreach (GameObject prefab in LoadCardPool())
+		{
+			if (!PrefabHasInlineCardTypeIdValue(prefab, "JU_ON")) continue;
+			string id = prefab.GetComponent<CardScript>().cardTypeID;
+			Assert.IsTrue(hitIds.Contains(id),
+				"card " + id + " carries the inline cardTypeID: JU_ON string but is not a card-reference hit");
+		}
+	}
+
+	// ---------- 10-11: TooltipContent composition ----------
+
+	[Test]
+	public void TooltipContent_CardRefTextMatchesComposition_AllPool()
+	{
+		var hitIds = new HashSet<string>(RiftRefHitIds.Concat(JuOnRefHitIds));
+		foreach (GameObject prefab in LoadCardPool())
+		{
+			var card = prefab.GetComponent<CardScript>();
+			string actual = ContentField(BuildContent(card), "CardRefText");
+			Assert.AreEqual(ExpectedCardRefText(card), actual, card.cardTypeID + " card-ref text composition");
 			if (hitIds.Contains(card.cardTypeID))
 			{
-				Assert.AreEqual(golden, cardRefText, card.cardTypeID + " golden card-ref text");
+				Assert.IsNotEmpty(actual, card.cardTypeID + " must show a card-reference block");
 			}
 			else
 			{
-				Assert.IsEmpty(cardRefText, card.cardTypeID + " must keep its tooltip unchanged");
+				Assert.IsEmpty(actual, card.cardTypeID + " must keep its tooltip unchanged");
 			}
 		}
+	}
+
+	[Test]
+	public void TooltipContent_DualReferenceCards_GetBothBlocksBelieverFirst()
+	{
+		string dual = GoldenCardRefText() + "\n\n" + GoldenCurseCardRefText();
+		Assert.AreEqual(dual, CardRefTooltipBlocks.BuildCardRefText(LoadCardScript(SwarmCurserPath)),
+			"SWARM_CURSER (诅咒唱诗班) names both tokens; the believer block (database order) comes first");
+		Assert.AreEqual(dual, CardRefTooltipBlocks.BuildCardRefText(LoadCardScript(RelicRiftOverridePath)),
+			"RELIC_RIFT_OVERRIDE (伪经) names both tokens; the believer block (database order) comes first");
 	}
 
 	[Test]
