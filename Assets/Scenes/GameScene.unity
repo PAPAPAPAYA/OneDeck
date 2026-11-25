@@ -3757,19 +3757,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1042294396622275492, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 7615038614708332329, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 2424560831447566516, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 8652292240949848764, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
 --- !u!1 &567038032
 GameObject:
@@ -7104,7 +7092,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6038099380364343606, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7010064298356579603, guid: dc7050cbdd002d241bc9ec112678926a, type: 3}
       propertyPath: m_fontColor.b
