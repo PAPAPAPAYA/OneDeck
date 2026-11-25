@@ -42,6 +42,43 @@ rendered:  攻击;复活 1 张tag为[信徒]的友方卡
 
 `<tag:Believer>` → 信徒, `<tag:DeathRattle>` → 遗言 (`Assets/SORefs/Strings/TagNames/`).
 
+## Hover tooltip mapping (2026-11-25)
+
+A **bare card name** in the raw `cardDesc` now also drives the hover tooltip: the hovered
+card gets a trailing card-reference block — the referenced card's display name as a bold
+bare title (no brackets), then the referenced card's own `cardDesc` on the next line.
+Example (RELIC_HIVE 以血布道, raw `被动:友方攻击时,生成<b>1</b>信徒`):
+
+```
+[现象]
+不可攻击
+
+[信徒]
+生成或增益[信徒]的效果
+
+[被动]
+在场期间持续生效的效果
+
+信徒
+复活 1 友方,去除自身
+```
+
+Rule (`CardRefTooltipBlocks.DescReferencesCard`): strip every `<...>` span (rich text and
+placeholders such as `<tag:Believer>`) and every `[...]` tag phrase from the raw desc; the
+block is added when the bare display name still occurs. A `[X]` phrase is a tag reference
+and never triggers a block (RIFT_SHEPHERD `tag为[<tag:Believer>]的友方卡` → no block).
+
+Data: `Assets/Resources/CardTooltipDatabase.asset` (`CardTooltipDatabaseSO`) — one entry per
+explainable card (`cardPrefab` + optional `descriptionOverride` StringSO), plus the block
+style tunables in `cardBlock` (title format, title/body color, font size, spacing before).
+Today the only entry is the RIFT token (15 cards of the 4.0 pool match; list in
+`plans/plan-card-ref-tooltip-believer-2026-11-25.md`). Adding the curse (JU_ON) token is a
+data-only change but is deferred (about 22 cards).
+
+Authoring impact: naming a database card bare in a cardDesc is enough to get the block —
+no prefab wiring, no tag. A StringSO used as `titleFormat` or `descriptionOverride` must
+keep `reset = false`, otherwise `StringSO.OnEnable` wipes the text.
+
 ## Why the distinction is load-bearing
 
 - RIFT_SHEPHERD revives via `ReviveMyCardsWithTag` (Believer **tag**) — a tag reference;

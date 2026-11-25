@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3155ef95604fe84f886b3f281c17989, type: 3}
+  m_Name: CardTooltipDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::CardTooltipDatabaseSO
+  entries:
+  - cardPrefab: {fileID: 8718476725744197808, guid: e8e562bae93b8c546a9a5d8c51f25855, type: 3}
+    descriptionOverride: {fileID: 0}
+  cardBlock:
+    titleFormat: {fileID: 0}
+    titleColor: {fileID: 0}
+    bodyColor: {fileID: 0}
+    fontSize: 0
+    spacingBefore: 0

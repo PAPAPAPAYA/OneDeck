@@ -15,7 +15,12 @@ using UnityEngine.UI;
 /// (Token 衍生物) and the Start Card show no type block. Each visible tag then
 /// gets a bold "[Tag]" title line followed by its explanation on the next
 /// line, from TagTooltipDatabaseSO (StringSO per tag); tags without a
-/// configured explanation show the title only. Follows the
+/// configured explanation show the title only. Last comes the card-reference
+/// block (CardRefTooltipBlocks): when the hovered card's cardDesc names a
+/// CardTooltipDatabaseSO card by bare name, that card is shown with a bold bare
+/// title and its own cardDesc, on its own label. That block sits on its own
+/// "CardRefs" label (a sibling of the "Text" label, so it can carry its own font
+/// size); the tooltip appears when either label has text. Follows the
 /// presenter convention (CombatIconPresenter, CombatHPBarPresenter): pure
 /// presentation, no game logic.
 /// </summary>
@@ -24,10 +29,13 @@ public class CardTagTooltip : MonoBehaviour
 	private static CardTagTooltip _instance;
 
 	private const float ScreenMargin = 16f;
+	private const float DefaultFontSize = 28f;
 
 	private Canvas _canvas;
 	private RectTransform _panel;
 	private TextMeshProUGUI _text;
+	private TextMeshProUGUI _cardRefsText;
+	private VerticalLayoutGroup _layout;
 	private CardPhysObjScript _source;
 	private Camera _camera;
 	private EnumStorage.GamePhase? _phaseAtShow;
@@ -38,19 +46,36 @@ public class CardTagTooltip : MonoBehaviour
 	private bool _pinned;
 
 	/// <summary>
+	/// Everything the tooltip shows for one hovered card. MainText = card-type block + tag
+	/// blocks (the "Text" label). CardRefText = card-reference blocks (the "CardRefs" label,
+	/// see CardRefTooltipBlocks). The tooltip is shown when either is non-empty.
+	/// </summary>
+	private struct TooltipContent
+	{
+		public string MainText;
+		public string CardRefText;
+
+		public bool HasContent
+		{
+			get { return !string.IsNullOrEmpty(MainText) || !string.IsNullOrEmpty(CardRefText); }
+		}
+	}
+
+	/// <summary>
 	/// Show the tooltip for the given card and PIN it: it stays visible (following the card)
 	/// until UnpinFor, even through hover end / cursor离开. Used by the enlarge preview modal.
-	/// No-op when the card has no visible tags (nothing to pin).
+	/// No-op when the card has no content (no type block, no visible tag and no card-reference
+	/// block).
 	/// </summary>
 	public static void PinFor(CardPhysObjScript card)
 	{
 		if (card == null) return;
-		string tooltipText = BuildTooltipText(card);
-		if (string.IsNullOrEmpty(tooltipText)) return;
+		TooltipContent content = BuildTooltipContent(card);
+		if (!content.HasContent) return;
 		EnsureInstance();
 		if (_instance == null) return;
 		_instance._pinned = true;
-		_instance.Show(card, tooltipText);
+		_instance.Show(card, content);
 	}
 
 	/// <summary>
@@ -69,16 +94,17 @@ public class CardTagTooltip : MonoBehaviour
 
 	/// <summary>
 	/// Show the tooltip for the given card (called after the hover delay elapses).
-	/// No-op when the card has no visible tags.
+	/// No-op when the card has no content (no type block, no visible tag and no card-reference
+	/// block).
 	/// </summary>
 	public static void ShowFor(CardPhysObjScript card)
 	{
 		if (card == null) return;
-		string tooltipText = BuildTooltipText(card);
-		if (string.IsNullOrEmpty(tooltipText)) return;
+		TooltipContent content = BuildTooltipContent(card);
+		if (!content.HasContent) return;
 		EnsureInstance();
 		if (_instance == null) return;
-		_instance.Show(card, tooltipText);
+		_instance.Show(card, content);
 	}
 
 	/// <summary>
@@ -104,12 +130,37 @@ public class CardTagTooltip : MonoBehaviour
 	/// without a (non-empty) description show the title only. Returns an empty
 	/// string when there is neither a type block nor any visible tag (no tooltip).
 	/// </summary>
-	private static string BuildTooltipText(CardPhysObjScript card)
+	private static string BuildTooltipText(CardScript card)
 	{
 		StringBuilder sb = new StringBuilder();
 		bool hasTypeBlock = TryAppendTypeBlock(card, sb);
 		bool hasVisibleTag = TryAppendTagBlocks(card, sb, hasTypeBlock);
 		return hasTypeBlock || hasVisibleTag ? sb.ToString() : string.Empty;
+	}
+
+	/// <summary>Null-safe overload resolving the hovered physical card to its CardScript.</summary>
+	private static string BuildTooltipText(CardPhysObjScript card)
+	{
+		return card != null ? BuildTooltipText(card.cardImRepresenting) : string.Empty;
+	}
+
+	/// <summary>Null-safe overload resolving the hovered physical card to its CardScript.</summary>
+	private static TooltipContent BuildTooltipContent(CardPhysObjScript card)
+	{
+		if (card == null) return default(TooltipContent);
+		return BuildTooltipContent(card.cardImRepresenting);
+	}
+
+	/// <summary>
+	/// Both labels' text for a card prefab: MainText from the type/tag databases,
+	/// CardRefText from CardRefTooltipBlocks (the card-reference block).
+	/// </summary>
+	private static TooltipContent BuildTooltipContent(CardScript card)
+	{
+		TooltipContent content;
+		content.MainText = BuildTooltipText(card);
+		content.CardRefText = card != null ? CardRefTooltipBlocks.BuildCardRefText(card) : string.Empty;
+		return content;
 	}
 
 	/// <summary>
@@ -118,11 +169,11 @@ public class CardTagTooltip : MonoBehaviour
 	/// Start Card and for card types without a database entry (Token 衍生物 —
 	/// data-driven exclusion, 2026-09-14).
 	/// </summary>
-	private static bool TryAppendTypeBlock(CardPhysObjScript card, StringBuilder sb)
+	private static bool TryAppendTypeBlock(CardScript card, StringBuilder sb)
 	{
-		if (card.cardImRepresenting == null || card.cardImRepresenting.isStartCard) return false;
+		if (card == null || card.isStartCard) return false;
 
-		EnumStorage.CardType cardType = card.cardImRepresenting.cardType;
+		EnumStorage.CardType cardType = card.cardType;
 		CardTypeTooltipDatabaseSO db = CardTypeTooltipDatabaseSO.Me;
 		string displayName = db != null ? db.GetDisplayName(cardType) : null;
 		if (string.IsNullOrEmpty(displayName)) return false;
@@ -139,18 +190,18 @@ public class CardTagTooltip : MonoBehaviour
 		return true;
 	}
 
-	private static bool TryAppendTagBlocks(CardPhysObjScript card, StringBuilder sb, bool hasPrecedingBlock)
+	private static bool TryAppendTagBlocks(CardScript card, StringBuilder sb, bool hasPrecedingBlock)
 	{
-		if (card.cardImRepresenting == null || card.cardImRepresenting.myTags == null || card.cardImRepresenting.myTags.Count == 0)
+		if (card == null || card.myTags == null || card.myTags.Count == 0)
 		{
 			return false;
 		}
 
 		TagTooltipDatabaseSO db = TagTooltipDatabaseSO.Me;
 		bool hasVisibleTag = false;
-		for (int i = 0; i < card.cardImRepresenting.myTags.Count; i++)
+		for (int i = 0; i < card.myTags.Count; i++)
 		{
-			EnumStorage.Tag tag = card.cardImRepresenting.myTags[i];
+			EnumStorage.Tag tag = card.myTags[i];
 			if (tag == EnumStorage.Tag.None) continue;
 			if (hasVisibleTag || (hasPrecedingBlock && sb.Length > 0))
 			{
@@ -208,30 +259,109 @@ public class CardTagTooltip : MonoBehaviour
 		var fitter = panelGo.AddComponent<ContentSizeFitter>();
 		fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
 		fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-		var layout = panelGo.AddComponent<VerticalLayoutGroup>();
-		layout.padding = new RectOffset(12, 12, 8, 8);
-		layout.childAlignment = TextAnchor.UpperLeft;
+		_layout = panelGo.AddComponent<VerticalLayoutGroup>();
+		_layout.padding = new RectOffset(12, 12, 8, 8);
+		_layout.childAlignment = TextAnchor.UpperLeft;
 
 		var textGo = new GameObject("Text");
 		textGo.transform.SetParent(panelGo.transform, false);
 		_text = textGo.AddComponent<TextMeshProUGUI>();
-		_text.fontSize = 28;
+		_text.fontSize = DefaultFontSize;
 		_text.color = GameColorPalette.TooltipTextColor;
 		_text.richText = true; // tag titles use <b>
 		_text.raycastTarget = false;
 		bg.raycastTarget = false;
 
+		// Card-reference block label: a sibling of the main label so the block can carry
+		// its own font size (CardTooltipDatabaseSO.cardBlock.fontSize). Same font and paragraph
+		// settings as the main label; active only when it has text.
+		var cardRefsGo = new GameObject("CardRefs");
+		cardRefsGo.transform.SetParent(panelGo.transform, false);
+		_cardRefsText = cardRefsGo.AddComponent<TextMeshProUGUI>();
+		_cardRefsText.font = _text.font;
+		_cardRefsText.alignment = _text.alignment;
+		_cardRefsText.enableWordWrapping = _text.enableWordWrapping;
+		_cardRefsText.overflowMode = _text.overflowMode;
+		_cardRefsText.fontSize = DefaultFontSize;
+		_cardRefsText.color = GameColorPalette.TooltipTextColor;
+		_cardRefsText.richText = true;
+		_cardRefsText.raycastTarget = false;
+		cardRefsGo.SetActive(false);
+
 		panelGo.SetActive(false);
 	}
 
-	private void Show(CardPhysObjScript card, string tooltipText)
+	private void Show(CardPhysObjScript card, TooltipContent content)
 	{
 		_source = card;
 		_camera = null; // re-resolve per show in case the rendering camera changed
-		_text.text = tooltipText;
+		ApplyContent(content);
 		_phaseAtShow = card.currentGamePhaseRef != null ? card.currentGamePhaseRef.Value() : (EnumStorage.GamePhase?)null;
 		_panel.gameObject.SetActive(true);
 		UpdatePosition();
+	}
+
+	/// <summary>
+	/// Feed one card's content to the two labels. Each label is active only when it has text.
+	/// With both active, the gap between them equals one blank line of the main label (the
+	/// separator between the blocks above) plus the database's spacingBefore.
+	/// </summary>
+	private void ApplyContent(TooltipContent content)
+	{
+		string mainText = content.MainText ?? string.Empty;
+		string cardRefText = content.CardRefText ?? string.Empty;
+		bool hasMain = mainText.Length > 0;
+		bool hasCardRefs = cardRefText.Length > 0;
+
+		float spacingBefore = 0f;
+		if (hasCardRefs)
+		{
+			_cardRefsText.text = cardRefText;
+			ApplyCardBlockStyle();
+			CardTooltipDatabaseSO db = CardTooltipDatabaseSO.Me;
+			if (db != null && db.cardBlock != null)
+			{
+				spacingBefore = db.cardBlock.spacingBefore;
+			}
+		}
+		_cardRefsText.gameObject.SetActive(hasCardRefs);
+
+		// Measure the gap while the main label is active, then write the real text last.
+		_text.gameObject.SetActive(true);
+		float gap = hasMain && hasCardRefs ? ComputeCardRefGap(mainText) + Mathf.Max(0f, spacingBefore) : 0f;
+		// Measure the gap first, then write the real text with SetText: GetPreferredValues(string)
+		// measures its argument in place by overwriting the label's internal text arrays, and the
+		// text setter would early-out on an unchanged string (same card hovered again).
+		_text.SetText(mainText);
+		_text.gameObject.SetActive(hasMain);
+		_layout.spacing = gap;
+	}
+
+	/// <summary>
+	/// Height of one blank line in the main label: the difference between appending "\n\n"
+	/// and "\n" (plus a trailing glyph) to the real text, measured on that label.
+	/// </summary>
+	private float ComputeCardRefGap(string mainText)
+	{
+		const string tail = "X";
+		float withBlankLine = _text.GetPreferredValues(mainText + "\n\n" + tail).y;
+		float withoutBlankLine = _text.GetPreferredValues(mainText + "\n" + tail).y;
+		return Mathf.Max(0f, withBlankLine - withoutBlankLine);
+	}
+
+	/// <summary>
+	/// Card-block tunables that live on the label itself. Colors and the title format are
+	/// already applied inside the text by CardRefTooltipBlocks.BuildCardRefText.
+	/// </summary>
+	private void ApplyCardBlockStyle()
+	{
+		float fontSize = 0f;
+		CardTooltipDatabaseSO db = CardTooltipDatabaseSO.Me;
+		if (db != null && db.cardBlock != null)
+		{
+			fontSize = db.cardBlock.fontSize;
+		}
+		_cardRefsText.fontSize = fontSize > 0f ? fontSize : DefaultFontSize;
 	}
 
 	private void Hide()
