@@ -340,6 +340,22 @@ public class PhaseTransitionDriver : MonoBehaviour
 		float dur = cfg != null ? Mathf.Max(0.05f, cfg.transDur) : 0.8f;
 		float stagger = cfg != null ? cfg.cardStagger : 0.07f;
 
+		// VISUAL-FIX(2026-11-26): selection leg2 (pick → combat) jumped into combat as a
+		//   hard cut.
+		//   Cause:    SelectionToCombatRoutine had NO camera tween — the rig stayed on the
+		//             selection page through the whole leg2, the entrance choreography flew
+		//             to targets one page above the viewport (probes: camY=12.12 constant,
+		//             clone targetVisible=False ×5), and after teardown Update()'s one-shot
+		//             phase-snap teleported rigY 12.12 → 24.24 in a single frame.
+		//   Affects:  PhaseTransitionDriver.SelectionToCombatRoutine (pick → combat leg only;
+		//             legacy ShopToCombat / ResultToShop rig tweens were already correct).
+		//   Regress:  Click 选择 on the selection page: the camera travels selection →
+		//             combat WITH the enemy plate and the entrance cards and lands with no
+		//             jump; the phase-snap probe line must NOT fire; the legacy two
+		//             transitions unregressed.
+		//   Related:  plan-opponent-select-page-2026-10-06.md §4.4, docs/RegressionChecklist.md row 157
+		Track(ApplyCfgEase(cfg, _rig.DOMoveY(_combatPageY, dur).SetUpdate(UpdateType.Normal, true)));
+
 		// The picked enemy plate translates to the combat HUD home in parallel with the
 		// camera (player-plate treatment); O-L1: the uniform scale ratio lands it at the
 		// HUD's rendered size — Play-tune point.
