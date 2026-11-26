@@ -379,12 +379,19 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		//             anchor -> combat anchor. Buy/sell HP utility in a settled shop: the WORLD
 		//             pill counts up/down; combat odometer/shake/pop untouched. Driver bypass
 		//             (config off / headless): same-frame hard cut, no glide.
+		// Selection legs (plan-opponent-select-page §4.4, option A 2026-11-26): while the
+		// opponent-select page is alive the enemy canvas pill stays hidden — the picked
+		// PANEL plate carries the enemy identity through both legs and the driver swaps
+		// them at landing (the travel-visible term below would otherwise ride the enemy
+		// pill up one page early).
+		bool selectionDwelling = OpponentSelectPage.Instance != null;
 		bool visible = side == Side.Player
 			? inCombat || phase == EnumStorage.GamePhase.Result
 				|| (phase == EnumStorage.GamePhase.Shop && PhaseTransitionDriver.IsTransitioning && !_handedOffToMirror)
-			: (inCombat && !PhaseTransitionDriver.SuppressCombatCanvasUI)
-				|| phase == EnumStorage.GamePhase.Result
-				|| travel != PhaseTransitionDriver.TransitionTravel.None;
+			: !selectionDwelling
+				&& ((inCombat && !PhaseTransitionDriver.SuppressCombatCanvasUI)
+					|| phase == EnumStorage.GamePhase.Result
+					|| travel != PhaseTransitionDriver.TransitionTravel.None);
 		// VISUAL-FIX(2026-09-19): Leaving the shop for combat left the player pill at the shop
 		//   Cause:    Placement was applied only from EnterVisiblePhase, which fires on an
 		//             invisible->visible edge. The player side is visible in BOTH Shop and
@@ -664,6 +671,11 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 				}
 				else
 				{
+					// Selection leg2 (plan §4.4, option A 2026-11-26): the driver flies the picked
+					// PANEL plate to this home and swaps it for the real HUD at landing — the
+					// canvas piece takes no part in either selection leg (mirror of the player
+					// gate above).
+					if (OpponentSelectPage.Instance != null) break;
 					// Entrance (fix 2): slide DOWN in from enemySlide above; the world position
 					// keeps the pill outside the viewport until the camera's arrival, like the demo.
 					Vector3 to = PhaseFlightPlanner.HudHomeAtPage(SnapToCombatAnchor(), PhaseTransitionDriver.LandingPageY, CanvasPlaneY);
@@ -728,6 +740,50 @@ public class HPNumericDisplayHorizontal : MonoBehaviour
 		KillTween(ref _placementScaleTween);
 		_selfRt.anchoredPosition = _combatAnchoredPos;
 		return _selfRt.position;
+	}
+
+	/// <summary>
+	/// Selection leg2 handoff query (plan §4.4, option A 2026-11-26): snaps the hidden
+	/// enemy display to its combat anchor and returns its HUD home mapped onto the
+	/// driver's landing page — the exact spot the ToCombat world flight would land on.
+	/// The caller (PhaseTransitionDriver) flies the picked panel plate here.
+	/// </summary>
+	public Vector3 CombatHomeWorld()
+	{
+		Vector3 anchoredWorld = SnapToCombatAnchor();
+		return PhaseFlightPlanner.HudHomeAtPage(anchoredWorld, PhaseTransitionDriver.LandingPageY, CanvasPlaneY);
+	}
+
+	/// <summary>The plate face's rendered WORLD width at combat scale (option A handoff). The old leg2 ratio compared raw lossyScales across unit bases (canvas px vs world authored) and shrank the plate to a speck — compare rendered widths instead. Static core is EditMode-testable; the instance reads faceImage/_selfRt/_combatScale.</summary>
+	public float CombatPlateWorldWidth()
+	{
+		return CombatPlateWorldWidthOf(faceImage != null ? faceImage.rectTransform : null,
+			_selfRt != null ? _selfRt.lossyScale.x : 0f, _combatScale.x);
+	}
+
+	/// <summary>Width the face renders once the pill sits at its combat scale: rect width in canvas units x canvas world factor (the pill's own scale divided out) x combat scale.</summary>
+	public static float CombatPlateWorldWidthOf(RectTransform faceRect, float selfLossyScaleX, float combatScaleX)
+	{
+		if (faceRect == null) return 0f;
+		float worldPerCanvasUnit = faceRect.lossyScale.x / Mathf.Max(0.0001f, selfLossyScaleX);
+		return faceRect.rect.width * worldPerCanvasUnit * Mathf.Max(0.0001f, combatScaleX);
+	}
+
+	/// <summary>
+	/// Landing handoff (option A 2026-11-26): surface the display at the combat home
+	/// immediately, with no entrance motion — the driver calls this in the same frame it
+	/// retires the picked panel plate, so the two occupy the same pose (the next poll's
+	/// EnterVisiblePhase re-applies the same placement idempotently).
+	/// </summary>
+	public void PlaceAtCombatHomeInstant()
+	{
+		if (_selfRt == null) return;
+		KillTween(ref _placementTween);
+		KillTween(ref _placementScaleTween);
+		if (_flight != null) _flight.Kill();
+		_selfRt.anchoredPosition = _combatAnchoredPos;
+		_selfRt.localScale = _combatScale;
+		if (displayRoot != null) displayRoot.gameObject.SetActive(true);
 	}
 
 	/// <summary>

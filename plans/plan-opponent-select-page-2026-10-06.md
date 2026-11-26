@@ -73,6 +73,7 @@
 - 新增 `RequestShopToSelection(pm)` 与选敌→战斗 routine；`_selectionPageY = _shopPageY + _pageH`；选敌页启用时 `_combatPageY = _shopPageY + 2*_pageH`，未启用保持现状。
 - **leg1（商店→选敌，2026-10-10 裁定）**：rig 飞行（overshoot 页外 PAD 余量照 demo 规矩）＋三件 HUD 事：①**玩家名牌 handoff 提前到 leg1**——商店名牌→战斗名牌交接原是一次性（shop→combat 单段旅行内完成），拆两段后交接点前移，战斗名牌自选敌页起上岗（商店期 HP 恒满，显示无歧义）；②**选项按钮平移**：屏幕右上（商店钉死位）→ 右下战斗位，随 leg1 平移、之后不动（它不是纯视口钉死物——钉的只是商店位）；③选敌面板**固定在 +1 页随镜头揭示**，无独立入场动画。选敌页背景 = **玩家灰全页延伸**（O4 落定：无红；背景覆盖需 +1 页）。
 - **leg2（选敌→战斗，落地编排）**：相机再上一页至 +2；**敌人名牌**面板位→战斗位（+8.64, +5.27）平移——对象恒常同玩家名牌处理，尺寸衔接 O-L1（面板 em 1.0 vs 战斗位渲染尺寸）落地前实测，纯平移或补 scale 到时定；**关键卡**面板槽位「起飞即生成」physical 实例（复用 PartD 机制，面板显示体同刻隐藏）飞入牌堆——同 cardTypeID 多副本时面板张对应其中一实例，其余副本走上方组；**剩余敌卡 + start card** 屏幕外上方移入；**玩家卡**屏幕外下方移入。三组来源参数进 `PhaseTransitionConfigSO`。**本条取代原「entrance 编排不动」**——`ScheduleCombatEntranceFlights` 的来源分组要改。
+- **敌方名牌衔接（2026-11-26 方案A拍板+实施）**：选敌名牌=唯一主体——真敌方 HUD 在两条 leg 全程隐藏（可见性 poll 的 travel 项 + OnTravelEdge ToCombat 敌方支双加选敌门），名牌按**纯平移**飞落真 HUD 的 `HudHomeAtPage` 家位（面板 prefab 本就把名牌烘在战斗牌尺寸——OpponentSelectPanel.cs 头注契约；中途试过的宽比 tween 实测 ratio=2.5e6 量纲垃圾已弃），落地 teardown 后同帧换主体（`PlaceAtCombatHomeInstant`）。**O-L1 关案**：旧 ratio 跨量纲不可用（249.94 canvas-px 口径 ÷ 零尺寸锚点钳位 0.0001 = 日志里的 2.5e6）；swap 尺寸 2026-11-26 Play 目检吻合，宽度探针已撤。
 - ShopHudBinder 离店绑定改为按 config 分流：选敌页启用 → `RequestShopToSelection`，否则现状 `RequestShopToCombat`。PhaseManager.cs:144 legacy 路径同步分流。
 - 选敌页停留期间输入门：`BlockInput`/`UnblockInput` 配对（页面自持 requester），leg1/leg2 期间沿用转场既有屏蔽。
 

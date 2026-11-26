@@ -377,14 +377,19 @@ public class PhaseTransitionDriver : MonoBehaviour
 		HPNumericDisplayHorizontal enemyDisplay = FindEnemyHpDisplay();
 		if (plate != null && enemyDisplay != null && enemyDisplay.displayRoot != null)
 		{
-			Vector3 target = enemyDisplay.displayRoot.position
-				+ new Vector3(0f, _combatPageY - _rig.position.y, 0f);
-			float ratio = enemyDisplay.displayRoot.lossyScale.x / Mathf.Max(0.0001f, plate.lossyScale.x);
+			// Option A (2026-11-26): the panel plate BECOMES the enemy HUD — fly it to the
+			// real HUD's combat home as PURE TRANSLATION. The panel prefab authors the plate
+			// at the combat-plate size on purpose (OpponentSelectPanel.cs header contract,
+			// morph-era pure-translation design), so a scale tween was never needed — the
+			// tried width-ratio tween measured garbage (249.94 / 0.0001 clamp = the logged
+			// 2.5e6: hudW came out in canvas-px scale, plateW hit the zero-size binding
+			// anchor rect) and exploded the plate out of the viewport. Swap size verified
+			// visually 2026-11-26; the incomparable width probes are not logged.
+			Vector3 target = enemyDisplay.CombatHomeWorld();
 			Track(ApplyCfgEase(cfg, plate.DOMove(target, dur).SetUpdate(UpdateType.Normal, true)));
-			Track(ApplyCfgEase(cfg, plate.DOScale(plate.localScale * ratio, dur).SetUpdate(UpdateType.Normal, true)));
 			TestManager.Log(string.Format(
-				"[PhaseTransition] leg2 plate flight: rigY={0:F2} targetY={1:F2} ratio={2:F3}",
-				_rig.position.y, target.y, ratio));
+				"[PhaseTransition] leg2 plate flight: rigY={0:F2} targetY={1:F2}",
+				_rig.position.y, target.y));
 		}
 		else
 		{
@@ -432,6 +437,12 @@ public class PhaseTransitionDriver : MonoBehaviour
 
 		_suppressCombatCanvasUI = false;
 		OpponentSelectPage.TeardownStatic();
+		// Same-frame handoff (option A 2026-11-26): the panel plate was the enemy-HUD
+		// stand-in through leg2 — retire it and surface the real display at the identical
+		// combat-home pose. After the teardown, so the visibility gate opens the moment
+		// the page dies and the next poll's EnterVisiblePhase re-applies idempotently.
+		if (plate != null) plate.gameObject.SetActive(false);
+		if (enemyDisplay != null) enemyDisplay.PlaceAtCombatHomeInstant();
 		_travel = TransitionTravel.None;
 		_transitioning = false;
 		ShopInputGate.Unblock();
