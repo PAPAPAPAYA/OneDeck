@@ -242,6 +242,7 @@ namespace DefaultNamespace.Effects
 				if (CombatManager.ShouldSkipEffectProcessing(cardScript)) continue;
 				if (cardScript.myStatusRef == myCardScript.myStatusRef) continue; // must be enemy card
 				if (cardScript.GetAttack() <= 0) continue; // must have attack to consume
+				if (cardScript.IgnoresAttackBuffs) continue; // a rule-defined attack cannot be weakened (2026-11-26)
 				eligibleCards.Add(cardScript);
 			}
 
@@ -252,6 +253,7 @@ namespace DefaultNamespace.Effects
 				    !CombatManager.ShouldSkipEffectProcessing(revealCardScript) &&
 				    revealCardScript.myStatusRef != myCardScript.myStatusRef &&
 				    revealCardScript.GetAttack() > 0 &&
+				    !revealCardScript.IgnoresAttackBuffs && // symmetric drain exclusion (2026-11-26)
 				    !eligibleCards.Exists(c => c.gameObject == CombatManager.Me.revealZone))
 				{
 					eligibleCards.Add(revealCardScript);
@@ -306,7 +308,8 @@ namespace DefaultNamespace.Effects
 				CombatManager.Me.revealZone,
 				c => !CombatManager.ShouldSkipEffectProcessing(c) &&
 				     c.myStatusRef != myCardScript.myStatusRef &&
-				     c.GetAttack() > 0);
+				     c.GetAttack() > 0 &&
+				     !c.IgnoresAttackBuffs); // a rule-defined attack cannot be weakened (2026-11-26)
 			if (target == null) return;
 
 			// Snapshot display state before mutating so card text updates are deferred until animation completes

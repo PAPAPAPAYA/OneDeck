@@ -181,7 +181,26 @@ public class EffectScript : MonoBehaviour
 	/// attack-gain event family (RaiseOwner/RaiseOpponent by the gaining card's faction),
 	/// records per-card combat stats and captures an AttackChange animation request.
 	/// </summary>
-	protected void ApplyAttackCore(
+	// VISUAL-FIX(2026-11-26): masked-attack cards (IgnoresAttackBuffs) still played the grant
+	//   projectile after the display guard — the face never moved, but a projectile flew and
+	//   the log/stats claimed a grant the settlement never deals.
+	//   Cause:    ApplyAttackCore applied stats/events/growth/capture unconditionally; only
+	//             GetAttackForDisplay() knew about the mask.
+	//   Affects:  EffectScript.ApplyAttackCore (returns bool now) + every caller's batch
+	//             animation capture (AttackGiverEffect family / AttackGainReactionEffect /
+	//             CurseEffect inline capture) + selector pools pre-excluding masked cards.
+	//   Regress:  Deterministic grant onto a masked card (override-armed curse enhancement,
+	//             masked self-gain): NO projectile/particle, face unchanged, log shows the
+	//             immune line; grants onto normal cards and the attack-times axis unchanged.
+	/// <summary>
+	/// Apply a permanent attack gain. Returns false (and logs the immune line) when the
+	/// target is a masked card (IgnoresAttackBuffs): those never absorb growth in
+	/// settlement, so the grant is an honest no-op — no stats, no events, no ledger write,
+	/// no AttackChange capture (callers branch on the return value to skip their batch
+	/// captures). The immune line intentionally ignores suppressLog: that flag only
+	/// suppresses the standard "granted N attack" line, not the correction.
+	/// </summary>
+	protected bool ApplyAttackCore(
 		CardScript targetCardScript,
 		int amount,
 		ParticleSystem particlePrefab,
@@ -189,7 +208,14 @@ public class EffectScript : MonoBehaviour
 		int? logAmount = null,
 		bool suppressLog = false)
 	{
-		if (targetCardScript == null || amount == 0) return;
+		if (targetCardScript == null || amount == 0) return false;
+
+		if (targetCardScript.IgnoresAttackBuffs)
+		{
+			LogAttackImmune(targetCardScript, logAmount ?? amount);
+			return false;
+		}
+
 		int actualLogAmount = logAmount ?? amount;
 
 		// Per-card combat stats: attack granted (by this effect's card) and received (by target).
@@ -234,6 +260,7 @@ public class EffectScript : MonoBehaviour
 		{
 			LogAttackGiven(targetCardScript, actualLogAmount);
 		}
+		return true;
 	}
 
 	/// <summary>
@@ -251,6 +278,25 @@ public class EffectScript : MonoBehaviour
 			targetCardOwnerString +
 			"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>]" +
 			GameColorPalette.Me.highlight.OpenTag + amount + "</color>点攻击力");
+	}
+
+	/// <summary>
+	/// Append the immune line for a masked-card grant (IgnoresAttackBuffs): the effect
+	/// resolved onto a card whose settlement never absorbs attack growth, so the log
+	/// corrects the attempt instead of claiming a grant. Not bound by suppressLog.
+	/// </summary>
+	protected void LogAttackImmune(CardScript targetCardScript, int amount)
+	{
+		string targetCardOwnerString = GetCardOwnerPrefix(targetCardScript.myStatusRef);
+		string targetCardColor = GetCardOwnerColor(targetCardScript.myStatusRef);
+		string thisCardOwnerString = GetMyCardOwnerPrefix();
+		string thisCardColor = GetMyCardOwnerColor();
+		AppendLog(
+			"// " + thisCardOwnerString +
+			"<color=" + thisCardColor + ">" + myCard.name + "</color>]对" +
+			targetCardOwnerString +
+			"<color=" + targetCardColor + ">" + targetCardScript.gameObject.name + "</color>]的攻击力强化无效" +
+			GameColorPalette.Me.highlight.OpenTag + "(尝试" + (amount > 0 ? "+" : string.Empty) + amount + ",不受攻击力强化影响)</color>");
 	}
 
 	/// <summary>

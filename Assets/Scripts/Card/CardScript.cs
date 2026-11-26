@@ -301,27 +301,28 @@ public class CardScript : MonoBehaviour
 
 	/// <summary>
 	/// True when GetAttack() resolves through a branch that does NOT absorb attackGrowth /
-	/// attackModThisRound (snapshot hold / dynamic resolver / curse override). The display
-	/// machinery (back-derived playback baselines, AttackChange commits) assumes a granted
-	/// buff actually lands in settlement — it does not for these cards, so their face must
-	/// read live GetAttack() directly (2026-11-26 display/settlement consistency fix; e.g.
-	/// GRAVE_GIANT, attack = graveyard friendly count, must not show a buffed value it will
-	/// never deal).
+	/// attackModThisRound (snapshot hold / dynamic resolver / curse override). One masked set
+	/// shared by every layer (2026-11-26 full-chain consistency fix, plan-attack-buff-
+	/// consistency-2026-11-26): display bypasses the snapshot machinery, the write gates
+	/// below keep the ledger at 0, selectors pre-exclude these cards from attack-gain /
+	/// drain pools, and ApplyAttackCore turns a grant into a logged immune no-op — e.g.
+	/// GRAVE_GIANT (attack = graveyard friendly count) never gains, shows, or loses a buffed
+	/// value it will never deal.
 	/// </summary>
-	public bool AttackDisplayIgnoresBuffs =>
+	public bool IgnoresAttackBuffs =>
 		attackSnapshotValue >= 0 || _attackResolver != null || GetCurseAttackOverride() >= 0;
 
 	/// <summary>
 	/// Attack value for display. Returns the frozen snapshot while a display snapshot is
 	/// active (logic phase / animation playback), otherwise the live GetAttack() — so the
 	/// card face never jumps at logic time (attack changes commit per animation request).
-	/// Masked cards (AttackDisplayIgnoresBuffs) bypass the snapshot entirely: the face
-	/// always reads live GetAttack(), so back-derived baselines and AttackChange deltas
-	/// cannot put a value the settlement will never deal onto the face.
+	/// Masked cards (IgnoresAttackBuffs) bypass the snapshot entirely: the face always
+	/// reads live GetAttack(), so back-derived baselines and AttackChange deltas cannot
+	/// put a value the settlement will never deal onto the face.
 	/// </summary>
 	public int GetAttackForDisplay()
 	{
-		if (AttackDisplayIgnoresBuffs) return GetAttack();
+		if (IgnoresAttackBuffs) return GetAttack();
 		return _displayAttack ?? GetAttack();
 	}
 
@@ -334,7 +335,7 @@ public class CardScript : MonoBehaviour
 	/// </summary>
 	public void CommitAttackDisplayDelta(int delta)
 	{
-		if (AttackDisplayIgnoresBuffs) return;
+		if (IgnoresAttackBuffs) return;
 		_displayAttack = (_displayAttack ?? GetAttack()) + delta;
 	}
 
@@ -421,17 +422,24 @@ public class CardScript : MonoBehaviour
 
 	/// <summary>
 	/// Permanent attack change (enhance / weaken / transfer / siphon). Stackable, kept until combat ends.
+	/// No-op for masked cards (IgnoresAttackBuffs): their settlement never absorbs growth, so
+	/// the ledger must stay 0 — this keeps the enhancedOnly / onlyEnhanced predicates correct
+	/// without touching their read sites and leaves no hidden residue behind if the resolver
+	/// later unbinds (2026-11-26 write gate).
 	/// </summary>
 	public void ModifyAttack(int delta)
 	{
+		if (IgnoresAttackBuffs) return;
 		attackGrowth += delta;
 	}
 
 	/// <summary>
 	/// This-round attack change (e.g. -2 this round); cleared at each round start.
+	/// Same masked-card gate as ModifyAttack: the ledger stays 0 during the whole masked window.
 	/// </summary>
 	public void ModifyAttackThisRound(int delta)
 	{
+		if (IgnoresAttackBuffs) return;
 		attackModThisRound += delta;
 	}
 

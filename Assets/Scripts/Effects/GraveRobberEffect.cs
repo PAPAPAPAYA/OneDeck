@@ -21,6 +21,11 @@ public class GraveRobberEffect : EffectScript
 		if (revived == null) return;
 		if (revived.myStatusRef == myCardScript.myStatusRef) return; // defensive: only enemy sources
 		myCardScript.attackSnapshotValue = revived.GetAttack();
+		// The snapshot REPLACES the card's attack identity — pre-snapshot buffs must not
+		// survive as attackGrowth residue, or enhancedOnly / onlyEnhanced pools would still
+		// count this card as "enhanced" after the hold masks everything (2026-11-26).
+		myCardScript.attackGrowth = 0;
+		myCardScript.attackModThisRound = 0;
 		CombatInfoDisplayer.me?.RefreshDeckInfo();
 	}
 }

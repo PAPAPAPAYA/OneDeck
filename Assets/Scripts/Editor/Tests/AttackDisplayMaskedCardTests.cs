@@ -22,7 +22,9 @@ public class AttackDisplayMaskedCardTests : HeadlessCombatTestFixture
 		var cs = card.GetComponent<CardScript>();
 		cs.printedAttack = 3;
 		cs.SetAttackResolver(() => 5);
-		cs.ModifyAttack(2); // masked: the resolver branch skips attackGrowth
+		// Direct field write: ModifyAttack is write-gated on masked cards now, so the growth
+		// residue must be planted by hand for this display-layer test.
+		cs.attackGrowth = 2;
 
 		Assert.AreEqual(5, cs.GetAttack(), "Settlement ignores the buff on resolver cards");
 		cs.CommitAttackDisplayDelta(2);
@@ -36,7 +38,7 @@ public class AttackDisplayMaskedCardTests : HeadlessCombatTestFixture
 		var cs = card.GetComponent<CardScript>();
 		cs.printedAttack = 3;
 		cs.SetAttackResolver(() => 5);
-		cs.ModifyAttack(2);
+		cs.attackGrowth = 2; // direct write (ModifyAttack is gated on masked cards)
 
 		// RecorderAnimationPlayer back-derives the playback baseline as
 		// GetAttack() - pendingDelta; the face must bypass it for masked cards.
@@ -65,7 +67,7 @@ public class AttackDisplayMaskedCardTests : HeadlessCombatTestFixture
 		var cs = card.GetComponent<CardScript>();
 		cs.printedAttack = 4;
 		cs.attackSnapshotValue = 6; // GRAVE_ROBBER-style hold: settlement returns 6 permanently
-		cs.ModifyAttack(1);         // masked while the hold is active
+		cs.attackGrowth = 1;        // residue write (ModifyAttack is gated on masked cards)
 
 		Assert.AreEqual(6, cs.GetAttack(), "Settlement reads the held value");
 		cs.CommitAttackDisplayDelta(1);
@@ -88,7 +90,7 @@ public class AttackDisplayMaskedCardTests : HeadlessCombatTestFixture
 		var curse = CreateCard(false, "Curse", "TEST_CURSE");
 		var cs = curse.GetComponent<CardScript>();
 		cs.printedAttack = 3;
-		cs.ModifyAttack(2); // masked while the override is armed
+		cs.attackGrowth = 2; // residue write (ModifyAttack is gated while the override is armed)
 
 		Assert.AreEqual(1, cs.GetAttack(), "Override replaces attack with the owner grave count");
 		cs.CommitAttackDisplayDelta(2);
@@ -104,7 +106,7 @@ public class AttackDisplayMaskedCardTests : HeadlessCombatTestFixture
 		var cs = target.GetComponent<CardScript>();
 		cs.printedAttack = 3;
 		cs.SetAttackResolver(() => 5);
-		cs.ModifyAttack(2); // phantom buff the animation batch will "grant" again
+		cs.attackGrowth = 2; // phantom buff (direct write; ModifyAttack is gated on masked cards)
 
 		var recorderGo = CreateGameObject("Root");
 		var recorder = recorderGo.AddComponent<EffectRecorder>();

@@ -358,8 +358,10 @@ namespace DefaultNamespace.Effects
 		{
 			if (targetCard == null || amount <= 0) return;
 
-			// Execute logic immediately so AnimationRequest is captured in the current recorder
-			ApplyAttackToCardInternal(targetCard, amount);
+			// Execute logic immediately so AnimationRequest is captured in the current recorder.
+			// Masked target (IgnoresAttackBuffs): the grant is a logged immune no-op — skip the
+			// whole projectile capture so nothing plays (2026-11-26).
+			if (!ApplyAttackToCardInternal(targetCard, amount)) return;
 
 			// Capture projectile animation into AnimationRequest
 			var recorderGo = EffectChainManager.Me != null ? EffectChainManager.Me.currentEffectRecorder : null;
@@ -416,14 +418,16 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Internal method: actually grants the attack (used as projectile animation callback).
+		/// Returns false when the target is masked (IgnoresAttackBuffs) — the gain is a logged
+		/// immune no-op and the curse gained-attack event must not raise for a phantom gain.
 		/// </summary>
-		private void ApplyAttackToCardInternal(CardScript targetCard, int amount)
+		private bool ApplyAttackToCardInternal(CardScript targetCard, int amount)
 		{
 			// Debug.Log("[CurseEffect] ApplyAttackToCardInternal target=" + (targetCard != null ? targetCard.name : "null") + " amount=" + amount + " myCard=" + (myCard != null ? myCard.name : "null"));
-			ApplyAttackCore(targetCard, amount, statusEffectParticlePrefab, particleYOffset);
+			bool applied = ApplyAttackCore(targetCard, amount, statusEffectParticlePrefab, particleYOffset);
 
-			// Check if curse card gained attack, trigger event
-			if (targetCard.cardTypeID == GameEventStorage.me?.curseCardTypeID?.value)
+			// Check if curse card gained attack, trigger event — only for applied gains.
+			if (applied && targetCard.cardTypeID == GameEventStorage.me?.curseCardTypeID?.value)
 			{
 				if (targetCard.myStatusRef == combatManager.enemyPlayerStatusRef)
 				{
@@ -434,6 +438,7 @@ namespace DefaultNamespace.Effects
 					GameEventStorage.me?.onEnemyCurseCardGainedAttack?.RaiseOpponent();
 				}
 			}
+			return applied;
 		}
 
 		// VISUAL-FIX(2026-06-13): ConsumeHostileCursePower has no PopUp/SlotIn/Projectile animation

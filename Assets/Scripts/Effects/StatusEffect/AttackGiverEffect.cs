@@ -29,8 +29,12 @@ namespace DefaultNamespace.Effects
 		public virtual void GiveSelfAttack(int amount)
 		{
 			if (amount <= 0) return;
-			ApplyAttackCore(myCardScript, amount, statusEffectParticlePrefab, particleYOffset);
-			CaptureBatchStatusEffectAnimation(new List<CardScript> { myCardScript }, amount);
+			// Masked self (IgnoresAttackBuffs): ApplyAttackCore logs the immune line and
+			// returns false — skip the batch capture so nothing plays (2026-11-26).
+			if (ApplyAttackCore(myCardScript, amount, statusEffectParticlePrefab, particleYOffset))
+			{
+				CaptureBatchStatusEffectAnimation(new List<CardScript> { myCardScript }, amount);
+			}
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 		}
 
@@ -42,8 +46,10 @@ namespace DefaultNamespace.Effects
 		{
 			int currentAttack = myCardScript.GetAttack();
 			if (currentAttack <= 0) return;
-			ApplyAttackCore(myCardScript, currentAttack, statusEffectParticlePrefab, particleYOffset);
-			CaptureBatchStatusEffectAnimation(new List<CardScript> { myCardScript }, currentAttack);
+			if (ApplyAttackCore(myCardScript, currentAttack, statusEffectParticlePrefab, particleYOffset))
+			{
+				CaptureBatchStatusEffectAnimation(new List<CardScript> { myCardScript }, currentAttack);
+			}
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 		}
 
@@ -69,7 +75,8 @@ namespace DefaultNamespace.Effects
 			{
 				var targetCardScript = cardsToGiveTag[i].GetComponent<CardScript>();
 				if (ShouldSkipCard(targetCardScript) || !MatchesTargetFilter(targetCardScript, target) ||
-				    !PassesDamageFilter(targetCardScript))
+				    !PassesDamageFilter(targetCardScript) ||
+				    targetCardScript.IgnoresAttackBuffs) // masked cards are never grant targets (2026-11-26)
 					cardsToGiveTag.RemoveAt(i);
 			}
 			if (cardsToGiveTag.Count <= 0) return;
@@ -101,6 +108,8 @@ namespace DefaultNamespace.Effects
 			if (amount <= 0) return;
 
 			var targetCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
+			// Masked cards never receive attack growth — exclude them from the grant pool.
+			targetCards.RemoveAll(c => c == null || c.IgnoresAttackBuffs);
 			if (targetCards.Count <= 0) return;
 
 			foreach (var card in targetCards)
@@ -129,6 +138,7 @@ namespace DefaultNamespace.Effects
 				     PassesDamageFilter(c) &&
 				     c.myStatusRef == myCardScript.myStatusRef &&
 				     c.GetAttack() > 0 &&
+				     !c.IgnoresAttackBuffs && // masked cards are never grant targets (2026-11-26)
 				     (includeSelf || c != myCardScript));
 			if (target == null) return;
 
@@ -172,6 +182,7 @@ namespace DefaultNamespace.Effects
 				var targetCardScript = targetCard.GetComponent<CardScript>();
 				if (ShouldSkipCard(targetCardScript)) continue;
 				if (!PassesDamageFilter(targetCardScript)) continue;
+				if (targetCardScript.IgnoresAttackBuffs) continue; // masked cards are never grant targets (2026-11-26)
 				targetCards.Add(targetCardScript);
 				cardsGiven++;
 			}
@@ -201,6 +212,8 @@ namespace DefaultNamespace.Effects
 			// PassesDamageFilter's HasAttackAttribute branch but is not a 实体 (2026-09-02 type
 			// split) — the enhance pool must judge pure IsCreature (2026-09-04 ruling).
 			friendlyCards.RemoveAll(c => c == null || !c.IsCreature);
+			// Masked cards never receive attack growth — exclude them from the grant pool.
+			friendlyCards.RemoveAll(c => c.IgnoresAttackBuffs);
 			if (friendlyCards.Count <= 0) return;
 
 			friendlyCards = UtilityFuncManagerScript.ShuffleList(friendlyCards);
@@ -236,6 +249,8 @@ namespace DefaultNamespace.Effects
 				var friendlyCards = CollectFriendlyCards(filterCanReceive: true, includeSelf: includeSelf);
 				// Same creature-only enhance pool as GiveAttackToXFriendly (RIFT_REAPER 友方实体).
 				friendlyCards.RemoveAll(c => c == null || !c.IsCreature);
+			// Masked cards never receive attack growth — exclude them from the grant pool.
+			friendlyCards.RemoveAll(c => c.IgnoresAttackBuffs);
 				if (friendlyCards.Count <= 0) break;
 
 				int randomIndex = Rng.Next(RngChannel.Target, friendlyCards.Count);
@@ -288,8 +303,10 @@ namespace DefaultNamespace.Effects
 
 		private void GiveAttackToXFriendlyWithTarget(int amount, CardScript target)
 		{
-			ApplyAttackCore(target, amount, statusEffectParticlePrefab, particleYOffset);
-			CaptureBatchStatusEffectAnimation(new List<CardScript> { target }, amount);
+			if (ApplyAttackCore(target, amount, statusEffectParticlePrefab, particleYOffset))
+			{
+				CaptureBatchStatusEffectAnimation(new List<CardScript> { target }, amount);
+			}
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 		}
 

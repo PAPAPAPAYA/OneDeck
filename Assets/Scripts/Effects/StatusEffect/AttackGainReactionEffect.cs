@@ -23,6 +23,8 @@ namespace DefaultNamespace.Effects
 
 		/// <summary>
 		/// Give attack to the card that just gained attack (listener on onAnyCardGainedAttack).
+		/// Masked target (IgnoresAttackBuffs): ApplyAttackCore logs the immune line and returns
+		/// false — no reaction capture plays (2026-11-26).
 		/// </summary>
 		public void GiveAttackToCardThatGainedAttack()
 		{
@@ -30,8 +32,10 @@ namespace DefaultNamespace.Effects
 			if (targetCard == null) return;
 			if (excludeSelf && targetCard == myCardScript) return;
 
-			ApplyAttackCore(targetCard, attackAmount, statusEffectParticlePrefab, particleYOffset);
-			CaptureBatchStatusEffectAnimation(new List<CardScript> { targetCard }, attackAmount);
+			if (ApplyAttackCore(targetCard, attackAmount, statusEffectParticlePrefab, particleYOffset))
+			{
+				CaptureBatchStatusEffectAnimation(new List<CardScript> { targetCard }, attackAmount);
+			}
 			CombatInfoDisplayer.me?.RefreshDeckInfo();
 		}
 

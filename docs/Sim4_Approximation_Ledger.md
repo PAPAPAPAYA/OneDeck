@@ -91,7 +91,7 @@
 | R3 | 回响X | **废弃不实现**:CURSE_ECHO 为备用卡,不在引擎池 |
 | R4 | 生成卡落点 | 一切生成(信徒/诅咒/**复制自身**)均进墓地侧,统一 spawn_to_graveyard_40 |
 | R5 | 「本回合」限定 | desc 带「本回合」→ 回合边界清一次(如 EXILE_BERSERKER 攻击次数、WEAKENING_FIELD 弱化);**无限定 → 永续**(如 COMBO_STARTER 强化反应:攻击次数+1 永久叠加)。判据=desc 原文,Unity 侧实现为 attackModThisRound/attackTimesModThisRound 槽位 |
-| R6 | attackGrowth(源码定论) | =**永久攻击力变化累计账本**(CardScript.ModifyAttack:强化/弱化/转移/虹吸,stackable,combat 内不清);GetAttack=printedAttack+attackGrowth+attackModThisRound+墓地光环;attackModThisRound=本回合槽位,Unity 注释「cleared at each round start」;ELITE_REVIVER 的「被强化过的」谓词在 Unity 侧=attackGrowth>0(ReviveEffect:113),与 sim 的 enhance_total>0 同构。**注意**:弱化走同一账本可为负,U 批若引入弱化,【被强化】谓词需改带符号判断 |
+| R6 | attackGrowth(源码定论) | =**永久攻击力变化累计账本**(CardScript.ModifyAttack:强化/弱化/转移/虹吸,stackable,combat 内不清);GetAttack=printedAttack+attackGrowth+attackModThisRound+墓地光环;attackModThisRound=本回合槽位,Unity 注释「cleared at each round start」;ELITE_REVIVER 的「被强化过的」谓词在 Unity 侧=attackGrowth>0(ReviveEffect:113),与 sim 的 enhance_total>0 同构。**注意**:弱化走同一账本可为负,U 批若引入弱化,【被强化】谓词需改带符号判断。**2026-11-26 分歧注记**:屏蔽攻击卡(IgnoresAttackBuffs:动态 resolver/夺攻快照/诅咒覆盖,plan-attack-buff-consistency-2026-11-26)在 Unity 侧 growth 账本恒 0(写口门+夺攻清账),强化对其为「免疫 no-op」;sim 的 verb_set_attack 是账本吸收差值、无此概念——涉屏蔽卡的 enhance_total 轨迹与 ELITE_REVIVER 池构成在两侧可分歧,复算需按 Unity 新语义 |
 | R7 | 攻击转化每段 | 源码测试实证:3 段攻击→3 次独立+1 强化(每次一段一个转化),与 09-05 每段触发裁定同构 |
 
 ## 二·六、R1-R7 全池 DB 验证(2026-09-09,全稀有度扫描)
