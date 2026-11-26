@@ -300,12 +300,28 @@ public class CardScript : MonoBehaviour
 	}
 
 	/// <summary>
+	/// True when GetAttack() resolves through a branch that does NOT absorb attackGrowth /
+	/// attackModThisRound (snapshot hold / dynamic resolver / curse override). The display
+	/// machinery (back-derived playback baselines, AttackChange commits) assumes a granted
+	/// buff actually lands in settlement — it does not for these cards, so their face must
+	/// read live GetAttack() directly (2026-11-26 display/settlement consistency fix; e.g.
+	/// GRAVE_GIANT, attack = graveyard friendly count, must not show a buffed value it will
+	/// never deal).
+	/// </summary>
+	public bool AttackDisplayIgnoresBuffs =>
+		attackSnapshotValue >= 0 || _attackResolver != null || GetCurseAttackOverride() >= 0;
+
+	/// <summary>
 	/// Attack value for display. Returns the frozen snapshot while a display snapshot is
 	/// active (logic phase / animation playback), otherwise the live GetAttack() — so the
 	/// card face never jumps at logic time (attack changes commit per animation request).
+	/// Masked cards (AttackDisplayIgnoresBuffs) bypass the snapshot entirely: the face
+	/// always reads live GetAttack(), so back-derived baselines and AttackChange deltas
+	/// cannot put a value the settlement will never deal onto the face.
 	/// </summary>
 	public int GetAttackForDisplay()
 	{
+		if (AttackDisplayIgnoresBuffs) return GetAttack();
 		return _displayAttack ?? GetAttack();
 	}
 
@@ -313,9 +329,12 @@ public class CardScript : MonoBehaviour
 	/// Apply a signed attack delta to the frozen display value (attack-attribute counterpart
 	/// of ApplyDisplayDelta). Commits happen as AttackChange requests play; the display
 	/// snapshot is cleared by CommitDisplayState so the face falls back to live GetAttack().
+	/// No-op for masked cards (hygiene — the read-port guard above is the load-bearing check;
+	/// this keeps _displayAttack free of phantom deltas for masked cards).
 	/// </summary>
 	public void CommitAttackDisplayDelta(int delta)
 	{
+		if (AttackDisplayIgnoresBuffs) return;
 		_displayAttack = (_displayAttack ?? GetAttack()) + delta;
 	}
 
