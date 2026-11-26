@@ -239,6 +239,10 @@ public class OpponentSelectPage : MonoBehaviour
 
 	private void Picked(int index)
 	{
+		// Repro probe (2026-11-26 leg2 hard-cut diagnosis): confirms the select PhysButton
+		// actually reached the page before the driver's leg2 runs.
+		TestManager.Log(string.Format("[PhaseTransition] pick fired: index={0} deckId={1} session={2}",
+			index, Candidates[index].deckId, Candidates[index].sessionNum));
 		if (onPicked != null) onPicked(index);
 	}
 }

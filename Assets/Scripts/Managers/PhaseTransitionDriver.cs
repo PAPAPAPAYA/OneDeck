@@ -173,6 +173,11 @@ public class PhaseTransitionDriver : MonoBehaviour
 		{
 			if (Mathf.Abs(_rig.position.y - _combatPageY) > 0.001f)
 			{
+				// Hard-cut probe (2026-11-26 selection leg2 diagnosis): this one-shot snap is
+				// the seam a missing camera tween falls back to — log the jump when it fires.
+				TestManager.Log(string.Format(
+					"[PhaseTransition] phase-snap: rigY={0:F2} -> combatPageY={1:F2} travel={2}",
+					_rig.position.y, _combatPageY, _travel));
 				var pos = _rig.position;
 				pos.y = _combatPageY;
 				_rig.position = pos;
@@ -307,6 +312,9 @@ public class PhaseTransitionDriver : MonoBehaviour
 		{
 			page.onPicked = index => Me.StartCoroutine(Me.SelectionToCombatRoutine(pm, page, index));
 		}
+		TestManager.Log(string.Format(
+			"[PhaseTransition] leg1 landed: rigY={0:F2} selectionPageY={1:F2} combatPageY={2:F2} onPicked={3}",
+			_rig.position.y, _selectionPageY, _combatPageY, page != null ? "wired" : "MISSING"));
 	}
 
 	/// <summary>
@@ -327,6 +335,12 @@ public class PhaseTransitionDriver : MonoBehaviour
 		int session = page.Candidates[pickedIndex].sessionNum;
 		OpponentDeckCache.ConsumeCandidate(session, page.Candidates[pickedIndex].deckId);
 		if (DeckSaver.Me != null) DeckSaver.Me.PopulateEnemyDeckBySessionNumber();
+		// Leg2 probe (2026-11-26 hard-cut diagnosis): rigY at the pick vs the combat page —
+		// the camera must travel this gap, and the transition latch must still be on from leg1.
+		TestManager.Log(string.Format(
+			"[PhaseTransition] leg2 start: picked={0} deckId={1} session={2} rigY={3:F2} combatPageY={4:F2} latch={5}",
+			pickedIndex, page.Candidates[pickedIndex].deckId, session,
+			_rig.position.y, _combatPageY, _transitioning));
 
 		// Panels out: only the picked plate + key faces stay visible (they fly).
 		page.PrepareLeg2Flights(pickedIndex);
@@ -368,6 +382,15 @@ public class PhaseTransitionDriver : MonoBehaviour
 			float ratio = enemyDisplay.displayRoot.lossyScale.x / Mathf.Max(0.0001f, plate.lossyScale.x);
 			Track(ApplyCfgEase(cfg, plate.DOMove(target, dur).SetUpdate(UpdateType.Normal, true)));
 			Track(ApplyCfgEase(cfg, plate.DOScale(plate.localScale * ratio, dur).SetUpdate(UpdateType.Normal, true)));
+			TestManager.Log(string.Format(
+				"[PhaseTransition] leg2 plate flight: rigY={0:F2} targetY={1:F2} ratio={2:F3}",
+				_rig.position.y, target.y, ratio));
+		}
+		else
+		{
+			TestManager.LogWarning("[PhaseTransition] leg2 plate flight skipped: plate=" + (plate != null)
+				+ " enemyDisplay=" + (enemyDisplay != null)
+				+ " displayRoot=" + (enemyDisplay != null && enemyDisplay.displayRoot != null));
 		}
 
 		_entranceFlightTotal = 0f;
@@ -389,6 +412,18 @@ public class PhaseTransitionDriver : MonoBehaviour
 			}
 			guard += Time.unscaledDeltaTime;
 			yield return null;
+		}
+		{
+			// Landing probe (selection leg2, mirrors the legacy landing swap): physicals/zone
+			// counts plus rig Y vs the combat page — rigY != combatPageY here is the hard cut
+			// (the camera never traveled; Update's phase-snap jumps it right after teardown).
+			var uxLand = CombatUXManager.me;
+			var cmLand = CombatManager.Me;
+			TestManager.Log(string.Format(
+				"[PhaseTransition] leg2 landing: physicals={0} zoneCount={1} rigY={2:F2} combatPageY={3:F2} t={4:F2}",
+				uxLand != null && uxLand.physicalCardsInDeck != null ? uxLand.physicalCardsInDeck.Count : -1,
+				cmLand != null && cmLand.combinedDeckZone != null ? cmLand.combinedDeckZone.Count : -1,
+				_rig != null ? _rig.position.y : -1f, _combatPageY, Time.unscaledTime));
 		}
 		foreach (var dummy in flightDummies)
 		{
@@ -450,6 +485,7 @@ public class PhaseTransitionDriver : MonoBehaviour
 		float playerSlide = PhaseFlightPlanner.PxToWorld(cfg != null ? cfg.playerCardSlideDemoPx : 400f, pageH);
 
 		int playerCount = ResolvePlayerSectionCount();
+		int keyCount = 0;
 		var claimed = new HashSet<int>();
 		var plans = new List<ClonePlan>();
 
@@ -480,6 +516,7 @@ public class PhaseTransitionDriver : MonoBehaviour
 				int slot = FindUnclaimedSlot(combat.combinedDeckZone, playerCount, faceScript != null ? faceScript.cardTypeID : null, claimed);
 				if (slot < 0) continue;
 				claimed.Add(slot);
+				keyCount++;
 				plans.Add(new ClonePlan
 				{
 					Slot = slot,
@@ -522,6 +559,10 @@ public class PhaseTransitionDriver : MonoBehaviour
 		}
 
 		_entranceFlightTotal = PhaseFlightPlanner.TotalDuration(dur, stagger, Mathf.Max(deckCount, 1)) + 0.05f;
+		TestManager.Log(string.Format(
+			"[PhaseTransition] selection leg2 schedule: plans={0} player={1} key={2} tail={3} deckCount={4} dur={5:F2} camY={6:F2} combatPageY={7:F2}",
+			plans.Count, playerCount, keyCount, plans.Count - playerCount - keyCount, deckCount,
+			dur, _rig.position.y, _combatPageY));
 	}
 
 	private struct ClonePlan

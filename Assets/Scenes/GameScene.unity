@@ -5001,7 +5001,7 @@ MonoBehaviour:
   logInfinityDetection: 0
   logEffectChains: 0
   logAnimationPlayback: 0
-  logVisualSync: 0
+  logVisualSync: 1
   logEditorTools: 0
   logTestManager: 0
   logDynamicDamageDisplay: 0
