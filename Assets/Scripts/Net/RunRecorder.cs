@@ -183,9 +183,21 @@ public static class RunRecorder
 
 	// ------------------------------------------------------------------ combat hook (PhaseManager)
 
-	public static void RecordCombatEnd(int sessionNum, bool won, int heartsLeft, int rounds, int opponentDeckId)
+	/// <summary>
+	/// Combat settlement hook (PhaseManager). Draw accounting (draw plan Step 2): the outcome
+	/// drives won/drawKind/forcedReason; HP, reveals and the combat seed travel as audit data.
+	/// Ordinary combats keep the defaults (JsonUtility still emits "drawKind":"").
+	/// </summary>
+	public static void RecordCombatEnd(int sessionNum, CombatOutcome outcome, int heartsLeft, int rounds, int opponentDeckId,
+		int ownerHp = 0, int enemyHp = 0, BudgetCapConclusion conclusion = null, int reveals = 0, int combatSeed = 0)
 	{
 		if (current == null || ended) return;
+		bool won = outcome == CombatOutcome.Win;
+		string drawKind = CombatOutcomeResolver.DrawKind(outcome);
+		// forcedReason is written only for a forced draw; anything else stores "".
+		string forcedReason = outcome == CombatOutcome.DrawForced && conclusion != null
+			? conclusion.ForcedReason
+			: string.Empty;
 
 		current.combats.Add(new RunCombatEntry
 		{
@@ -194,6 +206,12 @@ public static class RunRecorder
 			heartsLeft = heartsLeft,
 			rounds = rounds,
 			opponentDeckId = opponentDeckId,
+			drawKind = drawKind,
+			forcedReason = forcedReason,
+			ownerHp = ownerHp,
+			enemyHp = enemyHp,
+			reveals = reveals,
+			combatSeed = combatSeed,
 			perCard = HarvestPerCard(),
 			series = BuildSeriesSnapshot(),
 			ts = NetTime.NowIsoCst8()

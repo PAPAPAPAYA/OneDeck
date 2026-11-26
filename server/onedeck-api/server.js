@@ -93,6 +93,9 @@ CREATE TABLE IF NOT EXISTS decks (
 	card_type_ids TEXT NOT NULL,
 	defense_wins INTEGER NOT NULL DEFAULT 0,
 	defense_losses INTEGER NOT NULL DEFAULT 0,
+	-- D2 ruling (2026-11-26): a draw no longer credits a defense win/loss; it lands here.
+	defense_draws_natural INTEGER NOT NULL DEFAULT 0,
+	defense_draws_forced INTEGER NOT NULL DEFAULT 0,
 	fingerprint TEXT NOT NULL DEFAULT '',
 	flag INTEGER NOT NULL DEFAULT 0,
 	flag_reason TEXT NOT NULL DEFAULT '',
@@ -108,6 +111,11 @@ CREATE TABLE IF NOT EXISTS match_reports (
 	won INTEGER NOT NULL,
 	session_num INTEGER NOT NULL,
 	game_version TEXT NOT NULL,
+	-- Draw accounting (2026-11-26 draw plan): draw_kind <> '' marks a draw; HP columns are
+	-- display/audit data, never the draw authority.
+	draw_kind TEXT NOT NULL DEFAULT '',
+	owner_hp INTEGER,
+	enemy_hp INTEGER,
 	created_at TEXT NOT NULL
 );
 
@@ -124,6 +132,10 @@ CREATE TABLE IF NOT EXISTS stats_snapshots (
 	combats INTEGER NOT NULL DEFAULT 0,
 	wins INTEGER NOT NULL DEFAULT 0,
 	losses INTEGER NOT NULL DEFAULT 0,
+	-- Nullable on purpose: legacy clients omit the draw counters and the upsert COALESCE
+	-- keeps the stored values (the enemySource pattern).
+	draws_natural INTEGER,
+	draws_forced INTEGER,
 	updated_at TEXT NOT NULL,
 	PRIMARY KEY (player_id, kind, game_version, card_type_id, session_num)
 );
@@ -188,6 +200,14 @@ CREATE TABLE IF NOT EXISTS run_combats (
 	rounds INTEGER NOT NULL DEFAULT 0,
 	opponent_deck_id INTEGER,
 	per_card TEXT NOT NULL DEFAULT '[]',
+	-- Draw accounting (2026-11-26 draw plan): draw_kind <> '' marks a draw (natural = both
+	-- HP <= 0, forced = an L0 budget-cap conclusion, with forced_reason + reveals + seed).
+	draw_kind TEXT NOT NULL DEFAULT '',
+	forced_reason TEXT NOT NULL DEFAULT '',
+	owner_hp INTEGER,
+	enemy_hp INTEGER,
+	reveals INTEGER NOT NULL DEFAULT 0,
+	combat_seed INTEGER NOT NULL DEFAULT 0,
 	ts TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_combats_run ON run_combats(run_id);
@@ -255,6 +275,22 @@ function ensureColumn(table, columnDdl)
 ensureColumn('run_combats', 'rounds INTEGER NOT NULL DEFAULT 0');
 ensureColumn('run_combats', 'opponent_deck_id INTEGER');
 ensureColumn('run_combats', "series TEXT NOT NULL DEFAULT '[]'");
+// Draw accounting (2026-11-26 draw plan). Additive only; draw_kind <> '' is the draw marker
+// everywhere, HP columns are display/audit data, and combat_seed uses the full int32 range
+// (Rng.StableHash is signed).
+ensureColumn('run_combats', "draw_kind TEXT NOT NULL DEFAULT ''");
+ensureColumn('run_combats', "forced_reason TEXT NOT NULL DEFAULT ''");
+ensureColumn('run_combats', 'owner_hp INTEGER');
+ensureColumn('run_combats', 'enemy_hp INTEGER');
+ensureColumn('run_combats', 'reveals INTEGER NOT NULL DEFAULT 0');
+ensureColumn('run_combats', 'combat_seed INTEGER NOT NULL DEFAULT 0');
+ensureColumn('match_reports', "draw_kind TEXT NOT NULL DEFAULT ''");
+ensureColumn('match_reports', 'owner_hp INTEGER');
+ensureColumn('match_reports', 'enemy_hp INTEGER');
+ensureColumn('stats_snapshots', 'draws_natural INTEGER');
+ensureColumn('stats_snapshots', 'draws_forced INTEGER');
+ensureColumn('decks', 'defense_draws_natural INTEGER NOT NULL DEFAULT 0');
+ensureColumn('decks', 'defense_draws_forced INTEGER NOT NULL DEFAULT 0');
 // Nullable-with-default: the upsert INSERTs NULL when a legacy client omits enemySource,
 // so these must accept NULL (COALESCE in DO UPDATE keeps the stored value then).
 ensureColumn('stats_meta', 'enemy_source_server INTEGER DEFAULT 0');
@@ -313,6 +349,9 @@ const stmts = {
 		ORDER BY RANDOM() LIMIT ?`),
 	deckDefenseWin: db.prepare('UPDATE decks SET defense_wins = defense_wins + 1 WHERE deck_id = ?'),
 	deckDefenseLoss: db.prepare('UPDATE decks SET defense_losses = defense_losses + 1 WHERE deck_id = ?'),
+	// D2 ruling: draws are their own defense counter, split by kind.
+	deckDefenseDrawNatural: db.prepare('UPDATE decks SET defense_draws_natural = defense_draws_natural + 1 WHERE deck_id = ?'),
+	deckDefenseDrawForced: db.prepare('UPDATE decks SET defense_draws_forced = defense_draws_forced + 1 WHERE deck_id = ?'),
 
 	// --- infinity gate (§20) ---
 	fingerprintById: db.prepare('SELECT * FROM flagged_fingerprints WHERE fingerprint = ?'),
@@ -356,18 +395,20 @@ const stmts = {
 		retired_reason = '', updated_at = ? WHERE combo_key = ?`),
 
 	insertReport: db.prepare(`INSERT OR IGNORE INTO match_reports
-		(report_id, player_id, opponent_deck_id, won, session_num, game_version, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`),
+		(report_id, player_id, opponent_deck_id, won, session_num, game_version, draw_kind, owner_hp, enemy_hp, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
 
 	upsertSnapshot: db.prepare(`INSERT INTO stats_snapshots
 		(player_id, kind, game_version, card_type_id, session_num,
-		 appear, bought, util_appear, util_bought, combats, wins, losses, updated_at)
+		 appear, bought, util_appear, util_bought, combats, wins, losses, draws_natural, draws_forced, updated_at)
 		VALUES (@playerId, @kind, @gameVersion, @cardTypeId, @sessionNum,
-		 @appear, @bought, @utilAppear, @utilBought, @combats, @wins, @losses, @updatedAt)
+		 @appear, @bought, @utilAppear, @utilBought, @combats, @wins, @losses, @drawsNatural, @drawsForced, @updatedAt)
 		ON CONFLICT (player_id, kind, game_version, card_type_id, session_num)
 		DO UPDATE SET appear = excluded.appear, bought = excluded.bought,
 			util_appear = excluded.util_appear, util_bought = excluded.util_bought,
 			combats = excluded.combats, wins = excluded.wins, losses = excluded.losses,
+			draws_natural = COALESCE(excluded.draws_natural, stats_snapshots.draws_natural),
+			draws_forced = COALESCE(excluded.draws_forced, stats_snapshots.draws_forced),
 			updated_at = excluded.updated_at`),
 	upsertMeta: db.prepare(`INSERT INTO stats_meta (player_id, game_version, total_shop_visits, total_rerolls,
 		enemy_source_server, enemy_source_local, enemy_source_pool, updated_at)
@@ -390,8 +431,9 @@ const stmts = {
 		 seen_pool_pct, hp_max, gold_enter, gold_after_payday, gold_exit, ts)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
 	insertCombat: db.prepare(`INSERT INTO run_combats
-		(run_id, session_num, won, hearts_left, rounds, opponent_deck_id, per_card, series, ts)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`),
+		(run_id, session_num, won, hearts_left, rounds, opponent_deck_id, per_card, series, ts,
+		 draw_kind, forced_reason, owner_hp, enemy_hp, reveals, combat_seed)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
 
 	upsertCatalog: db.prepare(`INSERT INTO card_catalog
 		(game_version, card_type_id, name, tags, rarity, cost, updated_at)
@@ -447,6 +489,29 @@ function strArray(v, maxItems, maxLen)
 		out.push(item);
 	}
 	return out;
+}
+
+// Draw accounting (2026-11-26 draw plan). '' = not a draw / legacy client. Unknown kinds
+// coerce to '' instead of a 400: the client outbox treats every 4xx as a permanent rejection
+// and would drop the whole run over one bad field.
+const DRAW_KINDS = new Set(['natural', 'forced']);
+const FORCED_REASONS = new Set(['rounds', 'totalReveals']);
+
+function normalizeDrawKind(v)
+{
+	return typeof v === 'string' && DRAW_KINDS.has(v) ? v : '';
+}
+
+function normalizeForcedReason(v, drawKind)
+{
+	return drawKind === 'forced' && typeof v === 'string' && FORCED_REASONS.has(v) ? v : '';
+}
+
+// Bound int or null (absent / garbage / out of range -> NULL, exactly like a legacy row).
+function nullableInt(v)
+{
+	if (typeof v !== 'number' || !Number.isFinite(v)) return null;
+	return toInt(v, -1e9, 1e9, null);
 }
 
 // Deck content fingerprint: order-independent hash of the cardTypeID MULTISET (duplicates
@@ -601,7 +666,11 @@ function makeRateLimiter(max, windowMs)
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', true); // real client IP arrives via nginx X-Forwarded-For
-app.use(express.json({ limit: '256kb' }));
+// 900kb (2026-11-26 draw plan §5): a reveal-cap forced-draw combat serializes ~176 bytes per
+// sample, so 1500 samples alone crossed the old 256kb cap and the client outbox dropped the
+// whole run as a permanent 4xx. 900kb stays under nginx's 1 MB client_max_body_size; other
+// endpoints bound their own fields (payload <= 200kb, catalog <= 1000 cards).
+app.use(express.json({ limit: '900kb' }));
 // Admin forms post as urlencoded; every other endpoint is JSON. Parsed separately so a malformed
 // form body cannot turn into a json parse error for the API routes.
 app.use(express.urlencoded({ extended: false, limit: '16kb' }));
@@ -739,13 +808,24 @@ app.post('/api/matches/report', (req, res) =>
 	const deck = stmts.deckById.get(deckId);
 	if (!deck) return res.status(404).json({ error: 'deck_not_found' });
 	if (deck.player_id === player.player_id) return badRequest(res, 'own_deck');
-	const won = req.body.won === true ? 1 : 0;
+	// Draw accounting (2026-11-26 draw plan): drawKind outranks won — a payload carrying both
+	// is a draw. `won` keeps its meaning in this plan (0 for every draw).
+	const drawKind = normalizeDrawKind(req.body.drawKind);
+	const won = drawKind === '' && req.body.won === true ? 1 : 0;
 	const sessionNum = toInt(req.body.sessionNum, 0, 99, deck.session_num);
 	const gameVersion = isStr(req.body.gameVersion, 1, 32) ? req.body.gameVersion : deck.game_version;
 	const info = stmts.insertReport.run(
-		req.body.reportId, player.player_id, deckId, won, sessionNum, gameVersion, nowIso());
+		req.body.reportId, player.player_id, deckId, won, sessionNum, gameVersion, drawKind,
+		nullableInt(req.body.ownerHp), nullableInt(req.body.enemyHp), nowIso());
 	if (info.changes === 0) return res.json({ ok: true, deduped: true });
-	if (won) stmts.deckDefenseLoss.run(deckId);
+	if (drawKind !== '')
+	{
+		// D2 ruling: a draw no longer credits the ghost with a defense win/loss; it lands in
+		// the matching per-kind draw counter instead.
+		if (drawKind === 'natural') stmts.deckDefenseDrawNatural.run(deckId);
+		else stmts.deckDefenseDrawForced.run(deckId);
+	}
+	else if (won) stmts.deckDefenseLoss.run(deckId);
 	else stmts.deckDefenseWin.run(deckId);
 	return res.status(201).json({ ok: true });
 });
@@ -848,19 +928,27 @@ app.post('/api/stats/snapshot', (req, res) =>
 				cardTypeId: r.cardTypeID, sessionNum: toInt(r.sessionNum, 0, 99, 0),
 				appear: toInt(r.appear, 0, 1e9, 0), bought: toInt(r.bought, 0, 1e9, 0),
 				utilAppear: toInt(r.utilAppear, 0, 1e9, 0), utilBought: toInt(r.utilBought, 0, 1e9, 0),
-				combats: 0, wins: 0, losses: 0, updatedAt: nowIso(),
+				combats: 0, wins: 0, losses: 0,
+				// Shop rows carry no draw counters: bind null so the COALESCE upsert never
+				// zeroes a winrate row's stored draws.
+				drawsNatural: null, drawsForced: null, updatedAt: nowIso(),
 			});
 			rows++;
 		}
 		for (const r of winrate)
 		{
 			if (!r || !isStr(r.cardTypeID, 1, 64)) continue;
+			// Draw counters: absent (legacy client) -> null -> the upsert COALESCE keeps the
+			// stored values, so a legacy snapshot never zeroes a new client's draws.
+			const drawsNatural = typeof r.drawsNatural === 'number' ? toInt(r.drawsNatural, 0, 1e9, 0) : null;
+			const drawsForced = typeof r.drawsForced === 'number' ? toInt(r.drawsForced, 0, 1e9, 0) : null;
 			stmts.upsertSnapshot.run({
 				playerId: player.player_id, kind: 'winrate', gameVersion,
 				cardTypeId: r.cardTypeID, sessionNum: toInt(r.sessionNum, 0, 99, 0),
 				appear: 0, bought: 0, utilAppear: 0, utilBought: 0,
 				combats: toInt(r.combats, 0, 1e9, 0), wins: toInt(r.wins, 0, 1e9, 0),
-				losses: toInt(r.losses, 0, 1e9, 0), updatedAt: nowIso(),
+				losses: toInt(r.losses, 0, 1e9, 0),
+				drawsNatural, drawsForced, updatedAt: nowIso(),
 			});
 			rows++;
 		}
@@ -968,14 +1056,25 @@ app.post('/api/runs', (req, res) =>
 				cardTypeID: isStr(s.cardTypeID, 0, 64) ? s.cardTypeID : '',
 			});
 		}
+		const combatDrawKind = normalizeDrawKind(c.drawKind);
 		combatsClean.push({
 			sessionNum: toInt(c.sessionNum, 0, 99, 0),
-			won: c.won === true ? 1 : 0,
+			// Draw accounting (2026-11-26 draw plan): drawKind outranks won — a payload with
+			// both stores as a draw (won = 0). forced_reason is only meaningful on a forced
+			// draw. combat_seed uses the FULL int32 range — the loop-report precedent's
+			// 0..2147483647 clamp would zero half the signed seeds.
+			won: combatDrawKind !== '' ? 0 : (c.won === true ? 1 : 0),
 			heartsLeft: toInt(c.heartsLeft, 0, 99, 0),
 			rounds: toInt(c.rounds, 0, 999, 0),
 			opponentDeckId: opponentDeckId > 0 ? opponentDeckId : null,
 			perCard: perCardClean,
 			series: seriesClean,
+			drawKind: combatDrawKind,
+			forcedReason: normalizeForcedReason(c.forcedReason, combatDrawKind),
+			ownerHp: nullableInt(c.ownerHp),
+			enemyHp: nullableInt(c.enemyHp),
+			reveals: toInt(c.reveals, 0, 1e9, 0),
+			combatSeed: toInt(c.combatSeed, -2147483648, 2147483647, 0),
 			ts: isStr(c.ts, 1, 40) ? c.ts : null,
 		});
 	}
@@ -1008,7 +1107,8 @@ app.post('/api/runs', (req, res) =>
 		for (const c of combatsClean)
 		{
 			stmts.insertCombat.run(req.body.runId, c.sessionNum, c.won, c.heartsLeft, c.rounds,
-				c.opponentDeckId, JSON.stringify(c.perCard), JSON.stringify(c.series), c.ts);
+				c.opponentDeckId, JSON.stringify(c.perCard), JSON.stringify(c.series), c.ts,
+				c.drawKind, c.forcedReason, c.ownerHp, c.enemyHp, c.reveals, c.combatSeed);
 		}
 		return true;
 	});
@@ -1222,6 +1322,9 @@ app.get('/admin', requireAdmin, (req, res) =>
 		+ '<div class="card"><b>' + count('SELECT COUNT(*) AS c FROM decks') + '</b>ghost decks</div>'
 		+ '<div class="card"><b>' + count('SELECT COUNT(*) AS c FROM match_reports') + '</b>match reports</div>'
 		+ '<div class="card"><b>' + count('SELECT COUNT(*) AS c FROM runs') + '</b>runs</div>'
+		// Draws (2026-11-26 draw plan): natural + forced, counted from run_combats.
+		+ '<div class="card"><b>' + count("SELECT COUNT(*) AS c FROM run_combats WHERE draw_kind = 'natural'") + '</b>natural draws</div>'
+		+ '<div class="card"><b>' + count("SELECT COUNT(*) AS c FROM run_combats WHERE draw_kind = 'forced'") + '</b>forced draws</div>'
 		+ '<div class="card"><b>' + count('SELECT COUNT(*) AS c FROM decks WHERE flag = 1') + '</b>flagged decks</div>'
 		+ '<div class="card"><b>' + count('SELECT COUNT(*) AS c FROM loop_reports') + '</b>loop reports</div>'
 		+ '<div class="card"><b>' + count('SELECT COUNT(DISTINCT game_version) AS c FROM decks') + '</b>versions</div>'
@@ -1251,19 +1354,23 @@ app.get('/admin', requireAdmin, (req, res) =>
 	// Win rates aggregated over latest snapshots of all players.
 	// Section folds by default; inside, one <details> per (version, session) group.
 	const winRows = db.prepare(`SELECT game_version, card_type_id, session_num,
-		SUM(combats) AS combats, SUM(wins) AS wins, SUM(losses) AS losses
+		SUM(combats) AS combats, SUM(wins) AS wins, SUM(losses) AS losses,
+		SUM(COALESCE(draws_natural, 0)) AS draws_natural, SUM(COALESCE(draws_forced, 0)) AS draws_forced
 		FROM stats_snapshots WHERE kind = 'winrate'
 		GROUP BY game_version, card_type_id, session_num
 		ORDER BY game_version, session_num, combats DESC`).all();
 	const winBody = groupedStatsTable(winRows,
 		(r) => r.game_version + '|' + r.session_num,
 		(r) => esc(r.game_version) + ' · session ' + r.session_num,
-		'<th>card</th><th>combats</th><th>wins</th><th>losses</th><th>win rate</th>',
+		'<th>card</th><th>combats</th><th>wins</th><th>losses</th><th>draws nat</th><th>draws forced</th><th>win rate</th>',
 		(r) =>
 		{
+			// Rate stays wins / combats: new clients count draws in combats, so
+			// combats = wins + losses + natural + forced per key (draw plan §4).
 			const rate = r.combats > 0 ? (100 * r.wins / r.combats).toFixed(1) + '%' : '-';
 			return '<tr><td>' + esc(cardName(catalog, r.card_type_id)) + '</td><td class="num">' + r.combats
 				+ '</td><td class="num">' + r.wins + '</td><td class="num">' + r.losses
+				+ '</td><td class="num">' + r.draws_natural + '</td><td class="num">' + r.draws_forced
 				+ '</td><td class="num">' + rate + '</td></tr>';
 		});
 	const winHtml = section('Card win rates (per session) · ' + winRows.length + ' rows', winBody, false);
@@ -1271,7 +1378,8 @@ app.get('/admin', requireAdmin, (req, res) =>
 	// Ghost decks: defense record per session
 	let deckHtml = '<h2>Ghost decks</h2>';
 	const deckRows = db.prepare(`SELECT game_version, session_num, COUNT(*) AS n,
-		SUM(defense_wins) AS dw, SUM(defense_losses) AS dl
+		SUM(defense_wins) AS dw, SUM(defense_losses) AS dl,
+		SUM(defense_draws_natural) AS ddn, SUM(defense_draws_forced) AS ddf
 		FROM decks GROUP BY game_version, session_num ORDER BY game_version, session_num`).all();
 	if (deckRows.length === 0)
 	{
@@ -1279,13 +1387,16 @@ app.get('/admin', requireAdmin, (req, res) =>
 	}
 	else
 	{
-		deckHtml += '<table><tr><th>version</th><th>session</th><th>decks</th><th>defense wins</th><th>defense losses</th><th>defense win rate</th></tr>';
+		deckHtml += '<table><tr><th>version</th><th>session</th><th>decks</th><th>defense wins</th><th>defense losses</th><th>defense draws nat</th><th>defense draws forced</th><th>defense win rate</th></tr>';
 		for (const r of deckRows)
 		{
+			// Win rate stays a win/loss ratio (dw / (dw + dl)); draws are shown separately,
+			// deliberately unlike the card table's all-combats denominator (draw plan §4).
 			const total = r.dw + r.dl;
 			const rate = total > 0 ? (100 * r.dw / total).toFixed(1) + '%' : '-';
 			deckHtml += '<tr><td>' + esc(r.game_version) + '</td><td class="num">' + r.session_num + '</td><td class="num">'
-				+ r.n + '</td><td class="num">' + r.dw + '</td><td class="num">' + r.dl + '</td><td class="num">' + rate + '</td></tr>';
+				+ r.n + '</td><td class="num">' + r.dw + '</td><td class="num">' + r.dl + '</td><td class="num">'
+				+ r.ddn + '</td><td class="num">' + r.ddf + '</td><td class="num">' + rate + '</td></tr>';
 		}
 		deckHtml += '</table>';
 	}
@@ -1404,6 +1515,43 @@ app.get('/admin', requireAdmin, (req, res) =>
 		return html;
 	})(), false);
 
+	// Draws (2026-11-26 draw plan §4): every settled draw with its kind, from run_combats.
+	// LEFT JOIN decks on purpose — a draw against a default-pool opponent has opponent_deck_id
+	// NULL and an inner join would silently drop exactly the rows this section exists to show.
+	let drawsHtml = section('Draws · natural + forced (L0 conclusions) · latest 50', (() =>
+	{
+		const drawRows = db.prepare(`SELECT rc.session_num, rc.draw_kind, rc.forced_reason, rc.rounds,
+				rc.reveals, rc.owner_hp, rc.enemy_hp, rc.combat_seed, rc.run_id, rc.ts,
+				d.deck_id AS opponent_deck_id, d.username AS opponent_username,
+				r.game_version, p.username AS player_username
+			FROM run_combats rc
+			LEFT JOIN runs r ON r.run_id = rc.run_id
+			LEFT JOIN players p ON p.player_id = r.player_id
+			LEFT JOIN decks d ON d.deck_id = rc.opponent_deck_id
+			WHERE rc.draw_kind <> ''
+			ORDER BY rc.id DESC LIMIT 50`).all();
+		if (drawRows.length === 0) return '<p class="muted">no draws yet</p>';
+		let html = '<table><tr><th>when</th><th>kind</th><th>cap reason</th><th>player</th><th>version</th>'
+			+ '<th>session</th><th>rounds</th><th>reveals</th><th>HP left</th><th>seed</th><th>opponent deck</th><th>run</th></tr>';
+		for (const c of drawRows)
+		{
+			const hp = (c.owner_hp === null || c.owner_hp === undefined ? '-' : c.owner_hp) + ' / '
+				+ (c.enemy_hp === null || c.enemy_hp === undefined ? '-' : c.enemy_hp);
+			html += '<tr><td class="muted">' + esc(c.ts || '-') + '</td><td>' + esc(c.draw_kind)
+				+ '</td><td>' + esc(c.forced_reason || '-') + '</td><td>' + esc(c.player_username || '?')
+				+ '</td><td>' + esc(c.game_version || '?') + '</td><td class="num">' + c.session_num
+				+ '</td><td class="num">' + (c.rounds || '-') + '</td><td class="num">' + (c.reveals || '-')
+				+ '</td><td class="num">' + esc(hp) + '</td><td class="num">' + c.combat_seed
+				+ '</td><td>' + (c.opponent_deck_id
+					? esc(c.opponent_username || ('#' + c.opponent_deck_id)) + ' <span class="muted">#' + c.opponent_deck_id + '</span>'
+					: '<span class="muted">default pool</span>')
+				+ '</td><td><a href="/admin/run/' + encodeURIComponent(c.run_id || '') + '?token=' + esc(token) + '">'
+				+ esc((c.run_id || '').slice(0, 8)) + '</a></td></tr>';
+		}
+		html += '</table>';
+		return html;
+	})(), false);
+
 	// Recent runs with archetype derived from final deck tags
 	let runHtml = '<h2>Recent runs</h2>';
 	const runRows = db.prepare(`SELECT r.*, p.username FROM runs r LEFT JOIN players p ON p.player_id = r.player_id
@@ -1472,7 +1620,7 @@ app.get('/admin', requireAdmin, (req, res) =>
 		archHtml += '</table>';
 	}
 
-	res.send(adminPage('OneDeck Admin', token, overview + infinityHtml + archHtml + shopHtml + winHtml + deckHtml + srcHtml + runHtml));
+	res.send(adminPage('OneDeck Admin', token, overview + infinityHtml + drawsHtml + archHtml + shopHtml + winHtml + deckHtml + srcHtml + runHtml));
 });
 
 app.get('/admin/run/:id', requireAdmin, (req, res) =>
@@ -1529,7 +1677,7 @@ app.get('/admin/run/:id', requireAdmin, (req, res) =>
 	}
 	else
 	{
-		html += '<table><tr><th>session</th><th>result</th><th>hearts left</th><th>rounds</th><th>vs deck</th><th>HP curve</th><th>top damage cards</th></tr>';
+		html += '<table><tr><th>session</th><th>result</th><th>HP left</th><th>reveals</th><th>hearts left</th><th>rounds</th><th>vs deck</th><th>HP curve</th><th>top damage cards</th></tr>';
 		for (const c of combats)
 		{
 			let perCard = [];
@@ -1539,7 +1687,15 @@ app.get('/admin/run/:id', requireAdmin, (req, res) =>
 				.map((p) => cardName(catalog, p.cardTypeID) + ' (' + dmgOpp(p) + ')').join(', ');
 			let series = [];
 			try { series = JSON.parse(c.series || '[]'); } catch { /* keep empty */ }
-			html += '<tr><td class="num">' + c.session_num + '</td><td>' + (c.won ? 'won' : 'lost')
+			// Draw accounting (2026-11-26 draw plan §4): draw_kind outranks won; a forced draw
+			// shows its cap reason. HP columns are display/audit data.
+			const resultText = c.won ? 'won'
+				: c.draw_kind ? 'draw (' + c.draw_kind + (c.forced_reason ? ': ' + c.forced_reason : '') + ')'
+				: 'lost';
+			const hpLeft = (c.owner_hp === null || c.owner_hp === undefined ? '-' : c.owner_hp) + ' / '
+				+ (c.enemy_hp === null || c.enemy_hp === undefined ? '-' : c.enemy_hp);
+			html += '<tr><td class="num">' + c.session_num + '</td><td>' + esc(resultText)
+				+ '</td><td class="num">' + esc(hpLeft) + '</td><td class="num">' + (c.reveals || '-')
 				+ '</td><td class="num">' + c.hearts_left + '</td><td class="num">' + (c.rounds || '-')
 				+ '</td><td class="num">' + (c.opponent_deck_id || '-')
 				+ '</td><td>' + hpCurveSvg(series)

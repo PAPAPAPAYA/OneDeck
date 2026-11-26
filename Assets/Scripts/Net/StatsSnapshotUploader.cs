@@ -114,7 +114,9 @@ public static class StatsSnapshotUploader
 					sessionNum = bucket.sessionNum,
 					combats = bucket.combats,
 					wins = bucket.wins,
-					losses = bucket.losses
+					losses = bucket.losses,
+					drawsNatural = bucket.drawsNatural,
+					drawsForced = bucket.drawsForced
 				});
 			}
 		}

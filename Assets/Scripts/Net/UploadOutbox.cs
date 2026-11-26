@@ -21,6 +21,8 @@ public static class UploadOutbox
 		public string path;
 		public string jsonPayload;
 		public string enqueuedAt;
+		/// <summary>Draw plan Step 5: set after a 413 retry already stripped every combat series; a second 413 drops the item.</summary>
+		public bool seriesStripped;
 	}
 
 	[Serializable]
@@ -30,6 +32,13 @@ public static class UploadOutbox
 	}
 
 	public const int MaxItems = 100;
+
+	/// <summary>
+	/// Per-combat series cap for run uploads (draw plan Step 5). Public for tests.
+	/// </summary>
+	public const int MaxSeriesSamples = 500;
+	private const int SeriesHeadSamples = 450;
+	private const int SeriesTailSamples = 50;
 
 	/// <summary>Test seam: when set, overrides the persistentDataPath file location.</summary>
 	public static string OverrideFilePathForTests;
@@ -49,7 +58,51 @@ public static class UploadOutbox
 	public static void Enqueue(NetUploadKind kind, object dto)
 	{
 		if (!IsUploadEnabled(kind)) return;
-		EnqueueRaw(kind.ToString(), EndpointFor(kind), JsonUtility.ToJson(dto));
+		string json = JsonUtility.ToJson(dto);
+		// Draw plan Step 5 (required thinning, not optional): a reveal-cap forced-draw combat
+		// serializes ~176 bytes per sample, so 1500 samples alone exceed even the raised body
+		// cap and the whole run used to be dropped as a permanent 4xx. Cap each combat's series
+		// to MaxSeriesSamples BEFORE the item enters the queue — the server keeps the first 500
+		// anyway, and the head+tail cap keeps the curve's end state while bounding every run body.
+		if (kind == NetUploadKind.RunRecord) json = WithCappedCombatSeries(json);
+		EnqueueRaw(kind.ToString(), EndpointFor(kind), json);
+	}
+
+	/// <summary>
+	/// Caps every combat's series to <see cref="MaxSeriesSamples"/> samples (first 450 + last 50).
+	/// Returns the original string when nothing needed capping or the payload is unreadable.
+	/// </summary>
+	public static string WithCappedCombatSeries(string json)
+	{
+		RunUploadRequest run;
+		try
+		{
+			run = JsonUtility.FromJson<RunUploadRequest>(json);
+		}
+		catch (Exception)
+		{
+			return json;
+		}
+		if (run == null || run.combats == null || run.combats.Count == 0) return json;
+
+		bool changed = false;
+		foreach (RunCombatEntry combat in run.combats)
+		{
+			if (combat == null || combat.series == null || combat.series.Count <= MaxSeriesSamples) continue;
+			combat.series = ThinCombatSeries(combat.series);
+			changed = true;
+		}
+		return changed ? JsonUtility.ToJson(run) : json;
+	}
+
+	/// <summary>First 450 + last 50 samples of a longer series (pass-through otherwise). Public for tests.</summary>
+	public static List<RunCombatSample> ThinCombatSeries(List<RunCombatSample> series)
+	{
+		if (series == null || series.Count <= MaxSeriesSamples) return series;
+		List<RunCombatSample> thinned = new List<RunCombatSample>(MaxSeriesSamples);
+		for (int i = 0; i < SeriesHeadSamples; i++) thinned.Add(series[i]);
+		for (int i = series.Count - SeriesTailSamples; i < series.Count; i++) thinned.Add(series[i]);
+		return thinned;
 	}
 
 	public static void EnqueueRaw(string kind, string path, string jsonPayload)
@@ -143,8 +196,33 @@ public static class UploadOutbox
 					// one bad entry cannot stall every later upload behind it (2026-09-20).
 					if (statusCode >= 400 && statusCode < 500)
 					{
-						Debug.LogWarning("[UploadOutbox] dropping " + head.kind + " -> " + head.path
-							+ ": permanent server rejection (HTTP " + statusCode + ")");
+						// Draw plan Step 5: a 413 on a RunRecord is a size rejection, not a poison
+						// payload — retry it ONCE with every combat's series stripped, so a run is
+						// never silently dropped over its payload size. Guarded by the per-item
+						// seriesStripped flag: a second 413 drops the item with an error log.
+						if (statusCode == 413 && head.kind == nameof(NetUploadKind.RunRecord) && !head.seriesStripped)
+						{
+							string stripped = StripSeriesFromRunPayload(head.jsonPayload);
+							if (stripped != null)
+							{
+								head.jsonPayload = stripped;
+								head.seriesStripped = true;
+								Save(items);
+								Debug.LogWarning("[UploadOutbox] 413 payload_too_large -> retrying " + head.kind
+									+ " with all combat series stripped");
+								continue;
+							}
+						}
+						if (statusCode == 413 && head.kind == nameof(NetUploadKind.RunRecord))
+						{
+							Debug.LogError("[UploadOutbox] dropping " + head.kind + " -> " + head.path
+								+ ": still payload_too_large after stripping every combat series (HTTP 413)");
+						}
+						else
+						{
+							Debug.LogWarning("[UploadOutbox] dropping " + head.kind + " -> " + head.path
+								+ ": permanent server rejection (HTTP " + statusCode + ")");
+						}
 						items.RemoveAt(0);
 						Save(items);
 						continue;
@@ -159,6 +237,34 @@ public static class UploadOutbox
 		{
 			flushing = false;
 		}
+	}
+
+	/// <summary>
+	/// 413 fallback (draw plan Step 5): strip every combat's series from a run payload (the
+	/// counters and per-card data survive; only the HP/deck curves go). Returns null when the
+	/// payload cannot be parsed (caller drops the item). The caller guards against loops with
+	/// PendingRequest.seriesStripped, so a second 413 drops the item with an error log.
+	/// </summary>
+	private static string StripSeriesFromRunPayload(string json)
+	{
+		RunUploadRequest run;
+		try
+		{
+			run = JsonUtility.FromJson<RunUploadRequest>(json);
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+		if (run == null) return null;
+		if (run.combats != null)
+		{
+			foreach (RunCombatEntry combat in run.combats)
+			{
+				if (combat != null) combat.series = null;
+			}
+		}
+		return JsonUtility.ToJson(run);
 	}
 
 	public static bool IsUploadEnabled(NetUploadKind kind)

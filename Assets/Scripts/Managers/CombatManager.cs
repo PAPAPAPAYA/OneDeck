@@ -184,6 +184,12 @@ public class CombatManager : MonoBehaviour
 
 	/// <summary>Round count of the last finished combat, captured in ExitCombat before roundNumRef resets (Result screen display).</summary>
 	[HideInInspector] public int roundsLastCombat;
+	/// <summary>Total reveals of the last finished combat, captured in ExitCombat before totalCardsRevealed resets (draw plan Step 1b; run_combats.reveals).</summary>
+	[HideInInspector] public int revealsLastCombat;
+	/// <summary>Seed the last combat ran with, captured where GatherDecks computes it (draw plan Step 1b; run_combats.combat_seed, full int32 — Rng.StableHash is signed).</summary>
+	[HideInInspector] public int lastCombatSeed;
+	/// <summary>The last combat's forced-conclusion record, copied from the guard latch in ExitCombat before ResetState clears it (draw plan Step 1b). Null when the combat ended by HP.</summary>
+	public BudgetCapConclusion lastCombatConclusion;
 	public int overtimeRoundThreshold;
 	public GameObject cardToAddWhenOvertime;
 	[Tooltip("Add this amount of fatigue to both players")]
@@ -262,6 +268,11 @@ public class CombatManager : MonoBehaviour
 		
 		// clean up tracking stats (capture the finished combat's round count for the Result screen first)
 		roundsLastCombat = roundNumRef.value;
+		// Draw plan Step 1b: copy the conclusion + reveal facts out of the guard BEFORE ResetState
+		// clears the latch, so PhaseManager's post-exit ReportMatchResult/RecordCombatEnd still
+		// read them (the scene binds onExitCombatPhase to this method).
+		revealsLastCombat = totalCardsRevealed;
+		lastCombatConclusion = CombatBudgetGuard.Me != null ? CombatBudgetGuard.Me.Conclusion : null;
 		roundNumRef.value = 0;
 		cardsRevealedThisRound = 0;
 		totalCardsRevealed = 0;
@@ -319,6 +330,7 @@ public class CombatManager : MonoBehaviour
 		int sessionNum = TestWriteRead.DeckSaver.Me != null && TestWriteRead.DeckSaver.Me.sessionNumber != null ? TestWriteRead.DeckSaver.Me.sessionNumber.value : 0;
 		int overrideSeed = TestManager.Me != null ? TestManager.Me.overrideCombatSeed : 0;
 		int combatSeed = overrideSeed != 0 ? overrideSeed : Rng.ComputeCombatSeed(sessionNum);
+		lastCombatSeed = combatSeed;
 		Rng.InitCombat(combatSeed);
 		DeterminismTracker.BeginCombat(combatSeed, sessionNum,
 			playerDeck != null ? playerDeck.name : "null",
@@ -801,10 +813,25 @@ public class CombatManager : MonoBehaviour
 	private void RevealCards()
 	{
 		if (IsInputBlocked) return;
-		
+
 		// If attack animation is playing, wait
 		if (visuals != null && visuals.IsPlayingAttackAnimation())
 		{
+			return;
+		}
+
+		// L0 forced-conclusion retry (draw plan Step 1c): the guard latch drives settlement
+		// instead of the play-mode-only call in NotifyReveal, so a trip that landed while effect
+		// animations were still playing (the automatic round-start reveal, draw plan §2.2) or
+		// without a player click settles on the next RevealCards tick. The forced path is
+		// idempotent (combatFinished early return), so a repeat call is safe.
+		if (!combatFinished.value && !isPlayingEffectAnimations
+			&& CombatBudgetGuard.Me != null && CombatBudgetGuard.Me.ConclusionTripped)
+		{
+			string reason = CombatBudgetGuard.Me.Conclusion != null
+				? "[CombatManager] budget cap latch retry: " + CombatBudgetGuard.Me.Conclusion.DescribeReason()
+				: "[CombatManager] budget cap latch retry (conclusion record lost)";
+			ForceConcludeCombat(reason);
 			return;
 		}
 
@@ -1287,10 +1314,14 @@ public class CombatManager : MonoBehaviour
 	}
 
 	/// <summary>
-	/// L0 forced conclusion (2026-09-17): invoked by CombatBudgetGuard when a global
-	/// budget cap trips. Placeholder outcome semantics (§7.7, swappable): no HP is
-	/// touched — the result screen reads whatever remains, so the higher-HP side wins
-	/// and equal HP draws. Drains any open chain first so nothing keeps cascading.
+	/// L0 forced conclusion (2026-09-17): invoked by CombatBudgetGuard when a global budget
+	/// cap trips, and re-driven by the RevealCards latch retry (draw plan Step 1c). The outcome
+	/// is a DRAW (plans/plan-forced-draw-reporting-2026-11-26.md; replaces the §7.7 HP-ratio
+	/// placeholder): no HP is touched and no heart is lost — PhaseManager resolves
+	/// DrawForced from the guard latch. Fully automatic (Step 1d): settlement skips the
+	/// ShouldAutoConfirm click gate. Drains any open chain first so nothing keeps cascading;
+	/// safe to call repeatedly (combatFinished early return; CloseOpenedChain and
+	/// ResetGenerationGuards no-op when clean).
 	/// </summary>
 	public void ForceConcludeCombat(string reason)
 	{
@@ -1298,10 +1329,33 @@ public class CombatManager : MonoBehaviour
 		TestManager.Log("[CombatManager] FORCE CONCLUDE COMBAT: " + reason);
 		EffectChainManager.Me.CloseOpenedChain();
 		EffectChainManager.Me.ResetGenerationGuards();
-		HandleCombatFinished();
+		HandleCombatFinished(forced: true);
 	}
 
-	private void HandleCombatFinished()
+	/// <summary>
+	/// Draw plan Step 0: read the live forced-conclusion latch for settlement. True exactly
+	/// when CombatBudgetGuard has a tripped conclusion; the guard's latch is the single source
+	/// of truth (there is no pending-conclusion copy here). PhaseManager resolves the outcome
+	/// while the latch is still live — ResetState only runs later inside ExitCombat, which
+	/// first copies the record into <see cref="lastCombatConclusion"/>.
+	/// </summary>
+	public bool TryGetForcedConclusion(out BudgetCapConclusion conclusion)
+	{
+		if (CombatBudgetGuard.Me != null && CombatBudgetGuard.Me.ConclusionTripped)
+		{
+			conclusion = CombatBudgetGuard.Me.Conclusion;
+			return conclusion != null;
+		}
+		conclusion = null;
+		return false;
+	}
+
+	/// <summary>
+	/// Marks the combat finished. The effect-animation gate stays (PhaseManager would Destroy
+	/// cards the coroutine is still using); <paramref name="forced"/> skips the ShouldAutoConfirm
+	/// click gate so a forced conclusion settles with no player input (draw plan Step 1d).
+	/// </summary>
+	private void HandleCombatFinished(bool forced = false)
 	{
 		if (combatFinished.value) return;
 
@@ -1313,10 +1367,18 @@ public class CombatManager : MonoBehaviour
 			return;
 		}
 
-		_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAP / SPACE to continue";
-		if (!ShouldAutoConfirm()) return;
+		// A forced conclusion is fully automatic (draw plan Step 1d): never show the
+		// "TAP / SPACE to continue" prompt it would settle through. The HP path keeps it.
+		if (!forced)
+		{
+			_infoDisplayer.combatTipsDisplay.text = "COMBAT FINISHED\nTAP / SPACE to continue";
+			if (!ShouldAutoConfirm()) return;
+		}
 
 		combatFinished.value = true;
+		// Draw plan Step 1f: the settled line pairs the FORCE CONCLUDE COMBAT request line, so
+		// logs stop over-counting trips that were swallowed by the animation/click gates.
+		if (forced) TestManager.Log("[CombatManager] FORCE CONCLUDE COMBAT settled");
 		// Determinism ledger: write the combat digest (reveal sequence + per-card damage)
 		DeterminismTracker.EndCombat();
 		visuals.ClearAllPhysicalCards();

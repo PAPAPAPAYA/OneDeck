@@ -65,7 +65,7 @@
   - roles: 续链角色 engine / chain-switcher / pump(示例见 §6)
   - tripSignals / reproSeeds / ~~evidenceRef~~(实现落为 `LoopReport.tripSignal` + `liveTripSignal` 两字段承载证据,不单列 evidenceRef;§19.1)
   - status: candidate → active(admin 复核后)/ retired(卡改动后须复验)
-    - **落地状态(2026-09-19,§21)**:组合库 = 服务端 `combos` 表;入库**自动**(sim 门槛:1-最小 + 多 seed 稳健 + 未截断,§7.6);`retired` 由 admin 在面板上置位/恢复,退役后不再参与匹配扣留
+	- **落地状态(2026-09-19,§21)**:组合库 = 服务端 `combos` 表;入库**自动**(sim 门槛:1-最小 + 多 seed 稳健 + 未截断,§7.6);`retired` 由 admin 在面板上置位/恢复,退役后不再参与匹配扣留
 
 组合库必须由 sim 判定入库,不能靠读 desc 手工维护——desc 会因省略而撒谎(例:丧钟×无头武生在 desc 层看似递归,实际被 ReviveSelf 的墓区早退拦死)。
 入库判据(2026-09-18 用户拍板)= sim 中检出**无界递归**(同回合排列周期,见 §3),与「预算打不完」解耦。带击杀泵的循环同样必 flag:`lethal infinite test`(RELIC_CURSE_REVIVAL + CURSE_GARDENER,循环每圈增强诅咒、恰好三回合内击杀自终止)是典型标本——验收标准:该 deck 必须被排列周期检测器命中并入库,尽管其自然对局 17 揭晓击杀、预算零触顶。
@@ -136,7 +136,7 @@
   - 不能打死 → 疲劳自杀路径(疲劳卡 2026-09-18 改 AttackSelf 自伤,见 §5)正常判负;疲劳也杀不动(被盾/回复顶住)则判平局;
   - 两种结局均 flag 卡片组合。
 - 配对责:判平局 + 记录,**不 flag**(2026-09-18 用户拍板维持 §7.1:现无配对才成立的无限;将来立项时 flag 条目需加卡片归属方字段(enemySide)+ 匹配时跨侧组合检测)。
-- L0 硬上限触顶:判平局(替换 §7.7 HP 比例占位)。
+- L0 硬上限触顶:判平局(替换 §7.7 HP 比例占位)。**已实施(2026-11-26)**:`plans/plan-forced-draw-reporting-2026-11-26.md` §10 —— 强制结算真正落地(guard latch 重试 + forced 免确认,不再被动画/确认门吞掉),结局 = `CombatOutcome.DrawForced`,自然平局同报 `natural`;上报带 `drawKind`,ghost 不再因平局积 `defense_wins`(§20.5 的统一承诺兑现)。
 
 拍板细化项(review 2026-09-18):
 
@@ -527,7 +527,7 @@ B/C 的排列在同一回合内只在 4 / 15 个不同排列间打转,单个排�
 
 ### 20.5 已拍板(无遗留待确认)
 
-- **forced 平局的上报 = 维持现状**(2026-09-19 用户,推翻本轮设计的初版建议):不再提「非决定性收场一律不上报」,`PhaseManager` 在 P3 内零改动。已知接受的不一致:被 flag 的 deck 会因平局积 `defense_wins`;将来做「平局三态」时一并解决(需要 `match_reports.won` 改 `result TEXT` + admin 的 defense 统计口径跟着改)。
+- **forced 平局的上报 = 维持现状**(2026-09-19 用户,推翻本轮设计的初版建议):不再提「非决定性收场一律不上报」,`PhaseManager` 在 P3 内零改动。已知接受的不一致:被 flag 的 deck 会因平局积 `defense_wins`;将来做「平局三态」时一并解决(需要 `match_reports.won` 改 `result TEXT` + admin 的 defense 统计口径跟着改)。**→ 已解决(2026-11-26)**:「平局三态」以 `drawKind`(natural/forced)落地,`won` 字段未改语义(平局恒 0),`defense_draws_natural/forced` 接手平局计数,admin 拆分显示 —— 见 `plans/plan-forced-draw-reporting-2026-11-26.md` §3/§4/§10。
 - 其他三项拍板见 §20.1;P3 没有未决问题。
 
 ### 20.6 实施顺序

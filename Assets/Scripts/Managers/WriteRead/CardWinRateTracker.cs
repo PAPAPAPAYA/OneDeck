@@ -110,32 +110,41 @@ namespace TestWriteRead
 		}
 
 		/// <summary>
-		/// Called at combat end, updates stats for all participating cards
+		/// Called at combat end, updates stats for all participating cards.
+		/// Draw accounting (draw plan Step 2): every real outcome counts into combats — player
+		/// cards take the outcome as-is, enemy cards invert only Win &lt;-&gt; Loss, and both sides
+		/// increment the matching draw counter. Abnormal records nothing.
 		/// </summary>
-		/// <param name="playerWon">Whether player won</param>
+		/// <param name="outcome">The combat's resolved outcome (never Abnormal at the call sites that matter).</param>
 		/// <param name="sessionNum">Session the fought combat belonged to (plan §2.7 session bucketing)</param>
-		public void RecordCombatResult(bool playerWon, int sessionNum)
+		public void RecordCombatResult(CombatOutcome outcome, int sessionNum)
 		{
 			if (!switchOnTracking) return;
+			if (outcome == CombatOutcome.Abnormal) return;
 			if (_currentCombatPlayerCardTypeIDs.Count == 0 && _currentCombatEnemyCardTypeIDs.Count == 0) return;
+
+			// Enemy cards invert only Win <-> Loss; both sides keep the same draw outcome.
+			CombatOutcome enemyOutcome = outcome == CombatOutcome.Win ? CombatOutcome.Loss
+				: outcome == CombatOutcome.Loss ? CombatOutcome.Win
+				: outcome;
 
 			foreach (var cardTypeID in _currentCombatPlayerCardTypeIDs)
 			{
-				UpdateCardStats(cardTypeID, playerWon);
-				UpdateSessionCardStats(cardTypeID, sessionNum, playerWon);
+				UpdateCardStats(cardTypeID, outcome);
+				UpdateSessionCardStats(cardTypeID, sessionNum, outcome);
 			}
 
 			foreach (var cardTypeID in _currentCombatEnemyCardTypeIDs)
 			{
-				UpdateCardStats(cardTypeID, !playerWon);
-				UpdateSessionCardStats(cardTypeID, sessionNum, !playerWon);
+				UpdateCardStats(cardTypeID, enemyOutcome);
+				UpdateSessionCardStats(cardTypeID, sessionNum, enemyOutcome);
 			}
 
 			SaveData();
 
 			if (printOnSave)
 			{
-				/* Debug.Log($"[CardWinRateTracker] Recorded combat result: {(playerWon ? "Win" : "Loss")}, " +
+				/* Debug.Log($"[CardWinRateTracker] Recorded combat result: {outcome}, " +
 						  $"Affected {_currentCombatPlayerCardTypeIDs.Count} cards"); */
 			}
 		}
@@ -162,21 +171,24 @@ namespace TestWriteRead
 		/// <summary>
 		/// Update single card statistics
 		/// </summary>
-		private void UpdateCardStats(string cardTypeID, bool won)
+		private void UpdateCardStats(string cardTypeID, CombatOutcome outcome)
 		{
 			var stats = GetOrCreateStats(cardTypeID);
 			stats.totalCombats++;
 
-			if (won)
-				stats.wins++;
-			else
-				stats.losses++;
+			switch (outcome)
+			{
+				case CombatOutcome.Win: stats.wins++; break;
+				case CombatOutcome.Loss: stats.losses++; break;
+				case CombatOutcome.DrawNatural: stats.drawsNatural++; break;
+				case CombatOutcome.DrawForced: stats.drawsForced++; break;
+			}
 		}
 
 		/// <summary>
 		/// Update the per-(card, session) bucket used by the stats snapshot upload (plan §2.7).
 		/// </summary>
-		private void UpdateSessionCardStats(string cardTypeID, int sessionNum, bool won)
+		private void UpdateSessionCardStats(string cardTypeID, int sessionNum, CombatOutcome outcome)
 		{
 			var stats = _data.sessionCardStats.Find(s => s.cardTypeID == cardTypeID && s.sessionNum == sessionNum);
 			if (stats == null)
@@ -193,10 +205,13 @@ namespace TestWriteRead
 			}
 			stats.combats++;
 
-			if (won)
-				stats.wins++;
-			else
-				stats.losses++;
+			switch (outcome)
+			{
+				case CombatOutcome.Win: stats.wins++; break;
+				case CombatOutcome.Loss: stats.losses++; break;
+				case CombatOutcome.DrawNatural: stats.drawsNatural++; break;
+				case CombatOutcome.DrawForced: stats.drawsForced++; break;
+			}
 
 			StatsSnapshotUploader.MarkDirty();
 		}
@@ -297,17 +312,19 @@ namespace TestWriteRead
 			var sb = new StringBuilder();
 			
 			// CSV header
-			sb.AppendLine("CardTypeID,CardName,TotalCombats,Wins,Losses,WinRate,LastUpdated");
-			
+			// Draw plan Step 2: added the two draw columns and fixed the old header/row mismatch
+			// (the header had a CardName column that the rows never emitted — dropped).
+			sb.AppendLine("CardTypeID,TotalCombats,Wins,Losses,DrawsNatural,DrawsForced,WinRate,LastUpdated");
+
 			// Sort by win rate
 			var sortedStats = _data.allCardStats
 				.OrderByDescending(s => s.WinRate)
 				.ThenByDescending(s => s.totalCombats)
 				.ToList();
-			
+
 			foreach (var stat in sortedStats)
 			{
-				sb.AppendLine($"{stat.cardTypeID},{stat.totalCombats},{stat.wins},{stat.losses},{stat.WinRate:F4},{_data.lastUpdated}");
+				sb.AppendLine($"{stat.cardTypeID},{stat.totalCombats},{stat.wins},{stat.losses},{stat.drawsNatural},{stat.drawsForced},{stat.WinRate:F4},{_data.lastUpdated}");
 			}
 
 			try

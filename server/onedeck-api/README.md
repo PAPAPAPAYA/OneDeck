@@ -18,10 +18,10 @@ Single-file server (`server.js`), same deployment model as pkidle.
 | POST | `/api/players/register` | `{username}` -> `{playerId}`; 409 on name conflict |
 | POST | `/api/decks` | upload ghost deck snapshot; a deck whose content fingerprint is already flagged lands flagged |
 | GET | `/api/decks/opponents?playerId&gameVersion&maxSession&perSession[&includeSelf=1]` | batch opponent decks; flagged decks are never returned, decks CONTAINING an active combo are withheld too (multiset containment), `flaggedDeckIds` lists the flagged ids inside the requested range and `blockedCombos` carries the active combo card sets, both so the client can drop cached copies; `includeSelf=1` (client test toggle) drops the self-exclusion so the requester's own decks can come back |
-| POST | `/api/matches/report` | battle result, idempotent by `reportId` |
+| POST | `/api/matches/report` | battle result, idempotent by `reportId`; optional `drawKind` (`natural` = both HP <= 0, `forced` = an L0 budget-cap conclusion) + `ownerHp`/`enemyHp`. `drawKind` outranks `won`; a draw increments the ghost's `defense_draws_natural`/`defense_draws_forced` instead of `defense_wins`/`defense_losses` (D2 ruling 2026-11-26); unknown kinds coerce to `''` (never a 400 — the client outbox drops the whole run on 4xx) |
 | POST | `/api/loop-reports` | infinity-loop evidence against a ghost deck: `{playerId, gameVersion, opponentDeckId, verdict, seed, signals, payload}`. Verdict `EnemyDeck` (= a headless re-run proved the ghost loops by itself) flags the deck's CONTENT fingerprint and — when the payload carries a proven minimum (`unbounded`, `oneMinimal`, not `truncated`/`multiSeedStable: false`) — registers the minimized card set in the combo library (response: `comboKey`, `comboStatus`). `unbounded` is criterion v2 (plan §26, 2026-09-20): a periodic arrangement run the round boundary did not reset; payloads without it (older clients) are refused so a gate-bounded repetition can never register. Every other verdict is stored as evidence and changes no state. Idempotent per `(deck, fingerprint, seed, verdict, reporter)` |
 | POST | `/api/stats/snapshot` | lifetime cumulative shop/winrate stats (upsert, retry-safe) |
-| POST | `/api/runs` | one full run record with shop visits + combats, idempotent by `runId`; zero-combat runs are skipped (responds ok, stores nothing) |
+| POST | `/api/runs` | one full run record with shop visits + combats, idempotent by `runId`; zero-combat runs are skipped (responds ok, stores nothing). Each combat carries optional `drawKind`/`forcedReason` (`rounds` / `totalReveals`), `ownerHp`/`enemyHp`, `reveals` and the full-int32 `combatSeed` (`Rng.StableHash` is signed) |
 | POST | `/api/cards/catalog` | card metadata per game version (upsert) |
 | GET | `/api/health` | liveness |
 | GET | `/admin?token=...` | HTML dashboard (includes the infinity gate section) |
@@ -50,6 +50,28 @@ A deck that loops forever by itself must never be served, at two granularities:
 
 Deployment: existing dbs migrate on boot (`ensureColumn` + a fingerprint backfill for rows that
 predate the column), so no manual migration step.
+
+## Draws (2026-11-26 draw plan)
+
+Draws are recorded per kind and shown as draws (never as losses):
+
+- `run_combats.draw_kind` (`natural` / `forced`) is the draw marker everywhere — the predicate is
+  `draw_kind <> ''` and `drawKind` outranks `won` (a payload with both stores `won = 0`).
+  `forced_reason` (`rounds` / `totalReveals`) is written only for forced draws; `owner_hp` /
+  `enemy_hp` / `reveals` / `combat_seed` are display and audit data, never the authority.
+- `match_reports.draw_kind` likewise; a draw increments the ghost deck's per-kind
+  `defense_draws_natural` / `defense_draws_forced` and leaves `defense_wins` / `defense_losses`
+  untouched (D2 ruling).
+- `stats_snapshots.draws_natural` / `draws_forced` are nullable: a snapshot without them (legacy
+  client) keeps the stored values via `COALESCE` in the upsert, so old clients never zero counters.
+- Body limit is `900kb` (under nginx's 1 MB `client_max_body_size`); long forced-draw combats used
+  to exceed the old `256kb` cap and the client dropped the whole run. The client additionally caps
+  each combat's series to 500 samples (first 450 + last 50) before upload.
+- The admin dashboard has an overview pair of draw counter cards and a "Draws · natural + forced"
+  section (latest 50, LEFT JOIN decks so default-pool draws — `opponent_deck_id` NULL — still show);
+  the card win-rate table lists `draws nat` / `draws forced`, the ghost defense table lists
+  `defense draws nat` / `defense draws forced`, and the run page renders `draw (natural)` /
+  `draw (forced: <reason>)` with HP-left and reveal counts.
 
 ## Tests
 

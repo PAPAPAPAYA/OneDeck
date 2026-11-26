@@ -71,7 +71,7 @@ public class RunRecorderTests
 		RunRecorder.OnCardBought("wolf");
 		RunRecorder.OnReroll();
 		RunRecorder.CloseShopVisit(5, 1, 30);
-		RunRecorder.RecordCombatEnd(1, true, 4, 6, 12);
+		RunRecorder.RecordCombatEnd(1, CombatOutcome.Win, 4, 6, 12);
 		RunRecorder.CloseRun(RunRecorder.ResultVictory, 1, 4, new List<string> { "wolf", "shrine" });
 
 		Assert.AreEqual(1, UploadOutbox.PendingCount, "run record must be enqueued");
@@ -112,7 +112,7 @@ public class RunRecorderTests
 		PlayerIdentity.ResetForTests();
 
 		RunRecorder.StartRun();
-		RunRecorder.RecordCombatEnd(0, true, 3, 4, 0);
+		RunRecorder.RecordCombatEnd(0, CombatOutcome.Win, 3, 4, 0);
 		RunRecorder.CloseRun(RunRecorder.ResultVictory, 0, 3, new List<string> { "wolf" });
 
 		Assert.AreEqual(0, UploadOutbox.PendingCount, "no identity: nothing to attach the run to");
@@ -215,7 +215,7 @@ public class RunRecorderTests
 			revealIndex = 2, roundNum = 1, ownerHP = 18, enemyHP = 15, ownerShield = 2, enemyShield = 0,
 			ownerDeckSize = 10, enemyDeckSize = 9, side = RunCombatSample.SideEnemy, cardTypeID = "shrine"
 		});
-		RunRecorder.RecordCombatEnd(1, true, 4, 6, 12);
+		RunRecorder.RecordCombatEnd(1, CombatOutcome.Win, 4, 6, 12);
 
 		string snapshot = LastJournalSnapshot();
 		StringAssert.Contains("\"series\":[{\"revealIndex\":1,\"roundNum\":1,\"ownerHP\":20,\"enemyHP\":15,\"ownerShield\":2,\"enemyShield\":0,\"ownerDeckSize\":10,\"enemyDeckSize\":10,\"side\":0,\"cardTypeID\":\"wolf\"}", snapshot);
@@ -227,7 +227,7 @@ public class RunRecorderTests
 			revealIndex = 1, roundNum = 2, ownerHP = 18, enemyHP = 10, ownerShield = 0, enemyShield = 0,
 			ownerDeckSize = 9, enemyDeckSize = 8, side = RunCombatSample.SideOwner, cardTypeID = "wolf"
 		});
-		RunRecorder.RecordCombatEnd(2, false, 2, 3, 12);
+		RunRecorder.RecordCombatEnd(2, CombatOutcome.Loss, 2, 3, 12);
 
 		snapshot = LastJournalSnapshot();
 		Assert.AreEqual(2, CountOccurrences(snapshot, "\"revealIndex\":1"), "each combat's series restarts at revealIndex 1");
@@ -249,7 +249,7 @@ public class RunRecorderTests
 		{
 			revealIndex = 1, roundNum = 1, ownerHP = 20, enemyHP = 18, side = RunCombatSample.SideOwner, cardTypeID = "wolf"
 		});
-		RunRecorder.RecordCombatEnd(1, true, 4, 6, 12);
+		RunRecorder.RecordCombatEnd(1, CombatOutcome.Win, 4, 6, 12);
 
 		string snapshot = LastJournalSnapshot();
 		StringAssert.Contains("\"series\":[{\"revealIndex\":1,\"roundNum\":1,\"ownerHP\":20,\"enemyHP\":18", snapshot);
@@ -265,9 +265,68 @@ public class RunRecorderTests
 		{
 			revealIndex = 1, roundNum = 1, ownerHP = 20, enemyHP = 15, side = RunCombatSample.SideOwner, cardTypeID = "wolf"
 		});
-		RunRecorder.RecordCombatEnd(1, true, 4, 6, 12);
+		RunRecorder.RecordCombatEnd(1, CombatOutcome.Win, 4, 6, 12);
 
 		// JsonUtility normalizes a null list to "series":[]; assert no sample objects leak.
 		Assert.IsFalse(LastJournalSnapshot().Contains("\"series\":[{"), "series off: no sample objects may be captured");
+	}
+
+	// ---------------------------------------------------------------- draw accounting (2026-11-26 draw plan Step 2)
+
+	[Test]
+	public void DrawEntries_CarryKindReasonFields_AndForcedReasonOnlyOnForced()
+	{
+		RunRecorder.StartRun();
+		// Forced draw: kind, cap reason from the conclusion record, HP, reveals, signed seed.
+		var conclusion = new BudgetCapConclusion(BudgetCapKind.Rounds, 60, 1500, 88, 12);
+		RunRecorder.RecordCombatEnd(1, CombatOutcome.DrawForced, 3, 6, 12,
+			ownerHp: 7, enemyHp: 9, conclusion: conclusion, reveals: 1500, combatSeed: -559038737);
+		// Natural draw: no forcedReason even though a record is passed.
+		RunRecorder.RecordCombatEnd(2, CombatOutcome.DrawNatural, 3, 6, 12,
+			ownerHp: 0, enemyHp: 0, conclusion: conclusion, reveals: 42, combatSeed: 123);
+
+		string snapshot = LastJournalSnapshot();
+		StringAssert.Contains("\"drawKind\":\"forced\"", snapshot);
+		StringAssert.Contains("\"forcedReason\":\"rounds\"", snapshot);
+		StringAssert.Contains("\"combatSeed\":-559038737", snapshot);
+		StringAssert.Contains("\"reveals\":1500", snapshot);
+		StringAssert.Contains("\"ownerHp\":7", snapshot);
+		StringAssert.Contains("\"enemyHp\":9", snapshot);
+		StringAssert.Contains("\"drawKind\":\"natural\"", snapshot);
+		Assert.AreEqual(1, CountOccurrences(snapshot, "\"forcedReason\":\"rounds\""),
+			"forcedReason must be written only for the forced entry");
+	}
+
+	[Test]
+	public void OrdinaryCombats_EmitDefaults_ForTheDrawFields()
+	{
+		RunRecorder.StartRun();
+		RunRecorder.RecordCombatEnd(1, CombatOutcome.Win, 4, 6, 12);
+		RunRecorder.RecordCombatEnd(2, CombatOutcome.Loss, 2, 3, 12);
+
+		string snapshot = LastJournalSnapshot();
+		Assert.AreEqual(2, CountOccurrences(snapshot, "\"drawKind\":\"\""),
+			"JsonUtility must still emit the empty drawKind for ordinary combats");
+		Assert.AreEqual(2, CountOccurrences(snapshot, "\"forcedReason\":\"\""), "no forced reason on ordinary combats");
+		Assert.IsFalse(snapshot.Contains("\"drawKind\":\"forced\""), "no draw marker on ordinary combats");
+		Assert.AreEqual(0, CountOccurrences(snapshot, "\"forcedReason\":\"r"), "no forced reason anywhere");
+	}
+
+	[Test]
+	public void Recovery_LegacyCombatEntry_LoadsWithZeroDrawFields()
+	{
+		// An old journal line without the new fields: JsonUtility loads missing ints as 0 and
+		// missing strings as "", so recovered combats upload as ordinary non-draw rows.
+		string oldRun = "{\"runId\":\"run-legacy-fields\",\"playerId\":\"pid-test\",\"gameVersion\":\"0.1.0\",\"result\":\"\",\"combats\":[{\"sessionNum\":0,\"won\":false,\"heartsLeft\":1,\"rounds\":2,\"opponentDeckId\":0,\"ts\":\"t\"}]}";
+		File.WriteAllText(JournalPath, oldRun + "\n", new UTF8Encoding(false));
+
+		RunRecorder.StartRun();
+
+		Assert.AreEqual(1, UploadOutbox.PendingCount, "unfinished previous run must be re-uploaded");
+		string payload = ReadHeadPayload();
+		StringAssert.Contains("\"drawKind\":\"\"", payload);
+		StringAssert.Contains("\"ownerHp\":0", payload);
+		StringAssert.Contains("\"combatSeed\":0", payload);
+		StringAssert.Contains("\"result\":\"abandoned\"", payload);
 	}
 }

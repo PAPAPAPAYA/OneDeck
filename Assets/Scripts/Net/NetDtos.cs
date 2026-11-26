@@ -107,7 +107,13 @@ public class MatchReportRequest
 	public string playerId;
 	public string reportId;
 	public int opponentDeckId;
+	/// <summary>Only true on CombatOutcome.Win; a draw reports false (draw plan Step 2).</summary>
 	public bool won;
+	/// <summary>"" = not a draw / legacy client; "natural" = both HP &lt;= 0; "forced" = L0 budget-cap conclusion. drawKind outranks won on the server.</summary>
+	public string drawKind;
+	/// <summary>HP at settlement (display/audit data; the server never derives the draw from it).</summary>
+	public int ownerHp;
+	public int enemyHp;
 	public int sessionNum;
 	public string gameVersion;
 }
@@ -138,6 +144,10 @@ public class StatsWinrateRow
 	public int combats;
 	public int wins;
 	public int losses;
+	/// <summary>Natural-draw count (draw plan Step 2). Absent on legacy clients; the server COALESCE keeps stored values.</summary>
+	public int drawsNatural;
+	/// <summary>Forced-draw count (draw plan Step 2).</summary>
+	public int drawsForced;
 }
 
 [Serializable]
@@ -211,11 +221,23 @@ public class RunCombatSample
 public class RunCombatEntry
 {
 	public int sessionNum;
+	/// <summary>Only true on CombatOutcome.Win; draws and Abnormal report false (draw plan Step 2).</summary>
 	public bool won;
 	public int heartsLeft;
 	public int rounds;
 	/// <summary>Ghost deck fought against; 0 = none (local fallback), server stores NULL.</summary>
 	public int opponentDeckId;
+	/// <summary>"" / "natural" / "forced". drawKind outranks won on the server (draw plan Step 2).</summary>
+	public string drawKind;
+	/// <summary>"" / "rounds" / "totalReveals"; written only for DrawForced (lives in run_combats, not in per-card aggregates).</summary>
+	public string forcedReason;
+	/// <summary>HP at settlement (display/audit data).</summary>
+	public int ownerHp;
+	public int enemyHp;
+	/// <summary>Total cards revealed in the combat (CombatManager.revealsLastCombat).</summary>
+	public int reveals;
+	/// <summary>Full int32 combat seed (CombatManager.lastCombatSeed; Rng.StableHash is signed, server parses the full range).</summary>
+	public int combatSeed;
 	public string ts;
 	public List<RunCombatPerCard> perCard;
 	/// <summary>Per-reveal samples (ServerConfig.includeCombatSeries). Null = off/empty, server stores [].</summary>

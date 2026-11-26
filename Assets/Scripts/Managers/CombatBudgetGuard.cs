@@ -1,15 +1,73 @@
 using DefaultNamespace.Managers;
 using UnityEngine;
 
+/// <summary>Which global budget cap produced the forced conclusion (L0).</summary>
+public enum BudgetCapKind
+{
+	None = 0,
+	Rounds,
+	TotalReveals
+}
+
+/// <summary>
+/// Immutable facts latched at the frame a global budget cap trips (draw plan Step 1a).
+/// HP is deliberately absent: settlement HP is authoritative and two snapshots would be
+/// ambiguous. Lives only until CombatBudgetGuard.ResetState (CombatManager.ExitCombat);
+/// ExitCombat copies it into CombatManager.lastCombatConclusion before the reset.
+/// </summary>
+public class BudgetCapConclusion
+{
+	public readonly BudgetCapKind kind;
+	public readonly int round;
+	public readonly int totalReveals;
+	public readonly int poolSize;
+	public readonly int peakCascadeDepth;
+
+	public BudgetCapConclusion(BudgetCapKind kind, int round, int totalReveals, int poolSize, int peakCascadeDepth)
+	{
+		this.kind = kind;
+		this.round = round;
+		this.totalReveals = totalReveals;
+		this.poolSize = poolSize;
+		this.peakCascadeDepth = peakCascadeDepth;
+	}
+
+	/// <summary>run_combats.forced_reason value ("rounds" / "totalReveals"; "" when not a cap trip).</summary>
+	public string ForcedReason
+	{
+		get
+		{
+			switch (kind)
+			{
+				case BudgetCapKind.Rounds: return "rounds";
+				case BudgetCapKind.TotalReveals: return "totalReveals";
+				default: return string.Empty;
+			}
+		}
+	}
+
+	/// <summary>Human-readable trip reason for the FORCE CONCLUDE COMBAT log line.</summary>
+	public string DescribeReason()
+	{
+		switch (kind)
+		{
+			case BudgetCapKind.Rounds: return "global round cap hit (round=" + round + ")";
+			case BudgetCapKind.TotalReveals: return "global total-reveal cap hit (totalReveals=" + totalReveals + ")";
+			default: return "global budget cap hit";
+		}
+	}
+}
+
 /// <summary>
 /// L0 hard-stop budget for infinity defense (plans/plan-infinity-detection-2026-09-17.md,
 /// 2026-09-17). Auto-created on the CombatManager GameObject in CombatManager.Awake.
 /// Three independent fuses guarantee every combat terminates in bounded time:
 /// - Per-round reveal cap: past the cap the rest of the round flips cards WITHOUT effect
 ///   processing (the Start Card shuffle still fires so the round boundary survives).
-/// - Global total-reveal cap / global round cap: force-conclude combat. The outcome
-///   semantics are a swappable placeholder (§7.7): no HP is touched — the result screen
-///   reads whatever remains, so the higher-HP side wins and equal HP draws.
+/// - Global total-reveal cap / global round cap: force-conclude combat. The conclusion is a
+///   DRAW (plans/plan-forced-draw-reporting-2026-11-26.md; replaces the §7.7 HP-ratio
+///   placeholder): no HP is touched and no heart is lost — PhaseManager resolves
+///   CombatOutcome.DrawForced from the ConclusionTripped latch.
 /// Also feeds passive budget telemetry (per-round reveal peak / cascade depth peak /
 /// combined pool peak) into the DeterminismDigest for threshold calibration.
 /// The per-round bury-cascade cap was dropped by ruling (2026-09-17): the chainDepth fuse
@@ -38,6 +96,17 @@ public class CombatBudgetGuard : MonoBehaviour
 	/// <summary>Set when a global cap tripped; consumed by CombatManager.ForceConcludeCombat.</summary>
 	public bool ConcludeRequested { get; private set; }
 
+	/// <summary>
+	/// Single forced-conclusion latch (draw plan Step 0 / 1a): true from the trip frame until
+	/// ResetState. The ONLY source of truth for a forced conclusion — PhaseManager resolves
+	/// CombatOutcome.DrawForced from it and CombatManager.RevealCards retries settlement off it;
+	/// there is no pending-conclusion copy anywhere else. Cleared only by ResetState.
+	/// </summary>
+	public bool ConclusionTripped { get; private set; }
+
+	/// <summary>Facts latched at the trip frame; non-null exactly while ConclusionTripped.</summary>
+	public BudgetCapConclusion Conclusion { get; private set; }
+
 	/// <summary>Cascade depth peak seen since the last reset (telemetry; tests read it too).</summary>
 	public int PeakCascadeDepth { get; private set; }
 
@@ -47,6 +116,8 @@ public class CombatBudgetGuard : MonoBehaviour
 	{
 		RoundForceClearActive = false;
 		ConcludeRequested = false;
+		ConclusionTripped = false;
+		Conclusion = null;
 		_concluded = false;
 		PeakCascadeDepth = 0;
 	}
@@ -79,11 +150,17 @@ public class CombatBudgetGuard : MonoBehaviour
 			_concluded = true;
 			RoundForceClearActive = true;
 			ConcludeRequested = true;
+			// Draw plan Step 1a: latch the facts at the trip frame. Both caps can trip on the
+			// same reveal; the round cap is the one reported then.
+			ConclusionTripped = true;
+			Conclusion = new BudgetCapConclusion(
+				maxRounds > 0 && currentRound >= maxRounds ? BudgetCapKind.Rounds : BudgetCapKind.TotalReveals,
+				currentRound, totalCardsRevealed, poolSize, PeakCascadeDepth);
 			TestManager.Log("[CombatBudgetGuard] Global budget cap hit (totalReveals=" + totalCardsRevealed + "/" + maxTotalReveals
 				+ ", round=" + currentRound + "/" + maxRounds + ") -> force conclude requested");
 			if (Application.isPlaying && CombatManager.Me != null)
 			{
-				CombatManager.Me.ForceConcludeCombat("[CombatBudgetGuard] global budget cap");
+				CombatManager.Me.ForceConcludeCombat("[CombatBudgetGuard] " + Conclusion.DescribeReason());
 			}
 			return;
 		}

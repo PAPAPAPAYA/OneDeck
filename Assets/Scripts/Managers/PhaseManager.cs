@@ -173,31 +173,34 @@ public class PhaseManager : MonoBehaviour
 				EnteringShopPhase();
 				return;
 			}
-			if (playerStatusRef.hp <= 0)
+			// Draw accounting (plans/plan-forced-draw-reporting-2026-11-26.md Step 0): resolve the
+			// outcome exactly once, while the budget guard's conclusion latch is still live
+			// (ResetState only runs later inside ExitCombat). Downstream code never re-derives it from HP.
+			BudgetCapConclusion forcedConclusion = null;
+			bool forcedLatchLive = CombatManager.Me != null && CombatManager.Me.TryGetForcedConclusion(out forcedConclusion);
+			CombatOutcome outcome = CombatOutcomeResolver.Resolve(playerStatusRef.hp, enemyStatusRef.hp, forcedLatchLive);
+			if (outcome == CombatOutcome.Abnormal)
 			{
-				if (enemyStatusRef.hp <= 0)
-				{
-					// print("draw");
-					_resultText = "DRAW";
-					// Draws are not counted in statistics
-				}
-				else
-				{
-					// print("you lose");
-					_resultText = "LOSE";
-					hearts.value--;
-					DeckTester.me.deckBWins++;
-					DeckTester.me.currentSessionAmount++;
-					DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
-					DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
-					DeckTester.me.CalculateSessionAveDmg();
-					// Record player card loss
-					TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: false, sessionNum: sessionNum.value);
-				}
+				// Unreachable by construction (the only combatFinished writers are the HP check and
+				// the forced conclusion). No heart, win or stats change; uploads as an ordinary
+				// non-draw loss so the anomaly is at least visible on the server.
+				Debug.LogError("[PhaseManager] combat finished with both sides alive and no forced-conclusion latch; recording an ordinary non-draw loss (Abnormal)");
 			}
-			else if (enemyStatusRef.hp <= 0)
+
+			if (outcome == CombatOutcome.Loss)
 			{
-				// print("you win");
+				_resultText = "LOSE";
+				hearts.value--;
+				DeckTester.me.deckBWins++;
+				DeckTester.me.currentSessionAmount++;
+				DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
+				DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
+				DeckTester.me.CalculateSessionAveDmg();
+				// Record player card loss
+				TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(outcome, sessionNum.value);
+			}
+			else if (outcome == CombatOutcome.Win)
+			{
 				_resultText = "WIN";
 				wins.value++;
 				DeckTester.me.deckAWins++;
@@ -205,9 +208,23 @@ public class PhaseManager : MonoBehaviour
 				DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
 				DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
 				DeckTester.me.CalculateSessionAveDmg();
-					// Record player card win
-					TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(playerWon: true, sessionNum: sessionNum.value);
+				// Record player card win
+				TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(outcome, sessionNum.value);
 			}
+			else if (outcome == CombatOutcome.DrawNatural || outcome == CombatOutcome.DrawForced)
+			{
+				// Draws (draw plan Step 0): no heart, no win. They still advance the automation
+				// session counter and the per-session HP arrays, exactly like the win/lose branches,
+				// otherwise an all-draw autoSpace batch never reaches sessionAmountTarget and never
+				// terminates. Win/loss counters stay untouched.
+				_resultText = "DRAW";
+				DeckTester.me.currentSessionAmount++;
+				DeckTester.me.deckAHPs.Add(CombatManager.Me.ownerPlayerStatusRef.hp);
+				DeckTester.me.deckBHPs.Add(CombatManager.Me.enemyPlayerStatusRef.hp);
+				DeckTester.me.CalculateSessionAveDmg();
+				TestWriteRead.CardWinRateTracker.Me?.RecordCombatResult(outcome, sessionNum.value);
+			}
+			// Abnormal: no bookkeeping at all (Step 0).
 			// Check run-ending conditions after this combat's result is applied
 			if (hearts.value <= 0)
 			{
@@ -224,9 +241,10 @@ public class PhaseManager : MonoBehaviour
 
 			// Async-PvP hooks (plan §2.5/§2.6) - AFTER ExitingCombatPhase so
 			// roundsLastCombat already holds the finished combat's count, and BEFORE
-			// the result phase so hp/hearts are still the combat's values.
-			bool playerWon = enemyStatusRef.hp <= 0 && playerStatusRef.hp > 0;
-			ReportMatchResult(playerWon);
+			// the result phase so hp/hearts are still the combat's values. Reading the
+			// post-exit holders (revealsLastCombat / lastCombatConclusion) is safe: ExitCombat
+			// copied the guard latch into them before resetting (draw plan Step 1b).
+			ReportMatchResult(outcome);
 			// Upload gate (plans/plan-combat-completion-upload-gate-2026-09-06.md): the one
 			// settlement point every real combat reaches (draws included; the tutorial branch
 			// returns above). Open this run's gate and commit this combat's staged enemy
@@ -235,10 +253,15 @@ public class PhaseManager : MonoBehaviour
 			OpponentDeckCache.CommitStagedEnemySource();
 			RunRecorder.RecordCombatEnd(
 				sessionNum: sessionNum.value,
-				won: playerWon,
+				outcome: outcome,
 				heartsLeft: hearts.value,
 				rounds: CombatManager.Me != null ? Mathf.Max(0, CombatManager.Me.roundsLastCombat - 1) : 0,
-				opponentDeckId: OpponentDeckCache.Current != null ? OpponentDeckCache.Current.deckId : 0);
+				opponentDeckId: OpponentDeckCache.Current != null ? OpponentDeckCache.Current.deckId : 0,
+				ownerHp: playerStatusRef != null ? playerStatusRef.hp : 0,
+				enemyHp: enemyStatusRef != null ? enemyStatusRef.hp : 0,
+				conclusion: forcedConclusion,
+				reveals: CombatManager.Me != null ? CombatManager.Me.revealsLastCombat : 0,
+				combatSeed: CombatManager.Me != null ? CombatManager.Me.lastCombatSeed : 0);
 			if (_isRunEnded)
 			{
 				// Async-PvP: run_end - upload the finished run (plan §2.6)
@@ -436,9 +459,11 @@ public class PhaseManager : MonoBehaviour
 	/// <summary>
 	/// Async-PvP: report the combat result against the ghost deck that supplied the
 	/// enemy side (plan §2.5). No-op outside ghost matches; the outbox absorbs failures.
-	/// Draws report won=false (the ghost survived).
+	/// Draw accounting (2026-11-26 draw plan Step 2): draws carry drawKind natural/forced and
+	/// the settlement HP; won is only true on CombatOutcome.Win (per the D2 ruling the server
+	/// no longer counts a draw as a defense win or loss either).
 	/// </summary>
-	private void ReportMatchResult(bool playerWon)
+	private void ReportMatchResult(CombatOutcome outcome)
 	{
 		var opponent = OpponentDeckCache.Current;
 		if (opponent == null) return;
@@ -452,7 +477,10 @@ public class PhaseManager : MonoBehaviour
 			playerId = PlayerIdentity.PlayerId,
 			reportId = Guid.NewGuid().ToString("N"),
 			opponentDeckId = opponent.deckId,
-			won = playerWon,
+			won = outcome == CombatOutcome.Win,
+			drawKind = CombatOutcomeResolver.DrawKind(outcome),
+			ownerHp = playerStatusRef != null ? playerStatusRef.hp : 0,
+			enemyHp = enemyStatusRef != null ? enemyStatusRef.hp : 0,
 			sessionNum = sessionNum.value,
 			gameVersion = DeckNetworkClient.GameVersion
 		});
